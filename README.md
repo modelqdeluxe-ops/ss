@@ -202,6 +202,11 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   Curraleiro, Indonesia y terneros Simmental; todas CC BY 4.0): igual que v6 dentro de la raza (7.9 %) y, sin
   calibrar, 8–17 % en otras razas del mismo tipo (v6 daba 50–120 % en cebú y criollos). La calibración de ganado deja
   b entre 0.4 y 1.15. Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
+- **Recolección en la finca** (`pclab.js`, beta.29): para pesar ganado al azar con báscula y cámara y ajustar el
+  modelo. Sin lote ni arete (cada animal recibe un número), todas las tomas con un solo teléfono (costado, por detrás,
+  otro costado y, si se quiere, desde arriba), ficha por animal con su peso de báscula, foto a resolución completa,
+  y exporte a **Excel** (mediciones con todo lo calculado, animales, fórmulas contra la báscula, ajustes con validación
+  cruzada, condiciones, cada foto y cada par) y **ZIP por partes** con todas las fotos.
 - **Laboratorio completo** (`pclab.js`, beta.28): la app de depuración del modelo de peso. Cada medición guarda lo que
   hizo el modelo con cada foto (silueta, persona de referencia, puntos, medidas y dónde se tomaron, luz, nitidez,
   inclinación del teléfono) y los datos del animal (condición corporal, llenado, preñez, postura…). En `#pclab`:

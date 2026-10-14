@@ -1,8 +1,8 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 29 sep 2026. Rama de trabajo: `claude/new-session-fdysl6` (sale de `claude/happy-ritchie-u6007w`;
-si el dueño indica otra rama, usa esa).
+Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.29; la beta.28 salió de
+`claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
 
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.28) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.28) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.29) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.29) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -379,14 +379,41 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 - **Exportar para análisis** (laboratorio): las últimas 10 mediciones con sus fotos originales (`pcr-<id>-<ángulo>-<toma>`)
   en un JSON, para repetir la medición fuera del teléfono.
 
+**5.0.0-beta.29** (rama `claude/happy-ritchie-u6007w`): **recolección de datos en la finca** para ajustar el modelo
+con pesos de báscula reales. Lo que pidió el dueño: "no me pida crear un lote", "puedo hacer las 3 tomas yo con mi
+teléfono", "es un muestreo aleatorio, no debe pedirme arete", "calcule, estime el máximo de información… en Excel".
+- **Sin lote:** se mide sin lotes; con una sesión en curso el selector tiene "Sin lote" (`UI.pc.lote='_no'`, por defecto
+  al empezar la sesión). El tipo y la etapa sin lote se guardan en `tipos._libre`. Ganado es el modo por defecto.
+- **Todas las tomas con un teléfono:** `PC().tomasG` = 2 (costado y por detrás), **3 (más el otro costado, por defecto)**
+  o 4 (más desde arriba). `PASOS_EXTRA` en pesocam.js; en camvivo.js la persona de referencia se pide por paso
+  (`paso.ref===false` en el otro costado y desde arriba). Los teléfonos enlazados siguen, plegados como opcionales.
+- **Sesión de recolección** (pclab.js, `labSes={n,ts,def}`): datos fijos del día (llenado, pelo, suelo, fondo, raza,
+  horas entre báscula y foto, distancia) que se copian al `cond` de cada medición.
+- **Ficha del animal** después de cada medición (con sesión): número automático (`aid='n:<ts36 de la sesión>:<n>'`,
+  "Animal 1, 2…", sin arete), peso de báscula, sexo, CC, preñez, postura, edad, cinta, notas; botones Descartar (borra
+  con fotos), Repetir este (mismo número, copia báscula y datos) y Guardar y medir otro. Avance en Resumen (animales,
+  con báscula, con 3+ mediciones, error de la sesión, los que faltan báscula → anotar después), protocolo de campo.
+- **Se guarda todo:** foto a resolución completa de la cámara de cada ángulo (`pch-<id>-<ángulo>`), datos de la cámara
+  (`cam`: resolución, zoom, lente…); las mediciones con sesión o con báscula no se podan; registro hasta 1500.
+- **Cálculos** (`calcMed`, `porAnimal`, `ajustes` en pclab.js): ancho del pecho (arriba o atrás), perímetro estimado
+  (elipse de Ramanujan con fondo y ancho), volumen del tronco, índices (CD/WH, L/WH, ancho/CD…), peso con varias
+  fórmulas (app, v7 sin calibrar, cinta con perímetro estimado, cinta medida, Schaeffer, volumen) y su error contra la
+  báscula; por animal (promedio, CV de las medidas); cada fórmula calibrada (ln báscula = a + b ln fórmula) y modelos
+  libres (ln peso con alzada, fondo, largo, ancho, perímetro…) con validación cruzada dejando un animal fuera.
+- **Excel** (`libro` → `.xlsx` armado sin librerías con `zip`): hojas Mediciones (todo + calculado), Animales,
+  Formulas, Ajustes, Condiciones, Tomas (cada foto: medidas, luz, nitidez, puntos), Pares (peso de cada par contra la
+  báscula) y Sesion. **ZIP por partes** (~20 MB, para no reventar el puente Android): LEEME, mediciones.csv,
+  datos.xlsx, sesion.json y una carpeta por medición (`001_animal-1_<id>/` con registro.json, depuracion.json,
+  `<ángulo>_hd.jpg`, `_t1..t3.jpg`, `_vista.jpg`). Desde la sesión o desde Registro → Sesiones de recolección.
+
 ---
 
 ## 5. SIGUIENTE TAREA
 
-**Pendiente del dueño (oct 2026):** va a probar en su finca (beta.28, con Equipo Beta en los teléfonos del personal) y
-traerá los datos. Con ellos se ajusta el modelo de ganado: pedirle el archivo "laboratorio completo" (Peso con cámara →
-Laboratorio → Registro → Exportar el laboratorio completo), el CSV y el archivo de análisis con las fotos, con el peso de báscula anotado en cada medición (o los pesajes y
-ventas registrados en la app). Con eso: error real por animal y por lote, reajuste de la fórmula (`ajustar_ganado.py`
+**Pendiente del dueño (oct 2026):** pesa ganado al azar en su finca con la beta.29 (báscula + cámara, un solo teléfono)
+y trae los datos: los **ZIP de la sesión** (Laboratorio → Resumen → Exportar todo) o al menos el **Excel**. Con eso se
+ajusta el modelo de ganado: la hoja Ajustes ya trae los modelos libres con validación cruzada; reajustar con
+`modelo/peso/ganado/ajustar_ganado.py` y las fotos HD (también sirven para reentrenar la silueta y los puntos). Con eso: error real por animal y por lote, reajuste de la fórmula (`ajustar_ganado.py`
 con sus datos), del factor por animal y de la cinta. Meta del dueño: ≤ 5 % por animal. No adelantar el modelo global
 ni nada nuevo hasta tener sus datos.
 
@@ -427,6 +454,8 @@ Pruebas en `pruebas/` (se corren desde una carpeta de trabajo; escriben capturas
 - `v2_t.js` recorrido visual del equipo 4.9.0.
 - `aprende_t.js` la app aprende sola (peso de entrada, pesajes, ventas; factor de cada animal), sin cámara.
 - `enlace_t.js` tres teléfonos enlazados (WebRTC en tres páginas; mismos servidores que vivo_t.js).
+- `recoleccion_t.js` la recolección en la finca sin cámara: sin lote, sesión, ficha (número automático, Repetir,
+  Guardar y medir otro, Descartar), avance, báscula después, Excel (lo abre con openpyxl si `PY` lo tiene) y ZIP. Solo 8111.
 - `lab_t.js` el laboratorio completo (#pclab) con mediciones sintéticas: pestañas, diagnóstico, ajuste sugerido, datos del animal, exportes. Solo 8111.
 - `vivo_t.js` peso con cámara en vivo, personas y ganado (8112 con `silueta.onnx`, `seg.onnx`, `ort.bundle.js`,
   `ort-wasm-simd-threaded.wasm` y las fotos `frente.jpg` = COCO 000000223959, `lejos.jpg` = 000000295478,

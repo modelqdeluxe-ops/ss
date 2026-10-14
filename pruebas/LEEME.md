@@ -19,6 +19,12 @@ que la administración espere a las otras cámaras, que un disparo tome las tres
 que el peso use el otro costado, que el resultado llegue a las cámaras y que si un teléfono se cae se siga sin él.
 Mismos servidores y fotos que `vivo_t.js`.
 
+`recoleccion_t.js` (solo 8111, sin cámara) prueba la recolección de datos en la finca: sin lote, la sesión con sus
+datos fijos, la ficha de cada animal (número automático sin arete, báscula, Repetir este, Guardar y medir otro,
+Descartar), el avance, la báscula anotada después, el Excel (todas las hojas; con `PY=<python con openpyxl>` lo abre)
+y el ZIP por partes con las fotos. `vivo_t.js` mide la vaca con 3 tomas con un solo teléfono (el otro costado sin
+persona de referencia) y comprueba la foto a resolución completa.
+
 `lab_t.js` (solo 8111, sin cámara) prueba el laboratorio completo (#pclab): arma mediciones de ganado con calidad de
 la toma y datos del animal (los reales pesan con γ = 0.9 y +8 %; las fotos poco nítidas tienen más error) y comprueba
 que el laboratorio lo vea (diagnóstico, error por tercio, ajuste sugerido con γ alta), recorre todas las pestañas, el

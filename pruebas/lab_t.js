@@ -69,7 +69,7 @@ const cfg=CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),beta
  const C=await p.evaluate(()=>PesoCam.REG().slice(-1)[0].cond);console.log('datos del animal',JSON.stringify(C));assert.ok(C&&C.sexo==='c'&&C.cc==='5'&&C.postura==='movio'&&C.cinta===190,'datos guardados');
  // sesión de prueba y "mismo animal"
  await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(300);await p.click('[data-act="labSesIni"]');await p.click('#sheet button[type=submit]');await p.waitForTimeout(300);
- assert.ok(await p.evaluate(()=>!!S.config.pesoCam.labSes),'sesión en curso');await p.click('[data-act="labMismo"]');await p.waitForTimeout(200);assert.ok(await p.evaluate(()=>S.config.pesoCam.labMismo===true),'mismo animal');
+ assert.ok(await p.evaluate(()=>!!S.config.pesoCam.labSes),'sesión en curso');
  assert.ok(await p.$('.lab-ses-on'),'muestra la sesión');await p.click('[data-act="labSesFin"]');await p.waitForTimeout(200);assert.ok(await p.evaluate(()=>!S.config.pesoCam.labSes),'sesión terminada');
  // exportes
  const X=await p.evaluate(async()=>{let o={};Documentos.enviar=async(n,b,m,ti,tipo)=>{o[n.replace(/-\d{4}-\d{2}-\d{2}.*$/,'')]=new TextDecoder().decode(b);return true;};await ACTS.pcRegCsv();await ACTS.labExportar();return o;});

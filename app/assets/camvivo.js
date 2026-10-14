@@ -81,7 +81,7 @@ function revisar(s,p,W,H,paso,prev,ref,conRef,kp){
   if(!E.det)return {E,msg:paso.buscar};
   const c=s.n,d=paso.dist,a=paso.ang;
   E.comp=dentro(c,REGLAS.margen)&&!s.cortada;
-  const v=d.eje==='alto'?c[3]-c[1]:c[2]-c[0];E.dist=v>=d.min&&v<=d.max;
+  const v=d.eje==='alto'?c[3]-c[1]:d.eje==='max'?Math.max(c[3]-c[1],c[2]-c[0]):c[2]-c[0];E.dist=v>=d.min&&v<=d.max;
   const ratio=((c[2]-c[0])*W)/((c[3]-c[1])*H);
   // (ref: las medidas de la primera toma; perfil: el tronco debe verse a lo más esa fracción de ancho que de frente)
   const hn=a.hombros?hombrosN(kp,W,H):null;
@@ -205,7 +205,8 @@ function recuadro(x,X0,Y0,X1,Y1,col,listo){
 
 function abrir(o){
   return new Promise(async fin0=>{
-    const pasos=o.pasos.slice(),conRef=!!o.ref,clases=conRef?[o.clase,Vision.PERSONA]:[o.clase],caps=[];
+    const pasos=o.pasos.slice(),conRef0=!!o.ref,clases=conRef0?[o.clase,Vision.PERSONA]:[o.clase],caps=[];
+    const refDe=p=>conRef0&&!!p&&p.ref!==false;let conRef=refDe(pasos[0]);
     /* personal: cámara enlazada de otro teléfono (no toma sola: espera el disparo de la administración); enlace: la
        administración con cámaras enlazadas (dispara a todas a la vez) */
     const PER=o.personal||null,ENL=o.enlace&&window.Enlace?o.enlace:null,enl=()=>ENL&&ip===0&&Enlace.conectados().length>0;
@@ -218,7 +219,7 @@ function abrir(o){
       const el=Math.asin(Math.max(-1,Math.min(1,-z/n)))*180/Math.PI;return {elev:Math.round((frontal?-el:el)*10)/10,horiz:Math.round(Math.atan2(der,up)*1800/Math.PI)/10};};
     const w=document.createElement('dialog');w.className='cam cv';w.setAttribute('aria-label',o.titulo||'Peso con cámara');
     w.innerHTML=`<div class="cam-top"><div class="cv-tit"><b class="cv-paso"></b><span class="cv-sub"></span></div><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
-      <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
+      <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef0).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
         <div class="cv-ind"><span class="cv-pos" hidden><em>Posición</em><span class="cv-pos-b"><i></i></span><b data-no-tr>0 %</b></span><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
         <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
@@ -229,12 +230,16 @@ function abrir(o){
     const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);try{window.removeEventListener('devicemotion',onMot);}catch(e){}parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
     $w('.cam-x').onclick=()=>fin(null);
-    const pintarPaso=()=>{const p=pasos[ip];$w('.cv-paso').textContent=pasos.length>1?`Paso ${ip+1} de ${pasos.length} · ${p.nombre}`:p.nombre;sub.textContent=p.instr;};
+    const pintarPaso=()=>{const p=pasos[ip];conRef=refDe(p);{const c=w.querySelector('.cv-chip[data-k="ref"]');if(c)c.hidden=!conRef;}$w('.cv-paso').textContent=pasos.length>1?`Paso ${ip+1} de ${pasos.length} · ${p.nombre}`:p.nombre;sub.textContent=p.instr;};
     pintarPaso();
     async function abrirCam(){parar();const s=await Fotos.camara(frontal);
       if(!activo){s.getTracks().forEach(t=>t.stop());return;}   // se cerró mientras abría
       stream=s;v.srcObject=s;try{await v.play();}catch(e){}w.classList.toggle('espejo',frontal);zona=null;}
     let zona=null;
+    // la cámara con que se midió (resolución, zoom, lente): queda en el registro del laboratorio
+    const camInfo=()=>{try{const t=stream&&stream.getVideoTracks()[0];if(!t)return null;const g=t.getSettings?t.getSettings():{},o={lente:String(t.label||'').slice(0,60)||null,frontal};
+      for(const k of ['width','height','frameRate','zoom','focusDistance','focusMode','exposureMode','whiteBalanceMode','aspectRatio'])if(g[k]!=null)o[k]=typeof g[k]==='number'?Math.round(g[k]*100)/100:g[k];
+      o.vw=v.videoWidth;o.vh=v.videoHeight;return o;}catch(e){return null;}};
     $w('.cv-gira').onclick=async()=>{frontal=!frontal;try{await abrirCam();}catch(e){frontal=!frontal;toast('No se pudo abrir esa cámara.');try{await abrirCam();}catch(e2){}}};
     try{await abrirCam();}catch(e){msg.textContent='No se pudo abrir la cámara. Da permiso de cámara a la app en los ajustes del teléfono.';sub.textContent='';w.classList.add('sin');return;}
     if(!activo)return;
@@ -335,8 +340,10 @@ function abrir(o){
       // con cámaras enlazadas, todas toman sus fotos en este mismo instante
       const disp=enl()?ENL.disparar():null;
       const cuadro=()=>{const fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);return fc;};
+      // la foto a la resolución completa de la cámara (solo la primera toma): para entrenar el modelo con los datos de la finca
+      const cuadroHD=()=>{if(!v.videoWidth)return null;try{const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);return c;}catch(e){return null;}};
       const med={};for(const k of ['alto','ancho','area','banda','ratio','torsoN','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
-      const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,ori:telOri(),ts:Date.now(),rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
+      const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,ori:telOri(),ts:Date.now(),rapido:med,fc,hd:cuadroHD(),s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
       // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
       for(let t=1;t<nTomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
       caps.push(cap);capturando=false;
@@ -370,11 +377,11 @@ function abrir(o){
           if(!img)img=foto(t.fc,r.s,r.p,r.kp);}
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length){if(c.remoto)continue;tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});}
-        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,ori:c.ori||null,ts:c.ts||null,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
+        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,ori:c.ori||null,ts:c.ts||null,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,hd:c.hd||null,img:img||foto(c.fc,c.s,c.pr)});}
       try{if(tPre.length)localStorage.setItem('rumentis-pc-msp',String(Math.round(mediana(tPre))));}catch(e){}
       // rendimiento de esta medición (para el laboratorio)
       out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,
-        msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,msPose:tPose.length?tPose.reduce((a,b)=>a+b,0)/tPose.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length};
+        msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,msPose:tPose.length?tPose.reduce((a,b)=>a+b,0)/tPose.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length,cam:camInfo()};
       fin(out);
     }
     man.onclick=()=>{if(!ult)return toast('Que se vea completo para tomar la foto.');const l=buenos.length?buenos:[ult];capturar(l.slice(-REGLAS.seguidos),true);};

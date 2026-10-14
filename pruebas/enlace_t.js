@@ -45,7 +45,7 @@ const cfgDe=app=>CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|fals
  /* ---------- la página de ganado muestra los teléfonos enlazados ---------- */
  await A.evaluate(()=>{location.hash='#pesocam';});await A.waitForTimeout(500);
  await A.click('[data-act="pcModo"][data-m="ganado"]');await A.waitForTimeout(400);
- assert.ok(await A.$('.en-card'),'tarjeta de teléfonos enlazados');
+ assert.ok(await A.$('.en-card'),'tarjeta de teléfonos enlazados');await A.click('.pc-enl>summary');await A.waitForTimeout(200);
  assert.equal(await A.$$eval('.en-roles [data-act="enEnlazar"]',e=>e.length),3,'tres roles para enlazar');
  await A.screenshot({path:'enlace_pag.png',fullPage:true});
  // la hoja de enlace muestra el código QR del rol

@@ -9,7 +9,7 @@
 const {chromium}=require('playwright');const fs=require('fs');const assert=require('assert');
 const CFG0=fs.readFileSync('/home/user/ss/app/assets/config.js','utf8');
 const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:false,","prueba:false,beta:true,");
-const DOS=/2 de 2|2 of 2/;
+const DOS=/2 de \d|2 of \d/;
 (async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});const errs=[];
  const ctx=await b.newContext({viewport:{width:393,height:852},deviceScaleFactor:1.5});const p=await ctx.newPage();global.__p=p;global.__errs=errs;
  p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{const t=m.text();if(m.type()==='error'&&!/favicon|ERR_|net::|Failed to load resource/.test(t))errs.push(t);if(m.type()==='warning'&&/Visión/.test(t))console.log('aviso:',t);});
@@ -37,7 +37,8 @@ const DOS=/2 de 2|2 of 2/;
  const leer=async()=>{await p.waitForTimeout(300);const t=await p.$eval('#sheet',e=>e.textContent.replace(/\s+/g,' '));console.log(t.slice(0,300));return t;};
  const paso2=()=>p.waitForFunction(re=>new RegExp(re).test(document.querySelector('.cv-paso')?.textContent||''),DOS.source,{timeout:60000});
  await p.evaluate(()=>{location.hash='#pesocam';});await p.waitForTimeout(600);
- assert.equal(await p.$eval('.pc-modo [aria-pressed="true"]',e=>e.dataset.m),'persona','Personas por defecto');
+ assert.equal(await p.$eval('.pc-modo [aria-pressed="true"]',e=>e.dataset.m),'ganado','Ganado por defecto');
+ await p.click('[data-act="pcModo"][data-m="persona"]');await p.waitForTimeout(300);
  assert.ok(!/marca|marker|marcador/i.test(await p.$eval('#app',e=>e.textContent)),'no pide ninguna marca');
  await p.screenshot({path:'vivo_pag.png',fullPage:true});
 
@@ -124,6 +125,9 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.estado==='verde',null,{timeout:60000});await p.screenshot({path:'vivo_vaca.png'});
  await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=8,null,{timeout:60000});console.log('puntos de la vaca',await p.$eval('.cv',e=>e.dataset.puntos));
  await paso2();await esc('h',[ATR,REF2]);
+ // con un solo teléfono, la tercera toma: el otro costado, sin la persona de referencia
+ await p.waitForFunction(()=>/(Paso|Step|Passo) 3/.test(document.querySelector('.cv-paso')?.textContent||''),null,{timeout:60000});
+ assert.ok(await p.$eval('.cv-chip[data-k="ref"]',e=>e.hidden),'el otro costado no pide la persona de referencia');await esc('h',[LADO]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
  // (modelo v7: alzada y fondo de pecho con los puntos del animal y el tipo de animal; el largo y el alto de la silueta
  // quedan en el registro)
@@ -145,10 +149,11 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  assert.equal(await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length),n0+1,'pesaje guardado');
  /* ---------- laboratorio: lo de cada foto (depuración) con una medición real ---------- */
  const DB=await p.evaluate(async()=>{const r=PesoCam.REG().filter(x=>x.modo==='ganado').slice(-1)[0],D=await PcLab.leerDbg(r.id);if(!D)return null;const c=D.angs.find(a=>a.rol==='costado'),t=c&&c.tomas[0];
-   return {id:r.id,dq:r.dq,angs:D.angs.map(a=>a.rol+':'+a.tomas.length),pares:D.pares.length,geo:!!(t&&t.M&&t.M.geo),kp:t&&t.kp?t.kp.length:0,cont:t&&t.sil&&t.sil.cont?t.sil.cont.length:0,ref:!!(t&&t.ref&&t.ref.cont),luz:t&&t.luz,cmpx:t&&t.cmpx};});
+   const hd=await Fotos.url(`pch-${r.id}-0`);let hdW=0;if(hd){const im=new Image();im.src=hd;await im.decode();hdW=im.naturalWidth;}
+   return {hdW,cam:r.cam,id:r.id,dq:r.dq,angs:D.angs.map(a=>a.rol+':'+a.tomas.length),pares:D.pares.length,geo:!!(t&&t.M&&t.M.geo),kp:t&&t.kp?t.kp.length:0,cont:t&&t.sil&&t.sil.cont?t.sil.cont.length:0,ref:!!(t&&t.ref&&t.ref.cont),luz:t&&t.luz,cmpx:t&&t.cmpx};});
  console.log('depuración',JSON.stringify(DB));
  assert.ok(DB&&DB.geo&&DB.kp===51&&DB.cont>20&&DB.ref&&DB.luz&&DB.luz.nitidez>0&&DB.cmpx>0,'lo de cada foto queda guardado (silueta, persona, puntos, medidas, luz)');
- assert.ok(DB.angs.length===2&&DB.pares>=1&&DB.dq&&DB.dq.tamRef>0&&DB.dq.nitidez>0&&DB.dq.kp>0,'resumen de la toma en el registro');
+ assert.ok(DB.hdW>=960&&DB.cam&&DB.cam.vw>0,'foto a resolución completa y datos de la cámara');assert.ok(DB.angs.length===3&&DB.angs.includes('otro:'+DB.angs.find(a=>a.startsWith('otro')).split(':')[1])&&DB.pares>=1&&DB.dq&&DB.dq.tamRef>0&&DB.dq.nitidez>0&&DB.dq.kp>0,'resumen de la toma en el registro');
  await p.evaluate(()=>{location.hash='#pclab/registro';});await p.waitForSelector('.lab-tabs');await p.waitForTimeout(300);
  await p.click(`[data-act="pcRegVer"][data-id="${DB.id}"]`);await p.waitForSelector('#sheet .lab-cv');
  await p.waitForFunction(()=>{const c=document.querySelector('#sheet .lab-cv');if(!c||c.width<100)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=400)if(d[i]+d[i+1]+d[i+2]>120)n++;return n>50;},null,{timeout:10000});

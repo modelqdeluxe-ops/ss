@@ -27,6 +27,13 @@ const MODOS={
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado; la persona de referencia de pie, a la par del animal.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88}},
       {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara; la persona de referencia a su lado.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.45,max:.85},banda:[.05,.55]}]}
 };
+/* con un solo teléfono también se toman el otro costado y desde arriba (sin la persona de referencia): PC().tomasG dice
+   cuántas tomas pide la cámara (2: costado y por detrás; 3: más el otro costado; 4: más desde arriba). Lo que tome un
+   teléfono enlazado no se pide aquí. */
+const PASOS_EXTRA=[{id:'otro',nombre:'Otro costado',instr:'Pásate al otro lado del animal: de costado completo. Aquí la persona de referencia no hace falta.',girar:'Pásate al otro lado del animal, que quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88},ref:false},
+  {id:'arriba',nombre:'Desde arriba',instr:'El teléfono arriba del animal (desde la pasarela o la cerca de la manga), mirando hacia abajo.',girar:'Sube el teléfono arriba del animal, mirando hacia abajo',ang:{},dist:{eje:'max',min:.45,max:.9},ref:false}];
+const nTomasG=()=>[2,3,4].includes(+PC().tomasG)?+PC().tomasG:3;
+const pasosGanado=()=>MODOS.ganado.pasos.concat(PASOS_EXTRA.slice(0,nTomasG()-2));
 // la silueta mide un poco más que la estatura escrita (sin zapatos): suela y pelo
 const EXTRA_CM=2.5;
 // ropa: centímetros que se descuentan por lado al ancho y al fondo de cada rebanada
@@ -36,7 +43,7 @@ const ROPA={ajustada:{cm:.4,t:'Ajustada'},normal:{cm:.8,t:'Normal'},holgada:{cm:
 const FORMA={cabeza:Math.PI/4,tronco:.81,brazos:Math.PI/4,piernas:Math.PI/4};
 const MKEY='rumentis-pc-modo',VERSION_MODELO=7;
 UI.pc=UI.pc||{lote:'',items:[]};
-if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'persona';}
+if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'ganado';}
 const PC=()=>S.config.pesoCam||{};
 const guardarPC=cambios=>put('ajustes','finca',{...S.config,pesoCam:{...PC(),...cambios}});
 const ropaSel=()=>ROPA[PC().ropa]?PC().ropa:'normal';
@@ -45,14 +52,15 @@ const ropaSel=()=>ROPA[PC().ropa]?PC().ropa:'normal';
    Cada medición se guarda en S.config.pesoCam.reg (las últimas 300): volumen, peso estimado, medidas, calidad y
    rendimiento. Si se anota el peso de báscula (`real`), sirve para calibrar y para calcular el error. */
 const REG=()=>PC().reg||[];
+const REG_MAX=1500;
 function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
     puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,estimadas:r.estimadas||null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
     tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,lote:r.lote||null,aid:r.aid||null,HG:q(r.HG),predFoto:q(r.predFoto),camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
-    dq:r.q||null,cond:null,ses:PC().labSes&&PC().labSes.n||null,fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
-  guardarPC({reg:REG().concat(rec).slice(-300)});return id;
+    dq:r.q||null,cond:PC().labSes&&r.modo==='ganado'&&PC().labSes.def?{...PC().labSes.def}:null,ses:PC().labSes&&PC().labSes.n||null,cam:stats&&stats.cam||null,fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
+  guardarPC({reg:REG().concat(rec).slice(-REG_MAX)});return id;
 }
 const actualizarReg=(id,cambios)=>guardarPC({reg:REG().map(x=>x.id===id?{...x,...cambios}:x)});
 
@@ -255,7 +263,7 @@ function tipoDeRaza(raza){
 const etapaDe=x=>GANADO.etapas[x&&x.etapa]!=null?x.etapa:x&&x.joven?'ternero':'adulto';
 const tipoTxt=x=>(TIPOS_G.find(t=>t[0]===x.tipo)||TIPOS_G[1])[1]+(etapaDe(x)!=='adulto'?' · '+(ETAPAS.find(e=>e[0]===etapaDe(x))||ETAPAS[2])[1]:'');
 // el tipo y la edad de un lote: lo elegido en la cámara o, si no, lo que diga su raza (sin raza: cruce)
-const tipoLote=x=>{const g=x&&(PC().tipos||{})[x.id];if(g&&GANADO.a[g.g])return {g:g.g,etapa:etapaDe(g),auto:false};
+const tipoLote=x=>{const g=(PC().tipos||{})[x?x.id:'_libre'];if(g&&GANADO.a[g.g])return {g:g.g,etapa:etapaDe(g),auto:false};
   const r=tipoDeRaza(x&&x.l&&x.l.raza);return {g:r||'cruce',etapa:(g&&etapaDe(g))||'adulto',auto:true,raza:!!r};};
 function primerTramo(s,x){const G=s.G;let y0=-1;for(let y=0;y<G;y++){const on=s.mask[y*G+x]===1;if(on&&y0<0)y0=y;else if(!on&&y0>=0)return [y0,y];}return y0>=0?[y0,G]:null;}
 /* el peso del modelo con un par de fotos: a, de costado (con su escala k en cm/px); b, de atrás; tipo: {g, etapa};
@@ -609,7 +617,7 @@ function sensibilidad(x){const D=x.dims||{};if(x.modo!=='ganado'||!(D.WH>0)||!(x
 
 /* ---------- la pantalla ---------- */
 const lotesAct=()=>calc().act;
-const loteSel=()=>{const L=lotesAct();if(!L.find(x=>x.id===UI.pc.lote))UI.pc.lote=L.length?L[0].id:'';return calc().L[UI.pc.lote];};
+const loteSel=()=>{const L=lotesAct();if(UI.pc.lote==='_no'&&PC().labSes)return null;if(!L.find(x=>x.id===UI.pc.lote))UI.pc.lote=L.length?L[0].id:'';return calc().L[UI.pc.lote];};
 const cm=v=>`${nf(v)} cm`;
 function tarjetaCal(modo){
   const cal=calModo(modo),m=modeloV(modo),per=modo==='persona';
@@ -631,7 +639,15 @@ const filaTipo=x=>{const t=tipoLote(x);return `<div class="pc-tipo"><label class
   <p class="hint pc-razas" style="margin:0"><span data-no-tr>${RAZAS_TIPO[t.g]}</span>${t.auto?` · <span>${t.raza?'Según la raza del lote. Cámbialo si no es así.':'El lote no dice la raza: elige el tipo, cambia mucho el peso.'}</span>`:''}</p>
   <label class="pc-tl">Etapa</label><div class="seg pc-etapa" role="group" aria-label="Etapa">${ETAPAS.map(([v,n])=>`<button type="button" data-act="pcEtapa" data-v="${v}" aria-pressed="${t.etapa===v}">${n}</button>`).join('')}</div>
   <p class="hint" style="margin:0">Ternero: menos de 1 año. En crecimiento: de 1 a 2 años (toretes, novillos, novillas).</p></div>`;};
-const guardarTipo=cambio=>{const x=loteSel();if(!x)return;const t=tipoLote(x);guardarPC({tipos:{...(PC().tipos||{}),[x.id]:{g:t.g,etapa:t.etapa,...cambio}}});};
+// cuántas tomas pide la cámara con este teléfono
+const TOMAS_G=[[2,'2','Costado y por detrás'],[3,'3','Más el otro costado'],[4,'4','Más desde arriba']];
+const filaTomas=()=>`<label class="pc-tl">Tomas con este teléfono</label><div class="seg pc-tomas" role="group" aria-label="Tomas con este teléfono">${TOMAS_G.map(([v,n])=>`<button type="button" data-act="pcTomas" data-v="${v}" aria-pressed="${nTomasG()===v}">${n}</button>`).join('')}</div>
+  <p class="hint" style="margin:0">${TOMAS_G.find(t=>t[0]===nTomasG())[2]}. <span>Todas con este teléfono, una después de otra: la cámara te dice cuándo moverte.</span></p>`;
+ACTS.pcTomas=el=>{const v=+el.dataset.v;if([2,3,4].includes(v))guardarPC({tomasG:v});};
+// la sesión de recolección en curso (laboratorio)
+const sesBanner=()=>{const s=PC().labSes;if(!s||!window.PcLab)return '';const n=REG().filter(x=>x.ses===s.n).length;
+  return `<a class="pc-sesb" href="#pclab"><b><span>Recolección en curso:</span> <span data-no-tr>${esc(s.n)}</span></b><span>${pl(n,'medición','mediciones')} · <span>Abrir el laboratorio</span></span></a>`;};
+const guardarTipo=cambio=>{const x=loteSel(),t=tipoLote(x);guardarPC({tipos:{...(PC().tipos||{}),[x?x.id:'_libre']:{g:t.g,etapa:t.etapa,...cambio}}});};
 ACTS.pcEtapa=el=>{if(GANADO.etapas[el.dataset.v]!=null)guardarTipo({etapa:el.dataset.v});};
 const filaAlto=(per,a)=>`<div class="pc-alto"><span>${per?'Tu estatura':'Estatura de la persona de referencia'}</span><b>${a?cm(a):'—'}</b><button type="button" class="lnk" data-act="pcAlto">${a?'Cambiar':'Escribir'}</button></div>`;
 PAGES.pesocam=()=>{
@@ -643,13 +659,12 @@ PAGES.pesocam=()=>{
    ${per?`<section class="sec"><div class="card pad pc-vivo">${filaAlto(true,a)}
        <div class="pc-ropa"><span>Ropa</span><div class="seg" role="group" aria-label="Ropa">${Object.entries(ROPA).map(([v,o])=>`<button type="button" data-act="pcRopa" data-v="${v}" aria-pressed="${ropaSel()===v}">${o.t}</button>`).join('')}</div></div><p>Dos tomas: de frente y de costado. Cuando la silueta se pone verde, la foto se toma sola.</p>
        <button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
-     :lotesAct().length?`<section class="sec">${secH('Lote')}<div class="card pad pc-vivo"><select class="in" id="pcLote" data-pclote>${lotesAct().map(l=>`<option value="${esc(l.id)}"${l.id===UI.pc.lote?' selected':''}>${esc(l.l.nombre)} · ${pl(l.cab,'cabeza','cabezas')}</option>`).join('')}</select>
-       ${filaTipo(x)}${filaAlto(false,a)}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
-     :`<div class="card pad"><p class="empty">Primero crea un lote.</p></div>`}
+     :`<section class="sec">${secH(lotesAct().length?'Lote':'Medir')}<div class="card pad pc-vivo">${sesBanner()}${lotesAct().length?`<select class="in" id="pcLote" data-pclote>${PC().labSes?`<option value="_no"${UI.pc.lote==='_no'?' selected':''}>Sin lote</option>`:''}${lotesAct().map(l=>`<option value="${esc(l.id)}"${l.id===UI.pc.lote?' selected':''}>${esc(l.l.nombre)} · ${pl(l.cab,'cabeza','cabezas')}</option>`).join('')}</select>`:''}
+       ${filaTipo(x)}${filaAlto(false,a)}${filaTomas()}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`}
    ${!per&&it.length?`<section class="sec">${secH('Pesaje en curso',it.length)}<div class="card pad pc-sesion"><div class="pc-prom"><b>${wtxt(prom)}</b><span>promedio de ${pl(it.length,'animal','animales')} en ${esc(x?x.l.nombre:'')}</span></div>
      <div class="rows">${it.map((r,i)=>`<div class="row"><img class="pc-th" src="${r.img}" alt=""><div class="tx"><b>${wtxt(r.kg)}</b><span>${r.arete?`<span>Arete</span> <span data-no-tr>${esc(r.arete)}</span>`:'<span>Sin arete</span>'} · <span>±${Math.round(r.err*100)} %</span></span></div><button type="button" class="del" data-act="pcQuitar" data-i="${i}" aria-label="Quitar">${ico('x')}</button></div>`).join('')}</div>
      <div class="pc-acts"><button type="button" class="btn" data-act="pcVivo">${icono('camara','i3')}Otro animal</button><button type="button" class="btn pri" data-act="pcGuardar">Guardar pesaje</button></div></div></section>`:''}
-   ${!per&&window.Enlace?Enlace.tarjeta():''}
+   ${!per&&window.Enlace?`<details class="pc-enl"${Enlace.conectados().length?' open':''}><summary>Otros teléfonos a la vez (opcional)</summary>${Enlace.tarjeta()}</details>`:''}
    <section class="sec">${secH('Cómo hacerlo')}<div class="card pad pc-como">
      <ol class="pc-pasos">${per?`<li>Apoya el teléfono a la altura de la cintura, a unos 3 metros (o que alguien lo sostenga), y usa la cámara frontal si estás solo.</li><li>Detrás de ti, mejor una pared lisa: sin cama, sillón ni muebles pegados a tu cuerpo.</li><li>Párate derecho con el cuerpo completo a la vista: primero de frente, con los brazos relajados y las manos un poco separadas de las piernas; después de perfil completo (hombro hacia la cámara), con los brazos a los lados.</li><li>Ropa ajustada y sin zapatos ni gorra, si puedes: la silueta mide mejor tu cuerpo.</li><li>Quédate quieto cuando la silueta esté verde: la foto se toma sola.</li>`
        :`<li>Una persona se para derecha a la par del animal, sin taparlo. Su estatura es la medida de referencia.</li><li>Primero con el animal de costado; después por detrás. Aléjate hasta que el animal y la persona se vean completos.</li><li>Sostén el teléfono firme: cuando la silueta esté verde, la foto se toma sola.</li>`}</ol></div></section>
@@ -676,25 +691,29 @@ SAVE.pcAlto=f=>{const v=num(fv(f,'alto'));if(!(v>=100&&v<=230))return ferr(f,'Es
 
 /* las fotos de cada medición (con su silueta) quedan en el teléfono para el laboratorio: las de las últimas 40. Y las
    fotos originales de cada toma (sin dibujos, para el análisis que se exporta desde el laboratorio): las de las
-   últimas 10 (pcr-<id>-<ángulo>-<toma>) */
+   últimas 10 (pcr-<id>-<ángulo>-<toma>), más la de resolución completa de cada ángulo (pch-<id>-<ángulo>).
+   Las mediciones de una sesión de recolección o con peso de báscula no se podan: son los datos para ajustar el modelo
+   (se borran a mano desde el laboratorio, después de exportarlas). */
 const FOTOS_MAX=40,ORIG_MAX=10,DBG_MAX=60;
 const aBlob=c=>new Promise(ok=>c.toBlob(ok,'image/jpeg',.92));
+const conservar=x=>!!(x.ses||x.real>0);
 async function guardarFotos(id,caps,dbg){
   if(!window.Fotos)return;
   try{for(let i=0;i<caps.length;i++){const b=await (await fetch(caps[i].img)).blob();await Fotos.guardar(`pc-${id}-${i}`,b);
-      const T=caps[i].tomas||[];for(let j=0;j<T.length;j++)if(T[j].fc){const o=await aBlob(T[j].fc);if(o)await Fotos.guardar(`pcr-${id}-${i}-${j}`,o);}}
+      const T=caps[i].tomas||[];for(let j=0;j<T.length;j++)if(T[j].fc){const o=await aBlob(T[j].fc);if(o)await Fotos.guardar(`pcr-${id}-${i}-${j}`,o);}
+      if(caps[i].hd){const o=await aBlob(caps[i].hd);if(o)await Fotos.guardar(`pch-${id}-${i}`,o);caps[i].hd=null;}}
     if(dbg)await Fotos.guardar(`pcd-${id}`,new Blob([JSON.stringify(dbg)],{type:'application/json'}));
-    const R=REG();for(const x of R.slice(0,-FOTOS_MAX))for(let i=0;i<4;i++)Fotos.borrar(`pc-${x.id}-${i}`);
+    const R=REG().filter(x=>!conservar(x));for(const x of R.slice(0,-FOTOS_MAX))for(let i=0;i<4;i++)Fotos.borrar(`pc-${x.id}-${i}`);
     for(const x of R.slice(0,-DBG_MAX))Fotos.borrar(`pcd-${x.id}`);
-    for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<4;i++)for(let j=0;j<3;j++)Fotos.borrar(`pcr-${x.id}-${i}-${j}`);}catch(e){console.warn(e);}
+    for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<4;i++){Fotos.borrar(`pch-${x.id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${x.id}-${i}-${j}`);}}catch(e){console.warn(e);}
 }
 /* ---------- medir ---------- */
 let ULT=null;
 async function medirVivo(){
   const modo=UI.pc.modo,M=MODOS[modo],alto=PC()[M.alto];
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
-  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,buscar:M.buscar,pasos:M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
-  if(!caps||caps.length<M.pasos.length)return null;
+  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,buscar:M.buscar,pasos:modo==='ganado'?pasosGanado():M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
+  if(!caps||caps.length<M.pasos.length||modo==='ganado'&&!caps.some(c=>c.id==='costado')||modo==='ganado'&&!caps.some(c=>c.id==='atras'))return null;
   const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};if(modo==='ganado'){const x=loteSel();r.lote=x?x.id:null;
     // laboratorio, "repetir el mismo animal": el arete de la medición anterior del lote (30 minutos)
     if(PC().labMismo){const u=REG().filter(z=>z.modo==='ganado'&&z.aid&&z.lote===r.lote).slice(-1)[0];if(u&&Date.now()-u.ts<30*60e3)r.aid=u.aid;}}
@@ -760,6 +779,8 @@ function explicarV3(r,mm,pct){
 }
 const capsHTML=r=>`<div class="pc-caps">${r.caps.map(c=>`<figure><img src="${c.img}" alt=""><figcaption>${c.nombre}</figcaption></figure>`).join('')}</div>`;
 function resultado(r){
+  // con una sesión de recolección (laboratorio), la ficha del animal
+  if(window.PcLab&&PcLab.fichaActiva(r)){ULT=r;if(PcLab.ficha(r))return;}
   const x=loteSel(),an=r.modo==='ganado'&&x?(x.animAct||[]):[];ULT=r;
   openSheet(shHead(r.modo==='persona'?'Tu medición':'Peso estimado',r.modo==='persona'?'Peso con cámara':esc(x?x.l.nombre:''))+`<div class="sh-body pc-resw">${capsHTML(r)}
     <div class="pc-kg"><b>${wtxt(r.kg)}</b><span>entre ${wtxt(r.kg*(1-r.err))} y ${wtxt(r.kg*(1+r.err))}</span></div>
@@ -773,7 +794,8 @@ function resultado(r){
     ${window.PcLab?`<button type="button" class="lnk" data-act="pcLabDatos">Datos del laboratorio (báscula, condición, ayuno…)</button>`:''}
     <button type="button" class="lnk" data-act="pcCalRes">${r.modo==='persona'?'¿Sabes tu peso? Calibra con tu báscula':'¿Lo pesaste en báscula? Calibra con su peso'}</button></div>
     <div class="sh-foot">${r.modo==='persona'?`<button type="button" class="btn" data-act="cerrar" style="flex:1">Cerrar</button><button type="button" class="btn pri" data-act="pcVivo" style="flex:1.4">Medir otra vez</button>`
-      :`<button type="button" class="btn" data-act="cerrar" style="flex:1">Descartar</button><button type="button" class="btn pri" data-act="pcAgregar" style="flex:1.6">Agregar al pesaje</button>`}</div>`);
+      :x?`<button type="button" class="btn" data-act="cerrar" style="flex:1">Descartar</button><button type="button" class="btn pri" data-act="pcAgregar" style="flex:1.6">Agregar al pesaje</button>`
+      :`<button type="button" class="btn" data-act="cerrar" style="flex:1">Cerrar</button><button type="button" class="btn pri" data-act="pcVivo" style="flex:1.4">Medir otro</button>`}</div>`);
   if(r.aid)pintarAnimal(r);
 }
 /* el peso de este animal: el del modelo con su factor propio y sus mediciones anteriores (si se eligió su arete) */
@@ -791,7 +813,6 @@ ACTS.pcCinta=()=>{const r=ULT;if(!r||!r.dims||!r.dims.WH)return;const el=$('#she
   if(r.id)actualizarReg(r.id,{HG:Math.round(v*10)/10,pred:Math.round(r.pred*100)/100,predFoto:Math.round(r.predFoto*100)/100,kg:Math.round(r.kg*100)/100,err:Math.round(r.err*100)/100,k:m.k,b:m.b,ncal:m.n});
   resultado(r);};
 ACTS.pcVivo=()=>{
-  if(UI.pc.modo==='ganado'&&!loteSel()){toast('Primero crea un lote.');return;}
   closeSheet();conAlto(async()=>{const r=await medirVivo();if(r)resultado(r);});
 };
 // el peso de báscula de la última medición
@@ -801,7 +822,7 @@ function formCal(r){
     ${q('Peso de báscula',inp('kg','',{unit:UW(),xl:true,ph:nf(W(r.kg))}))}`,foot('Guardar calibración')));
 }
 ACTS.pcCalRes=()=>{if(ULT)formCal(ULT);};
-ACTS.pcCalibrar=()=>{if(UI.pc.modo==='ganado'&&!loteSel()){toast('Primero crea un lote.');return;}closeSheet();conAlto(async()=>{const r=await medirVivo();if(r){ULT=r;formCal(r);}});};
+ACTS.pcCalibrar=()=>{closeSheet();conAlto(async()=>{const r=await medirVivo();if(r){ULT=r;formCal(r);}});};
 SAVE.pcCal=f=>{const r=ULT;if(!r)return;const v=toKg(num(fv(f,'kg')));
   const [lo,hi]=r.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');
   if(r.id)actualizarReg(r.id,{real:Math.round(v*10)/10});
@@ -826,6 +847,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
+window.PesoCam={capsHTML,mostrar:resultado,ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();

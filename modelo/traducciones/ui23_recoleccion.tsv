@@ -1,0 +1,80 @@
+Medir	Measure	Medir
+Tomas con este teléfono	Shots with this phone	Tomadas com este celular
+Costado y por detrás.	Side and rear.	Lateral e traseira.
+Más el otro costado.	Plus the other side.	Mais o outro lado.
+Más desde arriba.	Plus from above.	Mais de cima.
+Todas con este teléfono, una después de otra: la cámara te dice cuándo moverte.	All with this phone, one after another: the camera tells you when to move.	Todas com este celular, uma depois da outra: a câmera avisa quando se mover.
+Otros teléfonos a la vez (opcional)	Other phones at the same time (optional)	Outros celulares ao mesmo tempo (opcional)
+Recolección en la finca	Data collection on the farm	Coleta de dados na fazenda
+Para ajustar el modelo con tus animales: una sesión guarda cada medición con todas sus fotos (también a resolución completa), su número de animal, su peso de báscula y los datos del animal, y lo exporta todo en Excel y ZIP.	To fit the model to your animals: a session saves every measurement with all its photos (also at full resolution), its animal number, its scale weight and the animal's data, and exports everything as Excel and ZIP.	Para ajustar o modelo aos seus animais: uma sessão guarda cada medição com todas as fotos (também em resolução máxima), o número do animal, o peso da balança e os dados do animal, e exporta tudo em Excel e ZIP.
+Empezar una sesión de recolección	Start a collection session	Iniciar uma sessão de coleta
+Cómo recolectar los datos en la finca	How to collect the data on the farm	Como coletar os dados na fazenda
+Escoge los animales al azar. Pesa cada uno en la báscula y tómale las fotos en la misma pasada por la manga, o el mismo día antes de que coma.	Pick the animals at random. Weigh each one on the scale and take its photos in the same pass through the chute, or the same day before it eats.	Escolha os animais ao acaso. Pese cada um na balança e tire as fotos na mesma passada pelo brete, ou no mesmo dia antes de comer.
+Anota el peso de báscula en la ficha que sale después de las fotos. Cada animal recibe un número solo: no hace falta arete.	Enter the scale weight in the form that appears after the photos. Each animal gets a number automatically: no ear tag needed.	Anote o peso da balança na ficha que aparece depois das fotos. Cada animal recebe um número sozinho: não precisa de brinco.
+Mide cada animal {0} veces seguidas con «Repetir este»: así se sabe cuánto varía la cámara con el mismo animal.	Measure each animal {0} times in a row with "Repeat this one": that shows how much the camera varies on the same animal.	Meça cada animal {0} vezes seguidas com «Repetir este»: assim se sabe quanto a câmera varia com o mesmo animal.
+El animal parado sobre suelo plano, de costado completo, sin otros animales detrás. La persona de referencia, de pie a su lado.	The animal standing on flat ground, fully side-on, with no other animals behind. The reference person standing beside it.	O animal parado em chão plano, totalmente de lado, sem outros animais atrás. A pessoa de referência, em pé ao lado dele.
+Teléfono a {0} a {1} m, a la altura del lomo, derecho y sin zoom. Evita el sol de frente y las sombras fuertes sobre el animal.	Phone {0} to {1} m away, at back height, level and without zoom. Avoid facing the sun and strong shadows on the animal.	Celular a {0} a {1} m, na altura do lombo, reto e sem zoom. Evite o sol de frente e sombras fortes sobre o animal.
+Busca variedad: terneros, novillos, vacas y toros; flacos y gordos; distintas razas. Con más rangos de peso el ajuste sale mejor.	Look for variety: calves, steers, cows and bulls; thin and fat; different breeds. The wider the weight range, the better the fit.	Busque variedade: bezerros, novilhos, vacas e touros; magros e gordos; raças diferentes. Com mais faixas de peso o ajuste fica melhor.
+Al terminar: Exportar la sesión. Se generan archivos ZIP con todas las fotos y datos; compártelos a Drive o a la computadora.	When done: Export the session. ZIP files are created with all photos and data; share them to Drive or to a computer.	Ao terminar: Exportar a sessão. São gerados arquivos ZIP com todas as fotos e dados; compartilhe no Drive ou no computador.
+Meta por sesión:	Goal per session:	Meta por sessão:
+animales al azar o más, cada uno con su peso de báscula y	random animals or more, each with its scale weight and	animais ao acaso ou mais, cada um com seu peso de balança e
+mediciones.	measurements.	medições.
+Sesión de recolección	Collection session	Sessão de coleta
+Las mediciones quedan marcadas con este nombre hasta que termines la sesión. Los datos de abajo se copian a cada animal; en su ficha se cambian si hace falta.	Measurements are tagged with this name until you end the session. The data below is copied to every animal; change it in its form if needed.	As medições ficam marcadas com este nome até você encerrar a sessão. Os dados abaixo são copiados para cada animal; na ficha dele podem ser alterados.
+Brahman × Pardo	Brahman × Brown Swiss	Brahman × Pardo-Suíço
+Raza o cruce	Breed or cross	Raça ou cruzamento
+Horas entre la báscula y la foto	Hours between scale and photo	Horas entre a balança e a foto
+{0} si los pesas y les tomas la foto en la misma pasada por la manga.	{0} if you weigh and photograph them in the same pass through the chute.	{0} se você pesa e fotografa na mesma passada pelo brete.
+Sesión de recolección en curso	Collection session in progress	Sessão de coleta em andamento
+Datos de la sesión guardados	Session data saved	Dados da sessão salvos
+Con peso de báscula	With scale weight	Com peso de balança
+Con {0} mediciones o más	With {0} measurements or more	Com {0} medições ou mais
+Exportar todo (ZIP con fotos)	Export everything (ZIP with photos)	Exportar tudo (ZIP com fotos)
+Datos de la sesión	Session data	Dados da sessão
+Datos de la sesión:	Session data:	Dados da sessão:
+pesos reales de animales distintos. Con menos de {0} los números todavía no son confiables: la meta es {1} o más, de animales distintos.	real weights of different animals. With fewer than {0} the numbers are not reliable yet: the goal is {1} or more, from different animals.	pesos reais de animais diferentes. Com menos de {0} os números ainda não são confiáveis: a meta é {1} ou mais, de animais diferentes.
+Animal	Animal	Animal
+Sin número	No number	Sem número
+estimado con la cámara	estimated with the camera	estimado com a câmera
+Si todavía no lo pesas, déjalo vacío y anótalo después en el laboratorio.	If you haven't weighed it yet, leave it empty and enter it later in the lab.	Se ainda não pesou, deixe vazio e anote depois no laboratório.
+Cambiar los datos de la sesión	Change the session data	Alterar os dados da sessão
+Repetir este	Repeat this one	Repetir este
+Guardar y medir otro	Save and measure next	Salvar e medir outro
+Falta el peso de báscula	Scale weight missing	Falta o peso da balança
+Guardado. Cámara {0} {3}, báscula {1} {4}: {2} {5}	Saved. Camera {0} {3}, scale {1} {4}: {2} {5}	Salvo. Câmera {0} {3}, balança {1} {4}: {2} {5}
+Guardado. Falta el peso de báscula.	Saved. Scale weight missing.	Salvo. Falta o peso da balança.
+Error de la cámara contra la báscula en esta sesión:	Camera error against the scale in this session:	Erro da câmera contra a balança nesta sessão:
+Repetición del mismo animal	Repeat of the same animal	Repetição do mesmo animal
+¿Descartar esta medición?	Discard this measurement?	Descartar esta medição?
+Se borra con sus fotos. Úsalo si el animal se movió o la foto salió mal.	It is deleted with its photos. Use it if the animal moved or the photo came out wrong.	É apagada com suas fotos. Use se o animal se mexeu ou a foto saiu ruim.
+Medición descartada	Measurement discarded	Medição descartada
+Se anota en sus	It is entered in its	É anotado nas suas
+mediciones de esta sesión. La cámara estimó	measurements of this session. The camera estimated	medições desta sessão. A câmera estimou
+Desacuerdo entre fotos:	Disagreement between photos:	Desacordo entre fotos:
+Exportar la sesión	Export the session	Exportar a sessão
+Mediciones:	Measurements:	Medições:
+cerca de	about	cerca de
+{0} archivo ZIP	{0} ZIP file	{0} arquivo ZIP
+{0} archivos ZIP	{0} ZIP files	{0} arquivos ZIP
+Comparte cada parte a Drive, al correo o a la computadora. Todas llevan el CSV y los datos de la sesión; las fotos van repartidas.	Share each part to Drive, email or a computer. All include the CSV and the session data; the photos are split among them.	Compartilhe cada parte no Drive, por e-mail ou no computador. Todas levam o CSV e os dados da sessão; as fotos vão divididas.
+Parte	Part	Parte
+Sesiones de recolección	Collection sessions	Sessões de coleta
+Todavía no hay sesiones de recolección.	No collection sessions yet.	Ainda não há sessões de coleta.
+ZIP	ZIP	ZIP
+Excel	Excel	Excel
+Excel de todo el ganado	Excel of all cattle	Excel de todo o gado
+ZIP de todo el ganado	ZIP of all cattle	ZIP de todo o gado
+Esta sesión no tiene mediciones.	This session has no measurements.	Esta sessão não tem medições.
+No pude armar el archivo. Revisa el espacio del teléfono.	Couldn't build the file. Check the phone's storage.	Não consegui montar o arquivo. Verifique o espaço do celular.
+Revisa el peso de la báscula.	Check the scale weight.	Verifique o peso da balança.
+Revisa la edad (en meses).	Check the age (in months).	Verifique a idade (em meses).
+Revisa el perímetro (en cm).	Check the girth (in cm).	Verifique o perímetro (em cm).
+Sin lote	No lot	Sem lote
+Recolección en curso:	Collection in progress:	Coleta em andamento:
+Abrir el laboratorio	Open the lab	Abrir o laboratório
+Pásate al otro lado del animal: de costado completo. Aquí la persona de referencia no hace falta.	Move to the other side of the animal: fully side-on. The reference person is not needed here.	Passe para o outro lado do animal: totalmente de lado. Aqui a pessoa de referência não é necessária.
+Pásate al otro lado del animal, que quede de costado	Move to the other side of the animal, so it is side-on	Passe para o outro lado do animal, que fique de lado
+Sube el teléfono arriba del animal, mirando hacia abajo	Raise the phone above the animal, facing down	Suba o celular acima do animal, olhando para baixo
+Medición	Measurement	Medição
+Mediciones	Measurements	Medições
+Recolección	Collection	Coleta

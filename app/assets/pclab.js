@@ -151,7 +151,8 @@ const tabla=(cab,filas,cls='')=>filas.length?`<div class="lab-tw"><table class="
 const tiles=T=>`<div class="pc-tiles">${T.map(([v,t])=>`<div><b data-no-tr>${v}</b><span>${t}</span></div>`).join('')}</div>`;
 const caja=(t,c,body)=>`<section class="sec">${secH(t,c)}<div class="card pad lab-c">${body}</div></section>`;
 const vacio=t=>`<p class="empty">${t}</p>`;
-const areteDe=x=>{if(!x||!x.aid)return '';try{const L=calc().L[x.lote];const a=L&&(L.l.animales||[]).find(z=>z.id===x.aid);return a?a.arete:'';}catch(e){return '';}};
+const animalTxt=x=>{const n=x&&numDe(x.aid);if(n)return `<span>Animal</span> <span data-no-tr>${n}</span>`;const a=areteDe(x);return a?`<span>Arete</span> <span data-no-tr>${esc(a)}</span>`:'<span>Sin número</span>';};
+const areteDe=x=>{if(!x||!x.aid)return '';if(String(x.aid).startsWith('n:'))return '#'+numDe(x.aid);if(String(x.aid).startsWith('e:'))return String(x.aid).slice(2);try{const L=calc().L[x.lote];const a=L&&(L.l.animales||[]).find(z=>z.id===x.aid);return a?a.arete:'';}catch(e){return '';}};
 
 /* ---------- la tarjeta en #pesocam ---------- */
 function html(modo){
@@ -193,11 +194,10 @@ ACTS.labModo=el=>{const m=el.dataset.m;if(!P.MODOS[m])return;UI.pc.modo=m;try{lo
 /* ---------- Resumen ---------- */
 function tResumen(modo){
   const E=estad(modo),{F,G}=etiquetasLab(modo),R=E.R,ses=PCc().labSes;
-  const sesion=`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
+  const sesion=modo==='ganado'?bloqueSesion(R,ses):`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
     ${ses?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b> · <span>${pl(R.filter(x=>x.ses===ses.n).length,'medición','mediciones')}</span></span></p>
       <button type="button" class="btn full" data-act="labSesFin">Terminar la sesión</button>`
-      :`<p class="hint" style="margin:0">Una sesión agrupa las mediciones de una prueba (por ejemplo, el día que pesas en la finca) para analizarlas y exportarlas juntas.</p><button type="button" class="btn pri full" data-act="labSesIni">Empezar una sesión de prueba</button>`}
-    ${modo==='ganado'?`<div class="lab-tog"><div><b>Repetir el mismo animal</b><span>Las mediciones nuevas toman el arete de la anterior (30 minutos). Para medir la repetibilidad: mide 3 a 5 veces cada animal.</span></div><button type="button" class="tog" data-act="labMismo" role="switch" aria-checked="${!!PCc().labMismo}" aria-label="Repetir el mismo animal"><span></span></button></div>`:''}</div></section>`;
+      :`<p class="hint" style="margin:0">Una sesión agrupa las mediciones de una prueba para analizarlas y exportarlas juntas.</p><button type="button" class="btn pri full" data-act="labSesIni">Empezar una sesión de prueba</button>`}</div></section>`;
   if(!R.length)return sesion+caja('Estado del modelo','',vacio('Todavía no hay mediciones. Mide con la cámara y vuelve aquí.'));
   const eF=F.map(f=>f.e),T=[[R.length,'mediciones'],[F.length+G.length,'pesos reales'],[F.length?'±'+pc(prom(eF.map(Math.abs))):'—','error esperado (validación cruzada)'],
     [F.length?pcs(prom(eF)):'—','sesgo'],[F.some(f=>esNum(f.ani))?'±'+pc(prom(F.map(f=>f.ani).filter(esNum).map(Math.abs))):'—','animal conocido'],[F.length?'±'+pc(prom(F.map(f=>Math.abs(f.fab)))):'—','error sin calibrar'],
@@ -209,7 +209,7 @@ function tResumen(modo){
 function diagnostico(modo,E,F,G){
   const H=[],add=(n,t)=>H.push([n,t]),R=E.R,gan=modo==='ganado';
   const nInd=F.length,mape=prom(F.map(f=>Math.abs(f.e))),ses=prom(F.map(f=>f.e)),fabS=prom(F.map(f=>f.fab));
-  if(nInd<10)add(1,`<span>Hay</span> <b data-no-tr>${nInd}</b> <span>pesos reales de animales con arete. Con menos de 10 los números todavía no son confiables: la meta es 20 o más, de animales distintos.</span>`);
+  if(nInd<10)add(1,`<span>Hay</span> <b data-no-tr>${nInd}</b> <span>pesos reales de animales distintos. Con menos de 10 los números todavía no son confiables: la meta es 20 o más, de animales distintos.</span>`);
   if(nInd>=3&&Math.abs(fabS)>.03)add(2,`<span>El modelo de fábrica ${fabS>0?'sobreestima':'subestima'} en promedio</span> <b data-no-tr>${pc(Math.abs(fabS))}</b><span>. La calibración lo corrige; si es más de 10 %, revisar el tipo de animal, la etapa o la estatura de referencia.</span>`);
   if(nInd>=5)add(mape>.05?3:0,mape>.05?`<span>Error esperado</span> <b data-no-tr>${pc(mape)}</b><span>: más que la meta de 5 %.</span>`:`<span>Error esperado</span> <b data-no-tr>${pc(mape)}</b><span>: dentro de la meta de 5 %.</span>`);
   if(nInd>=5&&Math.abs(ses)>.02)add(2,`<span>Queda un sesgo de</span> <b data-no-tr>${pcs(ses)}</b> <span>con validación cruzada: los pesos reales tienen fechas o fuentes que no coinciden, o el modelo se tuerce con el tamaño (ver Medidas).</span>`);
@@ -236,6 +236,48 @@ function diagnostico(modo,E,F,G){
   if(!H.length)return vacio('Nada que revisar por ahora.');
   return `<ul class="lab-diag">${H.sort((a,b)=>b[0]-a[0]).map(([n,t])=>`<li class="n${n}">${t}</li>`).join('')}</ul>`;
 }
+
+/* ---------- la recolección en la finca: avance de la sesión y protocolo ---------- */
+const META={animales:20,rep:3};
+function avance(R){
+  const por=new Map();for(const x of R){const k=x.aid||'';if(!por.has(k))por.set(k,[]);por.get(k).push(x);}
+  const A=[...por.entries()].filter(([k])=>k).map(([aid,v])=>({aid,v,u:v[v.length-1],real:v.find(z=>z.real>0)}));
+  const con=R.filter(x=>x.real>0),e=con.map(x=>(x.kg-x.real)/x.real);
+  return {A,sin:por.get('')||[],nA:A.length,conB:A.filter(a=>a.real).length,rep:A.filter(a=>a.v.length>=META.rep).length,faltan:A.filter(a=>!a.real),mape:prom(e.map(Math.abs)),sesgo:prom(e),nCon:con.length};
+}
+const PROTOCOLO=['Escoge los animales al azar. Pesa cada uno en la báscula y tómale las fotos en la misma pasada por la manga, o el mismo día antes de que coma.',
+  'Anota el peso de báscula en la ficha que sale después de las fotos. Cada animal recibe un número solo: no hace falta arete.',
+  'Mide cada animal 3 veces seguidas con «Repetir este»: así se sabe cuánto varía la cámara con el mismo animal.',
+  'El animal parado sobre suelo plano, de costado completo, sin otros animales detrás. La persona de referencia, de pie a su lado.',
+  'Teléfono a 3 a 6 m, a la altura del lomo, derecho y sin zoom. Evita el sol de frente y las sombras fuertes sobre el animal.',
+  'Busca variedad: terneros, novillos, vacas y toros; flacos y gordos; distintas razas. Con más rangos de peso el ajuste sale mejor.',
+  'Al terminar: Exportar la sesión. Se generan archivos ZIP con todas las fotos y datos; compártelos a Drive o a la computadora.'];
+function bloqueSesion(Rm,ses){
+  const proto=`<details class="lab-proto"><summary>Cómo recolectar los datos en la finca</summary><ol>${PROTOCOLO.map(t=>`<li>${t}</li>`).join('')}</ol>
+    <p class="hint" style="margin:0"><span>Meta por sesión:</span> <span data-no-tr>${META.animales}</span> <span>animales al azar o más, cada uno con su peso de báscula y</span> <span data-no-tr>${META.rep}</span> <span>mediciones.</span></p></details>`;
+  if(!ses)return `<section class="sec">${secH('Recolección en la finca')}<div class="card pad lab-c">
+    <p class="hint" style="margin:0">Para ajustar el modelo con tus animales: una sesión guarda cada medición con todas sus fotos (también a resolución completa), su número de animal, su peso de báscula y los datos del animal, y lo exporta todo en Excel y ZIP.</p>
+    <button type="button" class="btn pri full" data-act="labSesIni">Empezar una sesión de recolección</button>${proto}</div></section>`;
+  const R=Rm.filter(x=>x.ses===ses.n),a=avance(R),bar=(v,m)=>`<span class="lab-bar"><i style="width:${Math.min(100,Math.round(v/m*100))}%"></i></span>`;
+  return `<section class="sec">${secH('Recolección en la finca')}<div class="card pad lab-c">
+    <p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b></span></p>
+    <div class="lab-av">
+      <div><span>Animales</span><b data-no-tr>${a.nA} / ${META.animales}</b>${bar(a.nA,META.animales)}</div>
+      <div><span>Con peso de báscula</span><b data-no-tr>${a.conB} / ${a.nA}</b>${bar(a.conB,Math.max(1,a.nA))}</div>
+      <div><span>Con 3 mediciones o más</span><b data-no-tr>${a.rep} / ${a.nA}</b>${bar(a.rep,Math.max(1,a.nA))}</div>
+      <div><span>Mediciones</span><b data-no-tr>${R.length}</b></div></div>
+    ${a.nCon?`<p class="hint" style="margin:0"><span>Error de la cámara contra la báscula en esta sesión:</span> <b data-no-tr>±${pc(a.mape)}</b> · <span>sesgo</span> <b data-no-tr>${pcs(a.sesgo)}</b> <span data-no-tr>(${a.nCon})</span></p>`:''}
+    ${a.faltan.length?`<p class="lab-sub">Falta el peso de báscula</p><div class="rows">${a.faltan.map(z=>`<button type="button" class="row pc-reg" data-act="labRealAnimal" data-aid="${esc(z.aid)}"><div class="tx"><b>${animalTxt(z.u)}</b><span><span>${pl(z.v.length,'medición','mediciones')}</span> · <span>cámara</span> <span data-no-tr>${wtxt(prom(z.v.map(x=>x.kg)))}</span></span></div>${ico('chev')}</button>`).join('')}</div>`:''}
+    <div class="pc-acts lab-acts"><a class="btn pri" href="#pesocam">Medir</a><button type="button" class="btn" data-act="labExpSes" data-s="${esc(ses.n)}">Exportar todo (ZIP con fotos)</button><button type="button" class="btn" data-act="labExcel" data-s="${esc(ses.n)}">Excel</button><button type="button" class="btn" data-act="labSesDatos">Datos de la sesión</button><button type="button" class="btn" data-act="labSesFin">Terminar la sesión</button></div>
+    ${proto}</div></section>`;
+}
+// el peso de báscula de un animal: va a todas sus mediciones de la sesión
+let REAL_A=null;
+ACTS.labRealAnimal=el=>{const aid=el.dataset.aid,ses=PCc().labSes;const R=P.REG().filter(x=>x.aid===aid&&(!ses||x.ses===ses.n));if(!R.length)return;REAL_A=aid;
+  openSheet(shHead(animalTxt(R[0]),'Peso de báscula')+formWrap('labRealA',`<p class="hint"><span>Se anota en sus</span> <span data-no-tr>${R.length}</span> <span>mediciones de esta sesión. La cámara estimó</span> <b data-no-tr>${wtxt(prom(R.map(x=>x.kg)))}</b>.</p>
+    ${q('Peso de báscula',inp('kg','',{unit:UW(),xl:true,ph:'—'}))}`,foot('Guardar')));};
+SAVE.labRealA=f=>{const v=toKg(num(fv(f,'kg')));if(!(v>=40&&v<=1300))return ferr(f,'Escribe el peso de la báscula.');const ses=PCc().labSes,aid=REAL_A;
+  P.guardarPC({reg:P.REG().map(x=>x.aid===aid&&(!ses||x.ses===ses.n)?{...x,real:Math.round(v*10)/10}:x)});REAL_A=null;closeSheet();toast('Peso de báscula guardado');};
 
 /* ---------- Errores ---------- */
 // error medio por grupo (con validación cruzada) y sesgo
@@ -426,6 +468,10 @@ document.addEventListener('change',e=>{const f=e.target&&e.target.closest&&e.tar
 
 /* ---------- Registro ---------- */
 const FILTROS=[['todas','Todas'],['real','Con peso real'],['arete','Con arete'],['datos','Con datos del animal'],['sesion','Esta sesión']];
+function bloqueSesionesExp(){const L=sesionesGuardadas();
+  return `<section class="sec">${secH('Sesiones de recolección',L.length||'')}<div class="card pad lab-c">
+    ${L.length?`<div class="rows">${L.map(o=>`<div class="row"><div class="tx"><b data-no-tr>${esc(o.n)}</b><span><span>${pl(o.c,'medición','mediciones')}</span> · <span>con báscula</span> <span data-no-tr>${o.b}</span></span></div><button type="button" class="btn sm" data-act="labExcel" data-s="${esc(o.n)}">Excel</button><button type="button" class="btn sm" data-act="labExpSes" data-s="${esc(o.n)}">ZIP</button></div>`).join('')}</div>`:vacio('Todavía no hay sesiones de recolección.')}
+    <div class="pc-acts lab-acts"><button type="button" class="btn" data-act="labExcel" data-s="*">Excel de todo el ganado</button><button type="button" class="btn" data-act="labExpSes" data-s="*">ZIP de todo el ganado</button></div></div></section>`;}
 function tRegistro(modo){
   const L=LAB(),R=P.REG().filter(x=>x.modo===modo),ses=PCc().labSes,ids=new Set(etiquetasLab(modo).F.map(f=>f.id));
   const fl={todas:()=>true,real:x=>x.real>0||ids.has(x.id),arete:x=>!!x.aid,datos:x=>!!x.cond,sesion:x=>ses&&x.ses===ses.n}[L.f]||(()=>true),V=R.filter(fl);
@@ -433,13 +479,28 @@ function tRegistro(modo){
     <div class="chips wrap">${FILTROS.filter(f=>f[0]!=='sesion'||ses).map(([k,t])=>`<button type="button" class="chip" data-act="labFiltro" data-f="${k}" aria-pressed="${L.f===k}">${t}</button>`).join('')}</div>
     ${V.length?`<div class="rows">${V.slice().reverse().slice(0,150).map(filaReg).join('')}</div>`:vacio('Ninguna medición con este filtro.')}
     </div></section>
+    ${modo==='ganado'?bloqueSesionesExp():''}
     <section class="sec">${secH('Exportar')}<div class="card pad lab-c">
     <p class="hint" style="margin:0">CSV: una fila por medición, con las medidas, la calidad de las tomas, las condiciones del animal y el peso real. Laboratorio completo: todo el registro, lo de cada foto (siluetas, puntos, medidas), los pesos reales con su fuente y el estado del modelo, para ajustarlo fuera del teléfono. Para análisis: además las fotos originales de las últimas 10.</p>
     <div class="pc-acts lab-acts"><button type="button" class="btn" data-act="pcRegCsv">Exportar CSV</button><button type="button" class="btn pri" data-act="labExportar">Exportar el laboratorio completo</button><button type="button" class="btn" data-act="pcRegAnalisis">Exportar para análisis</button><button type="button" class="btn danger" data-act="pcRegLimpiar">Borrar registro</button></div></div></section>`;
 }
 ACTS.labFiltro=el=>{LAB().f=el.dataset.f;render();};
-ACTS.labSesIni=()=>{const n=`Prueba ${ffc(hoy())}`;openSheet(shHead('Sesión de prueba','Laboratorio')+formWrap('labSes',`<p class="hint">Las mediciones que hagas quedan marcadas con este nombre hasta que termines la sesión.</p>${q('Nombre',inp('n',n,{mode:'text'}))}`,foot('Empezar')));};
-SAVE.labSes=f=>{const n=String(fv(f,'n')||'').trim().slice(0,40);if(!n)return ferr(f,'Escribe un nombre.');P.guardarPC({labSes:{n,ts:Date.now()}});closeSheet();toast('Sesión de prueba en curso');};
+/* la sesión de recolección: un nombre y los datos que son iguales para todos los animales de ese día (se copian a cada
+   medición; en la ficha de cada animal se cambian si hace falta) */
+const DEF_SES=['llenado','pelo','suelo','fondo'];
+function formSes(ses){const d=ses&&ses.def||{},n=ses?ses.n:`Finca ${ffc(hoy())}`;
+  openSheet(shHead(ses?'Datos de la sesión':'Sesión de recolección','Laboratorio')+formWrap('labSes',`<p class="hint">Las mediciones quedan marcadas con este nombre hasta que termines la sesión. Los datos de abajo se copian a cada animal; en su ficha se cambian si hace falta.</p>
+    ${q('Nombre',inp('n',n,{mode:'text'}))}
+    ${DEF_SES.map(k=>{const [,t,L]=COND_G.find(c=>c[0]===k);return q(t,opts(k,L.map(([v,tt])=>({v,t:tt})),d[k]??'',{allowNone:true}));}).join('')}
+    ${q('Raza o cruce',inp('raza',d.raza||'',{mode:'text',ph:'Brahman × Pardo'}))}
+    ${q('Horas entre la báscula y la foto',inp('horas',d.horas!=null?String(d.horas):'',{ph:'0'}),'0 si los pesas y les tomas la foto en la misma pasada por la manga.')}
+    ${q('Distancia del teléfono al animal',inp('dist',d.dist>0?nf(d.dist,1):'',{unit:'m',ph:'4'}))}`,foot(ses?'Guardar':'Empezar')));}
+ACTS.labSesIni=()=>formSes(null);
+ACTS.labSesDatos=()=>formSes(PCc().labSes);
+SAVE.labSes=f=>{const n=String(fv(f,'n')||'').trim().slice(0,40);if(!n)return ferr(f,'Escribe un nombre.');
+  const def={};for(const k of DEF_SES){const v=fv(f,k);if(v!=='')def[k]=v;}const raza=String(fv(f,'raza')||'').trim().slice(0,60);if(raza)def.raza=raza;
+  const h=num(fv(f,'horas'));if(fv(f,'horas')!==''&&h>=0&&h<=72)def.horas=Math.round(h*10)/10;const d=num(fv(f,'dist'));if(d>=.5&&d<=30)def.dist=Math.round(d*10)/10;
+  const ant=PCc().labSes;if(!ant&&UI.pc)UI.pc.lote='_no';P.guardarPC({labSes:{n,ts:ant?ant.ts:Date.now(),def}});closeSheet();toast(ant?'Datos de la sesión guardados':'Sesión de recolección en curso');};
 ACTS.labSesFin=()=>{P.guardarPC({labSes:null});toast('Sesión terminada');};
 ACTS.labMismo=()=>{P.guardarPC({labMismo:!PCc().labMismo});};
 
@@ -528,18 +589,69 @@ function formCond(x,volver){COND=x.id;VOLVER=!!volver;const c=x.cond||{},C=condD
     ${q('Peso de báscula',inp('kg',x.real>0?nf(W(x.real),1):'',{unit:UW(),ph:nf(W(x.kg))}),'El de la báscula, ese mismo día.')}
     ${C.map(([k,t,L])=>q(t,opts(k,L.map(([v,tt])=>({v,t:tt})),c[k]??'',{allowNone:true}))).join('')}
     ${q(gan?'Edad (meses)':'Edad (años)',inp('edad',c.edad>0?String(c.edad):'',{ph:'—'}))}
+    ${gan?q('Raza o cruce',inp('raza',c.raza||'',{mode:'text',ph:'—'}))+q('Horas entre la báscula y la foto',inp('horas',c.horas!=null?String(c.horas):'',{ph:'—'})):''}
     ${gan?q('Perímetro con cinta (referencia)',inp('cinta',c.cinta>0?String(c.cinta):'',{unit:'cm',ph:'—'}),'Solo para comparar en el laboratorio: no cambia este peso.')+q('Distancia del teléfono al animal',inp('dist',c.dist>0?nf(c.dist,1):'',{unit:'m',ph:'—'})):''}
     ${q('Notas',`<textarea class="in" name="notas" rows="3" maxlength="400">${esc(c.notas||'')}</textarea>`)}`,foot('Guardar')));}
 ACTS.labCond=el=>{const x=buscar(el.dataset.id);if(x)formCond(x,false);};
 SAVE.labCond=f=>{const x=buscar(COND);if(!x)return closeSheet();const C=condDe(x.modo),c={};
   for(const [k] of C){const v=fv(f,k);if(v!=='')c[k]=v;}
-  const n=(k,lo,hi)=>{const v=num(fv(f,k));if(v>=lo&&v<=hi)c[k]=Math.round(v*10)/10;};n('edad',0,600);n('cinta',60,320);n('dist',.5,30);
+  const n=(k,lo,hi)=>{if(fv(f,k)==='')return;const v=num(fv(f,k));if(v>=lo&&v<=hi)c[k]=Math.round(v*10)/10;};n('edad',0,600);n('cinta',60,320);n('dist',.5,30);n('horas',0,72);
+  const raza=String(fv(f,'raza')||'').trim().slice(0,60);if(raza)c.raza=raza;
   const notas=String(fv(f,'notas')||'').trim().slice(0,400);if(notas)c.notas=notas;
   const cambios={cond:Object.keys(c).length?c:null};const kv=fv(f,'kg');
   if(kv!==''){const v=toKg(num(kv)),[lo,hi]=x.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');cambios.real=Math.round(v*10)/10;}
   P.actualizarReg(x.id,cambios);COND=null;closeSheet();toast('Datos guardados');if(VOLVER&&P.verResultado)setTimeout(P.verResultado,80);};
 // desde el resultado de una medición
 ACTS.pcLabDatos=()=>{const r=P.ultimo&&P.ultimo();if(!r||!r.id)return;const x=buscar(r.id);if(x)formCond(x,true);};
+
+/* ---------- la ficha de recolección ----------
+   Con una sesión de recolección en curso, después de medir sale esta ficha en vez del resultado normal: el número del
+   animal (automático), el peso de la báscula y los datos del animal, para anotar todo en la manga sin ir al laboratorio. Repetir: mide otra vez el mismo animal (para la repetibilidad) y copia sus
+   datos; Guardar y medir otro: abre la cámara para el siguiente. */
+const FICHA_C=['sexo','cc','prenez','postura'];
+/* muestreo al azar: no se pide arete. Cada animal de la sesión lleva un número (Animal 1, 2, 3…): n:<sesión>:<número>;
+   «Repetir este» mide otra vez el mismo número */
+const sesK=ses=>(ses.ts||0).toString(36);
+const numDe=aid=>{const m=/^n:[^:]+:(\d+)$/.exec(String(aid||''));return m?+m[1]:0;};
+function nuevoAnimal(ses){const k=sesK(ses);let mx=0;for(const x of P.REG())if(String(x.aid||'').startsWith('n:'+k+':'))mx=Math.max(mx,numDe(x.aid));return `n:${k}:${mx+1}`;}
+// el peso de báscula en la unidad del usuario, como lo escribió (se guarda en kg con un decimal: 900 lb vuelve a ser 900)
+const kgTxt=v=>{const r=W(v);return String(Math.abs(r-Math.round(r))<.15?Math.round(r):Math.round(r*10)/10);};
+const fichaActiva=r=>!!(r&&r.modo==='ganado'&&r.id&&PCc().labSes);
+function ficha(r){
+  const x=buscar(r.id);if(!x)return false;const ses=PCc().labSes,rep=UI.pc.rep&&Date.now()-UI.pc.rep.ts<30*60e3?UI.pc.rep:null;
+  // repetir: el mismo animal con sus datos (el peso de báscula es el mismo ese día)
+  if(!x.aid||!String(x.aid).startsWith('n:')){if(rep){const cond={...(x.cond||{}),...rep.cond};delete cond.postura;P.actualizarReg(x.id,{aid:rep.aid,real:rep.real||null,cond});}
+    else P.actualizarReg(x.id,{aid:nuevoAnimal(ses)});}
+  const y=buscar(r.id),c=y.cond||{},d=ses.def||{};
+  const fijo=DEF_SES.filter(k=>d[k]).map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return `<span>${t}</span>: <span>${txtOpc(L,d[k])}</span>`;}).concat(d.raza?[`<span>Raza</span>: <span data-no-tr>${esc(d.raza)}</span>`]:[]).join(' · ');
+  openSheet(shHead(`<span>Animal</span> <span data-no-tr>${numDe(y.aid)}</span>`,`<span data-no-tr>${esc(ses.n)}</span>`)+formWrap('labFicha',`${P.capsHTML(r)}
+    <div class="pc-kg lab-fk"><b>${wtxt(r.kg)}</b><span><span>estimado con la cámara</span>${esNum(r.cv)?` · <span>dispersión entre fotos</span> <span data-no-tr>±${nf(r.cv*100,1)} %</span>`:''}</span></div>
+    ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
+    ${rep?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>Repetición del mismo animal</span> <span data-no-tr>(${rep.n+1})</span></span></p>`:''}
+    ${q('Peso de báscula',inp('kg',y.real>0?kgTxt(y.real):'',{unit:UW(),xl:true,ph:'—'}),'Si todavía no lo pesas, déjalo vacío y anótalo después en el laboratorio.')}
+    ${FICHA_C.map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return q(t,opts(k,L.map(([v,tt])=>({v,t:tt})),c[k]??'',{allowNone:true}));}).join('')}
+    ${q('Edad (meses)',inp('edad',c.edad>0?String(c.edad):'',{ph:'—'}))}
+    ${q('Perímetro con cinta (referencia)',inp('cinta',c.cinta>0?String(c.cinta):'',{unit:'cm',ph:'—'}))}
+    ${q('Notas',`<textarea class="in" name="notas" rows="2" maxlength="400">${esc(c.notas||'')}</textarea>`)}
+    <p class="hint lab-fijo">${fijo?`<span>Datos de la sesión:</span> ${fijo}. `:''}<button type="button" class="lnk" data-act="labSesDatos">Cambiar los datos de la sesión</button></p>
+    <input type="hidden" name="paso" value="">`,`<div class="sh-foot lab-ff"><button type="button" class="btn" data-act="labFichaDesc">Descartar</button><button type="button" class="btn" data-act="labFichaIr" data-v="rep">Repetir este</button><button type="button" class="btn pri" data-act="labFichaIr" data-v="sig">Guardar y medir otro</button></div>`));
+  FICHA=r.id;return true;
+}
+let FICHA=null;
+ACTS.labFichaIr=el=>{const f=el.closest('form');if(!f)return;f.elements.paso.value=el.dataset.v;f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));};
+SAVE.labFicha=f=>{const x=buscar(FICHA);if(!x)return closeSheet();const c={...(x.cond||{})};
+  for(const k of FICHA_C){const v=fv(f,k);if(v!=='')c[k]=v;else delete c[k];}
+  for(const [k,lo,hi] of [['edad',0,600],['cinta',60,320]]){const t=fv(f,k);if(t===''){delete c[k];continue;}const v=num(t);if(!(v>=lo&&v<=hi))return ferr(f,k==='edad'?'Revisa la edad (en meses).':'Revisa el perímetro (en cm).');c[k]=Math.round(v*10)/10;}
+  const notas=String(fv(f,'notas')||'').trim().slice(0,400);if(notas)c.notas=notas;else delete c.notas;
+  const cambios={cond:Object.keys(c).length?c:null};const kv=fv(f,'kg');
+  if(kv!==''){const v=toKg(num(kv));if(!(v>=40&&v<=1300))return ferr(f,'Revisa el peso de la báscula.');cambios.real=Math.round(v*10)/10;}else cambios.real=null;
+  P.actualizarReg(x.id,cambios);const paso=fv(f,'paso');FICHA=null;
+  const er=cambios.real>0?(x.kg-cambios.real)/cambios.real:null;
+  toast(er!=null?`Guardado. Cámara ${wtxt(x.kg)}, báscula ${wtxt(cambios.real)}: ${pcs(er)}`:'Guardado. Falta el peso de báscula.',3500);
+  if(paso==='rep'){const n=P.REG().filter(z=>z.ses===x.ses&&z.aid===x.aid).length;UI.pc.rep={aid:x.aid,real:cambios.real,cond:c,ts:Date.now(),n};}
+  else UI.pc.rep=null;
+  closeSheet();if(paso==='rep'||paso==='sig')setTimeout(()=>ACTS.pcVivo&&ACTS.pcVivo(),120);};
+ACTS.labFichaDesc=()=>{const id=FICHA;confirmar('¿Descartar esta medición?','Se borra con sus fotos. Úsalo si el animal se movió o la foto salió mal.','Descartar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});borrarFotos(id);FICHA=null;toast('Medición descartada');});};
 
 /* ---------- peso de báscula, borrar ---------- */
 let REAL=null;
@@ -549,28 +661,33 @@ ACTS.pcRegReal=el=>{const x=buscar(el.dataset.id);if(!x)return;REAL=x.id;
 SAVE.pcReg=f=>{const x=buscar(REAL);if(!x)return closeSheet();const v=toKg(num(fv(f,'kg')));
   const [lo,hi]=x.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');
   P.actualizarReg(x.id,{real:Math.round(v*10)/10});REAL=null;closeSheet();toast('Peso de báscula guardado');};
-const borrarFotos=id=>{if(!window.Fotos)return;Fotos.borrar(`pcd-${id}`);for(let i=0;i<4;i++){Fotos.borrar(`pc-${id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${id}-${i}-${j}`);}};
+const borrarFotos=id=>{if(!window.Fotos)return;Fotos.borrar(`pcd-${id}`);for(let i=0;i<4;i++){Fotos.borrar(`pc-${id}-${i}`);Fotos.borrar(`pch-${id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${id}-${i}-${j}`);}};
 ACTS.pcRegBorrar=el=>{const id=el.dataset.id;confirmar('¿Borrar esta medición?','Sale del registro y de la calibración.','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});borrarFotos(id);toast('Medición borrada');});};
 ACTS.pcRegLimpiar=()=>{const modo=UI.pc.modo;confirmar('¿Borrar el registro?','Se borran todas las mediciones de este modo, también su peso de báscula (la calibración).','Borrar',()=>{const fu=P.REG().filter(x=>x.modo===modo);P.guardarPC({reg:P.REG().filter(x=>x.modo!==modo)});fu.forEach(x=>borrarFotos(x.id));toast('Registro borrado');});};
 
 /* ---------- exportar ---------- */
 // todo el registro en CSV (una fila por medición; el peso en kg)
 const DQ=['brillo','contraste','nitidez','quemado','oscuro','tam','tamRef','kp','kpMin','cvWH','cvCD','cvPred','elev','horiz','LWH','tomas'];
-const CK=['sexo','cc','llenado','prenez','pelo','postura','suelo','fondo','edad','dist','cinta','notas'];
+const CK=['sexo','cc','llenado','prenez','pelo','postura','suelo','fondo','edad','dist','cinta','notas','raza','horas'];
 const COLS=['id','fecha','hora','modo','version','litros','kg_estimado','kg_bascula','error_pct','rango_pct','cv_fotos_pct','combinaciones','k','b','calibraciones',
   'estatura_ref_cm','ropa','kg_modelo','hombros_cm','pecho_ancho_cm','pecho_fondo_cm','cintura_ancho_cm','cintura_fondo_cm','cadera_ancho_cm','gluteos_fondo_cm','muslo_contorno_cm','pantorrilla_cm','muslo_bajo_cm','cuello_cm','estimadas',
   'puntos','silueta_limpiada_pct','giro_perfil_grados','silueta_incompleta','medidas_al_limite','fondo_ancho','brazos_pegados','filas_recortadas_pct','imc','largo_cm','alto_cm','ancho_cm','alzada_cm','alzada_costado_cm','alzada_atras_cm','fondo_pecho_cm','largo_tronco_cm','fondo_medio_cm','ancho_alto_atras','tipo_animal','etapa','camaras','fondo_alzada_otro_costado','ancho_largo_arriba','ancho_arriba_cm','cabeza_l','tronco_l','brazos_l','piernas_l','seguridad','fuente','manual','fps','ms_rapido','ms_preciso','segundos','motor',
   'lote','animal','arete','sesion','perimetro_cinta_cm','kg_modelo_foto','kg_real','fuente_real','kg_modelo_hoy',...DQ.map(k=>'toma_'+k),...CK.map(k=>'animal_'+k),'ms_pose'];
-function csv(){
+function csv(R0){
   const q=v=>v==null||(typeof v==='number'&&!isFinite(v))?'':typeof v==='number'?String(Math.round(v*1000)/1000):/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
+  return tablaMed(R0).map(f=>f.map(q).join(',')).join('\n')+'\n';
+}
+function tablaMed(R0){
   const lab={};for(const m of ['persona','ganado'])try{for(const f of etiquetasLab(m).F)lab[f.id]=f;}catch(e){}
-  const L=P.REG().map(x=>{const pa=x.partes||{},er=x.real>0?(x.kg-x.real)/x.real*100:null,d=x.dims||{},dq=x.dq||{},c=x.cond||{},l=lab[x.id];
+  const L=(R0||P.REG()).map(x=>{const pa=x.partes||{},er=x.real>0?(x.kg-x.real)/x.real*100:null,d=x.dims||{},dq=x.dq||{},c=x.cond||{},l=lab[x.id];
     return [x.id,x.f,hora(x.ts),x.modo,x.v,x.L,x.kg,x.real,er,esNum(x.err)?x.err*100:null,esNum(x.cv)?x.cv*100:null,x.comb,x.k,x.b,x.ncal,x.alto,x.ropa,x.pred,
       x.dims?d.bid:x.anchoF,d.cb,x.dims?d.cd:x.prof,d.wb,d.wd,d.hb,d.bd,d.th,d.cf,d.lt,d.ne,x.estimadas?x.estimadas.join(' '):null,x.puntos==null?null:x.puntos?1:0,esNum(x.limpia)?x.limpia*100:null,x.giro,x.incompleta==null?null:x.incompleta?1:0,x.topes?x.topes.join(' '):null,x.fondoAncho,x.modo==='persona'?(x.brazosPegados?1:0):null,esNum(x.topadas)?x.topadas*100:null,x.imc,
       x.largo,x.altoAnimal,x.ancho,d.WH,d.WHs,d.WHr,d.CD,d.L,d.FM,d.RWH,x.tipo,x.etapa||(x.joven?'ternero':null),x.camaras?x.camaras.join(' '):null,d.qOtro,d.AWL,d.AW,pa.cabeza,pa.tronco,pa.brazos,pa.piernas,x.score,x.fuente,x.manual?1:0,x.fps,x.msR,x.msP,x.seg,x.motor,
-      x.lote,x.aid,areteDe(x)||null,x.ses,x.HG,x.predFoto,l?l.kg:null,l?l.src:null,ahoraDe(x),...DQ.map(k=>dq[k]),...CK.map(k=>c[k]),x.msPose].map(q).join(',');});
-  return [COLS.join(',')].concat(L).join('\n')+'\n';
+      x.lote,x.aid,areteDe(x)||null,x.ses,x.HG,x.predFoto,l?l.kg:null,l?l.src:null,ahoraDe(x),...DQ.map(k=>dq[k]),...CK.map(k=>c[k]),x.msPose,
+      numDe(x.aid)||null,...CAM_K.map(k=>(x.cam||{})[k]),...(()=>{const o=calcMed(x);return CC_L().map(k=>o[k]);})()];});
+  return [COLS.concat(['animal_num',...CAM_K.map(k=>'camara_'+k)],CC_L())].concat(L);
 }
+const CAM_K=['width','height','zoom','lente','vw','vh'];let CC_=null;const CC_L=()=>CC_||(CC_=CALC_COLS());
 ACTS.pcRegCsv=async()=>{const b=new TextEncoder().encode(csv());await Documentos.enviar(`rumentis-labs-mediciones-${hoy()}.csv`,b.buffer,'compartir','Mediciones',  'text/csv');};
 const aURL=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ok(null);r.readAsDataURL(b);});
 async function fotosDe(x,fotos){if(!window.Fotos)return;for(let i=0;i<4;i++)for(let j=0;j<3;j++){const k=`pcr-${x.id}-${i}-${j}`;try{const u=await Fotos.url(k);if(!u)continue;const b=await (await fetch(u)).blob();const d=await aURL(b);if(d)fotos[k]=d;}catch(e){}}}
@@ -586,8 +703,8 @@ ACTS.pcRegAnalisis=async()=>{const modo=UI.pc.modo;toast('Preparando el archivo�
   const b=new TextEncoder().encode(JSON.stringify(a));await Documentos.enviar(`rumentis-labs-analisis-${hoy()}.json`,b.buffer,'compartir','Análisis','application/json');};
 /* el laboratorio completo: todo el registro con lo de cada foto (las últimas 60), los pesos reales con su fuente, el
    estado del modelo y los animales y movimientos que dan pesos reales (entradas, pesajes, ventas) */
-async function completo(modo){
-  const R=P.REG().filter(x=>x.modo===modo),dbg={};for(const x of R){const D=await leerDbg(x.id);if(D)dbg[x.id]=D;}
+async function completo(modo,o={}){
+  const R=o.R||P.REG().filter(x=>x.modo===modo),dbg={};if(o.dbg!==false)for(const x of R){const D=await leerDbg(x.id);if(D)dbg[x.id]=D;}
   const {F,G}=etiquetasLab(modo),strip=f=>{const {x,...o}=f;return o;};
   let fin=null;if(modo==='ganado')try{const C=calc(),ids=new Set(R.map(x=>x.lote).filter(Boolean));
     fin={lotes:[...ids].map(id=>{const L=C.L[id];return L?{id,nombre:L.l.nombre,raza:L.l.raza||null,fechaIngreso:L.l.fechaIngreso||null,pesoIngreso:L.l.pesoIngreso||null,gdp:L.gdpUse||null,
@@ -596,11 +713,194 @@ async function completo(modo){
   const modelos={};for(const c of modo==='ganado'?['foto','cinta']:['foto'])modelos[c]=P.modeloV(modo,c);
   return {tipo:'rumentis-labs-laboratorio',v:1,version:P.VERSION_MODELO,app:(document.querySelector('meta[name=version]')||{}).content||null,fecha:hoy(),modo,
     constantes:modo==='ganado'?P.GANADO:{ANSUR:P.ANSUR},modelos,referencia:PCc()[P.MODOS[modo].alto]||null,tipos:PCc().tipos||null,
-    registros:R,depuracion:dbg,pesosReales:F.map(strip),pesosGrupo:G.map(strip),finca:fin};
+    registros:o.R?R.map(x=>({...x,arete:areteDe(x)||null})):R,depuracion:dbg,pesosReales:(o.R?F.filter(f=>R.some(x=>x.id===f.id)):F).map(strip),pesosGrupo:G.map(strip),finca:fin};
 }
 ACTS.labExportar=async()=>{const modo=UI.pc.modo;toast('Preparando el archivo…');const a=await completo(modo);
   const b=new TextEncoder().encode(JSON.stringify(a));await Documentos.enviar(`rumentis-labs-laboratorio-${modo}-${hoy()}.json`,b.buffer,'compartir','Laboratorio','application/json');};
 ACTS.labUna=async el=>{const x=buscar(el.dataset.id);if(!x)return;const fotos={};await fotosDe(x,fotos);const a={tipo:'rumentis-labs-medicion',v:1,version:P.VERSION_MODELO,fecha:hoy(),registro:x,depuracion:await leerDbg(x.id),fotos};
   const b=new TextEncoder().encode(JSON.stringify(a));await Documentos.enviar(`rumentis-labs-medicion-${x.id}.json`,b.buffer,'compartir','Medición','application/json');};
-window.PcLab={html,estad,csv,analisis,completo,etiquetasLab,leerDbg,diagnostico};
+/* ---------- todo lo que se puede calcular de cada medición (para ajustar el modelo con los datos reales) ----------
+   De las medidas de la foto (cm): el ancho del pecho (de arriba si hay esa toma; si no, el de la foto de atrás), el
+   perímetro del pecho estimado (elipse con el fondo y el ancho, Ramanujan), el volumen del tronco (cilindro elíptico)
+   y los índices corporales. Y el peso con varias fórmulas, cada una contra la báscula:
+     app        el peso que dio la app (calibrado con lo aprendido);
+     v7         el modelo v7 sin calibrar (alzada y fondo de pecho);
+     cinta_est  la fórmula de cinta de la app con el perímetro estimado de la foto;
+     cinta      la misma con el perímetro medido con cinta (si se anotó);
+     schaeffer  Schaeffer: perímetro² × largo / 300 (en pulgadas y libras), con el perímetro estimado;
+     volumen    1 kg por litro del volumen del tronco (solo para comparar: lo que importa es su ajuste). */
+const ramanujan=(a,b)=>Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));
+const FORM=[['app','La app'],['v7','Modelo v7 sin calibrar'],['cinta_est','Cinta con perímetro de la foto'],['cinta','Cinta medida'],['schaeffer','Schaeffer'],['volumen','Volumen del tronco']];
+function calcMed(x){
+  const d=x.dims||{},c=x.cond||{},o={};if(x.modo!=='ganado')return o;
+  const WH=d.WH,CD=d.CD,L=d.L>0?d.L:NaN,anc=d.AW>0?d.AW:x.ancho>0?x.ancho:NaN,T={g:x.tipo||'cruce',etapa:P.etapaDe(x)};
+  o.ancho_pecho_cm=anc;o.ancho_fuente=d.AW>0?'arriba':x.ancho>0?'atras':null;
+  o.perimetro_est_cm=CD>0&&anc>0?ramanujan(CD/2,anc/2):NaN;
+  o.volumen_tronco_l=CD>0&&anc>0&&L>0?Math.PI/4*CD*anc*L/1000:NaN;
+  o.cd_wh=CD/WH;o.l_wh=L/WH;o.ancho_cd=anc/CD;o.ancho_wh=anc/WH;o.perim_wh=o.perimetro_est_cm/WH;o.fm_cd=d.FM/CD;
+  o.wh_costado_atras=d.WHs>0&&d.WHr>0?d.WHr/d.WHs:NaN;o.cd_otro_costado=d.qOtro>0&&WH>0?d.qOtro/(CD/WH):NaN;
+  o.cinta_vs_perim_est=c.cinta>0&&o.perimetro_est_cm>0?c.cinta/o.perimetro_est_cm:NaN;
+  const est={app:x.kg,v7:x.predFoto>0?x.predFoto:x.pred,cinta_est:WH>0&&o.perimetro_est_cm>0?P.pesoCinta(WH,o.perimetro_est_cm,T):NaN,
+    cinta:WH>0&&c.cinta>0?P.pesoCinta(WH,c.cinta,T):NaN,schaeffer:o.perimetro_est_cm>0&&L>0?(o.perimetro_est_cm/2.54)**2*(L/2.54)/300*.45359237:NaN,volumen:o.volumen_tronco_l};
+  for(const [k] of FORM){o['kg_'+k]=est[k];o['err_'+k+'_pct']=x.real>0&&est[k]>0?(est[k]-x.real)/x.real*100:NaN;}
+  return o;
+}
+const CALC_COLS=x=>Object.keys(calcMed({modo:'ganado',dims:{},cond:{}}));
+// mínimos cuadrados (con un poco de ridge para que no explote con pocos datos) y su error dejando uno fuera
+function mco(X,y){const k=X[0].length,S=Array.from({length:k},()=>new Array(k).fill(0)),t=new Array(k).fill(0);
+  X.forEach((v,n)=>{for(let i=0;i<k;i++){t[i]+=v[i]*y[n];for(let j=0;j<k;j++)S[i][j]+=v[i]*v[j];}});for(let i=1;i<k;i++)S[i][i]+=1e-6*X.length;return resolver(S,t);}
+function ajusteLoo(X,y){if(X.length<X[0].length+3)return null;const c=mco(X,y);if(!c)return null;
+  const e=X.map((v,i)=>{const ci=mco(X.filter((_,j)=>j!==i),y.filter((_,j)=>j!==i));return ci?Math.exp(v.reduce((s,z,j)=>s+z*ci[j],0)-y[i])-1:NaN;}).filter(esNum);
+  const r=X.map((v,i)=>Math.exp(v.reduce((s,z,j)=>s+z*c[j],0)-y[i])-1);
+  return {c,n:X.length,loo:prom(e.map(Math.abs)),looS:prom(e),ajuste:prom(r.map(Math.abs)),dentro5:e.filter(z=>Math.abs(z)<=.05).length/e.length};}
+// por animal (el promedio de sus mediciones): así un animal medido 5 veces no pesa 5 veces en el ajuste
+function porAnimal(R){const m=new Map();for(const x of R){if(x.modo!=='ganado')continue;const k=x.aid||x.id;if(!m.has(k))m.set(k,[]);m.get(k).push(x);}
+  return [...m.entries()].map(([k,v])=>{const C=v.map(calcMed),real=(v.find(z=>z.real>0)||{}).real||null,me=f=>{const a=v.map(f).filter(z=>esNum(z)&&z>0);return a.length?prom(a):NaN;},cv=f=>{const a=v.map(f).filter(z=>esNum(z)&&z>0);return a.length>1?desv(a)/prom(a):NaN;};
+    return {k,v,C,real,n:v.length,WH:me(x=>x.dims&&x.dims.WH),CD:me(x=>x.dims&&x.dims.CD),L:me(x=>x.dims&&x.dims.L),anc:prom(C.map(c=>c.ancho_pecho_cm).filter(esNum)),
+      HG:prom(C.map(c=>c.perimetro_est_cm).filter(esNum)),cvWH:cv(x=>x.dims&&x.dims.WH),cvCD:cv(x=>x.dims&&x.dims.CD),cvKg:cv(x=>x.kg),
+      est:Object.fromEntries(FORM.map(([f])=>[f,prom(C.map(c=>c['kg_'+f]).filter(z=>esNum(z)&&z>0))])),tipo:v[0].tipo,etapa:P.etapaDe(v[0]),cond:v[v.length-1].cond||{}};});}
+// los ajustes que se pueden hacer con los pesos de báscula: cada fórmula calibrada (ln báscula = a + b ln fórmula) y
+// modelos libres con las medidas (ln peso = a + b ln alzada + c ln fondo + …)
+function ajustes(A){
+  const con=A.filter(a=>a.real>0),out={formulas:[],libres:[]};
+  for(const [f,t] of FORM){const D=con.filter(a=>a.est[f]>0);if(D.length<3){out.formulas.push({f,t,n:D.length});continue;}
+    const e=D.map(a=>a.est[f]/a.real-1),y=D.map(a=>Math.log(a.real)),ym=prom(D.map(a=>a.real)),sst=D.reduce((s,a)=>s+(a.real-ym)**2,0);
+    out.formulas.push({f,t,n:D.length,mape:prom(e.map(Math.abs)),sesgo:prom(e),rmse:Math.sqrt(prom(D.map(a=>(a.est[f]-a.real)**2))),r2:sst>0?1-D.reduce((s,a)=>s+(a.est[f]-a.real)**2,0)/sst:NaN,
+      cal:ajusteLoo(D.map(a=>[1,Math.log(a.est[f])]),y)});}
+  const L=[['Alzada y fondo de pecho',a=>[a.WH,a.CD]],['Alzada, fondo y largo',a=>[a.WH,a.CD,a.L]],['Alzada, fondo, largo y ancho',a=>[a.WH,a.CD,a.L,a.anc]],
+    ['Perímetro estimado y largo',a=>[a.HG,a.L]],['Perímetro estimado y alzada',a=>[a.HG,a.WH]],['Volumen del tronco',a=>[Math.PI/4*a.CD*a.anc*a.L/1000]]];
+  for(const [t,fn] of L){const D=con.filter(a=>fn(a).every(z=>esNum(z)&&z>0));const r=D.length?ajusteLoo(D.map(a=>[1,...fn(a).map(Math.log)]),D.map(a=>Math.log(a.real))):null;out.libres.push({t,n:D.length,r});}
+  return out;
+}
+
+/* ---------- Excel (.xlsx) ----------
+   Un libro con varias hojas, armado aquí (sin librerías): Mediciones (todo lo registrado y lo calculado), Animales,
+   Fórmulas, Ajustes, Condiciones y Sesión. */
+const colL=i=>{let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;};
+const xe=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+function hojaXml(rows){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>{const ref=colL(j)+(i+1),st=i===0?' s="1"':'';
+  if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return '';if(typeof v==='number')return `<c r="${ref}"${st}><v>${Math.round(v*1e4)/1e4}</v></c>`;if(typeof v==='boolean')return `<c r="${ref}"${st}><v>${v?1:0}</v></c>`;
+  return `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${xe(v)}</t></is></c>`;}).join('')}</row>`).join('')}</sheetData></worksheet>`;}
+function xlsx(H){const ws=H.map((h,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:hojaXml(h.rows)}));
+  return zip([{n:'[Content_Types].xml',d:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${H.map((h,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {n:'_rels/.rels',d:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {n:'xl/workbook.xml',d:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${H.map((h,i)=>`<sheet name="${xe(h.n.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {n:'xl/_rels/workbook.xml.rels',d:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${H.map((h,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${H.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {n:'xl/styles.xml',d:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`},...ws]);}
+const p100=v=>esNum(v)?v*100:null;
+// cada foto y cada par de fotos (de la depuración guardada): para ver qué tomas sirven y cuáles meten error
+async function hojasTomas(R){
+  const To=[['medicion','animal','angulo','toma','remoto','manual','ancho_px','alto_px','cm_por_px','tam_animal','tam_referencia','brillo','contraste','nitidez','quemado','oscuro',
+    'silueta_score','silueta_conf','silueta_area','referencia_score','alzada_cm','fondo_pecho_cm','largo_cm','fondo_medio_cm','ancho_alto_atras','alzada_atras_cm','fondo_alzada_otro','ancho_largo_arriba',
+    'puntos_conf_media','puntos_conf_min','inclinacion','horizonte','kg_bascula']],
+    Pa=[['medicion','animal','toma_costado','toma_atras','kg_modelo_par','alzada_cm','alzada_costado_cm','alzada_atras_cm','fondo_pecho_cm','fondo_costado_cm','fondo_alzada','al_limite','kg_bascula','error_par_pct']];
+  for(const x of R){const D=await leerDbg(x.id);if(!D)continue;const an=numDe(x.aid)||areteDe(x)||null;
+    for(const a of D.angs||[])(a.tomas||[]).forEach((t,j)=>{const kc=t.kp?t.kp.filter((_,i)=>i%3===2).filter(v=>v>0):[],l=t.luz||{},M=t.M||{};
+      To.push([x.id,an,a.rol,j+1,a.remoto?1:0,a.manual?1:0,t.W,t.H,t.cmpx,t.tam,t.tamRef,l.brillo,l.contraste,l.nitidez,l.quemado,l.oscuro,t.sil&&t.sil.score,t.sil&&t.sil.conf,t.sil&&t.sil.area,t.ref&&t.ref.score,
+        M.WH,M.CD,M.L,M.FM,t.RWH,t.WHr,t.q,t.AWL,kc.length?prom(kc):null,kc.length?Math.min(...kc):null,a.ori&&a.ori.elev,a.ori&&a.ori.horiz,x.real]);});
+    for(const q of D.pares||[])Pa.push([x.id,an,q.a+1,q.b+1,q.pred,q.WH,q.WHs,q.WHr,q.CD,q.CDs,q.q,q.tope?1:0,x.real,x.real>0&&q.pred>0?(q.pred/x.real-1)*100:null]);}
+  return [{n:'Tomas',rows:To},{n:'Pares',rows:Pa}];
+}
+// el libro de una lista de mediciones (de ganado)
+async function libro(R,info){
+  const T=tablaMed(R),A=porAnimal(R),AJ=ajustes(A),num_=a=>numDe(a.v[0].aid)||areteDe(a.v[0])||a.k;
+  const ani=[['animal','mediciones','kg_bascula','tipo','etapa','sexo','cc','alzada_cm','fondo_pecho_cm','largo_cm','ancho_pecho_cm','perimetro_est_cm','cv_alzada_pct','cv_fondo_pct','cv_kg_app_pct',
+    ...FORM.flatMap(([f])=>['kg_'+f,'err_'+f+'_pct'])]].concat(A.map(a=>[num_(a),a.n,a.real,a.tipo,a.etapa,a.cond.sexo||null,a.cond.cc||null,a.WH,a.CD,a.L,a.anc,a.HG,p100(a.cvWH),p100(a.cvCD),p100(a.cvKg),
+    ...FORM.flatMap(([f])=>[a.est[f],a.real>0&&a.est[f]>0?(a.est[f]/a.real-1)*100:null])]));
+  const fo=[['formula','descripcion','animales_con_bascula','error_medio_pct','sesgo_pct','rmse_kg','r2','calibrada_a','calibrada_b','calibrada_error_validacion_cruzada_pct','calibrada_sesgo_pct','calibrada_dentro_5pct']]
+    .concat(AJ.formulas.map(o=>[o.f,o.t,o.n,p100(o.mape),p100(o.sesgo),o.rmse,o.r2,o.cal?o.cal.c[0]:null,o.cal?o.cal.c[1]:null,o.cal?p100(o.cal.loo):null,o.cal?p100(o.cal.looS):null,o.cal?p100(o.cal.dentro5):null]));
+  const li=[['modelo (ln peso = a + b·ln x1 + c·ln x2 …)','animales','a','b','c','d','e','error_validacion_cruzada_pct','sesgo_pct','error_en_ajuste_pct','dentro_5pct']]
+    .concat(AJ.libres.map(o=>[o.t,o.n,...(o.r?[...o.r.c,...new Array(5-o.r.c.length).fill(null),p100(o.r.loo),p100(o.r.looS),p100(o.r.ajuste),p100(o.r.dentro5)]:new Array(9).fill(null))]));
+  const con=A.filter(a=>a.real>0&&a.est.app>0),co=[['condicion','valor','animales','error_medio_app_pct','sesgo_app_pct']];
+  const grupos=[['tipo',a=>a.tipo],['etapa',a=>a.etapa],...COND_G.map(([k])=>[k,a=>a.cond[k]]),['tomas',a=>(a.v[0].camaras||[]).length||null],['rango_kg',a=>a.real<200?'<200':a.real<350?'200-350':a.real<500?'350-500':'500+']];
+  for(const [g,fn] of grupos){const m=new Map();for(const a of con){const v=fn(a);if(v==null||v==='')continue;if(!m.has(v))m.set(v,[]);m.get(v).push(a.est.app/a.real-1);}
+    for(const [v,e] of m)co.push([g,String(v),e.length,prom(e.map(Math.abs))*100,prom(e)*100]);}
+  const ses=[['dato','valor'],['app',(document.querySelector('meta[name=version]')||{}).content||''],['version_modelo',P.VERSION_MODELO],['fecha_export',hoy()],['mediciones',R.length],['animales',A.length],['animales_con_bascula',A.filter(a=>a.real>0).length],
+    ...Object.entries(info||{}).map(([k,v])=>[k,typeof v==='object'?JSON.stringify(v):v]),['telefono',navigator.userAgent],
+    ...Object.entries(P.GANADO).filter(([,v])=>typeof v!=='object').map(([k,v])=>['ganado_'+k,v]),['ganado_a',JSON.stringify(P.GANADO.a)],['ganado_etapas',JSON.stringify(P.GANADO.etapas)]];
+  return xlsx([{n:'Mediciones',rows:T},{n:'Animales',rows:ani},{n:'Formulas',rows:fo},{n:'Ajustes',rows:li},{n:'Condiciones',rows:co},...await hojasTomas(R),{n:'Sesion',rows:ses}]);
+}
+ACTS.labExcel=async el=>{const sn=el.dataset.s,R=!sn||sn==='*'?P.REG().filter(x=>x.modo==='ganado'):P.REG().filter(x=>x.ses===sn);if(!R.length){toast('Todavía no hay mediciones.');return;}
+  toast('Preparando el archivo…');const ses=PCc().labSes,u=await libro(R,sn&&sn!=='*'?{sesion:sn,datos_sesion:ses&&ses.n===sn?ses.def||{}:{}}:{});
+  await Documentos.enviar(`rumentis-labs-${limpio(sn&&sn!=='*'?sn:'ganado')||'datos'}-${hoy()}.xlsx`,u.buffer,'compartir','Excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');};
+
+/* ---------- exportar una sesión de recolección: ZIP por partes ----------
+   Cada parte es un ZIP (sin comprimir: las fotos ya son JPEG) de unos 20 MB como máximo, para que el teléfono lo pueda
+   armar y compartir sin quedarse sin memoria. Cada parte lleva LEEME.txt, mediciones.csv y sesion.json (todas las
+   mediciones de la sesión, sin las fotos) y las carpetas de sus mediciones:
+     <nnn>_<arete>_<id>/registro.json      la medición (medidas, calidad, datos del animal, peso de báscula)
+                        depuracion.json    lo de cada foto (siluetas, puntos, medidas por toma)
+                        <ángulo>_hd.jpg    la foto a la resolución completa de la cámara (primera toma)
+                        <ángulo>_t<k>.jpg  las tomas originales (las que midió el modelo preciso), sin dibujos
+                        <ángulo>_vista.jpg la foto con la silueta dibujada */
+const PARTE_MAX=20e6;
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zip(E){
+  const enc=new TextEncoder(),d=new Date(),dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF,dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  const partes=[],cen=[];let off=0;
+  for(const e of E){const nm=enc.encode(e.n),u=e.d instanceof Uint8Array?e.d:enc.encode(e.d),c=crc32(u),h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,dt,true);h.setUint16(12,dd,true);
+    h.setUint32(14,c,true);h.setUint32(18,u.length,true);h.setUint32(22,u.length,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    const z=new DataView(new ArrayBuffer(46));z.setUint32(0,0x02014b50,true);z.setUint16(4,20,true);z.setUint16(6,20,true);z.setUint16(8,0x0800,true);z.setUint16(10,0,true);
+    z.setUint16(12,dt,true);z.setUint16(14,dd,true);z.setUint32(16,c,true);z.setUint32(20,u.length,true);z.setUint32(24,u.length,true);z.setUint16(28,nm.length,true);z.setUint32(42,off,true);
+    partes.push(new Uint8Array(h.buffer),nm,u);cen.push(new Uint8Array(z.buffer),nm);off+=30+nm.length+u.length;}
+  const tc=cen.reduce((a,b)=>a+b.length,0),f=new DataView(new ArrayBuffer(22));f.setUint32(0,0x06054b50,true);f.setUint16(8,E.length,true);f.setUint16(10,E.length,true);f.setUint32(12,tc,true);f.setUint32(16,off,true);
+  const out=new Uint8Array(off+tc+22);let p=0;for(const a of partes.concat(cen,[new Uint8Array(f.buffer)])){out.set(a,p);p+=a.length;}return out;
+}
+const limpio=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036F]/g,'').replace(/[^A-Za-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+async function blobDe(k){if(!window.Fotos)return null;try{const u=await Fotos.url(k);if(!u)return null;return new Uint8Array(await (await (await fetch(u)).blob()).arrayBuffer());}catch(e){return null;}}
+const angDe=(x,i)=>limpio(x.camaras&&x.camaras[i]||['costado','atras','arriba','otro'][i]||'angulo'+i);
+// los archivos de una medición (fotos y depuración); n: su número en la sesión
+async function archivosDe(x,n){
+  const dir=`${String(n).padStart(3,'0')}_${(numDe(x.aid)?'animal-'+numDe(x.aid):limpio(areteDe(x))||'sin-numero')}_${x.id}/`,E=[];
+  E.push({n:dir+'registro.json',d:JSON.stringify({...x,arete:areteDe(x)||null},null,1)});
+  const D=await leerDbg(x.id);if(D)E.push({n:dir+'depuracion.json',d:JSON.stringify(D)});
+  for(let i=0;i<4;i++){const a=angDe(x,i);let b=await blobDe(`pch-${x.id}-${i}`);if(b)E.push({n:`${dir}${a}_hd.jpg`,d:b});
+    for(let j=0;j<3;j++){b=await blobDe(`pcr-${x.id}-${i}-${j}`);if(b)E.push({n:`${dir}${a}_t${j+1}.jpg`,d:b});}
+    b=await blobDe(`pc-${x.id}-${i}`);if(b)E.push({n:`${dir}${a}_vista.jpg`,d:b});}
+  return E;
+}
+const tam=E=>E.reduce((s,e)=>s+(e.d.length||0)+e.n.length+80,0);
+const disp=()=>({ua:navigator.userAgent,pantalla:`${screen.width}x${screen.height}`,dpr:window.devicePixelRatio||1,idioma:window.I18N?I18N.lang():'es'});
+function leeme(sn,R,k,np){return [`Rumentis Labs: recolección de datos del peso con cámara`,`Sesión: ${sn}`,`Parte ${k} de ${np}`,`Mediciones en la sesión: ${R.length}`,'',
+  'datos.xlsx       Excel: Mediciones (todo lo medido y calculado), Animales (promedio y repetibilidad de cada uno), Formulas (cada fórmula de peso contra la báscula,',
+  '                 también calibrada con validación cruzada), Ajustes (modelos ajustados con estos pesos reales), Condiciones (el error según cada dato),',
+  '                 Tomas (cada foto: medidas, nitidez, luz, puntos), Pares (el peso de cada par de fotos contra la báscula) y Sesion.',
+  'mediciones.csv   una fila por medición (todas las de la sesión): medidas, calidad de las tomas, datos del animal, lo calculado, peso de báscula (kg_bascula) y error.',
+  'sesion.json      la sesión completa sin fotos: registros, datos fijos de la sesión, constantes y modelo, pesos reales, lotes y teléfono.',
+  'Carpetas         una por medición: <número>_<arete>_<id>/ con registro.json, depuracion.json y las fotos:',
+  '                 <ángulo>_hd.jpg (resolución completa), <ángulo>_t1..t3.jpg (tomas medidas por el modelo), <ángulo>_vista.jpg (con la silueta).',
+  'Unir con la báscula: registro.json → real (kg). El mismo arete en varias carpetas = el mismo animal medido varias veces.',''].join('\r\n');}
+// el plan: qué mediciones van en cada parte (con el tamaño de la primera medición de cada parte como referencia)
+const EXP={};
+async function planSesion(sn){
+  const R=sn==='*'?P.REG().filter(x=>x.modo==='ganado'):P.REG().filter(x=>x.ses===sn);if(!R.length)return null;
+  const e0=tam(await archivosDe(R[0],1)),por=Math.max(1,Math.floor((PARTE_MAX-2e6)/Math.max(1,e0*1.15)));
+  const partes=[];for(let i=0;i<R.length;i+=por)partes.push([i,Math.min(R.length,i+por)]);
+  return {sn,R,partes,hechas:new Set(),mb:e0*R.length/1e6};
+}
+async function armarParte(pl,k){
+  const {sn,R}=pl,[a,b]=pl.partes[k],ses=PCc().labSes,base=await completo('ganado',{R,dbg:false});
+  const E=[{n:'LEEME.txt',d:leeme(sn==='*'?'todas':sn,R,k+1,pl.partes.length)},{n:'mediciones.csv',d:csv(R)},{n:'datos.xlsx',d:await libro(R,sn==='*'?{}:{sesion:sn,datos_sesion:ses&&ses.n===sn?ses.def||{}:{}})},
+    {n:'sesion.json',d:JSON.stringify({...base,tipo:'rumentis-labs-recoleccion',v:1,sesion:sn==='*'?null:{n:sn,def:ses&&ses.n===sn?ses.def||null:null,desde:R[0].f,hasta:R[R.length-1].f},dispositivo:disp(),parte:[k+1,pl.partes.length]})}];
+  for(let i=a;i<b;i++){for(const e of await archivosDe(R[i],i+1))E.push(e);}
+  return zip(E);
+}
+function hojaExp(){const X=EXP.pl;if(!X)return;const np=X.partes.length;
+  openSheet(shHead('Exportar la sesión',`<span data-no-tr>${esc(X.sn==='*'?'':X.sn)}</span>`)+`<div class="sh-body">
+    <p class="hint"><span>Mediciones:</span> <b data-no-tr>${X.R.length}</b> · <span>cerca de</span> <b data-no-tr>${nf(Math.max(1,X.mb))} MB</b> · <span>${pl(np,'archivo ZIP','archivos ZIP')}</span>.</p>
+    <p class="hint">Comparte cada parte a Drive, al correo o a la computadora. Todas llevan el CSV y los datos de la sesión; las fotos van repartidas.</p>
+    <div class="rows">${X.partes.map(([a,b],k)=>`<div class="row"><div class="tx"><b><span>Parte</span> <span data-no-tr>${k+1} / ${np}</span>${X.hechas.has(k)?` <span class="ok">✓</span>`:''}</b><span><span>Mediciones</span> <span data-no-tr>${a+1}–${b}</span></span></div><button type="button" class="btn${X.hechas.has(k)?'':' pri'}" data-act="labExpParte" data-k="${k}">Compartir</button></div>`).join('')}</div></div>`);}
+ACTS.labExpSes=async el=>{const sn=el.dataset.s;toast('Preparando el archivo…');const pl=await planSesion(sn);if(!pl){toast('Esta sesión no tiene mediciones.');return;}EXP.pl=pl;hojaExp();};
+let ARMANDO=false;
+ACTS.labExpParte=async el=>{const pl=EXP.pl,k=+el.dataset.k;if(!pl||ARMANDO)return;ARMANDO=true;el.disabled=true;toast('Preparando el archivo…',8000);
+  try{const u=await armarParte(pl,k),np=pl.partes.length,nom=`rumentis-recoleccion-${limpio(pl.sn==='*'?'todo':pl.sn)||'sesion'}-${hoy()}${np>1?`-parte${k+1}de${np}`:''}.zip`;
+    const ok=await Documentos.enviar(nom,u.buffer,'compartir','Recolección','application/zip');if(ok!==false){pl.hechas.add(k);hojaExp();}}
+  catch(e){console.error(e);toast('No pude armar el archivo. Revisa el espacio del teléfono.',4000);}
+  finally{ARMANDO=false;el.disabled=false;}};
+// las sesiones guardadas (para exportarlas después)
+function sesionesGuardadas(){const m=new Map();for(const x of P.REG())if(x.modo==='ganado'&&x.ses){const o=m.get(x.ses)||{n:x.ses,c:0,b:0,f:x.f};o.c++;if(x.real>0)o.b++;o.f=x.f;m.set(x.ses,o);}return [...m.values()].reverse();}
+
+window.PcLab={libro,xlsx,calcMed,porAnimal,ajustes,tablaMed,zip,crc32,planSesion,armarParte,ficha,fichaActiva,numDe,html,estad,csv,analisis,completo,etiquetasLab,leerDbg,diagnostico};
 })();
