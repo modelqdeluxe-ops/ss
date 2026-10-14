@@ -1319,226 +1319,292 @@ def pass_levels():
     return out
 
 
+def sim_poly(s, pts, color):
+    """Un polígono en unidades (PadSkin.line / tri): en píxeles reales, respetando el recorte."""
+    from PIL import ImageDraw
+    ox, oy = s.o
+    rp = [(ox + x * s.f, oy + y * s.f) for x, y in pts]
+    x0, y0 = int(min(p[0] for p in rp)) - 1, int(min(p[1] for p in rp)) - 1
+    x1, y1 = int(max(p[0] for p in rp)) + 2, int(max(p[1] for p in rp)) + 2
+    if x1 <= x0 or y1 <= y0:
+        return
+    im = Image.new('RGBA', (x1 - x0, y1 - y0))
+    ImageDraw.Draw(im).polygon([(x - x0, y - y0) for x, y in rp], fill=tuple(color[:3]) + ((color[3],) if len(color) > 3 else (255,)))
+    s._paste_px(im, x0, y0)
+
+
+def sim_line(s, x0, y0, x1, y1, w, color):
+    dx, dy = x1 - x0, y1 - y0
+    ln = math.hypot(dx, dy)
+    if ln < 0.01:
+        return
+    nx, ny = -dy / ln * w / 2, dx / ln * w / 2
+    sim_poly(s, [(x0 + nx, y0 + ny), (x1 + nx, y1 + ny), (x1 - nx, y1 - ny), (x0 - nx, y0 - ny)], color)
+
+
 def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh=1080):
+    """PadPassPage (1.3.67): el MAPA DE LA TEMPORADA. HUD arriba, el mapa (cielo, colinas en paralaje y el camino que
+    ondula de medallón en medallón) y la tira de cómo se gana XP."""
     if ONLY and name not in ONLY:
         return
     s = Sim(fbw=fbw, fbh=fbh)
+    s.T = 2.0
     s.status('TF PASS')
     loc = Local(s)
     loc.__enter__()
     X, Y, W, H = s.X, s.Y, s.W, s.H
-    NODE, GAP, PITCH, HERO = 46, 6, 52, 50
-    bottom_h = max(40, min(52, H - HERO - 8 - 92))
-    track_h = H - HERO - 8 - bottom_h
+    PITCH, R, RB, HUD_H, FOOT_H = 60, 18, 22, 40, 15
     levels = pass_levels()
-    ready = [n for n, _ in levels if claimed < n <= lv]
-    # cabecera
-    x, y, w, h = X, Y, W, HERO
-    s.fill(x + 2, y + h, x + w - 2, y + h + 1, (40, 110, 200, 90))
-    s.box(x, y, w, h, NAVY)
-    s.vgrad(x + 1, y + 1, w - 2, h - 2, rgb(0x1E6B52), rgb(0x14284F))
-    s.texture(x + 1, y + 1, w - 2, h - 2)
-    s.tiled('stripes', x + 1, y + 1, w - 2, h - 2, 0.06, off=s.T * 3)
-    s.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0x5FD39A))
+    mx_ = len(levels)
+    top, bot = Y + HUD_H + 3, Y + H - FOOT_H - 3
+    mh = bot - top
+    at = scroll_to or (claimed + 1 if claimed < lv else lv)
+    scroll = max(0, min((mx_ - 1) * PITCH + 68 - W, (at - 1) * PITCH + 34 - W / 2))
+
+    def center(n):
+        mid = top + mh * 0.42
+        amp = max(0, min(14, (mh - 2 * RB - 34) / 2))
+        return X + 34 + (n - 1) * PITCH - scroll, mid + math.sin(n * 0.95) * amp
+
+    def state(n):
+        return 2 if n <= claimed else 1 if n <= lv else 0
+
+    # ---- el mapa
+    s.box(X, top, W, mh, rgb(0x0A1830))
+    s.scissor(X + 1, top + 1, W - 2, mh - 2)
+    s.vgrad(X + 1, top + 1, W - 2, mh - 2, rgb(0x7CCBF2), rgb(0xE4F6FF))
+    s.glow(X + W * 0.82, top + 16, 46, rgb(0xFFF0B0), 150)
+    s.rays(X + W * 0.82, top + 16, 70, 0.10, s.T * 3)
+    lh = min(56, mh * 0.55)
+    lw = 480 * lh / 56
+    for i, (nm, tint_c, sp) in enumerate((('land_far', 0xB8E2C4, 0.15), ('land_mid', 0x6CB486, 0.35), ('land_near', 0x2E7A52, 0.6))):
+        off = (scroll * sp) % lw
+        lx = X + 1 - off
+        while lx < X + W:
+            s.tex_alpha(nm, lx, bot - lh - (2 - i) * 4, lw, lh, 1.0, rgb(tint_c), smooth=False)
+            lx += lw
+    s.fill(X + 1, bot - 6, X + W - 1, bot - 1, rgb(0x2E7A52))
+    for pas in range(3):
+        for n in range(1, mx_):
+            ax, ay = center(n)
+            bx, by = center(n + 1)
+            if bx < X - PITCH or ax > X + W + PITCH:
+                continue
+            gold = n + 1 <= lv
+            if pas == 0:
+                sim_line(s, ax, ay, bx, by, 11, (24, 48, 64, 85))
+            elif pas == 1:
+                sim_line(s, ax, ay, bx, by, 8, rgb(0xF6B628) if gold else rgb(0xE8D6A8))
+            else:
+                ln = math.hypot(bx - ax, by - ay)
+                d = R
+                while d < ln - R:
+                    k = d / ln
+                    px, py = ax + (bx - ax) * k, ay + (by - ay) * k
+                    s.fill(round(px - 1), round(py), round(px + 2), round(py) + 1, rgb(0xFFF0B0) if gold else rgb(0xC4AE7C))
+                    d += 7
+    for n, ps in levels:
+        cx, cy = center(n)
+        if cx < X - RB - 4 or cx > X + W + RB + 4:
+            continue
+        big = n % 5 == 0
+        r = RB if big else R
+        st = state(n)
+        hv = hover == n
+        ring = rgb(0xF6B628) if st == 2 else rgb(0x2EB85A) if st == 1 else rgb(0x8FA6C8)
+        inner = rgb(0xFFF4D0) if st == 2 else rgb(0xEAFFF0) if st == 1 else rgb(0xE4EEF8)
+        if hv:
+            cy -= 2
+        if st == 1:
+            s.glow(cx, cy, r * 1.9, rgb(0x5CE48A), 150)
+        if n == lv:
+            s.glow(cx, cy, r * 1.7, rgb(0xFFE680), 120)
+        s.fill(cx - r * 0.8, cy + r + 2, cx + r * 0.8, cy + r + 4, (24, 48, 64, 64))
+        if big:
+            s.disc(cx, cy, r + 4, rgb(0xC07818))
+        s.disc(cx, cy, r + 2, rgb(0x102040))
+        s.disc(cx, cy, r, lighten(ring, 30) if hv else ring)
+        s.disc(cx, cy, r - 3, inner)
+        s.disc(cx - r * 0.25, cy - r * 0.3, r * 0.45, (255, 255, 255, 85))
+        p0 = ps[0]
+        s.item(item_of(p0), round(cx - 16), round(cy - 16), 2)
+        if p0['tipo'] == 'objeto' and p0['n'] > 1:
+            s.count(p0['n'], round(cx - 16), round(cy - 16), 2)
+        if len(ps) > 1:
+            more = f'+{len(ps) - 1}'
+            mw = s.pwidth(more) + 6
+            s.box(round(cx - r - 2), round(cy - r - 2), mw, 11, rgb(0x22346E))
+            s.ptext(more, round(cx - r + 1), round(cy - r - 1), (255, 255, 255), False)
+        if st == 0:
+            s.disc(cx, cy, r - 3, (228, 238, 248, 128))
+            lx_, ly_ = round(cx + r - 9), round(cy + r - 11)
+            c_ = rgb(0x6A80A4)
+            s.fill(lx_ + 2, ly_, lx_ + 5, ly_ + 1, c_)
+            s.fill(lx_ + 1, ly_ + 1, lx_ + 2, ly_ + 4, c_)
+            s.fill(lx_ + 5, ly_ + 1, lx_ + 6, ly_ + 4, c_)
+            s.fill(lx_, ly_ + 3, lx_ + 7, ly_ + 8, c_)
+            s.fill(lx_ + 3, ly_ + 5, lx_ + 4, ly_ + 7, (255, 255, 255))
+        elif st == 2:
+            s.disc(cx + r - 5, cy + r - 6, 6, rgb(0xC07818))
+            s.disc(cx + r - 5, cy + r - 6, 5, rgb(0xF6B628))
+            for px_, py_ in ((6, 0), (5, 1), (6, 1), (4, 2), (5, 2), (0, 2), (0, 3), (1, 3), (3, 3), (4, 3), (1, 4), (2, 4), (3, 4), (2, 5)):
+                s.fill(round(cx + r - 8) + px_, round(cy + r - 9) + py_, round(cx + r - 8) + px_ + 1, round(cy + r - 9) + py_ + 1, (255, 255, 255))
+        num = str(n)
+        pw = max(16, s.pwidth(num) + 8)
+        px, py = round(cx - pw / 2), round(cy + r + 1)
+        s.box(px, py, pw, 11, rgb(0x102040))
+        s.vgrad(px + 1, py + 1, pw - 2, 9, rgb(0xFFE58A) if st else rgb(0xF2F7FD), rgb(0xF6B628) if st else rgb(0xC4D6EA))
+        s.ptext(num, round(cx) - s.pwidth(num) // 2, py + 1, rgb(0x5A3A00) if st else rgb(0x34507E), False)
+        if big:
+            fx, fy = round(cx + r - 2), round(cy - r - 10)
+            s.fill(fx, fy, fx + 1, fy + 12, rgb(0x5A3A10))
+            sim_poly(s, [(fx + 1, fy), (fx + 1, fy + 6), (fx + 9, fy + 3)], rgb(0xE2466A))
+        if st == 1:
+            tu = s.pwidth('TÚ') + 8 if n == lv else 0
+            tw = tu + s.pwidth('COBRAR') + 8
+            tx, ty = round(cx - tw / 2), round(cy - r - 15)
+            s.box(tx, ty, tw, 12, rgb(0x0E5626))
+            s.vgrad(tx + 1, ty + 1, tw - 2, 10, rgb(0x5CE48A), rgb(0x1A9442))
+            s.fill(tx + 2, ty + 1, tx + tw - 2, ty + 2, rgb(0xA8F8C0))
+            if tu:
+                s.vgrad(tx + 1, ty + 1, tu - 1, 10, rgb(0xFFE58A), rgb(0xF6B628))
+                s.ptext('TÚ', tx + 4, ty + 1, rgb(0x5A3A00), False)
+            s.ptext_shadow('COBRAR', tx + tu + 4, ty + 2, (255, 255, 255), rgb(0x0E5626))
+            for i in range(3):
+                s.fill(round(cx) - 2 + i, ty + 12 + i, round(cx) + 3 - i, ty + 13 + i, rgb(0x1A9442))
+    # la chincheta TÚ (si tu nivel está por cobrar, va en su etiqueta)
+    cx, cy = center(lv) if state(lv) != 1 else (-999, -999)
+    r = RB if lv % 5 == 0 else R
+    py_ = cy - r - 3
+    w_ = s.pwidth('TÚ') + 8
+    bx_, by_ = round(cx - w_ / 2), round(py_ - 12 - 4)
+    sim_poly(s, [(cx - 3, by_ + 11), (cx + 4, by_ + 11), (cx + 0.5, py_)], rgb(0x102040))
+    sim_poly(s, [(cx - 2, by_ + 11), (cx + 3, by_ + 11), (cx + 0.5, py_ - 1.5)], rgb(0xF6B628))
+    s.box(bx_, by_, w_, 12, rgb(0x102040))
+    s.vgrad(bx_ + 1, by_ + 1, w_ - 2, 10, rgb(0xFFE58A), rgb(0xF6B628))
+    s.ptext('TÚ', bx_ + 4, by_ + 1, rgb(0x5A3A00), False)
+    s.no_scissor()
+    # flechas
+    for ax_, on, left in ((X + 3, scroll > 0, True), (X + W - 13, scroll < (mx_ - 1) * PITCH + 68 - W, False)):
+        ay_ = top + mh // 2 - 9
+        s.box(ax_, ay_, 10, 18, rgb(0x34507E) if on else (52, 80, 126, 128))
+        s.box(ax_ + 1, ay_ + 1, 8, 16, rgb(0xF2F8FF) if on else (238, 243, 249, 128))
+        c_ = rgb(0x34507E) if on else rgb(0xB4C6DC)
+        for i in range(4):
+            xx = ax_ + 5 - 2 + i if left else ax_ + 5 + 1 - i
+            s.fill(xx, ay_ + 9 - i, xx + 1, ay_ + 9 + i + 1, c_)
+    # el bocadillo
+    if hover:
+        n = hover
+        ps = levels[n - 1][1]
+        st = state(n)
+        head = f'Nivel {n}' + (' · hito' if n % 5 == 0 else '')
+        stt = 'Ya es tuyo' if st == 2 else '¡Listo! Pulsa para cobrar' if st == 1 else f'Te faltan {(n - lv) * 640 - 340:,} XP'.replace(',', '.')
+        w_ = max(s.bwidth(head), s.mwidth(stt)) + 14
+        for p in ps:
+            w_ = max(w_, s.mwidth(prize_name(p)) + 34)
+        h_ = 26 + len(ps) * 18
+        cx, cy = center(n)
+        r = RB if n % 5 == 0 else R
+        bx_ = round(max(X + 4, min(X + W - 4 - w_, cx - w_ / 2)))
+        below = cy - r - 8 - h_ < top + 2
+        by_ = round(cy + r + 14) if below else round(cy - r - 10 - h_)
+        by_ = max(top + 2, min(bot - h_ - 2, by_))
+        s.fill(bx_ + 2, by_ + h_, bx_ + w_ - 2, by_ + h_ + 2, (16, 32, 64, 64))
+        s.box(bx_, by_, w_, h_, rgb(0x102040))
+        s.vgrad(bx_ + 1, by_ + 1, w_ - 2, h_ - 2, (255, 255, 255), rgb(0xEAF2FB))
+        s.fill(bx_ + 1, by_ + 1, bx_ + w_ - 1, by_ + 3, rgb(0xF6B628) if st == 2 else rgb(0x2EB85A) if st == 1 else rgb(0x8FA6C8))
+        s.title(head, bx_ + 7, by_ + 5, w_ - 14, NAVY)
+        s.mtext(stt, bx_ + 7, by_ + 15, rgb(0x1A9442) if st == 1 else rgb(0xC27A10) if st == 2 else rgb(0x7E8CA8))
+        py = by_ + 25
+        for p in ps:
+            s.sk_slot(bx_ + 6, py, 18)
+            s.item(item_of(p), bx_ + 7, py + 1)
+            s.mtext(s.fitend(prize_name(p), w_ - 34), bx_ + 28, py + 5, NAVY)
+            py += 18
+    # ---- el HUD
+    x, y, w, h = X, Y, W, HUD_H
+    s.fill(x + 2, y + h, x + w - 2, y + h + 1, (24, 38, 92, 64))
+    s.box(x, y, w, h, rgb(0x0A1830))
+    s.vgrad(x + 1, y + 1, w - 2, h - 2, rgb(0x183F3A), rgb(0x0E1C34))
+    s.tiled('stripes', x + 1, y + 1, w - 2, h - 2, 0.05, off=s.T * 3)
+    s.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0x4FC88C))
     s.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, rgb(0xC07818))
-    s.corners(x, y, w, h)
-    sx, sy, ss = x + 8, y + 6, 38
-    clip = s.clip
+    sx, sy, ss = x + 6, y + 2, 36
     s.scissor(x + 1, y + 1, w - 2, h - 2)
-    s.rays(sx + ss / 2, sy + ss / 2, 48, 0.6, s.T * 18)
-    s.glow(sx + ss / 2, sy + ss / 2, 30, rgb(0x8CF0B4), 110)
-    s.glow(x + w * 0.62, y + h / 2, 60, rgb(0x5FD39A), 40)
-    s.clip = clip
-    cx = sx + ss // 2
+    s.rays(sx + ss / 2, sy + ss / 2, 44, 0.5, s.T * 18)
+    s.glow(sx + ss / 2, sy + ss / 2, 28, rgb(0x8CF0B4), 110)
+    s.no_scissor()
+    cxb = sx + ss // 2
     for row in range(ss):
         half = ss // 4 + row if row < ss // 4 else ss // 4 + (ss - 1 - row) if row > ss * 3 // 4 else ss // 2
         half = min(half, ss // 2)
-        s.fill(cx - half, sy + row, cx + half, sy + row + 1, rgb(0x0C1030))
+        s.fill(cxb - half, sy + row, cxb + half, sy + row + 1, rgb(0x0C1030))
         if half > 2 and 0 < row < ss - 1:
-            s.fill(cx - half + 1, sy + row, cx + half - 1, sy + row + 1, rgb(0xFFE58A) if row < ss // 2 else rgb(0xF6B628))
+            s.fill(cxb - half + 1, sy + row, cxb + half - 1, sy + row + 1, rgb(0xFFE58A) if row < ss // 2 else rgb(0xF6B628))
             if half > 5 and 2 < row < ss - 3:
-                s.fill(cx - half + 3, sy + row, cx + half - 3, sy + row + 1, rgb(0x3FCB7C) if row < ss // 2 else rgb(0x1E8A50))
-    s.ptext('NIVEL', cx - s.pwidth('NIVEL') // 2, sy + 3, (255, 255, 255))
-    with s.big_at(cx, sy + 17, px=s.f * 2):
-        n = str(lv)
-        s.mtext(n, -s.mwidth(n) // 2 + 1, 1, (60, 60, 60))
-        s.mtext(n, -s.mwidth(n) // 2, 0, (255, 255, 255))
-    tx = sx + ss + 9
-    s.ptext('TF PASS', tx, y + 4, rgb(0xFFD650))
-    right = x + w - 6
-    if ready:
-        label = f'RECLAMAR TODO ({len(ready)})'
-        bw = s.bw(label)
-        s.sk_button(right - bw, y + h - 22, bw, label, 3)
-    clock = 'Termina en 47 d 6 h'
-    cw = s.chip_w(clock) + 12
-    s.box(right - cw, y + 5, cw, 12, rgb(0x0C1030))
-    s.vgrad(right - cw + 1, y + 6, cw - 2, 10, rgb(0x2A3470), rgb(0x1A2050))
-    cx0, cy0 = right - cw + 4, y + 7
-    s.fill(cx0 + 1, cy0, cx0 + 6, cy0 + 1, rgb(0xFFE9A8)); s.fill(cx0 + 1, cy0 + 7, cx0 + 6, cy0 + 8, rgb(0xFFE9A8))
-    s.fill(cx0 + 2, cy0 + 1, cx0 + 5, cy0 + 3, rgb(0xF6B628)); s.fill(cx0 + 3, cy0 + 3, cx0 + 4, cy0 + 5, rgb(0xF6B628))
-    s.fill(cx0 + 2, cy0 + 5, cx0 + 5, cy0 + 7, rgb(0xC27A10))
-    s.mtext(clock, right - cw + 14, y + 7, rgb(0xFFE9A8))
+                s.fill(cxb - half + 3, sy + row, cxb + half - 3, sy + row + 1, rgb(0x3FCB7C) if row < ss // 2 else rgb(0x1E8A50))
+    s.ptext('NIVEL', cxb - s.pwidth('NIVEL') // 2, sy + 3, (255, 255, 255))
+    with s.big_at(cxb - s.mwidth(str(lv)), sy + 16, px=s.f * 2):
+        s.mtext(str(lv), 1, 1, (62, 62, 62))
+        s.mtext(str(lv), 0, 0, (255, 255, 255))
+    tx = sx + ss + 7
+    right = x + w - 5
+    clock = '42 d 5 h'
+    cw = s.mwidth(clock) + 16
+    s.box(right - cw, y + 4, cw, 12, rgb(0x05101E))
+    s.vgrad(right - cw + 1, y + 5, cw - 2, 10, rgb(0x2A3470), rgb(0x1A2050))
+    s.mtext(clock, right - cw + 12, y + 6, rgb(0xFFE9A8))
     gt = '7'
-    gw = s.mwidth(gt) + 18
+    gw = s.mwidth(gt) + 16
     gx = right - cw - 4 - gw
-    s.box(gx, y + 5, gw, 12, rgb(0x0C1030))
-    s.vgrad(gx + 1, y + 6, gw - 2, 10, rgb(0x1E6B52), rgb(0x124436))
-    s.blit('coin_green_s', gx + 3, y + 7)
-    s.mtext(gt, gx + 13, y + 7, rgb(0x8CF0B4))
+    s.box(gx, y + 4, gw, 12, rgb(0x05101E))
+    s.vgrad(gx + 1, y + 5, gw - 2, 10, rgb(0x1E6B52), rgb(0x124436))
+    s.blit('coin_green_s', gx + 3, y + 6)
+    s.mtext(gt, gx + 13, y + 6, rgb(0x8CF0B4))
+    ready = lv - claimed
+    bar_right = right
+    if ready > 0:
+        label = f'RECLAMAR TODO ({ready})'
+        bw = s.bw(label)
+        bx = right - bw
+        s.sk_button(bx, y + h - 5 - 16, bw, label, 3, True)
+        bar_right = bx - 6
+    s.ptext_shadow('TF PASS', tx, y + 4, rgb(0xFFD650), rgb(0x3A2A00))
     season = 'Temporada 1: El Despertar'
-    s.mtext(s.fitend(season, gx - 6 - tx), tx, y + 15, (255, 255, 255))
-    bar_w = max(60, ((right - s.bw(f'RECLAMAR TODO ({len(ready)})') - 8) if ready else right) - tx)
-    bx0, by0 = tx, y + 28
-    s.box(bx0, by0, bar_w, 8, rgb(0x0C1030))
-    s.fill(bx0 + 1, by0 + 1, bx0 + bar_w - 1, by0 + 7, rgb(0x233066))
-    fw = round((bar_w - 2) * 0.6)
-    s.vgrad(bx0 + 1, by0 + 1, fw, 6, rgb(0x8CF0A8), rgb(0x1E9E46))
-    s.fill(bx0 + 1, by0 + 1, bx0 + 1 + fw, by0 + 2, rgb(0xD8FFE2))
-    s.mtext('240 / 400 XP', bx0, by0 + 10, rgb(0xE0ECFF))
+    room = gx - 6 - (tx + s.pwidth('TF PASS') + 6)
+    if room > 30:
+        s.mtext(s.fitend(season, room), tx + s.pwidth('TF PASS') + 6, y + 5, rgb(0xE0ECFF))
+    bxx, byy, bww, bhh = tx, y + 18, max(60, bar_right - tx), 9
+    f_ = 0.42
+    s.box(bxx, byy, bww, bhh, rgb(0x05101E))
+    s.fill(bxx + 1, byy + 1, bxx + bww - 1, byy + bhh - 1, rgb(0x1E2C50))
+    fw = round((bww - 2) * f_)
+    s.vgrad(bxx + 1, byy + 1, fw, bhh - 2, rgb(0x9CF7B6), rgb(0x1E9E46))
+    s.fill(bxx + 1, byy + 1, bxx + 1 + fw, byy + 2, rgb(0xE0FFE8))
+    for i in range(1, 10):
+        mk = bxx + 1 + (bww - 2) * i // 10
+        s.fill(mk, byy + 1, mk + 1, byy + bhh - 1, (5, 16, 30, 64))
+    s.mtext('270 / 640 XP', bxx, byy + 11, rgb(0xE0ECFF))
     nx = f'nivel {lv + 1}'
-    s.mtext(nx, bx0 + bar_w - s.mwidth(nx), by0 + 10, rgb(0xB8C2F0))
-    for i, (dx, dy) in enumerate(((w - 20, 22), (ss + 14, 4), (w // 2, h - 5))):
-        s.sparkle(x + dx, y + dy, 2, s.twinkle(i * 1.7 + 0.6) * 0.9)
-    s.sheen(x + 1, y + 1, w - 2, h - 2, period=8.0, alpha=0.12)
-    # pista
-    top = Y + HERO + 4
-    s.sk_window(X, top, W, track_h, accent('pase'))
-    trx, trw = X + 16, W - 32
-    max_scroll = max(0, 50 * PITCH - GAP - trw)
-    at = scroll_to or (ready[0] if ready else lv + 1)
-    scroll = max(0, min(max_scroll, (at - 1) * PITCH + NODE / 2 - trw / 2))
-    for (ax, left, on) in ((X + 3, True, scroll > 0), (X + W - 13, False, scroll < max_scroll)):
-        ay = top + track_h // 2 - 9
-        s.box(ax, ay, 10, 18, rgb(0x6A88B8) if on else rgb(0xC6D6EA))
-        s.box(ax + 1, ay + 1, 8, 16, rgb(0xF2F8FF) if on else rgb(0xEEF3F9))
-        acx, acy = ax + 5, ay + 9
-        for i in range(4):
-            xx = acx - 2 + i if left else acx + 1 - i
-            s.fill(xx, acy - i, xx + 1, acy + i + 1, rgb(0x34507E) if on else rgb(0xB4C6DC))
-    rail = top + 12
-    s.scissor(trx, top + 2, trw, track_h - 4)
-    x0 = round(trx - scroll + NODE / 2)
-    x1 = round(trx - scroll + 49 * PITCH + NODE / 2)
-    s.fill(x0, rail - 2, x1, rail + 2, rgb(0x9DB8D8)); s.fill(x0, rail - 1, x1, rail + 1, rgb(0xDCE8F4))
-    xl = round(trx - scroll + (lv - 1) * PITCH + NODE / 2)
-    s.fill(x0, rail - 2, xl, rail + 2, rgb(0xC07818)); s.fill(x0, rail - 1, xl, rail + 1, rgb(0xF6B628))
-    s.fill(x0, rail - 1, xl, rail, rgb(0xFFE58A))
-    for n, ps in levels:
-        nx0 = round(trx - scroll + (n - 1) * PITCH)
-        if nx0 + NODE < trx - 2 or nx0 > trx + trw + 2:
-            continue
-        state = 2 if n <= claimed else 1 if n <= lv else 0
-        mile = n % 5 == 0
-        num = str(n)
-        pw = max(16, s.pwidth(num) + 8)
-        px, py = nx0 + (NODE - pw) // 2, rail - 6
-        s.box(px, py, pw, 12, NAVY)
-        s.vgrad(px + 1, py + 1, pw - 2, 10, rgb(0xFFE58A) if state else rgb(0xE2EFFB), rgb(0xF6B628) if state else rgb(0xB8CDE6))
-        s.fill(px + 1, py + 10, px + pw - 1, py + 11, rgb(0xC07818) if state else rgb(0x6A88B8))
-        s.ptext(num, nx0 + NODE // 2 - s.pwidth(num) // 2, py + 1, rgb(0x5A3A00) if state else rgb(0x34507E), False)
-        cy = rail + 10
-        ch = top + track_h - 6 - cy
-        hv = n == hover
-        edge = rgb(0x2EB85A) if state == 1 else rgb(0xC07818) if mile else rgb(0x3496FA) if hv else rgb(0xBBD3EC)
-        if state == 1:
-            s.box(nx0 - 2, cy - 2, NODE + 4, ch + 4, (61, 214, 110, 130))
-        if n == lv:
-            s.box(nx0 - 2, cy - 2, NODE + 4, ch + 4, rgb(0xF6B628))
-        s.box(nx0, cy, NODE, ch, edge)
-        topc = rgb(0xFFF6DA) if state == 2 else rgb(0xEAFFF0) if state == 1 else rgb(0xFFF7E0) if mile else (255, 255, 255)
-        botc = rgb(0xF5DEA0) if state == 2 else rgb(0xBDEFCB) if state == 1 else rgb(0xFFE7A8) if mile else rgb(0xE4EEF8)
-        s.vgrad(nx0 + 1, cy + 1, NODE - 2, ch - 2, topc, botc)
-        s.fill(nx0 + 2, cy + 1, nx0 + NODE - 2, cy + 2, (255, 255, 255))
-        if mile:
-            s.corners(nx0, cy, NODE, ch)
-        iy = cy + 4
-        s.stretch('glow', nx0 + 4, iy - 2, NODE - 8, 36)
-        s.item(item_of(ps[0]), nx0 + (NODE - 32) // 2, iy, 2)
-        if ps[0]['tipo'] == 'objeto' and ps[0]['n'] > 1:
-            s.count(ps[0]['n'], nx0 + (NODE - 32) // 2, iy, 2)
-        if len(ps) > 1:
-            s.slot(nx0 + NODE - 19, iy + 20, 18, 18)
-            s.item(item_of(ps[1]), nx0 + NODE - 18, iy + 21)
-            if ps[1]['tipo'] == 'objeto' and ps[1]['n'] > 1:
-                s.count(ps[1]['n'], nx0 + NODE - 18, iy + 21)
-        if ps[0]['tipo'] != 'objeto':
-            q = 'x' + f"{ps[0]['n']:,}".replace(',', '.')
-            qw = s.mwidth(q) + 2
-            s.box(nx0 + 3, iy + 24, qw + 1, 9, rgb(0x22346E))
-            s.mtext(q, nx0 + 4, iy + 25, (255, 255, 255))
-        sy2 = max(cy + ch - 16, iy + 34)
-        if state == 1:
-            s.vgrad(nx0 + 3, sy2, NODE - 6, 12, rgb(0x46D272), rgb(0x1A9442))
-            s.fill(nx0 + 3, sy2, nx0 + NODE - 3, sy2 + 1, rgb(0xA8F8C0))
-            s.fill(nx0 + 3, sy2 + 12, nx0 + NODE - 3, sy2 + 13, rgb(0x106A2E))
-            s.ptext_shadow('COBRAR', nx0 + NODE // 2 - s.pwidth('COBRAR') // 2, sy2 + 1, (255, 255, 255), rgb(0x0E5626))
-        elif state == 2:
-            for ax, ay in ((6, 0), (5, 1), (6, 1), (4, 2), (5, 2), (0, 2), (0, 3), (1, 3), (3, 3), (4, 3), (1, 4), (2, 4), (3, 4), (2, 5)):
-                s.put(nx0 + NODE // 2 - 4 + ax, sy2 + 4 + ay, rgb(0xC27A10))
-        else:
-            lx0, ly0, c = nx0 + NODE // 2 - 3, sy2 + 3, rgb(0x8EA4C4)
-            s.fill(lx0 + 2, ly0, lx0 + 5, ly0 + 1, c); s.fill(lx0 + 1, ly0 + 1, lx0 + 2, ly0 + 4, c)
-            s.fill(lx0 + 5, ly0 + 1, lx0 + 6, ly0 + 4, c); s.fill(lx0, ly0 + 3, lx0 + 7, ly0 + 8, c)
-            s.fill(lx0 + 3, ly0 + 5, lx0 + 4, ly0 + 7, (255, 255, 255))
-        if n == lv:
-            yw = s.pwidth('TÚ') + 8
-            yx, yy = nx0 + NODE - yw + 1, cy - 7
-            s.box(yx, yy, yw, 12, NAVY)
-            s.vgrad(yx + 1, yy + 1, yw - 2, 10, rgb(0xFFE58A), rgb(0xF6B628))
-            s.fill(yx + 1, yy + 10, yx + yw - 1, yy + 11, rgb(0xC07818))
-            s.ptext('TÚ', yx + 4, yy + 1, rgb(0x5A3A00), False)
-    s.no_scissor()
-    for i in range(10):
-        a = int(110 * (1 - i / 10))
-        if scroll > 1:
-            s.fill(trx + i, top + 2, trx + i + 1, top + track_h - 2, (255, 255, 255, a))
-        if scroll < max_scroll - 1:
-            s.fill(trx + trw - 1 - i, top + 2, trx + trw - i, top + track_h - 2, (255, 255, 255, a))
-    # abajo
-    btop = top + track_h + 4
-    s.sk_window(X, btop, W, bottom_h, accent('pase'))
-    src = ['+100 Misión diaria', '+500 Misión semanal', '+40 Caza']
-    head = 'Cómo se gana XP'
-    colw = min(round(W * 0.52), max(s.bwidth(head), sum(s.chip_w(t) + 4 for t in src) - 4))
-    cx2 = X + W - 6 - colw
-    s.fill(cx2 - 6, btop + 4, cx2 - 5, btop + bottom_h - 4, rgb(0xC6DAEE))
-    s.title(head, cx2, btop + 5, colw, GOLD_TXT)
-    chx, chy = cx2, btop + 17
-    for t in src:
-        cw = s.chip_w(t)
-        if chx > cx2 and chx + cw > cx2 + colw:
-            chx, chy = cx2, chy + 13
-        if chy + 11 > btop + bottom_h - 2:
+    s.mtext(nx, bxx + bww - s.mwidth(nx), byy + 11, rgb(0xB8C2F0))
+    # ---- abajo: XP
+    yy = Y + H - FOOT_H
+    s.box(X, yy, W, FOOT_H, rgb(0x0A1830))
+    s.vgrad(X + 1, yy + 1, W - 2, FOOT_H - 2, rgb(0x183F3A), rgb(0x0E1C34))
+    s.ptext_shadow('XP:', X + 6, yy + 3, rgb(0xFFD650), rgb(0x3A2A00))
+    chx = X + 8 + s.pwidth('XP:') + 4
+    for t_ in ('+40 Misión diaria', '+120 Misión semanal', '+25 Caza', '+10 Oficio'):
+        cw_ = s.chip_w(t_)
+        if chx + cw_ > X + W - 6:
             break
-        s.chip(chx, chy, t, 'green', 11)
-        chx += cw + 4
-    show = hover or (ready[0] if ready else lv + 1)
-    ps = levels[show - 1][1]
-    state = 2 if show <= claimed else 1 if show <= lv else 0
-    lx0, room = X + 6, cx2 - 12 - (X + 6)
-    title = f'Nivel {show}' + (' · hito' if show % 5 == 0 else '')
-    st = 'Ya es tuyo' if state == 2 else '¡Listo para reclamar!' if state == 1 else f'Te faltan {(show - lv) * 400 - 240:,} XP'.replace(',', '.')
-    s.title(title, lx0, btop + 5, room, NAVY)
-    tw = s.title_w(title, room)
-    if tw + 8 + s.chip_w(st) <= room:
-        s.chip(lx0 + tw + 6, btop + 3, st, 'gold' if state == 2 else 'green' if state == 1 else 'gray')
-    px = lx0
-    for p in ps:
-        nm = prize_name(p)
-        if lx0 + room - px < 50:
-            break
-        s.slot(px, btop + 18, 18, 18)
-        s.item(item_of(p), px + 1, btop + 19)
-        fit = s.fitend(nm, lx0 + room - px - 22)
-        s.mtext(fit, px + 22, btop + 23, NAVY)
-        px += 22 + s.mwidth(fit) + 10
+        s.sk_chip(chx, yy + 2, t_, 'green', 11)
+        chx += cw_ + 4
     loc.__exit__(None, None, None)
     s.save(OUT + name + '.png')
     NAMES.append(name)
 
 
-GOLD_TXT = rgb(0xC27A10)
 pass_page('p_pase')
 pass_page('p_pase_hito', lv=23, claimed=23, hover=30)
 pass_page('p_pase_1366', lv=4, claimed=1, fbw=1366, fbh=768)

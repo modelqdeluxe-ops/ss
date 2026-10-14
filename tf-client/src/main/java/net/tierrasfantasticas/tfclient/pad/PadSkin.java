@@ -182,6 +182,14 @@ final class PadSkin {
         quad(vc(g), g.pose().last().pose(), x0, y0, c, x0, y1, c, x1, y1, c, x1, y0, c);
     }
 
+    /** Un trazo de (x0, y0) a (x1, y1) de grueso w, de un color (sin flush): el camino del TF Pass. */
+    static void line(GuiGraphics g, float x0, float y0, float x1, float y1, float w, int c) {
+        float dx = x1 - x0, dy = y1 - y0, len = (float) Math.sqrt(dx * dx + dy * dy);
+        if (len < 0.01F) return;
+        float nx = -dy / len * w / 2, ny = dx / len * w / 2;
+        quad(vc(g), g.pose().last().pose(), x0 + nx, y0 + ny, c, x1 + nx, y1 + ny, c, x1 - nx, y1 - ny, c, x0 - nx, y0 - ny, c);
+    }
+
     /** Triángulo de un color (sin flush). */
     static void tri(GuiGraphics g, float x0, float y0, float x1, float y1, float x2, float y2, int c) {
         quad(vc(g), g.pose().last().pose(), x0, y0, c, x1, y1, c, x2, y2, c, x2, y2, c);
