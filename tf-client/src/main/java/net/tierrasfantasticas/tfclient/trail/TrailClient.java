@@ -17,10 +17,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -57,7 +60,8 @@ import org.joml.Vector3f;
  * que une esos puntos, que se apaga y se estrecha con la edad. Los puntos salen de ItemInHandRenderer.renderItem
  * (mixin): en primera persona se guardan tal cual (el espacio de la mano) y se dibujan al acabar las manos; en tercera,
  * se pasan al mundo y se dibujan después de las partículas. La forma de la hoja (punta y empuñadura) y el color
- * automático se sacan de la textura del objeto, así sirven también las armas de otros mods.
+ * automático se sacan del modelo del objeto (1.3.74: de su forma 3D si la tiene, ver readBlade), así sirven también las
+ * armas de otros mods.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class TrailClient {
@@ -234,19 +238,19 @@ public final class TrailClient {
         InteractionHand hand = arm == entity.getMainArm() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (!active(entity, hand, self, stack)) return;
         if (!allowed(stack)) return;
-        Blade blade = blade(stack, mc);
+        BakedModel model = mc.getItemRenderer().getModel(stack, entity.level(), entity, entity.getId() + ctx.ordinal());
+        Blade blade = blade(model);
         // la misma transformación que hará el juego al dibujar el objeto (la del modelo para esa mano)
         PoseStack ps = new PoseStack();
         ps.last().pose().set(pose.last().pose());
         ps.last().normal().set(pose.last().normal());
-        BakedModel model = mc.getItemRenderer().getModel(stack, entity.level(), entity, entity.getId() + ctx.ordinal());
         ForgeHooksClient.handleCameraTransforms(ps, model, ctx, left);
         ps.translate(-0.5F, -0.5F, -0.5F);
         Matrix4f m = ps.last().pose();
         TrailProfile profile = TrailProfile.current();
         float w = Math.min(1.25F, TrailSettings.width / 100F * profile.widthScale());
-        Vector3f tip = m.transformPosition(blade.tx, blade.ty, 0.5F, new Vector3f());
-        Vector3f base = m.transformPosition(blade.tx + (blade.gx - blade.tx) * w, blade.ty + (blade.gy - blade.ty) * w, 0.5F, new Vector3f());
+        Vector3f tip = m.transformPosition(blade.tx, blade.ty, blade.tz, new Vector3f());
+        Vector3f base = m.transformPosition(blade.along(w), new Vector3f());
         long now = Util.getNanos();
         Trail t;
         if (first) {
@@ -314,16 +318,27 @@ public final class TrailClient {
         return NONE;
     }
 
-    /** La punta (t) y la base de la hoja (g, la guarda) en el cuadrado del modelo (0 a 1, y hacia arriba), y el color. */
-    record Blade(float tx, float ty, float gx, float gy, int color) {}
+    /**
+     * La punta (t) y la base de la hoja (g, la guarda) en las coordenadas del modelo (las de un bloque: 0 a 1, y hacia
+     * arriba; un modelo 3D puede salirse, el espadón llega a 2), y el color.
+     */
+    record Blade(float tx, float ty, float tz, float gx, float gy, float gz, int color) {
+        /** El punto de la hoja a esa fracción, de la punta (0) a la guarda (1). */
+        Vector3f along(float f) {
+            return new Vector3f(tx + (gx - tx) * f, ty + (gy - ty) * f, tz + (gz - tz) * f);
+        }
+    }
 
-    private static final Map<Item, Blade> BLADES = new IdentityHashMap<>();
-    private static final Blade DEFAULT_BLADE = new Blade(0.94F, 0.94F, 0.3F, 0.3F, 0);
+    private static final Map<BakedModel, Blade> BLADES = new IdentityHashMap<>();
+    private static final Blade DEFAULT_BLADE = new Blade(0.94F, 0.94F, 0.5F, 0.3F, 0.3F, 0.5F, 0);
+    private static final Direction[] SIDES = {null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
 
-    static Blade blade(ItemStack stack, Minecraft mc) {
-        return BLADES.computeIfAbsent(stack.getItem(), item -> {
+    /** La hoja del modelo con el que se dibuja el objeto (el de sus «overrides» si los tiene). */
+    static Blade blade(BakedModel model) {
+        if (model == null) return DEFAULT_BLADE;
+        return BLADES.computeIfAbsent(model, k -> {
             try {
-                return readBlade(mc.getItemRenderer().getItemModelShaper().getItemModel(item));
+                return readBlade(model);
             } catch (Exception e) {
                 return DEFAULT_BLADE;
             }
@@ -331,11 +346,99 @@ public final class TrailClient {
     }
 
     /**
-     * Mira la textura del objeto: la punta es el píxel más arriba a la derecha y la empuñadura el más abajo a la
+     * Un objeto plano (los de Minecraft: la textura con un poco de grosor) se mira en su textura (readFlat). Uno con
+     * modelo 3D propio (las armas del servidor: el espadón mide dos bloques) se mira en su forma de verdad (readShape):
+     * con la textura salía la estela a media hoja y del tamaño de una espada normal.
+     */
+    private static Blade readBlade(BakedModel model) {
+        List<Vector3f> points = new ArrayList<>();
+        RandomSource random = RandomSource.create(42L);
+        boolean flat = true;
+        for (Direction side : SIDES) {
+            for (BakedQuad q : model.getQuads(null, side, random, ModelData.EMPTY, null)) {
+                int[] v = q.getVertices();
+                int stride = v.length / 4;
+                for (int i = 0; i < 4; i++) {
+                    Vector3f p = new Vector3f(Float.intBitsToFloat(v[i * stride]), Float.intBitsToFloat(v[i * stride + 1]),
+                            Float.intBitsToFloat(v[i * stride + 2]));
+                    points.add(p);
+                    if (p.z < 0.43F || p.z > 0.57F || p.x < -0.01F || p.x > 1.01F || p.y < -0.01F || p.y > 1.01F) flat = false;
+                }
+            }
+        }
+        if (!flat && !points.isEmpty()) {
+            Blade b = readShape(model, points);
+            if (b != null) return b;
+        }
+        return readFlat(model);
+    }
+
+    /**
+     * La hoja de un modelo 3D. Se mira como lo lleva un jugador en tercera persona (la mano en el origen; las armas
+     * apuntan hacia arriba): la punta es lo más lejos de la mano por encima de ella (así una guadaña cogida por el medio
+     * no toma el pie del mango por la punta) y la empuñadura, el otro extremo en esa misma línea; la hoja empieza a un
+     * tercio, como en las planas. Probado con los 552 modelos de armas 3D de TF Client.
+     */
+    private static Blade readShape(BakedModel model, List<Vector3f> points) {
+        Matrix4f hand = handSpace(model, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+        if (hand == null) hand = handSpace(model, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+        if (hand == null) return null;
+        List<Vector3f> held = new ArrayList<>(points.size());
+        boolean up = false;
+        for (Vector3f p : points) {
+            Vector3f h = hand.transformPosition(p, new Vector3f());
+            held.add(h);
+            if (h.y > 0) up = true;
+        }
+        Vector3f tip = null;
+        float far = -1;
+        for (Vector3f h : held) {
+            if (up && h.y <= 0) continue;
+            float d = h.lengthSquared();
+            if (d > far) {
+                far = d;
+                tip = h;
+            }
+        }
+        if (tip == null || far < 1e-6F) return null;
+        Vector3f axis = new Vector3f(tip).normalize();
+        float back = 0;
+        for (Vector3f h : held) back = Math.min(back, h.dot(axis));
+        Vector3f end = new Vector3f(axis).mul(back);
+        Vector3f guard = new Vector3f(tip).sub(end).mul(0.32F).add(end);
+        Matrix4f inv = hand.invert(new Matrix4f());
+        Vector3f t = inv.transformPosition(tip, new Vector3f()), g = inv.transformPosition(guard, new Vector3f());
+        return new Blade(t.x, t.y, t.z, g.x, g.y, g.z, textureColor(model, Float.NEGATIVE_INFINITY));
+    }
+
+    /** Del modelo a la mano que lo sostiene (lo que hace el juego al dibujarlo así), o null si lo aplasta del todo. */
+    private static Matrix4f handSpace(BakedModel model, ItemDisplayContext ctx) {
+        PoseStack ps = new PoseStack();
+        ForgeHooksClient.handleCameraTransforms(ps, model, ctx, false);
+        ps.translate(-0.5F, -0.5F, -0.5F);
+        Matrix4f m = new Matrix4f(ps.last().pose());
+        return Math.abs(m.determinant()) < 1e-9F ? null : m;
+    }
+
+    /**
+     * Del modelo a los 16 px del objeto en una pantalla (y hacia abajo), como lo pinta GuiGraphics.renderItem con su
+     * posición «gui»: la vista previa del pad pone la estela donde se ve la hoja.
+     */
+    static Matrix4f guiSpace(BakedModel model) {
+        PoseStack ps = new PoseStack();
+        ps.translate(8F, 8F, 0F);
+        ps.scale(16F, -16F, 16F);
+        ForgeHooksClient.handleCameraTransforms(ps, model, ItemDisplayContext.GUI, false);
+        ps.translate(-0.5F, -0.5F, -0.5F);
+        return new Matrix4f(ps.last().pose());
+    }
+
+    /**
+     * Un objeto plano: en su textura, la punta es el píxel más arriba a la derecha y la empuñadura el más abajo a la
      * izquierda (así se dibujan las armas en Minecraft); la hoja empieza a un tercio. El color, el de la mitad de arriba
      * (la hoja), dando más peso a lo vivo y claro.
      */
-    private static Blade readBlade(BakedModel model) {
+    private static Blade readFlat(BakedModel model) {
         if (model == null) return DEFAULT_BLADE;
         TextureAtlasSprite sprite = model.getParticleIcon(ModelData.EMPTY);
         SpriteContents c = sprite.contents();
@@ -362,9 +465,16 @@ public final class TrailClient {
         if (best == Integer.MIN_VALUE) return DEFAULT_BLADE;
         float tx = (bx + 0.5F) / w, ty = 1 - (by + 0.5F) / h, ex = (hx + 0.5F) / w, ey = 1 - (hy + 0.5F) / h;
         float gx = ex + (tx - ex) * 0.32F, gy = ey + (ty - ey) * 0.32F;
-        // el color de la hoja
+        return new Blade(tx, ty, 0.5F, gx, gy, 0.5F, textureColor(model, worst + (best - worst) * 0.45F));
+    }
+
+    /** El color de la textura del modelo (con x − y desde «mid»: en las planas, solo la hoja), dando más peso a lo vivo y claro. */
+    private static int textureColor(BakedModel model, float mid) {
+        SpriteContents c = model.getParticleIcon(ModelData.EMPTY).contents();
+        NativeImage img = c.getOriginalImage();
+        int w = c.width(), h = c.height();
+        if (img == null || w <= 0 || h <= 0) return 0;
         double r = 0, g = 0, b = 0, sum = 0;
-        float mid = worst + (best - worst) * 0.45F;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int p = img.getPixelRGBA(x, y);
@@ -378,8 +488,7 @@ public final class TrailClient {
                 sum += weight;
             }
         }
-        int color = sum <= 0 ? 0 : liven((int) (r / sum), (int) (g / sum), (int) (b / sum));
-        return new Blade(tx, ty, gx, gy, color);
+        return sum <= 0 ? 0 : liven((int) (r / sum), (int) (g / sum), (int) (b / sum));
     }
 
     /** Un color de la textura, más vivo y claro (las estelas son luz); los grises, un blanco frío. */

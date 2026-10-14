@@ -12,8 +12,8 @@ import net.minecraft.client.gui.GuiGraphics;
  * <ul>
  *   <li>Arriba, el HUD: el escudo con tu nivel, «TF PASS» y la temporada, la barra de XP (con sus marcas) hasta el
  *       siguiente nivel, tus monedas verdes, la cuenta atrás y RECLAMAR TODO.</li>
- *   <li>En medio, el mapa: cielo, colinas en tres capas que se desplazan a distinta velocidad (paralaje) y un camino
- *       que ondula de nivel en nivel. Cada nivel es un medallón redondo con su premio y su placa con el número; los
+ *   <li>En medio, el mapa: un escenario de noche (1.3.74, ver drawNight), colinas en tres capas que se desplazan a
+ *       distinta velocidad (paralaje) y un camino que ondula de nivel en nivel. Cada nivel es un medallón redondo con su premio y su placa con el número; los
  *       hitos (de 5 en 5), más grandes y con banderín. El camino es de oro hasta tu nivel, donde está tu chincheta «TÚ».
  *       Los listos laten en verde con «COBRAR» flotando encima; los tuyos llevan la marca de oro; los de más adelante,
  *       velados y con candado. Al pasar el ratón por uno, un bocadillo con todos sus premios y lo que falta. Se mueve
@@ -273,42 +273,32 @@ final class PadPassPage extends PadDataPage {
     // ---- el mapa --------------------------------------------------------------------------------------------------
 
     private static final String[] LAND = {"land_far", "land_mid", "land_near"};
-    private static final int[] LAND_TINT = {0xB8E2C4, 0x6CB486, 0x2E7A52};
+    /** Las colinas de noche (siluetas, la de delante la más oscura) y su borde iluminado por la luna. */
+    private static final int[] LAND_TINT = {0x245A68, 0x16404E, 0x0A1F2B}, LAND_RIM = {0x9FE8D8, 0x86DCC0, 0x6CC8A0};
     private static final float[] LAND_SPEED = {0.15F, 0.35F, 0.6F};
 
     private void drawMap(GuiGraphics g, double mx, double my, int lv, int max, float maxScroll, float dt) {
         int top = mapTop(), bot = mapBottom(), x = X, w = W, mh = bot - top;
         long now = System.currentTimeMillis();
         float t = PadSkin.time();
-        PadUi.box(g, x, top, w, mh, 0xFF0A1830);
+        PadUi.box(g, x, top, w, mh, 0xFF06101C);
         pad.scissor(g, x + 1, top + 1, w - 2, mh - 2);
-        // el cielo, el sol y las colinas en tres capas (paralaje)
-        g.fillGradient(x + 1, top + 1, x + w - 1, bot - 1, 0xFF7CCBF2, 0xFFE4F6FF);
-        PadSkin.glow(g, x + w * 0.82F, top + 16, 46, 0xFFF0B0, 150);
-        PadSkin.rays(g, x + w * 0.82F, top + 16, 70, 0.10F, t * 3);
-        float lh = Math.min(56, mh * 0.55F), lw = 480 * lh / 56F;
-        for (int i = 0; i < LAND.length; i++) {
-            float off = ((scroll * LAND_SPEED[i]) % lw + lw) % lw;
-            for (float lx = x + 1 - off; lx < x + w; lx += lw) {
-                PadSkin.texture(g, TFPadScreen.tex(LAND[i]), lx, bot - lh - (2 - i) * 4, lw, lh, 1F, LAND_TINT[i], false);
-            }
-        }
-        g.fill(x + 1, bot - 6, x + w - 1, bot - 1, 0xFF2E7A52);
-        // el camino: borde oscuro, tierra, y de oro hasta tu nivel; con su raya discontinua
+        drawNight(g, x, top, w, mh, lv, max, t);
+        // el camino: borde oscuro, piedra (lo que falta) y de oro hasta tu nivel; con su raya discontinua
         List<JsonObject> lvls = list(data, "niveles");
         for (int pass = 0; pass < 3; pass++) {
             for (int n = 1; n < max; n++) {
                 float[] a = center(n), b = center(n + 1);
                 if (b[0] < x - PITCH || a[0] > x + w + PITCH) continue;
                 boolean gold = n + 1 <= lv;
-                if (pass == 0) PadSkin.line(g, a[0], a[1], b[0], b[1], 11, 0x55183040);
-                else if (pass == 1) PadSkin.line(g, a[0], a[1], b[0], b[1], 8, gold ? PadUi.GOLD : 0xFFE8D6A8);
+                if (pass == 0) PadSkin.line(g, a[0], a[1], b[0], b[1], 11, 0x99040A14);
+                else if (pass == 1) PadSkin.line(g, a[0], a[1], b[0], b[1], 8, gold ? PadUi.GOLD : 0xFF33506E);
                 else {
                     float len = (float) Math.hypot(b[0] - a[0], b[1] - a[1]);
                     for (float d = R; d < len - R; d += 7) {
                         float k = d / len;
                         float px = a[0] + (b[0] - a[0]) * k, py = a[1] + (b[1] - a[1]) * k;
-                        PadSkin.rect(g, px - 1, py - 0.5F, px + 2, py + 0.5F, gold ? 0xFFFFF0B0 : 0xFFC4AE7C);
+                        PadSkin.rect(g, px - 1, py - 0.5F, px + 2, py + 0.5F, gold ? 0xFFFFF0B0 : 0xFF7896C0);
                     }
                 }
             }
@@ -360,6 +350,92 @@ final class PadPassPage extends PadDataPage {
         arrowButton(g, mx, my, x + w - 13, top + mh / 2 - 9, canR, false, () -> scrollTarget += PITCH * 4);
         // el bocadillo del nivel del ratón (por encima de todo)
         if (hovered != null) drawBubble(g, hovered, hoverAt, top, bot);
+    }
+
+    /**
+     * El escenario del mapa (1.3.74, el dueño: «el fondo del TF Pass es una mierda, dale rework como al Gachapón»). Antes,
+     * un cielo de día casi blanco con colinas verde pálido: sin contraste, los medallones se perdían. Ahora, como el
+     * escenario de la ruleta pero suyo: noche esmeralda que se apaga hacia abajo, una aurora que ondula, estrellas que
+     * titilan y la luna; detrás de tu nivel, un charco de luz de oro y focos que giran (te siguen al desplazar el mapa);
+     * colinas en silueta con el borde de luna (paralaje), luciérnagas que suben, rayas que se mueven y los lados en
+     * sombra. Igual en tools/pad/sim/pages.py (pass_page).
+     */
+    private void drawNight(GuiGraphics g, int x, int top, int w, int mh, int lv, int max, float t) {
+        int bot = top + mh, x0 = x + 1, x1 = x + w - 1;
+        g.fillGradient(x0, top + 1, x1, bot - 1, 0xFF0F3A44, 0xFF0A1430);
+        // la aurora: dos cintas que ondulan (y se mueven un poco con el mapa)
+        float drift = scroll * 0.05F;
+        for (int band = 0; band < 2; band++) {
+            int col = band == 0 ? 0x5CE48A : 0x3FC8E0, a = band == 0 ? 120 : 88;
+            float base = top + mh * (band == 0 ? 0.17F : 0.27F), thick = band == 0 ? 13 : 9;
+            for (int cx = x0; cx < x1; cx += 3) {
+                float u = cx + drift;
+                float cy = base + (float) Math.sin(u * 0.019F + t * 0.55F + band * 2.1F) * 6 + (float) Math.sin(u * 0.047F - t * 0.8F) * 2.5F;
+                float k = 0.5F + 0.5F * (float) Math.sin(u * 0.011F + t * 0.35F + band * 1.3F);
+                int c = PadSkin.alpha(col, Math.round(a * (0.35F + 0.65F * k))), none = PadSkin.alpha(col, 0);
+                int cx1 = Math.min(cx + 3, x1);
+                PadSkin.vgrad(g, cx, cy - thick, cx1, cy, none, c);
+                PadSkin.vgrad(g, cx, cy, cx1, cy + thick * 1.8F, c, none);
+            }
+        }
+        // estrellas (siempre las mismas; casi quietas al desplazar) y la luna
+        for (int i = 0; i < 34; i++) {
+            int h = hash(i * 7919 + 13);
+            float span = w - 6;
+            float sx = x + 3 + (((h & 0xFFFF) / 65535F * span - scroll * 0.03F) % span + span) % span;
+            float sy = top + 3 + ((h >>> 16) & 0xFF) / 255F * mh * 0.5F;
+            float b = 0.3F + 0.7F * PadSkin.twinkle(i * 1.7F + 0.4F);
+            if (i % 9 == 0) PadSkin.sparkle(g, Math.round(sx), Math.round(sy), 2, b, 0xCFE8FF);
+            else PadSkin.rect(g, sx, sy, sx + 1, sy + 1, PadSkin.alpha(i % 4 == 0 ? 0xFFF0C0 : 0xDDEEFF, Math.round(70 + 150 * b)));
+        }
+        float moonX = x + w * 0.88F - scroll * 0.01F, moonY = top + 13;
+        PadSkin.glow(g, moonX, moonY, 34, 0xFFF4C8, 80);
+        PadSkin.texture(g, TFPadScreen.tex("moon"), moonX - 11, moonY - 11, 22, 22, 1F, 0xFFFFFF, false);
+        // tu nivel: un charco de luz de oro y focos que giran despacio
+        if (lv > 0) {
+            float[] c = center(Math.min(max, lv));
+            PadSkin.glow(g, c[0], c[1], mh * 0.95F, 0xFFD650, 64);
+            PadSkin.rays(g, c[0], c[1], w * 0.62F, 0.10F, t * 6);
+        }
+        // las colinas: el resplandor del horizonte detrás, el borde de luna (un poco más arriba) y encima la silueta
+        float lh = Math.min(56, mh * 0.55F), lw = 480 * lh / 56F;
+        PadSkin.vgrad(g, x0, bot - lh - 16, x1, bot - lh * 0.4F, 0x003FC8E0, 0x553FC8E0);
+        for (int i = 0; i < LAND.length; i++) {
+            float off = ((scroll * LAND_SPEED[i]) % lw + lw) % lw, ly = bot - lh - (2 - i) * 4;
+            for (float lx = x0 - off; lx < x + w; lx += lw) {
+                PadSkin.texture(g, TFPadScreen.tex(LAND[i]), lx, ly - 1, lw, lh, 0.85F, LAND_RIM[i], false);
+                PadSkin.texture(g, TFPadScreen.tex(LAND[i]), lx, ly, lw, lh, 1F, LAND_TINT[i], false);
+            }
+        }
+        g.fill(x0, bot - 6, x1, bot - 1, 0xFF081C26);
+        // luciérnagas que suben despacio desde las colinas
+        for (int i = 0; i < 12; i++) {
+            int h = hash(i * 104_729 + 7);
+            float rise = mh * 0.75F, life = (t * (6 + (h & 7)) + (h >>> 8 & 0xFF)) % rise;
+            float span = w - 10;
+            float fx = x + 5 + (((h >>> 16 & 0xFFFF) / 65535F * span - scroll * 0.5F + (float) Math.sin(t * 0.9F + i) * 5) % span + span) % span;
+            float fy = bot - 8 - life;
+            float fade = Math.min(1F, life / 12F) * Math.min(1F, (rise - life) / 18F);
+            float b = (0.45F + 0.55F * PadSkin.twinkle(i * 2.3F)) * fade;
+            int col = i % 3 == 0 ? 0x8CF0B4 : 0xFFE680;
+            PadSkin.glow(g, fx, fy, 4, col, Math.round(110 * b));
+            PadSkin.rect(g, fx - 0.5F, fy - 0.5F, fx + 0.5F, fy + 0.5F, PadSkin.alpha(0xFFFFFF, Math.round(230 * b)));
+        }
+        // rayas que se mueven (como la ruleta), los lados en sombra y el filo de luz de arriba
+        PadSkin.stripes(g, x0, top + 1, w - 2, mh - 2, 0.04F, t * 4);
+        int side = Math.min(36, w / 8);
+        PadSkin.hgrad(g, x0, top + 1, x0 + side, bot - 1, 0xA0060E1C, 0x00060E1C);
+        PadSkin.hgrad(g, x1 - side, top + 1, x1, bot - 1, 0x00060E1C, 0xA0060E1C);
+        g.fill(x + 2, top + 1, x + w - 2, top + 2, 0x55FFFFFF);
+    }
+
+    private static int hash(int v) {
+        v ^= v >>> 16;
+        v *= 0x7FEB352D;
+        v ^= v >>> 15;
+        v *= 0x846CA68B;
+        v ^= v >>> 16;
+        return v;
     }
 
     /**

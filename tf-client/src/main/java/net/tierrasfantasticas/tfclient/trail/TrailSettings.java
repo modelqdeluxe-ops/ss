@@ -22,7 +22,11 @@ public final class TrailSettings {
     public static final int[] COLORS = {0x66FFEE, 0x5AB4FF, 0xB36BFF, 0xFF5AA8, 0xFF5A5A, 0xFFA03C, 0xFFE15A, 0x6CFF6C, 0xFFFFFF};
     public static final String[] COLOR_NAMES = {"Turquesa", "Azul", "Violeta", "Rosa", "Rojo", "Naranja", "Oro", "Verde", "Blanco"};
 
-    public static boolean enabled = true;
+    /**
+     * Apagadas de fábrica (1.3.74, el dueño). Se guardan con la clave «encendidas»: la «activadas» de antes (salía true en
+     * cualquiera que hubiera tocado un ajuste) ya no se lee, así que con esta versión arrancan apagadas para todos.
+     */
+    public static boolean enabled = false;
     public static boolean swing = true;
     public static boolean pullOut = true;
     public static boolean others = true;
@@ -66,7 +70,7 @@ public final class TrailSettings {
         Properties p = new Properties();
         try (Reader r = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
             p.load(r);
-            enabled = bool(p, "activadas", enabled);
+            enabled = bool(p, "encendidas", enabled);
             swing = bool(p, "al.golpear", swing);
             pullOut = bool(p, "al.sacar", pullOut);
             others = bool(p, "otros.jugadores", others);
@@ -98,7 +102,7 @@ public final class TrailSettings {
 
     public static void save() {
         Properties p = new Properties();
-        p.setProperty("activadas", Boolean.toString(enabled));
+        p.setProperty("encendidas", Boolean.toString(enabled));
         p.setProperty("al.golpear", Boolean.toString(swing));
         p.setProperty("al.sacar", Boolean.toString(pullOut));
         p.setProperty("otros.jugadores", Boolean.toString(others));
@@ -132,7 +136,8 @@ public final class TrailSettings {
 
     /** Vuelve a lo de fábrica (el botón de la página). */
     public static void reset() {
-        enabled = swing = pullOut = others = true;
+        enabled = false;
+        swing = pullOut = others = true;
         othersDistance = 32;
         length = 6;
         width = 60;

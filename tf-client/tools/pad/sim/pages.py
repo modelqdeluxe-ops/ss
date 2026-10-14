@@ -9,6 +9,8 @@ import math
 import os
 import sys
 
+import numpy as np
+
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1378,6 +1380,98 @@ def sim_line(s, x0, y0, x1, y1, w, color):
     sim_poly(s, [(x0 + nx, y0 + ny), (x1 + nx, y1 + ny), (x1 - nx, y1 - ny), (x0 - nx, y0 - ny)], color)
 
 
+def _hash(v):
+    v &= 0xFFFFFFFF
+    v ^= v >> 16
+    v = (v * 0x7FEB352D) & 0xFFFFFFFF
+    v ^= v >> 15
+    v = (v * 0x846CA68B) & 0xFFFFFFFF
+    v ^= v >> 16
+    return v
+
+
+def _vgrad_a(s, x0, y0, x1, y1, ct, cb):
+    """Degradado vertical con alfa (PadSkin.vgrad)."""
+    r = s._rect(x0, y0, x1, y1)
+    W_, H_ = r[2] - r[0], r[3] - r[1]
+    if W_ <= 0 or H_ <= 0:
+        return
+    ct, cb = np.array(ct, float), np.array(cb, float)
+    t = (np.arange(H_) + 0.5) / H_
+    col = np.outer(1 - t, ct) + np.outer(t, cb)
+    s._arr_paste(np.repeat(col[:, None], W_, axis=1), r[0], r[1])
+
+
+def pass_night(s, x, top, w, mh, lv, center, scroll):
+    """PadPassPage.drawNight (1.3.74): noche esmeralda, aurora, estrellas, luna, la luz de tu nivel, colinas en silueta
+    con borde de luna, luciérnagas, rayas y los lados en sombra."""
+    t = s.T
+    bot, x0, x1 = top + mh, x + 1, x + w - 1
+    s.vgrad(x0, top + 1, w - 2, mh - 2, rgb(0x0F3A44), rgb(0x0A1430))
+    drift = scroll * 0.05
+    for band in range(2):
+        col, a = ((0x5C, 0xE4, 0x8A), 120) if band == 0 else ((0x3F, 0xC8, 0xE0), 88)
+        base, thick = top + mh * (0.17 if band == 0 else 0.27), (13 if band == 0 else 9)
+        cx = x0
+        while cx < x1:
+            u = cx + drift
+            cy = base + math.sin(u * 0.019 + t * 0.55 + band * 2.1) * 6 + math.sin(u * 0.047 - t * 0.8) * 2.5
+            k = 0.5 + 0.5 * math.sin(u * 0.011 + t * 0.35 + band * 1.3)
+            c = col + (round(a * (0.35 + 0.65 * k)),)
+            cx1 = min(cx + 3, x1)
+            _vgrad_a(s, cx, cy - thick, cx1, cy, col + (0,), c)
+            _vgrad_a(s, cx, cy, cx1, cy + thick * 1.8, c, col + (0,))
+            cx += 3
+    for i in range(34):
+        h = _hash(i * 7919 + 13)
+        span = w - 6
+        sx = x + 3 + ((h & 0xFFFF) / 65535 * span - scroll * 0.03) % span
+        sy = top + 3 + ((h >> 16) & 0xFF) / 255 * mh * 0.5
+        b = 0.3 + 0.7 * s.twinkle(i * 1.7 + 0.4)
+        if i % 9 == 0:
+            s.sparkle(round(sx), round(sy), 2, b, rgb(0xCFE8FF))
+        else:
+            c = rgb(0xFFF0C0) if i % 4 == 0 else rgb(0xDDEEFF)
+            s.fill(sx, sy, sx + 1, sy + 1, c + (round(70 + 150 * b),))
+    mx_, my_ = x + w * 0.88 - scroll * 0.01, top + 13
+    s.glow(mx_, my_, 34, rgb(0xFFF4C8), 80)
+    s.tex_alpha('moon', mx_ - 11, my_ - 11, 22, 22, 1.0, smooth=False)
+    if lv > 0:
+        cx, cy = center(lv)
+        s.glow(cx, cy, mh * 0.95, rgb(0xFFD650), 64)
+        s.rays(cx, cy, w * 0.62, 0.10, t * 6)
+    lh = min(56, mh * 0.55)
+    lw = 480 * lh / 56
+    _vgrad_a(s, x0, bot - lh - 16, x1, bot - lh * 0.4, (0x3F, 0xC8, 0xE0, 0), (0x3F, 0xC8, 0xE0, 85))
+    for i, (nm, tint_c, rim, sp) in enumerate((('land_far', 0x245A68, 0x9FE8D8, 0.15), ('land_mid', 0x16404E, 0x86DCC0, 0.35),
+                                               ('land_near', 0x0A1F2B, 0x6CC8A0, 0.6))):
+        off = (scroll * sp) % lw
+        ly = bot - lh - (2 - i) * 4
+        lx = x0 - off
+        while lx < x + w:
+            s.tex_alpha(nm, lx, ly - 1, lw, lh, 0.85, rgb(rim), smooth=False)
+            s.tex_alpha(nm, lx, ly, lw, lh, 1.0, rgb(tint_c), smooth=False)
+            lx += lw
+    s.fill(x0, bot - 6, x1, bot - 1, rgb(0x081C26))
+    for i in range(12):
+        h = _hash(i * 104729 + 7)
+        rise = mh * 0.75
+        life = (t * (6 + (h & 7)) + ((h >> 8) & 0xFF)) % rise
+        span = w - 10
+        fx = x + 5 + (((h >> 16) & 0xFFFF) / 65535 * span - scroll * 0.5 + math.sin(t * 0.9 + i) * 5) % span
+        fy = bot - 8 - life
+        fade = min(1, life / 12) * min(1, (rise - life) / 18)
+        b = (0.45 + 0.55 * s.twinkle(i * 2.3)) * fade
+        col = rgb(0x8CF0B4) if i % 3 == 0 else rgb(0xFFE680)
+        s.glow(fx, fy, 4, col, round(110 * b))
+        s.fill(fx - 0.5, fy - 0.5, fx + 0.5, fy + 0.5, (255, 255, 255, round(230 * b)))
+    s.tiled('stripes', x0, top + 1, w - 2, mh - 2, 0.04, off=t * 4)
+    side = min(36, w // 8)
+    s.hgrad(x0, top + 1, side, mh - 2, (6, 14, 28, 160), (6, 14, 28, 0))
+    s.hgrad(x1 - side, top + 1, side, mh - 2, (6, 14, 28, 0), (6, 14, 28, 160))
+    s.fill(x + 2, top + 1, x + w - 2, top + 2, (255, 255, 255, 85))
+
+
 def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh=1080):
     """PadPassPage (1.3.67): el MAPA DE LA TEMPORADA. HUD arriba, el mapa (cielo, colinas en paralaje y el camino que
     ondula de medallón en medallón) y la tira de cómo se gana XP."""
@@ -1405,21 +1499,10 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
     def state(n):
         return 2 if n <= claimed else 1 if n <= lv else 0
 
-    # ---- el mapa
-    s.box(X, top, W, mh, rgb(0x0A1830))
+    # ---- el mapa: el escenario de noche (PadPassPage.drawNight, 1.3.74)
+    s.box(X, top, W, mh, rgb(0x06101C))
     s.scissor(X + 1, top + 1, W - 2, mh - 2)
-    s.vgrad(X + 1, top + 1, W - 2, mh - 2, rgb(0x7CCBF2), rgb(0xE4F6FF))
-    s.glow(X + W * 0.82, top + 16, 46, rgb(0xFFF0B0), 150)
-    s.rays(X + W * 0.82, top + 16, 70, 0.10, s.T * 3)
-    lh = min(56, mh * 0.55)
-    lw = 480 * lh / 56
-    for i, (nm, tint_c, sp) in enumerate((('land_far', 0xB8E2C4, 0.15), ('land_mid', 0x6CB486, 0.35), ('land_near', 0x2E7A52, 0.6))):
-        off = (scroll * sp) % lw
-        lx = X + 1 - off
-        while lx < X + W:
-            s.tex_alpha(nm, lx, bot - lh - (2 - i) * 4, lw, lh, 1.0, rgb(tint_c), smooth=False)
-            lx += lw
-    s.fill(X + 1, bot - 6, X + W - 1, bot - 1, rgb(0x2E7A52))
+    pass_night(s, X, top, W, mh, lv, center, scroll)
     for pas in range(3):
         for n in range(1, mx_):
             ax, ay = center(n)
@@ -1428,16 +1511,16 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
                 continue
             gold = n + 1 <= lv
             if pas == 0:
-                sim_line(s, ax, ay, bx, by, 11, (24, 48, 64, 85))
+                sim_line(s, ax, ay, bx, by, 11, (4, 10, 20, 153))
             elif pas == 1:
-                sim_line(s, ax, ay, bx, by, 8, rgb(0xF6B628) if gold else rgb(0xE8D6A8))
+                sim_line(s, ax, ay, bx, by, 8, rgb(0xF6B628) if gold else rgb(0x33506E))
             else:
                 ln = math.hypot(bx - ax, by - ay)
                 d = R
                 while d < ln - R:
                     k = d / ln
                     px, py = ax + (bx - ax) * k, ay + (by - ay) * k
-                    s.fill(round(px - 1), round(py), round(px + 2), round(py) + 1, rgb(0xFFF0B0) if gold else rgb(0xC4AE7C))
+                    s.fill(round(px - 1), round(py), round(px + 2), round(py) + 1, rgb(0xFFF0B0) if gold else rgb(0x7896C0))
                     d += 7
     for n, ps in levels:
         cx, cy = center(n)
