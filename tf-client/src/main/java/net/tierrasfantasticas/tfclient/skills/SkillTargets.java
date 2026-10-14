@@ -77,7 +77,37 @@ final class SkillTargets {
                 Who o = ctx.caster.owner() != null ? ctx.caster.owner() : ctx.caster;
                 yield List.of(Tgt.at(o.pos().add(0, yOff, 0)));
             }
-            case "children", "child", "summons" -> children(ctx);
+            case "children", "child", "summons" -> children(ctx, m.targetArg("", "target", "t", "type").toLowerCase(Locale.ROOT));
+            // @FloorOfTarget: el suelo bajo @target
+            case "flooroftarget", "fot" -> {
+                List<Tgt> tg = target(ctx);
+                if (tg.isEmpty()) yield List.of();
+                Vec3 p = tg.get(0).pos();
+                yield List.of(Tgt.at(SkillMinions.ground(ctx.caster.level(), p).add(0, yOff, 0)));
+            }
+            // @PlayersInRing{min;max}: jugadores entre min y max bloques (el muro de madera de Astwood los empuja)
+            case "playersinring", "pring" -> {
+                double min = SkillRuntime.num(m.targetArg("0", "min", "minradius", "minr"), 0);
+                double max = SkillRuntime.num(m.targetArg("5", "max", "maxradius", "maxr", "r"), 5);
+                List<Tgt> ring = new ArrayList<>();
+                Vec3 c = ctx.caster.pos();
+                for (Tgt x : entities(ctx, c, max, true, false, m)) {
+                    double d = Math.sqrt(x.pos().distanceToSqr(c));
+                    if (d >= min && d <= max) ring.add(x);
+                }
+                yield ring;
+            }
+            // @ModelPassengers{p}: quien va en el asiento del modelo (el jugador agarrado)
+            case "modelpassengers", "mpassengers" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                List<Tgt> riders = new ArrayList<>();
+                if (h != null && SkillMobs.world != null) {
+                    for (LivingEntity e : SkillMobs.world.seated(h, m.targetArg(null, "p", "pbone", "seat", "part"))) riders.add(Tgt.of(Who.of(e)));
+                }
+                yield riders;
+            }
+            // Objetos en el suelo: aquí no se mueven (solo apartaba los que caían dentro del cofre)
+            case "itemsinradius", "iir" -> List.of();
             case "mountedmodel", "mounted" -> {
                 SkillActor a = ctx.caster.entity == null ? null : SkillModels.mountedBy(ctx.caster.entity);
                 yield a == null ? List.of() : List.of(Tgt.of(a.who));
@@ -129,11 +159,26 @@ final class SkillTargets {
         return true;
     }
 
-    /** Lo que ha invocado quien lanza (sus efectos y esbirros). */
-    private static List<Tgt> children(Ctx ctx) {
+    /**
+     * Lo que ha invocado quien lanza (sus efectos y esbirros). target=markers / armorstands: solo los de ese tipo de mob
+     * (los marcadores hacia los que salta la Gárgola, la cabeza cortada de la Hidra).
+     */
+    private static List<Tgt> children(Ctx ctx, String kind) {
         List<Tgt> out = new ArrayList<>();
         for (SkillActor a : SkillRuntime.ACTORS) {
-            if (a.alive && a.owner != null && a.owner.same(ctx.caster) && a.follow == null) out.add(Tgt.of(a.who));
+            if (!a.alive || a.owner == null || !a.owner.same(ctx.caster) || a.follow != null) continue;
+            String type = a.def == null || a.def.type == null ? "" : a.def.type;
+            if (kind.startsWith("marker") && !type.equals("MARKER")) continue;
+            if (kind.startsWith("armorstand") && !type.equals("ARMOR_STAND")) continue;
+            out.add(Tgt.of(a.who));
+        }
+        // Los esbirros de verdad de un jefe
+        SkillMobs.Host me = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        if (me != null && me.boss() == me && (kind.isEmpty() || kind.startsWith("mob") || kind.startsWith("entit"))) {
+            for (LivingEntity e : ctx.caster.level().getEntitiesOfClass(LivingEntity.class, ctx.caster.entity.getBoundingBox().inflate(64))) {
+                SkillMobs.Host h = SkillMobs.host(e);
+                if (h != null && h != me && h.boss() == me && e.isAlive()) out.add(Tgt.of(Who.of(e)));
+            }
         }
         return out;
     }
@@ -347,9 +392,11 @@ final class SkillTargets {
         List<Tgt> out = new ArrayList<>();
         String ignore = m.targetArg("", "ignore").toLowerCase(Locale.ROOT);
         boolean self = SkillRuntime.bool(m.targetArg("false", "targetself", "ts"));
+        String myFaction = ignore.contains("samefaction") ? faction(ctx.caster) : null;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
             if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
             if (ctx.caster.entity == e && !self) continue;
+            if (myFaction != null && myFaction.equalsIgnoreCase(faction(Who.of(e)))) continue;
             if (playersOnly && !(e instanceof Player)) continue;
             if (mobsOnly && e instanceof Player) continue;
             if (e.position().distanceToSqr(c) > r * r && e.getBoundingBox().getCenter().distanceToSqr(c) > r * r) continue;
@@ -375,6 +422,16 @@ final class SkillTargets {
             }
         }
         return out;
+    }
+
+    /** La facción de alguien (Faction: NATURE de Astwood y sus retoños; o la que le puso setfaction). */
+    static String faction(Who w) {
+        if (w == null) return null;
+        SkillRuntime.WhoState st = SkillRuntime.stateIfAny(w);
+        if (st != null && st.faction != null) return st.faction;
+        if (w.actor != null && w.actor.def != null) return w.actor.def.faction;
+        SkillMobs.Host h = w.entity == null ? null : SkillMobs.host(w.entity);
+        return h != null ? h.faction() : null;
     }
 
     /** ¿Busca la línea un efecto del pack por su tipo (?mythicmobtype{t=X} true, también dentro de una compuesta)? */
@@ -404,13 +461,14 @@ final class SkillTargets {
     }
 
     private static List<Tgt> random(Mech m, Ctx ctx, double yOff, boolean fromOrigin) {
-        double r = SkillRuntime.num(m.targetArg("5", "radius", "r"), 5);
+        double r = SkillRuntime.num(m.targetArg("5", "radius", "r", "maxradius", "maxr"), 5);
+        double minR = Math.min(r, SkillRuntime.num(m.targetArg("0", "minradius", "minr"), 0));
         int amount = (int) Math.max(1, Math.min(64, SkillRuntime.num(m.targetArg("1", "amount", "a"), 1)));
         Vec3 c = fromOrigin ? origin(ctx) : ctx.caster.pos();
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         List<Tgt> out = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * r;
+            double a = rnd.nextDouble() * Math.PI * 2, d = minR + Math.sqrt(rnd.nextDouble()) * (r - minR);
             out.add(Tgt.at(c.add(Math.cos(a) * d, yOff, Math.sin(a) * d)));
         }
         return out;

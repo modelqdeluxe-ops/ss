@@ -47,6 +47,7 @@ final class SkillModels {
             a = new SkillActor(ctx.cls, null, (net.minecraft.server.level.ServerLevel) e.level(), e.position(), yaw, 0F, ctx.caster);
             a.follow = e;
             a.hideHost = true;
+            a.host = ctx.host;
             DISGUISES.put(e.getUUID(), a);
             SkillRuntime.ACTORS.add(a);
         }
@@ -82,7 +83,10 @@ final class SkillModels {
             // Como el cliente (y ModelEngine): si el modelo tiene animación de aparecer, empieza con ella (para que
             // @modelpart vea los huesos donde se ven)
             VfxModel vm = load(mid);
-            if (vm != null && vm.anims.containsKey("spawn")) {
+            if (a.layers != null) {
+                a.layers.clear();
+                if (vm != null && vm.anims.containsKey("spawn")) a.layers.play(vm, "spawn", a.age, 1F, 0, 0, 0, true);
+            } else if (vm != null && vm.anims.containsKey("spawn")) {
                 a.anim = "spawn";
                 a.animStart = a.age;
                 a.animSpeed = 1F;
@@ -108,6 +112,23 @@ final class SkillModels {
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
             if (a == null || a.me == null) continue;
+            if (a.layers != null) {
+                // Como ModelEngine: varias a la vez por prioridad, con entrada y salida suaves
+                VfxModel vm = load(a.me);
+                if (vm == null) continue;
+                int li = (int) SkillRuntime.num(m.arg("0", "lerpin", "li"), 0);
+                int lo = (int) SkillRuntime.num(m.arg("0", "lerpout", "lo"), 0);
+                int prio = (int) SkillRuntime.num(m.arg("1", "priority", "p"), 1);
+                boolean force = SkillRuntime.bool(m.arg("false", "force", "f"));
+                boolean instant = SkillRuntime.bool(m.arg("false", "ignorelerp", "i"));
+                if (remove) {
+                    a.layers.stop(s, a.age, instant ? 0 : m.a.containsKey("lo") || m.a.containsKey("lerpout") ? lo : -1);
+                    a.prop("lstop", s, instant ? "0" : m.a.containsKey("lo") || m.a.containsKey("lerpout") ? String.valueOf(lo) : "-1", null);
+                } else if (a.layers.play(vm, s, a.age, speed, li, lo, prio, force)) {
+                    a.prop("lstate", s, speed + "|" + li + "|" + lo + "|" + prio + "|" + (force ? 1 : 0), "0");
+                }
+                continue;
+            }
             if (remove) {
                 if (s.equalsIgnoreCase(a.anim)) a.anim = null;
                 a.prop("stop", s, null, null);
@@ -117,6 +138,58 @@ final class SkillModels {
                 a.animSpeed = speed;
                 a.prop("state", s, String.valueOf(speed), null);
             }
+        }
+    }
+
+    /** defaultstate{t=idle|walk;s=...}: la animación de reposo o de andar de ahora en adelante (la estatua de la Gárgola). */
+    static void defaultState(Mech m, Ctx ctx, List<Tgt> targets) {
+        String type = m.arg("idle", "type", "t");
+        String st = m.arg(null, "state", "s");
+        if (st == null) return;
+        for (Tgt t : targets) {
+            SkillActor a = holder(t, false, ctx);
+            if (a == null || a.layers == null) continue;
+            a.layers.setDefault(type, st, a.age);
+            a.prop("dstate", type.toLowerCase(Locale.ROOT), st, null);
+        }
+    }
+
+    /**
+     * brightness{b;s;p=pieza;em=false}: la luz con la que se ve el modelo (0-15 de bloque y de cielo) o una pieza (y las
+     * que la llevan en el nombre si em=false); b=-1 vuelve a la luz del sitio. Los jefes parpadean así al recibir golpes y
+     * sus estelas y runas brillan.
+     */
+    static void brightness(Mech m, Ctx ctx, List<Tgt> targets) {
+        int b = (int) SkillRuntime.num(m.arg("15", "block", "b"), 15);
+        int sky = (int) SkillRuntime.num(m.arg(String.valueOf(b), "sky", "s"), b);
+        String part = m.arg("", "partid", "pid", "part", "p");
+        boolean exact = SkillRuntime.bool(m.arg("true", "exactmatch", "em"));
+        for (Tgt t : targets) {
+            SkillActor a = holder(t, false, ctx);
+            if (a == null) continue;
+            a.prop("bright", part, b + "|" + sky, exact ? "1" : "0");
+        }
+    }
+
+    /** remapmodel{m;n}: el modelo se ve con las piezas del mismo nombre de otro (el parpadeo del escudo roto). */
+    static void remap(Mech m, Ctx ctx, List<Tgt> targets) {
+        String to = m.arg(null, "newmodelid", "n", "nm", "newmodel");
+        if (to == null) return;
+        String nm = to.contains(".") ? to : ctx.cls.id + "." + to.toLowerCase(Locale.ROOT);
+        for (Tgt t : targets) {
+            SkillActor a = holder(t, false, ctx);
+            if (a != null) a.prop("remap", nm, null, null);
+        }
+    }
+
+    /** displaytransformation{action=set|add;transformation=right_rotation|translation|scale;value}: el text_display gira o se mueve. */
+    static void displayTransform(Mech m, Ctx ctx, List<Tgt> targets) {
+        String action = m.arg("set", "action", "a").toLowerCase(Locale.ROOT);
+        String tr = m.arg("translation", "transformation", "t").toLowerCase(Locale.ROOT);
+        String value = SkillRuntime.unquote(m.arg("0", "value", "v"));
+        for (Tgt t : targets) {
+            SkillActor a = t.who == null ? null : t.who.actor;
+            if (a != null) a.prop("dt", action + "|" + tr, value, null);
         }
     }
 
@@ -209,7 +282,7 @@ final class SkillModels {
     static VfxModel load(String id) {
         if (id == null) return null;
         return MODELS.computeIfAbsent(id, k -> {
-            try (InputStream in = SkillModels.class.getResourceAsStream("/assets/tfclient/skills/models/" + k + ".json")) {
+            try (InputStream in = SkillModels.class.getResourceAsStream("/assets/tfclient/" + SkillDefs.modelDir(k) + k + ".json")) {
                 return in == null ? Optional.empty() : Optional.of(VfxModel.read(in));
             } catch (Exception e) {
                 TFClient.LOGGER.warn("TF Skills: no se pudo leer el modelo {}", k, e);
@@ -218,17 +291,87 @@ final class SkillModels {
         }).orElse(null);
     }
 
-    /** @modelpart{pid=hueso}: dónde está ahora ese hueso del modelo de quien lanza. */
+    /**
+     * @modelpart{pid=hueso;offset=LOCAL|GLOBAL;x;y;z;em}: dónde está ahora ese hueso del modelo de quien lanza. Con
+     * em=false, todos los que lo llevan en el nombre (la cola entera de la Hidra). offset LOCAL: el desplazamiento va con
+     * el giro del hueso (dos bloques a lo largo de la hoja de la espada); GLOBAL: en los ejes del mundo.
+     */
     static List<Tgt> modelPart(Mech m, Ctx ctx, double yOff) {
         String part = m.targetArg(null, "pid", "p", "partid", "part");
         SkillActor a = holder(Tgt.of(ctx.caster), false, ctx);
         if (a == null || a.me == null || part == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
         VfxModel model = load(a.me);
         if (model == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
-        int b = model.bone(part);
-        if (b < 0) return List.of(); // como ModelEngine: sin ese hueso no hay sitio
+        boolean exact = SkillRuntime.bool(m.targetArg("true", "exactmatch", "em"));
+        java.util.List<Integer> bones = new java.util.ArrayList<>();
+        if (exact) {
+            int b = model.bone(part);
+            if (b >= 0) bones.add(b);
+        } else {
+            String want = part.toLowerCase(Locale.ROOT);
+            for (int i = 0; i < model.bones.length; i++) {
+                if (model.bones[i].hitbox == null && model.bones[i].id.toLowerCase(Locale.ROOT).contains(want)) bones.add(i);
+            }
+        }
+        if (bones.isEmpty()) return List.of(); // como ModelEngine: sin ese hueso no hay sitio
+        Matrix4f[] mats = pose(a, model);
+        // Los desplazamientos x/z y LOCAL, solo en los modelos de los jefes (las clases siguen como estaban)
+        boolean boss = a.layers != null;
+        double x = boss ? SkillRuntime.num(m.targetArg("0", "x", "xoffset", "xo"), 0) : 0;
+        double y = yOff;
+        double z = boss ? SkillRuntime.num(m.targetArg("0", "z", "zoffset", "zo"), 0) : 0;
+        boolean local = boss && m.targetArg("GLOBAL", "offset", "o").equalsIgnoreCase("LOCAL");
+        Matrix4f w = world(a);
+        List<Tgt> out = new java.util.ArrayList<>();
+        for (int b : bones) {
+            Matrix4f bw = new Matrix4f(w).mul(mats[b]);
+            Vector4f p = bw.transform(new Vector4f(0, 0, 0, 1));
+            Vec3 at = new Vec3(p.x, p.y, p.z);
+            if (local && (x != 0 || y != 0 || z != 0)) {
+                // En los ejes del hueso (sin su escala): x, y, z en bloques
+                org.joml.Vector3f d = new org.joml.Vector3f((float) x, (float) y, (float) z);
+                org.joml.Matrix3f rot = new org.joml.Matrix3f(bw).normal();
+                rot.transform(d);
+                if (d.lengthSquared() > 1e-9) d.normalize((float) Math.sqrt(x * x + y * y + z * z));
+                at = at.add(d.x, d.y, d.z);
+            } else {
+                at = at.add(x, y, z);
+            }
+            out.add(Tgt.at(at));
+        }
+        return out;
+    }
+
+    /** Los huesos que ha escondido partvis (según lo último que se mandó de cada uno): para sus cajas de golpe. */
+    static boolean[] hiddenBones(SkillActor a, VfxModel model) {
+        boolean[] hidden = new boolean[model.bones.length];
+        for (SkillNet.Prop p : a.sticky.values()) {
+            if (!p.key().equals("vis") || !"false".equals(p.b())) continue;
+            int b = model.bone(p.a());
+            if (b >= 0) hidden[b] = true;
+        }
+        return hidden;
+    }
+
+    /** Del espacio del modelo (píxeles) al mundo: donde está el actor, su giro y su escala. */
+    static Matrix4f world(SkillActor a) {
+        return new Matrix4f().translate((float) a.pos.x, (float) a.pos.y, (float) a.pos.z)
+                .rotate(Axis.YP.rotationDegrees(180F - a.yaw)).scale((a.layers != null ? a.scale : 1F) / 16F);
+    }
+
+    /** La pose de ahora de todos los huesos del modelo de un actor (con sus capas y hacia dónde mira, si las tiene). */
+    static Matrix4f[] pose(SkillActor a, VfxModel model) {
         Matrix4f[] mats = new Matrix4f[model.bones.length];
         for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
+        if (a.layers != null) {
+            float headYaw = 0F, headPitch = 0F;
+            if (a.follow instanceof LivingEntity le) {
+                headYaw = net.minecraft.util.Mth.wrapDegrees(le.yHeadRot - le.yBodyRot);
+                headPitch = le.getXRot();
+            }
+            a.layers.pose(model, a.age, headYaw, headPitch, mats);
+            return mats;
+        }
         VfxModel.Anim anim = a.anim == null ? null : model.anims.get(a.anim);
         float secs = (a.age - a.animStart) / 20F * a.animSpeed;
         // Una animación de una vez que ya acabó vuelve a la de reposo (como en el cliente)
@@ -238,10 +381,7 @@ final class SkillModels {
         }
         if (anim == null) anim = model.anims.get("idle");
         VfxPose.compute(model, anim, secs, 0F, mats);
-        Matrix4f w = new Matrix4f().translate((float) a.pos.x, (float) a.pos.y, (float) a.pos.z)
-                .rotate(Axis.YP.rotationDegrees(180F - a.yaw)).scale(1F / 16F).mul(mats[b]);
-        Vector4f p = w.transform(new Vector4f(0, 0, 0, 1));
-        return List.of(Tgt.at(new Vec3(p.x, p.y + yOff, p.z)));
+        return mats;
     }
 
     static void forget(UUID player) {

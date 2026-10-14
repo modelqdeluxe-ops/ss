@@ -2,6 +2,16 @@
  "sources": [
   {
    "type": "directory",
+   "source": "bosses/astwood/modelengine",
+   "prefix": "bosses/astwood/modelengine/"
+  },
+  {
+   "type": "directory",
+   "source": "bosses/esqueleto_torre/modelengine",
+   "prefix": "bosses/esqueleto_torre/modelengine/"
+  },
+  {
+   "type": "directory",
    "source": "skills/arquero/minecraft",
    "prefix": "skills/arquero/minecraft/"
   },

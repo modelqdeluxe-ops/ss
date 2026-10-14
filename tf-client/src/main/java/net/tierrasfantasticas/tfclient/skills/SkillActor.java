@@ -61,6 +61,19 @@ public final class SkillActor {
     /** spin: grados por tick que gira sobre sí mismo y hasta qué edad. */
     float spin;
     int spinUntil;
+    // ----- Jefes
+    /** El jefe del que viene (su dificultad); null = de una clase de jugador. */
+    SkillMobs.Host host;
+    /** Animaciones a capas como ModelEngine (los modelos de los jefes); null = una sola animación (las clases). */
+    net.tierrasfantasticas.tfclient.vfx.VfxLayers layers;
+    /** lockmodel en un efecto: no gira. */
+    boolean locked;
+    /** Un soporte (no marcador) de un jefe: cae y se le puede lanzar (la cabeza cortada de la Hidra, la grieta). */
+    boolean physics;
+    Vec3 vel = Vec3.ZERO;
+    boolean onGround;
+    /** Lo último que se le cambió de cada cosa (para enseñárselo igual a quien llega tarde). */
+    final java.util.Map<String, SkillNet.Prop> sticky = new java.util.LinkedHashMap<>();
 
     SkillActor(SkillDefs.ClassDef cls, SkillDefs.MobDef def, ServerLevel level, Vec3 pos, float yaw, float pitch,
                SkillRuntime.Who owner) {
@@ -75,6 +88,27 @@ public final class SkillActor {
         this.owner = owner;
         this.head = def == null ? null : def.headModel;
         this.who = SkillRuntime.Who.of(this);
+        if (cls != null && cls.boss) {
+            layers = new net.tierrasfantasticas.tfclient.vfx.VfxLayers();
+            physics = def != null && "ARMOR_STAND".equals(def.type) && !def.marker;
+        }
+    }
+
+    /** Un soporte que cae: gravedad y rozamiento como un soporte de armadura, y se para en el suelo. */
+    void physicsTick() {
+        if (onGround && vel.lengthSqr() < 1e-6) return;
+        vel = new Vec3(vel.x * 0.98, (vel.y - 0.08) * 0.98, vel.z * 0.98);
+        Vec3 next = pos.add(vel);
+        Vec3 ground = SkillMinions.ground(level, next, pos.y);
+        if (next.y <= ground.y) {
+            next = new Vec3(next.x, ground.y, next.z);
+            vel = new Vec3(vel.x * 0.5, 0, vel.z * 0.5);
+            if (vel.lengthSqr() < 1e-4) vel = Vec3.ZERO;
+            onGround = true;
+        } else {
+            onGround = false;
+        }
+        moveTo(next, yaw, pitch);
     }
 
     void moveTo(Vec3 p, float yaw, float pitch) {
@@ -125,7 +159,31 @@ public final class SkillActor {
     }
 
     void prop(String key, String a, String b, String c) {
-        SkillNet.near(level, pos, new SkillNet.Prop(id, key, a, b, c));
+        SkillNet.Prop p = new SkillNet.Prop(id, key, a, b, c);
+        SkillNet.near(level, pos, p);
+        // Lo que se queda (para quien llega tarde): por clave y, en las de un hueso, por hueso
+        switch (key) {
+            case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item" -> {
+                if (key.equals("me")) sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:"));
+                sticky.put(key + (key.equals("dstate") ? ":" + a : ""), p);
+            }
+            case "vis", "part", "bright" -> sticky.put(key + ":" + a, p);
+            default -> { }
+        }
+    }
+
+    /** A un jugador que llega (o que empieza a ver al jefe): el actor tal como está ahora. */
+    void replay(net.minecraft.server.level.ServerPlayer player) {
+        SkillNet.toPlayer(player, spawnMessage());
+        for (SkillNet.Prop p : sticky.values()) SkillNet.toPlayer(player, p);
+        if (layers != null) {
+            for (net.tierrasfantasticas.tfclient.vfx.VfxLayers.Layer l : layers.active()) {
+                if (l.stopAt >= 0) continue;
+                SkillNet.toPlayer(player, new SkillNet.Prop(id, "lstate", l.name, l.speed + "|" + l.lerpIn + "|" + l.lerpOut + "|"
+                        + l.priority + "|1", String.valueOf((int) (age - l.start))));
+            }
+            if (layers.dead()) SkillNet.toPlayer(player, new SkillNet.Prop(id, "death", "", "", ""));
+        }
     }
 
     private boolean leaving;

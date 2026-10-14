@@ -1,0 +1,98 @@
+{
+ "gargola": {
+  "name": "Gárgola",
+  "title": "Centinela de piedra",
+  "color": "#9AA6BF",
+  "desc": "Una estatua de piedra que despierta cuando alguien se acerca. Salta sobre su presa con las garras por delante, barre con los dos brazos y, si la rodeáis, se aparta de un salto hacia atrás.",
+  "attacks": [
+   "Embestida de garras",
+   "Salto en picado",
+   "Barrido",
+   "Retirada en salto"
+  ],
+  "preview_hide": [
+   "tl_right_arm_trail",
+   "tl_left_arm_trail"
+  ]
+ },
+ "hidra": {
+  "name": "Hidra",
+  "title": "Bestia de las cinco cabezas",
+  "color": "#B45CF0",
+  "desc": "No se mueve de su sitio: gira hacia quien la ataca. Cinco cabezas que muerden por separado, dos que escupen fuego, pisotones que agrietan el suelo y coletazos. Por debajo de la mitad de vida empieza a perder cabezas.",
+  "attacks": [
+   "Mordiscos de cinco cabezas",
+   "Lanzallamas",
+   "Pisotón que agrieta el suelo",
+   "Coletazo",
+   "Giro en salto"
+  ],
+  "preview_hide": []
+ },
+ "abominacion": {
+  "name": "Abominación Parasitaria",
+  "title": "Horror de la plaga",
+  "color": "#8FCF4A",
+  "desc": "Golpea de lejos con la lengua, te atrapa con su tentáculo para secarte y embiste con las garras. Por debajo de la mitad de vida esparce una plaga que envenena y hace brotar pústulas que revientan.",
+  "attacks": [
+   "Latigazo de lengua",
+   "Tentáculo que atrapa",
+   "Garras en embestida",
+   "Plaga (fase 2)"
+  ],
+  "preview_hide": [
+   "swipe_fx",
+   "cloud",
+   "cloud2",
+   "bubo_large_1",
+   "bubo_small_1",
+   "bubo_small_2"
+  ]
+ },
+ "esqueleto_torre": {
+  "name": "Esqueleto de la Torre",
+  "title": "Señor del trono hueco",
+  "color": "#48FEAE",
+  "desc": "Despierta en su trono. Su escudo para los golpes de frente y escupe fuego: rompedlo por fases o atacadle por la espalda. Sin escudo os agarra y os consume; por debajo del 35 % forja una espada de almas y abre fosas de las que salen esbirros. Al caer deja su cofre.",
+  "attacks": [
+   "Escudo con lanzallamas",
+   "Carga con escudo",
+   "Agarre que consume",
+   "Espada de almas (fase 3)",
+   "Esbirros"
+  ],
+  "preview_hide": [
+   "death_sword_prop",
+   "scene_shield",
+   "back_sword",
+   "hand_souls",
+   "hand_souls_2",
+   "hand_souls_3",
+   "shield_debris",
+   "grabbed",
+   "slash_target"
+  ],
+  "drops": {
+   "TOWERSKELETON_sword": "Guja del Esqueleto de la Torre",
+   "TOWERSKELETON_helmet": "Cuernos del Esqueleto de la Torre",
+   "TOWERSKELETON_shield": "Égida del Esqueleto de la Torre"
+  }
+ },
+ "astwood": {
+  "name": "Astwood",
+  "title": "Guardián del bosque antiguo",
+  "color": "#5CC8F2",
+  "desc": "Un árbol milenario que golpea con sus puños, encierra a su presa en una jaula de raíces, levanta muros y púas de madera, hace llover rocas, dispara esferas de energía y absorbe la vida de quien atrapa. Llama a sus retoños para que luchen por él.",
+  "attacks": [
+   "Puñetazos",
+   "Jaula de raíces",
+   "Muro de madera",
+   "Lluvia de rocas",
+   "Esferas de energía",
+   "Absorber vida"
+  ],
+  "preview_hide": [
+   "vfx"
+  ]
+ }
+}

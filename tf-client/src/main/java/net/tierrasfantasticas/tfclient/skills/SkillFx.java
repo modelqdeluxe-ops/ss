@@ -181,7 +181,27 @@ final class SkillFx {
         if (s == null || s.isBlank()) return;
         float vol = (float) SkillRuntime.num(m.arg("1", "volume", "v"), 1);
         float pitch = (float) SkillRuntime.num(m.arg("1", "pitch", "p"), 1);
-        for (Tgt t : targets) send(ctx.caster.level(), t.pos(), SkillNet.Fx.sound(s, t.pos(), vol, pitch));
+        for (Tgt t : targets) {
+            SkillNet.Fx fx = SkillNet.Fx.sound(s, t.pos(), vol, pitch);
+            // Los de los jefes, como mobs hostiles (su volumen es el de «Criaturas hostiles» de las opciones)
+            if (ctx.host != null) fx = new SkillNet.Fx(9, s, fx.x(), fx.y(), fx.z(), 0, vol, pitch, 0, 0, 0, "h", 0, 0, 0, 0);
+            send(ctx.caster.level(), t.pos(), fx);
+        }
+    }
+
+    /**
+     * recoil{r;pitch} de un jefe: la cámara de cada jugador objetivo tiembla (solo la vista: no le mueve hacia dónde mira).
+     * Los packs lo encadenan cada tick (-0.8, 0.6, -0.4, 0.2) para un golpe que sacude el suelo.
+     */
+    static void shake(Mech m, Ctx ctx, List<Tgt> targets) {
+        float r = (float) SkillRuntime.num(m.arg("10", "r", "radius"), 10);
+        float pitch = (float) SkillRuntime.num(m.arg("0", "pitch", "p"), 0);
+        float yaw = (float) SkillRuntime.num(m.arg("0", "yaw", "y"), 0);
+        for (Tgt t : targets) {
+            if (t.entity() instanceof net.minecraft.server.level.ServerPlayer p) {
+                SkillNet.toPlayer(p, new SkillNet.Fx(6, "", 0, 0, 0, 0, pitch, yaw, 0, r, 0, null, 0, 0, 0, 0));
+            }
+        }
     }
 
     static void lightning(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -201,9 +221,11 @@ final class SkillFx {
         String block = m.arg("stone", "material", "m", "block", "b").toLowerCase(Locale.ROOT);
         float r = (float) SkillRuntime.num(m.arg("3", "radius", "r"), 3);
         int ticks = (int) SkillRuntime.num(m.arg("40", "duration", "d"), 40);
+        // oa=true (onlyAir): en los huecos de aire (la luz que deja la explosión del escudo), no en el suelo
+        int onlyAir = SkillRuntime.bool(m.arg("false", "onlyair", "oa")) ? 1 : 0;
         for (Tgt t : targets) {
             Vec3 p = t.pos();
-            send(ctx.caster.level(), p, new SkillNet.Fx(4, block, p.x, p.y, p.z, ticks, 0, 0, 0, r, 0, null, 1, 0, 0, 0));
+            send(ctx.caster.level(), p, new SkillNet.Fx(4, block, p.x, p.y, p.z, ticks, 0, 0, 0, r, onlyAir, null, 1, 0, 0, 0));
         }
     }
 

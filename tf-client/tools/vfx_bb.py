@@ -166,9 +166,11 @@ def apply(m, v):
             m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2]]
 
 
-def strip_prefix(name):
-    """Id del hueso como lo nombra ModelEngine en las mecánicas (sin el prefijo de comportamiento h_ / hi_)."""
-    for p in ('hi_', 'h_'):
+def strip_prefix(name, boss=False):
+    """Id del hueso como lo nombra ModelEngine en las mecánicas (sin el prefijo de comportamiento h_ / hi_). En los
+    jefes también ob_ (caja de golpe), p_ (asiento) y g_ (hueso fantasma, solo un sitio): las skills los llaman sin él
+    («@modelpart{pid=bite_left}», «mountmodel{p=seat}»). l_ no: en estos packs es «left» (l_hand)."""
+    for p in (('hi_', 'h_', 'ob_', 'p_', 'g_') if boss else ('hi_', 'h_')):
         if name.startswith(p):
             return name[len(p):]
     return name
@@ -205,8 +207,14 @@ def load_texture(tex, bb_path):
     return None
 
 
-def convert(bb_path, store, problems):
-    """Devuelve el modelo convertido (dict) o None si no sirve."""
+def convert(bb_path, store, problems, boss=False):
+    """Devuelve el modelo convertido (dict) o None si no sirve.
+
+    boss=True (los jefes): además de lo de siempre, cada animación dice si tapa a las de menos prioridad («ov», el
+    «override» de Blockbench, como las mezcla ModelEngine) y sus scripts de la línea de tiempo («fx»: [segundo,
+    skill], los «mm:SKILL» de ModelEngine); los huesos ob_ no se dibujan: son cajas de golpe («hb»: esquinas de la caja
+    respecto a su pivote, en píxeles); el hueso «hitbox» da el tamaño del mob («hitbox»: ancho y alto en bloques) y
+    los asientos p_ se marcan («seat»)."""
     d = json.load(open(bb_path, encoding='utf-8'))
     name = os.path.basename(bb_path)[:-len('.bbmodel')]
     res = d.get('resolution') or {}
@@ -340,16 +348,35 @@ def convert(bb_path, store, problems):
             quads.append([tex_map[ti], round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts
                          + ([flags] if flags else []))
 
+    hitbox = []
+
+    def cube_box(c):
+        """Caja que ocupan los cubos de un hueso (en píxeles del modelo)."""
+        lo, hi = [1e9] * 3, [-1e9] * 3
+        for ch in c.get('children', []):
+            if isinstance(ch, str) and ch in elements:
+                el = elements[ch]
+                for i in range(3):
+                    a, b = num(el['from'][i]), num(el['to'][i])
+                    lo[i] = min(lo[i], a, b)
+                    hi[i] = max(hi[i], a, b)
+        return (lo, hi) if lo[0] < 1e9 else None
+
     def walk(children, parent):
         for c in children:
             if not isinstance(c, dict):
                 continue  # cubos sueltos en la raíz: ModelEngine no los usa
             bname = c.get('name', 'bone')
             if bname.lower() in SPECIAL_BONES:
+                if boss and bname.lower() == 'hitbox' and not hitbox:
+                    box = cube_box(c)
+                    if box:
+                        lo, hi = box
+                        hitbox.append([round(max(hi[0] - lo[0], hi[2] - lo[2]) / 16, 4), round((hi[1] - lo[1]) / 16, 4)])
                 continue  # (el «export: false» de Blockbench no cuenta: ModelEngine dibuja igual ese hueso)
             idx = len(bones)
             pivot = [num(v) for v in c.get('origin', [0, 0, 0])]
-            sid = strip_prefix(bname)
+            sid = strip_prefix(bname, boss)
             phead = sid.lower().startswith('phead')
             bone = {
                 'id': sid,
@@ -362,8 +389,18 @@ def convert(bb_path, store, problems):
                 'shade': c.get('shade', True) is not False,
                 'quads': [],
             }
+            if boss and bname.startswith('p_'):
+                bone['seat'] = True
             bones.append(bone)
             uuid_to_bone[c['uuid']] = idx
+            if boss and bname.startswith('ob_'):
+                # Caja de golpe de ModelEngine: no se ve; se mueve con su hueso
+                box = cube_box(c)
+                if box:
+                    lo, hi = box
+                    bone['hb'] = [round(lo[i] - pivot[i], 4) for i in range(3)] + [round(hi[i] - pivot[i], 4) for i in range(3)]
+                walk(c.get('children', []), idx)
+                continue
             for ch in c.get('children', []):
                 if isinstance(ch, str) and ch in elements:
                     bake_cube(elements[ch], pivot, phead, bone['quads'], idx)
@@ -404,7 +441,23 @@ def convert(bb_path, store, problems):
             'loop': a.get('loop', 'once') if a.get('loop') in ('once', 'hold', 'loop') else 'once',
             'tracks': tracks,
         }
+        if boss:
+            anims[a['name']]['ov'] = bool(a.get('override'))
+            fx = []
+            for an in (a.get('animators') or {}).values():
+                for k in an.get('keyframes', []):
+                    if k.get('channel') != 'timeline':
+                        continue
+                    for dp in k.get('data_points') or []:
+                        for line in str(dp.get('script') or '').splitlines():
+                            line = line.strip()
+                            if line.lower().startswith('mm:'):
+                                fx.append([round(num(k.get('time', 0)), 5), line[3:].strip()])
+            if fx:
+                anims[a['name']]['fx'] = sorted(fx)
     out = {'name': name, 'tex': tex_out, 'bones': bones, 'anims': anims}
+    if boss and hitbox:
+        out['hitbox'] = hitbox[0]
     figures = make_figures(bones, actor_cubes, tex_out)
     if figures:
         for fig in figures:

@@ -84,6 +84,8 @@ def parse_line(line):
     line = str(line).strip()
     if line.startswith('-'):
         line = line[1:].strip()
+    # «!?condición» (al revés, errata de algunos packs) es «?!condición»
+    line = line.replace(' !?', ' ?!')
     m = re.match(r'^([\w:.\-]+)', line)
     if not m:
         return None
@@ -123,6 +125,11 @@ def parse_line(line):
     if cm:
         out['c'] = [{'not': bool(neg), 'm': c.lower(), 'a': parse_args(a[1:-1]) if a else {}} for neg, c, a in cm]
         rest = re.sub(r'\?(!?)([\w:]+)(\{[^}]*\})?', '', rest)
+    # Umbral de vida del disparador de un mob («~onDamaged <50%», «~onTimer:20 >75%»): las fases de los jefes
+    hp = re.search(r'(?<![\w.])([<>]=?)\s*(\d+(?:\.\d+)?)\s*%', rest)
+    if hp:
+        out['hp'] = hp.group(1) + hp.group(2) + '%'
+        rest = rest[:hp.start()] + rest[hp.end():]
     hm = re.search(r'(?<![\w.])(0?\.\d+|1(?:\.0+)?)\s*$', rest.strip())
     if hm:
         out['ch'] = float(hm.group(1))  # probabilidad

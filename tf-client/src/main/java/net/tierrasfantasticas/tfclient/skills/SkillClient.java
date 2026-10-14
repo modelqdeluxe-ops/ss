@@ -119,6 +119,8 @@ public final class SkillClient {
         a.def = cd == null ? null : cd.mob(m.mob());
         a.text = m.text();
         a.scale = m.scale() <= 0 ? 1F : m.scale();
+        a.boss = SkillDefs.isBoss(m.cls());
+        if (a.boss && a.layers == null) a.layers = new net.tierrasfantasticas.tfclient.vfx.VfxLayers();
         a.setModel(m.me());
         if (m.anim() != null) a.play(m.anim(), 1F);
     }
@@ -174,6 +176,33 @@ public final class SkillClient {
                 a.rider = m.a().isEmpty() ? -1 : (int) parse(m.a(), -1F);
                 a.seat = parse(m.b(), 1F);
             }
+            // Jefes: animaciones a capas, por defecto, muerte, brillo, remapeo, giro del display y bala de ítem
+            case "lstate" -> {
+                if (a.layers == null || a.model == null) return;
+                String[] p = m.b().split("\\|");
+                float sp = p.length > 0 ? parse(p[0], 1F) : 1F;
+                int li = p.length > 1 ? (int) parse(p[1], 0F) : 0, lo = p.length > 2 ? (int) parse(p[2], 0F) : 0;
+                int pr = p.length > 3 ? (int) parse(p[3], 1F) : 1;
+                boolean force = p.length > 4 && "1".equals(p[4]);
+                int ago = (int) parse(m.c(), 0F);
+                a.layers.play(a.model, m.a(), a.age - ago, sp, li, lo, pr, force);
+            }
+            case "lstop" -> {
+                if (a.layers != null) a.layers.stop(m.a(), a.age, (int) parse(m.b(), -1F));
+            }
+            case "dstate" -> {
+                if (a.layers != null) a.layers.setDefault(m.a(), m.b(), a.age);
+            }
+            case "death" -> {
+                if (a.layers != null && a.model != null) a.layers.death(a.model, a.age);
+            }
+            case "bright" -> a.bright(m.a(), m.b(), !"0".equals(m.c()));
+            case "remap" -> a.remap(m.a());
+            case "dt" -> a.displayTransform(m.a(), m.b());
+            case "item" -> {
+                a.item = m.a().isEmpty() ? null : new ResourceLocation(m.a());
+                a.itemScale = parse(m.b(), 1F);
+            }
             default -> { }
         }
     }
@@ -185,7 +214,8 @@ public final class SkillClient {
         if (m.kind() == 9) {
             ResourceLocation rl = ResourceLocation.tryParse(m.id());
             if (rl == null) return;
-            mc.getSoundManager().play(new SimpleSoundInstance(rl, SoundSource.PLAYERS, m.hs(), m.vs(), RandomSource.create(RANDOM.nextLong()),
+            SoundSource source = "h".equals(m.extra()) ? SoundSource.HOSTILE : SoundSource.PLAYERS;
+            mc.getSoundManager().play(new SimpleSoundInstance(rl, source, m.hs(), m.vs(), RandomSource.create(RANDOM.nextLong()),
                     false, 0, SoundInstance.Attenuation.LINEAR, m.x(), m.y(), m.z(), false));
             return;
         }
@@ -199,7 +229,11 @@ public final class SkillClient {
             else HIDDEN.put(id, clientTicks + m.n());
             return;
         }
-        if (m.kind() == 6) return; // retroceso de la cámara: ya no se mueve la vista de nadie (el jugador manda)
+        if (m.kind() == 6) {
+            // Temblor de cámara de un golpe de jefe (las skills de clase ya no lo mandan): solo la vista
+            CameraShake.add(m.hs(), m.vs(), m.radius());
+            return;
+        }
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
         if (opts == null || particleBudget <= 0) return;
         Vec3 at = new Vec3(m.x(), m.y(), m.z());
@@ -278,13 +312,14 @@ public final class SkillClient {
         int r = (int) Math.ceil(m.radius());
         BlockPos c = BlockPos.containing(m.x(), m.y() - 0.5, m.z());
         long until = clientTicks + m.n();
+        boolean onlyAir = m.points() == 1;
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
                 if (dx * dx + dz * dz > m.radius() * m.radius()) continue;
-                for (int dy = -1; dy <= 0; dy++) {
+                for (int dy = onlyAir ? 0 : -1; dy <= (onlyAir ? 1 : 0); dy++) {
                     BlockPos p = c.offset(dx, dy, dz);
                     BlockState now = level.getBlockState(p);
-                    if (now.isAir() || !now.isSolidRender(level, p)) continue;
+                    if (onlyAir ? !now.isAir() && !MASKS.containsKey(p) : now.isAir() || !now.isSolidRender(level, p)) continue;
                     Mask old = MASKS.get(p);
                     BlockState original = old != null ? old.original() : now;
                     MASKS.put(p, new Mask(original, shown, until));
@@ -397,12 +432,16 @@ public final class SkillClient {
             for (Actor a : ACTORS.values()) {
                 // El propio disfraz no tapa la vista en primera persona
                 if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId() && mc.options.getCameraType().isFirstPerson()) continue;
+                // El modelo de un mob de jefe lo dibuja su entidad (BossRenderer), con su luz
+                if (a.follow >= 0 && mc.level.getEntity(a.follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity) continue;
                 Vec3 at = a.lerp(mc.level, partial);
                 if (at == null || at.distanceToSqr(cam) > 128 * 128) continue;
                 float yaw = a.lerpYaw(mc.level, partial);
+                int light = a.boss ? net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at.add(0, 0.5, 0))) : FULL_BRIGHT;
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
                 if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
-                if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers);
+                if (a.item != null) renderItem(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
+                if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers, light);
                 if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
             }
         } catch (Throwable t) {
@@ -447,7 +486,7 @@ public final class SkillClient {
         net.minecraft.network.chat.MutableComponent text = net.minecraft.network.chat.Component.empty();
         String glyphs = cd == null ? "" : cd.glyphs;
         net.minecraft.network.chat.Style style = net.minecraft.network.chat.Style.EMPTY.withFont(
-                new ResourceLocation(TFClient.MOD_ID, "skills_" + a.cls));
+                new ResourceLocation(TFClient.MOD_ID, (a.boss ? "bosses_" : "skills_") + a.cls));
         StringBuilder plain = new StringBuilder();
         a.text.codePoints().forEach(cp -> {
             String ch = new String(Character.toChars(cp));
@@ -476,7 +515,8 @@ public final class SkillClient {
             default -> pose.mulPose(camera.rotation());
         }
         if (def != null) {
-            pose.translate(def.transX, def.transY, def.transZ);
+            pose.translate(def.transX + a.textX, def.transY + a.textY, def.transZ + a.textZ);
+            if (a.textRoll != 0F) pose.mulPose(Axis.ZP.rotationDegrees(a.textRoll));
             pose.scale(def.scaleX, def.scaleY, def.scaleZ);
         }
         pose.scale(-0.025F, -0.025F, 0.025F);
@@ -505,6 +545,50 @@ public final class SkillClient {
         Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, pose, buffers,
                 FULL_BRIGHT, OverlayTexture.NO_OVERLAY, model);
         pose.popPose();
+    }
+
+    /** La bala de un misil de tipo display (la esfera de Astwood): el modelo de ítem, mirando hacia donde va. */
+    private static void renderItem(Actor a, Vec3 at, float yaw, float pitch, PoseStack pose, MultiBufferSource buffers) {
+        BakedModel model = Minecraft.getInstance().getModelManager().getModel(a.item);
+        if (model == null || model == Minecraft.getInstance().getModelManager().getMissingModel()) return;
+        pose.pushPose();
+        pose.translate(at.x, at.y, at.z);
+        pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+        pose.mulPose(Axis.XP.rotationDegrees(pitch));
+        pose.scale(a.itemScale, a.itemScale, a.itemScale);
+        Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.FIXED, false, pose, buffers, FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, model);
+        pose.popPose();
+    }
+
+    /**
+     * El modelo de un mob de jefe, desde su entidad (BossRenderer): donde está la entidad, con su giro y la luz de su
+     * sitio. false si aún no le ha llegado el modelo.
+     */
+    public static boolean renderFollower(Entity e, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        Actor a = follower(e.getId());
+        if (a == null || a.model == null) return false;
+        float yaw = a.lerpYaw(e.level() instanceof ClientLevel cl ? cl : Minecraft.getInstance().level, partial);
+        a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
+        return true;
+    }
+
+    /** El actor que lleva el modelo de esa entidad (o null). */
+    private static Actor follower(int entityId) {
+        for (Actor a : ACTORS.values()) if (a.follow == entityId && a.model != null) return a;
+        return null;
+    }
+
+    /** Las cajas de golpe por piezas del modelo de un mob de jefe, en el mundo (para apuntarle). */
+    public static List<net.minecraft.world.phys.AABB> hitboxes(Entity e) {
+        Actor a = follower(e.getId());
+        if (a == null || a.model == null || net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(a.model).length == 0) return null;
+        Matrix4f[] mats = new Matrix4f[a.model.bones.length];
+        for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
+        a.pose(mats, 0F);
+        Matrix4f w = new Matrix4f().translate((float) e.getX(), (float) e.getY(), (float) e.getZ())
+                .rotate(Axis.YP.rotationDegrees(180F - (e instanceof LivingEntity le ? le.yBodyRot : e.getYRot()))).scale(a.scale / 16F);
+        return net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.boxes(a.model, mats, w, a.hiddenMask());
     }
 
     // ------------------------------------------------------------------------------------------- actor
@@ -544,9 +628,111 @@ public final class SkillClient {
         boolean walking;
         int rider = -1;
         float seat = 1F;
+        // ----- Jefes
+        /** De un jefe: animaciones a capas, luz del sitio y brillo por pieza. */
+        boolean boss;
+        net.tierrasfantasticas.tfclient.vfx.VfxLayers layers;
+        /** Luz de cada hueso puesta con brightness (-1 = la del sitio) y la de todo el modelo. */
+        int[] boneLight;
+        int wholeLight = -1;
+        ResourceLocation item;
+        float itemScale = 1F;
+        /** displaytransformation del text_display: giro (grados) y desplazamiento. */
+        float textRoll;
+        float textX, textY, textZ;
 
         Actor(int id) {
             this.id = id;
+        }
+
+        /** Pose de todos los huesos ahora (con sus capas si es de un jefe). */
+        void pose(Matrix4f[] mats, float partial) {
+            if (layers != null) {
+                float headYaw = 0F, headPitch = 0F;
+                ClientLevel level = Minecraft.getInstance().level;
+                Entity e = follow >= 0 && level != null ? level.getEntity(follow) : null;
+                if (e instanceof LivingEntity le) {
+                    float body = le.yBodyRotO + (le.yBodyRot - le.yBodyRotO) * partial;
+                    float head = le.yHeadRotO + (le.yHeadRot - le.yHeadRotO) * partial;
+                    headYaw = net.minecraft.util.Mth.wrapDegrees(head - body);
+                    headPitch = le.getViewXRot(partial);
+                }
+                layers.pose(model, age + partial, headYaw, headPitch, mats);
+                return;
+            }
+            float seconds = (age - animStart + partial) / 20F * speed;
+            VfxPose.compute(model, anim, seconds, 0F, mats);
+        }
+
+        /** Los huesos escondidos (para las cajas de golpe de las piezas). */
+        boolean[] hiddenMask() {
+            boolean[] h = new boolean[model.bones.length];
+            for (int i = 0; i < h.length; i++) h[i] = !visible[i] && model.bones[i].hitbox == null;
+            return h;
+        }
+
+        /** brightness{b;s;p;em}: la luz de una pieza (o de las que la llevan en el nombre) o de todo el modelo. */
+        void bright(String part, String value, boolean exact) {
+            if (model == null) return;
+            String[] v = value.split("\\|");
+            int b = (int) parse(v[0], 15F), sk = v.length > 1 ? (int) parse(v[1], b) : b;
+            int light = b < 0 ? -1 : LightTexture.pack(Math.min(15, b), Math.min(15, Math.max(0, sk)));
+            if (part == null || part.isEmpty()) {
+                wholeLight = light;
+                return;
+            }
+            if (boneLight == null) {
+                boneLight = new int[model.bones.length];
+                java.util.Arrays.fill(boneLight, -1);
+            }
+            String want = part.toLowerCase(java.util.Locale.ROOT);
+            for (int i = 0; i < model.bones.length; i++) {
+                String id = model.bones[i].id.toLowerCase(java.util.Locale.ROOT);
+                boolean hit = exact ? id.equals(want) : id.contains(want);
+                if (!hit) continue;
+                boneLight[i] = light;
+                // Lo de debajo de esa pieza, también (ModelEngine pinta así las estelas y runas con sus hijos)
+                for (int j = 0; j < model.bones.length; j++) {
+                    for (int p = model.bones[j].parent; p >= 0; p = model.bones[p].parent) if (p == i) {
+                        boneLight[j] = light;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /** remapmodel: cada hueso se ve con el del mismo nombre de otro modelo (o vuelve al suyo). */
+        void remap(String other) {
+            if (model == null) return;
+            VfxModel m = model(other);
+            if (m == null) return;
+            for (int i = 0; i < model.bones.length; i++) {
+                String id = model.bones[i].id;
+                if (m == model || m.bone(id) < 0) {
+                    source[i] = model;
+                    sourceBone[i] = id;
+                } else {
+                    source[i] = m;
+                    sourceBone[i] = id;
+                }
+            }
+        }
+
+        /** displaytransformation de un text_display: giro (right_rotation) o desplazamiento (translation). */
+        void displayTransform(String what, String value) {
+            String[] w = what.split("\\|");
+            boolean add = w[0].equals("add");
+            String tr = w.length > 1 ? w[1] : "translation";
+            String[] v = value.split(",");
+            if (tr.contains("rotation")) {
+                float deg = parse(v[0].trim(), 0F);
+                textRoll = add ? textRoll + deg : deg;
+            } else if (tr.contains("translation") && v.length >= 3) {
+                float x = parse(v[0].trim(), 0F), y = parse(v[1].trim(), 0F), z = parse(v[2].trim(), 0F);
+                textX = add ? textX + x : x;
+                textY = add ? textY + y : y;
+                textZ = add ? textZ + z : z;
+            }
         }
 
         /** Un esbirro que echa a andar o se para: «walk» o la de reposo, si no está con otra animación. */
@@ -561,6 +747,8 @@ public final class SkillClient {
 
         void setModel(String id) {
             model = id == null ? null : model(id);
+            boneLight = null;
+            if (layers != null) layers.clear();
             if (model == null) return;
             int n = model.bones.length;
             source = new VfxModel[n];
@@ -574,12 +762,20 @@ public final class SkillClient {
                 bones[i] = new Matrix4f();
             }
             // Como ModelEngine: si tiene animación de aparecer, primero esa; luego la de reposo
+            if (layers != null) {
+                if (model.anims.containsKey("spawn")) layers.play(model, "spawn", age, 1F, 0, 0, 0, true);
+                return;
+            }
             if (model.anims.containsKey("spawn")) play("spawn", 1F);
             else playIdle();
         }
 
         void play(String name, float sp) {
             if (model == null) return;
+            if (layers != null) {
+                layers.play(model, name, age, sp, 0, 0, 1, true);
+                return;
+            }
             VfxModel.Anim a = model.anims.get(name);
             if (a == null) {
                 for (Map.Entry<String, VfxModel.Anim> e : model.anims.entrySet()) {
@@ -638,6 +834,18 @@ public final class SkillClient {
                 playIdle();
                 if (walking) walk(true);
             }
+            if (layers != null && model != null) {
+                // Un mob de jefe anda si su entidad se mueve (la animación de andar o la de reposo, por defecto)
+                Entity e = follow >= 0 ? level.getEntity(follow) : null;
+                if (e != null) {
+                    double dx = e.getX() - e.xo, dz = e.getZ() - e.zo;
+                    layers.setWalking(dx * dx + dz * dz > 0.0009 && !(e instanceof LivingEntity le && le.isDeadOrDying()));
+                } else {
+                    layers.setWalking(walking);
+                }
+                layers.update(model, age);
+                layers.prune(age);
+            }
         }
 
         Vec3 lerp(ClientLevel level, float partial) {
@@ -662,8 +870,13 @@ public final class SkillClient {
         }
 
         void renderModel(Vec3 at, float yaw, float partial, PoseStack pose, MultiBufferSource buffers) {
-            float seconds = (age - animStart + partial) / 20F * speed;
-            VfxPose.compute(model, anim, seconds, 0F, bones);
+            renderModel(at, yaw, partial, pose, buffers, FULL_BRIGHT);
+        }
+
+        /** light: la luz del sitio (los de las clases, a plena luz; los de los jefes, con la del mundo). */
+        void renderModel(Vec3 at, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+            pose(bones, partial);
+            int baseLight = wholeLight >= 0 ? wholeLight : light;
             Matrix4f inst = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
                     .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(scale / 16F);
             Matrix4f base = new Matrix4f(pose.last().pose()).mul(inst);
@@ -711,6 +924,9 @@ public final class SkillClient {
                     // hornear los modelos), para que en los bordes no se cuele el píxel de al lado ni, en las texturas
                     // animadas, una raya del fotograma siguiente
                     float[] c = VfxModel.uvCenter(bone.quads, o);
+                    // Luz: las texturas emisivas (_e) y las caras que brillan, a plena luz; si no, la del hueso o la del sitio
+                    int lit = t.emissive() || ((int) bone.quads[o + 24] & 1) != 0 ? FULL_BRIGHT
+                            : boneLight != null && boneLight[bi] >= 0 ? boneLight[bi] : baseLight;
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
                         v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
@@ -718,7 +934,7 @@ public final class SkillClient {
                         float tu = VfxModel.insetUv(bone.quads[p + 3], c[0]);
                         float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
                         vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(tu, tv)
-                                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(FULL_BRIGHT).normal(n.x, n.y, n.z).endVertex();
+                                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(lit).normal(n.x, n.y, n.z).endVertex();
                     }
                 }
             }
@@ -738,7 +954,7 @@ public final class SkillClient {
     static VfxModel model(String id) {
         if (id == null || id.isEmpty()) return null;
         return MODELS.computeIfAbsent(id, key -> {
-            ResourceLocation rl = new ResourceLocation(TFClient.MOD_ID, "skills/models/" + key + ".json");
+            ResourceLocation rl = new ResourceLocation(TFClient.MOD_ID, SkillDefs.modelDir(key) + key + ".json");
             try {
                 var res = Minecraft.getInstance().getResourceManager().getResource(rl);
                 if (res.isEmpty()) {

@@ -416,7 +416,7 @@ public final class SkillServer {
     }
 
     /** El tipo de daño con el nombre de Bukkit que usan los packs (FALL, PROJECTILE, ENTITY_ATTACK...). */
-    static String damageType(net.minecraft.world.damagesource.DamageSource src) {
+    public static String damageType(net.minecraft.world.damagesource.DamageSource src) {
         if (src.is(net.minecraft.tags.DamageTypeTags.IS_FALL)) return "FALL";
         if (src.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE)) return "PROJECTILE";
         if (src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return src.getEntity() != null ? "ENTITY_EXPLOSION" : "BLOCK_EXPLOSION";

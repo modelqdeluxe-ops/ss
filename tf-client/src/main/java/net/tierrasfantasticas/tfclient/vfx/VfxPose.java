@@ -43,6 +43,16 @@ public final class VfxPose {
                 if (tr.scale != null && sample(tr.scale, at, v)) System.arraycopy(v, 0, extra, base + 6, 3);
             }
         }
+        build(model, extra, 0F, headPitch, out);
+    }
+
+    /**
+     * Las matrices de los huesos con lo que añaden las animaciones: extra[i*9 ..] = giro (3), posición (3), escala (3).
+     * headYaw y headPitch (grados): hacia dónde mira la cabeza respecto al cuerpo; los huesos de cabeza (h_/hi_) giran
+     * eso (repartido entre los que van encadenados, como ModelEngine).
+     */
+    public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out) {
+        int n = model.bones.length;
         for (int i = 0; i < n; i++) {
             VfxModel.Bone b = model.bones[i];
             int base = i * 9;
@@ -57,7 +67,8 @@ public final class VfxPose {
             if (b.parent >= 0) m.set(out[b.parent]);
             else m.identity();
             m.translate(b.pivot[0] - px + extra[base + 3], b.pivot[1] - py + extra[base + 4], b.pivot[2] - pz + extra[base + 5]);
-            if (b.head && headPitch != 0F) m.rotateX(-headPitch * DEG);
+            if (b.head && headYaw != 0F) m.rotateY(-headYaw * model.headShare(i) * DEG);
+            if (b.head && headPitch != 0F) m.rotateX(-headPitch * (headYaw != 0F ? model.headShare(i) : 1F) * DEG);
             m.rotateZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG, (b.rot[0] + extra[base]) * DEG);
             m.scale(extra[base + 6], extra[base + 7], extra[base + 8]);
         }

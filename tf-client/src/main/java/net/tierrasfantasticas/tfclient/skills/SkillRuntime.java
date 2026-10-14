@@ -222,6 +222,10 @@ public final class SkillRuntime {
         boolean ambient;
         /** De qué uso de una skill viene (cada clic, cada pasiva): la inmunidad a golpes de skill es de cada uso. */
         long cast;
+        /** El jefe del que viene (su dificultad: daño, ritmo de ataque; a quién no pega); null = skills de jugador. */
+        SkillMobs.Host host;
+        /** El tipo de daño que lo disparó (~onDamaged): ENTITY_ATTACK, PROJECTILE... */
+        String damageCause;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -243,6 +247,8 @@ public final class SkillRuntime {
             c.params = params;
             c.ambient = ambient;
             c.cast = cast;
+            c.host = host;
+            c.damageCause = damageCause;
             return c;
         }
 
@@ -257,6 +263,10 @@ public final class SkillRuntime {
             c.depth = depth + 1;
             c.mods = mods;
             c.cast = cast;
+            c.host = host;
+            // Un mob de jefe que lanza (el esbirro, el brote): su propio jefe
+            SkillMobs.Host own = who.entity == null ? null : SkillMobs.host(who.entity);
+            if (own != null) c.host = own.boss();
             return c;
         }
     }
@@ -368,7 +378,7 @@ public final class SkillRuntime {
             WhoState st = state(ctx.caster);
             Long until = st.cooldowns.get(meta.name);
             if (until != null && until > clock) return false;
-            st.cooldowns.put(meta.name, clock + Math.round(meta.cooldown * 20));
+            st.cooldowns.put(meta.name, clock + Math.round(meta.cooldown * 20 / rhythm(ctx)));
         }
         Ctx run = ctx;
         // Conditions: de quien lanza
@@ -567,7 +577,11 @@ public final class SkillRuntime {
             case "effect:blockmask", "blockmask", "effect:blockwave", "blockwave" -> SkillFx.blockmask(m, ctx, targets);
             case "summon" -> summon(m, ctx, targets);
             case "remove" -> {
-                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.remove();
+                for (Tgt t : targets) {
+                    if (t.who != null && t.who.actor != null) t.who.actor.remove();
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null && h.boss() != h) h.mob().discard();
+                }
             }
             case "equip" -> equip(m, ctx, targets);
             case "model" -> SkillModels.model(m, ctx, targets);
@@ -586,9 +600,15 @@ public final class SkillRuntime {
             case "auraremove", "removeaura", "removebuff" -> SkillAuras.remove(m, targets);
             case "damage", "d" -> damage(m, ctx, targets, false);
             case "basedamage" -> damage(m, ctx, targets, true);
+            case "hit" -> {
+                // hit{a=multiplicador}: un golpe con el daño de ataque de quien lanza (como basedamage)
+                Mech b = m.copyWith(new HashMap<>(m.a), m.ta);
+                b.a.put("multiplier", m.arg("1", "a", "amount", "multiplier", "m"));
+                damage(b, ctx, targets, true);
+            }
             case "percentdamage" -> percentDamage(m, ctx, targets);
-            case "heal" -> heal(m, targets, false);
-            case "healpercent" -> heal(m, targets, true);
+            case "heal" -> heal(m, targets, false, ctx.host != null && ctx.caster.entity != null ? ctx.host.healthScale() : 1.0);
+            case "healpercent" -> heal(m, targets, true, 1.0);
             case "potion" -> potion(m, ctx, targets);
             case "potionclear" -> {
                 for (Tgt t : targets) if (t.living() != null) t.living().removeAllEffects();
@@ -608,7 +628,6 @@ public final class SkillRuntime {
             case "velocity" -> SkillMotion.velocity(m, ctx, targets);
             case "propel" -> SkillMotion.propel(m, ctx, targets);
             case "teleport", "tp", "teleportto", "tpt" -> SkillMotion.teleport(m, ctx, targets);
-            case "look" -> SkillMotion.look(m, ctx, targets);
             case "stun", "prison", "freeze" -> SkillMotion.stun(m, ctx, targets);
             case "mount", "mounttarget", "dismount" -> { /* los actores no se montan */ }
             case "setblock", "setblocktype" -> setBlock(m, ctx, targets);
@@ -640,12 +659,12 @@ public final class SkillRuntime {
                 for (Tgt t : targets) if (t.who != null) state(t.who).faction = f;
             }
             case "gcd", "setgcd", "globalcooldown" -> {
-                int ticks = (int) num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20);
+                int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20) / rhythm(ctx));
                 for (Tgt t : targets) if (t.who != null) state(t.who).gcdUntil = clock + ticks;
             }
             case "setskillcooldown" -> {
                 Meta other = ctx.cls.meta(m.arg(null, "skill", "s"));
-                double sec = num(m.arg("0", "seconds", "s2", "ticks"), 0);
+                double sec = num(m.arg("0", "seconds", "s2", "ticks"), 0) / rhythm(ctx);
                 for (Tgt t : targets) {
                     if (other == null || t.who == null) continue;
                     if (sec <= 0) state(t.who).cooldowns.remove(other.name);
@@ -666,7 +685,12 @@ public final class SkillRuntime {
             case "cancelskill" -> throw new CancelSkill();
             case "signal" -> {
                 String sig = m.arg(null, "signal", "s");
-                for (Tgt t : targets) if (sig != null && t.who != null && t.who.actor != null) t.who.actor.signal(sig, ctx.caster);
+                for (Tgt t : targets) {
+                    if (sig == null || t.who == null) continue;
+                    if (t.who.actor != null) t.who.actor.signal(sig, ctx.caster);
+                    SkillMobs.Host h = t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) SkillMobs.signal(h, sig, ctx.caster);
+                }
             }
             case "settarget" -> {
                 if (ctx.caster.actor != null) {
@@ -689,19 +713,46 @@ public final class SkillRuntime {
             }
             case "setai", "setnoai" -> {
                 boolean ai = m.m.equals("setai") ? bool(m.arg("true", "ai", "a")) : !bool(m.arg("true", "ai", "a"));
-                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.ai = ai;
+                for (Tgt t : targets) {
+                    if (t.who != null && t.who.actor != null) t.who.actor.ai = ai;
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.setAi(ai);
+                }
             }
             case "setspeed" -> {
                 double sp = num(m.arg("1", "speed", "s", "amount", "a"), 1);
-                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.speedMul = sp;
+                for (Tgt t : targets) {
+                    if (t.who != null && t.who.actor != null) t.who.actor.speedMul = sp;
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.setSpeedMul(sp);
+                }
             }
             case "settextdisplay" -> {
                 String text = unquote(m.arg("", "text", "t"));
                 for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.setText(text);
             }
             case "setmodelscale" -> SkillModels.scale(m, ctx, targets);
-            case "mountmodel" -> SkillModels.mount(m, ctx, targets);
-            case "dismountmodel", "dismountall" -> SkillModels.dismount(ctx, targets);
+            case "mountmodel" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                if (h != null && SkillMobs.world != null) {
+                    // Agarre de un jefe (mountmodel{p=seat} desde su tótem): el objetivo va al asiento de su modelo
+                    String seat = m.arg("seat", "p", "pbone", "seat", "part");
+                    for (Tgt t : targets) if (t.living() != null && canHurt(ctx, t.living())) SkillMobs.world.seat(h, seat, t.living());
+                } else {
+                    SkillModels.mount(m, ctx, targets);
+                }
+            }
+            case "dismountmodel", "dismountall" -> {
+                boolean done = false;
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null && SkillMobs.world != null) {
+                        SkillMobs.world.unseat(h, m.arg(null, "p", "pbone", "seat", "part"));
+                        done = true;
+                    }
+                }
+                if (!done) SkillModels.dismount(ctx, targets);
+            }
             case "setnodamageticks" -> {
                 int ticks = (int) num(m.arg("0", "ticks", "t", "_"), 0);
                 for (Tgt t : targets) if (t.living() != null) setImmunity(t.living(), ticks, ctx.cast);
@@ -717,7 +768,10 @@ public final class SkillRuntime {
                     t.who.actor.spinUntil = d > 0 ? t.who.actor.age + d : Integer.MAX_VALUE;
                 }
             }
-            case "recoil" -> SkillMotion.recoil(m, ctx, targets);
+            case "recoil" -> {
+                if (ctx.host != null) SkillFx.shake(m, ctx, targets);
+                else SkillMotion.recoil(m, ctx, targets);
+            }
             case "chain" -> SkillMotion.chain(m, ctx, targets);
             case "hide" -> SkillFx.hide(m, ctx, targets, true);
             case "showentity", "show" -> SkillFx.hide(m, ctx, targets, false);
@@ -729,11 +783,79 @@ public final class SkillRuntime {
             case "endprojectile", "terminateprojectile" -> SkillMovers.endCurrent(ctx);
             case "setprojectiledirection" -> SkillMovers.setDirection(ctx, targets);
             case "onswing", "ondeath" -> SkillAuras.aura(m, ctx, targets);
-            case "cancelevent", "animatearmorstand", "bodyrotation", "brightness", "lockmodel",
-                    "bodyclamp", "enchant", "setgravity", "threat", "runaitargetselector", "runaigoalselector",
-                    "modifyglobalscore", "setglobalscore", "feed", "playanimation", "swing", "remapmodel", "glow",
-                    "setcollidable", "setinvulnerable", "setrotation", "bindhitbox", "clearthreat", "cullconfig",
-                    "posearmorstand", "segment", "removehelditem" -> { /* nada (o no se puede hacer sin entidades de verdad) */ }
+            case "bodyrotation", "bodyclamp" -> {
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.setBodyRotation((float) num(m.arg("30", "maxheadangle", "mh"), 30),
+                            (float) num(m.arg("30", "maxbodyangle", "mb"), 30), (int) num(m.arg("0", "rotationdelay", "rde"), 0),
+                            (int) num(m.arg("0", "rotationduration", "rdu"), 0));
+                }
+            }
+            case "lockmodel" -> {
+                boolean lock = bool(m.arg("true", "lock", "l"));
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.setLocked(lock);
+                    else if (t.who != null && t.who.actor != null) t.who.actor.locked = lock;
+                }
+            }
+            case "setrotation" -> {
+                boolean rel = bool(m.arg("false", "relative", "r"));
+                float yaw = (float) num(m.arg("0", "yaw", "y"), 0);
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.turn(yaw, rel);
+                    else if (t.who != null && t.who.actor != null) {
+                        SkillActor a = t.who.actor;
+                        a.moveTo(a.pos, rel ? a.yaw + yaw : yaw, a.pitch);
+                    }
+                }
+            }
+            case "brightness" -> SkillModels.brightness(m, ctx, targets);
+            case "defaultstate" -> SkillModels.defaultState(m, ctx, targets);
+            case "remapmodel" -> SkillModels.remap(m, ctx, targets);
+            case "displaytransformation" -> SkillModels.displayTransform(m, ctx, targets);
+            case "barcreate", "barset" -> {
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.barStyle(m.arg(null, "color", "c"), m.arg(null, "style", "s"));
+                }
+            }
+            case "sethealth" -> {
+                double hp = num(m.arg("0", "amount", "a", "health", "h"), 0);
+                for (Tgt t : targets) {
+                    if (t.who != null && t.who.actor != null && hp <= 0) t.who.actor.remove();
+                    else if (t.living() != null) {
+                        if (hp <= 0) t.living().kill();
+                        else t.living().setHealth((float) hp);
+                    }
+                }
+            }
+            case "dropitem" -> {
+                String item = m.arg(null, "item", "i");
+                if (item != null && SkillMobs.world != null) {
+                    for (Tgt t : targets) SkillMobs.world.drop(ctx.cls, item.split(":")[0], ctx.caster.level(), t.pos());
+                }
+            }
+            case "raytrace" -> {
+                // raytrace{entitySkill=X} @sitio: X con lo que haya en ese sitio (la sangre de la Hidra al recibir un
+                // flechazo): aquí, X en el sitio
+                String skill = m.arg(null, "entityskill", "es", "onhit");
+                if (skill != null) callNamed(skill, ctx, targets);
+            }
+            case "look", "lock" -> {
+                boolean now = bool(m.arg("false", "immediately", "i", "force", "f"));
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                if (h != null) {
+                    if (!targets.isEmpty()) h.face(targets.get(0).pos(), now);
+                } else {
+                    SkillMotion.look(m, ctx, targets);
+                }
+            }
+            case "cancelevent", "animatearmorstand", "enchant", "setgravity", "threat", "runaitargetselector",
+                    "runaigoalselector", "modifyglobalscore", "setglobalscore", "feed", "playanimation", "swing", "glow",
+                    "setcollidable", "setinvulnerable", "bindhitbox", "clearthreat", "cullconfig",
+                    "posearmorstand", "segment", "removehelditem", "renderinit", "goto" -> { /* nada (o no se puede hacer sin entidades de verdad) */ }
             default -> warn("mecánica " + m.m);
         }
     }
@@ -797,11 +919,33 @@ public final class SkillRuntime {
 
     // ------------------------------------------------------------------------------------------- actores
 
+    /** Ritmo de ataque de la dificultad del jefe (1 = el del pack): los enfriamientos y gcd se dividen por esto. */
+    static double rhythm(Ctx ctx) {
+        return ctx.host == null ? 1.0 : Math.max(0.25, ctx.host.rhythm());
+    }
+
     private static void summon(Mech m, Ctx ctx, List<Tgt> targets) {
         String type = m.arg(null, "type", "t", "mob", "m");
         MobDef def = ctx.cls.mob(type);
         if (def == null) {
             warn("mob " + type);
+            return;
+        }
+        if (def.entity && SkillMobs.world != null) {
+            // Un mob de verdad del jefe (esbirro, brote, retoño): una entidad con su IA y sus skills
+            SkillMobs.Host owner = ctx.host;
+            if (owner == null) return;
+            int amount = (int) Math.max(1, Math.min(16, num(m.arg("1", "amount", "a"), 1)));
+            double radius = num(m.arg("0", "radius", "r"), 0);
+            for (Tgt t : targets) {
+                for (int i = 0; i < amount; i++) {
+                    Vec3 at = t.pos();
+                    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+                    if (radius > 0) at = at.add((rnd.nextDouble() * 2 - 1) * radius, 0, (rnd.nextDouble() * 2 - 1) * radius);
+                    at = SkillMinions.ground(ctx.caster.level(), at);
+                    SkillMobs.world.spawnMinion(owner, def, ctx.caster.level(), at, ctx.caster.yaw());
+                }
+            }
             return;
         }
         int amount = (int) Math.max(1, Math.min(32, num(m.arg("1", "amount", "a"), 1)));
@@ -838,6 +982,7 @@ public final class SkillRuntime {
         if (ACTORS.size() >= MAX_ACTORS) return null;
         ServerLevel level = ctx.caster.level();
         SkillActor a = new SkillActor(ctx.cls, def, level, at, yaw, pitch, ctx.caster);
+        a.host = ctx.host;
         ACTORS.add(a);
         SkillNet.near(level, at, a.spawnMessage());
         Ctx mine = ctx.as(a.who);
@@ -858,6 +1003,7 @@ public final class SkillRuntime {
         if (ACTORS.size() >= MAX_ACTORS) return null;
         ServerLevel level = ctx.caster.level();
         SkillActor a = new SkillActor(ctx.cls, null, level, at, yaw, pitch, ctx.caster);
+        a.host = ctx.host;
         a.me = mid;
         if (scale > 0) a.scale = scale;
         if (state != null && !state.isBlank()) {
@@ -897,6 +1043,12 @@ public final class SkillRuntime {
     /** Si la skill puede hacer daño o efectos malos a esa entidad (nunca a quien la lanza, sus mascotas ni aliados). */
     static boolean canHurt(Ctx ctx, Entity e) {
         if (!(e instanceof LivingEntity le) || !le.isAlive() || le instanceof ArmorStand || le.isSpectator()) return false;
+        if (ctx.host != null) {
+            // Un jefe y lo suyo: a los jugadores (no en creativo) y a los demás mobs, nunca a los de su grupo
+            if (SkillMobs.sameGroup(ctx.host, le)) return false;
+            if (le instanceof Player p && (p.isCreative() || p.isSpectator())) return false;
+            return true;
+        }
         ServerPlayer owner = ctx.caster.player();
         if (owner != null) {
             if (le == owner) return false;
@@ -918,25 +1070,46 @@ public final class SkillRuntime {
         double amount = num(m.arg("1", "amount", "a", "damage"), 1);
         if (base) {
             double attack = owner != null ? owner.getAttributeValue(Attributes.ATTACK_DAMAGE) : 1;
+            // Un mob de jefe: su daño de ataque (ya con la dificultad); un efecto suyo, el del jefe
+            if (ctx.host != null) {
+                LivingEntity src = ctx.caster.entity instanceof LivingEntity l && SkillMobs.host(l) != null ? l : ctx.host.mob();
+                attack = src.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            }
             amount = attack * num(m.arg("1", "multiplier", "m"), 1);
+        } else if (ctx.host != null) {
+            amount *= ctx.host.damageMul(); // los daños fijos del pack, con la dificultad
         }
         boolean noKnock = bool(m.arg("false", "preventknockback", "pkb", "pk"));
         boolean ignoreArmor = bool(m.arg("false", "ignorearmor", "ia"));
-        boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi"));
+        boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi", "ignoreinvulnerability", "ii"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();
-            if (le == null || !canHurt(ctx, le)) continue;
-            hurt(ctx, le, amount * ctx.power * t.power * SkillServer.damageScale(), noKnock, ignoreArmor, noImmunity);
+            if (le == null) continue;
+            // damage @self de un mob de jefe: se lo hace a sí mismo (el Esqueleto atacado por la espalda); el número va
+            // en la vida del pack
+            SkillMobs.Host self = ctx.host != null && le == ctx.caster.entity ? SkillMobs.host(le) : null;
+            if (self != null) {
+                double raw = num(m.arg("1", "amount", "a", "damage"), 1);
+                self.selfDamage(raw * self.healthScale(), bool(m.arg("false", "ignoreresistance", "ir")));
+                continue;
+            }
+            if (!canHurt(ctx, le)) continue;
+            double scale = ctx.host != null ? 1.0 : SkillServer.damageScale();
+            hurt(ctx, le, amount * ctx.power * t.power * scale, noKnock, ignoreArmor, noImmunity);
         }
     }
 
     private static void percentDamage(Mech m, Ctx ctx, List<Tgt> targets) {
         double pct = num(m.arg("0.1", "percent", "p"), 0.1);
         boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi"));
+        // ch=true: del total de vida que le queda (no de la máxima)
+        boolean current = bool(m.arg("false", "currenthealth", "ch"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();
             if (le == null || !canHurt(ctx, le)) continue;
-            hurt(ctx, le, le.getMaxHealth() * pct * SkillServer.damageScale(), false, true, noImmunity);
+            double base = current ? le.getHealth() : le.getMaxHealth();
+            double scale = ctx.host != null ? ctx.host.damageMul() : SkillServer.damageScale();
+            hurt(ctx, le, base * pct * scale, false, true, noImmunity);
         }
     }
 
@@ -964,9 +1137,14 @@ public final class SkillRuntime {
      * hacer clic rápido no hace que la skill deje de pegar.
      */
     static double immunity(UUID id, long cast, double amount, boolean noImmunity) {
+        return immunity(id, cast, amount, noImmunity, IMMUNITY);
+    }
+
+    /** window: ticks de inmunidad (los golpes de los jefes, los 10 de Minecraft: un tótem que dura 7 ticks pega una vez). */
+    static double immunity(UUID id, long cast, double amount, boolean noImmunity, int window) {
         HitKey key = new HitKey(id, cast);
         SkillHit last = noImmunity ? null : SKILL_HITS.get(key);
-        if (last != null && clock - last.at() < IMMUNITY) {
+        if (last != null && clock - last.at() < window) {
             if (amount <= last.amount()) return 0;
             SKILL_HITS.put(key, new SkillHit(last.at(), amount));
             return amount - last.amount();
@@ -989,14 +1167,18 @@ public final class SkillRuntime {
 
     static void hurt(Ctx ctx, LivingEntity le, double amount, boolean noKnock, boolean ignoreArmor, boolean noImmunity) {
         if (amount <= 0) return;
-        amount = immunity(le.getUUID(), ctx.cast, amount, noImmunity);
+        amount = immunity(le.getUUID(), ctx.cast, amount, noImmunity, ctx.host != null ? 10 : IMMUNITY);
         if (amount <= 0) return;
         ServerPlayer owner = ctx.caster.player();
         Vec3 motion = le.getDeltaMovement();
         le.invulnerableTime = 0;
         inDamage = true;
         try {
-            if (owner != null) {
+            if (ctx.host != null) {
+                // Golpe de un jefe: como el de un mob (con su nombre en el mensaje de muerte); sin armadura, magia
+                LivingEntity src = ctx.caster.entity instanceof LivingEntity l && SkillMobs.host(l) != null ? l : ctx.host.mob();
+                le.hurt(ignoreArmor ? le.damageSources().indirectMagic(src, src) : le.damageSources().mobAttack(src), (float) amount);
+            } else if (owner != null) {
                 le.hurt(ignoreArmor ? le.damageSources().indirectMagic(owner, owner) : le.damageSources().playerAttack(owner), (float) amount);
             } else {
                 le.hurt(le.damageSources().magic(), (float) amount);
@@ -1011,12 +1193,13 @@ public final class SkillRuntime {
         }
     }
 
-    private static void heal(Mech m, List<Tgt> targets, boolean percent) {
+    /** scale: la vida de los jefes va a la escala de su dificultad (un «heal{a=10}» del pack cura 10 de su vida del pack). */
+    private static void heal(Mech m, List<Tgt> targets, boolean percent, double scale) {
         double a = num(m.arg("1", "amount", "a", "multiplier", "m"), 1);
         for (Tgt t : targets) {
             LivingEntity le = t.living();
             if (le == null) continue;
-            le.heal((float) (percent ? le.getMaxHealth() * a : a));
+            le.heal((float) (percent ? le.getMaxHealth() * a : a * (SkillMobs.host(le) != null ? scale : 1.0)));
         }
     }
 
@@ -1344,17 +1527,33 @@ public final class SkillRuntime {
             a.age++;
             if (a.spin != 0F && a.age <= a.spinUntil && a.follow == null) a.moveTo(a.pos, a.yaw + a.spin, a.pitch);
             if (a.follow != null) {
-                if (!a.follow.isAlive() || a.follow.isRemoved()) {
+                // El modelo de un mob de jefe sigue mientras la entidad esté en el mundo (muerto también: su animación
+                // de muerte y lo que hacen sus skills al morir)
+                boolean bossHost = SkillMobs.host(a.follow) != null;
+                if (a.follow.isRemoved() || !bossHost && !a.follow.isAlive()) {
                     a.remove();
                     continue;
                 }
                 float yaw = a.follow instanceof LivingEntity le ? le.yBodyRot : a.follow.getYRot();
                 a.moveTo(a.follow.position(), yaw, 0F);
+                if (a.layers != null) {
+                    Vec3 d = a.follow.getDeltaMovement();
+                    a.layers.setWalking(d.x * d.x + d.z * d.z > 0.0009 && !(a.follow instanceof LivingEntity l2 && l2.isDeadOrDying()));
+                }
+            } else if (a.physics) {
+                a.physicsTick();
             } else if (a.def != null && a.def.living) {
                 try {
                     SkillMinions.tick(a);
                 } catch (Throwable e) {
                     TFClient.LOGGER.debug("TF Skills: error en un esbirro", e);
+                }
+            }
+            if (a.layers != null && a.me != null) {
+                net.tierrasfantasticas.tfclient.vfx.VfxModel vm = SkillModels.load(a.me);
+                if (vm != null) {
+                    a.layers.update(vm, a.age);
+                    a.layers.prune(a.age);
                 }
             }
             if (!a.timers.isEmpty()) {
@@ -1365,6 +1564,7 @@ public final class SkillRuntime {
                         c.origin = a.pos;
                         c.trigger = a.owner;
                         c.aim = a.target;
+                        c.host = a.host;
                         currentCtx = c;
                         try {
                             exec(mm, c);

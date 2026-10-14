@@ -45,6 +45,15 @@ final class SkillMotion {
         if (ctx.caster.entity != null || ctx.caster.actor != null) from = ctx.caster.pos();
         for (Tgt t : targets) {
             Entity e = t.entity();
+            if (e == null && t.who != null && t.who.actor != null && t.who.actor.physics) {
+                // Un efecto de jefe que cae (la cabeza cortada de la Hidra): sale despedido
+                SkillActor a = t.who.actor;
+                Vec3 away = new Vec3(a.pos.x - from.x, 0, a.pos.z - from.z);
+                away = away.lengthSqr() < 1e-6 ? Vec3.ZERO : away.normalize().scale(v);
+                a.vel = new Vec3(away.x, vy, away.z);
+                a.onGround = false;
+                continue;
+            }
             if (e == null || !movable(ctx, e)) continue;
             Vec3 away = new Vec3(e.getX() - from.x, 0, e.getZ() - from.z);
             away = away.lengthSqr() < 1e-6 ? Vec3.ZERO : away.normalize().scale(v);
@@ -154,6 +163,13 @@ final class SkillMotion {
         boolean relative = SkillRuntime.bool(m.arg("false", "relative", "r"));
         for (Tgt t : targets) {
             Entity e = t.entity();
+            if (e == null && t.who != null && t.who.actor != null && t.who.actor.physics) {
+                SkillActor a = t.who.actor;
+                a.vel = mode.equals("add") ? a.vel.add(x, y, z) : new Vec3(x, y, z);
+                if (a.vel.y < -4) a.vel = new Vec3(a.vel.x, -4, a.vel.z);
+                a.onGround = false;
+                continue;
+            }
             if (e == null || !movable(ctx, e)) continue;
             Vec3 add = new Vec3(x, y, z);
             if (relative) {
