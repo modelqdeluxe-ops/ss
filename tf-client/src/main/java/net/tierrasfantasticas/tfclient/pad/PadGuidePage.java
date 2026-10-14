@@ -544,6 +544,8 @@ final class PadGuidePage extends PadPage {
                         + "Cada una tiene su SÍ/NO: por tipo de objeto (un NO lo deja como en Minecraft normal), al moverte, "
                         + "efectos en los brazos, física y objetos en 3D. APAGADAS arriba las quita todas: todo vuelve a ser como en "
                         + "Minecraft normal (tarda medio segundo: primero terminan lo que estaban haciendo)."),
+                b("Las armas y objetos del servidor (los que tienen modelo 3D) van sin Punchy de fábrica: así se ven como siempre. "
+                        + "Se pueden encender en «Con qué objetos»."),
                 b("Inspeccionar: con la tecla I miras lo que llevas en la mano (se cambia en Controles)."),
                 tip("Las animaciones son de Punchy, de Punchy Guys Studios (modrinth.com/mod/punchy-fpa), y van en TF Client "
                         + "con su permiso. Si tenías Punchy instalado aparte, puedes quitarlo: TF Client ya lo trae."),
