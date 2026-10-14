@@ -8,10 +8,9 @@ import net.minecraft.world.item.Items;
 import net.tierrasfantasticas.tfclient.trail.TrailPreview;
 import net.tierrasfantasticas.tfclient.trail.TrailProfile;
 import net.tierrasfantasticas.tfclient.trail.TrailSettings;
-import net.tierrasfantasticas.tfclient.trail.VividColors;
 
 /**
- * Efectos › COMBATE (1.3.67): los ajustes de las estelas de arma y de los colores vivos. Son de cada jugador y viven en
+ * Efectos › COMBATE (1.3.67): los ajustes de las estelas de arma. Son de cada jugador y viven en
  * el cliente (config/tfclient/estelas.properties), así que esta pestaña no pasa por el servidor: PadViewPage la monta
  * aquí y sus acciones se hacen aquí. Arriba, la vista previa (una espada que da tajos con la estela de ahora); debajo,
  * todo en filas compactas: interruptores, − + y « ».
@@ -65,7 +64,6 @@ final class PadCombat {
                     case "palas" -> TrailSettings.shovels = !TrailSettings.shovels;
                     case "azadas" -> TrailSettings.hoes = !TrailSettings.hoes;
                     case "armas" -> TrailSettings.others_tools = !TrailSettings.others_tools;
-                    case "vivos" -> TrailSettings.vivid = !TrailSettings.vivid;
                     case "detalle" -> TrailSettings.lowDetail = !TrailSettings.lowDetail;
                     case "destellos" -> TrailSettings.reducedFlash = !TrailSettings.reducedFlash;
                     default -> {
@@ -80,7 +78,6 @@ final class PadCombat {
                     case "minima" -> TrailSettings.minOpacity = clamp(TrailSettings.minOpacity + 10 * dir, 0, 60);
                     case "filo" -> TrailSettings.core = clamp(TrailSettings.core + 10 * dir, 0, 100);
                     case "distancia" -> TrailSettings.othersDistance = clamp(TrailSettings.othersDistance + 8 * dir, 0, 128);
-                    case "vivos" -> TrailSettings.vividAmount = clamp(TrailSettings.vividAmount + 10 * dir, 10, 100);
                     default -> {
                     }
                 }
@@ -169,16 +166,6 @@ final class PadCombat {
         b.row(toggle(Items.IRON_SHOVEL, "Palas", "", TrailSettings.shovels, "t:palas"));
         b.row(toggle(Items.IRON_HOE, "Azadas", "", TrailSettings.hoes, "t:azadas"));
         b.row(toggle(Items.TRIDENT, "Otras armas", "Las de otros mods (lanzas, martillos...).", TrailSettings.others_tools, "t:armas"));
-
-        b.row(section("COLORES VIVOS"));
-        if (VividColors.available()) {
-            b.row(toggle(Items.SUNFLOWER, "Colores vivos", "Todo el mundo con colores más intensos.", TrailSettings.vivid, "t:vivos"));
-            if (TrailSettings.vivid) {
-                b.row(stepper(Items.BLAZE_POWDER, "Cuánto", "", TrailSettings.vividAmount + " %", "n:vivos"));
-            }
-        } else {
-            b.row(note("Con shaders (Oculus) no hace falta: los shaders ya ponen su propio color."));
-        }
 
         b.row(section("RENDIMIENTO"));
         b.row(toggle(Items.COMPARATOR, "Poco detalle", "Menos puntos y sin suavizar: para PCs justos.", TrailSettings.lowDetail, "t:detalle"));

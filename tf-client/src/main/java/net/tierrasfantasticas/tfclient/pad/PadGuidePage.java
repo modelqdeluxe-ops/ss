@@ -538,8 +538,8 @@ final class PadGuidePage extends PadPage {
                 p("Efectos al matar, clases de skills y efectos de combate."),
                 b("AL MATAR: efectos de kill gratis. Pulsa uno para EQUIPAR; QUITAR EFECTO lo quita."),
                 b("SKILLS: las clases de skills que compraste en la web. ACTIVAR una (solo una a la vez); DESACTIVAR la apaga."),
-                b("COMBATE: la estela de luz de tus golpes (estilo, color, duración, ancho...) con su vista previa, y Colores vivos "
-                        + "para ver el mundo más intenso. Es solo tuyo y se guarda solo; RESTABLECER lo deja como venía."),
+                b("COMBATE: la estela de luz de tus golpes (estilo, color, duración, ancho...) con su vista previa. Es solo tuya y "
+                        + "se guarda sola; RESTABLECER la deja como venía."),
                 b("Todo se aplica al momento."));
 
         topic("rango", "Mi rango", "rango",

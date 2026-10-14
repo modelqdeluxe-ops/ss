@@ -435,7 +435,7 @@ page('a_kit', 'KITS', [], '', [], [
      cells=[(n, '', T, False, c) for n, c in (('iron_sword', 1), ('iron_pickaxe', 1), ('bread', 16), ('torch', 32), ('oak_log', 64),
                                              ('leather_chestplate', 1))],
      footer=[('ATRÁS', B), ('PROBAR', GO), ('COPIAR', GR), ('BORRAR', R)], app='a_kits')
-# 1.3.67: Efectos › COMBATE (PadCombat.view): las estelas de arma y los colores vivos, del cliente, con la vista previa
+# 1.3.67: Efectos › COMBATE (PadCombat.view): las estelas de arma, del cliente, con la vista previa
 def combate_page(name, st=None, t=250, hero_line='Clásico · Automático · brillo', rows_from=0):
     st = st or {}
     rows = [

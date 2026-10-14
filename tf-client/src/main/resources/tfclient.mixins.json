@@ -32,8 +32,6 @@
     "AbstractClientPlayerSkinMixin",
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
-    "GameRendererMixin",
-    "PostChainAccessor",
     "GuiGraphicsMixin"
   ],
   "injectors": {
