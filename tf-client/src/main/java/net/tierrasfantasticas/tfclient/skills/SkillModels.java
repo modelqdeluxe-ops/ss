@@ -113,7 +113,7 @@ final class SkillModels {
             SkillActor a = holder(t, false, ctx);
             if (a == null || a.me == null) continue;
             if (a.layers != null) {
-                // Como ModelEngine: varias a la vez por prioridad, con entrada y salida suaves
+                // Como ModelEngine 4: una animación por prioridad (la nueva sustituye a la de esa prioridad), con entrada y salida suaves
                 VfxModel vm = load(a.me);
                 if (vm == null) continue;
                 int li = (int) SkillRuntime.num(m.arg("0", "lerpin", "li"), 0);

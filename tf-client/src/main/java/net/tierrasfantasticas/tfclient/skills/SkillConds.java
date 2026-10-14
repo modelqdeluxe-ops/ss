@@ -196,12 +196,13 @@ final class SkillConds {
                 yield mh == null || mh.target() != null && mh.target().isAlive();
             }
             case "playerwithin" -> {
-                // playerWithin{d}: algún jugador (que no esté en creativo ni espectador) a d bloques de quien lanza
+                // playerWithin{d}: algún jugador (que no sea espectador) a d bloques de quien lanza; como en MythicMobs,
+                // también en creativo (la Gárgola y el Esqueleto despiertan aunque los pruebe el staff)
                 double d = SkillRuntime.num(arg(a, "5", "distance", "d"), 5);
                 Vec3 from = who != null ? who.pos() : ctx.caster.pos();
                 boolean any = false;
                 for (Player p : ctx.caster.level().players()) {
-                    if (!p.isSpectator() && !p.isCreative() && p.position().distanceToSqr(from) <= d * d) {
+                    if (!p.isSpectator() && p.position().distanceToSqr(from) <= d * d) {
                         any = true;
                         break;
                     }

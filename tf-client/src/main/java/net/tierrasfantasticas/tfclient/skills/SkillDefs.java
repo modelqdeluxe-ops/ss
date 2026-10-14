@@ -119,6 +119,8 @@ public final class SkillDefs {
         /** Un mob «de verdad» del pack (lobo, caballo, zombi...): en el juego anda, sigue a su dueño y ataca (esbirros). */
         public boolean living;
         public double speed = 0.25;
+        /** La velocidad del tipo de Minecraft (IRON_GOLEM 0,25...): setspeed{s} la multiplica (jefes). */
+        public double typeSpeed = 0.25;
         public double followRange = 32;
         // ----- Jefes (bosses/<jefe>.json)
         /** En el juego es un mob de verdad (se le pega, tiene IA): el jefe y sus esbirros. Si no, un efecto (actor). */
@@ -450,6 +452,7 @@ public final class SkillDefs {
                 mob.entity = "entity".equals(str(m, "kind", "actor"));
                 mob.living = false; // sus esbirros no son los de las clases (llevan su propia IA de mob de verdad)
                 double typeSpeed = num(m.get("speed"), 0.25);
+                mob.typeSpeed = typeSpeed;
                 mob.speed = opts.has("MovementSpeed") ? num(opts.get("MovementSpeed"), typeSpeed) : typeSpeed;
                 mob.display = str(m, "display", null);
                 mob.damage = num(m.get("damage"), 0);

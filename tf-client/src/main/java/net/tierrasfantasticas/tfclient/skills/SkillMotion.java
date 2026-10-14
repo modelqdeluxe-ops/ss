@@ -143,9 +143,24 @@ final class SkillMotion {
     }
 
     static void propel(Mech m, Ctx ctx, List<Tgt> targets) {
-        double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1) / 10.0;
         Entity self = ctx.caster.entity;
         if (self == null) return;
+        if (ctx.host != null) {
+            // Un jefe: como MythicMobs, «v» bloques por tick hacia el objetivo (la velocidad se pone, no se suma). La
+            // Gárgola se lanza ~9 bloques con v=4 y retrocede 15 con v=0,5 repetido 30 ticks; con la de las clases
+            // (v/10 sumado) apenas daba un saltito
+            double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1);
+            for (Tgt t : targets) {
+                Vec3 d = t.pos().subtract(self.position());
+                if (d.lengthSqr() < 1e-6) continue;
+                Vec3 motion = d.normalize().scale(v);
+                if (motion.length() > 4.0) motion = motion.normalize().scale(4);
+                push(ctx, self, motion);
+                break;
+            }
+            return;
+        }
+        double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1) / 10.0;
         for (Tgt t : targets) {
             Vec3 d = t.pos().subtract(self.position());
             if (d.lengthSqr() < 1e-6) continue;

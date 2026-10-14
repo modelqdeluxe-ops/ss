@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.75**: jefes de incursión; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.76**: jefes de incursión con su IA arreglada; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,10 +55,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.75) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.76) — lee esto primero
 
-**Estado**: última versión publicada **1.3.75** (**jefes de incursión**: 5 jefes de packs comprados, grietas de cristal y
-la ventana `/tf boss`; ver el bloque «TF Client 1.3.75» más abajo), Release ya creada:
+**Estado**: última versión publicada **1.3.76** (la IA de los jefes arreglada: ver el bloque «TF Client 1.3.76»; los
+jefes, grietas y `/tf boss` son de la 1.3.75), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -103,7 +103,9 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.75 entera** (jefes, grietas y `/tf boss`: compila
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.76** (la IA de los jefes: simulada con
+`tools/bosses/sim_ai.py`; pruébalos en SUPERVIVENCIA: como en MythicMobs, no atacan a quien está en creativo),
+**la 1.3.75 entera** (jefes, grietas y `/tf boss`: compila
 en Actions y los modelos/animaciones se revisaron en hojas renderizadas en Python, pero nadie ha luchado contra ellos; lo
 primero que hay que mirar si el dueño manda capturas: la vista previa 3D de la ventana —que mire de frente y quepa—, el
 cristal y su cartel, la barra del jefe, las cabezas de la Hidra al golpearlas y el agarre del Esqueleto/Abominación),
@@ -167,6 +169,41 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.76 (14 oct) — IA DE LOS JEFES ARREGLADA.** El dueño, tras probar la 1.3.75: «cargan bien en cuanto a
+> textura, pero no tienen todas sus habilidades, solo hacen 1 ataque genérico, son estúpidos; unos se quedan bugueados
+> en el cielo como el rey esqueleto… incluso en la dificultad máxima». No era el pack: era nuestro motor, que no hacía
+> lo que hace MythicMobs/ModelEngine en varias cosas que los jefes usan a cada paso:
+> - **Cooldown antes de las condiciones** (`SkillRuntime.runMeta`): se ponía el enfriamiento aunque la skill no saliera
+>   (distancia, ángulo, auras…). Los ataques que se miran cada segundo se quedaban en recarga sin salir: casi siempre
+>   quedaba uno (Astwood, con su randomskill, solo daba puñetazos). Ahora solo cuenta si sale.
+> - **Variables con duración** (`setvar{...;duration=40}`) no caducaban (`putVar`): la Hidra («saltando», «mordiendo»,
+>   «lanzando fuego») y la Abominación («lengua», «garras», «tentáculo») se quedaban marcadas para siempre tras el
+>   primer ataque.
+> - **Animaciones por prioridad** (`VfxLayers.play`): en ModelEngine 4 cada prioridad es una máquina de estados con UNA
+>   animación (la nueva sustituye a la anterior); aquí se apilaban. El «sleep» del Esqueleto de la Torre (lo sube 5,6
+>   bloques y lo echa 7 atrás, sobre el trono) seguía debajo al despertar: **flotaba en el aire**.
+> - **`~onDamaged` con el daño del golpe** (no el recibido, `BossEntity.hurt`): con el escudo arriba el Esqueleto tiene
+>   Resistencia V y le entraba 0, así que el escudo no se rompía nunca y no pasaba de la fase 1. Y **potion{level}** en
+>   los jefes es el amplificador (como MythicMobs: level=4 es Resistencia V); en las clases sigue como estaba.
+> - **`gcd` siempre del jefe** (antes, dentro de un ataque lanzado con @target, se lo ponía al jugador y encadenaba
+>   ataques encima unos de otros) y **las mecánicas de ModelEngine sin objetivo** (`bodyrotation`, `partvis`…) van a su
+>   modelo (`SkillRuntime.OWN_MODEL`).
+> - **`propel` en los jefes**: «v» bloques por tick hacia el objetivo (antes v/10 sumado: la Gárgola no saltaba, solo
+>   daba manotazos en el sitio). **`setspeed{s}`** es la velocidad del tipo por «s» (la Abominación sale con
+>   MovementSpeed 0 y no andaba nunca).
+> - **Hacia dónde mira** (`Host.lookYaw`): fieldOfView, @forward y los proyectiles usan la dirección de la entidad
+>   (mira a su objetivo, 30°/tick), no la del modelo; el modelo, andando, sigue esa dirección y, parado, la cabeza
+>   arrastra al cuerpo pasado «mh» (como ModelEngine). Se acercan hasta casi tocar (cuerpo + 1 bloque; antes +2,2 y
+>   Astwood nunca llegaba a los 4 bloques de sus puñetazos).
+> - `playerWithin` cuenta también a quien está en creativo (la Gárgola y el Esqueleto despiertan), y la incursión no se
+>   cierra si solo hay staff en creativo cerca. **Pero, como en MythicMobs, no atacan a quien está en creativo.**
+> - **Simulador de la IA**: `python3 tools/bosses/sim_ai.py [jefe] [--min 8] [--seed N] [-v] [--antes]` ejecuta el
+>   programa del jefe con las mismas reglas que Java contra un jugador que se mueve, le pega y es lanzado, y cuenta los
+>   ataques. Con `--antes` reproduce el motor de la 1.3.75 (la Abominación: 2 ataques en 4 minutos; la Hidra se quedaba
+>   en 9 de 15). Ahora: Gárgola 5/5, Hidra 14/15 (la rotura de cabezas sale por debajo del 50 %), Abominación 6/7 (el
+>   agarre depende de que el tentáculo te pille), Esqueleto con sus 3 fases (escudo → sin escudo → espada de almas por
+>   debajo del 35 %), Astwood 12/12; 6–30 ataques por minuto según el jefe.
 
 > **TF Client 1.3.75 (14 oct) — JEFES DE INCURSIÓN.** El dueño mandó 5 packs de jefes (zips: Gárgola, Hidra y Abominación
 > Parasitaria de LittleRoom, Tower Skeleton y Astwood) y pidió: «portear todo correctamente, animaciones, vfx, fases,
