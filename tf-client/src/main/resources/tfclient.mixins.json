@@ -32,14 +32,7 @@
     "AbstractClientPlayerSkinMixin",
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
-    "GuiGraphicsMixin",
-    "PunchyConfigMixin",
-    "PunchyArmRendererMixin",
-    "PunchyUseItemMixin",
-    "PunchyCameraMixin",
-    "PunchyScreenDelayMixin",
-    "FishingHookRendererMixin",
-    "GameRendererHandsMixin"
+    "GuiGraphicsMixin"
   ],
   "injectors": {
     "defaultRequire": 0

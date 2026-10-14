@@ -21,33 +21,12 @@ final class PadCombat {
 
     private PadCombat() {}
 
-    /** La vista de Efectos con las pestañas del cliente, COMBATE y ANIMACIONES (el servidor no las trae). */
+    /** La vista de Efectos con la pestaña COMBATE (si el servidor no la trae, por ser de otra versión). */
     static PadView withTab(PadView v) {
+        for (PadView.Tab t : v.tabs()) if (t.key().equals(TAB)) return v;
         List<PadView.Tab> tabs = new ArrayList<>(v.tabs());
-        boolean changed = false;
-        for (String[] t : CLIENT_TABS) {
-            if (tabs.stream().noneMatch(x -> x.key().equals(t[0]))) {
-                tabs.add(new PadView.Tab(t[0], t[1]));
-                changed = true;
-            }
-        }
-        if (!changed) return v;
+        tabs.add(new PadView.Tab(TAB, "COMBATE"));
         return new PadView(v.app(), tabs, v.tab(), v.header(), v.hero(), v.cells(), v.rows(), v.footer(), v.input(), v.empty(), v.cellStyle());
-    }
-
-    /** Las pestañas de Efectos que pinta el cliente (no pasan por el servidor), en su orden. */
-    private static final String[][] CLIENT_TABS = {{TAB, "COMBATE"}, {PadAnims.TAB, "ANIMACIONES"}};
-
-    /** Las pestañas de una vista del cliente: las del servidor (o las de siempre si no hay) y las del cliente. */
-    static void tabs(PadView.Builder b, List<PadView.Tab> serverTabs) {
-        if (serverTabs.isEmpty()) {
-            b.tab("", "AL MATAR").tab("skills", "SKILLS");
-        } else {
-            for (PadView.Tab t : serverTabs) b.tab(t.key(), t.label());
-        }
-        for (String[] t : CLIENT_TABS) {
-            if (serverTabs.stream().noneMatch(x -> x.key().equals(t[0]))) b.tab(t[0], t[1]);
-        }
     }
 
     /** ¿Esta acción es de la pestaña COMBATE (se hace aquí y no en el servidor)? */
@@ -87,7 +66,6 @@ final class PadCombat {
                     case "armas" -> TrailSettings.others_tools = !TrailSettings.others_tools;
                     case "detalle" -> TrailSettings.lowDetail = !TrailSettings.lowDetail;
                     case "destellos" -> TrailSettings.reducedFlash = !TrailSettings.reducedFlash;
-                    case "sonido" -> TrailSettings.sound = !TrailSettings.sound;
                     default -> {
                     }
                 }
@@ -100,7 +78,6 @@ final class PadCombat {
                     case "minima" -> TrailSettings.minOpacity = clamp(TrailSettings.minOpacity + 10 * dir, 0, 60);
                     case "filo" -> TrailSettings.core = clamp(TrailSettings.core + 10 * dir, 0, 100);
                     case "distancia" -> TrailSettings.othersDistance = clamp(TrailSettings.othersDistance + 8 * dir, 0, 128);
-                    case "volumen" -> TrailSettings.soundVolume = clamp(TrailSettings.soundVolume + 10 * dir, 0, 100);
                     default -> {
                     }
                 }
@@ -139,7 +116,13 @@ final class PadCombat {
     static PadView view(List<PadView.Tab> serverTabs) {
         TrailSettings.load();
         PadView.Builder b = PadView.of("efectos");
-        tabs(b, serverTabs);
+        if (serverTabs.isEmpty()) {
+            b.tab("", "AL MATAR").tab("skills", "SKILLS").tab(TAB, "COMBATE");
+        } else {
+            for (PadView.Tab t : serverTabs) b.tab(t.key(), t.label());
+            boolean has = serverTabs.stream().anyMatch(t -> t.key().equals(TAB));
+            if (!has) b.tab(TAB, "COMBATE");
+        }
         b.selected(TAB).compact();
         TrailProfile profile = TrailProfile.current();
         boolean on = TrailSettings.enabled;
@@ -174,12 +157,6 @@ final class PadCombat {
         if (TrailSettings.others) {
             b.row(stepper(Items.SPYGLASS, "Hasta qué distancia", "Las de los demás, desde tan lejos.",
                     TrailSettings.othersDistance == 0 ? "Sin límite" : TrailSettings.othersDistance + " bloques", "n:distancia"));
-        }
-
-        b.row(section("SONIDO"));
-        b.row(toggle(Items.NOTE_BLOCK, "Sonido del tajo", "Un «zas» de aire al golpear; el crítico, más fuerte.", TrailSettings.sound, "t:sonido"));
-        if (TrailSettings.sound) {
-            b.row(stepper(Items.JUKEBOX, "Volumen del tajo", "", TrailSettings.soundVolume + " %", "n:volumen"));
         }
 
         b.row(section("CON QUÉ"));
