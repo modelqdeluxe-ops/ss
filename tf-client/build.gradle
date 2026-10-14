@@ -42,6 +42,27 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
+// Punchy (1.3.69): las animaciones en primera persona de Punchy Guys Studios, con su permiso por escrito
+// (META-INF/licenses/punchy-PERMISO.txt). Va dentro del jar tal cual, el oficial de Modrinth (se comprueba su SHA-512),
+// como jar-in-jar de Forge: META-INF/jarjar/metadata.json. Si el jugador tiene Punchy suelto, Forge usa ese.
+def punchyUrl = 'https://cdn.modrinth.com/data/8aoMKplv/versions/YUkGOyu4/punchy-2.8e-forge-1.20.1.jar'
+def punchySha512 = '9711c65f05aed531da499bd773e248bb211a586714327aa436ac88905f750f75b7ae559ee012b1bbcea9d52539373b129b5d04544f2a96e0cc114cf1dd1fd145'
+def punchyJar = layout.buildDirectory.file('punchy/punchy-2.8e-forge-1.20.1.jar')
+
+tasks.register('punchyJar') {
+    inputs.property('sha512', punchySha512)
+    outputs.file(punchyJar)
+    doLast {
+        def out = punchyJar.get().asFile
+        def digest = { File f -> java.security.MessageDigest.getInstance('SHA-512').digest(f.bytes).encodeHex().toString() }
+        if (!out.exists() || digest(out) != punchySha512) {
+            out.parentFile.mkdirs()
+            new URL(punchyUrl).withInputStream { i -> out.withOutputStream { o -> o << i } }
+        }
+        if (digest(out) != punchySha512) throw new GradleException("Punchy: el jar descargado no es el oficial (SHA-512 distinto)")
+    }
+}
+
 tasks.named('processResources', ProcessResources).configure {
     def props = [mod_version: mod_version]
     inputs.properties props
@@ -51,6 +72,10 @@ tasks.named('processResources', ProcessResources).configure {
 }
 
 tasks.named('jar', Jar).configure {
+    dependsOn 'punchyJar'
+    from(punchyJar) {
+        into 'META-INF/jarjar'
+    }
     manifest {
         attributes([
             'Specification-Title'     : 'tfclient',

@@ -32,7 +32,8 @@
     "AbstractClientPlayerSkinMixin",
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
-    "GuiGraphicsMixin"
+    "GuiGraphicsMixin",
+    "PunchyConfigMixin"
   ],
   "injectors": {
     "defaultRequire": 0

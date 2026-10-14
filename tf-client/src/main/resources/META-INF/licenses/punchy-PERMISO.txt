@@ -1,0 +1,30 @@
+Punchy dentro de TF Client: permiso de su titular
+=================================================
+
+Punchy (https://modrinth.com/mod/punchy-fpa) es de Punchy Guys Studios y su licencia es «All Rights Reserved»
+(LICENSE_Punchy, dentro de META-INF/jarjar/punchy-2.8e-forge-1.20.1.jar). No es software libre.
+
+TF Client lo incluye porque Punchy Guys Studios, mediante su representante autorizado, lo autorizó por escrito:
+«Acuerdo de autorización: uso de animaciones y recursos de Punchy dentro de TF Client · Minecraft Forge 1.20.1»,
+firmado el 13 de octubre de 2026 por Punchy Guys Studios (el titular) y por Pewez777, responsable de Tierras
+Fantásticas (el solicitante). El documento firmado lo guarda Tierras Fantásticas.
+
+Qué permite: adaptar e incorporar en TF Client, mod gratuito para un servidor de Minecraft Forge 1.20.1, las animaciones
+en primera persona de Punchy y sus archivos de animación, modelos, texturas y sonidos, y estudiar o adaptar el código
+necesario, en la medida en que el titular tenga derechos sobre esos recursos. Se distribuyen solo integrados en TF
+Client, gratis, desde las Releases públicas de GitHub del proyecto.
+
+Compromisos de Tierras Fantásticas:
+  (a) crédito visible a Punchy Guys Studios en la lista de mods, en la app Guía y en el menú de Efectos, con el enlace
+      a su página oficial de Modrinth;
+  (b) cada jugador puede desactivar cada animación desde el menú de Efectos del TF Pad;
+  (c) no redistribuir Punchy por separado, no venderlo y no presentarlo como creación propia;
+  (d) guardar este permiso junto a las licencias del mod (este archivo);
+  (e) retirarlo en una versión posterior razonablemente posible si el titular lo pide por escrito.
+
+La titularidad de Punchy y de sus recursos sigue siendo de sus propietarios. Este permiso no transfiere propiedad ni da
+otros derechos que los indicados. Los recursos de terceros que el titular no controle quedan fuera.
+
+El jar de Punchy va tal cual, sin cambios: es el oficial de Modrinth (versión 2.8e para Forge 1.20.1, SHA-512
+9711c65f05aed531da499bd773e248bb211a586714327aa436ac88905f750f75b7ae559ee012b1bbcea9d52539373b129b5d04544f2a96e0cc114cf1dd1fd145).
+TF Client solo cambia sus ajustes (config/punchy/punchy_config.json) desde el pad, con la propia API de Punchy.

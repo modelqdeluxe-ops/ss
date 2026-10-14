@@ -535,11 +535,17 @@ final class PadGuidePage extends PadPage {
                 b("Solo cambian cómo te ven: tu armadura de verdad sigue igual."));
 
         topic("efectos", "Efectos", "efectos",
-                p("Efectos al matar, clases de skills y efectos de combate."),
+                p("Efectos al matar, clases de skills, efectos de combate y animaciones."),
                 b("AL MATAR: efectos de kill gratis. Pulsa uno para EQUIPAR; QUITAR EFECTO lo quita."),
                 b("SKILLS: las clases de skills que compraste en la web. ACTIVAR una (solo una a la vez); DESACTIVAR la apaga."),
                 b("COMBATE: la estela de luz de tus golpes (estilo, color, duración, ancho...) con su vista previa. Es solo tuya y "
                         + "se guarda sola; RESTABLECER la deja como venía."),
+                b("ANIMACIONES: las animaciones en primera persona de Punchy (golpes, minar, comer, arco, nadar, trepar...). "
+                        + "Cada una tiene su SÍ/NO: por tipo de objeto (un NO lo deja como en Minecraft normal), al moverte, "
+                        + "efectos en los brazos, física y objetos en 3D. ACTIVADAS/APAGADAS arriba las quita todas."),
+                b("Inspeccionar: con la tecla I miras lo que llevas en la mano (se cambia en Controles)."),
+                tip("Las animaciones son de Punchy, de Punchy Guys Studios (modrinth.com/mod/punchy-fpa), y van en TF Client "
+                        + "con su permiso. Si tenías Punchy instalado aparte, puedes quitarlo: TF Client ya lo trae."),
                 b("Todo se aplica al momento."));
 
         topic("rango", "Mi rango", "rango",
