@@ -162,7 +162,7 @@ public final class PadAdminRewards {
         /** Un día: su ficha arriba y lo que da (objetos, monedas y monedas verdes). */
         private PadView dayView(ServerPlayer player, int i, PadRewards.Day d) {
             String target = "d:" + i;
-            PadView.Builder b = PadView.of(APP_ID).selected(target);
+            PadView.Builder b = PadView.of(APP_ID).selected(target).compact();
             b.hero(new PadView.Row(d.icon(), "Día " + (i + 1), GOLD, List.of(contents(d.items(), d.coins(), d.greens()),
                     "El día " + (i + 1) + " de la racha de cada jugador."), -1, "", null, null));
             PadAdminUi.items(b, player, APP_ID, target, d.items());
@@ -178,7 +178,7 @@ public final class PadAdminRewards {
         private PadView rewardView(ServerPlayer player, PadRewards.Reward r) {
             String target = "r:" + r.id();
             String f = PadAdminUi.field(player, APP_ID, target);
-            PadView.Builder b = PadView.of(APP_ID).selected(target);
+            PadView.Builder b = PadView.of(APP_ID).selected(target).compact();
             b.hero(new PadView.Row(r.iconStack(), r.name(), r.on() ? GREEN : OFF, List.of(PadRewards.typeText(r) + " · "
                     + contents(r.items(), r.coins(), r.greens())), -1, r.on() ? "ACTIVA" : "APAGADA", null, null));
             b.row(PadAdminUi.toggle(new ItemStack(r.on() ? Items.LIME_DYE : Items.GRAY_DYE), "Activada", "", r.on(),
@@ -205,7 +205,7 @@ public final class PadAdminRewards {
         private PadView typeView(ServerPlayer player, PadRewards.Reward r) {
             String target = "r:" + r.id();
             String f = PadAdminUi.field(player, APP_ID, target);
-            PadView.Builder b = PadView.of(APP_ID).selected("rt:" + r.id()).header("Cada cuánto · " + r.name() + ". Cada jugador puede reclamarla:");
+            PadView.Builder b = PadView.of(APP_ID).compact().selected("rt:" + r.id()).header("Cada cuánto · " + r.name() + ". Cada jugador puede reclamarla:");
             b.row(PadAdminUi.choice(new ItemStack(Items.CLOCK), "Cada día", "Otra vez al día siguiente.", r.type().equals("diaria"), "tipo:diaria"));
             b.row(PadAdminUi.choice(new ItemStack(Items.CLOCK), "Cada semana", "Otra vez 7 días después.", r.type().equals("semanal"), "tipo:semanal"));
             if (r.type().equals("horas")) {
@@ -225,7 +225,7 @@ public final class PadAdminRewards {
         /** Lo que da una recompensa: objetos, monedas y monedas verdes. */
         private PadView contentsView(ServerPlayer player, PadRewards.Reward r) {
             String target = "r:" + r.id();
-            PadView.Builder b = PadView.of(APP_ID).selected("rc:" + r.id()).header("Lo que da · " + r.name() + ". Las monedas van al monedero, "
+            PadView.Builder b = PadView.of(APP_ID).compact().selected("rc:" + r.id()).header("Lo que da · " + r.name() + ". Las monedas van al monedero, "
                     + "nunca como objeto.");
             PadAdminUi.items(b, player, APP_ID, target, r.items());
             PadAdminUi.coins(b, player, APP_ID, target, r.coins(), r.greens());

@@ -365,6 +365,10 @@ public final class TFPadScreen extends Screen {
         if (PadSettings.sounds) TFPadClient.sound(name, volume * PadSettings.volume / 80F);
     }
 
+    void sound(String name, float volume, float pitch) {
+        if (PadSettings.sounds) TFPadClient.sound(name, volume * PadSettings.volume / 80F, pitch);
+    }
+
     /** El ratón está sobre algo que se puede pulsar (para el tic suave al cambiar). */
     void hover(String id) {
         hoverNow = id;
@@ -530,9 +534,41 @@ public final class TFPadScreen extends Screen {
         return (my * gs - gy - liftReal()) / cs;
     }
 
+    /**
+     * 1.3.67 (fluidez): todo el pad se pinta en lote (drawManaged): rectángulos, degradados, luces y textos seguidos van
+     * juntos a la tarjeta gráfica en vez de uno a uno (antes eran miles de llamadas por fotograma). El orden no cambia:
+     * las texturas y los objetos vacían el lote antes de pintarse (GuiGraphicsMixin) y los recortes también. Las mismas
+     * animaciones, menos trabajo.
+     */
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
+        RuntimeException[] error = new RuntimeException[1];
+        g.drawManaged(() -> {
+            PadSkin.batching = true;
+            try {
+                renderPad(g, mouseX, mouseY, partialTick);
+            } catch (RuntimeException e) {
+                error[0] = e;
+            } finally {
+                PadSkin.batching = false;
+            }
+        });
+        if (error[0] != null) throw error[0];
+        page.renderOver(g, mouseX, mouseY);
+        // destello de la cámara al volver de hacer una foto
+        long since = System.currentTimeMillis() - PadCamera.flashAt;
+        if (since < 350) {
+            int a = (int) (230 * (1 - since / 350F));
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 400);
+            g.fill(0, 0, width, height, a << 24 | 0xFFFFFF);
+            g.pose().popPose();
+        }
+        RenderSystem.disableBlend();
+    }
+
+    private void renderPad(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         double mx = ax(mouseX), my = ay(mouseY);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -575,17 +611,6 @@ public final class TFPadScreen extends Screen {
         hovered = hoverNow;
         drawNotice(g, mx, my);
         g.pose().popPose();
-        page.renderOver(g, mouseX, mouseY);
-        // destello de la cámara al volver de hacer una foto
-        long since = System.currentTimeMillis() - PadCamera.flashAt;
-        if (since < 350) {
-            int a = (int) (230 * (1 - since / 350F));
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 400);
-            g.fill(0, 0, width, height, a << 24 | 0xFFFFFF);
-            g.pose().popPose();
-        }
-        RenderSystem.disableBlend();
     }
 
     /**

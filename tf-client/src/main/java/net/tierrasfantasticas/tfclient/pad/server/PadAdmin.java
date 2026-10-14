@@ -232,7 +232,7 @@ public final class PadAdmin {
         @Override
         public PadView view(ServerPlayer player, String tab) {
             String[] t = settingsTab(tab);
-            PadView.Builder b = PadView.of(SETTINGS_ID).selected(t[0]);
+            PadView.Builder b = PadView.of(SETTINGS_ID).selected(t[0]).compact();
             for (String[] x : SETTING_TABS) b.tab(x[0], x[1]);
             b.header(t[3]);
             if (t[0].equals("sistema")) {
@@ -518,7 +518,7 @@ public final class PadAdmin {
             List<String> lines = new ArrayList<>();
             lines.add(buy > 0 ? "El jugador lo compra por " + TFEconomy.format(buy) + per + "." : "No se puede comprar.");
             lines.add(sell > 0 ? "La tienda se lo compra por " + TFEconomy.format(sell) + per + "." : "La tienda no lo compra.");
-            PadView.Builder b = PadView.of(SHOP_ID).selected(tab);
+            PadView.Builder b = PadView.of(SHOP_ID).selected(tab).compact();
             b.hero(new PadView.Row(s.copy(), entryName(o, s), buy == 0 && sell == 0 ? OFF_COLOR : SHOP_GOLD, lines, -1,
                     buy == 0 && sell == 0 ? "SIN PRECIO" : "", null, null));
             for (ShopField fd : SHOP_FIELDS) {
@@ -784,7 +784,7 @@ public final class PadAdmin {
         private PadView point(ServerPlayer player, PadTravel.Point p, String tab) {
             String f = PadAdminUi.field(player, TRAVEL_ID, tab);
             ItemStack icon = item(p.icon(), Items.FILLED_MAP);
-            PadView.Builder b = PadView.of(TRAVEL_ID).selected(tab);
+            PadView.Builder b = PadView.of(TRAVEL_ID).selected(tab).compact();
             b.hero(new PadView.Row(icon, p.name(), 0x1AA3C8, List.of(where(p), "Sale en la app Viajes de todos los jugadores."), -1, "",
                     PadView.Btn.of("IR", "ir:" + p.id(), PadView.BLUE), null));
             b.row(PadAdminUi.value(new ItemStack(Items.NAME_TAG), "Nombre", "El que ven los jugadores.", p.name(), "f:nombre", f.equals("nombre")));
@@ -1005,7 +1005,7 @@ public final class PadAdmin {
             JsonObject root = TFJson.read(TFJobsConfig.file());
             if (root == null) root = new JsonObject();
             String f = PadAdminUi.field(player, JOBS_ID, "");
-            PadView.Builder b = PadView.of(JOBS_ID).header("Ajustes de los oficios. Lo que paga cada uno, sus misiones y niveles: en "
+            PadView.Builder b = PadView.of(JOBS_ID).compact().header("Ajustes de los oficios. Lo que paga cada uno, sus misiones y niveles: en "
                     + "config/tfclient/oficios.json (y RECARGAR).");
             b.row(PadAdminUi.section("General"));
             for (JobField fd : JOB_FIELDS) {

@@ -1,28 +1,42 @@
 package net.tierrasfantasticas.tfclient.pad;
 
 import com.google.gson.JsonObject;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * El TF Pass (1.3.38), el pase de temporada gratis:
+ * El TF Pass, el pase de temporada gratis. 1.3.67, rehecho de cero como un MAPA DE LA TEMPORADA (el dueño: «el pase
+ * sigue igual, no veo innovación»):
  * <ul>
- *   <li>Arriba, la cabecera: el escudo con tu nivel, «TF PASS · Temporada 1: El Despertar», la barra de XP hasta el
- *       siguiente nivel, la cuenta atrás de la temporada, tus monedas verdes y RECLAMAR TODO si tienes niveles por
- *       reclamar.</li>
- *   <li>En medio, la pista de niveles (se desplaza con la rueda, arrastrando o con las flechas; se abre en tu nivel):
- *       cada nivel con su número sobre el raíl (que se llena de oro hasta donde llegas), su premio y su estado: verde y
- *       con RECLAMAR si está listo, marca de oro si ya es tuyo, candado si aún no llegas. Los niveles de 5 en 5 son
- *       hitos (marco de oro). Tu nivel lleva «TÚ».</li>
- *   <li>Abajo: el nivel que señales con el ratón (o el siguiente) con todos sus premios, y cómo se gana XP.</li>
+ *   <li>Arriba, el HUD: el escudo con tu nivel, «TF PASS» y la temporada, la barra de XP (con sus marcas) hasta el
+ *       siguiente nivel, tus monedas verdes, la cuenta atrás y RECLAMAR TODO.</li>
+ *   <li>En medio, el mapa: cielo, colinas en tres capas que se desplazan a distinta velocidad (paralaje) y un camino
+ *       que ondula de nivel en nivel. Cada nivel es un medallón redondo con su premio y su placa con el número; los
+ *       hitos (de 5 en 5), más grandes y con banderín. El camino es de oro hasta tu nivel, donde está tu chincheta «TÚ».
+ *       Los listos laten en verde con «COBRAR» flotando encima; los tuyos llevan la marca de oro; los de más adelante,
+ *       velados y con candado. Al pasar el ratón por uno, un bocadillo con todos sus premios y lo que falta. Se mueve
+ *       con la rueda, arrastrando o con las flechas; se abre en tu nivel.</li>
+ *   <li>Abajo, una tira con cómo se gana XP.</li>
  * </ul>
+ * Al cobrar: chispas que salen del medallón y una fanfarria. Lo mismo en tools/pad/sim/pages.py (pass_page).
  */
 final class PadPassPage extends PadDataPage {
-    private static final int NODE_W = 46, GAP = 6, PITCH = NODE_W + GAP;
+    private static final int PITCH = 60, R = 18, R_BIG = 22, HUD_H = 40, FOOT_H = 15;
+    private static final Random RANDOM = new Random();
     private float scroll, scrollTarget;
     private boolean placed;
     private int focus = -1, hoverLevel = -1;
     private long flashLevel = -1, flashAt;
+    private long lastNs = System.nanoTime();
+
+    private static final class Spark {
+        float x, y, vx, vy, life, max;
+        int color;
+    }
+
+    private final List<Spark> sparks = new ArrayList<>();
 
     PadPassPage(TFPadScreen pad) {
         super(pad, "pase");
@@ -36,14 +50,34 @@ final class PadPassPage extends PadDataPage {
     @Override
     void received(JsonObject o) {
         JsonObject ev = o.has("evento") && o.get("evento").isJsonObject() ? o.getAsJsonObject("evento") : null;
-        if (ev != null && ev.has("reclamado")) {
-            flashLevel = num(ev, "reclamado", -1);
+        if (ev != null && (ev.has("reclamado") || ev.has("reclamados"))) {
+            flashLevel = ev.has("reclamado") ? num(ev, "reclamado", -1) : 0;
             flashAt = System.currentTimeMillis();
-            pad.sound("like", 0.9F);
-        } else if (ev != null && ev.has("reclamados")) {
-            flashLevel = 0;
-            flashAt = System.currentTimeMillis();
-            pad.sound("like", 0.9F);
+            pad.sound(ev.has("reclamados") ? "gacha_win3" : "gacha_win2", 0.85F);
+            burst(flashLevel);
+        }
+    }
+
+    /** Chispas desde el medallón cobrado (o desde todos los que se ven, si fue RECLAMAR TODO). */
+    private void burst(long level) {
+        if (!PadSettings.animations) return;
+        for (JsonObject l : list(data, "niveles")) {
+            int n = (int) num(l, "n", 0);
+            if (level > 0 && n != level) continue;
+            float[] c = center(n);
+            if (c[0] < X || c[0] > X + W) continue;
+            for (int i = 0; i < 18; i++) {
+                Spark s = new Spark();
+                double a = RANDOM.nextDouble() * Math.PI * 2;
+                float v = 40 + RANDOM.nextFloat() * 70;
+                s.x = c[0];
+                s.y = c[1];
+                s.vx = (float) Math.cos(a) * v;
+                s.vy = (float) Math.sin(a) * v - 50;
+                s.max = s.life = 0.6F + RANDOM.nextFloat() * 0.6F;
+                s.color = RANDOM.nextInt(3) == 0 ? 0xFFFFFF : RANDOM.nextBoolean() ? 0xFFE680 : 0x5CE48A;
+                sparks.add(s);
+            }
         }
     }
 
@@ -51,31 +85,30 @@ final class PadPassPage extends PadDataPage {
     // Geometría
     // ---------------------------------------------------------------------------------------------------------------
 
-    private static final int HERO_H = 50;
-
-    private int trackTop() {
-        return Y + HERO_H + 4;
+    private int mapTop() {
+        return Y + HUD_H + 3;
     }
 
-    private int bottomH() {
-        return Math.max(40, Math.min(52, H - HERO_H - 8 - 92));
-    }
-
-    private int trackH() {
-        return H - HERO_H - 8 - bottomH();
-    }
-
-    /** La pista: x, ancho (sin las flechas). */
-    private int trackX() {
-        return X + 16;
-    }
-
-    private int trackW() {
-        return W - 32;
+    private int mapBottom() {
+        return Y + H - FOOT_H - 3;
     }
 
     private int levels() {
         return list(data, "niveles").size();
+    }
+
+    /** Centro del medallón del nivel n (ya con el desplazamiento): el camino ondula arriba y abajo. */
+    private float[] center(int n) {
+        int top = mapTop(), bot = mapBottom(), mh = bot - top;
+        float mid = top + mh * 0.42F;
+        float amp = Math.max(0, Math.min(14, (mh - 2 * R_BIG - 34) / 2F));
+        float x = X + 34 + (n - 1) * PITCH - scroll;
+        float y = mid + (float) Math.sin(n * 0.95) * amp;
+        return new float[] {x, y};
+    }
+
+    private float maxScroll() {
+        return Math.max(0, (levels() - 1) * PITCH + 68 - W);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -84,22 +117,25 @@ final class PadPassPage extends PadDataPage {
     void render(GuiGraphics g, double mx, double my, float partial) {
         hits.clear();
         if (loading(g)) return;
+        long ns = System.nanoTime();
+        float dt = Math.min(0.1F, (ns - lastNs) / 1e9F);
+        lastNs = ns;
         int lv = (int) num(data, "nivel", 0);
         int max = levels();
-        float maxScroll = Math.max(0, max * PITCH - GAP - trackW());
-        if (!placed) { // se abre con tu nivel (o el siguiente por reclamar) en el centro
+        float maxScroll = maxScroll();
+        if (!placed) { // se abre con tu nivel (o el primero por cobrar) en el centro
             int first = firstReady();
-            int at = first > 0 ? first : Math.min(max, lv + 1);
-            scrollTarget = scroll = Math.max(0, Math.min(maxScroll, (at - 1) * PITCH + NODE_W / 2F - trackW() / 2F));
+            int at = first > 0 ? first : Math.min(max, Math.max(1, lv));
+            scrollTarget = scroll = Math.max(0, Math.min(maxScroll, (at - 1) * PITCH + 34 - W / 2F));
             placed = true;
         }
         scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
-        scroll += (scrollTarget - scroll) * (PadSettings.animations ? 0.25F : 1F);
+        scroll += (scrollTarget - scroll) * (PadSettings.animations ? Math.min(1F, dt * 14) : 1F);
         if (Math.abs(scrollTarget - scroll) < 0.5F) scroll = scrollTarget;
         hoverLevel = -1;
-        drawHero(g, mx, my, lv, max);
-        drawTrack(g, mx, my, lv, max, maxScroll);
-        drawBottom(g, mx, my, lv);
+        drawMap(g, mx, my, lv, max, maxScroll, dt);
+        drawHud(g, mx, my, lv, max);
+        drawFooter(g);
     }
 
     private int firstReady() {
@@ -113,41 +149,47 @@ final class PadPassPage extends PadDataPage {
         return n;
     }
 
-    // ---- cabecera -------------------------------------------------------------------------------------------------
+    // ---- HUD ------------------------------------------------------------------------------------------------------
 
-    private void drawHero(GuiGraphics g, double mx, double my, int lv, int max) {
-        int x = X, y = Y, w = W, h = HERO_H;
-        // banner esmeralda oscuro con su textura y filo de oro
-        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0x5A286EC8);
-        PadUi.box(g, x, y, w, h, PadUi.NAVY);
-        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF1E6B52, 0xFF14284F);
-        PadUi.texture(g, x + 1, y + 1, w - 2, h - 2);
-        // 1.4: rayas que se mueven, una luz detrás del escudo y otra a la derecha
+    private void drawHud(GuiGraphics g, double mx, double my, int lv, int max) {
+        int x = X, y = Y, w = W, h = HUD_H;
+        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0x4018265C);
+        PadUi.box(g, x, y, w, h, 0xFF0A1830);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF183F3A, 0xFF0E1C34);
         float t = PadSkin.time();
-        PadSkin.stripes(g, x + 1, y + 1, w - 2, h - 2, 0.06F, t * 3);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF5FD39A);
+        PadSkin.stripes(g, x + 1, y + 1, w - 2, h - 2, 0.05F, t * 3);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF4FC88C);
         g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, PadUi.GOLD_LO);
-        PadUi.corners(g, x, y, w, h);
-        // el escudo con el nivel
-        int sx = x + 8, sy = y + 6, ss = 38;
+        // el escudo
+        int sx = x + 6, sy = y + 2, ss = 36;
         pad.clipPush(g, x + 1, y + 1, w - 2, h - 2);
-        PadSkin.rays(g, sx + ss / 2F, sy + ss / 2F, 48, 0.6F, t * 18);
-        PadSkin.glow(g, sx + ss / 2F, sy + ss / 2F, 30, 0x8CF0B4, 110);
-        PadSkin.glow(g, x + w * 0.62F, y + h / 2F, 60, 0x5FD39A, 40);
+        PadSkin.rays(g, sx + ss / 2F, sy + ss / 2F, 44, 0.5F, t * 18);
+        PadSkin.glow(g, sx + ss / 2F, sy + ss / 2F, 28, 0x8CF0B4, 110);
         pad.clipPop(g);
         drawBadge(g, sx, sy, ss, lv);
-        // título, temporada y barra de XP
-        int tx = sx + ss + 9;
+        int tx = sx + ss + 7;
         boolean active = data.has("activo") && data.get("activo").getAsBoolean();
-        PadFont.draw(g, "TF PASS", tx, y + 4, 0xFFD650, true);
-        String season = "Temporada " + num(data, "temporada", 1) + (str(data, "nombre", "").isEmpty() ? "" : ": " + str(data, "nombre", ""));
-        // a la derecha: monedas verdes, cuenta atrás y RECLAMAR TODO
-        int right = x + w - 6;
+        // a la derecha: monedas verdes, tiempo y RECLAMAR TODO
+        int right = x + w - 5;
+        long left = num(data, "fin", 0) - num(data, "ahora", 0) - (System.currentTimeMillis() - dataAt);
+        String clock = active ? until(left) : "Sin temporada";
+        int cw = PadUi.font().width(clock) + 16;
+        pill(g, right - cw, y + 4, cw, 0xFF2A3470, 0xFF1A2050);
+        drawClock(g, right - cw + 4, y + 6);
+        PadUi.text(g, clock, right - cw + 12, y + 6, 0xFFFFE9A8);
+        long greens = num(data, "verdes", 0);
+        String gtxt = PadUi.THOUSANDS.format(greens);
+        int gw = PadUi.font().width(gtxt) + 16;
+        int gx = right - cw - 4 - gw;
+        pill(g, gx, y + 4, gw, 0xFF1E6B52, 0xFF124436);
+        pad.blit(g, "coin_green_s", gx + 3, y + 6);
+        PadUi.text(g, gtxt, gx + 13, y + 6, 0xFF8CF0B4);
         int ready = readyCount();
+        int barRight = right;
         if (ready > 0 && active) {
             String label = "RECLAMAR TODO (" + ready + ")";
             int bw = PadUi.buttonWidth(label);
-            int bx = right - bw, by = y + h - 6 - 16;
+            int bx = right - bw, by = y + h - 5 - 16;
             boolean hv = !waiting && PadUi.inside(mx, my, bx, by, bw, 16);
             if (hv) pad.hover("§todo");
             PadSkin.button(g, bx, by, bw, label, PadView.GREEN, hv, !waiting, false);
@@ -155,50 +197,44 @@ final class PadPassPage extends PadDataPage {
                 send("todo");
                 pad.sound("select", 0.75F);
             });
+            barRight = bx - 6;
         }
-        long left = num(data, "fin", 0) - num(data, "ahora", 0) - (System.currentTimeMillis() - dataAt);
-        String clock = active ? "Termina en " + until(left) : "Sin temporada";
-        int cw = PadUi.chipWidth(clock) + 12;
-        PadUi.box(g, right - cw, y + 5, cw, 12, 0xFF0C1030);
-        g.fillGradient(right - cw + 1, y + 6, right - 1, y + 16, 0xFF2A3470, 0xFF1A2050);
-        drawClock(g, right - cw + 4, y + 7);
-        PadUi.text(g, clock, right - cw + 14, y + 7, 0xFFFFE9A8);
-        long greens = num(data, "verdes", 0);
-        String gtxt = PadUi.THOUSANDS.format(greens);
-        int gw = PadUi.font().width(gtxt) + 18;
-        int gx = right - cw - 4 - gw;
-        PadUi.box(g, gx, y + 5, gw, 12, 0xFF0C1030);
-        g.fillGradient(gx + 1, y + 6, gx + gw - 1, y + 16, 0xFF1E6B52, 0xFF124436);
-        pad.blit(g, "coin_green_s", gx + 3, y + 7);
-        PadUi.text(g, gtxt, gx + 13, y + 7, 0xFF8CF0B4);
-        int textRoom = gx - 6 - tx;
-        PadUi.text(g, PadUi.fitEnd(season, textRoom), tx, y + 15, 0xFFFFFFFF);
-        // barra de XP
-        int barX = tx, barY = y + 28, barW = Math.max(60, (ready > 0 && active ? right - PadUi.buttonWidth("RECLAMAR TODO (" + ready + ")") - 8
-                : right) - tx), barH = 8;
+        // título y temporada
+        PadFont.drawShadow(g, "TF PASS", tx, y + 4, 0xFFD650, 0x3A2A00);
+        String season = "Temporada " + num(data, "temporada", 1) + (str(data, "nombre", "").isEmpty() ? "" : ": " + str(data, "nombre", ""));
+        int room = gx - 6 - (tx + PadFont.width("TF PASS") + 6);
+        if (room > 30) PadUi.text(g, PadUi.fitEnd(season, room), tx + PadFont.width("TF PASS") + 6, y + 5, 0xFFE0ECFF);
+        // la barra de XP, con una marca cada 10 %
+        int barX = tx, barY = y + 18, barW = Math.max(60, barRight - tx), barH = 9;
         long xpIn = num(data, "xpEn", 0), xpNeed = num(data, "xpNivel", 0);
-        float f = xpNeed <= 0 ? 1F : Math.min(1F, xpIn / (float) xpNeed);
-        PadUi.box(g, barX, barY, barW, barH, 0xFF0C1030);
-        g.fill(barX + 1, barY + 1, barX + barW - 1, barY + barH - 1, 0xFF233066);
+        float f = lv >= max ? 1F : xpNeed <= 0 ? 1F : Math.min(1F, xpIn / (float) xpNeed);
+        PadUi.box(g, barX, barY, barW, barH, 0xFF05101E);
+        g.fill(barX + 1, barY + 1, barX + barW - 1, barY + barH - 1, 0xFF1E2C50);
         int fw = Math.round((barW - 2) * f);
         if (fw > 0) {
-            g.fillGradient(barX + 1, barY + 1, barX + 1 + fw, barY + barH - 1, 0xFF8CF0A8, 0xFF1E9E46);
-            g.fill(barX + 1, barY + 1, barX + 1 + fw, barY + 2, 0xFFD8FFE2);
-            if (PadSettings.animations && fw > 6) { // brillo que recorre la barra
-                int sh = (int) ((System.currentTimeMillis() / 12) % (fw + 30)) - 15;
-                for (int i = 0; i < 6; i++) {
-                    int px = barX + 1 + sh + i;
-                    if (px > barX && px < barX + fw) g.fill(px, barY + 1, px + 1, barY + barH - 1, 0x55FFFFFF);
-                }
+            g.fillGradient(barX + 1, barY + 1, barX + 1 + fw, barY + barH - 1, 0xFF9CF7B6, 0xFF1E9E46);
+            g.fill(barX + 1, barY + 1, barX + 1 + fw, barY + 2, 0xFFE0FFE8);
+            if (PadSettings.animations && fw > 8) {
+                float sh = (System.currentTimeMillis() / 9F) % (fw + 40) - 20;
+                PadSkin.hgrad(g, barX + 1 + Math.max(0, sh), barY + 1, barX + 1 + Math.min(fw, sh + 14), barY + barH - 1, 0x00FFFFFF, 0x66FFFFFF);
             }
         }
+        for (int i = 1; i < 10; i++) {
+            int mxk = barX + 1 + (barW - 2) * i / 10;
+            g.fill(mxk, barY + 1, mxk + 1, barY + barH - 1, 0x4005101E);
+        }
         String xpText = lv >= max ? "¡Nivel máximo!" : PadUi.THOUSANDS.format(xpIn) + " / " + PadUi.THOUSANDS.format(xpNeed) + " XP";
-        String next = lv >= max ? "" : "nivel " + (lv + 1);
-        PadUi.text(g, xpText, barX, barY + 10, 0xFFE0ECFF);
-        if (!next.isEmpty()) PadUi.text(g, next, barX + barW - PadUi.font().width(next), barY + 10, 0xFFB8C2F0);
-        int[][] sp = {{w - 20, 22}, {ss + 14, 4}, {w / 2, h - 5}};
-        for (int i = 0; i < sp.length; i++) PadSkin.sparkle(g, x + sp[i][0], y + sp[i][1], 2, PadSkin.twinkle(i * 1.7F + 0.6F) * 0.9F, 0xFFFFFF);
-        PadSkin.sheen(g, x + 1, y + 1, w - 2, h - 2, 8F, 0.12F);
+        PadUi.text(g, xpText, barX, barY + 11, 0xFFE0ECFF);
+        if (lv < max) {
+            String next = "nivel " + (lv + 1);
+            PadUi.text(g, next, barX + barW - PadUi.font().width(next), barY + 11, 0xFFB8C2F0);
+        }
+    }
+
+    private static void pill(GuiGraphics g, int x, int y, int w, int top, int bot) {
+        PadUi.box(g, x, y, w, 12, 0xFF05101E);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + 11, top, bot);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0x33FFFFFF);
     }
 
     /** El escudo del nivel: hexágono de oro con el centro verde y el número grande. */
@@ -220,7 +256,7 @@ final class PadPassPage extends PadDataPage {
         PadFont.drawCentered(g, "NIVEL", cx, y + 3, 0xFFFFFF, true);
         String n = Integer.toString(lv);
         g.pose().pushPose();
-        g.pose().translate(cx, y + 17, 0);
+        g.pose().translate(cx, y + 16, 0);
         g.pose().scale(2, 2, 1);
         g.drawString(PadUi.font(), n, -PadUi.font().width(n) / 2, 0, 0xFFFFFFFF, true);
         g.pose().popPose();
@@ -234,152 +270,256 @@ final class PadPassPage extends PadDataPage {
         g.fill(x + 2, y + 5, x + 5, y + 7, 0xFFC27A10);
     }
 
-    // ---- pista de niveles -----------------------------------------------------------------------------------------
+    // ---- el mapa --------------------------------------------------------------------------------------------------
 
-    private void drawTrack(GuiGraphics g, double mx, double my, int lv, int max, float maxScroll) {
-        int top = trackTop(), h = trackH();
-        int x = X, w = W;
-        PadSkin.window(g, x, top, w, h, PadSkin.accent(app));
-        int tx = trackX(), tw = trackW();
-        // flechas a los lados
-        boolean canL = scrollTarget > 0, canR = scrollTarget < maxScroll;
-        arrowButton(g, mx, my, x + 3, top + h / 2 - 9, canL, true, () -> scrollTarget -= PITCH * 4);
-        arrowButton(g, mx, my, x + w - 13, top + h / 2 - 9, canR, false, () -> scrollTarget += PITCH * 4);
-        List<JsonObject> lvls = list(data, "niveles");
-        int railY = top + 12;
-        pad.scissor(g, tx, top + 2, tw, h - 4);
-        // el raíl: gris de punta a punta y de oro hasta tu nivel
-        int x0 = Math.round(tx - scroll + NODE_W / 2F), x1 = Math.round(tx - scroll + (max - 1) * PITCH + NODE_W / 2F);
-        g.fill(x0, railY - 2, x1, railY + 2, 0xFF9DB8D8);
-        g.fill(x0, railY - 1, x1, railY + 1, 0xFFDCE8F4);
-        if (lv > 0) {
-            int xl = Math.round(tx - scroll + (lv - 1) * PITCH + NODE_W / 2F);
-            g.fill(x0, railY - 2, xl, railY + 2, PadUi.GOLD_LO);
-            g.fill(x0, railY - 1, xl, railY + 1, PadUi.GOLD);
-            g.fill(x0, railY - 1, xl, railY, PadUi.GOLD_HI);
+    private static final String[] LAND = {"land_far", "land_mid", "land_near"};
+    private static final int[] LAND_TINT = {0xB8E2C4, 0x6CB486, 0x2E7A52};
+    private static final float[] LAND_SPEED = {0.15F, 0.35F, 0.6F};
+
+    private void drawMap(GuiGraphics g, double mx, double my, int lv, int max, float maxScroll, float dt) {
+        int top = mapTop(), bot = mapBottom(), x = X, w = W, mh = bot - top;
+        long now = System.currentTimeMillis();
+        float t = PadSkin.time();
+        PadUi.box(g, x, top, w, mh, 0xFF0A1830);
+        pad.scissor(g, x + 1, top + 1, w - 2, mh - 2);
+        // el cielo, el sol y las colinas en tres capas (paralaje)
+        g.fillGradient(x + 1, top + 1, x + w - 1, bot - 1, 0xFF7CCBF2, 0xFFE4F6FF);
+        PadSkin.glow(g, x + w * 0.82F, top + 16, 46, 0xFFF0B0, 150);
+        PadSkin.rays(g, x + w * 0.82F, top + 16, 70, 0.10F, t * 3);
+        float lh = Math.min(56, mh * 0.55F), lw = 480 * lh / 56F;
+        for (int i = 0; i < LAND.length; i++) {
+            float off = ((scroll * LAND_SPEED[i]) % lw + lw) % lw;
+            for (float lx = x + 1 - off; lx < x + w; lx += lw) {
+                PadSkin.texture(g, TFPadScreen.tex(LAND[i]), lx, bot - lh - (2 - i) * 4, lw, lh, 1F, LAND_TINT[i], false);
+            }
         }
-        boolean inTrack = PadUi.inside(mx, my, tx, top + 2, tw, h - 4);
+        g.fill(x + 1, bot - 6, x + w - 1, bot - 1, 0xFF2E7A52);
+        // el camino: borde oscuro, tierra, y de oro hasta tu nivel; con su raya discontinua
+        List<JsonObject> lvls = list(data, "niveles");
+        for (int pass = 0; pass < 3; pass++) {
+            for (int n = 1; n < max; n++) {
+                float[] a = center(n), b = center(n + 1);
+                if (b[0] < x - PITCH || a[0] > x + w + PITCH) continue;
+                boolean gold = n + 1 <= lv;
+                if (pass == 0) PadSkin.line(g, a[0], a[1], b[0], b[1], 11, 0x55183040);
+                else if (pass == 1) PadSkin.line(g, a[0], a[1], b[0], b[1], 8, gold ? PadUi.GOLD : 0xFFE8D6A8);
+                else {
+                    float len = (float) Math.hypot(b[0] - a[0], b[1] - a[1]);
+                    for (float d = R; d < len - R; d += 7) {
+                        float k = d / len;
+                        float px = a[0] + (b[0] - a[0]) * k, py = a[1] + (b[1] - a[1]) * k;
+                        PadSkin.rect(g, px - 1, py - 0.5F, px + 2, py + 0.5F, gold ? 0xFFFFF0B0 : 0xFFC4AE7C);
+                    }
+                }
+            }
+        }
+        g.flush();
+        // los medallones
+        boolean inMap = PadUi.inside(mx, my, x, top, w, mh);
+        JsonObject hovered = null;
+        float[] hoverAt = null;
         for (JsonObject l : lvls) {
             int n = (int) num(l, "n", 0);
-            int nx = Math.round(tx - scroll + (n - 1) * PITCH);
-            if (nx + NODE_W < tx - 2 || nx > tx + tw + 2) continue;
-            drawNode(g, l, n, nx, top, h, railY, mx, my, inTrack, lv);
+            float[] c = center(n);
+            if (c[0] < x - R_BIG - 4 || c[0] > x + w + R_BIG + 4) continue;
+            boolean big = n % 5 == 0;
+            int r = big ? R_BIG : R;
+            boolean hv = inMap && Math.hypot(mx - c[0], my - c[1]) <= r + 2;
+            if (hv) {
+                hoverLevel = n;
+                hovered = l;
+                hoverAt = c;
+                pad.hover("§nivel" + n);
+            }
+            drawNode(g, l, n, c[0], c[1], r, big, hv, lv, now);
+            int state = (int) num(l, "e", 0);
+            final int level = n;
+            if (hv) hit(Math.round(c[0] - r), Math.round(c[1] - r), 2 * r, 2 * r, () -> {
+                if (state == 1) claim(level);
+                else {
+                    focus = level;
+                    pad.sound("tab", 0.5F);
+                }
+            });
         }
+        // la chincheta «TÚ» (si tu nivel está por cobrar, va en su etiqueta de COBRAR)
+        boolean lvReady = false;
+        for (JsonObject l : lvls) if (num(l, "n", 0) == lv && num(l, "e", 0) == 1) lvReady = true;
+        if (lv > 0 && lv <= max && !lvReady) {
+            float[] c = center(lv);
+            int r = lv % 5 == 0 ? R_BIG : R;
+            float bob = PadSettings.animations ? (float) Math.sin(now / 260.0) * 1.5F : 0;
+            drawPin(g, c[0], c[1] - r - 3 + bob);
+        }
+        // chispas de lo cobrado
+        drawSparks(g, dt);
         pad.noScissor(g);
-        // sombras en los bordes de la pista (se ve que sigue)
-        for (int i = 0; i < 10; i++) {
-            int a = (int) (110 * (1 - i / 10F)) << 24;
-            if (scroll > 1) g.fill(tx + i, top + 2, tx + i + 1, top + h - 2, a | 0xFFFFFF);
-            if (scroll < maxScroll - 1) g.fill(tx + tw - 1 - i, top + 2, tx + tw - i, top + h - 2, a | 0xFFFFFF);
+        // flechas a los lados
+        boolean canL = scrollTarget > 0, canR = scrollTarget < maxScroll;
+        arrowButton(g, mx, my, x + 3, top + mh / 2 - 9, canL, true, () -> scrollTarget -= PITCH * 4);
+        arrowButton(g, mx, my, x + w - 13, top + mh / 2 - 9, canR, false, () -> scrollTarget += PITCH * 4);
+        // el bocadillo del nivel del ratón (por encima de todo)
+        if (hovered != null) drawBubble(g, hovered, hoverAt, top, bot);
+    }
+
+    /**
+     * Un nivel: sombra, aro del color de su estado (gris si falta, verde que late si está listo, oro si es tuyo), el
+     * premio al doble, la placa con el número debajo; los hitos con banderín, los listos con «COBRAR» flotando y los
+     * de más adelante velados y con candado.
+     */
+    private void drawNode(GuiGraphics g, JsonObject l, int n, float cx, float cy, int r, boolean big, boolean hover, int lv, long now) {
+        int state = (int) num(l, "e", 0); // 0 bloqueado, 1 listo, 2 reclamado
+        int ring = state == 2 ? PadUi.GOLD : state == 1 ? 0xFF2EB85A : 0xFF8FA6C8;
+        int inner = state == 2 ? 0xFFFFF4D0 : state == 1 ? 0xFFEAFFF0 : 0xFFE4EEF8;
+        float lift = hover ? 2 : 0;
+        cy -= lift;
+        if (state == 1 && PadSettings.animations) {
+            float p = 0.5F + 0.5F * (float) Math.sin(now / 200.0 + n);
+            PadSkin.glow(g, cx, cy, r * 1.9F, 0x5CE48A, Math.round(90 + 90 * p));
         }
+        if (n == lv) PadSkin.glow(g, cx, cy, r * 1.7F, 0xFFE680, 120);
+        PadSkin.rect(g, cx - r * 0.8F, cy + r + 2 + lift, cx + r * 0.8F, cy + r + 4 + lift, 0x40183040);
+        if (big) PadSkin.disc(g, cx, cy, r + 4, PadUi.GOLD_LO);
+        PadSkin.disc(g, cx, cy, r + 2, 0xFF102040);
+        PadSkin.disc(g, cx, cy, r, hover ? PadSkin.lighten(ring, 30) : ring);
+        PadSkin.disc(g, cx, cy, r - 3, inner);
+        PadSkin.disc(g, cx - r * 0.25F, cy - r * 0.3F, r * 0.45F, 0x55FFFFFF);
+        // el premio
+        List<JsonObject> prizes = list(l, "p");
+        if (!prizes.isEmpty()) {
+            PadUi.item(g, stack(prizes.get(0)), Math.round(cx - 16), Math.round(cy - 16), 2);
+            if (prizes.size() > 1) {
+                String more = "+" + (prizes.size() - 1);
+                g.pose().pushPose();
+                g.pose().translate(0, 0, 210);
+                int mw = PadFont.width(more) + 6;
+                PadUi.box(g, Math.round(cx - r - 2), Math.round(cy - r - 2), mw, 11, 0xFF22346E);
+                PadFont.draw(g, more, Math.round(cx - r + 1), Math.round(cy - r - 1), 0xFFFFFF, false);
+                g.pose().popPose();
+            }
+        }
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 220);
+        if (state == 0 && n > lv) {
+            PadSkin.disc(g, cx, cy, r - 3, 0x80E4EEF8);
+            lock(g, Math.round(cx + r - 9), Math.round(cy + r - 11), 0xFF6A80A4);
+        } else if (state == 2) {
+            PadSkin.disc(g, cx + r - 5, cy + r - 6, 6, PadUi.GOLD_LO);
+            PadSkin.disc(g, cx + r - 5, cy + r - 6, 5, PadUi.GOLD);
+            check(g, Math.round(cx + r - 8), Math.round(cy + r - 9), 0xFFFFFFFF);
+            if (n == flashLevel || flashLevel == 0) {
+                long since = now - flashAt;
+                if (since < 700) PadSkin.disc(g, cx, cy, r, PadSkin.alpha(0xFFFFFF, Math.round(200 * (1 - since / 700F))));
+            }
+        }
+        // la placa con el número
+        String num = Integer.toString(n);
+        int pw = Math.max(16, PadFont.width(num) + 8), px = Math.round(cx - pw / 2F), py = Math.round(cy + r + 1);
+        PadUi.box(g, px, py, pw, 11, 0xFF102040);
+        g.fillGradient(px + 1, py + 1, px + pw - 1, py + 10, state > 0 ? PadUi.GOLD_HI : 0xFFF2F7FD, state > 0 ? PadUi.GOLD : 0xFFC4D6EA);
+        PadFont.drawCentered(g, num, Math.round(cx), py + 1, state > 0 ? 0x5A3A00 : 0x34507E, false);
+        // los hitos, con su banderín
+        if (big) {
+            int fx = Math.round(cx + r - 2), fy = Math.round(cy - r - 10);
+            g.fill(fx, fy, fx + 1, fy + 12, 0xFF5A3A10);
+            float wave = PadSettings.animations ? (float) Math.sin(now / 180.0 + n) : 0;
+            PadSkin.tri(g, fx + 1, fy, fx + 1, fy + 6, fx + 9 + wave, fy + 3, 0xFFE2466A);
+            g.flush();
+        }
+        // listo: «COBRAR» flotando encima (si es tu nivel, con «TÚ» delante en oro: una sola etiqueta)
+        if (state == 1) {
+            float bob = PadSettings.animations ? (float) Math.sin(now / 220.0 + n) * 1.5F : 0;
+            int tu = n == lv ? PadFont.width("TÚ") + 8 : 0;
+            int tw = tu + PadFont.width("COBRAR") + 8, tx = Math.round(cx - tw / 2F), ty = Math.round(cy - r - 15 + bob);
+            PadUi.box(g, tx, ty, tw, 12, 0xFF0E5626);
+            g.fillGradient(tx + 1, ty + 1, tx + tw - 1, ty + 11, 0xFF5CE48A, 0xFF1A9442);
+            g.fill(tx + 2, ty + 1, tx + tw - 2, ty + 2, 0xFFA8F8C0);
+            if (tu > 0) {
+                g.fillGradient(tx + 1, ty + 1, tx + tu, ty + 11, PadUi.GOLD_HI, PadUi.GOLD);
+                PadFont.draw(g, "TÚ", tx + 4, ty + 1, 0x5A3A00, false);
+            }
+            PadFont.drawShadow(g, "COBRAR", tx + tu + 4, ty + 2, 0xFFFFFF, 0xFF0E5626);
+            for (int i = 0; i < 3; i++) g.fill(Math.round(cx) - 2 + i, ty + 12 + i, Math.round(cx) + 3 - i, ty + 13 + i, 0xFF1A9442);
+        }
+        g.pose().popPose();
+    }
+
+    /** La chincheta «TÚ» con la punta en (x, y). */
+    private void drawPin(GuiGraphics g, float x, float y) {
+        int w = PadFont.width("TÚ") + 8, h = 12;
+        int bx = Math.round(x - w / 2F), by = Math.round(y - h - 4);
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 230);
+        PadSkin.tri(g, x - 3, by + h - 1, x + 4, by + h - 1, x + 0.5F, y, 0xFF102040);
+        PadSkin.tri(g, x - 2, by + h - 1, x + 3, by + h - 1, x + 0.5F, y - 1.5F, PadUi.GOLD);
+        g.flush();
+        PadUi.box(g, bx, by, w, h, 0xFF102040);
+        g.fillGradient(bx + 1, by + 1, bx + w - 1, by + h - 1, PadUi.GOLD_HI, PadUi.GOLD);
+        PadFont.draw(g, "TÚ", bx + 4, by + 1, 0x5A3A00, false);
+        g.pose().popPose();
+    }
+
+    /** El bocadillo de un nivel: su número, si es tuyo, si está listo o cuánto falta, y todos sus premios. */
+    private void drawBubble(GuiGraphics g, JsonObject l, float[] c, int top, int bot) {
+        int n = (int) num(l, "n", 0), state = (int) num(l, "e", 0);
+        List<JsonObject> prizes = list(l, "p");
+        String head = "Nivel " + n + (n % 5 == 0 ? " · hito" : "");
+        String st = state == 2 ? "Ya es tuyo" : state == 1 ? "¡Listo! Pulsa para cobrar"
+                : "Te faltan " + PadUi.THOUSANDS.format(Math.max(0, num(l, "x", 0) - num(data, "xp", 0))) + " XP";
+        int w = Math.max(PadUi.boldWidth(head), PadUi.font().width(st)) + 14;
+        for (JsonObject p : prizes) w = Math.max(w, PadUi.font().width(name(p)) + 34);
+        w = Math.min(w, W - 20);
+        int h = 26 + prizes.size() * 18;
+        int r = n % 5 == 0 ? R_BIG : R;
+        int bx = Math.round(Math.max(X + 4, Math.min(X + W - 4 - w, c[0] - w / 2F)));
+        boolean below = c[1] - r - 8 - h < top + 2;
+        int by = below ? Math.round(c[1] + r + 14) : Math.round(c[1] - r - 10 - h);
+        by = Math.max(top + 2, Math.min(bot - h - 2, by));
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 300);
+        g.fill(bx + 2, by + h, bx + w - 2, by + h + 2, 0x40102040);
+        PadUi.box(g, bx, by, w, h, 0xFF102040);
+        g.fillGradient(bx + 1, by + 1, bx + w - 1, by + h - 1, 0xFFFFFFFF, 0xFFEAF2FB);
+        int edge = state == 2 ? PadUi.GOLD : state == 1 ? 0xFF2EB85A : 0xFF8FA6C8;
+        g.fill(bx + 1, by + 1, bx + w - 1, by + 3, edge);
+        PadUi.title(g, head, bx + 7, by + 5, w - 14, PadUi.TEXT);
+        PadUi.text(g, PadUi.fitEnd(st, w - 14), bx + 7, by + 15, state == 1 ? 0xFF1A9442 : state == 2 ? PadUi.GOLD_TEXT : PadUi.MUTED);
+        int py = by + 25;
+        for (JsonObject p : prizes) {
+            PadUi.slot(g, bx + 6, py, 18, 18, 0);
+            PadUi.item(g, stack(p), bx + 7, py + 1, 1);
+            PadUi.text(g, PadUi.fitEnd(name(p), w - 34), bx + 28, py + 5, PadUi.TEXT);
+            py += 18;
+        }
+        g.pose().popPose();
+    }
+
+    private void drawSparks(GuiGraphics g, float dt) {
+        if (sparks.isEmpty()) return;
+        for (int i = sparks.size() - 1; i >= 0; i--) {
+            Spark s = sparks.get(i);
+            s.life -= dt;
+            if (s.life <= 0) {
+                sparks.remove(i);
+                continue;
+            }
+            s.x += s.vx * dt;
+            s.y += s.vy * dt;
+            s.vy += 150 * dt;
+            float a = Math.min(1F, s.life / s.max * 1.6F);
+            PadSkin.rect(g, s.x, s.y, s.x + 1.5F, s.y + 1.5F, PadSkin.alpha(s.color, Math.round(255 * a)));
+        }
+        g.flush();
     }
 
     private void arrowButton(GuiGraphics g, double mx, double my, int x, int y, boolean on, boolean left, Runnable action) {
         boolean hv = on && PadUi.inside(mx, my, x, y, 10, 18);
         if (hv) pad.hover(left ? "§izq" : "§der");
-        PadUi.box(g, x, y, 10, 18, on ? (hv ? 0xFF3496FA : 0xFF6A88B8) : 0xFFC6D6EA);
-        PadUi.box(g, x + 1, y + 1, 8, 16, on ? (hv ? 0xFFDCEEFF : 0xFFF2F8FF) : 0xFFEEF3F9);
+        PadUi.box(g, x, y, 10, 18, on ? (hv ? 0xFF3496FA : 0xFF34507E) : 0x8034507E);
+        PadUi.box(g, x + 1, y + 1, 8, 16, on ? (hv ? 0xFFDCEEFF : 0xFFF2F8FF) : 0x80EEF3F9);
         arrow(g, x + 5, y + 9, left, on ? (hv ? 0xFF1E4E9C : 0xFF34507E) : 0xFFB4C6DC);
         if (on) hit(x, y, 10, 18, () -> {
             action.run();
-            pad.sound("tab", 0.5F);
-        });
-    }
-
-    private void drawNode(GuiGraphics g, JsonObject l, int n, int x, int top, int h, int railY, double mx, double my, boolean inTrack,
-                          int lv) {
-        int state = (int) num(l, "e", 0); // 0 bloqueado, 1 listo, 2 reclamado
-        boolean milestone = n % 5 == 0;
-        boolean you = n == lv;
-        long now = System.currentTimeMillis();
-        // el número sobre el raíl
-        String num = Integer.toString(n);
-        int pw = Math.max(16, PadFont.width(num) + 8);
-        int px = x + (NODE_W - pw) / 2, py = railY - 6;
-        int pillEdge = state > 0 ? PadUi.GOLD_LO : 0xFF6A88B8;
-        PadUi.box(g, px, py, pw, 12, PadUi.NAVY);
-        g.fillGradient(px + 1, py + 1, px + pw - 1, py + 11, state > 0 ? PadUi.GOLD_HI : 0xFFE2EFFB, state > 0 ? PadUi.GOLD : 0xFFB8CDE6);
-        g.fill(px + 1, py + 10, px + pw - 1, py + 11, pillEdge);
-        PadFont.drawCentered(g, num, x + NODE_W / 2, py + 1, state > 0 ? 0x5A3A00 : 0x34507E, false);
-        // la tarjeta
-        int cy = railY + 10, ch = top + h - 6 - cy;
-        boolean hv = inTrack && PadUi.inside(mx, my, x, cy, NODE_W, ch);
-        if (hv) {
-            hoverLevel = n;
-            pad.hover("§nivel" + n);
-        }
-        int edge = state == 1 ? 0xFF2EB85A : milestone ? PadUi.GOLD_LO : hv ? 0xFF3496FA : 0xFFBBD3EC;
-        if (state == 1 && PadSettings.animations) { // listo: halo verde que late
-            float p = 0.5F + 0.5F * (float) Math.sin(now / 220.0 + n);
-            PadUi.box(g, x - 2, cy - 2, NODE_W + 4, ch + 4, ((int) (60 + 100 * p)) << 24 | 0x3DD66E);
-        }
-        if (you) PadUi.box(g, x - 2, cy - 2, NODE_W + 4, ch + 4, PadUi.GOLD);
-        PadUi.box(g, x, cy, NODE_W, ch, edge);
-        int topC = state == 2 ? 0xFFFFF6DA : state == 1 ? 0xFFEAFFF0 : milestone ? 0xFFFFF7E0 : 0xFFFFFFFF;
-        int botC = state == 2 ? 0xFFF5DEA0 : state == 1 ? 0xFFBDEFCB : milestone ? 0xFFFFE7A8 : 0xFFE4EEF8;
-        g.fillGradient(x + 1, cy + 1, x + NODE_W - 1, cy + ch - 1, topC, botC);
-        g.fill(x + 2, cy + 1, x + NODE_W - 2, cy + 2, 0xFFFFFFFF);
-        if (milestone) PadUi.corners(g, x, cy, NODE_W, ch);
-        // el premio: el primero al doble, y si hay más, el segundo pequeño en la esquina
-        List<JsonObject> prizes = list(l, "p");
-        int iy = cy + 4;
-        if (!prizes.isEmpty()) {
-            PadUi.stretch(g, "glow", x + 4, iy - 2, NODE_W - 8, 36);
-            PadUi.item(g, stack(prizes.get(0)), x + (NODE_W - 32) / 2, iy, 2);
-            if (prizes.size() > 1) {
-                g.pose().pushPose();
-                g.pose().translate(0, 0, 210);
-                PadUi.slot(g, x + NODE_W - 19, iy + 20, 18, 18, 0);
-                PadUi.item(g, stack(prizes.get(1)), x + NODE_W - 18, iy + 21, 1);
-                g.pose().popPose();
-            }
-        }
-        // cantidad de las monedas (los objetos ya llevan su número)
-        if (!prizes.isEmpty() && !str(prizes.get(0), "tipo", "").equals("objeto")) {
-            String q = "x" + PadUi.THOUSANDS.format(num(prizes.get(0), "n", 1));
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 200);
-            int qw = PadUi.font().width(q) + 2;
-            PadUi.box(g, x + 3, iy + 24, qw + 1, 9, 0xFF22346E);
-            PadUi.text(g, q, x + 4, iy + 25, 0xFFFFFFFF);
-            g.pose().popPose();
-        }
-        // abajo: el estado
-        int sy = cy + ch - 16;
-        if (sy < iy + 34) sy = iy + 34;
-        if (state == 1) {
-            boolean bh = !waiting && PadUi.inside(mx, my, x + 3, sy, NODE_W - 6, 13) && inTrack;
-            // 1.4.1: de caramelo como los botones, con el texto con sombra (sin contorno: no se pega a los bordes)
-            g.fillGradient(x + 3, sy, x + NODE_W - 3, sy + 12, bh ? 0xFF5CE48A : 0xFF46D272, bh ? 0xFF22A84C : 0xFF1A9442);
-            g.fill(x + 3, sy, x + NODE_W - 3, sy + 1, 0xFFA8F8C0);
-            g.fill(x + 3, sy + 12, x + NODE_W - 3, sy + 13, 0xFF106A2E);
-            PadFont.drawShadowCentered(g, "COBRAR", x + NODE_W / 2, sy + 1, 0xFFFFFF, 0xFF0E5626);
-            if (!waiting && inTrack) hit(x + 3, sy, NODE_W - 6, 13, () -> claim(n));
-        } else if (state == 2) {
-            check(g, x + NODE_W / 2 - 4, sy + 4, 0xFFC27A10);
-            if (n == flashLevel && now - flashAt < 900) {
-                int a = (int) (200 * (1 - (now - flashAt) / 900F));
-                g.fill(x + 1, cy + 1, x + NODE_W - 1, cy + ch - 1, a << 24 | 0xFFFFFF);
-            }
-        } else {
-            lock(g, x + NODE_W / 2 - 3, sy + 3, 0xFF8EA4C4);
-            g.fill(x + 1, cy + 1, x + NODE_W - 1, cy + ch - 1, 0x22B4C6DC);
-        }
-        if (you) { // «TÚ»: etiqueta de oro encima de la tarjeta, sobre el raíl
-            // 12 de alto: la tilde de la Ú cabe dentro (antes se salía por arriba)
-            int yw = PadFont.width("TÚ") + 8;
-            int yx = x + NODE_W - yw + 1, yy = cy - 7;
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 220);
-            PadUi.box(g, yx, yy, yw, 12, PadUi.NAVY);
-            g.fillGradient(yx + 1, yy + 1, yx + yw - 1, yy + 11, PadUi.GOLD_HI, PadUi.GOLD);
-            g.fill(yx + 1, yy + 10, yx + yw - 1, yy + 11, PadUi.GOLD_LO);
-            PadFont.draw(g, "TÚ", yx + 4, yy + 1, 0x5A3A00, false);
-            g.pose().popPose();
-        }
-        if (hv && state == 1 && !waiting) hit(x, cy, NODE_W, ch, () -> claim(n));
-        else if (hv) hit(x, cy, NODE_W, ch, () -> {
-            focus = n;
             pad.sound("tab", 0.5F);
         });
     }
@@ -391,67 +531,34 @@ final class PadPassPage extends PadDataPage {
         pad.sound("select", 0.75F);
     }
 
-    // ---- abajo: el nivel señalado y cómo se gana XP ------------------------------------------------------------------
+    // ---- abajo: cómo se gana XP -----------------------------------------------------------------------------------
 
-    private void drawBottom(GuiGraphics g, double mx, double my, int lv) {
-        int top = trackTop() + trackH() + 4, h = bottomH();
-        int x = X, w = W;
-        PadSkin.window(g, x, top, w, h, PadSkin.accent(app));
-        int max = levels();
-        int show = hoverLevel > 0 ? hoverLevel : focus > 0 ? focus : Math.max(1, Math.min(max, firstReady() > 0 ? firstReady() : lv + 1));
-        JsonObject l = null;
-        for (JsonObject o : list(data, "niveles")) if (num(o, "n", 0) == show) l = o;
-        // derecha: cómo se gana XP (las etiquetas, una tras otra; si no caben en una fila, en la siguiente)
+    private void drawFooter(GuiGraphics g) {
+        int y = Y + H - FOOT_H, x = X, w = W;
+        PadUi.box(g, x, y, w, FOOT_H, 0xFF0A1830);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + FOOT_H - 1, 0xFF183F3A, 0xFF0E1C34);
+        PadFont.drawShadow(g, "XP:", x + 6, y + 3, 0xFFD650, 0x3A2A00);
+        int chx = x + 8 + PadFont.width("XP:") + 4;
         List<JsonObject> src = list(data, "fuentes");
-        String head = "Cómo se gana XP";
-        int all = 0;
-        for (JsonObject s : src) all += PadUi.chipWidth("+" + num(s, "xp", 0) + " " + str(s, "n", "")) + 4;
-        int colW = Math.min(Math.round(w * 0.52F), Math.max(PadUi.boldWidth(head), all - 4));
-        int cx = x + w - 6 - colW;
-        g.fill(cx - 6, top + 4, cx - 5, top + h - 4, 0xFFC6DAEE);
-        PadUi.title(g, head, cx, top + 5, colW, PadUi.GOLD_TEXT);
-        int chx = cx, chy = top + 17;
         for (JsonObject s : src) {
             String t = "+" + num(s, "xp", 0) + " " + str(s, "n", "");
             int cw = PadUi.chipWidth(t);
-            if (chx > cx && chx + cw > cx + colW) {
-                chx = cx;
-                chy += 13;
-            }
-            if (chy + 11 > top + h - 2) break;
-            PadUi.chip(g, chx, chy, t, PadUi.TONE_GREEN, 11);
+            if (chx + cw > x + w - 6) break;
+            PadUi.chip(g, chx, y + 2, t, PadUi.TONE_GREEN, 11);
             chx += cw + 4;
         }
-        if (src.isEmpty()) PadUi.text(g, "Las misiones no dan XP.", cx, chy, PadUi.MUTED);
-        // izquierda: el nivel
-        int lx = x + 6, room = cx - 12 - lx;
-        if (l == null) return;
-        int state = (int) num(l, "e", 0);
-        String title = "Nivel " + show + (show % 5 == 0 ? " · hito" : "");
-        String st = state == 2 ? "Ya es tuyo" : state == 1 ? "¡Listo para reclamar!"
-                : "Te faltan " + PadUi.THOUSANDS.format(Math.max(0, num(l, "x", 0) - num(data, "xp", 0))) + " XP";
-        int tone = state == 2 ? PadUi.TONE_GOLD : state == 1 ? PadUi.TONE_GREEN : PadUi.TONE_GRAY;
-        PadUi.title(g, title, lx, top + 5, room, PadUi.TEXT);
-        int tw = PadUi.titleWidth(title, room);
-        if (tw + 8 + PadUi.chipWidth(st) <= room) PadUi.chip(g, lx + tw + 6, top + 3, st, tone, 12);
-        // los premios del nivel, uno tras otro
-        int px = lx, py = top + 18;
-        for (JsonObject p : list(l, "p")) {
-            String nm = name(p);
-            if (lx + room - px < 50) break; // sin sitio para otro (el nombre se recorta con «…»)
-            PadUi.slot(g, px, py, 18, 18, 0);
-            PadUi.item(g, stack(p), px + 1, py + 1, 1);
-            String fit = PadUi.fitEnd(nm, lx + room - px - 22);
-            PadUi.text(g, fit, px + 22, py + 5, PadUi.TEXT);
-            px += 22 + PadUi.font().width(fit) + 10;
-        }
-        if (list(l, "p").isEmpty()) PadUi.text(g, "Sin premio.", lx, py + 5, PadUi.MUTED);
+        if (src.isEmpty()) PadUi.text(g, "Las misiones no dan XP.", chx, y + 4, 0xFFB8C2F0);
     }
 
     @Override
     boolean scroll(double mx, double my, double delta) {
         scrollTarget -= (float) Math.signum(delta) * PITCH;
         return true;
+    }
+
+    @Override
+    boolean drag(double mx, double my, double dy) {
+        return false;
     }
 
     @Override

@@ -23,6 +23,21 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      * galería (1.4: tarjetas más grandes con la imagen en grande, para los efectos y las clases de skills).
      */
     public static final int SMALL = 0, CARDS = 1, GALLERY = 2;
+    /**
+     * 1.3.67: filas compactas (icono de 16 en una pastilla de 22, casi la mitad de alto), para las pantallas de ajustes
+     * del pad de administrador: así cabe todo sin bajar. Va como un bit en cellStyle (ver {@link #style}, {@link #compact}).
+     */
+    public static final int COMPACT = 16;
+
+    /** Casillas, tarjetas o galería (sin el bit de COMPACT). */
+    public int style() {
+        return cellStyle & 15;
+    }
+
+    /** ¿Filas compactas? */
+    public boolean compact() {
+        return (cellStyle & COMPACT) != 0;
+    }
 
     /**
      * Una textura del pad para el campo image de filas y tarjetas: «fx/kill_fuego_infernal» →
@@ -31,6 +46,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      */
     /** Imagen especial: el propio jugador en 3D, con la skin que lleva (la vista previa de la skin puesta del Armario). */
     public static final String SELF_MODEL = "tfclient:self_model";
+    /** Imagen especial (1.3.67): la vista previa de las estelas de arma (Efectos › COMBATE), una espada dando tajos. */
+    public static final String TRAIL_PREVIEW = "tfclient:trail_preview";
 
     public static String padImage(String name) {
         return "tfclient:textures/gui/pad/" + name + ".png";
@@ -202,6 +219,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         private Input input;
         private String empty = "";
         private int cellStyle = SMALL;
+        private boolean compact;
 
         private Builder(String app) {
             this.app = app;
@@ -270,6 +288,12 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             return this;
         }
 
+        /** Filas compactas (ver {@link #COMPACT}). */
+        public Builder compact() {
+            compact = true;
+            return this;
+        }
+
         public Builder cards() {
             cellStyle = CARDS;
             return this;
@@ -303,7 +327,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         }
 
         public PadView build() {
-            return new PadView(app, tabs, tab, header, hero, cells, rows, footer, input, empty, cellStyle);
+            return new PadView(app, tabs, tab, header, hero, cells, rows, footer, input, empty, cellStyle | (compact ? COMPACT : 0));
         }
     }
 

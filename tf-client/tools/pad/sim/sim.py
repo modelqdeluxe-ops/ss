@@ -545,7 +545,7 @@ class Sim(Skin):
         return label.startswith('ATR') or label == 'VOLVER'
 
     def bw(self, label):
-        return max(36, self.pwidth(label) + 14 + (8 if self.is_back(label) else 0))
+        return max(20 if len(label) == 1 else 36, self.pwidth(label) + 14 + (8 if self.is_back(label) else 0))
 
     def button(self, x, y, w, label, style, enabled=True, hover=False):
         c = self.BTN[4 if not enabled else 5 if style == 4 else min(style, 3)]
@@ -912,11 +912,12 @@ class Sim(Skin):
         return t[-1] if t and isinstance(t[-1], dict) else {}
 
     def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None, hero=None,
-             app='', gallery=None, hover_row=None, waiting=False, tab_hover=None):
+             app='', gallery=None, hover_row=None, waiting=False, tab_hover=None, compact=False):
         """PadViewPage.render (1.4): pestañas de carpeta encima (la elegida, del color de la app, se une a la cabecera);
         dentro, la cabecera de la app (su color, su icono y el texto del servidor o su frase), la ficha grande, la lista
         (casillas, tarjetas o galería y filas) y abajo la barra de acciones."""
         X, Y, W, H = self.X, self.Y, self.W, self.H
+        self.compact = compact
         acc = accent(app)
         mode = 'gallery' if gallery is not None else 'cards' if cards is not None else 'cells'
         cells = gallery if gallery is not None else cards if cards is not None else (cells or [])
@@ -1159,6 +1160,8 @@ class Sim(Skin):
         h = 8 + 11 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
         if self._ex(r).get('model'):  # el escaparate del Armario
             return max(58, h)
+        if self._ex(r).get('trail'):  # Efectos › COMBATE: el escenario de la vista previa de las estelas
+            return max(60, h)
         return max(self.HERO_MIN, h)
 
     @staticmethod
@@ -1231,6 +1234,19 @@ class Sim(Skin):
             self.model_at(ex['model'], mcx, y + h - 9, mh)
             self.clip = clip
             extra = mw - ms
+        elif ex.get('trail'):
+            # Efectos › COMBATE (1.3.67): la espada dando un tajo con la estela, en su escenario de noche
+            import trail
+            ph = h - 10
+            pw = round(ph * 1.75)
+            self.box(mx - 3, y + 4, pw + 2, ph + 2, darken(col, 0.3))
+            clip = self.clip
+            self.scissor(mx - 2, y + 5, pw, ph)
+            tr = ex['trail']
+            trail.preview(self, mx - 2, y + 5, pw, ph, f'{MC}/item/{icon}.png', tr.get('color', 0x58F4E6),
+                          dict(trail.DEFAULTS, **tr.get('st', {})), tr.get('t', 250))
+            self.clip = clip
+            extra = pw - ms - 4
         else:
             self.sk_slot(mx, my, ms, col)
             self.stretch('floor', mx + 8, my + ms - 7, ms - 16, 4)
@@ -1270,6 +1286,8 @@ class Sim(Skin):
         self.sheen(x + 1, y + 1, w - 2, h - 2, period=7.0, alpha=0.2)
 
     def lines_h(self, r, tw):
+        if getattr(self, 'compact', False):
+            return len(r[3]) * 10
         return sum(min(2, max(1, self.nlines(l, tw))) for l in r[3]) * 10
 
     def row_h(self, r, w):
@@ -1280,10 +1298,18 @@ class Sim(Skin):
             return 17
         if text_only:
             n = sum(max(1, self.nlines(l, w - 18)) for l in lines)
-            return 8 + (12 if title else 0) + n * 10 + 3 + self.ROW_GAP
+            return 8 + (12 if title else 0) + n * 10 + 3 + self.gap()
         tw = self.text_w(r, w)
         h = 4 + 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
+        if getattr(self, 'compact', False):  # PadView.COMPACT (1.3.67)
+            return max(22 + 6 if (icon or ex.get('img')) else 22, h) + 3
         return max(self.ICON_BOX + 10 if (icon or ex.get('img')) else 26, h + 2) + self.ROW_GAP
+
+    def gap(self):
+        return 3 if getattr(self, 'compact', False) else self.ROW_GAP
+
+    def ibox(self):
+        return 22 if getattr(self, 'compact', False) else self.ICON_BOX
 
     @staticmethod
     def switch_of(r):
@@ -1306,7 +1332,7 @@ class Sim(Skin):
 
     def text_w(self, r, w):
         has_icon = r[0] or self._ex(r).get('img')
-        return w - (self.ICON_BOX + 17 if has_icon else 14) - self.right_w(r) - 6
+        return w - (self.ibox() + (13 if getattr(self, 'compact', False) else 17) if has_icon else 14) - self.right_w(r) - 6
 
     def row(self, r, x, y, w, h, acc=(52, 150, 250), hover=False):
         """PadViewPage.drawRow (1.4): tarjeta con una franja del color de la fila (o de la app) a la izquierda, el icono
@@ -1314,7 +1340,7 @@ class Sim(Skin):
         icon, title, color, lines, prog, badge, b1, b2 = r[:8]
         ex = self._ex(r)
         sel = (len(r) > 8 and r[8] is True) or ex.get('sel')
-        h -= self.ROW_GAP
+        h -= self.gap()
         has_icon = bool(icon or ex.get('img'))
         text_only = not has_icon and not b1 and not b2
         plain = color in (0x18265C, 0x7E8CA8)
@@ -1345,7 +1371,15 @@ class Sim(Skin):
                 self.fill(x + 4 + i * 4, yy + 1, x + 8 + i * 4, yy + h - 1, tuple(tnt[:3]) + (a,))
         if hover:
             self.sheen(x + 1, yy + 1, w - 2, h - 2, 1.4, 0.25)
-        if has_icon:
+        if has_icon and getattr(self, 'compact', False):
+            iy = yy + (h - 22) // 2
+            self.sk_tile(x + 6, iy, 22, tnt, hover)
+            if ex.get('img'):
+                self.icon_at(icon, ex, x + 8, iy + 2, 18)
+            else:
+                self.item(icon, x + 6 + 3, iy + 3)
+            tx = x + 22 + 11
+        elif has_icon:
             ib = self.ICON_BOX
             iy = yy + (h - ib) // 2
             self.glow(x + 7 + ib / 2, iy + ib / 2, ib * 1.05, tnt, 150 if hover else 105)
@@ -1362,7 +1396,7 @@ class Sim(Skin):
         self.title(title, tx, top, tw, ink(tcol))
         ly = top + 11
         for l in lines:
-            ly += max(1, self.wrap_ellipsis(l, tx, ly, tw, MUTED, 2)) * 10
+            ly += max(1, self.wrap_ellipsis(l, tx, ly, tw, MUTED, 1 if getattr(self, 'compact', False) else 2)) * 10
         if prog >= 0:
             self.sk_progress(tx, ly + 1, min(tw, 140), prog)
         bx = x + w - self.right_w(r) - 2

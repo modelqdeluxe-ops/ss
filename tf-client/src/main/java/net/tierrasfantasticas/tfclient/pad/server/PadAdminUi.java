@@ -74,6 +74,38 @@ final class PadAdminUi {
                 .clickable(btn.action());
     }
 
+    /** Saltos de los botones − y + de las monedas (y precios) y de las monedas verdes. */
+    static final long[] COIN_STEPS = {0, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000, 25_000, 50_000, 100_000, 250_000,
+            500_000, 1_000_000};
+    static final long[] GREEN_STEPS = {0, 1, 2, 3, 5, 10, 15, 20, 25, 50, 100, 250, 500};
+
+    /** El siguiente salto hacia arriba (dir &gt; 0) o hacia abajo desde v. */
+    static long step(long v, long[] steps, int dir) {
+        if (dir > 0) {
+            for (long s : steps) if (s > v) return s;
+            return Math.max(v, steps[steps.length - 1]);
+        }
+        long best = 0;
+        for (long s : steps) if (s < v) best = s;
+        return best;
+    }
+
+    /**
+     * Un número con − y + (1.3.67): los botones saltan por valores redondos; pulsar la fila abre el campo de abajo para
+     * escribir el número exacto. editing: la fila sale marcada.
+     */
+    static PadView.Row stepper(ItemStack icon, String title, String help, String value, String minus, String plus, String click,
+                               boolean editing) {
+        return new PadView.Row(icon, title, TEXT, help.isEmpty() ? List.of() : List.of(help), -1, value,
+                PadView.Btn.of("-", minus, PadView.BLUE), PadView.Btn.of("+", plus, PadView.BLUE)).clickable(click).selected(editing);
+    }
+
+    /** Una de varias opciones con « y » para pasar por ellas (1.3.67). */
+    static PadView.Row cycle(ItemStack icon, String title, String help, String value, String prev, String next) {
+        return new PadView.Row(icon, title, TEXT, help.isEmpty() ? List.of() : List.of(help), -1, value,
+                PadView.Btn.of("«", prev, PadView.BLUE), PadView.Btn.of("»", next, PadView.BLUE)).clickable(next);
+    }
+
     static PadView.Row section(String title) {
         return new PadView.Row(ItemStack.EMPTY, title, TEXT, List.of(), -1, "", null, null);
     }
@@ -183,6 +215,14 @@ final class PadAdminUi {
      * QUITAR y LISTO; si no, cuántos hay y VACIAR (con confirmación).
      */
     static void items(PadView.Builder b, ServerPlayer p, String app, String target, List<ItemStack> items) {
+        items(b, p, app, target, items, null, null);
+    }
+
+    /**
+     * Lo mismo, pero si se dan add1 y add2 (MI INVENTARIO, ELEGIR…) la fila de debajo de las casillas lleva esos botones
+     * para añadir en vez de VACIAR (1.3.67: una fila menos en la ficha del kit).
+     */
+    static void items(PadView.Builder b, ServerPlayer p, String app, String target, List<ItemStack> items, PadView.Btn add1, PadView.Btn add2) {
         int sel = selected(p, app, target);
         for (int i = 0; i < items.size(); i++) b.cell(items.get(i).copy(), "", TEXT, "c.sel:" + i, i == sel);
         if (sel >= 0 && sel < items.size()) {
@@ -191,6 +231,10 @@ final class PadAdminUi {
                     List.of("Escribe abajo cuántos trae (1 a " + PadView.number(PadItemPicker.MAX_AMOUNT) + ") o quítalo."), -1,
                     "×" + PadView.number(s.getCount()), PadView.Btn.of("QUITAR", "c.del:" + sel, PadView.RED),
                     PadView.Btn.of("LISTO", "c.sel:-1", PadView.GRAY)).selected(true));
+        } else if (add1 != null) {
+            b.row(new PadView.Row(new ItemStack(Items.CHEST), items.isEmpty() ? "Sin objetos" : items.size() + (items.size() == 1 ? " objeto" : " objetos"),
+                    TEXT, List.of(items.isEmpty() ? "MI INVENTARIO: todo lo que llevas. ELEGIR: uno a uno."
+                    : "Pulsa uno arriba para cambiarlo o quitarlo."), -1, "", add1, add2));
         } else if (!items.isEmpty()) {
             boolean sure = PadServer.confirming(p, app + ".vaciar:" + target);
             b.row(new PadView.Row(new ItemStack(Items.CHEST), items.size() + (items.size() == 1 ? " objeto" : " objetos"), TEXT,
@@ -202,15 +246,17 @@ final class PadAdminUi {
         }
     }
 
-    /** Las filas de las monedas (de oro y verdes): números que se ingresan en el monedero, nunca objetos. */
+    /**
+     * Las filas de las monedas (de oro y verdes): números que se ingresan en el monedero, nunca objetos. 1.3.67: con − y +
+     * (saltos redondos); pulsando la fila se escribe el número exacto.
+     */
     static void coins(PadView.Builder b, ServerPlayer p, String app, String target, long coins, long greens) {
         String f = field(p, app, target);
-        b.row(value(PadKits.coinIcon(false), "Monedas", "Se ingresan directamente en el monedero del jugador (no se da ningún objeto).",
-                coins > 0 ? "+" + PadView.moneyExact(coins) : "Ninguna", "c.f:monedas", f.equals("monedas"),
-                coins > 0 ? PadView.Btn.of("QUITAR", "c.zero:monedas", PadView.GRAY) : null));
-        b.row(value(PadKits.coinIcon(true), "Monedas verdes", "Las del Gachapón. Se suman a su saldo de monedas verdes.",
-                greens > 0 ? "+" + PadView.number(greens) : "Ninguna", "c.f:verdes", f.equals("verdes"),
-                greens > 0 ? PadView.Btn.of("QUITAR", "c.zero:verdes", PadView.GRAY) : null));
+        b.row(stepper(PadKits.coinIcon(false), "Monedas", "Al monedero; pulsa la fila para escribirlas.",
+                coins > 0 ? "+" + PadView.moneyExact(coins) : "Ninguna", "c.step:monedas:-", "c.step:monedas:+", "c.f:monedas",
+                f.equals("monedas")));
+        b.row(stepper(PadKits.coinIcon(true), "Monedas verdes", "Del Gachapón; pulsa la fila para escribirlas.",
+                greens > 0 ? "+" + PadView.number(greens) : "Ninguna", "c.step:verdes:-", "c.step:verdes:+", "c.f:verdes", f.equals("verdes")));
     }
 
     /** El campo de abajo del editor: la cantidad del objeto elegido o las monedas que se cambian. true si lo puso. */
@@ -280,6 +326,17 @@ final class PadAdminUi {
                 stopEditing(p, app);
                 TFPadNet.notice(p, v == 0 ? "Sin " + (f.equals("monedas") ? "monedas." : "monedas verdes.")
                         : "Guardado: +" + PadView.number(v) + (f.equals("monedas") ? " monedas" : " monedas verdes") + " al monedero.");
+            }
+            case "c.step" -> { // c.step:monedas:+ o c.step:verdes:-
+                String[] k = arg.split(":");
+                if (k.length < 2 || !(k[0].equals("monedas") || k[0].equals("verdes"))) return true;
+                long[] steps = k[0].equals("monedas") ? COIN_STEPS : GREEN_STEPS;
+                long[] now = {0};
+                edit.accept(o -> {
+                    now[0] = step(Math.max(0, TFJson.num(o, k[0], 0)), steps, k[1].equals("+") ? 1 : -1);
+                    o.addProperty(k[0], now[0]);
+                });
+                stopEditing(p, app);
             }
             case "c.zero" -> {
                 if (arg.equals("monedas") || arg.equals("verdes")) edit.accept(o -> o.addProperty(arg, 0));

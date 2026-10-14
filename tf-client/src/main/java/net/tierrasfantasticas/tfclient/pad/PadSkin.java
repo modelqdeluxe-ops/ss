@@ -147,6 +147,17 @@ final class PadSkin {
     // Formas con vértices de color (se juntan y se pintan de una vez con g.flush())
     // ---------------------------------------------------------------------------------------------------------------
 
+    /**
+     * 1.3.67 (fluidez): mientras el pad pinta en lote (TFPadScreen.render, drawManaged) no hace falta vaciar el lote tras
+     * cada forma: lo que viene después va en orden (las texturas vacían el lote antes, ver GuiGraphicsMixin). Fuera del
+     * lote, cada forma se pinta al momento, como antes.
+     */
+    static boolean batching;
+
+    static void done(GuiGraphics g) {
+        if (!batching) g.flush();
+    }
+
     private static VertexConsumer vc(GuiGraphics g) {
         return g.bufferSource().getBuffer(RenderType.gui());
     }
@@ -182,21 +193,43 @@ final class PadSkin {
         quad(vc(g), g.pose().last().pose(), x0, y0, c, x0, y1, c, x1, y1, c, x1, y0, c);
     }
 
+    /** Un trazo de (x0, y0) a (x1, y1) de grueso w, de un color (sin flush): el camino del TF Pass. */
+    static void line(GuiGraphics g, float x0, float y0, float x1, float y1, float w, int c) {
+        float dx = x1 - x0, dy = y1 - y0, len = (float) Math.sqrt(dx * dx + dy * dy);
+        if (len < 0.01F) return;
+        float nx = -dy / len * w / 2, ny = dx / len * w / 2;
+        quad(vc(g), g.pose().last().pose(), x0 + nx, y0 + ny, c, x1 + nx, y1 + ny, c, x1 - nx, y1 - ny, c, x0 - nx, y0 - ny, c);
+    }
+
+    /** Triángulo de un color (sin flush). */
+    static void tri(GuiGraphics g, float x0, float y0, float x1, float y1, float x2, float y2, int c) {
+        quad(vc(g), g.pose().last().pose(), x0, y0, c, x1, y1, c, x2, y2, c, x2, y2, c);
+    }
+
     /** Degradado a lo ancho: cl a la izquierda, cr a la derecha (ARGB, con alfa). */
     static void hgrad(GuiGraphics g, float x0, float y0, float x1, float y1, int cl, int cr) {
         if (x1 <= x0 || y1 <= y0) return;
         quad(vc(g), g.pose().last().pose(), x0, y0, cl, x0, y1, cl, x1, y1, cr, x1, y0, cr);
-        g.flush();
+        done(g);
     }
 
     /** Degradado vertical con alfa (fillGradient, pero en float). */
     static void vgrad(GuiGraphics g, float x0, float y0, float x1, float y1, int ct, int cb) {
         if (x1 <= x0 || y1 <= y0) return;
         quad(vc(g), g.pose().last().pose(), x0, y0, ct, x0, y1, cb, x1, y1, cb, x1, y0, ct);
-        g.flush();
+        done(g);
     }
 
     private static final int SIDES = 24;
+    /** El círculo de 24 lados, calculado una vez (glow y disc se pintan muchas veces por fotograma). */
+    private static final float[] COS = new float[SIDES + 1], SIN = new float[SIDES + 1];
+
+    static {
+        for (int i = 0; i <= SIDES; i++) {
+            COS[i] = (float) Math.cos(i * Math.PI * 2 / SIDES);
+            SIN[i] = (float) Math.sin(i * Math.PI * 2 / SIDES);
+        }
+    }
 
     /**
      * Luz redonda de radio r: alfa a en el centro, el 40 % a 0,45 r y nada en el borde (dos anillos de 24 lados con
@@ -209,15 +242,14 @@ final class PadSkin {
         int c0 = alpha(rgb, a), c1 = alpha(rgb, Math.round(a * 0.4F)), c2 = alpha(rgb, 0);
         float ri = r * 0.45F;
         for (int i = 0; i < SIDES; i++) {
-            double a0 = i * Math.PI * 2 / SIDES, a1 = (i + 1) * Math.PI * 2 / SIDES;
-            float ix0 = cx + (float) Math.cos(a0) * ri, iy0 = cy + (float) Math.sin(a0) * ri;
-            float ix1 = cx + (float) Math.cos(a1) * ri, iy1 = cy + (float) Math.sin(a1) * ri;
-            float ox0 = cx + (float) Math.cos(a0) * r, oy0 = cy + (float) Math.sin(a0) * r;
-            float ox1 = cx + (float) Math.cos(a1) * r, oy1 = cy + (float) Math.sin(a1) * r;
+            float ix0 = cx + COS[i] * ri, iy0 = cy + SIN[i] * ri;
+            float ix1 = cx + COS[i + 1] * ri, iy1 = cy + SIN[i + 1] * ri;
+            float ox0 = cx + COS[i] * r, oy0 = cy + SIN[i] * r;
+            float ox1 = cx + COS[i + 1] * r, oy1 = cy + SIN[i + 1] * r;
             quad(vc, m, cx, cy, c0, ix0, iy0, c1, ix1, iy1, c1, ix1, iy1, c1);
             quad(vc, m, ix0, iy0, c1, ox0, oy0, c2, ox1, oy1, c2, ix1, iy1, c1);
         }
-        g.flush();
+        done(g);
     }
 
     /** Círculo lleno de un color (24 lados). */
@@ -225,12 +257,11 @@ final class PadSkin {
         VertexConsumer vc = vc(g);
         Matrix4f m = g.pose().last().pose();
         for (int i = 0; i < SIDES; i++) {
-            double a0 = i * Math.PI * 2 / SIDES, a1 = (i + 1) * Math.PI * 2 / SIDES;
-            float x0 = cx + (float) Math.cos(a0) * r, y0 = cy + (float) Math.sin(a0) * r;
-            float x1 = cx + (float) Math.cos(a1) * r, y1 = cy + (float) Math.sin(a1) * r;
+            float x0 = cx + COS[i] * r, y0 = cy + SIN[i] * r;
+            float x1 = cx + COS[i + 1] * r, y1 = cy + SIN[i + 1] * r;
             quad(vc, m, cx, cy, argb, x0, y0, argb, x1, y1, argb, x1, y1, argb);
         }
-        g.flush();
+        done(g);
     }
 
     /**
@@ -246,7 +277,7 @@ final class PadSkin {
         int mid = alpha(0xFFFFFF, Math.round(255 * a)), none = 0x00FFFFFF;
         quad(vc, m, topC - half, 0, none, botC - half, h, none, botC, h, mid, topC, 0, mid);
         quad(vc, m, topC, 0, mid, botC, h, mid, botC + half, h, none, topC + half, 0, none);
-        g.flush();
+        done(g);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -423,7 +454,7 @@ final class PadSkin {
             rect(g, cx, cy + i, cx + 1, cy + i + 1, c);
             rect(g, cx, cy - i, cx + 1, cy - i + 1, c);
         }
-        g.flush();
+        done(g);
     }
 
     /**
@@ -446,7 +477,7 @@ final class PadSkin {
             int b0 = Math.max(x, (int) (x + pos + 9 - j)), b1 = Math.min(x + w, (int) (x + pos + 11 - j));
             if (b1 > b0) rect(g, b0, y + j, b1, y + j + 1, c2);
         }
-        g.flush();
+        done(g);
     }
 
     /** Texto (letra de Minecraft) con una sombra de color a 1 abajo a la derecha. */
@@ -467,7 +498,7 @@ final class PadSkin {
         rect(g, x, y, x + 11, y + 1, PadUi.GOLD_HI);
         int[][] px = {{5, 1}, {4, 2}, {5, 2}, {1, 3}, {3, 3}, {4, 3}, {1, 4}, {2, 4}, {3, 4}, {2, 5}};
         for (int[] p : px) rect(g, x + p[0], y + p[1], x + p[0] + 1, y + p[1] + 1, WHITE);
-        g.flush();
+        done(g);
     }
 
     // ---------------------------------------------------------------------------------------------------------------

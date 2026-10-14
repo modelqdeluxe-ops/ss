@@ -1,16 +1,12 @@
 """Genera las texturas de las piedras de protección de TF Claims (una por tamaño de zona).
 
-1.3.66 (el dueño: «las texturas son exageradas; la primera y la segunda se parecen, tonos grises»): rediseño limpio,
-pixel a pixel en 32x32. Piedra pulida y lisa (sin ruido), con su canto de luz arriba a la izquierda; una placa embutida
-con un remate de hierro (de oro en las de pago: 250, 300 y 500) y sus remaches; en el centro, del color del nivel:
-  - front: las letras TF en relieve (la cara que mira a quien la pone).
-  - side:  una gema tallada (rombo con sus caras de luz y sombra) y debajo el tamaño de la zona («64»).
-  - top:   una gema redonda tallada: aquí empieza la protección, que sube hasta el cielo.
-  - bottom: la placa sola.
-Solo brillan de noche la gema, las letras y el número (capa _glow a plena luz), no el marco: nada de rayos ni neón por
-todo el bloque. Los 10 colores van como una escala de rareza (verde → turquesa → celeste → azul → violeta → magenta →
-coral → rojo → naranja → oro) y son los mismos que el borde de la zona (ClaimTier) y el nombre del objeto
-(ClaimBlocks.colorForTier).
+1.3.67 (el dueño: «la textura de las claims es una mierda exagerada otra vez: hazlas simplistas, sin números ni figuras
+geométricas» y luego «tampoco las hagas tan mierda, ponle TF siempre, con un contorno bonito»): un bloque sencillo de
+32x32. Un marco de piedra pulida (de oro en las de pago: 250, 300 y 500) y dentro un panel hundido del color del nivel,
+con su luz arriba, y en el centro las letras TF gruesas, blancas, con su contorno oscuro del mismo color. Igual en los
+cuatro lados y arriba; abajo, solo la piedra. De noche se ven el panel y las letras (capa _glow a plena luz). Los 10
+colores (verde → turquesa → celeste → azul → violeta → magenta → coral → rojo → naranja → oro) son los del borde de la
+zona (ClaimTier) y del nombre del objeto (ClaimBlocks.colorForTier).
 
 Uso: python3 tools/gen_claim_blocks.py [--preview DIR]
 """
@@ -18,13 +14,13 @@ import os
 import random
 import sys
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "tfclient")
 TEX = os.path.join(ROOT, "textures", "block", "claims")
 N = 32
 
-# tamaño (como en ClaimTier) → color de la gema
+# tamaño (como en ClaimTier) → color del panel
 TIERS = [
     ("10x10", (92, 214, 120)),
     ("25x25", (40, 206, 192)),
@@ -39,159 +35,74 @@ TIERS = [
 ]
 PAID = {"250x250", "300x300", "500x500"}
 
-DARK = (16, 18, 24)
-IRON = {"hi": (214, 220, 232), "mid": (156, 164, 182), "lo": (98, 104, 122)}
-GOLD = {"hi": (255, 232, 150), "mid": (232, 178, 62), "lo": (166, 108, 30)}
+# el marco: piedra pulida gris o, en las de pago, oro viejo (base, canto de luz y de sombra, y el borde del hueco)
+STONE = {"base": (126, 128, 136), "hi": (158, 160, 168), "lo": (86, 88, 96), "in_lo": (92, 94, 102), "in_hi": (162, 164, 172)}
+GOLD = {"base": (196, 152, 70), "hi": (236, 198, 112), "lo": (128, 90, 34), "in_lo": (120, 84, 32), "in_hi": (240, 206, 124)}
+
+# las letras TF (6 de ancho cada una, 2 de hueco, 10 de alto)
+GLYPH_T = ["######", "######", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##.."]
+GLYPH_F = ["######", "######", "##....", "##....", "#####.", "#####.", "##....", "##....", "##....", "##...."]
 
 
 def mix(a, b, t):
     return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
 
 
-def gem_shades(c):
-    return {"hi": mix(c, (255, 255, 255), 0.55), "lt": mix(c, (255, 255, 255), 0.22), "md": c,
-            "dk": mix(c, (0, 0, 0), 0.28), "dd": mix(c, (0, 0, 0), 0.5)}
-
-
-def base_block(seed, trim):
-    """La piedra pulida con la placa embutida y su remate (hierro u oro)."""
+def frame(seed, m):
+    """La piedra (o el oro) del marco: un grano muy suave y el canto (2 px) con luz arriba/izquierda y sombra abajo/derecha."""
     rnd = random.Random(seed)
     px = {}
     for y in range(N):
         for x in range(N):
-            v = rnd.choice((-3, -1, 0, 0, 1, 3))
-            px[x, y] = (46 + v, 48 + v, 60 + v)
-    for i in range(N):  # cantos del bloque: luz arriba/izquierda, sombra abajo/derecha
-        px[i, 0] = px[0, i] = (72, 75, 90)
-        px[i, N - 1] = px[N - 1, i] = (24, 26, 34)
-    px[0, N - 1] = px[N - 1, 0] = (40, 42, 52)
-    for y in range(4, N - 4):  # la placa, hundida
-        for x in range(4, N - 4):
-            v = rnd.choice((-2, 0, 0, 1))
-            px[x, y] = (33 + v, 35 + v, 45 + v)
-    for i in range(4, N - 4):
-        px[i, 4] = px[4, i] = (23, 25, 33)          # sombra de dentro arriba/izquierda
-        px[i, N - 5] = px[N - 5, i] = (54, 57, 70)  # luz de dentro abajo/derecha
-    for i in range(3, N - 3):  # el remate
-        px[i, 3] = px[3, i] = trim["hi"]
-        px[i, N - 4] = px[N - 4, i] = trim["lo"]
-    px[3, N - 4] = px[N - 4, 3] = trim["mid"]
-    for cx, cy in ((3, 3), (N - 4, 3), (3, N - 4), (N - 4, N - 4)):  # remaches
-        px[cx, cy] = trim["hi"]
-    for cx, cy in ((5, 5), (N - 7, 5), (5, N - 7), (N - 7, N - 7)):
-        px[cx, cy], px[cx + 1, cy], px[cx, cy + 1], px[cx + 1, cy + 1] = trim["hi"], trim["mid"], trim["mid"], trim["lo"]
+            v = rnd.choice((-4, -2, 0, 0, 0, 2, 3))
+            px[x, y] = tuple(max(0, min(255, c + v)) for c in m["base"])
+    for i in range(N):
+        for j in range(2):
+            px[i, j] = px[j, i] = m["hi"]
+            px[i, N - 1 - j] = px[N - 1 - j, i] = m["lo"]
     return px
 
 
-DIGITS = {
-    "0": ["111", "101", "101", "101", "111"], "1": ["010", "110", "010", "010", "111"],
-    "2": ["111", "001", "111", "100", "111"], "3": ["111", "001", "011", "001", "111"],
-    "4": ["101", "101", "111", "001", "001"], "5": ["111", "100", "111", "001", "111"],
-    "6": ["111", "100", "111", "101", "111"], "7": ["111", "001", "010", "010", "010"],
-    "8": ["111", "101", "111", "101", "111"], "9": ["111", "101", "111", "001", "111"],
-}
-
-
-def number(text, y, color):
-    """El número (radio de la zona) en cifras de 3x5 centradas, con su sombra."""
-    w = len(text) * 4 - 1
-    x0 = (N - w) // 2
-    cells, shadow = {}, set()
-    for i, ch in enumerate(text):
-        for r, row in enumerate(DIGITS[ch]):
-            for c, bit in enumerate(row):
-                if bit == "1":
-                    cells[x0 + i * 4 + c, y + r] = color
-    for (x, y2) in cells:
-        if (x + 1, y2 + 1) not in cells:
-            shadow.add((x + 1, y2 + 1))
-    return cells, shadow
-
-
-def letters(sh):
-    """T y F en relieve: cara del color, canto de luz arriba y sombra abajo/derecha."""
-    cells = {}
-
-    def rect(x0, y0, x1, y1):
-        for y in range(y0, y1 + 1):
-            for x in range(x0, x1 + 1):
-                cells[x, y] = sh["md"]
-    rect(9, 11, 14, 12)
-    rect(11, 13, 12, 20)
-    rect(17, 11, 22, 12)
-    rect(17, 13, 18, 20)
-    rect(19, 15, 21, 16)
-    for (x, y) in list(cells):
-        if (x, y - 1) not in cells:
-            cells[x, y] = sh["hi"]
-        elif (x + 1, y) not in cells or (x, y + 1) not in cells:
-            cells[x, y] = sh["dk"]
-    return cells
-
-
-def diamond_gem(sh, cx, cy, r):
-    """Gema en rombo tallada: cuatro caras (luz arriba a la izquierda), filo oscuro y un brillo."""
-    cells = {}
-    for y in range(N):
-        for x in range(N):
-            dx, dy = x + 0.5 - cx, y + 0.5 - cy
-            if abs(dx) + abs(dy) <= r:
-                if abs(dx) + abs(dy) > r - 1:
-                    cells[x, y] = sh["dd"]
-                elif dx <= 0 and dy <= 0:
-                    cells[x, y] = sh["lt"]
-                elif dx > 0 and dy <= 0:
-                    cells[x, y] = sh["md"]
-                elif dx <= 0:
-                    cells[x, y] = sh["dk"]
-                else:
-                    cells[x, y] = sh["dd"]
-    hx, hy = int(cx - r / 2.5), int(cy - r / 2.5)
-    cells[hx, hy] = sh["hi"]
-    cells[hx + 1, hy] = sh["hi"]
-    cells[hx, hy + 1] = sh["hi"]
-    return cells
-
-
-def round_gem(sh, cx, cy, r):
-    """Gema redonda tallada (vista desde arriba): anillo oscuro, corona, mesa clara y brillo."""
-    cells = {}
-    for y in range(N):
-        for x in range(N):
-            d = ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2) ** 0.5
-            if d <= r:
-                if d > r - 1.2:
-                    cells[x, y] = sh["dd"]
-                elif d > r * 0.55:
-                    cells[x, y] = sh["dk"] if (x + 0.5 - cx) + (y + 0.5 - cy) > 0 else sh["md"]
-                else:
-                    cells[x, y] = sh["lt"] if (x + 0.5 - cx) + (y + 0.5 - cy) < 1 else sh["md"]
-    cells[int(cx - r / 2.2), int(cy - r / 2.2)] = sh["hi"]
-    cells[int(cx - r / 2.2) + 1, int(cy - r / 2.2)] = sh["hi"]
+def letters():
+    """Las celdas de TF, centradas."""
+    w = len(GLYPH_T[0]) + 2 + len(GLYPH_F[0])
+    ox, oy = (N - w) // 2, (N - len(GLYPH_T)) // 2
+    cells = set()
+    for r in range(len(GLYPH_T)):
+        for c, ch in enumerate(GLYPH_T[r]):
+            if ch == "#":
+                cells.add((ox + c, oy + r))
+        for c, ch in enumerate(GLYPH_F[r]):
+            if ch == "#":
+                cells.add((ox + len(GLYPH_T[0]) + 2 + c, oy + r))
     return cells
 
 
 def face(kind, label, color, seed):
-    sh = gem_shades(color)
-    trim = GOLD if label in PAID else IRON
-    px = base_block(seed, trim)
+    """Una cara: el marco y, menos abajo, el panel del color (hundido) con TF y su contorno."""
+    m = GOLD if label in PAID else STONE
+    px = frame(seed, m)
     lit = {}
-    if kind == "front":
-        lit = letters(sh)
-    elif kind == "side":
-        lit = diamond_gem(sh, 16, 13, 7.5)
-        cells, shadow = number(label.split("x")[0], 22, sh["lt"])
-        for c in shadow:
-            px[c] = DARK
-        lit.update(cells)
-    elif kind == "top":
-        lit = round_gem(sh, 16, 16, 8.5)
-    # sombra de lo que va en relieve (abajo a la derecha)
-    for (x, y) in lit:
-        if (x + 1, y + 1) not in lit and 4 < x + 1 < N - 4 and 4 < y + 1 < N - 4 and kind != "side":
-            px[x + 1, y + 1] = DARK
-    for c, col in lit.items():
-        px[c] = col
+    if kind != "bottom":
+        p0, p1 = 6, N - 6
+        for y in range(p0, p1):
+            for x in range(p0, p1):
+                t = (y - p0) / (p1 - p0 - 1)
+                lit[x, y] = mix(mix(color, (255, 255, 255), 0.22), mix(color, (0, 0, 0), 0.22), t)
+        for x in range(p0 + 1, p1 - 1):
+            lit[x, p0] = mix(color, (255, 255, 255), 0.5)  # la luz de arriba del panel
+        for i in range(4, N - 4):
+            for j in range(2):  # el hueco del panel: sombra arriba/izquierda, luz abajo/derecha
+                px[i, 4 + j] = px[4 + j, i] = m["in_lo"]
+                px[i, N - 5 - j] = px[N - 5 - j, i] = m["in_hi"]
+        cells = letters()
+        outline = {(x + dx, y + dy) for x, y in cells for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - cells
+        for c in outline:
+            lit[c] = mix(color, (0, 0, 0), 0.62)
+        face_c, top_c, low_c = mix(color, (255, 255, 255), 0.85), (255, 255, 255), mix(color, (255, 255, 255), 0.55)
+        for x, y in cells:
+            lit[x, y] = top_c if (x, y - 1) not in cells else low_c if (x, y + 1) not in cells else face_c
+    px.update(lit)
     img = Image.new("RGBA", (N, N))
     for (x, y), col in px.items():
         img.putpixel((x, y), col + (255,))
@@ -334,9 +245,9 @@ def preview(dirname, faces):
         def dark(img):
             return Image.alpha_composite(img, Image.new("RGBA", img.size, (0, 0, 0, 200)))
         fr = dark(faces[name, "front"]); sd = dark(faces[name, "side"]); tp = dark(faces[name, "top"])
-        _, gf = face("front", dict(TIERS)[label], 1000)
-        _, gs = face("side", dict(TIERS)[label], 1017)
-        _, gt = face("top", dict(TIERS)[label], 1034)
+        _, gf = face("front", label, dict(TIERS)[label], 1000)
+        _, gs = face("side", label, dict(TIERS)[label], 1017)
+        _, gt = face("top", label, dict(TIERS)[label], 1034)
         fr.alpha_composite(gf); sd.alpha_composite(gs); tp.alpha_composite(gt)
         t = iso(fr, sd, tp, s=5)
         x = 30 + (i % cols) * (tw + 30)

@@ -2,6 +2,7 @@
 
     python3 tools/pad/build_sounds.py            # escribe src/main/resources/assets/tfclient/sounds/pad/*.ogg
     python3 tools/pad/build_sounds.py --wav DIR  # además, los .wav para escucharlos
+    python3 tools/pad/build_sounds.py --only gacha_tick,gacha_stop   # solo esos
 
 Timbre (1.3.23): suave y redondo, sin campanas ni brillos metálicos. «Pops» de burbuja con el tono que se desliza,
 pulsos de seno cálidos filtrados (como una tecla de piano eléctrico muy apagada), soplos de aire muy bajitos para
@@ -233,8 +234,125 @@ def s_like():
     return finish(lowpass(reverb(x, 0.1, 0.6), 4600), 0.36)
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# La ruleta del Gachapón (1.3.67): el dueño quería sonidos de verdad («no tiene sonidos, nada»). Más brillantes que los
+# del pad (es un juego de azar), pero redondos: arranque, tic de cada premio que pasa (el pad le sube el tono cuanto más
+# rápido va), el frenazo, el volteo de cada carta en las tiradas de 5 y una fanfarria por rareza, más grande cuanto
+# más rara.
+
+def chime(f, dur, decay, bright=0.35):
+    """Campanita suave: seno con su octava y una quinta muy bajita que se apagan antes (brillo sin pinchar)."""
+    t = t_axis(dur)
+    s = np.sin(2 * np.pi * f * t) + bright * np.sin(2 * np.pi * 2 * f * t) * np.exp(-t / (decay * 0.35)) \
+        + 0.12 * bright * np.sin(2 * np.pi * 3 * f * t) * np.exp(-t / (decay * 0.2))
+    return s * env(t, 0.003, decay)
+
+
+def sparkle(dur, seed, base=2600, n=7, level=0.12):
+    """Destellos: notas agudas y cortas al azar, como purpurina."""
+    rng = np.random.default_rng(seed)
+    x = np.zeros(int(dur * SR))
+    for i in range(n):
+        f = base * 2 ** (rng.integers(0, 12) / 12)
+        place(x, level * chime(f, 0.18, 0.04, 0.2), rng.uniform(0, dur * 0.8))
+    return x
+
+
+def thump(f0=120, f1=55, dur=0.18, decay=0.06):
+    """Golpe grave (bombo suave): un seno que cae de tono."""
+    return pop(f0, f1, dur, decay, attack=0.001)
+
+
+def s_gacha_start():
+    """Girar: un chasquido de palanca, un soplo que sube y una nota que acelera."""
+    x = np.zeros(int(SR * 0.7))
+    place(x, 0.5 * click_burst(0.02, 31), 0.0)
+    place(x, 0.5 * thump(160, 80, 0.12, 0.04), 0.0)
+    place(x, whoosh(0.45, 400, 3200, level=0.09, seed=33), 0.02)
+    t = t_axis(0.45)
+    f = 330 * (2.2 ** (t / 0.45))
+    place(x, 0.22 * np.sin(2 * np.pi * np.cumsum(f) / SR) * env(t, 0.03, 0.25), 0.04)
+    return finish(lowpass(reverb(x, 0.12, 0.7), 6000), 0.5)
+
+
+def s_gacha_tick():
+    """El tic de cada premio que pasa por la flecha: un clic de plástico con una notita (el pad cambia el tono)."""
+    x = np.zeros(int(SR * 0.07))
+    place(x, 0.55 * wood(1500, 0.035, seed=41), 0.0)
+    place(x, 0.35 * pop(1900, 1500, 0.05, 0.012), 0.0)
+    return finish(lowpass(x, 7000), 0.42, 0.006)
+
+
+def s_gacha_stop():
+    """Se para: un golpe que encaja (clac grave) y un brillo corto."""
+    x = np.zeros(int(SR * 0.45))
+    place(x, 0.7 * thump(140, 60, 0.2, 0.07), 0.0)
+    place(x, 0.45 * click_burst(0.02, 43, 0.9), 0.0)
+    place(x, 0.25 * chime(note('E6'), 0.25, 0.07), 0.01)
+    return finish(lowpass(reverb(x, 0.14, 0.7), 6500), 0.55)
+
+
+def s_gacha_flip():
+    """Voltear una carta (tiradas de 5): un soplo corto y un tic."""
+    x = np.zeros(int(SR * 0.25))
+    place(x, whoosh(0.12, 1200, 3000, level=0.1, seed=45), 0.0)
+    place(x, 0.4 * wood(1300, 0.04, seed=46), 0.08)
+    return finish(lowpass(x, 6500), 0.38)
+
+
+def arpeggio(notes, gap, dur, decay, level=0.5):
+    x = np.zeros(int(SR * (gap * len(notes) + dur)))
+    for i, n in enumerate(notes):
+        place(x, level * chime(note(n), dur, decay), i * gap)
+    return x
+
+
+def s_gacha_win1():
+    """Común: dos notas alegres."""
+    x = np.zeros(int(SR * 0.6))
+    place(x, arpeggio(['C5', 'G5'], 0.08, 0.35, 0.12), 0.0)
+    return finish(lowpass(reverb(x, 0.16, 0.8), 6500), 0.45)
+
+
+def s_gacha_win2():
+    """Raro: arpegio de tres que sube y un destello."""
+    x = np.zeros(int(SR * 0.9))
+    place(x, arpeggio(['D5', 'F#5', 'A5', 'D6'], 0.07, 0.4, 0.14), 0.0)
+    place(x, sparkle(0.5, 51, level=0.08, n=5), 0.2)
+    return finish(lowpass(reverb(x, 0.2, 0.9), 7000), 0.5)
+
+
+def s_gacha_win3():
+    """Épico: golpe grave, acorde y arpegio rápido con purpurina."""
+    x = np.zeros(int(SR * 1.3))
+    place(x, 0.8 * thump(110, 50, 0.3, 0.1), 0.0)
+    for n in ('E4', 'B4', 'E5', 'G#5'):
+        place(x, 0.28 * chime(note(n), 0.9, 0.35, 0.25), 0.0)
+    place(x, arpeggio(['E5', 'G#5', 'B5', 'E6', 'G#6'], 0.055, 0.35, 0.12, 0.4), 0.12)
+    place(x, sparkle(0.8, 53, level=0.1, n=9), 0.3)
+    return finish(lowpass(reverb(x, 0.24, 1.0), 7500), 0.55)
+
+
+def s_gacha_win4():
+    """Legendario: fanfarria (dos acordes que suben), barrido de aire, arpegio largo y lluvia de destellos."""
+    x = np.zeros(int(SR * 2.0))
+    place(x, 0.9 * thump(100, 45, 0.4, 0.14), 0.0)
+    place(x, whoosh(0.6, 300, 4000, level=0.08, seed=57), 0.0)
+    for n in ('C4', 'G4', 'C5', 'E5'):
+        place(x, 0.24 * soft(note(n), 0.5, 0.2, attack=0.01), 0.0)
+    for n in ('F4', 'A4', 'C5', 'F5'):
+        place(x, 0.24 * soft(note(n), 0.45, 0.18, attack=0.01), 0.22)
+    for n in ('G4', 'B4', 'D5', 'G5', 'B5'):
+        place(x, 0.26 * chime(note(n), 1.3, 0.55, 0.3), 0.44)
+    place(x, arpeggio(['G5', 'B5', 'D6', 'G6', 'B6', 'D7'], 0.05, 0.4, 0.13, 0.32), 0.5)
+    place(x, sparkle(1.2, 59, level=0.11, n=14), 0.6)
+    return finish(lowpass(reverb(x, 0.28, 1.1), 8000), 0.6)
+
+
 SOUNDS = {'open': s_open, 'close': s_close, 'select': s_select, 'back': s_back, 'page': s_page, 'tab': s_tab,
-          'hover': s_hover, 'foto': s_foto, 'like': s_like}
+          'hover': s_hover, 'foto': s_foto, 'like': s_like,
+          'gacha_start': s_gacha_start, 'gacha_tick': s_gacha_tick, 'gacha_stop': s_gacha_stop, 'gacha_flip': s_gacha_flip,
+          'gacha_win1': s_gacha_win1, 'gacha_win2': s_gacha_win2, 'gacha_win3': s_gacha_win3, 'gacha_win4': s_gacha_win4}
 
 
 def write_wav(path, x):
@@ -250,7 +368,10 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     wav_dir = sys.argv[sys.argv.index('--wav') + 1] if '--wav' in sys.argv else None
     with tempfile.TemporaryDirectory() as tmp:
+        only = sys.argv[sys.argv.index('--only') + 1].split(',') if '--only' in sys.argv else None
         for name, fn in SOUNDS.items():
+            if only and name not in only:
+                continue
             x = fn()
             wav = os.path.join(tmp, name + '.wav')
             write_wav(wav, x)

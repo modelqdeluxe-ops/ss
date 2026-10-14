@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.66**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.67**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (13 oct 2026, TF Client 1.3.66) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.67) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.66**, Release ya creada:
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.67**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
 
@@ -81,7 +81,9 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.66 (piedras de protección nuevas, pestañas iguales,
+**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.67 (estelas de arma en primera y tercera persona,
+colores vivos, Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
+y lo de la 1.3.66 (pestañas iguales,
 pad de administrador rehecho, interruptores) y lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
 rectangulares, paisaje fijo con un castillo y humo) y la 1.3.64 (pantalla que cubre todo el cristal, neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
 neones de los temas, paisaje, barra de estado, SKINS con `PadSkinModel`, app Guía, MP3 con JLayer) y de antes las skins
@@ -115,10 +117,13 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
   páginas propias: `PadMusicPage`+`music/`, `PadCommunityPage`+`PadEmoji*`, `PadGachaPage`, `PadPassPage`, `PadInfoPages`
   (Ajustes con temas), `PadSettings` (ajustes y `THEMES`).
 - Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
-  `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = asistente de kits, `PadClaims`…). Skins: `skins/`.
+  `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = el kit en UNA ficha (lista + `sheet`), `PadClaims`…).
+  Efectos › COMBATE es del cliente: `PadCombat` (la monta `PadViewPage` y sus acciones no van al servidor); estelas en
+  `trail/` (`TrailClient`, `TrailProfile`, `TrailSettings` = config/tfclient/estelas.properties, `TrailPreview`,
+  `VividColors`). Skins: `skins/`.
   Pad de administrador: `PadAdmin` (APPS, AJUSTES, TIENDA, VIAJES, GTS, COMUNIDAD, OFICIOS), `PadAdminKits`,
-  `PadAdminRewards`, `PadAdminHunts`; todas con las piezas de `PadAdminUi` (toggle, value + CAMBIAR, choice, button,
-  section, note, editor de objetos y monedas) y `PadItemPicker`. **Cada vista debe llamar `.selected(<su pestaña>)`**: el
+  `PadAdminRewards`, `PadAdminHunts`; todas con las piezas de `PadAdminUi` (toggle, value + CAMBIAR, stepper − +, cycle « »,
+  choice, button, section, note, editor de objetos y monedas; `PadView.compact()` = filas compactas) y `PadItemPicker`. **Cada vista debe llamar `.selected(<su pestaña>)`**: el
   cliente manda esa pestaña con cada acción (si no, la acción vuelve a la portada de la app).
 - Texturas: `tools/pad/build_pad.py --marco` (frame.png = marco.png con el cristal hueco, neon.png/neon_core.png),
   `build_skin.py` (rayas, luces, rayos y el paisaje land_far/mid/near),
@@ -130,6 +135,44 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.67 (14 oct)** — el dueño: «la creación de kits es un dolor de cabeza: dar objetos, asignar monedas…
+> que lo pueda meter todo de un solo», «la ruleta es una mierda: animación lenta, sin sonidos», «la textura de las claims
+> exagerada otra vez: simplistas, sin números ni figuras» y luego «ponle TF siempre con un contorno bonito», «no veo
+> innovación: el pase sigue igual, la ruleta también», «mete estas animaciones (Afterswing) y efectos de combate (Punchy),
+> full configurables en la app de efectos», «a veces el pad va lento: más fluidez, sin quitar animaciones».
+> - **Piedras de protección** (`tools/gen_claim_blocks.py`, 32x32): marco de piedra (oro en las de pago) y un panel del
+>   color del nivel con **TF** en blanco con contorno oscuro. Sin números ni gemas.
+> - **Kits en una sola ficha** (`PadAdminKits.sheet`): CREAR hace el kit con tu inventario (monedas aparte); en la ficha,
+>   todo a la vista: objetos (MI INVENTARIO / ELEGIR), monedas y verdes con − + (saltos redondos; pulsar la fila = escribir
+>   la cifra), cada cuánto « », quién puede « », precio − +, nombre, descripción, icono; PUBLICAR/OCULTAR arriba; ATRÁS,
+>   PROBAR, COPIAR, BORRAR. `PadAdminUi.stepper/cycle/step`, `PadView.COMPACT` (filas de 22 de alto con icono de 16).
+> - **Gachapón** (`PadGachaPage`, rehecho): tiradas de 2,1 s con aceleración, rebote y freno; tarjetas en perspectiva,
+>   lengüeta que salta en cada tic (el tic sube de tono con la velocidad), estela, destello, chispas y temblor; resultado
+>   con el título que golpea y el x5 que da la vuelta carta a carta; sonidos propios (`build_sounds.py --only`:
+>   gacha_start/tick/stop/flip/win1-4, uno por rareza); barra de garantía por tramos; PREMIOS por rareza.
+> - **TF Pass** (`PadPassPage`, rehecho): mapa de la temporada: camino que ondula sobre colinas en paralaje, medallones por
+>   nivel (hitos con banderín), TÚ, COBRAR flotando, bocadillo con los premios al pasar el ratón, fanfarria y chispas.
+> - **Estelas de arma** (idea y texturas de Afterswing, MIT: `META-INF/licenses/afterswing-MIT.txt`; el código es nuevo,
+>   Afterswing es de Fabric 26.x): `ItemInHandRendererMixin` apunta en `renderItem` la punta y la base de la hoja en cada
+>   fotograma (primera persona: en el espacio de la mano, se pinta al acabar las manos; tercera: al mundo con la rotación
+>   inversa de la cámara, se pinta tras las partículas; solo entre AFTER_SKY y AFTER_ENTITIES y junto a su dueño, así el
+>   muñeco del inventario no cuenta). La forma de la hoja y el color automático salen de la textura del arma (sirve con
+>   armas de otros mods). 7 estilos (`TrailProfile`), mezcla brillo/translúcida/sólida, duración, ancho, opacidad, cola,
+>   filo brillante, solo ataques (no al picar bloques), según la carga, al sacar el arma, otros jugadores y mobs con
+>   distancia, qué armas, poco detalle, menos destellos.
+> - **Colores vivos**: Punchy_1.19.zip es un **pack de texturas** («Vibrant Worlds» de ThisIsMystic, sin licencia para
+>   repartirlo): en su lugar, un filtro de saturación y contraste (`VividColors`, `shaders/post/vivid.json` =
+>   color_convolve; `GameRendererMixin` tras el mundo, `PostChainAccessor` para la cantidad). No con Oculus.
+> - **Efectos › COMBATE** (`PadCombat`): pestaña del cliente (si el servidor no la manda, `PadViewPage.set` la añade);
+>   arriba la vista previa (`TrailPreview`: una espada dando tajos con la estela de los ajustes, con el mismo código del
+>   juego; `PadView.TRAIL_PREVIEW`), abajo todo en filas compactas, RESTABLECER. Simulador: `tools/pad/sim/trail.py`,
+>   `PAGES=p_combate,p_combate_neon,p_combate_brasas,p_combate_humo`.
+> - **Fluidez del pad**: la fuente pixel pintaba **cada letra 12 veces (contorno) y cada vez era una llamada a la tarjeta
+>   gráfica**; ahora cada rótulo es un lote (`PadFont` + `PadRenderTypes.font`). Todo el pad se pinta en lote
+>   (`TFPadScreen.render` → `drawManaged`; `PadSkin.batching`/`done`): rectángulos, degradados, luces y textos seguidos van
+>   juntos; para que nada se desordene, `GuiGraphicsMixin` vacía el lote antes de cada textura (blit) y los recortes ya lo
+>   hacían. Además: círculo de `glow`/`disc` precalculado y la cabecera partida en líneas solo si cambia. Mismas animaciones.
 
 > **TF Client 1.3.66 (13 oct)** — el dueño: «las texturas de las claim son exageradas, la primera y la segunda se parecen,
 > tonos grises», «énfasis en el pad de admin: bien configurado, muy fácil, muy intuitivo», «los botones de las pestañas no
