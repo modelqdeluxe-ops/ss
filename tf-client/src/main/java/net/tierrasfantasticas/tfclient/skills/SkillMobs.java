@@ -1,0 +1,381 @@
+package net.tierrasfantasticas.tfclient.skills;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.Vec3;
+import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.skills.SkillDefs.ClassDef;
+import net.tierrasfantasticas.tfclient.skills.SkillDefs.Mech;
+import net.tierrasfantasticas.tfclient.skills.SkillDefs.MobDef;
+import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
+import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
+import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Who;
+
+/**
+ * Los mobs de verdad de los jefes (el jefe y sus esbirros) con el motor de skills: sus mecánicas de MythicMobs saltan
+ * con sus disparadores (~onSpawn, ~onTimer:N, ~onDamaged, ~onDeath, ~onSignal:X, ~onEnterCombat) y sus umbrales de
+ * vida («~onDamaged &lt;50%»: las fases), y los scripts «mm:» de las animaciones de su modelo se lanzan a su tiempo.
+ * La entidad (bosses/BossEntity) es la que anda, recibe golpes y muere; aquí solo se decide qué hace con sus skills.
+ */
+public final class SkillMobs {
+    private SkillMobs() {}
+
+    /** Lo que el motor necesita de un mob de un jefe (lo implementa la entidad). */
+    public interface Host {
+        Mob mob();
+
+        ClassDef cls();
+
+        MobDef def();
+
+        /** El jefe del grupo (él mismo si es el jefe): de él salen la dificultad y a quién no se pega. */
+        Host boss();
+
+        /** Multiplicador del daño de la dificultad (para los daños fijos del pack: «damage{a=15}»). */
+        double damageMul();
+
+        /** Ritmo de ataque de la dificultad: 1 = como el pack; 1,5 = los enfriamientos duran 1,5 veces menos. */
+        double rhythm();
+
+        /** Vida máxima / vida del pack: lo que va con números fijos de vida (el escudo del Esqueleto) escala con esto. */
+        double healthScale();
+
+        LivingEntity target();
+
+        void setAi(boolean on);
+
+        void setSpeedMul(double m);
+
+        void setLocked(boolean locked);
+
+        /** bodyrotation{mh;mb;rde;rdu}: cuánto gira la cabeza sola y cómo la sigue el cuerpo. */
+        void setBodyRotation(float maxHead, float maxBody, int delay, int duration);
+
+        /** setrotation{yaw}: gira el cuerpo (relativo) o lo pone mirando a ese giro. */
+        void turn(float yaw, boolean relative);
+
+        /** look: mira hacia ese sitio (immediately = de golpe). */
+        void face(Vec3 at, boolean immediately);
+
+        /** La barra de jefe cambia de color o estilo (barSet del pack). */
+        void barStyle(String color, String style);
+
+        /** Daño que se hace a sí mismo (el del Esqueleto atacado por la espalda con el escudo puesto). */
+        void selfDamage(double amount, boolean ignoreResistance);
+
+        String faction();
+
+        /** Ticks desde que apareció. */
+        int age();
+
+        /** ¿Ya ha muerto (aunque siga en el mundo haciendo su animación de muerte)? */
+        boolean dying();
+    }
+
+    /** Lo que hacen las entidades (el paquete de jefes): esbirros, objetos que caen, asientos y temblores de cámara. */
+    public interface World {
+        /** Un esbirro de verdad del pack (summon de un mob con IA): null si no se pudo. */
+        Host spawnMinion(Host owner, MobDef def, ServerLevel level, Vec3 at, float yaw);
+
+        /** dropitem{i=X}: el objeto del pack en el suelo. */
+        void drop(ClassDef cls, String item, ServerLevel level, Vec3 at);
+
+        /** mountmodel: el jugador se queda en el asiento «seat» del modelo de «host» (agarrado). */
+        void seat(Host host, String seat, LivingEntity rider);
+
+        /** dismountall: suelta a quien esté en ese asiento (null = en todos). */
+        void unseat(Host host, String seat);
+
+        /** Quién va en ese asiento (null = en cualquiera). */
+        List<LivingEntity> seated(Host host, String seat);
+    }
+
+    public static World world;
+
+    /** Lo de cada mob de jefe vivo: sus temporizadores y por dónde van los scripts de su modelo. */
+    private static final class State {
+        final Host host;
+        final List<Mech> timers = new ArrayList<>();
+        boolean spawned;
+        boolean combat;
+        int lastFx;
+        boolean diedDone;
+
+        State(Host host) {
+            this.host = host;
+        }
+    }
+
+    private static final Map<UUID, State> STATES = new HashMap<>();
+
+    private static State state(Host h) {
+        return STATES.computeIfAbsent(h.mob().getUUID(), k -> {
+            State s = new State(h);
+            for (Mech m : h.def().mechs) if ("ontimer".equals(m.tr)) s.timers.add(m);
+            return s;
+        });
+    }
+
+    /** La ejecución de una skill del mob: él lanza, su objetivo es @target y su jefe pone la dificultad. */
+    static Ctx ctx(Host h) {
+        Ctx c = new Ctx(h.cls(), Who.of(h.mob()));
+        c.origin = h.mob().position();
+        c.aim = h.target();
+        c.host = h.boss();
+        c.cast = -1L - h.mob().getId(); // la inmunidad a golpes va por mob
+        c.vars = new HashMap<>();
+        return c;
+    }
+
+    // ------------------------------------------------------------------------------------------- disparadores
+
+    /** Primer tick del mob en el mundo: sus ~onSpawn. */
+    public static void spawned(Host h) {
+        State s = state(h);
+        if (s.spawned) return;
+        s.spawned = true;
+        run(h, "onspawn", null, null, null);
+    }
+
+    /** Cada tick del mob (en el servidor). */
+    public static void tick(Host h) {
+        State s = state(h);
+        if (!s.spawned) spawned(h);
+        if (h.dying()) {
+            scripts(h, s);
+            return;
+        }
+        int age = h.age();
+        LivingEntity target = h.target();
+        boolean combat = target != null && target.isAlive();
+        if (combat && !s.combat) run(h, "onentercombat", target, null, null);
+        s.combat = combat;
+        for (Mech m : s.timers) {
+            int every = (int) Math.max(1, SkillRuntime.num(m.trv, 20));
+            if (age % every != 0 || !hpOk(h, m.hp)) continue;
+            Ctx c = ctx(h);
+            SkillRuntime.setCurrent(c);
+            try {
+                SkillRuntime.exec(m, c);
+            } catch (SkillRuntime.CancelSkill ignored) {
+                // la skill se paró sola
+            } catch (Throwable t) {
+                TFClient.LOGGER.debug("TF Jefes: error en un temporizador de {}", h.def().name, t);
+            } finally {
+                SkillRuntime.setCurrent(null);
+            }
+        }
+        scripts(h, s);
+    }
+
+    /** Los scripts «mm:» de las animaciones del modelo que han tocado desde el último tick. */
+    private static void scripts(Host h, State s) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a == null || a.layers == null || a.me == null) return;
+        net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+        if (model == null) return;
+        int now = a.age;
+        if (now <= s.lastFx) {
+            s.lastFx = now;
+            return;
+        }
+        List<String> due = new ArrayList<>();
+        a.layers.scripts(s.lastFx, now, due::add);
+        a.layers.baseScripts(model, s.lastFx, now, due::add);
+        s.lastFx = now;
+        for (String skill : due) {
+            Ctx c = ctx(h);
+            SkillRuntime.runMeta(h.cls().meta(skill), c);
+        }
+    }
+
+    /** Le han hecho daño (ya aplicado): sus ~onDamaged, con quien le pegó como @trigger. */
+    public static void damaged(Host h, Entity attacker, String cause, double amount) {
+        if (h.dying()) return;
+        Map<String, String> vars = new HashMap<>();
+        vars.put("damage-amount", SkillRuntime.fmt(amount));
+        vars.put("damage-cause", cause);
+        run(h, "ondamaged", attacker, cause, vars);
+    }
+
+    /** Ha muerto: sus ~onDeath (siguen aunque la entidad ya no esté viva: la animación de muerte, el cofre...). */
+    public static void died(Host h, Entity killer) {
+        State s = state(h);
+        if (s.diedDone) return;
+        s.diedDone = true;
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a != null && a.layers != null && a.me != null) {
+            net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+            if (model != null) {
+                a.layers.death(model, a.age);
+                a.prop("death", "", null, null);
+            }
+        }
+        run(h, "ondeath", killer, null, null);
+    }
+
+    /** signal{s=X} @este mob: sus ~onSignal:X. */
+    static void signal(Host h, String sig, Who from) {
+        for (Mech m : h.def().mechs) {
+            if (!"onsignal".equals(m.tr) || m.trv == null || !m.trv.equalsIgnoreCase(sig)) continue;
+            Ctx c = ctx(h);
+            c.trigger = from;
+            SkillRuntime.exec(m, c);
+        }
+    }
+
+    private static void run(Host h, String trigger, Entity other, String cause, Map<String, String> vars) {
+        List<Mech> list = new ArrayList<>();
+        for (Mech m : h.def().mechs) {
+            String tr = m.tr == null ? "onspawn" : m.tr;
+            if (tr.equals(trigger) && hpOk(h, m.hp)) list.add(m);
+        }
+        if (list.isEmpty()) return;
+        Ctx c = ctx(h);
+        if (other != null) c.trigger = Who.of(other);
+        c.damageCause = cause;
+        if (vars != null) c.vars.putAll(vars);
+        // Cada línea por separado (como MythicMobs: una línea con delay no frena a las demás)
+        for (Mech m : list) {
+            Ctx one = c.copy();
+            one.depth = 0;
+            SkillRuntime.setCurrent(one);
+            try {
+                SkillRuntime.exec(m, one);
+            } catch (SkillRuntime.CancelSkill ignored) {
+                // nada
+            } catch (Throwable t) {
+                TFClient.LOGGER.debug("TF Jefes: error en {} de {}", trigger, h.def().name, t);
+            } finally {
+                SkillRuntime.setCurrent(null);
+            }
+        }
+    }
+
+    /** «&lt;50%», «&gt;75%»: ¿cumple la vida del mob el umbral de la línea? */
+    static boolean hpOk(Host h, String hp) {
+        if (hp == null) return true;
+        Mob mob = h.mob();
+        double pct = mob.getHealth() / Math.max(1F, mob.getMaxHealth()) * 100.0;
+        String r = hp.replace("%", "").trim();
+        try {
+            if (r.startsWith("<=")) return pct <= Double.parseDouble(r.substring(2));
+            if (r.startsWith(">=")) return pct >= Double.parseDouble(r.substring(2));
+            if (r.startsWith("<")) return pct < Double.parseDouble(r.substring(1));
+            if (r.startsWith(">")) return pct > Double.parseDouble(r.substring(1));
+        } catch (NumberFormatException ignored) {
+            // sin umbral
+        }
+        return true;
+    }
+
+    // ------------------------------------------------------------------------------------------- ayudas
+
+    /** El mob de jefe de esa entidad, o null. */
+    public static Host host(Entity e) {
+        return e instanceof Host h ? h : null;
+    }
+
+    /** ¿Son del mismo jefe (no se pegan entre ellos)? */
+    static boolean sameGroup(Host a, Entity other) {
+        Host o = host(other);
+        return a != null && o != null && o.boss() == a.boss();
+    }
+
+    /** Se ha ido del mundo (muerto del todo o descargado): se olvida. */
+    public static void removed(Host h) {
+        STATES.remove(h.mob().getUUID());
+        SkillModels.forget(h.mob().getUUID());
+        if (world != null) world.unseat(h, null);
+    }
+
+    static void clear() {
+        STATES.clear();
+    }
+
+    /** Para la vista previa y el tamaño: el modelo de ModelEngine de un mob de un jefe. */
+    public static net.tierrasfantasticas.tfclient.vfx.VfxModel model(String id) {
+        return SkillModels.load(id);
+    }
+
+    /** Las cajas de golpe por piezas (huesos ob_) del modelo del mob, en el mundo (null = no tiene modelo). */
+    public static List<net.minecraft.world.phys.AABB> hitboxes(Host h) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a == null || a.me == null) return null;
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        if (m == null || net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m).length == 0) return null;
+        return net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.boxes(m, SkillModels.pose(a, m), SkillModels.world(a),
+                SkillModels.hiddenBones(a, m));
+    }
+
+    /** Dónde está ahora un hueso del modelo del mob (el asiento del agarre), o null. */
+    public static Vec3 bonePos(Host h, String bone) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a == null || a.me == null || bone == null) return null;
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        if (m == null) return null;
+        int b = m.bone(bone);
+        if (b < 0) return null;
+        org.joml.Matrix4f w = SkillModels.world(a).mul(SkillModels.pose(a, m)[b]);
+        org.joml.Vector4f p = w.transform(new org.joml.Vector4f(0, 0, 0, 1));
+        return new Vec3(p.x, p.y, p.z);
+    }
+
+    /** A un jugador que empieza a ver el mob: su modelo tal como está ahora (animaciones, piezas, brillo...). */
+    public static void replay(Host h, ServerPlayer p) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a != null && a.alive) a.replay(p);
+    }
+
+    /** Jugadores que deben ver la barra o los efectos de un mob (a «r» bloques). */
+    static List<ServerPlayer> playersNear(Host h, double r) {
+        List<ServerPlayer> out = new ArrayList<>();
+        if (!(h.mob().level() instanceof ServerLevel level)) return out;
+        for (ServerPlayer p : level.players()) if (p.distanceToSqr(h.mob()) <= r * r) out.add(p);
+        return out;
+    }
+
+    private static long playerCasts = Long.MIN_VALUE / 2;
+
+    /**
+     * Una línea de las skills de un objeto de un jefe (la guja y la égida del Esqueleto) con el jugador que lo lleva como
+     * lanzador: @target es lo que tiene delante a «reach» bloques. Son skills de jugador: el daño a otros jugadores
+     * sigue las reglas de PvP de las skills.
+     */
+    public static void playerMech(ServerPlayer p, ClassDef cls, Mech m, double reach) {
+        Ctx c = new Ctx(cls, Who.of(p));
+        c.origin = p.position();
+        c.aim = SkillRuntime.aimed(p, reach);
+        c.vars = new HashMap<>();
+        c.cast = ++playerCasts;
+        SkillRuntime.setCurrent(c);
+        try {
+            SkillRuntime.exec(m, c);
+        } catch (SkillRuntime.CancelSkill ignored) {
+            // nada
+        } catch (Throwable t) {
+            TFClient.LOGGER.debug("TF Jefes: error en la skill de un objeto", t);
+        } finally {
+            SkillRuntime.setCurrent(null);
+        }
+    }
+
+    /** Para quien lo use desde fuera: lanza una skill del jefe con este mob como lanzador (los objetos que suelta). */
+    public static void cast(Host h, String skill, List<Entity> targets) {
+        Ctx c = ctx(h);
+        if (targets != null && !targets.isEmpty()) {
+            List<Tgt> t = new ArrayList<>();
+            for (Entity e : targets) t.add(Tgt.of(Who.of(e)));
+            c.targets = t;
+        }
+        SkillRuntime.runMeta(h.cls().meta(skill), c);
+    }
+}

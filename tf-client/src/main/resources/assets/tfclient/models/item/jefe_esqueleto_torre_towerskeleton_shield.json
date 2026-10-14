@@ -1,0 +1,11 @@
+{
+ "parent": "tfclient:bosses/esqueleto_torre/littleroom_towerskeleton/tower_skeleton_shield",
+ "overrides": [
+  {
+   "predicate": {
+    "blocking": 1
+   },
+   "model": "tfclient:bosses/esqueleto_torre/littleroom_towerskeleton/tower_skeleton_shield_blocking"
+  }
+ ]
+}

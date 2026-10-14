@@ -45,7 +45,8 @@ final class SkillConds {
         return switch (c.m()) {
             case "mythicmobtype", "mmt", "mobtype" -> {
                 String types = arg(a, "", "types", "type", "t", "mobtypes", "m");
-                String name = who != null && who.actor != null ? who.actor.name() : "";
+                SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
+                String name = who != null && who.actor != null ? who.actor.name() : mh != null ? mh.def().name : "";
                 boolean hit = false;
                 for (String t : types.split(",")) if (t.trim().equalsIgnoreCase(name)) hit = true;
                 yield hit;
@@ -64,7 +65,7 @@ final class SkillConds {
             }
             case "crouching", "sneaking", "issneaking" -> e != null && e.isCrouching();
             case "sprinting", "issprinting" -> e != null && e.isSprinting();
-            case "onground", "grounded" -> e != null ? e.onGround() : true;
+            case "onground", "grounded" -> e != null ? e.onGround() : who == null || who.actor == null || !who.actor.physics || who.actor.onGround;
             case "inblock", "blocktype", "inside", "standingon" -> {
                 Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
                 BlockPos pos = BlockPos.containing(p);
@@ -171,6 +172,13 @@ final class SkillConds {
                         if (!ac.alive || ac.level != ctx.caster.level() || ac.pos.distanceToSqr(p) > r * r) continue;
                         for (String ty : types.split(",")) if (ty.trim().equalsIgnoreCase(ac.name())) n++;
                     }
+                    // Los mobs de verdad de un jefe (los retoños de Astwood)
+                    for (LivingEntity le2 : ctx.caster.level().getEntitiesOfClass(LivingEntity.class,
+                            new net.minecraft.world.phys.AABB(p, p).inflate(r))) {
+                        SkillMobs.Host mh = SkillMobs.host(le2);
+                        if (mh == null || !le2.isAlive() || le2.position().distanceToSqr(p) > r * r) continue;
+                        for (String ty : types.split(",")) if (ty.trim().equalsIgnoreCase(mh.def().name)) n++;
+                    }
                 } else {
                     for (LivingEntity le2 : ctx.caster.level().getEntitiesOfClass(LivingEntity.class,
                             new net.minecraft.world.phys.AABB(p, p).inflate(r))) {
@@ -182,7 +190,66 @@ final class SkillConds {
                 }
                 yield inRange(n, arg(a, ">0", "amount", "a"));
             }
-            case "incombat", "hasai", "wearing", "haspermission",
+            case "incombat" -> {
+                // Un mob de jefe: si tiene a quién atacar; lo demás (jugadores, efectos), siempre
+                SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
+                yield mh == null || mh.target() != null && mh.target().isAlive();
+            }
+            case "playerwithin" -> {
+                // playerWithin{d}: algún jugador (que no esté en creativo ni espectador) a d bloques de quien lanza
+                double d = SkillRuntime.num(arg(a, "5", "distance", "d"), 5);
+                Vec3 from = who != null ? who.pos() : ctx.caster.pos();
+                boolean any = false;
+                for (Player p : ctx.caster.level().players()) {
+                    if (!p.isSpectator() && !p.isCreative() && p.position().distanceToSqr(from) <= d * d) {
+                        any = true;
+                        break;
+                    }
+                }
+                yield any;
+            }
+            case "fieldofview", "fov", "infieldofview" -> {
+                // fieldOfView{angle;rotation}: el objetivo está dentro del ángulo, centrado en el giro de quien lanza
+                // menos «rotation» (r=90: a su izquierda, r=270: a su derecha, r=180: detrás)
+                double angle = SkillRuntime.num(arg(a, "90", "angle", "a"), 90);
+                double rot = SkillRuntime.num(arg(a, "0", "rotation", "r"), 0);
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                Vec3 to = p.subtract(ctx.caster.pos());
+                if (to.x * to.x + to.z * to.z < 1e-6) yield true;
+                double want = SkillRuntime.yawOf(to);
+                double center = ctx.caster.yaw() - rot;
+                double diff = net.minecraft.util.Mth.wrapDegrees(want - center);
+                yield Math.abs(diff) <= angle / 2;
+            }
+            case "boundingboxesoverlap", "bbo" -> {
+                Entity self = ctx.caster.entity;
+                yield self != null && e != null && e != self && self.getBoundingBox().intersects(e.getBoundingBox());
+            }
+            case "damagecause", "damagetype" -> {
+                String want = arg(a, "", "cause", "c", "type", "t").toUpperCase(Locale.ROOT);
+                String now = ctx.damageCause == null ? "" : ctx.damageCause;
+                boolean hit = false;
+                for (String w : want.split(",")) if (w.trim().equals(now)) hit = true;
+                yield hit;
+            }
+            case "directionalvelocity", "velocity" -> {
+                Vec3 v = e != null ? e.getDeltaMovement() : who != null && who.actor != null ? who.actor.vel : Vec3.ZERO;
+                boolean ok = true;
+                if (a.containsKey("x")) ok &= inRange(v.x, a.get("x"));
+                if (a.containsKey("y")) ok &= inRange(v.y, a.get("y"));
+                if (a.containsKey("z")) ok &= inRange(v.z, a.get("z"));
+                yield ok;
+            }
+            case "ydiff", "ydifference" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                yield inRange(p.y - ctx.caster.pos().y, arg(a, "0", "diff", "d", "y"));
+            }
+            case "modelhaspassengers", "hasmodelpassengers" -> {
+                SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
+                yield mh != null && SkillMobs.world != null && !SkillMobs.world.seated(mh, arg(a, null, "p", "pbone", "seat", "part")).isEmpty();
+            }
+            case "blocking", "isblocking" -> le != null && le.isBlocking();
+            case "hasai", "wearing", "haspermission",
                     "lineofsight", "los", "world", "biome", "dimension", "moonphase", "hasowner" -> true;
             case "targetwithin", "targetinlineofsight", "targetnotwithin" -> {
                 Entity t = ctx.aim;
@@ -221,6 +288,11 @@ final class SkillConds {
                     < SkillRuntime.num(arg(a, "1", "chance", "c"), 1);
             case "altitude", "height" -> {
                 Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                if (ctx.host != null) {
+                    // En los jefes, como MythicMobs: la altura sobre el suelo (el esbirro lanzado por los aires)
+                    Vec3 g = SkillMinions.ground(ctx.caster.level(), p, p.y);
+                    yield inRange(p.y - g.y, arg(a, ">0", "height", "h", "a"));
+                }
                 yield inRange(p.y, arg(a, ">0", "height", "h", "a"));
             }
             case "dead", "isdead" -> who != null && !who.alive();

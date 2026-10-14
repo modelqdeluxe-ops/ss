@@ -54,6 +54,8 @@ public final class SkillDefs {
         public List<Cond> hc = List.of();
         public List<Cond> sc = List.of();
         public double chance = 1.0;
+        /** Umbral de vida del disparador de un mob («~onDamaged &lt;50%», «~onTimer:20 &gt;75%»): las fases de los jefes. */
+        public String hp;
         /** Lleva variables (&lt;caster.var.x&gt;, &lt;skill.damage&gt;...) que se sustituyen al ejecutar. */
         public boolean dyn;
 
@@ -70,6 +72,7 @@ public final class SkillDefs {
             o.hc = hc;
             o.sc = sc;
             o.chance = chance;
+            o.hp = hp;
             return o;
         }
 
@@ -117,6 +120,25 @@ public final class SkillDefs {
         public boolean living;
         public double speed = 0.25;
         public double followRange = 32;
+        // ----- Jefes (bosses/<jefe>.json)
+        /** En el juego es un mob de verdad (se le pega, tiene IA): el jefe y sus esbirros. Si no, un efecto (actor). */
+        public boolean entity;
+        public String display;
+        public double damage;
+        public double armor;
+        public boolean invincible;
+        public boolean collidable = true;
+        public String faction;
+        /** Modelo de ModelEngine que se pone al aparecer (para el tamaño, la vista previa y las cajas de golpe). */
+        public String model;
+        /** Daño que recibe por tipo (FIRE 0, FALL 0...): el multiplicador de MythicMobs. */
+        public final Map<String, Double> damageModifiers = new HashMap<>();
+        /** IA: «clear» solo = ni se mueve ni mira solo (la Hidra); si no, persigue y mira a su objetivo. */
+        public boolean chases = true;
+        /** Barra de jefe de las opciones del mob (BossBar: Enabled): color y estilo. */
+        public String barColor;
+        public String barStyle;
+        public double barRange = 48;
 
         public boolean isDisplay() {
             return type != null && type.endsWith("_DISPLAY");
@@ -158,6 +180,9 @@ public final class SkillDefs {
         public final java.util.Set<String> missing = new java.util.HashSet<>();
         /** Variables con las que empieza quien tiene la clase (si aún no las tiene): el modo de los esbirros. */
         public final Map<String, String> startVars = new HashMap<>();
+        /** Es un jefe (assets/tfclient/bosses/), no una clase de jugador. */
+        public boolean boss;
+        public BossInfo bossInfo;
 
         public Meta meta(String name) {
             return name == null ? null : tree.get(name.toLowerCase(Locale.ROOT));
@@ -195,6 +220,31 @@ public final class SkillDefs {
         }
     }
 
+    /** Lo de un jefe que no es de MythicMobs: textos, valores base (Normal, un jugador), modelo y lo que suelta. */
+    public static final class BossInfo {
+        public String mob;
+        public String name;
+        public String title = "";
+        public String desc = "";
+        public int color = 0xFFFFFF;
+        public double health;
+        public double damage;
+        /** La vida que traía el pack (para escalar lo que va por números fijos de vida: el escudo del Esqueleto). */
+        public double packHealth;
+        public String model;
+        public float hitW;
+        public float hitH;
+        public List<String> attacks = List.of();
+        /** Huesos que no salen en la vista previa de /tf boss (estelas, piezas de la escena). */
+        public List<String> previewHide = List.of();
+        /** Objetos que suelta (dropitem): id de MythicMobs → modelo de ítem y nombre. */
+        public final Map<String, Drop> drops = new LinkedHashMap<>();
+    }
+
+    /** Un objeto que suelta un jefe: su modelo (y el de cubrirse, si es escudo), nombre, tipo y sus skills del pack
+     * (~onSwing al golpear con él, ~onTimer mientras se lleva). */
+    public record Drop(String id, String material, String model, String blockingModel, String name, String type, List<Mech> mechs) {}
+
     /** Las clases de arqueros (sus packs disparaban con el arco de la clase): Arquero, Arquero Despertado y Null. */
     private static final java.util.Set<String> BOW_CLASSES = java.util.Set.of("arquero", "arquero_despertado", "null");
 
@@ -223,7 +273,45 @@ public final class SkillDefs {
     }
 
     public static ClassDef get(String id) {
-        return id == null ? null : all().get(id);
+        if (id == null) return null;
+        ClassDef c = all().get(id);
+        return c != null ? c : bosses().get(id);
+    }
+
+    private static Map<String, ClassDef> bosses;
+
+    /** Los jefes que trae el mod (assets/tfclient/bosses/), en el orden del índice. */
+    public static synchronized Map<String, ClassDef> bosses() {
+        if (bosses == null) {
+            Map<String, ClassDef> out = new LinkedHashMap<>();
+            JsonElement cat = readJson("/assets/tfclient/bosses/catalog.json");
+            if (cat != null && cat.isJsonArray()) {
+                for (JsonElement e : cat.getAsJsonArray()) {
+                    String id = e.getAsJsonObject().get("id").getAsString();
+                    try {
+                        JsonElement json = readJson("/assets/tfclient/bosses/" + id + ".json");
+                        if (json != null) out.put(id, parse(json.getAsJsonObject()));
+                    } catch (Exception ex) {
+                        TFClient.LOGGER.error("TF Jefes: no se pudo leer el jefe {}", id, ex);
+                    }
+                }
+            }
+            bosses = Collections.unmodifiableMap(out);
+            TFClient.LOGGER.info("TF Jefes: {} jefes cargados", bosses.size());
+        }
+        return bosses;
+    }
+
+    /** Carpeta de los modelos de ModelEngine de ese id («hidra.lr_hydra» → bosses/models/, los demás skills/models/). */
+    public static String modelDir(String id) {
+        return id != null && id.startsWith("grieta.") || isBoss(id) ? "bosses/models/" : "skills/models/";
+    }
+
+    /** ¿Es de un jefe ese id de clase o de modelo («hidra» o «hidra.lr_hydra»)? */
+    public static boolean isBoss(String id) {
+        if (id == null) return false;
+        int dot = id.indexOf('.');
+        return bosses().containsKey(dot > 0 ? id.substring(0, dot) : id);
     }
 
     private static JsonElement readJson(String path) {
@@ -282,6 +370,40 @@ public final class SkillDefs {
         c.basic = str(o, "basic", null);
         c.glyphs = str(o, "glyphs", "");
         for (String x : strings(o.get("missing"))) c.missing.add(x.toLowerCase(Locale.ROOT));
+        if (o.has("boss") && o.get("boss").isJsonObject()) {
+            JsonObject b = o.getAsJsonObject("boss");
+            BossInfo bi = new BossInfo();
+            bi.mob = str(b, "mob", "");
+            bi.name = str(b, "name", c.id);
+            bi.title = str(b, "title", "");
+            bi.desc = str(b, "desc", "");
+            try {
+                bi.color = Integer.parseInt(str(b, "color", "#ffffff").replace("#", ""), 16);
+            } catch (NumberFormatException ignored) {
+                // blanco
+            }
+            bi.health = num(b.get("health"), 100);
+            bi.damage = num(b.get("damage"), 5);
+            bi.packHealth = num(b.get("pack_health"), bi.health);
+            bi.model = str(b, "model", null);
+            if (b.has("hitbox") && b.get("hitbox").isJsonArray()) {
+                bi.hitW = (float) num(b.getAsJsonArray("hitbox").get(0), 1);
+                bi.hitH = (float) num(b.getAsJsonArray("hitbox").get(1), 2);
+            }
+            bi.attacks = strings(b.get("attacks"));
+            bi.previewHide = strings(b.get("preview_hide"));
+            if (o.has("drops") && o.get("drops").isJsonObject()) {
+                for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("drops").entrySet()) {
+                    JsonObject d = e.getValue().getAsJsonObject();
+                    bi.drops.put(e.getKey().toLowerCase(Locale.ROOT), new Drop(e.getKey(), str(d, "material", "paper"),
+                            str(d, "model", null), str(d, "blocking", null), str(d, "name_es", str(d, "name", e.getKey())),
+                            str(d, "type", ""), mechs(d.get("mechs"))));
+                }
+            }
+            c.boss = true;
+            c.bossInfo = bi;
+            c.name = bi.name;
+        }
         if (o.has("start_vars") && o.get("start_vars").isJsonObject()) {
             for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("start_vars").entrySet()) {
                 c.startVars.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());
@@ -322,6 +444,40 @@ public final class SkillDefs {
             mob.living = LIVING.contains(mob.type);
             mob.speed = num(opts.get("MovementSpeed"), mob.speed);
             mob.followRange = num(opts.get("FollowRange"), mob.followRange);
+            if (c.boss) {
+                // Los mobs de un jefe: el de verdad (entity) o el efecto; su velocidad base (la del tipo de Minecraft,
+                // que es con la que cuenta setspeed) y la de las opciones si la pone
+                mob.entity = "entity".equals(str(m, "kind", "actor"));
+                mob.living = false; // sus esbirros no son los de las clases (llevan su propia IA de mob de verdad)
+                double typeSpeed = num(m.get("speed"), 0.25);
+                mob.speed = opts.has("MovementSpeed") ? num(opts.get("MovementSpeed"), typeSpeed) : typeSpeed;
+                mob.display = str(m, "display", null);
+                mob.damage = num(m.get("damage"), 0);
+                mob.armor = num(m.get("armor"), 0);
+                mob.invincible = bool(opts.get("Invincible"));
+                mob.collidable = !opts.has("Collidable") || bool(opts.get("Collidable"));
+                mob.faction = str(m, "faction", null);
+                mob.model = str(m, "model", null);
+                if (m.has("damage_modifiers") && m.get("damage_modifiers").isJsonArray()) {
+                    for (JsonElement dm : m.getAsJsonArray("damage_modifiers")) {
+                        String[] p = dm.getAsString().trim().split("\\s+");
+                        if (p.length >= 2) mob.damageModifiers.put(p[0].toUpperCase(Locale.ROOT), Math.max(0, num(new com.google.gson.JsonPrimitive(p[1]), 1)));
+                    }
+                }
+                List<String> goals = new ArrayList<>();
+                if (m.has("ai_goals") && m.get("ai_goals").isJsonArray()) {
+                    for (JsonElement g : m.getAsJsonArray("ai_goals")) if (!g.isJsonNull()) goals.add(g.getAsString().toLowerCase(Locale.ROOT));
+                }
+                mob.chases = !(goals.contains("clear") && goals.size() == 1);
+                if (m.has("bossbar") && m.get("bossbar").isJsonObject()) {
+                    JsonObject bb = m.getAsJsonObject("bossbar");
+                    if (bool(bb.get("Enabled"))) {
+                        mob.barColor = str(bb, "Color", "RED");
+                        mob.barStyle = str(bb, "Style", "SOLID");
+                        mob.barRange = num(bb.get("Range"), 48);
+                    }
+                }
+            }
             if (mob.headModel != null) c.itemModels.add(mob.headModel);
             c.mobs.put(e.getKey().toLowerCase(Locale.ROOT), mob);
         }
@@ -372,6 +528,7 @@ public final class SkillDefs {
             m.hc = conds(o.get("hc"));
             m.sc = conds(o.get("sc"));
             m.chance = num(o.get("ch"), 1.0);
+            m.hp = o.has("hp") && !o.get("hp").isJsonNull() ? o.get("hp").getAsString() : null;
             for (String v : m.a.values()) if (v.indexOf('<') >= 0) m.dyn = true;
             for (String v : m.ta.values()) if (v.indexOf('<') >= 0) m.dyn = true;
             out.add(m);

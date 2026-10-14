@@ -1,0 +1,85 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_08.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛸"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_07.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛹"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_06.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛺"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_05.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛻"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_04.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛼"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_03.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛽"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_02.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛾"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_09.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "🁉"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/hidra/glyph/flamet_10.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "🁊"
+   ]
+  }
+ ]
+}

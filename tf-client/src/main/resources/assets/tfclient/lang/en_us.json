@@ -1231,5 +1231,9 @@
  "item.tfclient.clase_guja_vendaval_windreaver_gale_glaive_ancient": "Ancient Windreaver of Gale Glaive",
  "item.tfclient.clase_cazador_bestias_katana_beast_slayer": "Beast Katana",
  "item.tfclient.clase_ronin_trueno_thunder_ronin_katana": "Thunder Katana",
- "item.tfclient.clase_invocador_summoner_tome": "Tome of Summoner"
+ "item.tfclient.clase_invocador_summoner_tome": "Tome of Summoner",
+ "entity.tfclient.jefe": "Boss",
+ "entity.tfclient.esbirro": "Minion",
+ "entity.tfclient.grieta": "Rift",
+ "entity.tfclient.asiento": "Seat"
 }

@@ -40,7 +40,8 @@ public final class VfxModel {
         return new float[] {cu, cv};
     }
 
-    public record Tex(String path, int frames, int frameTime, boolean emissive, boolean body) {}
+    /** tint: se tiñe del color del jefe (la grieta). */
+    public record Tex(String path, int frames, int frameTime, boolean emissive, boolean body, boolean tint) {}
 
     public static final class Bone {
         public String id;
@@ -53,6 +54,10 @@ public final class VfxModel {
         public boolean shade;
         public float[] quads;
         public int quadCount;
+        /** Asiento de ModelEngine (hueso p_: ahí se monta a quien agarra el jefe). */
+        public boolean seat;
+        /** Caja de golpe de ModelEngine (hueso ob_): esquinas mín. y máx. respecto a su pivote, en píxeles; null = no. */
+        public float[] hitbox;
     }
 
     public static final class Track {
@@ -68,6 +73,13 @@ public final class VfxModel {
         /** 0 una vez (luego vuelve al reposo), 1 se queda en el final, 2 en bucle. */
         public int loop;
         public Track[] tracks;
+        /** Tapa a las animaciones de menos prioridad en los huesos que mueve (el «override» de Blockbench). */
+        public boolean override;
+        /** Scripts de la línea de tiempo («mm:skill» de ModelEngine): en qué segundo y qué skill. */
+        public float[] fxTimes = new float[0];
+        public String[] fxSkills = new String[0];
+        /** Huesos que mueve (para mezclar animaciones por huesos). */
+        public boolean[] moves;
     }
 
     /** Huesos del «muñeco» de los efectos de kill: raíz y cabeza, cuerpo, brazo der., brazo izq., pierna der., pierna izq. */
@@ -90,6 +102,10 @@ public final class VfxModel {
     private org.joml.Matrix4f[] rest;
     public final Bone[] bones;
     public final Map<String, Anim> anims = new HashMap<>();
+    /** Tamaño del mob según el hueso «hitbox» de ModelEngine (bloques; 0 = no tiene). */
+    public float hitW, hitH;
+    /** Lo más lejos que llega en reposo (bloques; -1 = sin calcular, ver VfxHitboxes.reach). */
+    public double reachCache = -1;
     private final Map<String, Integer> boneIndex = new HashMap<>();
 
     private VfxModel(String name, Tex[] tex, Bone[] bones) {
@@ -111,6 +127,42 @@ public final class VfxModel {
             rest = r;
         }
         return rest;
+    }
+
+    /** La animación con ese nombre (sin distinguir mayúsculas), o null. */
+    public Anim anim(String name) {
+        if (name == null) return null;
+        Anim a = anims.get(name);
+        if (a != null) return a;
+        for (Map.Entry<String, Anim> e : anims.entrySet()) if (e.getKey().equalsIgnoreCase(name)) return e.getValue();
+        return null;
+    }
+
+    private float[] headShare;
+
+    /**
+     * Cuánto del giro de la cabeza lleva cada hueso de cabeza (h_/hi_): ModelEngine reparte la mirada entre los que
+     * van encadenados (pecho y cabeza de la Gárgola); los que no son de cabeza, 0.
+     */
+    public float headShare(int b) {
+        if (headShare == null) {
+            float[] out = new float[bones.length];
+            int[] below = new int[bones.length];
+            for (int i = bones.length - 1; i >= 0; i--) {
+                if (bones[i].parent >= 0) {
+                    int p = bones[i].parent;
+                    below[p] = Math.max(below[p], below[i] + (bones[i].head ? 1 : 0));
+                }
+            }
+            for (int i = 0; i < bones.length; i++) {
+                if (!bones[i].head) continue;
+                int above = 0;
+                for (int p = bones[i].parent; p >= 0; p = bones[p].parent) if (bones[p].head) above++;
+                out[i] = 1F / (above + 1 + below[i]);
+            }
+            headShare = out;
+        }
+        return headShare[b];
     }
 
     /** Índice del hueso por su id de ModelEngine (sin h_), o -1. */
@@ -137,7 +189,8 @@ public final class VfxModel {
         for (int i = 0; i < tex.length; i++) {
             JsonObject t = ta.get(i).getAsJsonObject();
             tex[i] = new Tex(t.get("path").getAsString(), Math.max(1, t.get("frames").getAsInt()),
-                    Math.max(1, t.get("ft").getAsInt()), t.get("e").getAsBoolean(), t.get("body").getAsBoolean());
+                    Math.max(1, t.get("ft").getAsInt()), t.get("e").getAsBoolean(), t.get("body").getAsBoolean(),
+                    t.has("tint") && t.get("tint").getAsBoolean());
         }
         JsonArray ba = o.getAsJsonArray("bones");
         Bone[] bones = new Bone[ba.size()];
@@ -152,6 +205,8 @@ public final class VfxModel {
             bone.phead = b.get("phead").getAsBoolean();
             bone.hidden = b.get("hidden").getAsBoolean();
             bone.shade = !b.has("shade") || b.get("shade").getAsBoolean();
+            bone.seat = b.has("seat") && b.get("seat").getAsBoolean();
+            if (b.has("hb")) bone.hitbox = floats(b.getAsJsonArray("hb"));
             JsonArray qa = b.getAsJsonArray("quads");
             bone.quadCount = qa.size();
             bone.quads = new float[bone.quadCount * QUAD];
@@ -164,6 +219,11 @@ public final class VfxModel {
             bones[i] = bone;
         }
         VfxModel model = new VfxModel(o.has("name") ? o.get("name").getAsString() : "", tex, bones);
+        if (o.has("hitbox")) {
+            JsonArray hb = o.getAsJsonArray("hitbox");
+            model.hitW = hb.get(0).getAsFloat();
+            model.hitH = hb.get(1).getAsFloat();
+        }
         if (o.has("figures")) {
             JsonArray fa = o.getAsJsonArray("figures");
             String[] keys = {"root", "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"};
@@ -196,6 +256,18 @@ public final class VfxModel {
                 track.pos = keys(t, "p");
                 track.scale = keys(t, "s");
                 anim.tracks[i] = track;
+            }
+            anim.override = a.has("ov") && a.get("ov").getAsBoolean();
+            anim.moves = new boolean[bones.length];
+            for (Track t : anim.tracks) if (t.bone >= 0 && t.bone < bones.length) anim.moves[t.bone] = true;
+            if (a.has("fx")) {
+                JsonArray fx = a.getAsJsonArray("fx");
+                anim.fxTimes = new float[fx.size()];
+                anim.fxSkills = new String[fx.size()];
+                for (int i = 0; i < fx.size(); i++) {
+                    anim.fxTimes[i] = fx.get(i).getAsJsonArray().get(0).getAsFloat();
+                    anim.fxSkills[i] = fx.get(i).getAsJsonArray().get(1).getAsString();
+                }
             }
             model.anims.put(e.getKey(), anim);
         }

@@ -2194,5 +2194,328 @@
     "name": "tfclient:pad/gacha_win4"
    }
   ]
+ },
+ "bosses.gargola.gargoyle_death": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_death"
+  ]
+ },
+ "bosses.gargola.gargoyle_body_fall": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_body_fall"
+  ]
+ },
+ "bosses.gargola.gargoyle_leap": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_leap"
+  ]
+ },
+ "bosses.gargola.gargoyle_grunt": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_grunt_0",
+   "tfclient:bosses/gargola/gargoyle_grunt_1",
+   "tfclient:bosses/gargola/gargoyle_grunt_2"
+  ]
+ },
+ "bosses.gargola.gargoyle_swing": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_swing_0",
+   "tfclient:bosses/gargola/gargoyle_swing_1"
+  ]
+ },
+ "bosses.gargola.gargoyle_awaken": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_awaken"
+  ]
+ },
+ "bosses.gargola.gargoyle_growl": {
+  "sounds": [
+   "tfclient:bosses/gargola/gargoyle_growl_0",
+   "tfclient:bosses/gargola/gargoyle_growl_1",
+   "tfclient:bosses/gargola/gargoyle_growl_2",
+   "tfclient:bosses/gargola/gargoyle_growl_3"
+  ]
+ },
+ "bosses.hidra.hydra_death": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_death"
+  ]
+ },
+ "bosses.hidra.hydra_land": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_land"
+  ]
+ },
+ "bosses.hidra.hydra_dismember_head": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_dismember_head"
+  ]
+ },
+ "bosses.hidra.hydra_flamethrower_40tick": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_flamethrower_40tick"
+  ]
+ },
+ "bosses.hidra.hydra_flamethrower_loop": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_flamethrower_loop"
+  ]
+ },
+ "bosses.hidra.hydra_grunt": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_grunt_0",
+   "tfclient:bosses/hidra/hydra_grunt_1",
+   "tfclient:bosses/hidra/hydra_grunt_2",
+   "tfclient:bosses/hidra/hydra_grunt_3",
+   "tfclient:bosses/hidra/hydra_grunt_4",
+   "tfclient:bosses/hidra/hydra_grunt_5"
+  ]
+ },
+ "bosses.hidra.hydra_leap": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_leap"
+  ]
+ },
+ "bosses.hidra.hydra_bite": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_bite_0",
+   "tfclient:bosses/hidra/hydra_bite_1"
+  ]
+ },
+ "bosses.hidra.hydra_spotted_roar": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_spotted_roar"
+  ]
+ },
+ "bosses.hidra.hydra_growl": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_growl_0",
+   "tfclient:bosses/hidra/hydra_growl_1",
+   "tfclient:bosses/hidra/hydra_growl_2"
+  ]
+ },
+ "bosses.hidra.hydra_ground_crack": {
+  "sounds": [
+   "tfclient:bosses/hidra/hydra_ground_crack_0",
+   "tfclient:bosses/hidra/hydra_ground_crack_1",
+   "tfclient:bosses/hidra/hydra_ground_crack_2"
+  ]
+ },
+ "bosses.abominacion.abomination_death_rattle": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_death_rattle"
+  ]
+ },
+ "bosses.abominacion.abomination_land": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_land"
+  ]
+ },
+ "bosses.abominacion.abomination_bubo_explode": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_bubo_explode"
+  ]
+ },
+ "bosses.abominacion.abomination_death_poof": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_death_poof"
+  ]
+ },
+ "bosses.abominacion.abomination_growl": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_growl_0",
+   "tfclient:bosses/abominacion/abomination_growl_1",
+   "tfclient:bosses/abominacion/abomination_growl_2",
+   "tfclient:bosses/abominacion/abomination_growl_3"
+  ]
+ },
+ "bosses.abominacion.abomination_spread_blight": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_spread_blight"
+  ]
+ },
+ "bosses.abominacion.abomination_swing_claw": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_swing_claw_0",
+   "tfclient:bosses/abominacion/abomination_swing_claw_1",
+   "tfclient:bosses/abominacion/abomination_swing_claw_2",
+   "tfclient:bosses/abominacion/abomination_swing_claw_3"
+  ]
+ },
+ "bosses.abominacion.abomination_swing": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_swing_0",
+   "tfclient:bosses/abominacion/abomination_swing_1"
+  ]
+ },
+ "bosses.abominacion.abomination_tongue_hit": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_tongue_hit_0",
+   "tfclient:bosses/abominacion/abomination_tongue_hit_1",
+   "tfclient:bosses/abominacion/abomination_tongue_hit_2"
+  ]
+ },
+ "bosses.abominacion.abomination_scream": {
+  "sounds": [
+   "tfclient:bosses/abominacion/abomination_scream"
+  ]
+ },
+ "bosses.esqueleto_torre.shield_flamethrower_loop": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/shield_flamethrower_loop_0",
+   "tfclient:bosses/esqueleto_torre/shield_flamethrower_loop_1"
+  ]
+ },
+ "bosses.esqueleto_torre.step": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/step"
+  ]
+ },
+ "bosses.esqueleto_torre.chain": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/chain_0",
+   "tfclient:bosses/esqueleto_torre/chain_1",
+   "tfclient:bosses/esqueleto_torre/chain_2",
+   "tfclient:bosses/esqueleto_torre/chain_3"
+  ]
+ },
+ "bosses.esqueleto_torre.armor_step": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/armor_step_0",
+   "tfclient:bosses/esqueleto_torre/armor_step_1",
+   "tfclient:bosses/esqueleto_torre/armor_step_2"
+  ]
+ },
+ "bosses.esqueleto_torre.imbue_sword": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/imbue_sword"
+  ]
+ },
+ "bosses.esqueleto_torre.death": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/death"
+  ]
+ },
+ "bosses.esqueleto_torre.death_sizzle": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/death_sizzle"
+  ]
+ },
+ "bosses.esqueleto_torre.grunt": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/grunt_0",
+   "tfclient:bosses/esqueleto_torre/grunt_1",
+   "tfclient:bosses/esqueleto_torre/grunt_2"
+  ]
+ },
+ "bosses.esqueleto_torre.slam": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/slam_0",
+   "tfclient:bosses/esqueleto_torre/slam_1",
+   "tfclient:bosses/esqueleto_torre/slam_2"
+  ]
+ },
+ "bosses.esqueleto_torre.shield_break_final": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/shield_break_final"
+  ]
+ },
+ "bosses.esqueleto_torre.summoning_chant": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/summoning_chant"
+  ]
+ },
+ "bosses.esqueleto_torre.swing": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/swing_0",
+   "tfclient:bosses/esqueleto_torre/swing_1"
+  ]
+ },
+ "bosses.esqueleto_torre.scream": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/scream_0",
+   "tfclient:bosses/esqueleto_torre/scream_1",
+   "tfclient:bosses/esqueleto_torre/scream_2"
+  ]
+ },
+ "bosses.esqueleto_torre.sword_swing": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/sword_swing"
+  ]
+ },
+ "bosses.esqueleto_torre.sword_hit": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/sword_hit"
+  ]
+ },
+ "bosses.esqueleto_torre.jump": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/jump"
+  ]
+ },
+ "bosses.esqueleto_torre.imbue_sword_shard": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/imbue_sword_shard_0",
+   "tfclient:bosses/esqueleto_torre/imbue_sword_shard_1",
+   "tfclient:bosses/esqueleto_torre/imbue_sword_shard_2"
+  ]
+ },
+ "bosses.esqueleto_torre.shield_impact": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/shield_impact_0",
+   "tfclient:bosses/esqueleto_torre/shield_impact_1",
+   "tfclient:bosses/esqueleto_torre/shield_impact_2"
+  ]
+ },
+ "bosses.esqueleto_torre.hit": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/hit_0",
+   "tfclient:bosses/esqueleto_torre/hit_1",
+   "tfclient:bosses/esqueleto_torre/hit_2",
+   "tfclient:bosses/esqueleto_torre/hit_3"
+  ]
+ },
+ "bosses.esqueleto_torre.shield_hit": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/shield_hit_0",
+   "tfclient:bosses/esqueleto_torre/shield_hit_1",
+   "tfclient:bosses/esqueleto_torre/shield_hit_2"
+  ]
+ },
+ "bosses.esqueleto_torre.shield_break": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/shield_break_0",
+   "tfclient:bosses/esqueleto_torre/shield_break_1"
+  ]
+ },
+ "bosses.esqueleto_torre.awaken_laugh": {
+  "sounds": [
+   "tfclient:bosses/esqueleto_torre/awaken_laugh"
+  ]
+ },
+ "bosses.astwood.buma_energy_ball": {
+  "sounds": [
+   "tfclient:bosses/astwood/buma_energy_ball"
+  ]
+ },
+ "bosses.astwood.buma_absorb": {
+  "sounds": [
+   "tfclient:bosses/astwood/buma_absorb"
+  ]
+ },
+ "bosses.astwood.buma_hit_floor": {
+  "sounds": [
+   "tfclient:bosses/astwood/buma_hit_floor"
+  ]
+ },
+ "bosses.astwood.buma_wood_spike": {
+  "sounds": [
+   "tfclient:bosses/astwood/buma_wood_spike"
+  ]
+ },
+ "bosses.astwood.buma_punch": {
+  "sounds": [
+   "tfclient:bosses/astwood/buma_punch"
+  ]
  }
 }

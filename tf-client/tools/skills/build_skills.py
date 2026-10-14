@@ -277,12 +277,16 @@ def item_override(pack, material, cmd):
 
 
 class ItemModels:
-    """Copia modelos de ítem (con sus padres y texturas) al espacio del mod, sin repetir."""
+    """Copia modelos de ítem (con sus padres y texturas) al espacio del mod, sin repetir. kind: carpeta del mod
+    («skills», o «bosses» para los jefes: models/bosses/... y textures/bosses/...)."""
 
-    def __init__(self, pack):
+    def __init__(self, pack, kind='skills'):
         self.pack = pack
         self.done = {}
         self.src = {}  # id en el mod → modelo del pack
+        self.kind = kind
+        self.out_models = os.path.join(RES, 'models', kind)
+        self.out_tex = os.path.join(RES, 'textures', kind)
 
     def model(self, ref):
         """«ns:ruta» de un modelo del pack → id del modelo en el mod («tfclient:skills/<clase>/...») o None."""
@@ -292,11 +296,11 @@ class ItemModels:
                 tex = self.texture(key[4:], 'minecraft')
                 tns, tpath = split_ref(tex)
                 out_rel = f'{self.pack.id}/generated/{tpath.split("/", 1)[-1]}'.lower()
-                dest = os.path.join(OUT_ITEM_MODELS, *out_rel.split('/')) + '.json'
+                dest = os.path.join(self.out_models, *out_rel.split('/')) + '.json'
                 os.makedirs(os.path.dirname(dest), exist_ok=True)
                 with open(dest, 'w', encoding='utf-8') as f:
                     json.dump({'parent': 'minecraft:item/generated', 'textures': {'layer0': tex}}, f)
-                self.done[key] = f'tfclient:skills/{out_rel}'
+                self.done[key] = f'tfclient:{self.kind}/{out_rel}'
             return self.done[key]
         ns, path = split_ref(ref)
         if ns == 'minecraft' and (path.startswith('item/') or path.startswith('block/')) and \
@@ -311,7 +315,7 @@ class ItemModels:
             self.done[key] = None
             return None
         out_rel = f'{self.pack.id}/{slug(ns)}/{path}'.lower()
-        out_id = f'tfclient:skills/{out_rel}'
+        out_id = f'tfclient:{self.kind}/{out_rel}'
         self.done[key] = out_id
         self.src[out_id] = key
         data = json.load(open(src, encoding='utf-8'))
@@ -333,7 +337,7 @@ class ItemModels:
                 faces = el.get('faces') or {}
                 for face in [k for k, fd in faces.items() if str(fd.get('texture', '')).lstrip('#') not in tx]:
                     del faces[face]
-        dest = os.path.join(OUT_ITEM_MODELS, *out_rel.split('/')) + '.json'
+        dest = os.path.join(self.out_models, *out_rel.split('/')) + '.json'
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, 'w', encoding='utf-8') as f:
             json.dump(data, f, separators=(',', ':'))
@@ -342,18 +346,22 @@ class ItemModels:
     def texture(self, ref, default_ns):
         ns, path = split_ref(ref, default_ns)
         src = self.pack.find(f'{ns}/textures/{path}.png')
+        if not src and ':' not in str(ref) and ns != 'minecraft':
+            # Sin espacio de nombres el juego la busca en minecraft («block/polished_deepslate»): la de vanilla
+            ns = 'minecraft'
+            src = self.pack.find(f'{ns}/textures/{path}.png')
         if not src:
             if ns == 'minecraft':
                 return f'minecraft:{path}'
             self.pack.problems.append(f'falta la textura {ns}:{path}')
             return 'minecraft:missingno'
         out_rel = f'{self.pack.id}/{slug(ns)}/{path}'.lower()
-        dest = os.path.join(OUT_TEX, *out_rel.split('/')) + '.png'
+        dest = os.path.join(self.out_tex, *out_rel.split('/')) + '.png'
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         shutil.copyfile(src, dest)
         if os.path.exists(src + '.mcmeta'):
             shutil.copyfile(src + '.mcmeta', dest + '.mcmeta')
-        return f'tfclient:skills/{out_rel}'
+        return f'tfclient:{self.kind}/{out_rel}'
 
 
 def mm_item_model(pack, models, item_def):
@@ -486,9 +494,10 @@ def pack_glyphs(pack):
     return out
 
 
-def write_glyphs(pack, prog):
+def write_glyphs(pack, prog, kind='skills'):
     """Los glifos que usan las skills de la clase → textures/skills/<clase>/glyph/ y la fuente tfclient:skills_<clase>.
-    Devuelve los caracteres que tiene (para que el cliente sepa cuáles dibujar con ella)."""
+    Devuelve los caracteres que tiene (para que el cliente sepa cuáles dibujar con ella). kind=«bosses»: los de un
+    jefe (textures/bosses/<jefe>/glyph/ y la fuente tfclient:bosses_<jefe>)."""
     glyphs = pack_glyphs(pack)
     used = set()
     for coll in list(prog['tree'].values()) + list(prog['mobs'].values()):
@@ -496,7 +505,7 @@ def write_glyphs(pack, prog):
             if pm['m'] in ('settextdisplay', 'sendtitle', 'message', 'actionmessage', 'title'):
                 for v in pm['a'].values():
                     used |= {ch for ch in str(v) if ch in glyphs}
-    font_path = os.path.join(OUT_FONTS, f'skills_{pack.id}.json')
+    font_path = os.path.join(OUT_FONTS, f'{kind}_{pack.id}.json')
     if not used:
         if os.path.exists(font_path):
             os.remove(font_path)
@@ -516,13 +525,13 @@ def write_glyphs(pack, prog):
             name = slug(os.path.splitext(os.path.basename(g['png']))[0])
             if img is not None:
                 name += f'_{g["row"]}_{g["col"]}'
-            dest = os.path.join(OUT_TEX, pack.id, 'glyph', name + '.png')
+            dest = os.path.join(RES, 'textures', kind, pack.id, 'glyph', name + '.png')
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             if img is not None:
                 img.save(dest)
             else:
                 shutil.copyfile(g['png'], dest)
-            done[key] = f'tfclient:skills/{pack.id}/glyph/{name}.png'
+            done[key] = f'tfclient:{kind}/{pack.id}/glyph/{name}.png'
         providers.append({'type': 'bitmap', 'file': done[key], 'ascent': min(g['ascent'], g['height']),
                           'height': g['height'], 'chars': [ch]})
     os.makedirs(OUT_FONTS, exist_ok=True)
@@ -1031,25 +1040,28 @@ ATLAS = os.path.normpath(os.path.join(RES, '..', 'minecraft', 'atlases', 'blocks
 
 
 def write_atlas():
-    """Las texturas de los modelos de ítem de las skills (textures/skills/...) al atlas de bloques: en 1.20.1 los
-    modelos de ítem solo ven las texturas de las carpetas que dice atlases/blocks.json (block/, item/...); las demás
-    salen moradas y negras. Solo las carpetas que usan esos modelos (las de ModelEngine, «me/», se cargan aparte)."""
+    """Las texturas de los modelos de ítem de las skills (textures/skills/...) y de los jefes (textures/bosses/..., ver
+    tools/bosses/build_bosses.py) al atlas de bloques: en 1.20.1 los modelos de ítem solo ven las texturas de las
+    carpetas que dice atlases/blocks.json (block/, item/...); las demás salen moradas y negras. Solo las carpetas que
+    usan esos modelos (las de ModelEngine, «me/», se cargan aparte)."""
     dirs, singles = set(), set()
-    for root, _d, files in os.walk(OUT_ITEM_MODELS):
-        for f in files:
-            if not f.endswith('.json'):
+    for kind in ('skills', 'bosses'):
+        refs = []
+        for root, _d, files in os.walk(os.path.join(RES, 'models', kind)):
+            for f in files:
+                if f.endswith('.json'):
+                    refs += (json.load(open(os.path.join(root, f), encoding='utf-8')).get('textures') or {}).values()
+        for ref in refs:
+            if not isinstance(ref, str) or ref.startswith('#'):
                 continue
-            for ref in (json.load(open(os.path.join(root, f), encoding='utf-8')).get('textures') or {}).values():
-                if not isinstance(ref, str) or ref.startswith('#'):
-                    continue
-                ns, _, path = ref.partition(':') if ':' in ref else ('minecraft', ':', ref)
-                parts = path.split('/')
-                if ns != 'tfclient' or parts[0] != 'skills':
-                    continue
-                if len(parts) > 3:
-                    dirs.add('/'.join(parts[:3]))
-                else:
-                    singles.add(path)
+            ns, _, path = ref.partition(':') if ':' in ref else ('minecraft', ':', ref)
+            parts = path.split('/')
+            if ns != 'tfclient' or parts[0] != kind:
+                continue
+            if len(parts) > 3:
+                dirs.add('/'.join(parts[:3]))
+            else:
+                singles.add(path)
     sources = [{'type': 'directory', 'source': d, 'prefix': d + '/'} for d in sorted(dirs)]
     sources += [{'type': 'single', 'resource': 'tfclient:' + x} for x in sorted(singles)
                 if not any(x.startswith(d + '/') for d in dirs)]

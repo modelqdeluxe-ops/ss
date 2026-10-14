@@ -79,6 +79,11 @@ final class SkillMovers {
         double homeY;
         Vec3 homeAt;
         double inertia;
+        /** ac: la velocidad se multiplica por esto cada paso (el fuego de los lanzallamas frena). */
+        double accel = 1.0;
+        /** bounce: rebota en el suelo (bv: lo que conserva de velocidad). */
+        boolean bounce;
+        double bounceVel = 0.5;
         int age;
         double travelled;
         boolean alive = true;
@@ -175,6 +180,9 @@ final class SkillMovers {
                 else p.homeAt = t.pos().add(0, tyo, 0);
                 p.inertia = Math.max(0.1, SkillRuntime.num(m.arg("1.5", "inertia", "in"), 1.5));
             }
+            p.accel = SkillRuntime.num(m.arg("1", "acceleration", "accel", "ac"), 1);
+            p.bounce = SkillRuntime.bool(m.arg("false", "bounce"));
+            p.bounceVel = SkillRuntime.num(m.arg("0.5", "bouncevelocity", "bv"), 0.5);
             p.ctx.dir = p.dir;
             start(p, m);
         }
@@ -296,6 +304,14 @@ final class SkillMovers {
             if (def != null) {
                 p.bullet = SkillRuntime.spawn(p.ctx, def, bulletPos(p), yaw, pitch);
                 if (p.bullet != null) p.bullet.carried = true;
+            }
+        } else if (type.equals("DISPLAY") && m.a.get("bulletitem") != null) {
+            // Bala de tipo display (la esfera de energía de Astwood): el modelo de ítem que la pone el pack
+            p.bullet = SkillRuntime.spawnModel(p.ctx, null, null, 1F, bulletPos(p), yaw, pitch);
+            if (p.bullet != null) {
+                p.bullet.carried = true;
+                String sc = m.arg("1", "bulletscale", "bs").split(",")[0];
+                p.bullet.prop("item", m.a.get("bulletitem"), String.valueOf(SkillRuntime.num(sc, 1)), null);
             }
         } else if (type.equals("ME") || type.equals("MEG") || type.equals("MODELENGINE")) {
             // Bala de ModelEngine: el modelo tal cual, justo donde va el proyectil
@@ -439,16 +455,31 @@ final class SkillMovers {
                         return;
                     }
                     to = new Vec3(to.x, g.y + p.hugHeight, to.z);
-                } else if (p.stopAtBlock) {
+                } else if (p.stopAtBlock || p.bounce) {
                     BlockHitResult hit = p.level.clip(new ClipContext(p.pos, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
                             (net.minecraft.world.entity.Entity) null));
                     if (hit.getType() == HitResult.Type.BLOCK) {
-                        p.pos = hit.getLocation();
-                        moveBullet(p);
-                        hitBlock(p);
-                        return;
+                        if (p.bounce) {
+                            // Rebota: la dirección se refleja en la cara del bloque y pierde velocidad (el fuego por el suelo)
+                            net.minecraft.core.Direction face = hit.getDirection();
+                            Vec3 d = p.dir;
+                            d = switch (face.getAxis()) {
+                                case X -> new Vec3(-d.x, d.y, d.z);
+                                case Y -> new Vec3(d.x, -d.y, d.z);
+                                default -> new Vec3(d.x, d.y, -d.z);
+                            };
+                            p.dir = d.normalize();
+                            p.step *= p.bounceVel;
+                            to = hit.getLocation().add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.05));
+                        } else {
+                            p.pos = hit.getLocation();
+                            moveBullet(p);
+                            hitBlock(p);
+                            return;
+                        }
                     }
                 }
+                if (p.accel != 1.0) p.step *= p.accel;
                 p.travelled += p.step;
                 p.pos = to;
                 p.ctx.dir = p.dir;
