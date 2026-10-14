@@ -63,6 +63,123 @@ def in_range(v, spec):
         return True
 
 
+def crunch(expr, x=0.0):
+    """SkillVars.math (variablemath): la cuenta de Crunch con «x»; None si no se entiende."""
+    s = str(expr).replace(' ', '').lower()
+    pos = [0]
+
+    def eat(op):
+        if s.startswith(op, pos[0]):
+            pos[0] += len(op)
+            return True
+        return False
+
+    def or_():
+        v = and_()
+        while pos[0] < len(s) and s[pos[0]] == '|':
+            pos[0] += 2 if s.startswith('||', pos[0]) else 1
+            r = and_()
+            v = 1.0 if v != 0 or r != 0 else 0.0
+        return v
+
+    def and_():
+        v = cmp_()
+        while pos[0] < len(s) and s[pos[0]] == '&':
+            pos[0] += 2 if s.startswith('&&', pos[0]) else 1
+            r = cmp_()
+            v = 1.0 if v != 0 and r != 0 else 0.0
+        return v
+
+    def cmp_():
+        v = add()
+        for op, f in (('==', lambda a, b: a == b), ('=', lambda a, b: a == b), ('!=', lambda a, b: a != b),
+                      ('<=', lambda a, b: a <= b), ('>=', lambda a, b: a >= b), ('<', lambda a, b: a < b),
+                      ('>', lambda a, b: a > b)):
+            if eat(op):
+                return 1.0 if f(v, add()) else 0.0
+        return v
+
+    def add():
+        v = mul()
+        while True:
+            if eat('+'):
+                v += mul()
+            elif eat('-'):
+                v -= mul()
+            else:
+                return v
+
+    def mul():
+        v = unary()
+        while True:
+            if eat('*'):
+                v *= unary()
+            elif eat('/'):
+                d = unary()
+                v = 0.0 if d == 0 else v / d
+            elif eat('%'):
+                d = unary()
+                v = 0.0 if d == 0 else math.fmod(v, d)
+            else:
+                return v
+
+    def unary():
+        if eat('-'):
+            return -unary()
+        if eat('+'):
+            return unary()
+        if pos[0] < len(s) and s[pos[0]] == '!' and not s.startswith('!=', pos[0]):
+            pos[0] += 1
+            return 1.0 if unary() == 0 else 0.0
+        v = atom()
+        if eat('^'):
+            return math.pow(v, unary())
+        return v
+
+    def atom():
+        if eat('('):
+            v = or_()
+            eat(')')
+            return v
+        m = re.match(r'(\d+\.?\d*|\.\d+)(e-?\d+)?', s[pos[0]:])
+        if m:
+            pos[0] += m.end()
+            return float(m.group(0))
+        m = re.match(r'[a-z]+', s[pos[0]:])
+        if not m:
+            raise ValueError(s)
+        name = m.group(0)
+        pos[0] += m.end()
+        if not eat('('):
+            return {'x': x, 'pi': math.pi, 'e': math.e, 'true': 1.0, 'false': 0.0}[name]
+        args = []
+        if not eat(')'):
+            args.append(or_())
+            while eat(','):
+                args.append(or_())
+            eat(')')
+        a = args[0] if args else 0.0
+        fns = {'sin': math.sin, 'cos': math.cos, 'tan': math.tan, 'asin': math.asin, 'acos': math.acos, 'atan': math.atan,
+               'sinh': math.sinh, 'cosh': math.cosh, 'tanh': math.tanh, 'sqrt': math.sqrt, 'cbrt': lambda v: math.copysign(abs(v) ** (1 / 3), v),
+               'ln': math.log, 'log': math.log10, 'abs': abs, 'round': lambda v: float(math.floor(v + 0.5)), 'ceil': math.ceil,
+               'floor': math.floor, 'sign': lambda v: float((v > 0) - (v < 0)), 'signum': lambda v: float((v > 0) - (v < 0))}
+        if name in fns:
+            return float(fns[name](a))
+        if name in ('rand', 'random'):
+            return random.random() * (a if args else 1.0)
+        if name == 'min':
+            return min(args) if args else 0.0
+        if name == 'max':
+            return max(args) if args else 0.0
+        raise ValueError(name)
+
+    try:
+        v = or_()
+        return v if pos[0] == len(s) else None
+    except (ValueError, KeyError, ZeroDivisionError, OverflowError):
+        return None
+
+
 def wrap(a):
     a = (a + 180.0) % 360.0
     return a - 180.0
@@ -1122,6 +1239,52 @@ class Sim:
                 b.invulnerable = str(arg(a, 'true', 'value', 'v', 'invulnerable', 'i')).lower() == 'true'
         elif m == 'suicide':
             b.hp = 0
+        # SkillMore.switchCases: con cada objetivo, el primer caso cuya condición cumple (o todos con unique=false);
+        # DEFAULT si ninguno
+        elif m == 'switch':
+            cases = [c.split('=', 1) for c in str(a.get('cases', '')).split(',') if '=' in c]
+            unique = str(arg(a, 'true', 'unique', 'first')).lower() == 'true'
+            for w in targets:
+                any_hit, fallback = False, None
+                for name, meta in cases:
+                    ent = self.tree.get(meta.strip().lower())
+                    if ent is None:
+                        continue
+                    if name.strip().upper() == 'DEFAULT':
+                        fallback = meta.strip()
+                        continue
+                    if all(self.passes(c, self.cond(c, w, ctx)) for c in ent.get('target_conditions', [])):
+                        any_hit = True
+                        self.run_meta(meta.strip(), dict(ctx, targets=[w]))
+                        if unique:
+                            break
+                if not any_hit and fallback:
+                    self.run_meta(fallback, dict(ctx, targets=[w]))
+        # SkillMore.consume: el jefe se cura «heal» (vida del pack) por cada jugador al que hace daño
+        elif m == 'consume':
+            if 'player' in targets:
+                pack = float(self.prog['boss'].get('pack_health') or self.prog['boss']['health'])
+                b.hp = min(b.maxhp, b.hp + num(arg(a, 1, 'heal', 'h'), 1) * b.maxhp / pack)
+        # SkillMore.swap / teleportIn: el jefe y el jugador cambian de sitio / el jugador va a ese punto del jefe
+        elif m in ('swap', 'tpswap'):
+            if 'player' in targets:
+                b.x, b.z, self.px, self.pz = self.px, self.pz, b.x, b.z
+        elif m in ('teleportin', 'tpin', 'tpdir', 'tpi'):
+            if 'player' in targets:
+                v = [num(x, 0) for x in (str(arg(a, '0,0,0', 'vector', 'direction', 'dir', 'd', 'v')).split(',') + ['0', '0'])[:3]]
+                r = math.radians(b.body)
+                fx, fz = -math.sin(r), math.cos(r)  # SkillRuntime.dir(yaw)
+                rx, rz = -math.sin(r + math.pi / 2), math.cos(r + math.pi / 2)
+                bx, bz = (self.px, self.pz) if str(arg(a, 'false', 'targetasorigin', 'tao')).lower() == 'true' else (b.x, b.z)
+                self.px, self.pz = bx + fx * v[0] + rx * v[2], bz + fz * v[0] + rz * v[2]
+        # SkillMore.variableMath: la variable pasa a valer la cuenta (x = lo que vale)
+        elif m in ('variablemath', 'mathvariable', 'varmath', 'mathvar'):
+            var = str(arg(a, '', 'var', 'variable', 'name', 'key', 'k')).lower()
+            if var and not var.startswith('target.'):
+                name = var.split('.', 1)[1] if var.startswith(('caster.', 'skill.')) else var
+                v = crunch(str(arg(a, 'x', 'equation', 'eq', 'e')).strip('"'), num(b.vars.get(name), 0))
+                if v is not None and math.isfinite(v):
+                    b.vars[name] = str(int(v)) if v == int(v) else str(v)
         # ~onSkillDamage (SkillRuntime.hurt → SkillMobs.skillDamage): el jefe da al jugador con una mecánica de daño
         elif m in ('damage', 'basedamage', 'percentdamage', 'hit') and 'player' in targets:
             if not self.in_skill_damage:

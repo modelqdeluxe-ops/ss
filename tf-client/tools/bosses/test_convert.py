@@ -169,12 +169,64 @@ def main():
     xs = [q[4 + k * 5] for q in sq if q[0] == -4 for k in range(4)]
     check('brazo slim: 3 px de ancho', len(sq) == 12 and xs and abs(max(xs) - min(xs) - 3) < 1e-6, (len(sq), xs[:4]))
 
+    mythic()
+
     print()
     if FAILS:
         print('FALLAN:', ', '.join(FAILS))
         return 1
     print('todo bien')
     return 0
+
+
+def mythic():
+    """Lo de MythicMobs de §11.3 en el compilador y en los simuladores (los mismos cálculos que el Java)."""
+    sys.path.insert(0, os.path.join(HERE, '..', 'skills'))
+    import compile as C
+    import sim as SIM
+    import sim_ai as AI
+
+    pm = C.parse_line('switch{condition=entitytype{t=<case>};cases= case SKELETON=[ - message{m="a"} @server - delay 5 ] '
+                      'case DEFAULT=[ - message{m="b"} @server ] } @trigger ~onDamaged')
+    tree = {}
+    C.extract_inline([pm], tree, 'mob_x')
+    sk = tree.get('mob_x__0_case_SKELETON', {})
+    check('switch: un caso por skill, con <case> en su condición',
+          pm['a'].get('cases') == 'SKELETON=mob_x__0_case_SKELETON,DEFAULT=mob_x__0_case_DEFAULT'
+          and sk.get('target_conditions') == [{'m': 'entitytype', 'a': {'t': 'SKELETON'}, 'v': 'true'}]
+          and len(sk.get('mechs', [])) == 2 and tree['mob_x__0_case_DEFAULT']['target_conditions'] == [], (pm, tree))
+    check('switch: sus casos cuentan como skills llamadas', C.refs(pm)[0] == ['mob_x__0_case_SKELETON', 'mob_x__0_case_DEFAULT'])
+    check('alias de disparadores (onBowShoot, onSkillHit, onVibration)',
+          [C.parse_line(f'skill{{s=a}} ~{t}')['tr'] for t in ('onBowShoot', 'onSkillHit', 'onVibration')]
+          == ['onshoot', 'onskilldamage', 'onhear'])
+    cm = C.parse_line('chainmissile{b=3;bounceConditions=[ - isplayer true ]} @target')
+    check('chainmissile: bounceConditions aparte', cm.get('bc') == [{'m': 'isplayer', 'a': {}, 'v': 'true'}] and 'bounceconditions' not in cm['a'], cm)
+
+    class Caster:
+        def pos(self):
+            return np.array([0.0, 0.0, 0.0])
+
+        def yaw(self):
+            return 0.0
+
+    class Ctx:
+        caster, targets, trigger = Caster(), None, None
+
+    ctx, o = Ctx(), np.zeros(3)
+    check('@Cone: angle·range·0,1 puntos si no lo dice (144)', len(SIM.shape_points('cone', {}, ctx, o)) == 144)
+    cone = SIM.shape_points('cone', {'a': '60', 'r': '8', 'p': '200'}, ctx, o)
+    check('@Cone: dentro del ángulo y del alcance, delante', all(np.linalg.norm(p) <= 8 + 1e-9 and p[2] >= -1e-9
+          and abs(math.degrees(math.atan2(-p[0], p[2]))) <= 30 + 1e-6 for p in cone), len(cone))
+    sph = SIM.shape_points('sphere', {'r': '3', 'p': '50', 'e': 'true'}, ctx, o)
+    check('@Sphere{exact}: los puntos en la superficie', len(sph) == 50 and all(abs(np.linalg.norm(p) - 3) < 1e-9 for p in sph))
+    counts = [len(SIM.shape_points('rectangle', k, ctx, o)) for k in ({}, {'outline': 'true'}, {'filled': 'true'})]
+    check('@Rectangle: caras 488, aristas 104, llena 1000 (10 por arista)', counts == [488, 104, 1000], counts)
+    bir = [len(SIM.shape_points('bir', k, ctx, o)) for k in ({}, {'s': 'CUBE'}, {'oa': 'true'})]
+    check('@BlocksInRadius r=2 en el suelo de prueba: esfera 10, cubo 50, solo aire 23', bir == [10, 50, 23], bir)
+    cases = [('x*2+1', 3, 7), ('(x/5)+1', 10, 3), ('2^3^2', 0, 512), ('max(1,x,3)', 7, 7), ('x>5 & x<10', 7, 1),
+             ('!0', 0, 1), ('10%4', 0, 2), ('-2^2', 0, -4), ('sqrt(16)+log(100)', 0, 6), ('round(2.5)+floor(-1.5)', 0, 1)]
+    bad = [(e, AI.crunch(e, x)) for e, x, want in cases if AI.crunch(e, x) != want]
+    check('variablemath: las cuentas de Crunch (como SkillVars.math)', not bad and AI.crunch('nada', 0) is None, bad)
 
 
 def heads(tmp, src):
