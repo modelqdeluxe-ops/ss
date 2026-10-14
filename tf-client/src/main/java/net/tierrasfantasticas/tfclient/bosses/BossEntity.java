@@ -403,7 +403,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     @Override
-    public void setInvulnerable(boolean on) {
+    public void setPackInvulnerable(boolean on) {
         packInvulnerable = on;
     }
 
@@ -420,6 +420,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         float hp = (float) Math.max(1, max);
         this.entityData.set(MAX_HP, hp);
         if (alsoHealth || getHealth() > hp) setHealth(hp);
+    }
+
+    /** hitboxconfig del pack: hueso de la caja → cuánto daño deja pasar. */
+    private final Map<String, Double> partPass = new HashMap<>();
+
+    @Override
+    public void hitboxPass(String part, double pass) {
+        if (part == null || part.isEmpty()) return;
+        partPass.put(part.toLowerCase(java.util.Locale.ROOT), Math.max(0, pass));
     }
 
     @Override
@@ -582,6 +591,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     @Override
+    public boolean isCurrentlyGlowing() {
+        // glowbone de ModelEngine: Minecraft solo dibuja contornos de entidades «brillantes»
+        return super.isCurrentlyGlowing() || level().isClientSide && SkillMobs.clientGlow.test(this);
+    }
+
+    @Override
     protected net.minecraft.world.InteractionResult mobInteract(Player player, net.minecraft.world.InteractionHand hand) {
         // ~onInteract (clic derecho), una vez por clic (no por cada mano)
         if (!level().isClientSide && def != null && hand == net.minecraft.world.InteractionHand.MAIN_HAND) SkillMobs.interacted(this, player);
@@ -597,6 +612,17 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /** Un golpe a una de sus piezas (la cabeza de la Hidra): es un golpe a él. */
     boolean hurtPart(BossPart part, DamageSource src, float amount) {
+        // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone)
+        if (!partPass.isEmpty() && model != null) {
+            int[] hb = net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(model);
+            if (part.index() < hb.length) {
+                Double pass = partPass.get(model.bones[hb[part.index()]].id.toLowerCase(java.util.Locale.ROOT));
+                if (pass != null) {
+                    if (pass <= 0) return false;
+                    amount *= pass.floatValue();
+                }
+            }
+        }
         return hurt(src, amount);
     }
 

@@ -9,9 +9,11 @@
   comprobarlos sin abrir el juego).
 - **El motor de jefes tiene que ser fiel a MythicMobs/ModelEngine para TODOS los packs que metamos** (orden del dueño).
   Antes de publicar un jefe: `python3 tools/bosses/audit.py` con **0 problemas** (y sus avisos leídos),
-  `audit.py --prueba` (el auditor ve todos los errores metidos a propósito) y `sim_ai.py` sin cambios inesperados en
-  los demás jefes. Si un pack usa algo que el motor no tiene, se implementa con la semántica de MythicMobs (y en
-  `sim_ai.py`); nunca se quita del pack ni se deja «de mentira» sin explicarlo en `STUB_OK` de `audit.py`.
+  `audit.py --prueba` (el auditor ve todos los errores metidos a propósito), `test_convert.py` «todo bien»,
+  `sim_physics.py` en los modelos con colas/segmentos/física y `sim_ai.py` sin cambios inesperados en los demás jefes.
+  ModelEngine 4 completo está en `tf-client/JEFES.md` §3.6 y el servidor (Mohist) en §10. Si un pack usa algo que
+  el motor no tiene, se implementa con la semántica de MythicMobs/ModelEngine (y en `sim_ai.py`); nunca se quita del
+  pack ni se deja «de mentira» sin explicarlo en `STUB_OK` de `audit.py`.
 - **Compila SIEMPRE con GitHub Actions** (orden del dueño): push a la rama y mira el workflow `tf-client.yml`. No
   compiles en el contenedor con `./gradlew`.
 

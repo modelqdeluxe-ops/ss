@@ -142,8 +142,8 @@ public final class SkillMobs {
             return List.of();
         }
 
-        /** setinvulnerable{v}: no recibe golpes. */
-        default void setInvulnerable(boolean on) {
+        /** setinvulnerable{v} del pack: no recibe golpes (no es el setInvulnerable de Minecraft). */
+        default void setPackInvulnerable(boolean on) {
         }
 
         /** goto{speed} @sitio: anda hasta allí (deja de perseguir hasta llegar o en ~10 s). */
@@ -157,6 +157,10 @@ public final class SkillMobs {
         /** Dónde apareció (@SpawnLocation, distanceFromSpawn): la grieta de un jefe. */
         default Vec3 spawnPos() {
             return mob().position();
+        }
+
+        /** hitboxconfig{p;pass}: cuánto daño deja pasar la caja de golpe de ese hueso (1 = todo, 0 = nada). */
+        default void hitboxPass(String part, double pass) {
         }
 
         /** suicide: muere ya (con su ~onDeath y su animación). */
@@ -202,6 +206,9 @@ public final class SkillMobs {
     }
 
     public static World world;
+
+    /** En el cliente: ¿el modelo de esa entidad tiene algún hueso con glowbone? (lo pone SkillClient). */
+    public static volatile java.util.function.Predicate<Entity> clientGlow = e -> false;
 
     /** Lo de cada mob de jefe vivo: sus temporizadores y por dónde van los scripts de su modelo. */
     private static final class State {

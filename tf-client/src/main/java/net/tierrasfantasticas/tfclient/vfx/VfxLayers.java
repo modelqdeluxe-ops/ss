@@ -25,13 +25,24 @@ public final class VfxLayers {
     public static final class Layer {
         public final String name;
         final VfxModel.Anim anim;
-        public final float start;
-        public final float speed;
-        public final int lerpIn;
+        public float start;
+        public float speed;
+        public int lerpIn;
         public int lerpOut;
         public final int priority;
         /** Cuándo empezó a irse (ticks); -1 = no se va. */
         public float stopAt = -1;
+        /** modifystate{loop;ov}: bucle (0 una vez, 1 se queda, 2 bucle; -1 = el del .bbmodel) y override (null = el suyo). */
+        public int loopMode = -1;
+        public Boolean overrideMode;
+
+        int loop() {
+            return loopMode >= 0 ? loopMode : anim.loop;
+        }
+
+        boolean override() {
+            return overrideMode != null ? overrideMode : anim.override;
+        }
 
         Layer(String name, VfxModel.Anim anim, float start, float speed, int lerpIn, int lerpOut, int priority) {
             this.name = name;
@@ -54,7 +65,7 @@ public final class VfxLayers {
             if (stopAt >= 0) {
                 return lerpOut > 0 ? w * Math.max(0F, 1F - (now - stopAt) / lerpOut) : 0F;
             }
-            if (anim.loop == 0) {
+            if (loop() == 0) {
                 float over = (seconds(now) - anim.length) * 20F / speed;
                 if (over > 0) return lerpOut > 0 ? w * Math.max(0F, 1F - over / lerpOut) : 0F;
             }
@@ -62,12 +73,12 @@ public final class VfxLayers {
         }
 
         boolean done(float now) {
-            return weight(now) <= 0F && (stopAt >= 0 || anim.loop == 0 && seconds(now) > anim.length);
+            return weight(now) <= 0F && (stopAt >= 0 || loop() == 0 && seconds(now) > anim.length);
         }
 
         float time(float now) {
             float t = seconds(now);
-            if (anim.loop == 2 && anim.length > 0) return t % anim.length;
+            if (loop() == 2 && anim.length > 0) return t % anim.length;
             return Math.max(0F, Math.min(t, anim.length));
         }
     }
@@ -97,7 +108,7 @@ public final class VfxLayers {
             Layer l = layers.get(i);
             if (!l.name.equalsIgnoreCase(name)) continue;
             // Ya está y sigue (no se va ni ha acabado): ModelEngine no la vuelve a empezar salvo con force
-            if (!force && l.stopAt < 0 && (l.anim.loop != 0 || l.seconds(now) <= l.anim.length)) return true;
+            if (!force && l.stopAt < 0 && (l.loop() != 0 || l.seconds(now) <= l.anim.length)) return true;
             layers.remove(i);
         }
         // Una sola animación por prioridad: la que hubiera se va mientras entra la nueva
@@ -123,6 +134,48 @@ public final class VfxLayers {
             l.stopAt = now;
             if (lerpOut >= 0) l.lerpOut = lerpOut;
         }
+    }
+
+    /**
+     * modifystate{s;p;speed;li;lo;loop;ov}: cambia una animación que ya suena sin volver a empezarla (la velocidad
+     * nueva sigue desde el mismo instante). NaN / -1 / null = no tocar. loop: 0 una vez, 1 se queda, 2 bucle, 3 = la del
+     * .bbmodel. false si no estaba.
+     */
+    public boolean modify(String name, int priority, float now, float speed, int lerpIn, int lerpOut, int loop, Boolean override) {
+        boolean found = false;
+        for (Layer l : layers) {
+            if (!l.name.equalsIgnoreCase(name) || l.stopAt >= 0) continue;
+            if (priority >= 0 && l.priority != priority) continue;
+            found = true;
+            if (!Float.isNaN(speed) && speed > 0 && speed != l.speed) {
+                float sec = l.seconds(now);
+                l.speed = speed;
+                l.start = now - sec * 20F / speed;
+            }
+            if (lerpIn >= 0) l.lerpIn = lerpIn;
+            if (lerpOut >= 0) l.lerpOut = lerpOut;
+            if (loop >= 0) l.loopMode = loop == 3 ? -1 : loop;
+            if (override != null) l.overrideMode = override;
+        }
+        return found;
+    }
+
+    /** ¿Alguna animación que suena ahora (con peso) mueve ese hueso? (las cadenas IK se encienden así) */
+    public boolean moves(VfxModel m, int bone, float now) {
+        VfxModel.Anim b = base == null ? null : m.anim(base);
+        if (b != null && b.moves != null && bone < b.moves.length && b.moves[bone]) return true;
+        for (Layer l : layers) {
+            if (l.anim.moves != null && bone < l.anim.moves.length && l.anim.moves[bone] && l.weight(now) > 0F) return true;
+        }
+        return false;
+    }
+
+    /** ¿Suena esa animación ahora (y no se está yendo)? (statetoggle) */
+    public boolean playing(String name, float now) {
+        for (Layer l : layers) {
+            if (l.name.equalsIgnoreCase(name) && l.stopAt < 0 && !l.done(now)) return true;
+        }
+        return false;
     }
 
     /** Quita todas al momento (al cambiar de modelo). */
@@ -196,6 +249,11 @@ public final class VfxLayers {
      * espacio del modelo (píxeles). headYaw/headPitch: hacia dónde mira la cabeza respecto al cuerpo (grados).
      */
     public void pose(VfxModel m, float now, float headYaw, float headPitch, Matrix4f[] out) {
+        pose(m, now, headYaw, headPitch, out, m.headLimits());
+    }
+
+    /** Igual, con los límites de las cabezas de este mob (headconfig): ver VfxPose.build. */
+    public void pose(VfxModel m, float now, float headYaw, float headPitch, Matrix4f[] out, float[] headLimits) {
         int n = m.bones.length;
         float[] extra = new float[n * 9];
         for (int i = 0; i < n; i++) {
@@ -220,13 +278,14 @@ public final class VfxLayers {
                 for (VfxModel.Track tr : l.anim.tracks) {
                     if (tr.bone < 0 || tr.bone >= n) continue;
                     int o = tr.bone * 9;
-                    if (tr.rot != null && VfxPose.sample(tr.rot, t, v)) mix(extra, o, v, w, l.anim.override, false);
-                    if (tr.pos != null && VfxPose.sample(tr.pos, t, v)) mix(extra, o + 3, v, w, l.anim.override, false);
-                    if (tr.scale != null && VfxPose.sample(tr.scale, t, v)) mix(extra, o + 6, v, w, l.anim.override, true);
+                    boolean ov = l.override();
+                    if (tr.rot != null && VfxPose.sample(tr.rot, t, v)) mix(extra, o, v, w, ov, false);
+                    if (tr.pos != null && VfxPose.sample(tr.pos, t, v)) mix(extra, o + 3, v, w, ov, false);
+                    if (tr.scale != null && VfxPose.sample(tr.scale, t, v)) mix(extra, o + 6, v, w, ov, true);
                 }
             }
         }
-        VfxPose.build(m, extra, headYaw, headPitch, out);
+        VfxPose.build(m, extra, headYaw, headPitch, out, headLimits);
     }
 
     /** La animación por defecto «ticks» después de empezar, con su peso. */

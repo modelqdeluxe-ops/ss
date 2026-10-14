@@ -4,7 +4,7 @@ Este documento sirve para que otra IA (o persona) retome los jefes sin tener que
 CHECKPOINT de `HANDOFF.md`, porque las reglas del dueño están allí (español, nada de subagentes, compilar con GitHub
 Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 
-- **Estado:** TF Client **1.3.79**.
+- **Estado:** TF Client **1.3.80**.
   - 1.3.75: jefes, grietas y `/tf boss`.
   - 1.3.76: la IA, fiel a MythicMobs/ModelEngine.
   - 1.3.77: el cerebro táctico.
@@ -16,6 +16,13 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
     `~onDropCombat`, `~onChangeTarget`, `~onKill`/`~onPlayerKill`, `~onInteract`; condiciones que antes se daban
     por cumplidas (`lineofsight`, `world`, `biome`…) y 20 nuevas; el auditor ve lo que el motor acepta «de mentira»,
     los disparadores que no saltan, la cobertura (`--cobertura`) y se prueba solo (`--prueba`).
+  - 1.3.80: **ModelEngine 4 completo en el motor** (§3.6): colas y segmentos `seg_`/`tl_` que se arrastran, física
+    `jig_`, IK de Blockbench y `ikchain`/`iktarget`, cajas `b_`, cabezas con límites/velocidad/bloqueo/objetivo,
+    `tag_` con nombre, objetos en huesos, miembros con la skin del jugador, brillo de encantado, billboard, contorno
+    (`glowbone`), `vfx` pegados a mobs y proyectiles, `modifystate`/`statetoggle`, `cycleparts`, `hitboxconfig`,
+    parpadeo rojo al recibir daño (`damagetint`) y `step`; el conversor lee las 26 etiquetas de hueso y hornea bezier,
+    Molang y fotogramas antes/después; efectos de MythicMobs nuevos (`particletornado`, `particlelinehelix`, `atom`,
+    `geyser`…); auditor de modelos y texturas; pruebas `test_convert.py` y `sim_physics.py`. Ver §10 para Mohist.
 - **Regla del dueño:** «quiero que este motor sea perfecto y bien corregido para todos los bosses que metamos». Ver
   §7: nada se publica sin el auditor a 0, su prueba y el simulador.
 - **Packs que hay:** 5 de LittleRoom y otros: Gárgola, Hidra, Abominación Parasitaria, Esqueleto de la Torre y Astwood.
@@ -39,6 +46,9 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 | `bosses/BossScreen` | La ventana `/tf boss`: lista de jefes, vista previa 3D, dificultad y grietas. |
 | `tools/bosses/sim_ai.py` | Simula la IA sin el juego: qué ataques salen, si castiga y si se bloquea. |
 | `tools/bosses/sim_gui.py` | Comprueba la disposición de la ventana a 8 tamaños: que nada se solape ni se salga. |
+| `skills/SkillMeg` | Las mecánicas de ModelEngine que cambian cómo se ve el modelo (§3.6): las manda al cliente. |
+| `vfx/VfxPhysics`, `vfx/VfxIk` | Colas/segmentos y física `jig_`; cinemática inversa (§3.6). Las usa el cliente al dibujar. |
+| `tools/molang.py` | Evalúa el Molang de los keyframes para hornearlo al convertir. |
 | `tools/bosses/audit.py` | **El auditor**: revisa cada jefe contra el motor (mecánicas, condiciones y objetivos sin implementar, skills que faltan, animaciones y huesos que no existen, sonidos y modelos). Lo lanza `build_bosses.py` al acabar. |
 
 Todas las rutas Java cuelgan de `tf-client/src/main/java/net/tierrasfantasticas/tfclient/`. Los recursos cuelgan de
@@ -213,6 +223,65 @@ el daño de la dificultad.
 Los proyectiles «MOB» (las llamas en `text_display`) y los «display» (la esfera de Astwood) son actores del cliente.
 
 ---
+
+### 3.6 ModelEngine 4 en el motor (1.3.80)
+
+Todo según la wiki de ModelEngine («Bone Behaviors» y «Skills/Mechanics»). Lo visual lo hace el cliente (`SkillClient.Actor`)
+con lo que le manda el servidor en «props» del actor del modelo (se guardan y se repiten a quien llega tarde;
+`SkillActor.prop`, `PER_MODEL`). Las mecánicas del servidor están en `skills/SkillMeg.java`.
+
+**Etiquetas de hueso** (las lee `tools/vfx_bb.py`, `bone_tag`; en el JSON del modelo van en `beh` y `bp`):
+
+| Etiqueta | Qué hace aquí |
+|---|---|
+| `h_`, `hi_`, `h[yaw;pitch;minyaw;maxyaw;minpitch;maxpitch;speed]_` | Cabeza: sigue la mirada (repartida entre las encadenadas), con límites (`VfxModel.headLimits`, `VfxPose.build`) y velocidad máxima por tick (`Actor.pose`). `hi_`: sus hijos también. |
+| `p_`, `mount` | Asiento (agarres). |
+| `ob_` / `b_` | Caja de golpe que gira con su hueso / recta del mundo que solo le sigue (`VfxHitboxes`; `b_` debe ser cuadrada en X/Z). |
+| `seg_`, `segf_`, `tl_`, `tlf_` | Cola o segmento (solo sin cubos, pivote atrás; `f` = delante): `vfx/VfxPhysics` (abajo). Conservan el nombre entero (`tl_tail_2` y `tail_2` conviven en la Gárgola). |
+| `jig_`, `jig[stiff;damp;grav;angle;repeat]_` | Física: muelle amortiguado con gravedad y ángulo máximo (`VfxPhysics.jiggle`). `repeat` (eslabones) se trata como 1. |
+| `ik[minx..maxz]_` | Límites de esa articulación en las cadenas IK. |
+| `tag_` | Hueso de nombre: `setmodeltag` o `model{nametag=hueso}` ponen el texto (mirando a la cámara). |
+| `l_` (sin cubos) | Correa: se lee, pero `leash`/`leashself` aún no se dibujan. Con cubos es un hueso normal («l_hand» = mano izquierda). |
+| `ih_`, `ir_`, `il_` | Objeto en la cabeza / mano derecha / izquierda (`setitemmodel`, `linkitembone`). |
+| `phead_`, `prarm_`, `plarm_`, `pbody_`, `prleg_`, `plleg_`, `limb[type=X]_` | Miembros con la skin del jugador (`modelplayerskin`; sin ella, la skin por defecto). El conversor pone la caja del miembro con el reparto de la skin (caras -4 y su capa -5); `limb[type]` son mitades (chest, forearm, foreleg...). |
+| `g_` | Hueso fantasma. |
+
+**Colas y segmentos** (`VfxPhysics`, igual en `tools/bosses/sim_physics.py`): cada eslabón cuelga del de delante (o
+de su padre) y, en el mundo, apunta a donde estaba (la cola se arrastra al girar y andar), vuelve a su forma animada
+con `extendrate` por tick, no se aparta más de `anglelimit` (o `x`/`y`, `minx`...) del eslabón de delante si `bounded`,
+y `elasticity` le da inercia. Sin `segment{}` del pack: bounded, 50°, 0,01 (los de ModelEngine). Su trozo visible se
+orienta con su eslabón, o con el siguiente si cuelga hacia atrás (`decideOutgoing`). Verificado: la Gárgola girando
+120° en 10 ticks dobla la cola en un arco continuo (sin huecos) y la capa del Esqueleto hace la onda de arriba abajo.
+
+**IK** (`VfxIk`, igual en `tools/bosses/test_convert.py`): las cadenas de Blockbench (objeto nulo con IK Target: el
+conversor lo hace hueso invisible `iknull` que su animación mueve; `ik` del modelo = raíz…punta) y las de `ikchain`.
+CCD de 16 vueltas: cada articulación lleva consigo lo que cuelga de ella tal cual (si se rehiciera con su giro
+animado se perdería lo girado y no converge: fallo encontrado y arreglado al probarlo); si la cadena está recta y el
+objetivo en su línea, se dobla un poco por su eje X (bisagra). Polo, `lockrotation`, peso y `blendticks` como
+ModelEngine; una cadena de Blockbench solo manda mientras una animación que suena mueve su nulo (o `alwaysactive`).
+
+**Mecánicas de ModelEngine nuevas**: `modifystate`, `statetoggle`, `headconfig`, `lockmodelhead`, `headtarget`,
+`jiggleimpulse`, `hitboxconfig` (cuánto daño deja pasar cada caja: `BossEntity.hurtPart`), `setitemmodel`,
+`linkitembone`, `setmodeltag`, `setmodeltagvisible`, `enchant` (brillo de encantado), `billboard`, `glowbone`
+(`meg:glow`: el contorno de Minecraft solo en esos huesos; `BossEntity.isCurrentlyGlowing` con `SkillMobs.clientGlow`),
+`cycleparts`, `modelplayerskin`, `ik`, `iktarget`, `ikchain`, `scale`, `nofall`, y la familia `vfx` (`vfx`, `vfxpos`,
+`vfxrot`, `vfxscale`, sus `reset`, `vfxchangemodel`, `vfxsetvis`, `vfxenchant`, `vfxtint`, `vfxbrightness`: un modelo
+o un hueso pegado a un mob o a un proyectil). Y de `model{}`: `damagetint` (parpadeo rojo al recibir daño, sí por
+defecto), `nametag`, `lockpitch`/`lockyaw` y `step` (**en los jefes `s` es step, no la escala**: antes se leía como
+escala).
+
+**Nombres con espacio**: `meg:X` es la de ModelEngine (`meg:glow` → `glowbone`, `meg:scale`, `meg:jump`) y
+`mythicmobs:X` la de MythicMobs (`tools/skills/compile.py`, `parse_line`).
+
+**El conversor** (`tools/vfx_bb.py`) además: bezier con sus asas, expresiones Molang (`tools/molang.py`: math.*,
+`q.anim_time`, variables...) y fotogramas con valor antes/después se **hornean** cada 1/40 s como lo calcula
+Blockbench (el juego no evalúa Molang); Box UV sin UV por cara; texturas `render_mode: emissive`; objetos nulos y
+localizadores como huesos invisibles. Lo que no entiende sale en «problemas».
+
+**Efectos de MythicMobs nuevos** (`SkillFx`): `particletornado`, `particlelinehelix`, `particlelinering`, `atom`,
+`smoke`, `flames`, `ender`, `geyser`, `spring`, `itemspray`, `firework`, `stopsound`. Y `summonfallingblock` (nunca
+se queda en el mundo: se crea vacío y el bloque va por NBT; `FallingBlockEntity.fall()` borraría el bloque de ese
+sitio), `shootpotion`, `shootshulkerbullet`.
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
@@ -404,10 +473,12 @@ de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
 |---|---|
 | `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
 | `python3 tools/bosses/audit.py [jefe ...] [--sin-avisos]` | El auditor (también al final de `build_bosses.py`). Tiene que dar **0 problemas** en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`, los `run(h, "...")` de `SkillMobs` (disparadores) y qué `case` no hacen nada. Los **avisos** (`·`) no cuentan pero dicen lo que no se verá igual (hoy: `segment`, las capas y colas rígidas). |
-| `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
+| `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo (16 errores en la 1.3.80, también de modelos: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota). Antes: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
 | `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.79: mecánicas 110/192 (todas las `*` salvo `mount`, `dismount` y `segment`), condiciones 81/88, objetivos 42/47, disparadores 11/26. |
 | `tools/vfx_render.py` (`model_tris`, `raster`, `B.pose`) | Dibujar un modelo de jefe con una animación y unos huesos visibles (ver §7, paso 4). |
 | `python3 tools/bosses/sim_gui.py [--png carpeta]` | La ventana `/tf boss` a 8 tamaños. |
+| `python3 tools/bosses/sim_physics.py <modelo> [carpeta] [--anim idle] [--giro 120] [--anda 0.3] [--sin]` | Colas y segmentos (lo mismo que VfxPhysics): gira y anda el jefe, dice cuánto se aparta cada eslabón del de delante (no debe pasar de su límite) y dibuja fotogramas desde arriba y de lado. Usa la configuración `segment{}` del pack. |
+| `python3 tools/bosses/test_convert.py` | Pruebas del conversor con .bbmodel hechos al vuelo: etiquetas, bezier, Molang, antes/después, escalón, Box UV, miembros, `b_` y la IK llegando a su objetivo. Tiene que decir «todo bien». |
 | `python3 tools/bosses/rift_model.py --preview carpeta` | Imágenes del cristal. |
 
 **Referencia** (1.3.78, `--min 8`, ataques por minuto; entre paréntesis, el motor de la 1.3.77 con la misma
@@ -451,8 +522,10 @@ antes de dar algo por arreglado.
    que los demás jefes dan las mismas cifras en `sim_ai.py` (misma `--seed`, antes y después). Si algo de verdad no
    importa, déjalo «sin efecto» y explícalo en `STUB_OK`. Van en `SkillRuntime`/`SkillConds`/`SkillTargets`/
    `SkillMobs`, solo para jefes si cambia algo de las clases (`ctx.host != null`).
-7. Antes de publicar: `audit.py` con 0 problemas en TODOS los jefes, `audit.py --prueba` entera y `sim_ai.py` de los
-   demás jefes igual que antes (si cambia, que sea a propósito y explicado).
+7. Antes de publicar: `audit.py` con 0 problemas en TODOS los jefes (ahora también modelos y texturas),
+   `audit.py --prueba` entera, `test_convert.py` «todo bien», `sim_physics.py <modelo>` en los que tengan
+   `seg_`/`tl_`/`jig_` (que se doble sin pasarse del límite) y `sim_ai.py` de los demás jefes igual que antes (si
+   cambia, que sea a propósito y explicado).
 8. Sube la versión (`mod_version` y `TFClient.VERSION`), apunta la entrega en `HANDOFF.md`, haz push a la rama
    (**compila SIEMPRE en GitHub Actions**, nunca con `./gradlew` en el contenedor: orden del dueño), PR y fusión.
    Comprueba la Release.
@@ -478,16 +551,24 @@ antes de dar algo por arreglado.
 | «Es inmortal / no le baja la vida» | Un `cancelevent`/`modifydamage` en `~onDamaged` (fase invulnerable del pack), `setinvulnerable` sin quitar | `sim_ai.py <id>` («golpes anulados por el pack»), `BossEntity.hurt` |
 | «Se va a una esquina / deja de perseguir» | Un `goto` del pack (dura hasta llegar o 10 s) | `BossEntity.goTo`, `customServerAiStep` |
 | «Va siempre a por el mismo» | `threat{mode=FORCE}`/`rally` del pack o la tabla de amenaza | `BossEntity.threat`/`pickTarget` |
+| «La cola / capa va rígida o se dobla raro» | Su `segment{}` (angle, extend), la orientación del trozo visible (`decideOutgoing`) | `sim_physics.py <modelo>`, `VfxPhysics` |
+| «Se ve un cubo que no debería» | Un hueso de comportamiento que el conversor no reconoció (`b_`, `l_`, `ih_`...) | Los «problemas» de `build_bosses.py`, `vfx_bb.bone_tag` |
+| «Parpadea en rojo» / «no parpadea» | `model{d=false}` del pack (damagetint) | `SkillModels.modelOptions`, `Actor.damageTint` |
+| «La animación salta o se queda quieta» | Bezier/Molang del .bbmodel (hay que volver a convertir con el conversor de la 1.3.80) | `vfx_bb.needs_bake/bake_channel`, `tools/molang.py` |
 | «Tiene una pieza fuera de sitio / le falta una pieza» | `partvis` (defaults de ModelEngine), el ojo de Blockbench al convertir | `SkillModels.partVis`, `tools/vfx_bb.py` (`boss`), §7 paso 4 |
 
 ---
 
 ## 9. Ideas pendientes (si el dueño pide más)
 
-- **`segment` de ModelEngine** (capas, colas y estelas que se doblan como una cuerda con límite de ángulo): hoy van
-  rígidas con su animación. Lo usan la Gárgola (cola y estelas de los brazos) y el Esqueleto (capa).
-- `mount`/`dismount` (montar a un efecto en otro) y los efectos de partículas con nombre propio de MythicMobs (`smoke`,
-  `flames`, `geyser`, `firework`…): ningún pack de ahora los usa; `--cobertura` los lista.
+- **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier, Molang y antes/después horneados): hace
+  falta que el dueño vuelva a mandar sus zips (no están en el repo). `build_bosses.py` dirá si había Molang que no
+  entiende.
+- De ModelEngine falta: `leash`/`leashself` (la cuerda), `move`, `changeparent`, `submodel`, `animatemodel`,
+  `rootmotion`, `swapentity`, `petrify`, `pairmodel`, `modeldisguise`; `jig[repeat]` con varios eslabones.
+  `--cobertura` lo lista; el auditor normal lo marca en cuanto un pack lo use.
+- De MythicMobs: `bloodyscreen`, `blackscreen`, `bossborder`, `skybox`, `particleequation`, `chainmissile` y lo que
+  cambia el mundo (`breakblock`, `fill`, `time`, `weather`...).
 
 - **Fintas y ataques retrasados de verdad:** ralentizar el principio de una animación y retrasar a la vez sus golpes.
   Hoy solo «se lo piensa» antes de empezar.
@@ -498,3 +579,33 @@ antes de dar algo por arreglado.
 - **Memoria entre peleas:** qué ataques esquiva cada jugador, guardado por grieta.
 - **Coordinación de esbirros:** rodear, cortar la retirada.
 - **Ver en el juego:** un modo depuración para el staff que muestre encima del jefe el ataque elegido y su puntuación.
+
+---
+
+## 10. Mohist (el servidor)
+
+El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y por qué:
+
+- **Motor propio dentro de TF Client (lo que hay)**: los packs de MythicMobs + ModelEngine se convierten fuera
+  (`build_bosses.py`) y el mod los ejecuta y los dibuja. No necesita ningún plugin, no depende de NMS de Bukkit, y
+  los jugadores ya llevan TF Client, que dibuja los modelos tal cual. Es lo más fiable en un servidor híbrido.
+- **Plugins MythicMobs + ModelEngine en Mohist (descartado)**: ModelEngine (y ItemsAdder) no dan soporte a servidores
+  híbridos: van por paquetes y NMS de Spigot, que Mohist cambia. MythicMobs a veces va, pero sin ModelEngine los
+  jefes no se ven. Además se dibujarían dos veces si conviviera con el motor. **No instales ModelEngine para estos
+  jefes.** Si el servidor tiene MythicMobs para otros mobs, no choca: los jefes del mod no lo usan.
+
+**Qué mirar en el servidor** (no se puede probar desde aquí):
+
+- Mohist aplica las reglas de Spigot también a las entidades de mods. Las nuestras piden 160 bloques de seguimiento
+  (`clientTrackingRange(10)` en `TFBosses`), pero `spigot.yml` puede recortarlo: si un jefe grande (la Hidra) aparece o
+  desaparece de golpe a unos 48-64 bloques, sube en `spigot.yml` → `world-settings.default.entity-tracking-range` los
+  valores `monsters` y `other` (por ejemplo a 128).
+- `entity-activation-range` de Spigot deja «dormidas» las entidades sin jugadores cerca. Un jefe **con objetivo** no se
+  duerme (Spigot lo exime), pero si se le ve quieto con jugadores a más de 32 bloques, sube `monsters`/`animals` (por
+  ejemplo a 64).
+- Los plugins que borran entidades (ClearLagg y parecidos) deben ignorar `tfclient:jefe`, `tfclient:esbirro`,
+  `tfclient:grieta` y `tfclient:asiento`.
+- Las protecciones (WorldGuard, GriefPrevention...) ven el daño de los jefes como daño de un mob (sale de
+  `SkillRuntime.hurt` con `mobAttack` del jefe): en una zona sin daño de mobs, los jefes no harán daño, y es lo
+  esperado. Las explosiones de los jefes (`explosion`) no rompen bloques y los bloques que caen no se quedan.
+

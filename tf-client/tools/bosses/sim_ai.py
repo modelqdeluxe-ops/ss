@@ -1006,7 +1006,7 @@ class Sim:
                 b.auras[n] = self.t + int(num(arg(a, 200, 'duration', 'd', 'ticks'), 200))
             if a.get('ot') or a.get('ontick'):
                 pass
-        elif m in ('state', 'animation'):
+        elif m in ('state', 'animation', 'statetoggle', 'togglestate'):
             s = str(arg(a, '', 'state', 's', 'animation', 'a'))
             if str(arg(a, 'false', 'remove', 'r')).lower() == 'true' or 'boss' not in targets:
                 return

@@ -52,6 +52,14 @@ public final class VfxPose {
      * eso (repartido entre los que van encadenados, como ModelEngine).
      */
     public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out) {
+        build(model, extra, headYaw, headPitch, out, model.headLimits());
+    }
+
+    /**
+     * limits[i*4 ..]: lo que puede girar la cabeza i (mín. y máx. de yaw, a la derecha positivo; mín. y máx. de pitch,
+     * abajo positivo), como h[yaw;pitch;minyaw...]_ y headconfig de ModelEngine; NaN = sin límite.
+     */
+    public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out, float[] limits) {
         int n = model.bones.length;
         for (int i = 0; i < n; i++) {
             VfxModel.Bone b = model.bones[i];
@@ -67,11 +75,25 @@ public final class VfxPose {
             if (b.parent >= 0) m.set(out[b.parent]);
             else m.identity();
             m.translate(b.pivot[0] - px + extra[base + 3], b.pivot[1] - py + extra[base + 4], b.pivot[2] - pz + extra[base + 5]);
-            if (b.head && headYaw != 0F) m.rotateY(-headYaw * model.headShare(i) * DEG);
-            if (b.head && headPitch != 0F) m.rotateX(-headPitch * (headYaw != 0F ? model.headShare(i) : 1F) * DEG);
+            if (b.head && (headYaw != 0F || headPitch != 0F)) {
+                float yaw = headYaw * model.headShare(i);
+                float pitch = headPitch * (headYaw != 0F ? model.headShare(i) : 1F);
+                if (limits != null) {
+                    yaw = clamp(yaw, limits[i * 4], limits[i * 4 + 1]);
+                    pitch = clamp(pitch, limits[i * 4 + 2], limits[i * 4 + 3]);
+                }
+                if (yaw != 0F) m.rotateY(-yaw * DEG);
+                if (pitch != 0F) m.rotateX(-pitch * DEG);
+            }
             m.rotateZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG, (b.rot[0] + extra[base]) * DEG);
             m.scale(extra[base + 6], extra[base + 7], extra[base + 8]);
         }
+    }
+
+    private static float clamp(float v, float lo, float hi) {
+        if (!Float.isNaN(lo) && v < lo) v = lo;
+        if (!Float.isNaN(hi) && v > hi) v = hi;
+        return v;
     }
 
     /** Valor de una pista (fotogramas aplanados de 5 en 5) en el instante t. false si la pista está vacía. */

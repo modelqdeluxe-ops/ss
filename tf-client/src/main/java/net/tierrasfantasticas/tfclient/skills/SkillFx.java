@@ -158,6 +158,175 @@ final class SkillFx {
         }
     }
 
+    // ------------------------------------------------------------------------------------------- más efectos de MythicMobs
+
+    /** Una ráfaga de «n» partículas en «p» (lo mismo que effect:particles). */
+    private static void burst(Ctx ctx, Vec3 p, String id, int n, float hs, float vs, float speed, String extra, float size) {
+        if (n <= 0) return;
+        send(ctx.caster.level(), p, new SkillNet.Fx(0, id, p.x, p.y, p.z, n, hs, vs, speed, 0, 0, extra, size, 0, 0, 0));
+    }
+
+    /**
+     * effect:particletornado{p;maxradius;height;interval;duration;rotationspeed;sliceheight;stationary;cloudparticle;
+     * cloudsize;cloudamount}: un remolino de partículas que sube girando (y una nube en la base) durante «duration».
+     */
+    static void tornado(Mech m, Ctx ctx, List<Tgt> targets) {
+        String id = particle(m), extra = extra(m);
+        float r = (float) SkillRuntime.num(m.arg("3", "maxradius", "mr", "radius", "r"), 3);
+        float h = (float) SkillRuntime.num(m.arg("4", "height", "h"), 4);
+        int every = (int) Math.max(1, SkillRuntime.num(m.arg("4", "interval", "i"), 4));
+        int dur = (int) Math.min(400, SkillRuntime.num(m.arg("80", "duration", "d"), 80));
+        float rs = (float) SkillRuntime.num(m.arg("0.1", "rotationspeed", "rs"), 0.1);
+        float slice = (float) Math.max(0.1, SkillRuntime.num(m.arg("0.2", "sliceheight", "sh"), 0.2));
+        boolean stay = SkillRuntime.bool(m.arg("false", "stationary", "s"));
+        String cloud = m.arg("", "cloudparticle", "cp").toLowerCase(Locale.ROOT);
+        float cs = (float) SkillRuntime.num(m.arg("0.5", "cloudsize", "cs"), 0.5);
+        int ca = (int) SkillRuntime.num(m.arg("10", "cloudamount", "ca"), 10);
+        for (Tgt t : targets) {
+            Vec3 fixed = t.pos();
+            for (int k = 0; k * every < dur; k++) {
+                final int step = k;
+                SkillRuntime.later(k * every, ctx.cast, () -> {
+                    Vec3 base = stay ? fixed : t.pos();
+                    int slices = (int) Math.min(60, h / slice);
+                    double scale = allow(ctx, slices * 2);
+                    if (scale <= 0) return;
+                    for (int s = 0; s < slices; s += Math.max(1, (int) Math.round(1 / scale))) {
+                        double y = s * slice;
+                        double rad = r * y / h;
+                        double a = step * every * rs + s * 0.6;
+                        for (int side = 0; side < 2; side++) {
+                            double aa = a + Math.PI * side;
+                            burst(ctx, base.add(Math.cos(aa) * rad, y, Math.sin(aa) * rad), id, 1, 0, 0, 0, extra, size(m));
+                        }
+                    }
+                    if (!cloud.isEmpty()) burst(ctx, base, cloud, ca, cs, 0.1F, 0, "", 1F);
+                });
+            }
+        }
+    }
+
+    /** effect:particlelinehelix{p;radius;helixlength;distancebetween;amount}: una espiral de partículas hasta el objetivo. */
+    static void lineHelix(Mech m, Ctx ctx, List<Tgt> targets) {
+        String id = particle(m), extra = extra(m);
+        double r = SkillRuntime.num(m.arg("0.5", "radius", "r"), 0.5);
+        double len = Math.max(0.1, SkillRuntime.num(m.arg("1", "helixlength", "hl", "length"), 1));
+        double db = Math.max(0.05, SkillRuntime.num(m.arg("0.2", "distancebetween", "db"), 0.2));
+        Vec3 from = ctx.caster.pos().add(0, SkillRuntime.num(m.arg("1", "startyoffset", "syo"), 1), 0);
+        for (Tgt t : targets) {
+            Vec3 to = t.pos().add(0, SkillRuntime.num(m.arg("1", "targetyoffset", "tyo"), 1), 0);
+            Vec3 d = to.subtract(from);
+            double dist = d.length();
+            if (dist < 1e-3) continue;
+            Vec3 f = d.scale(1 / dist);
+            Vec3 side = Math.abs(f.y) > 0.95 ? new Vec3(1, 0, 0) : f.cross(new Vec3(0, 1, 0)).normalize();
+            Vec3 up = side.cross(f).normalize();
+            int steps = (int) Math.min(300, dist / db);
+            double scale = allow(ctx, steps);
+            if (scale <= 0) continue;
+            int jump = Math.max(1, (int) Math.round(1 / scale));
+            for (int s = 0; s <= steps; s += jump) {
+                double along = s * db, a = along / len * Math.PI * 2;
+                Vec3 p = from.add(f.scale(along)).add(side.scale(Math.cos(a) * r)).add(up.scale(Math.sin(a) * r));
+                burst(ctx, p, id, 1, 0, 0, 0, extra, size(m));
+            }
+        }
+    }
+
+    /** effect:particlelinering{p;radius;points;distancebetween}: anillos de partículas a lo largo de una línea. */
+    static void lineRing(Mech m, Ctx ctx, List<Tgt> targets) {
+        String id = particle(m), extra = extra(m);
+        double r = SkillRuntime.num(m.arg("0.5", "radius", "r"), 0.5);
+        int pts = (int) Math.min(64, SkillRuntime.num(m.arg("8", "points", "p2", "ringpoints"), 8));
+        double db = Math.max(0.2, SkillRuntime.num(m.arg("1", "distancebetween", "db"), 1));
+        Vec3 from = ctx.caster.pos().add(0, SkillRuntime.num(m.arg("1", "startyoffset", "syo"), 1), 0);
+        for (Tgt t : targets) {
+            Vec3 to = t.pos().add(0, SkillRuntime.num(m.arg("1", "targetyoffset", "tyo"), 1), 0);
+            Vec3 d = to.subtract(from);
+            double dist = d.length();
+            if (dist < 1e-3) continue;
+            Vec3 f = d.scale(1 / dist);
+            Vec3 side = Math.abs(f.y) > 0.95 ? new Vec3(1, 0, 0) : f.cross(new Vec3(0, 1, 0)).normalize();
+            Vec3 up = side.cross(f).normalize();
+            int rings = (int) Math.min(60, dist / db);
+            if (allow(ctx, rings * pts) <= 0) continue;
+            for (int s = 0; s <= rings; s++) {
+                Vec3 c = from.add(f.scale(s * db));
+                for (int k = 0; k < pts; k++) {
+                    double a = Math.PI * 2 * k / pts;
+                    burst(ctx, c.add(side.scale(Math.cos(a) * r)).add(up.scale(Math.sin(a) * r)), id, 1, 0, 0, 0, extra, size(m));
+                }
+            }
+        }
+    }
+
+    /** effect:atom{p;radius;amount;orbits}: un núcleo y órbitas inclinadas alrededor del objetivo. */
+    static void atom(Mech m, Ctx ctx, List<Tgt> targets) {
+        String id = particle(m), extra = extra(m);
+        double r = SkillRuntime.num(m.arg("1.5", "radius", "r"), 1.5);
+        int pts = (int) Math.min(48, SkillRuntime.num(m.arg("16", "amount", "a", "points"), 16));
+        int orbits = (int) Math.max(1, Math.min(6, SkillRuntime.num(m.arg("3", "orbits", "o"), 3)));
+        for (Tgt t : targets) {
+            Vec3 c = t.pos().add(0, SkillRuntime.num(m.arg("1", "y", "yoffset"), 1), 0);
+            if (allow(ctx, pts * orbits) <= 0) continue;
+            burst(ctx, c, id, 4, 0.1F, 0.1F, 0, extra, size(m));
+            for (int o = 0; o < orbits; o++) {
+                double tilt = Math.PI * o / orbits;
+                for (int k = 0; k < pts; k++) {
+                    double a = Math.PI * 2 * k / pts;
+                    double x = Math.cos(a) * r, y = Math.sin(a) * r;
+                    burst(ctx, c.add(x * Math.cos(tilt), y, x * Math.sin(tilt)), id, 1, 0, 0, 0, extra, size(m));
+                }
+            }
+        }
+    }
+
+    /**
+     * Los efectos sencillos de MythicMobs como ráfagas de las partículas de Minecraft que se ven igual: effect:smoke,
+     * effect:flames (las del generador de monstruos), effect:ender (el ojo de ender), effect:geyser{type;height}
+     * (columna de agua o lava), effect:spring{type} (fuente), effect:itemspray{item;amount} y effect:firework.
+     */
+    static void simple(String kind, Mech m, Ctx ctx, List<Tgt> targets) {
+        for (Tgt t : targets) {
+            Vec3 p = point(m, ctx, t);
+            switch (kind) {
+                case "smoke" -> burst(ctx, p, "large_smoke", 12, 0.3F, 0.3F, 0.02F, "", 1F);
+                case "flames" -> burst(ctx, p.add(0, 0.5, 0), "flame", 16, 0.4F, 0.4F, 0.01F, "", 1F);
+                case "ender" -> burst(ctx, p.add(0, 0.5, 0), "portal", 40, 0.3F, 0.6F, 0.5F, "", 1F);
+                case "geyser", "spring" -> {
+                    boolean lava = m.arg("water", "type", "t", "liquid").toLowerCase(Locale.ROOT).contains("lava");
+                    double h = SkillRuntime.num(m.arg(kind.equals("geyser") ? "4" : "1.5", "height", "h"), 4);
+                    for (double y = 0; y <= h; y += 0.5) {
+                        burst(ctx, p.add(0, y, 0), lava ? "lava" : "splash", kind.equals("geyser") ? 6 : 2, 0.25F, 0.1F, 0.1F, "", 1F);
+                    }
+                    if (lava) burst(ctx, p.add(0, h, 0), "large_smoke", 6, 0.3F, 0.2F, 0.02F, "", 1F);
+                }
+                case "itemspray" -> {
+                    int n = (int) Math.min(64, SkillRuntime.num(m.arg("10", "amount", "a"), 10));
+                    String item = m.arg("stone", "item", "i", "material", "m").toLowerCase(Locale.ROOT);
+                    burst(ctx, p.add(0, 0.5, 0), "item", n, 0.3F, 0.3F, (float) SkillRuntime.num(m.arg("0.2", "velocity", "v"), 0.2), item, 1F);
+                }
+                case "firework" -> {
+                    burst(ctx, p, "firework", 60, 0.1F, 0.1F, 0.25F, "", 1F);
+                    String colors = m.arg("", "colors", "color", "c");
+                    if (!colors.isEmpty()) burst(ctx, p, "dust", 30, 1.2F, 1.2F, 0, colors.split(",")[0].trim(), 1.5F);
+                }
+                default -> { }
+            }
+        }
+    }
+
+    /** effect:stopsound{s}: corta ese sonido (o todos) a los jugadores del objetivo. */
+    static void stopSound(Mech m, Ctx ctx, List<Tgt> targets) {
+        String s = m.arg("", "sound", "s");
+        net.minecraft.resources.ResourceLocation rl = s.isEmpty() ? null : net.minecraft.resources.ResourceLocation.tryParse(s);
+        for (Tgt t : targets) {
+            if (t.entity() instanceof net.minecraft.server.level.ServerPlayer sp) {
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(rl, null));
+            }
+        }
+    }
+
     /** Línea de partículas desde quien lanza (o el origen) hasta el objetivo. */
     static void line(Mech m, Ctx ctx, List<Tgt> targets) {
         boolean fromOrigin = SkillRuntime.bool(m.arg("false", "fromorigin", "fo"));

@@ -58,6 +58,33 @@ public final class VfxModel {
         public boolean seat;
         /** Caja de golpe de ModelEngine (hueso ob_): esquinas mín. y máx. respecto a su pivote, en píxeles; null = no. */
         public float[] hitbox;
+        /** Caja b_ (alineada con los ejes del mundo: sigue al hueso sin girar con él); si no, ob_ (gira con él). */
+        public boolean aabb;
+        /**
+         * Comportamiento de ModelEngine 4 (la etiqueta del nombre): seg, segf, tl, tlf (colas y segmentos), jig (física),
+         * ik, nametag, leash, item_head, item_right, item_left, limb, head, head_inherit, seat, ghost, hitbox_obb,
+         * hitbox_aabb; null = hueso normal.
+         */
+        public String beh;
+        /** Parámetros de la etiqueta («h[yaw=60;speed=10]_», «jig[stiff=0.3;angle=30,10,5]_»...): nombre → valores. */
+        public Map<String, float[]> params = Map.of();
+        /** limb[type=X] / prarm_...: qué trozo de la skin del jugador. */
+        public String limb;
+
+        /** ¿Cola o segmento de ModelEngine (seg_, segf_, tl_, tlf_)? */
+        public boolean segment() {
+            return beh != null && (beh.equals("seg") || beh.equals("segf") || beh.equals("tl") || beh.equals("tlf"));
+        }
+
+        /** El pivote va delante (segf_, tlf_): el trozo visible cuelga hacia atrás. */
+        public boolean frontPivot() {
+            return "segf".equals(beh) || "tlf".equals(beh);
+        }
+
+        public float param(String key, float def) {
+            float[] v = params.get(key);
+            return v == null || v.length == 0 ? def : v[0];
+        }
     }
 
     public static final class Track {
@@ -102,6 +129,11 @@ public final class VfxModel {
     private org.joml.Matrix4f[] rest;
     public final Bone[] bones;
     public final Map<String, Anim> anims = new HashMap<>();
+    /** Una cadena IK de Blockbench (objeto nulo con objetivo): sus huesos de la raíz a la punta, el nulo y el polo. */
+    public record IkChain(int[] bones, int nullBone, int pole, boolean lockRotation) {}
+
+    /** Las cadenas IK del modelo (vacío si no tiene). */
+    public IkChain[] ik = new IkChain[0];
     /** Tamaño del mob según el hueso «hitbox» de ModelEngine (bloques; 0 = no tiene). */
     public float hitW, hitH;
     /** Lo más lejos que llega en reposo (bloques; -1 = sin calcular, ver VfxHitboxes.reach). */
@@ -136,6 +168,48 @@ public final class VfxModel {
         if (a != null) return a;
         for (Map.Entry<String, Anim> e : anims.entrySet()) if (e.getKey().equalsIgnoreCase(name)) return e.getValue();
         return null;
+    }
+
+    private float[] headLimits;
+
+    /**
+     * Límites de giro de cada cabeza según su etiqueta (h[yaw;pitch;minyaw;maxyaw;minpitch;maxpitch]_): 4 por hueso
+     * (mín./máx. yaw, mín./máx. pitch), NaN = libre. Una copia de esto es lo que cambia headconfig en cada mob.
+     */
+    public float[] headLimits() {
+        if (headLimits == null) {
+            float[] out = new float[bones.length * 4];
+            java.util.Arrays.fill(out, Float.NaN);
+            for (int i = 0; i < bones.length; i++) {
+                Bone b = bones[i];
+                if (!b.head || b.params.isEmpty()) continue;
+                float yaw = b.param("yaw", Float.NaN), pitch = b.param("pitch", Float.NaN);
+                if (!Float.isNaN(yaw)) {
+                    out[i * 4] = -Math.abs(yaw);
+                    out[i * 4 + 1] = Math.abs(yaw);
+                }
+                if (!Float.isNaN(pitch)) {
+                    out[i * 4 + 2] = -Math.abs(pitch);
+                    out[i * 4 + 3] = Math.abs(pitch);
+                }
+                out[i * 4] = b.param("minyaw", out[i * 4]);
+                out[i * 4 + 1] = b.param("maxyaw", out[i * 4 + 1]);
+                out[i * 4 + 2] = b.param("minpitch", out[i * 4 + 2]);
+                out[i * 4 + 3] = b.param("maxpitch", out[i * 4 + 3]);
+            }
+            headLimits = out;
+        }
+        return headLimits;
+    }
+
+    /** La velocidad de giro más lenta de sus cabezas (grados por tick; 0 = al momento), según sus etiquetas. */
+    public float headSpeed() {
+        float sp = 0F;
+        for (Bone b : bones) {
+            float v = b.head ? b.param("speed", 0F) : 0F;
+            if (v > 0F && (sp == 0F || v < sp)) sp = v;
+        }
+        return sp;
     }
 
     private float[] headShare;
@@ -207,6 +281,29 @@ public final class VfxModel {
             bone.shade = !b.has("shade") || b.get("shade").getAsBoolean();
             bone.seat = b.has("seat") && b.get("seat").getAsBoolean();
             if (b.has("hb")) bone.hitbox = floats(b.getAsJsonArray("hb"));
+            bone.aabb = b.has("aabb") && b.get("aabb").getAsBoolean();
+            if (b.has("beh")) {
+                bone.beh = b.get("beh").getAsString();
+            } else {
+                // Modelos convertidos antes de la 1.3.80: la etiqueta sigue en el nombre (tl_tail_2)
+                String low = bone.id.toLowerCase(java.util.Locale.ROOT);
+                for (String tag : new String[] {"segf_", "seg_", "tlf_", "tl_"}) {
+                    if (low.startsWith(tag) && bone.quadCount == 0 && b.getAsJsonArray("quads").size() == 0) {
+                        bone.beh = tag.substring(0, tag.length() - 1);
+                        break;
+                    }
+                }
+            }
+            if (b.has("bp")) {
+                Map<String, float[]> ps = new HashMap<>();
+                for (Map.Entry<String, JsonElement> e : b.getAsJsonObject("bp").entrySet()) {
+                    JsonElement v = e.getValue();
+                    if (v.isJsonArray()) ps.put(e.getKey(), floats(v.getAsJsonArray()));
+                    else if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isNumber()) ps.put(e.getKey(), new float[] {v.getAsFloat()});
+                    else if (e.getKey().equals("type")) bone.limb = v.getAsString();
+                }
+                bone.params = ps;
+            }
             JsonArray qa = b.getAsJsonArray("quads");
             bone.quadCount = qa.size();
             bone.quads = new float[bone.quadCount * QUAD];
@@ -237,6 +334,18 @@ public final class VfxModel {
                 String[] ft = new String[ta2.size()];
                 for (int i = 0; i < ft.length; i++) ft[i] = ta2.get(i).isJsonNull() ? null : ta2.get(i).getAsString();
                 model.figures[f] = new Figure(rig, ft);
+            }
+        }
+        if (o.has("ik")) {
+            JsonArray ia = o.getAsJsonArray("ik");
+            model.ik = new IkChain[ia.size()];
+            for (int i = 0; i < ia.size(); i++) {
+                JsonObject c = ia.get(i).getAsJsonObject();
+                JsonArray ch = c.getAsJsonArray("chain");
+                int[] bs = new int[ch.size()];
+                for (int k = 0; k < bs.length; k++) bs[k] = ch.get(k).getAsInt();
+                model.ik[i] = new IkChain(bs, c.get("null").getAsInt(), c.has("pole") ? c.get("pole").getAsInt() : -1,
+                        c.has("lock") && c.get("lock").getAsBoolean());
             }
         }
         JsonObject anims = o.getAsJsonObject("anims");

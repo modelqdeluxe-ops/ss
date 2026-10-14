@@ -79,6 +79,10 @@ def take_braces(text):
     return text[1:], ''
 
 
+# Mecánicas de ModelEngine que en MythicMobs significan otra cosa: con «meg:» se usa la de ModelEngine
+MEG_RENAME = {'glow': 'glowbone', 'scale': 'meg_scale', 'jump': 'meg_jump'}
+
+
 def parse_line(line):
     """«- mecánica{args} @objetivo{args} ~disparador ?condición 0.5» → dict, o None."""
     line = str(line).strip()
@@ -92,6 +96,14 @@ def parse_line(line):
     name = m.group(1).lower()
     if name.startswith('e:'):
         name = 'effect:' + name[2:]
+    # Espacios de nombres: «meg:glow» es la de ModelEngine (glowbone; «glow» suelta es la de MythicMobs), «meg:X» es X
+    # y «mythicmobs:X» es X
+    if ':' in name and not name.startswith('effect:'):
+        ns, base = name.split(':', 1)
+        if ns in ('meg', 'modelengine'):
+            name = MEG_RENAME.get(base, base)
+        elif ns in ('mythicmobs', 'mythic', 'mm'):
+            name = base
     rest = line[m.end():]
     args = {}
     if rest.startswith('{'):

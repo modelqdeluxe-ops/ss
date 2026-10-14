@@ -62,6 +62,8 @@ final class SkillMovers {
         String onEnd;
         String onHitBlock;
         SkillActor bullet;
+        /** vfx{} de ModelEngine pegados a este proyectil (van con él y se quitan con él). */
+        final List<SkillActor> vfx = new java.util.ArrayList<>();
         double bulletY;
         double bulletForward;
         int deathDelay;
@@ -515,6 +517,12 @@ final class SkillMovers {
     }
 
     private static void moveBullet(Mover p) {
+        for (SkillActor v : p.vfx) {
+            if (!v.alive) continue;
+            float yaw = p.dir.lengthSqr() > 1e-6 ? SkillRuntime.yawOf(p.dir) : v.yaw;
+            float pitch = p.dir.lengthSqr() > 1e-6 ? SkillRuntime.pitchOf(p.dir) : v.pitch;
+            v.moveTo(p.pos, yaw, pitch);
+        }
         if (p.bullet == null || !p.bullet.alive) return;
         float yaw = p.dir.lengthSqr() > 1e-6 ? SkillRuntime.yawOf(p.dir) : p.bullet.yaw;
         float pitch = p.kind == 0 || p.kind == 1 ? (p.dir.lengthSqr() > 1e-6 ? SkillRuntime.pitchOf(p.dir) : p.bullet.pitch) : 0F;
@@ -628,6 +636,8 @@ final class SkillMovers {
             if (p.deathDelay > 0) SkillRuntime.later(p.deathDelay, b::remove);
             else b.remove();
         }
+        for (SkillActor v : p.vfx) v.remove();
+        p.vfx.clear();
         if (p.aura != null) SkillAuras.moverEnded(p.aura);
     }
 

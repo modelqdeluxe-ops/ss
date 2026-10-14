@@ -180,26 +180,69 @@ swing
 feed
 enchant
 *model
-*state animation
-*defaultstate
-*partvisibility partvis
-*changepart
-*tint
-*brightness
-glowbone
+cullconfig
 *lockmodel
 *bodyrotation bodyclamp
-*setmodelscale
+pairmodel
+petrify
+*state animation
+*modifystate modifyanimation modstate
+*defaultstate
+lockmodelhead lockhead
+*remapmodel
+renderinit
+statetoggle togglestate
+submodel
+swapentity
+*scale meg_scale setmodelscale
+rootmotion
+animatemodel
+changeparent
+*changepart
+cycleparts
+enchant
+*tint
+glowbone
+*brightness
+*partvisibility partvis
+modelplayerskin modelskin
+billboard
 *mountmodel
 *dismountmodel
 *dismountall
+meg_jump
+move
+nofall
+syncyaw
 bindhitbox
-*segment
-submodel
-nametag
-cullconfig
-*remapmodel
-renderinit
+hitboxconfig
+*segment seg
+ik inversekinematics
+iktarget
+ikchain
+jiggleimpulse
+headtarget
+headconfig
+modeldisguise
+modelundisguise
+linkitembone
+setitemmodel
+leash
+leashself
+setmodeltag
+setmodeltagvisible
+vfx
+vfxpos
+vfxposreset
+vfxrot
+vfxrotreset
+vfxscale
+vfxscalereset
+vfxchangemodel
+vfxsetvis
+vfxenchant
+vfxtint
+vfxbrightness
 """
 
 CONDITIONS = """
@@ -373,6 +416,37 @@ ontrade
 """
 
 
+# Etiquetas de hueso de ModelEngine 4 (wiki «Bone Behaviors»): las lee el conversor (tools/vfx_bb.py, bone_tag)
+BONE_TAGS = """
+*h head
+*hi head_inherit
+h[] head_params
+*p seat
+*ob hitbox_obb
+b hitbox_aabb
+g ghost
+tag nametag
+l leash
+ih item_head
+ir item_right
+il item_left
+*seg
+segf
+*tl
+tlf
+jig
+jig[]
+ik[]
+phead
+prarm
+plarm
+pbody
+prleg
+plleg
+limb[]
+"""
+
+
 def parse(text):
     """[(nombre, [alias...], importante)]"""
     out = []
@@ -392,3 +466,4 @@ ALL = {
     'objetivos': parse(TARGETERS),
     'disparadores': parse(TRIGGERS),
 }
+TAGS = parse(BONE_TAGS)

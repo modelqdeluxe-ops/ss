@@ -172,7 +172,8 @@ public final class SkillActor {
         switch (key) {
             case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item" -> {
                 if (key.equals("me")) {
-                    sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:"));
+                    sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:")
+                            || k.startsWith("seg:") || PER_MODEL.stream().anyMatch(k::startsWith));
                     hiddenNow = null;
                 }
                 sticky.put(key + (key.equals("dstate") ? ":" + a : ""), p);
@@ -181,10 +182,17 @@ public final class SkillActor {
                 if (layers != null) trackVis(a, Boolean.parseBoolean(b), !"false".equals(c));
                 else sticky.put(key + ":" + a, p);
             }
-            case "part", "bright" -> sticky.put(key + ":" + a, p);
+            case "part", "bright", "seg", "headcfg", "bitem", "btag", "btagv", "ench", "bill", "bglow", "ik", "iktgt" -> sticky.put(key + ":" + a, p);
+            case "ikchain" -> sticky.put(key + ":" + (b == null ? "" : b.split("\\|")[0]), p);
+            case "headlock", "headtgt", "skin", "dtint", "only", "vfxvis" -> sticky.put(key, p);
+            case "vfxtf" -> sticky.put(key + ":" + a, p);
             default -> { }
         }
     }
+
+    /** Lo que se guarda por modelo (ModelEngine) y se olvida al cambiarlo. */
+    private static final java.util.List<String> PER_MODEL = java.util.List.of("headcfg:", "headlock", "headtgt", "bitem:", "btag:",
+            "btagv:", "ench:", "bill:", "bglow:", "skin", "dtint", "ik:", "iktgt:", "ikchain:");
 
     /** Como SkillClient.setVisible: el hueso (y, con children, los que cuelgan de él). */
     private void trackVis(String bone, boolean show, boolean children) {
@@ -233,6 +241,11 @@ public final class SkillActor {
                 if (l.stopAt >= 0) continue;
                 SkillNet.toPlayer(player, new SkillNet.Prop(id, "lstate", l.name, l.speed + "|" + l.lerpIn + "|" + l.lerpOut + "|"
                         + l.priority + "|1", String.valueOf((int) (age - l.start))));
+                if (l.loopMode >= 0 || l.overrideMode != null) {
+                    // modifystate{loop;ov} que tuviera
+                    SkillNet.toPlayer(player, new SkillNet.Prop(id, "lmod", l.name, l.priority + "|NaN|-1|-1|" + l.loopMode + "|"
+                            + (l.overrideMode == null ? "" : l.overrideMode ? "1" : "0"), null));
+                }
             }
             if (layers.dead()) SkillNet.toPlayer(player, new SkillNet.Prop(id, "death", "", "", ""));
         }
