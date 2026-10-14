@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.74**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
-`claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.75**: jefes de incursión; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+`claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -55,10 +55,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.74) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.75) — lee esto primero
 
-**Estado**: última versión publicada **1.3.74** (estelas apagadas de fábrica y del tamaño real del arma; TF Pass con
-escenario de noche), Release ya creada:
+**Estado**: última versión publicada **1.3.75** (**jefes de incursión**: 5 jefes de packs comprados, grietas de cristal y
+la ventana `/tf boss`; ver el bloque «TF Client 1.3.75» más abajo), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -103,7 +103,11 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.74** (estelas apagadas al entrar; con el espadón y
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.75 entera** (jefes, grietas y `/tf boss`: compila
+en Actions y los modelos/animaciones se revisaron en hojas renderizadas en Python, pero nadie ha luchado contra ellos; lo
+primero que hay que mirar si el dueño manda capturas: la vista previa 3D de la ventana —que mire de frente y quepa—, el
+cristal y su cartel, la barra del jefe, las cabezas de la Hidra al golpearlas y el agarre del Esqueleto/Abominación),
+**la 1.3.74** (estelas apagadas al entrar; con el espadón y
 las demás armas 3D, la estela de punta a guarda de su hoja real; el escenario de noche del TF Pass, visto en el simulador),
 **la 1.3.73** (sin Punchy: armas y manos como en la 1.3.68,
 Efectos solo con COMBATE, estelas sin sonido; la portada del pad sin las nubes blancas), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
@@ -119,6 +123,8 @@ diseño de la pantalla»). frame.png es marco.png TAL CUAL con el cristal hueco;
 fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
+- **Más jefes**: el dueño los manda «de 5 en 5» (zips de LittleRoom y otros, MythicMobs + ModelEngine). Cómo meter un
+  lote: ver «Jefes: cómo añadir uno» en el bloque de la 1.3.75. Esperan su prueba en el juego y su opinión.
 - **Actualización de CLANES** (la siguiente que quiere el dueño). Hoy `PadClans`: fundar (nombre y etiqueta), invitar,
   roles líder/oficial/miembro, echar, ascender, salir, disolver, color de la etiqueta, fuego amigo, etiqueta junto al
   nombre, 20 miembros. Lluvia de ideas que se le dio (1.3.66), por fases: **1** banco del clan (depositar/retirar por rol,
@@ -161,6 +167,50 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.75 (14 oct) — JEFES DE INCURSIÓN.** El dueño mandó 5 packs de jefes (zips: Gárgola, Hidra y Abominación
+> Parasitaria de LittleRoom, Tower Skeleton y Astwood) y pidió: «portear todo correctamente, animaciones, vfx, fases,
+> todo… funcionalidad completa con nuestro motor»; que sean **incursiones de grupo**: «una grieta o un cristal muy grande
+> tipo gema que al golpearla activa y sale el boss»; y **`/tf boss`** para elegir el jefe con **vista previa** y su
+> dificultad (velocidad, ataque, daño…: **presets de Fácil a Demencial**), «gui sin solapamiento y bien hecha». También:
+> «para compilar usa Git actions siempre». **Los packs NO están en el repo** (ni hay que subirlos): solo lo convertido.
+> - **Convertidor** `tf-client/tools/bosses/build_bosses.py <carpeta con los packs descomprimidos>` (Astwood venía en
+>   RAR: `bsdtar -xf`). `JEFES` = carpeta del pack → id (`gargola`, `hidra`, `abominacion`, `esqueleto_torre`,
+>   `astwood`), su mob de MythicMobs y la vida/daño base (Normal, 1 jugador; los de los packs eran de ejemplo).
+>   `es.json` = nombre, título, color, descripción, ataques, `preview_hide` (huesos que no salen en la vista previa) y
+>   nombres de los objetos que sueltan. `FIXES` = skills que el pack llama sin traerlas (`LR_HYDRA_stomp_damage`). Sale
+>   `assets/tfclient/bosses/<id>.json` (árbol de skills alcanzable desde el mob, mobs que invoca, modelos, objetos),
+>   `bosses/models/<id>.<modelo>.json` (los .bbmodel con `tools/vfx_bb.py` en **modo jefe**: prioridad y override de
+>   las animaciones, scripts `mm:` de la línea de tiempo, cajas `ob_`, asientos `p_`, cabezas `h_`/`hi_`, tamaño del
+>   hueso `hitbox`), texturas `textures/bosses/`, modelos de ítem `models/bosses/` y `models/item/jefe_*.json`,
+>   sonidos `sounds/bosses/` (eventos `tfclient:bosses.<id>.<x>`), glifos `font/bosses_<id>.json`. En la pasada completa
+>   rehace también el cristal (`rift_model.py`, modelo procedural: pedestal con runas, anillos, gema, núcleo, grietas y
+>   esquirlas; animaciones idle/activate/dormant/regrow; texturas `*_tint_e` = emisivas teñidas del color del jefe).
+> - **Motor** (`skills/` + `vfx/`, sin cambiar las clases de jugador): `VfxLayers` = animador por capas como ModelEngine R4
+>   (prioridad, override/aditivo por hueso y canal, entrada/salida suave, reposo/andar por defecto, muerte),
+>   `VfxHitboxes` (cajas `ob_` → AABB), `SkillMobs` (los jefes y esbirros como «host» de MythicMobs: disparadores
+>   ~onSpawn/~onTimer/~onDamaged con umbral de vida `<50%`, ~onDeath, señales, tabla de amenaza, scripts de las
+>   animaciones), `CameraShake`; condiciones/objetivos/movimientos nuevos que usan los packs.
+> - **Paquete `bosses/`**: `BossEntity` (`tfclient:jefe` y `tfclient:esbirro`: vida sin el tope de 1024, cajas por
+>   piezas `BossPart` —las 5 cabezas de la Hidra—, respiro de 8 ticks por jugador, giro del cuerpo como ModelEngine,
+>   barra «Nombre · Dificultad», muerte con su animación), `RiftEntity` + `Rifts` (la grieta: LISTA → al golpearla
+>   DESPIERTA 3,5 s → INCURSIÓN → RECARGA; correa de 40 bloques; si se queda sola 30 s, el jefe se va; monedas con
+>   `TFEconomy.give` a cada jugador que le hizo daño; guardadas en `<mundo>/tfclient/grietas.json`), `Difficulty`
+>   (presets facil/normal/dificil/pesadilla/demencial: vida, daño, velocidad, ritmo de ataque, armadura, vida por
+>   jugador extra, recarga y monedas), `BossConfig` (`config/tfclient/jefes.json`: la elegida de cada jefe),
+>   `SeatEntity` (agarres), `BossWorld`, `BossItems` (Guja/Égida/Cuernos del Esqueleto con sus skills del pack),
+>   `BossNet` (canal `tfclient:bosses`), `BossScreen` (la ventana), `BossRenderer`/`RiftRenderer`/`ModelDraw`.
+> - **`/tf boss`** (staff, permiso 2; el dueño lo pidió aunque la regla general es solo `/tf web` y `/tf reload`):
+>   izquierda los jefes (tarjeta de su color con punto de la dificultad guardada), centro el jefe en 3D (reposo,
+>   arrastrar = girar) y PONER GRIETA AQUÍ / PROBAR DELANTE / GUARDAR CAMBIOS, derecha DIFICULTAD (5 presets y 8 valores
+>   con − y +; Mayús = ×5; rueda del ratón; ayuda al pasar por encima; «Con 4 jugadores: X de vida» y la descripción si
+>   cabe) y GRIETAS (IR, ✎ editar su jefe/dificultad —GUARDAR/REINICIAR/DEJAR DE EDITAR—, ✕ dos veces para quitar,
+>   QUITAR JEFES DE PRUEBA). Colores macizos. **Disposición comprobada** con `python3 tools/bosses/sim_gui.py [--png
+>   carpeta]` (mismas cuentas que `BossScreen.layout`) de 427×240 a 1280×720: nada se solapa ni se sale.
+> - **Jefes: cómo añadir uno**: descomprime su pack en la carpeta de packs, añádelo a `JEFES` (id, mob, vida, daño) y a
+>   `es.json`, `python3 tools/bosses/build_bosses.py <carpeta>` (debe decir «problemas: 0»; si falta una skill del pack,
+>   a `FIXES`), mira las hojas de sus modelos y sube la versión. Las mecánicas de MythicMobs que un pack use y el motor no
+>   tenga salen en «missing» del JSON del jefe.
 
 > **TF Client 1.3.74 (14 oct)** — el dueño: «quedó mejor; haz que la estela esté desactivada por defecto, y que adopte
 > el tamaño real del item: con el espadón la estela se pone en medio o a tamaño de una espada vanilla. Y el fondo del TF

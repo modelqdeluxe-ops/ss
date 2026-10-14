@@ -344,10 +344,17 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     // ------------------------------------------------------------------------------------------- vida
 
-    @Override
-    public float getMaxHealth() {
-        float m = this.entityData.get(MAX_HP);
-        return m > 0 ? m : super.getMaxHealth();
+    /**
+     * La vida máxima de un jefe (sin el tope de 1024 del atributo), o 0 si no es un jefe o aún no tiene: la usa
+     * BossHealthMixin para LivingEntity.getMaxHealth, que es final.
+     */
+    public static float bossMaxHealth(LivingEntity e) {
+        if (!(e instanceof BossEntity b) || b.entityData == null) return 0F;
+        try {
+            return b.entityData.get(MAX_HP);
+        } catch (RuntimeException notYet) {
+            return 0F; // aún construyéndose (sin sus datos definidos)
+        }
     }
 
     @Override

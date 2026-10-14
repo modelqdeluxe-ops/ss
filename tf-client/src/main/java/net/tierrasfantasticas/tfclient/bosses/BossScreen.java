@@ -801,7 +801,7 @@ public class BossScreen extends Screen {
     }
 
     private void click() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1F, 0.6F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1F, 0.6F));
     }
 
     @Override
