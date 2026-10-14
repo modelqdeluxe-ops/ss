@@ -4,10 +4,12 @@ Este documento sirve para que otra IA (o persona) retome los jefes sin tener que
 CHECKPOINT de `HANDOFF.md`, porque las reglas del dueño están allí (español, nada de subagentes, compilar con GitHub
 Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 
-- **Estado:** TF Client **1.3.77**.
+- **Estado:** TF Client **1.3.78**.
   - 1.3.75: jefes, grietas y `/tf boss`.
   - 1.3.76: la IA, fiel a MythicMobs/ModelEngine.
   - 1.3.77: el cerebro táctico.
+  - 1.3.78: peleas más vivas (combos, tempo, giro, espaciado, paso atrás), los modelos completos (el «ojo» de
+    Blockbench), `partvis` como ModelEngine, la esfera de Astwood y el auditor `tools/bosses/audit.py`.
 - **Packs que hay:** 5 de LittleRoom y otros: Gárgola, Hidra, Abominación Parasitaria, Esqueleto de la Torre y Astwood.
 - **Cómo llegan los packs:** el dueño los manda «de 5 en 5» en zips (MythicMobs + ModelEngine). **Nunca subas los
   packs al repo.** Solo se sube lo convertido.
@@ -29,6 +31,7 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 | `bosses/BossScreen` | La ventana `/tf boss`: lista de jefes, vista previa 3D, dificultad y grietas. |
 | `tools/bosses/sim_ai.py` | Simula la IA sin el juego: qué ataques salen, si castiga y si se bloquea. |
 | `tools/bosses/sim_gui.py` | Comprueba la disposición de la ventana a 8 tamaños: que nada se solape ni se salga. |
+| `tools/bosses/audit.py` | **El auditor**: revisa cada jefe contra el motor (mecánicas, condiciones y objetivos sin implementar, skills que faltan, animaciones y huesos que no existen, sonidos y modelos). Lo lanza `build_bosses.py` al acabar. |
 
 Todas las rutas Java cuelgan de `tf-client/src/main/java/net/tierrasfantasticas/tfclient/`. Los recursos cuelgan de
 `tf-client/src/main/resources/assets/tfclient/`.
@@ -46,7 +49,10 @@ python3 tools/bosses/build_bosses.py <carpeta con los packs descomprimidos>     
 python3 tools/bosses/build_bosses.py <carpeta> LITTLEROOM_HYDRA_v1_0                # solo uno
 ```
 
-Debe decir `problemas: 0` en cada jefe.
+Debe decir `problemas: 0` en cada jefe y, al final, `auditoría <jefe> problemas: 0` en cada uno (ver §6). Las líneas
+con `·` son avisos: erratas del pack que el conversor ha corregido solo, como `errata del pack: animación
+«absord_life_start» → «absorb_life_start»` (Astwood; en ModelEngine esa animación no salía). Solo corrige una letra
+cambiada por otra y solo si hay un único nombre así (`head_6_bite` nunca se convierte en `head_1_bite`).
 
 `JEFES`, al principio de `build_bosses.py`, relaciona cada carpeta del pack con su jefe:
 
@@ -68,7 +74,7 @@ Debe decir `problemas: 0` en cada jefe.
 | Salida | Qué es |
 |---|---|
 | `bosses/<id>.json` | `boss` (mob, nombre, color, vida/daño base, `pack_health`, modelo, `hitbox`, ataques, `preview_hide`), `tree` (las skills alcanzables, ya compiladas), `mobs` (sus mobs: tipo, opciones, IA, mecánicas con disparador, `kind` entity/actor, `speed` del tipo), `models`, `item_models`, `drops` (con `mechs`, `blocking`, `name_es`), `glyphs` y `missing`. |
-| `bosses/models/<id>.<modelo>.json` | Los `.bbmodel` convertidos por `tools/vfx_bb.py` en **modo jefe**: prioridad y override de las animaciones, scripts `mm:` de la línea de tiempo (`fx`), cajas `ob_` (`hb`), asientos `p_`, cabezas `h_`/`hi_`, el hueso `hitbox` que da el tamaño de la entidad, y texturas `_e` que brillan. |
+| `bosses/models/<id>.<modelo>.json` | Los `.bbmodel` convertidos por `tools/vfx_bb.py` en **modo jefe**: prioridad y override de las animaciones, scripts `mm:` de la línea de tiempo (`fx`), cajas `ob_` (`hb`), asientos `p_`, cabezas `h_`/`hi_`, el hueso `hitbox` que da el tamaño de la entidad, y texturas `_e` que brillan. **El «ojo» de Blockbench (visibility) no cuenta en los jefes**: ModelEngine dibuja esos huesos y cubos igual, y el pack los enseña y esconde con `partvis`. Hasta la 1.3.77 se perdían: el Esqueleto no tenía escudo, ni espada a la espalda, ni escudo junto al trono; el trono no tenía escalinata ni pozo de almas; la Abominación, ni pústulas ni zarpazo. |
 | `bosses/models/grieta.cristal.json` | El cristal de la grieta. Es procedural (`tools/bosses/rift_model.py`). Sus texturas `*_tint_e` se tiñen del color del jefe y brillan. La pasada completa de `build_bosses.py` lo rehace solo. |
 | `textures/bosses/<id>/`, `models/bosses/<id>/`, `models/item/jefe_<id>_<objeto>.json` | Texturas, modelos de ítem (balas «display», objetos) y los modelos de los objetos que sueltan. El escudo lleva el override `blocking`. |
 | `sounds/bosses/<id>/*.ogg` + `sounds.json` | Eventos `tfclient:bosses.<id>.<x>`. |
@@ -96,13 +102,22 @@ Cada mob del jefe es un `MobDef` con `entity`, `speed`, `typeSpeed`, `chases`, `
   - suma amenaza;
   - lanza `~onDamaged` con el **daño del golpe**, no con lo que le quitó (con Resistencia V, eso sería 0).
 - **`customServerAiStep()`:** elige objetivo (`pickTarget`), le persigue con navegación hasta casi tocarlo (su cuerpo
-  + 1 bloque) y aplica el plan del cerebro (espaciarse y rodear). La correa con su grieta es de 40 bloques.
+  + 1 bloque) y aplica el plan del cerebro (§4.3): ponerse a la distancia de lo que va a hacer, apartarse si se le
+  pegan más de lo que sus ataques permiten (con paso atrás, `backstep`) y rodear. La correa con su grieta es de 40
+  bloques.
+- **`tempo()`** = velocidad de la dificultad × (1 + 0,12 × inteligencia): Fácil 0,93, Normal 1,07, Difícil 1,18,
+  Pesadilla 1,29, Demencial 1,4. Ver §3.3.
 - **`turnBody()`:** el giro, como ModelEngine.
   - `lookYaw` es hacia dónde mira la **entidad**: sigue al objetivo a 30° por tick. Con eso miden fieldOfView,
     @forward y los proyectiles.
   - `bodyYaw` es el **modelo**. Andando, sigue esa dirección. Parado, la cabeza no pasa de `mh` y arrastra al cuerpo,
-    y pasados `rde` ticks el cuerpo se pone de frente en `rdu`.
-  - Mientras ataca (gcd), con el cerebro, sigue al jugador hasta que `lockmodel` lo congela.
+    y pasados `rde` ticks el cuerpo se pone de frente en `rdu`. **Con la inteligencia, `rde` y `rdu` se acortan**
+    (× (1 − 0,8 × int.) y × (1 − 0,7 × int.)): la Abominación del pack esperaba 4 s y tardaba 6 s en ponerse de
+    frente («lentos al girar»).
+  - Mientras ataca (su gcd, o lo que dura el ataque en los packs que no ponen gcd), con el cerebro, sigue al jugador
+    hasta que `lockmodel` lo congela.
+- **`motion()` / `restoreMotion()`:** foto de cómo se mueve (velocidad, `lockmodel`, `bodyrotation`, IA) al empezar un
+  ataque, para dejarlo igual si el cerebro lo corta para encadenar otro.
 - **`BossPart` (piezas):** hasta 40 cajas de golpe por hueso `ob_` (las cabezas de la Hidra). Llevan id = id del jefe
   + 1 + i.
 - **Muerte:** `die()` → `~onDeath`, mata a sus esbirros, `Rifts.bossKilled` → monedas. La animación de muerte dura lo
@@ -116,7 +131,7 @@ Las líneas del mob (`mobs.<mob>.mechs`) llevan `tr`/`trv` (disparador) y `hp` (
 |---|---|
 | `onspawn` | El primer tick. |
 | `ontimer:N` | Cada N ticks, en el orden del pack. |
-| `onentercombat` | Al tener objetivo. |
+| `onentercombat` | Al tener objetivo, **una vez por pelea**: si lo pierde un momento no vuelve a saltar (salvo tras 10 s sin objetivo). La Abominación volvía a gritar cada vez. |
 | `ondamaged` | Al recibir un golpe. Lleva `damage-amount` y `damage-cause`. |
 | `ondeath` | Al morir. |
 | `onsignal:X` | Al recibir `signal{s=X}`. |
@@ -131,7 +146,12 @@ Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `Ski
 |---|---|---|
 | El cooldown de una skill **solo se pone si sale** (después de sus condiciones y de las de sus objetivos). | `runMeta` | Si se pone antes, los ataques que se miran cada segundo se quedan en recarga sin salir (antes de la 1.3.76 quedaba uno). |
 | `setvar{...;duration=N}` **caduca** a los N ticks (vuelve a valer «UNDEFINED»). | `putVar` | La Hidra y la Abominación marcan «estoy mordiendo / saltando» para unos segundos. |
-| `gcd{ticks}` es **siempre de quien lanza** y **no se divide por el ritmo** de la dificultad. | `apply` → `gcd` | Es lo que dura el ataque. Si se acorta, el siguiente corta la animación a medias. |
+| `gcd{ticks}` es **siempre de quien lanza** y **no se divide por el ritmo** de la dificultad (sí por el tempo, ver abajo). | `apply` → `gcd` | Es lo que dura el ataque. Si se acorta sin acortar la animación, el siguiente la corta a medias. |
+| **Tempo de los jefes** (`ctx.host != null`): los `delay` (de línea y del guion), `repeatinterval`, el `gcd`, las duraciones de `setvar` del jefe y el `li`/`lo` de `state` se **dividen** por `tempo()`, y la velocidad de sus animaciones se **multiplica**. | `SkillRuntime.tempo`, `SkillModels.state`, `putVar` | Todo el ataque va más rápido a la vez: los golpes siguen cayendo donde se ven. Las variables «estoy atacando» (Abominación, Astwood) acaban con su ataque. |
+| `partvis` en los jefes, **como ModelEngine**: sin `v` **esconde**; sin `child`, solo ese hueso; `em=true` por defecto (exacto, o sin el prefijo de comportamiento: `right_arm_trail` = `tl_right_arm_trail`); `em=false` = todos los que lo llevan en el nombre. Las clases siguen como antes (v y child a true). | `SkillModels.partVis`, `VfxModel.bone` | Con los valores de las clases, el Esqueleto enseñaba la espada de su muerte junto a la pierna. |
+| `@EIR`/`@PIR`… de un jefe **no cuentan a sus propios esbirros ni a sus efectos** (salvo que la línea busque un tipo concreto). | `SkillTargets.entities` | La esfera de Astwood (`@EIR{r=32;limit=8}`) salía hacia sus retoños y muros. |
+| `missile` de un jefe: apunta al **centro** del objetivo, persigue a media altura y su inercia es como mucho 12. | `SkillMovers.projectile` | Con `inertia=100` y apuntando a los pies, la esfera de Astwood se clavaba en el suelo («cae como un huevo»). |
+| Los usos de una skill llevan un **id** (`Ctx.cast`) en sus tareas pendientes y su guion. | `later(ticks, cast, r)`, `cancelCast` | El cerebro corta lo que le queda a un ataque para encadenar otro (combos). |
 | En los jefes, las mecánicas de ModelEngine **sin objetivo** van a su propio modelo. | `targets()` + `OWN_MODEL` | `bodyrotation{mh=0}` dentro de un ataque lanzado con @target es para el jefe, no para el jugador. |
 | `propel` en los jefes: «v» bloques por tick hacia el objetivo (se pone, no se suma). | `SkillMotion.propel` | Con la regla de las clases (v/10, sumado) la Gárgola no saltaba. |
 | `setspeed{s}` = velocidad **del tipo** de Minecraft × s. Hasta el primer setspeed manda `MovementSpeed`. | `BossEntity.applySpeed` | La Abominación sale con MovementSpeed 0 y su `setspeed{s=1.25}` la pone a andar. |
@@ -149,6 +169,9 @@ Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `Ski
 - **Fin de una animación:** una de una vez (`once`) acaba sola y libra su prioridad; `hold` se queda en su final;
   `loop` se repite.
 - **Por defecto:** debajo de todo va la animación por defecto (`idle`/`walk`, o lo que ponga `defaultstate`).
+- **Tempo:** en los jefes, `state{sp}` × `tempo()` y `li`/`lo` ÷ `tempo()`. Al encadenar un ataque, las animaciones
+  entran con al menos 5 ticks de mezcla (`Host.minLerp`, 6 ticks) y las del ataque cortado se van en 5
+  (`SkillModels.cutSince`), así no salta de una pose a otra.
 - **Muerte:** `death` lo tapa todo.
 - **Ejemplo:** el «sleep» del Esqueleto lo sube 5,6 bloques sobre el trono. Si no se sustituye al despertar, se queda
   flotando (fallo de la 1.3.75).
@@ -218,11 +241,12 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 - **Cuándo piensa:**
   - Cada `interval()` ticks: de 20 (inteligencia 0) a 4 (inteligencia 1), × 0,85 por debajo del 50 % de vida y × 0,8
     por debajo del 25 %, ÷ el ritmo.
-  - Nunca a mitad de un ataque, mientras haya gcd.
+  - Nunca a mitad de un ataque, mientras haya gcd (salvo para encadenar: combos, abajo).
   - Si el jugador **se cura** (come o bebe) y la inteligencia es ≥ 0,5, decide en cuanto quede libre.
 - **Qué puede salir:** prueba cada ataque **sin lanzarlo** (`SkillRuntime.usable`). Mira el cooldown, las condiciones
   de la skill y de sus objetivos y el umbral y las condiciones de la línea.
-- **Se lo piensa:** con inteligencia ≥ 0,5, el 16 % de las veces espera 3–12 ticks antes de atacar (no es predecible).
+- **Se lo piensa:** con inteligencia ≥ 0,5, un 24 % × (1 − inteligencia) de las veces espera 3–12 ticks antes de atacar
+  (no es predecible; con el 100 % no se para nunca).
 - **Puntuación** (todo × inteligencia salvo el azar):
 
 | Situación | Suma |
@@ -235,13 +259,23 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 | Está detrás | rear +3 |
 | 2 o más jugadores a 7 bloques | aoe +1 +0,7 por jugador |
 | Al jugador le queda < 30 % de vida | gap +1, el resto +0,4 |
+| Es el que tenía pensado (`planned`, §4.3) | +1,2 |
 | Repetir el último ataque | −2,2 (el penúltimo −0,9, los otros recientes −0,3) |
 | Aprender | +1,2 × aciertos/usos − 0,35 × fallos seguidos (con 2 usos o más) |
 | Azar | entre 0 y 0,35 + 2,6 × (1 − inteligencia) |
 
 - **Lanzar:** sale el que más puntúa, con `exec` de su línea o `callNamed` si es de una `randomskill`.
-- **Encadenar:** si ese ataque **no pone gcd** (las cabezas de la Hidra), puede salir otro distinto a la vez, hasta 3,
+- **A la vez:** si ese ataque **no pone gcd** (las cabezas de la Hidra), puede salir otro distinto a la vez, hasta 3,
   con una probabilidad de 0,35 + 0,4 × inteligencia.
+- **Combos (`SkillBrain.chain`), inteligencia ≥ 0,6:** de cada ataque se sabe, al leerlo, hasta qué tick hace algo
+  (`activeEnd`: su último daño, tótem, proyectil, salto… siguiendo sus delay y lo que llama); lo de después es
+  recuperación. Pasado ese tick (÷ tempo) + 3, si le quedan más de 6 ticks de gcd, con una probabilidad de
+  0,3 + 0,55 × inteligencia **corta la recuperación y lanza otro ataque distinto** que saldría ahora: cancela lo que
+  le quedaba al anterior (`SkillRuntime.cancelCast`), le devuelve el movimiento y las animaciones por defecto de antes
+  (`restoreMotion`, `restoreDefaults`), quita sus animaciones (`cutSince`) y el nuevo entra suave. No se cortan los
+  ataques con agarre ni los que dejan una variable sin duración (la carga del Esqueleto): `noCancel`. Solo encadena
+  quien pone gcd y deja recuperación (el Esqueleto mucho; la Gárgola y la Hidra poco; la Abominación y Astwood no:
+  marcan sus ataques con variables).
 - **Aprender:** los golpes del jefe que dan a un jugador (`SkillRuntime.hurt` → `SkillMobs.landed`) cuentan para el
   ataque en curso (70 ticks).
 
@@ -249,18 +283,20 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| Plan de movimiento (inteligencia ≥ 0,4) | `SkillBrain.plan` | Se pone a la distancia ideal (`sweet`) de un ataque que tendrá listo pronto; la cambia cada 3–6 s. |
+| Plan de movimiento (inteligencia ≥ 0,4) | `SkillBrain.plan` | Devuelve {distancia que busca, rodear, distancia mínima, máxima}. Elige un ataque **de su fase y su postura** (`possible`: su umbral de vida y las condiciones del pack que no son de distancia ni de gcd, como el escudo arriba o abajo del Esqueleto) que tendrá listo pronto y que **hace más que no usa**: así rota todo el repertorio. Se pone a su distancia ideal (`sweet`); lo cambia cada 3–6 s o al usarlo. Antes podía «pensar» en un ataque de otra fase (la plaga de la Abominación, < 50 %) y quedarse quieto. |
+| Apartarse y paso atrás | `BossEntity.customServerAiStep`, `backstep` | Si no le sale nada y el jugador está más cerca que el mínimo del ataque pensado, se aparta; con inteligencia ≥ 0,6 y 0,8 bloques por dentro, da un **salto atrás** (0,8 horizontal + 0,3 arriba; cada 3,5–6,5 s). Con poca inteligencia (< 0,4), solo no se pega más que el alcance mínimo de sus ataques. La Abominación pide 3 bloques o más en todos sus ataques: pegado a ella se quedaba gritando. |
 | Rodear (inteligencia ≥ 0,6) | `BossEntity.customServerAiStep` | Si no tiene ningún ataque posible, **le rodea** (cambia de lado cada 2–4,5 s). Si está demasiado cerca para lo que quiere hacer, se aparta. |
-| Seguir al atacar (inteligencia ≥ 0,4) | `SkillBrain.tracking` | Mientras ataca, se gira hacia el jugador a 2 + 8 × inteligencia grados por tick hasta que `lockmodel` lo congela. |
+| Seguir al atacar (inteligencia ≥ 0,4) | `SkillBrain.tracking` | Mientras ataca (`attacking`: gcd o lo que dura el ataque), se gira hacia el jugador a 2 + 8 × inteligencia grados por tick hasta que `lockmodel` lo congela. |
+| Girarse parado | `BossEntity.turnBody` | `rde`/`rdu` del pack, acortados con la inteligencia (§3.1). |
 | Objetivo (inteligencia ≥ 0,6) | `BossEntity.pickTarget` | Además de la amenaza: + a quien se cura, + a quien le dispara de lejos y, con ≥ 0,8, + a quien está por debajo del 30 % de vida. Solo cambia si el nuevo le compensa bastante. |
 | Furia por fases (inteligencia ≥ 0,5) | `BossEntity.rhythm` | Por debajo del 50 % y del 25 % de vida, los cooldowns se acortan otro 12 % × inteligencia en cada fase. |
 
 ### 4.4 Ajustarlo
 
 - **Los pesos:** están en `SkillBrain.score`. Si se tocan, se tocan **igual** en `tools/bosses/sim_ai.py`
-  (`Brain.score`), que es una copia en Python.
-- **Comprobarlo:** `python3 tools/bosses/sim_ai.py --min 8 --smart 1`. Muestra los ataques por minuto, cuántos
-  distintos, cuántos repite seguidos y cuántas curas castiga.
+  (`Brain.score`), que es una copia en Python (también `plan`, `chain`, `attacking`, `possible` y el tempo).
+- **Comprobarlo:** `python3 tools/bosses/sim_ai.py --min 8 --dif demencial` (o `--smart X`). Muestra los ataques por
+  minuto, cuántos distintos, cuántos repite seguidos, cuántas curas castiga, los combos y los pasos atrás.
 - **Si un jefe nuevo no usa un ataque:** con `-v` mira sus etiquetas y su alcance.
   - Si el alcance sale 0–40, el pack no pone distancia; el cerebro lo trata como «a cualquier distancia».
   - Si no aparece, el cerebro no lo ve como ofensivo y sigue el camino del pack.
@@ -344,22 +380,24 @@ de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
 
 | Comando | Para qué |
 |---|---|
-| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--smart` usa el cerebro y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite y las curas castigadas. |
+| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
+| `python3 tools/bosses/audit.py [jefe ...]` | El auditor (también al final de `build_bosses.py`). Tiene que dar 0 en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`. |
+| `tools/vfx_render.py` (`model_tris`, `raster`, `B.pose`) | Dibujar un modelo de jefe con una animación y unos huesos visibles (ver §7, paso 4). |
 | `python3 tools/bosses/sim_gui.py [--png carpeta]` | La ventana `/tf boss` a 8 tamaños. |
 | `python3 tools/bosses/rift_model.py --preview carpeta` | Imágenes del cristal. |
 
-**Referencia** (1.3.77, `--min 8`):
+**Referencia** (1.3.78, `--min 8`, ataques por minuto; entre paréntesis, el motor de la 1.3.77 con la misma
+inteligencia):
 
-| Jefe | Ataques distintos |
-|---|---|
-| Gárgola | 5/5 |
-| Hidra | 14/15 (la rotura de cabezas sale por debajo del 50 %) |
-| Abominación | 6/7 (el agarre depende de que el tentáculo pille) |
-| Esqueleto | 3 fases; en 16 min, 24/26 |
-| Astwood | 12/12 |
+| Jefe | Normal | Demencial | Distintos |
+|---|---|---|---|
+| Gárgola | 20,6 (18,9) | 27,5 (19,0) | 5/5 |
+| Hidra | 30,6 (29,4) | 36,9 (33,4) | 13–14/15 (la rotura de cabezas sale por debajo del 50 %) |
+| Abominación | 13,5 (12,2) | 18,8 (13,8) | 5–6/7 (la plaga, < 50 %; el agarre depende de que el tentáculo pille) |
+| Esqueleto | 13,5 (13,4) | 19,5 (13,2), 42 combos | 3 fases; en 30 min en Demencial, 25/26 con 77 combos |
+| Astwood | 23,2 (24,5) | 29,1 (22,5) | 12/12 |
 
-Con el cerebro al 100 %, Astwood y la Abominación atacan el doble de veces que con el pack solo y casi no repiten
-seguido.
+(El simulador de la 1.3.77 no aplicaba el ritmo de la dificultad: parte de la subida en Demencial es eso.)
 
 **Lo que el simulador no ve:** dónde caen de verdad los golpes (los tótems en los huesos), la física, el pathfinding y lo
 que se ve. Eso solo se comprueba en el juego. Pídeselo al dueño, en supervivencia, y **mide sus capturas con PIL**
@@ -371,8 +409,14 @@ antes de dar algo por arreglado.
 
 1. Descomprime el pack (fuera del repo).
 2. Añádelo a `JEFES` (en `build_bosses.py`) y a `tools/bosses/es.json`.
-3. Ejecuta `build_bosses.py`. Si dice «falta skill X», complétala en `FIXES` imitando las parecidas del pack.
-4. Mira las hojas de sus modelos (render en Python, como en la 1.3.75: `tools/vfx_render.py`) y su `preview_hide`.
+3. Ejecuta `build_bosses.py`. Si dice «falta skill X», complétala en `FIXES` imitando las parecidas del pack. **El
+   auditor del final tiene que dar 0**: si sale una mecánica, condición u objetivo sin implementar, impleméntalo (paso
+   6); si sale un hueso o una animación que no existen, mira el pack (puede ser una errata suya: si ModelEngine
+   tampoco la encuentra, decide con el dueño si se corrige en `FIXES`).
+4. Dibuja sus modelos **como aparecen**: la visibilidad inicial (todo visible: el ojo de Blockbench no cuenta) más
+   los `partvis` de su `~onSpawn` con las reglas de ModelEngine (§3.3), y después de cada `partvis{v=true}` del
+   pack (despertar, fases). Busca piezas fuera de sitio (la espada de la muerte del Esqueleto en la pierna) y piezas
+   que falten (su escudo). Ajusta su `preview_hide` (la vista previa de `/tf boss` lo enseña como en la pelea).
 5. Ejecuta `python3 tools/bosses/sim_ai.py <id> --min 8` y con `--smart 1 -v`:
    - ¿salen todos sus ataques?
    - ¿las etiquetas del cerebro tienen sentido?
@@ -396,7 +440,12 @@ antes de dar algo por arreglado.
 | «No anda» | `MovementSpeed` 0 sin `setspeed`, navegación de un mob muy grande, la correa | `BossEntity.applySpeed`, `customServerAiStep` |
 | «No me ataca» | Estás en creativo; la `FollowRange` del pack; fuera de la correa | `BossEntity.pickTarget` |
 | «Es tonto / muy predecible» | La inteligencia de su dificultad; los pesos del cerebro | `/tf boss` (fila Inteligencia), `SkillBrain.score` |
-| «Va demasiado rápido / corta animaciones» | El ritmo o la furia | `Difficulty.rhythm`, `BossEntity.rhythm` (el gcd no se divide) |
+| «Va demasiado rápido / corta animaciones» | El ritmo o la furia; el tempo; un combo que corta | `Difficulty.rhythm`, `BossEntity.rhythm`/`tempo`, `SkillBrain.chain` (`noCancel`) |
+| «Lento al girar» | `bodyrotation{rde;rdu}` del pack | `BossEntity.turnBody` (se acortan con la inteligencia) |
+| «Se queda quieto delante de mí / gritando» | Sus ataques piden más distancia que a la que se pone; un `~onEnterCombat` que se repite | `SkillBrain.plan` (mínimo, `possible`), `BossEntity.backstep`, `SkillMobs.tick` |
+| «Solo me tira 2 ataques» | La fase del pack (el Esqueleto, con el escudo arriba, solo tiene golpe y aplastamiento de escudo de cerca: hay que romperlo o ir a por su espalda); o el plan no rota | `sim_ai.py <id> -v`, `SkillBrain.plan` |
+| «Tira algo que no hace nada / cae al suelo» | El objetivo del proyectil (sus propios esbirros), hacia dónde apunta, la inercia | `SkillTargets.entities`, `SkillMovers.projectile` |
+| «Tiene una pieza fuera de sitio / le falta una pieza» | `partvis` (defaults de ModelEngine), el ojo de Blockbench al convertir | `SkillModels.partVis`, `tools/vfx_bb.py` (`boss`), §7 paso 4 |
 
 ---
 
@@ -404,8 +453,10 @@ antes de dar algo por arreglado.
 
 - **Fintas y ataques retrasados de verdad:** ralentizar el principio de una animación y retrasar a la vez sus golpes.
   Hoy solo «se lo piensa» antes de empezar.
-- **Esquivas o pasos atrás genéricos** del jefe cuando el jugador carga un golpe fuerte. Haría falta una animación de
-  paso: los packs no la traen, salvo el `swoop_back` de la Gárgola.
+- **Esquivas** cuando el jugador carga un golpe fuerte. Hoy hay paso atrás (`backstep`) solo para hacer sitio, sin
+  animación propia: los packs no la traen, salvo el `swoop_back` de la Gárgola.
+- **Combos en los packs sin gcd** (Abominación, Astwood): marcan «atacando» con variables; habría que saber qué
+  variable es de cada ataque para poder cortarlo.
 - **Memoria entre peleas:** qué ataques esquiva cada jugador, guardado por grieta.
 - **Coordinación de esbirros:** rodear, cortar la retirada.
 - **Ver en el juego:** un modo depuración para el staff que muestre encima del jefe el ataque elegido y su puntuación.

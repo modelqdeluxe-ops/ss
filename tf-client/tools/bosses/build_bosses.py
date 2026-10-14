@@ -364,6 +364,31 @@ def build(pack_dir, name, conf, sound_events):
             if mob.get('model'):
                 break
 
+    # Erratas del pack en los nombres de animación (Astwood pone «absord_life_start» y su modelo la llama
+    # «absorb_life_start»: en ModelEngine no sale, y su absorber vida iba sin animación)
+    pack.notes = []
+    all_anims = {a for m in converted.values() for a in m['anims']}
+
+    def fix_anim(pm):
+        if pm['m'] not in ('state', 'animation', 'defaultstate'):
+            return
+        for k in ('state', 's', 'animation'):
+            v = pm['a'].get(k)
+            if v and v not in all_anims:
+                good = typo_fix(v, all_anims)
+                if good:
+                    pm['a'][k] = good
+                    note = f'errata del pack: animación «{v}» → «{good}»'
+                    if note not in pack.notes:
+                        pack.notes.append(note)
+
+    for ent in prog['tree'].values():
+        for pm in ent['mechs']:
+            fix_anim(pm)
+    for mob in prog['mobs'].values():
+        for pm in mob['mechs']:
+            fix_anim(pm)
+
     # Scripts de las animaciones: con el nombre de la skill tal como está en el árbol
     lower_tree = {k.lower(): k for k in prog['tree']}
     for m in converted.values():
@@ -442,6 +467,19 @@ def build(pack_dir, name, conf, sound_events):
     return pack, out
 
 
+def typo_fix(name, names):
+    """El nombre bien escrito si «name» tiene una sola letra cambiada por otra (absord → absorb) y solo hay uno así; si
+    no, None. Los números no cuentan: head_6_bite no es head_1_bite."""
+    cands = []
+    for n in names:
+        if len(n) != len(name):
+            continue
+        diff = [(x, y) for x, y in zip(name, n) if x != y]
+        if len(diff) == 1 and diff[0][0].isalpha() and diff[0][1].isalpha():
+            cands.append(n)
+    return cands[0] if len(cands) == 1 else None
+
+
 def item_id(bid, iid):
     """El id del objeto en el mod (igual que TFBosses.itemId)."""
     return re.sub(r'[^a-z0-9_]+', '_', f'jefe_{bid}_{iid}'.lower())
@@ -474,6 +512,8 @@ def main():
               f"{len(out['item_models'])} modelos de ítem, {len(out['drops'])} objetos, problemas: {len(pack.problems)}")
         for p in pack.problems[:int(os.environ.get('MAXP', 20))]:
             print('   -', p)
+        for n in getattr(pack, 'notes', []):
+            print('   ·', n)
     sj = json.load(open(SOUNDS_JSON, encoding='utf-8')) if os.path.exists(SOUNDS_JSON) else {}
     if full:
         sj = {k: v for k, v in sj.items() if not k.startswith('bosses.')}
@@ -490,6 +530,13 @@ def main():
         import rift_model
         rift_model.main()
     BS.write_atlas()
+    # El auditor (tools/bosses/audit.py): lo que el motor no tiene o el pack nombra mal; debe dar 0 en cada jefe
+    # (por su ruta: tools/skills tiene otro audit.py, el de las clases)
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('boss_audit', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit.py'))
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    audit.main([c['id'] for c in catalog])
 
 
 if __name__ == '__main__':

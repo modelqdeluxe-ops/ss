@@ -132,7 +132,9 @@ final class SkillMovers {
             Vec3 start = base.add(0, syo, 0).add(SkillRuntime.dir(cy, 0F).scale(sfo)).add(SkillRuntime.dir(cy + 90F, 0F).scale(sso));
             // Adónde apunta (como MythicMobs): un proyectil, a media altura de un ser (o al sitio) + tyo; un misil, a los
             // pies (luego persigue a la altura de los ojos, o a tyo)
-            Vec3 aimAt = t.pos().add(0, missile ? 0 : tyo + halfHeight(t), 0);
+            // En un jefe, el misil también sale hacia el centro del objetivo: a los pies y con mucha inercia (la esfera de
+            // Astwood, inertia=100, casi no gira) se clavaba en el suelo antes de llegar
+            Vec3 aimAt = t.pos().add(0, missile && ctx.host == null ? 0 : tyo + halfHeight(t), 0);
             if (eso != 0) aimAt = aimAt.add(SkillRuntime.dir(cy + 90F, 0F).scale(eso));
             if (tso != 0) aimAt = aimAt.add(SkillRuntime.dir(SkillRuntime.yawOf(aimAt.subtract(start)) + 90F, 0F).scale(tso));
             Vec3 dir = targetIsOrigin ? ctx.caster.forward() : aimAt.subtract(start);
@@ -176,9 +178,12 @@ final class SkillMovers {
             if (missile) {
                 // Persigue al ser (a la altura de sus ojos, o a tyo de sus pies) o va al sitio (+ tyo)
                 p.homing = t.living();
-                if (p.homing != null) p.homeY = tyo != 0 ? tyo : p.homing.getEyeHeight();
+                if (p.homing != null) p.homeY = tyo != 0 ? tyo : ctx.host != null ? p.homing.getBbHeight() * 0.55 : p.homing.getEyeHeight();
                 else p.homeAt = t.pos().add(0, tyo, 0);
                 p.inertia = Math.max(0.1, SkillRuntime.num(m.arg("1.5", "inertia", "in"), 1.5));
+                // En un jefe, que la inercia no le impida llegar: como mucho 12 (la de 100 del pack apenas corregía ni 1°
+                // por paso y un jugador andando ya no estaba donde iba)
+                if (ctx.host != null) p.inertia = Math.min(p.inertia, 12);
             }
             p.accel = SkillRuntime.num(m.arg("1", "acceleration", "accel", "ac"), 1);
             p.bounce = SkillRuntime.bool(m.arg("false", "bounce"));

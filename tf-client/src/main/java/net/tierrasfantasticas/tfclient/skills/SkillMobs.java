@@ -91,6 +91,33 @@ public final class SkillMobs {
         default double smart() {
             return 0;
         }
+
+        /** Lo rápido que ataca (1 = como el pack): sus retardos se dividen por esto y sus animaciones van así de rápidas. */
+        default double tempo() {
+            return 1;
+        }
+
+        /** Ticks mínimos de entrada de sus animaciones ahora (al encadenar un ataque con otro, para que no salte). */
+        default int minLerp() {
+            return 0;
+        }
+
+        /** Cómo se mueve y gira ahora (velocidad, bloqueo, bodyrotation): para dejarlo igual si se corta un ataque. */
+        default double[] motion() {
+            return null;
+        }
+
+        default void restoreMotion(double[] m) {
+        }
+
+        /** Durante «ticks», sus animaciones nuevas entran suaves (minLerp): al encadenar un ataque. */
+        default void blend(int ticks) {
+        }
+
+        /** Un paso atrás rápido (el cerebro: necesita sitio para su siguiente ataque). false si no puede ahora. */
+        default boolean backstep(Vec3 away) {
+            return false;
+        }
     }
 
     /** Lo que hacen las entidades (el paquete de jefes): esbirros, objetos que caen, asientos y temblores de cámara. */
@@ -124,6 +151,8 @@ public final class SkillMobs {
         /** Su cerebro táctico (null si no tiene ataques que decidir) y si ya se ha mirado. */
         SkillBrain.Brain brain;
         boolean brainBuilt;
+        /** Último tick con objetivo (para ~onEnterCombat). */
+        int lastCombat;
 
         State(Host host) {
             this.host = host;
@@ -172,7 +201,10 @@ public final class SkillMobs {
         int age = h.age();
         LivingEntity target = h.target();
         boolean combat = target != null && target.isAlive();
-        if (combat && !s.combat) run(h, "onentercombat", target, null, null);
+        // ~onEnterCombat una vez por pelea: si pierde el objetivo un momento (la correa de la grieta, un cambio de
+        // objetivo) no vuelve a «entrar» (la Abominación volvía a gritar cada vez, quieta delante del jugador)
+        if (combat && !s.combat && (s.lastCombat == 0 || age - s.lastCombat > 200)) run(h, "onentercombat", target, null, null);
+        if (combat) s.lastCombat = age;
         s.combat = combat;
         if (!s.brainBuilt) {
             s.brainBuilt = true;
@@ -319,6 +351,16 @@ public final class SkillMobs {
     /** ¿Está en mitad de un ataque (su gcd)? */
     public static boolean busy(Host h) {
         return SkillBrain.busy(h);
+    }
+
+    /** ¿Está atacando (su gcd o lo que dura el ataque que eligió su cerebro)? */
+    public static boolean attacking(Host h) {
+        return SkillBrain.attacking(h, brain(h));
+    }
+
+    static SkillBrain.Brain brain(Host h) {
+        State st = STATES.get(h.mob().getUUID());
+        return st == null ? null : st.brain;
     }
 
     /** «&lt;50%», «&gt;75%»: ¿cumple la vida del mob el umbral de la línea? */

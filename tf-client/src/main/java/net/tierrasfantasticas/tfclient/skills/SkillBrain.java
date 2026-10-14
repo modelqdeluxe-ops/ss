@@ -63,6 +63,11 @@ public final class SkillBrain {
         /** Distancia al objetivo a la que sale (de sus condiciones: distance, targetwithin, targetnotwithin). */
         double min = 0, max = 40;
         boolean gap, ranged, aoe, grab, rear;
+        /** Hasta qué tick (desde que empieza, sin tempo) hace daño o mueve algo: lo de después es recuperación. */
+        int activeEnd;
+        /** Su gcd (lo que dura entero) y si se puede cortar su recuperación para encadenar otro (no: agarres, cargas). */
+        int gcd;
+        boolean noCancel;
         int uses, hits, missStreak;
         long lastUse = Long.MIN_VALUE / 4;
 
@@ -94,10 +99,21 @@ public final class SkillBrain {
         long currentAt;
         boolean currentHit;
         double preferred = 3;
-        long preferredUntil;
         int strafe = 1;
         long strafeUntil;
         long lastRangedHit = Long.MIN_VALUE / 4;
+        /** El uso del ataque en curso (para cortarlo al encadenar) y cómo estaba el jefe antes de empezarlo. */
+        long currentCast;
+        double[] motion;
+        String[] defaults;
+        float animMark = Float.NaN;
+        boolean chainTried;
+        /** El ataque que tiene pensado hacer (rota el repertorio) y hasta cuándo; los que puede hacer ahora (su fase). */
+        Attack planned;
+        long plannedUntil;
+        long planCheck;
+        List<Attack> can = List.of();
+        int chains;
 
         boolean handles(Mech m) {
             return handled.contains(m);
@@ -187,6 +203,15 @@ public final class SkillBrain {
         if (n.contains("tail") || n.contains("behind") || n.contains("turn")) a.rear |= n.contains("tail") || n.contains("leap_turn");
         if (n.contains("grab") || n.contains("enclose") || n.contains("absorb") || n.contains("cage")) a.grab = true;
         tags(cls, meta, a, new HashSet<>(), 0, false);
+        a.activeEnd = activeEnd(cls, meta, 0, new HashSet<>(), 0);
+        for (Mech m : meta.mechs) {
+            if (m.m.equals("gcd") || m.m.equals("setgcd") || m.m.equals("globalcooldown")) {
+                a.gcd = Math.max(a.gcd, (int) SkillRuntime.num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20));
+            }
+            // Una variable sin duración es un estado del jefe (la carga del Esqueleto): no se corta a medias
+            if ((m.m.equals("setvar") || m.m.equals("setvariable")) && m.arg(null, "duration", "d") == null) a.noCancel = true;
+        }
+        if (a.grab) a.noCancel = true;
         // Sin proyectiles pero de lejos y sin acercarse: un golpe a distancia (latigazo, onda)
         if (!a.ranged && !a.gap && a.min >= 6 && a.max >= 12) a.ranged = true;
         return a;
@@ -220,6 +245,35 @@ public final class SkillBrain {
             boolean callArea = m.m.equals("skill") || m.m.equals("metaskill") || m.m.equals("randomskill") ? here : false;
             for (Meta sub : called(cls, m)) tags(cls, sub, a, seen, depth + 1, callArea);
         }
+    }
+
+    /** Mecánicas que hacen el ataque (después de la última, el jefe solo se recupera). */
+    private static final Set<String> ACTIVE = Set.of("damage", "basedamage", "hit", "percentdamage", "throw", "projectile",
+            "missile", "shoot", "totem", "summon", "lunge", "propel", "leap", "pull", "mountmodel", "potion", "velocity");
+
+    /** Tick (desde «start») en que acaba lo último que hace el ataque, siguiendo sus delay y las skills que llama. */
+    private static int activeEnd(ClassDef cls, Meta meta, int start, Set<String> seen, int depth) {
+        if (meta == null || depth > 4 || !seen.add(meta.name)) return start;
+        int t = start, end = start;
+        for (Mech m : meta.mechs) {
+            if (m.m.equals("delay")) {
+                t += (int) Math.max(0, SkillRuntime.num(m.arg("0", "_", "ticks", "t", "d"), 0));
+                continue;
+            }
+            int at = t + (int) SkillRuntime.num(m.a.get("delay"), 0);
+            int rep = (int) SkillRuntime.num(m.arg("0", "repeat", "r_"), 0);
+            int every = (int) Math.max(1, SkillRuntime.num(m.arg("1", "repeatinterval", "repeati", "ri"), 1));
+            int last = at + rep * every;
+            if (ACTIVE.contains(m.m) && !(m.t != null && m.t.equals("self") && (m.m.equals("potion") || m.m.equals("velocity")))) {
+                int extra = m.m.equals("totem") ? (int) SkillRuntime.num(m.arg("2", "maxduration", "md"), 2)
+                        : m.m.equals("projectile") || m.m.equals("missile") ? 10 : 2;
+                end = Math.max(end, last + extra);
+            }
+            if (m.m.equals("skill") || m.m.equals("metaskill") || m.m.equals("randomskill") || m.m.equals("skillsequence")) {
+                for (Meta sub : called(cls, m)) end = Math.max(end, activeEnd(cls, sub, last, new HashSet<>(seen), depth + 1));
+            }
+        }
+        return end;
     }
 
     private static double radius(Mech m) {
@@ -331,7 +385,16 @@ public final class SkillBrain {
         Situation s = situation(h, target, b);
         // Castigar curas: en cuanto pueda, sin pensárselo
         if (s.healing() && smart >= 0.5) b.urgent = true;
-        if (busy(h)) return;
+        if (busy(h)) {
+            // Combos: pasada la parte peligrosa del ataque, a veces corta la recuperación y encadena otro (Souls)
+            Attack cur = b.current;
+            if (smart >= 0.6 && cur != null && !cur.noCancel && cur.gcd > 0 && !b.chainTried
+                    && now - b.currentAt >= cur.activeEnd / Math.max(0.5, h.tempo()) + 3 && gcdLeft(h) > 6) {
+                b.chainTried = true;
+                if (ThreadLocalRandom.current().nextDouble() < 0.3 + 0.55 * smart) chain(h, b, s, smart, now);
+            }
+            return;
+        }
         if (!b.urgent && now < b.nextDecision) return;
         if (!b.urgent && now < b.hesitateUntil) return;
         b.nextDecision = now + interval(h);
@@ -344,7 +407,8 @@ public final class SkillBrain {
         }
         // A veces se lo piensa un momento (como los jefes de los Souls, que no siempre atacan en cuanto pueden)
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        if (!b.urgent && !b.hesitated && smart >= 0.5 && rnd.nextDouble() < 0.16) {
+        // (menos cuanto más listo: con 100 % no se para nunca)
+        if (!b.urgent && !b.hesitated && smart >= 0.5 && rnd.nextDouble() < 0.24 * (1 - smart)) {
             b.hesitated = true;
             b.hesitateUntil = now + 3 + rnd.nextInt(10);
             return;
@@ -410,6 +474,8 @@ public final class SkillBrain {
         if (s.behind()) sc += smart * (a.rear ? 3 : 0);
         if (s.crowd() >= 2) sc += smart * (a.aoe ? 1 + s.crowd() * 0.7 : 0);
         if (s.lowHp()) sc += smart * (a.gap ? 1 : 0.4);
+        // Lo que tenía pensado hacer (rota el repertorio: no siempre los mismos dos)
+        if (a == b.planned) sc += smart * 1.2;
         // No repetir
         int i = 0;
         for (String r : b.recent) {
@@ -423,8 +489,18 @@ public final class SkillBrain {
         return sc;
     }
 
+    private static long castSeq = Long.MIN_VALUE / 2;
+
     private static void fire(Host h, Brain b, Attack a, long now) {
         Ctx c = SkillMobs.ctx(h);
+        // Cada ataque es un uso propio (para poder cortar lo que le queda al encadenar el siguiente)
+        c.cast = ++castSeq;
+        b.currentCast = c.cast;
+        b.chainTried = false;
+        b.motion = h.motion();
+        b.defaults = SkillModels.defaults(h.mob().getUUID());
+        b.animMark = SkillModels.mark(h.mob().getUUID());
+        if (a == b.planned) b.plannedUntil = 0;
         SkillRuntime.setCurrent(c);
         try {
             if (a.fromPool) SkillRuntime.callNamed(a.name, c, SkillRuntime.targets(a.line, c));
@@ -446,6 +522,47 @@ public final class SkillBrain {
         while (b.recent.size() > 6) b.recent.removeLast();
     }
 
+    /** Ticks que le quedan de gcd. */
+    private static long gcdLeft(Host h) {
+        SkillRuntime.WhoState st = SkillRuntime.stateIfAny(SkillRuntime.Who.of(h.mob()));
+        return st == null ? 0 : st.gcdUntil - SkillRuntime.clock;
+    }
+
+    /**
+     * Encadenar: si hay otro ataque que saldría ahora (sin contar el gcd del que está haciendo), corta lo que le queda
+     * al actual (su recuperación: delays pendientes), deja al jefe como estaba antes de empezarlo (velocidad, giro,
+     * animaciones por defecto) y lanza el siguiente entrando suave.
+     */
+    private static void chain(Host h, Brain b, Situation s, double smart, long now) {
+        SkillRuntime.WhoState st = SkillRuntime.stateIfAny(SkillRuntime.Who.of(h.mob()));
+        if (st == null) return;
+        long saved = st.gcdUntil;
+        st.gcdUntil = SkillRuntime.clock;
+        List<Attack> ok = usable(h, b, SkillMobs.ctx(h));
+        ok.remove(b.current);
+        if (ok.isEmpty()) {
+            st.gcdUntil = saved;
+            return;
+        }
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        Attack best = null;
+        double bestScore = -1e9;
+        for (Attack a : ok) {
+            double sc = score(h, b, a, s, smart, rnd);
+            if (sc > bestScore) {
+                bestScore = sc;
+                best = a;
+            }
+        }
+        SkillRuntime.cancelCast(b.currentCast);
+        h.restoreMotion(b.motion);
+        SkillModels.restoreDefaults(h.mob().getUUID(), b.defaults);
+        SkillModels.cutSince(h.mob().getUUID(), b.animMark, 5);
+        h.blend(6);
+        b.chains++;
+        fire(h, b, best, now);
+    }
+
     /** Un golpe del jefe ha dado a un jugador: cuenta para el ataque que está haciendo. */
     static void landed(Brain b, long now) {
         if (b.current == null || b.currentHit || now - b.currentAt > 70) return;
@@ -459,29 +576,85 @@ public final class SkillBrain {
         return st != null && st.gcdUntil > SkillRuntime.clock;
     }
 
+    /**
+     * ¿Está atacando? Su gcd o, en los packs que no ponen gcd (la Abominación y Astwood marcan sus ataques con
+     * variables), mientras dura lo que hace el ataque que eligió.
+     */
+    static boolean attacking(Host h, Brain b) {
+        if (busy(h)) return true;
+        return b != null && b.current != null && h.age() - b.currentAt < b.current.activeEnd / Math.max(0.5, h.tempo());
+    }
+
     // ------------------------------------------------------------------------------------------- moverse
 
+    /** Condiciones que no dicen si un ataque es de ahora (fase, postura), sino si sale en este instante. */
+    private static final Set<String> MOMENT = Set.of("distance", "targetwithin", "targetnotwithin", "playerwithin",
+            "playernotwithin", "offgcd", "gcd", "fieldofview", "fov", "infieldofview", "lineofsight", "los", "ydiff");
+
+    /** ¿Es un ataque de ahora (su umbral de vida y las condiciones de fase o postura del pack)? */
+    private static boolean possible(Host h, Attack a, Ctx base) {
+        if (a.line.hp != null && !SkillMobs.hpOk(h, a.line.hp)) return false;
+        return SkillRuntime.possible(h.cls().meta(a.name), base, MOMENT);
+    }
+
     /**
-     * El plan de movimiento: {distancia a la que quiere estar del objetivo, rodear (-1, 0 o 1)}; null = perseguir sin más
-     * (inteligencia baja o sin ataques). La distancia es la ideal de un ataque que tendrá listo pronto (cambia cada pocos
-     * segundos); rodea mientras espera a poder atacar, como los jefes de los Souls.
+     * El plan de movimiento: {distancia a la que quiere estar, rodear (-1, 0 o 1), distancia mínima (si se le pega más,
+     * se aparta), distancia máxima}; null = perseguir sin más. Piensa en un ataque de los que puede hacer ahora (de su
+     * fase y su postura) que tendrá listo pronto y que hace más que no usa (así rota todo su repertorio: se aleja para
+     * el lanzallamas, se acerca para el agarre) y se pone a su distancia; rodea mientras espera, como los jefes de los
+     * Souls. Con poca inteligencia solo no se pega más de lo que le dejan sus ataques.
      */
     static double[] plan(Host h, Brain b) {
         double smart = h.smart();
-        if (smart < 0.4 || h.target() == null) return null;
+        if (h.target() == null) return null;
         long now = h.age();
-        if (now >= b.preferredUntil) {
-            SkillRuntime.WhoState st = SkillRuntime.stateIfAny(SkillRuntime.Who.of(h.mob()));
-            List<Attack> soon = new ArrayList<>();
-            for (Attack a : b.attacks) {
-                Long until = st == null ? null : st.cooldowns.get(a.name);
-                if (until == null || until - SkillRuntime.clock < 40) soon.add(a);
+        if (now >= b.planCheck) {
+            b.planCheck = now + 10;
+            Ctx base = SkillMobs.ctx(h);
+            List<Attack> can = new ArrayList<>();
+            for (Attack a : b.attacks) if (possible(h, a, base)) can.add(a);
+            // (en mitad de un ataque, sus variables de «atacando» bloquean todo un momento: se queda con lo de antes)
+            if (!can.isEmpty()) b.can = can;
+            if (b.planned == null || now >= b.plannedUntil || !b.can.contains(b.planned)) {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(SkillRuntime.Who.of(h.mob()));
+                List<Attack> soon = new ArrayList<>();
+                for (Attack a : b.can) {
+                    Long until = st == null ? null : st.cooldowns.get(a.name);
+                    if (until == null || until - SkillRuntime.clock < 40) soon.add(a);
+                }
+                if (soon.isEmpty()) soon = new ArrayList<>(b.can);
+                Collections.shuffle(soon);
+                Attack pick = null;
+                int bestAge = -1;
+                for (Attack a : soon) {
+                    int idx = 0, age = 99;
+                    for (String r : b.recent) {
+                        if (r.equals(a.name)) {
+                            age = idx;
+                            break;
+                        }
+                        idx++;
+                    }
+                    if (age > bestAge) {
+                        bestAge = age;
+                        pick = a;
+                    }
+                }
+                b.planned = pick;
+                b.plannedUntil = now + 60 + ThreadLocalRandom.current().nextInt(60);
             }
-            if (soon.isEmpty()) soon = b.attacks;
-            Attack pick = soon.get(ThreadLocalRandom.current().nextInt(soon.size()));
-            b.preferred = Math.max(1.5, Math.min(pick.sweet(), 14));
-            b.preferredUntil = now + 60 + ThreadLocalRandom.current().nextInt(60);
         }
+        Attack p = b.planned;
+        if (p == null) return null;
+        if (smart < 0.4) {
+            // Poco listo: persigue sin más, pero sin pegarse más de lo que le dejan sus ataques (la Abominación: todos
+            // piden 3 bloques o más; pegado a ella no le salía nada)
+            double near = 99;
+            for (Attack a : b.can) near = Math.min(near, a.min);
+            if (near < 1 || near > 12) return null;
+            return new double[] {near + 0.5, 0, b.waiting ? near : 0, 40};
+        }
+        b.preferred = Math.max(1.5, Math.min(p.sweet(), 14));
         int strafe = 0;
         if (smart >= 0.6 && b.waiting && !busy(h)) {
             if (now >= b.strafeUntil) {
@@ -490,13 +663,19 @@ public final class SkillBrain {
             }
             strafe = b.strafe;
         }
-        return new double[] {b.preferred, strafe};
+        // La distancia mínima solo cuenta si ahora no le sale nada (si algo le sale, lo hará; si no, se aparta para lo
+        // que tiene pensado: la Abominación, con el jugador pegado, retrocede en vez de quedarse gritando)
+        return new double[] {b.preferred, strafe, b.waiting ? Math.min(p.min, 12) : 0, Math.min(p.max, 40)};
     }
 
     /** ¿Debe girarse hacia su objetivo mientras ataca (antes de que el modelo se bloquee)? Grados por tick, 0 = no. */
     static float tracking(Host h) {
         double smart = h.smart();
-        return smart < 0.4 || !busy(h) ? 0F : (float) (2 + 8 * smart);
+        return smart < 0.4 || !attacking(h, brainOf(h)) ? 0F : (float) (2 + 8 * smart);
+    }
+
+    private static Brain brainOf(Host h) {
+        return SkillMobs.brain(h);
     }
 
     /** Un jugador le ha dado con un proyectil: el cerebro sabe que le están disparando. */
