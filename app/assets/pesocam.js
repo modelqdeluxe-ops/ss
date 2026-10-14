@@ -43,6 +43,8 @@ const ROPA={ajustada:{cm:.4,t:'Ajustada'},normal:{cm:.8,t:'Normal'},holgada:{cm:
 const FORMA={cabeza:Math.PI/4,tronco:.81,brazos:Math.PI/4,piernas:Math.PI/4};
 const MKEY='rumentis-pc-modo',VERSION_MODELO=7;
 UI.pc=UI.pc||{lote:'',items:[]};
+// con una sesión de recolección en curso, al abrir la app se mide sin lote (como al empezarla)
+if(!UI.pc.lote&&S.config&&S.config.pesoCam&&S.config.pesoCam.labSes)UI.pc.lote='_no';
 // la beta es solo para ganado (el modo personas queda para las pruebas: window.PC_PERSONAS)
 if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=window.PC_PERSONAS&&MODOS[m]?m:'ganado';}
 const PC=()=>S.config.pesoCam||{};
