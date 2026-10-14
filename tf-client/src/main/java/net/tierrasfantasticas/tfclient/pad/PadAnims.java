@@ -83,9 +83,9 @@ final class PadAnims {
         int dir = p.length > 2 && p[2].equals("-") ? -1 : 1;
         switch (p[0]) {
             case "on" -> {
-                Object s = PunchyBridge.read();
-                boolean on = PunchyBridge.bool(s, "enableMod", true);
-                PunchyBridge.write(d -> PunchyBridge.set(d, "enableMod", !on));
+                // apagar de verdad: Punchy para lo que hacía y todo vuelve a Minecraft normal (PunchyBridge.turnOff)
+                if (PunchyBridge.vanilla()) PunchyBridge.turnOn();
+                else PunchyBridge.turnOff();
             }
             case "p" -> {
                 if (p.length < 2) return;
@@ -124,6 +124,7 @@ final class PadAnims {
                 if (screen != null) mc.setScreen(screen);
             }
             case "reset" -> {
+                PunchyBridge.cancelStop();
                 AnimSettings.reset();
                 Object def = PunchyBridge.defaults();
                 if (def != null) {
@@ -172,9 +173,9 @@ final class PadAnims {
         }
 
         Object s = PunchyBridge.read();
-        boolean on = PunchyBridge.bool(s, "enableMod", true);
+        boolean on = !PunchyBridge.vanilla();
         List<String> hero = new ArrayList<>();
-        hero.add(on ? "Golpes, minar, comer, arco, nadar... en primera persona." : "Apagadas: brazos y objetos como en Minecraft normal.");
+        hero.add(on ? "Golpes, minar, comer, arco, nadar... en primera persona." : "Apagadas: todo como en Minecraft normal.");
         hero.add("De Punchy Guys Studios, con su permiso. Se guarda solo.");
         b.hero(new PadView.Row(new ItemStack(Items.IRON_SWORD), "Animaciones de Punchy", TEXT, hero, -1, "",
                 PadView.Btn.of(on ? "ACTIVADAS" : "APAGADAS", "on", on ? PadView.GREEN : PadView.RED),

@@ -542,7 +542,8 @@ final class PadGuidePage extends PadPage {
                         + "tajo con su volumen. Es solo tuya y se guarda sola; RESTABLECER la deja como venía."),
                 b("ANIMACIONES: las animaciones en primera persona de Punchy (golpes, minar, comer, arco, nadar, trepar...). "
                         + "Cada una tiene su SÍ/NO: por tipo de objeto (un NO lo deja como en Minecraft normal), al moverte, "
-                        + "efectos en los brazos, física y objetos en 3D. ACTIVADAS/APAGADAS arriba las quita todas."),
+                        + "efectos en los brazos, física y objetos en 3D. APAGADAS arriba las quita todas: todo vuelve a ser como en "
+                        + "Minecraft normal (tarda medio segundo: primero terminan lo que estaban haciendo)."),
                 b("Inspeccionar: con la tecla I miras lo que llevas en la mano (se cambia en Controles)."),
                 tip("Las animaciones son de Punchy, de Punchy Guys Studios (modrinth.com/mod/punchy-fpa), y van en TF Client "
                         + "con su permiso. Si tenías Punchy instalado aparte, puedes quitarlo: TF Client ya lo trae."),

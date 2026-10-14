@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.70**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.71**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.70) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.71) — lee esto primero
 
-**Estado**: última versión publicada **1.3.70** (arreglos del pad y de las estelas, sonido del tajo), Release ya creada:
+**Estado**: última versión publicada **1.3.71** (Punchy apagado = Minecraft normal de verdad), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -102,7 +102,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.70** (portada del pad sin las nubes blancas, estelas
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.71** (APAGADAS = vanilla, también a mitad de un golpe;
+los tipos en NO; el sedal), **la 1.3.70** (portada del pad sin las nubes blancas, estelas
 con Punchy, sonido del tajo), **la 1.3.69 entera** (Punchy dentro del jar: que cargue, que
 las animaciones salgan, que cada interruptor de Efectos › ANIMACIONES haga lo que dice, que las estelas sigan saliendo con
 las animaciones de Punchy y que el servidor arranque con el jar nuevo), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
@@ -160,6 +161,30 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.71 (14 oct)** — el dueño: «cuando desactivo las animaciones no vuelve a la normalidad y cuando suelto
+> espadazos el modelo se baja hasta el suelo» (captura: no se ve la mano), «cuando las desactivo deben volver a las vanilla
+> originales sin errores».
+> - **Por qué**: el «Enable Punchy» de Punchy (lo que cambiaba ACTIVADAS/APAGADAS) no lo apaga del todo. Su tick se sale al
+>   principio sin limpiar (`PunchyClient` lambda$init$0: `if (!isModEnabled()) return`): lo que estaba a medias se queda
+>   congelado (mano bajada, objeto en uso, cámara, retraso del inventario). Y varios de sus enganches en Minecraft no
+>   miran si está activado (revisados todos con javap): `ItemRendererMixin` (pone una transformación «de reposo» al
+>   objeto que usas, a cualquier objeto), `ItemPropertiesMixin` (arco/ballesta: pasan por su lista negra),
+>   `FishingHookRendererMixin` (el sedal sale de la mano de su modelo), `CameraMixin`, `MinecraftScreenDelayMixin`,
+>   el cuerno. Los demás sin comprobación son inofensivos (tercera persona = vacío, bobView solo apunta, fuego vacío,
+>   barcas/vagonetas solo con la barca en la mano, rastreadores de golpes/minado/uso).
+> - **APAGADAS = vanilla** (`PunchyBridge.turnOff`/`vanilla()`): (1) ~10 ticks todo cuenta como su lista negra (incluida
+>   la mano vacía) con Punchy aún encendido: su `enforceBlacklist` para y funde lo que tuviera; (2) se apaga
+>   (`enableMod=false`); (3) mientras esté apagado, `vanilla()` (lee `PunchyConfig.isModEnabled` con un MethodHandle, así
+>   vale también si se apaga desde su propia pantalla) cierra cada puerta: `PunchyConfigMixin` (todo en lista negra),
+>   `PunchyArmRendererMixin` (no pinta brazos; sin transformación de reposo; sin brazo guardado), `PunchyUseItemMixin`
+>   (cuerno), `PunchyCameraMixin` (`CameraAnimationState.isActive` = false), `PunchyScreenDelayMixin` (inventario al
+>   momento) y `FishingHookRendererMixin` (nuestro, en Minecraft: el único Vec3 de `FishingHookRenderer.render` = el punto
+>   del sedal; se cambia tras el de Punchy por el cálculo original de Forge 1.20.1, mirado en el cliente oficial de Mojang).
+>   La cuenta atrás solo corre sin pausa (como el tick de Punchy). Los tipos en NO («con qué objetos») también cierran
+>   la transformación de reposo, el cuerno y el sedal de la caña.
+> - «Se baja hasta el suelo»: con Punchy apagado, una espada TF «pesada» (velocidad −3,1, como un hacha) baja mucho tras
+>   cada golpe hasta recargar: es lo que hace Minecraft con las armas lentas. Si pasa con Punchy encendido, pedir vídeo.
 
 > **TF Client 1.3.70 (14 oct)** — el dueño probó la 1.3.69 (captura de la portada): «¿qué mierda hiciste con el pad?»,
 > «las estelas no sirven, no se muestran, ni tampoco hay sonidos».
