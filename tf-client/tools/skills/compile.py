@@ -103,17 +103,24 @@ def parse_line(line):
         name = 'effect:' + name[2:]
     # Espacios de nombres: «meg:glow» es la de ModelEngine (glowbone; «glow» suelta es la de MythicMobs), «meg:X» es X
     # y «mythicmobs:X» es X
+    short_skill = None
     if ':' in name and not name.startswith('effect:'):
         ns, base = name.split(':', 1)
         if ns in ('meg', 'modelengine'):
             name = MEG_RENAME.get(base, base)
         elif ns in ('mythicmobs', 'mythic', 'mm'):
             name = base
+        elif ns in ('skill', 'metaskill', 'cast'):
+            # «skill:NOMBRE» de MythicMobs = skill{s=NOMBRE}
+            name, short_skill = 'skill', base
     rest = line[m.end():]
     args = {}
     if rest.startswith('{'):
         body, rest = take_braces(rest)
         args = parse_args(body)
+    if short_skill:
+        args = dict(args)
+        args.setdefault('s', short_skill)
     # valor suelto tras la mecánica («delay 28», «aura 20»...)
     pm = re.match(r'^\s+("[^"]*"|\'[^\']*\'|[^\s@~?{}]+)', rest)  # entre comillas: «delay "<modifier.duration> * 20"»
     if pm and not re.fullmatch(r'0?\.\d+', pm.group(1)):

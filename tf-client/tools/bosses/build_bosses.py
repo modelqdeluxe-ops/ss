@@ -2,7 +2,13 @@
 
     python3 tools/bosses/build_bosses.py <carpeta con los packs descomprimidos> [pack ...]
 
-Cada pack es un jefe (ver JEFES abajo: carpeta del pack → id del jefe y su mob de MythicMobs). Sale:
+Sin «pack»: todos (borra y rehace la salida de todos los jefes; hacen falta TODOS los packs en la carpeta). Con
+«pack ...»: solo esos (borra y rehace solo lo suyo y los pone en el catálogo, en el orden de JEFES): así se añade un
+jefe nuevo sin tener los packs de los demás (no están en el repo).
+
+Cada pack da uno o varios jefes (ver JEFES abajo: carpeta del pack → id del jefe y su mob de MythicMobs). Los zips y
+rar que traiga dentro (sonidos, resource packs, modelos) se descomprimen al lado la primera vez. Los .yml de
+MythicMobs se reconocen por su carpeta (skills/, mobs/, items/) o, si no, por lo que llevan dentro. Sale:
   - assets/tfclient/bosses/<jefe>.json      el programa del jefe: el árbol de skills de MythicMobs que alcanza su mob
                                             (y lo que invoca), sus mobs con sus opciones, textos y valores base
   - assets/tfclient/bosses/catalog.json     el índice (orden de la ventana /tf boss)
@@ -71,41 +77,129 @@ LR_HYDRA_stomp_damage:
 # displays) son efectos que dibuja el cliente. Uno de estos con «Invincible: true» también es solo un efecto (las
 # púas y rocas de Astwood: vindicadores invencibles sin IA).
 LIVING = {'IRON_GOLEM', 'HUSK', 'ZOMBIE', 'VINDICATOR', 'SKELETON', 'WITHER_SKELETON', 'SPIDER', 'RAVAGER', 'PIGLIN_BRUTE',
-          'WOLF', 'POLAR_BEAR', 'GIANT', 'ZOMBIE_VILLAGER', 'PILLAGER', 'EVOKER', 'BLAZE', 'SLIME', 'MAGMA_CUBE'}
-# Velocidad por defecto de cada tipo en Minecraft (setspeed{s=X} de MythicMobs = X por esta)
+          'WOLF', 'POLAR_BEAR', 'GIANT', 'ZOMBIE_VILLAGER', 'PILLAGER', 'EVOKER', 'BLAZE', 'SLIME', 'MAGMA_CUBE',
+          # (1.3.82) el resto de seres vivos de Minecraft que traen los packs nuevos
+          'STRAY', 'DROWNED', 'ZOMBIFIED_PIGLIN', 'PIG_ZOMBIE', 'PIGLIN', 'ILLUSIONER', 'WITCH', 'VEX', 'GHAST', 'PHANTOM',
+          'WARDEN', 'CREEPER', 'ENDERMAN', 'ENDERMITE', 'SILVERFISH', 'CAVE_SPIDER', 'HOGLIN', 'ZOGLIN', 'STRIDER', 'SHULKER',
+          'GUARDIAN', 'ELDER_GUARDIAN', 'WITHER', 'ENDER_DRAGON', 'SNOWMAN', 'SNOW_GOLEM', 'BAT', 'ALLAY', 'CHICKEN', 'PIG',
+          'COW', 'SHEEP', 'GOAT', 'HORSE', 'SKELETON_HORSE', 'ZOMBIE_HORSE', 'DONKEY', 'MULE', 'LLAMA', 'CAMEL', 'FOX',
+          'CAT', 'OCELOT', 'PANDA', 'RABBIT', 'PARROT', 'BEE', 'FROG', 'AXOLOTL', 'TURTLE', 'DOLPHIN', 'SQUID', 'GLOW_SQUID',
+          'VILLAGER', 'WANDERING_TRADER', 'SNIFFER', 'MUSHROOM_COW', 'MOOSHROOM'}
+# Velocidad por defecto de cada tipo en Minecraft (setspeed{s=X} de MythicMobs = X por esta; atributo movement_speed)
 SPEED = {'IRON_GOLEM': 0.25, 'HUSK': 0.23, 'ZOMBIE': 0.23, 'VINDICATOR': 0.35, 'SKELETON': 0.25,
          'WITHER_SKELETON': 0.25, 'SPIDER': 0.3, 'RAVAGER': 0.3, 'PIGLIN_BRUTE': 0.35, 'WOLF': 0.3,
-         'POLAR_BEAR': 0.25, 'GIANT': 0.5, 'ZOMBIE_VILLAGER': 0.23, 'PILLAGER': 0.35, 'EVOKER': 0.5, 'BLAZE': 0.23}
+         'POLAR_BEAR': 0.25, 'GIANT': 0.5, 'ZOMBIE_VILLAGER': 0.23, 'PILLAGER': 0.35, 'EVOKER': 0.5, 'BLAZE': 0.23,
+         'STRAY': 0.25, 'DROWNED': 0.23, 'ZOMBIFIED_PIGLIN': 0.23, 'PIG_ZOMBIE': 0.23, 'PIGLIN': 0.35, 'ILLUSIONER': 0.5,
+         'WITCH': 0.25, 'VEX': 0.6, 'GHAST': 0.7, 'PHANTOM': 0.7, 'WARDEN': 0.3, 'CREEPER': 0.25, 'ENDERMAN': 0.3,
+         'ENDERMITE': 0.25, 'SILVERFISH': 0.25, 'CAVE_SPIDER': 0.3, 'HOGLIN': 0.3, 'ZOGLIN': 0.3, 'STRIDER': 0.175,
+         'SHULKER': 0.0, 'GUARDIAN': 0.5, 'ELDER_GUARDIAN': 0.3, 'WITHER': 0.6, 'SNOWMAN': 0.2, 'SNOW_GOLEM': 0.2,
+         'BAT': 0.25, 'ALLAY': 0.1, 'CHICKEN': 0.25, 'PIG': 0.25, 'COW': 0.2, 'SHEEP': 0.23, 'GOAT': 0.2, 'HORSE': 0.225,
+         'SKELETON_HORSE': 0.2, 'ZOMBIE_HORSE': 0.2, 'DONKEY': 0.175, 'MULE': 0.175, 'LLAMA': 0.175, 'CAMEL': 0.09,
+         'FOX': 0.3, 'CAT': 0.3, 'OCELOT': 0.3, 'PANDA': 0.15, 'RABBIT': 0.3, 'PARROT': 0.2, 'BEE': 0.3, 'FROG': 1.0,
+         'AXOLOTL': 1.0, 'TURTLE': 0.25, 'DOLPHIN': 1.2, 'SQUID': 0.7, 'GLOW_SQUID': 0.7, 'VILLAGER': 0.5,
+         'WANDERING_TRADER': 0.5, 'SNIFFER': 0.1, 'MUSHROOM_COW': 0.2, 'MOOSHROOM': 0.2}
+
+
+def unpack_nested(pack_dir):
+    """Los zips y rar que trae el pack dentro (sonidos, resource packs, modelos): se descomprimen al lado
+    («<archivo>__dentro/») la primera vez, y los que traigan dentro esos, también (hasta 3 niveles)."""
+    import subprocess
+    import zipfile
+    for _level in range(3):
+        found = False
+        for d, _, fs in os.walk(pack_dir):
+            if '.deobfCachedPacks' in d or '.assetCache' in d:
+                continue
+            for f in fs:
+                if not f.lower().endswith(('.zip', '.rar')):
+                    continue
+                src = os.path.join(d, f)
+                dest = src + '__dentro'
+                if os.path.isdir(dest):
+                    continue
+                os.makedirs(dest)
+                found = True
+                try:
+                    if zipfile.is_zipfile(src):
+                        with zipfile.ZipFile(src) as z:
+                            for info in z.infolist():
+                                # nada fuera de su carpeta (rutas con «..» o absolutas)
+                                target = os.path.normpath(os.path.join(dest, info.filename))
+                                if not target.startswith(os.path.normpath(dest) + os.sep):
+                                    continue
+                                z.extract(info, dest)
+                    else:
+                        subprocess.run(['bsdtar', '-xf', src, '-C', dest], check=False, capture_output=True)
+                except Exception as e:  # noqa: BLE001
+                    print(f'   no se pudo abrir {os.path.relpath(src, pack_dir)}: {e}')
+        if not found:
+            break
+
+
+# Claves de una entrada de MythicMobs según lo que es (para los .yml que no están en una carpeta skills/mobs/items)
+_MOB_KEYS = {'Type', 'Health', 'Display', 'BossBar', 'AIGoalSelectors', 'AITargetSelectors', 'Faction', 'Mount',
+             'Equipment', 'Drops', 'DamageModifiers', 'Disguise', 'Modules', 'Options', 'Damage', 'Armor'}
+
+
+def kind_of(entry):
+    """«mob», «item», «skill» o None, por lo que lleva dentro una entrada de un .yml de MythicMobs."""
+    if not isinstance(entry, dict):
+        return None
+    keys = set(entry)
+    if 'Type' in keys or 'Health' in keys or (keys & _MOB_KEYS and 'Skills' in keys and not keys & {'Id', 'Material'}):
+        return 'mob'
+    if keys & {'Id', 'Material'}:
+        return 'item'
+    if keys & {'Skills', 'Conditions', 'TargetConditions', 'TriggerConditions', 'Cooldown'}:
+        return 'skill'
+    return None
 
 
 def files(pack_dir):
-    """Los .yml de MythicMobs del pack: (skills, mobs, ítems)."""
+    """Los .yml de MythicMobs del pack: (skills, mobs, ítems). Por su carpeta (…/MythicMobs/…/skills|mobs|items/) y, los
+    que no están en una de esas (los «hv_tenebris(Skills).yml» sueltos), por lo que llevan dentro."""
     sk, mb, it = [], [], []
-    for d, _, fs in os.walk(pack_dir):
+    for d, _, fs in sorted(os.walk(pack_dir)):
         low = d.replace('\\', '/').lower()
-        if 'mythicmobs' not in low:
+        if re.search(r'/(assets|\.deobfcachedpacks|\.assetcache|modelengine|itemsadder|nexo|oraxen)(/|$)', low):
             continue
         for f in sorted(fs):
-            if not f.lower().endswith(('.yml', '.yaml')) or f.lower() == 'packinfo.yml':
+            if not f.lower().endswith(('.yml', '.yaml')) or f.lower() in ('packinfo.yml', 'config.yml', 'plugin.yml'):
                 continue
             p = os.path.join(d, f)
-            if re.search(r'/skills?(/|$)', low):
+            if 'mythicmobs' in low and re.search(r'/skills?(/|$)', low):
                 sk.append(p)
-            elif re.search(r'/mobs?(/|$)', low):
+            elif 'mythicmobs' in low and re.search(r'/mobs?(/|$)', low):
                 mb.append(p)
-            elif re.search(r'/items?(/|$)', low):
+            elif 'mythicmobs' in low and re.search(r'/items?(/|$)', low):
                 it.append(p)
+            else:
+                try:
+                    data = C.load(p)
+                except Exception:  # noqa: BLE001
+                    continue
+                if '__error__' in data:
+                    continue
+                kinds = {kind_of(v) for v in data.values()} - {None}
+                for k in sorted(kinds):
+                    {'skill': sk, 'mob': mb, 'item': it}[k].append(p)
+                if kinds:
+                    LOOSE.add(p)
     return sk, mb, it
 
 
-def load_all(paths):
+# Los .yml sueltos (sin carpeta skills/mobs/items): de cada uno solo se coge lo que es de cada clase
+LOOSE = set()
+
+
+def load_all(paths, kind=None):
     out = {}
     for p in paths:
         data = C.load(p)
         if '__error__' in data:
             raise SystemExit(f'{p}: {data["__error__"]}')
         for k, v in data.items():
-            if isinstance(v, dict):
+            if isinstance(v, dict) and (p not in LOOSE or kind is None or kind_of(v) == kind):
                 out.setdefault(k, v)
     return out
 
@@ -114,7 +208,7 @@ def compile_boss(pack_dir, root_mob, extra_skills):
     """El árbol de MythicMobs que alcanza el jefe: sus mecánicas, las skills que llaman, los mobs que invoca (con las
     suyas) y los ítems que suelta. extra_skills: las que lanzan los scripts de los modelos y los objetos."""
     sk_files, mob_files, item_files = files(pack_dir)
-    tree, mobs, items = load_all(sk_files), load_all(mob_files), load_all(item_files)
+    tree, mobs, items = load_all(sk_files, 'skill'), load_all(mob_files, 'mob'), load_all(item_files, 'item')
     for k, v in (yaml.safe_load(FIXES.get(root_mob, '')) or {}).items():
         tree.setdefault(k, v)
     lower_tree = {k.lower(): k for k in tree}
@@ -274,7 +368,7 @@ def build(pack_dir, name, conf, sound_events):
                 converted[mname] = m
 
     sk_files, mob_files, item_files = files(pack_dir)
-    all_items = load_all(item_files)
+    all_items = load_all(item_files, 'item')
     prog = compile_boss(pack_dir, conf['mob'], model_scripts(converted) | item_skills(all_items))
     if conf['mob'] not in prog['mobs']:
         raise SystemExit(f'{name}: no está el mob {conf["mob"]}')
@@ -486,10 +580,45 @@ def item_id(bid, iid):
     return re.sub(r'[^a-z0-9_]+', '_', f'jefe_{bid}_{iid}'.lower())
 
 
+def confs():
+    """[(carpeta del pack, conf)] en el orden de JEFES (un pack puede dar varios jefes: una lista)."""
+    out = []
+    for name, c in JEFES.items():
+        for one in (c if isinstance(c, list) else [c]):
+            out.append((name, one))
+    return out
+
+
+def clean(bid, sj):
+    """Borra lo que salió de un jefe (para rehacerlo solo a él)."""
+    old = os.path.join(OUT, bid + '.json')
+    if os.path.exists(old):
+        try:
+            for iid in json.load(open(old, encoding='utf-8')).get('drops', {}):
+                p = os.path.join(OUT_ITEM_JSON, item_id(bid, iid) + '.json')
+                if os.path.exists(p):
+                    os.remove(p)
+        except ValueError:
+            pass
+        os.remove(old)
+    if os.path.isdir(OUT_MODELS):
+        for f in os.listdir(OUT_MODELS):
+            if f.startswith(bid + '.'):
+                os.remove(os.path.join(OUT_MODELS, f))
+    for d in (OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS):
+        shutil.rmtree(os.path.join(d, bid), ignore_errors=True)
+    font = os.path.join(BS.OUT_FONTS, f'bosses_{bid}.json')
+    if os.path.exists(font):
+        os.remove(font)
+    for k in [k for k in sj if k.startswith(f'bosses.{bid}.')]:
+        del sj[k]
+
+
 def main():
     root = sys.argv[1]
     only = set(sys.argv[2:])
     full = not only
+    sj = json.load(open(SOUNDS_JSON, encoding='utf-8')) if os.path.exists(SOUNDS_JSON) else {}
     if full:
         for d in (OUT, OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS):
             shutil.rmtree(d, ignore_errors=True)
@@ -499,14 +628,20 @@ def main():
         for f in os.listdir(OUT_ITEM_JSON) if os.path.isdir(OUT_ITEM_JSON) else []:
             if f.startswith('jefe_'):
                 os.remove(os.path.join(OUT_ITEM_JSON, f))
+        sj = {k: v for k, v in sj.items() if not k.startswith('bosses.')}
+    cat_path = os.path.join(OUT, 'catalog.json')
+    old_catalog = [] if full or not os.path.exists(cat_path) else json.load(open(cat_path, encoding='utf-8'))
     sound_events, catalog = {}, []
-    for name, conf in JEFES.items():
+    for name, conf in confs():
         if only and name not in only:
             continue
         d = os.path.join(root, name)
         if not os.path.isdir(d):
             print(f'falta el pack {name} en {root}')
             continue
+        unpack_nested(d)
+        if not full:
+            clean(conf['id'], sj)
         pack, out = build(d, name, conf, sound_events)
         catalog.append({'id': pack.id, 'name': out['boss']['name']})
         print(f"{pack.id:18s} {len(out['tree'])} skills, {len(out['mobs'])} mobs, {len(out['models'])} modelos ME, "
@@ -515,17 +650,19 @@ def main():
             print('   -', p)
         for n in getattr(pack, 'notes', []):
             print('   ·', n)
-    sj = json.load(open(SOUNDS_JSON, encoding='utf-8')) if os.path.exists(SOUNDS_JSON) else {}
-    if full:
-        sj = {k: v for k, v in sj.items() if not k.startswith('bosses.')}
     sj.update(sound_events)
     with open(SOUNDS_JSON, 'w', encoding='utf-8') as f:
         json.dump(sj, f, ensure_ascii=False, indent=1)
-    if full:
-        order = [c['id'] for c in JEFES.values()]
-        catalog.sort(key=lambda c: order.index(c['id']))
-        with open(os.path.join(OUT, 'catalog.json'), 'w', encoding='utf-8') as f:
-            json.dump(catalog, f, ensure_ascii=False, indent=1)
+    # El catálogo (orden de la ventana /tf boss): el de JEFES; sin «pack», solo los hechos; con «pack», los de antes
+    # más los rehechos
+    built = {c['id'] for c in catalog}
+    merged = {c['id']: c for c in old_catalog if c['id'] not in built}
+    merged.update({c['id']: c for c in catalog})
+    order = [c['id'] for _n, c in confs()]
+    final = sorted(merged.values(), key=lambda c: order.index(c['id']) if c['id'] in order else len(order))
+    os.makedirs(OUT, exist_ok=True)
+    with open(cat_path, 'w', encoding='utf-8') as f:
+        json.dump(final, f, ensure_ascii=False, indent=1)
     if full:
         # El cristal de las grietas (modelo propio, no de un pack) vive en las mismas carpetas: se vuelve a hacer
         import rift_model
