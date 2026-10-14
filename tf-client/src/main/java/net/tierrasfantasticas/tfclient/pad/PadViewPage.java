@@ -76,7 +76,7 @@ final class PadViewPage extends PadPage {
     }
 
     void set(PadView v) {
-        if (app.equals("efectos")) v = PadCombat.withTab(v); // COMBATE: los ajustes de las estelas, de este cliente
+        if (app.equals("efectos")) v = PadCombat.withTab(v); // COMBATE y ANIMACIONES: ajustes de este cliente
         boolean sameTab = view != null && view.tab().equals(v.tab());
         if (!sameTab) {
             scroll = 0;
@@ -792,16 +792,24 @@ final class PadViewPage extends PadPage {
         return false;
     }
 
-    /** Acciones del propio pad («§open:app») o del servidor. */
+    /** Acciones del propio pad («§open:app», «§link:url» con el aviso de Minecraft) o del servidor. */
     private void run(String action) {
         if (action.startsWith("§open:")) {
             pad.openApp(action.substring(6));
+            return;
+        }
+        if (action.startsWith("§link:")) {
+            pad.link(action.substring(6));
             return;
         }
         send(action, "");
     }
 
     private void send(String action, String text) {
+        if (app.equals("efectos") && PadAnims.local(view, action)) {
+            set(PadAnims.act(view, action));
+            return;
+        }
         if (app.equals("efectos") && PadCombat.local(view, action)) {
             set(PadCombat.act(view, action));
             return;
