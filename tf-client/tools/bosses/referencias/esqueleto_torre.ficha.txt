@@ -1,0 +1,27 @@
+jefe esqueleto_torre: mob TOWER_SKELETON, vida 1200 (pack 750), daño 9, modelo esqueleto_torre.tower_skeleton, caja [1.875, 8.0], ataques 5
+mob TOWERSKELETON_flamethrower_fx: efecto TEXT_DISPLAY, modelo None, 12 líneas
+mob TOWERSKELETON_marker: efecto MARKER, modelo None, 0 líneas
+mob TOWER_SKELETON: IRON_GOLEM, caja 1.875×8.0 (ojos 6.8, escala 1.0, del modelo), velocidad 0.25, vida 750, daño 2, IA None, modificadores None, 38 líneas
+mob TOWER_SKELETON_BROKEN_SHIELD: efecto ARMOR_STAND, modelo esqueleto_torre.tower_skeleton_shield_break, 2 líneas
+mob TOWER_SKELETON_CHEST: efecto ARMOR_STAND, modelo esqueleto_torre.tower_skeleton_chest, 9 líneas
+mob TOWER_SKELETON_MINION: HUSK, caja 1.0×2.625 (ojos 2.2312, escala 1.0, del modelo), velocidad 0.23, vida 10, daño 1, IA None, modificadores None, 10 líneas
+mob TOWER_SKELETON_SLASH_FX: efecto ARMOR_STAND, modelo esqueleto_torre.tower_skeleton_slash_fx, 6 líneas
+mob TOWER_SKELETON_SPAWNER_HOLE: efecto ARMOR_STAND, modelo esqueleto_torre.tower_skeleton_summon_hole, 6 líneas
+mob TOWER_SKELETON_THRONE: efecto ARMOR_STAND, modelo esqueleto_torre.tower_skeleton_throne, 4 líneas
+  modelo esqueleto_torre.tower_skeleton: 92 huesos, huella eb0d4272344d5db3, caja [1.875, 8.0], sombra None, cabeza 61, head_inherit 2, hitbox_obb 2, seat 1, tl 5
+    cabezas: chest cape_root tl_cape_1 cape_1 tl_cape_2 cape_2 tl_cape_3 cape_3 cape_root2 tl_cape_4 cape_4 tl_cape_5 cape_5 spine_1 spine_2 spine_3 head jaw horn_left horn_right left_pauldron right_pauldron neck_chain_1 neck_chain_2 neck_chain_3 neck_chain_4 neck_chain_5 neck_chain_6 neck_chain_7 right_shoulder right_bicep right_forearm right_hand sword sword_shard_2 shard_souls_2 sword_shard_1 shard_souls_1 sword_shard_3 shard_souls_3 right_hand_thumb_1 right_hand_thumb_2 right_hand_finger_1_1 right_hand_finger_1_2 right_hand_finger_1_3 right_hand_finger_1_4 right_hand_finger_1_5 right_hand_finger_1_6 right_hand_shield left_shoulder left_bicep left_forearm shield flamethrower_origin flamethower_target shieldhitbox left_hand left_hand_thumb_1 left_hand_thumb_2 left_hand_finger_1_1 left_hand_finger_1_2 left_hand_finger_1_3 left_hand_finger_1_4 left_hand_finger_1_5 left_hand_finger_1_6 grabbed hand_souls hand_souls_2 hand_souls_3 back_sword
+    animaciones: awaken:11.0 combo_2_no_shield:6.5 combo_no_shield:7.5 death:8.0 grab_miss:2.5 grab_player:7.5 idle:4.0 idle_no_shield:4.0 idle_shield:4.0 idle_soul_sword:4.0 imbue_sword:10.0 passive:2.25 put_down_shield:1.0 put_up_shield:1.0 scream:4.5 shield_bash:2.5 shield_break_final:8.0 shield_break_state:1.5 shield_charge:3.0 shield_charge_run:1.0 shield_charge_stop:1.5 shield_combo:6.0 shield_flamethrower:7.5 shield_hit:0.25 shield_slam:3.0 sleep:1.0 soul_sword_attack_1:5.0 soul_sword_attack_2:7.5 soul_sword_attack_3:5.0 soul_sword_grab_miss:2.5 soul_sword_grab_player:7.5 soul_sword_stomp:4.0 stab_slash:5.0 stomp:4.0 stun_hit:0.25 walk:2.0 walk_no_shield:1.5 walk_shield:4.0 walk_soul_sword:1.5
+  modelo esqueleto_torre.tower_skeleton_chest: 17 huesos, huella 2b2d6684ac4f943d, caja [1.5625, 1.5625], sombra None, 
+    animaciones: spawn:4.25
+  modelo esqueleto_torre.tower_skeleton_minion: 17 huesos, huella b418529227eb8c3b, caja [1.0, 2.625], sombra None, head 1
+    cabezas: head
+    animaciones: attack_1:1.25 idle:2.0 in_air:1.0 land:1.58333 spawn:2.0 walk:0.75
+  modelo esqueleto_torre.tower_skeleton_shield_break: 12 huesos, huella d062c109a083ea51, caja None, sombra None, 
+    animaciones: spawn:3.5
+  modelo esqueleto_torre.tower_skeleton_slash_fx: 4 huesos, huella 767bcf3b0418e6d9, caja None, sombra None, 
+    animaciones: spawn:1.5
+  modelo esqueleto_torre.tower_skeleton_summon_hole: 6 huesos, huella 81393e76b4cf1211, caja None, sombra None, 
+    animaciones: spawn:5.0
+  modelo esqueleto_torre.tower_skeleton_throne: 31 huesos, huella 30b76fcfbfb13c45, caja [6.25, 12.5], sombra None, 
+    animaciones: 
+  colas de esqueleto_torre.tower_skeleton: lo más que se aparta un eslabón al girar 50.1°

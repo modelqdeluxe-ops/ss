@@ -1,0 +1,50 @@
+## semilla 3, el pack tal cual
+abominacion         480 s, vida  10.5%: 46 ataques (5.8/min), 6 distintos de 7
+       18  tongue_attack_1
+       10  spread_blight
+        7  claw_attack_1
+        5  tentacle_attack_1
+        5  tongue_attack_2
+        1  scream
+     sin salir: tentacle_attack_1_grab_player
+     repite seguido: 3 de 45; curas castigadas: 0 de 4
+
+## semilla 3, normal
+abominacion         480 s, vida  60.7%: 106 ataques (13.2/min), 5 distintos de 7
+       33  tongue_attack_2
+       33  tongue_attack_1
+       22  claw_attack_1
+       17  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 0 de 105; curas castigadas: 1 de 11; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+abominacion         480 s, vida  64.8%: 153 ataques (19.1/min), 5 distintos de 7
+       49  tongue_attack_2
+       45  tongue_attack_1
+       38  claw_attack_1
+       20  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 0 de 152; curas castigadas: 2 de 13; combos: 0; pasos atrás: 11
+
+## semilla 11, normal
+abominacion         480 s, vida  67.3%: 110 ataques (13.8/min), 5 distintos de 7
+       36  tongue_attack_2
+       34  tongue_attack_1
+       24  claw_attack_1
+       15  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 0 de 109; curas castigadas: 2 de 14; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+abominacion         480 s, vida  67.4%: 126 ataques (15.8/min), 5 distintos de 7
+       40  tongue_attack_1
+       39  tongue_attack_2
+       28  claw_attack_1
+       18  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 1 de 125; curas castigadas: 1 de 14; combos: 0; pasos atrás: 11

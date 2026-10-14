@@ -573,6 +573,20 @@ de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
 
 ## 6. Herramientas de comprobación (sin abrir el juego)
 
+**La red de seguridad** (desde la 1.3.81, orden del dueño: «no queremos que esto rompa a los bosses actuales y
+venideros»): `python3 tools/bosses/verificar.py` pasa, en este orden, el auditor (0 problemas), su autoprueba,
+`test_convert.py` y, por cada jefe del catálogo, compara con sus **referencias** de `tools/bosses/referencias/`:
+`<jefe>.sim.txt` (el simulador de la pelea con 5 pasadas: semillas 3 y 11, el pack tal cual y varias dificultades,
+`--min 8`) y `<jefe>.ficha.txt` (lo que el simulador no ve: la caja y los ojos de cada mob calculados como
+`BossEntity.getDimensions` —si cambias esa función, cambia también `dims()` de `verificar.py`—, tipo, velocidad, vida,
+daño, modificadores; cada modelo con sus huesos por tipo, cabezas y sus límites, animaciones y su duración, una huella
+del archivo; y cuánto se doblan sus colas al girar). **GitHub Actions lo exige en cada compilación** (paso «Verificar
+los jefes» de `tf-client.yml`, con Python 3.13): si algo cambia a un jefe ya publicado, la compilación se para.
+- Si el cambio es **a propósito** (un arreglo, un pack reconvertido): `python3 tools/bosses/verificar.py --actualizar
+  <jefe>` y explica en el commit y en HANDOFF.md qué cambia y por qué.
+- Un **jefe nuevo** necesita sus referencias en el mismo cambio (`--actualizar <jefe>`); sin ellas, falla.
+- Nunca se actualizan las referencias de todos los jefes «para que pase» sin mirar el cambio de cada uno.
+
 | Comando | Para qué |
 |---|---|
 | `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
@@ -626,10 +640,10 @@ antes de dar algo por arreglado.
    que los demás jefes dan las mismas cifras en `sim_ai.py` (misma `--seed`, antes y después). Si algo de verdad no
    importa, déjalo «sin efecto» y explícalo en `STUB_OK`. Van en `SkillRuntime`/`SkillConds`/`SkillTargets`/
    `SkillMobs`, solo para jefes si cambia algo de las clases (`ctx.host != null`).
-7. Antes de publicar: `audit.py` con 0 problemas en TODOS los jefes (ahora también modelos y texturas),
-   `audit.py --prueba` entera, `test_convert.py` «todo bien», `sim_physics.py <modelo>` en los que tengan
-   `seg_`/`tl_`/`jig_` (que se doble sin pasarse del límite) y `sim_ai.py` de los demás jefes igual que antes (si
-   cambia, que sea a propósito y explicado).
+7. Antes de publicar: `python3 tools/bosses/verificar.py` «todo bien» (el auditor a 0 en TODOS los jefes, su
+   autoprueba, `test_convert.py` y los demás jefes iguales que sus referencias), las referencias del jefe nuevo
+   (`verificar.py --actualizar <jefe>`) y `sim_physics.py <modelo>` con imágenes en los que tengan `seg_`/`tl_`/`jig_`
+   (que se doble sin pasarse del límite). GitHub Actions vuelve a pasar `verificar.py` y no deja publicar si falla.
 8. Sube la versión (`mod_version` y `TFClient.VERSION`), apunta la entrega en `HANDOFF.md`, haz push a la rama
    (**compila SIEMPRE en GitHub Actions**, nunca con `./gradlew` en el contenedor: orden del dueño), PR y fusión.
    Comprueba la Release.

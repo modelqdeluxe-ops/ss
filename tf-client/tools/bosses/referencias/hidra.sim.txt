@@ -1,0 +1,89 @@
+## semilla 3, el pack tal cual
+hidra               480 s, vida  66.9%: 262 ataques (32.8/min), 13 distintos de 15
+       47  head_3_bite
+       47  head_1_bite
+       38  stomp_right
+       36  head_2_bite
+       28  head_5_bite
+       16  head_1_flamethrower
+       16  head_4_flamethrower
+       12  head_4_bite
+        7  tail_swipe_right
+        7  stomp_left
+        6  tail_swipe_left
+        1  spot_player
+        1  leap_turn_right
+     sin salir: head_break, leap_turn_left
+     repite seguido: 13 de 261; curas castigadas: 10 de 16
+
+## semilla 3, normal
+hidra               480 s, vida  67.0%: 240 ataques (30.0/min), 13 distintos de 15
+       45  head_1_bite
+       37  head_2_bite
+       34  head_3_bite
+       34  stomp_right
+       25  head_5_bite
+       15  head_4_flamethrower
+       14  head_4_bite
+       14  head_1_flamethrower
+        9  stomp_left
+        6  tail_swipe_right
+        5  tail_swipe_left
+        1  spot_player
+        1  leap_turn_right
+     sin salir: head_break, leap_turn_left
+     repite seguido: 8 de 239; curas castigadas: 9 de 15; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+hidra               480 s, vida  70.7%: 334 ataques (41.8/min), 12 distintos de 15
+       67  stomp_left
+       66  head_1_bite
+       49  head_2_bite
+       42  head_5_bite
+       37  head_3_bite
+       27  head_1_flamethrower
+       21  head_4_bite
+        7  tail_swipe_left
+        7  tail_swipe_right
+        7  head_4_flamethrower
+        3  leap_turn_right
+        1  spot_player
+     sin salir: head_break, leap_turn_left, stomp_right
+     repite seguido: 16 de 333; curas castigadas: 12 de 18; combos: 8; pasos atrás: 0
+
+## semilla 11, normal
+hidra               480 s, vida  67.0%: 229 ataques (28.6/min), 14 distintos de 15
+       43  head_1_bite
+       34  head_2_bite
+       31  head_3_bite
+       30  stomp_right
+       21  head_5_bite
+       15  head_4_flamethrower
+       15  head_1_flamethrower
+       12  stomp_left
+       11  head_4_bite
+        6  tail_swipe_left
+        5  tail_swipe_right
+        4  leap_turn_right
+        1  spot_player
+        1  leap_turn_left
+     sin salir: head_break
+     repite seguido: 9 de 228; curas castigadas: 5 de 14; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+hidra               480 s, vida  74.8%: 284 ataques (35.5/min), 13 distintos de 15
+       55  head_1_bite
+       43  head_2_bite
+       40  head_5_bite
+       31  head_3_bite
+       28  stomp_right
+       23  stomp_left
+       17  head_4_bite
+       16  head_4_flamethrower
+       15  head_1_flamethrower
+        7  tail_swipe_left
+        6  tail_swipe_right
+        2  leap_turn_right
+        1  spot_player
+     sin salir: head_break, leap_turn_left
+     repite seguido: 8 de 283; curas castigadas: 11 de 15; combos: 7; pasos atrás: 0
