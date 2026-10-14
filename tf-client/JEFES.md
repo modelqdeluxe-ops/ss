@@ -179,6 +179,11 @@ Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `Ski
   saber dónde está cada hueso (`@modelpart`, tótems de los golpes) y lanzar los scripts. El cliente las reproduce con
   los mensajes `lstate`/`lstop`/`dstate`/`death`, y a quien llega tarde se le repiten (`BossEvents` →
   `SkillMobs.replay`).
+- **Piezas escondidas** (`partvis`): el servidor lleva qué huesos de cada jefe están escondidos ahora
+  (`SkillActor.trackVis`, con la misma regla de `child` que el cliente) y a quien llega tarde le manda ese estado
+  hueso a hueso. Lo usan también sus cajas de golpe (`SkillModels.hiddenBones`: una cabeza cortada de la Hidra ya no
+  recibe golpes). Guardar solo el último `partvis` de cada hueso no basta: uno con `child=true` en el padre tapa a los
+  de sus hijos y el orden importa.
 
 ### 3.5 Golpes
 

@@ -412,6 +412,12 @@ final class SkillModels {
     /** Los huesos que ha escondido partvis (según lo último que se mandó de cada uno): para sus cajas de golpe. */
     static boolean[] hiddenBones(SkillActor a, VfxModel model) {
         boolean[] hidden = new boolean[model.bones.length];
+        if (a.layers != null) {
+            // Un jefe: lo que tiene escondido de verdad (como SkillClient.hiddenMask: las cajas ob_ cuentan por su padre)
+            boolean[] now = a.hiddenNow(model);
+            if (now != null) for (int i = 0; i < hidden.length; i++) hidden[i] = now[i] && model.bones[i].hitbox == null;
+            return hidden;
+        }
         for (SkillNet.Prop p : a.sticky.values()) {
             if (!p.key().equals("vis") || !"false".equals(p.b())) continue;
             int b = model.bone(p.a());

@@ -74,6 +74,13 @@ public final class SkillActor {
     boolean onGround;
     /** Lo último que se le cambió de cada cosa (para enseñárselo igual a quien llega tarde). */
     final java.util.Map<String, SkillNet.Prop> sticky = new java.util.LinkedHashMap<>();
+    /**
+     * En los jefes, qué huesos están escondidos ahora, como los deja el cliente con «vis» (para quien llega tarde). No
+     * vale guardar el último «vis» de cada hueso: uno con child=true sobre el padre tapa a los de sus hijos, y el orden
+     * importa (el Esqueleto esconde sus esquirlas al aparecer y las enseña al forjar la espada de almas).
+     */
+    private boolean[] hiddenNow;
+    private String hiddenModel;
 
     SkillActor(SkillDefs.ClassDef cls, SkillDefs.MobDef def, ServerLevel level, Vec3 pos, float yaw, float pitch,
                SkillRuntime.Who owner) {
@@ -164,18 +171,63 @@ public final class SkillActor {
         // Lo que se queda (para quien llega tarde): por clave y, en las de un hueso, por hueso
         switch (key) {
             case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item" -> {
-                if (key.equals("me")) sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:"));
+                if (key.equals("me")) {
+                    sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:"));
+                    hiddenNow = null;
+                }
                 sticky.put(key + (key.equals("dstate") ? ":" + a : ""), p);
             }
-            case "vis", "part", "bright" -> sticky.put(key + ":" + a, p);
+            case "vis" -> {
+                if (layers != null) trackVis(a, Boolean.parseBoolean(b), !"false".equals(c));
+                else sticky.put(key + ":" + a, p);
+            }
+            case "part", "bright" -> sticky.put(key + ":" + a, p);
             default -> { }
         }
+    }
+
+    /** Como SkillClient.setVisible: el hueso (y, con children, los que cuelgan de él). */
+    private void trackVis(String bone, boolean show, boolean children) {
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = me == null ? null : SkillModels.load(me);
+        if (m == null) return;
+        if (hiddenNow == null || !me.equals(hiddenModel) || hiddenNow.length != m.bones.length) {
+            hiddenNow = new boolean[m.bones.length];
+            for (int i = 0; i < hiddenNow.length; i++) hiddenNow[i] = m.bones[i].hidden;
+            hiddenModel = me;
+        }
+        int b = m.bone(bone);
+        if (b < 0) return;
+        hiddenNow[b] = !show;
+        if (!children) return;
+        for (int i = 0; i < m.bones.length; i++) {
+            for (int p = m.bones[i].parent; p >= 0; p = m.bones[p].parent) {
+                if (p == b) {
+                    hiddenNow[i] = !show;
+                    break;
+                }
+            }
+        }
+    }
+
+    /** Los huesos escondidos ahora en un jefe (true = escondido), o null si no ha escondido ninguno de este modelo. */
+    boolean[] hiddenNow(net.tierrasfantasticas.tfclient.vfx.VfxModel m) {
+        return hiddenNow != null && me != null && me.equals(hiddenModel) && hiddenNow.length == m.bones.length ? hiddenNow : null;
     }
 
     /** A un jugador que llega (o que empieza a ver al jefe): el actor tal como está ahora. */
     void replay(net.minecraft.server.level.ServerPlayer player) {
         SkillNet.toPlayer(player, spawnMessage());
         for (SkillNet.Prop p : sticky.values()) SkillNet.toPlayer(player, p);
+        if (hiddenNow != null && me != null && me.equals(hiddenModel)) {
+            net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(me);
+            if (m != null && m.bones.length == hiddenNow.length) {
+                for (int i = 0; i < hiddenNow.length; i++) {
+                    if (hiddenNow[i] != m.bones[i].hidden) {
+                        SkillNet.toPlayer(player, new SkillNet.Prop(id, "vis", m.bones[i].id, String.valueOf(!hiddenNow[i]), "false"));
+                    }
+                }
+            }
+        }
         if (layers != null) {
             for (net.tierrasfantasticas.tfclient.vfx.VfxLayers.Layer l : layers.active()) {
                 if (l.stopAt >= 0) continue;
