@@ -57,9 +57,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 
 ### CHECKPOINT (14 oct 2026, TF Client 1.3.67) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.67**, Release ya creada:
+**Estado**: última versión publicada **1.3.67**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
-(Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
+(Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
+
+**ORDEN DEL DUEÑO PENDIENTE DE PUBLICAR (14 oct): QUITAR «COLORES VIVOS».** Ya está quitado en `main` (borrados
+`trail/VividColors.java`, `mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y
+`assets/tfclient/shaders/post/vivid.json`; fuera de `tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE;
+compila). **Falta publicarlo**: sube la versión a **1.3.68** (`mod_version` y `TFClient.VERSION`), apunta la entrega abajo
+y fusiona en `main` (ver «Cómo publicar»). No añadas nada más que no pida el dueño.
 
 **Cómo trabaja el dueño contigo (reglas que ha repetido; incúmplelas y se enfada con razón)**:
 - Escribe en español; responde en español, claro y sin rodeos. Quiere **cambios reales**, no retoques, y calidad de
@@ -82,7 +88,7 @@ Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gr
 Central da 429, reintentar a los pocos segundos).
 
 **Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.67 (estelas de arma en primera y tercera persona,
-colores vivos, Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
+Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
 y lo de la 1.3.66 (pestañas iguales,
 pad de administrador rehecho, interruptores) y lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
 rectangulares, paisaje fijo con un castillo y humo) y la 1.3.64 (pantalla que cubre todo el cristal, neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
@@ -119,8 +125,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 - Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
   `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = el kit en UNA ficha (lista + `sheet`), `PadClaims`…).
   Efectos › COMBATE es del cliente: `PadCombat` (la monta `PadViewPage` y sus acciones no van al servidor); estelas en
-  `trail/` (`TrailClient`, `TrailProfile`, `TrailSettings` = config/tfclient/estelas.properties, `TrailPreview`,
-  `VividColors`). Skins: `skins/`.
+  `trail/` (`TrailClient`, `TrailProfile`, `TrailSettings` = config/tfclient/estelas.properties, `TrailPreview`).
+  Skins: `skins/`.
   Pad de administrador: `PadAdmin` (APPS, AJUSTES, TIENDA, VIAJES, GTS, COMUNIDAD, OFICIOS), `PadAdminKits`,
   `PadAdminRewards`, `PadAdminHunts`; todas con las piezas de `PadAdminUi` (toggle, value + CAMBIAR, stepper − +, cycle « »,
   choice, button, section, note, editor de objetos y monedas; `PadView.compact()` = filas compactas) y `PadItemPicker`. **Cada vista debe llamar `.selected(<su pestaña>)`**: el
@@ -139,7 +145,7 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > **TF Client 1.3.67 (14 oct)** — el dueño: «la creación de kits es un dolor de cabeza: dar objetos, asignar monedas…
 > que lo pueda meter todo de un solo», «la ruleta es una mierda: animación lenta, sin sonidos», «la textura de las claims
 > exagerada otra vez: simplistas, sin números ni figuras» y luego «ponle TF siempre con un contorno bonito», «no veo
-> innovación: el pase sigue igual, la ruleta también», «mete estas animaciones (Afterswing) y efectos de combate (Punchy),
+> innovación: el pase sigue igual, la ruleta también», «mete estas animaciones (Afterswing) y efectos de combate,
 > full configurables en la app de efectos», «a veces el pad va lento: más fluidez, sin quitar animaciones».
 > - **Piedras de protección** (`tools/gen_claim_blocks.py`, 32x32): marco de piedra (oro en las de pago) y un panel del
 >   color del nivel con **TF** en blanco con contorno oscuro. Sin números ni gemas.
@@ -161,9 +167,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   armas de otros mods). 7 estilos (`TrailProfile`), mezcla brillo/translúcida/sólida, duración, ancho, opacidad, cola,
 >   filo brillante, solo ataques (no al picar bloques), según la carga, al sacar el arma, otros jugadores y mobs con
 >   distancia, qué armas, poco detalle, menos destellos.
-> - **Colores vivos**: Punchy_1.19.zip es un **pack de texturas** («Vibrant Worlds» de ThisIsMystic, sin licencia para
->   repartirlo): en su lugar, un filtro de saturación y contraste (`VividColors`, `shaders/post/vivid.json` =
->   color_convolve; `GameRendererMixin` tras el mundo, `PostChainAccessor` para la cantidad). No con Oculus.
+> - **Colores vivos**: un filtro de saturación que salió en la 1.3.67. **El dueño ordenó quitarlo** (14 oct): ya está
+>   borrado en `main`, falta publicar la 1.3.68 (ver CHECKPOINT).
 > - **Efectos › COMBATE** (`PadCombat`): pestaña del cliente (si el servidor no la manda, `PadViewPage.set` la añade);
 >   arriba la vista previa (`TrailPreview`: una espada dando tajos con la estela de los ajustes, con el mismo código del
 >   juego; `PadView.TRAIL_PREVIEW`), abajo todo en filas compactas, RESTABLECER. Simulador: `tools/pad/sim/trail.py`,

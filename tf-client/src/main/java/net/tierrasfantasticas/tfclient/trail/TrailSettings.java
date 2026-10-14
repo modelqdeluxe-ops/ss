@@ -10,7 +10,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.util.TFConfigDir;
 
 /**
- * Los ajustes de los efectos de combate (1.3.67), de cada jugador: config/tfclient/estelas.properties. Se cambian en el
+ * Los ajustes de las estelas de arma (1.3.67), de cada jugador: config/tfclient/estelas.properties. Se cambian en el
  * pad, app Efectos › COMBATE. Las estelas son las de Afterswing (MIT) rehechas para Forge 1.20.1 (ver {@link TrailClient}).
  */
 public final class TrailSettings {
@@ -49,10 +49,6 @@ public final class TrailSettings {
     public static boolean lowDetail = false;
     public static boolean reducedFlash = false;
     public static boolean swords = true, axes = true, pickaxes = false, shovels = false, hoes = false, others_tools = true;
-    /** Colores vivos (1.3.67, en lugar del pack Punchy): el mundo más saturado. */
-    public static boolean vivid = false;
-    /** Cuánto (10 a 100 %). */
-    public static int vividAmount = 40;
 
     private static boolean loaded;
 
@@ -95,8 +91,6 @@ public final class TrailSettings {
             shovels = bool(p, "palas", shovels);
             hoes = bool(p, "azadas", hoes);
             others_tools = bool(p, "otras.armas", others_tools);
-            vivid = bool(p, "colores.vivos", vivid);
-            vividAmount = num(p, "colores.vivos.cuanto", vividAmount, 10, 100);
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Client: no se pudieron leer los ajustes de las estelas", e);
         }
@@ -129,10 +123,8 @@ public final class TrailSettings {
         p.setProperty("palas", Boolean.toString(shovels));
         p.setProperty("azadas", Boolean.toString(hoes));
         p.setProperty("otras.armas", Boolean.toString(others_tools));
-        p.setProperty("colores.vivos", Boolean.toString(vivid));
-        p.setProperty("colores.vivos.cuanto", Integer.toString(vividAmount));
         try (Writer w = Files.newBufferedWriter(file(), StandardCharsets.UTF_8)) {
-            p.store(w, "TF Client - efectos de combate (estelas de arma y colores vivos)");
+            p.store(w, "TF Client - estelas de arma");
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Client: no se pudieron guardar los ajustes de las estelas", e);
         }
@@ -150,8 +142,6 @@ public final class TrailSettings {
         lowDetail = reducedFlash = false;
         swords = axes = others_tools = true;
         pickaxes = shovels = hoes = false;
-        vivid = false;
-        vividAmount = 40;
     }
 
     private static boolean bool(Properties p, String k, boolean def) {
