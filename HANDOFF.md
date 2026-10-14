@@ -85,8 +85,11 @@ de antes, es inofensivo (nadie lo lee).
 de `./gradlew` en el contenedor; el push a la rama ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo
 sale desde `main`).
 
-**Motor de jefes «perfecto para todos los que metamos»** (orden del dueño, 14 oct): antes de publicar un jefe,
-`tools/bosses/audit.py` con 0 problemas, `audit.py --prueba` y `sim_ai.py` de los demás sin cambios. Lo que un pack use
+**Motor de jefes «perfecto para todos los que metamos»** (orden del dueño, 14 oct) y **«no queremos que esto rompa a
+los bosses actuales y venideros»** (15 oct): `python3 tf-client/tools/bosses/verificar.py` tiene que dar «todo bien»
+(auditor a 0, su autoprueba, `test_convert.py` y cada jefe igual que sus referencias de `tools/bosses/referencias/`:
+simulador y ficha con cajas, modelos y colas). **GitHub Actions lo exige en cada compilación.** Un cambio a propósito
+en un jefe se acepta con `verificar.py --actualizar <jefe>` y se explica; un jefe nuevo trae sus referencias. Lo que un pack use
 y el motor no tenga se implementa con la semántica de MythicMobs, nunca se quita del pack. Ver `tf-client/JEFES.md` §7.
 
 **JEFES: toda la documentación técnica está en `tf-client/JEFES.md`** (arquitectura, datos, motor, reglas de
