@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.73**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.74**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.73) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.74) — lee esto primero
 
-**Estado**: última versión publicada **1.3.73** (Punchy QUITADO: TF Client vuelve a ser la 1.3.68 + el arreglo del pad), Release ya creada:
+**Estado**: última versión publicada **1.3.74** (estelas apagadas de fábrica y del tamaño real del arma; TF Pass con
+escenario de noche), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -102,7 +103,9 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.73** (sin Punchy: armas y manos como en la 1.3.68,
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.74** (estelas apagadas al entrar; con el espadón y
+las demás armas 3D, la estela de punta a guarda de su hoja real; el escenario de noche del TF Pass, visto en el simulador),
+**la 1.3.73** (sin Punchy: armas y manos como en la 1.3.68,
 Efectos solo con COMBATE, estelas sin sonido; la portada del pad sin las nubes blancas), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
 Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
 y lo de la 1.3.66 (pestañas iguales,
@@ -158,6 +161,28 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.74 (14 oct)** — el dueño: «quedó mejor; haz que la estela esté desactivada por defecto, y que adopte
+> el tamaño real del item: con el espadón la estela se pone en medio o a tamaño de una espada vanilla. Y el fondo del TF
+> PASS es una mierda, dale rework como lo hiciste con el gachapón».
+> - **Estelas apagadas de fábrica** (`TrailSettings.enabled = false`, también RESTABLECER). La clave del archivo pasa de
+>   `activadas` a `encendidas`: la vieja salía `true` en cualquiera que hubiera tocado un ajuste, así que con esta versión
+>   arrancan apagadas para todos; quien las quiera, las enciende en Efectos › COMBATE.
+> - **Estela del tamaño real del arma** (`TrailClient.readBlade`): antes la punta y la guarda salían de la textura,
+>   como si todo fuera una espada plana de 16 px; las armas 3D del servidor (el espadón mide 32 px de alto) quedaban con
+>   la estela a media hoja. Ahora, si el modelo no es plano, se mira su forma (`readShape`): los vértices del modelo
+>   cocido, puestos como los lleva un jugador en tercera persona (la mano en el origen, el arma hacia +y); la punta es
+>   el vértice más lejos de la mano por encima de ella (una guadaña cogida por el medio no toma el pie del mango), la
+>   empuñadura el otro extremo en esa línea y la hoja empieza a un tercio. Simulado en Python con los 552 modelos de
+>   armas 3D de TF Client: todos con la punta en el extremo largo. Las planas (Minecraft, otros mods), como antes. La hoja
+>   se guarda por modelo (con sus «overrides»). La vista previa de COMBATE usa la posición «gui» del modelo
+>   (`TrailClient.guiSpace`), así la estela sale sobre la hoja también con un arma 3D en la mano.
+> - **TF Pass, escenario nuevo** (`PadPassPage.drawNight`, igual en el simulador: `pass_night`): el cielo de día casi
+>   blanco con colinas verde pálido no tenía contraste. Ahora, como el de la ruleta pero suyo: noche esmeralda, aurora de
+>   dos cintas que ondula, estrellas que titilan, la luna (`moon.png` al doble), un charco de luz de oro y focos que
+>   giran detrás de tu nivel (te siguen al desplazar), resplandor del horizonte, colinas en silueta con el borde de luna
+>   (paralaje), luciérnagas que suben, rayas que se mueven y los lados en sombra. El camino que falta, de piedra azul
+>   (antes arena clara). HUD, medallones, bocadillo y tira de XP, igual.
 
 > **TF Client 1.3.73 (14 oct)** — el dueño, tras el crash de la 1.3.72 al activar las animaciones y con la espada (también
 > la de netherita) bajándose al suelo en cada golpe: «quita el puto Punchy de mi mod, revisa una build anterior antes de

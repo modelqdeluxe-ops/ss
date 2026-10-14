@@ -5,6 +5,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
@@ -64,16 +65,21 @@ public final class TrailPreview {
         }
         float k = h * 0.6F / 16F; // la hoja llega casi al borde de arriba
         float px = x + w * 0.5F, py = y + h * 0.74F;
-        TrailClient.Blade blade = TrailClient.blade(stack, Minecraft.getInstance());
-        // la empuñadura en la mano (el pivote), como en el juego: el modelo en píxeles de 16, con y hacia abajo
-        float hx = (blade.gx() - (blade.tx() - blade.gx()) * 0.25F) * 16, hy = (1 - (blade.gy() - (blade.ty() - blade.gy()) * 0.25F)) * 16;
+        Minecraft mc = Minecraft.getInstance();
+        BakedModel model = mc.getItemRenderer().getModel(stack, mc.level, mc.player, 0);
+        TrailClient.Blade blade = TrailClient.blade(model);
+        // el modelo, en los 16 px del objeto tal como se pinta aquí (y hacia abajo; las armas 3D, con su posición «gui»)
+        Matrix4f gui = TrailClient.guiSpace(model);
+        // la empuñadura en la mano (el pivote), como en el juego
+        Vector3f grip = gui.transformPosition(blade.along(1.25F), new Vector3f());
+        float hx = grip.x, hy = grip.y;
         Matrix4f m = new Matrix4f().translate(px, py, 0).rotateZ((float) Math.toRadians(angle)).scale(k, k, 1).translate(-hx, -hy, 0);
         if (swinging) {
             TrailProfile profile = TrailProfile.current();
             float wd = Math.min(1.25F, TrailSettings.width / 100F * profile.widthScale());
-            Vector3f tip = m.transformPosition(blade.tx() * 16, (1 - blade.ty()) * 16, 0, new Vector3f());
-            float bx = blade.tx() + (blade.gx() - blade.tx()) * wd, by = blade.ty() + (blade.gy() - blade.ty()) * wd;
-            Vector3f base = m.transformPosition(bx * 16, (1 - by) * 16, 0, new Vector3f());
+            Vector3f t16 = gui.transformPosition(blade.along(0), new Vector3f()), b16 = gui.transformPosition(blade.along(wd), new Vector3f());
+            Vector3f tip = m.transformPosition(t16.x, t16.y, 0, new Vector3f());
+            Vector3f base = m.transformPosition(b16.x, b16.y, 0, new Vector3f());
             TRAIL.add(tip.x, tip.y, tip.z, base.x, base.y, base.z, now, ++frame);
         } else {
             frame += 2; // el siguiente tajo, tramo nuevo
