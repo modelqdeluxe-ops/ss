@@ -65,11 +65,20 @@ https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (
 `mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y `assets/tfclient/shaders/post/vivid.json`; fuera de
 `tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE.
 
-**EN CURSO (14 oct): pedido del dueño «mete estas animaciones a TF Client, que se puedan desactivar desde el apartado de
-Efectos del pad»** con el jar de **Punchy 2.8e (Forge 1.20.1, licencia MIT en su mods.toml)**: animaciones en primera
-persona (Bedrock: `player.animation.json`, 213 clips de brazos e `itemgrip`). Ver la entrega 1.3.69 cuando esté.
+**EN PAUSA (14 oct): pedido del dueño «mete estas animaciones (Punchy) a TF Client, que se puedan desactivar desde el
+apartado de Efectos del pad».** OJO, **Punchy NO es MIT**: es «All Rights Reserved» (`LICENSE_Punchy` del jar oficial de
+Modrinth, `punchy-fpa` 2.8e, y `license = "ARR"` en su mods.toml). El jar que llegó por el chat era el oficial con
+`LICENSE_Punchy` borrado y `license = MIT` puesto a mano. Su licencia prohíbe copiar, modificar, **adaptar**, hacer obras
+derivadas y redistribuir, así que **no se mete nada de Punchy** (ni código, ni clips, ni texturas, ni sonidos) **sin
+permiso por escrito de su autor**. El dueño dijo que es su amigo y que va a conseguir ese permiso: **espera a que lo
+mande**. Con permiso: animaciones adaptadas, desactivables en Efectos (como las estelas en `PadCombat`) y el permiso
+guardado en `META-INF/licenses/`. Sin permiso: solo animaciones nuestras, hechas de cero.
 **Compilar con GitHub Actions** (el dueño: «USA GIT ACTIONS»): en el contenedor Maven Central da 429; el push a la rama
 ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `main`).
+
+**Releases por versión (14 oct)**: el workflow de Rumentis (`compilar.yml` en `claude/happy-ritchie-u6007w`) borra todas
+las Releases con tag `^v[0-9]`; por eso desaparecían las `v1.3.x` de TF Client (solo quedaba la fija `tfclient`). Desde la
+1.3.68 el tag es **`tfclient-v<versión>`**: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient-v1.3.68/tfclient-1.20.1-1.3.68.jar
 
 **Cómo trabaja el dueño contigo (reglas que ha repetido; incúmplelas y se enfada con razón)**:
 - Escribe en español; responde en español, claro y sin rodeos. Quiere **cambios reales**, no retoques, y calidad de
@@ -82,7 +91,7 @@ ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `m
   «latest» (el repo tiene otras: StickerYa, Rumentis, mercado).
 
 **Cómo publicar una versión** (5 min): sube `mod_version` en `tf-client/gradle.properties` y `VERSION` en
-`tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java`; `cd tf-client && ./gradlew build --offline -q`;
+`tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java`; compila con GitHub Actions (push a la rama);
 apunta la entrega aquí arriba (bloque «TF Client 1.3.x»); commit, push a la rama, PR y squash-merge (herramientas
 `mcp__github__create_pull_request` / `merge_pull_request`); espera el CI de `main`
 (`curl -s https://api.github.com/repos/modelqdeluxe-ops/ss/actions/runs?head_sha=<sha>`) y comprueba que el enlace fijo baja
@@ -143,7 +152,7 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 > **REGLA NUEVA (13 oct, pedido del dueño): el jar se publica como Release de GitHub, no en `descargas/`.** Subir
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
-> `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
+> `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
 > **TF Client 1.3.68 (14 oct)** — el dueño: «quita Colores vivos». **Colores vivos quitado** (el filtro de saturación
