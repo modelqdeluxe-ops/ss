@@ -2017,6 +2017,9 @@ public final class SkillRuntime {
                 if (vm != null) {
                     a.layers.update(vm, a.age);
                     a.layers.prune(a.age);
+                    // Lo que tiene memoria (colas y física que se arrastran, la IK que entra y sale, cabezas lentas) se
+                    // calcula cada tick, como lo va viendo el cliente, aunque nadie le pregunte por un hueso
+                    if (a.rig(vm).stateful()) SkillModels.pose(a, vm);
                 }
             }
             if (!a.timers.isEmpty()) {

@@ -81,6 +81,14 @@ public final class SkillActor {
      */
     private boolean[] hiddenNow;
     private String hiddenModel;
+    /**
+     * Cabezas, colas/física e IK de ModelEngine también en el servidor (las mismas cuentas que el cliente: VfxRig), para
+     * que @modelpart y las cajas ob_ vean el modelo doblado como se ve. Recibe los mismos mensajes que el cliente.
+     */
+    private net.tierrasfantasticas.tfclient.vfx.VfxRig rig;
+    private String rigModel;
+    private static final java.util.Set<String> RIG_KEYS = java.util.Set.of("seg", "headcfg", "headlock", "headtgt", "jig", "ik",
+            "iktgt", "ikchain");
 
     SkillActor(SkillDefs.ClassDef cls, SkillDefs.MobDef def, ServerLevel level, Vec3 pos, float yaw, float pitch,
                SkillRuntime.Who owner) {
@@ -168,6 +176,10 @@ public final class SkillActor {
     void prop(String key, String a, String b, String c) {
         SkillNet.Prop p = new SkillNet.Prop(id, key, a, b, c);
         SkillNet.near(level, pos, p);
+        if (layers != null && me != null && RIG_KEYS.contains(key)) {
+            net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(me);
+            if (m != null) rig(m).message(key, a, b, c);
+        }
         // Lo que se queda (para quien llega tarde): por clave y, en las de un hueso, por hueso
         switch (key) {
             case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item" -> {
@@ -224,6 +236,15 @@ public final class SkillActor {
                 }
             }
         }
+    }
+
+    /** El VfxRig de su modelo de ahora (uno nuevo al cambiar de modelo, como el cliente). */
+    net.tierrasfantasticas.tfclient.vfx.VfxRig rig(net.tierrasfantasticas.tfclient.vfx.VfxModel m) {
+        if (rig == null || rig.model != m || !java.util.Objects.equals(me, rigModel)) {
+            rig = new net.tierrasfantasticas.tfclient.vfx.VfxRig(m);
+            rigModel = me;
+        }
+        return rig;
     }
 
     /** Los huesos escondidos ahora en un jefe (true = escondido), o null si no ha escondido ninguno de este modelo. */

@@ -197,7 +197,10 @@ public final class SkillClient {
                 if (a.layers != null && a.model != null) a.layers.death(a.model, a.age);
             }
             case "bright" -> a.bright(m.a(), m.b(), !"0".equals(m.c()));
-            case "seg" -> a.segment(m.a(), m.b(), !"0".equals(m.c()));
+            // Cabezas, colas/física e IK de ModelEngine: VfxRig (lo mismo hace el servidor con sus mensajes)
+            case "seg", "headcfg", "headlock", "headtgt", "jig", "ik", "iktgt", "ikchain" -> {
+                if (a.rig != null) a.rig.message(m.key(), m.a(), m.b(), m.c());
+            }
             // ModelEngine 4 (ver SkillMeg)
             case "lmod" -> {
                 if (a.layers == null) return;
@@ -206,28 +209,6 @@ public final class SkillClient {
                 float sp = p[1].equals("NaN") ? Float.NaN : parse(p[1], Float.NaN);
                 Boolean ov = p.length > 5 && !p[5].isEmpty() ? "1".equals(p[5]) : null;
                 a.layers.modify(m.a(), pr, a.age, sp, (int) parse(p[2], -1F), (int) parse(p[3], -1F), (int) parse(p[4], -1F), ov);
-            }
-            case "headcfg" -> a.headConfig(m.a(), m.b(), !"0".equals(m.c()));
-            case "headlock" -> {
-                if (!m.a().isEmpty()) a.lockHeadPitch = "1".equals(m.a());
-                if (!m.b().isEmpty()) a.lockHeadYaw = "1".equals(m.b());
-            }
-            case "headtgt" -> {
-                if ("clear".equals(m.c())) {
-                    a.headTargetId = -1;
-                    a.headTargetPos = null;
-                } else {
-                    String[] p = m.b().split("\\|");
-                    a.headTargetId = m.a().isEmpty() ? -1 : (int) parse(m.a(), -1F);
-                    a.headTargetPos = new Vec3(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
-                    a.headTargetY = p.length > 3 ? parse(p[3], 0F) : 0F;
-                }
-            }
-            case "jig" -> {
-                if (a.physics == null) return;
-                String[] p = m.b().split("\\|");
-                a.physics.impulse(m.a(), !"0".equals(m.c()), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
-                        parse(p[0], 0F), new Vector3f(parse(p[4], 0F), parse(p[5], 0F), parse(p[6], 0F)));
             }
             case "bitem" -> a.boneItem(m.a(), m.b(), !"0".equals(m.c()));
             case "btag" -> a.boneTag(m.a(), m.b(), "1".equals(m.c()));
@@ -283,7 +264,6 @@ public final class SkillClient {
                     if (v == a.vfxRot) a.vfxWorldRot = p.length > 4 && "1".equals(p[4]);
                 }
             }
-            case "ik", "iktgt", "ikchain" -> a.ikMessage(m.key(), m.a(), m.b(), m.c());
             case "leash" -> {
                 int who = (int) parse(m.a(), -1F);
                 if (a.leashes == null) a.leashes = new HashMap<>();
@@ -765,19 +745,9 @@ public final class SkillClient {
         /** displaytransformation del text_display: giro (grados) y desplazamiento. */
         float textRoll;
         float textX, textY, textZ;
-        /** Colas, segmentos y física de ModelEngine (seg_, tl_, jig_) y dónde está el modelo en el mundo. */
-        net.tierrasfantasticas.tfclient.vfx.VfxPhysics physics;
+        /** Cabezas, colas, física e IK de ModelEngine (VfxRig) y dónde está el modelo en el mundo. */
+        net.tierrasfantasticas.tfclient.vfx.VfxRig rig;
         Matrix4f physWorld;
-        /** segment{} que llegó antes que el modelo (o para reponer al cambiarlo): parte, valores, exacto. */
-        final List<Object[]> segCfg = new ArrayList<>();
-        // ----- ModelEngine: cabezas (headconfig, lockmodelhead, headtarget)
-        float[] headLimits;
-        float headSpeed = -1F;
-        boolean lockHeadYaw, lockHeadPitch;
-        int headTargetId = -1;
-        Vec3 headTargetPos;
-        float headTargetY;
-        float smoothYaw, smoothPitch, lastHeadT = Float.NaN;
         // ----- ModelEngine: por hueso (setitemmodel, setmodeltag, enchant, billboard, glowbone) y skin de los miembros
         ItemStack[] boneItem;
         String[] boneTag;
@@ -790,9 +760,6 @@ public final class SkillClient {
         boolean skinSlim;
         /** model{damagetint}: parpadea en rojo al recibir daño (como ModelEngine, sí por defecto). */
         boolean damageTint = true;
-        /** Cinemática inversa de ModelEngine (cadenas de Blockbench, ikchain, iktarget, ik) y lo que llegó antes. */
-        net.tierrasfantasticas.tfclient.vfx.VfxIk ik;
-        final List<String[]> ikCmds = new ArrayList<>();
         // ----- vfx{} de ModelEngine: solo un hueso, visible o no, y su posición/giro/escala propios
         String onlyBone;
         boolean vfxVisible = true;
@@ -811,46 +778,22 @@ public final class SkillClient {
         /** Pose de todos los huesos ahora (con sus capas si es de un jefe). */
         void pose(Matrix4f[] mats, float partial) {
             if (layers != null) {
-                float headYaw = 0F, headPitch = 0F;
+                float headYaw = 0F, headPitch = 0F, body = 0F;
+                Vector3f eye = null;
                 ClientLevel level = Minecraft.getInstance().level;
                 Entity e = follow >= 0 && level != null ? level.getEntity(follow) : null;
                 if (e instanceof LivingEntity le) {
-                    float body = le.yBodyRotO + (le.yBodyRot - le.yBodyRotO) * partial;
+                    body = le.yBodyRotO + (le.yBodyRot - le.yBodyRotO) * partial;
                     float head = le.yHeadRotO + (le.yHeadRot - le.yHeadRotO) * partial;
                     headYaw = net.minecraft.util.Mth.wrapDegrees(head - body);
                     headPitch = le.getViewXRot(partial);
-                    // headtarget: las cabezas miran a ese objetivo (o sitio), no a donde mira la entidad
-                    Vec3 tp = null;
-                    if (headTargetId >= 0 && level != null) {
-                        Entity te = level.getEntity(headTargetId);
-                        if (te != null) tp = te.getPosition(partial).add(0, te.getBbHeight() * 0.85 + headTargetY, 0);
-                    }
-                    if (tp == null) tp = headTargetPos;
-                    if (tp != null) {
-                        Vec3 eye = le.getPosition(partial).add(0, le.getEyeHeight(), 0);
-                        Vec3 d = tp.subtract(eye);
-                        float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-                        headYaw = net.minecraft.util.Mth.wrapDegrees(yaw - body);
-                        headPitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
-                    }
+                    Vec3 ep = le.getPosition(partial);
+                    eye = new Vector3f((float) ep.x, (float) (ep.y + le.getEyeHeight()), (float) ep.z);
                 }
-                if (lockHeadYaw) headYaw = 0F;
-                if (lockHeadPitch) headPitch = 0F;
-                // Velocidad de giro de la cabeza (h[speed=]_ o headconfig{speed}): grados por tick como mucho
-                float sp = headSpeed >= 0F ? headSpeed : model.headSpeed();
+                // headtarget, lockmodelhead y la velocidad de la cabeza: VfxRig (igual que el servidor)
                 float now = age + partial;
-                if (sp > 0F && !Float.isNaN(lastHeadT)) {
-                    float dt = Math.max(0F, Math.min(5F, now - lastHeadT));
-                    smoothYaw += net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(headYaw - smoothYaw), -sp * dt, sp * dt);
-                    smoothPitch += net.minecraft.util.Mth.clamp(headPitch - smoothPitch, -sp * dt, sp * dt);
-                    headYaw = smoothYaw;
-                    headPitch = smoothPitch;
-                } else {
-                    smoothYaw = headYaw;
-                    smoothPitch = headPitch;
-                }
-                lastHeadT = now;
-                layers.pose(model, now, headYaw, headPitch, mats, headLimits != null ? headLimits : model.headLimits());
+                float[] look = rig.look(headYaw, headPitch, body, eye, entities(partial), now);
+                layers.pose(model, now, look[0], look[1], mats, rig.limits());
                 return;
             }
             float seconds = (age - animStart + partial) / 20F * speed;
@@ -941,16 +884,7 @@ public final class SkillClient {
         void setModel(String id) {
             model = id == null ? null : model(id);
             boneLight = null;
-            physics = null;
-            segCfg.clear();
-            ik = null;
-            ikCmds.clear();
-            headLimits = null;
-            headSpeed = -1F;
-            lockHeadYaw = lockHeadPitch = false;
-            headTargetId = -1;
-            headTargetPos = null;
-            lastHeadT = Float.NaN;
+            rig = model == null ? null : new net.tierrasfantasticas.tfclient.vfx.VfxRig(model);
             boneItem = null;
             boneTag = null;
             boneTagStyle = null;
@@ -1090,29 +1024,8 @@ public final class SkillClient {
             if (!vfxVisible) return;
             pose(bones, partial);
             if (layers != null && physWorld != null) {
-                if (ik == null) {
-                    ik = new net.tierrasfantasticas.tfclient.vfx.VfxIk(model);
-                    for (String[] c : ikCmds) ikCommand(c);
-                }
-                if (ik.active()) {
-                    ClientLevel lv = Minecraft.getInstance().level;
-                    float now = age + partial;
-                    ik.apply(bones, physWorld, now, b -> layers.moves(model, b, now), id2 -> {
-                        Entity te = lv == null ? null : lv.getEntity(id2);
-                        if (te == null) return null;
-                        Vec3 p = te.getPosition(partial);
-                        return new Vector3f((float) p.x, (float) (p.y + te.getBbHeight() * 0.5), (float) p.z);
-                    });
-                }
-                if (physics == null) {
-                    physics = new net.tierrasfantasticas.tfclient.vfx.VfxPhysics(model);
-                    for (Object[] c : segCfg) {
-                        String part = (String) c[0];
-                        if (part != null && part.startsWith("\u0000jig:")) physics.configureJig(part.substring(5), castCfg(c[1]), (Boolean) c[2]);
-                        else physics.configure(part, castCfg(c[1]), (Boolean) c[2]);
-                    }
-                }
-                if (physics.active()) physics.apply(bones, physWorld, age + partial);
+                float now = age + partial;
+                rig.bend(bones, physWorld, now, b -> layers.moves(model, b, now), entities(partial));
             }
             Minecraft mc = Minecraft.getInstance();
             int baseLight = wholeLight >= 0 ? wholeLight : light;
@@ -1424,80 +1337,20 @@ public final class SkillClient {
             }
         }
 
-        /** Un mensaje de IK (ik, iktgt, ikchain): se guarda por si cambia el modelo y se aplica si ya hay IK. */
-        void ikMessage(String key, String a1, String b1, String c1) {
-            String[] cmd = {key, a1 == null ? "" : a1, b1 == null ? "" : b1, c1 == null ? "" : c1};
-            ikCmds.add(cmd);
-            if (ik != null) ikCommand(cmd);
-        }
-
-        private void ikCommand(String[] c) {
-            switch (c[0]) {
-                case "ik" -> {
-                    Map<String, Float> v = new HashMap<>();
-                    for (String kv : c[2].split(";")) {
-                        int eq = kv.indexOf('=');
-                        if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
-                    }
-                    ik.configure(c[1], v, !"0".equals(c[3]));
-                    if (physics != null) physics.configureJig(c[1], v, !"0".equals(c[3]));
-                    else segCfg.add(new Object[] {"\u0000jig:" + c[1], v, !"0".equals(c[3])});
-                }
-                case "iktgt" -> {
-                    boolean clear = c[3].startsWith("1");
-                    boolean exact = c[3].length() < 2 || c[3].charAt(1) == '1';
-                    if (clear) {
-                        ik.target(c[1], exact, -1, null, 0F, true);
-                    } else {
-                        String[] p = c[2].split("\\|");
-                        ik.target(c[1], exact, (int) parse(p[0], -1F), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
-                                parse(p[4], 0F), false);
-                    }
-                }
-                case "ikchain" -> {
-                    String[] p = c[2].split("\\|", -1);
-                    if ("1".equals(c[3])) ik.removeChain(p[0]);
-                    else ik.addChain(c[1], p[0], p.length > 1 ? p[1] : "");
-                }
-                default -> { }
-            }
-        }
-
         /** Los huesos con ese nombre (todos si vacío; con exact=false, los que lo llevan) y, con child, sus hijos. */
         int[] match(String part, boolean exact, boolean child) {
-            if (model == null) return new int[0];
-            int n = model.bones.length;
-            boolean[] hit = new boolean[n];
-            String want = part == null ? "" : part.toLowerCase(java.util.Locale.ROOT);
-            if (want.isEmpty()) {
-                java.util.Arrays.fill(hit, true);
-            } else if (exact) {
-                int b = model.bone(part);
-                if (b >= 0) hit[b] = true;
-            } else {
-                for (int i = 0; i < n; i++) hit[i] = model.bones[i].id.toLowerCase(java.util.Locale.ROOT).contains(want);
-            }
-            if (child && !want.isEmpty()) {
-                for (int i = 0; i < n; i++) if (!hit[i] && model.bones[i].parent >= 0 && hit[model.bones[i].parent]) hit[i] = true;
-            }
-            int c = 0;
-            for (boolean h : hit) if (h) c++;
-            int[] out = new int[c];
-            c = 0;
-            for (int i = 0; i < n; i++) if (hit[i]) out[c++] = i;
-            return out;
+            return net.tierrasfantasticas.tfclient.vfx.VfxRig.match(model, part, exact, child);
         }
 
-        /** headconfig: «minYaw|maxYaw|minPitch|maxPitch|speed» («» = no tocar) para esas cabezas (todas si vacío). */
-        void headConfig(String part, String cfg, boolean exact) {
-            if (model == null) return;
-            if (headLimits == null) headLimits = model.headLimits().clone();
-            String[] p = cfg.split("\\|", -1);
-            for (int b : match(part, exact, false)) {
-                if (!model.bones[b].head) continue;
-                for (int k = 0; k < 4; k++) if (k < p.length && !p[k].isEmpty()) headLimits[b * 4 + k] = parse(p[k], Float.NaN);
-            }
-            if (p.length > 4 && !p[4].isEmpty()) headSpeed = parse(p[4], 0F);
+        /** Las entidades del mundo para headtarget e iktarget: {x, y, z, alto}. */
+        private static net.tierrasfantasticas.tfclient.vfx.VfxRig.Entities entities(float partial) {
+            ClientLevel lv = Minecraft.getInstance().level;
+            return id -> {
+                Entity te = lv == null ? null : lv.getEntity(id);
+                if (te == null) return null;
+                Vec3 p = te.getPosition(partial);
+                return new float[] {(float) p.x, (float) p.y, (float) p.z, te.getBbHeight()};
+            };
         }
 
         /** setitemmodel: «id|data|color|enchant» en ese hueso de objeto (vacío = quitarlo). */
@@ -1540,22 +1393,6 @@ public final class SkillClient {
                 boneTagStyle[b] = style;
                 boneTagOn[b] = visible;
             }
-        }
-
-        @SuppressWarnings("unchecked")
-        private static Map<String, Float> castCfg(Object o) {
-            return (Map<String, Float>) o;
-        }
-
-        /** segment{}: «part» vacío = todo el modelo; «cfg» = clave=valor;... (ver SkillModels.segment). */
-        void segment(String part, String cfg, boolean exact) {
-            Map<String, Float> v = new HashMap<>();
-            for (String kv : cfg.split(";")) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
-            }
-            segCfg.add(new Object[] {part.isEmpty() ? null : part, v, exact});
-            if (physics != null) physics.configure(part.isEmpty() ? null : part, v, exact);
         }
 
         /** El hueso que se dibuja en el sitio «bi» (el suyo o el de otro modelo, si se cambió con changepart). */

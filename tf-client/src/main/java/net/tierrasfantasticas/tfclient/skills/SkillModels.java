@@ -483,12 +483,24 @@ final class SkillModels {
         Matrix4f[] mats = new Matrix4f[model.bones.length];
         for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
         if (a.layers != null) {
-            float headYaw = 0F, headPitch = 0F;
+            // Como el cliente (SkillClient.Actor.pose y renderModel): hacia dónde miran sus cabezas (headtarget,
+            // lockmodelhead, su velocidad), sus capas y luego la IK y la física (colas que se arrastran, jig_)
+            net.tierrasfantasticas.tfclient.vfx.VfxRig rig = a.rig(model);
+            float headYaw = 0F, headPitch = 0F, body = a.yaw;
+            org.joml.Vector3f eye = null;
             if (a.follow instanceof LivingEntity le) {
+                body = le.yBodyRot;
                 headYaw = net.minecraft.util.Mth.wrapDegrees(le.yHeadRot - le.yBodyRot);
                 headPitch = le.getXRot();
+                eye = new org.joml.Vector3f((float) le.getX(), (float) le.getEyeY(), (float) le.getZ());
             }
-            a.layers.pose(model, a.age, headYaw, headPitch, mats);
+            net.tierrasfantasticas.tfclient.vfx.VfxRig.Entities ents = id -> {
+                Entity e = a.level.getEntity(id);
+                return e == null ? null : new float[] {(float) e.getX(), (float) e.getY(), (float) e.getZ(), e.getBbHeight()};
+            };
+            float[] look = rig.look(headYaw, headPitch, body, eye, ents, a.age);
+            a.layers.pose(model, a.age, look[0], look[1], mats, rig.limits());
+            rig.bend(mats, world(a), a.age, b -> a.layers.moves(model, b, a.age), ents);
             return mats;
         }
         VfxModel.Anim anim = a.anim == null ? null : model.anims.get(a.anim);
