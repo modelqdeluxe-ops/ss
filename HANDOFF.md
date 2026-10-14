@@ -147,7 +147,9 @@ diseño de la pantalla»). frame.png es marco.png TAL CUAL con el cristal hueco;
 fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
-- **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier/Molang): pedir al dueño sus zips.
+- **Jefes: TODO lo que falta, con dónde tocarlo, cómo comprobarlo y un prompt listo para la siguiente IA, en
+  `tf-client/JEFES.md` §11.** Lo primero: volver a convertir los 5 jefes con el conversor de la 1.3.80 (bezier/Molang;
+  pedir al dueño sus zips) y que el dueño los pruebe en el juego.
 - **Más jefes**: el dueño los manda «de 5 en 5» (zips de LittleRoom y otros, MythicMobs + ModelEngine). Cómo meter un
   lote: ver «Jefes: cómo añadir uno» en el bloque de la 1.3.75. Esperan su prueba en el juego y su opinión.
 - **Actualización de CLANES** (la siguiente que quiere el dueño). Hoy `PadClans`: fundar (nombre y etiqueta), invitar,

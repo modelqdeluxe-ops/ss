@@ -609,3 +609,82 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
   `SkillRuntime.hurt` con `mobAttack` del jefe): en una zona sin daño de mobs, los jefes no harán daño, y es lo
   esperado. Las explosiones de los jefes (`explosion`) no rompen bloques y los bloques que caen no se quedan.
 
+---
+
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.80
+
+**Hecho y publicado (1.3.80)**: todo lo de §3.6. **Sin verificar en el juego**: nada de la 1.3.75 a la 1.3.80 lo ha
+probado nadie todavía; las pruebas son el simulador (`sim_ai.py`), la física copiada en Python (`sim_physics.py`),
+el conversor (`test_convert.py`) y el auditor (`audit.py`, `--prueba`). Compila en GitHub Actions.
+
+### 11.1 Lo primero (bloquea lo demás)
+
+1. **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier, Molang y antes/después horneados). Los
+   packs no están en el repo: **pide al dueño sus 5 zips** (Gárgola, Hidra y Abominación de LittleRoom, Tower Skeleton,
+   Astwood en RAR). Luego: `python3 tools/bosses/build_bosses.py <carpeta>`, mira sus «problemas» (dirá si hay Molang
+   que no entiende) y compara con git qué animaciones cambian (`git diff --stat src/main/resources/assets/tfclient/bosses/models`).
+   Si nada cambia, los packs no usaban bezier/Molang. Cuidado: la pasada completa rehace también el cristal de la grieta.
+2. **Prueba en el juego** (pídeselo al dueño, en SUPERVIVENCIA, con capturas o vídeo; mide las capturas con PIL):
+   la cola y las estelas de la Gárgola y la capa del Esqueleto al girar y andar (se doblan y arrastran, sin huecos ni
+   tirones); el parpadeo rojo al pegarles (el Esqueleto no parpadea: su pack pone `d=false`); que suban un bloque
+   andando (`step`); que nada salga en otro sitio. Si algo se ve mal, §8.
+3. **Mohist** (§10): con los ajustes de `spigot.yml` del dueño, comprobar alcance de seguimiento y de activación y que
+   ningún limpiador de entidades borre `tfclient:jefe`/`esbirro`/`grieta`/`asiento`.
+
+### 11.2 ModelEngine 4 que falta (la wiki: https://wiki.mythiccraft.io/modelengine/Skills/Mechanics)
+
+`--cobertura` las lista como «faltan» y el auditor las marca en cuanto un pack las use. Ninguno de los 5 jefes las usa.
+
+| Qué | Dónde iría | Nota |
+|---|---|---|
+| `leash`, `leashself` (cuerda de un hueso `l_` a una entidad u otro hueso) | `SkillMeg` + dibujo en `SkillClient.Actor.renderModel` (como la cuerda de Minecraft: `LeashKnotRenderer`/`MobRenderer.renderLeash`) | El conversor ya marca los `l_` sin cubos (`beh=leash`). |
+| `move`, `syncyaw` del controlador | `SkillMeg` → `BossEntity` | Para modelos montables; `syncyaw` hoy «sin efecto» (STUB_OK). |
+| `changeparent`, `submodel`, `animatemodel`, `rootmotion`, `swapentity`, `petrify`, `pairmodel`, `modeldisguise`/`modelundisguise` | `SkillMeg` + `VfxModel`/`Actor` | Raros en jefes. `rootmotion` mueve la entidad con la animación del hueso raíz (`model{rootbone}`). |
+| `jig[repeat=N]` | `VfxPhysics.jiggle` | Hoy un eslabón; haría falta partir el hueso en N trozos. |
+| `scale{hitbox=true}`, `model{hitboxscale;viewrange;radius;renderfire;forcefire}` | `SkillModels.model/scale`, `BossEntity.getDimensions` | La escala del modelo ya va; la caja de la entidad no cambia con ella. |
+| Miembros con skin «slim» (brazos de 3 px) y skins por `skin=` (base64) o por nombre de un jugador desconectado | `tools/vfx_bb.limb_quads`, `SkillClient.Actor.skinTexture` | Hoy: brazos de 4 px; skin de un jugador conectado o la de por defecto. |
+| `setmodeltag{alignment;linewidth;billboard}` | `SkillClient.Actor.drawTags` | Hoy: centrado, sin saltos de línea, mirando a la cámara. |
+| Física, IK y cabezas en el **servidor** | `SkillModels` (las capas del «disfraz») | Hoy solo en el cliente: `@modelpart` y las cajas `ob_` que cuelguen de una cola o de una cadena IK usan la pose animada, no la doblada. |
+
+### 11.3 MythicMobs que falta
+
+- Mecánicas: `bloodyscreen`, `blackscreen`, `bossborder`, `skybox`, `particleequation`, `chainmissile`, `decapitate`,
+  `disguise`, `hologram`, `variablemath`, `teleportin`... y las que cambian el mundo (`breakblock`, `fill`, `time`,
+  `weather`, `blockphysics`): decidir con el dueño (el servidor tiene construcciones; nunca deben romper nada).
+- Condiciones: `globalscore`, `score`, `itemrecharging`, `mobsinchunk`, `playerkills`; `wearing` y `haspermission`
+  siguen «sin efecto» (se dan por cumplidas).
+- Objetivos: `@Cone`, `@Sphere`, `@Rectangle`, `@BlocksInRadius`, `@BlocksNearOrigin`.
+- Disparadores: `~onShoot`, `~onBowHit`, `~onExplode`, `~onTeleport`, `~onCombat`, `~onSkillDamage`, `~onHear`, `~onUse`
+  (y los de bloques, doma, cría y comercio, que no tocan a los jefes).
+
+### 11.4 Aproximaciones que conviene saber (no son fallos, pero no son idénticas)
+
+- Molang: `q.life_time` = `q.anim_time`; `math.random` vale la mitad del rango (para que el horneado sea estable); las
+  consultas del mundo (`q.ground_speed`, `q.is_on_ground`...) valen 0 y salen como problema al convertir.
+- Efectos `geyser`, `firework`, `smoke`, `flames`, `ender`, `spring`, `atom`: ráfagas de partículas de Minecraft que se
+  parecen, no copias exactas de MythicMobs.
+- `billboard HORIZONTAL` gira solo con el cabeceo de la cámara. `vfxpos/rot/scale` relativos: a quien llega tarde se le
+  repite solo el último.
+- `segment`: los límites `minz`/`maxz` no se usan (el giro sobre el propio eslabón no cambia hacia dónde apunta).
+
+### 11.5 Prompt para seguir (cópialo tal cual en una sesión nueva)
+
+```
+Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §10 y §11). Estamos con
+el motor de jefes de TF Client (1.3.80): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
+metamos; el servidor es Mohist 1.20.1. Reglas: responde en español, no uses subagentes, compila SIEMPRE con GitHub
+Actions (nunca ./gradlew en el contenedor), publica como Release (sube mod_version y TFClient.VERSION, PR a main,
+squash, comprueba la Release), nunca subas los packs al repo.
+
+Tareas, en este orden:
+1. Te paso los zips de los 5 jefes: vuelve a convertirlos con tools/bosses/build_bosses.py (§11.1.1) y dime qué
+   animaciones cambian con bezier/Molang.
+2. Implementa lo de JEFES.md §11.2 (ModelEngine que falta), empezando por leash/leashself y la física/IK/cabezas en el
+   servidor; luego §11.3 (MythicMobs que falta) salvo lo que cambie el mundo (pregúntame antes).
+3. Cada cosa nueva: con la semántica de la wiki de ModelEngine/MythicMobs (léela con WebFetch), en sim_ai.py si
+   cambia la pelea, en mythic_ref.py y en las pruebas (test_convert.py / audit.py --prueba).
+Antes de publicar: audit.py con 0 problemas, audit.py --prueba entero, test_convert.py «todo bien», sim_physics.py
+en los modelos con colas, y sim_ai.py igual en los demás jefes (misma --seed, antes y después). Documenta en
+JEFES.md (§3.6 y §11) y en HANDOFF.md lo que hagas y lo que quede.
+```
+
