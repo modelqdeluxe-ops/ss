@@ -1160,6 +1160,8 @@ class Sim(Skin):
         h = 8 + 11 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
         if self._ex(r).get('model'):  # el escaparate del Armario
             return max(58, h)
+        if self._ex(r).get('trail'):  # Efectos › COMBATE: el escenario de la vista previa de las estelas
+            return max(60, h)
         return max(self.HERO_MIN, h)
 
     @staticmethod
@@ -1232,6 +1234,19 @@ class Sim(Skin):
             self.model_at(ex['model'], mcx, y + h - 9, mh)
             self.clip = clip
             extra = mw - ms
+        elif ex.get('trail'):
+            # Efectos › COMBATE (1.3.67): la espada dando un tajo con la estela, en su escenario de noche
+            import trail
+            ph = h - 10
+            pw = round(ph * 1.75)
+            self.box(mx - 3, y + 4, pw + 2, ph + 2, darken(col, 0.3))
+            clip = self.clip
+            self.scissor(mx - 2, y + 5, pw, ph)
+            tr = ex['trail']
+            trail.preview(self, mx - 2, y + 5, pw, ph, f'{MC}/item/{icon}.png', tr.get('color', 0x58F4E6),
+                          dict(trail.DEFAULTS, **tr.get('st', {})), tr.get('t', 250))
+            self.clip = clip
+            extra = pw - ms - 4
         else:
             self.sk_slot(mx, my, ms, col)
             self.stretch('floor', mx + 8, my + ms - 7, ms - 16, 4)

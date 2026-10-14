@@ -30,7 +30,10 @@
     "CustomHeadLayerMixin",
     "LivingEntityPoofMixin",
     "AbstractClientPlayerSkinMixin",
-    "PlayerInfoSkinMixin"
+    "PlayerInfoSkinMixin",
+    "ItemInHandRendererMixin",
+    "GameRendererMixin",
+    "PostChainAccessor"
   ],
   "injectors": {
     "defaultRequire": 0

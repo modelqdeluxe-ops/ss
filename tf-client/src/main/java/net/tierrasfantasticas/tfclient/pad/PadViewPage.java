@@ -76,6 +76,7 @@ final class PadViewPage extends PadPage {
     }
 
     void set(PadView v) {
+        if (app.equals("efectos")) v = PadCombat.withTab(v); // COMBATE: los ajustes de las estelas, de este cliente
         boolean sameTab = view != null && view.tab().equals(v.tab());
         if (!sameTab) {
             scroll = 0;
@@ -480,6 +481,7 @@ final class PadViewPage extends PadPage {
     private int heroHeight(PadView.Row r, int w) {
         int h = 8 + 11 + linesHeight(r, heroTextWidth(r, w)) + (r.progress() >= 0 ? 10 : 0) + 6;
         if (PadSkinModel.is(r.image())) return Math.max(58, h); // el escaparate del Armario: la skin en grande (y caben las tarjetas)
+        if (PadView.TRAIL_PREVIEW.equals(r.image())) return Math.max(60, h); // el escenario de la vista previa de las estelas
         return Math.max(HERO_MIN, h);
     }
 
@@ -518,6 +520,15 @@ final class PadViewPage extends PadPage {
             if (!drawn) bigItem(g, r.icon(), Math.round(mcx) - 16, y + (h - 32) / 2);
             drawn = true;
             extra = mw - ms;
+        } else if (PadView.TRAIL_PREVIEW.equals(r.image())) {
+            // Efectos › COMBATE: una espada dando tajos con la estela de los ajustes de ahora, en su escenario de noche
+            int ph = h - 10, pw = Math.round(ph * 1.75F);
+            PadUi.box(g, sx - 3, y + 4, pw + 2, ph + 2, PadSkin.darken(color, 0.3F));
+            pad.clipPush(g, sx - 2, y + 5, pw, ph);
+            net.tierrasfantasticas.tfclient.trail.TrailPreview.draw(g, sx - 2, y + 5, pw, ph, r.icon());
+            pad.clipPop(g);
+            drawn = true;
+            extra = pw - ms - 4;
         } else if (photo) {
             // un retrato (oficios): en grande, como una foto, en vez de dentro del medallón
             int ph = Math.min(h - 8, 46);
@@ -774,6 +785,10 @@ final class PadViewPage extends PadPage {
     }
 
     private void send(String action, String text) {
+        if (app.equals("efectos") && PadCombat.local(view, action)) {
+            set(PadCombat.act(view, action));
+            return;
+        }
         waiting = true;
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Action(app, view == null ? "" : view.tab(), action, text));
     }

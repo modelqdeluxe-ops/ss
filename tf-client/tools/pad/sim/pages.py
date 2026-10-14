@@ -435,6 +435,42 @@ page('a_kit', 'KITS', [], '', [], [
      cells=[(n, '', T, False, c) for n, c in (('iron_sword', 1), ('iron_pickaxe', 1), ('bread', 16), ('torch', 32), ('oak_log', 64),
                                              ('leather_chestplate', 1))],
      footer=[('ATRÁS', B), ('PROBAR', GO), ('COPIAR', GR), ('BORRAR', R)], app='a_kits')
+# 1.3.67: Efectos › COMBATE (PadCombat.view): las estelas de arma y los colores vivos, del cliente, con la vista previa
+def combate_page(name, st=None, t=250, hero_line='Clásico · Automático · brillo', rows_from=0):
+    st = st or {}
+    rows = [
+        ('', 'ESTILO', T, [], -1, '', None, None),
+        ('nether_star', 'Estilo', T, ['Una cinta de luz suave.'], -1, hero_line.split(' · ')[0], ('«', B), ('»', B)),
+        ('amethyst_shard', 'Color', T, ['El de tu arma (su material y encantamientos).'], -1, 'Automático', ('«', B), ('»', B)),
+        ('glowstone_dust', 'Mezcla', T, ['Luz que suma: brilla, sobre todo de noche.'], -1, 'Brillo', ('«', B), ('»', B)),
+        ('clock_00', 'Duración', T, ['Cuánto tarda en apagarse.'], -1, '0,30 s', ('-', B), ('+', B)),
+        ('iron_sword', 'Ancho', T, ['Qué parte de la hoja cubre, desde la punta.'], -1, '60 %', ('-', B), ('+', B)),
+        ('glass', 'Opacidad', T, [], -1, '85 %', ('-', B), ('+', B)),
+        ('feather', 'Cola', T, ['Cómo se apaga el final.'], -1, 'La del estilo', ('«', B), ('»', B)),
+        ('tinted_glass', 'Lo menos que se apaga', T, ['0 %: la cola se va del todo.'], -1, 'Nada', ('-', B), ('+', B)),
+        ('end_rod', 'Filo brillante', T, ['Una línea de luz por el borde.'], -1, 'No', ('-', B), ('+', B)),
+        ('', 'CUÁNDO', T, [], -1, '', None, None),
+        ('diamond_sword', 'Al golpear', T, [], -1, '', ('SÍ', G), None),
+        ('target_side', 'Solo ataques', T, ['No al picar bloques ni al usar cosas.'], -1, '', ('SÍ', G), None),
+        ('redstone', 'Según la carga', T, ['Un golpe flojo deja una estela floja.'], -1, '', ('SÍ', G), None),
+        ('chest', 'Al sacar el arma', T, ['Al cambiar de casilla a un arma.'], -1, '', ('SÍ', G), None),
+        ('player_head', 'Otros jugadores y mobs', T, [], -1, '', ('SÍ', G), None),
+        ('spyglass', 'Hasta qué distancia', T, ['Las de los demás, desde tan lejos.'], -1, '32 bloques', ('-', B), ('+', B)),
+        ('', 'CON QUÉ', T, [], -1, '', None, None),
+        ('golden_sword', 'Espadas', T, [], -1, '', ('SÍ', G), None),
+        ('iron_axe', 'Hachas', T, [], -1, '', ('SÍ', G), None),
+        ('iron_pickaxe', 'Picos', M, [], -1, '', ('NO', R), None),
+    ][rows_from:]
+    page(name, 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS'), ('combate', 'COMBATE')], 'combate', [], rows, compact=True,
+         hero=('diamond_sword', 'Estelas de arma', T, [hero_line, 'Cámbialo abajo: se guarda solo.'],
+               -1, '', ('ACTIVADAS', G), None, {'trail': {'st': st, 't': t, 'color': 0x58F4E6}}),
+         footer=[('RESTABLECER', GR)], app='efectos')
+
+
+combate_page('p_combate')
+combate_page('p_combate_neon', {'profile': 2}, 240, 'Neón · Automático · brillo')
+combate_page('p_combate_brasas', {'profile': 3}, 300, 'Brasas · Automático · brillo')
+combate_page('p_combate_humo', {'profile': 5, 'blend': 1}, 260, 'Humo · Automático · translúcida', rows_from=10)
 page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
      ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], app='a_kits', hover=5, cells=[
          (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',

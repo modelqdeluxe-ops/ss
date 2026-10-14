@@ -46,6 +46,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      */
     /** Imagen especial: el propio jugador en 3D, con la skin que lleva (la vista previa de la skin puesta del Armario). */
     public static final String SELF_MODEL = "tfclient:self_model";
+    /** Imagen especial (1.3.67): la vista previa de las estelas de arma (Efectos › COMBATE), una espada dando tajos. */
+    public static final String TRAIL_PREVIEW = "tfclient:trail_preview";
 
     public static String padImage(String name) {
         return "tfclient:textures/gui/pad/" + name + ".png";
