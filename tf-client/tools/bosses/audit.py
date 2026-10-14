@@ -308,6 +308,17 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             part = a.get('p', a.get('pbone', a.get('seat')))
             if part:
                 refs.append((model_id(a.get('m', a.get('mid')), default), part, True))
+        # Correas: ModelEngine solo las cuelga de huesos de correa (l_ sin cubos)
+        if m in ('leash', 'leashself'):
+            names = [a.get(k) for k in (('p', 'part', 'partid', 'pid') if m == 'leash' else ('s', 'sid', 'src', 'source', 'sourceid', 'd', 'did', 'dest', 'destid'))]
+            for part in [x for x in names if x]:
+                mid = model_id(a.get('m', a.get('mid', a.get('modelid'))), default)
+                cands = [mid] if mid else models
+                found = [b for x in cands if model(x) for b in model(x)['bones'] if bone({'bones': [b]}, part)]
+                if not found:
+                    problems.append(f'{where}: el hueso de correa «{part}» no está en {", ".join(c for c in cands if c)}')
+                elif not any(b.get('beh') == 'leash' for b in found):
+                    problems.append(f'{where}: «{part}» no es un hueso de correa (l_ sin cubos): ModelEngine no le cuelga la correa')
         if t == 'modelpart':
             ta = pm.get('ta') or {}
             part = ta.get('pid', ta.get('p', ta.get('part')))
@@ -542,6 +553,9 @@ def selftest():
     cases.append(('hueso de una mecánica de ModelEngine que no existe',
                   lambda p: p['mobs'][boss]['mechs'].append({'m': 'enchant', 'a': {'p': 'hueso_que_no_hay'}, 't': 'self'}),
                   'hueso_que_no_hay'))
+    cases.append(('correa en un hueso que no es de correa',
+                  lambda p: p['mobs'][boss]['mechs'].append({'m': 'leashself', 'a': {'s': 'head', 'd': 'jaw'}, 't': 'self'}),
+                  'no es un hueso de correa'))
     bad = 0
     for name, hurt, needle in cases:
         prog = copy.deepcopy(base)

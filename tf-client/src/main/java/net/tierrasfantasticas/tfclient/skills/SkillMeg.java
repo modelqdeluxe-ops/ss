@@ -354,6 +354,37 @@ final class SkillMeg {
         a.prop("skin", limbs, who, slim);
     }
 
+    // ------------------------------------------------------------------------------------------- correas
+
+    /**
+     * leash{m;p;leash} @objetivo: una correa como la de Minecraft desde el hueso de correa (l_) del modelo de quien lanza
+     * hasta el objetivo; leash=false la quita. Como en ModelEngine solo se ve («visually leash»): no tira de nadie.
+     */
+    static void leash(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillActor a = ctx.caster.entity == null ? ctx.caster.actor : SkillModels.holder(Tgt.of(ctx.caster), false, ctx);
+        if (a == null) return;
+        boolean on = SkillRuntime.bool(m.arg("true", "leash", "l"));
+        String part = m.arg("", "partid", "p", "pid", "part");
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e != null && e != ctx.caster.entity) a.prop("leash", String.valueOf(e.getId()), part, on ? "1" : "0");
+        }
+    }
+
+    /**
+     * leashself{m;s;d}: una correa entre dos huesos de correa del mismo modelo (s la sujeta, d va atado). Sin d, quita
+     * las que sujeta s.
+     */
+    static void leashSelf(Mech m, Ctx ctx, List<Tgt> targets) {
+        String src = m.arg(null, "sourceid", "s", "sid", "src", "source");
+        String dst = m.arg(null, "destid", "d", "did", "dest");
+        if (src == null) return;
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null) a.prop("leashself", src, dst == null ? "" : dst, dst == null ? "0" : "1");
+        }
+    }
+
     // ------------------------------------------------------------------------------------------- VFX de ModelEngine
 
     /** Los vfx{} de cada mob (por su UUID) o proyectil (el Mover). */

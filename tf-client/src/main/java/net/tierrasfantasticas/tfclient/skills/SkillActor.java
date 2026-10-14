@@ -186,13 +186,22 @@ public final class SkillActor {
             case "ikchain" -> sticky.put(key + ":" + (b == null ? "" : b.split("\\|")[0]), p);
             case "headlock", "headtgt", "skin", "dtint", "only", "vfxvis" -> sticky.put(key, p);
             case "vfxtf" -> sticky.put(key + ":" + a, p);
+            // Correas: las puestas se repiten; al quitarlas, se olvidan (leashself sin destino quita todas las de ese hueso)
+            case "leash" -> {
+                if ("1".equals(c)) sticky.put(key + ":" + a, p);
+                else sticky.remove(key + ":" + a);
+            }
+            case "leashself" -> {
+                if ("1".equals(c)) sticky.put(key + ":" + a + ">" + b, p);
+                else sticky.keySet().removeIf(k -> k.startsWith(key + ":" + a + ">"));
+            }
             default -> { }
         }
     }
 
     /** Lo que se guarda por modelo (ModelEngine) y se olvida al cambiarlo. */
     private static final java.util.List<String> PER_MODEL = java.util.List.of("headcfg:", "headlock", "headtgt", "bitem:", "btag:",
-            "btagv:", "ench:", "bill:", "bglow:", "skin", "dtint", "ik:", "iktgt:", "ikchain:");
+            "btagv:", "ench:", "bill:", "bglow:", "skin", "dtint", "ik:", "iktgt:", "ikchain:", "leash:", "leashself:");
 
     /** Como SkillClient.setVisible: el hueso (y, con children, los que cuelgan de él). */
     private void trackVis(String bone, boolean show, boolean children) {

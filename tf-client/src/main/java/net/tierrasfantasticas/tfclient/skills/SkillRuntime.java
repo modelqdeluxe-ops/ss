@@ -1122,6 +1122,8 @@ public final class SkillRuntime {
             case "ik", "inversekinematics" -> SkillMeg.ik(m, ctx, targets);
             case "iktarget" -> SkillMeg.ikTarget(m, ctx, targets);
             case "ikchain" -> SkillMeg.ikChain(m, ctx, targets);
+            case "leash" -> SkillMeg.leash(m, ctx, targets);
+            case "leashself" -> SkillMeg.leashSelf(m, ctx, targets);
             case "scale", "meg_scale" -> SkillModels.scale(m, ctx, targets);
             case "meg_jump" -> SkillMotion.jump(m, ctx, targets);
             case "nofall" -> {
@@ -1931,7 +1933,7 @@ public final class SkillRuntime {
             "changepart", "barset", "barcreate", "setmodelscale", "tint", "modifystate", "modifyanimation", "modstate",
             "statetoggle", "togglestate", "headconfig", "lockmodelhead", "lockhead", "hitboxconfig", "setitemmodel",
             "linkitembone", "setmodeltag", "setmodeltagvisible", "enchant", "billboard", "glowbone", "cycleparts", "scale",
-            "meg_scale", "ik", "inversekinematics", "ikchain");
+            "meg_scale", "ik", "inversekinematics", "ikchain", "leashself");
 
     // ------------------------------------------------------------------------------------------- tick
 

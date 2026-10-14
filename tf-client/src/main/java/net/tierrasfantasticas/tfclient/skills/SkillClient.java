@@ -284,6 +284,17 @@ public final class SkillClient {
                 }
             }
             case "ik", "iktgt", "ikchain" -> a.ikMessage(m.key(), m.a(), m.b(), m.c());
+            case "leash" -> {
+                int who = (int) parse(m.a(), -1F);
+                if (a.leashes == null) a.leashes = new HashMap<>();
+                if ("1".equals(m.c())) a.leashes.put(who, m.b());
+                else a.leashes.remove(who);
+            }
+            case "leashself" -> {
+                if (a.selfLeashes == null) a.selfLeashes = new ArrayList<>();
+                a.selfLeashes.removeIf(p -> p[0].equalsIgnoreCase(m.a()) && ("0".equals(m.c()) || p[1].equalsIgnoreCase(m.b())));
+                if ("1".equals(m.c())) a.selfLeashes.add(new String[] {m.a(), m.b()});
+            }
             case "skin" -> {
                 a.skin = m.b().isEmpty() ? null : m.b();
                 a.skinSlim = "true".equalsIgnoreCase(m.c());
@@ -534,6 +545,7 @@ public final class SkillClient {
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
                 if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
                 if (a.item != null) renderItem(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
+                a.poseOrigin = cam;
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers, light);
                 if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
             }
@@ -666,6 +678,7 @@ public final class SkillClient {
         Vec3 at = e.getPosition(partial);
         a.physWorld = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
                 .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
+        a.poseOrigin = at;
         a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
         return true;
     }
@@ -785,6 +798,11 @@ public final class SkillClient {
         boolean vfxVisible = true;
         final Vector3f vfxPos = new Vector3f(), vfxRot = new Vector3f(), vfxScale = new Vector3f(1, 1, 1);
         boolean vfxWorldRot;
+        // ----- leash / leashself de ModelEngine: entidad atada → hueso de correa que la sujeta; y {origen, destino}
+        Map<Integer, String> leashes;
+        List<String[]> selfLeashes;
+        /** Qué sitio del mundo es el origen de la pila de dibujo (la cámara, o la entidad que lo dibuja). */
+        Vec3 poseOrigin;
 
         Actor(int id) {
             this.id = id;
@@ -940,6 +958,8 @@ public final class SkillClient {
             boneGlint = null;
             boneBillboard = null;
             boneGlow = null;
+            leashes = null;
+            selfLeashes = null;
             if (layers != null) layers.clear();
             if (model == null) return;
             int n = model.bones.length;
@@ -1197,6 +1217,90 @@ public final class SkillClient {
             if (boneGlint != null) drawGlint(base, pose, plain);
             if (boneItem != null) drawItems(base, pose, plain, baseLight);
             if (boneTag != null) drawTags(base, pose, plain, baseLight);
+            if (leashes != null || selfLeashes != null) drawLeashes(inst, pose, plain, partial);
+        }
+
+        /** Dónde está ahora un hueso, en el espacio de la pila de dibujo (inst: del modelo a ese espacio). */
+        private Vec3 bonePoint(Matrix4f inst, int b) {
+            Vector4f p = new Matrix4f(inst).mul(bones[b]).transform(new Vector4f(0, 0, 0, 1));
+            return new Vec3(p.x, p.y, p.z);
+        }
+
+        /** El hueso de correa (l_ sin cubos) con ese nombre o, sin nombre, el primero que haya; -1 si no es de correa. */
+        private int leashBone(String part) {
+            if (part != null && !part.isEmpty()) {
+                int b = model.bone(part);
+                return b >= 0 && "leash".equals(model.bones[b].beh) ? b : -1;
+            }
+            for (int i = 0; i < model.bones.length; i++) if ("leash".equals(model.bones[i].beh)) return i;
+            return -1;
+        }
+
+        /**
+         * leash y leashself: la correa de Minecraft (MobRenderer.renderLeash) desde el hueso de correa hasta donde Minecraft
+         * ata a un mob (su «leash offset», girado con su cuerpo) o hasta el otro hueso.
+         */
+        private void drawLeashes(Matrix4f inst, PoseStack pose, MultiBufferSource buffers, float partial) {
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null || poseOrigin == null) return;
+            if (leashes != null) {
+                for (Map.Entry<Integer, String> e : leashes.entrySet()) {
+                    Entity t = level.getEntity(e.getKey());
+                    int b = leashBone(e.getValue());
+                    if (t == null || b < 0 || !visible[b]) continue;
+                    float body = t instanceof LivingEntity le ? net.minecraft.util.Mth.lerp(partial, le.yBodyRotO, le.yBodyRot) : t.getViewYRot(partial);
+                    double ang = Math.toRadians(body) + Math.PI / 2;
+                    Vec3 off = t.getLeashOffset(partial);
+                    double ox = Math.cos(ang) * off.z + Math.sin(ang) * off.x, oz = Math.sin(ang) * off.z - Math.cos(ang) * off.x;
+                    Vec3 tied = t.getPosition(partial).add(ox, off.y, oz).subtract(poseOrigin);
+                    rope(pose, buffers, tied, bonePoint(inst, b), level, poseOrigin);
+                }
+            }
+            if (selfLeashes != null) {
+                for (String[] p : selfLeashes) {
+                    int s = leashBone(p[0]), d = leashBone(p[1]);
+                    if (s < 0 || d < 0 || s == d || !visible[s] || !visible[d]) continue;
+                    rope(pose, buffers, bonePoint(inst, d), bonePoint(inst, s), level, poseOrigin);
+                }
+            }
+        }
+
+        /**
+         * Una correa como la de Minecraft (MobRenderer.renderLeash y addVertexPair): del extremo atado «tied» a quien la
+         * sujeta «holder» (los dos en el espacio de la pila), 24 tramos que cuelgan, dos tiras cruzadas de color cuerda y la
+         * luz de cada punta repartida a lo largo.
+         */
+        private static void rope(PoseStack pose, MultiBufferSource buffers, Vec3 tied, Vec3 holder, ClientLevel level, Vec3 origin) {
+            float dx = (float) (holder.x - tied.x), dy = (float) (holder.y - tied.y), dz = (float) (holder.z - tied.z);
+            float flat = dx * dx + dz * dz;
+            float k = (flat < 1e-8F ? 1F / 1e-4F : net.minecraft.util.Mth.invSqrt(flat)) * 0.025F / 2F;
+            float sx = dz * k, sz = dx * k;
+            if (flat < 1e-8F) sx = 0.0125F;
+            BlockPos pa = BlockPos.containing(tied.add(origin)), pb = BlockPos.containing(holder.add(origin));
+            int ba = level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pa);
+            int bb = level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pb);
+            int sa = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pa);
+            int sb = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pb);
+            VertexConsumer vc = buffers.getBuffer(RenderType.leash());
+            pose.pushPose();
+            pose.translate(tied.x, tied.y, tied.z);
+            Matrix4f m = pose.last().pose();
+            for (int i = 0; i <= 24; i++) ropePair(vc, m, dx, dy, dz, ba, bb, sa, sb, 0.025F, 0.025F, sx, sz, i, false);
+            for (int i = 24; i >= 0; i--) ropePair(vc, m, dx, dy, dz, ba, bb, sa, sb, 0.025F, 0F, sx, sz, i, true);
+            pose.popPose();
+        }
+
+        private static void ropePair(VertexConsumer vc, Matrix4f m, float dx, float dy, float dz, int blockA, int blockB, int skyA,
+                                     int skyB, float w, float lift, float sx, float sz, int i, boolean back) {
+            float f = i / 24F;
+            int light = LightTexture.pack((int) net.minecraft.util.Mth.lerp(f, blockA, blockB), (int) net.minecraft.util.Mth.lerp(f, skyA, skyB));
+            float shade = i % 2 == (back ? 1 : 0) ? 0.7F : 1F;
+            float r = 0.5F * shade, g = 0.4F * shade, b = 0.3F * shade;
+            float x = dx * f;
+            float y = dy > 0F ? dy * f * f : dy - dy * (1F - f) * (1F - f);
+            float z = dz * f;
+            vc.vertex(m, x - sx, y + lift, z + sz).color(r, g, b, 1F).uv2(light).endVertex();
+            vc.vertex(m, x + sx, y + w - lift, z - sz).color(r, g, b, 1F).uv2(light).endVertex();
         }
 
         /** La matriz con la que se dibuja un hueso (con billboard: mirando a la cámara). */
