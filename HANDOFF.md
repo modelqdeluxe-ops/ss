@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.67**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
-`claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.68**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+la que te asigne la sesión (la última: `claude/sweet-hamilton-7dvmbw`; se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -55,17 +55,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.67) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.68) — lee esto primero
 
-**Estado**: última versión publicada **1.3.67**, Release ya creada:
+**Estado**: última versión publicada **1.3.68** (Colores vivos quitado), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
-**ORDEN DEL DUEÑO PENDIENTE DE PUBLICAR (14 oct): QUITAR «COLORES VIVOS».** Ya está quitado en `main` (borrados
-`trail/VividColors.java`, `mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y
-`assets/tfclient/shaders/post/vivid.json`; fuera de `tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE;
-compila). **Falta publicarlo**: sube la versión a **1.3.68** (`mod_version` y `TFClient.VERSION`), apunta la entrega abajo
-y fusiona en `main` (ver «Cómo publicar»). No añadas nada más que no pida el dueño.
+**Última orden cumplida (14 oct): QUITAR «COLORES VIVOS»** — publicada en la **1.3.68** (ver la entrega abajo).
+
+**PETICIÓN ABIERTA DEL DUEÑO (14 oct): «mete estas animaciones a TF Client, que se puedan desactivar desde el apartado
+de Efectos del pad».** No llegó qué animaciones son (sin enlace ni archivo): se le preguntó. Cuando lo diga, van
+configurables en Efectos (como las estelas en `PadCombat`). **Compilar siempre en segundo plano con GitHub Actions**
+(push a la rama → workflow «TF Client»), no en local: lo pidió el dueño.
 
 **Cómo trabaja el dueño contigo (reglas que ha repetido; incúmplelas y se enfada con razón)**:
 - Escribe en español; responde en español, claro y sin rodeos. Quiere **cambios reales**, no retoques, y calidad de
@@ -78,7 +79,8 @@ y fusiona en `main` (ver «Cómo publicar»). No añadas nada más que no pida e
   «latest» (el repo tiene otras: StickerYa, Rumentis, mercado).
 
 **Cómo publicar una versión** (5 min): sube `mod_version` en `tf-client/gradle.properties` y `VERSION` en
-`tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java`; `cd tf-client && ./gradlew build --offline -q`;
+`tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java`; compila con GitHub Actions (push a la rama: el
+workflow «TF Client» compila y revisa los mixins; el dueño lo quiere así, en segundo plano);
 apunta la entrega aquí arriba (bloque «TF Client 1.3.x»); commit, push a la rama, PR y squash-merge (herramientas
 `mcp__github__create_pull_request` / `merge_pull_request`); espera el CI de `main`
 (`curl -s https://api.github.com/repos/modelqdeluxe-ops/ss/actions/runs?head_sha=<sha>`) y comprueba que el enlace fijo baja
@@ -87,7 +89,7 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.67 (estelas de arma en primera y tercera persona,
+**Sin verificar en el juego (solo simulador o compilando)**: la 1.3.68 (solo quita Colores vivos), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
 Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
 y lo de la 1.3.66 (pestañas iguales,
 pad de administrador rehecho, interruptores) y lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
@@ -142,6 +144,11 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
+> **TF Client 1.3.68 (14 oct)** — el dueño: «quita Colores vivos».
+> - **Colores vivos quitado**: borrados `trail/VividColors.java`, `mixin/GameRendererMixin.java`,
+>   `mixin/PostChainAccessor.java` y `assets/tfclient/shaders/post/vivid.json`; fuera de `tfclient.mixins.json`, de
+>   `TrailSettings` y de Efectos › COMBATE. Nada más cambia.
+
 > **TF Client 1.3.67 (14 oct)** — el dueño: «la creación de kits es un dolor de cabeza: dar objetos, asignar monedas…
 > que lo pueda meter todo de un solo», «la ruleta es una mierda: animación lenta, sin sonidos», «la textura de las claims
 > exagerada otra vez: simplistas, sin números ni figuras» y luego «ponle TF siempre con un contorno bonito», «no veo
@@ -167,8 +174,7 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   armas de otros mods). 7 estilos (`TrailProfile`), mezcla brillo/translúcida/sólida, duración, ancho, opacidad, cola,
 >   filo brillante, solo ataques (no al picar bloques), según la carga, al sacar el arma, otros jugadores y mobs con
 >   distancia, qué armas, poco detalle, menos destellos.
-> - **Colores vivos**: un filtro de saturación que salió en la 1.3.67. **El dueño ordenó quitarlo** (14 oct): ya está
->   borrado en `main`, falta publicar la 1.3.68 (ver CHECKPOINT).
+> - **Colores vivos**: un filtro de saturación que salió en la 1.3.67. **El dueño ordenó quitarlo**: fuera en la 1.3.68.
 > - **Efectos › COMBATE** (`PadCombat`): pestaña del cliente (si el servidor no la manda, `PadViewPage.set` la añade);
 >   arriba la vista previa (`TrailPreview`: una espada dando tajos con la estela de los ajustes, con el mismo código del
 >   juego; `PadView.TRAIL_PREVIEW`), abajo todo en filas compactas, RESTABLECER. Simulador: `tools/pad/sim/trail.py`,
@@ -2151,7 +2157,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.66)
+## 5. El mod (TF Client 1.3.68)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
