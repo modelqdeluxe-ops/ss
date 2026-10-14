@@ -49,6 +49,10 @@ public final class TrailSettings {
     public static boolean lowDetail = false;
     public static boolean reducedFlash = false;
     public static boolean swords = true, axes = true, pickaxes = false, shovels = false, hoes = false, others_tools = true;
+    /** Sonido del tajo (1.3.70): un «zas» de aire al golpear con un arma que deja estela; el crítico, más fuerte. */
+    public static boolean sound = true;
+    /** Volumen del tajo (0 a 100 %). */
+    public static int soundVolume = 70;
 
     private static boolean loaded;
 
@@ -91,6 +95,8 @@ public final class TrailSettings {
             shovels = bool(p, "palas", shovels);
             hoes = bool(p, "azadas", hoes);
             others_tools = bool(p, "otras.armas", others_tools);
+            sound = bool(p, "sonido", sound);
+            soundVolume = num(p, "sonido.volumen", soundVolume, 0, 100);
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Client: no se pudieron leer los ajustes de las estelas", e);
         }
@@ -123,6 +129,8 @@ public final class TrailSettings {
         p.setProperty("palas", Boolean.toString(shovels));
         p.setProperty("azadas", Boolean.toString(hoes));
         p.setProperty("otras.armas", Boolean.toString(others_tools));
+        p.setProperty("sonido", Boolean.toString(sound));
+        p.setProperty("sonido.volumen", Integer.toString(soundVolume));
         try (Writer w = Files.newBufferedWriter(file(), StandardCharsets.UTF_8)) {
             p.store(w, "TF Client - estelas de arma");
         } catch (Exception e) {
@@ -142,6 +150,8 @@ public final class TrailSettings {
         lowDetail = reducedFlash = false;
         swords = axes = others_tools = true;
         pickaxes = shovels = hoes = false;
+        sound = true;
+        soundVolume = 70;
     }
 
     private static boolean bool(Properties p, String k, boolean def) {

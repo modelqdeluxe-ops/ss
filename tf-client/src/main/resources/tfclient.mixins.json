@@ -33,7 +33,8 @@
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
     "GuiGraphicsMixin",
-    "PunchyConfigMixin"
+    "PunchyConfigMixin",
+    "GameRendererHandsMixin"
   ],
   "injectors": {
     "defaultRequire": 0
