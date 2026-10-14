@@ -152,6 +152,12 @@ public final class SkillRuntime {
         String faction;
         long gcdUntil;
         long touched;
+        /** tracklocation: el sitio guardado (@TrackedLocation, distanceFromTrackedLocation). */
+        Vec3 tracked;
+        /** La última señal que recibió (condición lastsignal). */
+        String lastSignal;
+        /** Puntuaciones de un mob (setmobscore, settargetscore, modifytargetscore): en memoria, no en el marcador. */
+        final Map<String, Double> scores = new HashMap<>();
     }
 
     static WhoState state(Who w) {
@@ -655,6 +661,8 @@ public final class SkillRuntime {
         if (!CALLS.contains(m.m)) applied++;
         switch (m.m) {
             case "skill", "metaskill", "cast", "s" -> callSkill(m, ctx, targets);
+            // vskill (VariableSkill): como skill, con marcadores en el nombre (ya resueltos al ejecutar la línea)
+            case "vskill", "variableskill", "metavariableskill" -> callSkill(m, ctx, targets);
             case "randomskill" -> randomSkill(m, ctx, targets);
             case "skillsequence" -> {
                 for (String n : m.arg("", "skills", "s").split(",")) callNamed(n.trim(), ctx, targets);
@@ -708,7 +716,7 @@ public final class SkillRuntime {
                 b.a.put("multiplier", m.arg("1", "a", "amount", "multiplier", "m"));
                 damage(b, ctx, targets, true);
             }
-            case "percentdamage" -> percentDamage(m, ctx, targets);
+            case "percentdamage", "damagepercent" -> percentDamage(m, ctx, targets);
             case "heal" -> heal(m, targets, false, ctx.host != null && ctx.caster.entity != null ? ctx.host.healthScale() : 1.0);
             case "healpercent" -> heal(m, targets, true, 1.0);
             case "potion" -> potion(m, ctx, targets);
@@ -735,7 +743,7 @@ public final class SkillRuntime {
             case "setblock", "setblocktype" -> setBlock(m, ctx, targets);
             case "setvariable", "setvar", "variableset" -> setVariable(m, ctx, targets);
             case "variableadd", "varadd" -> addVariable(m, ctx, targets);
-            case "variableunset", "unsetvariable" -> unsetVariable(m, ctx, targets);
+            case "variableunset", "unsetvariable", "unsetvar" -> unsetVariable(m, ctx, targets);
             case "message", "msg", "actionmessage" -> message(m, targets);
             case "variablesubtract", "varsubtract" -> {
                 Mech neg = m.copyWith(new HashMap<>(m.a), m.ta);
@@ -744,11 +752,11 @@ public final class SkillRuntime {
             }
             case "setvarloc", "setvariablelocation" -> setVarLoc(m, ctx, targets);
             // Estado de cada quién
-            case "addtag" -> {
+            case "addtag", "tagadd" -> {
                 String tag = m.arg(null, "tag", "t");
                 for (Tgt t : targets) if (tag != null && t.who != null) state(t.who).tags.add(tag.toLowerCase(Locale.ROOT));
             }
-            case "removetag" -> {
+            case "removetag", "tagremove" -> {
                 String tag = m.arg(null, "tag", "t");
                 for (Tgt t : targets) if (tag != null && t.who != null) state(t.who).tags.remove(tag.toLowerCase(Locale.ROOT));
             }
@@ -768,7 +776,7 @@ public final class SkillRuntime {
                 int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20) / tempo(ctx));
                 state(ctx.caster).gcdUntil = clock + ticks;
             }
-            case "setskillcooldown" -> {
+            case "setskillcooldown", "setskillcd" -> {
                 Meta other = ctx.cls.meta(m.arg(null, "skill", "s"));
                 double sec = num(m.arg("0", "seconds", "s2", "ticks"), 0) / rhythm(ctx);
                 for (Tgt t : targets) {
@@ -793,6 +801,7 @@ public final class SkillRuntime {
                 String sig = m.arg(null, "signal", "s");
                 for (Tgt t : targets) {
                     if (sig == null || t.who == null) continue;
+                    state(t.who).lastSignal = sig;
                     if (t.who.actor != null) t.who.actor.signal(sig, ctx.caster);
                     SkillMobs.Host h = t.who.entity == null ? null : SkillMobs.host(t.who.entity);
                     if (h != null) SkillMobs.signal(h, sig, ctx.caster);
@@ -848,7 +857,7 @@ public final class SkillRuntime {
                     SkillModels.mount(m, ctx, targets);
                 }
             }
-            case "dismountmodel", "dismountall" -> {
+            case "dismountmodel", "dismountall", "dismountallmodel" -> {
                 boolean done = false;
                 for (Tgt t : targets) {
                     SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
@@ -864,12 +873,17 @@ public final class SkillRuntime {
                 for (Tgt t : targets) if (t.living() != null) setImmunity(t.living(), ticks, ctx.cast);
             }
             case "directionalvelocity" -> SkillMotion.directional(m, ctx, targets);
-            case "spin" -> {
-                // spin{velocity=grados por tick;duration=ticks (0 = siempre)}: el efecto gira sobre sí mismo
+            case "spin", "effect:spin" -> {
+                // spin{velocity=grados por tick;duration=ticks (0 = siempre)}: el efecto gira sobre sí mismo; un mob, como
+                // el aura de MythicMobs (SkillMore.spinEntity)
                 float v = (float) num(m.arg("10", "velocity", "v"), 10);
                 int d = (int) num(m.arg("0", "duration", "d"), 0);
                 for (Tgt t : targets) {
-                    if (t.who == null || t.who.actor == null) continue;
+                    if (t.who == null) continue;
+                    if (t.who.actor == null) {
+                        SkillMore.spinEntity(m, ctx, t);
+                        continue;
+                    }
                     t.who.actor.spin = v;
                     t.who.actor.spinUntil = d > 0 ? t.who.actor.age + d : Integer.MAX_VALUE;
                 }
@@ -959,6 +973,20 @@ public final class SkillRuntime {
             case "variablemath", "mathvariable", "varmath", "mathvar" -> SkillMore.variableMath(m, ctx, targets);
             case "switch" -> SkillMore.switchCases(m, ctx, targets);
             case "chainmissile", "cmi" -> SkillMovers.chainMissile(m, ctx, targets);
+            // 1.3.82 (packs nuevos)
+            case "terminable", "stoppable", "cancelable", "exit", "terminatable" -> SkillAuras.terminable(m, ctx, targets);
+            case "teleporty", "tpy" -> SkillMore.teleportY(m, ctx);
+            case "matchrotation", "matchrot" -> SkillMore.matchRotation(m, ctx, targets);
+            case "tracklocation", "settrackedlocation", "stl" -> SkillMore.trackLocation(ctx, targets);
+            case "setdisplayentityitem" -> SkillMore.setDisplayItem(m, targets);
+            case "speak", "speech" -> SkillMore.speak(m, ctx, targets);
+            case "raytraceto" -> SkillMore.rayTraceTo(m, ctx, targets);
+            case "playblockstepsound", "blockstepsound" -> SkillMore.blockStepSound(m, ctx, targets);
+            case "weather" -> SkillMore.weather(m, ctx);
+            case "setmobscore" -> SkillMore.score(m, ctx, targets, true, false);
+            case "settargetscore" -> SkillMore.score(m, ctx, targets, false, false);
+            case "modifytargetscore" -> SkillMore.score(m, ctx, targets, false, true);
+            case "modifymobscore" -> SkillMore.score(m, ctx, List.of(), true, true);
             // MythicMobs dice de ella que aún no funciona («not yet functional... not intended to be used»)
             case "particleequation", "effect:particleequation", "peq", "effect:peq" -> { /* sin efecto, como en MythicMobs */ }
             case "sethealth" -> {
@@ -1191,14 +1219,26 @@ public final class SkillRuntime {
             case "nofall" -> {
                 for (Tgt t : targets) if (t.who != null && t.who.entity != null) t.who.entity.fallDistance = 0F;
             }
-            case "animatearmorstand", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
+            case "runaigoalselector", "aigoal", "aigoals" -> {
+                // Siempre al que lanza: un objetivo de IA más al final de los suyos (clear quita los de antes)
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                String g = m.arg(null, "goal", "aigoalselector", "g", "goalselector", "s", "string", "t", "target");
+                if (h != null && g != null) h.addAiGoal(g, false);
+            }
+            case "runaitargetselector", "aitarget" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                String g = m.arg(null, "target", "aitargetselector", "s", "string", "targetselector", "goal", "g");
+                if (h != null && g != null) h.addAiGoal(g, true);
+            }
+            case "animatearmorstand", "modifyglobalscore",
                     "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "bindhitbox", "cullconfig",
                     "posearmorstand", "removehelditem", "renderinit" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
         }
     }
 
-    private static final Set<String> CALLS = Set.of("skill", "metaskill", "cast", "s", "randomskill", "skillsequence");
+    private static final Set<String> CALLS = Set.of("skill", "metaskill", "cast", "s", "randomskill", "skillsequence", "vskill",
+            "variableskill", "metavariableskill");
 
     /** Opciones de la propia mecánica skill{} (lo demás son parámetros para la skill llamada). */
     private static final Set<String> CALL_KEYS = Set.of("s", "skill", "skills", "$skill", "spell", "delay", "repeat",
@@ -1588,11 +1628,18 @@ public final class SkillRuntime {
         double pct = num(m.arg("0.1", "percent", "p"), 0.1);
         boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi"));
         // ch=true: del total de vida que le queda (no de la máxima)
-        boolean current = bool(m.arg("false", "currenthealth", "ch"));
+        boolean current = bool(m.arg("false", "currenthealth", "current", "c", "ch"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();
-            if (le == null || !canHurt(ctx, le)) continue;
+            if (le == null) continue;
             double base = current ? le.getHealth() : le.getMaxHealth();
+            // Un jefe a sí mismo (damagepercent @self): su propia vida, como damage @self
+            SkillMobs.Host self = SkillMobs.host(le);
+            if (self != null && le == ctx.caster.entity) {
+                self.selfDamage(base * pct, true);
+                continue;
+            }
+            if (!canHurt(ctx, le)) continue;
             double scale = ctx.host != null ? ctx.host.damageMul() : SkillServer.damageScale();
             hurt(ctx, le, base * pct * scale, false, true, noImmunity);
         }
@@ -1605,6 +1652,11 @@ public final class SkillRuntime {
 
     private static final Map<HitKey, SkillHit> SKILL_HITS = new HashMap<>();
     private static long castSeq;
+
+    /** Un uso nuevo de una skill (para poder cortarlo luego con cancelCast). */
+    static long newCast() {
+        return ++castSeq;
+    }
 
     /**
      * Ticks que alguien no recibe otro golpe igual o menor del mismo uso de una skill. Minecraft (y MythicMobs) usan 10,

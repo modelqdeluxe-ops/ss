@@ -138,8 +138,16 @@ public final class SkillDefs {
         public String model;
         /** Daño que recibe por tipo (FIRE 0, FALL 0...): el multiplicador de MythicMobs. */
         public final Map<String, Double> damageModifiers = new HashMap<>();
-        /** IA: «clear» solo = ni se mueve ni mira solo (la Hidra); si no, persigue y mira a su objetivo. */
-        public boolean chases = true;
+        /**
+         * IA de MythicMobs ya puesta sobre la de su tipo de Minecraft ({@link SkillAI}): qué hace (AIGoalSelectors) y a
+         * quién busca (AITargetSelectors). Con «clear» solo (la Hidra), ni se mueve ni mira sola.
+         */
+        public List<String> goals = List.of();
+        public List<String> aiTargets = List.of();
+        /** Options: NoAI (sin IA desde que aparece: ni se mueve ni cae, como en Minecraft). */
+        public boolean noAi;
+        /** Se quema al sol como su tipo (zombi, esqueleto, ahogado, fantasma) si el pack no pone PreventSunburn. */
+        public boolean sunburn;
         /** Barra de jefe de las opciones del mob (BossBar: Enabled): color y estilo. */
         public String barColor;
         public String barStyle;
@@ -472,11 +480,10 @@ public final class SkillDefs {
                         if (p.length >= 2) mob.damageModifiers.put(p[0].toUpperCase(Locale.ROOT), Math.max(0, num(new com.google.gson.JsonPrimitive(p[1]), 1)));
                     }
                 }
-                List<String> goals = new ArrayList<>();
-                if (m.has("ai_goals") && m.get("ai_goals").isJsonArray()) {
-                    for (JsonElement g : m.getAsJsonArray("ai_goals")) if (!g.isJsonNull()) goals.add(g.getAsString().toLowerCase(Locale.ROOT));
-                }
-                mob.chases = !(goals.contains("clear") && goals.size() == 1);
+                mob.goals = SkillAI.apply(SkillAI.vanillaGoals(mob.type), m.has("ai_goals") ? strings(m.get("ai_goals")) : null, false);
+                mob.aiTargets = SkillAI.apply(SkillAI.vanillaTargets(mob.type), m.has("ai_targets") ? strings(m.get("ai_targets")) : null, true);
+                mob.noAi = bool(opts.get("NoAI"));
+                mob.sunburn = SUNBURN.contains(mob.type) && !bool(opts.get("PreventSunburn"));
                 if (m.has("bossbar") && m.get("bossbar").isJsonObject()) {
                     JsonObject bb = m.getAsJsonObject("bossbar");
                     if (bool(bb.get("Enabled"))) {
@@ -492,6 +499,10 @@ public final class SkillDefs {
         }
         return c;
     }
+
+    /** Los tipos de Minecraft que arden al sol (Mob.isSunBurnTick: zombis, esqueletos, ahogados, fantasmas). */
+    private static final java.util.Set<String> SUNBURN = java.util.Set.of("ZOMBIE", "ZOMBIE_VILLAGER", "DROWNED", "SKELETON",
+            "STRAY", "PHANTOM");
 
     /** Tipos de MythicMobs que son un mob con IA (los esbirros); los soportes y los displays son solo efectos. */
     private static final java.util.Set<String> LIVING = java.util.Set.of("WOLF", "HORSE", "ZOMBIE", "SKELETON", "HUSK",

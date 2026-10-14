@@ -27,6 +27,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mythic_ai as AI  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..', '..'))
 JAVA = os.path.join(ROOT, 'src', 'main', 'java', 'net', 'tierrasfantasticas', 'tfclient', 'skills')
@@ -51,8 +54,6 @@ STUB_OK = {
     'dismount': 'los efectos del pack no se montan en nada (los agarres van con mountmodel)',
     'animatearmorstand': 'soportes de armadura de Minecraft: los jefes y sus efectos son modelos de ModelEngine',
     'posearmorstand': 'soportes de armadura de Minecraft: los jefes y sus efectos son modelos de ModelEngine',
-    'runaitargetselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
-    'runaigoalselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
     'feed': 'el hambre es de los jugadores',
     'playanimation': 'el brazo de Minecraft: los jefes son modelos',
     'swing': 'el brazo de Minecraft: los jefes son modelos',
@@ -69,7 +70,7 @@ BONE_MECHS = {'partvis', 'partvisibility', 'brightness', 'changepart', 'segment'
               'jiggleimpulse', 'cycleparts', 'ik', 'inversekinematics', 'iktarget', 'tint', 'vfx', 'vfxchangemodel',
               'animatemodel'}
 # Disparadores que el motor no lanza pero que no hacen falta en estos casos (ver trigger_ok)
-QUIET_TRIGGERS = {'onload', 'onattack'}
+QUIET_TRIGGERS = {'onload'}
 
 
 # ----------------------------------------------------------------------------------------------- lo que sabe el motor
@@ -393,6 +394,8 @@ def audit(bid, engine_sets, warnings=None, prog=None):
     for mob, md in prog['mobs'].items():
         if not md.get('model') and md.get('kind') == 'entity':
             problems.append(f'mob {mob}: sin modelo de ModelEngine (se vería el mob de Minecraft)')
+        lines = list(md['mechs']) + [pm for k, mobs in reach.items() if mob in mobs for pm in tree[k]['mechs']]
+        check_ai(mob, md, lines, problems, warns)
         for i, pm in enumerate(md['mechs']):
             # Sin disparador es ~onCombat, como en MythicMobs
             tr = pm.get('tr') or 'oncombat'
@@ -538,27 +541,74 @@ def trigger_ok(tr, pm, tree, lower, md=None):
         if not_saved():
             return 'los jefes no se guardan en el mundo (BossEntity.shouldBeSaved = false): nunca vuelven del disco'
         return None
-    if tr == 'onattack':
-        # Los jefes no pegan con el golpe de Minecraft: un ~onAttack que solo lo cancela no hace falta
-        if only_cancels(pm, tree, lower, 0):
-            return 'los jefes no pegan con el golpe de Minecraft (solo lo cancelaba)'
-        return None
     return None
+
+
+# Objetivos de IA que solo miran o pasean: un efecto (Invincible, sin IA en el juego) con solo estos no hace nada
+# que importe tampoco en MythicMobs
+_AI_QUIET = {'lookatplayers', 'lookattarget', 'randomlookaround', 'randomnod', 'donothing', 'float'}
+
+
+def check_ai(mob, md, lines, problems, warns):
+    """Su IA de MythicMobs (AIGoalSelectors/AITargetSelectors sobre la de su tipo, runaigoalselector, resetai) frente
+    a lo que hace BossEntity (mythic_ai.AI_OK): lo que no copia es un problema."""
+    ty = str(md.get('type') or '').upper()
+    if ty not in AI.LIVING:
+        return
+    where = f'mob {mob}'
+    opts = md.get('options') or {}
+    for e in AI.unknown(md.get('ai_goals')):
+        warns.append((f'objetivo de IA «{e}» que MythicMobs no conoce (lo ignora: aquí también)', where))
+    for e in AI.unknown(md.get('ai_targets'), True):
+        warns.append((f'objetivo de búsqueda «{e}» que MythicMobs no conoce (lo ignora: aquí también)', where))
+    goals, targets = AI.goals_of(md), AI.targets_of(md)
+    wakes = False
+    for pm in lines:
+        a = pm.get('a', {})
+        if pm['m'] in ('runaigoalselector', 'aigoal', 'aigoals'):
+            g = next((a[k] for k in ('goal', 'aigoalselector', 'g', 'goalselector', 's', 'string', 't', 'target') if k in a), None)
+            if g is not None:
+                goals.append(str(g).lower())
+        elif pm['m'] in ('runaitargetselector', 'aitarget'):
+            g = next((a[k] for k in ('target', 'aitargetselector', 's', 'string', 'targetselector', 'goal', 'g') if k in a), None)
+            if g is not None:
+                targets.append(str(g).lower())
+        elif pm['m'] in ('resetai', 'resetaigoals'):
+            goals += AI.vanilla_goals(ty)
+            wakes = True
+        elif pm['m'] in ('setai', 'setnoai'):
+            on = str(a.get('ai', a.get('a', 'true'))).lower() == 'true'
+            wakes |= on if pm['m'] == 'setai' else not on
+    goals = [g for g in goals if AI.goal_name(g) != 'clear']
+    targets = [t for t in targets if AI.target_name(t) != 'clear']
+    if str(opts.get('NoAI', 'false')).lower() == 'true' and not wakes:
+        return  # sin IA nunca (como en MythicMobs)
+    if md.get('kind') != 'entity':
+        # Un ser vivo con Invincible: aquí es un efecto que no se mueve solo; en MythicMobs tendría esta IA
+        busy = sorted({AI.goal_name(g) for g in goals} - _AI_QUIET)
+        if busy:
+            problems.append(f'{where}: es un efecto (Invincible) pero en MythicMobs su IA hace {", ".join(busy)}: '
+                            f'ponle NoAI o «clear» en el pack, o hazlo un mob de verdad')
+        return
+    vanilla = set(AI.vanilla_goals(ty))
+    for n in sorted({AI.goal_name(g) for g in goals}):
+        origin = f'de su tipo {ty}, sin «clear»' if n in vanilla else 'del pack'
+        if n not in AI.AI_OK:
+            problems.append(f'{where}: la IA «{n}» ({origin}) NO ESTÁ en BossEntity: cópiala de Minecraft/MythicMobs '
+                            f'(SkillAI, BossEntity y mythic_ai.AI_OK)')
+        elif AI.AI_OK[n]:
+            warns.append((f'IA «{n}» ({origin}) no hace nada aquí: {AI.AI_OK[n]}', where))
+    for n in sorted({AI.target_name(t) for t in targets}):
+        if n not in AI.TARGETS_OK:
+            problems.append(f'{where}: busca «{n}» (AITargetSelectors) y BossEntity no lo hace: cópialo (pickTarget)')
+    if not AI.melee(goals) and any(pm.get('tr') == 'onattack' for pm in md['mechs']):
+        warns.append(('~onAttack no salta nunca: su IA no pega con el golpe de Minecraft (tampoco en MythicMobs)', where))
 
 
 def not_saved():
     src = open(os.path.join(ROOT, 'src', 'main', 'java', 'net', 'tierrasfantasticas', 'tfclient', 'bosses',
                             'BossEntity.java'), encoding='utf-8').read()
     return re.search(r'boolean shouldBeSaved\(\)\s*\{\s*return false;', src) is not None
-
-
-def only_cancels(pm, tree, lower, depth):
-    if pm['m'] == 'cancelevent':
-        return True
-    if pm['m'] in ('skill', 'metaskill', 'cast', 's') and depth < 5:
-        n = lower.get(str(pm.get('a', {}).get('s', pm.get('a', {}).get('skill', ''))).lower())
-        return n is not None and all(only_cancels(x, tree, lower, depth + 1) for x in tree[n]['mechs'])
-    return False
 
 
 def selftest():
@@ -593,8 +643,13 @@ def selftest():
         ('disparador del tipo de mob que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'CREEPER'),
                                                                p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onexplode'})),
          'onexplode'),
-        ('~onAttack que hace algo', lambda p: p['mobs'][boss]['mechs'].append({'m': 'damage', 'a': {'a': '5'}, 'tr': 'onattack'}),
-         'onattack'),
+        ('IA de su tipo que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'GHAST'), p['mobs'][boss].pop('ai_goals', None)),
+         'type:ghast'),
+        ('a quién busca que no copia', lambda p: p['mobs'][boss].__setitem__('ai_targets', ['clear', 'villagers']),
+         'villagers'),
+        ('IA que pone una skill y no copia', lambda p: p['mobs'][boss]['mechs'].append({'m': 'runaigoalselector', 'a': {'goal': 'bowattack'},
+                                                                                        'tr': 'onspawn'}),
+         'bowattack'),
         ('modelo que no existe', lambda p: p['mobs'][boss]['mechs'].append({'m': 'model', 'a': {'m': 'modelo_inventado'}, 't': 'self'}),
          'modelo_inventado'),
     ]

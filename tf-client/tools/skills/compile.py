@@ -168,6 +168,22 @@ def parse_line(line):
     for k, dest in (('hitconditions', 'hc'), ('hc', 'hc'), ('stopconditions', 'sc')):
         if k in args and str(args[k]).strip().startswith('['):
             out[dest] = inline_conds(args.pop(k))
+    # raytrace/raytraceTo: sus skills con el nombre largo (es/ls/hs son también otras cosas en otras mecánicas)
+    if out.get('m') in ('raytrace', 'raytraceto'):
+        for short, long_ in (('es', 'entityskill'), ('ls', 'locationskill'), ('hs', 'headshotskill')):
+            if short in args and long_ not in args:
+                args[long_] = args.pop(short)
+        # raytraceConditions: a quién puede tocar el rayo (como las hitConditions de un proyectil)
+        for k in ('raytraceconditions', 'rc', 'rcond', 'rconditions'):
+            if k in args and str(args[k]).strip().startswith('['):
+                out['hc'] = inline_conds(args.pop(k))
+                break
+    # terminable: sus condiciones para cortarse van como stopConditions
+    if out.get('m') in ('terminable', 'stoppable', 'cancelable', 'exit', 'terminatable'):
+        for k in ('terminateconditions', 'conditions', 'cond', 'c'):
+            if k in args and str(args[k]).strip().startswith('['):
+                out['sc'] = inline_conds(args.pop(k))
+                break
     # bounceConditions de chain/chainmissile: a quién puede saltar
     if out.get('m') in ('chain', 'chainmissile', 'cmi'):
         for k in ('bounceconditions', 'conditions', 'cond', 'c'):
@@ -305,8 +321,10 @@ def pick_files(pack_dir):
 
 
 # mecánicas que llaman a otra skill con s= / skill= (en las demás, s= es un sonido, un estado de animación...)
-CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillsequence', 'delayedskill', 'forcepull'}
-CALLBACK_KEYS = ('ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
+CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillsequence', 'delayedskill', 'forcepull', 'vskill',
+           'variableskill', 'metavariableskill'}
+CALLBACK_KEYS = ('onterminate', 'ox', 'entityskill', 'locationskill', 'headshotskill', 'eskill', 'lskill', 'hsskill',
+                 'ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
                  'ontickskill', 'onhitskill', 'onendskill', 'onstartskill', 'then', 'else', 'oncast', 'onapply',
                  'onexpire', 'onattack', 'ondamaged', 'onlandskill', 'onland', 'onbreak', 'ondeath', 'onswing',
                  'ondamagedskill', 'onhitentity', 'onsummon', 'onsummonskill', 'op', 'onpoint', 'onpointskill', 'od',

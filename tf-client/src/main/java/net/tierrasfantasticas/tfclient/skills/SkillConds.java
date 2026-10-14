@@ -63,7 +63,7 @@ final class SkillConds {
                 String range = arg(a, null, "stacks", "s", "amount", "a");
                 yield range == null ? stacks > 0 : inRange(stacks, range);
             }
-            case "crouching", "sneaking", "issneaking" -> e != null && e.isCrouching();
+            case "crouching", "sneaking", "issneaking", "iscrouching" -> e != null && e.isCrouching();
             case "sprinting", "issprinting" -> e != null && e.isSprinting();
             case "onground", "grounded" -> e != null ? e.onGround() : who == null || who.actor == null || !who.actor.physics || who.actor.onGround;
             case "inblock", "blocktype", "inside", "standingon" -> {
@@ -195,7 +195,7 @@ final class SkillConds {
                 SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
                 yield mh == null || mh.target() != null && mh.target().isAlive();
             }
-            case "playerwithin", "playernotwithin" -> {
+            case "playerwithin", "playernotwithin", "playerswithin" -> {
                 // playerWithin{d}: algún jugador (que no sea espectador) a d bloques de quien lanza; como en MythicMobs,
                 // también en creativo (la Gárgola y el Esqueleto despiertan aunque los pruebe el staff).
                 // playerNotWithin{d}: ninguno
@@ -246,7 +246,7 @@ final class SkillConds {
                 Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
                 yield inRange(p.y - ctx.caster.pos().y, arg(a, "0", "diff", "d", "y"));
             }
-            case "modelhaspassengers", "hasmodelpassengers" -> {
+            case "modelhaspassengers", "hasmodelpassengers", "modelhaspassenger" -> {
                 SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
                 yield mh != null && SkillMobs.world != null && !SkillMobs.world.seated(mh, arg(a, null, "p", "pbone", "seat", "part")).isEmpty();
             }
@@ -271,8 +271,14 @@ final class SkillConds {
             case "score" -> {
                 String obj = arg(a, null, "objective", "obj", "o");
                 String entry = arg(a, null, "entry", "ent", "e");
+                if (obj == null) yield false;
+                // La de un mob o efecto (setmobscore, settargetscore): en memoria, con él
+                if (entry == null && who != null && !(e instanceof Player)) {
+                    SkillRuntime.WhoState st = SkillRuntime.stateIfAny(who);
+                    yield inRange(st == null ? 0 : st.scores.getOrDefault(obj, 0.0), arg(a, "0", "value", "val", "v"));
+                }
                 if (entry == null && e != null) entry = e.getScoreboardName();
-                yield obj != null && entry != null && inRange(score(ctx, obj, entry), arg(a, "0", "value", "val", "v"));
+                yield entry != null && inRange(score(ctx, obj, entry), arg(a, "0", "value", "val", "v"));
             }
             case "globalscore", "scoreglobal" -> {
                 String obj = arg(a, null, "objective", "obj", "o");
@@ -457,6 +463,58 @@ final class SkillConds {
                 yield inRange(p.y, arg(a, ">0", "height", "h", "a"));
             }
             case "dead", "isdead" -> who != null && !who.alive();
+            // (1.3.82) packs nuevos
+            case "samefaction" -> {
+                String mine = SkillTargets.faction(ctx.caster), theirs = SkillTargets.faction(who);
+                yield mine != null && mine.equalsIgnoreCase(theirs);
+            }
+            case "lastsignal" -> {
+                SkillRuntime.WhoState st = who == null ? null : SkillRuntime.stateIfAny(who);
+                String want = arg(a, "", "signal", "s");
+                yield st != null && st.lastSignal != null && st.lastSignal.equalsIgnoreCase(want);
+            }
+            // stringEquals{val1;val2}: dos textos iguales (con sus marcadores ya puestos)
+            case "stringequals", "stringeq", "streq" -> SkillRuntime.unquote(arg(a, "", "value1", "val1", "v1"))
+                    .equals(SkillRuntime.unquote(arg(a, "", "value2", "val2", "v2")));
+            // damageAmount{amount}: el golpe del ~onDamaged/~onAttack que la lanza, en ese rango
+            case "damageamount" -> ctx.vars != null && ctx.vars.containsKey("damage-amount")
+                    && inRange(SkillRuntime.num(ctx.vars.get("damage-amount"), 0), arg(a, ">0", "amount", "a"));
+            // ridingModel: va montado en un modelo (un asiento de jefe o el de un efecto)
+            case "ridingmodel" -> e != null && (SkillModels.mountedBy(e) != null || e.getVehicle() instanceof net.tierrasfantasticas.tfclient.bosses.SeatEntity);
+            case "skilloncooldown" -> {
+                SkillDefs.Meta meta = ctx.cls.meta(arg(a, "", "skill", "s"));
+                SkillRuntime.WhoState st = who == null ? null : SkillRuntime.stateIfAny(who);
+                Long until = st == null || meta == null ? null : st.cooldowns.get(meta.name);
+                yield until != null && until > SkillRuntime.clock;
+            }
+            case "blocktypeinradius" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                int r = (int) Math.max(0, Math.min(16, SkillRuntime.num(arg(a, "1", "radius", "r"), 1)));
+                java.util.Set<String> types = new java.util.HashSet<>();
+                for (String t : arg(a, "", "types", "type", "t", "material", "m").toLowerCase(Locale.ROOT).split(",")) {
+                    types.add(t.trim().replace("minecraft:", ""));
+                }
+                BlockPos c0 = BlockPos.containing(p);
+                int n = 0;
+                for (BlockPos q : BlockPos.betweenClosed(c0.offset(-r, -r, -r), c0.offset(r, r, r))) {
+                    if (!ctx.caster.level().isLoaded(q)) continue;
+                    if (types.contains(BuiltInRegistries.BLOCK.getKey(ctx.caster.level().getBlockState(q).getBlock()).getPath())) n++;
+                }
+                yield inRange(n, arg(a, ">0", "amount", "a"));
+            }
+            // distanceFromTrackedLocation{d}: de su sitio guardado (tracklocation) a quien lanza
+            case "distancefromtrackedlocation", "distancefromtl" -> {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(ctx.caster);
+                yield st != null && st.tracked != null && inRange(st.tracked.distanceTo(ctx.caster.pos()), arg(a, ">0", "distance", "d"));
+            }
+            // hitbox / lasthitbox{h} de ModelEngine: la caja (hueso ob_/b_) del mob que se golpeó la última vez
+            case "hitbox", "lasthitbox" -> {
+                SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
+                String last = mh == null ? null : SkillMobs.lastHitbox(mh);
+                boolean hit = false;
+                for (String h : arg(a, "", "hitbox", "h", "part", "p").split(",")) if (last != null && h.trim().equalsIgnoreCase(last)) hit = true;
+                yield hit;
+            }
             default -> {
                 SkillRuntime.warn("condición " + c.m());
                 yield true;

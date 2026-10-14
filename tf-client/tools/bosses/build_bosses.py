@@ -39,6 +39,9 @@ import compile as C  # noqa: E402
 import vfx_bb as B  # noqa: E402
 import vfx_compile as VC  # noqa: E402
 
+sys.path.insert(0, HERE)
+import mythic_ai as AI  # noqa: E402
+
 RES = BS.RES
 OUT = os.path.join(RES, 'bosses')
 OUT_MODELS = os.path.join(OUT, 'models')
@@ -75,16 +78,8 @@ LR_HYDRA_stomp_damage:
 
 # Tipos de MythicMobs que en el juego son un mob de verdad (se les pega, tienen IA); los demás (soportes, marcadores,
 # displays) son efectos que dibuja el cliente. Uno de estos con «Invincible: true» también es solo un efecto (las
-# púas y rocas de Astwood: vindicadores invencibles sin IA).
-LIVING = {'IRON_GOLEM', 'HUSK', 'ZOMBIE', 'VINDICATOR', 'SKELETON', 'WITHER_SKELETON', 'SPIDER', 'RAVAGER', 'PIGLIN_BRUTE',
-          'WOLF', 'POLAR_BEAR', 'GIANT', 'ZOMBIE_VILLAGER', 'PILLAGER', 'EVOKER', 'BLAZE', 'SLIME', 'MAGMA_CUBE',
-          # (1.3.82) el resto de seres vivos de Minecraft que traen los packs nuevos
-          'STRAY', 'DROWNED', 'ZOMBIFIED_PIGLIN', 'PIG_ZOMBIE', 'PIGLIN', 'ILLUSIONER', 'WITCH', 'VEX', 'GHAST', 'PHANTOM',
-          'WARDEN', 'CREEPER', 'ENDERMAN', 'ENDERMITE', 'SILVERFISH', 'CAVE_SPIDER', 'HOGLIN', 'ZOGLIN', 'STRIDER', 'SHULKER',
-          'GUARDIAN', 'ELDER_GUARDIAN', 'WITHER', 'ENDER_DRAGON', 'SNOWMAN', 'SNOW_GOLEM', 'BAT', 'ALLAY', 'CHICKEN', 'PIG',
-          'COW', 'SHEEP', 'GOAT', 'HORSE', 'SKELETON_HORSE', 'ZOMBIE_HORSE', 'DONKEY', 'MULE', 'LLAMA', 'CAMEL', 'FOX',
-          'CAT', 'OCELOT', 'PANDA', 'RABBIT', 'PARROT', 'BEE', 'FROG', 'AXOLOTL', 'TURTLE', 'DOLPHIN', 'SQUID', 'GLOW_SQUID',
-          'VILLAGER', 'WANDERING_TRADER', 'SNIFFER', 'MUSHROOM_COW', 'MOOSHROOM'}
+# púas y rocas de Astwood: vindicadores invencibles sin IA). La lista está en mythic_ai (la usa también el auditor).
+LIVING = AI.LIVING
 # Velocidad por defecto de cada tipo en Minecraft (setspeed{s=X} de MythicMobs = X por esta; atributo movement_speed)
 SPEED = {'IRON_GOLEM': 0.25, 'HUSK': 0.23, 'ZOMBIE': 0.23, 'VINDICATOR': 0.35, 'SKELETON': 0.25,
          'WITHER_SKELETON': 0.25, 'SPIDER': 0.3, 'RAVAGER': 0.3, 'PIGLIN_BRUTE': 0.35, 'WOLF': 0.3,
@@ -161,10 +156,12 @@ def files(pack_dir):
     sk, mb, it = [], [], []
     for d, _, fs in sorted(os.walk(pack_dir)):
         low = d.replace('\\', '/').lower()
-        if re.search(r'/(assets|\.deobfcachedpacks|\.assetcache|modelengine|itemsadder|nexo|oraxen)(/|$)', low):
+        if re.search(r'/(assets|\.deobfcachedpacks|\.assetcache|modelengine|itemsadder|nexo|oraxen|__macosx)(/|$)', low):
             continue
         for f in sorted(fs):
             if not f.lower().endswith(('.yml', '.yaml')) or f.lower() in ('packinfo.yml', 'config.yml', 'plugin.yml'):
+                continue
+            if f.startswith('._'):  # basura de macOS
                 continue
             p = os.path.join(d, f)
             if 'mythicmobs' in low and re.search(r'/skills?(/|$)', low):
@@ -424,6 +421,21 @@ def build(pack_dir, name, conf, sound_events):
             for k in ('mid', 'm', 'modelid', 'model', 'newmodelid', 'nmid', 'nm', 'n', 'newmodel'):
                 if k in a and str(a[k]).lower() in me_models:
                     a[k] = me_models[str(a[k]).lower()]
+        if m == 'setdisplayentityitem':
+            # El objeto del pack (Items: su material y Model) o uno de Minecraft: el modelo que dibuja el efecto
+            name = str(a.get('i', a.get('item', a.get('material', a.get('m', '')))))
+            items_low = {str(k).lower(): v for k, v in (prog.get('items') or {}).items()}
+            idef = items_low.get(name.lower())
+            if idef is not None:
+                mat = idef.get('Id') or idef.get('Material') or 'paper'
+                cmd = idef.get('Model') or idef.get('CustomModelData')
+                mid = display_model(mat, cmd) if cmd is not None else None
+                if mid is None:
+                    mid = f'minecraft:item/{str(mat).lower()}'
+                    item_models[f'{str(mat).lower()}:'] = mid
+                a['itemmodel'] = mid
+            elif name and re.fullmatch(r'[a-z0-9_]+', name.lower()):
+                a['itemmodel'] = item_models.setdefault(f'{name.lower()}:', f'minecraft:item/{name.lower()}')
         if m in ('projectile', 'missile') and str(a.get('bullettype', '')).lower() == 'display':
             mat = a.get('material') or a.get('mat') or 'stone'
             cmd = a.get('model') or a.get('custommodeldata') or a.get('cmd')

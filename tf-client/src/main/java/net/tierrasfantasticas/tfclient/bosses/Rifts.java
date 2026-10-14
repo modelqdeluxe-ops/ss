@@ -285,10 +285,26 @@ public final class Rifts {
         if (cls == null || cls.bossInfo == null) return null;
         BossEntity boss = TFBosses.JEFE.get().create(level);
         if (boss == null) return null;
+        pos = ground(level, pos);
         boss.moveTo(pos.x, pos.y, pos.z, yaw, 0F);
         boss.configure(bossId, cls.bossInfo.mob, diff, players, null);
         level.addFreshEntity(boss);
         return boss;
+    }
+
+    /**
+     * Baja hasta el suelo un sitio que está en el aire (la prueba de /tf boss sale 8 bloques delante del jugador): con
+     * NoAI o setai{ai=false} al aparecer, como en Minecraft, el jefe no caería y se quedaría flotando.
+     */
+    private static Vec3 ground(ServerLevel level, Vec3 pos) {
+        BlockPos p = BlockPos.containing(pos);
+        if (!level.getBlockState(p).getCollisionShape(level, p).isEmpty()) return pos;
+        int drop = 0;
+        while (drop < 32 && p.getY() > level.getMinBuildHeight() && level.getBlockState(p.below()).getCollisionShape(level, p.below()).isEmpty()) {
+            p = p.below();
+            drop++;
+        }
+        return drop == 0 ? pos : new Vec3(pos.x, p.getY(), pos.z);
     }
 
     private static void announce(ServerLevel level, Vec3 at, SkillDefs.BossInfo bi, Difficulty d, int players) {

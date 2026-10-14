@@ -108,9 +108,9 @@ remount
 *remove
 removehelditem
 removeowner
-resetai
-runaigoalselector
-runaitargetselector
+resetai resetaigoals
+*runaigoalselector aigoal aigoals
+*runaitargetselector aitarget
 *sendactionmessage actionmessage
 *sendtitle title
 sendtoast
@@ -133,7 +133,7 @@ setparent
 setpathfindingmalus
 setpose
 *setrotation
-*setskillcooldown
+*setskillcooldown setskillcd
 *setstance
 *settarget
 *settextdisplay
@@ -173,7 +173,7 @@ time
 variablemath varmath
 *variableset setvariable setvar
 *variablesubtract varsubtract
-*variableunset unsetvariable
+*variableunset unsetvariable unsetvar
 *velocity
 weather
 swing
@@ -209,7 +209,7 @@ modelplayerskin modelskin
 billboard
 *mountmodel
 *dismountmodel
-*dismountall
+*dismountall dismountallmodel
 meg_jump
 move
 nofall
@@ -243,6 +243,21 @@ vfxsetvis
 vfxenchant
 vfxtint
 vfxbrightness
+terminable stoppable cancelable exit terminatable
+teleporty tpy
+matchrotation matchrot
+tracklocation settrackedlocation stl
+setdisplayentityitem
+speak speech
+raytraceto
+playblockstepsound blockstepsound
+setmobscore
+settargetscore
+modifymobscore
+percentdamage damagepercent
+addtag tagadd
+removetag tagremove
+variableskill vskill metavariableskill
 """
 
 CONDITIONS = """
@@ -334,6 +349,18 @@ haspermission
 hasai
 *boundingboxesoverlap bbo
 *modelhaspassengers hasmodelpassengers
+samefaction
+lastsignal
+stringequals stringeq streq
+damageamount
+ridingmodel
+skilloncooldown
+blocktypeinradius
+distancefromtrackedlocation distancefromtl
+hitbox lasthitbox
+iscrouching
+playerswithin
+modelhaspassenger
 """
 
 TARGETERS = """
@@ -349,11 +376,11 @@ TARGETERS = """
 playersinworld world
 playersonserver server everyone
 *playersnearorigin pno
-*mobsinradius mir
+*mobsinradius mir mobs
 *mobsnearorigin mno
 *entitiesinradius eir livingentitiesinradius
 *entitiesinring
-*entitiesincone eic
+*entitiesincone eic livingentitiesincone livingincone leic
 *entitiesinline eil
 *entitiesnearorigin eno
 itemsinradius iir
@@ -374,7 +401,7 @@ sphere
 rectangle
 *randomlocationsnearcaster rlnc
 *randomlocationsnearorigin rlno
-*randomlocationsneartargets rlnt
+*randomlocationsneartargets rlnt randomlocationsneartargetlocations rlntl
 blocksinradius bir
 blocksnearorigin bno
 *projectileforward pf
@@ -384,6 +411,15 @@ ownerlocation
 *modelpart mp
 *modelpassengers
 targetblock tb
+entitiesinringnearorigin eirno erno
+ringaroundorigin ringorigin rao
+trackedlocation
+siblings sibling brothers sisters
+playersinringnearorigin pring
+playerlocationsinradius plir
+notlivingnearorigin nonlivingnearorigin nlno
+locationsoftargets locationoftarget lot
+flooroftargets floorsoftarget floorsoftargets
 """
 
 TRIGGERS = """
@@ -399,7 +435,7 @@ TRIGGERS = """
 *onplayerkill
 onkill
 oninteract
-onattack
+*onattack
 onload
 onspawnorload
 onready

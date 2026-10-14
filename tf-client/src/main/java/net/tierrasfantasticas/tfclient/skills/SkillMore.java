@@ -463,6 +463,263 @@ final class SkillMore {
         }
     }
 
+    // ------------------------------------------------------------------------------------------- 1.3.82
+
+    /** teleportY{y}: quien lanza sube o baja a esa altura (y absoluta), en el mismo sitio. */
+    static void teleportY(Mech m, Ctx ctx) {
+        double y = SkillRuntime.num(m.arg("0", "y"), 0);
+        Vec3 p = ctx.caster.pos();
+        place(ctx.caster, new Vec3(p.x, y, p.z), ctx.caster.yaw());
+    }
+
+    /** matchrotation{target=@X} @objetivos: los objetivos miran igual que el primero de @X (su giro y su cabeceo). */
+    static void matchRotation(Mech m, Ctx ctx, List<Tgt> targets) {
+        String spec = m.arg(null, "target", "to", "t", "location", "loc", "l", "of");
+        List<Tgt> ref = spec == null ? (ctx.trigger != null ? List.of(Tgt.of(ctx.trigger)) : List.of()) : SkillTargets.fromString(spec, ctx);
+        if (ref.isEmpty() || ref.get(0).who == null) return;
+        SkillRuntime.Who w = ref.get(0).who;
+        float yaw = w.yaw(), pitch = w.pitch();
+        for (Tgt t : targets) {
+            if (t.who == null) continue;
+            if (t.who.actor != null) {
+                t.who.actor.moveTo(t.who.actor.pos, yaw, pitch);
+                continue;
+            }
+            SkillMobs.Host h = t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+            if (h != null) {
+                h.turn(yaw, false);
+            } else if (t.who.entity != null) {
+                t.who.entity.setYRot(yaw);
+                t.who.entity.setXRot(pitch);
+                t.who.entity.setYHeadRot(yaw);
+            }
+        }
+    }
+
+    /** tracklocation @sitio: guarda ese sitio como el de quien lanza (@TrackedLocation, distanceFromTrackedLocation). */
+    static void trackLocation(Ctx ctx, List<Tgt> targets) {
+        if (targets.isEmpty()) return;
+        SkillRuntime.state(ctx.caster).tracked = targets.get(0).pos();
+    }
+
+    /**
+     * setDisplayEntityItem{item}: el objeto que enseña un item_display del pack (el conversor lo pasa a su modelo de
+     * ítem: «itemmodel»; sin él, nada).
+     */
+    static void setDisplayItem(Mech m, List<Tgt> targets) {
+        String model = m.arg("", "itemmodel");
+        String scale = m.arg("1", "scale");
+        for (Tgt t : targets) {
+            if (t.who != null && t.who.actor != null) t.who.actor.prop("item", model, scale, null);
+        }
+    }
+
+    /**
+     * speak{message;radius=12;offset=1;chatprefix=&lt;caster.name&gt;&amp;f: ;sendchatmessage=true;duration}: quien lanza
+     * «habla»: el texto en un bocadillo encima de él (MESSAGE LENGTH × 4 ticks si no lo dice) y en el chat de quien esté
+     * a «radius» bloques.
+     */
+    static void speak(Mech m, Ctx ctx, List<Tgt> targets) {
+        String msg = SkillRuntime.unquote(m.arg("", "message", "m", "msg")).replace("\\n", " ");
+        if (msg.isBlank()) return;
+        double r = SkillRuntime.num(m.arg("12", "radius", "r"), 12);
+        double off = SkillRuntime.num(m.arg("1", "offset", "o", "yo", "yoffset"), 1);
+        String prefix = SkillVars.text(SkillRuntime.unquote(m.arg("<caster.name>&f<&co> ", "chatprefix", "cp")), ctx, Tgt.of(ctx.caster))
+                .replace("<&co>", ":");
+        String linePrefix = SkillRuntime.unquote(m.arg("&f", "lineprefix", "lp"));
+        int d = (int) SkillRuntime.num(m.arg(String.valueOf(msg.length() * 4), "duration", "d", "ticks", "time", "t"), msg.length() * 4);
+        boolean chat = SkillRuntime.bool(m.arg("true", "sendchatmessage", "chatmessage", "chat"));
+        Vec3 at = ctx.caster.pos();
+        double height = ctx.caster.entity != null ? ctx.caster.entity.getBbHeight() : 1.8;
+        SkillActor a = SkillRuntime.spawnModel(ctx, null, null, 1F, at.add(0, height + off, 0), 0F, 0F);
+        if (a != null) {
+            a.setText(strip(linePrefix + msg));
+            SkillRuntime.later(Math.max(1, d), a::remove);
+        }
+        if (!chat) return;
+        net.minecraft.network.chat.Component line = net.minecraft.network.chat.Component.literal(colors(prefix + msg));
+        for (ServerPlayer p : ctx.caster.level().players()) {
+            if (p.position().distanceToSqr(at) <= r * r) p.sendSystemMessage(line);
+        }
+    }
+
+    private static String strip(String s) {
+        return s.replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
+    }
+
+    /** Los colores «&amp;x» de los packs como los de Minecraft («§x»). */
+    private static String colors(String s) {
+        return s.replaceAll("&([0-9a-fk-orA-FK-OR])", "§$1");
+    }
+
+    /**
+     * raytraceTo{entityskill;locationskill;headshotskill;syo;tyo;fo;uel;sfo;sso;md=50;rw=0.2;ie;hn;vn;rc} @sitio: un rayo
+     * desde quien lanza (sus ojos con uel, el origen con fo, con sus offsets) hacia cada objetivo, que se para en el primer
+     * bloque; si antes toca a un ser (a «rw» de la línea, que cumpla rc), entityskill con él (headshotskill si le da en la
+     * cabeza); si no, locationskill donde acaba el rayo (wiki de MythicMobs, Premium).
+     */
+    static void rayTraceTo(Mech m, Ctx ctx, List<Tgt> targets) {
+        String es = m.arg(null, "entityskill", "eskill"), ls = m.arg(null, "locationskill", "lskill"),
+                hs = m.arg(null, "headshotskill", "hsskill");
+        double syo = SkillRuntime.num(m.arg("0", "startyoffset", "syo", "ystartoffset", "ys"), 0);
+        double tyo = SkillRuntime.num(m.arg("0", "targetyoffset", "tyo", "ytargetoffset", "yt"), 0);
+        double sfo = SkillRuntime.num(m.arg("0", "forwardoffset", "startfoffset", "sfo"), 0);
+        double sso = SkillRuntime.num(m.arg("0", "sideoffset", "soffset", "sso"), 0);
+        double md = SkillRuntime.num(m.arg("50", "maxdistance", "distance", "md", "d"), 50);
+        double rw = SkillRuntime.num(m.arg("0.2", "raywidth", "rw", "w"), 0.2);
+        boolean ignoreEntities = SkillRuntime.bool(m.arg("false", "ignoreentities", "ignoreentity", "ie"));
+        double hn = SkillRuntime.num(m.arg("0", "horizontalnoise", "hn"), 0), vn = SkillRuntime.num(m.arg("0", "verticalnoise", "vn"), 0);
+        boolean fromOrigin = SkillRuntime.bool(m.arg("false", "fromorigin", "fo"));
+        boolean eye = SkillRuntime.bool(m.arg("false", "useeyelocation", "uel"));
+        ServerLevel level = ctx.caster.level();
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        for (Tgt t : targets) {
+            Vec3 base = fromOrigin ? SkillTargets.origin(ctx) : eye ? ctx.caster.eye() : ctx.caster.pos();
+            Vec3 end = t.pos().add(0, tyo, 0);
+            if (hn > 0 || vn > 0) end = end.add(rnd.nextGaussian() * hn, rnd.nextGaussian() * vn, rnd.nextGaussian() * hn);
+            Vec3 flat = end.subtract(base);
+            float yaw = flat.lengthSqr() > 1e-6 ? SkillRuntime.yawOf(flat) : ctx.caster.yaw();
+            Vec3 start = base.add(0, syo, 0).add(SkillRuntime.dir(yaw, 0F).scale(sfo)).add(SkillRuntime.dir(yaw + 90F, 0F).scale(sso));
+            Vec3 d = end.subtract(start);
+            if (d.lengthSqr() < 1e-6) continue;
+            Vec3 stop = start.add(d.normalize().scale(Math.min(md, d.length())));
+            var bh = level.clip(new net.minecraft.world.level.ClipContext(start, stop, net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                    net.minecraft.world.level.ClipContext.Fluid.NONE, ctx.caster.entity));
+            if (bh.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) stop = bh.getLocation();
+            LivingEntity hit = null;
+            Vec3 hitAt = null;
+            if (!ignoreEntities) {
+                double best = Double.MAX_VALUE;
+                var box = new net.minecraft.world.phys.AABB(start, stop).inflate(rw + 1);
+                for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+                    if (!e.isAlive() || e.isSpectator() || e == ctx.caster.entity || e instanceof net.minecraft.world.entity.decoration.ArmorStand) continue;
+                    var clip = e.getBoundingBox().inflate(rw).clip(start, stop);
+                    if (clip.isEmpty()) continue;
+                    if (!m.hc.isEmpty() && !SkillTargets.passes(m.hc, Tgt.of(SkillRuntime.Who.of(e)), ctx)) continue;
+                    double dd = clip.get().distanceToSqr(start);
+                    if (dd < best) {
+                        best = dd;
+                        hit = e;
+                        hitAt = clip.get();
+                    }
+                }
+            }
+            Ctx c = ctx.copy();
+            if (hit != null) {
+                boolean head = hitAt.y >= hit.getEyeY() - 0.25;
+                String skill = head && hs != null ? hs : es;
+                c.origin = hitAt;
+                if (skill != null) SkillRuntime.callNamed(skill, c, List.of(Tgt.of(SkillRuntime.Who.of(hit))));
+            } else if (ls != null) {
+                c.origin = stop;
+                SkillRuntime.callNamed(ls, c, List.of(Tgt.at(stop)));
+            }
+        }
+    }
+
+    /** playblockstepsound: el ruido de pisar el bloque que hay en cada sitio (o bajo él). */
+    static void blockStepSound(Mech m, Ctx ctx, List<Tgt> targets) {
+        ServerLevel level = ctx.caster.level();
+        for (Tgt t : targets) {
+            net.minecraft.core.BlockPos bp = net.minecraft.core.BlockPos.containing(t.pos());
+            var st = level.getBlockState(bp);
+            if (st.isAir()) {
+                bp = bp.below();
+                st = level.getBlockState(bp);
+            }
+            if (st.isAir()) continue;
+            var sound = st.getSoundType().getStepSound();
+            level.playSound(null, bp, sound, net.minecraft.sounds.SoundSource.HOSTILE,
+                    (float) SkillRuntime.num(m.arg("1", "volume", "v"), 1), (float) SkillRuntime.num(m.arg("1", "pitch", "p"), 1));
+        }
+    }
+
+    /** Hasta cuándo dura el tiempo que ven los jugadores de cada mundo (weather) y su número de orden. */
+    private static final Map<ServerLevel, Long> WEATHER_UNTIL = new HashMap<>();
+
+    /**
+     * weather{type=sunny|rainy|stormy;duration=500}: el tiempo del mundo de quien lanza, «duration» ticks. Aquí solo lo
+     * ven sus jugadores (como skybox: paquetes del tiempo de Minecraft): el tiempo de verdad del servidor no cambia
+     * (decisión del dueño: nada de lo que hagan los jefes cambia el mundo). Al acabar, vuelven a ver el de verdad.
+     */
+    static void weather(Mech m, Ctx ctx) {
+        String type = m.arg("sunny", "type", "t").toLowerCase(Locale.ROOT);
+        int d = (int) Math.max(1, SkillRuntime.num(m.arg("500", "duration", "d"), 500));
+        boolean rain = type.startsWith("rain") || type.startsWith("storm") || type.startsWith("thunder");
+        boolean thunder = type.startsWith("storm") || type.startsWith("thunder");
+        ServerLevel level = ctx.caster.level();
+        for (ServerPlayer p : level.players()) {
+            p.connection.send(new ClientboundGameEventPacket(rain ? ClientboundGameEventPacket.START_RAINING
+                    : ClientboundGameEventPacket.STOP_RAINING, 0F));
+            p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, rain ? 1F : 0F));
+            p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, thunder ? 1F : 0F));
+        }
+        long until = level.getGameTime() + d;
+        WEATHER_UNTIL.put(level, until);
+        SkillRuntime.later(d, () -> {
+            if (WEATHER_UNTIL.getOrDefault(level, 0L) != until) return; // otro weather la alargó
+            WEATHER_UNTIL.remove(level);
+            for (ServerPlayer p : level.players()) {
+                p.connection.send(new ClientboundGameEventPacket(level.isRaining() ? ClientboundGameEventPacket.START_RAINING
+                        : ClientboundGameEventPacket.STOP_RAINING, 0F));
+                p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, level.getRainLevel(1F)));
+                p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, level.getThunderLevel(1F)));
+            }
+        });
+    }
+
+    /**
+     * setmobscore{objective;value} (de quien lanza), settargetscore{objective;value} y modifytargetscore{objective;action;
+     * value} (de los objetivos): la puntuación de un mob o efecto. Se guarda en memoria con el mob (la leen score y sus
+     * skills igual que en MythicMobs; el marcador del servidor no se toca). La de un jugador no se escribe (pendiente del
+     * dueño: el auditor lo marca).
+     */
+    static void score(Mech m, Ctx ctx, List<Tgt> targets, boolean self, boolean modify) {
+        String obj = m.arg(null, "objective", "obj", "o");
+        if (obj == null) return;
+        double v = SkillRuntime.num(m.arg("0", "value", "val", "v"), 0);
+        String action = m.arg("SET", "action", "a", "mode").toUpperCase(Locale.ROOT);
+        for (Tgt t : self ? List.of(Tgt.of(ctx.caster)) : targets) {
+            if (t.who == null || t.who.entity instanceof Player) continue;
+            Map<String, Double> scores = SkillRuntime.state(t.who).scores;
+            double now = scores.getOrDefault(obj, 0.0);
+            scores.put(obj, !modify ? v : switch (action) {
+                case "ADD" -> now + v;
+                case "SUBTRACT", "SUB" -> now - v;
+                case "MULTIPLY", "MULT" -> now * v;
+                case "DIVIDE", "DIV" -> v == 0 ? now : now / v;
+                default -> v;
+            });
+        }
+    }
+
+    /**
+     * spin{velocity=18;duration=200} a un mob (efecto:spin): gira sobre sí mismo «velocity» grados por tick (un aura de
+     * MythicMobs); con 0, se queda quieto mirando a donde miraba. Los efectos (actores) giran a su manera (SkillRuntime).
+     */
+    static void spinEntity(Mech m, Ctx ctx, Tgt t) {
+        Entity e = t.entity();
+        if (e == null) return;
+        float v = (float) SkillRuntime.num(m.arg("18", "velocity", "v"), 18);
+        int d = (int) Math.max(1, Math.min(6000, SkillRuntime.num(m.arg("200", "duration", "d", "ticks", "t"), 200)));
+        SkillMobs.Host h = SkillMobs.host(e);
+        float start = e.getYRot();
+        int[] step = {0};
+        Runnable[] tick = new Runnable[1];
+        tick[0] = () -> {
+            if (!e.isAlive()) return;
+            step[0]++;
+            float yaw = v == 0 ? start : start + v * step[0];
+            if (h != null) h.turn(yaw, false);
+            else {
+                e.setYRot(yaw);
+                e.setYHeadRot(yaw);
+            }
+            if (step[0] < d) SkillRuntime.later(1, ctx.cast, tick[0]);
+        };
+        SkillRuntime.later(1, ctx.cast, tick[0]);
+    }
+
     private static void run(Meta meta, Ctx ctx, Tgt t) {
         Ctx c = ctx.copy();
         c.targets = List.of(t);
