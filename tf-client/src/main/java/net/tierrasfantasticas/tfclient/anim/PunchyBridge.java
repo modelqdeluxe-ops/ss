@@ -1,6 +1,9 @@
 package net.tierrasfantasticas.tfclient.anim;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import net.minecraft.client.KeyMapping;
@@ -25,6 +28,10 @@ public final class PunchyBridge {
 
     private static Class<?> config, data, animations;
     private static boolean tried, ok, warned;
+    private static MethodHandle enabledHandle;
+    /** Apagando (1.3.71): todo cuenta como «lista negra» unos ticks con Punchy aún encendido, para que él mismo pare. */
+    private static volatile boolean stopping;
+    private static int stopTicks;
 
     private PunchyBridge() {}
 
@@ -40,6 +47,7 @@ public final class PunchyBridge {
                     } catch (Throwable ignored) {
                         animations = null;
                     }
+                    enabledHandle = MethodHandles.publicLookup().findStatic(config, "isModEnabled", MethodType.methodType(boolean.class));
                     ok = true;
                 }
             } catch (Throwable e) {
@@ -48,6 +56,50 @@ public final class PunchyBridge {
             }
         }
         return ok;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Apagado de verdad (1.3.71). El «Enable Punchy» de Punchy no lo apaga del todo: su tick se para tal cual (lo que
+    // estaba a medias se queda congelado: la mano bajada, el objeto en uso, la cámara...) y varios de sus enganches en
+    // Minecraft no miran si está activado. Por eso: (1) al apagar, unos ticks todo cuenta como su «lista negra» con
+    // Punchy aún encendido, y él mismo para y limpia lo que tenía (enforceBlacklist); (2) luego se apaga; (3) mientras
+    // esté apagado, vanilla() cierra cada enganche suelto (mixins Punchy*Mixin y FishingHookRendererMixin).
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** ¿Debe verse todo como en Minecraft normal? (Punchy apagado o apagándose). Rápido: se pregunta muchas veces. */
+    public static boolean vanilla() {
+        if (stopping) return true;
+        if (!available() || enabledHandle == null) return false;
+        try {
+            return !(boolean) enabledHandle.invokeExact();
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /** Apaga Punchy dejando que antes pare lo que estaba haciendo (ver arriba). */
+    public static void turnOff() {
+        if (!available()) return;
+        stopping = true;
+        stopTicks = 10;
+    }
+
+    public static void turnOn() {
+        stopping = false;
+        write(d -> set(d, "enableMod", true));
+    }
+
+    /** RESTABLECER y similares: si estaba apagándose, ya no. */
+    public static void cancelStop() {
+        stopping = false;
+    }
+
+    /** Cada tick del cliente (AnimSettings): acaba el apagado. Solo cuenta si el juego no está en pausa (Punchy tampoco). */
+    public static void tick(Minecraft mc) {
+        if (!stopping || mc.isPaused()) return;
+        if (--stopTicks > 0) return;
+        write(d -> set(d, "enableMod", false));
+        stopping = false;
     }
 
     /** La versión de Punchy que se está usando (la de TF Client o la suelta), o "". */

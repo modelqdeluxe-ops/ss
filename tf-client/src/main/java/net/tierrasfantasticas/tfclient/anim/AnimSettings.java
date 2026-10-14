@@ -26,6 +26,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -133,6 +134,12 @@ public final class AnimSettings {
             // un objeto raro de otro mod: «otros»
         }
         return Kind.OTHER;
+    }
+
+    /** Acaba el apagado de Punchy cuando toca (PunchyBridge.turnOff). */
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) PunchyBridge.tick(net.minecraft.client.Minecraft.getInstance());
     }
 
     // las etiquetas (espadas, hachas...) llegan al entrar en un mundo: lo apuntado antes puede estar mal
