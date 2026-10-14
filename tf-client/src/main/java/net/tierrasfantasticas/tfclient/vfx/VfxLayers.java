@@ -489,10 +489,10 @@ public final class VfxLayers {
         // animatemodel: lo puesto a mano, encima de todo
         float[] global = null;
         for (java.util.Map.Entry<Integer, float[]> e : manual.entrySet()) {
-            int b = e.getKey();
-            if (b < 0 || b >= n) continue;
+            int bone = e.getKey();
+            if (bone < 0 || bone >= n) continue;
             float[] mv = e.getValue();
-            int o = b * 9;
+            int o = bone * 9;
             boolean ov = mv[9] > 0, glob = mv[11] > 0;
             for (int k = 0; k < 3; k++) {
                 extra[o + 3 + k] = ov ? mv[k] : extra[o + 3 + k] + mv[k];
@@ -501,13 +501,13 @@ public final class VfxLayers {
                 if (!glob) extra[o + k] += mv[3 + k];
             }
             // copy=false: sin el giro de reposo del hueso
-            if (mv[10] <= 0) for (int k = 0; k < 3; k++) extra[o + k] -= m.bones[b].rot[k];
+            if (mv[10] <= 0) for (int k = 0; k < 3; k++) extra[o + k] -= m.bones[bone].rot[k];
             if (glob) {
                 if (global == null) {
                     global = new float[n * 3];
                     java.util.Arrays.fill(global, Float.NaN);
                 }
-                System.arraycopy(mv, 3, global, b * 3, 3);
+                System.arraycopy(mv, 3, global, bone * 3, 3);
             }
         }
         VfxPose.build(m, extra, headYaw, headPitch, out, headLimits, global);
