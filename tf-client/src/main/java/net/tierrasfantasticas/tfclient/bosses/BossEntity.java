@@ -73,6 +73,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private float maxHead = 30F, maxBody = 30F;
     private int rotDelay, rotDuration;
     private int turnWait;
+    private int blendUntil;
+    private int nextBackstep;
     private float bodyYaw;
     /** Hacia dónde mira la entidad (ver {@link #lookYaw()}): sigue a su objetivo aunque el modelo gire despacio. */
     private float lookYaw;
@@ -278,6 +280,54 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public double smart() {
         return difficulty.smart();
+    }
+
+    /**
+     * Lo rápido que ataca: la velocidad de la dificultad (Fácil 0,9 … Demencial 1,25) y algo más cuanto más listo (hasta
+     * +12 %). Sus animaciones y los retardos de sus ataques van a la vez, así los golpes caen donde se ven.
+     */
+    @Override
+    public double tempo() {
+        return difficulty.speed() * (1 + 0.12 * difficulty.smart());
+    }
+
+    @Override
+    public int minLerp() {
+        return age < blendUntil ? 5 : 0;
+    }
+
+    @Override
+    public void blend(int ticks) {
+        blendUntil = age + ticks;
+    }
+
+    @Override
+    public double[] motion() {
+        return new double[] {speedMul, speedSet ? 1 : 0, locked ? 1 : 0, maxHead, maxBody, rotDelay, rotDuration, ai ? 1 : 0};
+    }
+
+    @Override
+    public void restoreMotion(double[] m) {
+        if (m == null || m.length < 7) return;
+        speedMul = m[0];
+        speedSet = m[1] > 0;
+        applySpeed();
+        locked = m[2] > 0;
+        setBodyRotation((float) m[3], (float) m[4], (int) m[5], (int) m[6]);
+        if (m.length > 7 && (m[7] > 0) != ai) setAi(m[7] > 0);
+    }
+
+    /** Un salto corto hacia atrás (hacer sitio para su siguiente ataque, como los jefes de los Souls). */
+    @Override
+    public boolean backstep(Vec3 away) {
+        if (!onGround() || age < nextBackstep || locked || !ai || dying()) return false;
+        Vec3 d = new Vec3(away.x, 0, away.z);
+        if (d.lengthSqr() < 1e-4) return false;
+        d = d.normalize().scale(0.8);
+        setDeltaMovement(d.x, 0.3, d.z);
+        hurtMarked = true;
+        nextBackstep = age + 70 + getRandom().nextInt(60);
+        return true;
     }
 
     @Override
@@ -559,9 +609,16 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             double[] plan = SkillMobs.plan(this);
             if (plan != null) {
                 double want = Math.max(stop, plan[0]);
+                double min = plan.length > 2 ? plan[2] : 0;
                 double d = Math.sqrt(horizontalDistanceSqr(target.position()));
                 Vec3 rel = position().subtract(target.position()).multiply(1, 0, 1);
-                if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
+                if (d < min - 0.2 && rel.lengthSqr() > 1e-4 && !SkillMobs.attacking(this)) {
+                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más; si
+                    // te pegabas a ella se quedaba quieta): paso atrás y se aparta
+                    if (difficulty.smart() >= 0.6 && d < min - 0.8) backstep(rel);
+                    goal = position().add(rel.normalize().scale(4));
+                    stop = 0.6;
+                } else if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
                     // Rodear: un punto 25° más allá alrededor del objetivo, a la distancia que busca
                     double ang = Math.toRadians(25 * plan[1]);
                     Vec3 dir = rel.normalize();
@@ -642,10 +699,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 bodyYaw += Mth.clamp(diff - Math.signum(diff) * maxHead, -30F, 30F);
                 diff = Mth.wrapDegrees(want - bodyYaw);
             }
-            // y, pasados «rde» ticks, el cuerpo se pone de frente en «rdu»
+            // y, pasados «rde» ticks, el cuerpo se pone de frente en «rdu» (más rápido cuanto más listo: con 100 %, el
+            // retraso es un 20 % y el giro un 30 % de los del pack, que pesaban 2 s + 3 s)
+            double sm = difficulty.smart();
+            int delay = (int) Math.round(rotDelay * (1 - 0.8 * sm));
+            int duration = (int) Math.round(rotDuration * (1 - 0.7 * sm));
             if (Math.abs(diff) > Math.max(1F, maxBody) || maxBody == 0 && Math.abs(diff) > 0.5F) {
-                if (++turnWait >= rotDelay) {
-                    float step = rotDuration <= 0 ? diff : diff * Math.min(1F, 3F / rotDuration);
+                if (++turnWait >= delay) {
+                    float step = duration <= 0 ? diff : diff * Math.min(1F, 3F / duration);
                     if (Math.abs(step) < 1F && Math.abs(diff) > 1F) step = Math.signum(diff);
                     bodyYaw += step;
                 }

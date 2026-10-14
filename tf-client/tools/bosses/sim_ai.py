@@ -3,9 +3,11 @@ motor de Java (SkillRuntime/SkillConds/SkillMobs) contra un jugador que se mueve
 ataques salen. Sirve para ver si el pack se queda bloqueado (una variable que no caduca, un cooldown que se pone sin
 salir, un gcd que no es del jefe...) y si usa todos sus ataques.
 
-    python3 tools/bosses/sim_ai.py [jefe ...] [--min 5] [--seed 1] [--smart 0..1] [-v] [--antes]
+    python3 tools/bosses/sim_ai.py [jefe ...] [--min 5] [--seed 1] [--dif normal] [--smart 0..1] [-v] [--antes]
 
---smart N: con el cerebro táctico (skills/SkillBrain.java) a esa inteligencia (0 = el pack tal cual, por defecto).
+--dif P: una dificultad de /tf boss (facil, normal, dificil, pesadilla, demencial): su inteligencia, su velocidad
+(el tempo de los ataques) y su ritmo (cooldowns). --smart N: solo la inteligencia del cerebro táctico
+(skills/SkillBrain.java; 0 = el pack tal cual, por defecto).
 El jugador simulado, además de moverse y pegar, a veces se cura (come), se cubre con escudo o dispara con arco, y se
 mide si el jefe le castiga (cuántas curas reciben un ataque que acorta distancia o a distancia en el segundo y medio
 siguiente) y cuánto repite ataques seguidos. --antes: el motor de la 1.3.75 (para comparar).
@@ -109,6 +111,16 @@ class Boss:
 OLD = False  # --antes: como el motor de la 1.3.75 (para comparar)
 
 SMART = 0.0  # --smart: inteligencia del cerebro (como Difficulty.smart)
+SPEED = 1.0  # --dif: velocidad de la dificultad (Difficulty.speed)
+RHYTHM = 1.0  # --dif: ritmo de la dificultad (Difficulty.rhythm)
+# Como Difficulty.PRESETS: (velocidad, ritmo, inteligencia)
+PRESETS = {'facil': (0.9, 0.8, 0.3), 'normal': (1.0, 1.0, 0.55), 'dificil': (1.08, 1.15, 0.75),
+           'pesadilla': (1.16, 1.3, 0.9), 'demencial': (1.25, 1.5, 1.0)}
+
+
+def tempo():
+    """BossEntity.tempo (SkillRuntime.tempo): los retardos y el gcd de sus ataques se dividen por esto."""
+    return max(0.5, min(2.0, SPEED * (1 + 0.12 * SMART)))
 
 OFFENSE = {'damage', 'basedamage', 'hit', 'percentdamage', 'throw', 'projectile', 'missile', 'shoot', 'totem', 'summon',
            'lunge', 'propel', 'leap', 'mountmodel', 'stun', 'ignite', 'pull'}
@@ -122,6 +134,9 @@ class Attack:
         self.min, self.max = 0.0, 40.0
         self.gap = self.ranged = self.aoe = self.grab = self.rear = False
         self.uses = self.hits = self.miss = 0
+        self.active_end = 0
+        self.gcd = 0
+        self.no_cancel = False
 
     def sweet(self):
         hi = min(self.max, 24)
@@ -244,9 +259,47 @@ def analyze(tree, name, meta, at):
             for sn, sub in called(tree, pm):
                 tags(sn, sub, seen, depth + 1, call_area)
     tags(name, meta, set(), 0, False)
+    at.active_end = active_end(tree, name, meta, 0, set(), 0)
+    for pm in meta['mechs']:
+        a = pm.get('a', {})
+        if pm['m'] in ('gcd', 'setgcd', 'globalcooldown'):
+            at.gcd = max(at.gcd, int(num(arg(a, 20, 'ticks', 't', 'duration', 'd', '_'), 20)))
+        if pm['m'] in ('setvar', 'setvariable') and arg(a, None, 'duration', 'd') is None:
+            at.no_cancel = True
+    if at.grab:
+        at.no_cancel = True
     if not at.ranged and not at.gap and at.min >= 6 and at.max >= 12:
         at.ranged = True
     return at
+
+
+ACTIVE = {'damage', 'basedamage', 'hit', 'percentdamage', 'throw', 'projectile', 'missile', 'shoot', 'totem', 'summon',
+          'lunge', 'propel', 'leap', 'pull', 'mountmodel', 'potion', 'velocity'}
+
+
+def active_end(tree, name, meta, start, seen, depth):
+    """SkillBrain.activeEnd: tick en que acaba lo último que hace el ataque (lo de después es recuperación)."""
+    if meta is None or depth > 4 or name.lower() in seen:
+        return start
+    seen = seen | {name.lower()}
+    t = end = start
+    for pm in meta['mechs']:
+        a = pm.get('a', {})
+        if pm['m'] == 'delay':
+            t += int(max(0, num(arg(a, 0, '_', 'ticks', 't', 'd'), 0)))
+            continue
+        at = t + int(num(a.get('delay'), 0))
+        rep_ = int(num(arg(a, 0, 'repeat', 'r_'), 0))
+        every = int(max(1, num(arg(a, 1, 'repeatinterval', 'repeati', 'ri'), 1)))
+        last = at + rep_ * every
+        if pm['m'] in ACTIVE and not (pm.get('t') == 'self' and pm['m'] in ('potion', 'velocity')):
+            extra = int(num(arg(a, 2, 'maxduration', 'md'), 2)) if pm['m'] == 'totem' else \
+                10 if pm['m'] in ('projectile', 'missile') else 2
+            end = max(end, last + extra)
+        if pm['m'] in ('skill', 'metaskill', 'randomskill', 'skillsequence'):
+            for sn, sub in called(tree, pm):
+                end = max(end, active_end(tree, sn, sub, last, seen, depth + 1))
+    return end
 
 
 class Brain:
@@ -287,8 +340,14 @@ class Brain:
         self.current = None
         self.current_at = 0
         self.current_hit = False
+        self.current_cast = 0
+        self.chain_tried = False
+        self.chains = 0
+        self.planned = None
+        self.planned_until = 0
+        self.plan_check = 0
+        self.can = []
         self.preferred = 3.0
-        self.preferred_until = 0
         self.strafe = 1
         self.strafe_until = 0
 
@@ -348,6 +407,8 @@ class Brain:
         for i, r in enumerate(self.recent):
             if r == a.name:
                 sc -= SMART * (2.2 if i == 0 else 0.9 if i == 1 else 0.3)
+        if a is self.planned:
+            sc += SMART * 1.2
         if a.uses >= 2:
             sc += SMART * (1.2 * a.hits / a.uses - 0.35 * min(4, a.miss))
         sc += random.random() * (0.35 + 2.6 * (1 - SMART))
@@ -365,6 +426,13 @@ class Brain:
         if st['healing'] and SMART >= 0.5:
             self.urgent = True
         if b.gcd > s.t:
+            # Combos (SkillBrain.chain): pasada la parte peligrosa, a veces corta la recuperación y encadena otro
+            cur = self.current
+            if SMART >= 0.6 and cur is not None and not cur.no_cancel and cur.gcd > 0 and not self.chain_tried \
+                    and now - self.current_at >= cur.active_end / tempo() + 3 and b.gcd - s.t > 6:
+                self.chain_tried = True
+                if random.random() < 0.3 + 0.55 * SMART:
+                    self.chain(st)
             return
         if not self.urgent and now < self.next:
             return
@@ -376,7 +444,7 @@ class Brain:
         if not ok:
             self.urgent = False
             return
-        if not self.urgent and not self.hesitated and SMART >= 0.5 and random.random() < 0.16:
+        if not self.urgent and not self.hesitated and SMART >= 0.5 and random.random() < 0.24 * (1 - SMART):
             self.hesitated = True
             self.hesitate_until = now + 3 + random.randrange(10)
             return
@@ -394,9 +462,29 @@ class Brain:
                 break
             ok = self.usable()
 
+    def chain(self, st):
+        s, b = self.sim, self.sim.b
+        saved = b.gcd
+        b.gcd = s.t
+        ok = [a for a in self.usable() if a is not self.current]
+        if not ok:
+            b.gcd = saved
+            return
+        best = max(ok, key=lambda a: self.score(a, st))
+        s.cancel_cast(self.current_cast)
+        self.chains += 1
+        if s.verbose:
+            print(f'{s.t:6d}        combo: {self.current.name} -> {best.name}')
+        self.fire(best)
+
     def fire(self, a):
         s = self.sim
-        ctx = {'targets': None, 'vars': {}, 'depth': 0}
+        s.cast_seq += 1
+        ctx = {'targets': None, 'vars': {}, 'depth': 0, 'cast': s.cast_seq}
+        self.current_cast = s.cast_seq
+        self.chain_tried = False
+        if a is self.planned:
+            self.planned_until = 0
         s.firing = a
         if a.pool:
             s.run_meta(a.name, dict(ctx, targets=s.targets(a.line, ctx)))
@@ -421,23 +509,72 @@ class Brain:
                 att.hits += 1
         s.later(15, land)
 
+    def attacking(self):
+        """SkillBrain.attacking: su gcd o lo que dura el ataque elegido (packs sin gcd: Abominación, Astwood)."""
+        s = self.sim
+        if s.b.gcd > s.t:
+            return True
+        return self.current is not None and s.t - self.current_at < self.current.active_end / tempo()
+
+    MOMENT = {'distance', 'targetwithin', 'targetnotwithin', 'playerwithin', 'playernotwithin', 'offgcd', 'gcd',
+              'fieldofview', 'fov', 'infieldofview', 'lineofsight', 'los', 'ydiff'}
+
+    def possible(self, a):
+        """SkillBrain.possible: ¿es de su fase y su postura? (sin distancia, cooldown ni gcd)"""
+        s = self.sim
+        if a.line.get('hp') and not s.hp_ok(a.line['hp']):
+            return False
+        meta = s.tree.get(a.name.lower())
+        ctx = {'targets': None, 'vars': {}, 'depth': 0}
+        for c in meta.get('conditions', []):
+            if c['m'] in self.MOMENT:
+                continue
+            act = str(c.get('v', 'true')).lower()
+            if act.startswith('cast ') or act.startswith('power'):
+                continue
+            r = s.cond(c, 'boss', ctx)
+            if act.startswith('castinstead'):
+                if r:
+                    return True
+                continue
+            if not s.passes(c, r):
+                return False
+        return True
+
     def plan(self):
         s, b = self.sim, self.sim.b
-        if SMART < 0.4 or not b.target:
+        if not b.target:
             return None
         now = s.t
-        if now >= self.preferred_until:
-            soon = [a for a in self.attacks if b.cooldowns.get(meta_key(a.name), -1) - s.t < 40] or self.attacks
-            pick = random.choice(soon)
-            self.preferred = max(1.5, min(pick.sweet(), 14))
-            self.preferred_until = now + 60 + random.randrange(60)
+        if now >= self.plan_check:
+            self.plan_check = now + 10
+            can = [a for a in self.attacks if self.possible(a)]
+            if can:
+                self.can = can
+            if self.planned is None or now >= self.planned_until or self.planned not in self.can:
+                soon = [a for a in self.can if b.cooldowns.get(meta_key(a.name), -1) - s.t < 40] or list(self.can)
+                random.shuffle(soon)
+
+                def age(a):
+                    return self.recent.index(a.name) if a.name in self.recent else 99
+                self.planned = max(soon, key=age) if soon else None
+                self.planned_until = now + 60 + random.randrange(60)
+        p = self.planned
+        if p is None:
+            return None
+        if SMART < 0.4:
+            near = min([a.min for a in self.can] or [99])
+            if near < 1 or near > 12:
+                return None
+            return near + 0.5, 0, (near if self.waiting else 0), 40
+        self.preferred = max(1.5, min(p.sweet(), 14))
         strafe = 0
         if SMART >= 0.6 and self.waiting and b.gcd <= s.t:
             if now >= self.strafe_until:
                 self.strafe = random.choice([1, -1])
                 self.strafe_until = now + 40 + random.randrange(50)
             strafe = self.strafe
-        return self.preferred, strafe
+        return self.preferred, strafe, (min(p.min, 12) if self.waiting else 0), min(p.max, 40)
 
 
 
@@ -459,6 +596,9 @@ class Sim:
         self.last_shot = -1000
         self.heals = []  # (empieza, ¿castigada?)
         self.firing = None
+        self.cast_seq = 0
+        self.next_backstep = 0
+        self.backsteps = 0
         self.brain = Brain(self) if SMART > 0 else None
 
     # ------------------------------------------------------------------ jugador
@@ -529,7 +669,16 @@ class Sim:
                 want = max(stop, plan[0])
                 rx, rz = b.x - self.px, b.z - self.pz
                 rl = math.hypot(rx, rz) or 1e-6
-                if plan[1] and d < want + 3:
+                if d < plan[2] - 0.2 and not self.brain.attacking():
+                    # Demasiado cerca para lo que va a hacer: paso atrás (≈2,5 bloques) y se aparta
+                    if SMART >= 0.6 and d < plan[2] - 0.8 and self.t >= self.next_backstep and not b.locked:
+                        b.x += rx / rl * 2.5
+                        b.z += rz / rl * 2.5
+                        self.next_backstep = self.t + 70 + random.randrange(60)
+                        self.backsteps += 1
+                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
+                    stop = 0.6
+                elif plan[1] and d < want + 3:
                     ang = math.radians(25 * plan[1])
                     ux, uz = rx / rl, rz / rl
                     tx = ux * math.cos(ang) - uz * math.sin(ang)
@@ -557,7 +706,7 @@ class Sim:
         if b.chases and b.ai:
             b.look = wrap(b.look + max(-30, min(30, wrap(want - b.look))))
             if not b.locked:
-                track = (2 + 8 * SMART) if (self.brain and SMART >= 0.4 and b.gcd > self.t) else 0
+                track = (2 + 8 * SMART) if (self.brain and SMART >= 0.4 and self.brain.attacking()) else 0
                 if track and not moving:
                     b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
                 elif moving:
@@ -587,7 +736,7 @@ class Sim:
         return in_range(pct, spec.replace('%', ''))
 
     def rhythm(self):
-        r = 1.0
+        r = RHYTHM
         if SMART >= 0.5:
             hp = self.b.hp / self.b.maxhp
             if hp < 0.5:
@@ -729,18 +878,23 @@ class Sim:
         while i < len(mechs):
             pm = mechs[i]
             if pm['m'] == 'delay':
-                ticks = int(num(arg(pm.get('a', {}), 0, '_', 'ticks', 'd'), 0))
+                ticks = int(max(0, round(num(arg(pm.get('a', {}), 0, '_', 'ticks', 'd'), 0) / tempo())))
                 rest = i + 1
-                self.later(ticks, lambda r=rest: self.script(mechs, ctx, r, name))
+                self.later(ticks, lambda r=rest: self.script(mechs, ctx, r, name), ctx.get('cast', 0))
                 return
             self.exec(pm, ctx)
             i += 1
 
-    def later(self, ticks, fn):
+    def later(self, ticks, fn, cast=0):
         if ticks <= 0:
             fn()
         else:
-            self.tasks.append((self.t + ticks, fn))
+            self.tasks.append((self.t + ticks, cast, fn))
+
+    def cancel_cast(self, cast):
+        """SkillRuntime.cancelCast: lo que le queda a ese uso (sus delay) ya no sale."""
+        if cast:
+            self.tasks = [x for x in self.tasks if x[1] != cast]
 
     def exec(self, pm, ctx):
         a = pm.get('a', {})
@@ -749,9 +903,10 @@ class Sim:
                 return
         if pm.get('ch') not in (None, 1, 1.0) and random.random() >= float(pm['ch']):
             return
-        delay = int(num(a.get('delay'), 0))
+        delay = int(max(0, round(num(a.get('delay'), 0) / tempo())))
         repeat = int(num(arg(a, 0, 'repeat'), 0))
-        every = max(1, int(num(arg(a, 1, 'repeatinterval', 'repeati'), 1)))
+        every = max(1, int(round(num(arg(a, 1, 'repeatinterval', 'repeati'), 1) / tempo())))
+        cast = ctx.get('cast', 0)
 
         def once():
             self.apply(pm, ctx, self.targets(pm, ctx))
@@ -759,9 +914,9 @@ class Sim:
         def step(left):
             once()
             if left > 0:
-                self.later(every, lambda: step(left - 1))
+                self.later(every, lambda: step(left - 1), cast)
 
-        self.later(delay, lambda: step(min(repeat, 200)))
+        self.later(delay, lambda: step(min(repeat, 200)), cast)
 
     def targets(self, pm, ctx):
         t = pm.get('t')
@@ -795,6 +950,8 @@ class Sim:
                 return
             b.vars[name] = str(arg(a, '', 'value', 'val', 'v')).strip('"')
             dur = int(num(arg(a, 0, 'duration', 'd'), 0))
+            if dur > 0:
+                dur = max(1, round(dur / tempo()))
             tok = object()
             b.var_until[name] = tok
             if dur > 0 and not OLD:
@@ -812,7 +969,7 @@ class Sim:
         elif m in ('gcd', 'setgcd', 'globalcooldown'):
             if OLD and 'boss' not in targets:
                 return
-            b.gcd = self.t + int(num(arg(a, 20, 'ticks', 't', 'duration', 'd', '_'), 20))
+            b.gcd = self.t + int(round(num(arg(a, 20, 'ticks', 't', 'duration', 'd', '_'), 20) / tempo()))
         elif m == 'setskillcooldown':
             if 'boss' in targets:
                 b.cooldowns[meta_key(arg(a, '', 'skill', 's'))] = self.t + round(num(arg(a, 0, 'seconds', 'ticks'), 0) * 20)
@@ -889,10 +1046,10 @@ def run(boss_id, minutes, seed, verbose):
     end = int(minutes * 1200)
     while s.t < end and s.b.hp > 0:
         s.t += 1
-        due = [f for at, f in s.tasks if at <= s.t]
-        s.tasks = [(at, f) for at, f in s.tasks if at > s.t]
-        for f in due:
-            f()
+        due = [x for x in s.tasks if x[0] <= s.t]
+        s.tasks = [x for x in s.tasks if x[0] > s.t]
+        for x in due:
+            x[2]()
         s.player_step()
         s.boss_step()
         s.timers()
@@ -918,10 +1075,14 @@ def main():
     minutes = float(args[args.index('--min') + 1]) if '--min' in args else 5
     seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 1
     verbose = '-v' in args
-    global OLD, SMART
+    global OLD, SMART, SPEED, RHYTHM
     OLD = '--antes' in args
-    SMART = float(args[args.index('--smart') + 1]) if '--smart' in args else 0.0
-    bosses = [a for a in args if not a.startswith('-') and not re.match(r'^[\d.]+$', a)] or \
+    if '--dif' in args:
+        SPEED, RHYTHM, SMART = PRESETS[args[args.index('--dif') + 1]]
+    if '--smart' in args:
+        SMART = float(args[args.index('--smart') + 1])
+    skip = {args[i + 1] for i, a in enumerate(args) if a in ('--dif', '--min', '--seed', '--smart') and i + 1 < len(args)}
+    bosses = [a for a in args if not a.startswith('-') and a not in skip and not re.match(r'^[\d.]+$', a)] or \
         [c['id'] for c in json.load(open(os.path.join(RES, 'catalog.json'), encoding='utf-8'))]
     for bid in bosses:
         s = run(bid, minutes, seed, verbose)
@@ -940,7 +1101,8 @@ def main():
             print('     sin salir:', ', '.join(never))
         rep = sum(1 for i in range(1, len(s.b.timeline)) if s.b.timeline[i][1] == s.b.timeline[i - 1][1])
         punished = sum(1 for h in s.heals if h[1])
-        print(f'     repite seguido: {rep} de {max(0, len(s.b.timeline) - 1)}; curas castigadas: {punished} de {len(s.heals)}')
+        print(f'     repite seguido: {rep} de {max(0, len(s.b.timeline) - 1)}; curas castigadas: {punished} de {len(s.heals)}'
+              + (f'; combos: {s.brain.chains}; pasos atrás: {s.backsteps}' if s.brain else ''))
         if s.brain:
             for a in s.brain.attacks:
                 tags = ','.join(k for k in ('gap', 'ranged', 'aoe', 'grab', 'rear') if getattr(a, k))

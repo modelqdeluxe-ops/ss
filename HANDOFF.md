@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.77**: jefes de incursión con cerebro táctico tipo Souls; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.78**: jefes con combos, tempo, giro rápido, paso atrás, modelos completos y auditor; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,10 +55,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.77) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.78) — lee esto primero
 
-**Estado**: última versión publicada **1.3.77** (cerebro táctico de los jefes, «inteligencia» en `/tf boss`; la IA
-fiel al pack es de la 1.3.76 y los jefes, grietas y `/tf boss` de la 1.3.75), Release ya creada:
+**Estado**: última versión publicada **1.3.78** (peleas de jefes más vivas: combos, tempo, giro, espaciado y paso
+atrás; modelos completos —el «ojo» de Blockbench—; `partvis` como ModelEngine; la esfera de Astwood; auditor
+`tools/bosses/audit.py`. El cerebro táctico es de la 1.3.77, la IA fiel al pack de la 1.3.76 y los jefes, grietas y
+`/tf boss` de la 1.3.75), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -107,7 +109,11 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.77** (el cerebro de los jefes: simulado con
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.78** (combos, tempo, giro, paso atrás y
+los modelos completos: simulado con `sim_ai.py --dif demencial`, auditado con `audit.py` y los modelos dibujados en
+Python; lo primero que hay que mirar si el dueño manda capturas: el escudo del Esqueleto —ahora se ve—, que no le
+sobre ninguna pieza, el trono con su escalinata, las pústulas de la Abominación y la esfera de Astwood llegando al
+jugador), **la 1.3.77** (el cerebro de los jefes: simulado con
 `tools/bosses/sim_ai.py --smart 1`), **la 1.3.76** (la IA de los jefes: simulada con
 `tools/bosses/sim_ai.py`; pruébalos en SUPERVIVENCIA: como en MythicMobs, no atacan a quien está en creativo),
 **la 1.3.75 entera** (jefes, grietas y `/tf boss`: compila
@@ -174,6 +180,33 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.78 (14 oct) — PELEAS DE JEFES MÁS VIVAS Y MODELOS COMPLETOS.** El dueño, tras la 1.3.77: «actúan
+> mejor, pero los sigo sintiendo estúpidos, lentos al girar… solo me tiran 2 ataques básicos, ¿no debería haber más
+> combos?… el de plaga se queda estúpido gritándome cuando estoy frente a él… el esqueleto tiene una espada en la
+> pata… Astwood tira una bola azul, ¿qué efecto tiene? cae como un huevo al suelo… perfecciona esto para que al meter
+> los demás no tengamos errores». Todo en `tf-client/JEFES.md` (§3.3, §4.2, §4.3, §6–§8).
+> - **Combos** (`SkillBrain.chain`, inteligencia ≥ 0,6): pasada la parte activa de un ataque (`activeEnd`), corta su
+>   recuperación y encadena otro (cancela lo que le queda con `SkillRuntime.cancelCast`: cada uso lleva un id).
+> - **Tempo** (`BossEntity.tempo` = velocidad × (1 + 0,12 × inteligencia)): delays, gcd, variables del jefe y
+>   animaciones a la vez (Demencial ×1,4). **Giro** (`turnBody`): `rde`/`rdu` del pack acortados con la inteligencia.
+> - **Plan** (`SkillBrain.plan`): solo piensa en ataques de su fase/postura (`possible`) y rota el repertorio (el que
+>   hace más que no usa). Antes podía «pensar» en la plaga (< 50 %) de la Abominación y quedarse quieto. **Paso
+>   atrás** (`backstep`) y apartarse cuando se le pegan más que el alcance mínimo (la Abominación pide ≥ 3 bloques en
+>   todo: pegado a ella no hacía nada). `~onEnterCombat` una vez por pelea (no vuelve a gritar).
+> - **Modelos**: el conversor tiraba los cubos con el «ojo» apagado en Blockbench, pero ModelEngine los dibuja (el pack
+>   los enseña/esconde con `partvis`): el Esqueleto **no tenía escudo**, ni espada a la espalda, ni escudo junto al
+>   trono; el trono no tenía escalinata ni pozo de almas; la Abominación, ni pústulas ni zarpazo. Y `partvis` en los
+>   jefes con los valores de ModelEngine (sin `v` esconde, `child` false, `em` true): la espada de la muerte ya no
+>   sale en la pierna.
+> - **Esfera de Astwood**: `@EIR` de un jefe ya no apunta a sus esbirros/efectos, el misil sale hacia el centro del
+>   jugador y su inercia es como mucho 12 (la del pack, 100, no giraba y apuntaba a los pies). Hace 6 de daño que
+>   ignora armadura.
+> - **Auditor** `tools/bosses/audit.py` (también al final de `build_bosses.py`): mecánicas/condiciones/objetivos sin
+>   implementar (lee los `case` del Java), skills que faltan, animaciones y huesos que no existen, sonidos y modelos.
+>   Los 5 jefes: 0. El conversor corrige erratas de una letra en nombres de animación (Astwood «absord_life_start»).
+> - `sim_ai.py --dif <preset>` refleja todo; Demencial: Gárgola 27,5 ataques/min, Hidra 36,9, Abominación 18,8,
+>   Esqueleto 19,5 (42 combos en 8 min), Astwood 29,1.
 
 > **TF Client 1.3.77 (14 oct) — CEREBRO TÁCTICO DE LOS JEFES (tipo Souls).** El dueño: «quiero que la IA de estos
 > bosses sea muy inteligente, tipo Dark Souls o Elden Ring… y documenta todo para que otra IA pueda retomarlo».

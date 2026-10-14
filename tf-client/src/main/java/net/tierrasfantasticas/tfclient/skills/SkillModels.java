@@ -15,6 +15,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs.Mech;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
+import net.tierrasfantasticas.tfclient.vfx.VfxLayers;
 import net.tierrasfantasticas.tfclient.vfx.VfxModel;
 import net.tierrasfantasticas.tfclient.vfx.VfxPose;
 import org.joml.Matrix4f;
@@ -116,16 +117,20 @@ final class SkillModels {
                 // Como ModelEngine 4: una animación por prioridad (la nueva sustituye a la de esa prioridad), con entrada y salida suaves
                 VfxModel vm = load(a.me);
                 if (vm == null) continue;
-                int li = (int) SkillRuntime.num(m.arg("0", "lerpin", "li"), 0);
-                int lo = (int) SkillRuntime.num(m.arg("0", "lerpout", "lo"), 0);
+                // Con el tempo del jefe (sus retardos se dividen igual) y, si encadena un ataque, entrando suave
+                double tempo = SkillRuntime.tempo(ctx);
+                float sp = speed * (float) tempo;
+                int li = (int) Math.round(SkillRuntime.num(m.arg("0", "lerpin", "li"), 0) / tempo);
+                int lo = (int) Math.round(SkillRuntime.num(m.arg("0", "lerpout", "lo"), 0) / tempo);
+                if (ctx.host != null) li = Math.max(li, ctx.host.minLerp());
                 int prio = (int) SkillRuntime.num(m.arg("1", "priority", "p"), 1);
                 boolean force = SkillRuntime.bool(m.arg("false", "force", "f"));
                 boolean instant = SkillRuntime.bool(m.arg("false", "ignorelerp", "i"));
                 if (remove) {
                     a.layers.stop(s, a.age, instant ? 0 : m.a.containsKey("lo") || m.a.containsKey("lerpout") ? lo : -1);
                     a.prop("lstop", s, instant ? "0" : m.a.containsKey("lo") || m.a.containsKey("lerpout") ? String.valueOf(lo) : "-1", null);
-                } else if (a.layers.play(vm, s, a.age, speed, li, lo, prio, force)) {
-                    a.prop("lstate", s, speed + "|" + li + "|" + lo + "|" + prio + "|" + (force ? 1 : 0), "0");
+                } else if (a.layers.play(vm, s, a.age, sp, li, lo, prio, force)) {
+                    a.prop("lstate", s, sp + "|" + li + "|" + lo + "|" + prio + "|" + (force ? 1 : 0), "0");
                 }
                 continue;
             }
@@ -261,11 +266,73 @@ final class SkillModels {
     static void partVis(Mech m, Ctx ctx, List<Tgt> targets) {
         String part = m.arg(null, "partid", "pid", "part", "p");
         if (part == null) return;
-        boolean visible = SkillRuntime.bool(m.arg("true", "visible", "v", "visibility"));
-        boolean child = SkillRuntime.bool(m.arg("true", "child", "c", "children"));
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
-            if (a != null) a.prop("vis", part, String.valueOf(visible), String.valueOf(child));
+            if (a == null) continue;
+            if (a.layers == null) {
+                // Las clases, como siempre (sus packs se probaron así)
+                boolean visible = SkillRuntime.bool(m.arg("true", "visible", "v", "visibility"));
+                boolean child = SkillRuntime.bool(m.arg("true", "child", "c", "children"));
+                a.prop("vis", part, String.valueOf(visible), String.valueOf(child));
+                continue;
+            }
+            // Los jefes, como ModelEngine: sin «v» ESCONDE (v=false), sin «child» solo esa pieza y con em=false todas las
+            // que llevan ese nombre. Antes salía al revés: el Esqueleto de la Torre enseñaba la espada de su muerte junto
+            // a la pierna, la espada de la espalda y las almas de la mano, que el pack esconde al aparecer
+            boolean visible = SkillRuntime.bool(m.arg("false", "visibility", "visible", "v"));
+            boolean child = SkillRuntime.bool(m.arg("false", "child", "c", "ch", "children"));
+            boolean exact = SkillRuntime.bool(m.arg("true", "exactmatch", "em", "exact", "match"));
+            VfxModel vm = exact ? null : load(a.me);
+            if (vm == null) {
+                a.prop("vis", part, String.valueOf(visible), String.valueOf(child));
+                continue;
+            }
+            String want = part.toLowerCase(Locale.ROOT);
+            for (VfxModel.Bone b : vm.bones) {
+                if (b.hitbox == null && b.id.toLowerCase(Locale.ROOT).contains(want)) {
+                    a.prop("vis", b.id, String.valueOf(visible), String.valueOf(child));
+                }
+            }
+        }
+    }
+
+    /** Las animaciones por defecto del modelo de un jefe ({reposo, andar}), o null. */
+    static String[] defaults(java.util.UUID mob) {
+        SkillActor a = disguise(mob);
+        return a == null || a.layers == null ? null : new String[] {a.layers.idleName(), a.layers.walkName()};
+    }
+
+    /** El instante del modelo de un jefe (para saber luego qué animaciones puso un ataque); NaN si no tiene. */
+    static float mark(java.util.UUID mob) {
+        SkillActor a = disguise(mob);
+        return a == null || a.layers == null ? Float.NaN : a.age;
+    }
+
+    /**
+     * Quita, entrando la siguiente suave, las animaciones que puso un ataque desde «since» (al encadenar otro: si el
+     * nuevo usa otra prioridad, la del cortado seguiría encima).
+     */
+    static void cutSince(java.util.UUID mob, float since, int lerp) {
+        SkillActor a = disguise(mob);
+        if (a == null || a.layers == null || Float.isNaN(since)) return;
+        for (VfxLayers.Layer l : new java.util.ArrayList<>(a.layers.active())) {
+            if (l.start < since || l.stopAt >= 0 || l.priority == Integer.MAX_VALUE) continue;
+            a.layers.stop(l.name, a.age, lerp);
+            a.prop("lstop", l.name, String.valueOf(lerp), null);
+        }
+    }
+
+    /** Vuelve a poner sus animaciones por defecto (al cortar un ataque que las había cambiado: combos). */
+    static void restoreDefaults(java.util.UUID mob, String[] d) {
+        SkillActor a = disguise(mob);
+        if (a == null || a.layers == null || d == null) return;
+        if (!d[0].equals(a.layers.idleName())) {
+            a.layers.setDefault("idle", d[0], a.age);
+            a.prop("dstate", "idle", d[0], null);
+        }
+        if (!d[1].equals(a.layers.walkName())) {
+            a.layers.setDefault("walk", d[1], a.age);
+            a.prop("dstate", "walk", d[1], null);
         }
     }
 
@@ -345,6 +412,12 @@ final class SkillModels {
     /** Los huesos que ha escondido partvis (según lo último que se mandó de cada uno): para sus cajas de golpe. */
     static boolean[] hiddenBones(SkillActor a, VfxModel model) {
         boolean[] hidden = new boolean[model.bones.length];
+        if (a.layers != null) {
+            // Un jefe: lo que tiene escondido de verdad (como SkillClient.hiddenMask: las cajas ob_ cuentan por su padre)
+            boolean[] now = a.hiddenNow(model);
+            if (now != null) for (int i = 0; i < hidden.length; i++) hidden[i] = now[i] && model.bones[i].hitbox == null;
+            return hidden;
+        }
         for (SkillNet.Prop p : a.sticky.values()) {
             if (!p.key().equals("vis") || !"false".equals(p.b())) continue;
             int b = model.bone(p.a());

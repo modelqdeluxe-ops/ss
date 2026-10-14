@@ -294,7 +294,7 @@ public final class SkillRuntime {
                     // «delay "<modifier.duration> * 20"»: con variables y cuentas
                     String d = unquote(m.arg("0", "_", "ticks", "t", "d"));
                     if (d.indexOf('<') >= 0) d = SkillVars.text(d, ctx, null);
-                    wait = (int) Math.max(0, num(d, 0));
+                    wait = (int) Math.max(0, Math.round(num(d, 0) / tempo(ctx)));
                     continue;
                 }
                 try {
@@ -317,11 +317,16 @@ public final class SkillRuntime {
         }
     }
 
-    private record Task(long at, Runnable run) {}
+    /** Una tarea programada (delay=, repeat=); cast: de qué uso de una skill es (para poder cancelarla: los combos). */
+    private record Task(long at, long cast, Runnable run) {}
 
     private static boolean tasksFull;
 
     static void later(int ticks, Runnable r) {
+        later(ticks, 0L, r);
+    }
+
+    static void later(int ticks, long cast, Runnable r) {
         if (ticks <= 0) {
             r.run();
             return;
@@ -332,7 +337,22 @@ public final class SkillRuntime {
             return;
         }
         tasksFull = false;
-        TASKS.add(new Task(clock + ticks, r));
+        TASKS.add(new Task(clock + ticks, cast, r));
+    }
+
+    /**
+     * Cancela lo que le queda a un uso de una skill (sus líneas con delay y sus listas esperando un delay): el cerebro de
+     * los jefes lo usa para encadenar un ataque con el siguiente cortando la recuperación del anterior (combos).
+     */
+    static void cancelCast(long cast) {
+        if (cast == 0L) return;
+        TASKS.removeIf(t -> t.cast() == cast);
+        SCRIPTS.removeIf(s -> s.ctx.cast == cast);
+    }
+
+    /** Lo rápido que ataca el jefe (1 = como el pack): los retardos se dividen y sus animaciones se aceleran igual. */
+    static double tempo(Ctx ctx) {
+        return ctx.host == null ? 1.0 : Math.max(0.5, Math.min(2.0, ctx.host.tempo()));
     }
 
     // ------------------------------------------------------------------------------------------- entrada
@@ -505,6 +525,31 @@ public final class SkillRuntime {
         return false;
     }
 
+    /**
+     * ¿Podría salir pronto? Como {@link #usable}, pero sin su cooldown, sin las condiciones de «skip» (distancias, gcd)
+     * y sin mirar a los objetivos: lo que dice si es de esta fase o de esta postura (la Abominación, por debajo del 50 %;
+     * el Esqueleto, con el escudo arriba o abajo).
+     */
+    static boolean possible(Meta meta, Ctx ctx, Set<String> skip) {
+        if (meta == null) return false;
+        for (Cond c : meta.conditions) {
+            if (skip.contains(c.m())) continue;
+            String act = c.action();
+            if (act.startsWith("cast ") || act.startsWith("power")) continue;
+            boolean r = SkillConds.test(c, ctx.caster, ctx, null);
+            if (act.startsWith("castinstead")) {
+                if (r) return true;
+                continue;
+            }
+            if (act.startsWith("orelsecast")) {
+                if (!r) return true;
+                continue;
+            }
+            if (!passes(act, r)) return false;
+        }
+        return true;
+    }
+
     private enum Outcome { GO, STOP, REPLACED }
 
     /** Qué hace una condición de la skill según su resultado (true, false, cancel, castinstead X, orElseCast X, power N). */
@@ -563,9 +608,11 @@ public final class SkillRuntime {
             if (until != null && until > clock) return;
             st.cooldowns.put(key, clock + Math.round(lineCd * 20));
         }
-        int delay = (int) num(m.a.get("delay"), 0);
+        // En los jefes, con su tempo (la animación va igual de rápida: los golpes siguen cayendo donde se ven)
+        double tempo = tempo(ctx);
+        int delay = (int) Math.round(num(m.a.get("delay"), 0) / tempo);
         int repeat = (int) num(m.arg("0", "repeat", "r_"), 0);
-        int every = (int) Math.max(1, num(m.arg("1", "repeatinterval", "repeati", "ri"), 1));
+        int every = (int) Math.max(1, Math.round(num(m.arg("1", "repeatinterval", "repeati", "ri"), 1) / tempo));
         Runnable once = () -> {
             if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
             Ctx use = ctx;
@@ -593,9 +640,9 @@ public final class SkillRuntime {
         step[0] = () -> {
             if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
             once.run();
-            if (left[0]-- > 0) later(every, step[0]);
+            if (left[0]-- > 0) later(every, ctx.cast, step[0]);
         };
-        later(delay, step[0]);
+        later(delay, ctx.cast, step[0]);
     }
 
     /** Repeticiones como mucho de una línea (repeat=999 de los efectos que duran lo que viven). */
@@ -715,7 +762,7 @@ public final class SkillRuntime {
                 // con @target se ponía al jugador y el jefe encadenaba ataques encima unos de otros
                 // Sin dividir por el ritmo de la dificultad: el gcd es lo que dura el ataque (su animación); acortarlo hacía
                 // que el siguiente cortara al anterior a medias. El ritmo acorta los cooldowns y lo que piensa el cerebro
-                int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20));
+                int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20) / tempo(ctx));
                 state(ctx.caster).gcdUntil = clock + ticks;
             }
             case "setskillcooldown" -> {
@@ -1443,6 +1490,9 @@ public final class SkillRuntime {
         if (var.toLowerCase(Locale.ROOT).startsWith("target.")) {
             for (Tgt t : targets) putVar(varScope(var, ctx, t), varName(var), val, duration);
         } else {
+            // Las de un jefe van a su tempo: casi siempre marcan «estoy atacando» (la Abominación, Astwood) y, si el
+            // ataque va más rápido, la marca tiene que acabar con él
+            if (duration > 0 && ctx.host != null) duration = (int) Math.max(1, Math.round(duration / tempo(ctx)));
             putVar(varScope(var, ctx, null), varName(var), val, duration);
         }
     }

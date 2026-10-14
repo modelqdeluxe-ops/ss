@@ -260,8 +260,10 @@ def convert(bb_path, store, problems, boss=False):
     actor_cubes = []  # (nombre de la pieza, índice del hueso, texturas) para las figuras
 
     def bake_cube(el, pivot, phead, quads, bone_idx=None):
-        # Una pieza del muñeco sin exportar (fallo del pack) sí cuenta para el mob, que la tiene: solo la versión -3
-        only_skin = el.get('export') is False or el.get('visibility') is False
+        # Una pieza del muñeco sin exportar (fallo del pack) sí cuenta para el mob, que la tiene: solo la versión -3.
+        # En los jefes, el «ojo» de Blockbench (visibility) no cuenta: ModelEngine dibuja esos cubos igual y el pack los
+        # enseña o esconde con partvis (el escudo del Esqueleto, el zarpazo de la Abominación). Antes se perdían.
+        only_skin = el.get('export') is False or el.get('visibility') is False and not boss
         if only_skin and str(el.get('name', '')).lower() not in BODY_PARTS:
             return
         if el.get('type', 'cube') != 'cube':
@@ -385,7 +387,9 @@ def convert(bb_path, store, problems, boss=False):
                 'rot': [round(num(v), 4) for v in (c.get('rotation') or [0, 0, 0])],
                 'head': bname.startswith('h_') or bname.startswith('hi_'),
                 'phead': phead,
-                'hidden': c.get('visibility') is False,
+                # (en los jefes, tampoco el ojo de los huesos: el Esqueleto duerme con el escudo del trono y la espada a
+                # la espalda, ocultos en Blockbench, y el pack los esconde al despertar)
+                'hidden': c.get('visibility') is False and not boss,
                 'shade': c.get('shade', True) is not False,
                 'quads': [],
             }

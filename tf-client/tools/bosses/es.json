@@ -43,10 +43,7 @@
   "preview_hide": [
    "swipe_fx",
    "cloud",
-   "cloud2",
-   "bubo_large_1",
-   "bubo_small_1",
-   "bubo_small_2"
+   "cloud2"
   ]
  },
  "esqueleto_torre": {
@@ -70,7 +67,11 @@
    "hand_souls_3",
    "shield_debris",
    "grabbed",
-   "slash_target"
+   "slash_target",
+   "right_hand_shield",
+   "sword_shard_1",
+   "sword_shard_2",
+   "sword_shard_3"
   ],
   "drops": {
    "TOWERSKELETON_sword": "Guja del Esqueleto de la Torre",

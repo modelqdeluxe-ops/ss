@@ -393,9 +393,14 @@ final class SkillTargets {
         String ignore = m.targetArg("", "ignore").toLowerCase(Locale.ROOT);
         boolean self = SkillRuntime.bool(m.targetArg("false", "targetself", "ts"));
         String myFaction = ignore.contains("samefaction") ? faction(ctx.caster) : null;
+        // En un jefe, sus propios esbirros y efectos no son objetivo (salvo que el pack los busque por su tipo): la esfera
+        // de energía de Astwood (@EIR) salía hacia sus retoños y sus muros y caía al suelo junto a él
+        boolean typed = m != null && (m.targetArg(null, "types", "type", "t", "mobtypes") != null || looksForType(m.tc));
+        SkillMobs.Host mine = ctx.host != null && !typed ? ctx.host.boss() : null;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
             if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
             if (ctx.caster.entity == e && !self) continue;
+            if (mine != null && e != ctx.caster.entity && SkillMobs.host(e) != null && SkillMobs.host(e).boss() == mine) continue;
             if (myFaction != null && myFaction.equalsIgnoreCase(faction(Who.of(e)))) continue;
             if (playersOnly && !(e instanceof Player)) continue;
             if (mobsOnly && e instanceof Player) continue;
@@ -414,6 +419,7 @@ final class SkillTargets {
             for (SkillActor a : SkillRuntime.ACTORS) {
                 if (!a.alive || a.level != level || a.follow != null || ctx.caster.actor == a) continue;
                 if (a.carried && !byType) continue;
+                if (mine != null && a.host != null && a.host.boss() == mine) continue;
                 String type = a.def != null && a.def.type != null ? a.def.type.toLowerCase(Locale.ROOT) : "";
                 // Un display (block/item/text_display) no es un mob vivo: solo sale si se busca por su tipo de mob
                 if ((livingOnly || !byType) && type.contains("display")) continue;
