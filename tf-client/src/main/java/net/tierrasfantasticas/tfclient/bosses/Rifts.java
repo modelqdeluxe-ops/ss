@@ -204,7 +204,7 @@ public final class Rifts {
                     r.bossEntity = null;
                     dirty = true;
                 } else if (!boss.dying()) {
-                    boolean anyone = !playersNear(level, r.pos, LEASH + 24).isEmpty();
+                    boolean anyone = anyoneNear(level, r.pos, LEASH + 24);
                     if (anyone) r.emptySince = -1;
                     else if (r.emptySince < 0) r.emptySince = now;
                     else if (now - r.emptySince > EMPTY_TICKS) {
@@ -301,6 +301,12 @@ public final class Rifts {
             p.connection.send(new ClientboundSetTitleTextPacket(title));
             p.connection.send(new ClientboundSetSubtitleTextPacket(sub));
         }
+    }
+
+    /** ¿Hay alguien (también en creativo: el staff probando) cerca de la incursión? */
+    static boolean anyoneNear(ServerLevel level, Vec3 at, double r) {
+        for (ServerPlayer p : level.players()) if (!p.isSpectator() && p.position().distanceToSqr(at) <= r * r) return true;
+        return false;
     }
 
     static List<ServerPlayer> playersNear(ServerLevel level, Vec3 at, double r) {

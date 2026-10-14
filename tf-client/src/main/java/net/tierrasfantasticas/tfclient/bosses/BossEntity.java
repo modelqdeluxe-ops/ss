@@ -67,12 +67,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Difficulty difficulty = Difficulty.NORMAL;
     private double healthScale = 1.0;
     private double speedMul = 1.0;
+    private boolean speedSet;
     private boolean ai = true;
     private boolean locked;
     private float maxHead = 30F, maxBody = 30F;
     private int rotDelay, rotDuration;
     private int turnWait;
     private float bodyYaw;
+    /** Hacia dónde mira la entidad (ver {@link #lookYaw()}): sigue a su objetivo aunque el modelo gire despacio. */
+    private float lookYaw;
     private int age;
     private int deathLength = 60;
     private LivingEntity target;
@@ -161,6 +164,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(96, def.followRange)));
         applySpeed();
         bodyYaw = getYRot();
+        lookYaw = bodyYaw;
         yBodyRot = bodyYaw;
         yHeadRot = bodyYaw;
         this.entityData.set(BODY_YAW, bodyYaw);
@@ -277,12 +281,17 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void setSpeedMul(double m) {
         speedMul = Math.max(0, m);
+        speedSet = true;
         applySpeed();
     }
 
+    /**
+     * Velocidad de andar: la de sus opciones (MovementSpeed) hasta que una skill pone setspeed{s}, que es la del tipo
+     * de Minecraft por «s» (la Abominación sale con 0 y su setspeed{s=1.25} al aparecer la pone a andar).
+     */
     private void applySpeed() {
         if (def == null) return;
-        double sp = def.speed * speedMul * difficulty.speed();
+        double sp = (speedSet ? def.typeSpeed : def.speed) * speedMul * difficulty.speed();
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Math.max(0, sp));
         if (sp <= 0) getNavigation().stop();
     }
@@ -304,6 +313,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void turn(float yaw, boolean relative) {
         bodyYaw = relative ? bodyYaw + yaw : yaw;
         yHeadRot = relative ? yHeadRot + yaw : bodyYaw;
+        lookYaw = relative ? lookYaw + yaw : bodyYaw;
         syncBody();
     }
 
@@ -315,7 +325,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (immediately) bodyYaw = want;
         else bodyYaw += Mth.wrapDegrees(want - bodyYaw) * 0.5F;
         yHeadRot = want;
+        lookYaw = want;
         syncBody();
+    }
+
+    @Override
+    public float lookYaw() {
+        return lookYaw;
     }
 
     @Override
@@ -380,16 +396,21 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             lastHitBy.put(p.getUUID(), age);
         }
         float before = getHealth();
+        double hit = amount * mod;
         this.invulnerableTime = 0;
-        boolean ok = super.hurt(src, (float) (amount * mod));
+        boolean ok = super.hurt(src, (float) hit);
         this.invulnerableTime = 0;
         if (!ok) return false;
         float dealt = Math.max(0, before - getHealth());
         Player p = attacker instanceof Player pl ? pl : src.getDirectEntity() instanceof Player pl2 ? pl2 : null;
-        if (p != null) threat.merge(p.getUUID(), (double) dealt, Double::sum);
-        if (owner != null && p != null) owner.threat.merge(p.getUUID(), dealt * 0.25, Double::sum);
-        // Las cifras de vida del pack van en su escala (el escudo del Esqueleto aguanta «500» de su vida del pack)
-        SkillMobs.damaged(this, attacker != null ? attacker : src.getDirectEntity(), cause, dealt / Math.max(0.01, healthScale));
+        // La amenaza, con el golpe (con el escudo puesto no le entra daño, pero quien le pega sigue siendo su enemigo)
+        double threatBy = Math.max(dealt, hit * 0.5);
+        if (p != null) threat.merge(p.getUUID(), threatBy, Double::sum);
+        if (owner != null && p != null) owner.threat.merge(p.getUUID(), threatBy * 0.25, Double::sum);
+        // ~onDamaged con el daño del golpe, como MythicMobs (no lo que le quitó: con la Resistencia V del escudo del
+        // Esqueleto eso es 0 y el escudo no se rompía nunca). Las cifras de vida del pack van en su escala (el escudo
+        // aguanta «500» de su vida del pack)
+        SkillMobs.damaged(this, attacker != null ? attacker : src.getDirectEntity(), cause, hit / Math.max(0.01, healthScale));
         return true;
     }
 
@@ -505,7 +526,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (def == null || dying()) return;
         if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
         Vec3 goal = null;
-        double stop = getBbWidth() / 2 + 2.2;
+        // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,
+        // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
+        double stop = getBbWidth() / 2 + 1.0;
         if (home != null && position().distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) {
             // Se ha ido demasiado lejos de su grieta: vuelve
             goal = home;
@@ -535,31 +558,54 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return dx * dx + dz * dz;
     }
 
-    /** El cuerpo gira hacia su objetivo como en ModelEngine: la cabeza primero (hasta mh) y el cuerpo detrás. */
+    /**
+     * Hacia dónde mira la entidad y hacia dónde gira el cuerpo del modelo, como con ModelEngine: la entidad mira a su
+     * objetivo (30° por tick, como la de Minecraft) y con eso se miden sus ataques; el modelo, mientras anda, sigue esa
+     * dirección enseguida y, parado, gira la cabeza hasta «mh» y el cuerpo detrás (tras «rde» ticks, en «rdu»).
+     * lockmodel congela el modelo, no a dónde mira.
+     */
     private void turnBody() {
-        if (locked) {
-            syncBody();
-            return;
-        }
         float want = bodyYaw;
+        Vec3 v = getDeltaMovement();
+        boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
         if (def.chases && ai) {
             if (target != null) {
                 Vec3 d = target.position().subtract(position());
                 if (d.x * d.x + d.z * d.z > 1e-4) want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-            } else if (!getNavigation().isDone()) {
-                Vec3 v = getDeltaMovement();
-                if (v.x * v.x + v.z * v.z > 1e-4) want = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
+            } else if (moving) {
+                want = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
             }
+            lookYaw += Mth.clamp(Mth.wrapDegrees(want - lookYaw), -30F, 30F);
+        } else {
+            lookYaw = bodyYaw;
+        }
+        lookYaw = Mth.wrapDegrees(lookYaw);
+        if (locked) {
+            syncBody();
+            return;
         }
         float diff = Mth.wrapDegrees(want - bodyYaw);
-        if (Math.abs(diff) > maxBody || maxBody == 0) {
-            if (++turnWait >= rotDelay) {
-                float step = rotDuration <= 0 ? diff : diff * Math.min(1F, 3F / rotDuration);
-                if (Math.abs(step) < 1F && Math.abs(diff) > 1F) step = Math.signum(diff);
-                bodyYaw += step;
-            }
-        } else {
+        if (moving && def.chases && ai) {
+            // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
+            bodyYaw += Mth.clamp(diff, -20F, 20F);
             turnWait = 0;
+        } else {
+            // Parado: la cabeza no pasa de «mh» respecto al cuerpo; si el objetivo se va más allá, arrastra al cuerpo
+            // (como ModelEngine), así sus golpes nunca salen a más de «mh» grados de quien mira
+            if (Math.abs(diff) > maxHead) {
+                bodyYaw += Mth.clamp(diff - Math.signum(diff) * maxHead, -30F, 30F);
+                diff = Mth.wrapDegrees(want - bodyYaw);
+            }
+            // y, pasados «rde» ticks, el cuerpo se pone de frente en «rdu»
+            if (Math.abs(diff) > Math.max(1F, maxBody) || maxBody == 0 && Math.abs(diff) > 0.5F) {
+                if (++turnWait >= rotDelay) {
+                    float step = rotDuration <= 0 ? diff : diff * Math.min(1F, 3F / rotDuration);
+                    if (Math.abs(step) < 1F && Math.abs(diff) > 1F) step = Math.signum(diff);
+                    bodyYaw += step;
+                }
+            } else {
+                turnWait = 0;
+            }
         }
         float head = Mth.wrapDegrees(want - bodyYaw);
         yHeadRot = bodyYaw + Mth.clamp(head, -maxHead, maxHead);

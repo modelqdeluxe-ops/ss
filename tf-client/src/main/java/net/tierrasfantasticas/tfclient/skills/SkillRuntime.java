@@ -96,6 +96,7 @@ public final class SkillRuntime {
         }
 
         float yaw() {
+            if (entity instanceof SkillMobs.Host h) return h.lookYaw();
             if (entity instanceof LivingEntity le && !(entity instanceof Player)) return le.yBodyRot;
             return entity != null ? entity.getYRot() : actor.yaw;
         }
@@ -375,10 +376,9 @@ public final class SkillRuntime {
     static boolean runMeta(Meta meta, Ctx ctx) {
         if (meta == null || ctx.depth > 40 || SCRIPTS.size() > MAX_SCRIPTS) return false;
         if (meta.cooldown > 0) {
-            WhoState st = state(ctx.caster);
-            Long until = st.cooldowns.get(meta.name);
+            WhoState st = stateIfAny(ctx.caster);
+            Long until = st == null ? null : st.cooldowns.get(meta.name);
             if (until != null && until > clock) return false;
-            st.cooldowns.put(meta.name, clock + Math.round(meta.cooldown * 20 / rhythm(ctx)));
         }
         Ctx run = ctx;
         // Conditions: de quien lanza
@@ -448,6 +448,10 @@ public final class SkillRuntime {
             run.depth = ctx.depth;
             run.targets = out;
         }
+        // El cooldown solo cuenta si la skill sale de verdad (como MythicMobs): antes se ponía aunque sus condiciones
+        // la pararan, y los ataques de los jefes que se miran cada segundo (distancia, ángulo...) se quedaban en
+        // recarga sin haber salido: casi siempre quedaba uno solo
+        if (meta.cooldown > 0) state(ctx.caster).cooldowns.put(meta.name, clock + Math.round(meta.cooldown * 20 / rhythm(ctx)));
         Script s = new Script(run, meta.mechs);
         if (!s.run()) SCRIPTS.add(s);
         return true;
@@ -659,8 +663,10 @@ public final class SkillRuntime {
                 for (Tgt t : targets) if (t.who != null) state(t.who).faction = f;
             }
             case "gcd", "setgcd", "globalcooldown" -> {
+                // El gcd es de quien lanza (en MythicMobs no lleva objetivo): «gcd{ticks=60}» dentro de un ataque lanzado
+                // con @target se ponía al jugador y el jefe encadenaba ataques encima unos de otros
                 int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20) / rhythm(ctx));
-                for (Tgt t : targets) if (t.who != null) state(t.who).gcdUntil = clock + ticks;
+                state(ctx.caster).gcdUntil = clock + ticks;
             }
             case "setskillcooldown" -> {
                 Meta other = ctx.cls.meta(m.arg(null, "skill", "s"));
@@ -1269,8 +1275,10 @@ public final class SkillRuntime {
         MobEffect effect = potionType(m.arg(null, "type", "t"));
         if (effect == null) return;
         int duration = (int) num(m.arg("100", "duration", "d"), 100);
-        // En MythicMobs «level» es el nivel (1 = I); en Minecraft, el amplificador empieza en 0
-        int level = (int) Math.max(0, num(m.arg("1", "level", "lvl", "l"), 1) - 1);
+        // En las clases «level» va como nivel (1 = I). En los jefes, como en MythicMobs: es el amplificador (0 = I; el
+        // «DAMAGE_RESISTANCE level=4» del Esqueleto de la Torre es Resistencia V: no le entra daño con el escudo)
+        int level = ctx.host != null ? (int) Math.max(0, num(m.arg("0", "level", "lvl", "l"), 0))
+                : (int) Math.max(0, num(m.arg("1", "level", "lvl", "l"), 1) - 1);
         boolean particles = bool(m.arg("true", "hasparticles", "p", "particles"));
         boolean icon = bool(m.arg("true", "hasicon", "i", "icon"));
         for (Tgt t : targets) {
@@ -1379,11 +1387,35 @@ public final class SkillRuntime {
         String var = m.arg(null, "var", "variable", "name", "key", "k");
         if (var == null) return;
         String val = unquote(m.arg("", "value", "val", "v"));
+        int duration = (int) num(m.arg("0", "duration", "d"), 0);
         if (var.toLowerCase(Locale.ROOT).startsWith("target.")) {
-            for (Tgt t : targets) varScope(var, ctx, t).put(varName(var), val);
+            for (Tgt t : targets) putVar(varScope(var, ctx, t), varName(var), val, duration);
         } else {
-            varScope(var, ctx, null).put(varName(var), val);
+            putVar(varScope(var, ctx, null), varName(var), val, duration);
         }
+    }
+
+    private static long varSeq;
+
+    /**
+     * Pone una variable; con duración (setvar{...;duration=40}, en ticks) se borra sola al acabar, como en MythicMobs
+     * (vuelve a valer «UNDEFINED»). Antes la duración no se miraba: la Hidra marcaba «saltando», «mordiendo» o
+     * «lanzando fuego» para unos segundos y se quedaba marcada para siempre, sin volver a hacer esos ataques.
+     */
+    static void putVar(Map<String, String> scope, String name, String val, int duration) {
+        scope.put(name, val);
+        String key = "\u0001hasta:" + name;
+        if (duration <= 0) {
+            scope.remove(key);
+            return;
+        }
+        String token = Long.toString(++varSeq);
+        scope.put(key, token);
+        later(duration, () -> {
+            if (!token.equals(scope.get(key))) return; // la volvieron a poner después
+            scope.remove(key);
+            scope.remove(name);
+        });
     }
 
     private static void addVariable(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -1466,11 +1498,19 @@ public final class SkillRuntime {
     /** Los objetivos de una línea: los de su @objetivo o, sin él, los heredados (o quien lanza). */
     static List<Tgt> targets(Mech m, Ctx ctx) {
         if (m.t == null) {
+            // En los jefes, las de ModelEngine sin objetivo son de su propio modelo (bodyrotation{mh=0} dentro de un ataque
+            // lanzado con @target es para que el jefe deje de girar, no algo del jugador)
+            if (ctx.host != null && OWN_MODEL.contains(m.m)) return List.of(Tgt.of(ctx.caster));
             if (ctx.targets != null && !ctx.targets.isEmpty()) return ctx.targets;
             return List.of(Tgt.of(ctx.caster));
         }
         return SkillTargets.resolve(m, ctx);
     }
+
+    /** Mecánicas de ModelEngine que, sin objetivo, van al modelo de quien lanza. */
+    private static final Set<String> OWN_MODEL = Set.of("bodyrotation", "bodyclamp", "model", "segment", "partvis",
+            "partvisibility", "brightness", "renderinit", "defaultstate", "state", "animation", "lockmodel", "remapmodel",
+            "changepart", "barset", "barcreate", "setmodelscale", "tint");
 
     // ------------------------------------------------------------------------------------------- tick
 

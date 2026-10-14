@@ -6,11 +6,14 @@ import java.util.function.Consumer;
 import org.joml.Matrix4f;
 
 /**
- * Varias animaciones a la vez sobre un modelo de ModelEngine, como las mezcla ModelEngine (los jefes: la Hidra muerde
+ * Varias animaciones a la vez sobre un modelo de ModelEngine, como las mezcla ModelEngine 4 (los jefes: la Hidra muerde
  * con una cabeza mientras gira las patas y respira con el resto). Abajo va la animación por defecto (reposo, andar o
- * la que ponga defaultstate); encima, las de state{} por prioridad: una con «override» (la casilla de Blockbench) tapa
- * a las de debajo en los huesos que mueve; una sin él se suma. Cada una entra y sale suave («li» y «lo», en ticks).
- * Una de una vez acaba sola (con su «lo»); una que se queda («hold») sigue en su final hasta que la quitan.
+ * la que ponga defaultstate); encima, las de state{}: cada prioridad («p») es una máquina de estados que lleva UNA
+ * animación (la nueva sustituye a la que hubiera en esa prioridad, pasando de una a otra en su «li»), y las
+ * prioridades se apilan de menor a mayor: una con «override» (la casilla de Blockbench) tapa a las de debajo en los
+ * huesos que mueve; una sin él se suma. Una de una vez acaba sola (con su «lo») y deja libre su prioridad; una que se
+ * queda («hold») sigue en su final hasta que la quitan. (Antes se apilaban todas: el «sleep» del Esqueleto de la
+ * Torre seguía debajo después de despertar y se quedaba sentado en el aire.)
  *
  * <p>No depende del cliente: el servidor lleva las mismas capas para saber dónde está cada hueso (@modelpart) y
  * lanzar los scripts «mm:» de la línea de tiempo.
@@ -83,7 +86,10 @@ public final class VfxLayers {
     private float baseSince = -1000F;
     private boolean dead;
 
-    /** state{s;sp;li;lo;p;force}: pone una animación encima. false si el modelo no la tiene. */
+    /**
+     * state{s;sp;li;lo;p;force}: pone una animación en su prioridad (y quita la que hubiera en esa misma prioridad,
+     * fundiéndose en «li» ticks). false si el modelo no la tiene.
+     */
     public boolean play(VfxModel m, String name, float now, float speed, int lerpIn, int lerpOut, int priority, boolean force) {
         VfxModel.Anim a = m.anim(name);
         if (a == null) return false;
@@ -93,6 +99,18 @@ public final class VfxLayers {
             // Ya está y sigue (no se va ni ha acabado): ModelEngine no la vuelve a empezar salvo con force
             if (!force && l.stopAt < 0 && (l.anim.loop != 0 || l.seconds(now) <= l.anim.length)) return true;
             layers.remove(i);
+        }
+        // Una sola animación por prioridad: la que hubiera se va mientras entra la nueva
+        int fade = Math.max(0, lerpIn);
+        for (int i = layers.size() - 1; i >= 0; i--) {
+            Layer l = layers.get(i);
+            if (l.priority != priority || l.stopAt >= 0) continue;
+            if (fade == 0) {
+                layers.remove(i);
+            } else {
+                l.stopAt = now;
+                l.lerpOut = fade;
+            }
         }
         layers.add(new Layer(name, a, now, speed, lerpIn, lerpOut, priority));
         return true;

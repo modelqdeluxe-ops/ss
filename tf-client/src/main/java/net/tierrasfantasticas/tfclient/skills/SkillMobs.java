@@ -78,6 +78,14 @@ public final class SkillMobs {
 
         /** ¿Ya ha muerto (aunque siga en el mundo haciendo su animación de muerte)? */
         boolean dying();
+
+        /**
+         * Hacia dónde mira la entidad (no el modelo): el «yaw» con el que MythicMobs mide fieldOfView, @forward y
+         * hacia dónde salen sus proyectiles. Un mob que persigue mira a su objetivo aunque el modelo gire más despacio.
+         */
+        default float lookYaw() {
+            return mob().yBodyRot;
+        }
     }
 
     /** Lo que hacen las entidades (el paquete de jefes): esbirros, objetos que caen, asientos y temblores de cámara. */
