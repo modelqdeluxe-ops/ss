@@ -197,7 +197,38 @@ public final class SkillClient {
                 if (a.layers != null && a.model != null) a.layers.death(a.model, a.age);
             }
             case "bright" -> a.bright(m.a(), m.b(), !"0".equals(m.c()));
-            case "seg" -> a.segment(m.a(), m.b(), !"0".equals(m.c()));
+            // Cabezas, colas/física e IK de ModelEngine: VfxRig (lo mismo hace el servidor con sus mensajes)
+            case "seg", "headcfg", "headlock", "headtgt", "jig", "ik", "iktgt", "ikchain" -> {
+                if (a.rig != null) a.rig.message(m.key(), m.a(), m.b(), m.c());
+                // (para rehacerlo si el modelo cambia en vivo: changeparent, submodel)
+                if (!m.key().equals("jig")) a.rigLog.add(new String[] {m.key(), m.a(), m.b(), m.c()});
+            }
+            // ModelEngine 4: lo de §11.2 de JEFES.md (ver SkillMeg)
+            case "medit" -> a.applyEdits(m.b());
+            case "anim" -> {
+                if (a.layers != null && a.model != null) a.layers.animate(a.model, m.a(), !"0".equals(m.c()), m.b());
+            }
+            case "root" -> {
+                if (a.layers != null && a.model != null) a.layers.rootMessage(a.model, m.a(), m.b());
+            }
+            case "follow" -> {
+                a.follow = (int) parse(m.a(), -1F);
+                a.hideHost = "1".equals(m.b());
+            }
+            case "seeself" -> a.seeSelf = !"0".equals(m.a());
+            case "view" -> a.viewRange = parse(m.a(), 0F);
+            case "fire" -> {
+                String[] p = m.a().split("\\|");
+                a.fire = p.length > 1 && "1".equals(p[1]) ? 1 : "0".equals(p[0]) ? -1 : 0;
+            }
+            case "shadow" -> a.shadowOn = !"0".equals(m.a());
+            case "pair" -> a.pair = m.a().isEmpty() ? null : "1".equals(m.a());
+            case "lclear" -> {
+                if (a.layers != null) a.layers.clear();
+            }
+            case "freeze" -> {
+                if (a.layers != null) a.layers.freeze(a.age - parse(m.a(), 0F));
+            }
             // ModelEngine 4 (ver SkillMeg)
             case "lmod" -> {
                 if (a.layers == null) return;
@@ -206,28 +237,6 @@ public final class SkillClient {
                 float sp = p[1].equals("NaN") ? Float.NaN : parse(p[1], Float.NaN);
                 Boolean ov = p.length > 5 && !p[5].isEmpty() ? "1".equals(p[5]) : null;
                 a.layers.modify(m.a(), pr, a.age, sp, (int) parse(p[2], -1F), (int) parse(p[3], -1F), (int) parse(p[4], -1F), ov);
-            }
-            case "headcfg" -> a.headConfig(m.a(), m.b(), !"0".equals(m.c()));
-            case "headlock" -> {
-                if (!m.a().isEmpty()) a.lockHeadPitch = "1".equals(m.a());
-                if (!m.b().isEmpty()) a.lockHeadYaw = "1".equals(m.b());
-            }
-            case "headtgt" -> {
-                if ("clear".equals(m.c())) {
-                    a.headTargetId = -1;
-                    a.headTargetPos = null;
-                } else {
-                    String[] p = m.b().split("\\|");
-                    a.headTargetId = m.a().isEmpty() ? -1 : (int) parse(m.a(), -1F);
-                    a.headTargetPos = new Vec3(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
-                    a.headTargetY = p.length > 3 ? parse(p[3], 0F) : 0F;
-                }
-            }
-            case "jig" -> {
-                if (a.physics == null) return;
-                String[] p = m.b().split("\\|");
-                a.physics.impulse(m.a(), !"0".equals(m.c()), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
-                        parse(p[0], 0F), new Vector3f(parse(p[4], 0F), parse(p[5], 0F), parse(p[6], 0F)));
             }
             case "bitem" -> a.boneItem(m.a(), m.b(), !"0".equals(m.c()));
             case "btag" -> a.boneTag(m.a(), m.b(), "1".equals(m.c()));
@@ -283,17 +292,25 @@ public final class SkillClient {
                     if (v == a.vfxRot) a.vfxWorldRot = p.length > 4 && "1".equals(p[4]);
                 }
             }
-            case "ik", "iktgt", "ikchain" -> a.ikMessage(m.key(), m.a(), m.b(), m.c());
-            case "skin" -> {
-                a.skin = m.b().isEmpty() ? null : m.b();
-                a.skinSlim = "true".equalsIgnoreCase(m.c());
+            case "leash" -> {
+                int who = (int) parse(m.a(), -1F);
+                if (a.leashes == null) a.leashes = new HashMap<>();
+                if ("1".equals(m.c())) a.leashes.put(who, m.b());
+                else a.leashes.remove(who);
             }
+            case "leashself" -> {
+                if (a.selfLeashes == null) a.selfLeashes = new ArrayList<>();
+                a.selfLeashes.removeIf(p -> p[0].equalsIgnoreCase(m.a()) && ("0".equals(m.c()) || p[1].equalsIgnoreCase(m.b())));
+                if ("1".equals(m.c())) a.selfLeashes.add(new String[] {m.a(), m.b()});
+            }
+            case "skin" -> a.limbSkin(m.a(), m.b(), m.c());
             case "remap" -> a.remap(m.a());
             case "dt" -> a.displayTransform(m.a(), m.b());
             case "item" -> {
                 a.item = m.a().isEmpty() ? null : new ResourceLocation(m.a());
                 a.itemScale = parse(m.b(), 1F);
             }
+            case "beam" -> a.beam = m.a().isEmpty() ? null : m.a();
             default -> { }
         }
     }
@@ -323,6 +340,10 @@ public final class SkillClient {
         if (m.kind() == 6) {
             // Temblor de cámara de un golpe de jefe (las skills de clase ya no lo mandan): solo la vista
             CameraShake.add(m.hs(), m.vs(), m.radius());
+            return;
+        }
+        if (m.kind() == 7) {
+            unmask(level, m);
             return;
         }
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
@@ -417,6 +438,24 @@ public final class SkillClient {
                     level.setBlock(p, shown, 0);
                 }
             }
+        }
+    }
+
+    /** blockunmask: los bloques de blockmask a «radius» del sitio vuelven a ser los de verdad (points 1 = en cubo). */
+    private static void unmask(ClientLevel level, SkillNet.Fx m) {
+        if (MASKS.isEmpty()) return;
+        double r = m.radius();
+        boolean cube = m.points() == 1;
+        Iterator<Map.Entry<BlockPos, Mask>> it = MASKS.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<BlockPos, Mask> e = it.next();
+            BlockPos p = e.getKey();
+            double dx = p.getX() + 0.5 - m.x(), dy = p.getY() + 0.5 - m.y(), dz = p.getZ() + 0.5 - m.z();
+            boolean in = cube ? Math.abs(dx) <= r + 0.5 && Math.abs(dy) <= r + 0.5 && Math.abs(dz) <= r + 0.5
+                    : dx * dx + dy * dy + dz * dz <= (r + 0.5) * (r + 0.5);
+            if (!in) continue;
+            if (level.getBlockState(p) == e.getValue().shown()) level.setBlock(p, e.getValue().original(), 0);
+            it.remove();
         }
     }
 
@@ -521,21 +560,28 @@ public final class SkillClient {
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         try {
             for (Actor a : ACTORS.values()) {
-                // El propio disfraz no tapa la vista en primera persona
-                if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId() && mc.options.getCameraType().isFirstPerson()) continue;
+                // El propio disfraz no tapa la vista en primera persona (ni se ve con seeself=false)
+                if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId()
+                        && (mc.options.getCameraType().isFirstPerson() || !a.seeSelf)) continue;
+                // pairmodel{hidden=true}: a este jugador no se le enseña
+                if (Boolean.TRUE.equals(a.pair)) continue;
                 // El modelo de un mob de jefe lo dibuja su entidad (BossRenderer), con su luz
                 // (solo el suyo: los vfx{} pegados al jefe se dibujan aquí)
                 if (a.follow >= 0 && mc.level.getEntity(a.follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity
                         && follower(a.follow) == a) continue;
                 Vec3 at = a.lerp(mc.level, partial);
-                if (at == null || at.distanceToSqr(cam) > 128 * 128) continue;
+                // Hasta 128 bloques, o lo que diga model{viewrange;radius}; pairmodel{hidden=false}: siempre
+                double far = Boolean.FALSE.equals(a.pair) ? 512 : a.viewRange > 0 ? a.viewRange : 128;
+                if (at == null || at.distanceToSqr(cam) > far * far) continue;
                 float yaw = a.lerpYaw(mc.level, partial);
                 int light = a.boss ? net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at.add(0, 0.5, 0))) : FULL_BRIGHT;
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
                 if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
                 if (a.item != null) renderItem(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
+                a.poseOrigin = cam;
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers, light);
                 if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
+                if (a.beam != null) renderBeam(a, at, cam, partial, pose, buffers);
             }
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Skills: error al dibujar los efectos", t);
@@ -543,6 +589,46 @@ public final class SkillClient {
         } finally {
             buffers.endBatch();
         }
+    }
+
+    /**
+     * enderbeam: un cristal del End (como EndCrystalRenderer, sin base) y su rayo hacia la entidad o el sitio (como
+     * EnderDragonRenderer.renderCrystalBeams, el del dragón).
+     */
+    private static void renderBeam(Actor a, Vec3 at, Vec3 cam, float partial, PoseStack pose, MultiBufferSource buffers) {
+        Minecraft mc = Minecraft.getInstance();
+        if (a.crystal == null) {
+            a.crystal = new net.minecraft.world.entity.boss.enderdragon.EndCrystal(mc.level, at.x, at.y, at.z);
+            a.crystal.setShowBottom(false);
+        }
+        a.crystal.time = a.age;
+        a.crystal.setPos(at.x, at.y, at.z);
+        int light = net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at));
+        Vec3 rel = at.subtract(cam);
+        mc.getEntityRenderDispatcher().getRenderer(a.crystal).render(a.crystal, 0F, partial, translated(pose, rel), buffers, light);
+        pose.popPose();
+        Vec3 to = null;
+        if (a.beam.startsWith("e:")) {
+            net.minecraft.world.entity.Entity e = mc.level.getEntity((int) parse(a.beam.substring(2), -1F));
+            if (e != null) to = e.getPosition(partial).add(0, e.getBbHeight() * 0.5, 0);
+        } else if (a.beam.startsWith("p:")) {
+            String[] p = a.beam.substring(2).split(",");
+            if (p.length == 3) to = new Vec3(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
+        }
+        if (to == null) return;
+        float bob = net.minecraft.client.renderer.entity.EndCrystalRenderer.getY(a.crystal, partial);
+        Vec3 d = to.subtract(at);
+        pose.pushPose();
+        pose.translate(to.x - cam.x, to.y - cam.y, to.z - cam.z);
+        net.minecraft.client.renderer.entity.EnderDragonRenderer.renderCrystalBeams((float) -d.x, (float) -d.y + bob, (float) -d.z,
+                partial, a.age, pose, buffers, light);
+        pose.popPose();
+    }
+
+    private static PoseStack translated(PoseStack pose, Vec3 rel) {
+        pose.pushPose();
+        pose.translate(rel.x, rel.y, rel.z);
+        return pose;
     }
 
     /**
@@ -661,16 +747,33 @@ public final class SkillClient {
     public static boolean renderFollower(Entity e, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         Actor a = follower(e.getId());
         if (a == null || a.model == null) return false;
+        // pairmodel{hidden=true} y model{viewrange;radius}: no se dibuja (pero es el suyo: tampoco se ve la entidad)
+        if (Boolean.TRUE.equals(a.pair)) return true;
+        Minecraft mcv = Minecraft.getInstance();
+        if (a.viewRange > 0 && !Boolean.FALSE.equals(a.pair)
+                && e.distanceToSqr(mcv.gameRenderer.getMainCamera().getPosition()) > (double) a.viewRange * a.viewRange) return true;
         float yaw = a.lerpYaw(e.level() instanceof ClientLevel cl ? cl : Minecraft.getInstance().level, partial);
         // Dónde está el modelo en el mundo (para las colas y la física de ModelEngine, que van en el mundo)
         Vec3 at = e.getPosition(partial);
         a.physWorld = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
                 .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
+        a.poseOrigin = at;
         a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
         return true;
     }
 
+    /** La sombra de un mob de jefe: la del hueso «shadow» de su modelo (radio, en bloques), o 0. */
+    public static float shadowRadius(Entity e) {
+        Actor a = follower(e.getId());
+        if (a == null || a.model == null || !a.shadowOn || Boolean.TRUE.equals(a.pair)) return 0F;
+        return a.model.shadow / 2F * a.scale;
+    }
+
     static {
+        SkillMobs.clientFire = e -> {
+            Actor a = follower(e.getId());
+            return a == null ? 0 : a.fire;
+        };
         SkillMobs.clientGlow = e -> {
             Actor a = follower(e.getId());
             if (a == null || a.boneGlow == null) return false;
@@ -749,22 +852,15 @@ public final class SkillClient {
         int wholeLight = -1;
         ResourceLocation item;
         float itemScale = 1F;
+        /** enderbeam: el rayo hacia una entidad («e:id») o un sitio («p:x,y,z»), con su cristal del End (solo dibujado). */
+        String beam;
+        net.minecraft.world.entity.boss.enderdragon.EndCrystal crystal;
         /** displaytransformation del text_display: giro (grados) y desplazamiento. */
         float textRoll;
         float textX, textY, textZ;
-        /** Colas, segmentos y física de ModelEngine (seg_, tl_, jig_) y dónde está el modelo en el mundo. */
-        net.tierrasfantasticas.tfclient.vfx.VfxPhysics physics;
+        /** Cabezas, colas, física e IK de ModelEngine (VfxRig) y dónde está el modelo en el mundo. */
+        net.tierrasfantasticas.tfclient.vfx.VfxRig rig;
         Matrix4f physWorld;
-        /** segment{} que llegó antes que el modelo (o para reponer al cambiarlo): parte, valores, exacto. */
-        final List<Object[]> segCfg = new ArrayList<>();
-        // ----- ModelEngine: cabezas (headconfig, lockmodelhead, headtarget)
-        float[] headLimits;
-        float headSpeed = -1F;
-        boolean lockHeadYaw, lockHeadPitch;
-        int headTargetId = -1;
-        Vec3 headTargetPos;
-        float headTargetY;
-        float smoothYaw, smoothPitch, lastHeadT = Float.NaN;
         // ----- ModelEngine: por hueso (setitemmodel, setmodeltag, enchant, billboard, glowbone) y skin de los miembros
         ItemStack[] boneItem;
         String[] boneTag;
@@ -773,18 +869,34 @@ public final class SkillClient {
         boolean[] boneGlint;
         int[] boneBillboard;
         int[] boneGlow;
-        String skin;
-        boolean skinSlim;
+        /** modelplayerskin: la skin de cada hueso de jugador (uuid, nombre o «tex:» + base64; null = la de por defecto) y si es slim («» = la de la skin). */
+        String[] boneSkin;
+        String[] boneSlim;
         /** model{damagetint}: parpadea en rojo al recibir daño (como ModelEngine, sí por defecto). */
         boolean damageTint = true;
-        /** Cinemática inversa de ModelEngine (cadenas de Blockbench, ikchain, iktarget, ik) y lo que llegó antes. */
-        net.tierrasfantasticas.tfclient.vfx.VfxIk ik;
-        final List<String[]> ikCmds = new ArrayList<>();
         // ----- vfx{} de ModelEngine: solo un hueso, visible o no, y su posición/giro/escala propios
         String onlyBone;
         boolean vfxVisible = true;
         final Vector3f vfxPos = new Vector3f(), vfxRot = new Vector3f(), vfxScale = new Vector3f(1, 1, 1);
         boolean vfxWorldRot;
+        // ----- leash / leashself de ModelEngine: entidad atada → hueso de correa que la sujeta; y {origen, destino}
+        Map<Integer, String> leashes;
+        List<String[]> selfLeashes;
+        /** Qué sitio del mundo es el origen de la pila de dibujo (la cámara, o la entidad que lo dibuja). */
+        Vec3 poseOrigin;
+        /** El modelo sin los cambios en vivo y los mensajes de su VfxRig (para rehacerlo al cambiar el modelo en vivo). */
+        String meId;
+        final List<String[]> rigLog = new ArrayList<>();
+        /** model{seeself} / modeldisguise{seeself}: se ve a sí mismo el jugador disfrazado. */
+        boolean seeSelf = true;
+        /** model{viewrange;radius}: hasta dónde se ve (bloques; 0 = lo de siempre). */
+        float viewRange;
+        /** model{renderfire;forcefire}: 1 = fuego siempre, -1 = nunca, 0 = el de Minecraft. */
+        int fire;
+        /** model{showshadow}. */
+        boolean shadowOn = true;
+        /** pairmodel: escondido (true) o enseñado siempre (false) a este jugador; null = lo normal. */
+        Boolean pair;
 
         Actor(int id) {
             this.id = id;
@@ -793,46 +905,22 @@ public final class SkillClient {
         /** Pose de todos los huesos ahora (con sus capas si es de un jefe). */
         void pose(Matrix4f[] mats, float partial) {
             if (layers != null) {
-                float headYaw = 0F, headPitch = 0F;
+                float headYaw = 0F, headPitch = 0F, body = 0F;
+                Vector3f eye = null;
                 ClientLevel level = Minecraft.getInstance().level;
                 Entity e = follow >= 0 && level != null ? level.getEntity(follow) : null;
                 if (e instanceof LivingEntity le) {
-                    float body = le.yBodyRotO + (le.yBodyRot - le.yBodyRotO) * partial;
+                    body = le.yBodyRotO + (le.yBodyRot - le.yBodyRotO) * partial;
                     float head = le.yHeadRotO + (le.yHeadRot - le.yHeadRotO) * partial;
                     headYaw = net.minecraft.util.Mth.wrapDegrees(head - body);
                     headPitch = le.getViewXRot(partial);
-                    // headtarget: las cabezas miran a ese objetivo (o sitio), no a donde mira la entidad
-                    Vec3 tp = null;
-                    if (headTargetId >= 0 && level != null) {
-                        Entity te = level.getEntity(headTargetId);
-                        if (te != null) tp = te.getPosition(partial).add(0, te.getBbHeight() * 0.85 + headTargetY, 0);
-                    }
-                    if (tp == null) tp = headTargetPos;
-                    if (tp != null) {
-                        Vec3 eye = le.getPosition(partial).add(0, le.getEyeHeight(), 0);
-                        Vec3 d = tp.subtract(eye);
-                        float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-                        headYaw = net.minecraft.util.Mth.wrapDegrees(yaw - body);
-                        headPitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
-                    }
+                    Vec3 ep = le.getPosition(partial);
+                    eye = new Vector3f((float) ep.x, (float) (ep.y + le.getEyeHeight()), (float) ep.z);
                 }
-                if (lockHeadYaw) headYaw = 0F;
-                if (lockHeadPitch) headPitch = 0F;
-                // Velocidad de giro de la cabeza (h[speed=]_ o headconfig{speed}): grados por tick como mucho
-                float sp = headSpeed >= 0F ? headSpeed : model.headSpeed();
+                // headtarget, lockmodelhead y la velocidad de la cabeza: VfxRig (igual que el servidor)
                 float now = age + partial;
-                if (sp > 0F && !Float.isNaN(lastHeadT)) {
-                    float dt = Math.max(0F, Math.min(5F, now - lastHeadT));
-                    smoothYaw += net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(headYaw - smoothYaw), -sp * dt, sp * dt);
-                    smoothPitch += net.minecraft.util.Mth.clamp(headPitch - smoothPitch, -sp * dt, sp * dt);
-                    headYaw = smoothYaw;
-                    headPitch = smoothPitch;
-                } else {
-                    smoothYaw = headYaw;
-                    smoothPitch = headPitch;
-                }
-                lastHeadT = now;
-                layers.pose(model, now, headYaw, headPitch, mats, headLimits != null ? headLimits : model.headLimits());
+                float[] look = rig.look(headYaw, headPitch, body, eye, entities(partial), now);
+                layers.pose(model, now, look[0], look[1], mats, rig.limits());
                 return;
             }
             float seconds = (age - animStart + partial) / 20F * speed;
@@ -921,18 +1009,13 @@ public final class SkillClient {
         }
 
         void setModel(String id) {
+            meId = id;
             model = id == null ? null : model(id);
+            rigLog.clear();
+            boneSkin = null;
+            boneSlim = null;
             boneLight = null;
-            physics = null;
-            segCfg.clear();
-            ik = null;
-            ikCmds.clear();
-            headLimits = null;
-            headSpeed = -1F;
-            lockHeadYaw = lockHeadPitch = false;
-            headTargetId = -1;
-            headTargetPos = null;
-            lastHeadT = Float.NaN;
+            rig = model == null ? null : new net.tierrasfantasticas.tfclient.vfx.VfxRig(model);
             boneItem = null;
             boneTag = null;
             boneTagStyle = null;
@@ -940,6 +1023,8 @@ public final class SkillClient {
             boneGlint = null;
             boneBillboard = null;
             boneGlow = null;
+            leashes = null;
+            selfLeashes = null;
             if (layers != null) layers.clear();
             if (model == null) return;
             int n = model.bones.length;
@@ -1070,29 +1155,8 @@ public final class SkillClient {
             if (!vfxVisible) return;
             pose(bones, partial);
             if (layers != null && physWorld != null) {
-                if (ik == null) {
-                    ik = new net.tierrasfantasticas.tfclient.vfx.VfxIk(model);
-                    for (String[] c : ikCmds) ikCommand(c);
-                }
-                if (ik.active()) {
-                    ClientLevel lv = Minecraft.getInstance().level;
-                    float now = age + partial;
-                    ik.apply(bones, physWorld, now, b -> layers.moves(model, b, now), id2 -> {
-                        Entity te = lv == null ? null : lv.getEntity(id2);
-                        if (te == null) return null;
-                        Vec3 p = te.getPosition(partial);
-                        return new Vector3f((float) p.x, (float) (p.y + te.getBbHeight() * 0.5), (float) p.z);
-                    });
-                }
-                if (physics == null) {
-                    physics = new net.tierrasfantasticas.tfclient.vfx.VfxPhysics(model);
-                    for (Object[] c : segCfg) {
-                        String part = (String) c[0];
-                        if (part != null && part.startsWith("\u0000jig:")) physics.configureJig(part.substring(5), castCfg(c[1]), (Boolean) c[2]);
-                        else physics.configure(part, castCfg(c[1]), (Boolean) c[2]);
-                    }
-                }
-                if (physics.active()) physics.apply(bones, physWorld, age + partial);
+                float now = age + partial;
+                rig.bend(bones, physWorld, now, b -> layers.moves(model, b, now), entities(partial));
             }
             Minecraft mc = Minecraft.getInstance();
             int baseLight = wholeLight >= 0 ? wholeLight : light;
@@ -1119,22 +1183,23 @@ public final class SkillClient {
             Map<String, List<int[]>> byTex = new HashMap<>();
             Map<String, ResourceLocation> texOf = new HashMap<>();
             Map<String, Integer> glowOf = new HashMap<>();
-            ResourceLocation skinTex = null;
             for (int bi = 0; bi < model.bones.length; bi++) {
-                if (!visible[bi]) continue;
+                if (!visible[bi] || model.bones[bi].removed) continue;
                 VfxModel.Bone bone = boneOf(bi);
-                if (bone == null || bone.quadCount == 0) continue;
+                if (bone == null) continue;
+                float[] qd = quadsOf(bi, bone);
+                int qc = qd.length / VfxModel.QUAD;
+                if (qc == 0) continue;
                 VfxModel src = source[bi];
                 int glow = outline != null ? boneGlow[bi] : 0;
-                for (int q = 0; q < bone.quadCount; q++) {
-                    int ti = (int) bone.quads[q * VfxModel.QUAD];
+                for (int q = 0; q < qc; q++) {
+                    int ti = (int) qd[q * VfxModel.QUAD];
                     ResourceLocation rl;
                     if (ti >= 0 && ti < src.tex.length) {
                         rl = texture(src, ti);
                     } else if (layers != null && (ti == -1 || ti == -2 || ti == -4 || ti == -5)) {
                         // Miembros de jugador de ModelEngine (phead_, prarm_..., limb[]): con la skin de modelplayerskin
-                        if (skinTex == null) skinTex = skinTexture();
-                        rl = skinTex;
+                        rl = skinFor(bi);
                     } else {
                         continue;
                     }
@@ -1157,6 +1222,7 @@ public final class SkillClient {
                     int bi = item[0], q = item[1], ti = item[2];
                     VfxModel src = source[bi];
                     VfxModel.Bone bone = boneOf(bi);
+                    float[] qd = quadsOf(bi, bone);
                     if (bi != lastBone) {
                         boneMatrix(bi, base, pose, full);
                         normal.set(normalBase).mul(new Matrix3f(bones[bi]));
@@ -1173,22 +1239,22 @@ public final class SkillClient {
                             frame = (age / t.frameTime()) % t.frames();
                         }
                     }
-                    if (bone.shade) n.set(bone.quads[o + 1], bone.quads[o + 2], bone.quads[o + 3]).mul(normal).normalize();
+                    if (bone.shade) n.set(qd[o + 1], qd[o + 2], qd[o + 3]).mul(normal).normalize();
                     else n.set(0, 1, 0).mul(normalView);
                     if (!Float.isFinite(n.x)) n.set(0, 1, 0);
                     // Centro de la cara en la textura: cada esquina se mete un poco hacia él (como hace Minecraft al
                     // hornear los modelos), para que en los bordes no se cuele el píxel de al lado ni, en las texturas
                     // animadas, una raya del fotograma siguiente
-                    float[] c = VfxModel.uvCenter(bone.quads, o);
+                    float[] c = VfxModel.uvCenter(qd, o);
                     // Luz: las texturas emisivas (_e) y las caras que brillan, a plena luz; si no, la del hueso o la del sitio
-                    int lit = emissive || ((int) bone.quads[o + 24] & 1) != 0 ? FULL_BRIGHT
+                    int lit = emissive || ((int) qd[o + 24] & 1) != 0 ? FULL_BRIGHT
                             : boneLight != null && boneLight[bi] >= 0 ? boneLight[bi] : baseLight;
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
-                        v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
+                        v.set(qd[p], qd[p + 1], qd[p + 2], 1F);
                         full.transform(v);
-                        float tu = VfxModel.insetUv(bone.quads[p + 3], c[0]);
-                        float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
+                        float tu = VfxModel.insetUv(qd[p + 3], c[0]);
+                        float tv = (VfxModel.insetUv(qd[p + 4], c[1]) + frame) / frames;
                         vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(tu, tv)
                                 .overlayCoords(overlay).uv2(lit).normal(n.x, n.y, n.z).endVertex();
                     }
@@ -1197,6 +1263,90 @@ public final class SkillClient {
             if (boneGlint != null) drawGlint(base, pose, plain);
             if (boneItem != null) drawItems(base, pose, plain, baseLight);
             if (boneTag != null) drawTags(base, pose, plain, baseLight);
+            if (leashes != null || selfLeashes != null) drawLeashes(inst, pose, plain, partial);
+        }
+
+        /** Dónde está ahora un hueso, en el espacio de la pila de dibujo (inst: del modelo a ese espacio). */
+        private Vec3 bonePoint(Matrix4f inst, int b) {
+            Vector4f p = new Matrix4f(inst).mul(bones[b]).transform(new Vector4f(0, 0, 0, 1));
+            return new Vec3(p.x, p.y, p.z);
+        }
+
+        /** El hueso de correa (l_ sin cubos) con ese nombre o, sin nombre, el primero que haya; -1 si no es de correa. */
+        private int leashBone(String part) {
+            if (part != null && !part.isEmpty()) {
+                int b = model.bone(part);
+                return b >= 0 && "leash".equals(model.bones[b].beh) ? b : -1;
+            }
+            for (int i = 0; i < model.bones.length; i++) if ("leash".equals(model.bones[i].beh)) return i;
+            return -1;
+        }
+
+        /**
+         * leash y leashself: la correa de Minecraft (MobRenderer.renderLeash) desde el hueso de correa hasta donde Minecraft
+         * ata a un mob (su «leash offset», girado con su cuerpo) o hasta el otro hueso.
+         */
+        private void drawLeashes(Matrix4f inst, PoseStack pose, MultiBufferSource buffers, float partial) {
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null || poseOrigin == null) return;
+            if (leashes != null) {
+                for (Map.Entry<Integer, String> e : leashes.entrySet()) {
+                    Entity t = level.getEntity(e.getKey());
+                    int b = leashBone(e.getValue());
+                    if (t == null || b < 0 || !visible[b]) continue;
+                    float body = t instanceof LivingEntity le ? net.minecraft.util.Mth.lerp(partial, le.yBodyRotO, le.yBodyRot) : t.getViewYRot(partial);
+                    double ang = Math.toRadians(body) + Math.PI / 2;
+                    Vec3 off = t.getLeashOffset(partial);
+                    double ox = Math.cos(ang) * off.z + Math.sin(ang) * off.x, oz = Math.sin(ang) * off.z - Math.cos(ang) * off.x;
+                    Vec3 tied = t.getPosition(partial).add(ox, off.y, oz).subtract(poseOrigin);
+                    rope(pose, buffers, tied, bonePoint(inst, b), level, poseOrigin);
+                }
+            }
+            if (selfLeashes != null) {
+                for (String[] p : selfLeashes) {
+                    int s = leashBone(p[0]), d = leashBone(p[1]);
+                    if (s < 0 || d < 0 || s == d || !visible[s] || !visible[d]) continue;
+                    rope(pose, buffers, bonePoint(inst, d), bonePoint(inst, s), level, poseOrigin);
+                }
+            }
+        }
+
+        /**
+         * Una correa como la de Minecraft (MobRenderer.renderLeash y addVertexPair): del extremo atado «tied» a quien la
+         * sujeta «holder» (los dos en el espacio de la pila), 24 tramos que cuelgan, dos tiras cruzadas de color cuerda y la
+         * luz de cada punta repartida a lo largo.
+         */
+        private static void rope(PoseStack pose, MultiBufferSource buffers, Vec3 tied, Vec3 holder, ClientLevel level, Vec3 origin) {
+            float dx = (float) (holder.x - tied.x), dy = (float) (holder.y - tied.y), dz = (float) (holder.z - tied.z);
+            float flat = dx * dx + dz * dz;
+            float k = (flat < 1e-8F ? 1F / 1e-4F : net.minecraft.util.Mth.invSqrt(flat)) * 0.025F / 2F;
+            float sx = dz * k, sz = dx * k;
+            if (flat < 1e-8F) sx = 0.0125F;
+            BlockPos pa = BlockPos.containing(tied.add(origin)), pb = BlockPos.containing(holder.add(origin));
+            int ba = level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pa);
+            int bb = level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pb);
+            int sa = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pa);
+            int sb = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pb);
+            VertexConsumer vc = buffers.getBuffer(RenderType.leash());
+            pose.pushPose();
+            pose.translate(tied.x, tied.y, tied.z);
+            Matrix4f m = pose.last().pose();
+            for (int i = 0; i <= 24; i++) ropePair(vc, m, dx, dy, dz, ba, bb, sa, sb, 0.025F, 0.025F, sx, sz, i, false);
+            for (int i = 24; i >= 0; i--) ropePair(vc, m, dx, dy, dz, ba, bb, sa, sb, 0.025F, 0F, sx, sz, i, true);
+            pose.popPose();
+        }
+
+        private static void ropePair(VertexConsumer vc, Matrix4f m, float dx, float dy, float dz, int blockA, int blockB, int skyA,
+                                     int skyB, float w, float lift, float sx, float sz, int i, boolean back) {
+            float f = i / 24F;
+            int light = LightTexture.pack((int) net.minecraft.util.Mth.lerp(f, blockA, blockB), (int) net.minecraft.util.Mth.lerp(f, skyA, skyB));
+            float shade = i % 2 == (back ? 1 : 0) ? 0.7F : 1F;
+            float r = 0.5F * shade, g = 0.4F * shade, b = 0.3F * shade;
+            float x = dx * f;
+            float y = dy > 0F ? dy * f * f : dy - dy * (1F - f) * (1F - f);
+            float z = dz * f;
+            vc.vertex(m, x - sx, y + lift, z + sz).color(r, g, b, 1F).uv2(light).endVertex();
+            vc.vertex(m, x + sx, y + w - lift, z - sz).color(r, g, b, 1F).uv2(light).endVertex();
         }
 
         /** La matriz con la que se dibuja un hueso (con billboard: mirando a la cámara). */
@@ -1258,54 +1408,169 @@ public final class SkillClient {
             }
         }
 
-        /** setmodeltag: el texto de los huesos de nombre (tag_), mirando a la cámara. */
+        /**
+         * setmodeltag: el texto de los huesos de nombre (tag_) como un text_display de Minecraft (TextDisplayRenderer):
+         * líneas partidas a «linewidth», alineadas (LEFT, CENTER, RIGHT) y creciendo hacia arriba desde el hueso, con su
+         * billboard (CENTER = mirando a la cámara, VERTICAL = solo gira de lado, HORIZONTAL y FIXED = con el hueso).
+         */
         private void drawTags(Matrix4f base, PoseStack pose, MultiBufferSource buffers, int light) {
             Minecraft mc = Minecraft.getInstance();
             net.minecraft.client.gui.Font font = mc.font;
             Camera cam = mc.gameRenderer.getMainCamera();
             Matrix4f full = new Matrix4f();
             for (int bi = 0; bi < model.bones.length; bi++) {
-                if (boneTag[bi] == null || !boneTagOn[bi] || boneTag[bi].isEmpty()) continue;
+                if (boneTag[bi] == null || !boneTagOn[bi] || boneTag[bi].isEmpty() || model.bones[bi].removed) continue;
                 String[] st = boneTagStyle[bi].split("\\|");
-                float sc = parse(st[0], 1F);
+                String[] sv = st[0].split(",");
+                float sx = parse(sv[0], 1F), sy = sv.length > 1 ? parse(sv[1], sx) : sx, sz = sv.length > 2 ? parse(sv[2], sx) : sx;
                 boolean shadow = st.length > 1 && "1".equals(st[1]);
                 boolean through = st.length > 2 && "1".equals(st[2]);
                 int bg = st.length > 3 ? (int) parse(st[3], -1F) : -1;
                 int op = st.length > 4 ? (int) parse(st[4], -1F) : -1;
+                String align = st.length > 5 ? st[5] : "CENTER";
+                int lineWidth = st.length > 6 ? Math.max(1, (int) parse(st[6], 200F)) : 200;
+                String bill = st.length > 7 ? st[7] : "CENTER";
                 full.set(base).mul(bones[bi]);
                 Vector3f t = full.getTranslation(new Vector3f());
                 Quaternionf view = pose.last().pose().getUnnormalizedRotation(new Quaternionf()).normalize();
-                Matrix4f m = new Matrix4f().translate(t).rotate(view.mul(cam.rotation())).scale(-0.025F * sc, -0.025F * sc, 0.025F * sc);
-                net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component.literal(boneTag[bi]);
-                float x = -font.width(text) / 2F;
+                Quaternionf boneRot = full.getUnnormalizedRotation(new Quaternionf()).normalize().rotateY((float) Math.PI);
+                Quaternionf rot = switch (bill) {
+                    case "FIXED" -> boneRot;
+                    case "HORIZONTAL" -> boneRot.rotateX((float) Math.toRadians(cam.getXRot()));
+                    case "VERTICAL" -> view.mul(new Quaternionf().rotationY((float) Math.toRadians(-cam.getYRot())));
+                    default -> view.mul(cam.rotation());
+                };
+                Matrix4f m = new Matrix4f().translate(t).rotate(rot).scale(-0.025F * sx, -0.025F * sy, 0.025F * sz);
+                List<net.minecraft.util.FormattedCharSequence> lines = font.split(net.minecraft.network.chat.Component.literal(boneTag[bi]), lineWidth);
+                int maxW = 0;
+                for (net.minecraft.util.FormattedCharSequence l : lines) maxW = Math.max(maxW, font.width(l));
+                int lh = font.lineHeight + 1;
+                float y = -lines.size() * lh;
                 int color = op < 0 ? 0xFFFFFFFF : (Math.max(0, Math.min(255, op)) << 24) | 0xFFFFFF;
                 int back = bg == -1 ? (int) (mc.options.getBackgroundOpacity(0.25F) * 255F) << 24 : bg;
-                font.drawInBatch(text, x, 0, color, shadow, m, buffers,
-                        through ? net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH : net.minecraft.client.gui.Font.DisplayMode.NORMAL,
-                        back, light);
+                net.minecraft.client.gui.Font.DisplayMode mode = through ? net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH
+                        : net.minecraft.client.gui.Font.DisplayMode.NORMAL;
+                for (net.minecraft.util.FormattedCharSequence l : lines) {
+                    int w = font.width(l);
+                    float x = switch (align) {
+                        case "LEFT" -> -maxW / 2F;
+                        case "RIGHT" -> maxW / 2F - w;
+                        default -> -w / 2F;
+                    };
+                    font.drawInBatch(l, x, y, color, shadow, m, buffers, mode, back, light);
+                    y += lh;
+                }
             }
         }
 
-        /** La skin de modelplayerskin (uuid o nombre de un jugador conectado) o la de por defecto. */
-        private ResourceLocation skinTexture() {
-            Minecraft mc = Minecraft.getInstance();
-            var conn = mc.getConnection();
-            if (skin != null && conn != null) {
-                net.minecraft.client.multiplayer.PlayerInfo info = null;
-                try {
-                    String raw = skin.replace("-", "");
-                    if (raw.length() == 32) {
-                        java.util.UUID u = new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16),
-                                Long.parseUnsignedLong(raw.substring(16), 16));
-                        info = conn.getPlayerInfo(u);
-                    }
-                } catch (NumberFormatException ignored) {
-                    // no era un uuid: un nombre
-                }
-                if (info == null) info = conn.getPlayerInfo(skin);
-                if (info != null) return info.getSkinLocation();
+        /**
+         * changeparent / submodel (mensaje «medit»: todos los cambios, en orden): rehace el modelo como el servidor
+         * (VfxModel.derive) y lleva lo de cada hueso (visible, piezas, brillos, objetos, nombres, skins...) al hueso del
+         * mismo nombre; las animaciones que suenan siguen; la física y la IK vuelven a empezar con lo que tenían puesto.
+         */
+        void applyEdits(String joined) {
+            VfxModel base = meId == null ? null : model(meId);
+            if (base == null || model == null) return;
+            VfxModel now = base.derive(joined == null || joined.isEmpty() ? List.of() : List.of(joined.split("\n")));
+            VfxModel old = model;
+            if (now == old) return;
+            int n = now.bones.length;
+            int[] from = new int[n];
+            for (int i = 0; i < n; i++) from[i] = old.bone(now.bones[i].id);
+            VfxModel[] src2 = new VfxModel[n];
+            String[] srcBone2 = new String[n];
+            boolean[] vis2 = new boolean[n];
+            Matrix4f[] mats2 = new Matrix4f[n];
+            for (int i = 0; i < n; i++) {
+                int j = from[i];
+                mats2[i] = new Matrix4f();
+                boolean same = j >= 0 && j < old.bones.length;
+                src2[i] = same && source[j] != old ? source[j] : now;
+                srcBone2[i] = same ? sourceBone[j] : now.bones[i].id;
+                vis2[i] = (same ? visible[j] : !now.bones[i].hidden) && !now.bones[i].removed;
             }
-            return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin();
+            boneLight = remapInts(boneLight, from, n, -1);
+            boneBillboard = remapInts(boneBillboard, from, n, 0);
+            boneGlow = remapInts(boneGlow, from, n, 0);
+            if (boneGlint != null) {
+                boolean[] g = new boolean[n];
+                for (int i = 0; i < n; i++) g[i] = from[i] >= 0 && from[i] < boneGlint.length && boneGlint[from[i]];
+                boneGlint = g;
+            }
+            if (boneTagOn != null) {
+                boolean[] g = new boolean[n];
+                for (int i = 0; i < n; i++) g[i] = from[i] >= 0 && from[i] < boneTagOn.length && boneTagOn[from[i]];
+                boneTagOn = g;
+            }
+            boneItem = remap(boneItem, from, n, new ItemStack[n]);
+            boneTag = remap(boneTag, from, n, new String[n]);
+            boneTagStyle = remap(boneTagStyle, from, n, new String[n]);
+            boneSkin = remap(boneSkin, from, n, new String[n]);
+            boneSlim = remap(boneSlim, from, n, new String[n]);
+            model = now;
+            source = src2;
+            sourceBone = srcBone2;
+            visible = vis2;
+            bones = mats2;
+            if (layers != null) layers.rebind(old, now);
+            rig = new net.tierrasfantasticas.tfclient.vfx.VfxRig(now);
+            for (String[] c : rigLog) rig.message(c[0], c[1], c[2], c[3]);
+        }
+
+        private static int[] remapInts(int[] arr, int[] from, int n, int def) {
+            if (arr == null) return null;
+            int[] out = new int[n];
+            for (int i = 0; i < n; i++) out[i] = from[i] >= 0 && from[i] < arr.length ? arr[from[i]] : def;
+            return out;
+        }
+
+        private static <T> T[] remap(T[] arr, int[] from, int n, T[] out) {
+            if (arr == null) return null;
+            for (int i = 0; i < n; i++) out[i] = from[i] >= 0 && from[i] < arr.length ? arr[from[i]] : null;
+            return out;
+        }
+
+        /**
+         * modelplayerskin{limbs;uuid|username|skin;slim}: «limbs» (separados por comas; vacío = todos los huesos de jugador)
+         * con la skin de «who» (uuid, nombre o «tex:» + los datos base64 de la textura) y slim («true», «false» o «» = la de
+         * la skin).
+         */
+        void limbSkin(String limbs, String who, String slim) {
+            if (model == null) return;
+            int n = model.bones.length;
+            if (boneSkin == null) {
+                boneSkin = new String[n];
+                boneSlim = new String[n];
+            }
+            boolean[] hit = new boolean[n];
+            if (limbs == null || limbs.isBlank()) {
+                for (int i = 0; i < n; i++) hit[i] = "limb".equals(model.bones[i].beh) || model.bones[i].phead;
+            } else {
+                for (String l : limbs.split(",")) {
+                    int b = model.bone(l.trim());
+                    if (b >= 0) hit[b] = true;
+                }
+            }
+            for (int i = 0; i < n; i++) {
+                if (!hit[i]) continue;
+                boneSkin[i] = who == null || who.isEmpty() ? null : who;
+                boneSlim[i] = slim == null ? "" : slim.toLowerCase(java.util.Locale.ROOT);
+            }
+        }
+
+        /** La skin de ese hueso de jugador (la de modelplayerskin o la de por defecto). */
+        private ResourceLocation skinFor(int bi) {
+            String who = boneSkin == null || bi >= boneSkin.length ? null : boneSkin[bi];
+            ResourceLocation rl = who == null ? null : skinOf(who);
+            return rl != null ? rl : net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin();
+        }
+
+        /** Las caras de un hueso: las de su skin slim si es un brazo de jugador con skin slim. */
+        private float[] quadsOf(int bi, VfxModel.Bone bone) {
+            if (bone.slimQuads == null || boneSkin == null || bi >= boneSkin.length) return bone.quads;
+            String s = boneSlim[bi];
+            boolean slim = "true".equals(s) || !"false".equals(s) && boneSkin[bi] != null && slimOf(boneSkin[bi]);
+            return slim ? bone.slimQuads : bone.quads;
         }
 
         /** vfx{p}: solo se ve ese hueso (y lo que cuelga de él); vacío = todo. */
@@ -1320,80 +1585,20 @@ public final class SkillClient {
             }
         }
 
-        /** Un mensaje de IK (ik, iktgt, ikchain): se guarda por si cambia el modelo y se aplica si ya hay IK. */
-        void ikMessage(String key, String a1, String b1, String c1) {
-            String[] cmd = {key, a1 == null ? "" : a1, b1 == null ? "" : b1, c1 == null ? "" : c1};
-            ikCmds.add(cmd);
-            if (ik != null) ikCommand(cmd);
-        }
-
-        private void ikCommand(String[] c) {
-            switch (c[0]) {
-                case "ik" -> {
-                    Map<String, Float> v = new HashMap<>();
-                    for (String kv : c[2].split(";")) {
-                        int eq = kv.indexOf('=');
-                        if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
-                    }
-                    ik.configure(c[1], v, !"0".equals(c[3]));
-                    if (physics != null) physics.configureJig(c[1], v, !"0".equals(c[3]));
-                    else segCfg.add(new Object[] {"\u0000jig:" + c[1], v, !"0".equals(c[3])});
-                }
-                case "iktgt" -> {
-                    boolean clear = c[3].startsWith("1");
-                    boolean exact = c[3].length() < 2 || c[3].charAt(1) == '1';
-                    if (clear) {
-                        ik.target(c[1], exact, -1, null, 0F, true);
-                    } else {
-                        String[] p = c[2].split("\\|");
-                        ik.target(c[1], exact, (int) parse(p[0], -1F), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
-                                parse(p[4], 0F), false);
-                    }
-                }
-                case "ikchain" -> {
-                    String[] p = c[2].split("\\|", -1);
-                    if ("1".equals(c[3])) ik.removeChain(p[0]);
-                    else ik.addChain(c[1], p[0], p.length > 1 ? p[1] : "");
-                }
-                default -> { }
-            }
-        }
-
         /** Los huesos con ese nombre (todos si vacío; con exact=false, los que lo llevan) y, con child, sus hijos. */
         int[] match(String part, boolean exact, boolean child) {
-            if (model == null) return new int[0];
-            int n = model.bones.length;
-            boolean[] hit = new boolean[n];
-            String want = part == null ? "" : part.toLowerCase(java.util.Locale.ROOT);
-            if (want.isEmpty()) {
-                java.util.Arrays.fill(hit, true);
-            } else if (exact) {
-                int b = model.bone(part);
-                if (b >= 0) hit[b] = true;
-            } else {
-                for (int i = 0; i < n; i++) hit[i] = model.bones[i].id.toLowerCase(java.util.Locale.ROOT).contains(want);
-            }
-            if (child && !want.isEmpty()) {
-                for (int i = 0; i < n; i++) if (!hit[i] && model.bones[i].parent >= 0 && hit[model.bones[i].parent]) hit[i] = true;
-            }
-            int c = 0;
-            for (boolean h : hit) if (h) c++;
-            int[] out = new int[c];
-            c = 0;
-            for (int i = 0; i < n; i++) if (hit[i]) out[c++] = i;
-            return out;
+            return net.tierrasfantasticas.tfclient.vfx.VfxRig.match(model, part, exact, child);
         }
 
-        /** headconfig: «minYaw|maxYaw|minPitch|maxPitch|speed» («» = no tocar) para esas cabezas (todas si vacío). */
-        void headConfig(String part, String cfg, boolean exact) {
-            if (model == null) return;
-            if (headLimits == null) headLimits = model.headLimits().clone();
-            String[] p = cfg.split("\\|", -1);
-            for (int b : match(part, exact, false)) {
-                if (!model.bones[b].head) continue;
-                for (int k = 0; k < 4; k++) if (k < p.length && !p[k].isEmpty()) headLimits[b * 4 + k] = parse(p[k], Float.NaN);
-            }
-            if (p.length > 4 && !p[4].isEmpty()) headSpeed = parse(p[4], 0F);
+        /** Las entidades del mundo para headtarget e iktarget: {x, y, z, alto}. */
+        private static net.tierrasfantasticas.tfclient.vfx.VfxRig.Entities entities(float partial) {
+            ClientLevel lv = Minecraft.getInstance().level;
+            return id -> {
+                Entity te = lv == null ? null : lv.getEntity(id);
+                if (te == null) return null;
+                Vec3 p = te.getPosition(partial);
+                return new float[] {(float) p.x, (float) p.y, (float) p.z, te.getBbHeight()};
+            };
         }
 
         /** setitemmodel: «id|data|color|enchant» en ese hueso de objeto (vacío = quitarlo). */
@@ -1419,7 +1624,7 @@ public final class SkillClient {
             for (int b : match(part, exact, false)) boneItem[b] = st;
         }
 
-        /** setmodeltag: «escala|sombra|a través|fondo|opacidad\u0001texto» en ese hueso de nombre. */
+        /** setmodeltag: «escala|sombra|a través|fondo|opacidad|alineación|ancho|billboard\u0001texto» en ese hueso de nombre. */
         void boneTag(String part, String v, boolean visible) {
             if (model == null) return;
             int n = model.bones.length;
@@ -1438,22 +1643,6 @@ public final class SkillClient {
             }
         }
 
-        @SuppressWarnings("unchecked")
-        private static Map<String, Float> castCfg(Object o) {
-            return (Map<String, Float>) o;
-        }
-
-        /** segment{}: «part» vacío = todo el modelo; «cfg» = clave=valor;... (ver SkillModels.segment). */
-        void segment(String part, String cfg, boolean exact) {
-            Map<String, Float> v = new HashMap<>();
-            for (String kv : cfg.split(";")) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
-            }
-            segCfg.add(new Object[] {part.isEmpty() ? null : part, v, exact});
-            if (physics != null) physics.configure(part.isEmpty() ? null : part, v, exact);
-        }
-
         /** El hueso que se dibuja en el sitio «bi» (el suyo o el de otro modelo, si se cambió con changepart). */
         VfxModel.Bone boneOf(int bi) {
             VfxModel src = source[bi];
@@ -1464,6 +1653,59 @@ public final class SkillClient {
     }
 
     // ------------------------------------------------------------------------------------------- datos
+
+    // ------------------------------------------------------------------------------------------- skins de modelplayerskin
+
+    /** Skins de «tex:» + base64 ya bajadas (como ModelEngine: se bajan una vez) y si son slim. */
+    private static final Map<String, ResourceLocation> TEX_SKINS = new HashMap<>();
+    private static final Map<String, Boolean> TEX_SLIM = new HashMap<>();
+    private static final Set<String> TEX_ASKED = new HashSet<>();
+
+    /** La skin de un jugador conectado (uuid o nombre) o la de unos datos de textura («tex:» + base64); null si aún no. */
+    private static ResourceLocation skinOf(String who) {
+        if (who.startsWith("tex:")) {
+            String b64 = who.substring(4);
+            ResourceLocation rl = TEX_SKINS.get(b64);
+            if (rl == null && TEX_ASKED.add(b64)) {
+                com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(
+                        java.util.UUID.nameUUIDFromBytes(b64.getBytes(java.nio.charset.StandardCharsets.UTF_8)), "tfskin");
+                gp.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", b64));
+                Minecraft.getInstance().getSkinManager().registerSkins(gp, (type, loc, tex) -> {
+                    if (type == com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.SKIN) {
+                        TEX_SKINS.put(b64, loc);
+                        // «Sin modelo en los datos, CLASSIC» (wiki de ModelEngine)
+                        TEX_SLIM.put(b64, "slim".equals(tex.getMetadata("model")));
+                    }
+                }, false);
+            }
+            return rl;
+        }
+        net.minecraft.client.multiplayer.PlayerInfo info = playerInfo(who);
+        return info == null ? null : info.getSkinLocation();
+    }
+
+    /** ¿La skin de «who» es slim? (la del jugador conectado o la de los datos de textura) */
+    private static boolean slimOf(String who) {
+        if (who.startsWith("tex:")) return TEX_SLIM.getOrDefault(who.substring(4), false);
+        net.minecraft.client.multiplayer.PlayerInfo info = playerInfo(who);
+        return info != null && "slim".equals(info.getModelName());
+    }
+
+    private static net.minecraft.client.multiplayer.PlayerInfo playerInfo(String who) {
+        var conn = Minecraft.getInstance().getConnection();
+        if (conn == null) return null;
+        net.minecraft.client.multiplayer.PlayerInfo info = null;
+        try {
+            String raw = who.replace("-", "");
+            if (raw.length() == 32) {
+                info = conn.getPlayerInfo(new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16),
+                        Long.parseUnsignedLong(raw.substring(16), 16)));
+            }
+        } catch (NumberFormatException ignored) {
+            // no era un uuid: un nombre
+        }
+        return info != null ? info : conn.getPlayerInfo(who);
+    }
 
     static VfxModel model(String id) {
         if (id == null || id.isEmpty()) return null;

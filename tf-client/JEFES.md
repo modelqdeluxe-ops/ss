@@ -4,7 +4,7 @@ Este documento sirve para que otra IA (o persona) retome los jefes sin tener que
 CHECKPOINT de `HANDOFF.md`, porque las reglas del dueño están allí (español, nada de subagentes, compilar con GitHub
 Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 
-- **Estado:** TF Client **1.3.80**.
+- **Estado:** TF Client **1.3.81**.
   - 1.3.75: jefes, grietas y `/tf boss`.
   - 1.3.76: la IA, fiel a MythicMobs/ModelEngine.
   - 1.3.77: el cerebro táctico.
@@ -23,6 +23,16 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
     parpadeo rojo al recibir daño (`damagetint`) y `step`; el conversor lee las 26 etiquetas de hueso y hornea bezier,
     Molang y fotogramas antes/después; efectos de MythicMobs nuevos (`particletornado`, `particlelinehelix`, `atom`,
     `geyser`…); auditor de modelos y texturas; pruebas `test_convert.py` y `sim_physics.py`. Ver §10 para Mohist.
+  - 1.3.81: los 5 jefes **reconvertidos** (6 animaciones cambian por bezier; ningún pack trae Molang); **cabezas como
+    ModelEngine 4** (globales y sin acumularse, §3.6); **el resto de ModelEngine 4** (§3.6): `leash`/`leashself`,
+    cabezas/colas/física/IK **también en el servidor** (`vfx/VfxRig`), `animatemodel`, `rootmotion`, `changeparent`,
+    `submodel`, `swapentity`, `petrify`, `pairmodel`, `modeldisguise`, `move`, `syncyaw`, `jig[repeat=N]`, la caja de
+    la entidad con el modelo (`hitboxscale`…), skins slim/base64/de jugadores desconectados y `setmodeltag` con
+    alineación; y **lo que faltaba de MythicMobs sin tocar el mundo** (§3.2 y §3.7): `~onCombat` (las líneas sin
+    disparador), `~onSkillDamage`, `~onShoot`/`~onBowHit`, `~onProjectileHit`/`Land`, `~onDespawn`, `~onHear`…;
+    `@Cone`, `@Sphere`, `@Rectangle`, `@BlocksInRadius`, `@BlocksNearOrigin`; `score`, `globalscore`, `wearing`,
+    `haspermission`… de verdad; pantallas (`blackscreen`, `bloodyscreen`, `bossborder`, `skybox`, `sendtoast`),
+    `enderbeam`, `hologram`, `chainmissile`, `switch`, `variablemath`, `consume`, `swap`, `teleportin`…
 - **Regla del dueño:** «quiero que este motor sea perfecto y bien corregido para todos los bosses que metamos». Ver
   §7: nada se publica sin el auditor a 0, su prueba y el simulador.
 - **Packs que hay:** 5 de LittleRoom y otros: Gárgola, Hidra, Abominación Parasitaria, Esqueleto de la Torre y Astwood.
@@ -50,6 +60,8 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 | `vfx/VfxPhysics`, `vfx/VfxIk` | Colas/segmentos y física `jig_`; cinemática inversa (§3.6). Las usa el cliente al dibujar. |
 | `tools/molang.py` | Evalúa el Molang de los keyframes para hornearlo al convertir. |
 | `tools/bosses/audit.py` | **El auditor**: revisa cada jefe contra el motor (mecánicas, condiciones y objetivos sin implementar, skills que faltan, animaciones y huesos que no existen, sonidos y modelos). Lo lanza `build_bosses.py` al acabar. |
+| `vfx/VfxRig` | Lo que se mueve solo en un modelo (cabezas, colas/segmentos, física `jig_`, IK) con el mismo código en el cliente y en el servidor (§3.6). |
+| `skills/SkillMore`, `skills/SkillScreen` | Las mecánicas de MythicMobs de la 1.3.81 (§3.7) y lo que ponen en la pantalla del jugador (pantalla negra, borde rojo, aviso de logro). |
 
 Todas las rutas Java cuelgan de `tf-client/src/main/java/net/tierrasfantasticas/tfclient/`. Los recursos cuelgan de
 `tf-client/src/main/resources/assets/tfclient/`.
@@ -147,7 +159,9 @@ Las líneas del mob (`mobs.<mob>.mechs`) llevan `tr`/`trv` (disparador) y `hp` (
 
 | Disparador | Cuándo salta |
 |---|---|
+| (ninguno) = `oncombat` | **Como MythicMobs**: una línea sin `~disparador` es `~onCombat`, que salta al aparecer, al recibir un golpe (con el mismo golpe: puede anularlo) y al morir (y al pegar cuerpo a cuerpo, que los jefes no hacen). Hasta la 1.3.80 se trataba como `~onSpawn`; ningún pack de los 5 tiene líneas sin disparador. En un efecto (actor), que ni pega ni recibe, es lo mismo que aparecer. |
 | `onspawn` | El primer tick. |
+| `onspawnorload`, `onready` | Al aparecer (los jefes no se guardan: nunca «cargan»). `onready` («sale de un generador»): solo el jefe, que sale de su grieta; sus esbirros invocados, no. |
 | `ontimer:N` | Cada N ticks, en el orden del pack. |
 | `onentercombat` | Al tener objetivo, **una vez por pelea**: si lo pierde un momento no vuelve a saltar (salvo tras 10 s sin objetivo). La Abominación volvía a gritar cada vez. |
 | `ondropcombat` | Tras 10 s sin objetivo después de pelear (la misma regla que la entrada). @trigger: nadie. |
@@ -157,6 +171,14 @@ Las líneas del mob (`mobs.<mob>.mechs`) llevan `tr`/`trv` (disparador) y `hp` (
 | `onkill` / `onplayerkill` | Mata a algo / a un jugador con un golpe o una skill (`BossEntity.killedEntity`). @trigger = la víctima. |
 | `oninteract` | Clic derecho de un jugador (`BossEntity.mobInteract`). En los packs de ahora solo lleva `cancelevent` (no hace nada: no hay golpe que anular). |
 | `onsignal:X` | Al recibir `signal{s=X}`. |
+| `onskilldamage` | Hace daño con una mecánica (`damage`, un proyectil suyo…; `SkillRuntime.hurt`). @trigger = a quien ha dado. Uno que dentro hace daño no se vuelve a disparar a sí mismo. |
+| `onshoot` / `onbowhit` | `shoot`/`shootfireball` (en MythicMobs son proyectiles de Minecraft): `onshoot` al disparar (@trigger = él, `bow-tension` = 1) y `onbowhit` al dar a alguien (@trigger = a quien da). |
+| `onprojectilehit` / `onprojectileland` | Sus `projectile`/`missile` dan a alguien (@trigger = él, una vez por cada uno) / chocan con un bloque (@origin = donde caen). |
+| `ondespawn` | Se va sin morir (se cierra la grieta): `BossEntity.remove`. |
+| `ondismounted` | Se baja (o le bajan) de lo que montaba (`BossEvents.onDismount`). @trigger = la montura. |
+| `onhear` | Con `Hearing: Enabled: true` en el mob: oye como el Warden (la wiki lo dice así) las vibraciones de Minecraft (`VanillaGameEvent` del tag `vibrations`) a 16 bloques: no a quien va agachado si ese evento se calla así, ni lo amortiguado (lana), ni a sí mismo; tarda un tick por bloque en llegarle, mientras viaja no oye otra y después 2 s de calma. `volume` = distancia (1–15), `sound-type` = el evento (`STEP`, `HIT_GROUND`…), @trigger = quien la hizo, @origin = dónde. |
+| `onexplode`, `onprime`, `oncreepercharge`, `onteleport`, `ontame`, `onbreed`, `ontrade`, `onbucket` | Son de lo que hace por sí mismo su **tipo** de Minecraft (un creeper explota, un enderman se teletransporta…), que `BossEntity` no copia. Si el `Type` del pack no lo hace, tampoco saltan en MythicMobs (el auditor lo dice como aviso); si lo hace, es un problema (§11.3). |
+| `onchangeworld` | No salta: los jefes no pasan por portales (`BossEntity.canChangeDimensions = false`; su copia en el otro mundo no tendría su programa). |
 | `onload` | No salta: los jefes no se guardan en el mundo (`shouldBeSaved = false`), nunca vuelven del disco. El auditor lo comprueba en el Java. |
 | `onattack` | No salta: no hay golpe cuerpo a cuerpo de Minecraft. En los packs solo lo usan para cancelarlo; si un pack hace algo más con él, el auditor lo marca como problema. |
 
@@ -185,6 +207,7 @@ Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `Ski
 | Las cifras de vida del pack van **en su escala**: `health{h}`, `setmaxhealth{a}`, `shield{a;maxshield}`, `heal{a}`, `damage @self`. | `SkillConds` (health), `apply` | El pack no sabe de dificultades: «500» es 500 de su vida, no de la nuestra. |
 | `@TT` en un jefe es **@ThreatTable** (MythicMobs); en las skills de clase sigue siendo el objetivo heredado (`pistolero_despertado`). `threat{amount;mode}` = ADD/SUBTRACT/MULTIPLY/DIVIDE/SET/RESET/FORCE (FORCE: pasa a ser el primero y su objetivo). `rally` = FORCE en los de su grupo cercanos. | `SkillTargets.threat`, `BossEntity.threat` | Burlas, cambios de objetivo y ataques «al que más le pega». |
 | `explosion{yield;fire}` **nunca rompe bloques** y solo daña a quien el jefe puede dañar (la cuenta de daño de Minecraft, con la dificultad). `fakeexplosion`/`effect:explosion`: solo se ve y se oye. | `SkillRuntime.explosion` | El servidor tiene construcciones y protecciones. |
+| Una línea **sin disparador** es `~onCombat` (no `~onSpawn`). | `SkillMobs.run`, `audit.py`, `sim_ai.py` | Wiki de MythicMobs («Skills without a trigger default to onCombat»). |
 | Lo que el motor acepta sin hacer nada (`-> { /* nada */ }` en `apply`, `-> true;` en `SkillConds`) está explicado en `STUB_OK` de `audit.py`. Si añades uno, explícalo allí o el auditor lo marcará en cuanto un pack lo use. | `apply`, `SkillConds`, `audit.py` | Que nada se quede «de mentira» sin que se sepa. |
 
 ### 3.4 Animaciones: VfxLayers (ModelEngine 4)
@@ -224,7 +247,7 @@ Los proyectiles «MOB» (las llamas en `text_display`) y los «display» (la esf
 
 ---
 
-### 3.6 ModelEngine 4 en el motor (1.3.80)
+### 3.6 ModelEngine 4 en el motor (1.3.80 y 1.3.81)
 
 Todo según la wiki de ModelEngine («Bone Behaviors» y «Skills/Mechanics»). Lo visual lo hace el cliente (`SkillClient.Actor`)
 con lo que le manda el servidor en «props» del actor del modelo (se guardan y se repiten a quien llega tarde;
@@ -234,14 +257,14 @@ con lo que le manda el servidor en «props» del actor del modelo (se guardan y 
 
 | Etiqueta | Qué hace aquí |
 |---|---|
-| `h_`, `hi_`, `h[yaw;pitch;minyaw;maxyaw;minpitch;maxpitch;speed]_` | Cabeza: sigue la mirada (repartida entre las encadenadas), con límites (`VfxModel.headLimits`, `VfxPose.build`) y velocidad máxima por tick (`Actor.pose`). `hi_`: sus hijos también. |
+| `h_`, `hi_`, `h[yaw;pitch;minyaw;maxyaw;minpitch;maxpitch;speed]_` | Cabeza (1.3.81, como ModelEngine 4 y BetterModel, que lo copia): el giro de la mirada es **global** (en los ejes del modelo, sobre su pivote) y **no se acumula** (una cabeza dentro de otra no gira el doble: `hi_chest` + `hi_head` de la Gárgola miran una vez). Un hijo **sin etiqueta** de un `h_` va con él pero **no gira** («los hijos necesitan su propio h_»); con `hi_`, todo lo que cuelga es cabeza (el conversor lo marca y hereda sus límites). Cada cabeza con sus límites: un `hi[yaw=30]_pecho` con un `h[yaw=90]_cabeza` dentro gira 30° el pecho y la cabeza 60° más (`VfxPose.build`, `VfxModel.headLimits`); velocidad máxima por tick en `VfxRig.look`. Las clases siguen con la regla vieja (`VfxPose.compute`). |
 | `p_`, `mount` | Asiento (agarres). |
 | `ob_` / `b_` | Caja de golpe que gira con su hueso / recta del mundo que solo le sigue (`VfxHitboxes`; `b_` debe ser cuadrada en X/Z). |
 | `seg_`, `segf_`, `tl_`, `tlf_` | Cola o segmento (solo sin cubos, pivote atrás; `f` = delante): `vfx/VfxPhysics` (abajo). Conservan el nombre entero (`tl_tail_2` y `tail_2` conviven en la Gárgola). |
-| `jig_`, `jig[stiff;damp;grav;angle;repeat]_` | Física: muelle amortiguado con gravedad y ángulo máximo (`VfxPhysics.jiggle`). `repeat` (eslabones) se trata como 1. |
+| `jig_`, `jig[stiff;damp;grav;angle;repeat]_` | Física: muelle amortiguado con gravedad y ángulo máximo (`VfxPhysics.jiggle`). `repeat=N` (1.3.81): el conversor parte el hueso en N eslabones encadenados (`hueso`, `hueso_2`…, cada uno con su trozo) y lo que colgaba va tras el último. |
 | `ik[minx..maxz]_` | Límites de esa articulación en las cadenas IK. |
 | `tag_` | Hueso de nombre: `setmodeltag` o `model{nametag=hueso}` ponen el texto (mirando a la cámara). |
-| `l_` (sin cubos) | Correa: se lee, pero `leash`/`leashself` aún no se dibujan. Con cubos es un hueso normal («l_hand» = mano izquierda). |
+| `l_` (sin cubos) | Correa: `leash`/`leashself` la dibujan (1.3.81). Con cubos es un hueso normal («l_hand» = mano izquierda). |
 | `ih_`, `ir_`, `il_` | Objeto en la cabeza / mano derecha / izquierda (`setitemmodel`, `linkitembone`). |
 | `phead_`, `prarm_`, `plarm_`, `pbody_`, `prleg_`, `plleg_`, `limb[type=X]_` | Miembros con la skin del jugador (`modelplayerskin`; sin ella, la skin por defecto). El conversor pone la caja del miembro con el reparto de la skin (caras -4 y su capa -5); `limb[type]` son mitades (chest, forearm, foreleg...). |
 | `g_` | Hueso fantasma. |
@@ -270,6 +293,41 @@ o un hueso pegado a un mob o a un proyectil). Y de `model{}`: `damagetint` (parp
 defecto), `nametag`, `lockpitch`/`lockyaw` y `step` (**en los jefes `s` es step, no la escala**: antes se leía como
 escala).
 
+**Lo de la 1.3.81** (wiki de ModelEngine «Skills/Mechanics» y «Model Options»):
+
+- **Cabezas, colas, física e IK también en el servidor** (`vfx/VfxRig`, el mismo código que el cliente): `@modelpart`,
+  los tótems de los golpes y las cajas `ob_` que cuelgan de una cola, una cabeza o una cadena IK van donde se ven
+  (antes, en la pose animada sin doblar). Lo que cambia la pose (`headtgt`, `segment`, `ik`, `jiggleimpulse`…) llega al
+  servidor por los mismos «props» (`SkillActor.rig`, `RIG_KEYS`) y el disfraz se posa cada tick si tiene algo que
+  dependa del tiempo (`rig.stateful()`).
+- **`leash{m;p;leash}` @objetivo** y **`leashself{m;s;d}`**: correa como la de Minecraft (`LeashKnotRenderer`/
+  `MobRenderer.renderLeash`, misma cuenta y colores) desde un hueso `l_` hasta una entidad o hasta otro hueso `l_`
+  del mismo modelo. Como ModelEngine, solo se ve: no tira de nadie. `leash=false` / `leashself` sin `d` la quitan.
+- **`animatemodel{m;p;em;position;rotation;scale;r;o;copy;rm}`**: mueve un hueso a mano (píxeles y grados de
+  Blockbench; `r` suma, `o` tapa sus animaciones, `copy` parte de su forma del modelo, `rm=GLOBAL` gira en los ejes del
+  modelo; `VfxLayers.manual`, `VfxPose.build(..., global)`).
+- **`rootmotion{w;bw;ov}`** + **`model{rootbone}`**: la entidad anda lo que sus animaciones mueven el hueso raíz (en
+  horizontal, con su giro y escala; `SkillModels.rootStep` cada tick) y el modelo deja de mover ese hueso (no se ve
+  dos veces). `w`: peso con sus ataques; `bw`: con el reposo y el andar.
+- **`changeparent{m;p;c}`** (un hueso pasa a colgar de otro) y **`submodel{m;p;sp;pfx;r}`** (copia una pieza bajo
+  otro hueso, o la quita con `r=true`: ni se ve, ni caja, ni asiento): `VfxModel.derive` rehace el modelo igual en el
+  servidor y en el cliente (`SkillModels.modelOf`; las capas se reenganchan con `VfxLayers.rebind`).
+- **`swapentity{m;hitbox;invisible;step}`** (el modelo pasa a otra entidad), **`petrify{m}`** (estatua quieta del
+  modelo tal como está: pose, piezas, colores; se va al minuto como los efectos), **`pairmodel{hidden;remove}`** (a
+  esos jugadores se les esconde o se les enseña siempre), **`modeldisguise{m;seeself}`/`modelundisguise`** (un modelo
+  encima de un jugador), **`move{x;y;z;speed;global}`** (anda ese tick, con su escalón; `BossEntity.move`) y
+  **`syncyaw{t;b}`** (un giro de la entidad pasa a valer otro).
+- **`model{}`**: `hitbox` (su caja es la del hueso `hitbox` o la de su tipo), `hitboxscale` (y `scale{hitbox=true}`:
+  `BossEntity.getDimensions` con `HB_SCALE`), `showhitbox` (false = no se le apunta), `syncbody`, `viewrange`/`radius`
+  (hasta dónde se ve), `renderfire`/`forcefire` (el fuego de Minecraft), `showshadow` y el hueso `shadow` (diámetro de
+  la sombra; `BossRenderer.shadowRadius`), `seeself`.
+- **Skins**: brazos *slim* (3 px; el conversor guarda las dos versiones, `sq`), `modelplayerskin{skin=<base64>}` y por
+  nombre o uuid de un jugador **desconectado** (se baja una vez de Mojang, en otro hilo).
+- **`setmodeltag{...;alignment;linewidth;billboard}`**: texto alineado, con saltos de línea y fijo o mirando a la cámara.
+
+**Pendiente de decidir con el dueño**: la altura de los ojos de ModelEngine es el pivote del hueso `hitbox` (la wiki);
+aquí la entidad sigue con la de su tipo de Minecraft (cambiarla movería de dónde salen proyectiles y miradas).
+
 **Nombres con espacio**: `meg:X` es la de ModelEngine (`meg:glow` → `glowbone`, `meg:scale`, `meg:jump`) y
 `mythicmobs:X` la de MythicMobs (`tools/skills/compile.py`, `parse_line`).
 
@@ -282,6 +340,52 @@ localizadores como huesos invisibles. Lo que no entiende sale en «problemas».
 `smoke`, `flames`, `ender`, `geyser`, `spring`, `itemspray`, `firework`, `stopsound`. Y `summonfallingblock` (nunca
 se queda en el mundo: se crea vacío y el bloque va por NBT; `FallingBlockEntity.fall()` borraría el bloque de ese
 sitio), `shootpotion`, `shootshulkerbullet`.
+
+### 3.7 MythicMobs que se añadió en la 1.3.81 (sin tocar el mundo)
+
+Todo con la wiki de MythicMobs (https://wiki.mythiccraft.io/mythicmobs/Skills/...). Los disparadores están en §3.2.
+Donde la wiki no dice cómo es algo, se eligió lo más parecido a Minecraft y está en §11.4.
+
+**Objetivos** (`SkillTargets`, igual en `tools/skills/sim.py`, `shape_points`; como mucho 4096 puntos):
+
+| Objetivo | Qué da |
+|---|---|
+| `@Cone{angle=90;range=16;points;slices;minpoints=1;rotation;yoffset;exact}` | Puntos en un cono **horizontal** delante de quien lanza (no se inclina). Va en `slices` capas (floor(range)); cada una con su parte de `points` (angle·range·0,1 = 144 por defecto) según lo que ocupa, y al menos `minpoints`; al azar o, con `exact`, repartidos por el borde de cada capa. |
+| `@Sphere{radius=5;points=10;yoffset;exact}` | Puntos en la superficie de una esfera alrededor de quien lanza (al azar, o repartidos por igual con `exact`). |
+| `@Rectangle{x;y;z;xoffset;yoffset;zoffset;points=10;filled;outline;rotation=a,b,c;fromorigin}` (`@cube`, `@cuboid`) | Una caja centrada en quien lanza (o el origen): sus caras, sus aristas (`outline`) o llena (`filled`), con `points` por arista; `rotation` en grados x, y, z (como `Vec3.xRot/yRot/zRot`). |
+| `@BlocksInRadius{radius=2;radiusy;shape=SPHERE;noise=0;noair=true;onlyair;nearorigin}` (`@BIR`) | Los bloques (su esquina) alrededor de cada objetivo heredado (sin ninguno, de quien disparó la skill; `nearorigin`: del origen). Sin aire o solo aire; `noise` = la parte que se salta al azar. Solo chunks cargados, radio hasta 16. |
+| `@BlocksNearOrigin{...}` (`@BNO`) | Lo mismo alrededor del origen. |
+
+**Condiciones** (`SkillConds`): `score{objective;entry;value}` (la puntuación del marcador del servidor; sin `entry`, la
+del objetivo; sin puntuación, 0), `globalscore{objective;value}` (la entrada `__GLOBAL__`), `itemrecharging` (el
+objeto de la mano en enfriamiento), `mobsinchunk{amount}` (seres vivos que no son jugadores y efectos del pack en
+ese chunk), `playerkills{kills}` (jugadores que ha matado ese mob) y **de verdad** `wearing{armorslot;material}`
+(material de Minecraft u objeto del pack; `iswearing`, `wielding`) y `haspermission{permission}` (el permiso de
+Bukkit en Mohist, por reflexión; sin Bukkit, que sea op). Hasta la 1.3.80 estas dos se daban por cumplidas.
+
+**Mecánicas** (`SkillMore`, salvo donde se dice):
+
+| Mecánica | Qué hace aquí |
+|---|---|
+| `consume{damage;heal}` | Daña (como `damage`) y quien lanza se cura `heal` por cada uno al que hizo daño (en un jefe, en su escala). |
+| `oxygen{amount}`, `shieldbreak{duration}`, `setgliding{gliding}`, `setpose{pose}`, `setmobcolor{color}`, `setpathfindingmalus{malus;value}` | Aire del jugador; romper la guardia del escudo (enfriamiento y su sonido); planear con élitros (solo jugadores en el aire); la postura de Minecraft; el color de ovejas, shulkers y collares; lo que le cuesta a un mob pasar por un tipo de sitio. |
+| `blackscreen{duration}` | Pantalla negra (`SkillScreen`), en tramos de 10 ticks (es un aura de intervalo 10). |
+| `bloodyscreen{duration=20;cancel}` | El borde rojo de «cerca del borde del mundo», dibujado como `Gui.renderVignette` (solo con gráficos detallados, como en Minecraft). |
+| `sendtoast{icon;message;frame}` | El aviso de logro de Minecraft (`AdvancementToast`) con ese icono (material u objeto del pack) y texto. |
+| `skybox{skybox}` | Cielo de lluvia solo para ese jugador (el «nivel de lluvia» de Minecraft por paquete; >1 lo oscurece más); 0 = el de verdad. Dura hasta que cambie el tiempo del mundo. |
+| `bossborder{radius=32}` | Un borde del mundo de Minecraft **solo para ese jugador** (paquete) alrededor de quien lanza: su cliente no le deja salir. Se le quita (vuelve el de verdad) al morir o irse quien lo puso o si cambia de mundo (`SkillMore.tick`). El borde real del servidor no cambia. |
+| `enderbeam{duration=60;yoffset}` | Un cristal del End con su rayo hacia el objetivo, **solo dibujado** (`SkillClient.renderBeam`): el de MythicMobs es un cristal de verdad que puede explotar y romper bloques. |
+| `hologram{text;stay=100}` | Un texto flotando (un efecto con texto, como los `text_display`). |
+| `blockunmask{radius;shape}` | Deshace los `blockmask` a ese radio (en el cliente). |
+| `summonareaeffectcloud{...}` | La nube de una poción persistente de Minecraft (partícula, poción, nivel, duración, radio y lo que encoge). |
+| `swap`, `teleportin{vector;yaw;targetasorigin}` | Cambiarse el sitio con el objetivo; llevar al objetivo a un punto según hacia dónde mira quien lanza (x delante, y arriba, z a la derecha). |
+| `resetai` | Vuelve a la IA de su tipo: un jefe con `AIGoalSelectors: clear` vuelve a perseguir y mirar (`BossEntity.resetAi`). |
+| `randommessage{messages}` | Un mensaje al azar de la lista a cada jugador. |
+| `variablemath{var;equation}` | La variable pasa a valer la cuenta, con `x` = lo que vale ahora (`SkillVars.math`, como la librería Crunch: `+ - * / % ^`, comparaciones, `& | !`, `sin`…`max`). |
+| `switch{condition;cases;unique}` | `tools/skills/compile.py` convierte cada `case X=[ ... ]` en una skill cuya condición de objetivo es la del switch con `<case>` = X; en el juego, con cada objetivo, el primer caso que cumple (todos con `unique=false`), o `DEFAULT`. |
+| `chainmissile{bounces=2;bounceradius=5;returntocaster;bounceconditions}` | Un `missile` que, al dar a su objetivo, salta al más cercano que no haya tocado (y cumpla `bounceconditions`, que el compilador guarda aparte: `bc`), y al final vuelve a quien lo lanzó o se acaba (`SkillMovers.bounce`). |
+| `barcreate`/`barremove` | Sobre la barra del propio jefe (así la usan los packs): se ve / se quita. |
+| `particleequation` | Sin efecto, como en MythicMobs (su wiki: «not yet functional»; en `STUB_OK`). |
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
@@ -473,12 +577,12 @@ de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
 |---|---|
 | `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
 | `python3 tools/bosses/audit.py [jefe ...] [--sin-avisos]` | El auditor (también al final de `build_bosses.py`). Tiene que dar **0 problemas** en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`, los `run(h, "...")` de `SkillMobs` (disparadores) y qué `case` no hacen nada. Los **avisos** (`·`) no cuentan pero dicen lo que no se verá igual (hoy: `segment`, las capas y colas rígidas). |
-| `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo (16 errores en la 1.3.80, también de modelos: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota). Antes: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
-| `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.79: mecánicas 110/192 (todas las `*` salvo `mount`, `dismount` y `segment`), condiciones 81/88, objetivos 42/47, disparadores 11/26. |
+| `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo (20 errores en la 1.3.81 —con un disparador del tipo de mob que no se copia y una correa en un hueso que no es `l_`—; 16 en la 1.3.80, también de modelos: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota). Antes: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
+| `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.81: mecánicas 198/235 (faltan las que cambian el mundo o el inventario, dueño/montura y `disguise`: §11.3), condiciones 88/88, objetivos 47/47, disparadores 22/39 (faltan los del tipo de mob, regiones y cinemáticas). En la 1.3.79: 110/192, 81/88, 42/47, 11/26. |
 | `tools/vfx_render.py` (`model_tris`, `raster`, `B.pose`) | Dibujar un modelo de jefe con una animación y unos huesos visibles (ver §7, paso 4). |
 | `python3 tools/bosses/sim_gui.py [--png carpeta]` | La ventana `/tf boss` a 8 tamaños. |
 | `python3 tools/bosses/sim_physics.py <modelo> [carpeta] [--anim idle] [--giro 120] [--anda 0.3] [--sin]` | Colas y segmentos (lo mismo que VfxPhysics): gira y anda el jefe, dice cuánto se aparta cada eslabón del de delante (no debe pasar de su límite) y dibuja fotogramas desde arriba y de lado. Usa la configuración `segment{}` del pack. |
-| `python3 tools/bosses/test_convert.py` | Pruebas del conversor con .bbmodel hechos al vuelo: etiquetas, bezier, Molang, antes/después, escalón, Box UV, miembros, `b_` y la IK llegando a su objetivo. Tiene que decir «todo bien». |
+| `python3 tools/bosses/test_convert.py` | Pruebas del conversor con .bbmodel hechos al vuelo: etiquetas, bezier, Molang, antes/después, escalón, Box UV, miembros (y slim), `b_`, `jig[repeat]`, la sombra, las cabezas de ModelEngine 4 y la IK llegando a su objetivo; y (1.3.81) lo de MythicMobs en el compilador y los simuladores: `switch`, alias de disparadores, `bounceConditions`, los objetivos de formas y bloques y las cuentas de `variablemath`. Tiene que decir «todo bien». |
 | `python3 tools/bosses/rift_model.py --preview carpeta` | Imágenes del cristal. |
 
 **Referencia** (1.3.78, `--min 8`, ataques por minuto; entre paréntesis, el motor de la 1.3.77 con la misma
@@ -556,19 +660,15 @@ antes de dar algo por arreglado.
 | «Parpadea en rojo» / «no parpadea» | `model{d=false}` del pack (damagetint) | `SkillModels.modelOptions`, `Actor.damageTint` |
 | «La animación salta o se queda quieta» | Bezier/Molang del .bbmodel (hay que volver a convertir con el conversor de la 1.3.80) | `vfx_bb.needs_bake/bake_channel`, `tools/molang.py` |
 | «Tiene una pieza fuera de sitio / le falta una pieza» | `partvis` (defaults de ModelEngine), el ojo de Blockbench al convertir | `SkillModels.partVis`, `tools/vfx_bb.py` (`boss`), §7 paso 4 |
+| «La cabeza / el torso gira de más o se tuerce» | Cabezas de ModelEngine 4: globales, sin acumularse, cada una con sus límites | `VfxPose.build`, `VfxModel.headLimits`, `tools/vfx_bb.py` (`hi_`, `head_limits`) |
+| «Se me ha puesto la pantalla negra / roja / un borde» | `blackscreen`, `bloodyscreen`, `bossborder` del pack (se quitan solos; el borde, al morir o irse el jefe) | `SkillMore`, `SkillScreen` |
+| «Un golpe sale de otro sitio cuando el jefe mira o mueve la cola» | Desde la 1.3.81 el servidor dobla cabezas, colas e IK como el cliente | `vfx/VfxRig`, `SkillModels.pose` |
 
 ---
 
 ## 9. Ideas pendientes (si el dueño pide más)
 
-- **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier, Molang y antes/después horneados): hace
-  falta que el dueño vuelva a mandar sus zips (no están en el repo). `build_bosses.py` dirá si había Molang que no
-  entiende.
-- De ModelEngine falta: `leash`/`leashself` (la cuerda), `move`, `changeparent`, `submodel`, `animatemodel`,
-  `rootmotion`, `swapentity`, `petrify`, `pairmodel`, `modeldisguise`; `jig[repeat]` con varios eslabones.
-  `--cobertura` lo lista; el auditor normal lo marca en cuanto un pack lo use.
-- De MythicMobs: `bloodyscreen`, `blackscreen`, `bossborder`, `skybox`, `particleequation`, `chainmissile` y lo que
-  cambia el mundo (`breakblock`, `fill`, `time`, `weather`...).
+- Lo que falta del motor (MythicMobs y ModelEngine) está en §11.
 
 - **Fintas y ataques retrasados de verdad:** ralentizar el principio de una animación y retrasar a la vez sus golpes.
   Hoy solo «se lo piensa» antes de empezar.
@@ -611,51 +711,54 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.80
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.81
 
-**Hecho y publicado (1.3.80)**: todo lo de §3.6. **Sin verificar en el juego**: nada de la 1.3.75 a la 1.3.80 lo ha
+**Hecho y publicado**: todo lo de §3.6 y §3.7. **Sin verificar en el juego**: nada de la 1.3.75 a la 1.3.81 lo ha
 probado nadie todavía; las pruebas son el simulador (`sim_ai.py`), la física copiada en Python (`sim_physics.py`),
-el conversor (`test_convert.py`) y el auditor (`audit.py`, `--prueba`). Compila en GitHub Actions.
+el conversor y los simuladores de skills (`test_convert.py`) y el auditor (`audit.py`, `--prueba`). Compila en GitHub
+Actions.
 
-### 11.1 Lo primero (bloquea lo demás)
+### 11.1 Lo primero
 
-1. **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier, Molang y antes/después horneados). Los
-   packs no están en el repo: **pide al dueño sus 5 zips** (Gárgola, Hidra y Abominación de LittleRoom, Tower Skeleton,
-   Astwood en RAR). Luego: `python3 tools/bosses/build_bosses.py <carpeta>`, mira sus «problemas» (dirá si hay Molang
-   que no entiende) y compara con git qué animaciones cambian (`git diff --stat src/main/resources/assets/tfclient/bosses/models`).
-   Si nada cambia, los packs no usaban bezier/Molang. Cuidado: la pasada completa rehace también el cristal de la grieta.
-2. **Prueba en el juego** (pídeselo al dueño, en SUPERVIVENCIA, con capturas o vídeo; mide las capturas con PIL):
-   la cola y las estelas de la Gárgola y la capa del Esqueleto al girar y andar (se doblan y arrastran, sin huecos ni
-   tirones); el parpadeo rojo al pegarles (el Esqueleto no parpadea: su pack pone `d=false`); que suban un bloque
-   andando (`step`); que nada salga en otro sitio. Si algo se ve mal, §8.
-3. **Mohist** (§10): con los ajustes de `spigot.yml` del dueño, comprobar alcance de seguimiento y de activación y que
+1. **Prueba en el juego** (pídeselo al dueño, en SUPERVIVENCIA, con capturas o vídeo; mide las capturas con PIL):
+   las cabezas al mirar (la Gárgola con `hi_chest` + `hi_head`: el torso y la cabeza giran una vez, no el doble); la
+   cola y las estelas de la Gárgola y la capa del Esqueleto al girar y andar; que los golpes salgan de donde se ven
+   (ahora el servidor dobla cabezas y colas); el parpadeo rojo (el Esqueleto no parpadea: `d=false`); que suban un
+   bloque andando (`step`). Las 6 animaciones reconvertidas con bezier: `soul_sword_attack_3` del Esqueleto, `spawn`
+   de la rotura del escudo y del agujero de invocación, e `idle`, `walk` y `land` de la cabeza cortada de la Hidra.
+   Si algo se ve mal, §8.
+2. **Mohist** (§10): con los ajustes de `spigot.yml` del dueño, comprobar alcance de seguimiento y de activación y que
    ningún limpiador de entidades borre `tfclient:jefe`/`esbirro`/`grieta`/`asiento`.
 
-### 11.2 ModelEngine 4 que falta (la wiki: https://wiki.mythiccraft.io/modelengine/Skills/Mechanics)
+### 11.2 ModelEngine 4 que falta
 
-`--cobertura` las lista como «faltan» y el auditor las marca en cuanto un pack las use. Ninguno de los 5 jefes las usa.
+`--cobertura` ya no lista ninguna mecánica de ModelEngine sin hacer. Queda **decidir con el dueño**:
 
-| Qué | Dónde iría | Nota |
-|---|---|---|
-| `leash`, `leashself` (cuerda de un hueso `l_` a una entidad u otro hueso) | `SkillMeg` + dibujo en `SkillClient.Actor.renderModel` (como la cuerda de Minecraft: `LeashKnotRenderer`/`MobRenderer.renderLeash`) | El conversor ya marca los `l_` sin cubos (`beh=leash`). |
-| `move`, `syncyaw` del controlador | `SkillMeg` → `BossEntity` | Para modelos montables; `syncyaw` hoy «sin efecto» (STUB_OK). |
-| `changeparent`, `submodel`, `animatemodel`, `rootmotion`, `swapentity`, `petrify`, `pairmodel`, `modeldisguise`/`modelundisguise` | `SkillMeg` + `VfxModel`/`Actor` | Raros en jefes. `rootmotion` mueve la entidad con la animación del hueso raíz (`model{rootbone}`). |
-| `jig[repeat=N]` | `VfxPhysics.jiggle` | Hoy un eslabón; haría falta partir el hueso en N trozos. |
-| `scale{hitbox=true}`, `model{hitboxscale;viewrange;radius;renderfire;forcefire}` | `SkillModels.model/scale`, `BossEntity.getDimensions` | La escala del modelo ya va; la caja de la entidad no cambia con ella. |
-| Miembros con skin «slim» (brazos de 3 px) y skins por `skin=` (base64) o por nombre de un jugador desconectado | `tools/vfx_bb.limb_quads`, `SkillClient.Actor.skinTexture` | Hoy: brazos de 4 px; skin de un jugador conectado o la de por defecto. |
-| `setmodeltag{alignment;linewidth;billboard}` | `SkillClient.Actor.drawTags` | Hoy: centrado, sin saltos de línea, mirando a la cámara. |
-| Física, IK y cabezas en el **servidor** | `SkillModels` (las capas del «disfraz») | Hoy solo en el cliente: `@modelpart` y las cajas `ob_` que cuelguen de una cola o de una cadena IK usan la pose animada, no la doblada. |
+- **Altura de los ojos**: en ModelEngine es el pivote del hueso `hitbox` del modelo; aquí sigue la del tipo de Minecraft.
+  Cambiarla mueve de dónde salen proyectiles, miradas y `@SelfEyeLocation` en los 5 jefes (hay que mirarlo con
+  `sim_ai.py` y en el juego).
 
 ### 11.3 MythicMobs que falta
 
-- Mecánicas: `bloodyscreen`, `blackscreen`, `bossborder`, `skybox`, `particleequation`, `chainmissile`, `decapitate`,
-  `disguise`, `hologram`, `variablemath`, `teleportin`... y las que cambian el mundo (`breakblock`, `fill`, `time`,
-  `weather`, `blockphysics`): decidir con el dueño (el servidor tiene construcciones; nunca deben romper nada).
-- Condiciones: `globalscore`, `score`, `itemrecharging`, `mobsinchunk`, `playerkills`; `wearing` y `haspermission`
-  siguen «sin efecto» (se dan por cumplidas).
-- Objetivos: `@Cone`, `@Sphere`, `@Rectangle`, `@BlocksInRadius`, `@BlocksNearOrigin`.
-- Disparadores: `~onShoot`, `~onBowHit`, `~onExplode`, `~onTeleport`, `~onCombat`, `~onSkillDamage`, `~onHear`, `~onUse`
-  (y los de bloques, doma, cría y comercio, que no tocan a los jefes).
+Todo esto lo marca el auditor como problema en cuanto un pack lo use (salvo lo de `STUB_OK`).
+
+- **Lo que cambia el mundo** (no se ha hecho: **pregúntale al dueño**, el servidor tiene construcciones):
+  `breakblock`, `fill`, `blockphysics`, `blockdestabilize`, `setblockopen`, `time`, `weather`.
+- **Lo que cambia el estado o el inventario de un jugador** (también para preguntar): `giveitem`, `takeitem`,
+  `pickupitem`, `decapitate` (da su cabeza como objeto), `setgamemode`, `setlevel`, `fly`, y escribir en el marcador
+  (`modifyscore`, `modifytargetscore`, `modifyglobalscore`/`setglobalscore`, que hoy no hacen nada; las condiciones
+  `score`/`globalscore` ya leen el marcador de verdad).
+- **Dueño, padre y montura**: `setowner`, `removeowner`, `setparent`, `mountme`, `remount` y la opción `Mount:` del
+  mob (el motor de jefes no la lee; `mount`/`dismount`/`mounttarget` siguen en `STUB_OK` porque los packs de ahora no
+  montan sus efectos). Hoy el dueño de un efecto es quien lo invoca (`SkillActor.owner`, final) y el de un esbirro es
+  su jefe: cambiarlo toca a quién se cuenta el daño y a quién no se ataca.
+- **`disguise`**: necesita Libs' Disguises en MythicMobs; aquí haría falta dibujar el mob con la forma de otra entidad.
+- **El comportamiento propio del `Type` de Minecraft**: `BossEntity` solo persigue y usa skills; un creeper no
+  explota, un esqueleto no dispara su arco, un enderman no se teletransporta. Con eso irían `~onExplode`, `~onPrime`,
+  `~onCreeperCharge`, `~onTeleport` (y `~onTame`, `~onBreed`, `~onTrade`, `~onBucket` para los que se dejan). El
+  auditor ya distingue: si el `Type` del pack no lo hace, es un aviso; si lo hace, un problema.
+- **Regiones y cinemáticas** (`~onEnterBounds`, `~onExitBounds`, `~onPlayerEnter`, `~onPlayerExit`,
+  `~onCinematicStart/End`): necesitan las regiones (`Bounds`) y las cámaras de MythicMobs.
 
 ### 11.4 Aproximaciones que conviene saber (no son fallos, pero no son idénticas)
 
@@ -666,25 +769,33 @@ el conversor (`test_convert.py`) y el auditor (`audit.py`, `--prueba`). Compila 
 - `billboard HORIZONTAL` gira solo con el cabeceo de la cámara. `vfxpos/rot/scale` relativos: a quien llega tarde se le
   repite solo el último.
 - `segment`: los límites `minz`/`maxz` no se usan (el giro sobre el propio eslabón no cambia hacia dónde apunta).
+- (1.3.81, la wiki no lo dice) `@Cone`: puntos repartidos por área en cada capa; `@Sphere`: en la superficie;
+  `@Rectangle`: centrado en quien lanza, `points` por arista, caras por defecto; `@BIR`: la esquina de cada bloque y
+  `noise` = probabilidad de saltarse uno; `blackscreen`: negro opaco en tramos de 10 ticks; `skybox` > 1: más oscuro
+  (el truco del nivel de lluvia); `bossborder`: se quita al morir/irse quien lo puso; `teleportin{yaw}`: el objetivo
+  queda mirando hacia quien lanza + `yaw`; `hologram`: texto sin fondo; `~onShoot` salta con `shoot`/`shootfireball`
+  (aquí no son flechas de verdad) y `bow-tension` = 1; `~onProjectileHit` una vez por cada ser tocado; `~onHear`
+  copia al Warden (16 bloques, viaje de un tick por bloque y 2 s de calma).
+- `enderbeam` solo se dibuja (el cristal de MythicMobs es real y puede explotar); `itemrecharging` mira el
+  enfriamiento del objeto de la mano; `mobsinchunk` cuenta seres vivos que no son jugadores y efectos del pack.
 
 ### 11.5 Prompt para seguir (cópialo tal cual en una sesión nueva)
 
 ```
-Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §10 y §11). Estamos con
-el motor de jefes de TF Client (1.3.80): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
+Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §3.7, §10 y §11). Estamos
+con el motor de jefes de TF Client (1.3.81): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
 metamos; el servidor es Mohist 1.20.1. Reglas: responde en español, no uses subagentes, compila SIEMPRE con GitHub
 Actions (nunca ./gradlew en el contenedor), publica como Release (sube mod_version y TFClient.VERSION, PR a main,
 squash, comprueba la Release), nunca subas los packs al repo.
 
 Tareas, en este orden:
-1. Te paso los zips de los 5 jefes: vuelve a convertirlos con tools/bosses/build_bosses.py (§11.1.1) y dime qué
-   animaciones cambian con bezier/Molang.
-2. Implementa lo de JEFES.md §11.2 (ModelEngine que falta), empezando por leash/leashself y la física/IK/cabezas en el
-   servidor; luego §11.3 (MythicMobs que falta) salvo lo que cambie el mundo (pregúntame antes).
+1. Lo que el dueño haya decidido de JEFES.md §11.2 (altura de los ojos) y §11.3 (lo que cambia el mundo o el
+   inventario, dueño/montura); y si manda capturas o vídeo de la prueba en el juego (§11.1), mídelas con PIL y
+   arregla lo que se vea mal (§8).
+2. El comportamiento propio del Type de Minecraft (§11.3) si el dueño trae un pack que lo use.
 3. Cada cosa nueva: con la semántica de la wiki de ModelEngine/MythicMobs (léela con WebFetch), en sim_ai.py si
    cambia la pelea, en mythic_ref.py y en las pruebas (test_convert.py / audit.py --prueba).
 Antes de publicar: audit.py con 0 problemas, audit.py --prueba entero, test_convert.py «todo bien», sim_physics.py
-en los modelos con colas, y sim_ai.py igual en los demás jefes (misma --seed, antes y después). Documenta en
-JEFES.md (§3.6 y §11) y en HANDOFF.md lo que hagas y lo que quede.
+en los modelos con colas, y sim_ai.py igual en los demás jefes (misma --seed y --min 8, antes y después). Documenta en
+JEFES.md (§3.6, §3.7 y §11) y en HANDOFF.md lo que hagas y lo que quede.
 ```
-

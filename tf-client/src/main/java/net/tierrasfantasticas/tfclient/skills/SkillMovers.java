@@ -102,6 +102,12 @@ final class SkillMovers {
         double avy;
         double avz;
         SkillAuras.Aura aura;
+        /** shoot/shootfireball: en MythicMobs es un proyectil de Minecraft (sus disparadores son ~onShoot y ~onBowHit). */
+        boolean vanilla;
+        /** El mob de jefe que lo lanza escucha ~onProjectileHit/~onBowHit: mira a quién toca aunque no tenga onHit. */
+        boolean hitTrigger;
+        /** chainmissile: los saltos que le quedan (null = un misil normal). */
+        Chain chain;
 
         Mover(Ctx ctx, int kind, ServerLevel level) {
             this.ctx = ctx;
@@ -110,14 +116,52 @@ final class SkillMovers {
         }
     }
 
+    /** Lo de un chainmissile: saltos que quedan, a cuánto, si vuelve a quien lo lanzó y a quién ya ha tocado. */
+    static final class Chain {
+        int left;
+        double radius;
+        boolean back;
+        boolean returning;
+        List<Cond> conds = List.of();
+        final java.util.Set<java.util.UUID> visited = new java.util.HashSet<>();
+    }
+
     // ------------------------------------------------------------------------------------------- lanzar
 
     static void projectile(Mech m, Ctx ctx, List<Tgt> targets, boolean missile) {
+        projectile(m, ctx, targets, missile, false, null);
+    }
+
+    /**
+     * chainmissile{bounces=2;bounceradius=5;returntocaster=false;bounceconditions} (y todo lo de missile): un misil que,
+     * al tocar a su objetivo, salta al más cercano a «bounceradius» que no haya tocado (y cumpla bounceConditions),
+     * «bounces» veces; luego vuelve a quien lo lanzó (returnToCaster) o se acaba. Su onHit sale en cada uno.
+     */
+    static void chainMissile(Mech m, Ctx ctx, List<Tgt> targets) {
+        int bounces = (int) Math.max(0, Math.min(64, SkillRuntime.num(m.arg("2", "bounces", "b"), 2)));
+        double radius = SkillRuntime.num(m.arg("5", "bounceradius", "bouncerange", "radius", "range", "r"), 5);
+        boolean back = SkillRuntime.bool(m.arg("false", "returntocaster", "return", "rtc"));
+        projectile(m, ctx, targets, true, false, p -> {
+            Chain c = new Chain();
+            c.left = bounces;
+            c.radius = radius;
+            c.back = back;
+            c.conds = m.bc;
+            p.chain = c;
+        });
+    }
+
+    private static void projectile(Mech m, Ctx ctx, List<Tgt> targets, boolean missile, boolean vanilla,
+                                   java.util.function.Consumer<Mover> setup) {
         // projectile{type=METEOR}: cae desde «hfs» bloques por encima del objetivo (la sangre del Grimorio del Vampiro)
         boolean meteor = !missile && m.arg("NORMAL", "type").equalsIgnoreCase("METEOR");
         for (Tgt t : targets) {
             if (MOVERS.size() >= MAX) return;
             Mover p = new Mover(ctx.copy(), missile ? 1 : 0, ctx.caster.level());
+            p.vanilla = vanilla;
+            if (setup != null) setup.accept(p);
+            SkillMobs.Host h = host(p);
+            p.hitTrigger = h != null && SkillMobs.listens(h, vanilla ? "onbowhit" : "onprojectilehit");
             common(p, m);
             boolean fromOrigin = SkillRuntime.bool(m.arg("false", "fromorigin", "fo"));
             boolean targetIsOrigin = SkillRuntime.bool(m.arg("false", "targetisorigin", "tio"));
@@ -268,9 +312,19 @@ final class SkillMovers {
         }
     }
 
-    /** shoot{type=ARROW}: aquí sin flecha de verdad, como un proyectil rápido. */
+    /**
+     * shoot{type=ARROW}: aquí sin flecha de verdad, como un proyectil rápido; pero cuenta como el disparo de Minecraft que
+     * es en MythicMobs: el mob que dispara lanza su ~onShoot (una vez por disparo) y, al dar a alguien, su ~onBowHit.
+     */
     static void shoot(Mech m, Ctx ctx, List<Tgt> targets) {
-        projectile(m, ctx, targets, false);
+        projectile(m, ctx, targets, false, true, null);
+        SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        if (h != null && !targets.isEmpty()) SkillMobs.shot(h, 1.0);
+    }
+
+    /** El mob de jefe que lanzó el proyectil (null si lo lanzó un jugador o un efecto). */
+    private static SkillMobs.Host host(Mover p) {
+        return p.ctx.caster.entity == null ? null : SkillMobs.host(p.ctx.caster.entity);
     }
 
     private static void common(Mover p, Mech m) {
@@ -438,6 +492,11 @@ final class SkillMovers {
                             return;
                         }
                         home = p.homing.position().add(0, p.homeY, 0);
+                        // chainmissile de vuelta: se acaba al llegar a quien lo lanzó
+                        if (p.chain != null && p.chain.returning && home.distanceToSqr(p.pos) < 1.0) {
+                            end(p);
+                            return;
+                        }
                     }
                     Vec3 to = home == null ? Vec3.ZERO : home.subtract(p.pos);
                     if (to.lengthSqr() > 1e-6) p.dir = p.dir.scale(p.inertia).add(to.normalize()).normalize();
@@ -512,6 +571,10 @@ final class SkillMovers {
     }
 
     private static void hitBlock(Mover p) {
+        // ~onProjectileLand del mob que lo lanzó (los suyos de MythicMobs; el disparo de Minecraft, no)
+        SkillMobs.Host h = p.kind <= 1 && !p.vanilla ? host(p) : null;
+        if (h != null) SkillMobs.projectileLand(h, p.pos);
+        if (!p.alive) return;
         if (p.onHitBlock != null) run(p, p.onHitBlock, List.of(Tgt.at(p.pos)), null);
         end(p);
     }
@@ -535,8 +598,9 @@ final class SkillMovers {
      * cada paso en el que tocan a alguien; al mismo no lo vuelve a tocar hasta pasado «rehit».
      */
     private static void hits(Mover p, Vec3 from) {
-        if (p.onHit == null && !p.stopAtEntity) return;
+        if (p.onHit == null && !p.stopAtEntity && !p.hitTrigger) return;
         if (p.hr <= 0 || p.vr <= 0) return; // sin caja no toca a nadie
+        if (p.chain != null && p.chain.returning) return; // de vuelta a quien lo lanzó no toca a nadie
         AABB box = new AABB(from, p.pos).inflate(p.hr, p.vr, p.hr);
         long now = SkillRuntime.clock;
         List<Tgt> hit = new ArrayList<>();
@@ -584,9 +648,62 @@ final class SkillMovers {
         }
         if (hit.isEmpty()) return;
         p.hits++;
+        // ~onProjectileHit (o ~onBowHit, el disparo de Minecraft) del mob que lo lanzó: una vez por cada ser tocado
+        SkillMobs.Host h = p.hitTrigger ? host(p) : null;
+        if (h != null) {
+            for (Tgt t : hit) {
+                if (t.entity() == null) continue;
+                if (p.vanilla) SkillMobs.bowHit(h, t.entity());
+                else SkillMobs.projectileHit(h, t.entity(), p.pos);
+            }
+            if (!p.alive) return;
+        }
         if (p.onHit != null) run(p, p.onHit, hit, first);
         if (!p.alive) return;
+        if (stop && p.chain != null) {
+            bounce(p, first);
+            return;
+        }
         if (stop || (p.charges > 0 && p.hits >= p.charges)) end(p);
+    }
+
+    /** chainmissile: tras tocar a «at», al siguiente (el más cercano que no ha tocado), de vuelta o se acaba. */
+    private static void bounce(Mover p, LivingEntity at) {
+        Chain c = p.chain;
+        if (at != null) c.visited.add(at.getUUID());
+        Vec3 from = at != null ? at.position() : p.pos;
+        if (c.left > 0) {
+            LivingEntity next = null;
+            double best = c.radius * c.radius;
+            for (LivingEntity e : p.level.getEntitiesOfClass(LivingEntity.class, new AABB(from, from).inflate(c.radius))) {
+                if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand || c.visited.contains(e.getUUID())) continue;
+                if (e == p.ctx.caster.entity || e == p.ctx.caster.player()) continue;
+                if (e instanceof Player ? !p.hitPlayers : !p.hitNonPlayers) continue;
+                if (!SkillRuntime.canHurt(p.ctx, e)) continue;
+                if (!c.conds.isEmpty() && !SkillTargets.passes(c.conds, Tgt.of(Who.of(e)), p.ctx)) continue;
+                double d = e.distanceToSqr(from);
+                if (d < best) {
+                    best = d;
+                    next = e;
+                }
+            }
+            if (next != null) {
+                c.left--;
+                p.homing = next;
+                p.homeAt = null;
+                p.homeY = p.ctx.host != null ? next.getBbHeight() * 0.55 : next.getEyeHeight();
+                if (p.onlyTarget != null) p.onlyTarget = next;
+                return;
+            }
+        }
+        if (c.back && !c.returning && p.ctx.caster.entity instanceof LivingEntity self && self.isAlive()) {
+            c.returning = true;
+            p.homing = self;
+            p.homeAt = null;
+            p.homeY = self.getBbHeight() * 0.5;
+            return;
+        }
+        end(p);
     }
 
     private static boolean immune(Mover p, Object key, long now) {

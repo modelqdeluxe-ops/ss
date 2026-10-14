@@ -63,6 +63,123 @@ def in_range(v, spec):
         return True
 
 
+def crunch(expr, x=0.0):
+    """SkillVars.math (variablemath): la cuenta de Crunch con «x»; None si no se entiende."""
+    s = str(expr).replace(' ', '').lower()
+    pos = [0]
+
+    def eat(op):
+        if s.startswith(op, pos[0]):
+            pos[0] += len(op)
+            return True
+        return False
+
+    def or_():
+        v = and_()
+        while pos[0] < len(s) and s[pos[0]] == '|':
+            pos[0] += 2 if s.startswith('||', pos[0]) else 1
+            r = and_()
+            v = 1.0 if v != 0 or r != 0 else 0.0
+        return v
+
+    def and_():
+        v = cmp_()
+        while pos[0] < len(s) and s[pos[0]] == '&':
+            pos[0] += 2 if s.startswith('&&', pos[0]) else 1
+            r = cmp_()
+            v = 1.0 if v != 0 and r != 0 else 0.0
+        return v
+
+    def cmp_():
+        v = add()
+        for op, f in (('==', lambda a, b: a == b), ('=', lambda a, b: a == b), ('!=', lambda a, b: a != b),
+                      ('<=', lambda a, b: a <= b), ('>=', lambda a, b: a >= b), ('<', lambda a, b: a < b),
+                      ('>', lambda a, b: a > b)):
+            if eat(op):
+                return 1.0 if f(v, add()) else 0.0
+        return v
+
+    def add():
+        v = mul()
+        while True:
+            if eat('+'):
+                v += mul()
+            elif eat('-'):
+                v -= mul()
+            else:
+                return v
+
+    def mul():
+        v = unary()
+        while True:
+            if eat('*'):
+                v *= unary()
+            elif eat('/'):
+                d = unary()
+                v = 0.0 if d == 0 else v / d
+            elif eat('%'):
+                d = unary()
+                v = 0.0 if d == 0 else math.fmod(v, d)
+            else:
+                return v
+
+    def unary():
+        if eat('-'):
+            return -unary()
+        if eat('+'):
+            return unary()
+        if pos[0] < len(s) and s[pos[0]] == '!' and not s.startswith('!=', pos[0]):
+            pos[0] += 1
+            return 1.0 if unary() == 0 else 0.0
+        v = atom()
+        if eat('^'):
+            return math.pow(v, unary())
+        return v
+
+    def atom():
+        if eat('('):
+            v = or_()
+            eat(')')
+            return v
+        m = re.match(r'(\d+\.?\d*|\.\d+)(e-?\d+)?', s[pos[0]:])
+        if m:
+            pos[0] += m.end()
+            return float(m.group(0))
+        m = re.match(r'[a-z]+', s[pos[0]:])
+        if not m:
+            raise ValueError(s)
+        name = m.group(0)
+        pos[0] += m.end()
+        if not eat('('):
+            return {'x': x, 'pi': math.pi, 'e': math.e, 'true': 1.0, 'false': 0.0}[name]
+        args = []
+        if not eat(')'):
+            args.append(or_())
+            while eat(','):
+                args.append(or_())
+            eat(')')
+        a = args[0] if args else 0.0
+        fns = {'sin': math.sin, 'cos': math.cos, 'tan': math.tan, 'asin': math.asin, 'acos': math.acos, 'atan': math.atan,
+               'sinh': math.sinh, 'cosh': math.cosh, 'tanh': math.tanh, 'sqrt': math.sqrt, 'cbrt': lambda v: math.copysign(abs(v) ** (1 / 3), v),
+               'ln': math.log, 'log': math.log10, 'abs': abs, 'round': lambda v: float(math.floor(v + 0.5)), 'ceil': math.ceil,
+               'floor': math.floor, 'sign': lambda v: float((v > 0) - (v < 0)), 'signum': lambda v: float((v > 0) - (v < 0))}
+        if name in fns:
+            return float(fns[name](a))
+        if name in ('rand', 'random'):
+            return random.random() * (a if args else 1.0)
+        if name == 'min':
+            return min(args) if args else 0.0
+        if name == 'max':
+            return max(args) if args else 0.0
+        raise ValueError(name)
+
+    try:
+        v = or_()
+        return v if pos[0] == len(s) else None
+    except (ValueError, KeyError, ZeroDivisionError, OverflowError):
+        return None
+
+
 def wrap(a):
     a = (a + 180.0) % 360.0
     return a - 180.0
@@ -601,6 +718,12 @@ class Sim:
         self.cast_seq = 0
         self.next_backstep = 0
         self.backsteps = 0
+        # ModelEngine en la entidad: move{} (hasta qué tick lo lleva el pack), rootmotion (hueso raíz, si manda, sus
+        # pesos) y la escala de su caja (model{hitboxscale}, scale{hitbox=true})
+        self.move_until = 0
+        self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
+        self.hb_scale = 1.0
+        self.in_skill_damage = False
         self.brain = Brain(self) if SMART > 0 else None
 
     # ------------------------------------------------------------------ jugador
@@ -656,6 +779,7 @@ class Sim:
         # modifydamage lo cambia (sus cifras ADD/SET van en la escala del pack: aquí, ×scale/2)
         hit = {'amount': amount, 'cancelled': False, 'scale': scale / 2}
         self.trigger('ondamaged', vars, hit=hit)
+        self.trigger('oncombat', vars, hit=hit)  # SkillMobs.damaged: ~onCombat también al recibir
         if hit['cancelled'] or hit['amount'] <= 0 or b.hp <= 0:
             self.cancelled_hits += 1
             return
@@ -673,10 +797,12 @@ class Sim:
             b.combat = True
             self.trigger('onentercombat')
         moving = False
-        if b.ai and b.target and b.chases and b.speed() > 0:
+        if self.t < self.move_until:
+            pass  # move{} del pack: este tick lo lleva el pack (BossEntity.customServerAiStep)
+        elif b.ai and b.target and b.chases and b.speed() > 0:
             d = self.dist()
             hb = self.prog['boss'].get('hitbox') or [1, 2]
-            stop = hb[0] / 2 + 1.0  # como BossEntity
+            stop = hb[0] * self.hb_scale / 2 + 1.0  # como BossEntity
             gx, gz = self.px, self.pz
             plan = self.brain.plan() if self.brain else None
             if plan:
@@ -736,7 +862,7 @@ class Sim:
     # ------------------------------------------------------------------ disparadores
     def trigger(self, tr, vars=None, value=None, hit=None):
         for pm in self.b.mob['mechs']:
-            t = pm.get('tr') or 'onspawn'
+            t = pm.get('tr') or 'oncombat'  # sin disparador: ~onCombat (MythicMobs)
             if t != tr:
                 continue
             if value is not None and str(pm.get('trv', '')).lower() != str(value).lower():
@@ -852,6 +978,16 @@ class Sim:
             return in_range(0, arg(a, '>0', 'amount', 'a'))
         if m in ('modelhaspassengers',):
             return False
+        # SkillConds: en la prueba no hay marcador (todo a 0), el jugador no lleva nada puesto ni es op, y en el chunk
+        # del jefe solo está él
+        if m in ('score', 'globalscore', 'scoreglobal'):
+            return in_range(0, arg(a, '0', 'value', 'val', 'v'))
+        if m == 'playerkills':
+            return in_range(0, arg(a, '0', 'kills', 'k'))
+        if m == 'mobsinchunk':
+            return in_range(1, arg(a, '0', 'amount', 'a'))
+        if m in ('itemrecharging', 'wearing', 'iswearing', 'wielding', 'iswielding', 'haspermission'):
+            return False
         if m in ('ydiff', 'onground', 'altitude', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
             return m in ('ydiff', 'onground')
         self.unknown.add('cond:' + m)
@@ -909,6 +1045,33 @@ class Sim:
                 return
             self.exec(pm, ctx)
             i += 1
+
+    def root_motion(self, anim):
+        """rootmotion (SkillModels.rootStep): el jefe anda, tick a tick, lo que la animación mueve su hueso raíz (en el
+        suelo, en los ejes de su cuerpo, con el peso de los ataques)."""
+        model = load_model(self.prog['boss'].get('model'))
+        if not model:
+            return
+        ids = [bb['id'] for bb in model['bones']]
+        an = model['anims'].get(anim)
+        if self.root_bone not in ids or not an:
+            return
+        bi = ids.index(self.root_bone)
+        tr = next((x.get('p') for x in an['tracks'] if x['b'] == bi and x.get('p')), None)
+        if not tr:
+            return
+        w = 1.0 if self.root_w < 0 else min(1.0, self.root_w)
+        ticks = max(1, int(round(an['len'] * 20 / tempo())))
+        prev = vfx_sample(tr, 0)
+        for k in range(1, ticks + 1):
+            cur = vfx_sample(tr, k / 20 * tempo())
+
+            def step(dx=cur[0] - prev[0], dz=cur[2] - prev[2]):
+                r = math.radians(180 - self.b.body)  # del modelo al mundo (como SkillModels.world)
+                self.b.x += (dx * math.cos(r) + dz * math.sin(r)) / 16 * w
+                self.b.z += (-dx * math.sin(r) + dz * math.cos(r)) / 16 * w
+            self.later(k, step)
+            prev = cur
 
     def later(self, ticks, fn, cast=0):
         if ticks <= 0:
@@ -1010,6 +1173,8 @@ class Sim:
             s = str(arg(a, '', 'state', 's', 'animation', 'a'))
             if str(arg(a, 'false', 'remove', 'r')).lower() == 'true' or 'boss' not in targets:
                 return
+            if self.root_on and self.root_bone:
+                self.root_motion(s)
             if s not in NOT_ATTACKS:
                 # Los golpes lanzan lejos al jugador (throw de sus ataques): la distancia cambia como en una pelea
                 d = self.dist()
@@ -1074,20 +1239,140 @@ class Sim:
                 b.invulnerable = str(arg(a, 'true', 'value', 'v', 'invulnerable', 'i')).lower() == 'true'
         elif m == 'suicide':
             b.hp = 0
+        # SkillMore.switchCases: con cada objetivo, el primer caso cuya condición cumple (o todos con unique=false);
+        # DEFAULT si ninguno
+        elif m == 'switch':
+            cases = [c.split('=', 1) for c in str(a.get('cases', '')).split(',') if '=' in c]
+            unique = str(arg(a, 'true', 'unique', 'first')).lower() == 'true'
+            for w in targets:
+                any_hit, fallback = False, None
+                for name, meta in cases:
+                    ent = self.tree.get(meta.strip().lower())
+                    if ent is None:
+                        continue
+                    if name.strip().upper() == 'DEFAULT':
+                        fallback = meta.strip()
+                        continue
+                    if all(self.passes(c, self.cond(c, w, ctx)) for c in ent.get('target_conditions', [])):
+                        any_hit = True
+                        self.run_meta(meta.strip(), dict(ctx, targets=[w]))
+                        if unique:
+                            break
+                if not any_hit and fallback:
+                    self.run_meta(fallback, dict(ctx, targets=[w]))
+        # SkillMore.consume: el jefe se cura «heal» (vida del pack) por cada jugador al que hace daño
+        elif m == 'consume':
+            if 'player' in targets:
+                pack = float(self.prog['boss'].get('pack_health') or self.prog['boss']['health'])
+                b.hp = min(b.maxhp, b.hp + num(arg(a, 1, 'heal', 'h'), 1) * b.maxhp / pack)
+        # SkillMore.swap / teleportIn: el jefe y el jugador cambian de sitio / el jugador va a ese punto del jefe
+        elif m in ('swap', 'tpswap'):
+            if 'player' in targets:
+                b.x, b.z, self.px, self.pz = self.px, self.pz, b.x, b.z
+        elif m in ('teleportin', 'tpin', 'tpdir', 'tpi'):
+            if 'player' in targets:
+                v = [num(x, 0) for x in (str(arg(a, '0,0,0', 'vector', 'direction', 'dir', 'd', 'v')).split(',') + ['0', '0'])[:3]]
+                r = math.radians(b.body)
+                fx, fz = -math.sin(r), math.cos(r)  # SkillRuntime.dir(yaw)
+                rx, rz = -math.sin(r + math.pi / 2), math.cos(r + math.pi / 2)
+                bx, bz = (self.px, self.pz) if str(arg(a, 'false', 'targetasorigin', 'tao')).lower() == 'true' else (b.x, b.z)
+                self.px, self.pz = bx + fx * v[0] + rx * v[2], bz + fz * v[0] + rz * v[2]
+        # SkillMore.variableMath: la variable pasa a valer la cuenta (x = lo que vale)
+        elif m in ('variablemath', 'mathvariable', 'varmath', 'mathvar'):
+            var = str(arg(a, '', 'var', 'variable', 'name', 'key', 'k')).lower()
+            if var and not var.startswith('target.'):
+                name = var.split('.', 1)[1] if var.startswith(('caster.', 'skill.')) else var
+                v = crunch(str(arg(a, 'x', 'equation', 'eq', 'e')).strip('"'), num(b.vars.get(name), 0))
+                if v is not None and math.isfinite(v):
+                    b.vars[name] = str(int(v)) if v == int(v) else str(v)
+        # ~onSkillDamage (SkillRuntime.hurt → SkillMobs.skillDamage): el jefe da al jugador con una mecánica de daño
+        elif m in ('damage', 'basedamage', 'percentdamage', 'hit') and 'player' in targets:
+            if not self.in_skill_damage:
+                self.in_skill_damage = True
+                try:
+                    self.trigger('onskilldamage')
+                finally:
+                    self.in_skill_damage = False
+        # ModelEngine en la entidad (BossEntity.move, syncYaw; SkillModels.rootStep; setHitboxScale)
+        elif m == 'move':
+            if 'boss' in targets:
+                side, front = num(arg(a, 0, 'side', 'x'), 0), num(arg(a, 0, 'front', 'z'), 0)
+                ln = math.hypot(side, front)
+                if ln > 1:
+                    side, front = side / ln, front / ln
+                v = b.speed() * 0.9 * num(arg(a, 1, 'speed'), 1)
+                if str(arg(a, 'false', 'global', 'g')).lower() != 'true':
+                    r = math.radians(b.body)
+                    side, front = side * math.cos(r) - front * math.sin(r), front * math.cos(r) + side * math.sin(r)
+                b.x += side * v
+                b.z += front * v
+                self.move_until = self.t + 2
+        elif m == 'syncyaw':
+            if 'boss' in targets:
+                to = str(arg(a, 'yaw', 'target', 't', 'to')).lower()
+                fr = str(arg(a, 'head', 'body', 'b', 'from', 'src')).lower()
+                v = b.body if fr == 'body' else b.look  # (aquí la cabeza mira a donde la entidad)
+                if to in ('yaw', 'all', 'head'):
+                    b.look = v
+                if to in ('body', 'all'):
+                    b.body = v
+        elif m == 'rootmotion':
+            if 'boss' in targets:
+                if arg(a, None, 'override', 'ov') is not None:
+                    self.root_on = str(arg(a, 'false', 'override', 'ov')).lower() == 'true'
+                if arg(a, None, 'weight', 'w') is not None:
+                    self.root_w = num(arg(a, -1, 'weight', 'w'), -1)
+                if arg(a, None, 'baseweight', 'bw') is not None:
+                    self.root_bw = num(arg(a, -1, 'baseweight', 'bw'), -1)
+        elif m == 'model':
+            if 'boss' in targets and arg(a, None, 'rootbone', 'root', 'rt'):
+                self.root_bone = str(arg(a, '', 'rootbone', 'root', 'rt'))
+            if 'boss' in targets and arg(a, None, 'hitboxscale', 'hbs') is not None:
+                self.hb_scale = num(arg(a, 1, 'hitboxscale', 'hbs'), 1)
+        elif m in ('scale', 'meg_scale'):
+            if 'boss' in targets and str(arg(a, 'false', 'hitbox', 'h')).lower() == 'true':
+                self.hb_scale = num(arg(a, 1, 'scale', 's'), 1)
+
+
+_MODELS = {}
+
+
+def load_model(mid):
+    """El modelo convertido de un jefe (bosses/models/<id>.json), o None."""
+    if not mid:
+        return None
+    if mid not in _MODELS:
+        p = os.path.join(RES, 'models', mid + '.json')
+        _MODELS[mid] = json.load(open(p, encoding='utf-8')) if os.path.exists(p) else None
+    return _MODELS[mid]
+
+
+def vfx_sample(kfs, t):
+    """Valor de una pista del modelo (como VfxPose.sample)."""
+    sys.path.insert(0, os.path.join(HERE, '..'))
+    import vfx_bb
+    return vfx_bb.sample(kfs, t)
 
 
 def meta_key(name):
     return str(name).lower()
 
 
-OWN_MODEL = {'bodyrotation', 'bodyclamp', 'model', 'segment', 'partvis', 'partvisibility', 'brightness', 'renderinit',
-             'defaultstate', 'state', 'animation', 'lockmodel', 'remapmodel', 'changepart', 'barset', 'barcreate',
-             'setmodelscale', 'tint'}
+# Las de ModelEngine que, sin objetivo, van al propio modelo (igual que SkillRuntime.OWN_MODEL)
+OWN_MODEL = {'bodyrotation', 'bodyclamp', 'model', 'segment', 'seg', 'partvis', 'partvisibility', 'brightness',
+             'renderinit', 'defaultstate', 'state', 'animation', 'lockmodel', 'remapmodel', 'changepart', 'barset',
+             'barcreate', 'setmodelscale', 'tint', 'modifystate', 'modifyanimation', 'modstate', 'statetoggle',
+             'togglestate', 'headconfig', 'lockmodelhead', 'lockhead', 'hitboxconfig', 'setitemmodel',
+             'linkitembone', 'setmodeltag', 'setmodeltagvisible', 'enchant', 'billboard', 'glowbone', 'cycleparts',
+             'scale', 'meg_scale', 'ik', 'inversekinematics', 'ikchain', 'leashself', 'animatemodel', 'rootmotion',
+             'changeparent', 'submodel', 'petrify', 'syncyaw', 'move'}
 
 
 def run(boss_id, minutes, seed, verbose):
     s = Sim(boss_id, seed, verbose)
-    s.trigger('onspawn')
+    # SkillMobs.spawned: ~onSpawn, ~onSpawnOrLoad, ~onReady (el jefe sale de su grieta) y ~onCombat
+    for tr in ('onspawn', 'onspawnorload', 'onready', 'oncombat'):
+        s.trigger(tr)
     end = int(minutes * 1200)
     while s.t < end and s.b.hp > 0:
         s.t += 1

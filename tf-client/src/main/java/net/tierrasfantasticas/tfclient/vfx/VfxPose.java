@@ -1,6 +1,7 @@
 package net.tierrasfantasticas.tfclient.vfx;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 /**
  * Pose de un {@link VfxModel} en un instante, con las mismas reglas que Blockbench (y que tools/vfx_bb.py):
@@ -43,49 +44,112 @@ public final class VfxPose {
                 if (tr.scale != null && sample(tr.scale, at, v)) System.arraycopy(v, 0, extra, base + 6, 3);
             }
         }
-        build(model, extra, 0F, headPitch, out);
+        // Los efectos de las clases: cada hueso h_ cabecea por su cuenta en el espacio de su padre (así se probaron sus
+        // packs; los jefes van con las reglas de ModelEngine 4 en build)
+        for (int i = 0; i < n; i++) {
+            VfxModel.Bone b = model.bones[i];
+            Matrix4f m = place(model, extra, i, out);
+            if (b.head && headPitch != 0F) m.rotateX(-headPitch * DEG);
+            finish(b, extra, i, m);
+        }
+    }
+
+    /** El hueso «i» puesto en su sitio (la matriz de su padre y su traslación), sin girar aún. */
+    private static Matrix4f place(VfxModel model, float[] extra, int i, Matrix4f[] out) {
+        VfxModel.Bone b = model.bones[i];
+        int base = i * 9;
+        float px = 0, py = 0, pz = 0;
+        if (b.parent >= 0) {
+            float[] pp = model.bones[b.parent].pivot;
+            px = pp[0];
+            py = pp[1];
+            pz = pp[2];
+        }
+        Matrix4f m = out[i];
+        if (b.parent >= 0) m.set(out[b.parent]);
+        else m.identity();
+        m.translate(b.pivot[0] - px + extra[base + 3], b.pivot[1] - py + extra[base + 4], b.pivot[2] - pz + extra[base + 5]);
+        return m;
+    }
+
+    /** Su giro (reposo + animación, ZYX como Blockbench) y su escala. */
+    private static void finish(VfxModel.Bone b, float[] extra, int i, Matrix4f m) {
+        int base = i * 9;
+        m.rotateZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG, (b.rot[0] + extra[base]) * DEG);
+        m.scale(extra[base + 6], extra[base + 7], extra[base + 8]);
     }
 
     /**
      * Las matrices de los huesos con lo que añaden las animaciones: extra[i*9 ..] = giro (3), posición (3), escala (3).
-     * headYaw y headPitch (grados): hacia dónde mira la cabeza respecto al cuerpo; los huesos de cabeza (h_/hi_) giran
-     * eso (repartido entre los que van encadenados, como ModelEngine).
+     * headYaw y headPitch (grados): hacia dónde mira la cabeza respecto al cuerpo (ver el otro build).
      */
     public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out) {
         build(model, extra, headYaw, headPitch, out, model.headLimits());
     }
 
     /**
-     * limits[i*4 ..]: lo que puede girar la cabeza i (mín. y máx. de yaw, a la derecha positivo; mín. y máx. de pitch,
+     * Los modelos de los jefes, con las cabezas de ModelEngine 4 (wiki «Bone Behaviors»; igual que BetterModel, que lo
+     * copia): el giro de la mirada es <b>global</b> (en los ejes del modelo, sobre el pivote del hueso) y <b>no se
+     * acumula</b>: una cabeza dentro de otra cabeza no gira el doble (hi_chest e hi_head de la Gárgola: todo el torso
+     * mira una vez). Un hijo sin etiqueta de un h_ va donde lo lleve su cabeza pero <b>no gira con ella</b> («los hijos
+     * necesitan su propio h_»); con hi_ todos sus hijos son cabeza (el conversor los marca). Cada cabeza tiene sus
+     * límites: un hi[yaw=30]_pecho con un h[yaw=90]_cabeza dentro gira 30° el pecho y la cabeza 60° más.
+     *
+     * <p>limits[i*4 ..]: lo que puede girar la cabeza i (mín. y máx. de yaw, a la derecha positivo; mín. y máx. de pitch,
      * abajo positivo), como h[yaw;pitch;minyaw...]_ y headconfig de ModelEngine; NaN = sin límite.
      */
     public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out, float[] limits) {
+        build(model, extra, headYaw, headPitch, out, limits, null);
+    }
+
+    /**
+     * Igual, con giros puestos a mano en los ejes del modelo (animatemodel{rm=GLOBAL}): global[i*3 ..] en grados (NaN =
+     * ninguno). El hueso gira sobre su pivote en los ejes del modelo y lo que cuelga de él va con él.
+     */
+    public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out, float[] limits,
+                             float[] global) {
         int n = model.bones.length;
+        if (headYaw == 0F && headPitch == 0F && global == null) {
+            for (int i = 0; i < n; i++) finish(model.bones[i], extra, i, place(model, extra, i, out));
+            return;
+        }
+        // q0: el giro de cada hueso en el modelo sin ninguna cabeza; g: el de su mirada (null = no es cabeza)
+        Quaternionf[] q0 = new Quaternionf[n];
+        Quaternionf[] g = new Quaternionf[n];
         for (int i = 0; i < n; i++) {
             VfxModel.Bone b = model.bones[i];
             int base = i * 9;
-            float px = 0, py = 0, pz = 0;
-            if (b.parent >= 0) {
-                float[] pp = model.bones[b.parent].pivot;
-                px = pp[0];
-                py = pp[1];
-                pz = pp[2];
-            }
-            Matrix4f m = out[i];
-            if (b.parent >= 0) m.set(out[b.parent]);
-            else m.identity();
-            m.translate(b.pivot[0] - px + extra[base + 3], b.pivot[1] - py + extra[base + 4], b.pivot[2] - pz + extra[base + 5]);
+            Matrix4f m = place(model, extra, i, out);
             if (b.head && (headYaw != 0F || headPitch != 0F)) {
-                float yaw = headYaw * model.headShare(i);
-                float pitch = headPitch * (headYaw != 0F ? model.headShare(i) : 1F);
+                float yaw = headYaw, pitch = headPitch;
                 if (limits != null) {
                     yaw = clamp(yaw, limits[i * 4], limits[i * 4 + 1]);
                     pitch = clamp(pitch, limits[i * 4 + 2], limits[i * 4 + 3]);
                 }
-                if (yaw != 0F) m.rotateY(-yaw * DEG);
-                if (pitch != 0F) m.rotateX(-pitch * DEG);
+                g[i] = new Quaternionf().rotationY(-yaw * DEG).rotateX(-pitch * DEG);
             }
-            m.rotateZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG, (b.rot[0] + extra[base]) * DEG);
+            Quaternionf q0p = b.parent >= 0 ? q0[b.parent] : null;
+            Quaternionf gp = b.parent >= 0 ? g[b.parent] : null;
+            if (g[i] != null || gp != null) {
+                // Lo que hay que girar aquí (en los ejes del padre) para que el hueso quede con su mirada encima de su giro
+                // sin cabezas: q0p⁻¹ · gp⁻¹ · g · q0p (si padre e hijo miran igual, nada)
+                Quaternionf c = gp == null ? new Quaternionf() : new Quaternionf(gp).conjugate();
+                if (g[i] != null) c.mul(g[i]);
+                if (q0p != null) c = new Quaternionf(q0p).conjugate().mul(c).mul(q0p);
+                if (Math.abs(c.w) < 0.999999F) m.rotate(c);
+            }
+            Quaternionf local = new Quaternionf().rotationZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG,
+                    (b.rot[0] + extra[base]) * DEG);
+            Quaternionf q = q0p == null ? new Quaternionf() : new Quaternionf(q0p);
+            if (global != null && !Float.isNaN(global[i * 3])) {
+                // En los ejes del modelo sobre su pivote: el giro, visto desde los ejes de su padre (sin cabezas)
+                Quaternionf r = new Quaternionf().rotationZYX(global[i * 3 + 2] * DEG, global[i * 3 + 1] * DEG, global[i * 3] * DEG);
+                Quaternionf c = q0p == null ? r : new Quaternionf(q0p).conjugate().mul(r).mul(q0p);
+                m.rotate(c);
+                q.mul(c);
+            }
+            q0[i] = q.mul(local);
+            m.rotate(local);
             m.scale(extra[base + 6], extra[base + 7], extra[base + 8]);
         }
     }

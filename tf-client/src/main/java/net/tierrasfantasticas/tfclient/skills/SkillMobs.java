@@ -68,6 +68,15 @@ public final class SkillMobs {
         /** La barra de jefe cambia de color o estilo (barSet del pack). */
         void barStyle(String color, String style);
 
+        /** barcreate (se ve) y barremove (se quita) del pack sobre la barra del jefe. */
+        default void barVisible(boolean on) {
+        }
+
+        /** resetai: vuelve a la IA de su tipo de Minecraft (aquí: perseguir y mirar a su objetivo). */
+        default void resetAi() {
+            setAi(true);
+        }
+
         /** Daño que se hace a sí mismo (el del Esqueleto atacado por la espalda con el escudo puesto). */
         void selfDamage(double amount, boolean ignoreResistance);
 
@@ -167,6 +176,32 @@ public final class SkillMobs {
         default void suicide() {
             mob().kill();
         }
+
+        // --- ModelEngine en la entidad (model{}, scale{}, move, syncyaw)
+
+        /** move{x;y;z;speed;global}: anda este tick en esa dirección (x a su izquierda, z delante; con su escalón). */
+        default void move(double side, double up, double front, double speed, boolean global) {
+        }
+
+        /** syncyaw: el giro «to» (yaw, body, head o all) pasa a valer el «from» (yaw, body o head). */
+        default void syncYaw(String to, String from) {
+        }
+
+        /** model{hitbox}: su caja es la del hueso «hitbox» del modelo (true) o la de su tipo de Minecraft (false). */
+        default void setModelHitbox(boolean on) {
+        }
+
+        /** model{hitboxscale} y scale{hitbox=true}: la escala de su caja de golpe. */
+        default void setHitboxScale(float scale) {
+        }
+
+        /** model{showhitbox}: false = no se le puede apuntar ni pegar con la mano. */
+        default void setShowHitbox(boolean on) {
+        }
+
+        /** model{syncbody}: el cuerpo sigue a la cabeza (lo normal) o se queda como está. */
+        default void setSyncBody(boolean on) {
+        }
     }
 
     /**
@@ -209,6 +244,16 @@ public final class SkillMobs {
 
     /** En el cliente: ¿el modelo de esa entidad tiene algún hueso con glowbone? (lo pone SkillClient). */
     public static volatile java.util.function.Predicate<Entity> clientGlow = e -> false;
+    /** En el cliente: el fuego de model{renderfire;forcefire}: 1 = siempre, -1 = nunca, 0 = el de Minecraft (lo pone SkillClient). */
+    public static volatile java.util.function.ToIntFunction<Entity> clientFire = e -> 0;
+
+    /** El hueso (su id) de la caja de golpe «index» del modelo del mob tal como está ahora, o null. */
+    public static String partBone(Host h, int index) {
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
+        if (m == null) return null;
+        int[] hb = net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m);
+        return index >= 0 && index < hb.length ? m.bones[hb[index]].id : null;
+    }
 
     /** Lo de cada mob de jefe vivo: sus temporizadores y por dónde van los scripts de su modelo. */
     private static final class State {
@@ -227,11 +272,20 @@ public final class SkillMobs {
         boolean inFight;
         /** Su objetivo del tick anterior (~onChangeTarget). */
         UUID lastTarget;
+        /** Hearing (~onHear): la vibración que le está llegando (null = ninguna), cuándo llega y hasta cuándo no oye otra. */
+        Heard heard;
+        int heardAt;
+        int deafUntil;
+        /** Jugadores que ha matado (condición playerkills). */
+        int playerKills;
 
         State(Host host) {
             this.host = host;
         }
     }
+
+    /** Una vibración que ha oído (~onHear): quién la hizo, dónde y a qué distancia. */
+    private record Heard(Entity source, Vec3 at, double distance, String type) {}
 
     private static final Map<UUID, State> STATES = new HashMap<>();
 
@@ -256,12 +310,19 @@ public final class SkillMobs {
 
     // ------------------------------------------------------------------------------------------- disparadores
 
-    /** Primer tick del mob en el mundo: sus ~onSpawn. */
+    /**
+     * Primer tick del mob en el mundo: sus ~onSpawn, ~onSpawnOrLoad (los jefes no se guardan: nunca «cargan»), ~onReady
+     * (la primera vez que sale de un generador: el jefe, de su grieta; un esbirro invocado, no) y ~onCombat (el
+     * disparador de las líneas sin ninguno, que en MythicMobs salta al aparecer, al pegar, al recibir y al morir).
+     */
     public static void spawned(Host h) {
         State s = state(h);
         if (s.spawned) return;
         s.spawned = true;
         run(h, "onspawn", null, null, null);
+        run(h, "onspawnorload", null, null, null);
+        if (h.boss() == h) run(h, "onready", null, null, null);
+        run(h, "oncombat", null, null, null);
     }
 
     /** Cada tick del mob (en el servidor). */
@@ -324,6 +385,17 @@ public final class SkillMobs {
                 TFClient.LOGGER.debug("TF Jefes: error en el cerebro de {}", h.def().name, t);
             }
         }
+        // rootmotion de ModelEngine: anda lo que su animación mueve el hueso raíz
+        SkillModels.rootStep(h);
+        // ~onHear: la vibración que oyó le llega ahora (tarda un tick por bloque, como al Warden)
+        if (s.heard != null && age >= s.heardAt) {
+            Heard v = s.heard;
+            s.heard = null;
+            Map<String, String> vars = new HashMap<>();
+            vars.put("volume", SkillRuntime.fmt(Math.max(1, Math.min(15, v.distance()))));
+            vars.put("sound-type", v.type());
+            run(h, "onhear", v.source(), null, v.at(), vars, null);
+        }
         scripts(h, s);
     }
 
@@ -331,7 +403,7 @@ public final class SkillMobs {
     private static void scripts(Host h, State s) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.layers == null || a.me == null) return;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.modelOf(a);
         if (model == null) return;
         int now = a.age;
         if (now <= s.lastFx) {
@@ -363,14 +435,112 @@ public final class SkillMobs {
         vars.put("damage-amount", SkillRuntime.fmt(amount / scale));
         vars.put("damage-cause", cause);
         run(h, "ondamaged", attacker, cause, vars, hit);
+        // ~onCombat también salta al recibir el golpe (con el mismo golpe: puede anularlo o cambiarlo)
+        if (!h.dying()) run(h, "oncombat", attacker, cause, null, vars, hit);
         return hit;
+    }
+
+    /** Para que un ~onSkillDamage que hace daño no se vuelva a disparar a sí mismo sin fin. */
+    private static boolean inSkillDamage;
+
+    /** Ha hecho daño con una mecánica (damage, un proyectil...): ~onSkillDamage, con @trigger = a quien ha dado. */
+    static void skillDamage(Host h, LivingEntity victim) {
+        if (h.dying() || inSkillDamage) return;
+        inSkillDamage = true;
+        try {
+            run(h, "onskilldamage", victim, null, null);
+        } finally {
+            inSkillDamage = false;
+        }
+    }
+
+    /** Lo mismo para ~onShoot (un ~onShoot que dispara no se dispara a sí mismo). */
+    private static boolean inShoot;
+
+    /**
+     * Ha disparado un proyectil de Minecraft (shoot, shootfireball: en MythicMobs son flechas, bolas de fuego...):
+     * ~onShoot, con @trigger = él mismo y «bow-tension» (lo tensa que iba el arco: 1, del todo).
+     */
+    static void shot(Host h, double tension) {
+        if (h.dying() || inShoot) return;
+        inShoot = true;
+        try {
+            run(h, "onshoot", h.mob(), null, null, Map.of("bow-tension", SkillRuntime.fmt(tension)), null);
+        } finally {
+            inShoot = false;
+        }
+    }
+
+    /** Ese proyectil de Minecraft ha dado a alguien: ~onBowHit, con @trigger = a quien ha dado. */
+    static void bowHit(Host h, Entity victim) {
+        if (!h.dying()) run(h, "onbowhit", victim, null, null);
+    }
+
+    /** Uno de sus proyectiles de MythicMobs (projectile, missile) ha dado a alguien: ~onProjectileHit (@trigger = él). */
+    static void projectileHit(Host h, Entity victim, Vec3 at) {
+        if (!h.dying()) run(h, "onprojectilehit", victim, null, at, null, null);
+    }
+
+    /** ...o ha chocado con un bloque: ~onProjectileLand (@origin = donde ha caído). */
+    static void projectileLand(Host h, Vec3 at) {
+        if (!h.dying()) run(h, "onprojectileland", null, null, at, null, null);
+    }
+
+    /** Se va del mundo sin morir (se cierra su grieta, se descarga): ~onDespawn. */
+    public static void despawned(Host h) {
+        if (!h.dying()) run(h, "ondespawn", null, null, null);
+    }
+
+    /** Se ha bajado (o le han bajado) de lo que montaba: ~onDismounted, con @trigger = su montura. */
+    public static void dismounted(Host h, Entity vehicle) {
+        if (!h.dying()) run(h, "ondismounted", vehicle, null, null);
+    }
+
+    /**
+     * Una vibración de Minecraft (pasos, golpes, bloques, proyectiles...; game event del tag «vibrations») en «at»: la
+     * oyen los mobs con Hearing: Enabled a 16 bloques, como el Warden (al que copia MythicMobs): no oyen a quien va
+     * agachado si el evento es de los que se callan así, ni lo amortiguado (lana), ni a sí mismos; la vibración tarda un
+     * tick por bloque en llegar, mientras viaja no oyen otra y, al oírla, dos segundos de calma (los del Warden).
+     */
+    public static void heard(ServerLevel level, Vec3 at, String type, Entity source) {
+        if (STATES.isEmpty()) return;
+        for (State s : STATES.values()) {
+            Host h = s.host;
+            Mob mob = h.mob();
+            if (!h.def().hearing || mob.level() != level || h.dying() || mob == source) continue;
+            if (s.heard != null || h.age() < s.deafUntil) continue;
+            double d = mob.position().distanceTo(at);
+            if (d > 16) continue;
+            s.heard = new Heard(source, at, d, type);
+            s.heardAt = h.age() + (int) Math.floor(d);
+            s.deafUntil = s.heardAt + 40;
+        }
+    }
+
+    /** ¿Tiene el mob alguna línea con ese disparador? */
+    static boolean listens(Host h, String trigger) {
+        for (Mech m : h.def().mechs) if (trigger.equals(m.tr == null ? "oncombat" : m.tr)) return true;
+        return false;
+    }
+
+    /** ¿Algún mob de jefe oye? (para no mirar cada vibración del mundo si nadie las oye). */
+    public static boolean anyHearing() {
+        for (State s : STATES.values()) if (s.host.def().hearing) return true;
+        return false;
     }
 
     /** Ha matado a alguien con un golpe o una skill: ~onKill (a cualquiera) y ~onPlayerKill (a un jugador), @trigger = él. */
     public static void killed(Host h, LivingEntity victim) {
         if (h.dying()) return;
+        if (victim instanceof net.minecraft.world.entity.player.Player) state(h).playerKills++;
         run(h, "onkill", victim, null, null);
         if (victim instanceof net.minecraft.world.entity.player.Player) run(h, "onplayerkill", victim, null, null);
+    }
+
+    /** Cuántos jugadores ha matado (condición playerkills). */
+    static int playerKills(Host h) {
+        State s = STATES.get(h.mob().getUUID());
+        return s == null ? 0 : s.playerKills;
     }
 
     /** Un jugador le hace clic derecho: ~onInteract (@trigger = el jugador). */
@@ -386,13 +556,14 @@ public final class SkillMobs {
         s.diedDone = true;
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a != null && a.layers != null && a.me != null) {
-            net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+            net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.modelOf(a);
             if (model != null) {
                 a.layers.death(model, a.age);
                 a.prop("death", "", null, null);
             }
         }
         run(h, "ondeath", killer, null, null);
+        run(h, "oncombat", killer, null, null);
     }
 
     /** signal{s=X} @este mob: sus ~onSignal:X. */
@@ -406,17 +577,23 @@ public final class SkillMobs {
     }
 
     private static void run(Host h, String trigger, Entity other, String cause, Map<String, String> vars) {
-        run(h, trigger, other, cause, vars, null);
+        run(h, trigger, other, cause, null, vars, null);
     }
 
     private static void run(Host h, String trigger, Entity other, String cause, Map<String, String> vars, Hit hit) {
+        run(h, trigger, other, cause, null, vars, hit);
+    }
+
+    /** Las líneas del mob con ese disparador (sin ninguno = ~onCombat, como MythicMobs); «at»: su @origin (null = él). */
+    private static void run(Host h, String trigger, Entity other, String cause, Vec3 at, Map<String, String> vars, Hit hit) {
         List<Mech> list = new ArrayList<>();
         for (Mech m : h.def().mechs) {
-            String tr = m.tr == null ? "onspawn" : m.tr;
+            String tr = m.tr == null ? "oncombat" : m.tr;
             if (tr.equals(trigger) && hpOk(h, m.hp)) list.add(m);
         }
         if (list.isEmpty()) return;
         Ctx c = ctx(h);
+        if (at != null) c.origin = at;
         if (other != null) c.trigger = Who.of(other);
         c.damageCause = cause;
         c.hit = hit;
@@ -523,7 +700,7 @@ public final class SkillMobs {
     public static List<net.minecraft.world.phys.AABB> hitboxes(Host h) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null) return null;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(a);
         if (m == null || net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m).length == 0) return null;
         return net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.boxes(m, SkillModels.pose(a, m), SkillModels.world(a),
                 SkillModels.hiddenBones(a, m));
@@ -533,7 +710,7 @@ public final class SkillMobs {
     public static Vec3 bonePos(Host h, String bone) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null || bone == null) return null;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(a);
         if (m == null) return null;
         int b = m.bone(bone);
         if (b < 0) return null;

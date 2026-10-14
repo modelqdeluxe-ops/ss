@@ -217,6 +217,8 @@ public final class SkillHud {
         @SubscribeEvent
         public static void onOverlays(RegisterGuiOverlaysEvent event) {
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "tf_skills", (gui, g, partial, width, height) -> draw(g, width, height, partial));
+            // blackscreen y bloodyscreen de MythicMobs: encima de todo
+            event.registerAboveAll("tf_screen", (gui, g, partial, width, height) -> SkillScreen.draw(g, width, height));
         }
 
         /** Los modelos de los efectos no son de ningún objeto: se cargan aparte. */

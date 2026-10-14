@@ -53,7 +53,8 @@ KNOWN_TARGETS = {'self', 'caster', 's', 'boss', 'mob', 'owner', 'parent', 'summo
                  'mobsnearorigin', 'mno', 'entitiesinworld', 'eiw', 'livingentitiesinworld', 'entitiesinringnearorigin',
                  'eirno', 'entitiesincone', 'eic', 'livingentitiesincone', 'entitiesinline', 'eil', 'livinginline', 'lil',
                  'entl', 'livingentitiesinline', 'targetblock', 'tb', 'variablelocation', 'varlocation', 'vl',
-                 'randomlocationsneartargetentities', 'rlnte', 'randomlocationsneartargets', 'rlnt'}
+                 'randomlocationsneartargetentities', 'rlnte', 'randomlocationsneartargets', 'rlnt', 'cone', 'sphere',
+                 'rectangle', 'cube', 'cuboid', 'blocksinradius', 'bir', 'blocksnearorigin', 'bno'}
 KNOWN_CONDS = {'mythicmobtype', 'mmt', 'mobtype', 'owner', 'isowner', 'isparent', 'parent', 'hasaura', 'hasbuff',
                'hasaurastacks', 'aurastacks', 'crouching', 'sneaking', 'issneaking', 'sprinting', 'issprinting', 'onground',
                'grounded', 'inblock', 'blocktype', 'inside', 'standingon', 'variableisset', 'varisset', 'varset',
@@ -66,7 +67,9 @@ KNOWN_CONDS = {'mythicmobtype', 'mmt', 'mobtype', 'owner', 'isowner', 'isparent'
                'haspotioneffect', 'haspotion', 'isskill', 'chance', 'altitude', 'height', 'dead', 'isdead',
                'faction', 'hastag', 'tag', 'mmocantarget', 'cantarget', 'iscaster', 'ischild', 'children', 'child',
                'modelhasdriver', 'drivingmodel', 'isdriving', 'ownerisonline', 'ismoving', 'moving', 'pitch', 'onblock',
-               'hasitem', 'mobsinradius', 'mir', 'entitiesinradius', 'eir', 'playersinradius', 'pir'}
+               'hasitem', 'mobsinradius', 'mir', 'entitiesinradius', 'eir', 'playersinradius', 'pir', 'score',
+               'globalscore', 'scoreglobal', 'itemrecharging', 'mobsinchunk', 'playerkills', 'iswearing', 'wielding',
+               'iswielding'}
 
 PARTICLE_NAMES = {'reddust': 'dust', 'redstone': 'dust', 'smoke_normal': 'smoke', 'smoke_large': 'large_smoke',
                   'explosion_large': 'explosion', 'explosion_huge': 'explosion_emitter', 'explosion_normal': 'poof',
@@ -180,6 +183,124 @@ def pitch_of(d):
 # ---------------------------------------------------------------------------------------------------------------
 # Mundo de prueba
 # ---------------------------------------------------------------------------------------------------------------
+
+MAX_POINTS = 4096
+
+
+def shape_points(t, ta, ctx, origin):
+    """SkillTargets: @Cone, @Sphere, @Rectangle (@cube, @cuboid), @BlocksInRadius (@BIR) y @BlocksNearOrigin (@BNO), en
+    el mundo de prueba (plano: los bloques sólidos son los de y <= -1)."""
+    c = ctx.caster
+    out = []
+    if t == 'cone':
+        angle = max(0.0, min(360.0, num(arg(ta, '90', 'angle', 'a'), 90)))
+        rng = max(0.1, num(arg(ta, '16', 'range', 'r'), 16))
+        points = int(max(0, num(arg(ta, None, 'points', 'p'), angle * rng * 0.1)))
+        slices = int(max(1, num(arg(ta, None, 'slices', 's'), math.floor(rng))))
+        minp = int(max(0, num(arg(ta, '1', 'minpoints', 'mp'), 1)))
+        yaw = c.yaw() + num(arg(ta, '0', 'rotation', 'rot'), 0)
+        exact = str(arg(ta, 'false', 'exact', 'e')).lower() == 'true'
+        base = c.pos() + [0, num(arg(ta, '0', 'yoffset', 'yo', 'y'), 0), 0]
+        for i in range(1, slices + 1):
+            n = max(minp, int(round(points * (2 * i - 1) / (slices * slices))))
+            r0, r1 = rng * (i - 1) / slices, rng * i / slices
+            for k in range(n):
+                if len(out) >= MAX_POINTS:
+                    return out
+                if exact:
+                    a, d = (0 if n == 1 else -angle / 2 + angle * k / (n - 1)), r1
+                else:
+                    a, d = (random.random() - 0.5) * angle, math.sqrt(r0 * r0 + random.random() * (r1 * r1 - r0 * r0))
+                out.append(base + direction(yaw + a, 0) * d)
+        return out
+    if t == 'sphere':
+        r = max(0.0, num(arg(ta, '5', 'radius', 'r'), 5))
+        points = int(max(0, min(MAX_POINTS, num(arg(ta, '10', 'points', 'p'), 10))))
+        exact = str(arg(ta, 'false', 'exact', 'e')).lower() == 'true'
+        base = c.pos() + [0, num(arg(ta, '0', 'yoffset', 'yo', 'y'), 0), 0]
+        golden = math.pi * (3 - math.sqrt(5))
+        for i in range(points):
+            y = 1 - 2 * (i + 0.5) / points if exact else random.random() * 2 - 1
+            phi = i * golden if exact else random.random() * math.pi * 2
+            h = math.sqrt(max(0.0, 1 - y * y))
+            out.append(base + [math.cos(phi) * h * r, y * r, math.sin(phi) * h * r])
+        return out
+    if t in ('rectangle', 'cube', 'cuboid'):
+        sx, sy, sz = (num(arg(ta, '1', k), 1) for k in ('x', 'y', 'z'))
+        base = origin if str(arg(ta, 'false', 'fromorigin', 'origin')).lower() == 'true' else c.pos()
+        base = base + [num(arg(ta, '0', 'xoffset'), 0), num(arg(ta, '0', 'yoffset'), 0), num(arg(ta, '0', 'zoffset'), 0)]
+        n = int(max(1, min(64, num(arg(ta, '10', 'points', 'p', 'density', 'd'), 10))))
+        filled = str(arg(ta, 'false', 'filled', 'fill', 'f')).lower() == 'true'
+        outline = str(arg(ta, 'false', 'outline', 'edge', 'onlyedge', 'e', 'onlyoutline', 'o')).lower() == 'true'
+        rot = [num(x, 0) for x in (str(arg(ta, '0,0,0', 'rotation', 'r')).split(',') + ['0', '0'])[:3]]
+        for i in range(n):
+            for j in range(n):
+                for k in range(n):
+                    edges = sum(1 for q in (i, j, k) if q in (0, n - 1))
+                    if n > 1 and not filled and edges < (2 if outline else 1):
+                        continue
+                    u, v, w = ((q / (n - 1)) if n > 1 else 0.5 for q in (i, j, k))
+                    p = np.array([(u - 0.5) * sx, (v - 0.5) * sy, (w - 0.5) * sz])
+                    p = _rot_vec(p, rot)
+                    out.append(base + p)
+                    if len(out) >= MAX_POINTS:
+                        return out
+        return out
+    # Bloques: alrededor de los heredados (o del origen)
+    r = max(0.0, min(16.0, num(arg(ta, '2', 'radius', 'r'), 2)))
+    ry = max(0.0, min(16.0, num(arg(ta, None, 'radiusy', 'ry', 'yradius', 'yr'), r)))
+    cube = str(arg(ta, 'SPHERE', 'shape', 's')).upper() == 'CUBE'
+    noise = num(arg(ta, '0', 'noise', 'n'), 0)
+    only_air = str(arg(ta, 'false', 'onlyair', 'oa')).lower() == 'true'
+    no_air = str(arg(ta, 'true', 'noair', 'na')).lower() == 'true'
+    if t in ('blocksnearorigin', 'bno') or str(arg(ta, 'false', 'nearorigin', 'no')).lower() == 'true':
+        centers = [origin]
+    else:
+        centers = [x.pos() for x in (ctx.targets or [])] or [(ctx.trigger or c).pos()]
+
+    def sq(d, rr):
+        return (0 if d == 0 else 2) if rr <= 0 else (d / rr) ** 2
+    seen = set()
+    ir, iry = math.ceil(r), math.ceil(ry)
+    for cen in centers:
+        bx, by, bz = (math.floor(v) for v in cen[:3])
+        for dx in range(-ir, ir + 1):
+            for dy in range(-iry, iry + 1):
+                for dz in range(-ir, ir + 1):
+                    inside = (abs(dx) <= r and abs(dy) <= ry and abs(dz) <= r) if cube else \
+                        sq(dx, r) + sq(dy, ry) + sq(dz, r) <= 1 + 1e-9
+                    key = (bx + dx, by + dy, bz + dz)
+                    if not inside or key in seen:
+                        continue
+                    seen.add(key)
+                    air = key[1] > -1
+                    if (not air) if only_air else (no_air and air):
+                        continue
+                    if noise > 0 and random.random() < noise:
+                        continue
+                    out.append(np.array(key, dtype=float))
+                    if len(out) >= MAX_POINTS:
+                        return out
+    return out
+
+
+def _rot_vec(p, rot):
+    """Vec3.xRot, yRot, zRot de Minecraft (grados), en ese orden."""
+    x, y, z = p
+    a = math.radians(rot[0])
+    if a:
+        cs, sn = math.cos(a), math.sin(a)
+        y, z = y * cs + z * sn, z * cs - y * sn
+    a = math.radians(rot[1])
+    if a:
+        cs, sn = math.cos(a), math.sin(a)
+        x, z = x * cs + z * sn, z * cs - x * sn
+    a = math.radians(rot[2])
+    if a:
+        cs, sn = math.cos(a), math.sin(a)
+        x, y = x * cs + y * sn, y * cs - x * sn
+    return np.array([x, y, z])
+
 
 class Entity:
     def __init__(self, sim, kind, pos, yaw=0.0, name=''):
@@ -824,6 +945,8 @@ class Sim:
         if t in ('location', 'l'):
             co = str(arg(ta, '', 'c', 'coords', 'coordinates')).split(',')
             return [Tgt(at=np.array([num(co[0]), num(co[1]), num(co[2])]))] if len(co) >= 3 else [Tgt(at=c.pos())]
+        if t in ('cone', 'sphere', 'rectangle', 'cube', 'cuboid', 'blocksinradius', 'bir', 'blocksnearorigin', 'bno'):
+            return [Tgt(at=p) for p in shape_points(t, ta, ctx, self.origin(ctx))]
         if t in ('ring', 'circle'):
             pts = int(max(1, min(128, num(arg(ta, '8', 'points', 'p'), 8))))
             rr = num(arg(ta, '5', 'radius', 'r'), 5)
@@ -1919,10 +2042,11 @@ class Sim:
         mine = ctx.as_(Who(actor=act))
         on_spawn = []
         for mm in mob.get('mechs', []):
-            tr = mm.get('tr') or 'onspawn'
+            # Sin disparador es ~onCombat (MythicMobs), que en un efecto (no pega ni recibe) salta solo al aparecer
+            tr = mm.get('tr') or 'oncombat'
             if tr == 'ontimer':
                 act.timers.append(mm)
-            elif tr in ('onspawn', 'onready'):
+            elif tr in ('onspawn', 'onready', 'oncombat', 'onspawnorload'):
                 on_spawn.append(mm)
         s = Script(mine, on_spawn)
         if not self.run_script(s):

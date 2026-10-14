@@ -70,6 +70,34 @@ public final class VfxModel {
         public Map<String, float[]> params = Map.of();
         /** limb[type=X] / prarm_...: qué trozo de la skin del jugador. */
         public String limb;
+        /** Los brazos de jugador con una skin slim (3 px de ancho); null si no es un brazo. */
+        public float[] slimQuads;
+        /** Quitado con submodel{r=true}: ni se ve, ni es caja de golpe, ni asiento. */
+        public boolean removed;
+
+        /** Una copia (para los modelos cambiados en vivo: changeparent, submodel). */
+        Bone copy() {
+            Bone b = new Bone();
+            b.id = id;
+            b.parent = parent;
+            b.pivot = pivot;
+            b.rot = rot;
+            b.head = head;
+            b.phead = phead;
+            b.hidden = hidden;
+            b.shade = shade;
+            b.quads = quads;
+            b.quadCount = quadCount;
+            b.seat = seat;
+            b.hitbox = hitbox;
+            b.aabb = aabb;
+            b.beh = beh;
+            b.params = params;
+            b.limb = limb;
+            b.slimQuads = slimQuads;
+            b.removed = removed;
+            return b;
+        }
 
         /** ¿Cola o segmento de ModelEngine (seg_, segf_, tl_, tlf_)? */
         public boolean segment() {
@@ -136,6 +164,8 @@ public final class VfxModel {
     public IkChain[] ik = new IkChain[0];
     /** Tamaño del mob según el hueso «hitbox» de ModelEngine (bloques; 0 = no tiene). */
     public float hitW, hitH;
+    /** Diámetro de su sombra según el hueso «shadow» de ModelEngine (bloques; 0 = sin sombra, como allí). */
+    public float shadow;
     /** Lo más lejos que llega en reposo (bloques; -1 = sin calcular, ver VfxHitboxes.reach). */
     public double reachCache = -1;
     private final Map<String, Integer> boneIndex = new HashMap<>();
@@ -212,33 +242,6 @@ public final class VfxModel {
         return sp;
     }
 
-    private float[] headShare;
-
-    /**
-     * Cuánto del giro de la cabeza lleva cada hueso de cabeza (h_/hi_): ModelEngine reparte la mirada entre los que
-     * van encadenados (pecho y cabeza de la Gárgola); los que no son de cabeza, 0.
-     */
-    public float headShare(int b) {
-        if (headShare == null) {
-            float[] out = new float[bones.length];
-            int[] below = new int[bones.length];
-            for (int i = bones.length - 1; i >= 0; i--) {
-                if (bones[i].parent >= 0) {
-                    int p = bones[i].parent;
-                    below[p] = Math.max(below[p], below[i] + (bones[i].head ? 1 : 0));
-                }
-            }
-            for (int i = 0; i < bones.length; i++) {
-                if (!bones[i].head) continue;
-                int above = 0;
-                for (int p = bones[i].parent; p >= 0; p = bones[p].parent) if (bones[p].head) above++;
-                out[i] = 1F / (above + 1 + below[i]);
-            }
-            headShare = out;
-        }
-        return headShare[b];
-    }
-
     /** Índice del hueso por su id de ModelEngine (sin h_), o -1. */
     public int bone(String id) {
         if (id == null) return -1;
@@ -306,13 +309,8 @@ public final class VfxModel {
             }
             JsonArray qa = b.getAsJsonArray("quads");
             bone.quadCount = qa.size();
-            bone.quads = new float[bone.quadCount * QUAD];
-            for (int q = 0; q < bone.quadCount; q++) {
-                JsonArray quad = qa.get(q).getAsJsonArray();
-                int base = q * QUAD;
-                for (int k = 0; k < 24; k++) bone.quads[base + k] = quad.get(k).getAsFloat();
-                bone.quads[base + 24] = quad.size() > 24 ? quad.get(24).getAsFloat() : 0F;
-            }
+            bone.quads = quads(qa);
+            if (b.has("sq")) bone.slimQuads = quads(b.getAsJsonArray("sq"));
             bones[i] = bone;
         }
         VfxModel model = new VfxModel(o.has("name") ? o.get("name").getAsString() : "", tex, bones);
@@ -321,6 +319,7 @@ public final class VfxModel {
             model.hitW = hb.get(0).getAsFloat();
             model.hitH = hb.get(1).getAsFloat();
         }
+        if (o.has("shadow")) model.shadow = o.get("shadow").getAsFloat();
         if (o.has("figures")) {
             JsonArray fa = o.getAsJsonArray("figures");
             String[] keys = {"root", "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"};
@@ -381,6 +380,161 @@ public final class VfxModel {
             model.anims.put(e.getKey(), anim);
         }
         return model;
+    }
+
+    /** Las caras de un hueso tal como vienen en el JSON (QUAD floats cada una). */
+    private static float[] quads(JsonArray qa) {
+        float[] out = new float[qa.size() * QUAD];
+        for (int q = 0; q < qa.size(); q++) {
+            JsonArray quad = qa.get(q).getAsJsonArray();
+            int base = q * QUAD;
+            for (int k = 0; k < 24; k++) out[base + k] = quad.get(k).getAsFloat();
+            out[base + 24] = quad.size() > 24 ? quad.get(24).getAsFloat() : 0F;
+        }
+        return out;
+    }
+
+    // ------------------------------------------------------------------------------------------- cambios en vivo
+
+    /**
+     * El modelo con los cambios que ModelEngine hace en vivo a un modelo puesto, en orden: «cp|hijo|padre»
+     * (changeparent: el hueso pasa a colgar de otro), «sm+|padre|pieza|prefijo» (submodel: copia la pieza del plano,
+     * con lo que cuelga de ella, bajo ese padre; sin prefijo, con sus mismas animaciones) y «sm-|pieza» (submodel{r=true}:
+     * la quita, con lo que cuelga de ella). Devuelve un modelo nuevo (cada padre antes que sus hijos, las animaciones y la
+     * IK renumeradas); este no cambia. Sin cambios, él mismo.
+     */
+    public VfxModel derive(java.util.List<String> edits) {
+        if (edits == null || edits.isEmpty()) return this;
+        java.util.List<Bone> list = new java.util.ArrayList<>();
+        // de qué hueso del plano saca sus animaciones cada uno (-1 = ninguna)
+        java.util.List<Integer> animFrom = new java.util.ArrayList<>();
+        for (int i = 0; i < bones.length; i++) {
+            list.add(bones[i].copy());
+            animFrom.add(i);
+        }
+        for (String e : edits) {
+            String[] p = e.split("\\|", -1);
+            switch (p[0]) {
+                case "cp" -> {
+                    int c = find(list, p.length > 1 ? p[1] : ""), par = find(list, p.length > 2 ? p[2] : "");
+                    if (c >= 0 && par >= 0 && c != par && !descends(list, par, c)) list.get(c).parent = par;
+                }
+                case "sm-" -> {
+                    int b = find(list, p.length > 1 ? p[1] : "");
+                    if (b < 0) continue;
+                    for (int i = 0; i < list.size(); i++) {
+                        if (i == b || descends(list, i, b)) {
+                            Bone x = list.get(i);
+                            x.removed = true;
+                            x.hitbox = null;
+                            x.seat = false;
+                        }
+                    }
+                }
+                case "sm+" -> {
+                    int par = find(list, p.length > 1 ? p[1] : "");
+                    int sub = bone(p.length > 2 ? p[2] : "");
+                    String pfx = p.length > 3 ? p[3] : "";
+                    if (par < 0 || sub < 0) continue;
+                    // la pieza del plano y lo que cuelga de ella, en su orden
+                    Map<Integer, Integer> copyOf = new HashMap<>();
+                    for (int i = 0; i < bones.length; i++) {
+                        boolean in = i == sub;
+                        for (int q = bones[i].parent; q >= 0 && !in; q = bones[q].parent) if (q == sub) in = true;
+                        if (!in) continue;
+                        Bone x = bones[i].copy();
+                        x.id = pfx + x.id;
+                        x.parent = i == sub ? par : copyOf.getOrDefault(bones[i].parent, par);
+                        copyOf.put(i, list.size());
+                        list.add(x);
+                        animFrom.add(pfx.isEmpty() ? i : -1);
+                    }
+                }
+                default -> { }
+            }
+        }
+        // Cada padre antes que sus hijos (lo que piden la pose, la física y la IK), en el orden de antes si se puede
+        int n = list.size();
+        int[] order = new int[n];
+        boolean[] placed = new boolean[n];
+        int count = 0;
+        while (count < n) {
+            boolean any = false;
+            for (int i = 0; i < n; i++) {
+                if (placed[i]) continue;
+                int par = list.get(i).parent;
+                if (par >= 0 && !placed[par]) continue;
+                placed[i] = true;
+                order[count++] = i;
+                any = true;
+            }
+            if (!any) break; // (no pasa: changeparent no deja ciclos)
+        }
+        int[] newIndex = new int[n];
+        for (int k = 0; k < count; k++) newIndex[order[k]] = k;
+        Bone[] nb = new Bone[count];
+        for (int k = 0; k < count; k++) {
+            Bone x = list.get(order[k]);
+            x.parent = x.parent < 0 ? -1 : newIndex[x.parent];
+            nb[k] = x;
+        }
+        VfxModel m = new VfxModel(name, tex, nb);
+        m.hitW = hitW;
+        m.hitH = hitH;
+        m.shadow = shadow;
+        m.figures = figures;
+        java.util.List<IkChain> chains = new java.util.ArrayList<>();
+        for (IkChain c : ik) {
+            int[] bs = new int[c.bones().length];
+            for (int k = 0; k < bs.length; k++) bs[k] = newIndex[c.bones()[k]];
+            chains.add(new IkChain(bs, newIndex[c.nullBone()], c.pole() < 0 ? -1 : newIndex[c.pole()], c.lockRotation()));
+        }
+        m.ik = chains.toArray(new IkChain[0]);
+        for (Map.Entry<String, Anim> e : anims.entrySet()) {
+            Anim a = e.getValue();
+            Anim b = new Anim();
+            b.length = a.length;
+            b.loop = a.loop;
+            b.override = a.override;
+            b.fxTimes = a.fxTimes;
+            b.fxSkills = a.fxSkills;
+            java.util.List<Track> tracks = new java.util.ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                int from = animFrom.get(i);
+                if (from < 0 || !placed[i]) continue;
+                for (Track t : a.tracks) {
+                    if (t.bone != from) continue;
+                    Track c = new Track();
+                    c.bone = newIndex[i];
+                    c.rot = t.rot;
+                    c.pos = t.pos;
+                    c.scale = t.scale;
+                    tracks.add(c);
+                }
+            }
+            b.tracks = tracks.toArray(new Track[0]);
+            b.moves = new boolean[count];
+            for (Track t : b.tracks) b.moves[t.bone] = true;
+            m.anims.put(e.getKey(), b);
+        }
+        return m;
+    }
+
+    /** Como bone(), en una lista de huesos; con la etiqueta de ModelEngine delante también («ob_head» es «head»). */
+    private static int find(java.util.List<Bone> list, String id) {
+        if (id == null || id.isEmpty()) return -1;
+        String low = id.toLowerCase(java.util.Locale.ROOT);
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < list.size(); i++) if (list.get(i).id.toLowerCase(java.util.Locale.ROOT).equals(low)) return i;
+            low = low.replaceFirst("^[a-z]+(\\[[^\\]]*\\])?_", "");
+        }
+        return -1;
+    }
+
+    /** ¿«b» cuelga (a cualquier altura) de «ancestor»? */
+    private static boolean descends(java.util.List<Bone> list, int b, int ancestor) {
+        for (int q = list.get(b).parent, guard = 0; q >= 0 && guard < 10000; q = list.get(q).parent, guard++) if (q == ancestor) return true;
+        return false;
     }
 
     private static float[] keys(JsonObject t, String key) {

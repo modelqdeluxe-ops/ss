@@ -191,6 +191,179 @@ final class SkillVars {
         }
     }
 
+    /**
+     * Las cuentas de variablemath (la librería Crunch de MythicMobs): + - * / % ^ (potencia, de derecha a izquierda),
+     * comparaciones (= != &lt; &gt; &lt;= &gt;=, que dan 1 o 0), &amp; | ! (y, o, no), paréntesis, «x» (lo que vale la
+     * variable ahora), pi, e y las funciones sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, sqrt, cbrt, ln, log (en
+     * base 10), abs, round, ceil, floor, sign, rand (al azar hasta el número), min y max. null si no se entiende.
+     */
+    static Double math(String expr, double x) {
+        try {
+            MathParser p = new MathParser(expr.replace(" ", "").toLowerCase(java.util.Locale.ROOT), x);
+            double v = p.or();
+            return p.pos == p.s.length() ? v : null;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static final class MathParser {
+        final String s;
+        final double x;
+        int pos;
+
+        MathParser(String s, double x) {
+            this.s = s;
+            this.x = x;
+        }
+
+        boolean eat(String op) {
+            if (s.startsWith(op, pos)) {
+                pos += op.length();
+                return true;
+            }
+            return false;
+        }
+
+        double or() {
+            double v = and();
+            while (pos < s.length() && s.charAt(pos) == '|') {
+                pos += s.startsWith("||", pos) ? 2 : 1;
+                double r = and();
+                v = v != 0 || r != 0 ? 1 : 0;
+            }
+            return v;
+        }
+
+        double and() {
+            double v = cmp();
+            while (pos < s.length() && s.charAt(pos) == '&') {
+                pos += s.startsWith("&&", pos) ? 2 : 1;
+                double r = cmp();
+                v = v != 0 && r != 0 ? 1 : 0;
+            }
+            return v;
+        }
+
+        double cmp() {
+            double v = add();
+            if (eat("==") || eat("=")) return v == add() ? 1 : 0;
+            if (eat("!=")) return v != add() ? 1 : 0;
+            if (eat("<=")) return v <= add() ? 1 : 0;
+            if (eat(">=")) return v >= add() ? 1 : 0;
+            if (eat("<")) return v < add() ? 1 : 0;
+            if (eat(">")) return v > add() ? 1 : 0;
+            return v;
+        }
+
+        double add() {
+            double v = mul();
+            while (pos < s.length()) {
+                if (eat("+")) v += mul();
+                else if (eat("-")) v -= mul();
+                else break;
+            }
+            return v;
+        }
+
+        double mul() {
+            double v = unary();
+            while (pos < s.length()) {
+                if (eat("*")) {
+                    v *= unary();
+                } else if (eat("/")) {
+                    double d = unary();
+                    v = d == 0 ? 0 : v / d;
+                } else if (eat("%")) {
+                    double d = unary();
+                    v = d == 0 ? 0 : v % d;
+                } else {
+                    break;
+                }
+            }
+            return v;
+        }
+
+        double unary() {
+            if (eat("-")) return -unary();
+            if (eat("+")) return unary();
+            if (pos < s.length() && s.charAt(pos) == '!' && !s.startsWith("!=", pos)) {
+                pos++;
+                return unary() == 0 ? 1 : 0;
+            }
+            return pow();
+        }
+
+        double pow() {
+            double v = atom();
+            if (eat("^")) return Math.pow(v, unary());
+            return v;
+        }
+
+        double atom() {
+            if (eat("(")) {
+                double v = or();
+                eat(")");
+                return v;
+            }
+            int start = pos;
+            if (pos < s.length() && (Character.isDigit(s.charAt(pos)) || s.charAt(pos) == '.')) {
+                while (pos < s.length() && (Character.isDigit(s.charAt(pos)) || s.charAt(pos) == '.')) pos++;
+                if (pos < s.length() && s.charAt(pos) == 'e' && pos + 1 < s.length()
+                        && (Character.isDigit(s.charAt(pos + 1)) || s.charAt(pos + 1) == '-')) {
+                    pos += 2;
+                    while (pos < s.length() && Character.isDigit(s.charAt(pos))) pos++;
+                }
+                return Double.parseDouble(s.substring(start, pos));
+            }
+            while (pos < s.length() && Character.isLetter(s.charAt(pos))) pos++;
+            String id = s.substring(start, pos);
+            if (id.isEmpty()) throw new IllegalStateException("no es un número");
+            if (!eat("(")) {
+                return switch (id) {
+                    case "x" -> x;
+                    case "pi" -> Math.PI;
+                    case "e" -> Math.E;
+                    case "true" -> 1;
+                    case "false" -> 0;
+                    default -> throw new IllegalStateException("no sé qué es " + id);
+                };
+            }
+            java.util.List<Double> args = new java.util.ArrayList<>();
+            if (!eat(")")) {
+                do {
+                    args.add(or());
+                } while (eat(","));
+                eat(")");
+            }
+            double a = args.isEmpty() ? 0 : args.get(0);
+            return switch (id) {
+                case "sin" -> Math.sin(a);
+                case "cos" -> Math.cos(a);
+                case "tan" -> Math.tan(a);
+                case "asin" -> Math.asin(a);
+                case "acos" -> Math.acos(a);
+                case "atan" -> Math.atan(a);
+                case "sinh" -> Math.sinh(a);
+                case "cosh" -> Math.cosh(a);
+                case "tanh" -> Math.tanh(a);
+                case "sqrt" -> Math.sqrt(a);
+                case "cbrt" -> Math.cbrt(a);
+                case "ln" -> Math.log(a);
+                case "log" -> Math.log10(a);
+                case "abs" -> Math.abs(a);
+                case "round" -> Math.round(a);
+                case "ceil" -> Math.ceil(a);
+                case "floor" -> Math.floor(a);
+                case "sign", "signum" -> Math.signum(a);
+                case "rand", "random" -> java.util.concurrent.ThreadLocalRandom.current().nextDouble() * (args.isEmpty() ? 1 : a);
+                case "min" -> args.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+                case "max" -> args.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+                default -> throw new IllegalStateException("no sé qué es " + id + "()");
+            };
+        }
+    }
+
     private static final class Parser {
         final String s;
         int pos;

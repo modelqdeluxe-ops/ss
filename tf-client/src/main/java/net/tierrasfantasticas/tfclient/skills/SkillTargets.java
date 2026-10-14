@@ -138,6 +138,18 @@ final class SkillTargets {
             case "targetblock", "tb" -> targetBlock(ctx, yOff);
             case "variablelocation", "varlocation", "vl" -> varLocation(m, ctx, yOff);
             case "randomlocationsneartargetentities", "rlnte", "randomlocationsneartargets", "rlnt" -> randomNearTargets(m, ctx, yOff);
+            case "cone" -> conePoints(m, ctx);
+            case "sphere" -> spherePoints(m, ctx);
+            case "rectangle", "cube", "cuboid" -> rectangle(m, ctx);
+            case "blocksinradius", "bir" -> {
+                // Alrededor de cada objetivo heredado (nearorigin: del origen); sin ninguno, de quien disparó la skill
+                if (SkillRuntime.bool(m.targetArg("false", "nearorigin", "no"))) yield blocks(m, ctx, List.of(origin(ctx)));
+                List<Vec3> centers = new ArrayList<>();
+                if (ctx.targets != null) for (Tgt x : ctx.targets) centers.add(x.pos());
+                if (centers.isEmpty()) centers.add((ctx.trigger != null ? ctx.trigger : ctx.caster).pos());
+                yield blocks(m, ctx, centers);
+            }
+            case "blocksnearorigin", "bno" -> blocks(m, ctx, List.of(origin(ctx)));
             default -> {
                 SkillRuntime.warn("objetivo @" + t);
                 yield List.of(Tgt.of(ctx.caster));
@@ -320,6 +332,152 @@ final class SkillTargets {
             }
         }
         return out;
+    }
+
+    /** Tope de puntos de los objetivos de formas (@Cone, @Sphere, @Rectangle) y de bloques (@BIR, @BNO). */
+    private static final int MAX_POINTS = 4096;
+
+    /**
+     * @Cone{angle=90;range=16;points;slices;minpoints=1;rotation;yoffset;exact} (wiki de MythicMobs): puntos dentro de un
+     * cono delante de quien lanza, siempre en horizontal (no se inclina). Va en «slices» capas a lo largo (floor(range)
+     * si no lo dice); cada capa lleva su parte de los «points» (angle·range·0,1 si no lo dice) según lo que ocupa, y al
+     * menos «minpoints»; al azar dentro de su capa o, con exact, repartidos por el borde de cada capa. rotation gira el
+     * cono (grados, a la derecha).
+     */
+    private static List<Tgt> conePoints(Mech m, Ctx ctx) {
+        double angle = Math.max(0, Math.min(360, SkillRuntime.num(m.targetArg("90", "angle", "a"), 90)));
+        double range = Math.max(0.1, SkillRuntime.num(m.targetArg("16", "range", "r"), 16));
+        int points = (int) Math.max(0, SkillRuntime.num(m.targetArg(null, "points", "p"), angle * range * 0.1));
+        int slices = (int) Math.max(1, SkillRuntime.num(m.targetArg(null, "slices", "s"), Math.floor(range)));
+        int minPoints = (int) Math.max(0, SkillRuntime.num(m.targetArg("1", "minpoints", "mp"), 1));
+        float yaw = ctx.caster.yaw() + (float) SkillRuntime.num(m.targetArg("0", "rotation", "rot"), 0);
+        boolean exact = SkillRuntime.bool(m.targetArg("false", "exact", "e"));
+        Vec3 c = ctx.caster.pos().add(0, SkillRuntime.num(m.targetArg("0", "yoffset", "yo", "y"), 0), 0);
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        List<Tgt> out = new ArrayList<>();
+        for (int i = 1; i <= slices && out.size() < MAX_POINTS; i++) {
+            // Lo que ocupa la capa i de un sector circular: (2i − 1) / slices²
+            int n = Math.max(minPoints, (int) Math.round(points * (2.0 * i - 1) / ((double) slices * slices)));
+            double r0 = range * (i - 1) / slices, r1 = range * i / slices;
+            for (int k = 0; k < n && out.size() < MAX_POINTS; k++) {
+                double a, d;
+                if (exact) {
+                    a = n == 1 ? 0 : -angle / 2 + angle * k / (n - 1);
+                    d = r1;
+                } else {
+                    a = (rnd.nextDouble() - 0.5) * angle;
+                    d = Math.sqrt(r0 * r0 + rnd.nextDouble() * (r1 * r1 - r0 * r0));
+                }
+                out.add(Tgt.at(c.add(SkillRuntime.dir(yaw + (float) a, 0F).scale(d))));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * @Sphere{radius=5;points=10;yoffset;exact}: puntos en la superficie de una esfera alrededor de quien lanza; al azar o,
+     * con exact («una esfera perfecta»), repartidos por igual (espiral de Fibonacci).
+     */
+    private static List<Tgt> spherePoints(Mech m, Ctx ctx) {
+        double r = Math.max(0, SkillRuntime.num(m.targetArg("5", "radius", "r"), 5));
+        int points = (int) Math.max(0, Math.min(MAX_POINTS, SkillRuntime.num(m.targetArg("10", "points", "p"), 10)));
+        boolean exact = SkillRuntime.bool(m.targetArg("false", "exact", "e"));
+        Vec3 c = ctx.caster.pos().add(0, SkillRuntime.num(m.targetArg("0", "yoffset", "yo", "y"), 0), 0);
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        double golden = Math.PI * (3 - Math.sqrt(5));
+        List<Tgt> out = new ArrayList<>();
+        for (int i = 0; i < points; i++) {
+            double y = exact ? 1 - 2 * (i + 0.5) / points : rnd.nextDouble() * 2 - 1;
+            double phi = exact ? i * golden : rnd.nextDouble() * Math.PI * 2;
+            double h = Math.sqrt(Math.max(0, 1 - y * y));
+            out.add(Tgt.at(c.add(Math.cos(phi) * h * r, y * r, Math.sin(phi) * h * r)));
+        }
+        return out;
+    }
+
+    /**
+     * @Rectangle{x;y;z;xoffset;yoffset;zoffset;points=10;filled;outline;rotation=0,0,0;fromorigin} (@cube, @cuboid): una
+     * caja de x·y·z bloques centrada en quien lanza (o en el origen) más sus offsets, con «points» puntos por arista: sus
+     * caras (lo normal), solo sus aristas (outline) o llena (filled). rotation: grados en x, y, z sobre su centro.
+     */
+    private static List<Tgt> rectangle(Mech m, Ctx ctx) {
+        double sx = SkillRuntime.num(m.targetArg("1", "x"), 1), sy = SkillRuntime.num(m.targetArg("1", "y"), 1),
+                sz = SkillRuntime.num(m.targetArg("1", "z"), 1);
+        Vec3 c = SkillRuntime.bool(m.targetArg("false", "fromorigin", "origin")) ? origin(ctx) : ctx.caster.pos();
+        c = c.add(SkillRuntime.num(m.targetArg("0", "xoffset"), 0), SkillRuntime.num(m.targetArg("0", "yoffset"), 0),
+                SkillRuntime.num(m.targetArg("0", "zoffset"), 0));
+        int n = (int) Math.max(1, Math.min(64, SkillRuntime.num(m.targetArg("10", "points", "p", "density", "d"), 10)));
+        boolean filled = SkillRuntime.bool(m.targetArg("false", "filled", "fill", "f"));
+        boolean outline = SkillRuntime.bool(m.targetArg("false", "outline", "edge", "onlyedge", "e", "onlyoutline", "o"));
+        String[] rot = m.targetArg("0,0,0", "rotation", "r").split(",");
+        float rx = (float) Math.toRadians(SkillRuntime.num(rot[0], 0));
+        float ry = (float) Math.toRadians(rot.length > 1 ? SkillRuntime.num(rot[1], 0) : 0);
+        float rz = (float) Math.toRadians(rot.length > 2 ? SkillRuntime.num(rot[2], 0) : 0);
+        List<Tgt> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    int edges = (i == 0 || i == n - 1 ? 1 : 0) + (j == 0 || j == n - 1 ? 1 : 0) + (k == 0 || k == n - 1 ? 1 : 0);
+                    if (n > 1 && !filled && edges < (outline ? 2 : 1)) continue;
+                    double u = n == 1 ? 0.5 : (double) i / (n - 1), v = n == 1 ? 0.5 : (double) j / (n - 1),
+                            w = n == 1 ? 0.5 : (double) k / (n - 1);
+                    Vec3 p = new Vec3((u - 0.5) * sx, (v - 0.5) * sy, (w - 0.5) * sz);
+                    if (rx != 0) p = p.xRot(rx);
+                    if (ry != 0) p = p.yRot(ry);
+                    if (rz != 0) p = p.zRot(rz);
+                    out.add(Tgt.at(c.add(p)));
+                    if (out.size() >= MAX_POINTS) return out;
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * @BlocksInRadius / @BlocksNearOrigin{radius=2;radiusy;shape=SPHERE|CUBE;noise=0;noair=true;onlyair=false}: los bloques
+     * alrededor de esos centros (su esquina, como las demás posiciones de bloque de MythicMobs); sin aire si no dice otra
+     * cosa, o solo aire; noise: la parte que se salta al azar (0,5 = más o menos la mitad). Solo los chunks cargados (no
+     * carga ninguno) y como mucho 16 bloques de radio.
+     */
+    private static List<Tgt> blocks(Mech m, Ctx ctx, List<Vec3> centers) {
+        double r = Math.max(0, Math.min(16, SkillRuntime.num(m.targetArg("2", "radius", "r"), 2)));
+        double ry = Math.max(0, Math.min(16, SkillRuntime.num(m.targetArg(null, "radiusy", "ry", "yradius", "yr"), r)));
+        boolean cube = m.targetArg("SPHERE", "shape", "s").toUpperCase(Locale.ROOT).equals("CUBE");
+        double noise = SkillRuntime.num(m.targetArg("0", "noise", "n"), 0);
+        boolean onlyAir = SkillRuntime.bool(m.targetArg("false", "onlyair", "oa"));
+        boolean noAir = SkillRuntime.bool(m.targetArg("true", "noair", "na"));
+        ServerLevel level = ctx.caster.level();
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        java.util.Set<BlockPos> seen = new java.util.HashSet<>();
+        List<Tgt> out = new ArrayList<>();
+        int ir = (int) Math.ceil(r), iry = (int) Math.ceil(ry);
+        for (Vec3 center : centers) {
+            BlockPos cb = BlockPos.containing(center);
+            for (int dx = -ir; dx <= ir; dx++) {
+                for (int dy = -iry; dy <= iry; dy++) {
+                    for (int dz = -ir; dz <= ir; dz++) {
+                        boolean in = cube ? Math.abs(dx) <= r && Math.abs(dy) <= ry && Math.abs(dz) <= r
+                                : sq(dx, r) + sq(dy, ry) + sq(dz, r) <= 1.0 + 1e-9;
+                        if (!in) continue;
+                        BlockPos b = cb.offset(dx, dy, dz);
+                        if (!seen.add(b) || !level.isLoaded(b)) continue;
+                        boolean air = level.getBlockState(b).isAir();
+                        if (onlyAir ? !air : noAir && air) continue;
+                        if (noise > 0 && rnd.nextDouble() < noise) continue;
+                        out.add(Tgt.at(Vec3.atLowerCornerOf(b)));
+                        if (out.size() >= MAX_POINTS) return out;
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** (d / r)², con r = 0 como «solo el centro». */
+    private static double sq(int d, double r) {
+        if (r <= 0) return d == 0 ? 0 : 2;
+        double v = d / r;
+        return v * v;
     }
 
     private static List<Tgt> who(Who w) {

@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.80**: ModelEngine 4 completo en el motor de jefes —colas que se arrastran, física, IK, cabezas, vfx, 26 etiquetas de hueso, animaciones bezier/Molang— y auditor de modelos y texturas; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.81**: los 5 jefes reconvertidos, cabezas como ModelEngine 4, el resto de ModelEngine 4 —correas, cabezas/colas/IK también en el servidor, rootmotion…— y lo que faltaba de MythicMobs sin tocar el mundo; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,10 +55,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.80) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.81) — lee esto primero
 
-**Estado**: última versión publicada **1.3.80** (ModelEngine 4 completo en el motor: `tf-client/JEFES.md` §3.6; el
-servidor Mohist y por qué el motor es nuestro: §10). La 1.3.79 dejó el motor listo para packs nuevos (lo que faltaba de
+**Estado**: última versión publicada **1.3.81** (los 5 jefes reconvertidos con bezier; cabezas `h_`/`hi_` como
+ModelEngine 4; el resto de ModelEngine 4 y lo que faltaba de MythicMobs sin tocar el mundo: `tf-client/JEFES.md` §3.2,
+§3.6, §3.7; lo que queda y lo que hay que **preguntar al dueño**, §11). La 1.3.80 metió ModelEngine 4 en el motor
+(§3.6; el servidor Mohist y por qué el motor es nuestro: §10). La 1.3.79 dejó el motor listo para packs nuevos (lo que faltaba de
 MythicMobs y un auditor que ve también lo que el motor aceptaba sin hacer nada; los 5 jefes, sin cambios.
 Las peleas más vivas —combos, tempo, giro, paso atrás— y los modelos completos son de la 1.3.78, el cerebro táctico
 de la 1.3.77, la IA fiel al pack de la 1.3.76 y los jefes, grietas y `/tf boss` de la 1.3.75), Release ya creada:
@@ -115,7 +117,11 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.80** (lo primero que mirar si el dueño manda
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.81** (lo primero que mirar si el dueño manda
+capturas: las cabezas al mirar —la Gárgola gira torso y cabeza una vez, no el doble—; que los golpes salgan de donde
+se ven al girar la cabeza o la cola; las 6 animaciones reconvertidas con bezier —`soul_sword_attack_3` del Esqueleto,
+`spawn` de la rotura del escudo y del agujero, `idle`/`walk`/`land` de la cabeza cortada de la Hidra—; el resto de
+sus peleas no cambia: `sim_ai.py` idéntico), **la 1.3.80** (lo primero que mirar si el dueño manda
 capturas: la cola y las estelas de la Gárgola y la capa del Esqueleto al girar —deben doblarse y arrastrarse, sin
 huecos—; el parpadeo rojo al pegarles —el Esqueleto lo tiene apagado en su pack, `d=false`—; que suban un bloque
 andando —`step`—; nada más cambia en sus peleas), **la 1.3.79** (nada cambia en los 5 jefes —simulador
@@ -148,8 +154,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
 - **Jefes: TODO lo que falta, con dónde tocarlo, cómo comprobarlo y un prompt listo para la siguiente IA, en
-  `tf-client/JEFES.md` §11.** Lo primero: volver a convertir los 5 jefes con el conversor de la 1.3.80 (bezier/Molang;
-  pedir al dueño sus zips) y que el dueño los pruebe en el juego.
+  `tf-client/JEFES.md` §11.** Lo primero: que el dueño los pruebe en el juego y que decida lo que se le preguntó en la
+  1.3.81 (mecánicas que cambian el mundo o el inventario, dueño/montura, altura de los ojos de ModelEngine).
 - **Más jefes**: el dueño los manda «de 5 en 5» (zips de LittleRoom y otros, MythicMobs + ModelEngine). Cómo meter un
   lote: ver «Jefes: cómo añadir uno» en el bloque de la 1.3.75. Esperan su prueba en el juego y su opinión.
 - **Actualización de CLANES** (la siguiente que quiere el dueño). Hoy `PadClans`: fundar (nombre y etiqueta), invitar,
@@ -194,6 +200,34 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.81 (14 oct) — JEFES RECONVERTIDOS, EL RESTO DE MODELENGINE 4 Y DE MYTHICMOBS.** El dueño mandó los
+> 5 zips otra vez y pidió: reconvertirlos (§11.1), el ModelEngine que faltaba (§11.2) y el MythicMobs que faltaba
+> (§11.3) salvo lo que cambie el mundo, con la semántica de las wikis. Todo en `tf-client/JEFES.md` §3.2, §3.6, §3.7 y §11.
+> - **Reconversión**: cambian 6 animaciones, todas por **bezier** (ningún pack trae Molang): `soul_sword_attack_3` del
+>   Esqueleto, `spawn` de `tower_skeleton_shield_break` y `tower_skeleton_summon_hole`, e `idle`/`walk`/`land` de la
+>   cabeza cortada de la Hidra. `build_bosses.py` ya escribe siempre igual (orden fijo).
+> - **Cabezas como ModelEngine 4** (wiki + BetterModel): giro global sin acumularse, hijos sin etiqueta que no giran,
+>   `hi_` = todo el subárbol, límites por cabeza. Antes la Gárgola giraba el torso y la cabeza el doble.
+> - **ModelEngine**: `leash`/`leashself` (correa como la de Minecraft), cabezas/colas/física/IK **también en el
+>   servidor** (`vfx/VfxRig`: golpes y cajas donde se ven), `animatemodel`, `rootmotion`, `changeparent`, `submodel`,
+>   `swapentity`, `petrify`, `pairmodel`, `modeldisguise`, `move`, `syncyaw`, `jig[repeat=N]`, caja de la entidad con
+>   el modelo (`hitboxscale`, `scale{hitbox}`, `showhitbox`), `viewrange`, `renderfire`, sombra, skins slim/base64/de
+>   jugadores desconectados, `setmodeltag` con alineación.
+> - **MythicMobs**: las líneas sin disparador son `~onCombat` (como MythicMobs; antes `~onSpawn`), `~onSkillDamage`,
+>   `~onShoot`/`~onBowHit`, `~onProjectileHit`/`Land`, `~onDespawn`, `~onDismounted`, `~onHear` (como el Warden),
+>   `~onReady`/`~onSpawnOrLoad`; `@Cone`, `@Sphere`, `@Rectangle`, `@BlocksInRadius`, `@BlocksNearOrigin`; `score`,
+>   `globalscore`, `itemrecharging`, `mobsinchunk`, `playerkills` y `wearing`/`haspermission` de verdad (antes «sí»
+>   siempre); `blackscreen`, `bloodyscreen`, `bossborder`, `skybox`, `sendtoast`, `enderbeam` (solo dibujado),
+>   `hologram`, `consume`, `oxygen`, `shieldbreak`, `setgliding`, `setpose`, `setmobcolor`, `setpathfindingmalus`,
+>   `swap`, `teleportin`, `resetai`, `randommessage`, `variablemath`, `switch`, `chainmissile`, `blockunmask`,
+>   `summonareaeffectcloud`, `barremove`. Los jefes ya no pasan por portales.
+> - **Sin hacer, para preguntar al dueño** (§11.3): lo que cambia el mundo (`breakblock`, `fill`, `time`, `weather`…),
+>   el inventario o el estado del jugador (`giveitem`, `takeitem`, `decapitate`, `setgamemode`, marcador…), dueño y
+>   montura (`setowner`, `mountme`, `remount`…), y la altura de los ojos del hueso `hitbox` (§11.2).
+> - Comprobado: auditor 0 problemas en los 5, `--prueba` 20/20, `test_convert.py` «todo bien» (10 pruebas nuevas),
+>   `sim_physics.py` (Gárgola y Esqueleto: se doblan sin pasar de 50°), `sim_ai.py` **idéntico** (semillas 3 y 11,
+>   todas las dificultades, `--min 8`). Cobertura: condiciones 88/88, objetivos 47/47, mecánicas 198/235.
 
 > **TF Client 1.3.80 (14 oct) — MODELENGINE 4 COMPLETO EN EL MOTOR.** El dueño: «¿por qué no arreglaste el segment?
 > Necesito que la importación de todos los demás bosses sea correcta, sin errores, sin texturas malas, sin fallas de

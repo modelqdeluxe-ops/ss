@@ -121,7 +121,8 @@ def compile_boss(pack_dir, root_mob, extra_skills):
     lower_mobs = {k.lower(): k for k in mobs}
     missing = set()
     reach_s, reach_m = set(), set()
-    stack, mob_stack = list(extra_skills), [root_mob]
+    # (en orden: un conjunto sin ordenar cambia el orden del JSON en cada pasada)
+    stack, mob_stack = sorted(extra_skills), [root_mob]
     compiled_tree, compiled_mobs = {}, {}
     used_items = set()
 
@@ -190,13 +191,13 @@ def compile_boss(pack_dir, root_mob, extra_skills):
                    'display': v.get('Display'), 'health': v.get('Health'), 'mechs': mechs}
             for yk, ok in (('AIGoalSelectors', 'ai_goals'), ('AITargetSelectors', 'ai_targets'), ('Damage', 'damage'),
                            ('Armor', 'armor'), ('Faction', 'faction'), ('DamageModifiers', 'damage_modifiers'),
-                           ('BossBar', 'bossbar'), ('Modules', 'modules'), ('DisplayOptions', 'display_options'),
+                           ('BossBar', 'bossbar'), ('Modules', 'modules'), ('DisplayOptions', 'display_options'), ('Hearing', 'hearing'),
                            ('Drops', 'drops'), ('Equipment', 'equipment')):
                 if v.get(yk) is not None:
                     mob[ok] = v[yk]
             compiled_mobs[key] = mob
             follow(mechs)
-    return {'tree': compiled_tree, 'mobs': compiled_mobs, 'items': {k: items[k] for k in used_items if k in items},
+    return {'tree': compiled_tree, 'mobs': compiled_mobs, 'items': {k: items[k] for k in sorted(used_items) if k in items},
             'all_items': items, 'missing': sorted(missing)}
 
 
@@ -345,7 +346,7 @@ def build(pack_dir, name, conf, sound_events):
         mob['speed'] = SPEED.get(mob['type'], 0.25)
         # El modelo de ModelEngine que se pone (para la vista previa, el tamaño y la caja de golpe del mob)
         for pm in mob['mechs']:
-            if pm['m'] == 'model' and pm.get('tr') in (None, 'onspawn'):
+            if pm['m'] == 'model' and pm.get('tr') in (None, 'onspawn', 'oncombat', 'onspawnorload', 'onready'):
                 mid = pm['a'].get('mid') or pm['a'].get('m') or pm['a'].get('modelid')
                 if mid:
                     mob['model'] = mid
@@ -355,7 +356,7 @@ def build(pack_dir, name, conf, sound_events):
         if mob.get('model'):
             continue
         for pm in mob['mechs']:
-            if pm['m'] in ('skill', 's') and pm.get('tr') in (None, 'onspawn'):
+            if pm['m'] in ('skill', 's') and pm.get('tr') in (None, 'onspawn', 'oncombat', 'onspawnorload', 'onready'):
                 sub = prog['tree'].get(pm['a'].get('s', ''))
                 for sp in (sub or {}).get('mechs', []):
                     if sp['m'] == 'model':

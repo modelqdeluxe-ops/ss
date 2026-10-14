@@ -25,6 +25,8 @@ public class BossRenderer extends EntityRenderer<BossEntity> {
 
     @Override
     public void render(BossEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        // La sombra de ModelEngine: la del hueso «shadow» del modelo (sin él, ninguna; model{showshadow=false}, tampoco)
+        this.shadowRadius = SkillClient.shadowRadius(e);
         SkillClient.renderFollower(e, partial, pose, buffers, light);
     }
 

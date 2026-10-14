@@ -53,6 +53,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private static final EntityDataAccessor<String> KEY = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> MAX_HP = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> BODY_YAW = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
+    /** model{hitboxscale} / scale{hitbox=true}: escala de su caja. */
+    private static final EntityDataAccessor<Float> HB_SCALE = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
+    /** 1 = model{hitbox=false} (la caja de su tipo de Minecraft), 2 = model{showhitbox=false} (no se le apunta). */
+    private static final EntityDataAccessor<Byte> HB_FLAGS = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.BYTE);
     /** Cajas de golpe por piezas que puede tener un jefe (las cabezas, cuellos y cola de la Hidra son 35). */
     public static final int MAX_PARTS = 40;
 
@@ -97,6 +101,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private double gotoSpeed = 1.0;
     /** Dónde apareció (@SpawnLocation): la grieta o, si no tiene, su primer sitio. */
     private Vec3 spawnAt;
+    /** move{} de ModelEngine: hasta qué tick lo mueve el pack (sin buscar camino). */
+    private int moveUntil;
+    /** model{syncbody}: el cuerpo sigue a la cabeza. */
+    private boolean syncBodyOn = true;
 
     public BossEntity(EntityType<? extends BossEntity> type, Level level, boolean main) {
         super(type, level);
@@ -126,6 +134,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         this.entityData.define(KEY, "");
         this.entityData.define(MAX_HP, 0F);
         this.entityData.define(BODY_YAW, 0F);
+        this.entityData.define(HB_SCALE, 1F);
+        this.entityData.define(HB_FLAGS, (byte) 0);
     }
 
     @Override
@@ -213,12 +223,32 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (KEY.equals(key)) load();
+        if (HB_SCALE.equals(key) || HB_FLAGS.equals(key)) refreshDimensions();
     }
 
+    /**
+     * Su caja, como ModelEngine: la del hueso «hitbox» de su modelo (o, con model{hitbox=false}, la de su tipo de
+     * Minecraft en el pack), a la escala de model{hitboxscale} / scale{hitbox=true}.
+     */
     @Override
     public EntityDimensions getDimensions(Pose pose) {
-        if (model != null && model.hitW > 0 && model.hitH > 0) return EntityDimensions.scalable(model.hitW, model.hitH);
-        return super.getDimensions(pose);
+        float scale = 1F;
+        byte flags = 0;
+        try {
+            scale = this.entityData.get(HB_SCALE);
+            flags = this.entityData.get(HB_FLAGS);
+        } catch (RuntimeException notYet) {
+            // aún construyéndose
+        }
+        EntityDimensions d = null;
+        if ((flags & 1) == 0 && model != null && model.hitW > 0 && model.hitH > 0) {
+            d = EntityDimensions.scalable(model.hitW, model.hitH);
+        } else if ((flags & 1) != 0 && def != null) {
+            EntityType<?> t = EntityType.byString("minecraft:" + def.type.toLowerCase(java.util.Locale.ROOT)).orElse(null);
+            if (t != null) d = t.getDimensions();
+        }
+        if (d == null) d = super.getDimensions(pose);
+        return scale == 1F ? d : d.scale(scale);
     }
 
     public String bossId() {
@@ -352,6 +382,20 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void setAi(boolean on) {
         ai = on;
         if (!on) getNavigation().stop();
+    }
+
+    /** resetai de MythicMobs: vuelve a tener la IA de su tipo (persigue y mira a su objetivo, aunque el pack la quitara). */
+    private boolean aiReset;
+
+    @Override
+    public void resetAi() {
+        aiReset = true;
+        setAi(true);
+    }
+
+    /** ¿Persigue y mira a su objetivo? (la IA del pack, o la de su tipo tras resetai). */
+    private boolean chases() {
+        return def != null && (def.chases || aiReset);
     }
 
     @Override
@@ -506,6 +550,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (color != null) bar.setColor(color(color));
     }
 
+    /** barcreate / barremove del pack sobre su propia barra: se ve o se quita. */
+    @Override
+    public void barVisible(boolean on) {
+        if (bar != null) bar.setVisible(on);
+    }
+
     @Override
     public void selfDamage(double amount, boolean ignoreResistance) {
         if (dying() || amount <= 0) return;
@@ -527,6 +577,79 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public boolean dying() {
         return isDeadOrDying() || isRemoved();
+    }
+
+    // ------------------------------------------------------------------------------------------- ModelEngine en la entidad
+
+    /**
+     * move{x;y;z;speed;global} de ModelEngine: este tick anda en esa dirección como si le empujara su «mando» (como un
+     * caballo montado: la entrada por su velocidad × speed, en sus ejes o en los del mundo con global; sube escalones con
+     * su step). Mientras el pack lo mueve, no busca camino.
+     */
+    @Override
+    public void move(double side, double up, double front, double speed, boolean global) {
+        if (dying()) return;
+        Vec3 in = new Vec3(side, up, front);
+        if (in.lengthSqr() < 1e-8) return;
+        if (in.lengthSqr() > 1) in = in.normalize();
+        Vec3 v = in.scale(getAttributeValue(Attributes.MOVEMENT_SPEED) * speed);
+        if (!global) {
+            float sin = Mth.sin(bodyYaw * Mth.DEG_TO_RAD), cos = Mth.cos(bodyYaw * Mth.DEG_TO_RAD);
+            v = new Vec3(v.x * cos - v.z * sin, v.y, v.z * cos + v.x * sin);
+        }
+        setDeltaMovement(getDeltaMovement().add(v));
+        moveUntil = age + 2;
+        getNavigation().stop();
+    }
+
+    /** syncyaw de ModelEngine: «yaw» es hacia dónde mira la entidad, «body» el modelo y «head» su cabeza. */
+    @Override
+    public void syncYaw(String to, String from) {
+        float v = switch (from) {
+            case "yaw" -> lookYaw;
+            case "body" -> bodyYaw;
+            default -> yHeadRot;
+        };
+        if (to.equals("yaw") || to.equals("all")) {
+            lookYaw = v;
+            setYRot(v);
+        }
+        if (to.equals("head") || to.equals("all")) yHeadRot = v;
+        if (to.equals("body") || to.equals("all")) {
+            bodyYaw = v;
+            syncBody();
+        }
+    }
+
+    @Override
+    public void setModelHitbox(boolean on) {
+        byte f = this.entityData.get(HB_FLAGS);
+        this.entityData.set(HB_FLAGS, (byte) (on ? f & ~1 : f | 1));
+    }
+
+    @Override
+    public void setHitboxScale(float scale) {
+        this.entityData.set(HB_SCALE, Math.max(0.01F, scale));
+    }
+
+    @Override
+    public void setShowHitbox(boolean on) {
+        byte f = this.entityData.get(HB_FLAGS);
+        this.entityData.set(HB_FLAGS, (byte) (on ? f & ~2 : f | 2));
+    }
+
+    @Override
+    public void setSyncBody(boolean on) {
+        syncBodyOn = on;
+    }
+
+    /** model{renderfire;forcefire} de ModelEngine (el cliente sabe cuál tiene su modelo). */
+    @Override
+    public boolean displayFireAnimation() {
+        int mode = level().isClientSide ? SkillMobs.clientFire.applyAsInt(this) : 0;
+        if (mode > 0) return true;
+        if (mode < 0) return false;
+        return super.displayFireAnimation();
     }
 
     // ------------------------------------------------------------------------------------------- vida
@@ -612,15 +735,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /** Un golpe a una de sus piezas (la cabeza de la Hidra): es un golpe a él. */
     boolean hurtPart(BossPart part, DamageSource src, float amount) {
-        // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone)
-        if (!partPass.isEmpty() && model != null) {
-            int[] hb = net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(model);
-            if (part.index() < hb.length) {
-                Double pass = partPass.get(model.bones[hb[part.index()]].id.toLowerCase(java.util.Locale.ROOT));
-                if (pass != null) {
-                    if (pass <= 0) return false;
-                    amount *= pass.floatValue();
-                }
+        // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone, en su modelo tal como está ahora)
+        if (!partPass.isEmpty()) {
+            String bone = SkillMobs.partBone(this, part.index());
+            Double pass = bone == null ? null : partPass.get(bone.toLowerCase(java.util.Locale.ROOT));
+            if (pass != null) {
+                if (pass <= 0) return false;
+                amount *= pass.floatValue();
             }
         }
         return hurt(src, amount);
@@ -684,7 +805,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public boolean isPickable() {
-        return !dying() && def != null && !def.invincible;
+        return !dying() && def != null && !def.invincible && (this.entityData.get(HB_FLAGS) & 2) == 0;
     }
 
     @Override
@@ -698,6 +819,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public boolean shouldBeSaved() {
+        return false;
+    }
+
+    /** No pasa por portales: su copia en el otro mundo no tendría su programa (y se iría de su grieta). */
+    @Override
+    public boolean canChangeDimensions() {
         return false;
     }
 
@@ -735,6 +862,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         super.customServerAiStep();
         if (def == null || dying()) return;
         if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
+        if (age < moveUntil) {
+            // move{} del pack: lo lleva el pack este tick
+            turnBody();
+            return;
+        }
         Vec3 goal = null;
         // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,
         // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
@@ -750,7 +882,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             goal = gotoGoal;
             stop = 1.2;
             if (Math.sqrt(horizontalDistanceSqr(gotoGoal)) <= stop) gotoGoal = null;
-        } else if (target != null && def.chases) {
+        } else if (target != null && chases()) {
             goal = target.position();
             // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
             double[] plan = SkillMobs.plan(this);
@@ -812,7 +944,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         float want = bodyYaw;
         Vec3 v = getDeltaMovement();
         boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
-        if (def.chases && ai) {
+        if (chases() && ai) {
             if (target != null) {
                 Vec3 d = target.position().subtract(position());
                 if (d.x * d.x + d.z * d.z > 1e-4) want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
@@ -829,15 +961,18 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         float diff = Mth.wrapDegrees(want - bodyYaw);
-        float track = def.chases && ai ? SkillMobs.tracking(this) : 0F;
+        float track = chases() && ai ? SkillMobs.tracking(this) : 0F;
         if (track > 0 && !moving) {
             // Atacando (antes de que el modelo se bloquee): sigue al jugador, como los jefes de los Souls al cargar el golpe
             bodyYaw += Mth.clamp(diff, -track, track);
             diff = Mth.wrapDegrees(want - bodyYaw);
             turnWait = 0;
-        } else if (moving && def.chases && ai) {
+        } else if (moving && chases() && ai) {
             // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
             bodyYaw += Mth.clamp(diff, -20F, 20F);
+            turnWait = 0;
+        } else if (!syncBodyOn) {
+            // model{syncbody=false}: el cuerpo se queda; solo gira la cabeza (hasta «mh»)
             turnWait = 0;
         } else {
             // Parado: la cabeza no pasa de «mh» respecto al cuerpo; si el objetivo se va más allá, arrastra al cuerpo
@@ -947,6 +1082,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {
+            // ~onDespawn: se va sin morir (se cierra la grieta, se descarga su chunk), antes de olvidarlo
+            if (def != null && reason != RemovalReason.KILLED && reason != RemovalReason.CHANGED_DIMENSION && !dying()) {
+                try {
+                    SkillMobs.despawned(this);
+                } catch (RuntimeException e) {
+                    net.tierrasfantasticas.tfclient.TFClient.LOGGER.debug("TF Jefes: error en ~onDespawn de {}", def.name, e);
+                }
+            }
             if (bar != null) bar.removeAllPlayers();
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);

@@ -53,8 +53,6 @@ STUB_OK = {
     'posearmorstand': 'soportes de armadura de Minecraft: los jefes y sus efectos son modelos de ModelEngine',
     'runaitargetselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
     'runaigoalselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
-    'modifyglobalscore': 'marcadores globales: no hay ninguno (ninguna condición los lee)',
-    'setglobalscore': 'marcadores globales: no hay ninguno (ninguna condición los lee)',
     'feed': 'el hambre es de los jugadores',
     'playanimation': 'el brazo de Minecraft: los jefes son modelos',
     'swing': 'el brazo de Minecraft: los jefes son modelos',
@@ -63,15 +61,13 @@ STUB_OK = {
     'bindhitbox': 'las cajas de golpe salen de los huesos ob_ del modelo (BossPart)',
     'cullconfig': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'renderinit': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
-    'syncyaw': 'el giro del cuerpo de los jefes ya va con hacia dónde se mueven (BossEntity.turnBody)',
-    # condiciones que se dan por cumplidas
-    'wearing': 'se da por cumplida (lo que lleva puesto alguien no se mira)',
-    'haspermission': 'se da por cumplida (permisos de Bukkit)',
+    'particleequation': 'MythicMobs dice que aún no funciona («not yet functional… not intended to be used», wiki)',
 }
 # Mecánicas que nombran un hueso del modelo (p/pid/part/partid/b/bone): el auditor mira que exista
 BONE_MECHS = {'partvis', 'partvisibility', 'brightness', 'changepart', 'segment', 'seg', 'enchant', 'billboard', 'glowbone',
               'setmodeltag', 'setmodeltagvisible', 'setitemmodel', 'linkitembone', 'headconfig', 'hitboxconfig',
-              'jiggleimpulse', 'cycleparts', 'ik', 'inversekinematics', 'iktarget', 'tint', 'vfx', 'vfxchangemodel'}
+              'jiggleimpulse', 'cycleparts', 'ik', 'inversekinematics', 'iktarget', 'tint', 'vfx', 'vfxchangemodel',
+              'animatemodel'}
 # Disparadores que el motor no lanza pero que no hacen falta en estos casos (ver trigger_ok)
 QUIET_TRIGGERS = {'onload', 'onattack'}
 
@@ -153,6 +149,14 @@ def bone(m, part, exact=True):
     if part in ids or any(i.lower() == p for i in ids):
         return 1
     return sum(1 for i in ids if i.lower().endswith('_' + p) and i.index('_') == len(i) - len(p) - 1)
+
+
+def bone_any(mid, models, part):
+    """¿Algún modelo (ese o los del mob) tiene un hueso que se llame así tal cual?"""
+    for x in ([mid] if mid else models):
+        if x and model(x) and bone(model(x), str(part)):
+            return True
+    return False
 
 
 def exact(v):
@@ -304,10 +308,37 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             for k in ('root', 'r', 'tip', 't', 'pole'):
                 if a.get(k):
                     refs.append((model_id(a.get('m', a.get('mid')), default), a[k], True))
+        # changeparent{p;c}, submodel{p;sp} (con r=true, sp lleva su etiqueta: «ob_cola») y model{rootbone}
+        if m == 'changeparent':
+            for k in ('parent', 'p', 'child', 'c'):
+                if a.get(k):
+                    refs.append((model_id(a.get('m', a.get('mid')), default), a[k], True))
+        if m == 'submodel':
+            mid = model_id(a.get('m', a.get('mid')), default)
+            for k in ('partid', 'p', 'pid', 'part', 'subpartid', 'sp', 'spid', 'subpart'):
+                part = a.get(k)
+                if not part:
+                    continue
+                if k in ('subpartid', 'sp', 'spid', 'subpart') and not bone_any(mid, models, part):
+                    part = re.sub(r'^[a-z]+(\[[^\]]*\])?_', '', str(part).lower())  # con su etiqueta: «ob_cola» es «cola»
+                refs.append((mid, part, True))
+        if m == 'model' and a.get('rootbone', a.get('root', a.get('rt'))):
+            refs.append((model_id(a.get('m', a.get('mid', a.get('model'))), default), a.get('rootbone', a.get('root', a.get('rt'))), True))
         if m == 'mountmodel':
             part = a.get('p', a.get('pbone', a.get('seat')))
             if part:
                 refs.append((model_id(a.get('m', a.get('mid')), default), part, True))
+        # Correas: ModelEngine solo las cuelga de huesos de correa (l_ sin cubos)
+        if m in ('leash', 'leashself'):
+            names = [a.get(k) for k in (('p', 'part', 'partid', 'pid') if m == 'leash' else ('s', 'sid', 'src', 'source', 'sourceid', 'd', 'did', 'dest', 'destid'))]
+            for part in [x for x in names if x]:
+                mid = model_id(a.get('m', a.get('mid', a.get('modelid'))), default)
+                cands = [mid] if mid else models
+                found = [b for x in cands if model(x) for b in model(x)['bones'] if bone({'bones': [b]}, part)]
+                if not found:
+                    problems.append(f'{where}: el hueso de correa «{part}» no está en {", ".join(c for c in cands if c)}')
+                elif not any(b.get('beh') == 'leash' for b in found):
+                    problems.append(f'{where}: «{part}» no es un hueso de correa (l_ sin cubos): ModelEngine no le cuelga la correa')
         if t == 'modelpart':
             ta = pm.get('ta') or {}
             part = ta.get('pid', ta.get('p', ta.get('part')))
@@ -363,10 +394,11 @@ def audit(bid, engine_sets, warnings=None, prog=None):
         if not md.get('model') and md.get('kind') == 'entity':
             problems.append(f'mob {mob}: sin modelo de ModelEngine (se vería el mob de Minecraft)')
         for i, pm in enumerate(md['mechs']):
-            where = f'mob {mob} #{i + 1} ({pm.get("tr") or "onspawn"})'
-            tr = pm.get('tr') or 'onspawn'
+            # Sin disparador es ~onCombat, como en MythicMobs
+            tr = pm.get('tr') or 'oncombat'
+            where = f'mob {mob} #{i + 1} ({tr})'
             if tr not in fired:
-                why = trigger_ok(tr, pm, tree, lower)
+                why = trigger_ok(tr, pm, tree, lower, md)
                 if why:
                     warns.append((f'~{tr} no salta aquí, y da igual: {why}', where))
                 else:
@@ -468,8 +500,39 @@ def check_model(mid, m, warns):
     return probs
 
 
-def trigger_ok(tr, pm, tree, lower):
+# Disparadores de lo que hace por sí mismo un tipo de mob de Minecraft (Type del pack): en MythicMobs solo saltan si su
+# tipo lo hace; BossEntity no copia esos comportamientos (explotar, teletransportarse, dejarse domar...), así que con un
+# tipo que sí lo haga son un problema (habría que copiarlo) y con otro no saltan tampoco en MythicMobs.
+TYPE_TRIGGERS = {
+    'onexplode': ({'CREEPER', 'WITHER'}, 'explota'),
+    'onprime': ({'CREEPER'}, 'se prepara para explotar'),
+    'oncreepercharge': ({'CREEPER'}, 'se carga con un rayo'),
+    'onteleport': ({'ENDERMAN', 'SHULKER'}, 'se teletransporta solo'),
+    'ontame': ({'WOLF', 'CAT', 'PARROT', 'HORSE', 'DONKEY', 'MULE', 'LLAMA', 'TRADER_LLAMA', 'OCELOT'}, 'se deja domar'),
+    'onbreed': ({'COW', 'MUSHROOM_COW', 'MOOSHROOM', 'PIG', 'SHEEP', 'CHICKEN', 'WOLF', 'CAT', 'OCELOT', 'HORSE', 'DONKEY',
+                 'LLAMA', 'TRADER_LLAMA', 'RABBIT', 'TURTLE', 'PANDA', 'FOX', 'BEE', 'HOGLIN', 'STRIDER', 'GOAT', 'AXOLOTL',
+                 'FROG', 'CAMEL', 'SNIFFER', 'PARROT'}, 'cría'),
+    'ontrade': ({'VILLAGER', 'WANDERING_TRADER'}, 'comercia'),
+    'onbucket': ({'COW', 'MUSHROOM_COW', 'MOOSHROOM', 'GOAT', 'AXOLOTL', 'COD', 'SALMON', 'PUFFERFISH', 'TROPICAL_FISH',
+                  'TADPOLE'}, 'se ordeña o se mete en un cubo'),
+}
+
+
+def trigger_ok(tr, pm, tree, lower, md=None):
     """Por qué no importa que ese disparador no salte, o None si sí importa."""
+    if tr in TYPE_TRIGGERS:
+        types, what = TYPE_TRIGGERS[tr]
+        ty = str((md or {}).get('type') or 'ZOMBIE').upper()
+        if ty not in types:
+            return f'solo salta si su tipo de Minecraft {what}, y el suyo ({ty}) no lo hace (tampoco en MythicMobs)'
+        return None
+    if tr == 'onchangeworld':
+        # Los jefes no pasan por portales (BossEntity.canChangeDimensions = false): no cambian nunca de mundo
+        src = open(os.path.join(ROOT, 'src', 'main', 'java', 'net', 'tierrasfantasticas', 'tfclient', 'bosses',
+                                'BossEntity.java'), encoding='utf-8').read()
+        if re.search(r'boolean canChangeDimensions\(\)\s*\{\s*return false;', src):
+            return 'los jefes no pasan por portales (BossEntity.canChangeDimensions = false): nunca cambian de mundo'
+        return None
     if tr == 'onload':
         # ~onLoad es para un mob que vuelve del disco (al cargar su chunk): los de los jefes nunca se guardan
         if not_saved():
@@ -525,8 +588,11 @@ def selftest():
          'hueso_inventado'),
         ('sonido que no existe', lambda p: p['tree'][skill]['mechs'].append({'m': 'sound', 'a': {'s': 'tfclient:bosses.x.inventado'}}),
          'bosses.x.inventado'),
-        ('disparador que no salta', lambda p: p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onbowhit'}),
-         'onbowhit'),
+        ('disparador que no salta', lambda p: p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onenterbounds'}),
+         'onenterbounds'),
+        ('disparador del tipo de mob que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'CREEPER'),
+                                                               p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onexplode'})),
+         'onexplode'),
         ('~onAttack que hace algo', lambda p: p['mobs'][boss]['mechs'].append({'m': 'damage', 'a': {'a': '5'}, 'tr': 'onattack'}),
          'onattack'),
         ('modelo que no existe', lambda p: p['mobs'][boss]['mechs'].append({'m': 'model', 'a': {'m': 'modelo_inventado'}, 't': 'self'}),
@@ -542,6 +608,12 @@ def selftest():
     cases.append(('hueso de una mecánica de ModelEngine que no existe',
                   lambda p: p['mobs'][boss]['mechs'].append({'m': 'enchant', 'a': {'p': 'hueso_que_no_hay'}, 't': 'self'}),
                   'hueso_que_no_hay'))
+    cases.append(('changeparent a un hueso que no existe',
+                  lambda p: p['mobs'][boss]['mechs'].append({'m': 'changeparent', 'a': {'p': 'head', 'c': 'hueso_movido_inventado'}, 't': 'self'}),
+                  'hueso_movido_inventado'))
+    cases.append(('correa en un hueso que no es de correa',
+                  lambda p: p['mobs'][boss]['mechs'].append({'m': 'leashself', 'a': {'s': 'head', 'd': 'jaw'}, 't': 'self'}),
+                  'no es un hueso de correa'))
     bad = 0
     for name, hurt, needle in cases:
         prog = copy.deepcopy(base)

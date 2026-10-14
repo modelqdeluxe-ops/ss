@@ -249,7 +249,7 @@ final class SkillMeg {
     }
 
     /** El objeto del pack (sus objetos de MythicMobs son tfclient:jefe_<jefe>_<objeto>) o el material de Minecraft. */
-    private static String itemId(Ctx ctx, String mat) {
+    static String itemId(Ctx ctx, String mat) {
         if (mat == null || mat.isBlank()) return "";
         String key = mat.trim().toLowerCase(Locale.ROOT);
         SkillDefs.BossInfo bi = ctx.cls.bossInfo;
@@ -266,12 +266,15 @@ final class SkillMeg {
     static void setModelTag(Mech m, Ctx ctx, List<Tgt> targets) {
         String raw = SkillRuntime.unquote(m.arg("", "tag", "t"));
         boolean visible = SkillRuntime.bool(m.arg("true", "visible", "v"));
-        String scale = m.arg("1", "scale");
-        String style = scale.split(",")[0] + "|" + (SkillRuntime.bool(m.arg("false", "shadow")) ? 1 : 0) + "|"
+        String scale = m.arg("1", "scale").replace("|", ",");
+        // escala (x,y,z) | sombra | a través | fondo | opacidad | alineación | ancho de línea | billboard
+        String style = scale + "|" + (SkillRuntime.bool(m.arg("false", "shadow")) ? 1 : 0) + "|"
                 + (SkillRuntime.bool(m.arg("true", "seethrough")) ? 1 : 0) + "|"
                 + (SkillRuntime.bool(m.arg("true", "usedefaultbackground", "defaultbackground", "db")) ? -1
                 : (int) SkillRuntime.num(m.arg("0", "backgroundcolor", "background"), 0)) + "|"
-                + (int) SkillRuntime.num(m.arg("-1", "textopacity", "opacity"), -1);
+                + (int) SkillRuntime.num(m.arg("-1", "textopacity", "opacity"), -1) + "|"
+                + m.arg("CENTER", "alignment", "align").toUpperCase(Locale.ROOT) + "|"
+                + (int) SkillRuntime.num(m.arg("200", "linewidth"), 200) + "|" + m.arg("CENTER", "billboard").toUpperCase(Locale.ROOT);
         for (Tgt t : targets) {
             SkillActor a = SkillModels.holder(t, false, ctx);
             if (a == null) continue;
@@ -340,18 +343,240 @@ final class SkillMeg {
         }
     }
 
-    /** modelplayerskin{m;limbs;uuid;username;skin;slim} @jugador: la skin de los miembros de jugador del modelo. */
+    /**
+     * modelplayerskin{m;limbs;uuid;username;skin;slim} @jugador: la skin de los miembros de jugador del modelo («limbs»,
+     * separados por comas; sin ellos, todos): la del jugador objetivo, la de ese uuid o nombre (aunque no esté conectado:
+     * se baja una vez, como ModelEngine) o la de unos datos de textura en base64 (skin=). slim: fuerza los brazos finos;
+     * sin él, los de la skin.
+     */
     static void playerSkin(Mech m, Ctx ctx, List<Tgt> targets) {
         String limbs = m.arg("", "limbs", "p", "pbone");
         String uuid = m.arg(null, "uuid"), name = m.arg(null, "username", "user", "name");
+        String data = m.arg(null, "skin", "s");
         String slim = m.arg("", "slim");
         SkillActor a = ctx.caster.entity == null ? ctx.caster.actor : SkillModels.holder(Tgt.of(ctx.caster), false, ctx);
         if (a == null) return;
+        if (data != null && !data.isBlank()) {
+            a.prop("skin", limbs, "tex:" + SkillRuntime.unquote(data).trim(), slim);
+            return;
+        }
         String who = uuid != null ? uuid : name != null ? name : "";
         if (who.isEmpty() && !targets.isEmpty() && targets.get(0).entity() instanceof net.minecraft.world.entity.player.Player pl) {
             who = pl.getUUID().toString();
         }
-        a.prop("skin", limbs, who, slim);
+        if (who.isEmpty()) return;
+        // Conectado: el cliente ya tiene su skin. Si no, sus datos de textura (Mojang), una vez por jugador
+        net.minecraft.server.MinecraftServer srv = a.level.getServer();
+        if (online(srv, who)) {
+            a.prop("skin", limbs, who, slim);
+            return;
+        }
+        String cached = SKIN_DATA.get(who.toLowerCase(Locale.ROOT));
+        if (cached != null) {
+            a.prop("skin", limbs, "tex:" + cached, slim);
+            return;
+        }
+        String key = who;
+        net.minecraft.Util.backgroundExecutor().execute(() -> {
+            String tex = fetchTextures(srv, key);
+            if (tex == null) return;
+            srv.execute(() -> {
+                SKIN_DATA.put(key.toLowerCase(Locale.ROOT), tex);
+                if (a.alive) a.prop("skin", limbs, "tex:" + tex, slim);
+            });
+        });
+    }
+
+    /** Los datos de textura (base64) ya bajados de cada uuid o nombre. */
+    private static final java.util.Map<String, String> SKIN_DATA = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static java.util.UUID uuidOf(String s) {
+        String raw = s.replace("-", "");
+        if (raw.length() != 32) return null;
+        try {
+            return new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16), Long.parseUnsignedLong(raw.substring(16), 16));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static boolean online(net.minecraft.server.MinecraftServer srv, String who) {
+        if (srv == null) return false;
+        java.util.UUID u = uuidOf(who);
+        return u != null ? srv.getPlayerList().getPlayer(u) != null : srv.getPlayerList().getPlayerByName(who) != null;
+    }
+
+    /** Pide a Mojang (por la caché de perfiles del servidor) los datos de textura de un jugador; null si no hay. */
+    private static String fetchTextures(net.minecraft.server.MinecraftServer srv, String who) {
+        try {
+            java.util.UUID u = uuidOf(who);
+            com.mojang.authlib.GameProfile gp;
+            if (u != null) {
+                gp = new com.mojang.authlib.GameProfile(u, null);
+            } else {
+                var cache = srv.getProfileCache();
+                gp = cache == null ? null : cache.get(who).orElse(null);
+            }
+            if (gp == null) return null;
+            com.mojang.authlib.GameProfile full = srv.getSessionService().fillProfileProperties(gp, false);
+            for (com.mojang.authlib.properties.Property p : full.getProperties().get("textures")) return p.getValue();
+        } catch (Exception e) {
+            net.tierrasfantasticas.tfclient.TFClient.LOGGER.debug("TF Jefes: sin skin de {}", who, e);
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------------------------------- correas
+
+    /**
+     * leash{m;p;leash} @objetivo: una correa como la de Minecraft desde el hueso de correa (l_) del modelo de quien lanza
+     * hasta el objetivo; leash=false la quita. Como en ModelEngine solo se ve («visually leash»): no tira de nadie.
+     */
+    static void leash(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillActor a = ctx.caster.entity == null ? ctx.caster.actor : SkillModels.holder(Tgt.of(ctx.caster), false, ctx);
+        if (a == null) return;
+        boolean on = SkillRuntime.bool(m.arg("true", "leash", "l"));
+        String part = m.arg("", "partid", "p", "pid", "part");
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e != null && e != ctx.caster.entity) a.prop("leash", String.valueOf(e.getId()), part, on ? "1" : "0");
+        }
+    }
+
+    /**
+     * leashself{m;s;d}: una correa entre dos huesos de correa del mismo modelo (s la sujeta, d va atado). Sin d, quita
+     * las que sujeta s.
+     */
+    static void leashSelf(Mech m, Ctx ctx, List<Tgt> targets) {
+        String src = m.arg(null, "sourceid", "s", "sid", "src", "source");
+        String dst = m.arg(null, "destid", "d", "did", "dest");
+        if (src == null) return;
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null) a.prop("leashself", src, dst == null ? "" : dst, dst == null ? "0" : "1");
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------- huesos en vivo
+
+    /**
+     * animatemodel{m;p;em;position;rotation;scale;r;o;copy;rm}: mueve un hueso a mano, sin animación (posición en
+     * píxeles y giro en grados de Blockbench, como los fotogramas). r: sumado a lo que ya tenía a mano; o: tapa a sus
+     * animaciones; copy: parte de la forma del hueso en el modelo; rm=GLOBAL: el giro en los ejes del modelo.
+     */
+    static void animateModel(Mech m, Ctx ctx, List<Tgt> targets) {
+        String part = part(m);
+        if (part.isEmpty()) return;
+        double[] pos = vec(m.arg("0,0,0", "position", "pos"), 0), rot = vec(m.arg("0,0,0", "rotation", "rot"), 0);
+        double[] scl = vec(m.arg("1,1,1", "scale", "scl"), 1);
+        // A los signos del modelo convertido (como sus animaciones: la x de la posición y la x e y del giro, al revés)
+        String spec = (-pos[0]) + "," + pos[1] + "," + pos[2] + "|" + (-rot[0]) + "," + (-rot[1]) + "," + rot[2] + "|" + scl[0] + ","
+                + scl[1] + "," + scl[2] + "|" + (SkillRuntime.bool(m.arg("false", "relative", "rel", "r")) ? 1 : 0)
+                + (SkillRuntime.bool(m.arg("false", "override", "ov", "o")) ? 1 : 0) + (SkillRuntime.bool(m.arg("true", "copy")) ? 1 : 0)
+                + (m.arg("LOCAL", "rotmode", "rm").equalsIgnoreCase("GLOBAL") ? 1 : 0);
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null && a.layers != null) a.prop("anim", part, spec, exact(m) ? "1" : "0");
+        }
+    }
+
+    private static double[] vec(String s, double def) {
+        String[] p = s.split(",");
+        double x = SkillRuntime.num(p[0].trim(), def);
+        return new double[] {x, p.length > 1 ? SkillRuntime.num(p[1].trim(), def) : x, p.length > 2 ? SkillRuntime.num(p[2].trim(), def) : x};
+    }
+
+    /**
+     * rootmotion{w;bw;ov}: con ov=true la entidad anda lo que sus animaciones mueven el hueso raíz (model{rootbone}); con
+     * ov=false deja de hacerlo. w: peso con sus ataques; bw: con el reposo y el andar.
+     */
+    static void rootMotion(Mech m, Ctx ctx, List<Tgt> targets) {
+        String w = m.arg(null, "weight", "w"), bw = m.arg(null, "baseweight", "bw"), ov = m.arg(null, "override", "ov");
+        String spec = (w == null ? "NaN" : String.valueOf(SkillRuntime.num(w, -1))) + "|" + (bw == null ? "NaN" : String.valueOf(SkillRuntime.num(bw, -1)))
+                + "|" + (ov == null ? "" : SkillRuntime.bool(ov) ? "1" : "0");
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null && a.layers != null) a.prop("root", "", spec, null);
+        }
+    }
+
+    /** changeparent{m;p;c}: el hueso «c» (con lo que cuelga de él) pasa a colgar de «p». */
+    static void changeParent(Mech m, Ctx ctx, List<Tgt> targets) {
+        String parent = m.arg(null, "parent", "p"), child = m.arg(null, "child", "c");
+        if (parent == null || child == null) return;
+        for (Tgt t : targets) edit(SkillModels.holder(t, false, ctx), "cp|" + child + "|" + parent);
+    }
+
+    /**
+     * submodel{m;p;sp;pfx;r}: añade bajo «p» una copia de la pieza «sp» del modelo (con lo que cuelga de ella; con «pfx»
+     * delante del nombre) o, con r=true, la quita (con su etiqueta: «ob_cola»): ni se ve, ni es caja de golpe, ni asiento.
+     */
+    static void subModel(Mech m, Ctx ctx, List<Tgt> targets) {
+        String sub = m.arg(null, "subpartid", "sp", "spid", "subpart");
+        if (sub == null) return;
+        String e = SkillRuntime.bool(m.arg("false", "remove", "r")) ? "sm-|" + sub
+                : "sm+|" + m.arg("", "partid", "p", "pid", "part") + "|" + sub + "|" + m.arg("", "prefix", "pfx");
+        for (Tgt t : targets) edit(SkillModels.holder(t, false, ctx), e);
+    }
+
+    /** Un cambio en vivo del modelo: se apunta (en orden) y se manda entero (el cliente rehace el modelo igual). */
+    private static void edit(SkillActor a, String e) {
+        if (a == null || a.me == null || a.layers == null) return;
+        a.edits.add(e);
+        SkillModels.modelOf(a);
+        a.prop("medit", "", String.join("\n", a.edits), null);
+    }
+
+    /** swapentity{m;hitbox;invisible;step} @objetivo: el modelo de quien lanza pasa a esa entidad. */
+    static void swapEntity(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillActor a = ctx.caster.entity == null ? ctx.caster.actor : SkillModels.holder(Tgt.of(ctx.caster), false, ctx);
+        Entity to = targets.isEmpty() ? null : targets.get(0).entity();
+        if (a == null || to == null) return;
+        String step = m.arg(null, "step", "s");
+        SkillModels.swap(a, to, SkillRuntime.bool(m.arg("true", "invisible", "i", "invis")), step == null ? -1 : SkillRuntime.num(step, 0.5));
+    }
+
+    /** petrify{m}: una estatua del modelo como está ahora (quieta para siempre), donde está. */
+    static void petrify(Mech m, Ctx ctx, List<Tgt> targets) {
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null && a.me != null) SkillModels.petrify(a);
+        }
+    }
+
+    /**
+     * pairmodel{hidden;remove} @jugadores: a esos jugadores se les esconde (hidden=true) o se les enseña siempre
+     * (hidden=false) el modelo de quien lanza; remove vuelve a lo normal.
+     */
+    static void pairModel(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillActor a = ctx.caster.entity == null ? ctx.caster.actor : SkillModels.holder(Tgt.of(ctx.caster), false, ctx);
+        if (a == null) return;
+        boolean hidden = SkillRuntime.bool(m.arg("false", "hidden", "h")), remove = SkillRuntime.bool(m.arg("false", "remove", "r"));
+        for (Tgt t : targets) {
+            if (!(t.entity() instanceof net.minecraft.server.level.ServerPlayer p)) continue;
+            if (remove) a.pairs.remove(p.getUUID());
+            else a.pairs.put(p.getUUID(), hidden);
+            SkillNet.toPlayer(p, new SkillNet.Prop(a.id, "pair", remove ? "" : hidden ? "1" : "0", null, null));
+        }
+    }
+
+    /** modeldisguise{m;seeself} @jugador: le pone ese modelo encima (el disfraz); seeself: si se ve él mismo. */
+    static void modelDisguise(Mech m, Ctx ctx, List<Tgt> targets) {
+        String mid = modelOf(ctx, m);
+        if (mid == null) return;
+        java.util.Map<String, String> args = new java.util.HashMap<>();
+        args.put("mid", mid);
+        SkillModels.model(m.copyWith(args, m.ta), ctx, targets);
+        boolean see = SkillRuntime.bool(m.arg("true", "seeself", "s", "see"));
+        for (Tgt t : targets) {
+            SkillActor a = SkillModels.holder(t, false, ctx);
+            if (a != null) a.prop("seeself", see ? "1" : "0", null, null);
+        }
+    }
+
+    /** modelundisguise @jugador: le quita el disfraz. */
+    static void modelUndisguise(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillModels.model(m.copyWith(java.util.Map.of("remove", "true"), m.ta), ctx, targets);
     }
 
     // ------------------------------------------------------------------------------------------- VFX de ModelEngine
