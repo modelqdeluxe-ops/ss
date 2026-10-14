@@ -24,7 +24,7 @@ public final class VfxLayers {
 
     public static final class Layer {
         public final String name;
-        final VfxModel.Anim anim;
+        VfxModel.Anim anim;
         public float start;
         public float speed;
         public int lerpIn;
@@ -96,6 +96,20 @@ public final class VfxLayers {
     private float prevStart;
     private float baseSince = -1000F;
     private boolean dead;
+    /**
+     * animatemodel de ModelEngine: huesos movidos a mano (sin animación), por hueso: posición (3), giro (3), escala (3),
+     * override, copy, global (1/0 cada uno).
+     */
+    private final java.util.Map<Integer, float[]> manual = new java.util.HashMap<>();
+    /** rootmotion + model{rootbone}: el hueso raíz (-1 = no), si manda, sus pesos y lo último que se movió. */
+    private int rootBone = -1;
+    private boolean rootOn;
+    private float rootW = -1F, rootBw = -1F;
+    private final float[] rootOffset = new float[3];
+    private String rootKey = "";
+    private float rootWeightNow;
+    /** petrify: congelado en ese instante (NaN = no). */
+    private float frozenAt = Float.NaN;
 
     /**
      * state{s;sp;li;lo;p;force}: pone una animación en su prioridad (y quita la que hubiera en esa misma prioridad,
@@ -178,9 +192,174 @@ public final class VfxLayers {
         return false;
     }
 
-    /** Quita todas al momento (al cambiar de modelo). */
+    /** Quita todas al momento (al cambiar de modelo), con lo puesto a mano y la raíz. */
     public void clear() {
         layers.clear();
+        manual.clear();
+        rootBone = -1;
+        rootOn = false;
+    }
+
+    /**
+     * animatemodel{p;em;position;rotation;scale;r;o;copy;rm}: mueve esos huesos a mano, sin animación (posición en
+     * píxeles y giro en grados, ya con los signos del modelo convertido). relative: se suma a lo que ya tenían a mano;
+     * override: tapa a sus animaciones (si no, se suma a ellas); copy: parte de la forma del hueso en el modelo (si no,
+     * su giro de reposo no cuenta); global: el giro va en los ejes del modelo, no en los del hueso.
+     */
+    public void animate(int[] bones, float[] pos, float[] rot, float[] scale, boolean relative, boolean override, boolean copy,
+                        boolean global) {
+        for (int b : bones) {
+            float[] v = manual.get(b);
+            if (v == null || !relative) {
+                v = new float[] {0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0};
+                manual.put(b, v);
+            }
+            for (int k = 0; k < 3; k++) {
+                v[k] += pos[k];
+                v[3 + k] += rot[k];
+                v[6 + k] *= scale[k];
+            }
+            v[9] = override ? 1 : 0;
+            v[10] = copy ? 1 : 0;
+            v[11] = global ? 1 : 0;
+        }
+    }
+
+    /**
+     * rootmotion{w;bw;ov} con el hueso raíz de model{rootbone}: con «on», la entidad anda lo que mueve la animación a ese
+     * hueso (lo hace el servidor con {@link #rootOffset()}) y el modelo deja de moverlo (para no verse dos veces). w: el
+     * peso con las animaciones de state{} (-1 = 1); bw: con las de por defecto, reposo y andar (-1 = 0). null = no tocar.
+     */
+    public void rootMotion(int bone, Boolean on, float w, float bw) {
+        if (bone >= -1) rootBone = bone;
+        if (on != null) rootOn = on;
+        if (!Float.isNaN(w)) rootW = w;
+        if (!Float.isNaN(bw)) rootBw = bw;
+    }
+
+    /** Lo que mueve ahora la animación al hueso raíz ({x, y, z} en píxeles, sin peso), según la última pose. */
+    public float[] rootOffset() {
+        return rootOffset;
+    }
+
+    /** Qué animación mueve la raíz ahora (si cambia, el desplazamiento vuelve a empezar: no se anda «hacia atrás»). */
+    public String rootKey() {
+        return rootKey;
+    }
+
+    /** El peso de la raíz en la última pose (el de state{} o el de las animaciones por defecto). */
+    public float rootWeight() {
+        return rootWeightNow;
+    }
+
+    public boolean rootActive() {
+        return rootOn && rootBone >= 0;
+    }
+
+    /**
+     * El mensaje «anim» (SkillMeg.animateModel): «px,py,pz|rx,ry,rz|sx,sy,sz|banderas» (banderas: relative, override,
+     * copy, global, 1/0) en los huesos con ese nombre (exact) o que lo llevan. Devuelve los huesos tocados.
+     */
+    public int[] animate(VfxModel m, String part, boolean exact, String spec) {
+        String[] p = spec.split("\\|");
+        if (p.length < 4) return new int[0];
+        float[] pos = vec(p[0], 0F), rot = vec(p[1], 0F), scl = vec(p[2], 1F);
+        String f = p[3] + "0000";
+        int[] bones = VfxRig.match(m, part, exact, false);
+        animate(bones, pos, rot, scl, f.charAt(0) == '1', f.charAt(1) == '1', f.charAt(2) == '1', f.charAt(3) == '1');
+        return bones;
+    }
+
+    /** Lo puesto a mano en un hueso, como un mensaje «anim» absoluto (para quien llega tarde), o null. */
+    public String manualSpec(int bone) {
+        float[] v = manual.get(bone);
+        if (v == null) return null;
+        return v[0] + "," + v[1] + "," + v[2] + "|" + v[3] + "," + v[4] + "," + v[5] + "|" + v[6] + "," + v[7] + "," + v[8] + "|0"
+                + (v[9] > 0 ? 1 : 0) + (v[10] > 0 ? 1 : 0) + (v[11] > 0 ? 1 : 0);
+    }
+
+    /** El mensaje «root» (model{rootbone} y rootmotion): hueso («» = el de antes) y «w|bw|on» («NaN»/«» = no tocar). */
+    public void rootMessage(VfxModel m, String bone, String spec) {
+        String[] p = (spec == null ? "" : spec).split("\\|", -1);
+        int b = bone == null || bone.isEmpty() ? -2 : m.bone(bone);
+        float w = p.length > 0 ? num(p[0], Float.NaN) : Float.NaN, bw = p.length > 1 ? num(p[1], Float.NaN) : Float.NaN;
+        Boolean on = p.length > 2 && !p[2].isEmpty() ? "1".equals(p[2]) : null;
+        rootMotion(b, on, w, bw);
+    }
+
+    /** La raíz como un mensaje «root» completo: {hueso, «w|bw|on»} (para quien llega tarde), o null si no tiene. */
+    public String[] rootSpec(VfxModel m) {
+        if (rootBone < 0 || rootBone >= m.bones.length) return null;
+        return new String[] {m.bones[rootBone].id, rootW + "|" + rootBw + "|" + (rootOn ? "1" : "0")};
+    }
+
+    /**
+     * El modelo ha cambiado en vivo (changeparent, submodel: los huesos se renumeran): las animaciones que suenan, lo
+     * puesto a mano y la raíz pasan a los huesos del mismo nombre del modelo nuevo.
+     */
+    public void rebind(VfxModel old, VfxModel now) {
+        for (Layer l : layers) {
+            VfxModel.Anim a = now.anim(l.name);
+            if (a != null) l.anim = a;
+        }
+        java.util.Map<Integer, float[]> moved = new java.util.HashMap<>();
+        for (java.util.Map.Entry<Integer, float[]> e : manual.entrySet()) {
+            if (e.getKey() >= old.bones.length) continue;
+            int b = now.bone(old.bones[e.getKey()].id);
+            if (b >= 0) moved.put(b, e.getValue());
+        }
+        manual.clear();
+        manual.putAll(moved);
+        if (rootBone >= 0 && rootBone < old.bones.length) rootBone = now.bone(old.bones[rootBone].id);
+    }
+
+    private static float[] vec(String s, float def) {
+        String[] p = s.split(",");
+        float x = num(p[0], def);
+        return new float[] {x, p.length > 1 ? num(p[1], def) : x, p.length > 2 ? num(p[2], def) : x};
+    }
+
+    private static float num(String s, float def) {
+        try {
+            return Float.parseFloat(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    /** petrify: se queda quieto en «now» para siempre (la estatua). */
+    public void freeze(float now) {
+        frozenAt = now;
+    }
+
+    public float frozenAt() {
+        return frozenAt;
+    }
+
+    /**
+     * Una copia (la estatua de petrify) con las animaciones de ahora movidas «shift» ticks (el instante «now» de este es
+     * el «now - shift» de la copia).
+     */
+    public VfxLayers copy(float shift) {
+        VfxLayers c = new VfxLayers();
+        for (Layer l : layers) {
+            Layer n = new Layer(l.name, l.anim, l.start - shift, l.speed, l.lerpIn, l.lerpOut, l.priority);
+            n.stopAt = l.stopAt < 0 ? -1 : l.stopAt - shift;
+            n.loopMode = l.loopMode;
+            n.overrideMode = l.overrideMode;
+            c.layers.add(n);
+        }
+        c.idle = idle;
+        c.walk = walk;
+        c.walking = walking;
+        c.base = base;
+        c.prevBase = prevBase;
+        c.baseStart = baseStart - shift;
+        c.prevStart = prevStart - shift;
+        c.baseSince = baseSince - shift;
+        c.dead = dead;
+        for (java.util.Map.Entry<Integer, float[]> e : manual.entrySet()) c.manual.put(e.getKey(), e.getValue().clone());
+        return c;
     }
 
     /** defaultstate{t=idle|walk;s=...}: la animación por defecto de reposo o de andar. */
@@ -254,6 +433,7 @@ public final class VfxLayers {
 
     /** Igual, con los límites de las cabezas de este mob (headconfig): ver VfxPose.build. */
     public void pose(VfxModel m, float now, float headYaw, float headPitch, Matrix4f[] out, float[] headLimits) {
+        if (!Float.isNaN(frozenAt)) now = frozenAt;
         int n = m.bones.length;
         float[] extra = new float[n * 9];
         for (int i = 0; i < n; i++) {
@@ -285,7 +465,52 @@ public final class VfxLayers {
                 }
             }
         }
-        VfxPose.build(m, extra, headYaw, headPitch, out, headLimits);
+        // rootmotion: lo que la animación mueve la raíz lo anda la entidad (servidor); el modelo no lo vuelve a mover
+        if (rootBone >= 0 && rootBone < n) {
+            int o = rootBone * 9 + 3;
+            System.arraycopy(extra, o, rootOffset, 0, 3);
+            String key = "";
+            boolean byState = false;
+            for (Layer l : layers) {
+                if (l.weight(now) > 0F && l.anim.moves != null && rootBone < l.anim.moves.length && l.anim.moves[rootBone]) {
+                    key += l.name + "@" + l.start + ";";
+                    byState = true;
+                }
+            }
+            rootKey = byState ? key : String.valueOf(base) + "@" + baseStart;
+            if (rootOn) {
+                float w = byState ? (rootW < 0 ? 1F : rootW) : (rootBw < 0 ? 0F : rootBw);
+                rootWeightNow = w;
+                // solo en el suelo (x, z): la altura la siguen viendo los saltos de la animación
+                extra[o] *= 1F - Math.min(1F, w);
+                extra[o + 2] *= 1F - Math.min(1F, w);
+            }
+        }
+        // animatemodel: lo puesto a mano, encima de todo
+        float[] global = null;
+        for (java.util.Map.Entry<Integer, float[]> e : manual.entrySet()) {
+            int b = e.getKey();
+            if (b < 0 || b >= n) continue;
+            float[] mv = e.getValue();
+            int o = b * 9;
+            boolean ov = mv[9] > 0, glob = mv[11] > 0;
+            for (int k = 0; k < 3; k++) {
+                extra[o + 3 + k] = ov ? mv[k] : extra[o + 3 + k] + mv[k];
+                extra[o + 6 + k] = ov ? mv[6 + k] : extra[o + 6 + k] * mv[6 + k];
+                if (ov) extra[o + k] = 0F;
+                if (!glob) extra[o + k] += mv[3 + k];
+            }
+            // copy=false: sin el giro de reposo del hueso
+            if (mv[10] <= 0) for (int k = 0; k < 3; k++) extra[o + k] -= m.bones[b].rot[k];
+            if (glob) {
+                if (global == null) {
+                    global = new float[n * 3];
+                    java.util.Arrays.fill(global, Float.NaN);
+                }
+                System.arraycopy(mv, 3, global, b * 3, 3);
+            }
+        }
+        VfxPose.build(m, extra, headYaw, headPitch, out, headLimits, global);
     }
 
     /** La animación por defecto «ticks» después de empezar, con su peso. */

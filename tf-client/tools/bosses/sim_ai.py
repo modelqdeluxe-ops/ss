@@ -601,6 +601,11 @@ class Sim:
         self.cast_seq = 0
         self.next_backstep = 0
         self.backsteps = 0
+        # ModelEngine en la entidad: move{} (hasta qué tick lo lleva el pack), rootmotion (hueso raíz, si manda, sus
+        # pesos) y la escala de su caja (model{hitboxscale}, scale{hitbox=true})
+        self.move_until = 0
+        self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
+        self.hb_scale = 1.0
         self.brain = Brain(self) if SMART > 0 else None
 
     # ------------------------------------------------------------------ jugador
@@ -673,10 +678,12 @@ class Sim:
             b.combat = True
             self.trigger('onentercombat')
         moving = False
-        if b.ai and b.target and b.chases and b.speed() > 0:
+        if self.t < self.move_until:
+            pass  # move{} del pack: este tick lo lleva el pack (BossEntity.customServerAiStep)
+        elif b.ai and b.target and b.chases and b.speed() > 0:
             d = self.dist()
             hb = self.prog['boss'].get('hitbox') or [1, 2]
-            stop = hb[0] / 2 + 1.0  # como BossEntity
+            stop = hb[0] * self.hb_scale / 2 + 1.0  # como BossEntity
             gx, gz = self.px, self.pz
             plan = self.brain.plan() if self.brain else None
             if plan:
@@ -910,6 +917,33 @@ class Sim:
             self.exec(pm, ctx)
             i += 1
 
+    def root_motion(self, anim):
+        """rootmotion (SkillModels.rootStep): el jefe anda, tick a tick, lo que la animación mueve su hueso raíz (en el
+        suelo, en los ejes de su cuerpo, con el peso de los ataques)."""
+        model = load_model(self.prog['boss'].get('model'))
+        if not model:
+            return
+        ids = [bb['id'] for bb in model['bones']]
+        an = model['anims'].get(anim)
+        if self.root_bone not in ids or not an:
+            return
+        bi = ids.index(self.root_bone)
+        tr = next((x.get('p') for x in an['tracks'] if x['b'] == bi and x.get('p')), None)
+        if not tr:
+            return
+        w = 1.0 if self.root_w < 0 else min(1.0, self.root_w)
+        ticks = max(1, int(round(an['len'] * 20 / tempo())))
+        prev = vfx_sample(tr, 0)
+        for k in range(1, ticks + 1):
+            cur = vfx_sample(tr, k / 20 * tempo())
+
+            def step(dx=cur[0] - prev[0], dz=cur[2] - prev[2]):
+                r = math.radians(180 - self.b.body)  # del modelo al mundo (como SkillModels.world)
+                self.b.x += (dx * math.cos(r) + dz * math.sin(r)) / 16 * w
+                self.b.z += (-dx * math.sin(r) + dz * math.cos(r)) / 16 * w
+            self.later(k, step)
+            prev = cur
+
     def later(self, ticks, fn, cast=0):
         if ticks <= 0:
             fn()
@@ -1010,6 +1044,8 @@ class Sim:
             s = str(arg(a, '', 'state', 's', 'animation', 'a'))
             if str(arg(a, 'false', 'remove', 'r')).lower() == 'true' or 'boss' not in targets:
                 return
+            if self.root_on and self.root_bone:
+                self.root_motion(s)
             if s not in NOT_ATTACKS:
                 # Los golpes lanzan lejos al jugador (throw de sus ataques): la distancia cambia como en una pelea
                 d = self.dist()
@@ -1074,15 +1110,79 @@ class Sim:
                 b.invulnerable = str(arg(a, 'true', 'value', 'v', 'invulnerable', 'i')).lower() == 'true'
         elif m == 'suicide':
             b.hp = 0
+        # ModelEngine en la entidad (BossEntity.move, syncYaw; SkillModels.rootStep; setHitboxScale)
+        elif m == 'move':
+            if 'boss' in targets:
+                side, front = num(arg(a, 0, 'side', 'x'), 0), num(arg(a, 0, 'front', 'z'), 0)
+                ln = math.hypot(side, front)
+                if ln > 1:
+                    side, front = side / ln, front / ln
+                v = b.speed() * 0.9 * num(arg(a, 1, 'speed'), 1)
+                if str(arg(a, 'false', 'global', 'g')).lower() != 'true':
+                    r = math.radians(b.body)
+                    side, front = side * math.cos(r) - front * math.sin(r), front * math.cos(r) + side * math.sin(r)
+                b.x += side * v
+                b.z += front * v
+                self.move_until = self.t + 2
+        elif m == 'syncyaw':
+            if 'boss' in targets:
+                to = str(arg(a, 'yaw', 'target', 't', 'to')).lower()
+                fr = str(arg(a, 'head', 'body', 'b', 'from', 'src')).lower()
+                v = b.body if fr == 'body' else b.look  # (aquí la cabeza mira a donde la entidad)
+                if to in ('yaw', 'all', 'head'):
+                    b.look = v
+                if to in ('body', 'all'):
+                    b.body = v
+        elif m == 'rootmotion':
+            if 'boss' in targets:
+                if arg(a, None, 'override', 'ov') is not None:
+                    self.root_on = str(arg(a, 'false', 'override', 'ov')).lower() == 'true'
+                if arg(a, None, 'weight', 'w') is not None:
+                    self.root_w = num(arg(a, -1, 'weight', 'w'), -1)
+                if arg(a, None, 'baseweight', 'bw') is not None:
+                    self.root_bw = num(arg(a, -1, 'baseweight', 'bw'), -1)
+        elif m == 'model':
+            if 'boss' in targets and arg(a, None, 'rootbone', 'root', 'rt'):
+                self.root_bone = str(arg(a, '', 'rootbone', 'root', 'rt'))
+            if 'boss' in targets and arg(a, None, 'hitboxscale', 'hbs') is not None:
+                self.hb_scale = num(arg(a, 1, 'hitboxscale', 'hbs'), 1)
+        elif m in ('scale', 'meg_scale'):
+            if 'boss' in targets and str(arg(a, 'false', 'hitbox', 'h')).lower() == 'true':
+                self.hb_scale = num(arg(a, 1, 'scale', 's'), 1)
+
+
+_MODELS = {}
+
+
+def load_model(mid):
+    """El modelo convertido de un jefe (bosses/models/<id>.json), o None."""
+    if not mid:
+        return None
+    if mid not in _MODELS:
+        p = os.path.join(RES, 'models', mid + '.json')
+        _MODELS[mid] = json.load(open(p, encoding='utf-8')) if os.path.exists(p) else None
+    return _MODELS[mid]
+
+
+def vfx_sample(kfs, t):
+    """Valor de una pista del modelo (como VfxPose.sample)."""
+    sys.path.insert(0, os.path.join(HERE, '..'))
+    import vfx_bb
+    return vfx_bb.sample(kfs, t)
 
 
 def meta_key(name):
     return str(name).lower()
 
 
-OWN_MODEL = {'bodyrotation', 'bodyclamp', 'model', 'segment', 'partvis', 'partvisibility', 'brightness', 'renderinit',
-             'defaultstate', 'state', 'animation', 'lockmodel', 'remapmodel', 'changepart', 'barset', 'barcreate',
-             'setmodelscale', 'tint'}
+# Las de ModelEngine que, sin objetivo, van al propio modelo (igual que SkillRuntime.OWN_MODEL)
+OWN_MODEL = {'bodyrotation', 'bodyclamp', 'model', 'segment', 'seg', 'partvis', 'partvisibility', 'brightness',
+             'renderinit', 'defaultstate', 'state', 'animation', 'lockmodel', 'remapmodel', 'changepart', 'barset',
+             'barcreate', 'setmodelscale', 'tint', 'modifystate', 'modifyanimation', 'modstate', 'statetoggle',
+             'togglestate', 'headconfig', 'lockmodelhead', 'lockhead', 'hitboxconfig', 'setitemmodel',
+             'linkitembone', 'setmodeltag', 'setmodeltagvisible', 'enchant', 'billboard', 'glowbone', 'cycleparts',
+             'scale', 'meg_scale', 'ik', 'inversekinematics', 'ikchain', 'leashself', 'animatemodel', 'rootmotion',
+             'changeparent', 'submodel', 'petrify', 'syncyaw', 'move'}
 
 
 def run(boss_id, minutes, seed, verbose):

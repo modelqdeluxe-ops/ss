@@ -167,6 +167,32 @@ public final class SkillMobs {
         default void suicide() {
             mob().kill();
         }
+
+        // --- ModelEngine en la entidad (model{}, scale{}, move, syncyaw)
+
+        /** move{x;y;z;speed;global}: anda este tick en esa dirección (x a su izquierda, z delante; con su escalón). */
+        default void move(double side, double up, double front, double speed, boolean global) {
+        }
+
+        /** syncyaw: el giro «to» (yaw, body, head o all) pasa a valer el «from» (yaw, body o head). */
+        default void syncYaw(String to, String from) {
+        }
+
+        /** model{hitbox}: su caja es la del hueso «hitbox» del modelo (true) o la de su tipo de Minecraft (false). */
+        default void setModelHitbox(boolean on) {
+        }
+
+        /** model{hitboxscale} y scale{hitbox=true}: la escala de su caja de golpe. */
+        default void setHitboxScale(float scale) {
+        }
+
+        /** model{showhitbox}: false = no se le puede apuntar ni pegar con la mano. */
+        default void setShowHitbox(boolean on) {
+        }
+
+        /** model{syncbody}: el cuerpo sigue a la cabeza (lo normal) o se queda como está. */
+        default void setSyncBody(boolean on) {
+        }
     }
 
     /**
@@ -209,6 +235,16 @@ public final class SkillMobs {
 
     /** En el cliente: ¿el modelo de esa entidad tiene algún hueso con glowbone? (lo pone SkillClient). */
     public static volatile java.util.function.Predicate<Entity> clientGlow = e -> false;
+    /** En el cliente: el fuego de model{renderfire;forcefire}: 1 = siempre, -1 = nunca, 0 = el de Minecraft (lo pone SkillClient). */
+    public static volatile java.util.function.ToIntFunction<Entity> clientFire = e -> 0;
+
+    /** El hueso (su id) de la caja de golpe «index» del modelo del mob tal como está ahora, o null. */
+    public static String partBone(Host h, int index) {
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
+        if (m == null) return null;
+        int[] hb = net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m);
+        return index >= 0 && index < hb.length ? m.bones[hb[index]].id : null;
+    }
 
     /** Lo de cada mob de jefe vivo: sus temporizadores y por dónde van los scripts de su modelo. */
     private static final class State {
@@ -324,6 +360,8 @@ public final class SkillMobs {
                 TFClient.LOGGER.debug("TF Jefes: error en el cerebro de {}", h.def().name, t);
             }
         }
+        // rootmotion de ModelEngine: anda lo que su animación mueve el hueso raíz
+        SkillModels.rootStep(h);
         scripts(h, s);
     }
 
@@ -331,7 +369,7 @@ public final class SkillMobs {
     private static void scripts(Host h, State s) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.layers == null || a.me == null) return;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.modelOf(a);
         if (model == null) return;
         int now = a.age;
         if (now <= s.lastFx) {
@@ -386,7 +424,7 @@ public final class SkillMobs {
         s.diedDone = true;
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a != null && a.layers != null && a.me != null) {
-            net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.load(a.me);
+            net.tierrasfantasticas.tfclient.vfx.VfxModel model = SkillModels.modelOf(a);
             if (model != null) {
                 a.layers.death(model, a.age);
                 a.prop("death", "", null, null);
@@ -523,7 +561,7 @@ public final class SkillMobs {
     public static List<net.minecraft.world.phys.AABB> hitboxes(Host h) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null) return null;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(a);
         if (m == null || net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m).length == 0) return null;
         return net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.boxes(m, SkillModels.pose(a, m), SkillModels.world(a),
                 SkillModels.hiddenBones(a, m));
@@ -533,7 +571,7 @@ public final class SkillMobs {
     public static Vec3 bonePos(Host h, String bone) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null || bone == null) return null;
-        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(a.me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(a);
         if (m == null) return null;
         int b = m.bone(bone);
         if (b < 0) return null;

@@ -86,9 +86,17 @@ public final class SkillActor {
      * que @modelpart y las cajas ob_ vean el modelo doblado como se ve. Recibe los mismos mensajes que el cliente.
      */
     private net.tierrasfantasticas.tfclient.vfx.VfxRig rig;
-    private String rigModel;
     private static final java.util.Set<String> RIG_KEYS = java.util.Set.of("seg", "headcfg", "headlock", "headtgt", "jig", "ik",
             "iktgt", "ikchain");
+    /** changeparent / submodel de ModelEngine: los cambios hechos en vivo a su modelo, en orden (VfxModel.derive). */
+    final List<String> edits = new ArrayList<>();
+    net.tierrasfantasticas.tfclient.vfx.VfxModel edited;
+    String editedKey;
+    /** pairmodel: a quién se le esconde (true) o se le enseña siempre (false) este modelo. */
+    final java.util.Map<java.util.UUID, Boolean> pairs = new java.util.HashMap<>();
+    /** rootmotion: lo que la animación había movido la raíz el tick anterior (y con qué animación). */
+    final float[] rootLast = new float[3];
+    String rootLastKey;
 
     SkillActor(SkillDefs.ClassDef cls, SkillDefs.MobDef def, ServerLevel level, Vec3 pos, float yaw, float pitch,
                SkillRuntime.Who owner) {
@@ -176,9 +184,26 @@ public final class SkillActor {
     void prop(String key, String a, String b, String c) {
         SkillNet.Prop p = new SkillNet.Prop(id, key, a, b, c);
         SkillNet.near(level, pos, p);
-        if (layers != null && me != null && RIG_KEYS.contains(key)) {
-            net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(me);
-            if (m != null) rig(m).message(key, a, b, c);
+        if (key.equals("me")) {
+            edits.clear();
+            pairs.clear();
+        }
+        // Lo de ModelEngine que también lleva el servidor (las mismas cuentas que el cliente)
+        net.tierrasfantasticas.tfclient.vfx.VfxModel lm = layers != null && me != null ? SkillModels.modelOf(this) : null;
+        if (lm != null) {
+            if (RIG_KEYS.contains(key)) {
+                rig(lm).message(key, a, b, c);
+            } else if (key.equals("anim")) {
+                // Para quien llega tarde, lo que tiene cada hueso a mano ahora (los «relative» ya sumados)
+                for (int bone : layers.animate(lm, a, !"0".equals(c), b)) {
+                    String spec = layers.manualSpec(bone);
+                    if (spec != null) sticky.put("anim:" + lm.bones[bone].id, new SkillNet.Prop(id, "anim", lm.bones[bone].id, spec, "1"));
+                }
+            } else if (key.equals("root")) {
+                layers.rootMessage(lm, a, b);
+                String[] spec = layers.rootSpec(lm);
+                if (spec != null) sticky.put("root", new SkillNet.Prop(id, "root", spec[0], spec[1], null));
+            }
         }
         // Lo que se queda (para quien llega tarde): por clave y, en las de un hueso, por hueso
         switch (key) {
@@ -196,7 +221,12 @@ public final class SkillActor {
             }
             case "part", "bright", "seg", "headcfg", "bitem", "btag", "btagv", "ench", "bill", "bglow", "ik", "iktgt" -> sticky.put(key + ":" + a, p);
             case "ikchain" -> sticky.put(key + ":" + (b == null ? "" : b.split("\\|")[0]), p);
-            case "headlock", "headtgt", "skin", "dtint", "only", "vfxvis" -> sticky.put(key, p);
+            case "headlock", "headtgt", "dtint", "only", "vfxvis", "medit", "seeself", "view", "fire", "shadow", "follow" -> sticky.put(key, p);
+            // modelplayerskin: por miembros («» = todos, que tapa a los demás)
+            case "skin" -> {
+                if (a == null || a.isEmpty()) sticky.keySet().removeIf(k -> k.startsWith("skin:"));
+                sticky.put("skin:" + (a == null ? "" : a), p);
+            }
             case "vfxtf" -> sticky.put(key + ":" + a, p);
             // Correas: las puestas se repiten; al quitarlas, se olvidan (leashself sin destino quita todas las de ese hueso)
             case "leash" -> {
@@ -213,11 +243,12 @@ public final class SkillActor {
 
     /** Lo que se guarda por modelo (ModelEngine) y se olvida al cambiarlo. */
     private static final java.util.List<String> PER_MODEL = java.util.List.of("headcfg:", "headlock", "headtgt", "bitem:", "btag:",
-            "btagv:", "ench:", "bill:", "bglow:", "skin", "dtint", "ik:", "iktgt:", "ikchain:", "leash:", "leashself:");
+            "btagv:", "ench:", "bill:", "bglow:", "skin", "dtint", "ik:", "iktgt:", "ikchain:", "leash:", "leashself:", "medit", "anim:",
+            "root", "seeself", "view", "fire", "shadow");
 
     /** Como SkillClient.setVisible: el hueso (y, con children, los que cuelgan de él). */
     private void trackVis(String bone, boolean show, boolean children) {
-        net.tierrasfantasticas.tfclient.vfx.VfxModel m = me == null ? null : SkillModels.load(me);
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(this);
         if (m == null) return;
         if (hiddenNow == null || !me.equals(hiddenModel) || hiddenNow.length != m.bones.length) {
             hiddenNow = new boolean[m.bones.length];
@@ -238,11 +269,16 @@ public final class SkillActor {
         }
     }
 
-    /** El VfxRig de su modelo de ahora (uno nuevo al cambiar de modelo, como el cliente). */
+    /**
+     * El VfxRig de su modelo de ahora (uno nuevo al cambiar de modelo, como el cliente; si solo ha cambiado en vivo con
+     * changeparent/submodel, con lo que ya le habían configurado).
+     */
     net.tierrasfantasticas.tfclient.vfx.VfxRig rig(net.tierrasfantasticas.tfclient.vfx.VfxModel m) {
-        if (rig == null || rig.model != m || !java.util.Objects.equals(me, rigModel)) {
+        if (rig == null || rig.model != m) {
             rig = new net.tierrasfantasticas.tfclient.vfx.VfxRig(m);
-            rigModel = me;
+            for (SkillNet.Prop p : sticky.values()) {
+                if (RIG_KEYS.contains(p.key())) rig.message(p.key(), p.a(), p.b(), p.c());
+            }
         }
         return rig;
     }
@@ -255,9 +291,11 @@ public final class SkillActor {
     /** A un jugador que llega (o que empieza a ver al jefe): el actor tal como está ahora. */
     void replay(net.minecraft.server.level.ServerPlayer player) {
         SkillNet.toPlayer(player, spawnMessage());
+        // Una estatua (petrify): sin la animación de aparecer que pone el cliente al recibir el modelo
+        if (layers != null && !Float.isNaN(layers.frozenAt())) SkillNet.toPlayer(player, new SkillNet.Prop(id, "lclear", "", null, null));
         for (SkillNet.Prop p : sticky.values()) SkillNet.toPlayer(player, p);
         if (hiddenNow != null && me != null && me.equals(hiddenModel)) {
-            net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.load(me);
+            net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(this);
             if (m != null && m.bones.length == hiddenNow.length) {
                 for (int i = 0; i < hiddenNow.length; i++) {
                     if (hiddenNow[i] != m.bones[i].hidden) {
@@ -278,7 +316,12 @@ public final class SkillActor {
                 }
             }
             if (layers.dead()) SkillNet.toPlayer(player, new SkillNet.Prop(id, "death", "", "", ""));
+            if (!Float.isNaN(layers.frozenAt())) {
+                SkillNet.toPlayer(player, new SkillNet.Prop(id, "freeze", String.valueOf(age - layers.frozenAt()), null, null));
+            }
         }
+        Boolean pair = pairs.get(player.getUUID());
+        if (pair != null) SkillNet.toPlayer(player, new SkillNet.Prop(id, "pair", pair ? "1" : "0", null, null));
     }
 
     private boolean leaving;

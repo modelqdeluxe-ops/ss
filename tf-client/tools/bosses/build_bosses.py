@@ -121,7 +121,8 @@ def compile_boss(pack_dir, root_mob, extra_skills):
     lower_mobs = {k.lower(): k for k in mobs}
     missing = set()
     reach_s, reach_m = set(), set()
-    stack, mob_stack = list(extra_skills), [root_mob]
+    # (en orden: un conjunto sin ordenar cambia el orden del JSON en cada pasada)
+    stack, mob_stack = sorted(extra_skills), [root_mob]
     compiled_tree, compiled_mobs = {}, {}
     used_items = set()
 
@@ -196,7 +197,7 @@ def compile_boss(pack_dir, root_mob, extra_skills):
                     mob[ok] = v[yk]
             compiled_mobs[key] = mob
             follow(mechs)
-    return {'tree': compiled_tree, 'mobs': compiled_mobs, 'items': {k: items[k] for k in used_items if k in items},
+    return {'tree': compiled_tree, 'mobs': compiled_mobs, 'items': {k: items[k] for k in sorted(used_items) if k in items},
             'all_items': items, 'missing': sorted(missing)}
 
 

@@ -265,13 +265,21 @@ LIMB_SPLIT = {'chest': ('body', 0), 'body': ('body', 1), 'right_arm': ('right_ar
               'head': ('head', None)}
 
 
-def limb_quads(kind, split):
-    """Caras de un miembro de jugador: -4 = la skin, -5 = su capa exterior (un poco más grande)."""
+def limb_piece(kind, split):
+    """La pieza de la skin de un miembro (right_arm, body...)."""
+    return LIMB_SPLIT[kind][0] if split else kind
+
+
+def limb_quads(kind, split, slim=False):
+    """Caras de un miembro de jugador: -4 = la skin, -5 = su capa exterior (un poco más grande). slim: brazos de 3 px
+    (las skins «Alex»), con su reparto en la skin."""
     if split:
         piece, half = LIMB_SPLIT[kind]
     else:
         piece, half = kind, None
     (x0, y0, z0), (w, h, d), main, over = LIMB_BOX[piece]
+    if slim and piece in ('right_arm', 'left_arm'):
+        x0, w = -1.5, 3
     hh = h if half is None else h // 2
     if half is not None:
         y0 = -hh  # cada mitad cuelga de su pivote
@@ -633,6 +641,7 @@ def convert(bb_path, store, problems, boss=False):
                          + ([flags] if flags else []))
 
     hitbox = []
+    shadow = []
     inherit_heads = set()
 
     def cube_box(c):
@@ -647,7 +656,8 @@ def convert(bb_path, store, problems, boss=False):
                     hi[i] = max(hi[i], a, b)
         return (lo, hi) if lo[0] < 1e9 else None
 
-    def walk(children, parent):
+    def walk(children, parent, shift=(0.0, 0.0, 0.0)):
+        """shift: cuánto se mueve todo lo que cuelga de aquí (los hijos de un jig[repeat=N]_ van tras el último eslabón)."""
         for c in children:
             if not isinstance(c, dict):
                 continue  # cubos sueltos en la raíz: ModelEngine no los usa
@@ -658,6 +668,12 @@ def convert(bb_path, store, problems, boss=False):
                     if box:
                         lo, hi = box
                         hitbox.append([round(max(hi[0] - lo[0], hi[2] - lo[2]) / 16, 4), round((hi[1] - lo[1]) / 16, 4)])
+                if boss and bname.lower() == 'shadow' and not shadow:
+                    # La sombra de ModelEngine: su ancho mayor es el diámetro (sin hueso «shadow», no hay sombra)
+                    box = cube_box(c)
+                    if box:
+                        lo, hi = box
+                        shadow.append(round(max(hi[0] - lo[0], hi[2] - lo[2]) / 16, 4))
                 continue  # (el «export: false» de Blockbench no cuenta: ModelEngine dibuja igual ese hueso)
             idx = len(bones)
             pivot = [num(v) for v in c.get('origin', [0, 0, 0])]
@@ -677,7 +693,7 @@ def convert(bb_path, store, problems, boss=False):
             bone = {
                 'id': sid,
                 'parent': parent,
-                'pivot': [round(v, 4) for v in pivot],
+                'pivot': [round(pivot[i] + shift[i], 4) for i in range(3)],
                 'rot': [round(num(v), 4) for v in (c.get('rotation') or [0, 0, 0])],
                 'head': head,
                 'phead': phead,
@@ -716,34 +732,65 @@ def convert(bb_path, store, problems, boss=False):
                         bone['aabb'] = True
                         if abs((hi[0] - lo[0]) - (hi[2] - lo[2])) > 1e-3:
                             problems.append(f'{name}: la caja b_ «{bname}» no es cuadrada en X/Z (ModelEngine la pide así)')
-                walk(c.get('children', []), idx)
+                walk(c.get('children', []), idx, shift)
                 continue
             if boss and beh == 'limb':
                 # Miembro de jugador: sus cubos no cuentan; se dibuja la skin (modelplayerskin) con la caja del miembro
                 bone['quads'] = limb_quads(bparams['type'], bparams.get('split'))
-                walk(c.get('children', []), idx)
+                if limb_piece(bparams['type'], bparams.get('split')) in ('right_arm', 'left_arm'):
+                    # los mismos brazos para una skin slim (modelplayerskin{slim} o la del jugador): 3 px de ancho
+                    bone['sq'] = limb_quads(bparams['type'], bparams.get('split'), slim=True)
+                walk(c.get('children', []), idx, shift)
                 continue
             for ch in c.get('children', []):
                 if isinstance(ch, str) and ch in elements:
                     el = elements[ch]
                     if el.get('type') in ('null_object', 'locator'):
-                        loose_points.append((el, idx))  # objetos nulos (IK) y localizadores: huesos invisibles luego
+                        loose_points.append((el, idx, shift))  # objetos nulos (IK) y localizadores: huesos invisibles luego
                         continue
                     bake_cube(el, pivot, phead, bone['quads'], idx)
-            walk(c.get('children', []), idx)
+            last = idx
+            if boss and beh == 'jig' and int(num(bparams.get('repeat', 1))) > 1:
+                last, shift = jig_repeat(c, bone, idx, pivot, shift, int(num(bparams['repeat'])))
+            walk(c.get('children', []), last, shift)
+
+    def jig_repeat(c, bone, idx, pivot, shift, n):
+        """jig[repeat=N]_ de ModelEngine: el eslabón se copia N veces en cadena (cada copia cuelga del final de la
+        anterior: su pivote y el otro extremo de sus cubos) y lo que colgaba de él va tras el último. Las copias no llevan
+        el «repeat» (como en ModelEngine, los eslabones de dentro no lo copian). Devuelve (último, desplazamiento)."""
+        box = cube_box(c)
+        bone['bp'] = {k: v for k, v in bone['bp'].items() if k != 'repeat'}
+        if not bone['bp']:
+            del bone['bp']
+        if not box:
+            problems.append(f'{name}: «{c.get("name")}»: jig[repeat] sin cubos (no se sabe lo que mide el eslabón)')
+            return idx, shift
+        centre = [(box[0][i] + box[1][i]) / 2 for i in range(3)]
+        link = [2 * (centre[i] - pivot[i]) for i in range(3)]
+        if sum(x * x for x in link) < 0.25:
+            problems.append(f'{name}: «{c.get("name")}»: jig[repeat] con el pivote en medio del eslabón (se pone en un extremo)')
+            return idx, shift
+        prev = idx
+        for k in range(1, n):
+            cp = dict(bone, id=f'{bone["id"]}_{k + 1}', parent=prev,
+                      pivot=[round(pivot[i] + shift[i] + k * link[i], 4) for i in range(3)])
+            cp.pop('seat', None)
+            prev = len(bones)
+            bones.append(cp)
+        return prev, tuple(shift[i] + (n - 1) * link[i] for i in range(3))
 
     loose_points = []
     ik_chains = []
     walk(d.get('outliner', []), -1)
     for ch in d.get('outliner', []):
         if isinstance(ch, str) and ch in elements and elements[ch].get('type') in ('null_object', 'locator'):
-            loose_points.append((elements[ch], -1))
+            loose_points.append((elements[ch], -1, (0.0, 0.0, 0.0)))
     # Objetos nulos y localizadores (Blockbench): huesos sin cubos donde están (los anima su «animator» de posición). Los
     # nulos con objetivo IK hacen de objetivo de su cadena (ModelEngine: «Blockbench IK»)
     if boss and loose_points:
         point_bone = {}
-        for el, par in loose_points:
-            pos = [num(v) for v in (el.get('position') or el.get('from') or [0, 0, 0])]
+        for el, par, sh in loose_points:
+            pos = [num(v) + sh[i] for i, v in enumerate(el.get('position') or el.get('from') or [0, 0, 0])]
             bidx = len(bones)
             bones.append({'id': el.get('name', 'null'), 'parent': par, 'pivot': [round(v, 4) for v in pos], 'rot': [0.0, 0.0, 0.0],
                           'head': False, 'phead': False, 'hidden': False, 'shade': True, 'quads': [],
@@ -758,7 +805,7 @@ def convert(bb_path, store, problems, boss=False):
                 b = bones[b]['parent']
             return out
 
-        for el, par in loose_points:
+        for el, par, _sh in loose_points:
             tgt = el.get('ik_target')
             if el.get('type') != 'null_object' or not tgt:
                 continue
@@ -837,6 +884,8 @@ def convert(bb_path, store, problems, boss=False):
         out['ik'] = ik_chains
     if boss and hitbox:
         out['hitbox'] = hitbox[0]
+    if boss and shadow:
+        out['shadow'] = shadow[0]
     figures = make_figures(bones, actor_cubes, tex_out)
     if figures:
         for fig in figures:

@@ -148,6 +148,27 @@ def main():
     print('cabezas de ModelEngine 4 (VfxPose.build)')
     heads(tmp, src)
 
+    print('jig[repeat], sombra y brazos slim')
+    els3 = [cube('r1', [-0.5, -6, -0.5], [0.5, 0, 0.5]), cube('w1', [-1, -8, -1], [1, -6, 1]), cube('s1', [-16, 0, -12], [16, 2, 12])]
+    outl3 = [{'uuid': 'q0', 'name': 'body', 'origin': [0, 0, 0], 'children': [
+        {'uuid': 'q1', 'name': 'jig[repeat=3;stiff=0.2]_rope', 'origin': [0, 0, 0], 'children': ['r1',
+            {'uuid': 'q2', 'name': 'weight', 'origin': [0, -6, 0], 'children': ['w1']}]},
+        {'uuid': 'q3', 'name': 'prarm_arm', 'origin': [4, 12, 0], 'children': []}]},
+        {'uuid': 'q4', 'name': 'shadow', 'origin': [0, 0, 0], 'children': ['s1']}]
+    m3, probs3 = convert({'resolution': {'width': 16, 'height': 16}, 'textures': [{'name': 't', 'source': src}],
+                          'elements': els3, 'outliner': outl3, 'animations': []}, tmp)
+    ids = [b['id'] for b in m3['bones']]
+    chain = [bone(m3, x) for x in ('rope', 'rope_2', 'rope_3')] if 'rope_3' in ids else []
+    check('jig[repeat=3]_: tres eslabones en cadena', len(chain) == 3 and chain[1]['parent'] == ids.index('rope')
+          and chain[2]['parent'] == ids.index('rope_2') and chain[2]['pivot'] == [0.0, -12.0, 0.0]
+          and all(c.get('beh') == 'jig' and c['bp'] == {'stiff': 0.2} for c in chain), (ids, probs3))
+    w = bone(m3, 'weight')
+    check('... y lo que colgaba, tras el último', w['parent'] == ids.index('rope_3') and w['pivot'] == [0.0, -18.0, 0.0], w)
+    check('hueso shadow: diámetro de la sombra', m3.get('shadow') == 2.0, m3.get('shadow'))
+    sq = bone(m3, 'arm').get('sq') or []
+    xs = [q[4 + k * 5] for q in sq if q[0] == -4 for k in range(4)]
+    check('brazo slim: 3 px de ancho', len(sq) == 12 and xs and abs(max(xs) - min(xs) - 3) < 1e-6, (len(sq), xs[:4]))
+
     print()
     if FAILS:
         print('FALLAN:', ', '.join(FAILS))

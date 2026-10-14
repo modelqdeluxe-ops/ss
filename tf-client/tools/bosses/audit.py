@@ -63,7 +63,6 @@ STUB_OK = {
     'bindhitbox': 'las cajas de golpe salen de los huesos ob_ del modelo (BossPart)',
     'cullconfig': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'renderinit': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
-    'syncyaw': 'el giro del cuerpo de los jefes ya va con hacia dónde se mueven (BossEntity.turnBody)',
     # condiciones que se dan por cumplidas
     'wearing': 'se da por cumplida (lo que lleva puesto alguien no se mira)',
     'haspermission': 'se da por cumplida (permisos de Bukkit)',
@@ -71,7 +70,8 @@ STUB_OK = {
 # Mecánicas que nombran un hueso del modelo (p/pid/part/partid/b/bone): el auditor mira que exista
 BONE_MECHS = {'partvis', 'partvisibility', 'brightness', 'changepart', 'segment', 'seg', 'enchant', 'billboard', 'glowbone',
               'setmodeltag', 'setmodeltagvisible', 'setitemmodel', 'linkitembone', 'headconfig', 'hitboxconfig',
-              'jiggleimpulse', 'cycleparts', 'ik', 'inversekinematics', 'iktarget', 'tint', 'vfx', 'vfxchangemodel'}
+              'jiggleimpulse', 'cycleparts', 'ik', 'inversekinematics', 'iktarget', 'tint', 'vfx', 'vfxchangemodel',
+              'animatemodel'}
 # Disparadores que el motor no lanza pero que no hacen falta en estos casos (ver trigger_ok)
 QUIET_TRIGGERS = {'onload', 'onattack'}
 
@@ -153,6 +153,14 @@ def bone(m, part, exact=True):
     if part in ids or any(i.lower() == p for i in ids):
         return 1
     return sum(1 for i in ids if i.lower().endswith('_' + p) and i.index('_') == len(i) - len(p) - 1)
+
+
+def bone_any(mid, models, part):
+    """¿Algún modelo (ese o los del mob) tiene un hueso que se llame así tal cual?"""
+    for x in ([mid] if mid else models):
+        if x and model(x) and bone(model(x), str(part)):
+            return True
+    return False
 
 
 def exact(v):
@@ -304,6 +312,22 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             for k in ('root', 'r', 'tip', 't', 'pole'):
                 if a.get(k):
                     refs.append((model_id(a.get('m', a.get('mid')), default), a[k], True))
+        # changeparent{p;c}, submodel{p;sp} (con r=true, sp lleva su etiqueta: «ob_cola») y model{rootbone}
+        if m == 'changeparent':
+            for k in ('parent', 'p', 'child', 'c'):
+                if a.get(k):
+                    refs.append((model_id(a.get('m', a.get('mid')), default), a[k], True))
+        if m == 'submodel':
+            mid = model_id(a.get('m', a.get('mid')), default)
+            for k in ('partid', 'p', 'pid', 'part', 'subpartid', 'sp', 'spid', 'subpart'):
+                part = a.get(k)
+                if not part:
+                    continue
+                if k in ('subpartid', 'sp', 'spid', 'subpart') and not bone_any(mid, models, part):
+                    part = re.sub(r'^[a-z]+(\[[^\]]*\])?_', '', str(part).lower())  # con su etiqueta: «ob_cola» es «cola»
+                refs.append((mid, part, True))
+        if m == 'model' and a.get('rootbone', a.get('root', a.get('rt'))):
+            refs.append((model_id(a.get('m', a.get('mid', a.get('model'))), default), a.get('rootbone', a.get('root', a.get('rt'))), True))
         if m == 'mountmodel':
             part = a.get('p', a.get('pbone', a.get('seat')))
             if part:
@@ -553,6 +577,9 @@ def selftest():
     cases.append(('hueso de una mecánica de ModelEngine que no existe',
                   lambda p: p['mobs'][boss]['mechs'].append({'m': 'enchant', 'a': {'p': 'hueso_que_no_hay'}, 't': 'self'}),
                   'hueso_que_no_hay'))
+    cases.append(('changeparent a un hueso que no existe',
+                  lambda p: p['mobs'][boss]['mechs'].append({'m': 'changeparent', 'a': {'p': 'head', 'c': 'hueso_movido_inventado'}, 't': 'self'}),
+                  'hueso_movido_inventado'))
     cases.append(('correa en un hueso que no es de correa',
                   lambda p: p['mobs'][boss]['mechs'].append({'m': 'leashself', 'a': {'s': 'head', 'd': 'jaw'}, 't': 'self'}),
                   'no es un hueso de correa'))

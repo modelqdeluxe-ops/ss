@@ -1124,12 +1124,40 @@ public final class SkillRuntime {
             case "ikchain" -> SkillMeg.ikChain(m, ctx, targets);
             case "leash" -> SkillMeg.leash(m, ctx, targets);
             case "leashself" -> SkillMeg.leashSelf(m, ctx, targets);
+            case "animatemodel" -> SkillMeg.animateModel(m, ctx, targets);
+            case "rootmotion" -> SkillMeg.rootMotion(m, ctx, targets);
+            case "changeparent" -> SkillMeg.changeParent(m, ctx, targets);
+            case "submodel" -> SkillMeg.subModel(m, ctx, targets);
+            case "swapentity" -> SkillMeg.swapEntity(m, ctx, targets);
+            case "petrify" -> SkillMeg.petrify(m, ctx, targets);
+            case "pairmodel" -> SkillMeg.pairModel(m, ctx, targets);
+            case "modeldisguise" -> SkillMeg.modelDisguise(m, ctx, targets);
+            case "modelundisguise" -> SkillMeg.modelUndisguise(m, ctx, targets);
+            case "move" -> {
+                // move{x;y;z;speed;global} de ModelEngine: este tick anda en esa dirección (con su escalón)
+                double side = num(m.arg("0", "side", "x"), 0), up = num(m.arg("0", "up", "y"), 0), front = num(m.arg("0", "front", "z"), 0);
+                double sp = num(m.arg("1", "speed"), 1);
+                boolean global = bool(m.arg("false", "global", "g"));
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.move(side, up, front, sp, global);
+                }
+            }
+            case "syncyaw" -> {
+                // syncyaw{t=yaw|body|head|all;b=yaw|body|false}: un giro de la entidad pasa a ser otro (false = el de la cabeza)
+                String to = m.arg("yaw", "target", "t", "to").toLowerCase(Locale.ROOT);
+                String from = m.arg("head", "body", "b", "from", "src").toLowerCase(Locale.ROOT);
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.syncYaw(to, from.equals("false") ? "head" : from);
+                }
+            }
             case "scale", "meg_scale" -> SkillModels.scale(m, ctx, targets);
             case "meg_jump" -> SkillMotion.jump(m, ctx, targets);
             case "nofall" -> {
                 for (Tgt t : targets) if (t.who != null && t.who.entity != null) t.who.entity.fallDistance = 0F;
             }
-            case "animatearmorstand", "syncyaw", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
+            case "animatearmorstand", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
                     "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "bindhitbox", "cullconfig",
                     "posearmorstand", "removehelditem", "renderinit" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
@@ -1933,7 +1961,8 @@ public final class SkillRuntime {
             "changepart", "barset", "barcreate", "setmodelscale", "tint", "modifystate", "modifyanimation", "modstate",
             "statetoggle", "togglestate", "headconfig", "lockmodelhead", "lockhead", "hitboxconfig", "setitemmodel",
             "linkitembone", "setmodeltag", "setmodeltagvisible", "enchant", "billboard", "glowbone", "cycleparts", "scale",
-            "meg_scale", "ik", "inversekinematics", "ikchain", "leashself");
+            "meg_scale", "ik", "inversekinematics", "ikchain", "leashself", "animatemodel", "rootmotion", "changeparent", "submodel",
+            "petrify", "syncyaw", "move");
 
     // ------------------------------------------------------------------------------------------- tick
 
@@ -2013,7 +2042,7 @@ public final class SkillRuntime {
                 }
             }
             if (a.layers != null && a.me != null) {
-                net.tierrasfantasticas.tfclient.vfx.VfxModel vm = SkillModels.load(a.me);
+                net.tierrasfantasticas.tfclient.vfx.VfxModel vm = SkillModels.modelOf(a);
                 if (vm != null) {
                     a.layers.update(vm, a.age);
                     a.layers.prune(a.age);

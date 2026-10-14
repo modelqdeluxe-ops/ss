@@ -200,6 +200,34 @@ public final class SkillClient {
             // Cabezas, colas/física e IK de ModelEngine: VfxRig (lo mismo hace el servidor con sus mensajes)
             case "seg", "headcfg", "headlock", "headtgt", "jig", "ik", "iktgt", "ikchain" -> {
                 if (a.rig != null) a.rig.message(m.key(), m.a(), m.b(), m.c());
+                // (para rehacerlo si el modelo cambia en vivo: changeparent, submodel)
+                if (!m.key().equals("jig")) a.rigLog.add(new String[] {m.key(), m.a(), m.b(), m.c()});
+            }
+            // ModelEngine 4: lo de §11.2 de JEFES.md (ver SkillMeg)
+            case "medit" -> a.applyEdits(m.b());
+            case "anim" -> {
+                if (a.layers != null && a.model != null) a.layers.animate(a.model, m.a(), !"0".equals(m.c()), m.b());
+            }
+            case "root" -> {
+                if (a.layers != null && a.model != null) a.layers.rootMessage(a.model, m.a(), m.b());
+            }
+            case "follow" -> {
+                a.follow = (int) parse(m.a(), -1F);
+                a.hideHost = "1".equals(m.b());
+            }
+            case "seeself" -> a.seeSelf = !"0".equals(m.a());
+            case "view" -> a.viewRange = parse(m.a(), 0F);
+            case "fire" -> {
+                String[] p = m.a().split("\\|");
+                a.fire = p.length > 1 && "1".equals(p[1]) ? 1 : "0".equals(p[0]) ? -1 : 0;
+            }
+            case "shadow" -> a.shadowOn = !"0".equals(m.a());
+            case "pair" -> a.pair = m.a().isEmpty() ? null : "1".equals(m.a());
+            case "lclear" -> {
+                if (a.layers != null) a.layers.clear();
+            }
+            case "freeze" -> {
+                if (a.layers != null) a.layers.freeze(a.age - parse(m.a(), 0F));
             }
             // ModelEngine 4 (ver SkillMeg)
             case "lmod" -> {
@@ -275,10 +303,7 @@ public final class SkillClient {
                 a.selfLeashes.removeIf(p -> p[0].equalsIgnoreCase(m.a()) && ("0".equals(m.c()) || p[1].equalsIgnoreCase(m.b())));
                 if ("1".equals(m.c())) a.selfLeashes.add(new String[] {m.a(), m.b()});
             }
-            case "skin" -> {
-                a.skin = m.b().isEmpty() ? null : m.b();
-                a.skinSlim = "true".equalsIgnoreCase(m.c());
-            }
+            case "skin" -> a.limbSkin(m.a(), m.b(), m.c());
             case "remap" -> a.remap(m.a());
             case "dt" -> a.displayTransform(m.a(), m.b());
             case "item" -> {
@@ -512,14 +537,19 @@ public final class SkillClient {
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         try {
             for (Actor a : ACTORS.values()) {
-                // El propio disfraz no tapa la vista en primera persona
-                if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId() && mc.options.getCameraType().isFirstPerson()) continue;
+                // El propio disfraz no tapa la vista en primera persona (ni se ve con seeself=false)
+                if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId()
+                        && (mc.options.getCameraType().isFirstPerson() || !a.seeSelf)) continue;
+                // pairmodel{hidden=true}: a este jugador no se le enseña
+                if (Boolean.TRUE.equals(a.pair)) continue;
                 // El modelo de un mob de jefe lo dibuja su entidad (BossRenderer), con su luz
                 // (solo el suyo: los vfx{} pegados al jefe se dibujan aquí)
                 if (a.follow >= 0 && mc.level.getEntity(a.follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity
                         && follower(a.follow) == a) continue;
                 Vec3 at = a.lerp(mc.level, partial);
-                if (at == null || at.distanceToSqr(cam) > 128 * 128) continue;
+                // Hasta 128 bloques, o lo que diga model{viewrange;radius}; pairmodel{hidden=false}: siempre
+                double far = Boolean.FALSE.equals(a.pair) ? 512 : a.viewRange > 0 ? a.viewRange : 128;
+                if (at == null || at.distanceToSqr(cam) > far * far) continue;
                 float yaw = a.lerpYaw(mc.level, partial);
                 int light = a.boss ? net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at.add(0, 0.5, 0))) : FULL_BRIGHT;
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
@@ -653,6 +683,11 @@ public final class SkillClient {
     public static boolean renderFollower(Entity e, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         Actor a = follower(e.getId());
         if (a == null || a.model == null) return false;
+        // pairmodel{hidden=true} y model{viewrange;radius}: no se dibuja (pero es el suyo: tampoco se ve la entidad)
+        if (Boolean.TRUE.equals(a.pair)) return true;
+        Minecraft mcv = Minecraft.getInstance();
+        if (a.viewRange > 0 && !Boolean.FALSE.equals(a.pair)
+                && e.distanceToSqr(mcv.gameRenderer.getMainCamera().getPosition()) > (double) a.viewRange * a.viewRange) return true;
         float yaw = a.lerpYaw(e.level() instanceof ClientLevel cl ? cl : Minecraft.getInstance().level, partial);
         // Dónde está el modelo en el mundo (para las colas y la física de ModelEngine, que van en el mundo)
         Vec3 at = e.getPosition(partial);
@@ -663,7 +698,18 @@ public final class SkillClient {
         return true;
     }
 
+    /** La sombra de un mob de jefe: la del hueso «shadow» de su modelo (radio, en bloques), o 0. */
+    public static float shadowRadius(Entity e) {
+        Actor a = follower(e.getId());
+        if (a == null || a.model == null || !a.shadowOn || Boolean.TRUE.equals(a.pair)) return 0F;
+        return a.model.shadow / 2F * a.scale;
+    }
+
     static {
+        SkillMobs.clientFire = e -> {
+            Actor a = follower(e.getId());
+            return a == null ? 0 : a.fire;
+        };
         SkillMobs.clientGlow = e -> {
             Actor a = follower(e.getId());
             if (a == null || a.boneGlow == null) return false;
@@ -756,8 +802,9 @@ public final class SkillClient {
         boolean[] boneGlint;
         int[] boneBillboard;
         int[] boneGlow;
-        String skin;
-        boolean skinSlim;
+        /** modelplayerskin: la skin de cada hueso de jugador (uuid, nombre o «tex:» + base64; null = la de por defecto) y si es slim («» = la de la skin). */
+        String[] boneSkin;
+        String[] boneSlim;
         /** model{damagetint}: parpadea en rojo al recibir daño (como ModelEngine, sí por defecto). */
         boolean damageTint = true;
         // ----- vfx{} de ModelEngine: solo un hueso, visible o no, y su posición/giro/escala propios
@@ -770,6 +817,19 @@ public final class SkillClient {
         List<String[]> selfLeashes;
         /** Qué sitio del mundo es el origen de la pila de dibujo (la cámara, o la entidad que lo dibuja). */
         Vec3 poseOrigin;
+        /** El modelo sin los cambios en vivo y los mensajes de su VfxRig (para rehacerlo al cambiar el modelo en vivo). */
+        String meId;
+        final List<String[]> rigLog = new ArrayList<>();
+        /** model{seeself} / modeldisguise{seeself}: se ve a sí mismo el jugador disfrazado. */
+        boolean seeSelf = true;
+        /** model{viewrange;radius}: hasta dónde se ve (bloques; 0 = lo de siempre). */
+        float viewRange;
+        /** model{renderfire;forcefire}: 1 = fuego siempre, -1 = nunca, 0 = el de Minecraft. */
+        int fire;
+        /** model{showshadow}. */
+        boolean shadowOn = true;
+        /** pairmodel: escondido (true) o enseñado siempre (false) a este jugador; null = lo normal. */
+        Boolean pair;
 
         Actor(int id) {
             this.id = id;
@@ -882,7 +942,11 @@ public final class SkillClient {
         }
 
         void setModel(String id) {
+            meId = id;
             model = id == null ? null : model(id);
+            rigLog.clear();
+            boneSkin = null;
+            boneSlim = null;
             boneLight = null;
             rig = model == null ? null : new net.tierrasfantasticas.tfclient.vfx.VfxRig(model);
             boneItem = null;
@@ -1052,22 +1116,23 @@ public final class SkillClient {
             Map<String, List<int[]>> byTex = new HashMap<>();
             Map<String, ResourceLocation> texOf = new HashMap<>();
             Map<String, Integer> glowOf = new HashMap<>();
-            ResourceLocation skinTex = null;
             for (int bi = 0; bi < model.bones.length; bi++) {
-                if (!visible[bi]) continue;
+                if (!visible[bi] || model.bones[bi].removed) continue;
                 VfxModel.Bone bone = boneOf(bi);
-                if (bone == null || bone.quadCount == 0) continue;
+                if (bone == null) continue;
+                float[] qd = quadsOf(bi, bone);
+                int qc = qd.length / VfxModel.QUAD;
+                if (qc == 0) continue;
                 VfxModel src = source[bi];
                 int glow = outline != null ? boneGlow[bi] : 0;
-                for (int q = 0; q < bone.quadCount; q++) {
-                    int ti = (int) bone.quads[q * VfxModel.QUAD];
+                for (int q = 0; q < qc; q++) {
+                    int ti = (int) qd[q * VfxModel.QUAD];
                     ResourceLocation rl;
                     if (ti >= 0 && ti < src.tex.length) {
                         rl = texture(src, ti);
                     } else if (layers != null && (ti == -1 || ti == -2 || ti == -4 || ti == -5)) {
                         // Miembros de jugador de ModelEngine (phead_, prarm_..., limb[]): con la skin de modelplayerskin
-                        if (skinTex == null) skinTex = skinTexture();
-                        rl = skinTex;
+                        rl = skinFor(bi);
                     } else {
                         continue;
                     }
@@ -1090,6 +1155,7 @@ public final class SkillClient {
                     int bi = item[0], q = item[1], ti = item[2];
                     VfxModel src = source[bi];
                     VfxModel.Bone bone = boneOf(bi);
+                    float[] qd = quadsOf(bi, bone);
                     if (bi != lastBone) {
                         boneMatrix(bi, base, pose, full);
                         normal.set(normalBase).mul(new Matrix3f(bones[bi]));
@@ -1106,22 +1172,22 @@ public final class SkillClient {
                             frame = (age / t.frameTime()) % t.frames();
                         }
                     }
-                    if (bone.shade) n.set(bone.quads[o + 1], bone.quads[o + 2], bone.quads[o + 3]).mul(normal).normalize();
+                    if (bone.shade) n.set(qd[o + 1], qd[o + 2], qd[o + 3]).mul(normal).normalize();
                     else n.set(0, 1, 0).mul(normalView);
                     if (!Float.isFinite(n.x)) n.set(0, 1, 0);
                     // Centro de la cara en la textura: cada esquina se mete un poco hacia él (como hace Minecraft al
                     // hornear los modelos), para que en los bordes no se cuele el píxel de al lado ni, en las texturas
                     // animadas, una raya del fotograma siguiente
-                    float[] c = VfxModel.uvCenter(bone.quads, o);
+                    float[] c = VfxModel.uvCenter(qd, o);
                     // Luz: las texturas emisivas (_e) y las caras que brillan, a plena luz; si no, la del hueso o la del sitio
-                    int lit = emissive || ((int) bone.quads[o + 24] & 1) != 0 ? FULL_BRIGHT
+                    int lit = emissive || ((int) qd[o + 24] & 1) != 0 ? FULL_BRIGHT
                             : boneLight != null && boneLight[bi] >= 0 ? boneLight[bi] : baseLight;
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
-                        v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
+                        v.set(qd[p], qd[p + 1], qd[p + 2], 1F);
                         full.transform(v);
-                        float tu = VfxModel.insetUv(bone.quads[p + 3], c[0]);
-                        float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
+                        float tu = VfxModel.insetUv(qd[p + 3], c[0]);
+                        float tv = (VfxModel.insetUv(qd[p + 4], c[1]) + frame) / frames;
                         vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(tu, tv)
                                 .overlayCoords(overlay).uv2(lit).normal(n.x, n.y, n.z).endVertex();
                     }
@@ -1275,54 +1341,169 @@ public final class SkillClient {
             }
         }
 
-        /** setmodeltag: el texto de los huesos de nombre (tag_), mirando a la cámara. */
+        /**
+         * setmodeltag: el texto de los huesos de nombre (tag_) como un text_display de Minecraft (TextDisplayRenderer):
+         * líneas partidas a «linewidth», alineadas (LEFT, CENTER, RIGHT) y creciendo hacia arriba desde el hueso, con su
+         * billboard (CENTER = mirando a la cámara, VERTICAL = solo gira de lado, HORIZONTAL y FIXED = con el hueso).
+         */
         private void drawTags(Matrix4f base, PoseStack pose, MultiBufferSource buffers, int light) {
             Minecraft mc = Minecraft.getInstance();
             net.minecraft.client.gui.Font font = mc.font;
             Camera cam = mc.gameRenderer.getMainCamera();
             Matrix4f full = new Matrix4f();
             for (int bi = 0; bi < model.bones.length; bi++) {
-                if (boneTag[bi] == null || !boneTagOn[bi] || boneTag[bi].isEmpty()) continue;
+                if (boneTag[bi] == null || !boneTagOn[bi] || boneTag[bi].isEmpty() || model.bones[bi].removed) continue;
                 String[] st = boneTagStyle[bi].split("\\|");
-                float sc = parse(st[0], 1F);
+                String[] sv = st[0].split(",");
+                float sx = parse(sv[0], 1F), sy = sv.length > 1 ? parse(sv[1], sx) : sx, sz = sv.length > 2 ? parse(sv[2], sx) : sx;
                 boolean shadow = st.length > 1 && "1".equals(st[1]);
                 boolean through = st.length > 2 && "1".equals(st[2]);
                 int bg = st.length > 3 ? (int) parse(st[3], -1F) : -1;
                 int op = st.length > 4 ? (int) parse(st[4], -1F) : -1;
+                String align = st.length > 5 ? st[5] : "CENTER";
+                int lineWidth = st.length > 6 ? Math.max(1, (int) parse(st[6], 200F)) : 200;
+                String bill = st.length > 7 ? st[7] : "CENTER";
                 full.set(base).mul(bones[bi]);
                 Vector3f t = full.getTranslation(new Vector3f());
                 Quaternionf view = pose.last().pose().getUnnormalizedRotation(new Quaternionf()).normalize();
-                Matrix4f m = new Matrix4f().translate(t).rotate(view.mul(cam.rotation())).scale(-0.025F * sc, -0.025F * sc, 0.025F * sc);
-                net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component.literal(boneTag[bi]);
-                float x = -font.width(text) / 2F;
+                Quaternionf boneRot = full.getUnnormalizedRotation(new Quaternionf()).normalize().rotateY((float) Math.PI);
+                Quaternionf rot = switch (bill) {
+                    case "FIXED" -> boneRot;
+                    case "HORIZONTAL" -> boneRot.rotateX((float) Math.toRadians(cam.getXRot()));
+                    case "VERTICAL" -> view.mul(new Quaternionf().rotationY((float) Math.toRadians(-cam.getYRot())));
+                    default -> view.mul(cam.rotation());
+                };
+                Matrix4f m = new Matrix4f().translate(t).rotate(rot).scale(-0.025F * sx, -0.025F * sy, 0.025F * sz);
+                List<net.minecraft.util.FormattedCharSequence> lines = font.split(net.minecraft.network.chat.Component.literal(boneTag[bi]), lineWidth);
+                int maxW = 0;
+                for (net.minecraft.util.FormattedCharSequence l : lines) maxW = Math.max(maxW, font.width(l));
+                int lh = font.lineHeight + 1;
+                float y = -lines.size() * lh;
                 int color = op < 0 ? 0xFFFFFFFF : (Math.max(0, Math.min(255, op)) << 24) | 0xFFFFFF;
                 int back = bg == -1 ? (int) (mc.options.getBackgroundOpacity(0.25F) * 255F) << 24 : bg;
-                font.drawInBatch(text, x, 0, color, shadow, m, buffers,
-                        through ? net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH : net.minecraft.client.gui.Font.DisplayMode.NORMAL,
-                        back, light);
+                net.minecraft.client.gui.Font.DisplayMode mode = through ? net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH
+                        : net.minecraft.client.gui.Font.DisplayMode.NORMAL;
+                for (net.minecraft.util.FormattedCharSequence l : lines) {
+                    int w = font.width(l);
+                    float x = switch (align) {
+                        case "LEFT" -> -maxW / 2F;
+                        case "RIGHT" -> maxW / 2F - w;
+                        default -> -w / 2F;
+                    };
+                    font.drawInBatch(l, x, y, color, shadow, m, buffers, mode, back, light);
+                    y += lh;
+                }
             }
         }
 
-        /** La skin de modelplayerskin (uuid o nombre de un jugador conectado) o la de por defecto. */
-        private ResourceLocation skinTexture() {
-            Minecraft mc = Minecraft.getInstance();
-            var conn = mc.getConnection();
-            if (skin != null && conn != null) {
-                net.minecraft.client.multiplayer.PlayerInfo info = null;
-                try {
-                    String raw = skin.replace("-", "");
-                    if (raw.length() == 32) {
-                        java.util.UUID u = new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16),
-                                Long.parseUnsignedLong(raw.substring(16), 16));
-                        info = conn.getPlayerInfo(u);
-                    }
-                } catch (NumberFormatException ignored) {
-                    // no era un uuid: un nombre
-                }
-                if (info == null) info = conn.getPlayerInfo(skin);
-                if (info != null) return info.getSkinLocation();
+        /**
+         * changeparent / submodel (mensaje «medit»: todos los cambios, en orden): rehace el modelo como el servidor
+         * (VfxModel.derive) y lleva lo de cada hueso (visible, piezas, brillos, objetos, nombres, skins...) al hueso del
+         * mismo nombre; las animaciones que suenan siguen; la física y la IK vuelven a empezar con lo que tenían puesto.
+         */
+        void applyEdits(String joined) {
+            VfxModel base = meId == null ? null : model(meId);
+            if (base == null || model == null) return;
+            VfxModel now = base.derive(joined == null || joined.isEmpty() ? List.of() : List.of(joined.split("\n")));
+            VfxModel old = model;
+            if (now == old) return;
+            int n = now.bones.length;
+            int[] from = new int[n];
+            for (int i = 0; i < n; i++) from[i] = old.bone(now.bones[i].id);
+            VfxModel[] src2 = new VfxModel[n];
+            String[] srcBone2 = new String[n];
+            boolean[] vis2 = new boolean[n];
+            Matrix4f[] mats2 = new Matrix4f[n];
+            for (int i = 0; i < n; i++) {
+                int j = from[i];
+                mats2[i] = new Matrix4f();
+                boolean same = j >= 0 && j < old.bones.length;
+                src2[i] = same && source[j] != old ? source[j] : now;
+                srcBone2[i] = same ? sourceBone[j] : now.bones[i].id;
+                vis2[i] = (same ? visible[j] : !now.bones[i].hidden) && !now.bones[i].removed;
             }
-            return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin();
+            boneLight = remapInts(boneLight, from, n, -1);
+            boneBillboard = remapInts(boneBillboard, from, n, 0);
+            boneGlow = remapInts(boneGlow, from, n, 0);
+            if (boneGlint != null) {
+                boolean[] g = new boolean[n];
+                for (int i = 0; i < n; i++) g[i] = from[i] >= 0 && from[i] < boneGlint.length && boneGlint[from[i]];
+                boneGlint = g;
+            }
+            if (boneTagOn != null) {
+                boolean[] g = new boolean[n];
+                for (int i = 0; i < n; i++) g[i] = from[i] >= 0 && from[i] < boneTagOn.length && boneTagOn[from[i]];
+                boneTagOn = g;
+            }
+            boneItem = remap(boneItem, from, n, new ItemStack[n]);
+            boneTag = remap(boneTag, from, n, new String[n]);
+            boneTagStyle = remap(boneTagStyle, from, n, new String[n]);
+            boneSkin = remap(boneSkin, from, n, new String[n]);
+            boneSlim = remap(boneSlim, from, n, new String[n]);
+            model = now;
+            source = src2;
+            sourceBone = srcBone2;
+            visible = vis2;
+            bones = mats2;
+            if (layers != null) layers.rebind(old, now);
+            rig = new net.tierrasfantasticas.tfclient.vfx.VfxRig(now);
+            for (String[] c : rigLog) rig.message(c[0], c[1], c[2], c[3]);
+        }
+
+        private static int[] remapInts(int[] arr, int[] from, int n, int def) {
+            if (arr == null) return null;
+            int[] out = new int[n];
+            for (int i = 0; i < n; i++) out[i] = from[i] >= 0 && from[i] < arr.length ? arr[from[i]] : def;
+            return out;
+        }
+
+        private static <T> T[] remap(T[] arr, int[] from, int n, T[] out) {
+            if (arr == null) return null;
+            for (int i = 0; i < n; i++) out[i] = from[i] >= 0 && from[i] < arr.length ? arr[from[i]] : null;
+            return out;
+        }
+
+        /**
+         * modelplayerskin{limbs;uuid|username|skin;slim}: «limbs» (separados por comas; vacío = todos los huesos de jugador)
+         * con la skin de «who» (uuid, nombre o «tex:» + los datos base64 de la textura) y slim («true», «false» o «» = la de
+         * la skin).
+         */
+        void limbSkin(String limbs, String who, String slim) {
+            if (model == null) return;
+            int n = model.bones.length;
+            if (boneSkin == null) {
+                boneSkin = new String[n];
+                boneSlim = new String[n];
+            }
+            boolean[] hit = new boolean[n];
+            if (limbs == null || limbs.isBlank()) {
+                for (int i = 0; i < n; i++) hit[i] = "limb".equals(model.bones[i].beh) || model.bones[i].phead;
+            } else {
+                for (String l : limbs.split(",")) {
+                    int b = model.bone(l.trim());
+                    if (b >= 0) hit[b] = true;
+                }
+            }
+            for (int i = 0; i < n; i++) {
+                if (!hit[i]) continue;
+                boneSkin[i] = who == null || who.isEmpty() ? null : who;
+                boneSlim[i] = slim == null ? "" : slim.toLowerCase(java.util.Locale.ROOT);
+            }
+        }
+
+        /** La skin de ese hueso de jugador (la de modelplayerskin o la de por defecto). */
+        private ResourceLocation skinFor(int bi) {
+            String who = boneSkin == null || bi >= boneSkin.length ? null : boneSkin[bi];
+            ResourceLocation rl = who == null ? null : skinOf(who);
+            return rl != null ? rl : net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin();
+        }
+
+        /** Las caras de un hueso: las de su skin slim si es un brazo de jugador con skin slim. */
+        private float[] quadsOf(int bi, VfxModel.Bone bone) {
+            if (bone.slimQuads == null || boneSkin == null || bi >= boneSkin.length) return bone.quads;
+            String s = boneSlim[bi];
+            boolean slim = "true".equals(s) || !"false".equals(s) && boneSkin[bi] != null && slimOf(boneSkin[bi]);
+            return slim ? bone.slimQuads : bone.quads;
         }
 
         /** vfx{p}: solo se ve ese hueso (y lo que cuelga de él); vacío = todo. */
@@ -1376,7 +1557,7 @@ public final class SkillClient {
             for (int b : match(part, exact, false)) boneItem[b] = st;
         }
 
-        /** setmodeltag: «escala|sombra|a través|fondo|opacidad\u0001texto» en ese hueso de nombre. */
+        /** setmodeltag: «escala|sombra|a través|fondo|opacidad|alineación|ancho|billboard\u0001texto» en ese hueso de nombre. */
         void boneTag(String part, String v, boolean visible) {
             if (model == null) return;
             int n = model.bones.length;
@@ -1405,6 +1586,59 @@ public final class SkillClient {
     }
 
     // ------------------------------------------------------------------------------------------- datos
+
+    // ------------------------------------------------------------------------------------------- skins de modelplayerskin
+
+    /** Skins de «tex:» + base64 ya bajadas (como ModelEngine: se bajan una vez) y si son slim. */
+    private static final Map<String, ResourceLocation> TEX_SKINS = new HashMap<>();
+    private static final Map<String, Boolean> TEX_SLIM = new HashMap<>();
+    private static final Set<String> TEX_ASKED = new HashSet<>();
+
+    /** La skin de un jugador conectado (uuid o nombre) o la de unos datos de textura («tex:» + base64); null si aún no. */
+    private static ResourceLocation skinOf(String who) {
+        if (who.startsWith("tex:")) {
+            String b64 = who.substring(4);
+            ResourceLocation rl = TEX_SKINS.get(b64);
+            if (rl == null && TEX_ASKED.add(b64)) {
+                com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(
+                        java.util.UUID.nameUUIDFromBytes(b64.getBytes(java.nio.charset.StandardCharsets.UTF_8)), "tfskin");
+                gp.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", b64));
+                Minecraft.getInstance().getSkinManager().registerSkins(gp, (type, loc, tex) -> {
+                    if (type == com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.SKIN) {
+                        TEX_SKINS.put(b64, loc);
+                        // «Sin modelo en los datos, CLASSIC» (wiki de ModelEngine)
+                        TEX_SLIM.put(b64, "slim".equals(tex.getMetadata("model")));
+                    }
+                }, false);
+            }
+            return rl;
+        }
+        net.minecraft.client.multiplayer.PlayerInfo info = playerInfo(who);
+        return info == null ? null : info.getSkinLocation();
+    }
+
+    /** ¿La skin de «who» es slim? (la del jugador conectado o la de los datos de textura) */
+    private static boolean slimOf(String who) {
+        if (who.startsWith("tex:")) return TEX_SLIM.getOrDefault(who.substring(4), false);
+        net.minecraft.client.multiplayer.PlayerInfo info = playerInfo(who);
+        return info != null && "slim".equals(info.getModelName());
+    }
+
+    private static net.minecraft.client.multiplayer.PlayerInfo playerInfo(String who) {
+        var conn = Minecraft.getInstance().getConnection();
+        if (conn == null) return null;
+        net.minecraft.client.multiplayer.PlayerInfo info = null;
+        try {
+            String raw = who.replace("-", "");
+            if (raw.length() == 32) {
+                info = conn.getPlayerInfo(new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16),
+                        Long.parseUnsignedLong(raw.substring(16), 16)));
+            }
+        } catch (NumberFormatException ignored) {
+            // no era un uuid: un nombre
+        }
+        return info != null ? info : conn.getPlayerInfo(who);
+    }
 
     static VfxModel model(String id) {
         if (id == null || id.isEmpty()) return null;

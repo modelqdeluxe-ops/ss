@@ -99,8 +99,17 @@ public final class VfxPose {
      * abajo positivo), como h[yaw;pitch;minyaw...]_ y headconfig de ModelEngine; NaN = sin límite.
      */
     public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out, float[] limits) {
+        build(model, extra, headYaw, headPitch, out, limits, null);
+    }
+
+    /**
+     * Igual, con giros puestos a mano en los ejes del modelo (animatemodel{rm=GLOBAL}): global[i*3 ..] en grados (NaN =
+     * ninguno). El hueso gira sobre su pivote en los ejes del modelo y lo que cuelga de él va con él.
+     */
+    public static void build(VfxModel model, float[] extra, float headYaw, float headPitch, Matrix4f[] out, float[] limits,
+                             float[] global) {
         int n = model.bones.length;
-        if (headYaw == 0F && headPitch == 0F) {
+        if (headYaw == 0F && headPitch == 0F && global == null) {
             for (int i = 0; i < n; i++) finish(model.bones[i], extra, i, place(model, extra, i, out));
             return;
         }
@@ -111,7 +120,7 @@ public final class VfxPose {
             VfxModel.Bone b = model.bones[i];
             int base = i * 9;
             Matrix4f m = place(model, extra, i, out);
-            if (b.head) {
+            if (b.head && (headYaw != 0F || headPitch != 0F)) {
                 float yaw = headYaw, pitch = headPitch;
                 if (limits != null) {
                     yaw = clamp(yaw, limits[i * 4], limits[i * 4 + 1]);
@@ -131,7 +140,15 @@ public final class VfxPose {
             }
             Quaternionf local = new Quaternionf().rotationZYX((b.rot[2] + extra[base + 2]) * DEG, (b.rot[1] + extra[base + 1]) * DEG,
                     (b.rot[0] + extra[base]) * DEG);
-            q0[i] = q0p == null ? local : new Quaternionf(q0p).mul(local);
+            Quaternionf q = q0p == null ? new Quaternionf() : new Quaternionf(q0p);
+            if (global != null && !Float.isNaN(global[i * 3])) {
+                // En los ejes del modelo sobre su pivote: el giro, visto desde los ejes de su padre (sin cabezas)
+                Quaternionf r = new Quaternionf().rotationZYX(global[i * 3 + 2] * DEG, global[i * 3 + 1] * DEG, global[i * 3] * DEG);
+                Quaternionf c = q0p == null ? r : new Quaternionf(q0p).conjugate().mul(r).mul(q0p);
+                m.rotate(c);
+                q.mul(c);
+            }
+            q0[i] = q.mul(local);
             m.rotate(local);
             m.scale(extra[base + 6], extra[base + 7], extra[base + 8]);
         }

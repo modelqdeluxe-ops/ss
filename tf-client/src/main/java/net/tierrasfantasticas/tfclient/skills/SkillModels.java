@@ -65,6 +65,13 @@ final class SkillModels {
         for (Tgt t : targets) {
             if (remove) {
                 SkillActor a = holder(t, false, ctx);
+                // killowner: la entidad de debajo muere también (nunca un jugador)
+                if (SkillRuntime.bool(m.arg("false", "killowner", "ko")) && t.entity() instanceof LivingEntity owner
+                        && !(owner instanceof net.minecraft.world.entity.player.Player)) {
+                    SkillMobs.Host h = SkillMobs.host(owner);
+                    if (h != null) h.suicide();
+                    else owner.kill();
+                }
                 if (a == null) continue;
                 if (a.follow != null) {
                     a.remove();
@@ -114,6 +121,18 @@ final class SkillModels {
      */
     private static void modelOptions(Mech m, SkillActor a, Tgt t, VfxModel vm) {
         a.prop("dtint", SkillRuntime.bool(m.arg("true", "damagetint", "d", "tint")) ? "1" : "0", null, null);
+        // Lo que ve el cliente: hasta dónde (viewrange, radius), el fuego (renderfire, forcefire), la sombra (showshadow)
+        // y si se ve al jugador disfrazado él mismo (seeself)
+        double view = SkillRuntime.num(m.arg("0", "viewrange", "vr"), 0), radius = SkillRuntime.num(m.arg("0", "radius", "rad"), 0);
+        double far = Math.min(view > 0 ? view : Double.MAX_VALUE, radius > 0 ? radius : Double.MAX_VALUE);
+        a.prop("view", far == Double.MAX_VALUE ? "0" : String.valueOf(far), null, null);
+        a.prop("fire", (SkillRuntime.bool(m.arg("true", "renderfire", "rf")) ? "1" : "0") + "|"
+                + (SkillRuntime.bool(m.arg("false", "forcefire", "ff")) ? "1" : "0"), null, null);
+        a.prop("shadow", SkillRuntime.bool(m.arg("true", "showshadow")) ? "1" : "0", null, null);
+        a.prop("seeself", SkillRuntime.bool(m.arg("true", "seeself", "vs", "see")) ? "1" : "0", null, null);
+        // model{rootbone}: el hueso raíz de rootmotion
+        String root = m.arg(null, "rootbone", "root", "rt");
+        if (root != null) a.prop("root", root, "NaN|NaN|", null);
         String tag = m.arg(null, "nametag", "n", "name");
         Entity e = t.entity();
         SkillMobs.Host h = e == null ? null : SkillMobs.host(e);
@@ -127,6 +146,15 @@ final class SkillModels {
         }
         String step = m.arg(null, "step", "s");
         if (step != null && e instanceof LivingEntity le) le.setMaxUpStep((float) Math.max(0, SkillRuntime.num(step, 0.6)));
+        // La caja de la entidad: la del hueso «hitbox» del modelo o la de su tipo (hitbox=false), a la escala de
+        // hitboxscale (sin ella, la de scale), y si se le puede dar (showhitbox); syncbody: el cuerpo sigue a la cabeza
+        if (h != null) {
+            h.setModelHitbox(SkillRuntime.bool(m.arg("true", "hitbox", "h")));
+            String hbs = m.arg(null, "hitboxscale", "hbs");
+            h.setHitboxScale((float) Math.max(0.01, SkillRuntime.num(hbs != null ? hbs : m.arg("1", "scale", "size"), 1)));
+            h.setShowHitbox(SkillRuntime.bool(m.arg("true", "showhitbox")));
+            h.setSyncBody(SkillRuntime.bool(m.arg("true", "syncbody")));
+        }
     }
 
     static void state(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -139,7 +167,7 @@ final class SkillModels {
             if (a == null || a.me == null) continue;
             if (a.layers != null) {
                 // Como ModelEngine 4: una animación por prioridad (la nueva sustituye a la de esa prioridad), con entrada y salida suaves
-                VfxModel vm = load(a.me);
+                VfxModel vm = modelOf(a);
                 if (vm == null) continue;
                 // Con el tempo del jefe (sus retardos se dividen igual) y, si encadena un ataque, entrando suave
                 double tempo = SkillRuntime.tempo(ctx);
@@ -248,6 +276,14 @@ final class SkillModels {
     static void scale(Mech m, Ctx ctx, List<Tgt> targets) {
         float sc = (float) SkillRuntime.num(m.arg("1", "scale", "s", "amount", "a"), 1);
         if (sc <= 0) return;
+        // scale{hitbox=true} de ModelEngine: la caja de golpe de la entidad, no lo que se ve
+        if (SkillRuntime.bool(m.arg("false", "hitbox", "h"))) {
+            for (Tgt t : targets) {
+                SkillMobs.Host h = t.entity() == null ? null : SkillMobs.host(t.entity());
+                if (h != null) h.setHitboxScale(sc);
+            }
+            return;
+        }
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
             if (a == null) continue;
@@ -328,7 +364,7 @@ final class SkillModels {
             boolean visible = SkillRuntime.bool(m.arg("false", "visibility", "visible", "v"));
             boolean child = SkillRuntime.bool(m.arg("false", "child", "c", "ch", "children"));
             boolean exact = SkillRuntime.bool(m.arg("true", "exactmatch", "em", "exact", "match"));
-            VfxModel vm = exact ? null : load(a.me);
+            VfxModel vm = exact ? null : modelOf(a);
             if (vm == null) {
                 a.prop("vis", part, String.valueOf(visible), String.valueOf(child));
                 continue;
@@ -392,6 +428,110 @@ final class SkillModels {
 
     // ------------------------------------------------------------------------------------------- huesos
 
+    /**
+     * El modelo de un actor tal como está ahora: el suyo con los changeparent/submodel que le hayan hecho (VfxModel.derive;
+     * el mismo objeto mientras no cambien), o null.
+     */
+    static VfxModel modelOf(SkillActor a) {
+        if (a == null || a.me == null) return null;
+        VfxModel base = load(a.me);
+        if (base == null || a.edits.isEmpty()) {
+            a.edited = null;
+            a.editedKey = null;
+            return base;
+        }
+        String key = a.me + "\n" + String.join("\n", a.edits);
+        if (!key.equals(a.editedKey)) {
+            VfxModel old = a.edited != null ? a.edited : base;
+            a.edited = base.derive(a.edits);
+            a.editedKey = key;
+            if (a.layers != null) a.layers.rebind(old, a.edited);
+        }
+        return a.edited;
+    }
+
+    /**
+     * swapentity{hitbox;invisible;step} @objetivo: el modelo pasa de quien lo lleva a esa entidad (con sus animaciones y
+     * todo lo demás). invisible: esconde la entidad de debajo (a un jugador, nunca).
+     */
+    static void swap(SkillActor a, Entity to, boolean invisible, double step) {
+        if (a == null || to == null || a.follow == null || to == a.follow) return;
+        DISGUISES.remove(a.follow.getUUID());
+        SkillActor other = DISGUISES.remove(to.getUUID());
+        if (other != null && other != a) other.remove();
+        a.follow = to;
+        a.hideHost = invisible && !(to instanceof net.minecraft.world.entity.player.Player);
+        DISGUISES.put(to.getUUID(), a);
+        if (to instanceof LivingEntity le && step >= 0) le.setMaxUpStep((float) step);
+        a.prop("follow", String.valueOf(to.getId()), a.hideHost ? "1" : "0", null);
+    }
+
+    /**
+     * petrify: una estatua del modelo tal como está ahora (su pose, sus piezas, colores y brillo), que ya no cambia ni se
+     * mueve. Se queda donde estaba (como un efecto: se va al minuto, como los que nadie quita).
+     */
+    static void petrify(SkillActor a) {
+        VfxModel vm = modelOf(a);
+        if (vm == null || a.layers == null) return;
+        SkillActor st = new SkillActor(a.cls, null, a.level, a.pos, a.yaw, 0F, a.owner);
+        st.host = a.host;
+        st.me = a.me;
+        st.scale = a.scale;
+        st.edits.addAll(a.edits);
+        st.layers = a.layers.copy(a.age);
+        st.layers.freeze(0F);
+        SkillRuntime.ACTORS.add(st);
+        SkillNet.near(st.level, st.pos, st.spawnMessage());
+        st.prop("lclear", "", null, null);
+        // Lo que se ve de él (sus piezas, colores, brillos...), pero no a quién sigue ni lo de moverse
+        for (SkillNet.Prop p : new java.util.ArrayList<>(a.sticky.values())) {
+            if (p.key().equals("me") || p.key().equals("follow") || p.key().equals("headtgt") || p.key().equals("iktgt")) continue;
+            st.prop(p.key(), p.a(), p.b(), p.c());
+        }
+        boolean[] hidden = a.hiddenNow(vm);
+        if (hidden != null) {
+            for (int i = 0; i < hidden.length; i++) {
+                if (hidden[i] != vm.bones[i].hidden) st.prop("vis", vm.bones[i].id, String.valueOf(!hidden[i]), "false");
+            }
+        }
+        for (VfxLayers.Layer l : st.layers.active()) {
+            if (l.stopAt >= 0) continue;
+            st.prop("lstate", l.name, l.speed + "|" + l.lerpIn + "|" + l.lerpOut + "|" + l.priority + "|1", String.valueOf((int) (st.age - l.start)));
+        }
+        st.prop("dstate", "idle", st.layers.idleName(), null);
+        st.prop("dstate", "walk", st.layers.walkName(), null);
+        if (st.layers.dead()) st.prop("death", "", "", "");
+        st.prop("freeze", "0", null, null);
+    }
+
+    /**
+     * rootmotion (cada tick del mob, en el servidor): la entidad anda lo que la animación ha movido su hueso raíz desde el
+     * tick anterior (en el suelo; con la misma animación: si cambia, vuelve a contar desde ahí), con su peso.
+     */
+    static void rootStep(SkillMobs.Host h) {
+        SkillActor a = disguise(h.mob().getUUID());
+        if (a == null || a.layers == null || !a.layers.rootActive()) {
+            if (a != null) a.rootLastKey = null;
+            return;
+        }
+        VfxModel vm = modelOf(a);
+        if (vm == null) return;
+        pose(a, vm);
+        float[] now = a.layers.rootOffset();
+        String key = a.layers.rootKey();
+        if (key.equals(a.rootLastKey)) {
+            float w = a.layers.rootWeight();
+            org.joml.Vector3f d = new org.joml.Vector3f(now[0] - a.rootLast[0], 0, now[2] - a.rootLast[2]);
+            if (w > 0 && d.lengthSquared() > 1e-8F) {
+                // Del espacio del modelo (píxeles) al mundo: su giro y su escala
+                new Matrix4f().rotate(Axis.YP.rotationDegrees(180F - a.yaw)).scale(a.scale / 16F).transformDirection(d);
+                h.mob().move(net.minecraft.world.entity.MoverType.SELF, new Vec3(d.x * w, 0, d.z * w));
+            }
+        }
+        System.arraycopy(now, 0, a.rootLast, 0, 3);
+        a.rootLastKey = key;
+    }
+
     static VfxModel load(String id) {
         if (id == null) return null;
         return MODELS.computeIfAbsent(id, k -> {
@@ -413,7 +553,7 @@ final class SkillModels {
         String part = m.targetArg(null, "pid", "p", "partid", "part");
         SkillActor a = holder(Tgt.of(ctx.caster), false, ctx);
         if (a == null || a.me == null || part == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
-        VfxModel model = load(a.me);
+        VfxModel model = modelOf(a);
         if (model == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
         boolean exact = SkillRuntime.bool(m.targetArg("true", "exactmatch", "em"));
         java.util.List<Integer> bones = new java.util.ArrayList<>();
