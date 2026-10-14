@@ -12,9 +12,15 @@ Mira:
     con las mismas reglas que VfxModel.bone (sin prefijo de comportamiento: «right_arm_trail» es «tl_right_arm_trail»)
     y em=false (los que lo llevan en el nombre);
   - sonidos tfclient: que estén en sounds.json y que sus .ogg existan; modelos y objetos que no existen;
-  - mobs sin modelo y lo que build_bosses.py apuntó como «missing».
+  - mobs sin modelo y lo que build_bosses.py apuntó como «missing»;
+  - lo que el motor ACEPTA PERO NO HACE (lo lee del Java: mecánicas con «-> { /* ... */ }» y condiciones con
+    «-> true;»): si un pack lo usa y no está en STUB_OK (con su porqué), es un problema; si está, sale como aviso;
+  - disparadores (~onX) que el motor no lanza (lee los run(h, "...") de SkillMobs).
 
 Sale con código 1 si hay algún problema. Cada problema dice dónde está (skill o mob) para buscarlo en el pack.
+Los avisos (·) no cuentan, pero léelos: dicen lo que no se verá igual que con MythicMobs/ModelEngine.
+
+    python3 tools/bosses/audit.py --cobertura    # qué tiene el motor de MythicMobs/ModelEngine y qué le falta
 """
 import json
 import os
@@ -35,6 +41,37 @@ CALLBACKS = {'projectile', 'p', 'missile', 'totem', 'orbital', 'shoot', 'shootfi
              'ondamaged', 'onattack', 'onshoot'}
 SELF = (None, 'self', 'caster')
 
+# Lo que el motor acepta sin hacer nada a propósito, y por qué no cambia la pelea. Lo que esté «de mentira» en el Java y
+# NO esté aquí es un problema si un pack lo usa (impleméntalo con la semántica de MythicMobs o apúntalo aquí con su
+# porqué, si de verdad no importa).
+STUB_OK = {
+    # mecánicas
+    'mount': 'los efectos del pack no se montan en nada (los agarres van con mountmodel)',
+    'mounttarget': 'los efectos del pack no se montan en nada (los agarres van con mountmodel)',
+    'dismount': 'los efectos del pack no se montan en nada (los agarres van con mountmodel)',
+    'animatearmorstand': 'soportes de armadura de Minecraft: los jefes y sus efectos son modelos de ModelEngine',
+    'posearmorstand': 'soportes de armadura de Minecraft: los jefes y sus efectos son modelos de ModelEngine',
+    'runaitargetselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
+    'runaigoalselector': 'IA de Bukkit: la de los jefes es BossEntity + su cerebro (SkillBrain)',
+    'modifyglobalscore': 'marcadores globales: no hay ninguno (ninguna condición los lee)',
+    'setglobalscore': 'marcadores globales: no hay ninguno (ninguna condición los lee)',
+    'feed': 'el hambre es de los jugadores',
+    'playanimation': 'el brazo de Minecraft: los jefes son modelos',
+    'swing': 'el brazo de Minecraft: los jefes son modelos',
+    'removehelditem': 'los jefes no llevan objetos de Minecraft en la mano',
+    'setcollidable': 'los jefes no empujan ni se dejan empujar ya',
+    'bindhitbox': 'las cajas de golpe salen de los huesos ob_ del modelo (BossPart)',
+    'cullconfig': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
+    'renderinit': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
+    'enchant': 'VISUAL: el brillo de encantado de un hueso no se dibuja',
+    'segment': 'VISUAL: capas, colas y estelas no se doblan como una cuerda (van rígidas, con su animación)',
+    # condiciones que se dan por cumplidas
+    'wearing': 'se da por cumplida (lo que lleva puesto alguien no se mira)',
+    'haspermission': 'se da por cumplida (permisos de Bukkit)',
+}
+# Disparadores que el motor no lanza pero que no hacen falta en estos casos (ver trigger_ok)
+QUIET_TRIGGERS = {'onload', 'onattack'}
+
 
 # ----------------------------------------------------------------------------------------------- lo que sabe el motor
 
@@ -53,6 +90,18 @@ def _labels(path, start):
     return out
 
 
+def _stubs(path, start, body):
+    """Etiquetas de los case de ese switch cuyo cuerpo es «body» (una regex): los que no hacen nada."""
+    src = open(path, encoding='utf-8').read()
+    i = src.index(start)
+    first = re.search(r'\n(\s*)case\s', src[i:])
+    end = src.index('\n' + first.group(1) + 'default ->', i)
+    out = set()
+    for grp in re.findall(r'case\s+((?:"[^"]*"\s*,\s*)*"[^"]*")\s*->\s*' + body, src[i:end], re.S):
+        out.update(re.findall(r'"([^"]*)"', grp))
+    return out
+
+
 def engine():
     rt = os.path.join(JAVA, 'SkillRuntime.java')
     mechs = _labels(rt, 'switch (m.m) {')
@@ -64,6 +113,19 @@ def engine():
     conds.update({'or', 'and'})  # SkillConds.test las resuelve antes del switch
     targs = _labels(os.path.join(JAVA, 'SkillTargets.java'), 'List<Tgt> out = switch (t) {')
     return mechs, conds, targs
+
+
+def stubs():
+    """Lo que el motor acepta sin hacer nada: mecánicas «-> { /* ... */ }» y condiciones «-> true;»."""
+    m = _stubs(os.path.join(JAVA, 'SkillRuntime.java'), 'switch (m.m) {', r'\{\s*(?:/\*.*?\*/)?\s*\}')
+    c = _stubs(os.path.join(JAVA, 'SkillConds.java'), 'return switch (c.m()) {', r'true\s*;')
+    return m, c
+
+
+def triggers():
+    """Disparadores que lanza SkillMobs (run(h, "x", ...)), más ~onTimer:N y ~onSignal:X, que van aparte."""
+    src = open(os.path.join(JAVA, 'SkillMobs.java'), encoding='utf-8').read()
+    return set(re.findall(r'run\(h,\s*"(\w+)"', src)) | {'ontimer', 'onsignal'}
 
 
 # ----------------------------------------------------------------------------------------------- modelos
@@ -132,13 +194,24 @@ def flat(conds):
         yield from flat(c.get('parts'))
 
 
-def audit(bid, engine_sets):
+def audit(bid, engine_sets, warnings=None, prog=None):
     mechs, condset, targset = engine_sets
-    prog = json.load(open(os.path.join(BOSSES, bid + '.json'), encoding='utf-8'))
+    stub_m, stub_c = stubs()
+    fired = triggers()
+    if prog is None:
+        prog = json.load(open(os.path.join(BOSSES, bid + '.json'), encoding='utf-8'))
     pack = bid
     tree = prog['tree']
     lower = {k.lower(): k for k in tree}
     problems = []
+    warns = warnings if warnings is not None else []
+
+    def stub(kind, name, where):
+        if name in STUB_OK:
+            warns.append((f'{kind} «{name}» no hace nada aquí: {STUB_OK[name]}', where))
+        else:
+            problems.append(f'{where}: {kind} «{name}» se acepta pero NO HACE NADA en el motor (impleméntala o '
+                            f'explica en STUB_OK por qué no importa)')
 
     def find(n):
         return lower.get(str(n).lower())
@@ -185,15 +258,21 @@ def audit(bid, engine_sets):
         m, a = pm['m'], pm.get('a', {})
         if m not in mechs:
             problems.append(f'{where}: mecánica «{m}» sin implementar')
+        elif m in stub_m:
+            stub('mecánica', m, where)
         t = pm.get('t')
         if t is not None and t not in targset:
             problems.append(f'{where}: objetivo «@{t}» sin implementar ({m})')
         for c in flat(pm.get('c')) if pm.get('c') else []:
             if c['m'] not in condset:
                 problems.append(f'{where}: condición «{c["m"]}» sin implementar')
+            elif c['m'] in stub_c:
+                stub('condición', c['m'], where)
         for c in flat(pm.get('tc')) if pm.get('tc') else []:
             if c['m'] not in condset:
                 problems.append(f'{where}: condición de objetivo «{c["m"]}» sin implementar')
+            elif c['m'] in stub_c:
+                stub('condición', c['m'], where)
         for n in called(pm):
             if find(n) is None and not n.startswith('<'):
                 problems.append(f'{where}: llama a la skill «{n}», que no existe')
@@ -262,6 +341,8 @@ def audit(bid, engine_sets):
         for c in flat(list(conds_of(meta))):
             if c['m'] not in condset:
                 problems.append(f'skill {name}: condición «{c["m"]}» sin implementar')
+            elif c['m'] in stub_c:
+                stub('condición', c['m'], f'skill {name}')
             act = str(c.get('v', ''))
             if act.lower().startswith(('castinstead', 'orelsecast')) and ' ' in act:
                 n = act.split(None, 1)[1].strip()
@@ -271,7 +352,15 @@ def audit(bid, engine_sets):
         if not md.get('model') and md.get('kind') == 'entity':
             problems.append(f'mob {mob}: sin modelo de ModelEngine (se vería el mob de Minecraft)')
         for i, pm in enumerate(md['mechs']):
-            check_line(pm, f'mob {mob} #{i + 1} ({pm.get("tr") or "onspawn"})', mob=mob)
+            where = f'mob {mob} #{i + 1} ({pm.get("tr") or "onspawn"})'
+            tr = pm.get('tr') or 'onspawn'
+            if tr not in fired:
+                why = trigger_ok(tr, pm, tree, lower)
+                if why:
+                    warns.append((f'~{tr} no salta aquí, y da igual: {why}', where))
+                else:
+                    problems.append(f'{where}: el disparador ~{tr} NO SALTA en el motor (impleméntalo en SkillMobs)')
+            check_line(pm, where, mob=mob)
     for x in prog.get('missing') or []:
         problems.append(f'falta en el pack: {x}')
     # Los .ogg de sus sonidos
@@ -291,19 +380,146 @@ def audit(bid, engine_sets):
     return out
 
 
-def main(ids=None):
+def trigger_ok(tr, pm, tree, lower):
+    """Por qué no importa que ese disparador no salte, o None si sí importa."""
+    if tr == 'onload':
+        # ~onLoad es para un mob que vuelve del disco (al cargar su chunk): los de los jefes nunca se guardan
+        if not_saved():
+            return 'los jefes no se guardan en el mundo (BossEntity.shouldBeSaved = false): nunca vuelven del disco'
+        return None
+    if tr == 'onattack':
+        # Los jefes no pegan con el golpe de Minecraft: un ~onAttack que solo lo cancela no hace falta
+        if only_cancels(pm, tree, lower, 0):
+            return 'los jefes no pegan con el golpe de Minecraft (solo lo cancelaba)'
+        return None
+    return None
+
+
+def not_saved():
+    src = open(os.path.join(ROOT, 'src', 'main', 'java', 'net', 'tierrasfantasticas', 'tfclient', 'bosses',
+                            'BossEntity.java'), encoding='utf-8').read()
+    return re.search(r'boolean shouldBeSaved\(\)\s*\{\s*return false;', src) is not None
+
+
+def only_cancels(pm, tree, lower, depth):
+    if pm['m'] == 'cancelevent':
+        return True
+    if pm['m'] in ('skill', 'metaskill', 'cast', 's') and depth < 5:
+        n = lower.get(str(pm.get('a', {}).get('s', pm.get('a', {}).get('skill', ''))).lower())
+        return n is not None and all(only_cancels(x, tree, lower, depth + 1) for x in tree[n]['mechs'])
+    return False
+
+
+def selftest():
+    """--prueba: mete errores a propósito en una copia de un jefe y comprueba que el auditor los ve todos."""
+    import copy
+    sets = engine()
+    base = json.load(open(os.path.join(BOSSES, 'esqueleto_torre.json'), encoding='utf-8'))
+    if audit('esqueleto_torre', sets, [], base):
+        print('prueba: el Esqueleto ya tiene problemas; arréglalos antes')
+        return 1
+    stub_m, stub_c = stubs()
+    fake_stub = next((x for x in sorted(stub_m) if x not in STUB_OK), None)
+    boss = base['boss']['mob']
+    skill = next(k for k, v in base['tree'].items() if v['mechs'])
+    cases = [
+        ('mecánica que no existe', lambda p: p['tree'][skill]['mechs'].append({'m': 'mecanicainventada', 'a': {}}),
+         'mecanicainventada'),
+        ('condición que no existe', lambda p: p['tree'][skill]['conditions'].append({'m': 'condinventada', 'a': {}, 'v': 'true'}),
+         'condinventada'),
+        ('objetivo que no existe', lambda p: p['tree'][skill]['mechs'].append({'m': 'damage', 'a': {}, 't': 'objinventado'}),
+         'objinventado'),
+        ('skill que no existe', lambda p: p['tree'][skill]['mechs'].append({'m': 'skill', 'a': {'s': 'skill_inventada'}}),
+         'skill_inventada'),
+        ('animación que no existe', lambda p: p['mobs'][boss]['mechs'].append({'m': 'state', 'a': {'s': 'anim_inventada'}, 't': 'self'}),
+         'anim_inventada'),
+        ('hueso que no existe', lambda p: p['mobs'][boss]['mechs'].append({'m': 'partvis', 'a': {'p': 'hueso_inventado'}, 't': 'self'}),
+         'hueso_inventado'),
+        ('sonido que no existe', lambda p: p['tree'][skill]['mechs'].append({'m': 'sound', 'a': {'s': 'tfclient:bosses.x.inventado'}}),
+         'bosses.x.inventado'),
+        ('disparador que no salta', lambda p: p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onbowhit'}),
+         'onbowhit'),
+        ('~onAttack que hace algo', lambda p: p['mobs'][boss]['mechs'].append({'m': 'damage', 'a': {'a': '5'}, 'tr': 'onattack'}),
+         'onattack'),
+        ('modelo que no existe', lambda p: p['mobs'][boss]['mechs'].append({'m': 'model', 'a': {'m': 'modelo_inventado'}, 't': 'self'}),
+         'modelo_inventado'),
+    ]
+    if fake_stub:
+        cases.append(('mecánica que no hace nada sin explicar', lambda p: p['tree'][skill]['mechs'].append({'m': fake_stub, 'a': {}}),
+                      fake_stub))
+    # Una mecánica «de mentira» nueva en el Java, sin su porqué en STUB_OK: tiene que salir como problema
+    STUB_OK_BACKUP = STUB_OK.pop('segment', None)
+    cases.append(('mecánica de mentira sin su porqué', lambda p: None, 'segment'))
+    bad = 0
+    for name, hurt, needle in cases:
+        prog = copy.deepcopy(base)
+        hurt(prog)
+        probs = audit('esqueleto_torre', sets, [], prog)
+        ok = any(needle in x for x in probs)
+        bad += not ok
+        print(f'  {"OK " if ok else "NO "} {name}' + ('' if ok else f'  (no lo vio: {needle})'))
+    if STUB_OK_BACKUP is not None:
+        STUB_OK['segment'] = STUB_OK_BACKUP
+    print(f'prueba del auditor: {len(cases) - bad} de {len(cases)} errores encontrados')
+    return bad
+
+
+def coverage():
+    """--cobertura: el catálogo de mythic_ref.py contra el motor."""
+    sys.path.insert(0, HERE)
+    import mythic_ref
+    mechs, conds, targs = engine()
+    stub_m, stub_c = stubs()
+    have = {'mecánicas': (mechs, stub_m), 'condiciones': (conds, stub_c), 'objetivos': (targs, set()),
+            'disparadores': (triggers(), set())}
+    for kind, entries in mythic_ref.ALL.items():
+        impl, dead = have[kind]
+        ok, fake, miss = [], [], []
+        for name, aliases, hot in entries:
+            names = [name] + aliases
+            label = ('*' if hot else '') + name
+            if any(n in impl for n in names):
+                if all(n in dead for n in names if n in impl):
+                    fake.append(label)
+                else:
+                    ok.append(label)
+            else:
+                miss.append(label)
+        miss.sort(key=lambda x: (not x.startswith('*'), x))
+        print(f'{kind:13s} {len(ok)}/{len(entries)} hechas; sin efecto: {len(fake)}; faltan: {len(miss)}')
+        if fake:
+            print('   sin efecto:', ', '.join(fake))
+        if miss:
+            print('   faltan    :', ', '.join(miss))
+    print('(* = la usan mucho los packs de jefes. Las que faltan las marca el auditor normal en cuanto un pack las use.)')
+
+
+def main(ids=None, show_warnings=True):
     sets = engine()
     if not ids:
         ids = [c['id'] for c in json.load(open(os.path.join(BOSSES, 'catalog.json'), encoding='utf-8'))]
     total = 0
     for bid in ids:
-        probs = audit(bid, sets)
+        warns = []
+        probs = audit(bid, sets, warns)
         total += len(probs)
-        print(f'auditoría {bid:16s} problemas: {len(probs)}')
+        # Los avisos, agrupados (la misma explicación una vez, con cuántas veces sale)
+        seen = {}
+        for w, _where in warns:
+            seen[w] = seen.get(w, 0) + 1
+        print(f'auditoría {bid:16s} problemas: {len(probs)}   avisos: {len(seen)}')
         for p in probs:
             print('   -', p)
+        if show_warnings:
+            for w, n in seen.items():
+                print('   ·', w + (f' (×{n})' if n > 1 else ''))
     return total
 
 
 if __name__ == '__main__':
-    sys.exit(1 if main([a for a in sys.argv[1:] if not a.startswith('-')]) else 0)
+    if '--cobertura' in sys.argv:
+        coverage()
+        sys.exit(0)
+    if '--prueba' in sys.argv:
+        sys.exit(1 if selftest() else 0)
+    sys.exit(1 if main([a for a in sys.argv[1:] if not a.startswith('-')], '--sin-avisos' not in sys.argv) else 0)

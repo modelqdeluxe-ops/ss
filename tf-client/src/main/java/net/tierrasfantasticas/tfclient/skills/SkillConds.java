@@ -195,9 +195,10 @@ final class SkillConds {
                 SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
                 yield mh == null || mh.target() != null && mh.target().isAlive();
             }
-            case "playerwithin" -> {
+            case "playerwithin", "playernotwithin" -> {
                 // playerWithin{d}: algún jugador (que no sea espectador) a d bloques de quien lanza; como en MythicMobs,
-                // también en creativo (la Gárgola y el Esqueleto despiertan aunque los pruebe el staff)
+                // también en creativo (la Gárgola y el Esqueleto despiertan aunque los pruebe el staff).
+                // playerNotWithin{d}: ninguno
                 double d = SkillRuntime.num(arg(a, "5", "distance", "d"), 5);
                 Vec3 from = who != null ? who.pos() : ctx.caster.pos();
                 boolean any = false;
@@ -207,7 +208,7 @@ final class SkillConds {
                         break;
                     }
                 }
-                yield any;
+                yield any != c.m().equals("playernotwithin");
             }
             case "fieldofview", "fov", "infieldofview" -> {
                 // fieldOfView{angle;rotation}: el objetivo está dentro del ángulo, centrado en el giro de quien lanza
@@ -250,9 +251,115 @@ final class SkillConds {
                 yield mh != null && SkillMobs.world != null && !SkillMobs.world.seated(mh, arg(a, null, "p", "pbone", "seat", "part")).isEmpty();
             }
             case "blocking", "isblocking" -> le != null && le.isBlocking();
-            case "hasai", "wearing", "haspermission",
-                    "lineofsight", "los", "world", "biome", "dimension", "moonphase", "hasowner" -> true;
-            case "targetwithin", "targetinlineofsight", "targetnotwithin" -> {
+            // Sin mirar nada, a propósito: lo que lleva puesto un mob y los permisos de Bukkit (en los jefes no se usan;
+            // tools/bosses/audit.py avisa si un pack las usa)
+            case "wearing", "haspermission" -> true;
+            case "hasai" -> {
+                SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
+                yield mh != null ? mh.ai() : !(e instanceof net.minecraft.world.entity.Mob mob) || !mob.isNoAi();
+            }
+            case "hasowner" -> {
+                SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
+                yield who != null && who.owner() != null || mh != null && mh.boss() != mh;
+            }
+            case "lineofsight", "los" -> {
+                // ¿Lo ve quien lanza? (de ojos a ojos, sin bloques que tapen)
+                Vec3 to = e != null ? e.getEyePosition() : at != null ? at : who != null ? who.pos() : null;
+                yield to == null || sees(ctx, to);
+            }
+            case "targetinlineofsight" -> {
+                Entity t = ctx.aim;
+                yield t != null && t.isAlive() && sees(ctx, t.getEyePosition());
+            }
+            case "world", "dimension" -> {
+                // Como en Bukkit: «world», «world_nether», «world_the_end» (o NORMAL/NETHER/THE_END, o el id de Minecraft)
+                var key = ctx.caster.level().dimension().location();
+                String path = key.getPath();
+                String bukkit = path.equals("overworld") ? "world" : "world_" + path;
+                String env = path.equals("overworld") ? "normal" : path.equals("the_nether") ? "nether" : path;
+                boolean hit = false;
+                for (String w : arg(a, "", "world", "w", "dimension", "d", "environment", "env").toLowerCase(Locale.ROOT).split(",")) {
+                    w = w.trim();
+                    if (w.equals(path) || w.equals(key.toString()) || w.equals(bukkit) || w.equals(env)) hit = true;
+                }
+                yield hit;
+            }
+            case "biome" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                var b = ctx.caster.level().getBiome(BlockPos.containing(p)).unwrapKey();
+                if (b.isEmpty()) yield false;
+                String id = b.get().location().getPath();
+                boolean hit = false;
+                for (String w : arg(a, "", "biome", "b").toLowerCase(Locale.ROOT).split(",")) {
+                    w = w.trim();
+                    if (w.startsWith("minecraft:")) w = w.substring(10);
+                    if (w.equals(id)) hit = true;
+                }
+                yield hit;
+            }
+            case "moonphase", "lunarphase" -> inRange(ctx.caster.level().getMoonPhase(), arg(a, "0", "phase", "p"));
+            case "day", "night", "dusk", "dawn" -> {
+                long t = Math.floorMod(ctx.caster.level().getDayTime(), 24000L);
+                yield switch (c.m()) {
+                    case "day" -> t < 12300;
+                    case "dusk" -> t >= 12300 && t < 13800;
+                    case "night" -> t >= 13800 && t < 22200;
+                    default -> t >= 22200;
+                };
+            }
+            case "raining" -> ctx.caster.level().isRaining();
+            case "thundering" -> ctx.caster.level().isThundering();
+            case "sunny" -> !ctx.caster.level().isRaining();
+            case "outside" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                yield ctx.caster.level().canSeeSky(BlockPos.containing(p.x, p.y + 1, p.z));
+            }
+            case "lightlevel" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                yield inRange(ctx.caster.level().getMaxLocalRawBrightness(BlockPos.containing(p)), arg(a, ">0", "level", "l"));
+            }
+            case "distancefromspawn" -> {
+                // Desde donde apareció (un jefe: su grieta)
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                SkillMobs.Host mh = SkillMobs.host(e != null ? e : ctx.caster.entity);
+                Vec3 spawn = mh != null ? mh.spawnPos() : ctx.caster.level().getSharedSpawnPos().getCenter();
+                yield inRange(p.distanceTo(spawn), arg(a, ">0", "distance", "d"));
+            }
+            case "heightabove", "heightbelow" -> {
+                // Más alto / más bajo que esa Y
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                double h = SkillRuntime.num(arg(a, "0", "height", "h", "y"), 0);
+                yield c.m().equals("heightabove") ? p.y > h : p.y < h;
+            }
+            case "lastdamagecause" -> {
+                String want = arg(a, "", "cause", "c", "type", "t", "damagecause").toUpperCase(Locale.ROOT);
+                String now = ctx.damageCause != null ? ctx.damageCause
+                        : le != null && le.getLastDamageSource() != null ? SkillServer.damageType(le.getLastDamageSource()) : "";
+                boolean hit = false;
+                for (String w : want.split(",")) if (w.trim().equals(now)) hit = true;
+                yield hit;
+            }
+            case "mounted", "isriding" -> e != null && e.isPassenger();
+            case "haspassenger" -> e != null && e.isVehicle();
+            case "isfrozen" -> e != null && e.isFullyFrozen();
+            case "gliding" -> le != null && le.isFallFlying();
+            case "isclimbing" -> le != null && le.onClimbable();
+            case "motiony", "fallspeed" -> {
+                // fallSpeed: lo rápido que cae (positivo); motionY: la velocidad vertical tal cual
+                Vec3 v = e != null ? e.getDeltaMovement() : who != null && who.actor != null ? who.actor.vel : Vec3.ZERO;
+                double y = c.m().equals("fallspeed") ? -v.y : v.y;
+                yield inRange(y, arg(a, ">0", "speed", "s", "velocity", "v", "y", "amount", "a"));
+            }
+            case "level" -> e instanceof Player p && inRange(p.experienceLevel, arg(a, ">0", "level", "l"));
+            case "time" -> inRange(Math.floorMod(ctx.caster.level().getDayTime(), 24000L), arg(a, ">0", "time", "t"));
+            case "targets" -> inRange(ctx.targets == null ? 0 : ctx.targets.size(), arg(a, ">0", "amount", "a"));
+            case "playersonline" -> inRange(ctx.caster.level().getServer().getPlayerCount(), arg(a, ">0", "amount", "a"));
+            case "mobsinworld" -> {
+                int n = 0;
+                for (Entity x : ctx.caster.level().getAllEntities()) if (x instanceof net.minecraft.world.entity.Mob) n++;
+                yield inRange(n, arg(a, ">0", "amount", "a"));
+            }
+            case "targetwithin", "targetnotwithin" -> {
                 Entity t = ctx.aim;
                 double d = SkillRuntime.num(arg(a, "16", "distance", "d"), 16);
                 boolean within = t != null && t.isAlive() && t.position().distanceTo(ctx.caster.pos()) <= d;
@@ -263,7 +370,12 @@ final class SkillConds {
                 Vec3 from = c.m().equals("distance") ? ctx.caster.pos() : SkillTargets.origin(ctx);
                 yield inRange(p.distanceTo(from), arg(a, ">0", "distance", "d"));
             }
-            case "health", "hp" -> le != null && inRange(le.getHealth(), arg(a, ">0", "health", "h", "amount", "a"));
+            case "health", "hp" -> {
+                // Un mob de jefe: en la vida del pack (como sus otras cifras de vida: el pack no sabe de dificultades)
+                SkillMobs.Host mh = le == null ? null : SkillMobs.host(le);
+                double hp = le == null ? 0 : le.getHealth() / (mh != null ? Math.max(0.01, mh.healthScale()) : 1.0);
+                yield le != null && inRange(hp, arg(a, ">0", "health", "h", "amount", "a"));
+            }
             case "healthpercent", "hppercent", "hpp" -> le != null && inRange(le.getHealth() / Math.max(1, le.getMaxHealth()),
                     arg(a, ">0", "percent", "p", "health", "h"));
             case "entitytype", "type", "entitytypes" -> {
@@ -302,6 +414,15 @@ final class SkillConds {
                 yield true;
             }
         } != c.not();
+    }
+
+    /** ¿Ve quien lanza ese punto? (de sus ojos al punto, sin bloques que tapen la vista) */
+    private static boolean sees(Ctx ctx, Vec3 to) {
+        Vec3 from = ctx.caster.eye();
+        var hit = ctx.caster.level().clip(new net.minecraft.world.level.ClipContext(from, to,
+                net.minecraft.world.level.ClipContext.Block.VISUAL, net.minecraft.world.level.ClipContext.Fluid.NONE,
+                ctx.caster.entity));
+        return hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS;
     }
 
     private static String arg(Map<String, String> a, String def, String... keys) {

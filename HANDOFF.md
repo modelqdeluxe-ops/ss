@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.78**: jefes con combos, tempo, giro rápido, paso atrás, modelos completos y auditor; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.79**: motor de jefes listo para packs nuevos —amenaza, fases invulnerables, disparadores y condiciones que faltaban— y auditor que ve lo «de mentira»; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,12 +55,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.78) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.79) — lee esto primero
 
-**Estado**: última versión publicada **1.3.78** (peleas de jefes más vivas: combos, tempo, giro, espaciado y paso
-atrás; modelos completos —el «ojo» de Blockbench—; `partvis` como ModelEngine; la esfera de Astwood; auditor
-`tools/bosses/audit.py`. El cerebro táctico es de la 1.3.77, la IA fiel al pack de la 1.3.76 y los jefes, grietas y
-`/tf boss` de la 1.3.75), Release ya creada:
+**Estado**: última versión publicada **1.3.79** (el motor de jefes, listo para los packs que vengan: lo que faltaba de
+MythicMobs/ModelEngine y un auditor que ve también lo que el motor aceptaba sin hacer nada; los 5 jefes, sin cambios.
+Las peleas más vivas —combos, tempo, giro, paso atrás— y los modelos completos son de la 1.3.78, el cerebro táctico
+de la 1.3.77, la IA fiel al pack de la 1.3.76 y los jefes, grietas y `/tf boss` de la 1.3.75), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -78,8 +78,13 @@ estaba, solo deja las estelas, y los sonidos son mierda también». **tf-client 
 sonido del tajo, salvo que el dueño lo pida otra vez.** Como ya no se distribuye, los compromisos del acuerdo de Punchy no
 aplican (el PDF firmado lo guarda el dueño). Si un jugador tiene `config/punchy/` o `config/tfclient/animaciones.properties`
 de antes, es inofensivo (nadie lo lee).
-**Compilar con GitHub Actions** (el dueño: «USA GIT ACTIONS»): en el contenedor Maven Central da 429; el push a la rama
-ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `main`).
+**Compilar SIEMPRE con GitHub Actions** (el dueño, otra vez el 14 oct: «usa git actions para compilar siempre»): nada
+de `./gradlew` en el contenedor; el push a la rama ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo
+sale desde `main`).
+
+**Motor de jefes «perfecto para todos los que metamos»** (orden del dueño, 14 oct): antes de publicar un jefe,
+`tools/bosses/audit.py` con 0 problemas, `audit.py --prueba` y `sim_ai.py` de los demás sin cambios. Lo que un pack use
+y el motor no tenga se implementa con la semántica de MythicMobs, nunca se quita del pack. Ver `tf-client/JEFES.md` §7.
 
 **JEFES: toda la documentación técnica está en `tf-client/JEFES.md`** (arquitectura, datos, motor, reglas de
 MythicMobs/ModelEngine que no hay que romper, cerebro táctico, herramientas, cómo añadir un jefe y qué mirar según lo
@@ -109,7 +114,9 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.78** (combos, tempo, giro, paso atrás y
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.79** (nada cambia en los 5 jefes —simulador
+idéntico con varias semillas—; lo nuevo lo usarán los packs que vengan; lo único que puede notarse: `~onDamaged` va
+antes del golpe y sus umbrales de vida miran la vida de antes, como MythicMobs), **la 1.3.78** (combos, tempo, giro, paso atrás y
 los modelos completos: simulado con `sim_ai.py --dif demencial`, auditado con `audit.py` y los modelos dibujados en
 Python; lo primero que hay que mirar si el dueño manda capturas: el escudo del Esqueleto —ahora se ve—, que no le
 sobre ninguna pieza, el trono con su escalinata, las pústulas de la Abominación y la esfera de Astwood llegando al
@@ -180,6 +187,33 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.79 (14 oct) — MOTOR DE JEFES LISTO PARA PACKS NUEVOS.** El dueño: «recuerda que quiero que este
+> motor sea perfecto y bien corregido para todos los bosses que metamos». (Una sesión anterior empezó esto y se quedó
+> sin tokens sin subir nada: se rehízo entero desde la 1.3.78.) Todo en `tf-client/JEFES.md` (§3.2, §3.3, §6–§9).
+> - **Lo «de mentira» destapado**: el motor aceptaba `cancelevent`, `threat`, `clearthreat`, `setinvulnerable`,
+>   `goto`, `glow`, `setgravity` sin hacer nada, y daba por cumplidas `lineofsight`, `world`, `biome`, `moonphase`,
+>   `hasowner`, `hasai` (y `targetinlineofsight` solo miraba la distancia). El auditor las contaba como hechas: un pack
+>   con una fase invulnerable habría dado «0 problemas» y fallado en el juego. Ninguno de los 5 jefes dependía de eso.
+> - **`~onDamaged` antes del golpe** (como el EntityDamageEvent de MythicMobs): `cancelevent` lo anula y
+>   `modifydamage{amount;action}` lo cambia (`SkillMobs.Hit`); los umbrales miran la vida de antes.
+> - **Mecánicas nuevas o de verdad**: `threat{amount;mode}` (ADD…FORCE), `clearthreat`, `rally`, `setinvulnerable`,
+>   `goto`, `glow`, `setgravity`, `suicide`, `setmaxhealth`, `shield`/`shieldpercent`, `explosion` (nunca rompe
+>   bloques), `fakeexplosion`, `forcepull`, `disengage`, `rotatetowards`. **Disparadores**: `~onDropCombat`,
+>   `~onChangeTarget`, `~onKill`, `~onPlayerKill`, `~onInteract`. **Objetivos**: `@ThreatTable`/`@TT` (en jefes),
+>   `@RandomThreatTarget`, `@RandomThreatTargetLocation`, `@TriggerLocation`, `@PlayersOnServer`, `@SpawnLocation` (la
+>   grieta, no donde está). **Condiciones**: `playernotwithin`, `lineofsight`, `targetinlineofsight`, `world`, `biome`,
+>   `moonphase`, `hasowner`, `hasai`, `day/night/dusk/dawn`, `raining/thundering/sunny`, `outside`, `lightlevel`,
+>   `distancefromspawn`, `heightabove/below`, `lastdamagecause`, `mounted`, `haspassenger`, `isfrozen`, `gliding`,
+>   `isclimbing`, `motiony`, `fallspeed`, `level`, `time`, `targets`, `playersonline`, `mobsinworld`; `health` en
+>   la escala del pack.
+> - **Auditor**: lee del Java lo que no hace nada (`-> { /* */ }`, `-> true;`) y los disparadores que saltan; lo «de
+>   mentira» sin su porqué en `STUB_OK` es problema; avisos aparte (hoy solo `segment`: capas/colas rígidas).
+>   `--cobertura` (catálogo `tools/bosses/mythic_ref.py`) y `--prueba` (11 de 11 errores metidos a propósito). Los 5
+>   jefes: 0 problemas.
+> - `sim_ai.py` refleja todo (golpe antes de entrar, cancelar/modificar, invulnerable, suicide, playernotwithin,
+>   amenaza): los 5 jefes dan exactamente las mismas cifras que con la 1.3.78 (semillas 3 y 11, Normal, Difícil y
+>   Demencial).
 
 > **TF Client 1.3.78 (14 oct) — PELEAS DE JEFES MÁS VIVAS Y MODELOS COMPLETOS.** El dueño, tras la 1.3.77: «actúan
 > mejor, pero los sigo sintiendo estúpidos, lentos al girar… solo me tiran 2 ataques básicos, ¿no debería haber más

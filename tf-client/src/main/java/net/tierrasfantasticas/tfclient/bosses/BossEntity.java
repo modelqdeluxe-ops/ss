@@ -89,6 +89,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private UUID rift;
     private Vec3 home;
     private int repath;
+    /** setinvulnerable{v} del pack: no le entran golpes. */
+    private boolean packInvulnerable;
+    /** goto{} del pack: a dónde anda (deja de perseguir) y hasta qué tick, a qué velocidad. */
+    private Vec3 gotoGoal;
+    private int gotoUntil;
+    private double gotoSpeed = 1.0;
+    /** Dónde apareció (@SpawnLocation): la grieta o, si no tiene, su primer sitio. */
+    private Vec3 spawnAt;
 
     public BossEntity(EntityType<? extends BossEntity> type, Level level, boolean main) {
         super(type, level);
@@ -347,6 +355,87 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     @Override
+    public boolean ai() {
+        return ai;
+    }
+
+    @Override
+    public void threat(LivingEntity who, String mode, double amount) {
+        if (!(who instanceof Player p)) return;
+        UUID id = p.getUUID();
+        double now = threat.getOrDefault(id, 0.0);
+        double top = 0;
+        for (double v : threat.values()) top = Math.max(top, v);
+        double v = switch (mode) {
+            case "SUBTRACT", "REMOVE" -> now - amount;
+            case "MULTIPLY" -> now * amount;
+            case "DIVIDE" -> amount == 0 ? now : now / amount;
+            case "SET" -> amount;
+            case "RESET" -> 0;
+            // Pasa a ser el primero (rally, taunt): por encima del que más, con el margen con el que cambia de objetivo
+            case "FORCE" -> Math.max(now, top * 1.25 + 10 + amount);
+            default -> now + amount;
+        };
+        threat.put(id, Math.max(0, v));
+        if (mode.equals("FORCE")) {
+            target = p;
+            setTarget(p);
+        }
+    }
+
+    @Override
+    public void clearThreat() {
+        threat.clear();
+        target = null;
+        setTarget(null);
+    }
+
+    @Override
+    public List<LivingEntity> threatTable() {
+        List<LivingEntity> out = new ArrayList<>();
+        if (!(level() instanceof ServerLevel sl)) return out;
+        double range = getAttributeValue(Attributes.FOLLOW_RANGE);
+        threat.entrySet().stream().sorted((a, b) -> Double.compare(b.getValue(), a.getValue())).forEach(e -> {
+            Player p = sl.getPlayerByUUID(e.getKey());
+            if (p != null && p.isAlive() && !p.isSpectator() && !p.isCreative() && p.distanceToSqr(this) <= range * range) out.add(p);
+        });
+        return out;
+    }
+
+    @Override
+    public void setInvulnerable(boolean on) {
+        packInvulnerable = on;
+    }
+
+    @Override
+    public void goTo(Vec3 at, double speed) {
+        gotoGoal = at;
+        gotoUntil = age + 200;
+        gotoSpeed = speed <= 0 ? 1.0 : speed;
+        repath = 0;
+    }
+
+    @Override
+    public void setMaxHealth(double max, boolean alsoHealth) {
+        float hp = (float) Math.max(1, max);
+        this.entityData.set(MAX_HP, hp);
+        if (alsoHealth || getHealth() > hp) setHealth(hp);
+    }
+
+    @Override
+    public Vec3 spawnPos() {
+        return home != null ? home : spawnAt != null ? spawnAt : position();
+    }
+
+    @Override
+    public void suicide() {
+        // Sin pasar por hurt (su ~onDamaged podría anularlo): muere ya, con su ~onDeath y su animación
+        if (dying()) return;
+        setHealth(0F);
+        die(damageSources().genericKill());
+    }
+
+    @Override
     public void setSpeedMul(double m) {
         speedMul = Math.max(0, m);
         speedSet = true;
@@ -450,6 +539,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public boolean hurt(DamageSource src, float amount) {
         if (level().isClientSide) return false;
         if (def == null || dying() || def.invincible || isInvulnerableTo(src)) return false;
+        if (packInvulnerable && !src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
         Entity attacker = src.getEntity();
         // Los de su grupo no se hacen daño entre ellos
         if (attacker != null && SkillMobs.host(attacker) != null && SkillMobs.host(attacker).boss() == boss()) return false;
@@ -465,22 +555,44 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         }
         float before = getHealth();
         double hit = amount * mod;
+        Player p = attacker instanceof Player pl ? pl : src.getDirectEntity() instanceof Player pl2 ? pl2 : null;
+        // ~onDamaged ANTES de que entre, como MythicMobs (su EntityDamageEvent): con el daño del golpe (no lo que le
+        // quitará: con la Resistencia V del escudo del Esqueleto eso es 0 y el escudo no se rompía nunca), la vida de
+        // antes para sus umbrales, y sus skills pueden anularlo (cancelevent) o cambiarlo (modifydamage). Las cifras de
+        // vida del pack van en su escala (el escudo aguanta «500» de su vida del pack)
+        SkillMobs.Hit ev = SkillMobs.damaged(this, attacker != null ? attacker : src.getDirectEntity(), cause, hit);
+        if (dying()) return false; // una de sus skills lo ha matado (suicide)
+        if (ev.cancelled || ev.amount <= 0) {
+            // Anulado (una fase invulnerable): quien le pega sigue siendo su enemigo
+            if (p != null) threat.merge(p.getUUID(), hit * 0.5, Double::sum);
+            return false;
+        }
+        hit = ev.amount;
         this.invulnerableTime = 0;
         boolean ok = super.hurt(src, (float) hit);
         this.invulnerableTime = 0;
         if (!ok) return false;
         float dealt = Math.max(0, before - getHealth());
-        Player p = attacker instanceof Player pl ? pl : src.getDirectEntity() instanceof Player pl2 ? pl2 : null;
         // La amenaza, con el golpe (con el escudo puesto no le entra daño, pero quien le pega sigue siendo su enemigo)
         double threatBy = Math.max(dealt, hit * 0.5);
         if (p != null) threat.merge(p.getUUID(), threatBy, Double::sum);
         if (p != null && cause.equals("PROJECTILE")) shotBy.put(p.getUUID(), age);
         if (owner != null && p != null) owner.threat.merge(p.getUUID(), threatBy * 0.25, Double::sum);
-        // ~onDamaged con el daño del golpe, como MythicMobs (no lo que le quitó: con la Resistencia V del escudo del
-        // Esqueleto eso es 0 y el escudo no se rompía nunca). Las cifras de vida del pack van en su escala (el escudo
-        // aguanta «500» de su vida del pack)
-        SkillMobs.damaged(this, attacker != null ? attacker : src.getDirectEntity(), cause, hit / Math.max(0.01, healthScale));
         return true;
+    }
+
+    @Override
+    protected net.minecraft.world.InteractionResult mobInteract(Player player, net.minecraft.world.InteractionHand hand) {
+        // ~onInteract (clic derecho), una vez por clic (no por cada mano)
+        if (!level().isClientSide && def != null && hand == net.minecraft.world.InteractionHand.MAIN_HAND) SkillMobs.interacted(this, player);
+        return net.minecraft.world.InteractionResult.PASS;
+    }
+
+    @Override
+    public boolean killedEntity(ServerLevel level, LivingEntity victim) {
+        // ~onKill / ~onPlayerKill (con sus golpes y sus skills: los dos llevan al jefe como causante)
+        if (def != null) SkillMobs.killed(this, victim);
+        return super.killedEntity(level, victim);
     }
 
     /** Un golpe a una de sus piezas (la cabeza de la Hidra): es un golpe a él. */
@@ -581,7 +693,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             this.yBodyRotO = this.yBodyRot;
             this.yBodyRot += Mth.wrapDegrees(want - this.yBodyRot) * 0.5F;
         } else if (def != null) {
-            if (age == 1) SkillMobs.spawned(this);
+            if (age == 1) {
+                spawnAt = position();
+                SkillMobs.spawned(this);
+            }
             SkillMobs.tick(this);
             if (bar != null) updateBar();
             if (owner != null && (owner.isRemoved() || owner.dying() && owner.deathTime > 20)) discard();
@@ -603,6 +718,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             goal = home;
             stop = 2;
             target = null;
+            gotoGoal = null;
+        } else if (gotoGoal != null && age < gotoUntil) {
+            // goto{} del pack: anda hasta allí antes de volver a perseguir
+            goal = gotoGoal;
+            stop = 1.2;
+            if (Math.sqrt(horizontalDistanceSqr(gotoGoal)) <= stop) gotoGoal = null;
         } else if (target != null && def.chases) {
             goal = target.position();
             // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
@@ -638,7 +759,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             double d = Math.sqrt(horizontalDistanceSqr(goal));
             if (d > stop) {
                 if (--repath <= 0 || getNavigation().isDone()) {
-                    getNavigation().moveTo(goal.x, goal.y, goal.z, 1.0);
+                    getNavigation().moveTo(goal.x, goal.y, goal.z, goal == gotoGoal ? gotoSpeed : 1.0);
                     repath = 10;
                 }
             } else {

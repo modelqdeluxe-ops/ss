@@ -89,6 +89,7 @@ class Boss:
         self.auras = {}
         self.ai = True
         self.locked = False
+        self.invulnerable = False  # setinvulnerable{v}
         opts = self.mob.get('options') or {}
         self.type_speed = self.mob.get('speed', 0.25)
         self.base_speed = float(opts.get('MovementSpeed', self.type_speed))
@@ -590,6 +591,7 @@ class Sim:
         self.want_dist = 10.0
         self.verbose = verbose
         self.hits = 0
+        self.cancelled_hits = 0
         self.unknown = set()
         # Lo que hace el jugador (para ver si el jefe le castiga)
         self.heal_until = self.block_until = self.aim_until = -1
@@ -639,13 +641,25 @@ class Sim:
 
     def damage(self, amount, cause):
         b = self.b
-        if b.hp <= 0:
+        if b.hp <= 0 or b.invulnerable and not OLD:
             return
-        b.hp -= amount * b.maxhp / 2500.0  # que la pelea dure unos minutos sea cual sea la vida
         self.hits += 1
         # damage-amount en la escala de vida del pack (como BossEntity.hurt)
         scale = self.prog['boss']['health'] / max(1.0, float(self.prog['boss'].get('pack_health') or 1))
-        self.trigger('ondamaged', {'damage-amount': amount * 2 / scale, 'damage-cause': cause})
+        vars = {'damage-amount': amount * 2 / scale, 'damage-cause': cause}
+        if OLD:
+            # La 1.3.75 lanzaba ~onDamaged con el golpe ya dentro
+            b.hp -= amount * b.maxhp / 2500.0
+            self.trigger('ondamaged', vars)
+            return
+        # Como BossEntity.hurt: ~onDamaged ANTES de que entre (vida de antes para sus umbrales); cancelevent lo anula y
+        # modifydamage lo cambia (sus cifras ADD/SET van en la escala del pack: aquí, ×scale/2)
+        hit = {'amount': amount, 'cancelled': False, 'scale': scale / 2}
+        self.trigger('ondamaged', vars, hit=hit)
+        if hit['cancelled'] or hit['amount'] <= 0 or b.hp <= 0:
+            self.cancelled_hits += 1
+            return
+        b.hp -= hit['amount'] * b.maxhp / 2500.0  # que la pelea dure unos minutos sea cual sea la vida
 
     def dist(self):
         return math.hypot(self.px - self.b.x, self.pz - self.b.z)
@@ -720,7 +734,7 @@ class Sim:
             b.look = b.body
 
     # ------------------------------------------------------------------ disparadores
-    def trigger(self, tr, vars=None, value=None):
+    def trigger(self, tr, vars=None, value=None, hit=None):
         for pm in self.b.mob['mechs']:
             t = pm.get('tr') or 'onspawn'
             if t != tr:
@@ -729,7 +743,7 @@ class Sim:
                 continue
             if pm.get('hp') and not self.hp_ok(pm['hp']):
                 continue
-            self.exec(pm, {'targets': None, 'vars': dict(vars or {}), 'depth': 0})
+            self.exec(pm, {'targets': None, 'vars': dict(vars or {}), 'depth': 0, 'hit': hit})
 
     def hp_ok(self, spec):
         pct = self.b.hp / self.b.maxhp * 100
@@ -804,8 +818,19 @@ class Sim:
             return b.auras.get(n, -1) > self.t
         if m == 'incombat':
             return b.target
-        if m == 'playerwithin':
-            return math.hypot(self.px - b.x, self.pz - b.z) <= num(arg(a, 5, 'distance', 'd'), 5)
+        if m in ('playerwithin', 'playernotwithin'):
+            within = math.hypot(self.px - b.x, self.pz - b.z) <= num(arg(a, 5, 'distance', 'd'), 5)
+            return within != (m == 'playernotwithin')
+        if m == 'hasai':
+            return b.ai
+        if m in ('health', 'hp') and who == 'boss':
+            # en la vida del pack, como SkillConds
+            pack = float(self.prog['boss'].get('pack_health') or self.prog['boss']['health'])
+            return in_range(b.hp / b.maxhp * pack, arg(a, '>0', 'health', 'h', 'amount', 'a'))
+        if m in ('healthpercent', 'hppercent', 'hpp') and who == 'boss':
+            return in_range(b.hp / b.maxhp, arg(a, '>0', 'percent', 'p', 'health', 'h'))
+        if m in ('lineofsight', 'los', 'targetinlineofsight'):
+            return b.target  # aquí no hay paredes
         if m in ('targetwithin', 'targetnotwithin'):
             within = b.target and self.dist() <= num(arg(a, 16, 'distance', 'd'), 16)
             return within != (m == 'targetnotwithin')
@@ -928,6 +953,8 @@ class Sim:
             return ['boss']
         if t in ('target', 't', 'trigger'):
             return ['player'] if self.b.target else []
+        if t in ('threattable', 'tt', 'ttp', 'threattableplayers', 'randomthreattarget', 'rtt'):
+            return ['player'] if self.b.target else []
         if t in ('pir', 'playersinradius', 'eir', 'livinginradius', 'entitiesinradius'):
             r = num(arg(pm.get('ta') or {}, 5, 'r', 'radius'), 5)
             return ['player'] if self.dist() <= r else []
@@ -1029,6 +1056,24 @@ class Sim:
                     self.run_meta(oh, dict(ctx, targets=['player']))
         elif m in ('sethealth',) and 'boss' in targets and num(arg(a, 0, 'amount', 'a'), 0) <= 0:
             pass
+        # El golpe de ~onDamaged (SkillRuntime: cancelevent, modifydamage)
+        elif m == 'cancelevent':
+            if ctx.get('hit') is not None:
+                ctx['hit']['cancelled'] = True
+        elif m == 'modifydamage':
+            hit = ctx.get('hit')
+            if hit is not None:
+                v = num(arg(a, 1, 'amount', 'a', 'damage', 'd', 'multiplier', 'm'), 1)
+                act = str(arg(a, 'MULTIPLY', 'action', 'act', 'type', 't', 'mode')).upper()
+                h = hit['amount']
+                h = {'ADD': h + v * hit['scale'], 'SUBTRACT': h - v * hit['scale'], 'SUB': h - v * hit['scale'],
+                     'DIVIDE': h / v if v else h, 'SET': v * hit['scale']}.get(act, h * v)
+                hit['amount'] = max(0.0, h)
+        elif m in ('setinvulnerable', 'invulnerable'):
+            if 'boss' in targets:
+                b.invulnerable = str(arg(a, 'true', 'value', 'v', 'invulnerable', 'i')).lower() == 'true'
+        elif m == 'suicide':
+            b.hp = 0
 
 
 def meta_key(name):
@@ -1108,6 +1153,8 @@ def main():
                 tags = ','.join(k for k in ('gap', 'ranged', 'aoe', 'grab', 'rear') if getattr(a, k))
                 if '-v' in sys.argv:
                     print(f'       cerebro: {a.name:44s} {a.min:4.1f}-{a.max:4.1f} {tags:18s} usos {a.uses:3d} entran {a.hits:3d}')
+        if s.cancelled_hits:
+            print(f'     golpes anulados por el pack (cancelevent/modifydamage/invulnerable): {s.cancelled_hits} de {s.hits}')
         if s.unknown:
             print('     condiciones sin simular:', ', '.join(sorted(s.unknown)))
 

@@ -227,6 +227,8 @@ public final class SkillRuntime {
         SkillMobs.Host host;
         /** El tipo de daño que lo disparó (~onDamaged): ENTITY_ATTACK, PROJECTILE... */
         String damageCause;
+        /** El golpe que lo disparó, aún sin entrar (~onDamaged): cancelevent y modifydamage lo cambian. */
+        SkillMobs.Hit hit;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -250,6 +252,7 @@ public final class SkillRuntime {
             c.cast = cast;
             c.host = host;
             c.damageCause = damageCause;
+            c.hit = hit;
             return c;
         }
 
@@ -946,7 +949,7 @@ public final class SkillRuntime {
                 String skill = m.arg(null, "entityskill", "es", "onhit");
                 if (skill != null) callNamed(skill, ctx, targets);
             }
-            case "look", "lock" -> {
+            case "look", "lock", "rotatetowards" -> {
                 boolean now = bool(m.arg("false", "immediately", "i", "force", "f"));
                 SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
                 if (h != null) {
@@ -955,10 +958,125 @@ public final class SkillRuntime {
                     SkillMotion.look(m, ctx, targets);
                 }
             }
-            case "cancelevent", "animatearmorstand", "enchant", "setgravity", "threat", "runaitargetselector",
-                    "runaigoalselector", "modifyglobalscore", "setglobalscore", "feed", "playanimation", "swing", "glow",
-                    "setcollidable", "setinvulnerable", "bindhitbox", "clearthreat", "cullconfig",
-                    "posearmorstand", "segment", "removehelditem", "renderinit", "goto" -> { /* nada (o no se puede hacer sin entidades de verdad) */ }
+            // El golpe que disparó ~onDamaged (aún sin entrar): anularlo o cambiarlo. Fuera de un ~onDamaged no hay
+            // evento que cambiar (~onAttack y ~onInteract de los packs, o una skill lanzada por tiempo): nada, como en
+            // MythicMobs
+            case "cancelevent" -> {
+                if (ctx.hit != null) ctx.hit.cancelled = true;
+            }
+            case "modifydamage" -> modifyDamage(m, ctx);
+            case "threat", "threatchange", "threatmod" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                String mode = m.arg("ADD", "mode", "m").toUpperCase(Locale.ROOT);
+                double amount = num(m.arg("0", "amount", "a"), 0);
+                if (h != null) for (Tgt t : targets) if (t.living() != null) h.threat(t.living(), mode, amount);
+            }
+            case "clearthreat" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                if (h != null) h.clearThreat();
+            }
+            case "rally" -> rally(m, ctx, targets);
+            case "setinvulnerable", "invulnerable" -> {
+                boolean on = bool(m.arg("true", "value", "v", "invulnerable", "i"));
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.setInvulnerable(on);
+                }
+            }
+            case "glow" -> {
+                int ticks = (int) num(m.arg("0", "duration", "d", "ticks", "t"), 0);
+                for (Tgt t : targets) {
+                    Entity e = t.who == null ? null : t.who.entity;
+                    if (e == null || e instanceof Player) continue;
+                    e.setGlowingTag(true);
+                    if (ticks > 0) later(ticks, ctx.cast, () -> e.setGlowingTag(false));
+                }
+            }
+            case "setgravity" -> {
+                boolean g = bool(m.arg("true", "gravity", "g", "value", "v"));
+                for (Tgt t : targets) if (t.who != null && t.who.entity != null && !(t.who.entity instanceof Player)) t.who.entity.setNoGravity(!g);
+            }
+            case "goto" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                double sp = num(m.arg("1", "speedmodifier", "sm", "speed", "s"), 1);
+                if (h != null && !targets.isEmpty()) h.goTo(targets.get(0).pos(), sp);
+            }
+            case "suicide" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                if (h != null) h.suicide();
+                else if (ctx.caster.actor != null) ctx.caster.actor.remove();
+            }
+            case "setmaxhealth" -> {
+                // En los jefes, la cifra va en la escala del pack (como sus otras cifras de vida)
+                String mode = m.arg("SET", "mode", "m").toUpperCase(Locale.ROOT);
+                double amount = num(m.arg("20", "amount", "a"), 20);
+                boolean set = bool(m.arg("false", "set", "s"));
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h == null) continue;
+                    double max = h.mob().getMaxHealth();
+                    double v = amount * h.healthScale();
+                    max = switch (mode) {
+                        case "ADD" -> max + v;
+                        case "MULTIPLY" -> max * amount;
+                        default -> v;
+                    };
+                    h.setMaxHealth(Math.max(1, max), set);
+                }
+            }
+            case "shield", "absorbshield", "shieldpercent" -> {
+                // Corazones de absorción (como los de la manzana dorada) encima de la vida: los golpes se los comen antes
+                boolean pct = m.m.equals("shieldpercent");
+                double amount = num(m.arg(pct ? "0.1" : "1", "amount", "a", "multiplier", "m", "percent", "p"), pct ? 0.1 : 1);
+                double cap = num(m.arg("0", "maxshield", "ms", "max"), 0);
+                for (Tgt t : targets) {
+                    LivingEntity le = t.living();
+                    if (le == null) continue;
+                    SkillMobs.Host h = SkillMobs.host(le);
+                    double scale = h != null && ctx.host != null ? h.healthScale() : 1.0;
+                    double add = pct ? le.getMaxHealth() * amount : amount * scale;
+                    double max = cap > 0 ? (pct ? le.getMaxHealth() * cap : cap * scale) : Double.MAX_VALUE;
+                    le.setAbsorptionAmount((float) Math.min(max, le.getAbsorptionAmount() + add));
+                }
+            }
+            case "explosion", "explode" -> explosion(m, ctx, targets);
+            case "fakeexplosion", "effect:explosion", "e:explosion", "effect:explode", "e:explode" -> SkillFx.explosionFx(ctx, targets);
+            case "forcepull" -> {
+                // Trae a los objetivos junto a quien lanza (con algo de dispersión)
+                double sp = num(m.arg("0", "spread", "s"), 0);
+                double vs = num(m.arg("0", "vspread", "vs"), 0);
+                Vec3 c = ctx.caster.pos();
+                for (Tgt t : targets) {
+                    LivingEntity le = t.living();
+                    if (le == null || le == ctx.caster.entity) continue;
+                    ThreadLocalRandom r = ThreadLocalRandom.current();
+                    le.teleportTo(c.x + (r.nextDouble() * 2 - 1) * sp, c.y + r.nextDouble() * vs, c.z + (r.nextDouble() * 2 - 1) * sp);
+                }
+            }
+            case "disengage" -> {
+                // Salto hacia atrás, lejos de su objetivo
+                Entity e = ctx.caster.entity;
+                if (e != null) {
+                    double v = num(m.arg("1", "velocity", "v"), 1);
+                    double vy = num(m.arg("0.5", "velocityy", "vy"), 0.5);
+                    Vec3 from = !targets.isEmpty() ? targets.get(0).pos() : ctx.aim != null ? ctx.aim.position() : null;
+                    Vec3 away = from == null ? ctx.caster.forward().scale(-1) : e.position().subtract(from);
+                    away = new Vec3(away.x, 0, away.z);
+                    if (away.lengthSqr() < 1e-6) away = ctx.caster.forward().scale(-1);
+                    away = away.normalize().scale(v);
+                    e.setDeltaMovement(away.x, vy, away.z);
+                    e.hurtMarked = true;
+                }
+            }
+            // Sin efecto aquí, a propósito (tools/bosses/audit.py las conoce y dice cuándo importa):
+            //  - del cuerpo de Minecraft que los jefes no usan (los soportes de armadura, el brazo, el hambre, los
+            //    selectores de IA de Bukkit: su IA es la de BossEntity y su cerebro);
+            //  - de ModelEngine que aquí ya se hace de otra forma (bindhitbox: las cajas ob_; renderinit, cullconfig) o
+            //    aún no (segment: capas y colas que se doblan como una cuerda; enchant: el brillo de encantado);
+            //  - marcadores globales de MythicMobs (no hay condición que los lea).
+            case "animatearmorstand", "enchant", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
+                    "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "bindhitbox", "cullconfig",
+                    "posearmorstand", "segment", "removehelditem", "renderinit" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
         }
     }
@@ -1199,6 +1317,77 @@ public final class SkillRuntime {
             if (!canHurt(ctx, le)) continue;
             double scale = ctx.host != null ? 1.0 : SkillServer.damageScale();
             hurt(ctx, le, amount * ctx.power * t.power * scale, noKnock, ignoreArmor, noImmunity);
+        }
+    }
+
+    /**
+     * modifydamage{amount;action} en un ~onDamaged: cambia el golpe antes de que entre. action (o type): MULTIPLY (por
+     * defecto), ADD, SUBTRACT, DIVIDE o SET; las cifras de ADD/SUBTRACT/SET van en la escala del pack, como
+     * «damage-amount».
+     */
+    private static void modifyDamage(Mech m, Ctx ctx) {
+        SkillMobs.Hit hit = ctx.hit;
+        if (hit == null) return;
+        double a = num(m.arg("1", "amount", "a", "damage", "d", "multiplier", "m"), 1);
+        String act = m.arg("MULTIPLY", "action", "act", "type", "t", "mode").toUpperCase(Locale.ROOT);
+        hit.amount = switch (act) {
+            case "ADD" -> hit.amount + a * hit.scale;
+            case "SUBTRACT", "SUB" -> hit.amount - a * hit.scale;
+            case "DIVIDE" -> a == 0 ? hit.amount : hit.amount / a;
+            case "SET" -> a * hit.scale;
+            default -> hit.amount * a;
+        };
+        if (hit.amount < 0) hit.amount = 0;
+    }
+
+    /** rally{types;radius;overwritetarget}: los de su grupo cerca van a por su objetivo (o por quien diga la línea). */
+    private static void rally(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillMobs.Host me = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        if (me == null) return;
+        LivingEntity foe = null;
+        for (Tgt t : targets) if (t.living() != null && t.living() != ctx.caster.entity) foe = t.living();
+        if (foe == null) foe = me.target();
+        if (foe == null || !canHurt(ctx, foe)) return;
+        double r = num(m.arg("16", "radius", "r"), 16);
+        boolean over = bool(m.arg("false", "overwritetarget", "ot"));
+        String types = m.arg("", "types", "type", "t").toLowerCase(Locale.ROOT);
+        for (LivingEntity e : ctx.caster.level().getEntitiesOfClass(LivingEntity.class, ctx.caster.entity.getBoundingBox().inflate(r))) {
+            SkillMobs.Host h = SkillMobs.host(e);
+            if (h == null || h == me || h.boss() != me.boss() || h.dying()) continue;
+            if (!types.isEmpty() && !(("," + types.replace(" ", "") + ",").contains("," + h.def().name.toLowerCase(Locale.ROOT) + ","))) continue;
+            if (!over && h.target() != null && h.target().isAlive()) continue;
+            h.threat(foe, "FORCE", 0);
+        }
+    }
+
+    /**
+     * explosion{yield;fire}: una explosión de verdad para los golpes (yield 4 = una dinamita) que nunca rompe bloques
+     * (el servidor tiene construcciones y protecciones) y solo daña a quien el lanzador puede dañar.
+     */
+    private static void explosion(Mech m, Ctx ctx, List<Tgt> targets) {
+        double power = Math.max(0.5, num(m.arg("4", "yield", "y", "power", "p"), 4));
+        boolean fire = bool(m.arg("false", "fire", "f"));
+        double r = power * 2;
+        SkillFx.explosionFx(ctx, targets);
+        for (Tgt t : targets) {
+            Vec3 c = t.pos();
+            for (LivingEntity le : ctx.caster.level().getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(r))) {
+                if (!canHurt(ctx, le)) continue;
+                double d = le.position().distanceTo(c);
+                if (d > r) continue;
+                double impact = 1 - d / r;
+                // La cuenta de daño de Minecraft (sin tapar con bloques); los jefes, con su dificultad
+                double dmg = (impact * impact + impact) / 2 * 7 * r + 1;
+                if (ctx.host != null) dmg *= ctx.host.damageMul();
+                hurt(ctx, le, dmg, false, false, false);
+                Vec3 push = le.position().subtract(c);
+                if (push.lengthSqr() > 1e-6) {
+                    push = push.normalize().scale(impact);
+                    le.push(push.x, push.y * 0.5 + impact * 0.3, push.z);
+                    le.hurtMarked = true;
+                }
+                if (fire) le.setSecondsOnFire(4);
+            }
         }
     }
 

@@ -118,6 +118,69 @@ public final class SkillMobs {
         default boolean backstep(Vec3 away) {
             return false;
         }
+
+        // --- Lo que piden las mecánicas de MythicMobs de los jefes (threat, setinvulnerable, goto, setmaxhealth...)
+
+        /** ¿Tiene la IA puesta? (condición hasai) */
+        default boolean ai() {
+            return true;
+        }
+
+        /**
+         * threat{amount;mode} @quien: cambia lo que le odia (ADD, SUBTRACT, MULTIPLY, DIVIDE, SET, FORCE = pasa a ser
+         * el primero de la tabla, RESET = a 0). Solo cuentan los jugadores (los objetivos de los jefes).
+         */
+        default void threat(LivingEntity who, String mode, double amount) {
+        }
+
+        /** clearthreat: olvida la tabla de amenaza (y su objetivo, que vuelve a elegir). */
+        default void clearThreat() {
+        }
+
+        /** Su tabla de amenaza, de quien más odia a quien menos (los vivos a su alcance): @ThreatTable. */
+        default List<LivingEntity> threatTable() {
+            return List.of();
+        }
+
+        /** setinvulnerable{v}: no recibe golpes. */
+        default void setInvulnerable(boolean on) {
+        }
+
+        /** goto{speed} @sitio: anda hasta allí (deja de perseguir hasta llegar o en ~10 s). */
+        default void goTo(Vec3 at, double speed) {
+        }
+
+        /** setmaxhealth{amount;set}: vida máxima nueva (ya en su escala); con «set», también la vida. */
+        default void setMaxHealth(double max, boolean alsoHealth) {
+        }
+
+        /** Dónde apareció (@SpawnLocation, distanceFromSpawn): la grieta de un jefe. */
+        default Vec3 spawnPos() {
+            return mob().position();
+        }
+
+        /** suicide: muere ya (con su ~onDeath y su animación). */
+        default void suicide() {
+            mob().kill();
+        }
+    }
+
+    /**
+     * El golpe que dispara ~onDamaged, antes de que entre (como el EntityDamageEvent de MythicMobs): cancelevent lo
+     * anula y modifydamage lo cambia. Solo cuenta lo que hagan sus skills en el momento (lo que vaya con delay ya llega
+     * tarde, igual que en MythicMobs).
+     */
+    public static final class Hit {
+        /** Daño que va a entrar (en la escala del jefe, ya con sus modificadores de daño). */
+        public double amount;
+        public boolean cancelled;
+        /** Vida de verdad / vida del pack: las cifras fijas de modifydamage (ADD, SET) van en la del pack. */
+        final double scale;
+
+        Hit(double amount, double scale) {
+            this.amount = amount;
+            this.scale = scale;
+        }
     }
 
     /** Lo que hacen las entidades (el paquete de jefes): esbirros, objetos que caen, asientos y temblores de cámara. */
@@ -151,8 +214,12 @@ public final class SkillMobs {
         /** Su cerebro táctico (null si no tiene ataques que decidir) y si ya se ha mirado. */
         SkillBrain.Brain brain;
         boolean brainBuilt;
-        /** Último tick con objetivo (para ~onEnterCombat). */
+        /** Último tick con objetivo (para ~onEnterCombat y ~onDropCombat). */
         int lastCombat;
+        /** Sigue «en combate» para ~onDropCombat (se va tras 10 s sin objetivo, como entra una vez por pelea). */
+        boolean inFight;
+        /** Su objetivo del tick anterior (~onChangeTarget). */
+        UUID lastTarget;
 
         State(Host host) {
             this.host = host;
@@ -204,7 +271,18 @@ public final class SkillMobs {
         // ~onEnterCombat una vez por pelea: si pierde el objetivo un momento (la correa de la grieta, un cambio de
         // objetivo) no vuelve a «entrar» (la Abominación volvía a gritar cada vez, quieta delante del jugador)
         if (combat && !s.combat && (s.lastCombat == 0 || age - s.lastCombat > 200)) run(h, "onentercombat", target, null, null);
-        if (combat) s.lastCombat = age;
+        if (combat) {
+            s.lastCombat = age;
+            s.inFight = true;
+        } else if (s.inFight && age - s.lastCombat > 200) {
+            // ~onDropCombat: con la misma regla que la entrada (10 s sin nadie a quien atacar = se acabó la pelea)
+            s.inFight = false;
+            run(h, "ondropcombat", null, null, null);
+        }
+        // ~onChangeTarget: pasa de un objetivo a otro (con @trigger = el nuevo)
+        UUID now = combat ? target.getUUID() : null;
+        if (now != null && s.lastTarget != null && !now.equals(s.lastTarget)) run(h, "onchangetarget", target, null, null);
+        if (now != null) s.lastTarget = now;
         s.combat = combat;
         if (!s.brainBuilt) {
             s.brainBuilt = true;
@@ -263,15 +341,35 @@ public final class SkillMobs {
         }
     }
 
-    /** Le han hecho daño (ya aplicado): sus ~onDamaged, con quien le pegó como @trigger. */
-    public static void damaged(Host h, Entity attacker, String cause, double amount) {
-        if (h.dying()) return;
+    /**
+     * Le van a hacer daño (aún no ha entrado, como el EntityDamageEvent de MythicMobs): sus ~onDamaged, con quien le
+     * pegó como @trigger, «damage-amount» en la escala del pack y la vida de antes del golpe para sus umbrales
+     * («~onDamaged &lt;50%»). Devuelve el golpe: cancelevent lo anula y modifydamage lo cambia.
+     */
+    public static Hit damaged(Host h, Entity attacker, String cause, double amount) {
+        double scale = Math.max(0.01, h.healthScale());
+        Hit hit = new Hit(amount, scale);
+        if (h.dying()) return hit;
         State st = STATES.get(h.mob().getUUID());
         if (st != null && st.brain != null && "PROJECTILE".equals(cause)) SkillBrain.shotBy(st.brain, h.age());
         Map<String, String> vars = new HashMap<>();
-        vars.put("damage-amount", SkillRuntime.fmt(amount));
+        vars.put("damage-amount", SkillRuntime.fmt(amount / scale));
         vars.put("damage-cause", cause);
-        run(h, "ondamaged", attacker, cause, vars);
+        run(h, "ondamaged", attacker, cause, vars, hit);
+        return hit;
+    }
+
+    /** Ha matado a alguien con un golpe o una skill: ~onKill (a cualquiera) y ~onPlayerKill (a un jugador), @trigger = él. */
+    public static void killed(Host h, LivingEntity victim) {
+        if (h.dying()) return;
+        run(h, "onkill", victim, null, null);
+        if (victim instanceof net.minecraft.world.entity.player.Player) run(h, "onplayerkill", victim, null, null);
+    }
+
+    /** Un jugador le hace clic derecho: ~onInteract (@trigger = el jugador). */
+    public static void interacted(Host h, Entity who) {
+        if (h.dying()) return;
+        run(h, "oninteract", who, null, null);
     }
 
     /** Ha muerto: sus ~onDeath (siguen aunque la entidad ya no esté viva: la animación de muerte, el cofre...). */
@@ -301,6 +399,10 @@ public final class SkillMobs {
     }
 
     private static void run(Host h, String trigger, Entity other, String cause, Map<String, String> vars) {
+        run(h, trigger, other, cause, vars, null);
+    }
+
+    private static void run(Host h, String trigger, Entity other, String cause, Map<String, String> vars, Hit hit) {
         List<Mech> list = new ArrayList<>();
         for (Mech m : h.def().mechs) {
             String tr = m.tr == null ? "onspawn" : m.tr;
@@ -310,6 +412,7 @@ public final class SkillMobs {
         Ctx c = ctx(h);
         if (other != null) c.trigger = Who.of(other);
         c.damageCause = cause;
+        c.hit = hit;
         if (vars != null) c.vars.putAll(vars);
         // Cada línea por separado (como MythicMobs: una línea con delay no frena a las demás)
         for (Mech m : list) {
