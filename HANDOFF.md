@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.67**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.68**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,17 +55,21 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.67) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.68) — lee esto primero
 
-**Estado**: última versión publicada **1.3.67**, Release ya creada:
+**Estado**: última versión publicada **1.3.68**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
-**ORDEN DEL DUEÑO PENDIENTE DE PUBLICAR (14 oct): QUITAR «COLORES VIVOS».** Ya está quitado en `main` (borrados
-`trail/VividColors.java`, `mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y
-`assets/tfclient/shaders/post/vivid.json`; fuera de `tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE;
-compila). **Falta publicarlo**: sube la versión a **1.3.68** (`mod_version` y `TFClient.VERSION`), apunta la entrega abajo
-y fusiona en `main` (ver «Cómo publicar»). No añadas nada más que no pida el dueño.
+**«Colores vivos» quitado y publicado en la 1.3.68** (orden del dueño, 14 oct): borrados `trail/VividColors.java`,
+`mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y `assets/tfclient/shaders/post/vivid.json`; fuera de
+`tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE.
+
+**EN CURSO (14 oct): pedido del dueño «mete estas animaciones a TF Client, que se puedan desactivar desde el apartado de
+Efectos del pad»** con el jar de **Punchy 2.8e (Forge 1.20.1, licencia MIT en su mods.toml)**: animaciones en primera
+persona (Bedrock: `player.animation.json`, 213 clips de brazos e `itemgrip`). Ver la entrega 1.3.69 cuando esté.
+**Compilar con GitHub Actions** (el dueño: «USA GIT ACTIONS»): en el contenedor Maven Central da 429; el push a la rama
+ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `main`).
 
 **Cómo trabaja el dueño contigo (reglas que ha repetido; incúmplelas y se enfada con razón)**:
 - Escribe en español; responde en español, claro y sin rodeos. Quiere **cambios reales**, no retoques, y calidad de
@@ -142,6 +146,10 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
+> **TF Client 1.3.68 (14 oct)** — el dueño: «quita Colores vivos». **Colores vivos quitado** (el filtro de saturación
+> de la 1.3.67): fuera `VividColors`, `GameRendererMixin`, `PostChainAccessor`, el shader `post/vivid.json`, su ajuste en
+> `TrailSettings` y su fila en Efectos › COMBATE. Nada más.
+
 > **TF Client 1.3.67 (14 oct)** — el dueño: «la creación de kits es un dolor de cabeza: dar objetos, asignar monedas…
 > que lo pueda meter todo de un solo», «la ruleta es una mierda: animación lenta, sin sonidos», «la textura de las claims
 > exagerada otra vez: simplistas, sin números ni figuras» y luego «ponle TF siempre con un contorno bonito», «no veo
@@ -167,8 +175,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   armas de otros mods). 7 estilos (`TrailProfile`), mezcla brillo/translúcida/sólida, duración, ancho, opacidad, cola,
 >   filo brillante, solo ataques (no al picar bloques), según la carga, al sacar el arma, otros jugadores y mobs con
 >   distancia, qué armas, poco detalle, menos destellos.
-> - **Colores vivos**: un filtro de saturación que salió en la 1.3.67. **El dueño ordenó quitarlo** (14 oct): ya está
->   borrado en `main`, falta publicar la 1.3.68 (ver CHECKPOINT).
+> - **Colores vivos**: un filtro de saturación que salió en la 1.3.67. **El dueño ordenó quitarlo** (14 oct): quitado en
+>   la 1.3.68.
 > - **Efectos › COMBATE** (`PadCombat`): pestaña del cliente (si el servidor no la manda, `PadViewPage.set` la añade);
 >   arriba la vista previa (`TrailPreview`: una espada dando tajos con la estela de los ajustes, con el mismo código del
 >   juego; `PadView.TRAIL_PREVIEW`), abajo todo en filas compactas, RESTABLECER. Simulador: `tools/pad/sim/trail.py`,
