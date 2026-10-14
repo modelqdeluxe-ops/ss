@@ -145,12 +145,57 @@ def main():
         worst = max(worst, float(np.linalg.norm(s[3][:3, 3] - target)))
     check('el pie llega al objetivo (CCD, como VfxIk)', worst < 0.25, f'{worst:.3f} px')
 
+    print('cabezas de ModelEngine 4 (VfxPose.build)')
+    heads(tmp, src)
+
     print()
     if FAILS:
         print('FALLAN:', ', '.join(FAILS))
         return 1
     print('todo bien')
     return 0
+
+
+def heads(tmp, src):
+    """hi_ / h_ / h[yaw]_ como ModelEngine 4 (y BetterModel): giro global que no se acumula; los hijos sin etiqueta
+    de un h_ van con él pero no giran; hi_ hace cabeza a todos sus hijos; cada cabeza con sus límites."""
+    els = [cube('d1', [-2, 8, -2], [2, 12, 2]), cube('d2', [-1, 12, -1], [1, 14, 1]), cube('d3', [3, 10, -1], [5, 14, 1]),
+           cube('d4', [-1, 2, 7], [1, 6, 9]), cube('d5', [-1, 2, 11], [1, 4, 13])]
+    outl = [{'uuid': 'r', 'name': 'root', 'origin': [0, 0, 0], 'children': [
+        {'uuid': 'c', 'name': 'hi[yaw=20]_chest', 'origin': [0, 10, 0], 'children': ['d1',
+            {'uuid': 'n', 'name': 'neck', 'origin': [0, 12, 0], 'children': [
+                {'uuid': 'h', 'name': 'hi_head', 'origin': [0, 12, 0], 'children': ['d2']},
+                {'uuid': 's', 'name': 'h_snout', 'origin': [0, 12, 1], 'children': [
+                    {'uuid': 'o', 'name': 'nose', 'origin': [0, 12, 2], 'children': []}]}]},
+            {'uuid': 'a', 'name': 'arm', 'origin': [4, 14, 0], 'children': ['d3']}]},
+        {'uuid': 't', 'name': 'h_turret', 'origin': [0, 4, 8], 'children': ['d4',
+            {'uuid': 'j', 'name': 'jaw', 'origin': [0, 4, 12], 'children': ['d5']}]}]}]
+    m, probs = convert({'resolution': {'width': 16, 'height': 16}, 'textures': [{'name': 't', 'source': src}],
+                        'elements': els, 'outliner': outl, 'animations': []}, tmp)
+    ids = [b['id'] for b in m['bones']]
+    check('hi_: todo su subárbol es cabeza (también bajo un h_), los hijos de h_ no',
+          all(bone(m, x)['head'] for x in ('chest', 'neck', 'head', 'arm', 'snout', 'nose'))
+          and bone(m, 'turret')['head'] and not bone(m, 'jaw')['head'], [(b['id'], b['head']) for b in m['bones']])
+    check('hi[...]_: sus hijos sin etiqueta heredan los límites', bone(m, 'arm').get('bp') == {'yaw': 20.0}
+          and not bone(m, 'nose').get('bp'), (bone(m, 'arm').get('bp'), bone(m, 'nose').get('bp')))
+    mats = [np.array(x) for x in B.pose(m, None, 0, head=(40, 0))]
+
+    def yaw_of(i):
+        z = mats[i][:3, :3] @ np.array([0, 0, 1.0])
+        return math.degrees(math.atan2(z[0], z[2]))
+    yh, yc, ya, yt, yj = (yaw_of(ids.index(x)) for x in ('head', 'chest', 'arm', 'turret', 'jaw'))
+    check('cabeza dentro de cabeza: mira 40°, no 80° ni repartido', abs(yh + 40) < 1e-6, f'{yh:.2f}')
+    check('hi[yaw=20]_: el pecho solo 20°', abs(yc + 20) < 1e-6, f'{yc:.2f}')
+    check('hijo de hi_ (el brazo): con su pecho', abs(ya + 20) < 1e-6, f'{ya:.2f}')
+    check('h_ suelto: 40°', abs(yt + 40) < 1e-6, f'{yt:.2f}')
+    yn = yaw_of(ids.index('nose'))
+    check('bajo un h_ dentro de hi_: 40° (sin sumar)', abs(yn + 40) < 1e-6, f'{yn:.2f}')
+    check('hijo sin etiqueta de h_ (la mandíbula): no gira', abs(yj) < 1e-6, f'{yj:.2f}')
+    jaw = mats[ids.index('jaw')][:3, 3]
+    want = np.array([4 * math.sin(math.radians(-40)), 4, 8 + 4 * math.cos(math.radians(-40))])
+    check('... pero va donde la lleva su cabeza', np.linalg.norm(jaw - want) < 1e-6, (jaw, want))
+    still = [np.array(x) for x in B.pose(m, None, 0)]
+    check('sin mirada, igual que antes', all(np.allclose(a, b) for a, b in zip(still, [np.array(x) for x in B.pose(m, None, 0, head=(0, 0))])))
 
 
 def ccd(m, mats, c):

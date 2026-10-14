@@ -695,9 +695,14 @@ def convert(bb_path, store, problems, boss=False):
                     bone['bp'] = bparams
                 if beh == 'head_inherit':
                     inherit_heads.add(idx)
-            if boss and parent >= 0 and parent in inherit_heads and not head:
-                # hi_: los hijos también son cabeza sin llevar la etiqueta
-                bone['head'] = True
+            if boss and parent >= 0 and parent in inherit_heads:
+                # hi_: todo lo que cuelga de él es cabeza sin llevar la etiqueta (también por debajo de un h_ anidado),
+                # con los límites h[...] de su cabeza si no trae los suyos
+                if not head:
+                    bone['head'] = True
+                    lim = {k: v for k, v in (bones[parent].get('bp') or {}).items() if k in HEAD_KEYS}
+                    if lim:
+                        bone['bp'] = dict(lim, **(bone.get('bp') or {}))
                 inherit_heads.add(idx)
             bones.append(bone)
             uuid_to_bone[c['uuid']] = idx
@@ -894,8 +899,45 @@ def anim_time(anim, t):
     return t
 
 
-def pose(model, anim_name, t):
-    """Matrices 4x4 (listas) de cada hueso en el espacio del modelo (píxeles) en el instante t (segundos)."""
+HEAD_KEYS = ('yaw', 'pitch', 'minyaw', 'maxyaw', 'minpitch', 'maxpitch', 'speed')
+
+
+def head_limits(b):
+    """(mín. yaw, máx. yaw, mín. pitch, máx. pitch) de una cabeza según su etiqueta h[...]_ (None = libre): VfxModel.headLimits."""
+    p = b.get('bp') or {}
+
+    def one(k):
+        v = p.get(k)
+        return (v[0] if isinstance(v, list) else v) if v is not None else None
+    out = [None] * 4
+    if one('yaw') is not None:
+        out[0], out[1] = -abs(one('yaw')), abs(one('yaw'))
+    if one('pitch') is not None:
+        out[2], out[3] = -abs(one('pitch')), abs(one('pitch'))
+    for i, k in enumerate(('minyaw', 'maxyaw', 'minpitch', 'maxpitch')):
+        if one(k) is not None:
+            out[i] = one(k)
+    return out
+
+
+def transpose(m):
+    return [[m[j][i] for j in range(3)] for i in range(3)]
+
+
+def clamp(v, lo, hi):
+    """Como VfxPose.clamp: None = sin límite."""
+    if lo is not None and v < lo:
+        v = lo
+    if hi is not None and v > hi:
+        v = hi
+    return v
+
+
+def pose(model, anim_name, t, head=None):
+    """Matrices 4x4 (listas) de cada hueso en el espacio del modelo (píxeles) en el instante t (segundos).
+
+    head=(yaw, pitch) en grados: hacia dónde mira respecto al cuerpo, con las cabezas de ModelEngine 4 como
+    VfxPose.build (giro global que no se acumula; los hijos sin etiqueta de un h_ no giran con él)."""
     anim = model['anims'].get(anim_name) if anim_name else None
     at = anim_time(anim, t) if anim else None
     extra = {}
@@ -909,13 +951,32 @@ def pose(model, anim_name, t):
             if 's' in tr:
                 e[2] = sample(tr['s'], at)
     mats = []
+    look = head is not None and (head[0] or head[1])
+    eye = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    q0, g = [], []
     for i, b in enumerate(model['bones']):
         r, p, s = extra.get(i, [[0, 0, 0], [0, 0, 0], [1, 1, 1]])
-        parent_pivot = model['bones'][b['parent']]['pivot'] if b['parent'] >= 0 else [0, 0, 0]
+        par = b['parent']
+        parent_pivot = model['bones'][par]['pivot'] if par >= 0 else [0, 0, 0]
         tr = [b['pivot'][k] - parent_pivot[k] + p[k] for k in range(3)]
         rm = rot_matrix([b['rot'][k] + r[k] for k in range(3)])
+        gi = None
+        if look and b.get('head'):
+            yaw, pitch = head
+            lim = head_limits(b)
+            yaw, pitch = clamp(yaw, lim[0], lim[1]), clamp(pitch, lim[2], lim[3])
+            gi =mul(rot_matrix([0, -yaw, 0]), rot_matrix([-pitch, 0, 0]))
+        q0p = q0[par] if par >= 0 else eye
+        gp = g[par] if par >= 0 else None
+        c = eye
+        if gi is not None or gp is not None:
+            c = mul(transpose(gp) if gp is not None else eye, gi if gi is not None else eye)
+            c = mul(mul(transpose(q0p), c), q0p)
+        q0.append(mul(q0p, rm))
+        g.append(gi)
+        rm = mul(c, rm)
         local = [[rm[i2][j] * s[j] for j in range(3)] + [tr[i2]] for i2 in range(3)] + [[0, 0, 0, 1]]
-        mats.append(local if b['parent'] < 0 else mat4(mats[b['parent']], local))
+        mats.append(local if par < 0 else mat4(mats[par], local))
     return mats
 
 

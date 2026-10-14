@@ -212,33 +212,6 @@ public final class VfxModel {
         return sp;
     }
 
-    private float[] headShare;
-
-    /**
-     * Cuánto del giro de la cabeza lleva cada hueso de cabeza (h_/hi_): ModelEngine reparte la mirada entre los que
-     * van encadenados (pecho y cabeza de la Gárgola); los que no son de cabeza, 0.
-     */
-    public float headShare(int b) {
-        if (headShare == null) {
-            float[] out = new float[bones.length];
-            int[] below = new int[bones.length];
-            for (int i = bones.length - 1; i >= 0; i--) {
-                if (bones[i].parent >= 0) {
-                    int p = bones[i].parent;
-                    below[p] = Math.max(below[p], below[i] + (bones[i].head ? 1 : 0));
-                }
-            }
-            for (int i = 0; i < bones.length; i++) {
-                if (!bones[i].head) continue;
-                int above = 0;
-                for (int p = bones[i].parent; p >= 0; p = bones[p].parent) if (bones[p].head) above++;
-                out[i] = 1F / (above + 1 + below[i]);
-            }
-            headShare = out;
-        }
-        return headShare[b];
-    }
-
     /** Índice del hueso por su id de ModelEngine (sin h_), o -1. */
     public int bone(String id) {
         if (id == null) return -1;
