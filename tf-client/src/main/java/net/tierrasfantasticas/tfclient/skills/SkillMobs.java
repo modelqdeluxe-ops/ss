@@ -86,6 +86,11 @@ public final class SkillMobs {
         default float lookYaw() {
             return mob().yBodyRot;
         }
+
+        /** Inteligencia de la dificultad (0 a 1): cuánto decide su cerebro táctico ({@link SkillBrain}); 0 = el pack tal cual. */
+        default double smart() {
+            return 0;
+        }
     }
 
     /** Lo que hacen las entidades (el paquete de jefes): esbirros, objetos que caen, asientos y temblores de cámara. */
@@ -116,6 +121,9 @@ public final class SkillMobs {
         boolean combat;
         int lastFx;
         boolean diedDone;
+        /** Su cerebro táctico (null si no tiene ataques que decidir) y si ya se ha mirado. */
+        SkillBrain.Brain brain;
+        boolean brainBuilt;
 
         State(Host host) {
             this.host = host;
@@ -166,7 +174,18 @@ public final class SkillMobs {
         boolean combat = target != null && target.isAlive();
         if (combat && !s.combat) run(h, "onentercombat", target, null, null);
         s.combat = combat;
+        if (!s.brainBuilt) {
+            s.brainBuilt = true;
+            try {
+                s.brain = SkillBrain.build(h);
+            } catch (Throwable t) {
+                TFClient.LOGGER.warn("TF Jefes: sin cerebro para {}", h.def().name, t);
+            }
+        }
+        // Con cerebro, sus líneas de ataque no salen solas: las elige él (ver SkillBrain)
+        boolean brain = s.brain != null && h.smart() > 0;
         for (Mech m : s.timers) {
+            if (brain && s.brain.handles(m)) continue;
             int every = (int) Math.max(1, SkillRuntime.num(m.trv, 20));
             if (age % every != 0 || !hpOk(h, m.hp)) continue;
             Ctx c = ctx(h);
@@ -179,6 +198,13 @@ public final class SkillMobs {
                 TFClient.LOGGER.debug("TF Jefes: error en un temporizador de {}", h.def().name, t);
             } finally {
                 SkillRuntime.setCurrent(null);
+            }
+        }
+        if (brain) {
+            try {
+                SkillBrain.tick(h, s.brain);
+            } catch (Throwable t) {
+                TFClient.LOGGER.debug("TF Jefes: error en el cerebro de {}", h.def().name, t);
             }
         }
         scripts(h, s);
@@ -208,6 +234,8 @@ public final class SkillMobs {
     /** Le han hecho daño (ya aplicado): sus ~onDamaged, con quien le pegó como @trigger. */
     public static void damaged(Host h, Entity attacker, String cause, double amount) {
         if (h.dying()) return;
+        State st = STATES.get(h.mob().getUUID());
+        if (st != null && st.brain != null && "PROJECTILE".equals(cause)) SkillBrain.shotBy(st.brain, h.age());
         Map<String, String> vars = new HashMap<>();
         vars.put("damage-amount", SkillRuntime.fmt(amount));
         vars.put("damage-cause", cause);
@@ -266,6 +294,31 @@ public final class SkillMobs {
                 SkillRuntime.setCurrent(null);
             }
         }
+    }
+
+    /** Un golpe de este jefe (o de algo suyo) ha dado a un jugador: su cerebro lo apunta al ataque que hace. */
+    static void landed(Host boss) {
+        State st = boss == null ? null : STATES.get(boss.mob().getUUID());
+        if (st != null && st.brain != null) SkillBrain.landed(st.brain, boss.age());
+    }
+
+    /** Plan de movimiento del cerebro: {distancia que busca, rodear -1/0/1}, o null (perseguir sin más). */
+    public static double[] plan(Host h) {
+        State st = STATES.get(h.mob().getUUID());
+        if (st == null || st.brain == null || h.smart() <= 0) return null;
+        return SkillBrain.plan(h, st.brain);
+    }
+
+    /** Grados por tick que se gira hacia su objetivo mientras ataca (0 = lo que diga su bodyrotation). */
+    public static float tracking(Host h) {
+        State st = STATES.get(h.mob().getUUID());
+        if (st == null || st.brain == null || h.smart() <= 0) return 0F;
+        return SkillBrain.tracking(h);
+    }
+
+    /** ¿Está en mitad de un ataque (su gcd)? */
+    public static boolean busy(Host h) {
+        return SkillBrain.busy(h);
     }
 
     /** «&lt;50%», «&gt;75%»: ¿cumple la vida del mob el umbral de la línea? */

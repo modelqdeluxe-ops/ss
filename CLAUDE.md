@@ -5,6 +5,8 @@
 - **No uses subagentes** (Agent / Workflow): el dueño lo prohibió. Hazlo tú directamente.
 - Cuando el dueño mande capturas, **mídelas** (recorta, amplía, colores con PIL) antes de decir que algo está arreglado.
 - Responde al dueño en español.
+- Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
+  comprobarlos sin abrir el juego).
 
 ## Publicar TF Client (el mod) — SIEMPRE como Release de GitHub
 

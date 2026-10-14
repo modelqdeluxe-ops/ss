@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.76**: jefes de incursión con su IA arreglada; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.77**: jefes de incursión con cerebro táctico tipo Souls; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,10 +55,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.76) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.77) — lee esto primero
 
-**Estado**: última versión publicada **1.3.76** (la IA de los jefes arreglada: ver el bloque «TF Client 1.3.76»; los
-jefes, grietas y `/tf boss` son de la 1.3.75), Release ya creada:
+**Estado**: última versión publicada **1.3.77** (cerebro táctico de los jefes, «inteligencia» en `/tf boss`; la IA
+fiel al pack es de la 1.3.76 y los jefes, grietas y `/tf boss` de la 1.3.75), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -78,6 +78,10 @@ aplican (el PDF firmado lo guarda el dueño). Si un jugador tiene `config/punchy
 de antes, es inofensivo (nadie lo lee).
 **Compilar con GitHub Actions** (el dueño: «USA GIT ACTIONS»): en el contenedor Maven Central da 429; el push a la rama
 ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `main`).
+
+**JEFES: toda la documentación técnica está en `tf-client/JEFES.md`** (arquitectura, datos, motor, reglas de
+MythicMobs/ModelEngine que no hay que romper, cerebro táctico, herramientas, cómo añadir un jefe y qué mirar según lo
+que diga el dueño). Léelo antes de tocar nada de jefes.
 
 **Releases por versión (14 oct)**: el workflow de Rumentis (`compilar.yml` en `claude/happy-ritchie-u6007w`) borra todas
 las Releases con tag `^v[0-9]`; por eso desaparecían las `v1.3.x` de TF Client (solo quedaba la fija `tfclient`). Desde la
@@ -103,7 +107,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.76** (la IA de los jefes: simulada con
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.77** (el cerebro de los jefes: simulado con
+`tools/bosses/sim_ai.py --smart 1`), **la 1.3.76** (la IA de los jefes: simulada con
 `tools/bosses/sim_ai.py`; pruébalos en SUPERVIVENCIA: como en MythicMobs, no atacan a quien está en creativo),
 **la 1.3.75 entera** (jefes, grietas y `/tf boss`: compila
 en Actions y los modelos/animaciones se revisaron en hojas renderizadas en Python, pero nadie ha luchado contra ellos; lo
@@ -169,6 +174,22 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.77 (14 oct) — CEREBRO TÁCTICO DE LOS JEFES (tipo Souls).** El dueño: «quiero que la IA de estos
+> bosses sea muy inteligente, tipo Dark Souls o Elden Ring… y documenta todo para que otra IA pueda retomarlo».
+> - `skills/SkillBrain.java`: los ataques siguen siendo los del pack; el cerebro decide cuál sale y cuándo (prueba
+>   todos sin lanzarlos con `SkillRuntime.usable` y puntúa: alcance, castigos a curas/escudo/arco/distancia, ataques
+>   que dan detrás, área si hay grupo, no repetir, aprender lo que esquiva el jugador, algo de azar), piensa de cada
+>   20 ticks a cada 4 según la inteligencia, a veces se lo piensa, encadena ataques sin gcd y da un plan de movimiento
+>   (distancia de su próximo ataque, rodear mientras espera). `BossEntity`: sigue al jugador al cargar el golpe, elige
+>   objetivo (curas, arqueros, rematar) y se enfurece por debajo del 50 % y del 25 %.
+> - **Inteligencia** nueva en la dificultad (`Difficulty.smart`, JSON «inteligencia»; fila 5 de `/tf boss`): Fácil
+>   30 %, Normal 55 %, Difícil 75 %, Pesadilla 90 %, Demencial 100 %; 0 % = el pack tal cual. La ventana, con 9 filas,
+>   sigue sin solapes a los 8 tamaños (`sim_gui.py`).
+> - El gcd ya no se divide por el ritmo (cortaba las animaciones a medias); el ritmo acorta cooldowns y lo que piensa.
+> - `tools/bosses/sim_ai.py --smart X`: el cerebro copiado en Python, y el jugador simulado se cura, se cubre y
+>   dispara; mide ataques por minuto, variedad, repeticiones y curas castigadas.
+> - **Documentación completa: `tf-client/JEFES.md`.**
 
 > **TF Client 1.3.76 (14 oct) — IA DE LOS JEFES ARREGLADA.** El dueño, tras probar la 1.3.75: «cargan bien en cuanto a
 > textura, pero no tienen todas sus habilidades, solo hacen 1 ataque genérico, son estúpidos; unos se quedan bugueados

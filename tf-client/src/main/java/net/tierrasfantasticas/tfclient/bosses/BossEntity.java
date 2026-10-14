@@ -81,6 +81,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private LivingEntity target;
     private final Map<UUID, Double> threat = new HashMap<>();
     private final Map<UUID, Integer> lastHitBy = new HashMap<>();
+    /** Cuándo le disparó cada jugador por última vez (el cerebro va a por los que disparan desde lejos). */
+    private final Map<UUID, Integer> shotBy = new HashMap<>();
     private ServerBossEvent bar;
     private UUID rift;
     private Vec3 home;
@@ -257,9 +259,25 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return difficulty.damage();
     }
 
+    /**
+     * Ritmo de ataque de la dificultad y, con el cerebro, la furia por fases: por debajo del 50 % y del 25 % de vida sus
+     * cooldowns se acortan un poco más (hasta un 12 % cada fase con inteligencia 1).
+     */
     @Override
     public double rhythm() {
-        return difficulty.rhythm();
+        double r = difficulty.rhythm();
+        double smart = difficulty.smart();
+        if (smart >= 0.5 && isMainBoss()) {
+            float hp = getHealth() / Math.max(1F, getMaxHealth());
+            if (hp < 0.5F) r *= 1 + 0.12 * smart;
+            if (hp < 0.25F) r *= 1 + 0.12 * smart;
+        }
+        return r;
+    }
+
+    @Override
+    public double smart() {
+        return difficulty.smart();
     }
 
     @Override
@@ -406,6 +424,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // La amenaza, con el golpe (con el escudo puesto no le entra daño, pero quien le pega sigue siendo su enemigo)
         double threatBy = Math.max(dealt, hit * 0.5);
         if (p != null) threat.merge(p.getUUID(), threatBy, Double::sum);
+        if (p != null && cause.equals("PROJECTILE")) shotBy.put(p.getUUID(), age);
         if (owner != null && p != null) owner.threat.merge(p.getUUID(), threatBy * 0.25, Double::sum);
         // ~onDamaged con el daño del golpe, como MythicMobs (no lo que le quitó: con la Resistencia V del escudo del
         // Esqueleto eso es 0 y el escudo no se rompía nunca). Las cifras de vida del pack van en su escala (el escudo
@@ -536,6 +555,27 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             target = null;
         } else if (target != null && def.chases) {
             goal = target.position();
+            // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
+            double[] plan = SkillMobs.plan(this);
+            if (plan != null) {
+                double want = Math.max(stop, plan[0]);
+                double d = Math.sqrt(horizontalDistanceSqr(target.position()));
+                Vec3 rel = position().subtract(target.position()).multiply(1, 0, 1);
+                if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
+                    // Rodear: un punto 25° más allá alrededor del objetivo, a la distancia que busca
+                    double ang = Math.toRadians(25 * plan[1]);
+                    Vec3 dir = rel.normalize();
+                    Vec3 turned = new Vec3(dir.x * Math.cos(ang) - dir.z * Math.sin(ang), 0, dir.x * Math.sin(ang) + dir.z * Math.cos(ang));
+                    goal = target.position().add(turned.scale(Math.max(want, 2.5)));
+                    stop = 0.6;
+                } else if (d < want - 2.5 && rel.lengthSqr() > 1e-4) {
+                    // Demasiado cerca para lo que quiere hacer (un ataque a distancia): se aparta
+                    goal = position().add(rel.normalize().scale(4));
+                    stop = 0.6;
+                } else {
+                    stop = want;
+                }
+            }
         }
         if (ai && goal != null && getAttributeValue(Attributes.MOVEMENT_SPEED) > 0) {
             double d = Math.sqrt(horizontalDistanceSqr(goal));
@@ -585,7 +625,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         float diff = Mth.wrapDegrees(want - bodyYaw);
-        if (moving && def.chases && ai) {
+        float track = def.chases && ai ? SkillMobs.tracking(this) : 0F;
+        if (track > 0 && !moving) {
+            // Atacando (antes de que el modelo se bloquee): sigue al jugador, como los jefes de los Souls al cargar el golpe
+            bodyYaw += Mth.clamp(diff, -track, track);
+            diff = Mth.wrapDegrees(want - bodyYaw);
+            turnWait = 0;
+        } else if (moving && def.chases && ai) {
             // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
             bodyYaw += Mth.clamp(diff, -20F, 20F);
             turnWait = 0;
@@ -634,11 +680,21 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         Vec3 c = home != null ? home : position();
         LivingEntity best = null;
         double bestThreat = -1, bestDist = Double.MAX_VALUE;
+        double smart = difficulty.smart();
+        double top = 0;
+        for (double v : threat.values()) top = Math.max(top, v);
         for (ServerPlayer p : sl.players()) {
             if (!p.isAlive() || p.isSpectator() || p.isCreative()) continue;
             double d = p.distanceToSqr(this);
             if (d > range * range || home != null && p.position().distanceToSqr(c) > (Rifts.LEASH + 8) * (Rifts.LEASH + 8)) continue;
             double t = threat.getOrDefault(p.getUUID(), 0.0);
+            // Listo: va a por quien se cura, a por quien le dispara desde lejos y remata a quien está a punto de caer
+            if (smart >= 0.6) {
+                if (net.tierrasfantasticas.tfclient.skills.SkillBrain.healing(p)) t += top * 0.4 + 20;
+                Integer shot = shotBy.get(p.getUUID());
+                if (shot != null && age - shot < 100 && d > 64) t += top * 0.15 + 8;
+                if (smart >= 0.8 && p.getHealth() < p.getMaxHealth() * 0.3F) t += top * 0.1 + 5;
+            }
             if (t > bestThreat || t == bestThreat && d < bestDist) {
                 best = p;
                 bestThreat = t;

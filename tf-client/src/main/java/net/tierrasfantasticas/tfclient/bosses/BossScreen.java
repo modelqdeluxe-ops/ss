@@ -127,7 +127,7 @@ public class BossScreen extends Screen {
         int footY;
         // Derecha
         int tabsY, chipsY, chipRows, chipsPerRow, rowsY, rowH, bannerY;
-        static final int GAP = 8, PAD = 8, FOOT = 14, BTN = 16, CHIP = 14, TAB = 16, ROWS = 8, CARD_H = 32, RIFT_H = 32;
+        static final int GAP = 8, PAD = 8, FOOT = 14, BTN = 16, CHIP = 14, TAB = 16, ROWS = 9, CARD_H = 32, RIFT_H = 32;
     }
 
     static Layout layout(int w, int h, boolean banner) {
@@ -169,7 +169,7 @@ public class BossScreen extends Screen {
         L.chipRows = L.chipsPerRow == 5 ? 1 : 2;
         y += L.chipRows * Layout.CHIP + (L.chipRows - 1) * 3 + 6;
         L.rowsY = y;
-        L.rowH = Math.max(12, Math.min(20, (L.by + L.bh - y) / Layout.ROWS));
+        L.rowH = Math.max(11, Math.min(20, (L.by + L.bh - y) / Layout.ROWS));
         return L;
     }
 
@@ -410,13 +410,15 @@ public class BossScreen extends Screen {
         }
     }
 
-    static final String[] LABELS = {"Vida", "Daño", "Velocidad", "Ritmo de ataque", "Armadura", "Vida por jugador",
-            "Recarga de la grieta", "Monedas por jugador"};
+    static final String[] LABELS = {"Vida", "Daño", "Velocidad", "Ritmo de ataque", "Inteligencia", "Armadura",
+            "Vida por jugador", "Recarga de la grieta", "Monedas por jugador"};
     static final String[] HELP = {
             "Vida del jefe con un jugador (cada jugador más que haya al despertarlo le suma lo de «Vida por jugador»).",
             "Daño de sus golpes.",
             "Lo rápido que anda.",
             "Cada cuánto ataca: más alto, menos espera entre ataques (las animaciones no se aceleran).",
+            "Su cerebro táctico: 0 % = como el pack; más alto = elige el mejor ataque para cada momento, castiga si te curas, "
+                    + "te cubres o te alejas, te rodea, te sigue al atacar, aprende lo que esquivas y se enfurece al bajar de vida.",
             "Puntos de armadura (como la de un jugador: de 0 a 30).",
             "Cuánta vida suma cada jugador más de la incursión (100 % = el doble con 2 jugadores).",
             "Lo que tarda la grieta en volver a estar lista después de que caiga el jefe.",
@@ -430,9 +432,10 @@ public class BossScreen extends Screen {
             case 1 -> trim(dmg);
             case 2 -> "×" + trim(editing.speed());
             case 3 -> "×" + trim(editing.rhythm());
-            case 4 -> String.valueOf((int) Math.round(editing.armor()));
-            case 5 -> "+" + Math.round(editing.perPlayer() * 100) + " %";
-            case 6 -> editing.respawnMin() >= 60 ? (editing.respawnMin() / 60) + " h " + (editing.respawnMin() % 60) + " min"
+            case 4 -> Math.round(editing.smart() * 100) + " %";
+            case 5 -> String.valueOf((int) Math.round(editing.armor()));
+            case 6 -> "+" + Math.round(editing.perPlayer() * 100) + " %";
+            case 7 -> editing.respawnMin() >= 60 ? (editing.respawnMin() / 60) + " h " + (editing.respawnMin() % 60) + " min"
                     : editing.respawnMin() + " min";
             default -> grouped(editing.coins());
         };
@@ -737,18 +740,20 @@ public class BossScreen extends Screen {
     private void step(int i, int n) {
         Difficulty d = editing;
         double h = d.health(), dm = d.damage(), sp = d.speed(), rh = d.rhythm(), ar = d.armor(), pp = d.perPlayer();
+        double sm = d.smart();
         int rs = d.respawnMin(), co = d.coins();
         switch (i) {
             case 0 -> h = round(h + 0.05 * n);
             case 1 -> dm = round(dm + 0.05 * n);
             case 2 -> sp = round(sp + 0.02 * n);
             case 3 -> rh = round(rh + 0.05 * n);
-            case 4 -> ar += n;
-            case 5 -> pp = round(pp + 0.05 * n);
-            case 6 -> rs += n;
+            case 4 -> sm = round(sm + 0.05 * n);
+            case 5 -> ar += n;
+            case 6 -> pp = round(pp + 0.05 * n);
+            case 7 -> rs += n;
             default -> co += 50 * n;
         }
-        editing = new Difficulty(d.preset(), h, dm, sp, rh, ar, pp, rs, co).clamped();
+        editing = new Difficulty(d.preset(), h, dm, sp, rh, ar, pp, rs, co, sm).clamped();
     }
 
     private static double round(double v) {
