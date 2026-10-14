@@ -8,7 +8,7 @@ const cfg=CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),beta
 (async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});const errs=[];
  const p=await (await b.newContext({viewport:{width:393,height:852}})).newPage();
  p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!/favicon|ERR_|net::|Failed to load/.test(m.text()))errs.push(m.text());});
- await p.addInitScript(i=>{window.__I=i;},process.env.IDIOMA||'es');await p.route('**/config.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:cfg}));
+ await p.addInitScript(i=>{window.__I=i;window.PC_PERSONAS=true;},process.env.IDIOMA||'es');await p.route('**/config.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:cfg}));
  await p.goto('http://127.0.0.1:8111/index.html#hoy');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('rumentis-bienvenida','1');localStorage.setItem('rumentis-idioma',window.__I||'es');});await p.reload();await p.waitForTimeout(800);
  await p.evaluate(()=>cargarDemo());await p.waitForTimeout(400);
  const R=await p.evaluate(()=>{

@@ -43,24 +43,57 @@ const ROPA={ajustada:{cm:.4,t:'Ajustada'},normal:{cm:.8,t:'Normal'},holgada:{cm:
 const FORMA={cabeza:Math.PI/4,tronco:.81,brazos:Math.PI/4,piernas:Math.PI/4};
 const MKEY='rumentis-pc-modo',VERSION_MODELO=7;
 UI.pc=UI.pc||{lote:'',items:[]};
-if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'ganado';}
+// la beta es solo para ganado (el modo personas queda para las pruebas: window.PC_PERSONAS)
+if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=window.PC_PERSONAS&&MODOS[m]?m:'ganado';}
 const PC=()=>S.config.pesoCam||{};
-const guardarPC=cambios=>put('ajustes','finca',{...S.config,pesoCam:{...PC(),...cambios}});
+// el registro va aparte (REGDB); lo demás del peso con cámara, en los ajustes de la finca
+const guardarPC=cambios=>{if(cambios.reg){guardarReg(cambios.reg);const {reg,...o}=cambios;cambios=o;}
+  if(Object.keys(cambios).length)put('ajustes','finca',{...S.config,pesoCam:{...PC(),...cambios}});else changed();};
 const ropaSel=()=>ROPA[PC().ropa]?PC().ropa:'normal';
 
 /* ---------- registro de mediciones (laboratorio) ----------
-   Cada medición se guarda en S.config.pesoCam.reg (las últimas 300): volumen, peso estimado, medidas, calidad y
-   rendimiento. Si se anota el peso de báscula (`real`), sirve para calibrar y para calcular el error. */
-const REG=()=>PC().reg||[];
+   Cada medición (volumen, peso estimado, medidas, calidad, rendimiento, datos del animal y, si se anota, el peso de
+   báscula `real`) se guarda aparte de los datos de la finca, una por una: en Android como archivo (pcm-<id>, con las
+   fotos), en el navegador en IndexedDB. Así no tiene límite práctico (los datos de la finca van en localStorage, que
+   llega a ~5 MB). En memoria queda la lista completa (REG()). Las versiones viejas lo tenían en S.config.pesoCam.reg:
+   se pasa solo al abrir. Sin sesión ni báscula se guardan las últimas REG_MAX; las de una sesión o con báscula, todas. */
+const REGDB=(()=>{const NAT=!!(window.Android&&Android.fotoGuardar&&Android.fotoLeer&&Android.fotoLista);let dbp=null;
+  const db=()=>dbp||(dbp=new Promise((ok,mal)=>{try{const r=indexedDB.open('rumentis-pclab',1);r.onupgradeneeded=()=>r.result.createObjectStore('reg');r.onsuccess=()=>ok(r.result);r.onerror=()=>mal(r.error);}catch(e){mal(e);}}));
+  const tx=async(m,fn)=>{const d=await db();return new Promise((ok,mal)=>{const t=d.transaction('reg',m),st=t.objectStore('reg'),r=fn(st);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>mal(t.error);});};
+  const aB64=t=>{const u=new TextEncoder().encode(t);let o='';for(let i=0;i<u.length;i+=0x8000)o+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(o);};
+  const deB64=b=>{const t=atob(b),u=new Uint8Array(t.length);for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i);return new TextDecoder().decode(u);};
+  return {NAT,
+    put:async x=>{if(NAT){if(Android.fotoGuardar('pcm-'+x.id,aB64(JSON.stringify(x)))===false)throw new Error('sin espacio');return;}await tx('readwrite',st=>st.put(x,x.id));},
+    del:async id=>{if(NAT){Android.fotoBorrar('pcm-'+id);return;}await tx('readwrite',st=>st.delete(id));},
+    all:async()=>{if(NAT){const ids=String(Android.fotoLista()||'').split(',').map(f=>f.replace(/\.jpg$/,'')).filter(k=>k.startsWith('pcm-')),o=[];
+        for(let i=0;i<ids.length;i++){try{const b=Android.fotoLeer(ids[i]);if(b)o.push(JSON.parse(deB64(b)));}catch(e){}if(i%200===199)await new Promise(z=>setTimeout(z,0));}return o;}
+      return (await tx('readonly',st=>st.getAll()))||[];}};})();
+let REGM=[],REG_LISTO=false,REG_AVISO=0;
+const REG=()=>REGM;
 const REG_MAX=1500;
+function guardarReg(nuevo){
+  const viejo=new Map(REGM.map(x=>[x.id,x])),ids=new Set();REGM=nuevo.slice();
+  const falla=e=>{console.warn(e);if(Date.now()-REG_AVISO>10000){REG_AVISO=Date.now();toast('No se pudo guardar la medición. Revisa el espacio del teléfono.',4000);}};
+  for(const x of REGM){ids.add(x.id);if(viejo.get(x.id)!==x)REGDB.put(x).catch(falla);}
+  for(const id of viejo.keys())if(!ids.has(id))REGDB.del(id).catch(()=>{});
+}
+// al abrir: lo guardado, más lo de versiones viejas (que sale de los ajustes de la finca)
+(async()=>{let L=[];try{L=await REGDB.all();}catch(e){console.warn(e);}
+  const viejo=(S.config.pesoCam||{}).reg;
+  if(viejo&&viejo.length){const ya=new Set(L.map(x=>x.id));for(const x of viejo)if(!ya.has(x.id)){L.push(x);try{await REGDB.put(x);}catch(e){}}}
+  L.sort((a,b)=>(a.ts||0)-(b.ts||0));const nuevos=REGM.filter(x=>!L.some(z=>z.id===x.id));REGM=L.concat(nuevos);REG_LISTO=true;
+  if(viejo){const {reg,...o}=PC();put('ajustes','finca',{...S.config,pesoCam:o});}else changed();})();
 function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
     puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,estimadas:r.estimadas||null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
     tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,lote:r.lote||null,aid:r.aid||null,HG:q(r.HG),predFoto:q(r.predFoto),camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
-    dq:r.q||null,cond:PC().labSes&&r.modo==='ganado'&&PC().labSes.def?{...PC().labSes.def}:null,ses:PC().labSes&&PC().labSes.n||null,cam:stats&&stats.cam||null,fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
-  guardarPC({reg:REG().concat(rec).slice(-REG_MAX)});return id;
+    mx:r.mx?Object.fromEntries(Object.entries(r.mx).map(([a,b])=>[a,a.startsWith('forma')?(isFinite(b)?Math.round(b*1e4)/1e4:null):q(b)])):null,dq:r.q||null,cond:PC().labSes&&r.modo==='ganado'&&PC().labSes.def?{...PC().labSes.def}:null,ses:PC().labSes&&PC().labSes.n||null,cam:stats&&stats.cam||null,fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
+  // sin sesión ni báscula se guardan las últimas REG_MAX; las de una sesión o con báscula no se borran solas
+  let R=REG().concat(rec),sobra=R.filter(x=>!x.ses&&!(x.real>0)).length-REG_MAX;
+  if(sobra>0){const fuera=new Set(R.filter(x=>!x.ses&&!(x.real>0)).slice(0,sobra).map(x=>x.id));R=R.filter(x=>!fuera.has(x.id));}
+  guardarPC({reg:R});return id;
 }
 const actualizarReg=(id,cambios)=>guardarPC({reg:REG().map(x=>x.id===id?{...x,...cambios}:x)});
 
@@ -479,6 +512,24 @@ function medidasPersona(F,S,KF,KS,alto,ref,ropa){
   return {d,pred:Math.exp(lnPeso(x)),topes,estimadas,giro:Math.asin(giro)*180/Math.PI,incompleta:MF.incompleta||MS.incompleta};
 }
 
+/* ganado: más medidas de las fotos, para ajustar el modelo con los pesos de báscula (van al registro como `mx`; la
+   mediana de las tomas de cada ángulo). Áreas de la silueta de costado y de atrás (toda y sin patas), ancho mayor y
+   alto de atrás; distancias entre puntos del animal de costado, en cm (el promedio de los dos lados si se ven con
+   confianza ≥ 0.3); y la forma del otro costado (área entre alto², sin escala) contra la de este costado. */
+const KP_DIST=[['cuello_cola_cm',3,4,3,4],['hombro_cadera_cm',5,11,8,14],['cuello_hombro_cm',3,5,3,8],['hombro_codo_cm',5,6,8,9],['codo_mano_cm',6,7,9,10],
+  ['hombro_mano_cm',5,7,8,10],['cadera_rodilla_cm',11,12,14,15],['rodilla_pata_cm',12,13,15,16],['cadera_pata_cm',11,13,14,16],['ojo_nariz_cm',0,2,1,2]];
+function medidasExtra(TP,TS,otro,tomasDe){
+  const md=v=>{v=v.filter(x=>isFinite(x)&&x>0);return v.length?med(v):NaN;};
+  const area=T=>T.filas.reduce((a,f)=>a+suma(f),0)*T.cw*T.ch,areaC=T=>cuerpo(T).reduce((a,f)=>a+suma(f),0)*T.cw*T.ch;
+  const forma=s=>s&&s.caja&&s.cy?s.area*s.cx*s.cy/(((s.caja[3]-s.caja[1])*s.cy)**2):NaN;
+  const o={area_lat_cm2:md(TP.map(a=>area(a.T))),area_cuerpo_lat_cm2:md(TP.map(a=>areaC(a.T))),area_atras_cm2:md(TS.map(b=>area(b.T))),area_cuerpo_atras_cm2:md(TS.map(b=>areaC(b.T))),
+    ancho_max_atras_cm:md(TS.map(b=>Math.max(0,...b.T.filas.map(suma))*b.T.cw)),alto_atras_cm:md(TS.map(b=>b.T.filas.length*b.T.ch)),
+    alto_lat_cm:md(TP.map(a=>a.T.filas.length*a.T.ch)),largo_lat_cm:md(TP.map(a=>a.T.cols*a.T.cw)),forma_lat:md(TP.map(a=>forma(a.t.sil))),forma_otro:otro?md(tomasDe(otro).map(t=>forma(t.sil))):NaN};
+  for(const [n,a,b,c,d] of KP_DIST)o[n]=md(TP.map(x=>{const K=x.t.kp;if(!K)return NaN;
+    const dd=(i,j)=>K[3*i+2]>=.3&&K[3*j+2]>=.3?Math.hypot(K[3*i]-K[3*j],K[3*i+1]-K[3*j+1])*x.k:NaN,u=dd(a,b),v=a===c&&b===d?NaN:dd(c,d);
+    return isFinite(u)&&isFinite(v)?(u+v)/2:isFinite(u)?u:v;}));
+  return o;
+}
 /* dos ángulos (cada uno con 1 o 2 fotos) → centímetros con la estatura conocida → volumen → peso.
    Se calcula el volumen con cada par de fotos (frente × costado) y se promedia; su dispersión (cv) dice qué tan de
    acuerdo estuvieron las fotos entre sí. */
@@ -536,7 +587,8 @@ function combinar(modo,caps,alto,ropaK,tipo){
       // las cámaras enlazadas que entraron en el cálculo, y lo de arriba (ancho entre largo; en cm con el largo de costado)
       r.camaras=['costado','atras','otro','arriba'].filter(k=>porId(k));r.remotas=caps.filter(c=>c.remoto).map(c=>c.id);
       r.dims.qOtro=isFinite(qOtro)&&qOtro>0?qOtro:NaN;
-      if(extra.arriba){const A=tomas(extra.arriba).map(t=>arribaGanado(t.sil)).filter(Boolean);if(A.length){r.dims.AWL=med(A.map(a=>a.AWL));r.dims.AW=isFinite(r.dims.L)?r.dims.AWL*r.dims.L:NaN;}}}
+      if(extra.arriba){const A=tomas(extra.arriba).map(t=>arribaGanado(t.sil)).filter(Boolean);if(A.length){r.dims.AWL=med(A.map(a=>a.AWL));r.dims.AW=isFinite(r.dims.L)?r.dims.AWL*r.dims.L:NaN;}}
+      try{r.mx=medidasExtra(TP,TS,extra.otro,tomas);}catch(e){console.warn(e);}}
     // (sin los puntos del animal no hay fondo de pecho: queda el método anterior, volumen × 1.1 de fábrica, con ±30 %)
     else{r.puntos=false;r.pred=null;r.kg=1.1*r.L;r.err=Math.max(r.err,.3);}
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
@@ -655,7 +707,7 @@ PAGES.pesocam=()=>{
   const prom=it.length?it.reduce((s,r)=>s+r.kg,0)/it.length:0;
   return `<header class="hd">${hdBack('#hoy','Hoy')}<div class="ttl" style="margin-top:-6px"><span class="eyebrow pc-beta">Beta</span><h1>Peso con cámara</h1><p class="sub">${per?'Prueba la medición contigo: la cámara te toma de frente y de costado y estima tu peso.':'La cámara toma al animal de costado y por detrás, con una persona de pie a su lado como referencia, y estima su peso.'} Sin nada que imprimir. Todo se calcula aquí, sin internet.</p></div></header>
   <main class="bd">
-   <div class="seg pc-modo" role="group" aria-label="Qué medir">${[['persona','Personas'],['ganado','Ganado']].map(([v,t])=>`<button type="button" data-act="pcModo" data-m="${v}" aria-pressed="${modo===v}">${t}</button>`).join('')}</div>
+   ${window.PC_PERSONAS?`<div class="seg pc-modo" role="group" aria-label="Qué medir">${[['persona','Personas'],['ganado','Ganado']].map(([v,t])=>`<button type="button" data-act="pcModo" data-m="${v}" aria-pressed="${modo===v}">${t}</button>`).join('')}</div>`:''}
    ${per?`<section class="sec"><div class="card pad pc-vivo">${filaAlto(true,a)}
        <div class="pc-ropa"><span>Ropa</span><div class="seg" role="group" aria-label="Ropa">${Object.entries(ROPA).map(([v,o])=>`<button type="button" data-act="pcRopa" data-v="${v}" aria-pressed="${ropaSel()===v}">${o.t}</button>`).join('')}</div></div><p>Dos tomas: de frente y de costado. Cuando la silueta se pone verde, la foto se toma sola.</p>
        <button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
@@ -847,6 +899,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={capsHTML,mostrar:resultado,ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
+window.PesoCam={regListo:()=>REG_LISTO,capsHTML,mostrar:resultado,ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();

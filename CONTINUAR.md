@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.29; la beta.28 salió de
+Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.30; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.29) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.29) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.30) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.30) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -405,6 +405,22 @@ teléfono", "es un muestreo aleatorio, no debe pedirme arete", "calcule, estime 
   báscula) y Sesion. **ZIP por partes** (~20 MB, para no reventar el puente Android): LEEME, mediciones.csv,
   datos.xlsx, sesion.json y una carpeta por medición (`001_animal-1_<id>/` con registro.json, depuracion.json,
   `<ángulo>_hd.jpg`, `_t1..t3.jpg`, `_vista.jpg`). Desde la sesión o desde Registro → Sesiones de recolección.
+
+**5.0.0-beta.30**: lo que pidió el dueño para su muestreo al azar ("todos son machos, no sabremos la raza, condición
+corporal no la puedo calcular… mete todo parámetro medible posible", "que sean infinitos animales", "puro ganado").
+- **Solo ganado**: sin el selector Personas/Ganado (las pruebas lo activan con `window.PC_PERSONAS=true`).
+- **Ficha = solo el peso de báscula** (postura, cinta y notas plegados en "Más datos (opcional)"). La sesión pide solo
+  el nombre; los datos del día van plegados y el sexo viene en machos. Sin raza, CC, preñez ni edad.
+- **Registro sin límite y fuera de localStorage** (antes iba en `S.config.pesoCam.reg`, que vive en localStorage ~5 MB
+  junto con toda la finca: con cientos de mediciones dejaba de guardar sin avisar). Ahora `REGDB` en pesocam.js: en
+  Android un archivo por medición (`pcm-<id>` con el almacén de fotos nativo), en el navegador IndexedDB
+  `rumentis-pclab`; en memoria `REG()`. `guardarPC({reg})` escribe solo lo que cambió. Se migra solo lo viejo.
+- **Más medidas automáticas** (`medidasExtra` → `x.mx`): áreas de la silueta de costado y de atrás (toda y sin patas),
+  ancho mayor y alto de atrás, alto y largo de costado, forma (área/alto²) de este y del otro costado, y 10 distancias
+  entre puntos del animal en cm (cuello–cola, hombro–cadera, patas…). Van al Excel (Mediciones, Animales, Tomas con el
+  área de cada foto) con modelos nuevos en Ajustes (área de costado, área + ancho, área + alzada + fondo, volumen de la
+  silueta…) y una hoja **Medidas vs peso** (correlación de cada medida con el peso de báscula, ordenada por R²).
+- Excel de ganado sin columnas de personas (la estatura es `altura_persona_referencia_cm`).
 
 ---
 

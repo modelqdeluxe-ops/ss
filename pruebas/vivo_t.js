@@ -14,7 +14,7 @@ const DOS=/2 de \d|2 of \d/;
  const ctx=await b.newContext({viewport:{width:393,height:852},deviceScaleFactor:1.5});const p=await ctx.newPage();global.__p=p;global.__errs=errs;
  p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{const t=m.text();if(m.type()==='error'&&!/favicon|ERR_|net::|Failed to load resource/.test(t))errs.push(t);if(m.type()==='warning'&&/Visión/.test(t))console.log('aviso:',t);});
  await p.route('**/config.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:cfg}));
- await p.addInitScript(([i,sw,nu])=>{window.VISION_BASE='http://127.0.0.1:8112/';window.__I=i;if(sw)window.Worker=undefined;if(nu)Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>nu});},[IDI,!!process.env.SIN_WORKER,+process.env.NUCLEOS||0]);
+ await p.addInitScript(([i,sw,nu])=>{window.VISION_BASE='http://127.0.0.1:8112/';window.PC_PERSONAS=true;window.__I=i;if(sw)window.Worker=undefined;if(nu)Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>nu});},[IDI,!!process.env.SIN_WORKER,+process.env.NUCLEOS||0]);
  await p.goto('http://127.0.0.1:8111/index.html#hoy');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('rumentis-bienvenida','1');localStorage.setItem('rumentis-idioma',window.__I);});await p.reload();await p.waitForTimeout(900);
  await p.evaluate(()=>cargarDemo());await p.waitForTimeout(400);
  // la "cámara": un lienzo vertical (personas) y uno horizontal (ganado) con la escena que pida la prueba.
@@ -131,13 +131,14 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
  // (modelo v7: alzada y fondo de pecho con los puntos del animal y el tipo de animal; el largo y el alto de la silueta
  // quedan en el registro)
- const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,etapa:r.etapa};});
+ const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,mx:r.mx,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,etapa:r.etapa};});
  console.log('ganado v7',JSON.stringify(G));assert.equal(G.v,7);assert.equal(G.tipo,'euro','usa el tipo elegido');assert.equal(G.etapa,'adulto');
  // el mismo animal como cebú pesa e^(a cebú − a europeo) ≈ 0.62 veces
  const rc=await p.evaluate(()=>{const g=PesoCam.GANADO;return Math.exp(g.a.cebu-g.a.euro);});assert.ok(rc>.55&&rc<.7,'cebú más liviano a igual alzada');
  assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');
  assert.ok(G.dims&&G.dims.WH>100&&G.dims.WH<160&&G.dims.CD>40&&G.dims.CD<100,'alzada y fondo de pecho de un bovino');
- assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');
+ assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');
+ assert.ok(G.mx&&G.mx.area_lat_cm2>5000&&G.mx.area_lat_cm2<40000&&G.mx.area_atras_cm2>1000&&G.mx.ancho_max_atras_cm>20&&G.mx.forma_otro>0,'áreas y medidas extra de las fotos');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');
  // sin báscula: el perímetro con cinta; y el arete del animal (la app aprende de cada uno)
  await p.fill('#sheet [name=hg]','200');await p.click('#sheet [data-act="pcCinta"]');await p.waitForTimeout(500);
  const Gc=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {HG:r.HG,pred:r.pred,predFoto:r.predFoto,kg:r.kg};});console.log('con cinta',JSON.stringify(Gc));
