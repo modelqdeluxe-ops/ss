@@ -33,12 +33,26 @@ final class SkillTargets {
             case "parent", "summoner" -> who(ctx.caster.owner());
             case "trigger" -> who(ctx.trigger != null ? ctx.trigger : ctx.caster);
             case "target", "t", "targetedentity", "targeted" -> target(ctx);
-            // @TargetedTarget: el objetivo heredado (skill{s=X} @EntitiesNearOrigin → dentro de X, cada uno de ellos)
-            case "targetedtarget", "tt" -> {
-                List<Tgt> inh = new ArrayList<>();
-                if (ctx.targets != null) for (Tgt x : ctx.targets) if (x.who != null && !x.who.same(ctx.caster)) inh.add(x);
-                yield inh.isEmpty() ? target(ctx) : inh;
+            // @ThreatTable (@TT en MythicMobs): en un jefe, todos los de su tabla de amenaza. @RandomThreatTarget (@RTT):
+            // uno de ellos al azar; @RandomThreatTargetLocation (@RTTL): dónde está
+            case "threattable", "threattableplayers", "ttp", "randomthreattarget", "rtt", "randomthreattargetlocation", "rttl" ->
+                    threat(ctx, t, yOff);
+            case "triggerlocation", "triggerloc" -> {
+                Who tr = ctx.trigger != null ? ctx.trigger : ctx.caster;
+                yield List.of(Tgt.at(tr.pos().add(0, yOff, 0)));
             }
+            case "playersonserver", "server", "everyone" -> {
+                List<Tgt> all = new ArrayList<>();
+                for (var p : ctx.caster.level().getServer().getPlayerList().getPlayers()) {
+                    if (p.level() == ctx.caster.level() && !p.isSpectator()) all.add(Tgt.of(Who.of(p)));
+                }
+                yield all;
+            }
+            // En un jefe, @TT es su tabla de amenaza (MythicMobs); en las skills de clase, el objetivo heredado
+            case "tt" -> ctx.host != null && ctx.caster.entity != null && SkillMobs.host(ctx.caster.entity) != null
+                    ? threat(ctx, "threattable", yOff) : inherited(ctx);
+            // @TargetedTarget: el objetivo heredado (skill{s=X} @EntitiesNearOrigin → dentro de X, cada uno de ellos)
+            case "targetedtarget" -> inherited(ctx);
             case "origin", "o", "source" -> List.of(Tgt.at(offset(m, ctx, origin(ctx)).add(0, yOff, 0)));
             case "selflocation", "casterlocation", "sl", "bosslocation", "moblocation" ->
                     List.of(Tgt.at(offset(m, ctx, ctx.caster.pos()).add(0, yOff, 0)));
@@ -72,7 +86,11 @@ final class SkillTargets {
             case "randomlocationsnearcaster", "rlnc", "randomlocationsnearorigin", "rlno" -> random(m, ctx, yOff, t.endsWith("origin") || t.equals("rlno"));
             case "modelpart", "mp" -> SkillModels.modelPart(m, ctx, yOff);
             case "location", "l" -> location(m, ctx);
-            case "spawnlocation" -> List.of(Tgt.at(ctx.caster.pos()));
+            case "spawnlocation", "casterspawnlocation", "spawn" -> {
+                // Donde apareció (un jefe: su grieta); un efecto, donde está
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                yield List.of(Tgt.at((h != null ? h.spawnPos() : ctx.caster.pos()).add(0, yOff, 0)));
+            }
             case "ownerlocation" -> {
                 Who o = ctx.caster.owner() != null ? ctx.caster.owner() : ctx.caster;
                 yield List.of(Tgt.at(o.pos().add(0, yOff, 0)));
@@ -319,6 +337,25 @@ final class SkillTargets {
             for (Tgt t : ctx.targets) if (t.who != null && !t.who.same(ctx.caster)) return List.of(t);
         }
         return List.of();
+    }
+
+    /** @TargetedTarget: el objetivo heredado (o @target si no hay). */
+    private static List<Tgt> inherited(Ctx ctx) {
+        List<Tgt> inh = new ArrayList<>();
+        if (ctx.targets != null) for (Tgt x : ctx.targets) if (x.who != null && !x.who.same(ctx.caster)) inh.add(x);
+        return inh.isEmpty() ? target(ctx) : inh;
+    }
+
+    /** @ThreatTable, @RandomThreatTarget y @RandomThreatTargetLocation de un mob de jefe (otro lanzador: su @target). */
+    private static List<Tgt> threat(Ctx ctx, String t, double yOff) {
+        SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        List<Tgt> all = new ArrayList<>();
+        if (h != null) for (LivingEntity e : h.threatTable()) all.add(Tgt.of(Who.of(e)));
+        else all.addAll(target(ctx));
+        if (all.isEmpty() || t.equals("threattable") || t.equals("threattableplayers") || t.equals("ttp")) return all;
+        Tgt one = all.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(all.size()));
+        if (t.equals("rttl") || t.equals("randomthreattargetlocation")) return List.of(Tgt.at(one.pos().add(0, yOff, 0)));
+        return List.of(one);
     }
 
     /** @targetlocation: donde está @target o, sin él, el punto al que mira (como MythicLib con las skills de jugador). */

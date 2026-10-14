@@ -216,6 +216,18 @@ final class SkillFx {
         }
     }
 
+    /** effect:explosion / fakeexplosion (y lo que se ve de explosion): el estallido y su sonido, sin daño. */
+    static void explosionFx(Ctx ctx, List<Tgt> targets) {
+        ServerLevel level = ctx.caster.level();
+        for (Tgt t : targets) {
+            Vec3 p = t.pos();
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+            level.playSound(null, p.x, p.y, p.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE,
+                    ctx.host != null ? net.minecraft.sounds.SoundSource.HOSTILE : net.minecraft.sounds.SoundSource.PLAYERS, 4F,
+                    (1F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F);
+        }
+    }
+
     /** blockmask: el suelo se ve de otro bloque un rato (solo para la vista, sin tocar el mundo). */
     static void blockmask(Mech m, Ctx ctx, List<Tgt> targets) {
         String block = m.arg("stone", "material", "m", "block", "b").toLowerCase(Locale.ROOT);

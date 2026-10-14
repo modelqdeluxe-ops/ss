@@ -4,12 +4,20 @@ Este documento sirve para que otra IA (o persona) retome los jefes sin tener que
 CHECKPOINT de `HANDOFF.md`, porque las reglas del dueño están allí (español, nada de subagentes, compilar con GitHub
 Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 
-- **Estado:** TF Client **1.3.78**.
+- **Estado:** TF Client **1.3.79**.
   - 1.3.75: jefes, grietas y `/tf boss`.
   - 1.3.76: la IA, fiel a MythicMobs/ModelEngine.
   - 1.3.77: el cerebro táctico.
   - 1.3.78: peleas más vivas (combos, tempo, giro, espaciado, paso atrás), los modelos completos (el «ojo» de
     Blockbench), `partvis` como ModelEngine, la esfera de Astwood y el auditor `tools/bosses/audit.py`.
+  - 1.3.79: el motor, listo para packs nuevos: `~onDamaged` antes del golpe con `cancelevent`/`modifydamage`, tabla
+    de amenaza (`threat`, `clearthreat`, `rally`, `@ThreatTable`/`@TT`, `@RandomThreatTarget`), `setinvulnerable`,
+    `goto`, `suicide`, `setmaxhealth`, `shield`, `explosion`, `forcepull`, `disengage`; disparadores
+    `~onDropCombat`, `~onChangeTarget`, `~onKill`/`~onPlayerKill`, `~onInteract`; condiciones que antes se daban
+    por cumplidas (`lineofsight`, `world`, `biome`…) y 20 nuevas; el auditor ve lo que el motor acepta «de mentira»,
+    los disparadores que no saltan, la cobertura (`--cobertura`) y se prueba solo (`--prueba`).
+- **Regla del dueño:** «quiero que este motor sea perfecto y bien corregido para todos los bosses que metamos». Ver
+  §7: nada se publica sin el auditor a 0, su prueba y el simulador.
 - **Packs que hay:** 5 de LittleRoom y otros: Gárgola, Hidra, Abominación Parasitaria, Esqueleto de la Torre y Astwood.
 - **Cómo llegan los packs:** el dueño los manda «de 5 en 5» en zips (MythicMobs + ModelEngine). **Nunca subas los
   packs al repo.** Solo se sube lo convertido.
@@ -132,11 +140,15 @@ Las líneas del mob (`mobs.<mob>.mechs`) llevan `tr`/`trv` (disparador) y `hp` (
 | `onspawn` | El primer tick. |
 | `ontimer:N` | Cada N ticks, en el orden del pack. |
 | `onentercombat` | Al tener objetivo, **una vez por pelea**: si lo pierde un momento no vuelve a saltar (salvo tras 10 s sin objetivo). La Abominación volvía a gritar cada vez. |
-| `ondamaged` | Al recibir un golpe. Lleva `damage-amount` y `damage-cause`. |
+| `ondropcombat` | Tras 10 s sin objetivo después de pelear (la misma regla que la entrada). @trigger: nadie. |
+| `onchangetarget` | Pasa de un objetivo a otro. @trigger = el nuevo. |
+| `ondamaged` | Al recibir un golpe, **antes de que entre** (como el `EntityDamageEvent` de MythicMobs): `damage-amount` (golpe en la escala del pack), `damage-cause`, la vida de **antes** para sus umbrales (`<50%`), y sus skills pueden anularlo (`cancelevent`) o cambiarlo (`modifydamage`). Solo cuenta lo que hagan en el momento (lo que vaya con `delay` llega tarde, como en MythicMobs). |
 | `ondeath` | Al morir. |
+| `onkill` / `onplayerkill` | Mata a algo / a un jugador con un golpe o una skill (`BossEntity.killedEntity`). @trigger = la víctima. |
+| `oninteract` | Clic derecho de un jugador (`BossEntity.mobInteract`). En los packs de ahora solo lleva `cancelevent` (no hace nada: no hay golpe que anular). |
 | `onsignal:X` | Al recibir `signal{s=X}`. |
-| `onload` | No salta: no se guardan en el mundo. |
-| `onattack` | No salta: no hay golpe cuerpo a cuerpo de Minecraft. En los packs solo lo usan para cancelarlo. |
+| `onload` | No salta: los jefes no se guardan en el mundo (`shouldBeSaved = false`), nunca vuelven del disco. El auditor lo comprueba en el Java. |
+| `onattack` | No salta: no hay golpe cuerpo a cuerpo de Minecraft. En los packs solo lo usan para cancelarlo; si un pack hace algo más con él, el auditor lo marca como problema. |
 
 Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `SkillMobs.scripts`.
 
@@ -159,6 +171,11 @@ Los scripts `mm:` de la línea de tiempo de las animaciones se lanzan desde `Ski
 | `throw` y `pull` van entre 10 (como MythicMobs); `lunge` no. | `SkillMotion` | Velocidades del pack. |
 | `playerWithin` cuenta a quien está en creativo (no a los espectadores). **Pero no atacan a quien está en creativo**, como en MythicMobs. | `SkillConds`, `BossEntity.pickTarget` | El staff los despierta; para probar la pelea, en supervivencia. |
 | Los golpes de jefe dan 10 ticks de inmunidad por mob (como MythicMobs). | `hurt()` | |
+| `~onDamaged` va **antes** del golpe. `cancelevent` lo anula (quien pega sigue sumando amenaza) y `modifydamage{amount;action}` lo cambia: `MULTIPLY` por defecto, `ADD`/`SUBTRACT`/`SET` en la escala del pack, `DIVIDE`. Fuera de un `~onDamaged` no hacen nada (no hay evento), como en MythicMobs. | `BossEntity.hurt`, `SkillMobs.damaged` → `Hit`, `SkillRuntime.modifyDamage` | Fases invulnerables y armaduras de los packs. |
+| Las cifras de vida del pack van **en su escala**: `health{h}`, `setmaxhealth{a}`, `shield{a;maxshield}`, `heal{a}`, `damage @self`. | `SkillConds` (health), `apply` | El pack no sabe de dificultades: «500» es 500 de su vida, no de la nuestra. |
+| `@TT` en un jefe es **@ThreatTable** (MythicMobs); en las skills de clase sigue siendo el objetivo heredado (`pistolero_despertado`). `threat{amount;mode}` = ADD/SUBTRACT/MULTIPLY/DIVIDE/SET/RESET/FORCE (FORCE: pasa a ser el primero y su objetivo). `rally` = FORCE en los de su grupo cercanos. | `SkillTargets.threat`, `BossEntity.threat` | Burlas, cambios de objetivo y ataques «al que más le pega». |
+| `explosion{yield;fire}` **nunca rompe bloques** y solo daña a quien el jefe puede dañar (la cuenta de daño de Minecraft, con la dificultad). `fakeexplosion`/`effect:explosion`: solo se ve y se oye. | `SkillRuntime.explosion` | El servidor tiene construcciones y protecciones. |
+| Lo que el motor acepta sin hacer nada (`-> { /* nada */ }` en `apply`, `-> true;` en `SkillConds`) está explicado en `STUB_OK` de `audit.py`. Si añades uno, explícalo allí o el auditor lo marcará en cuanto un pack lo use. | `apply`, `SkillConds`, `audit.py` | Que nada se quede «de mentira» sin que se sepa. |
 
 ### 3.4 Animaciones: VfxLayers (ModelEngine 4)
 
@@ -386,7 +403,9 @@ de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
 | Comando | Para qué |
 |---|---|
 | `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
-| `python3 tools/bosses/audit.py [jefe ...]` | El auditor (también al final de `build_bosses.py`). Tiene que dar 0 en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`. |
+| `python3 tools/bosses/audit.py [jefe ...] [--sin-avisos]` | El auditor (también al final de `build_bosses.py`). Tiene que dar **0 problemas** en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`, los `run(h, "...")` de `SkillMobs` (disparadores) y qué `case` no hacen nada. Los **avisos** (`·`) no cuentan pero dicen lo que no se verá igual (hoy: `segment`, las capas y colas rígidas). |
+| `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
+| `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.79: mecánicas 110/192 (todas las `*` salvo `mount`, `dismount` y `segment`), condiciones 81/88, objetivos 42/47, disparadores 11/26. |
 | `tools/vfx_render.py` (`model_tris`, `raster`, `B.pose`) | Dibujar un modelo de jefe con una animación y unos huesos visibles (ver §7, paso 4). |
 | `python3 tools/bosses/sim_gui.py [--png carpeta]` | La ventana `/tf boss` a 8 tamaños. |
 | `python3 tools/bosses/rift_model.py --preview carpeta` | Imágenes del cristal. |
@@ -415,8 +434,8 @@ antes de dar algo por arreglado.
 1. Descomprime el pack (fuera del repo).
 2. Añádelo a `JEFES` (en `build_bosses.py`) y a `tools/bosses/es.json`.
 3. Ejecuta `build_bosses.py`. Si dice «falta skill X», complétala en `FIXES` imitando las parecidas del pack. **El
-   auditor del final tiene que dar 0**: si sale una mecánica, condición u objetivo sin implementar, impleméntalo (paso
-   6); si sale un hueso o una animación que no existen, mira el pack (puede ser una errata suya: si ModelEngine
+   auditor del final tiene que dar 0 problemas** (y lee sus avisos): si sale una mecánica, condición, objetivo o
+   disparador sin implementar, o algo que el motor acepta «de mentira», impleméntalo (paso 6); si sale un hueso o una animación que no existen, mira el pack (puede ser una errata suya: si ModelEngine
    tampoco la encuentra, decide con el dueño si se corrige en `FIXES`).
 4. Dibuja sus modelos **como aparecen**: la visibilidad inicial (todo visible: el ojo de Blockbench no cuenta) más
    los `partvis` de su `~onSpawn` con las reglas de ModelEngine (§3.3), y después de cada `partvis{v=true}` del
@@ -426,11 +445,17 @@ antes de dar algo por arreglado.
    - ¿salen todos sus ataques?
    - ¿las etiquetas del cerebro tienen sentido?
    - Si algo no sale nunca, busca por qué con `-v` (condiciones, variables, fases).
-6. Mecánicas o condiciones nuevas: si el pack usa algo que el motor no tiene, sale en el log del juego como «TF Skills:
-   …». Impleméntalo en `SkillRuntime`/`SkillConds`/`SkillTargets` **con la semántica de MythicMobs**, solo para jefes
-   si cambia algo de las clases (`ctx.host != null`), y cópialo en `sim_ai.py`.
-7. Sube la versión (`mod_version` y `TFClient.VERSION`), apunta la entrega en `HANDOFF.md`, haz push a la rama
-   (compila en Actions), PR y fusión. Comprueba la Release.
+6. Mecánicas, condiciones, objetivos o disparadores nuevos: el auditor los marca antes del juego (y en el juego salen
+   en el log como «TF Skills: …»). **Nunca los quites del pack**: impleméntalos con la semántica de MythicMobs (mira
+   cómo se hicieron los de la 1.3.79), cópialos en `sim_ai.py`, añádelos a `mythic_ref.py` si no estaban y comprueba
+   que los demás jefes dan las mismas cifras en `sim_ai.py` (misma `--seed`, antes y después). Si algo de verdad no
+   importa, déjalo «sin efecto» y explícalo en `STUB_OK`. Van en `SkillRuntime`/`SkillConds`/`SkillTargets`/
+   `SkillMobs`, solo para jefes si cambia algo de las clases (`ctx.host != null`).
+7. Antes de publicar: `audit.py` con 0 problemas en TODOS los jefes, `audit.py --prueba` entera y `sim_ai.py` de los
+   demás jefes igual que antes (si cambia, que sea a propósito y explicado).
+8. Sube la versión (`mod_version` y `TFClient.VERSION`), apunta la entrega en `HANDOFF.md`, haz push a la rama
+   (**compila SIEMPRE en GitHub Actions**, nunca con `./gradlew` en el contenedor: orden del dueño), PR y fusión.
+   Comprueba la Release.
 
 ---
 
@@ -450,11 +475,19 @@ antes de dar algo por arreglado.
 | «Se queda quieto delante de mí / gritando» | Sus ataques piden más distancia que a la que se pone; un `~onEnterCombat` que se repite | `SkillBrain.plan` (mínimo, `possible`), `BossEntity.backstep`, `SkillMobs.tick` |
 | «Solo me tira 2 ataques» | La fase del pack (el Esqueleto, con el escudo arriba, solo tiene golpe y aplastamiento de escudo de cerca: hay que romperlo o ir a por su espalda); o el plan no rota | `sim_ai.py <id> -v`, `SkillBrain.plan` |
 | «Tira algo que no hace nada / cae al suelo» | El objetivo del proyectil (sus propios esbirros), hacia dónde apunta, la inercia | `SkillTargets.entities`, `SkillMovers.projectile` |
+| «Es inmortal / no le baja la vida» | Un `cancelevent`/`modifydamage` en `~onDamaged` (fase invulnerable del pack), `setinvulnerable` sin quitar | `sim_ai.py <id>` («golpes anulados por el pack»), `BossEntity.hurt` |
+| «Se va a una esquina / deja de perseguir» | Un `goto` del pack (dura hasta llegar o 10 s) | `BossEntity.goTo`, `customServerAiStep` |
+| «Va siempre a por el mismo» | `threat{mode=FORCE}`/`rally` del pack o la tabla de amenaza | `BossEntity.threat`/`pickTarget` |
 | «Tiene una pieza fuera de sitio / le falta una pieza» | `partvis` (defaults de ModelEngine), el ojo de Blockbench al convertir | `SkillModels.partVis`, `tools/vfx_bb.py` (`boss`), §7 paso 4 |
 
 ---
 
 ## 9. Ideas pendientes (si el dueño pide más)
+
+- **`segment` de ModelEngine** (capas, colas y estelas que se doblan como una cuerda con límite de ángulo): hoy van
+  rígidas con su animación. Lo usan la Gárgola (cola y estelas de los brazos) y el Esqueleto (capa).
+- `mount`/`dismount` (montar a un efecto en otro) y los efectos de partículas con nombre propio de MythicMobs (`smoke`,
+  `flames`, `geyser`, `firework`…): ningún pack de ahora los usa; `--cobertura` los lista.
 
 - **Fintas y ataques retrasados de verdad:** ralentizar el principio de una animación y retrasar a la vez sus golpes.
   Hoy solo «se lo piensa» antes de empezar.
