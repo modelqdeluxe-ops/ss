@@ -60,7 +60,7 @@ final class PadAnims {
             new Opt("disableResourcePackModelParts", true, Items.ITEM_FRAME, "Piezas de los packs", "Las que añaden los paquetes de recursos."),
             new Opt("renderArmorArmsFP", false, Items.IRON_CHESTPLATE, "Mangas de la armadura", "Tu armadura en los brazos."));
 
-    private static final Item[] KIND_ICONS = {Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_HOE,
+    private static final Item[] KIND_ICONS = {Items.NETHERITE_SWORD, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_HOE,
             Items.BOW, Items.CROSSBOW, Items.SHIELD, Items.TRIDENT, Items.FISHING_ROD, Items.COOKED_BEEF, Items.GRASS_BLOCK,
             Items.PLAYER_HEAD, Items.SHEARS};
 

@@ -8,6 +8,11 @@ import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Properties;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
@@ -16,6 +21,7 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShieldItem;
@@ -32,6 +38,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.util.TFConfigDir;
+import org.joml.Vector3f;
 
 /**
  * Las animaciones de Punchy por tipo de objeto (1.3.69), de cada jugador: config/tfclient/animaciones.properties. Se
@@ -43,6 +50,11 @@ import net.tierrasfantasticas.tfclient.util.TFConfigDir;
 public final class AnimSettings {
     /** Los tipos, en el orden del pad: clave del archivo, nombre y explicación. */
     public enum Kind {
+        // 1.3.72: las armas y objetos del servidor con modelo 3D propio. Punchy cuelga el arma de su brazo y, en las
+        // herramientas, usa la posición de primera persona del modelo (forceVanillaDisplay), pensada para la espada de
+        // Minecraft (se mueve 1,13/3,2/1,13 px). Las nuestras traen la suya (oni_right_sword: 60° y 5,5/4/−10,25 px):
+        // sobre el brazo de Punchy hace de palanca y cada espadazo la manda al suelo. De fábrica, como antes de Punchy.
+        MODEL("modelos", "Armas y objetos del servidor", "Tienen su modelo 3D y Punchy los descoloca. NO: se ven como siempre.", false),
         SWORD("espadas", "Espadas", ""),
         AXE("hachas", "Hachas", ""),
         PICKAXE("picos", "Picos", ""),
@@ -59,11 +71,18 @@ public final class AnimSettings {
         OTHER("otros", "Otros objetos", "Todo lo demás: tijeras, mechero, mapas...");
 
         public final String key, title, help;
+        /** Encendido de fábrica. */
+        public final boolean def;
 
         Kind(String key, String title, String help) {
+            this(key, title, help, true);
+        }
+
+        Kind(String key, String title, String help, boolean def) {
             this.key = key;
             this.title = title;
             this.help = help;
+            this.def = def;
         }
     }
 
@@ -73,7 +92,11 @@ public final class AnimSettings {
     private static final Map<Item, Kind> CACHE = new IdentityHashMap<>();
 
     static {
-        java.util.Arrays.fill(ON, true);
+        defaults();
+    }
+
+    private static void defaults() {
+        for (Kind k : Kind.values()) ON[k.ordinal()] = k.def;
     }
 
     private AnimSettings() {}
@@ -90,9 +113,9 @@ public final class AnimSettings {
         save();
     }
 
-    /** Todos encendidos (el botón RESTABLECER de la página). */
+    /** Como vienen de fábrica (el botón RESTABLECER de la página). */
     public static void reset() {
-        java.util.Arrays.fill(ON, true);
+        defaults();
         update();
         save();
     }
@@ -117,6 +140,7 @@ public final class AnimSettings {
     private static Kind classify(ItemStack s) {
         Item i = s.getItem();
         try {
+            if (ownModel(s)) return Kind.MODEL;
             if (i instanceof TridentItem) return Kind.TRIDENT;
             if (i instanceof SwordItem || s.is(ItemTags.SWORDS)) return Kind.SWORD;
             if (i instanceof AxeItem || s.is(ItemTags.AXES)) return Kind.AXE;
@@ -139,7 +163,24 @@ public final class AnimSettings {
     /** Acaba el apagado de Punchy cuando toca (PunchyBridge.turnOff). */
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) PunchyBridge.tick(net.minecraft.client.Minecraft.getInstance());
+        if (event.phase == TickEvent.Phase.END) PunchyBridge.tick(Minecraft.getInstance());
+    }
+
+    /**
+     * ¿Es un objeto del servidor con su propio modelo? Los de TF Client cuya posición en primera persona no es la de
+     * Minecraft (item/generated e item/handheld: giro 0, −90, 25; desplazamiento 1,13, 3,2, 1,13 px; escala 0,68).
+     */
+    private static boolean ownModel(ItemStack s) {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(s.getItem());
+        if (id == null || !TFClient.MOD_ID.equals(id.getNamespace())) return false;
+        BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(s, null, null, 0);
+        ItemTransform t = model.getTransforms().getTransform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+        return !(near(t.rotation, 0F, -90F, 25F) && near(t.translation, 1.13F / 16F, 3.2F / 16F, 1.13F / 16F)
+                && near(t.scale, 0.68F, 0.68F, 0.68F));
+    }
+
+    private static boolean near(Vector3f v, float x, float y, float z) {
+        return Math.abs(v.x() - x) < 0.01F && Math.abs(v.y() - y) < 0.01F && Math.abs(v.z() - z) < 0.01F;
     }
 
     // las etiquetas (espadas, hachas...) llegan al entrar en un mundo: lo apuntado antes puede estar mal

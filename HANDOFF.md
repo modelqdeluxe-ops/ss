@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.71**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.72**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.71) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.72) — lee esto primero
 
-**Estado**: última versión publicada **1.3.71** (Punchy apagado = Minecraft normal de verdad), Release ya creada:
+**Estado**: última versión publicada **1.3.72** (armas del servidor sin Punchy: ya no se van al suelo), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -102,7 +102,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.71** (APAGADAS = vanilla, también a mitad de un golpe;
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.72** (espadas TF como antes con Punchy encendido),
+**la 1.3.71** (APAGADAS = vanilla, también a mitad de un golpe;
 los tipos en NO; el sedal), **la 1.3.70** (portada del pad sin las nubes blancas, estelas
 con Punchy, sonido del tajo), **la 1.3.69 entera** (Punchy dentro del jar: que cargue, que
 las animaciones salgan, que cada interruptor de Efectos › ANIMACIONES haga lo que dice, que las estelas sigan saliendo con
@@ -162,6 +163,17 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
+> **TF Client 1.3.72 (14 oct)** — el dueño: «¿no arreglaste lo de la espada? No estaba así, se jodió con Punchy».
+> - **Causa** (javap de Punchy): en primera persona Punchy cuelga el arma de su brazo 3D y, para espadas y herramientas,
+>   `ItemInHandRendererMixin.punchy$forceVanillaDisplay` cambia la vista a `FIRST_PERSON_*`: usa la posición de
+>   primera persona del modelo, la de la espada de Minecraft (0/−90/25°, 1,13/3,2/1,13 px, 0,68). Las armas TF son
+>   modelos 3D con la suya (`oni_right_sword`: 60,25°, 5,5/4/−10,25 px): sobre el brazo de Punchy ese desplazamiento hace
+>   de palanca y cada espadazo barre el arma hasta el suelo.
+> - **Arreglo**: tipo nuevo `AnimSettings.Kind.MODEL` «Armas y objetos del servidor», **NO de fábrica** (`def`): objetos
+>   `tfclient:` cuya transformación `FIRST_PERSON_RIGHT_HAND` no es la estándar (`ownModel`) van por la lista negra de
+>   Punchy = como antes de Punchy. Los de Minecraft siguen con Punchy. Para animarlas con Punchy habría que ajustar cada
+>   modelo (su sistema de «tuning» por objeto) con capturas o vídeo del dueño.
+
 > **TF Client 1.3.71 (14 oct)** — el dueño: «cuando desactivo las animaciones no vuelve a la normalidad y cuando suelto
 > espadazos el modelo se baja hasta el suelo» (captura: no se ve la mano), «cuando las desactivo deben volver a las vanilla
 > originales sin errores».
@@ -183,8 +195,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   del sedal; se cambia tras el de Punchy por el cálculo original de Forge 1.20.1, mirado en el cliente oficial de Mojang).
 >   La cuenta atrás solo corre sin pausa (como el tick de Punchy). Los tipos en NO («con qué objetos») también cierran
 >   la transformación de reposo, el cuerno y el sedal de la caña.
-> - «Se baja hasta el suelo»: con Punchy apagado, una espada TF «pesada» (velocidad −3,1, como un hacha) baja mucho tras
->   cada golpe hasta recargar: es lo que hace Minecraft con las armas lentas. Si pasa con Punchy encendido, pedir vídeo.
+> - (Lo de «se baja hasta el suelo» se explicó mal aquí como la bajada normal de las armas lentas; el dueño lo desmintió:
+>   antes de Punchy no pasaba. La causa real y el arreglo, en la 1.3.72.)
 
 > **TF Client 1.3.70 (14 oct)** — el dueño probó la 1.3.69 (captura de la portada): «¿qué mierda hiciste con el pad?»,
 > «las estelas no sirven, no se muestran, ni tampoco hay sonidos».
