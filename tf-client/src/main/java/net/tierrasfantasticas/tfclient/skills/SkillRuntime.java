@@ -457,6 +457,54 @@ public final class SkillRuntime {
         return true;
     }
 
+    /**
+     * ¿Saldría ahora esta skill? Lo mismo que mira runMeta (cooldown, condiciones de quien lanza y de los objetivos)
+     * sin hacer nada: el cerebro de los jefes (SkillBrain) prueba así cada ataque antes de elegir. Una condición con
+     * castinstead/orelseCast que se dispararía cuenta como que sale (haría algo).
+     */
+    static boolean usable(Meta meta, Ctx ctx) {
+        if (meta == null) return false;
+        if (meta.cooldown > 0) {
+            WhoState st = stateIfAny(ctx.caster);
+            Long until = st == null ? null : st.cooldowns.get(meta.name);
+            if (until != null && until > clock) return false;
+        }
+        for (Cond c : meta.conditions) {
+            String act = c.action();
+            if (act.startsWith("cast ") || act.startsWith("power")) continue;
+            boolean r = SkillConds.test(c, ctx.caster, ctx, null);
+            if (act.startsWith("castinstead")) {
+                if (r) return true;
+                continue;
+            }
+            if (act.startsWith("orelsecast")) {
+                if (!r) return true;
+                continue;
+            }
+            if (!passes(act, r)) return false;
+        }
+        if (meta.targetConditions.isEmpty()) return true;
+        List<Tgt> in = ctx.targets != null ? ctx.targets : List.of(Tgt.of(ctx.caster));
+        for (Tgt t : in) {
+            boolean keep = true;
+            for (Cond c : meta.targetConditions) {
+                String act = c.action();
+                if (act.startsWith("power") || act.startsWith("cast ")) continue;
+                boolean r = SkillConds.test(c, t.who, ctx, t.at);
+                if (act.startsWith("castinstead") || act.startsWith("orelsecast")) {
+                    if (r == act.startsWith("castinstead")) return true;
+                    continue;
+                }
+                if (!passes(act, r)) {
+                    keep = false;
+                    break;
+                }
+            }
+            if (keep) return true;
+        }
+        return false;
+    }
+
     private enum Outcome { GO, STOP, REPLACED }
 
     /** Qué hace una condición de la skill según su resultado (true, false, cancel, castinstead X, orElseCast X, power N). */
@@ -665,7 +713,9 @@ public final class SkillRuntime {
             case "gcd", "setgcd", "globalcooldown" -> {
                 // El gcd es de quien lanza (en MythicMobs no lleva objetivo): «gcd{ticks=60}» dentro de un ataque lanzado
                 // con @target se ponía al jugador y el jefe encadenaba ataques encima unos de otros
-                int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20) / rhythm(ctx));
+                // Sin dividir por el ritmo de la dificultad: el gcd es lo que dura el ataque (su animación); acortarlo hacía
+                // que el siguiente cortara al anterior a medias. El ritmo acorta los cooldowns y lo que piensa el cerebro
+                int ticks = (int) Math.round(num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20));
                 state(ctx.caster).gcdUntil = clock + ticks;
             }
             case "setskillcooldown" -> {
@@ -1197,6 +1247,8 @@ public final class SkillRuntime {
             le.setDeltaMovement(motion);
             le.hurtMarked = true;
         }
+        // El cerebro del jefe aprende qué ataques le entran al jugador (y cuáles esquiva)
+        if (ctx.host != null && le instanceof Player) SkillMobs.landed(ctx.host.boss());
     }
 
     /** scale: la vida de los jefes va a la escala de su dificultad (un «heal{a=10}» del pack cura 10 de su vida del pack). */

@@ -3,7 +3,12 @@ motor de Java (SkillRuntime/SkillConds/SkillMobs) contra un jugador que se mueve
 ataques salen. Sirve para ver si el pack se queda bloqueado (una variable que no caduca, un cooldown que se pone sin
 salir, un gcd que no es del jefe...) y si usa todos sus ataques.
 
-    python3 tools/bosses/sim_ai.py [jefe ...] [--min 5] [--seed 1] [-v]
+    python3 tools/bosses/sim_ai.py [jefe ...] [--min 5] [--seed 1] [--smart 0..1] [-v] [--antes]
+
+--smart N: con el cerebro táctico (skills/SkillBrain.java) a esa inteligencia (0 = el pack tal cual, por defecto).
+El jugador simulado, además de moverse y pegar, a veces se cura (come), se cubre con escudo o dispara con arco, y se
+mide si el jefe le castiga (cuántas curas reciben un ataque que acorta distancia o a distancia en el segundo y medio
+siguiente) y cuánto repite ataques seguidos. --antes: el motor de la 1.3.75 (para comparar).
 
 Simplificaciones: el jugador es un punto; los tótems y proyectiles no se simulan (salvo los que detectan dónde está
 el jugador para morder, en la Hidra); las auras solo cuentan su nombre y su duración; las animaciones solo se apuntan.
@@ -103,6 +108,338 @@ class Boss:
 
 OLD = False  # --antes: como el motor de la 1.3.75 (para comparar)
 
+SMART = 0.0  # --smart: inteligencia del cerebro (como Difficulty.smart)
+
+OFFENSE = {'damage', 'basedamage', 'hit', 'percentdamage', 'throw', 'projectile', 'missile', 'shoot', 'totem', 'summon',
+           'lunge', 'propel', 'leap', 'mountmodel', 'stun', 'ignite', 'pull'}
+AREA = {'pir', 'playersinradius', 'eir', 'entitiesinradius', 'livinginradius', 'leir', 'livingentitiesinradius', 'ring',
+        'playersinring', 'rlnc', 'randomlocationsnearcaster', 'air'}
+
+
+class Attack:
+    def __init__(self, name, line, pool):
+        self.name, self.line, self.pool = name, line, pool
+        self.min, self.max = 0.0, 40.0
+        self.gap = self.ranged = self.aoe = self.grab = self.rear = False
+        self.uses = self.hits = self.miss = 0
+
+    def sweet(self):
+        hi = min(self.max, 24)
+        return self.min + max(0.0, hi - self.min) * 0.35
+
+
+def called(tree, pm):
+    out = []
+    a = pm.get('a', {})
+    for k in ('s', 'skill', 'skills', 'oh', 'onhit', 'ot', 'ontick', 'oe', 'onend', 'os', 'onstart'):
+        v = a.get(k)
+        if v is None:
+            continue
+        if k in ('s', 'skill', 'skills') and pm['m'] not in ('skill', 'metaskill', 'randomskill', 'cast', 'skillsequence'):
+            continue
+        for part in str(v).split(','):
+            sub = tree.get(part.strip().split(' ')[0].lower())
+            if sub is not None:
+                out.append((part.strip().split(' ')[0], sub))
+    return out
+
+
+def offensive(tree, name, meta, seen, depth):
+    if meta is None or depth > 4 or name.lower() in seen:
+        return False
+    seen.add(name.lower())
+    for pm in meta['mechs']:
+        if pm['m'] in OFFENSE:
+            return True
+        if pm['m'] in ('potion', 'velocity') and pm.get('t') not in (None, 'self'):
+            return True
+        if pm['m'] == 'setspeed' and num(arg(pm.get('a', {}), 1, 'speed', 's'), 1) >= 2:
+            return True
+        for n, sub in called(tree, pm):
+            if offensive(tree, n, sub, seen, depth + 1):
+                return True
+    return False
+
+
+def spec(s):
+    s = str(s).strip()
+    try:
+        if 'to' in s:
+            lo, hi = s.split('to', 1)
+            return float(lo), float(hi)
+        if s.startswith('<='):
+            return 0.0, float(s[2:])
+        if s.startswith('<'):
+            return 0.0, float(s[1:])
+        if s.startswith('>='):
+            return float(s[2:]), 40.0
+        if s.startswith('>'):
+            return float(s[1:]), 40.0
+    except ValueError:
+        pass
+    return None
+
+
+def analyze(tree, name, meta, at):
+    for c in meta.get('target_conditions', []) + meta.get('conditions', []):
+        want = str(c.get('v', 'true')).lower() != 'false'
+        a = c.get('a', {})
+        if c['m'] == 'distance':
+            r = spec(arg(a, '', 'distance', 'd'))
+            if r and want:
+                at.min, at.max = max(at.min, r[0]), min(at.max, r[1])
+        elif c['m'] == 'targetwithin':
+            d = num(arg(a, 16, 'distance', 'd'), 16)
+            if want:
+                at.max = min(at.max, d)
+            else:
+                at.min = max(at.min, d)
+        elif c['m'] == 'targetnotwithin':
+            d = num(arg(a, 16, 'distance', 'd'), 16)
+            if want:
+                at.min = max(at.min, d)
+            else:
+                at.max = min(at.max, d)
+    for c in meta.get('target_conditions', []):
+        if c['m'] in ('fieldofview', 'fov', 'infieldofview'):
+            r = num(arg(c.get('a', {}), 0, 'rotation', 'r'), 0) % 360
+            if 110 <= r <= 250:
+                at.rear = True
+    n = name.lower()
+    if 'tail' in n or 'leap_turn' in n:
+        at.rear = True
+    if any(k in n for k in ('grab', 'enclose', 'absorb', 'cage')):
+        at.grab = True
+
+    def radius(pm):
+        return num(arg(pm.get('ta') or {}, 5, 'r', 'radius'), 5)
+
+    def tags(nm, mt, seen, depth, area):
+        if mt is None or depth > 4 or nm.lower() in seen:
+            return
+        seen.add(nm.lower())
+        for pm in mt['mechs']:
+            t = pm.get('t')
+            m = pm['m']
+            here = area if t is None else (t in AREA and 4 <= radius(pm) <= 16)
+            if m in ('lunge', 'propel', 'leap'):
+                at.gap = True
+            elif m in ('projectile', 'missile', 'shoot'):
+                if 'oe' in pm.get('a', {}) or 'onend' in pm.get('a', {}):
+                    at.gap = True
+                else:
+                    at.ranged = True
+            elif m in ('mountmodel', 'stun', 'lock'):
+                at.grab = True
+            elif m == 'setspeed':
+                if num(arg(pm.get('a', {}), 1, 'speed', 's'), 1) >= 2:
+                    at.gap = True
+            elif m == 'summon':
+                at.aoe = at.aoe or depth > 0 or here
+            elif m in ('damage', 'basedamage', 'hit', 'throw', 'potion', 'percentdamage'):
+                at.aoe = at.aoe or here
+            if m == 'totem' and num(arg(pm.get('a', {}), 1.25, 'hr', 'horizontalradius'), 1.25) >= 3:
+                at.aoe = True
+            call_area = here if m in ('skill', 'metaskill', 'randomskill') else False
+            for sn, sub in called(tree, pm):
+                tags(sn, sub, seen, depth + 1, call_area)
+    tags(name, meta, set(), 0, False)
+    if not at.ranged and not at.gap and at.min >= 6 and at.max >= 12:
+        at.ranged = True
+    return at
+
+
+class Brain:
+    """Lo mismo que SkillBrain.java (si se cambia allí, aquí igual)."""
+
+    def __init__(self, sim):
+        self.sim = sim
+        self.attacks = []
+        self.handled = set()
+        tree = sim.tree
+        for i, pm in enumerate(sim.b.mob['mechs']):
+            if pm.get('tr') != 'ontimer' or num(pm.get('trv'), 20) < 10:
+                continue
+            anyone = False
+            if pm['m'] == 'randomskill':
+                for part in str(arg(pm.get('a', {}), '', 'skills', 's')).split(','):
+                    n = part.strip().split(' ')[0]
+                    meta = tree.get(n.lower())
+                    if meta is not None and offensive(tree, n, meta, set(), 0):
+                        self.attacks.append(analyze(tree, n, meta, Attack(n, pm, True)))
+                        anyone = True
+            elif pm['m'] in ('skill', 'metaskill', 'cast'):
+                if pm.get('t') in (None, 'self', 'caster'):
+                    continue
+                n = str(arg(pm.get('a', {}), '', 's', 'skill', 'skills')).split(',')[0].strip()
+                meta = tree.get(n.lower())
+                if meta is not None and offensive(tree, n, meta, set(), 0):
+                    self.attacks.append(analyze(tree, n, meta, Attack(n, pm, False)))
+                    anyone = True
+            if anyone:
+                self.handled.add(id(pm))
+        self.recent = []
+        self.next = 0
+        self.hesitate_until = -1
+        self.hesitated = False
+        self.urgent = False
+        self.waiting = False
+        self.current = None
+        self.current_at = 0
+        self.current_hit = False
+        self.preferred = 3.0
+        self.preferred_until = 0
+        self.strafe = 1
+        self.strafe_until = 0
+
+    def interval(self):
+        b = self.sim.b
+        t = 20 - 16 * SMART
+        hp = b.hp / b.maxhp
+        if hp < 0.5:
+            t *= 0.85
+        if hp < 0.25:
+            t *= 0.8
+        return max(3, round(t / max(0.5, self.sim.rhythm())))
+
+    def situation(self):
+        s, b = self.sim, self.sim.b
+        dist = s.dist()
+        to = yaw_of(s.px - b.x, s.pz - b.z)
+        return {'dist': dist, 'behind': abs(wrap(to - b.body)) > 110, 'healing': s.t < s.heal_until,
+                'blocking': s.t < s.block_until, 'shooting': s.t < s.aim_until or s.t - s.last_shot < 60,
+                'far': dist > 10, 'crowd': 1, 'low': False}
+
+    def usable(self):
+        s = self.sim
+        out = []
+        for a in self.attacks:
+            pm = a.line
+            if pm.get('hp') and not s.hp_ok(pm['hp']):
+                continue
+            ctx = {'targets': None, 'vars': {}, 'depth': 0}
+            if any(s.cond(c, 'boss', ctx) == c.get('not', False) for c in pm.get('c') or []):
+                continue
+            targets = s.targets(pm, ctx)
+            if not targets:
+                continue
+            if s.can_run(a.name, dict(ctx, targets=targets)):
+                out.append(a)
+        return out
+
+    def score(self, a, st):
+        sc = 1.0
+        span = max(2.0, min(a.max, 24) - a.min)
+        sc += SMART * 1.5 * (1 - min(1.0, abs(st['dist'] - a.sweet()) / span))
+        if st['healing']:
+            sc += SMART * ((4 if a.gap else 0) + (3 if a.ranged else 0))
+        if st['shooting']:
+            sc += SMART * ((2.2 if a.gap else 0) + (1 if a.ranged else 0))
+        if st['far']:
+            sc += SMART * ((1.4 if a.gap else 0) + (1.4 if a.ranged else 0))
+        if st['blocking']:
+            sc += SMART * ((3 if a.grab else 0) + (1.2 if a.aoe else 0))
+        if st['behind']:
+            sc += SMART * (3 if a.rear else 0)
+        if st['crowd'] >= 2:
+            sc += SMART * ((1 + st['crowd'] * 0.7) if a.aoe else 0)
+        if st['low']:
+            sc += SMART * (1 if a.gap else 0.4)
+        for i, r in enumerate(self.recent):
+            if r == a.name:
+                sc -= SMART * (2.2 if i == 0 else 0.9 if i == 1 else 0.3)
+        if a.uses >= 2:
+            sc += SMART * (1.2 * a.hits / a.uses - 0.35 * min(4, a.miss))
+        sc += random.random() * (0.35 + 2.6 * (1 - SMART))
+        return sc
+
+    def tick(self):
+        s, b = self.sim, self.sim.b
+        now = s.t
+        if self.current is not None and now - self.current_at > 70:
+            self.current.miss = 0 if self.current_hit else self.current.miss + 1
+            self.current = None
+        if not b.target or b.hp <= 0:
+            return
+        st = self.situation()
+        if st['healing'] and SMART >= 0.5:
+            self.urgent = True
+        if b.gcd > s.t:
+            return
+        if not self.urgent and now < self.next:
+            return
+        if not self.urgent and now < self.hesitate_until:
+            return
+        self.next = now + self.interval()
+        ok = self.usable()
+        self.waiting = not ok
+        if not ok:
+            self.urgent = False
+            return
+        if not self.urgent and not self.hesitated and SMART >= 0.5 and random.random() < 0.16:
+            self.hesitated = True
+            self.hesitate_until = now + 3 + random.randrange(10)
+            return
+        self.hesitated = False
+        self.urgent = False
+        done = set()
+        for _ in range(3):
+            cands = [a for a in ok if id(a) not in done]
+            if not cands:
+                break
+            best = max(cands, key=lambda a: self.score(a, st))
+            self.fire(best)
+            done.add(id(best))
+            if b.gcd > s.t or random.random() > 0.35 + 0.4 * SMART:
+                break
+            ok = self.usable()
+
+    def fire(self, a):
+        s = self.sim
+        ctx = {'targets': None, 'vars': {}, 'depth': 0}
+        s.firing = a
+        if a.pool:
+            s.run_meta(a.name, dict(ctx, targets=s.targets(a.line, ctx)))
+        else:
+            s.exec(a.line, ctx)
+        s.firing = None
+        if self.current is not None and self.current is not a:
+            self.current.miss = 0 if self.current_hit else self.current.miss + 1
+        a.uses += 1
+        self.current, self.current_at, self.current_hit = a, s.t, False
+        self.recent.insert(0, a.name)
+        del self.recent[6:]
+        # ¿le entra? (el jugador esquiva a veces; con escudo para casi todo menos agarres)
+        d = s.dist()
+        p = 0.65 if a.min - 1 <= d <= a.max + 1 else 0.2
+        if s.t < s.block_until and not a.grab:
+            p *= 0.3
+
+        def land(att=a):
+            if self.current is att and not self.current_hit and random.random() < p:
+                self.current_hit = True
+                att.hits += 1
+        s.later(15, land)
+
+    def plan(self):
+        s, b = self.sim, self.sim.b
+        if SMART < 0.4 or not b.target:
+            return None
+        now = s.t
+        if now >= self.preferred_until:
+            soon = [a for a in self.attacks if b.cooldowns.get(meta_key(a.name), -1) - s.t < 40] or self.attacks
+            pick = random.choice(soon)
+            self.preferred = max(1.5, min(pick.sweet(), 14))
+            self.preferred_until = now + 60 + random.randrange(60)
+        strafe = 0
+        if SMART >= 0.6 and self.waiting and b.gcd <= s.t:
+            if now >= self.strafe_until:
+                self.strafe = random.choice([1, -1])
+                self.strafe_until = now + 40 + random.randrange(50)
+            strafe = self.strafe
+        return self.preferred, strafe
+
+
 
 class Sim:
     def __init__(self, boss_id, seed=1, verbose=False):
@@ -117,6 +454,12 @@ class Sim:
         self.verbose = verbose
         self.hits = 0
         self.unknown = set()
+        # Lo que hace el jugador (para ver si el jefe le castiga)
+        self.heal_until = self.block_until = self.aim_until = -1
+        self.last_shot = -1000
+        self.heals = []  # (empieza, ¿castigada?)
+        self.firing = None
+        self.brain = Brain(self) if SMART > 0 else None
 
     # ------------------------------------------------------------------ jugador
     def player_step(self):
@@ -130,16 +473,28 @@ class Sim:
             self.px, self.pz = b.x + math.cos(ang) * d, b.z + math.sin(ang) * d
         dx, dz = self.px - b.x, self.pz - b.z
         d = math.hypot(dx, dz) or 1e-6
-        # se acerca o se aleja a 0,2 b/t y rodea al jefe
+        # Se cura de vez en cuando (si está algo lejos), se cubre cuando lo tiene encima y tensa el arco de lejos
+        if self.t % 500 == 250 and d > 6 and self.t >= self.heal_until:
+            self.heal_until = self.t + 32
+            self.heals.append([self.t, False])
+        if d < 5 and self.t >= self.block_until and random.random() < 0.01:
+            self.block_until = self.t + 40
+        if d > 9 and self.t >= self.aim_until and random.random() < 0.01:
+            self.aim_until = self.t + 25
+        # se acerca o se aleja a 0,2 b/t y rodea al jefe (comiendo va despacio)
         radial = max(-0.28, min(0.28, (self.want_dist - d) * 0.1))  # corre (sprint)
+        if self.t < self.heal_until:
+            radial *= 0.2
         tx, tz = -dz / d, dx / d
         side = 0.12 if (self.t // 100) % 2 == 0 else -0.12
         self.px += dx / d * radial + tx * side
         self.pz += dz / d * radial + tz * side
         # pega si está cerca
-        if d < 4.5 and self.t % 12 == 0:
+        busy = self.t < self.heal_until or self.t < self.block_until
+        if d < 4.5 and self.t % 12 == 0 and not busy:
             self.damage(6.0, 'ENTITY_ATTACK')
-        elif d > 8 and self.t % 20 == 0 and random.random() < 0.4:
+        elif d > 8 and self.t % 20 == 0 and random.random() < 0.4 and not busy:
+            self.last_shot = self.t
             self.damage(4.0, 'PROJECTILE')
 
     def damage(self, amount, cause):
@@ -168,7 +523,32 @@ class Sim:
             d = self.dist()
             hb = self.prog['boss'].get('hitbox') or [1, 2]
             stop = hb[0] / 2 + 1.0  # como BossEntity
-            if d > stop:
+            gx, gz = self.px, self.pz
+            plan = self.brain.plan() if self.brain else None
+            if plan:
+                want = max(stop, plan[0])
+                rx, rz = b.x - self.px, b.z - self.pz
+                rl = math.hypot(rx, rz) or 1e-6
+                if plan[1] and d < want + 3:
+                    ang = math.radians(25 * plan[1])
+                    ux, uz = rx / rl, rz / rl
+                    tx = ux * math.cos(ang) - uz * math.sin(ang)
+                    tz = ux * math.sin(ang) + uz * math.cos(ang)
+                    gx, gz = self.px + tx * max(want, 2.5), self.pz + tz * max(want, 2.5)
+                    stop = 0.6
+                elif d < want - 2.5:
+                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
+                    stop = 0.6
+                else:
+                    stop = want
+            gd = math.hypot(gx - b.x, gz - b.z)
+            if (gx, gz) != (self.px, self.pz):
+                if gd > stop:
+                    step = min(b.speed() * 0.9, gd - stop)
+                    b.x += (gx - b.x) / gd * step
+                    b.z += (gz - b.z) / gd * step
+                    moving = True
+            elif d > stop:
                 step = min(b.speed() * 0.9, d - stop)
                 b.x += (self.px - b.x) / d * step
                 b.z += (self.pz - b.z) / d * step
@@ -177,9 +557,15 @@ class Sim:
         if b.chases and b.ai:
             b.look = wrap(b.look + max(-30, min(30, wrap(want - b.look))))
             if not b.locked:
-                if moving:
+                track = (2 + 8 * SMART) if (self.brain and SMART >= 0.4 and b.gcd > self.t) else 0
+                if track and not moving:
+                    b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
+                elif moving:
                     b.body = wrap(b.body + max(-20, min(20, wrap(want - b.body))))
                 else:
+                    diff = wrap(want - b.body)
+                    if abs(diff) > 30:  # la cabeza arrastra al cuerpo
+                        b.body = wrap(b.body + max(-30, min(30, diff - math.copysign(30, diff))))
                     b.body = wrap(b.body + wrap(want - b.body) * 0.05)
         else:
             b.look = b.body
@@ -200,13 +586,52 @@ class Sim:
         pct = self.b.hp / self.b.maxhp * 100
         return in_range(pct, spec.replace('%', ''))
 
+    def rhythm(self):
+        r = 1.0
+        if SMART >= 0.5:
+            hp = self.b.hp / self.b.maxhp
+            if hp < 0.5:
+                r *= 1 + 0.12 * SMART
+            if hp < 0.25:
+                r *= 1 + 0.12 * SMART
+        return r
+
+    def can_run(self, name, ctx):
+        """SkillRuntime.usable: ¿saldría? (sin hacer nada)"""
+        meta = self.tree.get(str(name).lower())
+        if meta is None:
+            return False
+        b = self.b
+        if num(meta.get('cooldown'), 0) > 0 and b.cooldowns.get(meta_key(name), -1) > self.t:
+            return False
+        for c in meta.get('conditions', []):
+            act = str(c.get('v', 'true')).lower()
+            if act.startswith('cast ') or act.startswith('power'):
+                continue
+            r = self.cond(c, 'boss', ctx)
+            if act.startswith('castinstead'):
+                if r:
+                    return True
+                continue
+            if not self.passes(c, r):
+                return False
+        if not meta.get('target_conditions'):
+            return True
+        ins = ctx['targets'] if ctx['targets'] is not None else ['boss']
+        return any(all(self.passes(c, self.cond(c, w, ctx)) for c in meta['target_conditions']) for w in ins)
+
     def timers(self):
+        on = self.brain is not None
         for pm in self.b.mob['mechs']:
             if pm.get('tr') != 'ontimer':
+                continue
+            if on and id(pm) in self.brain.handled:
                 continue
             every = int(num(pm.get('trv'), 20)) or 1
             if self.t % every == 0 and (not pm.get('hp') or self.hp_ok(pm['hp'])):
                 self.exec(pm, {'targets': None, 'vars': {}, 'depth': 0})
+        if on:
+            self.brain.tick()
 
     # ------------------------------------------------------------------ condiciones
     def cond(self, c, who, ctx):
@@ -296,7 +721,7 @@ class Sim:
                 return False
             targets = outs
         if cd > 0 and not OLD:
-            b.cooldowns[meta_key(name)] = self.t + round(cd * 20)
+            b.cooldowns[meta_key(name)] = self.t + round(cd * 20 / self.rhythm())
         self.script(meta['mechs'], dict(ctx, targets=targets, depth=ctx['depth'] + 1), 0, name)
         return True
 
@@ -409,6 +834,10 @@ class Sim:
                     self.px += (self.px - b.x) * k * 0.5
                     self.pz += (self.pz - b.z) * k * 0.5
                 b.fired[s] = b.fired.get(s, 0) + 1
+                a = self.firing
+                for h in self.heals:
+                    if not h[1] and 0 <= self.t - h[0] <= 30 and (a is None or a.gap or a.ranged):
+                        h[1] = True
                 b.timeline.append((self.t, s))
                 if self.verbose:
                     print(f'{self.t:6d} d={self.dist():5.1f} hp={b.hp / b.maxhp * 100:5.1f}%  {s}')
@@ -489,8 +918,9 @@ def main():
     minutes = float(args[args.index('--min') + 1]) if '--min' in args else 5
     seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 1
     verbose = '-v' in args
-    global OLD
+    global OLD, SMART
     OLD = '--antes' in args
+    SMART = float(args[args.index('--smart') + 1]) if '--smart' in args else 0.0
     bosses = [a for a in args if not a.startswith('-') and not re.match(r'^[\d.]+$', a)] or \
         [c['id'] for c in json.load(open(os.path.join(RES, 'catalog.json'), encoding='utf-8'))]
     for bid in bosses:
@@ -508,6 +938,14 @@ def main():
             print(f'     {v:4d}  {k}')
         if never:
             print('     sin salir:', ', '.join(never))
+        rep = sum(1 for i in range(1, len(s.b.timeline)) if s.b.timeline[i][1] == s.b.timeline[i - 1][1])
+        punished = sum(1 for h in s.heals if h[1])
+        print(f'     repite seguido: {rep} de {max(0, len(s.b.timeline) - 1)}; curas castigadas: {punished} de {len(s.heals)}')
+        if s.brain:
+            for a in s.brain.attacks:
+                tags = ','.join(k for k in ('gap', 'ranged', 'aoe', 'grab', 'rear') if getattr(a, k))
+                if '-v' in sys.argv:
+                    print(f'       cerebro: {a.name:44s} {a.min:4.1f}-{a.max:4.1f} {tags:18s} usos {a.uses:3d} entran {a.hits:3d}')
         if s.unknown:
             print('     condiciones sin simular:', ', '.join(sorted(s.unknown)))
 

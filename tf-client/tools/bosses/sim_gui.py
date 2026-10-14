@@ -18,12 +18,12 @@ def width(s):
     return sum(NARROW.get(c, 6) for c in s)
 
 
-GAP, PAD, FOOT, BTN, CHIP, TAB, ROWS, CARD_H, RIFT_H = 8, 8, 14, 16, 14, 16, 8, 32, 32
+GAP, PAD, FOOT, BTN, CHIP, TAB, ROWS, CARD_H, RIFT_H = 8, 8, 14, 16, 14, 16, 9, 32, 32
 PRESETS = ['Fácil', 'Normal', 'Difícil', 'Pesadilla', 'Demencial']
-LABELS = ['Vida', 'Daño', 'Velocidad', 'Ritmo de ataque', 'Armadura', 'Vida por jugador', 'Recarga de la grieta',
-          'Monedas por jugador']
+LABELS = ['Vida', 'Daño', 'Velocidad', 'Ritmo de ataque', 'Inteligencia', 'Armadura', 'Vida por jugador',
+          'Recarga de la grieta', 'Monedas por jugador']
 # Los valores más anchos que puede enseñar cada fila
-VALUES = ['24.000', '180', '×1,25', '×1,5', '18', '+100 %', '1 h 45 min', '1.000.000']
+VALUES = ['24.000', '180', '×1,25', '×1,5', '100 %', '18', '+100 %', '1 h 45 min', '1.000.000']
 BOSSES = ['Gárgola', 'Hidra', 'Abominación Parasitaria', 'Esqueleto de la Torre', 'Astwood']
 
 
@@ -72,7 +72,7 @@ def layout(w, h, banner):
     o.chipRows = 1 if o.chipsPerRow == 5 else 2
     y += o.chipRows * CHIP + (o.chipRows - 1) * 3 + 6
     o.rowsY = y
-    o.rowH = max(12, min(20, (o.by + o.bh - y) // ROWS))
+    o.rowH = max(11, min(20, (o.by + o.bh - y) // ROWS))
     return o
 
 

@@ -11,20 +11,22 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * retocar. Vida, daño, velocidad y ritmo de ataque son multiplicadores sobre los valores base del jefe (los de Normal
  * para un jugador); la armadura son puntos; «por jugador» es la vida que suma cada jugador más que haya al abrir la
  * grieta (incursión en grupo); la recarga es lo que tarda la grieta en volver a estar lista; las monedas, lo que se
- * lleva cada jugador que le haya hecho daño.
+ * lleva cada jugador que le haya hecho daño. La inteligencia (0 a 1) es cuánto decide su cerebro táctico
+ * (skills/SkillBrain): 0 = exactamente como el pack; 1 = elige el mejor ataque para cada momento, castiga curas, escudos
+ * y distancia, rodea, sigue al jugador al atacar y se enfurece por fases.
  */
 public record Difficulty(String preset, double health, double damage, double speed, double rhythm, double armor,
-                         double perPlayer, int respawnMin, int coins) {
+                         double perPlayer, int respawnMin, int coins, double smart) {
 
     /** Los presets, de menos a más difícil: id, nombre y color en la ventana. */
     public record Preset(String id, String name, int color, Difficulty values) {}
 
     public static final List<Preset> PRESETS = List.of(
-            new Preset("facil", "Fácil", 0x5BD46B, new Difficulty("facil", 0.6, 0.55, 0.9, 0.8, 0, 0.35, 10, 150)),
-            new Preset("normal", "Normal", 0x4FB3F2, new Difficulty("normal", 1.0, 1.0, 1.0, 1.0, 4, 0.5, 15, 300)),
-            new Preset("dificil", "Difícil", 0xF2C14F, new Difficulty("dificil", 1.6, 1.45, 1.08, 1.15, 8, 0.6, 20, 600)),
-            new Preset("pesadilla", "Pesadilla", 0xF2784F, new Difficulty("pesadilla", 2.5, 2.1, 1.16, 1.3, 12, 0.75, 30, 1100)),
-            new Preset("demencial", "Demencial", 0xE0447A, new Difficulty("demencial", 4.0, 3.0, 1.25, 1.5, 18, 1.0, 45, 2000)));
+            new Preset("facil", "Fácil", 0x5BD46B, new Difficulty("facil", 0.6, 0.55, 0.9, 0.8, 0, 0.35, 10, 150, 0.3)),
+            new Preset("normal", "Normal", 0x4FB3F2, new Difficulty("normal", 1.0, 1.0, 1.0, 1.0, 4, 0.5, 15, 300, 0.55)),
+            new Preset("dificil", "Difícil", 0xF2C14F, new Difficulty("dificil", 1.6, 1.45, 1.08, 1.15, 8, 0.6, 20, 600, 0.75)),
+            new Preset("pesadilla", "Pesadilla", 0xF2784F, new Difficulty("pesadilla", 2.5, 2.1, 1.16, 1.3, 12, 0.75, 30, 1100, 0.9)),
+            new Preset("demencial", "Demencial", 0xE0447A, new Difficulty("demencial", 4.0, 3.0, 1.25, 1.5, 18, 1.0, 45, 2000, 1.0)));
 
     public static final Difficulty NORMAL = PRESETS.get(1).values();
 
@@ -52,14 +54,16 @@ public record Difficulty(String preset, double health, double damage, double spe
     public boolean sameValues(Difficulty o) {
         return o != null && Math.abs(health - o.health) < 1e-6 && Math.abs(damage - o.damage) < 1e-6
                 && Math.abs(speed - o.speed) < 1e-6 && Math.abs(rhythm - o.rhythm) < 1e-6 && Math.abs(armor - o.armor) < 1e-6
-                && Math.abs(perPlayer - o.perPlayer) < 1e-6 && respawnMin == o.respawnMin && coins == o.coins;
+                && Math.abs(perPlayer - o.perPlayer) < 1e-6 && respawnMin == o.respawnMin && coins == o.coins
+                && Math.abs(smart - o.smart) < 1e-6;
     }
 
     /** Lo mismo dentro de los límites (lo que llega de la ventana o del archivo). */
     public Difficulty clamped() {
         return new Difficulty(preset == null ? "normal" : preset.toLowerCase(Locale.ROOT), clamp(health, MIN_MUL, MAX_MUL),
                 clamp(damage, MIN_MUL, MAX_MUL), clamp(speed, 0.3, 3.0), clamp(rhythm, 0.3, 3.0), clamp(armor, 0, MAX_ARMOR),
-                clamp(perPlayer, 0, MAX_PER_PLAYER), (int) clamp(respawnMin, 1, MAX_RESPAWN), (int) clamp(coins, 0, MAX_COINS));
+                clamp(perPlayer, 0, MAX_PER_PLAYER), (int) clamp(respawnMin, 1, MAX_RESPAWN), (int) clamp(coins, 0, MAX_COINS),
+                Double.isFinite(smart) ? Math.max(0, Math.min(1, smart)) : 0.55);
     }
 
     private static double clamp(double v, double lo, double hi) {
@@ -87,6 +91,7 @@ public record Difficulty(String preset, double health, double damage, double spe
         o.addProperty("porJugador", perPlayer);
         o.addProperty("recargaMin", respawnMin);
         o.addProperty("monedas", coins);
+        o.addProperty("inteligencia", smart);
         return o;
     }
 
@@ -97,7 +102,8 @@ public record Difficulty(String preset, double health, double damage, double spe
         if (p != null) d = p.values();
         return new Difficulty(TFJson.str(o, "preset", d.preset), num(o, "vida", d.health), num(o, "dano", d.damage),
                 num(o, "velocidad", d.speed), num(o, "ritmo", d.rhythm), num(o, "armadura", d.armor),
-                num(o, "porJugador", d.perPlayer), (int) num(o, "recargaMin", d.respawnMin), (int) num(o, "monedas", d.coins)).clamped();
+                num(o, "porJugador", d.perPlayer), (int) num(o, "recargaMin", d.respawnMin), (int) num(o, "monedas", d.coins),
+                num(o, "inteligencia", d.smart)).clamped();
     }
 
     private static double num(JsonObject o, String k, double def) {
@@ -118,10 +124,11 @@ public record Difficulty(String preset, double health, double damage, double spe
         buf.writeDouble(perPlayer);
         buf.writeVarInt(respawnMin);
         buf.writeVarInt(coins);
+        buf.writeDouble(smart);
     }
 
     public static Difficulty read(FriendlyByteBuf buf) {
         return new Difficulty(buf.readUtf(32), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readVarInt(), buf.readVarInt()).clamped();
+                buf.readDouble(), buf.readDouble(), buf.readVarInt(), buf.readVarInt(), buf.readDouble()).clamped();
     }
 }
