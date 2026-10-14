@@ -20,8 +20,13 @@ import io
 import json
 import math
 import os
+import re
+import sys
 
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import molang  # noqa: E402
 
 SPECIAL_BONES = {'hitbox', 'shadow', 'mount'}
 # Piezas del «muñeco» de los efectos de kill (en el juego las hace el propio mob)
@@ -166,6 +171,129 @@ def apply(m, v):
             m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2]]
 
 
+# Etiquetas de comportamiento de ModelEngine 4 (wiki «Bone Behaviors»). Las que piden un hueso SIN cubos solo cuentan
+# si el hueso no tiene cubos (como ModelEngine desde la R4.0.7): la Gárgola tiene «l_hand» con cubos = mano izquierda.
+CUBELESS_TAGS = {'seg': 'seg', 'segf': 'segf', 'tl': 'tl', 'tlf': 'tlf', 'l': 'leash', 'ih': 'item_head',
+                 'ir': 'item_right', 'il': 'item_left'}
+LIMB_TAGS = {'phead': 'head', 'prarm': 'right_arm', 'plarm': 'left_arm', 'pbody': 'body', 'prleg': 'right_leg',
+             'plleg': 'left_leg'}
+LIMB_TYPES = {'head', 'chest', 'body', 'right_arm', 'right_forearm', 'left_arm', 'left_forearm', 'right_leg',
+              'right_foreleg', 'left_leg', 'left_foreleg'}
+TAG_RE = re.compile(r'^([a-z]+)(\[([^\]]*)\])?_(.+)$', re.I)
+
+
+def parse_params(text):
+    """«yaw=60;pitch=30» → {'yaw': 60.0, 'pitch': 30.0} (los «x,y,z» de angle quedan en lista)."""
+    out = {}
+    for part in (text or '').split(';'):
+        if '=' not in part:
+            continue
+        k, v = part.split('=', 1)
+        k = k.strip().lower()
+        if k == 'type':
+            out[k] = v.strip().lower()
+            continue
+        vals = [num(x) for x in v.split(',')]
+        out[k] = vals if len(vals) > 1 else vals[0]
+    return out
+
+
+def bone_tag(name, has_cubes):
+    """(comportamiento, parámetros, id sin la etiqueta o None si conserva el nombre, problema o None).
+
+    comportamiento: head, head_inherit, seat, hitbox_obb, hitbox_aabb, ghost, nametag, leash, item_head, item_right,
+    item_left, seg, segf, tl, tlf, jig, ik, limb, o None (hueso normal)."""
+    m = TAG_RE.match(name)
+    if not m:
+        return None, {}, None, None
+    tag, br, params, rest = m.group(1).lower(), m.group(2), m.group(3), m.group(4)
+    if br:
+        p = parse_params(params)
+        if tag in ('h', 'hi'):
+            return ('head' if tag == 'h' else 'head_inherit'), p, rest, None
+        if tag == 'jig':
+            return 'jig', p, rest, None
+        if tag == 'ik':
+            return 'ik', p, rest, None
+        if tag == 'limb':
+            t = str(p.get('type', '')).lower()
+            if t not in LIMB_TYPES:
+                return None, {}, None, f'limb[type={t}]: tipo de miembro desconocido'
+            return 'limb', {'type': t, 'split': 1}, rest, None
+        return None, {}, None, f'etiqueta «{tag}[...]_» desconocida para ModelEngine'
+    if tag == 'h':
+        return 'head', {}, rest, None
+    if tag == 'hi':
+        return 'head_inherit', {}, rest, None
+    if tag == 'p':
+        return 'seat', {}, rest, None
+    if tag == 'ob':
+        return 'hitbox_obb', {}, rest, None
+    if tag == 'b':
+        return 'hitbox_aabb', {}, rest, None
+    if tag == 'g':
+        return 'ghost', {}, rest, None
+    if tag == 'tag':
+        return 'nametag', {}, rest, None
+    if tag == 'jig':
+        return 'jig', {}, rest, None
+    if tag in LIMB_TAGS:
+        return 'limb', {'type': LIMB_TAGS[tag]}, rest, None
+    if tag in CUBELESS_TAGS:
+        if has_cubes:
+            return None, {}, None, None  # con cubos no es esa etiqueta (l_hand = mano izquierda)
+        beh = CUBELESS_TAGS[tag]
+        # seg_/tl_ conservan el nombre entero: «tl_tail_2» y «tail_2» conviven en la Gárgola
+        return beh, {}, (rest if beh in ('leash', 'item_head', 'item_right', 'item_left') else None), None
+    return None, {}, None, None
+
+
+# Miembros de jugador (phead_, prarm_..., limb[type=]): caja respecto al pivote del hueso (píxeles, Y arriba), sitio
+# en la skin (64×64) de la pieza y de su capa exterior, y medidas. Los brazos, de 4 de ancho (skin clásica).
+LIMB_BOX = {
+    'head': ((-4, 0, -4), (8, 8, 8), (0, 0), (32, 0)),
+    'body': ((-4, -12, -2), (8, 12, 4), (16, 16), (16, 32)),
+    'right_arm': ((-2, -12, -2), (4, 12, 4), (40, 16), (40, 32)),
+    'left_arm': ((-2, -12, -2), (4, 12, 4), (32, 48), (48, 48)),
+    'right_leg': ((-2, -12, -2), (4, 12, 4), (0, 16), (0, 32)),
+    'left_leg': ((-2, -12, -2), (4, 12, 4), (16, 48), (0, 48)),
+}
+# limb[type=X]: mitades (arriba / abajo) de las piezas
+LIMB_SPLIT = {'chest': ('body', 0), 'body': ('body', 1), 'right_arm': ('right_arm', 0), 'right_forearm': ('right_arm', 1),
+              'left_arm': ('left_arm', 0), 'left_forearm': ('left_arm', 1), 'right_leg': ('right_leg', 0),
+              'right_foreleg': ('right_leg', 1), 'left_leg': ('left_leg', 0), 'left_foreleg': ('left_leg', 1),
+              'head': ('head', None)}
+
+
+def limb_quads(kind, split):
+    """Caras de un miembro de jugador: -4 = la skin, -5 = su capa exterior (un poco más grande)."""
+    if split:
+        piece, half = LIMB_SPLIT[kind]
+    else:
+        piece, half = kind, None
+    (x0, y0, z0), (w, h, d), main, over = LIMB_BOX[piece]
+    hh = h if half is None else h // 2
+    if half is not None:
+        y0 = -hh  # cada mitad cuelga de su pivote
+    out = []
+    for layer, (ou, ov), grow in ((-4, main, 0.0), (-5, over, 0.5 if piece == 'head' else 0.25)):
+        f = [x0 - grow, y0 - grow, z0 - grow]
+        t = [x0 + w + grow, y0 + hh + grow, z0 + d + grow]
+        uvs = box_uv(ou, ov, w, h, d)
+        for dname, (u1, v1, u2, v2) in uvs.items():
+            if half is not None and dname in ('north', 'south', 'east', 'west'):
+                top = ov + d + (0 if half == 0 else hh)
+                v1, v2 = top, top + hh
+            cuv = [(u1, v1), (u1, v2), (u2, v2), (u2, v1)]
+            verts = []
+            for k, c in enumerate(FACE_CORNERS[dname]):
+                pt = [t[i] if c[i] else f[i] for i in range(3)]
+                verts += [round(pt[0], 4), round(pt[1], 4), round(pt[2], 4), cuv[k][0] / 64, cuv[k][1] / 64]
+            n = FACE_NORMAL[dname]
+            out.append([layer, n[0], n[1], n[2]] + verts + [0])
+    return out
+
+
 def strip_prefix(name, boss=False):
     """Id del hueso como lo nombra ModelEngine en las mecánicas (sin el prefijo de comportamiento h_ / hi_). En los
     jefes también ob_ (caja de golpe), p_ (asiento) y g_ (hueso fantasma, solo un sitio): las skills los llaman sin él
@@ -205,6 +333,151 @@ def load_texture(tex, bb_path):
         if cand and os.path.exists(cand):
             return Image.open(cand).convert('RGBA')
     return None
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Animaciones con bezier, Molang o valor antes/después: la cuenta de Blockbench (keyframe.js / timeline_animators.js)
+# y se hornean en fotogramas lineales cada 1/40 s (el mod y el servidor no evalúan Molang ni curvas bezier).
+
+BAKE_STEP = 1 / 40
+DEFAULT_BEZ = {'bezier_left_time': [-0.1] * 3, 'bezier_left_value': [0] * 3, 'bezier_right_time': [0.1] * 3,
+               'bezier_right_value': [0] * 3}
+
+
+def needs_bake(kfs):
+    for k in kfs:
+        if k.get('interpolation') == 'bezier':
+            return True
+        dps = k.get('data_points') or []
+        for dp in dps:
+            if any(molang.is_expression(dp.get(ax, 0)) for ax in 'xyz'):
+                return True
+        if len(dps) > 1 and any(num(dps[0].get(ax, 0)) != num(dps[1].get(ax, 0)) for ax in 'xyz'):
+            return True
+    return False
+
+
+def kf_value(k, axis, dp_index, t, length, unknown):
+    dps = k['data_points']
+    dp = dps[max(0, min(dp_index, len(dps) - 1))]
+    v = dp.get(axis, 0)
+    return molang.evaluate(v, t, unknown, length) if molang.is_expression(v) else num(v)
+
+
+def bezier_y(p0, p1, p2, p3, x):
+    """y de la curva bezier cúbica (puntos (tiempo, valor)) en el tiempo x (busca el parámetro por bisección)."""
+    lo, hi = 0.0, 1.0
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        u = 1 - mid
+        bx = u * u * u * p0[0] + 3 * u * u * mid * p1[0] + 3 * u * mid * mid * p2[0] + mid * mid * mid * p3[0]
+        if bx < x:
+            lo = mid
+        else:
+            hi = mid
+    t = (lo + hi) / 2
+    u = 1 - t
+    return u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]
+
+
+def bb_sample(kfs, time, length, unknown):
+    """[x, y, z] del canal en ese instante, como Blockbench (antes de cambiar signos)."""
+    before = after = None
+    bi = -1
+    for i, k in enumerate(kfs):
+        kt = num(k.get('time', 0))
+        if kt < time:
+            if before is None or kt > num(before.get('time', 0)):
+                before, bi = k, i
+        elif after is None or kt < num(after.get('time', 0)):
+            after = k
+    out = []
+    for ai, ax in enumerate('xyz'):
+        if before is not None and abs(num(before.get('time', 0)) - time) < EPS:
+            out.append(kf_value(before, ax, 0, time, length, unknown))
+            continue
+        if after is not None and abs(num(after.get('time', 0)) - time) < EPS:
+            out.append(kf_value(after, ax, 0, time, length, unknown))
+            continue
+        if before is not None and (before.get('interpolation') == 'step' or after is None):
+            out.append(kf_value(before, ax, 9, time, length, unknown))  # el «después» del anterior
+            continue
+        if before is None:
+            out.append(kf_value(after, ax, 0, time, length, unknown))
+            continue
+        tb, ta = num(before.get('time', 0)), num(after.get('time', 0))
+        alpha = (time - tb) / (ta - tb) if ta > tb else 0.0
+        vb = kf_value(before, ax, 9, time, length, unknown)
+        va = kf_value(after, ax, 0, time, length, unknown)
+        ib, ia = before.get('interpolation', 'linear'), after.get('interpolation', 'linear')
+        if ib == 'catmullrom' or ia == 'catmullrom':
+            bp = kfs[bi - 1] if bi - 1 >= 0 else before
+            ap = kfs[bi + 2] if bi + 2 < len(kfs) else after
+            out.append(catmull(alpha, kf_value(bp, ax, 9, time, length, unknown), vb, va,
+                               kf_value(ap, ax, 0, time, length, unknown)))
+        elif ib == 'bezier' or ia == 'bezier':
+            gap = ta - tb
+            p0, p3 = (tb, vb), (ta, va)
+            if ib == 'bezier':
+                rt = num((before.get('bezier_right_time') or DEFAULT_BEZ['bezier_right_time'])[ai])
+                rv = num((before.get('bezier_right_value') or DEFAULT_BEZ['bezier_right_value'])[ai])
+                p1 = (tb + max(0.0, min(gap, rt)), vb + rv)
+            else:
+                p1 = p0
+            if ia == 'bezier':
+                lt = num((after.get('bezier_left_time') or DEFAULT_BEZ['bezier_left_time'])[ai])
+                lv = num((after.get('bezier_left_value') or DEFAULT_BEZ['bezier_left_value'])[ai])
+                p2 = (ta + max(-gap, min(0.0, lt)), va + lv)
+            else:
+                p2 = p3
+            out.append(bezier_y(p0, p1, p2, p3, time))
+        else:
+            out.append(vb + (va - vb) * alpha)
+    return out
+
+
+def bake_channel(kfs, length, ch, sign, unknown):
+    """Fotogramas lineales cada BAKE_STEP (más los de los propios fotogramas y sus saltos antes/después)."""
+    times = {round(num(k.get('time', 0)), 5) for k in kfs}
+    depends = any(molang.is_expression(dp.get(ax, 0)) and molang.depends_on_time(dp.get(ax, 0))
+                  for k in kfs for dp in k['data_points'] for ax in 'xyz')
+    start = 0.0 if depends else min(times)
+    end = max(length, max(times)) if depends else max(times)
+    t = start
+    while t < end:
+        times.add(round(t, 5))
+        t += BAKE_STEP
+    times.add(round(end, 5))
+    # justo antes de cada fotograma (2 ms): un escalón salta seco, como en Blockbench
+    for k in kfs:
+        kt = num(k.get('time', 0))
+        if kt - 0.002 > start:
+            times.add(round(kt - 0.002, 5))
+    jumps = set()
+    for k in kfs:
+        dps = k['data_points']
+        if len(dps) > 1:
+            jumps.add(round(num(k.get('time', 0)), 5))
+    out = []
+    for t in sorted(times):
+        v = bb_sample(kfs, t, length, unknown)
+        out.append([t] + [round(v[i] * sign[i], 4) for i in range(3)] + [0])
+        if t in jumps:
+            # el «después» justo detrás (2 ms: no se ve el paso)
+            k = next(k for k in kfs if round(num(k.get('time', 0)), 5) == t)
+            post = [kf_value(k, ax, 9, t, length, unknown) for ax in 'xyz']
+            out.append([round(t + 0.002, 5)] + [round(post[i] * sign[i], 4) for i in range(3)] + [0])
+    # quita los repetidos en línea recta (deja el archivo pequeño)
+    slim = []
+    for row in out:
+        if len(slim) >= 2:
+            a, b = slim[-2], slim[-1]
+            span = row[0] - a[0]
+            if span > 0 and all(abs(a[j] + (row[j] - a[j]) * (b[0] - a[0]) / span - b[j]) < 1e-3 for j in (1, 2, 3)):
+                slim[-1] = row
+                continue
+        slim.append(row)
+    return slim
 
 
 def convert(bb_path, store, problems, boss=False):
@@ -249,7 +522,7 @@ def convert(bb_path, store, problems, boss=False):
             'path': store.put(img),
             'frames': frames,
             'ft': max(1, int(num(t.get('frame_time', 1)) or 1)),
-            'e': tname.endswith('_e') or tname.endswith('_e.png'),
+            'e': tname.endswith('_e') or tname.endswith('_e.png') or t.get('render_mode') == 'emissive',
             'body': tname.startswith('body_grey') or tname == 'body',
         })
 
@@ -326,11 +599,20 @@ def convert(bb_path, store, problems, boss=False):
                         verts += [round(p[0], 4), round(p[1], 4), round(p[2], 4), cuv[k][0] / 64, cuv[k][1] / 64]
                     n = apply(rm, FACE_NORMAL[dname])
                     quads.append([layer, round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts + [2])
+        box_faces = None
+        if el.get('box_uv', d.get('meta', {}).get('box_uv', False)) and any(not fc.get('uv') for fc in (el.get('faces') or {}).values()):
+            # Box UV sin UV por cara (archivos viejos): el reparto de la caja desde uv_offset, como Blockbench
+            ou, ov = (num(x) for x in (el.get('uv_offset') or [0, 0])[:2])
+            dims = [math.floor(abs(num(el['to'][i]) - num(el['from'][i])) + 1e-6) for i in range(3)]
+            box_faces = box_uv(ou, ov, dims[0], dims[1], dims[2])
+            if el.get('mirror_uv'):
+                box_faces = {k: (v[2], v[1], v[0], v[3]) for k, v in box_faces.items()}
+                box_faces['east'], box_faces['west'] = box_faces['west'], box_faces['east']
         for dname, face in (el.get('faces') or {}).items():
             if dname not in FACE_CORNERS:
                 continue
             ti = face.get('texture')
-            uv = face.get('uv')
+            uv = face.get('uv') or (list(box_faces[dname]) if box_faces else None)
             if not isinstance(ti, int) or ti not in tex_map or not uv or len(uv) < 4:
                 continue
             a, b = FACE_AXES[dname]
@@ -351,6 +633,7 @@ def convert(bb_path, store, problems, boss=False):
                          + ([flags] if flags else []))
 
     hitbox = []
+    inherit_heads = set()
 
     def cube_box(c):
         """Caja que ocupan los cubos de un hueso (en píxeles del modelo)."""
@@ -380,12 +663,23 @@ def convert(bb_path, store, problems, boss=False):
             pivot = [num(v) for v in c.get('origin', [0, 0, 0])]
             sid = strip_prefix(bname, boss)
             phead = sid.lower().startswith('phead')
+            beh, bparams = None, {}
+            head = bname.startswith('h_') or bname.startswith('hi_')
+            if boss:
+                has_cubes = any(isinstance(ch, str) and ch in elements for ch in c.get('children', []))
+                beh, bparams, new_id, why = bone_tag(bname, has_cubes)
+                if why:
+                    problems.append(f'{name}: hueso «{bname}»: {why}')
+                if new_id is not None:
+                    sid = new_id
+                head = beh in ('head', 'head_inherit')
+                phead = beh == 'limb' and bparams.get('type') == 'head' or sid.lower().startswith('phead')
             bone = {
                 'id': sid,
                 'parent': parent,
                 'pivot': [round(v, 4) for v in pivot],
                 'rot': [round(num(v), 4) for v in (c.get('rotation') or [0, 0, 0])],
-                'head': bname.startswith('h_') or bname.startswith('hi_'),
+                'head': head,
                 'phead': phead,
                 # (en los jefes, tampoco el ojo de los huesos: el Esqueleto duerme con el escudo del trono y la espada a
                 # la espalda, ocultos en Blockbench, y el pack los esconde al despertar)
@@ -393,24 +687,94 @@ def convert(bb_path, store, problems, boss=False):
                 'shade': c.get('shade', True) is not False,
                 'quads': [],
             }
-            if boss and bname.startswith('p_'):
+            if boss and (bname.startswith('p_') or beh == 'seat'):
                 bone['seat'] = True
+            if boss and beh:
+                bone['beh'] = beh
+                if bparams:
+                    bone['bp'] = bparams
+                if beh == 'head_inherit':
+                    inherit_heads.add(idx)
+            if boss and parent >= 0 and parent in inherit_heads and not head:
+                # hi_: los hijos también son cabeza sin llevar la etiqueta
+                bone['head'] = True
+                inherit_heads.add(idx)
             bones.append(bone)
             uuid_to_bone[c['uuid']] = idx
-            if boss and bname.startswith('ob_'):
-                # Caja de golpe de ModelEngine: no se ve; se mueve con su hueso
+            if boss and (bname.startswith('ob_') or beh in ('hitbox_obb', 'hitbox_aabb')):
+                # Caja de golpe de ModelEngine: no se ve; ob_ se mueve y gira con su hueso, b_ se mueve sin girar
                 box = cube_box(c)
                 if box:
                     lo, hi = box
                     bone['hb'] = [round(lo[i] - pivot[i], 4) for i in range(3)] + [round(hi[i] - pivot[i], 4) for i in range(3)]
+                    if beh == 'hitbox_aabb':
+                        bone['aabb'] = True
+                        if abs((hi[0] - lo[0]) - (hi[2] - lo[2])) > 1e-3:
+                            problems.append(f'{name}: la caja b_ «{bname}» no es cuadrada en X/Z (ModelEngine la pide así)')
+                walk(c.get('children', []), idx)
+                continue
+            if boss and beh == 'limb':
+                # Miembro de jugador: sus cubos no cuentan; se dibuja la skin (modelplayerskin) con la caja del miembro
+                bone['quads'] = limb_quads(bparams['type'], bparams.get('split'))
                 walk(c.get('children', []), idx)
                 continue
             for ch in c.get('children', []):
                 if isinstance(ch, str) and ch in elements:
-                    bake_cube(elements[ch], pivot, phead, bone['quads'], idx)
+                    el = elements[ch]
+                    if el.get('type') in ('null_object', 'locator'):
+                        loose_points.append((el, idx))  # objetos nulos (IK) y localizadores: huesos invisibles luego
+                        continue
+                    bake_cube(el, pivot, phead, bone['quads'], idx)
             walk(c.get('children', []), idx)
 
+    loose_points = []
+    ik_chains = []
     walk(d.get('outliner', []), -1)
+    for ch in d.get('outliner', []):
+        if isinstance(ch, str) and ch in elements and elements[ch].get('type') in ('null_object', 'locator'):
+            loose_points.append((elements[ch], -1))
+    # Objetos nulos y localizadores (Blockbench): huesos sin cubos donde están (los anima su «animator» de posición). Los
+    # nulos con objetivo IK hacen de objetivo de su cadena (ModelEngine: «Blockbench IK»)
+    if boss and loose_points:
+        point_bone = {}
+        for el, par in loose_points:
+            pos = [num(v) for v in (el.get('position') or el.get('from') or [0, 0, 0])]
+            bidx = len(bones)
+            bones.append({'id': el.get('name', 'null'), 'parent': par, 'pivot': [round(v, 4) for v in pos], 'rot': [0.0, 0.0, 0.0],
+                          'head': False, 'phead': False, 'hidden': False, 'shade': True, 'quads': [],
+                          'beh': 'iknull' if el.get('type') == 'null_object' else 'locator'})
+            uuid_to_bone[el['uuid']] = bidx
+            point_bone[el['uuid']] = bidx
+
+        def ancestors(b):
+            out = []
+            while b >= 0:
+                out.append(b)
+                b = bones[b]['parent']
+            return out
+
+        for el, par in loose_points:
+            tgt = el.get('ik_target')
+            if el.get('type') != 'null_object' or not tgt:
+                continue
+            end = uuid_to_bone.get(tgt)
+            if end is None:
+                problems.append(f'{name}: el objeto nulo «{el.get("name")}» apunta a un objetivo IK que no existe')
+                continue
+            up = ancestors(end)
+            src = uuid_to_bone.get(el.get('ik_source')) if el.get('ik_source') else None
+            if src is not None and src not in up:
+                problems.append(f'{name}: IK «{el.get("name")}»: el origen no está por encima del objetivo')
+                continue
+            chain = list(reversed(up[:up.index(src) + 1] if src is not None else up))
+            null_b = point_bone[el['uuid']]
+            pole = uuid_to_bone.get(el.get('ik_pole')) if el.get('ik_pole') else -1
+            if any(x in chain for x in ancestors(null_b)) or pole in chain:
+                problems.append(f'{name}: IK «{el.get("name")}»: el objeto nulo o el polo están dentro de la cadena '
+                                f'(ModelEngine se la salta)')
+                continue
+            ik_chains.append({'null': null_b, 'chain': chain, 'lock': bool(el.get('lock_ik_target_rotation')),
+                              'pole': pole if pole is not None else -1})
     if not bones:
         problems.append(f'{name}: sin huesos')
         return None
@@ -419,7 +783,7 @@ def convert(bb_path, store, problems, boss=False):
     for a in d.get('animations', []):
         tracks = []
         for uid, an in (a.get('animators') or {}).items():
-            if an.get('type', 'bone') != 'bone' or uid not in uuid_to_bone:
+            if an.get('type', 'bone') not in ('bone', 'null_object') or uid not in uuid_to_bone:
                 continue
             tr = {'b': uuid_to_bone[uid]}
             for ch, key in (('rotation', 'r'), ('position', 'p'), ('scale', 's')):
@@ -427,16 +791,20 @@ def convert(bb_path, store, problems, boss=False):
                 if not kfs:
                     continue
                 kfs.sort(key=lambda k: num(k.get('time', 0)))
-                out = []
-                for k in kfs:
-                    dp = k['data_points'][0]
-                    x, y, z = num(dp.get('x', 0)), num(dp.get('y', 0)), num(dp.get('z', 0))
-                    if ch == 'rotation':
-                        x, y = -x, -y
-                    elif ch == 'position':
-                        x = -x
-                    out.append([round(num(k.get('time', 0)), 5), round(x, 4), round(y, 4), round(z, 4),
-                                INTERP.get(k.get('interpolation', 'linear'), 0)])
+                sign = (-1, -1, 1) if ch == 'rotation' else (-1, 1, 1) if ch == 'position' else (1, 1, 1)
+                if needs_bake(kfs):
+                    # bezier, Molang o valores distintos antes/después: se hornea con la cuenta de Blockbench
+                    unknown = set()
+                    out = bake_channel(kfs, num(a.get('length', 0)), ch, sign, unknown)
+                    for u in sorted(unknown):
+                        problems.append(f'{name}: animación «{a.get("name")}», Molang que no se entiende: {u}')
+                else:
+                    out = []
+                    for k in kfs:
+                        dp = k['data_points'][0]
+                        x, y, z = (num(dp.get(ax, 0)) * sign[i] for i, ax in enumerate('xyz'))
+                        out.append([round(num(k.get('time', 0)), 5), round(x, 4), round(y, 4), round(z, 4),
+                                    INTERP.get(k.get('interpolation', 'linear'), 0)])
                 tr[key] = out
             if len(tr) > 1:
                 tracks.append(tr)
@@ -460,6 +828,8 @@ def convert(bb_path, store, problems, boss=False):
             if fx:
                 anims[a['name']]['fx'] = sorted(fx)
     out = {'name': name, 'tex': tex_out, 'bones': bones, 'anims': anims}
+    if ik_chains:
+        out['ik'] = ik_chains
     if boss and hitbox:
         out['hitbox'] = hitbox[0]
     figures = make_figures(bones, actor_cubes, tex_out)

@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.79**: motor de jefes listo para packs nuevos —amenaza, fases invulnerables, disparadores y condiciones que faltaban— y auditor que ve lo «de mentira»; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.80**: ModelEngine 4 completo en el motor de jefes —colas que se arrastran, física, IK, cabezas, vfx, 26 etiquetas de hueso, animaciones bezier/Molang— y auditor de modelos y texturas; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,10 +55,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.79) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.80) — lee esto primero
 
-**Estado**: última versión publicada **1.3.79** (el motor de jefes, listo para los packs que vengan: lo que faltaba de
-MythicMobs/ModelEngine y un auditor que ve también lo que el motor aceptaba sin hacer nada; los 5 jefes, sin cambios.
+**Estado**: última versión publicada **1.3.80** (ModelEngine 4 completo en el motor: `tf-client/JEFES.md` §3.6; el
+servidor Mohist y por qué el motor es nuestro: §10). La 1.3.79 dejó el motor listo para packs nuevos (lo que faltaba de
+MythicMobs y un auditor que ve también lo que el motor aceptaba sin hacer nada; los 5 jefes, sin cambios.
 Las peleas más vivas —combos, tempo, giro, paso atrás— y los modelos completos son de la 1.3.78, el cerebro táctico
 de la 1.3.77, la IA fiel al pack de la 1.3.76 y los jefes, grietas y `/tf boss` de la 1.3.75), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
@@ -114,7 +115,10 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.79** (nada cambia en los 5 jefes —simulador
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.80** (lo primero que mirar si el dueño manda
+capturas: la cola y las estelas de la Gárgola y la capa del Esqueleto al girar —deben doblarse y arrastrarse, sin
+huecos—; el parpadeo rojo al pegarles —el Esqueleto lo tiene apagado en su pack, `d=false`—; que suban un bloque
+andando —`step`—; nada más cambia en sus peleas), **la 1.3.79** (nada cambia en los 5 jefes —simulador
 idéntico con varias semillas—; lo nuevo lo usarán los packs que vengan; lo único que puede notarse: `~onDamaged` va
 antes del golpe y sus umbrales de vida miran la vida de antes, como MythicMobs), **la 1.3.78** (combos, tempo, giro, paso atrás y
 los modelos completos: simulado con `sim_ai.py --dif demencial`, auditado con `audit.py` y los modelos dibujados en
@@ -143,6 +147,7 @@ diseño de la pantalla»). frame.png es marco.png TAL CUAL con el cristal hueco;
 fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
+- **Volver a convertir los 5 jefes** con el conversor de la 1.3.80 (bezier/Molang): pedir al dueño sus zips.
 - **Más jefes**: el dueño los manda «de 5 en 5» (zips de LittleRoom y otros, MythicMobs + ModelEngine). Cómo meter un
   lote: ver «Jefes: cómo añadir uno» en el bloque de la 1.3.75. Esperan su prueba en el juego y su opinión.
 - **Actualización de CLANES** (la siguiente que quiere el dueño). Hoy `PadClans`: fundar (nombre y etiqueta), invitar,
@@ -187,6 +192,27 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.80 (14 oct) — MODELENGINE 4 COMPLETO EN EL MOTOR.** El dueño: «¿por qué no arreglaste el segment?
+> Necesito que la importación de todos los demás bosses sea correcta, sin errores, sin texturas malas, sin fallas de
+> animación, IA perfecta… el server es Mohist… dame el máximo potencial». Todo en `tf-client/JEFES.md` §3.6 y §10.
+> - **Colas y segmentos** (`seg_`/`tl_`, mecánica `segment`): `vfx/VfxPhysics`, verificado en Python
+>   (`tools/bosses/sim_physics.py`): la Gárgola girando dobla su cola en arco continuo, la capa del Esqueleto ondea.
+>   **Física** `jig_`. **IK** de Blockbench + `ikchain`/`iktarget`/`ik` (`vfx/VfxIk`, CCD; un fallo de convergencia
+>   encontrado al probarlo y arreglado antes de publicar).
+> - **Las 26 etiquetas de hueso** de ModelEngine en el conversor (`b_`, `h[...]_`, `tag_`, `ih_/ir_/il_`, miembros de
+>   jugador, `jig[...]_`, `ik[...]_`...) y casi todas sus 64 mecánicas: cabezas (`headconfig`, `lockmodelhead`,
+>   `headtarget`), `modifystate`, `statetoggle`, `setitemmodel`, `setmodeltag`, `enchant`, `billboard`, `glowbone`,
+>   `cycleparts`, `hitboxconfig`, `modelplayerskin`, la familia `vfx`... De `model{}`: `damagetint` (parpadeo rojo),
+>   `nametag`, `lockpitch/yaw` y `step` (antes `s` se leía como escala).
+> - **Animaciones fieles**: bezier, Molang (`tools/molang.py`) y fotogramas antes/después se hornean como Blockbench;
+>   Box UV y texturas emisivas. **Los 5 jefes se convirtieron con el conversor viejo**: para aplicarlo hay que volver a
+>   convertirlos (el dueño tiene que mandar otra vez sus zips).
+> - Efectos de MythicMobs (`particletornado`, `particlelinehelix`, `atom`, `geyser`...), `summonfallingblock` (sin
+>   tocar el mundo), `shootpotion`, `shootshulkerbullet`; `meg:`/`mythicmobs:` en los nombres.
+> - **Auditor de modelos y texturas** (texturas que faltan, UV fuera, tiras mal cortadas, pistas rotas, IK) y
+>   `test_convert.py` (19 pruebas del conversor). Autoprueba del auditor 16/16; los 5 jefes, 0 problemas; `sim_ai.py`,
+>   idéntico. **Mohist**: el motor propio es la vía (ModelEngine no soporta híbridos); qué mirar en `spigot.yml`, §10.
 
 > **TF Client 1.3.79 (14 oct) — MOTOR DE JEFES LISTO PARA PACKS NUEVOS.** El dueño: «recuerda que quiero que este
 > motor sea perfecto y bien corregido para todos los bosses que metamos». (Una sesión anterior empezó esto y se quedó

@@ -33,7 +33,7 @@ final class SkillModels {
     private SkillModels() {}
 
     /** El actor que lleva el modelo de ese objetivo: el propio actor o el disfraz del jugador (null si no tiene). */
-    private static SkillActor holder(Tgt t, boolean create, Ctx ctx) {
+    static SkillActor holder(Tgt t, boolean create, Ctx ctx) {
         if (t.who == null) return null;
         if (t.who.actor != null) return t.who.actor;
         Entity e = t.who.entity;
@@ -92,7 +92,8 @@ final class SkillModels {
                 a.animStart = a.age;
                 a.animSpeed = 1F;
             }
-            float sc = (float) SkillRuntime.num(m.arg("1", "scale", "s", "size"), 1);
+            // En ModelEngine «s» es step (escalón), no la escala: en los jefes solo «scale»; las clases, como siempre
+            float sc = (float) SkillRuntime.num(ctx.host != null ? m.arg("1", "scale", "size") : m.arg("1", "scale", "s", "size"), 1);
             if (sc > 0 && sc != a.scale) {
                 a.scale = sc;
                 if (!isNew) a.prop("scale", String.valueOf(sc), null, null);
@@ -102,7 +103,30 @@ final class SkillModels {
             } else {
                 a.prop("me", mid, null, null);
             }
+            if (ctx.host != null) modelOptions(m, a, t, vm);
         }
+    }
+
+    /**
+     * Lo demás de model{} de ModelEngine en un mob de jefe: damagetint (parpadea en rojo al recibir daño, sí por
+     * defecto), nametag (el hueso tag_ donde sale su nombre), lockpitch/lockyaw (la cabeza no sigue la mirada) y step
+     * (cuánto sube andando).
+     */
+    private static void modelOptions(Mech m, SkillActor a, Tgt t, VfxModel vm) {
+        a.prop("dtint", SkillRuntime.bool(m.arg("true", "damagetint", "d", "tint")) ? "1" : "0", null, null);
+        String tag = m.arg(null, "nametag", "n", "name");
+        Entity e = t.entity();
+        SkillMobs.Host h = e == null ? null : SkillMobs.host(e);
+        if (tag != null && vm != null && vm.bone(tag) >= 0 && h != null) {
+            String name = h.def().display != null ? h.def().display : h.def().name;
+            a.prop("btag", tag, "1|0|1|-1|-1\u0001" + name.replace('&', '\u00a7'), "1");
+        }
+        String lp = m.arg(null, "lockpitch", "lp", "lpitch"), ly = m.arg(null, "lockyaw", "ly", "lyaw");
+        if (lp != null || ly != null) {
+            a.prop("headlock", lp == null ? "" : SkillRuntime.bool(lp) ? "1" : "0", ly == null ? "" : SkillRuntime.bool(ly) ? "1" : "0", null);
+        }
+        String step = m.arg(null, "step", "s");
+        if (step != null && e instanceof LivingEntity le) le.setMaxUpStep((float) Math.max(0, SkillRuntime.num(step, 0.6)));
     }
 
     static void state(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -173,6 +197,28 @@ final class SkillModels {
             SkillActor a = holder(t, false, ctx);
             if (a == null) continue;
             a.prop("bright", part, b + "|" + sky, exact ? "1" : "0");
+        }
+    }
+
+    /**
+     * segment{p;bounded;anglelimit;x;y;z;minx..maxz;extendrate;elasticity;em} de ModelEngine: cómo se mueven sus colas y
+     * segmentos (lo hace el cliente: VfxPhysics). Solo se manda lo que pone la línea (lo demás se queda como estaba).
+     */
+    static void segment(Mech m, Ctx ctx, List<Tgt> targets) {
+        String part = m.arg("", "partid", "pid", "part", "p");
+        boolean exact = SkillRuntime.bool(m.arg("true", "exactmatch", "em", "exact", "match"));
+        StringBuilder cfg = new StringBuilder();
+        String b = m.arg(null, "bounded", "b", "bd");
+        if (b != null) cfg.append("bounded=").append(SkillRuntime.bool(b) ? 1 : 0).append(';');
+        String[][] keys = {{"angle", "anglelimit", "a", "al", "angle"}, {"x", "x"}, {"y", "y"}, {"minx", "minx"}, {"maxx", "maxx"},
+                {"miny", "miny"}, {"maxy", "maxy"}, {"extend", "extendrate", "e", "er", "extend"}, {"elastic", "elasticity", "el"}};
+        for (String[] k : keys) {
+            String v = m.arg(null, java.util.Arrays.copyOfRange(k, 1, k.length));
+            if (v != null) cfg.append(k[0]).append('=').append(SkillRuntime.num(v, 0)).append(';');
+        }
+        for (Tgt t : targets) {
+            SkillActor a = holder(t, false, ctx);
+            if (a != null) a.prop("seg", part, cfg.toString(), exact ? "1" : "0");
         }
     }
 

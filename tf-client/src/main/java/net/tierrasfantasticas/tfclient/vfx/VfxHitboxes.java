@@ -39,6 +39,14 @@ public final class VfxHitboxes {
             }
             float[] hb = m.bones[bi].hitbox;
             full.set(world).mul(mats[bi]);
+            if (m.bones[bi].aabb) {
+                // b_ de ModelEngine: sigue al hueso pero no gira con él ni con el mob (caja recta del mundo)
+                Vector3f c = full.transformPosition(new Vector3f());
+                Vector3f sc = full.getScale(new Vector3f());
+                out.add(new AABB(c.x + hb[0] * sc.x, c.y + hb[1] * sc.y, c.z + hb[2] * sc.z,
+                        c.x + hb[3] * sc.x, c.y + hb[4] * sc.y, c.z + hb[5] * sc.z));
+                continue;
+            }
             double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, z0 = Double.MAX_VALUE;
             double x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE, z1 = -Double.MAX_VALUE;
             for (int c = 0; c < 8; c++) {

@@ -980,7 +980,7 @@ public final class SkillRuntime {
                 boolean on = bool(m.arg("true", "value", "v", "invulnerable", "i"));
                 for (Tgt t : targets) {
                     SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
-                    if (h != null) h.setInvulnerable(on);
+                    if (h != null) h.setPackInvulnerable(on);
                 }
             }
             case "glow" -> {
@@ -1040,6 +1040,21 @@ public final class SkillRuntime {
                 }
             }
             case "explosion", "explode" -> explosion(m, ctx, targets);
+            case "effect:particletornado", "particletornado", "effect:tornado", "tornado" -> SkillFx.tornado(m, ctx, targets);
+            case "effect:particlelinehelix", "particlelinehelix", "e:plh" -> SkillFx.lineHelix(m, ctx, targets);
+            case "effect:particlelinering", "particlelinering", "e:plr" -> SkillFx.lineRing(m, ctx, targets);
+            case "effect:atom", "atom" -> SkillFx.atom(m, ctx, targets);
+            case "effect:smoke", "smoke", "effect:smokeswirl", "smokeswirl" -> SkillFx.simple("smoke", m, ctx, targets);
+            case "effect:flames", "flames" -> SkillFx.simple("flames", m, ctx, targets);
+            case "effect:ender", "ender" -> SkillFx.simple("ender", m, ctx, targets);
+            case "effect:geyser", "geyser" -> SkillFx.simple("geyser", m, ctx, targets);
+            case "effect:spring", "spring" -> SkillFx.simple("spring", m, ctx, targets);
+            case "effect:itemspray", "itemspray" -> SkillFx.simple("itemspray", m, ctx, targets);
+            case "effect:firework", "firework", "fireworks" -> SkillFx.simple("firework", m, ctx, targets);
+            case "effect:stopsound", "stopsound" -> SkillFx.stopSound(m, ctx, targets);
+            case "summonfallingblock", "sfb" -> fallingBlock(m, ctx, targets);
+            case "shootpotion" -> shootPotion(m, ctx, targets);
+            case "shootshulkerbullet", "shootshulker" -> shulkerBullet(m, ctx, targets);
             case "fakeexplosion", "effect:explosion", "e:explosion", "effect:explode", "e:explode" -> SkillFx.explosionFx(ctx, targets);
             case "forcepull" -> {
                 // Trae a los objetivos junto a quien lanza (con algo de dispersión)
@@ -1074,9 +1089,47 @@ public final class SkillRuntime {
             //  - de ModelEngine que aquí ya se hace de otra forma (bindhitbox: las cajas ob_; renderinit, cullconfig) o
             //    aún no (segment: capas y colas que se doblan como una cuerda; enchant: el brillo de encantado);
             //  - marcadores globales de MythicMobs (no hay condición que los lea).
-            case "animatearmorstand", "enchant", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
+            case "segment", "seg" -> SkillModels.segment(m, ctx, targets);
+            // ModelEngine 4: lo que se ve del modelo (lo hace el cliente; ver SkillMeg)
+            case "modifystate", "modifyanimation", "modstate" -> SkillMeg.modifyState(m, ctx, targets);
+            case "statetoggle", "togglestate" -> SkillMeg.stateToggle(m, ctx, targets);
+            case "headconfig" -> SkillMeg.headConfig(m, ctx, targets);
+            case "lockmodelhead", "lockhead" -> SkillMeg.lockHead(m, ctx, targets);
+            case "headtarget" -> SkillMeg.headTarget(m, ctx, targets);
+            case "jiggleimpulse" -> SkillMeg.jiggleImpulse(m, ctx, targets);
+            case "hitboxconfig" -> SkillMeg.hitboxConfig(m, ctx, targets);
+            case "setitemmodel" -> SkillMeg.setItemModel(m, ctx, targets);
+            case "linkitembone" -> SkillMeg.linkItemBone(m, ctx, targets);
+            case "setmodeltag" -> SkillMeg.setModelTag(m, ctx, targets);
+            case "setmodeltagvisible" -> SkillMeg.setModelTagVisible(m, ctx, targets);
+            case "enchant" -> SkillMeg.enchant(m, ctx, targets);
+            case "billboard" -> SkillMeg.billboard(m, ctx, targets);
+            case "glowbone" -> SkillMeg.glowBone(m, ctx, targets);
+            case "cycleparts" -> SkillMeg.cycleParts(m, ctx, targets);
+            case "modelplayerskin", "modelskin" -> SkillMeg.playerSkin(m, ctx, targets);
+            case "vfx" -> SkillMeg.vfx(m, ctx, targets);
+            case "vfxpos" -> SkillMeg.vfxTransform("pos", m, ctx, targets, false);
+            case "vfxposreset" -> SkillMeg.vfxTransform("pos", m, ctx, targets, true);
+            case "vfxrot" -> SkillMeg.vfxTransform("rot", m, ctx, targets, false);
+            case "vfxrotreset" -> SkillMeg.vfxTransform("rot", m, ctx, targets, true);
+            case "vfxscale", "vfxscl", "vfxsca" -> SkillMeg.vfxTransform("scale", m, ctx, targets, false);
+            case "vfxscalereset" -> SkillMeg.vfxTransform("scale", m, ctx, targets, true);
+            case "vfxchangemodel" -> SkillMeg.vfxChangeModel(m, ctx, targets);
+            case "vfxsetvis" -> SkillMeg.vfxSet("vis", m, ctx, targets);
+            case "vfxenchant" -> SkillMeg.vfxSet("ench", m, ctx, targets);
+            case "vfxtint" -> SkillMeg.vfxSet("tint", m, ctx, targets);
+            case "vfxbrightness" -> SkillMeg.vfxSet("bright", m, ctx, targets);
+            case "ik", "inversekinematics" -> SkillMeg.ik(m, ctx, targets);
+            case "iktarget" -> SkillMeg.ikTarget(m, ctx, targets);
+            case "ikchain" -> SkillMeg.ikChain(m, ctx, targets);
+            case "scale", "meg_scale" -> SkillModels.scale(m, ctx, targets);
+            case "meg_jump" -> SkillMotion.jump(m, ctx, targets);
+            case "nofall" -> {
+                for (Tgt t : targets) if (t.who != null && t.who.entity != null) t.who.entity.fallDistance = 0F;
+            }
+            case "animatearmorstand", "syncyaw", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
                     "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "bindhitbox", "cullconfig",
-                    "posearmorstand", "segment", "removehelditem", "renderinit" -> { /* nada */ }
+                    "posearmorstand", "removehelditem", "renderinit" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
         }
     }
@@ -1338,6 +1391,80 @@ public final class SkillRuntime {
             default -> hit.amount * a;
         };
         if (hit.amount < 0) hit.amount = 0;
+    }
+
+    /**
+     * summonfallingblock{material;velocity;velocityy;spread}: un bloque que cae (lanzado hacia el objetivo con su
+     * velocidad). Nunca se queda en el mundo ni suelta objeto (el servidor tiene construcciones y protecciones).
+     */
+    private static void fallingBlock(Mech m, Ctx ctx, List<Tgt> targets) {
+        String mat = m.arg("stone", "material", "m", "block", "b").toLowerCase(Locale.ROOT);
+        ResourceLocation rl = ResourceLocation.tryParse(mat.contains(":") ? mat : "minecraft:" + mat);
+        Block block = rl == null ? null : ForgeRegistries.BLOCKS.getValue(rl);
+        if (block == null || block == Blocks.AIR) block = Blocks.STONE;
+        double v = num(m.arg("0", "velocity", "v"), 0), vy = num(m.arg("0", "velocityy", "vy"), 0);
+        double spread = num(m.arg("0", "spread", "s"), 0);
+        for (Tgt t : targets) {
+            Vec3 at = t.pos();
+            // (FallingBlockEntity.fall() quitaría el bloque del mundo en ese sitio: se crea vacío y se le pone el bloque por NBT)
+            net.minecraft.world.entity.item.FallingBlockEntity fb = EntityTypeHolder.FALLING.create(ctx.caster.level());
+            if (fb == null) continue;
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            fb.setPos(at.x, at.y, at.z);
+            fb.saveWithoutId(tag);
+            tag.put("BlockState", net.minecraft.nbt.NbtUtils.writeBlockState(block.defaultBlockState()));
+            tag.putBoolean("DropItem", false);
+            tag.putBoolean("CancelDrop", true);
+            tag.putInt("Time", 1);
+            fb.load(tag);
+            fb.disableDrop();
+            fb.dropItem = false;
+            Vec3 dir = at.subtract(ctx.caster.pos()).multiply(1, 0, 1);
+            dir = dir.lengthSqr() > 1e-6 ? dir.normalize().scale(v) : Vec3.ZERO;
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            fb.setDeltaMovement(dir.x + (r.nextDouble() - 0.5) * spread, vy, dir.z + (r.nextDouble() - 0.5) * spread);
+            ctx.caster.level().addFreshEntity(fb);
+            // Por si cae en algo raro: se va solo a los 5 s
+            later(100, () -> {
+                if (fb.isAlive()) fb.discard();
+            });
+        }
+    }
+
+    private static final class EntityTypeHolder {
+        static final net.minecraft.world.entity.EntityType<net.minecraft.world.entity.item.FallingBlockEntity> FALLING =
+                net.minecraft.world.entity.EntityType.FALLING_BLOCK;
+    }
+
+    /** shootpotion{type;duration;level;velocity}: una poción arrojadiza hacia el objetivo. */
+    private static void shootPotion(Mech m, Ctx ctx, List<Tgt> targets) {
+        if (!(ctx.caster.entity instanceof LivingEntity shooter)) return;
+        MobEffect effect = potionType(m.arg("SLOW", "type", "t"));
+        int ticks = (int) num(m.arg("100", "duration", "d"), 100);
+        int lvl = (int) num(m.arg("1", "level", "l", "lvl"), 1);
+        float vel = (float) num(m.arg("1", "velocity", "v"), 1);
+        for (Tgt t : targets) {
+            net.minecraft.world.item.ItemStack st = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SPLASH_POTION);
+            if (effect != null) {
+                net.minecraft.world.item.alchemy.PotionUtils.setCustomEffects(st, List.of(new MobEffectInstance(effect, ticks,
+                        Math.max(0, ctx.host != null ? lvl : lvl - 1))));
+            }
+            net.minecraft.world.entity.projectile.ThrownPotion pot = new net.minecraft.world.entity.projectile.ThrownPotion(ctx.caster.level(), shooter);
+            pot.setItem(st);
+            Vec3 d = t.pos().add(0, 1, 0).subtract(shooter.getEyePosition());
+            pot.shoot(d.x, d.y + d.horizontalDistance() * 0.2, d.z, vel, 2F);
+            ctx.caster.level().addFreshEntity(pot);
+        }
+    }
+
+    /** shootshulkerbullet: la bala de shulker que persigue al objetivo. */
+    private static void shulkerBullet(Mech m, Ctx ctx, List<Tgt> targets) {
+        if (!(ctx.caster.entity instanceof LivingEntity shooter)) return;
+        for (Tgt t : targets) {
+            if (!(t.entity() instanceof LivingEntity le) || !canHurt(ctx, le)) continue;
+            ctx.caster.level().addFreshEntity(new net.minecraft.world.entity.projectile.ShulkerBullet(ctx.caster.level(), shooter, le,
+                    net.minecraft.core.Direction.Axis.Y));
+        }
     }
 
     /** rally{types;radius;overwritetarget}: los de su grupo cerca van a por su objetivo (o por quien diga la línea). */
@@ -1799,9 +1926,12 @@ public final class SkillRuntime {
     }
 
     /** Mecánicas de ModelEngine que, sin objetivo, van al modelo de quien lanza. */
-    private static final Set<String> OWN_MODEL = Set.of("bodyrotation", "bodyclamp", "model", "segment", "partvis",
+    private static final Set<String> OWN_MODEL = Set.of("bodyrotation", "bodyclamp", "model", "segment", "seg", "partvis",
             "partvisibility", "brightness", "renderinit", "defaultstate", "state", "animation", "lockmodel", "remapmodel",
-            "changepart", "barset", "barcreate", "setmodelscale", "tint");
+            "changepart", "barset", "barcreate", "setmodelscale", "tint", "modifystate", "modifyanimation", "modstate",
+            "statetoggle", "togglestate", "headconfig", "lockmodelhead", "lockhead", "hitboxconfig", "setitemmodel",
+            "linkitembone", "setmodeltag", "setmodeltagvisible", "enchant", "billboard", "glowbone", "cycleparts", "scale",
+            "meg_scale", "ik", "inversekinematics", "ikchain");
 
     // ------------------------------------------------------------------------------------------- tick
 

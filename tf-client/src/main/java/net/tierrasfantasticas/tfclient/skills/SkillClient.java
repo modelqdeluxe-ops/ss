@@ -197,6 +197,97 @@ public final class SkillClient {
                 if (a.layers != null && a.model != null) a.layers.death(a.model, a.age);
             }
             case "bright" -> a.bright(m.a(), m.b(), !"0".equals(m.c()));
+            case "seg" -> a.segment(m.a(), m.b(), !"0".equals(m.c()));
+            // ModelEngine 4 (ver SkillMeg)
+            case "lmod" -> {
+                if (a.layers == null) return;
+                String[] p = m.b().split("\\|", -1);
+                int pr = (int) parse(p[0], -1F);
+                float sp = p[1].equals("NaN") ? Float.NaN : parse(p[1], Float.NaN);
+                Boolean ov = p.length > 5 && !p[5].isEmpty() ? "1".equals(p[5]) : null;
+                a.layers.modify(m.a(), pr, a.age, sp, (int) parse(p[2], -1F), (int) parse(p[3], -1F), (int) parse(p[4], -1F), ov);
+            }
+            case "headcfg" -> a.headConfig(m.a(), m.b(), !"0".equals(m.c()));
+            case "headlock" -> {
+                if (!m.a().isEmpty()) a.lockHeadPitch = "1".equals(m.a());
+                if (!m.b().isEmpty()) a.lockHeadYaw = "1".equals(m.b());
+            }
+            case "headtgt" -> {
+                if ("clear".equals(m.c())) {
+                    a.headTargetId = -1;
+                    a.headTargetPos = null;
+                } else {
+                    String[] p = m.b().split("\\|");
+                    a.headTargetId = m.a().isEmpty() ? -1 : (int) parse(m.a(), -1F);
+                    a.headTargetPos = new Vec3(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
+                    a.headTargetY = p.length > 3 ? parse(p[3], 0F) : 0F;
+                }
+            }
+            case "jig" -> {
+                if (a.physics == null) return;
+                String[] p = m.b().split("\\|");
+                a.physics.impulse(m.a(), !"0".equals(m.c()), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
+                        parse(p[0], 0F), new Vector3f(parse(p[4], 0F), parse(p[5], 0F), parse(p[6], 0F)));
+            }
+            case "bitem" -> a.boneItem(m.a(), m.b(), !"0".equals(m.c()));
+            case "btag" -> a.boneTag(m.a(), m.b(), "1".equals(m.c()));
+            case "btagv" -> {
+                for (int b : a.match(m.a(), true, false)) {
+                    if (a.boneTagOn != null) a.boneTagOn[b] = "1".equals(m.b());
+                }
+            }
+            case "ench" -> {
+                if (a.model == null) return;
+                if (a.boneGlint == null) a.boneGlint = new boolean[a.model.bones.length];
+                for (int b : a.match(m.a(), m.c().charAt(0) == '1', m.c().length() > 1 && m.c().charAt(1) == '1')) a.boneGlint[b] = "1".equals(m.b());
+            }
+            case "bill" -> {
+                if (a.model == null) return;
+                if (a.boneBillboard == null) a.boneBillboard = new int[a.model.bones.length];
+                int mode = switch (m.b()) {
+                    case "VERTICAL" -> 1;
+                    case "HORIZONTAL" -> 2;
+                    case "CENTER" -> 3;
+                    default -> 0;
+                };
+                for (int b : a.match(m.a(), m.c().charAt(0) == '1', m.c().length() > 1 && m.c().charAt(1) == '1')) a.boneBillboard[b] = mode;
+            }
+            case "bglow" -> {
+                if (a.model == null) return;
+                if (a.boneGlow == null) a.boneGlow = new int[a.model.bones.length];
+                String[] p = m.b().split("\\|");
+                int color = 0;
+                if ("1".equals(p[0])) {
+                    try {
+                        color = 0xFF000000 | (int) Long.parseLong(p.length > 1 && !p[1].isEmpty() ? p[1] : "FFFFFF", 16);
+                    } catch (NumberFormatException bad) {
+                        color = 0xFFFFFFFF; // color mal escrito en el pack: blanco
+                    }
+                }
+                for (int b : a.match(m.a(), m.c().charAt(0) == '1', m.c().length() > 1 && m.c().charAt(1) == '1')) a.boneGlow[b] = color;
+            }
+            case "dtint" -> a.damageTint = "1".equals(m.a());
+            case "only" -> a.only(m.a());
+            case "vfxvis" -> a.vfxVisible = "1".equals(m.a());
+            case "vfxtf" -> {
+                Vector3f v = "pos".equals(m.a()) ? a.vfxPos : "rot".equals(m.a()) ? a.vfxRot : a.vfxScale;
+                if ("reset".equals(m.b())) {
+                    if (v == a.vfxScale) v.set(1, 1, 1);
+                    else v.zero();
+                    if (v == a.vfxRot) a.vfxWorldRot = false;
+                } else {
+                    String[] p = m.b().split("\\|");
+                    Vector3f n = new Vector3f(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
+                    if (p.length > 3 && "1".equals(p[3])) v.add(n);
+                    else v.set(n);
+                    if (v == a.vfxRot) a.vfxWorldRot = p.length > 4 && "1".equals(p[4]);
+                }
+            }
+            case "ik", "iktgt", "ikchain" -> a.ikMessage(m.key(), m.a(), m.b(), m.c());
+            case "skin" -> {
+                a.skin = m.b().isEmpty() ? null : m.b();
+                a.skinSlim = "true".equalsIgnoreCase(m.c());
+            }
             case "remap" -> a.remap(m.a());
             case "dt" -> a.displayTransform(m.a(), m.b());
             case "item" -> {
@@ -433,7 +524,9 @@ public final class SkillClient {
                 // El propio disfraz no tapa la vista en primera persona
                 if (a.follow >= 0 && mc.player != null && a.follow == mc.player.getId() && mc.options.getCameraType().isFirstPerson()) continue;
                 // El modelo de un mob de jefe lo dibuja su entidad (BossRenderer), con su luz
-                if (a.follow >= 0 && mc.level.getEntity(a.follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity) continue;
+                // (solo el suyo: los vfx{} pegados al jefe se dibujan aquí)
+                if (a.follow >= 0 && mc.level.getEntity(a.follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity
+                        && follower(a.follow) == a) continue;
                 Vec3 at = a.lerp(mc.level, partial);
                 if (at == null || at.distanceToSqr(cam) > 128 * 128) continue;
                 float yaw = a.lerpYaw(mc.level, partial);
@@ -569,14 +662,33 @@ public final class SkillClient {
         Actor a = follower(e.getId());
         if (a == null || a.model == null) return false;
         float yaw = a.lerpYaw(e.level() instanceof ClientLevel cl ? cl : Minecraft.getInstance().level, partial);
+        // Dónde está el modelo en el mundo (para las colas y la física de ModelEngine, que van en el mundo)
+        Vec3 at = e.getPosition(partial);
+        a.physWorld = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
+                .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
         a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
         return true;
     }
 
+    static {
+        SkillMobs.clientGlow = e -> {
+            Actor a = follower(e.getId());
+            if (a == null || a.boneGlow == null) return false;
+            for (int g : a.boneGlow) if (g != 0) return true;
+            return false;
+        };
+    }
+
     /** El actor que lleva el modelo de esa entidad (o null). */
     private static Actor follower(int entityId) {
-        for (Actor a : ACTORS.values()) if (a.follow == entityId && a.model != null) return a;
-        return null;
+        // El modelo del mob (con capas de jefe) antes que un vfx{} que lleve pegado
+        Actor any = null;
+        for (Actor a : ACTORS.values()) {
+            if (a.follow != entityId || a.model == null) continue;
+            if (a.layers != null) return a;
+            if (any == null) any = a;
+        }
+        return any;
     }
 
     /** Las cajas de golpe por piezas del modelo de un mob de jefe, en el mundo (para apuntarle). */
@@ -640,6 +752,39 @@ public final class SkillClient {
         /** displaytransformation del text_display: giro (grados) y desplazamiento. */
         float textRoll;
         float textX, textY, textZ;
+        /** Colas, segmentos y física de ModelEngine (seg_, tl_, jig_) y dónde está el modelo en el mundo. */
+        net.tierrasfantasticas.tfclient.vfx.VfxPhysics physics;
+        Matrix4f physWorld;
+        /** segment{} que llegó antes que el modelo (o para reponer al cambiarlo): parte, valores, exacto. */
+        final List<Object[]> segCfg = new ArrayList<>();
+        // ----- ModelEngine: cabezas (headconfig, lockmodelhead, headtarget)
+        float[] headLimits;
+        float headSpeed = -1F;
+        boolean lockHeadYaw, lockHeadPitch;
+        int headTargetId = -1;
+        Vec3 headTargetPos;
+        float headTargetY;
+        float smoothYaw, smoothPitch, lastHeadT = Float.NaN;
+        // ----- ModelEngine: por hueso (setitemmodel, setmodeltag, enchant, billboard, glowbone) y skin de los miembros
+        ItemStack[] boneItem;
+        String[] boneTag;
+        String[] boneTagStyle;
+        boolean[] boneTagOn;
+        boolean[] boneGlint;
+        int[] boneBillboard;
+        int[] boneGlow;
+        String skin;
+        boolean skinSlim;
+        /** model{damagetint}: parpadea en rojo al recibir daño (como ModelEngine, sí por defecto). */
+        boolean damageTint = true;
+        /** Cinemática inversa de ModelEngine (cadenas de Blockbench, ikchain, iktarget, ik) y lo que llegó antes. */
+        net.tierrasfantasticas.tfclient.vfx.VfxIk ik;
+        final List<String[]> ikCmds = new ArrayList<>();
+        // ----- vfx{} de ModelEngine: solo un hueso, visible o no, y su posición/giro/escala propios
+        String onlyBone;
+        boolean vfxVisible = true;
+        final Vector3f vfxPos = new Vector3f(), vfxRot = new Vector3f(), vfxScale = new Vector3f(1, 1, 1);
+        boolean vfxWorldRot;
 
         Actor(int id) {
             this.id = id;
@@ -656,8 +801,38 @@ public final class SkillClient {
                     float head = le.yHeadRotO + (le.yHeadRot - le.yHeadRotO) * partial;
                     headYaw = net.minecraft.util.Mth.wrapDegrees(head - body);
                     headPitch = le.getViewXRot(partial);
+                    // headtarget: las cabezas miran a ese objetivo (o sitio), no a donde mira la entidad
+                    Vec3 tp = null;
+                    if (headTargetId >= 0 && level != null) {
+                        Entity te = level.getEntity(headTargetId);
+                        if (te != null) tp = te.getPosition(partial).add(0, te.getBbHeight() * 0.85 + headTargetY, 0);
+                    }
+                    if (tp == null) tp = headTargetPos;
+                    if (tp != null) {
+                        Vec3 eye = le.getPosition(partial).add(0, le.getEyeHeight(), 0);
+                        Vec3 d = tp.subtract(eye);
+                        float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
+                        headYaw = net.minecraft.util.Mth.wrapDegrees(yaw - body);
+                        headPitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
+                    }
                 }
-                layers.pose(model, age + partial, headYaw, headPitch, mats);
+                if (lockHeadYaw) headYaw = 0F;
+                if (lockHeadPitch) headPitch = 0F;
+                // Velocidad de giro de la cabeza (h[speed=]_ o headconfig{speed}): grados por tick como mucho
+                float sp = headSpeed >= 0F ? headSpeed : model.headSpeed();
+                float now = age + partial;
+                if (sp > 0F && !Float.isNaN(lastHeadT)) {
+                    float dt = Math.max(0F, Math.min(5F, now - lastHeadT));
+                    smoothYaw += net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(headYaw - smoothYaw), -sp * dt, sp * dt);
+                    smoothPitch += net.minecraft.util.Mth.clamp(headPitch - smoothPitch, -sp * dt, sp * dt);
+                    headYaw = smoothYaw;
+                    headPitch = smoothPitch;
+                } else {
+                    smoothYaw = headYaw;
+                    smoothPitch = headPitch;
+                }
+                lastHeadT = now;
+                layers.pose(model, now, headYaw, headPitch, mats, headLimits != null ? headLimits : model.headLimits());
                 return;
             }
             float seconds = (age - animStart + partial) / 20F * speed;
@@ -748,6 +923,23 @@ public final class SkillClient {
         void setModel(String id) {
             model = id == null ? null : model(id);
             boneLight = null;
+            physics = null;
+            segCfg.clear();
+            ik = null;
+            ikCmds.clear();
+            headLimits = null;
+            headSpeed = -1F;
+            lockHeadYaw = lockHeadPitch = false;
+            headTargetId = -1;
+            headTargetPos = null;
+            lastHeadT = Float.NaN;
+            boneItem = null;
+            boneTag = null;
+            boneTagStyle = null;
+            boneTagOn = null;
+            boneGlint = null;
+            boneBillboard = null;
+            boneGlow = null;
             if (layers != null) layers.clear();
             if (model == null) return;
             int n = model.bones.length;
@@ -875,47 +1067,111 @@ public final class SkillClient {
 
         /** light: la luz del sitio (los de las clases, a plena luz; los de los jefes, con la del mundo). */
         void renderModel(Vec3 at, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+            if (!vfxVisible) return;
             pose(bones, partial);
+            if (layers != null && physWorld != null) {
+                if (ik == null) {
+                    ik = new net.tierrasfantasticas.tfclient.vfx.VfxIk(model);
+                    for (String[] c : ikCmds) ikCommand(c);
+                }
+                if (ik.active()) {
+                    ClientLevel lv = Minecraft.getInstance().level;
+                    float now = age + partial;
+                    ik.apply(bones, physWorld, now, b -> layers.moves(model, b, now), id2 -> {
+                        Entity te = lv == null ? null : lv.getEntity(id2);
+                        if (te == null) return null;
+                        Vec3 p = te.getPosition(partial);
+                        return new Vector3f((float) p.x, (float) (p.y + te.getBbHeight() * 0.5), (float) p.z);
+                    });
+                }
+                if (physics == null) {
+                    physics = new net.tierrasfantasticas.tfclient.vfx.VfxPhysics(model);
+                    for (Object[] c : segCfg) {
+                        String part = (String) c[0];
+                        if (part != null && part.startsWith("\u0000jig:")) physics.configureJig(part.substring(5), castCfg(c[1]), (Boolean) c[2]);
+                        else physics.configure(part, castCfg(c[1]), (Boolean) c[2]);
+                    }
+                }
+                if (physics.active()) physics.apply(bones, physWorld, age + partial);
+            }
+            Minecraft mc = Minecraft.getInstance();
             int baseLight = wholeLight >= 0 ? wholeLight : light;
-            Matrix4f inst = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
-                    .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(scale / 16F);
+            Matrix4f inst = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z);
+            // vfxpos (bloques) y vfxrot (grados; con neworigin, en los ejes del mundo) de ModelEngine
+            inst.translate(vfxPos);
+            if (vfxWorldRot && vfxRot.lengthSquared() > 0) inst.rotateZYX((float) Math.toRadians(vfxRot.z), (float) Math.toRadians(vfxRot.y), (float) Math.toRadians(vfxRot.x));
+            inst.rotate(Axis.YP.rotationDegrees(180F - yaw));
+            if (!vfxWorldRot && vfxRot.lengthSquared() > 0) inst.rotateZYX((float) Math.toRadians(vfxRot.z), (float) Math.toRadians(vfxRot.y), (float) Math.toRadians(vfxRot.x));
+            inst.scale(scale / 16F).scale(vfxScale);
             Matrix4f base = new Matrix4f(pose.last().pose()).mul(inst);
             Matrix3f normalView = new Matrix3f(pose.last().normal());
             Matrix3f normalBase = new Matrix3f(normalView).mul(new Matrix3f(inst));
-            Map<ResourceLocation, List<int[]>> byTex = new HashMap<>();
+            // glowbone: con el contorno de Minecraft solo esos huesos (los demás, al dibujo normal)
+            net.minecraft.client.renderer.OutlineBufferSource outline = buffers instanceof net.minecraft.client.renderer.OutlineBufferSource ob
+                    && boneGlow != null ? ob : null;
+            MultiBufferSource plain = outline != null ? mc.renderBuffers().bufferSource() : buffers;
+            // damagetint: rojo mientras dura el golpe (el mismo «overlay» que los mobs de Minecraft)
+            int overlay = OverlayTexture.NO_OVERLAY;
+            if (layers != null && damageTint && follow >= 0 && mc.level != null
+                    && mc.level.getEntity(follow) instanceof LivingEntity hurt && hurt.hurtTime > 0) {
+                overlay = OverlayTexture.pack(0, OverlayTexture.v(true));
+            }
+            Map<String, List<int[]>> byTex = new HashMap<>();
+            Map<String, ResourceLocation> texOf = new HashMap<>();
+            Map<String, Integer> glowOf = new HashMap<>();
+            ResourceLocation skinTex = null;
             for (int bi = 0; bi < model.bones.length; bi++) {
                 if (!visible[bi]) continue;
                 VfxModel.Bone bone = boneOf(bi);
                 if (bone == null || bone.quadCount == 0) continue;
                 VfxModel src = source[bi];
+                int glow = outline != null ? boneGlow[bi] : 0;
                 for (int q = 0; q < bone.quadCount; q++) {
                     int ti = (int) bone.quads[q * VfxModel.QUAD];
-                    if (ti < 0 || ti >= src.tex.length) continue;
-                    byTex.computeIfAbsent(texture(src, ti), k -> new ArrayList<>()).add(new int[]{bi, q, ti});
+                    ResourceLocation rl;
+                    if (ti >= 0 && ti < src.tex.length) {
+                        rl = texture(src, ti);
+                    } else if (layers != null && (ti == -1 || ti == -2 || ti == -4 || ti == -5)) {
+                        // Miembros de jugador de ModelEngine (phead_, prarm_..., limb[]): con la skin de modelplayerskin
+                        if (skinTex == null) skinTex = skinTexture();
+                        rl = skinTex;
+                    } else {
+                        continue;
+                    }
+                    String key = rl + (glow != 0 ? "#" + glow : "");
+                    texOf.putIfAbsent(key, rl);
+                    glowOf.putIfAbsent(key, glow);
+                    byTex.computeIfAbsent(key, k -> new ArrayList<>()).add(new int[]{bi, q, ti});
                 }
             }
             Matrix4f full = new Matrix4f();
             Matrix3f normal = new Matrix3f();
             Vector3f n = new Vector3f();
             Vector4f v = new Vector4f();
-            for (Map.Entry<ResourceLocation, List<int[]>> e : byTex.entrySet()) {
-                VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentCull(e.getKey()));
+            for (Map.Entry<String, List<int[]>> e : byTex.entrySet()) {
+                int glow = glowOf.get(e.getKey());
+                if (glow != 0) outline.setColor((glow >> 16) & 255, (glow >> 8) & 255, glow & 255, 255);
+                VertexConsumer vc = (glow != 0 ? outline : plain).getBuffer(RenderType.entityTranslucentCull(texOf.get(e.getKey())));
                 int lastBone = -1;
                 for (int[] item : e.getValue()) {
                     int bi = item[0], q = item[1], ti = item[2];
                     VfxModel src = source[bi];
                     VfxModel.Bone bone = boneOf(bi);
                     if (bi != lastBone) {
-                        full.set(base).mul(bones[bi]);
+                        boneMatrix(bi, base, pose, full);
                         normal.set(normalBase).mul(new Matrix3f(bones[bi]));
                         lastBone = bi;
                     }
                     int o = q * VfxModel.QUAD;
                     float frames = 1, frame = 0;
-                    VfxModel.Tex t = src.tex[ti];
-                    if (t.frames() > 1) {
-                        frames = t.frames();
-                        frame = (age / t.frameTime()) % t.frames();
+                    boolean emissive = false;
+                    if (ti >= 0) {
+                        VfxModel.Tex t = src.tex[ti];
+                        emissive = t.emissive();
+                        if (t.frames() > 1) {
+                            frames = t.frames();
+                            frame = (age / t.frameTime()) % t.frames();
+                        }
                     }
                     if (bone.shade) n.set(bone.quads[o + 1], bone.quads[o + 2], bone.quads[o + 3]).mul(normal).normalize();
                     else n.set(0, 1, 0).mul(normalView);
@@ -925,7 +1181,7 @@ public final class SkillClient {
                     // animadas, una raya del fotograma siguiente
                     float[] c = VfxModel.uvCenter(bone.quads, o);
                     // Luz: las texturas emisivas (_e) y las caras que brillan, a plena luz; si no, la del hueso o la del sitio
-                    int lit = t.emissive() || ((int) bone.quads[o + 24] & 1) != 0 ? FULL_BRIGHT
+                    int lit = emissive || ((int) bone.quads[o + 24] & 1) != 0 ? FULL_BRIGHT
                             : boneLight != null && boneLight[bi] >= 0 ? boneLight[bi] : baseLight;
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
@@ -934,10 +1190,268 @@ public final class SkillClient {
                         float tu = VfxModel.insetUv(bone.quads[p + 3], c[0]);
                         float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
                         vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(tu, tv)
-                                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(lit).normal(n.x, n.y, n.z).endVertex();
+                                .overlayCoords(overlay).uv2(lit).normal(n.x, n.y, n.z).endVertex();
                     }
                 }
             }
+            if (boneGlint != null) drawGlint(base, pose, plain);
+            if (boneItem != null) drawItems(base, pose, plain, baseLight);
+            if (boneTag != null) drawTags(base, pose, plain, baseLight);
+        }
+
+        /** La matriz con la que se dibuja un hueso (con billboard: mirando a la cámara). */
+        void boneMatrix(int bi, Matrix4f base, PoseStack pose, Matrix4f out) {
+            out.set(base).mul(bones[bi]);
+            int mode = boneBillboard == null ? 0 : boneBillboard[bi];
+            if (mode == 0) return;
+            Camera cam = Minecraft.getInstance().gameRenderer.getMainCamera();
+            Vector3f t = out.getTranslation(new Vector3f());
+            Vector3f sc = out.getScale(new Vector3f());
+            Quaternionf view = pose.last().pose().getUnnormalizedRotation(new Quaternionf()).normalize();
+            Quaternionf q = switch (mode) {
+                case 1 -> new Quaternionf().rotationY((float) Math.toRadians(-cam.getYRot()));
+                case 2 -> new Quaternionf().rotationX((float) Math.toRadians(cam.getXRot()));
+                default -> new Quaternionf(cam.rotation());
+            };
+            out.identity().translate(t).rotate(view.mul(q)).scale(sc);
+        }
+
+        /** enchant: el brillo de encantado encima de esos huesos. */
+        private void drawGlint(Matrix4f base, PoseStack pose, MultiBufferSource buffers) {
+            VertexConsumer vc = buffers.getBuffer(RenderType.entityGlintDirect());
+            Matrix4f full = new Matrix4f();
+            Vector4f v = new Vector4f();
+            for (int bi = 0; bi < model.bones.length; bi++) {
+                if (!boneGlint[bi] || !visible[bi]) continue;
+                VfxModel.Bone bone = boneOf(bi);
+                if (bone == null) continue;
+                boneMatrix(bi, base, pose, full);
+                for (int q = 0; q < bone.quadCount; q++) {
+                    int o = q * VfxModel.QUAD;
+                    for (int k = 0; k < 4; k++) {
+                        int p = o + 4 + k * 5;
+                        v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
+                        full.transform(v);
+                        vc.vertex(v.x, v.y, v.z).uv(bone.quads[p + 3], bone.quads[p + 4]).endVertex();
+                    }
+                }
+            }
+        }
+
+        /** setitemmodel: el objeto en su hueso (ih_ en la cabeza, ir_ mano derecha, il_ izquierda), a tamaño de bloque. */
+        private void drawItems(Matrix4f base, PoseStack pose, MultiBufferSource buffers, int light) {
+            Minecraft mc = Minecraft.getInstance();
+            Matrix4f full = new Matrix4f();
+            for (int bi = 0; bi < model.bones.length; bi++) {
+                ItemStack st = boneItem[bi];
+                if (st == null || st.isEmpty() || !visible[bi]) continue;
+                String beh = model.bones[bi].beh;
+                ItemDisplayContext dc = "item_head".equals(beh) ? ItemDisplayContext.HEAD
+                        : "item_right".equals(beh) ? ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                        : "item_left".equals(beh) ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.FIXED;
+                boneMatrix(bi, base, pose, full);
+                pose.pushPose();
+                pose.last().pose().set(full).scale(16F);
+                pose.last().normal().set(new Matrix3f(full).normal());
+                mc.getItemRenderer().renderStatic(st, dc, light, OverlayTexture.NO_OVERLAY, pose, buffers, mc.level, id);
+                pose.popPose();
+            }
+        }
+
+        /** setmodeltag: el texto de los huesos de nombre (tag_), mirando a la cámara. */
+        private void drawTags(Matrix4f base, PoseStack pose, MultiBufferSource buffers, int light) {
+            Minecraft mc = Minecraft.getInstance();
+            net.minecraft.client.gui.Font font = mc.font;
+            Camera cam = mc.gameRenderer.getMainCamera();
+            Matrix4f full = new Matrix4f();
+            for (int bi = 0; bi < model.bones.length; bi++) {
+                if (boneTag[bi] == null || !boneTagOn[bi] || boneTag[bi].isEmpty()) continue;
+                String[] st = boneTagStyle[bi].split("\\|");
+                float sc = parse(st[0], 1F);
+                boolean shadow = st.length > 1 && "1".equals(st[1]);
+                boolean through = st.length > 2 && "1".equals(st[2]);
+                int bg = st.length > 3 ? (int) parse(st[3], -1F) : -1;
+                int op = st.length > 4 ? (int) parse(st[4], -1F) : -1;
+                full.set(base).mul(bones[bi]);
+                Vector3f t = full.getTranslation(new Vector3f());
+                Quaternionf view = pose.last().pose().getUnnormalizedRotation(new Quaternionf()).normalize();
+                Matrix4f m = new Matrix4f().translate(t).rotate(view.mul(cam.rotation())).scale(-0.025F * sc, -0.025F * sc, 0.025F * sc);
+                net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component.literal(boneTag[bi]);
+                float x = -font.width(text) / 2F;
+                int color = op < 0 ? 0xFFFFFFFF : (Math.max(0, Math.min(255, op)) << 24) | 0xFFFFFF;
+                int back = bg == -1 ? (int) (mc.options.getBackgroundOpacity(0.25F) * 255F) << 24 : bg;
+                font.drawInBatch(text, x, 0, color, shadow, m, buffers,
+                        through ? net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH : net.minecraft.client.gui.Font.DisplayMode.NORMAL,
+                        back, light);
+            }
+        }
+
+        /** La skin de modelplayerskin (uuid o nombre de un jugador conectado) o la de por defecto. */
+        private ResourceLocation skinTexture() {
+            Minecraft mc = Minecraft.getInstance();
+            var conn = mc.getConnection();
+            if (skin != null && conn != null) {
+                net.minecraft.client.multiplayer.PlayerInfo info = null;
+                try {
+                    String raw = skin.replace("-", "");
+                    if (raw.length() == 32) {
+                        java.util.UUID u = new java.util.UUID(Long.parseUnsignedLong(raw.substring(0, 16), 16),
+                                Long.parseUnsignedLong(raw.substring(16), 16));
+                        info = conn.getPlayerInfo(u);
+                    }
+                } catch (NumberFormatException ignored) {
+                    // no era un uuid: un nombre
+                }
+                if (info == null) info = conn.getPlayerInfo(skin);
+                if (info != null) return info.getSkinLocation();
+            }
+            return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin();
+        }
+
+        /** vfx{p}: solo se ve ese hueso (y lo que cuelga de él); vacío = todo. */
+        void only(String part) {
+            onlyBone = part == null || part.isEmpty() ? null : part;
+            if (model == null) return;
+            int b = onlyBone == null ? -1 : model.bone(onlyBone);
+            for (int i = 0; i < model.bones.length; i++) {
+                boolean in = b < 0;
+                for (int p = i; p >= 0 && !in; p = model.bones[p].parent) if (p == b) in = true;
+                visible[i] = in && !model.bones[i].hidden;
+            }
+        }
+
+        /** Un mensaje de IK (ik, iktgt, ikchain): se guarda por si cambia el modelo y se aplica si ya hay IK. */
+        void ikMessage(String key, String a1, String b1, String c1) {
+            String[] cmd = {key, a1 == null ? "" : a1, b1 == null ? "" : b1, c1 == null ? "" : c1};
+            ikCmds.add(cmd);
+            if (ik != null) ikCommand(cmd);
+        }
+
+        private void ikCommand(String[] c) {
+            switch (c[0]) {
+                case "ik" -> {
+                    Map<String, Float> v = new HashMap<>();
+                    for (String kv : c[2].split(";")) {
+                        int eq = kv.indexOf('=');
+                        if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
+                    }
+                    ik.configure(c[1], v, !"0".equals(c[3]));
+                    if (physics != null) physics.configureJig(c[1], v, !"0".equals(c[3]));
+                    else segCfg.add(new Object[] {"\u0000jig:" + c[1], v, !"0".equals(c[3])});
+                }
+                case "iktgt" -> {
+                    boolean clear = c[3].startsWith("1");
+                    boolean exact = c[3].length() < 2 || c[3].charAt(1) == '1';
+                    if (clear) {
+                        ik.target(c[1], exact, -1, null, 0F, true);
+                    } else {
+                        String[] p = c[2].split("\\|");
+                        ik.target(c[1], exact, (int) parse(p[0], -1F), new Vector3f(parse(p[1], 0F), parse(p[2], 0F), parse(p[3], 0F)),
+                                parse(p[4], 0F), false);
+                    }
+                }
+                case "ikchain" -> {
+                    String[] p = c[2].split("\\|", -1);
+                    if ("1".equals(c[3])) ik.removeChain(p[0]);
+                    else ik.addChain(c[1], p[0], p.length > 1 ? p[1] : "");
+                }
+                default -> { }
+            }
+        }
+
+        /** Los huesos con ese nombre (todos si vacío; con exact=false, los que lo llevan) y, con child, sus hijos. */
+        int[] match(String part, boolean exact, boolean child) {
+            if (model == null) return new int[0];
+            int n = model.bones.length;
+            boolean[] hit = new boolean[n];
+            String want = part == null ? "" : part.toLowerCase(java.util.Locale.ROOT);
+            if (want.isEmpty()) {
+                java.util.Arrays.fill(hit, true);
+            } else if (exact) {
+                int b = model.bone(part);
+                if (b >= 0) hit[b] = true;
+            } else {
+                for (int i = 0; i < n; i++) hit[i] = model.bones[i].id.toLowerCase(java.util.Locale.ROOT).contains(want);
+            }
+            if (child && !want.isEmpty()) {
+                for (int i = 0; i < n; i++) if (!hit[i] && model.bones[i].parent >= 0 && hit[model.bones[i].parent]) hit[i] = true;
+            }
+            int c = 0;
+            for (boolean h : hit) if (h) c++;
+            int[] out = new int[c];
+            c = 0;
+            for (int i = 0; i < n; i++) if (hit[i]) out[c++] = i;
+            return out;
+        }
+
+        /** headconfig: «minYaw|maxYaw|minPitch|maxPitch|speed» («» = no tocar) para esas cabezas (todas si vacío). */
+        void headConfig(String part, String cfg, boolean exact) {
+            if (model == null) return;
+            if (headLimits == null) headLimits = model.headLimits().clone();
+            String[] p = cfg.split("\\|", -1);
+            for (int b : match(part, exact, false)) {
+                if (!model.bones[b].head) continue;
+                for (int k = 0; k < 4; k++) if (k < p.length && !p[k].isEmpty()) headLimits[b * 4 + k] = parse(p[k], Float.NaN);
+            }
+            if (p.length > 4 && !p[4].isEmpty()) headSpeed = parse(p[4], 0F);
+        }
+
+        /** setitemmodel: «id|data|color|enchant» en ese hueso de objeto (vacío = quitarlo). */
+        void boneItem(String part, String v, boolean exact) {
+            if (model == null) return;
+            if (boneItem == null) boneItem = new ItemStack[model.bones.length];
+            String[] p = v.split("\\|", -1);
+            ItemStack st = ItemStack.EMPTY;
+            ResourceLocation rl = p[0].isEmpty() ? null : ResourceLocation.tryParse(p[0]);
+            if (rl != null && ForgeRegistries.ITEMS.containsKey(rl)) {
+                st = new ItemStack(ForgeRegistries.ITEMS.getValue(rl));
+                int data = p.length > 1 ? (int) parse(p[1], 0F) : 0;
+                if (data != 0) st.getOrCreateTag().putInt("CustomModelData", data);
+                if (p.length > 2 && !p[2].isEmpty()) {
+                    try {
+                        st.getOrCreateTagElement("display").putInt("color", Integer.parseInt(p[2].replace("#", ""), 16));
+                    } catch (NumberFormatException ignored) {
+                        // color mal escrito: sin color
+                    }
+                }
+                if (p.length > 3 && "1".equals(p[3])) st.enchant(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING, 1);
+            }
+            for (int b : match(part, exact, false)) boneItem[b] = st;
+        }
+
+        /** setmodeltag: «escala|sombra|a través|fondo|opacidad\u0001texto» en ese hueso de nombre. */
+        void boneTag(String part, String v, boolean visible) {
+            if (model == null) return;
+            int n = model.bones.length;
+            if (boneTag == null) {
+                boneTag = new String[n];
+                boneTagStyle = new String[n];
+                boneTagOn = new boolean[n];
+            }
+            int cut = v.indexOf('\u0001');
+            String style = cut < 0 ? "1|0|1|-1|-1" : v.substring(0, cut);
+            String text = cut < 0 ? v : v.substring(cut + 1);
+            for (int b : match(part, true, false)) {
+                boneTag[b] = text.replace('&', '\u00a7');
+                boneTagStyle[b] = style;
+                boneTagOn[b] = visible;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Map<String, Float> castCfg(Object o) {
+            return (Map<String, Float>) o;
+        }
+
+        /** segment{}: «part» vacío = todo el modelo; «cfg» = clave=valor;... (ver SkillModels.segment). */
+        void segment(String part, String cfg, boolean exact) {
+            Map<String, Float> v = new HashMap<>();
+            for (String kv : cfg.split(";")) {
+                int eq = kv.indexOf('=');
+                if (eq > 0) v.put(kv.substring(0, eq), parse(kv.substring(eq + 1), 0F));
+            }
+            segCfg.add(new Object[] {part.isEmpty() ? null : part, v, exact});
+            if (physics != null) physics.configure(part.isEmpty() ? null : part, v, exact);
         }
 
         /** El hueso que se dibuja en el sitio «bi» (el suyo o el de otro modelo, si se cambió con changepart). */
