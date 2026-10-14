@@ -83,6 +83,11 @@ def take_braces(text):
 MEG_RENAME = {'glow': 'glowbone', 'scale': 'meg_scale', 'jump': 'meg_jump'}
 
 
+# Otros nombres de los disparadores de MythicMobs (wiki «Triggers»): el motor solo conoce el primero
+TRIGGER_ALIASES = {'onbowshoot': 'onshoot', 'onshootbow': 'onshoot', 'onskillhit': 'onskilldamage',
+                   'onskill_damage': 'onskilldamage', 'onvibration': 'onhear'}
+
+
 def parse_line(line):
     """«- mecánica{args} @objetivo{args} ~disparador ?condición 0.5» → dict, o None."""
     line = str(line).strip()
@@ -129,7 +134,8 @@ def parse_line(line):
             rest = rest[:tm.start()] + ' ' + after
     gm = re.search(r'~(\w+)(?::(\w+))?', rest)
     if gm:
-        out['tr'] = gm.group(1).lower()
+        tr = gm.group(1).lower()
+        out['tr'] = TRIGGER_ALIASES.get(tr, tr)
         if gm.group(2):
             out['trv'] = gm.group(2)
         rest = rest[:gm.start()] + rest[gm.end():]
@@ -155,6 +161,12 @@ def parse_line(line):
     for k, dest in (('hitconditions', 'hc'), ('hc', 'hc'), ('stopconditions', 'sc')):
         if k in args and str(args[k]).strip().startswith('['):
             out[dest] = inline_conds(args.pop(k))
+    # bounceConditions de chain/chainmissile: a quién puede saltar
+    if out.get('m') in ('chain', 'chainmissile', 'cmi'):
+        for k in ('bounceconditions', 'conditions', 'cond', 'c'):
+            if k in args and str(args[k]).strip().startswith('['):
+                out['bc'] = inline_conds(args.pop(k))
+                break
     return out
 
 
@@ -343,6 +355,8 @@ def refs(mech):
     for k in CALLBACK_KEYS:
         if a.get(k):
             skills += skill_names(a[k])
+    if m == 'switch' and a.get('cases'):
+        skills += [x.split('=', 1)[1] for x in str(a['cases']).split(',') if '=' in x]
     if m in ('summon', 'totem', 'projectile', 'missile', 'orbital', 'shoot', 'mountmodel', 'mythicmobtype', 'spawn'):
         for k in ('type', 't', 'mob', 'mobtype', 'bullettype', 'bm', 'bulletmob', 'mm'):
             v = a.get(k)
@@ -352,9 +366,49 @@ def refs(mech):
     return skills, mobs
 
 
+def switch_cases(text):
+    """switch{cases=case A=[ - ... ] case DEFAULT=[ - ... ]}: [(nombre, «[ - ... ]»), ...] en su orden."""
+    out, i = [], 0
+    s = str(text)
+    while True:
+        mt = re.compile(r'case\s+([^\s=\[\]]+)\s*=\s*\[', re.I).search(s, i)
+        if not mt:
+            return out
+        start = mt.end() - 1
+        depth, quote, j = 0, False, start
+        while j < len(s):
+            ch = s[j]
+            if ch == '"':
+                quote = not quote
+            elif not quote:
+                if ch == '[':
+                    depth += 1
+                elif ch == ']':
+                    depth -= 1
+                    if depth == 0:
+                        break
+            j += 1
+        out.append((mt.group(1), s[start:j + 1]))
+        i = j + 1
+
+
 def extract_inline(mechs, tree_out, prefix):
     """Las listas en línea de los argumentos de llamada pasan a ser skills con nombre propio."""
     for idx, pm in enumerate(mechs):
+        # switch{condition=X{t=<case>};cases=case A=[...] case DEFAULT=[...]}: cada caso es una skill cuya condición de
+        # objetivo es la del switch con <case> = su nombre (DEFAULT, sin condición); «cases» queda «A=skill,B=skill»
+        if pm['m'] == 'switch' and '[' in str(pm.get('a', {}).get('cases', '')):
+            cond = str(pm['a'].get('condition', pm['a'].get('cond', '')))
+            names = []
+            for case, body in switch_cases(pm['a']['cases']):
+                name = f'{prefix}__{idx}_case_{case}'
+                sub = inline_list(body)
+                tcs = [] if case.upper() == 'DEFAULT' else [c for c in [parse_condition(cond.replace('<case>', case))] if c]
+                tree_out[name] = {'cooldown': None, 'conditions': [], 'target_conditions': tcs,
+                                  'trigger_conditions': [], 'mechs': sub}
+                extract_inline(sub, tree_out, name)
+                names.append(f'{case}={name}')
+            pm['a']['cases'] = ','.join(names)
         for k, v in list(pm.get('a', {}).items()):
             if (k in CALLBACK_KEYS or (pm['m'] in CALLERS and k in ('s', 'skill', 'skills'))) and str(v).strip().startswith('['):
                 name = f'{prefix}__{idx}_{k}'

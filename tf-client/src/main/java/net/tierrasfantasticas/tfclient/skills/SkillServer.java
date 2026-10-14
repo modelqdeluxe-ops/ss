@@ -346,6 +346,7 @@ public final class SkillServer {
         if (event.phase != TickEvent.Phase.END || server == null) return;
         try {
             SkillRuntime.tick(server);
+            SkillMore.tick(server);
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Skills: error en el tick", t);
         }
@@ -441,6 +442,34 @@ public final class SkillServer {
     // ¿Se está moviendo? (?isMoving): dónde estaba cada jugador hace un momento
     private static final Map<UUID, net.minecraft.world.phys.Vec3> LAST_POS = new HashMap<>();
     private static final Map<UUID, Long> MOVED_AT = new HashMap<>();
+
+    /** Bukkit.getPlayer(UUID) y Player.hasPermission(String) de Mohist (null: no hay Bukkit, Forge solo). */
+    private static java.lang.reflect.Method bukkitPlayer;
+    private static java.lang.reflect.Method bukkitPerm;
+    private static boolean bukkitTried;
+
+    /** haspermission de MythicMobs: el permiso de Bukkit del jugador (en Mohist); sin Bukkit, que sea op (nivel 2). */
+    static boolean hasPermission(ServerPlayer p, String perm) {
+        if (perm == null || perm.isBlank()) return true;
+        if (!bukkitTried) {
+            bukkitTried = true;
+            try {
+                bukkitPlayer = Class.forName("org.bukkit.Bukkit").getMethod("getPlayer", UUID.class);
+                bukkitPerm = Class.forName("org.bukkit.permissions.Permissible").getMethod("hasPermission", String.class);
+            } catch (Throwable t) {
+                bukkitPlayer = null;
+            }
+        }
+        if (bukkitPlayer != null) {
+            try {
+                Object bp = bukkitPlayer.invoke(null, p.getUUID());
+                if (bp != null) return (Boolean) bukkitPerm.invoke(bp, perm);
+            } catch (Throwable t) {
+                TFClient.LOGGER.debug("TF Skills: no se pudo mirar el permiso {} de {}", perm, p.getGameProfile().getName(), t);
+            }
+        }
+        return p.hasPermissions(2);
+    }
 
     static boolean moving(net.minecraft.world.entity.Entity e) {
         if (e instanceof ServerPlayer p) {

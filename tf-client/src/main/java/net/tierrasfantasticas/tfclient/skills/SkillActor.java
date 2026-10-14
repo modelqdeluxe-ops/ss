@@ -207,7 +207,7 @@ public final class SkillActor {
         }
         // Lo que se queda (para quien llega tarde): por clave y, en las de un hueso, por hueso
         switch (key) {
-            case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item" -> {
+            case "me", "tint", "scale", "head", "hand", "text", "dstate", "lock", "remap", "item", "beam" -> {
                 if (key.equals("me")) {
                     sticky.keySet().removeIf(k -> k.startsWith("vis:") || k.startsWith("part:") || k.startsWith("bright:")
                             || k.startsWith("seg:") || PER_MODEL.stream().anyMatch(k::startsWith));

@@ -251,9 +251,57 @@ final class SkillConds {
                 yield mh != null && SkillMobs.world != null && !SkillMobs.world.seated(mh, arg(a, null, "p", "pbone", "seat", "part")).isEmpty();
             }
             case "blocking", "isblocking" -> le != null && le.isBlocking();
-            // Sin mirar nada, a propósito: lo que lleva puesto un mob y los permisos de Bukkit (en los jefes no se usan;
-            // tools/bosses/audit.py avisa si un pack las usa)
-            case "wearing", "haspermission" -> true;
+            // wearing{armorslot=HEAD;material=DIRT}: lo que lleva en ese hueco (un material de Minecraft o un objeto del pack)
+            case "wearing", "iswearing", "wielding", "iswielding" -> {
+                if (le == null) yield false;
+                net.minecraft.world.item.ItemStack st = le.getItemBySlot(slot(arg(a, "HEAD", "armorslot", "slot", "s")));
+                if (st.isEmpty()) yield false;
+                String have = BuiltInRegistries.ITEM.getKey(st.getItem()).toString();
+                boolean hit = false;
+                for (String m : arg(a, "DIRT", "material", "mat", "m", "item", "i", "t", "type", "types").split(",")) {
+                    if (SkillMeg.itemId(ctx, m.trim()).equals(have)) hit = true;
+                }
+                yield hit;
+            }
+            // haspermission{permission}: el permiso de Bukkit (Mohist); sin Bukkit, los op
+            case "haspermission" -> e instanceof net.minecraft.server.level.ServerPlayer sp
+                    && SkillServer.hasPermission(sp, arg(a, "", "permission", "perm", "p"));
+            // score{objective;entry;value}: su puntuación en el marcador del servidor (la entrada: la suya si no la dice);
+            // globalscore{objective;value}: la de la entrada global de MythicMobs («__GLOBAL__»). Sin puntuación, 0
+            case "score" -> {
+                String obj = arg(a, null, "objective", "obj", "o");
+                String entry = arg(a, null, "entry", "ent", "e");
+                if (entry == null && e != null) entry = e.getScoreboardName();
+                yield obj != null && entry != null && inRange(score(ctx, obj, entry), arg(a, "0", "value", "val", "v"));
+            }
+            case "globalscore", "scoreglobal" -> {
+                String obj = arg(a, null, "objective", "obj", "o");
+                yield obj != null && inRange(score(ctx, obj, "__GLOBAL__"), arg(a, "0", "value", "val", "v"));
+            }
+            // itemrecharging: el arma que lleva en la mano está recargándose (su enfriamiento de objeto: el escudo tras un
+            // hacha, la perla...)
+            case "itemrecharging" -> e instanceof Player p && !p.getMainHandItem().isEmpty()
+                    && p.getCooldowns().isOnCooldown(p.getMainHandItem().getItem());
+            // mobsinchunk{amount}: los mobs (seres vivos que no son jugadores, y los efectos del pack, que en MythicMobs eran
+            // mobs) del chunk de ese sitio
+            case "mobsinchunk" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                int cx = net.minecraft.util.Mth.floor(p.x) >> 4, cz = net.minecraft.util.Mth.floor(p.z) >> 4;
+                var level = ctx.caster.level();
+                var box = new net.minecraft.world.phys.AABB(cx * 16, level.getMinBuildHeight(), cz * 16, cx * 16 + 16, level.getMaxBuildHeight(), cz * 16 + 16);
+                int n = 0;
+                for (LivingEntity x : level.getEntitiesOfClass(LivingEntity.class, box)) if (x.isAlive() && !(x instanceof Player)) n++;
+                for (SkillActor ac : SkillRuntime.ACTORS) {
+                    if (!ac.alive || ac.level != level || ac.def == null || ac.def.isDisplay()) continue;
+                    if (net.minecraft.util.Mth.floor(ac.pos.x) >> 4 == cx && net.minecraft.util.Mth.floor(ac.pos.z) >> 4 == cz) n++;
+                }
+                yield inRange(n, arg(a, "0", "amount", "a"));
+            }
+            // playerkills{kills}: cuántos jugadores ha matado ese mob de jefe
+            case "playerkills" -> {
+                SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
+                yield inRange(mh == null ? 0 : SkillMobs.playerKills(mh), arg(a, "0", "kills", "k"));
+            }
             case "hasai" -> {
                 SkillMobs.Host mh = e == null ? null : SkillMobs.host(e);
                 yield mh != null ? mh.ai() : !(e instanceof net.minecraft.world.entity.Mob mob) || !mob.isNoAi();
@@ -414,6 +462,27 @@ final class SkillConds {
                 yield true;
             }
         } != c.not();
+    }
+
+    /** El hueco de equipo de Bukkit (HEAD, CHEST, LEGS, FEET, HAND, OFF_HAND y sus otros nombres). */
+    private static net.minecraft.world.entity.EquipmentSlot slot(String s) {
+        return switch (s.trim().toUpperCase(Locale.ROOT)) {
+            case "CHEST", "CHESTPLATE", "BODY" -> net.minecraft.world.entity.EquipmentSlot.CHEST;
+            case "LEGS", "LEGGINGS" -> net.minecraft.world.entity.EquipmentSlot.LEGS;
+            case "FEET", "BOOTS" -> net.minecraft.world.entity.EquipmentSlot.FEET;
+            case "HAND", "MAINHAND", "MAIN_HAND", "WEAPON" -> net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+            case "OFFHAND", "OFF_HAND" -> net.minecraft.world.entity.EquipmentSlot.OFFHAND;
+            default -> net.minecraft.world.entity.EquipmentSlot.HEAD;
+        };
+    }
+
+    /** La puntuación de «entry» en el objetivo «objective» del marcador del servidor (0 si no tiene). */
+    private static int score(Ctx ctx, String objective, String entry) {
+        var sb = ctx.caster.level().getServer().getScoreboard();
+        var o = sb.getObjective(objective);
+        if (o == null) return 0;
+        var s = sb.getPlayerScores(entry).get(o);
+        return s == null ? 0 : s.getScore();
     }
 
     /** ¿Ve quien lanza ese punto? (de sus ojos al punto, sin bloques que tapen la vista) */

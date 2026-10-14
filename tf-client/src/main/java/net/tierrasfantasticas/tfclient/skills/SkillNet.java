@@ -53,6 +53,8 @@ public final class SkillNet {
                 .encoder(Swing::write).decoder(Swing::read).consumerMainThread(Swing::handle).add();
         CHANNEL.messageBuilder(Use.class, id++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(Use::write).decoder(Use::read).consumerMainThread(Use::handle).add();
+        CHANNEL.messageBuilder(Screen.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Screen::write).decoder(Screen::read).consumerMainThread(Screen::handle).add();
     }
 
     // ------------------------------------------------------------------------------------------- jugador → servidor
@@ -282,6 +284,28 @@ public final class SkillNet {
 
         public static Fx sound(String id, Vec3 at, float volume, float pitch) {
             return new Fx(9, id, at.x, at.y, at.z, 0, volume, pitch, 0, 0, 0, null, 0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * Lo que ve un jugador en su pantalla (mecánicas de MythicMobs): «black» (pantalla negra n ticks; 0 = quitarla),
+     * «blood» (el borde rojo n ticks; 0 = quitarlo) y «toast» (aviso de logro: a = icono, b = texto, n = 0 tarea,
+     * 1 desafío, 2 meta).
+     */
+    public record Screen(String kind, String a, String b, int n) {
+        static void write(Screen m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.kind, 16);
+            buf.writeUtf(m.a == null ? "" : m.a, 256);
+            buf.writeUtf(m.b == null ? "" : m.b, 1024);
+            buf.writeVarInt(m.n);
+        }
+
+        static Screen read(FriendlyByteBuf buf) {
+            return new Screen(buf.readUtf(16), buf.readUtf(256), buf.readUtf(1024), buf.readVarInt());
+        }
+
+        static void handle(Screen m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SkillScreen.handle(m));
         }
     }
 

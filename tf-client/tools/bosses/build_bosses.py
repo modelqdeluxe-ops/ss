@@ -191,7 +191,7 @@ def compile_boss(pack_dir, root_mob, extra_skills):
                    'display': v.get('Display'), 'health': v.get('Health'), 'mechs': mechs}
             for yk, ok in (('AIGoalSelectors', 'ai_goals'), ('AITargetSelectors', 'ai_targets'), ('Damage', 'damage'),
                            ('Armor', 'armor'), ('Faction', 'faction'), ('DamageModifiers', 'damage_modifiers'),
-                           ('BossBar', 'bossbar'), ('Modules', 'modules'), ('DisplayOptions', 'display_options'),
+                           ('BossBar', 'bossbar'), ('Modules', 'modules'), ('DisplayOptions', 'display_options'), ('Hearing', 'hearing'),
                            ('Drops', 'drops'), ('Equipment', 'equipment')):
                 if v.get(yk) is not None:
                     mob[ok] = v[yk]
@@ -346,7 +346,7 @@ def build(pack_dir, name, conf, sound_events):
         mob['speed'] = SPEED.get(mob['type'], 0.25)
         # El modelo de ModelEngine que se pone (para la vista previa, el tamaño y la caja de golpe del mob)
         for pm in mob['mechs']:
-            if pm['m'] == 'model' and pm.get('tr') in (None, 'onspawn'):
+            if pm['m'] == 'model' and pm.get('tr') in (None, 'onspawn', 'oncombat', 'onspawnorload', 'onready'):
                 mid = pm['a'].get('mid') or pm['a'].get('m') or pm['a'].get('modelid')
                 if mid:
                     mob['model'] = mid
@@ -356,7 +356,7 @@ def build(pack_dir, name, conf, sound_events):
         if mob.get('model'):
             continue
         for pm in mob['mechs']:
-            if pm['m'] in ('skill', 's') and pm.get('tr') in (None, 'onspawn'):
+            if pm['m'] in ('skill', 's') and pm.get('tr') in (None, 'onspawn', 'oncombat', 'onspawnorload', 'onready'):
                 sub = prog['tree'].get(pm['a'].get('s', ''))
                 for sp in (sub or {}).get('mechs', []):
                     if sp['m'] == 'model':

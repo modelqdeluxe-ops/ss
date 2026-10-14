@@ -921,12 +921,46 @@ public final class SkillRuntime {
             case "defaultstate" -> SkillModels.defaultState(m, ctx, targets);
             case "remapmodel" -> SkillModels.remap(m, ctx, targets);
             case "displaytransformation" -> SkillModels.displayTransform(m, ctx, targets);
-            case "barcreate", "barset" -> {
+            case "barcreate", "createbar", "barset", "setbar" -> {
                 for (Tgt t : targets) {
                     SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
-                    if (h != null) h.barStyle(m.arg(null, "color", "c"), m.arg(null, "style", "s"));
+                    if (h == null) continue;
+                    h.barStyle(m.arg(null, "color", "c"), m.arg(null, "style", "s"));
+                    if (m.m.equals("barcreate") || m.m.equals("createbar")) h.barVisible(true);
                 }
             }
+            case "barremove", "removebar" -> {
+                for (Tgt t : targets) {
+                    SkillMobs.Host h = t.who == null || t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+                    if (h != null) h.barVisible(false);
+                }
+            }
+            // MythicMobs que faltaba (JEFES.md §11.3): ver SkillMore
+            case "consume" -> SkillMore.consume(m, ctx, targets);
+            case "oxygen" -> SkillMore.oxygen(m, targets);
+            case "shieldbreak", "disableshield" -> SkillMore.shieldBreak(m, targets);
+            case "blackscreen", "effect:blackscreen" -> SkillMore.blackScreen(m, targets);
+            case "bloodyscreen", "effect:bloodyscreen", "redscreen", "effect:redscreen" -> SkillMore.bloodyScreen(m, targets);
+            case "sendtoast", "toastmessage", "toastmsg", "advmessage", "advancementmessage" -> SkillMore.sendToast(m, ctx, targets);
+            case "skybox", "effect:skybox" -> SkillMore.skybox(m, targets);
+            case "bossborder", "effect:bossborder" -> SkillMore.bossBorder(m, ctx, targets);
+            case "enderbeam", "effect:enderbeam" -> SkillMore.enderBeam(m, ctx, targets);
+            case "hologram", "summonhologram", "holo" -> SkillMore.hologram(m, ctx, targets);
+            case "blockunmask", "effect:blockunmask" -> SkillMore.blockUnmask(m, ctx, targets);
+            case "summonareaeffectcloud", "summoncloud" -> SkillMore.areaEffectCloud(m, ctx, targets);
+            case "setgliding" -> SkillMore.setGliding(m, targets);
+            case "setpose" -> SkillMore.setPose(m, targets);
+            case "setmobcolor", "setcolor" -> SkillMore.setMobColor(m, targets);
+            case "setpathfindingmalus", "setmalus", "malus" -> SkillMore.setPathfindingMalus(m, targets);
+            case "swap", "tpswap" -> SkillMore.swap(ctx, targets);
+            case "teleportin", "tpin", "tpdir", "tpi" -> SkillMore.teleportIn(m, ctx, targets);
+            case "resetai", "resetaigoals" -> SkillMore.resetAi(ctx);
+            case "randommessage", "randommsg", "rm", "rmsg" -> SkillMore.randomMessage(m, targets);
+            case "variablemath", "mathvariable", "varmath", "mathvar" -> SkillMore.variableMath(m, ctx, targets);
+            case "switch" -> SkillMore.switchCases(m, ctx, targets);
+            case "chainmissile", "cmi" -> SkillMovers.chainMissile(m, ctx, targets);
+            // MythicMobs dice de ella que aún no funciona («not yet functional... not intended to be used»)
+            case "particleequation", "effect:particleequation", "peq", "effect:peq" -> { /* sin efecto, como en MythicMobs */ }
             case "sethealth" -> {
                 double hp = num(m.arg("0", "amount", "a", "health", "h"), 0);
                 for (Tgt t : targets) {
@@ -1292,10 +1326,12 @@ public final class SkillRuntime {
         Ctx mine = ctx.as(a.who);
         mine.targets = null;
         List<Mech> onSpawn = new ArrayList<>();
+        // Sin disparador es ~onCombat (MythicMobs), que salta al aparecer; un efecto no pega ni recibe golpes, así que
+        // para él es lo mismo que ~onSpawn (y ~onSpawnOrLoad, ~onReady: sale una vez y nunca se guarda)
         for (Mech mm : def.mechs) {
-            String tr = mm.tr == null ? "onspawn" : mm.tr;
+            String tr = mm.tr == null ? "oncombat" : mm.tr;
             if (tr.equals("ontimer")) a.timers.add(mm);
-            else if (tr.equals("onspawn") || tr.equals("onready")) onSpawn.add(mm);
+            else if (tr.equals("onspawn") || tr.equals("onready") || tr.equals("oncombat") || tr.equals("onspawnorload")) onSpawn.add(mm);
         }
         Script s = new Script(mine, onSpawn);
         if (!s.run()) SCRIPTS.add(s);
@@ -1369,7 +1405,7 @@ public final class SkillRuntime {
         return true;
     }
 
-    private static void damage(Mech m, Ctx ctx, List<Tgt> targets, boolean base) {
+    static void damage(Mech m, Ctx ctx, List<Tgt> targets, boolean base) {
         ServerPlayer owner = ctx.caster.player();
         double amount = num(m.arg("1", "amount", "a", "damage"), 1);
         if (base) {
@@ -1622,11 +1658,12 @@ public final class SkillRuntime {
         Vec3 motion = le.getDeltaMovement();
         le.invulnerableTime = 0;
         inDamage = true;
+        boolean dealt = false;
         try {
             if (ctx.host != null) {
                 // Golpe de un jefe: como el de un mob (con su nombre en el mensaje de muerte); sin armadura, magia
                 LivingEntity src = ctx.caster.entity instanceof LivingEntity l && SkillMobs.host(l) != null ? l : ctx.host.mob();
-                le.hurt(ignoreArmor ? le.damageSources().indirectMagic(src, src) : le.damageSources().mobAttack(src), (float) amount);
+                dealt = le.hurt(ignoreArmor ? le.damageSources().indirectMagic(src, src) : le.damageSources().mobAttack(src), (float) amount);
             } else if (owner != null) {
                 le.hurt(ignoreArmor ? le.damageSources().indirectMagic(owner, owner) : le.damageSources().playerAttack(owner), (float) amount);
             } else {
@@ -1642,6 +1679,8 @@ public final class SkillRuntime {
         }
         // El cerebro del jefe aprende qué ataques le entran al jugador (y cuáles esquiva)
         if (ctx.host != null && le instanceof Player) SkillMobs.landed(ctx.host.boss());
+        // ~onSkillDamage del mob que lo ha hecho (él o un proyectil suyo; no un efecto invocado, que en MythicMobs es otro mob)
+        if (dealt && ctx.caster.entity != null && SkillMobs.host(ctx.caster.entity) != null) SkillMobs.skillDamage(SkillMobs.host(ctx.caster.entity), le);
     }
 
     /** scale: la vida de los jefes va a la escala de su dificultad (un «heal{a=10}» del pack cura 10 de su vida del pack). */
@@ -1928,7 +1967,7 @@ public final class SkillRuntime {
         }
     }
 
-    private static void message(Mech m, List<Tgt> targets) {
+    static void message(Mech m, List<Tgt> targets) {
         String msg = unquote(m.arg("", "message", "msg", "m"));
         if (msg.isBlank()) return;
         // <&lb> <&rb> <&co> de MythicMobs son [ ] : (los demás <...> son colores)

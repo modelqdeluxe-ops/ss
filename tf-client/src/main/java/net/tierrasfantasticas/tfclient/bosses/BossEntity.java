@@ -384,6 +384,20 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (!on) getNavigation().stop();
     }
 
+    /** resetai de MythicMobs: vuelve a tener la IA de su tipo (persigue y mira a su objetivo, aunque el pack la quitara). */
+    private boolean aiReset;
+
+    @Override
+    public void resetAi() {
+        aiReset = true;
+        setAi(true);
+    }
+
+    /** ¿Persigue y mira a su objetivo? (la IA del pack, o la de su tipo tras resetai). */
+    private boolean chases() {
+        return def != null && (def.chases || aiReset);
+    }
+
     @Override
     public boolean ai() {
         return ai;
@@ -534,6 +548,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void barStyle(String color, String style) {
         if (bar == null) return;
         if (color != null) bar.setColor(color(color));
+    }
+
+    /** barcreate / barremove del pack sobre su propia barra: se ve o se quita. */
+    @Override
+    public void barVisible(boolean on) {
+        if (bar != null) bar.setVisible(on);
     }
 
     @Override
@@ -802,6 +822,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return false;
     }
 
+    /** No pasa por portales: su copia en el otro mundo no tendría su programa (y se iría de su grieta). */
+    @Override
+    public boolean canChangeDimensions() {
+        return false;
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -856,7 +882,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             goal = gotoGoal;
             stop = 1.2;
             if (Math.sqrt(horizontalDistanceSqr(gotoGoal)) <= stop) gotoGoal = null;
-        } else if (target != null && def.chases) {
+        } else if (target != null && chases()) {
             goal = target.position();
             // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
             double[] plan = SkillMobs.plan(this);
@@ -918,7 +944,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         float want = bodyYaw;
         Vec3 v = getDeltaMovement();
         boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
-        if (def.chases && ai) {
+        if (chases() && ai) {
             if (target != null) {
                 Vec3 d = target.position().subtract(position());
                 if (d.x * d.x + d.z * d.z > 1e-4) want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
@@ -935,13 +961,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         float diff = Mth.wrapDegrees(want - bodyYaw);
-        float track = def.chases && ai ? SkillMobs.tracking(this) : 0F;
+        float track = chases() && ai ? SkillMobs.tracking(this) : 0F;
         if (track > 0 && !moving) {
             // Atacando (antes de que el modelo se bloquee): sigue al jugador, como los jefes de los Souls al cargar el golpe
             bodyYaw += Mth.clamp(diff, -track, track);
             diff = Mth.wrapDegrees(want - bodyYaw);
             turnWait = 0;
-        } else if (moving && def.chases && ai) {
+        } else if (moving && chases() && ai) {
             // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
             bodyYaw += Mth.clamp(diff, -20F, 20F);
             turnWait = 0;
@@ -1056,6 +1082,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {
+            // ~onDespawn: se va sin morir (se cierra la grieta, se descarga su chunk), antes de olvidarlo
+            if (def != null && reason != RemovalReason.KILLED && reason != RemovalReason.CHANGED_DIMENSION && !dying()) {
+                try {
+                    SkillMobs.despawned(this);
+                } catch (RuntimeException e) {
+                    net.tierrasfantasticas.tfclient.TFClient.LOGGER.debug("TF Jefes: error en ~onDespawn de {}", def.name, e);
+                }
+            }
             if (bar != null) bar.removeAllPlayers();
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);

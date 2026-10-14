@@ -53,6 +53,8 @@ public final class SkillDefs {
         public List<Cond> tc = List.of();
         public List<Cond> hc = List.of();
         public List<Cond> sc = List.of();
+        /** bounceConditions de chain y chainmissile: a quién puede saltar. */
+        public List<Cond> bc = List.of();
         public double chance = 1.0;
         /** Umbral de vida del disparador de un mob («~onDamaged &lt;50%», «~onTimer:20 &gt;75%»): las fases de los jefes. */
         public String hp;
@@ -71,6 +73,7 @@ public final class SkillDefs {
             o.tc = tc;
             o.hc = hc;
             o.sc = sc;
+            o.bc = bc;
             o.chance = chance;
             o.hp = hp;
             return o;
@@ -141,6 +144,8 @@ public final class SkillDefs {
         public String barColor;
         public String barStyle;
         public double barRange = 48;
+        /** Hearing: Enabled: oye las vibraciones como un Warden (su ~onHear). */
+        public boolean hearing;
 
         public boolean isDisplay() {
             return type != null && type.endsWith("_DISPLAY");
@@ -480,6 +485,7 @@ public final class SkillDefs {
                         mob.barRange = num(bb.get("Range"), 48);
                     }
                 }
+                mob.hearing = m.has("hearing") && m.get("hearing").isJsonObject() && bool(m.getAsJsonObject("hearing").get("Enabled"));
             }
             if (mob.headModel != null) c.itemModels.add(mob.headModel);
             c.mobs.put(e.getKey().toLowerCase(Locale.ROOT), mob);
@@ -530,6 +536,7 @@ public final class SkillDefs {
             m.tc = conds(o.get("tc"));
             m.hc = conds(o.get("hc"));
             m.sc = conds(o.get("sc"));
+            m.bc = conds(o.get("bc"));
             m.chance = num(o.get("ch"), 1.0);
             m.hp = o.has("hp") && !o.get("hp").isJsonNull() ? o.get("hp").getAsString() : null;
             for (String v : m.a.values()) if (v.indexOf('<') >= 0) m.dyn = true;

@@ -249,7 +249,7 @@ final class SkillMeg {
     }
 
     /** El objeto del pack (sus objetos de MythicMobs son tfclient:jefe_<jefe>_<objeto>) o el material de Minecraft. */
-    private static String itemId(Ctx ctx, String mat) {
+    static String itemId(Ctx ctx, String mat) {
         if (mat == null || mat.isBlank()) return "";
         String key = mat.trim().toLowerCase(Locale.ROOT);
         SkillDefs.BossInfo bi = ctx.cls.bossInfo;

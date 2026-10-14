@@ -267,7 +267,7 @@ faction
 fallspeed
 *fieldofview fov infieldofview
 gliding
-globalscore
+globalscore scoreglobal
 *onground grounded
 haspassenger
 *haspotioneffect haspotion
@@ -327,7 +327,7 @@ time
 *variableinrange varinrange
 *variableisset varisset
 *velocity directionalvelocity
-wearing
+wearing iswearing wielding iswielding
 world
 *ydiff ydifference
 haspermission
@@ -387,6 +387,7 @@ targetblock tb
 """
 
 TRIGGERS = """
+*oncombat
 *onspawn
 *ontimer
 *ondamaged
@@ -400,19 +401,31 @@ onkill
 oninteract
 onattack
 onload
-onshoot
+onspawnorload
+onready
+ondespawn
+onshoot onbowshoot onshootbow
 onbowhit
+onskilldamage onskillhit onskill_damage
+onprojectilehit
+onprojectileland
+onhear onvibration
+ondismounted
 onexplode
+onprime
+oncreepercharge
 onteleport
-oncombat
-onskilldamage
-onhear
-onuse
-onblockbreak
-onblockplace
 ontame
 onbreed
 ontrade
+onbucket
+onchangeworld
+onenterbounds
+onexitbounds
+onplayerenter
+onplayerexit
+oncinematicstart
+oncinematicend
 """
 
 

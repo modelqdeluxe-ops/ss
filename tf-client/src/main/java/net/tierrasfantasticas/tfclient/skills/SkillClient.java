@@ -310,6 +310,7 @@ public final class SkillClient {
                 a.item = m.a().isEmpty() ? null : new ResourceLocation(m.a());
                 a.itemScale = parse(m.b(), 1F);
             }
+            case "beam" -> a.beam = m.a().isEmpty() ? null : m.a();
             default -> { }
         }
     }
@@ -339,6 +340,10 @@ public final class SkillClient {
         if (m.kind() == 6) {
             // Temblor de cámara de un golpe de jefe (las skills de clase ya no lo mandan): solo la vista
             CameraShake.add(m.hs(), m.vs(), m.radius());
+            return;
+        }
+        if (m.kind() == 7) {
+            unmask(level, m);
             return;
         }
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
@@ -433,6 +438,24 @@ public final class SkillClient {
                     level.setBlock(p, shown, 0);
                 }
             }
+        }
+    }
+
+    /** blockunmask: los bloques de blockmask a «radius» del sitio vuelven a ser los de verdad (points 1 = en cubo). */
+    private static void unmask(ClientLevel level, SkillNet.Fx m) {
+        if (MASKS.isEmpty()) return;
+        double r = m.radius();
+        boolean cube = m.points() == 1;
+        Iterator<Map.Entry<BlockPos, Mask>> it = MASKS.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<BlockPos, Mask> e = it.next();
+            BlockPos p = e.getKey();
+            double dx = p.getX() + 0.5 - m.x(), dy = p.getY() + 0.5 - m.y(), dz = p.getZ() + 0.5 - m.z();
+            boolean in = cube ? Math.abs(dx) <= r + 0.5 && Math.abs(dy) <= r + 0.5 && Math.abs(dz) <= r + 0.5
+                    : dx * dx + dy * dy + dz * dz <= (r + 0.5) * (r + 0.5);
+            if (!in) continue;
+            if (level.getBlockState(p) == e.getValue().shown()) level.setBlock(p, e.getValue().original(), 0);
+            it.remove();
         }
     }
 
@@ -558,6 +581,7 @@ public final class SkillClient {
                 a.poseOrigin = cam;
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers, light);
                 if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
+                if (a.beam != null) renderBeam(a, at, cam, partial, pose, buffers);
             }
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Skills: error al dibujar los efectos", t);
@@ -565,6 +589,46 @@ public final class SkillClient {
         } finally {
             buffers.endBatch();
         }
+    }
+
+    /**
+     * enderbeam: un cristal del End (como EndCrystalRenderer, sin base) y su rayo hacia la entidad o el sitio (como
+     * EnderDragonRenderer.renderCrystalBeams, el del dragón).
+     */
+    private static void renderBeam(Actor a, Vec3 at, Vec3 cam, float partial, PoseStack pose, MultiBufferSource buffers) {
+        Minecraft mc = Minecraft.getInstance();
+        if (a.crystal == null) {
+            a.crystal = new net.minecraft.world.entity.boss.enderdragon.EndCrystal(mc.level, at.x, at.y, at.z);
+            a.crystal.setShowBottom(false);
+        }
+        a.crystal.time = a.age;
+        a.crystal.setPos(at.x, at.y, at.z);
+        int light = net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at));
+        Vec3 rel = at.subtract(cam);
+        mc.getEntityRenderDispatcher().getRenderer(a.crystal).render(a.crystal, 0F, partial, translated(pose, rel), buffers, light);
+        pose.popPose();
+        Vec3 to = null;
+        if (a.beam.startsWith("e:")) {
+            net.minecraft.world.entity.Entity e = mc.level.getEntity((int) parse(a.beam.substring(2), -1F));
+            if (e != null) to = e.getPosition(partial).add(0, e.getBbHeight() * 0.5, 0);
+        } else if (a.beam.startsWith("p:")) {
+            String[] p = a.beam.substring(2).split(",");
+            if (p.length == 3) to = new Vec3(parse(p[0], 0F), parse(p[1], 0F), parse(p[2], 0F));
+        }
+        if (to == null) return;
+        float bob = net.minecraft.client.renderer.entity.EndCrystalRenderer.getY(a.crystal, partial);
+        Vec3 d = to.subtract(at);
+        pose.pushPose();
+        pose.translate(to.x - cam.x, to.y - cam.y, to.z - cam.z);
+        net.minecraft.client.renderer.entity.EnderDragonRenderer.renderCrystalBeams((float) -d.x, (float) -d.y + bob, (float) -d.z,
+                partial, a.age, pose, buffers, light);
+        pose.popPose();
+    }
+
+    private static PoseStack translated(PoseStack pose, Vec3 rel) {
+        pose.pushPose();
+        pose.translate(rel.x, rel.y, rel.z);
+        return pose;
     }
 
     /**
@@ -788,6 +852,9 @@ public final class SkillClient {
         int wholeLight = -1;
         ResourceLocation item;
         float itemScale = 1F;
+        /** enderbeam: el rayo hacia una entidad («e:id») o un sitio («p:x,y,z»), con su cristal del End (solo dibujado). */
+        String beam;
+        net.minecraft.world.entity.boss.enderdragon.EndCrystal crystal;
         /** displaytransformation del text_display: giro (grados) y desplazamiento. */
         float textRoll;
         float textX, textY, textZ;

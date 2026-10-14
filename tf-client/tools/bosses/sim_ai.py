@@ -606,6 +606,7 @@ class Sim:
         self.move_until = 0
         self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
         self.hb_scale = 1.0
+        self.in_skill_damage = False
         self.brain = Brain(self) if SMART > 0 else None
 
     # ------------------------------------------------------------------ jugador
@@ -661,6 +662,7 @@ class Sim:
         # modifydamage lo cambia (sus cifras ADD/SET van en la escala del pack: aquí, ×scale/2)
         hit = {'amount': amount, 'cancelled': False, 'scale': scale / 2}
         self.trigger('ondamaged', vars, hit=hit)
+        self.trigger('oncombat', vars, hit=hit)  # SkillMobs.damaged: ~onCombat también al recibir
         if hit['cancelled'] or hit['amount'] <= 0 or b.hp <= 0:
             self.cancelled_hits += 1
             return
@@ -743,7 +745,7 @@ class Sim:
     # ------------------------------------------------------------------ disparadores
     def trigger(self, tr, vars=None, value=None, hit=None):
         for pm in self.b.mob['mechs']:
-            t = pm.get('tr') or 'onspawn'
+            t = pm.get('tr') or 'oncombat'  # sin disparador: ~onCombat (MythicMobs)
             if t != tr:
                 continue
             if value is not None and str(pm.get('trv', '')).lower() != str(value).lower():
@@ -858,6 +860,16 @@ class Sim:
         if m in ('mobsinradius', 'mir'):
             return in_range(0, arg(a, '>0', 'amount', 'a'))
         if m in ('modelhaspassengers',):
+            return False
+        # SkillConds: en la prueba no hay marcador (todo a 0), el jugador no lleva nada puesto ni es op, y en el chunk
+        # del jefe solo está él
+        if m in ('score', 'globalscore', 'scoreglobal'):
+            return in_range(0, arg(a, '0', 'value', 'val', 'v'))
+        if m == 'playerkills':
+            return in_range(0, arg(a, '0', 'kills', 'k'))
+        if m == 'mobsinchunk':
+            return in_range(1, arg(a, '0', 'amount', 'a'))
+        if m in ('itemrecharging', 'wearing', 'iswearing', 'wielding', 'iswielding', 'haspermission'):
             return False
         if m in ('ydiff', 'onground', 'altitude', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
             return m in ('ydiff', 'onground')
@@ -1110,6 +1122,14 @@ class Sim:
                 b.invulnerable = str(arg(a, 'true', 'value', 'v', 'invulnerable', 'i')).lower() == 'true'
         elif m == 'suicide':
             b.hp = 0
+        # ~onSkillDamage (SkillRuntime.hurt → SkillMobs.skillDamage): el jefe da al jugador con una mecánica de daño
+        elif m in ('damage', 'basedamage', 'percentdamage', 'hit') and 'player' in targets:
+            if not self.in_skill_damage:
+                self.in_skill_damage = True
+                try:
+                    self.trigger('onskilldamage')
+                finally:
+                    self.in_skill_damage = False
         # ModelEngine en la entidad (BossEntity.move, syncYaw; SkillModels.rootStep; setHitboxScale)
         elif m == 'move':
             if 'boss' in targets:
@@ -1187,7 +1207,9 @@ OWN_MODEL = {'bodyrotation', 'bodyclamp', 'model', 'segment', 'seg', 'partvis', 
 
 def run(boss_id, minutes, seed, verbose):
     s = Sim(boss_id, seed, verbose)
-    s.trigger('onspawn')
+    # SkillMobs.spawned: ~onSpawn, ~onSpawnOrLoad, ~onReady (el jefe sale de su grieta) y ~onCombat
+    for tr in ('onspawn', 'onspawnorload', 'onready', 'oncombat'):
+        s.trigger(tr)
     end = int(minutes * 1200)
     while s.t < end and s.b.hp > 0:
         s.t += 1
