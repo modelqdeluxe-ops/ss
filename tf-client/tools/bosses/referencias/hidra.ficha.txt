@@ -1,0 +1,11 @@
+jefe hidra: mob LR_HYDRA, vida 1500 (pack 1000), daño 9, modelo hidra.lr_hydra, caja [5.3125, 5.3125], ataques 5
+mob LR_HYDRA: IRON_GOLEM, caja 5.3125×5.3125 (ojos 4.5156, escala 1.0, del modelo), velocidad 0, vida 1000, daño 2, IA ['clear'], modificadores ['FIRE 0.0', 'SUFFOCATION 0.0'], 32 líneas
+mob LR_HYDRA_dismembered_head: efecto ARMOR_STAND, modelo hidra.lr_hydra_head, 8 líneas
+mob LR_HYDRA_flamethrower_fx: efecto TEXT_DISPLAY, modelo None, 13 líneas
+mob LR_HYDRA_ground_crack_fx: efecto ARMOR_STAND, modelo hidra.lr_hydra_ground_break, 13 líneas
+  modelo hidra.lr_hydra: 169 huesos, huella 066b69c0702f7b62, caja [5.3125, 5.3125], sombra None, ghost 6, hitbox_obb 35
+    animaciones: death:5.08333 head_1_bite:2.0 head_1_bite_top:2.5 head_1_flamethrower:5.0 head_2_bite:2.5 head_2_bite_top:2.5 head_3_bite:2.5 head_3_bite_top:2.5 head_4_bite:2.5 head_4_flamethrower:4.0 head_5_bite:2.5 head_break:2.0 idle:4.0 leap_turn_left:3.0 leap_turn_right:3.0 passive:4.0 spot_player:4.0 stomp_left:3.0 stomp_right:3.0 tail_swipe_left:2.25 tail_swipe_right:2.25 turn_left:3.0 turn_right:3.0
+  modelo hidra.lr_hydra_ground_break: 5 huesos, huella f1bb58a43547dde4, caja None, sombra None, 
+    animaciones: spawn:2.0
+  modelo hidra.lr_hydra_head: 14 huesos, huella 853f99c8863206a0, caja [4.0, 4.0], sombra None, 
+    animaciones: idle:2.0 land:3.5 walk:2.0

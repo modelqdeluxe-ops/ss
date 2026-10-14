@@ -18,6 +18,16 @@ jobs:
         working-directory: tf-client
     steps:
       - uses: actions/checkout@v4
+      # La red de seguridad de los jefes (tools/bosses/verificar.py): el auditor a 0, su autoprueba, las pruebas del
+      # conversor y que los jefes publicados sigan igual que sus referencias (simulador de la pelea y fichas: cajas,
+      # modelos, colas). Si algo cambia a un jefe que ya existía, la compilación se para hasta aceptarlo a propósito.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verificar los jefes
+        run: |
+          pip install --quiet numpy pillow pyyaml
+          python3 tools/bosses/verificar.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

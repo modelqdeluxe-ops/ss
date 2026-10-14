@@ -1,0 +1,23 @@
+jefe astwood: mob astwood, vida 800 (pack 200), daño 6, modelo astwood.astwood, caja [5.9375, 7.125], ataques 6
+mob astwood: VINDICATOR, caja 5.9375×7.125 (ojos 6.0562, escala 1.0, del modelo), velocidad 0.2, vida 200, daño 0, IA ['clear', 'meleeattack', 'movetowardstarget'], modificadores ['SUFFOCATION -0.00000000001', 'FALL -0.000000000001'], 4 líneas
+mob rock_fall: efecto VINDICATOR, modelo astwood.rock_fall, 4 líneas
+mob wood_bigspike: efecto VINDICATOR, modelo astwood.wood_bigspike, 4 líneas
+mob wood_cage: efecto VINDICATOR, modelo astwood.wood_cage, 4 líneas
+mob wood_circle: efecto VINDICATOR, modelo astwood.wood_circle, 6 líneas
+mob wood_pet: VINDICATOR, caja 0.8×1.9 (ojos 1.615, escala 1.0, del modelo), velocidad 0.2, vida 30, daño 0, IA ['clear', 'meleeattack', 'movetowardstarget'], modificadores ['SUFFOCATION 0', 'FALL 0'], 5 líneas
+mob wood_spike: efecto VINDICATOR, modelo astwood.wood_spike, 4 líneas
+  modelo astwood.astwood: 35 huesos, huella 65163f0bf00c99f2, caja [5.9375, 7.125], sombra None, 
+    animaciones: absorb_life_end:0.8 absorb_life_idle:0.6 absorb_life_start:0.0 attack:2.0 attack_left:2.0 death:2.85 enclose_player:1.45 hit_floor:2.75 idle:4.0 summon_energy_ball:3.25 summon_minions:2.75 summon_rock_rain:2.75 summon_wood_wall:1.2 summon_wood_wall_minions:3.75 walk:2.15 wood_spikes:2.75
+  modelo astwood.rock_fall: 1 huesos, huella b005c88215d15e00, caja [1.25, 1.75], sombra None, 
+    animaciones: death:0.1 idle:0.5 spawn:0.25
+  modelo astwood.wood_bigspike: 16 huesos, huella 949ac95aabf122ff, caja None, sombra None, 
+    animaciones: death:0.1 idle:0.5 spawn:0.1
+  modelo astwood.wood_cage: 11 huesos, huella e45390b66fab2d07, caja None, sombra None, 
+    animaciones: idle:0.5 spawn:0.15
+  modelo astwood.wood_circle: 87 huesos, huella 3cce64b1e89409a7, caja None, sombra None, 
+    animaciones: idle:0.5 spawn:0.15
+  modelo astwood.wood_pet: 10 huesos, huella f5751d38b6bce505, caja None, sombra None, head 1, hitbox_obb 4
+    cabezas: head
+    animaciones: attack:0.5 death:0.4 hurt:0.4 idle:4.05 walk:0.9
+  modelo astwood.wood_spike: 11 huesos, huella 31d01648b443c759, caja None, sombra None, 
+    animaciones: death:0.1 idle:0.5 spawn:0.15

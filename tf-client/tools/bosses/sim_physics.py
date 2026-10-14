@@ -273,6 +273,20 @@ def main():
     turn = float(args[args.index('--giro') + 1]) if '--giro' in args else 120.0
     walk = float(args[args.index('--anda') + 1]) if '--anda' in args else 0.0
     off = '--sin' in args
+    worst, frames, model = simulate(mid, anim, turn, walk, off)
+    if out_dir:
+        render_frames(model, frames, out_dir, mid + ('_sin' if off else ''))
+
+
+def has_chains(model):
+    """¿Tiene el modelo colas/segmentos o física (lo que mira simulate)?"""
+    return any(str(beh_of(b) or '').startswith(('seg', 'tl', 'jig')) for b in model['bones'])
+
+
+def simulate(mid, anim='idle', turn=120.0, walk=0.0, off=False, quiet=False):
+    """Gira el jefe «turn» grados en 10 ticks (y anda «walk» por tick) 60 ticks: (lo más que se aparta un eslabón de
+    su forma, fotogramas para dibujar, modelo). quiet: sin imprimir (para tools/bosses/verificar.py)."""
+    out = (lambda *a, **k: None) if quiet else print
     model = json.load(open(os.path.join(RES, 'bosses', 'models', mid + '.json'), encoding='utf-8'))
     ph = Physics(model)
     # La configuración de segment{} del pack (sus líneas en el programa del jefe)
@@ -291,12 +305,12 @@ def main():
                 if 'bounded' in a or 'b' in a:
                     vals['bounded'] = str(a.get('bounded', a.get('b'))).lower() == 'true'
                 ph.configure(a.get('p', a.get('pid', a.get('part', ''))), vals, str(a.get('em', 'true')).lower() == 'true')
-                print('   segment{}:', a.get('p'), vals)
+                out('   segment{}:', a.get('p'), vals)
     segs = [model['bones'][i]['id'] for i in range(ph.n) if ph.seg[i]]
-    print(f'{mid}: {len(segs)} eslabones', '(sin física)' if off else '')
+    out(f'{mid}: {len(segs)} eslabones', '(sin física)' if off else '')
     for i in range(ph.n):
         if ph.seg[i]:
-            print(f'   {model["bones"][i]["id"]:24s} cuelga de {model["bones"][ph.anchor[i]]["id"]:22s} '
+            out(f'   {model["bones"][i]["id"]:24s} cuelga de {model["bones"][ph.anchor[i]]["id"]:22s} '
                   f'trozo visible {"hacia atrás (siguiente eslabón)" if ph.outgoing[i] else "hacia delante (su eslabón)"}')
     frames = []
     yaw, x, z = 0.0, 0.0, 0.0
@@ -316,12 +330,11 @@ def main():
         ang = ph.angles(mats, h)
         worst = max([worst] + list(ang.values()))
         if tick in (0, 3, 6, 10, 14, 20, 30, 45, 60):
-            print(f'  tick {tick:2d} giro {yaw:6.1f}°  apartado de su forma: ' +
+            out(f'  tick {tick:2d} giro {yaw:6.1f}°  apartado de su forma: ' +
                   ' '.join(f'{k.split("_", 1)[-1]}={v:4.1f}' for k, v in list(ang.items())[:8]))
             frames.append((tick, mats, W))
-    print(f'  lo más que se apartó un eslabón: {worst:.1f}° (límite 50° por eslabón)')
-    if out_dir:
-        render_frames(model, frames, out_dir, mid + ('_sin' if off else ''))
+    out(f'  lo más que se apartó un eslabón: {worst:.1f}° (límite 50° por eslabón)')
+    return worst, frames, model
 
 
 def render_frames(model, frames, out_dir, name):

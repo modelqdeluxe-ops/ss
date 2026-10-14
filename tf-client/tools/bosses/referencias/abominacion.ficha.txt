@@ -1,0 +1,8 @@
+jefe abominacion: mob PARASITIC_ABOMINATION, vida 650 (pack 50), daño 8, modelo abominacion.parasitic_abomination, caja [2.5, 6.25], ataques 4
+mob PARASITIC_ABOMINATION: IRON_GOLEM, caja 2.5×6.25 (ojos 5.3125, escala 1.0, del modelo), velocidad 0, vida 50, daño 2, IA None, modificadores ['SUFFOCATION 0.0'], 22 líneas
+mob PARASITIC_ABOMINATION_BUD: IRON_GOLEM, caja 1.4×2.7 (ojos 2.295, escala 1.0, de su tipo), velocidad 0.25, vida 20, daño None, IA ['clear'], modificadores None, 6 líneas
+  modelo abominacion.parasite_bud: 22 huesos, huella eea8b00fd01b8e10, caja None, sombra None, 
+    animaciones: passive:4.0 spawn:20.0
+  modelo abominacion.parasitic_abomination: 73 huesos, huella 209a79fca00028fc, caja [2.5, 6.25], sombra None, cabeza 52, head_inherit 1, seat 1
+    cabezas: chest tentacle_1_6 tentacle_1_5 tentacle_1_4 tentacle_1_3 tentacle_1_2 tentacle_1_1 maw jaw_1_10 jaw_1_11 jaw_1_12 jaw_1_7 jaw_1_8 jaw_1_9 jaw_1_4 jaw_1_5 jaw_1_6 jaw_1_3 jaw_1_2 jaw_1_1 seat bubo_large_1 bubo_small_1 bubo_small_2 eye_socket eye_ball eye_pupil eye_toplid eye_bottomlid right_bicep right_forearm right_hand blade_1 blade_2 tendril_1_1 tendril_1_2 tendril_1_3 tendril_1_4 tendril_1_6 tendril_1_7 tendril_1_8 tendril_1_5 tendril_1_9 tendril_1_10 tongue_1 tongue_2 tongue_3 tongue_4 tongue_5 tongue_6 tongue_7 tongue_8 tongue_9 tongue_10
+    animaciones: claw_attack_1:2.75 death:5.5 idle:2.0 passive:2.0 passive_tentacle:2.0 passive_tongue:2.0 scream:4.0 spread_blight:10.5 tentacle_attack_1:2.0 tentacle_attack_1_grab_player:4.0 tongue_attack_1:3.5 tongue_attack_2:6.0 walk:2.0

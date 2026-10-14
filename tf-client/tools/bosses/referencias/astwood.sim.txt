@@ -1,0 +1,79 @@
+## semilla 3, el pack tal cual
+astwood             480 s, vida  37.0%: 94 ataques (11.8/min), 12 distintos de 12
+       14  attack_left
+       13  enclose_player
+       10  summon_minions
+        9  attack
+        9  wood_spikes
+        8  hit_floor
+        7  absorb_life_start
+        7  absorb_life_end
+        6  summon_wood_wall
+        4  summon_energy_ball
+        4  summon_rock_rain
+        3  summon_wood_wall_minions
+     repite seguido: 0 de 93; curas castigadas: 3 de 12
+
+## semilla 3, normal
+astwood             480 s, vida  63.0%: 195 ataques (24.4/min), 12 distintos de 12
+       24  hit_floor
+       22  summon_minions
+       21  summon_rock_rain
+       21  enclose_player
+       21  attack_left
+       20  summon_energy_ball
+       20  wood_spikes
+       14  attack
+        9  summon_wood_wall_minions
+        8  absorb_life_start
+        8  absorb_life_end
+        7  summon_wood_wall
+     repite seguido: 0 de 194; curas castigadas: 5 de 12; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+astwood             480 s, vida  66.6%: 240 ataques (30.0/min), 12 distintos de 12
+       31  summon_minions
+       30  enclose_player
+       30  hit_floor
+       28  wood_spikes
+       26  summon_rock_rain
+       24  summon_energy_ball
+       14  attack_left
+       13  attack
+       12  absorb_life_start
+       12  absorb_life_end
+       11  summon_wood_wall
+        9  summon_wood_wall_minions
+     repite seguido: 0 de 239; curas castigadas: 7 de 16; combos: 0; pasos atrás: 9
+
+## semilla 11, normal
+astwood             480 s, vida  55.0%: 207 ataques (25.9/min), 12 distintos de 12
+       26  attack_left
+       25  hit_floor
+       22  attack
+       21  summon_minions
+       20  summon_rock_rain
+       20  wood_spikes
+       20  enclose_player
+       19  summon_energy_ball
+       11  summon_wood_wall
+        8  absorb_life_start
+        8  absorb_life_end
+        7  summon_wood_wall_minions
+     repite seguido: 0 de 206; curas castigadas: 7 de 13; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+astwood             480 s, vida  65.6%: 213 ataques (26.6/min), 12 distintos de 12
+       31  hit_floor
+       26  summon_minions
+       24  wood_spikes
+       23  summon_rock_rain
+       23  enclose_player
+       22  summon_energy_ball
+       15  attack_left
+       13  summon_wood_wall_minions
+       10  attack
+        9  absorb_life_start
+        9  absorb_life_end
+        8  summon_wood_wall
+     repite seguido: 1 de 212; curas castigadas: 10 de 15; combos: 0; pasos atrás: 12
