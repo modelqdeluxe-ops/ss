@@ -182,6 +182,11 @@ final class PadSkin {
         quad(vc(g), g.pose().last().pose(), x0, y0, c, x0, y1, c, x1, y1, c, x1, y0, c);
     }
 
+    /** Triángulo de un color (sin flush). */
+    static void tri(GuiGraphics g, float x0, float y0, float x1, float y1, float x2, float y2, int c) {
+        quad(vc(g), g.pose().last().pose(), x0, y0, c, x1, y1, c, x2, y2, c, x2, y2, c);
+    }
+
     /** Degradado a lo ancho: cl a la izquierda, cr a la derecha (ARGB, con alfa). */
     static void hgrad(GuiGraphics g, float x0, float y0, float x1, float y1, int cl, int cr) {
         if (x1 <= x0 || y1 <= y0) return;

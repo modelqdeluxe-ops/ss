@@ -365,6 +365,10 @@ public final class TFPadScreen extends Screen {
         if (PadSettings.sounds) TFPadClient.sound(name, volume * PadSettings.volume / 80F);
     }
 
+    void sound(String name, float volume, float pitch) {
+        if (PadSettings.sounds) TFPadClient.sound(name, volume * PadSettings.volume / 80F, pitch);
+    }
+
     /** El ratón está sobre algo que se puede pulsar (para el tic suave al cambiar). */
     void hover(String id) {
         hoverNow = id;

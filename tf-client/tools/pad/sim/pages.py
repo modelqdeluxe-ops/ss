@@ -5,6 +5,7 @@ PadCameraPage, con la fuente de Minecraft, y una hoja con todas (hoja_apps.png).
 posiciones en esas clases Java, cámbialas también en sim.py.
 """
 import json
+import math
 import os
 import sys
 
@@ -997,125 +998,284 @@ PREMIOS = [
 ]
 
 
-def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=1920, fbh=1080):
+RAR_P = {'comun': 62.0, 'raro': 26.0, 'epico': 9.0, 'legendario': 3.0}
+
+
+def rank_of(r):
+    """PadGachaPage.rank: 1 (la más común) a 4 (la más rara)."""
+    return {'comun': 1, 'raro': 2, 'epico': 3, 'legendario': 4}[r]
+
+
+def gacha_card2(s, p, cx, cy, sc, d, cw, ch, win=False, since=9.0):
+    """PadGachaPage.drawCard (1.3.67): tarjeta a escala sc con su centro en (cx, cy); d: sombra de los lados."""
+    col = rgb(RAR[p['r']][1])
+    w, h = cw, ch
+    with s.big_at(cx - w * sc / 2, cy - h * sc / 2, px=s.f * sc):
+        x, y = 0, 0
+        if win:
+            pulse = 0.5 + 0.5 * math.sin(since * 7)
+            s.box(x - 3, y - 3, w + 6, h + 6, col + (round(110 + 120 * pulse),))
+            s.box(x - 2, y - 2, w + 4, h + 4, lighten(col, 70) + (200,))
+        s.box(x, y, w, h, col)
+        s.vgrad(x + 1, y + 1, w - 2, h - 2, tint(col, 0.5), tint(col, 0.88))
+        s.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255, 153))
+        s.stretch('glow', x + 2, y + 3, w - 4, w - 6)
+        big = 2 if h >= 50 else 1
+        iy = y + 4 + (h - 14 - 16 * big) // 2
+        s.item(item_of(p), x + w // 2 - 8 * big, iy, big)
+        if p['tipo'] == 'objeto' and p['n'] > 1:
+            s.count(p['n'], x + w // 2 - 8 * big, iy, big)
+        s.fill(x + 1, y + h - 11, x + w - 1, y + h - 1, darken(RAR[p['r']][1], 0.5) + (221,))
+        if p['tipo'] != 'objeto':
+            q = f"{p['n']:,}".replace(',', '.') if p['n'] < 10000 else f"{p['n'] // 1000}K"
+            s.ptext(q, x + w // 2 - s.pwidth(q) // 2, y + h - 11, (255, 255, 255))
+        if d > 0.05:
+            s.fill(x, y, x + w, y + h, (11, 8, 32, round(170 * d)))
+
+
+def gacha_page(name, tab='ruleta', result=None, best=0, phase='idle', off=130.0, speed=0.0, kick=0.0, since=0.6, balance=7,
+               fbw=1920, fbh=1080):
+    """PadGachaPage (1.3.67): RULETA · PREMIOS · HISTORIAL. phase: idle (quieta), spin (girando a speed u/s, con la
+    lengüeta doblada kick) o win (el premio salió hace since s)."""
     if ONLY and name not in ONLY:
         return
+    import random
     s = Sim(fbw=fbw, fbh=fbh)
+    s.T = 3.3
     s.status('GACHAPÓN')
     loc = Local(s)
     loc.__enter__()
     X, Y, W, H = s.X, s.Y, s.W, s.H
-    lw = max(210, min(270, round(W * 0.56)))
-    x, w, top, bottom = X, lw, Y + s.TABS, Y + H
-    dark_card(s, x, top, w, bottom, Y, 'RULETA')
-    s.blit('coin_green', x + 8, top + 6)
-    bal = f'{balance} monedas verdes'
-    s.mtext(bal, x + 22, top + 8, rgb(0x8CF0B4))
-    hint = 'Se ganan en el TF Pass'
-    if s.mwidth(bal) + s.mwidth(hint) + 40 <= w:
-        s.mtext(hint, x + w - 8 - s.mwidth(hint), top + 8, rgb(0x8C96C8))
-    by = bottom - 6 - 16
-    py = by - 13
-    many = bool(result) and len(result) > 1
-    rh = 58
-    block = rh + 6 + 10 + (26 if many else 0)
-    zt, zb = top + 20, py - 4
-    rx, ry, rw = x + 8, zt + max(2, (zb - zt - block) // 2), w - 16
-    s.box(rx - 1, ry - 1, rw + 2, rh + 2, rgb(0x0C1030))
-    s.vgrad(rx, ry, rw, rh, rgb(0x0E1432), rgb(0x1C2452))
-    center = rx + rw // 2
+    acc = accent('gachapon')
+    sel = {'ruleta': 0, 'premios': 1, 'historial': 2}[tab]
+    s.sk_tabs(X + 4, Y, W - 8, ['RULETA', 'PREMIOS', 'HISTORIAL'], sel, acc)
+    top, bottom = Y + s.TABS, Y + H
+    if tab == 'premios':
+        s.sk_window(X, top, W, bottom - top, acc)
+        cols = max(1, (W - 16) // 84)
+        cw = (W - 16) // cols
+        s.scissor(X + 2, top + 3, W - 4, bottom - top - 6)
+        y = top + 5
+        cur, col = None, 0
+        for p in PREMIOS:
+            if p['r'] != cur:
+                if cur is not None and col > 0:
+                    y += 66
+                cur, col = p['r'], 0
+                c = rgb(RAR[p['r']][1])
+                s.fill(X + 6, y + 4, X + 8, y + 12, c)
+                t = RAR[p['r']][0].upper()
+                s.ptext_shadow(t, X + 12, y + 3, lighten(c, 10), darken(RAR[p['r']][1], 0.4))
+                pc = f"{RAR_P[p['r']]:.0f} %"
+                s.mtext(pc, X + W - 12 - s.mwidth(pc), y + 4, rgb(0x4A6694))
+                s.fill(X + 14 + s.pwidth(t) + 4, y + 8, X + W - 18 - s.mwidth(pc), y + 9, c + (90,))
+                y += 16
+            px = X + 8 + col * cw + (cw - 84 + 4) // 2
+            c = rgb(RAR[p['r']][1])
+            w0, h0 = 80, 62
+            s.box(px, y, w0, h0, c)
+            s.vgrad(px + 1, y + 1, w0 - 2, 37, tint(c, 0.55), tint(c, 0.85))
+            s.fill(px + 1, y + 38, px + w0 - 1, y + h0 - 1, rgb(0xF4F7FC))
+            s.fill(px + 2, y + 1, px + w0 - 2, y + 2, (255, 255, 255, 153))
+            s.stretch('glow', px + w0 // 2 - 17, y + 2, 34, 34)
+            s.item(item_of(p), px + w0 // 2 - 16, y + 3, 2)
+            if p['tipo'] == 'objeto' and p['n'] > 1:
+                s.count(p['n'], px + w0 // 2 - 16, y + 3, 2)
+            nm = s.fitend(prize_name(p), w0 - 6)
+            s.mtext(nm, px + (w0 - s.mwidth(nm)) // 2, y + 41, NAVY)
+            pc = (f"{p['p']:.2f}".rstrip('0').rstrip('.').replace('.', ',') + ' %')
+            s.mtext(pc, px + (w0 - s.mwidth(pc)) // 2, y + 51, darken(RAR[p['r']][1], 0.7))
+            col += 1
+            if col >= cols:
+                col = 0
+                y += 66
+        s.no_scissor()
+        loc.__exit__(None, None, None)
+        s.save(OUT + name + '.png')
+        NAMES.append(name)
+        return
+    # ---- la ruleta
+    x, w, h = X, W, bottom - top
+    win = phase == 'win' and result
+    bestp = result[best] if win else None
+    bcol = rgb(RAR[bestp['r']][1]) if win else None
+    s.box(x, top, w, h, rgb(0x0A0620))
+    s.vgrad(x + 1, top + 1, w - 2, h - 2, rgb(0x2B1747), rgb(0x100A26))
+    s.scissor(x + 1, top + 1, w - 2, h - 2)
+    cx = x + w // 2
+    s.rays(cx, top + h * 0.42, w * 0.75, 0.22 if win else 0.10, s.T * 6)
+    s.glow(cx, top + h * 0.42, h * 0.85, bcol if win else acc, 120 if win else 70)
+    s.tiled('stripes', x + 1, top + 1, w - 2, h - 2, 0.04, off=s.T * 4)
+    s.no_scissor()
+    s.fill(x + 2, top + 1, x + w - 2, top + 2, (255, 255, 255, 85))
+    hy = top + 5
+    s.blit('coin_green', x + 7, hy - 1)
+    bal = f'{balance}'
+    s.ptext_shadow(bal, x + 21, hy, rgb(0x8CF0B4), rgb(0x0A3A20))
+    s.mtext('monedas verdes' if balance != 1 else 'moneda verde', x + 25 + s.pwidth(bal), hy + 1, rgb(0x8C96C8))
+    # garantía: barra de pasos
+    every, left = 10, 3
+    done = every - left
+    pc_ = rgb(0xA855F7)
+    seg, gap = 5, 1
+    bw = every * (seg + gap) - gap
+    bx = x + w - 7 - bw
+    for i in range(every):
+        sx = bx + i * (seg + gap)
+        s.fill(sx, hy + 1, sx + seg, hy + 8, pc_ if i < done else rgb(0x2A2350))
+        if i < done:
+            s.fill(sx, hy + 1, sx + seg, hy + 2, lighten(pc_, 60))
+    label = f'ÉPICO EN {left}'
+    s.ptext_shadow(label, bx - 5 - s.pwidth(label), hy, lighten(pc_, 50), rgb(0x0A0620))
+    # el carrete
+    rh = max(44, min(70, h - 22 - 28 - 40))
+    ch = rh - 10
+    cw = round(ch * 0.8)
+    pitch = cw + 6
+    rx, rw, ry = x + 6, w - 12, top + 20
+    s.box(rx - 1, ry - 1, rw + 2, rh + 2, rgb(0x05030F))
+    s.vgrad(rx, ry, rw, rh, rgb(0x0B0820), rgb(0x1A1238))
+    center, cy = rx + rw // 2, ry + rh // 2
     s.scissor(rx, ry, rw, rh)
-    # 1.4: rayas que corren, luz del color de la app bajo la flecha y, con premio, rayos de su rareza
-    s.tiled('stripes', rx, ry, rw, rh, 0.05, off=s.T * 6)
-    s.glow(center, ry + rh / 2, rh * 0.95, accent('gachapon'), 110 if result else 70)
-    if result:
-        s.rays(center, ry + rh / 2, rh * 1.1, 0.55, s.T * 30)
-        s.glow(center, ry + rh / 2, rh * 0.7, rgb(RAR[result[0]['r']][1]), 150)
-    strip = [PREMIOS[(i * 7) % len(PREMIOS)] for i in range(40)]
-    win_i = None
-    if result:
-        win_i = 20
-        strip[win_i] = result[0]
-        off = win_i * 44 + 5
-    else:
-        off = offset if offset is not None else 130
-    first = int((off - rw / 2) // 44) - 1
-    for i in range(first, first + rw // 44 + 4):
-        cx = round(center + i * 44 - off)
-        gacha_card(s, strip[i % len(strip)], cx - 20, ry + 4, win=(i == win_i))
-    for i in range(16):
-        a = int(150 * (1 - i / 16))
-        s.fill(rx + i, ry, rx + i + 1, ry + rh, (12, 16, 48, a))
-        s.fill(rx + rw - 1 - i, ry, rx + rw - i, ry + rh, (12, 16, 48, a))
-    if result:
-        for i, (dx, dy) in enumerate(((-30, 6), (28, 10), (-24, rh - 10), (32, rh - 14), (0, 3))):
+    s.glow(center, cy, rh * 0.9, bcol if win else rgb(0xFFE680), 150 if win else 60)
+    strip = [PREMIOS[(i * 7) % len(PREMIOS)] for i in range(60)]
+    win_i = 34
+    if win:
+        strip[win_i] = bestp
+        off = win_i * pitch
+    half = rw / 2
+    first = int((off - half) // pitch) - 1
+    idx = list(range(first, first + rw // pitch + 4))
+    idx.sort(key=lambda i: -abs(i * pitch - off))
+    for i in idx:
+        dx = i * pitch - off
+        d = min(1.0, abs(dx) / half)
+        sc = 1 - 0.24 * d
+        is_win = bool(win) and i == win_i
+        if is_win:
+            sc *= 1 + 0.16 * (0.75 + 0.25 * math.cos((since - 0.3) * 5) if since >= 0.3 else 1.0)
+        gacha_card2(s, strip[i % len(strip)], center + dx, cy, sc, d, cw, ch, is_win, since)
+    if speed > 300:
+        k = min(1.0, (speed - 300) / 1800)
+        for i in range(9):
+            ly = ry + 4 + (i * 37 % (rh - 8))
+            ln = 20 + (i * 53 % 50) * k
+            lx = rx + ((i * 97 + 3300 * (0.6 + i * 0.07)) % (rw + ln)) - ln
+            s.hgrad(lx, ly, ln, 1, (255, 255, 255, 0), (255, 255, 255, round(110 * k)))
+    if win and since < 0.35:
+        s.fill(rx, ry, rx + rw, ry + rh, lighten(bcol, 80) + (round(170 * (1 - since / 0.35)),))
+    fade = min(40, rw // 6)
+    s.hgrad(rx, ry, fade, rh, (11, 8, 32, 240), (11, 8, 32, 0))
+    s.hgrad(rx + rw - fade, ry, fade, rh, (11, 8, 32, 0), (11, 8, 32, 240))
+    if win:
+        for i, (dx, dy) in enumerate(((-34, 6), (30, 9), (-26, rh - 9), (36, rh - 13), (0, 3), (-48, rh // 2), (50, rh // 2 - 6))):
             s.sparkle(center + dx, ry + dy, 2, s.twinkle(i * 1.3 + 0.2))
     s.no_scissor()
-    s.fill(center, ry, center + 1, ry + rh, (255, 230, 128, 102))
+    fw, fh = cw + 8, ch + 6
+    fx, fy = center - fw // 2, cy - fh // 2
+    frame = lighten(bcol, 40) if win else rgb(0xF6B628)
+
+    def outline(x0, y0, w0, h0, c):
+        s.fill(x0 + 1, y0, x0 + w0 - 1, y0 + 1, c)
+        s.fill(x0 + 1, y0 + h0 - 1, x0 + w0 - 1, y0 + h0, c)
+        s.fill(x0, y0 + 1, x0 + 1, y0 + h0 - 1, c)
+        s.fill(x0 + w0 - 1, y0 + 1, x0 + w0, y0 + h0 - 1, c)
+    outline(fx, fy, fw, fh, frame + (220,))
+    outline(fx - 1, fy - 1, fw + 2, fh + 2, frame + (80,))
+    # la lengüeta (doblada kick) y la flecha de abajo
+    tipx, tipy = center - kick * 3, ry + 7 - kick * 1.5
+    from PIL import ImageDraw as _ID  # noqa: F401
+    for (a_, b_, c_, col) in ((center - 5, center + 6, tipy, rgb(0xC07818)), (center - 4, center + 5, tipy - 1.5, rgb(0xF6B628))):
+        for yy in range(int(ry - 3), int(c_) + 1):
+            t_ = (yy - (ry - 3)) / max(1, c_ - (ry - 3))
+            l_ = a_ + (tipx + 0.5 - a_) * t_
+            r_ = b_ + (tipx + 0.5 - b_) * t_
+            s.fill(round(l_), yy, round(r_), yy + 1, col)
+    s.fill(center - 5, ry - 5, center + 6, ry - 2, rgb(0xFFE58A))
     for i in range(4):
-        c = rgb(0xC07818) if i == 0 else rgb(0xF6B628)
-        s.fill(center - 3 + i, ry - 2 + i, center + 4 - i, ry - 1 + i, c)
-        s.fill(center - 3 + i, ry + rh + 1 - i, center + 4 - i, ry + rh + 2 - i, c)
-    ly = ry + rh + 6
-    if result:
-        best = result[0]
-        rn = RAR[best['r']][0].upper()
-        text = ('MEJOR: ' + rn) if len(result) > 1 else '¡' + rn + '!'
-        nm = prize_name(best)
-        tw = s.pwidth(text) + s.mwidth(nm) + 10
-        tx = x + (w - tw) // 2
-        s.ptext(text, tx, ly - 1, lighten(rgb(RAR[best['r']][1]), 30))
-        s.mtext(s.fitend(nm, w - 16 - s.pwidth(text) - 10), tx + s.pwidth(text) + 8, ly, (255, 255, 255))
+        s.fill(center - 4 + i, ry + rh + 3 - i, center + 5 - i, ry + rh + 4 - i, rgb(0xF6B628))
+    by = bottom - 21
+    zt, zb = ry + rh + 5, by - 4
+    if win:
+        rn = RAR[bestp['r']][0].upper()
+        title = ('MEJOR: ' + rn) if len(result) > 1 else '¡' + rn + '!'
+        tw = s.pwidth(title)
+        ty = zt + 2
+        if zb - zt >= 32:
+            with s.big_at(cx - tw, ty + 9 - 10, px=s.f * 2):
+                s.ptext_shadow(title, 0, 0, lighten(bcol, 40), darken(RAR[bestp['r']][1], 0.35))
+            ty += 22
+        else:
+            s.ptext_shadow(title, cx - tw // 2, ty, lighten(bcol, 40), darken(RAR[bestp['r']][1], 0.35))
+            ty += 12
+        nm = s.fitend(prize_name(bestp), w - 20)
+        if ty + 9 <= zb:
+            s.mtext(nm, cx - s.mwidth(nm) // 2, ty, (255, 255, 255))
+        ty += 12
+        if len(result) > 1:
+            sz, gp, n = 22, 5, len(result)
+            sx = cx - (n * sz + (n - 1) * gp) // 2
+            if ty + sz <= zb:
+                for i, p in enumerate(result):
+                    k = min(1.0, max(0.0, (since - 0.15 - i * 0.16) / 0.14))
+                    bx0 = sx + i * (sz + gp)
+                    if k >= 0.5:
+                        s.slot(bx0, ty, sz, sz, rgb(RAR[p['r']][1]))
+                        s.item(item_of(p), bx0 + 3, ty + 3)
+                        if p['tipo'] == 'objeto' and p['n'] > 1:
+                            s.count(p['n'], bx0 + 3, ty + 3)
+                    else:
+                        s.box(bx0, ty, sz, sz, rgb(0x4A3A8A))
+                        s.vgrad(bx0 + 1, ty + 1, sz - 2, sz - 2, rgb(0x3A2A70), rgb(0x1E1440))
+                        s.ptext('?', bx0 + sz // 2 - 2, ty + 6, rgb(0xB8A8F0))
+                    if k >= 1 and i == best:
+                        outline(bx0 - 2, ty - 2, sz + 4, sz + 4, rgb(0xFFE58A) + (230,))
+                        outline(bx0 - 1, ty - 1, sz + 2, sz + 2, rgb(0xF6B628) + (200,))
     else:
-        how = 'Una tirada: 1 · 5 tiradas: 5'
-        s.mtext(how, x + (w - s.mwidth(how)) // 2, ly, rgb(0xB8C2F0))
+        how = '1 tirada: 1  ·  5 tiradas: 5  ·  ESPACIO para girar'
+        s.mtext(how, cx - s.mwidth(how) // 2, zt + 2, rgb(0xB8C2F0))
+        if zb - zt >= 30:
+            bw2 = min(w - 40, 300)
+            bx2, by2 = cx - bw2 // 2, zt + 16
+            s.box(bx2 - 1, by2 - 1, bw2 + 2, 8, rgb(0x05030F))
+            at = bx2
+            for r_, pct_ in RAR_P.items():
+                sw = bw2 * pct_ / 100
+                c = rgb(RAR[r_][1])
+                s.fill(round(at), by2, round(at + sw), by2 + 6, c)
+                s.fill(round(at), by2, round(at + sw), by2 + 1, lighten(c, 60))
+                at += sw
+            ly = by2 + 10
+            labels = [(RAR[r_][0] + f' {pct_:.0f} %', rgb(RAR[r_][1])) for r_, pct_ in RAR_P.items()]
+            lw0 = sum(8 + s.mwidth(t) + 10 for t, _ in labels)
+            lx = cx - lw0 // 2
+            for t, c in labels:
+                s.fill(lx, ly + 1, lx + 5, ly + 6, c)
+                s.mtext(t, lx + 8, ly, lighten(c, 70))
+                lx += 8 + s.mwidth(t) + 10
+    # chispas
+    if win and since < 1.4:
+        rnd = random.Random(7)
+        n = 10 + rank_of(bestp['r']) * 10
+        for _ in range(n):
+            a_ = rnd.random() * math.pi * 2
+            v = 50 + rnd.random() * (60 + rank_of(bestp['r']) * 25)
+            life = 0.7 + rnd.random() * 0.7
+            if since > life:
+                continue
+            tt = since
+            px_ = math.cos(a_) * v * tt
+            py_ = (math.sin(a_) * v - 40) * tt + 80 * tt * tt
+            colr = (255, 255, 255) if rnd.random() < 0.33 else rgb(0xFFE680) if rnd.random() < 0.33 else bcol
+            sz = 2 if rnd.random() < 0.25 else 1
+            al = round(255 * min(1.0, (life - since) / life * 1.6))
+            s.fill(round(cx + px_), round(cy + py_), round(cx + px_) + sz, round(cy + py_) + sz, colr + (al,))
     w1 = s.pwidth('GIRAR') + 6 + 10 + s.pwidth('1') + 14
     w5 = s.pwidth('GIRAR X5') + 6 + 10 + s.pwidth('5') + 14
-    bx = x + (w - w1 - w5 - 8) // 2
-    price_button(s, bx, by, 'GIRAR', 1, 3, balance >= 1)
-    price_button(s, bx + w1 + 8, by, 'GIRAR X5', 5, 1, balance >= 5)
-    pity = 'Épico o mejor asegurado en 7 tiradas'
-    s.mtext(pity, x + (w - s.mwidth(pity)) // 2, py, lighten(rgb(0xA855F7), 40))
-    if result and len(result) > 1:
-        sz, gap, n = 22, 4, len(result)
-        sx = x + (w - (n * sz + (n - 1) * gap)) // 2
-        sy = ly + 14
-        if sy + sz <= py - 2:
-            for i, p in enumerate(result):
-                cx = sx + i * (sz + gap)
-                s.slot(cx, sy, sz, sz, rgb(RAR[p['r']][1]))
-                s.item(item_of(p), cx + 3, sy + 3)
-                if p['tipo'] == 'objeto' and p['n'] > 1:
-                    s.count(p['n'], cx + 3, sy + 3)
-    # derecha: PREMIOS / HISTORIAL
-    lx, lw2 = X + lw + 6, W - lw - 6
-    acc = accent('gachapon')
-    s.sk_window(lx, top, lw2, bottom - top, acc)
-    s.vgrad(lx + 1, top + 1, lw2 - 2, 3, mix(acc, (255, 255, 255), 0.14), darken_t(acc, 0.78))
-    s.sk_tabs(lx + 4, Y, lw2 - 8, ['PREMIOS', 'HISTORIAL'], 0 if tab == 'premios' else 1, acc)
-    rows = PREMIOS if tab == 'premios' else [dict(r, t=m) for r, m in zip(result or PREMIOS[3:9], ('ahora', 'ahora', 'hace 3 min', 'hace 2 h', 'hace 1 d', 'hace 2 d'))]
-    s.scissor(lx + 2, top + 6, lw2 - 4, bottom - top - 10)
-    ry2 = top + 6
-    for p in rows:
-        x0, w0 = lx + 5, lw2 - 14
-        col = rgb(RAR[p['r']][1])
-        s.fill(x0 + 3, ry2 + 23, x0 + w0 - 3, ry2 + 24, rgb(0xC8E4F8))
-        s.vgrad(x0, ry2 + 3, 2, 18, lighten(col, 50), col)
-        s.sk_slot(x0 + 4, ry2 + 2, 20, col)
-        s.item(item_of(p), x0 + 6, ry2 + 4)
-        if p['tipo'] == 'objeto' and p['n'] > 1:
-            s.count(p['n'], x0 + 6, ry2 + 4)
-        x0, w0 = x0 + 3, w0 - 3
-        right = (f"{p['p']:.2f}".rstrip('0').rstrip('.').replace('.', ',') + ' %') if tab == 'premios' else p['t']
-        rw2 = s.mwidth(right)
-        s.mtext(right, x0 + w0 - 4 - rw2, ry2 + 8, rgb(0x4A6694))
-        room = w0 - 26 - rw2 - 10
-        s.mtext(s.fitend(prize_name(p), room), x0 + 26, ry2 + 3, NAVY)
-        s.mtext(RAR[p['r']][0], x0 + 26, ry2 + 13, darken(RAR[p['r']][1], 0.7))
-        ry2 += 24
-    s.no_scissor()
-    content = len(rows) * 24
-    s.sk_scrollbar(lx + lw2 - 7, top + 7, bottom - top - 12, bottom - top - 10, content, 0, acc)
+    bx3 = x + (w - w1 - w5 - 10) // 2
+    busy = phase == 'spin'
+    price_button(s, bx3, by, 'GIRAR', 1, 3, balance >= 1 and not busy)
+    price_button(s, bx3 + w1 + 10, by, 'GIRAR X5', 5, 1, balance >= 5 and not busy)
     loc.__exit__(None, None, None)
     s.save(OUT + name + '.png')
     NAMES.append(name)
@@ -1130,9 +1290,12 @@ R5 = [{'tipo': 'objeto', 'n': 1, 'id': 'minecraft:totem_of_undying', 'nombre': '
       {'tipo': 'objeto', 'n': 3, 'id': 'minecraft:diamond', 'nombre': '', 'r': 'raro'},
       {'tipo': 'objeto', 'n': 16, 'id': 'minecraft:bread', 'nombre': '', 'r': 'comun'},
       {'tipo': 'monedas', 'n': 500, 'id': 'tfclient:fantastic_coin', 'nombre': '500 monedas', 'r': 'raro'}]
-gacha_page('p_gachapon', 'premios')
-gacha_page('p_gachapon_x5', 'historial', result=R5, balance=2)
-gacha_page('p_gachapon_1366', 'premios', result=[PREMIOS[1]], balance=0, fbw=1366, fbh=768)
+gacha_page('p_gachapon')
+gacha_page('p_gachapon_giro', phase='spin', off=812.0, speed=2100.0, kick=0.8)
+gacha_page('p_gachapon_epico', result=[PREMIOS[4]], phase='win', since=0.45)
+gacha_page('p_gachapon_x5', result=R5, best=0, phase='win', since=1.4, balance=2)
+gacha_page('p_gachapon_premios', tab='premios')
+gacha_page('p_gachapon_1366', result=[PREMIOS[1]], phase='win', since=0.9, balance=0, fbw=1366, fbh=768)
 
 
 def pass_levels():

@@ -2138,5 +2138,61 @@
   "sounds": [
    "tfclient:skills/invocador/samus_phoenix_fire"
   ]
+ },
+ "pad.gacha_start": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_start"
+   }
+  ]
+ },
+ "pad.gacha_tick": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_tick"
+   }
+  ]
+ },
+ "pad.gacha_stop": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_stop"
+   }
+  ]
+ },
+ "pad.gacha_flip": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_flip"
+   }
+  ]
+ },
+ "pad.gacha_win1": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_win1"
+   }
+  ]
+ },
+ "pad.gacha_win2": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_win2"
+   }
+  ]
+ },
+ "pad.gacha_win3": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_win3"
+   }
+  ]
+ },
+ "pad.gacha_win4": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/gacha_win4"
+   }
+  ]
  }
 }

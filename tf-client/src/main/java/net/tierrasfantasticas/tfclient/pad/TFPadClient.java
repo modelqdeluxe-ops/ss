@@ -74,8 +74,13 @@ public final class TFPadClient {
      * volumen general, sin posición (suenan igual se mire a donde se mire).
      */
     static void sound(String name, float volume) {
+        sound(name, volume, 1.0F);
+    }
+
+    /** Un sonido del pad con su tono (1 = el de siempre; la ruleta sube el tic cuanto más rápido va). */
+    static void sound(String name, float volume, float pitch) {
         Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(new ResourceLocation(TFClient.MOD_ID, "pad." + name),
-                SoundSource.MASTER, volume, 1.0F, RandomSource.create(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
+                SoundSource.MASTER, volume, pitch, RandomSource.create(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
     }
 
     /** Abre el pad (y pide al servidor los datos al día). */
