@@ -190,7 +190,7 @@ public final class BossNet {
             }
             case CLEAR_TESTS -> {
                 int n = 0;
-                for (BossEntity b : p.level().getEntitiesOfClass(BossEntity.class, p.getBoundingBox().inflate(160), e -> e.rift() == null)) {
+                for (BossEntity b : p.level().getEntitiesOfClass(BossEntity.class, p.getBoundingBox().inflate(160), BossEntity::isTest)) {
                     b.discard();
                     n++;
                 }

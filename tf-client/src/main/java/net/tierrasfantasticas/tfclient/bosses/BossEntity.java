@@ -217,6 +217,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return difficulty;
     }
 
+    /** Es de una prueba de /tf boss (ni él ni su jefe son de una grieta). */
+    public boolean isTest() {
+        return rift == null && (owner == null || owner.rift == null);
+    }
+
     public VfxModel model() {
         return model;
     }
