@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -11,14 +12,21 @@ import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.tierrasfantasticas.tfclient.TFClient;
+import org.joml.Matrix4f;
 
 /**
  * La fuente pixel del pad (4 px de ancho, mayúsculas, con tildes): font.png + font.json, generados por
  * tools/pad/build_pad.py. Cada letra ocupa una celda de 6x10: 2 filas para la tilde, 7 de letra y 1 libre.
  * Con contorno azul marino (1 px a los lados y arriba, 2 abajo) queda como los rótulos del marco.
+ * <p>
+ * 1.3.67 (fluidez): las letras ya no se pintan una a una (cada una era una llamada a la tarjeta gráfica, y con el
+ * contorno, 12 por letra): todas, con su contorno, van en un lote de texto con el color en cada vértice, como la
+ * fuente de Minecraft. Dentro del pad (que pinta en lote, ver TFPadScreen.render) se juntan con el resto.
  */
 final class PadFont {
     static final int NAVY = 0x18265C;
@@ -73,16 +81,17 @@ final class PadFont {
     static void draw(GuiGraphics g, String s, int x, int y, int rgb, int outline) {
         load();
         String text = upper(s);
+        VertexConsumer vc = begin(g);
+        Matrix4f m = g.pose().last().pose();
         if (outline >= 0) {
-            tint(outline & 0xFFFFFF);
-            for (int[] d : new int[][] {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}}) {
-                glyphs(g, text, x + d[0], y + d[1]);
-            }
+            int o = 0xFF000000 | outline;
+            for (int[] d : OUTLINE) glyphs(vc, m, text, x + d[0], y + d[1], o);
         }
-        tint(rgb);
-        glyphs(g, text, x, y);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        glyphs(vc, m, text, x, y, 0xFF000000 | rgb);
+        end(g);
     }
+
+    private static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}};
 
     /** Con una sombra de color 1 abajo (más ligera que el contorno): el texto de los botones y las pestañas elegidas. */
     static void drawShadowCentered(GuiGraphics g, String s, int cx, int y, int rgb, int shadow) {
@@ -92,12 +101,30 @@ final class PadFont {
     static void drawShadow(GuiGraphics g, String s, int x, int y, int rgb, int shadow) {
         load();
         String text = upper(s);
-        tint(shadow & 0xFFFFFF);
-        glyphs(g, text, x, y + 1);
-        glyphs(g, text, x + 1, y + 1);
-        tint(rgb);
-        glyphs(g, text, x, y);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        VertexConsumer vc = begin(g);
+        Matrix4f m = g.pose().last().pose();
+        int sh = 0xFF000000 | shadow;
+        glyphs(vc, m, text, x, y + 1, sh);
+        glyphs(vc, m, text, x + 1, y + 1, sh);
+        glyphs(vc, m, text, x, y, 0xFF000000 | rgb);
+        end(g);
+    }
+
+    private static RenderType type;
+
+    /**
+     * El lote de texto de la fuente. Como antes, el color es solo el de las letras: si alguien dejó el pincel teñido o
+     * transparente (setColor), se vuelve a blanco (lo de antes ya se pintó con el suyo).
+     */
+    private static VertexConsumer begin(GuiGraphics g) {
+        float[] c = RenderSystem.getShaderColor();
+        if (c[0] != 1F || c[1] != 1F || c[2] != 1F || c[3] != 1F) g.setColor(1F, 1F, 1F, 1F);
+        if (type == null) type = PadRenderTypes.font(TEX);
+        return g.bufferSource().getBuffer(type);
+    }
+
+    private static void end(GuiGraphics g) {
+        if (!PadSkin.batching) g.flush();
     }
 
     /** ¿Tiene alguna letra que la fuente pixel sepa dibujar? (si no, saldría en blanco). */
@@ -123,9 +150,11 @@ final class PadFont {
         draw(g, s, cx - width(s) / 2, y, rgb, outline);
     }
 
-    private static void glyphs(GuiGraphics g, String text, int x, int y) {
+    private static void glyphs(VertexConsumer vc, Matrix4f m, String text, int x, int y, int argb) {
         int cx = x;
-        for (char c : text.toCharArray()) {
+        int r = argb >> 16 & 255, gr = argb >> 8 & 255, b = argb & 255, a = argb >>> 24;
+        for (int k = 0; k < text.length(); k++) {
+            char c = text.charAt(k);
             int i = chars.indexOf(c);
             if (i < 0) {
                 cx += 3;
@@ -133,14 +162,14 @@ final class PadFont {
             }
             int w = widths[i];
             if (c != ' ') {
-                RenderSystem.enableBlend();
-                g.blit(TEX, cx, y, (i % cols) * 6, (i / cols) * 10, w, 10, texW, texH);
+                float u0 = (i % cols) * 6F / texW, v0 = (i / cols) * 10F / texH, u1 = u0 + w / (float) texW, v1 = v0 + 10F / texH;
+                int light = LightTexture.FULL_BRIGHT;
+                vc.vertex(m, cx, y, 0).color(r, gr, b, a).uv(u0, v0).uv2(light).endVertex();
+                vc.vertex(m, cx, y + 10, 0).color(r, gr, b, a).uv(u0, v1).uv2(light).endVertex();
+                vc.vertex(m, cx + w, y + 10, 0).color(r, gr, b, a).uv(u1, v1).uv2(light).endVertex();
+                vc.vertex(m, cx + w, y, 0).color(r, gr, b, a).uv(u1, v0).uv2(light).endVertex();
             }
             cx += w + 1;
         }
-    }
-
-    private static void tint(int rgb) {
-        RenderSystem.setShaderColor((rgb >> 16 & 255) / 255F, (rgb >> 8 & 255) / 255F, (rgb & 255) / 255F, 1F);
     }
 }

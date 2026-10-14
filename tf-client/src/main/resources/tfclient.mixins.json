@@ -33,7 +33,8 @@
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
     "GameRendererMixin",
-    "PostChainAccessor"
+    "PostChainAccessor",
+    "GuiGraphicsMixin"
   ],
   "injectors": {
     "defaultRequire": 0

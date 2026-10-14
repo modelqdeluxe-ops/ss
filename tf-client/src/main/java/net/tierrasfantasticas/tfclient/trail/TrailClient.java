@@ -203,8 +203,20 @@ public final class TrailClient {
     // Captura (mixin en ItemInHandRenderer.renderItem)
     // ---------------------------------------------------------------------------------------------------------------
 
+    /** Si algo falla al apuntar (un arma rara de otro mod), se avisa una vez y las estelas se apagan esta sesión. */
+    private static boolean broken;
+
     public static void capture(LivingEntity entity, ItemStack stack, ItemDisplayContext ctx, boolean left, PoseStack pose) {
-        if (!TrailSettings.enabled || entity == null || stack.isEmpty()) return;
+        if (broken || !TrailSettings.enabled || entity == null || stack.isEmpty()) return;
+        try {
+            doCapture(entity, stack, ctx, left, pose);
+        } catch (Throwable e) {
+            broken = true;
+            TFClient.LOGGER.error("TF Client: las estelas de arma fallaron y se apagan hasta reiniciar", e);
+        }
+    }
+
+    private static void doCapture(LivingEntity entity, ItemStack stack, ItemDisplayContext ctx, boolean left, PoseStack pose) {
         boolean first = ctx.firstPerson();
         if (!first && ctx != ItemDisplayContext.THIRD_PERSON_LEFT_HAND && ctx != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) return;
         if (!first && !worldPass) return;

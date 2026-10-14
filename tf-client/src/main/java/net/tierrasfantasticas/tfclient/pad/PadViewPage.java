@@ -223,8 +223,21 @@ final class PadViewPage extends PadPage {
         return 1 - (1 - x) * (1 - x) * (1 - x);
     }
 
+    // la cabecera ya partida (1.3.67: solo se vuelve a partir si cambia el texto, el ancho o las líneas que caben)
+    private List<String> bannerFor = List.of(), bannerCache = List.of();
+    private int bannerKey = -1;
+
     /** El texto de la cabecera partido al ancho que deja el icono (room líneas como mucho, la última con «...»). */
     private List<String> bannerLines(List<String> header, int room) {
+        int key = W * 8 + room;
+        if (key == bannerKey && header.equals(bannerFor)) return bannerCache;
+        bannerKey = key;
+        bannerFor = header;
+        bannerCache = splitBanner(header, room);
+        return bannerCache;
+    }
+
+    private List<String> splitBanner(List<String> header, int room) {
         int w = W - 2 - 46;
         List<String> lines = new ArrayList<>();
         for (String line : header) {
@@ -525,7 +538,11 @@ final class PadViewPage extends PadPage {
             int ph = h - 10, pw = Math.round(ph * 1.75F);
             PadUi.box(g, sx - 3, y + 4, pw + 2, ph + 2, PadSkin.darken(color, 0.3F));
             pad.clipPush(g, sx - 2, y + 5, pw, ph);
-            net.tierrasfantasticas.tfclient.trail.TrailPreview.draw(g, sx - 2, y + 5, pw, ph, r.icon());
+            try {
+                net.tierrasfantasticas.tfclient.trail.TrailPreview.draw(g, sx - 2, y + 5, pw, ph, r.icon());
+            } catch (RuntimeException e) {
+                net.tierrasfantasticas.tfclient.TFClient.LOGGER.warn("TF Pad: la vista previa de las estelas falló", e);
+            }
             pad.clipPop(g);
             drawn = true;
             extra = pw - ms - 4;
