@@ -540,6 +540,11 @@ public final class TFPadScreen extends Screen {
      * las texturas y los objetos vacían el lote antes de pintarse (GuiGraphicsMixin) y los recortes también. Las mismas
      * animaciones, menos trabajo.
      */
+    /** ¿Está el pad pintando en lote ahora mismo? (GuiGraphicsMixin: así deja el estado como el pad lo espera). */
+    public static boolean drawing() {
+        return PadSkin.batching;
+    }
+
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);

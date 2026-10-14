@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.69**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.70**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.69) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.70) — lee esto primero
 
-**Estado**: última versión publicada **1.3.69** (animaciones de Punchy), Release ya creada:
+**Estado**: última versión publicada **1.3.70** (arreglos del pad y de las estelas, sonido del tajo), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -102,7 +102,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.69 entera** (Punchy dentro del jar: que cargue, que
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.70** (portada del pad sin las nubes blancas, estelas
+con Punchy, sonido del tajo), **la 1.3.69 entera** (Punchy dentro del jar: que cargue, que
 las animaciones salgan, que cada interruptor de Efectos › ANIMACIONES haga lo que dice, que las estelas sigan saliendo con
 las animaciones de Punchy y que el servidor arranque con el jar nuevo), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
 Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
@@ -159,6 +160,24 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.70 (14 oct)** — el dueño probó la 1.3.69 (captura de la portada): «¿qué mierda hiciste con el pad?»,
+> «las estelas no sirven, no se muestran, ni tampoco hay sonidos».
+> - **Pad (portada con manchas blancas)**: medido en su captura: las nubes y los rayos del cielo salían opacos, lo
+>   transparente de su textura en blanco (246,252,255) con la sombra gris alrededor. Venía del dibujo en lote de la
+>   1.3.67 (nunca probado en el juego): `GuiGraphicsMixin` vacía el lote antes de cada textura y al vaciarlo Minecraft
+>   apaga la mezcla (blend); el `blit` siguiente salía opaco. Además lo del lote se pintaba con el color/alfa ya puesto
+>   para esa textura. Ahora, mientras pinta el pad (`TFPadScreen.drawing()`), el lote se vacía en blanco y luego se deja
+>   el color de la textura, la mezcla encendida y la normal (el pad siempre pinta así). Fuera del pad, igual que antes.
+> - **Estelas con Punchy**: Punchy pinta el arma de la primera persona con `THIRD_PERSON_*_HAND` (la cuelga de su brazo
+>   3D), y `TrailClient` solo apuntaba la hoja con contexto de primera persona: con Punchy no salía ninguna estela.
+>   `GameRendererHandsMixin` marca el pase de las manos (`GameRenderer.renderItemInHand`) y en él lo del propio jugador
+>   cuenta como primera persona.
+> - **Sonido del tajo** (no había ninguno): `tools/trail_sounds.py` (sintetizado: ruido con un paso banda que baja de
+>   agudo a grave, cuerpo grave; 1,3–1,9 kHz de centro, nada por encima de 5 kHz; sin chasquidos) → sounds/combate:
+>   `combate.tajo` (3 variantes al azar, ~0,2 s) y `combate.tajo_fuerte` (crítico, 0,43 s). Suena al golpear (no al
+>   picar) con un arma que deja estela; volumen según la carga, tono según el arma (hachas y picos más graves).
+>   Efectos › COMBATE › SONIDO: «Sonido del tajo» SÍ/NO y volumen (estelas.properties: `sonido`, `sonido.volumen`).
 
 > **TF Client 1.3.69 (14 oct)** — el dueño: «mete estas animaciones (Punchy) a TF Client, que se puedan desactivar desde
 > el apartado de Efectos del pad», «adapta esas animaciones completas sin errores» y trajo el permiso firmado.

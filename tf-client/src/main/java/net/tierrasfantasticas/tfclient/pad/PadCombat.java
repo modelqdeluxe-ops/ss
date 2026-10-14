@@ -87,6 +87,7 @@ final class PadCombat {
                     case "armas" -> TrailSettings.others_tools = !TrailSettings.others_tools;
                     case "detalle" -> TrailSettings.lowDetail = !TrailSettings.lowDetail;
                     case "destellos" -> TrailSettings.reducedFlash = !TrailSettings.reducedFlash;
+                    case "sonido" -> TrailSettings.sound = !TrailSettings.sound;
                     default -> {
                     }
                 }
@@ -99,6 +100,7 @@ final class PadCombat {
                     case "minima" -> TrailSettings.minOpacity = clamp(TrailSettings.minOpacity + 10 * dir, 0, 60);
                     case "filo" -> TrailSettings.core = clamp(TrailSettings.core + 10 * dir, 0, 100);
                     case "distancia" -> TrailSettings.othersDistance = clamp(TrailSettings.othersDistance + 8 * dir, 0, 128);
+                    case "volumen" -> TrailSettings.soundVolume = clamp(TrailSettings.soundVolume + 10 * dir, 0, 100);
                     default -> {
                     }
                 }
@@ -172,6 +174,12 @@ final class PadCombat {
         if (TrailSettings.others) {
             b.row(stepper(Items.SPYGLASS, "Hasta qué distancia", "Las de los demás, desde tan lejos.",
                     TrailSettings.othersDistance == 0 ? "Sin límite" : TrailSettings.othersDistance + " bloques", "n:distancia"));
+        }
+
+        b.row(section("SONIDO"));
+        b.row(toggle(Items.NOTE_BLOCK, "Sonido del tajo", "Un «zas» de aire al golpear; el crítico, más fuerte.", TrailSettings.sound, "t:sonido"));
+        if (TrailSettings.sound) {
+            b.row(stepper(Items.JUKEBOX, "Volumen del tajo", "", TrailSettings.soundVolume + " %", "n:volumen"));
         }
 
         b.row(section("CON QUÉ"));

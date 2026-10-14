@@ -538,8 +538,8 @@ final class PadGuidePage extends PadPage {
                 p("Efectos al matar, clases de skills, efectos de combate y animaciones."),
                 b("AL MATAR: efectos de kill gratis. Pulsa uno para EQUIPAR; QUITAR EFECTO lo quita."),
                 b("SKILLS: las clases de skills que compraste en la web. ACTIVAR una (solo una a la vez); DESACTIVAR la apaga."),
-                b("COMBATE: la estela de luz de tus golpes (estilo, color, duración, ancho...) con su vista previa. Es solo tuya y "
-                        + "se guarda sola; RESTABLECER la deja como venía."),
+                b("COMBATE: la estela de luz de tus golpes (estilo, color, duración, ancho...) con su vista previa, y el sonido del "
+                        + "tajo con su volumen. Es solo tuya y se guarda sola; RESTABLECER la deja como venía."),
                 b("ANIMACIONES: las animaciones en primera persona de Punchy (golpes, minar, comer, arco, nadar, trepar...). "
                         + "Cada una tiene su SÍ/NO: por tipo de objeto (un NO lo deja como en Minecraft normal), al moverte, "
                         + "efectos en los brazos, física y objetos en 3D. ACTIVADAS/APAGADAS arriba las quita todas."),
