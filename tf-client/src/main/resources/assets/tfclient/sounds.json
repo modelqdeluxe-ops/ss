@@ -2194,25 +2194,5 @@
     "name": "tfclient:pad/gacha_win4"
    }
   ]
- },
- "combate.tajo": {
-  "sounds": [
-   {
-    "name": "tfclient:combate/tajo1"
-   },
-   {
-    "name": "tfclient:combate/tajo2"
-   },
-   {
-    "name": "tfclient:combate/tajo3"
-   }
-  ]
- },
- "combate.tajo_fuerte": {
-  "sounds": [
-   {
-    "name": "tfclient:combate/tajo_fuerte"
-   }
-  ]
  }
 }

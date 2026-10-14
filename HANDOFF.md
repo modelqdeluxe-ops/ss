@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.72**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **14 de octubre de 2026** (TF Client **1.3.73**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.72) — lee esto primero
+### CHECKPOINT (14 oct 2026, TF Client 1.3.73) — lee esto primero
 
-**Estado**: última versión publicada **1.3.72** (armas del servidor sin Punchy: ya no se van al suelo), Release ya creada:
+**Estado**: última versión publicada **1.3.73** (Punchy QUITADO: TF Client vuelve a ser la 1.3.68 + el arreglo del pad), Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay worktrees de agentes pendientes.
 
@@ -65,16 +65,16 @@ https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (
 `mixin/GameRendererMixin.java`, `mixin/PostChainAccessor.java` y `assets/tfclient/shaders/post/vivid.json`; fuera de
 `tfclient.mixins.json`, de `TrailSettings` y de Efectos › COMBATE.
 
-**Punchy dentro de TF Client (1.3.69, orden del dueño: «mete estas animaciones, que se puedan desactivar desde
-Efectos»).** Punchy (Modrinth `punchy-fpa`) es **«All Rights Reserved»**, no MIT: el jar que llegó primero por el chat
-tenía `LICENSE_Punchy` borrado y `license = MIT` puesto a mano. El dueño consiguió **permiso por escrito** de Punchy Guys
-Studios (la organización dueña del proyecto en Modrinth; PunchyDevGuy): «Acuerdo de autorización», firmado el 13 oct por
-las dos partes (Pewez777 = el dueño). El PDF firmado lo guarda el dueño (no se sube al repo: lleva firmas); el resumen
-está en `META-INF/licenses/punchy-PERMISO.txt`. **Compromisos que hay que mantener siempre**: crédito visible (lista de
-mods = `credits` de mods.toml, app Guía, Efectos › ANIMACIONES con enlace a Modrinth), cada animación se puede apagar
-desde Efectos, no subir ni vender Punchy por separado, guardar el permiso, y **quitarlo en la versión siguiente si el
-titular lo pide por escrito** (borrar `META-INF/jarjar/`, la tarea `punchyJar` de build.gradle, `anim/`, `PadAnims` y
-`PunchyConfigMixin`). Detalle en la entrega 1.3.69.
+**Punchy FUERA de TF Client (1.3.73, orden del dueño, 14 oct).** Se metió en la 1.3.69 (jar-in-jar, con permiso firmado
+de Punchy Guys Studios) y en la 1.3.72 crasheaba (StackOverflow: `AnimSettings.ownModel` → `ItemRenderer.getModel` →
+`ItemPropertiesMixin` de Punchy → `PunchyConfig.isItemBlacklisted` → nuestro mixin → `ownModel`…) y las armas seguían
+bajándose al suelo al golpear. El dueño: «quita el puto Punchy de mi mod, revisa una build anterior para que lo dejes como
+estaba, solo deja las estelas, y los sonidos son mierda también». **tf-client está exactamente como en la 1.3.68** (commit
+`ad7a158`) salvo el arreglo del pad de la 1.3.70 (`GuiGraphicsMixin` + `TFPadScreen.drawing()`: era un fallo de la
+1.3.67, no de Punchy) y la versión. **No vuelvas a meter Punchy ni otro mod de animaciones de primera persona, ni el
+sonido del tajo, salvo que el dueño lo pida otra vez.** Como ya no se distribuye, los compromisos del acuerdo de Punchy no
+aplican (el PDF firmado lo guarda el dueño). Si un jugador tiene `config/punchy/` o `config/tfclient/animaciones.properties`
+de antes, es inofensivo (nadie lo lee).
 **Compilar con GitHub Actions** (el dueño: «USA GIT ACTIONS»): en el contenedor Maven Central da 429; el push a la rama
 ya lanza `tf-client.yml` (compila y revisa mixins; la Release solo sale desde `main`).
 
@@ -102,12 +102,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.72** (espadas TF como antes con Punchy encendido),
-**la 1.3.71** (APAGADAS = vanilla, también a mitad de un golpe;
-los tipos en NO; el sedal), **la 1.3.70** (portada del pad sin las nubes blancas, estelas
-con Punchy, sonido del tajo), **la 1.3.69 entera** (Punchy dentro del jar: que cargue, que
-las animaciones salgan, que cada interruptor de Efectos › ANIMACIONES haga lo que dice, que las estelas sigan saliendo con
-las animaciones de Punchy y que el servidor arranque con el jar nuevo), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
+**Sin verificar en el juego (solo simulador o compilando)**: **la 1.3.73** (sin Punchy: armas y manos como en la 1.3.68,
+Efectos solo con COMBATE, estelas sin sonido; la portada del pad sin las nubes blancas), lo de la 1.3.67 (estelas de arma en primera y tercera persona,
 Efectos › COMBATE, el pad en lote —fluidez—, kits en una ficha, Gachapón y TF Pass nuevos, piedras con TF)
 y lo de la 1.3.66 (pestañas iguales,
 pad de administrador rehecho, interruptores) y lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
@@ -144,8 +140,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
   (Ajustes con temas), `PadSettings` (ajustes y `THEMES`).
 - Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
   `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = el kit en UNA ficha (lista + `sheet`), `PadClaims`…).
-  Efectos › COMBATE y › ANIMACIONES son del cliente: `PadCombat` y `PadAnims` (las monta `PadViewPage` y sus acciones no
-  van al servidor; `PadCombat.tabs/withTab` ponen las dos pestañas); Punchy en `anim/` (`PunchyBridge`, `AnimSettings`); estelas en
+  Efectos › COMBATE es del cliente: `PadCombat` (lo monta `PadViewPage` y sus acciones no van al servidor;
+  `PadCombat.withTab` pone la pestaña); estelas en
   `trail/` (`TrailClient`, `TrailProfile`, `TrailSettings` = config/tfclient/estelas.properties, `TrailPreview`).
   Skins: `skins/`.
   Pad de administrador: `PadAdmin` (APPS, AJUSTES, TIENDA, VIAJES, GTS, COMUNIDAD, OFICIOS), `PadAdminKits`,
@@ -162,6 +158,20 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `tfclient-v<versión>` (antes `v<versión>`) con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.73 (14 oct)** — el dueño, tras el crash de la 1.3.72 al activar las animaciones y con la espada (también
+> la de netherita) bajándose al suelo en cada golpe: «quita el puto Punchy de mi mod, revisa una build anterior antes de
+> meter Punchy para que lo dejes como estaba, solo deja las estelas, y los sonidos son mierda también».
+> - **tf-client vuelto a la 1.3.68** (`git checkout ad7a158 -- tf-client/` y borrados los archivos nuevos): fuera Punchy
+>   entero (tarea `punchyJar` de build.gradle, `META-INF/jarjar/`, `punchy-PERMISO.txt`, `credits` de mods.toml, `anim/`,
+>   `PadAnims`, los mixins `Punchy*`, `FishingHookRendererMixin` y `GameRendererHandsMixin`), Efectos › ANIMACIONES, la
+>   guía de ANIMACIONES y el sonido del tajo (`sounds/combate/`, sus entradas en sounds.json, `TrailSettings.sound`,
+>   `TrailClient.swingSound`, `tools/trail_sounds.py`). Las manos y las armas vuelven a ser las de Minecraft (y las del
+>   modelo de cada arma TF), como antes de Punchy.
+> - **Se queda**: las estelas tal cual estaban en la 1.3.68 (Efectos › COMBATE) y el arreglo del pad de la 1.3.70
+>   (`GuiGraphicsMixin`: el lote se vacía en blanco y se deja la mezcla encendida; si no, la portada sale con manchas
+>   blancas). `git diff ad7a158 -- tf-client` = solo eso y la versión.
+> - Las entregas 1.3.69–1.3.72 de abajo quedan como historia: nada de eso está ya en el mod.
 
 > **TF Client 1.3.72 (14 oct)** — el dueño: «¿no arreglaste lo de la espada? No estaba así, se jodió con Punchy».
 > - **Causa** (javap de Punchy): en primera persona Punchy cuelga el arma de su brazo 3D y, para espadas y herramientas,

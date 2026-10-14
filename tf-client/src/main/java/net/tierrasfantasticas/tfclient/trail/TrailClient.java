@@ -19,13 +19,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -95,12 +90,6 @@ public final class TrailClient {
     private static long frame;
     /** Entre el cielo y el fin de las entidades: solo ahí cuenta lo que se dibuja en tercera persona (no el inventario). */
     private static boolean worldPass;
-    /** Se están pintando las manos en primera persona (GameRendererHandsMixin). */
-    private static boolean handsPass;
-
-    public static void handsPass(boolean on) {
-        handsPass = on;
-    }
 
     // el jugador de este cliente: si su golpe fue un ataque (no picar un bloque ni usar algo), su fuerza y el sacar el arma
     private static boolean armed;
@@ -154,32 +143,8 @@ public final class TrailClient {
         if (mc.player == null) return;
         // picar un bloque no es un golpe
         armed = mc.hitResult == null || mc.hitResult.getType() != HitResult.Type.BLOCK;
-        if (armed) {
-            attackStrength = mc.player.getAttackStrengthScale(0.5F);
-            swingSound(mc);
-        }
+        if (armed) attackStrength = mc.player.getAttackStrengthScale(0.5F);
     }
-
-    /**
-     * El «zas» del tajo (1.3.70, sounds/combate, tools/trail_sounds.py): solo con un arma que deja estela y al golpear (no
-     * al picar). Más flojo si el golpe va sin cargar; el crítico (cayendo y cargado), el fuerte. Hachas y picos, más graves.
-     */
-    private static void swingSound(Minecraft mc) {
-        if (!TrailSettings.enabled || !TrailSettings.swing || !TrailSettings.sound || TrailSettings.soundVolume <= 0) return;
-        ItemStack main = mc.player.getMainHandItem();
-        if (main.isEmpty() || !allowed(main)) return;
-        float strength = attackStrength;
-        boolean crit = strength > 0.9F && mc.player.fallDistance > 0 && !mc.player.onGround() && !mc.player.onClimbable()
-                && !mc.player.isInWater();
-        float volume = TrailSettings.soundVolume / 100F * (0.35F + 0.65F * strength) * (crit ? 1F : 0.8F);
-        int c = CATEGORY.computeIfAbsent(main.getItem(), i -> category(main));
-        float pitch = (c == AXE ? 0.86F : c == PICKAXE ? 0.93F : c == SWORD ? 1.04F : 1F) * (0.94F + RANDOM.nextFloat() * 0.12F);
-        ResourceLocation id = new ResourceLocation(TFClient.MOD_ID, crit ? "combate.tajo_fuerte" : "combate.tajo");
-        mc.getSoundManager().play(new SimpleSoundInstance(id, SoundSource.PLAYERS, volume, pitch, RandomSource.create(), false, 0,
-                SoundInstance.Attenuation.NONE, 0, 0, 0, true));
-    }
-
-    private static final java.util.Random RANDOM = new java.util.Random();
 
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload event) {
@@ -254,12 +219,9 @@ public final class TrailClient {
     private static void doCapture(LivingEntity entity, ItemStack stack, ItemDisplayContext ctx, boolean left, PoseStack pose) {
         boolean first = ctx.firstPerson();
         if (!first && ctx != ItemDisplayContext.THIRD_PERSON_LEFT_HAND && ctx != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) return;
+        if (!first && !worldPass) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        // Punchy (1.3.69) pinta el arma de la primera persona con el modelo de tercera persona (la cuelga de su brazo
-        // 3D): en el pase de las manos, lo del propio jugador es primera persona (antes no se apuntaba y no salía estela)
-        if (!first && handsPass && entity == mc.player) first = true;
-        if (!first && !worldPass) return;
         boolean self = entity == mc.player;
         if (!first && self && mc.options.getCameraType().isFirstPerson()) return; // ya la lleva la primera persona
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();

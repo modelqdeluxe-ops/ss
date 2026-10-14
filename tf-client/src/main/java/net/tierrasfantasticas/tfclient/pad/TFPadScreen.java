@@ -534,17 +534,17 @@ public final class TFPadScreen extends Screen {
         return (my * gs - gy - liftReal()) / cs;
     }
 
+    /** ¿Está el pad pintando en lote ahora mismo? (GuiGraphicsMixin: así deja el estado como el pad lo espera). */
+    public static boolean drawing() {
+        return PadSkin.batching;
+    }
+
     /**
      * 1.3.67 (fluidez): todo el pad se pinta en lote (drawManaged): rectángulos, degradados, luces y textos seguidos van
      * juntos a la tarjeta gráfica en vez de uno a uno (antes eran miles de llamadas por fotograma). El orden no cambia:
      * las texturas y los objetos vacían el lote antes de pintarse (GuiGraphicsMixin) y los recortes también. Las mismas
      * animaciones, menos trabajo.
      */
-    /** ¿Está el pad pintando en lote ahora mismo? (GuiGraphicsMixin: así deja el estado como el pad lo espera). */
-    public static boolean drawing() {
-        return PadSkin.batching;
-    }
-
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
