@@ -324,6 +324,25 @@ public class ArPuente implements GLSurfaceView.Renderer {
         }
     }
 
+    /* la altura del teléfono (m) sobre cada plano horizontal que ARCore sigue (de 0.3 a 3 m debajo), sin repetidos */
+    private org.json.JSONArray alturas(Camera cam) {
+        org.json.JSONArray L = new org.json.JSONArray();
+        try {
+            float y = cam.getPose().ty();
+            java.util.ArrayList<Float> v = new java.util.ArrayList<Float>();
+            for (Plane p : session.getAllTrackables(Plane.class)) {
+                if (p.getTrackingState() != TrackingState.TRACKING || p.getSubsumedBy() != null || p.getType() != Plane.Type.HORIZONTAL_UPWARD_FACING) continue;
+                float h = y - p.getCenterPose().ty();
+                if (h < .3f || h > 3f) continue;
+                boolean rep = false; for (float x : v) if (Math.abs(x - h) < .05f) { rep = true; break; }
+                if (!rep) v.add(h);
+            }
+            java.util.Collections.sort(v);
+            for (float h : v) L.put((double) h);
+        } catch (Throwable e) { }
+        return L;
+    }
+
     /* lo común de un cuadro y de una foto: inclinación, suelo, intrínsecos (para una imagen de W×H escalada por k y
        girada rot grados) y la profundidad con ese encuadre (GW de ancho) */
     private void datos(JSONObject o, Frame f, Camera cam, int W, int H, int[] rc, float k, int rot, int GW) throws Exception {
@@ -334,7 +353,11 @@ public class ArPuente implements GLSurfaceView.Renderer {
         float[] z = ps.getZAxis(), x = ps.getXAxis();
         o.put("elev", Math.toDegrees(Math.asin(Math.max(-1, Math.min(1, -z[1])))));
         o.put("ladeo", Math.toDegrees(Math.asin(Math.max(-1, Math.min(1, x[1])))));
-        if (sigue) { float a = alturaSuelo(cam); if (a > 0) o.put("alto", a); }
+        if (sigue) {
+            float a = alturaSuelo(cam); if (a > 0) o.put("alto", a);
+            // todos los planos horizontales debajo (el piso de uno, el de la manga o el corral): la página elige
+            org.json.JSONArray L = alturas(cam); if (L.length() > 1) o.put("altos", L);
+        }
         CameraIntrinsics ci = cam.getImageIntrinsics();
         float[] fl = ci.getFocalLength(), pp = ci.getPrincipalPoint();
         int[] dim = ci.getImageDimensions();

@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.41; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.42; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.41) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.41) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.42) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.42) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -583,6 +583,27 @@ persona de referencia.
 - **Por detrás**: `ang.max` 1.25 (el animal voltea la cabeza) y la banda del ancho de la grupa 5–45 % del alto.
 - **Barandas**: el cierre del modelo preciso es de 3.5 % del lado (rápido 2.5 %).
 - **ARCore**: imagen de la cámara hasta 2560 de ancho (antes 1920): el zoom 3–4× tiene más detalle.
+
+**5.0.0-beta.42: lo que enseñaron los datos reales (Finca 14 oct: 55 mediciones, 51 con báscula, novillos de 204–336 kg
+en corral, detrás de barandas, Samsung S938B).**
+- La escala estaba casi al doble: alzadas de 180–450 cm. Causa: el suelo de ARCore era de otro plano (el animal
+  estaba en una manga o corral elevado respecto de donde estaba el dueño; `alturaSuelo` toma el plano más bajo): la
+  distancia por suelo salía 1.5–8 veces la de la profundidad. La profundidad suavizada también fallaba (se mezcla con
+  las barandas); la cruda (puntos de confianza) daba alzadas creíbles (100–135 cm). En unos pocos la profundidad solo
+  vio la baranda (1.1–1.2 m) y el animal detrás no.
+- Correlación del peso de la cámara con la báscula: 0.06 (antes) — la cámara no aportaba. Con la regla nueva, en 34 de
+  51 mediciones con escala creíble: error medio 17 %, mediana 13.5 % (calibrado). El rango de pesos es estrecho (±10 %):
+  adivinar el promedio da 8.6 %. Para que la cámara sirva hace falta bajar el error de la distancia.
+- Regla nueva en `escalaAR`: orden combinado (profundidad cruda + suelo de acuerdo ±15 %), profundidad cruda, suelo,
+  profundidad suavizada (`Dsuave`), mira; ninguna se usa si el alto real de la caja sale fuera de 70–210 cm
+  (`creible`; personas 100–230); `o.descartadas`. El suelo usa el plano (de `meta.altos`, todos los planos horizontales
+  que manda ArPuente) que da una distancia de acuerdo con la profundidad cruda; sin ella, el más bajo creíble. Las
+  patas: si las pezuñas de los puntos del cuerpo (AP-10K 7, 10, 13, 16) quedan más abajo que la silueta (patas oscuras
+  o tapadas), se usan (`o.pezunas`).
+- `reescalar(r)` al abrir: las mediciones viejas con `geo.ar` se vuelven a escalar con la regla (alzada creíble 85–170)
+  desde lo guardado (`geo.ar.costado`: prof, profTipo, suelo, Z): lineales ×f, áreas ×f², pred ×f², kg ×f^(2b); lo de
+  antes en `esc.antes`. Sin distancia creíble: `dudosa` (fuera de la calibración). Las nuevas llevan `esc.v = 2`.
+- Calibración (`ajustar`): con 6 pesos o más se quitan los que el modelo erró más de 1.6 veces de lo típico.
 
 ---
 

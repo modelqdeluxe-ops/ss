@@ -86,13 +86,33 @@ function guardarReg(nuevo){
   const viejo=(S.config.pesoCam||{}).reg;
   if(viejo&&viejo.length){const ya=new Set(L.map(x=>x.id));for(const x of viejo)if(!ya.has(x.id)){L.push(x);try{await REGDB.put(x);}catch(e){}}}
   L.sort((a,b)=>(a.ts||0)-(b.ts||0));const nuevos=REGM.filter(x=>!L.some(z=>z.id===x.id));REGM=L.concat(nuevos);REG_LISTO=true;
+  try{const cam=REGM.map(reescalar),n=cam.filter((x,i)=>x!==REGM[i]).length;if(n){guardarPC({reg:cam});console.info('reescaladas',n);}}catch(e){console.warn(e);}
   if(viejo){const {reg,...o}=PC();put('ajustes','finca',{...S.config,pesoCam:o});}else changed();})();
+/* las mediciones de ganado con ARCore de antes de beta.42 (escala 1): la distancia se vuelve a elegir con la regla de
+   las mediciones reales en corral (combinado, profundidad cruda, suelo, profundidad suavizada; nada que dé una alzada
+   imposible, fuera de 85–170 cm) y las medidas se reescalan (lineales ×f, áreas ×f², el peso del modelo ×f²). Lo de
+   antes queda en esc.antes. Sin ninguna distancia creíble: dudosa (no entra en la calibración). */
+function reescalar(r){
+  if(!r||r.modo!=='ganado'||r.esc||!r.geo||!r.geo.ar||!r.geo.ar.costado||!(r.dims&&r.dims.WH>0))return r;
+  const c=r.geo.ar.costado,Z=c.Z;if(!(Z>0))return r;
+  const mix=c.profTipo==='cruda'&&c.prof>0&&c.suelo>0&&Math.abs(c.prof/c.suelo-1)<=.15?(c.prof+c.suelo)/2:null;
+  const cand=[['mix',mix],['prof',c.profTipo==='cruda'?c.prof:null],['suelo',c.suelo],['suave',c.profTipo==='suave'?c.prof:null],['centro',c.centro]];
+  const el=cand.find(([,D])=>D>0&&r.dims.WH*D/Z>=85&&r.dims.WH*D/Z<=170);
+  if(!el)return {...r,dudosa:true,esc:{v:2,f:1}};
+  const f=el[1]/Z;if(Math.abs(f-1)<.005)return {...r,esc:{v:2,f:1,metodo:'ar-'+el[0]}};
+  const L1=v=>v>0?Math.round(v*f*100)/100:v,dims={...r.dims};for(const k of ['WH','WHs','WHr','CD','CDs','L','FM'])if(dims[k]>0)dims[k]=L1(dims[k]);
+  const mx=r.mx?Object.fromEntries(Object.entries(r.mx).map(([k,v])=>[k,typeof v==='number'?(/_cm2$/.test(k)?Math.round(v*f*f*100)/100:/_cm$/.test(k)?L1(v):v):v])):r.mx;
+  const b=r.b||1;
+  return {...r,dims,mx,largo:L1(r.largo),altoAnimal:L1(r.altoAnimal),ancho:L1(r.ancho),pred:r.pred>0?Math.round(r.pred*f*f*100)/100:r.pred,kg:r.kg>0?Math.round(r.kg*Math.pow(f,2*b)*100)/100:r.kg,
+    geo:{...r.geo,metodo:'ar-'+el[0],costado:r.geo.costado?{...r.geo.costado,D:el[1]/100}:r.geo.costado,ar:{...r.geo.ar,costado:{...c,Z:el[1],metodo:'ar-'+el[0]}}},
+    esc:{v:2,f:Math.round(f*1000)/1000,metodo:'ar-'+el[0],antes:{pred:r.pred,kg:r.kg,WH:r.dims.WH,CD:r.dims.CD,Z}}};
+}
 function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
     puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,estimadas:r.estimadas||null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
-    tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,lote:r.lote||null,aid:r.aid||null,HG:q(r.HG),predFoto:q(r.predFoto),camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
+    esc:r.esc||null,tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,lote:r.lote||null,aid:r.aid||null,HG:q(r.HG),predFoto:q(r.predFoto),camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     geo:r.geo||null,mx:r.mx?Object.fromEntries(Object.entries(r.mx).map(([a,b])=>[a,a.startsWith('forma')?(isFinite(b)?Math.round(b*1e4)/1e4:null):q(b)])):null,dq:r.q||null,cond:PC().labSes&&r.modo==='ganado'&&PC().labSes.def?{...PC().labSes.def}:null,ses:PC().labSes&&PC().labSes.n||null,cam:stats&&stats.cam||null,fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   // sin sesión ni báscula se guardan las últimas REG_MAX; las de una sesión o con báscula no se borran solas
   let R=REG().concat(rec),sobra=R.filter(x=>!x.ses&&!(x.real>0)).length-REG_MAX;
@@ -129,7 +149,7 @@ const baseDe=x=>x.v>=(x.modo==='persona'?5:7)&&x.pred>0?x.pred:0;
 const DIAS=(a,b)=>Math.round((Date.parse(a)-Date.parse(b))/864e5);
 const canalDe=x=>x.modo==='ganado'&&x.HG>0?'cinta':'foto';
 function etiquetas(modo,canal){
-  const R=REG().filter(x=>x.modo===modo&&baseDe(x)>0&&canalDe(x)===canal),E=[];
+  const R=REG().filter(x=>x.modo===modo&&baseDe(x)>0&&canalDe(x)===canal&&!x.dudosa),E=[];
   if(modo!=='ganado'){for(const x of R)if(x.real>0)E.push({L:baseDe(x),kg:x.real,w:1,id:x.id,src:'bascula'});return E;}
   let C=null;try{C=calc();}catch(e){}
   const L=id=>C&&C.L&&C.L[id],gan=id=>{const x=L(id);return x&&x.gdpUse>0&&x.gdpUse<3?x.gdpUse:1.1;};
@@ -157,6 +177,9 @@ function etiquetas(modo,canal){
 const calModo=(modo,canal='foto')=>etiquetas(modo,canal);
 const wmed=(v,w)=>{const o=v.map((x,i)=>[x,w[i]]).sort((a,b)=>a[0]-b[0]),t=w.reduce((a,b)=>a+b,0);let s=0;for(const [x,ww] of o){s+=ww;if(s>=t/2)return x;}return o.length?o[o.length-1][0]:0;};
 function ajustar(C,modo){
+  /* sin los datos atípicos: con 6 pesos o más, se quitan los que el modelo erró por más de 1.6 veces respecto de lo
+     típico (una foto que agarró otro animal, una escala imposible, un peso mal anotado); quedan anotados en n0 */
+  const n0=C.length;if(C.length>=6){const r=C.map(z=>Math.log(z.kg/z.L)),m=med(r),C2=C.filter((z,i)=>Math.abs(r[i]-m)<=Math.log(1.6));if(C2.length>=Math.max(4,C.length*.6))C=C2;}
   const n=C.length,M=MODOS[modo];if(!n)return {k:M.k,b:1,n:0};
   // b solo con los pesos de cada animal (los de grupo mezclan animales); k con todos, por su peso
   const I=C.filter(z=>!z.grupo),X=I.map(z=>Math.log(z.L)),Y=I.map(z=>Math.log(z.kg)),rango=X.length?Math.max(...X)-Math.min(...X):0;let b=1;
@@ -601,7 +624,7 @@ function combinar(modo,caps,alto,ropaK,tipo){
       const gd=T=>{const G=T.map(x=>geoT(x.t)).filter(Boolean);return G.length?{D:med(G.map(g=>g.D)),a:med(G.map(g=>g.a)),elev:med(T.map(x=>x.t.ori&&x.t.ori.elev).filter(isFinite)),horiz:med(T.map(x=>x.t.ori&&x.t.ori.horiz).filter(isFinite))}:null;};
       const kRef=T=>{const v=T.map(x=>x.t.med&&x.t.med.refAlto>0?ref/x.t.med.refAlto:NaN).filter(isFinite);return v.length?med(v):null;};
       const arT=T=>{const A=T.map(x=>x.t.ar).filter(Boolean);if(!A.length)return null;const mm=k=>{const v=A.map(a=>a[k]).filter(z=>z!=null&&isFinite(z)&&(k==='elev'||z>0));return v.length?med(v):null;};
-        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),mix:mm('Zmix'),pie:mm('pie'),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev'),profEje:mm('prof'),profTipo:(A.find(a=>a.profTipo)||{}).profTipo||null,cmpx:mm('cmpx'),corr:mm('corr')};};
+        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),mix:mm('Zmix'),suave:mm('Zsuave'),pie:mm('pie'),hCaja:mm('h'+String(A[0].metodo||'').replace('ar-','')),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev'),profEje:mm('prof'),profTipo:(A.find(a=>a.profTipo)||{}).profTipo||null,cmpx:mm('cmpx'),corr:mm('corr')};};
       const arC=arT(TP);
       r.geo={ar:arC?{costado:arC,atras:arT(TS)}:null,metodo:arC?arC.metodo:TP.some(x=>geoT(x.t))?'suelo':TP.some(x=>x.t.med&&x.t.med.refAlto>0)&&isFinite(ref)?'persona':null,h:arC&&arC.alto?Math.round(arC.alto):PC().altTel||null,fov:fovTel(),costado:arC?{D:arC.Z/100,elev:arC.elev}:gd(TP),atras:gd(TS),
         kCostado:med(TP.map(x=>x.k).filter(isFinite)),kAtras:med(TS.map(x=>x.k).filter(isFinite)),kPersona:kRef(TP)};
@@ -828,22 +851,39 @@ function escalaAR(c,t,modo,vista){
   /* cada método da la distancia horizontal D (cm) del teléfono al plano del cuerpo; la escala sale de D con la
      perspectiva exacta (CamVivo.escPlano: el alto real de la caja entre sus píxeles) */
   const mc=MITAD_CUERPO[modo]||0,ang=y=>Math.atan((y-cy)/fy);
-  // el suelo de ARCore: la altura del teléfono y el ángulo hasta las patas
-  if(o.alto>0&&isFinite(yP)){const a=p+ang(yP);if(a>2*Math.PI/180&&a<80*Math.PI/180){o.pie=o.alto/Math.tan(a);o.suelo=o.pie+pieExtra(modo,vista);}}
+  /* las patas: lo más bajo de la silueta, o las pezuñas de los puntos del cuerpo si quedan más abajo (patas oscuras
+     contra la sombra o tapadas por la baranda de abajo: la silueta no llega al suelo) */
+  let yPie=yP;
+  if(modo==='ganado'&&t.kp&&isFinite(yP)&&isFinite(yT)){const K=t.kp;let m=-1;for(const i of [7,10,13,16])if(K[3*i+2]>=.35&&K[3*i+1]>m)m=K[3*i+1];
+    if(m>yP&&m<=yP+.15*(yP-yT)){yPie=m;o.pezunas=true;}}
+  // la altura real de la caja (cm) con una distancia D: para descartar distancias imposibles
+  const altoCaja=D=>{const kk=window.CamVivo&&CamVivo.escPlano?CamVivo.escPlano(D,p,yT,yPie,cy,fy):D/fx;return kk>0?kk*(yPie-yT):null;};
+  const [hMin,hMax]=modo==='persona'?[100,230]:[70,210],creible=D=>{const h=D>0?altoCaja(D):null;return h!=null&&h>=hMin&&h<=hMax;};
   // la profundidad (a lo largo del eje de la cámara) en las filas del cuerpo, más medio cuerpo, a horizontal
   if(o.prof>0){const b=ang(o.profY);o.Dprof=(o.prof+mc)*Math.cos(p+b)/Math.cos(b);}
+  /* el suelo de ARCore: la altura del teléfono sobre un plano y el ángulo hasta las patas. ARCore puede encontrar
+     varios planos (el piso donde está uno, el de la manga o el corral, más alto o más bajo): se usa el que da una
+     distancia de acuerdo con la profundidad; sin profundidad, el más bajo si da un animal creíble, si no otro que sí */
+  const altos=[...new Set([c.alto,...(c.altos||[])].filter(a=>a>0).map(a=>Math.round(a*1000)/1000))],aP=p+ang(yPie);
+  if(altos.length&&isFinite(yPie)&&aP>2*Math.PI/180&&aP<80*Math.PI/180){const dS=a=>a*100/Math.tan(aP)+pieExtra(modo,vista);
+    let elegido=altos[0];
+    if(o.Dprof>0&&o.profTipo==='cruda'&&creible(o.Dprof))elegido=altos.reduce((b,a)=>Math.abs(dS(a)-o.Dprof)<Math.abs(dS(b)-o.Dprof)?a:b,altos[0]);
+    else if(!creible(dS(altos[0])))elegido=altos.find(a=>creible(dS(a)))||altos[0];
+    o.alto=elegido*100;o.pie=o.alto/Math.tan(aP);o.suelo=dS(elegido);o.nPlanos=altos.length;}
   if(o.centro>0)o.Dcentro=(o.centro+mc)*Math.cos(p);
   o.Dsuelo=o.suelo>0?o.suelo:null;o.Dprof=o.Dprof>0?o.Dprof:null;o.Dcentro=o.Dcentro>0?o.Dcentro:null;
-  // combinado: si la profundidad y el suelo están de acuerdo (±15 %), el promedio (dos medidas independientes: menos error)
-  o.Dmix=o.Dsuelo&&o.Dprof&&Math.abs(o.Dprof/o.Dsuelo-1)<=.15?(o.Dsuelo+o.Dprof)/2:null;
-  const esc=D=>{if(!(D>0))return null;const kk=window.CamVivo&&CamVivo.escPlano?CamVivo.escPlano(D,p,yT,yP,cy,fy):null;return kk||D/fx;};
-  for(const m of ['prof','suelo','centro','mix']){o['Z'+m]=o['D'+m];o['k'+m]=esc(o['D'+m]);}
-  /* el método: el orden que salió de las pruebas con persona (PC().arPref; sin pruebas, el suelo primero). La
-     profundidad no se usa si discrepa más de 15 % del suelo. Si las pruebas dieron un sesgo constante (PC().arCorr,
-     real/medido), se corrige y queda anotado. Solo cuentan las pruebas con esta geometría (PC().arG = 3). */
-  const ok={mix:!!o.Dmix,prof:o.Dprof&&!(o.Dsuelo&&Math.abs(o.Dprof/o.Dsuelo-1)>.15),suelo:!!o.Dsuelo,centro:!!o.Dcentro&&!(o.Dsuelo&&Math.abs(o.Dcentro/o.Dsuelo-1)>.15)};
-  const G2=PC().arG===3,pref=((G2&&PC().arPref)||['mix','suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,cc=G2&&PC().arCorr?PC().arCorr[m]:null,corr=m&&cc>.85&&cc<1.15?cc:1;
-  o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['D'+m]:null;o.cmpx=m&&o['k'+m]?o['k'+m]*corr:null;
+  // combinado: si la profundidad cruda y el suelo están de acuerdo (±15 %), el promedio (dos medidas independientes)
+  o.Dmix=o.Dsuelo&&o.Dprof&&o.profTipo==='cruda'&&Math.abs(o.Dprof/o.Dsuelo-1)<=.15?(o.Dsuelo+o.Dprof)/2:null;
+  o.Dsuave=o.profTipo==='suave'?o.Dprof:null;if(o.profTipo==='suave')o.Dprof=null;
+  const esc=D=>{if(!(D>0))return null;const kk=window.CamVivo&&CamVivo.escPlano?CamVivo.escPlano(D,p,yT,yPie,cy,fy):null;return kk||D/fx;};
+  for(const m of ['prof','suelo','centro','mix','suave']){o['Z'+m]=o['D'+m];o['k'+m]=esc(o['D'+m]);o['h'+m]=o['D'+m]?altoCaja(o['D'+m]):null;}
+  /* el método, en este orden (lo que salió de las mediciones reales en corral: el suelo puede ser de otro plano y la
+     profundidad suavizada se mezcla con las barandas): combinado, profundidad cruda, suelo, profundidad suavizada, mira.
+     Ninguno se usa si da un animal de tamaño imposible (alto de la caja fuera de 70–210 cm en ganado). Con pruebas
+     con persona (PC().arPref, arG = 3) manda su orden; su sesgo (arCorr) se corrige y queda anotado. */
+  const ok={};for(const m of ['mix','prof','suelo','suave','centro'])ok[m]=!!o['D'+m]&&creible(o['D'+m]);
+  const G2=PC().arG===3,base=['mix','prof','suelo','suave','centro'],pref=((G2&&PC().arPref)||base).concat(base).filter((m,i,a)=>a.indexOf(m)===i&&ok[m]),m=pref[0]||null,cc=G2&&PC().arCorr?PC().arCorr[m]:null,corr=m&&cc>.85&&cc<1.15?cc:1;
+  o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['D'+m]:null;o.cmpx=m&&o['k'+m]?o['k'+m]*corr:null;o.descartadas=base.filter(x=>o['D'+x]&&!ok[x]);
   return o;
 }
 /* ---------- medir ---------- */
@@ -856,7 +896,7 @@ async function medirVivo(){
   const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};if(modo==='ganado'){const x=loteSel();r.lote=x?x.id:null;
     // laboratorio, "repetir el mismo animal": el arete de la medición anterior del lote (30 minutos)
     if(PC().labMismo){const u=REG().filter(z=>z.modo==='ganado'&&z.aid&&z.lote===r.lote).slice(-1)[0];if(u&&Date.now()-u.ts<30*60e3)r.aid=u.aid;}}
-  r.id=registrar(r,r.stats);guardarFotos(r.id,caps,r.dbg);
+  if(modo==='ganado')r.esc={v:2,f:1,nueva:true};r.id=registrar(r,r.stats);guardarFotos(r.id,caps,r.dbg);
   if(modo==='ganado'&&window.Enlace&&Enlace.conectados().length)Enlace.avisarResultado(wtxt(r.kg));return r;
 }
 const arError=e=>/no-instalado/.test(e)?'Sin "Servicios de Google Play para RA" no se puede usar ARCore. Se mide con el sensor de movimiento.':/no-compatible/.test(e)?'Este teléfono no es compatible con ARCore. Se mide con el sensor de movimiento.':/sin-permiso/.test(e)?'Da permiso de cámara a la app.':'No se pudo abrir ARCore.';
