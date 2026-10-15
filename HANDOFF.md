@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **14 de octubre de 2026** (TF Client **1.3.81**: los 5 jefes reconvertidos, cabezas como ModelEngine 4, el resto de ModelEngine 4 —correas, cabezas/colas/IK también en el servidor, rootmotion…— y lo que faltaba de MythicMobs sin tocar el mundo; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **15 de octubre de 2026** (TF Client **1.3.82**: 12 jefes nuevos de LittleRoom —ya son 17—, la IA de MythicMobs con el golpe de Minecraft y lo que le faltaba al motor para los packs nuevos; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,7 +55,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (14 oct 2026, TF Client 1.3.81) — lee esto primero
+### CHECKPOINT (15 oct 2026, TF Client 1.3.82) — lee esto primero
+
+**1.3.82 (15 oct)**: el dueño mandó **64 packs de jefes** nuevos (13 mensajes) tras pedir «que esto no rompa a los
+bosses actuales y venideros» (se hizo la red de seguridad: `tools/bosses/verificar.py` + `referencias/`, que corre en GitHub Actions).
+Hecho: el motor con la **IA de MythicMobs** (AIGoalSelectors/AITargetSelectors sobre la de su
+tipo de Minecraft, el golpe de Minecraft con `~onAttack`, NoAI de verdad, el ghast, `bindhitbox`, relevos…:
+`tf-client/JEFES.md` §3.8) y **12 jefes de LittleRoom**: Rey Calabaza, El Archivista, Eldric, Druida Boreal (+ Mamut de
+relevo), Contemplador, Arconte Astral, Kazk, Guardián Hueco, Ignevar, Mecha Piglin, Mega Guardián y Tormenta del
+Wither; cada uno con su referencia en `verificar.py`. Los 5 de antes, iguales (la Hidra gana las partículas de sangre
+de su raytrace, que no salían). **Pendiente** (`JEFES.md` §11.0): **Pohaku** (necesita su escenario: preguntar al
+dueño) y los otros **51 packs** (no están en el repo: estaban en el contenedor de la sesión; si se pierden, pedírselos
+al dueño), por tandas, con lo que marque el auditor (IA de tipo: arcos de esqueleto, vex, slime…; facciones; lo que
+toca el inventario del jugador: preguntar). Avisar al dueño: el jar crece (~29 MB de jefes ahora) y las licencias de
+LittleRoom dicen que no se puede poner a descargar en sitios de terceros.
+
+### CHECKPOINT anterior (14 oct 2026, TF Client 1.3.81)
 
 **Estado**: última versión publicada **1.3.81** (los 5 jefes reconvertidos con bezier; cabezas `h_`/`hi_` como
 ModelEngine 4; el resto de ModelEngine 4 y lo que faltaba de MythicMobs sin tocar el mundo: `tf-client/JEFES.md` §3.2,
