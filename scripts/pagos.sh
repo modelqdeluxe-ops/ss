@@ -32,9 +32,9 @@ java -jar "$TOOLS/apktool.jar" d -s -f "$TMP/smali.apk" -o "$TMP/dec" >/dev/null
 # 2. Gradle
 D="$TMP/donante"; mkdir -p "$D/java/hn/hato/ganadero"
 cp "$RAIZ"/scripts/donante/*.kts "$RAIZ/scripts/donante/gradle.properties" "$D/"
-# DONANTE=ar (Rumentis Beta): ARCore en vez de Google Play Billing; la pantalla de medición y su puente
+# DONANTE=ar (Rumentis Beta): ARCore en vez de Google Play Billing (el puente ArPuente)
 DON="${DONANTE:-pagos}"
-if [ "$DON" = ar ]; then cp "$RAIZ/modelo/android/ArPuente.java" "$RAIZ/modelo/android/ArActivity.java" "$D/java/hn/hato/ganadero/"
+if [ "$DON" = ar ]; then cp "$RAIZ/modelo/android/ArPuente.java" "$D/java/hn/hato/ganadero/"
 else cp "$RAIZ/modelo/android/Pagos.java" "$D/java/hn/hato/ganadero/"; fi
 python3 "$RAIZ/scripts/donante/preparar.py" "$APP" "$D" "$TMP/dec/res/values/public.xml"
 if [ "$DON" = ar ]; then python3 - "$D/manifiesto/AndroidManifest.xml" <<'PY'
@@ -42,10 +42,8 @@ import sys, xml.etree.ElementTree as ET
 A='{http://schemas.android.com/apk/res/android}'
 ET.register_namespace('android','http://schemas.android.com/apk/res/android')
 t=ET.parse(sys.argv[1]);m=t.getroot();ap=m.find('application')
-# ARCore opcional (la app funciona sin él) y la pantalla de medición
+# ARCore opcional (la app funciona sin él; corre por debajo de la cámara de la página)
 md=ET.SubElement(ap,'meta-data');md.set(A+'name','com.google.ar.core');md.set(A+'value','optional')
-ac=ET.SubElement(ap,'activity');ac.set(A+'name','hn.hato.ganadero.ArActivity');ac.set(A+'exported','false')
-ac.set(A+'configChanges','orientation|screenSize|screenLayout|keyboardHidden');ac.set(A+'theme','@android:style/Theme.Black.NoTitleBar.Fullscreen')
 uf=ET.SubElement(m,'uses-feature');uf.set(A+'name','android.hardware.camera.ar');uf.set(A+'required','false')
 t.write(sys.argv[1],encoding='utf-8',xml_declaration=True)
 PY

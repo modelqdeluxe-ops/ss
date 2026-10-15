@@ -168,3 +168,12 @@ Estatura real	Real height	Altura real
 Alto de la silueta	Outline height	Altura da silhueta
 Con estas pruebas el ganado se mide con	With these tests cattle are measured with	Com estes testes o gado é medido com
 corrección	correction	correção
+Probar la medida	Test the measurement	Testar a medida
+Con ARCore (la distancia real con la cámara).	With ARCore (the real distance from the camera).	Com ARCore (a distância real da câmera).
+Este teléfono no tiene ARCore: se mide con el sensor de movimiento.	This phone has no ARCore: it measures with the motion sensor.	Este celular não tem ARCore: mede com o sensor de movimento.
+La persona de pie, completa de pies a cabeza, a {0} a {1} m. Mueve el teléfono despacio al principio para que ARCore reconozca el suelo; la foto se toma sola cuando la silueta esté verde.	The person standing, whole from head to toe, {0} to {1} m away. Move the phone slowly at first so ARCore recognizes the ground; the photo is taken by itself when the outline turns green.	A pessoa em pé, inteira da cabeça aos pés, a {0} a {1} m. Mova o celular devagar no começo para o ARCore reconhecer o chão; a foto é tirada sozinha quando a silhueta ficar verde.
+ARCore no arrancó: se mide con el sensor de movimiento.	ARCore did not start: measuring with the motion sensor.	O ARCore não iniciou: mede com o sensor de movimento.
+Instala "Servicios de Google Play para RA" y vuelve a medir. Mientras, se mide con el sensor de movimiento.	Install "Google Play Services for AR" and measure again. Meanwhile, it measures with the motion sensor.	Instale "Google Play Services para RA" e meça de novo. Enquanto isso, mede com o sensor de movimento.
+Apunta un momento al suelo para que ARCore lo encuentre	Point at the ground for a moment so ARCore finds it	Aponte para o chão por um momento para o ARCore encontrá-lo
+Mueve el teléfono despacio para que ARCore reconozca el lugar	Move the phone slowly so ARCore recognizes the place	Mova o celular devagar para o ARCore reconhecer o lugar
+No se pudo tomar la foto. Otra vez…	Could not take the photo. Again…	Não foi possível tirar a foto. De novo…

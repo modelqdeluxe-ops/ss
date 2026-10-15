@@ -18,7 +18,7 @@ import java.security.spec.X509EncodedKeySpec;
 /* Puentes extra para la WebView (se llama desde MainActivity.onCreate, junto al puente "Android"):
    - "Pagos": Google Play Billing. La clase Pagos y la biblioteca de Google van en un segundo dex que se agrega al
      compilar en GitHub Actions (scripts/pagos.sh). Si no está (compilación local), no hay puente y la app lo sabe.
-   - "Ar": la medición con ARCore de Rumentis Beta (ArPuente y ArActivity, que Gradle compila con com.google.ar:core;
+   - "Ar": la medición con ARCore de Rumentis Beta (ArPuente, por debajo de la cámara en vivo; Gradle lo compila con com.google.ar:core;
      scripts/pagos.sh con DONANTE=ar). Si no está, no hay puente.
    - "Cripto": comprueba la firma RSA de una compra de Google Play con la llave pública de la app (SHA1withRSA),
      para que la app del vaquero sepa que su licencia salió de una compra real.

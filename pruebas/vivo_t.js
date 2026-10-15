@@ -110,9 +110,9 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.click('[data-act="pcModo"][data-m="ganado"]');await p.waitForTimeout(300);assert.equal(await p.evaluate(()=>localStorage.getItem('rumentis-pc-modo')),'ganado');
  // el tipo de animal: por la raza del lote, o elegido (cambia el punto de partida del modelo v7)
  assert.deepEqual(await p.evaluate(()=>['Brangus','Brahman x','Angus','Holstein','criollo','',null].map(PesoCam.tipoDeRaza)),['cruce','cebu','euro','leche','cebu','',''],'tipo por la raza');
- assert.ok(await p.$('#pcTipo'),'elige el tipo de animal');assert.ok(await p.$('[data-act="pcEtapa"]'),'elige la etapa');
- await p.selectOption('#pcTipo','euro');await p.waitForTimeout(300);
- assert.equal(await p.evaluate(()=>{const t=S.config.pesoCam.tipos||{};const k=Object.keys(t)[0];return k&&t[k].g;}),'euro','tipo guardado en el lote');
+ // sin preguntas de tipo ni etapa: no se le pregunta al usuario lo que no sabe (el tipo sale de la raza del lote o es cruce)
+ assert.ok(!(await p.$('#pcTipo')),'no pregunta el tipo de animal');assert.ok(!(await p.$('[data-act="pcEtapa"]')),'no pregunta la etapa');
+ assert.ok(!/Distancia al animal|Sensor de movimiento/.test(await p.$eval('#app',e=>e.textContent)),'sin selector de método');
  await p.screenshot({path:'vivo_ganado.png',fullPage:true});
  const pxL=.6*960/359*359/200,LADO={f:'lado',x:.38,y:.9,h:269*(.6*960/359)},REF1={f:'frente',x:.83,y:.93,h:175*pxL};
  const pxA=.6*720/150,ATR={f:'atras',x:.4,y:.85,h:.6*720},REF2={f:'frente',x:.72,y:.9,h:175*pxA};
@@ -134,7 +134,7 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  // (modelo v7: alzada y fondo de pecho con los puntos del animal y el tipo de animal; el largo y el alto de la silueta
  // quedan en el registro)
  const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {geo:r.geo,pred:r.pred,kg:r.kg,dims:r.dims,mx:r.mx,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,etapa:r.etapa};});
- console.log('ganado v7',JSON.stringify(G));assert.equal(G.v,7);assert.equal(G.tipo,'euro','usa el tipo elegido');assert.equal(G.etapa,'adulto');
+ console.log('ganado v7',JSON.stringify(G));assert.equal(G.v,7);assert.ok(['euro','cruce','cebu','leche'].includes(G.tipo),'tipo automático');assert.equal(G.etapa,'adulto');
  // el mismo animal como cebú pesa e^(a cebú − a europeo) ≈ 0.62 veces
  const rc=await p.evaluate(()=>{const g=PesoCam.GANADO;return Math.exp(g.a.cebu-g.a.euro);});assert.ok(rc>.55&&rc<.7,'cebú más liviano a igual alzada');
  assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');

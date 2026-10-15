@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.34; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.35; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.34) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.34) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.35) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.35) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -440,7 +440,7 @@ no podemos dejar fijas cámaras, debemos estarnos moviendo… la app debe calcul
   distancia con la cámara en profundidad), que pide compilar la beta con Gradle y probar en el teléfono.
 
 **5.0.0-beta.33: ARCore.** El dueño: "pues mete arcore, y lo probamos con humano… esto debe quedar listo hoy".
-- **Nativo** (compila Gradle con `com.google.ar:core` 1.54; `scripts/pagos.sh` con `DONANTE=ar`, que
+- (beta.35: la pantalla `ArActivity` se quitó; ver abajo.) **Nativo** (compila Gradle con `com.google.ar:core` 1.54; `scripts/pagos.sh` con `DONANTE=ar`, que
   `scripts/variantes.sh` usa para Rumentis Beta; minSdk 24 en la beta): `modelo/android/ArActivity.java` (GLSurfaceView
   con la cámara, mira, sesión con Depth API automática, planos horizontales, la cámara con la imagen CPU más grande ≤
   1920; por cada paso guarda la foto en files/fotos/ar-*.jpg derecha como en pantalla, la profundidad en mm girada igual,
@@ -468,6 +468,30 @@ ArActivity arma una rejilla con el encuadre de la foto y lee la profundidad en `
 pruebas, el suelo) y corrige su sesgo (`PC().arCorr`, mediana de real/medido, entre 0.8 y 1.25), que queda en
 `geo.ar.*.corr`. La profundidad no se usa si discrepa >20 % del suelo. Cada prueba guarda la foto con la silueta
 (`pcp-<ts>`) y se abre en el laboratorio.
+
+**5.0.0-beta.35: ARCore dentro de la cámara en vivo** (el dueño: "en tiempo real debo ver tanto la silueta perfecta, el
+punto para la distancia… Arcore… va integrado en tiempo real con la detección"; la pantalla aparte se abría en
+horizontal con la mira gigante y los botones tapados). Ya no hay `ArActivity` ni pantalla aparte:
+- `ArPuente.java` es el motor: un `GLSurfaceView` de 2×2 px detrás del WebView (ARCore necesita una textura GL) con la
+  sesión (Depth automática, planos horizontales, la imagen CPU más grande ≤ 1920). API JS "Ar": `estado()`,
+  `iniciar(json)` → `window.arIniciado({ok,profundidad}|{instalar}|{error})`; `otro()` → `window.arCuadro(b64 jpeg
+  480 px, meta)` (un cuadro por llamada, la página pide el siguiente al dibujarlo); `foto()` → `window.arFoto(json)`
+  (foto completa en files/fotos/ar-*.jpg y su meta); `detener()`. `meta`: W, H, fx, fy, cx, cy (de la imagen ya
+  girada derecha), elev, ladeo, alto (m sobre el suelo), sigue (tracking), rot y `prof` {w, h, mm base64 Uint16} con la
+  profundidad alineada a la imagen (`TEXTURE_NORMALIZED`). Pausa y reanuda con el ciclo de la actividad.
+- `CamVivo.abrir({ar:true})` (camvivo.js): con ARCore, el video de la cámara en vivo sale de los cuadros de ARCore (un
+  canvas → `captureStream`), así la silueta, los puntos, la pastilla de distancia (`distAR`: altura de ARCore e
+  inclinación hasta el pie de la caja) y la foto automática en verde son los mismos de siempre; además el verde espera a
+  que ARCore siga el lugar y conozca el suelo o la profundidad (si no, "Apunta un momento al suelo…"). Al capturar pide
+  `foto()` por cada toma (`tomas[].arc`). Si ARCore no arranca (o no está instalado) sigue con la cámara normal y el
+  sensor de movimiento (aviso). `pesocam.js` calcula `t.ar=escalaAR(t.arc,…)` en `combinar`.
+- Fuera: el selector "Distancia al animal con: ARCore | Sensor", las preguntas de tipo de animal y etapa (el tipo sale
+  de la raza del lote o es cruce; adulto) y la altura del teléfono cuando hay ARCore. La prueba con persona tiene un
+  solo botón ("Probar la medida": con ARCore si el teléfono lo tiene, si no con el sensor).
+- `pruebas/ar_t.js` simula el puente (cuadros, foto completa y profundidad) y prueba la persona (175 → 175.9
+  profundidad, 174 suelo), la caída al sensor (176.2) y el ganado con 3 tomas (`ar-suelo`, Excel).
+- Para revisar en el teléfono: que la imagen salga derecha en vertical (`rotacionImagen`/`girar`), los cuadros por
+  segundo (el JPEG viaja en base64 por el puente) y que la foto automática llegue al ponerse verde.
 
 ---
 

@@ -202,9 +202,11 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   Curraleiro, Indonesia y terneros Simmental; todas CC BY 4.0): igual que v6 dentro de la raza (7.9 %) y, sin
   calibrar, 8–17 % en otras razas del mismo tipo (v6 daba 50–120 % en cebú y criollos). La calibración de ganado deja
   b entre 0.4 y 1.15. Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
-- **ARCore** (beta.33): `modelo/android/ArActivity.java` + `ArPuente.java` (puente "Ar"), compilados por Gradle con
-  `com.google.ar:core` (`scripts/pagos.sh` con `DONANTE=ar`): la distancia al animal con la profundidad de la cámara y el
-  suelo que reconoce ARCore. Prueba con persona en el laboratorio (estatura medida contra la real).
+- **ARCore** (beta.35): `modelo/android/ArPuente.java` (puente "Ar"), compilado por Gradle con `com.google.ar:core`
+  (`scripts/pagos.sh` con `DONANTE=ar`), corre por debajo de la misma cámara en vivo: la silueta, los puntos, la
+  distancia y la foto automática de siempre, con la distancia al animal por la profundidad de la cámara y el suelo que
+  reconoce ARCore. Sin ARCore, el sensor de movimiento. Prueba con persona en el laboratorio (estatura medida contra la
+  real).
 - **Recolección en la finca** (`pclab.js`, beta.29–30; solo ganado, registro sin límite, áreas y distancias de la silueta): para pesar ganado al azar con báscula y cámara y ajustar el
   modelo. Sin lote ni arete (cada animal recibe un número), todas las tomas con un solo teléfono (costado, por detrás,
   otro costado y, si se quiere, desde arriba), ficha por animal con su peso de báscula, foto a resolución completa,

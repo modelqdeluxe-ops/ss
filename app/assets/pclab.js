@@ -289,8 +289,8 @@ function bloquePrueba(){
   const L=PRU(),ar=P.hayAR&&P.hayAR(),st=MET_P.map(([k,t])=>{const e=L.map(x=>x.medido&&x.medido[k]>0?x.medido[k]/x.real-1:NaN).filter(esNum);return e.length?[t,e.length,'±'+pc(prom(e.map(Math.abs))),pcs(prom(e))]:null;}).filter(Boolean);
   return `<section class="sec">${secH('Probar la medida con una persona',L.length||'')}<div class="card pad lab-c">
     <p class="hint" style="margin:0">Mide a una persona de estatura conocida: la app la calcula con la misma escala que da los centímetros del animal. El error de la estatura es el error de la escala; en el peso, cerca del doble.</p>
-    <div class="pc-acts lab-acts">${ar?`<button type="button" class="btn pri" data-act="labPrueba" data-v="ar">Probar con ARCore</button>`:''}<button type="button" class="btn${ar?'':' pri'}" data-act="labPrueba" data-v="sensor">Probar con el sensor de movimiento</button></div>
-    ${ar?'':`<p class="hint" style="margin:0">${P.arEstado&&P.arEstado()==='no'?'Este teléfono no tiene ARCore (o esta versión de la app no lo trae).':''}</p>`}
+    <button type="button" class="btn pri full" data-act="labPrueba" data-v="${ar?'ar':'sensor'}">Probar la medida</button>
+    <p class="hint" style="margin:0">${ar?'Con ARCore (la distancia real con la cámara).':'Este teléfono no tiene ARCore: se mide con el sensor de movimiento.'}</p>
     ${st.length?tabla(['Método','n','error','sesgo'],st):''}
     ${PCc().arPref&&PCc().arCorr?`<p class="hint" style="margin:0"><span>Con estas pruebas el ganado se mide con</span> <b>${(MET_P.find(m=>m[0]===PCc().arPref[0])||[0,''])[1]}</b>${PCc().arCorr[PCc().arPref[0]]?` · <span>corrección</span> <b data-no-tr>×${nf(PCc().arCorr[PCc().arPref[0]],3)}</b>`:''}.</p>`:''}
     ${L.length?`<div class="rows">${L.slice(-6).reverse().map(x=>`<div class="row pc-reg" data-act="labPruebaVer" data-ts="${x.ts}" role="button">${x.foto?`<img class="pc-th" data-foto="${x.foto}" alt="">`:''}<div class="tx"><b><span>Real</span> <span data-no-tr>${nf(x.real)} cm</span></b><span>${MET_P.filter(([k])=>x.medido&&x.medido[k]>0).map(([k,t])=>`<span>${t}</span> <span data-no-tr>${nf(x.medido[k],1)} cm (${pcs(x.medido[k]/x.real-1)})</span>`).join(' · ')}${x.D?` · <span>a</span> <span data-no-tr>${nf(x.D,2)} m</span>`:''}</span></div></div>`).join('')}</div>
@@ -298,13 +298,13 @@ function bloquePrueba(){
 }
 let PRUEBA=null;
 ACTS.labPrueba=el=>{const via=el.dataset.v;PRUEBA=via;
-  openSheet(shHead('Prueba con una persona',via==='ar'?'ARCore':'Sensor de movimiento')+formWrap('labPrueba',`<p class="hint">${via==='ar'?'Se abre la cámara de ARCore: mueve el teléfono despacio hasta que reconozca el lugar (que se vea el suelo), pon la mira sobre el pecho de la persona y toma la foto. Que se vea completa, de pies a cabeza.':'La persona de pie, completa de pies a cabeza, a 3 a 6 m. Sostén el teléfono a la altura que anotaste; la foto se toma sola cuando la silueta esté verde.'}</p>
+  openSheet(shHead('Prueba con una persona',via==='ar'?'ARCore':'Sensor de movimiento')+formWrap('labPrueba',`<p class="hint">${via==='ar'?'La persona de pie, completa de pies a cabeza, a 2 a 6 m. Mueve el teléfono despacio al principio para que ARCore reconozca el suelo; la foto se toma sola cuando la silueta esté verde.':'La persona de pie, completa de pies a cabeza, a 3 a 6 m. Sostén el teléfono a la altura que anotaste; la foto se toma sola cuando la silueta esté verde.'}</p>
     ${q('Estatura real de la persona, con zapatos',inp('real','',{unit:'cm',xl:true,ph:'170'}),'Mídela con cinta, con los zapatos que tiene puestos.')}
     ${via==='sensor'?q('Altura del teléfono',inp('alt',PCc().altTel?String(PCc().altTel):'',{unit:'cm',ph:'140'}),'Del suelo al teléfono como lo vas a sostener.'):''}`,foot('Empezar')));};
 SAVE.labPrueba=f=>{const real=num(fv(f,'real'));if(!(real>=50&&real<=230))return ferr(f,'Escribe la estatura en centímetros (por ejemplo, 170).');
   const via=PRUEBA;if(via==='sensor'){const a=num(fv(f,'alt'));if(!(a>=50&&a<=250))return ferr(f,'Escribe la altura del teléfono en centímetros (por ejemplo, 140).');P.guardarPC({altTel:Math.round(a)});}
   closeSheet();setTimeout(()=>correrPrueba(via,real),120);};
-const PASO_PERSONA={id:'persona',nombre:'Persona de pie',instr:'La persona de pie, completa de pies a cabeza.',instrAR:'La persona de pie, completa de pies a cabeza. Pon la mira sobre su pecho y toma la foto.',girar:'Que se vea la persona completa',ang:{},dist:{eje:'alto',min:.45,max:.92},ref:false};
+const PASO_PERSONA={id:'persona',nombre:'Persona de pie',instr:'La persona de pie, completa de pies a cabeza.',girar:'Que se vea la persona completa',ang:{},dist:{eje:'alto',min:.45,max:.92},ref:false};
 // la estatura de cada método con una toma ya medida (para la app y las pruebas)
 function estaturaPrueba(t,via,altTel,fov){
   const o={},alto=t&&t.med&&t.med.alto;if(!(alto>0))return o;o.altoPx=alto;if(t.ar)o.profOrig=t.ar.profOrig;
@@ -312,16 +312,16 @@ function estaturaPrueba(t,via,altTel,fov){
   if(via==='sensor'&&t.ori&&t.sil&&t.sil.n){const g=CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,altTel,fov);if(g){o.sensor=alto*g.cmpx;o.D=g.D;o.elev=t.ori.elev;}}
   return o;
 }
-async function correrPrueba(via,real){
+async function correrPrueba(via0,real){let via=via0;
   let tomas=[];
-  if(via==='ar'){const res=await P.abrirAR([PASO_PERSONA],'vertical');if(!res||res.cancelado)return;if(res.error){toast(P.arError(res.error),5000);return;}
-    toast('Midiendo…',8000);const caps=await P.capsAR(res,[PASO_PERSONA],Vision.PERSONA,'persona');tomas=caps.flatMap(c=>c.tomas);}
-  else{const caps=await CamVivo.abrir({titulo:'Prueba con una persona',clase:Vision.PERSONA,ref:false,geo:{h:PCc().altTel,fov:P.fovTel()},buscar:'Apunta a la persona, de pies a cabeza',pasos:[PASO_PERSONA]});
-    if(!caps||!caps.length)return;tomas=caps.flatMap(c=>c.tomas.map(t=>({...t,ori:c.ori,img:c.img})));}
-  const M=tomas.map(t=>estaturaPrueba(t,via,PCc().altTel,P.fovTel())),md=k=>{const v=M.map(m=>m[k]).filter(z=>esNum(z)&&(k==='elev'||z>0));return v.length?medn(v):null;};
+  // la misma cámara en vivo que el ganado (con ARCore por debajo si el teléfono lo tiene)
+  const caps=await CamVivo.abrir({titulo:'Prueba con una persona',clase:Vision.PERSONA,ref:false,ar:via==='ar',geo:{h:PCc().altTel||140,fov:P.fovTel()},buscar:'Apunta a la persona, de pies a cabeza',pasos:[PASO_PERSONA]});
+  if(!caps||!caps.length)return;tomas=caps.flatMap(c=>c.tomas.map(t=>({...t,ori:c.ori,img:c.img,ar:t.arc?P.escalaAR(t.arc,t,'persona'):null})));
+  if(via==='ar'&&!tomas.some(t=>t.ar))via='sensor';
+  const altT=PCc().altTel||140,M=tomas.map(t=>estaturaPrueba(t,via,altT,P.fovTel())),md=k=>{const v=M.map(m=>m[k]).filter(z=>esNum(z)&&(k==='elev'||z>0));return v.length?medn(v):null;};
   const medido={};for(const [k] of MET_P){const v=md(k);if(v)medido[k]=Math.round(v*10)/10;}
   if(!Object.keys(medido).length){toast(via==='ar'?'No se pudo medir: que se vea la persona completa y el suelo, y espera a que ARCore reconozca el lugar.':'No se pudo medir: que se vea la persona completa, con los pies.',5000);return;}
-  const x={ts:Date.now(),f:hoy(),via,real,medido,D:md('D'),alto:md('alto'),elev:md('elev'),nProf:md('nProf'),tel:via==='sensor'?PCc().altTel:null,fov:P.fovTel(),
+  const x={ts:Date.now(),f:hoy(),via,real,medido,D:md('D'),alto:md('alto'),elev:md('elev'),nProf:md('nProf'),tel:via==='sensor'?altT:null,fov:P.fovTel(),
     altoPx:md('altoPx'),profOrig:M[0]&&M[0].profOrig||null};
   // la foto con la silueta y los puntos que vio el modelo (para revisarla en el laboratorio)
   const img=tomas[0]&&tomas[0].img;if(img&&window.Fotos)try{x.foto='pcp-'+x.ts;await Fotos.guardar(x.foto,await (await fetch(img)).blob());}catch(e){x.foto=null;}

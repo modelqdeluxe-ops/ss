@@ -32,7 +32,7 @@ variante() {
     if [ "$r" != 3 ]; then exit "$r"; fi
     echo "variantes: $archivo sin Google Play Billing"
   fi
-  # Rumentis Beta: con ARCore (Gradle trae com.google.ar:core; la pantalla de medición va en modelo/android/Ar*.java)
+  # Rumentis Beta: con ARCore (Gradle trae com.google.ar:core; el motor va por debajo de la cámara en vivo: modelo/android/ArPuente.java)
   if [ "$app" = jefe ] && [ "$beta" = 1 ]; then
     local r=0; DONANTE=ar bash "$RAIZ/scripts/pagos.sh" "$D" "$RAIZ/dist/$archivo.apk" || r=$?
     if [ "$r" = 0 ]; then return; fi

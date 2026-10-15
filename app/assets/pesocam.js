@@ -33,7 +33,7 @@ const MODOS={
 const PASOS_EXTRA=[{id:'otro',nombre:'Otro costado',instr:'Pásate al otro lado del animal: de costado completo, con las patas a la vista.',girar:'Pásate al otro lado del animal, que quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88},ref:false},
   {id:'arriba',nombre:'Desde arriba',instr:'El teléfono arriba del animal (desde la pasarela o la cerca de la manga), mirando hacia abajo.',girar:'Sube el teléfono arriba del animal, mirando hacia abajo',ang:{},dist:{eje:'max',min:.45,max:.9},ref:false}];
 // la altura del teléfono al medir (cm) y el campo de visión de la cámara (lado largo, grados)
-const FOV_DEF=67;const fovTel=()=>+PC().fovTel>20?+PC().fovTel:FOV_DEF;
+const FOV_DEF=67,ALT_DEF=140;const fovTel=()=>+PC().fovTel>20?+PC().fovTel:FOV_DEF;
 const nTomasG=()=>[2,3,4].includes(+PC().tomasG)?+PC().tomasG:3;
 const pasosGanado=()=>MODOS.ganado.pasos.concat(PASOS_EXTRA.slice(0,nTomasG()-2));
 // la silueta mide un poco más que la estatura escrita (sin zapatos): suela y pelo
@@ -546,8 +546,8 @@ function combinar(modo,caps,alto,ropaK,tipo){
   // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
   /* ganado: cm por píxel con la distancia al animal (CamVivo.suelo: la altura del teléfono y su inclinación al tomar
      la foto); si el teléfono no tiene acelerómetro, con la persona de referencia si se ve. Se guardan las dos. */
-  for(const c of caps)for(const t of tomas(c))t.ori=c.ori||null;
-  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel,fovTel()):null;
+  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo);}
+  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel()):null;
   const cmpx=t=>{if(t.ar&&t.ar.cmpx>0)return t.ar.cmpx;if(modo==='persona')return ref/t.med.alto;const g=geoT(t);if(g)return g.cmpx;return t.med&&t.med.refAlto>0?ref/t.med.refAlto:NaN;};
   const conK=t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t)),K:modo==='persona'?kpT(t):null});
   const TP=tomas(p).map(conK),TS=tomas(s).map(conK);
@@ -708,11 +708,6 @@ const filaTipo=x=>{const t=tipoLote(x);return `<div class="pc-tipo"><label class
   <p class="hint pc-razas" style="margin:0"><span data-no-tr>${RAZAS_TIPO[t.g]}</span>${t.auto?` · <span>${t.raza?'Según la raza del lote. Cámbialo si no es así.':'El lote no dice la raza: elige el tipo, cambia mucho el peso.'}</span>`:''}</p>
   <label class="pc-tl">Etapa</label><div class="seg pc-etapa" role="group" aria-label="Etapa">${ETAPAS.map(([v,n])=>`<button type="button" data-act="pcEtapa" data-v="${v}" aria-pressed="${t.etapa===v}">${n}</button>`).join('')}</div>
   <p class="hint" style="margin:0">Ternero: menos de 1 año. En crecimiento: de 1 a 2 años (toretes, novillos, novillas).</p></div>`;};
-// con qué se mide la distancia al animal: ARCore (si el teléfono y la app lo tienen) o el sensor de movimiento
-const filaDist=()=>{if(!hayAR())return '';const ar=usarAR();
-  return `<label class="pc-tl">Distancia al animal con</label><div class="seg pc-tomas" role="group" aria-label="Distancia al animal con"><button type="button" data-act="pcUsarAR" data-v="1" aria-pressed="${ar}">ARCore</button><button type="button" data-act="pcUsarAR" data-v="0" aria-pressed="${!ar}">Sensor de movimiento</button></div>
-  <p class="hint" style="margin:0">${ar?'ARCore mide la distancia con la profundidad de la cámara y reconoce el suelo: no hace falta la altura del teléfono. La primera vez puede pedir instalar "Servicios de Google Play para RA".':'Con la altura a la que sostienes el teléfono y su inclinación.'}</p>`;};
-ACTS.pcUsarAR=el=>{guardarPC({usarAR:el.dataset.v==='1'});};
 // cuántas tomas pide la cámara con este teléfono
 const TOMAS_G=[[2,'2','Costado y por detrás'],[3,'3','Más el otro costado'],[4,'4','Más desde arriba']];
 const filaTomas=()=>`<label class="pc-tl">Tomas con este teléfono</label><div class="seg pc-tomas" role="group" aria-label="Tomas con este teléfono">${TOMAS_G.map(([v,n])=>`<button type="button" data-act="pcTomas" data-v="${v}" aria-pressed="${nTomasG()===v}">${n}</button>`).join('')}</div>
@@ -734,7 +729,7 @@ PAGES.pesocam=()=>{
        <div class="pc-ropa"><span>Ropa</span><div class="seg" role="group" aria-label="Ropa">${Object.entries(ROPA).map(([v,o])=>`<button type="button" data-act="pcRopa" data-v="${v}" aria-pressed="${ropaSel()===v}">${o.t}</button>`).join('')}</div></div><p>Dos tomas: de frente y de costado. Cuando la silueta se pone verde, la foto se toma sola.</p>
        <button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
      :`<section class="sec">${secH(lotesAct().length?'Lote':'Medir')}<div class="card pad pc-vivo">${sesBanner()}${lotesAct().length?`<select class="in" id="pcLote" data-pclote>${PC().labSes?`<option value="_no"${UI.pc.lote==='_no'?' selected':''}>Sin lote</option>`:''}${lotesAct().map(l=>`<option value="${esc(l.id)}"${l.id===UI.pc.lote?' selected':''}>${esc(l.l.nombre)} · ${pl(l.cab,'cabeza','cabezas')}</option>`).join('')}</select>`:''}
-       ${filaTipo(x)}${filaDist()}${usarAR()?'':filaAlto(false,a)}${filaTomas()}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`}
+       ${hayAR()?'':filaAlto(false,a)}${filaTomas()}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`}
    ${!per&&it.length?`<section class="sec">${secH('Pesaje en curso',it.length)}<div class="card pad pc-sesion"><div class="pc-prom"><b>${wtxt(prom)}</b><span>promedio de ${pl(it.length,'animal','animales')} en ${esc(x?x.l.nombre:'')}</span></div>
      <div class="rows">${it.map((r,i)=>`<div class="row"><img class="pc-th" src="${r.img}" alt=""><div class="tx"><b>${wtxt(r.kg)}</b><span>${r.arete?`<span>Arete</span> <span data-no-tr>${esc(r.arete)}</span>`:'<span>Sin arete</span>'} · <span>±${Math.round(r.err*100)} %</span></span></div><button type="button" class="del" data-act="pcQuitar" data-i="${i}" aria-label="Quitar">${ico('x')}</button></div>`).join('')}</div>
      <div class="pc-acts"><button type="button" class="btn" data-act="pcVivo">${icono('camara','i3')}Otro animal</button><button type="button" class="btn pri" data-act="pcGuardar">Guardar pesaje</button></div></div></section>`:''}
@@ -791,27 +786,18 @@ async function guardarFotos(id,caps,dbg){
     for(const x of R.slice(0,-DBG_MAX))Fotos.borrar(`pcd-${x.id}`);
     for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<4;i++){Fotos.borrar(`pch-${x.id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${x.id}-${i}-${j}`);}}catch(e){console.warn(e);}
 }
-/* ---------- ARCore (Rumentis Beta compilada con ARCore: el puente "Ar", modelo/android/ArActivity.java) ----------
-   La pantalla nativa toma las fotos (una por paso) y por cada una entrega la profundidad de la imagen (Depth API), la
-   distancia a la mira, la altura del teléfono sobre el suelo que reconoce ARCore, su inclinación y los intrínsecos de
-   la cámara. La página mide cada foto con los mismos modelos (CamVivo.medirFoto) y saca los cm por píxel:
+/* ---------- ARCore (Rumentis Beta compilada con ARCore: el puente "Ar", modelo/android/ArPuente.java) ----------
+   ARCore corre por debajo de la cámara en vivo (camvivo.js): la silueta se ve en tiempo real como siempre y las tomas
+   son fotos completas de ARCore, cada una con la profundidad de la imagen (Depth API), la altura del teléfono sobre el
+   suelo que reconoce ARCore, su inclinación y los intrínsecos de la cámara. Con eso, los cm por píxel de cada toma:
    - "ar-prof": la mediana de la profundidad dentro del cuerpo (la silueta sin patas ni cabeza) más la mitad del grueso
      del cuerpo (el plano del contorno está detrás de la piel que se ve): Z / f;
    - "ar-suelo": si no hay profundidad, el ángulo hasta las patas con la altura y la inclinación que da ARCore;
    - "ar-centro": si tampoco, la distancia a la mira.
    Se guardan las tres para comparar. */
-const AR={espera:null};
-window.arResultado=r=>{let o=r;try{o=typeof r==='string'?JSON.parse(r):r;}catch(e){o={error:'json'};}const f=AR.espera;AR.espera=null;if(f)f(o||{});};
 const arEstado=()=>{try{return window.Ar&&Ar.estado?String(Ar.estado()):'no';}catch(e){return 'no';}};
 const hayAR=()=>['listo','instalar','revisando'].includes(arEstado());
-const usarAR=()=>hayAR()&&PC().usarAR!==false;
 const T_=t=>window.I18N&&I18N.t?I18N.t(t):t;
-function abrirAR(pasos,orient){
-  const textos={cancelar:T_('Cancelar'),terminar:T_('Terminar'),tomar:T_('Tomar foto'),tomando:T_('Tomando…'),buscando:T_('Mueve el teléfono despacio para que reconozca el lugar'),
-    distancia:T_('Distancia a la mira'),altura:T_('Teléfono sobre el suelo'),sinMira:T_('Apunta la mira al animal'),sinSuelo:T_('Apunta un momento al suelo para encontrarlo')};
-  const P=pasos.map((p,i)=>({id:p.id,nombre:T_(p.nombre),titulo:pasos.length>1?`${T_('Paso')} ${i+1} ${T_('de')} ${pasos.length} · ${T_(p.nombre)}`:T_(p.nombre),instr:T_(p.instrAR||p.instr)}));
-  return new Promise(ok=>{AR.espera=ok;try{Ar.abrir(JSON.stringify({pasos:P,textos,orient}));}catch(e){AR.espera=null;ok({error:'abrir'});}});
-}
 const MITAD_CUERPO={ganado:15,persona:10};
 function escalaAR(c,t,modo){
   // la mira: la profundidad en el centro (si la hay) o el punto que tocó el rayo
@@ -837,26 +823,12 @@ function escalaAR(c,t,modo){
   o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['Z'+m]*corr:null;o.cmpx=o.Z&&fx>0?o.Z/fx:null;
   return o;
 }
-// las fotos de ARCore → las tomas, como las del video (una por paso)
-async function capsAR(res,pasos,clase,modo){
-  const caps=[];
-  for(const c of (res&&res.capturas)||[]){const paso=pasos.find(p=>p.id===c.paso)||pasos[caps.length]||pasos[0];
-    const u=window.Fotos&&await Fotos.url(c.foto);if(!u)continue;const im=new Image();im.src=u;try{await im.decode();}catch(e){continue;}
-    const fc=document.createElement('canvas');fc.width=im.naturalWidth;fc.height=im.naturalHeight;fc.getContext('2d').drawImage(im,0,0);
-    const t=await CamVivo.medirFoto(fc,{clase,banda:paso.banda});try{Fotos.borrar(c.foto);}catch(e){}
-    if(!t)continue;t.ar=escalaAR(c,t,modo);t.ori={elev:c.elev,horiz:c.ladeo};
-    caps.push({id:paso.id,nombre:paso.nombre,manual:true,ar:true,ori:t.ori,ts:c.ts,tomas:[t],med:t.med,sil:t.sil,ref:null,W:t.W,H:t.H,fuente:'preciso',img:t.img,hd:fc});}
-  caps.stats={motor:'arcore',profundidad:!!(res&&res.profundidad),tomas:caps.length};
-  return caps;
-}
-
 /* ---------- medir ---------- */
 let ULT=null;
 async function medirVivo(){
   const modo=UI.pc.modo,M=MODOS[modo],alto=PC()[M.alto];
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
-  if(modo==='ganado'&&usarAR())return medirAR();
-  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,geo:modo==='ganado'?{h:PC().altTel,fov:fovTel()}:null,buscar:M.buscar,pasos:modo==='ganado'?pasosGanado():M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
+  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,ar:modo==='ganado'&&hayAR(),geo:modo==='ganado'?{h:PC().altTel||ALT_DEF,fov:fovTel()}:null,buscar:M.buscar,pasos:modo==='ganado'?pasosGanado():M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
   if(!caps||caps.length<M.pasos.length||modo==='ganado'&&!caps.some(c=>c.id==='costado')||modo==='ganado'&&!caps.some(c=>c.id==='atras'))return null;
   const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};if(modo==='ganado'){const x=loteSel();r.lote=x?x.id:null;
     // laboratorio, "repetir el mismo animal": el arete de la medición anterior del lote (30 minutos)
@@ -864,19 +836,9 @@ async function medirVivo(){
   r.id=registrar(r,r.stats);guardarFotos(r.id,caps,r.dbg);
   if(modo==='ganado'&&window.Enlace&&Enlace.conectados().length)Enlace.avisarResultado(wtxt(r.kg));return r;
 }
-// ganado con ARCore: las fotos en la pantalla nativa, la escala con la profundidad
-async function medirAR(){
-  const M=MODOS.ganado,pasos=pasosGanado().map(p=>({...p,instrAR:p.id==='costado'?'El animal de costado, completo, con las patas a la vista. Pon la mira sobre su panza y toma la foto.':p.id==='atras'?'El animal de espaldas, con las patas a la vista. Pon la mira sobre su cadera.':p.id==='otro'?'Del otro lado, de costado completo. Pon la mira sobre su panza.':'Desde arriba, el animal completo.'}));
-  const res=await abrirAR(pasos,'horizontal');
-  if(!res||res.cancelado)return null;if(res.error){toast(arError(res.error),5000);return null;}
-  toast('Midiendo…',8000);const caps=await capsAR(res,pasos,M.clase,'ganado');
-  if(!caps.some(c=>c.id==='costado')||!caps.some(c=>c.id==='atras')){toast('Faltó la foto de costado o la de por detrás (o no se reconoció el animal). Repite.',5000);return null;}
-  const r={...combinar('ganado',caps,null,ropaSel(),tipoLote(loteSel())),caps,stats:caps.stats};const x=loteSel();r.lote=x?x.id:null;
-  r.id=registrar(r,r.stats);guardarFotos(r.id,caps,r.dbg);return r;
-}
 const arError=e=>/no-instalado/.test(e)?'Sin "Servicios de Google Play para RA" no se puede usar ARCore. Se mide con el sensor de movimiento.':/no-compatible/.test(e)?'Este teléfono no es compatible con ARCore. Se mide con el sensor de movimiento.':/sin-permiso/.test(e)?'Da permiso de cámara a la app.':'No se pudo abrir ARCore.';
 // antes de medir hace falta la estatura de referencia
-function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto]||UI.pc.modo==='ganado'&&usarAR())return fn();formAlto(fn);}
+function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto]||UI.pc.modo==='ganado'&&hayAR())return fn();formAlto(fn);}
 const medHTML=r=>r.modo==='persona'&&r.dims
   ?`<div class="pc-med"><div><b>${cm(r.dims.bid)}</b><span>hombros</span></div><div><b>${cm(r.dims.wb)}</b><span>cintura</span></div><div><b>${cm(r.dims.th)}</b><span>muslo</span></div><div><b>${nf(r.imc,1)}</b><span>IMC</span></div></div>`
   :r.modo==='persona'?`<div class="pc-med"><div><b>${nf(r.L)} <span data-no-tr>L</span></b><span>volumen</span></div><div><b>${cm(r.anchoF)}</b><span>hombros</span></div><div><b>${cm(r.prof)}</b><span>pecho de fondo</span></div><div><b>${nf(r.imc,1)}</b><span>IMC</span></div></div>`
@@ -941,7 +903,6 @@ function resultado(r){
     <div class="pc-kg"><b>${wtxt(r.kg)}</b><span>entre ${wtxt(r.kg*(1-r.err))} y ${wtxt(r.kg*(1+r.err))}</span></div>
     ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
     ${medHTML(r)}
-    ${r.modo==='ganado'&&r.tipo?`<p class="hint"><span>Calculado como:</span> <b>${tipoTxt(r)}</b>. <span>Si no es así, cámbialo en la pantalla de la cámara y vuelve a medir.</span></p>`:''}
     ${an.length?q('Arete (opcional)',`<select class="in" id="pcArete" data-pcarete><option value="">Sin arete</option>${an.map(a=>`<option value="${esc(a.id)}"${a.id===r.aid?' selected':''}>${esc(a.arete)}</option>`).join('')}</select>`)+`<p class="hint pc-animal"></p>`:''}
     ${r.modo==='ganado'&&r.dims&&r.dims.WH?`<div class="pc-cinta">${q('Perímetro del pecho con cinta (opcional)',`<div class="pc-cinta-f">${inp('hg',r.HG?String(Math.round(r.HG)):'',{unit:'cm',ph:'180'})}<button type="button" class="btn" data-act="pcCinta">Usar</button></div>`)}<p class="hint" style="margin:0">Con la cinta el peso sale más exacto (cerca de 5 %), aunque no tengas báscula.</p></div>`:''}
     <p class="hint">${r.n?`La app aprendió con ${pl(r.n,'peso real','pesos reales')} de tus animales.`:'Estimado general: la app aprende sola con cada peso real que anotes (báscula, entrada, pesajes o ventas).'}</p>
@@ -1002,6 +963,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={fovTel,abrirAR,escalaAR,capsAR,arEstado,hayAR,usarAR,arError,regListo:()=>REG_LISTO,capsHTML,mostrar:resultado,ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
+window.PesoCam={fovTel,escalaAR,arEstado,hayAR,arError,regListo:()=>REG_LISTO,capsHTML,mostrar:resultado,ultimo:()=>ULT,verResultado:()=>{if(ULT)resultado(ULT);},predDims,sensibilidad,KP_ANIMAL,KP_USA,etapaDe,canalDe,baseDe,DIAS,modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();
