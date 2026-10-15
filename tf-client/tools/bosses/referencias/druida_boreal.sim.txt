@@ -1,0 +1,44 @@
+## semilla 3, el pack tal cual
+druida_boreal       480 s, vida  46.6%: 148 ataques (18.5/min), 4 distintos de 10
+       81  staff_slam
+       47  cast_quick_1
+       19  cast_quick_2
+        1  wind_loop
+     sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
+     repite seguido: 40 de 147; curas castigadas: 8 de 12
+
+## semilla 3, normal
+druida_boreal       480 s, vida  68.4%: 201 ataques (25.1/min), 4 distintos de 10
+       74  cast_quick_2
+       69  staff_slam
+       57  cast_quick_1
+        1  wind_loop
+     sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
+     repite seguido: 22 de 200; curas castigadas: 10 de 15; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+druida_boreal       480 s, vida  70.4%: 288 ataques (36.0/min), 4 distintos de 10
+       99  cast_quick_2
+       97  staff_slam
+       91  cast_quick_1
+        1  wind_loop
+     sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
+     repite seguido: 36 de 287; curas castigadas: 11 de 16; combos: 32; pasos atrás: 35
+
+## semilla 11, normal
+druida_boreal       480 s, vida  71.8%: 192 ataques (24.0/min), 4 distintos de 10
+       73  staff_slam
+       64  cast_quick_2
+       54  cast_quick_1
+        1  wind_loop
+     sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
+     repite seguido: 26 de 191; curas castigadas: 10 de 16; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+druida_boreal       480 s, vida  74.2%: 224 ataques (28.0/min), 4 distintos de 10
+       81  staff_slam
+       77  cast_quick_2
+       65  cast_quick_1
+        1  wind_loop
+     sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
+     repite seguido: 30 de 223; curas castigadas: 12 de 17; combos: 22; pasos atrás: 29

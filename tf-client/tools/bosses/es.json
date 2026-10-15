@@ -95,5 +95,171 @@
   "preview_hide": [
    "vfx"
   ]
+ },
+ "rey_calabaza": {
+  "name": "Rey Calabaza",
+  "title": "Señor de la cosecha maldita",
+  "color": "#FF8A1F",
+  "desc": "Un espantajo con cabeza de calabaza que flota entre la niebla. Siega con la guadaña a quien tiene cerca, se lanza con un tajo a quien se aleja, la hace girar a su alrededor o la arroja como un torbellino, levanta anillos de lápidas bajo los pies y desaparece para reaparecer junto a su presa.",
+  "attacks": [
+   "Tajo de guadaña",
+   "Tajo con embestida",
+   "Guadaña giratoria",
+   "Guadaña arrojada",
+   "Anillos de lápidas",
+   "Teletransporte"
+  ],
+  "drops": {
+   "lr_pumpkin_king_hat": "Sombrero del Rey Calabaza"
+  }
+ },
+ "archivista": {
+  "name": "El Archivista",
+  "title": "Guardián de la biblioteca prohibida",
+  "color": "#C9A86A",
+  "desc": "Un erudito espectral que pelea con su libro de hechizos. Marca el suelo y lo hace estallar, lanza un rayo y líneas de magia, hace girar una vela encendida que quema y llama a guerreros de cera; se mueve de lado y se aparta de los golpes.",
+  "attacks": [
+   "Estallido del libro",
+   "Rayo del libro",
+   "Línea arcana",
+   "Vela giratoria",
+   "Guerreros de cera"
+  ]
+ },
+ "eldric": {
+  "name": "Eldric",
+  "title": "El herrero de la forja ardiente",
+  "color": "#E8642C",
+  "desc": "Un herrero gigante con el martillo al rojo vivo. Golpea con mazazos que queman y lanzan lejos, clava picos de magma en anillo a su alrededor y salta para caer sobre su presa.",
+  "attacks": [
+   "Mazazo ardiente",
+   "Golpe de martillo",
+   "Doble mazazo",
+   "Picos de magma",
+   "Salto aplastante"
+  ]
+ },
+ "druida_boreal": {
+  "name": "Druida Boreal",
+  "title": "La voz del invierno",
+  "color": "#9FD8FF",
+  "desc": "Un druida de las tierras heladas. Barre con cuchillas de hielo, golpea el suelo con el bastón y lanza garras y un rayo de nieve que congelan; si te alejas, vuela hacia ti. Al caer despierta a su mamut boreal, que sigue la pelea.",
+  "attacks": [
+   "Barrido de hielo",
+   "Golpe de bastón",
+   "Garras de hielo",
+   "Rayo de nieve",
+   "Vuelo",
+   "Mamut boreal"
+  ],
+  "successors": {
+   "boreal_druid_mammoth": "Mamut boreal"
+  }
+ },
+ "contemplador": {
+  "name": "Contemplador",
+  "title": "El ojo que todo lo ve",
+  "color": "#B04BD6",
+  "desc": "Un ojo flotante rodeado de tentáculos con ojos. Muerde a quien se acerca, se lanza en picado, dispara rayos con sus ojos y esquiva las flechas.",
+  "attacks": [
+   "Mordisco",
+   "Picado",
+   "Rayos oculares",
+   "Danza de rayos"
+  ]
+ },
+ "arconte_astral": {
+  "name": "Arconte Astral",
+  "title": "Señor de las constelaciones",
+  "color": "#7E8BFF",
+  "desc": "Un hechicero celeste que flota envuelto en su capa de estrellas. Dispara proyectiles que rebotan, cortes que persiguen, espirales de energía y constelaciones de estrellas; cuando se vuelve vibrante se teletransporta al recibir golpes, y atrae a quien intenta huir.",
+  "attacks": [
+   "Doble disparo",
+   "Doble corte",
+   "Espiral",
+   "Constelación",
+   "Atracción"
+  ]
+ },
+ "kazk": {
+  "name": "Kazk, la Reina",
+  "title": "Reina de la colmena subterránea",
+  "color": "#8CBF3F",
+  "desc": "La reina de una colmena de insectos. Corta con sus cuchillas, embiste, escupe veneno y golpea con la cola a quien la ataca; se entierra para salir bajo los pies de su presa y morderla, y su grito debilita a los que la rodean.",
+  "attacks": [
+   "Cuchillas",
+   "Embestida",
+   "Golpe de cola",
+   "Escupitajo venenoso",
+   "Enterrarse",
+   "Mordisco subterráneo",
+   "Grito"
+  ]
+ },
+ "guardian_hueco": {
+  "name": "Guardián Hueco",
+  "title": "El coloso de la mina olvidada",
+  "color": "#8B7B6B",
+  "desc": "Un coloso minero que despierta cuando alguien se acerca. Ataca con el pico, la espada y patadas según dónde estés, lanza rocas, se gira hacia ti y, si te alejas, echa a correr para atravesarte.",
+  "attacks": [
+   "Golpe de pico",
+   "Tajo",
+   "Patada",
+   "Rocas",
+   "Ataque por la espalda",
+   "Carga"
+  ]
+ },
+ "ignevar": {
+  "name": "Ignevar",
+  "title": "El dragón de las cenizas",
+  "color": "#FF4B1F",
+  "desc": "Un dragón de fuego. Pisa con fuerza y agrieta el suelo, escupe llamas, alza el vuelo para hacer llover meteoritos y cae en picado sobre su presa.",
+  "attacks": [
+   "Pisotón",
+   "Aliento de fuego",
+   "Lluvia de meteoritos",
+   "Picado"
+  ]
+ },
+ "piglin_mecha": {
+  "name": "Mecha Piglin",
+  "title": "La máquina de guerra del Nether",
+  "color": "#D9A441",
+  "desc": "Un piglin dentro de una armadura mecánica gigante. Barre con los brazos, golpea el suelo con ondas de choque, gira sobre sí mismo, salta sobre su presa y dispara láseres y misiles desde lejos.",
+  "attacks": [
+   "Barrido",
+   "Golpe de onda",
+   "Giro",
+   "Salto",
+   "Láser de hombro",
+   "Misil"
+  ]
+ },
+ "mega_guardian": {
+  "name": "Mega Guardián",
+  "title": "El vigilante de las profundidades",
+  "color": "#1E6E7A",
+  "desc": "Un guardián ciego que caza por el sonido. Se sumerge bajo tierra y emerge bajo quien se acerca, golpea con zarpazos, lanza ondas sónicas que ciegan y entra en furia si haces ruido (correr, saltar o golpearle).",
+  "attacks": [
+   "Zarpazos",
+   "Golpe",
+   "Onda sónica",
+   "Sumergirse",
+   "Furia"
+  ]
+ },
+ "tormenta_wither": {
+  "name": "Tormenta del Wither",
+  "title": "La plaga de tres cabezas",
+  "color": "#5A2E7A",
+  "desc": "Un wither gigantesco y corrupto que flota sobre la tormenta. Sus tres cabezas atrapan con un rayo tractor y muerden a quien arrastran: golpear la cabeza que te atrae la interrumpe y le hace daño. Llama a los rayos, escupe fuego bacteriano y abre grietas en el cielo.",
+  "attacks": [
+   "Rayo tractor",
+   "Mordisco",
+   "Rayos",
+   "Fuego bacteriano",
+   "Grietas del cielo"
+  ]
  }
 }

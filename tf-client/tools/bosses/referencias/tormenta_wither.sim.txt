@@ -1,0 +1,62 @@
+## semilla 3, el pack tal cual
+tormenta_wither     480 s, vida  58.6%: 72 ataques (9.0/min), 10 distintos de 15
+       15  head_1_idle
+       14  head_2_idle
+       13  head_1_tractor_beam
+       12  head_2_tractor_beam
+        8  head_3_idle
+        5  head_3_tractor_beam
+        2  head_3_projectile
+        1  wither_storm_spin_layer
+        1  head_1_projectile
+        1  head_2_projectile
+     sin salir: head_1_tractor_bite, head_1_tractor_interrupt, head_2_tractor_bite, head_2_tractor_interrupt, head_3_tractor_bite, head_3_tractor_interrupt
+     repite seguido: 0 de 71; curas castigadas: 3 de 14
+
+## semilla 3, normal
+tormenta_wither     480 s, vida  63.0%: 64 ataques (8.0/min), 7 distintos de 15
+       15  head_2_idle
+       14  head_2_tractor_beam
+       11  head_1_idle
+       10  head_1_tractor_beam
+        7  head_3_idle
+        6  head_3_tractor_beam
+        1  wither_storm_spin_layer
+     sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
+     repite seguido: 0 de 63; curas castigadas: 3 de 14; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+tormenta_wither     480 s, vida  62.7%: 64 ataques (8.0/min), 7 distintos de 15
+       13  head_3_idle
+       12  head_3_tractor_beam
+       11  head_2_idle
+       10  head_2_tractor_beam
+        9  head_1_idle
+        8  head_1_tractor_beam
+        1  wither_storm_spin_layer
+     sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
+     repite seguido: 0 de 63; curas castigadas: 3 de 12; combos: 0; pasos atrás: 0
+
+## semilla 11, normal
+tormenta_wither     480 s, vida  66.3%: 60 ataques (7.5/min), 7 distintos de 15
+       14  head_3_idle
+       13  head_3_tractor_beam
+       12  head_1_idle
+       11  head_1_tractor_beam
+        5  head_2_idle
+        4  head_2_tractor_beam
+        1  wither_storm_spin_layer
+     sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
+     repite seguido: 0 de 59; curas castigadas: 3 de 18; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+tormenta_wither     480 s, vida  62.4%: 63 ataques (7.9/min), 7 distintos de 15
+       13  head_3_idle
+       13  head_3_tractor_beam
+       10  head_2_idle
+        9  head_1_idle
+        9  head_2_tractor_beam
+        8  head_1_tractor_beam
+        1  wither_storm_spin_layer
+     sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
+     repite seguido: 0 de 62; curas castigadas: 3 de 16; combos: 0; pasos atrás: 0

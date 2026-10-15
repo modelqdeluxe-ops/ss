@@ -25,6 +25,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient', 'bosses')
+sys.path.insert(0, HERE)
+import mythic_ai as AI  # noqa: E402
 
 # Estados que no son ataques (reposo, pasivos, transiciones)
 NOT_ATTACKS = {'passive', 'passive_tongue', 'passive_tentacle', 'idle', 'walk', 'sleep', 'land', 'in_air', 'hurt',
@@ -212,8 +214,16 @@ class Boss:
         self.base_speed = float(opts.get('MovementSpeed', self.type_speed))
         self.speed_mul = 1.0
         self.speed_set = False
-        goals = [str(g).lower() for g in (self.mob.get('ai_goals') or [])]
-        self.chases = not (goals == ['clear'])
+        # Su IA de MythicMobs sobre la de su tipo (SkillAI / mythic_ai): persigue, pega con el golpe de Minecraft y a
+        # quién busca (el jugador de la prueba: con «players», o con «hurtbytarget» en cuanto le pega)
+        self.goals = AI.goals_of(self.mob)
+        self.ai_targets = AI.targets_of(self.mob)
+        self.chases = AI.chases(self.goals)
+        self.melee = AI.melee(self.goals)
+        self.melee_wait = 0
+        self.scores = {}
+        if AI.flag(self.mob, 'NoAI'):
+            self.ai = False
         self.target = False
         self.combat = False
         self.fired = {}
@@ -709,6 +719,12 @@ class Sim:
         self.verbose = verbose
         self.hits = 0
         self.cancelled_hits = 0
+        self.melee_tries = self.melee_hits = 0
+        # El modelo del jefe (los scripts «mm:» de sus animaciones) y qué animación tiene cada prioridad
+        mp = os.path.join(RES, 'models', str(self.prog['boss'].get('model')) + '.json')
+        self.model = json.load(open(mp, encoding='utf-8')) if os.path.exists(mp) else None
+        self.script_tok = {}
+        self.fireballs = 0
         self.unknown = set()
         # Lo que hace el jugador (para ver si el jefe le castiga)
         self.heal_until = self.block_until = self.aim_until = -1
@@ -791,8 +807,11 @@ class Sim:
     # ------------------------------------------------------------------ jefe
     def boss_step(self):
         b = self.b
-        # objetivo: el jugador si está al alcance (siempre en esta prueba)
-        b.target = b.ai and self.dist() < 64
+        # objetivo: el jugador si está al alcance (siempre en esta prueba) y lo busca (players; hurtbytarget, si le ha
+        # pegado; con clear, solo si una skill se lo da)
+        names = {AI.target_name(x) for x in b.ai_targets}
+        hunts = 'players' in names or 'hurtbytarget' in names and self.hits > 0
+        b.target = b.ai and self.dist() < 64 and hunts
         if b.target and not b.combat:
             b.combat = True
             self.trigger('onentercombat')
@@ -842,6 +861,9 @@ class Sim:
                 b.x += (self.px - b.x) / d * step
                 b.z += (self.pz - b.z) / d * step
                 moving = True
+        b.moving = moving
+        self.melee_step()
+        self.ghast_step()
         want = yaw_of(self.px - b.x, self.pz - b.z)
         if b.chases and b.ai:
             b.look = wrap(b.look + max(-30, min(30, wrap(want - b.look))))
@@ -858,6 +880,67 @@ class Sim:
                     b.body = wrap(b.body + wrap(want - b.body) * 0.05)
         else:
             b.look = b.body
+
+    def melee_step(self):
+        """BossEntity.meleeStep: el golpe de Minecraft (MeleeAttackGoal) con sus ~onAttack y ~onCombat antes de entrar."""
+        b = self.b
+        if not (b.ai and b.target and b.melee):
+            b.melee_wait = 0
+            return
+        if b.melee_wait > 0:
+            b.melee_wait -= 1
+        w = (self.prog['boss'].get('hitbox') or [1, 2])[0] * self.hb_scale
+        reach = (w * 2) ** 2 + 0.6 if AI.has(b.goals, 'meleeattack', 'zombieattack') else 4 + 0.6
+        if b.melee_wait > 0 or self.dist() ** 2 > reach:
+            return
+        b.melee_wait = 20
+        dmg = float(self.prog['boss'].get('damage') or 0)
+        hit = {'amount': dmg, 'cancelled': False, 'scale': 1.0}
+        vars = {'damage-amount': dmg, 'damage-cause': 'ENTITY_ATTACK', 'damage-type': 'ENTITY_ATTACK'}
+        self.melee_tries += 1
+        self.trigger('onattack', vars, hit=hit)
+        self.trigger('oncombat', vars, hit=hit)
+        if not hit['cancelled'] and hit['amount'] > 0:
+            self.melee_hits += 1
+
+    def play_scripts(self, s, a):
+        """SkillMobs.scripts: los «mm:» de la línea de tiempo de la animación que pone (a su velocidad y con el tempo),
+        mientras siga puesta en su prioridad; las de bucle, otra vez en cada vuelta."""
+        anim = (self.model or {}).get('anims', {}).get(s)
+        if not anim or not anim.get('fx'):
+            return
+        prio = int(num(arg(a, 1, 'priority', 'p'), 1))
+        tok = object()
+        self.script_tok[prio] = (s, tok)
+        sp = max(0.05, num(arg(a, 1, 'speed', 'sp'), 1) * tempo())
+        length = max(0.05, float(anim.get('length') or 0))
+
+        def lap():
+            if self.script_tok.get(prio, (None, None))[1] is not tok:
+                return
+            for t, skill in anim['fx']:
+                def go(sk=skill):
+                    if self.script_tok.get(prio, (None, None))[1] is tok:
+                        self.run_meta(sk, {'targets': None, 'vars': {}, 'depth': 0, 'hit': None})
+                self.later(int(round(float(t) * 20 / sp)), go)
+            if anim.get('loop') == 'loop':
+                self.later(max(1, int(round(length * 20 / sp))), lap)
+
+        lap()
+
+    def ghast_step(self):
+        """BossEntity.ghastStep: la bola de fuego del ghast (20 de carga, 40 de espera), con ~onShoot antes de salir."""
+        b = self.b
+        if not (b.ai and b.target and AI.has(b.goals, 'type:ghast')) or self.dist() >= 64:
+            b.ghast_charge = 0 if not b.target else max(0, getattr(b, 'ghast_charge', 0) - 1)
+            return
+        b.ghast_charge = getattr(b, 'ghast_charge', 0) + 1
+        if b.ghast_charge == 20:
+            b.ghast_charge = -40
+            hit = {'amount': 0, 'cancelled': False, 'scale': 1.0}
+            self.trigger('onshoot', {'bow-tension': 1}, hit=hit)
+            if not hit['cancelled']:
+                self.fireballs += 1
 
     # ------------------------------------------------------------------ disparadores
     def trigger(self, tr, vars=None, value=None, hit=None):
@@ -980,6 +1063,9 @@ class Sim:
             return False
         # SkillConds: en la prueba no hay marcador (todo a 0), el jugador no lleva nada puesto ni es op, y en el chunk
         # del jefe solo está él
+        if m == 'score' and who == 'boss' and not arg(a, None, 'entry', 'ent', 'e'):
+            # la del jefe: en memoria (setmobscore, modifymobscore), como SkillConds
+            return in_range(b.scores.get(str(arg(a, '', 'objective', 'obj', 'o')), 0.0), arg(a, '0', 'value', 'val', 'v'))
         if m in ('score', 'globalscore', 'scoreglobal'):
             return in_range(0, arg(a, '0', 'value', 'val', 'v'))
         if m == 'playerkills':
@@ -988,7 +1074,21 @@ class Sim:
             return in_range(1, arg(a, '0', 'amount', 'a'))
         if m in ('itemrecharging', 'wearing', 'iswearing', 'wielding', 'iswielding', 'haspermission'):
             return False
-        if m in ('ydiff', 'onground', 'altitude', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
+        if m == 'stance':
+            # SkillConds: la postura de quien la mire (setstance)
+            return who == 'boss' and str(getattr(b, 'stance', '') or '').lower() == str(arg(a, '', 'stance', 's')).lower()
+        if m in ('variableisset', 'varisset'):
+            return b.var(str(arg(a, '', 'var', 'variable', 'name', 'key', 'k'))) is not None
+        if m in ('moving', 'ismoving'):
+            # el jugador de la prueba siempre se mueve; el jefe, si anda
+            return who == 'player' or bool(getattr(b, 'moving', False))
+        if m in ('sprinting', 'crouching', 'iscrouching', 'sneaking', 'inblock'):
+            return False
+        if m == 'altitude':
+            # en el suelo (0); los que vuelan como un ghast, a media altura (6): la prueba no tiene alturas
+            alt = 6.0 if AI.has(b.goals, 'type:ghast') or AI.flag(b.mob, 'NoGravity') else 0.0
+            return in_range(alt, arg(a, '>0', 'altitude', 'a', 'height', 'h'))
+        if m in ('ydiff', 'onground', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
             return m in ('ydiff', 'onground')
         self.unknown.add('cond:' + m)
         return True
@@ -1091,6 +1191,9 @@ class Sim:
                 return
         if pm.get('ch') not in (None, 1, 1.0) and random.random() >= float(pm['ch']):
             return
+        # SkillRuntime.exec: el modificador de vida de la línea, también dentro de una skill
+        if pm.get('hp') and not self.hp_ok(pm['hp']):
+            return
         delay = int(max(0, round(num(a.get('delay'), 0) / tempo())))
         repeat = int(num(arg(a, 0, 'repeat'), 0))
         every = max(1, int(round(num(arg(a, 1, 'repeatinterval', 'repeati'), 1) / tempo())))
@@ -1171,8 +1274,13 @@ class Sim:
                 pass
         elif m in ('state', 'animation', 'statetoggle', 'togglestate'):
             s = str(arg(a, '', 'state', 's', 'animation', 'a'))
+            # «hit_<random.1to3>» (SkillModels.state lo resuelve cada vez)
+            s = re.sub(r'<random\.(?:int\.)?(-?\d+)to(-?\d+)>', lambda mt: str(random.randint(int(mt.group(1)), int(mt.group(2)))), s)
+            if 'boss' in targets and str(arg(a, 'false', 'remove', 'r')).lower() == 'true':
+                self.script_tok = {k: v for k, v in self.script_tok.items() if v[0] != s}
             if str(arg(a, 'false', 'remove', 'r')).lower() == 'true' or 'boss' not in targets:
                 return
+            self.play_scripts(s, a)
             if self.root_on and self.root_bone:
                 self.root_motion(s)
             if s not in NOT_ATTACKS:
@@ -1197,6 +1305,35 @@ class Sim:
         elif m in ('setai', 'setnoai'):
             if 'boss' in targets:
                 b.ai = str(arg(a, 'true', 'ai', 'a')).lower() == 'true'
+        elif m in ('setmobscore', 'settargetscore', 'modifymobscore', 'modifytargetscore'):
+            # SkillMore.score: las de los mobs, en memoria (las de los jugadores no se tocan)
+            obj = str(arg(a, '', 'objective', 'obj', 'o'))
+            if obj and ('boss' in targets or m.endswith('mobscore')):
+                v = num(arg(a, 0, 'value', 'val', 'v'), 0)
+                now = b.scores.get(obj, 0.0)
+                act = str(arg(a, 'SET', 'action', 'a', 'mode')).upper()
+                if m.startswith('modify'):
+                    v = {'ADD': now + v, 'SUBTRACT': now - v, 'SUB': now - v, 'MULTIPLY': now * v, 'MULT': now * v,
+                         'DIVIDE': now / v if v else now, 'DIV': now / v if v else now}.get(act, v)
+                b.scores[obj] = v
+        elif m == 'setstance':
+            if 'boss' in targets:
+                b.stance = str(arg(a, '', 'stance', 's'))
+        elif m in ('runaigoalselector', 'aigoal', 'aigoals', 'runaitargetselector', 'aitarget'):
+            # BossEntity.addAiGoal: uno más en su IA (clear quita los de antes; en los de búsqueda, también su objetivo)
+            tgt = m in ('runaitargetselector', 'aitarget')
+            g = arg(a, None, *(('target', 'aitargetselector', 's', 'string', 'targetselector', 'goal', 'g') if tgt else
+                               ('goal', 'aigoalselector', 'g', 'goalselector', 's', 'string', 't', 'target')))
+            if g is not None:
+                if tgt:
+                    b.ai_targets = AI.apply(b.ai_targets, [g], True)
+                else:
+                    b.goals = AI.apply(b.goals, [g])
+                    b.chases, b.melee = AI.chases(b.goals), AI.melee(b.goals)
+        elif m in ('resetai', 'resetaigoals'):
+            b.goals = AI.vanilla_goals(b.mob.get('type'))
+            b.chases, b.melee = AI.chases(b.goals), AI.melee(b.goals)
+            b.ai = True
         elif m == 'lockmodel':
             if 'boss' in targets:
                 b.locked = str(arg(a, 'true', 'lock', 'l')).lower() == 'true'
@@ -1440,6 +1577,10 @@ def main():
                     print(f'       cerebro: {a.name:44s} {a.min:4.1f}-{a.max:4.1f} {tags:18s} usos {a.uses:3d} entran {a.hits:3d}')
         if s.cancelled_hits:
             print(f'     golpes anulados por el pack (cancelevent/modifydamage/invulnerable): {s.cancelled_hits} de {s.hits}')
+        if s.fireballs:
+            print(f'     bolas de fuego del ghast: {s.fireballs}')
+        if s.melee_hits:
+            print(f'     golpes de Minecraft (~onAttack) que entran: {s.melee_hits} de {s.melee_tries}')
         if s.unknown:
             print('     condiciones sin simular:', ', '.join(sorted(s.unknown)))
 

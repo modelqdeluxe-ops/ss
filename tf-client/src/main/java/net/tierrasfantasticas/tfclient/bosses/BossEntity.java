@@ -34,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
+import net.tierrasfantasticas.tfclient.skills.SkillAI;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs;
 import net.tierrasfantasticas.tfclient.skills.SkillMobs;
 import net.tierrasfantasticas.tfclient.vfx.VfxModel;
@@ -105,6 +106,31 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int moveUntil;
     /** model{syncbody}: el cuerpo sigue a la cabeza. */
     private boolean syncBodyOn = true;
+    /**
+     * Su IA de MythicMobs ahora (AIGoalSelectors y AITargetSelectors sobre la de su tipo, ver SkillAI): la de su
+     * MobDef al aparecer; runaigoalselector, runaitargetselector y resetai la cambian.
+     */
+    private List<String> goals = List.of();
+    private List<String> aiTargets = List.of();
+    /** MeleeAttackGoal: ticks hasta que puede volver a pegar (20 entre golpes). */
+    private int meleeWait;
+    /** RandomStrollGoal, PanicGoal, FleeSunGoal: a dónde va sin objetivo, a qué velocidad y si es huyendo. */
+    private Vec3 wanderGoal;
+    private double wanderSpeed = 1.0;
+    private boolean panicking;
+    /** Ghast (RandomFloatAroundGoal + GhastMoveControl + GhastShootFireballGoal): a dónde flota y su carga. */
+    private Vec3 floatGoal;
+    private int floatWait, ghastCharge;
+    /** bindhitbox: caja ob_ (sin prefijo, en minúsculas) → el mob atado a ella; y, en el atado, a quién y dónde. */
+    private final Map<String, BossEntity> bound = new HashMap<>();
+    private BossEntity boundTo;
+    private String boundBone;
+    /** Relevo (BossInfo.successors): el jefe que ha muerto y espera a su relevo, y el relevo que ya es el jefe. */
+    private boolean relay, successor;
+    private int players = 1;
+    /** LookAtPlayerGoal: a quién mira (sin objetivo) y hasta cuándo. */
+    private Player lookPlayer;
+    private int lookUntil;
 
     public BossEntity(EntityType<? extends BossEntity> type, Level level, boolean main) {
         super(type, level);
@@ -166,7 +192,20 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         load();
         this.owner = owner;
         this.difficulty = d == null ? Difficulty.NORMAL : d;
+        this.players = Math.max(1, players);
         if (def == null) return;
+        goals = new ArrayList<>(def.goals);
+        aiTargets = new ArrayList<>(def.aiTargets);
+        // Options: NoAI (los efectos de los packs que se mueven a golpe de teleport): sin IA desde que aparece
+        if (def.noAi) setAi(false);
+        if (def.noGravity || SkillAI.has(goals, "type:ghast")) setNoGravity(true); // el ghast vuela (FlyingMob)
+        getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(def.knockbackResistance);
+        // El empuje de su golpe (ATTACK_KNOCKBACK de su tipo de Minecraft: el devastador empuja, el hoglin lanza)
+        getAttribute(Attributes.ATTACK_KNOCKBACK).setBaseValue(switch (def.type) {
+            case "RAVAGER" -> 1.5;
+            case "HOGLIN", "ZOGLIN" -> 1.0;
+            default -> 0.0;
+        });
         SkillDefs.BossInfo bi = cls.bossInfo;
         double hp;
         if (owner == null && bi != null && def.name.equalsIgnoreCase(bi.mob)) {
@@ -256,7 +295,33 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     public boolean isMainBoss() {
-        return owner == null && cls != null && cls.bossInfo != null && def != null && def.name.equalsIgnoreCase(cls.bossInfo.mob);
+        return owner == null && cls != null && cls.bossInfo != null && def != null && (successor || def.name.equalsIgnoreCase(cls.bossInfo.mob));
+    }
+
+    /** ¿Es «mob» el relevo de este jefe (lo saca al morir y sigue la pelea)? */
+    boolean relayTo(SkillDefs.MobDef mob) {
+        return relay && mob != null && cls != null && cls.bossInfo != null && cls.bossInfo.successors.containsKey(mob.name.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * Este mob es el relevo de «from» (que acaba de morir): pasa a ser el jefe de la grieta, con la vida a la misma
+     * escala que la del jefe (la del pack × vida del jefe / vida del pack del jefe), su daño, su barra y la amenaza.
+     */
+    void becomeSuccessor(BossEntity from) {
+        successor = true;
+        SkillDefs.BossInfo bi = cls.bossInfo;
+        double hp = from.difficulty.healthFor(bi.health * Math.max(1, def.health) / Math.max(1, bi.packHealth), from.players);
+        healthScale = hp / Math.max(1, def.health);
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(bi.damage * difficulty.damage());
+        getAttribute(Attributes.ARMOR).setBaseValue(difficulty.armor());
+        this.entityData.set(MAX_HP, (float) hp);
+        setHealth((float) hp);
+        threat.putAll(from.threat);
+        if (from.rift != null) setRift(from.rift, from.home);
+        bar = new ServerBossEvent(barTitle(), color(def.barColor != null ? def.barColor : "PURPLE"), BossEvent.BossBarOverlay.NOTCHED_10);
+        bar.setDarkenScreen(false);
+        from.relay = false;
+        Rifts.relayed(from, this);
     }
 
     public Difficulty difficulty() {
@@ -378,24 +443,46 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return target;
     }
 
+    /**
+     * setai{ai=false} / Options: NoAI: como el setAI de Bukkit, el NoAI de Minecraft: ni piensa, ni anda, ni cae, ni
+     * le mueven los empujones (sus skills siguen: es lo que usan los packs para dejarlo quieto en una pose).
+     */
     @Override
     public void setAi(boolean on) {
         ai = on;
+        setNoAi(!on);
         if (!on) getNavigation().stop();
     }
 
-    /** resetai de MythicMobs: vuelve a tener la IA de su tipo (persigue y mira a su objetivo, aunque el pack la quitara). */
-    private boolean aiReset;
-
+    /** resetai de MythicMobs: vuelve a los objetivos de IA de su tipo de Minecraft (aunque el pack los quitara). */
     @Override
     public void resetAi() {
-        aiReset = true;
+        if (def != null) goals = new ArrayList<>(SkillAI.vanillaGoals(def.type));
         setAi(true);
     }
 
-    /** ¿Persigue y mira a su objetivo? (la IA del pack, o la de su tipo tras resetai). */
+    @Override
+    public void addAiGoal(String goal, boolean isTarget) {
+        boolean clear = (isTarget ? SkillAI.targetName(goal) : SkillAI.goalName(goal)).equals("clear");
+        if (isTarget) {
+            aiTargets = SkillAI.apply(aiTargets, List.of(goal), true);
+            // Al quitar sus objetivos de buscar, Minecraft olvida a quien perseguía (TargetGoal.stop)
+            if (clear) {
+                target = null;
+                setTarget(null);
+            }
+        } else {
+            goals = SkillAI.apply(goals, List.of(goal), false);
+            if (clear) {
+                getNavigation().stop();
+                wanderGoal = null;
+            }
+        }
+    }
+
+    /** ¿Persigue a su objetivo? (meleeattack, movetowardstarget...: su IA de ahora). */
     private boolean chases() {
-        return def != null && (def.chases || aiReset);
+        return def != null && SkillAI.chases(goals);
     }
 
     @Override
@@ -468,6 +555,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /** hitboxconfig del pack: hueso de la caja → cuánto daño deja pasar. */
     private final Map<String, Double> partPass = new HashMap<>();
+
+    @Override
+    public void bindHitbox(String part, SkillMobs.Host b) {
+        if (part == null || !(b instanceof BossEntity e)) return;
+        String key = part.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", "");
+        bound.put(key, e);
+        e.boundTo = this;
+        e.boundBone = part;
+    }
 
     @Override
     public void hitboxPass(String part, double pass) {
@@ -735,6 +831,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /** Un golpe a una de sus piezas (la cabeza de la Hidra): es un golpe a él. */
     boolean hurtPart(BossPart part, DamageSource src, float amount) {
+        if (!level().isClientSide && def != null) SkillMobs.hitPart(this, part.index());
+        // bindhitbox: esa caja es de otro mob (la cabeza de la Tormenta del Wither): el golpe es para él
+        if (!bound.isEmpty()) {
+            String bone = SkillMobs.partBone(this, part.index());
+            BossEntity b = bone == null ? null : bound.get(bone.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""));
+            if (b != null && b.isAlive() && !b.isRemoved()) return b.hurt(src, amount);
+        }
         // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone, en su modelo tal como está ahora)
         if (!partPass.isEmpty()) {
             String bone = SkillMobs.partBone(this, part.index());
@@ -759,7 +862,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             for (BossEntity m : level().getEntitiesOfClass(BossEntity.class, getBoundingBox().inflate(96), e -> e.owner == this && e.isAlive())) {
                 m.kill();
             }
-            if (isMainBoss()) Rifts.bossKilled(this, threatPlayers());
+            // Con relevo (el Mamut del Druida), la pelea sigue: la grieta espera a que caiga el relevo
+            if (isMainBoss() && !successor && cls.bossInfo != null && !cls.bossInfo.successors.isEmpty()) relay = true;
+            else if (isMainBoss()) Rifts.bossKilled(this, threatPlayers());
         }
     }
 
@@ -851,6 +956,18 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 SkillMobs.spawned(this);
             }
             SkillMobs.tick(this);
+            if (boundTo != null) {
+                // Atado a una caja de su jefe (bindhitbox): va en ella
+                if (boundTo.isRemoved()) {
+                    discard();
+                } else {
+                    Vec3 at = SkillMobs.bonePos(boundTo, boundBone);
+                    if (at != null) {
+                        setPos(at.x, at.y - getBbHeight() / 2, at.z);
+                        setDeltaMovement(Vec3.ZERO);
+                    }
+                }
+            }
             if (bar != null) updateBar();
             if (owner != null && (owner.isRemoved() || owner.dying() && owner.deathTime > 20)) discard();
         }
@@ -862,12 +979,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         super.customServerAiStep();
         if (def == null || dying()) return;
         if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
+        aiExtras();
         if (age < moveUntil) {
             // move{} del pack: lo lleva el pack este tick
+            meleeStep();
             turnBody();
             return;
         }
         Vec3 goal = null;
+        double speed = 1.0;
         // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,
         // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
         double stop = getBbWidth() / 2 + 1.0;
@@ -913,20 +1033,254 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 }
             }
         }
+        if (goal == gotoGoal && goal != null) speed = gotoSpeed;
+        if (goal != null) {
+            // Persigue, vuelve a su grieta o hace su goto: deja de pasear o de huir
+            wanderGoal = null;
+            panicking = false;
+        }
+        if (goal == null && (goal = idleGoal()) != null) {
+            stop = 1.0;
+            speed = wanderSpeed;
+        }
         if (ai && goal != null && getAttributeValue(Attributes.MOVEMENT_SPEED) > 0) {
             double d = Math.sqrt(horizontalDistanceSqr(goal));
             if (d > stop) {
                 if (--repath <= 0 || getNavigation().isDone()) {
-                    getNavigation().moveTo(goal.x, goal.y, goal.z, goal == gotoGoal ? gotoSpeed : 1.0);
+                    getNavigation().moveTo(goal.x, goal.y, goal.z, speed);
                     repath = 10;
                 }
             } else {
                 getNavigation().stop();
+                if (goal == wanderGoal) wanderGoal = null;
             }
         } else if (!getNavigation().isDone()) {
             getNavigation().stop();
         }
+        meleeStep();
+        ghastStep();
         turnBody();
+    }
+
+    /**
+     * El ghast de Minecraft: flota hacia un punto al azar a 16 bloques (RandomFloatAroundGoal; cada 2-6 ticks se
+     * empuja 0,1 hacia él si no hay nada en medio, GhastMoveControl) y, con su objetivo a 64 bloques y a la vista,
+     * carga 20 ticks y le lanza una bola de fuego (GhastShootFireballGoal; 40 de espera). ~onShoot puede cancelarla
+     * (el Contemplador y el Arconte Astral lo hacen: solo quieren su vuelo).
+     */
+    private void ghastStep() {
+        if (!ai || !SkillAI.has(goals, "type:ghast")) return;
+        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(position()) > 3600) {
+            Vec3 c = position();
+            floatGoal = c.add((getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16);
+            // sin salir de su grieta
+            if (home != null && floatGoal.distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) floatGoal = home.add(0, 4, 0);
+        }
+        if (floatWait-- <= 0) {
+            floatWait += getRandom().nextInt(5) + 2;
+            Vec3 d = floatGoal.subtract(position());
+            double len = d.length();
+            if (len > 1e-4) {
+                d = d.normalize();
+                AABB box = getBoundingBox();
+                boolean clear = true;
+                for (int i = 1; i < Math.ceil(len); i++) {
+                    box = box.move(d);
+                    if (!level().noCollision(this, box)) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (clear) setDeltaMovement(getDeltaMovement().add(d.scale(0.1)));
+                else floatGoal = null;
+            }
+        }
+        if (target == null) {
+            ghastCharge = 0;
+            return;
+        }
+        if (target.distanceToSqr(this) < 4096 && hasLineOfSight(target)) {
+            if (++ghastCharge == 20) {
+                ghastCharge = -40;
+                if (!SkillMobs.shootCancelled(this, target)) {
+                    // Sale a 4 bloques delante de donde mira (la potencia de su explosión, la del ghast: 1)
+                    double vx = -Mth.sin(lookYaw * Mth.DEG_TO_RAD), vz = Mth.cos(lookYaw * Mth.DEG_TO_RAD);
+                    double dx = target.getX() - (getX() + vx * 4), dy = target.getY(0.5) - (0.5 + getY(0.5)), dz = target.getZ() - (getZ() + vz * 4);
+                    net.minecraft.world.entity.projectile.LargeFireball ball = new net.minecraft.world.entity.projectile.LargeFireball(level(), this, dx, dy, dz, 1);
+                    ball.setPos(getX() + vx * 4, getY(0.5) + 0.5, getZ() + vz * 4);
+                    level().addFreshEntity(ball);
+                }
+            }
+        } else if (ghastCharge > 0) {
+            ghastCharge--;
+        }
+    }
+
+    /**
+     * Lo que hace sin nadie a quien perseguir (o, sin objetivos que persigan, aunque lo tenga): huir un rato si le
+     * pegan (PanicGoal), buscar sombra si arde al sol (FleeSunGoal), volver a donde apareció (gotospawnlocation) o
+     * pasear (RandomStrollGoal: de vez en cuando, a un sitio a menos de 10 bloques, sin salir de su grieta).
+     */
+    private Vec3 idleGoal() {
+        if (!ai) return null;
+        if (target != null && chases()) return null;
+        if (wanderGoal != null && getNavigation().isDone() && Math.sqrt(horizontalDistanceSqr(wanderGoal)) <= 1.0) wanderGoal = null;
+        if (panicking && wanderGoal == null) panicking = false;
+        if (SkillAI.has(goals, "panic") && !panicking && (getLastHurtByMob() != null || isOnFire())) {
+            Vec3 to = net.minecraft.world.entity.ai.util.DefaultRandomPos.getPos(this, 5, 4);
+            if (to != null && inLeash(to)) {
+                wanderGoal = to;
+                wanderSpeed = 1.25;
+                panicking = true;
+            }
+        }
+        if (wanderGoal == null && target == null && SkillAI.has(goals, "fleesun") && level().isDay() && isOnFire()
+                && level().canSeeSky(blockPosition())) {
+            Vec3 to = shade();
+            if (to != null) {
+                wanderGoal = to;
+                wanderSpeed = 1.0;
+            }
+        }
+        if (wanderGoal == null && SkillAI.has(goals, "gotospawnlocation") && spawnAt != null
+                && Math.sqrt(horizontalDistanceSqr(spawnAt)) > 2) {
+            wanderSpeed = 1.0;
+            return spawnAt;
+        }
+        if (wanderGoal == null && SkillAI.has(goals, "randomstroll") && getRandom().nextInt(120) == 0) {
+            Vec3 to = net.minecraft.world.entity.ai.util.LandRandomPos.getPos(this, 10, 7);
+            if (to != null && inLeash(to)) {
+                wanderGoal = to;
+                wanderSpeed = 1.0;
+            }
+        }
+        return wanderGoal;
+    }
+
+    private boolean inLeash(Vec3 at) {
+        return home == null || at.distanceToSqr(home) < Rifts.LEASH * Rifts.LEASH;
+    }
+
+    /** FleeSunGoal.getHidePos: un sitio cerca sin cielo encima. */
+    private Vec3 shade() {
+        BlockPos here = blockPosition();
+        for (int i = 0; i < 10; i++) {
+            BlockPos p = here.offset(getRandom().nextInt(20) - 10, getRandom().nextInt(6) - 3, getRandom().nextInt(20) - 10);
+            if (!level().canSeeSky(p) && getWalkTargetValue(p) < 0.0F) return Vec3.atBottomCenterOf(p);
+        }
+        return null;
+    }
+
+    /**
+     * Lo que su IA hace cada tick además de andar: flotar en el agua (FloatGoal), saltar sobre su objetivo
+     * (LeapAtTargetGoal: a 2-4 bloques, desde el suelo), no andar al sol (RestrictSunGoal) y arder al sol si su tipo lo
+     * hace (Mob.isSunBurnTick, salvo con PreventSunburn).
+     */
+    private void aiExtras() {
+        if (!ai) return;
+        if (SkillAI.has(goals, "float") && (isInWater() && getFluidHeight(net.minecraft.tags.FluidTags.WATER) > getFluidJumpThreshold()
+                || isInLava()) && getRandom().nextFloat() < 0.8F) {
+            getJumpControl().jump();
+        }
+        if (target != null && onGround() && SkillAI.has(goals, "leapattarget")) {
+            double d = distanceToSqr(target);
+            // canUse se mira cada 2 ticks con 1 entre 3 (reducedTickDelay(5)): 1 entre 6 por tick
+            if (d >= 4 && d <= 16 && getRandom().nextInt(6) == 0) {
+                Vec3 dir = new Vec3(target.getX() - getX(), 0, target.getZ() - getZ());
+                if (dir.lengthSqr() > 1.0E-7) dir = dir.normalize().scale(0.4).add(getDeltaMovement().scale(0.2));
+                setDeltaMovement(dir.x, 0.4, dir.z);
+            }
+        }
+        if (getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation g) {
+            g.setAvoidSun(SkillAI.has(goals, "restrictsun") && level().isDay());
+        }
+    }
+
+    @Override
+    public void aiStep() {
+        // Se quema al sol como su tipo de Minecraft (zombi, esqueleto...), si el pack no lo evita con PreventSunburn
+        if (!level().isClientSide && def != null && def.sunburn && ai && isAlive() && isSunBurnTick()) setSecondsOnFire(8);
+        super.aiStep();
+    }
+
+    // ------------------------------------------------------------------------------------------- el golpe de Minecraft
+
+    /**
+     * MeleeAttackGoal (meleeattack, zombieattack, spiderattack): con su objetivo al alcance ((ancho × 2)² + el ancho del
+     * objetivo, en distancia al cuadrado; spiderattack, 4 + el ancho) y 20 ticks desde el anterior, le pega.
+     */
+    private void meleeStep() {
+        if (!ai || target == null || dying() || !SkillAI.melee(goals) || !target.isAlive()) {
+            meleeWait = 0; // MeleeAttackGoal.start: el primer golpe sale en cuanto llega
+            return;
+        }
+        if (meleeWait > 0) meleeWait--;
+        double reach = SkillAI.has(goals, "meleeattack", "zombieattack") ? Math.pow(getBbWidth() * 2.0, 2) + target.getBbWidth()
+                : 4.0 + target.getBbWidth();
+        if (meleeWait <= 0 && distanceToSqr(target.getX(), target.getY(), target.getZ()) <= reach) {
+            meleeWait = 20;
+            doHurtTarget(target);
+        }
+    }
+
+    /**
+     * El golpe de Minecraft de su tipo (Mob.doHurtTarget y los suyos: el del gólem entre media y vez y media su daño
+     * y lanza hacia arriba, el del hoglin lanza, el del husk da hambre, el del esqueleto del Wither marchita, el de la
+     * araña de cueva envenena). Antes de que entre, sus ~onAttack (cancelevent lo anula, modifydamage lo cambia).
+     */
+    @Override
+    public boolean doHurtTarget(Entity victim) {
+        if (def == null || level().isClientSide || !(victim instanceof LivingEntity le)) return false;
+        String type = def.type;
+        float base = (float) getAttributeValue(Attributes.ATTACK_DAMAGE);
+        boolean golem = type.equals("IRON_GOLEM"), hoglin = type.equals("HOGLIN") || type.equals("ZOGLIN");
+        float dmg = (golem || hoglin) && (int) base > 0 ? base / 2F + getRandom().nextInt((int) base) : base;
+        SkillMobs.Hit hit = SkillMobs.attack(this, le, dmg);
+        if (dying() || hit.cancelled || hit.amount <= 0 || !le.isAlive()) return false;
+        float kb = (float) getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        if (!le.hurt(damageSources().mobAttack(this), (float) hit.amount)) return false;
+        double res = le.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+        if (golem) {
+            le.setDeltaMovement(le.getDeltaMovement().add(0, 0.4 * Math.max(0, 1 - res), 0));
+        } else if (hoglin) {
+            // HoglinBase.throwTarget
+            double push = kb - res;
+            if (push > 0) {
+                Vec3 v = new Vec3(le.getX() - getX(), 0, le.getZ() - getZ()).normalize()
+                        .scale(push * (getRandom().nextFloat() * 0.5 + 0.2)).yRot(getRandom().nextInt(21) - 10);
+                le.push(v.x, push * getRandom().nextFloat() * 0.5, v.z);
+                le.hurtMarked = true;
+            }
+        } else if (kb > 0) {
+            le.knockback(kb * 0.5F, Mth.sin(lookYaw * Mth.DEG_TO_RAD), -Mth.cos(lookYaw * Mth.DEG_TO_RAD));
+            setDeltaMovement(getDeltaMovement().multiply(0.6, 1, 0.6));
+        }
+        float diff = level().getCurrentDifficultyAt(blockPosition()).getEffectiveDifficulty();
+        switch (type) {
+            case "ZOMBIE", "HUSK", "DROWNED", "ZOMBIE_VILLAGER", "ZOMBIFIED_PIGLIN", "PIG_ZOMBIE" -> {
+                if (isOnFire() && getRandom().nextFloat() < diff * 0.3F) le.setSecondsOnFire(2 * (int) diff);
+                if (type.equals("HUSK")) {
+                    le.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.HUNGER,
+                            140 * (int) diff), this);
+                }
+            }
+            case "WITHER_SKELETON" -> le.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.WITHER, 200), this);
+            case "CAVE_SPIDER" -> {
+                int secs = switch (level().getDifficulty()) {
+                    case NORMAL -> 7;
+                    case HARD -> 15;
+                    default -> 0;
+                };
+                if (secs > 0) le.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON,
+                        secs * 20, 0), this);
+            }
+            default -> {
+            }
+        }
+        doEnchantDamageEffects(this, le);
+        setLastHurtMob(le);
+        return true;
     }
 
     private double horizontalDistanceSqr(Vec3 p) {
@@ -944,9 +1298,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         float want = bodyYaw;
         Vec3 v = getDeltaMovement();
         boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
-        if (chases() && ai) {
-            if (target != null) {
-                Vec3 d = target.position().subtract(position());
+        // Anda por su cuenta (persigue, pasea o huye) y a quién mira (su objetivo, o un jugador cerca con lookatplayers)
+        boolean walks = ai && (chases() || wanderGoal != null || SkillAI.has(goals, "type:ghast"));
+        Entity look = ai ? lookAt() : null;
+        if (walks || look != null) {
+            if (look != null) {
+                Vec3 d = look.position().subtract(position());
                 if (d.x * d.x + d.z * d.z > 1e-4) want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
             } else if (moving) {
                 want = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
@@ -961,13 +1318,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         float diff = Mth.wrapDegrees(want - bodyYaw);
-        float track = chases() && ai ? SkillMobs.tracking(this) : 0F;
+        float track = walks ? SkillMobs.tracking(this) : 0F;
         if (track > 0 && !moving) {
             // Atacando (antes de que el modelo se bloquee): sigue al jugador, como los jefes de los Souls al cargar el golpe
             bodyYaw += Mth.clamp(diff, -track, track);
             diff = Mth.wrapDegrees(want - bodyYaw);
             turnWait = 0;
-        } else if (moving && chases() && ai) {
+        } else if (moving && walks) {
             // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
             bodyYaw += Mth.clamp(diff, -20F, 20F);
             turnWait = 0;
@@ -998,15 +1355,46 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         }
         float head = Mth.wrapDegrees(want - bodyYaw);
         yHeadRot = bodyYaw + Mth.clamp(head, -maxHead, maxHead);
-        if (target != null) {
+        if (look != null && !def.lockPitch) {
             Vec3 eye = getEyePosition();
-            Vec3 to = target.getEyePosition().subtract(eye);
+            Vec3 to = look.getEyePosition().subtract(eye);
             float pitch = (float) -Math.toDegrees(Math.atan2(to.y, Math.sqrt(to.x * to.x + to.z * to.z)));
             setXRot(Mth.clamp(pitch, -Math.min(45F, maxHead), Math.min(45F, maxHead)));
-        } else {
+        } else if (ai || def.lockPitch) {
+            // Sin nadie a quien mirar (o con LockPitch), la cabeza vuelve al frente (LookControl); sin IA se queda como esté
             setXRot(getXRot() * 0.8F);
         }
         syncBody();
+    }
+
+    /**
+     * A quién mira: a su objetivo si lo persigue o tiene lookattarget{r} (a menos de r bloques); si no, con
+     * lookatplayers{r} (LookAtPlayerGoal: 8 bloques), de vez en cuando (2 % por tick) a un jugador cerca, 2-4 s.
+     */
+    private Entity lookAt() {
+        if (target != null) {
+            if (chases()) return target;
+            // GhastLookGoal: a su objetivo si está a menos de 64 bloques
+            if (SkillAI.has(goals, "type:ghast") && target.distanceToSqr(this) < 4096) return target;
+            String g = SkillAI.find(goals, "lookattarget");
+            if (g != null) {
+                double r = SkillAI.arg(g, 64, "r", "range", "radius");
+                if (target.distanceToSqr(this) <= r * r) return target;
+            }
+        }
+        String g = SkillAI.find(goals, "lookatplayers");
+        if (g == null) return null;
+        double r = SkillAI.arg(g, 8, "r", "range", "radius");
+        if (lookPlayer != null && age < lookUntil && lookPlayer.isAlive() && lookPlayer.distanceToSqr(this) <= r * r) return lookPlayer;
+        lookPlayer = null;
+        if (getRandom().nextFloat() < 0.02F) {
+            Player p = level().getNearestPlayer(this, r);
+            if (p != null && !p.isSpectator()) {
+                lookPlayer = p;
+                lookUntil = age + 40 + getRandom().nextInt(40);
+            }
+        }
+        return lookPlayer;
     }
 
     private void syncBody() {
@@ -1016,10 +1404,28 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         this.entityData.set(BODY_YAW, bodyYaw);
     }
 
-    /** Objetivo: entre los jugadores a su alcance, el que más daño le ha hecho; si nadie, el más cercano. */
+    /**
+     * Objetivo, según sus AITargetSelectors: con «players», entre los jugadores a su alcance el que más daño le ha
+     * hecho (si nadie, el más cercano); con «hurtbytarget» solo, entre los que le han pegado; con «monsters», si no
+     * hay jugador, el monstruo más cercano que no sea de su grupo. Sin ninguno (clear), solo sus skills le dan objetivo.
+     */
     private void pickTarget() {
         if (!(level() instanceof ServerLevel sl)) return;
         double range = getAttributeValue(Attributes.FOLLOW_RANGE);
+        // SpiderTargetGoal: a los jugadores solo a oscuras (el que ya tiene lo sigue)
+        boolean players = SkillAI.hasTarget(aiTargets, "players")
+                || SkillAI.hasTarget(aiTargets, "type:spider") && (target != null || getLightLevelDependentMagicValue() < 0.5F);
+        boolean hurtBy = SkillAI.hasTarget(aiTargets, "hurtbytarget");
+        boolean monsters = SkillAI.hasTarget(aiTargets, "monsters"), villagers = SkillAI.hasTarget(aiTargets, "villagers"),
+                golems = SkillAI.hasTarget(aiTargets, "irongolem");
+        boolean mobs = monsters || villagers || golems;
+        if (!players && !hurtBy && !mobs) {
+            if (target != null && (!target.isAlive() || target.isRemoved() || target.distanceToSqr(this) > range * range)) {
+                target = null;
+                setTarget(null);
+            }
+            return;
+        }
         Vec3 c = home != null ? home : position();
         LivingEntity best = null;
         double bestThreat = -1, bestDist = Double.MAX_VALUE;
@@ -1028,6 +1434,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         for (double v : threat.values()) top = Math.max(top, v);
         for (ServerPlayer p : sl.players()) {
             if (!p.isAlive() || p.isSpectator() || p.isCreative()) continue;
+            if (!players && !threat.containsKey(p.getUUID())) continue;
             double d = p.distanceToSqr(this);
             if (d > range * range || home != null && p.position().distanceToSqr(c) > (Rifts.LEASH + 8) * (Rifts.LEASH + 8)) continue;
             double t = threat.getOrDefault(p.getUUID(), 0.0);
@@ -1049,8 +1456,31 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             double now = threat.getOrDefault(target.getUUID(), 0.0);
             if (bestThreat < now * 1.2 + 5 && target.distanceToSqr(this) <= range * range) best = target;
         }
-        target = best;
-        setTarget(best);
+        LivingEntity pick = best;
+        if (pick == null && mobs) {
+            // NearestAttackableTargetGoal de monstruos (el gólem no va a por los creepers), aldeanos y gólems de hierro;
+            // los de su grupo no cuentan
+            if (target != null && !(target instanceof Player) && target.isAlive() && target.distanceToSqr(this) <= range * range
+                    && SkillMobs.host(target) == null) {
+                pick = target;
+            } else {
+                double bd = Double.MAX_VALUE;
+                for (Mob m : sl.getEntitiesOfClass(Mob.class, getBoundingBox().inflate(range), e -> e != this && e.isAlive()
+                        && (monsters && e instanceof Enemy && !(def.type.equals("IRON_GOLEM") && e instanceof net.minecraft.world.entity.monster.Creeper)
+                        || villagers && e instanceof net.minecraft.world.entity.npc.AbstractVillager
+                        || golems && e instanceof net.minecraft.world.entity.animal.IronGolem))) {
+                    SkillMobs.Host h = SkillMobs.host(m);
+                    if (h != null && h.boss() == boss()) continue;
+                    double d = m.distanceToSqr(this);
+                    if (d < bd && d <= range * range) {
+                        bd = d;
+                        pick = m;
+                    }
+                }
+            }
+        }
+        target = pick;
+        setTarget(pick);
     }
 
     private void updateBar() {
@@ -1067,6 +1497,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Component barTitle() {
         SkillDefs.BossInfo bi = cls == null ? null : cls.bossInfo;
         String name = bi != null ? bi.name : def != null && def.display != null ? def.display : "Jefe";
+        if (successor && bi != null) name = bi.successors.getOrDefault(def.name.toLowerCase(java.util.Locale.ROOT), name);
         return Component.literal(name).withStyle(s -> s.withColor(TextColor.fromRgb(bi != null ? bi.color : 0xFFFFFF)).withBold(true))
                 .append(Component.literal("  ·  " + difficulty.label()).withStyle(s -> s.withColor(TextColor.fromRgb(difficulty.color())).withBold(false)));
     }
@@ -1093,12 +1524,17 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             if (bar != null) bar.removeAllPlayers();
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);
+            // Murió esperando un relevo que no llegó a salir: la pelea se gana con él
+            if (relay && reason == RemovalReason.KILLED) Rifts.bossKilled(this, threatPlayers());
         }
         super.remove(reason);
     }
 
     @Override
     public Component getName() {
+        if (successor && cls.bossInfo.successors.containsKey(def.name.toLowerCase(java.util.Locale.ROOT))) {
+            return Component.literal(cls.bossInfo.successors.get(def.name.toLowerCase(java.util.Locale.ROOT)));
+        }
         if (cls != null && cls.bossInfo != null && isMainBoss()) return Component.literal(cls.bossInfo.name);
         if (def != null && def.display != null) return Component.literal(def.display);
         return super.getName();

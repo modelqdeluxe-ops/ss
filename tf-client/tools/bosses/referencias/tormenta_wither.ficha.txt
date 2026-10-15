@@ -1,0 +1,20 @@
+jefe tormenta_wither: mob LRD_WITHERSTORM, vida 1800 (pack 750), daño 9, modelo tormenta_wither.lrd_witherstorm, caja [8.5625, 22.375], ataques 5
+mob LRD_WITHERSTORM: IRON_GOLEM, caja 8.5625×22.375 (ojos 19.0188, escala 1.0, del modelo), velocidad 0, vida 750, daño 2, IA None, modificadores ['CRAMMING 0.00'], 49 líneas
+mob LRD_WITHERSTORM_HEAD_1: IRON_GOLEM, caja 1.4×2.7 (ojos 2.295, escala 1.0, de su tipo), velocidad 0.25, vida 1000, daño None, IA None, modificadores ['CRAMMING 0.00'], 5 líneas
+mob LRD_WITHERSTORM_HEAD_2: IRON_GOLEM, caja 1.4×2.7 (ojos 2.295, escala 1.0, de su tipo), velocidad 0.25, vida 1000, daño None, IA None, modificadores ['CRAMMING 0.00'], 5 líneas
+mob LRD_WITHERSTORM_HEAD_3: IRON_GOLEM, caja 1.4×2.7 (ojos 2.295, escala 1.0, de su tipo), velocidad 0.25, vida 1000, daño None, IA None, modificadores ['CRAMMING 0.00'], 5 líneas
+mob LRD_WITHERSTORM_PROJECTILE_FX: efecto ARMOR_STAND, modelo tormenta_wither.lrd_witherstorm_projectile_bacteria, 5 líneas
+mob LRD_WITHERSTORM_RIFT_PORTAL: efecto ARMOR_STAND, modelo tormenta_wither.lrd_witherstorm_rift, 12 líneas
+mob LRD_WITHERSTORM_RIFT_PORTAL_CHUNK: efecto ARMOR_STAND, modelo tormenta_wither.lrd_witherstorm_chunk, 7 líneas
+mob LRD_WITHERSTORM_RIFT_PORTAL_CHUNK_EXPLOSION_FX: efecto ARMOR_STAND, modelo None, 3 líneas
+  modelo tormenta_wither.lrd_witherstorm: 122 huesos, huella 7723fce2aff6f77d, caja [8.5625, 22.375], sombra None, ghost 3, hitbox_obb 4
+    animaciones: death:6.0 head_1_idle:6.0 head_1_projectile:4.5 head_1_tractor_beam:12.0 head_1_tractor_bite:2.0 head_1_tractor_interrupt:2.0 head_2_idle:6.0 head_2_projectile:4.5 head_2_tractor_beam:12.0 head_2_tractor_bite:2.0 head_2_tractor_interrupt:2.0 head_3_idle:6.0 head_3_projectile:4.5 head_3_tractor_beam:12.0 head_3_tractor_bite:2.0 head_3_tractor_interrupt:2.0 idle:6.0 passive:2.83333 spawn:6.0 wither_storm_spin_layer:6.0
+  modelo tormenta_wither.lrd_witherstorm_chunk: 1 huesos, huella 2a5f12adf9115453, caja [4.0, 4.0], sombra None, 
+    animaciones: idle:2.0 spawn:0.25
+  modelo tormenta_wither.lrd_witherstorm_head: 1 huesos, huella 790e98934fbf50b6, caja [5.0, 5.0], sombra None, 
+    animaciones: passive:4.0 spawn:4.0
+  modelo tormenta_wither.lrd_witherstorm_projectile_bacteria: 1 huesos, huella 4368047286156065, caja None, sombra None, head 1
+    cabezas: bacteria_1
+    animaciones: spawn:1.0
+  modelo tormenta_wither.lrd_witherstorm_rift: 1 huesos, huella 83170c80f5056d3b, caja None, sombra None, 
+    animaciones: spawn:5.0

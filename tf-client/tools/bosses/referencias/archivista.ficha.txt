@@ -1,0 +1,19 @@
+jefe archivista: mob the_archivist, vida 600 (pack 150), daño 7, modelo archivista.the_archivist, caja None, ataques 5
+mob the_archivist: IRON_GOLEM, caja 1.4×2.7 (ojos 2.295, escala 1.0, del modelo), velocidad 0.2, vida 150, daño 1, IA ['clear'], modificadores None, 27 líneas
+mob the_archivist_AOE: efecto ARMOR_STAND, modelo archivista.thearchivist_groundexplosion, 10 líneas
+mob the_archivist_AOE_telegraph: efecto ARMOR_STAND, modelo archivista.thearchivist_telegraph, 10 líneas
+mob the_archivist_LINE_telegraph: efecto ARMOR_STAND, modelo archivista.thearchivist_slash_fx, 13 líneas
+mob the_archivist_candlewarrior: IRON_GOLEM, caja 0.875×1.9375 (ojos 1.6469, escala 1.0, del modelo), velocidad 0.3, vida 14, daño 1, IA None, modificadores None, 17 líneas
+mob the_archivist_groundbreak: efecto ARMOR_STAND, modelo archivista.thearchivist_groundfx, 8 líneas
+  modelo archivista.the_archivist: 86 huesos, huella 038785a5ab1c64b3, caja None, sombra None, ghost 2, hitbox_obb 6
+    animaciones: candle_spin:7.5 death:4.0 idle:2.0 line_magic:2.0 move_backward:1.5 move_forward:1.5 passive_layer:1.5 strafe_left:0.0 strafe_right:0.0 summon_candles:3.0 turn_left:0.0 turn_right:0.0 use_book:9.0 use_book_laser:9.0 walk:1.5
+  modelo archivista.thearchivist_candlewarrior: 12 huesos, huella 3448ab60c2a670fe, caja [0.875, 1.9375], sombra None, ghost 1
+    animaciones: attack_1:1.0 attack_2:1.0 death:2.0 idle:1.5 inair:1.5 land:1.79167 spawn:2.5 walk:0.83333
+  modelo archivista.thearchivist_groundexplosion: 2 huesos, huella a9d26d3542c4cb81, caja None, sombra None, 
+    animaciones: spawn:1.20833
+  modelo archivista.thearchivist_groundfx: 2 huesos, huella 293e3bda4e029e0e, caja None, sombra None, 
+    animaciones: spawn:0.75
+  modelo archivista.thearchivist_slash_fx: 5 huesos, huella fdaeae632d606115, caja None, sombra None, 
+    animaciones: spawn:2.5
+  modelo archivista.thearchivist_telegraph: 1 huesos, huella 1cd19dd30b903c15, caja None, sombra None, 
+    animaciones: spawn:2.5

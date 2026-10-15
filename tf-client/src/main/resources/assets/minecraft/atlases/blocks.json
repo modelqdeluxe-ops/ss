@@ -2,13 +2,43 @@
  "sources": [
   {
    "type": "directory",
+   "source": "bosses/arconte_astral/littleroom_astralarchon",
+   "prefix": "bosses/arconte_astral/littleroom_astralarchon/"
+  },
+  {
+   "type": "directory",
    "source": "bosses/astwood/modelengine",
    "prefix": "bosses/astwood/modelengine/"
   },
   {
    "type": "directory",
+   "source": "bosses/contemplador/modelengine",
+   "prefix": "bosses/contemplador/modelengine/"
+  },
+  {
+   "type": "directory",
+   "source": "bosses/druida_boreal/modelengine",
+   "prefix": "bosses/druida_boreal/modelengine/"
+  },
+  {
+   "type": "directory",
+   "source": "bosses/eldric/littleroom_eldric",
+   "prefix": "bosses/eldric/littleroom_eldric/"
+  },
+  {
+   "type": "directory",
    "source": "bosses/esqueleto_torre/modelengine",
    "prefix": "bosses/esqueleto_torre/modelengine/"
+  },
+  {
+   "type": "directory",
+   "source": "bosses/piglin_mecha/modelengine",
+   "prefix": "bosses/piglin_mecha/modelengine/"
+  },
+  {
+   "type": "directory",
+   "source": "bosses/rey_calabaza/modelengine",
+   "prefix": "bosses/rey_calabaza/modelengine/"
   },
   {
    "type": "directory",

@@ -103,17 +103,24 @@ def parse_line(line):
         name = 'effect:' + name[2:]
     # Espacios de nombres: «meg:glow» es la de ModelEngine (glowbone; «glow» suelta es la de MythicMobs), «meg:X» es X
     # y «mythicmobs:X» es X
+    short_skill = None
     if ':' in name and not name.startswith('effect:'):
         ns, base = name.split(':', 1)
         if ns in ('meg', 'modelengine'):
             name = MEG_RENAME.get(base, base)
         elif ns in ('mythicmobs', 'mythic', 'mm'):
             name = base
+        elif ns in ('skill', 'metaskill', 'cast'):
+            # «skill:NOMBRE» de MythicMobs = skill{s=NOMBRE}
+            name, short_skill = 'skill', base
     rest = line[m.end():]
     args = {}
     if rest.startswith('{'):
         body, rest = take_braces(rest)
         args = parse_args(body)
+    if short_skill:
+        args = dict(args)
+        args.setdefault('s', short_skill)
     # valor suelto tras la mecánica («delay 28», «aura 20»...)
     pm = re.match(r'^\s+("[^"]*"|\'[^\']*\'|[^\s@~?{}]+)', rest)  # entre comillas: «delay "<modifier.duration> * 20"»
     if pm and not re.fullmatch(r'0?\.\d+', pm.group(1)):
@@ -161,6 +168,22 @@ def parse_line(line):
     for k, dest in (('hitconditions', 'hc'), ('hc', 'hc'), ('stopconditions', 'sc')):
         if k in args and str(args[k]).strip().startswith('['):
             out[dest] = inline_conds(args.pop(k))
+    # raytrace/raytraceTo: sus skills con el nombre largo (es/ls/hs son también otras cosas en otras mecánicas)
+    if out.get('m') in ('raytrace', 'raytraceto'):
+        for short, long_ in (('es', 'entityskill'), ('ls', 'locationskill'), ('hs', 'headshotskill')):
+            if short in args and long_ not in args:
+                args[long_] = args.pop(short)
+        # raytraceConditions: a quién puede tocar el rayo (como las hitConditions de un proyectil)
+        for k in ('raytraceconditions', 'rc', 'rcond', 'rconditions'):
+            if k in args and str(args[k]).strip().startswith('['):
+                out['hc'] = inline_conds(args.pop(k))
+                break
+    # terminable: sus condiciones para cortarse van como stopConditions
+    if out.get('m') in ('terminable', 'stoppable', 'cancelable', 'exit', 'terminatable'):
+        for k in ('terminateconditions', 'conditions', 'cond', 'c'):
+            if k in args and str(args[k]).strip().startswith('['):
+                out['sc'] = inline_conds(args.pop(k))
+                break
     # bounceConditions de chain/chainmissile: a quién puede saltar
     if out.get('m') in ('chain', 'chainmissile', 'cmi'):
         for k in ('bounceconditions', 'conditions', 'cond', 'c'):
@@ -261,9 +284,31 @@ def parse_condition(line):
     m = re.match(r'^(!?[\w:]+)\s*(\{[^}]*\})?\s*(.*)$', line)
     if not m:
         return None
-    rest = m.group(3).strip().lower()
-    return {'m': m.group(1).lower(), 'a': parse_args(m.group(2)[1:-1]) if m.group(2) else {},
-            'v': rest or 'true'}
+    rest = m.group(3).strip()
+    name = m.group(1).lower()
+    args = parse_args(m.group(2)[1:-1]) if m.group(2) else {}
+    # Forma antigua de MythicMobs: «- hasaura Dive false», «- targetwithin 25», «- stance rage false»: el valor suelto
+    # es su atributo principal (el «conditionVar» que cada condición toma como valor por defecto)
+    if not m.group(2) and rest:
+        first, _, after = rest.partition(' ')
+        if first.lower() not in CONDITION_ACTIONS:
+            args = {LEGACY_CONDITION_KEY.get(name.lstrip('!'), '_'): first}
+            rest = after.strip()
+    return {'m': name, 'a': args, 'v': rest.lower() or 'true'}
+
+
+# Lo que va detrás del nombre de una condición: su acción (true/false, power, cast...)
+CONDITION_ACTIONS = {'true', 'false', 'power', 'cast', 'castinstead', 'orelsecast', 'required', 'cancel'}
+# El atributo que es el valor suelto de cada condición en la forma antigua («- hasaura Dive false»: aura=Dive). Las que
+# no estén aquí lo guardan en «_» y el auditor de los jefes lo marca para añadirlas
+LEGACY_CONDITION_KEY = {
+    'hasaura': 'aura', 'hasbuff': 'aura', 'targetwithin': 'd', 'targetnotwithin': 'd', 'playerwithin': 'd',
+    'playernotwithin': 'd', 'distance': 'd', 'stance': 's', 'biome': 'b', 'variableisset': 'var', 'varisset': 'var',
+    'health': 'h', 'healthpercent': 'p', 'altitude': 'a', 'score': 'v', 'entitytype': 't', 'mobtype': 't',
+    'mythicmobtype': 't', 'world': 'w', 'gamemode': 'm', 'haspotioneffect': 't', 'haspotion': 't', 'faction': 'f',
+    'lightlevel': 'l', 'height': 'h', 'mobsinradius': 'a', 'moving': 'v', 'inblock': 'b', 'onblock': 'b',
+    'hastag': 't', 'dawn': 'v', 'level': 'l', 'yaw': 'y', 'pitch': 'p', 'chance': 'c', 'offgcd': 'v',
+}
 
 
 def pick_files(pack_dir):
@@ -298,8 +343,10 @@ def pick_files(pack_dir):
 
 
 # mecánicas que llaman a otra skill con s= / skill= (en las demás, s= es un sonido, un estado de animación...)
-CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillsequence', 'delayedskill', 'forcepull'}
-CALLBACK_KEYS = ('ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
+CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillsequence', 'delayedskill', 'forcepull', 'vskill',
+           'variableskill', 'metavariableskill'}
+CALLBACK_KEYS = ('onterminate', 'ox', 'entityskill', 'locationskill', 'headshotskill', 'eskill', 'lskill', 'hsskill',
+                 'ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
                  'ontickskill', 'onhitskill', 'onendskill', 'onstartskill', 'then', 'else', 'oncast', 'onapply',
                  'onexpire', 'onattack', 'ondamaged', 'onlandskill', 'onland', 'onbreak', 'ondeath', 'onswing',
                  'ondamagedskill', 'onhitentity', 'onsummon', 'onsummonskill', 'op', 'onpoint', 'onpointskill', 'od',
@@ -357,13 +404,19 @@ def refs(mech):
             skills += skill_names(a[k])
     if m == 'switch' and a.get('cases'):
         skills += [x.split('=', 1)[1] for x in str(a['cases']).split(',') if '=' in x]
-    if m in ('summon', 'totem', 'projectile', 'missile', 'orbital', 'shoot', 'mountmodel', 'mythicmobtype', 'spawn'):
+    if m in ('summon', 'totem', 'projectile', 'missile', 'orbital', 'shoot', 'mountmodel', 'mythicmobtype', 'spawn',
+             'bindhitbox'):
         for k in ('type', 't', 'mob', 'mobtype', 'bullettype', 'bm', 'bulletmob', 'mm'):
             v = a.get(k)
-            if v and v.upper() not in ('MOB', 'ARROW', 'ITEM', 'DISPLAY', 'BLOCK', 'SMALL_FIREBALL', 'TRIDENT',
-                                       'ME', 'MODELENGINE'):
+            if v and v.upper() not in BULLET_TYPES:
                 mobs.append(v)
     return skills, mobs
+
+
+# Tipos de bala de projectile/missile (bulletType, wiki de MythicMobs) y de proyectil (type=NORMAL|METEOR): no son mobs
+BULLET_TYPES = {'MOB', 'ARROW', 'ITEM', 'MYTHICITEM', 'DISPLAY', 'BLOCK', 'SMALLBLOCK', 'SMALL_BLOCK', 'SMALL_FIREBALL',
+                'TRIDENT', 'ME', 'MEG', 'MODELENGINE', 'TRACKING', 'ARMOR_STAND', 'ARMORSTAND', 'PSTAND', 'REALTRACKING',
+                'RTRACKING', 'REAL_ARMOR_STAND', 'REALARMORSTAND', 'STAND', 'TEXT', 'NORMAL', 'METEOR'}
 
 
 def switch_cases(text):

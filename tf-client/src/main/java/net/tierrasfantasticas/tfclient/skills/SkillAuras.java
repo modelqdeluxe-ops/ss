@@ -49,6 +49,12 @@ final class SkillAuras {
         int charges;
         /** El orbital que la lleva (orbital{auraName=X}): se acaban juntos. */
         SkillMovers.Mover mover;
+        /** terminable: sus condiciones, el uso de su onStart (para cortarlo), onTerminate y deep (corta también a quien la lanzó). */
+        List<SkillDefs.Cond> stopIf;
+        long startCast;
+        long callerCast;
+        String onTerminate;
+        boolean deep;
 
         Aura(String name, Who on) {
             this.name = name;
@@ -116,6 +122,47 @@ final class SkillAuras {
             st.auras.put(key, a);
             AURAS.add(a);
             if (onStart != null) SkillRuntime.runMeta(ctx.cls.meta(onStart), auraCtx(a));
+        }
+    }
+
+    /**
+     * terminable{auraName;d;conditions;onStart;onTerminate;deep} (stoppable, cancelable, exit): un aura que lanza su
+     * onStart y mira sus condiciones cada tick sobre quien la lleva; en cuanto se cumplen, corta lo que le quede a su
+     * onStart (y con deep, a la skill que la lanzó), lanza onTerminate y se acaba (wiki de MythicMobs).
+     */
+    static void terminable(Mech m, Ctx ctx, List<Tgt> targets) {
+        String name = m.arg("terminable", "auraname", "aura", "name", "n", "buffname", "b");
+        String key = name.toLowerCase(Locale.ROOT);
+        int duration = (int) SkillRuntime.num(m.arg("200", "duration", "d", "ticks", "t", "time"), 200);
+        String onStart = m.arg(null, "onstart", "os", "onstartskill");
+        for (Tgt t : targets) {
+            if (t.who == null || !t.who.alive()) continue;
+            SkillRuntime.WhoState st = SkillRuntime.state(t.who);
+            Aura old = st.auras.get(key);
+            if (old != null && old.alive) continue;
+            Aura a = new Aura(key, t.who);
+            a.ctx = ctx.copy();
+            a.ctx.targets = List.of(Tgt.of(t.who));
+            a.left = duration;
+            a.duration = duration;
+            a.interval = 1;
+            a.maxStacks = 1;
+            a.stacks = 1;
+            a.kind = "terminable";
+            a.onTick = m.arg(null, "ontick", "ot", "ontickskill");
+            a.onEnd = m.arg(null, "onend", "oe", "onendskill");
+            a.stopIf = m.sc;
+            a.onTerminate = m.arg(null, "onterminate", "ox");
+            a.deep = SkillRuntime.bool(m.arg("false", "deep"));
+            a.callerCast = ctx.cast;
+            a.startCast = SkillRuntime.newCast();
+            st.auras.put(key, a);
+            AURAS.add(a);
+            if (onStart != null) {
+                Ctx c = auraCtx(a);
+                c.cast = a.startCast;
+                SkillRuntime.runMeta(ctx.cls.meta(onStart), c);
+            }
         }
     }
 
@@ -252,6 +299,21 @@ final class SkillAuras {
                 if (!a.on.alive()) {
                     SkillRuntime.WhoState st = SkillRuntime.stateIfAny(a.on);
                     finish(a, st);
+                    continue;
+                }
+                // terminable: se cumplen sus condiciones → se corta su onStart (y a quien la lanzó, con deep) y se acaba
+                if (a.stopIf != null && !a.stopIf.isEmpty() && SkillTargets.passes(a.stopIf, Tgt.of(a.on), a.ctx)) {
+                    SkillRuntime.cancelCast(a.startCast);
+                    if (a.deep) SkillRuntime.cancelCast(a.callerCast);
+                    a.onEnd = null;
+                    finish(a, SkillRuntime.stateIfAny(a.on));
+                    if (a.onTerminate != null) {
+                        try {
+                            SkillRuntime.runMeta(a.ctx.cls.meta(a.onTerminate), auraCtx(a));
+                        } catch (SkillRuntime.CancelSkill ignored) {
+                            // nada
+                        }
+                    }
                     continue;
                 }
                 if (a.onTick != null && a.age % a.interval == 0) {

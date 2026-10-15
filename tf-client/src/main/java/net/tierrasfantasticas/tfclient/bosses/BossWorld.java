@@ -18,6 +18,16 @@ final class BossWorld implements SkillMobs.World {
     @Override
     public SkillMobs.Host spawnMinion(SkillMobs.Host owner, SkillDefs.MobDef def, ServerLevel level, Vec3 at, float yaw) {
         if (!(owner instanceof BossEntity boss)) return null;
+        if (boss.relayTo(def)) {
+            // El relevo del jefe que acaba de morir: un jefe nuevo (con sus cajas), que sigue la pelea en su grieta
+            BossEntity next = TFBosses.JEFE.get().create(level);
+            if (next == null) return null;
+            next.moveTo(at.x, at.y, at.z, yaw, 0F);
+            next.configure(boss.bossId(), def.name, boss.difficulty(), 1, null);
+            next.becomeSuccessor(boss);
+            level.addFreshEntity(next);
+            return next;
+        }
         // Como mucho 24 esbirros vivos por jefe (las fosas del Esqueleto sacan uno cada vez)
         int alive = level.getEntitiesOfClass(BossEntity.class, boss.getBoundingBox().inflate(96), e -> e.boss() == boss && e != boss && e.isAlive()).size();
         if (alive >= 24) return null;

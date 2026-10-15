@@ -1,0 +1,17 @@
+jefe piglin_mecha: mob PIGLIN_MECH, vida 1100 (pack 500), daño 9, modelo piglin_mecha.piglin_mech, caja [4.6875, 8.75], ataques 6
+mob PIGLINMECH_laser_line: efecto ARMOR_STAND, modelo None, 2 líneas
+mob PIGLINMECH_laser_particle: efecto ITEM_DISPLAY, modelo None, 1 líneas
+mob PIGLINMECH_marker: efecto MARKER, modelo None, 1 líneas
+mob PIGLIN_MECH: IRON_GOLEM, caja 4.6875×8.75 (ojos 7.4375, escala 1.0, del modelo), velocidad 0.25, vida 500, daño 2, IA None, modificadores ['FIRE 0.0', 'SUFFOCATION 0.0'], 25 líneas
+mob PIGLIN_MECH_explosion_fx: efecto ARMOR_STAND, modelo piglin_mecha.piglinmech_explosion_fx, 14 líneas
+mob PIGLIN_MECH_ground_crack_fx: efecto ARMOR_STAND, modelo piglin_mecha.piglin_mech_ground_fx, 10 líneas
+mob PIGLIN_MECH_ground_dust_fx: efecto ARMOR_STAND, modelo piglin_mecha.piglinmech_dust_fx, 9 líneas
+  modelo piglin_mecha.piglin_mech: 56 huesos, huella 761eb6a6cc25a038, caja [4.6875, 8.75], sombra None, cabeza 34, ghost 2, head_inherit 2, hitbox_obb 4
+    cabezas: torso engine left_lever right_lever piglin_torso piglin_right_leg piglin_left_leg piglin_right_arm piglin_left_arm piglin_head piglin_right_ear piglin_left_ear gear_big gear_small right_arm_shoulder right_shoulder_laser right_arm_bicep right_arm_hitbox right_arm_forearm right_forearm_hitbox right_arm_hand right_arm_finger_1_0 right_arm_finger_1_1 right_arm_finger_1_2 right_arm_finger_1_3 right_arm_finger_1_4 right_arm_finger_1_5 left_arm_shoulder left_shoulder_laser left_arm_bicep left_arm_hitbox left_arm_forearm left_forearm_hitbox left_arm_hand left_arm_finger_1_0 left_arm_finger_1_1 left_arm_finger_1_2 left_arm_finger_1_3 left_arm_finger_1_4 left_arm_finger_1_5 fire missile
+    animaciones: damaged:3.0 death:6.0 fire_missile:6.0 idle:2.0 in_air:2.0 land:2.0 leap:3.0 passive_layer:1.0 slam_front:3.5 slam_front_2:3.5 slam_left:3.5 slam_right:3.5 spawn:4.0 spin_attack_long:12.75 spin_attack_short:3.75 swing_1:3.5 swing_2:3.5 walk:2.5 walk_slow:4.0
+  modelo piglin_mecha.piglin_mech_ground_fx: 13 huesos, huella b582bb21b9efd077, caja [0.125, 0.125], sombra None, 
+    animaciones: spawn:2.0
+  modelo piglin_mecha.piglinmech_dust_fx: 1 huesos, huella 3f7f4789089a7b71, caja None, sombra None, 
+    animaciones: spawn:1.5
+  modelo piglin_mecha.piglinmech_explosion_fx: 4 huesos, huella 0ca352cfea5aa3dc, caja None, sombra None, 
+    animaciones: spawn:2.83333

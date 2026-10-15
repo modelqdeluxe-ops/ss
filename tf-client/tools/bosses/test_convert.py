@@ -228,6 +228,22 @@ def mythic():
     bad = [(e, AI.crunch(e, x)) for e, x, want in cases if AI.crunch(e, x) != want]
     check('variablemath: las cuentas de Crunch (como SkillVars.math)', not bad and AI.crunch('nada', 0) is None, bad)
 
+    # La IA de MythicMobs (SkillAI.java, leída por mythic_ai): clear, prioridades, alias y la de su tipo
+    import mythic_ai as MA
+    g = MA.apply(MA.vanilla_goals('IRON_GOLEM'), ['0 clear', '1 MeleeAttack', 'lookattarget{r=25}', 'players', 'swim'])
+    check('AIGoalSelectors: clear quita la del tipo; prioridad, {opciones} y alias; lo que no existe se ignora',
+          [MA.goal_name(x) for x in g] == ['meleeattack', 'lookattarget', 'float'] and g[1] == 'lookattarget{r=25}', g)
+    check('sin AIGoalSelectors: la del tipo (el gólem pega y persigue; el cerdo no; el gigante, nada)',
+          MA.melee(MA.goals_of({'type': 'IRON_GOLEM'})) and MA.chases(MA.goals_of({'type': 'IRON_GOLEM'}))
+          and not MA.chases(MA.goals_of({'type': 'PIG'})) and MA.goals_of({'type': 'GIANT'}) == [])
+    t = MA.apply(MA.vanilla_targets('IRON_GOLEM'), ['1 players', '2 attacker'], True)
+    check('AITargetSelectors sin clear: se añaden a los del tipo (el gólem: quien le pega y los monstruos)',
+          [MA.target_name(x) for x in t] == ['hurtbytarget', 'monsters', 'players', 'hurtbytarget'], t)
+    check('Hidra: «clear» solo = ni persigue ni pega', not MA.chases(MA.goals_of({'type': 'IRON_GOLEM', 'ai_goals': ['clear']})))
+    src = open(MA.JAVA, encoding='utf-8').read()
+    check('mythic_ai lee todas las tablas de SkillAI.java', len(MA.GOALS) >= 50 and len(MA.GOAL_ALIAS) >= 25
+          and len(MA._VG) >= 45 and 'default' in MA._VG and len(MA._VT) >= 30 and src.count('case "') >= 40, (len(MA.GOALS), len(MA._VG)))
+
 
 def heads(tmp, src):
     """hi_ / h_ / h[yaw]_ como ModelEngine 4 (y BetterModel): giro global que no se acumula; los hijos sin etiqueta

@@ -1,0 +1,26 @@
+jefe druida_boreal: mob boreal_druid, vida 400 (pack 100), daño 7, modelo druida_boreal.boreal_druid, caja [1.125, 2.625], ataques 6
+mob boreal_druid: IRON_GOLEM, caja 1.125×2.625 (ojos 2.2312, escala 1.0, del modelo), velocidad 0.25, vida 100, daño 1, IA None, modificadores None, 21 líneas
+mob boreal_druid_iceblast_fx: efecto ARMOR_STAND, modelo druida_boreal.boreal_druid_iceblast, 3 líneas
+mob boreal_druid_iceclaw: efecto ARMOR_STAND, modelo druida_boreal.boreal_druid_ice_claw, 4 líneas
+mob boreal_druid_mammoth: IRON_GOLEM, caja 6.3563×4.6125 (ojos 3.9206, escala 0.9, del modelo), velocidad 0.25, vida 250, daño 2, IA None, modificadores None, 17 líneas
+mob boreal_druid_player_freeze: efecto ARMOR_STAND, modelo druida_boreal.boreal_druid_player_freeze, 10 líneas
+mob boreal_druid_snowowl: PIG, caja 1.5625×0.875 (ojos 0.7438, escala 1.0, del modelo), velocidad 0.25, vida 20, daño 1, IA None, modificadores None, 15 líneas
+mob borealdruid_snowbeam_block: efecto ARMOR_STAND, modelo druida_boreal.boreal_druid_ice_block, 6 líneas
+  modelo druida_boreal.boreal_druid: 55 huesos, huella f67e8dc2ea4cf9d1, caja [1.125, 2.625], sombra 1.25, head 7
+    cabezas: head hood hood2 owl_head projectile_origin projectile_target owl_head2
+    animaciones: cast_quick_1:1.5 cast_quick_2:1.5 death:2.0 fly:4.75 idle:1.5 staff_slam:2.5 walk:1.5 wind_loop:1.5
+  modelo druida_boreal.boreal_druid_ice_block: 2 huesos, huella 3a4d43730fc3b74c, caja None, sombra None, head 1
+    cabezas: block
+    animaciones: 
+  modelo druida_boreal.boreal_druid_ice_claw: 16 huesos, huella 3b6c265ad2664997, caja [2.625, 2.625], sombra None, 
+    animaciones: idle:2.75
+  modelo druida_boreal.boreal_druid_iceblast: 23 huesos, huella f9c0b42b8d90659b, caja None, sombra None, 
+    animaciones: spawn:1.0
+  modelo druida_boreal.boreal_druid_mammoth: 50 huesos, huella 7faf09f0cda75241, caja [7.0625, 5.125], sombra 6.25, head 29, hitbox_obb 5
+    cabezas: head jaw left_tusk_base left_tusk_7 left_tusk_8 left_tusk_9 left_tusk_1 left_tusk_2 left_tusk_3 left_tusk_4 left_tusk_5 left_tusk_6 right_tusk_base right_tusk_7 right_tusk_8 right_tusk_9 right_tusk_1 right_tusk_2 right_tusk_3 right_tusk_4 right_tusk_5 right_tusk_6 trunk_1 trunk_2 trunk_3 trunk_4 trunk_5 left_ear right_ear
+    animaciones: attack_1:1.75 attack_2:1.75 attack_3:1.75 attack_4:3.0 back_left_leg_attack:1.5 back_right_leg_attack:1.5 death:5.20833 idle:2.0 run:0.5 spawn:2.75 walk:2.0
+  modelo druida_boreal.boreal_druid_owl: 11 huesos, huella 827309aa7f09c74c, caja [1.5625, 0.875], sombra 1.25, head 1
+    cabezas: owl_head
+    animaciones: death:2.0 idle:3.0 walk:3.0
+  modelo druida_boreal.boreal_druid_player_freeze: 7 huesos, huella ad93aaf3d02cc834, caja [0.6875, 0.875], sombra None, seat 1
+    animaciones: spawn:2.0

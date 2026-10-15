@@ -1,0 +1,89 @@
+## semilla 3, el pack tal cual
+guardian_hueco      480 s, vida  69.8%: 1581 ataques (197.6/min), 14 distintos de 14
+      869  bank_left
+      650  bank_right
+       13  attack_forward_1
+       12  attack_forward_3
+       11  attack_forward_2
+        6  attack_back_1
+        4  start_run
+        4  run
+        4  run_stab
+        3  attack_left_1
+        2  attack_right_1
+        1  awaken
+        1  attack_left_2
+        1  stun
+     repite seguido: 1469 de 1580; curas castigadas: 6 de 17
+
+## semilla 3, normal
+guardian_hueco      480 s, vida  65.3%: 1853 ataques (231.6/min), 13 distintos de 14
+      958  bank_right
+      823  bank_left
+       15  attack_forward_3
+       11  attack_forward_1
+       10  attack_forward_2
+        8  start_run
+        8  run
+        6  run_stab
+        5  attack_back_1
+        4  attack_right_1
+        3  attack_left_2
+        1  awaken
+        1  stun
+     sin salir: attack_left_1
+     repite seguido: 1707 de 1852; curas castigadas: 11 de 15; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+guardian_hueco      480 s, vida  61.4%: 1525 ataques (190.6/min), 14 distintos de 14
+      724  bank_left
+      698  bank_right
+       19  attack_forward_3
+       16  attack_forward_1
+       15  attack_forward_2
+       13  attack_back_1
+        8  start_run
+        8  run
+        8  run_stab
+        8  attack_right_1
+        5  attack_left_2
+        1  awaken
+        1  attack_left_1
+        1  stun
+     repite seguido: 1349 de 1524; curas castigadas: 10 de 13; combos: 21; pasos atrás: 0
+
+## semilla 11, normal
+guardian_hueco      480 s, vida  61.4%: 1923 ataques (240.4/min), 14 distintos de 14
+      989  bank_right
+      865  bank_left
+       15  attack_forward_3
+       11  attack_forward_1
+        9  attack_forward_2
+        6  attack_right_1
+        5  attack_back_1
+        5  start_run
+        5  run
+        5  run_stab
+        3  attack_left_1
+        3  attack_left_2
+        1  awaken
+        1  stun
+     repite seguido: 1776 de 1922; curas castigadas: 10 de 14; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+guardian_hueco      480 s, vida  60.1%: 1900 ataques (237.5/min), 14 distintos de 14
+      948  bank_left
+      865  bank_right
+       14  attack_forward_3
+       14  attack_forward_1
+       11  attack_forward_2
+        8  attack_back_1
+        8  start_run
+        8  run
+        8  run_stab
+        8  attack_left_2
+        4  attack_right_1
+        2  attack_left_1
+        1  awaken
+        1  stun
+     repite seguido: 1750 de 1899; curas castigadas: 4 de 12; combos: 10; pasos atrás: 0

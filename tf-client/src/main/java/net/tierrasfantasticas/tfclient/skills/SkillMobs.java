@@ -72,9 +72,16 @@ public final class SkillMobs {
         default void barVisible(boolean on) {
         }
 
-        /** resetai: vuelve a la IA de su tipo de Minecraft (aquí: perseguir y mirar a su objetivo). */
+        /** resetai: vuelve a los objetivos de IA de su tipo de Minecraft ({@link SkillAI#vanillaGoals}). */
         default void resetAi() {
             setAi(true);
+        }
+
+        /**
+         * runaigoalselector{goal} / runaitargetselector{target}: uno más al final de su IA (AIGoalSelectors o
+         * AITargetSelectors); «clear» quita todos los de antes (y, en los de objetivo, a quien perseguía).
+         */
+        default void addAiGoal(String goal, boolean target) {
         }
 
         /** Daño que se hace a sí mismo (el del Esqueleto atacado por la espalda con el escudo puesto). */
@@ -168,6 +175,10 @@ public final class SkillMobs {
             return mob().position();
         }
 
+        /** bindhitbox: el mob «bound» va en la caja ob_ «part» y recibe los golpes que le den a esa caja. */
+        default void bindHitbox(String part, Host bound) {
+        }
+
         /** hitboxconfig{p;pass}: cuánto daño deja pasar la caja de golpe de ese hueso (1 = todo, 0 = nada). */
         default void hitboxPass(String part, double pass) {
         }
@@ -248,6 +259,16 @@ public final class SkillMobs {
     public static volatile java.util.function.ToIntFunction<Entity> clientFire = e -> 0;
 
     /** El hueso (su id) de la caja de golpe «index» del modelo del mob tal como está ahora, o null. */
+    /** ¿Es «part» una caja ob_ de su modelo (una de sus BossPart)? (bindhitbox solo engancha a esas, como ModelEngine) */
+    static boolean isHitboxBone(Host h, String part) {
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
+        if (m == null || part == null) return false;
+        int b = m.bone(part);
+        if (b < 0) return false;
+        for (int i : net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m)) if (i == b) return true;
+        return false;
+    }
+
     public static String partBone(Host h, int index) {
         net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
         if (m == null) return null;
@@ -278,6 +299,8 @@ public final class SkillMobs {
         int deafUntil;
         /** Jugadores que ha matado (condición playerkills). */
         int playerKills;
+        /** La caja (hueso ob_/b_) que le golpearon la última vez (condición hitbox/lasthitbox de ModelEngine). */
+        String lastHitbox;
 
         State(Host host) {
             this.host = host;
@@ -440,6 +463,25 @@ public final class SkillMobs {
         return hit;
     }
 
+    /**
+     * Va a pegar a «victim» con el golpe de Minecraft (MeleeAttackGoal: el EntityDamageByEntityEvent de MythicMobs, antes
+     * de que entre): sus ~onAttack y ~onCombat, con @trigger = a quien pega y «damage-amount» en la
+     * escala del pack (sin la dificultad). Devuelve el golpe: cancelevent lo anula y modifydamage lo cambia (sus cifras
+     * fijas, con la dificultad).
+     */
+    public static Hit attack(Host h, LivingEntity victim, double amount) {
+        double scale = Math.max(0.01, h.damageMul());
+        Hit hit = new Hit(amount, scale);
+        if (h.dying()) return hit;
+        Map<String, String> vars = new HashMap<>();
+        vars.put("damage-amount", SkillRuntime.fmt(amount / scale));
+        vars.put("damage-cause", "ENTITY_ATTACK");
+        vars.put("damage-type", "ENTITY_ATTACK");
+        run(h, "onattack", victim, "ENTITY_ATTACK", vars, hit);
+        if (!h.dying()) run(h, "oncombat", victim, "ENTITY_ATTACK", null, vars, hit);
+        return hit;
+    }
+
     /** Para que un ~onSkillDamage que hace daño no se vuelva a disparar a sí mismo sin fin. */
     private static boolean inSkillDamage;
 
@@ -469,6 +511,22 @@ public final class SkillMobs {
         } finally {
             inShoot = false;
         }
+    }
+
+    /**
+     * Su tipo de Minecraft va a disparar (la bola de fuego del ghast): ~onShoot antes de que salga, como el
+     * ProjectileLaunchEvent que escucha MythicMobs; true si sus skills lo cancelan (cancelevent).
+     */
+    public static boolean shootCancelled(Host h, Entity target) {
+        if (h.dying() || inShoot) return false;
+        inShoot = true;
+        Hit hit = new Hit(0, 1);
+        try {
+            run(h, "onshoot", target != null ? target : h.mob(), null, null, Map.of("bow-tension", "1"), hit);
+        } finally {
+            inShoot = false;
+        }
+        return hit.cancelled;
     }
 
     /** Ese proyectil de Minecraft ha dado a alguien: ~onBowHit, con @trigger = a quien ha dado. */
@@ -535,6 +593,18 @@ public final class SkillMobs {
         if (victim instanceof net.minecraft.world.entity.player.Player) state(h).playerKills++;
         run(h, "onkill", victim, null, null);
         if (victim instanceof net.minecraft.world.entity.player.Player) run(h, "onplayerkill", victim, null, null);
+    }
+
+    /** Le han dado en la caja «index» de su modelo (BossEntity.hurtPart): para la condición hitbox/lasthitbox. */
+    public static void hitPart(Host h, int index) {
+        state(h).lastHitbox = partBone(h, index);
+    }
+
+    /** La caja que le golpearon la última vez (sin prefijo de comportamiento: «ob_rightleg_box» → «rightleg_box»). */
+    static String lastHitbox(Host h) {
+        State s = STATES.get(h.mob().getUUID());
+        if (s == null || s.lastHitbox == null) return null;
+        return s.lastHitbox.replaceFirst("^(?i)(ob|b)_", "");
     }
 
     /** Cuántos jugadores ha matado (condición playerkills). */

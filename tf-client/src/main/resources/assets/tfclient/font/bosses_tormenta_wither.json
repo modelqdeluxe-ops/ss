@@ -1,0 +1,13 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/tormenta_wither/glyph/flash.png",
+   "ascent": 512,
+   "height": 1024,
+   "chars": [
+    "☄"
+   ]
+  }
+ ]
+}

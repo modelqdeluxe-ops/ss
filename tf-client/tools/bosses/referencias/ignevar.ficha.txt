@@ -1,0 +1,20 @@
+jefe ignevar: mob ignevar, vida 1000 (pack 500), daño 9, modelo ignevar.ignevar, caja [3.0, 5.75], ataques 4
+mob ignevar: IRON_GOLEM, caja 3.0×5.75 (ojos 4.8875, escala 1.0, del modelo), velocidad 0.2, vida 500, daño 1, IA ['clear'], modificadores ['FIRE 0.00', 'HOT_FLOOR 0.00', 'LAVA 0.00'], 20 líneas
+mob ignevar_LINE_telegraph: efecto ARMOR_STAND, modelo ignevar.ignevar_lava_fx, 13 líneas
+mob ignevar_flamethower_particle: efecto ITEM_DISPLAY, modelo None, 12 líneas
+mob ignevar_groundbreak: efecto ARMOR_STAND, modelo ignevar.ignevar_groundbreak, 15 líneas
+mob ignevar_groundcrack: efecto ARMOR_STAND, modelo ignevar.ignevar_groundcrack, 12 líneas
+mob ignevar_groundexplosion: efecto ARMOR_STAND, modelo ignevar.ignevar_groundexplosion, 10 líneas
+mob ignevar_meteor: efecto ARMOR_STAND, modelo ignevar.ignevar_meteor_telegraph, 11 líneas
+  modelo ignevar.ignevar: 127 huesos, huella 69ac3574f4feca57, caja [3.0, 5.75], sombra None, ghost 1, hitbox_obb 6
+    animaciones: damage_1:0.0 damage_2:0.0 damage_3:0.0 damage_4:0.0 death:5.5 dive_flight:3.0 dive_idle_flight:2.0 dive_idle_flight_left:0.0 dive_idle_flight_right:0.0 firebreath:7.0 idle:4.0 idle_flight:1.5 land_flight:2.0 spawn:5.0 spawn_2:5.0 stomp_1:4.0 tail_layer:2.0 tail_swipe:3.5 take_flight:4.0 turn_left:2.0 turn_right:2.0 walk:2.0 walk_turn_left:0.5 walk_turn_right:0.5
+  modelo ignevar.ignevar_groundbreak: 9 huesos, huella e7da5e85effe4110, caja None, sombra None, 
+    animaciones: spawn:2.0
+  modelo ignevar.ignevar_groundcrack: 13 huesos, huella 7f777a157966a1a9, caja [0.125, 0.125], sombra None, 
+    animaciones: spawn:2.0
+  modelo ignevar.ignevar_groundexplosion: 2 huesos, huella 325706be5d30b9e2, caja None, sombra None, 
+    animaciones: spawn:1.20833
+  modelo ignevar.ignevar_lava_fx: 5 huesos, huella 70f4db684b9d1de9, caja None, sombra None, 
+    animaciones: spawn:2.5
+  modelo ignevar.ignevar_meteor_telegraph: 10 huesos, huella 24d7c8bbded7b08f, caja None, sombra None, 
+    animaciones: spawn:2.625

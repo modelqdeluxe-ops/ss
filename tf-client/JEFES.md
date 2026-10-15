@@ -387,6 +387,58 @@ Bukkit en Mohist, por reflexión; sin Bukkit, que sea op). Hasta la 1.3.80 estas
 | `barcreate`/`barremove` | Sobre la barra del propio jefe (así la usan los packs): se ve / se quita. |
 | `particleequation` | Sin efecto, como en MythicMobs (su wiki: «not yet functional»; en `STUB_OK`). |
 
+### 3.8 La IA de MythicMobs y lo que se añadió en la 1.3.82 (packs nuevos)
+
+**IA** (`skills/SkillAI.java`, leída por `tools/bosses/mythic_ai.py` para el simulador y el auditor; wiki
+Mobs/Custom-AI). Cada mob de jefe tiene sus `AIGoalSelectors` (qué hace) y `AITargetSelectors` (a quién busca) **sobre
+la IA de su tipo de Minecraft** (`SkillAI.vanillaGoals/vanillaTargets`: un zombi persigue y pega a los jugadores, un
+gólem solo a quien le pega y a los monstruos, un cerdo pasea): sin lista, la de su tipo; `clear` (alias `reset`) la
+quita entera y lo de después se añade; `1 meleeattack` lleva la prioridad delante (aquí no hace falta: cada objetivo
+es una cosa distinta); lo que MythicMobs no conoce se ignora (aviso del auditor). `runaigoalselector{goal}`
+(`aigoal`, `aigoals`) y `runaitargetselector{target}` (`aitarget`) añaden uno en mitad de la pelea (`clear` borra los de
+antes y, en los de búsqueda, a quien perseguía); `resetai` vuelve a los de su tipo. Lo que hace `BossEntity`:
+
+| Objetivo | En `BossEntity` |
+|---|---|
+| `meleeattack`, `zombieattack`, `spiderattack` | Persigue y **pega con el golpe de Minecraft** (`meleeStep` + `doHurtTarget`): alcance (ancho×2)² + ancho del objetivo (araña: 4 + ancho), 20 ticks entre golpes, el primero al llegar. Antes de entrar salen sus **`~onAttack` y `~onCombat`** (`SkillMobs.attack`, @trigger = a quien pega, `damage-amount` en la escala del pack): `cancelevent` lo anula, `modifydamage` lo cambia. Por tipo: el gólem pega entre media y vez y media su daño y lanza hacia arriba (0,4), el hoglin/zoglin lanzan, el husk da hambre, el esqueleto del Wither marchita, la araña de cueva envenena, el zombi en llamas prende; `ATTACK_KNOCKBACK` del tipo (devastador 1,5). Los 5 jefes de antes cancelan su `~onAttack`: siguen igual. |
+| `movetowardstarget` | Persigue sin pegar. |
+| `lookattarget{r}`, `lookatplayers{r=8}` | Mira a su objetivo / de vez en cuando (2 % por tick, 2-4 s) a un jugador cerca. |
+| `randomstroll`, `panic`, `gotospawnlocation`, `fleesun`, `restrictsun` | Sin objetivo que perseguir: pasea (1 entre 120 por tick, a 10 bloques, sin salir de su grieta), huye 5 bloques si le pegan o arde, vuelve a donde apareció, busca sombra si arde al sol; no anda al sol. |
+| `float`, `leapattarget` | Flota en el agua; salta sobre su objetivo a 2-4 bloques desde el suelo. |
+| `type:ghast` | El ghast (`ghastStep`): vuela a un punto al azar a 16 bloques (empujones de 0,1 cada 2-6 ticks si no hay nada en medio), mira a su objetivo a 64 bloques y le lanza una bola de fuego (20 de carga, 40 de espera) que **`~onShoot` puede cancelar** (`SkillMobs.shootCancelled`; el Contemplador y el Arconte lo hacen). Sin gravedad. |
+| `randomlookaround`, `randomnod`, `donothing`, `breed`, `eatgrass`, `opendoor`, `breakdoors`, `movethroughvillage`, `movetowardsrestriction` | Sin efecto, con su porqué en `mythic_ai.AI_OK` (o no cambian la pelea o cambiarían el mundo). |
+| Búsqueda: `players`, `hurtbytarget`, `monsters`, `villagers`, `irongolem`, `type:spider` | `pickTarget`: con `players`, el jugador con más amenaza (§4.3); con `hurtbytarget` solo, entre los que le han pegado; si no hay jugador, el monstruo/aldeano/gólem más cercano que no sea de su grupo; la araña, a los jugadores solo a oscuras. Sin ninguno, solo sus skills le dan objetivo. |
+
+Lo que no está en `AI_OK` (el arco del esqueleto `bowattack`, la carga del vex, el slime, el fantasma, el enderman,
+`nearestotherfaction`…) lo marca el auditor como problema en el pack que lo use: se copia entonces. `NoAI` y `setai`
+son el NoAI de Minecraft (ni piensa, ni anda, ni cae; sus skills siguen; `Rifts.spawnBoss` baja el jefe al suelo).
+Opciones nuevas: `NoGravity`, `LockPitch`, `KnockbackResistance` (o la de su tipo), `PreventSunburn` (los zombis y
+esqueletos arden al sol si no), `PreventRandomEquipment` (un esqueleto sin arco pega cuerpo a cuerpo); las opciones se
+leen sin mirar mayúsculas (`noAI`).
+
+**Más de la 1.3.82**:
+
+| Qué | Cómo |
+|---|---|
+| Balas de `projectile`/`missile` | `ITEM`/`MYTHICITEM` (objeto suelto que gira), `TRACKING`/`REALTRACKING` (en la cabeza de un soporte, girada hacia donde va), `BLOCK`/`SMALLBLOCK` (el bloque), `ARROW`: el conversor les pone el modelo de su objeto (el del pack con su `Model`, o el de Minecraft); `material=air` no se ve. |
+| `bindhitbox{mid;p;t}` | Saca el mob `t` atado a la caja `ob_`/`b_` `p`: va siempre en ella y **los golpes a esa caja son para él** (`BossEntity.hurtPart`); si el modelo no tiene esa caja, nada (como ModelEngine). Las tres cabezas de la Tormenta del Wither. |
+| **Relevo** | Los mobs de verdad que el jefe saca en su `~onDeath` con al menos la mitad de su vida (`build_bosses.successors`, `boss.successors` con su nombre en español) siguen la pelea: salen como jefe de la grieta (`BossEntity.becomeSuccessor`: vida a la misma escala, su barra, la amenaza) y la grieta se gana cuando cae el último. El Mamut del Druida Boreal. |
+| `summon` de un mob de Minecraft | `summon{type=WITHER_SKELETON}`: el de Minecraft tal cual (con `finalizeSpawn`), como mucho 16 de una vez y 24 cerca. |
+| `@parent` de un esbirro | Su jefe (antes no tenía): `signal @parent`. |
+| `@RandomRingPoint`, `isflying`, `setstance`/`stance` | Como la wiki. |
+| Modificadores de vida en las skills | `- skill{s=X} @self <75%` dentro de una skill también se mira (antes solo en las líneas del mob). |
+| `state{s=hit_<random.1to3>}` | El marcador se resuelve cada vez; el auditor comprueba cada animación posible. |
+
+**Conversor** (`build_bosses.py`): las condiciones en la **forma antigua** (`- hasaura Dive false`, `- targetwithin 25`,
+`- stance rage false`: el valor suelto es su atributo principal, `compile.LEGACY_CONDITION_KEY`; si falta alguna, el
+auditor lo dice); los **nombres de MythicMobs son de todo el servidor** (`global_index`: Ignevar usa
+`THEARCHIVIST_tele_to_floor` del Archivista; un nombre de mob de Minecraft no se busca en otros packs); **`HUECOS`**:
+lo que un pack nombra y no trae (skills, animaciones, huesos, modelos), revisado a mano, que en MythicMobs tampoco hace
+nada: queda como aviso con su porqué (para completarlo, `FIXES`, si el dueño quiere); **`ITEM_FIXES`**: objetos cuyo
+override olvidó el pack; la **vista previa** esconde lo que el jefe esconde al aparecer (`spawn_hidden`) si `es.json` no
+dice `preview_hide`. El simulador corre también los scripts `mm:` de las animaciones (Eldric empieza su pelea desde
+uno) y `stance`, `altitude`, `variableisset`, `moving`…
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -725,7 +777,29 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.81
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.82
+
+**1.3.82**: §3.8 y los 12 jefes de LittleRoom de la segunda tanda (Rey Calabaza, Archivista, Eldric, Druida Boreal,
+Contemplador, Arconte Astral, Kazk, Guardián Hueco, Ignevar, Mecha Piglin, Mega Guardián, Tormenta del Wither). Quedan
+**51 packs** de los 64 que mandó el dueño (en el contenedor de la sesión, no en el repo: hay que volver a pedírselos si
+se pierden) y **Pohaku**, que espera al dueño (§11.0).
+
+### 11.0 Packs nuevos: lo que queda y lo que hay que preguntar
+
+- **Pohaku**: su pelea necesita el escenario del pack (`schematic`) con balistas y mercenarios que el admin pone a
+  mano (`/mm mobs spawn`); sin ellos no se le aturde y no recibe daño. Preguntar: ¿se monta el escenario en la
+  grieta (que el jefe saque sus balistas y mercenarios al aparecer) o se deja fuera?
+- **IA de tipo que falta** (el auditor la marcará): `bowattack`/`fleewolf` (esqueletos de Abyss, Furacas, Moon Glow,
+  UKing, Guardians of Light), la carga del vex (Void Hydra, las cajas de Xiddri), el slime (Abyss, Furacas), el
+  fantasma (Void Hydra), el enderman (Toro EnderDragon), `rangedattack` (ElementalFire), `movewithindistanceoftarget`
+  (samus2002); búsqueda por facción (`nearestotherfaction`, `specificfaction`: ElementalFire, Gilded Guardians,
+  FallenDefender, FallenHeroes, MexBots).
+- **Inventario o estado del jugador** (preguntar): `consumeslot` (Mega Guardián mascota, Moon Glow), `giveitem`,
+  `setlevel`, `giveexperiencelevels`, `setitemnbt`, `consumeuseddurability`, la condición `equipslot`.
+- **Tamaño del jar**: los 17 jefes suman ~29 MB de recursos (los sonidos, 18 MB); con los 64 packs el jar pasaría de
+  100 MB. Si el dueño lo pide, se pueden recodificar los `.ogg` (mono, menos calidad).
+- **Licencias**: los packs de LittleRoom dicen que no se pueden poner a descargar en sitios de terceros (el jar va en
+  las Releases públicas de GitHub). Lo decide el dueño (ya estaban los 4 primeros de LittleRoom).
 
 **Hecho y publicado**: todo lo de §3.6 y §3.7. **Sin verificar en el juego**: nada de la 1.3.75 a la 1.3.81 lo ha
 probado nadie todavía; las pruebas son el simulador (`sim_ai.py`), la física copiada en Python (`sim_physics.py`),
@@ -767,8 +841,9 @@ Todo esto lo marca el auditor como problema en cuanto un pack lo use (salvo lo d
   montan sus efectos). Hoy el dueño de un efecto es quien lo invoca (`SkillActor.owner`, final) y el de un esbirro es
   su jefe: cambiarlo toca a quién se cuenta el daño y a quién no se ataca.
 - **`disguise`**: necesita Libs' Disguises en MythicMobs; aquí haría falta dibujar el mob con la forma de otra entidad.
-- **El comportamiento propio del `Type` de Minecraft**: `BossEntity` solo persigue y usa skills; un creeper no
-  explota, un esqueleto no dispara su arco, un enderman no se teletransporta. Con eso irían `~onExplode`, `~onPrime`,
+- **El comportamiento propio del `Type` de Minecraft**: desde la 1.3.82 `BossEntity` copia su IA (§3.8: persigue,
+  pega con el golpe de Minecraft, el ghast vuela y dispara); falta lo que marque el auditor (`type:x` fuera de
+  `mythic_ai.AI_OK`): un creeper no explota, un esqueleto no dispara su arco, un enderman no se teletransporta. Con eso irían `~onExplode`, `~onPrime`,
   `~onCreeperCharge`, `~onTeleport` (y `~onTame`, `~onBreed`, `~onTrade`, `~onBucket` para los que se dejan). El
   auditor ya distingue: si el `Type` del pack no lo hace, es un aviso; si lo hace, un problema.
 - **Regiones y cinemáticas** (`~onEnterBounds`, `~onExitBounds`, `~onPlayerEnter`, `~onPlayerExit`,
@@ -796,8 +871,8 @@ Todo esto lo marca el auditor como problema en cuanto un pack lo use (salvo lo d
 ### 11.5 Prompt para seguir (cópialo tal cual en una sesión nueva)
 
 ```
-Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §3.7, §10 y §11). Estamos
-con el motor de jefes de TF Client (1.3.81): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
+Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §3.7, §3.8, §10 y §11).
+Estamos con el motor de jefes de TF Client (1.3.82): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
 metamos; el servidor es Mohist 1.20.1. Reglas: responde en español, no uses subagentes, compila SIEMPRE con GitHub
 Actions (nunca ./gradlew en el contenedor), publica como Release (sube mod_version y TFClient.VERSION, PR a main,
 squash, comprueba la Release), nunca subas los packs al repo.

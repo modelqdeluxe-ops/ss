@@ -18,5 +18,53 @@
  {
   "id": "astwood",
   "name": "Astwood"
+ },
+ {
+  "id": "rey_calabaza",
+  "name": "Rey Calabaza"
+ },
+ {
+  "id": "archivista",
+  "name": "El Archivista"
+ },
+ {
+  "id": "eldric",
+  "name": "Eldric"
+ },
+ {
+  "id": "druida_boreal",
+  "name": "Druida Boreal"
+ },
+ {
+  "id": "contemplador",
+  "name": "Contemplador"
+ },
+ {
+  "id": "arconte_astral",
+  "name": "Arconte Astral"
+ },
+ {
+  "id": "kazk",
+  "name": "Kazk, la Reina"
+ },
+ {
+  "id": "guardian_hueco",
+  "name": "Guardián Hueco"
+ },
+ {
+  "id": "ignevar",
+  "name": "Ignevar"
+ },
+ {
+  "id": "piglin_mecha",
+  "name": "Mecha Piglin"
+ },
+ {
+  "id": "mega_guardian",
+  "name": "Mega Guardián"
+ },
+ {
+  "id": "tormenta_wither",
+  "name": "Tormenta del Wither"
  }
 ]

@@ -1,0 +1,59 @@
+## semilla 3, el pack tal cual
+rey_calabaza        480 s, vida  50.3%: 115 ataques (14.4/min), 7 distintos de 7
+       41  swing_1
+       27  swing_2
+       23  teleport
+       11  throw_scythe
+       11  summon
+        1  passive_layer
+        1  greet
+     sin salir: death
+     repite seguido: 7 de 114; curas castigadas: 5 de 14
+
+## semilla 3, normal
+rey_calabaza        480 s, vida  56.6%: 123 ataques (15.4/min), 7 distintos de 7
+       47  swing_1
+       28  swing_2
+       23  teleport
+       12  throw_scythe
+       11  summon
+        1  passive_layer
+        1  greet
+     sin salir: death
+     repite seguido: 9 de 122; curas castigadas: 6 de 16; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+rey_calabaza        480 s, vida  61.7%: 174 ataques (21.8/min), 7 distintos de 7
+       64  swing_1
+       41  swing_2
+       32  teleport
+       18  throw_scythe
+       17  summon
+        1  passive_layer
+        1  greet
+     sin salir: death
+     repite seguido: 9 de 173; curas castigadas: 6 de 12; combos: 39; pasos atrás: 3
+
+## semilla 11, normal
+rey_calabaza        480 s, vida  52.2%: 119 ataques (14.9/min), 7 distintos de 7
+       44  swing_1
+       25  swing_2
+       25  teleport
+       12  throw_scythe
+       11  summon
+        1  passive_layer
+        1  greet
+     sin salir: death
+     repite seguido: 5 de 118; curas castigadas: 2 de 14; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+rey_calabaza        480 s, vida  62.0%: 144 ataques (18.0/min), 7 distintos de 7
+       52  swing_1
+       33  swing_2
+       30  teleport
+       14  summon
+       13  throw_scythe
+        1  passive_layer
+        1  greet
+     sin salir: death
+     repite seguido: 14 de 143; curas castigadas: 5 de 16; combos: 30; pasos atrás: 4

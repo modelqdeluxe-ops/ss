@@ -78,7 +78,10 @@ final class SkillTargets {
             case "playersnearorigin", "pno" -> entities(ctx, origin(ctx), radius(m), true, false, m);
             case "entitiesinradius", "eir", "livingentitiesinradius", "leir", "livinginradius", "allinradius", "air",
                     "entitiesinring", "eirr" -> entities(ctx, ctx.caster.pos(), radius(m), false, false, m);
-            case "mobsinradius", "mir" -> entities(ctx, ctx.caster.pos(), radius(m), false, true, m);
+            // @MobsInRadius{r;types} (@MIR, @Mobs): con tipos, los mobs y efectos del pack de esos tipos (también los suyos)
+            case "mobsinradius", "mir", "mobs" -> m.targetArg(null, "types", "type", "t", "mobtypes") != null
+                    ? typed(entities(ctx, ctx.caster.pos(), radius(m), false, false, m), m)
+                    : entities(ctx, ctx.caster.pos(), radius(m), false, true, m);
             case "playersinradius", "pir", "playersinworld", "world", "pinr" -> entities(ctx, ctx.caster.pos(), radius(m), true, false, m);
             case "nearestplayer", "np" -> nearest(entities(ctx, ctx.caster.pos(), radius(m), true, false, m), ctx.caster.pos());
             case "ring" -> ring(m, ctx, yOff);
@@ -96,12 +99,18 @@ final class SkillTargets {
                 yield List.of(Tgt.at(o.pos().add(0, yOff, 0)));
             }
             case "children", "child", "summons" -> children(ctx, m.targetArg("", "target", "t", "type").toLowerCase(Locale.ROOT));
-            // @FloorOfTarget: el suelo bajo @target
+            // @FloorOfTarget: el suelo bajo @target; @FloorOfTargets: bajo cada objetivo heredado
             case "flooroftarget", "fot" -> {
                 List<Tgt> tg = target(ctx);
                 if (tg.isEmpty()) yield List.of();
                 Vec3 p = tg.get(0).pos();
                 yield List.of(Tgt.at(SkillMinions.ground(ctx.caster.level(), p).add(0, yOff, 0)));
+            }
+            case "flooroftargets", "floorsoftarget", "floorsoftargets" -> {
+                List<Tgt> tg = ctx.targets != null && !ctx.targets.isEmpty() ? ctx.targets : target(ctx);
+                List<Tgt> floors = new ArrayList<>();
+                for (Tgt x : tg) floors.add(Tgt.at(SkillMinions.ground(ctx.caster.level(), x.pos()).add(0, yOff, 0)));
+                yield floors;
             }
             // @PlayersInRing{min;max}: jugadores entre min y max bloques (el muro de madera de Astwood los empuja)
             case "playersinring", "pring" -> {
@@ -132,12 +141,53 @@ final class SkillTargets {
             }
             case "mobsnearorigin", "mno" -> typed(entities(ctx, origin(ctx), radius(m), false, true, m), m);
             case "entitiesinworld", "eiw", "livingentitiesinworld" -> entities(ctx, ctx.caster.pos(), 128, false, false, m);
-            case "entitiesinringnearorigin", "eirno" -> ringNear(ctx, origin(ctx), m);
-            case "entitiesincone", "eic", "livingentitiesincone" -> cone(ctx, m);
+            case "entitiesinringnearorigin", "eirno", "erno" -> ringNear(ctx, origin(ctx), m);
+            case "entitiesincone", "eic", "livingentitiesincone", "livingincone", "leic" -> cone(ctx, m);
+            // (1.3.82) packs nuevos
+            case "ringaroundorigin", "ringorigin", "rao" -> ringAround(m, ctx, origin(ctx), yOff);
+            case "randomringpoint" -> randomRingPoint(m, ctx, yOff);
+            case "trackedlocation" -> {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(ctx.caster);
+                yield st == null || st.tracked == null ? List.of() : List.of(Tgt.at(st.tracked.add(0, yOff, 0)));
+            }
+            case "siblings", "sibling", "brothers", "sisters" -> siblings(ctx);
+            case "playersinringnearorigin" -> {
+                double min = SkillRuntime.num(m.targetArg("0", "min", "minradius", "minr"), 0);
+                double max = SkillRuntime.num(m.targetArg("5", "max", "maxradius", "maxr", "r"), 5);
+                List<Tgt> ring = new ArrayList<>();
+                Vec3 c = origin(ctx);
+                for (Tgt x : entities(ctx, c, max, true, false, m)) {
+                    double d = Math.sqrt(x.pos().distanceToSqr(c));
+                    if (d >= min && d <= max) ring.add(x);
+                }
+                yield ring;
+            }
+            case "playerlocationsinradius", "plir" -> {
+                List<Tgt> locs = new ArrayList<>();
+                for (Tgt x : entities(ctx, ctx.caster.pos(), radius(m), true, false, m)) locs.add(Tgt.at(x.pos().add(0, yOff, 0)));
+                yield locs;
+            }
+            // @NotLivingNearOrigin (@NLNO): lo que no es un ser vivo cerca del origen: aquí, los efectos del pack
+            case "notlivingnearorigin", "nonlivingnearorigin", "nlno" -> {
+                Vec3 c = origin(ctx);
+                double r = radius(m);
+                List<Tgt> out2 = new ArrayList<>();
+                for (SkillActor a : SkillRuntime.ACTORS) {
+                    if (!a.alive || a.level != ctx.caster.level() || a.follow != null || ctx.caster.actor == a) continue;
+                    if (a.pos.distanceToSqr(c) <= r * r) out2.add(Tgt.of(a.who));
+                }
+                yield out2;
+            }
+            case "locationsoftargets", "locationoftarget", "lot" -> {
+                List<Tgt> locs = new ArrayList<>();
+                if (ctx.targets != null) for (Tgt x : ctx.targets) locs.add(Tgt.at(x.pos().add(0, yOff, 0)));
+                yield locs;
+            }
             case "entitiesinline", "eil", "livinginline", "lil", "entl", "livingentitiesinline" -> line(ctx, m);
             case "targetblock", "tb" -> targetBlock(ctx, yOff);
             case "variablelocation", "varlocation", "vl" -> varLocation(m, ctx, yOff);
-            case "randomlocationsneartargetentities", "rlnte", "randomlocationsneartargets", "rlnt" -> randomNearTargets(m, ctx, yOff);
+            case "randomlocationsneartargetentities", "rlnte", "randomlocationsneartargets", "rlnt", "randomlocationsneartarget",
+                    "randomlocationsneartargetlocations", "rlntl" -> randomNearTargets(m, ctx, yOff);
             case "cone" -> conePoints(m, ctx);
             case "sphere" -> spherePoints(m, ctx);
             case "rectangle", "cube", "cuboid" -> rectangle(m, ctx);
@@ -219,9 +269,13 @@ final class SkillTargets {
         if (types == null) return in;
         List<Tgt> out = new ArrayList<>();
         for (Tgt t : in) {
-            if (t.who == null || t.who.actor == null) continue;
+            if (t.who == null) continue;
+            // un efecto del pack (su mob) o un mob de verdad de un jefe (su mob del pack)
+            SkillMobs.Host h = t.who.entity == null ? null : SkillMobs.host(t.who.entity);
+            String name = t.who.actor != null ? t.who.actor.name() : h != null ? h.def().name : null;
+            if (name == null) continue;
             for (String ty : types.split(",")) {
-                if (ty.trim().equalsIgnoreCase(t.who.actor.name())) {
+                if (ty.trim().equalsIgnoreCase(name)) {
                     out.add(t);
                     break;
                 }
@@ -657,6 +711,75 @@ final class SkillTargets {
         for (int i = 0; i < points; i++) {
             Vec3 d = SkillRuntime.dir(yaw + 360F * i / points, 0F);
             out.add(Tgt.at(c.add(d.scale(r)).add(0, yOff, 0)));
+        }
+        return out;
+    }
+
+    /**
+     * @RingAroundOrigin{radius;points;rotation;xrotation;yrotation;zrotation} (@RAO): un anillo de sitios alrededor del
+     * origen, girado esos grados en x, y, z (como Vec3.xRot/yRot/zRot).
+     */
+    private static List<Tgt> ringAround(Mech m, Ctx ctx, Vec3 c, double yOff) {
+        double r = SkillRuntime.num(m.targetArg("5", "radius", "r"), 5);
+        int points = (int) Math.max(1, Math.min(256, SkillRuntime.num(m.targetArg("8", "points", "p"), 8)));
+        float rot = (float) SkillRuntime.num(m.targetArg("0", "rotation", "rot"), 0);
+        float rx = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "xrotation", "xrot", "rx"), 0));
+        float ry = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "yrotation", "yrot", "ry"), 0));
+        float rz = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "zrotation", "zrot", "rz"), 0));
+        List<Tgt> out = new ArrayList<>();
+        for (int i = 0; i < points; i++) {
+            Vec3 d = SkillRuntime.dir(rot + 360F * i / points, 0F).scale(r);
+            if (rx != 0) d = d.xRot(rx);
+            if (ry != 0) d = d.yRot(ry);
+            if (rz != 0) d = d.zRot(rz);
+            out.add(Tgt.at(c.add(d).add(0, yOff, 0)));
+        }
+        return out;
+    }
+
+    /**
+     * @RandomRingPoint{radius=5;points=10;amount=1;rotationx/y/z;offsetx/y/z}: «amount» de los «points» puntos de un
+     * anillo alrededor de quien lanza, al azar (la Tormenta del Wither saca de ahí los bloques que absorbe).
+     */
+    private static List<Tgt> randomRingPoint(Mech m, Ctx ctx, double yOff) {
+        double r = SkillRuntime.num(m.targetArg("5", "radius", "r"), 5);
+        int points = (int) Math.max(1, Math.min(256, SkillRuntime.num(m.targetArg("10", "points", "p"), 10)));
+        int amount = (int) Math.max(1, Math.min(points, SkillRuntime.num(m.targetArg("1", "amount", "a"), 1)));
+        float rx = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationx", "rotx", "rx"), 0));
+        float ry = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationy", "roty", "ry"), 0));
+        float rz = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationz", "rotz", "rz"), 0));
+        Vec3 off = new Vec3(SkillRuntime.num(m.targetArg("0", "offsetx", "offx", "ox"), 0),
+                SkillRuntime.num(m.targetArg("0", "offsety", "offy", "oy"), 0), SkillRuntime.num(m.targetArg("0", "offsetz", "offz", "oz"), 0));
+        Vec3 c = ctx.caster.pos();
+        List<Integer> idx = new ArrayList<>();
+        for (int i = 0; i < points; i++) idx.add(i);
+        java.util.Collections.shuffle(idx, new java.util.Random(java.util.concurrent.ThreadLocalRandom.current().nextLong()));
+        List<Tgt> out = new ArrayList<>();
+        for (int k = 0; k < amount; k++) {
+            Vec3 d = SkillRuntime.dir(360F * idx.get(k) / points, 0F).scale(r);
+            if (rx != 0) d = d.xRot(rx);
+            if (ry != 0) d = d.yRot(ry);
+            if (rz != 0) d = d.zRot(rz);
+            out.add(Tgt.at(c.add(d).add(off).add(0, yOff, 0)));
+        }
+        return out;
+    }
+
+    /** @Siblings: los que tienen el mismo padre que quien lanza (los otros efectos de su dueño, los otros esbirros de su jefe). */
+    private static List<Tgt> siblings(Ctx ctx) {
+        List<Tgt> out = new ArrayList<>();
+        SkillRuntime.Who parent = ctx.caster.owner();
+        if (parent != null) {
+            for (SkillActor a : SkillRuntime.ACTORS) {
+                if (a.alive && a.owner != null && a.owner.same(parent) && ctx.caster.actor != a && a.follow == null) out.add(Tgt.of(a.who));
+            }
+        }
+        SkillMobs.Host me = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        if (me != null && me.boss() != me) {
+            for (LivingEntity e : ctx.caster.level().getEntitiesOfClass(LivingEntity.class, ctx.caster.entity.getBoundingBox().inflate(64))) {
+                SkillMobs.Host h = SkillMobs.host(e);
+                if (h != null && h != me && h.boss() == me.boss() && h.boss() != h && e.isAlive()) out.add(Tgt.of(Who.of(e)));
+            }
         }
         return out;
     }

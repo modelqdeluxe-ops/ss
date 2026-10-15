@@ -1,0 +1,20 @@
+jefe eldric: mob LRD_eldric, vida 650 (pack 200), daño 8, modelo eldric.eldric, caja [2.25, 4.1875], ataques 5
+mob LRD_eldric: IRON_GOLEM, caja 2.25×4.1875 (ojos 3.5594, escala 1.0, del modelo), velocidad 0.2, vida 200, daño 1, IA None, modificadores ['HOT_FLOOR 0', 'FIRE 0', 'FIRE_TICK 0', 'LAVA 0', 'ENTITY_EXPLOSION 0', 'BLOCK_EXPLOSION 0'], 21 líneas
+mob LRD_eldric_anvil: efecto ARMOR_STAND, modelo eldric.eldric_anvil, 5 líneas
+mob LRD_eldric_magma_spike: efecto ARMOR_STAND, modelo eldric.eldric_lava_spike, 9 líneas
+mob LRD_eldric_megahit_fx: efecto ARMOR_STAND, modelo eldric.eldric_megahit_fx, 6 líneas
+mob LRD_eldric_scrapmetal: efecto ARMOR_STAND, modelo eldric.eldric_scrapmetal, 5 líneas
+mob LRD_eldric_slam_fx: efecto ARMOR_STAND, modelo eldric.eldric_slam_fx, 6 líneas
+  modelo eldric.eldric: 74 huesos, huella 4a6f775d5a74fa9c, caja [2.25, 4.1875], sombra None, head 7
+    cabezas: head eyebrow_left eyebrow_right jaw beard_1 beard_2 mask
+    animaciones: air:2.0 attack_1:3.0 attack_2:1.5 attack_3:2.5 attack_4:2.5 death:4.0 idle:2.0 idle_prefight:1.5 land:1.625 leap:1.75 passive_layer:1.0 start_fight:6.0 walk:2.0
+  modelo eldric.eldric_anvil: 1 huesos, huella a19a748857f59081, caja [1.9375, 2.1875], sombra None, 
+    animaciones: 
+  modelo eldric.eldric_lava_spike: 6 huesos, huella 54f0e1b16816e676, caja None, sombra None, 
+    animaciones: spawn:1.5
+  modelo eldric.eldric_megahit_fx: 4 huesos, huella 96df480ce7c2e2d8, caja None, sombra None, 
+    animaciones: spawn:1.33333
+  modelo eldric.eldric_scrapmetal: 1 huesos, huella 7c6ed3ce13a9c247, caja [1.0, 1.0], sombra None, 
+    animaciones: land:2.0 spawn:2.0
+  modelo eldric.eldric_slam_fx: 1 huesos, huella 8c588342f20ecbea, caja None, sombra None, 
+    animaciones: spawn:2.625

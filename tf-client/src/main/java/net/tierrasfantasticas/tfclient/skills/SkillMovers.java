@@ -374,6 +374,15 @@ final class SkillMovers {
                 String sc = m.arg("1", "bulletscale", "bs").split(",")[0];
                 p.bullet.prop("item", m.a.get("bulletitem"), String.valueOf(SkillRuntime.num(sc, 1)), null);
             }
+        } else if (m.a.get("bulletitem") != null && ITEM_BULLETS.containsKey(type)) {
+            // ITEM/MYTHICITEM (un objeto suelto), TRACKING/REALTRACKING (un soporte con el objeto en la cabeza, girado
+            // hacia donde va), BLOCK/SMALLBLOCK (el bloque) y ARROW (la flecha): el modelo que les puso el conversor
+            String[] how = ITEM_BULLETS.get(type);
+            p.bullet = SkillRuntime.spawnModel(p.ctx, null, null, 1F, bulletPos(p), yaw, pitch);
+            if (p.bullet != null) {
+                p.bullet.carried = true;
+                p.bullet.prop("item", m.a.get("bulletitem"), how[1], how[0]);
+            }
         } else if (type.equals("ME") || type.equals("MEG") || type.equals("MODELENGINE")) {
             // Bala de ModelEngine: el modelo tal cual, justo donde va el proyectil
             String model = m.arg(null, "bulletmodel", "model");
@@ -388,6 +397,18 @@ final class SkillMovers {
         if (onStart != null) run(p, onStart, List.of(Tgt.at(p.pos)), null);
         MOVERS.add(p);
     }
+
+    /** Tipo de bala de MythicMobs → {cómo se dibuja (SkillClient: head, ground o fixed), escala}. */
+    private static final java.util.Map<String, String[]> ITEM_BULLETS = java.util.Map.ofEntries(
+            java.util.Map.entry("ITEM", new String[] {"ground", "1"}), java.util.Map.entry("MYTHICITEM", new String[] {"ground", "1"}),
+            java.util.Map.entry("TRACKING", new String[] {"head", "1"}), java.util.Map.entry("ARMOR_STAND", new String[] {"head", "1"}),
+            java.util.Map.entry("ARMORSTAND", new String[] {"head", "1"}), java.util.Map.entry("PSTAND", new String[] {"head", "1"}),
+            java.util.Map.entry("REALTRACKING", new String[] {"head", "1"}), java.util.Map.entry("RTRACKING", new String[] {"head", "1"}),
+            java.util.Map.entry("REAL_ARMOR_STAND", new String[] {"head", "1"}), java.util.Map.entry("REALARMORSTAND", new String[] {"head", "1"}),
+            java.util.Map.entry("STAND", new String[] {"head", "1"}),
+            // el bloque entero (como el bloque que cae de Minecraft: FIXED lo dibuja a la mitad) y el pequeño
+            java.util.Map.entry("BLOCK", new String[] {"fixed", "2"}), java.util.Map.entry("SMALLBLOCK", new String[] {"fixed", "0.9"}),
+            java.util.Map.entry("SMALL_BLOCK", new String[] {"fixed", "0.9"}), java.util.Map.entry("ARROW", new String[] {"fixed", "1"}));
 
     private static Vec3 bulletPos(Mover p) {
         Vec3 at = p.pos.add(0, p.bulletY, 0);

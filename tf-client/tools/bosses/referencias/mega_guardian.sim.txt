@@ -1,0 +1,58 @@
+## semilla 3, el pack tal cual
+mega_guardian       480 s, vida  64.2%: 240 ataques (30.0/min), 10 distintos de 11
+       83  swipe_1
+       70  swipe_2
+       53  swipe_3
+       15  slam
+       12  blast
+        2  submerge
+        2  emerge
+        1  sniff_walk
+        1  rage
+        1  stun
+     sin salir: death
+     repite seguido: 27 de 239; curas castigadas: 7 de 12
+
+## semilla 3, normal
+mega_guardian       480 s, vida  71.3%: 14 ataques (1.8/min), 6 distintos de 11
+        9  blast
+        1  sniff_walk
+        1  rage
+        1  slam
+        1  submerge
+        1  stun
+     sin salir: death, emerge, swipe_1, swipe_2, swipe_3
+     repite seguido: 7 de 13; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+mega_guardian       480 s, vida  73.4%: 6 ataques (0.8/min), 6 distintos de 11
+        1  sniff_walk
+        1  rage
+        1  blast
+        1  slam
+        1  submerge
+        1  stun
+     sin salir: death, emerge, swipe_1, swipe_2, swipe_3
+     repite seguido: 0 de 5; curas castigadas: 0 de 19; combos: 0; pasos atrás: 0
+
+## semilla 11, normal
+mega_guardian       480 s, vida  69.7%: 9 ataques (1.1/min), 7 distintos de 11
+        3  blast
+        1  sniff_walk
+        1  rage
+        1  swipe_1
+        1  slam
+        1  submerge
+        1  stun
+     sin salir: death, emerge, swipe_2, swipe_3
+     repite seguido: 2 de 8; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+mega_guardian       480 s, vida  74.1%: 5 ataques (0.6/min), 5 distintos de 11
+        1  sniff_walk
+        1  rage
+        1  blast
+        1  slam
+        1  submerge
+     sin salir: death, emerge, stun, swipe_1, swipe_2, swipe_3
+     repite seguido: 0 de 4; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0

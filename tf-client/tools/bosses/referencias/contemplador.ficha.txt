@@ -1,0 +1,11 @@
+jefe contemplador: mob LRD_beholder, vida 600 (pack 100), daño 7, modelo contemplador.lrd_beholder, caja [3.125, 3.125], ataques 4
+mob LRD_beholder: GHAST, caja 3.125×3.125 (ojos 2.6562, escala 1.0, del modelo), velocidad 0.05, vida 100, daño 5, IA None, modificadores None, 32 líneas
+mob LR_BEHOLDER_gib_eye: efecto ARMORSTAND, modelo contemplador.lrd_beholder_gibs, 8 líneas
+mob LR_BEHOLDER_gib_horn: efecto ARMORSTAND, modelo contemplador.lrd_beholder_gibs, 6 líneas
+mob LR_BEHOLDER_gib_random: efecto ARMORSTAND, modelo contemplador.lrd_beholder_gibs, 7 líneas
+mob LR_BEHOLDER_laser_particle: efecto ITEM_DISPLAY, modelo None, 1 líneas
+  modelo contemplador.lrd_beholder: 117 huesos, huella 3af9c629a3d1465c, caja [3.125, 3.125], sombra 3.125, head 3
+    cabezas: body glow_eyeball pupil
+    animaciones: bite:1.5 death:5.0 evade_left:1.0 evade_right:1.0 fire_laser_1:0.5 fire_laser_2:0.5 fire_laser_3:0.5 fire_laser_4:0.5 fire_laser_5:0.5 hit_1:0.75 hit_2:0.75 hit_3:0.75 idle:2.0 laser_dance:3.0 overlay_anim:2.0 remove_tentacle:4.0 tentacle_1_remove:1.0 tentacle_2_remove:1.0 tentacle_3_remove:1.0 tentacle_4_remove:1.0 tentacle_5_remove:1.0 walk:2.0
+  modelo contemplador.lrd_beholder_gibs: 5 huesos, huella cd104f0631cc44e1, caja None, sombra None, 
+    animaciones: spawn:1.5

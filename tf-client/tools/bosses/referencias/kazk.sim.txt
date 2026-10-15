@@ -1,0 +1,47 @@
+## semilla 3, el pack tal cual
+kazk                480 s, vida  65.9%: 200 ataques (25.0/min), 4 distintos de 15
+       76  attack_1
+       62  attack_2
+       56  attack_3
+        6  attack_4
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, scream, spit, tail_attack
+     repite seguido: 2 de 199; curas castigadas: 12 de 15
+
+## semilla 3, normal
+kazk                480 s, vida  63.9%: 188 ataques (23.5/min), 4 distintos de 15
+       68  attack_1
+       67  attack_2
+       46  attack_3
+        7  attack_4
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, scream, spit, tail_attack
+     repite seguido: 3 de 187; curas castigadas: 0 de 16; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+kazk                480 s, vida  64.2%: 280 ataques (35.0/min), 5 distintos de 15
+      100  attack_1
+       99  attack_2
+       70  attack_3
+       10  attack_4
+        1  scream
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
+     repite seguido: 0 de 279; curas castigadas: 1 de 13; combos: 0; pasos atrás: 4
+
+## semilla 11, normal
+kazk                480 s, vida  58.2%: 205 ataques (25.6/min), 5 distintos de 15
+       68  attack_2
+       68  attack_1
+       57  attack_3
+       11  attack_4
+        1  scream
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
+     repite seguido: 1 de 204; curas castigadas: 2 de 10; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+kazk                480 s, vida  56.7%: 232 ataques (29.0/min), 5 distintos de 15
+       79  attack_1
+       77  attack_2
+       62  attack_3
+       13  attack_4
+        1  scream
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
+     repite seguido: 0 de 231; curas castigadas: 2 de 13; combos: 0; pasos atrás: 5
