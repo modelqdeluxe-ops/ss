@@ -123,7 +123,7 @@ function NUCLEO(){
     // animales (no personas): las barandas del corral tapan franjas angostas del cuerpo; se cierran (dilatar y erosionar
     // con un cuadrado de r celdas, ~2.5 % del lado) y se rellenan los huecos de adentro, así la silueta queda entera
     const bin=new Uint8Array(G*G);for(let i=0;i<G*G;i++)bin[i]=v[i]>0?1:0;
-    if(opc.cl&&opc.cl!==1)cerrar(bin,G,Math.max(1,Math.round(G*.025)));
+    if(opc.cl&&opc.cl!==1)cerrar(bin,G,Math.max(1,Math.round(G*(G>200?.035:.025))));
     const lab=new Int32Array(G*G),pila=new Int32Array(G*G),B=[];let id=0;
     for(let i=0;i<G*G;i++){if(!bin[i]||lab[i])continue;id++;let n=0,t=0,bx0=G,by0=G,bx1=0,by1=0,sx=0,sy=0;pila[t++]=i;lab[i]=id;
       while(t){const j=pila[--t];n++;const x=j%G,y=(j-x)/G;sx+=x;sy+=y;if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y;
@@ -137,7 +137,7 @@ function NUCLEO(){
     else kB=opc.fijo&&pista?elegirFijo(Bf,G,pista):elegir(Bf,G,pista);
     let mejor=kB>=0?Bf[kB].id:0,mejorN=kB>=0?Bf[kB].n:0,recortada=false,exceso=1;
     // el elegido dentro de un grupo: solo lo que cae en la caja seguida, con margen
-    if(mejor&&opc.fijo&&pista&&!opc.pt){const tc=Bf[kB].caja,ap=Math.max(1e-6,(pista[2]-pista[0])*(pista[3]-pista[1]));exceso=(tc[2]-tc[0])*(tc[3]-tc[1])/(G*G)/ap;const mx=(pista[2]-pista[0])*.12+2/G,my=(pista[3]-pista[1])*.12+2/G,c=[Math.floor((pista[0]-mx)*G),Math.floor((pista[1]-my)*G),Math.ceil((pista[2]+mx)*G),Math.ceil((pista[3]+my)*G)];
+    if(mejor&&opc.fijo&&pista&&!opc.pt){const tc=Bf[kB].caja,ap=Math.max(1e-6,(pista[2]-pista[0])*(pista[3]-pista[1]));exceso=(tc[2]-tc[0])*(tc[3]-tc[1])/(G*G)/ap;const mx=(pista[2]-pista[0])*.08+2/G,my=(pista[3]-pista[1])*.08+2/G,c=[Math.floor((pista[0]-mx)*G),Math.floor((pista[1]-my)*G),Math.ceil((pista[2]+mx)*G),Math.ceil((pista[3]+my)*G)];
       let n=0;for(let i=0;i<G*G;i++){if(lab[i]!==mejor)continue;const x=i%G,y=(i-x)/G;if(x<c[0]||y<c[1]||x>=c[2]||y>=c[3]){lab[i]=-1;recortada=true;}else n++;}
       mejorN=n;if(!n)mejor=0;}
     if(!mejor)return {ok:false,area:0};

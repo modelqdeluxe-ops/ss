@@ -85,7 +85,7 @@ function escPlano(D,p,yTop,yPie,cy,fy){
   const t=y=>Math.tan(p+Math.atan((y-cy)/fy)),h=D*(t(yPie)-t(yTop));return h>0?h/(yPie-yTop):null;
 }
 // el campo de visión (grados, lado largo) con zoom z: la distancia focal se multiplica por z
-const fovZ=(fov,z)=>z>1.01?2*Math.atan(Math.tan(fov*Math.PI/360)/z)*180/Math.PI:fov;
+const fovZ=(fov,z)=>z>0&&Math.abs(z-1)>.01?2*Math.atan(Math.tan(fov*Math.PI/360)/z)*180/Math.PI:fov;
 function suelo(yPie,W,H,elev,h,fovL,yTop,extra){
   if(!(h>0)||!(fovL>20)||elev==null||!isFinite(elev)||!(W>0)||!(H>0)||!isFinite(yPie))return null;
   const f=(Math.max(W,H)/2)/Math.tan(fovL*Math.PI/360),p=-elev*Math.PI/180,a=p+Math.atan((yPie-H/2)/f);
@@ -251,7 +251,7 @@ function abrir(o){
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef0).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
         <div class="cv-ind"><span class="cv-pos" hidden><em>Posición</em><span class="cv-pos-b"><i></i></span><b data-no-tr>0 %</b></span><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
-        <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span><span class="cv-dist" hidden><em>Distancia</em><b data-no-tr></b></span><span class="cv-toca">Toca el animal para elegirlo · pellizca para acercar</span><div class="cv-zoom" hidden>${[1,2,3,4].map(z=>`<button type="button" data-z="${z}" data-no-tr>${z}×</button>`).join('')}</div></div>
+        <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span><span class="cv-dist" hidden><em>Distancia</em><b data-no-tr></b></span><span class="cv-toca">Toca el animal para elegirlo · pellizca para acercar</span><div class="cv-zoom" hidden>${['.5',1,2,3,4].map(z=>`<button type="button" data-z="${z}" data-no-tr>${z==='.5'?'0.5':z}×</button>`).join('')}</div></div>
       <div class="cam-bar cv-bar"><span class="cv-fps"></span><button type="button" class="cam-disp cv-man" aria-label="Tomar la foto ahora" disabled><i></i></button><button type="button" class="cam-lente cv-gira">Girar cámara</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const $w=s=>w.querySelector(s),distEl=w.querySelector('.cv-dist'),tag=w.querySelector('.cv-tag'),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
@@ -301,7 +301,7 @@ function abrir(o){
       stream=c.captureStream(30);v.srcObject=stream;try{await v.play();}catch(e){}arUsa=true;w.classList.remove('espejo');$w('.cv-gira').hidden=true;
     }
     async function abrirCam(){parar();
-      if(arPide&&!arFallo){try{await abrirAR();iniZoom();return;}catch(e){arFallo=String(e&&e.message||e);arUsa=false;
+      if(arPide&&!arFallo&&!ancho){try{await abrirAR();iniZoom();return;}catch(e){arFallo=String(e&&e.message||e);arUsa=false;
         toast(arFallo==='instalar'?'Instala "Servicios de Google Play para RA" y vuelve a medir. Mientras, se mide con el sensor de movimiento.':'ARCore no arrancó: se mide con el sensor de movimiento.',5000);}}
       const s=await Fotos.camara(frontal);
       if(!activo){s.getTracks().forEach(t=>t.stop());return;}   // se cerró mientras abría
@@ -313,18 +313,37 @@ function abrir(o){
       o.vw=v.videoWidth;o.vh=v.videoHeight;return o;}catch(e){return null;}};
     /* zoom: con ARCore, recorte del centro en el teléfono (Ar.zoom); sin ARCore, el zoom de la cámara si lo tiene. Al
        cambiar, el sujeto se vuelve a buscar (la imagen cambió de escala). Botones 1× a 4× y pellizco con dos dedos. */
-    let zoomAct=1,zoomMax=1,zoomCap=null;const zEl=$w('.cv-zoom');
-    const pintarZoom=()=>{zEl.hidden=zoomMax<1.5;for(const b of zEl.querySelectorAll('button')){const z=+b.dataset.z;b.hidden=z>zoomMax+.01;b.setAttribute('aria-pressed',String(Math.abs(z-zoomAct)<.25));}};
-    const ponerZoom=(z,guardar=true)=>{z=Math.round(Math.max(1,Math.min(zoomMax,z))*20)/20;if(Math.abs(z-zoomAct)<.02)return;zoomAct=z;
+    /* gran angular (0.5×): ARCore usa solo la cámara principal, así que se cambia a la cámara normal con su zoom (en los
+       teléfonos que la tienen en la misma cámara, de 0.5 o 0.6). La distancia sale entonces de la altura del teléfono
+       que midió ARCore justo antes (arAltoCm) y de la inclinación, con el campo de visión de la cámara principal que dan
+       los intrínsecos de ARCore (fovAR). Al volver a 1× o más, otra vez ARCore. */
+    let zoomAct=1,zoomMax=1,zoomCap=null,ancho=false,arAltoCm=null,fovAR=null;const zEl=$w('.cv-zoom');
+    const hGeo=()=>ancho&&arAltoCm?arAltoCm:o.geo?o.geo.h:null,fovGeo=()=>fovAR||(o.geo?o.geo.fov:null);
+    const anchoPosible=()=>arUsa?!!(arPide&&Fotos&&Fotos.camara):!!(zoomCap&&zoomCap.min<=.75);
+    const pintarZoom=()=>{const a=anchoPosible()||ancho;zEl.hidden=zoomMax<1.5&&!a;for(const b of zEl.querySelectorAll('button')){const z=+b.dataset.z;b.hidden=z<1?!a:z>zoomMax+.01;b.setAttribute('aria-pressed',String(z<1?zoomAct<.95:Math.abs(z-zoomAct)<.25));}};
+    const reBuscar=()=>{pista=null;zona=null;hist=[];prev=null;buenos=[];caja=null;toque=null;fijo=null;};
+    const ponerZoom=async(z,guardar=true)=>{
+      if(z<.95){if(zoomAct<.95&&!arUsa)return;
+        if(arUsa){if(arMeta&&arMeta.fx>0){if(arMeta.alto>0)arAltoCm=arMeta.alto*100;const L=Math.max(arMeta.W,arMeta.H);fovAR=2*Math.atan(Math.tan(Math.atan(L/2/arMeta.fx))*(arMeta.zoom||1))*180/Math.PI;}
+          ancho=true;try{await abrirCam();}catch(e){ancho=false;try{await abrirCam();}catch(e2){}return;}
+          if(!(zoomCap&&zoomCap.min<=.75)){toast('Este teléfono no deja usar el gran angular en la app.');ancho=false;try{await abrirCam();}catch(e){}return;}
+          if(!arAltoCm)toast('Sin la altura de ARCore: la distancia sale de la altura del teléfono guardada.',4000);}
+        if(!(zoomCap&&zoomCap.min<=.75))return;
+        const zz=Math.max(zoomCap.min,.5),t=stream&&stream.getVideoTracks()[0];try{t&&await t.applyConstraints({advanced:[{zoom:zz}]});}catch(e){}
+        zoomAct=zz;reBuscar();pintarZoom();return;}
+      if(ancho){ancho=false;if(arPide&&!arFallo){try{await abrirCam();}catch(e){}}}
+      z=Math.round(Math.max(1,Math.min(zoomMax,z))*20)/20;if(Math.abs(z-zoomAct)<.02)return;zoomAct=z;
       if(arUsa){try{Ar.zoom(z);}catch(e){}}
-      else if(zoomCap){const t=stream&&stream.getVideoTracks()[0];try{t&&t.applyConstraints({advanced:[{zoom:Math.min(zoomCap.max,zoomCap.min*z)}]}).catch(()=>{});}catch(e){}}
-      pista=null;zona=null;hist=[];prev=null;buenos=[];caja=null;pintarZoom();
+      else if(zoomCap){const t=stream&&stream.getVideoTracks()[0];try{t&&t.applyConstraints({advanced:[{zoom:Math.max(zoomCap.min,Math.min(zoomCap.max,z))}]}).catch(()=>{});}catch(e){}}
+      reBuscar();pintarZoom();
       if(guardar)try{localStorage.setItem('rumentis-pc-zoom',String(z));}catch(e){}};
     const iniZoom=()=>{zoomAct=1;zoomCap=null;
       if(arUsa)zoomMax=typeof Ar.zoom==='function'?4:1;
       else{let c=null;try{const t=stream&&stream.getVideoTracks()[0];c=t&&t.getCapabilities?t.getCapabilities().zoom:null;}catch(e){}
-        zoomCap=c&&c.max>c.min?{min:c.min||1,max:c.max}:null;zoomMax=zoomCap?Math.min(4,zoomCap.max/zoomCap.min):1;}
+        // (el zoom de la cámara es absoluto: 1 es la lente principal; menos de 1, el gran angular)
+        zoomCap=c&&c.max>c.min?{min:c.min||1,max:c.max}:null;zoomMax=zoomCap?Math.min(4,zoomCap.max):1;}
       if(arUsa&&zoomMax>1)try{Ar.zoom(1);}catch(e){}
+      if(ancho){pintarZoom();return;}
       let z0=1;try{z0=+localStorage.getItem('rumentis-pc-zoom')||1;}catch(e){}pintarZoom();if(z0>1)ponerZoom(z0,false);};
     zEl.addEventListener('click',e=>{const b=e.target.closest('button[data-z]');if(b){e.stopPropagation();ponerZoom(+b.dataset.z);}});
     $w('.cv-gira').onclick=async()=>{frontal=!frontal;try{await abrirCam();}catch(e){frontal=!frontal;toast('No se pudo abrir esa cámara.');try{await abrirCam();}catch(e2){}}};
@@ -447,7 +466,7 @@ function abrir(o){
         cap={id:p.id,nombre:p.nombre,manual:!!manual,zoom:zoomAct,ori:{elev:F[0].arc.elev,horiz:F[0].arc.ladeo},ts:Date.now(),rapido:med,fc:F[0].fc,hd:F[0].fc,s:u.s,pr:u.p,banda:p.banda,ar:true,
           tomas:F.map(f=>({fc:f.fc,arc:f.arc,pend:precisa(f.fc,cajas)}))};
       }else{
-        const fc=cuadro();cap={id:p.id,nombre:p.nombre,manual:!!manual,zoom:zoomAct,ori:telOri(),ts:Date.now(),rapido:med,fc,hd:cuadroHD(),s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
+        const fc=cuadro();cap={id:p.id,nombre:p.nombre,manual:!!manual,zoom:zoomAct,hTel:hGeo(),fov1:fovGeo(),ori:telOri(),ts:Date.now(),rapido:med,fc,hd:cuadroHD(),s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
         // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
         for(let t=1;t<nTomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
       }
@@ -483,7 +502,7 @@ function abrir(o){
           if(!img)img=foto(t.fc,r.s,r.p,r.kp);}
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length){if(c.remoto)continue;tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});}
-        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,zoom:c.zoom||1,ori:c.ori||null,ts:c.ts||null,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,hd:c.hd||null,img:img||foto(c.fc,c.s,c.pr)});}
+        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,zoom:c.zoom||1,hTel:c.hTel||null,fov1:c.fov1||null,ori:c.ori||null,ts:c.ts||null,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,hd:c.hd||null,img:img||foto(c.fc,c.s,c.pr)});}
       try{if(tPre.length)localStorage.setItem('rumentis-pc-msp',String(Math.round(mediana(tPre))));}catch(e){}
       // rendimiento de esta medición (para el laboratorio)
       out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,
@@ -536,7 +555,7 @@ function abrir(o){
       const med=E.det?medir(s,W,H,p.banda):null;if(med&&(conRef?E.ref:refOk(pr,W,H)))med.refAlto=medir(pr,W,H).alto;
       // la distancia al animal (con la altura del teléfono y su inclinación), en vivo
       if(arUsa){const D=E.det&&s&&s.n?distAR(s.n,arMeta):null;distEl.hidden=!D;if(D)distEl.lastChild.textContent=`${nf(D,1)} m`;w.dataset.dist=D?D.toFixed(2):'';}
-      else if(o.geo){const ori=telOri(),d=E.det&&s&&s.n&&ori?suelo(s.n[3]*H,W,H,ori.elev,o.geo.h,fovZ(o.geo.fov,zoomAct)):null;distEl.hidden=!d;if(d)distEl.lastChild.textContent=`${nf(d.D,1)} m`;w.dataset.dist=d?d.D.toFixed(2):'';}
+      else if(o.geo){const ori=telOri(),d=E.det&&s&&s.n&&ori?suelo(s.n[3]*H,W,H,ori.elev,hGeo(),fovZ(fovGeo(),zoomAct)):null;distEl.hidden=!d;if(d)distEl.lastChild.textContent=`${nf(d.D,1)} m`;w.dataset.dist=d?d.D.toFixed(2):'';}
       ult=E.det&&E.comp&&(!conRef||E.ref)?{s,p:pr,med}:null;man.disabled=!ult;
       vis.s=E.det?s:null;vis.p=pr;vis.color=color;chips(E);w.dataset.estado=color;w.dataset.zona=zona?'si':'no';
       /* un cuadro que falla no reinicia la cuenta si el anterior estaba bien y lo que falló es poco (un temblor de la
@@ -573,9 +592,12 @@ function abrir(o){
       // (si la mancha entera no es mucho más grande que la caja, es el mismo animal más grande: se acercó o se hizo zoom)
       if(fijo&&s.recortada&&s.exceso>2.2&&pista){const P=pista.n,pw=P[2]-P[0],ph=P[3]-P[1],c0=[(P[0]+P[2])/2,(P[1]+P[3])/2],c1=[(n[0]+n[2])/2,(n[1]+n[3])/2],
         cx=c0[0]+Math.max(-.1*pw,Math.min(.1*pw,c1[0]-c0[0])),cy=c0[1]+Math.max(-.1*ph,Math.min(.1*ph,c1[1]-c0[1]));n=[cx-pw/2,cy-ph/2,cx+pw/2,cy+ph/2];}
-      pista={n,t:ah};w.dataset.fijo=fijo?'1':'';if(fijo)refrescar();}
+      pista={n,t:ah};w.dataset.fijo=fijo?'1':'';
+      // sin tocar: si la mancha parece de varios animales (muy alargada para el ángulo), el modelo preciso busca uno
+      const rr=(n[2]-n[0])*W/Math.max(1,(n[3]-n[1])*H),grupo=pasos[ip]&&pasos[ip].id==='atras'?rr>1.25:rr>2.2;
+      if(fijo||grupo)refrescar(!fijo);}
     // el modelo preciso vuelve a encontrar al animal elegido (el que contiene el punto tocado) y ajusta la caja seguida
-    async function refrescar(){if(!fijo||!pista||refAnd||capturando||performance.now()-tRef<1500)return;refAnd=true;tRef=performance.now();
+    async function refrescar(auto){if((!fijo&&!auto)||!pista||refAnd||capturando||performance.now()-tRef<(auto?2000:1500))return;refAnd=true;tRef=performance.now();
       try{const pre=await preP,fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);
         const q=ptSel(),Z=zonaDe([pista.n],W,H,{margen:.3,min:.3,amin:.5,amax:2})||{x:0,y:0,w:W,h:H},c=document.createElement('canvas');c.width=c.height=pre.R;
         const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);
@@ -583,7 +605,10 @@ function abrir(o){
         let s2=aCuadro(r.suj[o.clase],r.G,Z,W,H);
         // si el recorte lo corta, en el cuadro completo
         if(s2&&s2.cortada){const T={x:0,y:0,w:W,h:H};x.drawImage(fc,0,0,W,H,0,0,pre.R,pre.R);const r2=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},[{c:o.clase,p:pista.n,pt:q}]);s2=aCuadro(r2.suj[o.clase],r2.G,T,W,H);}
-        if(fijo&&q&&s2&&s2.ok&&!s2.cortada&&q[0]>=s2.n[0]&&q[0]<=s2.n[2]&&q[1]>=s2.n[1]&&q[1]<=s2.n[3]){const n=s2.n;pista={n:n.slice(),t:performance.now()};
+        const ar_=n=>(n[2]-n[0])*(n[3]-n[1]);
+        // un grupo sin tocar: si la mancha es mucho más grande que el animal que encontró el modelo preciso, se queda con ese
+        if(!fijo&&auto&&s2&&s2.ok&&!s2.cortada&&pista&&ar_(pista.n)>1.6*ar_(s2.n)){fijo={rel:[.5,.5]};pista={n:s2.n.slice(),t:performance.now()};w.dataset.fijo='1';}
+        else if(fijo&&q&&s2&&s2.ok&&!s2.cortada&&q[0]>=s2.n[0]&&q[0]<=s2.n[2]&&q[1]>=s2.n[1]&&q[1]<=s2.n[3]){const n=s2.n;pista={n:n.slice(),t:performance.now()};
           fijo.rel=[(q[0]-n[0])/Math.max(1e-3,n[2]-n[0]),(q[1]-n[1])/Math.max(1e-3,n[3]-n[1])];}}catch(e){console.warn(e);}
       refAnd=false;}
     // toques y pellizco sobre el video

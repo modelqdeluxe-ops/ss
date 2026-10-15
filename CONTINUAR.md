@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.40; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.41; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.40) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.40) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.41) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.41) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -569,6 +569,20 @@ persona de referencia.
   y «Repetir este»).
 - El resultado ya no dice «persona de referencia» con ARCore (`escalaTxt`); sin el campo de persona en los ajustes.
   La prueba con persona del laboratorio queda plegada y opcional.
+
+**5.0.0-beta.41: gran angular, grupos sin tocar, por detrás flexible.**
+- **0.5×**: ARCore solo usa la lente principal; el botón 0.5× pasa a la cámara normal con su zoom mínimo (0.5–0.6 en
+  teléfonos con varias lentes en una cámara lógica) y vuelve a ARCore con 1× o más. Antes de soltar ARCore se guarda la
+  altura del teléfono que midió (`arAltoCm`) y el campo de visión de la lente principal por sus intrínsecos (`fovAR`):
+  la distancia con gran angular sale de esa altura, la inclinación (acelerómetro) y `fovZ(fovAR, zoom)`; cada toma lleva
+  `hTel` y `fov1`. Si el teléfono no da zoom < 0.75 en la cámara normal, avisa y sigue con ARCore. El zoom de la cámara
+  normal es absoluto (1 = lente principal).
+- **Grupos sin tocar**: si la mancha del modelo rápido es muy alargada para el ángulo (ancho/alto > 2.2 de costado,
+  > 1.25 por detrás), cada 2 s el modelo preciso busca un animal ahí; si la mancha es más de 1.6 veces su caja, queda
+  fijo ese animal (`refrescar(auto)`). Tocar elige otro. El margen del recorte del grupo bajó a 8 %.
+- **Por detrás**: `ang.max` 1.25 (el animal voltea la cabeza) y la banda del ancho de la grupa 5–45 % del alto.
+- **Barandas**: el cierre del modelo preciso es de 3.5 % del lado (rápido 2.5 %).
+- **ARCore**: imagen de la cámara hasta 2560 de ancho (antes 1920): el zoom 3–4× tiene más detalle.
 
 ---
 

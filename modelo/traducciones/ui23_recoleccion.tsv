@@ -202,3 +202,5 @@ La distancia al animal	The distance to the animal	A distância até o animal
 , con la altura del teléfono y su inclinación al tomar la foto: así cada píxel tiene su medida en centímetros.	, with the phone's height and tilt when taking the photo: so each pixel has its size in centimeters.	, com a altura do celular e sua inclinação ao tirar a foto: assim cada pixel tem sua medida em centímetros.
 No se pudo medir la distancia al animal: la medida es aproximada.	The distance to the animal could not be measured: the measurement is approximate.	Não foi possível medir a distância até o animal: a medida é aproximada.
 Prueba opcional con una persona	Optional test with a person	Teste opcional com uma pessoa
+Este teléfono no deja usar el gran angular en la app.	This phone does not allow the wide-angle lens in the app.	Este celular não permite usar a grande angular no app.
+Sin la altura de ARCore: la distancia sale de la altura del teléfono guardada.	Without ARCore's height: the distance comes from the saved phone height.	Sem a altura do ARCore: a distância vem da altura do celular salva.

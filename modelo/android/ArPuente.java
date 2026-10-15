@@ -216,7 +216,7 @@ public class ArPuente implements GLSurfaceView.Renderer {
     }
 
     private void configurar() {
-        // la cámara trasera con la imagen (CPU) más grande hasta 1920 de ancho: las fotos salen de ahí
+        // la cámara trasera con la imagen (CPU) más grande hasta 2560 de ancho: las fotos y el zoom salen de ahí
         try {
             CameraConfigFilter f = new CameraConfigFilter(session);
             f.setFacingDirection(CameraConfig.FacingDirection.BACK);
@@ -224,7 +224,7 @@ public class ArPuente implements GLSurfaceView.Renderer {
             CameraConfig mejor = null;
             for (CameraConfig c : L) {
                 Size s = c.getImageSize();
-                if (s.getWidth() > 1920) continue;
+                if (s.getWidth() > 2560) continue;
                 if (mejor == null || s.getWidth() * s.getHeight() > mejor.getImageSize().getWidth() * mejor.getImageSize().getHeight()) mejor = c;
             }
             if (mejor != null) session.setCameraConfig(mejor);

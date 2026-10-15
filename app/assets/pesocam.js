@@ -25,7 +25,7 @@ const MODOS={
   ganado:{clase:Vision.VACA,k:1,err:.15,alto:'altTel',ref:true,
     buscar:'Apunta al animal, que se vea completo',
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado, completo y con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.28,max:.92},quieto:.5,ref:false},
-      {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara, con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.28,max:.9},quieto:.5,banda:[.05,.55],ref:false}]}
+      {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara, con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:1.25},dist:{eje:'alto',min:.28,max:.9},quieto:.5,banda:[.05,.45],ref:false}]}
 };
 /* con un solo teléfono también se toman el otro costado y desde arriba (sin la persona de referencia): PC().tomasG dice
    cuántas tomas pide la cámara (2: costado y por detrás; 3: más el otro costado; 4: más desde arriba). Lo que tome un
@@ -546,8 +546,8 @@ function combinar(modo,caps,alto,ropaK,tipo){
   // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
   /* ganado: cm por píxel con la distancia al animal (CamVivo.suelo: la altura del teléfono y su inclinación al tomar
      la foto); si el teléfono no tiene acelerómetro, con la persona de referencia si se ve. Se guardan las dos. */
-  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;t.vista=c.id;t.zoom=c.zoom||1;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo,c.id);}
-  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,CamVivo.fovZ(fovTel(),t.zoom||1),t.sil.n[1]*t.H,pieExtra(modo,t.vista)):null;
+  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;t.vista=c.id;t.zoom=c.zoom||1;t.hTel=c.hTel||null;t.fov1=c.fov1||null;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo,c.id);}
+  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,t.hTel||PC().altTel||ALT_DEF,CamVivo.fovZ(t.fov1||fovTel(),t.zoom||1),t.sil.n[1]*t.H,pieExtra(modo,t.vista)):null;
   const cmpx=t=>{if(t.ar&&t.ar.cmpx>0)return t.ar.cmpx;if(modo==='persona')return ref/t.med.alto;const g=geoT(t);if(g)return g.cmpx;return t.med&&t.med.refAlto>0?ref/t.med.refAlto:NaN;};
   const conK=t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t)),K:modo==='persona'?kpT(t):null});
   const TP=tomas(p).map(conK),TS=tomas(s).map(conK);
