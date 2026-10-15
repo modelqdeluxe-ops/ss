@@ -435,8 +435,8 @@ public class ArPuente implements GLSurfaceView.Renderer {
                 try {
                     byte[] nv = pl.nv21(w2, h2);
                     YuvImage y = new YuvImage(nv, ImageFormat.NV21, w2, h2, null);
-                    ByteArrayOutputStream bo = new ByteArrayOutputStream(64 * 1024);
-                    y.compressToJpeg(new Rect(0, 0, w2, h2), 70, bo);
+                    ByteArrayOutputStream bo = new ByteArrayOutputStream(128 * 1024);
+                    y.compressToJpeg(new Rect(0, 0, w2, h2), 80, bo);
                     js("window.arCuadro&&window.arCuadro('" + Base64.encodeToString(bo.toByteArray(), Base64.NO_WRAP) + "'," + o.toString() + ")");
                 } catch (Throwable e) {
                     pedirCuadro = true;

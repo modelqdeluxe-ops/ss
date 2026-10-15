@@ -274,7 +274,7 @@ function abrir(o){
          decodifica), se decodifica fuera del hilo principal y se dibuja girado meta.rot grados. Si llega uno nuevo
          mientras se decodifica otro, el viejo se salta. */
       let ultPide=0,deco=0;
-      const pedir=()=>{if(!activo)return;const t=performance.now(),d=Math.max(0,45-(t-ultPide));setTimeout(()=>{if(!activo)return;ultPide=performance.now();try{Ar.otro();}catch(e){}},d);};
+      const pedir=()=>{if(!activo)return;const t=performance.now(),d=Math.max(0,33-(t-ultPide));setTimeout(()=>{if(!activo)return;ultPide=performance.now();try{Ar.otro();}catch(e){}},d);};
       let ultLlega=performance.now();
       // si un cuadro se pierde en el camino, se vuelve a pedir (la cámara no se queda congelada)
       const vig=setInterval(()=>{if(!activo||arFallo){clearInterval(vig);return;}if(performance.now()-ultLlega>1500){ultLlega=performance.now();try{Ar.otro();}catch(e){}}},500);
@@ -286,11 +286,11 @@ function abrir(o){
           g.setTransform(...(rot===90?[0,1,-1,0,Wc,0]:rot===180?[-1,0,0,-1,Wc,Hc]:rot===270?[0,-1,1,0,0,Hc]:[1,0,0,1,0,0]));g.drawImage(bm,0,0);g.setTransform(1,0,0,1,0,0);
           try{bm.close();}catch(e){}arMeta=meta;}catch(e){}};
       const r=await new Promise(ok=>{let hecho=false;const fin_=x=>{if(!hecho){hecho=true;ok(x);}};window.arIniciado=j=>{let x={};try{x=JSON.parse(j);}catch(e){}fin_(x);};
-        try{Ar.iniciar(JSON.stringify({lado:640}));}catch(e){fin_({error:'puente'});}setTimeout(()=>fin_({error:'tiempo'}),15000);});
+        try{Ar.iniciar(JSON.stringify({lado:960}));}catch(e){fin_({error:'puente'});}setTimeout(()=>fin_({error:'tiempo'}),15000);});
       if(!r.ok)throw new Error(r.instalar?'instalar':r.error||'ar');
       try{Ar.otro();}catch(e){}const t0=performance.now();while(!arMeta&&activo&&performance.now()-t0<8000)await new Promise(z=>setTimeout(z,100));
       if(!arMeta){try{Ar.detener();}catch(e){}throw new Error('sin-cuadros');}
-      stream=c.captureStream(24);v.srcObject=stream;try{await v.play();}catch(e){}arUsa=true;w.classList.remove('espejo');$w('.cv-gira').hidden=true;
+      stream=c.captureStream(30);v.srcObject=stream;try{await v.play();}catch(e){}arUsa=true;w.classList.remove('espejo');$w('.cv-gira').hidden=true;
     }
     async function abrirCam(){parar();
       if(arPide&&!arFallo){try{await abrirAR();return;}catch(e){arFallo=String(e&&e.message||e);arUsa=false;

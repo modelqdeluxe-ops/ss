@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.38; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.39; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.38) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.38) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.39) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.39) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -536,6 +536,12 @@ puntaje, aunque fueran otro animal, otra persona o algo del fondo.
   puntaje × (0.15 + IoU con la pista); sin pista, con preferencia por el centro.
 - `camvivo.js`: la pista es la caja del último cuadro bueno (1.2 s; se borra al cambiar de paso); las fotos se miden
   con la caja que estaba verde y una foto cuya silueta no coincide con ella (IoU < 0.4) no se usa.
+
+**5.0.0-beta.39: cámara a pantalla completa.** El dueño (captura): la cámara se veía chica, comprimida y con pocos
+cuadros. En vertical el video de la cámara en vivo ocupa toda la pantalla (`object-fit: contain`, sin recortar: lo que
+se ve es lo que mide el modelo) y el título, los indicadores, la distancia y el botón van encima con degradados
+(`@media (orientation:portrait)` para `.cv`). ARCore manda cuadros de 960 px (antes 640) con JPEG 80 (antes 70), la
+página los pide cada 33 ms como mínimo (antes 45) y el lienzo se captura a 30 cuadros/s.
 
 ---
 
