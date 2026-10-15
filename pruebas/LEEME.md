@@ -25,6 +25,10 @@ Descartar), el avance, la báscula anotada después, el Excel (todas las hojas; 
 y el ZIP por partes con las fotos. `vivo_t.js` mide la vaca con 3 tomas con un solo teléfono (el otro costado sin
 persona de referencia) y comprueba la foto a resolución completa.
 
+`ar_t.js` (8111 y 8112) prueba ARCore sin teléfono: el puente nativo "Ar" se reemplaza por uno que entrega foto,
+profundidad e intrínsecos de escenas de COCO. La prueba con persona por ARCore (175 cm reales → error < 4 %) y por el
+sensor de movimiento, y el ganado con ARCore (escala ar-prof, medidas, peso, Excel).
+
 `lab_t.js` (solo 8111, sin cámara) prueba el laboratorio completo (#pclab): arma mediciones de ganado con calidad de
 la toma y datos del animal (los reales pesan con γ = 0.9 y +8 %; las fotos poco nítidas tienen más error) y comprueba
 que el laboratorio lo vea (diagnóstico, error por tercio, ajuste sugerido con γ alta), recorre todas las pestañas, el

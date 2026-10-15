@@ -194,7 +194,7 @@ ACTS.labModo=el=>{const m=el.dataset.m;if(!P.MODOS[m])return;UI.pc.modo=m;try{lo
 /* ---------- Resumen ---------- */
 function tResumen(modo){
   const E=estad(modo),{F,G}=etiquetasLab(modo),R=E.R,ses=PCc().labSes;
-  const sesion=modo==='ganado'?bloqueSesion(R,ses):`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
+  const sesion=modo==='ganado'?bloquePrueba()+bloqueSesion(R,ses):`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
     ${ses?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b> · <span>${pl(R.filter(x=>x.ses===ses.n).length,'medición','mediciones')}</span></span></p>
       <button type="button" class="btn full" data-act="labSesFin">Terminar la sesión</button>`
       :`<p class="hint" style="margin:0">Una sesión agrupa las mediciones de una prueba para analizarlas y exportarlas juntas.</p><button type="button" class="btn pri full" data-act="labSesIni">Empezar una sesión de prueba</button>`}</div></section>`;
@@ -278,6 +278,56 @@ ACTS.labRealAnimal=el=>{const aid=el.dataset.aid,ses=PCc().labSes;const R=P.REG(
     ${q('Peso de báscula',inp('kg','',{unit:UW(),xl:true,ph:'—'}))}`,foot('Guardar')));};
 SAVE.labRealA=f=>{const v=toKg(num(fv(f,'kg')));if(!(v>=40&&v<=1300))return ferr(f,'Escribe el peso de la báscula.');const ses=PCc().labSes,aid=REAL_A;
   P.guardarPC({reg:P.REG().map(x=>x.aid===aid&&(!ses||x.ses===ses.n)?{...x,real:Math.round(v*10)/10}:x)});REAL_A=null;closeSheet();toast('Peso de báscula guardado');};
+
+/* ---------- prueba de la medida con una persona ----------
+   Antes de ir a la finca: se mide la estatura de una persona conocida con la misma escala que da los centímetros del
+   animal (ARCore: profundidad, suelo o mira; o el sensor de movimiento con la altura del teléfono). El error de la
+   estatura es el error de la escala (el del peso, cerca del doble). Se guardan en PCc().pruebas y van al Excel. */
+const PRU=()=>PCc().pruebas||[];
+const MET_P=[['prof','ARCore · profundidad'],['suelo','ARCore · suelo'],['centro','ARCore · mira'],['sensor','Sensor de movimiento']];
+function bloquePrueba(){
+  const L=PRU(),ar=P.hayAR&&P.hayAR(),st=MET_P.map(([k,t])=>{const e=L.map(x=>x.medido&&x.medido[k]>0?x.medido[k]/x.real-1:NaN).filter(esNum);return e.length?[t,e.length,'±'+pc(prom(e.map(Math.abs))),pcs(prom(e))]:null;}).filter(Boolean);
+  return `<section class="sec">${secH('Probar la medida con una persona',L.length||'')}<div class="card pad lab-c">
+    <p class="hint" style="margin:0">Mide a una persona de estatura conocida: la app la calcula con la misma escala que da los centímetros del animal. El error de la estatura es el error de la escala; en el peso, cerca del doble.</p>
+    <div class="pc-acts lab-acts">${ar?`<button type="button" class="btn pri" data-act="labPrueba" data-v="ar">Probar con ARCore</button>`:''}<button type="button" class="btn${ar?'':' pri'}" data-act="labPrueba" data-v="sensor">Probar con el sensor de movimiento</button></div>
+    ${ar?'':`<p class="hint" style="margin:0">${P.arEstado&&P.arEstado()==='no'?'Este teléfono no tiene ARCore (o esta versión de la app no lo trae).':''}</p>`}
+    ${st.length?tabla(['Método','n','error','sesgo'],st):''}
+    ${L.length?`<div class="rows">${L.slice(-6).reverse().map(x=>`<div class="row"><div class="tx"><b><span>Real</span> <span data-no-tr>${nf(x.real)} cm</span></b><span>${MET_P.filter(([k])=>x.medido&&x.medido[k]>0).map(([k,t])=>`<span>${t}</span> <span data-no-tr>${nf(x.medido[k],1)} cm (${pcs(x.medido[k]/x.real-1)})</span>`).join(' · ')}${x.D?` · <span>a</span> <span data-no-tr>${nf(x.D,2)} m</span>`:''}</span></div></div>`).join('')}</div>
+      <button type="button" class="lnk" data-act="labPruebaBorrar">Borrar las pruebas</button>`:''}</div></section>`;
+}
+let PRUEBA=null;
+ACTS.labPrueba=el=>{const via=el.dataset.v;PRUEBA=via;
+  openSheet(shHead('Prueba con una persona',via==='ar'?'ARCore':'Sensor de movimiento')+formWrap('labPrueba',`<p class="hint">${via==='ar'?'Se abre la cámara de ARCore: mueve el teléfono despacio hasta que reconozca el lugar (que se vea el suelo), pon la mira sobre el pecho de la persona y toma la foto. Que se vea completa, de pies a cabeza.':'La persona de pie, completa de pies a cabeza, a 3 a 6 m. Sostén el teléfono a la altura que anotaste; la foto se toma sola cuando la silueta esté verde.'}</p>
+    ${q('Estatura real de la persona, con zapatos',inp('real','',{unit:'cm',xl:true,ph:'170'}),'Mídela con cinta, con los zapatos que tiene puestos.')}
+    ${via==='sensor'?q('Altura del teléfono',inp('alt',PCc().altTel?String(PCc().altTel):'',{unit:'cm',ph:'140'}),'Del suelo al teléfono como lo vas a sostener.'):''}`,foot('Empezar')));};
+SAVE.labPrueba=f=>{const real=num(fv(f,'real'));if(!(real>=50&&real<=230))return ferr(f,'Escribe la estatura en centímetros (por ejemplo, 170).');
+  const via=PRUEBA;if(via==='sensor'){const a=num(fv(f,'alt'));if(!(a>=50&&a<=250))return ferr(f,'Escribe la altura del teléfono en centímetros (por ejemplo, 140).');P.guardarPC({altTel:Math.round(a)});}
+  closeSheet();setTimeout(()=>correrPrueba(via,real),120);};
+const PASO_PERSONA={id:'persona',nombre:'Persona de pie',instr:'La persona de pie, completa de pies a cabeza.',instrAR:'La persona de pie, completa de pies a cabeza. Pon la mira sobre su pecho y toma la foto.',girar:'Que se vea la persona completa',ang:{},dist:{eje:'alto',min:.45,max:.92},ref:false};
+// la estatura de cada método con una toma ya medida (para la app y las pruebas)
+function estaturaPrueba(t,via,altTel,fov){
+  const o={},alto=t&&t.med&&t.med.alto;if(!(alto>0))return o;
+  if(via==='ar'&&t.ar){for(const k of ['prof','suelo','centro']){const kk=t.ar['k'+k];if(kk>0)o[k]=alto*kk;}o.D=t.ar.Z?t.ar.Z/100:null;o.alto=t.ar.alto;o.nProf=t.ar.nProf;o.elev=t.ar.elev;}
+  if(via==='sensor'&&t.ori&&t.sil&&t.sil.n){const g=CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,altTel,fov);if(g){o.sensor=alto*g.cmpx;o.D=g.D;o.elev=t.ori.elev;}}
+  return o;
+}
+async function correrPrueba(via,real){
+  let tomas=[];
+  if(via==='ar'){const res=await P.abrirAR([PASO_PERSONA],'vertical');if(!res||res.cancelado)return;if(res.error){toast(P.arError(res.error),5000);return;}
+    toast('Midiendo…',8000);const caps=await P.capsAR(res,[PASO_PERSONA],Vision.PERSONA,'persona');tomas=caps.flatMap(c=>c.tomas);}
+  else{const caps=await CamVivo.abrir({titulo:'Prueba con una persona',clase:Vision.PERSONA,ref:false,geo:{h:PCc().altTel,fov:P.fovTel()},buscar:'Apunta a la persona, de pies a cabeza',pasos:[PASO_PERSONA]});
+    if(!caps||!caps.length)return;tomas=caps.flatMap(c=>c.tomas.map(t=>({...t,ori:c.ori})));}
+  const M=tomas.map(t=>estaturaPrueba(t,via,PCc().altTel,P.fovTel())),md=k=>{const v=M.map(m=>m[k]).filter(z=>esNum(z)&&(k==='elev'||z>0));return v.length?medn(v):null;};
+  const medido={};for(const [k] of MET_P){const v=md(k);if(v)medido[k]=Math.round(v*10)/10;}
+  if(!Object.keys(medido).length){toast(via==='ar'?'No se pudo medir: que se vea la persona completa y el suelo, y espera a que ARCore reconozca el lugar.':'No se pudo medir: que se vea la persona completa, con los pies.',5000);return;}
+  const x={ts:Date.now(),f:hoy(),via,real,medido,D:md('D'),alto:md('alto'),elev:md('elev'),nProf:md('nProf'),tel:via==='sensor'?PCc().altTel:null,fov:P.fovTel()};
+  P.guardarPC({pruebas:PRU().concat(x).slice(-100)});
+  openSheet(shHead('Resultado de la prueba',via==='ar'?'ARCore':'Sensor de movimiento')+`<div class="sh-body"><div class="pc-kg"><b data-no-tr>${nf(real)} cm</b><span>estatura real</span></div>
+    <div class="rows">${MET_P.filter(([k])=>medido[k]).map(([k,t])=>`<div class="pc-kv"><span>${t}</span><b data-no-tr>${nf(medido[k],1)} cm · ${pcs(medido[k]/real-1)}</b></div>`).join('')}
+    ${x.D?`<div class="pc-kv"><span>Distancia</span><b data-no-tr>${nf(x.D,2)} m</b></div>`:''}${x.alto?`<div class="pc-kv"><span>Teléfono sobre el suelo (ARCore)</span><b data-no-tr>${nf(x.alto)} cm</b></div>`:''}${esNum(x.elev)?`<div class="pc-kv"><span>Inclinación del teléfono</span><b data-no-tr>${nf(x.elev,1)}°</b></div>`:''}</div>
+    <p class="hint">Repite a distintas distancias (3, 5 y 8 m): el laboratorio junta todas las pruebas y saca el error de cada método.</p></div><div class="sh-foot"><button type="button" class="btn pri full" data-act="cerrar">Listo</button></div>`);
+}
+ACTS.labPruebaBorrar=()=>confirmar('¿Borrar las pruebas?','Se borran las pruebas con persona de este teléfono.','Borrar',()=>{P.guardarPC({pruebas:[]});toast('Pruebas borradas');});
 
 /* ---------- Errores ---------- */
 // error medio por grupo (con validación cruzada) y sesgo
@@ -843,7 +893,8 @@ async function libro(R,info){
   const ses=[['dato','valor'],['app',(document.querySelector('meta[name=version]')||{}).content||''],['version_modelo',P.VERSION_MODELO],['fecha_export',hoy()],['mediciones',R.length],['animales',A.length],['animales_con_bascula',A.filter(a=>a.real>0).length],
     ...Object.entries(info||{}).map(([k,v])=>[k,typeof v==='object'?JSON.stringify(v):v]),['telefono',navigator.userAgent],
     ...Object.entries(P.GANADO).filter(([,v])=>typeof v!=='object').map(([k,v])=>['ganado_'+k,v]),['ganado_a',JSON.stringify(P.GANADO.a)],['ganado_etapas',JSON.stringify(P.GANADO.etapas)]];
-  return xlsx([{n:'Mediciones',rows:T},{n:'Animales',rows:ani},{n:'Formulas',rows:fo},{n:'Ajustes',rows:li},{n:'Medidas vs peso',rows:cor},{n:'Condiciones',rows:co},...await hojasTomas(R),{n:'Sesion',rows:ses}]);
+  return xlsx([{n:'Mediciones',rows:T},{n:'Animales',rows:ani},{n:'Formulas',rows:fo},{n:'Ajustes',rows:li},{n:'Medidas vs peso',rows:cor},{n:'Condiciones',rows:co},...await hojasTomas(R),...(PRU().length?[{n:'Pruebas persona',rows:[['fecha','metodo_de_prueba','estatura_real_cm',...MET_P.flatMap(([k])=>['medida_'+k+'_cm','error_'+k+'_pct']),'distancia_m','telefono_sobre_suelo_cm','inclinacion_grados','puntos_profundidad','altura_telefono_manual_cm','campo_vision']]
+    .concat(PRU().map(x=>[x.f,x.via,x.real,...MET_P.flatMap(([k])=>[x.medido[k]||null,x.medido[k]>0?(x.medido[k]/x.real-1)*100:null]),x.D,x.alto,x.elev,x.nProf,x.tel,x.fov]))}]:[]),{n:'Sesion',rows:ses}]);
 }
 ACTS.labExcel=async el=>{const sn=el.dataset.s,R=!sn||sn==='*'?P.REG().filter(x=>x.modo==='ganado'):P.REG().filter(x=>x.ses===sn);if(!R.length){toast('Todavía no hay mediciones.');return;}
   toast('Preparando el archivo…');const ses=PCc().labSes,u=await libro(R,sn&&sn!=='*'?{sesion:sn,datos_sesion:ses&&ses.n===sn?ses.def||{}:{}}:{});
@@ -927,5 +978,5 @@ ACTS.labExpParte=async el=>{const pl=EXP.pl,k=+el.dataset.k;if(!pl||ARMANDO)retu
 // las sesiones guardadas (para exportarlas después)
 function sesionesGuardadas(){const m=new Map();for(const x of P.REG())if(x.modo==='ganado'&&x.ses){const o=m.get(x.ses)||{n:x.ses,c:0,b:0,f:x.f};o.c++;if(x.real>0)o.b++;o.f=x.f;m.set(x.ses,o);}return [...m.values()].reverse();}
 
-window.PcLab={libro,xlsx,calcMed,porAnimal,ajustes,tablaMed,zip,crc32,planSesion,armarParte,ficha,fichaActiva,numDe,html,estad,csv,analisis,completo,etiquetasLab,leerDbg,diagnostico};
+window.PcLab={estaturaPrueba,bloquePrueba,libro,xlsx,calcMed,porAnimal,ajustes,tablaMed,zip,crc32,planSesion,armarParte,ficha,fichaActiva,numDe,html,estad,csv,analisis,completo,etiquetasLab,leerDbg,diagnostico};
 })();

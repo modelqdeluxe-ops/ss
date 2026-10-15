@@ -16,10 +16,10 @@
 
 # direct methods
 .method public constructor <init>()V
-    .registers 1
+    .locals 0
 
     .prologue
-    .line 141
+    .line 150
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -28,12 +28,12 @@
 
 # virtual methods
 .method public verificar(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
-    .registers 5
+    .locals 1
     .annotation runtime Landroid/webkit/JavascriptInterface;
     .end annotation
 
     .prologue
-    .line 144
+    .line 153
     invoke-static {p1, p2, p3}, Lhn/hato/ganadero/Enlace;->verificarRsa(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
 
     move-result v0

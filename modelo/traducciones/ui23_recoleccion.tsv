@@ -109,3 +109,57 @@ Las dos tomas dieron alturas distintas del animal: sostén el teléfono siempre 
 Nadie se acerca al animal: la app calcula la distancia con la altura del teléfono y su inclinación. Mide una vez la altura a la que lo sostienes (a la altura del pecho) y sostenlo siempre así.	Nobody approaches the animal: the app works out the distance from the phone's height and tilt. Measure once the height you hold it at (chest height) and always hold it like that.	Ninguém se aproxima do animal: o app calcula a distância com a altura do celular e sua inclinação. Meça uma vez a altura em que você o segura (na altura do peito) e segure sempre assim.
 De {0} a {1} m, sin zoom, con las patas del animal a la vista y el suelo más o menos plano entre tú y el animal. Evita el sol de frente y las sombras fuertes sobre el animal.	From {0} to {1} m, without zoom, with the animal's feet visible and fairly level ground between you and the animal. Avoid facing the sun and strong shadows on the animal.	De {0} a {1} m, sem zoom, com as patas do animal à vista e o chão mais ou menos plano entre você e o animal. Evite o sol de frente e sombras fortes sobre o animal.
 Distancia	Distance	Distância
+Probar la medida con una persona	Test the measurement on a person	Testar a medida com uma pessoa
+Mide a una persona de estatura conocida: la app la calcula con la misma escala que da los centímetros del animal. El error de la estatura es el error de la escala; en el peso, cerca del doble.	Measure a person of known height: the app works it out with the same scale that gives the animal's centimeters. The height error is the scale error; in weight, about double.	Meça uma pessoa de altura conhecida: o app a calcula com a mesma escala que dá os centímetros do animal. O erro da altura é o erro da escala; no peso, cerca do dobro.
+Probar con ARCore	Test with ARCore	Testar com ARCore
+Probar con el sensor de movimiento	Test with the motion sensor	Testar com o sensor de movimento
+ARCore	ARCore	ARCore
+Prueba con una persona	Test with a person	Teste com uma pessoa
+Se abre la cámara de ARCore: mueve el teléfono despacio hasta que reconozca el lugar (que se vea el suelo), pon la mira sobre el pecho de la persona y toma la foto. Que se vea completa, de pies a cabeza.	The ARCore camera opens: move the phone slowly until it recognizes the place (with the ground visible), put the crosshair on the person's chest and take the photo. They must be fully visible, head to toe.	A câmera do ARCore abre: mova o celular devagar até ele reconhecer o lugar (com o chão à vista), coloque a mira no peito da pessoa e tire a foto. Ela deve aparecer inteira, da cabeça aos pés.
+Estatura real de la persona, con zapatos	The person's real height, with shoes	Altura real da pessoa, com sapatos
+Mídela con cinta, con los zapatos que tiene puestos.	Measure it with a tape, with the shoes they are wearing.	Meça com trena, com os sapatos que está usando.
+Terminar	Finish	Terminar
+Tomando…	Taking…	Tirando…
+Mueve el teléfono despacio para que reconozca el lugar	Move the phone slowly so it recognizes the place	Mova o celular devagar para ele reconhecer o lugar
+Distancia a la mira	Distance to the crosshair	Distância até a mira
+Teléfono sobre el suelo	Phone above the ground	Celular acima do chão
+Apunta la mira al animal	Point the crosshair at the animal	Aponte a mira para o animal
+Apunta un momento al suelo para encontrarlo	Point at the ground for a moment so it finds it	Aponte para o chão por um momento para encontrá-lo
+Persona de pie	Person standing	Pessoa em pé
+La persona de pie, completa de pies a cabeza. Pon la mira sobre su pecho y toma la foto.	The person standing, fully visible head to toe. Put the crosshair on their chest and take the photo.	A pessoa em pé, inteira da cabeça aos pés. Coloque a mira no peito dela e tire a foto.
+Resultado de la prueba	Test result	Resultado do teste
+estatura real	real height	altura real
+ARCore · profundidad	ARCore · depth	ARCore · profundidade
+ARCore · suelo	ARCore · ground	ARCore · chão
+ARCore · mira	ARCore · crosshair	ARCore · mira
+Teléfono sobre el suelo (ARCore)	Phone above the ground (ARCore)	Celular acima do chão (ARCore)
+Repite a distintas distancias ({0}, {1} y {2} m): el laboratorio junta todas las pruebas y saca el error de cada método.	Repeat at different distances ({0}, {1} and {2} m): the lab gathers all the tests and works out the error of each method.	Repita a distâncias diferentes ({0}, {1} e {2} m): o laboratório junta todos os testes e calcula o erro de cada método.
+Método	Method	Método
+Real	Real	Real
+Borrar las pruebas	Delete the tests	Apagar os testes
+¿Borrar las pruebas?	Delete the tests?	Apagar os testes?
+Se borran las pruebas con persona de este teléfono.	The person tests on this phone are deleted.	Os testes com pessoa deste celular são apagados.
+Pruebas borradas	Tests deleted	Testes apagados
+Sensor de movimiento	Motion sensor	Sensor de movimento
+La persona de pie, completa de pies a cabeza, a {0} a {1} m. Sostén el teléfono a la altura que anotaste; la foto se toma sola cuando la silueta esté verde.	The person standing, fully visible head to toe, {0} to {1} m away. Hold the phone at the height you entered; the photo is taken automatically when the outline turns green.	A pessoa em pé, inteira da cabeça aos pés, a {0} a {1} m. Segure o celular na altura que você anotou; a foto é tirada sozinha quando a silhueta ficar verde.
+Del suelo al teléfono como lo vas a sostener.	From the ground to the phone the way you will hold it.	Do chão até o celular como você vai segurá-lo.
+La persona de pie, completa de pies a cabeza.	The person standing, fully visible head to toe.	A pessoa em pé, inteira da cabeça aos pés.
+Distancia al animal con	Distance to the animal with	Distância até o animal com
+ARCore mide la distancia con la profundidad de la cámara y reconoce el suelo: no hace falta la altura del teléfono. La primera vez puede pedir instalar "Servicios de Google Play para RA".	ARCore measures the distance with the camera's depth and recognizes the ground: no phone height needed. The first time it may ask to install "Google Play Services for AR".	O ARCore mede a distância com a profundidade da câmera e reconhece o chão: não precisa da altura do celular. Na primeira vez pode pedir para instalar "Google Play Services para RA".
+Con la altura a la que sostienes el teléfono y su inclinación.	With the height you hold the phone at and its tilt.	Com a altura em que você segura o celular e sua inclinação.
+Paso	Step	Passo
+de	of	de
+El animal de costado, completo, con las patas a la vista. Pon la mira sobre su panza y toma la foto.	The animal side-on, whole, with its feet visible. Put the crosshair on its belly and take the photo.	O animal de lado, inteiro, com as patas à vista. Coloque a mira na barriga dele e tire a foto.
+El animal de espaldas, con las patas a la vista. Pon la mira sobre su cadera.	The animal facing away, with its feet visible. Put the crosshair on its hip.	O animal de costas, com as patas à vista. Coloque a mira no quadril dele.
+Del otro lado, de costado completo. Pon la mira sobre su panza.	From the other side, fully side-on. Put the crosshair on its belly.	Do outro lado, totalmente de lado. Coloque a mira na barriga dele.
+Desde arriba, el animal completo.	From above, the whole animal.	De cima, o animal inteiro.
+Este teléfono no tiene ARCore (o esta versión de la app no lo trae).	This phone doesn't have ARCore (or this version of the app doesn't include it).	Este celular não tem ARCore (ou esta versão do app não o inclui).
+No se pudo medir: que se vea la persona completa y el suelo, y espera a que ARCore reconozca el lugar.	Couldn't measure: the whole person and the ground must be visible, and wait for ARCore to recognize the place.	Não foi possível medir: a pessoa inteira e o chão devem aparecer, e espere o ARCore reconhecer o lugar.
+No se pudo medir: que se vea la persona completa, con los pies.	Couldn't measure: the whole person must be visible, feet included.	Não foi possível medir: a pessoa inteira deve aparecer, com os pés.
+Apunta a la persona, de pies a cabeza	Point at the person, head to toe	Aponte para a pessoa, da cabeça aos pés
+Que se vea la persona completa	The whole person must be visible	A pessoa inteira deve aparecer
+Faltó la foto de costado o la de por detrás (o no se reconoció el animal). Repite.	The side or rear photo is missing (or the animal wasn't recognized). Try again.	Faltou a foto de lado ou a de trás (ou o animal não foi reconhecido). Repita.
+Sin "Servicios de Google Play para RA" no se puede usar ARCore. Se mide con el sensor de movimiento.	Without "Google Play Services for AR" ARCore can't be used. The motion sensor is used instead.	Sem "Google Play Services para RA" não dá para usar o ARCore. Mede-se com o sensor de movimento.
+Este teléfono no es compatible con ARCore. Se mide con el sensor de movimiento.	This phone isn't compatible with ARCore. The motion sensor is used instead.	Este celular não é compatível com o ARCore. Mede-se com o sensor de movimento.
+Da permiso de cámara a la app.	Give the app camera permission.	Dê permissão de câmera ao app.
+No se pudo abrir ARCore.	ARCore couldn't be opened.	Não foi possível abrir o ARCore.

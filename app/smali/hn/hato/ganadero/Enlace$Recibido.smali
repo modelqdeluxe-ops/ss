@@ -20,31 +20,31 @@
 
 # direct methods
 .method constructor <init>(Landroid/app/Activity;)V
-    .registers 2
+    .locals 0
 
     .prologue
-    .line 94
+    .line 103
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 95
+    .line 104
     iput-object p1, p0, Lhn/hato/ganadero/Enlace$Recibido;->a:Landroid/app/Activity;
 
-    .line 96
+    .line 105
     return-void
 .end method
 
 
 # virtual methods
 .method public pasar(Ljava/lang/String;)Z
-    .registers 8
+    .locals 6
     .annotation runtime Landroid/webkit/JavascriptInterface;
     .end annotation
 
     .prologue
     const/4 v0, 0x0
 
-    .line 102
-    :try_start_1
+    .line 111
+    :try_start_0
     iget-object v1, p0, Lhn/hato/ganadero/Enlace$Recibido;->a:Landroid/app/Activity;
 
     invoke-virtual {v1}, Landroid/app/Activity;->getPackageName()Ljava/lang/String;
@@ -55,38 +55,38 @@
 
     move-result-object v2
 
-    .line 103
-    if-nez v2, :cond_e
+    .line 112
+    if-nez v2, :cond_1
 
-    .line 116
-    :cond_d
-    :goto_d
+    .line 125
+    :cond_0
+    :goto_0
     return v0
 
-    .line 104
-    :cond_e
+    .line 113
+    :cond_1
     const-string v1, ".vaquero"
 
     invoke-virtual {v2, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
     move-result v1
 
-    .line 105
+    .line 114
     iget-object v3, p0, Lhn/hato/ganadero/Enlace$Recibido;->a:Landroid/app/Activity;
 
-    if-eqz v1, :cond_76
+    if-eqz v1, :cond_2
 
     const-string v1, "equipo.campo"
 
-    :goto_1a
+    :goto_1
     invoke-static {v3, v1, p1}, Lhn/hato/ganadero/Archivos;->escribir(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v1
 
-    .line 106
-    if-eqz v1, :cond_d
+    .line 115
+    if-eqz v1, :cond_0
 
-    .line 107
+    .line 116
     new-instance v3, Ljava/lang/StringBuilder;
 
     invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
@@ -129,14 +129,14 @@
 
     move-result-object v3
 
-    .line 108
+    .line 117
     new-instance v4, Landroid/content/Intent;
 
     const-string v5, "android.intent.action.VIEW"
 
     invoke-direct {v4, v5}, Landroid/content/Intent;-><init>(Ljava/lang/String;)V
 
-    .line 109
+    .line 118
     const/4 v5, 0x0
 
     invoke-static {v1, v5}, Lhn/hato/ganadero/Archivos;->tipo(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
@@ -145,15 +145,15 @@
 
     invoke-virtual {v4, v3, v1}, Landroid/content/Intent;->setDataAndType(Landroid/net/Uri;Ljava/lang/String;)Landroid/content/Intent;
 
-    .line 110
+    .line 119
     invoke-virtual {v4, v2}, Landroid/content/Intent;->setPackage(Ljava/lang/String;)Landroid/content/Intent;
 
-    .line 111
+    .line 120
     const v1, 0x10000001
 
     invoke-virtual {v4, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 112
+    .line 121
     iget-object v1, p0, Lhn/hato/ganadero/Enlace$Recibido;->a:Landroid/app/Activity;
 
     invoke-virtual {v1}, Landroid/app/Activity;->getPackageManager()Landroid/content/pm/PackageManager;
@@ -164,56 +164,54 @@
 
     move-result-object v1
 
-    if-eqz v1, :cond_d
+    if-eqz v1, :cond_0
 
-    .line 113
+    .line 122
     iget-object v1, p0, Lhn/hato/ganadero/Enlace$Recibido;->a:Landroid/app/Activity;
 
     invoke-virtual {v1, v4}, Landroid/app/Activity;->startActivity(Landroid/content/Intent;)V
 
-    .line 114
+    .line 123
     const/4 v0, 0x1
 
-    goto :goto_d
+    goto :goto_0
 
-    .line 105
-    :cond_76
+    .line 114
+    :cond_2
     const-string v1, "equipo.rumentis"
-    :try_end_78
-    .catch Ljava/lang/Throwable; {:try_start_1 .. :try_end_78} :catch_79
+    :try_end_0
+    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
 
-    goto :goto_1a
+    goto :goto_1
 
-    .line 115
-    :catch_79
+    .line 124
+    :catch_0
     move-exception v1
 
-    goto :goto_d
+    goto :goto_0
 .end method
 
 .method public tomar()Ljava/lang/String;
-    .registers 3
+    .locals 2
     .annotation runtime Landroid/webkit/JavascriptInterface;
     .end annotation
 
     .prologue
-    .line 122
-    # getter for: Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
+    .line 131
     invoke-static {}, Lhn/hato/ganadero/Enlace;->access$000()Ljava/lang/String;
 
     move-result-object v0
 
-    .line 123
+    .line 132
     const/4 v1, 0x0
 
-    # setter for: Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
     invoke-static {v1}, Lhn/hato/ganadero/Enlace;->access$002(Ljava/lang/String;)Ljava/lang/String;
 
-    .line 124
-    if-nez v0, :cond_c
+    .line 133
+    if-nez v0, :cond_0
 
     const-string v0, ""
 
-    :cond_c
+    :cond_0
     return-object v0
 .end method

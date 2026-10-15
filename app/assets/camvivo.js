@@ -508,5 +508,30 @@ function abrir(o){
     tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });
 }
-window.CamVivo={suelo,poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
+/* una foto sin video (la de ARCore): se mide como una toma del video (modelo preciso, la zona del sujeto y los puntos
+   del cuerpo, en espejo). fc: lienzo; o.clase (Vision.VACA o Vision.PERSONA); o.banda. Devuelve la toma o null. */
+async function medirFoto(fc,o){
+  const persona=o.clase===Vision.PERSONA,pre=await Vision.motor('preciso'),W=fc.width,H=fc.height;
+  const c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
+  const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},[o.clase]);return aCuadro(r.suj[o.clase],r.G,Z,W,H);};
+  let s=await una({x:0,y:0,w:W,h:H});if(!s||!s.ok)return null;
+  // otra pasada en la zona del sujeto, con más detalle
+  const Z=zonaDe([s.n],W,H,{margen:.1,min:.3,amin:.5,amax:2});if(Z){const s2=await una(Z);if(s2&&s2.ok&&!s2.cortada)s=s2;}
+  let kp=null;
+  try{const m=await Vision.motor(persona?'cuerpo':'animal'),esp=persona?Vision.ESPEJO:Vision.ESPEJO_ANIMAL,Zp=recortePose(s.n,W,H,m),d=document.createElement('canvas');d.width=m.W;d.height=m.H;
+    const y=d.getContext('2d',{willReadFrequently:true});y.fillStyle='#000';y.fillRect(0,0,m.W,m.H);y.drawImage(fc,Zp.x,Zp.y,Zp.w,Zp.h,0,0,m.W,m.H);
+    const P=(await m.correr({px:y.getImageData(0,0,m.W,m.H).data},[])).kp;
+    y.setTransform(-1,0,0,1,m.W,0);y.fillRect(0,0,m.W,m.H);y.drawImage(fc,Zp.x,Zp.y,Zp.w,Zp.h,0,0,m.W,m.H);y.setTransform(1,0,0,1,0,0);
+    const Q=(await m.correr({px:y.getImageData(0,0,m.W,m.H).data},[])).kp;
+    if(P){if(Q&&Q.length===P.length)for(let i=0;i<P.length/3;i++){const j=esp[i]??i;P[3*i]=(P[3*i]+1-Q[3*j])/2;P[3*i+1]=(P[3*i+1]+Q[3*j+1])/2;P[3*i+2]=(P[3*i+2]+Q[3*j+2])/2;}
+      for(let i=0;i<P.length;i+=3){P[i]=Zp.x+P[i]*Zp.w;P[i+1]=Zp.y+P[i+1]*Zp.h;}kp=P;}}catch(e){console.warn(e);}
+  // la vista con la silueta y los puntos (como la de las tomas del video)
+  let img=null;try{const Zv=zonaDe([s.n],W,H,{margen:.12,min:.3,amin:.6,amax:1.6})||{x:0,y:0,w:W,h:H},c2=document.createElement('canvas'),k=Math.min(1,720/Math.max(Zv.w,Zv.h));
+    c2.width=Math.round(Zv.w*k);c2.height=Math.round(Zv.h*k);const g=c2.getContext('2d');g.drawImage(fc,Zv.x,Zv.y,Zv.w,Zv.h,0,0,c2.width,c2.height);
+    const X=-Zv.x*k,Y=-Zv.y*k,Wd=W*k,Hd=H*k,lw=Math.max(2,c2.width/260);trazar(g,s,COLOR.verde,X,Y,Wd,Hd,W,H,null,{relleno:.22,linea:lw});
+    if(kp){const P=kp.slice();for(let i=0;i<P.length;i+=3){P[i]/=W;P[i+1]/=H;}puntos(g,P,Vision.ESQUELETO[persona?'persona':'animal'],X,Y,Wd,Hd,lw*1.4);}
+    img=c2.toDataURL('image/jpeg',.85);}catch(e){img=fc.toDataURL('image/jpeg',.8);}
+  return {med:medir(s,W,H,o.banda),sil:s,ref:null,kp,W,H,fc,img};
+}
+window.CamVivo={medirFoto,suelo,poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
 })();

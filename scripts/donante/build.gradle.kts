@@ -6,13 +6,15 @@
 plugins { id("com.android.application") version "8.7.3" }
 
 fun p(n: String) = providers.gradleProperty(n).get()
+// "pagos" (la app del dueño: Google Play Billing) o "ar" (Rumentis Beta: ARCore para medir la distancia)
+fun q(n: String, d: String) = providers.gradleProperty(n).getOrElse(d)
 
 android {
     namespace = "hn.hato.ganadero"
     compileSdk = 35
     defaultConfig {
         applicationId = p("paquete")
-        minSdk = 21
+        minSdk = q("minsdk", "21").toInt()
         targetSdk = p("target").toInt()
         versionCode = p("vc").toInt()
         versionName = p("vn")
@@ -29,4 +31,7 @@ android {
     lint { checkReleaseBuilds = false; abortOnError = false }
 }
 
-dependencies { implementation("com.android.billingclient:billing:" + p("billing")) }
+dependencies {
+    if (q("donante", "pagos") == "ar") implementation("com.google.ar:core:" + p("arcore"))
+    else implementation("com.android.billingclient:billing:" + p("billing"))
+}

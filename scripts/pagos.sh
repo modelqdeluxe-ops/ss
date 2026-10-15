@@ -32,13 +32,30 @@ java -jar "$TOOLS/apktool.jar" d -s -f "$TMP/smali.apk" -o "$TMP/dec" >/dev/null
 # 2. Gradle
 D="$TMP/donante"; mkdir -p "$D/java/hn/hato/ganadero"
 cp "$RAIZ"/scripts/donante/*.kts "$RAIZ/scripts/donante/gradle.properties" "$D/"
-cp "$RAIZ/modelo/android/Pagos.java" "$D/java/hn/hato/ganadero/"
+# DONANTE=ar (Rumentis Beta): ARCore en vez de Google Play Billing; la pantalla de medición y su puente
+DON="${DONANTE:-pagos}"
+if [ "$DON" = ar ]; then cp "$RAIZ/modelo/android/ArPuente.java" "$RAIZ/modelo/android/ArActivity.java" "$D/java/hn/hato/ganadero/"
+else cp "$RAIZ/modelo/android/Pagos.java" "$D/java/hn/hato/ganadero/"; fi
 python3 "$RAIZ/scripts/donante/preparar.py" "$APP" "$D" "$TMP/dec/res/values/public.xml"
+if [ "$DON" = ar ]; then python3 - "$D/manifiesto/AndroidManifest.xml" <<'PY'
+import sys, xml.etree.ElementTree as ET
+A='{http://schemas.android.com/apk/res/android}'
+ET.register_namespace('android','http://schemas.android.com/apk/res/android')
+t=ET.parse(sys.argv[1]);m=t.getroot();ap=m.find('application')
+# ARCore opcional (la app funciona sin él) y la pantalla de medición
+md=ET.SubElement(ap,'meta-data');md.set(A+'name','com.google.ar.core');md.set(A+'value','optional')
+ac=ET.SubElement(ap,'activity');ac.set(A+'name','hn.hato.ganadero.ArActivity');ac.set(A+'exported','false')
+ac.set(A+'configChanges','orientation|screenSize|screenLayout|keyboardHidden');ac.set(A+'theme','@android:style/Theme.Black.NoTitleBar.Fullscreen')
+uf=ET.SubElement(m,'uses-feature');uf.set(A+'name','android.hardware.camera.ar');uf.set(A+'required','false')
+t.write(sys.argv[1],encoding='utf-8',xml_declaration=True)
+PY
+fi
 PAQ=$(python3 -c "import xml.etree.ElementTree as E,sys;print(E.parse(sys.argv[1]).getroot().get('package'))" "$APP/AndroidManifest.xml")
 TAREAS=(assembleRelease); [ -n "$AAB" ] && TAREAS+=(bundleRelease)
 (cd "$D" && gradle --no-daemon --console=plain -q "${TAREAS[@]}" \
    -Ppaquete="$PAQ" -Pvc="$(leer versionCode)" -Pvn="$(leer versionName)" -Ptarget="$(leer targetSdkVersion)" \
-   -Pbilling="$VER" -Passets="$APP/assets") || nada "Gradle no pudo armar la app"
+   -Pbilling="$VER" -Passets="$APP/assets" -Pdonante="$DON" -Parcore="${ARCORE_VER:-1.54.0}" \
+   -Pminsdk="$([ "$DON" = ar ] && echo 24 || echo 21)") || nada "Gradle no pudo armar la app"
 U=$(ls "$D"/build/outputs/apk/release/*.apk | head -1)
 [ -s "$U" ] || nada "Gradle no dejó el APK"
 

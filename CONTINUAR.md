@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.32; la beta.28 salió de
+Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.33; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.32) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.32) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.33) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.33) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -438,6 +438,26 @@ no podemos dejar fijas cámaras, debemos estarnos moviendo… la app debe calcul
   (el peso, cerca del doble). Lo constante (campo de visión, altura mal medida) lo absorbe la calibración con báscula;
   lo que varía de foto a foto no. Con los datos de la finca se verá. Para menos error: ARCore nativo (medir la
   distancia con la cámara en profundidad), que pide compilar la beta con Gradle y probar en el teléfono.
+
+**5.0.0-beta.33: ARCore.** El dueño: "pues mete arcore, y lo probamos con humano… esto debe quedar listo hoy".
+- **Nativo** (compila Gradle con `com.google.ar:core` 1.54; `scripts/pagos.sh` con `DONANTE=ar`, que
+  `scripts/variantes.sh` usa para Rumentis Beta; minSdk 24 en la beta): `modelo/android/ArActivity.java` (GLSurfaceView
+  con la cámara, mira, sesión con Depth API automática, planos horizontales, la cámara con la imagen CPU más grande ≤
+  1920; por cada paso guarda la foto en files/fotos/ar-*.jpg derecha como en pantalla, la profundidad en mm girada igual,
+  intrínsecos girados, distancia a la mira, altura sobre el suelo e inclinación) y `ArPuente.java` (puente JS "Ar":
+  `estado()`, `abrir(json)`; responde con `window.arResultado`). `Enlace.java` lo registra si la clase existe
+  (recompilado a smali: javac → dx → `apktool d` de un APK con ese dex). El manifiesto de la beta lleva la actividad,
+  `com.google.ar.core=optional` y `android.hardware.camera.ar` opcional. Para compilar local: Android SDK
+  (`platforms;android-35`, `build-tools;35.0.0`) y `ANDROID_HOME`.
+- **Página**: `PesoCam.abrirAR/capsAR/escalaAR` (pesocam.js) y `CamVivo.medirFoto` (camvivo.js, la foto con los mismos
+  modelos). Escala: `ar-prof` = mediana de la profundidad dentro del cuerpo + 15 cm (ganado; 10 en personas) / f;
+  si no, `ar-suelo` (altura e inclinación de ARCore) o `ar-centro` (la mira). Se guardan las tres (`geo.ar`).
+  Selector "Distancia al animal con: ARCore | Sensor de movimiento" (`PC().usarAR`); con ARCore no pide la altura.
+- **Prueba con persona** (Laboratorio → Resumen): estatura real contra la medida por ARCore (profundidad, suelo, mira)
+  o por el sensor de movimiento; `PC().pruebas`, hoja "Pruebas persona" del Excel. `pruebas/ar_t.js` lo prueba sin
+  teléfono con un ARCore simulado (persona 175 cm → 174.8 con profundidad).
+- **No probado en un teléfono real** (aquí no hay ARCore): lo que hay que mirar primero si falla es la orientación de
+  la foto (`rotacionImagen`), la profundidad (`acquireDepthImage16Bits`) y que el puente "Ar" aparezca.
 
 ---
 
