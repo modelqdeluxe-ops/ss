@@ -163,3 +163,8 @@ Sin "Servicios de Google Play para RA" no se puede usar ARCore. Se mide con el s
 Este teléfono no es compatible con ARCore. Se mide con el sensor de movimiento.	This phone isn't compatible with ARCore. The motion sensor is used instead.	Este celular não é compatível com o ARCore. Mede-se com o sensor de movimento.
 Da permiso de cámara a la app.	Give the app camera permission.	Dê permissão de câmera ao app.
 No se pudo abrir ARCore.	ARCore couldn't be opened.	Não foi possível abrir o ARCore.
+La silueta (verde) y los puntos son lo que vio el modelo: la estatura es el alto de la silueta por los centímetros de cada píxel.	The outline (green) and the points are what the model saw: the height is the outline's height times the centimeters of each pixel.	A silhueta (verde) e os pontos são o que o modelo viu: a altura é a altura da silhueta vezes os centímetros de cada pixel.
+Estatura real	Real height	Altura real
+Alto de la silueta	Outline height	Altura da silhueta
+Con estas pruebas el ganado se mide con	With these tests cattle are measured with	Com estes testes o gado é medido com
+corrección	correction	correção

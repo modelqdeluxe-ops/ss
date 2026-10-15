@@ -483,8 +483,36 @@ public class ArActivity extends Activity implements GLSurfaceView.Renderer {
                     short[] d = new short[dw * dh];
                     for (int yy = 0; yy < dh; yy++) for (int xx = 0; xx < dw; xx++) d[yy * dw + xx] = bb.getShort(yy * rs + xx * px);
                     dep.close(); dep = null;
+                    /* la profundidad no tiene el mismo encuadre que la foto (CPU): va con la textura de la cámara. Se arma
+                       una rejilla con el encuadre de la foto: cada celda (en píxeles de la foto) se lleva a coordenadas de
+                       la textura con ARCore y ahí se lee la profundidad */
+                    int GW = 160, GH = Math.max(1, Math.round(160f * H / W));
+                    FloatBuffer pin = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                    FloatBuffer pout = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                    for (int j = 0; j < GH; j++) for (int i = 0; i < GW; i++) { pin.put((i + .5f) * W / GW); pin.put((j + .5f) * H / GH); }
+                    pin.position(0);
+                    f.transformCoordinates2d(Coordinates2d.IMAGE_PIXELS, pin, Coordinates2d.TEXTURE_NORMALIZED, pout);
+                    short[] al = new short[GW * GH];
+                    for (int k = 0; k < GW * GH; k++) {
+                        float u = pout.get(2 * k), v = pout.get(2 * k + 1);
+                        int xx = (int) (u * dw), yy = (int) (v * dh);
+                        al[k] = xx >= 0 && yy >= 0 && xx < dw && yy < dh ? d[yy * dw + xx] : 0;
+                    }
+                    // la profundidad en la mira (el centro de la pantalla): la mediana de 5×5
+                    try {
+                        FloatBuffer cin = ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder()).asFloatBuffer(), cout = ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                        cin.put(vw / 2f); cin.put(vh / 2f); cin.position(0);
+                        f.transformCoordinates2d(Coordinates2d.VIEW, cin, Coordinates2d.TEXTURE_NORMALIZED, cout);
+                        int cx0 = (int) (cout.get(0) * dw), cy0 = (int) (cout.get(1) * dh), n = 0;
+                        int[] m = new int[25];
+                        for (int yy = cy0 - 2; yy <= cy0 + 2; yy++) for (int xx = cx0 - 2; xx <= cx0 + 2; xx++)
+                            if (xx >= 0 && yy >= 0 && xx < dw && yy < dh) { int v = d[yy * dw + xx] & 0xFFFF; if (v > 0) m[n++] = v; }
+                        if (n > 0) { java.util.Arrays.sort(m, 0, n); o.put("centroProf", m[n / 2] / 1000.0); }
+                    } catch (Throwable e) {
+                    }
+                    o.put("profOrig", dw + "x" + dh);
                     int[] nd = new int[2];
-                    short[] g = girar(d, dw, dh, rot, nd);
+                    short[] g = girar(al, GW, GH, rot, nd);
                     ByteBuffer out = ByteBuffer.allocate(g.length * 2).order(ByteOrder.LITTLE_ENDIAN);
                     for (short v : g) out.putShort(v);
                     JSONObject jd = new JSONObject();

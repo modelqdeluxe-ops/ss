@@ -814,7 +814,8 @@ function abrirAR(pasos,orient){
 }
 const MITAD_CUERPO={ganado:15,persona:10};
 function escalaAR(c,t,modo){
-  const s=t.sil,W=t.W,H=t.H,k=c.W>0?W/c.W:1,fx=c.fx*k,fy=(c.fy||c.fx)*k,cy=(c.cy!=null?c.cy:c.H/2)*k,o={fx,alto:c.alto>0?c.alto*100:null,centro:c.centro>0?c.centro*100:null,elev:c.elev};
+  // la mira: la profundidad en el centro (si la hay) o el punto que tocó el rayo
+  const s=t.sil,W=t.W,H=t.H,k=c.W>0?W/c.W:1,fx=c.fx*k,fy=(c.fy||c.fx)*k,cy=(c.cy!=null?c.cy:c.H/2)*k,o={fx,alto:c.alto>0?c.alto*100:null,centro:c.centroProf>0?c.centroProf*100:c.centro>0?c.centro*100:null,elev:c.elev,profOrig:c.profOrig||null};
   // la profundidad dentro del cuerpo: filas de 15 a 60 % y columnas de 20 a 80 % de la caja de la silueta
   if(c.prof&&c.prof.mm&&s&&s.mask){try{const b=atob(c.prof.mm),dw=c.prof.w,dh=c.prof.h,dv=new DataView(new ArrayBuffer(b.length));for(let i=0;i<b.length;i++)dv.setUint8(i,b.charCodeAt(i));
     const [x0,y0,x1,y1]=[s.n[0]*W,s.n[1]*H,s.n[2]*W,s.n[3]*H],v=[];
@@ -827,9 +828,13 @@ function escalaAR(c,t,modo){
   if(o.alto>0&&isFinite(c.elev)&&s&&s.n){const p=-c.elev*Math.PI/180,a=p+Math.atan((s.n[3]*H-cy)/fy);if(a>2*Math.PI/180&&a<80*Math.PI/180)o.suelo=o.alto/Math.sin(a)*Math.cos(a-p);}
   const mc=MITAD_CUERPO[modo]||0;
   o.Zprof=o.prof>0?o.prof+mc:null;o.Zsuelo=o.suelo>0?o.suelo:null;o.Zcentro=o.centro>0?o.centro+mc:null;
-  o.metodo=o.Zprof?'ar-prof':o.Zsuelo?'ar-suelo':o.Zcentro?'ar-centro':null;
-  o.Z=o.Zprof||o.Zsuelo||o.Zcentro||null;o.cmpx=o.Z&&fx>0?o.Z/fx:null;
+  /* el método: el orden que salió de las pruebas con persona (PC().arPref; sin pruebas, el suelo primero: en las
+     primeras pruebas reales fue el más estable). La profundidad no se usa si discrepa más de 20 % del suelo. Si las
+     pruebas dieron un sesgo constante (PC().arCorr, real/medido), se corrige y queda anotado. */
   for(const z of ['Zprof','Zsuelo','Zcentro'])o['k'+z.slice(1)]=o[z]&&fx>0?o[z]/fx:null;
+  const ok={prof:o.Zprof&&!(o.Zsuelo&&Math.abs(o.Zprof/o.Zsuelo-1)>.2),suelo:!!o.Zsuelo,centro:!!o.Zcentro};
+  const pref=(PC().arPref||['suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,corr=m&&PC().arCorr&&PC().arCorr[m]>.8&&PC().arCorr[m]<1.25?PC().arCorr[m]:1;
+  o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['Z'+m]*corr:null;o.cmpx=o.Z&&fx>0?o.Z/fx:null;
   return o;
 }
 // las fotos de ARCore → las tomas, como las del video (una por paso)

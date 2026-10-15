@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.33; la beta.28 salió de
+Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.34; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.33) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.33) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.34) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.34) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -458,6 +458,16 @@ no podemos dejar fijas cámaras, debemos estarnos moviendo… la app debe calcul
   teléfono con un ARCore simulado (persona 175 cm → 174.8 con profundidad).
 - **No probado en un teléfono real** (aquí no hay ARCore): lo que hay que mirar primero si falla es la orientación de
   la foto (`rotacionImagen`), la profundidad (`acquireDepthImage16Bits`) y que el puente "Ar" aparezca.
+
+**5.0.0-beta.34: primeras pruebas reales con ARCore** (el dueño, 5 pruebas con persona de 170–180 cm, 1.8 a 6 m):
+"ARCore · suelo" −9.9, −3.0, −6.4, −6.7, −6.5 % (sesgo casi constante, ±1–3 % corregido); profundidad y mira al azar
+(+108 %, −37 %…). Causa de la profundidad: no tiene el encuadre de la foto (va con la textura de la cámara). Arreglo:
+ArActivity arma una rejilla con el encuadre de la foto y lee la profundidad en `TEXTURE_NORMALIZED` con
+`transformCoordinates2d(IMAGE_PIXELS → TEXTURE_NORMALIZED)`; la mira usa la profundidad del centro de la vista
+(`centroProf`). La página elige el método por las pruebas (`PC().arPref`, el de menor dispersión de real/medido; sin
+pruebas, el suelo) y corrige su sesgo (`PC().arCorr`, mediana de real/medido, entre 0.8 y 1.25), que queda en
+`geo.ar.*.corr`. La profundidad no se usa si discrepa >20 % del suelo. Cada prueba guarda la foto con la silueta
+(`pcp-<ts>`) y se abre en el laboratorio.
 
 ---
 

@@ -146,7 +146,7 @@ async function limpiar(){
   if(!vivos.size)return;
   // las del equipo (evidencias de tareas y fotos de perfil, 'eq-…') y las del peso con cámara ('pc-…', las originales
   // 'pcr-…', las de resolución completa 'pch-…' y la depuración 'pcd-…') no son de animales: no se tocan
-  for(const k of await ids())if(!/^(eq|pc|pcr|pcd|pch|pcm)-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
+  for(const k of await ids())if(!/^(eq|pc|pcr|pcd|pch|pcm|pcp)-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
 }
 setTimeout(limpiar,15000);
 window.Fotos={guardar,borrar,url,tiene,tomar,camara,pintar,ids,limpiar,NATIVO};

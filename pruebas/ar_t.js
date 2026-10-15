@@ -77,9 +77,15 @@ const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:fal
  await p.waitForSelector('#sheet .pc-kg',{timeout:120000});await p.screenshot({path:'ar_vaca.png'});
  const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {geo:r.geo,dims:r.dims,mx:r.mx,kg:r.kg,camaras:r.camaras,motor:r.motor,n:PesoCam.REG().length};});
  console.log('ganado ARCore',JSON.stringify(G).slice(0,900));
- assert.equal(G.n,n0+1,'registrada');assert.equal(G.geo.metodo,'ar-prof','escala con la profundidad');assert.ok(Math.abs(G.geo.ar.costado.prof-315)<5,'profundidad del cuerpo 300 cm + 15 al plano del contorno');assert.ok(G.geo.ar.costado.elev===-12,'inclinación');
+ assert.equal(G.n,n0+1,'registrada');assert.equal(G.geo.metodo,'ar-suelo','sin pruebas: el suelo primero (la profundidad discrepa más de 20 % y no se usa)');assert.ok(Math.abs(G.geo.ar.costado.prof-315)<5,'profundidad del cuerpo 300 cm + 15 al plano del contorno');assert.ok(G.geo.ar.costado.elev===-12,'inclinación');
  assert.ok(G.dims&&G.dims.WH>80&&G.dims.WH<200&&G.dims.CD>30,'alzada y fondo');assert.ok(G.kg>100&&G.kg<1500,'peso');assert.deepEqual(G.camaras,['costado','atras','otro']);assert.equal(G.motor,'arcore');
  paso(`ganado con ARCore: alzada ${Math.round(G.dims.WH)} cm, fondo ${Math.round(G.dims.CD)} cm, ${Math.round(G.kg)} kg`);
+ // el orden de los métodos y la corrección del sesgo con las pruebas (como las primeras reales: el suelo −6.5 % estable)
+ const AJ=await p.evaluate(()=>PcLab.ajusteAR([174,168,173,160,170].map((m,i)=>({via:'ar',real:180,medido:{suelo:m,prof:[228,374,159,260,107][i],centro:[156,95,217,117,92][i]}}))));
+ console.log('ajuste',JSON.stringify(AJ));assert.equal(AJ.arPref[0],'suelo','el más estable primero');assert.ok(AJ.arCorr.suelo>1.03&&AJ.arCorr.suelo<1.1,'corrige el sesgo del suelo');
+ await p.evaluate(a=>PesoCam.guardarPC(a),AJ);
+ const k2=await p.evaluate(()=>{const c={fx:760,fy:760,cx:480,cy:360,W:960,H:720,alto:1.4,elev:-12};const t={W:960,H:720,sil:{n:[.2,.3,.7,.9]},med:{alto:400}};return PesoCam.escalaAR(c,t,'ganado');});
+ assert.equal(k2.metodo,'ar-suelo');assert.ok(Math.abs(k2.corr-AJ.arCorr.suelo)<1e-9&&Math.abs(k2.Z/k2.Zsuelo-k2.corr)<1e-6,'aplica la corrección');paso('método y corrección: '+AJ.arPref.join(' > ')+' · ×'+AJ.arCorr.suelo);
  // el Excel con las columnas de ARCore y la hoja de pruebas
  const X=await p.evaluate(async()=>{const u=await PcLab.libro(PesoCam.REG().filter(x=>x.modo==='ganado'),{});let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);});
  fs.writeFileSync('ar.xlsx',Buffer.from(X,'base64'));
