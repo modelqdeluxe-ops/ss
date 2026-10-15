@@ -16,8 +16,9 @@ const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:fal
    cuerpo (mc: medio cuerpo, del frente al plano del contorno). Con D fija (dada) busca la inclinación que pone las patas
    en yP. */
 const tg=(p,y,cy,fy)=>Math.tan(p+Math.atan((y-cy)/fy));
-function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null;
-  for(let e=-45;e<=15;e+=.002){const p=-e*Math.PI/180,aP=p+Math.atan((yP-cy)/fy);if(aP<=.02)continue;const D=h/Math.tan(aP),H=D*(tg(p,yP,cy,fy)-tg(p,yT,cy,fy));
+// off: lo que toca el suelo (patas cercanas, puntas de los pies) está off cm antes del plano del cuerpo
+function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc,off=0}){const h=altoM*100;let mejor=null;
+  for(let e=-45;e<=15;e+=.002){const p=-e*Math.PI/180,aP=p+Math.atan((yP-cy)/fy);if(aP<=.02)continue;const D=h/Math.tan(aP)+off,H=D*(tg(p,yP,cy,fy)-tg(p,yT,cy,fy));
     const err=D0?Math.abs(D-D0):Math.abs(H-Hr);if(!mejor||err<mejor.err)mejor={err,e,p,D,H};}
   const ym=yT+.375*(yP-yT),b=Math.atan((ym-cy)/fy),Z=mejor.D*Math.cos(b)/Math.cos(mejor.p+b)-mc;
   return {elev:mejor.e,D:mejor.D,H:mejor.H,mm:Math.round(Z*10)};}
@@ -58,7 +59,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null
  const esc=o=>p.evaluate(o=>{window.__esc=o;},o);
  // ---------- prueba con persona: ARCore por debajo de la cámara en vivo ----------
  // foto completa 960×1280, f = 1013 px; la persona de 175 cm ocupa 0.625 del alto (800 px), el teléfono a 1.4 m
- const PW=960,PH=1280,fx=1013,hf=.625,EP=escena({Hr:175,altoM:1.4,yT:(.93-hf)*PH,yP:.93*PH,cy:PH/2,fy:fx,mc:10});
+ const PW=960,PH=1280,fx=1013,hf=.625,EP=escena({Hr:175,altoM:1.4,yT:(.93-hf)*PH,yP:.93*PH,cy:PH/2,fy:fx,mc:10,off:8});
  console.log('escena persona',JSON.stringify(EP));
  await esc({f:'frente',x:.5,y:.93,hf,plan:{W:PW,H:PH,fx,mm:EP.mm,alto:1.4,elev:EP.elev,ar:.3,malo:true}});
  await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(600);
@@ -71,7 +72,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null
  assert.ok(await p.evaluate(()=>document.querySelector('.cv-gira').hidden),'con ARCore no se cambia de cámara');
  await p.waitForFunction(()=>((S.config.pesoCam||{}).pruebas||[]).length===1,null,{timeout:120000});
  const P1=await p.evaluate(()=>S.config.pesoCam.pruebas[0]);console.log('prueba ARCore',JSON.stringify(P1));
- assert.equal(P1.via,'ar');assert.ok(Math.abs(P1.medido.prof/175-1)<.04,'estatura con la profundidad (la cruda; la suavizada estaba mala): '+P1.medido.prof);assert.equal(P1.g,2);
+ assert.equal(P1.via,'ar');assert.ok(Math.abs(P1.medido.prof/175-1)<.04,'estatura con la profundidad (la cruda; la suavizada estaba mala): '+P1.medido.prof);assert.equal(P1.g,3);assert.ok(Math.abs(P1.medido.mix/175-1)<.03,'combinado: '+P1.medido.mix);
  assert.ok(Math.abs(P1.medido.suelo/175-1)<.04,'estatura con el suelo de ARCore: '+P1.medido.suelo);
  const A1=await p.evaluate(()=>({...window.__ar}));assert.ok(A1.cuadros>5&&A1.fotos>=1,'cuadros en vivo y fotos completas de ARCore '+JSON.stringify(A1));
  assert.match(await p.$eval('#sheet',e=>e.textContent),/Resultado de la prueba/);await p.screenshot({path:'ar_prueba.png'});await p.click('#sheet [data-act="cerrar"]');
@@ -90,7 +91,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null
  // ---------- ganado con ARCore ----------
  // foto completa 1280×960, f = 1013; la vaca a 3 m en horizontal, el teléfono a 1.4 m
  const GWd=1280,GHd=960;
- const pl=(y)=>{const E=escena({D:300,altoM:1.4,yT:(y-.6)*GHd,yP:y*GHd,cy:GHd/2,fy:fx,mc:15});return {W:GWd,H:GHd,fx,mm:E.mm,alto:1.4,elev:E.elev,ar:1.33};};
+ const pl=(y,off=15)=>{const E=escena({D:300,altoM:1.4,yT:(y-.6)*GHd,yP:y*GHd,cy:GHd/2,fy:fx,mc:15,off});return {W:GWd,H:GHd,fx,mm:E.mm,alto:1.4,elev:E.elev,ar:1.33};};
  await esc({f:'lado',x:.45,y:.9,hf:.6,plan:pl(.9)});
  await p.evaluate(()=>{location.hash='#pesocam';});await p.waitForTimeout(500);
  const pag=await p.$eval('#app',e=>e.textContent);assert.ok(!/Tipo de animal|Etapa|Distancia al animal con/.test(pag),'sin preguntas de tipo, etapa ni método');
@@ -98,7 +99,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null
  const n0=await p.evaluate(()=>PesoCam.REG().length);
  await p.click('[data-act="pcVivo"]');await p.waitForSelector('dialog.cv',{timeout:20000});
  await p.waitForFunction(()=>/(Paso|Step|Passo) 2/.test(document.querySelector('.cv-paso')?.textContent||''),null,{timeout:90000});
- await esc({f:'atras',x:.45,y:.88,hf:.6,plan:{...pl(.88),ar:.57}});
+ await esc({f:'atras',x:.45,y:.88,hf:.6,plan:{...pl(.88,0),ar:.57}});
  await p.waitForFunction(()=>/(Paso|Step|Passo) 3/.test(document.querySelector('.cv-paso')?.textContent||''),null,{timeout:90000});
  await esc({f:'lado',x:.45,y:.9,hf:.6,plan:pl(.9)});
  await p.waitForSelector('#sheet .pc-kg',{timeout:120000});await p.screenshot({path:'ar_vaca.png'});
@@ -107,11 +108,11 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc}){const h=altoM*100;let mejor=null
  assert.ok(Z0&&Z0.praw&&Z0.prof&&Z0.fx>0,'se guarda lo de ARCore de cada foto (profundidad cruda y suavizada) '+JSON.stringify(Z0));
  console.log('ganado ARCore',JSON.stringify(G).slice(0,700));
  assert.equal(G.n,n0+1,'registrada');assert.ok(/^ar-/.test(G.geo.metodo),'escala de ARCore: '+G.geo.metodo);assert.ok(Math.abs(G.geo.ar.costado.suelo/300-1)<.03,'distancia por el suelo: '+G.geo.ar.costado.suelo);
- assert.ok(Math.abs(G.geo.ar.costado.prof/G.geo.ar.costado.suelo-1)<.04,'suelo y profundidad de acuerdo');assert.equal(G.geo.ar.costado.profTipo,'cruda');
+ assert.ok(Math.abs(G.geo.ar.costado.prof/G.geo.ar.costado.suelo-1)<.04,'suelo y profundidad de acuerdo');assert.equal(G.geo.ar.costado.profTipo,'cruda');assert.equal(G.geo.metodo,'ar-mix','suelo y profundidad combinados');assert.ok(Math.abs(G.geo.ar.costado.suelo-G.geo.ar.costado.pie-15)<.01,'el plano del cuerpo 15 cm detrás de las patas');
  assert.ok(G.dims&&G.dims.WH>80&&G.dims.WH<200&&G.dims.CD>30,'alzada y fondo');assert.ok(G.kg>100&&G.kg<1500,'peso');assert.deepEqual(G.camaras,['costado','atras','otro']);assert.match(G.motor,/arcore/);
  paso(`ganado con ARCore: alzada ${Math.round(G.dims.WH)} cm, fondo ${Math.round(G.dims.CD)} cm, ${Math.round(G.kg)} kg (${G.geo.metodo})`);
  // ---------- el orden de los métodos y la corrección del sesgo con las pruebas (como las primeras reales) ----------
- const AJ=await p.evaluate(()=>PcLab.ajusteAR([174,168,173,160,170].map((m,i)=>({via:'ar',g:2,real:180,medido:{suelo:m,prof:[228,374,159,260,107][i],centro:[156,95,217,117,92][i]}}))));
+ const AJ=await p.evaluate(()=>PcLab.ajusteAR([174,168,173,160,170].map((m,i)=>({via:'ar',g:3,real:180,medido:{suelo:m,prof:[228,374,159,260,107][i],centro:[156,95,217,117,92][i]}}))));
  assert.equal(AJ.arPref[0],'suelo','el más estable primero');assert.ok(AJ.arCorr.suelo>1.03&&AJ.arCorr.suelo<1.1,'corrige el sesgo del suelo');
  await p.evaluate(a=>PesoCam.guardarPC(a),AJ);
  const k2=await p.evaluate(()=>{const c={fx:760,fy:760,cx:480,cy:360,W:960,H:720,alto:1.4,elev:-12};const t={W:960,H:720,sil:{n:[.2,.3,.7,.9]},med:{alto:400}};return PesoCam.escalaAR(c,t,'ganado');});

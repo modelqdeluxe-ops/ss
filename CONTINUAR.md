@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.36; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.37; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.36) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.36) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.37) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.37) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -517,6 +517,14 @@ pida el peso en báscula".
   (`UI.pc.pend` {aid, real}); la ficha trae el peso y la comparación báscula/cámara; «Siguiente animal» vuelve a pedir
   el peso; «Repetir este» mide otra vez con el mismo. Si la cámara se cierra sin medir, el animal queda pendiente
   («Medir» / «Cambiar el peso»). Con sesión, «Medir» del peso con cámara también pide el peso primero.
+
+**5.0.0-beta.37: más precisión.**
+- Lo más bajo de la silueta está más cerca que el plano del cuerpo: de costado, las patas del lado del teléfono
+  (~15 cm antes de la línea media); de frente, las puntas de los pies (~8 cm); por detrás, nada. `pieExtra(modo,vista)`
+  se suma a la distancia del suelo (ARCore y sensor: `CamVivo.suelo(…, yTop, extra)`); `geo.ar.*.pie` guarda la
+  distancia a las patas. A 3–5 m eran 3–5 % de escala que cambia con la distancia.
+- Método «combinado» (`ar-mix`): si la profundidad y el suelo coinciden (±15 %), el promedio de las dos distancias;
+  es el primero por defecto (`['mix','suelo','prof','centro']`). Las pruebas con persona pasan a `g:3` / `PC().arG=3`.
 
 ---
 

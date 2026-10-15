@@ -546,8 +546,8 @@ function combinar(modo,caps,alto,ropaK,tipo){
   // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
   /* ganado: cm por píxel con la distancia al animal (CamVivo.suelo: la altura del teléfono y su inclinación al tomar
      la foto); si el teléfono no tiene acelerómetro, con la persona de referencia si se ve. Se guardan las dos. */
-  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo);}
-  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel(),t.sil.n[1]*t.H):null;
+  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;t.vista=c.id;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo,c.id);}
+  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel(),t.sil.n[1]*t.H,pieExtra(modo,t.vista)):null;
   const cmpx=t=>{if(t.ar&&t.ar.cmpx>0)return t.ar.cmpx;if(modo==='persona')return ref/t.med.alto;const g=geoT(t);if(g)return g.cmpx;return t.med&&t.med.refAlto>0?ref/t.med.refAlto:NaN;};
   const conK=t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t)),K:modo==='persona'?kpT(t):null});
   const TP=tomas(p).map(conK),TS=tomas(s).map(conK);
@@ -601,7 +601,7 @@ function combinar(modo,caps,alto,ropaK,tipo){
       const gd=T=>{const G=T.map(x=>geoT(x.t)).filter(Boolean);return G.length?{D:med(G.map(g=>g.D)),a:med(G.map(g=>g.a)),elev:med(T.map(x=>x.t.ori&&x.t.ori.elev).filter(isFinite)),horiz:med(T.map(x=>x.t.ori&&x.t.ori.horiz).filter(isFinite))}:null;};
       const kRef=T=>{const v=T.map(x=>x.t.med&&x.t.med.refAlto>0?ref/x.t.med.refAlto:NaN).filter(isFinite);return v.length?med(v):null;};
       const arT=T=>{const A=T.map(x=>x.t.ar).filter(Boolean);if(!A.length)return null;const mm=k=>{const v=A.map(a=>a[k]).filter(z=>z!=null&&isFinite(z)&&(k==='elev'||z>0));return v.length?med(v):null;};
-        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev'),profEje:mm('prof'),profTipo:(A.find(a=>a.profTipo)||{}).profTipo||null,cmpx:mm('cmpx'),corr:mm('corr')};};
+        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),mix:mm('Zmix'),pie:mm('pie'),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev'),profEje:mm('prof'),profTipo:(A.find(a=>a.profTipo)||{}).profTipo||null,cmpx:mm('cmpx'),corr:mm('corr')};};
       const arC=arT(TP);
       r.geo={ar:arC?{costado:arC,atras:arT(TS)}:null,metodo:arC?arC.metodo:TP.some(x=>geoT(x.t))?'suelo':TP.some(x=>x.t.med&&x.t.med.refAlto>0)&&isFinite(ref)?'persona':null,h:arC&&arC.alto?Math.round(arC.alto):PC().altTel||null,fov:fovTel(),costado:arC?{D:arC.Z/100,elev:arC.elev}:gd(TP),atras:gd(TS),
         kCostado:med(TP.map(x=>x.k).filter(isFinite)),kAtras:med(TS.map(x=>x.k).filter(isFinite)),kPersona:kRef(TP)};
@@ -801,7 +801,12 @@ const arEstado=()=>{try{return window.Ar&&Ar.estado?String(Ar.estado()):'no';}ca
 const hayAR=()=>['listo','instalar','revisando'].includes(arEstado());
 const T_=t=>window.I18N&&I18N.t?I18N.t(t):t;
 const MITAD_CUERPO={ganado:15,persona:10};
-function escalaAR(c,t,modo){
+/* lo más bajo de la silueta (lo que toca el suelo) está más cerca del teléfono que el plano del cuerpo que se mide: de
+   costado, las patas del lado del teléfono (~15 cm antes de la línea media del animal); de frente, las puntas de los
+   pies de la persona (~8 cm). Por detrás, las patas traseras están en el plano de la grupa. A 3–5 m, 15 cm son 3–5 %
+   de la escala, y cambia con la distancia: la calibración no lo quitaría. */
+const pieExtra=(modo,vista)=>modo==='persona'?8:vista==='atras'?0:15;
+function escalaAR(c,t,modo,vista){
   const s=t.sil,W=t.W,H=t.H,k=c.W>0?W/c.W:1,fx=c.fx*k,fy=(c.fy||c.fx)*k,cy=(c.cy!=null?c.cy:c.H/2)*k,o={fx,alto:c.alto>0?c.alto*100:null,centro:c.centroProf>0?c.centroProf*100:c.centro>0?c.centro*100:null,elev:c.elev,profOrig:c.profOrig||null};
   const p=isFinite(c.elev)?-c.elev*Math.PI/180:0,yT=s&&s.n?s.n[1]*H:NaN,yP=s&&s.n?s.n[3]*H:NaN;
   // la profundidad dentro del cuerpo: filas de 15 a 60 % y columnas de 20 a 80 % de la caja de la silueta (con la
@@ -819,18 +824,20 @@ function escalaAR(c,t,modo){
      perspectiva exacta (CamVivo.escPlano: el alto real de la caja entre sus píxeles) */
   const mc=MITAD_CUERPO[modo]||0,ang=y=>Math.atan((y-cy)/fy);
   // el suelo de ARCore: la altura del teléfono y el ángulo hasta las patas
-  if(o.alto>0&&isFinite(yP)){const a=p+ang(yP);if(a>2*Math.PI/180&&a<80*Math.PI/180)o.suelo=o.alto/Math.tan(a);}
+  if(o.alto>0&&isFinite(yP)){const a=p+ang(yP);if(a>2*Math.PI/180&&a<80*Math.PI/180){o.pie=o.alto/Math.tan(a);o.suelo=o.pie+pieExtra(modo,vista);}}
   // la profundidad (a lo largo del eje de la cámara) en las filas del cuerpo, más medio cuerpo, a horizontal
   if(o.prof>0){const b=ang(o.profY);o.Dprof=(o.prof+mc)*Math.cos(p+b)/Math.cos(b);}
   if(o.centro>0)o.Dcentro=(o.centro+mc)*Math.cos(p);
   o.Dsuelo=o.suelo>0?o.suelo:null;o.Dprof=o.Dprof>0?o.Dprof:null;o.Dcentro=o.Dcentro>0?o.Dcentro:null;
+  // combinado: si la profundidad y el suelo están de acuerdo (±15 %), el promedio (dos medidas independientes: menos error)
+  o.Dmix=o.Dsuelo&&o.Dprof&&Math.abs(o.Dprof/o.Dsuelo-1)<=.15?(o.Dsuelo+o.Dprof)/2:null;
   const esc=D=>{if(!(D>0))return null;const kk=window.CamVivo&&CamVivo.escPlano?CamVivo.escPlano(D,p,yT,yP,cy,fy):null;return kk||D/fx;};
-  for(const m of ['prof','suelo','centro']){o['Z'+m]=o['D'+m];o['k'+m]=esc(o['D'+m]);}
+  for(const m of ['prof','suelo','centro','mix']){o['Z'+m]=o['D'+m];o['k'+m]=esc(o['D'+m]);}
   /* el método: el orden que salió de las pruebas con persona (PC().arPref; sin pruebas, el suelo primero). La
      profundidad no se usa si discrepa más de 15 % del suelo. Si las pruebas dieron un sesgo constante (PC().arCorr,
-     real/medido), se corrige y queda anotado. Solo cuentan las pruebas con esta geometría (PC().arG = 2). */
-  const ok={prof:o.Dprof&&!(o.Dsuelo&&Math.abs(o.Dprof/o.Dsuelo-1)>.15),suelo:!!o.Dsuelo,centro:!!o.Dcentro&&!(o.Dsuelo&&Math.abs(o.Dcentro/o.Dsuelo-1)>.15)};
-  const G2=PC().arG===2,pref=((G2&&PC().arPref)||['suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,cc=G2&&PC().arCorr?PC().arCorr[m]:null,corr=m&&cc>.85&&cc<1.15?cc:1;
+     real/medido), se corrige y queda anotado. Solo cuentan las pruebas con esta geometría (PC().arG = 3). */
+  const ok={mix:!!o.Dmix,prof:o.Dprof&&!(o.Dsuelo&&Math.abs(o.Dprof/o.Dsuelo-1)>.15),suelo:!!o.Dsuelo,centro:!!o.Dcentro&&!(o.Dsuelo&&Math.abs(o.Dcentro/o.Dsuelo-1)>.15)};
+  const G2=PC().arG===3,pref=((G2&&PC().arPref)||['mix','suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,cc=G2&&PC().arCorr?PC().arCorr[m]:null,corr=m&&cc>.85&&cc<1.15?cc:1;
   o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['D'+m]:null;o.cmpx=m&&o['k'+m]?o['k'+m]*corr:null;
   return o;
 }

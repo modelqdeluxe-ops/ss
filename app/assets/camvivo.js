@@ -81,11 +81,12 @@ function escPlano(D,p,yTop,yPie,cy,fy){
   if(!(D>0)||!(fy>0)||!isFinite(p)||!isFinite(yTop)||!isFinite(yPie)||!(yPie-yTop>4))return null;
   const t=y=>Math.tan(p+Math.atan((y-cy)/fy)),h=D*(t(yPie)-t(yTop));return h>0?h/(yPie-yTop):null;
 }
-function suelo(yPie,W,H,elev,h,fovL,yTop){
+function suelo(yPie,W,H,elev,h,fovL,yTop,extra){
   if(!(h>0)||!(fovL>20)||elev==null||!isFinite(elev)||!(W>0)||!(H>0)||!isFinite(yPie))return null;
   const f=(Math.max(W,H)/2)/Math.tan(fovL*Math.PI/360),p=-elev*Math.PI/180,a=p+Math.atan((yPie-H/2)/f);
   if(!(a>2*Math.PI/180&&a<80*Math.PI/180))return null;
-  const Z=h/Math.sin(a)*Math.cos(a-p),D=h/Math.tan(a),k=isFinite(yTop)?escPlano(D,p,yTop,yPie,H/2,f):null;
+  // extra: cuánto más lejos que lo que toca el suelo está el plano del cuerpo (cm)
+  const Z=h/Math.sin(a)*Math.cos(a-p),D=h/Math.tan(a)+(extra>0?extra:0),k=isFinite(yTop)?escPlano(D,p,yTop,yPie,H/2,f):null;
   return {D:D/100,Z,cmpx:k||Z/f,a:a*180/Math.PI,f};
 }
 function refOk(p,W,H){if(!p||!p.ok||p.score<REGLAS.score||p.cortada)return false;const c=p.n;
