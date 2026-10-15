@@ -51,7 +51,7 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.waitForSelector('dialog.cv');
  await p.waitForFunction(()=>document.querySelector('.cv-chip[data-k="det"]')?.dataset.s==='ok',null,{timeout:120000});
  console.log('primer cuadro',Date.now()-t0,'ms');await p.waitForTimeout(600);
- const m1=await p.$eval('.cv-msg',e=>e.textContent);console.log('lejos:',m1);assert.ok(/Acércate|Come closer|Aproxime/.test(m1),'pide acercarse');
+ const m1=await p.$eval('.cv-msg',e=>e.textContent);console.log('lejos:',m1);assert.ok(/[Aa]cércate|closer|[Aa]proxime/.test(m1),'pide acercarse');
  assert.equal(await p.$eval('.cv-chip[data-k="dist"]',e=>e.dataset.s),'no');
  const pos1=await p.$eval('.cv-pos',e=>({v:!e.hidden,t:e.lastChild.textContent}));console.log('posición lejos',pos1.t);assert.ok(pos1.v&&parseInt(pos1.t)<90,'indicador de posición');assert.ok(!await p.$('.cv-chip[data-k="ref"]'),'sin referencia en personas');
  await p.screenshot({path:'vivo_lejos.png'});

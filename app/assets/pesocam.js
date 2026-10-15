@@ -24,13 +24,13 @@ const MODOS={
       {id:'costado',nombre:'De costado',instr:'De perfil completo, con los brazos relajados a los lados.',girar:'Gírate de costado, con los brazos a los lados',girarMas:'Gírate un poco más: de perfil completo',ang:{max:.32,rel:.8,perfil:.7,hombros:.36},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
   ganado:{clase:Vision.VACA,k:1,err:.15,alto:'altTel',ref:true,
     buscar:'Apunta al animal, que se vea completo',
-    pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado, completo y con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88},ref:false},
-      {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara, con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.45,max:.85},banda:[.05,.55],ref:false}]}
+    pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado, completo y con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.28,max:.92},quieto:.5,ref:false},
+      {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara, con las patas a la vista. Teléfono a la altura de siempre.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.28,max:.9},quieto:.5,banda:[.05,.55],ref:false}]}
 };
 /* con un solo teléfono también se toman el otro costado y desde arriba (sin la persona de referencia): PC().tomasG dice
    cuántas tomas pide la cámara (2: costado y por detrás; 3: más el otro costado; 4: más desde arriba). Lo que tome un
    teléfono enlazado no se pide aquí. */
-const PASOS_EXTRA=[{id:'otro',nombre:'Otro costado',instr:'Pásate al otro lado del animal: de costado completo, con las patas a la vista.',girar:'Pásate al otro lado del animal, que quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88},ref:false},
+const PASOS_EXTRA=[{id:'otro',nombre:'Otro costado',instr:'Pásate al otro lado del animal: de costado completo, con las patas a la vista.',girar:'Pásate al otro lado del animal, que quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.28,max:.92},quieto:.5,ref:false},
   {id:'arriba',nombre:'Desde arriba',instr:'El teléfono arriba del animal (desde la pasarela o la cerca de la manga), mirando hacia abajo.',girar:'Sube el teléfono arriba del animal, mirando hacia abajo',ang:{},dist:{eje:'max',min:.45,max:.9},ref:false}];
 // la altura del teléfono al medir (cm) y el campo de visión de la cámara (lado largo, grados)
 const FOV_DEF=67,ALT_DEF=140;const fovTel=()=>+PC().fovTel>20?+PC().fovTel:FOV_DEF;
@@ -546,8 +546,8 @@ function combinar(modo,caps,alto,ropaK,tipo){
   // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
   /* ganado: cm por píxel con la distancia al animal (CamVivo.suelo: la altura del teléfono y su inclinación al tomar
      la foto); si el teléfono no tiene acelerómetro, con la persona de referencia si se ve. Se guardan las dos. */
-  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;t.vista=c.id;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo,c.id);}
-  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel(),t.sil.n[1]*t.H,pieExtra(modo,t.vista)):null;
+  for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;t.vista=c.id;t.zoom=c.zoom||1;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo,c.id);}
+  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,CamVivo.fovZ(fovTel(),t.zoom||1),t.sil.n[1]*t.H,pieExtra(modo,t.vista)):null;
   const cmpx=t=>{if(t.ar&&t.ar.cmpx>0)return t.ar.cmpx;if(modo==='persona')return ref/t.med.alto;const g=geoT(t);if(g)return g.cmpx;return t.med&&t.med.refAlto>0?ref/t.med.refAlto:NaN;};
   const conK=t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t)),K:modo==='persona'?kpT(t):null});
   const TP=tomas(p).map(conK),TS=tomas(s).map(conK);
@@ -754,8 +754,7 @@ function formAlto(tras){
     <p class="hint">La app calcula la distancia al animal con la altura a la que sostienes el teléfono y su inclinación, sin nadie junto al animal. Mide una vez, con cinta, del suelo al teléfono como lo vas a sostener (a la altura del pecho) y sostenlo siempre así al medir.</p>
     ${q('Altura del teléfono',inp('alto',a?String(Math.round(a)):'',{unit:'cm',xl:true,ph:'140'}))}
     <details class="lab-mas"><summary>Ajustes de la cámara (opcional)</summary>
-    ${q('Campo de visión de la cámara',inp('fov',PC().fovTel?String(PC().fovTel):'',{unit:'°',ph:String(FOV_DEF)}),'El lado largo de la foto con la cámara principal en 1x. Casi todos los teléfonos andan entre 65 y 70.')}
-    ${q('Estatura de una persona de referencia',inp('ref',PC().refAlto?String(PC().refAlto):'',{unit:'cm',ph:'—'}),'Solo si el teléfono no tiene sensor de movimiento: una persona de pie a la par del animal.')}</details>`,foot('Guardar')));
+    ${q('Campo de visión de la cámara',inp('fov',PC().fovTel?String(PC().fovTel):'',{unit:'°',ph:String(FOV_DEF)}),'El lado largo de la foto con la cámara principal en 1x. Casi todos los teléfonos andan entre 65 y 70.')}</details>`,foot('Guardar')));
   openSheet(shHead(per?'Tu estatura':'Persona de referencia','Peso con cámara')+formWrap('pcAlto',`
     <p class="hint">${per?'Con tu estatura la cámara sabe cuánto mide cada parte de tu cuerpo. Escríbela una vez, sin zapatos.':'Con la estatura de quien se para junto al animal, la cámara sabe cuánto mide el animal. Escríbela una vez.'}</p>
     ${q(per?'Estatura':'Estatura de la persona',inp('alto',a?String(Math.round(a)):'',{unit:'cm',xl:true,ph:'170'}))}`,foot('Guardar')));
@@ -765,7 +764,7 @@ SAVE.pcAlto=f=>{const v=num(fv(f,'alto')),per=UI.pc.modo==='persona';
   if(per&&!(v>=100&&v<=230))return ferr(f,'Escribe la estatura en centímetros (por ejemplo, 170).');
   if(!per&&!(v>=50&&v<=250))return ferr(f,'Escribe la altura del teléfono en centímetros (por ejemplo, 140).');
   const c={[MODOS[UI.pc.modo].alto]:Math.round(v)};
-  if(!per){const fo=num(fv(f,'fov')),rf=num(fv(f,'ref'));c.fovTel=fo>=30&&fo<=120?fo:null;c.refAlto=rf>=100&&rf<=230?Math.round(rf):null;}
+  if(!per){const fo=num(fv(f,'fov'));c.fovTel=fo>=30&&fo<=120?fo:null;}
   guardarPC(c);closeSheet();const t=TRAS;TRAS=null;if(t)setTimeout(t,60);else toast(per?'Estatura guardada':'Altura del teléfono guardada');};
 
 /* las fotos de cada medición (con su silueta) quedan en el teléfono para el laboratorio: las de las últimas 40. Y las
@@ -801,6 +800,12 @@ const arEstado=()=>{try{return window.Ar&&Ar.estado?String(Ar.estado()):'no';}ca
 const hayAR=()=>['listo','instalar','revisando'].includes(arEstado());
 const T_=t=>window.I18N&&I18N.t?I18N.t(t):t;
 const MITAD_CUERPO={ganado:15,persona:10};
+// cómo salió la escala de una medición de ganado (para el resultado)
+const escalaTxt=r=>{const g=r.geo||{},D=g.costado&&g.costado.D;
+  if(/^ar-/.test(g.metodo||''))return `${T_('La distancia al animal la midió ARCore')}${D?` (${nf(D,1)} m)`:''}${T_(': con el suelo que reconoce y la profundidad de la cámara. Así cada píxel tiene su medida en centímetros.')}`;
+  if(g.metodo==='suelo'&&D)return `${T_('La distancia al animal')} (${nf(D,1)} m)${T_(', con la altura del teléfono y su inclinación al tomar la foto: así cada píxel tiene su medida en centímetros.')}`;
+  if(g.metodo==='persona')return 'La estatura de la persona de referencia más 2.5 cm, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.';
+  return 'No se pudo medir la distancia al animal: la medida es aproximada.';};
 /* lo más bajo de la silueta (lo que toca el suelo) está más cerca del teléfono que el plano del cuerpo que se mide: de
    costado, las patas del lado del teléfono (~15 cm antes de la línea media del animal); de frente, las puntas de los
    pies de la persona (~8 cm). Por detrás, las patas traseras están en el plano de la grupa. A 3–5 m, 15 cm son 3–5 %
@@ -846,7 +851,7 @@ let ULT=null;
 async function medirVivo(){
   const modo=UI.pc.modo,M=MODOS[modo],alto=PC()[M.alto];
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
-  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,ar:modo==='ganado'&&hayAR(),geo:modo==='ganado'?{h:PC().altTel||ALT_DEF,fov:fovTel()}:null,buscar:M.buscar,pasos:modo==='ganado'?pasosGanado():M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
+  const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,ar:modo==='ganado'&&hayAR(),geo:modo==='ganado'?{h:PC().altTel||ALT_DEF,fov:fovTel()}:null,buscar:M.buscar,seguidos:modo==='ganado'?2:null,pasos:modo==='ganado'?pasosGanado():M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
   if(!caps||caps.length<M.pasos.length||modo==='ganado'&&!caps.some(c=>c.id==='costado')||modo==='ganado'&&!caps.some(c=>c.id==='atras'))return null;
   const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};if(modo==='ganado'){const x=loteSel();r.lote=x?x.id:null;
     // laboratorio, "repetir el mismo animal": el arete de la medición anterior del lote (30 minutos)
@@ -871,7 +876,7 @@ function explicar(r){
     ['Escala','Tu estatura más 2.5 cm de suela y pelo, dividida entre el alto de tu silueta en cada foto: así cada píxel tiene su medida en centímetros.'],
     ['Rebanadas',`La silueta de frente da el ancho a cada altura del cuerpo y la de costado el fondo. Cada rebanada es un corte ovalado: área = f × ancho × fondo (f = ${nf(FORMA.tronco,2)} en el tronco y ${nf(FORMA.cabeza,3)} en cabeza, brazos y piernas). Se descuentan ${nf(ROPA[r.ropa||'normal'].cm,1)} cm de ropa por lado.`],
     ['Volumen',`La suma de las rebanadas: ${nf(r.L,1)} L. Cabeza ${nf(P.cabeza,1)} L · tronco ${nf(P.tronco,1)} L · brazos ${nf(P.brazos,1)} L · piernas ${nf(P.piernas,1)} L.`]]
-   :[[`Escala`,r.geo&&r.geo.metodo==='suelo'&&r.geo.costado?`La distancia al animal (${nf(r.geo.costado.D,1)} m), con la altura del teléfono (${nf(r.geo.h)} cm) y su inclinación al tomar la foto: así cada píxel tiene su medida en centímetros.`:'La estatura de la persona de referencia más 2.5 cm, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.'],
+   :[[`Escala`,escalaTxt(r)],
     ['Rebanadas','De costado, cada columna del cuerpo (sin las patas) es una rebanada a lo largo del animal; su corte tiene la forma que se ve por detrás, agrandada o achicada según el grueso del cuerpo en esa columna.'],
     ['Volumen',`La suma de las rebanadas: ${nf(r.L,1)} L.`]];
   pasos.push(['Peso',`k × volumen^b = ${nf(W(r.k),3)} × ${nf(r.L,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${per?'k es la densidad del cuerpo: peso por litro.':'k es mayor que la densidad del cuerpo porque las patas no entran en el volumen.'} ${mm.n?`Ajustado con ${pl(mm.n,'medición','mediciones')} de báscula.`:`De fábrica k = ${nf(W(ml.k),2)} ${UW()}/L; con la báscula se ajusta.`}`]);
@@ -883,7 +888,7 @@ function explicarGanado(r,mm,pct){
   const D=r.dims,G=GANADO,ex=(v,d=2)=>`<sup data-no-tr>${nf(v,d)}</sup>`,dos=isFinite(D.WHr)&&Math.abs(D.WHr-D.WHs)/D.WHs<.12;
   const a0=isFinite(r.a0)?r.a0:G.a[r.tipo||'cruce'];
   const pasos=[
-    [`Escala`,r.geo&&r.geo.metodo==='suelo'&&r.geo.costado?`La distancia al animal (${nf(r.geo.costado.D,1)} m), con la altura del teléfono (${nf(r.geo.h)} cm) y su inclinación al tomar la foto: así cada píxel tiene su medida en centímetros.`:'La estatura de la persona de referencia más 2.5 cm, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.'],
+    [`Escala`,escalaTxt(r)],
     ['Puntos del animal','Un modelo de pose ubica hombros, codos, manos, cadera y la base de la cola. Con ellos se sabe dónde medir la alzada y el pecho, sin la cabeza ni las patas.'],
     ['Medidas',`Alzada a la cruz: ${cm(D.WHs)} de costado${dos?` y ${cm(D.WHr)} por detrás; se usa el promedio, ${cm(D.WH)}`:''}. Fondo de pecho detrás del codo: ${cm(D.CD)}. Largo del hombro a la base de la cola: ${cm(D.L)}.`],
     ['Tipo de animal',`<span>${tipoTxt(r)}</span><span data-no-tr>: a = ${nf(a0,3)}.</span> <span>A igual alzada y fondo, un cebú o criollo pesa cerca de 0.6 veces lo que un europeo de carne; un ternero, unas 0.67 veces lo de un adulto, y uno en crecimiento, unas 0.82.</span>`],

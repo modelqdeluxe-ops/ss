@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.39; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.40; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.39) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.39) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.40) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.40) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -542,6 +542,33 @@ cuadros. En vertical el video de la cámara en vivo ocupa toda la pantalla (`obj
 se ve es lo que mide el modelo) y el título, los indicadores, la distancia y el botón van encima con degradados
 (`@media (orientation:portrait)` para `.cv`). ARCore manda cuadros de 960 px (antes 640) con JPEG 80 (antes 70), la
 página los pide cada 33 ms como mínimo (antes 45) y el lienzo se captura a 30 cuadros/s.
+
+**5.0.0-beta.40: problemas de campo (ganado).** El dueño en la finca: había que acercarse demasiado (los animales no
+se dejan), en un grupo la silueta agarraba varios, las barandas del corral cortaban la silueta, los animales nunca
+están quietos, la captura era lenta, el peso de báscula debía ir después de las fotos y el resultado hablaba de una
+persona de referencia.
+- **Zoom** 1× a 4× (botones sobre el video y pellizco). Con ARCore: `Ar.zoom(z)` recorta el centro de la imagen de la
+  cámara en el teléfono (`recorte`): cuadros en vivo, fotos, intrínsecos (`cx−ox`) y la rejilla de profundidad van con
+  el recorte, así la escala no cambia (`meta.zoom`). Sin ARCore: el zoom de la cámara si lo tiene
+  (`applyConstraints({zoom})`) y el campo de visión del sensor se divide (`CamVivo.fovZ`; `cap.zoom`, `t.zoom`). El
+  último zoom se recuerda (`rumentis-pc-zoom`). Al cambiar se vuelve a buscar al animal.
+- **Tocar el animal** en el video: `tocar()` → `toque`; `vision.js` elige la mancha bajo el punto (`opc.pt`) o la
+  consulta de RF-DETR cuya máscara lo contiene. Queda **fijo** (`fijo.rel`: el punto dentro de la caja): la mancha se
+  recorta a la caja seguida con 12 % de margen (`opc.fijo`; un grupo pegado es una sola mancha del modelo rápido); si
+  la mancha entera es más de 2.2 veces la caja (`exceso`), la caja guarda su tamaño y su centro sigue a la silueta (10 %
+  por cuadro); si no, crece (se acercó o hizo zoom). Cada 1.5 s el modelo preciso vuelve a encontrar al animal que
+  contiene el punto (`refrescar`). Las fotos se miden con ese punto (`cajas.pt`). Se suelta al cambiar de paso.
+- **Barandas**: en animales (no personas) la máscara se cierra (cuadrado de ~2.5 % del lado) y se rellenan los huecos
+  (`cerrar`), antes de separar las manchas; la confianza solo cuenta lo que marcó el modelo.
+- **En movimiento y de lejos**: ganado con `quieto: .5` (antes .86, IoU de la caja con las anteriores), 2 cuadros
+  buenos seguidos (antes 3), tamaño mínimo 28 % del cuadro (antes 50 % de ancho de costado y 45 % de alto por detrás);
+  el aviso dice «Haz zoom o acércate».
+- **Captura**: las fotos de ARCore se piden todas a la vez y salen sin girar (la página las gira); los planos se copian
+  de una vez.
+- **Recolección**: «Nuevo animal» abre la cámara; la ficha pide el peso de báscula (obligatorio para «Siguiente animal»
+  y «Repetir este»).
+- El resultado ya no dice «persona de referencia» con ARCore (`escalaTxt`); sin el campo de persona en los ajustes.
+  La prueba con persona del laboratorio queda plegada y opcional.
 
 ---
 

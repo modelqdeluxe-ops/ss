@@ -70,7 +70,11 @@ import javax.microedition.khronos.opengles.GL10;
                  la página lo gira meta.rot grados)
          foto(): pide una foto completa -> window.arFoto(json): la foto en files/fotos/<id>.jpg, la profundidad (mm)
                  con el encuadre de la foto, los intrínsecos, la altura del teléfono sobre el suelo y su inclinación
+         zoom(z): zoom digital de 1 a 4 (recorte del centro; los cuadros, las fotos, los intrínsecos y la profundidad
+                  van con el recorte; meta.zoom)
          detener(): suelta la cámara.
+   Las fotos salen sin girar (iw×ih); la página las gira meta.rot grados al abrirlas (W, H e intrínsecos ya son de la
+   foto girada).
    meta de cada cuadro: W, H, fx, fy, cx, cy (del cuadro ya girado), rot, iw, ih, elev y ladeo (grados), alto (m sobre
    el suelo, si ARCore ya lo encontró), sigue (ARCore está ubicado) y pd (ARCore ya tiene profundidad). La foto lleva
    además prof y praw {w, h, mm}: la profundidad (suavizada, y la cruda solo con los puntos de confianza) con el encuadre
@@ -129,6 +133,19 @@ public class ArPuente implements GLSurfaceView.Renderer {
 
     @JavascriptInterface
     public void foto() { pedirFotos++; }
+
+    /* zoom digital (1 a 4): un recorte del centro de la imagen de la cámara. Hasta 2× no pierde detalle (el cuadro en
+       vivo sale de la imagen completa); los intrínsecos y la profundidad van con el recorte, así la medida sigue igual */
+    private volatile float zoom = 1f;
+    @JavascriptInterface
+    public void zoom(float z) { zoom = Math.max(1f, Math.min(4f, z)); }
+    // el recorte {ox, oy, cw, ch} de una imagen de W×H con el zoom de ahora
+    private int[] recorte(int W, int H) {
+        float z = zoom;
+        int cw = Math.max(16, Math.round(W / z)) & ~1, ch = Math.max(16, Math.round(H / z)) & ~1;
+        int ox = ((W - cw) / 2) & ~1, oy = ((H - ch) / 2) & ~1;
+        return new int[]{ox, oy, cw, ch};
+    }
 
     @JavascriptInterface
     public void detener() {
@@ -309,7 +326,8 @@ public class ArPuente implements GLSurfaceView.Renderer {
 
     /* lo común de un cuadro y de una foto: inclinación, suelo, intrínsecos (para una imagen de W×H escalada por k y
        girada rot grados) y la profundidad con ese encuadre (GW de ancho) */
-    private void datos(JSONObject o, Frame f, Camera cam, int W, int H, float k, int rot, int GW) throws Exception {
+    private void datos(JSONObject o, Frame f, Camera cam, int W, int H, int[] rc, float k, int rot, int GW) throws Exception {
+        final int ox = rc[0], oy = rc[1], cw = rc[2], ch = rc[3];
         boolean sigue = cam.getTrackingState() == TrackingState.TRACKING;
         o.put("sigue", sigue);
         Pose ps = cam.getDisplayOrientedPose();
@@ -321,8 +339,9 @@ public class ArPuente implements GLSurfaceView.Renderer {
         float[] fl = ci.getFocalLength(), pp = ci.getPrincipalPoint();
         int[] dim = ci.getImageDimensions();
         float sx = dim[0] > 0 ? (float) W / dim[0] : 1f, sy = dim[1] > 0 ? (float) H / dim[1] : 1f;
-        int w2 = Math.round(W * k), h2 = Math.round(H * k);
-        float[] r = girarIntr(rot, w2, h2, fl[0] * sx * k, fl[1] * sy * k, pp[0] * sx * k, pp[1] * sy * k);
+        int w2 = Math.round(cw * k), h2 = Math.round(ch * k);
+        float[] r = girarIntr(rot, w2, h2, fl[0] * sx * k, fl[1] * sy * k, (pp[0] * sx - ox) * k, (pp[1] * sy - oy) * k);
+        o.put("zoom", (double) W / cw);
         o.put("fx", r[0]); o.put("fy", r[1]); o.put("cx", r[2]); o.put("cy", r[3]);
         o.put("W", rot % 180 == 0 ? w2 : h2); o.put("H", rot % 180 == 0 ? h2 : w2);
         o.put("rot", rot);
@@ -354,10 +373,10 @@ public class ArPuente implements GLSurfaceView.Renderer {
             }
             /* la profundidad va con la textura de la cámara: cada celda de la rejilla (en píxeles de la imagen CPU) se
                lleva a coordenadas normalizadas de la textura con ARCore y ahí se lee (como en la guía de Depth) */
-            int GH = Math.max(1, Math.round((float) GW * H / W));
+            int GH = Math.max(1, Math.round((float) GW * ch / cw));
             FloatBuffer pin = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
             FloatBuffer pout = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            for (int j = 0; j < GH; j++) for (int i = 0; i < GW; i++) { pin.put((i + .5f) * W / GW); pin.put((j + .5f) * H / GH); }
+            for (int j = 0; j < GH; j++) for (int i = 0; i < GW; i++) { pin.put(ox + (i + .5f) * cw / GW); pin.put(oy + (j + .5f) * ch / GH); }
             pin.position(0);
             f.transformCoordinates2d(Coordinates2d.IMAGE_PIXELS, pin, Coordinates2d.TEXTURE_NORMALIZED, pout);
             int[] idx = new int[GW * GH];
@@ -420,20 +439,21 @@ public class ArPuente implements GLSurfaceView.Renderer {
         try {
             img = f.acquireCameraImage();
             final int W = img.getWidth(), H = img.getHeight();
-            final float k = Math.min(1f, (float) lado / Math.max(W, H));
-            final int w2 = Math.round(W * k) & ~1, h2 = Math.round(H * k) & ~1;
+            final int[] rc = recorte(W, H);
+            final float k = Math.min(1f, (float) lado / Math.max(rc[2], rc[3]));
+            final int w2 = Math.round(rc[2] * k) & ~1, h2 = Math.round(rc[3] * k) & ~1;
             final Planos pl = new Planos(img);
             img.close(); img = null;
             final int rot = rotacionImagen();
             final JSONObject o = new JSONObject();
-            datos(o, f, cam, W, H, (float) w2 / W, rot, 0);
+            datos(o, f, cam, W, H, rc, (float) w2 / rc[2], rot, 0);
             if ((nCuadro++ % 10) == 0) ultProf = hayProf(f);
             o.put("pd", ultProf);
             o.put("iw", w2); o.put("ih", h2);
             armando = true;
             hilo.execute(new Runnable() { @Override public void run() {
                 try {
-                    byte[] nv = pl.nv21(w2, h2);
+                    byte[] nv = pl.nv21(rc[0], rc[1], rc[2], rc[3], w2, h2);
                     YuvImage y = new YuvImage(nv, ImageFormat.NV21, w2, h2, null);
                     ByteArrayOutputStream bo = new ByteArrayOutputStream(128 * 1024);
                     y.compressToJpeg(new Rect(0, 0, w2, h2), 80, bo);
@@ -467,16 +487,17 @@ public class ArPuente implements GLSurfaceView.Renderer {
             y = copiar(p[0].getBuffer()); u = copiar(p[1].getBuffer()); v = copiar(p[2].getBuffer());
         }
         private static byte[] copiar(ByteBuffer b) { b.rewind(); byte[] a = new byte[b.remaining()]; b.get(a); return a; }
-        byte[] nv21(int w2, int h2) {
+        // el recorte (ox, oy, cw, ch; pares) llevado a w2×h2 (el más cercano)
+        byte[] nv21(int ox, int oy, int cw, int ch, int w2, int h2) {
             byte[] out = new byte[w2 * h2 * 3 / 2];
             int pos = 0;
             int[] sx = new int[w2];
-            for (int c = 0; c < w2; c++) sx[c] = (int) ((long) c * W / w2) * yp;
-            for (int r = 0; r < h2; r++) { int base = (int) ((long) r * H / h2) * yr; for (int c = 0; c < w2; c++) out[pos++] = y[base + sx[c]]; }
+            for (int c = 0; c < w2; c++) sx[c] = (ox + (int) ((long) c * cw / w2)) * yp;
+            for (int r = 0; r < h2; r++) { int base = (oy + (int) ((long) r * ch / h2)) * yr; for (int c = 0; c < w2; c++) out[pos++] = y[base + sx[c]]; }
             for (int r = 0; r < h2 / 2; r++) {
-                int cy = (int) ((long) r * 2 * H / h2) / 2;
+                int cy = (oy + (int) ((long) r * 2 * ch / h2)) / 2;
                 for (int c = 0; c < w2 / 2; c++) {
-                    int cx = (int) ((long) c * 2 * W / w2) / 2;
+                    int cx = (ox + (int) ((long) c * 2 * cw / w2)) / 2;
                     int iv = cy * vr + cx * vp, iu = cy * ur + cx * up;
                     out[pos++] = iv < v.length ? v[iv] : (byte) 128;
                     out[pos++] = iu < u.length ? u[iu] : (byte) 128;
@@ -492,17 +513,21 @@ public class ArPuente implements GLSurfaceView.Renderer {
         try {
             img = f.acquireCameraImage();
             final int W = img.getWidth(), H = img.getHeight();
-            final byte[] nv = nv21(img, W, H);
+            // los planos se copian de una vez y la imagen se suelta; el JPEG (del recorte del zoom, sin girar: lo gira
+            // la página al abrirlo, meta.rot) se arma en el otro hilo
+            final Planos pl = new Planos(img);
             img.close(); img = null;
             final int rot = rotacionImagen();
+            final int[] rc = recorte(W, H);
             final JSONObject o = new JSONObject();
             o.put("ts", System.currentTimeMillis());
-            datos(o, f, cam, W, H, 1f, rot, 160);
+            datos(o, f, cam, W, H, rc, 1f, rot, 160);
+            o.put("iw", rc[2]); o.put("ih", rc[3]);
             final String id = "ar-" + System.currentTimeMillis() + "-" + (nFoto++);
             o.put("foto", id);
             hilo.execute(new Runnable() { @Override public void run() {
                 try {
-                    byte[] jpg = jpeg(nv, W, H, rot, 92);
+                    byte[] jpg = jpeg(pl.nv21(rc[0], rc[1], rc[2], rc[3], rc[2], rc[3]), rc[2], rc[3], 0, 92);
                     File dir = new File(act.getFilesDir(), "fotos");
                     if (!dir.exists()) dir.mkdirs();
                     FileOutputStream fo = new FileOutputStream(new File(dir, id + ".jpg"));
@@ -561,28 +586,6 @@ public class ArPuente implements GLSurfaceView.Renderer {
             o[ny * h + nx] = d[y * w + x];
         }
         return o;
-    }
-
-    /* YUV_420_888 a NV21 de w2×h2 (el más cercano: para el cuadro chico; con w2×h2 = W×H, la imagen completa) */
-    private static byte[] nv21(Image img, int w2, int h2) {
-        int W = img.getWidth(), H = img.getHeight();
-        byte[] out = new byte[w2 * h2 * 3 / 2];
-        Image.Plane[] p = img.getPlanes();
-        ByteBuffer y = p[0].getBuffer(), u = p[1].getBuffer(), v = p[2].getBuffer();
-        int yr = p[0].getRowStride(), yp = p[0].getPixelStride();
-        int ur = p[1].getRowStride(), up = p[1].getPixelStride(), vr = p[2].getRowStride(), vp = p[2].getPixelStride();
-        int pos = 0;
-        if (w2 == W && h2 == H && yp == 1 && yr == W) { y.position(0); y.get(out, 0, W * H); pos = W * H; }
-        else for (int r = 0; r < h2; r++) { int sy = (int) ((long) r * H / h2); for (int c = 0; c < w2; c++) out[pos++] = y.get(sy * yr + (int) ((long) c * W / w2) * yp); }
-        for (int r = 0; r < h2 / 2; r++) {
-            int sy = (int) ((long) r * 2 * H / h2) / 2;
-            for (int c = 0; c < w2 / 2; c++) {
-                int sx = (int) ((long) c * 2 * W / w2) / 2;
-                out[pos++] = v.get(sy * vr + sx * vp);
-                out[pos++] = u.get(sy * ur + sx * up);
-            }
-        }
-        return out;
     }
 
     private void evento(String fn, String json) { js("window." + fn + "&&window." + fn + "(" + JSONObject.quote(json) + ")"); }

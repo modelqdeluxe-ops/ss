@@ -54,6 +54,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc,off=0}){const h=altoM*100;let mejo
        window.arCuadro(c.toDataURL('image/jpeg',.8).split(',')[1],{...meta(e,w,h,0),rot:90,iw:c.width,ih:c.height});},40),
      foto:()=>setTimeout(async()=>{const e=window.__esc,c=__pintar(e.plan.W,e.plan.H,e),bl=await new Promise(r=>c.toBlob(r,'image/jpeg',.92)),id='ar-prueba-'+(++__ar.fotos);
        await Fotos.guardar(id,bl);window.arFoto(JSON.stringify({...meta(e,e.plan.W,e.plan.H,160),ts:Date.now(),foto:id}));},60),
+     zoom:z=>{__ar.zoom=z;},
      detener:()=>{}};
  });
  const esc=o=>p.evaluate(o=>{window.__esc=o;},o);
@@ -61,19 +62,36 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc,off=0}){const h=altoM*100;let mejo
  const SEL=await p.evaluate(()=>{const G=64,M=new Float32Array(G*G).fill(-1);const pon=(x0,y0,x1,y1)=>{for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)M[y*G+x]=1;};
    pon(0,8,22,40);pon(26,20,40,56);const a=Vision.silueta(M,G,G,G),b=Vision.silueta(M,G,G,G,[0,8/G,22/G,40/G]);return {a:a.caja,b:b.caja};});
  assert.deepEqual(SEL.a,[26,20,40,56],'sin pista: la del centro');assert.deepEqual(SEL.b,[0,8,22,40],'con pista: la que se venía siguiendo');
+ // un grupo pegado (una sola mancha): con el animal elegido queda solo su parte (la caja seguida con margen);
+ // un animal cortado por una baranda (franja vacía de 3 celdas): con el cierre la silueta queda entera
+ const GR=await p.evaluate(()=>{const G=64,M=new Float32Array(G*G).fill(-1);const pon=(x0,y0,x1,y1)=>{for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)M[y*G+x]=1;};
+   pon(4,20,30,44);pon(30,18,58,46);const a=Vision.silueta(M,G,G,G,[4/G,20/G,30/G,44/G],{fijo:true,cl:21});
+   const B=new Float32Array(G*G).fill(-1);for(let y=10;y<50;y++)for(let x=16;x<48;x++)if(y<28||y>30)B[y*G+x]=1;const b=Vision.silueta(B,G,G,G,null,{cl:21}),c=Vision.silueta(B,G,G,G,null,{cl:1});
+   return {a:a.caja,rec:a.recortada,b:b.caja,c:c.caja};});
+ assert.ok(GR.rec&&GR.a[2]<=36&&GR.a[0]<=4,'del grupo, solo el elegido: '+JSON.stringify(GR.a));
+ assert.deepEqual(GR.b,[16,10,48,50],'la baranda no corta la silueta del animal');assert.notDeepEqual(GR.c,[16,10,48,50],'(en personas no se cierra)');
  // ---------- prueba con persona: ARCore por debajo de la cámara en vivo ----------
  // foto completa 960×1280, f = 1013 px; la persona de 175 cm ocupa 0.625 del alto (800 px), el teléfono a 1.4 m
  const PW=960,PH=1280,fx=1013,hf=.625,EP=escena({Hr:175,altoM:1.4,yT:(.93-hf)*PH,yP:.93*PH,cy:PH/2,fy:fx,mc:10,off:8});
  console.log('escena persona',JSON.stringify(EP));
  await esc({f:'frente',x:.5,y:.93,hf,plan:{W:PW,H:PH,fx,mm:EP.mm,alto:1.4,elev:EP.elev,ar:.3,malo:true}});
  await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(600);
- assert.match(await p.$eval('#app',e=>e.textContent),/Probar la medida con una persona/);
+ assert.match(await p.$eval('#app',e=>e.textContent),/Prueba opcional con una persona/);await p.click('.lab-pru>summary');await p.waitForTimeout(200);
  assert.equal(await p.$$eval('[data-act="labPrueba"]',e=>e.length),1,'un solo botón');
+ // primero lejos (chica: no se toma sola) para probar el zoom y el toque
+ await esc({f:'frente',x:.5,y:.93,hf:.3,plan:{W:PW,H:PH,fx,mm:EP.mm,alto:1.4,elev:EP.elev,ar:.3,malo:true}});
  await p.click('[data-act="labPrueba"]');await p.waitForTimeout(300);await p.fill('#sheet [name=real]','175');await p.click('#sheet button[type=submit]');
  await p.waitForSelector('dialog.cv',{timeout:20000});
  await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.dist||0)>0,null,{timeout:60000});
  const dV=await p.$eval('.cv',e=>+e.dataset.dist);console.log('distancia en vivo (ARCore)',dV,'m');await p.screenshot({path:'ar_vivo.png'});
  assert.ok(await p.evaluate(()=>document.querySelector('.cv-gira').hidden),'con ARCore no se cambia de cámara');
+ // zoom con ARCore (botones; también con dos dedos) y tocar a la persona para fijarla
+ assert.ok(await p.isVisible('.cv-zoom'),'botones de zoom');await p.click('.cv-zoom [data-z="2"]');assert.equal(await p.evaluate(()=>__ar.zoom),2,'zoom en ARCore');
+ await p.click('.cv-zoom [data-z="1"]');assert.equal(await p.evaluate(()=>__ar.zoom),1);
+ {const bb=await p.$eval('.cv video',e=>{const r=e.getBoundingClientRect(),k=Math.min(r.width/e.videoWidth,r.height/e.videoHeight);return [r.left+(r.width-e.videoWidth*k)/2,r.top+(r.height-e.videoHeight*k)/2,e.videoWidth*k,e.videoHeight*k];});
+   await p.mouse.click(bb[0]+bb[2]*.5,bb[1]+bb[3]*.8);}
+ await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.fijo==='1',null,{timeout:20000});paso('zoom 1× a 4× y la persona fijada con un toque');
+ await esc({f:'frente',x:.5,y:.93,hf,plan:{W:PW,H:PH,fx,mm:EP.mm,alto:1.4,elev:EP.elev,ar:.3,malo:true}});
  await p.waitForFunction(()=>((S.config.pesoCam||{}).pruebas||[]).length===1,null,{timeout:120000});
  const P1=await p.evaluate(()=>S.config.pesoCam.pruebas[0]);console.log('prueba ARCore',JSON.stringify(P1));
  assert.equal(P1.via,'ar');assert.ok(Math.abs(P1.medido.prof/175-1)<.04,'estatura con la profundidad (la cruda; la suavizada estaba mala): '+P1.medido.prof);assert.equal(P1.g,3);assert.ok(Math.abs(P1.medido.mix/175-1)<.03,'combinado: '+P1.medido.mix);
@@ -86,6 +104,7 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc,off=0}){const h=altoM*100;let mejo
    window.__pv=setInterval(()=>V.getContext('2d').drawImage(E,0,0),100);V.getContext('2d').drawImage(E,0,0);Fotos.camara=async()=>V.captureStream(10);
    const z=9.81*Math.sin(5*Math.PI/180),y=9.81*Math.cos(5*Math.PI/180);window.__gv=setInterval(()=>window.dispatchEvent(new DeviceMotionEvent('devicemotion',{accelerationIncludingGravity:{x:0,y,z},interval:50})),50);});
  await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(400);
+ if(!(await p.isVisible('[data-act="labPrueba"]')))await p.click('.lab-pru>summary');await p.waitForTimeout(200);
  await p.click('[data-act="labPrueba"]');await p.waitForTimeout(300);await p.fill('#sheet [name=real]','175');await p.click('#sheet button[type=submit]');
  await p.waitForFunction(()=>((S.config.pesoCam||{}).pruebas||[]).length===2,null,{timeout:120000});
  const P2=await p.evaluate(()=>S.config.pesoCam.pruebas[1]);console.log('prueba sin ARCore',JSON.stringify(P2));

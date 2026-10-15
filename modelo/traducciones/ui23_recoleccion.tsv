@@ -189,3 +189,16 @@ El que escribiste antes de medir. Corrígelo aquí si hace falta.	The one you ty
 Las pruebas anteriores a la corrección de la perspectiva no cuentan en la tabla:	Tests from before the perspective correction do not count in the table:	Os testes anteriores à correção da perspectiva não contam na tabela:
 Bórralas y vuelve a probar.	Delete them and test again.	Apague-os e teste de novo.
 ARCore · combinado	ARCore · combined	ARCore · combinado
+Toca «Nuevo animal»: se abre la cámara y se toman las fotos; después escribe su peso de báscula y toca «Siguiente animal». Cada animal recibe su número: no hace falta arete.	Tap «New animal»: the camera opens and the photos are taken; then type its scale weight and tap «Next animal». Each animal gets its number: no ear tag needed.	Toque «Novo animal»: a câmera abre e as fotos são tiradas; depois digite o peso da balança e toque «Próximo animal». Cada animal recebe seu número: não precisa de brinco.
+El mismo animal: el peso de báscula de antes. Corrígelo aquí si hace falta.	The same animal: the scale weight from before. Correct it here if needed.	O mesmo animal: o peso da balança de antes. Corrija aqui se precisar.
+Lo que marcó la báscula para este animal.	What the scale showed for this animal.	O que a balança marcou para este animal.
+Haz zoom o acércate	Zoom in or get closer	Dê zoom ou aproxime-se
+Aléjate o quita zoom	Step back or zoom out	Afaste-se ou tire o zoom
+Toca el animal para elegirlo · pellizca para acercar	Tap the animal to choose it · pinch to zoom	Toque o animal para escolhê-lo · pince para aproximar
+No se encontró un animal ahí: toca encima del animal.	No animal found there: tap on the animal.	Nenhum animal encontrado aí: toque em cima do animal.
+La distancia al animal la midió ARCore	ARCore measured the distance to the animal	O ARCore mediu a distância até o animal
+: con el suelo que reconoce y la profundidad de la cámara. Así cada píxel tiene su medida en centímetros.	: with the ground it recognizes and the camera depth. So each pixel has its size in centimeters.	: com o chão que reconhece e a profundidade da câmera. Assim cada pixel tem sua medida em centímetros.
+La distancia al animal	The distance to the animal	A distância até o animal
+, con la altura del teléfono y su inclinación al tomar la foto: así cada píxel tiene su medida en centímetros.	, with the phone's height and tilt when taking the photo: so each pixel has its size in centimeters.	, com a altura do celular e sua inclinação ao tirar a foto: assim cada pixel tem sua medida em centímetros.
+No se pudo medir la distancia al animal: la medida es aproximada.	The distance to the animal could not be measured: the measurement is approximate.	Não foi possível medir a distância até o animal: a medida é aproximada.
+Prueba opcional con una persona	Optional test with a person	Teste opcional com uma pessoa

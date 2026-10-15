@@ -1311,6 +1311,12 @@ html.vaquero .f-ayuda .rumi-av{display:none}
 .cv.carga .cv-msg::before{content:'';display:inline-block;width:18px;height:18px;margin-right:10px;vertical-align:-2px;border-radius:50%;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;animation:pcg 1s linear infinite}
 .cv.sin .cv-chips,.cv.sin .cv-bar{visibility:hidden}.cv.sin .cv-msg{font-size:17px;font-weight:600;font-family:inherit}
 @media (orientation:landscape){.cv-chips{position:absolute;top:58px;left:0;right:120px;z-index:2}.cv-msg{font-size:14.5px;padding:5px 12px}.cv .cv-gira{white-space:nowrap;font-size:12px;padding:0 10px}.cv-ind{bottom:10px}.cv-fps{grid-column:auto;grid-row:1;justify-self:center}.cv .cv-man{grid-column:auto;grid-row:2}.cv .cv-gira{grid-column:auto;grid-row:3}}
+.cv-toca{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(228px + env(safe-area-inset-bottom,0px));z-index:3;max-width:90%;padding:4px 12px;border-radius:99px;background:rgba(0,0,0,.5);color:#fff;font-size:12.5px;text-align:center;pointer-events:none}
+@media (orientation:landscape){.cv-toca{bottom:108px}}
+.cv-zoom{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(178px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;gap:6px;padding:4px;border-radius:99px;background:rgba(0,0,0,.5)}
+.cv-zoom button{min-width:46px;height:40px;border-radius:99px;border:0;background:transparent;color:#fff;font:700 15px/1 inherit}
+.cv-zoom button[aria-pressed="true"]{background:#fff;color:#111}
+@media (orientation:landscape){.cv-zoom{bottom:60px}}
 /* la cámara en vivo en vertical: el video ocupa toda la pantalla (sin recortar) y el título, los indicadores y el botón van encima */
 @media (orientation:portrait){.cv .cv-v{position:absolute;inset:0;z-index:0}
 .cv .cam-top{position:absolute;left:0;right:0;top:0;z-index:2;padding-top:calc(10px + env(safe-area-inset-top,0px));background:linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.35) 70%,rgba(0,0,0,0))}

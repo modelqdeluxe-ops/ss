@@ -246,7 +246,7 @@ function avance(R){
   return {A,sin:por.get('')||[],nA:A.length,conB:A.filter(a=>a.real).length,rep:A.filter(a=>a.v.length>=META.rep).length,faltan:A.filter(a=>!a.real),mape:prom(e.map(Math.abs)),sesgo:prom(e),nCon:con.length};
 }
 const PROTOCOLO=['Escoge los animales al azar. Pesa cada uno en la báscula y tómale las fotos en la misma pasada por la manga, o el mismo día antes de que coma.',
-  'Toca «Nuevo animal», escribe su peso de báscula y después se abre la cámara. Cada peso nuevo es un animal nuevo con su número: no hace falta arete.',
+  'Toca «Nuevo animal»: se abre la cámara y se toman las fotos; después escribe su peso de báscula y toca «Siguiente animal». Cada animal recibe su número: no hace falta arete.',
   'En algunos animales, mide 2 o 3 veces seguidas con «Repetir este»: así se sabe cuánto varía la cámara con el mismo animal.',
   'Nadie se acerca al animal: ARCore mide la distancia. Al abrir la cámara, apunta un momento al suelo y mueve el teléfono despacio hasta que salga la distancia; la foto se toma sola cuando la silueta está verde.',
   'De 3 a 8 m, sin zoom, con las patas del animal a la vista y el suelo más o menos plano entre tú y el animal. Evita el sol de frente y las sombras fuertes sobre el animal.',
@@ -261,7 +261,7 @@ function bloqueSesion(Rm,ses){
   const R=Rm.filter(x=>x.ses===ses.n),a=avance(R),bar=(v,m)=>`<span class="lab-bar"><i style="width:${Math.min(100,Math.round(v/m*100))}%"></i></span>`;
   return `<section class="sec">${secH('Recolección en la finca')}<div class="card pad lab-c">
     <p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b></span></p>
-    ${pendHTML()}<button type="button" class="btn pri full lab-nuevo" data-act="labNuevo">${ico('nuevo',2.4)}<span>Nuevo animal</span></button>
+    <button type="button" class="btn pri full lab-nuevo" data-act="labNuevo">${ico('nuevo',2.4)}<span>Nuevo animal</span></button>
     <div class="lab-av">
       <div><span>Animales</span><b data-no-tr>${a.nA}</b></div>
       <div><span>Con peso de báscula</span><b data-no-tr>${a.conB} / ${a.nA}</b>${bar(a.conB,Math.max(1,a.nA))}</div>
@@ -272,25 +272,9 @@ function bloqueSesion(Rm,ses){
     <div class="pc-acts lab-acts"><button type="button" class="btn" data-act="labExpSes" data-s="${esc(ses.n)}">Exportar todo (ZIP con fotos)</button><button type="button" class="btn" data-act="labExcel" data-s="${esc(ses.n)}">Excel</button><button type="button" class="btn" data-act="labSesDatos">Datos de la sesión</button><button type="button" class="btn" data-act="labSesFin">Terminar la sesión</button></div>
     ${proto}</div></section>`;
 }
-/* cada animal nuevo: primero el peso de báscula y después la cámara (UI.pc.pend: el número del animal y su peso, que la
-   ficha le pone a la medición). Si la cámara se cierra sin medir, queda pendiente para medirlo o cambiar el peso. */
-const pendAct=()=>{const x=UI.pc&&UI.pc.pend,ses=PCc().labSes;return x&&ses&&x.ses===ses.n&&Date.now()-x.ts<6*3600e3?x:null;};
-const pendHTML=()=>{const x=pendAct();if(!x)return '';
-  return `<div class="lab-pend"><b><span>Animal</span> <span data-no-tr>${numDe(x.aid)}</span> · <span data-no-tr>${wtxt(x.real)}</span></b><span>Falta medirlo con la cámara.</span>
-    <div class="pc-acts"><button type="button" class="btn pri" data-act="labMedirPend">Medir</button><button type="button" class="btn" data-act="labNuevo" data-cambiar="1">Cambiar el peso</button></div></div>`;};
-ACTS.labNuevo=el=>{const ses=PCc().labSes;if(!ses){formSes(null);return;}const cam=el&&el.dataset&&el.dataset.cambiar&&pendAct();
-  UI.pc.rep=null;const aid=cam?cam.aid:nuevoAnimal(ses);
-  openSheet(shHead(`<span>Animal</span> <span data-no-tr>${numDe(aid)}</span>`,'Peso de báscula')+formWrap('labNuevo',`<p class="hint">Pésalo en la báscula y escribe el peso. Después se abre la cámara para medirlo.</p>
-    ${q('Peso de báscula',inp('kg',cam?kgTxt(cam.real):'',{unit:UW(),xl:true,ph:'—'}))}<input type="hidden" name="aid" value="${esc(aid)}">`,foot('Abrir la cámara')));
-  setTimeout(()=>{const i=$('#sheet [name=kg]');if(i)try{i.focus();}catch(e){}},250);};
-SAVE.labNuevo=f=>{const v=toKg(num(fv(f,'kg')));if(!(v>=40&&v<=1300))return ferr(f,'Escribe el peso de la báscula.');
-  const ses=PCc().labSes;if(!ses)return closeSheet();UI.pc.pend={aid:String(fv(f,'aid')||nuevoAnimal(ses)),real:Math.round(v*10)/10,ses:ses.n,ts:Date.now()};
-  closeSheet();if(location.hash.startsWith('#pclab'))render();setTimeout(medirPend,150);};
-function medirPend(){if(!pendAct())return;UI.pc.modo='ganado';UI.pc.lote='_no';try{localStorage.setItem('rumentis-pc-modo','ganado');}catch(e){}ACTS.pcVivo();}
-ACTS.labMedirPend=()=>medirPend();
-// con una sesión en curso, «Medir» en el peso con cámara también pide el peso primero
-const vivo0=ACTS.pcVivo;
-ACTS.pcVivo=(...a)=>{if(PCc().labSes&&UI.pc&&UI.pc.modo==='ganado'&&!pendAct()&&!(UI.pc.rep&&Date.now()-UI.pc.rep.ts<30*60e3)){closeSheet();ACTS.labNuevo();return;}return vivo0(...a);};
+/* cada animal nuevo: primero la cámara y después, en la ficha, el peso de báscula (en la manga es más fácil así) */
+ACTS.labNuevo=()=>{const ses=PCc().labSes;if(!ses){formSes(null);return;}UI.pc.rep=null;closeSheet();
+  UI.pc.modo='ganado';UI.pc.lote='_no';try{localStorage.setItem('rumentis-pc-modo','ganado');}catch(e){}setTimeout(()=>ACTS.pcVivo(),80);};
 // el peso de báscula de un animal: va a todas sus mediciones de la sesión
 let REAL_A=null;
 ACTS.labRealAnimal=el=>{const aid=el.dataset.aid,ses=PCc().labSes;const R=P.REG().filter(x=>x.aid===aid&&(!ses||x.ses===ses.n));if(!R.length)return;REAL_A=aid;
@@ -307,7 +291,8 @@ const PRU=()=>PCc().pruebas||[];
 const MET_P=[['mix','ARCore · combinado'],['prof','ARCore · profundidad'],['suelo','ARCore · suelo'],['centro','ARCore · mira'],['sensor','Sensor de movimiento']];
 function bloquePrueba(){
   const L=PRU(),L2=L.filter(x=>x.g===3),viejas=L.length-L2.length,ar=P.hayAR&&P.hayAR(),st=MET_P.map(([k,t])=>{const e=L2.map(x=>x.medido&&x.medido[k]>0?x.medido[k]/x.real-1:NaN).filter(esNum);return e.length?[t,e.length,'±'+pc(prom(e.map(Math.abs))),pcs(prom(e))]:null;}).filter(Boolean);
-  return `<section class="sec">${secH('Probar la medida con una persona',L.length||'')}<div class="card pad lab-c">
+  // (opcional y plegado: el trabajo es con ganado)
+  return `<section class="sec"><details class="lab-mas lab-pru"><summary>Prueba opcional con una persona${L.length?` <span data-no-tr>(${L.length})</span>`:''}</summary><div class="card pad lab-c">
     <p class="hint" style="margin:0">Mide a una persona de estatura conocida: la app la calcula con la misma escala que da los centímetros del animal. El error de la estatura es el error de la escala; en el peso, cerca del doble.</p>
     <button type="button" class="btn pri full" data-act="labPrueba" data-v="${ar?'ar':'sensor'}">Probar la medida</button>
     <p class="hint" style="margin:0">${ar?'Con ARCore (la distancia real con la cámara).':'Este teléfono no tiene ARCore: se mide con el sensor de movimiento.'}</p>
@@ -315,7 +300,7 @@ function bloquePrueba(){
     ${viejas?`<p class="hint" style="margin:0"><span>Las pruebas anteriores a la corrección de la perspectiva no cuentan en la tabla:</span> <span data-no-tr>${viejas}</span>. <span>Bórralas y vuelve a probar.</span></p>`:''}
     ${PCc().arG===3&&PCc().arPref&&PCc().arCorr?`<p class="hint" style="margin:0"><span>Con estas pruebas el ganado se mide con</span> <b>${(MET_P.find(m=>m[0]===PCc().arPref[0])||[0,''])[1]}</b>${PCc().arCorr[PCc().arPref[0]]?` · <span>corrección</span> <b data-no-tr>×${nf(PCc().arCorr[PCc().arPref[0]],3)}</b>`:''}.</p>`:''}
     ${L.length?`<div class="rows">${L.slice(-6).reverse().map(x=>`<div class="row pc-reg" data-act="labPruebaVer" data-ts="${x.ts}" role="button">${x.foto?`<img class="pc-th" data-foto="${x.foto}" alt="">`:''}<div class="tx"><b><span>Real</span> <span data-no-tr>${nf(x.real)} cm</span></b><span>${MET_P.filter(([k])=>x.medido&&x.medido[k]>0).map(([k,t])=>`<span>${t}</span> <span data-no-tr>${nf(x.medido[k],1)} cm (${pcs(x.medido[k]/x.real-1)})</span>`).join(' · ')}${x.D?` · <span>a</span> <span data-no-tr>${nf(x.D,2)} m</span>`:''}</span></div></div>`).join('')}</div>
-      <button type="button" class="lnk" data-act="labPruebaBorrar">Borrar las pruebas</button>`:''}</div></section>`;
+      <button type="button" class="lnk" data-act="labPruebaBorrar">Borrar las pruebas</button>`:''}</div></details></section>`;
 }
 let PRUEBA=null;
 ACTS.labPrueba=el=>{const via=el.dataset.v;PRUEBA=via;
@@ -707,11 +692,8 @@ const fichaActiva=r=>!!(r&&r.modo==='ganado'&&r.id&&PCc().labSes);
 function ficha(r){
   const x=buscar(r.id);if(!x)return false;const ses=PCc().labSes,rep=UI.pc.rep&&Date.now()-UI.pc.rep.ts<30*60e3?UI.pc.rep:null;
   // repetir: el mismo animal con sus datos (el peso de báscula es el mismo ese día)
-  const pe=pendAct();
   if(!x.aid||!String(x.aid).startsWith('n:')){if(rep){const cond={...(x.cond||{}),...rep.cond};delete cond.postura;P.actualizarReg(x.id,{aid:rep.aid,real:rep.real||null,cond});}
-    else if(pe)P.actualizarReg(x.id,{aid:pe.aid,real:pe.real});
     else P.actualizarReg(x.id,{aid:nuevoAnimal(ses)});}
-  UI.pc.pend=null;
   const y=buscar(r.id),c=y.cond||{},d=ses.def||{};
   const fijo=DEF_SES.filter(k=>d[k]).map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return `<span>${t}</span>: <span>${txtOpc(L,d[k])}</span>`;}).concat(d.raza?[`<span>Raza</span>: <span data-no-tr>${esc(d.raza)}</span>`]:[]).join(' · ');
   openSheet(shHead(`<span>Animal</span> <span data-no-tr>${numDe(y.aid)}</span>`,`<span data-no-tr>${esc(ses.n)}</span>`)+formWrap('labFicha',`${P.capsHTML(r)}
@@ -719,14 +701,14 @@ function ficha(r){
     ${y.real>0?`<p class="lab-cmp"><span>Báscula</span> <b data-no-tr>${wtxt(y.real)}</b> · <span>cámara</span> <b data-no-tr>${wtxt(r.kg)} (${pcs((r.kg-y.real)/y.real)})</b></p>`:''}
     ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
     ${rep?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>Repetición del mismo animal</span> <span data-no-tr>(${rep.n+1})</span></span></p>`:''}
-    ${q('Peso de báscula',inp('kg',y.real>0?kgTxt(y.real):'',{unit:UW(),xl:true,ph:'—'}),y.real>0?'El que escribiste antes de medir. Corrígelo aquí si hace falta.':'Si todavía no lo pesas, déjalo vacío y anótalo después en el laboratorio.')}
+    ${q('Peso de báscula',inp('kg',y.real>0?kgTxt(y.real):'',{unit:UW(),xl:true,ph:'—'}),y.real>0?'El mismo animal: el peso de báscula de antes. Corrígelo aquí si hace falta.':'Lo que marcó la báscula para este animal.')}
     <details class="lab-mas"><summary>Más datos (opcional)</summary>
     ${FICHA_C.map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return q(t,opts(k,L.map(([v,tt])=>({v,t:tt})),c[k]??'',{allowNone:true}));}).join('')}
     ${q('Perímetro con cinta (referencia)',inp('cinta',c.cinta>0?String(c.cinta):'',{unit:'cm',ph:'—'}))}
     ${q('Notas',`<textarea class="in" name="notas" rows="2" maxlength="400">${esc(c.notas||'')}</textarea>`)}
     <p class="hint lab-fijo">${fijo?`<span>Datos de la sesión:</span> ${fijo}. `:''}<button type="button" class="lnk" data-act="labSesDatos">Cambiar los datos de la sesión</button></p></details>
     <input type="hidden" name="paso" value="">`,`<div class="sh-foot lab-ff"><button type="button" class="btn" data-act="labFichaDesc">Descartar</button><button type="button" class="btn" data-act="labFichaIr" data-v="rep">Repetir este</button><button type="button" class="btn pri" data-act="labFichaIr" data-v="sig">Siguiente animal</button></div>`));
-  FICHA=r.id;return true;
+  FICHA=r.id;setTimeout(()=>{const i=$('#sheet [name=kg]');if(i&&!i.value)try{i.focus();}catch(e){}},300);return true;
 }
 let FICHA=null;
 ACTS.labFichaIr=el=>{const f=el.closest('form');if(!f)return;f.elements.paso.value=el.dataset.v;f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));};
@@ -735,7 +717,8 @@ SAVE.labFicha=f=>{const x=buscar(FICHA);if(!x)return closeSheet();const c={...(x
   for(const [k,lo,hi] of [['cinta',60,320]]){const t=fv(f,k);if(t===''){delete c[k];continue;}const v=num(t);if(!(v>=lo&&v<=hi))return ferr(f,'Revisa el perímetro (en cm).');c[k]=Math.round(v*10)/10;}
   const notas=String(fv(f,'notas')||'').trim().slice(0,400);if(notas)c.notas=notas;else delete c.notas;
   const cambios={cond:Object.keys(c).length?c:null};const kv=fv(f,'kg');
-  if(kv!==''){const v=toKg(num(kv));if(!(v>=40&&v<=1300))return ferr(f,'Revisa el peso de la báscula.');cambios.real=Math.round(v*10)/10;}else cambios.real=null;
+  if(kv!==''){const v=toKg(num(kv));if(!(v>=40&&v<=1300))return ferr(f,'Revisa el peso de la báscula.');cambios.real=Math.round(v*10)/10;}
+  else if(fv(f,'paso')==='sig'||fv(f,'paso')==='rep')return ferr(f,'Escribe el peso de la báscula.');else cambios.real=null;
   P.actualizarReg(x.id,cambios);const paso=fv(f,'paso');FICHA=null;
   const er=cambios.real>0?(x.kg-cambios.real)/cambios.real:null;
   toast(er!=null?`Guardado. Cámara ${wtxt(x.kg)}, báscula ${wtxt(cambios.real)}: ${pcs(er)}`:'Guardado. Falta el peso de báscula.',3500);

@@ -75,7 +75,8 @@ const cfgDe=app=>CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|fals
 
  /* ---------- un disparo, tres vistas ---------- */
  await A.evaluate(()=>{location.hash='#pesocam';});await A.waitForTimeout(300);
- await A.click('[data-act="pcVivo"]');await A.waitForSelector('#sheet form[data-form="pcAlto"]');await A.fill('#sheet [name=alto]','140');await A.click('#sheet .lab-mas>summary');await A.fill('#sheet [name=ref]','175');await A.click('#sheet button[type=submit]');
+ await A.evaluate(()=>PesoCam.guardarPC({refAlto:175}));// (la escala de respaldo con persona ya no se pide en pantalla: sin sensor de movimiento en la prueba)
+ await A.click('[data-act="pcVivo"]');await A.waitForSelector('#sheet form[data-form="pcAlto"]');await A.fill('#sheet [name=alto]','140');await A.click('#sheet button[type=submit]');
  // (sin acelerómetro en la prueba: la escala sale de la persona de referencia, el respaldo)
  await A.waitForSelector('dialog.cv');
  // la administración no pasa al paso "por detrás": las fotos de los otros teléfonos llegan solas

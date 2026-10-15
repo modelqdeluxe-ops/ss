@@ -88,6 +88,8 @@ function NUCLEO(){
      fracciones de la entrada), la que más coincide con ella; sin pista o si ninguna coincide, la más grande dando
      preferencia a la del centro (lo que se apunta). */
   const iouN=(a,b)=>{const ix=Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0])),iy=Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1])),I=ix*iy,U=(a[2]-a[0])*(a[3]-a[1])+(b[2]-b[0])*(b[3]-b[1])-I;return U>0?I/U:0;};
+  // con el animal elegido: la que más coincide con su caja, sin cambiarse a otra
+  function elegirFijo(B,G,pista){let k=-1,m=.02;for(let i=0;i<B.length;i++){const v=iouN(B[i].caja.map(z=>z/G),pista);if(v>m){m=v;k=i;}}return k;}
   function elegir(B,G,pista){
     // B: [{n, caja:[x0,y0,x1,y1] en celdas, cx, cy}]; devuelve el índice
     if(!B.length)return -1;const mx=Math.max(...B.map(b=>b.n));
@@ -98,23 +100,51 @@ function NUCLEO(){
       if(k>=0)return k!==kd&&B[kd].n>2.5*B[k].n&&dC(B[kd])<dC(B[k])?kd:k;}
     return kd;
   }
-  function silueta(M,mw,mh,G,pista){
+  /* opc: {pt:[x,y]} el punto que tocó el usuario (fracciones): la mancha que lo contiene (o la más cercana); {fijo}
+     con pista: el animal elegido; la mancha se recorta a la caja seguida con un margen (en un grupo pegado, la mancha
+     es de varios: así queda el elegido) y se marca recortada si se salía */
+  // cierre morfológico (cuadrado de lado 2r+1, con sumas acumuladas) y relleno de huecos, sobre una máscara 0/1 de G×G
+  function cerrar(b,G,r){const S=new Int32Array((G+1)*(G+1)),suma=(x0,y0,x1,y1)=>S[y1*(G+1)+x1]-S[y0*(G+1)+x1]-S[y1*(G+1)+x0]+S[y0*(G+1)+x0];
+    const acum=()=>{for(let y=0;y<G;y++){let f=0;for(let x=0;x<G;x++){f+=b[y*G+x];S[(y+1)*(G+1)+x+1]=S[y*(G+1)+x+1]+f;}}};
+    acum();const d=new Uint8Array(G*G);for(let y=0;y<G;y++)for(let x=0;x<G;x++)d[y*G+x]=suma(Math.max(0,x-r),Math.max(0,y-r),Math.min(G,x+r+1),Math.min(G,y+r+1))>0?1:0;
+    const orig=b.slice();b.set(d);acum();
+    // erosión (lo de afuera del cuadro cuenta como lleno: no se come el borde); nunca quita lo que el modelo marcó
+    for(let y=0;y<G;y++)for(let x=0;x<G;x++){const x0=Math.max(0,x-r),y0=Math.max(0,y-r),x1=Math.min(G,x+r+1),y1=Math.min(G,y+r+1);b[y*G+x]=orig[y*G+x]||suma(x0,y0,x1,y1)===(x1-x0)*(y1-y0)?1:0;}
+    // huecos: lo vacío que no toca el borde
+    const vis=new Uint8Array(G*G),pila=new Int32Array(G*G);let t=0;
+    for(let i=0;i<G;i++)for(const j of [i,(G-1)*G+i,i*G,i*G+G-1])if(!b[j]&&!vis[j]){vis[j]=1;pila[t++]=j;}
+    while(t){const j=pila[--t],x=j%G,y=(j-x)/G;for(const k of [x>0?j-1:-1,x<G-1?j+1:-1,y>0?j-G:-1,y<G-1?j+G:-1])if(k>=0&&!b[k]&&!vis[k]){vis[k]=1;pila[t++]=k;}}
+    for(let i=0;i<G*G;i++)if(!b[i]&&!vis[i])b[i]=1;}
+  function silueta(M,mw,mh,G,pista,opc){opc=opc||{};
     const v=new Float32Array(G*G);
     for(let y=0;y<G;y++){const fy=Math.min(mh-1,Math.max(0,(y+.5)*mh/G-.5)),a=Math.floor(fy),b=Math.min(mh-1,a+1),ty=fy-a;
       for(let x=0;x<G;x++){const fx=Math.min(mw-1,Math.max(0,(x+.5)*mw/G-.5)),c=Math.floor(fx),d=Math.min(mw-1,c+1),tx=fx-c;
         v[y*G+x]=(M[a*mw+c]*(1-tx)+M[a*mw+d]*tx)*(1-ty)+(M[b*mw+c]*(1-tx)+M[b*mw+d]*tx)*ty;}}
+    // animales (no personas): las barandas del corral tapan franjas angostas del cuerpo; se cierran (dilatar y erosionar
+    // con un cuadrado de r celdas, ~2.5 % del lado) y se rellenan los huecos de adentro, así la silueta queda entera
+    const bin=new Uint8Array(G*G);for(let i=0;i<G*G;i++)bin[i]=v[i]>0?1:0;
+    if(opc.cl&&opc.cl!==1)cerrar(bin,G,Math.max(1,Math.round(G*.025)));
     const lab=new Int32Array(G*G),pila=new Int32Array(G*G),B=[];let id=0;
-    for(let i=0;i<G*G;i++){if(v[i]<=0||lab[i])continue;id++;let n=0,t=0,bx0=G,by0=G,bx1=0,by1=0,sx=0,sy=0;pila[t++]=i;lab[i]=id;
+    for(let i=0;i<G*G;i++){if(!bin[i]||lab[i])continue;id++;let n=0,t=0,bx0=G,by0=G,bx1=0,by1=0,sx=0,sy=0;pila[t++]=i;lab[i]=id;
       while(t){const j=pila[--t];n++;const x=j%G,y=(j-x)/G;sx+=x;sy+=y;if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y;
-        if(x>0&&v[j-1]>0&&!lab[j-1]){lab[j-1]=id;pila[t++]=j-1;}if(x<G-1&&v[j+1]>0&&!lab[j+1]){lab[j+1]=id;pila[t++]=j+1;}
-        if(y>0&&v[j-G]>0&&!lab[j-G]){lab[j-G]=id;pila[t++]=j-G;}if(y<G-1&&v[j+G]>0&&!lab[j+G]){lab[j+G]=id;pila[t++]=j+G;}}
+        if(x>0&&bin[j-1]&&!lab[j-1]){lab[j-1]=id;pila[t++]=j-1;}if(x<G-1&&bin[j+1]&&!lab[j+1]){lab[j+1]=id;pila[t++]=j+1;}
+        if(y>0&&bin[j-G]&&!lab[j-G]){lab[j-G]=id;pila[t++]=j-G;}if(y<G-1&&bin[j+G]&&!lab[j+G]){lab[j+G]=id;pila[t++]=j+G;}}
       B.push({id,n,caja:[bx0,by0,bx1+1,by1+1],cx:sx/n+.5,cy:sy/n+.5});}
-    const kB=elegir(B.filter(b=>b.n>=4),G,pista),Bf=B.filter(b=>b.n>=4),mejor=kB>=0?Bf[kB].id:0,mejorN=kB>=0?Bf[kB].n:0;
+    const Bf=B.filter(b=>b.n>=4);let kB;
+    if(opc.pt){const gx=Math.min(G-1,Math.max(0,Math.floor(opc.pt[0]*G))),gy=Math.min(G-1,Math.max(0,Math.floor(opc.pt[1]*G))),l=lab[gy*G+gx];
+      kB=Bf.findIndex(b=>b.id===l);
+      if(kB<0){let m=.12*G;for(let i=0;i<Bf.length;i++){const b=Bf[i],dx=Math.max(b.caja[0]-gx,0,gx-b.caja[2]),dy=Math.max(b.caja[1]-gy,0,gy-b.caja[3]),d=Math.hypot(dx,dy);if(d<m){m=d;kB=i;}}}}
+    else kB=opc.fijo&&pista?elegirFijo(Bf,G,pista):elegir(Bf,G,pista);
+    let mejor=kB>=0?Bf[kB].id:0,mejorN=kB>=0?Bf[kB].n:0,recortada=false,exceso=1;
+    // el elegido dentro de un grupo: solo lo que cae en la caja seguida, con margen
+    if(mejor&&opc.fijo&&pista&&!opc.pt){const tc=Bf[kB].caja,ap=Math.max(1e-6,(pista[2]-pista[0])*(pista[3]-pista[1]));exceso=(tc[2]-tc[0])*(tc[3]-tc[1])/(G*G)/ap;const mx=(pista[2]-pista[0])*.12+2/G,my=(pista[3]-pista[1])*.12+2/G,c=[Math.floor((pista[0]-mx)*G),Math.floor((pista[1]-my)*G),Math.ceil((pista[2]+mx)*G),Math.ceil((pista[3]+my)*G)];
+      let n=0;for(let i=0;i<G*G;i++){if(lab[i]!==mejor)continue;const x=i%G,y=(i-x)/G;if(x<c[0]||y<c[1]||x>=c[2]||y>=c[3]){lab[i]=-1;recortada=true;}else n++;}
+      mejorN=n;if(!n)mejor=0;}
     if(!mejor)return {ok:false,area:0};
-    const mask=new Uint8Array(G*G),filas=new Uint16Array(G);let x0=G,y0=G,x1=-1,y1=-1,s=0;
-    for(let y=0;y<G;y++){let a=G,b=-1;for(let x=0;x<G;x++){const i=y*G+x;if(lab[i]!==mejor)continue;mask[i]=1;s+=sig(v[i]);if(x<a)a=x;b=x;}
+    const mask=new Uint8Array(G*G),filas=new Uint16Array(G);let x0=G,y0=G,x1=-1,y1=-1,s=0,nPos=0;
+    for(let y=0;y<G;y++){let a=G,b=-1;for(let x=0;x<G;x++){const i=y*G+x;if(lab[i]!==mejor)continue;mask[i]=1;if(v[i]>0){s+=sig(v[i]);nPos++;}if(x<a)a=x;b=x;}
       if(b>=0){filas[y]=b-a+1;if(a<x0)x0=a;if(b>x1)x1=b;if(y<y0)y0=y;y1=y;}}
-    return {ok:mejorN>G*G*.004,area:mejorN,caja:[x0,y0,x1+1,y1+1],filas,mask,conf:s/mejorN,cont:contorno(mask,G)};
+    return {ok:mejorN>G*G*.004,area:mejorN,caja:[x0,y0,x1+1,y1+1],filas,mask,conf:s/Math.max(1,nPos),cont:contorno(mask,G),recortada,exceso};
   }
   // un cuadro: la silueta de cada clase pedida
   /* pose (SimCC): por punto, dos curvas (x e y, a medio píxel de la entrada); el máximo de cada una con una parábola
@@ -129,27 +159,30 @@ function NUCLEO(){
   function cuadro(out,tipo,clases,G){
     const r={G,suj:{}};
     if(tipo==='pose'){r.kp=puntos(out);return r;}
-    const lista=(clases||[]).map(c=>typeof c==='object'&&c?{cl:c.c,p:c.p||null}:{cl:c,p:null});
+    const lista=(clases||[]).map(c=>typeof c==='object'&&c?{cl:c.c,p:c.p||null,o:{pt:c.pt||null,fijo:!!c.fijo,cl:c.c}}:{cl:c,p:null,o:{cl:c}});
     if(tipo==='sem'){
       const o=out.logits,[,C,h,w]=o.dims,L=o.data,n=h*w;
-      for(const {cl,p} of lista){const k=SEM[cl],M=new Float32Array(n);
+      for(const {cl,p,o} of lista){const k=SEM[cl],M=new Float32Array(n);
         for(let i=0;i<n;i++){let m=-1e9;for(let c=0;c<C;c++)if(c!==k&&L[c*n+i]>m)m=L[c*n+i];M[i]=L[k*n+i]-m;}
-        const s=silueta(M,w,h,G,p);s.score=s.ok?s.conf:0;r.suj[cl]=s;}
+        const s=silueta(M,w,h,G,p,o);s.score=s.ok?s.conf:0;r.suj[cl]=s;}
     }else{
       const L=out.labels.data,Q=out.labels.dims[1],C=out.labels.dims[2],Mk=out.masks.data,mw=out.masks.dims[3];
       // la caja (fracciones) de la máscara de una consulta
       const cajaQ=q=>{const o=q*mw*mw;let x0=mw,y0=mw,x1=-1,y1=-1;for(let y=0;y<mw;y++)for(let x=0;x<mw;x++)if(Mk[o+y*mw+x]>0){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}return x1<0?null:[x0/mw,y0/mw,(x1+1)/mw,(y1+1)/mw];};
-      for(const {cl,p} of lista){
+      for(const {cl,p,o} of lista){
         // las consultas de la clase (y, si no hay ninguna clara, de los parecidos)
         let cand=[];for(let i=0;i<Q;i++){const v=sig(L[i*C+cl]);if(v>=.3)cand.push({q:i,sc:v});}
         if(!cand.some(z=>z.sc>=.35)&&PARECIDOS[cl])for(const k of PARECIDOS[cl])for(let i=0;i<Q;i++){const v=sig(L[i*C+k])*.85;if(v>=.3)cand.push({q:i,sc:v});}
         if(!cand.length){let sc=0;for(let i=0;i<Q;i++)sc=Math.max(sc,sig(L[i*C+cl]));r.suj[cl]={ok:false,area:0,score:sc};continue;}
         /* cuál: con pista, la de más puntaje × coincidencia con la caja seguida (sin coincidencia no se usa si hay otra que
            sí); sin pista, la de más puntaje con preferencia por la del centro */
-        let mejor=null,mv=-1;for(const z of cand.sort((a,b)=>b.sc-a.sc).slice(0,8)){const b=cajaQ(z.q);if(!b)continue;
+        // con un punto (el animal que se tocó y se viene siguiendo): la consulta cuya máscara lo contiene
+        const dentro=(q,pt)=>{const x=Math.min(mw-1,Math.max(0,Math.floor(pt[0]*mw))),y=Math.min(mw-1,Math.max(0,Math.floor(pt[1]*mw)));return Mk[q*mw*mw+y*mw+x]>0;};
+        let mejor=null,mv=-1;if(o.pt)for(const z of cand.sort((a,b)=>b.sc-a.sc))if(dentro(z.q,o.pt)){mejor=z;break;}
+        if(!mejor)for(const z of cand.sort((a,b)=>b.sc-a.sc).slice(0,8)){const b=cajaQ(z.q);if(!b)continue;
           const v=p?z.sc*(.15+iouN(b,p)):z.sc*(1-.3*Math.min(1,Math.hypot((b[0]+b[2])/2-.5,(b[1]+b[3])/2-.5)/.71));if(v>mv){mv=v;mejor=z;}}
         if(!mejor)mejor=cand[0];
-        const s=silueta(Mk.subarray(mejor.q*mw*mw,(mejor.q+1)*mw*mw),mw,mw,G,p);s.score=mejor.sc;r.suj[cl]=s;}
+        const s=silueta(Mk.subarray(mejor.q*mw*mw,(mejor.q+1)*mw*mw),mw,mw,G,p,{cl});s.score=mejor.sc;r.suj[cl]=s;}
     }
     return r;
   }
