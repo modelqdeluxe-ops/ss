@@ -67,6 +67,18 @@ function zonaSig(cajas,W,H,act){
   return comoda?act:nueva;
 }
 // la persona de referencia: completa, de pie y de buen tamaño en el cuadro
+/* la distancia al animal sin referencia, con el teléfono en la mano: a una altura conocida h (cm, del suelo al
+   teléfono) y con la inclinación del acelerómetro (elev: grados, negativo = hacia abajo). El punto donde las patas tocan
+   el suelo (yPie, en píxeles del cuadro W×H) está a un ángulo a bajo el horizonte y la distancia por el suelo es
+   h / tan(a). Con ella, la profundidad sobre el eje de la cámara (Z) y los cm por píxel en el plano del animal (Z / f).
+   fovL: el campo de visión del lado largo del cuadro (grados; la cámara principal en 1x ronda 65–70°). Supone suelo
+   plano entre el teléfono y el animal. Devuelve {D (m), Z (cm), cmpx, a (grados)} o null si no se puede. */
+function suelo(yPie,W,H,elev,h,fovL){
+  if(!(h>0)||!(fovL>20)||elev==null||!isFinite(elev)||!(W>0)||!(H>0)||!isFinite(yPie))return null;
+  const f=(Math.max(W,H)/2)/Math.tan(fovL*Math.PI/360),p=-elev*Math.PI/180,a=p+Math.atan((yPie-H/2)/f);
+  if(!(a>2*Math.PI/180&&a<80*Math.PI/180))return null;
+  const Z=h/Math.sin(a)*Math.cos(a-p);return {D:h/Math.tan(a)/100,Z,cmpx:Z/f,a:a*180/Math.PI,f};
+}
 function refOk(p,W,H){if(!p||!p.ok||p.score<REGLAS.score||p.cortada)return false;const c=p.n;
   return dentro(c,REGLAS.margen)&&c[3]-c[1]>=REGLAS.ref.alto&&((c[3]-c[1])*H)/((c[2]-c[0])*W)>=REGLAS.ref.forma;}
 /* hombros de perfil (con los puntos del cuerpo): separación de los dos hombros entre el largo del tronco (hombros a
@@ -213,7 +225,7 @@ function abrir(o){
     let ip=0,activo=true,stream=null,frontal=false,wl=null,tick=0;
     /* la inclinación del teléfono en cada toma (para el laboratorio), con el acelerómetro: elev, hacia dónde apunta la
        cámara (0 = horizontal; negativo = hacia abajo) y horiz, cuánto se ladea la imagen respecto del horizonte (grados) */
-    let GRAV=null;const onMot=e=>{const a=e.accelerationIncludingGravity;if(a&&a.x!=null)GRAV=[a.x,a.y,a.z];};try{window.addEventListener('devicemotion',onMot);}catch(e){}
+    let GRAV=null;const onMot=e=>{const a=e.accelerationIncludingGravity;if(a&&a.x!=null)GRAV=GRAV?GRAV.map((g,i)=>.8*g+.2*[a.x,a.y,a.z][i]):[a.x,a.y,a.z];};try{window.addEventListener('devicemotion',onMot);}catch(e){}
     const telOri=()=>{if(!GRAV)return null;const [x,y,z]=GRAV,n=Math.hypot(x,y,z);if(!(n>3))return null;
       const th=((screen.orientation&&screen.orientation.angle)||+window.orientation||0)*Math.PI/180,up=x*Math.sin(th)+y*Math.cos(th),der=x*Math.cos(th)-y*Math.sin(th);
       const el=Math.asin(Math.max(-1,Math.min(1,-z/n)))*180/Math.PI;return {elev:Math.round((frontal?-el:el)*10)/10,horiz:Math.round(Math.atan2(der,up)*1800/Math.PI)/10};};
@@ -222,10 +234,10 @@ function abrir(o){
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef0).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
         <div class="cv-ind"><span class="cv-pos" hidden><em>Posición</em><span class="cv-pos-b"><i></i></span><b data-no-tr>0 %</b></span><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
-        <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
+        <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span><span class="cv-dist" hidden><em>Distancia</em><b data-no-tr></b></span></div>
       <div class="cam-bar cv-bar"><span class="cv-fps"></span><button type="button" class="cam-disp cv-man" aria-label="Tomar la foto ahora" disabled><i></i></button><button type="button" class="cam-lente cv-gira">Girar cámara</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
-    const $w=s=>w.querySelector(s),tag=w.querySelector('.cv-tag'),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
+    const $w=s=>w.querySelector(s),distEl=w.querySelector('.cv-dist'),tag=w.querySelector('.cv-tag'),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
     const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);try{window.removeEventListener('devicemotion',onMot);}catch(e){}parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
@@ -305,7 +317,8 @@ function abrir(o){
     // (el modelo preciso tardó más de 4 s la vez pasada)
     let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>4000)nTomas=2;}catch(e){}
     const tPre=[];
-    async function precisa(fc,cajas,cR=conRef){
+    async function precisa(fc,cajas,cR=conRef0,req=conRef){
+      // cR: también busca a la persona de referencia (si está, se mide para comparar); req: sin ella la foto no sirve
       try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
         const cl=cR?[o.clase,Vision.PERSONA]:[o.clase];
         const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},cl);
@@ -314,7 +327,8 @@ function abrir(o){
         let r=await una(Zr||todo);
         if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
         tPre.push(performance.now()-t0);
-        if(!r.s||!r.s.ok||(cR&&!refOk(r.p,fc.width,fc.height)))return null;
+        if(!r.s||!r.s.ok||(req&&!refOk(r.p,fc.width,fc.height)))return null;
+        if(r.p&&!refOk(r.p,fc.width,fc.height))r.p=null;
         // (la silueta de la foto no se limpia con los puntos: medido contra siluetas a mano, el modelo preciso sale
         // mejor sin tocar, también en escenas de casa; limpiarla le quitaba cabeza, pies o brazos)
         r.kp=await posePx(fc,r.s.n);
@@ -355,7 +369,7 @@ function abrir(o){
         msg.textContent='Recibiendo las fotos de los otros teléfonos…';w.dataset.estado='';chips({});
         const r=await disp.fotos;if(!activo)return;const hechos=new Set();
         for(const [rol,L] of Object.entries(r.fotos)){const R=Enlace.ROLES[rol],fs=(L||[]).filter(Boolean);if(!R||!fs.length)continue;
-          const tomas=[];for(const f of fs){const fc2=await deFoto(f.blob);if(fc2)tomas.push({fc:fc2,pend:precisa(fc2,[],R.ref)});}
+          const tomas=[];for(const f of fs){const fc2=await deFoto(f.blob);if(fc2)tomas.push({fc:fc2,pend:precisa(fc2,[],R.ref,R.ref)});}
           if(tomas.length){caps.push({id:rol,nombre:R.nombre,remoto:true,banda:R.banda,tomas,fc:tomas[0].fc});hechos.add(rol);}}
         // lo que ya tomó otro teléfono no se pide aquí
         for(let j=pasos.length-1;j>ip;j--)if(hechos.has(pasos[j].id))pasos.splice(j,1);
@@ -404,7 +418,7 @@ function abrir(o){
     const tIni=performance.now(),msR=[],fpsL=[];let procesados=0,fpsAct=0;
     function procesar(r,Z){
       procesados++;if(msR.length<400)msR.push(r.ms);
-      const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
+      const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef0?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
       const now=performance.now();
       if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85&&poseBuena(vis.kp.p))s=limpiarSil(s,vis.kp.p,W,H);
       tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
@@ -425,7 +439,9 @@ function abrir(o){
       if(faltan.length)ev.msg=`Esperando a: ${faltan.join(', ')}`;
       const color=!E.det?'rojo':listo||(listo0&&(PER||faltan.length))?'verde':(E.comp&&E.dist?'ambar':'rojo');
       if(PER){const t=performance.now();if(color!==envio.c||t-envio.t>300){envio={c:color,t};PER.estado({c:color,m:ev.msg,p:+(ev.pos||0).toFixed(2)});}}
-      const med=E.det?medir(s,W,H,p.banda):null;if(med&&conRef&&E.ref)med.refAlto=medir(pr,W,H).alto;
+      const med=E.det?medir(s,W,H,p.banda):null;if(med&&(conRef?E.ref:refOk(pr,W,H)))med.refAlto=medir(pr,W,H).alto;
+      // la distancia al animal (con la altura del teléfono y su inclinación), en vivo
+      if(o.geo){const ori=telOri(),d=E.det&&s&&s.n&&ori?suelo(s.n[3]*H,W,H,ori.elev,o.geo.h,o.geo.fov):null;distEl.hidden=!d;if(d)distEl.lastChild.textContent=`${nf(d.D,1)} m`;w.dataset.dist=d?d.D.toFixed(2):'';}
       ult=E.det&&E.comp&&(!conRef||E.ref)?{s,p:pr,med}:null;man.disabled=!ult;
       vis.s=E.det?s:null;vis.p=pr;vis.color=color;chips(E);w.dataset.estado=color;w.dataset.zona=zona?'si':'no';
       /* un cuadro que falla no reinicia la cuenta si el anterior estaba bien y lo que falló es poco (un temblor de la
@@ -492,5 +508,5 @@ function abrir(o){
     tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });
 }
-window.CamVivo={poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
+window.CamVivo={suelo,poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
 })();

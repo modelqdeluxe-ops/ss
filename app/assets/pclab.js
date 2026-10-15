@@ -248,8 +248,8 @@ function avance(R){
 const PROTOCOLO=['Escoge los animales al azar. Pesa cada uno en la báscula y tómale las fotos en la misma pasada por la manga, o el mismo día antes de que coma.',
   'Anota el peso de báscula en la ficha que sale después de las fotos. Cada animal recibe un número solo: no hace falta arete.',
   'En algunos animales, mide 2 o 3 veces seguidas con «Repetir este»: así se sabe cuánto varía la cámara con el mismo animal.',
-  'El animal parado sobre suelo plano, de costado completo, sin otros animales detrás. La persona de referencia, de pie a su lado.',
-  'Teléfono a 3 a 6 m, a la altura del lomo, derecho y sin zoom. Evita el sol de frente y las sombras fuertes sobre el animal.',
+  'Nadie se acerca al animal: la app calcula la distancia con la altura del teléfono y su inclinación. Mide una vez la altura a la que lo sostienes (a la altura del pecho) y sostenlo siempre así.',
+  'De 3 a 8 m, sin zoom, con las patas del animal a la vista y el suelo más o menos plano entre tú y el animal. Evita el sol de frente y las sombras fuertes sobre el animal.',
   'Que entren animales de todos los tamaños que tengas, de los más livianos a los más pesados: con más rango de peso el ajuste sale mejor.',
   'Al terminar: Exportar la sesión. Se generan archivos ZIP con todas las fotos y datos; compártelos a Drive o a la computadora.'];
 function bloqueSesion(Rm,ses){
@@ -750,6 +750,11 @@ function calcMed(x){
   for(const [k] of FORM){o['kg_'+k]=est[k];o['err_'+k+'_pct']=x.real>0&&est[k]>0?(est[k]-x.real)/x.real*100:NaN;}
   // lo demás medido en las fotos (áreas, distancias entre puntos, forma del otro costado) y unos índices con ello
   const m=x.mx||{};for(const k of MX_K)o[k]=m[k];
+  // la escala: con qué se midió, la distancia y la inclinación de cada ángulo, y la de la persona si se vio (para comparar)
+  const g=x.geo||{},gc=g.costado||{},ga=g.atras||{};
+  o.escala_metodo=g.metodo||null;o.altura_telefono_cm=g.h;o.campo_vision_grados=g.fov;o.distancia_costado_m=gc.D;o.distancia_atras_m=ga.D;
+  o.inclinacion_costado_grados=gc.elev;o.inclinacion_atras_grados=ga.elev;o.ladeo_costado_grados=gc.horiz;o.angulo_patas_costado_grados=gc.a;
+  o.cm_px_costado=g.kCostado;o.cm_px_atras=g.kAtras;o.cm_px_persona=g.kPersona;o.escala_persona_vs_suelo=g.kPersona>0&&g.kCostado>0?g.kPersona/g.kCostado:NaN;
   o.volumen_silueta_l=x.L;o.area_lat_wh2=m.area_lat_cm2/(WH*WH);o.area_lat_x_ancho=m.area_lat_cm2*anc/1000;o.forma_otro_vs_lat=m.forma_otro/m.forma_lat;
   return o;
 }

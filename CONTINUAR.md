@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.31; la beta.28 salió de
+Última actualización: 14 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.32; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.31) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.31) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.32) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.32) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -421,6 +421,23 @@ corporal no la puedo calcular… mete todo parámetro medible posible", "que sea
   área de cada foto) con modelos nuevos en Ajustes (área de costado, área + ancho, área + alzada + fondo, volumen de la
   silueta…) y una hoja **Medidas vs peso** (correlación de cada medida con el peso de báscula, ordenada por R²).
 - Excel de ganado sin columnas de personas (la estatura es `altura_persona_referencia_cm`).
+
+**5.0.0-beta.32: sin persona de referencia.** El dueño: "los animales no son mansos… no podemos tener una persona fija,
+no podemos dejar fijas cámaras, debemos estarnos moviendo… la app debe calcular la distancia del teléfono al objetivo".
+- La escala de ganado sale de la **distancia por el suelo** (`CamVivo.suelo` en camvivo.js): la altura a la que se
+  sostiene el teléfono (`PC().altTel`, se mide una vez; el formulario "Altura del teléfono") y su inclinación
+  (acelerómetro, suavizado) dan el ángulo bajo el horizonte del punto donde las patas tocan el suelo:
+  D = h / tan(a); cm/px = Z / f con Z la profundidad sobre el eje y f del campo de visión del lado largo
+  (`PC().fovTel`, 67° por defecto). Supone suelo plano. La distancia se ve en vivo en la cámara (`.cv-dist`).
+- La persona de referencia ya no se exige en ningún paso de ganado (`ref:false`); si aparece, se mide igual y queda
+  `geo.kPersona` para comparar. Solo es el respaldo si el teléfono no tiene acelerómetro (estatura en "Ajustes de la
+  cámara"). Corregido: el paso preciso descartaba la foto sin persona (`precisa(fc,cajas,cR,req)`).
+- Registro `x.geo` {metodo, h, fov, costado/atras: {D, a, elev, horiz}, kCostado, kAtras, kPersona} y columnas en el
+  Excel (escala_metodo, distancia_*_m, inclinacion_*, angulo_patas, cm_px_*, escala_persona_vs_suelo).
+- Precisión esperada: 1° de error en la inclinación cambia la distancia ~3–5 % y 5 cm en la altura del teléfono ~3.5 %
+  (el peso, cerca del doble). Lo constante (campo de visión, altura mal medida) lo absorbe la calibración con báscula;
+  lo que varía de foto a foto no. Con los datos de la finca se verá. Para menos error: ARCore nativo (medir la
+  distancia con la cámara en profundidad), que pide compilar la beta con Gradle y probar en el teléfono.
 
 ---
 

@@ -116,28 +116,31 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.screenshot({path:'vivo_ganado.png',fullPage:true});
  const pxL=.6*960/359*359/200,LADO={f:'lado',x:.38,y:.9,h:269*(.6*960/359)},REF1={f:'frente',x:.83,y:.93,h:175*pxL};
  const pxA=.6*720/150,ATR={f:'atras',x:.4,y:.85,h:.6*720},REF2={f:'frente',x:.72,y:.9,h:175*pxA};
+ // sin persona de referencia: la distancia sale de la altura del teléfono (140 cm) y su inclinación (acelerómetro: 9.5°
+ // hacia abajo, que con el animal de la escena da la misma escala que tendría la persona de 175 cm)
+ const S=await p.evaluate(()=>{const r=CamVivo.suelo(360,960,720,-20,140,67);return r&&+r.D.toFixed(3);});assert.ok(Math.abs(S-1.4/Math.tan(20*Math.PI/180))<.01,'distancia por el suelo: '+S);
+ await p.evaluate(()=>{const z=9.81*Math.sin(9.47*Math.PI/180),y=9.81*Math.cos(9.47*Math.PI/180);window.__gv=setInterval(()=>window.dispatchEvent(new DeviceMotionEvent('devicemotion',{accelerationIncludingGravity:{x:0,y,z},interval:50})),50);});
  await esc('h',[LADO]);
- await p.click('[data-act="pcVivo"]');await p.waitForSelector('#sheet form[data-form="pcAlto"]');await p.fill('#sheet [name=alto]','175');await p.click('#sheet button[type=submit]');
- await p.waitForSelector('dialog.cv .cv-chip[data-k="ref"]');
- await p.waitForFunction(()=>document.querySelector('.cv-chip[data-k="det"]')?.dataset.s==='ok',null,{timeout:60000});await p.waitForTimeout(800);
- const m2=await p.$eval('.cv-msg',e=>e.textContent);console.log('sin referencia:',m2);assert.ok(/referencia|reference|referência/.test(m2),'pide la persona de referencia');
- await esc('h',[LADO,REF1]);
+ await p.click('[data-act="pcVivo"]');await p.waitForSelector('#sheet form[data-form="pcAlto"]');assert.match(await p.$eval('#sheet',e=>e.textContent),/Altura del teléfono/);
+ await p.fill('#sheet [name=alto]','140');await p.click('#sheet button[type=submit]');
+ await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.dist||0)>0,null,{timeout:60000});const dV=await p.$eval('.cv',e=>+e.dataset.dist);console.log('distancia en vivo',dV,'m');assert.ok(dV>1.8&&dV<3.2,'distancia en vivo');
  await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.estado==='verde',null,{timeout:60000});await p.screenshot({path:'vivo_vaca.png'});
  await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=8,null,{timeout:60000});console.log('puntos de la vaca',await p.$eval('.cv',e=>e.dataset.puntos));
- await paso2();await esc('h',[ATR,REF2]);
+ await paso2();await esc('h',[ATR]);
  // con un solo teléfono, la tercera toma: el otro costado, sin la persona de referencia
  await p.waitForFunction(()=>/(Paso|Step|Passo) 3/.test(document.querySelector('.cv-paso')?.textContent||''),null,{timeout:60000});
  assert.ok(await p.$eval('.cv-chip[data-k="ref"]',e=>e.hidden),'el otro costado no pide la persona de referencia');await esc('h',[LADO]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
  // (modelo v7: alzada y fondo de pecho con los puntos del animal y el tipo de animal; el largo y el alto de la silueta
  // quedan en el registro)
- const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,mx:r.mx,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,etapa:r.etapa};});
+ const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {geo:r.geo,pred:r.pred,kg:r.kg,dims:r.dims,mx:r.mx,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,etapa:r.etapa};});
  console.log('ganado v7',JSON.stringify(G));assert.equal(G.v,7);assert.equal(G.tipo,'euro','usa el tipo elegido');assert.equal(G.etapa,'adulto');
  // el mismo animal como cebú pesa e^(a cebú − a europeo) ≈ 0.62 veces
  const rc=await p.evaluate(()=>{const g=PesoCam.GANADO;return Math.exp(g.a.cebu-g.a.euro);});assert.ok(rc>.55&&rc<.7,'cebú más liviano a igual alzada');
  assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');
  assert.ok(G.dims&&G.dims.WH>100&&G.dims.WH<160&&G.dims.CD>40&&G.dims.CD<100,'alzada y fondo de pecho de un bovino');
  assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');
+ assert.equal(G.geo.metodo,'suelo','escala con la distancia, sin persona');assert.ok(G.geo.costado&&G.geo.costado.D>1.8&&G.geo.costado.D<3.2&&G.geo.h===140,'distancia de costado');assert.ok(!(G.geo.kPersona>0),'sin persona de referencia');
  assert.ok(G.mx&&G.mx.area_lat_cm2>5000&&G.mx.area_lat_cm2<40000&&G.mx.area_atras_cm2>1000&&G.mx.ancho_max_atras_cm>20&&G.mx.forma_otro>0,'áreas y medidas extra de las fotos');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');
  // sin báscula: el perímetro con cinta; y el arete del animal (la app aprende de cada uno)
  await p.fill('#sheet [name=hg]','200');await p.click('#sheet [data-act="pcCinta"]');await p.waitForTimeout(500);
@@ -153,8 +156,8 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
    const hd=await Fotos.url(`pch-${r.id}-0`);let hdW=0;if(hd){const im=new Image();im.src=hd;await im.decode();hdW=im.naturalWidth;}
    return {hdW,cam:r.cam,id:r.id,dq:r.dq,angs:D.angs.map(a=>a.rol+':'+a.tomas.length),pares:D.pares.length,geo:!!(t&&t.M&&t.M.geo),kp:t&&t.kp?t.kp.length:0,cont:t&&t.sil&&t.sil.cont?t.sil.cont.length:0,ref:!!(t&&t.ref&&t.ref.cont),luz:t&&t.luz,cmpx:t&&t.cmpx};});
  console.log('depuración',JSON.stringify(DB));
- assert.ok(DB&&DB.geo&&DB.kp===51&&DB.cont>20&&DB.ref&&DB.luz&&DB.luz.nitidez>0&&DB.cmpx>0,'lo de cada foto queda guardado (silueta, persona, puntos, medidas, luz)');
- assert.ok(DB.hdW>=960&&DB.cam&&DB.cam.vw>0,'foto a resolución completa y datos de la cámara');assert.ok(DB.angs.length===3&&DB.angs.includes('otro:'+DB.angs.find(a=>a.startsWith('otro')).split(':')[1])&&DB.pares>=1&&DB.dq&&DB.dq.tamRef>0&&DB.dq.nitidez>0&&DB.dq.kp>0,'resumen de la toma en el registro');
+ assert.ok(DB&&DB.geo&&DB.kp===51&&DB.cont>20&&DB.luz&&DB.luz.nitidez>0&&DB.cmpx>0,'lo de cada foto queda guardado (silueta, puntos, medidas, luz)');
+ assert.ok(DB.hdW>=960&&DB.cam&&DB.cam.vw>0,'foto a resolución completa y datos de la cámara');assert.ok(DB.angs.length===3&&DB.angs.includes('otro:'+DB.angs.find(a=>a.startsWith('otro')).split(':')[1])&&DB.pares>=1&&DB.dq&&DB.dq.nitidez>0&&DB.dq.kp>0,'resumen de la toma en el registro');
  await p.evaluate(()=>{location.hash='#pclab/registro';});await p.waitForSelector('.lab-tabs');await p.waitForTimeout(300);
  await p.click(`[data-act="pcRegVer"][data-id="${DB.id}"]`);await p.waitForSelector('#sheet .lab-cv');
  await p.waitForFunction(()=>{const c=document.querySelector('#sheet .lab-cv');if(!c||c.width<100)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=400)if(d[i]+d[i+1]+d[i+2]>120)n++;return n>50;},null,{timeout:10000});

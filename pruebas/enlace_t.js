@@ -75,7 +75,8 @@ const cfgDe=app=>CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|fals
 
  /* ---------- un disparo, tres vistas ---------- */
  await A.evaluate(()=>{location.hash='#pesocam';});await A.waitForTimeout(300);
- await A.click('[data-act="pcVivo"]');await A.waitForSelector('#sheet form[data-form="pcAlto"]');await A.fill('#sheet [name=alto]','175');await A.click('#sheet button[type=submit]');
+ await A.click('[data-act="pcVivo"]');await A.waitForSelector('#sheet form[data-form="pcAlto"]');await A.fill('#sheet [name=alto]','140');await A.click('#sheet .lab-mas>summary');await A.fill('#sheet [name=ref]','175');await A.click('#sheet button[type=submit]');
+ // (sin acelerómetro en la prueba: la escala sale de la persona de referencia, el respaldo)
  await A.waitForSelector('dialog.cv');
  // la administración no pasa al paso "por detrás": las fotos de los otros teléfonos llegan solas
  let vioPaso2=false;const vig=setInterval(async()=>{try{const t=await A.$eval('.cv-paso',e=>e.textContent);if(/2 de 2|2 of 2|2 de 2/.test(t)&&!/Recib|Receiv/.test(await A.$eval('.cv-msg',e=>e.textContent)))vioPaso2=true;}catch(e){}},300);
