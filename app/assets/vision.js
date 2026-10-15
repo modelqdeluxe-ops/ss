@@ -83,19 +83,33 @@ function NUCLEO(){
     for(let i=0;i<n;i+=paso){let sx=0,sy=0,c=0;for(let j=-w;j<=w;j++){const k=((i+j)%n+n)%n;sx+=P[2*k];sy+=P[2*k+1];c++;}out.push(sx/c+.5,sy/c+.5);}
     return new Float32Array(out);
   }
-  /* margen (logits, >0 es la clase) de mw×mh llevado a G×G con interpolación bilineal; se queda con la mancha más
-     grande (así no se suma otra persona o un pedazo suelto) */
-  function silueta(M,mw,mh,G){
+  /* margen (logits, >0 es la clase) de mw×mh llevado a G×G con interpolación bilineal; se queda con una sola mancha
+     (así no se suma otra persona, otro animal o un pedazo suelto). Cuál: con pista (la caja que se venía siguiendo, en
+     fracciones de la entrada), la que más coincide con ella; sin pista o si ninguna coincide, la más grande dando
+     preferencia a la del centro (lo que se apunta). */
+  const iouN=(a,b)=>{const ix=Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0])),iy=Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1])),I=ix*iy,U=(a[2]-a[0])*(a[3]-a[1])+(b[2]-b[0])*(b[3]-b[1])-I;return U>0?I/U:0;};
+  function elegir(B,G,pista){
+    // B: [{n, caja:[x0,y0,x1,y1] en celdas, cx, cy}]; devuelve el índice
+    if(!B.length)return -1;const mx=Math.max(...B.map(b=>b.n));
+    const dC=b=>Math.hypot(b.cx/G-.5,b.cy/G-.5)/.71;
+    let kd=0,md=-1;for(let i=0;i<B.length;i++){const b=B[i],v=b.n*(1-.8*Math.min(1,dC(b)));if(v>md){md=v;kd=i;}}
+    if(pista){let k=-1,m=.08;for(let i=0;i<B.length;i++){const b=B[i];if(b.n<mx*.05)continue;const v=iouN(b.caja.map(z=>z/G),pista);if(v>m){m=v;k=i;}}
+      // se sigue la misma, salvo que lo que se apunta ahora (al centro) sea mucho más grande: se cambió de sujeto
+      if(k>=0)return k!==kd&&B[kd].n>2.5*B[k].n&&dC(B[kd])<dC(B[k])?kd:k;}
+    return kd;
+  }
+  function silueta(M,mw,mh,G,pista){
     const v=new Float32Array(G*G);
     for(let y=0;y<G;y++){const fy=Math.min(mh-1,Math.max(0,(y+.5)*mh/G-.5)),a=Math.floor(fy),b=Math.min(mh-1,a+1),ty=fy-a;
       for(let x=0;x<G;x++){const fx=Math.min(mw-1,Math.max(0,(x+.5)*mw/G-.5)),c=Math.floor(fx),d=Math.min(mw-1,c+1),tx=fx-c;
         v[y*G+x]=(M[a*mw+c]*(1-tx)+M[a*mw+d]*tx)*(1-ty)+(M[b*mw+c]*(1-tx)+M[b*mw+d]*tx)*ty;}}
-    const lab=new Int32Array(G*G),pila=new Int32Array(G*G);let mejor=0,mejorN=0,id=0;
-    for(let i=0;i<G*G;i++){if(v[i]<=0||lab[i])continue;id++;let n=0,t=0;pila[t++]=i;lab[i]=id;
-      while(t){const j=pila[--t];n++;const x=j%G,y=(j-x)/G;
+    const lab=new Int32Array(G*G),pila=new Int32Array(G*G),B=[];let id=0;
+    for(let i=0;i<G*G;i++){if(v[i]<=0||lab[i])continue;id++;let n=0,t=0,bx0=G,by0=G,bx1=0,by1=0,sx=0,sy=0;pila[t++]=i;lab[i]=id;
+      while(t){const j=pila[--t];n++;const x=j%G,y=(j-x)/G;sx+=x;sy+=y;if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y;
         if(x>0&&v[j-1]>0&&!lab[j-1]){lab[j-1]=id;pila[t++]=j-1;}if(x<G-1&&v[j+1]>0&&!lab[j+1]){lab[j+1]=id;pila[t++]=j+1;}
         if(y>0&&v[j-G]>0&&!lab[j-G]){lab[j-G]=id;pila[t++]=j-G;}if(y<G-1&&v[j+G]>0&&!lab[j+G]){lab[j+G]=id;pila[t++]=j+G;}}
-      if(n>mejorN){mejorN=n;mejor=id;}}
+      B.push({id,n,caja:[bx0,by0,bx1+1,by1+1],cx:sx/n+.5,cy:sy/n+.5});}
+    const kB=elegir(B.filter(b=>b.n>=4),G,pista),Bf=B.filter(b=>b.n>=4),mejor=kB>=0?Bf[kB].id:0,mejorN=kB>=0?Bf[kB].n:0;
     if(!mejor)return {ok:false,area:0};
     const mask=new Uint8Array(G*G),filas=new Uint16Array(G);let x0=G,y0=G,x1=-1,y1=-1,s=0;
     for(let y=0;y<G;y++){let a=G,b=-1;for(let x=0;x<G;x++){const i=y*G+x;if(lab[i]!==mejor)continue;mask[i]=1;s+=sig(v[i]);if(x<a)a=x;b=x;}
@@ -110,21 +124,32 @@ function NUCLEO(){
   function puntos(out){const X=out.simcc_x,Y=out.simcc_y,K=X.dims[1],nx=X.dims[2],ny=Y.dims[2],kp=new Float32Array(K*3);
     for(let k=0;k<K;k++){const [x,cx]=pico(X.data,k*nx,nx),[y,cy]=pico(Y.data,k*ny,ny);kp[3*k]=(x+.5)/nx;kp[3*k+1]=(y+.5)/ny;kp[3*k+2]=Math.min(cx,cy);}
     return kp;}
+  /* clases: números COCO, o {c, p} con p la pista (la caja del sujeto que se venía siguiendo, en fracciones de la
+     entrada): así se queda con el mismo animal o la misma persona aunque haya otros en la imagen */
   function cuadro(out,tipo,clases,G){
     const r={G,suj:{}};
     if(tipo==='pose'){r.kp=puntos(out);return r;}
+    const lista=(clases||[]).map(c=>typeof c==='object'&&c?{cl:c.c,p:c.p||null}:{cl:c,p:null});
     if(tipo==='sem'){
       const o=out.logits,[,C,h,w]=o.dims,L=o.data,n=h*w;
-      for(const cl of clases){const k=SEM[cl],M=new Float32Array(n);
+      for(const {cl,p} of lista){const k=SEM[cl],M=new Float32Array(n);
         for(let i=0;i<n;i++){let m=-1e9;for(let c=0;c<C;c++)if(c!==k&&L[c*n+i]>m)m=L[c*n+i];M[i]=L[k*n+i]-m;}
-        const s=silueta(M,w,h,G);s.score=s.ok?s.conf:0;r.suj[cl]=s;}
+        const s=silueta(M,w,h,G,p);s.score=s.ok?s.conf:0;r.suj[cl]=s;}
     }else{
       const L=out.labels.data,Q=out.labels.dims[1],C=out.labels.dims[2],Mk=out.masks.data,mw=out.masks.dims[3];
-      for(const cl of clases){let q=-1,sc=0;
-        for(let i=0;i<Q;i++){const v=sig(L[i*C+cl]);if(v>sc){sc=v;q=i;}}
-        if(sc<.35&&PARECIDOS[cl])for(const k of PARECIDOS[cl])for(let i=0;i<Q;i++){const v=sig(L[i*C+k])*.85;if(v>sc){sc=v;q=i;}}
-        if(q<0||sc<.3){r.suj[cl]={ok:false,area:0,score:sc};continue;}
-        const s=silueta(Mk.subarray(q*mw*mw,(q+1)*mw*mw),mw,mw,G);s.score=sc;r.suj[cl]=s;}
+      // la caja (fracciones) de la máscara de una consulta
+      const cajaQ=q=>{const o=q*mw*mw;let x0=mw,y0=mw,x1=-1,y1=-1;for(let y=0;y<mw;y++)for(let x=0;x<mw;x++)if(Mk[o+y*mw+x]>0){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}return x1<0?null:[x0/mw,y0/mw,(x1+1)/mw,(y1+1)/mw];};
+      for(const {cl,p} of lista){
+        // las consultas de la clase (y, si no hay ninguna clara, de los parecidos)
+        let cand=[];for(let i=0;i<Q;i++){const v=sig(L[i*C+cl]);if(v>=.3)cand.push({q:i,sc:v});}
+        if(!cand.some(z=>z.sc>=.35)&&PARECIDOS[cl])for(const k of PARECIDOS[cl])for(let i=0;i<Q;i++){const v=sig(L[i*C+k])*.85;if(v>=.3)cand.push({q:i,sc:v});}
+        if(!cand.length){let sc=0;for(let i=0;i<Q;i++)sc=Math.max(sc,sig(L[i*C+cl]));r.suj[cl]={ok:false,area:0,score:sc};continue;}
+        /* cuál: con pista, la de más puntaje × coincidencia con la caja seguida (sin coincidencia no se usa si hay otra que
+           sí); sin pista, la de más puntaje con preferencia por la del centro */
+        let mejor=null,mv=-1;for(const z of cand.sort((a,b)=>b.sc-a.sc).slice(0,8)){const b=cajaQ(z.q);if(!b)continue;
+          const v=p?z.sc*(.15+iouN(b,p)):z.sc*(1-.3*Math.min(1,Math.hypot((b[0]+b[2])/2-.5,(b[1]+b[3])/2-.5)/.71));if(v>mv){mv=v;mejor=z;}}
+        if(!mejor)mejor=cand[0];
+        const s=silueta(Mk.subarray(mejor.q*mw*mw,(mejor.q+1)*mw*mw),mw,mw,G,p);s.score=mejor.sc;r.suj[cl]=s;}
     }
     return r;
   }

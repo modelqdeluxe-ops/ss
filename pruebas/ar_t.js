@@ -57,6 +57,10 @@ function escena({Hr,D:D0,altoM,yT,yP,cy,fy,mc,off=0}){const h=altoM*100;let mejo
      detener:()=>{}};
  });
  const esc=o=>p.evaluate(o=>{window.__esc=o;},o);
+ // la silueta se queda con el sujeto: sin pista, la mancha del centro aunque otra sea más grande; con pista, la seguida
+ const SEL=await p.evaluate(()=>{const G=64,M=new Float32Array(G*G).fill(-1);const pon=(x0,y0,x1,y1)=>{for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)M[y*G+x]=1;};
+   pon(0,8,22,40);pon(26,20,40,56);const a=Vision.silueta(M,G,G,G),b=Vision.silueta(M,G,G,G,[0,8/G,22/G,40/G]);return {a:a.caja,b:b.caja};});
+ assert.deepEqual(SEL.a,[26,20,40,56],'sin pista: la del centro');assert.deepEqual(SEL.b,[0,8,22,40],'con pista: la que se venía siguiendo');
  // ---------- prueba con persona: ARCore por debajo de la cámara en vivo ----------
  // foto completa 960×1280, f = 1013 px; la persona de 175 cm ocupa 0.625 del alto (800 px), el teléfono a 1.4 m
  const PW=960,PH=1280,fx=1013,hf=.625,EP=escena({Hr:175,altoM:1.4,yT:(.93-hf)*PH,yP:.93*PH,cy:PH/2,fy:fx,mc:10,off:8});

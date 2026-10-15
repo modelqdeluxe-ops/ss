@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.37; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.38; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.37) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.37) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.38) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.38) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -525,6 +525,17 @@ pida el peso en báscula".
   distancia a las patas. A 3–5 m eran 3–5 % de escala que cambia con la distancia.
 - Método «combinado» (`ar-mix`): si la profundidad y el suelo coinciden (±15 %), el promedio de las dos distancias;
   es el primero por defecto (`['mix','suelo','prof','centro']`). Las pruebas con persona pasan a `g:3` / `PC().arG=3`.
+
+**5.0.0-beta.38: la silueta se queda con el sujeto.** El dueño: "a veces selecciona cosas que no, y no a mí o al
+animal". Antes: el modelo rápido se quedaba con la mancha más grande de la clase y el preciso con la consulta de más
+puntaje, aunque fueran otro animal, otra persona o algo del fondo.
+- `vision.js`: `cuadro(out,tipo,clases,G)` acepta `{c, p}` con la pista `p` (la caja seguida, en fracciones de la
+  entrada). Modelo rápido: de las manchas, la que más coincide con la pista; sin pista, la más grande con preferencia
+  por el centro (`elegir`, peso 1 − 0.8·distancia al centro); si lo del centro es 2.5 veces más grande que lo seguido,
+  se cambia (el usuario apuntó a otro). Modelo preciso (RF-DETR): de las consultas de la clase (≥ 0.3), la de más
+  puntaje × (0.15 + IoU con la pista); sin pista, con preferencia por el centro.
+- `camvivo.js`: la pista es la caja del último cuadro bueno (1.2 s; se borra al cambiar de paso); las fotos se miden
+  con la caja que estaba verde y una foto cuya silueta no coincide con ella (IoU < 0.4) no se usa.
 
 ---
 

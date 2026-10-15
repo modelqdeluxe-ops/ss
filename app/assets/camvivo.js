@@ -32,6 +32,8 @@ const dentro=(c,mg)=>c[0]>mg&&c[1]>mg&&c[2]<1-mg&&c[3]<1-mg;
 /* la rejilla G×G de una silueta cubre una zona Z del cuadro W×H (todo el cuadro o un recorte): se anota su caja en
    fracciones del cuadro (n), cuántos píxeles mide cada celda (cx, cy) y si toca un borde de la zona que no es borde
    del cuadro (entonces la zona la cortó) */
+// una caja en fracciones del cuadro (W×H) → en fracciones de la zona Z (la pista para el modelo)
+const enZona=(n,Z,W,H)=>n?[(n[0]*W-Z.x)/Z.w,(n[1]*H-Z.y)/Z.h,(n[2]*W-Z.x)/Z.w,(n[3]*H-Z.y)/Z.h]:null;
 function aCuadro(s,G,Z,W,H){
   if(!s||!s.ok)return s;const [x0,y0,x1,y1]=s.caja;s.G=G;s.Z=Z;s.cx=Z.w/G;s.cy=Z.h/G;
   s.n=[(Z.x+x0*s.cx)/W,(Z.y+y0*s.cy)/H,(Z.x+x1*s.cx)/W,(Z.y+y1*s.cy)/H];
@@ -155,7 +157,7 @@ function limpiarSil(s,P,W,H){
     if(!ok)for(const t of tr)if(dSeg(X,Y,t)<=t[4]){ok=true;break;}
     M[i]=ok?1:-1;if(!ok)quita++;}
   if(!quita)return s;
-  const n=Vision.silueta(M,G,G,G);if(!n.ok)return s;
+  const n=Vision.silueta(M,G,G,G,s.caja.map(z=>z/G));if(!n.ok)return s;
   n.score=s.score;n.conf=s.conf;n.limpia=quita/s.area;return aCuadro(n,G,Z,W,H);
 }
 /* la caja del cuerpo según los puntos (fracciones del cuadro): de la cabeza (sobre los ojos, con la coronilla) a los
@@ -316,7 +318,7 @@ function abrir(o){
     const espejo=persona?Vision.ESPEJO:Vision.ESPEJO_ANIMAL;
     if(!activo)return;w.classList.remove('carga');
     const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
-    let W=0,H=0,hist=[],prev=null,buenos=[],malos=0,ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
+    let W=0,H=0,hist=[],prev=null,pista=null,buenos=[],malos=0,ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
     // el tamaño de trabajo del cuadro (hasta 960 px de lado)
     const medidas=()=>{const vw=v.videoWidth,vh=v.videoHeight,k=Math.min(1,REGLAS.lienzo/Math.max(vw,vh)),w2=Math.round(vw*k),h2=Math.round(vh*k);if(w2!==W||h2!==H){W=w2;H=h2;zona=null;}};
 
@@ -369,14 +371,18 @@ function abrir(o){
     async function precisa(fc,cajas,cR=conRef0,req=conRef){
       // cR: también busca a la persona de referencia (si está, se mide para comparar); req: sin ella la foto no sirve
       try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
-        const cl=cR?[o.clase,Vision.PERSONA]:[o.clase];
-        const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},cl);
+        // con la pista del sujeto (y de la persona de referencia) que se venía siguiendo en el video
+        const cl=Z=>{const a=enZona(cajas[0],Z,fc.width,fc.height),b=cR?enZona(cajas[1],Z,fc.width,fc.height):null;return cR?[a?{c:o.clase,p:a}:o.clase,b?{c:Vision.PERSONA,p:b}:Vision.PERSONA]:[a?{c:o.clase,p:a}:o.clase];};
+        const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},cl(Z));
           return {s:aCuadro(r.suj[o.clase],r.G,Z,fc.width,fc.height),p:cR?aCuadro(r.suj[Vision.PERSONA],r.G,Z,fc.width,fc.height):null};};
         const Zr=zonaDe(cajas,fc.width,fc.height,{margen:.1,min:.3,amin:.5,amax:2}),todo={x:0,y:0,w:fc.width,h:fc.height};
         let r=await una(Zr||todo);
         if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
         tPre.push(performance.now()-t0);
         if(!r.s||!r.s.ok||(req&&!refOk(r.p,fc.width,fc.height)))return null;
+        // la silueta de la foto tiene que ser el mismo sujeto que estaba verde en el video: si el modelo preciso se quedó
+        // con otra cosa (otro animal, una persona, algo del fondo), esa foto no se usa
+        if(cajas[0]&&iou(r.s.n,cajas[0])<.4){r.s.otro=true;return null;}
         if(r.p&&!refOk(r.p,fc.width,fc.height))r.p=null;
         // (la silueta de la foto no se limpia con los puntos: medido contra siluetas a mano, el modelo preciso sale
         // mejor sin tocar, también en escenas de casa; limpiarla le quitaba cabeza, pies o brazos)
@@ -436,7 +442,7 @@ function abrir(o){
         if(faltan.length)toast(`No llegaron las fotos de: ${faltan.join(', ')}`,3500);
       }
       if(ip+1>=pasos.length){terminar();return;}
-      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});hist=[];posEl.hidden=true;w.dataset.estado='';pausa=performance.now()+1500;
+      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});hist=[];pista=null;posEl.hidden=true;w.dataset.estado='';pausa=performance.now()+1500;
     }
     async function terminar(){
       pausa=Infinity;man.disabled=true;chips({});w.dataset.estado='';sub.textContent='';w.classList.add('carga');
@@ -478,6 +484,7 @@ function abrir(o){
     function procesar(r,Z){
       procesados++;if(msR.length<400)msR.push(r.ms);
       const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef0?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
+      if(s&&s.ok&&s.n)pista={n:s.n,t:performance.now()};
       const now=performance.now();
       if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85&&poseBuena(vis.kp.p))s=limpiarSil(s,vis.kp.p,W,H);
       tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
@@ -523,7 +530,9 @@ function abrir(o){
     }
     async function lanzar(){
       vuelo++;const mi=++seq,paso=ip;medidas();const Z=zona||{x:0,y:0,w:W,h:H};let r=null;
-      try{r=await rap.correr(await tomar(Z),clases);fallas=0;}catch(e){console.warn(e);fallas++;}
+      // la pista: la caja del sujeto que se venía siguiendo (así no salta a otro animal, a otra persona o a algo del fondo)
+      const pi=pista&&performance.now()-pista.t<1200?enZona(pista.n,Z,W,H):null,clP=clases.map(c=>c===o.clase&&pi?{c,p:pi}:c);
+      try{r=await rap.correr(await tomar(Z),clP);fallas=0;}catch(e){console.warn(e);fallas++;}
       vuelo--;
       if(!activo)return;
       if(fallas>=3){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.dataset.estado='';man.disabled=true;clearInterval(tick);return;}
