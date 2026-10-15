@@ -66,12 +66,15 @@ import javax.microedition.khronos.opengles.GL10;
    JS -> estado(): "listo" | "instalar" | "revisando" | "no"
          iniciar(json {lado}): arranca (la primera vez puede pedir instalar "Servicios de Google Play para RA");
                                responde window.arIniciado({ok, profundidad} | {instalar} | {error})
-         otro(): pide el cuadro siguiente -> window.arCuadro(jpegBase64, meta)
+         otro(): pide el cuadro siguiente -> window.arCuadro(jpegBase64, meta) (el JPEG sin girar, de iw×ih;
+                 la página lo gira meta.rot grados)
          foto(): pide una foto completa -> window.arFoto(json): la foto en files/fotos/<id>.jpg, la profundidad (mm)
                  con el encuadre de la foto, los intrínsecos, la altura del teléfono sobre el suelo y su inclinación
          detener(): suelta la cámara.
-   meta de cada cuadro: W, H, fx, fy, cx, cy (de ese cuadro), elev y ladeo (grados), alto (m sobre el suelo, si ARCore
-   ya lo encontró), sigue (ARCore está ubicado) y prof {w, h, mm} (la profundidad chica, con el encuadre del cuadro).
+   meta de cada cuadro: W, H, fx, fy, cx, cy (del cuadro ya girado), rot, iw, ih, elev y ladeo (grados), alto (m sobre
+   el suelo, si ARCore ya lo encontró), sigue (ARCore está ubicado) y pd (ARCore ya tiene profundidad). La foto lleva
+   además prof y praw {w, h, mm}: la profundidad (suavizada, y la cruda solo con los puntos de confianza) con el encuadre
+   de la foto.
    La sesión corre en un GLSurfaceView de 2×2 px detrás de la WebView (ARCore necesita un contexto GL). */
 public class ArPuente implements GLSurfaceView.Renderer {
     private static WeakReference<WebView> web = new WeakReference<WebView>(null);
@@ -211,6 +214,7 @@ public class ArPuente implements GLSurfaceView.Renderer {
         } catch (Throwable e) {
         }
         try { camId = session.getCameraConfig().getCameraId(); } catch (Throwable e) { camId = null; }
+        sensorRot = -1;
         Config c = new Config(session);
         profundidad = session.isDepthModeSupported(Config.DepthMode.AUTOMATIC);
         if (profundidad) c.setDepthMode(Config.DepthMode.AUTOMATIC);
@@ -263,16 +267,21 @@ public class ArPuente implements GLSurfaceView.Renderer {
     }
 
     /* cuántos grados (sentido del reloj) hay que girar la imagen de la cámara para verla como en la pantalla */
+    private int sensorRot = -1;
     private int rotacionImagen() {
-        int sensor = 90;
-        try {
-            CameraManager cm = (CameraManager) act.getSystemService(Context.CAMERA_SERVICE);
-            if (camId != null) {
-                Integer s = cm.getCameraCharacteristics(camId).get(CameraCharacteristics.SENSOR_ORIENTATION);
-                if (s != null) sensor = s;
+        // la orientación del sensor se lee una vez (pedirla en cada cuadro es lento)
+        if (sensorRot < 0) {
+            sensorRot = 90;
+            try {
+                CameraManager cm = (CameraManager) act.getSystemService(Context.CAMERA_SERVICE);
+                if (camId != null) {
+                    Integer s = cm.getCameraCharacteristics(camId).get(CameraCharacteristics.SENSOR_ORIENTATION);
+                    if (s != null) sensorRot = s;
+                }
+            } catch (Throwable e) {
             }
-        } catch (Throwable e) {
         }
+        int sensor = sensorRot;
         int pant = 0;
         switch (rotacionPantalla()) {
             case Surface.ROTATION_90: pant = 90; break;
@@ -317,38 +326,48 @@ public class ArPuente implements GLSurfaceView.Renderer {
         o.put("fx", r[0]); o.put("fy", r[1]); o.put("cx", r[2]); o.put("cy", r[3]);
         o.put("W", rot % 180 == 0 ? w2 : h2); o.put("H", rot % 180 == 0 ? h2 : w2);
         o.put("rot", rot);
-        if (!profundidad) return;
-        Image dep = null;
+        if (!profundidad || GW <= 0) return;
+        Image dep = null, raw = null, conf = null;
         try {
             dep = f.acquireDepthImage16Bits();
             int dw = dep.getWidth(), dh = dep.getHeight();
-            Image.Plane pl = dep.getPlanes()[0];
-            ByteBuffer bb = pl.getBuffer().order(ByteOrder.LITTLE_ENDIAN);
-            int rs = pl.getRowStride(), px = pl.getPixelStride();
-            short[] d = new short[dw * dh];
-            for (int yy = 0; yy < dh; yy++) for (int xx = 0; xx < dw; xx++) d[yy * dw + xx] = bb.getShort(yy * rs + xx * px);
+            short[] d = leer16(dep);
             dep.close(); dep = null;
-            // la profundidad va con la textura de la cámara: cada celda de la rejilla (en píxeles de la imagen) se
-            // lleva a coordenadas de la textura con ARCore y ahí se lee
+            // la cruda (sin rellenar ni suavizar) con su confianza: solo los puntos que ARCore midió de verdad
+            short[] dr = null;
+            try {
+                raw = f.acquireRawDepthImage16Bits(); conf = f.acquireRawDepthConfidenceImage();
+                if (raw.getWidth() == dw && raw.getHeight() == dh && conf.getWidth() == dw && conf.getHeight() == dh) {
+                    dr = leer16(raw);
+                    Image.Plane pc = conf.getPlanes()[0];
+                    ByteBuffer cb = pc.getBuffer();
+                    int crs = pc.getRowStride(), cps = pc.getPixelStride();
+                    for (int yy = 0; yy < dh; yy++) for (int xx = 0; xx < dw; xx++)
+                        if ((cb.get(yy * crs + xx * cps) & 0xff) < CONF_MIN) dr[yy * dw + xx] = 0;
+                }
+            } catch (Throwable e) {
+                dr = null;
+            } finally {
+                if (raw != null) try { raw.close(); } catch (Throwable e) { }
+                if (conf != null) try { conf.close(); } catch (Throwable e) { }
+                raw = null; conf = null;
+            }
+            /* la profundidad va con la textura de la cámara: cada celda de la rejilla (en píxeles de la imagen CPU) se
+               lleva a coordenadas normalizadas de la textura con ARCore y ahí se lee (como en la guía de Depth) */
             int GH = Math.max(1, Math.round((float) GW * H / W));
             FloatBuffer pin = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
             FloatBuffer pout = ByteBuffer.allocateDirect(GW * GH * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
             for (int j = 0; j < GH; j++) for (int i = 0; i < GW; i++) { pin.put((i + .5f) * W / GW); pin.put((j + .5f) * H / GH); }
             pin.position(0);
             f.transformCoordinates2d(Coordinates2d.IMAGE_PIXELS, pin, Coordinates2d.TEXTURE_NORMALIZED, pout);
-            short[] al = new short[GW * GH];
+            int[] idx = new int[GW * GH];
             for (int q = 0; q < GW * GH; q++) {
-                int xx = (int) (pout.get(2 * q) * dw), yy = (int) (pout.get(2 * q + 1) * dh);
-                al[q] = xx >= 0 && yy >= 0 && xx < dw && yy < dh ? d[yy * dw + xx] : 0;
+                float tx = pout.get(2 * q), ty = pout.get(2 * q + 1);
+                int xx = (int) (tx * dw), yy = (int) (ty * dh);
+                idx[q] = tx >= 0 && ty >= 0 && xx >= 0 && yy >= 0 && xx < dw && yy < dh ? yy * dw + xx : -1;
             }
-            int[] nd = new int[2];
-            short[] gg = girar(al, GW, GH, rot, nd);
-            ByteBuffer out = ByteBuffer.allocate(gg.length * 2).order(ByteOrder.LITTLE_ENDIAN);
-            for (short v : gg) out.putShort(v);
-            JSONObject jd = new JSONObject();
-            jd.put("w", nd[0]); jd.put("h", nd[1]); jd.put("mm", Base64.encodeToString(out.array(), Base64.NO_WRAP));
-            jd.put("orig", dw + "x" + dh);
-            o.put("prof", jd);
+            o.put("prof", rejilla(d, idx, GW, GH, rot, dw + "x" + dh));
+            if (dr != null) o.put("praw", rejilla(dr, idx, GW, GH, rot, dw + "x" + dh));
         } catch (NotYetAvailableException e) {
             // ARCore todavía no tiene la profundidad (necesita que el teléfono se mueva un poco)
         } finally {
@@ -356,26 +375,73 @@ public class ArPuente implements GLSurfaceView.Renderer {
         }
     }
 
-    /* un cuadro chico para la silueta en vivo */
+    private static final int CONF_MIN = 128;
+
+    private static short[] leer16(Image im) {
+        int w = im.getWidth(), h = im.getHeight();
+        Image.Plane pl = im.getPlanes()[0];
+        ByteBuffer bb = pl.getBuffer().order(ByteOrder.LITTLE_ENDIAN);
+        int rs = pl.getRowStride(), px = pl.getPixelStride();
+        short[] d = new short[w * h];
+        for (int yy = 0; yy < h; yy++) for (int xx = 0; xx < w; xx++) d[yy * w + xx] = bb.getShort(yy * rs + xx * px);
+        return d;
+    }
+
+    private static JSONObject rejilla(short[] d, int[] idx, int GW, int GH, int rot, String orig) throws Exception {
+        short[] al = new short[GW * GH];
+        for (int q = 0; q < GW * GH; q++) al[q] = idx[q] >= 0 ? d[idx[q]] : 0;
+        int[] nd = new int[2];
+        short[] gg = girar(al, GW, GH, rot, nd);
+        ByteBuffer out = ByteBuffer.allocate(gg.length * 2).order(ByteOrder.LITTLE_ENDIAN);
+        for (short v : gg) out.putShort(v);
+        JSONObject jd = new JSONObject();
+        jd.put("w", nd[0]); jd.put("h", nd[1]); jd.put("mm", Base64.encodeToString(out.array(), Base64.NO_WRAP));
+        jd.put("orig", orig);
+        return jd;
+    }
+
+    /* si ARCore ya tiene profundidad (para la página: listo para medir) */
+    private boolean hayProf(Frame f) {
+        if (!profundidad) return false;
+        Image im = null;
+        try { im = f.acquireDepthImage16Bits(); return true; } catch (Throwable e) { return false; }
+        finally { if (im != null) try { im.close(); } catch (Throwable e) { } }
+    }
+
+    /* un cuadro chico para la silueta en vivo. En el hilo de GL solo se copian los planos de la imagen (rápido) y lo
+       que sabe ARCore; el JPEG se arma en otro hilo, sin girar (lo gira la página al dibujarlo: meta.rot). Mientras se
+       arma uno no se pide otro. */
+    private volatile boolean armando = false;
+    private int nCuadro = 0;
+    private boolean ultProf = false;
     private boolean cuadro(Frame f, Camera cam) {
+        if (armando) return false;
         Image img = null;
         try {
             img = f.acquireCameraImage();
             final int W = img.getWidth(), H = img.getHeight();
             final float k = Math.min(1f, (float) lado / Math.max(W, H));
             final int w2 = Math.round(W * k) & ~1, h2 = Math.round(H * k) & ~1;
-            final byte[] nv = nv21(img, w2, h2);
+            final Planos pl = new Planos(img);
             img.close(); img = null;
             final int rot = rotacionImagen();
             final JSONObject o = new JSONObject();
-            datos(o, f, cam, W, H, (float) w2 / W, rot, 48);
+            datos(o, f, cam, W, H, (float) w2 / W, rot, 0);
+            if ((nCuadro++ % 10) == 0) ultProf = hayProf(f);
+            o.put("pd", ultProf);
+            o.put("iw", w2); o.put("ih", h2);
+            armando = true;
             hilo.execute(new Runnable() { @Override public void run() {
                 try {
-                    byte[] jpg = jpeg(nv, w2, h2, rot, 72);
-                    final String js = "window.arCuadro&&window.arCuadro('" + Base64.encodeToString(jpg, Base64.NO_WRAP) + "'," + o.toString() + ")";
-                    js(js);
+                    byte[] nv = pl.nv21(w2, h2);
+                    YuvImage y = new YuvImage(nv, ImageFormat.NV21, w2, h2, null);
+                    ByteArrayOutputStream bo = new ByteArrayOutputStream(64 * 1024);
+                    y.compressToJpeg(new Rect(0, 0, w2, h2), 70, bo);
+                    js("window.arCuadro&&window.arCuadro('" + Base64.encodeToString(bo.toByteArray(), Base64.NO_WRAP) + "'," + o.toString() + ")");
                 } catch (Throwable e) {
                     pedirCuadro = true;
+                } finally {
+                    armando = false;
                 }
             } });
             return true;
@@ -385,6 +451,38 @@ public class ArPuente implements GLSurfaceView.Renderer {
             return false;
         } finally {
             if (img != null) try { img.close(); } catch (Throwable e) { }
+        }
+    }
+
+    /* los planos YUV_420_888 copiados de una vez (la imagen se suelta enseguida) y pasados a NV21 de w2×h2 */
+    private static final class Planos {
+        final int W, H, yr, yp, ur, up, vr, vp;
+        final byte[] y, u, v;
+        Planos(Image img) {
+            W = img.getWidth(); H = img.getHeight();
+            Image.Plane[] p = img.getPlanes();
+            yr = p[0].getRowStride(); yp = p[0].getPixelStride();
+            ur = p[1].getRowStride(); up = p[1].getPixelStride();
+            vr = p[2].getRowStride(); vp = p[2].getPixelStride();
+            y = copiar(p[0].getBuffer()); u = copiar(p[1].getBuffer()); v = copiar(p[2].getBuffer());
+        }
+        private static byte[] copiar(ByteBuffer b) { b.rewind(); byte[] a = new byte[b.remaining()]; b.get(a); return a; }
+        byte[] nv21(int w2, int h2) {
+            byte[] out = new byte[w2 * h2 * 3 / 2];
+            int pos = 0;
+            int[] sx = new int[w2];
+            for (int c = 0; c < w2; c++) sx[c] = (int) ((long) c * W / w2) * yp;
+            for (int r = 0; r < h2; r++) { int base = (int) ((long) r * H / h2) * yr; for (int c = 0; c < w2; c++) out[pos++] = y[base + sx[c]]; }
+            for (int r = 0; r < h2 / 2; r++) {
+                int cy = (int) ((long) r * 2 * H / h2) / 2;
+                for (int c = 0; c < w2 / 2; c++) {
+                    int cx = (int) ((long) c * 2 * W / w2) / 2;
+                    int iv = cy * vr + cx * vp, iu = cy * ur + cx * up;
+                    out[pos++] = iv < v.length ? v[iv] : (byte) 128;
+                    out[pos++] = iu < u.length ? u[iu] : (byte) 128;
+                }
+            }
+            return out;
         }
     }
 

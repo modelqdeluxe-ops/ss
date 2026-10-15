@@ -1,7 +1,7 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.35; la beta.28 salió de
+Última actualización: 15 oct 2026. Rama de trabajo: `claude/happy-ritchie-u6007w` (beta.36; la beta.28 salió de
 `claude/new-session-fdysl6`). Si el dueño indica otra rama, usa esa.
 
 ---
@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.35) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.35) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.36) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.36) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -492,6 +492,31 @@ horizontal con la mira gigante y los botones tapados). Ya no hay `ArActivity` ni
   profundidad, 174 suelo), la caída al sensor (176.2) y el ganado con 3 tomas (`ar-suelo`, Excel).
 - Para revisar en el teléfono: que la imagen salga derecha en vertical (`rotacionImagen`/`girar`), los cuadros por
   segundo (el JPEG viaja en base64 por el puente) y que la foto automática llegue al ponerse verde.
+
+**5.0.0-beta.36: perspectiva exacta, peso de báscula primero, cámara más rápida, profundidad cruda.** Pruebas reales
+con beta.35 (persona de 180 cm, 1.8–2.6 m): suelo −4.0 a +9.9 % (±4.6 %, sesgo +2.5 %); profundidad +330, +63, +104,
+−16 % (basura). El dueño: "la cámara me va super lenta… que el modelo no se equivoque… que antes de abrir la cámara me
+pida el peso en báscula".
+- **Perspectiva** (la causa del error del suelo): la escala era Z/f con Z la profundidad de las patas. Con el teléfono
+  inclinado hacia abajo lo de arriba del cuerpo queda más cerca y la escala sale grande: +5 % a 10°, +8–10 % a 15°
+  (justo lo que se vio). Ahora cada método da la distancia **horizontal** D al plano del cuerpo y la escala es el alto
+  real de la caja (`CamVivo.escPlano(D,p,yTop,yPie,cy,fy)` = D·(tan(p+atan((yPie−cy)/fy)) − tan(p+atan((yTop−cy)/fy))))
+  entre su alto en píxeles. Suelo: D = alto/tan(ángulo a las patas); profundidad: la del eje en las filas del cuerpo,
+  más medio cuerpo, pasada a horizontal; mira: (centro + medio cuerpo)·cos p. También el sensor sin ARCore
+  (`CamVivo.suelo(…, yTop)`). Las pruebas con persona llevan `g:2`; `ajusteAR` y la tabla solo usan esas (`PC().arG=2`),
+  las viejas se muestran con un aviso.
+- **Profundidad**: la foto trae `prof` (suavizada) y `praw` (cruda, solo puntos con confianza ≥ 128 de
+  `acquireRawDepthConfidenceImage`); `escalaAR` usa la cruda si hay ≥ 8 puntos en el cuerpo, si no la suavizada
+  (`profTipo`). No se usa si discrepa > 15 % del suelo. Cada foto guarda su meta de ARCore (`pcz-<id>-<ángulo>-<toma>`,
+  con las dos profundidades) y va al ZIP como `<ángulo>_tN_arcore.json` para revisar la profundidad después.
+- **Cámara**: el cuadro en vivo ya no lleva profundidad (`pd`: ya la hay), el JPEG sale sin girar (lo gira la página
+  con `setTransform` según `meta.rot`), los planos YUV se copian de una vez y el JPEG se arma en otro hilo (sin pedir
+  otro mientras), la orientación del sensor se lee una vez; la página pide el siguiente cuadro al recibir uno (no al
+  terminar de dibujarlo + 50 ms), decodifica con `createImageBitmap` y salta los atrasados.
+- **Recolección**: «Nuevo animal» (arriba en el laboratorio) pide el **peso de báscula** y abre la cámara
+  (`UI.pc.pend` {aid, real}); la ficha trae el peso y la comparación báscula/cámara; «Siguiente animal» vuelve a pedir
+  el peso; «Repetir este» mide otra vez con el mismo. Si la cámara se cierra sin medir, el animal queda pendiente
+  («Medir» / «Cambiar el peso»). Con sesión, «Medir» del peso con cámara también pide el peso primero.
 
 ---
 

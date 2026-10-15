@@ -73,11 +73,20 @@ function zonaSig(cajas,W,H,act){
    h / tan(a). Con ella, la profundidad sobre el eje de la cámara (Z) y los cm por píxel en el plano del animal (Z / f).
    fovL: el campo de visión del lado largo del cuadro (grados; la cámara principal en 1x ronda 65–70°). Supone suelo
    plano entre el teléfono y el animal. Devuelve {D (m), Z (cm), cmpx, a (grados)} o null si no se puede. */
-function suelo(yPie,W,H,elev,h,fovL){
+/* la escala (cm por píxel) de un cuerpo de pie a D cm (en horizontal) del teléfono, inclinado p rad hacia abajo: el
+   alto real de la caja (de las patas, yPie, a lo más alto, yTop; filas de la imagen) entre su alto en píxeles, con la
+   perspectiva exacta. Con la profundidad de un solo punto (Z/f) la escala sale grande cuando el teléfono mira hacia
+   abajo: +5 % a 10°, +8 a 10 % a 15° (lo de arriba del cuerpo queda más cerca de la cámara que las patas). */
+function escPlano(D,p,yTop,yPie,cy,fy){
+  if(!(D>0)||!(fy>0)||!isFinite(p)||!isFinite(yTop)||!isFinite(yPie)||!(yPie-yTop>4))return null;
+  const t=y=>Math.tan(p+Math.atan((y-cy)/fy)),h=D*(t(yPie)-t(yTop));return h>0?h/(yPie-yTop):null;
+}
+function suelo(yPie,W,H,elev,h,fovL,yTop){
   if(!(h>0)||!(fovL>20)||elev==null||!isFinite(elev)||!(W>0)||!(H>0)||!isFinite(yPie))return null;
   const f=(Math.max(W,H)/2)/Math.tan(fovL*Math.PI/360),p=-elev*Math.PI/180,a=p+Math.atan((yPie-H/2)/f);
   if(!(a>2*Math.PI/180&&a<80*Math.PI/180))return null;
-  const Z=h/Math.sin(a)*Math.cos(a-p);return {D:h/Math.tan(a)/100,Z,cmpx:Z/f,a:a*180/Math.PI,f};
+  const Z=h/Math.sin(a)*Math.cos(a-p),D=h/Math.tan(a),k=isFinite(yTop)?escPlano(D,p,yTop,yPie,H/2,f):null;
+  return {D:D/100,Z,cmpx:k||Z/f,a:a*180/Math.PI,f};
 }
 function refOk(p,W,H){if(!p||!p.ok||p.score<REGLAS.score||p.cortada)return false;const c=p.n;
   return dentro(c,REGLAS.margen)&&c[3]-c[1]>=REGLAS.ref.alto&&((c[3]-c[1])*H)/((c[2]-c[0])*W)>=REGLAS.ref.forma;}
@@ -253,21 +262,32 @@ function abrir(o){
     const fotoAR=()=>new Promise(ok=>{let hecho=false;const fin_=x=>{if(!hecho){hecho=true;ok(x);}};arEsp.push(fin_);try{Ar.foto();}catch(e){fin_(null);}setTimeout(()=>fin_(null),6000);});
     const cargarFoto=async id=>{try{const u=await Fotos.url(id);if(!u)return null;const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c;}catch(e){return null;}};
     // listo para medir: ARCore ubicado y con el suelo encontrado (o con profundidad)
-    const arListo=()=>!!(arMeta&&arMeta.sigue&&(arMeta.alto>0||arMeta.prof));
+    const arListo=()=>!!(arMeta&&arMeta.sigue&&(arMeta.alto>0||arMeta.pd||arMeta.prof));
     // la distancia (m) por el suelo de ARCore, con la caja de la silueta (fracciones del cuadro)
     const distAR=(n,m)=>{if(!m||!(m.alto>0)||!n)return null;const p=-m.elev*Math.PI/180,a=p+Math.atan((n[3]*m.H-m.cy)/m.fy);return a>.035&&a<1.4?m.alto/Math.tan(a):null;};
     async function abrirAR(){
       const c=document.createElement('canvas');c.width=640;c.height=480;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,640,480);arMeta=null;
-      window.arCuadro=async(b64,meta)=>{if(!activo)return;try{const bl=await (await fetch('data:image/jpeg;base64,'+b64)).blob(),bm=await createImageBitmap(bl);
-        if(c.width!==bm.width||c.height!==bm.height){c.width=bm.width;c.height=bm.height;}g.drawImage(bm,0,0);try{bm.close();}catch(e){}arMeta=meta;}catch(e){}
-        // el siguiente cuadro, a lo más ~15 por segundo (el teléfono también corre los modelos)
-        if(activo)setTimeout(()=>{if(activo)try{Ar.otro();}catch(e){}},50);};
+      /* cada cuadro llega como JPEG sin girar: se pide el siguiente enseguida (el teléfono lo arma mientras este se
+         decodifica), se decodifica fuera del hilo principal y se dibuja girado meta.rot grados. Si llega uno nuevo
+         mientras se decodifica otro, el viejo se salta. */
+      let ultPide=0,deco=0;
+      const pedir=()=>{if(!activo)return;const t=performance.now(),d=Math.max(0,45-(t-ultPide));setTimeout(()=>{if(!activo)return;ultPide=performance.now();try{Ar.otro();}catch(e){}},d);};
+      let ultLlega=performance.now();
+      // si un cuadro se pierde en el camino, se vuelve a pedir (la cámara no se queda congelada)
+      const vig=setInterval(()=>{if(!activo||arFallo){clearInterval(vig);return;}if(performance.now()-ultLlega>1500){ultLlega=performance.now();try{Ar.otro();}catch(e){}}},500);
+      window.arCuadro=async(b64,meta)=>{if(!activo)return;ultLlega=performance.now();pedir();const mi=++deco;
+        try{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+          const bm=await createImageBitmap(new Blob([u],{type:'image/jpeg'}));if(mi!==deco||!activo){try{bm.close();}catch(e){}return;}
+          const rot=((meta&&meta.rot)|0)%360,Wc=rot%180?bm.height:bm.width,Hc=rot%180?bm.width:bm.height;
+          if(c.width!==Wc||c.height!==Hc){c.width=Wc;c.height=Hc;}
+          g.setTransform(...(rot===90?[0,1,-1,0,Wc,0]:rot===180?[-1,0,0,-1,Wc,Hc]:rot===270?[0,-1,1,0,0,Hc]:[1,0,0,1,0,0]));g.drawImage(bm,0,0);g.setTransform(1,0,0,1,0,0);
+          try{bm.close();}catch(e){}arMeta=meta;}catch(e){}};
       const r=await new Promise(ok=>{let hecho=false;const fin_=x=>{if(!hecho){hecho=true;ok(x);}};window.arIniciado=j=>{let x={};try{x=JSON.parse(j);}catch(e){}fin_(x);};
         try{Ar.iniciar(JSON.stringify({lado:640}));}catch(e){fin_({error:'puente'});}setTimeout(()=>fin_({error:'tiempo'}),15000);});
       if(!r.ok)throw new Error(r.instalar?'instalar':r.error||'ar');
       try{Ar.otro();}catch(e){}const t0=performance.now();while(!arMeta&&activo&&performance.now()-t0<8000)await new Promise(z=>setTimeout(z,100));
       if(!arMeta){try{Ar.detener();}catch(e){}throw new Error('sin-cuadros');}
-      stream=c.captureStream(15);v.srcObject=stream;try{await v.play();}catch(e){}arUsa=true;w.classList.remove('espejo');$w('.cv-gira').hidden=true;
+      stream=c.captureStream(24);v.srcObject=stream;try{await v.play();}catch(e){}arUsa=true;w.classList.remove('espejo');$w('.cv-gira').hidden=true;
     }
     async function abrirCam(){parar();
       if(arPide&&!arFallo){try{await abrirAR();return;}catch(e){arFallo=String(e&&e.message||e);arUsa=false;
@@ -449,7 +469,7 @@ function abrir(o){
         try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}beep();w.classList.add('flash');setTimeout(()=>w.classList.remove('flash'),260);
         await PER.enviar(id,fotos);});
       // si se cae la conexión con la administración, la cámara se cierra
-      const vig=setInterval(()=>{if(!activo){clearInterval(vig);return;}if(!PER.vivo()){clearInterval(vig);msg.textContent='Se perdió la conexión con la administración.';setTimeout(()=>fin(null),2500);}},1000);
+      const vig=setInterval(()=>{if(!activo||arFallo){clearInterval(vig);return;}if(!PER.vivo()){clearInterval(vig);msg.textContent='Se perdió la conexión con la administración.';setTimeout(()=>fin(null),2500);}},1000);
     }
 
     /* ---------- un resultado del modelo rápido ---------- */
@@ -573,5 +593,5 @@ async function medirFoto(fc,o){
     img=c2.toDataURL('image/jpeg',.85);}catch(e){img=fc.toDataURL('image/jpeg',.8);}
   return {med:medir(s,W,H,o.banda),sil:s,ref:null,kp,W,H,fc,img};
 }
-window.CamVivo={medirFoto,suelo,poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
+window.CamVivo={medirFoto,suelo,escPlano,poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
 })();

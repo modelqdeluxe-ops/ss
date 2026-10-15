@@ -1,6 +1,6 @@
 // Rumentis Beta: la recolección de datos en la finca (muestreo al azar, sin arete y sin lote). Sin cámara: las
 // mediciones se arman con medidas sintéticas y fotos de prueba. Comprueba la sesión con sus datos fijos, la ficha de
-// cada animal (número automático, báscula, Repetir este, Guardar y medir otro, Descartar), el avance de la sesión, el
+// cada animal (Nuevo animal: peso de báscula primero y después la cámara; número automático, Repetir este, Siguiente animal, Descartar), el avance de la sesión, el
 // peso de báscula anotado después, el Excel (todas las hojas, cálculos y ajustes) y el ZIP por partes con las fotos.
 // Usa 8111. Escribe recoleccion.xlsx y recoleccion.zip donde se corre; si hay python3 con openpyxl, abre el Excel.
 const {chromium}=require('playwright');const fs=require('fs');const assert=require('assert');const {execFileSync}=require('child_process');
@@ -47,22 +47,39 @@ const cfg=CFG0.replace(/window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),beta
    ACTS.pcVivo=async()=>{closeSheet();const r=await __med(__k++);PesoCam.mostrar(r);};
  });
  const ficha=async()=>{await p.waitForSelector('#sheet form[data-form="labFicha"]',{timeout:5000});await p.waitForTimeout(250);return await p.$eval('#sheet',e=>e.textContent);};
- await p.evaluate(()=>ACTS.pcVivo());let t=await ficha();
- assert.match(t,/Animal\s*1/,'animal 1');assert.ok(!(await p.$('#sheet [name=arete]')),'no pide arete');assert.ok(!(await p.isVisible('#sheet .opts[data-name="postura"]')),'solo pide la báscula (lo demás plegado)');assert.ok(!(await p.$('#sheet .opts[data-name="sexo"]')),'no pide sexo');
+ // cada animal: «Nuevo animal» pide primero el peso de báscula y después abre la cámara
+ await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(400);
+ const nuevo=async(kg,n)=>{await p.click('[data-act="labNuevo"]');await p.waitForSelector('#sheet form[data-form="labNuevo"]',{timeout:5000});await p.waitForTimeout(200);
+   const tx=await p.$eval('#sheet',e=>e.textContent);assert.match(tx,new RegExp('Animal\\s*'+n),'número del animal '+n);assert.match(tx,/Peso de báscula/);
+   if(kg!=null){await p.fill('#sheet [name=kg]',String(kg));await p.click('#sheet button[type=submit]');}};
+ const sigue=async(kg,n)=>{await p.waitForSelector('#sheet form[data-form="labNuevo"]',{timeout:5000});await p.waitForTimeout(200);assert.match(await p.$eval('#sheet',e=>e.textContent),new RegExp('Animal\\s*'+n));
+   await p.fill('#sheet [name=kg]',String(kg));await p.click('#sheet button[type=submit]');};
+ assert.equal(await p.$$eval('[data-act="labNuevo"]',e=>e.length),1,'botón Nuevo animal');
+ await nuevo(null,1);await p.click('#sheet button[type=submit]');await p.waitForTimeout(300);
+ assert.ok(await p.$('#sheet form[data-form="labNuevo"]'),'sin peso de báscula no abre la cámara');await p.screenshot({path:'rec_nuevo.png'});
+ await p.fill('#sheet [name=kg]','900');await p.click('#sheet button[type=submit]');
+ let t=await ficha();
+ assert.match(t,/Animal\s*1/,'animal 1');assert.equal(await p.inputValue('#sheet [name=kg]'),'900','la ficha trae el peso de báscula');assert.match(t,/Báscula/);
+ assert.ok(!(await p.$('#sheet [name=arete]')),'no pide arete');assert.ok(!(await p.isVisible('#sheet .opts[data-name="postura"]')),'lo demás plegado');assert.ok(!(await p.$('#sheet .opts[data-name="sexo"]')),'no pide sexo');
  await p.screenshot({path:'rec_ficha.png',fullPage:true});
- await p.fill('#sheet [name=kg]','900');
  await p.click('#sheet [data-act="labFichaIr"][data-v="rep"]');
  await p.waitForTimeout(400);t=await ficha();assert.match(t,/Animal\s*1/,'repetir: el mismo animal');assert.match(t,/Repetición del mismo animal/);
  assert.equal(await p.inputValue('#sheet [name=kg]'),'900','repetir copia la báscula');
  const R1=await p.evaluate(()=>PesoCam.REG().map(x=>({aid:x.aid,real:x.real,cond:x.cond,ses:x.ses,cam:x.cam})));
  const K=await p.evaluate(()=>[Math.round(toKg(900)*10)/10,Math.round(toKg(850)*10)/10]);assert.equal(R1[0].real,K[0],'báscula en la unidad del usuario');assert.equal(R1[0].cond.llenado,'ayuno','dato fijo de la sesión');assert.equal(R1[0].cond.sexo,'m','machos (dato del día)');assert.ok(R1[0].cam&&R1[0].cam.width===1920,'datos de la cámara');
- assert.equal(R1[1].aid,R1[0].aid,'mismo número');paso('ficha: animal 1 con báscula, repetido con sus datos');
+ assert.equal(R1[1].aid,R1[0].aid,'mismo número');paso('animal 1: peso de báscula primero, cámara, repetido con sus datos');
+ // «Siguiente animal»: pide el peso del siguiente y abre la cámara (al animal 2 se le borra el peso: se anota después)
  await p.click('#sheet .lab-mas>summary');await p.click('#sheet .opts[data-name="postura"] [data-v="bien"]');await p.click('#sheet [data-act="labFichaIr"][data-v="sig"]');
- await p.waitForTimeout(400);t=await ficha();assert.match(t,/Animal\s*2/,'el siguiente es el animal 2');assert.equal(await p.inputValue('#sheet [name=kg]'),'');
- await p.click('#sheet [data-act="labFichaIr"][data-v="sig"]');await p.waitForTimeout(400);t=await ficha();assert.match(t,/Animal\s*3/);
+ await sigue(760,2);t=await ficha();assert.match(t,/Animal\s*2/,'el siguiente es el animal 2');assert.equal(await p.inputValue('#sheet [name=kg]'),'760');
+ await p.fill('#sheet [name=kg]','');await p.click('#sheet [data-act="labFichaIr"][data-v="sig"]');await sigue(700,3);t=await ficha();assert.match(t,/Animal\s*3/);
  const n0=await p.evaluate(()=>PesoCam.REG().length),idD=await p.evaluate(()=>PesoCam.REG().slice(-1)[0].id);await p.click('#sheet [data-act="labFichaDesc"]');await p.waitForTimeout(250);await p.click('#sheet [data-act="confirmarSi"]');await p.waitForTimeout(500);
  assert.equal(await p.evaluate(()=>PesoCam.REG().length),n0-1,'descartada');assert.equal(await p.evaluate(async id=>!!(await Fotos.url('pch-'+id+'-0')),idD),false,'sus fotos se borran');
- paso('guardar y medir otro: animal 2 y 3; descartar borra la medición');
+ // si la cámara se cierra sin medir, el animal queda pendiente con su peso
+ await p.evaluate(()=>{location.hash='#pclab/resumen';window.__pcV=ACTS.pcVivo;ACTS.pcVivo=()=>{};});await p.waitForTimeout(400);
+ await nuevo(650,3);await p.waitForTimeout(500);t=await p.$eval('#app',e=>e.textContent);assert.match(t,/Falta medirlo con la cámara/,'pendiente');
+ await p.evaluate(()=>{ACTS.pcVivo=window.__pcV;});await p.click('[data-act="labMedirPend"]');t=await ficha();assert.match(t,/Animal\s*3/);assert.equal(await p.inputValue('#sheet [name=kg]'),'650');
+ await p.click('#sheet [data-act="labFichaDesc"]');await p.waitForTimeout(250);await p.click('#sheet [data-act="confirmarSi"]');await p.waitForTimeout(400);
+ paso('siguiente animal: peso y cámara (2 y 3); pendiente si se cierra la cámara; descartar borra la medición');
  // el avance: falta la báscula del animal 2; se anota después
  await p.evaluate(()=>{location.hash='#pclab/resumen';});await p.waitForTimeout(500);
  t=await p.$eval('#app',e=>e.textContent);assert.match(t,/Recolección en la finca/);assert.match(t,/Falta el peso de báscula/);

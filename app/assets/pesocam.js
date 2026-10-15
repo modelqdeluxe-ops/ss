@@ -547,7 +547,7 @@ function combinar(modo,caps,alto,ropaK,tipo){
   /* ganado: cm por píxel con la distancia al animal (CamVivo.suelo: la altura del teléfono y su inclinación al tomar
      la foto); si el teléfono no tiene acelerómetro, con la persona de referencia si se ve. Se guardan las dos. */
   for(const c of caps)for(const t of tomas(c)){t.ori=c.ori||null;if(t.arc&&!t.ar)t.ar=escalaAR(t.arc,t,modo);}
-  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel()):null;
+  const geoT=t=>modo==='ganado'&&window.CamVivo&&CamVivo.suelo&&t.ori&&t.sil&&t.sil.n&&t.H?CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,PC().altTel||ALT_DEF,fovTel(),t.sil.n[1]*t.H):null;
   const cmpx=t=>{if(t.ar&&t.ar.cmpx>0)return t.ar.cmpx;if(modo==='persona')return ref/t.med.alto;const g=geoT(t);if(g)return g.cmpx;return t.med&&t.med.refAlto>0?ref/t.med.refAlto:NaN;};
   const conK=t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t)),K:modo==='persona'?kpT(t):null});
   const TP=tomas(p).map(conK),TS=tomas(s).map(conK);
@@ -601,7 +601,7 @@ function combinar(modo,caps,alto,ropaK,tipo){
       const gd=T=>{const G=T.map(x=>geoT(x.t)).filter(Boolean);return G.length?{D:med(G.map(g=>g.D)),a:med(G.map(g=>g.a)),elev:med(T.map(x=>x.t.ori&&x.t.ori.elev).filter(isFinite)),horiz:med(T.map(x=>x.t.ori&&x.t.ori.horiz).filter(isFinite))}:null;};
       const kRef=T=>{const v=T.map(x=>x.t.med&&x.t.med.refAlto>0?ref/x.t.med.refAlto:NaN).filter(isFinite);return v.length?med(v):null;};
       const arT=T=>{const A=T.map(x=>x.t.ar).filter(Boolean);if(!A.length)return null;const mm=k=>{const v=A.map(a=>a[k]).filter(z=>z!=null&&isFinite(z)&&(k==='elev'||z>0));return v.length?med(v):null;};
-        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev')};};
+        return {metodo:A[0].metodo,Z:mm('Z'),prof:mm('Zprof'),suelo:mm('Zsuelo'),centro:mm('Zcentro'),alto:mm('alto'),fx:mm('fx'),nProf:mm('nProf'),elev:mm('elev'),profEje:mm('prof'),profTipo:(A.find(a=>a.profTipo)||{}).profTipo||null,cmpx:mm('cmpx'),corr:mm('corr')};};
       const arC=arT(TP);
       r.geo={ar:arC?{costado:arC,atras:arT(TS)}:null,metodo:arC?arC.metodo:TP.some(x=>geoT(x.t))?'suelo':TP.some(x=>x.t.med&&x.t.med.refAlto>0)&&isFinite(ref)?'persona':null,h:arC&&arC.alto?Math.round(arC.alto):PC().altTel||null,fov:fovTel(),costado:arC?{D:arC.Z/100,elev:arC.elev}:gd(TP),atras:gd(TS),
         kCostado:med(TP.map(x=>x.k).filter(isFinite)),kAtras:med(TS.map(x=>x.k).filter(isFinite)),kPersona:kRef(TP)};
@@ -779,12 +779,14 @@ const conservar=x=>!!(x.ses||x.real>0);
 async function guardarFotos(id,caps,dbg){
   if(!window.Fotos)return;
   try{for(let i=0;i<caps.length;i++){const b=await (await fetch(caps[i].img)).blob();await Fotos.guardar(`pc-${id}-${i}`,b);
-      const T=caps[i].tomas||[];for(let j=0;j<T.length;j++)if(T[j].fc){const o=await aBlob(T[j].fc);if(o)await Fotos.guardar(`pcr-${id}-${i}-${j}`,o);}
+      const T=caps[i].tomas||[];for(let j=0;j<T.length;j++){if(T[j].fc){const o=await aBlob(T[j].fc);if(o)await Fotos.guardar(`pcr-${id}-${i}-${j}`,o);}
+        // lo que sabía ARCore de esa foto: intrínsecos, suelo, inclinación y la profundidad (suavizada y cruda)
+        if(T[j].arc)await Fotos.guardar(`pcz-${id}-${i}-${j}`,new Blob([JSON.stringify(T[j].arc)],{type:'application/json'}));}
       if(caps[i].hd){const o=await aBlob(caps[i].hd);if(o)await Fotos.guardar(`pch-${id}-${i}`,o);caps[i].hd=null;}}
     if(dbg)await Fotos.guardar(`pcd-${id}`,new Blob([JSON.stringify(dbg)],{type:'application/json'}));
     const R=REG().filter(x=>!conservar(x));for(const x of R.slice(0,-FOTOS_MAX))for(let i=0;i<4;i++)Fotos.borrar(`pc-${x.id}-${i}`);
     for(const x of R.slice(0,-DBG_MAX))Fotos.borrar(`pcd-${x.id}`);
-    for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<4;i++){Fotos.borrar(`pch-${x.id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${x.id}-${i}-${j}`);}}catch(e){console.warn(e);}
+    for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<4;i++){Fotos.borrar(`pch-${x.id}-${i}`);for(let j=0;j<5;j++){Fotos.borrar(`pcr-${x.id}-${i}-${j}`);Fotos.borrar(`pcz-${x.id}-${i}-${j}`);}}}catch(e){console.warn(e);}
 }
 /* ---------- ARCore (Rumentis Beta compilada con ARCore: el puente "Ar", modelo/android/ArPuente.java) ----------
    ARCore corre por debajo de la cámara en vivo (camvivo.js): la silueta se ve en tiempo real como siempre y las tomas
@@ -800,27 +802,36 @@ const hayAR=()=>['listo','instalar','revisando'].includes(arEstado());
 const T_=t=>window.I18N&&I18N.t?I18N.t(t):t;
 const MITAD_CUERPO={ganado:15,persona:10};
 function escalaAR(c,t,modo){
-  // la mira: la profundidad en el centro (si la hay) o el punto que tocó el rayo
   const s=t.sil,W=t.W,H=t.H,k=c.W>0?W/c.W:1,fx=c.fx*k,fy=(c.fy||c.fx)*k,cy=(c.cy!=null?c.cy:c.H/2)*k,o={fx,alto:c.alto>0?c.alto*100:null,centro:c.centroProf>0?c.centroProf*100:c.centro>0?c.centro*100:null,elev:c.elev,profOrig:c.profOrig||null};
-  // la profundidad dentro del cuerpo: filas de 15 a 60 % y columnas de 20 a 80 % de la caja de la silueta
-  if(c.prof&&c.prof.mm&&s&&s.mask){try{const b=atob(c.prof.mm),dw=c.prof.w,dh=c.prof.h,dv=new DataView(new ArrayBuffer(b.length));for(let i=0;i<b.length;i++)dv.setUint8(i,b.charCodeAt(i));
+  const p=isFinite(c.elev)?-c.elev*Math.PI/180:0,yT=s&&s.n?s.n[1]*H:NaN,yP=s&&s.n?s.n[3]*H:NaN;
+  // la profundidad dentro del cuerpo: filas de 15 a 60 % y columnas de 20 a 80 % de la caja de la silueta (con la
+  // profundidad cruda de ARCore, solo los puntos de confianza, si la hay; si no, la suavizada)
+  const leer=pr=>{if(!(pr&&pr.mm&&s&&s.mask))return null;try{const b=atob(pr.mm),dw=pr.w,dh=pr.h,dv=new DataView(new ArrayBuffer(b.length));for(let i=0;i<b.length;i++)dv.setUint8(i,b.charCodeAt(i));
     const [x0,y0,x1,y1]=[s.n[0]*W,s.n[1]*H,s.n[2]*W,s.n[3]*H],v=[];
     for(let yy=0;yy<dh;yy++)for(let xx=0;xx<dw;xx++){const X=(xx+.5)*W/dw,Y=(yy+.5)*H/dh;
       if(X<x0+.2*(x1-x0)||X>x0+.8*(x1-x0)||Y<y0+.15*(y1-y0)||Y>y0+.6*(y1-y0))continue;
       const gx=Math.floor((X-s.Z.x)/s.cx),gy=Math.floor((Y-s.Z.y)/s.cy);if(gx<0||gy<0||gx>=s.G||gy>=s.G||s.mask[gy*s.G+gx]!==1)continue;
-      const mm=dv.getUint16(2*(yy*dw+xx),true);if(mm>200&&mm<15000)v.push(mm/10);}
-    if(v.length>=8){v.sort((a,b)=>a-b);o.prof=v[Math.floor(v.length/2)];o.prof25=v[Math.floor(v.length*.25)];o.nProf=v.length;}}catch(e){console.warn(e);}}
-  // con el suelo de ARCore: el ángulo hasta las patas (con la inclinación y el centro óptico reales)
-  if(o.alto>0&&isFinite(c.elev)&&s&&s.n){const p=-c.elev*Math.PI/180,a=p+Math.atan((s.n[3]*H-cy)/fy);if(a>2*Math.PI/180&&a<80*Math.PI/180)o.suelo=o.alto/Math.sin(a)*Math.cos(a-p);}
-  const mc=MITAD_CUERPO[modo]||0;
-  o.Zprof=o.prof>0?o.prof+mc:null;o.Zsuelo=o.suelo>0?o.suelo:null;o.Zcentro=o.centro>0?o.centro+mc:null;
-  /* el método: el orden que salió de las pruebas con persona (PC().arPref; sin pruebas, el suelo primero: en las
-     primeras pruebas reales fue el más estable). La profundidad no se usa si discrepa más de 20 % del suelo. Si las
-     pruebas dieron un sesgo constante (PC().arCorr, real/medido), se corrige y queda anotado. */
-  for(const z of ['Zprof','Zsuelo','Zcentro'])o['k'+z.slice(1)]=o[z]&&fx>0?o[z]/fx:null;
-  const ok={prof:o.Zprof&&!(o.Zsuelo&&Math.abs(o.Zprof/o.Zsuelo-1)>.2),suelo:!!o.Zsuelo,centro:!!o.Zcentro};
-  const pref=(PC().arPref||['suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,corr=m&&PC().arCorr&&PC().arCorr[m]>.8&&PC().arCorr[m]<1.25?PC().arCorr[m]:1;
-  o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['Z'+m]*corr:null;o.cmpx=o.Z&&fx>0?o.Z/fx:null;
+      const mm=dv.getUint16(2*(yy*dw+xx),true);if(mm>200&&mm<15000)v.push([mm/10,Y]);}
+    if(v.length<8)return null;v.sort((a,b)=>a[0]-b[0]);return {d:v[Math.floor(v.length/2)][0],d25:v[Math.floor(v.length*.25)][0],y:v.reduce((a,z)=>a+z[1],0)/v.length,n:v.length};}catch(e){console.warn(e);return null;}};
+  const cr=leer(c.praw),cs=leer(c.prof),q=cr&&cr.n>=8?cr:cs;
+  if(q){o.prof=q.d;o.prof25=q.d25;o.nProf=q.n;o.profY=q.y;o.profTipo=q===cr?'cruda':'suave';if(cs&&cr)o.profSuave=cs.d;}
+  /* cada método da la distancia horizontal D (cm) del teléfono al plano del cuerpo; la escala sale de D con la
+     perspectiva exacta (CamVivo.escPlano: el alto real de la caja entre sus píxeles) */
+  const mc=MITAD_CUERPO[modo]||0,ang=y=>Math.atan((y-cy)/fy);
+  // el suelo de ARCore: la altura del teléfono y el ángulo hasta las patas
+  if(o.alto>0&&isFinite(yP)){const a=p+ang(yP);if(a>2*Math.PI/180&&a<80*Math.PI/180)o.suelo=o.alto/Math.tan(a);}
+  // la profundidad (a lo largo del eje de la cámara) en las filas del cuerpo, más medio cuerpo, a horizontal
+  if(o.prof>0){const b=ang(o.profY);o.Dprof=(o.prof+mc)*Math.cos(p+b)/Math.cos(b);}
+  if(o.centro>0)o.Dcentro=(o.centro+mc)*Math.cos(p);
+  o.Dsuelo=o.suelo>0?o.suelo:null;o.Dprof=o.Dprof>0?o.Dprof:null;o.Dcentro=o.Dcentro>0?o.Dcentro:null;
+  const esc=D=>{if(!(D>0))return null;const kk=window.CamVivo&&CamVivo.escPlano?CamVivo.escPlano(D,p,yT,yP,cy,fy):null;return kk||D/fx;};
+  for(const m of ['prof','suelo','centro']){o['Z'+m]=o['D'+m];o['k'+m]=esc(o['D'+m]);}
+  /* el método: el orden que salió de las pruebas con persona (PC().arPref; sin pruebas, el suelo primero). La
+     profundidad no se usa si discrepa más de 15 % del suelo. Si las pruebas dieron un sesgo constante (PC().arCorr,
+     real/medido), se corrige y queda anotado. Solo cuentan las pruebas con esta geometría (PC().arG = 2). */
+  const ok={prof:o.Dprof&&!(o.Dsuelo&&Math.abs(o.Dprof/o.Dsuelo-1)>.15),suelo:!!o.Dsuelo,centro:!!o.Dcentro&&!(o.Dsuelo&&Math.abs(o.Dcentro/o.Dsuelo-1)>.15)};
+  const G2=PC().arG===2,pref=((G2&&PC().arPref)||['suelo','prof','centro']).filter(m=>ok[m]),m=pref[0]||null,cc=G2&&PC().arCorr?PC().arCorr[m]:null,corr=m&&cc>.85&&cc<1.15?cc:1;
+  o.metodo=m?'ar-'+m:null;o.corr=corr;o.Z=m?o['D'+m]:null;o.cmpx=m&&o['k'+m]?o['k'+m]*corr:null;
   return o;
 }
 /* ---------- medir ---------- */

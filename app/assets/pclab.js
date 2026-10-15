@@ -194,7 +194,7 @@ ACTS.labModo=el=>{const m=el.dataset.m;if(!P.MODOS[m])return;UI.pc.modo=m;try{lo
 /* ---------- Resumen ---------- */
 function tResumen(modo){
   const E=estad(modo),{F,G}=etiquetasLab(modo),R=E.R,ses=PCc().labSes;
-  const sesion=modo==='ganado'?bloquePrueba()+bloqueSesion(R,ses):`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
+  const sesion=modo==='ganado'?bloqueSesion(R,ses)+bloquePrueba():`<section class="sec">${secH('Sesión de prueba')}<div class="card pad lab-c">
     ${ses?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b> · <span>${pl(R.filter(x=>x.ses===ses.n).length,'medición','mediciones')}</span></span></p>
       <button type="button" class="btn full" data-act="labSesFin">Terminar la sesión</button>`
       :`<p class="hint" style="margin:0">Una sesión agrupa las mediciones de una prueba para analizarlas y exportarlas juntas.</p><button type="button" class="btn pri full" data-act="labSesIni">Empezar una sesión de prueba</button>`}</div></section>`;
@@ -246,9 +246,9 @@ function avance(R){
   return {A,sin:por.get('')||[],nA:A.length,conB:A.filter(a=>a.real).length,rep:A.filter(a=>a.v.length>=META.rep).length,faltan:A.filter(a=>!a.real),mape:prom(e.map(Math.abs)),sesgo:prom(e),nCon:con.length};
 }
 const PROTOCOLO=['Escoge los animales al azar. Pesa cada uno en la báscula y tómale las fotos en la misma pasada por la manga, o el mismo día antes de que coma.',
-  'Anota el peso de báscula en la ficha que sale después de las fotos. Cada animal recibe un número solo: no hace falta arete.',
+  'Toca «Nuevo animal», escribe su peso de báscula y después se abre la cámara. Cada peso nuevo es un animal nuevo con su número: no hace falta arete.',
   'En algunos animales, mide 2 o 3 veces seguidas con «Repetir este»: así se sabe cuánto varía la cámara con el mismo animal.',
-  'Nadie se acerca al animal: la app calcula la distancia con la altura del teléfono y su inclinación. Mide una vez la altura a la que lo sostienes (a la altura del pecho) y sostenlo siempre así.',
+  'Nadie se acerca al animal: ARCore mide la distancia. Al abrir la cámara, apunta un momento al suelo y mueve el teléfono despacio hasta que salga la distancia; la foto se toma sola cuando la silueta está verde.',
   'De 3 a 8 m, sin zoom, con las patas del animal a la vista y el suelo más o menos plano entre tú y el animal. Evita el sol de frente y las sombras fuertes sobre el animal.',
   'Que entren animales de todos los tamaños que tengas, de los más livianos a los más pesados: con más rango de peso el ajuste sale mejor.',
   'Al terminar: Exportar la sesión. Se generan archivos ZIP con todas las fotos y datos; compártelos a Drive o a la computadora.'];
@@ -261,6 +261,7 @@ function bloqueSesion(Rm,ses){
   const R=Rm.filter(x=>x.ses===ses.n),a=avance(R),bar=(v,m)=>`<span class="lab-bar"><i style="width:${Math.min(100,Math.round(v/m*100))}%"></i></span>`;
   return `<section class="sec">${secH('Recolección en la finca')}<div class="card pad lab-c">
     <p class="lab-ses-on">${ico('aviso',2)}<span><span>En curso:</span> <b data-no-tr>${esc(ses.n)}</b></span></p>
+    ${pendHTML()}<button type="button" class="btn pri full lab-nuevo" data-act="labNuevo">${ico('nuevo',2.4)}<span>Nuevo animal</span></button>
     <div class="lab-av">
       <div><span>Animales</span><b data-no-tr>${a.nA}</b></div>
       <div><span>Con peso de báscula</span><b data-no-tr>${a.conB} / ${a.nA}</b>${bar(a.conB,Math.max(1,a.nA))}</div>
@@ -268,9 +269,28 @@ function bloqueSesion(Rm,ses){
       <div><span>Mediciones</span><b data-no-tr>${R.length}</b></div></div>
     ${a.nCon?`<p class="hint" style="margin:0"><span>Error de la cámara contra la báscula en esta sesión:</span> <b data-no-tr>±${pc(a.mape)}</b> · <span>sesgo</span> <b data-no-tr>${pcs(a.sesgo)}</b> <span data-no-tr>(${a.nCon})</span></p>`:''}
     ${a.faltan.length?`<p class="lab-sub">Falta el peso de báscula</p><div class="rows">${a.faltan.map(z=>`<button type="button" class="row pc-reg" data-act="labRealAnimal" data-aid="${esc(z.aid)}"><div class="tx"><b>${animalTxt(z.u)}</b><span><span>${pl(z.v.length,'medición','mediciones')}</span> · <span>cámara</span> <span data-no-tr>${wtxt(prom(z.v.map(x=>x.kg)))}</span></span></div>${ico('chev')}</button>`).join('')}</div>`:''}
-    <div class="pc-acts lab-acts"><a class="btn pri" href="#pesocam">Medir</a><button type="button" class="btn" data-act="labExpSes" data-s="${esc(ses.n)}">Exportar todo (ZIP con fotos)</button><button type="button" class="btn" data-act="labExcel" data-s="${esc(ses.n)}">Excel</button><button type="button" class="btn" data-act="labSesDatos">Datos de la sesión</button><button type="button" class="btn" data-act="labSesFin">Terminar la sesión</button></div>
+    <div class="pc-acts lab-acts"><button type="button" class="btn" data-act="labExpSes" data-s="${esc(ses.n)}">Exportar todo (ZIP con fotos)</button><button type="button" class="btn" data-act="labExcel" data-s="${esc(ses.n)}">Excel</button><button type="button" class="btn" data-act="labSesDatos">Datos de la sesión</button><button type="button" class="btn" data-act="labSesFin">Terminar la sesión</button></div>
     ${proto}</div></section>`;
 }
+/* cada animal nuevo: primero el peso de báscula y después la cámara (UI.pc.pend: el número del animal y su peso, que la
+   ficha le pone a la medición). Si la cámara se cierra sin medir, queda pendiente para medirlo o cambiar el peso. */
+const pendAct=()=>{const x=UI.pc&&UI.pc.pend,ses=PCc().labSes;return x&&ses&&x.ses===ses.n&&Date.now()-x.ts<6*3600e3?x:null;};
+const pendHTML=()=>{const x=pendAct();if(!x)return '';
+  return `<div class="lab-pend"><b><span>Animal</span> <span data-no-tr>${numDe(x.aid)}</span> · <span data-no-tr>${wtxt(x.real)}</span></b><span>Falta medirlo con la cámara.</span>
+    <div class="pc-acts"><button type="button" class="btn pri" data-act="labMedirPend">Medir</button><button type="button" class="btn" data-act="labNuevo" data-cambiar="1">Cambiar el peso</button></div></div>`;};
+ACTS.labNuevo=el=>{const ses=PCc().labSes;if(!ses){formSes(null);return;}const cam=el&&el.dataset&&el.dataset.cambiar&&pendAct();
+  UI.pc.rep=null;const aid=cam?cam.aid:nuevoAnimal(ses);
+  openSheet(shHead(`<span>Animal</span> <span data-no-tr>${numDe(aid)}</span>`,'Peso de báscula')+formWrap('labNuevo',`<p class="hint">Pésalo en la báscula y escribe el peso. Después se abre la cámara para medirlo.</p>
+    ${q('Peso de báscula',inp('kg',cam?kgTxt(cam.real):'',{unit:UW(),xl:true,ph:'—'}))}<input type="hidden" name="aid" value="${esc(aid)}">`,foot('Abrir la cámara')));
+  setTimeout(()=>{const i=$('#sheet [name=kg]');if(i)try{i.focus();}catch(e){}},250);};
+SAVE.labNuevo=f=>{const v=toKg(num(fv(f,'kg')));if(!(v>=40&&v<=1300))return ferr(f,'Escribe el peso de la báscula.');
+  const ses=PCc().labSes;if(!ses)return closeSheet();UI.pc.pend={aid:String(fv(f,'aid')||nuevoAnimal(ses)),real:Math.round(v*10)/10,ses:ses.n,ts:Date.now()};
+  closeSheet();if(location.hash.startsWith('#pclab'))render();setTimeout(medirPend,150);};
+function medirPend(){if(!pendAct())return;UI.pc.modo='ganado';UI.pc.lote='_no';try{localStorage.setItem('rumentis-pc-modo','ganado');}catch(e){}ACTS.pcVivo();}
+ACTS.labMedirPend=()=>medirPend();
+// con una sesión en curso, «Medir» en el peso con cámara también pide el peso primero
+const vivo0=ACTS.pcVivo;
+ACTS.pcVivo=(...a)=>{if(PCc().labSes&&UI.pc&&UI.pc.modo==='ganado'&&!pendAct()&&!(UI.pc.rep&&Date.now()-UI.pc.rep.ts<30*60e3)){closeSheet();ACTS.labNuevo();return;}return vivo0(...a);};
 // el peso de báscula de un animal: va a todas sus mediciones de la sesión
 let REAL_A=null;
 ACTS.labRealAnimal=el=>{const aid=el.dataset.aid,ses=PCc().labSes;const R=P.REG().filter(x=>x.aid===aid&&(!ses||x.ses===ses.n));if(!R.length)return;REAL_A=aid;
@@ -286,13 +306,14 @@ SAVE.labRealA=f=>{const v=toKg(num(fv(f,'kg')));if(!(v>=40&&v<=1300))return ferr
 const PRU=()=>PCc().pruebas||[];
 const MET_P=[['prof','ARCore · profundidad'],['suelo','ARCore · suelo'],['centro','ARCore · mira'],['sensor','Sensor de movimiento']];
 function bloquePrueba(){
-  const L=PRU(),ar=P.hayAR&&P.hayAR(),st=MET_P.map(([k,t])=>{const e=L.map(x=>x.medido&&x.medido[k]>0?x.medido[k]/x.real-1:NaN).filter(esNum);return e.length?[t,e.length,'±'+pc(prom(e.map(Math.abs))),pcs(prom(e))]:null;}).filter(Boolean);
+  const L=PRU(),L2=L.filter(x=>x.g===2),viejas=L.length-L2.length,ar=P.hayAR&&P.hayAR(),st=MET_P.map(([k,t])=>{const e=L2.map(x=>x.medido&&x.medido[k]>0?x.medido[k]/x.real-1:NaN).filter(esNum);return e.length?[t,e.length,'±'+pc(prom(e.map(Math.abs))),pcs(prom(e))]:null;}).filter(Boolean);
   return `<section class="sec">${secH('Probar la medida con una persona',L.length||'')}<div class="card pad lab-c">
     <p class="hint" style="margin:0">Mide a una persona de estatura conocida: la app la calcula con la misma escala que da los centímetros del animal. El error de la estatura es el error de la escala; en el peso, cerca del doble.</p>
     <button type="button" class="btn pri full" data-act="labPrueba" data-v="${ar?'ar':'sensor'}">Probar la medida</button>
     <p class="hint" style="margin:0">${ar?'Con ARCore (la distancia real con la cámara).':'Este teléfono no tiene ARCore: se mide con el sensor de movimiento.'}</p>
     ${st.length?tabla(['Método','n','error','sesgo'],st):''}
-    ${PCc().arPref&&PCc().arCorr?`<p class="hint" style="margin:0"><span>Con estas pruebas el ganado se mide con</span> <b>${(MET_P.find(m=>m[0]===PCc().arPref[0])||[0,''])[1]}</b>${PCc().arCorr[PCc().arPref[0]]?` · <span>corrección</span> <b data-no-tr>×${nf(PCc().arCorr[PCc().arPref[0]],3)}</b>`:''}.</p>`:''}
+    ${viejas?`<p class="hint" style="margin:0"><span>Las pruebas anteriores a la corrección de la perspectiva no cuentan en la tabla:</span> <span data-no-tr>${viejas}</span>. <span>Bórralas y vuelve a probar.</span></p>`:''}
+    ${PCc().arG===2&&PCc().arPref&&PCc().arCorr?`<p class="hint" style="margin:0"><span>Con estas pruebas el ganado se mide con</span> <b>${(MET_P.find(m=>m[0]===PCc().arPref[0])||[0,''])[1]}</b>${PCc().arCorr[PCc().arPref[0]]?` · <span>corrección</span> <b data-no-tr>×${nf(PCc().arCorr[PCc().arPref[0]],3)}</b>`:''}.</p>`:''}
     ${L.length?`<div class="rows">${L.slice(-6).reverse().map(x=>`<div class="row pc-reg" data-act="labPruebaVer" data-ts="${x.ts}" role="button">${x.foto?`<img class="pc-th" data-foto="${x.foto}" alt="">`:''}<div class="tx"><b><span>Real</span> <span data-no-tr>${nf(x.real)} cm</span></b><span>${MET_P.filter(([k])=>x.medido&&x.medido[k]>0).map(([k,t])=>`<span>${t}</span> <span data-no-tr>${nf(x.medido[k],1)} cm (${pcs(x.medido[k]/x.real-1)})</span>`).join(' · ')}${x.D?` · <span>a</span> <span data-no-tr>${nf(x.D,2)} m</span>`:''}</span></div></div>`).join('')}</div>
       <button type="button" class="lnk" data-act="labPruebaBorrar">Borrar las pruebas</button>`:''}</div></section>`;
 }
@@ -309,7 +330,7 @@ const PASO_PERSONA={id:'persona',nombre:'Persona de pie',instr:'La persona de pi
 function estaturaPrueba(t,via,altTel,fov){
   const o={},alto=t&&t.med&&t.med.alto;if(!(alto>0))return o;o.altoPx=alto;if(t.ar)o.profOrig=t.ar.profOrig;
   if(via==='ar'&&t.ar){for(const k of ['prof','suelo','centro']){const kk=t.ar['k'+k];if(kk>0)o[k]=alto*kk;}o.D=t.ar.Z?t.ar.Z/100:null;o.alto=t.ar.alto;o.nProf=t.ar.nProf;o.elev=t.ar.elev;}
-  if(via==='sensor'&&t.ori&&t.sil&&t.sil.n){const g=CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,altTel,fov);if(g){o.sensor=alto*g.cmpx;o.D=g.D;o.elev=t.ori.elev;}}
+  if(via==='sensor'&&t.ori&&t.sil&&t.sil.n){const g=CamVivo.suelo(t.sil.n[3]*t.H,t.W,t.H,t.ori.elev,altTel,fov,t.sil.n[1]*t.H);if(g){o.sensor=alto*g.cmpx;o.D=g.D;o.elev=t.ori.elev;}}
   return o;
 }
 async function correrPrueba(via0,real){let via=via0;
@@ -321,7 +342,7 @@ async function correrPrueba(via0,real){let via=via0;
   const altT=PCc().altTel||140,M=tomas.map(t=>estaturaPrueba(t,via,altT,P.fovTel())),md=k=>{const v=M.map(m=>m[k]).filter(z=>esNum(z)&&(k==='elev'||z>0));return v.length?medn(v):null;};
   const medido={};for(const [k] of MET_P){const v=md(k);if(v)medido[k]=Math.round(v*10)/10;}
   if(!Object.keys(medido).length){toast(via==='ar'?'No se pudo medir: que se vea la persona completa y el suelo, y espera a que ARCore reconozca el lugar.':'No se pudo medir: que se vea la persona completa, con los pies.',5000);return;}
-  const x={ts:Date.now(),f:hoy(),via,real,medido,D:md('D'),alto:md('alto'),elev:md('elev'),nProf:md('nProf'),tel:via==='sensor'?altT:null,fov:P.fovTel(),
+  const x={ts:Date.now(),f:hoy(),g:2,via,real,medido,D:md('D'),alto:md('alto'),elev:md('elev'),nProf:md('nProf'),tel:via==='sensor'?altT:null,fov:P.fovTel(),
     altoPx:md('altoPx'),profOrig:M[0]&&M[0].profOrig||null};
   // la foto con la silueta y los puntos que vio el modelo (para revisarla en el laboratorio)
   const img=tomas[0]&&tomas[0].img;if(img&&window.Fotos)try{x.foto='pcp-'+x.ts;await Fotos.guardar(x.foto,await (await fetch(img)).blob());}catch(e){x.foto=null;}
@@ -333,10 +354,10 @@ async function correrPrueba(via0,real){let via=via0;
 }
 /* con 3 pruebas o más por ARCore: el orden de los métodos (el más estable primero: la menor dispersión de real/medido)
    y la corrección de su sesgo constante (la mediana de real/medido), que usa la escala del ganado */
-function ajusteAR(L){const A=L.filter(x=>x.via==='ar'),est={},corr={};
+function ajusteAR(L){const A=L.filter(x=>x.via==='ar'&&x.g===2),est={},corr={};
   for(const k of ['prof','suelo','centro']){const r=A.map(x=>x.medido&&x.medido[k]>0?x.real/x.medido[k]:NaN).filter(esNum);if(r.length>=3){est[k]=desv(r)/prom(r);corr[k]=Math.round(medn(r)*1000)/1000;}}
-  const ks=Object.keys(est);if(!ks.length)return {};
-  return {arPref:ks.sort((a,b)=>est[a]-est[b]).concat(['suelo','prof','centro'].filter(k=>!ks.includes(k))),arCorr:corr,arDisp:est};}
+  const ks=Object.keys(est);if(!ks.length)return {arPref:null,arCorr:null,arDisp:null};
+  return {arPref:ks.sort((a,b)=>est[a]-est[b]).concat(['suelo','prof','centro'].filter(k=>!ks.includes(k))),arCorr:corr,arDisp:est,arG:2};}
 ACTS.labPruebaBorrar=()=>confirmar('¿Borrar las pruebas?','Se borran las pruebas con persona de este teléfono.','Borrar',()=>{for(const x of PRU())if(x.foto&&window.Fotos)Fotos.borrar(x.foto);P.guardarPC({pruebas:[],arPref:null,arCorr:null,arDisp:null});toast('Pruebas borradas');});
 ACTS.labPruebaVer=el=>{const x=PRU().find(z=>String(z.ts)===el.dataset.ts);if(!x)return;
   openSheet(shHead('Prueba con una persona',x.via==='ar'?'ARCore':'Sensor de movimiento')+`<div class="sh-body">${x.foto?`<img class="lab-pfoto" data-foto="${x.foto}" alt="">`:''}
@@ -686,21 +707,25 @@ const fichaActiva=r=>!!(r&&r.modo==='ganado'&&r.id&&PCc().labSes);
 function ficha(r){
   const x=buscar(r.id);if(!x)return false;const ses=PCc().labSes,rep=UI.pc.rep&&Date.now()-UI.pc.rep.ts<30*60e3?UI.pc.rep:null;
   // repetir: el mismo animal con sus datos (el peso de báscula es el mismo ese día)
+  const pe=pendAct();
   if(!x.aid||!String(x.aid).startsWith('n:')){if(rep){const cond={...(x.cond||{}),...rep.cond};delete cond.postura;P.actualizarReg(x.id,{aid:rep.aid,real:rep.real||null,cond});}
+    else if(pe)P.actualizarReg(x.id,{aid:pe.aid,real:pe.real});
     else P.actualizarReg(x.id,{aid:nuevoAnimal(ses)});}
+  UI.pc.pend=null;
   const y=buscar(r.id),c=y.cond||{},d=ses.def||{};
   const fijo=DEF_SES.filter(k=>d[k]).map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return `<span>${t}</span>: <span>${txtOpc(L,d[k])}</span>`;}).concat(d.raza?[`<span>Raza</span>: <span data-no-tr>${esc(d.raza)}</span>`]:[]).join(' · ');
   openSheet(shHead(`<span>Animal</span> <span data-no-tr>${numDe(y.aid)}</span>`,`<span data-no-tr>${esc(ses.n)}</span>`)+formWrap('labFicha',`${P.capsHTML(r)}
     <div class="pc-kg lab-fk"><b>${wtxt(r.kg)}</b><span><span>estimado con la cámara</span>${esNum(r.cv)?` · <span>dispersión entre fotos</span> <span data-no-tr>±${nf(r.cv*100,1)} %</span>`:''}</span></div>
+    ${y.real>0?`<p class="lab-cmp"><span>Báscula</span> <b data-no-tr>${wtxt(y.real)}</b> · <span>cámara</span> <b data-no-tr>${wtxt(r.kg)} (${pcs((r.kg-y.real)/y.real)})</b></p>`:''}
     ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
     ${rep?`<p class="lab-ses-on">${ico('aviso',2)}<span><span>Repetición del mismo animal</span> <span data-no-tr>(${rep.n+1})</span></span></p>`:''}
-    ${q('Peso de báscula',inp('kg',y.real>0?kgTxt(y.real):'',{unit:UW(),xl:true,ph:'—'}),'Si todavía no lo pesas, déjalo vacío y anótalo después en el laboratorio.')}
+    ${q('Peso de báscula',inp('kg',y.real>0?kgTxt(y.real):'',{unit:UW(),xl:true,ph:'—'}),y.real>0?'El que escribiste antes de medir. Corrígelo aquí si hace falta.':'Si todavía no lo pesas, déjalo vacío y anótalo después en el laboratorio.')}
     <details class="lab-mas"><summary>Más datos (opcional)</summary>
     ${FICHA_C.map(k=>{const [,t,L]=COND_G.find(z=>z[0]===k);return q(t,opts(k,L.map(([v,tt])=>({v,t:tt})),c[k]??'',{allowNone:true}));}).join('')}
     ${q('Perímetro con cinta (referencia)',inp('cinta',c.cinta>0?String(c.cinta):'',{unit:'cm',ph:'—'}))}
     ${q('Notas',`<textarea class="in" name="notas" rows="2" maxlength="400">${esc(c.notas||'')}</textarea>`)}
     <p class="hint lab-fijo">${fijo?`<span>Datos de la sesión:</span> ${fijo}. `:''}<button type="button" class="lnk" data-act="labSesDatos">Cambiar los datos de la sesión</button></p></details>
-    <input type="hidden" name="paso" value="">`,`<div class="sh-foot lab-ff"><button type="button" class="btn" data-act="labFichaDesc">Descartar</button><button type="button" class="btn" data-act="labFichaIr" data-v="rep">Repetir este</button><button type="button" class="btn pri" data-act="labFichaIr" data-v="sig">Guardar y medir otro</button></div>`));
+    <input type="hidden" name="paso" value="">`,`<div class="sh-foot lab-ff"><button type="button" class="btn" data-act="labFichaDesc">Descartar</button><button type="button" class="btn" data-act="labFichaIr" data-v="rep">Repetir este</button><button type="button" class="btn pri" data-act="labFichaIr" data-v="sig">Siguiente animal</button></div>`));
   FICHA=r.id;return true;
 }
 let FICHA=null;
@@ -716,7 +741,7 @@ SAVE.labFicha=f=>{const x=buscar(FICHA);if(!x)return closeSheet();const c={...(x
   toast(er!=null?`Guardado. Cámara ${wtxt(x.kg)}, báscula ${wtxt(cambios.real)}: ${pcs(er)}`:'Guardado. Falta el peso de báscula.',3500);
   if(paso==='rep'){const n=P.REG().filter(z=>z.ses===x.ses&&z.aid===x.aid).length;UI.pc.rep={aid:x.aid,real:cambios.real,cond:c,ts:Date.now(),n};}
   else UI.pc.rep=null;
-  closeSheet();if(paso==='rep'||paso==='sig')setTimeout(()=>ACTS.pcVivo&&ACTS.pcVivo(),120);};
+  closeSheet();if(paso==='rep')setTimeout(()=>ACTS.pcVivo&&ACTS.pcVivo(),120);else if(paso==='sig')setTimeout(()=>ACTS.labNuevo(),120);};
 ACTS.labFichaDesc=()=>{const id=FICHA;confirmar('¿Descartar esta medición?','Se borra con sus fotos. Úsalo si el animal se movió o la foto salió mal.','Descartar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});borrarFotos(id);FICHA=null;toast('Medición descartada');});};
 
 /* ---------- peso de báscula, borrar ---------- */
@@ -727,7 +752,7 @@ ACTS.pcRegReal=el=>{const x=buscar(el.dataset.id);if(!x)return;REAL=x.id;
 SAVE.pcReg=f=>{const x=buscar(REAL);if(!x)return closeSheet();const v=toKg(num(fv(f,'kg')));
   const [lo,hi]=x.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');
   P.actualizarReg(x.id,{real:Math.round(v*10)/10});REAL=null;closeSheet();toast('Peso de báscula guardado');};
-const borrarFotos=id=>{if(!window.Fotos)return;Fotos.borrar(`pcd-${id}`);for(let i=0;i<4;i++){Fotos.borrar(`pc-${id}-${i}`);Fotos.borrar(`pch-${id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${id}-${i}-${j}`);}};
+const borrarFotos=id=>{if(!window.Fotos)return;Fotos.borrar(`pcd-${id}`);for(let i=0;i<4;i++){Fotos.borrar(`pc-${id}-${i}`);Fotos.borrar(`pch-${id}-${i}`);for(let j=0;j<5;j++){Fotos.borrar(`pcr-${id}-${i}-${j}`);Fotos.borrar(`pcz-${id}-${i}-${j}`);}}};
 ACTS.pcRegBorrar=el=>{const id=el.dataset.id;confirmar('¿Borrar esta medición?','Sale del registro y de la calibración.','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});borrarFotos(id);toast('Medición borrada');});};
 ACTS.pcRegLimpiar=()=>{const modo=UI.pc.modo;confirmar('¿Borrar el registro?','Se borran todas las mediciones de este modo, también su peso de báscula (la calibración).','Borrar',()=>{const fu=P.REG().filter(x=>x.modo===modo);P.guardarPC({reg:P.REG().filter(x=>x.modo!==modo)});fu.forEach(x=>borrarFotos(x.id));toast('Registro borrado');});};
 
@@ -762,7 +787,7 @@ const SOLO_PERSONA=['ropa','hombros_cm','pecho_ancho_cm','pecho_fondo_cm','cintu
 const CAM_K=['width','height','zoom','lente','vw','vh'];let CC_=null;const CC_L=()=>CC_||(CC_=CALC_COLS());
 ACTS.pcRegCsv=async()=>{const b=new TextEncoder().encode(csv());await Documentos.enviar(`rumentis-labs-mediciones-${hoy()}.csv`,b.buffer,'compartir','Mediciones',  'text/csv');};
 const aURL=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ok(null);r.readAsDataURL(b);});
-async function fotosDe(x,fotos){if(!window.Fotos)return;for(let i=0;i<4;i++)for(let j=0;j<3;j++){const k=`pcr-${x.id}-${i}-${j}`;try{const u=await Fotos.url(k);if(!u)continue;const b=await (await fetch(u)).blob();const d=await aURL(b);if(d)fotos[k]=d;}catch(e){}}}
+async function fotosDe(x,fotos){if(!window.Fotos)return;for(let i=0;i<4;i++)for(let j=0;j<5;j++){const k=`pcr-${x.id}-${i}-${j}`;try{const u=await Fotos.url(k);if(!u)continue;const b=await (await fetch(u)).blob();const d=await aURL(b);if(d)fotos[k]=d;}catch(e){}}}
 /* para el análisis de Rumentis Labs: las últimas mediciones con sus fotos originales (sin dibujos) y lo de cada foto,
    en un solo archivo JSON. Con las fotos se puede repetir la medición paso a paso fuera del teléfono. */
 async function analisis(modo){
@@ -910,8 +935,8 @@ async function libro(R,info){
   const ses=[['dato','valor'],['app',(document.querySelector('meta[name=version]')||{}).content||''],['version_modelo',P.VERSION_MODELO],['fecha_export',hoy()],['mediciones',R.length],['animales',A.length],['animales_con_bascula',A.filter(a=>a.real>0).length],
     ...Object.entries(info||{}).map(([k,v])=>[k,typeof v==='object'?JSON.stringify(v):v]),['telefono',navigator.userAgent],
     ...Object.entries(P.GANADO).filter(([,v])=>typeof v!=='object').map(([k,v])=>['ganado_'+k,v]),['ganado_a',JSON.stringify(P.GANADO.a)],['ganado_etapas',JSON.stringify(P.GANADO.etapas)]];
-  return xlsx([{n:'Mediciones',rows:T},{n:'Animales',rows:ani},{n:'Formulas',rows:fo},{n:'Ajustes',rows:li},{n:'Medidas vs peso',rows:cor},{n:'Condiciones',rows:co},...await hojasTomas(R),...(PRU().length?[{n:'Pruebas persona',rows:[['fecha','metodo_de_prueba','estatura_real_cm',...MET_P.flatMap(([k])=>['medida_'+k+'_cm','error_'+k+'_pct']),'distancia_m','telefono_sobre_suelo_cm','inclinacion_grados','puntos_profundidad','altura_telefono_manual_cm','campo_vision']]
-    .concat(PRU().map(x=>[x.f,x.via,x.real,...MET_P.flatMap(([k])=>[x.medido[k]||null,x.medido[k]>0?(x.medido[k]/x.real-1)*100:null]),x.D,x.alto,x.elev,x.nProf,x.tel,x.fov]))}]:[]),{n:'Sesion',rows:ses}]);
+  return xlsx([{n:'Mediciones',rows:T},{n:'Animales',rows:ani},{n:'Formulas',rows:fo},{n:'Ajustes',rows:li},{n:'Medidas vs peso',rows:cor},{n:'Condiciones',rows:co},...await hojasTomas(R),...(PRU().length?[{n:'Pruebas persona',rows:[['fecha','metodo_de_prueba','estatura_real_cm',...MET_P.flatMap(([k])=>['medida_'+k+'_cm','error_'+k+'_pct']),'distancia_m','telefono_sobre_suelo_cm','inclinacion_grados','puntos_profundidad','altura_telefono_manual_cm','campo_vision','perspectiva_exacta']]
+    .concat(PRU().map(x=>[x.f,x.via,x.real,...MET_P.flatMap(([k])=>[x.medido[k]||null,x.medido[k]>0?(x.medido[k]/x.real-1)*100:null]),x.D,x.alto,x.elev,x.nProf,x.tel,x.fov,x.g===2?'si':'no']))}]:[]),{n:'Sesion',rows:ses}]);
 }
 ACTS.labExcel=async el=>{const sn=el.dataset.s,R=!sn||sn==='*'?P.REG().filter(x=>x.modo==='ganado'):P.REG().filter(x=>x.ses===sn);if(!R.length){toast('Todavía no hay mediciones.');return;}
   toast('Preparando el archivo…');const ses=PCc().labSes,u=await libro(R,sn&&sn!=='*'?{sesion:sn,datos_sesion:ses&&ses.n===sn?ses.def||{}:{}}:{});
@@ -950,7 +975,8 @@ async function archivosDe(x,n){
   E.push({n:dir+'registro.json',d:JSON.stringify({...x,arete:areteDe(x)||null},null,1)});
   const D=await leerDbg(x.id);if(D)E.push({n:dir+'depuracion.json',d:JSON.stringify(D)});
   for(let i=0;i<4;i++){const a=angDe(x,i);let b=await blobDe(`pch-${x.id}-${i}`);if(b)E.push({n:`${dir}${a}_hd.jpg`,d:b});
-    for(let j=0;j<3;j++){b=await blobDe(`pcr-${x.id}-${i}-${j}`);if(b)E.push({n:`${dir}${a}_t${j+1}.jpg`,d:b});}
+    for(let j=0;j<5;j++){b=await blobDe(`pcr-${x.id}-${i}-${j}`);if(b)E.push({n:`${dir}${a}_t${j+1}.jpg`,d:b});
+      b=await blobDe(`pcz-${x.id}-${i}-${j}`);if(b)E.push({n:`${dir}${a}_t${j+1}_arcore.json`,d:b});}
     b=await blobDe(`pc-${x.id}-${i}`);if(b)E.push({n:`${dir}${a}_vista.jpg`,d:b});}
   return E;
 }

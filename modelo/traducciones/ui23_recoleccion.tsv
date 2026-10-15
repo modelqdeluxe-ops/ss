@@ -177,3 +177,14 @@ Instala "Servicios de Google Play para RA" y vuelve a medir. Mientras, se mide c
 Apunta un momento al suelo para que ARCore lo encuentre	Point at the ground for a moment so ARCore finds it	Aponte para o chão por um momento para o ARCore encontrá-lo
 Mueve el teléfono despacio para que ARCore reconozca el lugar	Move the phone slowly so ARCore recognizes the place	Mova o celular devagar para o ARCore reconhecer o lugar
 No se pudo tomar la foto. Otra vez…	Could not take the photo. Again…	Não foi possível tirar a foto. De novo…
+Nuevo animal	New animal	Novo animal
+Toca «Nuevo animal», escribe su peso de báscula y después se abre la cámara. Cada peso nuevo es un animal nuevo con su número: no hace falta arete.	Tap «New animal», type its scale weight and then the camera opens. Each new weight is a new animal with its number: no ear tag needed.	Toque «Novo animal», digite o peso da balança e depois a câmera abre. Cada peso novo é um animal novo com seu número: não precisa de brinco.
+Nadie se acerca al animal: ARCore mide la distancia. Al abrir la cámara, apunta un momento al suelo y mueve el teléfono despacio hasta que salga la distancia; la foto se toma sola cuando la silueta está verde.	Nobody goes near the animal: ARCore measures the distance. When the camera opens, point at the ground for a moment and move the phone slowly until the distance shows; the photo is taken by itself when the outline is green.	Ninguém se aproxima do animal: o ARCore mede a distância. Ao abrir a câmera, aponte para o chão por um momento e mova o celular devagar até aparecer a distância; a foto é tirada sozinha quando a silhueta está verde.
+Pésalo en la báscula y escribe el peso. Después se abre la cámara para medirlo.	Weigh it on the scale and type the weight. Then the camera opens to measure it.	Pese na balança e digite o peso. Depois a câmera abre para medi-lo.
+Abrir la cámara	Open the camera	Abrir a câmera
+Siguiente animal	Next animal	Próximo animal
+Cambiar el peso	Change the weight	Mudar o peso
+Falta medirlo con la cámara.	It still needs to be measured with the camera.	Falta medi-lo com a câmera.
+El que escribiste antes de medir. Corrígelo aquí si hace falta.	The one you typed before measuring. Correct it here if needed.	O que você digitou antes de medir. Corrija aqui se precisar.
+Las pruebas anteriores a la corrección de la perspectiva no cuentan en la tabla:	Tests from before the perspective correction do not count in the table:	Os testes anteriores à correção da perspectiva não contam na tabela:
+Bórralas y vuelve a probar.	Delete them and test again.	Apague-os e teste de novo.

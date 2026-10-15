@@ -20,15 +20,16 @@ que el peso use el otro costado, que el resultado llegue a las cámaras y que si
 Mismos servidores y fotos que `vivo_t.js`.
 
 `recoleccion_t.js` (solo 8111, sin cámara) prueba la recolección de datos en la finca: sin lote, la sesión con sus
-datos fijos, la ficha de cada animal (número automático sin arete, báscula, Repetir este, Guardar y medir otro,
-Descartar), el avance, la báscula anotada después, el Excel (todas las hojas; con `PY=<python con openpyxl>` lo abre)
+datos fijos, «Nuevo animal» (el peso de báscula primero y después la cámara; pendiente si la cámara se cierra), la
+ficha de cada animal (número automático sin arete, Repetir este, Siguiente animal, Descartar), el avance, la báscula anotada después, el Excel (todas las hojas; con `PY=<python con openpyxl>` lo abre)
 y el ZIP por partes con las fotos. `vivo_t.js` mide la vaca con 3 tomas con un solo teléfono (el otro costado sin
 persona de referencia) y comprueba la foto a resolución completa.
 
 `ar_t.js` (8111 y 8112) prueba ARCore sin teléfono: el puente nativo "Ar" se reemplaza por uno que entrega los cuadros
 en vivo, la foto completa, la profundidad y los intrínsecos de escenas de COCO. Todo pasa por la misma cámara en vivo
 (silueta, distancia, foto automática): la prueba con persona por ARCore (175 cm reales → error < 4 % con profundidad y
-con suelo), la caída al sensor de movimiento si ARCore no arranca, y el ganado con 3 tomas (escala ar-*, peso, Excel).
+con suelo; las escenas con perspectiva exacta y la profundidad suavizada mala a propósito: se usa la cruda), la caída
+al sensor de movimiento si ARCore no arranca, y el ganado con 3 tomas (escala ar-*, peso, Excel, lo de ARCore guardado).
 
 `lab_t.js` (solo 8111, sin cámara) prueba el laboratorio completo (#pclab): arma mediciones de ganado con calidad de
 la toma y datos del animal (los reales pesan con γ = 0.9 y +8 %; las fotos poco nítidas tienen más error) y comprueba
