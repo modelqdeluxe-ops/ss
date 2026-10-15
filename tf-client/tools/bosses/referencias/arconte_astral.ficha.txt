@@ -1,0 +1,9 @@
+jefe arconte_astral: mob astral_archon, vida 800 (pack 250), daño 8, modelo arconte_astral.astral_archon, caja [1.9375, 6.4375], ataques 5
+mob astral_archon: GHAST, caja 1.9375×6.4375 (ojos 5.4719, escala 1.0, del modelo), velocidad 0.7, vida 250, daño None, IA None, modificadores None, 18 líneas
+mob astral_archon_star: efecto ARMOR_STAND, modelo arconte_astral.astral_archon_star, 4 líneas
+mob astral_archon_star_vibrant: efecto ARMOR_STAND, modelo arconte_astral.astral_archon_star, 4 líneas
+  modelo arconte_astral.astral_archon: 33 huesos, huella edba38a18dd023a6, caja [1.9375, 6.4375], sombra None, head 2
+    cabezas: head jaw
+    animaciones: cast_1:4.0 cast_2:3.0 cast_3:6.0 cast_4:2.0 death:4.0 idle:2.0 ring_spin:1.0 stun:6.70833 vibrant:5.0
+  modelo arconte_astral.astral_archon_star: 1 huesos, huella c5cae0ef29abb733, caja None, sombra None, 
+    animaciones: idle:3.0 spawn:0.25

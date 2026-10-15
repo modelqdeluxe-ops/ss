@@ -146,6 +146,12 @@ public final class SkillDefs {
         public List<String> aiTargets = List.of();
         /** Options: NoAI (sin IA desde que aparece: ni se mueve ni cae, como en Minecraft). */
         public boolean noAi;
+        /** Options: NoGravity (no cae: la Tormenta del Wither flota). */
+        public boolean noGravity;
+        /** Options: LockPitch (la cabeza no mira arriba ni abajo). */
+        public boolean lockPitch;
+        /** Options: KnockbackResistance (0 a 1), o la de su tipo de Minecraft. */
+        public double knockbackResistance = 1;
         /** Se quema al sol como su tipo (zombi, esqueleto, ahogado, fantasma) si el pack no pone PreventSunburn. */
         public boolean sunburn;
         /** Barra de jefe de las opciones del mob (BossBar: Enabled): color y estilo. */
@@ -254,6 +260,11 @@ public final class SkillDefs {
         public List<String> previewHide = List.of();
         /** Objetos que suelta (dropitem): id de MythicMobs → modelo de ítem y nombre. */
         public final Map<String, Drop> drops = new LinkedHashMap<>();
+        /**
+         * Su relevo: los mobs que saca al morir y siguen la pelea (el Mamut del Druida Boreal), en minúsculas → su
+         * nombre en español. La grieta no se gana hasta que cae el último.
+         */
+        public final Map<String, String> successors = new HashMap<>();
     }
 
     /** Un objeto que suelta un jefe: su modelo (y el de cubrirse, si es escudo), nombre, tipo y sus skills del pack
@@ -406,6 +417,11 @@ public final class SkillDefs {
                 bi.hitH = (float) num(b.getAsJsonArray("hitbox").get(1), 2);
             }
             bi.attacks = strings(b.get("attacks"));
+            if (b.has("successors") && b.get("successors").isJsonObject()) {
+                for (Map.Entry<String, JsonElement> e : b.getAsJsonObject("successors").entrySet()) {
+                    bi.successors.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());
+                }
+            }
             bi.previewHide = strings(b.get("preview_hide"));
             if (o.has("drops") && o.get("drops").isJsonObject()) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("drops").entrySet()) {
@@ -466,12 +482,12 @@ public final class SkillDefs {
                 mob.living = false; // sus esbirros no son los de las clases (llevan su propia IA de mob de verdad)
                 double typeSpeed = num(m.get("speed"), 0.25);
                 mob.typeSpeed = typeSpeed;
-                mob.speed = opts.has("MovementSpeed") ? num(opts.get("MovementSpeed"), typeSpeed) : typeSpeed;
+                mob.speed = opt(opts, "MovementSpeed") != null ? num(opt(opts, "MovementSpeed"), typeSpeed) : typeSpeed;
                 mob.display = str(m, "display", null);
                 mob.damage = num(m.get("damage"), 0);
                 mob.armor = num(m.get("armor"), 0);
-                mob.invincible = bool(opts.get("Invincible"));
-                mob.collidable = !opts.has("Collidable") || bool(opts.get("Collidable"));
+                mob.invincible = bool(opt(opts, "Invincible"));
+                mob.collidable = opt(opts, "Collidable") == null || bool(opt(opts, "Collidable"));
                 mob.faction = str(m, "faction", null);
                 mob.model = str(m, "model", null);
                 if (m.has("damage_modifiers") && m.get("damage_modifiers").isJsonArray()) {
@@ -482,8 +498,15 @@ public final class SkillDefs {
                 }
                 mob.goals = SkillAI.apply(SkillAI.vanillaGoals(mob.type), m.has("ai_goals") ? strings(m.get("ai_goals")) : null, false);
                 mob.aiTargets = SkillAI.apply(SkillAI.vanillaTargets(mob.type), m.has("ai_targets") ? strings(m.get("ai_targets")) : null, true);
-                mob.noAi = bool(opts.get("NoAI"));
-                mob.sunburn = SUNBURN.contains(mob.type) && !bool(opts.get("PreventSunburn"));
+                mob.noAi = bool(opt(opts, "NoAI"));
+                mob.noGravity = bool(opt(opts, "NoGravity"));
+                mob.sunburn = SUNBURN.contains(mob.type) && !bool(opt(opts, "PreventSunburn"));
+                mob.lockPitch = bool(opt(opts, "LockPitch"));
+                mob.knockbackResistance = opt(opts, "KnockbackResistance") != null
+                        ? Math.max(0, Math.min(1, num(opt(opts, "KnockbackResistance"), 0))) : SkillAI.knockbackResistance(mob.type);
+                // Un esqueleto sin el arco que le da Minecraft (PreventRandomEquipment) pega cuerpo a cuerpo
+                // (AbstractSkeleton.reassessWeaponGoal)
+                if (bool(opt(opts, "PreventRandomEquipment"))) mob.goals = SkillAI.withoutBow(mob.goals);
                 if (m.has("bossbar") && m.get("bossbar").isJsonObject()) {
                     JsonObject bb = m.getAsJsonObject("bossbar");
                     if (bool(bb.get("Enabled"))) {
@@ -593,6 +616,13 @@ public final class SkillDefs {
 
     private static String str(JsonObject o, String key, String def) {
         return o.has(key) && o.get(key).isJsonPrimitive() ? o.get(key).getAsString() : def;
+    }
+
+    /** Una opción de MythicMobs sin mirar mayúsculas («noAI», «NoAi» y «NoAI» son la misma). */
+    private static JsonElement opt(JsonObject opts, String key) {
+        if (opts.has(key)) return opts.get(key);
+        for (Map.Entry<String, JsonElement> e : opts.entrySet()) if (e.getKey().equalsIgnoreCase(key)) return e.getValue();
+        return null;
     }
 
     private static boolean bool(JsonElement e) {

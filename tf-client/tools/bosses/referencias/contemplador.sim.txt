@@ -1,0 +1,74 @@
+## semilla 3, el pack tal cual
+contemplador        480 s, vida  69.2%: 262 ataques (32.8/min), 10 distintos de 17
+       64  hit_1
+       56  hit_2
+       47  hit_3
+       47  bite
+       11  fire_laser_5
+       11  fire_laser_2
+        9  fire_laser_3
+        8  fire_laser_1
+        8  fire_laser_4
+        1  overlay_anim
+     sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
+     repite seguido: 35 de 261; curas castigadas: 3 de 16
+
+## semilla 3, normal
+contemplador        480 s, vida  66.5%: 603 ataques (75.4/min), 10 distintos de 17
+       84  fire_laser_3
+       79  fire_laser_5
+       77  fire_laser_4
+       74  fire_laser_2
+       71  fire_laser_1
+       64  hit_2
+       61  hit_3
+       52  hit_1
+       40  bite
+        1  overlay_anim
+     sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
+     repite seguido: 31 de 602; curas castigadas: 7 de 16; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+contemplador        480 s, vida  75.6%: 597 ataques (74.6/min), 10 distintos de 17
+       94  fire_laser_4
+       84  fire_laser_3
+       83  fire_laser_5
+       71  fire_laser_1
+       71  fire_laser_2
+       57  bite
+       52  hit_2
+       44  hit_1
+       40  hit_3
+        1  overlay_anim
+     sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
+     repite seguido: 47 de 596; curas castigadas: 6 de 16; combos: 6; pasos atrás: 0
+
+## semilla 11, normal
+contemplador        480 s, vida  65.9%: 529 ataques (66.1/min), 10 distintos de 17
+       65  fire_laser_3
+       64  hit_2
+       63  hit_1
+       63  fire_laser_4
+       62  fire_laser_5
+       60  fire_laser_1
+       59  hit_3
+       51  fire_laser_2
+       41  bite
+        1  overlay_anim
+     sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
+     repite seguido: 31 de 528; curas castigadas: 6 de 17; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+contemplador        480 s, vida  65.5%: 640 ataques (80.0/min), 10 distintos de 17
+       88  fire_laser_4
+       87  fire_laser_3
+       85  fire_laser_1
+       78  fire_laser_5
+       73  fire_laser_2
+       66  hit_3
+       62  hit_1
+       53  hit_2
+       47  bite
+        1  overlay_anim
+     sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
+     repite seguido: 29 de 639; curas castigadas: 6 de 13; combos: 3; pasos atrás: 0

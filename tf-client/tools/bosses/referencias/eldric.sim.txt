@@ -1,0 +1,64 @@
+## semilla 3, el pack tal cual
+eldric              480 s, vida  58.8%: 115 ataques (14.4/min), 9 distintos de 8
+       32  attack_2
+       30  attack_1
+       23  attack_4
+       21  attack_3
+        3  leap
+        3  air
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 3 de 114; curas castigadas: 11 de 15
+
+## semilla 3, normal
+eldric              480 s, vida  59.0%: 117 ataques (14.6/min), 9 distintos de 8
+       23  attack_1
+       22  attack_4
+       19  attack_3
+       17  leap
+       17  air
+       16  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 2 de 116; curas castigadas: 7 de 17; combos: 0; pasos atrás: 0
+
+## semilla 3, demencial
+eldric              480 s, vida  63.0%: 147 ataques (18.4/min), 9 distintos de 8
+       32  attack_1
+       26  attack_3
+       22  leap
+       22  air
+       22  attack_4
+       20  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 1 de 146; curas castigadas: 7 de 15; combos: 11; pasos atrás: 11
+
+## semilla 11, normal
+eldric              480 s, vida  57.0%: 97 ataques (12.1/min), 9 distintos de 8
+       20  attack_1
+       18  attack_4
+       16  attack_3
+       14  leap
+       14  air
+       12  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 0 de 96; curas castigadas: 3 de 13; combos: 0; pasos atrás: 0
+
+## semilla 11, dificil
+eldric              480 s, vida  59.8%: 127 ataques (15.9/min), 9 distintos de 8
+       27  attack_1
+       22  attack_4
+       22  attack_3
+       18  leap
+       18  air
+       17  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 0 de 126; curas castigadas: 7 de 15; combos: 11; pasos atrás: 11

@@ -284,9 +284,31 @@ def parse_condition(line):
     m = re.match(r'^(!?[\w:]+)\s*(\{[^}]*\})?\s*(.*)$', line)
     if not m:
         return None
-    rest = m.group(3).strip().lower()
-    return {'m': m.group(1).lower(), 'a': parse_args(m.group(2)[1:-1]) if m.group(2) else {},
-            'v': rest or 'true'}
+    rest = m.group(3).strip()
+    name = m.group(1).lower()
+    args = parse_args(m.group(2)[1:-1]) if m.group(2) else {}
+    # Forma antigua de MythicMobs: «- hasaura Dive false», «- targetwithin 25», «- stance rage false»: el valor suelto
+    # es su atributo principal (el «conditionVar» que cada condición toma como valor por defecto)
+    if not m.group(2) and rest:
+        first, _, after = rest.partition(' ')
+        if first.lower() not in CONDITION_ACTIONS:
+            args = {LEGACY_CONDITION_KEY.get(name.lstrip('!'), '_'): first}
+            rest = after.strip()
+    return {'m': name, 'a': args, 'v': rest.lower() or 'true'}
+
+
+# Lo que va detrás del nombre de una condición: su acción (true/false, power, cast...)
+CONDITION_ACTIONS = {'true', 'false', 'power', 'cast', 'castinstead', 'orelsecast', 'required', 'cancel'}
+# El atributo que es el valor suelto de cada condición en la forma antigua («- hasaura Dive false»: aura=Dive). Las que
+# no estén aquí lo guardan en «_» y el auditor de los jefes lo marca para añadirlas
+LEGACY_CONDITION_KEY = {
+    'hasaura': 'aura', 'hasbuff': 'aura', 'targetwithin': 'd', 'targetnotwithin': 'd', 'playerwithin': 'd',
+    'playernotwithin': 'd', 'distance': 'd', 'stance': 's', 'biome': 'b', 'variableisset': 'var', 'varisset': 'var',
+    'health': 'h', 'healthpercent': 'p', 'altitude': 'a', 'score': 'v', 'entitytype': 't', 'mobtype': 't',
+    'mythicmobtype': 't', 'world': 'w', 'gamemode': 'm', 'haspotioneffect': 't', 'haspotion': 't', 'faction': 'f',
+    'lightlevel': 'l', 'height': 'h', 'mobsinradius': 'a', 'moving': 'v', 'inblock': 'b', 'onblock': 'b',
+    'hastag': 't', 'dawn': 'v', 'level': 'l', 'yaw': 'y', 'pitch': 'p', 'chance': 'c', 'offgcd': 'v',
+}
 
 
 def pick_files(pack_dir):
@@ -382,13 +404,19 @@ def refs(mech):
             skills += skill_names(a[k])
     if m == 'switch' and a.get('cases'):
         skills += [x.split('=', 1)[1] for x in str(a['cases']).split(',') if '=' in x]
-    if m in ('summon', 'totem', 'projectile', 'missile', 'orbital', 'shoot', 'mountmodel', 'mythicmobtype', 'spawn'):
+    if m in ('summon', 'totem', 'projectile', 'missile', 'orbital', 'shoot', 'mountmodel', 'mythicmobtype', 'spawn',
+             'bindhitbox'):
         for k in ('type', 't', 'mob', 'mobtype', 'bullettype', 'bm', 'bulletmob', 'mm'):
             v = a.get(k)
-            if v and v.upper() not in ('MOB', 'ARROW', 'ITEM', 'DISPLAY', 'BLOCK', 'SMALL_FIREBALL', 'TRIDENT',
-                                       'ME', 'MODELENGINE'):
+            if v and v.upper() not in BULLET_TYPES:
                 mobs.append(v)
     return skills, mobs
+
+
+# Tipos de bala de projectile/missile (bulletType, wiki de MythicMobs) y de proyectil (type=NORMAL|METEOR): no son mobs
+BULLET_TYPES = {'MOB', 'ARROW', 'ITEM', 'MYTHICITEM', 'DISPLAY', 'BLOCK', 'SMALLBLOCK', 'SMALL_BLOCK', 'SMALL_FIREBALL',
+                'TRIDENT', 'ME', 'MEG', 'MODELENGINE', 'TRACKING', 'ARMOR_STAND', 'ARMORSTAND', 'PSTAND', 'REALTRACKING',
+                'RTRACKING', 'REAL_ARMOR_STAND', 'REALARMORSTAND', 'STAND', 'TEXT', 'NORMAL', 'METEOR'}
 
 
 def switch_cases(text):

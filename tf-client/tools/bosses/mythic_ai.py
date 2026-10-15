@@ -15,7 +15,7 @@ JAVA = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'java', 'n
 AI_OK = {
     'meleeattack': None, 'zombieattack': None, 'spiderattack': None, 'movetowardstarget': None, 'lookattarget': None,
     'lookatplayers': None, 'randomstroll': None, 'panic': None, 'float': None, 'leapattarget': None,
-    'gotospawnlocation': None, 'restrictsun': None, 'fleesun': None, 'clear': None,
+    'gotospawnlocation': None, 'restrictsun': None, 'fleesun': None, 'clear': None, 'type:ghast': None,
     'randomlookaround': 'solo gira la cabeza a ningún sitio en concreto (no cambia a quién ataca ni a dónde va)',
     'randomnod': 'solo cabecea',
     'donothing': 'no hace nada (sin condiciones, que son de MythicMobs Premium)',
@@ -26,7 +26,7 @@ AI_OK = {
     'movethroughvillage': 'las grietas no están en aldeas',
     'movetowardsrestriction': 'los mobs de los jefes no tienen zona de restricción (la de su grieta es la correa)',
 }
-TARGETS_OK = {'clear', 'hurtbytarget', 'players', 'monsters', 'type:spider'}
+TARGETS_OK = {'clear', 'hurtbytarget', 'players', 'monsters', 'villagers', 'irongolem', 'type:spider'}
 
 # Tipos de Minecraft que son seres vivos (tienen IA): en el juego, un mob de verdad del jefe (BossEntity); los demás
 # (soportes, marcadores, displays) son efectos que dibuja el cliente
@@ -133,8 +133,26 @@ def unknown(entries, targets=False):
             and (target_name(e) if targets else goal_name(e)) not in ((TARGETS if targets else GOALS) | {'clear'})]
 
 
+def opt(mob, key, default=None):
+    """Una opción de MythicMobs sin mirar mayúsculas (como SkillDefs.opt)."""
+    opts = mob.get('options') or {}
+    if key in opts:
+        return opts[key]
+    return next((v for k, v in opts.items() if str(k).lower() == key.lower()), default)
+
+
+def flag(mob, key):
+    return str(opt(mob, key, 'false')).lower() == 'true'
+
+
+def without_bow(goals):
+    """SkillAI.withoutBow: sin el arco de Minecraft (PreventRandomEquipment), el esqueleto pega cuerpo a cuerpo."""
+    return ['meleeattack' if goal_name(g) == 'bowattack' and '{' not in g else g for g in goals]
+
+
 def goals_of(mob):
-    return apply(vanilla_goals(mob.get('type')), mob.get('ai_goals'))
+    g = apply(vanilla_goals(mob.get('type')), mob.get('ai_goals'))
+    return without_bow(g) if flag(mob, 'PreventRandomEquipment') else g
 
 
 def targets_of(mob):

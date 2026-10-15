@@ -261,6 +261,7 @@ variableskill vskill metavariableskill
 """
 
 CONDITIONS = """
+isflying flying
 *altitude height
 biome
 *blocking isblocking
@@ -364,6 +365,7 @@ modelhaspassenger
 """
 
 TARGETERS = """
+randomringpoint
 *self caster boss mob
 *target t
 *trigger

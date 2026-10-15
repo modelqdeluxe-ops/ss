@@ -309,6 +309,13 @@ public final class SkillClient {
             case "item" -> {
                 a.item = m.a().isEmpty() ? null : new ResourceLocation(m.a());
                 a.itemScale = parse(m.b(), 1F);
+                // Cómo se dibuja: «head» (la bala TRACKING de MythicMobs: un soporte con el objeto en la cabeza),
+                // «ground» (ITEM: un objeto suelto que gira), si no como un display (FIXED)
+                a.itemContext = switch (m.c() == null ? "" : m.c()) {
+                    case "head" -> ItemDisplayContext.HEAD;
+                    case "ground" -> ItemDisplayContext.GROUND;
+                    default -> ItemDisplayContext.FIXED;
+                };
             }
             case "beam" -> a.beam = m.a().isEmpty() ? null : m.a();
             default -> { }
@@ -732,10 +739,15 @@ public final class SkillClient {
         if (model == null || model == Minecraft.getInstance().getModelManager().getMissingModel()) return;
         pose.pushPose();
         pose.translate(at.x, at.y, at.z);
-        pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
-        pose.mulPose(Axis.XP.rotationDegrees(pitch));
+        if (a.itemContext == ItemDisplayContext.GROUND) {
+            // Un objeto suelto de Minecraft (ItemEntityRenderer): gira solo, sin seguir la dirección
+            pose.mulPose(Axis.YP.rotation((a.age + Minecraft.getInstance().getFrameTime()) / 20F));
+        } else {
+            pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+            pose.mulPose(Axis.XP.rotationDegrees(pitch));
+        }
         pose.scale(a.itemScale, a.itemScale, a.itemScale);
-        Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.FIXED, false, pose, buffers, FULL_BRIGHT,
+        Minecraft.getInstance().getItemRenderer().render(STACK, a.itemContext, false, pose, buffers, FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, model);
         pose.popPose();
     }
@@ -852,6 +864,7 @@ public final class SkillClient {
         int wholeLight = -1;
         ResourceLocation item;
         float itemScale = 1F;
+        ItemDisplayContext itemContext = ItemDisplayContext.FIXED;
         /** enderbeam: el rayo hacia una entidad («e:id») o un sitio («p:x,y,z»), con su cristal del End (solo dibujado). */
         String beam;
         net.minecraft.world.entity.boss.enderdragon.EndCrystal crystal;

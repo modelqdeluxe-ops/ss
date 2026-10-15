@@ -222,7 +222,7 @@ class Boss:
         self.melee = AI.melee(self.goals)
         self.melee_wait = 0
         self.scores = {}
-        if str(opts.get('NoAI', 'false')).lower() == 'true':
+        if AI.flag(self.mob, 'NoAI'):
             self.ai = False
         self.target = False
         self.combat = False
@@ -720,6 +720,11 @@ class Sim:
         self.hits = 0
         self.cancelled_hits = 0
         self.melee_tries = self.melee_hits = 0
+        # El modelo del jefe (los scripts «mm:» de sus animaciones) y qué animación tiene cada prioridad
+        mp = os.path.join(RES, 'models', str(self.prog['boss'].get('model')) + '.json')
+        self.model = json.load(open(mp, encoding='utf-8')) if os.path.exists(mp) else None
+        self.script_tok = {}
+        self.fireballs = 0
         self.unknown = set()
         # Lo que hace el jugador (para ver si el jefe le castiga)
         self.heal_until = self.block_until = self.aim_until = -1
@@ -856,7 +861,9 @@ class Sim:
                 b.x += (self.px - b.x) / d * step
                 b.z += (self.pz - b.z) / d * step
                 moving = True
+        b.moving = moving
         self.melee_step()
+        self.ghast_step()
         want = yaw_of(self.px - b.x, self.pz - b.z)
         if b.chases and b.ai:
             b.look = wrap(b.look + max(-30, min(30, wrap(want - b.look))))
@@ -895,6 +902,45 @@ class Sim:
         self.trigger('oncombat', vars, hit=hit)
         if not hit['cancelled'] and hit['amount'] > 0:
             self.melee_hits += 1
+
+    def play_scripts(self, s, a):
+        """SkillMobs.scripts: los «mm:» de la línea de tiempo de la animación que pone (a su velocidad y con el tempo),
+        mientras siga puesta en su prioridad; las de bucle, otra vez en cada vuelta."""
+        anim = (self.model or {}).get('anims', {}).get(s)
+        if not anim or not anim.get('fx'):
+            return
+        prio = int(num(arg(a, 1, 'priority', 'p'), 1))
+        tok = object()
+        self.script_tok[prio] = (s, tok)
+        sp = max(0.05, num(arg(a, 1, 'speed', 'sp'), 1) * tempo())
+        length = max(0.05, float(anim.get('length') or 0))
+
+        def lap():
+            if self.script_tok.get(prio, (None, None))[1] is not tok:
+                return
+            for t, skill in anim['fx']:
+                def go(sk=skill):
+                    if self.script_tok.get(prio, (None, None))[1] is tok:
+                        self.run_meta(sk, {'targets': None, 'vars': {}, 'depth': 0, 'hit': None})
+                self.later(int(round(float(t) * 20 / sp)), go)
+            if anim.get('loop') == 'loop':
+                self.later(max(1, int(round(length * 20 / sp))), lap)
+
+        lap()
+
+    def ghast_step(self):
+        """BossEntity.ghastStep: la bola de fuego del ghast (20 de carga, 40 de espera), con ~onShoot antes de salir."""
+        b = self.b
+        if not (b.ai and b.target and AI.has(b.goals, 'type:ghast')) or self.dist() >= 64:
+            b.ghast_charge = 0 if not b.target else max(0, getattr(b, 'ghast_charge', 0) - 1)
+            return
+        b.ghast_charge = getattr(b, 'ghast_charge', 0) + 1
+        if b.ghast_charge == 20:
+            b.ghast_charge = -40
+            hit = {'amount': 0, 'cancelled': False, 'scale': 1.0}
+            self.trigger('onshoot', {'bow-tension': 1}, hit=hit)
+            if not hit['cancelled']:
+                self.fireballs += 1
 
     # ------------------------------------------------------------------ disparadores
     def trigger(self, tr, vars=None, value=None, hit=None):
@@ -1028,7 +1074,21 @@ class Sim:
             return in_range(1, arg(a, '0', 'amount', 'a'))
         if m in ('itemrecharging', 'wearing', 'iswearing', 'wielding', 'iswielding', 'haspermission'):
             return False
-        if m in ('ydiff', 'onground', 'altitude', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
+        if m == 'stance':
+            # SkillConds: la postura de quien la mire (setstance)
+            return who == 'boss' and str(getattr(b, 'stance', '') or '').lower() == str(arg(a, '', 'stance', 's')).lower()
+        if m in ('variableisset', 'varisset'):
+            return b.var(str(arg(a, '', 'var', 'variable', 'name', 'key', 'k'))) is not None
+        if m in ('moving', 'ismoving'):
+            # el jugador de la prueba siempre se mueve; el jefe, si anda
+            return who == 'player' or bool(getattr(b, 'moving', False))
+        if m in ('sprinting', 'crouching', 'iscrouching', 'sneaking', 'inblock'):
+            return False
+        if m == 'altitude':
+            # en el suelo (0); los que vuelan como un ghast, a media altura (6): la prueba no tiene alturas
+            alt = 6.0 if AI.has(b.goals, 'type:ghast') or AI.flag(b.mob, 'NoGravity') else 0.0
+            return in_range(alt, arg(a, '>0', 'altitude', 'a', 'height', 'h'))
+        if m in ('ydiff', 'onground', 'blocking', 'mythicmobtype', 'boundingboxesoverlap'):
             return m in ('ydiff', 'onground')
         self.unknown.add('cond:' + m)
         return True
@@ -1131,6 +1191,9 @@ class Sim:
                 return
         if pm.get('ch') not in (None, 1, 1.0) and random.random() >= float(pm['ch']):
             return
+        # SkillRuntime.exec: el modificador de vida de la línea, también dentro de una skill
+        if pm.get('hp') and not self.hp_ok(pm['hp']):
+            return
         delay = int(max(0, round(num(a.get('delay'), 0) / tempo())))
         repeat = int(num(arg(a, 0, 'repeat'), 0))
         every = max(1, int(round(num(arg(a, 1, 'repeatinterval', 'repeati'), 1) / tempo())))
@@ -1211,8 +1274,13 @@ class Sim:
                 pass
         elif m in ('state', 'animation', 'statetoggle', 'togglestate'):
             s = str(arg(a, '', 'state', 's', 'animation', 'a'))
+            # «hit_<random.1to3>» (SkillModels.state lo resuelve cada vez)
+            s = re.sub(r'<random\.(?:int\.)?(-?\d+)to(-?\d+)>', lambda mt: str(random.randint(int(mt.group(1)), int(mt.group(2)))), s)
+            if 'boss' in targets and str(arg(a, 'false', 'remove', 'r')).lower() == 'true':
+                self.script_tok = {k: v for k, v in self.script_tok.items() if v[0] != s}
             if str(arg(a, 'false', 'remove', 'r')).lower() == 'true' or 'boss' not in targets:
                 return
+            self.play_scripts(s, a)
             if self.root_on and self.root_bone:
                 self.root_motion(s)
             if s not in NOT_ATTACKS:
@@ -1248,6 +1316,9 @@ class Sim:
                     v = {'ADD': now + v, 'SUBTRACT': now - v, 'SUB': now - v, 'MULTIPLY': now * v, 'MULT': now * v,
                          'DIVIDE': now / v if v else now, 'DIV': now / v if v else now}.get(act, v)
                 b.scores[obj] = v
+        elif m == 'setstance':
+            if 'boss' in targets:
+                b.stance = str(arg(a, '', 'stance', 's'))
         elif m in ('runaigoalselector', 'aigoal', 'aigoals', 'runaitargetselector', 'aitarget'):
             # BossEntity.addAiGoal: uno más en su IA (clear quita los de antes; en los de búsqueda, también su objetivo)
             tgt = m in ('runaitargetselector', 'aitarget')
@@ -1506,6 +1577,8 @@ def main():
                     print(f'       cerebro: {a.name:44s} {a.min:4.1f}-{a.max:4.1f} {tags:18s} usos {a.uses:3d} entran {a.hits:3d}')
         if s.cancelled_hits:
             print(f'     golpes anulados por el pack (cancelevent/modifydamage/invulnerable): {s.cancelled_hits} de {s.hits}')
+        if s.fireballs:
+            print(f'     bolas de fuego del ghast: {s.fireballs}')
         if s.melee_hits:
             print(f'     golpes de Minecraft (~onAttack) que entran: {s.melee_hits} de {s.melee_tries}')
         if s.unknown:

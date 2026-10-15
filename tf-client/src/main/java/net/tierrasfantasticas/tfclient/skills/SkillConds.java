@@ -64,6 +64,8 @@ final class SkillConds {
                 yield range == null ? stacks > 0 : inRange(stacks, range);
             }
             case "crouching", "sneaking", "issneaking", "iscrouching" -> e != null && e.isCrouching();
+            // isflying: el jugador vuela (Player.isFlying de Bukkit: el vuelo de creativo o el que le den, no el élitro)
+            case "isflying", "flying" -> e instanceof Player p && p.getAbilities().flying;
             case "sprinting", "issprinting" -> e != null && e.isSprinting();
             case "onground", "grounded" -> e != null ? e.onGround() : who == null || who.actor == null || !who.actor.physics || who.actor.onGround;
             case "inblock", "blocktype", "inside", "standingon" -> {

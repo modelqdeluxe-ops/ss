@@ -59,7 +59,6 @@ STUB_OK = {
     'swing': 'el brazo de Minecraft: los jefes son modelos',
     'removehelditem': 'los jefes no llevan objetos de Minecraft en la mano',
     'setcollidable': 'los jefes no empujan ni se dejan empujar ya',
-    'bindhitbox': 'las cajas de golpe salen de los huesos ob_ del modelo (BossPart)',
     'cullconfig': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'renderinit': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'particleequation': 'MythicMobs dice que aún no funciona («not yet functional… not intended to be used», wiki)',
@@ -292,8 +291,15 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             if s and str(a.get('r', a.get('remove', 'false'))).lower() != 'true':
                 # (SkillModels.state no mira su «model»: el «wood_cirlce» de Astwood va igual)
                 have = set().union(*[anims(model(x)) for x in models]) if models else all_anims
-                if s not in have:
-                    problems.append(f'{where}: la animación «{s}» no está en {", ".join(models) or "ningún modelo"}')
+                # «hit_<random.1to3>»: cada una de las que puede salir (SkillModels.state resuelve el marcador)
+                rnd = re.search(r'<random\.(?:int\.)?(-?\d+)to(-?\d+)>', str(s))
+                names = [str(s)[:rnd.start()] + str(i) + str(s)[rnd.end():] for i in range(int(rnd.group(1)), int(rnd.group(2)) + 1)] \
+                    if rnd else [s]
+                for n in names:
+                    if '<' in str(n):
+                        warns.append((f'animación «{n}» con un marcador que el auditor no puede comprobar', where))
+                    elif n not in have:
+                        problems.append(f'{where}: la animación «{n}» no está en {", ".join(models) or "ningún modelo"}')
         # Huesos
         refs = []
         if m in BONE_MECHS:
@@ -382,6 +388,9 @@ def audit(bid, engine_sets, warnings=None, prog=None):
         for i, pm in enumerate(meta['mechs']):
             check_line(pm, f'skill {name} #{i + 1}', meta=name)
         for c in flat(list(conds_of(meta))):
+            if '_' in (c.get('a') or {}):
+                problems.append(f'skill {name}: condición «{c["m"]}» en la forma antigua («{c["m"]} {c["a"]["_"]}»): '
+                                f'di en compile.LEGACY_CONDITION_KEY cuál es su atributo')
             if c['m'] not in condset:
                 problems.append(f'skill {name}: condición «{c["m"]}» sin implementar')
             elif c['m'] in stub_c:
@@ -418,6 +427,18 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             name = snd if isinstance(snd, str) else snd.get('name', '')
             if name.startswith('tfclient:') and not os.path.exists(os.path.join(RES, 'sounds', name.split(':', 1)[1] + '.ogg')):
                 problems.append(f'sonido {key}: falta el archivo {name}.ogg')
+    # Huecos del pack revisados (build_bosses.HUECOS): lo que el pack nombra y no trae, que en MythicMobs/ModelEngine
+    # tampoco hace nada; quedan como aviso con su porqué
+    gaps = prog.get('gaps') or {}
+    if gaps:
+        keep = []
+        for p in problems:
+            hit = next((g for g in gaps if f'«{g}»' in p or p.endswith(f': {g}') or f'modelo {g}' in p), None)
+            if hit:
+                warns.append((f'hueco del pack (tampoco hace nada en MythicMobs): {gaps[hit]}', p.split(':', 1)[0]))
+            else:
+                keep.append(p)
+        problems = keep
     # Sin repetir (la misma línea en onspawn y onload)
     seen, out = set(), []
     for p in problems:
@@ -581,7 +602,7 @@ def check_ai(mob, md, lines, problems, warns):
             wakes |= on if pm['m'] == 'setai' else not on
     goals = [g for g in goals if AI.goal_name(g) != 'clear']
     targets = [t for t in targets if AI.target_name(t) != 'clear']
-    if str(opts.get('NoAI', 'false')).lower() == 'true' and not wakes:
+    if AI.flag(md, 'NoAI') and not wakes:
         return  # sin IA nunca (como en MythicMobs)
     if md.get('kind') != 'entity':
         # Un ser vivo con Invincible: aquí es un efecto que no se mueve solo; en MythicMobs tendría esta IA
@@ -643,10 +664,10 @@ def selftest():
         ('disparador del tipo de mob que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'CREEPER'),
                                                                p['mobs'][boss]['mechs'].append({'m': 'skill', 'a': {'s': skill}, 't': 'self', 'tr': 'onexplode'})),
          'onexplode'),
-        ('IA de su tipo que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'GHAST'), p['mobs'][boss].pop('ai_goals', None)),
-         'type:ghast'),
-        ('a quién busca que no copia', lambda p: p['mobs'][boss].__setitem__('ai_targets', ['clear', 'villagers']),
-         'villagers'),
+        ('IA de su tipo que no copia', lambda p: (p['mobs'][boss].__setitem__('type', 'VEX'), p['mobs'][boss].pop('ai_goals', None)),
+         'type:vex'),
+        ('a quién busca que no copia', lambda p: p['mobs'][boss].__setitem__('ai_targets', ['clear', 'nearestotherfaction']),
+         'nearestotherfaction'),
         ('IA que pone una skill y no copia', lambda p: p['mobs'][boss]['mechs'].append({'m': 'runaigoalselector', 'a': {'goal': 'bowattack'},
                                                                                         'tr': 'onspawn'}),
          'bowattack'),
@@ -657,9 +678,9 @@ def selftest():
         cases.append(('mecánica que no hace nada sin explicar', lambda p: p['tree'][skill]['mechs'].append({'m': fake_stub, 'a': {}}),
                       fake_stub))
     # Una mecánica «de mentira» nueva en el Java, sin su porqué en STUB_OK: tiene que salir como problema
-    STUB_OK_BACKUP = STUB_OK.pop('bindhitbox', None)
-    cases.append(('mecánica de mentira sin su porqué', lambda p: p['tree'][skill]['mechs'].append({'m': 'bindhitbox', 'a': {}}),
-                  'bindhitbox'))
+    STUB_OK_BACKUP = STUB_OK.pop('cullconfig', None)
+    cases.append(('mecánica de mentira sin su porqué', lambda p: p['tree'][skill]['mechs'].append({'m': 'cullconfig', 'a': {}}),
+                  'cullconfig'))
     cases.append(('hueso de una mecánica de ModelEngine que no existe',
                   lambda p: p['mobs'][boss]['mechs'].append({'m': 'enchant', 'a': {'p': 'hueso_que_no_hay'}, 't': 'self'}),
                   'hueso_que_no_hay'))
@@ -678,7 +699,7 @@ def selftest():
         bad += not ok
         print(f'  {"OK " if ok else "NO "} {name}' + ('' if ok else f'  (no lo vio: {needle})'))
     if STUB_OK_BACKUP is not None:
-        STUB_OK['bindhitbox'] = STUB_OK_BACKUP
+        STUB_OK['cullconfig'] = STUB_OK_BACKUP
     # Modelos estropeados: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota
     import copy as _copy
     real = model('esqueleto_torre.tower_skeleton')

@@ -1,0 +1,12 @@
+jefe rey_calabaza: mob LR_PUMPKINKING, vida 500 (pack 150), daño 7, modelo rey_calabaza.pumpkin_king, caja [4.0, 8.0], ataques 6
+mob LR_PUMPKINKING: IRON_GOLEM, caja 4.0×8.0 (ojos 6.8, escala 1.0, del modelo), velocidad 0.25, vida 150, daño 1, IA None, modificadores ['SUFFOCATION 0.0'], 34 líneas
+mob LR_PUMPKINKING_CANDY: efecto ARMOR_STAND, modelo rey_calabaza.pumpkin_king_candy_gibs, 7 líneas
+mob LR_PUMPKINKING_GRAVE: efecto ARMOR_STAND, modelo rey_calabaza.pumpkin_king_tombstone, 7 líneas
+mob pumpkin_king_dummy: efecto MARKER, modelo None, 1 líneas
+  modelo rey_calabaza.pumpkin_king: 70 huesos, huella c5923189f26fee1f, caja [4.0, 8.0], sombra None, cabeza 4, head_inherit 1
+    cabezas: head head_glow hat hat_tail_1 hat_tail_2
+    animaciones: death:3.04167 greet:6.5 idle:2.0 passive_layer:4.0 summon:5.5 swing_1:2.5 swing_2:3.0 teleport:0.75 throw_scythe:12.0 walk:1.5
+  modelo rey_calabaza.pumpkin_king_candy_gibs: 1 huesos, huella ac3b0b6b22d87d95, caja None, sombra None, 
+    animaciones: spawn:1.5
+  modelo rey_calabaza.pumpkin_king_tombstone: 2 huesos, huella 2e343d03160c1fbc, caja None, sombra None, 
+    animaciones: spawn:2.5

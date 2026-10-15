@@ -1,0 +1,11 @@
+jefe mega_guardian: mob mega_warden, vida 1200 (pack 100), daño 9, modelo mega_guardian.mega_warden, caja [2.5, 4.375], ataques 5
+mob MEGAWARDEN_concussion: efecto ARMOR_STAND, modelo concussion, 3 líneas
+mob MEGAWARDEN_submerge_rocks: CAT, caja 0.8×1.9 (ojos 1.615, escala 1.0, del modelo), velocidad 0.3, vida None, daño None, IA ['clear'], modificadores None, 3 líneas
+mob mega_warden: IRON_GOLEM, caja 2.5×4.375 (ojos 3.7188, escala 1.0, del modelo), velocidad 0.15, vida 100, daño None, IA None, modificadores None, 21 líneas
+  modelo concussion: NO EXISTE
+  modelo mega_guardian.mega_warden: 46 huesos, huella accbfe4fbd7d7e4a, caja [2.5, 4.375], sombra None, head 3
+    cabezas: head jaw drool
+    animaciones: blast:2.0 death:4.0 eat:3.25 emerge:1.25 idle:2.0 rage:4.5 run:1.0 slam:2.25 sniff_idle:4.0 sniff_walk:4.0 spawn:5.0 stun:5.0 submerge:4.0 swipe_1:1.5 swipe_2:1.25 swipe_3:1.25 walk:4.0
+  modelo mega_guardian.mega_warden_rocks: 6 huesos, huella 42cf333253c4b4db, caja None, sombra None, head 1
+    cabezas: base
+    animaciones: idle:1.0 spawn:1.0

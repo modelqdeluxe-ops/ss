@@ -1,0 +1,13 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:bosses/kazk/glyph/screen_splat.png",
+   "ascent": 200,
+   "height": 400,
+   "chars": [
+    "✺"
+   ]
+  }
+ ]
+}

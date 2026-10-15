@@ -115,7 +115,11 @@ public final class SkillRuntime {
 
         /** Quien invocó al actor (para @owner, @parent). Una entidad no tiene. */
         Who owner() {
-            return actor != null ? actor.owner : null;
+            if (actor != null) return actor.owner;
+            // Un mob de jefe que se invocó (esbirro, cabeza de bindhitbox): su padre es el jefe que lo sacó, como el
+            // «parent» de MythicMobs (@parent, signal @parent)
+            SkillMobs.Host h = entity == null ? null : SkillMobs.host(entity);
+            return h != null && h.boss() != h ? Who.of(h.boss().mob()) : null;
         }
 
         /** El jugador al que se le cuenta lo que hace (daño, muertes). */
@@ -603,6 +607,11 @@ public final class SkillRuntime {
     static void exec(Mech raw, Ctx ctx) {
         Mech m = raw.dyn ? SkillVars.resolve(raw, ctx) : raw;
         if (m.chance < 1.0 && ThreadLocalRandom.current().nextDouble() >= m.chance) return;
+        // Modificador de vida de la línea («- skill{s=X} @self <75%»), también dentro de una skill: la de quien lanza
+        if (m.hp != null) {
+            SkillMobs.Host self = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+            if (self != null && !SkillMobs.hpOk(self, m.hp)) return;
+        }
         // Condiciones en línea («?hasaura{...}», «?!hasaura{...}»): test ya tiene en cuenta el «!» (antes se volvía a
         // negar aquí y todas las «?!» del juego salían al revés: el Asesino, la Bruja, el Caballero de la Muerte...)
         for (Cond c : m.c) {
@@ -1230,8 +1239,9 @@ public final class SkillRuntime {
                 String g = m.arg(null, "target", "aitargetselector", "s", "string", "targetselector", "goal", "g");
                 if (h != null && g != null) h.addAiGoal(g, true);
             }
+            case "bindhitbox" -> SkillMore.bindHitbox(m, ctx);
             case "animatearmorstand", "modifyglobalscore",
-                    "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "bindhitbox", "cullconfig",
+                    "setglobalscore", "feed", "playanimation", "swing", "setcollidable", "cullconfig",
                     "posearmorstand", "removehelditem", "renderinit" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
         }
@@ -1305,6 +1315,15 @@ public final class SkillRuntime {
     private static void summon(Mech m, Ctx ctx, List<Tgt> targets) {
         String type = m.arg(null, "type", "t", "mob", "m");
         MobDef def = ctx.cls.mob(type);
+        if (def == null && type != null && ctx.host != null) {
+            // Un mob de Minecraft (summon{type=WITHER_SKELETON}): MythicMobs lo saca tal cual, con su IA y su equipo
+            net.minecraft.world.entity.EntityType<?> vt = net.minecraft.world.entity.EntityType.byString(
+                    "minecraft:" + type.toLowerCase(Locale.ROOT)).orElse(null);
+            if (vt != null && vt.getCategory() != net.minecraft.world.entity.MobCategory.MISC) {
+                summonVanilla(m, ctx, targets, vt);
+                return;
+            }
+        }
         if (def == null) {
             warn("mob " + type);
             return;
@@ -1351,6 +1370,34 @@ public final class SkillRuntime {
                     c.aim = null;
                     runMeta(onSummon, c);
                 }
+            }
+        }
+    }
+
+    /**
+     * summon de un mob de Minecraft: como el spawnEntity de Bukkit que usa MythicMobs (con finalizeSpawn: el esqueleto
+     * con su arco), en el suelo; como mucho 16 de una vez y 24 vivos cerca de quien los saca.
+     */
+    private static void summonVanilla(Mech m, Ctx ctx, List<Tgt> targets, net.minecraft.world.entity.EntityType<?> vt) {
+        ServerLevel level = ctx.caster.level();
+        int amount = (int) Math.max(1, Math.min(16, num(m.arg("1", "amount", "a"), 1)));
+        double radius = num(m.arg("0", "radius", "r"), 0);
+        Vec3 c = ctx.caster.pos();
+        int near = level.getEntities(vt, new net.minecraft.world.phys.AABB(c, c).inflate(64), e -> e.isAlive()).size();
+        for (Tgt t : targets) {
+            for (int i = 0; i < amount && near < 24; i++, near++) {
+                Vec3 at = t.pos();
+                ThreadLocalRandom rnd = ThreadLocalRandom.current();
+                if (radius > 0) at = at.add((rnd.nextDouble() * 2 - 1) * radius, 0, (rnd.nextDouble() * 2 - 1) * radius);
+                at = SkillMinions.ground(level, at);
+                net.minecraft.world.entity.Entity e = vt.create(level);
+                if (e == null) return;
+                e.moveTo(at.x, at.y, at.z, ctx.caster.yaw(), 0F);
+                if (e instanceof net.minecraft.world.entity.Mob mob) {
+                    mob.finalizeSpawn(level, level.getCurrentDifficultyAt(e.blockPosition()),
+                            net.minecraft.world.entity.MobSpawnType.MOB_SUMMONED, null, null);
+                }
+                level.addFreshEntity(e);
             }
         }
     }

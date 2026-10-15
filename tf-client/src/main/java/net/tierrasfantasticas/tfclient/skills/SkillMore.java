@@ -725,4 +725,21 @@ final class SkillMore {
         c.targets = List.of(t);
         SkillRuntime.runMeta(meta, c);
     }
+
+    /**
+     * bindhitbox{mid;p;t} de ModelEngine: saca el mob «t» y lo ata a la caja ob_ «p» del modelo de quien lanza: va
+     * siempre en esa caja y lo que golpee esa caja le hace daño a él, no al jefe (las tres cabezas de la Tormenta del
+     * Wither, con su vida y su ~onDamaged). Si el modelo no tiene esa caja, como en ModelEngine, no hace nada.
+     */
+    static void bindHitbox(Mech m, Ctx ctx) {
+        SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+        if (h == null || SkillMobs.world == null) return;
+        String part = m.arg(null, "partid", "p", "pid", "part");
+        String type = m.arg("SKELETON", "type", "t", "mob");
+        SkillDefs.MobDef def = ctx.cls.mob(type);
+        Vec3 at = SkillMobs.isHitboxBone(h, part) ? SkillMobs.bonePos(h, part) : null;
+        if (def == null || at == null) return;
+        SkillMobs.Host b = SkillMobs.world.spawnMinion(h.boss(), def, ctx.caster.level(), at, ctx.caster.yaw());
+        if (b != null) h.bindHitbox(part, b);
+    }
 }

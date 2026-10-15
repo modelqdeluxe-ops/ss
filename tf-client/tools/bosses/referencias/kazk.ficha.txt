@@ -1,0 +1,12 @@
+jefe kazk: mob LRD_kazk, vida 800 (pack 250), daño 8, modelo kazk.kazk_queen, caja [2.625, 2.625], ataques 7
+mob LRD_kazk: IRON_GOLEM, caja 2.625×2.625 (ojos 2.2312, escala 1.0, del modelo), velocidad 0.25, vida 250, daño 1, IA None, modificadores None, 28 líneas
+mob LRD_kazk_hole_hold: efecto ARMOR_STAND, modelo kazk.kazk_queen_hole, 6 líneas
+mob LRD_kazk_hole_temp: efecto ARMOR_STAND, modelo kazk.kazk_queen_hole, 5 líneas
+mob LRD_kazk_slash_fx: efecto ARMOR_STAND, modelo kazk.kazk_queen_slash_fx, 6 líneas
+  modelo kazk.kazk_queen: 47 huesos, huella 286e155784c35678, caja [2.625, 2.625], sombra None, head 13, hitbox_obb 6
+    cabezas: head head_glow antennae_left_1 antennae_left_2 antennae_left_3 antennae_left_4 antennae_right_1 antennae_right_2 antennae_right_3 antennae_right_4 jaw mandible_left mandible_right
+    animaciones: attack_1:2.0 attack_2:2.0 attack_3:1.5 attack_4:2.5 burrow:3.20833 dash:2.0 death:3.79167 emerge_attack_1:1.25 emerge_bite:2.0 emerge_death:2.75 emerge_down:1.0 emerge_full:4.0 emerge_half:1.25 emerge_idle:2.0 idle:2.0 scream:3.0 spawn:4.25 spit:2.5 tail_attack:1.75 walk:1.5
+  modelo kazk.kazk_queen_hole: 20 huesos, huella 035571452ad3cead, caja [0.125, 0.125], sombra None, 
+    animaciones: despawn:1.0 idle:2.125 spawn:2.125
+  modelo kazk.kazk_queen_slash_fx: 4 huesos, huella 7ee4ab64503cc38d, caja None, sombra None, 
+    animaciones: spawn:1.5

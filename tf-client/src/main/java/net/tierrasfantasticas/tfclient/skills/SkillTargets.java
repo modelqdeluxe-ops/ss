@@ -145,6 +145,7 @@ final class SkillTargets {
             case "entitiesincone", "eic", "livingentitiesincone", "livingincone", "leic" -> cone(ctx, m);
             // (1.3.82) packs nuevos
             case "ringaroundorigin", "ringorigin", "rao" -> ringAround(m, ctx, origin(ctx), yOff);
+            case "randomringpoint" -> randomRingPoint(m, ctx, yOff);
             case "trackedlocation" -> {
                 SkillRuntime.WhoState st = SkillRuntime.stateIfAny(ctx.caster);
                 yield st == null || st.tracked == null ? List.of() : List.of(Tgt.at(st.tracked.add(0, yOff, 0)));
@@ -732,6 +733,34 @@ final class SkillTargets {
             if (ry != 0) d = d.yRot(ry);
             if (rz != 0) d = d.zRot(rz);
             out.add(Tgt.at(c.add(d).add(0, yOff, 0)));
+        }
+        return out;
+    }
+
+    /**
+     * @RandomRingPoint{radius=5;points=10;amount=1;rotationx/y/z;offsetx/y/z}: «amount» de los «points» puntos de un
+     * anillo alrededor de quien lanza, al azar (la Tormenta del Wither saca de ahí los bloques que absorbe).
+     */
+    private static List<Tgt> randomRingPoint(Mech m, Ctx ctx, double yOff) {
+        double r = SkillRuntime.num(m.targetArg("5", "radius", "r"), 5);
+        int points = (int) Math.max(1, Math.min(256, SkillRuntime.num(m.targetArg("10", "points", "p"), 10)));
+        int amount = (int) Math.max(1, Math.min(points, SkillRuntime.num(m.targetArg("1", "amount", "a"), 1)));
+        float rx = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationx", "rotx", "rx"), 0));
+        float ry = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationy", "roty", "ry"), 0));
+        float rz = (float) Math.toRadians(SkillRuntime.num(m.targetArg("0", "rotationz", "rotz", "rz"), 0));
+        Vec3 off = new Vec3(SkillRuntime.num(m.targetArg("0", "offsetx", "offx", "ox"), 0),
+                SkillRuntime.num(m.targetArg("0", "offsety", "offy", "oy"), 0), SkillRuntime.num(m.targetArg("0", "offsetz", "offz", "oz"), 0));
+        Vec3 c = ctx.caster.pos();
+        List<Integer> idx = new ArrayList<>();
+        for (int i = 0; i < points; i++) idx.add(i);
+        java.util.Collections.shuffle(idx, new java.util.Random(java.util.concurrent.ThreadLocalRandom.current().nextLong()));
+        List<Tgt> out = new ArrayList<>();
+        for (int k = 0; k < amount; k++) {
+            Vec3 d = SkillRuntime.dir(360F * idx.get(k) / points, 0F).scale(r);
+            if (rx != 0) d = d.xRot(rx);
+            if (ry != 0) d = d.yRot(ry);
+            if (rz != 0) d = d.zRot(rz);
+            out.add(Tgt.at(c.add(d).add(off).add(0, yOff, 0)));
         }
         return out;
     }

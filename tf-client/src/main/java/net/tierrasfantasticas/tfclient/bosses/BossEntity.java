@@ -118,6 +118,16 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Vec3 wanderGoal;
     private double wanderSpeed = 1.0;
     private boolean panicking;
+    /** Ghast (RandomFloatAroundGoal + GhastMoveControl + GhastShootFireballGoal): a dónde flota y su carga. */
+    private Vec3 floatGoal;
+    private int floatWait, ghastCharge;
+    /** bindhitbox: caja ob_ (sin prefijo, en minúsculas) → el mob atado a ella; y, en el atado, a quién y dónde. */
+    private final Map<String, BossEntity> bound = new HashMap<>();
+    private BossEntity boundTo;
+    private String boundBone;
+    /** Relevo (BossInfo.successors): el jefe que ha muerto y espera a su relevo, y el relevo que ya es el jefe. */
+    private boolean relay, successor;
+    private int players = 1;
     /** LookAtPlayerGoal: a quién mira (sin objetivo) y hasta cuándo. */
     private Player lookPlayer;
     private int lookUntil;
@@ -182,11 +192,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         load();
         this.owner = owner;
         this.difficulty = d == null ? Difficulty.NORMAL : d;
+        this.players = Math.max(1, players);
         if (def == null) return;
         goals = new ArrayList<>(def.goals);
         aiTargets = new ArrayList<>(def.aiTargets);
         // Options: NoAI (los efectos de los packs que se mueven a golpe de teleport): sin IA desde que aparece
         if (def.noAi) setAi(false);
+        if (def.noGravity || SkillAI.has(goals, "type:ghast")) setNoGravity(true); // el ghast vuela (FlyingMob)
+        getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(def.knockbackResistance);
         // El empuje de su golpe (ATTACK_KNOCKBACK de su tipo de Minecraft: el devastador empuja, el hoglin lanza)
         getAttribute(Attributes.ATTACK_KNOCKBACK).setBaseValue(switch (def.type) {
             case "RAVAGER" -> 1.5;
@@ -282,7 +295,33 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     public boolean isMainBoss() {
-        return owner == null && cls != null && cls.bossInfo != null && def != null && def.name.equalsIgnoreCase(cls.bossInfo.mob);
+        return owner == null && cls != null && cls.bossInfo != null && def != null && (successor || def.name.equalsIgnoreCase(cls.bossInfo.mob));
+    }
+
+    /** ¿Es «mob» el relevo de este jefe (lo saca al morir y sigue la pelea)? */
+    boolean relayTo(SkillDefs.MobDef mob) {
+        return relay && mob != null && cls != null && cls.bossInfo != null && cls.bossInfo.successors.containsKey(mob.name.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * Este mob es el relevo de «from» (que acaba de morir): pasa a ser el jefe de la grieta, con la vida a la misma
+     * escala que la del jefe (la del pack × vida del jefe / vida del pack del jefe), su daño, su barra y la amenaza.
+     */
+    void becomeSuccessor(BossEntity from) {
+        successor = true;
+        SkillDefs.BossInfo bi = cls.bossInfo;
+        double hp = from.difficulty.healthFor(bi.health * Math.max(1, def.health) / Math.max(1, bi.packHealth), from.players);
+        healthScale = hp / Math.max(1, def.health);
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(bi.damage * difficulty.damage());
+        getAttribute(Attributes.ARMOR).setBaseValue(difficulty.armor());
+        this.entityData.set(MAX_HP, (float) hp);
+        setHealth((float) hp);
+        threat.putAll(from.threat);
+        if (from.rift != null) setRift(from.rift, from.home);
+        bar = new ServerBossEvent(barTitle(), color(def.barColor != null ? def.barColor : "PURPLE"), BossEvent.BossBarOverlay.NOTCHED_10);
+        bar.setDarkenScreen(false);
+        from.relay = false;
+        Rifts.relayed(from, this);
     }
 
     public Difficulty difficulty() {
@@ -516,6 +555,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /** hitboxconfig del pack: hueso de la caja → cuánto daño deja pasar. */
     private final Map<String, Double> partPass = new HashMap<>();
+
+    @Override
+    public void bindHitbox(String part, SkillMobs.Host b) {
+        if (part == null || !(b instanceof BossEntity e)) return;
+        String key = part.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", "");
+        bound.put(key, e);
+        e.boundTo = this;
+        e.boundBone = part;
+    }
 
     @Override
     public void hitboxPass(String part, double pass) {
@@ -784,6 +832,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     /** Un golpe a una de sus piezas (la cabeza de la Hidra): es un golpe a él. */
     boolean hurtPart(BossPart part, DamageSource src, float amount) {
         if (!level().isClientSide && def != null) SkillMobs.hitPart(this, part.index());
+        // bindhitbox: esa caja es de otro mob (la cabeza de la Tormenta del Wither): el golpe es para él
+        if (!bound.isEmpty()) {
+            String bone = SkillMobs.partBone(this, part.index());
+            BossEntity b = bone == null ? null : bound.get(bone.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""));
+            if (b != null && b.isAlive() && !b.isRemoved()) return b.hurt(src, amount);
+        }
         // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone, en su modelo tal como está ahora)
         if (!partPass.isEmpty()) {
             String bone = SkillMobs.partBone(this, part.index());
@@ -808,7 +862,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             for (BossEntity m : level().getEntitiesOfClass(BossEntity.class, getBoundingBox().inflate(96), e -> e.owner == this && e.isAlive())) {
                 m.kill();
             }
-            if (isMainBoss()) Rifts.bossKilled(this, threatPlayers());
+            // Con relevo (el Mamut del Druida), la pelea sigue: la grieta espera a que caiga el relevo
+            if (isMainBoss() && !successor && cls.bossInfo != null && !cls.bossInfo.successors.isEmpty()) relay = true;
+            else if (isMainBoss()) Rifts.bossKilled(this, threatPlayers());
         }
     }
 
@@ -900,6 +956,18 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 SkillMobs.spawned(this);
             }
             SkillMobs.tick(this);
+            if (boundTo != null) {
+                // Atado a una caja de su jefe (bindhitbox): va en ella
+                if (boundTo.isRemoved()) {
+                    discard();
+                } else {
+                    Vec3 at = SkillMobs.bonePos(boundTo, boundBone);
+                    if (at != null) {
+                        setPos(at.x, at.y - getBbHeight() / 2, at.z);
+                        setDeltaMovement(Vec3.ZERO);
+                    }
+                }
+            }
             if (bar != null) updateBar();
             if (owner != null && (owner.isRemoved() || owner.dying() && owner.deathTime > 20)) discard();
         }
@@ -990,7 +1058,62 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             getNavigation().stop();
         }
         meleeStep();
+        ghastStep();
         turnBody();
+    }
+
+    /**
+     * El ghast de Minecraft: flota hacia un punto al azar a 16 bloques (RandomFloatAroundGoal; cada 2-6 ticks se
+     * empuja 0,1 hacia él si no hay nada en medio, GhastMoveControl) y, con su objetivo a 64 bloques y a la vista,
+     * carga 20 ticks y le lanza una bola de fuego (GhastShootFireballGoal; 40 de espera). ~onShoot puede cancelarla
+     * (el Contemplador y el Arconte Astral lo hacen: solo quieren su vuelo).
+     */
+    private void ghastStep() {
+        if (!ai || !SkillAI.has(goals, "type:ghast")) return;
+        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(position()) > 3600) {
+            Vec3 c = position();
+            floatGoal = c.add((getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16);
+            // sin salir de su grieta
+            if (home != null && floatGoal.distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) floatGoal = home.add(0, 4, 0);
+        }
+        if (floatWait-- <= 0) {
+            floatWait += getRandom().nextInt(5) + 2;
+            Vec3 d = floatGoal.subtract(position());
+            double len = d.length();
+            if (len > 1e-4) {
+                d = d.normalize();
+                AABB box = getBoundingBox();
+                boolean clear = true;
+                for (int i = 1; i < Math.ceil(len); i++) {
+                    box = box.move(d);
+                    if (!level().noCollision(this, box)) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (clear) setDeltaMovement(getDeltaMovement().add(d.scale(0.1)));
+                else floatGoal = null;
+            }
+        }
+        if (target == null) {
+            ghastCharge = 0;
+            return;
+        }
+        if (target.distanceToSqr(this) < 4096 && hasLineOfSight(target)) {
+            if (++ghastCharge == 20) {
+                ghastCharge = -40;
+                if (!SkillMobs.shootCancelled(this, target)) {
+                    // Sale a 4 bloques delante de donde mira (la potencia de su explosión, la del ghast: 1)
+                    double vx = -Mth.sin(lookYaw * Mth.DEG_TO_RAD), vz = Mth.cos(lookYaw * Mth.DEG_TO_RAD);
+                    double dx = target.getX() - (getX() + vx * 4), dy = target.getY(0.5) - (0.5 + getY(0.5)), dz = target.getZ() - (getZ() + vz * 4);
+                    net.minecraft.world.entity.projectile.LargeFireball ball = new net.minecraft.world.entity.projectile.LargeFireball(level(), this, dx, dy, dz, 1);
+                    ball.setPos(getX() + vx * 4, getY(0.5) + 0.5, getZ() + vz * 4);
+                    level().addFreshEntity(ball);
+                }
+            }
+        } else if (ghastCharge > 0) {
+            ghastCharge--;
+        }
     }
 
     /**
@@ -1176,7 +1299,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         Vec3 v = getDeltaMovement();
         boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
         // Anda por su cuenta (persigue, pasea o huye) y a quién mira (su objetivo, o un jugador cerca con lookatplayers)
-        boolean walks = ai && (chases() || wanderGoal != null);
+        boolean walks = ai && (chases() || wanderGoal != null || SkillAI.has(goals, "type:ghast"));
         Entity look = ai ? lookAt() : null;
         if (walks || look != null) {
             if (look != null) {
@@ -1232,13 +1355,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         }
         float head = Mth.wrapDegrees(want - bodyYaw);
         yHeadRot = bodyYaw + Mth.clamp(head, -maxHead, maxHead);
-        if (look != null) {
+        if (look != null && !def.lockPitch) {
             Vec3 eye = getEyePosition();
             Vec3 to = look.getEyePosition().subtract(eye);
             float pitch = (float) -Math.toDegrees(Math.atan2(to.y, Math.sqrt(to.x * to.x + to.z * to.z)));
             setXRot(Mth.clamp(pitch, -Math.min(45F, maxHead), Math.min(45F, maxHead)));
-        } else if (ai) {
-            // Sin nadie a quien mirar, la cabeza vuelve al frente (LookControl); sin IA se queda como esté
+        } else if (ai || def.lockPitch) {
+            // Sin nadie a quien mirar (o con LockPitch), la cabeza vuelve al frente (LookControl); sin IA se queda como esté
             setXRot(getXRot() * 0.8F);
         }
         syncBody();
@@ -1251,6 +1374,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Entity lookAt() {
         if (target != null) {
             if (chases()) return target;
+            // GhastLookGoal: a su objetivo si está a menos de 64 bloques
+            if (SkillAI.has(goals, "type:ghast") && target.distanceToSqr(this) < 4096) return target;
             String g = SkillAI.find(goals, "lookattarget");
             if (g != null) {
                 double r = SkillAI.arg(g, 64, "r", "range", "radius");
@@ -1291,8 +1416,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         boolean players = SkillAI.hasTarget(aiTargets, "players")
                 || SkillAI.hasTarget(aiTargets, "type:spider") && (target != null || getLightLevelDependentMagicValue() < 0.5F);
         boolean hurtBy = SkillAI.hasTarget(aiTargets, "hurtbytarget");
-        boolean monsters = SkillAI.hasTarget(aiTargets, "monsters");
-        if (!players && !hurtBy && !monsters) {
+        boolean monsters = SkillAI.hasTarget(aiTargets, "monsters"), villagers = SkillAI.hasTarget(aiTargets, "villagers"),
+                golems = SkillAI.hasTarget(aiTargets, "irongolem");
+        boolean mobs = monsters || villagers || golems;
+        if (!players && !hurtBy && !mobs) {
             if (target != null && (!target.isAlive() || target.isRemoved() || target.distanceToSqr(this) > range * range)) {
                 target = null;
                 setTarget(null);
@@ -1330,14 +1457,18 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             if (bestThreat < now * 1.2 + 5 && target.distanceToSqr(this) <= range * range) best = target;
         }
         LivingEntity pick = best;
-        if (pick == null && monsters) {
-            // NearestAttackableTargetGoal de monstruos (el gólem no va a por los creepers); los de su grupo no cuentan
-            if (target != null && !(target instanceof Player) && target.isAlive() && target.distanceToSqr(this) <= range * range) {
+        if (pick == null && mobs) {
+            // NearestAttackableTargetGoal de monstruos (el gólem no va a por los creepers), aldeanos y gólems de hierro;
+            // los de su grupo no cuentan
+            if (target != null && !(target instanceof Player) && target.isAlive() && target.distanceToSqr(this) <= range * range
+                    && SkillMobs.host(target) == null) {
                 pick = target;
             } else {
                 double bd = Double.MAX_VALUE;
-                for (Mob m : sl.getEntitiesOfClass(Mob.class, getBoundingBox().inflate(range), e -> e instanceof Enemy && e != this
-                        && e.isAlive() && !(def.type.equals("IRON_GOLEM") && e instanceof net.minecraft.world.entity.monster.Creeper))) {
+                for (Mob m : sl.getEntitiesOfClass(Mob.class, getBoundingBox().inflate(range), e -> e != this && e.isAlive()
+                        && (monsters && e instanceof Enemy && !(def.type.equals("IRON_GOLEM") && e instanceof net.minecraft.world.entity.monster.Creeper)
+                        || villagers && e instanceof net.minecraft.world.entity.npc.AbstractVillager
+                        || golems && e instanceof net.minecraft.world.entity.animal.IronGolem))) {
                     SkillMobs.Host h = SkillMobs.host(m);
                     if (h != null && h.boss() == boss()) continue;
                     double d = m.distanceToSqr(this);
@@ -1366,6 +1497,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Component barTitle() {
         SkillDefs.BossInfo bi = cls == null ? null : cls.bossInfo;
         String name = bi != null ? bi.name : def != null && def.display != null ? def.display : "Jefe";
+        if (successor && bi != null) name = bi.successors.getOrDefault(def.name.toLowerCase(java.util.Locale.ROOT), name);
         return Component.literal(name).withStyle(s -> s.withColor(TextColor.fromRgb(bi != null ? bi.color : 0xFFFFFF)).withBold(true))
                 .append(Component.literal("  ·  " + difficulty.label()).withStyle(s -> s.withColor(TextColor.fromRgb(difficulty.color())).withBold(false)));
     }
@@ -1392,12 +1524,17 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             if (bar != null) bar.removeAllPlayers();
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);
+            // Murió esperando un relevo que no llegó a salir: la pelea se gana con él
+            if (relay && reason == RemovalReason.KILLED) Rifts.bossKilled(this, threatPlayers());
         }
         super.remove(reason);
     }
 
     @Override
     public Component getName() {
+        if (successor && cls.bossInfo.successors.containsKey(def.name.toLowerCase(java.util.Locale.ROOT))) {
+            return Component.literal(cls.bossInfo.successors.get(def.name.toLowerCase(java.util.Locale.ROOT)));
+        }
         if (cls != null && cls.bossInfo != null && isMainBoss()) return Component.literal(cls.bossInfo.name);
         if (def != null && def.display != null) return Component.literal(def.display);
         return super.getName();

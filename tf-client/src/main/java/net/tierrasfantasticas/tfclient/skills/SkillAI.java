@@ -224,6 +224,24 @@ public final class SkillAI {
         };
     }
 
+    /** La resistencia al empuje de su tipo de Minecraft (atributo knockback_resistance). */
+    public static double knockbackResistance(String type) {
+        return switch (type == null ? "" : type.toUpperCase(Locale.ROOT)) {
+            case "IRON_GOLEM", "WARDEN", "SHULKER", "ENDER_DRAGON", "WITHER" -> 1.0;
+            case "RAVAGER" -> 0.75;
+            case "HOGLIN", "ZOGLIN" -> 0.6;
+            case "GOAT", "CAMEL", "SNIFFER", "PIGLIN_BRUTE" -> 0.0;
+            default -> 0.0;
+        };
+    }
+
+    /** Sin arco (PreventRandomEquipment): el esqueleto pega cuerpo a cuerpo en vez de disparar. */
+    public static List<String> withoutBow(List<String> goals) {
+        List<String> out = new ArrayList<>();
+        for (String g : goals) out.add(goalName(g).equals("bowattack") && !g.contains("{") ? "meleeattack" : g);
+        return out;
+    }
+
     /** Persigue a su objetivo (algún objetivo de los que andan hasta él). */
     public static boolean chases(List<String> goals) {
         return has(goals, "meleeattack", "zombieattack", "spiderattack", "movetowardstarget", "movewithindistanceoftarget");

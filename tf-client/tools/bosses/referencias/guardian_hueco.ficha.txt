@@ -1,0 +1,8 @@
+jefe guardian_hueco: mob LRD_HOLLOWKEEPER, vida 1000 (pack 500), daño 8, modelo guardian_hueco.lrd_hollow_keeper, caja [4.0, 8.0], ataques 6
+mob LRD_HOLLOWKEEPER: IRON_GOLEM, caja 4.0×8.0 (ojos 6.8, escala 1.0, del modelo), velocidad 0, vida 500, daño 1, IA ['clear'], modificadores None, 38 líneas
+mob LRD_HOLLOWKEEPER_GROUND_FX: efecto ARMOR_STAND, modelo guardian_hueco.lrd_hollow_keeper_ground_fx, 10 líneas
+  modelo guardian_hueco.lrd_hollow_keeper: 58 huesos, huella f7471272c23fc042, caja [4.0, 8.0], sombra None, cabeza 2, ghost 5, head_inherit 1
+    cabezas: head gib_head octagon2
+    animaciones: attack_back_1:4.0 attack_forward_1:8.5 attack_forward_2:9.0 attack_forward_3:4.5 attack_left_1:3.5 attack_left_2:5.0 attack_right_1:6.0 awaken:3.0 bank_left:1.0 bank_right:1.0 death:3.0 idle:3.0 passive:1.5 run:1.0 run_stab:2.0 sleep:1.0 start_run:1.0 stun:8.0 stun_hit:0.33333 turn_left:2.0 turn_right:2.0 walk:4.0
+  modelo guardian_hueco.lrd_hollow_keeper_ground_fx: 13 huesos, huella b6d879e67c05c048, caja [0.125, 0.125], sombra None, 
+    animaciones: spawn:2.0

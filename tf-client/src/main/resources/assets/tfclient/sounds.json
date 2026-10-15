@@ -2517,5 +2517,829 @@
   "sounds": [
    "tfclient:bosses/astwood/buma_punch"
   ]
+ },
+ "bosses.rey_calabaza.death": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/death"
+  ]
+ },
+ "bosses.rey_calabaza.teleport": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/teleport"
+  ]
+ },
+ "bosses.rey_calabaza.tombstone": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/tombstone"
+  ]
+ },
+ "bosses.rey_calabaza.laugh": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/laugh_0",
+   "tfclient:bosses/rey_calabaza/laugh_1",
+   "tfclient:bosses/rey_calabaza/laugh_2"
+  ]
+ },
+ "bosses.rey_calabaza.grunt": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/grunt_0",
+   "tfclient:bosses/rey_calabaza/grunt_1",
+   "tfclient:bosses/rey_calabaza/grunt_2"
+  ]
+ },
+ "bosses.rey_calabaza.scythe_throw": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/scythe_throw"
+  ]
+ },
+ "bosses.rey_calabaza.swing": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/swing_0",
+   "tfclient:bosses/rey_calabaza/swing_1"
+  ]
+ },
+ "bosses.rey_calabaza.candy_gib": {
+  "sounds": [
+   "tfclient:bosses/rey_calabaza/candy_gib"
+  ]
+ },
+ "bosses.archivista.candle_step": {
+  "sounds": [
+   "tfclient:bosses/archivista/candle_step_0",
+   "tfclient:bosses/archivista/candle_step_1",
+   "tfclient:bosses/archivista/candle_step_2",
+   "tfclient:bosses/archivista/candle_step_3",
+   "tfclient:bosses/archivista/candle_step_4",
+   "tfclient:bosses/archivista/candle_step_5"
+  ]
+ },
+ "bosses.archivista.voice_summon": {
+  "sounds": [
+   "tfclient:bosses/archivista/voice_summon"
+  ]
+ },
+ "bosses.archivista.foley": {
+  "sounds": [
+   "tfclient:bosses/archivista/foley_0",
+   "tfclient:bosses/archivista/foley_1",
+   "tfclient:bosses/archivista/foley_2",
+   "tfclient:bosses/archivista/foley_3",
+   "tfclient:bosses/archivista/foley_4"
+  ]
+ },
+ "bosses.archivista.candle_whoosh": {
+  "sounds": [
+   "tfclient:bosses/archivista/candle_whoosh_0",
+   "tfclient:bosses/archivista/candle_whoosh_1"
+  ]
+ },
+ "bosses.archivista.laugh": {
+  "sounds": [
+   "tfclient:bosses/archivista/laugh_0",
+   "tfclient:bosses/archivista/laugh_1",
+   "tfclient:bosses/archivista/laugh_2"
+  ]
+ },
+ "bosses.archivista.voice_laser": {
+  "sounds": [
+   "tfclient:bosses/archivista/voice_laser"
+  ]
+ },
+ "bosses.archivista.laser_attack": {
+  "sounds": [
+   "tfclient:bosses/archivista/laser_attack"
+  ]
+ },
+ "bosses.archivista.voice_aoe": {
+  "sounds": [
+   "tfclient:bosses/archivista/voice_aoe"
+  ]
+ },
+ "bosses.archivista.magic_spell": {
+  "sounds": [
+   "tfclient:bosses/archivista/magic_spell_0",
+   "tfclient:bosses/archivista/magic_spell_1",
+   "tfclient:bosses/archivista/magic_spell_2",
+   "tfclient:bosses/archivista/magic_spell_3"
+  ]
+ },
+ "bosses.archivista.magic_impact": {
+  "sounds": [
+   "tfclient:bosses/archivista/magic_impact_0",
+   "tfclient:bosses/archivista/magic_impact_1",
+   "tfclient:bosses/archivista/magic_impact_2",
+   "tfclient:bosses/archivista/magic_impact_3"
+  ]
+ },
+ "bosses.archivista.death_no": {
+  "sounds": [
+   "tfclient:bosses/archivista/death_no"
+  ]
+ },
+ "bosses.archivista.body_impact": {
+  "sounds": [
+   "tfclient:bosses/archivista/body_impact"
+  ]
+ },
+ "bosses.archivista.hurt": {
+  "sounds": [
+   "tfclient:bosses/archivista/hurt_0",
+   "tfclient:bosses/archivista/hurt_1",
+   "tfclient:bosses/archivista/hurt_2",
+   "tfclient:bosses/archivista/hurt_3"
+  ]
+ },
+ "bosses.archivista.magic_ground": {
+  "sounds": [
+   "tfclient:bosses/archivista/magic_ground_0",
+   "tfclient:bosses/archivista/magic_ground_1",
+   "tfclient:bosses/archivista/magic_ground_2",
+   "tfclient:bosses/archivista/magic_ground_3"
+  ]
+ },
+ "bosses.eldric.eldric_notice_player": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_notice_player"
+  ]
+ },
+ "bosses.eldric.eldric_leap": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_leap"
+  ]
+ },
+ "bosses.eldric.eldric_step": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_step_0",
+   "tfclient:bosses/eldric/eldric_step_1"
+  ]
+ },
+ "bosses.eldric.eldric_anvil_hit": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_anvil_hit"
+  ]
+ },
+ "bosses.eldric.eldric_death_growl": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_death_growl"
+  ]
+ },
+ "bosses.eldric.eldric_land": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_land"
+  ]
+ },
+ "bosses.eldric.eldric_hammer_hit": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_hammer_hit_0",
+   "tfclient:bosses/eldric/eldric_hammer_hit_1",
+   "tfclient:bosses/eldric/eldric_hammer_hit_2"
+  ]
+ },
+ "bosses.eldric.eldric_scrapmetal_impact": {
+  "sounds": [
+   "tfclient:bosses/eldric/eldric_scrapmetal_impact"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_owl_flap": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_owl_flap"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_mammoth_step": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_step_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_step_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_step_2",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_step_3"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_druid_death": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_death"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_druid_vox": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_vox_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_vox_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_vox_2",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_vox_3",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_vox_4"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_druid_swing": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_swing_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_swing_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_swing_2",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_druid_swing_3"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_snow_impact": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_snow_impact_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_snow_impact_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_snow_impact_2"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_ice_beam": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_ice_beam"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_ice_blast": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_ice_blast_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_ice_blast_1"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_ice_sweep": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_ice_sweep_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_ice_sweep_1"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_mammoth_vox": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_vox_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_vox_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_vox_2",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_vox_3",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_vox_4"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_mammoth_swing": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_swing_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_swing_1"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_mammoth_hit": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_hit_0",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_hit_1",
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_mammoth_hit_2"
+  ]
+ },
+ "bosses.druida_boreal.littleroom_borealdruid_player_freeze": {
+  "sounds": [
+   "tfclient:bosses/druida_boreal/littleroom_borealdruid_player_freeze"
+  ]
+ },
+ "bosses.contemplador.beholder_laser_build": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_laser_build_0",
+   "tfclient:bosses/contemplador/beholder_laser_build_1",
+   "tfclient:bosses/contemplador/beholder_laser_build_2",
+   "tfclient:bosses/contemplador/beholder_laser_build_3"
+  ]
+ },
+ "bosses.contemplador.beholder_laser": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_laser_0",
+   "tfclient:bosses/contemplador/beholder_laser_1",
+   "tfclient:bosses/contemplador/beholder_laser_2"
+  ]
+ },
+ "bosses.contemplador.beholder_deflect_hit": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_deflect_hit_0",
+   "tfclient:bosses/contemplador/beholder_deflect_hit_1"
+  ]
+ },
+ "bosses.contemplador.beholder_scream": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_scream_0",
+   "tfclient:bosses/contemplador/beholder_scream_1",
+   "tfclient:bosses/contemplador/beholder_scream_2"
+  ]
+ },
+ "bosses.contemplador.beholder_dismember_tentacle": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_dismember_tentacle"
+  ]
+ },
+ "bosses.contemplador.beholder_shield_hit": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_shield_hit_0",
+   "tfclient:bosses/contemplador/beholder_shield_hit_1",
+   "tfclient:bosses/contemplador/beholder_shield_hit_2"
+  ]
+ },
+ "bosses.contemplador.beholder_deflect": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_deflect_0",
+   "tfclient:bosses/contemplador/beholder_deflect_1",
+   "tfclient:bosses/contemplador/beholder_deflect_2"
+  ]
+ },
+ "bosses.contemplador.beholder_death": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_death"
+  ]
+ },
+ "bosses.contemplador.beholder_vanish": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_vanish"
+  ]
+ },
+ "bosses.contemplador.beholder_laser_dance_build": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_laser_dance_build"
+  ]
+ },
+ "bosses.contemplador.beholder_laser_dance": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_laser_dance"
+  ]
+ },
+ "bosses.contemplador.beholder_open_maw": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_open_maw"
+  ]
+ },
+ "bosses.contemplador.beholder_bite": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_bite_0",
+   "tfclient:bosses/contemplador/beholder_bite_1"
+  ]
+ },
+ "bosses.contemplador.beholder_idle": {
+  "sounds": [
+   "tfclient:bosses/contemplador/beholder_idle_0",
+   "tfclient:bosses/contemplador/beholder_idle_1",
+   "tfclient:bosses/contemplador/beholder_idle_2"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_movement": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_movement_0",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_movement_1",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_movement_2",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_movement_3",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_movement_4"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_death_fx": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_death_fx"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_stun": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_stun"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_vibrant": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_vibrant"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_constellation_cast": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_constellation_cast"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_double_slash_swing": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_double_slash_swing"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_double_slash_loop": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_double_slash_loop"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_double_shot": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_double_shot_0",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_double_shot_1"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_double_shot_projectile": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_double_shot_projectile"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_spin_slash": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_spin_slash_0",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_spin_slash_1",
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_spin_slash_2"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_constellation_form": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_constellation_form"
+  ]
+ },
+ "bosses.arconte_astral.littleroom_astralarchon_constellation_fall": {
+  "sounds": [
+   "tfclient:bosses/arconte_astral/littleroom_astralarchon_constellation_fall"
+  ]
+ },
+ "bosses.kazk.kazk_death": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_death"
+  ]
+ },
+ "bosses.kazk.kazk_ground_impact": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_ground_impact"
+  ]
+ },
+ "bosses.kazk.kazk_spit": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_spit"
+  ]
+ },
+ "bosses.kazk.kazk_splat": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_splat"
+  ]
+ },
+ "bosses.kazk.kazk_swing": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_swing_0",
+   "tfclient:bosses/kazk/kazk_swing_1",
+   "tfclient:bosses/kazk/kazk_swing_2",
+   "tfclient:bosses/kazk/kazk_swing_3"
+  ]
+ },
+ "bosses.kazk.kazk_hit": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_hit_0",
+   "tfclient:bosses/kazk/kazk_hit_1",
+   "tfclient:bosses/kazk/kazk_hit_2",
+   "tfclient:bosses/kazk/kazk_hit_3"
+  ]
+ },
+ "bosses.kazk.kazk_bite": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_bite"
+  ]
+ },
+ "bosses.kazk.kazk_ground_rumble": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_ground_rumble"
+  ]
+ },
+ "bosses.kazk.kazk_rubble": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_rubble_0",
+   "tfclient:bosses/kazk/kazk_rubble_1",
+   "tfclient:bosses/kazk/kazk_rubble_2"
+  ]
+ },
+ "bosses.kazk.kazk_slam": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_slam"
+  ]
+ },
+ "bosses.kazk.kazk_roar": {
+  "sounds": [
+   "tfclient:bosses/kazk/kazk_roar"
+  ]
+ },
+ "bosses.guardian_hueco.step": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/step_0",
+   "tfclient:bosses/guardian_hueco/step_1",
+   "tfclient:bosses/guardian_hueco/step_2",
+   "tfclient:bosses/guardian_hueco/step_3"
+  ]
+ },
+ "bosses.guardian_hueco.death": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/death"
+  ]
+ },
+ "bosses.guardian_hueco.pickaxe_ground_impact": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/pickaxe_ground_impact_0",
+   "tfclient:bosses/guardian_hueco/pickaxe_ground_impact_1"
+  ]
+ },
+ "bosses.guardian_hueco.groan": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/groan_0",
+   "tfclient:bosses/guardian_hueco/groan_1",
+   "tfclient:bosses/guardian_hueco/groan_2"
+  ]
+ },
+ "bosses.guardian_hueco.movement": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/movement_0",
+   "tfclient:bosses/guardian_hueco/movement_1",
+   "tfclient:bosses/guardian_hueco/movement_2",
+   "tfclient:bosses/guardian_hueco/movement_3"
+  ]
+ },
+ "bosses.guardian_hueco.swing": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/swing_0",
+   "tfclient:bosses/guardian_hueco/swing_1"
+  ]
+ },
+ "bosses.guardian_hueco.ground_tear": {
+  "sounds": [
+   "tfclient:bosses/guardian_hueco/ground_tear_0",
+   "tfclient:bosses/guardian_hueco/ground_tear_1",
+   "tfclient:bosses/guardian_hueco/ground_tear_2"
+  ]
+ },
+ "bosses.ignevar.flap": {
+  "sounds": [
+   "tfclient:bosses/ignevar/flap_0",
+   "tfclient:bosses/ignevar/flap_1",
+   "tfclient:bosses/ignevar/flap_2",
+   "tfclient:bosses/ignevar/flap_3"
+  ]
+ },
+ "bosses.ignevar.death": {
+  "sounds": [
+   "tfclient:bosses/ignevar/death"
+  ]
+ },
+ "bosses.ignevar.impact": {
+  "sounds": [
+   "tfclient:bosses/ignevar/impact_0",
+   "tfclient:bosses/ignevar/impact_1",
+   "tfclient:bosses/ignevar/impact_2"
+  ]
+ },
+ "bosses.ignevar.firebreath_short": {
+  "sounds": [
+   "tfclient:bosses/ignevar/firebreath_short"
+  ]
+ },
+ "bosses.ignevar.roar": {
+  "sounds": [
+   "tfclient:bosses/ignevar/roar"
+  ]
+ },
+ "bosses.ignevar.growl": {
+  "sounds": [
+   "tfclient:bosses/ignevar/growl_0",
+   "tfclient:bosses/ignevar/growl_1"
+  ]
+ },
+ "bosses.ignevar.firebreath": {
+  "sounds": [
+   "tfclient:bosses/ignevar/firebreath"
+  ]
+ },
+ "bosses.ignevar.fire_spell": {
+  "sounds": [
+   "tfclient:bosses/ignevar/fire_spell_0",
+   "tfclient:bosses/ignevar/fire_spell_1",
+   "tfclient:bosses/ignevar/fire_spell_2"
+  ]
+ },
+ "bosses.ignevar.fireball_whoosh": {
+  "sounds": [
+   "tfclient:bosses/ignevar/fireball_whoosh_0",
+   "tfclient:bosses/ignevar/fireball_whoosh_1"
+  ]
+ },
+ "bosses.piglin_mecha.mech_swing": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_swing_0",
+   "tfclient:bosses/piglin_mecha/mech_swing_1"
+  ]
+ },
+ "bosses.piglin_mecha.mech_step": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_step"
+  ]
+ },
+ "bosses.piglin_mecha.mech_body_explode": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_body_explode"
+  ]
+ },
+ "bosses.piglin_mecha.mech_mech_land": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_mech_land"
+  ]
+ },
+ "bosses.piglin_mecha.mech_movement": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_movement_0",
+   "tfclient:bosses/piglin_mecha/mech_movement_1",
+   "tfclient:bosses/piglin_mecha/mech_movement_2",
+   "tfclient:bosses/piglin_mecha/mech_movement_3",
+   "tfclient:bosses/piglin_mecha/mech_movement_4"
+  ]
+ },
+ "bosses.piglin_mecha.mech_rocket_launch": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_rocket_launch"
+  ]
+ },
+ "bosses.piglin_mecha.mech_rocket_explosion": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_rocket_explosion"
+  ]
+ },
+ "bosses.piglin_mecha.mech_laser_fire": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_laser_fire_0",
+   "tfclient:bosses/piglin_mecha/mech_laser_fire_1",
+   "tfclient:bosses/piglin_mecha/mech_laser_fire_2",
+   "tfclient:bosses/piglin_mecha/mech_laser_fire_3"
+  ]
+ },
+ "bosses.piglin_mecha.mech_land": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_land"
+  ]
+ },
+ "bosses.piglin_mecha.mech_hit": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_hit_0",
+   "tfclient:bosses/piglin_mecha/mech_hit_1",
+   "tfclient:bosses/piglin_mecha/mech_hit_2",
+   "tfclient:bosses/piglin_mecha/mech_hit_3"
+  ]
+ },
+ "bosses.piglin_mecha.mech_leap": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_leap"
+  ]
+ },
+ "bosses.piglin_mecha.mech_slam": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_slam_0",
+   "tfclient:bosses/piglin_mecha/mech_slam_1",
+   "tfclient:bosses/piglin_mecha/mech_slam_2"
+  ]
+ },
+ "bosses.piglin_mecha.mech_alarm": {
+  "sounds": [
+   "tfclient:bosses/piglin_mecha/mech_alarm"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_spawn": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_spawn"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_sniff": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_sniff_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_sniff_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_sniff_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_sniff_3",
+   "tfclient:bosses/mega_guardian/littleroom_warden_sniff_4"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_vox_roar": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_roar_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_roar_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_roar_2"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_vox_attack": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_attack_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_attack_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_attack_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_attack_3",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_attack_4"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_swipe": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_3",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_4",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_5",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_6",
+   "tfclient:bosses/mega_guardian/littleroom_warden_swipe_7"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_impact": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_impact_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_impact_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_impact_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_impact_3",
+   "tfclient:bosses/mega_guardian/littleroom_warden_impact_4"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_sonar_blast": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_sonar_blast"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_sonar_impact": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_sonar_impact"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_vox_stun": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_stun_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_stun_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_stun_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_stun_3",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_stun_4"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_ground_impact": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_ground_impact_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_ground_impact_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_ground_impact_2",
+   "tfclient:bosses/mega_guardian/littleroom_warden_ground_impact_3"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_vox_death": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_death_0",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_death_1",
+   "tfclient:bosses/mega_guardian/littleroom_warden_vox_death_2"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_death_impact": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_death_impact"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_death_drip": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_death_drip"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_poof": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_poof"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_submerge": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_submerge"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_ground_rumble": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_ground_rumble"
+  ]
+ },
+ "bosses.mega_guardian.littleroom_warden_emerge": {
+  "sounds": [
+   "tfclient:bosses/mega_guardian/littleroom_warden_emerge"
+  ]
+ },
+ "bosses.tormenta_wither.death": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/death"
+  ]
+ },
+ "bosses.tormenta_wither.death_spike": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/death_spike"
+  ]
+ },
+ "bosses.tormenta_wither.bacteria": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/bacteria_0",
+   "tfclient:bosses/tormenta_wither/bacteria_1",
+   "tfclient:bosses/tormenta_wither/bacteria_2"
+  ]
+ },
+ "bosses.tormenta_wither.hurt": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/hurt_0",
+   "tfclient:bosses/tormenta_wither/hurt_1",
+   "tfclient:bosses/tormenta_wither/hurt_2"
+  ]
+ },
+ "bosses.tormenta_wither.bite": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/bite_0",
+   "tfclient:bosses/tormenta_wither/bite_1"
+  ]
+ },
+ "bosses.tormenta_wither.tractorbeam": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/tractorbeam_0",
+   "tfclient:bosses/tormenta_wither/tractorbeam_1",
+   "tfclient:bosses/tormenta_wither/tractorbeam_2"
+  ]
+ },
+ "bosses.tormenta_wither.growl": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/growl"
+  ]
+ },
+ "bosses.tormenta_wither.bacteria_passive": {
+  "sounds": [
+   "tfclient:bosses/tormenta_wither/bacteria_passive"
+  ]
  }
 }

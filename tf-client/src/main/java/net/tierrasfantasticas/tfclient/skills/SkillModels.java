@@ -160,6 +160,8 @@ final class SkillModels {
     static void state(Mech m, Ctx ctx, List<Tgt> targets) {
         String s = m.arg(null, "state", "s", "animation", "a");
         if (s == null) return;
+        // Con sus marcadores, como MythicMobs: «hit_<random.1to3>» es hit_1, hit_2 o hit_3 cada vez
+        if (s.indexOf('<') >= 0) s = SkillVars.text(s, ctx, Tgt.of(ctx.caster));
         boolean remove = SkillRuntime.bool(m.arg("false", "remove", "r"));
         float speed = (float) SkillRuntime.num(m.arg("1", "speed", "sp"), 1);
         for (Tgt t : targets) {

@@ -175,6 +175,10 @@ public final class SkillMobs {
             return mob().position();
         }
 
+        /** bindhitbox: el mob «bound» va en la caja ob_ «part» y recibe los golpes que le den a esa caja. */
+        default void bindHitbox(String part, Host bound) {
+        }
+
         /** hitboxconfig{p;pass}: cuánto daño deja pasar la caja de golpe de ese hueso (1 = todo, 0 = nada). */
         default void hitboxPass(String part, double pass) {
         }
@@ -255,6 +259,16 @@ public final class SkillMobs {
     public static volatile java.util.function.ToIntFunction<Entity> clientFire = e -> 0;
 
     /** El hueso (su id) de la caja de golpe «index» del modelo del mob tal como está ahora, o null. */
+    /** ¿Es «part» una caja ob_ de su modelo (una de sus BossPart)? (bindhitbox solo engancha a esas, como ModelEngine) */
+    static boolean isHitboxBone(Host h, String part) {
+        net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
+        if (m == null || part == null) return false;
+        int b = m.bone(part);
+        if (b < 0) return false;
+        for (int i : net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.bones(m)) if (i == b) return true;
+        return false;
+    }
+
     public static String partBone(Host h, int index) {
         net.tierrasfantasticas.tfclient.vfx.VfxModel m = SkillModels.modelOf(SkillModels.disguise(h.mob().getUUID()));
         if (m == null) return null;
@@ -497,6 +511,22 @@ public final class SkillMobs {
         } finally {
             inShoot = false;
         }
+    }
+
+    /**
+     * Su tipo de Minecraft va a disparar (la bola de fuego del ghast): ~onShoot antes de que salga, como el
+     * ProjectileLaunchEvent que escucha MythicMobs; true si sus skills lo cancelan (cancelevent).
+     */
+    public static boolean shootCancelled(Host h, Entity target) {
+        if (h.dying() || inShoot) return false;
+        inShoot = true;
+        Hit hit = new Hit(0, 1);
+        try {
+            run(h, "onshoot", target != null ? target : h.mob(), null, null, Map.of("bow-tension", "1"), hit);
+        } finally {
+            inShoot = false;
+        }
+        return hit.cancelled;
     }
 
     /** Ese proyectil de Minecraft ha dado a alguien: ~onBowHit, con @trigger = a quien ha dado. */

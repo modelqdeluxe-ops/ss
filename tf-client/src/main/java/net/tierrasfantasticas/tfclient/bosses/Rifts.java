@@ -410,6 +410,15 @@ public final class Rifts {
     }
 
     /** El jefe se ha ido sin morir (se descargó o lo quitó el staff): su grieta vuelve a estar lista. */
+    /** El jefe de la grieta ha muerto y sigue su relevo (BossEntity.becomeSuccessor). */
+    static void relayed(BossEntity from, BossEntity next) {
+        Rift r = from.rift() == null ? null : RIFTS.get(from.rift());
+        if (r != null) {
+            r.bossEntity = next.getUUID();
+            dirty = true;
+        }
+    }
+
     static void bossGone(BossEntity boss) {
         Rift r = boss.rift() == null ? null : RIFTS.get(boss.rift());
         if (r != null && r.state == RiftEntity.FIGHT) {
