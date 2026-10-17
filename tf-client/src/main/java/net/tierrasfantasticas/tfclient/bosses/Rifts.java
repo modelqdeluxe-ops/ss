@@ -177,6 +177,7 @@ public final class Rifts {
         if (!level.isLoaded(bp) || !level.isPositionEntityTicking(bp)) {
             // Nadie cerca: la incursión se acaba sola
             if (r.state == RiftEntity.WAKING || r.state == RiftEntity.FIGHT) {
+                trace(r, "sin cargar o sin tick de entidades: se queda lista");
                 r.state = RiftEntity.READY;
                 dirty = true;
             }
@@ -200,6 +201,7 @@ public final class Rifts {
             case RiftEntity.FIGHT -> {
                 Entity b = r.bossEntity == null ? null : level.getEntity(r.bossEntity);
                 if (!(b instanceof BossEntity boss) || boss.isRemoved()) {
+                    trace(r, "el jefe ya no está (" + (b == null ? "no se encuentra" : "quitado") + "): se queda lista");
                     r.state = RiftEntity.READY;
                     r.bossEntity = null;
                     dirty = true;
@@ -208,6 +210,7 @@ public final class Rifts {
                     if (anyone) r.emptySince = -1;
                     else if (r.emptySince < 0) r.emptySince = now;
                     else if (now - r.emptySince > EMPTY_TICKS) {
+                        trace(r, "nadie cerca: el jefe se va");
                         boss.discard();
                         r.state = RiftEntity.READY;
                         r.bossEntity = null;
@@ -254,6 +257,7 @@ public final class Rifts {
     private static void spawn(ServerLevel level, Rift r) {
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(r.boss);
         if (cls == null || cls.bossInfo == null) {
+            trace(r, "jefe desconocido");
             r.state = RiftEntity.READY;
             return;
         }
@@ -267,6 +271,7 @@ public final class Rifts {
         }
         BossEntity boss = spawnBoss(level, r.pos, r.boss, r.diff, players, yaw);
         if (boss == null) {
+            trace(r, "no se pudo crear el jefe");
             r.state = RiftEntity.READY;
             return;
         }
@@ -368,6 +373,11 @@ public final class Rifts {
         p.displayClientMessage(Component.literal(cls.bossInfo.name).withStyle(s -> s.withColor(TextColor.fromRgb(cls.bossInfo.color)).withBold(true))
                 .append(Component.literal(" · " + r.diff.label()).withStyle(s -> s.withColor(TextColor.fromRgb(r.diff.color())).withBold(false)))
                 .append(Component.literal(" · " + state).withStyle(ChatFormatting.GRAY)), true);
+    }
+
+    /** Por qué cambia una grieta (solo en la prueba de los jefes, BossTest). */
+    private static void trace(Rift r, String why) {
+        if (BossTest.ON) TFClient.LOGGER.info("Prueba de jefes: grieta {} ({}): {}", r.boss, r.state, why);
     }
 
     /** mm:ss de unos ticks. */

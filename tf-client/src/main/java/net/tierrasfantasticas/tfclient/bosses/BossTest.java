@@ -75,7 +75,7 @@ public final class BossTest {
     private static Vec3 lastPos;
     private static int wantDist = 6, side = 1;
     /** Tick (de la fase de muerte) en que salió el relevo (-1 = ninguno pendiente) y desde el que se mira la muerte. */
-    private static int relayAt = -1, deathFrom;
+    private static int relayAt = -1, deathFrom, lastState = -1;
 
     private BossTest() {}
 
@@ -207,6 +207,7 @@ public final class BossTest {
                     player.teleportTo(level, arena.x, arena.y, arena.z - 12, 0F, 10F);
                 }
                 if (t == 60) {
+                    lastState = rift.state;
                     rift.state = RiftEntity.WAKING;
                     rift.wakeAt = level.getGameTime() + RiftEntity.WAKE_TICKS;
                     phase = 1;
@@ -214,6 +215,10 @@ public final class BossTest {
                 }
             }
             case 1 -> {
+                if (rift.state != lastState) {
+                    r.event("grieta: estado " + lastState + " -> " + rift.state);
+                    lastState = rift.state;
+                }
                 if (rift.state == RiftEntity.FIGHT && bossNow(level) != null) {
                     boss = bossNow(level);
                     r.hpStart = boss.getHealth();
