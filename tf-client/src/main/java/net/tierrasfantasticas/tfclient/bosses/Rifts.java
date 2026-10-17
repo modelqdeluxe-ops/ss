@@ -322,7 +322,7 @@ public final class Rifts {
      * Baja hasta el suelo un sitio que está en el aire (la prueba de /tf boss sale 8 bloques delante del jugador): con
      * NoAI o setai{ai=false} al aparecer, como en Minecraft, el jefe no caería y se quedaría flotando.
      */
-    private static Vec3 ground(ServerLevel level, Vec3 pos) {
+    static Vec3 ground(ServerLevel level, Vec3 pos) {
         BlockPos p = BlockPos.containing(pos);
         if (!level.getBlockState(p).getCollisionShape(level, p).isEmpty()) return pos;
         int drop = 0;

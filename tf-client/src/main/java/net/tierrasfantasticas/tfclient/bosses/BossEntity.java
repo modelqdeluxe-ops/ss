@@ -1091,8 +1091,22 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,
         // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
         double stop = getBbWidth() / 2 + 1.0;
-        if (home != null && position().distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) {
-            // Se ha ido demasiado lejos de su grieta: vuelve
+        double fromHome = home == null ? 0 : position().distanceTo(home);
+        if (home != null && fromHome > Rifts.LEASH + 24 && !isPassenger()) {
+            // Muy lejos (una carga, un salto, un empujón): vuelve a su grieta de golpe
+            Vec3 back = Rifts.ground((ServerLevel) level(), home);
+            ((ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, getX(), getY(0.5), getZ(), 60,
+                    getBbWidth() / 2, getBbHeight() / 2, getBbWidth() / 2, 0.3);
+            teleportTo(back.x, back.y, back.z);
+            playSound(net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 3F, 0.6F);
+            getNavigation().stop();
+            fromHome = 0;
+        }
+        boolean targetInArena = target != null && target.position().distanceToSqr(home == null ? position() : home)
+                <= Rifts.LEASH * Rifts.LEASH;
+        if (home != null && fromHome > Rifts.LEASH && !targetInArena) {
+            // Fuera de su arena y sin nadie dentro a quien perseguir: vuelve (si su objetivo sigue dentro, le persigue:
+            // antes lo soltaba y se iba dándole la espalda, «me ignora»)
             goal = home;
             stop = 2;
             target = null;

@@ -58,6 +58,8 @@ public final class BossTest {
     public static final boolean ON = System.getenv("TFCLIENT_PRUEBA_JEFES") != null;
     /** Ticks de pelea por jefe y de mirar su muerte. */
     private static final int FIGHT = 800, DEATH = 320;
+    /** Ticks de la pelea con captura. */
+    private static final Set<Integer> SHOTS = Set.of(40, 200, 360, 520, 680);
 
     static volatile String shotRequest;
     static volatile boolean finished;
@@ -280,12 +282,18 @@ public final class BossTest {
         double radial = Mth.clamp((reach - d) * 0.15, -0.25, 0.25);
         Vec3 tan = new Vec3(-dir.z, 0, dir.x).scale(0.08 * side);
         Vec3 np = player.position().add(dir.scale(radial)).add(tan);
+        // Como en una pelea de verdad: el jugador no se va de la arena (a 22 bloques de la grieta como mucho)
+        Vec3 fromRift = np.subtract(rift.pos).multiply(1, 0, 1);
+        if (fromRift.length() > 22) np = rift.pos.add(fromRift.normalize().scale(22)).add(0, np.y - rift.pos.y, 0);
+        // Para las capturas, se aparta hasta ver al jefe entero
+        boolean view = SHOTS.contains(t + 6) || SHOTS.contains(t + 3) || SHOTS.contains(t);
+        if (view) np = bp.add(dir.scale(Math.max(12, boss.getBbWidth() * 1.5 + boss.getBbHeight() * 1.2)));
         int gy = ground(level, Mth.floor(np.x), Mth.floor(np.z));
         Vec3 look = boss.position().add(0, boss.getBbHeight() * 0.5, 0).subtract(np.x, gy + 1.62, np.z);
         float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.sqrt(look.x * look.x + look.z * look.z)));
         if (!player.isPassenger()) player.teleportTo(level, np.x, gy, np.z, yaw, pitch);
-        if (d < 3.5 + boss.getBbWidth() / 2 && t % 12 == 0) {
+        if (!view && d < 3.5 + boss.getBbWidth() / 2 && t % 12 == 0) {
             player.attack(boss);
             player.resetAttackStrengthTicker();
             r.playerAttacks++;
@@ -301,19 +309,31 @@ public final class BossTest {
         } else if (hs > 0.8) {
             r.fastTicks++;
         }
+        List<String> anims = SkillMobs.animNames(boss);
+        String what = anims == null ? "sin modelo" : String.join(",", anims.subList(Math.min(1, anims.size()), anims.size()));
+        boolean back = false;
         if (hs > 0.03 && hs <= 4) {
             r.movingTicks++;
             float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
             float diff = Math.abs(Mth.wrapDegrees(go - boss.yBodyRot));
-            if (diff > 120) r.backTicks++;
-            else if (diff > 60) r.sideTicks++;
+            if (diff > 120) {
+                r.backTicks++;
+                back = true;
+            } else if (diff > 60) {
+                r.sideTicks++;
+            }
         }
+        episode(r, "anda hacia atrás", back, what);
+        if (hs > 4) r.event("se teletransporta " + String.format("%.0f", hs) + " bloques [" + what + "]");
         int ground = ground(level, Mth.floor(bp.x), Mth.floor(bp.z));
         double air = bp.y - ground;
         r.maxAir = Math.max(r.maxAir, air);
         if (air > 3) r.airTicks++;
-        r.maxHome = Math.max(r.maxHome, bp.distanceTo(rift.pos));
-        List<String> anims = SkillMobs.animNames(boss);
+        episode(r, "en el aire", air > 3, what + String.format(" a %.1f", air));
+        double home = bp.distanceTo(rift.pos);
+        r.maxHome = Math.max(r.maxHome, home);
+        episode(r, "fuera de la arena (>40)", home > 40, what);
+        episode(r, "sin objetivo", boss.target() == null, what);
         if (anims == null) {
             r.noModelTicks++;
         } else {
@@ -322,7 +342,7 @@ public final class BossTest {
         }
         int minions = level.getEntitiesOfClass(BossEntity.class, boss.getBoundingBox().inflate(64), e -> e != boss && e.isAlive()).size();
         r.minionsMax = Math.max(r.minionsMax, minions);
-        if (t == 30 || t == 200 || t == 450 || t == 750) shot(r, "pelea_" + t / 20 + "s");
+        if (SHOTS.contains(t)) shot(r, "pelea_" + t / 20 + "s");
         if (t >= FIGHT) kill(level, r);
     }
 
@@ -358,7 +378,18 @@ public final class BossTest {
             List<String> anims = SkillMobs.animNames(boss);
             if (anims != null) r.deathAnims = String.join(",", anims);
         }
-        if (dt == 10 || dt == 70 || dt == 130 || dt == 190) shot(r, "muerte_" + dt);
+        if (boss != null && !boss.isRemoved() && dt < 200) {
+            // Mirando su muerte desde lejos (se ve entero, con sus rayos)
+            Vec3 bp = boss.position();
+            Vec3 dir = player.position().subtract(bp).multiply(1, 0, 1);
+            dir = dir.lengthSqr() < 1e-4 ? new Vec3(0, 0, -1) : dir.normalize();
+            Vec3 np = bp.add(dir.scale(Math.max(14, boss.getBbWidth() * 1.5 + boss.getBbHeight() * 1.5)));
+            int gy = ground(level, Mth.floor(np.x), Mth.floor(np.z));
+            Vec3 look = bp.add(0, boss.getBbHeight() * 0.5, 0).subtract(np.x, gy + 1.62, np.z);
+            player.teleportTo(level, np.x, gy, np.z, (float) Math.toDegrees(Math.atan2(-look.x, look.z)),
+                    (float) -Math.toDegrees(Math.atan2(look.y, Math.sqrt(look.x * look.x + look.z * look.z))));
+        }
+        if (dt == 10 || dt == 70 || dt == 130 || dt == 155) shot(r, "muerte_" + dt);
         if (dt == 60) r.barsAfterDeath = clientBars;
         if (dt >= DEATH && relayAt < 0) {
             AABB box = new AABB(arena, arena).inflate(64);
@@ -374,6 +405,20 @@ public final class BossTest {
     private static int ground(ServerLevel level, int x, int z) {
         level.getChunk(x >> 4, z >> 4);
         return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+    }
+
+    private static final Map<String, Integer> EPISODES = new java.util.HashMap<>();
+
+    /** Apunta cuándo empieza y cuánto dura algo raro (con lo que hacía el jefe al empezar). */
+    private static void episode(Rep r, String name, boolean on, String what) {
+        Integer since = EPISODES.get(name);
+        if (on && since == null) {
+            EPISODES.put(name, t);
+            r.event(name + " [" + what + "]");
+        } else if (!on && since != null) {
+            EPISODES.remove(name);
+            if (t - since >= 10) r.event("   ... " + name + " " + (t - since) + " ticks");
+        }
     }
 
     private static void shot(Rep r, String what) {
@@ -392,6 +437,7 @@ public final class BossTest {
         }
         rift = null;
         boss = null;
+        EPISODES.clear();
         index++;
         phase = 0;
         t = 0;
