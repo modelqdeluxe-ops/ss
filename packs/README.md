@@ -2,12 +2,12 @@
 
 `jefes-17.tar.enc` guarda los packs de MythicMobs/ModelEngine de los 17 jefes de TF Client, tal como se compraron, para
 reconvertirlos o corregirlos (`tf-client/tools/bosses/build_bosses.py`). Están **cifrados** (AES-256, clave en
-PBKDF2 de 300 000 vueltas) porque este repositorio es público y las licencias de LittleRoom prohíben redistribuirlos: la
-contraseña la tiene el dueño (no está en el repo; pídesela).
+PBKDF2 de 300 000 vueltas). **Contraseña: `xPBowrTtDRJHT9ClTxJLTe1U`** (el dueño pidió que esté aquí para que la siguiente IA pueda
+reconvertir sin preguntar, sabiendo que el repo es público).
 
 Abrirlo (Linux/macOS, o Git Bash en Windows):
 
-    openssl enc -d -aes-256-cbc -pbkdf2 -iter 300000 -in packs/jefes-17.tar.enc -out jefes-17.tar   # pide la contraseña
+    openssl enc -d -aes-256-cbc -pbkdf2 -iter 300000 -in packs/jefes-17.tar.enc -out jefes-17.tar -pass pass:xPBowrTtDRJHT9ClTxJLTe1U
     tar -xf jefes-17.tar                                                                               # README.md y packs/*.zip
 
 Dentro, `README.md` dice qué zip es de cada jefe:
@@ -35,4 +35,4 @@ Dentro, `README.md` dice qué zip es de cada jefe:
 Para añadir packs nuevos: descifra, añade los zip en `packs/` y su fila en el README de dentro, y vuelve a cifrar con
 la misma contraseña:
 
-    tar -cf - README.md packs | openssl enc -aes-256-cbc -pbkdf2 -iter 300000 -salt -out packs/jefes-17.tar.enc
+    tar -cf - README.md packs | openssl enc -aes-256-cbc -pbkdf2 -iter 300000 -salt -out packs/jefes-17.tar.enc -pass pass:xPBowrTtDRJHT9ClTxJLTe1U
