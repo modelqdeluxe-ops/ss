@@ -520,6 +520,50 @@ la música; el color de la grieta, uno para todas: oscuridad, morado intenso osc
 La prueba en el juego saca dos capturas más por jefe: `grieta_lista` (la grieta en reposo con el cielo ya entrado) y
 `grieta_despierta` (despertando).
 
+### 3.12 Lo que pidió el dueño tras la 1.3.86 y lo que encontró la prueba (1.3.87)
+
+Quejas: *«texturas del cielo y la grieta pixeladas, estrellas fugaces horribles, una grieta más grande; que desaparezca
+al salir el jefe y vuelva al matarlo; las llamas no hacen la animación; Astwood te manda a volar fuera del mapa y su bola
+azul no impacta; el ataque de área del Archivista cae en el aire; el Mamut lanza ataques al aire, no te sigue, aparece y
+desaparece en bucle y al pegarte ya no le puedes hacer daño; más radio del cielo, música siniestra que se quite al
+empezar la pelea; quita el sonido de tambores al morir; los rayos son exagerados»*.
+
+| Síntoma | Causa (medida en la prueba) | Arreglo |
+|---|---|---|
+| «Te manda a volar fuera del mapa» (Astwood: 128 bloques de alto en la prueba) | `potion` cortaba el amplificador en 127. La jaula de Astwood pone `JUMP 155` (Bukkit manda el amplificador al cliente en un byte: 155 → −101, **no poder saltar**); cortado a 127 era Salto 128 = un supersalto de ~130 bloques. | `SkillRuntime.potion`: hasta 255, como Bukkit (Minecraft hace lo mismo con el byte). |
+| «Al pegarme ya no le puedo hacer daño» (Mamut) | `freeze{ticks=480}` (el búho de nieve que invoca el Mamut, y el zarpazo del Druida) se hacía como `stun`: 24 s con Lentitud X y **Debilidad V** (tu daño cuerpo a cuerpo, 0). En MythicMobs `freeze` es el frío de la nieve en polvo (`setFreezeTicks`). | `SkillMotion.freeze`: `setTicksFrozen(max(actual, ticks))`: escarcha en pantalla, algo de lentitud, a partir de 140 un poco de daño cada 2 s, y se va solo (2 por tick). |
+| «Aparece y desaparece en bucle» (Mamut) | Su `spawn` (sale de debajo de la tierra) está en **bucle** en el `.bbmodel` y el motor lo jugaba al poner el modelo: 800 de 800 ticks de pelea. | `VfxLayers.playSpawn`: la de aparecer de ModelEngine se juega una vez (luego la de reposo), la tenga como la tenga el `.bbmodel`. |
+| El trono del Esqueleto vivo en la pelea siguiente | `TOWER_SKELETON_THRONE` (`Despawn: NEVER`) lo invoca el jefe al salir; en el servidor del pack se queda para siempre, aquí cada despertar ponía otro encima. | `SkillMobs.removed`: lo que invocó un jefe (y lo que invocaron esos) se va cuando se quita él. |
+| Primer fotograma del lanzallamas (Esqueleto, Hidra) | El conversor solo metía en la fuente los glifos de `settextdisplay`, no el `Text` con el que nace el text_display (⛿): sus 2 primeros ticks se veía la letra de Minecraft. Los demás fotogramas sí cambian (en las capturas se ven llama verde y humo gris a la vez). | `build_skills.write_glyphs` mira también `DisplayOptions.Text`; reconvertidos los dos. |
+| «Cae en el aire» (área del Archivista) | `tyo=64` se sumaba también al apuntar a un sitio. | `tyo` solo con un ser de objetivo; el alcance (`maxRange`) se mide en línea recta desde la salida; `sdir` solo en misiles (MythicMobs). |
+| La bola azul de Astwood | En la prueba le da al jugador las 2 de 2. Con `inertia=100` del pack apenas gira (el motor la deja en 12): andando se esquiva, como en el pack. | Nada. |
+
+**La grieta 2.0** (`rift_model.py`, `GEO_S = 1.6`): 1,6 veces más grande (entidad 3,2×8,5, se ve a 160 bloques),
+texturas de 256 (vetas orgánicas con supermuestreo, cristal sin cruces de brillo), desgarro 96×288 de 16 fotogramas.
+**Desaparece al salir el jefe** (`RiftRenderer`: se encoge en 14 ticks en `FIGHT`, sin cartel) y **vuelve** al recargar
+(crece en 30 ticks).
+
+**El cielo 2.0** (`RiftSky`, `rift_sky.py`): todas sus texturas llevan `.png.mcmeta` con `blur` (filtro suave: eran los
+«píxeles horribles»); panorama de 2048×1024 sin estrellas pintadas (eran píxeles gordos al estirarlo), con filamentos,
+compresión suave (antes manchas planas de borde duro) y tramado; 1400 estrellas-destello; una capa de nebulosas lejana
+que gira al revés (paralaje); un **sol negro** (`grieta_eclipse.png`) 38° sobre la grieta más cercana; las fugaces son
+una estela con textura (`grieta_fugaz.png`: cabeza y cola que se afina, suave de ancho), cada 2,5-9 s, y a veces un
+**bólido** grande, lento y rosado. Radio: lista o recargando, entero hasta 48 bloques y nada a 112; despertando o en
+pelea, entero hasta 112 y nada a 128.
+
+**La música de la grieta** (`grieta.musica`, 96 s en bucle, re frigio, coro, campanas y viento; `sonidos_grieta.py`):
+categoría «Discos», sin posición, entra en 5 s cuando la fuerza del cielo pasa de 0,3 sin pelea y sin la música de un
+jefe; se va en 2 s al despertar la grieta; vuelve cuando se calla la del jefe. Mientras suena, la de Minecraft espera
+(`MusicManagerMixin` con `RiftSky.musicActive`). En el CI no hay tarjeta de sonido: la prueba mira `RiftSky.musicWanted`.
+
+**La muerte**: sin los chasquidos («tambores»): `jefes.muerte_disolucion` (~9 s de viento, cristal y coro, sin golpes)
+al empezar y `jefes.muerte_estallido` suave al final; rayos de 0,4-0,9 según el tamaño del jefe y hasta 30.
+
+**La prueba** cuenta además: daño por skill («skills que le dan»), proyectiles y misiles por skill (cuántos tocan al
+jugador y por qué acabó uno que no), lo más lejos/alto que le lanzan (con la skill, la velocidad y sus efectos),
+golpes del jugador que no quitan vida, efectos que no se quitan (más de 15 s), la pelea entera con el relevo (el Mamut:
+`<jefe>_relevo`) y la música (`música de la grieta antes de la pelea` / `música en la pelea`).
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
