@@ -70,7 +70,11 @@ licencias de LittleRoom prohíben redistribuirlos; el dueño eligió un **repo p
 puede crear (GitHub responde 403): cuando lo cree y dé acceso a la app de Claude, subir los 17 zips con su README (jefe →
 zip). Después el dueño dijo «súbelos público, no importa»: se subieron a `ss` **cifrados** (`packs/jefes-17.tar.enc`,
 AES-256; cómo abrirlo en `packs/README.md`; la contraseña la tiene el dueño, no está en el repo). En claro no: sería
-redistribuir packs de pago.
+redistribuir packs de pago. El dueño no podía descargar («site not reached»: su red no llega a
+`release-assets.githubusercontent.com`, adonde GitHub manda las descargas): la web tiene ahora **`/descargar`** (y
+`/tfclient.jar`) que sirve el jar de la última Release pasándolo por Cloudflare, y **`/packs`** con el archivo cifrado
+(`tierras-fantasticas/src/app.js`, `passDownload`; prueba en `app.test.js`). Enlace para jugadores:
+**https://xn--tierrasfantsticas-hpb.store/descargar**.
 
 ### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.85)
 
