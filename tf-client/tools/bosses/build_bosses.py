@@ -701,6 +701,9 @@ def build(pack_dir, name, conf, sound_events):
             'preview_hide': es.get('preview_hide') if 'preview_hide' in es else spawn_hidden(prog, conf['mob'])}
     if succ:
         boss['successors'] = succ
+    # (1.3.88, orden del dueño) «suelo»: sus golpes no suben al jugador al cielo (el Contemplador, JEFES.md §3.13)
+    if es.get('suelo'):
+        boss['suelo'] = True
     out = {'id': bid, 'pack': name, 'boss': boss, 'class': {'name': boss['name']}, 'skills': [],
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': {k: v for k, v in item_models.items() if v},
            'drops': drops, 'glyphs': glyphs, 'missing': [m.split(':', 1)[1] for m in prog['missing'] if m.startswith('skill:')]}

@@ -174,6 +174,19 @@ public final class SkillRuntime {
         return STATES.get(w.key());
     }
 
+    /** Para la prueba en el juego: las variables del pack y el gcd de una entidad («movement=forward ... gcd=12»). */
+    public static String debugVars(Entity e) {
+        WhoState st = stateIfAny(Who.of(e));
+        if (st == null) return "sin estado";
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> v : new java.util.TreeMap<>(st.vars).entrySet()) {
+            if (sb.length() > 360) break;
+            String val = v.getValue() == null ? "" : v.getValue();
+            sb.append(v.getKey()).append('=').append(val.length() > 18 ? val.substring(0, 18) : val).append(' ');
+        }
+        return sb.append("gcd=").append(Math.max(0, st.gcdUntil - clock)).toString();
+    }
+
     // ------------------------------------------------------------------------------------------- objetivos
 
     /** Un objetivo: una entidad, un actor o un punto. power: multiplicador (condición «power»). */
@@ -1670,7 +1683,9 @@ public final class SkillRuntime {
                 Vec3 push = le.position().subtract(c);
                 if (push.lengthSqr() > 1e-6) {
                     push = push.normalize().scale(impact);
-                    le.push(push.x, push.y * 0.5 + impact * 0.3, push.z);
+                    // (1.3.88, orden del dueño) un jefe con «suelo» no sube al jugador con sus explosiones
+                    boolean ground = le instanceof net.minecraft.server.level.ServerPlayer && SkillMotion.keepsGround(ctx);
+                    le.push(push.x, ground ? 0 : push.y * 0.5 + impact * 0.3, push.z);
                     le.hurtMarked = true;
                 }
                 if (fire) le.setSecondsOnFire(4);

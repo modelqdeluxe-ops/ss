@@ -101,6 +101,7 @@ public final class BossTest {
 
     private static volatile String lastPush = "";
     private static volatile int bossPushedAt = -100;
+    private static int stillFar;
     private static volatile String bossPush = "";
 
     /** SkillMotion.push ha movido al jefe (velocity, leap, lunge... del pack): lo que ande así no lo decide el motor. */
@@ -144,6 +145,7 @@ public final class BossTest {
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
         int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, backPushed, sidePushed, landed, noEffect;
         double minDist = 1e9;
+        int stillFarTicks, stillFarShown;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -456,6 +458,16 @@ public final class BossTest {
             why += String.format("; va a %.0f° del cuerpo, %.2f b/t, jugador a %.0f°, %s", Mth.wrapDegrees(go - boss.yBodyRot), hs,
                     Mth.wrapDegrees(Math.toDegrees(Math.atan2(-tp.x, tp.z)) - boss.yBodyRot), node);
         }
+        // Quieto y lejos del jugador más de 2 s («se queda quieto lejos y ataca sin sentido», Ignevar): por qué no anda
+        if (d > 10 + boss.getBbWidth() / 2 && hs < 0.03) {
+            if (++stillFar == 40 && r.stillFarShown++ < 6) {
+                r.event(String.format("quieto lejos (a %.1f) [%s] suelo=%s %s", d, what, boss.onGround(),
+                        net.tierrasfantasticas.tfclient.skills.SkillRuntime.debugVars(boss)));
+            }
+            if (stillFar >= 40) r.stillFarTicks++;
+        } else {
+            stillFar = 0;
+        }
         episode(r, "anda hacia atrás", back, what + why);
         episode(r, "anda de lado", side, what + why);
         if (hs > 4) r.event("se teletransporta " + String.format("%.0f", hs) + " bloques [" + what + "]");
@@ -477,6 +489,8 @@ public final class BossTest {
         int minions = level.getEntitiesOfClass(BossEntity.class, boss.getBoundingBox().inflate(64), e -> e != boss && e.isAlive()).size();
         r.minionsMax = Math.max(r.minionsMax, minions);
         if (SHOTS.contains(t)) shot(r, "pelea_" + t / 20 + "s");
+        // Cómo aparece (el Guardián Hueco: «sale completo y luego se cae a pedazos»): sus primeros ticks
+        if (t == 1 || t == 4 || t == 10) shot(r, "aparece_t" + t);
         if (t == 200) {
             r.event("música en la pelea: grieta " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada")
                     + ", jefe " + (net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive() ? "suena" : "no suena"));
@@ -695,6 +709,7 @@ public final class BossTest {
         freeUntil = 0;
         pushedAt = -10;
         bossPushedAt = -100;
+        stillFar = 0;
         EPISODES.clear();
         index++;
         phase = 0;
@@ -740,6 +755,7 @@ public final class BossTest {
                     r.movingTicks, r.backTicks, r.backLocked, r.backPushed, r.sideTicks, r.sideLocked, r.sidePushed, r.fastTicks, r.teleports));
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",
                     r.airTicks, r.maxAir, r.maxHome, r.minionsMax));
+            sb.append(String.format("   quieto y lejos del jugador (más de 2 s seguidos): %d ticks%n", r.stillFarTicks));
             sb.append(String.format("   sin modelo %d ticks; sin animación %d ticks%n", r.noModelTicks, r.noAnimTicks));
             sb.append("   animaciones (ticks): ").append(r.anims).append('\n');
             sb.append(String.format("   al morir: anims [%s]; barras que ve el cliente a los 3 s: %d; quitado: %s; objetos: %d; experiencia: %d; esbirros vivos: %d%n",

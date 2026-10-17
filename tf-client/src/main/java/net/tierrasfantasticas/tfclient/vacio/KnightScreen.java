@@ -68,11 +68,10 @@ public class KnightScreen extends Screen {
         return false;
     }
 
+    /** «Volver a Tierras Fantásticas · 120, 64, -30» (a donde estabas antes de venir). */
     private String backLabel() {
         String b = talk.back();
-        if (b == null || b.isEmpty()) return "Volver a Tierras Fantásticas";
-        int dot = b.indexOf(" · ");
-        return "Volver a " + (dot > 0 ? b.substring(0, dot) : b);
+        return b == null || b.isEmpty() ? "Volver a Tierras Fantásticas" : "Volver a " + b;
     }
 
     private void go(Page p) {
@@ -90,8 +89,7 @@ public class KnightScreen extends Screen {
                 default -> text = "";
             }
             if (p == Page.LEAVING) return;
-            String where = talk.back() == null || talk.back().isEmpty() ? "" : " (" + talk.back() + ")";
-            options.add(new Option(backLabel() + where, () -> leave(VoidNet.BACK)));
+            options.add(new Option(backLabel(), () -> leave(VoidNet.BACK)));
             if (p != Page.WHERE) options.add(new Option("¿Dónde estoy?", () -> go(Page.WHERE)));
             options.add(new Option("Me quedo un rato", this::onClose));
             return;
