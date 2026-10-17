@@ -872,9 +872,9 @@ def main():
     with open(cat_path, 'w', encoding='utf-8') as f:
         json.dump(final, f, ensure_ascii=False, indent=1)
     if full:
-        # El cristal de las grietas (modelo propio, no de un pack) vive en las mismas carpetas: se vuelve a hacer
-        import rift_model
-        rift_model.main()
+        # La grieta (geometría propia, no de un pack; 1.3.88: la 3.0, con shaders) vive en las mismas carpetas: se rehace
+        import grieta3
+        grieta3.main()
     BS.write_atlas()
     # El auditor (tools/bosses/audit.py): lo que el motor no tiene o el pack nombra mal; debe dar 0 en cada jefe
     # (por su ruta: tools/skills tiene otro audit.py, el de las clases)

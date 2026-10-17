@@ -650,11 +650,17 @@ public final class SkillRuntime {
         int delay = (int) Math.round(num(m.a.get("delay"), 0) / tempo);
         int repeat = (int) num(m.arg("0", "repeat", "r_"), 0);
         int every = (int) Math.max(1, Math.round(num(m.arg("1", "repeatinterval", "repeati", "ri"), 1) / tempo));
+        // Los marcadores (<caster.var.x>, <random...>) se leen cada vez que la línea sale, como MythicMobs: con delay,
+        // al salir; con repeat, en cada repetición (1.3.88: el despegue de Ignevar, velocity{y=<caster.var.ramping_current>;
+        // repeat=40}, subía con la velocidad que tenía al empezar, 0: nunca volaba, ni se giraba ni caía en picado)
+        boolean[] fresh = {delay <= 0};
         Runnable once = () -> {
             if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
+            Mech cur = fresh[0] || !raw.dyn ? m : SkillVars.resolve(raw, ctx);
+            fresh[0] = false;
             Ctx use = ctx;
             // origin=@Objetivo{...}: la línea (y lo que llame) sale desde ahí
-            String o = m.a.get("origin");
+            String o = cur.a.get("origin");
             if (o != null && o.trim().startsWith("@")) {
                 List<Tgt> r = SkillTargets.fromString(o, ctx);
                 if (!r.isEmpty()) {
@@ -663,7 +669,7 @@ public final class SkillRuntime {
                     use.origin = r.get(0).pos();
                 }
             }
-            apply(m, use, targets(m, use));
+            apply(cur, use, targets(cur, use));
         };
         if (delay <= 0 && repeat <= 0) {
             once.run();

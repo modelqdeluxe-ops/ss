@@ -41,8 +41,10 @@ public class RiftEntity extends Entity {
     public final VfxLayers layers = new VfxLayers();
     public int clientAge;
     public int shownState = -1;
-    /** clientAge cuando cambió de estado (lo pone RiftRenderer.sync): para desaparecer y reaparecer. */
+    /** clientAge cuando cambió de estado (lo pone RiftRenderer.look): para desaparecer, reaparecer y abrirse. */
     public int stateSince;
+    /** El estado de antes del de ahora (en el cliente). */
+    public int prevState = -1;
 
     public RiftEntity(EntityType<? extends RiftEntity> type, Level level) {
         super(type, level);
@@ -188,13 +190,15 @@ public class RiftEntity extends Entity {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        // El desgarro sube a ~13,5 bloques y los anillos del suelo llegan a 6 del centro (1.3.87: un 60 % más grande)
-        return getBoundingBox().inflate(5, 6, 5);
+        // (1.3.88, la grieta 3.0) las garras llegan a ~10 bloques del centro, el círculo de runas a 13,5 y el desgarro y el
+        // cartel a ~24 de alto
+        AABB b = getBoundingBox();
+        return new AABB(b.minX - 14, b.minY - 1, b.minZ - 14, b.maxX + 14, b.minY + 25, b.maxZ + 14);
     }
 
     @Override
     public boolean shouldRenderAtSqrDistance(double d) {
-        return d < 128 * 128;
+        return d < 192 * 192;
     }
 
     @Override

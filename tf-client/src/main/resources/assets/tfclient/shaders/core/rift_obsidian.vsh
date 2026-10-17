@@ -1,0 +1,29 @@
+#version 150
+
+in vec3 Position;
+in vec4 Color;
+in vec2 UV0;
+in ivec2 UV1;
+in ivec2 UV2;
+in vec3 Normal;
+
+uniform sampler2D Sampler2;
+uniform mat4 ModelViewMat;
+uniform mat4 ProjMat;
+
+out vec4 vColor;
+out vec2 vUV;
+flat out ivec2 vMat;
+out float vLight;
+out float vDist;
+
+void main() {
+    vec4 p = ModelViewMat * vec4(Position, 1.0);
+    gl_Position = ProjMat * p;
+    vColor = Color;
+    vUV = UV0;
+    vMat = UV1;
+    vec4 lm = texelFetch(Sampler2, UV2 / 16, 0);
+    vLight = max(lm.r, max(lm.g, lm.b));
+    vDist = length(p.xyz);
+}

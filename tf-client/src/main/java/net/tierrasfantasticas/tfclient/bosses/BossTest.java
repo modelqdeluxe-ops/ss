@@ -269,7 +269,7 @@ public final class BossTest {
                 if (t == 40) {
                     rift = Rifts.place(player, r.id, Difficulty.NORMAL);
                     // mirándola (hacia +z) y un poco hacia arriba: la grieta entera (1.3.87: más grande)
-                    player.teleportTo(level, arena.x, arena.y, arena.z - 22, 0F, -13F);
+                    player.teleportTo(level, arena.x, arena.y, arena.z - 34, 0F, -17F);
                 }
                 if (t == 175) {
                     shot(r, "grieta_lista");
@@ -350,6 +350,8 @@ public final class BossTest {
             wantDist = new int[] {3, 6, 10, 16, 4, 8}[(t / 100) % 6];
             side = -side;
         }
+        // (para ver entero el despertar del Guardián Hueco, que despierta a menos de 8 bloques)
+        if (r.id.equals("guardian_hueco") && t < 160) wantDist = 6;
         Vec3 rel = player.position().subtract(bp).multiply(1, 0, 1);
         double d = rel.length();
         if (d < 1e-3) rel = new Vec3(0, 0, -1);
@@ -491,6 +493,8 @@ public final class BossTest {
         if (SHOTS.contains(t)) shot(r, "pelea_" + t / 20 + "s");
         // Cómo aparece (el Guardián Hueco: «sale completo y luego se cae a pedazos»): sus primeros ticks
         if (t == 1 || t == 4 || t == 10) shot(r, "aparece_t" + t);
+        // El despertar del Guardián Hueco (sale de pie, se cae y se monta, decía el dueño): cada 10 ticks
+        if (r.id.equals("guardian_hueco") && t >= 30 && t <= 150 && t % 10 == 0) shot(r, String.format("despierta_t%03d", t));
         if (t == 200) {
             r.event("música en la pelea: grieta " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada")
                     + ", jefe " + (net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive() ? "suena" : "no suena"));
