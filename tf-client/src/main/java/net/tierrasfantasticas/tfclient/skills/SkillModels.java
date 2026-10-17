@@ -93,7 +93,7 @@ final class SkillModels {
             VfxModel vm = load(mid);
             if (a.layers != null) {
                 a.layers.clear();
-                if (vm != null && vm.anims.containsKey("spawn")) a.layers.play(vm, "spawn", a.age, 1F, 0, 0, 0, true);
+                if (vm != null) a.layers.playSpawn(vm, a.age);
             } else if (vm != null && vm.anims.containsKey("spawn")) {
                 a.anim = "spawn";
                 a.animStart = a.age;

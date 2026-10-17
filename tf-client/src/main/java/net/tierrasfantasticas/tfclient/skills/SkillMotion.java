@@ -29,7 +29,9 @@ final class SkillMotion {
         motion = new Vec3(clamp(motion.x, max), clamp(motion.y, max), clamp(motion.z, max));
         e.setDeltaMovement(motion);
         e.hurtMarked = true;
-        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && e instanceof ServerPlayer) net.tierrasfantasticas.tfclient.bosses.BossTest.pushed();
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && e instanceof ServerPlayer) {
+            net.tierrasfantasticas.tfclient.bosses.BossTest.pushed(String.format("%s v=%.2f,%.2f,%.2f", ctx.skill, motion.x, motion.y, motion.z));
+        }
         if (motion.y > 0 && e instanceof ServerPlayer) SkillServer.noFall(e.getUUID(), 100);
         e.fallDistance = 0;
     }
@@ -269,6 +271,21 @@ final class SkillMotion {
             if (!self) le.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, d, 4, false, false, false));
             le.setDeltaMovement(0, Math.min(0, le.getDeltaMovement().y), 0);
             le.hurtMarked = true;
+        }
+    }
+
+    /**
+     * freeze{ticks}: el frío de la nieve en polvo de Minecraft (MythicMobs: setFreezeTicks): la escarcha en la pantalla,
+     * algo de lentitud y, congelado del todo (140), un poco de daño cada 2 s; se va solo (2 por tick). Hasta la 1.3.86 era
+     * un aturdimiento con Debilidad V de «ticks» (480 el búho del Druida: 24 s sin poder hacer daño, «al pegarme me quita
+     * el daño, no le puedo hacer nada»).
+     */
+    static void freeze(Mech m, Ctx ctx, List<Tgt> targets) {
+        int ticks = (int) SkillRuntime.num(m.arg("100", "ticks", "t", "duration", "d"), 100);
+        for (Tgt t : targets) {
+            LivingEntity le = t.living();
+            if (le == null || !SkillRuntime.canHurt(ctx, le)) continue;
+            le.setTicksFrozen(Math.max(le.getTicksFrozen(), ticks));
         }
     }
 

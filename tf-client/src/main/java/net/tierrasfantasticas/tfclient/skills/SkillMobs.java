@@ -796,6 +796,23 @@ public final class SkillMobs {
         STATES.remove(h.mob().getUUID());
         SkillModels.forget(h.mob().getUUID());
         if (world != null) world.unseat(h, null);
+        // Lo que invocó y sigue ahí (y lo que invocaron esos) se va con él. En MythicMobs el trono del Esqueleto
+        // («Despawn: NEVER») se queda para siempre en el servidor del pack; aquí la grieta vuelve a despertar y cada pelea
+        // ponía otro trono encima del anterior (la prueba lo veía vivo en la pelea siguiente, 1.3.87).
+        java.util.Set<Object> gone = new java.util.HashSet<>();
+        gone.add(h.mob());
+        boolean more = true;
+        while (more) {
+            more = false;
+            for (SkillActor a : new ArrayList<>(SkillRuntime.ACTORS)) {
+                if (!a.alive || a.owner == null || gone.contains(a)) continue;
+                if (gone.contains(a.owner.entity) || a.owner.actor != null && gone.contains(a.owner.actor)) {
+                    gone.add(a);
+                    a.remove();
+                    more = true;
+                }
+            }
+        }
     }
 
     static void clear() {

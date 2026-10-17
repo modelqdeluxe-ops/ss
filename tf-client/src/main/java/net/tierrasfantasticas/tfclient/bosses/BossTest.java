@@ -93,9 +93,24 @@ public final class BossTest {
         else r.missed.putIfAbsent(what, info);
     }
 
-    /** SkillMotion.push ha movido a un jugador. */
-    public static void pushed() {
+    /** SkillMotion.push ha movido a un jugador (what: la skill y la velocidad). */
+    public static void pushed(String what) {
         pushedAt = t;
+        lastPush = what;
+    }
+
+    private static volatile String lastPush = "";
+
+    /** SkillRuntime.hurt: una skill del jefe le ha dado al jugador (dealt = el daño que entró; 0 = no entró). */
+    public static void skillHit(String skill, float dealt) {
+        Rep r = current;
+        if (r == null) return;
+        float[] c = r.skillHits.computeIfAbsent(skill, k -> new float[3]);
+        c[0]++;
+        if (dealt > 0) {
+            c[1]++;
+            c[2] += dealt;
+        }
     }
     /** Tick (de la fase de muerte) en que salió el relevo (-1 = ninguno pendiente) y desde el que se mira la muerte. */
     private static int relayAt = -1, deathFrom, lastState = -1;
@@ -107,6 +122,8 @@ public final class BossTest {
         final java.util.Set<String> stuck = new java.util.HashSet<>();
         /** Proyectiles y misiles del jefe: qué → {lanzados, tocan al jugador}, y cómo acabó uno que no tocó. */
         final Map<String, int[]> shots = new TreeMap<>();
+        /** Por skill: veces que le da al jugador, las que le hacen daño y cuánto. */
+        final Map<String, float[]> skillHits = new TreeMap<>();
         final Map<String, String> missed = new java.util.HashMap<>();
         /** Lo más lejos y alto que le ha lanzado un golpe del jefe. */
         double throwFar, throwHigh;
@@ -240,7 +257,7 @@ public final class BossTest {
                 if (t == 175) {
                     shot(r, "grieta_lista");
                     // (solo en el cliente del juego de un jugador, que es el de la prueba)
-                    r.event("música de la grieta antes de la pelea: " + (RiftSky.musicActive() ? "suena" : "NO SUENA"));
+                    r.event("música de la grieta antes de la pelea: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
                 }
                 if (t == 180) {
                     lastState = rift.state;
@@ -344,6 +361,7 @@ public final class BossTest {
                 throwWhat = SkillMobs.animNames(boss) == null ? "" : String.join(",", SkillMobs.animNames(boss));
                 throwMax = 0;
                 throwTop = 0;
+                throwWhat += " | " + lastPush + effects(player);
             }
             freeUntil = t + 30;
         }
@@ -440,7 +458,7 @@ public final class BossTest {
         r.minionsMax = Math.max(r.minionsMax, minions);
         if (SHOTS.contains(t)) shot(r, "pelea_" + t / 20 + "s");
         if (t == 200) {
-            r.event("música en la pelea: grieta " + (RiftSky.musicActive() ? "SUENA (mal)" : "callada")
+            r.event("música en la pelea: grieta " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada")
                     + ", jefe " + (net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive() ? "suena" : "no suena"));
         }
         if (t >= FIGHT) kill(level, r);
@@ -533,6 +551,18 @@ public final class BossTest {
         }
     }
 
+    /** Los efectos del jugador (si alguno pasa de nivel 10: el «Salto 128» era un supersalto). */
+    private static String effects(ServerPlayer p) {
+        StringBuilder sb = new StringBuilder();
+        for (net.minecraft.world.effect.MobEffectInstance e : p.getActiveEffects()) {
+            sb.append(' ').append(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.getKey(e.getEffect()).getPath())
+                    .append(' ').append(e.getAmplifier());
+        }
+        if (p.getTicksFrozen() > 0) sb.append(" congelado ").append(p.getTicksFrozen());
+        if (p.isPassenger()) sb.append(" montado");
+        return sb.length() == 0 ? "" : " | efectos:" + sb;
+    }
+
     private static void shot(Rep r, String what) {
         shotRequest = String.format("%02d_%s_%s", index, r.id, what);
     }
@@ -582,6 +612,14 @@ public final class BossTest {
             sb.append(String.format("   mis golpes que le quitan vida: %d; sin efecto (sin estar en sus ticks de invulnerable): %d%n", r.landed, r.noEffect));
             sb.append(String.format("   me mueve el jefe (empujón, arrastre): %d veces; lo más lejos que me lanza %.1f bloques, lo más alto %.1f%n",
                     r.moved, r.throwFar, r.throwHigh));
+            if (!r.skillHits.isEmpty()) {
+                StringBuilder hs = new StringBuilder();
+                for (Map.Entry<String, float[]> e : r.skillHits.entrySet()) {
+                    float[] c = e.getValue();
+                    hs.append(String.format("%s%s %.0f/%.0f (%.0f)", hs.length() == 0 ? "" : "; ", e.getKey(), c[1], c[0], c[2]));
+                }
+                sb.append("   skills que le dan (con daño/veces, daño): ").append(hs).append('\n');
+            }
             for (Map.Entry<String, int[]> e : r.shots.entrySet()) {
                 sb.append(String.format("   %s: %d, tocan al jugador %d%s%n", e.getKey(), e.getValue()[0], e.getValue()[1],
                         r.missed.containsKey(e.getKey()) ? " (uno que no: " + r.missed.get(e.getKey()) + ")" : ""));

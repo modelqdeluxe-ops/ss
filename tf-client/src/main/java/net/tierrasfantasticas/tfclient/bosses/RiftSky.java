@@ -60,6 +60,8 @@ public final class RiftSky {
     private static RiftEntity nearest;
     private static Ambient ambient;
     private static RiftMusic music;
+    /** ¿Toca la música de la grieta ahora? (aunque no haya sonido: la prueba de jefes del CI no tiene tarjeta) */
+    private static boolean musicWanted;
     private static int ticks, nextMeteor = 60;
     /** Hacia dónde está el sol negro (encima de la grieta más cercana, se mueve suave). */
     private static final Vector3f ECLIPSE_DIR = new Vector3f(0, 0.5F, 0.87F);
@@ -93,6 +95,11 @@ public final class RiftSky {
         return music != null && !music.isStopped();
     }
 
+    /** ¿Debería sonar? (cerca de una grieta, sin pelea y sin la música de un jefe) */
+    public static boolean musicWanted() {
+        return musicWanted;
+    }
+
     private RiftSky() {}
 
     /** Cuánto cielo de grieta hay ahora (0..1), para el mixin del color del cielo y las nubes. */
@@ -117,6 +124,7 @@ public final class RiftSky {
             METEORS.clear();
             if (music != null) mc.getSoundManager().stop(music);
             music = null;
+            musicWanted = false;
             return;
         }
         if (mc.isPaused()) return;
@@ -139,16 +147,20 @@ public final class RiftSky {
         }
         strength += Mth.clamp(target - strength, -0.01F, 0.01F);
         nearest = near;
-        // El sol negro, encima de la grieta más cercana (desde donde estás), 30° sobre el horizonte
+        // El sol negro, encima de la grieta más cercana (desde donde estás), 38° sobre el horizonte (sobre su nombre)
         if (near != null) {
             double dx = near.getX() - mc.player.getX(), dz = near.getZ() - mc.player.getZ(), h = Math.sqrt(dx * dx + dz * dz);
             if (h > 2) {
-                Vector3f want = new Vector3f((float) (dx / h) * 0.866F, 0.5F, (float) (dz / h) * 0.866F);
+                Vector3f want = new Vector3f((float) (dx / h) * 0.788F, 0.616F, (float) (dz / h) * 0.788F);
                 ECLIPSE_DIR.lerp(want, 0.04F).normalize();
             }
         }
         // La música siniestra: con la grieta cerca y sin pelea; se va al despertar y vuelve al callarse la del jefe
         boolean wantMusic = strength > 0.3F && !battle && !net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive();
+        musicWanted = wantMusic;
+        // (si el motor de sonido la ha soltado sin pararla, p. ej. al recargar los sonidos, se vuelve a poner)
+        if (music != null && !music.isStopped() && music.age > 40 && !mc.getSoundManager().isActive(music)) music = null;
+        if (music != null && !music.isStopped()) music.age++;
         if (wantMusic) {
             if (music == null || music.isStopped()) {
                 music = new RiftMusic();
@@ -284,7 +296,7 @@ public final class RiftSky {
         Matrix4f fixed = pose.last().pose();
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         float breathe = 1F + 0.025F * Mth.sin(time * 0.02F);
-        billboard(buf, fixed, ECLIPSE_DIR, 95F, 30F * breathe, time * 0.01F, 1F, 1F, 1F, s);
+        billboard(buf, fixed, ECLIPSE_DIR, 95F, 64F * breathe, time * 0.01F, 1F, 1F, 1F, s);
         BufferUploader.drawWithShader(buf.end());
 
         // 5. Las estrellas fugaces: una estela con textura que sigue su arco, cabeza brillante y cola que se apaga
@@ -427,6 +439,7 @@ public final class RiftSky {
         private static final float VOLUME = 0.6F;
         private static final int FADE_IN = 100, FADE_OUT = 40;
         boolean leaving;
+        int age;
         private float fade;
 
         RiftMusic() {
