@@ -226,7 +226,7 @@ public final class BossTest {
                     lastPos = boss.position();
                     phase = 2;
                     t = 0;
-                } else if (t > 200) {
+                } else if (t > 600) {
                     r.event("NO SALE el jefe (la grieta está en " + rift.state + ")");
                     next(level);
                 }
