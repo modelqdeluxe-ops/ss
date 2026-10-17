@@ -1101,8 +1101,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             getNavigation().stop();
             fromHome = 0;
         }
+        // (el mismo margen que pickTarget: a quien sale despedido de la arena lo sigue hasta 64 bloques de su grieta)
         boolean targetInArena = target != null && target.position().distanceToSqr(home == null ? position() : home)
-                <= Rifts.LEASH * Rifts.LEASH;
+                <= (Rifts.LEASH + 24) * (Rifts.LEASH + 24);
         if (home != null && fromHome > Rifts.LEASH && !targetInArena) {
             // Fuera de su arena y sin nadie dentro a quien perseguir: vuelve (si su objetivo sigue dentro, le persigue:
             // antes lo soltaba y se iba dándole la espalda, «me ignora»)
@@ -1596,7 +1597,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             if (!p.isAlive() || p.isSpectator() || p.isCreative()) continue;
             if (!players && !threat.containsKey(p.getUUID())) continue;
             double d = p.distanceToSqr(this);
-            if (d > range * range || home != null && p.position().distanceToSqr(c) > (Rifts.LEASH + 8) * (Rifts.LEASH + 8)) continue;
+            // Fuera de su arena no busca a nadie; al que ya perseguía no lo suelta hasta 64 bloques (lo que salta él antes de
+            // volver a su grieta): sus golpes lanzan lejos (el Druida, a más de 48) y lo perdía justo cuando iba a volar hacia él
+            double arena = p == target ? Rifts.LEASH + 24 : Rifts.LEASH + 8;
+            if (d > range * range || home != null && p.position().distanceToSqr(c) > arena * arena) continue;
             double t = threat.getOrDefault(p.getUUID(), 0.0);
             // Listo: va a por quien se cura, a por quien le dispara desde lejos y remata a quien está a punto de caer
             if (smart >= 0.6) {
