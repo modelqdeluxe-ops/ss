@@ -98,7 +98,7 @@ public final class BossTest {
         final Map<String, Integer> anims = new TreeMap<>();
         final Map<String, Integer> errors = new LinkedHashMap<>();
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
-        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved;
+        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -329,19 +329,28 @@ public final class BossTest {
         }
         List<String> anims = SkillMobs.animNames(boss);
         String what = anims == null ? "sin modelo" : String.join(",", anims.subList(Math.min(1, anims.size()), anims.size()));
-        boolean back = false;
+        boolean back = false, side = false, lockedNow = false;
         if (hs > 0.03 && hs <= 4) {
             r.movingTicks++;
             float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
             float diff = Math.abs(Mth.wrapDegrees(go - boss.yBodyRot));
+            // Con el modelo bloqueado por el pack (lockmodel) el cuerpo no gira: eso es de ModelEngine; se cuenta aparte
+            boolean locked = boss.motion()[2] != 0;
             if (diff > 120) {
                 r.backTicks++;
+                if (locked) r.backLocked++;
                 back = true;
             } else if (diff > 60) {
                 r.sideTicks++;
+                if (locked) r.sideLocked++;
+                side = true;
             }
+            lockedNow = locked;
         }
-        episode(r, "anda hacia atrás", back, what + String.format(" a %.1f del jugador%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : ""));
+        String why = String.format(" a %.1f del jugador%s%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : "",
+                lockedNow ? ", modelo bloqueado (lockmodel)" : "");
+        episode(r, "anda hacia atrás", back, what + why);
+        episode(r, "anda de lado", side, what + why);
         if (hs > 4) r.event("se teletransporta " + String.format("%.0f", hs) + " bloques [" + what + "]");
         int ground = ground(level, Mth.floor(bp.x), Mth.floor(bp.z));
         double air = bp.y - ground;
@@ -485,8 +494,8 @@ public final class BossTest {
             sb.append(String.format("   objetivo = el jugador: %d%% del tiempo (cerca: %d%%); golpes que me da: %d (%.1f de daño); los míos: %d%n",
                     100 * r.targetTicks / ft, 100 * r.nearTicks / ft, r.hitsTaken, r.dmgTaken, r.playerAttacks));
             sb.append(String.format("   me mueve el jefe (empujón, arrastre): %d veces%n", r.moved));
-            sb.append(String.format("   anda: %d ticks, hacia atrás %d, de lado %d; rápido (>0,8 b/t) %d; teletransportes %d%n",
-                    r.movingTicks, r.backTicks, r.sideTicks, r.fastTicks, r.teleports));
+            sb.append(String.format("   anda: %d ticks, hacia atrás %d (con lockmodel del pack %d), de lado %d (con lockmodel %d); rápido (>0,8 b/t) %d; teletransportes %d%n",
+                    r.movingTicks, r.backTicks, r.backLocked, r.sideTicks, r.sideLocked, r.fastTicks, r.teleports));
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",
                     r.airTicks, r.maxAir, r.maxHome, r.minionsMax));
             sb.append(String.format("   sin modelo %d ticks; sin animación %d ticks%n", r.noModelTicks, r.noAnimTicks));
