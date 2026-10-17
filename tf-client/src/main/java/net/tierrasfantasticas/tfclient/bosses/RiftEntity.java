@@ -41,6 +41,8 @@ public class RiftEntity extends Entity {
     public final VfxLayers layers = new VfxLayers();
     public int clientAge;
     public int shownState = -1;
+    /** clientAge cuando cambió de estado (lo pone RiftRenderer.sync): para desaparecer y reaparecer. */
+    public int stateSince;
 
     public RiftEntity(EntityType<? extends RiftEntity> type, Level level) {
         super(type, level);
@@ -113,29 +115,30 @@ public class RiftEntity extends Entity {
     private void clientFx() {
         net.minecraft.util.RandomSource r = random;
         int st = state();
+        if (st == FIGHT) return; // durante la pelea la grieta no está (RiftRenderer)
         boolean open = st == READY || st == WAKING;
         int n = st == WAKING ? 4 : open ? 2 : 1;
         for (int i = 0; i < n; i++) {
-            double a = r.nextDouble() * Math.PI * 2, d = 1.2 + r.nextDouble() * 2.6;
+            double a = r.nextDouble() * Math.PI * 2, d = 2 + r.nextDouble() * 4.2;
             if (r.nextInt(3) == 0) {
                 level().addParticle(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, getX() + Math.cos(a) * d, getY() + 0.15,
                         getZ() + Math.sin(a) * d, 0, 0.04 + r.nextDouble() * 0.06, 0);
             }
             if (open) {
                 // Se las traga el desgarro: salen alrededor y van hacia él
-                double y = getY() + 1.5 + r.nextDouble() * 6;
-                level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + (r.nextDouble() - 0.5) * 3, y,
-                        getZ() + (r.nextDouble() - 0.5) * 3, (r.nextDouble() - 0.5) * 2, (r.nextDouble() - 0.5) * 1.5,
+                double y = getY() + 2.5 + r.nextDouble() * 10;
+                level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + (r.nextDouble() - 0.5) * 5, y,
+                        getZ() + (r.nextDouble() - 0.5) * 5, (r.nextDouble() - 0.5) * 2, (r.nextDouble() - 0.5) * 1.5,
                         (r.nextDouble() - 0.5) * 2);
             }
             if (r.nextInt(4) == 0) {
                 level().addParticle(new net.minecraft.core.particles.DustParticleOptions(VOID_PURPLE, 1.4F),
-                        getX() + (r.nextDouble() - 0.5) * 5, getY() + r.nextDouble() * 7, getZ() + (r.nextDouble() - 0.5) * 5, 0, 0.01, 0);
+                        getX() + (r.nextDouble() - 0.5) * 8, getY() + r.nextDouble() * 11, getZ() + (r.nextDouble() - 0.5) * 8, 0, 0.01, 0);
             }
         }
         if (open && r.nextInt(st == WAKING ? 3 : 25) == 0) {
             level().addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, getX() + (r.nextDouble() - 0.5) * 0.8,
-                    getY() + 2 + r.nextDouble() * 5, getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
+                    getY() + 3 + r.nextDouble() * 8, getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
                     (r.nextDouble() - 0.5) * 0.08, (r.nextDouble() - 0.5) * 0.08);
         }
     }
@@ -180,13 +183,13 @@ public class RiftEntity extends Entity {
 
     @Override
     public EntityDimensions getDimensions(Pose pose) {
-        return EntityDimensions.scalable(2.4F, 5.2F);
+        return EntityDimensions.scalable(3.2F, 8.5F);
     }
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        // El desgarro sube a ~8,5 bloques y los anillos del suelo llegan a 3,75 del centro
-        return getBoundingBox().inflate(3, 4, 3);
+        // El desgarro sube a ~13,5 bloques y los anillos del suelo llegan a 6 del centro (1.3.87: un 60 % más grande)
+        return getBoundingBox().inflate(5, 6, 5);
     }
 
     @Override

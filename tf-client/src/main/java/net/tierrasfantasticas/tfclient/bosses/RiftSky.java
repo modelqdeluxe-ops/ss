@@ -37,30 +37,42 @@ import org.joml.Vector3f;
  * el vacío: un panorama de nebulosas moradas (tools/bosses/rift_sky.py) en una esfera que gira muy despacio, nubes de
  * nebulosa que laten, estrellas que titilan y estrellas fugaces; la niebla, el color del cielo y las nubes de Minecraft
  * se tiñen del mismo morado (RiftSkyMixin) y suena el zumbido de la grieta.
- * Cuánto: con la grieta lista o recargando, entero a 20 bloques y nada a 64; despertando o en pelea, entero hasta 80
- * bloques y nada a 128. Solo en el cliente: no cambia nada del mundo.
+ * 1.3.87 (el dueño: «pixeles horribles, estrellas fugaces horribles, extiende el radio, que una música siniestra se
+ * apodere de la atmósfera»): todas las texturas se filtran suaves (su .png.mcmeta), el panorama es de 2048 y sin
+ * estrellas (todas son destellos aquí, 1400), hay dos capas de nebulosa que giran distinto (paralaje), un sol negro
+ * encima de la grieta y las fugaces son una estela con textura (cabeza y cola que se afina), más raras, y a veces un
+ * bólido grande y lento. Con la grieta cerca suena una música siniestra (grieta.musica, en «Discos» como la de los
+ * jefes) que se va en cuanto empieza la pelea; vuelve al morir el jefe, cuando se calla la de la pelea.
+ * Cuánto: con la grieta lista o recargando, entero hasta 48 bloques y nada a 112; despertando o en pelea, entero hasta
+ * 112 y nada a 128 (la grieta se ve a 160). Solo en el cliente: no cambia nada del mundo.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class RiftSky {
     private static final ResourceLocation SKY = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_cielo.png");
     private static final ResourceLocation CLOUD = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_nube.png");
     private static final ResourceLocation STAR = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_estrella.png");
+    private static final ResourceLocation STREAK = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_fugaz.png");
+    private static final ResourceLocation ECLIPSE = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_eclipse.png");
     /** El color al que van la niebla y el cielo de Minecraft (y las nubes, algo más claras). */
     public static final Vec3 FOG = new Vec3(0.045, 0.008, 0.085), CLOUDS = new Vec3(0.30, 0.13, 0.45);
 
     private static float strength, prevStrength;
     private static RiftEntity nearest;
     private static Ambient ambient;
-    private static int ticks, nextMeteor = 40;
+    private static RiftMusic music;
+    private static int ticks, nextMeteor = 60;
+    /** Hacia dónde está el sol negro (encima de la grieta más cercana, se mueve suave). */
+    private static final Vector3f ECLIPSE_DIR = new Vector3f(0, 0.5F, 0.87F);
     private static final List<Meteor> METEORS = new ArrayList<>();
-    private static final Star[] STARS = new Star[700];
-    private static final Nebula[] NEBULAS = new Nebula[7];
+    private static final Star[] STARS = new Star[1400];
+    private static final Nebula[] NEBULAS = new Nebula[7], FAR_NEBULAS = new Nebula[6];
 
     static {
         Random r = new Random(1717);
         for (int i = 0; i < STARS.length; i++) {
             Vector3f d = randomDir(r, -0.15F);
-            float size = 0.25F + (float) Math.pow(r.nextFloat(), 3) * 1.1F;
+            // muchas pequeñas y pocas grandes
+            float size = 0.22F + (float) Math.pow(r.nextFloat(), 4) * 1.3F;
             float hue = r.nextFloat();
             // blancas, lavanda y alguna rosada o azulada
             float cr = hue < 0.6F ? 1F : hue < 0.8F ? 0.85F : 1F, cg = hue < 0.6F ? 0.95F : hue < 0.8F ? 0.8F : 0.75F, cb = 1F;
@@ -70,6 +82,15 @@ public final class RiftSky {
             NEBULAS[i] = new Nebula(randomDir(r, 0.05F), 26F + r.nextFloat() * 34F, r.nextFloat() * 360F,
                     (r.nextFloat() - 0.5F) * 3F, r.nextFloat() * 6.28F, 0.3F + r.nextFloat() * 0.3F);
         }
+        for (int i = 0; i < FAR_NEBULAS.length; i++) {
+            FAR_NEBULAS[i] = new Nebula(randomDir(r, -0.1F), 50F + r.nextFloat() * 40F, r.nextFloat() * 360F,
+                    (r.nextFloat() - 0.5F) * 1.5F, r.nextFloat() * 6.28F, 0.18F + r.nextFloat() * 0.15F);
+        }
+    }
+
+    /** ¿Suena la música de la grieta? (la normal de Minecraft espera: MusicManagerMixin). */
+    public static boolean musicActive() {
+        return music != null && !music.isStopped();
     }
 
     private RiftSky() {}
@@ -94,6 +115,8 @@ public final class RiftSky {
             strength = prevStrength = 0;
             nearest = null;
             METEORS.clear();
+            if (music != null) mc.getSoundManager().stop(music);
+            music = null;
             return;
         }
         if (mc.isPaused()) return;
@@ -101,11 +124,14 @@ public final class RiftSky {
         float target = 0;
         RiftEntity near = null;
         double nearD = Double.MAX_VALUE;
+        boolean battle = false;
         for (RiftEntity e : mc.level.getEntitiesOfClass(RiftEntity.class, mc.player.getBoundingBox().inflate(128))) {
             double d = e.distanceTo(mc.player);
             int st = e.state();
-            float t = st == RiftEntity.WAKING || st == RiftEntity.FIGHT ? 1F - smooth(80, 128, d) : 1F - smooth(20, 64, d);
+            boolean fight = st == RiftEntity.WAKING || st == RiftEntity.FIGHT;
+            float t = fight ? 1F - smooth(112, 128, d) : 1F - smooth(48, 112, d);
             target = Math.max(target, t);
+            if (fight && t > 0) battle = true;
             if (d < nearD) {
                 nearD = d;
                 near = e;
@@ -113,8 +139,29 @@ public final class RiftSky {
         }
         strength += Mth.clamp(target - strength, -0.01F, 0.01F);
         nearest = near;
+        // El sol negro, encima de la grieta más cercana (desde donde estás), 30° sobre el horizonte
+        if (near != null) {
+            double dx = near.getX() - mc.player.getX(), dz = near.getZ() - mc.player.getZ(), h = Math.sqrt(dx * dx + dz * dz);
+            if (h > 2) {
+                Vector3f want = new Vector3f((float) (dx / h) * 0.866F, 0.5F, (float) (dz / h) * 0.866F);
+                ECLIPSE_DIR.lerp(want, 0.04F).normalize();
+            }
+        }
+        // La música siniestra: con la grieta cerca y sin pelea; se va al despertar y vuelve al callarse la del jefe
+        boolean wantMusic = strength > 0.3F && !battle && !net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive();
+        if (wantMusic) {
+            if (music == null || music.isStopped()) {
+                music = new RiftMusic();
+                mc.getSoundManager().play(music);
+                mc.getMusicManager().stopPlaying();
+            } else {
+                music.leaving = false;
+            }
+        } else if (music != null && !music.isStopped()) {
+            music.leaving = true;
+        }
         // El zumbido del vacío, en la grieta más cercana
-        if (near != null && nearD < 30) {
+        if (near != null && nearD < 40) {
             if (ambient == null || ambient.isStopped() || ambient.rift != near || !mc.getSoundManager().isActive(ambient)) {
                 if (ambient != null) ambient.end();
                 ambient = new Ambient(near);
@@ -131,9 +178,9 @@ public final class RiftSky {
         }
         if (strength > 0.25F && --nextMeteor <= 0) {
             Random r = new Random(ticks * 31L + 7);
-            METEORS.add(Meteor.random(r));
-            if (r.nextInt(5) == 0) METEORS.add(Meteor.random(r)); // a veces dos a la vez
-            nextMeteor = 12 + r.nextInt(50);
+            METEORS.add(Meteor.random(r, r.nextInt(6) == 0));
+            if (r.nextInt(6) == 0) METEORS.add(Meteor.random(r, false)); // a veces dos a la vez
+            nextMeteor = 50 + r.nextInt(130);
         }
     }
 
@@ -201,9 +248,19 @@ public final class RiftSky {
         }
         BufferUploader.drawWithShader(buf.end());
 
-        // 2. Nubes de nebulosa que laten (luz que suma)
+        // 2. Nubes de nebulosa que laten (luz que suma): una capa lejana que gira al revés (paralaje) y la cercana
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         RenderSystem.setShaderTexture(0, CLOUD);
+        pose.pushPose();
+        pose.mulPose(Axis.YP.rotationDegrees(-time * 0.03F));
+        Matrix4f far = pose.last().pose();
+        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (Nebula n : FAR_NEBULAS) {
+            float pulse = n.alpha * (0.7F + 0.3F * Mth.sin(time * 0.008F + n.phase));
+            billboard(buf, far, n.dir, 96F, n.size, n.angle + time * n.spin * 0.006F, 0.45F, 0.3F, 1F, pulse * s);
+        }
+        BufferUploader.drawWithShader(buf.end());
+        pose.popPose();
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (Nebula n : NEBULAS) {
             float pulse = n.alpha * (0.65F + 0.35F * Mth.sin(time * 0.012F + n.phase));
@@ -215,33 +272,49 @@ public final class RiftSky {
         RenderSystem.setShaderTexture(0, STAR);
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (Star st : STARS) {
-            float tw = 0.55F + 0.45F * Mth.sin(time * 0.05F * st.speed + st.phase);
-            billboard(buf, m, st.dir, 90F, st.size * (0.8F + 0.4F * tw), 0F, st.r, st.g, st.b, tw * s);
-        }
-        // y la cabeza de las fugaces
-        for (Meteor me : METEORS) {
-            float k = (me.age + partial) / me.life;
-            Vector3f head = me.at(k);
-            billboard(buf, m, head, 89F, 2.2F * me.size, 0F, 0.95F, 0.85F, 1F, me.fade(k) * s);
+            float tw = 0.6F + 0.4F * Mth.sin(time * 0.05F * st.speed + st.phase);
+            billboard(buf, m, st.dir, 90F, st.size * (0.85F + 0.3F * tw), 0F, st.r, st.g, st.b, tw * s);
         }
         BufferUploader.drawWithShader(buf.end());
+        pose.popPose();
 
-        // 4. Las estelas de las estrellas fugaces (blanco violeta que se apaga hacia atrás)
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // 4. El sol negro encima de la grieta (no gira con el cielo: siempre sobre ella); tapa lo de detrás
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderTexture(0, ECLIPSE);
+        Matrix4f fixed = pose.last().pose();
+        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        float breathe = 1F + 0.025F * Mth.sin(time * 0.02F);
+        billboard(buf, fixed, ECLIPSE_DIR, 95F, 30F * breathe, time * 0.01F, 1F, 1F, 1F, s);
+        BufferUploader.drawWithShader(buf.end());
+
+        // 5. Las estrellas fugaces: una estela con textura que sigue su arco, cabeza brillante y cola que se apaga
+        pose.pushPose();
+        pose.mulPose(Axis.ZP.rotationDegrees(18F));
+        pose.mulPose(Axis.YP.rotationDegrees(time * 0.018F));
+        m = pose.last().pose();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.setShaderTexture(0, STREAK);
+        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (Meteor me : METEORS) {
             float k = (me.age + partial) / me.life;
             float fade = me.fade(k) * s;
-            int seg = 14;
+            if (fade <= 0.003F) continue;
+            int seg = 16;
             for (int i = 0; i < seg; i++) {
                 float k0 = k - me.tail * i / seg, k1 = k - me.tail * (i + 1) / seg;
                 Vector3f p0 = me.at(k0).mul(88F), p1 = me.at(k1).mul(88F);
                 Vector3f side = new Vector3f(p0).cross(new Vector3f(p1).sub(p0)).normalize();
-                float w0 = 0.32F * me.size * (1F - i / (float) seg), w1 = 0.32F * me.size * (1F - (i + 1) / (float) seg);
-                float a0 = fade * (1F - i / (float) seg), a1 = fade * (1F - (i + 1) / (float) seg);
-                float g0 = 0.75F + 0.25F * (1 - i / (float) seg);
-                quadColor(buf, m, p0, p1, side, w0, w1, g0, a0, a1);
+                streak(buf, m, p0, p1, side, me.size * 0.55F, 1F - i / (float) seg, 1F - (i + 1) / (float) seg, me, fade);
             }
+        }
+        BufferUploader.drawWithShader(buf.end());
+        // y el resplandor de la cabeza de los bólidos
+        RenderSystem.setShaderTexture(0, STAR);
+        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (Meteor me : METEORS) {
+            if (!me.bolide) continue;
+            float k = (me.age + partial) / me.life;
+            billboard(buf, m, me.at(k), 87F, 3.2F * me.size, 0F, me.r, me.g, me.b, me.fade(k) * s * 0.8F);
         }
         BufferUploader.drawWithShader(buf.end());
 
@@ -278,14 +351,14 @@ public final class RiftSky {
         buf.vertex(m, c.x + ax.x - ay.x, c.y + ax.y - ay.y, c.z + ax.z - ay.z).uv(1, 0).color(ri, gi, bi, ai).endVertex();
     }
 
-    private static void quadColor(BufferBuilder buf, Matrix4f m, Vector3f p0, Vector3f p1, Vector3f side, float w0, float w1,
-                                  float g, float a0, float a1) {
-        int ia0 = (int) (Mth.clamp(a0, 0, 1) * 255), ia1 = (int) (Mth.clamp(a1, 0, 1) * 255);
-        int r = 235, gg = (int) (190 * g), b = 255;
-        buf.vertex(m, p0.x + side.x * w0, p0.y + side.y * w0, p0.z + side.z * w0).color(r, gg, b, ia0).endVertex();
-        buf.vertex(m, p0.x - side.x * w0, p0.y - side.y * w0, p0.z - side.z * w0).color(r, gg, b, ia0).endVertex();
-        buf.vertex(m, p1.x - side.x * w1, p1.y - side.y * w1, p1.z - side.z * w1).color(180, 90, 255, ia1).endVertex();
-        buf.vertex(m, p1.x + side.x * w1, p1.y + side.y * w1, p1.z + side.z * w1).color(180, 90, 255, ia1).endVertex();
+    /** Un trozo de la estela entre p0 (u0, más cerca de la cabeza) y p1 (u1): la textura pone la forma. */
+    private static void streak(BufferBuilder buf, Matrix4f m, Vector3f p0, Vector3f p1, Vector3f side, float w, float u0,
+                               float u1, Meteor me, float alpha) {
+        int a = (int) (Mth.clamp(alpha, 0, 1) * 255), r = (int) (me.r * 255), g = (int) (me.g * 255), b = (int) (me.b * 255);
+        buf.vertex(m, p0.x + side.x * w, p0.y + side.y * w, p0.z + side.z * w).uv(u0, 0).color(r, g, b, a).endVertex();
+        buf.vertex(m, p0.x - side.x * w, p0.y - side.y * w, p0.z - side.z * w).uv(u0, 1).color(r, g, b, a).endVertex();
+        buf.vertex(m, p1.x - side.x * w, p1.y - side.y * w, p1.z - side.z * w).uv(u1, 1).color(r, g, b, a).endVertex();
+        buf.vertex(m, p1.x + side.x * w, p1.y + side.y * w, p1.z + side.z * w).uv(u1, 0).color(r, g, b, a).endVertex();
     }
 
     private static Vector3f randomDir(Random r, float minY) {
@@ -302,29 +375,39 @@ public final class RiftSky {
 
     private record Nebula(Vector3f dir, float size, float angle, float spin, float phase, float alpha) {}
 
-    /** Una estrella fugaz: va de «from» girando hacia «to» (en la esfera) en «life» ticks, con su estela detrás. */
+    /**
+     * Una estrella fugaz: va de «from» girando hacia «toward» (en la esfera) en «life» ticks, con su estela detrás. Las
+     * normales son finas, rápidas y blanco lavanda; los bólidos, gruesos, lentos, rosa violeta y con resplandor.
+     */
     private static final class Meteor {
         final Vector3f from, toward;
-        final float arc, tail, size;
+        final float arc, tail, size, r, g, b;
+        final boolean bolide;
         final int life;
         int age;
 
-        private Meteor(Vector3f from, Vector3f toward, float arc, float tail, float size, int life) {
+        private Meteor(Vector3f from, Vector3f toward, float arc, float tail, float size, int life, boolean bolide) {
             this.from = from;
             this.toward = toward;
             this.arc = arc;
             this.tail = tail;
             this.size = size;
             this.life = life;
+            this.bolide = bolide;
+            this.r = bolide ? 1F : 0.92F;
+            this.g = bolide ? 0.62F : 0.86F;
+            this.b = 1F;
         }
 
-        static Meteor random(Random r) {
-            Vector3f from = randomDir(r, 0.25F);
+        static Meteor random(Random r, boolean bolide) {
+            Vector3f from = randomDir(r, 0.3F);
             // hacia dónde: perpendicular a donde está, algo hacia abajo (caen)
             Vector3f any = new Vector3f(r.nextFloat() - 0.5F, -0.6F - r.nextFloat() * 0.6F, r.nextFloat() - 0.5F);
             Vector3f toward = any.sub(new Vector3f(from).mul(any.dot(from))).normalize();
-            return new Meteor(from, toward, 0.35F + r.nextFloat() * 0.45F, 0.35F + r.nextFloat() * 0.25F,
-                    0.7F + r.nextFloat() * 0.8F, 14 + r.nextInt(16));
+            if (bolide) return new Meteor(from, toward, 0.5F + r.nextFloat() * 0.3F, 0.3F + r.nextFloat() * 0.1F,
+                    2.2F + r.nextFloat() * 0.8F, 45 + r.nextInt(20), true);
+            return new Meteor(from, toward, 0.3F + r.nextFloat() * 0.35F, 0.4F + r.nextFloat() * 0.2F,
+                    0.8F + r.nextFloat() * 0.6F, 16 + r.nextInt(12), false);
         }
 
         /** La dirección cuando va por «k» (0..1) de su recorrido. */
@@ -336,6 +419,38 @@ public final class RiftSky {
         /** Aparece rápido y se apaga al final. */
         float fade(float k) {
             return Mth.clamp(k * 6F, 0, 1) * Mth.clamp((1F - k) * 3F, 0, 1);
+        }
+    }
+
+    /** La música siniestra de la grieta: en bucle, sin posición, con fundidos (como la de los jefes: TFBossMusic). */
+    private static final class RiftMusic extends AbstractTickableSoundInstance {
+        private static final float VOLUME = 0.6F;
+        private static final int FADE_IN = 100, FADE_OUT = 40;
+        boolean leaving;
+        private float fade;
+
+        RiftMusic() {
+            super(BossSounds.RIFT_MUSIC, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
+            this.looping = true;
+            this.delay = 0;
+            this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
+            this.volume = 0.001F;
+        }
+
+        @Override
+        public boolean canStartSilent() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            fade = leaving ? fade - 1F / FADE_OUT : Math.min(1F, fade + 1F / FADE_IN);
+            if (fade <= 0F) {
+                stop();
+                return;
+            }
+            this.volume = Math.max(0.001F, fade * fade * VOLUME);
         }
     }
 

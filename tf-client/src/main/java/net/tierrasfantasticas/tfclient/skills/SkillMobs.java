@@ -252,6 +252,19 @@ public final class SkillMobs {
      * Para la prueba de los jefes (bosses/BossTest): el modelo que lleva y las animaciones que tiene puestas ahora en el
      * servidor (la de por defecto y las de state{}); null si no lleva modelo.
      */
+    /**
+     * Prueba en el juego (BossTest): los efectos sueltos (sin entidad a la que sigan) que llevan vivos más de «minAge»
+     * ticks: nombre del mob, edad y su texto (las llamas de texto del Esqueleto deberían irse a los 20 ticks).
+     */
+    public static List<String> oldActors(int minAge) {
+        List<String> out = new ArrayList<>();
+        for (SkillActor a : SkillRuntime.ACTORS) {
+            if (!a.alive || a.follow != null || a.carried || a.age < minAge) continue;
+            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : ""));
+        }
+        return out;
+    }
+
     public static List<String> animNames(Host h) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null) return null;

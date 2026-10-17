@@ -103,82 +103,94 @@ def to_img(rgb, alpha):
     return Image.fromarray(arr, 'RGBA')
 
 
-def veins_mask(n, seed, count=9, width=1):
-    """Grietas ramificadas (una máscara 0..255) para las vetas que brillan."""
-    img = Image.new('L', (n, n), 0)
+def veins_mask(n, seed, count=9, width=1.0):
+    """Grietas ramificadas (máscara 0..255, suavizada: se dibuja a 4× y se reduce) para las vetas que brillan. Las
+    medidas van en «píxeles de 64» (se escalan a n) y se repiten sin costuras."""
+    ss = 4
+    big = n * ss
+    k = big / 64.0
+    img = Image.new('L', (big, big), 0)
     d = ImageDraw.Draw(img)
     r = random.Random(seed)
+    w = max(1, int(round(width * k * 0.5)))
+
+    def line(pts, fill, wd):
+        for ox in (-big, 0, big):
+            for oy in (-big, 0, big):
+                d.line([(px + ox, py + oy) for px, py in pts], fill=fill, width=wd, joint='curve')
+
     for _ in range(count):
-        x, y = r.uniform(0, n), r.uniform(0, n)
+        x, y = r.uniform(0, big), r.uniform(0, big)
         ang = r.uniform(0, math.tau)
         pts = [(x, y)]
-        for _ in range(r.randint(4, 8)):
-            ang += r.uniform(-0.9, 0.9)
-            step = r.uniform(3, 8)
-            x, y = x + math.cos(ang) * step, y + math.sin(ang) * step
-            pts.append((x, y))
-            if r.random() < 0.3:
+        for _ in range(r.randint(5, 9)):
+            ang += r.uniform(-0.8, 0.8)
+            # pasos cortos con temblor: grietas orgánicas, no segmentos rectos
+            for _ in range(3):
+                step = r.uniform(1.2, 3.0) * k
+                x, y = x + math.cos(ang + r.uniform(-0.35, 0.35)) * step, y + math.sin(ang + r.uniform(-0.35, 0.35)) * step
+                pts.append((x, y))
+            if r.random() < 0.35:
                 bx, by, ba = x, y, ang + r.choice((-1, 1)) * r.uniform(0.6, 1.2)
                 bpts = [(bx, by)]
-                for _ in range(r.randint(2, 4)):
-                    bx, by = bx + math.cos(ba) * r.uniform(2, 5), by + math.sin(ba) * r.uniform(2, 5)
+                for _ in range(r.randint(3, 6)):
+                    bx, by = bx + math.cos(ba) * r.uniform(1, 2.5) * k, by + math.sin(ba) * r.uniform(1, 2.5) * k
+                    ba += r.uniform(-0.4, 0.4)
                     bpts.append((bx, by))
-                d.line(bpts, fill=200, width=width)
-        # se repite al otro lado (sin costuras)
-        for ox in (-n, 0, n):
-            for oy in (-n, 0, n):
-                d.line([(px + ox, py + oy) for px, py in pts], fill=255, width=width)
-    return img
+                line(bpts, 190, max(1, w - 1))
+        line(pts, 255, w)
+    return img.resize((n, n), Image.LANCZOS)
 
 
 # ---------------------------------------------------------------------------------------------- texturas
 
-def tex_obsidian(n=64, seed=1):
-    """Obsidiana casi negra con un brillo morado oscuro y motas (sin luz propia)."""
-    nz = noise2(n, n, 3, 4, seed)
-    fine = noise2(n, n, 16, 2, seed + 1)
-    t = nz * 0.75 + fine * 0.25
-    rgb = ramp(t, [(0, VOID * 1.4), (0.5, DEEP * 0.55), (0.75, DEEP * 0.9), (1, PURPLE * 0.65)])
-    speck = NP.random((n, n)) > 0.985
-    rgb[speck] = PURPLE * 0.9
-    # facetas: bandas diagonales un poco más claras (brillo del cristal volcánico)
-    yy, xx = np.mgrid[0:n, 0:n]
-    band = (np.sin((xx * 0.7 + yy * 0.3) * 0.35) > 0.93)
-    rgb[band] = rgb[band] * 1.6 + 8
+TEX_N = 256  # resolución de las caras (antes 64: se veían los píxeles)
+
+
+def tex_obsidian(n=TEX_N, seed=1):
+    """Obsidiana casi negra con brillo morado oscuro, vetas finas de cristal volcánico y motas (sin luz propia)."""
+    nz = noise2(n, n, 3, 6, seed)
+    fine = noise2(n, n, 24, 3, seed + 1)
+    t = nz * 0.7 + fine * 0.3
+    rgb = ramp(t, [(0, VOID * 1.3), (0.45, DEEP * 0.5), (0.7, DEEP * 0.85), (1, PURPLE * 0.6)])
+    # facetas: planos con brillo distinto (cristal volcánico tallado) y aristas finas un poco más claras
+    yy, xx = np.mgrid[0:n, 0:n] / n
+    facet = noise2(n, n, 2, 1, seed + 7)
+    rgb *= (0.8 + 0.45 * np.round(facet * 4) / 4)[..., None]
+    edge = np.abs(np.sin((xx * 2.7 + yy * 1.1) * math.pi * 3)) < 0.02
+    rgb[edge] = rgb[edge] * 1.8 + 10
+    speck = NP.random((n, n)) > 0.993
+    rgb[speck] = PURPLE * 0.8
     return to_img(rgb, np.full((n, n), 255))
 
 
-def tex_veins(n=64, seed=2, count=9):
-    """Vetas que brillan (con luz propia): violeta con el centro casi blanco y un halo que se apaga."""
-    core = np.array(veins_mask(n, seed, count, 1), float) / 255
-    halo = np.array(veins_mask(n, seed, count, 1).filter(ImageFilter.GaussianBlur(1.6)), float) / 255
-    halo = np.clip(halo * 2.2, 0, 1)
-    rgb = ramp(np.clip(core * 0.85 + halo * 0.45, 0, 1), [(0, PURPLE), (0.45, VIOLET), (0.8, GLOW), (1, HOT)])
-    alpha = np.clip(core * 255 + halo * 170, 0, 255)
+def tex_veins(n=TEX_N, seed=2, count=9):
+    """Vetas que brillan (con luz propia): centro casi blanco, violeta y un halo suave que se apaga."""
+    m = veins_mask(n, seed, count, 1.0)
+    core = np.array(m, float) / 255
+    halo = np.array(m.filter(ImageFilter.GaussianBlur(n / 64 * 1.8)), float) / 255
+    halo = np.clip(halo * 2.6, 0, 1)
+    rgb = ramp(np.clip(core * 0.9 + halo * 0.45, 0, 1), [(0, PURPLE), (0.4, VIOLET), (0.75, GLOW), (1, HOT)])
+    alpha = np.clip(core * 255 + halo * 175, 0, 255)
     return to_img(rgb, alpha)
 
 
-def tex_crystal(n=64, seed=3):
-    """Cristal de obsidiana: oscuro y translúcido (se ve el núcleo dentro), facetas y aristas violetas."""
-    yy, xx = np.mgrid[0:n, 0:n]
-    band = np.sin((xx * 0.9 + yy * 0.35) * 0.42) * 0.5 + 0.5
-    nz = noise2(n, n, 4, 3, seed)
-    t = band * 0.45 + nz * 0.55
-    rgb = ramp(t, [(0, VOID * 2), (0.55, DEEP), (0.85, PURPLE * 0.9), (1, VIOLET * 0.8)])
-    alpha = 165 + 45 * t
-    edge = (xx < 2) | (xx > n - 3)
-    rgb[edge] = VIOLET * 1.05
-    alpha[edge] = 245
-    img = to_img(rgb, alpha)
-    d = ImageDraw.Draw(img)
-    for _ in range(5):
-        x, y = RNG.randint(4, n - 5), RNG.randint(4, n - 5)
-        d.line([(x - 2, y), (x + 2, y)], fill=(236, 200, 255, 255))
-        d.line([(x, y - 2), (x, y + 2)], fill=(236, 200, 255, 255))
-    return img
+def tex_crystal(n=TEX_N, seed=3):
+    """Cristal de obsidiana: oscuro y translúcido (se ve el núcleo dentro), facetas suaves y aristas violetas."""
+    yy, xx = np.mgrid[0:n, 0:n] / n
+    band = np.sin((xx * 0.9 + yy * 0.35) * 26) * 0.5 + 0.5
+    nz = noise2(n, n, 4, 5, seed)
+    t = band * 0.35 + nz * 0.65
+    rgb = ramp(t, [(0, VOID * 2), (0.5, DEEP), (0.8, PURPLE * 0.85), (1, VIOLET * 0.8)])
+    alpha = 160 + 50 * t
+    ex = np.minimum(xx, 1 - xx) * n
+    edge = np.clip(1 - ex / (n / 40), 0, 1)
+    rgb = rgb * (1 - edge[..., None]) + VIOLET * 1.1 * edge[..., None]
+    alpha = alpha * (1 - edge) + 245 * edge
+    return to_img(rgb, alpha)
 
 
-def tex_core(n=32):
+def tex_core(n=64):
     """Núcleo (con luz propia): casi blanco en el centro, violeta intenso hacia fuera."""
     yy, xx = np.mgrid[0:n, 0:n]
     c = (n - 1) / 2
@@ -188,7 +200,7 @@ def tex_core(n=32):
     return to_img(rgb, np.full((n, n), 255))
 
 
-def tex_circle(n=256):
+def tex_circle(n=512):
     """Los anillos de runas del suelo (luz propia), con simetría de 4 (giran sin saltos)."""
     big = n * 4
     img = Image.new('L', (big, big), 0)
@@ -226,15 +238,16 @@ def tex_circle(n=256):
     return to_img(rgb, alpha)
 
 
-def tex_cracks(n=64):
+def tex_cracks(n=TEX_N):
     """Grietas casi blancas que aparecen al despertar (luz propia)."""
-    core = np.array(veins_mask(n, 11, 8, 1), float) / 255
-    halo = np.clip(np.array(veins_mask(n, 11, 8, 2).filter(ImageFilter.GaussianBlur(1.2)), float) / 255 * 1.8, 0, 1)
+    m = veins_mask(n, 11, 8, 1.4)
+    core = np.array(m, float) / 255
+    halo = np.clip(np.array(m.filter(ImageFilter.GaussianBlur(n / 64 * 1.4)), float) / 255 * 2.0, 0, 1)
     rgb = ramp(np.clip(core + halo * 0.4, 0, 1), [(0, VIOLET), (0.6, GLOW), (1, HOT)])
     return to_img(rgb, np.clip(core * 255 + halo * 150, 0, 255))
 
 
-TEAR_W, TEAR_H, TEAR_FRAMES = 48, 144, 16
+TEAR_W, TEAR_H, TEAR_FRAMES = 96, 288, 16
 
 
 def tex_tear():
@@ -265,7 +278,7 @@ def tex_tear():
         rgb = ramp(inner * (1 - d * 0.55), [(0, VOID), (0.35, DEEP), (0.7, PURPLE), (1, VIOLET)])
         # estrellas que titilan
         tw = (np.sin(stars * 50 + ph * 2) * 0.5 + 0.5)
-        st = (stars > 0.965) & (d < 0.85)
+        st = (stars > 0.988) & (d < 0.85)
         rgb[st] = rgb[st] * 0.3 + HOT * (0.5 + 0.5 * tw[st])[:, None]
         # el borde: violeta que brilla con el centro casi blanco, y un halo fuera
         rim = np.exp(-((d - 1.0) / 0.11) ** 2)
@@ -295,8 +308,15 @@ def texture(name, img, uv=None, frame_time=1):
     return len(TEX) - 1
 
 
+# Todo un 60 % más grande que en la 1.3.86 (el dueño la quería «más grande e imponente»): ~14 bloques de alto
+GEO_S = 1.6
+
+
 def cube(name, frm, to, tex, faces=None, rot=None, origin=None, uv=None):
     """Un cubo con la textura entera (un fotograma) en cada cara (o solo en «faces»)."""
+    frm = [c * GEO_S for c in frm]
+    to = [c * GEO_S for c in to]
+    origin = [c * GEO_S for c in origin] if origin else None
     tw, th = TEX[tex][2]
     all_faces = faces or ['north', 'south', 'east', 'west', 'up', 'down']
     fdict = {}
@@ -313,7 +333,7 @@ def cube(name, frm, to, tex, faces=None, rot=None, origin=None, uv=None):
 def build():
     obsidian = texture('obsidian', tex_obsidian())
     veins = texture('veins_e', tex_veins())
-    veins2 = texture('veins_dense_e', tex_veins(64, 5, 14))
+    veins2 = texture('veins_dense_e', tex_veins(TEX_N, 5, 14))
     crystal = texture('crystal', tex_crystal())
     core = texture('core_e', tex_core())
     circle = texture('circle_e', tex_circle())
@@ -323,7 +343,7 @@ def build():
     elements, outliner, bones = [], [], {}
 
     def bone(name, origin, parent=None, rotation=None):
-        b = {'name': name, 'origin': list(origin), 'uuid': uid(), 'children': [], 'rotation': list(rotation or [0, 0, 0])}
+        b = {'name': name, 'origin': [c * GEO_S for c in origin], 'uuid': uid(), 'children': [], 'rotation': list(rotation or [0, 0, 0])}
         bones[name] = b
         (bones[parent]['children'] if parent else outliner).append(b)
         return b
@@ -400,6 +420,8 @@ def build():
 
     # ------------------------------------------------------------------ animaciones
     def kf(channel, time, xyz, interp='linear'):
+        if channel == 'position':
+            xyz = [c * GEO_S for c in xyz]
         return {'channel': channel, 'data_points': [{'x': xyz[0], 'y': xyz[1], 'z': xyz[2]}], 'uuid': uid(), 'time': time,
                 'interpolation': interp}
 

@@ -257,18 +257,18 @@ public final class Rifts {
      */
     private static void wakingFx(ServerLevel level, Rift r, int left) {
         Vector3f c = RiftEntity.VOID_PURPLE;
-        Vec3 p = r.pos.add(0, 4.2, 0);
+        Vec3 p = r.pos.add(0, 6.7, 0);
         int done = RiftEntity.WAKE_TICKS - left;
         if (done % 4 == 0) {
             level.sendParticles(new DustParticleOptions(c, 1.6F), p.x, p.y, p.z, 6 + done / 6, 0.9, 1.4, 0.9, 0.02);
             level.sendParticles(ParticleTypes.END_ROD, p.x, p.y, p.z, 2, 0.6, 1.2, 0.6, 0.04);
         }
-        if (done % 6 == 0) level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 10 + done / 3, 0.8, 2.6, 0.8, 0.08);
+        if (done % 6 == 0) level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 14 + done / 3, 1.3, 4.2, 1.3, 0.08);
         if (left == 1) {
             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, p.x, p.y, p.z, 1, 0, 0, 0, 0);
             level.sendParticles(new DustParticleOptions(c, 2F), p.x, p.y, p.z, 120, 2.2, 2.2, 2.2, 0.2);
             level.sendParticles(ParticleTypes.END_ROD, p.x, p.y, p.z, 60, 1.5, 2, 1.5, 0.25);
-            level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 160, 1.2, 3, 1.2, 0.6);
+            level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 220, 2, 5, 2, 0.6);
             level.playSound(null, p.x, p.y, p.z, BossSounds.RIFT_BURST, SoundSource.HOSTILE, 6F, 1F);
         }
     }

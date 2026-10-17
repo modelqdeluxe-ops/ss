@@ -35,7 +35,7 @@ public final class TFBosses {
                     .sized(0.8F, 1.9F).clientTrackingRange(8).updateInterval(2).build("esbirro"));
     public static final RegistryObject<EntityType<RiftEntity>> GRIETA = ENTITIES.register("grieta", () ->
             EntityType.Builder.<RiftEntity>of(RiftEntity::new, MobCategory.MISC)
-                    .sized(2.4F, 5.2F).clientTrackingRange(8).updateInterval(5).noSummon().fireImmune().build("grieta"));
+                    .sized(3.2F, 8.5F).clientTrackingRange(10).updateInterval(5).noSummon().fireImmune().build("grieta"));
     public static final RegistryObject<EntityType<SeatEntity>> ASIENTO = ENTITIES.register("asiento", () ->
             EntityType.Builder.<SeatEntity>of(SeatEntity::new, MobCategory.MISC)
                     .sized(0.3F, 0.3F).clientTrackingRange(8).updateInterval(1).noSummon().build("asiento"));

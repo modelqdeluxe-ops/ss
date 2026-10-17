@@ -10,8 +10,10 @@ sounds/bosses/, que el conversor borra). Necesita numpy, scipy y ffmpeg con libv
   grieta/despertar    los 3,5 s del despertar: un rugido que sube, cada vez más rápido
   grieta/estallido    sale el jefe: absorción al revés, boom grave, desgarro y cola que brilla
   grieta/lista        la grieta vuelve a estar lista: un gong grave
-  jefes/muerte_crepita_1..3   los chasquidos de energía de la muerte épica (antes, explosiones de TNT)
-  jefes/muerte_estallido      el estallido final (implosión, boom y cristales que se rompen)
+  grieta/musica       música ambiental siniestra en bucle (estéreo, ~96 s) cerca de la grieta, fuera de la pelea
+  jefes/muerte_disolucion     la muerte épica, desde que empieza (sin golpes: viento, brillo de cristales y coro)
+  jefes/muerte_estallido      el final de la muerte épica (inspiración al revés y liberación de luz, sin bombo)
+(1.3.87: fuera los chasquidos de la muerte, que «sonaban a tambor».)
 """
 import os
 import subprocess
@@ -256,50 +258,129 @@ def lista():
     return fade(norm(reverb(x, 4.0, 2600, 0.45, seed=43)), 0.01, 0.6)
 
 
-def crepita(seed):
-    """Chasquido de energía: un golpe seco, un zumbido violeta que cae y crepitar; corto y sin TNT."""
-    dur = 1.6
+def muerte_disolucion():
+    """La muerte épica (suena desde que empieza, con el rugido del dragón): el jefe se deshace. Sin golpes (el dueño:
+    los chasquidos «sonaban a tambor»): un grave que entra, viento que sube, un brillo de cristales cada vez más denso y
+    un coro que se abre; ~9 s."""
+    dur = 9.0
     n = int(dur * SR)
     t = np.arange(n) / SR
-    r = rng(seed)
-    thump = np.sin(sweep(r.uniform(85, 110), 40, n, 0.3)) * exp_env(n, 0.12)
-    zap = np.sin(sweep(r.uniform(1300, 1800), r.uniform(180, 260), n, 0.5)) * exp_env(n, 0.09) * 0.7
-    zap += saw(sweep(r.uniform(650, 900), 120, n, 0.5), 8) * exp_env(n, 0.07) * 0.45
-    grains = np.zeros(n)
-    for _ in range(int(r.uniform(18, 30))):
-        at = int(r.exponential(0.12) * SR)
-        if at >= n - 600:
-            continue
-        g = r.standard_normal(500) * np.exp(-np.arange(500) / 60)
-        grains[at:at + 500] += g * r.uniform(0.3, 1.0)
-    grains = bp(grains, 1800, 9000) * 0.8
-    x = thump * 1.1 + zap + grains
-    return fade(norm(reverb(soft(x, 1.5), 1.6, 3500, 0.3, seed=seed + 1)[: int(2.2 * SR)]), 0.001, 0.3)
+    k = t / dur
+    r = rng(71)
+    swell = np.clip(k * 1.15, 0, 1) ** 1.5 * np.clip((1 - k) * 6, 0, 1)
+    drone = (np.sin(2 * np.pi * 55 * t) * 0.5 + np.sin(2 * np.pi * 55.4 * t) * 0.5 + saw(2 * np.pi * 82.5 * t, 10) * 0.25)
+    drone = lp(drone, 500) * (0.4 + 0.6 * k) * 0.45
+    wind = lp_sweep(bp(r.standard_normal(n), 200, 6000), 400, 9000) * 0.5 * k ** 1.2
+    # brillo: muchos parciales altos que se encienden al azar y se apagan despacio (sin ataque seco)
+    sparkle = np.zeros(n)
+    for i in range(int(90)):
+        at = int((r.random() ** 0.6) * (n - SR))
+        f = r.uniform(1800, 6500)
+        ln = int(r.uniform(0.25, 0.9) * SR)
+        seg = np.arange(ln) / SR
+        env = np.sin(np.pi * np.arange(ln) / ln) ** 2
+        sparkle[at:at + ln] += np.sin(2 * np.pi * f * seg) * env * r.uniform(0.2, 0.6)
+    sparkle *= 0.18 * (0.2 + k)
+    choir = np.zeros(n)
+    for f, a in ((220, 1), (220.7, 0.9), (329.6, 0.7), (440.5, 0.4), (277.2, 0.5)):
+        choir += saw(sweep(f, f * 1.12, n, 1.3), 14) * a
+    choir = bp(choir, 350, 1600) * 0.35 * k ** 1.4
+    x = (drone + wind + sparkle + choir) * swell
+    y = reverb(x, 4.0, 3500, 0.5, seed=72)[: int(11 * SR)]
+    return fade(norm(y), 0.3, 1.5)
 
 
 def muerte_estallido():
-    dur = 7.0
+    """El final de la muerte épica: una inspiración al revés y una liberación de luz (cristales que se dispersan y un
+    soplo que se abre en la reverb). Sin bombo ni explosión."""
+    dur = 6.5
     n = int(dur * SR)
     t = np.arange(n) / SR
-    r = rng(61)
-    pre = int(0.9 * SR)
-    # implosión: todo sube y se aspira hacia dentro
-    rise = saw(sweep(60, 420, pre, 2.0), 18) * np.linspace(0, 1, pre) ** 2.5 * 0.5
-    suck = hp(r.standard_normal(pre), 800) * np.linspace(0, 1, pre) ** 4 * 0.7
-    implode = lp_sweep(rise + suck, 400, 12000, 24)
+    r = rng(81)
+    pre = int(0.6 * SR)
+    inhale = hp(r.standard_normal(pre), 1500) * np.linspace(0, 1, pre) ** 3 * 0.6
+    inhale = lp_sweep(inhale, 2000, 12000, 16)
     m = n - pre
-    boom = np.sin(sweep(80, 22, m, 0.28)) * exp_env(m, 1.1) * 1.4
-    boom2 = np.sin(sweep(46, 19, m, 0.3)) * exp_env(m, 1.6) * 0.8
-    crack = hp(r.standard_normal(m), 1200) * exp_env(m, 0.05) * 1.1
-    roar = soft(lp(r.standard_normal(m), 1800) * exp_env(m, 0.9) * 3, 2.0) * 0.55
-    growl = lp(soft(saw(sweep(52, 27, m, 0.35), 30) * 2.5, 2.5), 2600) * exp_env(m, 1.0) * 0.6
-    shatter = metal(m, 740, [(1, 1), (1.34, 0.9), (1.93, 0.8), (2.71, 0.7), (3.55, 0.5), (4.9, 0.4), (6.6, 0.3)], 3.0,
-                    seed=63, detune=0.03) * 0.22
-    sparkle = bp(r.standard_normal(m), 5000, 14000) * exp_env(m, 1.4) * 0.18 * (0.5 + 0.5 * np.sin(2 * np.pi * 7 * t[:m]))
-    x = np.concatenate([implode, boom + boom2 + crack + roar + growl + shatter + sparkle])
-    y = reverb(soft(x, 1.7), 6.0, 2000, 0.55, seed=64)[: int(10.0 * SR)]
-    return fade(norm(y), 0.01, 1.0)
+    shards = metal(m, 880, [(1, 1), (1.33, 0.9), (1.78, 0.8), (2.41, 0.7), (3.17, 0.55), (4.05, 0.4), (5.6, 0.3)], 2.8,
+                   seed=82, detune=0.025) * 0.35
+    air = lp(r.standard_normal(m), 5000) * exp_env(m, 0.8) * 0.45
+    warm = (np.sin(2 * np.pi * 110 * t[:m]) + 0.6 * np.sin(2 * np.pi * 165 * t[:m])) * exp_env(m, 1.6) * \
+        np.clip(np.arange(m) / (0.12 * SR), 0, 1) * 0.35
+    x = np.concatenate([inhale, shards + air + warm])
+    y = reverb(x, 5.0, 4000, 0.55, seed=83)[: int(9.0 * SR)]
+    return fade(norm(y), 0.01, 1.2)
 
+
+def musica():
+    """Música ambiental siniestra de la grieta (en bucle, ~96 s, estéreo): bordón grave en re frigio, acordes oscuros
+    lentos (Rem, Sib, Solm, Mib), un coro de vocales, campanas graves sueltas con eco y viento. Sin percusión."""
+    dur = 96.0
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    r = rng(91)
+
+    def fq(f):  # que quepa entera en el bucle
+        return round(f * dur) / dur
+
+    def note(m):  # MIDI → Hz
+        return 440.0 * 2 ** ((m - 69) / 12)
+
+    drone = np.sin(2 * np.pi * fq(note(26)) * t) * 0.6 + np.sin(2 * np.pi * fq(note(38) * 1.003) * t) * 0.35
+    drone *= 0.75 + 0.25 * np.sin(2 * np.pi * t / dur * 4)
+    chords = [(50, 53, 57), (46, 50, 53), (43, 46, 50), (51, 55, 58)]  # Rem, Sib, Solm, Mib (graves)
+    seg = dur / 8
+    pad = np.zeros(n)
+    for ci in range(8):
+        ch = chords[ci % 4]
+        a, b = int(ci * seg * SR), int((ci + 1) * seg * SR)
+        ln = b - a
+        tt = np.arange(ln) / SR
+        env = np.clip(np.minimum(tt / 3.0, (ln / SR - tt) / 3.0), 0, 1) ** 1.5
+        chunk = np.zeros(ln)
+        for m in ch:
+            for det in (0.997, 1.0, 1.004):
+                chunk += saw(2 * np.pi * note(m) * det * tt + r.uniform(0, 6.28), 12)
+        pad[a:b] += chunk * env
+    pad = lp(np.concatenate([pad, pad]), 900)[n:] * 0.22
+    choir = np.zeros(n)
+    for ci in range(8):
+        ch = chords[ci % 4]
+        a, b = int(ci * seg * SR), int((ci + 1) * seg * SR)
+        ln = b - a
+        tt = np.arange(ln) / SR
+        env = np.clip(np.minimum(tt / 4.0, (ln / SR - tt) / 4.0), 0, 1) ** 2
+        vib = 1 + 0.004 * np.sin(2 * np.pi * 5.2 * tt)
+        for m in ch:
+            choir[a:b] += saw(2 * np.pi * note(m + 12) * np.cumsum(vib) / SR, 18) * env
+    choir = (bp(choir, 500, 900) * 0.6 + bp(choir, 1000, 1500) * 0.35) * 0.18
+    bells = np.zeros(n)
+    scale = [62, 63, 65, 67, 69, 70, 72]  # re frigio
+    tpos = 2.0
+    while tpos < dur - 6:
+        m = scale[r.integers(len(scale))] - (12 if r.random() < 0.5 else 0)
+        a = int(tpos * SR)
+        ln = int(5.5 * SR)
+        b = metal(ln, note(m), [(1, 1), (2.0, 0.35), (2.76, 0.25), (5.4, 0.1)], 2.4, seed=int(tpos * 10)) * 0.5
+        b *= np.clip(np.arange(ln) / (0.06 * SR), 0, 1)  # entrada suave: campana lejana, no un golpe
+        bells[a:a + ln] += b[: max(0, min(ln, n - a))]
+        tpos += r.uniform(3.0, 7.5)
+    # eco de las campanas (dos repeticiones)
+    for d, g in ((0.55, 0.45), (1.1, 0.22)):
+        k = int(d * SR)
+        bells[k:] += bells[:-k] * g
+    bells = lp(bells, 3000) * 0.5
+    wind = bp(r.standard_normal(n * 2), 250, 1800)[n:] * (0.05 + 0.04 * np.sin(2 * np.pi * t / dur * 3 + 1))
+    x = drone * 0.55 + pad + choir + bells + wind
+    out = []
+    for ch_seed in (101, 102):
+        y = reverb(np.concatenate([x, x, x]), 6.0, 2500, 0.45, seed=ch_seed)[n:2 * n]
+        out.append(y)
+    st = np.stack(out, 1)
+    return norm(st, 0.85)
+
+
+# En bucle: sin cortar la cola ni filtrar el principio (empalman con su final)
+LOOPS = {'grieta/ambiente', 'grieta/musica'}
 
 SOUNDS = {
     'grieta/ambiente': ambiente,
@@ -307,17 +388,16 @@ SOUNDS = {
     'grieta/despertar': despertar,
     'grieta/estallido': estallido,
     'grieta/lista': lista,
-    'jefes/muerte_crepita_1': lambda: crepita(51),
-    'jefes/muerte_crepita_2': lambda: crepita(52),
-    'jefes/muerte_crepita_3': lambda: crepita(53),
+    'jefes/muerte_disolucion': muerte_disolucion,
     'jefes/muerte_estallido': muerte_estallido,
+    'grieta/musica': musica,
 }
 
 
 def write_wav(path, x):
     pcm = (np.clip(x, -1, 1) * 32767).astype('<i2')
     with wave.open(path, 'wb') as w:
-        w.setnchannels(1)
+        w.setnchannels(1 if x.ndim == 1 else x.shape[1])
         w.setsampwidth(2)
         w.setframerate(SR)
         w.writeframes(pcm.tobytes())
@@ -328,18 +408,24 @@ def main():
     tmp = tempfile.mkdtemp()
     for name, fn in SOUNDS.items():
         x = fn()
-        # sin el sub-grave que nadie oye (<25 Hz) y sin la cola muda del final (por debajo de -60 dB)
-        x = norm(hp(x, 25, 2), 0.89)
-        loud = np.nonzero(np.abs(x) > 0.89 * 10 ** (-60 / 20))[0]
-        if name != 'grieta/ambiente' and len(loud):
+        stereo = x.ndim == 2
+        loop = name in LOOPS
+        # sin el sub-grave que nadie oye (<25 Hz) y sin la cola muda del final (por debajo de -60 dB); los bucles, enteros
+        if stereo:
+            x = np.stack([hp(x[:, c], 25, 2) for c in range(x.shape[1])], 1)
+        elif not loop:
+            x = hp(x, 25, 2)
+        x = norm(x, 0.89)
+        loud = np.nonzero(np.abs(x if not stereo else x.max(1)) > 0.89 * 10 ** (-60 / 20))[0]
+        if not loop and len(loud):
             x = fade(x[: min(len(x), loud[-1] + int(0.05 * SR))].copy(), 0, 0.15)
         wav = os.path.join(wav_dir or tmp, name.replace('/', '_') + '.wav')
         os.makedirs(os.path.dirname(wav), exist_ok=True)
         write_wav(wav, x)
         out = os.path.join(RES, name + '.ogg')
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-c:a', 'libvorbis', '-q:a', '5', '-ac', '1', out],
-                       check=True)
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-c:a', 'libvorbis', '-q:a', '4' if stereo else '5',
+                        '-ac', '2' if stereo else '1', out], check=True)
         print(f'{name}: {len(x) / SR:.1f} s, {os.path.getsize(out) // 1024} KB')
 
 

@@ -56,6 +56,8 @@ final class SkillMovers {
         boolean stopAtBlock;
         int charges;
         int hits;
+        /** Prueba en el juego: tocó a un jugador. */
+        boolean hitPlayer;
         double gravity;
         String onTick;
         String onHit;
@@ -88,6 +90,8 @@ final class SkillMovers {
         double bounceVel = 0.5;
         int age;
         double travelled;
+        /** Dónde salió: el alcance (maxRange) se mide en línea recta desde aquí, como MythicMobs (maxDistanceSquared). */
+        Vec3 start;
         boolean alive = true;
         // orbital
         Who center;
@@ -180,10 +184,20 @@ final class SkillMovers {
             // pies (luego persigue a la altura de los ojos, o a tyo)
             // En un jefe, el misil también sale hacia el centro del objetivo: a los pies y con mucha inercia (la esfera de
             // Astwood, inertia=100, casi no gira) se clavaba en el suelo antes de llegar
-            Vec3 aimAt = t.pos().add(0, missile && ctx.host == null ? 0 : tyo + halfHeight(t), 0);
+            // tyo («dónde, sobre el objetivo») solo cuando el objetivo es un ser, como MythicMobs: a un sitio va derecho (el
+            // área del Archivista, tyo=64 a sitios al azar, salía al cielo y estallaba en el aire)
+            boolean onBeing = t.entity() != null || t.who != null && t.who.actor != null;
+            Vec3 aimAt = t.pos().add(0, missile && ctx.host == null ? 0 : (onBeing ? tyo : 0) + halfHeight(t), 0);
             if (eso != 0) aimAt = aimAt.add(SkillRuntime.dir(cy + 90F, 0F).scale(eso));
             if (tso != 0) aimAt = aimAt.add(SkillRuntime.dir(SkillRuntime.yawOf(aimAt.subtract(start)) + 90F, 0F).scale(tso));
             Vec3 dir = targetIsOrigin ? ctx.caster.forward() : aimAt.subtract(start);
+            // startingDirection (sdir) de un misil: sale hacia ese sitio y luego gira hacia su objetivo (la Tormenta del
+            // Wither escupe desde cada boca hacia delante); en un proyectil no hace nada, como en MythicMobs
+            String sdir = missile ? m.a.get("sdir") != null ? m.a.get("sdir") : m.a.getOrDefault("startingdirection", m.a.get("startdir")) : null;
+            if (sdir != null && sdir.trim().startsWith("@")) {
+                List<Tgt> sd = SkillTargets.fromString(sdir, ctx);
+                if (!sd.isEmpty() && sd.get(0).pos().distanceToSqr(start) > 1e-4) dir = sd.get(0).pos().subtract(start);
+            }
             if (dir.lengthSqr() < 1e-6) dir = ctx.caster.forward();
             dir = dir.normalize();
             double ho = SkillRuntime.num(m.arg("0", "horizontaloffset", "ho"), 0);
@@ -198,6 +212,7 @@ final class SkillMovers {
             Vec3 flat = new Vec3(dir.x, 0, dir.z);
             flat = flat.lengthSqr() < 1e-6 ? Vec3.ZERO : flat.normalize();
             p.pos = start;
+            p.start = start;
             p.dir = dir;
             double v = SkillRuntime.num(m.arg("5", "velocity", "v"), 5);
             p.step = v / 20.0 * p.interval;
@@ -588,7 +603,7 @@ final class SkillMovers {
         if (!p.alive) return;
         hits(p, from);
         if (!p.alive) return;
-        if (p.travelled >= p.maxRange || p.age >= p.maxTicks) end(p);
+        if (p.age >= p.maxTicks || (p.start != null ? p.pos.distanceToSqr(p.start) >= p.maxRange * p.maxRange : p.travelled >= p.maxRange)) end(p);
     }
 
     private static void hitBlock(Mover p) {
@@ -658,6 +673,7 @@ final class SkillMovers {
             found.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(from)));
             for (LivingEntity e : found) {
                 Tgt t = Tgt.of(Who.of(e));
+                if (e instanceof Player) p.hitPlayer = true;
                 p.hit.put(e.getUUID(), now);
                 hit.add(t);
                 if (first == null) first = e;
@@ -711,6 +727,7 @@ final class SkillMovers {
             if (next != null) {
                 c.left--;
                 p.homing = next;
+                p.start = p.pos; // cada salto cuenta su alcance desde aquí
                 p.homeAt = null;
                 p.homeY = p.ctx.host != null ? next.getBbHeight() * 0.55 : next.getEyeHeight();
                 if (p.onlyTarget != null) p.onlyTarget = next;
@@ -720,6 +737,7 @@ final class SkillMovers {
         if (c.back && !c.returning && p.ctx.caster.entity instanceof LivingEntity self && self.isAlive()) {
             c.returning = true;
             p.homing = self;
+            p.start = p.pos;
             p.homeAt = null;
             p.homeY = self.getBbHeight() * 0.5;
             return;
@@ -762,6 +780,13 @@ final class SkillMovers {
     static void end(Mover p) {
         if (!p.alive) return;
         p.alive = false;
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && p.kind <= 1 && host(p) != null) {
+            // Prueba en el juego: cada proyectil o misil de un jefe (¿llega al jugador?)
+            String to = p.homing != null ? p.homing.getName().getString() : "un sitio";
+            net.tierrasfantasticas.tfclient.bosses.BossTest.projectile((p.kind == 1 ? "misil" : "proyectil") + " " + p.onHit
+                    + " → " + to, p.hitPlayer, String.format("%.0f bloques, %d ticks%s", p.travelled, p.age,
+                    p.age >= p.maxTicks ? ", se acabó el tiempo" : p.start != null && p.pos.distanceToSqr(p.start) >= p.maxRange * p.maxRange ? ", alcance máximo" : ""));
+        }
         if (p.onEnd != null) {
             try {
                 run(p, p.onEnd, List.of(Tgt.at(p.pos)), null);
