@@ -260,7 +260,10 @@ public final class SkillMobs {
         List<String> out = new ArrayList<>();
         for (SkillActor a : SkillRuntime.ACTORS) {
             if (!a.alive || a.follow != null || a.carried || a.age < minAge) continue;
-            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : ""));
+            Entity oe = a.owner == null ? null : a.owner.entity;
+            String by = a.owner == null ? "sin dueño" : oe != null ? oe.getType().toShortString() + " " + oe.getUUID().toString().substring(0, 8)
+                    + (oe.isRemoved() ? " QUITADO" : "") : a.owner.actor != null ? "efecto " + a.owner.actor.name() + (a.owner.actor.alive ? "" : " (ya no está)") : "?";
+            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : "") + " [de " + by + "]");
         }
         return out;
     }
@@ -805,10 +808,14 @@ public final class SkillMobs {
         while (more) {
             more = false;
             for (SkillActor a : new ArrayList<>(SkillRuntime.ACTORS)) {
-                if (!a.alive || a.owner == null || gone.contains(a)) continue;
-                if (gone.contains(a.owner.entity) || a.owner.actor != null && gone.contains(a.owner.actor)) {
+                if (a.owner == null || gone.contains(a)) continue;
+                // (también a través de un efecto que ya se fue: lo que invocó sigue siendo de este jefe)
+                Entity oe = a.owner.entity;
+                boolean mine = oe != null && (gone.contains(oe) || oe.isRemoved() && host(oe) != null)
+                        || a.owner.actor != null && gone.contains(a.owner.actor);
+                if (mine) {
                     gone.add(a);
-                    a.remove();
+                    if (a.alive) a.remove();
                     more = true;
                 }
             }
