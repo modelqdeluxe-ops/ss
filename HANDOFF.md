@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **17 de octubre de 2026** (TF Client **1.3.85**: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **17 de octubre de 2026** (TF Client **1.3.86**: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,7 +55,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (17 oct 2026, TF Client 1.3.85) — lee esto primero
+### CHECKPOINT (17 oct 2026, TF Client 1.3.86) — lee esto primero
+
+**1.3.86 (17 oct)**: el dueño: *«la grieta es fea, el sonido feo y simple, las estelas blancas de la muerte (las del
+dragón) hacen que vea a través de los bloques, el sonido de TNT es horrible; hazla imponente; que la grieta tiña el
+cielo como el del End, con nebulosas y estrellas fugaces; un solo color para todas: oscuridad, morado intenso oscuro»* y
+que se suban a git los packs de los 17 jefes. Hecho (`tf-client/JEFES.md` §3.11): **grieta nueva** de un solo morado
+del vacío (obsidiana con vetas que brillan, agujas, runas, un desgarro animado con el vacío dentro, cristal de
+obsidiana), **cielo de la grieta** en el cliente (nebulosas que giran, estrellas que titilan, estrellas fugaces; niebla,
+cielo y nubes teñidos; sin nubes con el cielo entrado), **sonidos sintetizados** (golpe, despertar, estallido, lista,
+zumbido en bucle; chasquidos y estallido de la muerte en vez de la TNT) y **rayos de la muerte** con una capa que
+respeta los bloques. Probado en el juego (capturas `grieta_lista` y `grieta_despierta`). **Packs**: `ss` es público y las
+licencias de LittleRoom prohíben redistribuirlos; el dueño eligió un **repo privado** `tf-packs`, que desde aquí no se
+puede crear (GitHub responde 403): cuando lo cree y dé acceso a la app de Claude, subir los 17 zips con su README (jefe →
+zip). **No** subir los packs a `ss`.
+
+### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.85)
 
 **1.3.85 (17 oct)**: el dueño: *«la abominación, ¿por qué no la arreglaste?»*. La prueba en el juego ahora separa lo que
 anda de lado o atrás **con el modelo bloqueado por el pack** (`lockmodel`: en ModelEngine el modelo no gira y el jefe

@@ -3349,5 +3349,69 @@
     "stream": true
    }
   ]
+ },
+ "grieta.ambiente": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/ambiente",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "grieta.golpe": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/golpe",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "grieta.despertar": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/despertar",
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "grieta.estallido": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/estallido",
+    "attenuation_distance": 96
+   }
+  ]
+ },
+ "grieta.lista": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/lista",
+    "attenuation_distance": 40
+   }
+  ]
+ },
+ "jefes.muerte_crepita": {
+  "sounds": [
+   {
+    "name": "tfclient:jefes/muerte_crepita_1",
+    "attenuation_distance": 64
+   },
+   {
+    "name": "tfclient:jefes/muerte_crepita_2",
+    "attenuation_distance": 64
+   },
+   {
+    "name": "tfclient:jefes/muerte_crepita_3",
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "jefes.muerte_estallido": {
+  "sounds": [
+   {
+    "name": "tfclient:jefes/muerte_estallido",
+    "attenuation_distance": 128
+   }
+  ]
  }
 }

@@ -243,7 +243,7 @@ public final class Rifts {
                 if (now >= r.readyAt) {
                     r.state = RiftEntity.READY;
                     dirty = true;
-                    level.playSound(null, r.pos.x, r.pos.y + 2, r.pos.z, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.HOSTILE, 2F, 0.7F);
+                    level.playSound(null, r.pos.x, r.pos.y + 2, r.pos.z, BossSounds.RIFT_READY, SoundSource.HOSTILE, 2.5F, 1F);
                 }
             }
             default -> { }
@@ -251,27 +251,25 @@ public final class Rifts {
         e.show(r.boss, r.state, r.left(now), r.diff);
     }
 
-    /** Lo que pasa mientras despierta: el cristal vibra, sube el sonido y la luz de su color, y al final estalla. */
+    /**
+     * Lo que pasa mientras despierta: el cristal vibra, el desgarro se abre, sube la luz morada (la misma en todas las
+     * grietas desde la 1.3.86) y al final estalla. El sonido que sube lo pone wake (grieta.despertar dura lo mismo).
+     */
     private static void wakingFx(ServerLevel level, Rift r, int left) {
-        SkillDefs.ClassDef cls = SkillDefs.bosses().get(r.boss);
-        int color = cls != null && cls.bossInfo != null ? cls.bossInfo.color : 0xB45CF0;
-        Vector3f c = new Vector3f(((color >> 16) & 255) / 255F, ((color >> 8) & 255) / 255F, (color & 255) / 255F);
-        Vec3 p = r.pos.add(0, 2.6, 0);
+        Vector3f c = RiftEntity.VOID_PURPLE;
+        Vec3 p = r.pos.add(0, 4.2, 0);
         int done = RiftEntity.WAKE_TICKS - left;
         if (done % 4 == 0) {
             level.sendParticles(new DustParticleOptions(c, 1.6F), p.x, p.y, p.z, 6 + done / 6, 0.9, 1.4, 0.9, 0.02);
             level.sendParticles(ParticleTypes.END_ROD, p.x, p.y, p.z, 2, 0.6, 1.2, 0.6, 0.04);
         }
-        if (done % 14 == 0) {
-            level.playSound(null, p.x, p.y, p.z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.HOSTILE, 3F, 0.6F + done / 70F);
-        }
-        if (done == 20 || done == 45) level.playSound(null, p.x, p.y, p.z, SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 2.5F, 0.6F);
+        if (done % 6 == 0) level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 10 + done / 3, 0.8, 2.6, 0.8, 0.08);
         if (left == 1) {
             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, p.x, p.y, p.z, 1, 0, 0, 0, 0);
             level.sendParticles(new DustParticleOptions(c, 2F), p.x, p.y, p.z, 120, 2.2, 2.2, 2.2, 0.2);
             level.sendParticles(ParticleTypes.END_ROD, p.x, p.y, p.z, 60, 1.5, 2, 1.5, 0.25);
-            level.playSound(null, p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3F, 0.7F);
-            level.playSound(null, p.x, p.y, p.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.HOSTILE, 4F, 0.5F);
+            level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.x, p.y, p.z, 160, 1.2, 3, 1.2, 0.6);
+            level.playSound(null, p.x, p.y, p.z, BossSounds.RIFT_BURST, SoundSource.HOSTILE, 6F, 1F);
         }
     }
 
@@ -374,8 +372,8 @@ public final class Rifts {
         r.state = RiftEntity.WAKING;
         r.wakeAt = e.level().getGameTime() + RiftEntity.WAKE_TICKS;
         dirty = true;
-        e.level().playSound(null, e.getX(), e.getY() + 2, e.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 3F, 0.6F);
-        e.level().playSound(null, e.getX(), e.getY() + 2, e.getZ(), SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.HOSTILE, 3F, 0.5F);
+        e.level().playSound(null, e.getX(), e.getY() + 2, e.getZ(), BossSounds.RIFT_HIT, SoundSource.HOSTILE, 3F, 1F);
+        e.level().playSound(null, e.getX(), e.getY() + 4, e.getZ(), BossSounds.RIFT_WAKE, SoundSource.HOSTILE, 4F, 1F);
         e.show(r.boss, r.state, r.left(e.level().getGameTime()), r.diff);
     }
 
