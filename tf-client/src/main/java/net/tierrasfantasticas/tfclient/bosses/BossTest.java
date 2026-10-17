@@ -349,6 +349,21 @@ public final class BossTest {
         }
         String why = String.format(" a %.1f del jugador%s%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : "",
                 lockedNow ? ", modelo bloqueado (lockmodel)" : "");
+        if (back || side) {
+            // Por qué: hacia dónde va, hacia dónde mira el cuerpo y a qué punto del camino de Minecraft va
+            float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
+            net.minecraft.world.level.pathfinder.Path path = boss.getNavigation().getPath();
+            String node = "sin camino";
+            if (path != null && !path.isDone()) {
+                net.minecraft.core.BlockPos n = path.getNextNodePos();
+                Vec3 to = Vec3.atBottomCenterOf(n).subtract(bp);
+                node = String.format("nodo %d/%d a %.1f, %.0f°", path.getNextNodeIndex(), path.getNodeCount(),
+                        Math.sqrt(to.x * to.x + to.z * to.z), Mth.wrapDegrees(Math.toDegrees(Math.atan2(-to.x, to.z)) - boss.yBodyRot));
+            }
+            Vec3 tp = player.position().subtract(bp);
+            why += String.format("; va a %.0f° del cuerpo, %.2f b/t, jugador a %.0f°, %s", Mth.wrapDegrees(go - boss.yBodyRot), hs,
+                    Mth.wrapDegrees(Math.toDegrees(Math.atan2(-tp.x, tp.z)) - boss.yBodyRot), node);
+        }
         episode(r, "anda hacia atrás", back, what + why);
         episode(r, "anda de lado", side, what + why);
         if (hs > 4) r.event("se teletransporta " + String.format("%.0f", hs) + " bloques [" + what + "]");
