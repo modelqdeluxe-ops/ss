@@ -76,7 +76,8 @@ Las **tres cabezas de la Tormenta del Wither no salían** (el pack pide `ob_head
 animación de andar (el Druida, cada vez que el jugador estaba más cerca de lo que piden sus hechizos); ahora, demasiado
 cerca, se queda quieto. Referencias del simulador rehechas para **todos** los jefes por eso (cambia la secuencia al
 azar; sin la línea «pasos atrás»): golpes al aire 20 → 10 en total (Astwood 9 → 5, Esqueleto 11 → 5), sin mirarle
-1 → 2 (Abominación), ataques casi iguales (Mega Guardián 644 → 764: ya no pierde tiempo saltando). Lo pendiente sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
+1 → 2 (Abominación), ataques casi iguales (Mega Guardián 644 → 764: ya no pierde tiempo saltando). Última prueba en el juego (234e7e8):
+el Druida, 0 ticks de espaldas (antes 66-83); la Tormenta del Wither saca sus 3 cabezas, arrastra y muerde. Lo pendiente sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
 
 ### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.83)
 
