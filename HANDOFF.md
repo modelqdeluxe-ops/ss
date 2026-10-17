@@ -67,7 +67,10 @@ es yRot (`BossEntity.turnBody/aiStep`, `sim_ai.walk`). En el juego, sin `lockmod
 lado o atrás; Abominación 2 y 2 de 425; Gárgola 1 y 1; Mecha Piglin 0 y 2. Y el jefe ya no suelta al jugador que sus
 golpes lanzan fuera de la arena (lo sigue hasta 64 bloques de la grieta: el Druida lo perdía justo al ir a volar hacia
 él). Referencias del simulador rehechas (9 jefes, cambios pequeños). (`lock{f=true}` del pack, que gira al jefe hacia el
-jugador cada tick mientras anda despacio, también se ve de lado: es del pack.)
+jugador cada tick mientras anda despacio, también se ve de lado: es del pack; y el Archivista y Eldric se apartan,
+retroceden y esquivan con `velocity{r=true}` de su pack.) Arreglado también un **error en el tick de las skills**
+(`ConcurrentModificationException` en `SkillRuntime.tick` cuando un efecto sacaba otro, con Eldric: se cortaba el resto
+del tick); el registro de la prueba en el juego guarda ahora las trazas del mod.
 
 ### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.84)
 

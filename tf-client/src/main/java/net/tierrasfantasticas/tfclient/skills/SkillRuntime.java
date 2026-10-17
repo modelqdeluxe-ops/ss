@@ -2148,7 +2148,6 @@ public final class SkillRuntime {
         SkillAuras.tick();
         // Actores: temporizadores, pegados a su entidad, fin de vida
         Map<ServerLevel, List<SkillActor>> moved = new HashMap<>();
-        Iterator<SkillActor> it = ACTORS.iterator();
         List<SkillActor> list = new ArrayList<>(ACTORS);
         for (SkillActor a : list) {
             if (!a.alive) continue;
@@ -2188,7 +2187,8 @@ public final class SkillRuntime {
                 }
             }
             if (!a.timers.isEmpty()) {
-                for (Mech mm : a.timers) {
+                // (sobre una copia: un temporizador puede cambiar el modelo del efecto y con él sus temporizadores)
+                for (Mech mm : new ArrayList<>(a.timers)) {
                     int every = (int) Math.max(1, num(mm.trv, 20));
                     if (a.age % every == 0) {
                         Ctx c = new Ctx(a.cls, a.who);
@@ -2215,7 +2215,9 @@ public final class SkillRuntime {
                 moved.computeIfAbsent(a.level, k -> new ArrayList<>()).add(a);
             }
         }
-        while (it.hasNext()) if (!it.next().alive) it.remove();
+        // (el iterador se hacía antes del bucle y, si un efecto sacaba otro —Eldric—, saltaba ConcurrentModificationException
+        // y el resto del tick no se hacía: ni se mandaban los movimientos ni se limpiaban los estados. Prueba en el juego)
+        ACTORS.removeIf(a -> !a.alive);
         moved.forEach(SkillNet::sendMoves);
         // Estados de quien ya no existe
         if (clock % 200 == 0) {
