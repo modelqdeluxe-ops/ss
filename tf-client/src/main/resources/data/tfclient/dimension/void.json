@@ -1,0 +1,10 @@
+{
+  "type": "tfclient:void",
+  "generator": {
+    "type": "tfclient:void_island",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "tfclient:void"
+    }
+  }
+}

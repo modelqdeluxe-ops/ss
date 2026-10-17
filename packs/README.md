@@ -36,3 +36,9 @@ Para añadir packs nuevos: descifra, añade los zip en `packs/` y su fila en el 
 la misma contraseña:
 
     tar -cf - README.md packs | openssl enc -aes-256-cbc -pbkdf2 -iter 300000 -salt -out packs/jefes-17.tar.enc
+
+## `void.tar.enc` (1.3.88): los originales de The Void
+
+Con la misma contraseña y el mismo comando (`... -in packs/void.tar.enc -out void.tar`): dentro, `void/` con el pack
+del caballero de luz (`NPCs_For_Mini_Games_vol.1.zip`, Wardenful Studio: el modelo es `skywars_npc.bbmodel`) y el mapa
+de la isla (`EndCarageKitMap.schematic`). La isla se convierte con `python3 -I tf-client/tools/void/isla.py <schematic>`.

@@ -238,6 +238,8 @@ public final class BossTest {
             if (level.getGameTime() - waitPlayer < 100) return;
             ids = new ArrayList<>(SkillDefs.bosses().keySet());
             String only = System.getenv("TFCLIENT_PRUEBA_JEFES");
+            // (1.3.88) «vacio»: la visita a The Void (el caballero, su diálogo, el viaje, el cielo y la isla), la primera
+            ids.add(0, "vacio");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -254,20 +256,23 @@ public final class BossTest {
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
         Rep r = current;
+        if ("vacio".equals(r.id)) {
+            voidStep(server, level, player, r);
+            return;
+        }
         switch (phase) {
             case 0 -> {
                 // Llegar a la arena (dejar que se carguen los chunks) y poner la grieta en medio
                 if (t == 1) player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
                 if (t == 40) {
                     rift = Rifts.place(player, r.id, Difficulty.NORMAL);
-                    // mirándola (hacia +z) y un poco hacia arriba: la grieta entera (1.3.87: más grande), el sol negro
-                    // encima y el cielo (que tarda ~5 s en entrar)
+                    // mirándola (hacia +z) y un poco hacia arriba: la grieta entera (1.3.87: más grande)
                     player.teleportTo(level, arena.x, arena.y, arena.z - 22, 0F, -13F);
                 }
                 if (t == 175) {
                     shot(r, "grieta_lista");
                     // (solo en el cliente del juego de un jugador, que es el de la prueba)
-                    r.event("música de la grieta antes de la pelea: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
+                    r.event("música del vacío fuera del Void: " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada (bien)"));
                 }
                 if (t == 180) {
                     lastState = rift.state;
@@ -576,6 +581,97 @@ public final class BossTest {
         if (p.getTicksFrozen() > 0) sb.append(" congelado ").append(p.getTicksFrozen());
         if (p.isPassenger()) sb.append(" montado");
         return sb.length() == 0 ? "" : " | efectos:" + sb;
+    }
+
+    /** Lo que el cliente de la prueba pulsa en el diálogo del caballero (1 = la primera respuesta; -1 = nada). */
+    static volatile int dialogPress = -1;
+    private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
+    private static Vec3 origin;
+
+    /**
+     * La visita a The Void (1.3.88): pone un caballero de luz delante del jugador, le habla (saludo, «¿Qué es el
+     * Void?», «Llévame al Void»), viaja con la animación, mira el cielo y la isla desde varios sitios, prueba el rescate
+     * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
+     */
+    private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        switch (t) {
+            case 1 -> {
+                if (vl == null) {
+                    r.event("NO HAY DIMENSIÓN tfclient:void");
+                    next(level);
+                    return;
+                }
+                player.teleportTo(level, arena.x, arena.y, arena.z, 180F, 0F);
+            }
+            case 30 -> {
+                knight = net.tierrasfantasticas.tfclient.vacio.TFVoid.KNIGHT.get().create(level);
+                knight.moveTo(arena.x, arena.y, arena.z - 4, 0F, 0F);
+                knight.setYHeadRot(0F);
+                knight.setYBodyRot(0F);
+                level.addFreshEntity(knight);
+                origin = player.position();
+            }
+            case 70 -> shot(r, "caballero_mundo");
+            case 80 -> net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            case 200 -> shot(r, "dialogo_saludo");
+            case 210 -> dialogPress = 1;
+            case 340 -> shot(r, "dialogo_lore");
+            case 350 -> dialogPress = 0;
+            case 395 -> shot(r, "viaje_salida");
+            case 440 -> {
+                r.event("tras el viaje: dimensión " + player.level().dimension().location() + String.format(" en %.1f %.1f %.1f",
+                        player.getX(), player.getY(), player.getZ()));
+                shot(r, "viaje_llegada");
+            }
+            case 520 -> {
+                BlockPosHelper.report(r, player);
+                r.event("cielo del vacío (shader): " + (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.skyShaderLoaded() ? "cargado" : "NO CARGADO")
+                        + "; música del vacío: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
+                shot(r, "vacio_llegada");
+            }
+            case 530 -> player.teleportTo(vl, 0.5, 78, 4.5, 180F, -22F);
+            case 600 -> shot(r, "vacio_agujero");
+            case 610 -> player.teleportTo(vl, 0.5, 108, 70.5, 180F, 18F);
+            case 700 -> shot(r, "vacio_isla");
+            case 710 -> player.teleportTo(vl, 120.5, 60, -40.5, 120F, 2F);
+            case 800 -> shot(r, "vacio_lado");
+            case 810 -> player.teleportTo(vl, 0.5, 74, 9.5, 180F, 30F);
+            case 870 -> shot(r, "vacio_santuario");
+            case 880 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 885 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
+                    player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
+            case 940 -> {
+                var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
+                r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
+                if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
+            }
+            case 1060 -> shot(r, "dialogo_santuario");
+            case 1070 -> dialogPress = 0;
+            case 1200 -> {
+                double d = origin == null ? -1 : player.position().distanceTo(origin);
+                r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
+                        + (player.level() == level && d < 3 ? "" : " (MAL)"));
+                shot(r, "vuelta");
+            }
+            case 1240 -> {
+                if (knight != null) knight.discard();
+                knight = null;
+                next(level);
+            }
+            default -> {
+            }
+        }
+    }
+
+    /** Lo que hay bajo los pies al llegar al vacío (¿se generó la isla?). */
+    private static final class BlockPosHelper {
+        static void report(Rep r, ServerPlayer p) {
+            net.minecraft.core.BlockPos b = p.blockPosition().below();
+            r.event("bajo los pies al llegar: " + p.level().getBlockState(b).getBlock().getDescriptionId() + " en " + b.toShortString()
+                    + (p.level().getBlockState(b).isAir() ? " (VACÍO: ¿no se generó la isla?)" : ""));
+        }
     }
 
     private static void shot(Rep r, String what) {

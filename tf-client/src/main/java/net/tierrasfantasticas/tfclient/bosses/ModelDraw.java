@@ -25,7 +25,7 @@ import org.joml.Vector4f;
  * las marcadas «tint» del color del jefe.
  */
 @OnlyIn(Dist.CLIENT)
-final class ModelDraw {
+public final class ModelDraw {
     private static final Map<String, ResourceLocation> TEXTURES = new HashMap<>();
 
     private ModelDraw() {}
@@ -34,7 +34,7 @@ final class ModelDraw {
      * pose: ya en el sitio del modelo (sus pies), mirando a donde mira; mats: pose de cada hueso (píxeles); hidden:
      * huesos que no se ven (con sus hijos), o null; tint: color de las texturas «tint» (0xRRGGBB).
      */
-    static void draw(VfxModel m, Matrix4f[] mats, boolean[] hidden, PoseStack pose, MultiBufferSource buffers, int light,
+    public static void draw(VfxModel m, Matrix4f[] mats, boolean[] hidden, PoseStack pose, MultiBufferSource buffers, int light,
                      int tint, int age, float alpha) {
         Matrix4f base = new Matrix4f(pose.last().pose()).scale(1F / 16F);
         Matrix3f normalBase = new Matrix3f(pose.last().normal());

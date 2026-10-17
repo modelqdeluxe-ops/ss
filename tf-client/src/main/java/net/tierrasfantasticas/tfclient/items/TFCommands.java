@@ -101,6 +101,8 @@ public final class TFCommands {
                 .then(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload))
                 // /tf boss (staff): la ventana de jefes, dificultades y grietas
                 .then(net.tierrasfantasticas.tfclient.bosses.TFBosses.command())
+                // /tf void npc|quitar|ir|volver (staff): el caballero de luz y el viaje a The Void
+                .then(net.tierrasfantasticas.tfclient.vacio.TFVoid.command())
                 // /tf claim give <jugadores> <id> [cantidad]: dar protecciones a mano
                 .then(Commands.literal("claim").requires(s -> s.hasPermission(2))
                         .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.giveCommand()))
