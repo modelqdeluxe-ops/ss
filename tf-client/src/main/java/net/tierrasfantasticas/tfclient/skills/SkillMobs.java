@@ -130,11 +130,6 @@ public final class SkillMobs {
         default void blend(int ticks) {
         }
 
-        /** Un paso atrás rápido (el cerebro: necesita sitio para su siguiente ataque). false si no puede ahora. */
-        default boolean backstep(Vec3 away) {
-            return false;
-        }
-
         // --- Lo que piden las mecánicas de MythicMobs de los jefes (threat, setinvulnerable, goto, setmaxhealth...)
 
         /** ¿Tiene la IA puesta? (condición hasai) */
@@ -252,6 +247,24 @@ public final class SkillMobs {
 
     /** La marca de los mobs de Minecraft que saca un jefe (summon{type=ZOMBIE}): no sueltan nada al morir (BossEvents). */
     public static final String SUMMONED = "tfclient_jefe";
+
+    /**
+     * Para la prueba de los jefes (bosses/BossTest): el modelo que lleva y las animaciones que tiene puestas ahora en el
+     * servidor (la de por defecto y las de state{}); null si no lleva modelo.
+     */
+    public static List<String> animNames(Host h) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a == null || a.me == null) return null;
+        List<String> out = new ArrayList<>();
+        out.add("modelo:" + a.me);
+        if (a.layers != null) {
+            if (a.layers.baseName() != null) out.add(a.layers.baseName());
+            for (net.tierrasfantasticas.tfclient.vfx.VfxLayers.Layer l : a.layers.active()) out.add(l.name);
+        } else if (a.anim != null) {
+            out.add(a.anim);
+        }
+        return out;
+    }
 
     /** La muerte épica (BossEntity.epicTick): el modelo, a «factor» de la escala que tenía al morir (se deshace). */
     public static void deathScale(Host h, float factor) {

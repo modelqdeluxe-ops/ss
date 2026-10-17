@@ -703,7 +703,7 @@ final class SkillMore {
         float v = (float) SkillRuntime.num(m.arg("18", "velocity", "v"), 18);
         int d = (int) Math.max(1, Math.min(6000, SkillRuntime.num(m.arg("200", "duration", "d", "ticks", "t"), 200)));
         SkillMobs.Host h = SkillMobs.host(e);
-        float start = e.getYRot();
+        float start = h != null ? h.lookYaw() : e.getYRot();
         int[] step = {0};
         Runnable[] tick = new Runnable[1];
         tick[0] = () -> {

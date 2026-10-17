@@ -32,7 +32,7 @@ ignevar             480 s, vida  66.9%: 322 ataques (40.2/min), 13 distintos de 
        10  land_flight
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 123 de 321; curas castigadas: 5 de 18; combos: 0; pasos atrás: 0
+     repite seguido: 123 de 321; curas castigadas: 5 de 18; combos: 0
 
 ## semilla 3, demencial
 ignevar             480 s, vida  66.4%: 364 ataques (45.5/min), 13 distintos de 10
@@ -50,7 +50,7 @@ ignevar             480 s, vida  66.4%: 364 ataques (45.5/min), 13 distintos de 
        12  land_flight
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 152 de 363; curas castigadas: 6 de 14; combos: 0; pasos atrás: 0
+     repite seguido: 152 de 363; curas castigadas: 6 de 14; combos: 0
 
 ## semilla 11, normal
 ignevar             480 s, vida  65.0%: 288 ataques (36.0/min), 13 distintos de 10
@@ -68,7 +68,7 @@ ignevar             480 s, vida  65.0%: 288 ataques (36.0/min), 13 distintos de 
        10  firebreath
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 100 de 287; curas castigadas: 7 de 17; combos: 0; pasos atrás: 0
+     repite seguido: 100 de 287; curas castigadas: 7 de 17; combos: 0
 
 ## semilla 11, dificil
 ignevar             480 s, vida  63.9%: 348 ataques (43.5/min), 13 distintos de 10
@@ -86,4 +86,4 @@ ignevar             480 s, vida  63.9%: 348 ataques (43.5/min), 13 distintos de 
        10  land_flight
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 140 de 347; curas castigadas: 5 de 16; combos: 0; pasos atrás: 0
+     repite seguido: 140 de 347; curas castigadas: 5 de 16; combos: 0

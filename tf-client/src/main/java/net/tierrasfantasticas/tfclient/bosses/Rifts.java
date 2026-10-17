@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -69,6 +70,8 @@ public final class Rifts {
         UUID bossEntity;
         long emptySince = -1;
         int players;
+        /** Su arena cargada a la fuerza (mientras despierta o hay pelea). */
+        boolean forced;
 
         /** Ticks que faltan (despertar o recarga). */
         public int left(long now) {
@@ -116,6 +119,11 @@ public final class Rifts {
                 }
             }
         }
+        // (si el servidor se cerró de golpe en mitad de una pelea, su arena seguía cargada a la fuerza)
+        for (Rift r : RIFTS.values()) {
+            ServerLevel level = server.getLevel(r.dim);
+            if (level != null) force(level, r, false);
+        }
         TFClient.LOGGER.info("TF Jefes: {} grietas", RIFTS.size());
     }
 
@@ -127,6 +135,7 @@ public final class Rifts {
             Entity b = r.bossEntity == null ? null : level.getEntity(r.bossEntity);
             if (b != null) b.discard();
             if (r.state == RiftEntity.WAKING || r.state == RiftEntity.FIGHT) r.state = RiftEntity.READY;
+            if (r.forced) force(level, r, false);
         }
         save();
         server = null;
@@ -174,11 +183,24 @@ public final class Rifts {
         if (level == null) return;
         long now = level.getGameTime();
         BlockPos bp = BlockPos.containing(r.pos);
+        // Mientras despierta o hay pelea, su arena se queda cargada (como el dragón del End en su isla): si no, al
+        // alejarse el jugador hacia el borde (o con el servidor lento al cargar) el jefe se congelaba o se descargaba
+        boolean active = r.state == RiftEntity.WAKING || r.state == RiftEntity.FIGHT;
+        if (active != r.forced) force(level, r, active);
         if (!level.isLoaded(bp) || !level.isPositionEntityTicking(bp)) {
-            // Nadie cerca: la incursión se acaba sola
-            if (r.state == RiftEntity.WAKING || r.state == RiftEntity.FIGHT) {
-                r.state = RiftEntity.READY;
-                dirty = true;
+            // Aún cargando: se espera. Antes se reiniciaba en el acto y el jefe seguía suelto: al golpear el cristal
+            // salía otro («aparecen, se van, reaparecen»). Solo se cierra si no queda nadie cerca un buen rato
+            if (active && !anyoneNear(level, r.pos, LEASH + 24)) {
+                if (r.emptySince < 0) {
+                    r.emptySince = now;
+                } else if (now - r.emptySince > EMPTY_TICKS) {
+                    trace(r, "sin cargar y sin nadie cerca: se queda lista");
+                    Entity b = r.bossEntity == null ? null : level.getEntity(r.bossEntity);
+                    if (b != null) b.discard();
+                    r.bossEntity = null;
+                    r.state = RiftEntity.READY;
+                    dirty = true;
+                }
             }
             return;
         }
@@ -200,6 +222,7 @@ public final class Rifts {
             case RiftEntity.FIGHT -> {
                 Entity b = r.bossEntity == null ? null : level.getEntity(r.bossEntity);
                 if (!(b instanceof BossEntity boss) || boss.isRemoved()) {
+                    trace(r, "el jefe ya no está (" + (b == null ? "no se encuentra" : "quitado") + "): se queda lista");
                     r.state = RiftEntity.READY;
                     r.bossEntity = null;
                     dirty = true;
@@ -208,6 +231,7 @@ public final class Rifts {
                     if (anyone) r.emptySince = -1;
                     else if (r.emptySince < 0) r.emptySince = now;
                     else if (now - r.emptySince > EMPTY_TICKS) {
+                        trace(r, "nadie cerca: el jefe se va");
                         boss.discard();
                         r.state = RiftEntity.READY;
                         r.bossEntity = null;
@@ -254,6 +278,7 @@ public final class Rifts {
     private static void spawn(ServerLevel level, Rift r) {
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(r.boss);
         if (cls == null || cls.bossInfo == null) {
+            trace(r, "jefe desconocido");
             r.state = RiftEntity.READY;
             return;
         }
@@ -267,6 +292,7 @@ public final class Rifts {
         }
         BossEntity boss = spawnBoss(level, r.pos, r.boss, r.diff, players, yaw);
         if (boss == null) {
+            trace(r, "no se pudo crear el jefe");
             r.state = RiftEntity.READY;
             return;
         }
@@ -296,7 +322,7 @@ public final class Rifts {
      * Baja hasta el suelo un sitio que está en el aire (la prueba de /tf boss sale 8 bloques delante del jugador): con
      * NoAI o setai{ai=false} al aparecer, como en Minecraft, el jefe no caería y se quedaría flotando.
      */
-    private static Vec3 ground(ServerLevel level, Vec3 pos) {
+    static Vec3 ground(ServerLevel level, Vec3 pos) {
         BlockPos p = BlockPos.containing(pos);
         if (!level.getBlockState(p).getCollisionShape(level, p).isEmpty()) return pos;
         int drop = 0;
@@ -368,6 +394,23 @@ public final class Rifts {
         p.displayClientMessage(Component.literal(cls.bossInfo.name).withStyle(s -> s.withColor(TextColor.fromRgb(cls.bossInfo.color)).withBold(true))
                 .append(Component.literal(" · " + r.diff.label()).withStyle(s -> s.withColor(TextColor.fromRgb(r.diff.color())).withBold(false)))
                 .append(Component.literal(" · " + state).withStyle(ChatFormatting.GRAY)), true);
+    }
+
+    /** Radio en chunks de la arena que se queda cargada durante la pelea (3 = 7×7 chunks: la correa y algo más). */
+    private static final int ARENA_CHUNKS = 3;
+
+    /** Carga (o suelta) a la fuerza los chunks de la arena de una grieta. */
+    private static void force(ServerLevel level, Rift r, boolean on) {
+        int cx = SectionPos.blockToSectionCoord(r.pos.x), cz = SectionPos.blockToSectionCoord(r.pos.z);
+        for (int dx = -ARENA_CHUNKS; dx <= ARENA_CHUNKS; dx++) {
+            for (int dz = -ARENA_CHUNKS; dz <= ARENA_CHUNKS; dz++) level.setChunkForced(cx + dx, cz + dz, on);
+        }
+        r.forced = on;
+    }
+
+    /** Por qué cambia una grieta (solo en la prueba de los jefes, BossTest). */
+    private static void trace(Rift r, String why) {
+        if (BossTest.ON) TFClient.LOGGER.info("Prueba de jefes: grieta {} ({}): {}", r.boss, r.state, why);
     }
 
     /** mm:ss de unos ticks. */
@@ -457,6 +500,7 @@ public final class Rifts {
         if (r == null) return false;
         ServerLevel level = server.getLevel(r.dim);
         if (level != null) {
+            if (r.forced) force(level, r, false);
             Entity e = r.entity == null ? null : level.getEntity(r.entity);
             if (e != null) e.discard();
             Entity b = r.bossEntity == null ? null : level.getEntity(r.bossEntity);

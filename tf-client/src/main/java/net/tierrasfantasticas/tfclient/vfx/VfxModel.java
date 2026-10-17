@@ -243,6 +243,9 @@ public final class VfxModel {
     }
 
     /** Índice del hueso por su id de ModelEngine (sin h_), o -1. */
+    /** Un nombre con etiqueta de ModelEngine delante (ob_, h_, hi_, p_, seg_, ik[...]_ ...): el resto. */
+    private static final java.util.regex.Pattern TAGGED = java.util.regex.Pattern.compile("[a-z]{1,5}(?:\\[[^\\]]*\\])?_(.+)");
+
     public int bone(String id) {
         if (id == null) return -1;
         Integer i = boneIndex.get(id);
@@ -255,6 +258,12 @@ public final class VfxModel {
                     return b;
                 }
             }
+        }
+        if (i == null) {
+            // Y al revés: el pack nombra el hueso con su etiqueta (bindhitbox{p=ob_head_1_hitbox}) y el conversor se la
+            // quitó (head_1_hitbox). Sin esto, las cabezas de la Tormenta del Wither no salían nunca (prueba en el juego)
+            java.util.regex.Matcher tm = TAGGED.matcher(id.toLowerCase(java.util.Locale.ROOT));
+            if (tm.matches()) i = boneIndex.get(tm.group(1));
         }
         return i == null ? -1 : i;
     }

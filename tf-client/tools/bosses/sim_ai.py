@@ -808,6 +808,7 @@ class Brain:
                         want = yaw_of(s.px - b.x, s.pz - b.z)
                         b.body = wrap(b.body + wrap(want - b.body) * 0.5)
                         b.look = want
+                        s.face_hold = s.t + 3  # BossEntity.face: se planta a girarse
                     self.turns += 1
                     self.hesitated = True
                     self.next = now + 2
@@ -985,11 +986,10 @@ class Sim:
         self.heals = []  # (empieza, ¿castigada?)
         self.firing = None
         self.cast_seq = 0
-        self.next_backstep = 0
-        self.backsteps = 0
         # ModelEngine en la entidad: move{} (hasta qué tick lo lleva el pack), rootmotion (hueso raíz, si manda, sus
         # pesos) y la escala de su caja (model{hitboxscale}, scale{hitbox=true})
         self.move_until = 0
+        self.face_hold = 0
         self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
         self.hb_scale = 1.0
         self.in_skill_damage = False
@@ -1075,6 +1075,8 @@ class Sim:
         ox, oz = b.x, b.z
         if self.t < self.move_until:
             pass  # move{} del pack: este tick lo lleva el pack (BossEntity.customServerAiStep)
+        elif b.ai and b.target and b.chases and self.t < self.face_hold:
+            pass  # plantado girándose hacia él para un golpe por delante (BossEntity.face)
         elif b.ai and b.target and b.chases and b.speed() > 0:
             d = self.dist()
             hb = self.prog['boss'].get('hitbox') or [1, 2]
@@ -1086,14 +1088,8 @@ class Sim:
                 rx, rz = b.x - self.px, b.z - self.pz
                 rl = math.hypot(rx, rz) or 1e-6
                 if d < plan[2] - 0.2 and not self.brain.attacking():
-                    # Demasiado cerca para lo que va a hacer: paso atrás (≈2,5 bloques) y se aparta
-                    if SMART >= 0.6 and d < plan[2] - 0.8 and self.t >= self.next_backstep and not b.locked:
-                        b.x += rx / rl * 2.5
-                        b.z += rz / rl * 2.5
-                        self.next_backstep = self.t + 70 + random.randrange(60)
-                        self.backsteps += 1
-                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
-                    stop = 0.6
+                    # Demasiado cerca para lo que va a hacer: se queda donde está (sin el salto atrás de antes de la 1.3.84)
+                    gx, gz, stop = b.x, b.z, 99
                 elif plan[1] and d < want + 3:
                     ang = math.radians(25 * plan[1])
                     ux, uz = rx / rl, rz / rl
@@ -1102,8 +1098,7 @@ class Sim:
                     gx, gz = self.px + tx * max(want, 2.5), self.pz + tz * max(want, 2.5)
                     stop = 0.6
                 elif d < want - 2.5:
-                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
-                    stop = 0.6
+                    gx, gz, stop = b.x, b.z, 99  # se queda donde está
                 else:
                     stop = want
             gd = math.hypot(gx - b.x, gz - b.z)
@@ -1129,10 +1124,9 @@ class Sim:
                 if track and not moving:
                     b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
                 elif moving:
-                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda (retrocediendo, mirándole)
+                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda (hasta 90° por tick, el MoveControl)
                     go = yaw_of(b.x - ox, b.z - oz) if (b.x, b.z) != (ox, oz) else want
-                    to = want if abs(wrap(go - want)) > 110 else go
-                    b.body = wrap(b.body + max(-20, min(20, wrap(to - b.body))))
+                    b.body = wrap(b.body + max(-90, min(90, wrap(go - b.body))))
                 else:
                     diff = wrap(want - b.body)
                     if abs(diff) > 30:  # la cabeza arrastra al cuerpo
@@ -1835,7 +1829,7 @@ def main():
         rep = sum(1 for i in range(1, len(s.b.timeline)) if s.b.timeline[i][1] == s.b.timeline[i - 1][1])
         punished = sum(1 for h in s.heals if h[1])
         print(f'     repite seguido: {rep} de {max(0, len(s.b.timeline) - 1)}; curas castigadas: {punished} de {len(s.heals)}'
-              + (f'; combos: {s.brain.chains}; pasos atrás: {s.backsteps}' if s.brain else ''))
+              + (f'; combos: {s.brain.chains}' if s.brain else ''))
         if s.brain:
             for a in s.brain.attacks:
                 tags = ','.join(k for k in ('gap', 'ranged', 'aoe', 'grab', 'rear') if getattr(a, k))

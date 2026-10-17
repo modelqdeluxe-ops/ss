@@ -81,7 +81,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int rotDelay, rotDuration;
     private int turnWait;
     private int blendUntil;
-    private int nextBackstep;
+    /** Hasta cuándo se queda plantado girándose hacia el jugador para un golpe por delante (SkillBrain). */
+    private int faceHold;
     private float bodyYaw;
     /** Hacia dónde mira la entidad (ver {@link #lookYaw()}): sigue a su objetivo aunque el modelo gire despacio. */
     private float lookYaw;
@@ -436,19 +437,6 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (m.length > 7 && (m[7] > 0) != ai) setAi(m[7] > 0);
     }
 
-    /** Un salto corto hacia atrás (hacer sitio para su siguiente ataque, como los jefes de los Souls). */
-    @Override
-    public boolean backstep(Vec3 away) {
-        if (!onGround() || age < nextBackstep || locked || !ai || dying()) return false;
-        Vec3 d = new Vec3(away.x, 0, away.z);
-        if (d.lengthSqr() < 1e-4) return false;
-        d = d.normalize().scale(0.8);
-        setDeltaMovement(d.x, 0.3, d.z);
-        hurtMarked = true;
-        nextBackstep = age + 70 + getRandom().nextInt(60);
-        return true;
-    }
-
     @Override
     public double healthScale() {
         return healthScale;
@@ -584,7 +572,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void hitboxPass(String part, double pass) {
         if (part == null || part.isEmpty()) return;
-        partPass.put(part.toLowerCase(java.util.Locale.ROOT), Math.max(0, pass));
+        // Sin la etiqueta (ob_/b_), como el hueso del modelo convertido (con ella no casaba nunca)
+        partPass.put(part.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""), Math.max(0, pass));
     }
 
     @Override
@@ -644,8 +633,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         Vec3 d = at.subtract(position());
         if (d.x * d.x + d.z * d.z < 1e-6) return;
         float want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-        if (immediately) bodyYaw = want;
-        else bodyYaw += Mth.wrapDegrees(want - bodyYaw) * 0.5F;
+        if (immediately) {
+            bodyYaw = want;
+        } else {
+            bodyYaw += Mth.wrapDegrees(want - bodyYaw) * 0.5F;
+            // El cerebro le gira para un golpe por delante: se planta a girarse (andando, el cuerpo volvía hacia donde
+            // anda y el golpe salía de lado)
+            faceHold = age + 3;
+            getNavigation().stop();
+        }
         yHeadRot = want;
         lookYaw = want;
         syncBody();
@@ -863,7 +859,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone, en su modelo tal como está ahora)
         if (!partPass.isEmpty()) {
             String bone = SkillMobs.partBone(this, part.index());
-            Double pass = bone == null ? null : partPass.get(bone.toLowerCase(java.util.Locale.ROOT));
+            Double pass = bone == null ? null : partPass.get(bone.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""));
             if (pass != null) {
                 if (pass <= 0) return false;
                 amount *= pass.floatValue();
@@ -1091,8 +1087,22 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,
         // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
         double stop = getBbWidth() / 2 + 1.0;
-        if (home != null && position().distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) {
-            // Se ha ido demasiado lejos de su grieta: vuelve
+        double fromHome = home == null ? 0 : position().distanceTo(home);
+        if (home != null && fromHome > Rifts.LEASH + 24 && !isPassenger()) {
+            // Muy lejos (una carga, un salto, un empujón): vuelve a su grieta de golpe
+            Vec3 back = Rifts.ground((ServerLevel) level(), home);
+            ((ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, getX(), getY(0.5), getZ(), 60,
+                    getBbWidth() / 2, getBbHeight() / 2, getBbWidth() / 2, 0.3);
+            teleportTo(back.x, back.y, back.z);
+            playSound(net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 3F, 0.6F);
+            getNavigation().stop();
+            fromHome = 0;
+        }
+        boolean targetInArena = target != null && target.position().distanceToSqr(home == null ? position() : home)
+                <= Rifts.LEASH * Rifts.LEASH;
+        if (home != null && fromHome > Rifts.LEASH && !targetInArena) {
+            // Fuera de su arena y sin nadie dentro a quien perseguir: vuelve (si su objetivo sigue dentro, le persigue:
+            // antes lo soltaba y se iba dándole la espalda, «me ignora»)
             goal = home;
             stop = 2;
             target = null;
@@ -1102,6 +1112,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             goal = gotoGoal;
             stop = 1.2;
             if (Math.sqrt(horizontalDistanceSqr(gotoGoal)) <= stop) gotoGoal = null;
+        } else if (target != null && chases() && age < faceHold) {
+            // Plantado girándose hacia él para un golpe por delante (face del cerebro)
+            goal = null;
         } else if (target != null && chases()) {
             goal = target.position();
             // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
@@ -1112,11 +1125,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 double d = Math.sqrt(horizontalDistanceSqr(target.position()));
                 Vec3 rel = position().subtract(target.position()).multiply(1, 0, 1);
                 if (d < min - 0.2 && rel.lengthSqr() > 1e-4 && !SkillMobs.attacking(this)) {
-                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más; si
-                    // te pegabas a ella se quedaba quieta): paso atrás y se aparta
-                    if (difficulty.smart() >= 0.6 && d < min - 0.8) backstep(rel);
-                    goal = position().add(rel.normalize().scale(4));
-                    stop = 0.6;
+                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más): se
+                    // queda donde está, como un mob de MythicMobs, hasta que su ataque salga o el jugador se aparte. (Hasta
+                    // la 1.3.84 daba un salto atrás de 0,8 b/t, y antes se alejaba andando: en el juego se veía resbalar
+                    // hacia atrás ~13 ticks con la animación de andar —el Druida, a 12 bloques—: «corren en retroceso»)
+                    goal = null;
                 } else if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
                     // Rodear: un punto 25° más allá alrededor del objetivo, a la distancia que busca
                     double ang = Math.toRadians(25 * plan[1]);
@@ -1124,10 +1137,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                     Vec3 turned = new Vec3(dir.x * Math.cos(ang) - dir.z * Math.sin(ang), 0, dir.x * Math.sin(ang) + dir.z * Math.cos(ang));
                     goal = target.position().add(turned.scale(Math.max(want, 2.5)));
                     stop = 0.6;
-                } else if (d < want - 2.5 && rel.lengthSqr() > 1e-4) {
-                    // Demasiado cerca para lo que quiere hacer (un ataque a distancia): se aparta
-                    goal = position().add(rel.normalize().scale(4));
-                    stop = 0.6;
+                } else if (d < want - 2.5) {
+                    // Más cerca de lo que quiere para lo que va a hacer (un ataque a distancia): se queda donde está
+                    goal = null;
                 } else {
                     stop = want;
                 }
@@ -1160,16 +1172,28 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                     direct = true;
                 }
             } else {
-                getNavigation().stop();
+                halt();
                 noPath = false;
                 if (goal == wanderGoal) wanderGoal = null;
             }
-        } else if (!getNavigation().isDone()) {
-            getNavigation().stop();
+        } else {
+            halt();
         }
         meleeStep();
         ghastStep();
         turnBody();
+    }
+
+    /**
+     * Se para: el camino y también el MoveControl, que si no seguía llevándole al último punto que se le pidió (los jefes
+     * grandes van derechos, sin camino) mientras el cuerpo ya miraba al jugador: andaba de espaldas ~13 ticks (el Druida,
+     * en la prueba en el juego).
+     */
+    private void halt() {
+        if (!getNavigation().isDone()) getNavigation().stop();
+        if (getMoveControl().hasWanted() && !SkillAI.has(goals, "type:ghast")) {
+            getMoveControl().setWantedPosition(getX(), getY(), getZ(), 0);
+        }
     }
 
     /**
@@ -1180,11 +1204,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
      */
     private void ghastStep() {
         if (!ai || !SkillAI.has(goals, "type:ghast")) return;
-        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(position()) > 3600) {
-            Vec3 c = position();
-            floatGoal = c.add((getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16);
-            // sin salir de su grieta
-            if (home != null && floatGoal.distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) floatGoal = home.add(0, 4, 0);
+        // En su arena, el vuelo al azar del ghast va alrededor de su objetivo (o de su grieta) y a poca altura: con el de
+        // Minecraft (16 bloques al azar desde donde está, sin límite) el Contemplador subía a 60 bloques y se iba a 64
+        // de la grieta, perdiendo al jugador (prueba en el juego, 1.3.83)
+        Vec3 center = target != null ? target.position() : home != null ? home : spawnAt != null ? spawnAt : position();
+        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(center) > 20 * 20) {
+            floatGoal = center.add((getRandom().nextFloat() * 2 - 1) * 12, 3 + getRandom().nextFloat() * 7, (getRandom().nextFloat() * 2 - 1) * 12);
         }
         if (floatWait-- <= 0) {
             floatWait += getRandom().nextInt(5) + 2;
@@ -1437,10 +1462,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } else if (moving && walks) {
             // Andando, el cuerpo va hacia donde anda (BodyRotationControl de Minecraft, que copia ModelEngine) y la
             // cabeza mira a su objetivo hasta «mh»: antes el cuerpo miraba al jugador y, al rodearle o al apartarse,
-            // andaba de lado. Si se aparta de él (hacia atrás), retrocede mirándole, como los jefes de los Souls
+            // andaba de lado (y en la 1.3.83, al apartarse, corría hacia atrás con la animación de andar). Gira hasta 90° por
+            // tick, lo que gira el MoveControl de Minecraft que lo mueve (con 20°, al dar la vuelta andaba unos ticks de
+            // espaldas: prueba en el juego)
             float go = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
-            float to = Math.abs(Mth.wrapDegrees(go - want)) > 110F && look != null ? want : go;
-            bodyYaw += Mth.clamp(Mth.wrapDegrees(to - bodyYaw), -20F, 20F);
+            bodyYaw += Mth.clamp(Mth.wrapDegrees(go - bodyYaw), -90F, 90F);
             turnWait = 0;
         } else if (!syncBodyOn) {
             // model{syncbody=false}: el cuerpo se queda; solo gira la cabeza (hasta «mh»)
@@ -1658,6 +1684,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             }
             if (bar != null) bar.removeAllPlayers();
             stopMusic();
+            if (BossTest.ON) BossTest.removed(this, reason);
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);
             // Murió esperando un relevo que no llegó a salir: la pelea se gana con él

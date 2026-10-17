@@ -32,7 +32,7 @@ hidra               480 s, vida  67.0%: 240 ataques (30.0/min), 13 distintos de 
         1  spot_player
         1  leap_turn_right
      sin salir: head_break, leap_turn_left
-     repite seguido: 8 de 239; curas castigadas: 9 de 15; combos: 0; pasos atrás: 0
+     repite seguido: 8 de 239; curas castigadas: 9 de 15; combos: 0
 
 ## semilla 3, demencial
 hidra               480 s, vida  70.7%: 334 ataques (41.8/min), 12 distintos de 15
@@ -49,7 +49,7 @@ hidra               480 s, vida  70.7%: 334 ataques (41.8/min), 12 distintos de 
         3  leap_turn_right
         1  spot_player
      sin salir: head_break, leap_turn_left, stomp_right
-     repite seguido: 16 de 333; curas castigadas: 12 de 18; combos: 8; pasos atrás: 0
+     repite seguido: 16 de 333; curas castigadas: 12 de 18; combos: 8
 
 ## semilla 11, normal
 hidra               480 s, vida  67.0%: 229 ataques (28.6/min), 14 distintos de 15
@@ -68,7 +68,7 @@ hidra               480 s, vida  67.0%: 229 ataques (28.6/min), 14 distintos de 
         1  spot_player
         1  leap_turn_left
      sin salir: head_break
-     repite seguido: 9 de 228; curas castigadas: 5 de 14; combos: 0; pasos atrás: 0
+     repite seguido: 9 de 228; curas castigadas: 5 de 14; combos: 0
 
 ## semilla 11, dificil
 hidra               480 s, vida  74.8%: 284 ataques (35.5/min), 13 distintos de 15
@@ -86,4 +86,4 @@ hidra               480 s, vida  74.8%: 284 ataques (35.5/min), 13 distintos de 
         2  leap_turn_right
         1  spot_player
      sin salir: head_break, leap_turn_left
-     repite seguido: 8 de 283; curas castigadas: 11 de 15; combos: 7; pasos atrás: 0
+     repite seguido: 8 de 283; curas castigadas: 11 de 15; combos: 7

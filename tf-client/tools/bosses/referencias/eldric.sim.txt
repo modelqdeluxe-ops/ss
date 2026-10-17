@@ -12,61 +12,61 @@ eldric              480 s, vida  58.8%: 115 ataques (14.4/min), 9 distintos de 8
      repite seguido: 3 de 114; curas castigadas: 11 de 15
 
 ## semilla 3, normal
-eldric              480 s, vida  59.0%: 117 ataques (14.6/min), 9 distintos de 8
-       23  attack_1
-       22  attack_4
-       19  attack_3
+eldric              480 s, vida  62.7%: 130 ataques (16.2/min), 9 distintos de 8
+       30  attack_1
+       25  attack_4
+       20  attack_3
+       18  attack_2
        17  leap
        17  air
-       16  attack_2
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 2 de 116; curas castigadas: 7 de 17; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 38
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 38
+     repite seguido: 0 de 129; curas castigadas: 7 de 11; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 43
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 43
 
 ## semilla 3, demencial
-eldric              480 s, vida  63.0%: 147 ataques (18.4/min), 9 distintos de 8
-       32  attack_1
-       26  attack_3
-       22  leap
-       22  air
-       22  attack_4
-       20  attack_2
+eldric              480 s, vida  63.4%: 176 ataques (22.0/min), 9 distintos de 8
+       46  attack_1
+       33  attack_4
+       30  attack_3
+       22  attack_2
+       21  leap
+       21  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 1 de 146; curas castigadas: 7 de 15; combos: 11; pasos atrás: 11
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 42
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 42
+     repite seguido: 3 de 175; curas castigadas: 6 de 11; combos: 17
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 55
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 55
 
 ## semilla 11, normal
-eldric              480 s, vida  57.0%: 97 ataques (12.1/min), 9 distintos de 8
-       20  attack_1
-       18  attack_4
-       16  attack_3
-       14  leap
-       14  air
-       12  attack_2
+eldric              480 s, vida  61.0%: 114 ataques (14.2/min), 9 distintos de 8
+       30  attack_1
+       23  attack_4
+       19  attack_3
+       13  leap
+       13  air
+       13  attack_2
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 0 de 96; curas castigadas: 3 de 13; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 30
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 30
+     repite seguido: 1 de 113; curas castigadas: 7 de 13; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 36
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 36
 
 ## semilla 11, dificil
-eldric              480 s, vida  59.8%: 129 ataques (16.1/min), 9 distintos de 8
-       25  attack_1
-       22  attack_4
-       21  attack_3
-       20  attack_2
-       19  leap
-       19  air
+eldric              480 s, vida  59.3%: 152 ataques (19.0/min), 9 distintos de 8
+       36  attack_1
+       30  attack_4
+       25  attack_2
+       24  attack_3
+       17  leap
+       17  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 0 de 128; curas castigadas: 3 de 14; combos: 8; pasos atrás: 12
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 42
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 42
+     repite seguido: 1 de 151; curas castigadas: 4 de 13; combos: 16
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 55
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 55

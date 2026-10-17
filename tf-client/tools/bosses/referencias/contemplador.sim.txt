@@ -26,7 +26,7 @@ contemplador        480 s, vida  66.5%: 603 ataques (75.4/min), 10 distintos de 
        40  bite
         1  overlay_anim
      sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
-     repite seguido: 31 de 602; curas castigadas: 7 de 16; combos: 0; pasos atrás: 0
+     repite seguido: 31 de 602; curas castigadas: 7 de 16; combos: 0
 
 ## semilla 3, demencial
 contemplador        480 s, vida  75.6%: 597 ataques (74.6/min), 10 distintos de 17
@@ -41,7 +41,7 @@ contemplador        480 s, vida  75.6%: 597 ataques (74.6/min), 10 distintos de 
        40  hit_3
         1  overlay_anim
      sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
-     repite seguido: 47 de 596; curas castigadas: 6 de 16; combos: 6; pasos atrás: 0
+     repite seguido: 47 de 596; curas castigadas: 6 de 16; combos: 6
 
 ## semilla 11, normal
 contemplador        480 s, vida  65.9%: 529 ataques (66.1/min), 10 distintos de 17
@@ -56,7 +56,7 @@ contemplador        480 s, vida  65.9%: 529 ataques (66.1/min), 10 distintos de 
        41  bite
         1  overlay_anim
      sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
-     repite seguido: 31 de 528; curas castigadas: 6 de 17; combos: 0; pasos atrás: 0
+     repite seguido: 31 de 528; curas castigadas: 6 de 17; combos: 0
 
 ## semilla 11, dificil
 contemplador        480 s, vida  65.5%: 640 ataques (80.0/min), 10 distintos de 17
@@ -71,4 +71,4 @@ contemplador        480 s, vida  65.5%: 640 ataques (80.0/min), 10 distintos de 
        47  bite
         1  overlay_anim
      sin salir: death, evade_left, evade_right, hit_<random.1to3>, laser_dance, remove_tentacle, tentacle_1_remove, tentacle_2_remove, tentacle_3_remove, tentacle_4_remove, tentacle_5_remove
-     repite seguido: 29 de 639; curas castigadas: 6 de 13; combos: 3; pasos atrás: 0
+     repite seguido: 29 de 639; curas castigadas: 6 de 13; combos: 3

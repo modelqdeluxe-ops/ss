@@ -11,6 +11,8 @@
   Antes de publicar un jefe: `python3 tools/bosses/audit.py` con **0 problemas** (y sus avisos leídos),
   `audit.py --prueba` (el auditor ve todos los errores metidos a propósito), `test_convert.py` «todo bien»,
   `sim_physics.py` en los modelos con colas/segmentos/física y `sim_ai.py` sin cambios inesperados en los demás jefes.
+  Si tocas la IA, el movimiento, las grietas o lo que se ve: **prueba en el juego tú mismo** con `[prueba-jefes]` en
+  el commit (`tf-client/JEFES.md` §3.10) y lee el informe y las capturas de la rama `pruebas-jefes`; no se la pidas al dueño.
   ModelEngine 4 completo está en `tf-client/JEFES.md` §3.6, el servidor (Mohist) en §10 y lo que falta (con un
   prompt para seguir) en §11. Si un pack usa algo que
   el motor no tiene, se implementa con la semántica de MythicMobs/ModelEngine (y en `sim_ai.py`); nunca se quita del

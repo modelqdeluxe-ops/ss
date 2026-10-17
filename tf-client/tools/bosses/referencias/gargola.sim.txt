@@ -8,37 +8,37 @@ gargola             480 s, vida  49.4%: 149 ataques (18.6/min), 5 distintos de 5
      repite seguido: 7 de 148; curas castigadas: 8 de 12
 
 ## semilla 3, normal
-gargola             480 s, vida  57.9%: 166 ataques (20.8/min), 5 distintos de 5
-       64  attack_1
-       57  attack_2
-       36  attack_3
-        8  swoop_back
+gargola             480 s, vida  56.6%: 165 ataques (20.6/min), 5 distintos de 5
+       62  attack_1
+       51  attack_2
+       37  attack_3
+       14  swoop_back
         1  awaken
-     repite seguido: 3 de 165; curas castigadas: 4 de 14; combos: 0; pasos atrás: 0
+     repite seguido: 3 de 164; curas castigadas: 9 de 14; combos: 0
 
 ## semilla 3, demencial
-gargola             480 s, vida  68.3%: 225 ataques (28.1/min), 5 distintos de 5
-       97  attack_1
-       78  attack_2
-       47  attack_3
-        2  swoop_back
+gargola             480 s, vida  60.9%: 228 ataques (28.5/min), 5 distintos de 5
+       93  attack_1
+       67  attack_2
+       55  attack_3
+       12  swoop_back
         1  awaken
-     repite seguido: 6 de 224; curas castigadas: 11 de 16; combos: 2; pasos atrás: 8
+     repite seguido: 9 de 227; curas castigadas: 9 de 12; combos: 10
 
 ## semilla 11, normal
-gargola             480 s, vida  57.8%: 168 ataques (21.0/min), 5 distintos de 5
-       66  attack_1
-       56  attack_2
-       36  attack_3
-        9  swoop_back
+gargola             480 s, vida  58.8%: 168 ataques (21.0/min), 5 distintos de 5
+       63  attack_1
+       50  attack_2
+       42  attack_3
+       12  swoop_back
         1  awaken
-     repite seguido: 2 de 167; curas castigadas: 4 de 10; combos: 0; pasos atrás: 0
+     repite seguido: 2 de 167; curas castigadas: 7 de 14; combos: 0
 
 ## semilla 11, dificil
-gargola             480 s, vida  64.4%: 189 ataques (23.6/min), 5 distintos de 5
-       77  attack_1
-       64  attack_2
-       44  attack_3
-        3  swoop_back
+gargola             480 s, vida  59.8%: 189 ataques (23.6/min), 5 distintos de 5
+       76  attack_1
+       62  attack_2
+       39  attack_3
+       11  swoop_back
         1  awaken
-     repite seguido: 3 de 188; curas castigadas: 9 de 14; combos: 18; pasos atrás: 7
+     repite seguido: 4 de 188; curas castigadas: 6 de 16; combos: 24
