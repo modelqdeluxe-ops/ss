@@ -394,6 +394,7 @@ public final class SkillMobs {
 
     /** Cada tick del mob (en el servidor). */
     public static void tick(Host h) {
+        if (h.mob().isRemoved()) return; // ya olvidado (removed): no volver a nacer
         State s = state(h);
         if (!s.spawned) spawned(h);
         if (h.dying()) {

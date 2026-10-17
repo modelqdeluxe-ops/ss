@@ -1038,6 +1038,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void tick() {
         load();
         super.tick();
+        // Se ha quitado en este mismo tick (acabó su muerte): nada más. Si no, SkillMobs.tick rehacía su estado como si
+        // acabara de nacer y volvía a lanzar su ~onSpawn (el Esqueleto dejaba un trono nuevo cada vez que moría).
+        if (isRemoved()) return;
         age++;
         if (level().isClientSide) {
             // El cuerpo mira a donde dice el servidor (suave)
