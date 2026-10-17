@@ -28,7 +28,7 @@ guardian_hueco      480 s, vida  62.1%: 79 ataques (9.9/min), 12 distintos de 12
         4  attack_right_1
         1  awaken
         1  stun
-     repite seguido: 0 de 78; curas castigadas: 6 de 15; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 78; curas castigadas: 6 de 15; combos: 0
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 15
 
 ## semilla 3, demencial
@@ -45,7 +45,7 @@ guardian_hueco      480 s, vida  65.5%: 100 ataques (12.5/min), 12 distintos de 
         3  attack_left_1
         1  awaken
         1  stun
-     repite seguido: 0 de 99; curas castigadas: 6 de 14; combos: 18; pasos atrás: 0
+     repite seguido: 0 de 99; curas castigadas: 6 de 14; combos: 18
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 10
 
 ## semilla 11, normal
@@ -62,7 +62,7 @@ guardian_hueco      480 s, vida  64.7%: 80 ataques (10.0/min), 12 distintos de 1
         3  attack_left_1
         1  awaken
         1  stun
-     repite seguido: 0 de 79; curas castigadas: 6 de 13; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 79; curas castigadas: 6 de 13; combos: 0
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 8
 
 ## semilla 11, dificil
@@ -79,5 +79,5 @@ guardian_hueco      480 s, vida  65.1%: 94 ataques (11.8/min), 12 distintos de 1
         3  attack_right_1
         1  awaken
         1  stun
-     repite seguido: 0 de 93; curas castigadas: 2 de 15; combos: 13; pasos atrás: 0
+     repite seguido: 0 de 93; curas castigadas: 2 de 15; combos: 13
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 13

@@ -16,7 +16,7 @@ arconte_astral      480 s, vida  60.7%: 100 ataques (12.5/min), 5 distintos de 5
        18  cast_4
         1  ring_spin
      sin salir: vibrant
-     repite seguido: 0 de 99; curas castigadas: 7 de 16; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 99; curas castigadas: 7 de 16; combos: 0
 
 ## semilla 3, demencial
 arconte_astral      480 s, vida  53.7%: 126 ataques (15.8/min), 5 distintos de 5
@@ -26,7 +26,7 @@ arconte_astral      480 s, vida  53.7%: 126 ataques (15.8/min), 5 distintos de 5
        22  cast_4
         1  ring_spin
      sin salir: vibrant
-     repite seguido: 1 de 125; curas castigadas: 11 de 17; combos: 0; pasos atrás: 0
+     repite seguido: 1 de 125; curas castigadas: 11 de 17; combos: 0
 
 ## semilla 11, normal
 arconte_astral      480 s, vida  65.5%: 102 ataques (12.8/min), 5 distintos de 5
@@ -36,7 +36,7 @@ arconte_astral      480 s, vida  65.5%: 102 ataques (12.8/min), 5 distintos de 5
        15  cast_4
         1  ring_spin
      sin salir: vibrant
-     repite seguido: 0 de 101; curas castigadas: 7 de 17; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 101; curas castigadas: 7 de 17; combos: 0
 
 ## semilla 11, dificil
 arconte_astral      480 s, vida  62.0%: 108 ataques (13.5/min), 5 distintos de 5
@@ -46,4 +46,4 @@ arconte_astral      480 s, vida  62.0%: 108 ataques (13.5/min), 5 distintos de 5
        17  cast_4
         1  ring_spin
      sin salir: vibrant
-     repite seguido: 0 de 107; curas castigadas: 5 de 15; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 107; curas castigadas: 5 de 15; combos: 0

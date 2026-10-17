@@ -11,53 +11,53 @@ piglin_mecha        480 s, vida  46.5%: 121 ataques (15.1/min), 7 distintos de 1
      repite seguido: 0 de 120; curas castigadas: 4 de 10
 
 ## semilla 3, normal
-piglin_mecha        480 s, vida  51.0%: 105 ataques (13.1/min), 6 distintos de 11
+piglin_mecha        480 s, vida  60.4%: 100 ataques (12.5/min), 6 distintos de 11
        24  slam_front
-       24  slam_front_2
+       22  slam_front_2
        21  swing_1
-       20  spin_attack_short
-       15  swing_2
+       19  spin_attack_short
+       13  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 104; curas castigadas: 0 de 16; combos: 0; pasos atrás: 33
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 104
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 104
+     repite seguido: 0 de 99; curas castigadas: 0 de 13; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 99
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 99
 
 ## semilla 3, demencial
-piglin_mecha        480 s, vida  65.0%: 137 ataques (17.1/min), 6 distintos de 11
-       31  slam_front
-       31  slam_front_2
-       30  swing_2
+piglin_mecha        480 s, vida  63.7%: 142 ataques (17.8/min), 6 distintos de 11
+       34  slam_front
+       33  slam_front_2
        28  spin_attack_short
-       16  swing_1
+       24  swing_2
+       22  swing_1
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 136; curas castigadas: 0 de 15; combos: 83; pasos atrás: 37
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 136
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 136
+     repite seguido: 0 de 141; curas castigadas: 0 de 15; combos: 68
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 141
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 141
 
 ## semilla 11, normal
-piglin_mecha        480 s, vida  59.0%: 107 ataques (13.4/min), 6 distintos de 11
-       25  slam_front_2
-       24  slam_front
-       20  spin_attack_short
-       19  swing_1
+piglin_mecha        480 s, vida  63.6%: 100 ataques (12.5/min), 6 distintos de 11
+       25  slam_front
+       24  slam_front_2
+       19  spin_attack_short
+       17  swing_2
+       14  swing_1
+        1  passive_layer
+     sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
+     repite seguido: 0 de 99; curas castigadas: 0 de 13; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 99
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 99
+
+## semilla 11, dificil
+piglin_mecha        480 s, vida  57.8%: 117 ataques (14.6/min), 6 distintos de 11
+       27  slam_front_2
+       25  slam_front
+       24  spin_attack_short
+       22  swing_1
        18  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 106; curas castigadas: 0 de 14; combos: 0; pasos atrás: 39
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 106
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 106
-
-## semilla 11, dificil
-piglin_mecha        480 s, vida  60.3%: 100 ataques (12.5/min), 6 distintos de 11
-       22  spin_attack_short
-       22  slam_front_2
-       21  slam_front
-       20  swing_1
-       14  swing_2
-        1  passive_layer
-     sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 99; curas castigadas: 0 de 15; combos: 34; pasos atrás: 28
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 99
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 99
+     repite seguido: 0 de 116; curas castigadas: 0 de 16; combos: 44
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 116
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 116

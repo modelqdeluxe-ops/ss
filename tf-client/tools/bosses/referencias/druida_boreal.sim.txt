@@ -8,37 +8,37 @@ druida_boreal       480 s, vida  46.6%: 148 ataques (18.5/min), 4 distintos de 1
      repite seguido: 40 de 147; curas castigadas: 8 de 12
 
 ## semilla 3, normal
-druida_boreal       480 s, vida  66.3%: 184 ataques (23.0/min), 4 distintos de 10
-       70  staff_slam
-       60  cast_quick_2
-       53  cast_quick_1
+druida_boreal       480 s, vida  61.2%: 194 ataques (24.2/min), 4 distintos de 10
+       74  staff_slam
+       68  cast_quick_2
+       51  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 26 de 183; curas castigadas: 9 de 13; combos: 0; pasos atrás: 49
+     repite seguido: 19 de 193; curas castigadas: 7 de 13; combos: 0
 
 ## semilla 3, demencial
-druida_boreal       480 s, vida  66.9%: 284 ataques (35.5/min), 4 distintos de 10
-       99  cast_quick_2
-       99  staff_slam
-       85  cast_quick_1
+druida_boreal       480 s, vida  63.7%: 262 ataques (32.8/min), 4 distintos de 10
+      103  staff_slam
+       88  cast_quick_2
+       70  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 30 de 283; curas castigadas: 13 de 15; combos: 32; pasos atrás: 48
+     repite seguido: 36 de 261; curas castigadas: 11 de 17; combos: 32
 
 ## semilla 11, normal
-druida_boreal       480 s, vida  61.7%: 188 ataques (23.5/min), 4 distintos de 10
-       82  staff_slam
-       64  cast_quick_2
-       41  cast_quick_1
+druida_boreal       480 s, vida  58.4%: 189 ataques (23.6/min), 4 distintos de 10
+       78  staff_slam
+       58  cast_quick_2
+       52  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 39 de 187; curas castigadas: 7 de 14; combos: 0; pasos atrás: 46
+     repite seguido: 28 de 188; curas castigadas: 5 de 12; combos: 0
 
 ## semilla 11, dificil
-druida_boreal       480 s, vida  60.8%: 215 ataques (26.9/min), 4 distintos de 10
-       91  staff_slam
-       70  cast_quick_2
-       53  cast_quick_1
+druida_boreal       480 s, vida  63.0%: 211 ataques (26.4/min), 4 distintos de 10
+       80  staff_slam
+       72  cast_quick_2
+       58  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 30 de 214; curas castigadas: 5 de 15; combos: 20; pasos atrás: 49
+     repite seguido: 24 de 210; curas castigadas: 8 de 16; combos: 15

@@ -138,8 +138,8 @@ Cada mob del jefe es un `MobDef` con `entity`, `speed`, `typeSpeed`, `chases`, `
   - lanza `~onDamaged` con el **daño del golpe**, no con lo que le quitó (con Resistencia V, eso sería 0).
 - **`customServerAiStep()`:** elige objetivo (`pickTarget`), le persigue con navegación hasta casi tocarlo (su cuerpo
   + 1 bloque) y aplica el plan del cerebro (§4.3): ponerse a la distancia de lo que va a hacer, apartarse si se le
-  pegan más de lo que sus ataques permiten (con paso atrás, `backstep`) y rodear. La correa con su grieta es de 40
-  bloques.
+  pegan más de lo que sus ataques permiten (desde la 1.3.84 se queda quieto: sin paso atrás) y rodear. La correa con
+  su grieta es de 40 bloques (§3.10).
 - **`tempo()`** = velocidad de la dificultad × (1 + 0,12 × inteligencia): Fácil 0,93, Normal 1,07, Difícil 1,18,
   Pesadilla 1,29, Demencial 1,4. Ver §3.3.
 - **`turnBody()`:** el giro, como ModelEngine.
@@ -490,13 +490,16 @@ Lo que encontró y se arregló:
 | Síntoma | Causa | Arreglo |
 |---|---|---|
 | «Aparecen, se van, reaparecen» | Con el jugador lejos de las entidades que tickean, la grieta veía «no tickea» y se reiniciaba al instante, quitando al jefe. | `Rifts`: los chunks de la arena (7×7) se **fuerzan** mientras despierta o hay pelea (`setChunkForced`, se sueltan al acabar, al quitar la grieta y al arrancar/parar el servidor); sin tick solo se reinicia tras `EMPTY_TICKS` sin nadie cerca. |
-| «Corren en retroceso» | (a) La 1.3.83 hacía retroceder mirando al jugador y el cerebro le apartaba andando; (b) el cuerpo giraba 20°/tick y Minecraft le mueve hacia su yRot, que gira 90°/tick: al cambiar de dirección andaba de espaldas; (c) al pararse solo se paraba la navegación y el MoveControl (los jefes grandes van derechos) le seguía llevando al último punto mientras el cuerpo ya miraba al jugador (el Druida, ~13 ticks de espaldas cada vez). | Sin retroceder andando (solo el salto atrás de `backstep`, mirándole); el cuerpo gira hasta 90°/tick andando (`turnBody`, `sim_ai`); al pararse, `BossEntity.halt` para también el MoveControl. Para un golpe por delante, el cerebro le **planta 3 ticks** a girarse (`BossEntity.face` → `faceHold`; si no, andar le volvía a girar). |
+| «Corren en retroceso» | (a) La 1.3.83 hacía retroceder mirando al jugador y el cerebro le apartaba andando; (b) el cuerpo giraba 20°/tick y Minecraft le mueve hacia su yRot, que gira 90°/tick: al cambiar de dirección andaba de espaldas; (c) al pararse solo se paraba la navegación y el MoveControl (los jefes grandes van derechos) le seguía llevando al último punto mientras el cuerpo ya miraba al jugador (el Druida, ~13 ticks de espaldas cada vez). | Sin retroceder andando ni el salto atrás (`backstep`, que resbalaba ~13 ticks a 0,8 b/t con la animación de andar: el Druida a 12 bloques; no es de MythicMobs): demasiado cerca, se queda quieto; el cuerpo gira hasta 90°/tick andando (`turnBody`, `sim_ai`); al pararse, `BossEntity.halt` para también el MoveControl. Para un golpe por delante, el cerebro le **planta 3 ticks** a girarse (`BossEntity.face` → `faceHold`; si no, andar le volvía a girar). |
 | «No me hacen caso» | La correa soltaba al objetivo en cuanto el jefe pasaba de 40 bloques de su grieta (una carga, un salto) y se iba dándole la espalda. | Si su objetivo sigue en la arena, le sigue persiguiendo; si el jefe acaba a más de 64, vuelve a la grieta con partículas de portal. |
 | «Se van volando lejos» | Ignevar: `velocity{relative}` y `spinentity` usaban el yRot de Minecraft, que en los jefes no se mueve (volaba de espaldas). Contemplador/Arconte: el vuelo al azar del ghast no tenía límite, y `altitude{a=<6}` miraba solo 8 bloques hacia abajo, así que el Contemplador subía sin parar (61 bloques). | `Who.yaw()` en esas mecánicas; el ghast flota alrededor de su objetivo (o grieta) a 3-10 bloques; `altitude` mide sobre el primer suelo de debajo, sin límite, como MythicMobs (`SkillConds.floorBelow`). |
 | «Texturas bugueadas» | En las capturas los modelos salen bien; el cuadrado blanco grande junto al Contemplador es la partícula `flash` de Minecraft que lanza su pack (el destello de los cohetes), y lo naranja es el jugador ardiendo por su láser. | Nada (fiel al pack). |
 
 La Tormenta del Wither es NoAI (no tiene objetivo; ataca con `@PIR`): su mordisco solo sale cuando el rayo tractor te
-arrastra a menos de 10 bloques de una cabeza; sus otros ataques, por debajo del 75 % y del 50 % de vida.
+arrastra a menos de 10 bloques de una cabeza; sus otros ataques, por debajo del 75 % y del 50 % de vida. **Sus tres
+cabezas no salían nunca**: el pack las ata con `bindhitbox{p=ob_head_1_hitbox}` y el conversor guarda el hueso sin la
+etiqueta (`head_1_hitbox`); `VfxModel.bone` ahora también busca el nombre sin su etiqueta (como ya hacía al revés).
+Lo mismo pasaba con `hitboxconfig{pass}` (guardaba la caja con `ob_` y la buscaba sin él).
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
@@ -590,7 +593,7 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 | Qué | Dónde | Cómo |
 |---|---|---|
 | Plan de movimiento (inteligencia ≥ 0,4) | `SkillBrain.plan` | Devuelve {distancia que busca, rodear, distancia mínima, máxima}. Elige un ataque **de su fase y su postura** (`possible`: su umbral de vida y las condiciones del pack que no son de distancia ni de gcd, como el escudo arriba o abajo del Esqueleto) que tendrá listo pronto y que **hace más que no usa**: así rota todo el repertorio. Se pone a su distancia ideal (`sweet`); lo cambia cada 3–6 s o al usarlo. Antes podía «pensar» en un ataque de otra fase (la plaga de la Abominación, < 50 %) y quedarse quieto. |
-| Apartarse y paso atrás | `BossEntity.customServerAiStep`, `backstep` | Si no le sale nada y el jugador está más cerca que el mínimo del ataque pensado, se aparta; con inteligencia ≥ 0,6 y 0,8 bloques por dentro, da un **salto atrás** (0,8 horizontal + 0,3 arriba; cada 3,5–6,5 s). Con poca inteligencia (< 0,4), solo no se pega más que el alcance mínimo de sus ataques. La Abominación pide 3 bloques o más en todos sus ataques: pegado a ella se quedaba gritando. |
+| Demasiado cerca | `BossEntity.customServerAiStep` | Si el jugador está más cerca que el mínimo del ataque pensado, **se queda quieto** (no se pega más) hasta que algo salga o el jugador se aparte. Hasta la 1.3.83 se apartaba andando y hasta la 1.3.84 daba un salto atrás (`backstep`): en el juego se veía correr hacia atrás (§3.10), y MythicMobs no lo hace. |
 | Rodear (inteligencia ≥ 0,6) | `BossEntity.customServerAiStep` | Si no tiene ningún ataque posible, **le rodea** (cambia de lado cada 2–4,5 s). Si está demasiado cerca para lo que quiere hacer, se aparta. |
 | Seguir al atacar (inteligencia ≥ 0,4) | `SkillBrain.tracking` | Mientras ataca (`attacking`: gcd o lo que dura el ataque), se gira hacia el jugador a 2 + 8 × inteligencia grados por tick hasta que `lockmodel` lo congela. |
 | Girarse parado | `BossEntity.turnBody` | `rde`/`rdu` del pack, acortados con la inteligencia (§3.1). |
@@ -604,7 +607,7 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 - **Los pesos:** están en `SkillBrain.score`. Si se tocan, se tocan **igual** en `tools/bosses/sim_ai.py`
   (`Brain.score`), que es una copia en Python (también `plan`, `chain`, `attacking`, `possible` y el tempo).
 - **Comprobarlo:** `python3 tools/bosses/sim_ai.py --min 8 --dif demencial` (o `--smart X`). Muestra los ataques por
-  minuto, cuántos distintos, cuántos repite seguidos, cuántas curas castiga, los combos y los pasos atrás.
+  minuto, cuántos distintos, cuántos repite seguidos, cuántas curas castiga, los combos (los pasos atrás, hasta la 1.3.84).
 - **Si un jefe nuevo no usa un ataque:** con `-v` mira sus etiquetas y su alcance.
   - Si el alcance sale 0–40, el pack no pone distancia; el cerebro lo trata como «a cualquier distancia».
   - Si no aparece, el cerebro no lo ve como ofensivo y sigue el camino del pack.
@@ -703,7 +706,7 @@ los jefes» de `tf-client.yml`, con Python 3.13): si algo cambia a un jefe ya pu
 
 | Comando | Para qué |
 |---|---|
-| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia, `--antes` reproduce el motor de la 1.3.75 y `--sin-alcance` el cerebro de la 1.3.82 (sin mirar hasta dónde llega cada golpe ni girarse antes) para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos, los pasos atrás y, desde la 1.3.83, los golpes lanzados fuera de su alcance («al aire») y los golpes por delante lanzados sin mirarle. Con `-v`, cada ataque y cada combo. |
+| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia, `--antes` reproduce el motor de la 1.3.75 y `--sin-alcance` el cerebro de la 1.3.82 (sin mirar hasta dónde llega cada golpe ni girarse antes) para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y, desde la 1.3.83, los golpes lanzados fuera de su alcance («al aire») y los golpes por delante lanzados sin mirarle. Con `-v`, cada ataque y cada combo. |
 | `python3 tools/bosses/audit.py [jefe ...] [--sin-avisos]` | El auditor (también al final de `build_bosses.py`). Tiene que dar **0 problemas** en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`, los `run(h, "...")` de `SkillMobs` (disparadores) y qué `case` no hacen nada. Los **avisos** (`·`) no cuentan pero dicen lo que no se verá igual (hoy: `segment`, las capas y colas rígidas). |
 | `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo (20 errores en la 1.3.81 —con un disparador del tipo de mob que no se copia y una correa en un hueso que no es `l_`—; 16 en la 1.3.80, también de modelos: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota). Antes: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
 | `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.81: mecánicas 198/235 (faltan las que cambian el mundo o el inventario, dueño/montura y `disguise`: §11.3), condiciones 88/88, objetivos 47/47, disparadores 22/39 (faltan los del tipo de mob, regiones y cinemáticas). En la 1.3.79: 110/192, 81/88, 42/47, 11/26. |
@@ -783,7 +786,7 @@ hazla tú antes de publicar un cambio de IA o de movimiento, no se la pidas al d
 | «Es tonto / muy predecible» | La inteligencia de su dificultad; los pesos del cerebro | `/tf boss` (fila Inteligencia), `SkillBrain.score` |
 | «Va demasiado rápido / corta animaciones» | El ritmo o la furia; el tempo; un combo que corta | `Difficulty.rhythm`, `BossEntity.rhythm`/`tempo`, `SkillBrain.chain` (`noCancel`) |
 | «Lento al girar» | `bodyrotation{rde;rdu}` del pack | `BossEntity.turnBody` (se acortan con la inteligencia) |
-| «Se queda quieto delante de mí / gritando» | Sus ataques piden más distancia que a la que se pone; un `~onEnterCombat` que se repite | `SkillBrain.plan` (mínimo, `possible`), `BossEntity.backstep`, `SkillMobs.tick` |
+| «Se queda quieto delante de mí / gritando» | Sus ataques piden más distancia que a la que se pone; un `~onEnterCombat` que se repite | `SkillBrain.plan` (mínimo, `possible`), `SkillMobs.tick` |
 | «Solo me tira 2 ataques» | La fase del pack (el Esqueleto, con el escudo arriba, solo tiene golpe y aplastamiento de escudo de cerca: hay que romperlo o ir a por su espalda); o el plan no rota | `sim_ai.py <id> -v`, `SkillBrain.plan` |
 | «Tira algo que no hace nada / cae al suelo» | El objetivo del proyectil (sus propios esbirros), hacia dónde apunta, la inercia | `SkillTargets.entities`, `SkillMovers.projectile` |
 | «Es inmortal / no le baja la vida» | Un `cancelevent`/`modifydamage` en `~onDamaged` (fase invulnerable del pack), `setinvulnerable` sin quitar | `sim_ai.py <id>` («golpes anulados por el pack»), `BossEntity.hurt` |
@@ -806,8 +809,8 @@ hazla tú antes de publicar un cambio de IA o de movimiento, no se la pidas al d
 
 - **Fintas y ataques retrasados de verdad:** ralentizar el principio de una animación y retrasar a la vez sus golpes.
   Hoy solo «se lo piensa» antes de empezar.
-- **Esquivas** cuando el jugador carga un golpe fuerte. Hoy hay paso atrás (`backstep`) solo para hacer sitio, sin
-  animación propia: los packs no la traen, salvo el `swoop_back` de la Gárgola.
+- **Esquivas** cuando el jugador carga un golpe fuerte. No hay (el paso atrás `backstep` se quitó en la 1.3.84: sin
+  animación propia resbalaba hacia atrás andando); los packs no la traen, salvo el `swoop_back` de la Gárgola.
 - **Combos en los packs sin gcd** (Abominación, Astwood): marcan «atacando» con variables; habría que saber qué
   variable es de cada ataque para poder cortarlo.
 - **Memoria entre peleas:** qué ataques esquiva cada jugador, guardado por grieta.

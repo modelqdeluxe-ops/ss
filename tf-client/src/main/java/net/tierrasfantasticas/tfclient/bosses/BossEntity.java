@@ -81,7 +81,6 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int rotDelay, rotDuration;
     private int turnWait;
     private int blendUntil;
-    private int nextBackstep;
     /** Hasta cuándo se queda plantado girándose hacia el jugador para un golpe por delante (SkillBrain). */
     private int faceHold;
     private float bodyYaw;
@@ -438,19 +437,6 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (m.length > 7 && (m[7] > 0) != ai) setAi(m[7] > 0);
     }
 
-    /** Un salto corto hacia atrás (hacer sitio para su siguiente ataque, como los jefes de los Souls). */
-    @Override
-    public boolean backstep(Vec3 away) {
-        if (!onGround() || age < nextBackstep || locked || !ai || dying()) return false;
-        Vec3 d = new Vec3(away.x, 0, away.z);
-        if (d.lengthSqr() < 1e-4) return false;
-        d = d.normalize().scale(0.8);
-        setDeltaMovement(d.x, 0.3, d.z);
-        hurtMarked = true;
-        nextBackstep = age + 70 + getRandom().nextInt(60);
-        return true;
-    }
-
     @Override
     public double healthScale() {
         return healthScale;
@@ -586,7 +572,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void hitboxPass(String part, double pass) {
         if (part == null || part.isEmpty()) return;
-        partPass.put(part.toLowerCase(java.util.Locale.ROOT), Math.max(0, pass));
+        // Sin la etiqueta (ob_/b_), como el hueso del modelo convertido (con ella no casaba nunca)
+        partPass.put(part.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""), Math.max(0, pass));
     }
 
     @Override
@@ -872,7 +859,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // hitboxconfig{pass} de esa caja (el hueso ob_/b_ que la pone, en su modelo tal como está ahora)
         if (!partPass.isEmpty()) {
             String bone = SkillMobs.partBone(this, part.index());
-            Double pass = bone == null ? null : partPass.get(bone.toLowerCase(java.util.Locale.ROOT));
+            Double pass = bone == null ? null : partPass.get(bone.toLowerCase(java.util.Locale.ROOT).replaceFirst("^(ob|b)_", ""));
             if (pass != null) {
                 if (pass <= 0) return false;
                 amount *= pass.floatValue();
@@ -1138,10 +1125,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 double d = Math.sqrt(horizontalDistanceSqr(target.position()));
                 Vec3 rel = position().subtract(target.position()).multiply(1, 0, 1);
                 if (d < min - 0.2 && rel.lengthSqr() > 1e-4 && !SkillMobs.attacking(this)) {
-                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más):
-                    // un salto atrás mirándole. Antes además se daba la vuelta y se alejaba andando 4 bloques: en el juego
-                    // se veía darle la espalda y correr «hacia atrás» (1.3.83, prueba en el juego)
-                    if (difficulty.smart() >= 0.4 && d < min - 0.8) backstep(rel);
+                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más): se
+                    // queda donde está, como un mob de MythicMobs, hasta que su ataque salga o el jugador se aparte. (Hasta
+                    // la 1.3.84 daba un salto atrás de 0,8 b/t, y antes se alejaba andando: en el juego se veía resbalar
+                    // hacia atrás ~13 ticks con la animación de andar —el Druida, a 12 bloques—: «corren en retroceso»)
                     goal = null;
                 } else if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
                     // Rodear: un punto 25° más allá alrededor del objetivo, a la distancia que busca

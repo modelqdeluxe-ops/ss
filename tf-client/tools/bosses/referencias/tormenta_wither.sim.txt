@@ -23,7 +23,7 @@ tormenta_wither     480 s, vida  63.0%: 64 ataques (8.0/min), 7 distintos de 15
         6  head_3_tractor_beam
         1  wither_storm_spin_layer
      sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
-     repite seguido: 0 de 63; curas castigadas: 3 de 14; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 63; curas castigadas: 3 de 14; combos: 0
 
 ## semilla 3, demencial
 tormenta_wither     480 s, vida  62.7%: 64 ataques (8.0/min), 7 distintos de 15
@@ -35,7 +35,7 @@ tormenta_wither     480 s, vida  62.7%: 64 ataques (8.0/min), 7 distintos de 15
         8  head_1_tractor_beam
         1  wither_storm_spin_layer
      sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
-     repite seguido: 0 de 63; curas castigadas: 3 de 12; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 63; curas castigadas: 3 de 12; combos: 0
 
 ## semilla 11, normal
 tormenta_wither     480 s, vida  66.3%: 60 ataques (7.5/min), 7 distintos de 15
@@ -47,7 +47,7 @@ tormenta_wither     480 s, vida  66.3%: 60 ataques (7.5/min), 7 distintos de 15
         4  head_2_tractor_beam
         1  wither_storm_spin_layer
      sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
-     repite seguido: 0 de 59; curas castigadas: 3 de 18; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 59; curas castigadas: 3 de 18; combos: 0
 
 ## semilla 11, dificil
 tormenta_wither     480 s, vida  62.4%: 63 ataques (7.9/min), 7 distintos de 15
@@ -59,4 +59,4 @@ tormenta_wither     480 s, vida  62.4%: 63 ataques (7.9/min), 7 distintos de 15
         8  head_1_tractor_beam
         1  wither_storm_spin_layer
      sin salir: head_1_projectile, head_1_tractor_bite, head_1_tractor_interrupt, head_2_projectile, head_2_tractor_bite, head_2_tractor_interrupt, head_3_projectile, head_3_tractor_bite, head_3_tractor_interrupt
-     repite seguido: 0 de 62; curas castigadas: 3 de 16; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 62; curas castigadas: 3 de 16; combos: 0

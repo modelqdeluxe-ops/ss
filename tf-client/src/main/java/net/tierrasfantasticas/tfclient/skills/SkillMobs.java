@@ -130,11 +130,6 @@ public final class SkillMobs {
         default void blend(int ticks) {
         }
 
-        /** Un paso atrás rápido (el cerebro: necesita sitio para su siguiente ataque). false si no puede ahora. */
-        default boolean backstep(Vec3 away) {
-            return false;
-        }
-
         // --- Lo que piden las mecánicas de MythicMobs de los jefes (threat, setinvulnerable, goto, setmaxhealth...)
 
         /** ¿Tiene la IA puesta? (condición hasai) */

@@ -71,8 +71,12 @@ subía a 61 bloques (vuelo de ghast sin límite y `altitude` que miraba solo 8 b
 el jefe se **planta a girarse**. Las «texturas bugueadas» de las capturas eran la partícula `flash` del Contemplador y
 los cubos de lava de Ignevar (del pack). En la prueba completa: los 17 salen una vez, objetivo el 100 % (menos el Mega
 Guardián, 87 %, que es un Warden, y la Tormenta del Wither, NoAI), 0 barras tras morir, 0 objetos, 0 errores.
-Referencias del simulador rehechas (abominacion, astwood, eldric, esqueleto_torre, kazk, piglin_mecha, rey_calabaza:
-el giro a 90°/tick y plantarse a girarse). Lo pendiente sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
+Las **tres cabezas de la Tormenta del Wither no salían** (el pack pide `ob_head_1_hitbox` y el hueso convertido es
+`head_1_hitbox`: `VfxModel.bone` busca ahora también sin la etiqueta), así que nunca mordía. Quitado el **salto atrás** del cerebro (`backstep`, no es de MythicMobs): resbalaba ~13 ticks hacia atrás con la
+animación de andar (el Druida, cada vez que el jugador estaba más cerca de lo que piden sus hechizos); ahora, demasiado
+cerca, se queda quieto. Referencias del simulador rehechas para **todos** los jefes por eso (cambia la secuencia al
+azar; sin la línea «pasos atrás»): golpes al aire 20 → 10 en total (Astwood 9 → 5, Esqueleto 11 → 5), sin mirarle
+1 → 2 (Abominación), ataques casi iguales (Mega Guardián 644 → 764: ya no pierde tiempo saltando). Lo pendiente sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
 
 ### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.83)
 

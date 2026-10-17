@@ -986,8 +986,6 @@ class Sim:
         self.heals = []  # (empieza, ¿castigada?)
         self.firing = None
         self.cast_seq = 0
-        self.next_backstep = 0
-        self.backsteps = 0
         # ModelEngine en la entidad: move{} (hasta qué tick lo lleva el pack), rootmotion (hueso raíz, si manda, sus
         # pesos) y la escala de su caja (model{hitboxscale}, scale{hitbox=true})
         self.move_until = 0
@@ -1090,12 +1088,7 @@ class Sim:
                 rx, rz = b.x - self.px, b.z - self.pz
                 rl = math.hypot(rx, rz) or 1e-6
                 if d < plan[2] - 0.2 and not self.brain.attacking():
-                    # Demasiado cerca para lo que va a hacer: un salto atrás (≈2,5 bloques) mirándole y se queda
-                    if SMART >= 0.4 and d < plan[2] - 0.8 and self.t >= self.next_backstep and not b.locked:
-                        b.x += rx / rl * 2.5
-                        b.z += rz / rl * 2.5
-                        self.next_backstep = self.t + 70 + random.randrange(60)
-                        self.backsteps += 1
+                    # Demasiado cerca para lo que va a hacer: se queda donde está (sin el salto atrás de antes de la 1.3.84)
                     gx, gz, stop = b.x, b.z, 99
                 elif plan[1] and d < want + 3:
                     ang = math.radians(25 * plan[1])
@@ -1836,7 +1829,7 @@ def main():
         rep = sum(1 for i in range(1, len(s.b.timeline)) if s.b.timeline[i][1] == s.b.timeline[i - 1][1])
         punished = sum(1 for h in s.heals if h[1])
         print(f'     repite seguido: {rep} de {max(0, len(s.b.timeline) - 1)}; curas castigadas: {punished} de {len(s.heals)}'
-              + (f'; combos: {s.brain.chains}; pasos atrás: {s.backsteps}' if s.brain else ''))
+              + (f'; combos: {s.brain.chains}' if s.brain else ''))
         if s.brain:
             for a in s.brain.attacks:
                 tags = ','.join(k for k in ('gap', 'ranged', 'aoe', 'grab', 'rear') if getattr(a, k))
