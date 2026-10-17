@@ -219,6 +219,12 @@ public final class BossTest {
                     r.event("grieta: estado " + lastState + " -> " + rift.state);
                     lastState = rift.state;
                 }
+                if (t % 100 == 1) {
+                    net.minecraft.core.BlockPos bp = net.minecraft.core.BlockPos.containing(rift.pos);
+                    r.event(String.format("diagnóstico: grieta en %.0f %.0f %.0f, jugador en %.0f %.0f %.0f; cargada %s, activa %s, forzados %d",
+                            rift.pos.x, rift.pos.y, rift.pos.z, player.getX(), player.getY(), player.getZ(), level.isLoaded(bp),
+                            level.isPositionEntityTicking(bp), level.getForcedChunks().size()));
+                }
                 if (rift.state == RiftEntity.FIGHT && bossNow(level) != null) {
                     boss = bossNow(level);
                     r.hpStart = boss.getHealth();

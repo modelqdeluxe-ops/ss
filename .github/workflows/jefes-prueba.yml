@@ -21,7 +21,7 @@ on:
 jobs:
   prueba:
     name: Pelear con los jefes
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[prueba-jefes]')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[prueba-jefes')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -42,11 +42,16 @@ jobs:
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils > /dev/null
       - name: Jugar
         env:
-          TFCLIENT_PRUEBA_JEFES: ${{ github.event.inputs.jefes || '1' }}
+          ELEGIDOS: ${{ github.event.inputs.jefes }}
+          MENSAJE: ${{ github.event.head_commit.message }}
           LIBGL_ALWAYS_SOFTWARE: '1'
           MESA_GL_VERSION_OVERRIDE: '4.5'
           GALLIUM_DRIVER: llvmpipe
         run: |
+          # Qué jefes: los del formulario, los de «[prueba-jefes=a,b]» en el commit o todos
+          if [ -z "$ELEGIDOS" ]; then ELEGIDOS=$(printf '%s' "$MENSAJE" | grep -oP '\[prueba-jefes=\K[^\]]+' | head -n1 || true); fi
+          export TFCLIENT_PRUEBA_JEFES="${ELEGIDOS:-1}"
+          echo "Jefes: $TFCLIENT_PRUEBA_JEFES"
           chmod +x gradlew
           mkdir -p run
           printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nrenderDistance:6\nsoundCategory_master:0.0\n' > run/options.txt
