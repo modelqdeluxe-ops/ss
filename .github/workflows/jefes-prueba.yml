@@ -1,0 +1,84 @@
+name: Prueba de jefes en el juego
+
+# Arranca Minecraft con TF Client en una pantalla virtual (xvfb + Mesa por software) y deja que la prueba de los jefes
+# (tf-client/.../bosses/BossTest.java) pelee con cada jefe en un mundo plano, lo mate y saque capturas. El informe y
+# las capturas (en JPEG pequeño) se suben a la rama «pruebas-jefes» (sin historia: se rehace cada vez).
+# Sale en un push a una rama claude/** cuyo commit diga [prueba-jefes], o a mano (con los jefes que se quieran).
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - 'tf-client/**'
+      - '.github/workflows/jefes-prueba.yml'
+  workflow_dispatch:
+    inputs:
+      jefes:
+        description: 'Jefes separados por comas (vacío = todos)'
+        required: false
+        default: ''
+
+jobs:
+  prueba:
+    name: Pelear con los jefes
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[prueba-jefes]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: tf-client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Pantalla virtual
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils > /dev/null
+      - name: Jugar
+        env:
+          TFCLIENT_PRUEBA_JEFES: ${{ github.event.inputs.jefes || '1' }}
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          MESA_GL_VERSION_OVERRIDE: '4.5'
+          GALLIUM_DRIVER: llvmpipe
+        run: |
+          chmod +x gradlew
+          mkdir -p run
+          printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nrenderDistance:6\nsoundCategory_master:0.0\n' > run/options.txt
+          timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
+          tail -n 80 run/juego.log
+          ls run/pruebas || true
+          cat run/pruebas/informe.txt || true
+      - name: Subir el informe y las capturas
+        if: always()
+        run: |
+          python3 -m pip install --quiet pillow || true
+          rm -rf /tmp/out && mkdir -p /tmp/out
+          cp run/pruebas/informe.txt /tmp/out/ 2>/dev/null || echo "sin informe" > /tmp/out/informe.txt
+          grep -E "TF Jefes|Prueba de jefes|Exception|ERROR|WARN.*(tfclient|texture)|Caused by" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
+          tail -n 400 run/juego.log > /tmp/out/final_del_registro.txt || true
+          python3 - <<'EOF'
+          import glob, os
+          try:
+              from PIL import Image
+          except ImportError:
+              Image = None
+          for f in sorted(glob.glob('run/pruebas/*.png')):
+              out = '/tmp/out/' + os.path.basename(f)[:-4] + '.jpg'
+              if Image is None:
+                  continue
+              im = Image.open(f).convert('RGB')
+              im.thumbnail((800, 450))
+              im.save(out, quality=82)
+          EOF
+          cd /tmp/out
+          git init -q
+          git checkout -q -b pruebas-jefes
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Prueba de jefes ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" pruebas-jefes

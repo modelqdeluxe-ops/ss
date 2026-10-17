@@ -401,6 +401,11 @@ public final class VfxLayers {
         return layers;
     }
 
+    /** La animación por defecto que se ve ahora (reposo, andar o la de defaultstate); null si aún ninguna. */
+    public String baseName() {
+        return base;
+    }
+
     public String idleName() {
         return idle;
     }

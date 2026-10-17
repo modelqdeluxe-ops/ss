@@ -1129,10 +1129,9 @@ class Sim:
                 if track and not moving:
                     b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
                 elif moving:
-                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda (retrocediendo, mirándole)
+                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda
                     go = yaw_of(b.x - ox, b.z - oz) if (b.x, b.z) != (ox, oz) else want
-                    to = want if abs(wrap(go - want)) > 110 else go
-                    b.body = wrap(b.body + max(-20, min(20, wrap(to - b.body))))
+                    b.body = wrap(b.body + max(-20, min(20, wrap(go - b.body))))
                 else:
                     diff = wrap(want - b.body)
                     if abs(diff) > 30:  # la cabeza arrastra al cuerpo

@@ -1437,10 +1437,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } else if (moving && walks) {
             // Andando, el cuerpo va hacia donde anda (BodyRotationControl de Minecraft, que copia ModelEngine) y la
             // cabeza mira a su objetivo hasta «mh»: antes el cuerpo miraba al jugador y, al rodearle o al apartarse,
-            // andaba de lado. Si se aparta de él (hacia atrás), retrocede mirándole, como los jefes de los Souls
+            // andaba de lado (y en la 1.3.83, al apartarse, corría hacia atrás con la animación de andar)
             float go = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
-            float to = Math.abs(Mth.wrapDegrees(go - want)) > 110F && look != null ? want : go;
-            bodyYaw += Mth.clamp(Mth.wrapDegrees(to - bodyYaw), -20F, 20F);
+            bodyYaw += Mth.clamp(Mth.wrapDegrees(go - bodyYaw), -20F, 20F);
             turnWait = 0;
         } else if (!syncBodyOn) {
             // model{syncbody=false}: el cuerpo se queda; solo gira la cabeza (hasta «mh»)
@@ -1658,6 +1657,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             }
             if (bar != null) bar.removeAllPlayers();
             stopMusic();
+            if (BossTest.ON) BossTest.removed(this, reason);
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);
             // Murió esperando un relevo que no llegó a salir: la pelea se gana con él
