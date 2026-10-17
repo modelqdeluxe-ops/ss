@@ -91,7 +91,7 @@ respeta los bloques. Probado en el juego (capturas `grieta_lista` y `grieta_desp
 licencias de LittleRoom prohíben redistribuirlos; el dueño eligió un **repo privado** `tf-packs`, que desde aquí no se
 puede crear (GitHub responde 403): cuando lo cree y dé acceso a la app de Claude, subir los 17 zips con su README (jefe →
 zip). Después el dueño dijo «súbelos público, no importa»: se subieron a `ss` **cifrados** (`packs/jefes-17.tar.enc`,
-AES-256; cómo abrirlo en `packs/README.md`; contraseña `xPBowrTtDRJHT9ClTxJLTe1U`, puesta en el repo por orden del dueño). En claro no: sería
+AES-256; cómo abrirlo en `packs/README.md`; la contraseña la tiene el dueño, no está en el repo). En claro no: sería
 redistribuir packs de pago. El dueño no podía descargar («site not reached»: su red no llega a
 `release-assets.githubusercontent.com`, adonde GitHub manda las descargas): la web tiene ahora **`/descargar`** (y
 `/tfclient.jar`) que sirve el jar de la última Release pasándolo por Cloudflare, y **`/packs`** con el archivo cifrado
