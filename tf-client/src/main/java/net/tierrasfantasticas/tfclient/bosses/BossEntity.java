@@ -956,8 +956,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             Vec3 at = c.add((rnd.nextDouble() - 0.5) * w, (rnd.nextDouble() - 0.5) * h, (rnd.nextDouble() - 0.5) * w);
             particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION, at, 1, 0, 0, 0);
             if (deathTime % 6 == 0) {
-                sl.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE,
-                        2.5F, 0.7F + rnd.nextFloat() * 0.5F);
+                // Chasquidos de energía (1.3.86; antes la explosión de la TNT, que el dueño no quería)
+                sl.playSound(null, at.x, at.y, at.z, BossSounds.DEATH_CRACKLE, net.minecraft.sounds.SoundSource.HOSTILE,
+                        3F, 0.85F + rnd.nextFloat() * 0.3F);
             }
         }
         if (p > 0.88) {
@@ -972,9 +973,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             particles(sl, net.minecraft.core.particles.ParticleTypes.END_ROD, c, 160, w * 0.3, h * 0.3, 0.45);
             particles(sl, new net.minecraft.core.particles.DustParticleOptions(col, 2.5F), c, 200, w * 0.6, h * 0.5, 0.3);
             particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, c, 2, w * 0.3, h * 0.2, 0);
-            sl.playSound(null, c.x, c.y, c.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE, 5F, 0.6F);
-            sl.playSound(null, c.x, c.y, c.z, net.minecraft.sounds.SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, net.minecraft.sounds.SoundSource.HOSTILE,
-                    5F, 0.8F);
+            sl.playSound(null, c.x, c.y, c.z, BossSounds.DEATH_BURST, net.minecraft.sounds.SoundSource.HOSTILE, 8F, 1F);
         }
     }
 

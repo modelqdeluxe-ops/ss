@@ -21,9 +21,10 @@ import net.tierrasfantasticas.tfclient.vfx.VfxModel;
 import org.joml.Matrix4f;
 
 /**
- * La grieta: el cristal (del color de su jefe, que brilla aunque sea de noche) con sus animaciones según cómo esté
- * (flotando y girando; temblando y agrietándose al despertar; apagado durante la incursión y la recarga; creciendo otra
- * vez) y, encima, el nombre del jefe, su dificultad y qué hacer o cuánto falta.
+ * La grieta: el desgarro al vacío y su cristal de obsidiana (del mismo morado oscuro en todas, con lo que brilla aunque
+ * sea de noche) con sus animaciones según cómo esté (flotando y girando; temblando, agrietándose y abriéndose al
+ * despertar; una rendija y el cristal apagado durante la incursión y la recarga; creciendo otra vez) y, encima, el
+ * nombre del jefe, su dificultad y qué hacer o cuánto falta.
  */
 @OnlyIn(Dist.CLIENT)
 public class RiftRenderer extends EntityRenderer<RiftEntity> {
@@ -57,7 +58,6 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
     public void render(RiftEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         VfxModel m = SkillMobs.model(MODEL);
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(e.boss());
-        int color = cls != null && cls.bossInfo != null ? cls.bossInfo.color : 0xB45CF0;
         if (m != null) {
             sync(e, m);
             e.layers.prune(e.clientAge);
@@ -66,7 +66,8 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
             e.layers.pose(m, e.clientAge + partial, 0F, 0F, mats);
             pose.pushPose();
             pose.mulPose(Axis.YP.rotationDegrees(180F));
-            ModelDraw.draw(m, mats, null, pose, buffers, light, color, e.clientAge, 1F);
+            // (1.3.86) Ya no se tiñe del color del jefe: todas las grietas son del mismo morado del vacío
+            ModelDraw.draw(m, mats, null, pose, buffers, light, 0xFFFFFF, e.clientAge, 1F);
             pose.popPose();
         }
         if (cls != null && cls.bossInfo != null) label(e, cls.bossInfo, pose, buffers);
@@ -91,7 +92,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         lines.add(Component.literal(state).withStyle(s -> s.withColor(TextColor.fromRgb(st == RiftEntity.WAKING ? 0xFF6A6A : 0xD8D8E0))));
         Font font = mc.font;
         pose.pushPose();
-        pose.translate(0, st == RiftEntity.FIGHT || st == RiftEntity.COOLDOWN ? 2.2 : 5.6, 0);
+        pose.translate(0, 9.2, 0);
         pose.mulPose(this.entityRenderDispatcher.cameraOrientation());
         pose.scale(-0.028F, -0.028F, 0.028F);
         Matrix4f mat = pose.last().pose();

@@ -215,9 +215,11 @@ public final class BossTest {
                 if (t == 1) player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
                 if (t == 40) {
                     rift = Rifts.place(player, r.id, Difficulty.NORMAL);
-                    player.teleportTo(level, arena.x, arena.y, arena.z - 12, 0F, 10F);
+                    // mirándola (hacia +z) y un poco hacia arriba: la grieta entera y el cielo (que tarda ~5 s en entrar)
+                    player.teleportTo(level, arena.x, arena.y, arena.z - 15, 0F, -14F);
                 }
-                if (t == 60) {
+                if (t == 175) shot(r, "grieta_lista");
+                if (t == 180) {
                     lastState = rift.state;
                     rift.state = RiftEntity.WAKING;
                     rift.wakeAt = level.getGameTime() + RiftEntity.WAKE_TICKS;
@@ -226,6 +228,7 @@ public final class BossTest {
                 }
             }
             case 1 -> {
+                if (t == 55) shot(r, "grieta_despierta");
                 if (rift.state != lastState) {
                     r.event("grieta: estado " + lastState + " -> " + rift.state);
                     lastState = rift.state;

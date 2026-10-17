@@ -33,7 +33,8 @@
     "AbstractClientPlayerSkinMixin",
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
-    "GuiGraphicsMixin"
+    "GuiGraphicsMixin",
+    "RiftSkyMixin"
   ],
   "injectors": {
     "defaultRequire": 0

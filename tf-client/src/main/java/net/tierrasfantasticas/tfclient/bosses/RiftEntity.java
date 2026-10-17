@@ -94,8 +94,50 @@ public class RiftEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) clientAge++;
-        else if (riftId == null || !Rifts.owns(this)) discard();
+        if (level().isClientSide) {
+            clientAge++;
+            clientFx();
+        } else if (riftId == null || !Rifts.owns(this)) {
+            discard();
+        }
+    }
+
+    /** El morado del vacío de las grietas (partículas). */
+    static final org.joml.Vector3f VOID_PURPLE = new org.joml.Vector3f(0.55F, 0.16F, 0.98F);
+
+    /**
+     * Lo que se ve alrededor (solo en el cliente): chispas moradas que suben del círculo, el desgarro que se traga
+     * partículas de portal, polvo violeta flotando y, de vez en cuando, un destello. Durante la incursión y la recarga
+     * (el desgarro es una rendija), menos.
+     */
+    private void clientFx() {
+        net.minecraft.util.RandomSource r = random;
+        int st = state();
+        boolean open = st == READY || st == WAKING;
+        int n = st == WAKING ? 4 : open ? 2 : 1;
+        for (int i = 0; i < n; i++) {
+            double a = r.nextDouble() * Math.PI * 2, d = 1.2 + r.nextDouble() * 2.6;
+            if (r.nextInt(3) == 0) {
+                level().addParticle(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, getX() + Math.cos(a) * d, getY() + 0.15,
+                        getZ() + Math.sin(a) * d, 0, 0.04 + r.nextDouble() * 0.06, 0);
+            }
+            if (open) {
+                // Se las traga el desgarro: salen alrededor y van hacia él
+                double y = getY() + 1.5 + r.nextDouble() * 6;
+                level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + (r.nextDouble() - 0.5) * 3, y,
+                        getZ() + (r.nextDouble() - 0.5) * 3, (r.nextDouble() - 0.5) * 2, (r.nextDouble() - 0.5) * 1.5,
+                        (r.nextDouble() - 0.5) * 2);
+            }
+            if (r.nextInt(4) == 0) {
+                level().addParticle(new net.minecraft.core.particles.DustParticleOptions(VOID_PURPLE, 1.4F),
+                        getX() + (r.nextDouble() - 0.5) * 5, getY() + r.nextDouble() * 7, getZ() + (r.nextDouble() - 0.5) * 5, 0, 0.01, 0);
+            }
+        }
+        if (open && r.nextInt(st == WAKING ? 3 : 25) == 0) {
+            level().addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, getX() + (r.nextDouble() - 0.5) * 0.8,
+                    getY() + 2 + r.nextDouble() * 5, getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
+                    (r.nextDouble() - 0.5) * 0.08, (r.nextDouble() - 0.5) * 0.08);
+        }
     }
 
     @Override
@@ -143,7 +185,8 @@ public class RiftEntity extends Entity {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(3, 2, 3);
+        // El desgarro sube a ~8,5 bloques y los anillos del suelo llegan a 3,75 del centro
+        return getBoundingBox().inflate(3, 4, 3);
     }
 
     @Override

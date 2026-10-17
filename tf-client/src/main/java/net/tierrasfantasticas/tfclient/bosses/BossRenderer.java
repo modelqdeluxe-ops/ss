@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -51,7 +50,7 @@ public class BossRenderer extends EntityRenderer<BossEntity> {
         int color = e.color();
         int r = (color >> 16) & 255, g = (color >> 8) & 255, b = color & 255;
         RandomSource rnd = RandomSource.create(432L);
-        VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
+        VertexConsumer vc = buffers.getBuffer(BossRenderTypes.RAYS);
         pose.pushPose();
         pose.translate(0F, e.getBbHeight() * 0.5F, 0F);
         int n = (int) ((f5 + f5 * f5) / 2F * 60F);
@@ -66,7 +65,7 @@ public class BossRenderer extends EntityRenderer<BossEntity> {
             float w = (rnd.nextFloat() * 2F + 1F + f7 * 2F) * size;
             Matrix4f m = pose.last().pose();
             int a = (int) (255F * (1F - f7));
-            // Las tres caras del rayo (lightning va por cuadriláteros: cada triángulo, con el centro repetido)
+            // Las tres caras del rayo (la capa va por cuadriláteros: cada triángulo, con el centro repetido)
             face(vc, m, a, -HALF_SQRT_3 * w, l, -0.5F * w, HALF_SQRT_3 * w, l, -0.5F * w, r, g, b);
             face(vc, m, a, HALF_SQRT_3 * w, l, -0.5F * w, 0F, l, w, r, g, b);
             face(vc, m, a, 0F, l, w, -HALF_SQRT_3 * w, l, -0.5F * w, r, g, b);
