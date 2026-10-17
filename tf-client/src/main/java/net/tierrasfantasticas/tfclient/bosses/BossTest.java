@@ -145,7 +145,7 @@ public final class BossTest {
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
         int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, backPushed, sidePushed, landed, noEffect;
         double minDist = 1e9;
-        int stillFarTicks, stillFarShown;
+        int stillFarTicks, stillFarShown, flameShown;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -469,6 +469,21 @@ public final class BossTest {
             if (stillFar >= 40) r.stillFarTicks++;
         } else {
             stillFar = 0;
+        }
+        // Lanzallamas (Ignevar: «ataca sin sentido», sus llamas no daban): hacia dónde apunta, 3 veces por pelea
+        if (anims != null && r.flameShown < 3 && t % 10 == 0 && anims.stream().anyMatch(a -> a.contains("breath") || a.contains("flame"))) {
+            net.tierrasfantasticas.tfclient.skills.SkillMobs.Host hh = net.tierrasfantasticas.tfclient.skills.SkillMobs.host(boss);
+            Vec3 jaw = hh == null ? null : net.tierrasfantasticas.tfclient.skills.SkillMobs.bonePos(hh, "jaw");
+            Vec3 aim = hh == null ? null : net.tierrasfantasticas.tfclient.skills.SkillMobs.bonePos(hh, "flametarget");
+            if (jaw != null && aim != null) {
+                r.flameShown++;
+                Vec3 dj = aim.subtract(jaw);
+                float aimYaw = (float) Math.toDegrees(Math.atan2(-dj.x, dj.z));
+                Vec3 tp = player.position().subtract(jaw);
+                r.event(String.format("lanzallamas [%s]: boca %.1f %.1f %.1f (sobre el suelo %.1f), apunta a %.1f bloques, %.0f° (cuerpo %.0f°, jugador %.0f°), baja %.1f; jugador a %.1f",
+                        what, jaw.x - bp.x, jaw.y - bp.y, jaw.z - bp.z, jaw.y - bp.y, dj.length(), aimYaw, boss.yBodyRot,
+                        Math.toDegrees(Math.atan2(-tp.x, tp.z)), -dj.y, Math.sqrt(tp.x * tp.x + tp.z * tp.z)));
+            }
         }
         episode(r, "anda hacia atrás", back, what + why);
         episode(r, "anda de lado", side, what + why);
