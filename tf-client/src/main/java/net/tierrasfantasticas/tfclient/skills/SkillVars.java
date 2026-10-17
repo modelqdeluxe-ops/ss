@@ -316,7 +316,8 @@ final class SkillVars {
                 }
                 return Double.parseDouble(s.substring(start, pos));
             }
-            while (pos < s.length() && Character.isLetter(s.charAt(pos))) pos++;
+            // (nombres con cifras después de la primera letra: «atan2»; 1.3.88, el giro en vuelo de Ignevar)
+            while (pos < s.length() && (Character.isLetter(s.charAt(pos)) || pos > start && Character.isDigit(s.charAt(pos)))) pos++;
             String id = s.substring(start, pos);
             if (id.isEmpty()) throw new IllegalStateException("no es un número");
             if (!eat("(")) {
@@ -344,6 +345,10 @@ final class SkillVars {
                 case "asin" -> Math.asin(a);
                 case "acos" -> Math.acos(a);
                 case "atan" -> Math.atan(a);
+                case "atan2" -> Math.atan2(a, args.size() > 1 ? args.get(1) : 1);
+                case "pow" -> Math.pow(a, args.size() > 1 ? args.get(1) : 1);
+                case "exp" -> Math.exp(a);
+                case "hypot" -> Math.hypot(a, args.size() > 1 ? args.get(1) : 0);
                 case "sinh" -> Math.sinh(a);
                 case "cosh" -> Math.cosh(a);
                 case "tanh" -> Math.tanh(a);

@@ -224,8 +224,10 @@ def mythic():
     bir = [len(SIM.shape_points('bir', k, ctx, o)) for k in ({}, {'s': 'CUBE'}, {'oa': 'true'})]
     check('@BlocksInRadius r=2 en el suelo de prueba: esfera 10, cubo 50, solo aire 23', bir == [10, 50, 23], bir)
     cases = [('x*2+1', 3, 7), ('(x/5)+1', 10, 3), ('2^3^2', 0, 512), ('max(1,x,3)', 7, 7), ('x>5 & x<10', 7, 1),
-             ('!0', 0, 1), ('10%4', 0, 2), ('-2^2', 0, -4), ('sqrt(16)+log(100)', 0, 6), ('round(2.5)+floor(-1.5)', 0, 1)]
-    bad = [(e, AI.crunch(e, x)) for e, x, want in cases if AI.crunch(e, x) != want]
+             ('!0', 0, 1), ('10%4', 0, 2), ('-2^2', 0, -4), ('sqrt(16)+log(100)', 0, 6), ('round(2.5)+floor(-1.5)', 0, 1),
+             # (1.3.88) el giro en vuelo de Ignevar: -atan2(dx, dz) en grados
+             ('-atan2(0-x, 10-0)*180/3.14159', 10, 45.0000)]
+    bad = [(e, AI.crunch(e, x)) for e, x, want in cases if AI.crunch(e, x) is None or abs(AI.crunch(e, x) - want) > 1e-3]
     check('variablemath: las cuentas de Crunch (como SkillVars.math)', not bad and AI.crunch('nada', 0) is None, bad)
 
     # La IA de MythicMobs (SkillAI.java, leída por mythic_ai): clear, prioridades, alias y la de su tipo

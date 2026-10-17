@@ -25,7 +25,7 @@ import org.lwjgl.glfw.GLFW;
  * solo le saluda por su nombre»).
  *
  * <p>Una placa abajo, maciza (morado casi negro con marco de oro y adornos en las esquinas): a la izquierda su retrato
- * (el modelo de verdad, que te sigue con la mirada, sobre un fondo de luz), a la derecha su nombre en Cinzel dorada, su
+ * (el modelo de verdad, de tres cuartos, sobre un fondo de luz), a la derecha su nombre en Cinzel dorada, su
  * título, el texto que se va escribiendo (clic o espacio para verlo entero) y las respuestas (con el ratón o con 1, 2,
  * 3). Motas de luz suben por la placa. Hay páginas de lore (qué es el Void, qué son las grietas, qué hace él). El del
  * santuario del vacío, en vez de llevarte, te devuelve a donde estabas.
@@ -210,7 +210,8 @@ public class KnightScreen extends Screen {
                 KnightRenderer.inGui = true;
                 try {
                     int scale = (int) ((py1 - py0) * 0.92F / 2.9F);
-                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, py1 - 4, scale, cx - mouseX, cy - mouseY, k);
+                    // De tres cuartos y quieto (siguiendo al ratón, con el ratón en una esquina se veía tumbado)
+                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, py1 - 4, scale, 14F + 4F * Mth.sin(t * 0.03F), -6F, k);
                 } finally {
                     KnightRenderer.inGui = false;
                 }
