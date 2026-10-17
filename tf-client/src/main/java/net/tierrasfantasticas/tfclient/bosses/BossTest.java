@@ -280,7 +280,7 @@ public final class BossTest {
         double radial = Mth.clamp((reach - d) * 0.15, -0.25, 0.25);
         Vec3 tan = new Vec3(-dir.z, 0, dir.x).scale(0.08 * side);
         Vec3 np = player.position().add(dir.scale(radial)).add(tan);
-        int gy = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(np.x), Mth.floor(np.z));
+        int gy = ground(level, Mth.floor(np.x), Mth.floor(np.z));
         Vec3 look = boss.position().add(0, boss.getBbHeight() * 0.5, 0).subtract(np.x, gy + 1.62, np.z);
         float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.sqrt(look.x * look.x + look.z * look.z)));
@@ -308,7 +308,7 @@ public final class BossTest {
             if (diff > 120) r.backTicks++;
             else if (diff > 60) r.sideTicks++;
         }
-        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(bp.x), Mth.floor(bp.z));
+        int ground = ground(level, Mth.floor(bp.x), Mth.floor(bp.z));
         double air = bp.y - ground;
         r.maxAir = Math.max(r.maxAir, air);
         if (air > 3) r.airTicks++;
@@ -370,6 +370,12 @@ public final class BossTest {
         }
     }
 
+    /** La altura del suelo en x, z (generando el chunk si aún no está: sin él, la altura sale la del fondo del mundo). */
+    private static int ground(ServerLevel level, int x, int z) {
+        level.getChunk(x >> 4, z >> 4);
+        return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+    }
+
     private static void shot(Rep r, String what) {
         shotRequest = String.format("%02d_%s_%s", index, r.id, what);
     }
@@ -395,7 +401,7 @@ public final class BossTest {
             finished = true;
             return;
         }
-        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 1000 + index * 600, 0);
+        int ground = ground(level, 1000 + index * 600, 0);
         arena = new Vec3(1000 + index * 600 + 0.5, ground, 0.5);
         current = new Rep(ids.get(index));
         REPS.add(current);
