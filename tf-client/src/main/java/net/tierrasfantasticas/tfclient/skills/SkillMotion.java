@@ -32,6 +32,9 @@ final class SkillMotion {
         if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && e instanceof ServerPlayer) {
             net.tierrasfantasticas.tfclient.bosses.BossTest.pushed(String.format("%s v=%.2f,%.2f,%.2f", ctx.skill, motion.x, motion.y, motion.z));
         }
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && !(e instanceof ServerPlayer)) {
+            net.tierrasfantasticas.tfclient.bosses.BossTest.selfPushed(e, ctx.skill);
+        }
         if (motion.y > 0 && e instanceof ServerPlayer) SkillServer.noFall(e.getUUID(), 100);
         e.fallDistance = 0;
     }
