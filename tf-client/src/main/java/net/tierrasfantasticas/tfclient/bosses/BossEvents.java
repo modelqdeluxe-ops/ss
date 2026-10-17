@@ -6,6 +6,8 @@ import net.minecraft.tags.GameEventTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.VanillaGameEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -41,6 +43,17 @@ public final class BossEvents {
                 && event.getEntityMounting() instanceof BossEntity b && b.def() != null) {
             SkillMobs.dismounted(b, event.getEntityBeingMounted());
         }
+    }
+
+    @SubscribeEvent
+    public static void onDrops(LivingDropsEvent event) {
+        // Los jefes no sueltan objetos (orden del dueño): tampoco los zombis, esqueletos... que sacan en la pelea
+        if (event.getEntity().getTags().contains(SkillMobs.SUMMONED)) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onExperience(LivingExperienceDropEvent event) {
+        if (event.getEntity().getTags().contains(SkillMobs.SUMMONED)) event.setCanceled(true);
     }
 
     @SubscribeEvent

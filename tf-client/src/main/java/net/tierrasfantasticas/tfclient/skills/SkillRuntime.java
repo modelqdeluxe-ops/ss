@@ -1008,12 +1008,8 @@ public final class SkillRuntime {
                     }
                 }
             }
-            case "dropitem" -> {
-                String item = m.arg(null, "item", "i");
-                if (item != null && SkillMobs.world != null) {
-                    for (Tgt t : targets) SkillMobs.world.drop(ctx.cls, item.split(":")[0], ctx.caster.level(), t.pos());
-                }
-            }
+            // Los jefes no sueltan objetos (orden del dueño, 1.3.83): lo que se gana es lo de la grieta (STUB_OK de audit.py)
+            case "dropitem" -> { /* sin efecto */ }
             case "raytrace" -> {
                 // raytrace{entitySkill=X} @sitio: X con lo que haya en ese sitio (la sangre de la Hidra al recibir un
                 // flechazo): aquí, X en el sitio
@@ -1397,6 +1393,8 @@ public final class SkillRuntime {
                     mob.finalizeSpawn(level, level.getCurrentDifficultyAt(e.blockPosition()),
                             net.minecraft.world.entity.MobSpawnType.MOB_SUMMONED, null, null);
                 }
+                // No sueltan nada al morir (ni lo que llevan, ni experiencia): BossEvents.onDrops
+                e.addTag(SkillMobs.SUMMONED);
                 level.addFreshEntity(e);
             }
         }

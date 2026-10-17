@@ -244,6 +244,33 @@ def mythic():
     check('mythic_ai lee todas las tablas de SkillAI.java', len(MA.GOALS) >= 50 and len(MA.GOAL_ALIAS) >= 25
           and len(MA._VG) >= 45 and 'default' in MA._VG and len(MA._VT) >= 30 and src.count('case "') >= 40, (len(MA.GOALS), len(MA._VG)))
 
+    # Hasta dónde llega cada golpe (SkillBrain.reachOf, copiado en sim_ai): las mismas tablas y lo que mide
+    import re
+    import sim_ai as SA
+    brain = open(os.path.join(os.path.dirname(MA.JAVA), 'SkillBrain.java'), encoding='utf-8').read()
+
+    def jset(name):
+        m = re.search(r'Set<String> ' + name + r' = Set\.of\((.*?)\);', brain, re.S)
+        return set(re.findall(r'"([^"]+)"', m.group(1))) if m else None
+    names = ('HITS', 'REACHES_FAR', 'CALLS', 'AROUND', 'CONE', 'RING', 'SELF')
+    differ = [n for n in names if jset(n) != getattr(SA, n)]
+    check('alcance de los golpes: las tablas de SkillBrain.java y de sim_ai.py son las mismas', not differ, differ)
+    model = {'name': 'prueba', 'anims': {}, 'bones': [
+        {'id': 'root', 'parent': -1, 'pivot': [0, 0, 0], 'rot': [0, 0, 0]},
+        {'id': 'blade', 'parent': 0, 'pivot': [0, 0, -32], 'rot': [0, 0, 0]}]}
+
+    def reach(*mechs):
+        line = {'m': 'skill', 't': 'target', 'a': {'s': 'golpe'}}
+        meta = {'mechs': list(mechs), 'conditions': [], 'target_conditions': []}
+        return SA.reach_of({'golpe': meta}, 'golpe', meta, SA.Attack('golpe', line, False), model)
+    a1 = reach({'m': 'basedamage', 'a': {}, 't': 'pir', 'ta': {'r': '3'}})
+    a2 = reach({'m': 'totem', 'a': {'hr': '1', 'md': '2'}, 't': 'modelpart', 'ta': {'pid': 'blade'}})
+    a3 = reach({'m': 'damage', 'a': {}})
+    check('alcance: @PIR{r=3} llega a 3; un tótem de radio 1 en un hueso a 2 bloques delante, a 3 (y va por delante); '
+          'un golpe a @target no tiene tope',
+          not a1.far and a1.reach() == 3 and not a1.frontal and not a2.far and abs(a2.reach() - 3) < 1e-6 and a2.frontal
+          and a3.far, (a1.reach(), a2.reach(), a3.far))
+
 
 def heads(tmp, src):
     """hi_ / h_ / h[yaw]_ como ModelEngine 4 (y BetterModel): giro global que no se acumula; los hijos sin etiqueta

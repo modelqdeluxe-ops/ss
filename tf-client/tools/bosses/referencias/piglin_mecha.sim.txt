@@ -11,45 +11,53 @@ piglin_mecha        480 s, vida  46.5%: 121 ataques (15.1/min), 7 distintos de 1
      repite seguido: 0 de 120; curas castigadas: 4 de 10
 
 ## semilla 3, normal
-piglin_mecha        480 s, vida  66.6%: 86 ataques (10.8/min), 6 distintos de 11
-       22  slam_front_2
+piglin_mecha        480 s, vida  71.0%: 79 ataques (9.9/min), 6 distintos de 11
        19  slam_front
-       15  swing_2
-       15  swing_1
+       17  slam_front_2
+       14  swing_2
        14  spin_attack_short
+       14  swing_1
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 85; curas castigadas: 0 de 16; combos: 0; pasos atrás: 0
+     repite seguido: 1 de 78; curas castigadas: 0 de 18; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 78
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 78
 
 ## semilla 3, demencial
-piglin_mecha        480 s, vida  67.0%: 98 ataques (12.2/min), 6 distintos de 11
+piglin_mecha        480 s, vida  74.1%: 92 ataques (11.5/min), 6 distintos de 11
        22  slam_front
-       21  spin_attack_short
-       20  slam_front_2
-       19  swing_2
-       15  swing_1
+       20  spin_attack_short
+       18  swing_1
+       16  slam_front_2
+       15  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 97; curas castigadas: 0 de 17; combos: 48; pasos atrás: 37
+     repite seguido: 0 de 91; curas castigadas: 0 de 18; combos: 49; pasos atrás: 46
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 91
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 91
 
 ## semilla 11, normal
-piglin_mecha        480 s, vida  75.6%: 74 ataques (9.2/min), 6 distintos de 11
-       16  slam_front
-       16  slam_front_2
-       15  spin_attack_short
-       15  swing_2
-       11  swing_1
+piglin_mecha        480 s, vida  77.0%: 82 ataques (10.2/min), 6 distintos de 11
+       20  slam_front
+       18  slam_front_2
+       16  swing_1
+       14  spin_attack_short
+       13  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 73; curas castigadas: 0 de 19; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 81; curas castigadas: 0 de 19; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 81
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 81
 
 ## semilla 11, dificil
-piglin_mecha        480 s, vida  75.1%: 83 ataques (10.4/min), 6 distintos de 11
+piglin_mecha        480 s, vida  73.7%: 81 ataques (10.1/min), 6 distintos de 11
        18  slam_front
-       18  spin_attack_short
-       16  swing_1
+       17  spin_attack_short
+       16  slam_front_2
        15  swing_2
-       15  slam_front_2
+       14  swing_1
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 82; curas castigadas: 0 de 19; combos: 29; pasos atrás: 33
+     repite seguido: 0 de 80; curas castigadas: 0 de 19; combos: 31; pasos atrás: 47
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 80
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 80

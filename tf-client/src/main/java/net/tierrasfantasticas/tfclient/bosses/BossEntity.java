@@ -58,6 +58,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private static final EntityDataAccessor<Float> HB_SCALE = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
     /** 1 = model{hitbox=false} (la caja de su tipo de Minecraft), 2 = model{showhitbox=false} (no se le apunta). */
     private static final EntityDataAccessor<Byte> HB_FLAGS = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.BYTE);
+    /** La muerte épica (la del jefe que acaba la pelea): cuántos ticks dura (0 = la normal); el cliente dibuja sus rayos. */
+    private static final EntityDataAccessor<Integer> EPIC = SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.INT);
     /** Cajas de golpe por piezas que puede tener un jefe (las cabezas, cuellos y cola de la Hidra son 35). */
     public static final int MAX_PARTS = 40;
 
@@ -94,6 +96,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private UUID rift;
     private Vec3 home;
     private int repath;
+    /** Sin camino de Minecraft que llegue (es muy grande): va derecho a donde quiere ir (noPath) y este tick lo hace. */
+    private boolean noPath, direct;
     /** setinvulnerable{v} del pack: no le entran golpes. */
     private boolean packInvulnerable;
     /** goto{} del pack: a dónde anda (deja de perseguir) y hasta qué tick, a qué velocidad. */
@@ -131,6 +135,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     /** LookAtPlayerGoal: a quién mira (sin objetivo) y hasta cuándo. */
     private Player lookPlayer;
     private int lookUntil;
+    /** A quién le ha pedido la música de la pelea (client/TFBossMusic): los que ven su barra. */
+    private final List<ServerPlayer> musicFor = new ArrayList<>();
 
     public BossEntity(EntityType<? extends BossEntity> type, Level level, boolean main) {
         super(type, level);
@@ -162,6 +168,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         this.entityData.define(BODY_YAW, 0F);
         this.entityData.define(HB_SCALE, 1F);
         this.entityData.define(HB_FLAGS, (byte) 0);
+        this.entityData.define(EPIC, 0);
     }
 
     @Override
@@ -222,7 +229,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         }
         this.entityData.set(MAX_HP, (float) hp);
         setHealth((float) hp);
-        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(96, def.followRange)));
+        // El jefe ve a todo el que esté en su arena (con FollowRange 32, a quien le disparaba desde 35 bloques de la
+        // grieta no le hacía caso); sus esbirros, lo de su pack
+        double follow = owner == null ? Math.max(def.followRange, Rifts.LEASH + 8) : def.followRange;
+        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(96, follow)));
         applySpeed();
         bodyYaw = getYRot();
         lookYaw = bodyYaw;
@@ -321,6 +331,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         bar = new ServerBossEvent(barTitle(), color(def.barColor != null ? def.barColor : "PURPLE"), BossEvent.BossBarOverlay.NOTCHED_10);
         bar.setDarkenScreen(false);
         from.relay = false;
+        // La música sigue sin cortarse: el relevo la pide antes de que la deje el que murió
+        for (ServerPlayer p : from.musicFor) {
+            SkillMobs.music(p, getUUID(), true);
+            musicFor.add(p);
+        }
+        from.stopMusic();
         Rifts.relayed(from, this);
     }
 
@@ -675,6 +691,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return isDeadOrDying() || isRemoved();
     }
 
+    /** Muerto es muerto: si una skill de su ~onDeath le devuelve vida (heal, sethealth), no se levanta a medias. */
+    @Override
+    public boolean isDeadOrDying() {
+        return super.isDeadOrDying() || this.dead;
+    }
+
     // ------------------------------------------------------------------------------------------- ModelEngine en la entidad
 
     /**
@@ -856,7 +878,23 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         super.die(src);
         if (level().isClientSide) return;
         SkillMobs.died(this, src.getEntity());
-        if (bar != null) bar.setProgress(0F);
+        // La barra se va en cuanto muere (antes se quedaba a cero mientras duraba su animación de muerte, a veces 10 s)
+        if (bar != null) {
+            bar.setProgress(0F);
+            bar.removeAllPlayers();
+            bar.setVisible(false);
+        }
+        // y la música (si no le sigue un relevo, que la sigue pidiendo: BossEntity.becomeSuccessor)
+        boolean relayNext = isMainBoss() && !successor && cls.bossInfo != null && !cls.bossInfo.successors.isEmpty();
+        if (!relayNext) stopMusic();
+        if (isMainBoss() && !relayNext) {
+            // La muerte épica (orden del dueño: como la del dragón del End): más larga que su animación de muerte, con el
+            // grito del dragón (ver epicTick y los rayos de BossRenderer)
+            deathLength = Math.max(deathLength + 40, 160);
+            this.entityData.set(EPIC, deathLength);
+            level().playSound(null, getX(), getY(), getZ(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_DEATH,
+                    net.minecraft.sounds.SoundSource.HOSTILE, 6F, 0.9F);
+        }
         if (owner == null) {
             // Los esbirros caen con su jefe
             for (BossEntity m : level().getEntitiesOfClass(BossEntity.class, getBoundingBox().inflate(96), e -> e.owner == this && e.isAlive())) {
@@ -882,9 +920,70 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     protected void tickDeath() {
         ++this.deathTime;
+        int epic = this.entityData.get(EPIC);
+        if (epic > 0 && level() instanceof ServerLevel sl) epicTick(sl, epic);
         if (this.deathTime >= deathLength && !level().isClientSide && !isRemoved()) {
             level().broadcastEntityEvent(this, (byte) 60);
             this.remove(RemovalReason.KILLED);
+        }
+    }
+
+    /** Cuántos ticks dura su muerte épica (0 = no la tiene): BossRenderer dibuja sus rayos. */
+    public int epicDeath() {
+        return this.entityData.get(EPIC);
+    }
+
+    /** El color del jefe (el de su barra y su grieta): el de los rayos de su muerte. */
+    public int color() {
+        return cls != null && cls.bossInfo != null ? cls.bossInfo.color : 0xB45CF0;
+    }
+
+    /**
+     * La muerte de un jefe, como la del dragón del End: rayos de luz que le salen del cuerpo y crecen (BossRenderer),
+     * chispas de su color que se le escapan (se deshace), explosiones cada vez más seguidas, al final una grande cada
+     * tick (como las del dragón) mientras el modelo se encoge hasta desaparecer, y un estallido. Se ve desde lejos.
+     */
+    private void epicTick(ServerLevel sl, int len) {
+        double p = deathTime / (double) len;
+        double w = getBbWidth(), h = getBbHeight();
+        Vec3 c = position().add(0, h * 0.5, 0);
+        int color = color();
+        org.joml.Vector3f col = new org.joml.Vector3f(((color >> 16) & 255) / 255F, ((color >> 8) & 255) / 255F, (color & 255) / 255F);
+        net.minecraft.util.RandomSource rnd = getRandom();
+        if (deathTime % 2 == 0) {
+            particles(sl, new net.minecraft.core.particles.DustParticleOptions(col, 1.8F), c, 2 + (int) (p * 14), w * 0.4, h * 0.4, 0.02);
+            particles(sl, net.minecraft.core.particles.ParticleTypes.END_ROD, c, 1 + (int) (p * 6), w * 0.35, h * 0.4, 0.07);
+        }
+        if (p > 0.45 && deathTime % (p > 0.75 ? 3 : 6) == 0) {
+            Vec3 at = c.add((rnd.nextDouble() - 0.5) * w, (rnd.nextDouble() - 0.5) * h, (rnd.nextDouble() - 0.5) * w);
+            particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION, at, 1, 0, 0, 0);
+            if (deathTime % 6 == 0) {
+                sl.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE,
+                        2.5F, 0.7F + rnd.nextFloat() * 0.5F);
+            }
+        }
+        if (p > 0.88) {
+            Vec3 at = c.add((rnd.nextDouble() - 0.5) * w * 0.8, (rnd.nextDouble() - 0.5) * h * 0.6, (rnd.nextDouble() - 0.5) * w * 0.8);
+            particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, at, 1, 0, 0, 0);
+            // Se deshace: el modelo se encoge hasta desaparecer en el estallido
+            double q = (p - 0.88) / 0.12;
+            SkillMobs.deathScale(this, (float) Math.max(0.02, 1 - q * q));
+        }
+        if (deathTime == len - 1) {
+            particles(sl, net.minecraft.core.particles.ParticleTypes.FLASH, c, 3, 0.2, 0.2, 0);
+            particles(sl, net.minecraft.core.particles.ParticleTypes.END_ROD, c, 160, w * 0.3, h * 0.3, 0.45);
+            particles(sl, new net.minecraft.core.particles.DustParticleOptions(col, 2.5F), c, 200, w * 0.6, h * 0.5, 0.3);
+            particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, c, 2, w * 0.3, h * 0.2, 0);
+            sl.playSound(null, c.x, c.y, c.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE, 5F, 0.6F);
+            sl.playSound(null, c.x, c.y, c.z, net.minecraft.sounds.SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, net.minecraft.sounds.SoundSource.HOSTILE,
+                    5F, 0.8F);
+        }
+    }
+
+    /** Partículas que se ven desde lejos (a 96 bloques; las normales del servidor, solo a 32). */
+    private void particles(ServerLevel sl, net.minecraft.core.particles.ParticleOptions o, Vec3 at, int n, double dxz, double dy, double speed) {
+        for (ServerPlayer p : sl.players()) {
+            if (p.distanceToSqr(at) <= 96 * 96) sl.sendParticles(p, o, true, at.x, at.y, at.z, n, dxz, dy, dxz, speed);
         }
     }
 
@@ -968,7 +1067,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                     }
                 }
             }
-            if (bar != null) updateBar();
+            if (bar != null && !dying()) updateBar();
             if (owner != null && (owner.isRemoved() || owner.dying() && owner.deathTime > 20)) discard();
         }
         if (main) placeParts();
@@ -980,6 +1079,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (def == null || dying()) return;
         if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
         aiExtras();
+        direct = false;
         if (age < moveUntil) {
             // move{} del pack: lo lleva el pack este tick
             meleeStep();
@@ -1047,11 +1147,21 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             double d = Math.sqrt(horizontalDistanceSqr(goal));
             if (d > stop) {
                 if (--repath <= 0 || getNavigation().isDone()) {
-                    getNavigation().moveTo(goal.x, goal.y, goal.z, speed);
+                    net.minecraft.world.level.pathfinder.Path path = getNavigation().createPath(goal.x, goal.y, goal.z, 0);
+                    // Los jefes grandes (cajas de 3-6 bloques) a menudo no caben por los caminos de Minecraft: sin camino
+                    // que llegue, va derecho (si no, se quedaba plantado mirando al jugador)
+                    noPath = path == null || !path.canReach() && d < 32;
+                    if (!noPath) getNavigation().moveTo(path, speed);
                     repath = 10;
+                }
+                if (noPath) {
+                    getNavigation().stop();
+                    getMoveControl().setWantedPosition(goal.x, goal.y, goal.z, speed);
+                    direct = true;
                 }
             } else {
                 getNavigation().stop();
+                noPath = false;
                 if (goal == wanderGoal) wanderGoal = null;
             }
         } else if (!getNavigation().isDone()) {
@@ -1290,14 +1400,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     /**
      * Hacia dónde mira la entidad y hacia dónde gira el cuerpo del modelo, como con ModelEngine: la entidad mira a su
-     * objetivo (30° por tick, como la de Minecraft) y con eso se miden sus ataques; el modelo, mientras anda, sigue esa
-     * dirección enseguida y, parado, gira la cabeza hasta «mh» y el cuerpo detrás (tras «rde» ticks, en «rdu»).
-     * lockmodel congela el modelo, no a dónde mira.
+     * objetivo (30° por tick, como la de Minecraft) y con eso se miden sus ataques; el modelo, mientras anda, va hacia
+     * donde anda (con la cabeza hacia su objetivo hasta «mh») y, parado, gira la cabeza hasta «mh» y el cuerpo detrás
+     * (tras «rde» ticks, en «rdu»). lockmodel congela el modelo, no a dónde mira.
      */
     private void turnBody() {
         float want = bodyYaw;
         Vec3 v = getDeltaMovement();
-        boolean moving = v.x * v.x + v.z * v.z > 0.0009 && !getNavigation().isDone();
+        boolean moving = v.x * v.x + v.z * v.z > 0.0009 && (!getNavigation().isDone() || direct);
         // Anda por su cuenta (persigue, pasea o huye) y a quién mira (su objetivo, o un jugador cerca con lookatplayers)
         boolean walks = ai && (chases() || wanderGoal != null || SkillAI.has(goals, "type:ghast"));
         Entity look = ai ? lookAt() : null;
@@ -1325,8 +1435,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             diff = Mth.wrapDegrees(want - bodyYaw);
             turnWait = 0;
         } else if (moving && walks) {
-            // Andando, el cuerpo va hacia donde va (como el de ModelEngine al moverse)
-            bodyYaw += Mth.clamp(diff, -20F, 20F);
+            // Andando, el cuerpo va hacia donde anda (BodyRotationControl de Minecraft, que copia ModelEngine) y la
+            // cabeza mira a su objetivo hasta «mh»: antes el cuerpo miraba al jugador y, al rodearle o al apartarse,
+            // andaba de lado. Si se aparta de él (hacia atrás), retrocede mirándole, como los jefes de los Souls
+            float go = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
+            float to = Math.abs(Mth.wrapDegrees(go - want)) > 110F && look != null ? want : go;
+            bodyYaw += Mth.clamp(Mth.wrapDegrees(to - bodyYaw), -20F, 20F);
             turnWait = 0;
         } else if (!syncBodyOn) {
             // model{syncbody=false}: el cuerpo se queda; solo gira la cabeza (hasta «mh»)
@@ -1492,6 +1606,27 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (level() instanceof ServerLevel sl) for (ServerPlayer p : sl.players()) if (p.distanceToSqr(this) <= r * r) now.add(p);
         for (ServerPlayer p : new ArrayList<>(bar.getPlayers())) if (!now.contains(p)) bar.removePlayer(p);
         for (ServerPlayer p : now) bar.addPlayer(p);
+        // La música de la pelea (orden del dueño): a quien ve la barra del jefe; se le quita al irse (primero los que se
+        // van: al reaparecer tras morir, el jugador es otro objeto con la misma conexión)
+        if (!isMainBoss()) return;
+        for (ServerPlayer p : new ArrayList<>(musicFor)) {
+            if (!now.contains(p)) {
+                SkillMobs.music(p, getUUID(), false);
+                musicFor.remove(p);
+            }
+        }
+        for (ServerPlayer p : now) {
+            if (!musicFor.contains(p)) {
+                SkillMobs.music(p, getUUID(), true);
+                musicFor.add(p);
+            }
+        }
+    }
+
+    /** Se acaba la música de la pelea para todos (muere o se va). */
+    private void stopMusic() {
+        for (ServerPlayer p : musicFor) SkillMobs.music(p, getUUID(), false);
+        musicFor.clear();
     }
 
     private Component barTitle() {
@@ -1522,6 +1657,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 }
             }
             if (bar != null) bar.removeAllPlayers();
+            stopMusic();
             SkillMobs.removed(this);
             if (isMainBoss() && reason != RemovalReason.KILLED) Rifts.bossGone(this);
             // Murió esperando un relevo que no llegó a salir: la pelea se gana con él
@@ -1572,6 +1708,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public AABB getBoundingBoxForCulling() {
         double r = model == null ? 0 : net.tierrasfantasticas.tfclient.vfx.VfxHitboxes.reach(model);
+        // (los rayos de su muerte épica llegan lejos)
+        if (epicDeath() > 0) r = Math.max(r, 24);
         return r <= 0 ? super.getBoundingBoxForCulling() : getBoundingBox().inflate(r);
     }
 

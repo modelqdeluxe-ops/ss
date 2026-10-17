@@ -58,6 +58,8 @@ public final class SkillActor {
     /** Texto de un text_display (settextdisplay): letras de la fuente de la clase o texto normal. */
     String text;
     float scale = 1F;
+    /** La escala que tenía al morir (la muerte épica lo encoge desde ella; 0 = aún no). */
+    float deathScale;
     /** spin: grados por tick que gira sobre sí mismo y hasta qué edad. */
     float spin;
     int spinUntil;

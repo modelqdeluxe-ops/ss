@@ -4,7 +4,7 @@ Este documento sirve para que otra IA (o persona) retome los jefes sin tener que
 CHECKPOINT de `HANDOFF.md`, porque las reglas del dueño están allí (español, nada de subagentes, compilar con GitHub
 Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
 
-- **Estado:** TF Client **1.3.81**.
+- **Estado:** TF Client **1.3.83**.
   - 1.3.75: jefes, grietas y `/tf boss`.
   - 1.3.76: la IA, fiel a MythicMobs/ModelEngine.
   - 1.3.77: el cerebro táctico.
@@ -33,6 +33,11 @@ Actions, publicar como Release y sin abrir nunca el juego ni un servidor).
     `@Cone`, `@Sphere`, `@Rectangle`, `@BlocksInRadius`, `@BlocksNearOrigin`; `score`, `globalscore`, `wearing`,
     `haspermission`… de verdad; pantallas (`blackscreen`, `bloodyscreen`, `bossborder`, `skybox`, `sendtoast`),
     `enderbeam`, `hologram`, `chainmissile`, `switch`, `variablemath`, `consume`, `swap`, `teleportin`…
+  - 1.3.82: la IA de MythicMobs (AIGoalSelectors/AITargetSelectors, el golpe de Minecraft) y 12 jefes de LittleRoom
+    más (§3.8).
+  - 1.3.83: lo que pidió el dueño al probarlos (§3.9): el alcance real de cada golpe, girarse antes de golpear, el
+    cuerpo hacia donde anda, sin objetos, la barra se va al morir, **música de la pelea** y **muerte épica** (rayos
+    como el dragón del End).
 - **Regla del dueño:** «quiero que este motor sea perfecto y bien corregido para todos los bosses que metamos». Ver
   §7: nada se publica sin el auditor a 0, su prueba y el simulador.
 - **Packs que hay:** 5 de LittleRoom y otros: Gárgola, Hidra, Abominación Parasitaria, Esqueleto de la Torre y Astwood.
@@ -439,6 +444,25 @@ override olvidó el pack; la **vista previa** esconde lo que el jefe esconde al 
 dice `preview_hide`. El simulador corre también los scripts `mm:` de las animaciones (Eldric empieza su pelea desde
 uno) y `stance`, `altitude`, `variableisset`, `moving`…
 
+### 3.9 Lo que pidió el dueño al probar los jefes nuevos (1.3.83)
+
+Queja del dueño: *«algunos se quedan estúpidos y a veces me ignoran, se giran mal, caminan de lado, tiran ataques al
+aire, sus boss bar no desaparecen al morir, sus ítems no deben dropearse»*, y que suene **siempre una música** al
+empezar la pelea (la manda él: `sounds/jefes/musica.ogg`) y que **cada muerte sea épica, como la del dragón del End**.
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| **Hasta dónde llega cada golpe** | `SkillBrain.reachOf/hits/boneHit` (copia: `sim_ai.reach_of`) | Al leer el ataque se mira a dónde van sus golpes: un área alrededor (`@PIR{r}`, `@EIR{r}`…), un cono (`@LivingInCone{r}`), un anillo, `@Forward{f}` o un **tótem en un hueso** (`@modelpart`): dónde está ese hueso en la animación que el ataque tiene puesta **en el instante en que sale el tótem** (siguiendo sus `delay`), hacia delante (lo que alcanza a quien tiene enfrente) más el radio del tótem; si el pack ya elige por el lado (`fieldofview` girado ≥ 45°, golpes detrás), en redondo. Si algún golpe va a `@target` (o al de la línea), dispara, se lanza o salta, **no tiene tope** (`far`: valen las condiciones del pack). Los packs ponen condiciones con holgura (los golpes de escudo del Esqueleto llegan a 4-7 y su condición es `0to8`; su pisotón, a 3,7). |
+| No golpear al aire | `SkillBrain.usable`, `Attack.sweet` | La distancia que busca no pasa del 80 % de lo que llega su golpe; un golpe con tope no se lanza si el jugador está más lejos que su alcance + 0,6 + medio ancho del jugador. Si en **3 s** no entra (el jefe no puede andar hasta él), lo lanza igual, como el pack. |
+| Mirar antes de un golpe por delante | `SkillBrain.tick/facing`, `Host.face` | Un golpe por delante (cono, hueso, `@forward`) sin `fieldofview` girado ni etiqueta de detrás: si el cuerpo no tiene al jugador a menos de 50°, **primero se gira** (medio camino cada 2 ticks, 4 veces como mucho) y luego golpea; con el modelo bloqueado (`lockmodel` del ataque de antes) espera hasta 20 ticks a que el pack lo suelte. En un combo (`chain`) o a la vez que otro, solo si ya le mira. El simulador cuenta «golpes por delante lanzados sin mirarle» y «golpes con alcance lanzados fuera de su alcance (al aire)»; `--sin-alcance` simula como la 1.3.82 para comparar (el Esqueleto: 6 de 32 al aire → 0; Kazk, el Rey Calabaza y el Mecha Piglin: 3-22 de lado → 0). |
+| No andar de lado | `BossEntity.turnBody` | Andando, **el cuerpo va hacia donde anda** (BodyRotationControl de Minecraft, que copia ModelEngine) y la cabeza mira a su objetivo hasta `mh`; si se aparta de él (más de 110° de donde mira), retrocede mirándole. Antes el cuerpo miraba al jugador al rodearle o al apartarse. |
+| No quedarse plantado | `BossEntity.customServerAiStep` (`noPath`) | Si Minecraft no le encuentra camino (cajas de 3-6 bloques no caben) o el camino no llega y está a menos de 32 bloques, va derecho (`MoveControl.setWantedPosition`). |
+| No ignorar | `BossEntity.configure` | El jefe ve a todo el que esté en su arena: `FollowRange` al menos la correa + 8 (48); sus esbirros, lo de su pack. (El Mega Guardián es un Warden: no te ve si vas agachado y no corres; eso es del pack.) |
+| La barra se va al morir | `BossEntity.die` | Se quita en cuanto muere (antes se quedaba a 0 mientras duraba su muerte). **Muerto es muerto**: `isDeadOrDying` cuenta `dead` (una skill de `~onDeath` que le devuelva vida no lo levanta a medias). |
+| Sin objetos | `SkillRuntime` (`dropitem` sin efecto, en `STUB_OK` del auditor), `BossEvents.onDrops/onExperience` | Los jefes no sueltan nada (orden del dueño): ni los `dropitem` del pack (el cofre del Esqueleto, el sombrero del Rey Calabaza, el ojo del Contemplador) ni lo que llevan o la experiencia de los mobs de Minecraft que sacan (`summon{type=ZOMBIE}`, marca `SkillMobs.SUMMONED`). Lo que se gana es lo de la grieta. |
+| **Música de la pelea** | `client/TFBossMusic`, `BossEntity.updateBar/stopMusic`, `SkillScreen` («music»), `MusicManagerMixin` | El jefe se la pide a quien ve su barra (mensaje de pantalla `music`, a = el jefe); suena en bucle (`tfclient:jefes.musica`, `stream`, sin posición) con 1,5 s de entrada y 3 s de salida mientras algún jefe la pida; se va al morir el jefe, si se va o si el jugador se aleja. Con el relevo (el Mamut del Druida) no se corta. Va con el volumen de **«Discos»** (así suena aunque se tenga la música de Minecraft quitada) y la música normal se calla mientras suena. La pista está fuera de `sounds/bosses/` (que el conversor borra al rehacer). |
+| **Muerte épica** | `BossEntity.die/epicTick` (dato `EPIC`), `BossRenderer.rays`, `VfxLayers.death` | Solo el jefe que acaba la pelea (no el que deja relevo): dura su animación de muerte + 2 s, como poco 8 s; grita como el dragón (`ENDER_DRAGON_DEATH`); le salen **rayos de luz** como los del dragón (las cuentas de `EnderDragonRenderer`, blancos en el centro y del color del jefe hacia fuera, a su tamaño), chispas de su color y destellos que se le escapan, explosiones cada vez más seguidas y al final una grande cada tick mientras **el modelo se encoge hasta desaparecer**, y un estallido (destello, chispas, explosión, cohete). Las partículas se ven a 96 bloques. La animación de muerte del pack se queda en su último fotograma hasta el final (si no, volvía a ponerse de pie). |
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -535,6 +559,8 @@ Para ver las etiquetas de cada jefe: `python3 tools/bosses/sim_ai.py --smart 1 -
 | Rodear (inteligencia ≥ 0,6) | `BossEntity.customServerAiStep` | Si no tiene ningún ataque posible, **le rodea** (cambia de lado cada 2–4,5 s). Si está demasiado cerca para lo que quiere hacer, se aparta. |
 | Seguir al atacar (inteligencia ≥ 0,4) | `SkillBrain.tracking` | Mientras ataca (`attacking`: gcd o lo que dura el ataque), se gira hacia el jugador a 2 + 8 × inteligencia grados por tick hasta que `lockmodel` lo congela. |
 | Girarse parado | `BossEntity.turnBody` | `rde`/`rdu` del pack, acortados con la inteligencia (§3.1). |
+| Andar | `BossEntity.turnBody` | El cuerpo hacia donde anda; la cabeza a su objetivo hasta `mh`; retrocede mirándole (1.3.83, §3.9). |
+| Alcance de cada golpe y mirarle antes (1.3.83) | `SkillBrain.reachOf`, `usable`, `facing` | §3.9: se pone a la distancia a la que su golpe llega, no lo lanza al aire y se gira antes de un golpe por delante. |
 | Objetivo (inteligencia ≥ 0,6) | `BossEntity.pickTarget` | Además de la amenaza: + a quien se cura, + a quien le dispara de lejos y, con ≥ 0,8, + a quien está por debajo del 30 % de vida. Solo cambia si el nuevo le compensa bastante. |
 | Furia por fases (inteligencia ≥ 0,5) | `BossEntity.rhythm` | Por debajo del 50 % y del 25 % de vida, los cooldowns se acortan otro 12 % × inteligencia en cada fase. |
 
@@ -618,8 +644,9 @@ Los objetos de los packs (la Guja, la Égida y los Cuernos del Esqueleto) los re
 - **El arma:** `~onSwing` al golpear con el golpe cargado (paquete `Swing` desde `BossClient`).
 - **El escudo:** `~onTimer` mientras te cubres.
 
-`BossWorld` hace lo que el motor pide al mundo: los esbirros (hasta 24 por jefe), los objetos que caen y los asientos
-de los agarres (`SeatEntity`; con `BossEvents` no se sale con mayúsculas).
+`BossWorld` hace lo que el motor pide al mundo: los esbirros (hasta 24 por jefe) y los asientos de los agarres
+(`SeatEntity`; con `BossEvents` no se sale con mayúsculas). Desde la 1.3.83 **los jefes no sueltan objetos** (orden del
+dueño, §3.9): los objetos siguen registrados (se pueden dar con comandos), pero `dropitem` no hace nada.
 
 ---
 
@@ -641,7 +668,7 @@ los jefes» de `tf-client.yml`, con Python 3.13): si algo cambia a un jefe ya pu
 
 | Comando | Para qué |
 |---|---|
-| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia y `--antes` reproduce el motor de la 1.3.75 para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos y los pasos atrás. Con `-v`, cada ataque y cada combo. |
+| `python3 tools/bosses/sim_ai.py [jefe] --min 8 [--seed N] [--dif P] [--smart X] [-v] [--antes]` | La IA. El jugador simulado se mueve, pega, sale despedido, a veces está detrás, se cura, se cubre y dispara. `--dif` pone una dificultad de `/tf boss` (su inteligencia, tempo y ritmo), `--smart` solo la inteligencia, `--antes` reproduce el motor de la 1.3.75 y `--sin-alcance` el cerebro de la 1.3.82 (sin mirar hasta dónde llega cada golpe ni girarse antes) para comparar. Saca los ataques por minuto, cuántos distintos de los que tiene, los que no salieron, cuántos repite, las curas castigadas, los combos, los pasos atrás y, desde la 1.3.83, los golpes lanzados fuera de su alcance («al aire») y los golpes por delante lanzados sin mirarle. Con `-v`, cada ataque y cada combo. |
 | `python3 tools/bosses/audit.py [jefe ...] [--sin-avisos]` | El auditor (también al final de `build_bosses.py`). Tiene que dar **0 problemas** en cada jefe. Sabe solo lo que tiene el motor: lee las etiquetas `case` de `SkillRuntime.apply`, `SkillConds.test` y `SkillTargets.targets`, los `run(h, "...")` de `SkillMobs` (disparadores) y qué `case` no hacen nada. Los **avisos** (`·`) no cuentan pero dicen lo que no se verá igual (hoy: `segment`, las capas y colas rígidas). |
 | `python3 tools/bosses/audit.py --prueba` | Se prueba a sí mismo (20 errores en la 1.3.81 —con un disparador del tipo de mob que no se copia y una correa en un hueso que no es `l_`—; 16 en la 1.3.80, también de modelos: UV fuera de la textura, pista de un hueso que no existe, textura que falta, IK rota). Antes: mete 11 errores a propósito en una copia del Esqueleto (mecánica, condición, objetivo, skill, animación, hueso, sonido y modelo que no existen, un disparador que no salta, un `~onAttack` que hace algo y una mecánica «de mentira» sin su porqué) y tiene que verlos todos. Si tocas el auditor, pásala. |
 | `python3 tools/bosses/audit.py --cobertura` | El catálogo de MythicMobs 5 / ModelEngine 4 (`tools/bosses/mythic_ref.py`, con alias; `*` = habitual en jefes) contra el motor: cuántas hay, cuáles no hacen nada y cuáles faltan. En la 1.3.81: mecánicas 198/235 (faltan las que cambian el mundo o el inventario, dueño/montura y `disguise`: §11.3), condiciones 88/88, objetivos 47/47, disparadores 22/39 (faltan los del tipo de mob, regiones y cinemáticas). En la 1.3.79: 110/192, 81/88, 42/47, 11/26. |
@@ -709,7 +736,10 @@ antes de dar algo por arreglado.
 | «Solo hace un ataque» | Cooldowns o variables que no caducan; una condición que nunca se cumple; el cerebro no ve el ataque como ofensivo | `sim_ai.py <id> -v`, `SkillRuntime.runMeta`/`putVar`, `SkillBrain.build` |
 | «Se queda en el aire / en una pose rara» | Una animación que no se sustituye (prioridades) o un `hold` que nadie quita | `VfxLayers.play/stop`, los `state{p=..;r=true}` del pack |
 | «Pega al aire / no le da» | Hueso mal (`@modelpart`), pose del servidor distinta, el tótem a otra altura | `SkillModels.modelPart/pose`, `SkillMovers.totem` (`yo`) |
-| «No se gira / ataca de lado» | `lookYaw`/`bodyYaw`, `bodyrotation` del pack, `lockmodel` que no se suelta | `BossEntity.turnBody` |
+| «No se gira / ataca de lado» | `lookYaw`/`bodyYaw`, `bodyrotation` del pack, `lockmodel` que no se suelta | `BossEntity.turnBody`, `SkillBrain.facing` (§3.9) |
+| «Anda de lado» | El cuerpo debe ir hacia donde anda (1.3.83) | `BossEntity.turnBody` (rama «moving && walks») |
+| «Tira ataques al aire» | Alcance de su golpe más corto que su condición; se lanzó sin mirarle | `SkillBrain.reachOf` (`sim_ai.py <id> --dif normal`: «al aire», «sin mirarle»; `-v`) |
+| «La barra no se va» / «suelta objetos» / «no suena la música» | §3.9 | `BossEntity.die`, `BossEvents.onDrops`, `TFBossMusic` (volumen de «Discos») |
 | «No anda» | `MovementSpeed` 0 sin `setspeed`, navegación de un mob muy grande, la correa | `BossEntity.applySpeed`, `customServerAiStep` |
 | «No me ataca» | Estás en creativo; la `FollowRange` del pack; fuera de la correa | `BossEntity.pickTarget` |
 | «Es tonto / muy predecible» | La inteligencia de su dificultad; los pesos del cerebro | `/tf boss` (fila Inteligencia), `SkillBrain.score` |
@@ -777,7 +807,15 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.82
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.83
+
+**1.3.83**: lo que pidió el dueño al probar los jefes nuevos (§3.9: alcance real de los golpes, girarse antes de
+golpear, no andar de lado, sin objetos, barra al morir, música de la pelea y muerte épica). **Sin probar en el juego**:
+pedir al dueño que mire una pelea entera (que la música entre y se vaya, los rayos y el estallido de la muerte, que
+no ande de lado ni golpee al aire). La música es una versión de Final Destination (Super Smash Bros. Brawl) de
+AdamCrossing: va dentro del jar que se descarga desde GitHub; si alguien reclama sus derechos, cambiarla por otra
+(`sounds/jefes/musica.ogg`, OGG Vorbis; la del dueño se pasó con `ffmpeg -c:a libvorbis -q:a 3` y se le quitaron los
+4 s de silencio del final).
 
 **1.3.82**: §3.8 y los 12 jefes de LittleRoom de la segunda tanda (Rey Calabaza, Archivista, Eldric, Druida Boreal,
 Contemplador, Arconte Astral, Kazk, Guardián Hueco, Ignevar, Mecha Piglin, Mega Guardián, Tormenta del Wither). Quedan

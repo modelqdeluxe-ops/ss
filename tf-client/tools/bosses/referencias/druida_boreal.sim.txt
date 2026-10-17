@@ -17,13 +17,13 @@ druida_boreal       480 s, vida  68.4%: 201 ataques (25.1/min), 4 distintos de 1
      repite seguido: 22 de 200; curas castigadas: 10 de 15; combos: 0; pasos atrás: 0
 
 ## semilla 3, demencial
-druida_boreal       480 s, vida  70.4%: 288 ataques (36.0/min), 4 distintos de 10
-       99  cast_quick_2
-       97  staff_slam
-       91  cast_quick_1
+druida_boreal       480 s, vida  70.0%: 290 ataques (36.2/min), 4 distintos de 10
+       98  cast_quick_2
+       98  staff_slam
+       93  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 36 de 287; curas castigadas: 11 de 16; combos: 32; pasos atrás: 35
+     repite seguido: 33 de 289; curas castigadas: 9 de 16; combos: 29; pasos atrás: 47
 
 ## semilla 11, normal
 druida_boreal       480 s, vida  71.8%: 192 ataques (24.0/min), 4 distintos de 10
@@ -35,10 +35,10 @@ druida_boreal       480 s, vida  71.8%: 192 ataques (24.0/min), 4 distintos de 1
      repite seguido: 26 de 191; curas castigadas: 10 de 16; combos: 0; pasos atrás: 0
 
 ## semilla 11, dificil
-druida_boreal       480 s, vida  74.2%: 224 ataques (28.0/min), 4 distintos de 10
-       81  staff_slam
-       77  cast_quick_2
+druida_boreal       480 s, vida  73.4%: 229 ataques (28.6/min), 4 distintos de 10
+       85  staff_slam
+       78  cast_quick_2
        65  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 30 de 223; curas castigadas: 12 de 17; combos: 22; pasos atrás: 29
+     repite seguido: 29 de 228; curas castigadas: 11 de 18; combos: 26; pasos atrás: 37
