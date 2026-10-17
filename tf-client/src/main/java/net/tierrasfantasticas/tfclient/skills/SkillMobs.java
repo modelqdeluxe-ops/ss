@@ -263,7 +263,7 @@ public final class SkillMobs {
             Entity oe = a.owner == null ? null : a.owner.entity;
             String by = a.owner == null ? "sin dueño" : oe != null ? oe.getType().toShortString() + " " + oe.getUUID().toString().substring(0, 8)
                     + (oe.isRemoved() ? " QUITADO" : "") : a.owner.actor != null ? "efecto " + a.owner.actor.name() + (a.owner.actor.alive ? "" : " (ya no está)") : "?";
-            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : "") + " [de " + by + "]");
+            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : "") + " [de " + by + (a.origin != null ? ", sale de " + a.origin + " (ahora " + SkillRuntime.clock + ")" : "") + "]");
         }
         return out;
     }

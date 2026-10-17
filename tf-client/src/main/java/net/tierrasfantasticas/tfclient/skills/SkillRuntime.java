@@ -1414,6 +1414,7 @@ public final class SkillRuntime {
         ServerLevel level = ctx.caster.level();
         SkillActor a = new SkillActor(ctx.cls, def, level, at, yaw, pitch, ctx.caster);
         a.host = ctx.host;
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON) a.origin = ctx.skill + " en el tick " + clock;
         ACTORS.add(a);
         SkillNet.near(level, at, a.spawnMessage());
         Ctx mine = ctx.as(a.who);

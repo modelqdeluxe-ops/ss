@@ -323,7 +323,7 @@ public final class BossTest {
         if (t % 40 == 0) {
             // Efectos que no se quitan (las llamas de texto del Esqueleto viven 20 ticks): más de 15 s, es que se atascan
             for (String old : net.tierrasfantasticas.tfclient.skills.SkillMobs.oldActors(300)) {
-                String key = old.replaceAll(" \\d+t", "");
+                String key = old.replaceAll(" \\d+t", "").replaceAll(" \\(ahora \\d+\\)", "");
                 if (r.stuck.add(key) && r.stuck.size() <= 8) r.event("efecto que no se quita: " + old);
             }
         }
