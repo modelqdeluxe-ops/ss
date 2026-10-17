@@ -1,55 +1,55 @@
 ## semilla 3, el pack tal cual
-kazk                480 s, vida  65.9%: 200 ataques (25.0/min), 4 distintos de 15
+kazk                480 s, vida  61.6%: 194 ataques (24.2/min), 4 distintos de 15
        76  attack_1
-       62  attack_2
-       56  attack_3
-        6  attack_4
+       57  attack_2
+       53  attack_3
+        8  attack_4
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, scream, spit, tail_attack
-     repite seguido: 2 de 199; curas castigadas: 12 de 15
+     repite seguido: 3 de 193; curas castigadas: 10 de 12
 
 ## semilla 3, normal
-kazk                480 s, vida  55.0%: 198 ataques (24.8/min), 4 distintos de 15
-       71  attack_1
-       69  attack_2
-       49  attack_3
-        9  attack_4
+kazk                480 s, vida  62.4%: 203 ataques (25.4/min), 4 distintos de 15
+       69  attack_1
+       68  attack_2
+       58  attack_3
+        8  attack_4
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, scream, spit, tail_attack
-     repite seguido: 0 de 197; curas castigadas: 1 de 17; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 189
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 189
+     repite seguido: 0 de 202; curas castigadas: 0 de 10; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 195
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 195
 
 ## semilla 3, demencial
-kazk                480 s, vida  68.1%: 276 ataques (34.5/min), 5 distintos de 15
-      100  attack_2
-       99  attack_1
-       69  attack_3
-        7  attack_4
+kazk                480 s, vida  69.7%: 290 ataques (36.2/min), 5 distintos de 15
+      103  attack_1
+      102  attack_2
+       79  attack_3
+        5  attack_4
         1  scream
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 275; curas castigadas: 1 de 14; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 268
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 268
+     repite seguido: 0 de 289; curas castigadas: 1 de 17; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 284
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 284
 
 ## semilla 11, normal
-kazk                480 s, vida  60.5%: 198 ataques (24.8/min), 5 distintos de 15
-       68  attack_2
-       68  attack_1
-       51  attack_3
-       10  attack_4
-        1  scream
-     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 197; curas castigadas: 2 de 18; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 187
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 187
-
-## semilla 11, dificil
-kazk                480 s, vida  65.4%: 235 ataques (29.4/min), 5 distintos de 15
-       81  attack_1
-       80  attack_2
-       64  attack_3
+kazk                480 s, vida  57.8%: 206 ataques (25.8/min), 5 distintos de 15
+       71  attack_2
+       71  attack_1
+       54  attack_3
         9  attack_4
         1  scream
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 234; curas castigadas: 1 de 14; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 225
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 225
+     repite seguido: 1 de 205; curas castigadas: 0 de 14; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 196
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 196
+
+## semilla 11, dificil
+kazk                480 s, vida  62.3%: 228 ataques (28.5/min), 5 distintos de 15
+       78  attack_1
+       78  attack_2
+       60  attack_3
+       11  attack_4
+        1  scream
+     sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
+     repite seguido: 0 de 227; curas castigadas: 0 de 13; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 216
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 216

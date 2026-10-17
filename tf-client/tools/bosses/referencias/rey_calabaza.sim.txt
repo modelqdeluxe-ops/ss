@@ -1,67 +1,67 @@
 ## semilla 3, el pack tal cual
-rey_calabaza        480 s, vida  50.3%: 115 ataques (14.4/min), 7 distintos de 7
-       41  swing_1
-       27  swing_2
-       23  teleport
+rey_calabaza        480 s, vida  42.5%: 116 ataques (14.5/min), 7 distintos de 7
+       40  swing_1
+       31  swing_2
+       22  teleport
        11  throw_scythe
-       11  summon
+       10  summon
         1  passive_layer
         1  greet
      sin salir: death
-     repite seguido: 7 de 114; curas castigadas: 5 de 14
+     repite seguido: 5 de 115; curas castigadas: 3 de 10
 
 ## semilla 3, normal
-rey_calabaza        480 s, vida  60.3%: 122 ataques (15.2/min), 7 distintos de 7
-       44  swing_1
-       28  teleport
-       25  swing_2
+rey_calabaza        480 s, vida  50.0%: 116 ataques (14.5/min), 7 distintos de 7
+       42  swing_1
+       27  swing_2
+       22  teleport
        12  throw_scythe
        11  summon
         1  passive_layer
         1  greet
      sin salir: death
-     repite seguido: 8 de 121; curas castigadas: 6 de 15; combos: 0
+     repite seguido: 7 de 115; curas castigadas: 6 de 14; combos: 0
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 44
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 33
 
 ## semilla 3, demencial
-rey_calabaza        480 s, vida  51.3%: 166 ataques (20.8/min), 7 distintos de 7
-       62  swing_1
-       39  swing_2
-       29  teleport
-       17  summon
+rey_calabaza        480 s, vida  58.7%: 165 ataques (20.6/min), 7 distintos de 7
+       57  swing_1
+       41  swing_2
+       30  teleport
+       18  summon
        17  throw_scythe
         1  passive_layer
         1  greet
      sin salir: death
-     repite seguido: 10 de 165; curas castigadas: 0 de 11; combos: 30
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 65
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 48
+     repite seguido: 5 de 164; curas castigadas: 1 de 11; combos: 26
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 64
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 46
 
 ## semilla 11, normal
-rey_calabaza        480 s, vida  49.6%: 120 ataques (15.0/min), 7 distintos de 7
-       45  swing_1
+rey_calabaza        480 s, vida  46.2%: 125 ataques (15.6/min), 7 distintos de 7
+       48  swing_1
        26  teleport
-       23  swing_2
+       25  swing_2
        12  summon
        12  throw_scythe
         1  passive_layer
         1  greet
      sin salir: death
-     repite seguido: 9 de 119; curas castigadas: 2 de 12; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 48
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 36
+     repite seguido: 8 de 124; curas castigadas: 2 de 9; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 47
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 35
 
 ## semilla 11, dificil
-rey_calabaza        480 s, vida  49.4%: 142 ataques (17.8/min), 7 distintos de 7
+rey_calabaza        480 s, vida  53.5%: 145 ataques (18.1/min), 7 distintos de 7
        52  swing_1
        33  swing_2
-       28  teleport
-       14  summon
+       32  teleport
+       13  summon
        13  throw_scythe
         1  passive_layer
         1  greet
      sin salir: death
-     repite seguido: 8 de 141; curas castigadas: 4 de 16; combos: 25
+     repite seguido: 5 de 144; curas castigadas: 1 de 13; combos: 24
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 52
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 38
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 39

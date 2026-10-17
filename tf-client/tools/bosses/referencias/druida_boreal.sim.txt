@@ -1,44 +1,44 @@
 ## semilla 3, el pack tal cual
-druida_boreal       480 s, vida  46.6%: 148 ataques (18.5/min), 4 distintos de 10
-       81  staff_slam
-       47  cast_quick_1
-       19  cast_quick_2
+druida_boreal       480 s, vida  54.7%: 155 ataques (19.4/min), 4 distintos de 10
+       74  staff_slam
+       50  cast_quick_1
+       30  cast_quick_2
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 40 de 147; curas castigadas: 8 de 12
+     repite seguido: 32 de 154; curas castigadas: 9 de 13
 
 ## semilla 3, normal
-druida_boreal       480 s, vida  61.2%: 194 ataques (24.2/min), 4 distintos de 10
-       74  staff_slam
-       68  cast_quick_2
-       51  cast_quick_1
+druida_boreal       480 s, vida  58.9%: 188 ataques (23.5/min), 4 distintos de 10
+       69  staff_slam
+       63  cast_quick_2
+       55  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 19 de 193; curas castigadas: 7 de 13; combos: 0
+     repite seguido: 21 de 187; curas castigadas: 8 de 16; combos: 0
 
 ## semilla 3, demencial
-druida_boreal       480 s, vida  63.7%: 262 ataques (32.8/min), 4 distintos de 10
+druida_boreal       480 s, vida  65.4%: 272 ataques (34.0/min), 4 distintos de 10
       103  staff_slam
-       88  cast_quick_2
-       70  cast_quick_1
+       92  cast_quick_2
+       76  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 36 de 261; curas castigadas: 11 de 17; combos: 32
+     repite seguido: 32 de 271; curas castigadas: 12 de 19; combos: 29
 
 ## semilla 11, normal
-druida_boreal       480 s, vida  58.4%: 189 ataques (23.6/min), 4 distintos de 10
-       78  staff_slam
+druida_boreal       480 s, vida  55.9%: 187 ataques (23.4/min), 4 distintos de 10
+       79  staff_slam
        58  cast_quick_2
-       52  cast_quick_1
+       49  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 28 de 188; curas castigadas: 5 de 12; combos: 0
+     repite seguido: 34 de 186; curas castigadas: 5 de 13; combos: 0
 
 ## semilla 11, dificil
-druida_boreal       480 s, vida  63.0%: 211 ataques (26.4/min), 4 distintos de 10
-       80  staff_slam
+druida_boreal       480 s, vida  63.4%: 212 ataques (26.5/min), 4 distintos de 10
+       86  staff_slam
        72  cast_quick_2
-       58  cast_quick_1
+       53  cast_quick_1
         1  wind_loop
      sin salir: attack_1, attack_2, attack_3, attack_4, back_left_leg_attack, back_right_leg_attack, fly
-     repite seguido: 24 de 210; curas castigadas: 8 de 16; combos: 15
+     repite seguido: 32 de 211; curas castigadas: 7 de 17; combos: 20

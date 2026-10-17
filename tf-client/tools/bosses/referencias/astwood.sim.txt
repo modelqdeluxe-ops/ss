@@ -1,87 +1,87 @@
 ## semilla 3, el pack tal cual
-astwood             480 s, vida  37.0%: 94 ataques (11.8/min), 12 distintos de 12
-       14  attack_left
-       13  enclose_player
-       10  summon_minions
-        9  attack
+astwood             480 s, vida  39.0%: 90 ataques (11.2/min), 12 distintos de 12
+       13  attack
+       11  hit_floor
+       11  summon_minions
+       10  enclose_player
+       10  attack_left
         9  wood_spikes
-        8  hit_floor
-        7  absorb_life_start
-        7  absorb_life_end
-        6  summon_wood_wall
-        4  summon_energy_ball
-        4  summon_rock_rain
-        3  summon_wood_wall_minions
-     repite seguido: 0 de 93; curas castigadas: 3 de 12
+        6  absorb_life_start
+        6  absorb_life_end
+        6  summon_wood_wall_minions
+        3  summon_wood_wall
+        3  summon_energy_ball
+        2  summon_rock_rain
+     repite seguido: 2 de 89; curas castigadas: 3 de 12
 
 ## semilla 3, normal
-astwood             480 s, vida  58.1%: 180 ataques (22.5/min), 12 distintos de 12
-       22  hit_floor
-       20  enclose_player
+astwood             480 s, vida  64.5%: 178 ataques (22.2/min), 12 distintos de 12
+       21  hit_floor
+       20  summon_rock_rain
+       20  wood_spikes
+       19  summon_energy_ball
+       19  enclose_player
        19  summon_minions
-       18  attack
-       18  summon_rock_rain
-       18  wood_spikes
-       16  summon_energy_ball
-       16  attack_left
-       12  summon_wood_wall
+       16  attack
+       13  attack_left
+       10  summon_wood_wall
         8  absorb_life_start
         8  absorb_life_end
         5  summon_wood_wall_minions
-     repite seguido: 0 de 179; curas castigadas: 6 de 11; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 2 de 75
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 34
+     repite seguido: 0 de 177; curas castigadas: 5 de 11; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 4 de 69
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 29
 
 ## semilla 3, demencial
-astwood             480 s, vida  57.4%: 228 ataques (28.5/min), 12 distintos de 12
-       33  hit_floor
-       31  enclose_player
-       30  summon_minions
-       28  wood_spikes
-       24  summon_rock_rain
+astwood             480 s, vida  68.5%: 212 ataques (26.5/min), 12 distintos de 12
+       30  enclose_player
+       30  wood_spikes
+       28  summon_minions
+       26  summon_rock_rain
+       25  hit_floor
        21  summon_energy_ball
-       11  absorb_life_start
-       11  absorb_life_end
-       10  summon_wood_wall_minions
-       10  attack_left
-       10  attack
-        9  summon_wood_wall
-     repite seguido: 0 de 227; curas castigadas: 5 de 14; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 2 de 83
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 20
+       12  absorb_life_start
+       12  absorb_life_end
+        8  summon_wood_wall
+        8  summon_wood_wall_minions
+        6  attack_left
+        6  attack
+     repite seguido: 2 de 211; curas castigadas: 12 de 17; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 2 de 65
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 12
 
 ## semilla 11, normal
-astwood             480 s, vida  58.6%: 193 ataques (24.1/min), 12 distintos de 12
-       27  hit_floor
-       24  attack
-       20  summon_rock_rain
+astwood             480 s, vida  63.1%: 185 ataques (23.1/min), 12 distintos de 12
+       24  hit_floor
+       21  summon_rock_rain
        20  enclose_player
        20  summon_minions
        20  wood_spikes
-       18  summon_energy_ball
-       12  attack_left
-        9  summon_wood_wall_minions
+       19  attack
+       17  summon_energy_ball
+       13  attack_left
+       10  summon_wood_wall_minions
         8  absorb_life_start
         8  absorb_life_end
-        7  summon_wood_wall
-     repite seguido: 0 de 192; curas castigadas: 5 de 14; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 83
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 36
+        5  summon_wood_wall
+     repite seguido: 0 de 184; curas castigadas: 6 de 16; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 76
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 32
 
 ## semilla 11, dificil
-astwood             480 s, vida  57.5%: 187 ataques (23.4/min), 12 distintos de 12
+astwood             480 s, vida  68.8%: 195 ataques (24.4/min), 12 distintos de 12
        27  hit_floor
        24  wood_spikes
+       24  enclose_player
        24  summon_minions
-       23  enclose_player
        22  summon_rock_rain
-       18  summon_energy_ball
+       20  summon_energy_ball
        12  summon_wood_wall_minions
-        9  attack_left
+       10  attack
         9  absorb_life_start
         9  absorb_life_end
+        7  attack_left
         7  summon_wood_wall
-        3  attack
-     repite seguido: 0 de 186; curas castigadas: 3 de 11; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 63
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 12
+     repite seguido: 1 de 194; curas castigadas: 7 de 13; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 68
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 17
