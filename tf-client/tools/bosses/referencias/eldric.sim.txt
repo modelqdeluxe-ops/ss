@@ -12,61 +12,61 @@ eldric              480 s, vida  58.8%: 115 ataques (14.4/min), 9 distintos de 8
      repite seguido: 3 de 114; curas castigadas: 11 de 15
 
 ## semilla 3, normal
-eldric              480 s, vida  56.3%: 110 ataques (13.8/min), 9 distintos de 8
-       23  attack_1
-       20  attack_4
-       18  attack_3
+eldric              480 s, vida  58.4%: 121 ataques (15.1/min), 9 distintos de 8
+       26  attack_1
+       25  attack_4
+       20  attack_3
        16  leap
        16  air
-       14  attack_2
-        1  idle_prefight
-        1  passive_layer
-        1  start_fight
-     repite seguido: 2 de 109; curas castigadas: 8 de 18; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 34
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 34
-
-## semilla 3, demencial
-eldric              480 s, vida  61.5%: 149 ataques (18.6/min), 9 distintos de 8
-       32  attack_1
-       28  attack_3
-       25  attack_4
-       21  leap
-       21  air
-       19  attack_2
-        1  idle_prefight
-        1  passive_layer
-        1  start_fight
-     repite seguido: 2 de 148; curas castigadas: 7 de 14; combos: 11; pasos atrás: 13
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 44
-     golpes por delante lanzados sin mirarle (más de 50°): 1 de 44
-
-## semilla 11, normal
-eldric              480 s, vida  62.5%: 105 ataques (13.1/min), 9 distintos de 8
-       21  attack_1
-       18  attack_3
-       17  attack_4
-       16  leap
-       15  air
        15  attack_2
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 1 de 104; curas castigadas: 6 de 15; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 32
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 32
+     repite seguido: 0 de 120; curas castigadas: 4 de 10; combos: 0; pasos atrás: 13
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 40
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 40
 
-## semilla 11, dificil
-eldric              480 s, vida  64.8%: 123 ataques (15.4/min), 9 distintos de 8
-       24  attack_1
-       23  attack_4
-       22  attack_3
-       17  leap
-       17  air
-       17  attack_2
+## semilla 3, demencial
+eldric              480 s, vida  64.6%: 156 ataques (19.5/min), 9 distintos de 8
+       39  attack_1
+       32  attack_3
+       26  attack_4
+       19  leap
+       19  air
+       18  attack_2
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 0 de 122; curas castigadas: 6 de 16; combos: 11; pasos atrás: 13
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 40
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 40
+     repite seguido: 3 de 155; curas castigadas: 11 de 15; combos: 7; pasos atrás: 22
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 44
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 44
+
+## semilla 11, normal
+eldric              480 s, vida  60.0%: 116 ataques (14.5/min), 9 distintos de 8
+       27  attack_1
+       23  attack_4
+       19  attack_3
+       15  leap
+       15  air
+       14  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 0 de 115; curas castigadas: 5 de 10; combos: 0; pasos atrás: 20
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 37
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 37
+
+## semilla 11, dificil
+eldric              480 s, vida  66.1%: 140 ataques (17.5/min), 9 distintos de 8
+       31  attack_1
+       24  attack_4
+       24  attack_3
+       20  leap
+       19  air
+       19  attack_2
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 2 de 139; curas castigadas: 8 de 17; combos: 7; pasos atrás: 10
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 43
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 43

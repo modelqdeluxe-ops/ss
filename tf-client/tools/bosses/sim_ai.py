@@ -1086,14 +1086,13 @@ class Sim:
                 rx, rz = b.x - self.px, b.z - self.pz
                 rl = math.hypot(rx, rz) or 1e-6
                 if d < plan[2] - 0.2 and not self.brain.attacking():
-                    # Demasiado cerca para lo que va a hacer: paso atrás (≈2,5 bloques) y se aparta
-                    if SMART >= 0.6 and d < plan[2] - 0.8 and self.t >= self.next_backstep and not b.locked:
+                    # Demasiado cerca para lo que va a hacer: un salto atrás (≈2,5 bloques) mirándole y se queda
+                    if SMART >= 0.4 and d < plan[2] - 0.8 and self.t >= self.next_backstep and not b.locked:
                         b.x += rx / rl * 2.5
                         b.z += rz / rl * 2.5
                         self.next_backstep = self.t + 70 + random.randrange(60)
                         self.backsteps += 1
-                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
-                    stop = 0.6
+                    gx, gz, stop = b.x, b.z, 99
                 elif plan[1] and d < want + 3:
                     ang = math.radians(25 * plan[1])
                     ux, uz = rx / rl, rz / rl
@@ -1102,8 +1101,7 @@ class Sim:
                     gx, gz = self.px + tx * max(want, 2.5), self.pz + tz * max(want, 2.5)
                     stop = 0.6
                 elif d < want - 2.5:
-                    gx, gz = b.x + rx / rl * 4, b.z + rz / rl * 4
-                    stop = 0.6
+                    gx, gz, stop = b.x, b.z, 99  # se queda donde está
                 else:
                     stop = want
             gd = math.hypot(gx - b.x, gz - b.z)

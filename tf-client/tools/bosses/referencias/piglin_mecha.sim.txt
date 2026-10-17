@@ -11,53 +11,53 @@ piglin_mecha        480 s, vida  46.5%: 121 ataques (15.1/min), 7 distintos de 1
      repite seguido: 0 de 120; curas castigadas: 4 de 10
 
 ## semilla 3, normal
-piglin_mecha        480 s, vida  65.5%: 70 ataques (8.8/min), 6 distintos de 11
-       18  slam_front
-       14  swing_2
-       14  spin_attack_short
-       13  slam_front_2
-       10  swing_1
+piglin_mecha        480 s, vida  51.0%: 105 ataques (13.1/min), 6 distintos de 11
+       24  slam_front
+       24  slam_front_2
+       21  swing_1
+       20  spin_attack_short
+       15  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 69; curas castigadas: 0 de 17; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 69
-     golpes por delante lanzados sin mirarle (más de 50°): 24 de 69
+     repite seguido: 0 de 104; curas castigadas: 0 de 16; combos: 0; pasos atrás: 33
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 104
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 104
 
 ## semilla 3, demencial
-piglin_mecha        480 s, vida  73.4%: 86 ataques (10.8/min), 6 distintos de 11
-       21  spin_attack_short
-       19  slam_front_2
-       18  slam_front
-       17  swing_2
-       10  swing_1
+piglin_mecha        480 s, vida  62.7%: 141 ataques (17.6/min), 6 distintos de 11
+       35  slam_front_2
+       30  slam_front
+       29  swing_2
+       28  spin_attack_short
+       18  swing_1
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 85; curas castigadas: 0 de 18; combos: 28; pasos atrás: 29
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 85
-     golpes por delante lanzados sin mirarle (más de 50°): 34 de 85
+     repite seguido: 1 de 140; curas castigadas: 0 de 15; combos: 78; pasos atrás: 38
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 140
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 140
 
 ## semilla 11, normal
-piglin_mecha        480 s, vida  70.6%: 70 ataques (8.8/min), 6 distintos de 11
-       15  slam_front
-       15  spin_attack_short
-       14  slam_front_2
-       14  swing_2
-       11  swing_1
+piglin_mecha        480 s, vida  59.0%: 107 ataques (13.4/min), 6 distintos de 11
+       25  slam_front_2
+       24  slam_front
+       20  spin_attack_short
+       19  swing_1
+       18  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 69; curas castigadas: 0 de 18; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 69
-     golpes por delante lanzados sin mirarle (más de 50°): 37 de 69
+     repite seguido: 1 de 106; curas castigadas: 0 de 14; combos: 0; pasos atrás: 39
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 106
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 106
 
 ## semilla 11, dificil
-piglin_mecha        480 s, vida  73.9%: 79 ataques (9.9/min), 6 distintos de 11
-       18  slam_front_2
-       17  spin_attack_short
-       16  swing_2
-       14  swing_1
-       13  slam_front
+piglin_mecha        480 s, vida  59.6%: 102 ataques (12.8/min), 6 distintos de 11
+       23  slam_front
+       23  slam_front_2
+       21  spin_attack_short
+       20  swing_1
+       14  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 78; curas castigadas: 0 de 18; combos: 19; pasos atrás: 35
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 78
-     golpes por delante lanzados sin mirarle (más de 50°): 35 de 78
+     repite seguido: 0 de 101; curas castigadas: 0 de 15; combos: 38; pasos atrás: 30
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 101
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 101

@@ -1126,11 +1126,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 double d = Math.sqrt(horizontalDistanceSqr(target.position()));
                 Vec3 rel = position().subtract(target.position()).multiply(1, 0, 1);
                 if (d < min - 0.2 && rel.lengthSqr() > 1e-4 && !SkillMobs.attacking(this)) {
-                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más; si
-                    // te pegabas a ella se quedaba quieta): paso atrás y se aparta
-                    if (difficulty.smart() >= 0.6 && d < min - 0.8) backstep(rel);
-                    goal = position().add(rel.normalize().scale(4));
-                    stop = 0.6;
+                    // Demasiado cerca para lo que va a hacer (la Abominación: todos sus ataques piden 3 bloques o más):
+                    // un salto atrás mirándole. Antes además se daba la vuelta y se alejaba andando 4 bloques: en el juego
+                    // se veía darle la espalda y correr «hacia atrás» (1.3.83, prueba en el juego)
+                    if (difficulty.smart() >= 0.4 && d < min - 0.8) backstep(rel);
+                    goal = null;
                 } else if (plan[1] != 0 && d < want + 3 && rel.lengthSqr() > 1e-4) {
                     // Rodear: un punto 25° más allá alrededor del objetivo, a la distancia que busca
                     double ang = Math.toRadians(25 * plan[1]);
@@ -1138,10 +1138,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                     Vec3 turned = new Vec3(dir.x * Math.cos(ang) - dir.z * Math.sin(ang), 0, dir.x * Math.sin(ang) + dir.z * Math.cos(ang));
                     goal = target.position().add(turned.scale(Math.max(want, 2.5)));
                     stop = 0.6;
-                } else if (d < want - 2.5 && rel.lengthSqr() > 1e-4) {
-                    // Demasiado cerca para lo que quiere hacer (un ataque a distancia): se aparta
-                    goal = position().add(rel.normalize().scale(4));
-                    stop = 0.6;
+                } else if (d < want - 2.5) {
+                    // Más cerca de lo que quiere para lo que va a hacer (un ataque a distancia): se queda donde está
+                    goal = null;
                 } else {
                     stop = want;
                 }

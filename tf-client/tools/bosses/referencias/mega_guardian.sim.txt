@@ -14,45 +14,58 @@ mega_guardian       480 s, vida  64.2%: 240 ataques (30.0/min), 10 distintos de 
      repite seguido: 27 de 239; curas castigadas: 7 de 12
 
 ## semilla 3, normal
-mega_guardian       480 s, vida  71.3%: 14 ataques (1.8/min), 6 distintos de 11
-        9  blast
+mega_guardian       480 s, vida  76.7%: 139 ataques (17.4/min), 9 distintos de 11
+       54  swipe_1
+       32  swipe_2
+       18  blast
+       16  swipe_3
+        7  slam
+        5  submerge
+        5  emerge
         1  sniff_walk
         1  rage
-        1  slam
-        1  submerge
-        1  stun
-     sin salir: death, emerge, swipe_1, swipe_2, swipe_3
-     repite seguido: 7 de 13; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0
+     sin salir: death, stun
+     repite seguido: 21 de 138; curas castigadas: 4 de 16; combos: 0; pasos atrás: 22
 
 ## semilla 3, demencial
-mega_guardian       480 s, vida  73.4%: 6 ataques (0.8/min), 6 distintos de 11
+mega_guardian       480 s, vida  71.8%: 58 ataques (7.2/min), 10 distintos de 11
+       12  blast
+       11  submerge
+       10  slam
+       10  emerge
+        5  swipe_2
+        5  swipe_3
+        2  swipe_1
         1  sniff_walk
         1  rage
-        1  blast
-        1  slam
-        1  submerge
         1  stun
-     sin salir: death, emerge, swipe_1, swipe_2, swipe_3
-     repite seguido: 0 de 5; curas castigadas: 0 de 19; combos: 0; pasos atrás: 0
+     sin salir: death
+     repite seguido: 3 de 57; curas castigadas: 1 de 18; combos: 0; pasos atrás: 17
 
 ## semilla 11, normal
-mega_guardian       480 s, vida  69.7%: 9 ataques (1.1/min), 7 distintos de 11
-        3  blast
+mega_guardian       480 s, vida  80.3%: 158 ataques (19.8/min), 9 distintos de 11
+       50  swipe_2
+       47  swipe_1
+       34  swipe_3
+       19  blast
+        4  slam
+        1  sniff_walk
+        1  rage
+        1  submerge
+        1  emerge
+     sin salir: death, stun
+     repite seguido: 15 de 157; curas castigadas: 0 de 18; combos: 0; pasos atrás: 12
+
+## semilla 11, dificil
+mega_guardian       480 s, vida  72.8%: 49 ataques (6.1/min), 9 distintos de 11
+       12  blast
+       12  slam
+       10  submerge
+       10  emerge
         1  sniff_walk
         1  rage
         1  swipe_1
-        1  slam
-        1  submerge
+        1  swipe_2
         1  stun
-     sin salir: death, emerge, swipe_2, swipe_3
-     repite seguido: 2 de 8; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0
-
-## semilla 11, dificil
-mega_guardian       480 s, vida  74.1%: 5 ataques (0.6/min), 5 distintos de 11
-        1  sniff_walk
-        1  rage
-        1  blast
-        1  slam
-        1  submerge
-     sin salir: death, emerge, stun, swipe_1, swipe_2, swipe_3
-     repite seguido: 0 de 4; curas castigadas: 1 de 19; combos: 0; pasos atrás: 0
+     sin salir: death, swipe_3
+     repite seguido: 2 de 48; curas castigadas: 1 de 17; combos: 0; pasos atrás: 15

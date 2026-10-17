@@ -8,48 +8,48 @@ kazk                480 s, vida  65.9%: 200 ataques (25.0/min), 4 distintos de 1
      repite seguido: 2 de 199; curas castigadas: 12 de 15
 
 ## semilla 3, normal
-kazk                480 s, vida  57.1%: 201 ataques (25.1/min), 4 distintos de 15
-       69  attack_2
+kazk                480 s, vida  60.2%: 196 ataques (24.5/min), 4 distintos de 15
        68  attack_1
-       53  attack_3
-       11  attack_4
+       67  attack_2
+       51  attack_3
+       10  attack_4
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, scream, spit, tail_attack
-     repite seguido: 0 de 200; curas castigadas: 1 de 15; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 190
-     golpes por delante lanzados sin mirarle (más de 50°): 1 de 190
+     repite seguido: 0 de 195; curas castigadas: 1 de 13; combos: 0; pasos atrás: 5
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 186
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 186
 
 ## semilla 3, demencial
-kazk                480 s, vida  64.2%: 293 ataques (36.6/min), 5 distintos de 15
-      102  attack_1
-      102  attack_2
-       74  attack_3
-       14  attack_4
+kazk                480 s, vida  63.5%: 285 ataques (35.6/min), 5 distintos de 15
+      100  attack_1
+      100  attack_2
+       71  attack_3
+       13  attack_4
         1  scream
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 292; curas castigadas: 0 de 14; combos: 0; pasos atrás: 6
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 278
-     golpes por delante lanzados sin mirarle (más de 50°): 1 de 278
+     repite seguido: 0 de 284; curas castigadas: 0 de 13; combos: 0; pasos atrás: 4
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 271
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 271
 
 ## semilla 11, normal
-kazk                480 s, vida  55.1%: 202 ataques (25.2/min), 5 distintos de 15
-       67  attack_2
-       67  attack_1
-       56  attack_3
+kazk                480 s, vida  53.3%: 212 ataques (26.5/min), 5 distintos de 15
+       70  attack_2
+       70  attack_1
+       60  attack_3
        11  attack_4
         1  scream
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 201; curas castigadas: 0 de 15; combos: 0; pasos atrás: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 190
-     golpes por delante lanzados sin mirarle (más de 50°): 4 de 190
+     repite seguido: 0 de 211; curas castigadas: 0 de 13; combos: 0; pasos atrás: 5
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 200
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 200
 
 ## semilla 11, dificil
-kazk                480 s, vida  61.4%: 234 ataques (29.2/min), 5 distintos de 15
-       80  attack_1
-       80  attack_2
+kazk                480 s, vida  60.6%: 238 ataques (29.8/min), 5 distintos de 15
+       83  attack_1
+       81  attack_2
        64  attack_3
         9  attack_4
         1  scream
      sin salir: burrow, dash, despawn, emerge_attack_1, emerge_bite, emerge_down, emerge_full, emerge_half, spit, tail_attack
-     repite seguido: 0 de 233; curas castigadas: 0 de 14; combos: 0; pasos atrás: 6
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 224
-     golpes por delante lanzados sin mirarle (más de 50°): 1 de 224
+     repite seguido: 0 de 237; curas castigadas: 2 de 14; combos: 0; pasos atrás: 4
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 228
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 228
