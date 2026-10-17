@@ -911,11 +911,15 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.86
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.87
 
-**1.3.86**: §3.11 (grieta del vacío, cielo de nebulosas, sonidos propios, rayos que respetan los bloques). Los packs de
-los 17 jefes van a un repo **privado** `modelqdeluxe-ops/tf-packs` (lo crea el dueño: desde aquí no se puede crear; el
-contenido, con un README de jefe → zip, se prepara igual): **nunca** en `ss`, que es público.
+**1.3.87**: §3.12 (supersalto, `freeze`, `spawn` una vez, jefes que renacían al morir, grieta y cielo 2.0, música de
+la grieta). El procedimiento exacto para seguir está en `SIGUIENTE-IA.md` (raíz del repo). Los packs de los 17 jefes
+están **cifrados** en `packs/jefes-17.tar.enc` (la contraseña, el dueño). Queda que el dueño pruebe la 1.3.87 y las
+dudas de `SIGUIENTE-IA.md` §6 (Contemplador, Archivista, bola de Astwood).
+
+**1.3.86**: §3.11 (grieta del vacío, cielo de nebulosas, sonidos propios, rayos que respetan los bloques). Los packs
+no van en claro en `ss`, que es público (el repo privado `tf-packs` no se pudo crear; el dueño aceptó subirlos cifrados).
 
 **1.3.84**: la prueba en el juego en GitHub Actions y lo que encontró (§3.10: grietas que se reiniciaban, correr de
 espaldas, correa que soltaba al jugador, Ignevar y el Contemplador volando lejos). Lo de la 1.3.83 que pedía «probar en
@@ -1022,8 +1026,8 @@ Todo esto lo marca el auditor como problema en cuanto un pack lo use (salvo lo d
 ### 11.5 Prompt para seguir (cópialo tal cual en una sesión nueva)
 
 ```
-Lee CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6, §3.7, §3.8, §10 y §11).
-Estamos con el motor de jefes de TF Client (1.3.84): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
+Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md entero (sobre todo §3.6-§3.12,
+§10 y §11). Estamos con el motor de jefes de TF Client (1.3.87): tiene que ser fiel a MythicMobs + ModelEngine 4 para todos los packs que
 metamos; el servidor es Mohist 1.20.1. Reglas: responde en español, no uses subagentes, compila SIEMPRE con GitHub
 Actions (nunca ./gradlew en el contenedor), publica como Release (sube mod_version y TFClient.VERSION, PR a main,
 squash, comprueba la Release), nunca subas los packs al repo.
@@ -1031,7 +1035,8 @@ squash, comprueba la Release), nunca subas los packs al repo.
 Tareas, en este orden:
 1. Lo que el dueño haya decidido de JEFES.md §11.2 (altura de los ojos) y §11.3 (lo que cambia el mundo o el
    inventario, dueño/montura); y si se queja de algo en el juego, reprodúcelo TÚ con la prueba en el juego (§3.10,
-   `[prueba-jefes=<jefes>]` en el commit), lee el informe y las capturas, arréglalo (§8) y vuelve a probar.
+   `[prueba-jefes=<jefes>]` en el commit; espera en segundo plano con tools/bosses/esperar_prueba.sh), lee el
+   informe y las capturas, arréglalo (§8) y vuelve a probar.
 2. El comportamiento propio del Type de Minecraft (§11.3) si el dueño trae un pack que lo use.
 3. Cada cosa nueva: con la semántica de la wiki de ModelEngine/MythicMobs (léela con WebFetch), en sim_ai.py si
    cambia la pelea, en mythic_ref.py y en las pruebas (test_convert.py / audit.py --prueba).

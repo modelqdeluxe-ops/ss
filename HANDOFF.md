@@ -9,6 +9,10 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
+> exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
+> de la 1.3.87, más abajo.
+
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
 tienda, quiero un cambio real» («tarjeta de botones» = la barra de categorías). Las dos primeras rondas (PR #94 y #95)

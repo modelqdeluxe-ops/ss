@@ -1,5 +1,7 @@
 # Reglas del repo (léelas siempre)
 
+- **Empieza por `SIGUIENTE-IA.md`**: qué estamos haciendo y el procedimiento exacto (prueba en el juego con GitHub
+  Actions en segundo plano, verificar, publicar). Luego lo de abajo.
 - Lee `HANDOFF.md` antes de tocar nada; empieza por su **CHECKPOINT** (sección 0): estado, reglas del dueño, cómo
   publicar, qué falta por verificar y el mapa del TF Pad.
 - **No uses subagentes** (Agent / Workflow): el dueño lo prohibió. Hazlo tú directamente.
