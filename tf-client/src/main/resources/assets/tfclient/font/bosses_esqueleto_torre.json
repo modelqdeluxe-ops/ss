@@ -65,6 +65,15 @@
   },
   {
    "type": "bitmap",
+   "file": "tfclient:bosses/esqueleto_torre/glyph/flamet_01.png",
+   "ascent": 12,
+   "height": 24,
+   "chars": [
+    "⛿"
+   ]
+  },
+  {
+   "type": "bitmap",
    "file": "tfclient:bosses/esqueleto_torre/glyph/flamet_09.png",
    "ascent": 12,
    "height": 24,

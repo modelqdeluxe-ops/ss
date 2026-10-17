@@ -892,6 +892,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             this.entityData.set(EPIC, deathLength);
             level().playSound(null, getX(), getY(), getZ(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_DEATH,
                     net.minecraft.sounds.SoundSource.HOSTILE, 6F, 0.9F);
+            // y se deshace (sin golpes: viento, brillo de cristales y coro; tools/bosses/sonidos_grieta.py)
+            level().playSound(null, getX(), getY(), getZ(), BossSounds.DEATH_DISSOLVE, net.minecraft.sounds.SoundSource.HOSTILE, 6F, 1F);
         }
         if (owner == null) {
             // Los esbirros caen con su jefe
@@ -955,11 +957,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (p > 0.45 && deathTime % (p > 0.75 ? 3 : 6) == 0) {
             Vec3 at = c.add((rnd.nextDouble() - 0.5) * w, (rnd.nextDouble() - 0.5) * h, (rnd.nextDouble() - 0.5) * w);
             particles(sl, net.minecraft.core.particles.ParticleTypes.EXPLOSION, at, 1, 0, 0, 0);
-            if (deathTime % 6 == 0) {
-                // Chasquidos de energía (1.3.86; antes la explosión de la TNT, que el dueño no quería)
-                sl.playSound(null, at.x, at.y, at.z, BossSounds.DEATH_CRACKLE, net.minecraft.sounds.SoundSource.HOSTILE,
-                        3F, 0.85F + rnd.nextFloat() * 0.3F);
-            }
+
         }
         if (p > 0.88) {
             Vec3 at = c.add((rnd.nextDouble() - 0.5) * w * 0.8, (rnd.nextDouble() - 0.5) * h * 0.6, (rnd.nextDouble() - 0.5) * w * 0.8);
@@ -1040,6 +1038,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     public void tick() {
         load();
         super.tick();
+        // Se ha quitado en este mismo tick (acabó su muerte): nada más. Si no, SkillMobs.tick rehacía su estado como si
+        // acabara de nacer y volvía a lanzar su ~onSpawn (el Esqueleto dejaba un trono nuevo cada vez que moría).
+        if (isRemoved()) return;
         age++;
         if (level().isClientSide) {
             // El cuerpo mira a donde dice el servidor (suave)

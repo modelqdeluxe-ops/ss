@@ -239,6 +239,8 @@ public final class SkillRuntime {
         String damageCause;
         /** El golpe que lo disparó, aún sin entrar (~onDamaged): cancelevent y modifydamage lo cambian. */
         SkillMobs.Hit hit;
+        /** La skill con nombre de la que viene (para la prueba de jefes: qué ataques hacen daño). */
+        String skill;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -263,6 +265,7 @@ public final class SkillRuntime {
             c.host = host;
             c.damageCause = damageCause;
             c.hit = hit;
+            c.skill = skill;
             return c;
         }
 
@@ -278,6 +281,7 @@ public final class SkillRuntime {
             c.mods = mods;
             c.cast = cast;
             c.host = host;
+            c.skill = skill;
             // Un mob de jefe que lanza (el esbirro, el brote): su propio jefe
             SkillMobs.Host own = who.entity == null ? null : SkillMobs.host(who.entity);
             if (own != null) c.host = own.boss();
@@ -598,7 +602,9 @@ public final class SkillRuntime {
 
     static void runNamed(String name, Ctx ctx) {
         if (name == null || name.isBlank()) return;
-        runMeta(ctx.cls.meta(name.trim()), ctx.copy());
+        Ctx c = ctx.copy();
+        c.skill = name.trim();
+        runMeta(ctx.cls.meta(name.trim()), c);
     }
 
     // ------------------------------------------------------------------------------------------- mecánicas
@@ -747,7 +753,8 @@ public final class SkillRuntime {
             case "velocity" -> SkillMotion.velocity(m, ctx, targets);
             case "propel" -> SkillMotion.propel(m, ctx, targets);
             case "teleport", "tp", "teleportto", "tpt" -> SkillMotion.teleport(m, ctx, targets);
-            case "stun", "prison", "freeze" -> SkillMotion.stun(m, ctx, targets);
+            case "stun", "prison" -> SkillMotion.stun(m, ctx, targets);
+            case "freeze" -> SkillMotion.freeze(m, ctx, targets);
             case "mount", "mounttarget", "dismount" -> { /* los actores no se montan */ }
             case "setblock", "setblocktype" -> setBlock(m, ctx, targets);
             case "setvariable", "setvar", "variableset" -> setVariable(m, ctx, targets);
@@ -1274,6 +1281,7 @@ public final class SkillRuntime {
         if (meta == null) return;
         Ctx c = ctx.copy();
         c.targets = targets;
+        c.skill = name;
         runMeta(meta, c);
     }
 
@@ -1406,6 +1414,7 @@ public final class SkillRuntime {
         ServerLevel level = ctx.caster.level();
         SkillActor a = new SkillActor(ctx.cls, def, level, at, yaw, pitch, ctx.caster);
         a.host = ctx.host;
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON) a.origin = ctx.skill + " en el tick " + clock;
         ACTORS.add(a);
         SkillNet.near(level, at, a.spawnMessage());
         Ctx mine = ctx.as(a.who);
@@ -1776,6 +1785,10 @@ public final class SkillRuntime {
         }
         // El cerebro del jefe aprende qué ataques le entran al jugador (y cuáles esquiva)
         if (ctx.host != null && le instanceof Player) SkillMobs.landed(ctx.host.boss());
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && ctx.host != null && le instanceof ServerPlayer) {
+            String what = ctx.skill != null ? ctx.skill : ctx.caster.actor != null ? "mob:" + ctx.caster.actor.name() : "?";
+            net.tierrasfantasticas.tfclient.bosses.BossTest.skillHit(what, dealt ? (float) amount : 0F);
+        }
         // ~onSkillDamage del mob que lo ha hecho (él o un proyectil suyo; no un efecto invocado, que en MythicMobs es otro mob)
         if (dealt && ctx.caster.entity != null && SkillMobs.host(ctx.caster.entity) != null) SkillMobs.skillDamage(SkillMobs.host(ctx.caster.entity), le);
     }
@@ -1871,7 +1884,10 @@ public final class SkillRuntime {
                 d = selfEffect(effect, duration, level);
                 if (d <= 0) continue;
             }
-            le.addEffect(new MobEffectInstance(effect, d, Math.min(level, 127), false, particles, icon));
+            // Hasta 255, como Bukkit: Minecraft manda el amplificador al cliente en un byte, así que de 128 en adelante el
+            // cliente lo ve negativo (el «JUMP 155» de la jaula de Astwood es NO poder saltar). Hasta la 1.3.86 se cortaba
+            // en 127: Salto 128, un supersalto de ~130 bloques («te manda a volar fuera del mapa»).
+            le.addEffect(new MobEffectInstance(effect, d, Math.min(level, 255), false, particles, icon));
         }
     }
 

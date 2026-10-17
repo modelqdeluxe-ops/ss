@@ -252,6 +252,22 @@ public final class SkillMobs {
      * Para la prueba de los jefes (bosses/BossTest): el modelo que lleva y las animaciones que tiene puestas ahora en el
      * servidor (la de por defecto y las de state{}); null si no lleva modelo.
      */
+    /**
+     * Prueba en el juego (BossTest): los efectos sueltos (sin entidad a la que sigan) que llevan vivos más de «minAge»
+     * ticks: nombre del mob, edad y su texto (las llamas de texto del Esqueleto deberían irse a los 20 ticks).
+     */
+    public static List<String> oldActors(int minAge) {
+        List<String> out = new ArrayList<>();
+        for (SkillActor a : SkillRuntime.ACTORS) {
+            if (!a.alive || a.follow != null || a.carried || a.age < minAge) continue;
+            Entity oe = a.owner == null ? null : a.owner.entity;
+            String by = a.owner == null ? "sin dueño" : oe != null ? oe.getType().toShortString() + " " + oe.getUUID().toString().substring(0, 8)
+                    + (oe.isRemoved() ? " QUITADO" : "") : a.owner.actor != null ? "efecto " + a.owner.actor.name() + (a.owner.actor.alive ? "" : " (ya no está)") : "?";
+            out.add((a.def != null ? a.def.name : a.me) + " " + a.age + "t" + (a.text != null ? " «" + a.text + "»" : "") + " [de " + by + (a.origin != null ? ", sale de " + a.origin + " (ahora " + SkillRuntime.clock + ")" : "") + "]");
+        }
+        return out;
+    }
+
     public static List<String> animNames(Host h) {
         SkillActor a = SkillModels.disguise(h.mob().getUUID());
         if (a == null || a.me == null) return null;
@@ -378,6 +394,7 @@ public final class SkillMobs {
 
     /** Cada tick del mob (en el servidor). */
     public static void tick(Host h) {
+        if (h.mob().isRemoved()) return; // ya olvidado (removed): no volver a nacer
         State s = state(h);
         if (!s.spawned) spawned(h);
         if (h.dying()) {
@@ -783,6 +800,27 @@ public final class SkillMobs {
         STATES.remove(h.mob().getUUID());
         SkillModels.forget(h.mob().getUUID());
         if (world != null) world.unseat(h, null);
+        // Lo que invocó y sigue ahí (y lo que invocaron esos) se va con él. En MythicMobs el trono del Esqueleto
+        // («Despawn: NEVER») se queda para siempre en el servidor del pack; aquí la grieta vuelve a despertar y cada pelea
+        // ponía otro trono encima del anterior (la prueba lo veía vivo en la pelea siguiente, 1.3.87).
+        java.util.Set<Object> gone = new java.util.HashSet<>();
+        gone.add(h.mob());
+        boolean more = true;
+        while (more) {
+            more = false;
+            for (SkillActor a : new ArrayList<>(SkillRuntime.ACTORS)) {
+                if (a.owner == null || gone.contains(a)) continue;
+                // (también a través de un efecto que ya se fue: lo que invocó sigue siendo de este jefe)
+                Entity oe = a.owner.entity;
+                boolean mine = oe != null && (gone.contains(oe) || oe.isRemoved() && host(oe) != null)
+                        || a.owner.actor != null && gone.contains(a.owner.actor);
+                if (mine) {
+                    gone.add(a);
+                    if (a.alive) a.remove();
+                    more = true;
+                }
+            }
+        }
     }
 
     static void clear() {

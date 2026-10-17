@@ -1,14 +1,21 @@
-"""El cielo de las grietas (1.3.86): las texturas que dibuja RiftSky cuando estás cerca de una grieta.
+"""El cielo de las grietas (1.3.86; 1.3.87 más fino): las texturas que dibuja RiftSky cerca de una grieta.
 
     python3 tools/bosses/rift_sky.py [--preview carpeta]
 
-  textures/environment/grieta_cielo.png    panorama equirectangular (2:1) sin costuras: el vacío morado con nebulosas
-                                           (violeta, magenta y añil), franjas de polvo oscuro, una banda galáctica y
-                                           un polvo de estrellas pequeñas. RiftSky lo pone en una esfera alrededor de la
-                                           cámara (u = longitud, v = latitud: las mismas cuentas que aquí).
+  textures/environment/grieta_cielo.png    panorama equirectangular (2:1, 2048x1024) sin costuras: el vacío morado con
+                                           nebulosas (violeta, magenta y añil), filamentos, franjas de polvo oscuro y
+                                           una banda galáctica. Sin estrellas (1.3.87: en el panorama se veían como
+                                           píxeles gordos; ahora todas las dibuja RiftSky) y con tramado para que el
+                                           degradado oscuro no salga en escalones. RiftSky lo pone en una esfera
+                                           alrededor de la cámara (u = longitud, v = latitud: las mismas cuentas que aquí).
   textures/environment/grieta_nube.png     una nube de nebulosa suelta (con alfa) para las capas que laten encima.
-  textures/environment/grieta_estrella.png el destello de una estrella (las que titilan y la cabeza de las fugaces).
+  textures/environment/grieta_estrella.png el destello de una estrella (las que titilan).
+  textures/environment/grieta_fugaz.png    la estela de una estrella fugaz (cabeza a la derecha, cola que se afina y
+                                           se apaga a la izquierda; suave también de ancho).
+  textures/environment/grieta_eclipse.png  el «sol negro» del vacío: un disco negro con corona violeta (encima de la
+                                           grieta).
 
+Todas llevan su .png.mcmeta con «blur»: Minecraft las filtra suaves en vez de píxel a píxel.
 Todo sale del ruido de valor 3D sobre la dirección (no hay costura en la longitud y los polos no se estiran raro).
 """
 import math
@@ -22,7 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient', 'textures',
                                     'environment'))
 
-W, H = 1024, 512
+W, H = 2048, 1024
 
 
 class Noise3:
@@ -89,11 +96,17 @@ def sky():
     axis = np.array([0.32, 0.86, -0.4], np.float32)
     axis /= np.linalg.norm(axis)
     band = np.exp(-(d @ axis) ** 2 / 0.06)
-    dens = np.clip((dens - 0.42) * 2.6 + band * 0.45, 0, 1)
-    dens = dens ** 1.35
+    # compresión suave (1.3.87): antes se cortaba en 1 y lo más brillante salía en manchas planas de borde duro
+    x = np.clip((dens - 0.4) * 2.4 + band * 0.4, 0, None)
+    dens = (1 - np.exp(-x * 1.5)) ** 1.25
+    # detalle fino dentro de la nebulosa (que lo brillante también tenga textura de humo)
+    dens *= 0.72 + 0.5 * n1.fbm(d * 9.0 + warp * 3.0 + 21.0, 5)
     # polvo oscuro que corta la nebulosa
     dust = smooth(0.5, 0.7, n3.fbm(d * 5.5 + warp * 2.0, 5)) * (0.4 + 0.6 * band)
     dens *= 1 - 0.75 * dust
+    # filamentos: hilos brillantes retorcidos donde ya hay nebulosa (ruido «de cresta»)
+    ridge = 1 - np.abs(2 * n2.fbm(d * 4.2 + warp * 2.4 + 11.0, 5) - 1)
+    dens = np.clip(dens + smooth(0.86, 0.98, ridge) * smooth(0.05, 0.4, dens) * 0.35, 0, 1)
     hue = n4.fbm(d * 1.6 + 9.0, 4)  # 0: añil, 1: magenta
     base = np.array([5, 1, 11], np.float32)
     deep = np.array([34, 6, 66], np.float32)
@@ -105,17 +118,12 @@ def sky():
     col = base + (deep - base) * smooth(0.0, 0.35, dens)[..., None]
     col = col + (violet - col) * smooth(0.3, 0.7, dens)[..., None] * 0.9
     col = col + (hi - col) * smooth(0.6, 0.95, dens)[..., None] * 0.7
-    col = col + (hot - col) * smooth(0.9, 1.0, dens)[..., None] * 0.35
+    col = col + (hot - col) * smooth(0.82, 1.05, dens)[..., None] * 0.3
     # el horizonte un poco más claro (como el resplandor del End) y el cénit más negro
     lat = d[..., 1]
     col *= (0.75 + 0.35 * np.exp(-(lat / 0.35) ** 2))[..., None]
-    # polvo de estrellas pequeño (las que titilan y las fugaces las dibuja RiftSky)
-    rng = np.random.default_rng(55)
-    stars = rng.random((H, W)) ** 900 * (1 + 2 * band)
-    stars += (rng.random((H, W)) > 0.9985) * rng.uniform(0.4, 1.0, (H, W))
-    # en los polos los píxeles son más pequeños: menos estrellas allí
-    stars *= np.cos(lat) ** 0.5
-    col += stars[..., None] * np.array([210, 200, 255], np.float32)
+    # tramado (medio nivel de ruido): sin él el degradado oscuro se ve en escalones al estirarlo
+    col += np.random.default_rng(56).random((H, W, 1)) - 0.5
     img = Image.fromarray(np.clip(col, 0, 255).astype(np.uint8), 'RGB')
     return img
 
@@ -132,15 +140,56 @@ def cloud(n=256, seed=7):
     return Image.fromarray(arr, 'RGBA').filter(ImageFilter.GaussianBlur(1.2))
 
 
-def star(n=32):
-    """El destello de una estrella: punto blanco con halo y cruz suave (blanco: el color lo pone RiftSky)."""
+def star(n=64):
+    """El destello de una estrella: punto blanco con halo y una cruz muy fina (blanco: el color lo pone RiftSky)."""
     yy, xx = np.mgrid[0:n, 0:n] / (n - 1) * 2 - 1
     r = np.hypot(xx, yy)
-    core = np.exp(-(r / 0.12) ** 2)
-    halo = np.exp(-(r / 0.45) ** 2) * 0.45
-    cross = (np.exp(-(xx / 0.05) ** 2) + np.exp(-(yy / 0.05) ** 2)) * np.exp(-(r / 0.8) ** 2) * 0.35
-    a = np.clip(core + halo + cross, 0, 1)
+    core = np.exp(-(r / 0.09) ** 2)
+    halo = np.exp(-(r / 0.32) ** 2) * 0.32
+    cross = (np.exp(-(xx / 0.022) ** 2) + np.exp(-(yy / 0.022) ** 2)) * np.exp(-(r / 0.55) ** 2) * 0.22
+    a = np.clip(core + halo + cross, 0, 1) * np.clip((1 - r) * 4, 0, 1)
     arr = np.dstack([np.full((n, n, 3), 255), a * 255]).astype(np.uint8)
+    return Image.fromarray(arr, 'RGBA')
+
+
+def streak(w=512, h=32):
+    """La estela de una fugaz: blanca (el color lo pone RiftSky), cabeza redonda a la derecha y una cola que se afina
+    y se apaga hacia la izquierda; de ancho cae en campana (sin bordes duros)."""
+    x = (np.arange(w) + 0.5) / w           # 0 cola .. 1 cabeza
+    y = (np.arange(h) + 0.5) / h * 2 - 1   # -1..1 de ancho
+    xx, yy = np.meshgrid(x, y)
+    width = 0.08 + 0.42 * xx ** 1.6        # la cola se afina
+    body = np.exp(-(yy / width) ** 2) * xx ** 2.2
+    hx = (xx - 0.965) / 0.03
+    head = np.exp(-(hx ** 2 + (yy / 0.5) ** 2) * 1.0)
+    a = np.clip(body * 0.85 + head, 0, 1) * np.clip((1 - xx) * 30, 0, 1)
+    arr = np.dstack([np.full((h, w, 3), 255), a * 255]).astype(np.uint8)
+    return Image.fromarray(arr, 'RGBA')
+
+
+def eclipse(n=512):
+    """El sol negro: disco negro (opaco) con un anillo fino muy brillante, corona violeta con rayos suaves y un halo."""
+    yy, xx = np.mgrid[0:n, 0:n] / (n - 1) * 2 - 1
+    r = np.hypot(xx, yy)
+    ang = np.arctan2(yy, xx)
+    R = 0.34
+    disc = smooth(R + 0.006, R - 0.006, r)
+    ring = np.exp(-((r - R) / 0.012) ** 2)
+    nz = Noise3(909)
+    rays = nz.fbm(np.stack([np.cos(ang) * 3, np.sin(ang) * 3, r * 0.6], -1).astype(np.float32) + 4, 5)
+    rays = smooth(0.35, 0.75, rays)
+    out = np.clip(r - R, 0, None)
+    corona = np.exp(-out / (0.05 + 0.16 * rays)) * (r > R - 0.01)
+    halo = np.exp(-(out / 0.45) ** 2) * 0.35
+    glow = np.clip(ring + corona * 0.8 + halo, 0, 1) * np.clip((1 - r) * 5, 0, 1)
+    white = np.array([255, 236, 255], np.float32)
+    violet = np.array([170, 70, 255], np.float32)
+    deep = np.array([90, 20, 170], np.float32)
+    col = deep + (violet - deep) * np.clip(corona, 0, 1)[..., None]
+    col = col + (white - col) * np.clip(ring * 1.2, 0, 1)[..., None]
+    col = col * (1 - disc[..., None])  # el disco, negro
+    a = np.clip(np.maximum(disc, glow), 0, 1)
+    arr = np.dstack([np.clip(col, 0, 255), a * 255]).astype(np.uint8)
     return Image.fromarray(arr, 'RGBA')
 
 
@@ -150,7 +199,13 @@ def main():
     s.save(os.path.join(OUT, 'grieta_cielo.png'), optimize=True)
     cloud().save(os.path.join(OUT, 'grieta_nube.png'), optimize=True)
     star().save(os.path.join(OUT, 'grieta_estrella.png'), optimize=True)
-    for f in ('grieta_cielo.png', 'grieta_nube.png', 'grieta_estrella.png'):
+    streak().save(os.path.join(OUT, 'grieta_fugaz.png'), optimize=True)
+    eclipse().save(os.path.join(OUT, 'grieta_eclipse.png'), optimize=True)
+    names = ('grieta_cielo.png', 'grieta_nube.png', 'grieta_estrella.png', 'grieta_fugaz.png', 'grieta_eclipse.png')
+    for f in names:
+        # suaves (lineales) al estirarlas; el panorama se repite en la longitud, las demás no
+        with open(os.path.join(OUT, f + '.mcmeta'), 'w') as fh:
+            fh.write('{"texture": {"blur": true, "clamp": %s}}\n' % ('false' if f == 'grieta_cielo.png' else 'true'))
         print(f, os.path.getsize(os.path.join(OUT, f)) // 1024, 'KB')
     if '--preview' in sys.argv:
         dest = sys.argv[sys.argv.index('--preview') + 1]

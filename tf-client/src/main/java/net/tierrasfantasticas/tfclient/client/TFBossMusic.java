@@ -52,6 +52,11 @@ public final class TFBossMusic {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) WANTED.clear();
         boolean want = !WANTED.isEmpty();
+        // Ya nadie la pide y el motor de sonido no la tiene (sin tarjeta de sonido, al recargar los sonidos): se da por
+        // acabada (si no, la música de la grieta y la de Minecraft esperaban para siempre)
+        if (!want && current != null && !current.isStopped() && current.leaving && !mc.getSoundManager().isActive(current)) {
+            current = null;
+        }
         if (want && (current == null || current.isStopped() || current.leaving)) {
             if (current != null && !current.isStopped() && current.leaving) {
                 // Volvía a irse y otro jefe la pide: sigue, subiendo otra vez

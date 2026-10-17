@@ -46,14 +46,15 @@ public class BossRenderer extends EntityRenderer<BossEntity> {
         if (len <= 0 || e.deathTime <= 0) return;
         float f5 = Math.min(1F, (e.deathTime + partial) / len);
         float f7 = Math.min(f5 > 0.8F ? (f5 - 0.8F) / 0.2F : 0F, 1F);
-        float size = Math.max(0.5F, Math.min(1.2F, Math.max(e.getBbWidth(), e.getBbHeight()) / 6F));
+        // (1.3.87: la mitad de rayos y un tercio de largo: el dueño los veía «exagerados de grandes»)
+        float size = Math.max(0.4F, Math.min(0.9F, Math.max(e.getBbWidth(), e.getBbHeight()) / 8F));
         int color = e.color();
         int r = (color >> 16) & 255, g = (color >> 8) & 255, b = color & 255;
         RandomSource rnd = RandomSource.create(432L);
         VertexConsumer vc = buffers.getBuffer(BossRenderTypes.RAYS);
         pose.pushPose();
         pose.translate(0F, e.getBbHeight() * 0.5F, 0F);
-        int n = (int) ((f5 + f5 * f5) / 2F * 60F);
+        int n = (int) ((f5 + f5 * f5) / 2F * 30F);
         for (int i = 0; i < n; i++) {
             pose.mulPose(Axis.XP.rotationDegrees(rnd.nextFloat() * 360F));
             pose.mulPose(Axis.YP.rotationDegrees(rnd.nextFloat() * 360F));
@@ -61,8 +62,8 @@ public class BossRenderer extends EntityRenderer<BossEntity> {
             pose.mulPose(Axis.XP.rotationDegrees(rnd.nextFloat() * 360F));
             pose.mulPose(Axis.YP.rotationDegrees(rnd.nextFloat() * 360F));
             pose.mulPose(Axis.ZP.rotationDegrees(rnd.nextFloat() * 360F + f5 * 90F));
-            float l = (rnd.nextFloat() * 20F + 5F + f7 * 10F) * size;
-            float w = (rnd.nextFloat() * 2F + 1F + f7 * 2F) * size;
+            float l = (rnd.nextFloat() * 7F + 2.5F + f7 * 3F) * size;
+            float w = (rnd.nextFloat() * 0.8F + 0.4F + f7 * 0.6F) * size;
             Matrix4f m = pose.last().pose();
             int a = (int) (255F * (1F - f7));
             // Las tres caras del rayo (la capa va por cuadriláteros: cada triángulo, con el centro repetido)

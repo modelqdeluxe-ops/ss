@@ -501,6 +501,11 @@ def write_glyphs(pack, prog, kind='skills'):
     glyphs = pack_glyphs(pack)
     used = set()
     for coll in list(prog['tree'].values()) + list(prog['mobs'].values()):
+        # el texto con el que nace un text_display (el primer fotograma del lanzallamas: hasta la 1.3.86 faltaba y se
+        # veía la letra de Minecraft)
+        text = (coll.get('display_options') or {}).get('Text')
+        if text:
+            used |= {ch for ch in str(text) if ch in glyphs}
         for pm in coll['mechs']:
             if pm['m'] in ('settextdisplay', 'sendtitle', 'message', 'actionmessage', 'title'):
                 for v in pm['a'].values():

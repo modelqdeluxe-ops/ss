@@ -42,6 +42,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         if (st == e.shownState) return;
         int before = e.shownState;
         e.shownState = st;
+        e.stateSince = before < 0 ? -1000 : e.clientAge;
         float now = e.clientAge;
         e.layers.clear();
         switch (st) {
@@ -58,19 +59,25 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
     public void render(RiftEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         VfxModel m = SkillMobs.model(MODEL);
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(e.boss());
-        if (m != null) {
-            sync(e, m);
+        if (m != null) sync(e, m);
+        // (1.3.87, lo pidió el dueño) Al salir el jefe, la grieta se encoge y desaparece; vuelve al morir él (recarga)
+        float since = e.clientAge - e.stateSince + partial;
+        int stNow = e.state();
+        float show = stNow == RiftEntity.FIGHT ? Math.max(0F, 1F - since / 14F)
+                : stNow == RiftEntity.COOLDOWN && e.shownState == RiftEntity.COOLDOWN ? Math.min(1F, since / 30F) : 1F;
+        if (m != null && show > 0.001F) {
             e.layers.prune(e.clientAge);
             Matrix4f[] mats = new Matrix4f[m.bones.length];
             for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
             e.layers.pose(m, e.clientAge + partial, 0F, 0F, mats);
             pose.pushPose();
+            if (show < 1F) pose.scale(show, show, show);
             pose.mulPose(Axis.YP.rotationDegrees(180F));
             // (1.3.86) Ya no se tiñe del color del jefe: todas las grietas son del mismo morado del vacío
             ModelDraw.draw(m, mats, null, pose, buffers, light, 0xFFFFFF, e.clientAge, 1F);
             pose.popPose();
         }
-        if (cls != null && cls.bossInfo != null) label(e, cls.bossInfo, pose, buffers);
+        if (cls != null && cls.bossInfo != null && stNow != RiftEntity.FIGHT) label(e, cls.bossInfo, pose, buffers);
     }
 
     /** El cartel de encima: jefe, dificultad y estado. */
@@ -92,7 +99,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         lines.add(Component.literal(state).withStyle(s -> s.withColor(TextColor.fromRgb(st == RiftEntity.WAKING ? 0xFF6A6A : 0xD8D8E0))));
         Font font = mc.font;
         pose.pushPose();
-        pose.translate(0, 9.2, 0);
+        pose.translate(0, 14.2, 0);
         pose.mulPose(this.entityRenderDispatcher.cameraOrientation());
         pose.scale(-0.028F, -0.028F, 0.028F);
         Matrix4f mat = pose.last().pose();

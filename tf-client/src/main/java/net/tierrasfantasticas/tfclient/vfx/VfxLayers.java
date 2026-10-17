@@ -141,6 +141,17 @@ public final class VfxLayers {
         return true;
     }
 
+    /**
+     * La animación de aparecer de ModelEngine («spawn», al poner el modelo): una sola vez, aunque en el .bbmodel esté en
+     * bucle, y luego la de reposo. (1.3.87: el Mamut del Druida la tiene en bucle y sale de debajo de la tierra; se
+     * repetía toda la pelea: «aparece y desaparece en un bucle».)
+     */
+    public void playSpawn(VfxModel m, float now) {
+        if (m.anim("spawn") == null) return;
+        play(m, "spawn", now, 1F, 0, 3, 0, true);
+        layers.get(layers.size() - 1).loopMode = 0;
+    }
+
     /** state{s;r=true}: quita una animación (con su salida suave «lerpOut»; -1 = la suya). */
     public void stop(String name, float now, int lerpOut) {
         for (Layer l : layers) {

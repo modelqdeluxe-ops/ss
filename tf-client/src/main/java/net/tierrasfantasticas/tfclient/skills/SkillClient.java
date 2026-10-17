@@ -1053,7 +1053,7 @@ public final class SkillClient {
             }
             // Como ModelEngine: si tiene animación de aparecer, primero esa; luego la de reposo
             if (layers != null) {
-                if (model.anims.containsKey("spawn")) layers.play(model, "spawn", age, 1F, 0, 0, 0, true);
+                layers.playSpawn(model, age);
                 return;
             }
             if (model.anims.containsKey("spawn")) play("spawn", 1F);

@@ -3390,27 +3390,27 @@
    }
   ]
  },
- "jefes.muerte_crepita": {
-  "sounds": [
-   {
-    "name": "tfclient:jefes/muerte_crepita_1",
-    "attenuation_distance": 64
-   },
-   {
-    "name": "tfclient:jefes/muerte_crepita_2",
-    "attenuation_distance": 64
-   },
-   {
-    "name": "tfclient:jefes/muerte_crepita_3",
-    "attenuation_distance": 64
-   }
-  ]
- },
  "jefes.muerte_estallido": {
   "sounds": [
    {
     "name": "tfclient:jefes/muerte_estallido",
     "attenuation_distance": 128
+   }
+  ]
+ },
+ "jefes.muerte_disolucion": {
+  "sounds": [
+   {
+    "name": "tfclient:jefes/muerte_disolucion",
+    "attenuation_distance": 96
+   }
+  ]
+ },
+ "grieta.musica": {
+  "sounds": [
+   {
+    "name": "tfclient:grieta/musica",
+    "stream": true
    }
   ]
  }

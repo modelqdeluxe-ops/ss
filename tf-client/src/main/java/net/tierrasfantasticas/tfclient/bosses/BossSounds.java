@@ -26,8 +26,10 @@ public final class BossSounds {
     public static final SoundEvent RIFT_BURST = of("grieta.estallido");
     /** La grieta vuelve a estar lista. */
     public static final SoundEvent RIFT_READY = of("grieta.lista");
-    /** Los chasquidos de energía de la muerte épica (tres variantes al azar). */
-    public static final SoundEvent DEATH_CRACKLE = of("jefes.muerte_crepita");
+    /** La muerte épica, desde que empieza: el jefe se deshace (sin golpes; antes chasquidos que «sonaban a tambor»). */
+    public static final SoundEvent DEATH_DISSOLVE = of("jefes.muerte_disolucion");
+    /** La música siniestra cerca de una grieta, fuera de la pelea (la pone RiftSky, en bucle). */
+    public static final SoundEvent RIFT_MUSIC = of("grieta.musica");
     /** El estallido final de la muerte épica. */
     public static final SoundEvent DEATH_BURST = of("jefes.muerte_estallido");
 }

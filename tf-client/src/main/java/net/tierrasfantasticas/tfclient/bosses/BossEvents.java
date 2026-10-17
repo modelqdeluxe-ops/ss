@@ -23,6 +23,19 @@ import net.tierrasfantasticas.tfclient.skills.SkillMobs;
 public final class BossEvents {
     private BossEvents() {}
 
+    /**
+     * Salto de nivel 128 o más (o negativo): NO se salta, como en Bukkit, que manda el amplificador al cliente en un
+     * byte y allí sale negativo. Los packs lo usan así (la jaula de Astwood, JUMP 155; el aturdimiento, 200); en Forge
+     * el cliente lo veía positivo y era un supersalto: 128 bloques de alto en la prueba (1.3.87). En los dos lados.
+     */
+    @SubscribeEvent
+    public static void onJump(net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent event) {
+        net.minecraft.world.effect.MobEffectInstance jump = event.getEntity().getEffect(net.minecraft.world.effect.MobEffects.JUMP);
+        if (jump == null || jump.getAmplifier() >= 0 && jump.getAmplifier() < 128) return;
+        net.minecraft.world.phys.Vec3 dm = event.getEntity().getDeltaMovement();
+        event.getEntity().setDeltaMovement(dm.x, Math.min(0.0, dm.y), dm.z);
+    }
+
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getTarget() instanceof BossEntity b && event.getEntity() instanceof ServerPlayer p) SkillMobs.replay(b, p);

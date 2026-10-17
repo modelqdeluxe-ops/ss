@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **17 de octubre de 2026** (TF Client **1.3.86**: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **17 de octubre de 2026** (TF Client **1.3.87**: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,7 +55,25 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (17 oct 2026, TF Client 1.3.86) — lee esto primero
+### CHECKPOINT (17 oct 2026, TF Client 1.3.87) — lee esto primero
+
+**1.3.87 (17 oct)**: el dueño (con capturas): *«texturas del cielo y la grieta pixeladas, estrellas fugaces horribles,
+una grieta más grande e imponente; que desaparezca al salir el jefe y vuelva al matarlo; las llamas no se animan; Astwood
+te manda a volar fuera del mapa y su bola azul no impacta; el área del Archivista cae en el aire; el Mamut lanza al aire,
+no sigue, aparece y desaparece en bucle y tras pegarte no le puedes hacer daño; más radio del cielo y música siniestra que
+se quite al empezar la pelea; quita los tambores al morir; los rayos son exagerados»*. Hecho y probado en el juego
+(`tf-client/JEFES.md` §3.12): **supersalto** (el `JUMP 155` de la jaula de Astwood se cortaba a 127 = Salto 128: 128
+bloques de alto en la prueba; ahora hasta 255 como Bukkit: no poder saltar), **`freeze`** = frío de la nieve en polvo
+(era un aturdimiento de 24 s con Debilidad V: no le hacías daño al Mamut), **`spawn` de ModelEngine una vez** (el del
+Mamut está en bucle y salía de la tierra toda la pelea), lo que invoca un jefe se va con él (el trono del Esqueleto se
+apilaba), primer fotograma del lanzallamas (Esqueleto, Hidra), `tyo` y alcance de los proyectiles como MythicMobs (área
+del Archivista). **Grieta 2.0** ×1,6, se encoge al salir el jefe y vuelve al recargar; **cielo 2.0** con texturas
+suaves (`.mcmeta` blur), panorama 2048 sin estrellas pintadas, paralaje, sol negro, fugaces con estela de textura y
+bólidos, radio 48→112 (128 en pelea); **música de la grieta** (`grieta.musica`, Discos) que se va al despertar; muerte
+sin tambores y rayos más pequeños. La prueba ahora da daño por skill, proyectiles, lanzamientos con su causa y la pelea
+con el relevo. La bola de Astwood sí impacta en la prueba (2/2); con `inertia=100` se esquiva andando, como en el pack.
+
+### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.86)
 
 **1.3.86 (17 oct)**: el dueño: *«la grieta es fea, el sonido feo y simple, las estelas blancas de la muerte (las del
 dragón) hacen que vea a través de los bloques, el sonido de TNT es horrible; hazla imponente; que la grieta tiña el
