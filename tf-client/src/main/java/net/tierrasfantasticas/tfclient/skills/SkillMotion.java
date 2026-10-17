@@ -188,7 +188,10 @@ final class SkillMotion {
             if (e == null || !movable(ctx, e)) continue;
             Vec3 add = new Vec3(x, y, z);
             if (relative) {
-                Vec3 f = SkillRuntime.dir(e.getYRot(), 0F), r = SkillRuntime.dir(e.getYRot() + 90F, 0F);
+                // Hacia donde mira (Who.yaw: en un jefe, su lookYaw; su yRot de Minecraft no se mueve y Ignevar volaba
+                // de espaldas, hacia donde miraba al aparecer)
+                float yaw = SkillRuntime.Who.of(e).yaw();
+                Vec3 f = SkillRuntime.dir(yaw, 0F), r = SkillRuntime.dir(yaw + 90F, 0F);
                 add = f.scale(z).add(r.scale(x)).add(0, y, 0);
             }
             Vec3 now = e.getDeltaMovement();

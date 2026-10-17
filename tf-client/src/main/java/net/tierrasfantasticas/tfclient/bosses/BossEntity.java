@@ -1193,11 +1193,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
      */
     private void ghastStep() {
         if (!ai || !SkillAI.has(goals, "type:ghast")) return;
-        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(position()) > 3600) {
-            Vec3 c = position();
-            floatGoal = c.add((getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16, (getRandom().nextFloat() * 2 - 1) * 16);
-            // sin salir de su grieta
-            if (home != null && floatGoal.distanceToSqr(home) > Rifts.LEASH * Rifts.LEASH) floatGoal = home.add(0, 4, 0);
+        // En su arena, el vuelo al azar del ghast va alrededor de su objetivo (o de su grieta) y a poca altura: con el de
+        // Minecraft (16 bloques al azar desde donde está, sin límite) el Contemplador subía a 60 bloques y se iba a 64
+        // de la grieta, perdiendo al jugador (prueba en el juego, 1.3.83)
+        Vec3 center = target != null ? target.position() : home != null ? home : spawnAt != null ? spawnAt : position();
+        if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(center) > 20 * 20) {
+            floatGoal = center.add((getRandom().nextFloat() * 2 - 1) * 12, 3 + getRandom().nextFloat() * 7, (getRandom().nextFloat() * 2 - 1) * 12);
         }
         if (floatWait-- <= 0) {
             floatWait += getRandom().nextInt(5) + 2;
