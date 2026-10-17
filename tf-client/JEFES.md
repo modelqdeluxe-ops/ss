@@ -607,6 +607,12 @@ vuelve a abrir en 40 ticks). Vista previa con los shaders de verdad: `tools/boss
 | Ignevar en el aire no se giraba hacia ti (`target_rot`, `yaw_diff`, `newrot` siempre 0) | Su `IGNEVAR_rotate_flying` calcula `-atan2(dx, dz) * 180 / 3.14159`: el evaluador de `variablemath` cortaba los nombres en la primera cifra (`atan` + `2`) y no tenía `atan2`: daba error y la variable no cambiaba. | `SkillVars.math` (y `sim_ai.crunch`, con su prueba en `test_convert.py`): nombres con cifras, `atan2`, `pow`, `exp`, `hypot`. |
 | «El caballero esqueleto que nace quebrado sale completo, luego se cae a pedazos y luego vuelve» (Guardián Hueco; capturas cada 10 ticks del despertar) | Nace dormido (`defaultstate{s=sleep}`, `setai{ai=false}`) y despierta con `awaken` si estás a menos de 8. Pero en su primer tick el motor le buscaba objetivo **antes** de sus `~onSpawn` (en MythicMobs salen al aparecer, antes de la IA): dormido y con objetivo, sus `turn_left/right @target` (animaciones override de todo el esqueleto, de pie) lo ponían entero mientras se giraba; al acabar volvía al montón de huesos y luego se montaba con `awaken`. | `BossEntity.customServerAiStep`: no busca objetivo en su primer tick. Sin IA no busca (NoAI de Minecraft), así que dormido no se gira. |
 
+**Prueba completa de la 1.3.88** (los 17 y el Void, frente a la de la 1.3.87): Ignevar anda 204 ticks (25), vuela 270
+(0) y «quieto y lejos» 39 (317); el Contemplador no lanza (0 bloques; 55) y, por eso, le llegan más láseres (131
+impactos; 73); el Guardián Hueco duerme hasta que te acercas a 8 bloques; el Rey Calabaza ya no se queda a 3 bloques del
+suelo (149 ticks en el aire → 0) y sigue atacando; los demás, igual. Los «efectos que no se quitan» son los del pack (el
+trono, el yunque de Eldric, los bloques de nieve, las estrellas del Arconte), los mismos que en la 1.3.87.
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -955,7 +961,14 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.87
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.88
+
+**1.3.88**: §3.13 (The Void con la isla del dueño y su cielo con agujero negro, Aurelion y el viaje, la grieta 3.0 con
+shaders; Ignevar vuelve a volar y a girarse en el aire; el Guardián Hueco no se levanta dormido; el Contemplador no sube
+al jugador). Cambios del motor que tocan a todos: los marcadores de una línea con `delay`/`repeat` se leen al salir
+(antes una vez), `throw` normaliza en 3D y no mueve con `@self`, `variablemath` con `atan2`/`pow`/`exp`/`hypot` y no se
+busca objetivo antes de los `~onSpawn`. Queda que el dueño lo pruebe y, en Ignevar, mirar en la prueba si sus llamaradas
+apuntan bien (la prueba ahora lo dice: «lanzallamas ... apunta a ...»).
 
 **1.3.87**: §3.12 (supersalto, `freeze`, `spawn` una vez, jefes que renacían al morir, grieta y cielo 2.0, música de
 la grieta). El procedimiento exacto para seguir está en `SIGUIENTE-IA.md` (raíz del repo). Los packs de los 17 jefes
