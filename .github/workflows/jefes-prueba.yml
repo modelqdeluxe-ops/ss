@@ -65,7 +65,7 @@ jobs:
           python3 -m pip install --quiet pillow || true
           rm -rf /tmp/out && mkdir -p /tmp/out
           cp run/pruebas/informe.txt /tmp/out/ 2>/dev/null || echo "sin informe" > /tmp/out/informe.txt
-          grep -E "TF Jefes|Prueba de jefes|Exception|ERROR|WARN.*(tfclient|texture)|Caused by" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
+          grep -E "TF Jefes|TF Skills|Prueba de jefes|Exception|ERROR|WARN.*(tfclient|texture)|Caused by|^\s+at net\.tierrasfantasticas" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
           tail -n 400 run/juego.log > /tmp/out/final_del_registro.txt || true
           python3 - <<'EOF'
           import glob, os
