@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **17 de octubre de 2026** (TF Client **1.3.83**: lo que pidió el dueño al probar los jefes nuevos —que no golpeen al aire ni anden de lado, sin objetos, la barra al morir—, la música de las peleas y la muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **17 de octubre de 2026** (TF Client **1.3.84**: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,7 +55,26 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (17 oct 2026, TF Client 1.3.83) — lee esto primero
+### CHECKPOINT (17 oct 2026, TF Client 1.3.84) — lee esto primero
+
+**1.3.84 (17 oct)**: el dueño, tras la 1.3.83: *«se quedan bugueados, aparecen se van reaparecen, no me hacen caso, se
+van volando lejos algunos, corren en retroceso, texturas bugueadas, sin su animación…»* y **«haz tú las pruebas»**.
+Hecho: **prueba en el juego de verdad** en GitHub Actions (`.github/workflows/jefes-prueba.yml`, `bosses/BossTest.java`
+y `BossTestClient.java`): Minecraft en pantalla virtual, un mundo plano, una grieta por jefe, la pelea, la muerte y
+capturas; sale con `[prueba-jefes]` (o `[prueba-jefes=a,b]`) en el commit y deja informe y capturas en la rama
+`pruebas-jefes` (`tf-client/JEFES.md` §3.10). Lo que encontró y se arregló: las grietas se reiniciaban sin chunks que
+tickearan (ahora la arena se **fuerza** mientras hay pelea); corrían **de espaldas** (retroceso andando de la 1.3.83,
+el cuerpo girando más lento que el MoveControl, y el MoveControl que seguía andando tras pararse); la **correa** soltaba
+al jugador si el jefe salía de 40 bloques (ahora le sigue si el jugador está en la arena y vuelve teletransportado si
+pasa de 64); **Ignevar** volaba de espaldas (`velocity{relative}` con el yRot de Minecraft) y el **Contemplador**
+subía a 61 bloques (vuelo de ghast sin límite y `altitude` que miraba solo 8 bloques); antes de un golpe por delante
+el jefe se **planta a girarse**. Las «texturas bugueadas» de las capturas eran la partícula `flash` del Contemplador y
+los cubos de lava de Ignevar (del pack). En la prueba completa: los 17 salen una vez, objetivo el 100 % (menos el Mega
+Guardián, 87 %, que es un Warden, y la Tormenta del Wither, NoAI), 0 barras tras morir, 0 objetos, 0 errores.
+Referencias del simulador rehechas (abominacion, astwood, eldric, esqueleto_torre, kazk, piglin_mecha, rey_calabaza:
+el giro a 90°/tick y plantarse a girarse). Lo pendiente sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
+
+### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.83)
 
 **1.3.83 (17 oct)**: el dueño probó los jefes nuevos: *«algunos se quedan estúpidos y a veces me ignoran, se giran
 mal, caminan de lado, tiran ataques al aire, sus boss bar no desaparecen al morir, sus ítems no deben dropearse»*;
