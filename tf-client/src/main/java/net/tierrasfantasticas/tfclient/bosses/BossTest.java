@@ -79,6 +79,12 @@ public final class BossTest {
     /** Dónde dejó la prueba al jugador el tick de antes y hasta cuándo le deja moverse solo (le empuja o arrastra el jefe). */
     private static Vec3 placed;
     private static int freeUntil;
+    private static volatile int pushedAt = -10;
+
+    /** SkillMotion.push ha movido a un jugador. */
+    public static void pushed() {
+        pushedAt = t;
+    }
     /** Tick (de la fase de muerte) en que salió el relevo (-1 = ninguno pendiente) y desde el que se mira la muerte. */
     private static int relayAt = -1, deathFrom, lastState = -1;
 
@@ -295,9 +301,10 @@ public final class BossTest {
         Vec3 look = boss.position().add(0, boss.getBbHeight() * 0.5, 0).subtract(np.x, gy + 1.62, np.z);
         float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.sqrt(look.x * look.x + look.z * look.z)));
-        // Si algo del jefe le ha movido (un empujón, el rayo tractor que le arrastra hasta su boca), le deja ir 1,5 s: si
-        // no, la prueba le devolvía a su sitio cada tick y esos ataques no llegaban nunca a nada (la Tormenta del Wither)
-        if (placed != null && !view && player.position().distanceTo(placed) > 0.5) {
+        // Si algo del jefe le ha movido (un empujón, el rayo tractor que le arrastra hasta su boca: SkillMotion.push avisa),
+        // le deja ir 1,5 s: si no, la prueba le devolvía a su sitio cada tick y esos ataques no llegaban nunca a nada (la
+        // Tormenta del Wither). (Mientras se le teletransporta, el servidor no hace caso de lo que se mueve el cliente.)
+        if (pushedAt == t || pushedAt == t - 1 || placed != null && !view && player.position().distanceTo(placed) > 0.5) {
             if (t >= freeUntil) r.moved++;
             freeUntil = t + 30;
         }
@@ -450,6 +457,7 @@ public final class BossTest {
         boss = null;
         placed = null;
         freeUntil = 0;
+        pushedAt = -10;
         EPISODES.clear();
         index++;
         phase = 0;

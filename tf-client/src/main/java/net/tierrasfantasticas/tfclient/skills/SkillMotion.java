@@ -29,6 +29,7 @@ final class SkillMotion {
         motion = new Vec3(clamp(motion.x, max), clamp(motion.y, max), clamp(motion.z, max));
         e.setDeltaMovement(motion);
         e.hurtMarked = true;
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && e instanceof ServerPlayer) net.tierrasfantasticas.tfclient.bosses.BossTest.pushed();
         if (motion.y > 0 && e instanceof ServerPlayer) SkillServer.noFall(e.getUUID(), 100);
         e.fallDistance = 0;
     }

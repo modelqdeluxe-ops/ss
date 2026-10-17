@@ -1185,16 +1185,28 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                     direct = true;
                 }
             } else {
-                getNavigation().stop();
+                halt();
                 noPath = false;
                 if (goal == wanderGoal) wanderGoal = null;
             }
-        } else if (!getNavigation().isDone()) {
-            getNavigation().stop();
+        } else {
+            halt();
         }
         meleeStep();
         ghastStep();
         turnBody();
+    }
+
+    /**
+     * Se para: el camino y también el MoveControl, que si no seguía llevándole al último punto que se le pidió (los jefes
+     * grandes van derechos, sin camino) mientras el cuerpo ya miraba al jugador: andaba de espaldas ~13 ticks (el Druida,
+     * en la prueba en el juego).
+     */
+    private void halt() {
+        if (!getNavigation().isDone()) getNavigation().stop();
+        if (getMoveControl().hasWanted() && !SkillAI.has(goals, "type:ghast")) {
+            getMoveControl().setWantedPosition(getX(), getY(), getZ(), 0);
+        }
     }
 
     /**
