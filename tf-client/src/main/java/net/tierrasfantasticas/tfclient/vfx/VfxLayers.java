@@ -383,7 +383,13 @@ public final class VfxLayers {
             l.lerpOut = Math.max(l.lerpOut, 3);
         }
         VfxModel.Anim a = m.anim("death");
-        if (a != null) layers.add(new Layer("death", a, now, 1F, 3, 0, Integer.MAX_VALUE));
+        if (a != null) {
+            // Se queda en su último fotograma hasta que se quita el modelo (la muerte épica dura más que la animación:
+            // si no, al acabar, el jefe volvía a quedarse de pie en su pose de reposo)
+            Layer l = new Layer("death", a, now, 1F, 3, 0, Integer.MAX_VALUE);
+            if (a.loop == 0) l.loopMode = 1;
+            layers.add(l);
+        }
     }
 
     /** Quita las que ya han terminado del todo. */

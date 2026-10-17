@@ -10,41 +10,49 @@ abominacion         480 s, vida  10.5%: 46 ataques (5.8/min), 6 distintos de 7
      repite seguido: 3 de 45; curas castigadas: 0 de 4
 
 ## semilla 3, normal
-abominacion         480 s, vida  60.7%: 106 ataques (13.2/min), 5 distintos de 7
-       33  tongue_attack_2
-       33  tongue_attack_1
-       22  claw_attack_1
-       17  tentacle_attack_1
-        1  scream
-     sin salir: spread_blight, tentacle_attack_1_grab_player
-     repite seguido: 0 de 105; curas castigadas: 1 de 11; combos: 0; pasos atrás: 0
-
-## semilla 3, demencial
-abominacion         480 s, vida  64.8%: 153 ataques (19.1/min), 5 distintos de 7
-       49  tongue_attack_2
-       45  tongue_attack_1
-       38  claw_attack_1
-       20  tentacle_attack_1
-        1  scream
-     sin salir: spread_blight, tentacle_attack_1_grab_player
-     repite seguido: 0 de 152; curas castigadas: 2 de 13; combos: 0; pasos atrás: 11
-
-## semilla 11, normal
-abominacion         480 s, vida  67.3%: 110 ataques (13.8/min), 5 distintos de 7
-       36  tongue_attack_2
-       34  tongue_attack_1
-       24  claw_attack_1
+abominacion         480 s, vida  65.2%: 105 ataques (13.1/min), 5 distintos de 7
+       34  tongue_attack_2
+       30  tongue_attack_1
+       25  claw_attack_1
        15  tentacle_attack_1
         1  scream
      sin salir: spread_blight, tentacle_attack_1_grab_player
-     repite seguido: 0 de 109; curas castigadas: 2 de 14; combos: 0; pasos atrás: 0
+     repite seguido: 0 de 104; curas castigadas: 3 de 13; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 15
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 15
 
-## semilla 11, dificil
-abominacion         480 s, vida  67.4%: 126 ataques (15.8/min), 5 distintos de 7
-       40  tongue_attack_1
-       39  tongue_attack_2
-       28  claw_attack_1
-       18  tentacle_attack_1
+## semilla 3, demencial
+abominacion         480 s, vida  67.0%: 157 ataques (19.6/min), 5 distintos de 7
+       49  tongue_attack_1
+       49  tongue_attack_2
+       36  claw_attack_1
+       22  tentacle_attack_1
         1  scream
      sin salir: spread_blight, tentacle_attack_1_grab_player
-     repite seguido: 1 de 125; curas castigadas: 1 de 14; combos: 0; pasos atrás: 11
+     repite seguido: 1 de 156; curas castigadas: 1 de 11; combos: 0; pasos atrás: 7
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 22
+     golpes por delante lanzados sin mirarle (más de 50°): 1 de 22
+
+## semilla 11, normal
+abominacion         480 s, vida  72.0%: 108 ataques (13.5/min), 5 distintos de 7
+       34  tongue_attack_2
+       32  tongue_attack_1
+       24  claw_attack_1
+       17  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 0 de 107; curas castigadas: 3 de 15; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 17
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 17
+
+## semilla 11, dificil
+abominacion         480 s, vida  62.2%: 122 ataques (15.2/min), 5 distintos de 7
+       39  tongue_attack_2
+       36  tongue_attack_1
+       29  claw_attack_1
+       17  tentacle_attack_1
+        1  scream
+     sin salir: spread_blight, tentacle_attack_1_grab_player
+     repite seguido: 0 de 121; curas castigadas: 2 de 12; combos: 0; pasos atrás: 8
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 17
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 17

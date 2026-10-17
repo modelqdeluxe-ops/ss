@@ -25,6 +25,10 @@ import net.tierrasfantasticas.tfclient.skills.SkillDefs.Meta;
 import net.tierrasfantasticas.tfclient.skills.SkillMobs.Host;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
+import net.tierrasfantasticas.tfclient.vfx.VfxModel;
+import net.tierrasfantasticas.tfclient.vfx.VfxPose;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * El cerebro táctico de los jefes («inteligencia» de la dificultad, de 0 a 1). Los ataques siguen siendo los del pack
@@ -70,6 +74,16 @@ public final class SkillBrain {
         boolean noCancel;
         int uses, hits, missStreak;
         long lastUse = Long.MIN_VALUE / 4;
+        /**
+         * Hasta dónde llega de verdad su golpe, en bloques (ver {@link #reachOf}); far = no tiene tope (da a @target,
+         * dispara, se lanza o salta): solo cuentan las condiciones del pack.
+         */
+        double reach = Double.MAX_VALUE;
+        boolean far = true;
+        /** Su golpe va por delante (un cono, un hueso, @forward): antes de lanzarlo tiene que mirar al jugador. */
+        boolean frontal;
+        /** El pack elige por el lado en que está el jugador (fieldofview girado: los golpes a los lados del Guardián). */
+        boolean fov;
 
         Attack(String name, Mech line, boolean fromPool) {
             this.name = name;
@@ -77,11 +91,22 @@ public final class SkillBrain {
             this.fromPool = fromPool;
         }
 
-        /** Distancia ideal (algo más cerca que el centro de su alcance: los packs miden el alcance con holgura). */
+        /**
+         * Distancia ideal (algo más cerca que el centro de su alcance: los packs miden el alcance con holgura), sin pasar
+         * de lo que llega de verdad su golpe: un tajo de 4 bloques con «distance 0to8» en el pack se lanzaba a 2,8-5,6 y
+         * cortaba el aire.
+         */
         double sweet() {
             double hi = Math.min(max, 24);
+            if (!far) hi = Math.min(hi, Math.max(min + 0.5, reach * 0.8));
             return min + Math.max(0, hi - min) * 0.35;
         }
+    }
+
+    /** La escala de ahora del modelo del mob (model{scale}, setmodelscale); 1 si no tiene. */
+    static float modelScale(Host h) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        return a == null || a.scale <= 0 ? 1F : a.scale;
     }
 
     /** El cerebro de un mob de jefe. */
@@ -114,6 +139,9 @@ public final class SkillBrain {
         long planCheck;
         List<Attack> can = List.of();
         int chains;
+        /** Desde cuándo espera a que el jugador entre en el alcance de sus golpes (-1 = no espera); y giros pedidos. */
+        long reachWait = -1;
+        int turns;
 
         boolean handles(Mech m) {
             return handled.contains(m);
@@ -131,6 +159,8 @@ public final class SkillBrain {
     static Brain build(Host h) {
         ClassDef cls = h.cls();
         Brain b = new Brain();
+        VfxModel model = h.def().model == null ? null : SkillMobs.model(h.def().model);
+        float scale = modelScale(h);
         for (Mech m : h.def().mechs) {
             if (!"ontimer".equals(m.tr) || SkillRuntime.num(m.trv, 20) < 10) continue;
             boolean any = false;
@@ -139,7 +169,7 @@ public final class SkillBrain {
                     String n = part.trim().split("\\s+")[0];
                     Meta meta = n.isEmpty() ? null : cls.meta(n);
                     if (meta != null && offensive(cls, meta, new HashSet<>(), 0)) {
-                        b.attacks.add(analyze(cls, meta, new Attack(meta.name, m, true)));
+                        b.attacks.add(analyze(cls, meta, new Attack(meta.name, m, true), model, scale));
                         any = true;
                     }
                 }
@@ -149,7 +179,7 @@ public final class SkillBrain {
                 String n = m.arg(null, "s", "skill", "skills");
                 Meta meta = n == null ? null : cls.meta(n.split(",")[0].trim());
                 if (meta != null && offensive(cls, meta, new HashSet<>(), 0)) {
-                    b.attacks.add(analyze(cls, meta, new Attack(meta.name, m, false)));
+                    b.attacks.add(analyze(cls, meta, new Attack(meta.name, m, false), model, scale));
                     any = true;
                 }
             }
@@ -189,9 +219,22 @@ public final class SkillBrain {
     }
 
     /** Lee sus mecánicas (y las de lo que llama): alcance y qué tipo de ataque es. */
+    private static Attack analyze(ClassDef cls, Meta meta, Attack a, VfxModel model, float scale) {
+        analyze(cls, meta, a);
+        reachOf(cls, meta, a, model, scale);
+        return a;
+    }
+
     private static Attack analyze(ClassDef cls, Meta meta, Attack a) {
         for (Cond c : meta.targetConditions) range(a, c);
         for (Cond c : meta.conditions) range(a, c);
+        for (List<Cond> cs : List.of(meta.targetConditions, meta.conditions, a.line.c)) {
+            for (Cond c : cs) {
+                if (!(c.m().equals("fieldofview") || c.m().equals("fov") || c.m().equals("infieldofview"))) continue;
+                double r = Mth.wrapDegrees(SkillRuntime.num(c.a().getOrDefault("rotation", c.a().getOrDefault("r", "0")), 0));
+                if (Math.abs(r) >= 45) a.fov = true;
+            }
+        }
         for (Cond c : meta.targetConditions) {
             if (c.m().equals("fieldofview") || c.m().equals("fov") || c.m().equals("infieldofview")) {
                 double r = SkillRuntime.num(c.a().getOrDefault("rotation", c.a().getOrDefault("r", "0")), 0);
@@ -278,6 +321,167 @@ public final class SkillBrain {
 
     private static double radius(Mech m) {
         return SkillRuntime.num(m.ta.getOrDefault("r", m.ta.getOrDefault("radius", "5")), 5);
+    }
+
+    // ------------------------------------------------------------------------------------------- hasta dónde llega
+
+    /** Mecánicas que dan donde las pone su objetivo (su alcance es el de ese objetivo; el del tótem, más su radio). */
+    private static final Set<String> HITS = Set.of("damage", "basedamage", "hit", "percentdamage", "throw", "ignite", "stun",
+            "mountmodel", "totem", "potion", "pull", "velocity");
+    /** Las que llegan lejos o mueven al jefe: con una de ellas el ataque no tiene tope (mandan las condiciones del pack). */
+    private static final Set<String> REACHES_FAR = Set.of("projectile", "missile", "shoot", "chainmissile", "cmi", "lunge",
+            "propel", "leap", "teleport", "tp", "teleportto", "tpto", "beam", "raytrace", "raytraceto", "jump", "summon");
+    private static final Set<String> CALLS = Set.of("skill", "metaskill", "randomskill", "cast", "skillsequence", "aura",
+            "buff", "debuff");
+    /** Objetivos alrededor de quien lanza (MythicMobs: en un radio «r» desde él; 5 si no lo pone). */
+    private static final Set<String> AROUND = Set.of("pir", "playersinradius", "eir", "entitiesinradius", "livinginradius",
+            "leir", "livingentitiesinradius", "mir", "mobsinradius", "rlnc", "randomlocationsnearcaster", "iir", "bir", "sphere");
+    private static final Set<String> CONE = Set.of("livingincone", "lic", "entitiesincone", "eic", "playersincone");
+    private static final Set<String> RING = Set.of("ring", "eirr", "entitiesinringradius", "playersinring", "pirr");
+    private static final Set<String> SELF = Set.of("self", "caster", "selflocation", "casterlocation", "origin");
+
+    /**
+     * Hasta dónde llega de verdad el ataque, leyendo a dónde van sus golpes: un área alrededor (@PIR{r}, @EIR{r}), un
+     * cono (@LivingInCone{r}), un anillo, @Forward{f} o un tótem en un hueso del modelo (donde está ese hueso en su
+     * animación en el instante en que sale el tótem, y hacia delante: lo que llega a quien tiene enfrente, más el radio
+     * del tótem). Si algún golpe va a @target (o al que lo lance la línea), dispara, se lanza hacia el jugador o saca
+     * algo, no tiene tope: valen las condiciones del pack. Los packs ponen condiciones de distancia con holgura (los
+     * golpes de escudo del Esqueleto llegan a 5 y su condición es 0to8): con esto el cerebro se pone a la distancia a la
+     * que el golpe llega y no lo lanza al aire.
+     */
+    private static void reachOf(ClassDef cls, Meta meta, Attack a, VfxModel model, float scale) {
+        List<Object[]> states = new ArrayList<>();
+        List<Object[]> bones = new ArrayList<>();
+        boolean[] far = {false};
+        double[] reach = {0};
+        // (lo que no pone objetivo va al de la línea que lo lanza: «skill{s=X} @target», sin tope)
+        hits(cls, meta, a, a.line.t != null ? a.line : null, model, 0, states, bones, reach, far, new HashSet<>(), 0);
+        boolean any = reach[0] > 0;
+        for (Object[] b : bones) {
+            double r = boneHit(model, scale, (int) b[0], (int) b[1], (String) b[2], (double) b[3], states, a.fov || a.rear);
+            if (r < 0) {
+                far[0] = true;
+            } else {
+                reach[0] = Math.max(reach[0], r);
+                any = true;
+            }
+        }
+        a.far = far[0] || !any;
+        a.reach = a.far ? Double.MAX_VALUE : reach[0];
+        if (a.far) a.frontal = false;
+    }
+
+    /**
+     * Recorre el ataque en el tiempo (sus delay y las skills que llama, como activeEnd): las animaciones que pone
+     * (states: {tick, nombre, velocidad}) y sus golpes; los de un hueso (bones: {tick, ticks que dura, hueso, radio}) se
+     * miden luego con la animación que tenga puesta en ese instante.
+     */
+    private static void hits(ClassDef cls, Meta meta, Attack a, Mech inherited, VfxModel model, int start, List<Object[]> states,
+                             List<Object[]> bones, double[] reach, boolean[] far, Set<String> seen, int depth) {
+        if (meta == null || depth > 4 || !seen.add(meta.name)) return;
+        int t = start;
+        for (Mech m : meta.mechs) {
+            if (m.m.equals("delay")) {
+                t += (int) Math.max(0, SkillRuntime.num(m.arg("0", "_", "ticks", "t", "d"), 0));
+                continue;
+            }
+            int at = t + (int) SkillRuntime.num(m.a.get("delay"), 0);
+            Mech tgt = m.t != null ? m : inherited;
+            boolean onSelf = tgt != null && (tgt.t.equals("self") || tgt.t.equals("caster"));
+            if ((m.m.equals("state") || m.m.equals("animation")) && (m.t == null || onSelf) && model != null
+                    && !SkillRuntime.bool(m.arg("false", "remove", "r"))) {
+                String s = m.arg(null, "state", "s", "animation", "a");
+                if (s != null) {
+                    // «hit_<random.1to3>»: la primera que empieza así (todas las de un pack se parecen)
+                    if (s.indexOf('<') >= 0) {
+                        String pre = s.substring(0, s.indexOf('<'));
+                        s = model.anims.keySet().stream().filter(n -> n.startsWith(pre)).sorted().findFirst().orElse(s);
+                    }
+                    states.add(new Object[] {at, s, (float) SkillRuntime.num(m.arg("1", "speed", "sp"), 1)});
+                }
+                continue;
+            }
+            if (REACHES_FAR.contains(m.m) || m.m.equals("setspeed") && SkillRuntime.num(m.arg("1", "speed", "s"), 1) >= 2
+                    || m.m.equals("velocity") && onSelf) {
+                // (lo que saca en un sitio a su alrededor, una lápida en un anillo, llega hasta allí y un poco más)
+                double r = m.m.equals("summon") && tgt != null && !onSelf ? flatSpot(tgt) : -1;
+                if (r >= 0) reach[0] = Math.max(reach[0], r + SkillRuntime.num(m.arg("0", "radius", "r"), 0) + 2);
+                else far[0] = true;
+                continue;
+            }
+            if (HITS.contains(m.m) && !(onSelf && !m.m.equals("totem"))) {
+                double hr = m.m.equals("totem") ? SkillRuntime.num(m.arg("1.25", "hr", "horizontalradius"), 1.25) : 0;
+                if (tgt != null && tgt.t.equals("modelpart") && model != null) {
+                    String pid = tgt.ta.getOrDefault("pid", tgt.ta.get("p"));
+                    int dur = m.m.equals("totem") ? (int) Math.min(20, SkillRuntime.num(m.arg("10", "maxduration", "md"), 10)) : 0;
+                    if (pid == null) far[0] = true;
+                    else bones.add(new Object[] {at, dur, pid, Math.max(hr, 0.5)});
+                    if (!onSelf) a.frontal = true;
+                } else {
+                    double r = tgt == null ? -1 : flatSpot(tgt);
+                    if (r < 0) {
+                        far[0] = true;
+                    } else {
+                        reach[0] = Math.max(reach[0], r + hr);
+                        if (CONE.contains(tgt.t) || tgt.t.equals("forward")) a.frontal = true;
+                    }
+                }
+                continue;
+            }
+            if (CALLS.contains(m.m)) {
+                for (Meta sub : called(cls, m)) hits(cls, sub, a, tgt, model, at, states, bones, reach, far, seen, depth + 1);
+            }
+        }
+    }
+
+    /** Bloques desde el jefe hasta donde da un objetivo que no es un hueso; -1 = no tiene tope (@target...). */
+    private static double flatSpot(Mech tgt) {
+        String t = tgt.t;
+        if (SELF.contains(t)) return 0;
+        if (AROUND.contains(t) || CONE.contains(t)) return num(tgt.ta, 5, "r", "radius");
+        if (RING.contains(t)) return num(tgt.ta, num(tgt.ta, 5, "r", "radius"), "max", "maxradius");
+        if (t.equals("forward")) return num(tgt.ta, 5, "f", "forward");
+        return -1;
+    }
+
+    private static double num(Map<String, String> a, double def, String... keys) {
+        for (String k : keys) if (a.containsKey(k)) return SkillRuntime.num(a.get(k), def);
+        return def;
+    }
+
+    /**
+     * Lo que llega un golpe en un hueso (un tótem en la cuchilla de Kazk): dónde está ese hueso, con la animación que
+     * el ataque tiene puesta en ese instante, durante lo que dura el tótem; hacia delante (lo que alcanza a quien tiene
+     * justo enfrente) o, si el pack ya elige por el lado (fieldofview, golpes detrás), en redondo. -1 = no tiene ese hueso.
+     */
+    static double boneHit(VfxModel model, float scale, int at, int dur, String bone, double hr, List<Object[]> states, boolean round) {
+        int b = model.bone(bone);
+        if (b < 0) return -1;
+        VfxModel.Anim anim = null;
+        int from = 0;
+        float speed = 1F;
+        for (Object[] s : states) {
+            int st = (int) s[0];
+            VfxModel.Anim an = model.anims.get((String) s[1]);
+            if (an != null && st <= at && (anim == null || st >= from)) {
+                anim = an;
+                from = st;
+                speed = (float) s[2];
+            }
+        }
+        Matrix4f[] mats = new Matrix4f[model.bones.length];
+        for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
+        Vector3f p = new Vector3f();
+        double front = -1, around = 0;
+        for (int k = 0; k <= dur; k++) {
+            VfxPose.compute(model, anim, (at - from + k) / 20F * speed, 0F, mats);
+            mats[b].transformPosition(p.set(0F, 0F, 0F));
+            // (el modelo mira a -Z: ver SkillModels.world)
+            double f = -p.z * scale / 16.0, l = p.x * scale / 16.0;
+            around = Math.max(around, Math.sqrt(f * f + l * l) + hr);
+            if (Math.abs(l) < hr) front = Math.max(front, f + Math.sqrt(hr * hr - l * l));
+        }
+        return round || front < 0 ? around : front;
     }
 
     /** distance{d=4to16}, targetwithin{d=10} (o «false»: más allá), targetnotwithin{d=7}. */
@@ -428,6 +632,22 @@ public final class SkillBrain {
                 }
             }
             if (best == null) break;
+            // Un golpe por delante (un tajo, un cono): primero se gira hacia el jugador (si no, el tajo salía de lado y
+            // cortaba el aire). Gira medio camino cada vez; si no puede (modelo bloqueado), lo lanza igual. Uno que sale a
+            // la vez que otro, solo si ya le mira
+            if (!facing(h, target, best)) {
+                if (k > 0) break;
+                // Con el modelo bloqueado (lockmodel del ataque de antes) no puede girarse: espera a que el pack lo suelte
+                boolean locked = h.motion()[2] != 0;
+                if (b.turns < (locked ? 10 : 4)) {
+                    if (!locked) h.face(target.position(), false);
+                    b.turns++;
+                    b.hesitated = true;
+                    b.nextDecision = now + 2;
+                    return;
+                }
+            }
+            b.turns = 0;
             fire(h, b, best, now);
             done.add(best);
             // Si ese ataque no deja al jefe ocupado (sin gcd: las cabezas de la Hidra), puede salir otro a la vez
@@ -437,9 +657,21 @@ public final class SkillBrain {
         }
     }
 
+    /** ¿Le mira para lanzarlo? Los golpes por delante, si tiene al jugador a menos de 50° de su cuerpo. */
+    private static boolean facing(Host h, LivingEntity target, Attack a) {
+        if (!a.frontal || a.fov || a.rear || target == null) return true;
+        Vec3 d = target.position().subtract(h.mob().position());
+        if (d.horizontalDistanceSqr() < 1e-4) return true;
+        float to = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
+        return Math.abs(Mth.wrapDegrees(to - h.mob().yBodyRot)) <= 50F;
+    }
+
     /** Los ataques que saldrían ahora (sus condiciones, las de su línea y su cooldown), sin lanzar nada. */
     private static List<Attack> usable(Host h, Brain b, Ctx base) {
         List<Attack> out = new ArrayList<>();
+        LivingEntity target = h.target();
+        double dist = target == null ? 0 : target.position().distanceTo(h.mob().position());
+        double slack = target == null ? 0 : 0.6 + target.getBbWidth() / 2;
         Map<Mech, List<Tgt>> lineTargets = new IdentityHashMap<>();
         for (Attack a : b.attacks) {
             Mech line = a.line;
@@ -456,7 +688,14 @@ public final class SkillBrain {
             if (targets.isEmpty()) continue;
             Ctx c = base.copy();
             c.targets = targets;
-            if (SkillRuntime.usable(h.cls().meta(a.name), c)) out.add(a);
+            if (!SkillRuntime.usable(h.cls().meta(a.name), c)) continue;
+            if (target != null && dist > a.reach + slack) {
+                // Su golpe no le llega: espera a que el jugador entre en su alcance (el plan le acerca); si en 3 s no
+                // llega (no puede andar hasta él), lo lanza igual, como el pack
+                if (b.reachWait < 0) b.reachWait = h.age();
+                if (h.age() - b.reachWait < 60) continue;
+            }
+            out.add(a);
         }
         return out;
     }
@@ -497,6 +736,7 @@ public final class SkillBrain {
         c.cast = ++castSeq;
         b.currentCast = c.cast;
         b.chainTried = false;
+        b.reachWait = -1;
         b.motion = h.motion();
         b.defaults = SkillModels.defaults(h.mob().getUUID());
         b.animMark = SkillModels.mark(h.mob().getUUID());
@@ -540,6 +780,8 @@ public final class SkillBrain {
         st.gcdUntil = SkillRuntime.clock;
         List<Attack> ok = usable(h, b, SkillMobs.ctx(h));
         ok.remove(b.current);
+        // (un golpe por delante solo si ya le mira: en mitad de un combo no hay tiempo de girarse)
+        ok.removeIf(a -> !facing(h, h.target(), a));
         if (ok.isEmpty()) {
             st.gcdUntil = saved;
             return;

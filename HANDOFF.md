@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **15 de octubre de 2026** (TF Client **1.3.82**: 12 jefes nuevos de LittleRoom —ya son 17—, la IA de MythicMobs con el golpe de Minecraft y lo que le faltaba al motor para los packs nuevos; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
-`claude/intelligent-einstein-g9d88o` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
+Última actualización: **17 de octubre de 2026** (TF Client **1.3.83**: lo que pidió el dueño al probar los jefes nuevos —que no golpeen al aire ni anden de lado, sin objetos, la barra al morir—, la música de las peleas y la muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+`claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -55,7 +55,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (15 oct 2026, TF Client 1.3.82) — lee esto primero
+### CHECKPOINT (17 oct 2026, TF Client 1.3.83) — lee esto primero
+
+**1.3.83 (17 oct)**: el dueño probó los jefes nuevos: *«algunos se quedan estúpidos y a veces me ignoran, se giran
+mal, caminan de lado, tiran ataques al aire, sus boss bar no desaparecen al morir, sus ítems no deben dropearse»*;
+mandó una canción (mp3) que **debe sonar siempre al empezar un jefe y quitarse al morir** y pidió que **cada muerte sea
+épica, como la del dragón del End que se desintegra**. Hecho (`tf-client/JEFES.md` §3.9): el cerebro sabe **hasta dónde
+llega cada golpe** (áreas, conos, tótems en huesos en el instante del golpe) y no lo lanza al aire; **se gira antes**
+de un golpe por delante (y espera a que el pack suelte `lockmodel`); andando, **el cuerpo va hacia donde anda**; sin
+camino de Minecraft (jefes grandes) va derecho; el jefe ve toda su arena (`FollowRange` ≥ 48); la **barra se quita al
+morir**; **ningún objeto cae** (`dropitem` sin efecto, y los mobs de Minecraft que sacan no sueltan nada); **música**
+en bucle (`sounds/jefes/musica.ogg`, volumen de «Discos») mientras se ve la barra del jefe, con fundido al morir;
+**muerte épica**: rayos de luz como el dragón del color del jefe, grito del dragón, explosiones, el modelo se encoge y
+estalla (≥ 8 s). Referencias del simulador rehechas (9 jefes: alcance, giro, combos que deshacen `lockmodel` como el
+Java, el Guardián Hueco ya no cuenta sus giros `bank_*` como ataques). **Sin probar en el juego**: pedir al dueño una
+pelea entera. **Avisado al dueño**: la canción es una versión con derechos (Final Destination de Smash Bros., cover de
+AdamCrossing) y va dentro del jar público. Lo pendiente de antes sigue igual (Pohaku, 51 packs: `JEFES.md` §11.0).
+
+### CHECKPOINT anterior (15 oct 2026, TF Client 1.3.82)
 
 **1.3.82 (15 oct)**: el dueño mandó **64 packs de jefes** nuevos (13 mensajes) tras pedir «que esto no rompa a los
 bosses actuales y venideros» (se hizo la red de seguridad: `tools/bosses/verificar.py` + `referencias/`, que corre en GitHub Actions).

@@ -62,6 +62,7 @@ STUB_OK = {
     'cullconfig': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'renderinit': 'ajuste de dibujo de ModelEngine que aquí no hace falta',
     'particleequation': 'MythicMobs dice que aún no funciona («not yet functional… not intended to be used», wiki)',
+    'dropitem': 'los jefes no sueltan objetos (orden del dueño, 1.3.83): lo que se gana es lo de la grieta',
 }
 # Mecánicas que nombran un hueso del modelo (p/pid/part/partid/b/bone): el auditor mira que exista
 BONE_MECHS = {'partvis', 'partvisibility', 'brightness', 'changepart', 'segment', 'seg', 'enchant', 'billboard', 'glowbone',

@@ -238,9 +238,6 @@ public final class SkillMobs {
         /** Un esbirro de verdad del pack (summon de un mob con IA): null si no se pudo. */
         Host spawnMinion(Host owner, MobDef def, ServerLevel level, Vec3 at, float yaw);
 
-        /** dropitem{i=X}: el objeto del pack en el suelo. */
-        void drop(ClassDef cls, String item, ServerLevel level, Vec3 at);
-
         /** mountmodel: el jugador se queda en el asiento «seat» del modelo de «host» (agarrado). */
         void seat(Host host, String seat, LivingEntity rider);
 
@@ -252,6 +249,24 @@ public final class SkillMobs {
     }
 
     public static World world;
+
+    /** La marca de los mobs de Minecraft que saca un jefe (summon{type=ZOMBIE}): no sueltan nada al morir (BossEvents). */
+    public static final String SUMMONED = "tfclient_jefe";
+
+    /** La muerte épica (BossEntity.epicTick): el modelo, a «factor» de la escala que tenía al morir (se deshace). */
+    public static void deathScale(Host h, float factor) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        if (a == null || a.me == null) return;
+        if (a.deathScale <= 0) a.deathScale = a.scale;
+        a.scale = Math.max(0.01F, a.deathScale * factor);
+        a.prop("scale", String.valueOf(a.scale), null, null);
+    }
+
+    /** La música de la pelea (client/TFBossMusic): el jefe «boss» la pide a ese jugador (on) o deja de pedírsela. */
+    public static void music(ServerPlayer p, UUID boss, boolean on) {
+        if (p.hasDisconnected()) return;
+        SkillNet.toPlayer(p, new SkillNet.Screen("music", boss.toString(), "", on ? 1 : 0));
+    }
 
     /** En el cliente: ¿el modelo de esa entidad tiene algún hueso con glowbone? (lo pone SkillClient). */
     public static volatile java.util.function.Predicate<Entity> clientGlow = e -> false;

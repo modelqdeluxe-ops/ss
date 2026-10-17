@@ -23,6 +23,8 @@ eldric              480 s, vida  59.0%: 117 ataques (14.6/min), 9 distintos de 8
         1  passive_layer
         1  start_fight
      repite seguido: 2 de 116; curas castigadas: 7 de 17; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 38
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 38
 
 ## semilla 3, demencial
 eldric              480 s, vida  63.0%: 147 ataques (18.4/min), 9 distintos de 8
@@ -36,6 +38,8 @@ eldric              480 s, vida  63.0%: 147 ataques (18.4/min), 9 distintos de 8
         1  passive_layer
         1  start_fight
      repite seguido: 1 de 146; curas castigadas: 7 de 15; combos: 11; pasos atrás: 11
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 42
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 42
 
 ## semilla 11, normal
 eldric              480 s, vida  57.0%: 97 ataques (12.1/min), 9 distintos de 8
@@ -49,16 +53,20 @@ eldric              480 s, vida  57.0%: 97 ataques (12.1/min), 9 distintos de 8
         1  passive_layer
         1  start_fight
      repite seguido: 0 de 96; curas castigadas: 3 de 13; combos: 0; pasos atrás: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 30
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 30
 
 ## semilla 11, dificil
-eldric              480 s, vida  59.8%: 127 ataques (15.9/min), 9 distintos de 8
-       27  attack_1
+eldric              480 s, vida  59.8%: 129 ataques (16.1/min), 9 distintos de 8
+       25  attack_1
        22  attack_4
-       22  attack_3
-       18  leap
-       18  air
-       17  attack_2
+       21  attack_3
+       20  attack_2
+       19  leap
+       19  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 0 de 126; curas castigadas: 7 de 15; combos: 11; pasos atrás: 11
+     repite seguido: 0 de 128; curas castigadas: 3 de 14; combos: 8; pasos atrás: 12
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 42
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 42

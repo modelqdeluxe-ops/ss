@@ -3341,5 +3341,13 @@
   "sounds": [
    "tfclient:bosses/tormenta_wither/bacteria_passive"
   ]
+ },
+ "jefes.musica": {
+  "sounds": [
+   {
+    "name": "tfclient:jefes/musica",
+    "stream": true
+   }
+  ]
  }
 }

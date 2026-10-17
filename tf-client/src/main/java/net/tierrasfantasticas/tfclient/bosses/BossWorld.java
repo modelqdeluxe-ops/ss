@@ -2,18 +2,14 @@ package net.tierrasfantasticas.tfclient.bosses;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs;
 import net.tierrasfantasticas.tfclient.skills.SkillMobs;
 
-/** Lo que el motor de skills pide al mundo para los jefes: esbirros, objetos que caen y agarres. */
+/** Lo que el motor de skills pide al mundo para los jefes: esbirros y agarres (objetos que caigan, ninguno). */
 final class BossWorld implements SkillMobs.World {
     @Override
     public SkillMobs.Host spawnMinion(SkillMobs.Host owner, SkillDefs.MobDef def, ServerLevel level, Vec3 at, float yaw) {
@@ -38,15 +34,6 @@ final class BossWorld implements SkillMobs.World {
         if (boss.rift() != null) m.setRift(boss.rift(), Vec3.atBottomCenterOf(boss.homePos()));
         level.addFreshEntity(m);
         return m;
-    }
-
-    @Override
-    public void drop(SkillDefs.ClassDef cls, String item, ServerLevel level, Vec3 at) {
-        RegistryObject<net.minecraft.world.item.Item> o = TFBosses.DROPS.get(cls.id + ":" + item.toLowerCase(Locale.ROOT));
-        if (o == null) return;
-        ItemEntity e = new ItemEntity(level, at.x, at.y + 0.5, at.z, new ItemStack(o.get()));
-        e.setDefaultPickUpDelay();
-        level.addFreshEntity(e);
     }
 
     @Override

@@ -39,6 +39,8 @@ public final class SkillScreen {
             case "black" -> blackUntil = m.n() <= 0 ? 0 : now + m.n();
             case "blood" -> bloodUntil = m.n() <= 0 ? 0 : now + m.n();
             case "toast" -> toast(mc, m.a(), m.b(), m.n());
+            // La música de la pelea de jefe (BossEntity): a = el jefe, n = 1 la pide, 0 ya no
+            case "music" -> net.tierrasfantasticas.tfclient.client.TFBossMusic.set(m.a(), m.n() > 0);
             default -> { }
         }
     }

@@ -4,13 +4,16 @@ ataques salen. Sirve para ver si el pack se queda bloqueado (una variable que no
 salir, un gcd que no es del jefe...) y si usa todos sus ataques.
 
     python3 tools/bosses/sim_ai.py [jefe ...] [--min 5] [--seed 1] [--dif normal] [--smart 0..1] [-v] [--antes]
+                                  [--sin-alcance]
 
 --dif P: una dificultad de /tf boss (facil, normal, dificil, pesadilla, demencial): su inteligencia, su velocidad
 (el tempo de los ataques) y su ritmo (cooldowns). --smart N: solo la inteligencia del cerebro táctico
 (skills/SkillBrain.java; 0 = el pack tal cual, por defecto).
 El jugador simulado, además de moverse y pegar, a veces se cura (come), se cubre con escudo o dispara con arco, y se
 mide si el jefe le castiga (cuántas curas reciben un ataque que acorta distancia o a distancia en el segundo y medio
-siguiente) y cuánto repite ataques seguidos. --antes: el motor de la 1.3.75 (para comparar).
+siguiente), cuánto repite ataques seguidos y (1.3.83) cuántos golpes lanza fuera de su alcance («al aire») o, si van
+por delante, sin mirarle. --antes: el motor de la 1.3.75; --sin-alcance: el cerebro de la 1.3.82, sin mirar hasta
+dónde llega cada golpe ni girarse antes (para comparar).
 
 Simplificaciones: el jugador es un punto; los tótems y proyectiles no se simulan (salvo los que detectan dónde está
 el jugador para morder, en la Hidra); las auras solo cuentan su nombre y su duración; las animaciones solo se apuntan.
@@ -30,7 +33,8 @@ import mythic_ai as AI  # noqa: E402
 
 # Estados que no son ataques (reposo, pasivos, transiciones)
 NOT_ATTACKS = {'passive', 'passive_tongue', 'passive_tentacle', 'idle', 'walk', 'sleep', 'land', 'in_air', 'hurt',
-               'spawn', 'shield_charge_run', 'turn_left', 'turn_right', 'shield_hit', 'stun_hit', 'statue'}
+               'spawn', 'shield_charge_run', 'turn_left', 'turn_right', 'shield_hit', 'stun_hit', 'statue', 'bank_left',
+               'bank_right'}
 
 
 def num(v, d=0.0):
@@ -237,6 +241,7 @@ class Boss:
 
 
 OLD = False  # --antes: como el motor de la 1.3.75 (para comparar)
+NO_REACH = False  # --sin-alcance: el cerebro sin mirar hasta dónde llega cada golpe ni girarse antes (1.3.82)
 
 SMART = 0.0  # --smart: inteligencia del cerebro (como Difficulty.smart)
 SPEED = 1.0  # --dif: velocidad de la dificultad (Difficulty.speed)
@@ -265,10 +270,209 @@ class Attack:
         self.active_end = 0
         self.gcd = 0
         self.no_cancel = False
+        # SkillBrain.reachOf: hasta dónde llega su golpe (bloques); far = sin tope; frontal = va por delante; fov = el
+        # pack ya mira hacia qué lado está el jugador
+        self.reach_v = float('inf')
+        self.far = True
+        self.frontal = False
+        self.fov = False
 
-    def sweet(self):
+    def reach(self, sim=None):
+        return float('inf') if self.far else self.reach_v
+
+    def cap(self, sim=None):
+        """El alcance con el que decide el cerebro (--sin-alcance: como antes de la 1.3.83, sin mirarlo)."""
+        return float('inf') if NO_REACH else self.reach()
+
+    def sweet(self, sim=None):
         hi = min(self.max, 24)
+        if not self.far and not NO_REACH:
+            hi = min(hi, max(self.min + 0.5, self.reach_v * 0.8))
         return self.min + max(0.0, hi - self.min) * 0.35
+
+
+# SkillBrain.reachOf: hasta dónde llega de verdad cada ataque (las mismas tablas)
+HITS = {'damage', 'basedamage', 'hit', 'percentdamage', 'throw', 'ignite', 'stun', 'mountmodel', 'totem', 'potion', 'pull',
+        'velocity'}
+REACHES_FAR = {'projectile', 'missile', 'shoot', 'chainmissile', 'cmi', 'lunge', 'propel', 'leap', 'teleport', 'tp',
+               'teleportto', 'tpto', 'beam', 'raytrace', 'raytraceto', 'jump', 'summon'}
+CALLS = {'skill', 'metaskill', 'randomskill', 'cast', 'skillsequence', 'aura', 'buff', 'debuff'}
+AROUND = {'pir', 'playersinradius', 'eir', 'entitiesinradius', 'livinginradius', 'leir', 'livingentitiesinradius', 'mir',
+          'mobsinradius', 'rlnc', 'randomlocationsnearcaster', 'iir', 'bir', 'sphere'}
+CONE = {'livingincone', 'lic', 'entitiesincone', 'eic', 'playersincone'}
+RING = {'ring', 'eirr', 'entitiesinringradius', 'playersinring', 'pirr'}
+SELF = {'self', 'caster', 'selflocation', 'casterlocation', 'origin'}
+
+
+def _ta_num(ta, d, *keys):
+    for k in keys:
+        if k in ta:
+            return num(ta[k], d)
+    return d
+
+
+def bone_index(model, name):
+    """VfxModel.bone: el id tal cual, en minúsculas o sin su prefijo de comportamiento (ef_suelo → «suelo»)."""
+    ids = [b['id'] for b in model['bones']]
+    if name in ids:
+        return ids.index(name)
+    low = name.lower()
+    for i, b in enumerate(ids):
+        if b.lower() == low:
+            return i
+    tail = '_' + low
+    for i, b in enumerate(ids):
+        if b.lower().endswith(tail) and b.find('_') == len(b) - len(tail):
+            return i
+    return -1
+
+
+def bone_hit(model, scale, at, dur, bone, hr, states, round_):
+    """SkillBrain.boneHit: lo que llega un golpe en un hueso con la animación que tiene puesta en ese instante (hacia
+    delante, o en redondo si el pack ya elige por el lado). Solo la cadena de padres del hueso (es lo mismo que la pose
+    entera de VfxPose.compute)."""
+    sys.path.insert(0, os.path.join(HERE, '..'))
+    import vfx_bb as VB
+    b = bone_index(model, bone)
+    if b < 0:
+        return -1
+    anim, start, speed = None, 0, 1.0
+    for st, name, sp in states:
+        an = model['anims'].get(name)
+        if an is not None and st <= at and (anim is None or st >= start):
+            anim, start, speed = an, st, sp
+    chain = []
+    i = b
+    while i >= 0:
+        chain.append(i)
+        i = model['bones'][i]['parent']
+    chain.reverse()
+    on = set(chain)
+    front, around = -1.0, 0.0
+    for k in range(dur + 1):
+        t = (at - start + k) / 20.0 * speed
+        extra = {}
+        tt = VB.anim_time(anim, t) if anim else None
+        if anim and tt is not None:
+            for tr in anim['tracks']:
+                if tr['b'] not in on:
+                    continue
+                e = extra.setdefault(tr['b'], [[0, 0, 0], [0, 0, 0], [1, 1, 1]])
+                if 'r' in tr:
+                    e[0] = VB.sample(tr['r'], tt)
+                if 'p' in tr:
+                    e[1] = VB.sample(tr['p'], tt)
+                if 's' in tr:
+                    e[2] = VB.sample(tr['s'], tt)
+        m = None
+        for i2 in chain:
+            bn = model['bones'][i2]
+            r, p, sc = extra.get(i2, [[0, 0, 0], [0, 0, 0], [1, 1, 1]])
+            par = bn['parent']
+            pp = model['bones'][par]['pivot'] if par >= 0 else [0, 0, 0]
+            tr3 = [bn['pivot'][q] - pp[q] + p[q] for q in range(3)]
+            rm = VB.rot_matrix([bn['rot'][q] + r[q] for q in range(3)])
+            local = [[rm[r2][c] * sc[c] for c in range(3)] + [tr3[r2]] for r2 in range(3)] + [[0, 0, 0, 1]]
+            m = local if m is None else VB.mat4(m, local)
+        f, lat = -m[2][3] * scale / 16.0, m[0][3] * scale / 16.0  # (el modelo mira a -Z)
+        around = max(around, math.hypot(f, lat) + hr)
+        if abs(lat) < hr:
+            front = max(front, f + math.sqrt(hr * hr - lat * lat))
+    return around if round_ or front < 0 else front
+
+
+def flat_spot(tgt):
+    t, ta = tgt['t'], tgt.get('ta') or {}
+    if t in SELF:
+        return 0.0
+    if t in AROUND or t in CONE:
+        return _ta_num(ta, 5, 'r', 'radius')
+    if t in RING:
+        return _ta_num(ta, _ta_num(ta, 5, 'r', 'radius'), 'max', 'maxradius')
+    if t == 'forward':
+        return _ta_num(ta, 5, 'f', 'forward')
+    return -1.0
+
+
+def reach_hits(tree, name, meta, at, inherited, model, start, states, bones, reach, far, seen, depth):
+    """SkillBrain.hits: recorre el ataque en el tiempo (sus delay y lo que llama)."""
+    if meta is None or depth > 4 or name.lower() in seen:
+        return
+    seen.add(name.lower())
+    t = start
+    for pm in meta['mechs']:
+        m, a = pm['m'], pm.get('a', {})
+        if m == 'delay':
+            t += int(max(0, num(arg(a, 0, '_', 'ticks', 't', 'd'), 0)))
+            continue
+        when = t + int(num(a.get('delay'), 0))
+        tgt = pm if pm.get('t') is not None else inherited
+        on_self = tgt is not None and tgt['t'] in ('self', 'caster')
+        if m in ('state', 'animation') and (pm.get('t') is None or on_self) and model is not None \
+                and str(arg(a, 'false', 'remove', 'r')).lower() != 'true':
+            st = arg(a, None, 'state', 's', 'animation', 'a')
+            if st is not None:
+                st = str(st)
+                if '<' in st:
+                    pre = st[:st.index('<')]
+                    st = next((n for n in sorted(model['anims']) if n.startswith(pre)), st)
+                states.append((when, st, num(arg(a, 1, 'speed', 'sp'), 1)))
+            continue
+        if m in REACHES_FAR or m == 'setspeed' and num(arg(a, 1, 'speed', 's'), 1) >= 2 or m == 'velocity' and on_self:
+            r = flat_spot(tgt) if m == 'summon' and tgt is not None and not on_self else -1
+            if r >= 0:
+                reach[0] = max(reach[0], r + num(arg(a, 0, 'radius', 'r'), 0) + 2)
+            else:
+                far[0] = True
+            continue
+        if m in HITS and not (on_self and m != 'totem'):
+            hr = num(arg(a, 1.25, 'hr', 'horizontalradius'), 1.25) if m == 'totem' else 0
+            if tgt is not None and tgt['t'] == 'modelpart' and model is not None:
+                ta = tgt.get('ta') or {}
+                pid = ta.get('pid', ta.get('p'))
+                dur = int(min(20, num(arg(a, 10, 'maxduration', 'md'), 10))) if m == 'totem' else 0
+                if pid is None:
+                    far[0] = True
+                else:
+                    bones.append((when, dur, str(pid), max(hr, 0.5)))
+                if not on_self:
+                    at.frontal = True
+            else:
+                r = -1 if tgt is None else flat_spot(tgt)
+                if r < 0:
+                    far[0] = True
+                else:
+                    reach[0] = max(reach[0], r + hr)
+                    if tgt['t'] in CONE or tgt['t'] == 'forward':
+                        at.frontal = True
+            continue
+        if m in CALLS:
+            for sn, sub in called(tree, pm):
+                reach_hits(tree, sn, sub, at, tgt, model, when, states, bones, reach, far, seen, depth + 1)
+
+
+def reach_of(tree, name, meta, at, model, scale=1.0):
+    """SkillBrain.reachOf."""
+    for c in meta.get('target_conditions', []) + meta.get('conditions', []) + (at.line.get('c') or []):
+        if c['m'] in ('fieldofview', 'fov', 'infieldofview'):
+            if abs(wrap(num(arg(c.get('a', {}), 0, 'rotation', 'r'), 0))) >= 45:
+                at.fov = True
+    states, bones, reach, far = [], [], [0.0], [False]
+    reach_hits(tree, name, meta, at, at.line if at.line.get('t') is not None else None, model, 0, states, bones, reach,
+               far, set(), 0)
+    anyone = reach[0] > 0
+    for when, dur, bone, hr in bones:
+        r = bone_hit(model, scale, when, dur, bone, hr, states, at.fov or at.rear)
+        if r < 0:
+            far[0] = True
+        else:
+            reach[0] = max(reach[0], r)
+            anyone = True
+    at.far = far[0] or not anyone
+    at.reach_v = float('inf') if at.far else reach[0]
+    if at.far:
+        at.frontal = False
+    return at
 
 
 def called(tree, pm):
@@ -447,7 +651,7 @@ class Brain:
                     n = part.strip().split(' ')[0]
                     meta = tree.get(n.lower())
                     if meta is not None and offensive(tree, n, meta, set(), 0):
-                        self.attacks.append(analyze(tree, n, meta, Attack(n, pm, True)))
+                        self.attacks.append(reach_of(tree, n, meta, analyze(tree, n, meta, Attack(n, pm, True)), sim.model, sim.model_scale))
                         anyone = True
             elif pm['m'] in ('skill', 'metaskill', 'cast'):
                 if pm.get('t') in (None, 'self', 'caster'):
@@ -455,7 +659,7 @@ class Brain:
                 n = str(arg(pm.get('a', {}), '', 's', 'skill', 'skills')).split(',')[0].strip()
                 meta = tree.get(n.lower())
                 if meta is not None and offensive(tree, n, meta, set(), 0):
-                    self.attacks.append(analyze(tree, n, meta, Attack(n, pm, False)))
+                    self.attacks.append(reach_of(tree, n, meta, analyze(tree, n, meta, Attack(n, pm, False)), sim.model, sim.model_scale))
                     anyone = True
             if anyone:
                 self.handled.add(id(pm))
@@ -478,6 +682,8 @@ class Brain:
         self.preferred = 3.0
         self.strafe = 1
         self.strafe_until = 0
+        self.reach_wait = -1  # SkillBrain.Brain.reachWait
+        self.turns = 0
 
     def interval(self):
         b = self.sim.b
@@ -510,14 +716,21 @@ class Brain:
             targets = s.targets(pm, ctx)
             if not targets:
                 continue
-            if s.can_run(a.name, dict(ctx, targets=targets)):
-                out.append(a)
+            if not s.can_run(a.name, dict(ctx, targets=targets)):
+                continue
+            # SkillBrain.usable: su golpe no le llega (espera hasta 3 s a que el jugador entre en su alcance)
+            if s.dist() > a.cap(s) + 0.9:
+                if self.reach_wait < 0:
+                    self.reach_wait = s.t
+                if s.t - self.reach_wait < 60:
+                    continue
+            out.append(a)
         return out
 
     def score(self, a, st):
         sc = 1.0
         span = max(2.0, min(a.max, 24) - a.min)
-        sc += SMART * 1.5 * (1 - min(1.0, abs(st['dist'] - a.sweet()) / span))
+        sc += SMART * 1.5 * (1 - min(1.0, abs(st['dist'] - a.sweet(self.sim)) / span))
         if st['healing']:
             sc += SMART * ((4 if a.gap else 0) + (3 if a.ranged else 0))
         if st['shooting']:
@@ -584,22 +797,48 @@ class Brain:
             if not cands:
                 break
             best = max(cands, key=lambda a: self.score(a, st))
+            # SkillBrain.tick: un golpe por delante, primero se gira hacia el jugador (medio camino cada vez, 4 como mucho);
+            # uno que sale a la vez que otro, solo si ya le mira
+            if not self.facing(best):
+                if done:
+                    break
+                # con el modelo bloqueado no puede girarse: espera a que el pack lo suelte
+                if self.turns < (10 if b.locked else 4):
+                    if not b.locked:
+                        want = yaw_of(s.px - b.x, s.pz - b.z)
+                        b.body = wrap(b.body + wrap(want - b.body) * 0.5)
+                        b.look = want
+                    self.turns += 1
+                    self.hesitated = True
+                    self.next = now + 2
+                    return
+            self.turns = 0
             self.fire(best)
             done.add(id(best))
             if b.gcd > s.t or random.random() > 0.35 + 0.4 * SMART:
                 break
             ok = self.usable()
 
+    def facing(self, a):
+        """SkillBrain.facing: los golpes por delante, si tiene al jugador a menos de 50° de su cuerpo."""
+        s, b = self.sim, self.sim.b
+        if NO_REACH or not a.frontal or a.fov or a.rear or s.dist() < 1e-2:
+            return True
+        return abs(wrap(yaw_of(s.px - b.x, s.pz - b.z) - b.body)) <= 50
+
     def chain(self, st):
         s, b = self.sim, self.sim.b
         saved = b.gcd
         b.gcd = s.t
-        ok = [a for a in self.usable() if a is not self.current]
+        ok = [a for a in self.usable() if a is not self.current and self.facing(a)]
         if not ok:
             b.gcd = saved
             return
         best = max(ok, key=lambda a: self.score(a, st))
         s.cancel_cast(self.current_cast)
+        # Host.restoreMotion: como estaba antes del ataque que corta (su velocidad, el modelo sin bloquear, su IA)
+        if getattr(self, 'motion', None):
+            b.speed_mul, b.speed_set, b.locked, b.ai = self.motion
         self.chains += 1
         if s.verbose:
             print(f'{s.t:6d}        combo: {self.current.name} -> {best.name}')
@@ -611,6 +850,20 @@ class Brain:
         ctx = {'targets': None, 'vars': {}, 'depth': 0, 'cast': s.cast_seq}
         self.current_cast = s.cast_seq
         self.chain_tried = False
+        self.reach_wait = -1
+        # SkillBrain.fire: cómo estaba antes de empezarlo (Host.motion), para dejarlo así si encadena otro
+        b = s.b
+        self.motion = (b.speed_mul, b.speed_set, b.locked, b.ai)
+        # ¿Lo lanza donde su golpe llega? (los que no tienen tope no cuentan)
+        if not a.far:
+            s.reach_fired += 1
+            if s.dist() > a.reach() + 0.9:
+                s.air += 1
+        # ¿Lo lanza mirándole? (los que van por delante; los que el pack elige por el lado no cuentan)
+        if a.frontal and not a.fov and not a.rear:
+            s.front_fired += 1
+            if abs(wrap(yaw_of(s.px - s.b.x, s.pz - s.b.z) - s.b.body)) > 50:
+                s.sideways += 1
         if a is self.planned:
             self.planned_until = 0
         s.firing = a
@@ -627,7 +880,7 @@ class Brain:
         del self.recent[6:]
         # ¿le entra? (el jugador esquiva a veces; con escudo para casi todo menos agarres)
         d = s.dist()
-        p = 0.65 if a.min - 1 <= d <= a.max + 1 else 0.2
+        p = 0.65 if a.min - 1 <= d <= min(a.max, a.reach()) + 1 else 0.2
         if s.t < s.block_until and not a.grab:
             p *= 0.3
 
@@ -695,7 +948,7 @@ class Brain:
             if near < 1 or near > 12:
                 return None
             return near + 0.5, 0, (near if self.waiting else 0), 40
-        self.preferred = max(1.5, min(p.sweet(), 14))
+        self.preferred = max(1.5, min(p.sweet(s), 14))
         strafe = 0
         if SMART >= 0.6 and self.waiting and b.gcd <= s.t:
             if now >= self.strafe_until:
@@ -740,7 +993,10 @@ class Sim:
         self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
         self.hb_scale = 1.0
         self.in_skill_damage = False
-        self.brain = Brain(self) if SMART > 0 else None
+        self.model_scale = 1.0  # la escala del modelo (model{scale}, setmodelscale): SkillBrain.modelScale
+        self.reach_fired = self.air = 0
+        self.front_fired = self.sideways = 0
+        self.brain = None  # (se hace en su primer tick: run)
 
     # ------------------------------------------------------------------ jugador
     def player_step(self):
@@ -816,6 +1072,7 @@ class Sim:
             b.combat = True
             self.trigger('onentercombat')
         moving = False
+        ox, oz = b.x, b.z
         if self.t < self.move_until:
             pass  # move{} del pack: este tick lo lleva el pack (BossEntity.customServerAiStep)
         elif b.ai and b.target and b.chases and b.speed() > 0:
@@ -872,7 +1129,10 @@ class Sim:
                 if track and not moving:
                     b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
                 elif moving:
-                    b.body = wrap(b.body + max(-20, min(20, wrap(want - b.body))))
+                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda (retrocediendo, mirándole)
+                    go = yaw_of(b.x - ox, b.z - oz) if (b.x, b.z) != (ox, oz) else want
+                    to = want if abs(wrap(go - want)) > 110 else go
+                    b.body = wrap(b.body + max(-20, min(20, wrap(to - b.body))))
                 else:
                     diff = wrap(want - b.body)
                     if abs(diff) > 30:  # la cabeza arrastra al cuerpo
@@ -1462,6 +1722,8 @@ class Sim:
                 if arg(a, None, 'baseweight', 'bw') is not None:
                     self.root_bw = num(arg(a, -1, 'baseweight', 'bw'), -1)
         elif m == 'model':
+            if 'boss' in targets and arg(a, None, 'scale', 'size') is not None:
+                self.model_scale = num(arg(a, 1, 'scale', 'size'), 1) or 1.0
             if 'boss' in targets and arg(a, None, 'rootbone', 'root', 'rt'):
                 self.root_bone = str(arg(a, '', 'rootbone', 'root', 'rt'))
             if 'boss' in targets and arg(a, None, 'hitboxscale', 'hbs') is not None:
@@ -1510,6 +1772,9 @@ def run(boss_id, minutes, seed, verbose):
     # SkillMobs.spawned: ~onSpawn, ~onSpawnOrLoad, ~onReady (el jefe sale de su grieta) y ~onCombat
     for tr in ('onspawn', 'onspawnorload', 'onready', 'oncombat'):
         s.trigger(tr)
+    # SkillMobs.tick: el cerebro se hace en su primer tick, ya con su modelo puesto (su escala)
+    if SMART > 0:
+        s.brain = Brain(s)
     end = int(minutes * 1200)
     while s.t < end and s.b.hp > 0:
         s.t += 1
@@ -1542,8 +1807,9 @@ def main():
     minutes = float(args[args.index('--min') + 1]) if '--min' in args else 5
     seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 1
     verbose = '-v' in args
-    global OLD, SMART, SPEED, RHYTHM
+    global OLD, SMART, SPEED, RHYTHM, NO_REACH
     OLD = '--antes' in args
+    NO_REACH = '--sin-alcance' in args
     if '--dif' in args:
         SPEED, RHYTHM, SMART = PRESETS[args[args.index('--dif') + 1]]
     if '--smart' in args:
@@ -1579,6 +1845,10 @@ def main():
             print(f'     golpes anulados por el pack (cancelevent/modifydamage/invulnerable): {s.cancelled_hits} de {s.hits}')
         if s.fireballs:
             print(f'     bolas de fuego del ghast: {s.fireballs}')
+        if s.reach_fired:
+            print(f'     golpes con alcance lanzados fuera de su alcance (al aire): {s.air} de {s.reach_fired}')
+        if s.front_fired:
+            print(f'     golpes por delante lanzados sin mirarle (más de 50°): {s.sideways} de {s.front_fired}')
         if s.melee_hits:
             print(f'     golpes de Minecraft (~onAttack) que entran: {s.melee_hits} de {s.melee_tries}')
         if s.unknown:
