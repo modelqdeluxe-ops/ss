@@ -68,7 +68,9 @@ zumbido en bucle; chasquidos y estallido de la muerte en vez de la TNT) y **rayo
 respeta los bloques. Probado en el juego (capturas `grieta_lista` y `grieta_despierta`). **Packs**: `ss` es público y las
 licencias de LittleRoom prohíben redistribuirlos; el dueño eligió un **repo privado** `tf-packs`, que desde aquí no se
 puede crear (GitHub responde 403): cuando lo cree y dé acceso a la app de Claude, subir los 17 zips con su README (jefe →
-zip). **No** subir los packs a `ss`.
+zip). Después el dueño dijo «súbelos público, no importa»: se subieron a `ss` **cifrados** (`packs/jefes-17.tar.enc`,
+AES-256; cómo abrirlo en `packs/README.md`; la contraseña la tiene el dueño, no está en el repo). En claro no: sería
+redistribuir packs de pago.
 
 ### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.85)
 
