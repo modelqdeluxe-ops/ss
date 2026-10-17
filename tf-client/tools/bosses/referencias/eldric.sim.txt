@@ -57,16 +57,16 @@ eldric              480 s, vida  60.0%: 116 ataques (14.5/min), 9 distintos de 8
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 37
 
 ## semilla 11, dificil
-eldric              480 s, vida  66.1%: 140 ataques (17.5/min), 9 distintos de 8
-       31  attack_1
-       24  attack_4
+eldric              480 s, vida  58.2%: 132 ataques (16.5/min), 9 distintos de 8
+       28  attack_1
        24  attack_3
-       20  leap
-       19  air
-       19  attack_2
+       22  attack_4
+       21  attack_2
+       17  leap
+       17  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 2 de 139; curas castigadas: 8 de 17; combos: 7; pasos atrás: 10
+     repite seguido: 2 de 131; curas castigadas: 6 de 14; combos: 10; pasos atrás: 15
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 43
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 43

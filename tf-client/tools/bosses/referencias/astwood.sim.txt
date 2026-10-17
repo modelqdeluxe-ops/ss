@@ -69,19 +69,19 @@ astwood             480 s, vida  60.0%: 180 ataques (22.5/min), 12 distintos de 
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 28
 
 ## semilla 11, dificil
-astwood             480 s, vida  56.0%: 205 ataques (25.6/min), 12 distintos de 12
-       30  hit_floor
+astwood             480 s, vida  54.5%: 201 ataques (25.1/min), 12 distintos de 12
+       29  hit_floor
+       24  enclose_player
        24  summon_minions
-       23  summon_rock_rain
        23  wood_spikes
-       23  enclose_player
-       21  summon_energy_ball
-       13  attack_left
-       13  summon_wood_wall
-       11  attack
+       21  summon_rock_rain
+       20  summon_energy_ball
+       14  summon_wood_wall
+       12  attack_left
+       10  attack
         9  absorb_life_start
         9  absorb_life_end
         6  summon_wood_wall_minions
-     repite seguido: 0 de 204; curas castigadas: 3 de 9; combos: 0; pasos atrás: 13
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 78
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 24
+     repite seguido: 0 de 200; curas castigadas: 6 de 12; combos: 0; pasos atrás: 13
+     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 75
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 22

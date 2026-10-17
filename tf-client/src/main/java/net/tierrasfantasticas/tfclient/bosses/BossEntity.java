@@ -82,6 +82,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int turnWait;
     private int blendUntil;
     private int nextBackstep;
+    /** Hasta cuándo se queda plantado girándose hacia el jugador para un golpe por delante (SkillBrain). */
+    private int faceHold;
     private float bodyYaw;
     /** Hacia dónde mira la entidad (ver {@link #lookYaw()}): sigue a su objetivo aunque el modelo gire despacio. */
     private float lookYaw;
@@ -644,8 +646,15 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         Vec3 d = at.subtract(position());
         if (d.x * d.x + d.z * d.z < 1e-6) return;
         float want = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-        if (immediately) bodyYaw = want;
-        else bodyYaw += Mth.wrapDegrees(want - bodyYaw) * 0.5F;
+        if (immediately) {
+            bodyYaw = want;
+        } else {
+            bodyYaw += Mth.wrapDegrees(want - bodyYaw) * 0.5F;
+            // El cerebro le gira para un golpe por delante: se planta a girarse (andando, el cuerpo volvía hacia donde
+            // anda y el golpe salía de lado)
+            faceHold = age + 3;
+            getNavigation().stop();
+        }
         yHeadRot = want;
         lookYaw = want;
         syncBody();
@@ -1116,6 +1125,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             goal = gotoGoal;
             stop = 1.2;
             if (Math.sqrt(horizontalDistanceSqr(gotoGoal)) <= stop) gotoGoal = null;
+        } else if (target != null && chases() && age < faceHold) {
+            // Plantado girándose hacia él para un golpe por delante (face del cerebro)
+            goal = null;
         } else if (target != null && chases()) {
             goal = target.position();
             // El cerebro: a qué distancia ponerse (la del ataque que tendrá listo) y rodearle mientras espera
@@ -1451,9 +1463,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } else if (moving && walks) {
             // Andando, el cuerpo va hacia donde anda (BodyRotationControl de Minecraft, que copia ModelEngine) y la
             // cabeza mira a su objetivo hasta «mh»: antes el cuerpo miraba al jugador y, al rodearle o al apartarse,
-            // andaba de lado (y en la 1.3.83, al apartarse, corría hacia atrás con la animación de andar)
+            // andaba de lado (y en la 1.3.83, al apartarse, corría hacia atrás con la animación de andar). Gira hasta 90° por
+            // tick, lo que gira el MoveControl de Minecraft que lo mueve (con 20°, al dar la vuelta andaba unos ticks de
+            // espaldas: prueba en el juego)
             float go = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
-            bodyYaw += Mth.clamp(Mth.wrapDegrees(go - bodyYaw), -20F, 20F);
+            bodyYaw += Mth.clamp(Mth.wrapDegrees(go - bodyYaw), -90F, 90F);
             turnWait = 0;
         } else if (!syncBodyOn) {
             // model{syncbody=false}: el cuerpo se queda; solo gira la cabeza (hasta «mh»)

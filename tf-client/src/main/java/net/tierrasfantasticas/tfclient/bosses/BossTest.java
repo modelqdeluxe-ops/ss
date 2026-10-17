@@ -76,6 +76,9 @@ public final class BossTest {
     private static Vec3 arena;
     private static Vec3 lastPos;
     private static int wantDist = 6, side = 1;
+    /** Dónde dejó la prueba al jugador el tick de antes y hasta cuándo le deja moverse solo (le empuja o arrastra el jefe). */
+    private static Vec3 placed;
+    private static int freeUntil;
     /** Tick (de la fase de muerte) en que salió el relevo (-1 = ninguno pendiente) y desde el que se mira la muerte. */
     private static int relayAt = -1, deathFrom, lastState = -1;
 
@@ -89,7 +92,7 @@ public final class BossTest {
         final Map<String, Integer> anims = new TreeMap<>();
         final Map<String, Integer> errors = new LinkedHashMap<>();
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
-        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax;
+        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -292,7 +295,15 @@ public final class BossTest {
         Vec3 look = boss.position().add(0, boss.getBbHeight() * 0.5, 0).subtract(np.x, gy + 1.62, np.z);
         float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.sqrt(look.x * look.x + look.z * look.z)));
-        if (!player.isPassenger()) player.teleportTo(level, np.x, gy, np.z, yaw, pitch);
+        // Si algo del jefe le ha movido (un empujón, el rayo tractor que le arrastra hasta su boca), le deja ir 1,5 s: si
+        // no, la prueba le devolvía a su sitio cada tick y esos ataques no llegaban nunca a nada (la Tormenta del Wither)
+        if (placed != null && !view && player.position().distanceTo(placed) > 0.5) {
+            if (t >= freeUntil) r.moved++;
+            freeUntil = t + 30;
+        }
+        boolean free = t < freeUntil && !view;
+        if (!player.isPassenger() && !free) player.teleportTo(level, np.x, gy, np.z, yaw, pitch);
+        placed = player.position();
         if (!view && d < 3.5 + boss.getBbWidth() / 2 && t % 12 == 0) {
             player.attack(boss);
             player.resetAttackStrengthTicker();
@@ -323,7 +334,7 @@ public final class BossTest {
                 r.sideTicks++;
             }
         }
-        episode(r, "anda hacia atrás", back, what);
+        episode(r, "anda hacia atrás", back, what + String.format(" a %.1f del jugador%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : ""));
         if (hs > 4) r.event("se teletransporta " + String.format("%.0f", hs) + " bloques [" + what + "]");
         int ground = ground(level, Mth.floor(bp.x), Mth.floor(bp.z));
         double air = bp.y - ground;
@@ -437,6 +448,8 @@ public final class BossTest {
         }
         rift = null;
         boss = null;
+        placed = null;
+        freeUntil = 0;
         EPISODES.clear();
         index++;
         phase = 0;
@@ -463,6 +476,7 @@ public final class BossTest {
             sb.append(String.format("   pelea: %d ticks; jefes distintos: %d; vida %.0f -> %.0f%n", r.fightTicks, r.bosses.size(), r.hpStart, r.hpEnd));
             sb.append(String.format("   objetivo = el jugador: %d%% del tiempo (cerca: %d%%); golpes que me da: %d (%.1f de daño); los míos: %d%n",
                     100 * r.targetTicks / ft, 100 * r.nearTicks / ft, r.hitsTaken, r.dmgTaken, r.playerAttacks));
+            sb.append(String.format("   me mueve el jefe (empujón, arrastre): %d veces%n", r.moved));
             sb.append(String.format("   anda: %d ticks, hacia atrás %d, de lado %d; rápido (>0,8 b/t) %d; teletransportes %d%n",
                     r.movingTicks, r.backTicks, r.sideTicks, r.fastTicks, r.teleports));
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",

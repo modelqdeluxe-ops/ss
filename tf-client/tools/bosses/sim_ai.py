@@ -808,6 +808,7 @@ class Brain:
                         want = yaw_of(s.px - b.x, s.pz - b.z)
                         b.body = wrap(b.body + wrap(want - b.body) * 0.5)
                         b.look = want
+                        s.face_hold = s.t + 3  # BossEntity.face: se planta a girarse
                     self.turns += 1
                     self.hesitated = True
                     self.next = now + 2
@@ -990,6 +991,7 @@ class Sim:
         # ModelEngine en la entidad: move{} (hasta qué tick lo lleva el pack), rootmotion (hueso raíz, si manda, sus
         # pesos) y la escala de su caja (model{hitboxscale}, scale{hitbox=true})
         self.move_until = 0
+        self.face_hold = 0
         self.root_bone, self.root_on, self.root_w, self.root_bw = None, False, -1.0, -1.0
         self.hb_scale = 1.0
         self.in_skill_damage = False
@@ -1075,6 +1077,8 @@ class Sim:
         ox, oz = b.x, b.z
         if self.t < self.move_until:
             pass  # move{} del pack: este tick lo lleva el pack (BossEntity.customServerAiStep)
+        elif b.ai and b.target and b.chases and self.t < self.face_hold:
+            pass  # plantado girándose hacia él para un golpe por delante (BossEntity.face)
         elif b.ai and b.target and b.chases and b.speed() > 0:
             d = self.dist()
             hb = self.prog['boss'].get('hitbox') or [1, 2]
@@ -1127,9 +1131,9 @@ class Sim:
                 if track and not moving:
                     b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
                 elif moving:
-                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda
+                    # BossEntity.turnBody: andando, el cuerpo va hacia donde anda (hasta 90° por tick, el MoveControl)
                     go = yaw_of(b.x - ox, b.z - oz) if (b.x, b.z) != (ox, oz) else want
-                    b.body = wrap(b.body + max(-20, min(20, wrap(go - b.body))))
+                    b.body = wrap(b.body + max(-90, min(90, wrap(go - b.body))))
                 else:
                     diff = wrap(want - b.body)
                     if abs(diff) > 30:  # la cabeza arrastra al cuerpo

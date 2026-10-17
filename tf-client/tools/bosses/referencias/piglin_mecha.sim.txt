@@ -24,17 +24,17 @@ piglin_mecha        480 s, vida  51.0%: 105 ataques (13.1/min), 6 distintos de 1
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 104
 
 ## semilla 3, demencial
-piglin_mecha        480 s, vida  62.7%: 141 ataques (17.6/min), 6 distintos de 11
-       35  slam_front_2
-       30  slam_front
-       29  swing_2
+piglin_mecha        480 s, vida  65.0%: 137 ataques (17.1/min), 6 distintos de 11
+       31  slam_front
+       31  slam_front_2
+       30  swing_2
        28  spin_attack_short
-       18  swing_1
+       16  swing_1
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 1 de 140; curas castigadas: 0 de 15; combos: 78; pasos atrás: 38
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 140
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 140
+     repite seguido: 1 de 136; curas castigadas: 0 de 15; combos: 83; pasos atrás: 37
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 136
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 136
 
 ## semilla 11, normal
 piglin_mecha        480 s, vida  59.0%: 107 ataques (13.4/min), 6 distintos de 11
@@ -50,14 +50,14 @@ piglin_mecha        480 s, vida  59.0%: 107 ataques (13.4/min), 6 distintos de 1
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 106
 
 ## semilla 11, dificil
-piglin_mecha        480 s, vida  59.6%: 102 ataques (12.8/min), 6 distintos de 11
-       23  slam_front
-       23  slam_front_2
-       21  spin_attack_short
+piglin_mecha        480 s, vida  60.3%: 100 ataques (12.5/min), 6 distintos de 11
+       22  spin_attack_short
+       22  slam_front_2
+       21  slam_front
        20  swing_1
        14  swing_2
         1  passive_layer
      sin salir: damaged, fire_missile, leap, slam_left, slam_right, spin_attack_long
-     repite seguido: 0 de 101; curas castigadas: 0 de 15; combos: 38; pasos atrás: 30
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 101
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 101
+     repite seguido: 0 de 99; curas castigadas: 0 de 15; combos: 34; pasos atrás: 28
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 99
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 99
