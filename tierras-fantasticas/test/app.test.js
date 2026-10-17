@@ -291,6 +291,34 @@ test('/discord lleva al servidor con la invitación del widget (sin «X te ha in
   assert.match(wa.headers.get('location'), /^https:\/\/chat\.whatsapp\.com\//);
 });
 
+test('/descargar sirve el jar del mod (y /packs los packs cifrados) desde la web, sigue la redirección de GitHub y avisa si falla', async () => {
+  const jar = Buffer.from('PK\u0003\u0004 jar de prueba');
+  let up = true;
+  const server = http.createServer((req, res) => {
+    if (!up) return res.writeHead(503).end();
+    if (req.url === '/tfclient.jar') return res.writeHead(302, { Location: '/blob/tfclient.jar' }).end();
+    if (req.url === '/blob/tfclient.jar') return res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': jar.length }).end(jar);
+    res.writeHead(404).end();
+  });
+  servers.push(server);
+  const port = await new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
+  const e = { ...env, CLIENT_JAR_URL: `http://127.0.0.1:${port}/tfclient.jar`, PACKS_URL: `http://127.0.0.1:${port}/blob/tfclient.jar` };
+  for (const path of ['/descargar', '/tfclient.jar']) {
+    const res = await worker.fetch(new Request(`http://tienda.test${path}`), e);
+    assert.strictEqual(res.status, 200);
+    assert.match(res.headers.get('Content-Disposition'), /attachment; filename="tfclient.jar"/);
+    assert.strictEqual(res.headers.get('Content-Type'), 'application/java-archive');
+    assert.deepStrictEqual(Buffer.from(await res.arrayBuffer()), jar);
+  }
+  const packs = await worker.fetch(new Request('http://tienda.test/packs'), e);
+  assert.strictEqual(packs.status, 200);
+  assert.match(packs.headers.get('Content-Disposition'), /filename="jefes-17.tar.enc"/);
+  up = false;
+  const down = await worker.fetch(new Request('http://tienda.test/descargar'), e);
+  assert.strictEqual(down.status, 502);
+  assert.match(await down.text(), /no está disponible/);
+});
+
 test('el puente rechaza una clave incorrecta', async () => {
   assert.strictEqual((await poll(['Steve'], [], { secret: 'otra' })).status, 401);
   const saved = env.BRIDGE_SECRET;

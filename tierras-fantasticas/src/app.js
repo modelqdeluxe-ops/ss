@@ -112,6 +112,30 @@ export function json(data, status = 200, headers = {}) {
   });
 }
 
+/** Un archivo de GitHub (el jar del mod, los packs cifrados) pasado tal cual (sigue sus redirecciones) como descarga de esta web. */
+async function passDownload(source, filename, type) {
+  let upstream;
+  try {
+    upstream = await fetch(source, { redirect: 'follow' });
+  } catch {
+    upstream = null;
+  }
+  if (!upstream || !upstream.ok || !upstream.body) {
+    return new Response('La descarga no está disponible ahora mismo. Prueba otra vez en unos minutos.', {
+      status: 502,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
+  const headers = new Headers({
+    'Content-Type': type,
+    'Content-Disposition': `attachment; filename="${filename}"`,
+    'Cache-Control': 'no-store',
+  });
+  const length = upstream.headers.get('Content-Length');
+  if (length) headers.set('Content-Length', length);
+  return new Response(upstream.body, { status: 200, headers });
+}
+
 function redirect(location, cookies = []) {
   const headers = new Headers({ Location: location, 'Cache-Control': 'no-store' });
   for (const c of cookies) headers.append('Set-Cookie', c);
@@ -160,6 +184,11 @@ export function createApp(env) {
   // Grupo de WhatsApp. La web siempre enlaza a /whatsapp: si algún día el enlace del grupo cambia, basta con poner el
   // nuevo en la variable WHATSAPP_URL de Cloudflare (o aquí) y todos los botones siguen funcionando.
   const WHATSAPP_URL = env.WHATSAPP_URL || 'https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm';
+  // El mod (TF Client): la última Release de GitHub. /descargar lo sirve desde aquí (Cloudflare lo baja de GitHub): hay
+  // redes que no llegan a release-assets.githubusercontent.com, adonde GitHub manda la descarga («site not reached»).
+  const CLIENT_JAR_URL = env.CLIENT_JAR_URL || 'https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar';
+  // Los packs originales de los jefes (cifrados: sin la contraseña del dueño no sirven), por el mismo motivo
+  const PACKS_URL = env.PACKS_URL || 'https://raw.githubusercontent.com/modelqdeluxe-ops/ss/main/packs/jefes-17.tar.enc';
   const CURRENCY = (env.CURRENCY || 'USD').toUpperCase();
   const PUBLIC_URL = (env.PUBLIC_URL || '').replace(/\/$/, '');
   const log = env.LOGGER || console;
@@ -763,6 +792,9 @@ export function createApp(env) {
     // Enlaces fijos de la comunidad: la web enlaza aquí y esto lleva a la invitación vigente (302: nunca se queda en caché).
     'GET /discord': async (req, { discord }) => redirect(await discordInvite(discord)),
     'GET /whatsapp': async () => redirect(WHATSAPP_URL),
+    'GET /descargar': async () => passDownload(CLIENT_JAR_URL, 'tfclient.jar', 'application/java-archive'),
+    'GET /tfclient.jar': async () => passDownload(CLIENT_JAR_URL, 'tfclient.jar', 'application/java-archive'),
+    'GET /packs': async () => passDownload(PACKS_URL, 'jefes-17.tar.enc', 'application/octet-stream'),
 
     'GET /auth/discord': async (req, { url, discord, secure }) => {
       if (!discord.loginEnabled) return redirect('/cuenta?discord=off');
