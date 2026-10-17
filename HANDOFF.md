@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **17 de octubre de 2026** (TF Client **1.3.84**: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **17 de octubre de 2026** (TF Client **1.3.85**: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,7 +55,21 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (17 oct 2026, TF Client 1.3.84) — lee esto primero
+### CHECKPOINT (17 oct 2026, TF Client 1.3.85) — lee esto primero
+
+**1.3.85 (17 oct)**: el dueño: *«la abominación, ¿por qué no la arreglaste?»*. La prueba en el juego ahora separa lo que
+anda de lado o atrás **con el modelo bloqueado por el pack** (`lockmodel`: en ModelEngine el modelo no gira y el jefe
+sigue andando; la Abominación lo hace en sus ataques de lengua con `setspeed 0.5`) y dice, en cada episodio, hacia dónde
+va, hacia dónde mira el cuerpo, dónde está el jugador y el nodo del camino. Encontrado: Minecraft mueve al mob hacia su
+**yRot** (el MoveControl lo gira hasta 90°/tick hacia el punto del camino) y el cuerpo del jefe era otro giro aparte:
+al recalcular el camino iba de lado (Astwood, 19 % del tiempo). Ahora yRot sale del cuerpo y, tras moverse, el cuerpo
+es yRot (`BossEntity.turnBody/aiStep`, `sim_ai.walk`). En el juego, sin `lockmodel`: Astwood, Kazk y Druida 0 ticks de
+lado o atrás; Abominación 2 y 2 de 425; Gárgola 1 y 1; Mecha Piglin 0 y 2. Y el jefe ya no suelta al jugador que sus
+golpes lanzan fuera de la arena (lo sigue hasta 64 bloques de la grieta: el Druida lo perdía justo al ir a volar hacia
+él). Referencias del simulador rehechas (9 jefes, cambios pequeños). (`lock{f=true}` del pack, que gira al jefe hacia el
+jugador cada tick mientras anda despacio, también se ve de lado: es del pack.)
+
+### CHECKPOINT anterior (17 oct 2026, TF Client 1.3.84)
 
 **1.3.84 (17 oct)**: el dueño, tras la 1.3.83: *«se quedan bugueados, aparecen se van reaparecen, no me hacen caso, se
 van volando lejos algunos, corren en retroceso, texturas bugueadas, sin su animación…»* y **«haz tú las pruebas»**.
