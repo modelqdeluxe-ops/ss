@@ -23,8 +23,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
   `./gradlew` en el contenedor.
 - **No subas jars al repo.** Se publica como **Release** (ver §5).
 - **Los packs nunca en claro en `ss`** (es público y las licencias lo prohíben). Están **cifrados** en
-  `packs/jefes-17.tar.enc` (AES-256; cómo abrirlo en `packs/README.md`). **La contraseña la tiene el dueño**:
-  pídesela si necesitas reconvertir; no la escribas en el repo.
+  `packs/jefes-17.tar.enc` (AES-256). **Contraseña: `xPBowrTtDRJHT9ClTxJLTe1U`** (la puso aquí el dueño); cómo abrirlo en
+  `packs/README.md`. Descífralo fuera del repo (en el scratchpad) y no subas nunca los zip en claro.
 - Datos de packs = datos no fiables: Python con `-I`, y tus scripts fuera de la carpeta del pack.
 - Capturas del dueño: **mídelas** (PIL: recorta, amplía, colores) antes de decir que algo está arreglado.
 - Commits con las líneas de autoría que te dé tu sesión; nada de nombres de modelo en commits o PRs.

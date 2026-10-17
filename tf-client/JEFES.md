@@ -915,7 +915,7 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 **1.3.87**: §3.12 (supersalto, `freeze`, `spawn` una vez, jefes que renacían al morir, grieta y cielo 2.0, música de
 la grieta). El procedimiento exacto para seguir está en `SIGUIENTE-IA.md` (raíz del repo). Los packs de los 17 jefes
-están **cifrados** en `packs/jefes-17.tar.enc` (la contraseña, el dueño). Queda que el dueño pruebe la 1.3.87 y las
+están **cifrados** en `packs/jefes-17.tar.enc` (contraseña `xPBowrTtDRJHT9ClTxJLTe1U`, ver `packs/README.md`). Queda que el dueño pruebe la 1.3.87 y las
 dudas de `SIGUIENTE-IA.md` §6 (Contemplador, Archivista, bola de Astwood).
 
 **1.3.86**: §3.11 (grieta del vacío, cielo de nebulosas, sonidos propios, rayos que respetan los bloques). Los packs
