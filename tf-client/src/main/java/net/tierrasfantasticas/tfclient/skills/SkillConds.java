@@ -458,9 +458,10 @@ final class SkillConds {
             case "altitude", "height" -> {
                 Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
                 if (ctx.host != null) {
-                    // En los jefes, como MythicMobs: la altura sobre el suelo (el esbirro lanzado por los aires)
-                    Vec3 g = SkillMinions.ground(ctx.caster.level(), p, p.y);
-                    yield inRange(p.y - g.y, arg(a, ">0", "height", "h", "a"));
+                    // En los jefes, como MythicMobs: la altura sobre el primer suelo que haya debajo, por lejos que esté
+                    // (antes se buscaba solo 8 bloques: más arriba salía 0,5 y el Contemplador, que sube mientras esté a
+                    // menos de 6, subía sin parar hasta 60 bloques)
+                    yield inRange(p.y - floorBelow(ctx.caster.level(), p), arg(a, ">0", "height", "h", "a"));
                 }
                 yield inRange(p.y, arg(a, ">0", "height", "h", "a"));
             }
@@ -589,5 +590,18 @@ final class SkillConds {
         } catch (NumberFormatException e) {
             return true;
         }
+    }
+
+    /** La altura del primer bloque sólido bajo un punto (el fondo del mundo si no hay ninguno). */
+    static double floorBelow(net.minecraft.server.level.ServerLevel level, Vec3 p) {
+        net.minecraft.core.BlockPos.MutableBlockPos q = net.minecraft.core.BlockPos.containing(p).mutable();
+        int min = level.getMinBuildHeight();
+        int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, q.getX(), q.getZ());
+        if (q.getY() >= top) return top;
+        for (; q.getY() >= min; q.move(net.minecraft.core.Direction.DOWN)) {
+            net.minecraft.world.phys.shapes.VoxelShape sh = level.getBlockState(q).getCollisionShape(level, q);
+            if (!sh.isEmpty()) return q.getY() + sh.max(net.minecraft.core.Direction.Axis.Y);
+        }
+        return min;
     }
 }
