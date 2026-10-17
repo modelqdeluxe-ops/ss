@@ -34,7 +34,8 @@
     "PlayerInfoSkinMixin",
     "ItemInHandRendererMixin",
     "GuiGraphicsMixin",
-    "RiftSkyMixin"
+    "RiftSkyMixin",
+    "RiftCloudsMixin"
   ],
   "injectors": {
     "defaultRequire": 0

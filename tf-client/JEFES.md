@@ -502,6 +502,24 @@ cabezas no salían nunca**: el pack las ata con `bindhitbox{p=ob_head_1_hitbox}`
 etiqueta (`head_1_hitbox`); `VfxModel.bone` ahora también busca el nombre sin su etiqueta (como ya hacía al revés).
 Lo mismo pasaba con `hitboxconfig{pass}` (guardaba la caja con `ob_` y la buscaba sin él).
 
+### 3.11 La grieta del vacío, su cielo y sus sonidos (1.3.86)
+
+Pidió el dueño: *«la grieta es fea, mejora esa textura, el sonido también es feo y simple; las estelas blancas al
+derrotar un boss (las del dragón del End) hacen que vea a través de los bloques; no me gusta el sonido de TNT; hazla
+imponente; que la grieta haga que el cielo se tone como el del End, con nebulosas y estrellas fugaces, que combine con
+la música; el color de la grieta, uno para todas: oscuridad, morado intenso oscuro»*.
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| **La grieta** | `tools/bosses/rift_model.py` → `bosses/models/grieta.cristal.json`, `textures/bosses/grieta/me/` | Ya no se tiñe del color del jefe (`RiftRenderer` pasa blanco): un solo morado del vacío. Plataforma escalonada y cuatro agujas de obsidiana casi negra con vetas que brillan (`*_e`), dos anillos de runas violetas que giran, **el desgarro** (dos planos cruzados de ~7,5 bloques con una textura animada de 16 fotogramas: remolino morado, estrellas que titilan y borde magenta), el cristal de obsidiana translúcida con núcleo que late, ocho esquirlas que orbitan. Animaciones: `idle` (el desgarro respira), `activate` (se abre ×2 y gira), `dormant` (rendija), `regrow`. Para cambiarla: edita el script y `python3 tools/bosses/rift_model.py --preview carpeta` (borra las texturas viejas de `grieta/me/`). El cartel va a 9,2 bloques; la caja de recorte, +4 arriba. |
+| Partículas | `RiftEntity.clientFx` | En el cliente: portal al revés que sube del círculo, partículas de portal que se traga el desgarro, polvo morado (`VOID_PURPLE`), destellos; al despertar, más. El despertar del servidor (`Rifts.wakingFx`) también en ese morado. |
+| **El cielo** | `bosses/RiftSky`, `mixin/RiftSkyMixin`, `tools/bosses/rift_sky.py` → `textures/environment/grieta_*.png` | Solo cliente, no toca el mundo. Fuerza 0..1 (cambia 0,01 por tick, ~5 s): grieta lista o recargando, entera a 20 bloques y nada a 64; despertando o en pelea, entera hasta 80 y nada a 128. En `RenderLevelStageEvent.AFTER_SKY` dibuja, con esa fuerza: una esfera con el panorama de nebulosas (equirectangular 1024×512 hecho con ruido 3D: sin costura; u = longitud, v = latitud, las mismas cuentas en Java y Python) que gira muy despacio, siete nubes de nebulosa que laten (luz que suma), 700 estrellas que titilan y **estrellas fugaces** (cada 0,6-3 s, a veces dos, con estela que se apaga). `ComputeFogColor` y el mixin (`ClientLevel.getSkyColor/getCloudColor`) llevan la niebla, el cielo y las nubes de Minecraft al morado del vacío; con más de la mitad de fuerza, sin nubes (`RiftCloudsMixin`: teñidas se veían como manchas oscuras cuadradas). |
+| **Sonidos** | `tools/bosses/sonidos_grieta.py` → `sounds/grieta/*.ogg`, `sounds/jefes/muerte_*.ogg`; `BossSounds`; `sounds.json` | Sintetizados (numpy/scipy, sin muestras de nadie; mono para que suenen en su sitio): `grieta.golpe` (al golpear el cristal), `grieta.despertar` (los 3,5 s que sube), `grieta.estallido` (sale el jefe), `grieta.lista` (vuelve a estar lista), `grieta.ambiente` (zumbido en bucle a menos de 30 bloques, lo pone `RiftSky`, categoría «Ambiente»), `jefes.muerte_crepita` (3 variantes: los chasquidos de la muerte épica, antes la explosión de la TNT) y `jefes.muerte_estallido` (el final). El rugido del dragón al empezar la muerte se queda. Para rehacerlos: `python3 tools/bosses/sonidos_grieta.py --wav carpeta` (las WAV, para escucharlas). |
+| **Rayos de la muerte** | `BossRenderTypes.RAYS`, `BossRenderer.rays` | Antes `RenderType.lightning()`: escribe profundidad y, con gráficos «Fabulosos», va a la capa del clima: se veían a través de los bloques. Ahora una capa propia: luz que suma, prueba la profundidad sin escribirla, en la imagen principal (la tapan los bloques y no tapa nada). |
+
+La prueba en el juego saca dos capturas más por jefe: `grieta_lista` (la grieta en reposo con el cielo ya entrado) y
+`grieta_despierta` (despertando).
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -849,7 +867,11 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.84
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.86
+
+**1.3.86**: §3.11 (grieta del vacío, cielo de nebulosas, sonidos propios, rayos que respetan los bloques). Los packs de
+los 17 jefes van a un repo **privado** `modelqdeluxe-ops/tf-packs` (lo crea el dueño: desde aquí no se puede crear; el
+contenido, con un README de jefe → zip, se prepara igual): **nunca** en `ss`, que es público.
 
 **1.3.84**: la prueba en el juego en GitHub Actions y lo que encontró (§3.10: grietas que se reiniciaban, correr de
 espaldas, correa que soltaba al jugador, Ignevar y el Contemplador volando lejos). Lo de la 1.3.83 que pedía «probar en
