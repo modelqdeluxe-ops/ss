@@ -1,72 +1,72 @@
 ## semilla 3, el pack tal cual
-eldric              480 s, vida  58.8%: 115 ataques (14.4/min), 9 distintos de 8
-       32  attack_2
-       30  attack_1
-       23  attack_4
-       21  attack_3
-        3  leap
-        3  air
+eldric              480 s, vida  51.7%: 124 ataques (15.5/min), 9 distintos de 8
+       37  attack_2
+       27  attack_4
+       27  attack_1
+       18  attack_3
+        6  leap
+        6  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 3 de 114; curas castigadas: 11 de 15
+     repite seguido: 3 de 123; curas castigadas: 9 de 14
 
 ## semilla 3, normal
-eldric              480 s, vida  62.7%: 130 ataques (16.2/min), 9 distintos de 8
-       30  attack_1
-       25  attack_4
+eldric              480 s, vida  63.3%: 115 ataques (14.4/min), 9 distintos de 8
+       26  attack_1
        20  attack_3
-       18  attack_2
-       17  leap
-       17  air
+       20  attack_4
+       16  attack_2
+       15  leap
+       15  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 0 de 129; curas castigadas: 7 de 11; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 43
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 43
-
-## semilla 3, demencial
-eldric              480 s, vida  63.4%: 176 ataques (22.0/min), 9 distintos de 8
-       46  attack_1
-       33  attack_4
-       30  attack_3
-       22  attack_2
-       21  leap
-       21  air
-        1  idle_prefight
-        1  passive_layer
-        1  start_fight
-     repite seguido: 3 de 175; curas castigadas: 6 de 11; combos: 17
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 55
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 55
-
-## semilla 11, normal
-eldric              480 s, vida  61.0%: 114 ataques (14.2/min), 9 distintos de 8
-       30  attack_1
-       23  attack_4
-       19  attack_3
-       13  leap
-       13  air
-       13  attack_2
-        1  idle_prefight
-        1  passive_layer
-        1  start_fight
-     repite seguido: 1 de 113; curas castigadas: 7 de 13; combos: 0
+     repite seguido: 0 de 114; curas castigadas: 10 de 15; combos: 0
      golpes con alcance lanzados fuera de su alcance (al aire): 0 de 36
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 36
 
+## semilla 3, demencial
+eldric              480 s, vida  56.5%: 172 ataques (21.5/min), 9 distintos de 8
+       41  attack_1
+       34  attack_4
+       33  attack_2
+       29  attack_3
+       16  leap
+       16  air
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 3 de 171; curas castigadas: 5 de 13; combos: 26
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 67
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 67
+
+## semilla 11, normal
+eldric              480 s, vida  63.1%: 120 ataques (15.0/min), 9 distintos de 8
+       28  attack_1
+       23  attack_4
+       19  attack_3
+       17  attack_2
+       15  leap
+       15  air
+        1  idle_prefight
+        1  passive_layer
+        1  start_fight
+     repite seguido: 0 de 119; curas castigadas: 4 de 14; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 40
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 40
+
 ## semilla 11, dificil
-eldric              480 s, vida  59.3%: 152 ataques (19.0/min), 9 distintos de 8
-       36  attack_1
+eldric              480 s, vida  63.0%: 158 ataques (19.8/min), 9 distintos de 8
+       40  attack_1
        30  attack_4
-       25  attack_2
+       27  attack_2
        24  attack_3
        17  leap
        17  air
         1  idle_prefight
         1  passive_layer
         1  start_fight
-     repite seguido: 1 de 151; curas castigadas: 4 de 13; combos: 16
-     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 55
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 55
+     repite seguido: 0 de 157; curas castigadas: 6 de 11; combos: 23
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 57
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 57

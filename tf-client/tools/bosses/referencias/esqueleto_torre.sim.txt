@@ -1,104 +1,104 @@
 ## semilla 3, el pack tal cual
-esqueleto_torre     480 s, vida  36.4%: 95 ataques (11.9/min), 15 distintos de 26
-       11  shield_bash
+esqueleto_torre     480 s, vida  38.2%: 95 ataques (11.9/min), 17 distintos de 26
        10  combo_no_shield
-        9  combo_2_no_shield
-        9  grab_player
-        9  grab_miss
-        8  shield_flamethrower
+       10  combo_2_no_shield
+       10  grab_player
+       10  grab_miss
+        9  shield_bash
         7  stab_slash
         7  put_up_shield
         7  shield_slam
-        6  stomp
-        4  scream
-        3  put_down_shield
+        5  scream
+        5  shield_flamethrower
+        5  stomp
         3  shield_break_state
+        2  shield_charge
+        2  shield_charge_stop
         1  awaken
+        1  put_down_shield
         1  shield_break_final
-     sin salir: attack_1, imbue_sword, shield_charge, shield_charge_stop, shield_combo, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
-     repite seguido: 0 de 94; curas castigadas: 4 de 6
+     sin salir: attack_1, imbue_sword, shield_combo, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
+     repite seguido: 0 de 94; curas castigadas: 4 de 14
 
 ## semilla 3, normal
-esqueleto_torre     480 s, vida  52.6%: 103 ataques (12.9/min), 18 distintos de 26
-       11  shield_bash
-       10  stab_slash
-       10  put_up_shield
-        9  scream
-        9  shield_flamethrower
-        8  grab_player
-        8  grab_miss
-        6  stomp
-        6  shield_slam
-        5  combo_no_shield
-        5  combo_2_no_shield
-        4  shield_charge
-        4  shield_charge_stop
+esqueleto_torre     480 s, vida  60.1%: 111 ataques (13.9/min), 17 distintos de 26
+       16  shield_bash
+       15  stab_slash
+       12  put_up_shield
+       12  shield_slam
+       11  scream
+       10  shield_flamethrower
+        9  stomp
+        6  shield_charge
+        6  shield_charge_stop
+        3  put_down_shield
         3  shield_break_state
-        2  put_down_shield
+        3  shield_combo
         1  awaken
-        1  shield_combo
         1  shield_break_final
-     sin salir: attack_1, imbue_sword, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
-     repite seguido: 1 de 102; curas castigadas: 2 de 13; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 2 de 51
+        1  combo_no_shield
+        1  grab_player
+        1  grab_miss
+     sin salir: attack_1, combo_2_no_shield, imbue_sword, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
+     repite seguido: 0 de 110; curas castigadas: 4 de 15; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 0 de 53
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 42
 
 ## semilla 3, demencial
-esqueleto_torre     480 s, vida  61.7%: 152 ataques (19.0/min), 13 distintos de 26
+esqueleto_torre     480 s, vida  62.2%: 152 ataques (19.0/min), 12 distintos de 26
        28  stab_slash
-       20  stomp
-       18  scream
-       17  shield_bash
-       14  put_up_shield
-       12  shield_flamethrower
-       10  shield_slam
-       10  shield_charge
-       10  shield_charge_stop
+       19  stomp
+       17  scream
+       16  shield_bash
+       13  put_up_shield
+       13  shield_flamethrower
+       12  shield_slam
+       12  shield_charge
+       11  shield_charge_stop
         8  shield_combo
-        3  shield_break_state
+        2  shield_break_state
         1  awaken
-        1  put_down_shield
-     sin salir: attack_1, combo_2_no_shield, combo_no_shield, grab_miss, grab_player, imbue_sword, shield_break_final, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
-     repite seguido: 2 de 151; curas castigadas: 3 de 12; combos: 39
-     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 73
+     sin salir: attack_1, combo_2_no_shield, combo_no_shield, grab_miss, grab_player, imbue_sword, put_down_shield, shield_break_final, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
+     repite seguido: 3 de 151; curas castigadas: 3 de 13; combos: 41
+     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 72
      golpes por delante lanzados sin mirarle (más de 50°): 0 de 55
 
 ## semilla 11, normal
-esqueleto_torre     480 s, vida  48.1%: 115 ataques (14.4/min), 13 distintos de 26
-       17  stab_slash
+esqueleto_torre     480 s, vida  47.8%: 112 ataques (14.0/min), 13 distintos de 26
+       18  stab_slash
+       14  scream
        14  put_up_shield
-       13  scream
-       12  stomp
        12  shield_bash
-       10  shield_slam
         9  shield_charge
         9  shield_charge_stop
-        8  shield_flamethrower
-        6  shield_combo
+        9  shield_flamethrower
+        9  shield_slam
+        8  stomp
+        5  shield_combo
         3  shield_break_state
         1  awaken
         1  put_down_shield
      sin salir: attack_1, combo_2_no_shield, combo_no_shield, grab_miss, grab_player, imbue_sword, shield_break_final, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
-     repite seguido: 0 de 114; curas castigadas: 2 de 9; combos: 0
-     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 53
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 40
+     repite seguido: 0 de 111; curas castigadas: 3 de 11; combos: 0
+     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 48
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 34
 
 ## semilla 11, dificil
-esqueleto_torre     480 s, vida  51.6%: 133 ataques (16.6/min), 13 distintos de 26
-       19  stab_slash
-       16  scream
-       16  put_up_shield
-       14  stomp
-       12  shield_charge
+esqueleto_torre     480 s, vida  56.2%: 127 ataques (15.9/min), 13 distintos de 26
+       20  stab_slash
+       15  scream
+       15  put_up_shield
+       13  stomp
        12  shield_flamethrower
-       11  shield_charge_stop
-       11  shield_slam
-       10  shield_bash
-        7  shield_combo
+       11  shield_bash
+       10  shield_charge
+       10  shield_charge_stop
+       10  shield_slam
+        5  shield_combo
         3  shield_break_state
+        2  put_down_shield
         1  awaken
-        1  put_down_shield
      sin salir: attack_1, combo_2_no_shield, combo_no_shield, grab_miss, grab_player, imbue_sword, shield_break_final, soul_sword_attack_1, soul_sword_attack_2, soul_sword_attack_3, soul_sword_grab_miss, soul_sword_grab_player, soul_sword_stomp
-     repite seguido: 0 de 132; curas castigadas: 8 de 13; combos: 33
-     golpes con alcance lanzados fuera de su alcance (al aire): 1 de 58
-     golpes por delante lanzados sin mirarle (más de 50°): 0 de 42
+     repite seguido: 0 de 126; curas castigadas: 7 de 12; combos: 25
+     golpes con alcance lanzados fuera de su alcance (al aire): 2 de 54
+     golpes por delante lanzados sin mirarle (más de 50°): 0 de 39

@@ -81,6 +81,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int rotDelay, rotDuration;
     private int turnWait;
     private int blendUntil;
+    /** Este tick le mueve el MoveControl de Minecraft (hacia su yRot): al acabar, el cuerpo es esa dirección. */
+    private boolean steer;
     /** Hasta cuándo se queda plantado girándose hacia el jugador para un golpe por delante (SkillBrain). */
     private int faceHold;
     private float bodyYaw;
@@ -1072,6 +1074,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        steer = false;
         if (def == null || dying()) return;
         if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
         aiExtras();
@@ -1098,8 +1101,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             getNavigation().stop();
             fromHome = 0;
         }
+        // (el mismo margen que pickTarget: a quien sale despedido de la arena lo sigue hasta 64 bloques de su grieta)
         boolean targetInArena = target != null && target.position().distanceToSqr(home == null ? position() : home)
-                <= Rifts.LEASH * Rifts.LEASH;
+                <= (Rifts.LEASH + 24) * (Rifts.LEASH + 24);
         if (home != null && fromHome > Rifts.LEASH && !targetInArena) {
             // Fuera de su arena y sin nadie dentro a quien perseguir: vuelve (si su objetivo sigue dentro, le persigue:
             // antes lo soltaba y se iba dándole la espalda, «me ignora»)
@@ -1336,6 +1340,16 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // Se quema al sol como su tipo de Minecraft (zombi, esqueleto...), si el pack no lo evita con PreventSunburn
         if (!level().isClientSide && def != null && def.sunburn && ai && isAlive() && isSunBurnTick()) setSecondsOnFire(8);
         super.aiStep();
+        if (!level().isClientSide && steer && !locked && def != null) {
+            // Andando, el cuerpo va justo hacia donde le ha movido Minecraft este tick (BodyRotationControl: cuerpo = yRot)
+            steer = false;
+            Vec3 v = getDeltaMovement();
+            if (v.x * v.x + v.z * v.z > 1e-5) {
+                bodyYaw = Mth.wrapDegrees(getYRot());
+                yHeadRot = bodyYaw + Mth.clamp(Mth.wrapDegrees(lookYaw - bodyYaw), -maxHead, maxHead);
+                syncBody();
+            }
+        }
     }
 
     // ------------------------------------------------------------------------------------------- el golpe de Minecraft
@@ -1505,6 +1519,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             setXRot(getXRot() * 0.8F);
         }
         syncBody();
+        if (!SkillAI.has(goals, "type:ghast")) {
+            // El MoveControl de Minecraft le mueve hacia su yRot (girándolo hasta 90° por tick hacia el punto del camino):
+            // que salga de donde mira el cuerpo, y al acabar el tick el cuerpo será esa dirección (aiStep). Antes eran dos
+            // giros sueltos y, al recalcular el camino, andaba de lado o de espaldas un tick (Astwood, prueba en el juego)
+            setYRot(bodyYaw);
+            steer = walks && ai && getMoveControl().hasWanted();
+        }
     }
 
     /**
@@ -1576,7 +1597,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             if (!p.isAlive() || p.isSpectator() || p.isCreative()) continue;
             if (!players && !threat.containsKey(p.getUUID())) continue;
             double d = p.distanceToSqr(this);
-            if (d > range * range || home != null && p.position().distanceToSqr(c) > (Rifts.LEASH + 8) * (Rifts.LEASH + 8)) continue;
+            // Fuera de su arena no busca a nadie; al que ya perseguía no lo suelta hasta 64 bloques (lo que salta él antes de
+            // volver a su grieta): sus golpes lanzan lejos (el Druida, a más de 48) y lo perdía justo cuando iba a volar hacia él
+            double arena = p == target ? Rifts.LEASH + 24 : Rifts.LEASH + 8;
+            if (d > range * range || home != null && p.position().distanceToSqr(c) > arena * arena) continue;
             double t = threat.getOrDefault(p.getUUID(), 0.0);
             // Listo: va a por quien se cura, a por quien le dispara desde lejos y remata a quien está a punto de caer
             if (smart >= 0.6) {

@@ -1104,14 +1104,10 @@ class Sim:
             gd = math.hypot(gx - b.x, gz - b.z)
             if (gx, gz) != (self.px, self.pz):
                 if gd > stop:
-                    step = min(b.speed() * 0.9, gd - stop)
-                    b.x += (gx - b.x) / gd * step
-                    b.z += (gz - b.z) / gd * step
+                    self.walk(gx, gz, min(b.speed() * 0.9, gd - stop))
                     moving = True
             elif d > stop:
-                step = min(b.speed() * 0.9, d - stop)
-                b.x += (self.px - b.x) / d * step
-                b.z += (self.pz - b.z) / d * step
+                self.walk(self.px, self.pz, min(b.speed() * 0.9, d - stop))
                 moving = True
         b.moving = moving
         self.melee_step()
@@ -1134,6 +1130,16 @@ class Sim:
                     b.body = wrap(b.body + wrap(want - b.body) * 0.05)
         else:
             b.look = b.body
+
+    def walk(self, tx, tz, step):
+        """El MoveControl de Minecraft (BossEntity: yRot sale del cuerpo y gira hasta 90° por tick hacia el punto): anda
+        hacia donde queda mirando, no en línea recta al punto. Con el modelo bloqueado, derecho."""
+        b = self.b
+        want = yaw_of(tx - b.x, tz - b.z)
+        head = want if b.locked else wrap(b.body + max(-90, min(90, wrap(want - b.body))))
+        r = math.radians(head)
+        b.x += -math.sin(r) * step
+        b.z += math.cos(r) * step
 
     def melee_step(self):
         """BossEntity.meleeStep: el golpe de Minecraft (MeleeAttackGoal) con sus ~onAttack y ~onCombat antes de entrar."""
