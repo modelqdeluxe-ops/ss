@@ -33,6 +33,8 @@ uniform vec3 HoleDir;         // hacia dónde está el agujero (mundo)
 uniform vec3 DiskNormal;      // normal del disco (mundo)
 uniform float Quality;        // 0.35..1: menos o más pasos
 uniform float AtFar;          // 1 = después del paquete de shaders (vacio/AfterShaders): solo donde no hay nada
+uniform float Rage;           // 0..1: una grieta activa cerca (1.3.91, RiftWarp): el agujero se enfurece
+uniform float RageMother;     // 1 = la grieta madre (carmesí)
 
 in vec3 vDir;
 out vec4 fragColor;
@@ -51,6 +53,8 @@ const float JET_L = 15.0;                           // largo de los chorros (rad
 
 // Lo que mide un píxel (en radianes de cielo); lo pone main()
 float PIX = 0.001;
+// La distancia de la cámara al agujero (DIST; con una grieta activa, late: el agujero se acerca y se aleja)
+float D = DIST;
 
 // Una velocidad angular redondeada a vueltas exactas por hora (sin salto cuando VoidTime vuelve a 0)
 float qw(float w) {
@@ -241,9 +245,11 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     dens += 1.5 * hotspots(ang, r);
     dens *= smoothstep(RIN * 0.92, RIN * 1.3, r) * (1.0 - smoothstep(ROUT * 0.45, ROUT, r));
     // (el borde de fuera llega casi hasta la cámara: lo que pasaría a su lado se difumina, sin una lámina rara de lado)
-    dens *= smoothstep(-0.9 * DIST, -0.5 * DIST, dot(q, normalize(HoleDir)));
-    // el disco respira despacio
+    dens *= smoothstep(-0.9 * D, -0.5 * D, dot(q, normalize(HoleDir)));
+    // el disco respira despacio (y con una grieta activa, más brillo y los grumos más vivos)
     dens *= 0.9 + 0.12 * sin(qw(0.55) * VoidTime);
+    dens *= 1.0 + 0.5 * Rage;
+    dens += 1.6 * Rage * hotspots(ang, r) * (0.6 + 0.4 * sin(VoidTime * 3.1));
     float temp = pow(RIN / r, 1.5);
     // Doppler (la luz que llega a la cámara va por -v) y el corrimiento al rojo de la gravedad
     vec3 tang = normalize(cross(n, q));
@@ -253,6 +259,8 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     g *= sqrt(max(1.0 - 1.0 / r, 0.05));
     float I = dens * (0.35 + 1.9 * temp) * pow(g, 3.0) * 1.9;
     vec3 c = ramp(temp * g * 1.15);
+    // (furia: se tiñe del color de la grieta)
+    c = mix(c, mix(vec3(0.75, 0.35, 1.0), vec3(1.0, 0.25, 0.4), RageMother), 0.35 * Rage);
     float a = clamp(dens * (0.45 + 0.6 * temp), 0.0, 0.92);
     return vec4(c * I, a);
 }
@@ -272,7 +280,7 @@ vec3 jet(vec3 p, vec3 n) {
     float fade = smoothstep(1.2, 2.6, ah) * (1.0 - smoothstep(JET_L * 0.35, JET_L, ah));
     float core = exp(-d2);
     vec3 c = mix(vec3(0.42, 0.25, 0.95), vec3(0.85, 0.9, 1.0), exp(-d2 * 3.0));
-    return c * core * fade * max(k, 0.05) * 0.5;
+    return c * core * fade * max(k, 0.05) * 0.5 * (1.0 + 2.5 * Rage);
 }
 
 void main() {
@@ -287,7 +295,8 @@ void main() {
     vec3 e1 = normalize(cross(n, f));
     vec3 e2 = cross(n, e1);
 
-    vec3 p = -f * DIST;
+    D = DIST * (1.0 - 0.08 * Rage * (0.5 + 0.5 * sin(VoidTime * 2.3)));
+    vec3 p = -f * D;
     vec3 v = dir;
     vec3 hc = cross(p, v);
     float h2 = dot(hc, hc);
@@ -336,7 +345,7 @@ void main() {
             captured = true;
             break;
         }
-        if (rn > DIST * 2.6 && dot(p, v) > 0.0) break;
+        if (rn > D * 2.6 && dot(p, v) > 0.0) break;
     }
 
     vec3 bg = captured ? vec3(0.0) : background(normalize(v));
@@ -345,11 +354,12 @@ void main() {
     // El anillo de fotones (fino y brillante justo fuera de la sombra, nunca más fino que un píxel) y un halo violeta
     // que se abre, con un poco de naranja cerca
     if (!captured) {
-        float ringW = max(0.11, PIX * DIST * 1.5);
+        float ringW = max(0.11, PIX * D * 1.5);
         float ring = exp(-pow((minR - 1.55) / ringW, 2.0));
         // (vibra: ondas de luz que le dan la vuelta)
         float ra = atan(dot(dir, e2), dot(dir, e1));
         ring *= 0.78 + 0.22 * sin(ra * 3.0 - qw(1.3) * VoidTime) + 0.12 * sin(ra * 7.0 + qw(2.1) * VoidTime);
+        ring *= 1.0 + 1.3 * Rage * (0.5 + 0.5 * sin(ra * 5.0 - VoidTime * 6.0));
         bg += vec3(1.0, 0.86, 0.7) * ring * 0.95;
         bg += vec3(0.55, 0.22, 0.95) * exp(-max(minR - 1.5, 0.0) * 0.42) * 0.26;
         bg += vec3(1.0, 0.55, 0.3) * exp(-max(minR - 1.5, 0.0) * 1.1) * 0.14;

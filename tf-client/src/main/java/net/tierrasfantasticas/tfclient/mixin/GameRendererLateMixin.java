@@ -2,6 +2,7 @@ package net.tierrasfantasticas.tfclient.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.GameRenderer;
+import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
 import net.tierrasfantasticas.tfclient.vacio.AfterShaders;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Con paquete de shaders (Oculus), la grieta y el cielo del Void se dibujan después de la pasada final del paquete:
  * justo al volver de {@code LevelRenderer.renderLevel} (donde Oculus la hace) y antes de que Minecraft borre la
- * profundidad para la mano. Ver {@link AfterShaders}.
+ * profundidad para la mano. Ver {@link AfterShaders}. Después, la distorsión de las grietas ({@link RiftWarp}).
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererLateMixin {
@@ -25,5 +26,7 @@ public abstract class GameRendererLateMixin {
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = LEVEL, shift = At.Shift.AFTER))
     private void tfclient$afterLevel(float partial, long finishNanos, PoseStack pose, CallbackInfo ci) {
         AfterShaders.end(partial);
+        // (1.3.91) la distorsión del espacio-tiempo de las grietas, sobre la imagen ya hecha (con o sin paquete)
+        RiftWarp.apply(partial);
     }
 }

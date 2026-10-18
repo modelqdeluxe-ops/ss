@@ -475,6 +475,13 @@ public final class Rifts {
             r.readyAt = boss.level().getGameTime() + d.respawnMin() * 1200L;
             r.bossEntity = null;
             dirty = true;
+            // (1.3.91) la grieta se cierra: se traga la luz (el cierre lo dibuja RiftRenderer y el fogonazo, RiftWarp)
+            if (boss.level() instanceof ServerLevel sl) {
+                Vec3 c = r.pos.add(0, r.kind == RiftEntity.MOTHER ? 16.5 : 11.5, 0);
+                sl.sendParticles(ParticleTypes.REVERSE_PORTAL, c.x, c.y, c.z, 260, 3, 8, 3, 0.9);
+                sl.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 5F, 0.55F);
+                sl.playSound(null, c.x, c.y, c.z, BossSounds.RIFT_HIT, SoundSource.HOSTILE, 4F, 0.5F);
+            }
         }
         if (bi == null) return;
         Component title = Component.literal(bi.name.toUpperCase(java.util.Locale.ROOT) + " HA CAÍDO")

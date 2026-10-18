@@ -1,7 +1,7 @@
 """La grieta 3.0 (TF Client 1.3.88) y la grieta madre (1.3.89): geometría facetada y su vista previa con los shaders.
 
     python3 tools/bosses/grieta3.py              escribe assets/tfclient/bosses/grieta3.json y grieta3_madre.json
-    xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta [--t segundos] [--estado lista|despierta|dormida]
+    xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta [--t segundos] [--estado lista|despierta|estalla|abierta|dormida]
                                                 [--madre]
 
 La grieta madre (el dueño: «haz dos grietas, la normal y la grieta madre, una más imponente que la que tenemos, para
@@ -223,8 +223,9 @@ def shard_mesh(m, V):
 def build(variant='normal'):
     V = VARIANTS[variant]
     parts = {}
-    for name, fn, pivot in (('base', base, [0, 0, 0]), ('spires', spires, [0, 0, 0]), ('crystal', crystal, [0, V['crystal_y'], 0]),
-                            ('shard', shard_mesh, [0, 0, 0])):
+    # (1.3.91, el dueño: «quita los pilares y la base; deja la grieta con sus cristales, cerrada, y que al romper el
+    # cristal se abra»: ya no van el estrado ni las garras; base() y spires() se quedan por si vuelven)
+    for name, fn, pivot in (('crystal', crystal, [0, V['crystal_y'], 0]), ('shard', shard_mesh, [0, 0, 0])):
         m = Mesh()
         fn(m, V)
         parts[name] = {'pivot': pivot, 'v': m.v}
@@ -234,7 +235,16 @@ def build(variant='normal'):
         shards.append([round(rng.uniform(*V['shard_r']), 3), round(rng.uniform(*V['shard_h']), 3),
                        round(rng.uniform(0.25, 0.7) * rng.choice((-1, 1)), 3),
                        round(rng.uniform(0, math.tau), 3), round(rng.uniform(-0.4, 0.4), 3), round(rng.uniform(0.7, 1.5), 3)])
-    return {'parts': parts, 'shards': shards, 'tear': V['tear'], 'ring': V['ring']}
+    # Los trozos del cristal al estallar (1.3.91): dirección (hacia fuera y algo arriba), velocidad, giro y tamaño
+    burst = []
+    for i in range(V['shards'] + 10):
+        a = rng.uniform(0, math.tau)
+        up = rng.uniform(-0.25, 0.75)
+        d = np.array([math.cos(a), up, math.sin(a)])
+        d = d / np.linalg.norm(d)
+        burst.append([round(float(d[0]), 3), round(float(d[1]), 3), round(float(d[2]), 3), round(rng.uniform(9.0, 20.0), 2),
+                      round(rng.uniform(-9.0, 9.0), 2), round(rng.uniform(0.6, 1.7), 2)])
+    return {'parts': parts, 'shards': shards, 'burst': burst, 'tear': V['tear'], 'ring': V['ring']}
 
 
 # ------------------------------------------------------------------------------------- luz por vértice (= Java)
@@ -298,8 +308,14 @@ def preview(dest, t, state, variant='normal'):
     fbo = ctx.framebuffer(color_attachments=[ctx.texture((w, h), 4)], depth_attachment=ctx.depth_texture((w, h)))
     fbo.use()
     proj = CP.perspective(70, w / h, 0.05, 1000)
-    glow = {'lista': 1.0, 'despierta': 1.7, 'dormida': 0.3}[state]
-    open_k = {'lista': 1.0, 'despierta': 1.35, 'dormida': 0.06}[state]
+    # (1.3.91) = RiftRenderer.look: lista = rendija cerrada con el cristal; despierta = se agrieta y se abre un poco;
+    # estalla = 0,3 s después de romperse (trozos volando, abriéndose de golpe); abierta = la pelea; dormida = recarga
+    glow = {'lista': 1.0, 'despierta': 1.9, 'estalla': 2.1, 'abierta': 1.6, 'dormida': 0.35}[state]
+    open_k = {'lista': 0.05, 'despierta': 0.3, 'estalla': 1.4, 'abierta': 1.2, 'dormida': 0.03}[state]
+    crys_k = {'lista': 1.0, 'despierta': 1.1, 'estalla': 0.0, 'abierta': 0.0, 'dormida': 1.0}[state]
+    crack = 1.0 if state == 'despierta' else 0.0
+    shard_out = {'lista': 1.0, 'despierta': 0.6, 'estalla': 1.2, 'abierta': 1.7, 'dormida': 1.0}[state]
+    burst_t = 0.3 if state == 'estalla' else -1.0
     gt = (t * 20 % 24000) / 24000.0
     f, n = CP.hole_and_disk()
     for vname, cam, yaw_deg, pitch in (('frente', (0.5, 2.0, -26.0), 0.0, -14.0), ('lado', (22.0, 6.0, -12.0), 60.0, -6.0),
@@ -338,20 +354,36 @@ def preview(dest, t, state, variant='normal'):
                 rel = p - cam
                 verts.append((rel[0], rel[1], rel[2], col[0], col[1], col[2], 1.0, row[6], row[7], int(row[8]) + (4 if madre else 0),
                               int(min(255, row[9] * glow * 100)), 240, 240))
-        add_part('base', None)
-        add_part('spires', None)
         ang = t * 0.6
         def crys(p, normal=False):
             ca, sa = math.cos(ang), math.sin(ang)
             q = np.array([ca * p[0] - sa * p[2], p[1], sa * p[0] + ca * p[2]])
             if normal:
                 return q
-            s = 0.25 if state == 'dormida' else 1.0
-            return q * s + np.array([0, V['crystal_y'] + 0.3 * math.sin(t * 1.3), 0])
-        add_part('crystal', crys)
-        if state != 'dormida':
+            return q * crys_k + np.array([0, V['crystal_y'] + 0.3 * math.sin(t * 1.3), 0])
+        if crys_k > 0.01:
+            g0 = glow
+            glow = glow * (1 + 2.5 * crack)
+            add_part('crystal', crys)
+            glow = g0
+        if burst_t >= 0:
+            k = (1 - math.exp(-burst_t * 2.2)) / 2.2
+            g0 = glow
+            glow = 1.2 + 2 * (1 - min(1, burst_t / 0.6))
+            for fb in data['burst']:
+                d = fb[3] * k
+                cpos = np.array([fb[0] * d, V['crystal_y'] + fb[1] * d - 2.5 * burst_t * burst_t, fb[2] * d])
+                def fr_xf(p, normal=False, fb=fb, cpos=cpos):
+                    a = fb[4] * burst_t
+                    ca, sa = math.cos(a), math.sin(a)
+                    q = np.array([ca * p[0] - sa * p[2], p[1], sa * p[0] + ca * p[2]])
+                    return q if normal else q * fb[5] + cpos
+                add_part('shard', fr_xf)
+            glow = g0
+        if True:
             for sd in data['shards']:
                 r, hh, sp, ph, tilt, sz = sd
+                r = r * shard_out
                 a = ph + t * sp
                 cpos = np.array([math.cos(a) * r, hh + math.sin(a * 2 + ph) * tilt, math.sin(a) * r])
                 def sh_xf(p, normal=False, a=a, cpos=cpos, sz=sz):

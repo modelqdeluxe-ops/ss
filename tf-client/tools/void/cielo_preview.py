@@ -1,6 +1,6 @@
 """Vista previa del cielo de The Void sin abrir el juego: ejecuta el shader de verdad (void_sky.vsh/.fsh) con Mesa.
 
-    xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--t segundos] [--q calidad] [--size 960x540]
+    xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--t segundos] [--q calidad] [--size 960x540] [--furia 0..1]
 
 Necesita `pip install moderngl` y una pantalla virtual (xvfb-run). Dibuja el cubo del cielo como VoidSky (posiciones
 ±100 alrededor de la cámara, la matriz de la vista y la proyección de Minecraft con 70° de campo) mirando a varios
@@ -66,6 +66,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     t = float(sys.argv[sys.argv.index('--t') + 1]) if '--t' in sys.argv else 30.0
     q = float(sys.argv[sys.argv.index('--q') + 1]) if '--q' in sys.argv else 1.0
+    rage = float(sys.argv[sys.argv.index('--furia') + 1]) if '--furia' in sys.argv else 0.0
     w, h = (960, 540)
     if '--size' in sys.argv:
         w, h = (int(x) for x in sys.argv[sys.argv.index('--size') + 1].split('x'))
@@ -89,7 +90,7 @@ def main():
     tex.repeat_y = False
     tex.use(0)
     f, n = hole_and_disk()
-    for name, val in (('Sampler0', 0), ('VoidTime', t), ('HoleDir', tuple(f)), ('DiskNormal', tuple(n)), ('Quality', q)):
+    for name, val in (('Sampler0', 0), ('VoidTime', t), ('HoleDir', tuple(f)), ('DiskNormal', tuple(n)), ('Quality', q), ('Rage', rage)):
         if name in prog:
             prog[name].value = val
     fbo = ctx.simple_framebuffer((w, h))

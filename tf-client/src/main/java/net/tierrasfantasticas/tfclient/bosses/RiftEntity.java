@@ -46,7 +46,7 @@ public class RiftEntity extends Entity {
     public final VfxLayers layers = new VfxLayers();
     public int clientAge;
     public int shownState = -1;
-    /** clientAge cuando cambió de estado (lo pone RiftRenderer.look): para desaparecer, reaparecer y abrirse. */
+    /** clientAge cuando cambió de estado (en su tick, o al dibujarla si aún no hizo ninguno): abrirse, cerrarse... */
     public int stateSince;
     /** El estado de antes del de ahora (en el cliente). */
     public int prevState = -1;
@@ -128,6 +128,29 @@ public class RiftEntity extends Entity {
         super.tick();
         if (level().isClientSide) {
             clientAge++;
+            int st = state();
+            if (st != shownState) {
+                // (aquí y no al dibujarla: la distorsión y los sonidos del cierre van aunque no se vea)
+                stateSince = shownState < 0 ? -1000 : clientAge;
+                prevState = shownState;
+                shownState = st;
+                // (1.3.91) el cristal se hace añicos al abrirse la grieta
+                if (st == FIGHT && prevState == WAKING) {
+                    double y = getY() + (kindNow == MOTHER ? 8.6 : 6.2);
+                    level().playLocalSound(getX(), y, getZ(), net.minecraft.sounds.SoundEvents.GLASS_BREAK, net.minecraft.sounds.SoundSource.HOSTILE,
+                            4F, 0.6F, false);
+                    level().playLocalSound(getX(), y, getZ(), net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK,
+                            net.minecraft.sounds.SoundSource.HOSTILE, 4F, 0.7F, false);
+                }
+            }
+            // (1.3.91) al juntarse la grieta que se cierra (RiftRenderer: 30 ticks), un chasquido
+            if (st == COOLDOWN && prevState == FIGHT && clientAge - stateSince == 30) {
+                double y = getY() + 11.5 * scale();
+                level().playLocalSound(getX(), y, getZ(), net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK,
+                        net.minecraft.sounds.SoundSource.HOSTILE, 4F, 0.45F, false);
+                level().playLocalSound(getX(), y, getZ(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE,
+                        2.5F, 1.7F, false);
+            }
             clientFx();
         } else if (riftId == null || !Rifts.owns(this)) {
             discard();
@@ -148,16 +171,15 @@ public class RiftEntity extends Entity {
     }
 
     /**
-     * Lo que se ve alrededor (solo en el cliente): chispas moradas que suben del círculo, el desgarro que se traga
-     * partículas de portal, polvo violeta flotando y, de vez en cuando, un destello. Durante la incursión y la recarga
-     * (el desgarro es una rendija), menos.
+     * Lo que se ve alrededor (solo en el cliente): chispas moradas que suben del círculo, polvo violeta flotando y, con
+     * el desgarro abierto (1.3.91: al despertar y en toda la pelea; lista y en la recarga es una rendija cerrada), las
+     * partículas de portal que se traga y destellos.
      */
     private void clientFx() {
         net.minecraft.util.RandomSource r = random;
         int st = state();
-        if (st == FIGHT) return; // durante la pelea la grieta no está (RiftRenderer)
-        boolean open = st == READY || st == WAKING;
-        int n = st == WAKING ? 4 : open ? 2 : 1;
+        boolean open = st == WAKING || st == FIGHT;
+        int n = st == FIGHT ? 5 : st == WAKING ? 4 : st == READY ? 2 : 1;
         for (int i = 0; i < n; i++) {
             double k = scale();
             double a = r.nextDouble() * Math.PI * 2, d = (2 + r.nextDouble() * 4.2) * k;
@@ -177,7 +199,7 @@ public class RiftEntity extends Entity {
                         getX() + (r.nextDouble() - 0.5) * 8 * k, getY() + r.nextDouble() * 11 * k, getZ() + (r.nextDouble() - 0.5) * 8 * k, 0, 0.01, 0);
             }
         }
-        if (open && r.nextInt(st == WAKING ? 3 : 25) == 0) {
+        if (open ? r.nextInt(3) == 0 : st == READY && r.nextInt(25) == 0) {
             level().addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, getX() + (r.nextDouble() - 0.5) * 0.8,
                     getY() + (3 + r.nextDouble() * 8) * scale(), getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
                     (r.nextDouble() - 0.5) * 0.08, (r.nextDouble() - 0.5) * 0.08);

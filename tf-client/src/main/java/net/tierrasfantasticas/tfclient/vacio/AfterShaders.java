@@ -35,12 +35,24 @@ public final class AfterShaders {
 
     private AfterShaders() {}
 
-    /** Antes de dibujar el mundo (con la cámara ya girada): ¿hay paquete? y la cámara de este fotograma. */
+    /**
+     * Antes de dibujar el mundo (con la cámara ya girada): ¿hay paquete? y la cámara de este fotograma (siempre: también
+     * la usa la distorsión de las grietas, {@link net.tierrasfantasticas.tfclient.bosses.RiftWarp}).
+     */
     public static void begin(PoseStack pose) {
-        frame = !failed && ShaderPacks.inUse();
-        if (!frame) return;
         VIEW.set(pose.last().pose());
         PROJ.set(RenderSystem.getProjectionMatrix());
+        frame = !failed && ShaderPacks.inUse();
+    }
+
+    /** La rotación de la cámara de este fotograma (mundo relativo a la cámara → vista). */
+    public static Matrix4f view() {
+        return VIEW;
+    }
+
+    /** La proyección con la que se dibujó el mundo en este fotograma. */
+    public static Matrix4f projection() {
+        return PROJ;
     }
 
     /** ¿Lo nuestro se deja para después del paquete en este fotograma? */

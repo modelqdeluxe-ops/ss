@@ -33,19 +33,21 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import org.joml.Vector3f;
 
 /**
- * El viaje al vacío y de vuelta, en el servidor. Al elegirlo, durante {@link #LEAVE_TICKS} la luz te rodea: dos
- * espirales de luz dorada y blanca suben a tu alrededor cerrándose, flotas despacio (Levitación), suenan el faro y la
- * amatista y la pantalla se va llenando de luz ({@link TravelFx}); en el último tick, chispas, el sonido del portal
- * del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la grieta del centro) o donde estabas antes
- * de ir. Al llegar, chispas que se abren y caes despacio. (1.3.89: sin el destello FLASH, una mancha redonda que el dueño
- * contaba entre los «círculos horribles».)
+ * El viaje al vacío y de vuelta, en el servidor. 1.3.91 (el dueño: «la animación de teletransporte, más bonita: que
+ * viaje por un agujero de gusano con la realidad alterada, imágenes del Overworld, el Nether y el End; de regreso End,
+ * Nether y Overworld»): el viaje dura 7,5 s ({@link #LEAVE_TICKS}); en tu pantalla la realidad se rasga y cruzas el
+ * agujero de gusano ({@link TravelFx}), mientras aquí flotas (y nada te hace daño). Alrededor, para los demás, dos
+ * espirales de luz dorada y blanca suben cerrándose y suenan el faro y la amatista; en el último tick, chispas, el
+ * sonido del portal del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la grieta del
+ * centro) o donde estabas antes de ir. Al llegar, chispas que se abren y caes despacio. (1.3.89: sin el destello
+ * FLASH, una mancha redonda que el dueño contaba entre los «círculos horribles».)
  *
  * <p>Dónde estabas se guarda en los datos del jugador (ForgeData → «TFVoid»: dimensión, x, y, z, giro), y también si ya
  * habló con el caballero (para que la segunda vez solo te salude por tu nombre).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class VoidTravel {
-    public static final int LEAVE_TICKS = 64;
+    public static final int LEAVE_TICKS = 150;
     private static final DustParticleOptions GOLD = new DustParticleOptions(new Vector3f(1F, 0.8F, 0.3F), 1.4F);
     private static final DustParticleOptions LIGHT = new DustParticleOptions(new Vector3f(1F, 0.97F, 0.85F), 1.0F);
     private static final DustParticleOptions VIOLET = new DustParticleOptions(new Vector3f(0.62F, 0.3F, 1F), 1.3F);
@@ -126,11 +128,14 @@ public final class VoidTravel {
             d.putFloat("Pitch", p.getXRot());
         }
         TRIPS.put(p.getUUID(), new Trip(toVoid));
-        VoidNet.fx(p, VoidNet.FX_LEAVE);
+        VoidNet.fx(p, toVoid ? VoidNet.FX_LEAVE : VoidNet.FX_LEAVE_BACK);
         ServerLevel l = p.serverLevel();
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.2F, 1.25F);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 1F, 0.8F);
-        p.addEffect(new MobEffectInstance(MobEffects.LEVITATION, LEAVE_TICKS - 10, 0, false, false));
+        // flota un poco y se queda flotando (cae muy despacio); mientras cruza el túnel nada le hace daño
+        p.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 30, 0, false, false));
+        p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, LEAVE_TICKS + 40, 0, false, false));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, LEAVE_TICKS + 60, 4, false, false));
     }
 
     static void tick(MinecraftServer server) {

@@ -28,6 +28,11 @@ public final class VoidTestHooks {
         return island != null && level.getBlockState(p) == island.stateAt(p.getX(), p.getY(), p.getZ());
     }
 
+    /** El último viaje por el agujero de gusano: fotogramas por segundo y cuándo llegó. */
+    public static String travel() {
+        return TravelFx.lastTrip();
+    }
+
     /** Shaders (Oculus): si hay paquete puesto y qué se hizo con el Void. */
     public static String shaders() {
         return (ShaderPacks.inUse() ? "paquete de shaders puesto" : "sin paquete de shaders") + " (" + ShaderPacks.status + ")"

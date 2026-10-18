@@ -55,6 +55,15 @@ import org.joml.Vector3f;
  * 27 bloques, cristal ×1,5, 24 esquirlas, desgarro de 30 y círculo de 19,5) y en carmesí (aquí la luz de cada cara; en
  * los shaders, material +4 y modo 0,25/1). La grieta del Void (la fija del centro de la isla) lleva encima su nombre.
  * Con paquete de shaders (Oculus), la grieta se dibuja después de la pasada final del paquete ({@link AfterShaders}).
+ *
+ * <p>1.3.91 (el dueño: «quita los pilares y la base; deja la grieta cerrada con sus cristales y, cuando rompa el
+ * cristal, que se abra y salga el jefe; que desate su poder y se distorsione el espacio-tiempo hasta matarlo, y se
+ * cierre»): ya no hay estrado ni garras; solo el cristal y sus esquirlas, flotando delante de una grieta cerrada (una
+ * rendija de luz, {@link #SEAM}). Al despertarla el cristal se agrieta (brilla por dentro), tiembla y gira cada vez más
+ * rápido y la rendija se entreabre; al empezar la pelea el cristal estalla en trozos que salen despedidos (y caen) y la
+ * grieta se abre de golpe (con rebote) y se queda abierta, respirando, mientras las esquirlas giran deprisa más lejos.
+ * Al morir el jefe se cierra cada vez más rápido, las esquirlas caen en ella, fogonazo al juntarse, y el cristal se
+ * rehace despacio. La distorsión de la imagen (lente, remolino, ondas, temblor) la hace {@link RiftWarp}.
  */
 @OnlyIn(Dist.CLIENT)
 public class RiftRenderer extends EntityRenderer<RiftEntity> {
@@ -85,6 +94,8 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
     private static final class Mesh {
         final Map<String, Part> parts = new LinkedHashMap<>();
         final List<float[]> shards = new ArrayList<>();
+        /** Los trozos del cristal al estallar: dirección (x, y, z), velocidad, giro, tamaño. */
+        final List<float[]> burst = new ArrayList<>();
         float tearCy = 11.5F, quadW = 17F, quadH = 27F, ringR = 13.5F, ringY = 0.04F;
     }
 
@@ -112,6 +123,14 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
                 for (int i = 0; i < f.length; i++) f[i] = a.get(i).getAsFloat();
                 m.shards.add(f);
             }
+            if (o.has("burst")) {
+                for (com.google.gson.JsonElement s : o.getAsJsonArray("burst")) {
+                    JsonArray a = s.getAsJsonArray();
+                    float[] f = new float[a.size()];
+                    for (int i = 0; i < f.length; i++) f[i] = a.get(i).getAsFloat();
+                    m.burst.add(f);
+                }
+            }
             JsonObject t = o.getAsJsonObject("tear");
             m.tearCy = t.get("cy").getAsFloat();
             m.quadW = t.get("quad_w").getAsFloat();
@@ -129,11 +148,38 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
 
     // ------------------------------------------------------------------------------------------- dibujo
 
-    /** Cómo se ve ahora: luz, apertura del desgarro, cristal, esquirlas y tamaño de todo. */
+    /**
+     * Cómo se ve ahora: luz, apertura del desgarro, el cristal (tamaño, grietas encendidas, temblor), las esquirlas y los
+     * trozos del cristal que salen volando al estallar.
+     */
     private static final class Look {
-        float glow = 1F, open = 1F, crystal = 1F, crystalSpin = 0.6F, shake, shardSpeed = 1F, shardOut = 1F, shards = 1F, size = 1F;
+        float glow = 1F, open = SEAM, crystal = 1F, crystalSpin = 0.6F, crack, shake, shardSpeed = 1F, shardOut = 1F, shards = 1F;
+        /** Trozos del cristal al estallar: segundos desde que estalló (−1: no). */
+        float burst = -1F;
     }
 
+    /** Lo abierta que está la rendija cerrada (la grieta lista: una línea de luz). */
+    private static final float SEAM = 0.05F;
+
+    private static float smooth(float a, float b, float x) {
+        float t = Mth.clamp((x - a) / (b - a), 0F, 1F);
+        return t * t * (3 - 2 * t);
+    }
+
+    /**
+     * 1.3.91 (el dueño: «quita los pilares y la base; deja la grieta con sus cristales, cerrada, y cuando rompa el cristal
+     * se abra la grieta y salga el boss; que desate su poder hasta matar al boss y se cierre»):
+     * <ul>
+     *   <li>Lista: el desgarro es una rendija de luz cerrada; el cristal flota y gira; las esquirlas orbitan.</li>
+     *   <li>Despertando (70 ticks): el cristal se agrieta (sus vetas se encienden), tiembla y se hincha; las esquirlas
+     *   se le acercan y aceleran; la rendija empieza a abrirse.</li>
+     *   <li>Pelea: el cristal estalla en trozos que salen volando, el desgarro se abre de golpe (con un rebote) y se
+     *   queda abierto, respirando, con las esquirlas girando alrededor, mientras dure el jefe.</li>
+     *   <li>Recarga (al morir el jefe): el desgarro se cierra en 30 ticks, cada vez más rápido, con un fogonazo, y las
+     *   esquirlas caen en él; después el cristal se rehace (de 40 a 140 ticks) y vuelven las esquirlas, apagado hasta
+     *   que vuelve a estar lista.</li>
+     * </ul>
+     */
     private static Look look(RiftEntity e, float partial) {
         Look l = new Look();
         int st = e.state();
@@ -144,40 +190,48 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         }
         float since = e.clientAge - e.stateSince + partial;
         float t = e.clientAge + partial;
+        float flicker = 0.85F + 0.15F * Mth.sin(t * 0.37F) * Mth.sin(t * 0.13F + 1.7F);
         switch (st) {
             case RiftEntity.WAKING -> {
                 float k = Mth.clamp(1F - (e.left() - partial) / RiftEntity.WAKE_TICKS, 0F, 1F);
-                l.glow = 1F + 0.9F * k + 0.25F * k * Mth.sin(t * 1.7F);
-                l.open = 1F + 0.4F * k * k;
-                l.crystalSpin = 0.6F + 6F * k;
-                l.shake = k * 0.12F;
-                l.shardSpeed = 1F + 3.5F * k;
-                l.shardOut = 1F + 0.6F * k;
+                l.glow = 1F + 1.0F * k + 0.3F * k * Mth.sin(t * 1.7F);
+                l.open = SEAM + 0.3F * k * k * (0.8F + 0.2F * Mth.sin(t * 2.3F));
+                l.crystal = 1F + 0.1F * k;
+                l.crystalSpin = 0.6F + 7F * k;
+                l.crack = k;
+                l.shake = k * k * 0.16F;
+                l.shardSpeed = 1F + 4F * k;
+                l.shardOut = 1F - 0.4F * k;
             }
             case RiftEntity.FIGHT -> {
-                // (1.3.87, lo pidió el dueño) al salir el jefe, la grieta se encoge y desaparece; vuelve al morir él
-                l.size = Math.max(0F, 1F - since / 14F);
-                l.glow = 1.9F;
-                l.open = 1.4F;
+                l.crystal = 0F;
+                l.burst = since / 20F;
+                // se abre de golpe (rebote) y se queda abierta, respirando
+                float o = since < 8F ? 0.35F + 1.15F * smooth(0F, 8F, since) : 1.5F - 0.3F * smooth(8F, 30F, since);
+                l.open = o + 0.07F * Mth.sin(t * 0.21F) * smooth(20F, 40F, since);
+                l.glow = 2.2F - 0.6F * smooth(4F, 40F, since) + 0.15F * Mth.sin(t * 0.6F);
+                l.shardSpeed = 2.6F;
+                l.shardOut = 1F + 0.7F * smooth(0F, 30F, since);
+                l.shards = smooth(10F, 40F, since);
             }
             case RiftEntity.COOLDOWN -> {
-                l.glow = 0.35F;
-                l.open = 0.06F;
-                l.crystal = 0.28F;
-                l.crystalSpin = 0.15F;
-                l.shards = 0F;
-                l.size = e.prevState == RiftEntity.FIGHT ? Math.min(1F, since / 30F) : 1F;
+                boolean fromFight = e.prevState == RiftEntity.FIGHT;
+                float s2 = fromFight ? since : 1000F;
+                // se cierra cada vez más rápido y da un fogonazo al juntarse
+                float c = smooth(0F, 30F, s2);
+                l.open = Math.max(0.03F, 1.2F * (1F - c * c));
+                l.glow = 0.35F + 1.6F * (1F - smooth(0F, 34F, s2)) + 2.5F * Math.max(0F, 1F - Math.abs(s2 - 30F) / 5F);
+                // las esquirlas caen en él y luego vuelven con el cristal, que se rehace
+                l.shardOut = s2 < 30F ? 1.7F * (1F - c) + 0.05F : 1F;
+                l.shards = s2 < 30F ? 1F - c : smooth(100F, 160F, s2);
+                l.shardSpeed = s2 < 30F ? 4F : 0.5F;
+                l.crystal = smooth(40F, 140F, s2);
+                l.crystalSpin = 0.2F;
             }
             default -> {
-                // Lista otra vez tras la recarga: se abre en 40 ticks
-                if (e.prevState == RiftEntity.COOLDOWN && since < 40F) {
-                    float k = since / 40F;
-                    k = k * k * (3 - 2 * k);
-                    l.glow = 0.35F + 0.65F * k;
-                    l.open = 0.06F + 0.94F * k;
-                    l.crystal = 0.28F + 0.72F * k;
-                    l.shards = k;
-                }
+                l.open = SEAM * flicker;
+                // lista otra vez tras la recarga: se enciende en 40 ticks
+                if (e.prevState == RiftEntity.COOLDOWN && since < 40F) l.glow = 0.35F + 0.65F * smooth(0F, 40F, since);
             }
         }
         return l;
@@ -191,7 +245,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         // Con paquete de shaders (Oculus) la grieta se guarda y se dibuja después de su pasada final (AfterShaders;
         // dibujada ahora no dejaría nada); en su pasada de sombras, nada
         boolean late = AfterShaders.active();
-        if (m != null && l.size > 0.001F && RiftShaders.ready() && !(late && AfterShaders.shadowPass())) {
+        if (m != null && RiftShaders.ready() && !(late && AfterShaders.shadowPass())) {
             try {
                 draw(e, m, kind, l, partial, pose, late ? RiftLate.buffers() : buffers, light);
             } catch (Throwable t) {
@@ -212,22 +266,22 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         Vec3 camW = this.entityRenderDispatcher.camera.getPosition();
         double ex = Mth.lerp(partial, e.xo, e.getX()), ey = Mth.lerp(partial, e.yo, e.getY()), ez = Mth.lerp(partial, e.zo, e.getZ());
         // La cámara en las coordenadas de la grieta (para el brillo del borde y el desgarro que te mira)
-        Vector3f cam = new Vector3f((float) ((camW.x - ex) / l.size), (float) ((camW.y - ey) / l.size), (float) ((camW.z - ez) / l.size));
-        pose.pushPose();
-        if (l.size < 1F) pose.scale(l.size, l.size, l.size);
+        Vector3f cam = new Vector3f((float) (camW.x - ex), (float) (camW.y - ey), (float) (camW.z - ez));
         Matrix4f mat = pose.last().pose();
         Matrix3f nmat = pose.last().normal();
         VertexConsumer vc = buffers.getBuffer(BossRenderTypes.RIFT_OBSIDIAN);
-        Matrix4f id = new Matrix4f();
-        emit(vc, m.parts.get("base"), id, mat, nmat, cam, l, light, kind, m.tearCy);
-        emit(vc, m.parts.get("spires"), id, mat, nmat, cam, l, light, kind, m.tearCy);
-        // El cristal: flota, gira (y tiembla al despertar)
+        // El cristal: flota, gira (y tiembla, se agrieta y se hincha al despertar)
         Part cr = m.parts.get("crystal");
         if (cr != null && l.crystal > 0.01F) {
             float sx = l.shake > 0 ? Mth.sin(t * 2.9F) * l.shake * 3F : 0F, sz = l.shake > 0 ? Mth.cos(t * 3.3F) * l.shake * 3F : 0F;
             Matrix4f x = new Matrix4f().translate(cr.px + sx, cr.py + 0.3F * Mth.sin(t * 0.065F), cr.pz + sz)
                     .rotateY(t * 0.03F * l.crystalSpin).rotateZ(l.shake * Mth.sin(t * 1.1F)).scale(l.crystal);
-            emit(vc, cr, x, mat, nmat, cam, l, light, kind, m.tearCy);
+            Look lc = l;
+            if (l.crack > 0F) {
+                lc = new Look();
+                lc.glow = l.glow * (1F + 2.5F * l.crack * (0.7F + 0.3F * Mth.sin(t * 1.9F)));
+            }
+            emit(vc, cr, x, mat, nmat, cam, lc, light, kind, m.tearCy);
         }
         // Las esquirlas que orbitan
         Part sh = m.parts.get("shard");
@@ -238,6 +292,20 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
                 Matrix4f x = new Matrix4f().translate(Mth.cos(a) * r, s[1] + Mth.sin(a * 2 + s[3]) * s[4], Mth.sin(a) * r)
                         .rotateY(a * 3F).scale(s[5] * l.shards);
                 emit(vc, sh, x, mat, nmat, cam, l, light, kind, m.tearCy);
+            }
+        }
+        // Los trozos del cristal al estallar: salen del cristal hacia fuera, girando, caen un poco y se apagan en 1,6 s
+        if (sh != null && cr != null && l.burst >= 0F && l.burst < 1.6F) {
+            float b = l.burst;
+            float fade = 1F - smooth(0.9F, 1.6F, b);
+            float k = (float) (1 - Math.exp(-b * 2.2)) / 2.2F;
+            Look lb = new Look();
+            lb.glow = 1.2F + 2F * (1F - smooth(0F, 0.6F, b));
+            for (float[] f : m.burst) {
+                float d = f[3] * k;
+                Matrix4f x = new Matrix4f().translate(cr.px + f[0] * d, cr.py + f[1] * d - 2.5F * b * b, cr.pz + f[2] * d)
+                        .rotateXYZ(f[4] * b, f[4] * b * 0.7F, f[4] * b * 0.4F).scale(f[5] * fade);
+                emit(vc, sh, x, mat, nmat, cam, lb, light, kind, m.tearCy);
             }
         }
         // El desgarro (mira a la cámara, girando solo en vertical) y el círculo del suelo
@@ -258,8 +326,9 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         quad(fx, mat, -sxx * hw, cy - hh, -szz * hw, sxx * hw, cy - hh, szz * hw, sxx * hw, cy + hh, szz * hw, -sxx * hw, cy + hh, -szz * hw,
                 cr0, kind == 1 ? 64 : 0, cb, ca);
         float rr = m.ringR, ry = m.ringY;
-        quad(fx, mat, -rr, ry, -rr, rr, ry, -rr, rr, ry, rr, -rr, ry, rr, cr0, kind == 1 ? 255 : 191, 255, ca);
-        pose.popPose();
+        // (el círculo: más encendido con la grieta abierta)
+        int ringA = (int) (Mth.clamp((0.35F + 0.5F * Math.min(1F, l.open)) * l.glow / 2F, 0F, 1F) * 255);
+        quad(fx, mat, -rr, ry, -rr, rr, ry, -rr, rr, ry, rr, -rr, ry, rr, cr0, kind == 1 ? 255 : 191, 255, ringA);
     }
 
     private static void quad(VertexConsumer vc, Matrix4f mat, float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2,

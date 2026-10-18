@@ -1,80 +1,275 @@
 package net.tierrasfantasticas.tfclient.vacio;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
 
 /**
- * La animación del viaje en la pantalla: un fundido. Al salir ({@link VoidTravel#LEAVE_TICKS}), mientras las espirales
- * de luz suben alrededor (partículas en el mundo, {@link VoidTravel}), la pantalla se va llenando de luz blanca cálida;
- * al llegar, ese blanco se abre despacio (con un tinte lila si llegas al Void).
+ * El viaje por el agujero de gusano (1.3.91; el dueño: «la animación de teletransporte, más bonita: una escena como si
+ * viajara por un agujero de gusano con la realidad alterada, con imágenes del Overworld, el Nether y el End; y de
+ * regreso lo mismo pero End, Nether y Overworld; algo súper épico»). Dura lo que el viaje en el servidor
+ * ({@link VoidTravel#LEAVE_TICKS}, 7,5 s) y un poco más:
+ * <ol>
+ *   <li>0-1 s: el mundo se deforma en el centro de la pantalla y la cámara tiembla ({@link RiftWarp#travel}).</li>
+ *   <li>1-2,2 s: la realidad se rasga: en el centro se abre un desgarro de borde vivo que llena la pantalla.</li>
+ *   <li>El túnel, cada vez más rápido: a la ida el Overworld (sus bloques), la puerta de obsidiana con el portal del
+ *   Nether (4 s), el Nether (lava, piedra luminosa), la puerta del End (5,9 s) y el End (sus estrellas); a la vuelta, End,
+ *   Nether y Overworld. Pasan bloques de verdad girando (de cada mundo); al cruzar cada puerta, fogonazo.</li>
+ *   <li>Al llegar (el servidor ya te ha llevado): la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece
+ *   ondulando hasta calmarse.</li>
+ * </ol>
+ * Lo dibuja el shader wormhole sobre toda la pantalla (encima de la interfaz y de la pantalla de carga al cambiar de
+ * mundo) al acabar cada fotograma, con texturas del propio Minecraft ({@link WormholeTextures}); los sonidos (el
+ * portal, el cristal que se rompe, el viento, el viaje del Nether, un ghast, el portal del End, el dragón) suenan solo
+ * para ti. Vista previa sin juego: tools/void/tunel_preview.py (mismos tiempos).
  *
- * <p>1.3.89, el dueño: «esas franjas o círculos que se ponen en ambas está horrible; si vas a poner eso, mejor no pongas
- * nada si no lo harás bien». Fuera los rayos que giraban, la viñeta de franjas desde los bordes y la onda que se abría:
- * solo el fundido, a pantalla entera y con curva suave (sin escalones).
+ * <p>Una llegada sin viaje (el rescate al caer al vacío del Void) es solo la luz que se va.
  */
 @OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class TravelFx {
-    private static int phase = -1, ticks = 1;
-    private static long startTick;
+    /** El shader del túnel (lo registra {@link VoidClient}). */
+    static ShaderInstance shader;
+    /** Segundos desde que empieza: el desgarro se abre (de OPEN0 a OPEN1) y las dos puertas. = tunel_preview. */
+    static final float OPEN0 = 1.0F, OPEN1 = 2.2F, GATE1 = 4.0F, GATE2 = 5.9F;
+    /** Segundos desde que llegas: el túnel sigue, la luz llena la pantalla (EXIT1) y se va (EXIT2); el mundo se calma. */
+    private static final float EXIT0 = 0.4F, EXIT1 = 1.5F, EXIT2 = 2.4F, CALM = 3.4F;
+    /** Si no llega la llegada (se cortó algo), el túnel se acaba solo. */
+    private static final float GIVE_UP = 25F;
+    /** La llegada sin viaje: la luz se va en este tiempo. */
+    private static final float FADE = 2.5F;
+
+    private static boolean trip, back, fade, failed;
+    private static long startNanos;
+    private static float arrived = -1F;
+    private static int tripId, sounds, tripFrames;
+    /** Este fotograma: segundos desde que empezó, cuánto se abre el desgarro, camino recorrido y salida (0..2). */
+    private static float now, open, travel, exit;
+    private static String lastTrip = "ningún viaje";
 
     private TravelFx() {}
 
     static void start(int ph, int t) {
         Minecraft mc = Minecraft.getInstance();
-        if (ph == VoidNet.FX_CANCEL) {
-            phase = -1;
-            return;
+        long nanos = System.nanoTime();
+        switch (ph) {
+            case VoidNet.FX_LEAVE, VoidNet.FX_LEAVE_BACK -> {
+                trip = true;
+                fade = false;
+                back = ph == VoidNet.FX_LEAVE_BACK;
+                startNanos = nanos;
+                arrived = -1F;
+                sounds = 0;
+                tripFrames = 0;
+                tripId++;
+                WormholeTextures.prepare();
+                // El diálogo se cierra para que se vea
+                if (mc.screen instanceof KnightScreen) mc.setScreen(null);
+            }
+            case VoidNet.FX_ARRIVE -> {
+                if (trip && arrived < 0F) {
+                    arrived = (nanos - startNanos) / 1e9F;
+                } else if (!trip) {
+                    fade = true;
+                    startNanos = nanos;
+                }
+            }
+            default -> stop();
         }
-        phase = ph;
-        ticks = Math.max(1, t);
-        startTick = mc.level == null ? 0 : mc.level.getGameTime();
-        // El diálogo se cierra para que se vea
-        if (ph == VoidNet.FX_ARRIVE && mc.screen instanceof KnightScreen) mc.setScreen(null);
     }
 
-    /** ¿Está saliendo ahora? (para la prueba en el juego) */
+    private static void stop() {
+        if (trip) {
+            float s = (System.nanoTime() - startNanos) / 1e9F;
+            lastTrip = String.format("%s: %d fotogramas en %.1f s (%.0f por segundo), llegada a los %.1f s", back ? "vuelta" : "ida",
+                    tripFrames, s, tripFrames / Math.max(0.1F, s), arrived);
+        }
+        trip = false;
+        fade = false;
+        RiftWarp.travel(0F, 0F);
+    }
+
+    /** ¿Está viajando (o se está yendo la luz)? (para la prueba en el juego) */
     public static boolean active() {
-        return phase >= 0;
+        return trip || fade;
     }
 
-    public static void render(ForgeGui gui, GuiGraphics g, float partial, int w, int h) {
-        if (phase < 0) return;
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) {
-            phase = -1;
-            return;
-        }
-        float k = (mc.level.getGameTime() - startTick + partial) / ticks;
-        if (k < 0) k = 0;
-        if (k >= 1F && phase == VoidNet.FX_ARRIVE) {
-            phase = -1;
-            return;
-        }
-        k = Math.min(k, 1F);
-        float white;
-        int tint;
-        if (phase == VoidNet.FX_LEAVE) {
-            // la luz sube en la segunda mitad y al final lo cubre todo
-            white = smooth(0.35F, 0.97F, k);
-            tint = 0xFFF8EC;
+    /** Segundos desde que empezó el viaje, o −1 si no hay viaje (la prueba saca capturas a sus tiempos). */
+    public static float clock() {
+        return trip ? (System.nanoTime() - startNanos) / 1e9F : -1F;
+    }
+
+    /** A los cuántos segundos del viaje llegó (−1: aún no). */
+    public static float arrivedAt() {
+        return trip ? arrived : -1F;
+    }
+
+    /** ¿Es la vuelta (End → Nether → Overworld)? */
+    public static boolean back() {
+        return back;
+    }
+
+    /** Cuenta los viajes (cada uno empieza sus capturas de cero). */
+    public static int tripId() {
+        return tripId;
+    }
+
+    /** Cómo fue el último viaje (fotogramas por segundo). */
+    public static String lastTrip() {
+        return lastTrip;
+    }
+
+    /** = tunel_preview.travel: el camino recorrido; la velocidad va de 1,4 a 4 entre 1 y 4,5 s. */
+    static float travel(float t) {
+        float a = 1F, b = 4.5F, s;
+        if (t < a) {
+            s = 0F;
+        } else if (t <= b) {
+            float y = (t - a) / (b - a);
+            s = (b - a) * (y * y * y - y * y * y * y / 2F);
         } else {
-            white = 1F - smooth(0.0F, 0.85F, k);
-            tint = TFVoid.isVoid(mc.level) ? 0xF1E6FF : 0xFFF6E4;
+            s = (b - a) / 2F + (t - b);
         }
-        if (white <= 0.004F) return;
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        g.fill(0, 0, w, h, ((int) (white * 255) << 24) | tint);
-        RenderSystem.disableBlend();
+        return 1.4F * t + 2.6F * s;
     }
 
     private static float smooth(float a, float b, float x) {
         float t = Mth.clamp((x - a) / (b - a), 0F, 1F);
         return t * t * (3 - 2 * t);
+    }
+
+    /** Antes de cada fotograma: dónde va el viaje, la deformación del mundo y los sonidos. */
+    private static void update() {
+        if (!trip && !fade) return;
+        now = (System.nanoTime() - startNanos) / 1e9F;
+        if (fade) {
+            open = 1F;
+            travel = travel(now + 8F);
+            exit = 1F + now / FADE;
+            if (now > FADE) stop();
+            return;
+        }
+        if (arrived < 0F && now > GIVE_UP) arrived = now;
+        open = smooth(OPEN0, OPEN1, now);
+        travel = travel(now);
+        float since = arrived < 0F ? -1F : now - arrived;
+        exit = since < EXIT0 ? 0F : smooth(EXIT0, EXIT1, since) + smooth(EXIT1, EXIT2, since);
+        // el mundo se deforma antes de rasgarse; al llegar, el nuevo aparece ondulando (y gira al revés) hasta calmarse
+        float warp = smooth(0.1F, 1.3F, now) * (1F - smooth(OPEN1, OPEN1 + 0.3F, now));
+        float calm = since < EXIT1 ? 0F : 0.9F * (1F - smooth(EXIT1 + 0.1F, CALM, since));
+        if (calm > 0F) RiftWarp.travel(calm, -1.6F * calm);
+        else RiftWarp.travel(warp, 2.2F * warp);
+        sounds(since);
+        if (since > CALM) stop();
+    }
+
+    private static void sounds(float since) {
+        float t = now;
+        if (once(0, t >= 0F)) play(SoundEvents.PORTAL_TRIGGER, 1.15F, 0.45F);
+        if (once(1, t >= OPEN0)) {
+            // la realidad se rompe
+            play(SoundEvents.GLASS_BREAK, 0.55F, 0.7F);
+            play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.7F, 0.6F);
+        }
+        if (once(2, t >= OPEN1 - 0.15F)) play(SoundEvents.ELYTRA_FLYING, 1.1F, 0.5F);
+        if (once(3, back && t >= OPEN1 + 0.3F)) play(SoundEvents.ENDER_DRAGON_GROWL, 1.1F, 0.15F);
+        // la primera puerta, a la ida y a la vuelta, da al Nether
+        if (once(4, t >= GATE1 - 0.35F)) play(SoundEvents.PORTAL_TRAVEL, 1.2F, 0.3F);
+        if (once(5, t >= GATE1 + 0.5F)) play(SoundEvents.GHAST_AMBIENT, 0.75F, 0.3F);
+        if (once(6, t >= GATE2 - 0.2F)) {
+            if (back) play(SoundEvents.CONDUIT_ACTIVATE, 1.2F, 0.6F);
+            else play(SoundEvents.END_PORTAL_SPAWN, 1.1F, 0.35F);
+        }
+        if (once(7, !back && t >= GATE2 + 0.6F)) play(SoundEvents.ENDER_DRAGON_GROWL, 0.9F, 0.2F);
+        if (once(8, since >= EXIT0)) play(SoundEvents.BEACON_POWER_SELECT, 1.4F, 0.5F);
+    }
+
+    private static boolean once(int bit, boolean when) {
+        if (!when || (sounds & 1 << bit) != 0) return false;
+        sounds |= 1 << bit;
+        return true;
+    }
+
+    private static void play(SoundEvent s, float pitch, float volume) {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(s, pitch, volume));
+    }
+
+    /**
+     * Al empezar el fotograma, el viaje; al acabarlo (encima de todo: el mundo, la interfaz y las pantallas), el túnel.
+     * (Antes que las capturas de la prueba, que van después: BossTestClient.)
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onRender(TickEvent.RenderTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            update();
+            return;
+        }
+        if ((!trip && !fade) || exit >= 1.9F || open <= 0.001F || shader == null || failed) return;
+        try {
+            draw();
+            if (trip) tripFrames++;
+        } catch (Throwable t) {
+            failed = true;
+            TFClient.LOGGER.error("TF Void: no se pudo dibujar el agujero de gusano: se apaga", t);
+        }
+    }
+
+    private static void draw() {
+        Minecraft mc = Minecraft.getInstance();
+        WormholeTextures.prepare();
+        RenderTarget main = mc.getMainRenderTarget();
+        main.bindWrite(true);
+        ShaderInstance sh = shader;
+        sh.safeGetUniform("WTime").set(now);
+        sh.safeGetUniform("Travel").set(travel);
+        sh.safeGetUniform("Gates").set(travel(GATE1), travel(GATE2));
+        sh.safeGetUniform("Open").set(open);
+        sh.safeGetUniform("Exit").set(exit);
+        sh.safeGetUniform("Back").set(back ? 1F : 0F);
+        sh.safeGetUniform("Frames").set(WormholeTextures.lavaFrames, WormholeTextures.portalFrames);
+        sh.safeGetUniform("ScreenSize").set((float) main.width, (float) main.height);
+        RenderSystem.setShader(() -> sh);
+        RenderSystem.setShaderTexture(0, WormholeTextures.PANORAMA);
+        RenderSystem.setShaderTexture(1, WormholeTextures.ATLAS);
+        RenderSystem.setShaderTexture(2, WormholeTextures.LAVA);
+        RenderSystem.setShaderTexture(3, WormholeTextures.PORTAL);
+        RenderSystem.setShaderTexture(4, WormholeTextures.STARS);
+        RenderSystem.setShaderTexture(5, WormholeTextures.END_SKY);
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        b.vertex(-1, -1, 0).endVertex();
+        b.vertex(1, -1, 0).endVertex();
+        b.vertex(1, 1, 0).endVertex();
+        b.vertex(-1, 1, 0).endVertex();
+        BufferUploader.drawWithShader(b.end());
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
     }
 }
