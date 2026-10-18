@@ -61,7 +61,9 @@ public final class BossTest {
     /** Ticks de la pelea con captura. */
     private static final Set<Integer> SHOTS = Set.of(40, 200, 360, 520, 680);
 
-    static volatile String shotRequest;
+    /** Las capturas pedidas, en orden (las saca BossTestClient). */
+    static final java.util.concurrent.ConcurrentLinkedQueue<String> SHOTS_PENDING = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private static int shotWait;
     static volatile boolean finished;
     /** Barras de jefe que ve el cliente ahora (BossTestClient). */
     static volatile int clientBars = -1;
@@ -260,12 +262,16 @@ public final class BossTest {
             return;
         }
         if (index >= ids.size()) return;
-        t++;
+        Rep r = current;
+        // En el Void la prueba espera a que salga cada captura: con shaders el cliente va a pocos fotogramas por
+        // segundo y la vista siguiente (o quitar el cielo propio) llegaba antes que la foto (10 s como mucho)
+        if (SHOTS_PENDING.isEmpty()) shotWait = 0;
+        boolean waitShot = "vacio".equals(r.id) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
+        if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
-        Rep r = current;
         if ("vacio".equals(r.id)) {
-            voidStep(server, level, player, r);
+            if (!waitShot) voidStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -755,15 +761,16 @@ public final class BossTest {
                     player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
                 }
             }
-            case 1266 -> {
+            // (que carguen los chunks de la llegada: está a 170 bloques)
+            case 1296 -> {
                 if (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders) shot(r, "vacio_agujero_propio");
             }
-            case 1269 -> {
+            case 1299 -> {
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = false;
                 fly(player, false);
             }
-            case 1270 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
-            case 1276 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
+            case 1300 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 1306 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
                     player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
             case 1330 -> {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
@@ -806,7 +813,7 @@ public final class BossTest {
     }
 
     private static void shot(Rep r, String what) {
-        shotRequest = String.format("%02d_%s_%s", index, r.id, what);
+        SHOTS_PENDING.add(String.format("%02d_%s_%s", index, r.id, what));
     }
 
     /** Recoge la arena y pasa al siguiente jefe (o acaba). */

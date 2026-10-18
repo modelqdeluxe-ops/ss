@@ -477,7 +477,9 @@ ticks: el jugador se acerca y se aleja, le rodea y le pega; no muere), su muerte
   el mundo, capturas, cuenta las barras que ve, cierra el juego). Con la variable sin poner no hace nada.
 - **Resultados**: la rama `pruebas-jefes` (sin historia, se rehace cada vez): `informe.txt`, `registro.txt` (lo del log
   de TF Jefes y los errores), `final_del_registro.txt` y capturas JPEG (`NN_<jefe>_pelea_<s>.jpg`, `_muerte_<t>.jpg`).
-  `git clone --depth 1 -b pruebas-jefes https://github.com/modelqdeluxe-ops/ss.git pj`.
+  `git clone --depth 1 -b pruebas-jefes https://github.com/modelqdeluxe-ops/ss.git pj`. Cada captura se saca al acabar
+  un fotograma empezado después de pedirla (en cola, ninguna se pisa) y en el Void la prueba espera a que salga (hasta
+  10 s): con shaders el cliente va a pocos fotogramas por segundo.
 - **Qué mide** por jefe: si sale y cuántos jefes distintos (reaparecer = más de uno), % del tiempo con el jugador de
   objetivo, golpes que da y recibe, ticks andando, **hacia atrás / de lado** (respecto a su cuerpo), rápido,
   teletransportes, en el aire, lo más lejos de la grieta, esbirros, ticks sin modelo o sin animación, las animaciones que
