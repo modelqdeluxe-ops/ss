@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **18 de octubre de 2026** (TF Client **1.3.88**: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **18 de octubre de 2026** (TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -59,7 +59,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (18 oct 2026, TF Client 1.3.89) — lee esto primero
+### CHECKPOINT (18 oct 2026, TF Client 1.3.90) — lee esto primero
+
+**1.3.90**: el dueño, con tres capturas, tras probar la 1.3.89. Hecho y probado (`tf-client/JEFES.md` §3.15):
+- **Isla ×1,5 con la grieta en el centro de verdad** (`tools/void/isla.py` → `agrandar`: terreno remuestreado suave,
+  lo construido a su tamaño, plaza de radio 28). La grieta sigue en 0 72 0. Los mundos con el Void ya generado se
+  rehacen solos al arrancar (`vacio/IslandUpdate` v3, empezando por el santuario; probado en el juego).
+- **Disco del agujero negro sin muaré**: no era de los shaders, sino del giro Kepler que se enrollaba con el tiempo de
+  juego. Ahora: giro de conjunto + dos capas que se renuevan. **Más vida**: disco más rápido, grumos que orbitan,
+  chorros con nudos, anillo que vibra; las nebulosas fluyen, laten y caen en remolino al agujero.
+- **Alas de Caelthar**: medido, las plumas pasaban 5 px por delante del pecho. Animación «reposo» nueva con alas
+  abiertas detrás (`tools/void/caballero_alas.py`, que mide y se niega a guardar si atraviesan).
+
+### CHECKPOINT anterior (18 oct 2026, TF Client 1.3.89)
+
 
 **1.3.89**: el dueño, con tres capturas, tras probar la 1.3.88 («excelente con el Void, una mierda con Ignevar»). Hecho y
 probado en el juego (`tf-client/JEFES.md` §3.14):

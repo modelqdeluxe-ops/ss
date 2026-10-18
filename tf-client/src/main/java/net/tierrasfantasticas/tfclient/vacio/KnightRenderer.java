@@ -22,8 +22,9 @@ import org.joml.Matrix4f;
 /**
  * Caelthar, el Caballero Sacro (1.3.88 «Aurelion, caballero de luz»; el dueño, en la 1.3.89: «ponle otro nombre épico no
  * conocido, y ponle Caballero Sacro»): su modelo de ModelEngine (vacio.caballero, del .bbmodel «skywars_npc») con su
- * animación de reposo («reposo»: la parte tranquila, 0-9 s, del «idle» del modelo; el resto era una reverencia con un
- * aleteo de −94° en el que las alas le atravesaban el pecho: «se buguean las alas, le traspasan al pecho»), un 40 % más
+ * animación de reposo («reposo», de tools/void/caballero_alas.py: el cuerpo, lo tranquilo del «idle» del modelo; las
+ * alas, abiertas hacia atrás y aleteando despacio. 1.3.89 dejaba las del idle, plegadas −110° hacia delante: sus plumas
+ * pasaban 5 píxeles por delante del pecho, «las alas le traspasan al pecho»; el script lo mide), un 40 % más
  * grande, a luz completa (es de luz: se ve igual de noche y en el vacío), la cabeza mirando a quien
  * tiene cerca y, encima, su nombre y «clic derecho para hablar» cuando estás cerca. Sin las islitas flotantes del
  * modelo original (eran del Skywars).

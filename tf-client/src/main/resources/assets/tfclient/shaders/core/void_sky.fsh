@@ -18,6 +18,14 @@
 // baja de ~2 píxeles, y las estrellas se dibujan como manchas de al menos un píxel con la misma luz total. Antes el ruido
 // fino del disco (hebras de 0,07 radios) y la capa de estrellas más densa eran más pequeños que un píxel: grano y
 // parpadeo.
+//
+// 1.3.90 (el dueño, con captura: «con shaders se ve pixelado cuando me muevo; anima más el agujero negro y el cielo,
+// las nubes o manchas moradas»): el muaré era del giro del disco (ángulo − ω(r)·t: cada radio gira a su velocidad y el
+// dibujo se enrollaba sin fin; con horas de juego, espirales más finas que un píxel). Ahora gira en conjunto y lo
+// diferencial va en dos capas que se renuevan y se funden (diskNoise). Más vida: el disco gira el doble de rápido, con
+// grumos calientes que orbitan y laten, chorros por el eje con nudos que suben, el anillo de fotones vibra y las
+// nebulosas fluyen, laten y giran hacia el agujero. Todo lo que cambia con el tiempo da vueltas exactas en una hora
+// (VoidTime vuelve a 0 cada 3600 s): sin saltos.
 
 uniform sampler2D Sampler0;   // panorama de nebulosas (equirectangular, el de rift_sky.py)
 uniform float VoidTime;       // segundos
@@ -34,8 +42,28 @@ const float DIST = 8.0;       // distancia de la cámara al agujero (1.3.88: 12)
 const float RIN = 2.35;       // borde de dentro del disco (algo más allá de la órbita estable)
 const float ROUT = 10.5;      // borde de fuera
 
+// El giro del disco: de conjunto (igual en todos los radios: no enrolla) y lo diferencial en capas de SPIN_P segundos
+const float SPIN_P = 12.0;                          // 3600/12 = 300 ciclos exactos por hora
+const float SPIN_K = 1.6;                           // velocidad (la 1.3.89: 0,8)
+const float SPIN_RIG = 6.2831853 * 229.0 / 3600.0;  // ≈ ω(r=4)·SPIN_K, en vueltas exactas por hora
+const float NEB_P = 40.0;                           // capas del remolino de las nebulosas (90 por hora)
+const float JET_L = 15.0;                           // largo de los chorros (radios)
+
 // Lo que mide un píxel (en radianes de cielo); lo pone main()
 float PIX = 0.001;
+
+// Una velocidad angular redondeada a vueltas exactas por hora (sin salto cuando VoidTime vuelve a 0)
+float qw(float w) {
+    return 6.2831853 * floor(w * 3600.0 / 6.2831853 + 0.5) / 3600.0;
+}
+
+// Un punto que recorre un círculo en el espacio del ruido a «speed» unidades por segundo (una vuelta por hora): lo
+// que se mueve con él cambia sin parar y sin salto a la hora
+vec3 drift(float speed, float seed) {
+    float a = 6.2831853 * VoidTime / 3600.0 + seed;
+    float R = speed * 3600.0 / 6.2831853;
+    return vec3(cos(a) * R, sin(a) * R, seed * 17.0);
+}
 
 float hash13(vec3 p) {
     p = fract(p * 0.1031);
@@ -93,18 +121,49 @@ vec3 stars(vec3 d, float scale, float density, float size) {
     return col * b * tw * (0.6 + 1.6 * hash13(i + 3.0)) * fade;
 }
 
-// El cielo sin agujero: nebulosas que giran muy despacio, estrellas y el abismo oscuro por debajo
-vec3 background(vec3 d) {
-    float a = VoidTime * 0.0015;
+vec3 rotY(vec3 d, float a) {
     float ca = cos(a);
     float sa = sin(a);
-    vec3 r = vec3(ca * d.x - sa * d.z, d.y, sa * d.x + ca * d.z);
-    float u = fract(atan(r.z, r.x) / (2.0 * PI));
-    float v = 0.5 - asin(clamp(r.y, -1.0, 1.0)) / PI;
+    return vec3(ca * d.x - sa * d.z, d.y, sa * d.x + ca * d.z);
+}
+
+// La nebulosa en la dirección r (ya girada con el cielo): la textura se lee desplazada por un ruido lento que cambia
+// con el tiempo (fluye, se deforma) y su luz late a manchas grandes
+vec3 nebAt(vec3 r) {
+    vec3 wq = r * 2.3 + drift(0.06, 1.0);
+    vec2 warp = vec2(noise3(wq), noise3(wq + vec3(5.2, 1.3, 7.7))) - 0.5;
+    float u = fract(atan(r.z, r.x) / (2.0 * PI) + warp.x * 0.04);
+    float v = clamp(0.5 - asin(clamp(r.y, -1.0, 1.0)) / PI + warp.y * 0.035, 0.001, 0.999);
     // (textureLod: sin mipmaps, y así el salto de u en la costura no cambia nada)
     vec3 neb = textureLod(Sampler0, vec2(u, v), 0.0).rgb;
     neb = pow(neb, vec3(1.45)) * 0.95;
-    vec3 col = neb;
+    float glow = noise3(r * 1.7 + drift(0.05, 3.0));
+    return neb * (0.55 + 1.0 * glow * glow);
+}
+
+// Junto al agujero, la nebulosa gira en remolino y cae hacia él: se lee de donde estaba hace «tau» segundos (más
+// lejos y girada hacia atrás), más cuanto más cerca
+vec3 swirl(vec3 d, float tau) {
+    vec3 f = normalize(HoleDir);
+    vec3 b1 = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
+    vec3 b2 = cross(f, b1);
+    float th = acos(clamp(dot(d, f), -1.0, 1.0));
+    float w = exp(-th * 1.5);
+    float al = atan(dot(d, b2), dot(d, b1)) - w * tau * 0.025 / (th + 0.15);
+    th *= 1.0 + w * tau * 0.006;
+    return cos(th) * f + sin(th) * (cos(al) * b1 + sin(al) * b2);
+}
+
+// El cielo sin agujero: nebulosas que giran (dos vueltas por hora), fluyen y caen en remolino hacia el agujero (en dos
+// capas que se renuevan cada NEB_P segundos y se funden: el remolino no se enrolla), estrellas y el abismo por debajo
+vec3 background(vec3 d) {
+    float a = VoidTime * 6.2831853 * 2.0 / 3600.0;
+    float ph = fract(VoidTime / NEB_P);
+    float wa = 1.0 - abs(2.0 * ph - 1.0);
+    vec3 na = nebAt(rotY(swirl(d, ph * NEB_P), a));
+    vec3 nb = nebAt(rotY(swirl(d, fract(ph + 0.5) * NEB_P), a));
+    vec3 col = na * wa + nb * (1.0 - wa);
+    vec3 r = rotY(d, a);
     col += stars(r, 110.0, 0.06, 0.30) * 1.7;
     col += stars(r.zxy, 260.0, 0.08, 0.34) * 1.0;
     col += stars(r.yzx, 520.0, 0.10, 0.40) * 0.6;
@@ -128,24 +187,63 @@ vec3 ramp(float x) {
     return mix(c4, c5, clamp((x - 1.25) / 1.2, 0.0, 1.0));
 }
 
+// El ruido del disco en una capa (0 o 1): el giro de conjunto más lo diferencial de los «tau» segundos que lleva la
+// capa (se renueva cada SPIN_P, desplazada para que no se repita). El ruido se filtra contando cuánto lo estira el
+// giro diferencial a lo largo del radio (r·|∂rot/∂r| = 1,5·ω·SPIN_K·tau): nunca más fino que ~2 píxeles.
+vec2 diskNoise(float ang, float r, float omega, float foot, float layer) {
+    float ph = fract(VoidTime / SPIN_P + 0.5 * layer);
+    float tau = ph * SPIN_P;
+    float cyc = mod(floor(VoidTime / SPIN_P + 0.5 * layer), 3600.0 / SPIN_P);
+    vec3 off = vec3(cyc * 7.13, cyc * 3.71, cyc * 5.29);
+    float rot = ang - SPIN_RIG * VoidTime - (omega * SPIN_K - SPIN_RIG) * tau;
+    float sh = 1.5 * omega * SPIN_K * tau;
+    float cr = cos(rot);
+    float sr = sin(rot);
+    float n1 = fbmf(vec3(cr * r, sr * r, r * 0.4) * 0.75 + off, foot * 0.75 * sqrt(1.0 + sh * sh), 4);
+    float s2 = 1.6 * sh / (r * 2.6);
+    float n2 = fbmf(vec3(r * 2.6, cr * 1.6, sr * 1.6) + 7.0 + off, foot * 2.6 * sqrt(1.0 + s2 * s2), 4);
+    return vec2(n1, n2);
+}
+
+// Grumos calientes que orbitan cada uno a su velocidad (vueltas exactas por hora) y laten
+float hotspots(float ang, float r) {
+    float s = 0.0;
+    for (int i = 0; i < 7; i++) {
+        float fi = float(i);
+        float ri = RIN + 0.55 + 3.6 * fract(fi * 0.618 + 0.13);
+        float a = fi * 2.39996 + qw(2.0 / (ri * sqrt(ri)) * SPIN_K) * VoidTime;
+        float da = (mod(ang - a + PI, 2.0 * PI) - PI) * ri;
+        float dr = r - ri;
+        float life = 0.5 + 0.5 * sin(qw(0.23 + 0.05 * fi) * VoidTime + fi * 1.7);
+        s += life * exp(-dr * dr / 0.08 - da * da / 1.4);
+    }
+    return s;
+}
+
 // La luz y lo que tapa el disco en el punto q (en el plano del disco); «foot» = lo que mide un píxel ahí (en radios)
 vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     float ang = atan(dot(q, e2), dot(q, e1));
     float omega = 2.0 / (r * sqrt(r));
-    float rot = ang - omega * VoidTime * 0.8;
-    float cr = cos(rot);
-    float sr = sin(rot);
+    // las dos capas, fundidas sin perder contraste (la que se renueva pesa 0)
+    vec2 la = diskNoise(ang, r, omega, foot, 0.0);
+    vec2 lb = diskNoise(ang, r, omega, foot, 1.0);
+    float wa = 1.0 - abs(2.0 * fract(VoidTime / SPIN_P) - 1.0);
+    float wb = 1.0 - wa;
+    float kn = inversesqrt(wa * wa + wb * wb);
+    float n1 = clamp(0.5 + (wa * (la.x - 0.5) + wb * (lb.x - 0.5)) * kn, 0.0, 1.0);
+    float n2 = clamp(0.5 + (wa * (la.y - 0.5) + wb * (lb.y - 0.5)) * kn, 0.0, 1.0);
     // grumos grandes que giran y arcos estirados a lo largo de la órbita (anillos de distinta densidad); el ruido
     // de los arcos va en (radio, ángulo) con el ángulo comprimido: hebras largas, nunca más finas que 2 píxeles
-    float n1 = fbmf(vec3(cr * r, sr * r, r * 0.4) * 0.75, foot * 0.75, 4);
-    float n2 = fbmf(vec3(r * 2.6, cr * 1.6, sr * 1.6) + 7.0, foot * 2.6, 4);
     float lanes = 0.5 + 0.5 * sin(r * 5.2 + 3.0 * n1);
     lanes = mix(0.5, lanes, 1.0 - smoothstep(0.12, 0.3, foot * 5.2 / 6.2832));
     float arcs = smoothstep(0.28, 0.82, n2);
     float dens = (0.2 + 1.2 * n1 * n1) * (0.4 + 0.9 * arcs) * (0.78 + 0.44 * lanes);
+    dens += 1.5 * hotspots(ang, r);
     dens *= smoothstep(RIN * 0.92, RIN * 1.3, r) * (1.0 - smoothstep(ROUT * 0.45, ROUT, r));
     // (el borde de fuera llega casi hasta la cámara: lo que pasaría a su lado se difumina, sin una lámina rara de lado)
     dens *= smoothstep(-0.9 * DIST, -0.5 * DIST, dot(q, normalize(HoleDir)));
+    // el disco respira despacio
+    dens *= 0.9 + 0.12 * sin(qw(0.55) * VoidTime);
     float temp = pow(RIN / r, 1.5);
     // Doppler (la luz que llega a la cámara va por -v) y el corrimiento al rojo de la gravedad
     vec3 tang = normalize(cross(n, q));
@@ -157,6 +255,24 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     vec3 c = ramp(temp * g * 1.15);
     float a = clamp(dens * (0.45 + 0.6 * temp), 0.0, 0.92);
     return vec4(c * I, a);
+}
+
+// Los chorros por el eje del disco: un hilo azul-violeta con nudos que suben (ondas con vueltas exactas por hora)
+vec3 jet(vec3 p, vec3 n) {
+    float h = dot(p, n);
+    float ah = abs(h);
+    if (ah < 1.2 || ah > JET_L) return vec3(0.0);
+    float w = 0.1 + 0.045 * ah;
+    float d2 = dot(p - n * h, p - n * h) / (w * w);
+    if (d2 > 9.0) return vec3(0.0);
+    float side = h > 0.0 ? 0.0 : 2.1;
+    float k = 0.45 + 0.35 * sin(ah * 1.15 - qw(2.4) * VoidTime + side)
+            + 0.25 * sin(ah * 2.9 - qw(3.7) * VoidTime + side * 3.0)
+            + 0.15 * sin(ah * 0.47 - qw(0.9) * VoidTime + side * 5.0);
+    float fade = smoothstep(1.2, 2.6, ah) * (1.0 - smoothstep(JET_L * 0.35, JET_L, ah));
+    float core = exp(-d2);
+    vec3 c = mix(vec3(0.42, 0.25, 0.95), vec3(0.85, 0.9, 1.0), exp(-d2 * 3.0));
+    return c * core * fade * max(k, 0.05) * 0.5;
 }
 
 void main() {
@@ -189,6 +305,10 @@ void main() {
         float r = length(p);
         minR = min(minR, r);
         float dt = clamp(stepK * r, 0.02, 1.5);
+        // (junto a los chorros, pasos más cortos: son finos)
+        float hj = dot(p, n);
+        float dj = length(p - n * hj);
+        if (abs(hj) < JET_L) dt = min(dt, max(0.12, 0.5 * dj));
         float r2 = r * r;
         vec3 acc = -1.5 * h2 * p / (r2 * r2 * r);
         v += acc * dt;
@@ -208,6 +328,7 @@ void main() {
                 alpha += (1.0 - alpha) * dc.a;
             }
         }
+        col += (1.0 - alpha) * jet(p, n) * length(v) * dt;
         travel += length(v) * dt;
         p = pn;
         float rn = length(p);
@@ -226,6 +347,9 @@ void main() {
     if (!captured) {
         float ringW = max(0.11, PIX * DIST * 1.5);
         float ring = exp(-pow((minR - 1.55) / ringW, 2.0));
+        // (vibra: ondas de luz que le dan la vuelta)
+        float ra = atan(dot(dir, e2), dot(dir, e1));
+        ring *= 0.78 + 0.22 * sin(ra * 3.0 - qw(1.3) * VoidTime) + 0.12 * sin(ra * 7.0 + qw(2.1) * VoidTime);
         bg += vec3(1.0, 0.86, 0.7) * ring * 0.95;
         bg += vec3(0.55, 0.22, 0.95) * exp(-max(minR - 1.5, 0.0) * 0.42) * 0.26;
         bg += vec3(1.0, 0.55, 0.3) * exp(-max(minR - 1.5, 0.0) * 1.1) * 0.14;

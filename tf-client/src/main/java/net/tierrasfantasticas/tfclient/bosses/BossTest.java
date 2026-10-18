@@ -65,6 +65,7 @@ public final class BossTest {
     static final java.util.concurrent.ConcurrentLinkedQueue<String> SHOTS_PENDING = new java.util.concurrent.ConcurrentLinkedQueue<>();
     private static int shotWait;
     private static boolean voidRescued;
+    private static int updateFrom, updateWait;
     static volatile boolean finished;
     /** Barras de jefe que ve el cliente ahora (BossTestClient). */
     static volatile int clientBars = -1;
@@ -765,12 +766,15 @@ public final class BossTest {
             }
             case 1085 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
             // (las vistas desde el aire, volando: en la 1.3.89 se caía al vacío antes de la captura y salía el rescate)
+            // (1.3.90: la isla ×1,5 y centrada en la grieta; con la vista de 6 chunks de la prueba se ve hasta ~96 bloques)
             case 1100 -> {
                 fly(player, true);
-                player.teleportTo(vl, 0.5, 140, 150.5, 180F, 30F);
+                player.teleportTo(vl, 0.5, 165, 70.5, 180F, 48F);
             }
             case 1180 -> shot(r, "vacio_isla");
-            case 1190 -> player.teleportTo(vl, 130.5, 75, -40.5, 120F, 2F);
+            case 1185 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
+            case 1225 -> shot(r, "vacio_planta");
+            case 1230 -> player.teleportTo(vl, 230.5, 92, 0.5, 90F, 4F);
             case 1260 -> shot(r, "vacio_lado");
             case 1299 -> fly(player, false);
             case 1300 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
@@ -782,6 +786,11 @@ public final class BossTest {
             }
             case 1450 -> shot(r, "dialogo_santuario");
             case 1460 -> dialogPress = 0;
+            // (1.3.90) un mundo con la isla de antes: se pone al día solo (el servidor del dueño)
+            case 1470 -> {
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.pretendOldIsland(vl);
+                updateFrom = t;
+            }
             case 1590 -> {
                 double d = origin == null ? -1 : player.position().distanceTo(origin);
                 r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
@@ -789,6 +798,18 @@ public final class BossTest {
                 shot(r, "vuelta");
             }
             case 1630 -> {
+                // espera a que la isla esté al día (como mucho 4000 ticks)
+                if (!net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.islandUpdated() && updateWait++ < 4000) {
+                    t--;
+                    return;
+                }
+                net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos().below();
+                r.event("isla de antes puesta al día: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.islandUpdate()
+                        + " en " + (t - updateFrom + updateWait) + " ticks; pedestal del caballero: "
+                        + (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.islandMatches(vl, k) ? "bien" : "MAL")
+                        + "; columna de piedra de la plaza: "
+                        + (vl.getBlockState(new net.minecraft.core.BlockPos(6, 75, 6)).isAir() ? "quitada" : "SIGUE"));
+                updateWait = 0;
                 if (knight != null) knight.discard();
                 knight = null;
                 next(level);
