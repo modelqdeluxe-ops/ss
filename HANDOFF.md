@@ -75,7 +75,8 @@ probado en el juego (`tf-client/JEFES.md` §3.14):
   diálogo sin lag (el halo era ~430 dibujos por fotograma). **Viaje**: solo un fundido (sin rayos, franjas ni anillos).
 - **Grieta**: sin la raya de «vidrio roto» (corte del `atan` del remolino). **Ignevar**: sus llamas ya se ven (el
   conversor no encontraba sus objetos `item_display`; también las partículas del láser del Contemplador y del Piglin
-  Mecha) y anda a la velocidad de la dificultad.
+  Mecha), anda a la velocidad de la dificultad y, con inteligencia, se gira despacio hacia ti mientras escupe fuego
+  (`gira_al_atacar` en `es.json`; **referencia de `sim_ai` de Ignevar actualizada**: menos giros andando, mismos ataques).
 
 ### CHECKPOINT anterior (18 oct 2026, TF Client 1.3.88)
 

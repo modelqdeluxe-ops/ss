@@ -1470,6 +1470,22 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             lookYaw = bodyYaw;
         }
         lookYaw = Mth.wrapDegrees(lookYaw);
+        // (1.3.89) Un jefe que se gira con sus propias skills (sin IA de andar: Ignevar, con setrotation) y al que el pack
+        // deja quieto mientras ataca (su «stopturn»: echaba el fuego de lado si te movías, «pendejo»; «gira_al_atacar» en
+        // es.json, BossInfo.turnWhileAttacking): con inteligencia
+        // (cerebro táctico, como «te sigue al atacar» en los que andan), se gira despacio hacia su objetivo mientras dura
+        // el ataque: el 40 % del ritmo de los que andan (Normal, 2,6° por tick: lo que gira Ignevar al andar). Sin
+        // inteligencia, como el pack.
+        if (!walks && ai && !locked && getTarget() != null && cls() != null && cls().bossInfo != null && cls().bossInfo.turnWhileAttacking) {
+            float tr = SkillMobs.tracking(this) * 0.4F;
+            Vec3 dt = getTarget().position().subtract(position());
+            if (tr > 0 && dt.x * dt.x + dt.z * dt.z > 1e-4) {
+                float to = (float) Math.toDegrees(Math.atan2(-dt.x, dt.z));
+                bodyYaw = Mth.wrapDegrees(bodyYaw + Mth.clamp(Mth.wrapDegrees(to - bodyYaw), -tr, tr));
+                lookYaw = bodyYaw;
+                want = bodyYaw;
+            }
+        }
         if (locked) {
             syncBody();
             return;

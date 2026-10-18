@@ -125,6 +125,26 @@ public final class SkillClient {
         if (m.anim() != null) a.play(m.anim(), 1F);
     }
 
+    /** Para la prueba en el juego: cuántos efectos llevan un objeto, cuántos sin su modelo cargado y uno de ejemplo. */
+    public static String debugItems() {
+        int n = 0, missing = 0, display = 0;
+        String example = "";
+        BakedModel miss = Minecraft.getInstance().getModelManager().getMissingModel();
+        for (Actor a : ACTORS.values()) {
+            if (a.item == null) continue;
+            n++;
+            if (a.itemDisplay) display++;
+            BakedModel m = Minecraft.getInstance().getModelManager().getModel(a.item);
+            if (m == null || m == miss) {
+                missing++;
+                example = a.item + " (sin modelo)";
+            } else if (example.isEmpty()) {
+                example = a.item + " escala " + (a.def == null ? "?" : a.def.scaleX) + " billboard " + (a.def == null ? "?" : a.def.billboard);
+            }
+        }
+        return n + " con objeto (" + display + " item_display, " + missing + " sin modelo)" + (example.isEmpty() ? "" : "; p. ej. " + example);
+    }
+
     static void moves(SkillNet.Moves m) {
         for (int i = 0; i < m.ids().length; i++) {
             Actor a = ACTORS.get(m.ids()[i]);

@@ -23,7 +23,7 @@ los packs de los jefes). Aquí:
        con cornisa, cúpula de cristal blanco con nervios de cuarzo y remate de oro con vara del End, farolillos colgando
        en las entradas, balaustrada hacia el barranco y luz invisible dentro. Los cimientos bajan hasta el terreno en
        cada columna (el de la 1.3.88 tenía huecos debajo: «volando»). El caballero en el pedestal del centro mirando al
-       sur; se llega al borde sur, mirando hacia la grieta (y el agujero negro detrás).
+       sur; se llega a la puerta del este, mirando hacia la grieta (y el agujero negro detrás).
   4. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados, posiciones (caballero, llegada,
      grieta) y, por columna, tramos (y, largo, bloque). El centro de la plaza (la grieta) queda en x=0, z=0 del mundo.
 
@@ -590,7 +590,9 @@ def santuario(isl):
         if g[T + 3, pz_, px_] == 0 and g[T + 2, pz_, px_] not in (0,) and 'wall' not in isl.name(g[T + 2, pz_, px_]):
             put(px_, T + 3, pz_, cluster)
     knight = (cx, T + 4, cz)
-    arrive = (cx, T + 3, cz + 5)
+    # se llega a la puerta del este (entre dos columnas): desde ahí la línea hasta la grieta del centro queda libre (desde
+    # el borde sur la tapaba la loma que baja de la aguja del oeste, a y 72-77)
+    arrive = (cx + 6, T + 3, cz)
     return knight, arrive
 
 

@@ -117,7 +117,7 @@ public final class VoidIsland {
         return i == null ? new BlockPos(0, 72, 0) : i.rift;
     }
 
-    /** Dónde se llega al vacío (al borde sur del santuario, mirando hacia la grieta del centro). */
+    /** Dónde se llega al vacío (a la puerta del este del santuario, mirando hacia la grieta del centro). */
     public static Vec3 arrivePos() {
         VoidIsland i = get();
         return i == null ? new Vec3(0.5, 80, 6.5) : i.arrive;

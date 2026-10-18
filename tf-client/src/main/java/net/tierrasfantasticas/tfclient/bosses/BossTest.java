@@ -487,9 +487,10 @@ public final class BossTest {
                 Vec3 dj = aim.subtract(jaw);
                 float aimYaw = (float) Math.toDegrees(Math.atan2(-dj.x, dj.z));
                 Vec3 tp = player.position().subtract(jaw);
-                r.event(String.format("lanzallamas [%s]: boca %.1f %.1f %.1f (sobre el suelo %.1f), apunta a %.1f bloques, %.0f° (cuerpo %.0f°, jugador %.0f°), baja %.1f; jugador a %.1f",
+                r.event(String.format("lanzallamas [%s]: boca %.1f %.1f %.1f (sobre el suelo %.1f), apunta a %.1f bloques, %.0f° (cuerpo %.0f°, jugador %.0f°), baja %.1f; jugador a %.1f; en el cliente: %s",
                         what, jaw.x - bp.x, jaw.y - bp.y, jaw.z - bp.z, jaw.y - bp.y, dj.length(), aimYaw, boss.yBodyRot,
-                        Math.toDegrees(Math.atan2(-tp.x, tp.z)), -dj.y, Math.sqrt(tp.x * tp.x + tp.z * tp.z)));
+                        Math.toDegrees(Math.atan2(-tp.x, tp.z)), -dj.y, Math.sqrt(tp.x * tp.x + tp.z * tp.z), clientItems));
+                if (r.flameShown == 2) shot(r, "lanzallamas");
             }
         }
         episode(r, "anda hacia atrás", back, what + why);
@@ -623,6 +624,9 @@ public final class BossTest {
         return sb.length() == 0 ? "" : " | efectos:" + sb;
     }
 
+    /** Los efectos con objeto que tiene el cliente (item_display: las llamas de Ignevar...), para el informe. */
+    static volatile String clientItems = "?";
+
     /** Lo que el cliente de la prueba pulsa en el diálogo del caballero (1 = la primera respuesta; -1 = nada). */
     static volatile int dialogPress = -1;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
@@ -683,8 +687,8 @@ public final class BossTest {
             }
             case 680 -> shot(r, "vacio_santuario");
             case 690 -> {
-                Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
-                player.teleportTo(vl, ar.x, ar.y, ar.z, 180F, -12F);
+                net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
+                player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 4.5, 180F, -12F);
             }
             case 750 -> shot(r, "vacio_caballero");
             // la grieta del Void en el centro de la plaza
@@ -727,7 +731,11 @@ public final class BossTest {
                 shot(r, "vacio_grieta_jefe");
             }
             case 1085 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
-            case 1100 -> player.teleportTo(vl, 0.5, 140, 150.5, 180F, 30F);
+            // (las vistas desde el aire, volando: en la 1.3.89 se caía al vacío antes de la captura y salía el rescate)
+            case 1100 -> {
+                fly(player, true);
+                player.teleportTo(vl, 0.5, 140, 150.5, 180F, 30F);
+            }
             case 1180 -> shot(r, "vacio_isla");
             case 1190 -> player.teleportTo(vl, 130.5, 75, -40.5, 120F, 2F);
             case 1260 -> shot(r, "vacio_lado");
@@ -742,7 +750,10 @@ public final class BossTest {
             case 1266 -> {
                 if (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders) shot(r, "vacio_agujero_propio");
             }
-            case 1269 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = false;
+            case 1269 -> {
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = false;
+                fly(player, false);
+            }
             case 1270 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
             case 1276 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
                     player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
@@ -768,6 +779,13 @@ public final class BossTest {
             default -> {
             }
         }
+    }
+
+    /** Que el jugador de la prueba vuele (o deje de volar), como en creativo. */
+    private static void fly(ServerPlayer p, boolean on) {
+        p.getAbilities().mayfly = on;
+        p.getAbilities().flying = on;
+        p.onUpdateAbilities();
     }
 
     /** Lo que hay bajo los pies al llegar al vacío (¿se generó la isla?). */

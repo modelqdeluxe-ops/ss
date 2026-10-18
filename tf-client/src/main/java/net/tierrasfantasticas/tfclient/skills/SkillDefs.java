@@ -266,6 +266,12 @@ public final class SkillDefs {
          * está en el aire, y sus explosiones no le suben. El Contemplador.
          */
         public boolean ground;
+        /**
+         * (1.3.89, el dueño: «Ignevar es pendejo») «gira_al_atacar» en tools/bosses/es.json: un jefe que se gira con sus
+         * propias skills y que el pack deja quieto mientras ataca (Ignevar echa el fuego 7 s sin girarse): con
+         * inteligencia, se gira despacio hacia su objetivo mientras dura el ataque (BossEntity.turnBody).
+         */
+        public boolean turnWhileAttacking;
         /** Objetos que suelta (dropitem): id de MythicMobs → modelo de ítem y nombre. */
         public final Map<String, Drop> drops = new LinkedHashMap<>();
         /**
@@ -433,6 +439,7 @@ public final class SkillDefs {
             }
             bi.previewHide = strings(b.get("preview_hide"));
             bi.ground = b.has("suelo") && b.get("suelo").getAsBoolean();
+            bi.turnWhileAttacking = b.has("gira_al_atacar") && b.get("gira_al_atacar").getAsBoolean();
             if (o.has("drops") && o.get("drops").isJsonObject()) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("drops").entrySet()) {
                     JsonObject d = e.getValue().getAsJsonObject();

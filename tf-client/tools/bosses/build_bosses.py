@@ -720,6 +720,9 @@ def build(pack_dir, name, conf, sound_events):
     # (1.3.88, orden del dueño) «suelo»: sus golpes no suben al jugador al cielo (el Contemplador, JEFES.md §3.13)
     if es.get('suelo'):
         boss['suelo'] = True
+    # (1.3.89) «gira_al_atacar»: con inteligencia, se gira despacio hacia el jugador mientras ataca (Ignevar, §3.14)
+    if es.get('gira_al_atacar'):
+        boss['gira_al_atacar'] = True
     out = {'id': bid, 'pack': name, 'boss': boss, 'class': {'name': boss['name']}, 'skills': [],
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': {k: v for k, v in item_models.items() if v},
            'drops': drops, 'glyphs': glyphs, 'missing': [m.split(':', 1)[1] for m in prog['missing'] if m.startswith('skill:')]}
