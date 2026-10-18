@@ -113,6 +113,11 @@ public final class SkillMobs {
             return 1;
         }
 
+        /** Lo rápido que anda (1 = como el pack): la «Velocidad» de su dificultad (también la de sus empujones a sí mismo). */
+        default double moveSpeed() {
+            return 1;
+        }
+
         /** Ticks mínimos de entrada de sus animaciones ahora (al encadenar un ataque con otro, para que no salte). */
         default int minLerp() {
             return 0;

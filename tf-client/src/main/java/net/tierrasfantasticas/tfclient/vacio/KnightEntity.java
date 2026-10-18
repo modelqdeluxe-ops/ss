@@ -25,11 +25,14 @@ import net.tierrasfantasticas.tfclient.vfx.VfxLayers;
 import org.joml.Vector3f;
 
 /**
- * Aurelion, el caballero de luz (el NPC «skywars» de NPCs For Mini Games vol.1 de Wardenful Studio, que mandó el dueño):
+ * Caelthar, el Caballero Sacro (hasta la 1.3.88 «Aurelion, caballero de luz»; el NPC «skywars» de NPCs For Mini Games
+ * vol.1 de Wardenful Studio, que mandó el dueño):
  * no se mueve, no se le hace daño (salvo /kill), mira a quien tiene cerca y, con clic derecho, habla ({@link VoidNet}).
  * El de {@code /tf void npc} lleva al vacío; el del santuario ({@link #home()}) devuelve a donde estabas.
  */
 public class KnightEntity extends PathfinderMob {
+    /** Su nombre (el dueño: «otro nombre épico no conocido») y su título. */
+    public static final String NAME = "Caelthar", TITLE = "Caballero Sacro";
     private static final EntityDataAccessor<Boolean> HOME = SynchedEntityData.defineId(KnightEntity.class, EntityDataSerializers.BOOLEAN);
     private static final DustParticleOptions GOLD = new DustParticleOptions(new Vector3f(1F, 0.82F, 0.35F), 1.1F);
 
@@ -91,6 +94,13 @@ public class KnightEntity extends PathfinderMob {
         // Quieto en su sitio (aunque algo le empuje)
         Vec3 v = getDeltaMovement();
         setDeltaMovement(0, Math.min(0, v.y), 0);
+        // (1.3.89) el santuario se mudó a la punta norte: el caballero que se quedó en el centro de un Void de antes se va
+        // (TFVoid pone otro en el santuario nuevo)
+        if (!level().isClientSide && home() && tickCount % 40 == 0 && TFVoid.isVoid(level())
+                && blockPosition().distSqr(VoidIsland.knightPos()) > 12 * 12) {
+            discard();
+            return;
+        }
         if (level().isClientSide) {
             clientAge++;
             // Motas de luz dorada que suben a su alrededor y alguna chispa blanca

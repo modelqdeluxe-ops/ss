@@ -217,6 +217,12 @@ final class SkillMotion {
                 Vec3 f = SkillRuntime.dir(yaw, 0F), r = SkillRuntime.dir(yaw + 90F, 0F);
                 add = f.scale(z).add(r.scale(x)).add(0, y, 0);
             }
+            // (1.3.89) un jefe que anda empujándose a sí mismo (Ignevar: velocity{m=add;z=0.05;r=true} cada tick) va a la
+            // «Velocidad» de su dificultad, como los que andan con su IA (en Normal, ×1: como el pack)
+            if (mode.equals("add") && ctx.host != null && ctx.caster.entity == e) {
+                double k = Math.max(0.3, Math.min(3.0, ctx.host.moveSpeed()));
+                add = new Vec3(add.x * k, add.y, add.z * k);
+            }
             Vec3 now = e.getDeltaMovement();
             Vec3 out = switch (mode) {
                 case "add" -> now.add(add);

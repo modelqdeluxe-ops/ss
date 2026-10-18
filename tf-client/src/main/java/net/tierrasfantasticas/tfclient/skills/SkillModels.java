@@ -263,11 +263,14 @@ final class SkillModels {
         }
     }
 
-    /** displaytransformation{action=set|add;transformation=right_rotation|translation|scale;value}: el text_display gira o se mueve. */
+    /**
+     * displaytransformation{action=set|add;transformation=right_rotation|left_rotation|translation|scale;value|val}: el
+     * display gira o se mueve (1.3.89: también «val», como lo escribe el pack de Ignevar).
+     */
     static void displayTransform(Mech m, Ctx ctx, List<Tgt> targets) {
         String action = m.arg("set", "action", "a").toLowerCase(Locale.ROOT);
         String tr = m.arg("translation", "transformation", "t").toLowerCase(Locale.ROOT);
-        String value = SkillRuntime.unquote(m.arg("0", "value", "v"));
+        String value = SkillRuntime.unquote(m.arg("0", "value", "val", "v"));
         for (Tgt t : targets) {
             SkillActor a = t.who == null ? null : t.who.actor;
             if (a != null) a.prop("dt", action + "|" + tr, value, null);

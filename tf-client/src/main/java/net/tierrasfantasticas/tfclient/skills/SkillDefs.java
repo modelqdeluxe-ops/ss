@@ -113,6 +113,8 @@ public final class SkillDefs {
         public boolean small;
         public boolean marker;
         public String headModel;
+        /** El objeto con el que nace un item_display (DisplayOptions.Item del pack, ya como modelo de ítem). */
+        public String displayItem;
         public double health;
         public List<Mech> mechs = List.of();
         /** Display (text_display, item_display...): escala, desplazamiento y si mira a la cámara. */
@@ -466,6 +468,7 @@ public final class SkillDefs {
             mob.small = bool(opts.get("Small"));
             mob.marker = bool(opts.get("Marker"));
             mob.headModel = str(m, "head_model", null);
+            mob.displayItem = str(m, "display_item", null);
             mob.health = num(m.get("health"), 0);
             mob.mechs = mechs(m.get("mechs"));
             if (m.has("display_options") && m.get("display_options").isJsonObject()) {
@@ -526,6 +529,7 @@ public final class SkillDefs {
                 mob.hearing = m.has("hearing") && m.get("hearing").isJsonObject() && bool(m.getAsJsonObject("hearing").get("Enabled"));
             }
             if (mob.headModel != null) c.itemModels.add(mob.headModel);
+            if (mob.displayItem != null) c.itemModels.add(mob.displayItem);
             c.mobs.put(e.getKey().toLowerCase(Locale.ROOT), mob);
         }
         return c;

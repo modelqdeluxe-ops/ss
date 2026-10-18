@@ -37,6 +37,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.DeferredRegister;
@@ -52,7 +53,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   <li>La dimensión {@code tfclient:void} (datos en data/tfclient: dimension, dimension_type, worldgen/biome): la luz del
  *   End (sin luz del cielo, hora fija, el mapa de luz más claro), sin sol ni lluvia, sin criaturas y sin estructuras.
  *   Su generador ({@link VoidIslandGenerator}) pone la isla del mapa del dueño ({@link VoidIsland}).</li>
- *   <li>El caballero de luz ({@link KnightEntity}): se pone con {@code /tf void npc}; habla, cuenta el lore y lleva al
+ *   <li>El Caballero Sacro, Caelthar ({@link KnightEntity}; «Aurelion, caballero de luz» en la 1.3.88): se pone con {@code /tf void npc}; habla, cuenta el lore y lleva al
  *   vacío con una animación de luz ({@link VoidTravel}). En el santuario de la isla hay otro (sale solo) que te
  *   devuelve a donde estabas.</li>
  *   <li>La isla está protegida (solo el staff rompe o pone bloques), las camas y anclas no explotan (no se usan) y quien
@@ -108,7 +109,7 @@ public final class TFVoid {
                     k.setYHeadRot(yaw);
                     k.setYBodyRot(yaw);
                     p.serverLevel().addFreshEntity(k);
-                    ctx.getSource().sendSuccess(() -> Component.literal("Caballero de luz puesto. Los jugadores le hablan con clic derecho.")
+                    ctx.getSource().sendSuccess(() -> Component.literal(KnightEntity.NAME + ", el " + KnightEntity.TITLE + ", puesto. Los jugadores le hablan con clic derecho.")
                             .withStyle(ChatFormatting.GOLD), true);
                     return 1;
                 }))
@@ -200,13 +201,19 @@ public final class TFVoid {
     }
 
     @SubscribeEvent
+    public static void onServerStarted(ServerStartedEvent event) {
+        IslandUpdate.reset();
+    }
+
+    @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
         VoidTravel.tick(server);
-        if (++tick % 100 != 0) return;
         ServerLevel level = server.getLevel(VOID);
+        if (level != null) IslandUpdate.tick(level);
+        if (++tick % 100 != 0) return;
         if (level == null || level.players().isEmpty()) return;
         ensureHomeKnight(level);
     }
@@ -220,7 +227,7 @@ public final class TFVoid {
         KnightEntity k = KNIGHT.get().create(level);
         if (k == null) return;
         k.setHome(true);
-        // Mira al sur, hacia donde se llega
+        // Mira al sur: hacia la isla, la grieta del centro y donde se llega
         k.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0F, 0F);
         k.setYHeadRot(0F);
         k.setYBodyRot(0F);

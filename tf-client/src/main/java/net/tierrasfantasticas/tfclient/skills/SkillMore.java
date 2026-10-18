@@ -504,13 +504,14 @@ final class SkillMore {
 
     /**
      * setDisplayEntityItem{item}: el objeto que enseña un item_display del pack (el conversor lo pasa a su modelo de
-     * ítem: «itemmodel»; sin él, nada).
+     * ítem: «itemmodel»; sin él, nada). Se dibuja como el item_display de Minecraft (billboard, escala y traslación de
+     * sus DisplayOptions; SkillClient.renderItem).
      */
     static void setDisplayItem(Mech m, List<Tgt> targets) {
         String model = m.arg("", "itemmodel");
         String scale = m.arg("1", "scale");
         for (Tgt t : targets) {
-            if (t.who != null && t.who.actor != null) t.who.actor.prop("item", model, scale, null);
+            if (t.who != null && t.who.actor != null) t.who.actor.prop("item", model, scale, "display");
         }
     }
 

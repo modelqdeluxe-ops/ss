@@ -519,6 +519,25 @@ def build(pack_dir, name, conf, sound_events):
             item_models[key] = mid
         return item_models[key]
 
+    def display_item(name):
+        """El modelo de un objeto que enseña un item_display (setDisplayEntityItem o su DisplayOptions.Item): el del pack
+        (Items: material y Model) o uno de Minecraft. (1.3.89: se buscaba solo entre los objetos que suelta el jefe y las
+        llamas de Ignevar, «ignevar_flamethower_01..10» = INK_SAC con su Model, quedaban como minecraft:item/... que no
+        existe: no se veían.)"""
+        items_low = {str(k).lower(): v for k, v in (prog.get('all_items') or {}).items()}
+        idef = items_low.get(str(name).lower())
+        if idef is not None:
+            mat = idef.get('Id') or idef.get('Material') or 'paper'
+            cmd = idef.get('Model') or idef.get('CustomModelData')
+            mid = display_model(mat, cmd) if cmd is not None else None
+            if mid is None:
+                mid = f'minecraft:item/{str(mat).lower()}'
+                item_models[f'{str(mat).lower()}:'] = mid
+            return mid
+        if name and re.fullmatch(r'[a-z0-9_]+', str(name).lower()):
+            return item_models.setdefault(f'{str(name).lower()}:', f'minecraft:item/{str(name).lower()}')
+        return None
+
     def fix_mech(pm):
         a = pm.get('a', {})
         m = pm['m']
@@ -537,18 +556,9 @@ def build(pack_dir, name, conf, sound_events):
         if m == 'setdisplayentityitem':
             # El objeto del pack (Items: su material y Model) o uno de Minecraft: el modelo que dibuja el efecto
             name = str(a.get('i', a.get('item', a.get('material', a.get('m', '')))))
-            items_low = {str(k).lower(): v for k, v in (prog.get('items') or {}).items()}
-            idef = items_low.get(name.lower())
-            if idef is not None:
-                mat = idef.get('Id') or idef.get('Material') or 'paper'
-                cmd = idef.get('Model') or idef.get('CustomModelData')
-                mid = display_model(mat, cmd) if cmd is not None else None
-                if mid is None:
-                    mid = f'minecraft:item/{str(mat).lower()}'
-                    item_models[f'{str(mat).lower()}:'] = mid
+            mid = display_item(name)
+            if mid:
                 a['itemmodel'] = mid
-            elif name and re.fullmatch(r'[a-z0-9_]+', name.lower()):
-                a['itemmodel'] = item_models.setdefault(f'{name.lower()}:', f'minecraft:item/{name.lower()}')
         bt = str(a.get('bullettype', a.get('bullet', a.get('bt', '')))).upper()
         if m in ('projectile', 'missile') and bt in ITEM_BULLETS and 'bulletitem' not in a:
             # Balas ITEM/MYTHICITEM/TRACKING/REALTRACKING/BLOCK/SMALLBLOCK/ARROW: el modelo de su objeto (el del pack con
@@ -580,6 +590,12 @@ def build(pack_dir, name, conf, sound_events):
     for mob in prog['mobs'].values():
         mob['mechs'] = [fix_mech(pm) for pm in mob['mechs']]
         mob['kind'] = mob_kind(mob)
+        # El objeto con el que nace un item_display (DisplayOptions.Item)
+        dopt = mob.get('display_options') or {}
+        if mob['type'] == 'ITEM_DISPLAY' and dopt.get('Item'):
+            mid = display_item(dopt['Item'])
+            if mid:
+                mob['display_item'] = mid
         mob['speed'] = SPEED.get(mob['type'], 0.25)
         # El modelo de ModelEngine que se pone (para la vista previa, el tamaño y la caja de golpe del mob)
         for pm in mob['mechs']:

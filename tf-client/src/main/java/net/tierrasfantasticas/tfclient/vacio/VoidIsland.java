@@ -15,13 +15,14 @@ import net.minecraft.world.phys.Vec3;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La isla de The Void: la del mapa del dueño (EndCarageKitMap), con el pozo del centro relleno y el santuario del
- * caballero de luz encima (tools/void/isla.py la convierte a {@code tfclient-void-isla.bin}). Se carga una vez (en el
+ * La isla de The Void: la del mapa del dueño (EndCarageKitMap), con el pozo del centro relleno y la plaza de la grieta
+ * del Void encima, y el santuario del caballero en la punta norte (1.3.89; tools/void/isla.py la convierte a
+ * {@code tfclient-void-isla.bin}). Se carga una vez (en el
  * primer chunk que se genere) y {@link VoidIslandGenerator} copia en cada chunk lo que le toca: así no se pega nada de
  * golpe en el servidor y cada chunk nace ya con su trozo de isla.
  *
  * <p>Formato (gzip, big-endian): «TFVI», versión, tamaño (x, y, z), dónde va su esquina en el mundo, dónde está el
- * caballero, dónde se llega (x, y, z, yaw), la paleta (estados como en /setblock) y, por columna (z por fuera, x por
+ * caballero, dónde se llega (x, y, z, yaw), dónde va la grieta del Void (desde la versión 2), la paleta (estados como en /setblock) y, por columna (z por fuera, x por
  * dentro), sus tramos: (y, largo, bloque).
  */
 public final class VoidIsland {
@@ -32,6 +33,7 @@ public final class VoidIsland {
     final BlockPos knight;
     final Vec3 arrive;
     final float arriveYaw;
+    final BlockPos rift;
     final BlockState[] palette;
     /** Por columna: dónde empiezan sus tramos en {@link #runs} (y el final, en la siguiente). */
     final int[] colStart;
@@ -43,7 +45,7 @@ public final class VoidIsland {
         in.readFully(magic);
         if (magic[0] != 'T' || magic[1] != 'F' || magic[2] != 'V' || magic[3] != 'I') throw new IOException("no es una isla");
         int version = in.readInt();
-        if (version != 1) throw new IOException("versión " + version);
+        if (version != 1 && version != 2) throw new IOException("versión " + version);
         sx = in.readInt();
         sy = in.readInt();
         sz = in.readInt();
@@ -53,6 +55,7 @@ public final class VoidIsland {
         knight = new BlockPos(in.readInt(), in.readInt(), in.readInt());
         arrive = new Vec3(in.readInt() + 0.5, in.readInt(), in.readInt() + 0.5);
         arriveYaw = in.readFloat();
+        rift = version >= 2 ? new BlockPos(in.readInt(), in.readInt(), in.readInt()) : new BlockPos(0, 72, 0);
         int n = in.readInt();
         palette = new BlockState[n];
         for (int i = 0; i < n; i++) {
@@ -108,7 +111,13 @@ public final class VoidIsland {
         return i == null ? new BlockPos(0, 80, 0) : i.knight;
     }
 
-    /** Dónde se llega al vacío (delante del caballero, mirándole). */
+    /** Dónde va la grieta del Void (el centro de la plaza; se pisa en esa y). */
+    public static BlockPos riftPos() {
+        VoidIsland i = get();
+        return i == null ? new BlockPos(0, 72, 0) : i.rift;
+    }
+
+    /** Dónde se llega al vacío (al borde sur del santuario, mirando hacia la grieta del centro). */
     public static Vec3 arrivePos() {
         VoidIsland i = get();
         return i == null ? new Vec3(0.5, 80, 6.5) : i.arrive;
@@ -163,6 +172,18 @@ public final class VoidIsland {
             if (b < palette.length && counts.test(palette[b])) best = Math.max(best, y0 + len + oy);
         }
         return best;
+    }
+
+    /** El bloque de la isla en un sitio del mundo (aire fuera de ella). */
+    BlockState stateAt(int x, int y, int z) {
+        int ix = x - ox, iz = z - oz, iy = y - oy;
+        if (ix < 0 || ix >= sx || iz < 0 || iz >= sz || iy < 0 || iy >= sy) return Blocks.AIR.defaultBlockState();
+        int c = iz * sx + ix;
+        for (int r = colStart[c]; r < colStart[c + 1]; r += 3) {
+            int y0 = runs[r] & 0xFFFF, len = runs[r + 1] & 0xFFFF, b = runs[r + 2] & 0xFFFF;
+            if (iy >= y0 && iy < y0 + len && b < palette.length) return palette[b];
+        }
+        return Blocks.AIR.defaultBlockState();
     }
 
     /** La columna entera (para getBaseColumn). */

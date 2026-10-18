@@ -2,10 +2,13 @@ package net.tierrasfantasticas.tfclient.vacio;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -20,7 +23,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * El diálogo con Aurelion, el caballero de luz (lo pidió el dueño: «al seleccionarlo hazle un diseño bonito, que salude,
+ * El diálogo con Caelthar, el Caballero Sacro (hasta la 1.3.88, Aurelion; lo pidió el dueño: «al seleccionarlo hazle un diseño bonito, que salude,
  * su nombre, qué es él, un breve lore del Void, las grietas... y que le pida si quiere viajar al Void; la segunda vez,
  * solo le saluda por su nombre»).
  *
@@ -29,6 +32,10 @@ import org.lwjgl.glfw.GLFW;
  * título, el texto que se va escribiendo (clic o espacio para verlo entero) y las respuestas (con el ratón o con 1, 2,
  * 3). Motas de luz suben por la placa. Hay páginas de lore (qué es el Void, qué son las grietas, qué hace él). El del
  * santuario del vacío, en vez de llevarte, te devuelve a donde estabas.
+ *
+ * <p>1.3.89 (el dueño: «los diálogos van a 3 fps, súper lagueados»): el halo del retrato era un círculo pintado fila a
+ * fila (unos 430 rectángulos por fotograma, y en 1.20.1 cada {@code fill} es una llamada de dibujo aparte); ahora es una
+ * textura que se hace una vez ({@link #halo}) y la placa y las motas se dibujan juntas ({@code drawManaged}).
  */
 @OnlyIn(Dist.CLIENT)
 public class KnightScreen extends Screen {
@@ -50,7 +57,7 @@ public class KnightScreen extends Screen {
     private record Option(String label, Runnable action) {}
 
     public KnightScreen(VoidNet.Talk talk) {
-        super(Component.literal("Aurelion"));
+        super(Component.literal(KnightEntity.NAME));
         this.talk = talk;
         this.entityId = talk.entity();
         java.util.Random r = new java.util.Random();
@@ -82,9 +89,9 @@ public class KnightScreen extends Screen {
         if (talk.home()) {
             switch (p) {
                 case GREET -> text = talk.first()
-                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el corazón del Void. Aquí la luz es escasa... no te alejes mucho de ella."
+                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void. Allí, en el centro de la isla, late su grieta... y sobre ella, el agujero negro que lo devora todo."
                         : "Has vuelto al santuario, " + n + ". El Void te observa. ¿Regresas a casa, o te quedas un poco más?";
-                case WHERE -> text = "Esta isla es lo último que queda de una tierra que el Void se tragó. Las grietas brotan en sus orillas, y el agujero negro de ahí arriba es su corazón. Si caes al vacío, mi luz te traerá de vuelta a este santuario.";
+                case WHERE -> text = "Esta isla es lo último que queda de una tierra que el Void se tragó. En su centro late la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Si caes al vacío, mi luz te traerá de vuelta a este santuario.";
                 case LEAVING -> text = "Que la luz te guíe de regreso, " + n + ". Aquí estaré cuando el Void vuelva a llamarte.";
                 default -> text = "";
             }
@@ -96,7 +103,7 @@ public class KnightScreen extends Screen {
         }
         switch (p) {
             case GREET -> text = talk.first()
-                    ? "¡Saludos, " + n + "! Que la luz guíe tus pasos. Soy Aurelion, el último de los Caballeros de Luz, y custodio el umbral entre Tierras Fantásticas y el Void."
+                    ? "¡Saludos, " + n + "! Que la luz guíe tus pasos. Soy " + KnightEntity.NAME + ", el último de los Caballeros Sacros, y custodio el umbral entre Tierras Fantásticas y el Void."
                     : "¡" + n + "! Me alegra verte de nuevo, viajero. La luz aún te reconoce. ¿Volvemos al Void?";
             case LORE_VOID -> text = "El Void es lo que hay bajo las costuras de nuestro mundo: un océano de oscuridad donde flotan islas arrancadas de otras tierras. En su cielo, un agujero negro devora la luz de mil estrellas.";
             case LORE_RIFTS -> text = "Las grietas son heridas que el Void abre en la realidad. Dentro duermen criaturas antiguas: golpea su cristal y despertarán. Quien las derrota se gana su gloria... y sus tesoros.";
@@ -169,40 +176,43 @@ public class KnightScreen extends Screen {
         int w = panelW(), h = panelH();
         int x0 = (width - w) / 2, y0 = height - h - 14;
         float t = age + partial;
-        // Placa maciza con doble marco y adornos
-        g.fill(x0 - 3, y0 - 3, x0 + w + 3, y0 + h + 3, 0xFF07030D);
+        // Placa maciza con doble marco y adornos, y motas de luz que suben (todo en una sola tanda)
         int pulse = lerpColor(GOLD, GOLD_HI, 0.5F + 0.5F * Mth.sin(t * 0.08F));
-        g.fill(x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2, pulse);
-        g.fill(x0, y0, x0 + w, y0 + h, BG);
-        g.fillGradient(x0, y0, x0 + w, y0 + h, BG2, BG);
-        g.fill(x0 + 3, y0 + 3, x0 + w - 3, y0 + 4, INNER);
-        g.fill(x0 + 3, y0 + h - 4, x0 + w - 3, y0 + h - 3, INNER);
-        corner(g, x0 - 2, y0 - 2, pulse);
-        corner(g, x0 + w + 1, y0 - 2, pulse);
-        corner(g, x0 - 2, y0 + h + 1, pulse);
-        corner(g, x0 + w + 1, y0 + h + 1, pulse);
-        // Motas de luz que suben por la placa
-        for (float[] m : motes) {
-            float yy = (m[1] - t * m[2]) % 1F;
-            if (yy < 0) yy += 1F;
-            int mx = x0 + 6 + (int) ((m[0] + 0.02F * Mth.sin(t * 0.05F + m[3])) * (w - 12));
-            int my = y0 + 6 + (int) (yy * (h - 12));
-            int a = (int) (110 + 100 * Mth.sin(t * 0.1F + m[3]));
-            g.fill(mx, my, mx + 1, my + 1, (Mth.clamp(a, 0, 255) << 24) | 0xFFE7A0);
-        }
+        g.drawManaged(() -> {
+            g.fill(x0 - 3, y0 - 3, x0 + w + 3, y0 + h + 3, 0xFF07030D);
+            g.fill(x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2, pulse);
+            g.fill(x0, y0, x0 + w, y0 + h, BG);
+            g.fillGradient(x0, y0, x0 + w, y0 + h, BG2, BG);
+            g.fill(x0 + 3, y0 + 3, x0 + w - 3, y0 + 4, INNER);
+            g.fill(x0 + 3, y0 + h - 4, x0 + w - 3, y0 + h - 3, INNER);
+            corner(g, x0 - 2, y0 - 2, pulse);
+            corner(g, x0 + w + 1, y0 - 2, pulse);
+            corner(g, x0 - 2, y0 + h + 1, pulse);
+            corner(g, x0 + w + 1, y0 + h + 1, pulse);
+            for (float[] m : motes) {
+                float yy = (m[1] - t * m[2]) % 1F;
+                if (yy < 0) yy += 1F;
+                int mx = x0 + 6 + (int) ((m[0] + 0.02F * Mth.sin(t * 0.05F + m[3])) * (w - 12));
+                int my = y0 + 6 + (int) (yy * (h - 12));
+                int a = (int) (110 + 100 * Mth.sin(t * 0.1F + m[3]));
+                g.fill(mx, my, mx + 1, my + 1, (Mth.clamp(a, 0, 255) << 24) | 0xFFE7A0);
+            }
+        });
         // Retrato
         int pw = portraitW();
         if (pw > 0) {
             int px0 = x0 + 10, py0 = y0 + 10, px1 = px0 + pw, py1 = y0 + h - 10;
             g.fill(px0 - 1, py0 - 1, px1 + 1, py1 + 1, GOLD);
             g.fillGradient(px0, py0, px1, py1, 0xFF3B2160, 0xFF120922);
-            // halo de luz detrás (anillos macizos de más claro a más oscuro)
+            // halo de luz detrás (una textura: un disco que se apaga hacia fuera)
             int cx = (px0 + px1) / 2, cy = py0 + (py1 - py0) * 2 / 5;
-            for (int r = 34; r > 0; r -= 4) {
-                float k = r / 34F;
-                int col = lerpColor(0xFFFFE6A8, 0xFF3B2160, k);
-                ring(g, cx, cy, r, col, px0, py0, px1, py1);
-            }
+            int hr = Math.min(40, (px1 - px0) / 2 - 2);
+            g.enableScissor(px0, py0, px1, py1);
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            g.blit(halo(), cx - hr, cy - hr, hr * 2, hr * 2, 0F, 0F, HALO, HALO, HALO, HALO);
+            RenderSystem.disableBlend();
+            g.disableScissor();
             Minecraft mc = Minecraft.getInstance();
             Entity e = mc.level == null ? null : mc.level.getEntity(entityId);
             if (e instanceof KnightEntity k) {
@@ -224,10 +234,11 @@ public class KnightScreen extends Screen {
         g.pose().pushPose();
         g.pose().translate(tx, y0 + 10, 0);
         g.pose().scale(1.7F, 1.7F, 1F);
-        g.drawString(font, Component.literal("AURELION").withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 1, 1, 0xFF5A3A08, false);
-        g.drawString(font, Component.literal("AURELION").withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 0, 0, GOLD_HI, false);
+        String upper = KnightEntity.NAME.toUpperCase(java.util.Locale.ROOT);
+        g.drawString(font, Component.literal(upper).withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 1, 1, 0xFF5A3A08, false);
+        g.drawString(font, Component.literal(upper).withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 0, 0, GOLD_HI, false);
         g.pose().popPose();
-        String sub = talk.home() ? "Guardián del santuario · The Void" : "Caballero de Luz · Custodio del umbral";
+        String sub = talk.home() ? KnightEntity.TITLE + " · Guardián del santuario" : KnightEntity.TITLE + " · Custodio del umbral";
         g.drawString(font, sub, tx, y0 + 30, SUB, false);
         g.fill(tx, y0 + 42, tx + tw, y0 + 43, GOLD);
         g.fill(tx, y0 + 43, tx + tw / 2, y0 + 44, 0xFF6E5420);
@@ -265,14 +276,26 @@ public class KnightScreen extends Screen {
         g.fill(x - 1, y - 1, x + 2, y + 2, col);
     }
 
-    /** Un anillo macizo (relleno) de radio r, recortado al retrato. */
-    private static void ring(GuiGraphics g, int cx, int cy, int r, int col, int x0, int y0, int x1, int y1) {
-        for (int dy = -r; dy <= r; dy++) {
-            int dx = (int) Math.sqrt(r * r - dy * dy);
-            int yy = cy + dy;
-            if (yy < y0 || yy >= y1) continue;
-            g.fill(Math.max(x0, cx - dx), yy, Math.min(x1, cx + dx), yy + 1, col);
+    private static final int HALO = 128;
+    private static ResourceLocation haloTex;
+
+    /** El halo del retrato: un disco de luz dorada que se apaga hacia fuera (se hace la primera vez y se queda). */
+    private static ResourceLocation halo() {
+        if (haloTex != null) return haloTex;
+        NativeImage img = new NativeImage(NativeImage.Format.RGBA, HALO, HALO, false);
+        float c = (HALO - 1) / 2F;
+        for (int y = 0; y < HALO; y++) {
+            for (int x = 0; x < HALO; x++) {
+                float d = (float) Math.sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
+                float k = Mth.clamp(1F - d, 0F, 1F);
+                int a = (int) (255 * Math.pow(k, 1.4));
+                int col = lerpColor(0xFF6A3FA0, 0xFFFFE6A8, (float) Math.pow(k, 0.8));
+                int r = (col >> 16) & 255, gg = (col >> 8) & 255, b = col & 255;
+                img.setPixelRGBA(x, y, (a << 24) | (b << 16) | (gg << 8) | r);
+            }
         }
+        haloTex = Minecraft.getInstance().getTextureManager().register("tfclient_halo_caballero", new DynamicTexture(img));
+        return haloTex;
     }
 
     private static int lerpColor(int a, int b, float k) {

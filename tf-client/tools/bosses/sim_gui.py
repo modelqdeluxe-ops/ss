@@ -94,10 +94,41 @@ def step_rect(o, i, plus):
 
 
 def rift_buttons(o, i):
-    top = o.tabsY + TAB + 5 + BTN + 5
+    top = o.tabsY + TAB + 5 + BTN + 5 + RIFT_H  # (debajo de la tarjeta de la grieta del Void)
     y = top + i * RIFT_H + 7
     x3 = o.rightX + o.rightW - 16
     return [(x3 - 2 * 17 - 4, y, 20, 14), (x3 - 17, y, 14, 14), (x3, y, 14, 14)]
+
+
+def void_card_buttons(o):
+    y = o.tabsY + TAB + 5 + BTN + 5 + 7
+    x3 = o.rightX + o.rightW - 16
+    return [(x3 - 24, y, 20, 14), (x3, y, 14, 14)]
+
+
+VOID_ROW = 14
+
+
+def void_layout(o):
+    """= BossScreen.voidLayout (el panel de la grieta del Void, 1.3.89)."""
+    v = L()
+    x, w = o.rightX, o.rightW
+    y = o.tabsY + TAB + 5
+    v.back = (x, y, 16, BTN)
+    v.title = (x + 22, y + 4, w - 24, 9)
+    y += BTN + 3
+    cw = (w - 3) // 2
+    v.chipN = (x, y, cw, CHIP)
+    v.chipM = (x + cw + 3, y, w - cw - 3, CHIP)
+    y += CHIP + 3
+    v.status = (x + 2, y, w - 4, 9)
+    y += 12
+    v.center = (x, y, cw, BTN)
+    v.reset = (x + cw + 3, y, w - cw - 3, BTN)
+    y += BTN + 3
+    v.add = (x, y, w, BTN)
+    v.listY = y + BTN + 4
+    return v
 
 
 def inter(a, b):
@@ -139,10 +170,19 @@ def pieces(w, h, tab, banner, rifts=6):
         iy = o.rowsY + ROWS * o.rowH + 6
         if bottom - iy >= 9:
             out.append(('con 4 jugadores', (o.rightX + 2, iy, o.rightW - 4, 9), 'body'))
+    elif tab == 2:
+        v = void_layout(o)
+        for n in ('back', 'title', 'chipN', 'chipM', 'status', 'center', 'reset', 'add'):
+            out.append((f'void {n}', getattr(v, n), 'body'))
+        vis = max(1, (o.by + o.bh - v.listY) // VOID_ROW)
+        for i in range(min(17, vis)):
+            out.append((f'void fila {i}', (o.rightX, v.listY + i * VOID_ROW, o.rightW, VOID_ROW - 1), 'body'))
     else:
         top = o.tabsY + TAB + 5
         out.append(('quitar pruebas', (o.rightX, top, o.rightW, BTN), 'body'))
         y0 = top + BTN + 5
+        out.append(('grieta del Void', (o.rightX, y0, o.rightW, RIFT_H - 3), 'body'))
+        y0 += RIFT_H
         vis = max(1, (o.by + o.bh - y0) // RIFT_H)
         for i in range(min(rifts, vis)):
             out.append((f'grieta {i}', (o.rightX, y0 + i * RIFT_H, o.rightW, RIFT_H - 3), 'body'))
@@ -152,7 +192,7 @@ def pieces(w, h, tab, banner, rifts=6):
 
 def check(w, h):
     errs = []
-    for tab in (0, 1):
+    for tab in (0, 1, 2):
         for banner in (False, True):
             o, ps = pieces(w, h, tab, banner)
             panel = (o.px, o.py, o.pw, o.ph)
@@ -197,9 +237,24 @@ def check(w, h):
                         # Se recorta con «…»: se avisa si queda muy poco
                         if label_w < 60:
                             errs.append(f'fila {i}: «{LABELS[i]}» con solo {label_w} px')
+            elif tab == 2:
+                v = void_layout(o)
+                if (o.by + o.bh - v.listY) // VOID_ROW < 3:
+                    errs.append('grieta del Void: caben menos de 3 criaturas en la lista')
+                for lab, r in (('★ NORMAL', v.chipN), ('★ MADRE', v.chipM), ('ACTIVA ★', v.center), ('ACTIVAR', v.center),
+                               ('REINICIAR', v.reset), ('GRIETA DEL VOID', v.title)):
+                    if width(lab) > r[2] - 4:
+                        errs.append(f'«{lab}» no cabe ({r[2]})')
             else:
                 top = o.tabsY + TAB + 5
                 y0 = top + BTN + 5
+                card = (o.rightX, y0, o.rightW, RIFT_H - 3)
+                for b in void_card_buttons(o):
+                    if not inside(b, card):
+                        errs.append('grieta del Void: botón fuera de la tarjeta')
+                if void_card_buttons(o)[0][0] - o.rightX - 10 < width('✦ GRIETA DEL VOID ✦'):
+                    errs.append('grieta del Void: no cabe el título')
+                y0 += RIFT_H
                 vis = max(1, (o.by + o.bh - y0) // RIFT_H)
                 for i in range(min(6, vis)):
                     card = (o.rightX, y0 + i * RIFT_H, o.rightW, RIFT_H - 3)
@@ -228,7 +283,9 @@ def draw(w, h, path, tab, banner):
         x, y, rw, rh = r
         d.rectangle([x * k, y * k, (x + rw) * k - 1, (y + rh) * k - 1], fill=colors[g], outline=(140, 150, 170))
         d.text((x * k + 3, y * k + 2), n, fill=(235, 238, 244))
-    if tab == 0:
+    if tab == 2:
+        pass
+    elif tab == 0:
         for i in range(ROWS):
             for plus in (False, True):
                 x, y, s, _ = step_rect(o, i, plus)
@@ -262,6 +319,7 @@ def main():
             os.makedirs(png, exist_ok=True)
             draw(w, h, os.path.join(png, f'gui_{w}x{h}_dificultad.png'), 0, True)
             draw(w, h, os.path.join(png, f'gui_{w}x{h}_grietas.png'), 1, False)
+            draw(w, h, os.path.join(png, f'gui_{w}x{h}_void.png'), 2, False)
     sys.exit(1 if bad else 0)
 
 

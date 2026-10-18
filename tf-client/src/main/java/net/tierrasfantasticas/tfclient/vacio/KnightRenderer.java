@@ -20,8 +20,11 @@ import net.tierrasfantasticas.tfclient.vfx.VfxModel;
 import org.joml.Matrix4f;
 
 /**
- * El caballero de luz: su modelo de ModelEngine (vacio.caballero, del .bbmodel «skywars_npc») con su animación de
- * reposo, un 40 % más grande, a luz completa (es de luz: se ve igual de noche y en el vacío), la cabeza mirando a quien
+ * Caelthar, el Caballero Sacro (1.3.88 «Aurelion, caballero de luz»; el dueño, en la 1.3.89: «ponle otro nombre épico no
+ * conocido, y ponle Caballero Sacro»): su modelo de ModelEngine (vacio.caballero, del .bbmodel «skywars_npc») con su
+ * animación de reposo («reposo»: la parte tranquila, 0-9 s, del «idle» del modelo; el resto era una reverencia con un
+ * aleteo de −94° en el que las alas le atravesaban el pecho: «se buguean las alas, le traspasan al pecho»), un 40 % más
+ * grande, a luz completa (es de luz: se ve igual de noche y en el vacío), la cabeza mirando a quien
  * tiene cerca y, encima, su nombre y «clic derecho para hablar» cuando estás cerca. Sin las islitas flotantes del
  * modelo original (eran del Skywars).
  */
@@ -52,7 +55,7 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
             }
             if (e.shown != 1) {
                 e.layers.clear();
-                e.layers.play(m, "idle", e.clientAge, 1F, 0, 0, 1, true);
+                e.layers.play(m, m.anims.containsKey("reposo") ? "reposo" : "idle", e.clientAge, 1F, 0, 0, 1, true);
                 e.shown = 1;
             }
             e.layers.prune(e.clientAge);
@@ -78,8 +81,8 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         if (mc.player == null) return;
         double d2 = mc.player.distanceToSqr(e);
         if (d2 > 24 * 24) return;
-        Component name = Component.literal("Aurelion").withStyle(s -> s.withColor(TextColor.fromRgb(0xFFD66B)).withBold(true));
-        Component title = Component.literal(e.home() ? "Guardián del santuario" : "Caballero de Luz")
+        Component name = Component.literal(KnightEntity.NAME).withStyle(s -> s.withColor(TextColor.fromRgb(0xFFD66B)).withBold(true));
+        Component title = Component.literal(e.home() ? "Caballero Sacro · Guardián del santuario" : "Caballero Sacro")
                 .withStyle(s -> s.withColor(TextColor.fromRgb(0xE9DDFF)));
         Component hint = Component.literal("✦ Clic derecho para hablar ✦").withStyle(s -> s.withColor(TextColor.fromRgb(0xB79CFF)));
         Font font = mc.font;

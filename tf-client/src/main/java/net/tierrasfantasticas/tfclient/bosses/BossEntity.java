@@ -414,6 +414,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     @Override
+    public double moveSpeed() {
+        return difficulty.speed();
+    }
+
+    @Override
     public int minLerp() {
         return age < blendUntil ? 5 : 0;
     }

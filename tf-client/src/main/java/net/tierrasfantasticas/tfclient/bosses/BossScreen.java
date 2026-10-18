@@ -35,6 +35,10 @@ import org.joml.Matrix4f;
  * y GRIETAS (las puestas: ir, editar su jefe y dificultad, reiniciar, quitar). Todo con su sitio calculado en
  * {@link #layout} para que nada se monte encima de nada a ningún tamaño (se comprueba con
  * tools/bosses/sim_gui.py). Colores macizos, sin transparencias.
+ *
+ * <p>1.3.89: arriba de GRIETAS, la tarjeta de la grieta del Void (la del centro de la isla); con su ✎ se abre su panel
+ * ({@link #tab} 2, con la pestaña GRIETAS encendida): elegir lista (la de la grieta normal o la de la madre), ponerla en
+ * el centro, reiniciarla, añadir el jefe elegido a la izquierda con la dificultad de DIFICULTAD y quitar los de la lista.
  */
 @OnlyIn(Dist.CLIENT)
 public class BossScreen extends Screen {
@@ -51,6 +55,10 @@ public class BossScreen extends Screen {
     private final List<String> bosses = new ArrayList<>();
     private final Map<String, Difficulty> chosen = new HashMap<>();
     private List<BossNet.RiftInfo> rifts = List.of();
+    private BossNet.VoidInfo voidInfo = BossNet.VoidInfo.NONE;
+    /** Qué lista de la grieta del Void se mira (0 la normal, 1 la madre); -1 = la que esté en el centro. */
+    private int voidKind = -1;
+    private int voidScroll;
     private String selected;
     private Difficulty editing = Difficulty.NORMAL;
     /** Grieta que se está editando (null = la dificultad del jefe). */
@@ -80,6 +88,7 @@ public class BossScreen extends Screen {
         bosses.addAll(m.bosses());
         for (int i = 0; i < m.bosses().size(); i++) chosen.put(m.bosses().get(i), m.chosen().get(i));
         rifts = m.rifts();
+        voidInfo = m.voidRift();
         if (selected == null || !bosses.contains(selected)) select(bosses.isEmpty() ? null : bosses.get(0));
         if (editRift != null) {
             BossNet.RiftInfo again = null;
@@ -348,8 +357,9 @@ public class BossScreen extends Screen {
         int x = L.rightX, w = L.rightW;
         int tw = (w - 3) / 2;
         drawTab(g, x, L.tabsY, tw, "DIFICULTAD", tab == 0, mx, my);
-        drawTab(g, x + tw + 3, L.tabsY, w - tw - 3, "GRIETAS (" + rifts.size() + ")", tab == 1, mx, my);
+        drawTab(g, x + tw + 3, L.tabsY, w - tw - 3, "GRIETAS (" + (rifts.size() + (voidInfo.exists() ? 1 : 0)) + ")", tab != 0, mx, my);
         if (tab == 0) drawDifficulty(g, L, mx, my);
+        else if (tab == 2) drawVoid(g, L, mx, my);
         else drawRifts(g, L, mx, my);
     }
 
@@ -441,11 +451,61 @@ public class BossScreen extends Screen {
         };
     }
 
+    static final int VOID_PURPLE = 0xFFB45CF0, VOID_RED = 0xFFF0466E;
+
+    private int voidColor(int kind) {
+        return kind == RiftEntity.MOTHER ? VOID_RED : VOID_PURPLE;
+    }
+
+    private String riftState(int state, int left) {
+        return switch (state) {
+            case RiftEntity.READY -> "lista";
+            case RiftEntity.WAKING -> "despertando";
+            case RiftEntity.FIGHT -> "en incursión";
+            default -> "vuelve en " + Rifts.time(left);
+        };
+    }
+
+    private String bossName(String id) {
+        SkillDefs.ClassDef c = SkillDefs.bosses().get(id);
+        return c != null && c.bossInfo != null ? c.bossInfo.name : id;
+    }
+
+    /** La tarjeta de la grieta del Void, arriba de la lista (con IR y ✎ para su panel). */
+    private void drawVoidCard(GuiGraphics g, Layout L, int y, int mx, int my) {
+        int x = L.rightX, w = L.rightW;
+        int color = voidColor(voidInfo.active());
+        g.fill(x, y, x + w, y + Layout.RIFT_H - 3, mix(CARD, color, 0.16F));
+        g.fill(x, y, x + 3, y + Layout.RIFT_H - 3, color);
+        outline(g, x, y, w, Layout.RIFT_H - 3, mix(CARD, color, 0.55F));
+        int[][] b = voidCardButtons(L);
+        int textW = b[0][0] - x - 10;
+        String title = voidInfo.active() == RiftEntity.MOTHER ? "✦ GRIETA MADRE ✦" : "✦ GRIETA DEL VOID ✦";
+        g.drawString(font, fit(title, textW), x + 7, y + 4, color, false);
+        int n = voidInfo.pools().get(voidInfo.active()).size();
+        String line = n == 0 ? "sin criaturas · pulsa ✎" : n + (n == 1 ? " criatura · " : " criaturas · ") + riftState(voidInfo.state(), voidInfo.left())
+                + (voidInfo.boss().isEmpty() ? "" : " · " + bossName(voidInfo.boss()));
+        g.drawString(font, fit(line, textW), x + 7, y + 16, MUTED, false);
+        drawButton(g, b[0][0], b[0][1], b[0][2], b[0][3], "IR", mx, my, 0xFF343946, true);
+        drawButton(g, b[1][0], b[1][1], b[1][2], b[1][3], "✎", mx, my, color, true);
+    }
+
+    /** IR y ✎ de la tarjeta de la grieta del Void. */
+    int[][] voidCardButtons(Layout L) {
+        int y = L.tabsY + Layout.TAB + 5 + Layout.BTN + 5 + 7;
+        int x3 = L.rightX + L.rightW - 16;
+        return new int[][] {{x3 - 24, y, 20, 14}, {x3, y, 14, 14}};
+    }
+
     private void drawRifts(GuiGraphics g, Layout L, int mx, int my) {
         int x = L.rightX, w = L.rightW;
         int top = L.tabsY + Layout.TAB + 5;
         drawButton(g, x, top, w, Layout.BTN, "QUITAR JEFES DE PRUEBA", mx, my, 0xFF3A3F4B, true);
         int y0 = top + Layout.BTN + 5;
+        if (voidInfo.exists()) {
+            drawVoidCard(g, L, y0, mx, my);
+            y0 += Layout.RIFT_H;
+        }
         int visible = Math.max(1, (L.by + L.bh - y0) / Layout.RIFT_H);
         riftScroll = clamp(riftScroll, 0, Math.max(0, rifts.size() - visible));
         if (rifts.isEmpty()) {
@@ -487,6 +547,158 @@ public class BossScreen extends Screen {
         }
     }
 
+    // ------------------------------------------------------------------------------------------- grieta del Void
+
+    static final int VOID_ROW = 14;
+
+    /** Lo que se mira del panel de la grieta del Void: sus piezas (x, y, w, h). */
+    static final class VoidLayout {
+        int[] back, chipN, chipM, center, reset, add;
+        int titleY, statusY, listY;
+    }
+
+    static VoidLayout voidLayout(Layout L) {
+        VoidLayout v = new VoidLayout();
+        int x = L.rightX, w = L.rightW;
+        int y = L.tabsY + Layout.TAB + 5;
+        v.back = new int[] {x, y, 16, Layout.BTN};
+        v.titleY = y + 4;
+        y += Layout.BTN + 3;
+        int cw = (w - 3) / 2;
+        v.chipN = new int[] {x, y, cw, Layout.CHIP};
+        v.chipM = new int[] {x + cw + 3, y, w - cw - 3, Layout.CHIP};
+        y += Layout.CHIP + 3;
+        v.statusY = y;
+        y += 12;
+        v.center = new int[] {x, y, cw, Layout.BTN};
+        v.reset = new int[] {x + cw + 3, y, w - cw - 3, Layout.BTN};
+        y += Layout.BTN + 3;
+        v.add = new int[] {x, y, w, Layout.BTN};
+        v.listY = y + Layout.BTN + 4;
+        return v;
+    }
+
+    private int viewKind() {
+        return voidKind < 0 ? voidInfo.active() : voidKind;
+    }
+
+    private void drawVoid(GuiGraphics g, Layout L, int mx, int my) {
+        int x = L.rightX, w = L.rightW;
+        VoidLayout v = voidLayout(L);
+        int k = viewKind();
+        int color = voidColor(k);
+        drawButton(g, v.back[0], v.back[1], v.back[2], v.back[3], "‹", mx, my, 0xFF343946, true);
+        g.drawString(font, fit(k == RiftEntity.MOTHER ? "GRIETA MADRE" : "GRIETA DEL VOID", w - 24), x + 22, v.titleY, color, false);
+        if (!voidInfo.exists()) {
+            g.drawString(font, fit("Este mundo no tiene el Void", w - 4), x + 2, v.statusY, MUTED, false);
+            return;
+        }
+        for (int kind = 0; kind < 2; kind++) {
+            int[] r = kind == 0 ? v.chipN : v.chipM;
+            boolean on = kind == k;
+            int c = voidColor(kind);
+            boolean hover = in(mx, my, r[0], r[1], r[2], r[3]);
+            g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], on ? c : hover ? mix(CARD, c, 0.35F) : mix(CARD, c, 0.16F));
+            outline(g, r[0], r[1], r[2], r[3], on ? 0xFFFFFFFF : mix(CARD, c, 0.6F));
+            String label = fit((kind == voidInfo.active() ? "★ " : "") + (kind == 0 ? "NORMAL" : "MADRE"), r[2] - 4);
+            g.drawString(font, label, r[0] + (r[2] - font.width(label)) / 2, r[1] + 3, on ? 0xFF101216 : TEXT, false);
+        }
+        String status = "En el centro: " + (voidInfo.active() == RiftEntity.MOTHER ? "la madre" : "la normal") + " · "
+                + riftState(voidInfo.state(), voidInfo.left()) + (voidInfo.boss().isEmpty() ? "" : " · " + bossName(voidInfo.boss()));
+        g.drawString(font, fit(status, w - 4), x + 2, v.statusY, MUTED, false);
+        boolean here = k == voidInfo.active();
+        drawButton(g, v.center[0], v.center[1], v.center[2], v.center[3], here ? "ACTIVA ★" : "ACTIVAR", mx, my,
+                here ? 0xFF2B3039 : color, !here);
+        drawButton(g, v.reset[0], v.reset[1], v.reset[2], v.reset[3], "REINICIAR", mx, my, 0xFF3A3F4B, true);
+        SkillDefs.BossInfo bi = info();
+        String add = bi == null ? "AÑADIR" : "AÑADIR " + bi.name + " · " + editing.label();
+        drawButton(g, v.add[0], v.add[1], v.add[2], v.add[3], add, mx, my, color, bi != null);
+        List<Rifts.Entry> pool = voidInfo.pools().get(k);
+        int visible = Math.max(1, (L.by + L.bh - v.listY) / VOID_ROW);
+        voidScroll = clamp(voidScroll, 0, Math.max(0, pool.size() - visible));
+        if (pool.isEmpty()) {
+            for (FormattedCharSequence line : font.split(Component.literal(
+                    "Sin criaturas. Elige un jefe a la izquierda, su dificultad en DIFICULTAD y pulsa AÑADIR."), w - 4)) {
+                if (v.listY + 10 > L.by + L.bh) break;
+                g.drawString(font, line, x + 2, v.listY, MUTED, false);
+                v.listY += 10;
+            }
+            return;
+        }
+        for (int i = voidScroll; i < pool.size() && i < voidScroll + visible; i++) {
+            Rifts.Entry e = pool.get(i);
+            int y = v.listY + (i - voidScroll) * VOID_ROW;
+            SkillDefs.ClassDef c = SkillDefs.bosses().get(e.boss());
+            int bc = 0xFF000000 | (c != null && c.bossInfo != null ? c.bossInfo.color : 0x888888);
+            if (i % 2 == 0) g.fill(x, y, x + w, y + VOID_ROW - 1, CARD);
+            g.fill(x, y, x + 2, y + VOID_ROW - 1, bc);
+            int[] rm = voidRemove(L, v, i);
+            String diff = " · " + e.diff().label();
+            String name = fit(bossName(e.boss()), rm[0] - x - 10 - font.width(diff));
+            g.drawString(font, name, x + 6, y + 3, TEXT, false);
+            g.drawString(font, diff, x + 6 + font.width(name), y + 3, 0xFF000000 | e.diff().color(), false);
+            drawButton(g, rm[0], rm[1], rm[2], rm[3], "✕", mx, my, 0xFF4A2F33, true);
+        }
+        if (pool.size() > visible) {
+            String more = (voidScroll + 1) + "-" + Math.min(pool.size(), voidScroll + visible) + " de " + pool.size();
+            g.drawString(font, more, x + w - font.width(more) - 2, v.titleY, DIM, false);
+        }
+    }
+
+    /** La ✕ de la fila i de la lista (en la página que se ve). */
+    int[] voidRemove(Layout L, VoidLayout v, int i) {
+        int y = v.listY + (i - voidScroll) * VOID_ROW + 1;
+        return new int[] {L.rightX + L.rightW - 13, y, 12, 12};
+    }
+
+    private boolean clickVoid(Layout L, double mx, double my) {
+        VoidLayout v = voidLayout(L);
+        if (in(mx, my, v.back[0], v.back[1], v.back[2], v.back[3])) {
+            click();
+            tab = 1;
+            return true;
+        }
+        if (!voidInfo.exists()) return false;
+        int k = viewKind();
+        if (in(mx, my, v.chipN[0], v.chipN[1], v.chipN[2], v.chipN[3]) || in(mx, my, v.chipM[0], v.chipM[1], v.chipM[2], v.chipM[3])) {
+            click();
+            voidKind = in(mx, my, v.chipN[0], v.chipN[1], v.chipN[2], v.chipN[3]) ? 0 : 1;
+            voidScroll = 0;
+            return true;
+        }
+        if (in(mx, my, v.center[0], v.center[1], v.center[2], v.center[3]) && k != voidInfo.active()) {
+            click();
+            sendVoid(BossNet.VOID_ACTIVE, k);
+            return true;
+        }
+        if (in(mx, my, v.reset[0], v.reset[1], v.reset[2], v.reset[3])) {
+            click();
+            sendVoid(BossNet.VOID_RESET, 0);
+            return true;
+        }
+        if (in(mx, my, v.add[0], v.add[1], v.add[2], v.add[3]) && info() != null) {
+            click();
+            sendVoid(BossNet.VOID_ADD, k);
+            return true;
+        }
+        List<Rifts.Entry> pool = voidInfo.pools().get(k);
+        int visible = Math.max(1, (L.by + L.bh - v.listY) / VOID_ROW);
+        for (int i = voidScroll; i < pool.size() && i < voidScroll + visible; i++) {
+            int[] rm = voidRemove(L, v, i);
+            if (in(mx, my, rm[0], rm[1], rm[2], rm[3])) {
+                click();
+                sendVoid(BossNet.VOID_REMOVE, k * 1024 + i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void sendVoid(int kind, int arg) {
+        BossNet.CHANNEL.sendToServer(new BossNet.Action(kind, selected, editing, null, arg));
+    }
+
+
     // ------------------------------------------------------------------------------------------- piezas
 
     /** [x, y, w, h] del preset i. */
@@ -508,9 +720,14 @@ public class BossScreen extends Screen {
         return new int[] {x, y, s, s};
     }
 
+    /** Dónde empieza la lista de grietas (debajo de la tarjeta de la del Void, si la hay). */
+    int riftsTop(Layout L) {
+        return L.tabsY + Layout.TAB + 5 + Layout.BTN + 5 + (voidInfo.exists() ? Layout.RIFT_H : 0);
+    }
+
     /** Botones IR, editar y quitar de la grieta i (en la página que se ve). */
     int[][] riftButtons(Layout L, int i) {
-        int top = L.tabsY + Layout.TAB + 5 + Layout.BTN + 5;
+        int top = riftsTop(L);
         int y = top + (i - riftScroll) * Layout.RIFT_H + 7;
         int x3 = L.rightX + L.rightW - 16;
         return new int[][] {{x3 - 2 * 17 - 4, y, 20, 14}, {x3 - 17, y, 14, 14}, {x3, y, 14, 14}};
@@ -663,6 +880,7 @@ public class BossScreen extends Screen {
             return true;
         }
         if (tab == 0) return clickDifficulty(L, mx, my) || super.mouseClicked(mx, my, button);
+        if (tab == 2) return clickVoid(L, mx, my) || super.mouseClicked(mx, my, button);
         return clickRifts(L, mx, my) || super.mouseClicked(mx, my, button);
     }
 
@@ -699,7 +917,22 @@ public class BossScreen extends Screen {
             send(BossNet.CLEAR_TESTS, null);
             return true;
         }
-        int y0 = top + Layout.BTN + 5;
+        if (voidInfo.exists()) {
+            int[][] vb = voidCardButtons(L);
+            if (in(mx, my, vb[0][0], vb[0][1], vb[0][2], vb[0][3])) {
+                click();
+                send(BossNet.VOID_TP, null);
+                return true;
+            }
+            if (in(mx, my, vb[1][0], vb[1][1], vb[1][2], vb[1][3])) {
+                click();
+                tab = 2;
+                voidKind = -1;
+                voidScroll = 0;
+                return true;
+            }
+        }
+        int y0 = riftsTop(L);
         int visible = Math.max(1, (L.by + L.bh - y0) / Layout.RIFT_H);
         for (int i = riftScroll; i < rifts.size() && i < riftScroll + visible; i++) {
             BossNet.RiftInfo r = rifts.get(i);
@@ -785,6 +1018,10 @@ public class BossScreen extends Screen {
         }
         if (tab == 1 && in(mx, my, L.rightX, L.by, L.rightW, L.bh)) {
             riftScroll -= (int) Math.signum(delta);
+            return true;
+        }
+        if (tab == 2 && in(mx, my, L.rightX, L.by, L.rightW, L.bh)) {
+            voidScroll -= (int) Math.signum(delta);
             return true;
         }
         if (tab == 0) {

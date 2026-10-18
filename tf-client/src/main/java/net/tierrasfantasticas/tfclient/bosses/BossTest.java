@@ -143,6 +143,9 @@ public final class BossTest {
         final Map<String, Integer> anims = new TreeMap<>();
         final Map<String, Integer> errors = new LinkedHashMap<>();
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
+        /** Lo que anda en el suelo (bloques) y en cuántos ticks: su velocidad media al andar (1.3.89, «Ignevar es lento»). */
+        double groundDist;
+        int groundTicks;
         int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, backPushed, sidePushed, landed, noEffect;
         double minDist = 1e9;
         int stillFarTicks, stillFarShown, flameShown;
@@ -422,6 +425,10 @@ public final class BossTest {
         List<String> anims = SkillMobs.animNames(boss);
         String what = anims == null ? "sin modelo" : String.join(",", anims.subList(Math.min(1, anims.size()), anims.size()));
         boolean back = false, side = false, lockedNow = false, pushedNow = false;
+        if (hs > 0.03 && hs <= 4 && boss.onGround()) {
+            r.groundDist += hs;
+            r.groundTicks++;
+        }
         if (hs > 0.03 && hs <= 4) {
             r.movingTicks++;
             float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
@@ -664,32 +671,84 @@ public final class BossTest {
                         + "; shaders: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shaders());
                 shot(r, "vacio_llegada");
             }
-            case 530 -> player.teleportTo(vl, 0.5, 78, 4.5, 0F, -22F);
+            case 530 -> {
+                Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
+                player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
+            }
             case 600 -> shot(r, "vacio_agujero");
-            case 610 -> player.teleportTo(vl, 0.5, 108, 70.5, 180F, 18F);
-            case 700 -> shot(r, "vacio_isla");
-            case 710 -> player.teleportTo(vl, 120.5, 60, -40.5, 120F, 2F);
-            case 800 -> shot(r, "vacio_lado");
-            case 810 -> player.teleportTo(vl, 0.5, 74, 9.5, 180F, 30F);
-            case 870 -> shot(r, "vacio_santuario");
-            case 880 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
-            case 885 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
+            // (1.3.89) el santuario nuevo, en la punta norte: desde el camino del este y por dentro, con el caballero
+            case 610 -> {
+                net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
+                player.teleportTo(vl, k.getX() + 19.5, k.getY() + 1, k.getZ() + 7.5, 108F, -6F);
+            }
+            case 680 -> shot(r, "vacio_santuario");
+            case 690 -> {
+                Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
+                player.teleportTo(vl, ar.x, ar.y, ar.z, 180F, -12F);
+            }
+            case 750 -> shot(r, "vacio_caballero");
+            // la grieta del Void en el centro de la plaza
+            case 760 -> {
+                net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
+                player.teleportTo(vl, g.getX() + 0.5, g.getY(), g.getZ() - 17.5, 0F, -14F);
+            }
+            case 830 -> {
+                Rifts.Rift vr = Rifts.voidRift();
+                r.event("grieta del Void: " + (vr == null ? "NO EXISTE" : (vr.kind == RiftEntity.MOTHER ? "madre" : "normal") + ", espera a «"
+                        + vr.boss + "» (" + vr.diff.label() + "); listas: " + Rifts.voidConfig().pools.get(0).size() + " normal, "
+                        + Rifts.voidConfig().pools.get(1).size() + " madre; entidad: "
+                        + (vl.getEntitiesOfClass(RiftEntity.class, new AABB(player.blockPosition()).inflate(40)).isEmpty() ? "NO ESTÁ" : "está")));
+                shot(r, "vacio_grieta");
+            }
+            case 840 -> {
+                net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
+                player.teleportTo(vl, g.getX() + 3.0, g.getY() + 3, g.getZ() - 5.0, 20F, -28F);
+            }
+            case 900 -> shot(r, "vacio_grieta_cerca");
+            case 905 -> r.event(Rifts.voidSetActive(RiftEntity.MOTHER));
+            case 910 -> {
+                net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
+                player.teleportTo(vl, g.getX() + 0.5, g.getY(), g.getZ() - 26.5, 0F, -14F);
+            }
+            case 980 -> {
+                Rifts.Rift vr = Rifts.voidRift();
+                r.event("grieta madre: espera a «" + (vr == null ? "?" : vr.boss) + "»");
+                shot(r, "vacio_madre");
+            }
+            case 990 -> {
+                r.event(Rifts.voidSetActive(RiftEntity.NORMAL));
+                r.event("despertar la grieta del Void: " + (Rifts.testWake() ? "despierta" : "NO SE PUDO"));
+            }
+            case 1075 -> {
+                var bosses = vl.getEntitiesOfClass(BossEntity.class, new AABB(player.blockPosition()).inflate(48));
+                Rifts.Rift vr = Rifts.voidRift();
+                r.event("de la grieta del Void sale: " + (bosses.isEmpty() ? "NADIE" : bosses.get(0).cls() == null ? "?" : bosses.get(0).cls().id)
+                        + " (estado " + (vr == null ? -1 : vr.state) + ")");
+                shot(r, "vacio_grieta_jefe");
+            }
+            case 1085 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
+            case 1100 -> player.teleportTo(vl, 0.5, 140, 150.5, 180F, 30F);
+            case 1180 -> shot(r, "vacio_isla");
+            case 1190 -> player.teleportTo(vl, 130.5, 75, -40.5, 120F, 2F);
+            case 1260 -> shot(r, "vacio_lado");
+            case 1270 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 1276 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
                     player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
-            case 940 -> {
+            case 1330 -> {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
                         new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
                 r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
                 if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
             }
-            case 1060 -> shot(r, "dialogo_santuario");
-            case 1070 -> dialogPress = 0;
-            case 1200 -> {
+            case 1450 -> shot(r, "dialogo_santuario");
+            case 1460 -> dialogPress = 0;
+            case 1590 -> {
                 double d = origin == null ? -1 : player.position().distanceTo(origin);
                 r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
                         + (player.level() == level && d < 3 ? "" : " (MAL)"));
                 shot(r, "vuelta");
             }
-            case 1240 -> {
+            case 1630 -> {
                 if (knight != null) knight.discard();
                 knight = null;
                 next(level);
@@ -773,6 +832,8 @@ public final class BossTest {
             }
             sb.append(String.format("   anda: %d ticks, hacia atrás %d (con lockmodel del pack %d, empujado por su skill %d), de lado %d (con lockmodel %d, empujado %d); rápido (>0,8 b/t) %d; teletransportes %d%n",
                     r.movingTicks, r.backTicks, r.backLocked, r.backPushed, r.sideTicks, r.sideLocked, r.sidePushed, r.fastTicks, r.teleports));
+            sb.append(String.format("   al andar por el suelo: %.3f bloques/tick de media (%d ticks)%n", r.groundTicks == 0 ? 0 : r.groundDist / r.groundTicks,
+                    r.groundTicks));
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",
                     r.airTicks, r.maxAir, r.maxHome, r.minionsMax));
             sb.append(String.format("   quieto y lejos del jugador (más de 2 s seguidos): %d ticks%n", r.stillFarTicks));
