@@ -731,6 +731,18 @@ public final class BossTest {
             case 1180 -> shot(r, "vacio_isla");
             case 1190 -> player.teleportTo(vl, 130.5, 75, -40.5, 120F, 2F);
             case 1260 -> shot(r, "vacio_lado");
+            // con shaders: nuestro cielo encima del suyo (¿lo respeta el paquete?)
+            case 1261 -> {
+                if (net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse()) {
+                    net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = true;
+                    Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
+                    player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
+                }
+            }
+            case 1266 -> {
+                if (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders) shot(r, "vacio_agujero_propio");
+            }
+            case 1269 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = false;
             case 1270 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
             case 1276 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
                     player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));

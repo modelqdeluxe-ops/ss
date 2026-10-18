@@ -44,7 +44,7 @@ public class VoidEffects extends DimensionSpecialEffects {
     public boolean renderSky(ClientLevel level, int ticks, float partial, PoseStack pose, Camera camera, Matrix4f projection,
                              boolean foggy, Runnable setupFog) {
         // (con shaders, el paquete sobrescribe el cielo: el nuestro saldría tapado o a medias)
-        if (ShaderPacks.inUse()) return false;
+        if (ShaderPacks.inUse() && !VoidTestHooks.ownSkyWithShaders) return false;
         try {
             VoidSky.render(pose, projection, partial);
         } catch (Throwable t) {

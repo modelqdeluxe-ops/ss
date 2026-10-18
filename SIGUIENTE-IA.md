@@ -1,11 +1,12 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **18 oct 2026, TF Client 1.3.88** (The Void, el caballero de luz, la grieta 3.0, Ignevar y el
-Contemplador: JEFES.md §3.13 y el CHECKPOINT de HANDOFF.md).
+Estado al dejarlo: **18 oct 2026, TF Client 1.3.89** (la grieta del Void normal y madre en el centro de la isla, el
+santuario nuevo, el cielo más grande y con shaders, Caelthar el Caballero Sacro, las llamas de Ignevar: JEFES.md §3.14
+y el CHECKPOINT de HANDOFF.md).
 Rama de trabajo: `claude/intelligent-cray-63dqai` (o la que te asigne la sesión), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
-`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.12 lo último, §11 lo que falta).
+`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.14 lo último, §11 lo que falta).
 
 ## 1. Qué estamos haciendo
 
@@ -42,6 +43,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
    `[prueba-jefes=jefe1,jefe2]` (o `[prueba-jefes]` = los 17, ~30 min) y `git push`. GitHub Actions
    (`.github/workflows/jefes-prueba.yml`) arranca Minecraft con TF Client en una pantalla virtual (xvfb + Mesa), crea
    un mundo plano, despierta una grieta por jefe, pelea 800 ticks con un jugador automático, lo mata y saca capturas.
+   Con `[shaders]` también en el mensaje, juega con Oculus 1.8 + Embeddium + Complementary Reimagined (para ver The
+   Void y lo demás con un paquete de shaders; va lento, úsalo solo con `vacio` y uno o dos jefes).
    **No esperes con sleeps**: lanza en segundo plano
    `tf-client/tools/bosses/esperar_prueba.sh <hash corto> <carpeta del scratchpad>` (Bash con `run_in_background`);
    te avisa cuando la rama `pruebas-jefes` tenga el informe de ese commit.
@@ -68,7 +71,10 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 | Ver skills y mobs de un jefe | `tools/bosses/ver_skill.py` |
 | Esperar la prueba en el juego | `tools/bosses/esperar_prueba.sh` (en segundo plano) |
 | Reconvertir un pack | `python3 -I tools/bosses/build_bosses.py <carpeta packs> <PACK>` (packs descifrados fuera del repo; mira el `git diff` después y deja `sounds.json` como estaba si solo cambia el orden) |
-| Grieta (modelo y texturas) | `tools/bosses/rift_model.py --preview carpeta` |
+| Grieta normal y madre (con sus shaders) | `xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta [--madre] [--estado lista|despierta|dormida]` |
+| Cielo del Void (agujero negro) | `xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--size 1920x1080] [--q 0.35]` |
+| Isla del Void (santuario, plaza) | `python3 -I tools/void/isla.py <EndCarageKitMap.schematic> --preview carpeta` (mapa cifrado en `packs/void.tar.enc`) |
+| Ventana /tf boss (tamaños) | `python3 tools/bosses/sim_gui.py` |
 | Cielo de la grieta | `tools/bosses/rift_sky.py --preview carpeta` |
 | Sonidos de grieta, muerte y música | `tools/bosses/sonidos_grieta.py --wav carpeta` |
 | Estado de Actions / Releases | herramientas `mcp__github__*` (no hay `gh`) |
@@ -76,7 +82,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.88**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.90**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
@@ -86,14 +92,18 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
-- **Que el dueño pruebe la 1.3.88**: The Void (`/tf void npc`, hablar con Aurelion, viajar, el cielo, volver), la grieta
-  3.0 y Ignevar (ahora vuela, se gira en el aire y cae en picado). Si en su servidor hay un limpiador de entidades
-  (ClearLag...), que no borre `tfclient:caballero`. Si alguien tiene un PC flojo y el cielo va lento: con gráficos
-  «Rápidos» el shader da menos pasos.
+- **Que el dueño pruebe la 1.3.89**: la grieta del Void (en `/tf boss` → GRIETAS, la tarjeta de arriba con ✎: listas
+  de la normal y de la madre), el santuario nuevo de la punta norte (su Void ya generado se pone al día solo al ir: en el
+  registro «TF Void: ... se pone al día»), el cielo con y sin shaders, Caelthar y las llamas de Ignevar. Si dice que el
+  agujero negro no se ve con shaders: con paquete de shaders el cielo lo pone el paquete (su End); mira la captura
+  `vacio_agujero_propio` de una prueba con `[shaders]` para ver si el nuestro encima quedaría bien.
+- **Ignevar «pendejo, lento»**: anda como el pack (se empuja `velocity z=0.05` por tick, ~0,11 b/t en Normal) y ahora
+  a la Velocidad de la dificultad; si sigue pareciendo lento en Normal, es el pack: pregúntale si quiere que la grieta
+  del Void use Difícil o más para él.
 - **Contemplador**: ya no te sube al cielo (orden del dueño, «suelo»), pero sus láseres siguen al ritmo del pack (en
   la prueba, 140 impactos en 40 s). Si el dueño dice que dispara demasiado, pregúntale antes de tocarlo.
-- **The Void sin herramientas de grieta propias**: las grietas se ponen con `/tf boss` como siempre (también en The
-  Void); el cielo morado ya no sale junto a las del mundo normal.
+- **La grieta del Void** es fija (no se quita ni se edita como las demás); las grietas normales se siguen poniendo con
+  `/tf boss` donde quieras (también en The Void).
 - **Que el dueño pruebe la 1.3.87** (Astwood sin supersalto, Mamut, grieta y cielo nuevos, música de la grieta,
   muerte). La música no se puede oír en el CI (no hay tarjeta de sonido): la prueba solo mira si *quiere* sonar.
 - **Contemplador**: el jugador de prueba recibe ~500 de daño (cada impacto del láser te quema, te lanza y avisa al
@@ -108,7 +118,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ```
 Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.12, §11). Seguimos con
-el motor de jefes de TF Client (1.3.87): fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
+el motor de jefes de TF Client (1.3.89): fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
 compila solo con GitHub Actions, publica como Release, nunca subas los packs en claro. Si el dueño se queja de algo,
 reprodúcelo TÚ con la prueba en el juego ([prueba-jefes=<jefes>] en el commit, espera en segundo plano con
 tools/bosses/esperar_prueba.sh), lee el informe y las capturas, arréglalo con la semántica de MythicMobs, pasa
