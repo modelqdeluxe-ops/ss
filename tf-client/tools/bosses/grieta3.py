@@ -270,7 +270,8 @@ def preview(dest, t, state):
     gt = (t * 20 % 24000) / 24000.0
     f, n = CP.hole_and_disk()
     for vname, cam, yaw_deg, pitch in (('frente', (0.5, 2.0, -26.0), 0.0, -14.0), ('lado', (22.0, 6.0, -12.0), 60.0, -6.0),
-                                       ('cerca', (0.0, 1.8, -12.0), 0.0, -32.0), ('lejos', (12.0, 9.0, -46.0), 14.0, -6.0)):
+                                       ('cerca', (0.0, 1.8, -12.0), 0.0, -32.0), ('lejos', (12.0, 9.0, -46.0), 14.0, -6.0),
+                                       ('pegado', (2.5, 7.0, -5.5), 20.0, -28.0)):
         cam = np.array(cam)
         mv = CP.view(yaw_deg, pitch)
         ctx.clear(0, 0, 0, 1)

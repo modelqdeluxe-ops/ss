@@ -23,6 +23,11 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'info'
             args '--width', '1280', '--height', '720'
+            if (project.hasProperty('tfshaders')) {
+                // (los mixins de Oculus y Embeddium, compilados para el juego normal, se traducen a los nombres de aquí)
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            }
             mods {
                 tfclient {
                     source sourceSets.main
@@ -37,9 +42,24 @@ mixin {
     config 'tfclient.mixins.json'
 }
 
+// La prueba en el juego con shaders (commit con [shaders]: .github/workflows/jefes-prueba.yml pasa -Ptfshaders): Oculus
+// y Embeddium solo para jugar en la prueba; el mod no depende de ellos (vacio/ShaderPacks los busca por reflexión).
+if (project.hasProperty('tfshaders')) {
+    repositories {
+        maven {
+            url = 'https://api.modrinth.com/maven'
+            content { includeGroup 'maven.modrinth' }
+        }
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    if (project.hasProperty('tfshaders')) {
+        runtimeOnly fg.deobf('maven.modrinth:embeddium:0.3.31+mc1.20.1')
+        runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')
+    }
 }
 
 tasks.named('processResources', ProcessResources).configure {

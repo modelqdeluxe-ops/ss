@@ -8,4 +8,9 @@ public final class VoidTestHooks {
     public static boolean skyShaderLoaded() {
         return VoidSky.shader != null;
     }
+
+    /** Shaders (Oculus): si hay paquete puesto y qué se hizo con el Void. */
+    public static String shaders() {
+        return (ShaderPacks.inUse() ? "paquete de shaders puesto" : "sin paquete de shaders") + " (" + ShaderPacks.status + ")";
+    }
 }

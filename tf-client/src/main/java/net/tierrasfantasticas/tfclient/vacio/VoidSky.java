@@ -30,8 +30,11 @@ import org.joml.Vector3f;
 @OnlyIn(Dist.CLIENT)
 public final class VoidSky {
     static final ResourceLocation PANORAMA = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_cielo.png");
-    /** Hacia dónde está el agujero: al norte (por donde se mira al llegar), algo a la derecha y subido. */
-    static final Vector3f HOLE = new Vector3f(0.18F, 0.40F, -1.0F).normalize();
+    /**
+     * Hacia dónde está el agujero: al sur, algo al este y subido 22° (1.3.89: el santuario está en la punta norte de la
+     * isla y se llega mirando al sur, hacia la grieta del centro; el agujero queda detrás de ella).
+     */
+    static final Vector3f HOLE = new Vector3f(0.16F, 0.42F, 1.0F).normalize();
     static ShaderInstance shader;
     private static VertexBuffer cube;
     private static boolean warned;

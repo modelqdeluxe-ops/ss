@@ -55,7 +55,18 @@ jobs:
           chmod +x gradlew
           mkdir -p run
           printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nrenderDistance:6\nsoundCategory_master:0.0\n' > run/options.txt
-          timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
+          # Con «[shaders]» en el commit: Oculus + Embeddium y el paquete Complementary Reimagined (r5.3) puesto
+          EXTRA=""
+          if printf '%s' "$MENSAJE" | grep -q '\[shaders\]'; then
+            EXTRA="-Ptfshaders"
+            export TFCLIENT_PRUEBA_SHADERS=1
+            mkdir -p run/shaderpacks run/config
+            curl -sSfL -o run/shaderpacks/ComplementaryReimagined_r5.3.zip https://cdn.modrinth.com/data/HVnmMxH1/versions/71Hn3myZ/ComplementaryReimagined_r5.3.zip
+            printf 'enableShaders=true\nshaderPack=ComplementaryReimagined_r5.3.zip\n' > run/config/oculus.properties
+            cp run/config/oculus.properties run/config/iris.properties
+            echo "Con shaders: Oculus 1.8.0 + Complementary Reimagined r5.3"
+          fi
+          timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient $EXTRA --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
           tail -n 80 run/juego.log
           ls run/pruebas || true
           cat run/pruebas/informe.txt || true
@@ -65,7 +76,7 @@ jobs:
           python3 -m pip install --quiet pillow || true
           rm -rf /tmp/out && mkdir -p /tmp/out
           cp run/pruebas/informe.txt /tmp/out/ 2>/dev/null || echo "sin informe" > /tmp/out/informe.txt
-          grep -E "TF Jefes|TF Skills|Prueba de jefes|Exception|ERROR|WARN.*(tfclient|texture)|Caused by|^\s+at net\.tierrasfantasticas" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
+          grep -E "TF Jefes|TF Skills|TF Void|Prueba de jefes|Oculus|Iris|Exception|ERROR|WARN.*(tfclient|texture)|Caused by|^\s+at net\.tierrasfantasticas" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
           tail -n 400 run/juego.log > /tmp/out/final_del_registro.txt || true
           python3 - <<'EOF'
           import glob, os

@@ -1,7 +1,7 @@
 #version 150
 
 // El desgarro de la grieta 3.0 y su círculo de runas (TF Client 1.3.88). Sin texturas: todo sale de cuentas, así que
-// el borde es suave a cualquier tamaño (el dueño: «bordes dentados»).
+// el borde es suave a cualquier tamaño (el dueño: «bordes dentados»). Sin atan en el remolino (1.3.89: hacía una raya).
 //
 // Color del vértice: r = semilla, g = modo (0 desgarro, 1 círculo del suelo), b = cuánto está abierto / 1.4,
 // a = intensidad / 2. Salida con alfa premultiplicado (ONE, 1-SRC_ALPHA): dentro de la rasgadura, el vacío opaco;
@@ -99,9 +99,16 @@ vec4 tear(vec2 uv, float seed, float open, float inten, float t) {
     float inside = 1.0 - smoothstep(-aa, aa, d);
     // dentro: el vacío que gira, estrellas a dos profundidades y el ojo del vórtice
     vec2 q = vec2(p.x - cx, y);
-    float r = length(q * vec2(1.5, 0.42));
-    float ang = atan(q.y, q.x * 2.0);
-    float sw = fbm2(vec2(ang * 1.8 + r * 0.55 - t * 0.6, r * 0.7 - t * 0.22) + seed);
+    vec2 qe = q * vec2(1.5, 0.42);
+    float r = length(qe);
+    // (1.3.89) el remolino ya no sale del ángulo (atan): su corte dibujaba una raya recta del ojo hacia un lado y el ojo
+    // era un «estallido» de rayos (el dueño: «esa línea parece vidrio quebrado»). Ahora se gira el plano más cuanto más
+    // cerca del ojo (un torbellino) y el ruido se lee ahí: sin cortes ni puntos raros.
+    float tw = 2.6 / (1.0 + r * 0.45) - t * 0.35;
+    float ct = cos(tw);
+    float st = sin(tw);
+    vec2 w = vec2(ct * qe.x - st * qe.y, st * qe.x + ct * qe.y);
+    float sw = fbm2(w * 0.55 + vec2(seed, seed * 0.37) + vec2(0.0, t * 0.05));
     vec3 voidc = mix(vec3(0.02, 0.004, 0.05), vec3(0.42, 0.10, 0.70), smoothstep(0.25, 0.85, sw));
     voidc += vec3(0.12, 0.02, 0.22) * (1.0 - smoothstep(0.0, 1.0, r * 0.12));
     voidc += vec3(0.85, 0.40, 1.0) * exp(-r * 0.5) * (0.6 + 0.4 * sin(t * 2.1)) * 1.1;
@@ -131,10 +138,11 @@ vec4 ring(vec2 uv, float seed, float inten, float t) {
     float l2 = exp(-abs(r - 11.45) * 10.0);
     float l3 = exp(-abs(r - 10.1) * 14.0) * 0.6;
     // runas: 48 casillas que giran despacio, con trazos al azar dentro
-    float rot = a + t * 0.05;
+    // (vuelta completa = 48 casillas exactas: sin costura donde atan salta de -π a π)
     float n = 48.0;
-    float cell = floor(rot / 6.2831853 * n);
-    float fr = fract(rot / 6.2831853 * n);
+    float rot = fract((a + t * 0.05) / 6.2831853) * n;
+    float cell = floor(rot);
+    float fr = fract(rot);
     float rr = (r - 11.6) / 1.2;
     float h1 = hash12(vec2(cell, seed));
     float h2 = hash12(vec2(cell, seed + 7.0));

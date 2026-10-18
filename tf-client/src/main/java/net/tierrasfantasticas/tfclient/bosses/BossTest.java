@@ -660,10 +660,11 @@ public final class BossTest {
             case 520 -> {
                 BlockPosHelper.report(r, player);
                 r.event("cielo del vacío (shader): " + (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.skyShaderLoaded() ? "cargado" : "NO CARGADO")
-                        + "; música del vacío: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
+                        + "; música del vacío: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA")
+                        + "; shaders: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shaders());
                 shot(r, "vacio_llegada");
             }
-            case 530 -> player.teleportTo(vl, 0.5, 78, 4.5, 180F, -22F);
+            case 530 -> player.teleportTo(vl, 0.5, 78, 4.5, 0F, -22F);
             case 600 -> shot(r, "vacio_agujero");
             case 610 -> player.teleportTo(vl, 0.5, 108, 70.5, 180F, 18F);
             case 700 -> shot(r, "vacio_isla");

@@ -59,10 +59,15 @@ void main() {
     float pulse = 0.6 + 0.4 * sin(t * 1.6 + n * 14.0);
     vec3 veinCol = mix(vec3(0.55, 0.12, 1.0), vec3(1.0, 0.62, 1.0), smoothstep(0.95, 0.995, ridge));
     c += veinCol * v * pulse * 1.5;
-    // destellos sueltos en la obsidiana
-    vec2 cell = floor(vUV * 18.0);
+    // destellos sueltos en la obsidiana: puntos redondos y suaves (1.3.89; antes eran cuadraditos duros, «píxeles»)
+    vec2 sp = vUV * 9.0;
+    vec2 cell = floor(sp);
     float g = hash12(cell);
-    c += vec3(0.5, 0.3, 0.8) * step(0.988, g) * (0.5 + 0.5 * sin(t * 2.5 + g * 60.0)) * 0.5;
+    vec2 ctr = vec2(hash12(cell + 17.0), hash12(cell + 31.0)) * 0.6 + 0.2;
+    float dd = length(fract(sp) - ctr);
+    float aa = fwidth(sp.x) + fwidth(sp.y);
+    float dot1 = 1.0 - smoothstep(0.03, 0.03 + max(aa, 0.04), dd);
+    if (mat == 0) c += vec3(0.55, 0.35, 0.9) * dot1 * step(0.96, g) * (0.5 + 0.5 * sin(t * 2.5 + g * 60.0)) * 0.6;
     if (mat == 1 || mat == 2) {
         // cristal: brillo que sube por dentro
         float k = 0.5 + 0.5 * sin(vUV.y * 1.7 - t * 2.2);
