@@ -1,7 +1,10 @@
 package net.tierrasfantasticas.tfclient.vacio;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
@@ -13,19 +16,25 @@ import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * Pone al día la isla de un Void que ya se generó con una versión anterior del mod: los chunks guardados no se vuelven
- * a generar, así que en el servidor del dueño seguían el santuario de la 1.3.88 en el centro y el templete de la punta
- * norte. 1.3.89: si al tener cargado el centro (o la punta norte) se ve lo de antes (lo que hay no es lo que debería
- * haber en un par de bloques que distinguen las dos islas), esa zona (un círculo de 47 bloques alrededor de la grieta y
- * uno de 14 alrededor del santuario) se reescribe columna a columna como en {@link VoidIsland}, 48 columnas por tick y
- * solo los bloques que cambian (sin vecinos ni objetos que caigan). Hecho, se apunta en los datos del mundo del Void
- * ({@code data/tfclient_void.dat}: islaV) y no se vuelve a mirar. En un mundo nuevo, los chunks ya nacen bien y solo se
- * apunta.
+ * a generar, así que en el servidor del dueño seguiría la isla de antes.
+ *
+ * <p>1.3.89 reescribía el centro y la punta norte. 1.3.90 (el dueño: «la grieta no está en el centro; hazla más
+ * grande»): la isla es ×1,5 y está centrada en la grieta, así que cambia entera. Al arrancar el servidor (el Void hace
+ * ticks aunque no haya nadie), si el pedestal del caballero nuevo no está (es otra isla), se reescribe todo lo que
+ * ocupaban la isla vieja y la nueva, chunk a chunk y empezando por el santuario (donde se llega), 128 columnas por tick
+ * y solo los bloques que cambian (sin vecinos ni objetos que caigan): unos 450 chunks, menos de un minuto. Hecho, se
+ * apunta en los datos del mundo del Void ({@code data/tfclient_void.dat}: islaV) y no se vuelve a mirar. En un mundo
+ * nuevo, los chunks ya nacen bien y solo se apunta. El caballero viejo se va solo ({@link KnightEntity}) y sale el del
+ * santuario nuevo; la grieta sigue donde estaba (0 72 0).
  */
 final class IslandUpdate {
-    static final int VERSION = 2;
-    private static final int PER_TICK = 48;
-    private static boolean done;
-    private static Region center, shrine;
+    static final int VERSION = 3;
+    private static final int PER_TICK = 128;
+    /** Lo que ocupaba la isla de la 1.3.88-1.3.89 (x, z del mundo; con margen). */
+    private static final int OLD_X0 = -61, OLD_X1 = 140, OLD_Z0 = -163, OLD_Z1 = 97;
+    private static boolean done, checked;
+    private static Deque<long[]> chunks;
+    private static int chunksTotal, changed;
 
     private IslandUpdate() {}
 
@@ -46,29 +55,38 @@ final class IslandUpdate {
         }
     }
 
-    /** Una zona: dónde mirar si está como antes y sus columnas por reescribir. */
-    private static final class Region {
-        final String name;
-        final BlockPos mark;
-        final int cx, cz, r;
-        boolean checked;
-        Deque<long[]> todo;
-        int changed;
-
-        Region(String name, BlockPos mark, int cx, int cz, int r) {
-            this.name = name;
-            this.mark = mark;
-            this.cx = cx;
-            this.cz = cz;
-            this.r = r;
+    /**
+     * Para la prueba en el juego: hace como si la isla de este mundo fuera la de antes (versión 2, el pedestal del
+     * caballero cambiado y una columna de piedra en la plaza) para ver que se pone al día sola.
+     */
+    static void pretendOld(ServerLevel level) {
+        Data data = level.getDataStorage().computeIfAbsent(Data::load, Data::new, "tfclient_void");
+        data.version = 2;
+        data.setDirty();
+        level.setBlock(VoidIsland.knightPos().below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        for (int y = 72; y < 80; y++) {
+            level.setBlock(new BlockPos(6, y, 6), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
+        reset();
+    }
+
+    /** Para la prueba: cómo va. */
+    static String status() {
+        if (done) return "al día (" + chunksTotal + " chunks, " + changed + " bloques cambiados)";
+        return chunks == null ? "sin empezar" : "quedan " + chunks.size() + " de " + chunksTotal + " chunks";
+    }
+
+    static boolean finished() {
+        return done;
     }
 
     /** Al arrancar el servidor (o al cambiar de mundo en un jugador sin servidor dedicado), se vuelve a mirar. */
     static void reset() {
         done = false;
-        center = null;
-        shrine = null;
+        checked = false;
+        chunks = null;
+        chunksTotal = 0;
+        changed = 0;
     }
 
     static void tick(ServerLevel level) {
@@ -80,64 +98,83 @@ final class IslandUpdate {
         }
         VoidIsland island = VoidIsland.get();
         if (island == null) return;
-        if (center == null) {
-            BlockPos rift = VoidIsland.riftPos();
-            BlockPos knight = VoidIsland.knightPos();
-            // centro: encima de la plaza no hay nada (en la 1.3.88, el pedestal del santuario); santuario: el pedestal
-            // de oro bajo el caballero (en el mapa original, el aire dentro del templete)
-            center = new Region("centro", rift.above(2), rift.getX(), rift.getZ(), 47);
-            shrine = new Region("santuario", knight.below(), knight.getX(), knight.getZ(), 14);
+        if (!checked) {
+            checked = true;
+            // El pedestal del caballero nuevo (bajo sus pies): si está, la isla ya es la de ahora
+            BlockPos mark = VoidIsland.knightPos().below();
+            level.getChunk(SectionPos.blockToSectionCoord(mark.getX()), SectionPos.blockToSectionCoord(mark.getZ()));
+            if (level.getBlockState(mark) == island.stateAt(mark.getX(), mark.getY(), mark.getZ())) {
+                finish(level, data, "la isla ya es la de ahora");
+                return;
+            }
+            chunks = plan(island);
+            chunksTotal = chunks.size();
+            TFClient.LOGGER.info("TF Void: la isla de este mundo es de antes; se pone al día ({} chunks, primero el santuario)", chunksTotal);
         }
-        boolean all = true;
-        for (Region r : new Region[] {center, shrine}) all &= step(level, island, r);
-        if (all) {
-            data.version = VERSION;
-            data.setDirty();
-            done = true;
+        if (step(level, island)) {
+            finish(level, data, String.format("isla al día (%d chunks, %d bloques cambiados)", chunksTotal, changed));
         }
     }
 
-    /** Un paso de una zona; true si ya está (bien desde el principio o reescrita). */
-    private static boolean step(ServerLevel level, VoidIsland island, Region r) {
-        if (!r.checked) {
-            if (!level.hasChunkAt(r.mark)) return false;
-            r.checked = true;
-            if (level.getBlockState(r.mark) == island.stateAt(r.mark.getX(), r.mark.getY(), r.mark.getZ())) return true;
-            r.todo = new ArrayDeque<>();
-            for (int z = r.cz - r.r; z <= r.cz + r.r; z++) {
-                for (int x = r.cx - r.r; x <= r.cx + r.r; x++) {
-                    int dx = x - r.cx, dz = z - r.cz;
-                    if (dx * dx + dz * dz <= r.r * r.r) r.todo.add(new long[] {x, z});
-                }
+    private static void finish(ServerLevel level, Data data, String what) {
+        data.version = VERSION;
+        data.setDirty();
+        done = true;
+        chunks = null;
+        TFClient.LOGGER.info("TF Void: {}", what);
+    }
+
+    /** Los chunks de la isla vieja y la nueva, del más cercano al santuario nuevo al más lejano; en cada uno, sus columnas. */
+    private static Deque<long[]> plan(VoidIsland island) {
+        int x0 = Math.min(OLD_X0, island.ox), x1 = Math.max(OLD_X1, island.ox + island.sx - 1);
+        int z0 = Math.min(OLD_Z0, island.oz), z1 = Math.max(OLD_Z1, island.oz + island.sz - 1);
+        BlockPos k = VoidIsland.knightPos();
+        List<long[]> list = new ArrayList<>();
+        for (int cz = SectionPos.blockToSectionCoord(z0); cz <= SectionPos.blockToSectionCoord(z1); cz++) {
+            for (int cx = SectionPos.blockToSectionCoord(x0); cx <= SectionPos.blockToSectionCoord(x1); cx++) {
+                long dx = cx * 16L + 8 - k.getX(), dz = cz * 16L + 8 - k.getZ();
+                // {chunk x, chunk z, distancia², columna siguiente (0..256)}
+                list.add(new long[] {cx, cz, dx * dx + dz * dz, 0});
             }
-            TFClient.LOGGER.info("TF Void: la isla de este mundo es de antes; se pone al día ({}: {} columnas)", r.name, r.todo.size());
         }
-        if (r.todo == null) return true;
+        list.sort(Comparator.comparingLong(a -> a[2]));
+        return new ArrayDeque<>(list);
+    }
+
+    /** Un tick: hasta PER_TICK columnas (cargando como mucho un chunk); true si ya no queda nada. */
+    private static boolean step(ServerLevel level, VoidIsland island) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int n = 0;
-        int loads = 0;
-        while (!r.todo.isEmpty() && n < PER_TICK) {
-            long[] c = r.todo.peek();
-            int x = (int) c[0], z = (int) c[1];
-            if (!level.hasChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))) {
-                // (cargarlo aquí: el centro puede quedar fuera de la vista de quien llega al santuario)
-                if (loads++ > 0) break;
-                level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z));
+        boolean loaded = false;
+        while (!chunks.isEmpty() && n < PER_TICK) {
+            long[] c = chunks.peek();
+            int cx = (int) c[0], cz = (int) c[1];
+            if (!level.hasChunk(cx, cz)) {
+                if (loaded) break;
+                level.getChunk(cx, cz);
+                loaded = true;
             }
-            r.todo.poll();
-            n++;
-            BlockState[] col = island.column(x, z, island.oy, island.sy);
-            for (int i = 0; i < col.length; i++) {
-                pos.set(x, island.oy + i, z);
-                if (level.getBlockState(pos) != col[i]) {
-                    level.setBlock(pos, col[i], Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS);
-                    r.changed++;
+            while (c[3] < 256 && n < PER_TICK) {
+                int x = cx * 16 + (int) (c[3] & 15), z = cz * 16 + (int) (c[3] >> 4);
+                c[3]++;
+                n++;
+                BlockState[] col = island.column(x, z, island.oy, island.sy);
+                for (int i = 0; i < col.length; i++) {
+                    pos.set(x, island.oy + i, z);
+                    if (level.getBlockState(pos) != col[i]) {
+                        level.setBlock(pos, col[i], Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS);
+                        changed++;
+                    }
+                }
+            }
+            if (c[3] >= 256) {
+                chunks.poll();
+                int left = chunks.size();
+                if (left % 50 == 0 && left > 0) {
+                    TFClient.LOGGER.info("TF Void: isla, quedan {} de {} chunks", left, chunksTotal);
                 }
             }
         }
-        if (!r.todo.isEmpty()) return false;
-        TFClient.LOGGER.info("TF Void: {} de la isla al día ({} bloques cambiados)", r.name, r.changed);
-        r.todo = null;
-        return true;
+        return chunks.isEmpty();
     }
 }

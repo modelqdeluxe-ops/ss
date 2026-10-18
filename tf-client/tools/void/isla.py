@@ -24,7 +24,13 @@ los packs de los jefes). Aquí:
        en las entradas, balaustrada hacia el barranco y luz invisible dentro. Los cimientos bajan hasta el terreno en
        cada columna (el de la 1.3.88 tenía huecos debajo: «volando»). El caballero en el pedestal del centro mirando al
        sur; se llega a la puerta del este, mirando hacia la grieta (y el agujero negro detrás).
-  4. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados, posiciones (caballero, llegada,
+  4. 1.3.90 (el dueño, con captura desde arriba: «la grieta no está en el centro de la isla; quiero que hagas esa isla
+     más grande»): la isla se agranda ×1,5 en planta y ×1,35 en altura (×1,5 la sacaría por debajo del mundo) alrededor
+     de su centro de verdad, y la plaza y la grieta van ahí (agrandar). El terreno se remuestrea suave (ocupación
+     trilineal, sin escalones de 1-2 bloques) y las franjas de la superficie se copian de su columna; los caminos van con
+     el terreno; lo construido (el templete del sureste y los farolillos) se pone a su tamaño (1:1) en su sitio nuevo,
+     sobre el terreno nuevo, con cimientos; el templete del norte lo sustituye el santuario.
+  5. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados, posiciones (caballero, llegada,
      grieta) y, por columna, tramos (y, largo, bloque). El centro de la plaza (la grieta) queda en x=0, z=0 del mundo.
 
 Los 81 enderman del mapa no se copian (la dimensión no tiene criaturas).
@@ -73,8 +79,13 @@ WORLD_DY = 10  # y del mundo = y del mapa + 10 (el suelo de la plaza queda a 71:
 # El santuario: el templete de la punta norte del mapa (centro y altura de su terraza)
 SHRINE = (115, 135)
 SHRINE_TOP = 56
-PLAZA_R = 24
-CLEAR_R = 45
+PLAZA_R = 28
+CLEAR_R = 55
+# 1.3.90: la isla más grande (en planta y en altura) y en el mundo con y = la del mapa grande (oy 0)
+SCALE = 1.5
+SCALE_Y = 1.35
+WORLD_GROUND = GROUND + WORLD_DY  # la cara de arriba de la plaza en el mundo: 71 (la grieta sigue en 0 72 0)
+H_WORLD = 128
 TERRAIN = {'gray_wool', 'end_stone', 'cyan_terracotta', 'clay', 'purple_wool', 'magenta_wool', 'purple_terracotta',
            'blue_terracotta', 'magenta_terracotta', 'white_terracotta', 'mycelium', 'dirt', 'white_wool', 'red_wool',
            'acacia_wood', 'acacia_log'}
@@ -344,9 +355,14 @@ def clear_near_center(isl):
             if math.hypot(x - cx, z - cz) > CLEAR_R:
                 continue
             col = g[:, z, x]
+            # (lo que está a ras del suelo de alrededor, como los caminos metidos en el terreno, se rellena con el
+            # terreno de la columna: sin surcos)
+            around = ttop[max(0, z - 1):z + 2, max(0, x - 1):x + 2]
+            flush = int(np.median(around[around >= 0])) if (around >= 0).any() else -1
+            fill = col[ttop[z, x]] if ttop[z, x] >= 0 else 0
             for y in range(max(0, ttop[z, x] + 1), H):
                 if col[y] != 0 and not terr[col[y]]:
-                    col[y] = 0
+                    col[y] = fill if y <= flush else 0
                     n += 1
     return n
 
@@ -398,8 +414,8 @@ def plaza(isl):
                     col[y] = body
             if r > PLAZA_R:
                 continue
-            # lo oscuro: seguro hasta 15, a puntos hasta PLAZA_R
-            dark = smooth(PLAZA_R, 15.0, r)
+            # lo oscuro: seguro hasta 18, a puntos hasta PLAZA_R
+            dark = smooth(PLAZA_R, 18.0, r)
             if nd[z, x] < dark:
                 v = n1[z, x]
                 blk = obsidian if n2[z, x] > 0.68 else polished if v > 0.6 else blackstone
@@ -407,7 +423,7 @@ def plaza(isl):
                 for a0 in veins:
                     a = a0 + 0.22 * math.sin(r * 0.35 + a0 * 3)
                     da = (ang - a + math.pi) % math.tau - math.pi
-                    if 5.5 < r < 20 and abs(da) * r < 0.75 - 0.02 * r:
+                    if 5.5 < r < 24 and abs(da) * r < 0.8 - 0.02 * r:
                         blk = crying
                 col[GROUND] = blk
                 col[GROUND - 1] = blackstone
@@ -597,6 +613,187 @@ def santuario(isl):
     return knight, arrive
 
 
+def agrandar(isl):
+    """La isla ×SCALE en planta y ×SCALE_Y en altura alrededor de su centro (el de las columnas con algo de terreno),
+    en una rejilla nueva con y = la del mundo. Cambia isl (rejilla) y PIT_CENTER, SHRINE, SHRINE_TOP, GROUND y
+    WORLD_DY para lo que viene después (la plaza va al centro nuevo). Devuelve (ox, oz): x, z del mundo del (0, 0) de la
+    rejilla."""
+    global PIT_CENTER, SHRINE, SHRINE_TOP, GROUND, WORLD_DY
+    g = isl.grid
+    H, L, W = g.shape
+    terr = np.array([is_terrain(isl, i) for i in range(len(isl.names))])
+    glassy = np.array(['glass' in n for n in isl.names])
+    T = terr[g]
+    solid = g != 0
+    # El centro: el del cuerpo de la isla, sin las puntas (columnas de 6 bloques o más, abiertas 12: fuera lo que no
+    # cabe en un círculo de 12): el punto que queda a la misma distancia de los bordes oeste y este y de los bordes norte
+    # y sur (desde la grieta, la isla se ve igual de grande a cada lado)
+    body = T.sum(0) >= 6
+    dist = np.zeros(body.shape, int)
+    cur = body.copy()
+    k = 0
+    while cur.any():
+        k += 1
+        dist[cur] = k
+        e = cur.copy()
+        e[1:] &= cur[:-1]
+        e[:-1] &= cur[1:]
+        e[:, 1:] &= cur[:, :-1]
+        e[:, :-1] &= cur[:, 1:]
+        e[1:, 1:] &= cur[:-1, :-1]
+        e[:-1, :-1] &= cur[1:, 1:]
+        e[1:, :-1] &= cur[:-1, 1:]
+        e[:-1, 1:] &= cur[1:, :-1]
+        cur = e
+    core = dilate(dist >= 12, 12) & body
+    bz, bx = np.nonzero(core)
+    cxs, czs = int(round(bx.mean())), int(round(bz.mean()))
+
+    def span(line, c):
+        lo = hi = c
+        while lo > 0 and line[lo - 1]:
+            lo -= 1
+        while hi < len(line) - 1 and line[hi + 1]:
+            hi += 1
+        return lo, hi
+
+    for _ in range(8):
+        xl, xh = span(core[czs], cxs)
+        zl, zh = span(core[:, cxs], czs)
+        cxs, czs = int(round((xl + xh) / 2)), int(round((zl + zh) / 2))
+    # Lo que no es terreno: el templete del norte (r ≤ 14) se quita (lo sustituye el santuario); el cristal (farolillos)
+    # y el templete del sureste se ponen a su tamaño; lo demás (caminos de ladrillo, metidos en el suelo) va con el
+    # terreno
+    sx, sz = SHRINE
+    yy, zz, xx = np.nonzero(solid & ~T)
+    drop = np.hypot(xx - sx, zz - sz) <= 14
+    se = (xx >= 186) & (xx <= 216) & (zz >= 319) & (zz <= 352)
+    keep = glassy[g[yy, zz, xx]] | se
+    struct = [(int(y), int(z), int(x)) for y, z, x, d, k in zip(yy, zz, xx, drop, keep) if k and not d]
+    like = T.copy()
+    for y, z, x, d, k in zip(yy, zz, xx, drop, keep):
+        if not d and not k:
+            like[y, z, x] = True
+    occ = like.astype(np.float32)
+    mat = np.where(like, g, 0)
+    # La rejilla nueva: lo que ocupa el terreno escalado, con margen
+    xs, zs = np.nonzero(like.any(0).T)[0], np.nonzero(like.any(0))[0]
+    wx0 = int(math.floor((xs.min() - cxs) * SCALE)) - 4
+    wx1 = int(math.ceil((xs.max() - cxs) * SCALE)) + 4
+    wz0 = int(math.floor((zs.min() - czs) * SCALE)) - 4
+    wz1 = int(math.ceil((zs.max() - czs) * SCALE)) + 4
+    W2, L2, H2 = wx1 - wx0 + 1, wz1 - wz0 + 1, H_WORLD
+    X, Z = np.meshgrid(np.arange(W2), np.arange(L2))
+    xsrc = cxs + (X + wx0) / SCALE
+    zsrc = czs + (Z + wz0) / SCALE
+    x0 = np.floor(xsrc).astype(int)
+    z0 = np.floor(zsrc).astype(int)
+    fx = (xsrc - x0).astype(np.float32)
+    fz = (zsrc - z0).astype(np.float32)
+    g2 = np.zeros((H2, L2, W2), np.int32)
+    for Y in range(H2):
+        ysrc = GROUND + (Y - WORLD_GROUND) / SCALE_Y
+        y0 = int(math.floor(ysrc))
+        fy = ysrc - y0
+        if y0 + 1 < 0 or y0 >= H:
+            continue
+        acc = np.zeros((L2, W2), np.float32)
+        best_w = np.full((L2, W2), -1.0, np.float32)
+        best_m = np.zeros((L2, W2), np.int32)
+        for dy in (0, 1):
+            yi = y0 + dy
+            if yi < 0 or yi >= H:
+                continue
+            wy = fy if dy else 1 - fy
+            for dz in (0, 1):
+                zi = z0 + dz
+                wz = fz if dz else 1 - fz
+                for dx in (0, 1):
+                    xi = x0 + dx
+                    wxx = fx if dx else 1 - fx
+                    ok = (zi >= 0) & (zi < L) & (xi >= 0) & (xi < W)
+                    zc, xc = np.clip(zi, 0, L - 1), np.clip(xi, 0, W - 1)
+                    o = np.where(ok, occ[yi, zc, xc], 0.0)
+                    w = wy * wz * wxx
+                    acc += w * o
+                    cand = np.where(o > 0, w, -1.0)
+                    better = cand > best_w
+                    best_w = np.where(better, cand, best_w)
+                    best_m = np.where(better, mat[yi, zc, xc], best_m)
+        g2[Y] = np.where(acc >= 0.5, best_m, 0)
+    # Las franjas de la superficie: el bloque de arriba y el de debajo, los de su columna en el mapa
+    s2 = g2 != 0
+    top2 = np.where(s2.any(0), H2 - 1 - np.argmax(s2[::-1], 0), -1)
+    ltop = np.where(like.any(0), H - 1 - np.argmax(like[::-1], 0), -1)
+    xn = np.clip(np.round(xsrc).astype(int), 0, W - 1)
+    zn = np.clip(np.round(zsrc).astype(int), 0, L - 1)
+    for Z_, X_ in zip(*np.nonzero(top2 >= 0)):
+        sz_, sx_ = zn[Z_, X_], xn[Z_, X_]
+        t = ltop[sz_, sx_]
+        if t < 1:
+            continue
+        Yt = top2[Z_, X_]
+        g2[Yt, Z_, X_] = mat[t, sz_, sx_]
+        if Yt > 0 and g2[Yt - 1, Z_, X_] != 0 and mat[t - 1, sz_, sx_] != 0:
+            g2[Yt - 1, Z_, X_] = mat[t - 1, sz_, sx_]
+    s2 = g2 != 0
+    top2 = np.where(s2.any(0), H2 - 1 - np.argmax(s2[::-1], 0), -1)
+    # Lo construido, a su tamaño: cada pieza (conexa) en su sitio nuevo, a la misma altura sobre el suelo, con cimientos
+    pts = set(struct)
+    seen = set()
+    placed = 0
+    found = isl.pal('stone_bricks')
+    for p0 in struct:
+        if p0 in seen:
+            continue
+        comp, st = [], [p0]
+        seen.add(p0)
+        while st:
+            q = st.pop()
+            comp.append(q)
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        r = (q[0] + dy, q[1] + dz, q[2] + dx)
+                        if r in pts and r not in seen:
+                            seen.add(r)
+                            st.append(r)
+        a = np.array(comp)
+        ymin = int(a[:, 0].min())
+        az, ax = int(round(a[:, 1].mean())), int(round(a[:, 2].mean()))
+        lift = ymin - int(ltop[az, ax])
+        NX = int(round((ax - cxs) * SCALE)) - wx0
+        NZ = int(round((az - czs) * SCALE)) - wz0
+        base = int(top2[NZ, NX]) + lift
+        cols = {}
+        for y, z, x in comp:
+            Y, Z_, X_ = base + y - ymin, NZ + z - az, NX + x - ax
+            if 0 <= Y < H2 and 0 <= Z_ < L2 and 0 <= X_ < W2:
+                g2[Y, Z_, X_] = g[y, z, x]
+                cols[(Z_, X_)] = min(cols.get((Z_, X_), 999), Y)
+                placed += 1
+        # sin terreno dentro de la pieza (por encima de su base) ni huecos debajo
+        for (Z_, X_), ylo in cols.items():
+            col = g2[:, Z_, X_]
+            for Y in range(base + 1, H2):
+                if col[Y] != 0 and terr[col[Y]] and Y > ylo:
+                    col[Y] = 0
+            below = np.nonzero(col[:ylo])[0]
+            if len(below) and len(comp) > 20:
+                for Y in range(int(below.max()) + 1, ylo):
+                    col[Y] = found
+    isl.grid = g2
+    isl.H, isl.L, isl.W = H2, L2, W2
+    PIT_CENTER = (-wx0, -wz0)
+    SHRINE = (int(round((sx - cxs) * SCALE)) - wx0, int(round((sz - czs) * SCALE)) - wz0)
+    SHRINE_TOP = int(round(WORLD_GROUND + (SHRINE_TOP - GROUND) * SCALE_Y))
+    GROUND = WORLD_GROUND
+    WORLD_DY = 0
+    print('agrandada: centro del mapa (%.1f, %.1f), %dx%dx%d, %d bloques construidos puestos; santuario en %s, terraza %d'
+          % (cxs, czs, W2, H2, L2, placed, SHRINE, SHRINE_TOP))
+    return wx0, wz0
+
+
 def encode(isl, ox, oy, oz, npc, arrive, rift):
     g = isl.grid
     H, L, W = g.shape
@@ -644,6 +841,7 @@ def main():
     isl = Island(b, m)
     fix_walls(isl)
     fill_pit(isl)
+    agrandar(isl)
     cleared = clear_near_center(isl)
     plaza(isl)
     (kx, ky, kz), (ax, ay, az) = santuario(isl)
