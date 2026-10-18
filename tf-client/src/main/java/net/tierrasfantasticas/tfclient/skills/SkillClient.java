@@ -125,6 +125,13 @@ public final class SkillClient {
         if (m.anim() != null) a.play(m.anim(), 1F);
     }
 
+    /** Para la prueba en el juego: cuántos efectos llevan un objeto. */
+    public static int debugItemCount() {
+        int n = 0;
+        for (Actor a : ACTORS.values()) if (a.item != null) n++;
+        return n;
+    }
+
     /** Para la prueba en el juego: cuántos efectos llevan un objeto, cuántos sin su modelo cargado y uno de ejemplo. */
     public static String debugItems() {
         int n = 0, missing = 0, display = 0;

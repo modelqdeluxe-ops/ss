@@ -167,24 +167,24 @@ public final class VoidTravel {
     }
 
     /**
-     * Dos espirales que suben a tu alrededor y se cierran un poco, y chispas en un anillo. (1.3.89: nada a menos de 1,3
-     * bloques ni en el centro: las chispas que nacían en el jugador salían pegadas a la cámara, manchas blancas enormes.)
+     * Dos espirales de polvo de luz que suben a tu alrededor y se cierran un poco, y motas en un anillo. (1.3.89: nada a
+     * menos de 1,9 bloques ni en el centro, y sin chispas END_ROD: pegadas a la cámara eran manchas blancas enormes.)
      */
     private static void spiral(ServerPlayer p, int age) {
         ServerLevel l = p.serverLevel();
         float k = age / (float) LEAVE_TICKS;
-        double r = 2.1 - 0.8 * k;
+        double r = 2.6 - 0.7 * k;
         for (int s = 0; s < 2; s++) {
             double a = age * 0.42 + s * Math.PI;
             double y = p.getY() + ((age * 0.09) % 2.6);
             double x = p.getX() + Math.cos(a) * r, z = p.getZ() + Math.sin(a) * r;
             l.sendParticles(s == 0 ? GOLD : LIGHT, x, y, z, 1, 0, 0, 0, 0);
-            l.sendParticles(ParticleTypes.END_ROD, x, y + 0.3, z, 1, 0.02, 0.05, 0.02, 0.01);
+            l.sendParticles(s == 0 ? LIGHT : GOLD, x, y + 0.35, z, 1, 0, 0, 0, 0);
         }
-        if (age % 3 == 0) ring(l, p, GOLD, 4, 1.6, 2.4);
-        if (age > LEAVE_TICKS * 0.6) ring(l, p, ParticleTypes.END_ROD, 2, 1.4, 2.0);
+        if (age % 3 == 0) ring(l, p, GOLD, 4, 1.9, 2.8);
+        if (age > LEAVE_TICKS * 0.6) ring(l, p, LIGHT, 3, 1.9, 2.6);
         if (age == LEAVE_TICKS - 2) {
-            ring(l, p, ParticleTypes.END_ROD, 24, 1.5, 2.2);
+            ring(l, p, LIGHT, 24, 1.9, 2.8);
             l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.45F, 1.4F);
         }
     }
@@ -226,9 +226,9 @@ public final class VoidTravel {
         p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 60, 0, false, false));
         VoidNet.fx(p, VoidNet.FX_ARRIVE);
         ServerLevel l = p.serverLevel();
-        ring(l, p, toVoid ? VIOLET : GOLD, 36, 1.6, 2.8);
-        ring(l, p, ParticleTypes.END_ROD, 18, 1.5, 2.4);
-        if (toVoid) ring(l, p, ParticleTypes.REVERSE_PORTAL, 40, 1.6, 3.0);
+        ring(l, p, toVoid ? VIOLET : GOLD, 36, 1.9, 3.0);
+        ring(l, p, LIGHT, 18, 1.9, 2.8);
+        if (toVoid) ring(l, p, ParticleTypes.REVERSE_PORTAL, 40, 2.0, 3.2);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.PLAYERS, 1F, 1.2F);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
         if (toVoid) {

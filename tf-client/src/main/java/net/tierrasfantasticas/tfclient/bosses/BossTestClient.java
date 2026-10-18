@@ -53,6 +53,7 @@ public final class BossTestClient {
         if (mc.level != null && mc.screen != null && mc.screen.isPauseScreen()) mc.setScreen(null);
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
+        BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();
         if (BossTest.dialogPress >= 0 && mc.screen instanceof net.tierrasfantasticas.tfclient.vacio.KnightScreen ks) {
             ks.testPress(BossTest.dialogPress);
             BossTest.dialogPress = -1;

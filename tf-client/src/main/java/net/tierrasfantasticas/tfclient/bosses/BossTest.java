@@ -143,6 +143,9 @@ public final class BossTest {
         final Map<String, Integer> anims = new TreeMap<>();
         final Map<String, Integer> errors = new LinkedHashMap<>();
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
+        /** Lo más que tuvo el cliente de efectos con objeto (item_display: llamas de Ignevar) y cómo estaban. */
+        int clientItemMax;
+        String clientItemInfo = "";
         /** Lo que anda en el suelo (bloques) y en cuántos ticks: su velocidad media al andar (1.3.89, «Ignevar es lento»). */
         double groundDist;
         int groundTicks;
@@ -425,6 +428,10 @@ public final class BossTest {
         List<String> anims = SkillMobs.animNames(boss);
         String what = anims == null ? "sin modelo" : String.join(",", anims.subList(Math.min(1, anims.size()), anims.size()));
         boolean back = false, side = false, lockedNow = false, pushedNow = false;
+        if (clientItemCount > r.clientItemMax) {
+            r.clientItemMax = clientItemCount;
+            r.clientItemInfo = clientItems;
+        }
         if (hs > 0.03 && hs <= 4 && boss.onGround()) {
             r.groundDist += hs;
             r.groundTicks++;
@@ -626,6 +633,7 @@ public final class BossTest {
 
     /** Los efectos con objeto que tiene el cliente (item_display: las llamas de Ignevar...), para el informe. */
     static volatile String clientItems = "?";
+    static volatile int clientItemCount;
 
     /** Lo que el cliente de la prueba pulsa en el diálogo del caballero (1 = la primera respuesta; -1 = nada). */
     static volatile int dialogPress = -1;
@@ -864,6 +872,7 @@ public final class BossTest {
                     r.movingTicks, r.backTicks, r.backLocked, r.backPushed, r.sideTicks, r.sideLocked, r.sidePushed, r.fastTicks, r.teleports));
             sb.append(String.format("   al andar por el suelo: %.3f bloques/tick de media (%d ticks)%n", r.groundTicks == 0 ? 0 : r.groundDist / r.groundTicks,
                     r.groundTicks));
+            if (r.clientItemMax > 0) sb.append("   efectos con objeto en el cliente (lo más): ").append(r.clientItemInfo).append('\n');
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",
                     r.airTicks, r.maxAir, r.maxHome, r.minionsMax));
             sb.append(String.format("   quieto y lejos del jugador (más de 2 s seguidos): %d ticks%n", r.stillFarTicks));
