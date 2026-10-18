@@ -662,13 +662,13 @@ public final class BossTest {
      */
     private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
         ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
-        // Caer al vacío (se le tira en el tick 1300): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
-        if (t > 1300 && t < 1330 && !voidRescued) {
+        // Caer al vacío (se le tira en el tick 1420): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
+        if (t > 1420 && t < 1450 && !voidRescued) {
             if (player.getY() > 50) {
                 voidRescued = true;
-                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 1300, player.getX(),
+                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 1420, player.getX(),
                         player.getY(), player.getZ()));
-            } else if (t == 1329) {
+            } else if (t == 1449) {
                 r.event(String.format("caer al vacío: NO RESCATADO (sigue en %.1f %.1f %.1f)", player.getX(), player.getY(), player.getZ()));
             }
         }
@@ -696,41 +696,43 @@ public final class BossTest {
             case 210 -> dialogPress = 1;
             case 340 -> shot(r, "dialogo_lore");
             case 350 -> dialogPress = 0;
-            case 395 -> shot(r, "viaje_salida");
-            case 440 -> {
+            // (1.3.91) el viaje por el agujero de gusano dura 150 ticks: sus capturas las saca el cliente a los tiempos
+            // del túnel (BossTestClient: ida_tunel_*, vuelta_tunel_*); desde aquí, todo 120 ticks más tarde que antes
+            case 560 -> {
                 r.event("tras el viaje: dimensión " + player.level().dimension().location() + String.format(" en %.1f %.1f %.1f",
-                        player.getX(), player.getY(), player.getZ()));
+                        player.getX(), player.getY(), player.getZ()) + "; agujero de gusano: "
+                        + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.travel());
                 shot(r, "viaje_llegada");
             }
-            case 520 -> {
+            case 640 -> {
                 BlockPosHelper.report(r, player);
                 r.event("cielo del vacío (shader): " + (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.skyShaderLoaded() ? "cargado" : "NO CARGADO")
                         + "; música del vacío: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA")
                         + "; shaders: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shaders());
                 shot(r, "vacio_llegada");
             }
-            case 530 -> {
+            case 650 -> {
                 Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
                 player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
             }
-            case 600 -> shot(r, "vacio_agujero");
+            case 720 -> shot(r, "vacio_agujero");
             // (1.3.89) el santuario nuevo, en la punta norte: desde el camino del este y por dentro, con el caballero
-            case 610 -> {
+            case 730 -> {
                 net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
                 player.teleportTo(vl, k.getX() + 19.5, k.getY() + 1, k.getZ() + 7.5, 108F, -6F);
             }
-            case 680 -> shot(r, "vacio_santuario");
-            case 690 -> {
+            case 800 -> shot(r, "vacio_santuario");
+            case 810 -> {
                 net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
                 player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 4.5, 180F, -12F);
             }
-            case 750 -> shot(r, "vacio_caballero");
+            case 870 -> shot(r, "vacio_caballero");
             // la grieta del Void en el centro de la plaza
-            case 760 -> {
+            case 880 -> {
                 net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
                 player.teleportTo(vl, g.getX() + 0.5, g.getY(), g.getZ() - 17.5, 0F, -14F);
             }
-            case 830 -> {
+            case 950 -> {
                 Rifts.Rift vr = Rifts.voidRift();
                 r.event("grieta del Void: " + (vr == null ? "NO EXISTE" : (vr.kind == RiftEntity.MOTHER ? "madre" : "normal") + ", espera a «"
                         + vr.boss + "» (" + vr.diff.label() + "); listas: " + Rifts.voidConfig().pools.get(0).size() + " normal, "
@@ -738,66 +740,67 @@ public final class BossTest {
                         + (vl.getEntitiesOfClass(RiftEntity.class, new AABB(player.blockPosition()).inflate(40)).isEmpty() ? "NO ESTÁ" : "está")));
                 shot(r, "vacio_grieta");
             }
-            case 840 -> {
+            case 960 -> {
                 net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
                 player.teleportTo(vl, g.getX() + 3.0, g.getY() + 3, g.getZ() - 5.0, 20F, -28F);
             }
-            case 900 -> shot(r, "vacio_grieta_cerca");
-            case 905 -> r.event(Rifts.voidSetActive(RiftEntity.MOTHER));
-            case 910 -> {
+            case 1020 -> shot(r, "vacio_grieta_cerca");
+            case 1025 -> r.event(Rifts.voidSetActive(RiftEntity.MOTHER));
+            case 1030 -> {
                 net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
                 player.teleportTo(vl, g.getX() + 0.5, g.getY(), g.getZ() - 26.5, 0F, -14F);
             }
-            case 980 -> {
+            case 1100 -> {
                 Rifts.Rift vr = Rifts.voidRift();
                 r.event("grieta madre: espera a «" + (vr == null ? "?" : vr.boss) + "»");
                 shot(r, "vacio_madre");
             }
-            case 990 -> {
+            case 1110 -> {
                 r.event(Rifts.voidSetActive(RiftEntity.NORMAL));
                 r.event("despertar la grieta del Void: " + (Rifts.testWake() ? "despierta" : "NO SE PUDO"));
             }
-            case 1075 -> {
+            case 1195 -> {
                 var bosses = vl.getEntitiesOfClass(BossEntity.class, new AABB(player.blockPosition()).inflate(48));
                 Rifts.Rift vr = Rifts.voidRift();
                 r.event("de la grieta del Void sale: " + (bosses.isEmpty() ? "NADIE" : bosses.get(0).cls() == null ? "?" : bosses.get(0).cls().id)
                         + " (estado " + (vr == null ? -1 : vr.state) + ")");
                 shot(r, "vacio_grieta_jefe");
             }
-            case 1085 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
+            case 1205 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
             // (las vistas desde el aire, volando: en la 1.3.89 se caía al vacío antes de la captura y salía el rescate)
             // (1.3.90: la isla ×1,5 y centrada en la grieta; con la vista de 6 chunks de la prueba se ve hasta ~96 bloques)
-            case 1100 -> {
+            case 1220 -> {
                 fly(player, true);
                 player.teleportTo(vl, 0.5, 165, 70.5, 180F, 48F);
             }
-            case 1180 -> shot(r, "vacio_isla");
-            case 1185 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
-            case 1225 -> shot(r, "vacio_planta");
-            case 1230 -> player.teleportTo(vl, 175.5, 88, 30.5, 110F, 8F);
-            case 1260 -> shot(r, "vacio_lado");
-            case 1299 -> fly(player, false);
-            case 1300 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
-            case 1330 -> {
+            case 1300 -> shot(r, "vacio_isla");
+            case 1305 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
+            case 1345 -> shot(r, "vacio_planta");
+            case 1350 -> player.teleportTo(vl, 175.5, 88, 30.5, 110F, 8F);
+            case 1380 -> shot(r, "vacio_lado");
+            case 1419 -> fly(player, false);
+            case 1420 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 1450 -> {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
                         new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
                 r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
                 if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
             }
-            case 1450 -> shot(r, "dialogo_santuario");
-            case 1460 -> dialogPress = 0;
+            case 1570 -> shot(r, "dialogo_santuario");
+            case 1580 -> dialogPress = 0;
             // (1.3.90) un mundo con la isla de antes: se pone al día solo (el servidor del dueño)
-            case 1470 -> {
+            case 1590 -> {
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.pretendOldIsland(vl);
                 updateFrom = t;
             }
-            case 1590 -> {
+            case 1800 -> {
                 double d = origin == null ? -1 : player.position().distanceTo(origin);
                 r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
-                        + (player.level() == level && d < 3 ? "" : " (MAL)"));
+                        + (player.level() == level && d < 3 ? "" : " (MAL)") + "; agujero de gusano: "
+                        + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.travel());
                 shot(r, "vuelta");
             }
-            case 1630 -> {
+            case 1840 -> {
                 // espera a que la isla esté al día (como mucho 4000 ticks)
                 if (!net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.islandUpdated() && updateWait++ < 4000) {
                     t--;
@@ -833,6 +836,12 @@ public final class BossTest {
             r.event("bajo los pies al llegar: " + p.level().getBlockState(b).getBlock().getDescriptionId() + " en " + b.toShortString()
                     + (p.level().getBlockState(b).isAir() ? " (VACÍO: ¿no se generó la isla?)" : ""));
         }
+    }
+
+    /** Una captura que pide el cliente (BossTestClient: el túnel del viaje, a sus tiempos). */
+    static void clientShot(String what) {
+        Rep r = current;
+        if (r != null) shot(r, what);
     }
 
     private static void shot(Rep r, String what) {

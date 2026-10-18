@@ -22,8 +22,11 @@ public final class VoidNet {
 
     /** Lo que se elige en el diálogo. */
     public static final int GO = 0, BACK = 1, BYE = 2;
-    /** Fases de la animación: sale (la luz sube hasta el blanco) y llega (el blanco se va). */
-    public static final int FX_LEAVE = 0, FX_ARRIVE = 1, FX_CANCEL = 2;
+    /**
+     * Fases de la animación: sale hacia el Void (agujero de gusano Overworld → Nether → End), llega, se cancela y sale de
+     * vuelta (End → Nether → Overworld; 1.3.91). Una llegada sin viaje (el rescate al caer al vacío) es solo un fundido.
+     */
+    public static final int FX_LEAVE = 0, FX_ARRIVE = 1, FX_CANCEL = 2, FX_LEAVE_BACK = 3;
 
     private VoidNet() {}
 
@@ -39,7 +42,7 @@ public final class VoidNet {
     }
 
     static void fx(ServerPlayer p, int phase) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new Fx(phase, phase == FX_LEAVE ? VoidTravel.LEAVE_TICKS : 50));
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new Fx(phase, phase == FX_LEAVE || phase == FX_LEAVE_BACK ? VoidTravel.LEAVE_TICKS : 50));
     }
 
     /**

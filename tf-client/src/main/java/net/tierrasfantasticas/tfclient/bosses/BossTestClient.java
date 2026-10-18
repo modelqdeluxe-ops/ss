@@ -20,10 +20,12 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.vacio.TravelFx;
 
 /**
  * El cliente de la prueba de los jefes (BossTest): en cuanto sale el menú, crea un mundo plano; saca las capturas que
- * pide la prueba (run/pruebas/*.png), cuenta las barras de jefe que se ven y cierra el juego al acabar.
+ * pide la prueba (run/pruebas/*.png) y las del viaje por el agujero de gusano, cuenta las barras de jefe que se ven y
+ * cierra el juego al acabar.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class BossTestClient {
@@ -74,6 +76,7 @@ public final class BossTestClient {
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
+        tunnelShots();
         String shot = BossTest.SHOTS_PENDING.peek();
         if (shot == null || mc.level == null) {
             shotSeen = null;
@@ -92,6 +95,28 @@ public final class BossTestClient {
             TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar la captura {}", shot, e);
         }
         BossTest.SHOTS_PENDING.poll();
+    }
+
+    /** (1.3.91) Capturas del viaje por el agujero de gusano, a los tiempos del túnel (no a los de la prueba). */
+    private static final String[] TUNNEL = {"0_deforma", "1_rasgado", "2_mundo1", "3_puerta1", "4_mundo2", "5_puerta2", "6_mundo3",
+            "7_salida", "8_luz", "9_aparece"};
+    /** Segundos desde que empieza el viaje (las 7 primeras) o desde que llega (las 3 últimas). */
+    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 3.0F, 3.85F, 4.9F, 5.75F, 6.9F, 0.9F, 1.45F, 2.1F};
+    private static int tunnelTrip = -1, tunnelNext;
+
+    private static void tunnelShots() {
+        float c = TravelFx.clock();
+        if (c < 0F) return;
+        if (TravelFx.tripId() != tunnelTrip) {
+            tunnelTrip = TravelFx.tripId();
+            tunnelNext = 0;
+        }
+        if (tunnelNext >= TUNNEL.length) return;
+        float at = TUNNEL_AT[tunnelNext];
+        float arrived = TravelFx.arrivedAt();
+        if (tunnelNext < 7 ? c < at : arrived < 0F || c < arrived + at) return;
+        BossTest.clientShot((TravelFx.back() ? "vuelta" : "ida") + "_tunel_" + TUNNEL[tunnelNext]);
+        tunnelNext++;
     }
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */

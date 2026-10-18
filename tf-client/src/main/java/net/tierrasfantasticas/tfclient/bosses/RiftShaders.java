@@ -10,7 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
-/** Los shaders de la grieta 3.0 (shaders/core/rift_obsidian y rift_fx): se cargan con los recursos. */
+/** Los shaders de la grieta 3.0 (shaders/core/rift_obsidian y rift_fx) y su distorsión (rift_warp, 1.3.91). */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class RiftShaders {
     static ShaderInstance obsidian, fx;
@@ -28,6 +28,8 @@ public final class RiftShaders {
                     DefaultVertexFormat.NEW_ENTITY), s -> obsidian = s);
             event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "rift_fx"),
                     DefaultVertexFormat.POSITION_COLOR_TEX), s -> fx = s);
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "rift_warp"),
+                    DefaultVertexFormat.POSITION), s -> RiftWarp.shader = s);
         } catch (IOException e) {
             TFClient.LOGGER.error("TF Jefes: no se pudieron cargar los shaders de la grieta", e);
         }

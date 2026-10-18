@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -22,6 +21,8 @@ public final class VoidClient {
     /** El servidor abre el diálogo del caballero. */
     static void talk(VoidNet.Talk m) {
         Minecraft.getInstance().setScreen(new KnightScreen(m));
+        // (las texturas del agujero de gusano, ya: que el viaje no empiece con un tirón)
+        WormholeTextures.prepare();
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
@@ -58,14 +59,11 @@ public final class VoidClient {
                     VoidSky.shader = s;
                     VoidSky.reset();
                 });
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "wormhole"),
+                        DefaultVertexFormat.POSITION), s -> TravelFx.shader = s);
             } catch (IOException e) {
-                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo", e);
+                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo o del viaje", e);
             }
-        }
-
-        @SubscribeEvent
-        public static void onOverlays(RegisterGuiOverlaysEvent event) {
-            event.registerAboveAll("vacio_viaje", TravelFx::render);
         }
     }
 }

@@ -93,6 +93,9 @@ public final class VoidSky {
         sh.safeGetUniform("DiskNormal").set(n.x, n.y, n.z);
         sh.safeGetUniform("Quality").set(quality);
         sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
+        // (1.3.91) una grieta activa cerca: el agujero negro se enfurece (RiftWarp)
+        sh.safeGetUniform("Rage").set(net.tierrasfantasticas.tfclient.bosses.RiftWarp.rage());
+        sh.safeGetUniform("RageMother").set(net.tierrasfantasticas.tfclient.bosses.RiftWarp.rageMother() ? 1F : 0F);
         RenderSystem.setShaderTexture(0, PANORAMA);
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();
