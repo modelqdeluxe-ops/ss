@@ -17,6 +17,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.bosses.RiftSky;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 /**
  * El cielo de The Void (1.3.88, el dueño: «quita ese sol, hazle un rework al cielo, que haya un agujero negro gigante
@@ -30,8 +31,11 @@ import org.joml.Vector3f;
 @OnlyIn(Dist.CLIENT)
 public final class VoidSky {
     static final ResourceLocation PANORAMA = new ResourceLocation(TFClient.MOD_ID, "textures/environment/grieta_cielo.png");
-    /** Hacia dónde está el agujero: al norte (por donde se mira al llegar), algo a la derecha y subido. */
-    static final Vector3f HOLE = new Vector3f(0.18F, 0.40F, -1.0F).normalize();
+    /**
+     * Hacia dónde está el agujero: al sur, algo al este y subido 22° (1.3.89: el santuario está en la punta norte de la
+     * isla y se llega mirando al sur, hacia la grieta del centro; el agujero queda detrás de ella).
+     */
+    static final Vector3f HOLE = new Vector3f(0.16F, 0.42F, 1.0F).normalize();
     static ShaderInstance shader;
     private static VertexBuffer cube;
     private static boolean warned;
@@ -53,15 +57,31 @@ public final class VoidSky {
 
     /** Dibuja el cielo entero (lo llama {@link VoidEffects#renderSky}). */
     static void render(PoseStack pose, Matrix4f projection, float partial) {
+        if (!draw(pose.last().pose(), projection, partial, false)) return;
+        // Las estrellas fugaces, encima
+        RiftSky.drawMeteors(pose, partial);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+    }
+
+    /**
+     * Con paquete de shaders, después de su pasada final ({@link AfterShaders}): el mismo cielo, solo donde la escena
+     * dejó la profundidad en 1 (donde se ve el cielo); los bloques, los jefes y la mano quedan delante. Sin las
+     * estrellas fugaces (son cuadros a 88 bloques: con la profundidad de la escena saldrían delante de la isla lejana).
+     */
+    public static void renderAfterShaders(Matrix4f view, Matrix4f projection, float partial) {
+        draw(view, projection, partial, true);
+    }
+
+    private static boolean draw(Matrix4f view, Matrix4f projection, float partial, boolean atFar) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
+        if (mc.level == null) return false;
         ShaderInstance sh = shader;
         if (sh == null) {
             if (!warned) {
                 warned = true;
                 TFClient.LOGGER.warn("TF Void: el shader del cielo no está cargado (se ve el vacío negro)");
             }
-            return;
+            return false;
         }
         if (cube == null) cube = buildCube();
         float time = ((mc.level.getGameTime() % 72000L) + partial) / 20F;
@@ -72,18 +92,21 @@ public final class VoidSky {
         sh.safeGetUniform("HoleDir").set(HOLE.x, HOLE.y, HOLE.z);
         sh.safeGetUniform("DiskNormal").set(n.x, n.y, n.z);
         sh.safeGetUniform("Quality").set(quality);
+        sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
         RenderSystem.setShaderTexture(0, PANORAMA);
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
+        if (atFar) {
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        }
         cube.bind();
-        cube.drawWithShader(pose.last().pose(), projection, sh);
+        cube.drawWithShader(view, projection, sh);
         VertexBuffer.unbind();
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
-        // Las estrellas fugaces, encima
-        RiftSky.drawMeteors(pose, partial);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+        return true;
     }
 
     private static VertexBuffer buildCube() {

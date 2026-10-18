@@ -125,6 +125,33 @@ public final class SkillClient {
         if (m.anim() != null) a.play(m.anim(), 1F);
     }
 
+    /** Para la prueba en el juego: cuántos efectos llevan un objeto. */
+    public static int debugItemCount() {
+        int n = 0;
+        for (Actor a : ACTORS.values()) if (a.item != null) n++;
+        return n;
+    }
+
+    /** Para la prueba en el juego: cuántos efectos llevan un objeto, cuántos sin su modelo cargado y uno de ejemplo. */
+    public static String debugItems() {
+        int n = 0, missing = 0, display = 0;
+        String example = "";
+        BakedModel miss = Minecraft.getInstance().getModelManager().getMissingModel();
+        for (Actor a : ACTORS.values()) {
+            if (a.item == null) continue;
+            n++;
+            if (a.itemDisplay) display++;
+            BakedModel m = Minecraft.getInstance().getModelManager().getModel(a.item);
+            if (m == null || m == miss) {
+                missing++;
+                example = a.item + " (sin modelo)";
+            } else if (example.isEmpty()) {
+                example = a.item + " escala " + (a.def == null ? "?" : a.def.scaleX) + " billboard " + (a.def == null ? "?" : a.def.billboard);
+            }
+        }
+        return n + " con objeto (" + display + " item_display, " + missing + " sin modelo)" + (example.isEmpty() ? "" : "; p. ej. " + example);
+    }
+
     static void moves(SkillNet.Moves m) {
         for (int i = 0; i < m.ids().length; i++) {
             Actor a = ACTORS.get(m.ids()[i]);
@@ -311,9 +338,12 @@ public final class SkillClient {
                 a.itemScale = parse(m.b(), 1F);
                 // Cómo se dibuja: «head» (la bala TRACKING de MythicMobs: un soporte con el objeto en la cabeza),
                 // «ground» (ITEM: un objeto suelto que gira), si no como un display (FIXED)
+                // y «display» (el objeto de un item_display: sin transformación de objeto, con su billboard y escala)
+                a.itemDisplay = "display".equals(m.c());
                 a.itemContext = switch (m.c() == null ? "" : m.c()) {
                     case "head" -> ItemDisplayContext.HEAD;
                     case "ground" -> ItemDisplayContext.GROUND;
+                    case "display" -> ItemDisplayContext.NONE;
                     default -> ItemDisplayContext.FIXED;
                 };
             }
@@ -584,7 +614,7 @@ public final class SkillClient {
                 int light = a.boss ? net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, BlockPos.containing(at.add(0, 0.5, 0))) : FULL_BRIGHT;
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
                 if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
-                if (a.item != null) renderItem(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
+                if (a.item != null) renderItem(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, camera, pose, buffers);
                 a.poseOrigin = cam;
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers, light);
                 if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
@@ -733,12 +763,44 @@ public final class SkillClient {
         pose.popPose();
     }
 
-    /** La bala de un misil de tipo display (la esfera de Astwood): el modelo de ítem, mirando hacia donde va. */
-    private static void renderItem(Actor a, Vec3 at, float yaw, float pitch, PoseStack pose, MultiBufferSource buffers) {
+    /**
+     * La bala de un misil de tipo display (la esfera de Astwood): el modelo de ítem, mirando hacia donde va. El objeto de
+     * un item_display (1.3.89: las llamas de Ignevar, las partículas del láser del contemplador y del Piglin Mecha), como
+     * el DisplayRenderer de Minecraft: el billboard de sus DisplayOptions (CENTER: mirando a la cámara), su traslación y
+     * escala, girado 180° y sin transformación de objeto (NONE).
+     */
+    private static void renderItem(Actor a, Vec3 at, float yaw, float pitch, Camera camera, PoseStack pose, MultiBufferSource buffers) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(a.item);
         if (model == null || model == Minecraft.getInstance().getModelManager().getMissingModel()) return;
         pose.pushPose();
         pose.translate(at.x, at.y, at.z);
+        if (a.itemDisplay) {
+            SkillDefs.MobDef def = a.def;
+            String bb = def == null || def.billboard == null ? "FIXED" : def.billboard.toUpperCase(java.util.Locale.ROOT);
+            switch (bb) {
+                case "CENTER" -> pose.mulPose(camera.rotation());
+                case "VERTICAL" -> pose.mulPose(Axis.YP.rotationDegrees(180F - camera.getYRot()));
+                case "HORIZONTAL" -> {
+                    pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+                    pose.mulPose(Axis.XP.rotationDegrees(-camera.getXRot()));
+                }
+                default -> {
+                    pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+                    pose.mulPose(Axis.XP.rotationDegrees(pitch));
+                }
+            }
+            // (el orden de Minecraft: traslación, giro izquierdo, escala, giro derecho)
+            if (def != null) pose.translate(def.transX, def.transY, def.transZ);
+            pose.mulPose(a.dtLeft);
+            if (def != null) pose.scale(def.scaleX, def.scaleY, def.scaleZ);
+            pose.mulPose(a.dtRight);
+            pose.mulPose(Axis.YP.rotationDegrees(180F));
+            pose.scale(a.itemScale, a.itemScale, a.itemScale);
+            Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.NONE, false, pose, buffers, FULL_BRIGHT,
+                    OverlayTexture.NO_OVERLAY, model);
+            pose.popPose();
+            return;
+        }
         if (a.itemContext == ItemDisplayContext.GROUND) {
             // Un objeto suelto de Minecraft (ItemEntityRenderer): gira solo, sin seguir la dirección
             pose.mulPose(Axis.YP.rotation((a.age + Minecraft.getInstance().getFrameTime()) / 20F));
@@ -865,6 +927,10 @@ public final class SkillClient {
         ResourceLocation item;
         float itemScale = 1F;
         ItemDisplayContext itemContext = ItemDisplayContext.FIXED;
+        /** El objeto es el de un item_display (con el billboard y la escala de su mob). */
+        boolean itemDisplay;
+        /** Giros izquierdo y derecho de un item_display (displaytransformation con cuaternión). */
+        final org.joml.Quaternionf dtLeft = new org.joml.Quaternionf(), dtRight = new org.joml.Quaternionf();
         /** enderbeam: el rayo hacia una entidad («e:id») o un sitio («p:x,y,z»), con su cristal del End (solo dibujado). */
         String beam;
         net.minecraft.world.entity.boss.enderdragon.EndCrystal crystal;
@@ -994,13 +1060,24 @@ public final class SkillClient {
             }
         }
 
-        /** displaytransformation de un text_display: giro (right_rotation) o desplazamiento (translation). */
+        /**
+         * displaytransformation: de un text_display, giro (right_rotation, en grados) o desplazamiento (translation); con
+         * cuatro números (un cuaternión, como en Minecraft), el giro izquierdo o derecho de un item_display (ADD los suma
+         * componente a componente y se normaliza, como MythicMobs: las llamas de Ignevar salen cada una algo giradas).
+         */
         void displayTransform(String what, String value) {
             String[] w = what.split("\\|");
             boolean add = w[0].equals("add");
             String tr = w.length > 1 ? w[1] : "translation";
             String[] v = value.split(",");
-            if (tr.contains("rotation")) {
+            if (tr.contains("rotation") && v.length >= 4) {
+                org.joml.Quaternionf q = tr.contains("left") ? dtLeft : dtRight;
+                float x = parse(v[0].trim(), 0F), y = parse(v[1].trim(), 0F), z = parse(v[2].trim(), 0F), qw = parse(v[3].trim(), 0F);
+                if (add) q.set(q.x + x, q.y + y, q.z + z, q.w + qw);
+                else q.set(x, y, z, qw);
+                if (q.lengthSquared() < 1e-8F) q.identity();
+                else q.normalize();
+            } else if (tr.contains("rotation")) {
                 float deg = parse(v[0].trim(), 0F);
                 textRoll = add ? textRoll + deg : deg;
             } else if (tr.contains("translation") && v.length >= 3) {
@@ -1832,13 +1909,19 @@ public final class SkillClient {
         }
     }
 
-    /** Todos los modelos de ítem de los efectos (se registran para que el juego los cargue). */
+    /**
+     * Todos los modelos de ítem de los efectos (se registran para que el juego los cargue): los de las clases y, desde la
+     * 1.3.89, también los de los jefes (antes no: sus objetos de efecto no se cargaban y no se veían, «veo invisibles sus
+     * llamas»: las de Ignevar, la bola azul de Astwood y las partículas del láser del Contemplador y del Piglin Mecha).
+     */
     static Set<ResourceLocation> itemModels() {
         Set<ResourceLocation> out = new HashSet<>();
-        for (SkillDefs.ClassDef c : SkillDefs.all().values()) {
-            for (String m : c.itemModels) {
-                ResourceLocation rl = ResourceLocation.tryParse(m);
-                if (rl != null && rl.getNamespace().equals(TFClient.MOD_ID)) out.add(rl);
+        for (Map<String, SkillDefs.ClassDef> defs : List.of(SkillDefs.all(), SkillDefs.bosses())) {
+            for (SkillDefs.ClassDef c : defs.values()) {
+                for (String m : c.itemModels) {
+                    ResourceLocation rl = ResourceLocation.tryParse(m);
+                    if (rl != null && rl.getNamespace().equals(TFClient.MOD_ID)) out.add(rl);
+                }
             }
         }
         return out;

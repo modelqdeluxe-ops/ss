@@ -10,6 +10,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
@@ -21,6 +22,18 @@ public final class VoidClient {
     /** El servidor abre el diálogo del caballero. */
     static void talk(VoidNet.Talk m) {
         Minecraft.getInstance().setScreen(new KnightScreen(m));
+    }
+
+    @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
+    public static final class ForgeEvents {
+        private ForgeEvents() {}
+
+        @SubscribeEvent
+        public static void onTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && TFVoid.isVoid(mc.level)) ShaderPacks.tick();
+        }
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)

@@ -27,6 +27,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs;
+import net.tierrasfantasticas.tfclient.vacio.AfterShaders;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -48,17 +49,26 @@ import org.joml.Vector3f;
  * pelea (se encoge y desaparece en 14 ticks); recarga (el desgarro es una rendija, el cristal pequeño y apagado, sin
  * esquirlas) y, al estar lista otra vez, se abre en 40 ticks. Encima (si no hay pelea), el jefe, su dificultad y qué
  * hacer. Para verla sin el juego: {@code xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta}.
+ *
+ * <p>1.3.89: la grieta madre ({@link RiftEntity#MOTHER}; el dueño: «una más imponente que la que tenemos, para poner
+ * criaturas más poderosas»): su propia malla ({@code bosses/grieta3_madre.json}: estrado de 18 lados, 11 garras de hasta
+ * 27 bloques, cristal ×1,5, 24 esquirlas, desgarro de 30 y círculo de 19,5) y en carmesí (aquí la luz de cada cara; en
+ * los shaders, material +4 y modo 0,25/1). La grieta del Void (la fija del centro de la isla) lleva encima su nombre.
+ * Con paquete de shaders (Oculus), la grieta se dibuja después de la pasada final del paquete ({@link AfterShaders}).
  */
 @OnlyIn(Dist.CLIENT)
 public class RiftRenderer extends EntityRenderer<RiftEntity> {
     private static final ResourceLocation NONE = new ResourceLocation("minecraft", "textures/misc/white.png");
     /** Lo mismo que grieta3.py (LIGHT, ROCK...) y que los shaders. */
     private static final Vector3f LIGHT = new Vector3f(0.35F, 0.85F, 0.25F).normalize();
-    private static final float[] ROCK = {0.075F, 0.042F, 0.11F}, CRYSTAL = {0.22F, 0.07F, 0.42F}, SHARD = {0.30F, 0.10F, 0.55F},
-            TEAR_LIGHT = {0.85F, 0.28F, 1.0F}, RIM = {0.55F, 0.30F, 0.95F};
+    /** Colores [tipo]: la normal (morado) y la madre (carmesí), los mismos que grieta3.py COLORS. */
+    private static final float[][] ROCK = {{0.075F, 0.042F, 0.11F}, {0.085F, 0.030F, 0.060F}},
+            CRYSTAL = {{0.22F, 0.07F, 0.42F}, {0.42F, 0.05F, 0.20F}}, SHARD = {{0.30F, 0.10F, 0.55F}, {0.55F, 0.08F, 0.28F}},
+            TEAR_LIGHT = {{0.85F, 0.28F, 1.0F}, {1.0F, 0.22F, 0.45F}}, RIM = {{0.55F, 0.30F, 0.95F}, {0.95F, 0.28F, 0.50F}};
+    private static final String[] FILES = {"/assets/tfclient/bosses/grieta3.json", "/assets/tfclient/bosses/grieta3_madre.json"};
     private static final int VERT = 10;
-    private static Mesh mesh;
-    private static boolean meshFailed;
+    private static final Mesh[] meshes = new Mesh[2];
+    private static final boolean[] meshFailed = new boolean[2];
 
     public RiftRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -78,10 +88,10 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         float tearCy = 11.5F, quadW = 17F, quadH = 27F, ringR = 13.5F, ringY = 0.04F;
     }
 
-    private static Mesh mesh() {
-        if (mesh != null || meshFailed) return mesh;
-        try (InputStream in = RiftRenderer.class.getResourceAsStream("/assets/tfclient/bosses/grieta3.json")) {
-            if (in == null) throw new IllegalStateException("no está grieta3.json");
+    private static Mesh mesh(int kind) {
+        if (meshes[kind] != null || meshFailed[kind]) return meshes[kind];
+        try (InputStream in = RiftRenderer.class.getResourceAsStream(FILES[kind])) {
+            if (in == null) throw new IllegalStateException("no está " + FILES[kind]);
             JsonObject o = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
             Mesh m = new Mesh();
             for (Map.Entry<String, com.google.gson.JsonElement> e : o.getAsJsonObject("parts").entrySet()) {
@@ -109,12 +119,12 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
             JsonObject r = o.getAsJsonObject("ring");
             m.ringR = r.get("r").getAsFloat();
             m.ringY = r.get("y").getAsFloat();
-            mesh = m;
+            meshes[kind] = m;
         } catch (Exception ex) {
-            meshFailed = true;
-            TFClient.LOGGER.error("TF Jefes: no se pudo leer la grieta (grieta3.json)", ex);
+            meshFailed[kind] = true;
+            TFClient.LOGGER.error("TF Jefes: no se pudo leer la grieta ({})", FILES[kind], ex);
         }
-        return mesh;
+        return meshes[kind];
     }
 
     // ------------------------------------------------------------------------------------------- dibujo
@@ -175,22 +185,29 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
 
     @Override
     public void render(RiftEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
-        Mesh m = mesh();
+        int kind = e.kind() == RiftEntity.MOTHER ? 1 : 0;
+        Mesh m = mesh(kind);
         Look l = look(e, partial);
-        if (m != null && l.size > 0.001F && RiftShaders.ready()) {
+        // Con paquete de shaders (Oculus) la grieta se guarda y se dibuja después de su pasada final (AfterShaders;
+        // dibujada ahora no dejaría nada); en su pasada de sombras, nada
+        boolean late = AfterShaders.active();
+        if (m != null && l.size > 0.001F && RiftShaders.ready() && !(late && AfterShaders.shadowPass())) {
             try {
-                draw(e, m, l, partial, pose, buffers, light);
+                draw(e, m, kind, l, partial, pose, late ? RiftLate.buffers() : buffers, light);
             } catch (Throwable t) {
                 TFClient.LOGGER.error("TF Jefes: error al dibujar la grieta", t);
-                meshFailed = true;
-                mesh = null;
+                meshFailed[kind] = true;
+                meshes[kind] = null;
             }
         }
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(e.boss());
-        if (cls != null && cls.bossInfo != null && e.state() != RiftEntity.FIGHT) label(e, cls.bossInfo, pose, buffers);
+        SkillDefs.BossInfo bi = cls == null ? null : cls.bossInfo;
+        if (e.state() != RiftEntity.FIGHT && (bi != null || e.fixed())) {
+            label(e, bi, m == null ? 23F : m.tearCy + m.quadH * 0.426F, pose, buffers);
+        }
     }
 
-    private void draw(RiftEntity e, Mesh m, Look l, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+    private void draw(RiftEntity e, Mesh m, int kind, Look l, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         float t = e.clientAge + partial;
         Vec3 camW = this.entityRenderDispatcher.camera.getPosition();
         double ex = Mth.lerp(partial, e.xo, e.getX()), ey = Mth.lerp(partial, e.yo, e.getY()), ez = Mth.lerp(partial, e.zo, e.getZ());
@@ -202,15 +219,15 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         Matrix3f nmat = pose.last().normal();
         VertexConsumer vc = buffers.getBuffer(BossRenderTypes.RIFT_OBSIDIAN);
         Matrix4f id = new Matrix4f();
-        emit(vc, m.parts.get("base"), id, mat, nmat, cam, l, light);
-        emit(vc, m.parts.get("spires"), id, mat, nmat, cam, l, light);
+        emit(vc, m.parts.get("base"), id, mat, nmat, cam, l, light, kind, m.tearCy);
+        emit(vc, m.parts.get("spires"), id, mat, nmat, cam, l, light, kind, m.tearCy);
         // El cristal: flota, gira (y tiembla al despertar)
         Part cr = m.parts.get("crystal");
         if (cr != null && l.crystal > 0.01F) {
             float sx = l.shake > 0 ? Mth.sin(t * 2.9F) * l.shake * 3F : 0F, sz = l.shake > 0 ? Mth.cos(t * 3.3F) * l.shake * 3F : 0F;
             Matrix4f x = new Matrix4f().translate(cr.px + sx, cr.py + 0.3F * Mth.sin(t * 0.065F), cr.pz + sz)
                     .rotateY(t * 0.03F * l.crystalSpin).rotateZ(l.shake * Mth.sin(t * 1.1F)).scale(l.crystal);
-            emit(vc, cr, x, mat, nmat, cam, l, light);
+            emit(vc, cr, x, mat, nmat, cam, l, light, kind, m.tearCy);
         }
         // Las esquirlas que orbitan
         Part sh = m.parts.get("shard");
@@ -220,7 +237,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
                 float r = s[0] * l.shardOut;
                 Matrix4f x = new Matrix4f().translate(Mth.cos(a) * r, s[1] + Mth.sin(a * 2 + s[3]) * s[4], Mth.sin(a) * r)
                         .rotateY(a * 3F).scale(s[5] * l.shards);
-                emit(vc, sh, x, mat, nmat, cam, l, light);
+                emit(vc, sh, x, mat, nmat, cam, l, light, kind, m.tearCy);
             }
         }
         // El desgarro (mira a la cámara, girando solo en vertical) y el círculo del suelo
@@ -237,10 +254,11 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         float intensity = Mth.clamp(l.glow / 2F, 0F, 1F);
         int cr0 = (int) (seed * 255), ca = (int) (intensity * 255), cb = (int) (Mth.clamp(l.open / 1.4F, 0F, 1F) * 255);
         // (el desgarro lleva «abierto» 0..1,4 en b/255×1,4: el shader lo usa tal cual en 0..1; con 1,4 se ve más ancho)
+        // (modo en g: 0 desgarro, 64 el de la madre; 191 círculo, 255 el de la madre)
         quad(fx, mat, -sxx * hw, cy - hh, -szz * hw, sxx * hw, cy - hh, szz * hw, sxx * hw, cy + hh, szz * hw, -sxx * hw, cy + hh, -szz * hw,
-                cr0, 0, cb, ca);
+                cr0, kind == 1 ? 64 : 0, cb, ca);
         float rr = m.ringR, ry = m.ringY;
-        quad(fx, mat, -rr, ry, -rr, rr, ry, -rr, rr, ry, rr, -rr, ry, rr, cr0, 255, 255, ca);
+        quad(fx, mat, -rr, ry, -rr, rr, ry, -rr, rr, ry, rr, -rr, ry, rr, cr0, kind == 1 ? 255 : 191, 255, ca);
         pose.popPose();
     }
 
@@ -253,7 +271,8 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
     }
 
     /** Los triángulos de una parte, con su transformación (x) y la luz de cada vértice. */
-    private static void emit(VertexConsumer vc, Part p, Matrix4f x, Matrix4f mat, Matrix3f nmat, Vector3f cam, Look l, int light) {
+    private static void emit(VertexConsumer vc, Part p, Matrix4f x, Matrix4f mat, Matrix3f nmat, Vector3f cam, Look l, int light,
+                             int kind, float tearCy) {
         if (p == null) return;
         float[] v = p.v;
         Vector3f pos = new Vector3f(), n = new Vector3f();
@@ -267,19 +286,19 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
                 x.transformDirection(n).normalize();
             }
             int matId = (int) v[i + 8];
-            light(pos, n, matId, cam, l.glow, col);
+            light(pos, n, matId, cam, l.glow, col, kind, tearCy);
             int vein = (int) Mth.clamp(v[i + 9] * l.glow * 100F, 0F, 255F);
-            vc.vertex(mat, pos.x, pos.y, pos.z).color(col[0], col[1], col[2], 1F).uv(v[i + 6], v[i + 7]).overlayCoords(matId, vein)
+            vc.vertex(mat, pos.x, pos.y, pos.z).color(col[0], col[1], col[2], 1F).uv(v[i + 6], v[i + 7]).overlayCoords(matId + 4 * kind, vein)
                     .uv2(light).normal(nmat, n.x, n.y, n.z).endVertex();
         }
     }
 
     /** La luz de un vértice (la misma cuenta que grieta3.py light): base × (ambiente + difusa) + desgarro + borde. */
-    static void light(Vector3f pos, Vector3f n, int mat, Vector3f cam, float glow, float[] out) {
-        float[] base = mat == 0 || mat == 3 ? ROCK : mat == 1 ? CRYSTAL : SHARD;
+    static void light(Vector3f pos, Vector3f n, int mat, Vector3f cam, float glow, float[] out, int kind, float tearCy) {
+        float[] base = mat == 0 || mat == 3 ? ROCK[kind] : mat == 1 ? CRYSTAL[kind] : SHARD[kind];
         float dif = Math.max(0F, n.dot(LIGHT));
         float k0 = 0.5F + 0.9F * dif;
-        float tx = -pos.x, ty = 11.5F - pos.y, tz = -pos.z;
+        float tx = -pos.x, ty = tearCy - pos.y, tz = -pos.z;
         float d2 = tx * tx + ty * ty + tz * tz;
         float dl = (float) Math.sqrt(d2 + 1e-9F);
         float k = Math.max(0F, (n.x * tx + n.y * ty + n.z * tz) / dl) * glow * 80F / (80F + d2) * (mat == 0 || mat == 3 ? 0.55F : 0.9F);
@@ -287,30 +306,45 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         float vl = (float) Math.sqrt(vx * vx + vy * vy + vz * vz) + 1e-9F;
         float fr = 1F - Math.abs((n.x * vx + n.y * vy + n.z * vz) / vl);
         fr = fr * fr * fr * (mat == 0 || mat == 3 ? 0.35F : 0.7F);
-        for (int c = 0; c < 3; c++) out[c] = Mth.clamp(base[c] * k0 + TEAR_LIGHT[c] * k + RIM[c] * fr, 0F, 1F);
+        for (int c = 0; c < 3; c++) out[c] = Mth.clamp(base[c] * k0 + TEAR_LIGHT[kind][c] * k + RIM[kind][c] * fr, 0F, 1F);
     }
 
-    /** El cartel de encima: jefe, dificultad y estado. */
-    private void label(RiftEntity e, SkillDefs.BossInfo bi, PoseStack pose, MultiBufferSource buffers) {
+    /**
+     * El cartel de encima: jefe, dificultad y estado (y, en la grieta del Void, su nombre; si el staff no le ha puesto
+     * criaturas, lo dice).
+     */
+    private void label(RiftEntity e, SkillDefs.BossInfo bi, float height, PoseStack pose, MultiBufferSource buffers) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.distanceToSqr(e) > 48 * 48) return;
+        double far = 48 * e.scale();
+        if (mc.player == null || mc.player.distanceToSqr(e) > far * far) return;
         List<Component> lines = new ArrayList<>();
         int st = e.state();
-        lines.add(Component.literal(bi.name.toUpperCase(java.util.Locale.ROOT)).withStyle(s -> s.withColor(TextColor.fromRgb(bi.color)).withBold(true)));
-        lines.add(Component.literal(e.label()).withStyle(s -> s.withColor(TextColor.fromRgb(e.labelColor()))));
-        String state = switch (st) {
-            case RiftEntity.READY -> "Golpea el cristal para despertarlo";
-            case RiftEntity.WAKING -> "¡Despierta!";
-            case RiftEntity.FIGHT -> "Incursión en curso";
-            default -> "Vuelve en " + Rifts.time(e.left());
-        };
-        lines.add(Component.literal(state).withStyle(s -> s.withColor(TextColor.fromRgb(st == RiftEntity.WAKING ? 0xFF6A6A : 0xD8D8E0))));
+        boolean mother = e.kind() == RiftEntity.MOTHER;
+        if (e.fixed()) {
+            lines.add(Component.literal(mother ? "✦ GRIETA MADRE ✦" : "✦ GRIETA DEL VOID ✦")
+                    .withStyle(s -> s.withColor(TextColor.fromRgb(mother ? 0xFF4A7A : 0xC77DFF)).withBold(true)));
+        }
+        if (bi == null) {
+            lines.add(Component.literal("Sin criaturas").withStyle(s -> s.withColor(TextColor.fromRgb(0xD8D8E0))));
+            lines.add(Component.literal("El staff las pone en /tf boss → VOID").withStyle(s -> s.withColor(TextColor.fromRgb(0x9AA0AE))));
+        } else {
+            lines.add(Component.literal(bi.name.toUpperCase(java.util.Locale.ROOT)).withStyle(s -> s.withColor(TextColor.fromRgb(bi.color)).withBold(true)));
+            lines.add(Component.literal(e.label()).withStyle(s -> s.withColor(TextColor.fromRgb(e.labelColor()))));
+            String state = switch (st) {
+                case RiftEntity.READY -> "Golpea el cristal para despertarlo";
+                case RiftEntity.WAKING -> "¡Despierta!";
+                case RiftEntity.FIGHT -> "Incursión en curso";
+                default -> "Vuelve en " + Rifts.time(e.left());
+            };
+            lines.add(Component.literal(state).withStyle(s -> s.withColor(TextColor.fromRgb(st == RiftEntity.WAKING ? 0xFF6A6A : 0xD8D8E0))));
+        }
         Font font = mc.font;
         pose.pushPose();
-        // Encima del desgarro (que llega a ~21,5 bloques)
-        pose.translate(0, 23.0, 0);
+        // Encima del desgarro (la normal llega a ~21,5 bloques; la madre a ~32)
+        pose.translate(0, height, 0);
         pose.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        pose.scale(-0.05F, -0.05F, 0.05F);
+        float k = 0.05F * (mother ? 1.4F : 1F);
+        pose.scale(-k, -k, k);
         Matrix4f mat = pose.last().pose();
         int bg = (int) (mc.options.getBackgroundOpacity(0.35F) * 255F) << 24;
         float y = -lines.size() * 11;

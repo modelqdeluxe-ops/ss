@@ -1,7 +1,14 @@
-"""La grieta 3.0 (TF Client 1.3.88): geometría facetada y su vista previa con los shaders de verdad.
+"""La grieta 3.0 (TF Client 1.3.88) y la grieta madre (1.3.89): geometría facetada y su vista previa con los shaders.
 
-    python3 tools/bosses/grieta3.py                       escribe assets/tfclient/bosses/grieta3.json
+    python3 tools/bosses/grieta3.py              escribe assets/tfclient/bosses/grieta3.json y grieta3_madre.json
     xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta [--t segundos] [--estado lista|despierta|dormida]
+                                                [--madre]
+
+La grieta madre (el dueño: «haz dos grietas, la normal y la grieta madre, una más imponente que la que tenemos, para
+poner criaturas más poderosas»; va en el centro de la isla del Void si el staff la elige en /tf boss → VOID): la misma
+idea en grande y en carmesí: estrado de 18 lados (7,4 de radio) con 24 piedras alrededor, 11 garras de 9 a 27 bloques,
+cristal ×1,5, 24 esquirlas, desgarro de 30 bloques de alto y círculo de runas de 19,5. El color lo ponen los shaders
+(material +4 en rift_obsidian y modo 0,25/1 en rift_fx) y RiftRenderer (la luz de cada cara).
 
 El dueño (con capturas): «la textura de la grieta está mal trabajada, se ve horrible, falta pintura, bordes dentados,
 caras planas, mal hecha; quiero algo más imponente que esto, más grande». La 3.0 ya no lleva texturas:
@@ -41,6 +48,21 @@ RNG = random.Random(2026)
 # El desgarro (lo dibuja el shader): alto, ancho máximo, centro y el cuadro del halo
 TEAR = {'h': 20.0, 'w': 7.5, 'cy': 11.5, 'quad_w': 17.0, 'quad_h': 27.0}
 RING = {'r': 13.5, 'y': 0.04}
+OUT_MADRE = os.path.join(RES, 'bosses', 'grieta3_madre.json')
+
+# Las dos grietas: la normal (1.3.88) y la madre (1.3.89). El desgarro de la madre es el mismo cuadro escalado ×1,5
+# (el shader trabaja en coordenadas del cuadro).
+VARIANTS = {
+    'normal': {'base_sides': 14, 'base_r': 5.6, 'stones': 16, 'stone_r': (7.0, 9.6), 'stone_sz': (0.7, 1.4), 'stone_h': (0.5, 1.6),
+               'spires': 7, 'spire_r': (6.8, 8.2), 'spire_tall': (12.0, 18.0), 'spire_short': (6.0, 10.0), 'spire_r0': (1.2, 1.9),
+               'spire_lean': (2.0, 3.4), 'crystal_scale': 1.0, 'crystal_y': 6.2, 'shards': 14, 'shard_r': (2.6, 5.2),
+               'shard_h': (2.0, 13.0), 'tear': TEAR, 'ring': RING},
+    'madre': {'base_sides': 18, 'base_r': 7.4, 'stones': 24, 'stone_r': (9.2, 13.0), 'stone_sz': (0.9, 1.9), 'stone_h': (0.7, 2.4),
+              'spires': 11, 'spire_r': (9.0, 10.6), 'spire_tall': (19.0, 27.0), 'spire_short': (9.0, 14.0), 'spire_r0': (1.6, 2.6),
+              'spire_lean': (2.6, 4.6), 'crystal_scale': 1.5, 'crystal_y': 8.6, 'shards': 24, 'shard_r': (3.6, 7.6),
+              'shard_h': (3.0, 19.0),
+              'tear': {'h': 30.0, 'w': 11.25, 'cy': 16.5, 'quad_w': 25.5, 'quad_h': 40.5}, 'ring': {'r': 19.5, 'y': 0.04}},
+}
 
 
 class Mesh:
@@ -97,11 +119,11 @@ def prism(m, bottom, top, mat, vein, cap_top=True, cap_bottom=False):
             m.tri(c, bottom[i], bottom[(i + 1) % n], mat, vein * 0.3)
 
 
-def base(m):
-    """El estrado: losa biselada de 14 lados y anillo de piedras."""
-    sides = 14
+def base(m, V):
+    """El estrado: losa biselada de 14 lados (18 la madre) y anillo de piedras."""
+    sides = V['base_sides']
     rng = random.Random(11)
-    rad = [5.6 * (1 + rng.uniform(-0.07, 0.07)) for _ in range(sides)]
+    rad = [V['base_r'] * (1 + rng.uniform(-0.07, 0.07)) for _ in range(sides)]
     angs = [i * math.tau / sides + rng.uniform(-0.08, 0.08) for i in range(sides)]
     ground = [(math.cos(a) * r, 0.0, math.sin(a) * r) for a, r in zip(angs, rad)]
     mid = [(math.cos(a) * r, 0.45, math.sin(a) * r) for a, r in zip(angs, rad)]
@@ -109,7 +131,7 @@ def base(m):
     prism(m, ground, mid, 0, 0.5, cap_top=False)
     prism(m, mid, top, 0, 0.7, cap_top=False)
     # la cara de arriba, con un hundimiento en el centro (donde cae la luz del desgarro)
-    inner = [(math.cos(a) * 2.0, 0.6, math.sin(a) * 2.0) for a in angs]
+    inner = [(math.cos(a) * 2.0 * V['base_r'] / 5.6, 0.6, math.sin(a) * 2.0 * V['base_r'] / 5.6) for a in angs]
     for i in range(sides):
         j = (i + 1) % sides
         m.quad(top[i], inner[i], inner[j], top[j], 0, 0.9)
@@ -117,12 +139,13 @@ def base(m):
     for i in range(sides):
         m.tri(c, inner[(i + 1) % sides], inner[i], 0, 1.0)
     # piedras del anillo
-    for k in range(16):
-        a = k * math.tau / 16 + rng.uniform(-0.12, 0.12)
-        r = rng.uniform(7.0, 9.6)
+    ns = V['stones']
+    for k in range(ns):
+        a = k * math.tau / ns + rng.uniform(-0.12, 0.12)
+        r = rng.uniform(*V['stone_r'])
         cx, cz = math.cos(a) * r, math.sin(a) * r
-        sz = rng.uniform(0.7, 1.4)
-        h = rng.uniform(0.5, 1.6)
+        sz = rng.uniform(*V['stone_sz'])
+        h = rng.uniform(*V['stone_h'])
         n = rng.choice((5, 6, 7))
         bot = ring_pts(cx, -0.2, cz, sz, n, 0.25, rot=rng.uniform(0, 6.28), rng=rng)
         lean = (rng.uniform(-0.35, 0.35), rng.uniform(-0.35, 0.35))
@@ -151,14 +174,15 @@ def spire(m, x, z, height, r0, lean_out, twist, seg, rng):
         prism(m, rings[s], rings[s + 1], mat, vein, cap_top=(s == seg - 1))
 
 
-def spires(m):
+def spires(m, V):
     rng = random.Random(23)
-    for k in range(7):
-        a = k * math.tau / 7 + rng.uniform(-0.15, 0.15) + 0.3
-        r = rng.uniform(6.8, 8.2)
-        h = rng.uniform(12.0, 18.0) if k % 2 == 0 else rng.uniform(6.0, 10.0)
-        spire(m, math.cos(a) * r, math.sin(a) * r, h, rng.uniform(1.2, 1.9), rng.uniform(2.0, 3.4),
-              rng.uniform(-0.9, 0.9), 8, rng)
+    n = V['spires']
+    for k in range(n):
+        a = k * math.tau / n + rng.uniform(-0.15, 0.15) + 0.3
+        r = rng.uniform(*V['spire_r'])
+        h = rng.uniform(*V['spire_tall']) if k % 2 == 0 else rng.uniform(*V['spire_short'])
+        spire(m, math.cos(a) * r, math.sin(a) * r, h, rng.uniform(*V['spire_r0']), rng.uniform(*V['spire_lean']),
+              rng.uniform(-0.9, 0.9), 8 if h < 20 else 10, rng)
 
 
 def bipyramid(m, c, radius, up, down, sides, mat, vein, rot=0.0):
@@ -173,79 +197,88 @@ def bipyramid(m, c, radius, up, down, sides, mat, vein, rot=0.0):
         m.tri(bot, eq[i], eq[j], mat, vein)
 
 
-def crystal(m):
+def crystal(m, V):
     """El cristal que se golpea (alrededor de su pivote, que anima Java)."""
     # cuerpo: bipirámide alargada con un anillo intermedio (más facetas)
+    k = V['crystal_scale']
     sides = 8
-    r = 1.7
-    eq1 = [(math.cos(i * math.tau / sides) * r, 0.5, math.sin(i * math.tau / sides) * r) for i in range(sides)]
-    eq2 = [(math.cos(i * math.tau / sides + 0.3) * r * 0.92, -0.5, math.sin(i * math.tau / sides + 0.3) * r * 0.92) for i in range(sides)]
-    top, bot = (0, 3.4, 0), (0, -2.4, 0)
+    r = 1.7 * k
+    eq1 = [(math.cos(i * math.tau / sides) * r, 0.5 * k, math.sin(i * math.tau / sides) * r) for i in range(sides)]
+    eq2 = [(math.cos(i * math.tau / sides + 0.3) * r * 0.92, -0.5 * k, math.sin(i * math.tau / sides + 0.3) * r * 0.92) for i in range(sides)]
+    top, bot = (0, 3.4 * k, 0), (0, -2.4 * k, 0)
     for i in range(sides):
         j = (i + 1) % sides
         m.tri(top, eq1[j], eq1[i], 1, 0.8)
         m.quad(eq1[i], eq1[j], eq2[j], eq2[i], 1, 0.9)
         m.tri(bot, eq2[i], eq2[j], 1, 0.8)
     # dos cristales pequeños a los lados
-    bipyramid(m, (1.7, -0.8, 0.4), 0.6, 1.6, 0.8, 6, 1, 0.7, rot=0.4)
-    bipyramid(m, (-1.5, -0.5, -0.5), 0.5, 1.3, 0.7, 6, 1, 0.7, rot=1.1)
+    bipyramid(m, (1.7 * k, -0.8 * k, 0.4 * k), 0.6 * k, 1.6 * k, 0.8 * k, 6, 1, 0.7, rot=0.4)
+    bipyramid(m, (-1.5 * k, -0.5 * k, -0.5 * k), 0.5 * k, 1.3 * k, 0.7 * k, 6, 1, 0.7, rot=1.1)
 
 
-def shard_mesh(m):
+def shard_mesh(m, V):
     bipyramid(m, (0, 0, 0), 0.32, 0.75, 0.45, 5, 2, 0.6)
 
 
-def build():
+def build(variant='normal'):
+    V = VARIANTS[variant]
     parts = {}
-    for name, fn, pivot in (('base', base, [0, 0, 0]), ('spires', spires, [0, 0, 0]), ('crystal', crystal, [0, 6.2, 0]),
+    for name, fn, pivot in (('base', base, [0, 0, 0]), ('spires', spires, [0, 0, 0]), ('crystal', crystal, [0, V['crystal_y'], 0]),
                             ('shard', shard_mesh, [0, 0, 0])):
         m = Mesh()
-        fn(m)
+        fn(m, V)
         parts[name] = {'pivot': pivot, 'v': m.v}
     rng = random.Random(41)
     shards = []
-    for i in range(14):
-        shards.append([round(rng.uniform(2.6, 5.2), 3), round(rng.uniform(2.0, 13.0), 3), round(rng.uniform(0.25, 0.7) * rng.choice((-1, 1)), 3),
+    for i in range(V['shards']):
+        shards.append([round(rng.uniform(*V['shard_r']), 3), round(rng.uniform(*V['shard_h']), 3),
+                       round(rng.uniform(0.25, 0.7) * rng.choice((-1, 1)), 3),
                        round(rng.uniform(0, math.tau), 3), round(rng.uniform(-0.4, 0.4), 3), round(rng.uniform(0.7, 1.5), 3)])
-    return {'parts': parts, 'shards': shards, 'tear': TEAR, 'ring': RING}
+    return {'parts': parts, 'shards': shards, 'tear': V['tear'], 'ring': V['ring']}
 
 
 # ------------------------------------------------------------------------------------- luz por vértice (= Java)
 
 LIGHT = np.array([0.35, 0.85, 0.25]) / np.linalg.norm([0.35, 0.85, 0.25])
-ROCK = np.array([0.075, 0.042, 0.11])
-CRYSTAL = np.array([0.22, 0.07, 0.42])
-SHARD = np.array([0.30, 0.10, 0.55])
-TEAR_LIGHT = np.array([0.85, 0.28, 1.0])
-RIM = np.array([0.55, 0.30, 0.95])
+# colores (= RiftRenderer): normal (morado) y madre (carmesí)
+COLORS = {
+    'normal': {'rock': np.array([0.075, 0.042, 0.11]), 'crystal': np.array([0.22, 0.07, 0.42]), 'shard': np.array([0.30, 0.10, 0.55]),
+               'tear': np.array([0.85, 0.28, 1.0]), 'rim': np.array([0.55, 0.30, 0.95])},
+    'madre': {'rock': np.array([0.085, 0.030, 0.060]), 'crystal': np.array([0.42, 0.05, 0.20]), 'shard': np.array([0.55, 0.08, 0.28]),
+              'tear': np.array([1.0, 0.22, 0.45]), 'rim': np.array([0.95, 0.28, 0.50])},
+}
 
 
-def light(pos, n, mat, cam, glow):
+def light(pos, n, mat, cam, glow, variant='normal'):
     """La misma cuenta que RiftRenderer.light (Java): base × (ambiente + difusa) + luz del desgarro + borde."""
-    base_c = ROCK if mat in (0, 3) else CRYSTAL if mat == 1 else SHARD
+    C = COLORS[variant]
+    base_c = C['rock'] if mat in (0, 3) else C['crystal'] if mat == 1 else C['shard']
     dif = max(0.0, float(n @ LIGHT))
     c = base_c * (0.5 + 0.9 * dif)
-    tear = np.array([0.0, TEAR['cy'], 0.0])
+    tear = np.array([0.0, VARIANTS[variant]['tear']['cy'], 0.0])
     to = tear - pos
     d2 = float(to @ to)
     to = to / math.sqrt(d2 + 1e-9)
     k = max(0.0, float(n @ to)) * glow * 80.0 / (80.0 + d2)
-    c = c + TEAR_LIGHT * k * (0.55 if mat in (0, 3) else 0.9)
+    c = c + C['tear'] * k * (0.55 if mat in (0, 3) else 0.9)
     view = cam - pos
     view = view / (np.linalg.norm(view) + 1e-9)
     fr = (1 - abs(float(n @ view))) ** 3
-    c = c + RIM * fr * (0.35 if mat in (0, 3) else 0.7)
+    c = c + C['rim'] * fr * (0.35 if mat in (0, 3) else 0.7)
     return np.clip(c, 0, 1)
 
 
 # ------------------------------------------------------------------------------------- vista previa (moderngl)
 
-def preview(dest, t, state):
+def preview(dest, t, state, variant='normal'):
     import moderngl
     from PIL import Image
     sys.path.insert(0, os.path.join(HERE, '..', 'void'))
     import cielo_preview as CP
-    data = build()
+    data = build(variant)
+    V = VARIANTS[variant]
+    madre = variant == 'madre'
+    sc = 1.5 if madre else 1.0
     ctx = moderngl.create_standalone_context(require=330)
     w, h = 960, 540
     sh = os.path.join(RES, 'shaders', 'core')
@@ -270,8 +303,9 @@ def preview(dest, t, state):
     gt = (t * 20 % 24000) / 24000.0
     f, n = CP.hole_and_disk()
     for vname, cam, yaw_deg, pitch in (('frente', (0.5, 2.0, -26.0), 0.0, -14.0), ('lado', (22.0, 6.0, -12.0), 60.0, -6.0),
-                                       ('cerca', (0.0, 1.8, -12.0), 0.0, -32.0), ('lejos', (12.0, 9.0, -46.0), 14.0, -6.0)):
-        cam = np.array(cam)
+                                       ('cerca', (0.0, 1.8, -12.0), 0.0, -32.0), ('lejos', (12.0, 9.0, -46.0), 14.0, -6.0),
+                                       ('pegado', (2.5, 7.0, -5.5), 20.0, -28.0)):
+        cam = np.array(cam) * sc
         mv = CP.view(yaw_deg, pitch)
         ctx.clear(0, 0, 0, 1)
         ctx.enable(moderngl.DEPTH_TEST)
@@ -300,9 +334,10 @@ def preview(dest, t, state):
                 nn = row[3:6]
                 if xf:
                     nn = xf(row[3:6], True)
-                col = light(p, nn, int(row[8]), cam, glow)
+                col = light(p, nn, int(row[8]), cam, glow, variant)
                 rel = p - cam
-                verts.append((rel[0], rel[1], rel[2], col[0], col[1], col[2], 1.0, row[6], row[7], int(row[8]), int(min(255, row[9] * glow * 100)), 240, 240))
+                verts.append((rel[0], rel[1], rel[2], col[0], col[1], col[2], 1.0, row[6], row[7], int(row[8]) + (4 if madre else 0),
+                              int(min(255, row[9] * glow * 100)), 240, 240))
         add_part('base', None)
         add_part('spires', None)
         ang = t * 0.6
@@ -312,7 +347,7 @@ def preview(dest, t, state):
             if normal:
                 return q
             s = 0.25 if state == 'dormida' else 1.0
-            return q * s + np.array([0, 6.2 + 0.3 * math.sin(t * 1.3), 0])
+            return q * s + np.array([0, V['crystal_y'] + 0.3 * math.sin(t * 1.3), 0])
         add_part('crystal', crys)
         if state != 'dormida':
             for sd in data['shards']:
@@ -344,16 +379,16 @@ def preview(dest, t, state):
         fwd = np.array([cam[0], 0, cam[2]])
         fwd = fwd / (np.linalg.norm(fwd) + 1e-9)
         side = np.array([fwd[2], 0, -fwd[0]])
-        qw, qh, cy = TEAR['quad_w'], TEAR['quad_h'], TEAR['cy']
+        qw, qh, cy = V['tear']['quad_w'], V['tear']['quad_h'], V['tear']['cy']
         for (u, vv) in ((0, 0), (1, 0), (1, 1), (0, 0), (1, 1), (0, 1)):
             p = side * (u - 0.5) * qw + np.array([0, cy + (vv - 0.5) * qh, 0])
             rel = p - cam
-            qv.append([rel[0], rel[1], rel[2], 0.37, 0.0, min(1.0, open_k / 1.4), glow / 2, u, vv])
-        R = RING['r']
+            qv.append([rel[0], rel[1], rel[2], 0.37, 0.25 if madre else 0.0, min(1.0, open_k / 1.4), glow / 2, u, vv])
+        R = V['ring']['r']
         for (u, vv) in ((0, 0), (1, 0), (1, 1), (0, 0), (1, 1), (0, 1)):
-            p = np.array([(u - 0.5) * 2 * R, RING['y'], (vv - 0.5) * 2 * R])
+            p = np.array([(u - 0.5) * 2 * R, V['ring']['y'], (vv - 0.5) * 2 * R])
             rel = p - cam
-            qv.append([rel[0], rel[1], rel[2], 0.37, 1.0, 1.0, glow / 2, u, vv])
+            qv.append([rel[0], rel[1], rel[2], 0.37, 1.0 if madre else 0.75, 1.0, glow / 2, u, vv])
         qb = ctx.buffer(np.array(qv, 'f4').tobytes())
         fx['ModelViewMat'].write(mv.T.astype('f4').tobytes())
         fx['ProjMat'].write(proj.T.astype('f4').tobytes())
@@ -364,21 +399,22 @@ def preview(dest, t, state):
         ctx.depth_mask = True
         data_px = fbo.read(components=3)
         im = Image.frombytes('RGB', (w, h), data_px).transpose(Image.FLIP_TOP_BOTTOM)
-        im.save(os.path.join(dest, f'grieta3_{state}_{vname}.png'))
+        im.save(os.path.join(dest, f'grieta3_{variant}_{state}_{vname}.png'))
 
 
 def main():
-    data = build()
-    with open(OUT, 'w', encoding='utf-8') as fh:
-        json.dump(data, fh, separators=(',', ':'))
-    tris = {k: len(p['v']) // (VERT * 3) for k, p in data['parts'].items()}
-    print('grieta3:', tris, 'triángulos;', os.path.getsize(OUT) // 1024, 'KB')
+    for variant, out in (('normal', OUT), ('madre', OUT_MADRE)):
+        data = build(variant)
+        with open(out, 'w', encoding='utf-8') as fh:
+            json.dump(data, fh, separators=(',', ':'))
+        tris = {k: len(p['v']) // (VERT * 3) for k, p in data['parts'].items()}
+        print(os.path.basename(out) + ':', tris, 'triángulos;', os.path.getsize(out) // 1024, 'KB')
     if '--preview' in sys.argv:
         dest = sys.argv[sys.argv.index('--preview') + 1]
         os.makedirs(dest, exist_ok=True)
         t = float(sys.argv[sys.argv.index('--t') + 1]) if '--t' in sys.argv else 12.0
         st = sys.argv[sys.argv.index('--estado') + 1] if '--estado' in sys.argv else 'lista'
-        preview(dest, t, st)
+        preview(dest, t, st, 'madre' if '--madre' in sys.argv else 'normal')
 
 
 if __name__ == '__main__':

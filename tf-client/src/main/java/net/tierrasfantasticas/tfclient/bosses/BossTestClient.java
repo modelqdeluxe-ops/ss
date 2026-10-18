@@ -30,6 +30,7 @@ public final class BossTestClient {
     private static boolean started, quitting;
     private static int menuTicks;
     private static Field barsField;
+    private static String shotSeen;
 
     private BossTestClient() {}
 
@@ -52,25 +53,45 @@ public final class BossTestClient {
         }
         if (mc.level != null && mc.screen != null && mc.screen.isPauseScreen()) mc.setScreen(null);
         BossTest.clientBars = bars(mc);
+        BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
+        BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();
         if (BossTest.dialogPress >= 0 && mc.screen instanceof net.tierrasfantasticas.tfclient.vacio.KnightScreen ks) {
             ks.testPress(BossTest.dialogPress);
             BossTest.dialogPress = -1;
-        }
-        String shot = BossTest.shotRequest;
-        if (shot != null && mc.level != null) {
-            BossTest.shotRequest = null;
-            try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
-                File dir = new File(mc.gameDirectory, "pruebas");
-                dir.mkdirs();
-                img.writeToFile(new File(dir, shot + ".png"));
-            } catch (Exception e) {
-                TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar la captura {}", shot, e);
-            }
         }
         if (BossTest.finished && !quitting) {
             quitting = true;
             mc.stop();
         }
+    }
+
+    /**
+     * Las capturas, al acabar de dibujar un fotograma que empezó después de pedirla (antes se sacaban en el tick del
+     * cliente, con el último fotograma dibujado: con shaders, a pocos fotogramas por segundo, podía ser de antes de la
+     * vista pedida).
+     */
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
+        Minecraft mc = Minecraft.getInstance();
+        String shot = BossTest.SHOTS_PENDING.peek();
+        if (shot == null || mc.level == null) {
+            shotSeen = null;
+            return;
+        }
+        if (!shot.equals(shotSeen)) {
+            shotSeen = shot;
+            return;
+        }
+        shotSeen = null;
+        try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+            File dir = new File(mc.gameDirectory, "pruebas");
+            dir.mkdirs();
+            img.writeToFile(new File(dir, shot + ".png"));
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar la captura {}", shot, e);
+        }
+        BossTest.SHOTS_PENDING.poll();
     }
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */

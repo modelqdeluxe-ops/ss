@@ -1436,6 +1436,8 @@ public final class SkillRuntime {
         if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON) a.origin = ctx.skill + " en el tick " + clock;
         ACTORS.add(a);
         SkillNet.near(level, at, a.spawnMessage());
+        // Un item_display nace enseñando su objeto (DisplayOptions.Item)
+        if (def.displayItem != null) a.prop("item", def.displayItem, "1", "display");
         Ctx mine = ctx.as(a.who);
         mine.targets = null;
         List<Mech> onSpawn = new ArrayList<>();

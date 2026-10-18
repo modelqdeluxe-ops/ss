@@ -35,6 +35,11 @@ public class RiftEntity extends Entity {
     private static final EntityDataAccessor<Integer> LEFT = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> LABEL = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> LABEL_COLOR = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.INT);
+    /** 0 la grieta normal, 1 la grieta madre (1.3.89: más grande, en carmesí). */
+    private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.INT);
+    /** ¿Es la grieta del Void (la fija del centro de la isla, con sus jefes en /tf boss → VOID)? */
+    private static final EntityDataAccessor<Boolean> FIXED = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final int NORMAL = 0, MOTHER = 1;
 
     UUID riftId;
     /** Animaciones del cristal en el cliente (reposo, despertar, apagado, volver a crecer). */
@@ -45,6 +50,8 @@ public class RiftEntity extends Entity {
     public int stateSince;
     /** El estado de antes del de ahora (en el cliente). */
     public int prevState = -1;
+    /** El tipo (copia de KIND, para el tamaño: getDimensions no debe leer los datos sincronizados). */
+    private int kindNow;
 
     public RiftEntity(EntityType<? extends RiftEntity> type, Level level) {
         super(type, level);
@@ -59,6 +66,25 @@ public class RiftEntity extends Entity {
         this.entityData.define(LEFT, 0);
         this.entityData.define(LABEL, "");
         this.entityData.define(LABEL_COLOR, 0xFFFFFF);
+        this.entityData.define(KIND, NORMAL);
+        this.entityData.define(FIXED, false);
+    }
+
+    public int kind() {
+        return this.entityData.get(KIND);
+    }
+
+    public boolean fixed() {
+        return this.entityData.get(FIXED);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (KIND.equals(key)) {
+            kindNow = kind();
+            refreshDimensions();
+        }
     }
 
     public String boss() {
@@ -83,7 +109,9 @@ public class RiftEntity extends Entity {
         return this.entityData.get(LABEL_COLOR);
     }
 
-    void show(String boss, int state, int left, Difficulty d) {
+    void show(String boss, int state, int left, Difficulty d, int kind, boolean fixed) {
+        if (kind != kind()) this.entityData.set(KIND, kind);
+        if (fixed != fixed()) this.entityData.set(FIXED, fixed);
         if (!boss.equals(boss())) this.entityData.set(BOSS, boss);
         if (state != state()) this.entityData.set(STATE, state);
         // Lo que falta, al segundo (no cada tick: no hace falta mandarlo tanto)
@@ -106,8 +134,18 @@ public class RiftEntity extends Entity {
         }
     }
 
-    /** El morado del vacío de las grietas (partículas). */
+    /** El morado del vacío de las grietas (partículas) y el carmesí de la grieta madre. */
     static final org.joml.Vector3f VOID_PURPLE = new org.joml.Vector3f(0.55F, 0.16F, 0.98F);
+    static final org.joml.Vector3f MOTHER_RED = new org.joml.Vector3f(0.95F, 0.14F, 0.38F);
+
+    /** Lo grande que es (la madre ×1,5) y su color de partículas. */
+    public float scale() {
+        return kindNow == MOTHER ? 1.5F : 1F;
+    }
+
+    org.joml.Vector3f color() {
+        return kindNow == MOTHER ? MOTHER_RED : VOID_PURPLE;
+    }
 
     /**
      * Lo que se ve alrededor (solo en el cliente): chispas moradas que suben del círculo, el desgarro que se traga
@@ -121,26 +159,27 @@ public class RiftEntity extends Entity {
         boolean open = st == READY || st == WAKING;
         int n = st == WAKING ? 4 : open ? 2 : 1;
         for (int i = 0; i < n; i++) {
-            double a = r.nextDouble() * Math.PI * 2, d = 2 + r.nextDouble() * 4.2;
+            double k = scale();
+            double a = r.nextDouble() * Math.PI * 2, d = (2 + r.nextDouble() * 4.2) * k;
             if (r.nextInt(3) == 0) {
                 level().addParticle(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, getX() + Math.cos(a) * d, getY() + 0.15,
                         getZ() + Math.sin(a) * d, 0, 0.04 + r.nextDouble() * 0.06, 0);
             }
             if (open) {
                 // Se las traga el desgarro: salen alrededor y van hacia él
-                double y = getY() + 2.5 + r.nextDouble() * 10;
-                level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + (r.nextDouble() - 0.5) * 5, y,
-                        getZ() + (r.nextDouble() - 0.5) * 5, (r.nextDouble() - 0.5) * 2, (r.nextDouble() - 0.5) * 1.5,
+                double y = getY() + (2.5 + r.nextDouble() * 10) * k;
+                level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + (r.nextDouble() - 0.5) * 5 * k, y,
+                        getZ() + (r.nextDouble() - 0.5) * 5 * k, (r.nextDouble() - 0.5) * 2, (r.nextDouble() - 0.5) * 1.5,
                         (r.nextDouble() - 0.5) * 2);
             }
             if (r.nextInt(4) == 0) {
-                level().addParticle(new net.minecraft.core.particles.DustParticleOptions(VOID_PURPLE, 1.4F),
-                        getX() + (r.nextDouble() - 0.5) * 8, getY() + r.nextDouble() * 11, getZ() + (r.nextDouble() - 0.5) * 8, 0, 0.01, 0);
+                level().addParticle(new net.minecraft.core.particles.DustParticleOptions(color(), 1.4F),
+                        getX() + (r.nextDouble() - 0.5) * 8 * k, getY() + r.nextDouble() * 11 * k, getZ() + (r.nextDouble() - 0.5) * 8 * k, 0, 0.01, 0);
             }
         }
         if (open && r.nextInt(st == WAKING ? 3 : 25) == 0) {
             level().addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, getX() + (r.nextDouble() - 0.5) * 0.8,
-                    getY() + 3 + r.nextDouble() * 8, getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
+                    getY() + (3 + r.nextDouble() * 8) * scale(), getZ() + (r.nextDouble() - 0.5) * 0.8, (r.nextDouble() - 0.5) * 0.08,
                     (r.nextDouble() - 0.5) * 0.08, (r.nextDouble() - 0.5) * 0.08);
         }
     }
@@ -185,20 +224,24 @@ public class RiftEntity extends Entity {
 
     @Override
     public EntityDimensions getDimensions(Pose pose) {
-        return EntityDimensions.scalable(3.2F, 8.5F);
+        // (el cristal de la madre está a 8,6 bloques: más alto)
+        return kindNow == MOTHER ? EntityDimensions.scalable(4.6F, 12.5F) : EntityDimensions.scalable(3.2F, 8.5F);
     }
 
     @Override
     public AABB getBoundingBoxForCulling() {
         // (1.3.88, la grieta 3.0) las garras llegan a ~10 bloques del centro, el círculo de runas a 13,5 y el desgarro y el
         // cartel a ~24 de alto
+        // y la madre, ×1,5
         AABB b = getBoundingBox();
-        return new AABB(b.minX - 14, b.minY - 1, b.minZ - 14, b.maxX + 14, b.minY + 25, b.maxZ + 14);
+        float k = scale();
+        return new AABB(b.minX - 14 * k, b.minY - 1, b.minZ - 14 * k, b.maxX + 14 * k, b.minY + 25 * k, b.maxZ + 14 * k);
     }
 
     @Override
     public boolean shouldRenderAtSqrDistance(double d) {
-        return d < 192 * 192;
+        double far = 192 * scale();
+        return d < far * far;
     }
 
     @Override
@@ -208,7 +251,7 @@ public class RiftEntity extends Entity {
 
     @Override
     public Component getName() {
-        return Component.literal("Grieta");
+        return Component.literal(kindNow == MOTHER ? "Grieta madre" : fixed() ? "Grieta del Void" : "Grieta");
     }
 
     @Override

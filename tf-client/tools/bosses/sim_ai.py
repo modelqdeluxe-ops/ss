@@ -1134,6 +1134,12 @@ class Sim:
                         b.body = wrap(b.body + max(-30, min(30, diff - math.copysign(30, diff))))
                     b.body = wrap(b.body + wrap(want - b.body) * 0.05)
         else:
+            # BossEntity.turnBody (1.3.89): el que se gira con sus skills y lleva «gira_al_atacar» (Ignevar), con
+            # inteligencia, sigue al jugador despacio mientras ataca (40 % del ritmo de los que andan)
+            if self.prog['boss'].get('gira_al_atacar') and b.ai and not b.locked and self.brain and SMART >= 0.4 \
+                    and self.brain.attacking():
+                track = (2 + 8 * SMART) * 0.4
+                b.body = wrap(b.body + max(-track, min(track, wrap(want - b.body))))
             b.look = b.body
 
     def walk(self, tx, tz, step):

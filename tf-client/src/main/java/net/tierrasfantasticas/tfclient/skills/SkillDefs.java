@@ -113,6 +113,8 @@ public final class SkillDefs {
         public boolean small;
         public boolean marker;
         public String headModel;
+        /** El objeto con el que nace un item_display (DisplayOptions.Item del pack, ya como modelo de ítem). */
+        public String displayItem;
         public double health;
         public List<Mech> mechs = List.of();
         /** Display (text_display, item_display...): escala, desplazamiento y si mira a la cámara. */
@@ -264,6 +266,12 @@ public final class SkillDefs {
          * está en el aire, y sus explosiones no le suben. El Contemplador.
          */
         public boolean ground;
+        /**
+         * (1.3.89, el dueño: «Ignevar es pendejo») «gira_al_atacar» en tools/bosses/es.json: un jefe que se gira con sus
+         * propias skills y que el pack deja quieto mientras ataca (Ignevar echa el fuego 7 s sin girarse): con
+         * inteligencia, se gira despacio hacia su objetivo mientras dura el ataque (BossEntity.turnBody).
+         */
+        public boolean turnWhileAttacking;
         /** Objetos que suelta (dropitem): id de MythicMobs → modelo de ítem y nombre. */
         public final Map<String, Drop> drops = new LinkedHashMap<>();
         /**
@@ -431,6 +439,7 @@ public final class SkillDefs {
             }
             bi.previewHide = strings(b.get("preview_hide"));
             bi.ground = b.has("suelo") && b.get("suelo").getAsBoolean();
+            bi.turnWhileAttacking = b.has("gira_al_atacar") && b.get("gira_al_atacar").getAsBoolean();
             if (o.has("drops") && o.get("drops").isJsonObject()) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("drops").entrySet()) {
                     JsonObject d = e.getValue().getAsJsonObject();
@@ -466,6 +475,7 @@ public final class SkillDefs {
             mob.small = bool(opts.get("Small"));
             mob.marker = bool(opts.get("Marker"));
             mob.headModel = str(m, "head_model", null);
+            mob.displayItem = str(m, "display_item", null);
             mob.health = num(m.get("health"), 0);
             mob.mechs = mechs(m.get("mechs"));
             if (m.has("display_options") && m.get("display_options").isJsonObject()) {
@@ -526,6 +536,7 @@ public final class SkillDefs {
                 mob.hearing = m.has("hearing") && m.get("hearing").isJsonObject() && bool(m.getAsJsonObject("hearing").get("Enabled"));
             }
             if (mob.headModel != null) c.itemModels.add(mob.headModel);
+            if (mob.displayItem != null) c.itemModels.add(mob.displayItem);
             c.mobs.put(e.getKey().toLowerCase(Locale.ROOT), mob);
         }
         return c;

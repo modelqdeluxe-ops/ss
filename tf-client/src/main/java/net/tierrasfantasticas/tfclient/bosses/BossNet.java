@@ -30,9 +30,9 @@ public final class BossNet {
             new ResourceLocation(TFClient.MOD_ID, "bosses"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
     private static boolean registered;
 
-    /** Lo que se puede pulsar en la ventana. */
+    /** Lo que se puede pulsar en la ventana (VOID_*: la pestaña de la grieta del Void; arg = tipo o tipo×1024+fila). */
     public static final int SAVE = 0, PLACE = 1, TEST = 2, RIFT_TP = 3, RIFT_SAVE = 4, RIFT_REMOVE = 5, RIFT_RESET = 6,
-            REFRESH = 7, CLEAR_TESTS = 8;
+            REFRESH = 7, CLEAR_TESTS = 8, VOID_ACTIVE = 9, VOID_ADD = 10, VOID_REMOVE = 11, VOID_TP = 12, VOID_RESET = 13;
 
     private BossNet() {}
 
@@ -51,8 +51,46 @@ public final class BossNet {
     public record RiftInfo(UUID id, String boss, Difficulty diff, int state, int left, String world, double x, double y, double z,
                            double dist) {}
 
+    /**
+     * La grieta del Void tal como la ve la ventana: si existe (el mundo tiene el Void), cuál está en el centro, sus dos
+     * listas y cómo está (jefe que espera, estado, lo que falta).
+     */
+    public record VoidInfo(boolean exists, int active, List<List<Rifts.Entry>> pools, String boss, Difficulty diff, int state, int left) {
+        static final VoidInfo NONE = new VoidInfo(false, 0, List.of(List.of(), List.of()), "", Difficulty.NORMAL, 0, 0);
+
+        void write(FriendlyByteBuf buf) {
+            buf.writeBoolean(exists);
+            buf.writeVarInt(active);
+            for (int k = 0; k < 2; k++) {
+                List<Rifts.Entry> pool = pools.get(k);
+                buf.writeVarInt(pool.size());
+                for (Rifts.Entry e : pool) {
+                    buf.writeUtf(e.boss(), 64);
+                    e.diff().write(buf);
+                }
+            }
+            buf.writeUtf(boss, 64);
+            diff.write(buf);
+            buf.writeVarInt(state);
+            buf.writeVarInt(left);
+        }
+
+        static VoidInfo read(FriendlyByteBuf buf) {
+            boolean exists = buf.readBoolean();
+            int active = buf.readVarInt();
+            List<List<Rifts.Entry>> pools = new ArrayList<>();
+            for (int k = 0; k < 2; k++) {
+                int n = Math.min(64, buf.readVarInt());
+                List<Rifts.Entry> pool = new ArrayList<>();
+                for (int i = 0; i < n; i++) pool.add(new Rifts.Entry(buf.readUtf(64), Difficulty.read(buf)));
+                pools.add(pool);
+            }
+            return new VoidInfo(exists, active, pools, buf.readUtf(64), Difficulty.read(buf), buf.readVarInt(), buf.readVarInt());
+        }
+    }
+
     /** Abre (o pone al día) la ventana: dificultad elegida de cada jefe, las grietas y un aviso de lo último que se hizo. */
-    public record Open(List<String> bosses, List<Difficulty> chosen, List<RiftInfo> rifts, String notice) {
+    public record Open(List<String> bosses, List<Difficulty> chosen, List<RiftInfo> rifts, VoidInfo voidRift, String notice) {
         static void write(Open m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.bosses.size());
             for (int i = 0; i < m.bosses.size(); i++) {
@@ -72,6 +110,7 @@ public final class BossNet {
                 buf.writeDouble(r.z);
                 buf.writeDouble(r.dist);
             }
+            m.voidRift.write(buf);
             buf.writeUtf(m.notice == null ? "" : m.notice, 256);
         }
 
@@ -89,7 +128,8 @@ public final class BossNet {
                 rifts.add(new RiftInfo(buf.readUUID(), buf.readUtf(64), Difficulty.read(buf), buf.readVarInt(), buf.readVarInt(),
                         buf.readUtf(128), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readDouble()));
             }
-            return new Open(bosses, chosen, rifts, buf.readUtf(256));
+            VoidInfo v = VoidInfo.read(buf);
+            return new Open(bosses, chosen, rifts, v, buf.readUtf(256));
         }
 
         static void handle(Open m, Supplier<NetworkEvent.Context> ctx) {
@@ -97,10 +137,15 @@ public final class BossNet {
         }
     }
 
-    /** Lo que pulsa el staff: qué, con qué jefe y dificultad, y sobre qué grieta (si es de grietas). */
-    public record Action(int kind, String boss, Difficulty diff, UUID rift) {
+    /** Lo que pulsa el staff: qué, con qué jefe y dificultad, sobre qué grieta (si es de grietas) y un número más. */
+    public record Action(int kind, String boss, Difficulty diff, UUID rift, int arg) {
+        public Action(int kind, String boss, Difficulty diff, UUID rift) {
+            this(kind, boss, diff, rift, 0);
+        }
+
         static void write(Action m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.kind);
+            buf.writeVarInt(m.arg);
             buf.writeUtf(m.boss == null ? "" : m.boss, 64);
             (m.diff == null ? Difficulty.NORMAL : m.diff).write(buf);
             buf.writeBoolean(m.rift != null);
@@ -109,10 +154,11 @@ public final class BossNet {
 
         static Action read(FriendlyByteBuf buf) {
             int kind = buf.readVarInt();
+            int arg = buf.readVarInt();
             String boss = buf.readUtf(64);
             Difficulty d = Difficulty.read(buf);
             UUID rift = buf.readBoolean() ? buf.readUUID() : null;
-            return new Action(kind, boss, d, rift);
+            return new Action(kind, boss, d, rift, arg);
         }
 
         static void handle(Action m, Supplier<NetworkEvent.Context> ctx) {
@@ -161,7 +207,16 @@ public final class BossNet {
         }
         // Las de este mundo primero, de la más cercana a la más lejana
         rifts.sort((a, b) -> a.dist < 0 ? (b.dist < 0 ? 0 : 1) : b.dist < 0 ? -1 : Double.compare(a.dist, b.dist));
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new Open(ids, chosen, rifts, notice));
+        VoidInfo v = VoidInfo.NONE;
+        Rifts.Rift vr = Rifts.voidRift();
+        if (vr != null) {
+            ServerLevel level = p.getServer().getLevel(vr.dim);
+            long now = level == null ? 0 : level.getGameTime();
+            Rifts.VoidConfig c = Rifts.voidConfig();
+            v = new VoidInfo(true, c.active, List.of(List.copyOf(c.pools.get(0)), List.copyOf(c.pools.get(1))), vr.boss, vr.diff, vr.state,
+                    vr.left(now));
+        }
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new Open(ids, chosen, rifts, v, notice));
     }
 
     private static String act(ServerPlayer p, Action m) {
@@ -208,6 +263,22 @@ public final class BossNet {
             }
             case RIFT_RESET -> {
                 return m.rift != null && Rifts.reset(m.rift) ? "Grieta lista otra vez" : "No existe esa grieta";
+            }
+            case VOID_ACTIVE -> {
+                return Rifts.voidRift() == null ? "Este mundo no tiene el Void" : Rifts.voidSetActive(m.arg);
+            }
+            case VOID_ADD -> {
+                if (cls == null) return "";
+                return Rifts.voidAdd(m.arg, m.boss, d);
+            }
+            case VOID_REMOVE -> {
+                return Rifts.voidRemove(m.arg / 1024, m.arg % 1024);
+            }
+            case VOID_TP -> {
+                return Rifts.teleport(p, Rifts.VOID_ID) ? "Teletransportado a la grieta del Void" : "Este mundo no tiene el Void";
+            }
+            case VOID_RESET -> {
+                return Rifts.reset(Rifts.VOID_ID) ? "Grieta del Void lista otra vez" : "Este mundo no tiene el Void";
             }
             default -> {
                 return "";

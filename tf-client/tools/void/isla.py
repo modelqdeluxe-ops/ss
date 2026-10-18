@@ -1,4 +1,5 @@
-"""La isla de The Void (la dimensión del vacío, 1.3.88): del mapa del dueño a lo que genera VoidIslandGenerator.
+"""La isla de The Void (la dimensión del vacío, 1.3.88; santuario y plaza nuevos en la 1.3.89): del mapa del dueño a lo
+que genera VoidIslandGenerator.
 
     python3 -I tools/void/isla.py <EndCarageKitMap.schematic> [--preview carpeta]
 
@@ -10,16 +11,26 @@ los packs de los jefes). Aquí:
      contraste de la isla»): era un pozo de ~50×50 que atravesaba la isla con puentes en cruz, cuatro casetas al final
      de los brazos y una torre en medio. Se rellena con el terreno de la isla: el fondo y los lados con su mezcla de
      lana gris, terracota cian, arcilla y piedra del End (ruido 3D, en la misma proporción que el resto de la isla) y
-     arriba franjas como las de alrededor (lana y terracota moradas y magenta, micelio...).
-  3. Encima, el santuario del caballero de luz (donde se llega y desde donde se vuelve): una plataforma redonda de tres
-     escalones (piedra negra pulida, cuarzo y un anillo de oro), seis pilares de cuarzo con varas del End y luz
-     invisible (bloques «light»), entradas con escaleras a los cuatro lados y un sello de cuarzo en medio.
-  4. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados y, por columna, tramos
-     (y, largo, bloque). El centro del santuario queda en x=0, z=0 del mundo.
+     arriba las franjas de alrededor, que se alargan hacia dentro (cada columna toma la de la orilla más cercana por un
+     camino con ruido: siguen las bandas en vez de manchas).
+  3. 1.3.89 (el dueño: «el centro debe tener la grieta; el santuario hazlo en una esquina, en esa construcción; ese
+     modelo es horrible y está 1 bloque volando del suelo; quita las demás estructuras cerca del centro»):
+     - En el centro, la plaza de la grieta del Void (plaza): suelo plano en un radio de 24 (la grieta madre llega con
+       su círculo de runas a ~20), oscuro de piedra negra y obsidiana con vetas de obsidiana llorosa que salen del centro
+       y se funde con las franjas de la isla hacia fuera. Sin nada encima a menos de 45 bloques (farolillos, caminos).
+     - El santuario (santuario), en la punta norte, donde estaba el templete de cúpula del mapa: estrado redondo de dos
+       escalones (piedra negra y cuarzo con un anillo cincelado), ocho columnas de cuarzo con capitel, un entablamento
+       con cornisa, cúpula de cristal blanco con nervios de cuarzo y remate de oro con vara del End, farolillos colgando
+       en las entradas, balaustrada hacia el barranco y luz invisible dentro. Los cimientos bajan hasta el terreno en
+       cada columna (el de la 1.3.88 tenía huecos debajo: «volando»). El caballero en el pedestal del centro mirando al
+       sur; se llega a la puerta del este, mirando hacia la grieta (y el agujero negro detrás).
+  4. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados, posiciones (caballero, llegada,
+     grieta) y, por columna, tramos (y, largo, bloque). El centro de la plaza (la grieta) queda en x=0, z=0 del mundo.
 
 Los 81 enderman del mapa no se copian (la dimensión no tiene criaturas).
 """
 import gzip
+import heapq
 import math
 import os
 import struct
@@ -56,9 +67,17 @@ WALL = 139  # cobblestone_wall: sus lados se calculan con los vecinos
 # El pozo del centro (en el mapa): su centro y la caja en la que se busca
 PIT_CENTER = (136, 271)  # x, z
 PIT_BOX = (98, 176, 232, 312)  # x0, x1, z0, z1
-# Altura del suelo del santuario (la cara de arriba del terreno, en el mapa) y desplazamiento al mundo
+# Altura del suelo de la plaza (la cara de arriba del terreno, en el mapa) y desplazamiento al mundo
 GROUND = 61
-WORLD_DY = 10  # y del mundo = y del mapa + 10 (el suelo queda a 71-72)
+WORLD_DY = 10  # y del mundo = y del mapa + 10 (el suelo de la plaza queda a 71: se pisa en 72)
+# El santuario: el templete de la punta norte del mapa (centro y altura de su terraza)
+SHRINE = (115, 135)
+SHRINE_TOP = 56
+PLAZA_R = 24
+CLEAR_R = 45
+TERRAIN = {'gray_wool', 'end_stone', 'cyan_terracotta', 'clay', 'purple_wool', 'magenta_wool', 'purple_terracotta',
+           'blue_terracotta', 'magenta_terracotta', 'white_terracotta', 'mycelium', 'dirt', 'white_wool', 'red_wool',
+           'acacia_wood', 'acacia_log'}
 
 
 def full(s):
@@ -243,23 +262,17 @@ def fill_pit(isl):
     n_end = value_noise(shp, 7, 21)
     n_clay = value_noise(shp, 9, 22)
     n_cyan = value_noise(shp, 5, 24)
-    surf_names = ['purple_wool', 'magenta_wool', 'purple_terracotta', 'blue_terracotta', 'gray_wool', 'mycelium[snowy=false]',
-                  'magenta_terracotta']
-    surf = [isl.pal(s) for s in surf_names]
-    warp = value_noise((L, W), 14, 31)
-    band = value_noise((L, W), 22, 32, octaves=2)
+    labels = inpaint_surface(isl, pit, ring)
     for i in range(len(pz)):
         z, x = pz[i], px[i]
         lz, lx = z - zb0, x - xb0
+        top_blk, below_blk = labels.get((z, x), (body[0], body[0]))
         for y in range(pbot[i], ptop[i] + 1):
             depth = ptop[i] - y
-            if depth <= 1:
-                # franjas onduladas como las de alrededor
-                v = band[z, x] * 6 + warp[z, x] * 5
-                k = int(v * 3) % len(surf)
-                blk = surf[k]
-                if depth == 1 and blk in (surf[5],):
-                    blk = isl.pal('dirt')
+            if depth == 0:
+                blk = top_blk
+            elif depth == 1:
+                blk = below_blk
             else:
                 if n_end[y, lz, lx] > 0.66:
                     blk = body[3]
@@ -273,100 +286,327 @@ def fill_pit(isl):
     return pit
 
 
-def shrine(isl):
-    """El santuario del caballero de luz, centrado en el pozo relleno. Devuelve (x, y, z) del mapa donde está él."""
+def is_terrain(isl, idx):
+    return idx != 0 and isl.name(idx).split(':')[1].split('[')[0] in TERRAIN
+
+
+def inpaint_surface(isl, pit, ring):
+    """La superficie del pozo relleno: cada columna toma la de la orilla (ring) más cercana por un camino con ruido
+    (Dijkstra con coste 1 + ruido): las franjas de alrededor se alargan hacia dentro en vez de quedar manchas."""
     g = isl.grid
+    H, L, W = g.shape
+    solid = g != 0
+    top = np.where(solid.any(0), H - 1 - np.argmax(solid[::-1], 0), -1)
+    noise = value_noise((L, W), 6, 41)
+    dist = {}
+    label = {}
+    heap = []
+    rz, rx = np.nonzero(ring)
+    for z, x in zip(rz, rx):
+        t = top[z, x]
+        if t < 1 or not is_terrain(isl, g[t, z, x]):
+            continue
+        below = g[t - 1, z, x]
+        if not is_terrain(isl, below):
+            below = g[t, z, x]
+        dist[(z, x)] = 0.0
+        label[(z, x)] = (int(g[t, z, x]), int(below))
+        heapq.heappush(heap, (0.0, int(z), int(x)))
+    allowed = pit | ring
+    while heap:
+        d, z, x = heapq.heappop(heap)
+        if d > dist.get((z, x), 1e18):
+            continue
+        for dz, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nz, nx = z + dz, x + dx
+            if not (0 <= nz < L and 0 <= nx < W) or not allowed[nz, nx]:
+                continue
+            nd = d + 1.0 + 3.0 * noise[nz, nx]
+            if nd < dist.get((nz, nx), 1e18):
+                dist[(nz, nx)] = nd
+                label[(nz, nx)] = label[(z, x)]
+                heapq.heappush(heap, (nd, nz, nx))
+    return {k: v for k, v in label.items() if pit[k]}
+
+
+def clear_near_center(isl):
+    """Nada construido a menos de CLEAR_R bloques de la grieta (farolillos, trozos de camino): por encima del terreno,
+    todo lo que no sea terreno fuera."""
+    g = isl.grid
+    H, L, W = g.shape
     cx, cz = PIT_CENTER
-    y0 = GROUND
+    terr = np.array([is_terrain(isl, i) for i in range(len(isl.names))])
+    T = terr[g]
+    ttop = np.where(T.any(0), H - 1 - np.argmax(T[::-1], 0), -1)
+    n = 0
+    for z in range(max(0, cz - CLEAR_R), min(L, cz + CLEAR_R + 1)):
+        for x in range(max(0, cx - CLEAR_R), min(W, cx + CLEAR_R + 1)):
+            if math.hypot(x - cx, z - cz) > CLEAR_R:
+                continue
+            col = g[:, z, x]
+            for y in range(max(0, ttop[z, x] + 1), H):
+                if col[y] != 0 and not terr[col[y]]:
+                    col[y] = 0
+                    n += 1
+    return n
+
+
+def plaza(isl):
+    """La plaza de la grieta del Void: llana (cara de arriba en GROUND) en un radio PLAZA_R, oscura en el centro (piedra
+    negra, negra pulida y obsidiana a manchas, con siete vetas de obsidiana llorosa que salen del centro) y fundiéndose
+    con las franjas de la isla hacia fuera (a puntos, sin un borde redondo). Las 4 siguientes columnas bajan o suben
+    poco a poco hasta el terreno de alrededor."""
+    g = isl.grid
+    H, L, W = g.shape
+    cx, cz = PIT_CENTER
     P = isl.pal
-    blackstone = P('polished_blackstone_bricks')
-    chis_black = P('chiseled_polished_blackstone')
-    crying = P('crying_obsidian')
-    quartz = P('smooth_quartz')
-    qbricks = P('quartz_bricks')
-    chis_q = P('chiseled_quartz_block')
-    gold = P('gold_block')
-    pillar = P('quartz_pillar[axis=y]')
-    rod = P('end_rod[facing=up]')
-    light = P('light[level=15,waterlogged=false]')
-    light_soft = P('light[level=11,waterlogged=false]')
-    amethyst = P('amethyst_block')
-    cluster = P('amethyst_cluster[facing=up,waterlogged=false]')
+    blackstone, polished, obsidian, crying = P('blackstone'), P('polished_blackstone'), P('obsidian'), P('crying_obsidian')
+    body = P('gray_wool')
+    n1 = value_noise((L, W), 5, 51)
+    n2 = value_noise((L, W), 4, 52)
+    nd = value_noise((L, W), 3, 53)
+    rng = np.random.default_rng(54)
+    veins = [k * math.tau / 7 + rng.uniform(-0.2, 0.2) for k in range(7)]
+    R2 = PLAZA_R + 4
+    for z in range(cz - R2, cz + R2 + 1):
+        for x in range(cx - R2, cx + R2 + 1):
+            r = math.hypot(x - cx, z - cz)
+            if r > R2:
+                continue
+            col = g[:, z, x]
+            solid = np.nonzero(col)[0]
+            if len(solid) == 0:
+                continue
+            ytop = int(solid.max())
+            top_blk = col[ytop] if is_terrain(isl, col[ytop]) else body
+            below_blk = col[ytop - 1] if ytop > 0 and is_terrain(isl, col[ytop - 1]) else top_blk
+            if r <= PLAZA_R:
+                target = GROUND
+            else:
+                k = (r - PLAZA_R) / 4.0
+                target = int(round(GROUND + (ytop - GROUND) * k))
+            # subir o bajar la columna hasta target, con sus dos bloques de arriba encima
+            col[target + 1:] = np.where(col[target + 1:] != 0, 0, col[target + 1:])
+            for y in range(min(ytop, target) - 1, target + 1):
+                if y < 0:
+                    continue
+                if y == target:
+                    col[y] = top_blk
+                elif y == target - 1:
+                    col[y] = below_blk
+                elif col[y] == 0:
+                    col[y] = body
+            if r > PLAZA_R:
+                continue
+            # lo oscuro: seguro hasta 15, a puntos hasta PLAZA_R
+            dark = smooth(PLAZA_R, 15.0, r)
+            if nd[z, x] < dark:
+                v = n1[z, x]
+                blk = obsidian if n2[z, x] > 0.68 else polished if v > 0.6 else blackstone
+                ang = math.atan2(z - cz, x - cx)
+                for a0 in veins:
+                    a = a0 + 0.22 * math.sin(r * 0.35 + a0 * 3)
+                    da = (ang - a + math.pi) % math.tau - math.pi
+                    if 5.5 < r < 20 and abs(da) * r < 0.75 - 0.02 * r:
+                        blk = crying
+                col[GROUND] = blk
+                col[GROUND - 1] = blackstone
+
+
+def smooth(e0, e1, x):
+    t = min(1.0, max(0.0, (x - e0) / (e1 - e0)))
+    return t * t * (3 - 2 * t)
+
+
+def connect_walls(isl, cells):
+    """Los muros se unen a los vecinos que sean muro o bloque lleno (como en el juego al ponerlos a mano)."""
+    g = isl.grid
+    H, L, W = g.shape
+
+    def joins(idx):
+        if idx == 0:
+            return False
+        n = isl.name(idx)
+        return ('wall' in n or not any(w in n for w in ('glass', 'stairs', 'slab', 'lantern', 'light', 'rod', 'cluster')))
+
+    for (x, y, z, base) in cells:
+        sides = {}
+        for nm, dz, dx in (('north', -1, 0), ('south', 1, 0), ('west', 0, -1), ('east', 0, 1)):
+            zz, xx = z + dz, x + dx
+            sides[nm] = 'low' if 0 <= zz < L and 0 <= xx < W and joins(g[y, zz, xx]) else 'none'
+        straight = (sides['north'] == sides['south'] == 'low' and sides['east'] == sides['west'] == 'none') or \
+                   (sides['east'] == sides['west'] == 'low' and sides['north'] == sides['south'] == 'none')
+        g[y, z, x] = isl.pal('%s[east=%s,north=%s,south=%s,up=%s,waterlogged=false,west=%s]' % (
+            base, sides['east'], sides['north'], sides['south'], 'false' if straight else 'true', sides['west']))
+
+
+def santuario(isl):
+    """El santuario del caballero, en la terraza de la punta norte (donde el mapa tenía un templete con cúpula).
+    Devuelve (caballero, llegada) en coordenadas del mapa: el caballero en su pedestal del centro y la llegada en el
+    borde sur del estrado."""
+    g = isl.grid
+    H, L, W = g.shape
+    cx, cz = SHRINE
+    T = SHRINE_TOP
+    P = isl.pal
+    terr = np.array([is_terrain(isl, i) for i in range(len(isl.names))])
 
     def put(x, y, z, blk):
-        if 0 <= y < isl.H and 0 <= z < isl.L and 0 <= x < isl.W:
+        if 0 <= y < H and 0 <= z < L and 0 <= x < W:
             g[y, z, x] = blk
 
-    R = 11
-    for dz in range(-R - 1, R + 2):
-        for dx in range(-R - 1, R + 2):
-            r = math.hypot(dx, dz)
-            x, z = cx + dx, cz + dz
-            # quita lo que hubiera encima
-            if r <= R + 0.5:
-                for y in range(y0 + 1, y0 + 12):
-                    put(x, y, z, 0)
-            # Escalón 1: piedra negra con un anillo cincelado y vetas de obsidiana llorosa
-            if r <= R + 0.3:
-                ang = math.atan2(dz, dx)
-                if r > R - 0.8:
-                    put(x, y0 + 1, z, chis_black if int((ang + math.pi) / (2 * math.pi) * 36) % 3 == 0 else blackstone)
-                elif abs(math.sin(ang * 3)) < 0.12 and r > 4:
-                    put(x, y0 + 1, z, crying)
-                else:
-                    put(x, y0 + 1, z, blackstone)
-            # Escalón 2: cuarzo con un anillo de oro
-            if r <= 7.6:
-                put(x, y0 + 2, z, gold if 6.6 < r <= 7.6 else quartz)
-            # Escalón 3: ladrillos de cuarzo y el sello
-            if r <= 4.4:
-                put(x, y0 + 3, z, qbricks)
-                if r <= 1.6:
-                    put(x, y0 + 3, z, chis_q)
-                if 2.4 < r <= 3.2 and (dx == 0 or dz == 0 or abs(dx) == abs(dz)):
-                    put(x, y0 + 3, z, gold)
-    # Entradas: escaleras de cuarzo en los cuatro lados (tres de ancho)
-    for f, (sx, sz) in (('north', (0, -1)), ('south', (0, 1)), ('west', (-1, 0)), ('east', (1, 0))):
-        # hacia dónde mira la escalera: el lado alto hacia el centro
-        facing = {'north': 'south', 'south': 'north', 'west': 'east', 'east': 'west'}[f]
-        st = P(f'quartz_stairs[facing={facing},half=bottom,shape=straight,waterlogged=false]')
-        for w in (-1, 0, 1):
-            px_, pz_ = (w, 0) if sx == 0 else (0, w)
-            # escalón al nivel 2 (r 8) y al 3 (r 5)
-            put(cx + sx * 8 + px_, y0 + 2, cz + sz * 8 + pz_, st)
-            put(cx + sx * 5 + px_, y0 + 3, cz + sz * 5 + pz_, st)
-            put(cx + sx * 12 + px_, y0 + 1, cz + sz * 12 + pz_, st)
-    # Seis pilares de cuarzo con vara del End y luz invisible, y amatista a sus pies
-    for k in range(6):
-        a = k * math.pi / 3 + math.pi / 6
-        x, z = cx + int(round(math.cos(a) * 9)), cz + int(round(math.sin(a) * 9))
-        put(x, y0 + 2, z, chis_q)
-        for y in range(y0 + 3, y0 + 8):
+    def rr(x, z):
+        return math.hypot(x - cx, z - cz)
+
+    def angle_near(x, z, angs, tol):
+        a = math.atan2(z - cz, x - cx)
+        return any(abs((a - b + math.pi) % math.tau - math.pi) < tol for b in angs)
+
+    # 1. Fuera el templete del mapa (columnas de piedra y cúpula de terracota): todo lo de encima de la terraza al aire
+    # (hasta r 10,5; más allá, solo lo que no es terreno) y lo que no es terreno por debajo, terreno
+    body = P('gray_wool')
+    for z in range(cz - 12, cz + 13):
+        for x in range(cx - 12, cx + 13):
+            r = rr(x, z)
+            if r > 11.5:
+                continue
+            for y in range(T - 4, H):
+                b = g[y, z, x]
+                if b == 0:
+                    continue
+                if y > T and r <= 10.5:
+                    g[y, z, x] = 0
+                elif not terr[b]:
+                    g[y, z, x] = body if y <= T else 0
+    # 2. Cimientos: en cada columna del estrado, de lo más alto que haya hasta la terraza (sin huecos debajo)
+    tiles = P('deepslate_tiles')
+    R1 = 8.6
+    for z in range(cz - 9, cz + 10):
+        for x in range(cx - 9, cx + 10):
+            if rr(x, z) > R1:
+                continue
+            col = g[:, z, x]
+            below = np.nonzero(col[:T + 1])[0]
+            y0 = int(below.max()) + 1 if len(below) else T - 6
+            for y in range(min(y0, T), T + 1):
+                col[y] = tiles
+    # 3. Primer escalón (y T+1): piedra negra pulida con un borde de ladrillos y ocho piedras cinceladas
+    bricks, chis_black, polished = P('polished_blackstone_bricks'), P('chiseled_polished_blackstone'), P('polished_blackstone')
+    eight = [k * math.pi / 4 for k in range(8)]
+    for z in range(cz - 9, cz + 10):
+        for x in range(cx - 9, cx + 10):
+            r = rr(x, z)
+            if r > R1:
+                continue
+            if r > 7.6:
+                put(x, T + 1, z, chis_black if angle_near(x, z, eight, 0.07) else bricks)
+            else:
+                put(x, T + 1, z, polished)
+    # 4. Segundo escalón (y T+2, el suelo): cuarzo liso, borde de ladrillos de cuarzo, un anillo cincelado con oro en
+    # los cuatro puntos y el pedestal del caballero en medio (con amatista debajo)
+    quartz, qbricks, chis_q, gold = P('smooth_quartz'), P('quartz_bricks'), P('chiseled_quartz_block'), P('gold_block')
+    four = [k * math.pi / 2 for k in range(4)]
+    for z in range(cz - 8, cz + 9):
+        for x in range(cx - 8, cx + 9):
+            r = rr(x, z)
+            if r > 7.6:
+                continue
+            blk = qbricks if r > 6.9 else quartz
+            if 4.3 < r <= 5.1:
+                blk = gold if angle_near(x, z, four, 0.12) else chis_q
+            put(x, T + 2, z, blk)
+    put(cx, T + 2, cz, P('amethyst_block'))
+    for z in range(cz - 1, cz + 2):
+        for x in range(cx - 1, cx + 2):
+            if rr(x, z) <= 1.5:
+                put(x, T + 3, z, gold if (x, z) == (cx, cz) else chis_q)
+    # 5. Ocho columnas de cuarzo (entre las entradas) con basa y capitel
+    pillar = P('quartz_pillar[axis=y]')
+    pillar_angs = [math.pi / 8 + k * math.pi / 4 for k in range(8)]
+    pillars = []
+    for a in pillar_angs:
+        x, z = cx + int(round(math.cos(a) * 6.4)), cz + int(round(math.sin(a) * 6.4))
+        pillars.append((x, z))
+        put(x, T + 3, z, chis_q)
+        for y in range(T + 4, T + 10):
             put(x, y, z, pillar)
-        put(x, y0 + 8, z, chis_q)
-        put(x, y0 + 9, z, gold)
-        put(x, y0 + 10, z, rod)
-        put(x, y0 + 11, z, light)
-        for ox, oz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            if g[y0 + 2, z + oz, x + ox] == 0 and g[y0 + 1, z + oz, x + ox] != 0:
-                put(x + ox, y0 + 2, z + oz, cluster)
-    # Luz suave e invisible sobre la plataforma (el vacío no tiene sol)
-    for dx, dz in ((0, 0), (5, 5), (-5, 5), (5, -5), (-5, -5)):
-        put(cx + dx, y0 + 6, cz + dz, light_soft)
-    # Amatista bajo el sello (brilla un poco por las juntas al mirarlo de cerca)
-    put(cx, y0 + 2, cz, amethyst)
-    return cx, y0 + 4, cz
+        put(x, T + 10, z, chis_q)
+    # 6. Cúpula: cristal blanco con nervios de cuarzo sobre las columnas; remate de oro y vara del End
+    glass, rib = P('white_stained_glass'), quartz
+    cy = T + 11
+    Rd = 6.6
+    for y in range(cy + 1, cy + 8):
+        for z in range(cz - 7, cz + 8):
+            for x in range(cx - 7, cx + 8):
+                d = math.sqrt((x - cx) ** 2 + (z - cz) ** 2 + (y - cy) ** 2)
+                if Rd - 1.1 < d <= Rd:
+                    rxy = max(0.5, rr(x, z))
+                    put(x, y, z, rib if angle_near(x, z, pillar_angs, 0.55 / rxy) else glass)
+    for z in range(cz - 1, cz + 2):
+        for x in range(cx - 1, cx + 2):
+            if rr(x, z) <= 1.5:
+                put(x, cy + 6, z, chis_q)
+                put(x, cy + 7, z, 0)
+    put(cx, cy + 7, cz, gold)
+    put(cx, cy + 8, cz, P('end_rod[facing=up]'))
+    put(cx, cy + 9, cz, P('light[level=15,waterlogged=false]'))
+    # 7. Entablamento sobre las columnas (oro encima de cada una) y cornisa que vuela
+    slab = P('smooth_quartz_slab[type=bottom,waterlogged=false]')
+    for z in range(cz - 8, cz + 9):
+        for x in range(cx - 8, cx + 9):
+            r = rr(x, z)
+            if 5.6 < r <= 7.4:
+                put(x, cy, z, quartz)
+            if 6.0 < r <= 7.9:
+                put(x, cy + 1, z, slab)
+    for x, z in pillars:
+        put(x, cy, z, gold)
+    # 8. Farolillos colgando en las cuatro entradas y luz invisible dentro (el Void no tiene sol)
+    lantern = P('lantern[hanging=true,waterlogged=false]')
+    for a in four:
+        put(cx + int(round(math.cos(a) * 6.4)), cy - 1, cz + int(round(math.sin(a) * 6.4)), lantern)
+    put(cx, T + 8, cz, P('light[level=15,waterlogged=false]'))
+    for a in four:
+        put(cx + int(round(math.cos(a + math.pi / 4) * 4)), T + 5, cz + int(round(math.sin(a + math.pi / 4) * 4)),
+            P('light[level=11,waterlogged=false]'))
+    # 9. Entrada al este (por donde sigue el camino): escaleras de cuarzo; en lo demás, balaustrada (al sur, el barranco)
+    for w in (-1, 0, 1):
+        put(cx + 9, T + 1, cz + w, P('quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'))
+        put(cx + 8, T + 2, cz + w, P('quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'))
+    walls = []
+    for z in range(cz - 9, cz + 10):
+        for x in range(cx - 9, cx + 10):
+            r = rr(x, z)
+            if 7.6 < r <= R1 and not angle_near(x, z, [0.0], 0.42) and g[T + 2, z, x] == 0:
+                walls.append((x, T + 2, z, 'polished_blackstone_brick_wall'))
+                put(x, T + 2, z, P('polished_blackstone_brick_wall'))
+    connect_walls(isl, walls)
+    # amatista al pie de las columnas, por fuera
+    cluster = P('amethyst_cluster[facing=up,waterlogged=false]')
+    for x, z in pillars:
+        ox, oz = x - cx, z - cz
+        n = math.hypot(ox, oz)
+        px_, pz_ = x + int(round(ox / n)), z + int(round(oz / n))
+        if g[T + 3, pz_, px_] == 0 and g[T + 2, pz_, px_] not in (0,) and 'wall' not in isl.name(g[T + 2, pz_, px_]):
+            put(px_, T + 3, pz_, cluster)
+    knight = (cx, T + 4, cz)
+    # se llega a la escalera del este (por fuera de las columnas, con la cúpula a la derecha): desde ahí la línea hasta la
+    # grieta del centro queda libre (desde el borde sur la tapaba la loma que baja de la aguja del oeste, a y 72-77, y
+    # desde la puerta, la columna de su lado sur)
+    arrive = (cx + 8, T + 3, cz)
+    return knight, arrive
 
 
-def encode(isl, ox, oy, oz, npc, arrive):
+def encode(isl, ox, oy, oz, npc, arrive, rift):
     g = isl.grid
     H, L, W = g.shape
     out = bytearray()
-    out += b'TFVI' + struct.pack('>i', 1)
+    out += b'TFVI' + struct.pack('>i', 2)
     out += struct.pack('>iii', W, H, L)
     out += struct.pack('>iii', ox, oy, oz)
     out += struct.pack('>iii', *npc)
     out += struct.pack('>iiif', *arrive)
+    out += struct.pack('>iii', *rift)
     out += struct.pack('>i', len(isl.names))
     for n in isl.names:
         e = n.encode('utf-8')
@@ -404,14 +644,19 @@ def main():
     isl = Island(b, m)
     fix_walls(isl)
     fill_pit(isl)
-    nx, ny, nz = shrine(isl)
-    # Centro del santuario en x=0, z=0 del mundo
-    ox, oy, oz = -nx, WORLD_DY, -nz
-    npc = (0, ny + oy, 0)
-    arrive = (0, ny + oy, 6, 180.0)  # se llega delante del caballero, mirándole (al norte)
-    runs, size = encode(isl, ox, oy, oz, npc, arrive)
-    print('isla: %dx%dx%d, %d estados, %d tramos, %.1f kB; caballero en %s' % (isl.W, isl.H, isl.L, len(isl.names), runs,
-                                                                            size / 1024, npc))
+    cleared = clear_near_center(isl)
+    plaza(isl)
+    (kx, ky, kz), (ax, ay, az) = santuario(isl)
+    # El centro de la plaza (la grieta) en x=0, z=0 del mundo
+    ox, oy, oz = -PIT_CENTER[0], WORLD_DY, -PIT_CENTER[1]
+    npc = (kx + ox, ky + oy, kz + oz)
+    rift = (0, GROUND + 1 + oy, 0)
+    # se llega al borde sur del santuario mirando hacia la grieta del centro
+    yaw = -math.degrees(math.atan2(rift[0] - (ax + ox), rift[2] - (az + oz)))
+    arrive = (ax + ox, ay + oy, az + oz, round(yaw, 1))
+    runs, size = encode(isl, ox, oy, oz, npc, arrive, rift)
+    print('isla: %dx%dx%d, %d estados, %d tramos, %.1f kB; caballero en %s, llegada %s, grieta %s; quitados %d bloques '
+          'cerca del centro' % (isl.W, isl.H, isl.L, len(isl.names), runs, size / 1024, npc, arrive, rift, cleared))
     if '--preview' in sys.argv:
         dest = sys.argv[sys.argv.index('--preview') + 1]
         os.makedirs(dest, exist_ok=True)

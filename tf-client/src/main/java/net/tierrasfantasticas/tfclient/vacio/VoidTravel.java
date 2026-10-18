@@ -35,9 +35,10 @@ import org.joml.Vector3f;
 /**
  * El viaje al vacío y de vuelta, en el servidor. Al elegirlo, durante {@link #LEAVE_TICKS} la luz te rodea: dos
  * espirales de luz dorada y blanca suben a tu alrededor cerrándose, flotas despacio (Levitación), suenan el faro y la
- * amatista y la pantalla se va llenando de luz ({@link TravelFx}); en el último tick, un destello, el sonido del portal
- * del End, y apareces: en el santuario del vacío (delante del caballero) o donde estabas antes de ir. Al llegar, otro
- * destello, chispas que se abren y caes despacio.
+ * amatista y la pantalla se va llenando de luz ({@link TravelFx}); en el último tick, chispas, el sonido del portal
+ * del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la grieta del centro) o donde estabas antes
+ * de ir. Al llegar, chispas que se abren y caes despacio. (1.3.89: sin el destello FLASH, una mancha redonda que el dueño
+ * contaba entre los «círculos horribles».)
  *
  * <p>Dónde estabas se guarda en los datos del jugador (ForgeData → «TFVoid»: dimensión, x, y, z, giro), y también si ya
  * habló con el caballero (para que la segunda vez solo te salude por tu nombre).
@@ -155,27 +156,35 @@ public final class VoidTravel {
         }
     }
 
-    /** Dos espirales que suben a tu alrededor y se cierran, chispas y, al final, un destello. */
+    /** Partículas en un anillo alrededor del jugador (entre r0 y r1 bloques, a la altura del cuerpo). */
+    private static void ring(ServerLevel l, ServerPlayer p, net.minecraft.core.particles.ParticleOptions type, int n, double r0, double r1) {
+        java.util.concurrent.ThreadLocalRandom rnd = java.util.concurrent.ThreadLocalRandom.current();
+        for (int i = 0; i < n; i++) {
+            double a = rnd.nextDouble() * Math.PI * 2, r = r0 + rnd.nextDouble() * (r1 - r0);
+            l.sendParticles(type, p.getX() + Math.cos(a) * r, p.getY() + 0.2 + rnd.nextDouble() * 2.2, p.getZ() + Math.sin(a) * r,
+                    1, 0, 0.02, 0, 0.01);
+        }
+    }
+
+    /**
+     * Dos espirales de polvo de luz que suben a tu alrededor y se cierran un poco, y motas en un anillo. (1.3.89: nada a
+     * menos de 1,9 bloques ni en el centro, y sin chispas END_ROD: pegadas a la cámara eran manchas blancas enormes.)
+     */
     private static void spiral(ServerPlayer p, int age) {
         ServerLevel l = p.serverLevel();
         float k = age / (float) LEAVE_TICKS;
-        double r = 1.7 - 1.2 * k;
+        double r = 2.6 - 0.7 * k;
         for (int s = 0; s < 2; s++) {
             double a = age * 0.42 + s * Math.PI;
             double y = p.getY() + ((age * 0.09) % 2.6);
             double x = p.getX() + Math.cos(a) * r, z = p.getZ() + Math.sin(a) * r;
             l.sendParticles(s == 0 ? GOLD : LIGHT, x, y, z, 1, 0, 0, 0, 0);
-            l.sendParticles(ParticleTypes.END_ROD, x, y + 0.3, z, 1, 0.02, 0.05, 0.02, 0.01);
+            l.sendParticles(s == 0 ? LIGHT : GOLD, x, y + 0.35, z, 1, 0, 0, 0, 0);
         }
-        if (age % 3 == 0) {
-            l.sendParticles(GOLD, p.getX(), p.getY() + 1, p.getZ(), 4, 0.9, 1.1, 0.9, 0);
-        }
-        if (age > LEAVE_TICKS * 0.6) {
-            l.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 1, p.getZ(), 3, 0.15, 1.5, 0.15, 0.04);
-        }
+        if (age % 3 == 0) ring(l, p, GOLD, 4, 1.9, 2.8);
+        if (age > LEAVE_TICKS * 0.6) ring(l, p, LIGHT, 3, 1.9, 2.6);
         if (age == LEAVE_TICKS - 2) {
-            l.sendParticles(ParticleTypes.FLASH, p.getX(), p.getY() + 1, p.getZ(), 1, 0, 0, 0, 0);
-            l.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 1, p.getZ(), 40, 0.2, 0.6, 0.2, 0.25);
+            ring(l, p, LIGHT, 24, 1.9, 2.8);
             l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.45F, 1.4F);
         }
     }
@@ -217,10 +226,9 @@ public final class VoidTravel {
         p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 60, 0, false, false));
         VoidNet.fx(p, VoidNet.FX_ARRIVE);
         ServerLevel l = p.serverLevel();
-        l.sendParticles(ParticleTypes.FLASH, p.getX(), p.getY() + 1, p.getZ(), 1, 0, 0, 0, 0);
-        l.sendParticles(toVoid ? VIOLET : GOLD, p.getX(), p.getY() + 1, p.getZ(), 60, 1.2, 1.0, 1.2, 0);
-        l.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 0.5, p.getZ(), 50, 0.1, 0.1, 0.1, 0.18);
-        if (toVoid) l.sendParticles(ParticleTypes.REVERSE_PORTAL, p.getX(), p.getY() + 1, p.getZ(), 120, 0.6, 1, 0.6, 0.6);
+        ring(l, p, toVoid ? VIOLET : GOLD, 36, 1.9, 3.0);
+        ring(l, p, LIGHT, 18, 1.9, 2.8);
+        if (toVoid) ring(l, p, ParticleTypes.REVERSE_PORTAL, 40, 2.0, 3.2);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.PLAYERS, 1F, 1.2F);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
         if (toVoid) {

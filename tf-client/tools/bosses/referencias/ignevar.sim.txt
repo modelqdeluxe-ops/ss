@@ -17,73 +17,73 @@ ignevar             480 s, vida  65.8%: 410 ataques (51.2/min), 13 distintos de 
      repite seguido: 224 de 409; curas castigadas: 5 de 16
 
 ## semilla 3, normal
-ignevar             480 s, vida  66.9%: 322 ataques (40.2/min), 13 distintos de 10
-       71  walk_turn_left
-       51  walk_turn_right
-       37  damage_1
-       34  damage_4
-       34  damage_2
-       31  damage_3
+ignevar             480 s, vida  62.3%: 285 ataques (35.6/min), 13 distintos de 10
+       60  walk_turn_right
+       43  damage_3
+       42  damage_2
+       34  damage_1
+       31  damage_4
        12  firebreath
-       11  stomp_1
+       12  stomp_1
+       10  walk_turn_left
        10  take_flight
        10  idle_flight
        10  dive_flight
        10  land_flight
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 123 de 321; curas castigadas: 5 de 18; combos: 0
+     repite seguido: 85 de 284; curas castigadas: 4 de 16; combos: 0
 
 ## semilla 3, demencial
-ignevar             480 s, vida  66.4%: 364 ataques (45.5/min), 13 distintos de 10
-      125  walk_turn_right
-       41  damage_3
-       36  damage_2
-       28  damage_4
-       28  damage_1
-       27  walk_turn_left
-       15  firebreath
-       14  stomp_1
-       13  take_flight
-       12  idle_flight
-       12  dive_flight
-       12  land_flight
-        1  tail_layer
-     sin salir: damage_<random.1to4>
-     repite seguido: 152 de 363; curas castigadas: 6 de 14; combos: 0
-
-## semilla 11, normal
-ignevar             480 s, vida  65.0%: 288 ataques (36.0/min), 13 distintos de 10
-       64  walk_turn_right
-       37  damage_2
-       34  damage_3
-       33  damage_1
-       31  walk_turn_left
-       27  damage_4
-       11  stomp_1
+ignevar             480 s, vida  63.8%: 339 ataques (42.4/min), 13 distintos de 10
+       56  walk_turn_right
+       50  walk_turn_left
+       47  damage_3
+       43  damage_4
+       40  damage_2
+       25  damage_1
+       19  stomp_1
+       18  firebreath
        10  take_flight
        10  idle_flight
        10  dive_flight
        10  land_flight
-       10  firebreath
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 100 de 287; curas castigadas: 7 de 17; combos: 0
+     repite seguido: 124 de 338; curas castigadas: 4 de 15; combos: 0
 
-## semilla 11, dificil
-ignevar             480 s, vida  63.9%: 348 ataques (43.5/min), 13 distintos de 10
-       80  walk_turn_left
-       58  walk_turn_right
-       41  damage_1
-       36  damage_4
-       32  damage_3
-       31  damage_2
-       14  firebreath
-       13  stomp_1
+## semilla 11, normal
+ignevar             480 s, vida  59.8%: 269 ataques (33.6/min), 13 distintos de 10
+       53  walk_turn_left
+       36  damage_3
+       34  damage_4
+       32  damage_1
+       27  damage_2
+       19  walk_turn_right
+       12  firebreath
+       11  stomp_1
        11  take_flight
        11  idle_flight
-       10  dive_flight
-       10  land_flight
+       11  dive_flight
+       11  land_flight
         1  tail_layer
      sin salir: damage_<random.1to4>
-     repite seguido: 140 de 347; curas castigadas: 5 de 16; combos: 0
+     repite seguido: 81 de 268; curas castigadas: 0 de 13; combos: 0
+
+## semilla 11, dificil
+ignevar             480 s, vida  58.6%: 283 ataques (35.4/min), 13 distintos de 10
+       43  damage_3
+       43  walk_turn_right
+       41  damage_4
+       36  damage_1
+       27  damage_2
+       21  walk_turn_left
+       14  stomp_1
+       13  firebreath
+       11  take_flight
+       11  idle_flight
+       11  dive_flight
+       11  land_flight
+        1  tail_layer
+     sin salir: damage_<random.1to4>
+     repite seguido: 76 de 282; curas castigadas: 3 de 15; combos: 0

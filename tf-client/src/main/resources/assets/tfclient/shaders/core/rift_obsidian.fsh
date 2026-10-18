@@ -3,7 +3,7 @@
 // La obsidiana de la grieta 3.0 (TF Client 1.3.88): facetas sin textura. La luz de cada cara (de arriba, la morada del
 // desgarro y el brillo del borde) viene ya en el color del vértice (RiftRenderer.light); aquí se le suman las vetas que
 // laten (ruido «de cresta» sobre las coordenadas de la cara), destellos en la obsidiana y el brillo de cristales y
-// puntas. UV1 = (material, vena×100): 0 roca, 1 cristal, 2 esquirla, 3 punta.
+// puntas. UV1 = (material, vena×100): 0 roca, 1 cristal, 2 esquirla, 3 punta; +4 la grieta madre (1.3.89: carmesí).
 
 uniform float GameTime;
 uniform float FogStart;
@@ -49,6 +49,8 @@ float fbm2(vec2 p) {
 void main() {
     float t = GameTime * 1200.0;
     int mat = vMat.x;
+    float madre = mat >= 4 ? 1.0 : 0.0;
+    if (mat >= 4) mat -= 4;
     float vein = float(vMat.y) / 100.0;
     vec3 c = vColor.rgb * mix(0.62, 1.0, vLight);
     // vetas que brillan y laten (despacio, como si corriera algo por dentro)
@@ -57,19 +59,25 @@ void main() {
     float ridge = 1.0 - abs(2.0 * n - 1.0);
     float v = smoothstep(0.955, 0.99, ridge) * vein;
     float pulse = 0.6 + 0.4 * sin(t * 1.6 + n * 14.0);
-    vec3 veinCol = mix(vec3(0.55, 0.12, 1.0), vec3(1.0, 0.62, 1.0), smoothstep(0.95, 0.995, ridge));
+    vec3 veinCol = mix(mix(vec3(0.55, 0.12, 1.0), vec3(1.0, 0.12, 0.34), madre), mix(vec3(1.0, 0.62, 1.0), vec3(1.0, 0.7, 0.78), madre),
+            smoothstep(0.95, 0.995, ridge));
     c += veinCol * v * pulse * 1.5;
-    // destellos sueltos en la obsidiana
-    vec2 cell = floor(vUV * 18.0);
+    // destellos sueltos en la obsidiana: puntos redondos y suaves (1.3.89; antes eran cuadraditos duros, «píxeles»)
+    vec2 sp = vUV * 9.0;
+    vec2 cell = floor(sp);
     float g = hash12(cell);
-    c += vec3(0.5, 0.3, 0.8) * step(0.988, g) * (0.5 + 0.5 * sin(t * 2.5 + g * 60.0)) * 0.5;
+    vec2 ctr = vec2(hash12(cell + 17.0), hash12(cell + 31.0)) * 0.6 + 0.2;
+    float dd = length(fract(sp) - ctr);
+    float aa = fwidth(sp.x) + fwidth(sp.y);
+    float dot1 = 1.0 - smoothstep(0.03, 0.03 + max(aa, 0.04), dd);
+    if (mat == 0) c += mix(vec3(0.55, 0.35, 0.9), vec3(0.9, 0.3, 0.5), madre) * dot1 * step(0.96, g) * (0.5 + 0.5 * sin(t * 2.5 + g * 60.0)) * 0.6;
     if (mat == 1 || mat == 2) {
         // cristal: brillo que sube por dentro
         float k = 0.5 + 0.5 * sin(vUV.y * 1.7 - t * 2.2);
-        c += vec3(0.42, 0.10, 0.85) * (0.25 + 0.35 * k);
+        c += mix(vec3(0.42, 0.10, 0.85), vec3(0.8, 0.08, 0.3), madre) * (0.25 + 0.35 * k);
     } else if (mat == 3) {
         // las puntas de las garras arden un poco
-        c += vec3(0.45, 0.12, 0.85) * (0.35 + 0.15 * sin(t * 2.0 + vUV.x));
+        c += mix(vec3(0.45, 0.12, 0.85), vec3(0.85, 0.1, 0.32), madre) * (0.35 + 0.15 * sin(t * 2.0 + vUV.x));
     }
     float fog = clamp((vDist - FogStart) / max(0.001, FogEnd - FogStart), 0.0, 1.0);
     c = mix(c, FogColor.rgb, fog * FogColor.a);

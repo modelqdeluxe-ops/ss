@@ -32,6 +32,11 @@
   },
   {
    "type": "directory",
+   "source": "bosses/ignevar/littleroom_ignevar",
+   "prefix": "bosses/ignevar/littleroom_ignevar/"
+  },
+  {
+   "type": "directory",
    "source": "bosses/piglin_mecha/modelengine",
    "prefix": "bosses/piglin_mecha/modelengine/"
   },

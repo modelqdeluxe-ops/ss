@@ -1,10 +1,10 @@
 #version 150
 
 // El desgarro de la grieta 3.0 y su círculo de runas (TF Client 1.3.88). Sin texturas: todo sale de cuentas, así que
-// el borde es suave a cualquier tamaño (el dueño: «bordes dentados»).
+// el borde es suave a cualquier tamaño (el dueño: «bordes dentados»). Sin atan en el remolino (1.3.89: hacía una raya).
 //
-// Color del vértice: r = semilla, g = modo (0 desgarro, 1 círculo del suelo), b = cuánto está abierto / 1.4,
-// a = intensidad / 2. Salida con alfa premultiplicado (ONE, 1-SRC_ALPHA): dentro de la rasgadura, el vacío opaco;
+// Color del vértice: r = semilla, g = modo (0 desgarro, 0,75 círculo del suelo; 0,25 y 1 lo mismo de la grieta madre,
+// 1.3.89, en carmesí), b = cuánto está abierto / 1.4, a = intensidad / 2. Salida con alfa premultiplicado (ONE, 1-SRC_ALPHA): dentro de la rasgadura, el vacío opaco;
 // el borde y el halo suman luz sin tapar.
 //
 // El cuadro del desgarro mide QW × QH bloques (RiftRenderer.TEAR_QW/QH = tools/bosses/grieta3.py TEAR) y la rasgadura,
@@ -69,7 +69,7 @@ float fbm2(vec2 p) {
     return s;
 }
 
-vec3 starfield(vec2 p, float t) {
+vec3 starfield(vec2 p, float t, float madre) {
     vec2 i = floor(p);
     vec2 f = fract(p);
     float h = hash12(i);
@@ -78,10 +78,19 @@ vec3 starfield(vec2 p, float t) {
     float d = length(f - c);
     float tw = 0.55 + 0.45 * sin(t * (1.0 + 4.0 * hash12(i + 3.0)) + h * 80.0);
     float b = smoothstep(0.16, 0.0, d);
-    return mix(vec3(0.85, 0.75, 1.0), vec3(1.0, 0.8, 0.95), hash12(i + 21.0)) * b * b * tw * 1.6;
+    vec3 c0 = mix(vec3(0.85, 0.75, 1.0), vec3(1.0, 0.72, 0.78), madre);
+    return mix(c0, vec3(1.0, 0.8, 0.95), hash12(i + 21.0)) * b * b * tw * 1.6;
 }
 
-vec4 tear(vec2 uv, float seed, float open, float inten, float t) {
+vec4 tear(vec2 uv, float seed, float open, float inten, float t, float madre) {
+    // colores: morado (la normal) o carmesí (la madre)
+    vec3 cDeep = mix(vec3(0.02, 0.004, 0.05), vec3(0.05, 0.0, 0.02), madre);
+    vec3 cSwirl = mix(vec3(0.42, 0.10, 0.70), vec3(0.72, 0.05, 0.22), madre);
+    vec3 cCore = mix(vec3(0.12, 0.02, 0.22), vec3(0.22, 0.01, 0.06), madre);
+    vec3 cEye = mix(vec3(0.85, 0.40, 1.0), vec3(1.0, 0.35, 0.5), madre);
+    vec3 cRim = mix(vec3(1.0, 0.88, 1.0), vec3(1.0, 0.86, 0.9), madre);
+    vec3 cBand = mix(vec3(0.85, 0.22, 1.0), vec3(1.0, 0.16, 0.42), madre);
+    vec3 cGlow = mix(vec3(0.55, 0.14, 0.95), vec3(0.95, 0.10, 0.36), madre);
     vec2 p = vec2((uv.x - 0.5) * QW, (uv.y - 0.5) * QH);
     float y = p.y;
     float hy = y / (TH * 0.5);
@@ -99,31 +108,38 @@ vec4 tear(vec2 uv, float seed, float open, float inten, float t) {
     float inside = 1.0 - smoothstep(-aa, aa, d);
     // dentro: el vacío que gira, estrellas a dos profundidades y el ojo del vórtice
     vec2 q = vec2(p.x - cx, y);
-    float r = length(q * vec2(1.5, 0.42));
-    float ang = atan(q.y, q.x * 2.0);
-    float sw = fbm2(vec2(ang * 1.8 + r * 0.55 - t * 0.6, r * 0.7 - t * 0.22) + seed);
-    vec3 voidc = mix(vec3(0.02, 0.004, 0.05), vec3(0.42, 0.10, 0.70), smoothstep(0.25, 0.85, sw));
-    voidc += vec3(0.12, 0.02, 0.22) * (1.0 - smoothstep(0.0, 1.0, r * 0.12));
-    voidc += vec3(0.85, 0.40, 1.0) * exp(-r * 0.5) * (0.6 + 0.4 * sin(t * 2.1)) * 1.1;
-    voidc += starfield(q * 2.0 + vec2(0.0, t * 0.12), t) * 0.9;
-    voidc += starfield(q * 4.3 + vec2(t * 0.07, 3.0), t) * 0.5;
+    vec2 qe = q * vec2(1.5, 0.42);
+    float r = length(qe);
+    // (1.3.89) el remolino ya no sale del ángulo (atan): su corte dibujaba una raya recta del ojo hacia un lado y el ojo
+    // era un «estallido» de rayos (el dueño: «esa línea parece vidrio quebrado»). Ahora se gira el plano más cuanto más
+    // cerca del ojo (un torbellino) y el ruido se lee ahí: sin cortes ni puntos raros.
+    float tw = 2.6 / (1.0 + r * 0.45) - t * 0.35;
+    float ct = cos(tw);
+    float st = sin(tw);
+    vec2 w = vec2(ct * qe.x - st * qe.y, st * qe.x + ct * qe.y);
+    float sw = fbm2(w * 0.55 + vec2(seed, seed * 0.37) + vec2(0.0, t * 0.05));
+    vec3 voidc = mix(cDeep, cSwirl, smoothstep(0.25, 0.85, sw));
+    voidc += cCore * (1.0 - smoothstep(0.0, 1.0, r * 0.12));
+    voidc += cEye * exp(-r * 0.5) * (0.6 + 0.4 * sin(t * 2.1)) * 1.1;
+    voidc += starfield(q * 2.0 + vec2(0.0, t * 0.12), t, madre) * 0.9;
+    voidc += starfield(q * 4.3 + vec2(t * 0.07, 3.0), t, madre) * 0.5;
     // más oscuro junto al borde: se mira hacia dentro
     voidc *= mix(0.55, 1.0, smoothstep(0.0, -0.9, d));
     // el borde: una línea caliente casi blanca, una banda magenta y chispas que corren
     float rim = exp(-abs(d) * 6.0);
     float band = exp(-abs(d) * 1.6);
     float spark = 0.85 + 0.3 * noise1(y * 1.3 - t * 2.5 + seed);
-    vec3 rimc = (vec3(1.0, 0.88, 1.0) * rim * 1.7 + vec3(0.85, 0.22, 1.0) * band * 0.85) * spark;
+    vec3 rimc = (cRim * rim * 1.7 + cBand * band * 0.85) * spark;
     // el halo de fuera
     float od = max(d, 0.0);
-    vec3 glowc = vec3(0.55, 0.14, 0.95) * (exp(-od * 0.6) * 0.5 + exp(-od * 0.17) * 0.2);
+    vec3 glowc = cGlow * (exp(-od * 0.6) * 0.5 + exp(-od * 0.17) * 0.2);
     glowc *= smoothstep(1.25, 0.55, abs(hy));
     float border = smoothstep(0.0, 0.1, uv.x) * smoothstep(1.0, 0.9, uv.x) * smoothstep(0.0, 0.07, uv.y) * smoothstep(1.0, 0.93, uv.y);
     vec3 col = voidc * inside + (rimc * (open > 0.02 ? 1.0 : 0.0) + glowc * (1.0 - inside)) * inten * border;
     return vec4(col, inside);
 }
 
-vec4 ring(vec2 uv, float seed, float inten, float t) {
+vec4 ring(vec2 uv, float seed, float inten, float t, float madre) {
     vec2 p = (uv - 0.5) * 2.0 * RING_R;
     float r = length(p);
     float a = atan(p.y, p.x);
@@ -131,10 +147,11 @@ vec4 ring(vec2 uv, float seed, float inten, float t) {
     float l2 = exp(-abs(r - 11.45) * 10.0);
     float l3 = exp(-abs(r - 10.1) * 14.0) * 0.6;
     // runas: 48 casillas que giran despacio, con trazos al azar dentro
-    float rot = a + t * 0.05;
+    // (vuelta completa = 48 casillas exactas: sin costura donde atan salta de -π a π)
     float n = 48.0;
-    float cell = floor(rot / 6.2831853 * n);
-    float fr = fract(rot / 6.2831853 * n);
+    float rot = fract((a + t * 0.05) / 6.2831853) * n;
+    float cell = floor(rot);
+    float fr = fract(rot);
     float rr = (r - 11.6) / 1.2;
     float h1 = hash12(vec2(cell, seed));
     float h2 = hash12(vec2(cell, seed + 7.0));
@@ -145,9 +162,12 @@ vec4 ring(vec2 uv, float seed, float inten, float t) {
     g += smoothstep(0.08, 0.0, abs(rr - (0.75 - 0.4 * h1))) * smoothstep(0.42, 0.3, abs(fr - 0.5)) * step(0.5, h2);
     g *= step(0.0, rr) * step(rr, 1.0);
     float pulse = 0.55 + 0.45 * sin(t * 1.4 - cell * 0.45);
-    vec3 col = vec3(0.72, 0.26, 1.0) * (l1 + l2 + l3) * 0.9 + vec3(0.95, 0.5, 1.0) * g * pulse;
+    vec3 cLine = mix(vec3(0.72, 0.26, 1.0), vec3(1.0, 0.2, 0.42), madre);
+    vec3 cRune = mix(vec3(0.95, 0.5, 1.0), vec3(1.0, 0.55, 0.65), madre);
+    vec3 cPool = mix(vec3(0.32, 0.07, 0.55), vec3(0.5, 0.04, 0.16), madre);
+    vec3 col = cLine * (l1 + l2 + l3) * 0.9 + cRune * g * pulse;
     // charco de luz hacia el centro
-    col += vec3(0.32, 0.07, 0.55) * exp(-r * 0.2) * 0.3;
+    col += cPool * exp(-r * 0.2) * 0.3;
     col *= smoothstep(RING_R, RING_R - 0.4, r);
     return vec4(col * inten, 0.0);
 }
@@ -156,6 +176,8 @@ void main() {
     float t = GameTime * 1200.0;
     float seed = vColor.r * 100.0;
     float inten = vColor.a * 2.0;
-    vec4 c = vColor.g > 0.5 ? ring(vUV, seed, inten, t) : tear(vUV, seed, vColor.b * 1.4, inten, t);
+    bool ringMode = vColor.g > 0.5;
+    float madre = ringMode ? step(0.875, vColor.g) : step(0.125, vColor.g);
+    vec4 c = ringMode ? ring(vUV, seed, inten, t, madre) : tear(vUV, seed, vColor.b * 1.4, inten, t, madre);
     fragColor = c;
 }

@@ -212,6 +212,7 @@
   ]
  },
  "ignevar": {
+  "gira_al_atacar": true,
   "name": "Ignevar",
   "title": "El dragón de las cenizas",
   "color": "#FF4B1F",

@@ -47,6 +47,15 @@ import org.joml.Vector3f;
  * todos se van de la incursión (o el jefe se descarga), el jefe se va y la grieta vuelve a estar lista. Al caer el
  * jefe, cada jugador que le hizo daño se lleva las monedas de la dificultad. Se guardan en
  * &lt;mundo&gt;/tfclient/grietas.json.
+ *
+ * <p>1.3.89, la grieta del Void (el dueño: «el centro de la isla debe tener la grieta, configurable con /tf boss, para
+ * no estar poniendo una grieta cada rato con un jefe distinto: la pongo desde ahí a todos los que quiera; dos grietas,
+ * la normal y la grieta madre, más imponente, para criaturas más poderosas; por defecto la normal»): una grieta fija
+ * ({@link Rift#fixed}) en el centro de la plaza de la isla del Void, que no se quita ni se edita como las demás. Tiene
+ * dos listas de jefes con su dificultad ({@link VoidConfig}: la de la grieta normal y la de la madre) y una activa: cada
+ * vez que vuelve a estar lista elige al azar uno de la lista activa (sin repetir el último si hay más de uno). En la
+ * ventana, la pestaña VOID. Al principio, la normal con todos los jefes en su dificultad guardada y la madre con todos
+ * en Pesadilla.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class Rifts {
@@ -72,6 +81,10 @@ public final class Rifts {
         int players;
         /** Su arena cargada a la fuerza (mientras despierta o hay pelea). */
         boolean forced;
+        /** 0 grieta normal, 1 grieta madre ({@link RiftEntity#MOTHER}). */
+        public int kind;
+        /** La grieta del Void (la fija del centro de la isla: sus jefes salen de {@link VoidConfig}). */
+        public boolean fixed;
 
         /** Ticks que faltan (despertar o recarga). */
         public int left(long now) {
@@ -86,6 +99,21 @@ public final class Rifts {
     private static final Map<UUID, Rift> RIFTS = new LinkedHashMap<>();
     private static MinecraftServer server;
     private static boolean dirty;
+
+    /** Un jefe de la lista de la grieta del Void, con su dificultad. */
+    public record Entry(String boss, Difficulty diff) {}
+
+    /** Las listas de la grieta del Void: [0] la normal, [1] la madre; y cuál está en el centro. */
+    public static final class VoidConfig {
+        public int active = RiftEntity.NORMAL;
+        public final List<List<Entry>> pools = List.of(new ArrayList<>(), new ArrayList<>());
+        final int[] last = {-1, -1};
+    }
+
+    /** La grieta del Void tiene siempre el mismo id. */
+    public static final UUID VOID_ID = UUID.nameUUIDFromBytes("tfclient:grieta-del-void".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    private static VoidConfig voidConfig = new VoidConfig();
+    private static final java.util.Random PICK = new java.util.Random();
 
     // ------------------------------------------------------------------------------------------- guardar
 
@@ -109,16 +137,20 @@ public final class Rifts {
                     rift.pos = new Vec3(TFJson.dec(r, "x", 0), TFJson.dec(r, "y", 64), TFJson.dec(r, "z", 0));
                     rift.boss = TFJson.str(r, "jefe", "");
                     rift.diff = Difficulty.fromJson(TFJson.obj(r, "dificultad"));
+                    rift.kind = (int) TFJson.num(r, "tipo", RiftEntity.NORMAL) == RiftEntity.MOTHER ? RiftEntity.MOTHER : RiftEntity.NORMAL;
+                    rift.fixed = rift.id.equals(VOID_ID);
                     // Una incursión que estaba en marcha al cerrar: la grieta vuelve a estar lista
                     int st = (int) TFJson.num(r, "estado", RiftEntity.READY);
                     rift.state = st == RiftEntity.COOLDOWN ? RiftEntity.COOLDOWN : RiftEntity.READY;
                     rift.readyAt = TFJson.num(r, "listaEn", 0);
-                    if (SkillDefs.bosses().containsKey(rift.boss)) RIFTS.put(rift.id, rift);
+                    if (rift.fixed || SkillDefs.bosses().containsKey(rift.boss)) RIFTS.put(rift.id, rift);
                 } catch (RuntimeException ex) {
                     TFClient.LOGGER.warn("TF Jefes: grieta mal guardada: {}", ex.getMessage());
                 }
             }
         }
+        voidConfig = loadVoid(o == null ? null : TFJson.obj(o, "vacio"));
+        ensureVoidRift();
         // (si el servidor se cerró de golpe en mitad de una pelea, su arena seguía cargada a la fuerza)
         for (Rift r : RIFTS.values()) {
             ServerLevel level = server.getLevel(r.dim);
@@ -155,10 +187,12 @@ public final class Rifts {
             o.add("dificultad", r.diff.toJson());
             o.addProperty("estado", r.state);
             o.addProperty("listaEn", r.readyAt);
+            o.addProperty("tipo", r.kind);
             arr.add(o);
         }
         JsonObject root = new JsonObject();
         root.add("grietas", arr);
+        root.add("vacio", saveVoid());
         TFJson.write(file(), root);
         dirty = false;
     }
@@ -242,13 +276,14 @@ public final class Rifts {
             case RiftEntity.COOLDOWN -> {
                 if (now >= r.readyAt) {
                     r.state = RiftEntity.READY;
+                    if (r.fixed) pickVoid(r);
                     dirty = true;
                     level.playSound(null, r.pos.x, r.pos.y + 2, r.pos.z, BossSounds.RIFT_READY, SoundSource.HOSTILE, 2.5F, 1F);
                 }
             }
             default -> { }
         }
-        e.show(r.boss, r.state, r.left(now), r.diff);
+        e.show(r.boss, r.state, r.left(now), r.diff, r.kind, r.fixed);
     }
 
     /**
@@ -256,8 +291,8 @@ public final class Rifts {
      * grietas desde la 1.3.86) y al final estalla. El sonido que sube lo pone wake (grieta.despertar dura lo mismo).
      */
     private static void wakingFx(ServerLevel level, Rift r, int left) {
-        Vector3f c = RiftEntity.VOID_PURPLE;
-        Vec3 p = r.pos.add(0, 6.7, 0);
+        Vector3f c = r.kind == RiftEntity.MOTHER ? RiftEntity.MOTHER_RED : RiftEntity.VOID_PURPLE;
+        Vec3 p = r.pos.add(0, r.kind == RiftEntity.MOTHER ? 9.2 : 6.7, 0);
         int done = RiftEntity.WAKE_TICKS - left;
         if (done % 4 == 0) {
             level.sendParticles(new DustParticleOptions(c, 1.6F), p.x, p.y, p.z, 6 + done / 6, 0.9, 1.4, 0.9, 0.02);
@@ -369,12 +404,18 @@ public final class Rifts {
     static void wake(RiftEntity e, ServerPlayer p) {
         Rift r = RIFTS.get(e.riftId);
         if (r == null || r.state != RiftEntity.READY) return;
+        if (!SkillDefs.bosses().containsKey(r.boss)) {
+            // (la grieta del Void sin criaturas en su lista)
+            p.displayClientMessage(Component.literal("Esta grieta duerme: el staff le pone criaturas en /tf boss → VOID")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE), true);
+            return;
+        }
         r.state = RiftEntity.WAKING;
         r.wakeAt = e.level().getGameTime() + RiftEntity.WAKE_TICKS;
         dirty = true;
         e.level().playSound(null, e.getX(), e.getY() + 2, e.getZ(), BossSounds.RIFT_HIT, SoundSource.HOSTILE, 3F, 1F);
         e.level().playSound(null, e.getX(), e.getY() + 4, e.getZ(), BossSounds.RIFT_WAKE, SoundSource.HOSTILE, 4F, 1F);
-        e.show(r.boss, r.state, r.left(e.level().getGameTime()), r.diff);
+        e.show(r.boss, r.state, r.left(e.level().getGameTime()), r.diff, r.kind, r.fixed);
     }
 
     /** Clic derecho en el cristal: qué jefe guarda y cómo está. */
@@ -382,7 +423,14 @@ public final class Rifts {
         Rift r = RIFTS.get(e.riftId);
         if (r == null) return;
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(r.boss);
-        if (cls == null || cls.bossInfo == null) return;
+        if (cls == null || cls.bossInfo == null) {
+            if (r.fixed) {
+                p.displayClientMessage(Component.literal(r.kind == RiftEntity.MOTHER ? "Grieta madre" : "Grieta del Void")
+                        .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)
+                        .append(Component.literal(" · sin criaturas (el staff: /tf boss → VOID)").withStyle(ChatFormatting.GRAY)), true);
+            }
+            return;
+        }
         String state = switch (r.state) {
             case RiftEntity.READY -> "Golpea el cristal para despertarlo";
             case RiftEntity.WAKING -> "Despertando...";
@@ -471,8 +519,11 @@ public final class Rifts {
 
     // ------------------------------------------------------------------------------------------- staff (/tf boss)
 
+    /** Las grietas que pone el staff (sin la del Void, que va en su pestaña). */
     public static List<Rift> list() {
-        return new ArrayList<>(RIFTS.values());
+        List<Rift> out = new ArrayList<>();
+        for (Rift r : RIFTS.values()) if (!r.fixed) out.add(r);
+        return out;
     }
 
     public static Rift get(UUID id) {
@@ -494,8 +545,9 @@ public final class Rifts {
     }
 
     public static boolean remove(UUID id) {
+        Rift cur = RIFTS.get(id);
+        if (cur == null || cur.fixed) return false;
         Rift r = RIFTS.remove(id);
-        if (r == null) return false;
         ServerLevel level = server.getLevel(r.dim);
         if (level != null) {
             if (r.forced) force(level, r, false);
@@ -511,7 +563,7 @@ public final class Rifts {
     /** Cambia el jefe o la dificultad de una grieta (si está en incursión, cuenta para la siguiente). */
     public static boolean edit(UUID id, String boss, Difficulty d) {
         Rift r = RIFTS.get(id);
-        if (r == null) return false;
+        if (r == null || r.fixed) return false;
         r.boss = boss;
         r.diff = d;
         save();
@@ -535,7 +587,163 @@ public final class Rifts {
         Rift r = RIFTS.get(id);
         ServerLevel level = r == null ? null : server.getLevel(r.dim);
         if (level == null) return false;
+        if (r.fixed) {
+            // la del Void: delante, al norte de su círculo de runas, mirándola (con el agujero negro detrás)
+            p.teleportTo(level, r.pos.x, r.pos.y, r.pos.z - (r.kind == RiftEntity.MOTHER ? 25 : 18), 0F, -12F);
+            return true;
+        }
         p.teleportTo(level, r.pos.x + 3, r.pos.y, r.pos.z + 3, p.getYRot(), p.getXRot());
         return true;
+    }
+
+    // ------------------------------------------------------------------------------------------- la grieta del Void
+
+    private static VoidConfig loadVoid(JsonObject o) {
+        VoidConfig c = new VoidConfig();
+        if (o == null) {
+            // Al principio: la normal con todos los jefes (en su dificultad guardada) y la madre con todos en Pesadilla
+            Difficulty hard = Difficulty.preset("pesadilla").values();
+            for (String id : SkillDefs.bosses().keySet()) {
+                SkillDefs.ClassDef cls = SkillDefs.bosses().get(id);
+                if (cls == null || cls.bossInfo == null) continue;
+                c.pools.get(0).add(new Entry(id, BossConfig.get(id)));
+                c.pools.get(1).add(new Entry(id, hard));
+            }
+            dirty = true;
+            return c;
+        }
+        c.active = (int) TFJson.num(o, "activa", 0) == RiftEntity.MOTHER ? RiftEntity.MOTHER : RiftEntity.NORMAL;
+        String[] keys = {"normal", "madre"};
+        for (int k = 0; k < 2; k++) {
+            if (!o.has(keys[k]) || !o.get(keys[k]).isJsonArray()) continue;
+            for (JsonElement e : o.getAsJsonArray(keys[k])) {
+                try {
+                    JsonObject eo = e.getAsJsonObject();
+                    String boss = TFJson.str(eo, "jefe", "");
+                    if (SkillDefs.bosses().containsKey(boss)) c.pools.get(k).add(new Entry(boss, Difficulty.fromJson(TFJson.obj(eo, "dificultad"))));
+                } catch (RuntimeException ex) {
+                    TFClient.LOGGER.warn("TF Jefes: jefe de la grieta del Void mal guardado: {}", ex.getMessage());
+                }
+            }
+        }
+        return c;
+    }
+
+    private static JsonObject saveVoid() {
+        JsonObject o = new JsonObject();
+        o.addProperty("activa", voidConfig.active);
+        String[] keys = {"normal", "madre"};
+        for (int k = 0; k < 2; k++) {
+            JsonArray a = new JsonArray();
+            for (Entry e : voidConfig.pools.get(k)) {
+                JsonObject eo = new JsonObject();
+                eo.addProperty("jefe", e.boss());
+                eo.add("dificultad", e.diff().toJson());
+                a.add(eo);
+            }
+            o.add(keys[k], a);
+        }
+        return o;
+    }
+
+    /** La grieta del Void en el centro de la plaza (si el mundo tiene el Void); la crea la primera vez. */
+    private static void ensureVoidRift() {
+        if (server == null || server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID) == null) return;
+        Rift r = RIFTS.get(VOID_ID);
+        if (r == null) {
+            r = new Rift();
+            r.id = VOID_ID;
+            r.fixed = true;
+            r.diff = Difficulty.NORMAL;
+            r.boss = "";
+            RIFTS.put(r.id, r);
+            dirty = true;
+        }
+        BlockPos at = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
+        r.dim = net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID;
+        r.pos = new Vec3(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        r.kind = voidConfig.active;
+        if (r.state == RiftEntity.READY && !inPool(r)) pickVoid(r);
+    }
+
+    private static boolean inPool(Rift r) {
+        for (Entry e : voidConfig.pools.get(r.kind)) if (e.boss().equals(r.boss) && e.diff().equals(r.diff)) return true;
+        return false;
+    }
+
+    /** El siguiente jefe de la grieta del Void: uno al azar de la lista activa, sin repetir el último si hay más. */
+    private static void pickVoid(Rift r) {
+        List<Entry> pool = voidConfig.pools.get(r.kind);
+        if (pool.isEmpty()) {
+            r.boss = "";
+            r.diff = Difficulty.NORMAL;
+            return;
+        }
+        int last = voidConfig.last[r.kind];
+        int i = PICK.nextInt(pool.size());
+        if (pool.size() > 1 && i == last) i = (i + 1 + PICK.nextInt(pool.size() - 1)) % pool.size();
+        voidConfig.last[r.kind] = i;
+        r.boss = pool.get(i).boss();
+        r.diff = pool.get(i).diff();
+        dirty = true;
+    }
+
+    /** Para la prueba en el juego: despierta la grieta del Void (sin golpe). */
+    static boolean testWake() {
+        Rift r = voidRift();
+        ServerLevel level = r == null || server == null ? null : server.getLevel(r.dim);
+        if (level == null || r.state != RiftEntity.READY || !SkillDefs.bosses().containsKey(r.boss)) return false;
+        r.state = RiftEntity.WAKING;
+        r.wakeAt = level.getGameTime() + RiftEntity.WAKE_TICKS;
+        dirty = true;
+        return true;
+    }
+
+    public static VoidConfig voidConfig() {
+        return voidConfig;
+    }
+
+    /** La grieta del Void (null si el mundo no tiene el Void). */
+    public static Rift voidRift() {
+        return RIFTS.get(VOID_ID);
+    }
+
+    /** Pone en el centro la grieta normal o la madre (si hay pelea, la cambia al acabar: se ve ya). */
+    public static String voidSetActive(int kind) {
+        voidConfig.active = kind == RiftEntity.MOTHER ? RiftEntity.MOTHER : RiftEntity.NORMAL;
+        Rift r = voidRift();
+        if (r != null) {
+            r.kind = voidConfig.active;
+            if (r.state == RiftEntity.READY || r.state == RiftEntity.COOLDOWN) pickVoid(r);
+        }
+        save();
+        return "En el centro del Void: " + (voidConfig.active == RiftEntity.MOTHER ? "la grieta madre" : "la grieta normal");
+    }
+
+    public static String voidAdd(int kind, String boss, Difficulty d) {
+        if (!SkillDefs.bosses().containsKey(boss)) return "";
+        List<Entry> pool = voidConfig.pools.get(kind == RiftEntity.MOTHER ? 1 : 0);
+        if (pool.size() >= 64) return "La lista ya tiene 64 criaturas";
+        pool.add(new Entry(boss, d));
+        Rift r = voidRift();
+        if (r != null && r.kind == kind && r.state == RiftEntity.READY && !SkillDefs.bosses().containsKey(r.boss)) pickVoid(r);
+        save();
+        return "Añadido a la " + (kind == RiftEntity.MOTHER ? "grieta madre" : "grieta del Void") + ": " + name(boss) + " (" + d.label() + ")";
+    }
+
+    public static String voidRemove(int kind, int index) {
+        List<Entry> pool = voidConfig.pools.get(kind == RiftEntity.MOTHER ? 1 : 0);
+        if (index < 0 || index >= pool.size()) return "";
+        Entry e = pool.remove(index);
+        voidConfig.last[kind == RiftEntity.MOTHER ? 1 : 0] = -1;
+        Rift r = voidRift();
+        if (r != null && r.kind == kind && r.state == RiftEntity.READY && !inPool(r)) pickVoid(r);
+        save();
+        return "Quitado de la " + (kind == RiftEntity.MOTHER ? "grieta madre" : "grieta del Void") + ": " + name(e.boss());
+    }
+
+    private static String name(String boss) {
+        SkillDefs.ClassDef cls = SkillDefs.bosses().get(boss);
+        return cls != null && cls.bossInfo != null ? cls.bossInfo.name : boss;
     }
 }

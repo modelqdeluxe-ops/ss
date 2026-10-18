@@ -26,7 +26,7 @@ def norm(v):
 
 def hole_and_disk():
     """Las mismas cuentas que VoidSky.HOLE y VoidSky.diskNormal()."""
-    f = norm([0.18, 0.40, -1.0])
+    f = norm([0.16, 0.42, 1.0])
     up = np.array([0.0, 1.0, 0.0])
     n0 = norm(up - f * up.dot(f))
     tilt = math.radians(7)
@@ -97,7 +97,7 @@ def main():
     proj = perspective(70, w / h, 0.05, 1000)
     hole_yaw = math.degrees(math.atan2(-f[0], f[2]))
     hole_pitch = -math.degrees(math.asin(f[1]))
-    views = [('agujero', hole_yaw, hole_pitch + 8), ('llegada', 180, -8), ('lado', hole_yaw + 70, -5),
+    views = [('agujero', hole_yaw, hole_pitch + 8), ('llegada', -9, -8), ('lado', hole_yaw + 70, -5),
              ('arriba', hole_yaw, -70), ('abajo', hole_yaw + 180, 50), ('espalda', hole_yaw + 180, -15)]
     for vname, yaw, pitch in views:
         mv = view(yaw, pitch)
