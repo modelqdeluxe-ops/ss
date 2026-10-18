@@ -94,7 +94,12 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
-- **Que el dueño pruebe la 1.3.89**: la grieta del Void (en `/tf boss` → GRIETAS, la tarjeta de arriba con ✎: listas
+- **Que el dueño pruebe la 1.3.90**: al arrancar su servidor, la isla de su Void se rehace sola (en el registro «TF
+  Void: la isla de este mundo es de antes; se pone al día (N chunks, primero el santuario)» y, al acabar, «isla al día»;
+  menos de un minuto). Que mire la grieta en el centro desde arriba, el disco del agujero negro tras horas de juego
+  (sin muaré), los chorros y las nebulosas que se mueven, y las alas de Caelthar. Si el disco se ve borroso o el cielo
+  va lento con un PC flojo, en Gráficos «Rápidos» el cielo usa menos pasos (`Quality`).
+- **(1.3.89) Lo de antes, por si vuelve a salir**: la grieta del Void (en `/tf boss` → GRIETAS, la tarjeta de arriba con ✎: listas
   de la normal y de la madre), el santuario nuevo de la punta norte (su Void ya generado se pone al día solo al ir: en el
   registro «TF Void: ... se pone al día»), el cielo con y sin shaders, Caelthar y las llamas de Ignevar. **Con
   shaders** (Oculus) la grieta y nuestro cielo se dibujan después de la pasada final del paquete (`vacio/AfterShaders`,
