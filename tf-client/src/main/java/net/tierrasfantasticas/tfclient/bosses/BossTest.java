@@ -774,7 +774,7 @@ public final class BossTest {
             case 1180 -> shot(r, "vacio_isla");
             case 1185 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
             case 1225 -> shot(r, "vacio_planta");
-            case 1230 -> player.teleportTo(vl, 230.5, 92, 0.5, 90F, 4F);
+            case 1230 -> player.teleportTo(vl, 175.5, 88, 30.5, 110F, 8F);
             case 1260 -> shot(r, "vacio_lado");
             case 1299 -> fly(player, false);
             case 1300 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
