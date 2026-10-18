@@ -59,7 +59,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (18 oct 2026, TF Client 1.3.90) — lee esto primero
+### CHECKPOINT (18 oct 2026, TF Client 1.3.91) — lee esto primero
+
+**1.3.91**: el dueño pidió algo «súper épico» para la grieta y el viaje. Hecho (`tf-client/JEFES.md` §3.16):
+- **Grieta sin estrado ni garras**: cerrada (una rendija de luz) con su cristal y sus esquirlas. Al despertarla el
+  cristal se agrieta y tiembla; al empezar la pelea **estalla** en trozos y la grieta se abre de golpe; al morir el
+  jefe se cierra (implosión, fogonazo) y el cristal se rehace.
+- **Distorsión del espacio-tiempo** (`bosses/RiftWarp`, shader `rift_warp`): lente gravitatoria, remolino, ondas,
+  onda de choque y temblor de cámara desde que se rompe el cristal hasta que muere el jefe (con o sin shaders). En el
+  Void, el **agujero negro se enfurece** (`Rage` en `void_sky`).
+- **Viaje por un agujero de gusano** (`vacio/TravelFx`, shader `wormhole`, 7,5 s): la realidad se rasga, túnel
+  Overworld → Nether → End (a la vuelta End → Nether → Overworld) con texturas del propio Minecraft, puertas de portal,
+  bloques 3D girando (nada de «fotos»: lo pidió el dueño), sonidos; al llegar, la luz se va y el mundo ondula.
+
+### CHECKPOINT anterior (18 oct 2026, TF Client 1.3.90)
 
 **1.3.90**: el dueño, con tres capturas, tras probar la 1.3.89. Hecho y probado (`tf-client/JEFES.md` §3.15):
 - **Isla ×1,5 con la grieta en el centro de verdad** (`tools/void/isla.py` → `agrandar`: terreno remuestreado suave,

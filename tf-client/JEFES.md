@@ -673,6 +673,24 @@ manchas moradas. El Caballero Sacro aún hace mal la animación de las alas»*.
 | Mundos donde el Void ya existe (el del dueño) | Los chunks guardados no se regeneran. | `vacio/IslandUpdate` versión 3: si el pedestal del caballero nuevo no está, se reescribe todo lo que ocupaban la isla vieja y la nueva, chunk a chunk y **empezando por el santuario** (donde se llega), 128 columnas por tick y solo lo que cambia. Empieza al arrancar el servidor (el Void hace ticks sin jugadores). El caballero viejo se va solo y sale el del santuario nuevo. **Probado** en la prueba en el juego (`pretendOldIsland`: versión 2, pedestal cambiado y una columna de piedra en la plaza): «475 chunks en 948 ticks» (~48 s), pedestal bien y la columna quitada. En un mundo nuevo, «la isla ya es la de ahora». |
 | «El Caballero Sacro aún hace mal la animación de las alas» | Medido con `tools/void/caballero_alas.py`: en «reposo» (lo tranquilo del idle) el segundo tramo de cada ala iba plegado −110° hacia delante y sus plumas llegaban a z = −7,0, casi **5 píxeles por delante del pecho** (z = −2,25): de frente o en diagonal le cruzaban el pecho y los brazos. Además nacían en z = 1,75, dentro del torso. | El mismo script reescribe «reposo»: alas abiertas hacia atrás (30° y 5° más el segundo tramo), aleteo lento (dos en 9 s) y raíz 1,5 px más atrás (z = 3,25). Se comprueba solo, muestreando las plumas cada 0,25 s: ninguna por delante de z = 2,28, ninguna dentro del torso, los brazos o las piernas (solo una tira de la raíz dentro del casco, por detrás y tapada por él). Si algo atraviesa, no guarda. |
 
+### 3.16 La grieta que se abre al romper el cristal, la distorsión del espacio-tiempo y el agujero de gusano (1.3.91)
+
+El dueño: *«que cuando se active la grieta el cielo o el agujero negro se distorsionen; al romper el cristal de la
+grieta, que desate su poder y se distorsione el espacio-tiempo hasta matar al boss, y se cierre la grieta. Quita la
+textura de pilares y base y deja la grieta con sus cristales, cerrada, y cuando rompa el cristal se abra y salga el
+boss. Y la animación de teletransporte más bonita: que viaje por un agujero de gusano con la realidad alterada, con
+imágenes del Overworld, el Nether y el End, y de regreso End, Nether y Overworld. Algo súper épico»*. Y, al ver la
+primera vista previa del túnel: *«no quiero que salten imágenes literalmente, fotos»* (trozos del panorama del menú
+enmarcados que pasaban volando): fuera; en su lugar, bloques de verdad en 3D.
+
+| Qué | Cómo |
+|---|---|
+| Grieta sin estrado ni garras, cerrada | `tools/bosses/grieta3.py`: la malla solo lleva el cristal y la esquirla (y `burst`: dirección, velocidad, giro y tamaño de los trozos del cristal). `RiftRenderer.look`: lista = rendija de luz (`SEAM` 0,05) con el cristal flotando y las esquirlas; despertando = el cristal se agrieta (sus vetas brillan ×3,5), tiembla, gira ×7 y se hincha; la rendija se entreabre; pelea = el cristal estalla (los trozos salen, giran, caen y se apagan en 1,6 s; sonido de cristal y amatista) y la grieta se abre de golpe con rebote y queda abierta respirando; recarga = se cierra en 30 ticks cada vez más rápido, las esquirlas caen dentro, fogonazo y chasquido al juntarse (`Rifts.bossKilled`: partículas de portal al revés y sonidos), el cristal se rehace de 40 a 140 ticks. Vista previa: `grieta3.py --preview carpeta --estado lista|despierta|estalla|abierta|dormida`. |
+| Distorsión del espacio-tiempo | `bosses/RiftWarp` + shader `rift_warp`: cada fotograma, después del mundo (con o sin paquete de shaders: `GameRendererLateMixin`), se copia la imagen y se pinta deformada alrededor de cada grieta activa (proyectada a pantalla): lente gravitatoria con anillo de Einstein (`|r − a/r|`), remolino, ondas, onda de choque, aberración cromática, viñeta y destello del color de la grieta; temblor de cámara (`ViewportEvent.ComputeCameraAngles`). Despertando crece; al estallar, onda de choque + destello + golpe de temblor; la pelea entera, lente y remolino que dejan pelear (radio máximo 0,28 de la pantalla); al morir el jefe, implosión en 30 ticks y fogonazo. Se nota a menos de ~48 bloques (×tamaño de la grieta) y se apaga a 144. |
+| El agujero negro reacciona | `void_sky.fsh`: uniformes `Rage` (0..1, la grieta activa más cercana) y `RageMother` (carmesí): la lente late, el disco se enciende y se tiñe, los grumos arden, los chorros ×3,5 y el anillo parpadea. Vista previa: `tools/void/cielo_preview.py --furia`. |
+| Viaje por el agujero de gusano | `vacio/TravelFx` + shader `wormhole` (7,5 s, `VoidTravel.LEAVE_TICKS` 150; la vuelta es `FX_LEAVE_BACK`): el mundo se deforma y tiembla (0–1 s), la realidad se rasga en el centro y el desgarro llena la pantalla (1–2,2 s); el túnel acelera (velocidad 1,4 → 4) y se retuerce: a la ida Overworld (hierba, hojas, cerezo, troncos, con ventanas a su cielo), puerta de obsidiana con el portal del Nether (4 s), Nether (netherrack, ladrillo, nilio, piedra luminosa y ríos de lava animada), puerta del End con ojos y estrellas (5,9 s) y End (piedra del End, púrpur, obsidiana, ventanas a las estrellas); a la vuelta End → Nether → Overworld. Pasan **bloques de verdad en 3D** girando (prueba rayo–caja girada por píxel, 40 cubos que se reciclan), motas, rayas de velocidad y fogonazo al cruzar cada puerta. Al llegar, la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece ondulando (`RiftWarp.travel`). Se dibuja al acabar cada fotograma (`RenderTickEvent` END: encima de la interfaz y de la pantalla de carga). Sonidos solo para ti (portal, cristal, viento, viaje del Nether, ghast, portal del End o conducto, dragón). Texturas: las del propio Minecraft (`WormholeTextures`: panorama del menú, atlas 4×4 de bloques con sus tintes, portal multiplicado por su alfa). Vista previa: `xvfb-run -a python3 -I tools/void/tunel_preview.py <assets> carpeta [--vuelta]`. El rescate al caer al vacío (llegada sin viaje) es solo la luz que se va. |
+| La prueba en el juego | `BossTestClient` saca las capturas del túnel a sus tiempos (`ida_tunel_0_deforma` … `9_aparece`, y `vuelta_tunel_*`); el informe dice los fotogramas por segundo del viaje («agujero de gusano: ida: N fotogramas en S s»). El Void va 120 ticks más tarde que antes (el viaje es más largo). |
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1022,7 +1040,11 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.89
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.91
+
+**1.3.91**: §3.16 (grieta cerrada que se abre al romper el cristal, distorsión del espacio-tiempo, agujero negro que
+reacciona, viaje por un agujero de gusano). Queda que el dueño lo vea en su PC (los fotogramas por segundo del túnel
+con su tarjeta gráfica) y que diga si la distorsión de la pelea molesta para pelear (se baja en `RiftWarp.profile`).
 
 **1.3.88**: §3.13 (The Void con la isla del dueño y su cielo con agujero negro, Aurelion y el viaje, la grieta 3.0 con
 shaders; Ignevar vuelve a volar y a girarse en el aire; el Guardián Hueco no se levanta dormido; el Contemplador no sube
