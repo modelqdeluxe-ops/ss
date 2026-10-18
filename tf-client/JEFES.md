@@ -110,7 +110,7 @@ cambiada por otra y solo si hay un único nombre así (`head_6_bite` nunca se co
 |---|---|
 | `bosses/<id>.json` | `boss` (mob, nombre, color, vida/daño base, `pack_health`, modelo, `hitbox`, ataques, `preview_hide`), `tree` (las skills alcanzables, ya compiladas), `mobs` (sus mobs: tipo, opciones, IA, mecánicas con disparador, `kind` entity/actor, `speed` del tipo), `models`, `item_models`, `drops` (con `mechs`, `blocking`, `name_es`), `glyphs` y `missing`. |
 | `bosses/models/<id>.<modelo>.json` | Los `.bbmodel` convertidos por `tools/vfx_bb.py` en **modo jefe**: prioridad y override de las animaciones, scripts `mm:` de la línea de tiempo (`fx`), cajas `ob_` (`hb`), asientos `p_`, cabezas `h_`/`hi_`, el hueso `hitbox` que da el tamaño de la entidad, y texturas `_e` que brillan. **El «ojo» de Blockbench (visibility) no cuenta en los jefes**: ModelEngine dibuja esos huesos y cubos igual, y el pack los enseña y esconde con `partvis`. Hasta la 1.3.77 se perdían: el Esqueleto no tenía escudo, ni espada a la espalda, ni escudo junto al trono; el trono no tenía escalinata ni pozo de almas; la Abominación, ni pústulas ni zarpazo. |
-| `bosses/models/grieta.cristal.json` | El cristal de la grieta. Es procedural (`tools/bosses/rift_model.py`). Sus texturas `*_tint_e` se tiñen del color del jefe y brillan. La pasada completa de `build_bosses.py` lo rehace solo. |
+| `bosses/grieta3.json` | La grieta 3.0 (1.3.88): geometría facetada de `tools/bosses/grieta3.py`, sin texturas (shaders `rift_obsidian` y `rift_fx`, §3.13). La pasada completa de `build_bosses.py` la rehace sola. |
 | `textures/bosses/<id>/`, `models/bosses/<id>/`, `models/item/jefe_<id>_<objeto>.json` | Texturas, modelos de ítem (balas «display», objetos) y los modelos de los objetos que sueltan. El escudo lleva el override `blocking`. |
 | `sounds/bosses/<id>/*.ogg` + `sounds.json` | Eventos `tfclient:bosses.<id>.<x>`. |
 | `font/bosses_<id>.json` | Glifos de sus `text_display`, como el lanzallamas de la Hidra. |
@@ -564,6 +564,55 @@ jugador y por qué acabó uno que no), lo más lejos/alto que le lanzan (con la 
 golpes del jugador que no quitan vida, efectos que no se quitan (más de 15 s), la pelea entera con el relevo (el Mamut:
 `<jefe>_relevo`) y la música (`música de la grieta antes de la pelea` / `música en la pelea`).
 
+### 3.13 The Void, la grieta 3.0 y lo que pidió el dueño tras la 1.3.87 (1.3.88)
+
+El dueño (con dos capturas, el pack «NPCs For Mini Games vol.1» y el mapa «EndCarageKitMap.schematic»): *«la textura de
+la grieta está mal trabajada: falta pintura, bordes dentados, caras planas; quiero algo más imponente, más grande. El
+cielo: ¿el sol me sigue? quítalo; hazle un rework, que haya un agujero negro gigante animado, como el cielo de
+Iterationt en el End, que me haga sentir pequeño. Ignevar se hace pendejo, me deja de perseguir, se queda quieto lejos y
+ataca sin sentido; el caballero esqueleto que nace quebrado sale completo y luego se cae a pedazos y luego vuelve; el ojo
+volador no me deja respirar, sus ataques me elevan al cielo. Quiero que The Void sea una dimensión nueva, a la que se va
+solo con el caballero dorado con alas; con esta isla (sin casas, rellenas con bloques de la isla), el cielo de la
+dimensión, sin sol, la luz del End, sin errores en Mohist; el NPC con /tf void npc, un diálogo bonito con su nombre y el
+lore, una animación espectacular de teletransporte y una estructura para volver; la segunda vez solo saluda»*.
+
+**The Void** (paquete `vacio`; la isla, `tools/void/isla.py`; los originales, cifrados en `packs/void.tar.enc`):
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| La dimensión | `data/tfclient/dimension/void.json`, `dimension_type/void.json`, `worldgen/biome/void.json` | Como el End: sin luz del cielo, hora fija, `effects` propios (`VoidEffects`: el mapa de luz más claro, sin nubes ni lluvia, niebla morada). Bioma sin criaturas ni estructuras, con motas de portal y los sonidos del valle de almas. Camas y anclas no se usan (no explotan). |
+| La isla | `tools/void/isla.py` → `tfclient-void-isla.bin`; `VoidIsland`, `VoidIslandGenerator` | El mapa del dueño (MCEdit «Alpha», 297×121×492) pasado a 1.20.1. Su centro era un pozo de ~50×50 que atravesaba la isla, con puentes en cruz, cuatro casetas y una torre: fuera, y relleno con el terreno de la isla (ruido 3D en su proporción de lana gris, terracota cian, arcilla y piedra del End; arriba, franjas de lana y terracota moradas y magenta). Encima, el santuario del caballero (tres escalones de piedra negra, cuarzo y oro; seis pilares con varas del End y luz invisible). El generador copia en cada chunk su trozo al nacer: nada se pega de golpe en el servidor. El santuario queda en x=0, z=0, y=75. |
+| El cielo | `VoidSky`, `shaders/core/void_sky.*` | Todo el cielo es un shader: rayos que se curvan con la gravedad (Schwarzschild: a = −1,5 h² r/r⁵) alrededor de un agujero negro con disco de acreción (Kepler, más caliente dentro, Doppler) sobre el panorama de nebulosas y estrellas que titilan. Al norte, encima del santuario (se ve de frente al llegar). Calidad según los gráficos (Rápidos: menos pasos). Sin el sol negro de la 1.3.87. Encima, las estrellas fugaces de `RiftSky`. Vista previa: `tools/void/cielo_preview.py`. |
+| El ambiente | `RiftSky` | El cielo de las grietas ya no sale al acercarse a una: es el de la dimensión. En The Void suena la música siniestra (`grieta.musica`, se calla en las peleas) y hay fugaces y niebla morada. |
+| Protección y rescate | `TFVoid` | Solo el staff rompe o pone bloques (ni cubos ni mecheros); quien cae por debajo de y=2 vuelve al santuario con caída lenta. |
+| El caballero de luz | `KnightEntity`, `KnightRenderer`, `KnightScreen` | Aurelion (`skywars_npc.bbmodel` del pack de Wardenful Studio → `bosses/models/vacio.caballero.json`; sin sus islitas), 1,4 veces más grande, a luz llena, mira a quien tiene cerca, con motas doradas. Clic derecho: el diálogo (placa maciza de oro y morado, su retrato de verdad, letra Cinzel, texto que se escribe, respuestas con el ratón o 1-2-3; lore del Void, las grietas y su orden). La primera vez se presenta; luego solo saluda por tu nombre. `/tf void npc` lo pone (staff), `/tf void quitar` lo quita (a 6 bloques). |
+| El viaje | `VoidTravel`, `TravelFx`, `VoidNet` | 64 ticks: espirales de luz que se cierran, flotas, faro y amatista, la pantalla se llena de rayos dorados y luz; destello y sonido del portal del End; llegas delante del caballero del santuario (sale solo, uno). Dónde estabas se guarda (ForgeData → «TFVoid»); el del santuario te devuelve allí. `/tf void ir|volver [jugadores]` (staff). |
+
+**La grieta 3.0** (`tools/bosses/grieta3.py` → `bosses/grieta3.json`; `RiftRenderer`, `RiftShaders`, shaders
+`rift_obsidian` y `rift_fx`): sin texturas (eran los «bordes dentados» y las «caras planas»). Estrado roto de 14 lados y
+16 piedras, siete garras facetadas de 6 a 18 bloques, el cristal que se golpea (bipirámide de 8 lados, 5,8 bloques) y 14
+esquirlas que orbitan; la luz de cada cara se calcula por vértice (de arriba, la morada del desgarro, el borde según la
+cámara) y el shader pone las vetas que laten. El desgarro (20 bloques de alto) y el círculo de runas (radio 13,5) son
+cuadros con el shader `rift_fx`: borde suave y ondulado, el vacío girando dentro con estrellas y el ojo del vórtice, el
+halo. Estados como antes (despertando: más luz, se abre, el cristal tiembla; pelea: desaparece; recarga: rendija; se
+vuelve a abrir en 40 ticks). Vista previa con los shaders de verdad: `tools/bosses/grieta3.py --preview`.
+
+**Los jefes:**
+
+| Síntoma | Causa (medida en la prueba) | Arreglo |
+|---|---|---|
+| «Ignevar se hace pendejo, se queda quieto, ataca sin sentido» (anda 25 de 800 ticks, 0 ticks en el aire aunque pone la animación de vuelo, 41 llamas y ninguna da) | Su despegue es `velocity{m=SET;y=<caster.var.ramping_current>;repeat=40}` y la variable sube tick a tick: el motor leía los marcadores **una vez** al empezar la línea (0): nunca volaba, así que nunca se giraba hacia ti en el aire (`IGNEVAR_rotate_flying`) ni caía en picado; en el suelo solo se gira andando (a más de 8 bloques y contigo delante) y escupía fuego hacia donde miraba. | `SkillRuntime.exec`: con `delay` o `repeat`, los marcadores se leen cada vez que sale la línea, como MythicMobs. |
+| «El ojo volador me eleva al cielo» (55 bloques y 14 de alto) | (1) `throw{v=4;vy=5} @self` del láser (el jugador lo lanza sobre sí mismo con sudoskill): el motor lo hacía un salto de 0,5 hacia arriba en cada impacto; en MythicMobs el vector (objetivo − quien lanza) normalizado sale NaN y Bukkit no lo acepta: no mueve. (2) Cada impacto de la danza de rayos hace `throw{v=4;vy=5}` (también en MythicMobs: con impactos casi cada tick, subías sin parar). | `throw` como MythicMobs: (objetivo − quien lanza) normalizado en 3D, la Y = velocityY, `@self` no mueve, `fromOrigin`. Y (orden del dueño) «suelo» en `es.json` del Contemplador (`BossInfo.ground`): sus empujes al jugador dan como mucho un saltito (0,25) y nada si ya va por el aire; sus explosiones no le suben. En la prueba: 0 empujones (antes 3, hasta 55 bloques). |
+| El caballero no se veía (prueba) | `SkillDefs.modelDir` buscaba los modelos que no son de un jefe en `skills/models/`. | Los `vacio.` van con los de los jefes. |
+| Ignevar en el aire no se giraba hacia ti (`target_rot`, `yaw_diff`, `newrot` siempre 0) | Su `IGNEVAR_rotate_flying` calcula `-atan2(dx, dz) * 180 / 3.14159`: el evaluador de `variablemath` cortaba los nombres en la primera cifra (`atan` + `2`) y no tenía `atan2`: daba error y la variable no cambiaba. | `SkillVars.math` (y `sim_ai.crunch`, con su prueba en `test_convert.py`): nombres con cifras, `atan2`, `pow`, `exp`, `hypot`. |
+| «El caballero esqueleto que nace quebrado sale completo, luego se cae a pedazos y luego vuelve» (Guardián Hueco; capturas cada 10 ticks del despertar) | Nace dormido (`defaultstate{s=sleep}`, `setai{ai=false}`) y despierta con `awaken` si estás a menos de 8. Pero en su primer tick el motor le buscaba objetivo **antes** de sus `~onSpawn` (en MythicMobs salen al aparecer, antes de la IA): dormido y con objetivo, sus `turn_left/right @target` (animaciones override de todo el esqueleto, de pie) lo ponían entero mientras se giraba; al acabar volvía al montón de huesos y luego se montaba con `awaken`. | `BossEntity.customServerAiStep`: no busca objetivo en su primer tick. Sin IA no busca (NoAI de Minecraft), así que dormido no se gira. |
+
+**Prueba completa de la 1.3.88** (los 17 y el Void, frente a la de la 1.3.87): Ignevar anda 204 ticks (25), vuela 270
+(0) y «quieto y lejos» 39 (317); el Contemplador no lanza (0 bloques; 55) y, por eso, le llegan más láseres (131
+impactos; 73); el Guardián Hueco duerme hasta que te acercas a 8 bloques; el Rey Calabaza ya no se queda a 3 bloques del
+suelo (149 ticks en el aire → 0) y sigue atacando; los demás, igual. Los «efectos que no se quitan» son los del pack (el
+trono, el yunque de Eldric, los bloques de nieve, las estrellas del Arconte), los mismos que en la 1.3.87.
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -777,7 +826,8 @@ los jefes» de `tf-client.yml`, con Python 3.13): si algo cambia a un jefe ya pu
 | `python3 tools/bosses/sim_gui.py [--png carpeta]` | La ventana `/tf boss` a 8 tamaños. |
 | `python3 tools/bosses/sim_physics.py <modelo> [carpeta] [--anim idle] [--giro 120] [--anda 0.3] [--sin]` | Colas y segmentos (lo mismo que VfxPhysics): gira y anda el jefe, dice cuánto se aparta cada eslabón del de delante (no debe pasar de su límite) y dibuja fotogramas desde arriba y de lado. Usa la configuración `segment{}` del pack. |
 | `python3 tools/bosses/test_convert.py` | Pruebas del conversor con .bbmodel hechos al vuelo: etiquetas, bezier, Molang, antes/después, escalón, Box UV, miembros (y slim), `b_`, `jig[repeat]`, la sombra, las cabezas de ModelEngine 4 y la IK llegando a su objetivo; y (1.3.81) lo de MythicMobs en el compilador y los simuladores: `switch`, alias de disparadores, `bounceConditions`, los objetivos de formas y bloques y las cuentas de `variablemath`. Tiene que decir «todo bien». |
-| `python3 tools/bosses/rift_model.py --preview carpeta` | Imágenes del cristal. |
+| `xvfb-run -a python3 tools/bosses/grieta3.py --preview carpeta [--estado lista\|despierta\|dormida] [--t s]` | La grieta 3.0 con sus shaders de verdad (Mesa, moderngl) desde cuatro sitios. |
+| `xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--t s] [--q calidad]` | El cielo de The Void (el agujero negro) con su shader de verdad, mirando a seis sitios. |
 
 **Referencia** (1.3.78, `--min 8`, ataques por minuto; entre paréntesis, el motor de la 1.3.77 con la misma
 inteligencia):
@@ -911,7 +961,14 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.87
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.88
+
+**1.3.88**: §3.13 (The Void con la isla del dueño y su cielo con agujero negro, Aurelion y el viaje, la grieta 3.0 con
+shaders; Ignevar vuelve a volar y a girarse en el aire; el Guardián Hueco no se levanta dormido; el Contemplador no sube
+al jugador). Cambios del motor que tocan a todos: los marcadores de una línea con `delay`/`repeat` se leen al salir
+(antes una vez), `throw` normaliza en 3D y no mueve con `@self`, `variablemath` con `atan2`/`pow`/`exp`/`hypot` y no se
+busca objetivo antes de los `~onSpawn`. Queda que el dueño lo pruebe y, en Ignevar, mirar en la prueba si sus llamaradas
+apuntan bien (la prueba ahora lo dice: «lanzallamas ... apunta a ...»).
 
 **1.3.87**: §3.12 (supersalto, `freeze`, `spawn` una vez, jefes que renacían al morir, grieta y cielo 2.0, música de
 la grieta). El procedimiento exacto para seguir está en `SIGUIENTE-IA.md` (raíz del repo). Los packs de los 17 jefes

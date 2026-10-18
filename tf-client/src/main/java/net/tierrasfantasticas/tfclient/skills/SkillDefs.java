@@ -258,6 +258,12 @@ public final class SkillDefs {
         public List<String> attacks = List.of();
         /** Huesos que no salen en la vista previa de /tf boss (estelas, piezas de la escena). */
         public List<String> previewHide = List.of();
+        /**
+         * (1.3.88, orden del dueño: «que sus ataques no me eleven al cielo, debo mantenerme en el suelo») «suelo» en
+         * tools/bosses/es.json: lo que lanza al jugador (throw, velocity, leap...) le da como mucho un saltito, nada si ya
+         * está en el aire, y sus explosiones no le suben. El Contemplador.
+         */
+        public boolean ground;
         /** Objetos que suelta (dropitem): id de MythicMobs → modelo de ítem y nombre. */
         public final Map<String, Drop> drops = new LinkedHashMap<>();
         /**
@@ -330,7 +336,8 @@ public final class SkillDefs {
 
     /** Carpeta de los modelos de ModelEngine de ese id («hidra.lr_hydra» → bosses/models/, los demás skills/models/). */
     public static String modelDir(String id) {
-        return id != null && id.startsWith("grieta.") || isBoss(id) ? "bosses/models/" : "skills/models/";
+        // (la grieta y, desde la 1.3.88, el caballero de luz de The Void «vacio.caballero» están con los de los jefes)
+        return id != null && (id.startsWith("grieta.") || id.startsWith("vacio.")) || isBoss(id) ? "bosses/models/" : "skills/models/";
     }
 
     /** ¿Es de un jefe ese id de clase o de modelo («hidra» o «hidra.lr_hydra»)? */
@@ -423,6 +430,7 @@ public final class SkillDefs {
                 }
             }
             bi.previewHide = strings(b.get("preview_hide"));
+            bi.ground = b.has("suelo") && b.get("suelo").getAsBoolean();
             if (o.has("drops") && o.get("drops").isJsonObject()) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("drops").entrySet()) {
                     JsonObject d = e.getValue().getAsJsonObject();

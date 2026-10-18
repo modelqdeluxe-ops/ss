@@ -27,13 +27,27 @@ final class SkillMotion {
         if (ctx.ambient && e instanceof ServerPlayer) return;
         double max = 6.0;
         motion = new Vec3(clamp(motion.x, max), clamp(motion.y, max), clamp(motion.z, max));
+        // (1.3.88, orden del dueño) Jefes con «suelo» (el Contemplador): al jugador, como mucho un saltito, y nada si
+        // ya va por el aire (los impactos seguidos de su danza de rayos lo subían al cielo)
+        if (e instanceof ServerPlayer && keepsGround(ctx)) {
+            double vy = e.onGround() ? Math.min(motion.y, 0.25) : Math.min(motion.y, Math.min(0.0, e.getDeltaMovement().y));
+            motion = new Vec3(motion.x, vy, motion.z);
+        }
         e.setDeltaMovement(motion);
         e.hurtMarked = true;
         if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && e instanceof ServerPlayer) {
             net.tierrasfantasticas.tfclient.bosses.BossTest.pushed(String.format("%s v=%.2f,%.2f,%.2f", ctx.skill, motion.x, motion.y, motion.z));
         }
+        if (net.tierrasfantasticas.tfclient.bosses.BossTest.ON && !(e instanceof ServerPlayer)) {
+            net.tierrasfantasticas.tfclient.bosses.BossTest.selfPushed(e, ctx.skill);
+        }
         if (motion.y > 0 && e instanceof ServerPlayer) SkillServer.noFall(e.getUUID(), 100);
         e.fallDistance = 0;
+    }
+
+    /** ¿Es de un jefe con «suelo» (BossInfo.ground)? */
+    static boolean keepsGround(Ctx ctx) {
+        return ctx != null && ctx.cls != null && ctx.cls.bossInfo != null && ctx.cls.bossInfo.ground;
     }
 
     private static double clamp(double v, double m) {
@@ -44,8 +58,10 @@ final class SkillMotion {
     static void throwAway(Mech m, Ctx ctx, List<Tgt> targets) {
         double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1) / 10.0;
         double vy = SkillRuntime.num(m.arg("1", "velocityy", "vy"), 1) / 10.0;
+        // fromOrigin (fo): desde el origen de la skill (origin=@selflocation{y=4} de Ignevar), si no desde quien lanza
         Vec3 from = SkillTargets.origin(ctx);
-        if (ctx.caster.entity != null || ctx.caster.actor != null) from = ctx.caster.pos();
+        boolean fromOrigin = SkillRuntime.bool(m.arg("false", "fromorigin", "fo"));
+        if (!fromOrigin && (ctx.caster.entity != null || ctx.caster.actor != null)) from = ctx.caster.pos();
         for (Tgt t : targets) {
             Entity e = t.entity();
             if (e == null && t.who != null && t.who.actor != null && t.who.actor.physics) {
@@ -58,8 +74,12 @@ final class SkillMotion {
                 continue;
             }
             if (e == null || !movable(ctx, e)) continue;
-            Vec3 away = new Vec3(e.getX() - from.x, 0, e.getZ() - from.z);
-            away = away.lengthSqr() < 1e-6 ? Vec3.ZERO : away.normalize().scale(v);
+            // Como MythicMobs: (objetivo − quien lanza) normalizado en 3D por velocity y luego la Y = velocityY. Si es el
+            // mismo sitio (throw @self: el láser del Contemplador lo lanza el jugador sobre sí mismo), el vector sale NaN
+            // y Bukkit no lo acepta (setVelocity → checkFinite): no se mueve. Antes aquí era un salto hacia arriba.
+            Vec3 d = e.position().subtract(from);
+            if (d.lengthSqr() < 1e-6) continue;
+            Vec3 away = d.normalize().scale(v);
             push(ctx, e, new Vec3(away.x, vy, away.z));
         }
     }

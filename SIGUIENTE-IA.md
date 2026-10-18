@@ -1,7 +1,7 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **17 oct 2026, TF Client 1.3.87 publicado** (Release `tfclient-v1.3.87`, PR
-https://github.com/modelqdeluxe-ops/ss/pull/126 fusionado). Todo está en `main`; no hay nada a medias.
+Estado al dejarlo: **18 oct 2026, TF Client 1.3.88** (The Void, el caballero de luz, la grieta 3.0, Ignevar y el
+Contemplador: JEFES.md §3.13 y el CHECKPOINT de HANDOFF.md).
 Rama de trabajo: `claude/intelligent-cray-63dqai` (o la que te asigne la sesión), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
@@ -86,6 +86,14 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
+- **Que el dueño pruebe la 1.3.88**: The Void (`/tf void npc`, hablar con Aurelion, viajar, el cielo, volver), la grieta
+  3.0 y Ignevar (ahora vuela, se gira en el aire y cae en picado). Si en su servidor hay un limpiador de entidades
+  (ClearLag...), que no borre `tfclient:caballero`. Si alguien tiene un PC flojo y el cielo va lento: con gráficos
+  «Rápidos» el shader da menos pasos.
+- **Contemplador**: ya no te sube al cielo (orden del dueño, «suelo»), pero sus láseres siguen al ritmo del pack (en
+  la prueba, 140 impactos en 40 s). Si el dueño dice que dispara demasiado, pregúntale antes de tocarlo.
+- **The Void sin herramientas de grieta propias**: las grietas se ponen con `/tf boss` como siempre (también en The
+  Void); el cielo morado ya no sale junto a las del mundo normal.
 - **Que el dueño pruebe la 1.3.87** (Astwood sin supersalto, Mamut, grieta y cielo nuevos, música de la grieta,
   muerte). La música no se puede oír en el CI (no hay tarjeta de sonido): la prueba solo mira si *quiere* sonar.
 - **Contemplador**: el jugador de prueba recibe ~500 de daño (cada impacto del láser te quema, te lanza y avisa al

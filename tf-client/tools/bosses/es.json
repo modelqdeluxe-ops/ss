@@ -166,7 +166,8 @@
    "Picado",
    "Rayos oculares",
    "Danza de rayos"
-  ]
+  ],
+  "suelo": true
  },
  "arconte_astral": {
   "name": "Arconte Astral",

@@ -1076,7 +1076,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         super.customServerAiStep();
         steer = false;
         if (def == null || dying()) return;
-        if (age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
+        // (1.3.88) No en su primer tick: sus ~onSpawn aún no han salido (en MythicMobs salen al aparecer, antes de la IA).
+        // El Guardián Hueco nace dormido con setai{ai=false}: aquí ya tenía objetivo y, dormido, se giraba hacia el
+        // jugador con turn_left/right (animaciones de pie): «sale completo, luego se cae a pedazos y luego vuelve»
+        if (age > 0 && age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
         aiExtras();
         direct = false;
         if (age < moveUntil) {

@@ -701,6 +701,9 @@ def build(pack_dir, name, conf, sound_events):
             'preview_hide': es.get('preview_hide') if 'preview_hide' in es else spawn_hidden(prog, conf['mob'])}
     if succ:
         boss['successors'] = succ
+    # (1.3.88, orden del dueño) «suelo»: sus golpes no suben al jugador al cielo (el Contemplador, JEFES.md §3.13)
+    if es.get('suelo'):
+        boss['suelo'] = True
     out = {'id': bid, 'pack': name, 'boss': boss, 'class': {'name': boss['name']}, 'skills': [],
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': {k: v for k, v in item_models.items() if v},
            'drops': drops, 'glyphs': glyphs, 'missing': [m.split(':', 1)[1] for m in prog['missing'] if m.startswith('skill:')]}
@@ -869,9 +872,9 @@ def main():
     with open(cat_path, 'w', encoding='utf-8') as f:
         json.dump(final, f, ensure_ascii=False, indent=1)
     if full:
-        # El cristal de las grietas (modelo propio, no de un pack) vive en las mismas carpetas: se vuelve a hacer
-        import rift_model
-        rift_model.main()
+        # La grieta (geometría propia, no de un pack; 1.3.88: la 3.0, con shaders) vive en las mismas carpetas: se rehace
+        import grieta3
+        grieta3.main()
     BS.write_atlas()
     # El auditor (tools/bosses/audit.py): lo que el motor no tiene o el pack nombra mal; debe dar 0 en cada jefe
     # (por su ruta: tools/skills tiene otro audit.py, el de las clases)

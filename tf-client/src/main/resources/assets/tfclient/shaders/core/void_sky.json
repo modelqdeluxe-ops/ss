@@ -1,0 +1,23 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "one",
+        "dstrgb": "zero"
+    },
+    "vertex": "tfclient:void_sky",
+    "fragment": "tfclient:void_sky",
+    "attributes": [
+        "Position"
+    ],
+    "samplers": [
+        { "name": "Sampler0" }
+    ],
+    "uniforms": [
+        { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "VoidTime", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "HoleDir", "type": "float", "count": 3, "values": [ 0.55, 0.30, -0.78 ] },
+        { "name": "DiskNormal", "type": "float", "count": 3, "values": [ 0.0, 1.0, 0.0 ] },
+        { "name": "Quality", "type": "float", "count": 1, "values": [ 1.0 ] }
+    ]
+}

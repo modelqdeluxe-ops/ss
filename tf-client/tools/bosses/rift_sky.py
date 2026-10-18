@@ -1,4 +1,4 @@
-"""El cielo de las grietas (1.3.86; 1.3.87 más fino): las texturas que dibuja RiftSky cerca de una grieta.
+"""El cielo del vacío: las texturas del cielo de The Void (1.3.88; antes, el de cerca de las grietas, 1.3.86-1.3.87).
 
     python3 tools/bosses/rift_sky.py [--preview carpeta]
 
@@ -8,12 +8,10 @@
                                            píxeles gordos; ahora todas las dibuja RiftSky) y con tramado para que el
                                            degradado oscuro no salga en escalones. RiftSky lo pone en una esfera
                                            alrededor de la cámara (u = longitud, v = latitud: las mismas cuentas que aquí).
-  textures/environment/grieta_nube.png     una nube de nebulosa suelta (con alfa) para las capas que laten encima.
   textures/environment/grieta_estrella.png el destello de una estrella (las que titilan).
   textures/environment/grieta_fugaz.png    la estela de una estrella fugaz (cabeza a la derecha, cola que se afina y
                                            se apaga a la izquierda; suave también de ancho).
-  textures/environment/grieta_eclipse.png  el «sol negro» del vacío: un disco negro con corona violeta (encima de la
-                                           grieta).
+  (1.3.88: el shader del cielo, shaders/core/void_sky.fsh, usa el panorama de fondo; ya no hay nube suelta ni sol negro)
 
 Todas llevan su .png.mcmeta con «blur»: Minecraft las filtra suaves en vez de píxel a píxel.
 Todo sale del ruido de valor 3D sobre la dirección (no hay costura en la longitud y los polos no se estiran raro).
@@ -197,11 +195,10 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     s = sky()
     s.save(os.path.join(OUT, 'grieta_cielo.png'), optimize=True)
-    cloud().save(os.path.join(OUT, 'grieta_nube.png'), optimize=True)
     star().save(os.path.join(OUT, 'grieta_estrella.png'), optimize=True)
     streak().save(os.path.join(OUT, 'grieta_fugaz.png'), optimize=True)
-    eclipse().save(os.path.join(OUT, 'grieta_eclipse.png'), optimize=True)
-    names = ('grieta_cielo.png', 'grieta_nube.png', 'grieta_estrella.png', 'grieta_fugaz.png', 'grieta_eclipse.png')
+    # (1.3.88: sin la nube suelta ni el «sol negro»: el cielo es el shader de The Void y este panorama es su fondo)
+    names = ('grieta_cielo.png', 'grieta_estrella.png', 'grieta_fugaz.png')
     for f in names:
         # suaves (lineales) al estirarlas; el panorama se repite en la longitud, las demás no
         with open(os.path.join(OUT, f + '.mcmeta'), 'w') as fh:

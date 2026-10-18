@@ -100,6 +100,16 @@ public final class BossTest {
     }
 
     private static volatile String lastPush = "";
+    private static volatile int bossPushedAt = -100;
+    private static int stillFar;
+    private static volatile String bossPush = "";
+
+    /** SkillMotion.push ha movido al jefe (velocity, leap, lunge... del pack): lo que ande así no lo decide el motor. */
+    public static void selfPushed(Entity e, String skill) {
+        if (e != boss) return;
+        bossPushedAt = t;
+        bossPush = skill;
+    }
 
     /** SkillRuntime.hurt: una skill del jefe le ha dado al jugador (dealt = el daño que entró; 0 = no entró). */
     public static void skillHit(String skill, float dealt) {
@@ -133,7 +143,9 @@ public final class BossTest {
         final Map<String, Integer> anims = new TreeMap<>();
         final Map<String, Integer> errors = new LinkedHashMap<>();
         int fightTicks, targetTicks, nearTicks, movingTicks, backTicks, sideTicks, airTicks, fastTicks, teleports;
-        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, landed, noEffect;
+        int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, backPushed, sidePushed, landed, noEffect;
+        double minDist = 1e9;
+        int stillFarTicks, stillFarShown, flameShown;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -228,6 +240,8 @@ public final class BossTest {
             if (level.getGameTime() - waitPlayer < 100) return;
             ids = new ArrayList<>(SkillDefs.bosses().keySet());
             String only = System.getenv("TFCLIENT_PRUEBA_JEFES");
+            // (1.3.88) «vacio»: la visita a The Void (el caballero, su diálogo, el viaje, el cielo y la isla), la primera
+            ids.add(0, "vacio");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -244,20 +258,23 @@ public final class BossTest {
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
         Rep r = current;
+        if ("vacio".equals(r.id)) {
+            voidStep(server, level, player, r);
+            return;
+        }
         switch (phase) {
             case 0 -> {
                 // Llegar a la arena (dejar que se carguen los chunks) y poner la grieta en medio
                 if (t == 1) player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
                 if (t == 40) {
                     rift = Rifts.place(player, r.id, Difficulty.NORMAL);
-                    // mirándola (hacia +z) y un poco hacia arriba: la grieta entera (1.3.87: más grande), el sol negro
-                    // encima y el cielo (que tarda ~5 s en entrar)
-                    player.teleportTo(level, arena.x, arena.y, arena.z - 22, 0F, -13F);
+                    // mirándola (hacia +z) y un poco hacia arriba: la grieta entera (1.3.87: más grande)
+                    player.teleportTo(level, arena.x, arena.y, arena.z - 34, 0F, -17F);
                 }
                 if (t == 175) {
                     shot(r, "grieta_lista");
                     // (solo en el cliente del juego de un jugador, que es el de la prueba)
-                    r.event("música de la grieta antes de la pelea: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
+                    r.event("música del vacío fuera del Void: " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada (bien)"));
                 }
                 if (t == 180) {
                     lastState = rift.state;
@@ -333,6 +350,8 @@ public final class BossTest {
             wantDist = new int[] {3, 6, 10, 16, 4, 8}[(t / 100) % 6];
             side = -side;
         }
+        // (para ver entero el despertar del Guardián Hueco, que despierta a menos de 8 bloques)
+        if (r.id.equals("guardian_hueco") && t < 160) wantDist = 6;
         Vec3 rel = player.position().subtract(bp).multiply(1, 0, 1);
         double d = rel.length();
         if (d < 1e-3) rel = new Vec3(0, 0, -1);
@@ -391,6 +410,7 @@ public final class BossTest {
         // Lo que hace el jefe
         if (boss.target() == player) r.targetTicks++;
         if (d < 30) r.nearTicks++;
+        if (!view) r.minDist = Math.min(r.minDist, d - boss.getBbWidth() / 2);
         Vec3 mv = bp.subtract(lastPos);
         lastPos = bp;
         double hs = Math.sqrt(mv.x * mv.x + mv.z * mv.z);
@@ -401,26 +421,30 @@ public final class BossTest {
         }
         List<String> anims = SkillMobs.animNames(boss);
         String what = anims == null ? "sin modelo" : String.join(",", anims.subList(Math.min(1, anims.size()), anims.size()));
-        boolean back = false, side = false, lockedNow = false;
+        boolean back = false, side = false, lockedNow = false, pushedNow = false;
         if (hs > 0.03 && hs <= 4) {
             r.movingTicks++;
             float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
             float diff = Math.abs(Mth.wrapDegrees(go - boss.yBodyRot));
             // Con el modelo bloqueado por el pack (lockmodel) el cuerpo no gira: eso es de ModelEngine; se cuenta aparte
             boolean locked = boss.motion()[2] != 0;
+            // Lo empuja una skill de su pack (velocity{z=-1} del Archivista: un saltito atrás): tampoco es del motor
+            pushedNow = t - bossPushedAt <= 20;
             if (diff > 120) {
                 r.backTicks++;
                 if (locked) r.backLocked++;
+                if (pushedNow) r.backPushed++;
                 back = true;
             } else if (diff > 60) {
                 r.sideTicks++;
                 if (locked) r.sideLocked++;
+                if (pushedNow) r.sidePushed++;
                 side = true;
             }
             lockedNow = locked;
         }
-        String why = String.format(" a %.1f del jugador%s%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : "",
-                lockedNow ? ", modelo bloqueado (lockmodel)" : "");
+        String why = String.format(" a %.1f del jugador%s%s%s", d, boss.hurtTime > 0 ? ", le acaban de pegar" : "",
+                lockedNow ? ", modelo bloqueado (lockmodel)" : "", pushedNow ? ", lo empuja su skill " + bossPush : "");
         if (back || side) {
             // Por qué: hacia dónde va, hacia dónde mira el cuerpo y a qué punto del camino de Minecraft va
             float go = (float) Math.toDegrees(Math.atan2(-mv.x, mv.z));
@@ -435,6 +459,31 @@ public final class BossTest {
             Vec3 tp = player.position().subtract(bp);
             why += String.format("; va a %.0f° del cuerpo, %.2f b/t, jugador a %.0f°, %s", Mth.wrapDegrees(go - boss.yBodyRot), hs,
                     Mth.wrapDegrees(Math.toDegrees(Math.atan2(-tp.x, tp.z)) - boss.yBodyRot), node);
+        }
+        // Quieto y lejos del jugador más de 2 s («se queda quieto lejos y ataca sin sentido», Ignevar): por qué no anda
+        if (d > 10 + boss.getBbWidth() / 2 && hs < 0.03) {
+            if (++stillFar == 40 && r.stillFarShown++ < 6) {
+                r.event(String.format("quieto lejos (a %.1f) [%s] suelo=%s %s", d, what, boss.onGround(),
+                        net.tierrasfantasticas.tfclient.skills.SkillRuntime.debugVars(boss)));
+            }
+            if (stillFar >= 40) r.stillFarTicks++;
+        } else {
+            stillFar = 0;
+        }
+        // Lanzallamas (Ignevar: «ataca sin sentido», sus llamas no daban): hacia dónde apunta, 3 veces por pelea
+        if (anims != null && r.flameShown < 3 && t % 10 == 0 && anims.stream().anyMatch(a -> a.contains("breath") || a.contains("flame"))) {
+            net.tierrasfantasticas.tfclient.skills.SkillMobs.Host hh = net.tierrasfantasticas.tfclient.skills.SkillMobs.host(boss);
+            Vec3 jaw = hh == null ? null : net.tierrasfantasticas.tfclient.skills.SkillMobs.bonePos(hh, "jaw");
+            Vec3 aim = hh == null ? null : net.tierrasfantasticas.tfclient.skills.SkillMobs.bonePos(hh, "flametarget");
+            if (jaw != null && aim != null) {
+                r.flameShown++;
+                Vec3 dj = aim.subtract(jaw);
+                float aimYaw = (float) Math.toDegrees(Math.atan2(-dj.x, dj.z));
+                Vec3 tp = player.position().subtract(jaw);
+                r.event(String.format("lanzallamas [%s]: boca %.1f %.1f %.1f (sobre el suelo %.1f), apunta a %.1f bloques, %.0f° (cuerpo %.0f°, jugador %.0f°), baja %.1f; jugador a %.1f",
+                        what, jaw.x - bp.x, jaw.y - bp.y, jaw.z - bp.z, jaw.y - bp.y, dj.length(), aimYaw, boss.yBodyRot,
+                        Math.toDegrees(Math.atan2(-tp.x, tp.z)), -dj.y, Math.sqrt(tp.x * tp.x + tp.z * tp.z)));
+            }
         }
         episode(r, "anda hacia atrás", back, what + why);
         episode(r, "anda de lado", side, what + why);
@@ -457,6 +506,10 @@ public final class BossTest {
         int minions = level.getEntitiesOfClass(BossEntity.class, boss.getBoundingBox().inflate(64), e -> e != boss && e.isAlive()).size();
         r.minionsMax = Math.max(r.minionsMax, minions);
         if (SHOTS.contains(t)) shot(r, "pelea_" + t / 20 + "s");
+        // Cómo aparece (el Guardián Hueco: «sale completo y luego se cae a pedazos»): sus primeros ticks
+        if (t == 1 || t == 4 || t == 10) shot(r, "aparece_t" + t);
+        // El despertar del Guardián Hueco (sale de pie, se cae y se monta, decía el dueño): cada 10 ticks
+        if (r.id.equals("guardian_hueco") && t >= 30 && t <= 150 && t % 10 == 0) shot(r, String.format("despierta_t%03d", t));
         if (t == 200) {
             r.event("música en la pelea: grieta " + (RiftSky.musicWanted() ? "SUENA (mal)" : "callada")
                     + ", jefe " + (net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive() ? "suena" : "no suena"));
@@ -563,6 +616,97 @@ public final class BossTest {
         return sb.length() == 0 ? "" : " | efectos:" + sb;
     }
 
+    /** Lo que el cliente de la prueba pulsa en el diálogo del caballero (1 = la primera respuesta; -1 = nada). */
+    static volatile int dialogPress = -1;
+    private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
+    private static Vec3 origin;
+
+    /**
+     * La visita a The Void (1.3.88): pone un caballero de luz delante del jugador, le habla (saludo, «¿Qué es el
+     * Void?», «Llévame al Void»), viaja con la animación, mira el cielo y la isla desde varios sitios, prueba el rescate
+     * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
+     */
+    private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        switch (t) {
+            case 1 -> {
+                if (vl == null) {
+                    r.event("NO HAY DIMENSIÓN tfclient:void");
+                    next(level);
+                    return;
+                }
+                player.teleportTo(level, arena.x, arena.y, arena.z, 180F, 0F);
+            }
+            case 30 -> {
+                knight = net.tierrasfantasticas.tfclient.vacio.TFVoid.KNIGHT.get().create(level);
+                knight.moveTo(arena.x, arena.y, arena.z - 4, 0F, 0F);
+                knight.setYHeadRot(0F);
+                knight.setYBodyRot(0F);
+                level.addFreshEntity(knight);
+                origin = player.position();
+            }
+            case 70 -> shot(r, "caballero_mundo");
+            case 80 -> net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            case 200 -> shot(r, "dialogo_saludo");
+            case 210 -> dialogPress = 1;
+            case 340 -> shot(r, "dialogo_lore");
+            case 350 -> dialogPress = 0;
+            case 395 -> shot(r, "viaje_salida");
+            case 440 -> {
+                r.event("tras el viaje: dimensión " + player.level().dimension().location() + String.format(" en %.1f %.1f %.1f",
+                        player.getX(), player.getY(), player.getZ()));
+                shot(r, "viaje_llegada");
+            }
+            case 520 -> {
+                BlockPosHelper.report(r, player);
+                r.event("cielo del vacío (shader): " + (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.skyShaderLoaded() ? "cargado" : "NO CARGADO")
+                        + "; música del vacío: " + (RiftSky.musicWanted() ? "suena" : "NO SUENA"));
+                shot(r, "vacio_llegada");
+            }
+            case 530 -> player.teleportTo(vl, 0.5, 78, 4.5, 180F, -22F);
+            case 600 -> shot(r, "vacio_agujero");
+            case 610 -> player.teleportTo(vl, 0.5, 108, 70.5, 180F, 18F);
+            case 700 -> shot(r, "vacio_isla");
+            case 710 -> player.teleportTo(vl, 120.5, 60, -40.5, 120F, 2F);
+            case 800 -> shot(r, "vacio_lado");
+            case 810 -> player.teleportTo(vl, 0.5, 74, 9.5, 180F, 30F);
+            case 870 -> shot(r, "vacio_santuario");
+            case 880 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 885 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
+                    player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
+            case 940 -> {
+                var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
+                r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
+                if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
+            }
+            case 1060 -> shot(r, "dialogo_santuario");
+            case 1070 -> dialogPress = 0;
+            case 1200 -> {
+                double d = origin == null ? -1 : player.position().distanceTo(origin);
+                r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
+                        + (player.level() == level && d < 3 ? "" : " (MAL)"));
+                shot(r, "vuelta");
+            }
+            case 1240 -> {
+                if (knight != null) knight.discard();
+                knight = null;
+                next(level);
+            }
+            default -> {
+            }
+        }
+    }
+
+    /** Lo que hay bajo los pies al llegar al vacío (¿se generó la isla?). */
+    private static final class BlockPosHelper {
+        static void report(Rep r, ServerPlayer p) {
+            net.minecraft.core.BlockPos b = p.blockPosition().below();
+            r.event("bajo los pies al llegar: " + p.level().getBlockState(b).getBlock().getDescriptionId() + " en " + b.toShortString()
+                    + (p.level().getBlockState(b).isAir() ? " (VACÍO: ¿no se generó la isla?)" : ""));
+        }
+    }
+
     private static void shot(Rep r, String what) {
         shotRequest = String.format("%02d_%s_%s", index, r.id, what);
     }
@@ -583,6 +727,8 @@ public final class BossTest {
         throwFrom = null;
         freeUntil = 0;
         pushedAt = -10;
+        bossPushedAt = -100;
+        stillFar = 0;
         EPISODES.clear();
         index++;
         phase = 0;
@@ -607,8 +753,8 @@ public final class BossTest {
             for (String e : r.events) sb.append("   ").append(e).append('\n');
             int ft = Math.max(1, r.fightTicks);
             sb.append(String.format("   pelea: %d ticks; jefes distintos: %d; vida %.0f -> %.0f%n", r.fightTicks, r.bosses.size(), r.hpStart, r.hpEnd));
-            sb.append(String.format("   objetivo = el jugador: %d%% del tiempo (cerca: %d%%); golpes que me da: %d (%.1f de daño); los míos: %d%n",
-                    100 * r.targetTicks / ft, 100 * r.nearTicks / ft, r.hitsTaken, r.dmgTaken, r.playerAttacks));
+            sb.append(String.format("   objetivo = el jugador: %d%% del tiempo (cerca: %d%%); golpes que me da: %d (%.1f de daño); los míos: %d (lo más cerca que llego: %.1f del borde)%n",
+                    100 * r.targetTicks / ft, 100 * r.nearTicks / ft, r.hitsTaken, r.dmgTaken, r.playerAttacks, r.minDist));
             sb.append(String.format("   mis golpes que le quitan vida: %d; sin efecto (sin estar en sus ticks de invulnerable): %d%n", r.landed, r.noEffect));
             sb.append(String.format("   me mueve el jefe (empujón, arrastre): %d veces; lo más lejos que me lanza %.1f bloques, lo más alto %.1f%n",
                     r.moved, r.throwFar, r.throwHigh));
@@ -624,10 +770,11 @@ public final class BossTest {
                 sb.append(String.format("   %s: %d, tocan al jugador %d%s%n", e.getKey(), e.getValue()[0], e.getValue()[1],
                         r.missed.containsKey(e.getKey()) ? " (uno que no: " + r.missed.get(e.getKey()) + ")" : ""));
             }
-            sb.append(String.format("   anda: %d ticks, hacia atrás %d (con lockmodel del pack %d), de lado %d (con lockmodel %d); rápido (>0,8 b/t) %d; teletransportes %d%n",
-                    r.movingTicks, r.backTicks, r.backLocked, r.sideTicks, r.sideLocked, r.fastTicks, r.teleports));
+            sb.append(String.format("   anda: %d ticks, hacia atrás %d (con lockmodel del pack %d, empujado por su skill %d), de lado %d (con lockmodel %d, empujado %d); rápido (>0,8 b/t) %d; teletransportes %d%n",
+                    r.movingTicks, r.backTicks, r.backLocked, r.backPushed, r.sideTicks, r.sideLocked, r.sidePushed, r.fastTicks, r.teleports));
             sb.append(String.format("   en el aire (>3 bloques) %d ticks, como mucho %.1f; lo más lejos de la grieta %.1f; esbirros a la vez %d%n",
                     r.airTicks, r.maxAir, r.maxHome, r.minionsMax));
+            sb.append(String.format("   quieto y lejos del jugador (más de 2 s seguidos): %d ticks%n", r.stillFarTicks));
             sb.append(String.format("   sin modelo %d ticks; sin animación %d ticks%n", r.noModelTicks, r.noAnimTicks));
             sb.append("   animaciones (ticks): ").append(r.anims).append('\n');
             sb.append(String.format("   al morir: anims [%s]; barras que ve el cliente a los 3 s: %d; quitado: %s; objetos: %d; experiencia: %d; esbirros vivos: %d%n",

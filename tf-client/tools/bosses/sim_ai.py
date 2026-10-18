@@ -151,7 +151,7 @@ def crunch(expr, x=0.0):
         if m:
             pos[0] += m.end()
             return float(m.group(0))
-        m = re.match(r'[a-z]+', s[pos[0]:])
+        m = re.match(r'[a-z][a-z0-9]*', s[pos[0]:])
         if not m:
             raise ValueError(s)
         name = m.group(0)
@@ -173,6 +173,11 @@ def crunch(expr, x=0.0):
             return float(fns[name](a))
         if name in ('rand', 'random'):
             return random.random() * (a if args else 1.0)
+        if name in ('atan2', 'pow', 'hypot'):
+            b = args[1] if len(args) > 1 else (1.0 if name != 'hypot' else 0.0)
+            return float({'atan2': math.atan2, 'pow': math.pow, 'hypot': math.hypot}[name](a, b))
+        if name == 'exp':
+            return math.exp(a)
         if name == 'min':
             return min(args) if args else 0.0
         if name == 'max':

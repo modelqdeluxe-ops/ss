@@ -22,4 +22,19 @@ final class BossRenderTypes extends RenderType {
             false, true, CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setCullState(NO_CULL).setWriteMaskState(COLOR_WRITE).setDepthTestState(LEQUAL_DEPTH_TEST)
                     .setLightmapState(NO_LIGHTMAP).createCompositeState(false));
+
+    /**
+     * La obsidiana de la grieta 3.0 (1.3.88): triángulos con su luz en el color, las vetas del shader rift_obsidian, el
+     * mapa de luz y sin cara oculta (las caras de las garras se ven por dentro al pasar entre ellas).
+     */
+    static final RenderType RIFT_OBSIDIAN = create("tfclient_rift_obsidian", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.TRIANGLES,
+            262144, true, false, CompositeState.builder().setShaderState(new ShaderStateShard(() -> RiftShaders.obsidian))
+                    .setTransparencyState(NO_TRANSPARENCY).setCullState(NO_CULL).setLightmapState(LIGHTMAP)
+                    .setOverlayState(OVERLAY).createCompositeState(true));
+
+    /** El desgarro y el círculo de runas (shader rift_fx): alfa premultiplicado, sin escribir profundidad. */
+    static final RenderType RIFT_FX = create("tfclient_rift_fx", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 4096,
+            false, true, CompositeState.builder().setShaderState(new ShaderStateShard(() -> RiftShaders.fx))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).setWriteMaskState(COLOR_WRITE)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST).setLightmapState(NO_LIGHTMAP).createCompositeState(false));
 }

@@ -16,13 +16,15 @@ import org.slf4j.Logger;
 @Mod(TFClient.MOD_ID)
 public final class TFClient {
     public static final String MOD_ID = "tfclient";
-    public static final String VERSION = "1.3.87";
+    public static final String VERSION = "1.3.88";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFClient() {
         TFItems.register(FMLJavaModLoadingContext.get().getModEventBus());
         // Jefes: sus entidades, los objetos que sueltan y el enlace del motor de skills con el mundo
         net.tierrasfantasticas.tfclient.bosses.TFBosses.init(FMLJavaModLoadingContext.get().getModEventBus());
+        // The Void: la dimensión del vacío, su isla y el caballero de luz que lleva allí
+        net.tierrasfantasticas.tfclient.vacio.TFVoid.init(FMLJavaModLoadingContext.get().getModEventBus());
         // TF Claims: protecciones de zona (antes Fantastic Claims)
         net.tierrasfantasticas.tfclient.claims.TFClaims.init(FMLJavaModLoadingContext.get().getModEventBus());
         net.tierrasfantasticas.tfclient.menu.TFPanelMenu.MENUS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -33,6 +35,7 @@ public final class TFClient {
                     net.tierrasfantasticas.tfclient.items.TFWardrobe.register();
                     net.tierrasfantasticas.tfclient.pad.TFPadNet.register();
                     net.tierrasfantasticas.tfclient.bosses.BossNet.register();
+                    net.tierrasfantasticas.tfclient.vacio.VoidNet.register();
                 }));
         if (FMLEnvironment.dist == Dist.CLIENT) {
             try {
