@@ -9,6 +9,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ProgressScreen;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -34,8 +36,9 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
  *   <li>El túnel, cada vez más rápido: a la ida el Overworld (sus bloques), la puerta de obsidiana con el portal del
  *   Nether (4 s), el Nether (lava, piedra luminosa), la puerta del End (5,9 s) y el End (sus estrellas); a la vuelta, End,
  *   Nether y Overworld. Pasan bloques de verdad girando (de cada mundo); al cruzar cada puerta, fogonazo.</li>
- *   <li>Al llegar (el servidor ya te ha llevado): la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece
- *   ondulando hasta calmarse.</li>
+ *   <li>Al llegar (el servidor ya te ha llevado y el mundo nuevo ya se ha cargado: mientras se ve «Cargando el
+ *   terreno...», se sigue viajando): la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece ondulando
+ *   hasta calmarse.</li>
  * </ol>
  * Lo dibuja el shader wormhole sobre toda la pantalla (encima de la interfaz y de la pantalla de carga al cambiar de
  * mundo) al acabar cada fotograma, con texturas del propio Minecraft ({@link WormholeTextures}); los sonidos (el
@@ -60,7 +63,7 @@ public final class TravelFx {
 
     private static boolean trip, back, fade, failed;
     private static long startNanos;
-    private static float arrived = -1F;
+    private static float arrived = -1F, serverArrived = -1F;
     private static int tripId, sounds, tripFrames;
     /** Este fotograma: segundos desde que empezó, cuánto se abre el desgarro, camino recorrido y salida (0..2). */
     private static float now, open, travel, exit;
@@ -77,7 +80,7 @@ public final class TravelFx {
                 fade = false;
                 back = ph == VoidNet.FX_LEAVE_BACK;
                 startNanos = nanos;
-                arrived = -1F;
+                arrived = serverArrived = -1F;
                 sounds = 0;
                 tripFrames = 0;
                 tripId++;
@@ -87,7 +90,7 @@ public final class TravelFx {
             }
             case VoidNet.FX_ARRIVE -> {
                 if (trip && arrived < 0F) {
-                    arrived = (nanos - startNanos) / 1e9F;
+                    arrived = serverArrived = (nanos - startNanos) / 1e9F;
                 } else if (!trip) {
                     fade = true;
                     startNanos = nanos;
@@ -100,8 +103,8 @@ public final class TravelFx {
     private static void stop() {
         if (trip) {
             float s = (System.nanoTime() - startNanos) / 1e9F;
-            lastTrip = String.format("%s: %d fotogramas en %.1f s (%.0f por segundo), llegada a los %.1f s", back ? "vuelta" : "ida",
-                    tripFrames, s, tripFrames / Math.max(0.1F, s), arrived);
+            lastTrip = String.format("%s: %d fotogramas en %.1f s (%.0f por segundo), llegada a los %.1f s, mundo cargado a los %.1f s",
+                    back ? "vuelta" : "ida", tripFrames, s, tripFrames / Math.max(0.1F, s), serverArrived, arrived);
         }
         trip = false;
         fade = false;
@@ -169,6 +172,9 @@ public final class TravelFx {
             return;
         }
         if (arrived < 0F && now > GIVE_UP) arrived = now;
+        // (con el mundo nuevo aún cargando, «Cargando el terreno...», se sigue viajando: la luz se abre cuando ya está; en
+        // la prueba con shaders tardaba más que la salida y se veía la pantalla de carga)
+        if (arrived >= 0F && loading() && now < GIVE_UP + 15F) arrived = now;
         open = smooth(OPEN0, OPEN1, now);
         travel = travel(now);
         float since = arrived < 0F ? -1F : now - arrived;
@@ -180,6 +186,12 @@ public final class TravelFx {
         else RiftWarp.travel(warp, 2.2F * warp);
         sounds(since);
         if (since > CALM) stop();
+    }
+
+    /** ¿Aún se está cargando el mundo al que llegas? */
+    private static boolean loading() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null || mc.player == null || mc.screen instanceof ReceivingLevelScreen || mc.screen instanceof ProgressScreen;
     }
 
     private static void sounds(float since) {
