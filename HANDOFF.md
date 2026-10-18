@@ -74,8 +74,8 @@ probado en el juego (`tf-client/JEFES.md` §3.14):
 - **Caelthar, el Caballero Sacro** (antes Aurelion): animación de reposo sin el aleteo que le atravesaba el pecho y
   diálogo sin lag (el halo era ~430 dibujos por fotograma). **Viaje**: solo un fundido (sin rayos, franjas ni anillos).
 - **Grieta**: sin la raya de «vidrio roto» (corte del `atan` del remolino). **Ignevar**: sus llamas ya se ven (el
-  conversor no encontraba sus objetos `item_display`; también las partículas del láser del Contemplador y del Piglin
-  Mecha), anda a la velocidad de la dificultad y, con inteligencia, se gira despacio hacia ti mientras escupe fuego
+  conversor no encontraba sus objetos `item_display` y, sobre todo, **los modelos de efecto de ningún jefe se cargaban**:
+  25 de 9 jefes, desde la bola azul de Astwood hasta los pinchos del Druida), anda a la velocidad de la dificultad y, con inteligencia, se gira despacio hacia ti mientras escupe fuego
   (`gira_al_atacar` en `es.json`; **referencia de `sim_ai` de Ignevar actualizada**: menos giros andando, mismos ataques).
 
 ### CHECKPOINT anterior (18 oct 2026, TF Client 1.3.88)

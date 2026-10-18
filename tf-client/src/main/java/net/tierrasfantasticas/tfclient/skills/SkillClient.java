@@ -1909,13 +1909,19 @@ public final class SkillClient {
         }
     }
 
-    /** Todos los modelos de ítem de los efectos (se registran para que el juego los cargue). */
+    /**
+     * Todos los modelos de ítem de los efectos (se registran para que el juego los cargue): los de las clases y, desde la
+     * 1.3.89, también los de los jefes (antes no: sus objetos de efecto no se cargaban y no se veían, «veo invisibles sus
+     * llamas»: las de Ignevar, la bola azul de Astwood y las partículas del láser del Contemplador y del Piglin Mecha).
+     */
     static Set<ResourceLocation> itemModels() {
         Set<ResourceLocation> out = new HashSet<>();
-        for (SkillDefs.ClassDef c : SkillDefs.all().values()) {
-            for (String m : c.itemModels) {
-                ResourceLocation rl = ResourceLocation.tryParse(m);
-                if (rl != null && rl.getNamespace().equals(TFClient.MOD_ID)) out.add(rl);
+        for (Map<String, SkillDefs.ClassDef> defs : List.of(SkillDefs.all(), SkillDefs.bosses())) {
+            for (SkillDefs.ClassDef c : defs.values()) {
+                for (String m : c.itemModels) {
+                    ResourceLocation rl = ResourceLocation.tryParse(m);
+                    if (rl != null && rl.getNamespace().equals(TFClient.MOD_ID)) out.add(rl);
+                }
             }
         }
         return out;
