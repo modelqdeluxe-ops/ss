@@ -27,6 +27,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs;
+import net.tierrasfantasticas.tfclient.vacio.AfterShaders;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -53,6 +54,7 @@ import org.joml.Vector3f;
  * criaturas más poderosas»): su propia malla ({@code bosses/grieta3_madre.json}: estrado de 18 lados, 11 garras de hasta
  * 27 bloques, cristal ×1,5, 24 esquirlas, desgarro de 30 y círculo de 19,5) y en carmesí (aquí la luz de cada cara; en
  * los shaders, material +4 y modo 0,25/1). La grieta del Void (la fija del centro de la isla) lleva encima su nombre.
+ * Con paquete de shaders (Oculus), la grieta se dibuja después de la pasada final del paquete ({@link AfterShaders}).
  */
 @OnlyIn(Dist.CLIENT)
 public class RiftRenderer extends EntityRenderer<RiftEntity> {
@@ -186,9 +188,12 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         int kind = e.kind() == RiftEntity.MOTHER ? 1 : 0;
         Mesh m = mesh(kind);
         Look l = look(e, partial);
-        if (m != null && l.size > 0.001F && RiftShaders.ready()) {
+        // Con paquete de shaders (Oculus) la grieta se guarda y se dibuja después de su pasada final (AfterShaders;
+        // dibujada ahora no dejaría nada); en su pasada de sombras, nada
+        boolean late = AfterShaders.active();
+        if (m != null && l.size > 0.001F && RiftShaders.ready() && !(late && AfterShaders.shadowPass())) {
             try {
-                draw(e, m, kind, l, partial, pose, buffers, light);
+                draw(e, m, kind, l, partial, pose, late ? RiftLate.buffers() : buffers, light);
             } catch (Throwable t) {
                 TFClient.LOGGER.error("TF Jefes: error al dibujar la grieta", t);
                 meshFailed[kind] = true;

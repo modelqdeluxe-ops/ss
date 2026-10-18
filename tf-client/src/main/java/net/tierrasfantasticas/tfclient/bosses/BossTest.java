@@ -64,6 +64,7 @@ public final class BossTest {
     /** Las capturas pedidas, en orden (las saca BossTestClient). */
     static final java.util.concurrent.ConcurrentLinkedQueue<String> SHOTS_PENDING = new java.util.concurrent.ConcurrentLinkedQueue<>();
     private static int shotWait;
+    private static boolean voidRescued;
     static volatile boolean finished;
     /** Barras de jefe que ve el cliente ahora (BossTestClient). */
     static volatile int clientBars = -1;
@@ -154,6 +155,7 @@ public final class BossTest {
         int noModelTicks, noAnimTicks, hitsTaken, playerAttacks, minionsMax, moved, backLocked, sideLocked, backPushed, sidePushed, landed, noEffect;
         double minDist = 1e9;
         int stillFarTicks, stillFarShown, flameShown;
+        boolean flameSeen;
         double dmgTaken, maxHome, maxAir, hpStart = -1, hpEnd = -1;
         int barsAfterDeath = -1, items = -1, xp = -1, minionsLeft = -1;
         boolean removedAfterDeath;
@@ -490,6 +492,12 @@ public final class BossTest {
         } else {
             stillFar = 0;
         }
+        // Las llamas de Ignevar («veo invisibles sus llamas»): una captura cuando el cliente ya tiene varias
+        if (anims != null && !r.flameSeen && clientItemCount >= 4 && anims.stream().anyMatch(a -> a.contains("breath") || a.contains("flame"))) {
+            r.flameSeen = true;
+            r.event("llamas en el cliente: " + clientItems);
+            shot(r, "llamas");
+        }
         // Lanzallamas (Ignevar: «ataca sin sentido», sus llamas no daban): hacia dónde apunta, 3 veces por pelea
         if (anims != null && r.flameShown < 3 && t % 10 == 0 && anims.stream().anyMatch(a -> a.contains("breath") || a.contains("flame"))) {
             net.tierrasfantasticas.tfclient.skills.SkillMobs.Host hh = net.tierrasfantasticas.tfclient.skills.SkillMobs.host(boss);
@@ -653,8 +661,19 @@ public final class BossTest {
      */
     private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
         ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        // Caer al vacío (se le tira en el tick 1300): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
+        if (t > 1300 && t < 1330 && !voidRescued) {
+            if (player.getY() > 50) {
+                voidRescued = true;
+                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 1300, player.getX(),
+                        player.getY(), player.getZ()));
+            } else if (t == 1329) {
+                r.event(String.format("caer al vacío: NO RESCATADO (sigue en %.1f %.1f %.1f)", player.getX(), player.getY(), player.getZ()));
+            }
+        }
         switch (t) {
             case 1 -> {
+                voidRescued = false;
                 if (vl == null) {
                     r.event("NO HAY DIMENSIÓN tfclient:void");
                     next(level);
@@ -753,25 +772,8 @@ public final class BossTest {
             case 1180 -> shot(r, "vacio_isla");
             case 1190 -> player.teleportTo(vl, 130.5, 75, -40.5, 120F, 2F);
             case 1260 -> shot(r, "vacio_lado");
-            // con shaders: nuestro cielo encima del suyo (¿lo respeta el paquete?)
-            case 1261 -> {
-                if (net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse()) {
-                    net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = true;
-                    Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
-                    player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
-                }
-            }
-            // (que carguen los chunks de la llegada: está a 170 bloques)
-            case 1296 -> {
-                if (net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders) shot(r, "vacio_agujero_propio");
-            }
-            case 1299 -> {
-                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.ownSkyWithShaders = false;
-                fly(player, false);
-            }
+            case 1299 -> fly(player, false);
             case 1300 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
-            case 1306 -> r.event(String.format("caer al vacío: el jugador queda en %.1f %.1f %.1f (%s)", player.getX(), player.getY(),
-                    player.getZ(), player.getY() > 50 ? "rescatado" : "NO RESCATADO"));
             case 1330 -> {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
                         new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);

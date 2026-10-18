@@ -35,7 +35,8 @@
     "ItemInHandRendererMixin",
     "GuiGraphicsMixin",
     "RiftSkyMixin",
-    "RiftCloudsMixin"
+    "RiftCloudsMixin",
+    "GameRendererLateMixin"
   ],
   "injectors": {
     "defaultRequire": 0

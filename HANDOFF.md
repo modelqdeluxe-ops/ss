@@ -70,7 +70,10 @@ probado en el juego (`tf-client/JEFES.md` §3.14):
   norte (donde estaba el templete con cúpula), con cimientos hasta el suelo; se llega mirando a la grieta. Los mundos
   con el Void ya generado se ponen al día solos (`vacio/IslandUpdate`, por zonas, sin parar el servidor).
 - **Cielo**: agujero negro más grande, sin grano (ruido filtrado por píxel), al sur. **Con shaders** (Oculus) el Void
-  usa el End del paquete (`vacio/ShaderPacks`): probado con Oculus 1.8 + Complementary en el CI (`[shaders]` en el commit).
+  usa el End del paquete (`vacio/ShaderPacks`) y **la grieta y el agujero negro se dibujan después de la pasada final
+  del paquete** (`vacio/AfterShaders`, `bosses/RiftLate`, `mixin/GameRendererLateMixin`): Oculus apaga el color y la
+  profundidad de los shaders de los mods mientras dibuja el mundo, y con paquete **ninguna grieta se veía** (tampoco
+  en el mundo normal). Probado con Oculus 1.8 + Complementary en el CI (`[shaders]` en el commit).
 - **Caelthar, el Caballero Sacro** (antes Aurelion): animación de reposo sin el aleteo que le atravesaba el pecho y
   diálogo sin lag (el halo era ~430 dibujos por fotograma). **Viaje**: solo un fundido (sin rayos, franjas ni anillos).
 - **Grieta**: sin la raya de «vidrio roto» (corte del `atan` del remolino). **Ignevar**: sus llamas ya se ven (el

@@ -30,7 +30,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class ShaderPacks {
     private static boolean looked, failed;
     private static Object api;
-    private static Method inUse, getCurrentPack, getPipelineManager, destroyPipeline;
+    private static Method inUse, shadowPass, getCurrentPack, getPipelineManager, destroyPipeline;
     private static Field dimensionMap, overrides, endId;
     private static Constructor<?> namespacedId;
     /** El paquete al que ya se le dijo lo del Void (Oculus crea otro al cambiar de paquete o recargar). */
@@ -47,6 +47,7 @@ public final class ShaderPacks {
             Class<?> apiClass = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
             api = apiClass.getMethod("getInstance").invoke(null);
             inUse = apiClass.getMethod("isShaderPackInUse");
+            shadowPass = apiClass.getMethod("isRenderingShadowPass");
             status = "Oculus sin reconocer";
         } catch (Throwable t) {
             return; // sin Oculus
@@ -83,6 +84,16 @@ public final class ShaderPacks {
         if (api == null) return false;
         try {
             return (Boolean) inUse.invoke(api);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** ¿Está dibujando ahora la pasada de sombras del paquete? (los jefes y la grieta se dibujan también en ella) */
+    public static boolean shadowPass() {
+        if (api == null || shadowPass == null) return false;
+        try {
+            return (Boolean) shadowPass.invoke(api);
         } catch (Throwable t) {
             return false;
         }

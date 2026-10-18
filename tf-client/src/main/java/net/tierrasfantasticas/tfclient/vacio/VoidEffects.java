@@ -14,8 +14,9 @@ import org.joml.Matrix4f;
 /**
  * Cómo se ve The Void: la luz del End (sin nubes, sin sol, el mapa de luz más claro: los mismos números que
  * {@code DimensionSpecialEffects.EndEffects}), su cielo con el agujero negro ({@link VoidSky}), sin nubes ni lluvia y
- * una niebla morada muy oscura. Con un paquete de shaders (Oculus) el cielo no se toca: Minecraft pone el del End
- * (por eso SkyType.END) y el paquete, que usa en el Void sus programas del End ({@link ShaderPacks}), el suyo.
+ * una niebla morada muy oscura. Con un paquete de shaders (Oculus), aquí no se dibuja: Minecraft pone el del End
+ * (por eso SkyType.END) y el paquete, que usa en el Void sus programas del End ({@link ShaderPacks}), el suyo; encima,
+ * al acabar el paquete, el nuestro donde se ve el cielo ({@link AfterShaders}).
  */
 @OnlyIn(Dist.CLIENT)
 public class VoidEffects extends DimensionSpecialEffects {
@@ -43,8 +44,9 @@ public class VoidEffects extends DimensionSpecialEffects {
     @Override
     public boolean renderSky(ClientLevel level, int ticks, float partial, PoseStack pose, Camera camera, Matrix4f projection,
                              boolean foggy, Runnable setupFog) {
-        // (con shaders, el paquete sobrescribe el cielo: el nuestro saldría tapado o a medias)
-        if (ShaderPacks.inUse() && !VoidTestHooks.ownSkyWithShaders) return false;
+        // (con shaders, Minecraft pone el del End, que el paquete cambia por el suyo, y el nuestro se dibuja después de su
+        // pasada final, donde se ve el cielo: AfterShaders)
+        if (ShaderPacks.inUse()) return false;
         try {
             VoidSky.render(pose, projection, partial);
         } catch (Throwable t) {

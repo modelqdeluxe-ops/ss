@@ -94,9 +94,9 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 - **Que el dueño pruebe la 1.3.89**: la grieta del Void (en `/tf boss` → GRIETAS, la tarjeta de arriba con ✎: listas
   de la normal y de la madre), el santuario nuevo de la punta norte (su Void ya generado se pone al día solo al ir: en el
-  registro «TF Void: ... se pone al día»), el cielo con y sin shaders, Caelthar y las llamas de Ignevar. Si dice que el
-  agujero negro no se ve con shaders: con paquete de shaders el cielo lo pone el paquete (su End); mira la captura
-  `vacio_agujero_propio` de una prueba con `[shaders]` para ver si el nuestro encima quedaría bien.
+  registro «TF Void: ... se pone al día»), el cielo con y sin shaders, Caelthar y las llamas de Ignevar. **Con
+  shaders** (Oculus) la grieta y nuestro cielo se dibujan después de la pasada final del paquete (`vacio/AfterShaders`,
+  JEFES §3.14): si algo de eso falla con otro paquete, mira el registro («después del paquete») y prueba con `[shaders]`.
 - **Ignevar «pendejo, lento»**: anda como el pack (se empuja `velocity z=0.05` por tick, ~0,11 b/t en Normal) y ahora
   a la Velocidad de la dificultad; si sigue pareciendo lento en Normal, es el pack: pregúntale si quiere que la grieta
   del Void use Difícil o más para él.

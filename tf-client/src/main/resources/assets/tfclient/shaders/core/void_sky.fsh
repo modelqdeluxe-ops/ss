@@ -24,6 +24,7 @@ uniform float VoidTime;       // segundos
 uniform vec3 HoleDir;         // hacia dónde está el agujero (mundo)
 uniform vec3 DiskNormal;      // normal del disco (mundo)
 uniform float Quality;        // 0.35..1: menos o más pasos
+uniform float AtFar;          // 1 = después del paquete de shaders (vacio/AfterShaders): solo donde no hay nada
 
 in vec3 vDir;
 out vec4 fragColor;
@@ -159,6 +160,9 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
 }
 
 void main() {
+    // Con paquete de shaders se dibuja al final, con la profundidad de la escena: como si estuviera en el fondo (lo
+    // que haya delante, bloques, jefes o la mano, lo tapa; solo pinta donde la escena dejó la profundidad en 1)
+    gl_FragDepth = AtFar > 0.5 ? 0.9999995 : gl_FragCoord.z;
     vec3 dir = normalize(vDir);
     // lo que mide un píxel (antes de cualquier bucle: las derivadas solo valen fuera de él)
     PIX = max(length(fwidth(dir)), 1e-5);
