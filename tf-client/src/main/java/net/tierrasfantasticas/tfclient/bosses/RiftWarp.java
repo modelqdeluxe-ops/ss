@@ -218,10 +218,12 @@ public final class RiftWarp {
             s.swirl = 0.18F * sky[3];
             s.wave = 0.004F * sky[3];
             s.flash = 0.5F * sky[4];
+            // (al romperse, la onda de choque barre la pantalla)
+            s.shock = sky[5];
             s.tr = 0.75F;
             s.tg = 0.45F;
             s.tb = 1F;
-            s.weight = s.lens + s.flash;
+            s.weight = s.lens + s.flash + (s.shock >= 0 ? 0.5F : 0F);
             list.add(s);
             near = Math.max(near, 0.1F * sky[3] + 0.3F * sky[4]);
         }

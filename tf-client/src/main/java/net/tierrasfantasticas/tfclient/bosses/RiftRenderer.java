@@ -256,7 +256,8 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         }
         SkillDefs.ClassDef cls = SkillDefs.bosses().get(e.boss());
         SkillDefs.BossInfo bi = cls == null ? null : cls.bossInfo;
-        if (e.state() != RiftEntity.FIGHT && (bi != null || e.fixed())) {
+        // (1.3.93b, el dueño: «quita el texto encima de la grieta»: la del Void va sin cartel)
+        if (e.state() != RiftEntity.FIGHT && bi != null && !e.fixed()) {
             label(e, bi, m == null ? 23F : m.tearCy + m.quadH * 0.426F, pose, buffers);
         }
     }

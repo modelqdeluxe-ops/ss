@@ -16,7 +16,7 @@ RES = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources'
 SH = os.path.join(RES, 'shaders', 'core')
 
 # nombre, tiempo, grietas, abierto, fogonazo, opacidad[, preludio] (= los de SkyRiftClient en esos momentos)
-STATES = [('0_preludio', 5.0, 0.0, 0.0, 0.0, 1.0, 0.8), ('0_grietas', 0.6, 0.35, 0.0, 0.0, 1.0), ('1_rompe', 1.4, 1.0, 0.0, 1.0, 1.0), ('2_abre', 2.2, 1.0, 0.35, 0.4, 1.0),
+STATES = [('0_preludio', 5.0, 0.0, 0.0, 0.0, 1.0, 0.8), ('0_relampago', 8.7, 0.17, 0.0, 0.45, 1.0, 0.75), ('0_grietas', 0.6, 0.35, 0.0, 0.0, 1.0), ('1_rompe', 1.4, 1.0, 0.0, 1.0, 1.0), ('2_abre', 2.2, 1.0, 0.35, 0.4, 1.0),
           ('3_abierta', 6.0, 1.0, 1.0, 0.0, 1.0), ('4_abierta_b', 9.3, 1.0, 1.0, 0.0, 1.0), ('5_cierra', 10.0, 0.7, 0.3, 0.0, 1.0),
           ('6_cicatriz', 12.0, 0.3, 0.0, 0.0, 0.75)]
 

@@ -4,7 +4,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -29,12 +28,12 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * porque tiene algo que decirles. Para cerrar esa grieta del cielo hay que cerrar la del Void: cuando derroten un
  * boss, se cierra en el Overworld momentáneamente; cuando se active otro, se vuelve a abrir con otro sonido; y así hasta
  * el final, que decidiremos nosotros»). El spawn del servidor es un mundo aparte (un plugin lo separa del Overworld de
- * los jugadores): la grieta sale en <b>todos los mundos de tipo Overworld</b> (por su cielo, no por su nombre), encima
- * de Caelthar en el suyo y encima del punto de aparición en los demás.
+ * los jugadores): la grieta sale en <b>todos los mundos de tipo Overworld</b> (por su cielo, no por su nombre), en el
+ * mismo sitio del cielo para todos ({@link #YAW}, {@link #PITCH}).
  *
  * <p>El evento ({@link #start}, al poner al caballero con {@code /tf void npc} la primera vez): preludio (chat,
- * retumbar y temblor que crece, 6 s), la grieta se rompe y se abre ({@link #FX_BURST}) y, 7 s después, el chat con
- * dónde está. Su estado se guarda en el mundo ({@link Data}) y cada jugador lo recibe al entrar o cambiar de mundo. Lo
+ * retumbar, el cielo que se apaga, relámpagos lejanos y temblor que crece, 12 s), la grieta se rompe y se abre
+ * ({@link #FX_BURST}) y, 8 s después, el chat con dónde está. Su estado se guarda en el mundo ({@link Data}) y cada jugador lo recibe al entrar o cambiar de mundo. Lo
  * dibuja y lo hace sonar SkyRiftClient.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
@@ -43,10 +42,14 @@ public final class SkyRift {
     public static final int OFF = 0, OPEN = 1, CLOSED = 2, ENDED = 3;
     /** Lo que ve el jugador al cambiar: nada (al entrar), el preludio, se rompe, se sella, se vuelve a abrir, el final. */
     public static final int FX_SYNC = 0, FX_PRELUDE = 1, FX_BURST = 2, FX_CLOSE = 3, FX_REOPEN = 4, FX_END = 5;
-    /** Lo alta que está sobre Caelthar (o el punto de aparición). */
-    static final double HEIGHT = 190;
-    /** Ticks del evento: el preludio dura hasta que se rompe; luego, el chat con dónde está. */
-    static final int BURST_AT = 120, WHERE_AT = 260;
+    /**
+     * Dónde está en el cielo (1.3.93b): como el sol o la luna, en una dirección fija (hacia el norte, a 50° sobre el
+     * horizonte) estés donde estés. Antes era un punto 190 bloques sobre el spawn: lejos de él (al reaparecer en tu cama,
+     * por ejemplo) salía pequeña junto al horizonte (captura del dueño: «sale ahí y no en el cielo»).
+     */
+    public static final float YAW = 180F, PITCH = -50F;
+    /** Ticks del evento: el preludio (12 s) dura hasta que se rompe; luego, el chat con dónde está. */
+    static final int BURST_AT = 240, WHERE_AT = 400;
     private static int eventTick = -1;
     /** Cuándo se selló (ticks del servidor) y lo mínimo que se queda sellada: que se vea que se cerró. */
     private static int closedAt = -1;
@@ -104,18 +107,9 @@ public final class SkyRift {
         return l.dimensionType().effectsLocation().equals(BuiltinDimensionTypes.OVERWORLD_EFFECTS) && !TFVoid.isVoid(l);
     }
 
-    /** Dónde está la grieta en el mundo de ese jugador: sobre Caelthar en el suyo, sobre el punto de aparición en los demás. */
-    static Vec3 skyPos(Data d, ServerLevel l) {
-        if (!d.dim.isEmpty() && l.dimension().location().toString().equals(d.dim)) return new Vec3(d.x, d.y + HEIGHT, d.z);
-        BlockPos s = l.getSharedSpawnPos();
-        return new Vec3(s.getX() + 0.5, Math.max(s.getY(), l.getSeaLevel()) + HEIGHT, s.getZ() + 0.5);
-    }
-
     private static void send(ServerPlayer p, Data d, int fx) {
         SENT.put(p.getUUID(), p.level().dimension().location().toString());
-        Vec3 at = skyPos(d, p.serverLevel());
-        VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p),
-                new VoidNet.Sky(d.state, fx, at.x, at.y, at.z, overworldLike(p.level())));
+        VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new VoidNet.Sky(d.state, fx, overworldLike(p.level())));
     }
 
     private static void sendAll(MinecraftServer server, Data d, int fx) {

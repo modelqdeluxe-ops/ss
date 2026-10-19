@@ -102,6 +102,11 @@ void main() {
     float aura = exp(-r * r * 2.2) * max(smoothstep(0.0, 0.6, Crack), Dark) * smoothstep(1.0, 0.6, length(uv));
     col += vec3(0.05, 0.0, 0.09) * aura;
     alpha += aura * 0.6;
+    // (1.3.93b) en el preludio, un resplandor violeta que late en el centro de la sombra: algo despierta detrás del cielo
+    float pulse = 0.55 + 0.45 * sin(t * 3.4) * sin(t * 1.3 + 0.7);
+    float ember = Dark * (1.0 - smoothstep(0.0, 0.5, Crack)) * exp(-r * r * 9.0) * pulse;
+    col += vec3(0.55, 0.08, 0.85) * ember * 0.9;
+    alpha += ember * 0.5;
 
     // Las grietas: 11 ramas con dos horquillas cada una, que crecen con Crack
     vec2 cr = vec2(0.0);

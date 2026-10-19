@@ -103,9 +103,12 @@ public final class Rifts {
     /** Un jefe de la lista de la grieta del Void, con su dificultad. */
     public record Entry(String boss, Difficulty diff) {}
 
-    /** Las listas de la grieta del Void: [0] la normal, [1] la madre; y cuál está en el centro. */
+    /**
+     * Las listas de la grieta del Void: [0] la normal, [1] la madre; y cuál está en el centro: desde la 1.3.93b, siempre
+     * la madre (el dueño: «que la grieta del Void siempre sea grieta madre»). La lista normal se guarda pero no se usa.
+     */
     public static final class VoidConfig {
-        public int active = RiftEntity.NORMAL;
+        public int active = RiftEntity.MOTHER;
         public final List<List<Entry>> pools = List.of(new ArrayList<>(), new ArrayList<>());
         final int[] last = {-1, -1};
     }
@@ -635,7 +638,7 @@ public final class Rifts {
             dirty = true;
             return c;
         }
-        c.active = (int) TFJson.num(o, "activa", 0) == RiftEntity.MOTHER ? RiftEntity.MOTHER : RiftEntity.NORMAL;
+        c.active = RiftEntity.MOTHER;
         String[] keys = {"normal", "madre"};
         for (int k = 0; k < 2; k++) {
             if (!o.has(keys[k]) || !o.get(keys[k]).isJsonArray()) continue;
@@ -731,16 +734,17 @@ public final class Rifts {
         return RIFTS.get(VOID_ID);
     }
 
-    /** Pone en el centro la grieta normal o la madre (si hay pelea, la cambia al acabar: se ve ya). */
+    /** La grieta del centro del Void: siempre la madre (1.3.93b, orden del dueño); se pida la que se pida. */
     public static String voidSetActive(int kind) {
-        voidConfig.active = kind == RiftEntity.MOTHER ? RiftEntity.MOTHER : RiftEntity.NORMAL;
+        voidConfig.active = RiftEntity.MOTHER;
         Rift r = voidRift();
         if (r != null) {
             r.kind = voidConfig.active;
             if (r.state == RiftEntity.READY || r.state == RiftEntity.COOLDOWN) pickVoid(r);
         }
         save();
-        return "En el centro del Void: " + (voidConfig.active == RiftEntity.MOTHER ? "la grieta madre" : "la grieta normal");
+        return kind == RiftEntity.MOTHER ? "En el centro del Void: la grieta madre"
+                : "La grieta del Void es siempre la grieta madre (sigue la madre)";
     }
 
     public static String voidAdd(int kind, String boss, Difficulty d) {
