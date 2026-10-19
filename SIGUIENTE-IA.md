@@ -1,9 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **19 oct 2026, TF Client 1.3.94** (la grieta del cielo en una dirección fija del cielo, más
-grande y con una aparición de 12 s más siniestra; la grieta del Void siempre madre y sin cartel; la espada de Caelthar
-como la lleva un jugador: JEFES.md §3.19; antes, 1.3.93: el evento de la grieta del cielo, §3.18; y el CHECKPOINT de
-HANDOFF.md).
+Estado al dejarlo: **19 oct 2026, publicada la TF Client 1.3.94; EN CURSO la grieta del cielo 2.0** (el dueño: «la
+animación, el sonido de cristal, el tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»).
+El shader nuevo y su vista previa están en la rama; **falta el Java, probarla y publicar la 1.3.95**: JEFES.md §3.20 lo
+dice paso a paso. Antes: 1.3.94 (§3.19), 1.3.93 (§3.18); y el CHECKPOINT de HANDOFF.md).
 Rama de trabajo: `claude/intelligent-cray-63dqai` (o la que te asigne la sesión), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
@@ -97,6 +97,9 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
+- **PRIMERO: terminar la grieta del cielo 2.0** (JEFES §3.20, «Falta»): el Java de `SkyRiftClient` (uniformes nuevos,
+  cuadro más grande, línea de tiempo de la vista previa, sonidos sin cristal), probar en el juego con y sin shaders y
+  publicar la 1.3.95. Antes de tocar el diseño, mira la vista previa (`tools/void/grieta_cielo_preview.py carpeta --gif`).
 - **Que el dueño vea la 1.3.94**: la grieta del cielo en el mismo sitio del cielo esté donde esté, la aparición
   nueva (12 s), la grieta del Void madre sin cartel y la espada de Caelthar como un jugador.
 - **Que el dueño vea la 1.3.93** en su servidor: al poner a Caelthar en el spawn, el evento (chat, temblor, el cielo
@@ -141,8 +144,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 7. Prompt para empezar una sesión nueva (cópialo tal cual)
 
 ```
-Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.19, §11). Seguimos con
-el motor de jefes de TF Client (1.3.94): fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
+Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.20, §11). Primero termina
+la grieta del cielo 2.0 (JEFES §3.20, «Falta») y publica la 1.3.95. Seguimos con el motor de jefes de TF Client: fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
 compila solo con GitHub Actions, publica como Release, nunca subas los packs en claro. Si el dueño se queja de algo,
 reprodúcelo TÚ con la prueba en el juego ([prueba-jefes=<jefes>] en el commit, espera en segundo plano con
 tools/bosses/esperar_prueba.sh), lee el informe y las capturas, arréglalo con la semántica de MythicMobs, pasa
