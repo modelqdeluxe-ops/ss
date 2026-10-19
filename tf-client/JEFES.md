@@ -840,6 +840,10 @@ como mierda: él vuela y se ve mal, pónsela normal, tal cual fuera un jugador»
 
 ### 3.20 La grieta del cielo 2.0 (EN CURSO para la 1.3.95: el shader está hecho; falta la parte de Java)
 
+> **Todo el detalle, con imágenes** (cada momento de la animación, el GIF, lo que el dueño rechazó, el código Java que
+> falta con sus valores exactos y las trampas): **`tf-client/docs/grieta-cielo-2/README.md`**. Esta sección es el
+> resumen.
+
 El dueño, tras la 1.3.94: *«la animación, el sonido de cristal, el tamaño y el diseño de la grieta son una mierda...
 esmérate por hacer algo chingón men por favor»*. Se rehace entera. **Estado**: el shader y su vista previa están en la
 rama (commit «WIP grieta del cielo 2.0»); el Java todavía es el de la 1.3.94 y **no pasa los uniformes nuevos**: no

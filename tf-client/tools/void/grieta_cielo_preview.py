@@ -51,12 +51,23 @@ def look(phase, t):
                     Alpha=1.0 - 0.2 * sm(2.3, 3.5, t), Dark=0.0, Storm=1.0 - 0.75 * sm(0.5, 3.0, t), Shatter=-1.0, dim=0.15 * (1 - sm(0.5, 4, t)))
     if phase == 'cicatriz':
         return dict(Crack=0.35, Open=0.0, Flash=0.0, Alpha=0.8, Dark=0.0, Storm=0.25, Shatter=-1.0, dim=0.0)
+    if phase == 'reabre':
+        # (desde la cicatriz: la tormenta vuelve, las grietas crecen y estalla a los 1,2 s)
+        BREAK = 1.2
+        flash = 1.3 * math.exp(-(t - BREAK) * 1.8) if t >= BREAK else 0.3 * sm(0.9, BREAK, t)
+        return dict(Crack=0.35 + 0.65 * sm(0.0, BREAK, t), Open=sm(BREAK, 4.0, t), Flash=flash, Alpha=0.8 + 0.2 * sm(0, 0.6, t),
+                    Dark=0.6 * (1 - sm(BREAK, 3.0, t)), Storm=0.25 + 0.75 * sm(0.0, 1.5, t),
+                    Shatter=(t - BREAK) if t >= BREAK else -1.0, dim=0.15 + 0.3 * sm(0, 1.2, t) * (1 - sm(2, 7, t)))
+    if phase == 'final':
+        # (se cierra para siempre: gran fogonazo a los 2,5 s y desaparece todo)
+        return dict(Crack=1.0 - sm(0.5, 3.0, t), Open=1.0 - sm(0.0, 2.5, t), Flash=1.6 * math.exp(-abs(t - 2.5) * 3.5),
+                    Alpha=1.0 - sm(2.6, 4.5, t), Dark=0.0, Storm=1.0 - sm(0.5, 3.5, t), Shatter=-1.0, dim=0.15 * (1 - sm(0.5, 4, t)))
     raise ValueError(phase)
 
 
 STATES = [('preludio', 3.0), ('preludio', 7.5), ('preludio', 8.7), ('preludio', 11.6), ('rompe', 0.5), ('rompe', 1.3),
           ('rompe', 1.85), ('rompe', 2.4), ('rompe', 3.5), ('rompe', 5.5), ('abierta', 20.0), ('abierta', 27.5),
-          ('cierra', 1.5), ('cicatriz', 40.0)]
+          ('cierra', 1.5), ('cicatriz', 40.0), ('reabre', 1.4), ('reabre', 3.0), ('final', 2.5)]
 
 
 def direction(yaw, pitch):
@@ -164,11 +175,12 @@ def main():
         big.paste(im.resize((sw, shh)), ((i % cols) * sw, (i // cols) * shh))
     big.save(os.path.join(out, 'grieta_todo.png'))
     if '--gif' in sys.argv:
+        # (pequeño: 320 × 180, a 4 fotogramas por segundo, con paleta común; ~2 MB)
         frames = []
-        for phase, t0, t1 in (('preludio', 0.0, 12.0), ('rompe', 0.0, 8.0), ('abierta', 20.0, 24.0)):
+        for phase, t0, t1 in (('preludio', 0.0, 12.0), ('rompe', 0.0, 8.0), ('abierta', 20.0, 23.0)):
             for t in np.arange(t0, t1, 0.25):
-                frames.append(frame((phase, float(t)), 'cara').resize((w // 2, h // 2)))
-        frames[0].save(os.path.join(out, 'grieta.gif'), save_all=True, append_images=frames[1:], duration=125, loop=0)
+                frames.append(frame((phase, float(t)), 'cara').resize((320, 180), Image.LANCZOS).convert('P', palette=Image.ADAPTIVE, colors=128))
+        frames[0].save(os.path.join(out, 'grieta.gif'), save_all=True, append_images=frames[1:], duration=250, loop=0, optimize=True)
     print('hecho en', out)
 
 

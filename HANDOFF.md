@@ -75,7 +75,9 @@ grieta son una mierda... esmérate por hacer algo chingón»*. Se está rehacien
 - **Falta (Java; sin esto el juego dibuja mal la grieta nueva: NO fusionar así)**: `SkyRiftClient` tiene que pasar los
   uniformes nuevos (`Storm`, `Shatter`, `RiftF/RiftR/RiftU`), el cuadro más grande (`ANG` 1,1, `DRAW` 30), la línea de
   tiempo de `look()` de la vista previa, los sonidos sin cristal y `warp()` con el radio nuevo; `BossTestClient.SKY_AT`;
-  versión 1.3.95; prueba en el juego con y sin shaders; publicar. Detalle exacto en JEFES §3.20.
+  versión 1.3.95; prueba en el juego con y sin shaders; publicar. **Todo el detalle, con imágenes de cada momento, el
+  GIF, lo que el dueño rechazó y el código que falta: `tf-client/docs/grieta-cielo-2/README.md`** (resumen en JEFES
+  §3.20). PR en borrador: https://github.com/modelqdeluxe-ops/ss/pull/137.
 
 ### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.94)
 
