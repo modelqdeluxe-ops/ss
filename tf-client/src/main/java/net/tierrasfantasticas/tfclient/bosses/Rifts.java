@@ -56,6 +56,13 @@ import org.joml.Vector3f;
  * vez que vuelve a estar lista elige al azar uno de la lista activa (sin repetir el último si hay más de uno). En la
  * ventana, la pestaña VOID. Al principio, la normal con todos los jefes en su dificultad guardada y la madre con todos
  * en Pesadilla.
+ *
+ * <p>1.3.96 (el dueño: «con respecto a la grieta del Void, haz que pueda configurar los atributos para todos los bosses,
+ * la secuencia de bosses y así»): la lista es una <b>secuencia</b> ({@link VoidConfig#sequence}: salen en orden, uno
+ * tras otro; o al azar como antes), con su orden (subir y bajar), el siguiente que se quiera, los atributos de cada uno
+ * (su {@link Difficulty} entera, o la misma para todos) y qué pasa al acabar ({@link VoidConfig#endMode}): volver a
+ * empezar, parar (la grieta se queda sin criaturas y la del cielo, sellada) o <b>el final</b>: al caer el último jefe de
+ * la secuencia, la grieta del cielo se cierra para siempre ({@code SkyRift.voidSequenceEnded}).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class Rifts {
@@ -111,7 +118,16 @@ public final class Rifts {
         public int active = RiftEntity.MOTHER;
         public final List<List<Entry>> pools = List.of(new ArrayList<>(), new ArrayList<>());
         final int[] last = {-1, -1};
+        /** (1.3.96) En orden (una secuencia) o al azar. */
+        public boolean sequence = true;
+        /** (1.3.96) Al acabar la secuencia: {@link #END_REPEAT}, {@link #END_STOP} o {@link #END_FINAL}. */
+        public int endMode = END_REPEAT;
+        /** (1.3.96) Por lista: el que está en la grieta (−1 ninguno) y el que sale después (en la secuencia). */
+        public final int[] current = {-1, -1}, next = {0, 0};
     }
+
+    /** Al acabar la secuencia: volver a empezar, parar, o el final (la grieta del cielo se cierra para siempre). */
+    public static final int END_REPEAT = 0, END_STOP = 1, END_FINAL = 2;
 
     /** La grieta del Void tiene siempre el mismo id. */
     public static final UUID VOID_ID = UUID.nameUUIDFromBytes("tfclient:grieta-del-void".getBytes(java.nio.charset.StandardCharsets.UTF_8));
@@ -492,8 +508,12 @@ public final class Rifts {
             r.readyAt = boss.level().getGameTime() + d.respawnMin() * 1200L;
             r.bossEntity = null;
             dirty = true;
-            // (1.3.93) si es la del Void, la grieta del cielo se sella... por ahora
-            if (r.fixed) net.tierrasfantasticas.tfclient.vacio.SkyRift.voidBossKilled();
+            // (1.3.93) si es la del Void, la grieta del cielo se sella... por ahora; (1.3.96) o, si era el último de la
+            // secuencia y al acabar va el final, se cierra para siempre
+            if (r.fixed) {
+                if (sequenceFinale(r)) net.tierrasfantasticas.tfclient.vacio.SkyRift.voidSequenceEnded();
+                else net.tierrasfantasticas.tfclient.vacio.SkyRift.voidBossKilled();
+            }
             // (1.3.91) la grieta se cierra: se traga la luz (el cierre lo dibuja RiftRenderer y el fogonazo, RiftWarp)
             if (boss.level() instanceof ServerLevel sl) {
                 Vec3 c = r.pos.add(0, r.kind == RiftEntity.MOTHER ? 16.5 : 11.5, 0);
@@ -639,6 +659,8 @@ public final class Rifts {
             return c;
         }
         c.active = RiftEntity.MOTHER;
+        c.sequence = !o.has("secuencia") || TFJson.bool(o, "secuencia", true);
+        c.endMode = Math.max(END_REPEAT, Math.min(END_FINAL, (int) TFJson.num(o, "alAcabar", END_REPEAT)));
         String[] keys = {"normal", "madre"};
         for (int k = 0; k < 2; k++) {
             if (!o.has(keys[k]) || !o.get(keys[k]).isJsonArray()) continue;
@@ -651,6 +673,8 @@ public final class Rifts {
                     TFClient.LOGGER.warn("TF Jefes: jefe de la grieta del Void mal guardado: {}", ex.getMessage());
                 }
             }
+            c.current[k] = Math.min((int) TFJson.num(o, keys[k] + "Actual", -1), c.pools.get(k).size() - 1);
+            c.next[k] = Math.max(0, (int) TFJson.num(o, keys[k] + "Siguiente", 0));
         }
         return c;
     }
@@ -658,6 +682,8 @@ public final class Rifts {
     private static JsonObject saveVoid() {
         JsonObject o = new JsonObject();
         o.addProperty("activa", voidConfig.active);
+        o.addProperty("secuencia", voidConfig.sequence);
+        o.addProperty("alAcabar", voidConfig.endMode);
         String[] keys = {"normal", "madre"};
         for (int k = 0; k < 2; k++) {
             JsonArray a = new JsonArray();
@@ -668,6 +694,8 @@ public final class Rifts {
                 a.add(eo);
             }
             o.add(keys[k], a);
+            o.addProperty(keys[k] + "Actual", voidConfig.current[k]);
+            o.addProperty(keys[k] + "Siguiente", voidConfig.next[k]);
         }
         return o;
     }
@@ -697,21 +725,50 @@ public final class Rifts {
         return false;
     }
 
-    /** El siguiente jefe de la grieta del Void: uno al azar de la lista activa, sin repetir el último si hay más. */
+    /**
+     * El siguiente jefe de la grieta del Void: el siguiente de la secuencia (1.3.96; al acabarla, según
+     * {@link VoidConfig#endMode}) o, al azar, uno de la lista sin repetir el último si hay más.
+     */
     private static void pickVoid(Rift r) {
-        List<Entry> pool = voidConfig.pools.get(r.kind);
+        int k = r.kind;
+        List<Entry> pool = voidConfig.pools.get(k);
+        int i;
         if (pool.isEmpty()) {
+            i = -1;
+        } else if (voidConfig.sequence) {
+            i = voidConfig.next[k];
+            if (i >= pool.size()) i = voidConfig.endMode == END_REPEAT ? 0 : -1;
+        } else {
+            int last = voidConfig.last[k];
+            i = PICK.nextInt(pool.size());
+            if (pool.size() > 1 && i == last) i = (i + 1 + PICK.nextInt(pool.size() - 1)) % pool.size();
+        }
+        put(r, i);
+    }
+
+    /** Pone en la grieta del Void el n.º i de su lista (−1: ninguno; la secuencia ha terminado o la lista está vacía). */
+    private static void put(Rift r, int i) {
+        int k = r.kind;
+        List<Entry> pool = voidConfig.pools.get(k);
+        if (i < 0 || i >= pool.size()) {
             r.boss = "";
             r.diff = Difficulty.NORMAL;
-            return;
+            voidConfig.current[k] = -1;
+            if (voidConfig.sequence && !pool.isEmpty()) voidConfig.next[k] = pool.size();
+        } else {
+            voidConfig.last[k] = i;
+            voidConfig.current[k] = i;
+            voidConfig.next[k] = i + 1;
+            r.boss = pool.get(i).boss();
+            r.diff = pool.get(i).diff();
         }
-        int last = voidConfig.last[r.kind];
-        int i = PICK.nextInt(pool.size());
-        if (pool.size() > 1 && i == last) i = (i + 1 + PICK.nextInt(pool.size() - 1)) % pool.size();
-        voidConfig.last[r.kind] = i;
-        r.boss = pool.get(i).boss();
-        r.diff = pool.get(i).diff();
         dirty = true;
+    }
+
+    /** ¿El jefe que acaba de caer era el último de la secuencia y al acabar va el final? */
+    private static boolean sequenceFinale(Rift r) {
+        List<Entry> pool = voidConfig.pools.get(r.kind);
+        return voidConfig.sequence && voidConfig.endMode == END_FINAL && !pool.isEmpty() && voidConfig.current[r.kind] == pool.size() - 1;
     }
 
     /** Para la prueba en el juego: despierta la grieta del Void (sin golpe). */
@@ -759,14 +816,102 @@ public final class Rifts {
     }
 
     public static String voidRemove(int kind, int index) {
-        List<Entry> pool = voidConfig.pools.get(kind == RiftEntity.MOTHER ? 1 : 0);
+        int k = kind == RiftEntity.MOTHER ? 1 : 0;
+        List<Entry> pool = voidConfig.pools.get(k);
         if (index < 0 || index >= pool.size()) return "";
         Entry e = pool.remove(index);
-        voidConfig.last[kind == RiftEntity.MOTHER ? 1 : 0] = -1;
+        voidConfig.last[k] = -1;
+        if (voidConfig.current[k] == index) voidConfig.current[k] = -1;
+        else if (voidConfig.current[k] > index) voidConfig.current[k]--;
+        if (voidConfig.next[k] > index) voidConfig.next[k]--;
         Rift r = voidRift();
         if (r != null && r.kind == kind && r.state == RiftEntity.READY && !inPool(r)) pickVoid(r);
         save();
         return "Quitado de la " + (kind == RiftEntity.MOTHER ? "grieta madre" : "grieta del Void") + ": " + name(e.boss());
+    }
+
+    /** (1.3.96) Sube (dir −1) o baja (+1) el n.º index de la lista (lo que está en la grieta no cambia). */
+    public static String voidMove(int kind, int index, int dir) {
+        int k = kind == RiftEntity.MOTHER ? 1 : 0;
+        List<Entry> pool = voidConfig.pools.get(k);
+        int j = index + dir;
+        if (index < 0 || index >= pool.size() || j < 0 || j >= pool.size()) return "";
+        java.util.Collections.swap(pool, index, j);
+        int[] cur = voidConfig.current, nx = voidConfig.next;
+        if (cur[k] == index) cur[k] = j;
+        else if (cur[k] == j) cur[k] = index;
+        if (nx[k] == index) nx[k] = j;
+        else if (nx[k] == j) nx[k] = index;
+        voidConfig.last[k] = -1;
+        save();
+        return name(pool.get(j).boss()) + ": n.º " + (j + 1) + " de la secuencia";
+    }
+
+    /** (1.3.96) Cambia el jefe y los atributos del n.º index (si es el que espera en la grieta, ya sale así). */
+    public static String voidEdit(int kind, int index, String boss, Difficulty d) {
+        int k = kind == RiftEntity.MOTHER ? 1 : 0;
+        List<Entry> pool = voidConfig.pools.get(k);
+        if (index < 0 || index >= pool.size() || !SkillDefs.bosses().containsKey(boss)) return "";
+        pool.set(index, new Entry(boss, d));
+        Rift r = voidRift();
+        if (r != null && r.kind == k && voidConfig.current[k] == index && r.state == RiftEntity.READY) {
+            r.boss = boss;
+            r.diff = d;
+        }
+        save();
+        return "N.º " + (index + 1) + " de la grieta del Void: " + name(boss) + " (" + d.label() + ")";
+    }
+
+    /** (1.3.96) Los mismos atributos para todos los de la lista (cada uno sigue siendo su jefe). */
+    public static String voidAll(int kind, Difficulty d) {
+        int k = kind == RiftEntity.MOTHER ? 1 : 0;
+        List<Entry> pool = voidConfig.pools.get(k);
+        if (pool.isEmpty()) return "La lista está vacía";
+        pool.replaceAll(e -> new Entry(e.boss(), d));
+        Rift r = voidRift();
+        if (r != null && r.kind == k && r.state == RiftEntity.READY && SkillDefs.bosses().containsKey(r.boss)) r.diff = d;
+        save();
+        return "Los " + pool.size() + " jefes de la grieta del Void, en " + d.label();
+    }
+
+    /** (1.3.96) En orden o al azar. */
+    public static String voidMode(boolean sequence) {
+        voidConfig.sequence = sequence;
+        save();
+        return sequence ? "Grieta del Void: los jefes salen en orden (secuencia)" : "Grieta del Void: los jefes salen al azar";
+    }
+
+    /** (1.3.96) Qué pasa al acabar la secuencia. */
+    public static String voidEnd(int mode) {
+        voidConfig.endMode = Math.max(END_REPEAT, Math.min(END_FINAL, mode));
+        Rift r = voidRift();
+        // (si ya había acabado y ahora se repite, vuelve a empezar)
+        if (r != null && r.state == RiftEntity.READY && !SkillDefs.bosses().containsKey(r.boss)) pickVoid(r);
+        save();
+        return switch (voidConfig.endMode) {
+            case END_STOP -> "Al acabar la secuencia: la grieta del Void se queda sin criaturas";
+            case END_FINAL -> "Al acabar la secuencia: EL FINAL (al caer el último, la grieta del cielo se cierra para siempre)";
+            default -> "Al acabar la secuencia: vuelve a empezar";
+        };
+    }
+
+    /**
+     * (1.3.96) Que el n.º index sea el siguiente: si la grieta está esperando (lista, sin despertar), sale ya; si no, al
+     * acabar la pelea o la recarga.
+     */
+    public static String voidNext(int kind, int index) {
+        int k = kind == RiftEntity.MOTHER ? 1 : 0;
+        List<Entry> pool = voidConfig.pools.get(k);
+        if (index < 0 || index >= pool.size()) return "";
+        Rift r = voidRift();
+        if (r != null && r.kind == k && r.state == RiftEntity.READY) {
+            put(r, index);
+            save();
+            return "Ahora en la grieta del Void: " + name(pool.get(index).boss()) + " (n.º " + (index + 1) + ")";
+        }
+        voidConfig.next[k] = index;
+        save();
+        return "Después saldrá " + name(pool.get(index).boss()) + " (n.º " + (index + 1) + ")";
     }
 
     private static String name(String boss) {

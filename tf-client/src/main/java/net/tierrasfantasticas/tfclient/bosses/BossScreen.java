@@ -39,6 +39,12 @@ import org.joml.Matrix4f;
  * <p>1.3.89: arriba de GRIETAS, la tarjeta de la grieta del Void (la del centro de la isla); con su ✎ se abre su panel
  * ({@link #tab} 2, con la pestaña GRIETAS encendida): elegir lista (la de la grieta normal o la de la madre), ponerla en
  * el centro, reiniciarla, añadir el jefe elegido a la izquierda con la dificultad de DIFICULTAD y quitar los de la lista.
+ *
+ * <p>1.3.96 (el dueño: «haz que pueda configurar los atributos para todos los bosses, la secuencia de bosses y así»): el
+ * panel de la grieta del Void es su secuencia: EN ORDEN o AL AZAR, qué pasa al acabar (FIN: repetir, parar o EL FINAL),
+ * y en cada jefe ▲ ▼ (su sitio), ✎ (sus atributos: se abren en DIFICULTAD con «GUARDAR EN EL VOID» y «A TODOS LOS DEL
+ * VOID») y ✕; con un clic en su nombre, es el siguiente (o sale ya si la grieta está esperando). «A TODOS» pone los
+ * atributos de DIFICULTAD a toda la lista.
  */
 @OnlyIn(Dist.CLIENT)
 public class BossScreen extends Screen {
@@ -63,6 +69,8 @@ public class BossScreen extends Screen {
     private Difficulty editing = Difficulty.NORMAL;
     /** Grieta que se está editando (null = la dificultad del jefe). */
     private BossNet.RiftInfo editRift;
+    /** (1.3.96) N.º de la lista de la grieta del Void cuyos atributos se están editando (−1 ninguno). */
+    private int editVoid = -1;
     private int tab;
     private int riftScroll, listScroll;
     private String notice = "";
@@ -95,6 +103,7 @@ public class BossScreen extends Screen {
             for (BossNet.RiftInfo r : rifts) if (r.id().equals(editRift.id())) again = r;
             editRift = again;
         }
+        if (editVoid >= voidInfo.pools().get(viewKind()).size()) editVoid = -1;
         if (!m.notice().isEmpty()) {
             notice = m.notice();
             noticeAt = System.currentTimeMillis();
@@ -106,6 +115,11 @@ public class BossScreen extends Screen {
         editing = id == null ? Difficulty.NORMAL : chosen.getOrDefault(id, Difficulty.NORMAL);
         previewLayers.clear();
         spin = 20F;
+    }
+
+    /** ¿Se está editando algo (una grieta o un jefe del Void)? Entonces DIFICULTAD lleva su aviso arriba. */
+    private boolean hasBanner() {
+        return editRift != null || editVoid >= 0;
     }
 
     private SkillDefs.BossInfo info() {
@@ -192,7 +206,7 @@ public class BossScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float partial) {
         renderBackground(g);
         tip = null;
-        Layout L = layout(width, height, editRift != null && tab == 0);
+        Layout L = layout(width, height, hasBanner() && tab == 0);
         // Panel
         g.fill(L.px - 1, L.py - 1, L.px + L.pw + 1, L.py + L.ph + 1, LINE);
         g.fill(L.px, L.py, L.px + L.pw, L.py + L.ph, PANEL);
@@ -272,7 +286,12 @@ public class BossScreen extends Screen {
         }
         // Botones
         int by = L.btnY;
-        if (editRift != null) {
+        if (editVoid >= 0) {
+            int vc = voidColor(viewKind());
+            drawButton(g, x, by, w, Layout.BTN, "GUARDAR EN EL VOID", mx, my, vc, true);
+            drawButton(g, x, by + Layout.BTN + 3, w, Layout.BTN, "A TODOS LOS DEL VOID", mx, my, 0xFF3A3F4B, true);
+            drawButton(g, x, by + 2 * (Layout.BTN + 3), w, Layout.BTN, "DEJAR DE EDITAR", mx, my, 0xFF3A3F4B, true);
+        } else if (editRift != null) {
             drawButton(g, x, by, w, Layout.BTN, "GUARDAR GRIETA", mx, my, accent, true);
             drawButton(g, x, by + Layout.BTN + 3, w, Layout.BTN, "REINICIAR GRIETA", mx, my, 0xFF3A3F4B, true);
             drawButton(g, x, by + 2 * (Layout.BTN + 3), w, Layout.BTN, "DEJAR DE EDITAR", mx, my, 0xFF3A3F4B, true);
@@ -365,7 +384,11 @@ public class BossScreen extends Screen {
 
     private void drawDifficulty(GuiGraphics g, Layout L, int mx, int my) {
         int x = L.rightX, w = L.rightW;
-        if (editRift != null) {
+        if (editVoid >= 0) {
+            int vc = voidColor(viewKind());
+            g.fill(x, L.bannerY, x + w, L.bannerY + 11, mix(PANEL, vc, 0.2F));
+            g.drawString(font, fit("Editando el n.º " + (editVoid + 1) + " de la grieta del Void", w - 6), x + 3, L.bannerY + 2, vc, false);
+        } else if (editRift != null) {
             g.fill(x, L.bannerY, x + w, L.bannerY + 11, mix(PANEL, GOLD, 0.18F));
             g.drawString(font, fit("Editando la grieta de " + (int) editRift.x() + ", " + (int) editRift.y() + ", " + (int) editRift.z(), w - 6),
                     x + 3, L.bannerY + 2, GOLD, false);
@@ -551,9 +574,9 @@ public class BossScreen extends Screen {
 
     static final int VOID_ROW = 14;
 
-    /** Lo que se mira del panel de la grieta del Void: sus piezas (x, y, w, h). */
+    /** Lo que se mira del panel de la grieta del Void: sus piezas (x, y, w, h). Igual que tools/bosses/sim_gui.py. */
     static final class VoidLayout {
-        int[] back, chipN, chipM, center, reset, add;
+        int[] back, chipSeq, chipRand, end, reset, add, all;
         int titleY, statusY, listY;
     }
 
@@ -565,21 +588,38 @@ public class BossScreen extends Screen {
         v.titleY = y + 4;
         y += Layout.BTN + 3;
         int cw = (w - 3) / 2;
-        v.chipN = new int[] {x, y, cw, Layout.CHIP};
-        v.chipM = new int[] {x + cw + 3, y, w - cw - 3, Layout.CHIP};
+        v.chipSeq = new int[] {x, y, cw, Layout.CHIP};
+        v.chipRand = new int[] {x + cw + 3, y, w - cw - 3, Layout.CHIP};
         y += Layout.CHIP + 3;
         v.statusY = y;
         y += 12;
-        v.center = new int[] {x, y, cw, Layout.BTN};
+        v.end = new int[] {x, y, cw, Layout.BTN};
         v.reset = new int[] {x + cw + 3, y, w - cw - 3, Layout.BTN};
         y += Layout.BTN + 3;
-        v.add = new int[] {x, y, w, Layout.BTN};
+        int aw = 54;
+        v.add = new int[] {x, y, w - aw - 3, Layout.BTN};
+        v.all = new int[] {x + w - aw, y, aw, Layout.BTN};
         v.listY = y + Layout.BTN + 4;
         return v;
     }
 
+    /** La lista que se mira: la del centro (desde la 1.3.93b, siempre la madre). */
     private int viewKind() {
         return voidKind < 0 ? voidInfo.active() : voidKind;
+    }
+
+    private static final String[] END_LABELS = {"FIN: REPETIR", "FIN: PARAR", "FIN: EL FINAL"};
+    private static final String[] END_HELP = {
+            "Al acabar la secuencia, vuelve a empezar por el primero.",
+            "Al acabar la secuencia, la grieta del Void se queda sin criaturas (y la del cielo, sellada) hasta que añadas más.",
+            "Al caer el último jefe de la secuencia, la grieta del cielo se cierra PARA SIEMPRE (el final del evento)."};
+
+    private void chip(GuiGraphics g, int[] r, String text, boolean on, int c, int mx, int my) {
+        boolean hover = in(mx, my, r[0], r[1], r[2], r[3]);
+        g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], on ? c : hover ? mix(CARD, c, 0.35F) : mix(CARD, c, 0.16F));
+        outline(g, r[0], r[1], r[2], r[3], on ? 0xFFFFFFFF : mix(CARD, c, 0.6F));
+        String label = fit(text, r[2] - 4);
+        g.drawString(font, label, r[0] + (r[2] - font.width(label)) / 2, r[1] + 3, on ? 0xFF101216 : TEXT, false);
     }
 
     private void drawVoid(GuiGraphics g, Layout L, int mx, int my) {
@@ -587,41 +627,43 @@ public class BossScreen extends Screen {
         VoidLayout v = voidLayout(L);
         int k = viewKind();
         int color = voidColor(k);
+        List<Rifts.Entry> pool = voidInfo.pools().get(k);
         drawButton(g, v.back[0], v.back[1], v.back[2], v.back[3], "‹", mx, my, 0xFF343946, true);
-        g.drawString(font, fit(k == RiftEntity.MOTHER ? "GRIETA MADRE" : "GRIETA DEL VOID", w - 24), x + 22, v.titleY, color, false);
+        String head = "GRIETA DEL VOID · " + pool.size() + (pool.size() == 1 ? " jefe" : " jefes");
+        g.drawString(font, fit(head, w - 24), x + 22, v.titleY, color, false);
         if (!voidInfo.exists()) {
             g.drawString(font, fit("Este mundo no tiene el Void", w - 4), x + 2, v.statusY, MUTED, false);
             return;
         }
-        for (int kind = 0; kind < 2; kind++) {
-            int[] r = kind == 0 ? v.chipN : v.chipM;
-            boolean on = kind == k;
-            int c = voidColor(kind);
-            boolean hover = in(mx, my, r[0], r[1], r[2], r[3]);
-            g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], on ? c : hover ? mix(CARD, c, 0.35F) : mix(CARD, c, 0.16F));
-            outline(g, r[0], r[1], r[2], r[3], on ? 0xFFFFFFFF : mix(CARD, c, 0.6F));
-            String label = fit((kind == voidInfo.active() ? "★ " : "") + (kind == 0 ? "NORMAL" : "MADRE"), r[2] - 4);
-            g.drawString(font, label, r[0] + (r[2] - font.width(label)) / 2, r[1] + 3, on ? 0xFF101216 : TEXT, false);
+        boolean seq = voidInfo.sequence();
+        chip(g, v.chipSeq, "EN ORDEN", seq, color, mx, my);
+        chip(g, v.chipRand, "AL AZAR", !seq, color, mx, my);
+        if (in(mx, my, v.chipSeq[0], v.chipSeq[1], v.chipSeq[2], v.chipSeq[3])) tip = "Los jefes salen uno tras otro, en el orden de la lista.";
+        if (in(mx, my, v.chipRand[0], v.chipRand[1], v.chipRand[2], v.chipRand[3])) tip = "Cada vez, uno de la lista al azar (sin repetir el último).";
+        String status = riftState(voidInfo.state(), voidInfo.left()) + (voidInfo.boss().isEmpty()
+                ? (seq && !pool.isEmpty() && voidInfo.current() < 0 ? " · secuencia acabada" : "") : " · " + bossName(voidInfo.boss()));
+        if (seq && !pool.isEmpty() && voidInfo.next() < pool.size() && voidInfo.next() != voidInfo.current()) {
+            status += " · luego " + bossName(pool.get(voidInfo.next()).boss());
         }
-        String status = "En el centro: " + (voidInfo.active() == RiftEntity.MOTHER ? "la madre" : "la normal") + " · "
-                + riftState(voidInfo.state(), voidInfo.left()) + (voidInfo.boss().isEmpty() ? "" : " · " + bossName(voidInfo.boss()));
         g.drawString(font, fit(status, w - 4), x + 2, v.statusY, MUTED, false);
-        boolean here = k == voidInfo.active();
-        drawButton(g, v.center[0], v.center[1], v.center[2], v.center[3], here ? "ACTIVA ★" : "ACTIVAR", mx, my,
-                here ? 0xFF2B3039 : color, !here);
+        int end = Math.max(0, Math.min(2, voidInfo.endMode()));
+        drawButton(g, v.end[0], v.end[1], v.end[2], v.end[3], END_LABELS[end], mx, my, end == Rifts.END_FINAL ? 0xFF7A2B3A : 0xFF3A3F4B, seq);
+        if (seq && in(mx, my, v.end[0], v.end[1], v.end[2], v.end[3])) tip = END_HELP[end] + " (clic: cambiar)";
         drawButton(g, v.reset[0], v.reset[1], v.reset[2], v.reset[3], "REINICIAR", mx, my, 0xFF3A3F4B, true);
         SkillDefs.BossInfo bi = info();
         String add = bi == null ? "AÑADIR" : "AÑADIR " + bi.name + " · " + editing.label();
         drawButton(g, v.add[0], v.add[1], v.add[2], v.add[3], add, mx, my, color, bi != null);
-        List<Rifts.Entry> pool = voidInfo.pools().get(k);
+        drawButton(g, v.all[0], v.all[1], v.all[2], v.all[3], "A TODOS", mx, my, 0xFF3A3F4B, !pool.isEmpty());
+        if (in(mx, my, v.all[0], v.all[1], v.all[2], v.all[3])) tip = "Pone a todos los jefes de la lista los atributos de DIFICULTAD (" + editing.label() + ").";
         int visible = Math.max(1, (L.by + L.bh - v.listY) / VOID_ROW);
         voidScroll = clamp(voidScroll, 0, Math.max(0, pool.size() - visible));
         if (pool.isEmpty()) {
+            int ly = v.listY;
             for (FormattedCharSequence line : font.split(Component.literal(
-                    "Sin criaturas. Elige un jefe a la izquierda, su dificultad en DIFICULTAD y pulsa AÑADIR."), w - 4)) {
-                if (v.listY + 10 > L.by + L.bh) break;
-                g.drawString(font, line, x + 2, v.listY, MUTED, false);
-                v.listY += 10;
+                    "Sin criaturas. Elige un jefe a la izquierda, sus atributos en DIFICULTAD y pulsa AÑADIR."), w - 4)) {
+                if (ly + 10 > L.by + L.bh) break;
+                g.drawString(font, line, x + 2, ly, MUTED, false);
+                ly += 10;
             }
             return;
         }
@@ -630,25 +672,44 @@ public class BossScreen extends Screen {
             int y = v.listY + (i - voidScroll) * VOID_ROW;
             SkillDefs.ClassDef c = SkillDefs.bosses().get(e.boss());
             int bc = 0xFF000000 | (c != null && c.bossInfo != null ? c.bossInfo.color : 0x888888);
-            if (i % 2 == 0) g.fill(x, y, x + w, y + VOID_ROW - 1, CARD);
+            boolean cur = i == voidInfo.current(), next = seq && i == voidInfo.next() && !cur;
+            int[][] btn = voidRowButtons(L, v, i);
+            int nameW = btn[0][0] - x - 4;
+            if (cur) g.fill(x, y, x + w, y + VOID_ROW - 1, mix(CARD, color, 0.22F));
+            else if (in(mx, my, x, y, nameW, VOID_ROW - 1)) g.fill(x, y, x + w, y + VOID_ROW - 1, CARD_HOVER);
+            else if (i % 2 == 0) g.fill(x, y, x + w, y + VOID_ROW - 1, CARD);
+            if (i == editVoid) outline(g, x, y, w, VOID_ROW - 1, GOLD);
             g.fill(x, y, x + 2, y + VOID_ROW - 1, bc);
-            int[] rm = voidRemove(L, v, i);
+            String num = (i + 1) + (cur ? ". ▶ " : next ? ". › " : ". ");
+            int numC = cur ? color : next ? GOLD : DIM;
+            g.drawString(font, num, x + 5, y + 3, numC, false);
+            int nx = x + 5 + font.width(num);
             String diff = " · " + e.diff().label();
-            String name = fit(bossName(e.boss()), rm[0] - x - 10 - font.width(diff));
-            g.drawString(font, name, x + 6, y + 3, TEXT, false);
-            g.drawString(font, diff, x + 6 + font.width(name), y + 3, 0xFF000000 | e.diff().color(), false);
-            drawButton(g, rm[0], rm[1], rm[2], rm[3], "✕", mx, my, 0xFF4A2F33, true);
+            boolean showDiff = font.width(bossName(e.boss())) + font.width(diff) <= btn[0][0] - nx - 3 || btn[0][0] - nx - 3 > 90;
+            String name = fit(bossName(e.boss()), btn[0][0] - nx - 3 - (showDiff ? font.width(diff) : 0));
+            g.drawString(font, name, nx, y + 3, TEXT, false);
+            if (showDiff) g.drawString(font, diff, nx + font.width(name), y + 3, 0xFF000000 | e.diff().color(), false);
+            drawButton(g, btn[0][0], btn[0][1], btn[0][2], btn[0][3], "▲", mx, my, 0xFF343946, i > 0);
+            drawButton(g, btn[1][0], btn[1][1], btn[1][2], btn[1][3], "▼", mx, my, 0xFF343946, i < pool.size() - 1);
+            drawButton(g, btn[2][0], btn[2][1], btn[2][2], btn[2][3], "✎", mx, my, 0xFF343946, true);
+            drawButton(g, btn[3][0], btn[3][1], btn[3][2], btn[3][3], "✕", mx, my, 0xFF4A2F33, true);
+            if (in(mx, my, x, y, nameW, VOID_ROW - 1)) {
+                tip = e.diff().label() + " · vida ×" + trim(e.diff().health()) + " · daño ×" + trim(e.diff().damage()) + " · recarga "
+                        + e.diff().respawnMin() + " min. Clic: " + (voidInfo.state() == RiftEntity.READY ? "que salga este ahora" : "que salga después")
+                        + ". ✎ sus atributos, ▲ ▼ su sitio, ✕ quitar.";
+            }
         }
         if (pool.size() > visible) {
             String more = (voidScroll + 1) + "-" + Math.min(pool.size(), voidScroll + visible) + " de " + pool.size();
-            g.drawString(font, more, x + w - font.width(more) - 2, v.titleY, DIM, false);
+            g.drawString(font, more, x + w - font.width(more) - 2, v.statusY, DIM, false);
         }
     }
 
-    /** La ✕ de la fila i de la lista (en la página que se ve). */
-    int[] voidRemove(Layout L, VoidLayout v, int i) {
+    /** ▲ ▼ ✎ ✕ de la fila i de la lista (en la página que se ve). */
+    int[][] voidRowButtons(Layout L, VoidLayout v, int i) {
         int y = v.listY + (i - voidScroll) * VOID_ROW + 1;
-        return new int[] {L.rightX + L.rightW - 13, y, 12, 12};
+        int x = L.rightX + L.rightW - 13;
+        return new int[][] {{x - 39, y, 12, 12}, {x - 26, y, 12, 12}, {x - 13, y, 12, 12}, {x, y, 12, 12}};
     }
 
     private boolean clickVoid(Layout L, double mx, double my) {
@@ -660,15 +721,19 @@ public class BossScreen extends Screen {
         }
         if (!voidInfo.exists()) return false;
         int k = viewKind();
-        if (in(mx, my, v.chipN[0], v.chipN[1], v.chipN[2], v.chipN[3]) || in(mx, my, v.chipM[0], v.chipM[1], v.chipM[2], v.chipM[3])) {
+        if (in(mx, my, v.chipSeq[0], v.chipSeq[1], v.chipSeq[2], v.chipSeq[3]) && !voidInfo.sequence()) {
             click();
-            voidKind = in(mx, my, v.chipN[0], v.chipN[1], v.chipN[2], v.chipN[3]) ? 0 : 1;
-            voidScroll = 0;
+            sendVoid(BossNet.VOID_MODE, 1);
             return true;
         }
-        if (in(mx, my, v.center[0], v.center[1], v.center[2], v.center[3]) && k != voidInfo.active()) {
+        if (in(mx, my, v.chipRand[0], v.chipRand[1], v.chipRand[2], v.chipRand[3]) && voidInfo.sequence()) {
             click();
-            sendVoid(BossNet.VOID_ACTIVE, k);
+            sendVoid(BossNet.VOID_MODE, 0);
+            return true;
+        }
+        if (in(mx, my, v.end[0], v.end[1], v.end[2], v.end[3]) && voidInfo.sequence()) {
+            click();
+            sendVoid(BossNet.VOID_END, (Math.max(0, voidInfo.endMode()) + 1) % 3);
             return true;
         }
         if (in(mx, my, v.reset[0], v.reset[1], v.reset[2], v.reset[3])) {
@@ -682,12 +747,45 @@ public class BossScreen extends Screen {
             return true;
         }
         List<Rifts.Entry> pool = voidInfo.pools().get(k);
+        if (in(mx, my, v.all[0], v.all[1], v.all[2], v.all[3]) && !pool.isEmpty()) {
+            click();
+            sendVoid(BossNet.VOID_ALL, k);
+            return true;
+        }
         int visible = Math.max(1, (L.by + L.bh - v.listY) / VOID_ROW);
         for (int i = voidScroll; i < pool.size() && i < voidScroll + visible; i++) {
-            int[] rm = voidRemove(L, v, i);
-            if (in(mx, my, rm[0], rm[1], rm[2], rm[3])) {
+            int[][] btn = voidRowButtons(L, v, i);
+            int y = v.listY + (i - voidScroll) * VOID_ROW;
+            if (in(mx, my, btn[0][0], btn[0][1], btn[0][2], btn[0][3]) && i > 0) {
                 click();
+                sendVoid(BossNet.VOID_UP, k * 1024 + i);
+                return true;
+            }
+            if (in(mx, my, btn[1][0], btn[1][1], btn[1][2], btn[1][3]) && i < pool.size() - 1) {
+                click();
+                sendVoid(BossNet.VOID_DOWN, k * 1024 + i);
+                return true;
+            }
+            if (in(mx, my, btn[2][0], btn[2][1], btn[2][2], btn[2][3])) {
+                // sus atributos, en DIFICULTAD (con su jefe elegido a la izquierda)
+                click();
+                Rifts.Entry e = pool.get(i);
+                editRift = null;
+                if (bosses.contains(e.boss())) select(e.boss());
+                editing = e.diff();
+                editVoid = i;
+                tab = 0;
+                return true;
+            }
+            if (in(mx, my, btn[3][0], btn[3][1], btn[3][2], btn[3][3])) {
+                click();
+                if (editVoid == i) editVoid = -1;
                 sendVoid(BossNet.VOID_REMOVE, k * 1024 + i);
+                return true;
+            }
+            if (in(mx, my, L.rightX, y, btn[0][0] - L.rightX - 4, VOID_ROW - 1)) {
+                click();
+                sendVoid(BossNet.VOID_NEXT, k * 1024 + i);
                 return true;
             }
         }
@@ -825,7 +923,7 @@ public class BossScreen extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) return super.mouseClicked(mx, my, button);
-        Layout L = layout(width, height, editRift != null && tab == 0);
+        Layout L = layout(width, height, hasBanner() && tab == 0);
         if (in(mx, my, L.px + L.pw - 20, L.py + 7, 14, 14)) {
             onClose();
             return true;
@@ -853,7 +951,14 @@ public class BossScreen extends Screen {
         for (int k = 0; k < 3; k++) {
             if (!in(mx, my, L.midX, L.btnY + k * (Layout.BTN + 3), L.midW, Layout.BTN)) continue;
             click();
-            if (editRift != null) {
+            if (editVoid >= 0) {
+                if (k == 0 && selected != null) sendVoid(BossNet.VOID_EDIT, viewKind() * 1024 + editVoid);
+                else if (k == 1) sendVoid(BossNet.VOID_ALL, viewKind());
+                if (k != 1) {
+                    editVoid = -1;
+                    tab = 2;
+                }
+            } else if (editRift != null) {
                 if (k == 0) send(BossNet.RIFT_SAVE, editRift.id());
                 else if (k == 1) send(BossNet.RIFT_RESET, editRift.id());
                 else editRift = null;
@@ -1011,7 +1116,7 @@ public class BossScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        Layout L = layout(width, height, editRift != null && tab == 0);
+        Layout L = layout(width, height, hasBanner() && tab == 0);
         if (in(mx, my, L.listX, L.by, L.listW, L.bh)) {
             listScroll -= (int) Math.signum(delta);
             return true;

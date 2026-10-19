@@ -110,7 +110,7 @@ VOID_ROW = 14
 
 
 def void_layout(o):
-    """= BossScreen.voidLayout (el panel de la grieta del Void, 1.3.89)."""
+    """= BossScreen.voidLayout (el panel de la grieta del Void, 1.3.89; su secuencia, 1.3.96)."""
     v = L()
     x, w = o.rightX, o.rightW
     y = o.tabsY + TAB + 5
@@ -118,17 +118,26 @@ def void_layout(o):
     v.title = (x + 22, y + 4, w - 24, 9)
     y += BTN + 3
     cw = (w - 3) // 2
-    v.chipN = (x, y, cw, CHIP)
-    v.chipM = (x + cw + 3, y, w - cw - 3, CHIP)
+    v.chipSeq = (x, y, cw, CHIP)
+    v.chipRand = (x + cw + 3, y, w - cw - 3, CHIP)
     y += CHIP + 3
     v.status = (x + 2, y, w - 4, 9)
     y += 12
-    v.center = (x, y, cw, BTN)
+    v.end = (x, y, cw, BTN)
     v.reset = (x + cw + 3, y, w - cw - 3, BTN)
     y += BTN + 3
-    v.add = (x, y, w, BTN)
+    aw = 54
+    v.add = (x, y, w - aw - 3, BTN)
+    v.all = (x + w - aw, y, aw, BTN)
     v.listY = y + BTN + 4
     return v
+
+
+def void_row_buttons(o, v, i):
+    """= BossScreen.voidRowButtons: ▲ ▼ ✎ ✕ de la fila i."""
+    y = v.listY + i * VOID_ROW + 1
+    x = o.rightX + o.rightW - 13
+    return [(x - 39, y, 12, 12), (x - 26, y, 12, 12), (x - 13, y, 12, 12), (x, y, 12, 12)]
 
 
 def inter(a, b):
@@ -172,7 +181,7 @@ def pieces(w, h, tab, banner, rifts=6):
             out.append(('con 4 jugadores', (o.rightX + 2, iy, o.rightW - 4, 9), 'body'))
     elif tab == 2:
         v = void_layout(o)
-        for n in ('back', 'title', 'chipN', 'chipM', 'status', 'center', 'reset', 'add'):
+        for n in ('back', 'title', 'chipSeq', 'chipRand', 'status', 'end', 'reset', 'add', 'all'):
             out.append((f'void {n}', getattr(v, n), 'body'))
         vis = max(1, (o.by + o.bh - v.listY) // VOID_ROW)
         for i in range(min(17, vis)):
@@ -241,10 +250,23 @@ def check(w, h):
                 v = void_layout(o)
                 if (o.by + o.bh - v.listY) // VOID_ROW < 3:
                     errs.append('grieta del Void: caben menos de 3 criaturas en la lista')
-                for lab, r in (('★ NORMAL', v.chipN), ('★ MADRE', v.chipM), ('ACTIVA ★', v.center), ('ACTIVAR', v.center),
-                               ('REINICIAR', v.reset), ('GRIETA DEL VOID', v.title)):
+                for lab, r in (('EN ORDEN', v.chipSeq), ('AL AZAR', v.chipRand), ('FIN: REPETIR', v.end), ('FIN: EL FINAL', v.end),
+                               ('REINICIAR', v.reset), ('A TODOS', v.all), ('GRIETA DEL VOID · 17 jefes', v.title)):
                     if width(lab) > r[2] - 4:
                         errs.append(f'«{lab}» no cabe ({r[2]})')
+                vis = max(1, (o.by + o.bh - v.listY) // VOID_ROW)
+                for i in range(min(17, vis)):
+                    row = (o.rightX, v.listY + i * VOID_ROW, o.rightW, VOID_ROW - 1)
+                    bs = void_row_buttons(o, v, i)
+                    for b in bs:
+                        if not inside(b, row):
+                            errs.append(f'void fila {i}: botón fuera de la fila')
+                    for a in range(4):
+                        for b in range(a + 1, 4):
+                            if inter(bs[a], bs[b]):
+                                errs.append(f'void fila {i}: botones pisados')
+                    if bs[0][0] - o.rightX - 4 - width('17. ▶ ') < 60:
+                        errs.append(f'void fila {i}: poco sitio para el nombre')
             else:
                 top = o.tabsY + TAB + 5
                 y0 = top + BTN + 5
