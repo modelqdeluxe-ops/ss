@@ -753,13 +753,13 @@ grieta, de su tamaño de verdad (~160 × 224 bloques) pero nunca menor que ~10°
 desde debajo, orientado al norte. Sin paquete de shaders se dibuja justo después del cielo (bloques y nubes delante);
 con paquete, después de su pasada final, solo donde se ve el cielo (`AfterShaders`, como la grieta y el cielo del
 Void). El shader: 11 ramas de grieta con horquillas que crecen desde el centro (de vez en cuando las recorre un rayo),
-un aura oscura, el desgarro en S de borde vivo con el Void dentro (sus nebulosas en remolino, estrellas y el agujero
+un aura oscura (redonda y apagada del todo antes del borde del cuadro), el desgarro en S de borde vivo con el Void dentro (sus nebulosas en remolino, estrellas y el agujero
 negro con su anillo de oro), el fogonazo y, sellada, la cicatriz. Todo con bordes suaves (`fwidth`). Vista previa sin
 juego: `xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta` (estados `0_grietas` … `6_cicatriz`).
 
 | Momento | Se ve | Suena | Cámara |
 |---|---|---|---|
-| Preludio (6 s) | — | Retumbar del warden al salir, latidos cada vez más rápidos, el lamento del guardián anciano, un rugido lejano | Temblor leve que crece (0,06 → 0,36) |
+| Preludio (6 s) | El cielo se apaga en un círculo donde va a romperse (`Dark`) | Retumbar del warden al salir, latidos cada vez más rápidos, el lamento del guardián anciano, un rugido lejano | Temblor leve que crece (0,06 → 0,36) |
 | Se rompe | Grietas (1,2 s), fogonazo, el desgarro se abre (hasta 3,4 s) | Cristal que se quiebra, ancla de reaparición, trueno, explosión, portal del End, rugido | Golpe de temblor (1,5) que se apaga |
 | Abierta | Grietas que laten, el Void dentro | — | Al mirarla: distorsión leve (lente 0,07, remolino 0,18, tinte violeta; `RiftWarp`) |
 | Se sella | El desgarro se cierra (2,5 s), fogonazo, cicatriz | Faro que se apaga, conducto | Temblor pequeño |
@@ -781,6 +781,14 @@ del santuario lo recuerda en «¿Dónde estoy?».
 cae un jefe del Void (`cielo_cierra`, `cielo_cicatriz`), se vuelve a abrir sola a los 30 s porque la grieta del Void
 tiene jefe (`cielo_reabre`, `cielo_reabierta`) y el final (`cielo_final`, `cielo_sin_grieta`). El informe dice el
 estado, lo que ve el cliente, los fotogramas dibujados y el temblor más fuerte.
+
+Primera prueba (6d622c5, sin shaders): todo el ciclo bien (abierta → sellada → se vuelve a abrir sola cuando la
+grieta del Void tiene jefe → cerrada para siempre; 2383 fotogramas dibujada; temblor máximo 1,49). Encontró dos cosas:
+el aura llegaba al borde del cuadro (exp(-1,6) ≈ 0,2 allí): con más contraste se veía una **columna rectangular**
+oscura alrededor de la grieta → aura más concentrada y multiplicada por `smoothstep(1, 0,6, |uv|)` (la vista previa
+ahora deja un margen del 10 % para verlo: el cielo en el borde del cuadro, igual dentro que fuera); y el diálogo no se
+abrió al volver de la vista de 600 bloques (el cliente aún no tenía a Caelthar: `KnightScreen` se cierra si no
+encuentra la entidad) → la prueba habla con él antes y 3 s después de llegar.
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
