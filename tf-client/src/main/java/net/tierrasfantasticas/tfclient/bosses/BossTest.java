@@ -672,7 +672,7 @@ public final class BossTest {
      * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
      */
     /** (1.3.96) Lo que dura la prueba de la luz del Alba (lightStep), metida tras la persecución. */
-    private static final int LIGHT_TICKS = 340;
+    private static final int LIGHT_TICKS = 430;
     /** Cuándo empieza (en ticks de la prueba). */
     private static final int LIGHT_AT = 1815 + 80;
 
@@ -973,19 +973,14 @@ public final class BossTest {
             case 0 -> {
                 r.event("luz tras la persecución (30 s fuera del Velo): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
-                // (encima del fragmento, volando: que se cargue su chunk antes de buscar desde dónde mirarlo)
-                if (f != null) {
-                    fly(player, true);
-                    player.teleportTo(vl, f.getX() + 0.5, f.getY() + 6, f.getZ() + 0.5, 180F, 60F);
-                }
-            }
-            case 20 -> {
-                // a 4,5 bloques, por donde el suelo no tape (en la primera prueba se quedó dentro de una loma)
+                // a 4,5 bloques, por donde el suelo no tape (en la primera prueba se quedó dentro de una loma), volando y
+                // con los chunks de alrededor ya cargados en el servidor (si no, su altura es la mínima)
                 if (f != null) {
                     Vec3 c = Vec3.atCenterOf(f);
                     Vec3 best = null;
                     for (int a = 0; a < 8; a++) {
                         int x = (int) Math.floor(c.x + 4.5 * Math.cos(a * Math.PI / 4)), z = (int) Math.floor(c.z + 4.5 * Math.sin(a * Math.PI / 4));
+                        vl.getChunk(x >> 4, z >> 4);
                         int g = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
                         if (g > f.getY()) continue;
                         Vec3 at = new Vec3(x + 0.5, Math.max(g, f.getY() - 1), z + 0.5);
@@ -995,35 +990,38 @@ public final class BossTest {
                     double dx = c.x - best.x, dz = c.z - best.z, dy = c.y - (best.y + player.getEyeHeight());
                     float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90F;
                     float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+                    fly(player, true);
                     player.teleportTo(vl, best.x, best.y, best.z, yaw, pitch);
                 }
             }
-            case 60 -> shot(r, "vacio_fragmento");
-            case 65 -> fly(player, false);
-            case 70 -> {
+            // (7,5 s: con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las entidades de un trozo
+            // de mundo que aún no ha construido; en la prueba con Photon, a los 2 s no se veía ni el suelo ni el fragmento)
+            case 150 -> shot(r, "vacio_fragmento");
+            case 155 -> fly(player, false);
+            case 160 -> {
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 40F);
                 if (f != null) player.teleportTo(vl, f.getX() + 0.5, f.getY(), f.getZ() + 0.5, 180F, 12F);
             }
-            case 110 -> {
+            case 200 -> {
                 r.event("coger un fragmento con 40 de luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
                 shot(r, "vacio_fragmento_cogido");
             }
-            case 120 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 8F);
-            case 170 -> {
+            case 210 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 8F);
+            case 260 -> {
                 r.event("poca luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
                 shot(r, "vacio_poca_luz");
             }
-            case 180 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 0F);
-            case 250 -> {
+            case 270 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 0F);
+            case 340 -> {
                 r.event("sin luz (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
                 shot(r, "vacio_sin_luz");
             }
-            case 260 -> {
+            case 350 -> {
                 Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
                 player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -18F);
             }
-            case 330 -> {
+            case 420 -> {
                 r.event("de vuelta dentro del Velo (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sanctuary());
                 shot(r, "vacio_velo_dentro");

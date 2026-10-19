@@ -994,10 +994,23 @@ los 16, «por primera vez en eras, no me siento solo»); en el Overworld, que es
 
 **La prueba en el juego** (`[prueba-jefes=vacio]`): con el viaje de 11,5 s, `BossTest.voidClock` pasa los tiempos de
 siempre (lo de después de la ida, 80 ticks más tarde; lo de después de la vuelta, 160) y tras la persecución mete
-`lightStep` (340 ticks): ver un fragmento, cogerlo con 40 de luz, poca luz (8), sin luz (corrosión) y de vuelta en el
+`lightStep` (430 ticks): ver un fragmento, cogerlo con 40 de luz, poca luz (8), sin luz (corrosión) y de vuelta en el
 Velo. Capturas nuevas: `vacio_santuario` (desde el Puente de Luz), `vacio_fragmento`, `vacio_fragmento_cogido`,
 `vacio_poca_luz`, `vacio_sin_luz`, `vacio_velo_dentro`. (La vida del jugador de la prueba se rellena cada tick: la
 corrosión se cuenta por sus golpes.)
+
+Lo que dio (dbbc0b7 sin shaders; 95f1dc5 con **Photon v1.3b**): viaje de ida 12,4–12,5 s con el Nether, el End y el
+Void de verdad en el túnel; santuario dibujado (Velo y Corazón con su columna; desde la isla grande se ve como una bola
+de cristal dorada); luz 99 en el puente y 100 dentro del Velo; tras 30 s fuera, 85–87; un fragmento con 40 → 69–70 y
+«Eco del Alba (1/16)» de Ser Aldric; con 8, poca luz; sin luz, 2 golpes de corrosión en 3,5 s y oscuridad; de vuelta en
+el Velo, 88 en 3,5 s; el rescate al caer, al santuario en 2–7 ticks; la vuelta, a 0,0 bloques de donde se salió; la
+grieta del cielo, el ciclo entero. **Con Photon, la grieta del cielo sin barras blancas** (lo casi blanco del cielo,
+< 1 %: solo el filo encendido; en la captura del dueño eran abanicos enteros). Lo que encontró la primera y se arregló:
+la vuelta no se hacía en la prueba (el rescate deja a ~15 bloques de Caelthar y su diálogo se cierra a más de 14: la
+prueba habla ahora delante de él), el rótulo largo del medidor encima de la barra de jefe, tres avisos de luz de golpe,
+el medidor con el eco sin contar y el borde del Velo verde oliva (tornasol con el arcoíris entero: ahora oro, rosa y
+perla). Con Photon el cliente va a ~4 fotogramas por segundo: Minecraft no dibuja las entidades de un trozo de mundo que
+aún no ha construido, así que la captura del fragmento espera 7,5 s.
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
