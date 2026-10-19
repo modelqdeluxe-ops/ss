@@ -1,10 +1,9 @@
-# La grieta del cielo 2.0 — trabajo a medias (para la siguiente IA)
+# La grieta del cielo 2.0 (TF Client 1.3.95)
 
-Estado: **19 oct 2026**. Publicada la **TF Client 1.3.94**. La grieta del cielo **2.0** está a medias en la rama
-`claude/trusting-euler-rrxyae` (PR en borrador: https://github.com/modelqdeluxe-ops/ss/pull/137). **El shader nuevo está
-hecho y revisado con la vista previa; falta el Java, probarla en el juego y publicarla como 1.3.95.** No fusiones hasta
-hacer lo de «Lo que falta»: con el Java de la 1.3.94, el juego dibuja la grieta nueva mal (no le pasa los uniformes
-nuevos).
+Estado: **19 oct 2026, hecha y publicada en la TF Client 1.3.95** (rama `claude/peaceful-gauss-4nzddg`; antes, a
+medias, en `claude/trusting-euler-rrxyae`, PR en borrador https://github.com/modelqdeluxe-ops/ss/pull/137). El shader
+y la vista previa son los de ese trabajo; el Java, la máscara de las nubes y la prueba en el juego, de la 1.3.95
+(§3 y §5). Queda que **el dueño la vea en su servidor** (y diga si le gusta o qué cambiar).
 
 Lee también: `CLAUDE.md` (reglas del dueño), el CHECKPOINT de `HANDOFF.md`, `SIGUIENTE-IA.md` y `tf-client/JEFES.md`
 §3.18 (el evento), §3.19 (1.3.94) y §3.20 (este trabajo, resumido).

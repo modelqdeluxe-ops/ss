@@ -838,16 +838,14 @@ como mierda: él vuela y se ve mal, pónsela normal, tal cual fuera un jugador»
 | Texto encima de la grieta | El cartel (`RiftRenderer.label`: «✦ GRIETA MADRE ✦», jefe, dificultad, estado). | La del Void va sin cartel; las grietas normales lo siguen teniendo. |
 | Espada «como un jugador» | La 1.3.93 la clavaba en el suelo con la mano en el puño (él flota: se veía mal). | Lo mismo que `ItemInHandLayer`: el brazo derecho adelantado 18° (`HumanoidModel.ArmPose.ITEM`) y `translateToHand` → girar X −90, Y 180 → trasladar 1/16, 0,125, −0,625 → `THIRD_PERSON_RIGHT_HAND`. El brazo del caballero es el de un jugador (pivote 5, 22, 0; antebrazo de x −1,25 a 3,25, mano a 10,25 px) con +y arriba: los ejes de Minecraft son los nuestros con x e y al revés (`scale(−1, −1, 1)`). `tools/void/caballero_espada.py`: el puño a 0,75 px del centro de la mano, la hoja hacia delante y algo arriba. |
 
-### 3.20 La grieta del cielo 2.0 (EN CURSO para la 1.3.95: el shader está hecho; falta la parte de Java)
+### 3.20 La grieta del cielo 2.0: rehecha entera, sin cristal, y las nubes detrás del desgarro (1.3.95)
 
-> **Todo el detalle, con imágenes** (cada momento de la animación, el GIF, lo que el dueño rechazó, el código Java que
-> falta con sus valores exactos y las trampas): **`tf-client/docs/grieta-cielo-2/README.md`**. Esta sección es el
-> resumen.
+> **Todo el detalle, con imágenes** (cada momento de la animación en la vista previa y en el juego, el GIF, lo que el
+> dueño rechazó y las trampas): **`tf-client/docs/grieta-cielo-2/README.md`**. Esta sección es el resumen.
 
 El dueño, tras la 1.3.94: *«la animación, el sonido de cristal, el tamaño y el diseño de la grieta son una mierda...
-esmérate por hacer algo chingón men por favor»*. Se rehace entera. **Estado**: el shader y su vista previa están en la
-rama (commit «WIP grieta del cielo 2.0»); el Java todavía es el de la 1.3.94 y **no pasa los uniformes nuevos**: no
-fusionar hasta hacer lo de «Falta».
+esmérate por hacer algo chingón men por favor»*. Se rehízo entera: el diseño, la animación, el tamaño (de ~46° × 64°
+a una tormenta de ~115° de cielo con un desgarro de ~66° de largo) y los sonidos (sin cristal).
 
 **El diseño (hecho, `shaders/core/sky_rift.fsh`)**. Todo en ángulos de cielo alrededor del centro de la grieta
 (proyección azimutal equidistante con `RiftF` = el centro, `RiftR` = derecha, `RiftU` = arriba, direcciones relativas a
@@ -875,31 +873,40 @@ la cámara): mide lo mismo la mires como la mires y no se estira en los bordes d
 
 **Vista previa** (sin el juego): `xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta [--gif]`. Dibuja
 como el juego (el cuadro a `DRAW` bloques en la dirección `SkyRift.YAW/PITCH`, cámara de 70° mirándola y otra desde el
-horizonte; el cielo apagado con el velo de `SkyRiftClient`) los momentos de `STATES`; su función `look()` es **la línea
-de tiempo que hay que copiar a `SkyRiftClient.look()`**; con `--gif`, la aparición entera en movimiento.
+horizonte; el cielo apagado con el velo de `SkyRiftClient`) los momentos de `STATES`; su función `look()` es **la misma línea
+de tiempo que `SkyRiftClient.look()`** (si cambias una, cambia la otra); con `--gif`, la aparición entera en movimiento.
 
-**Falta (Java), paso a paso**:
-1. `SkyRiftClient`:
-   - `ANG` = 1,1 (medio ancho del cuadro, radianes) y `DRAW` = 30 (las esquinas a ~90 bloques: dentro del plano lejano
-     incluso con 2 chunks, 128).
-   - En `render()`, pasar `Storm`, `Shatter` y `RiftF/RiftR/RiftU` (los ejes de `quad()` normalizados: `DIR`, `right`,
-     `up`; `safeGetUniform("RiftF").set(x, y, z)`).
-   - `look()` con 8 valores (crack, open, flash, alpha, dark, storm, shatter, onda de choque) y la línea de tiempo de la
-     vista previa: preludio 12 s (`Crack` parpadea en los relámpagos y llega a 0,18 al final, `Dark`, `Storm` =
-     smooth(0, 11,5)); se rompe (`FX_BURST`): `Crack` a saltos (0,3 / 0,45 / 0,62 / 0,8 / 1 a los 0 / 0,35 / 0,75 / 1,15 /
-     1,5 s), estalla a los 1,8 s (`Flash` 1,6 que se apaga, `Shatter` = t − 1,8, onda de choque), `Open` = smooth(1,8,
-     5,5); abierta (todo a 1, `Storm` 1); se sella (`Open` 1 → 0 en 2,2 s, `Crack` → 0,35, `Storm` → 0,25, fogonazo a los
-     2,3 s); sellada (`Crack` 0,35, `Storm` 0,25, `Alpha` 0,8); se vuelve a abrir (como se rompe, desde la cicatriz); el
-     final (todo a 0 con gran fogonazo).
-   - Sonidos **sin cristal** (el dueño se quejó del cristal): preludio como ahora; al romperse: `WARDEN_SONIC_CHARGE` (la
-     carga), chasquidos `LIGHTNING_BOLT_IMPACT` en cada salto, al estallar `TRIDENT_THUNDER` + `GENERIC_EXPLODE` (0,45) +
-     `WARDEN_SONIC_BOOM` (0,5) + `END_PORTAL_SPAWN` (0,5), mientras se abre `ENDER_DRAGON_DEATH` (0,5–0,55, grave) y
-     `PORTAL_TRIGGER`; volver a abrirse con `WITHER_SPAWN`; abierta, un trueno lejano cada 30–50 s.
-   - `warp()`: el punto del radio con `DIR * DRAW + right * tan(0,3) * DRAW` (el `right` del cuadro ahora es enorme).
-2. `BossTestClient.SKY_AT` con los tiempos nuevos (rompe ~1,0 s, estalla 1,85 s, abre 3,5 s, abierta 7 s).
-3. `mod_version` y `TFClient.VERSION` → 1.3.95; `verificar.py` «todo bien»; `[prueba-jefes=vacio]` y otra con
-   `[shaders]`; mirar las capturas `cielo_*` (que el desgarro no salga blanco por dentro, que la tormenta no tape el
-   desgarro, que no haya rectángulos ni bordes del cuadro); documentar aquí y publicar.
+**El Java (`vacio/SkyRiftClient`)**:
+- **El cuadro** es solo el lienzo: cuadrado, `ANG` 1,21 rad de medio ancho a `DRAW` 25 bloques (las esquinas a ~97:
+  dentro del plano lejano incluso con 2 chunks, 128). Con el 1,1 de la vista previa, **mirándola de lado se veía el borde
+  recto del cuadro** en el fogonazo (el shader se apaga del todo a 1,2 rad y el borde del cuadro estaba a 1,1): medido
+  con cámaras de lado, de frente al horizonte, desde abajo y al cenit, alfa en el borde 24/255 → 1/255.
+- `render()` pasa `Storm`, `Shatter` y los ejes `RiftF/RiftR/RiftU` (`axes()`); `look()` devuelve 8 valores (crack, open,
+  flash, alpha, dark, storm, shatter, onda de choque) con la línea de tiempo de la vista previa (`look()` de
+  `grieta_cielo_preview.py`): preludio 12 s (tormenta `smooth(0, 11,5)`, grietas en los relámpagos que llegan a 0,18), se
+  rompe a saltos (0,3 / 0,45 / 0,62 / 0,8 / 1 a los 0 / 0,35 / 0,75 / 1,15 / 1,5 s), **estalla a los 1,8 s** (`BREAK`:
+  fogonazo 1,6, trozos de cielo, onda de choque) y se abre hasta los 5,5 s (`OPENED`); se sella (2,2 s); sellada (cicatriz
+  0,35, tormenta 0,25, alfa 0,8); se vuelve a abrir (estalla a los 1,2 s, `REBREAK`); el final **se cierra desde como
+  estaba** (abierta o sellada: si el staff lo lanza con la grieta sellada, ya no se abre de golpe para cerrarse).
+- `warp()` (la distorsión leve de RiftWarp): el radio a 0,3 rad del centro (el cuadro ahora es mucho mayor que la grieta).
+- **Sonidos sin cristal**: al romperse, la carga del warden y un chasquido de rayo en cada salto; al estallar, el trueno
+  del tridente, explosión, el «sonic boom» del warden y el portal del End; mientras se abre, el rugido de muerte del
+  dragón grave (0,55) y el portal; al volver a abrirse, el Wither al nacer y luego trueno y portal; al sellarse, el faro
+  y el conducto que se apagan y un trueno; el final, faro, trueno y «desafío completado». **Abierta**, un trueno lejano
+  cada 30–50 s (`rumble`). El preludio, como en la 1.3.94.
+- **Las nubes de Minecraft, detrás del desgarro** (`renderMask`). Sin paquete de shaders la grieta se dibuja justo
+  después del cielo y las nubes (que Minecraft dibuja casi al final) le quedaban delante: en la primera prueba en el
+  juego (6fc96a7) **bloques blancos tapaban medio Void**, sobre todo desde lejos. Ahora, antes de las nubes
+  (`AFTER_PARTICLES`: ya están los bloques, el cristal y las partículas) y sin color, donde está el desgarro y su filo
+  (`tearShape < 0,025`), el shader (`CloudMask` = la base de las nubes sobre la cámara) escribe la profundidad de un punto
+  2 bloques antes de la capa de nubes: las nubes de detrás no pasan la prueba de profundidad y lo que está más cerca
+  (bloques, cristal, lluvia) sigue delante. Sin nubes, con la cámara en ellas o encima, no hace nada; con paquete de
+  shaders tampoco (`AfterShaders`). El fogonazo no entra (su recorte salía como un disco de borde duro). Probado sin
+  juego con una capa de nubes de bloques simulada y en el juego (abajo).
+- `sky_rift.fsh`: los trozos de cielo que flotan entran poco a poco al acabar el estallido (antes aparecían de golpe).
+- `BossTestClient.SKY_AT`: rompe 1,0 s, fogonazo 1,85 s, abre 3,5 s, abierta 7 s; reabre 1,5 / 4,5 s.
+
+**La prueba en el juego**: ver «Lo que encontró la prueba» en el README de la grieta y aquí abajo.
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
