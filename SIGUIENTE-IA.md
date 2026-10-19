@@ -1,13 +1,13 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **19 oct 2026, publicada la TF Client 1.3.94; EN CURSO la grieta del cielo 2.0** (el dueño: «la
-animación, el sonido de cristal, el tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»).
-El shader nuevo y su vista previa están en la rama; **falta el Java, probarla y publicar la 1.3.95**:
-**`tf-client/docs/grieta-cielo-2/README.md`** lo dice paso a paso, con imágenes de cada momento (resumen: JEFES §3.20). Antes: 1.3.94 (§3.19), 1.3.93 (§3.18); y el CHECKPOINT de HANDOFF.md).
-Rama de trabajo: `claude/intelligent-cray-63dqai` (o la que te asigne la sesión), **reiniciada desde `main`**.
+Estado al dejarlo: **19 oct 2026, TF Client 1.3.95** (la grieta del cielo 2.0, rehecha entera y sin sonidos de
+cristal, con las nubes de Minecraft detrás del desgarro: JEFES.md §3.20 y, con imágenes de cada momento en la vista
+previa y en el juego, **`tf-client/docs/grieta-cielo-2/README.md`**; antes: 1.3.94 §3.19, 1.3.93 §3.18; y el
+CHECKPOINT de HANDOFF.md).
+Rama de trabajo: la que te asigne la sesión (la última fue `claude/peaceful-gauss-4nzddg`), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
-`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.18 lo último, §11 lo que falta).
+`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.20 lo último, §11 lo que falta).
 
 ## 1. Qué estamos haciendo
 
@@ -87,7 +87,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.95**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.96**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
@@ -97,9 +97,13 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
-- **PRIMERO: terminar la grieta del cielo 2.0** (`tf-client/docs/grieta-cielo-2/README.md`, §3 «Lo que falta»): el Java de `SkyRiftClient` (uniformes nuevos,
-  cuadro más grande, línea de tiempo de la vista previa, sonidos sin cristal), probar en el juego con y sin shaders y
-  publicar la 1.3.95. Antes de tocar el diseño, mira la vista previa (`tools/void/grieta_cielo_preview.py carpeta --gif`).
+- **Que el dueño vea la 1.3.95** (la grieta del cielo 2.0, la que pidió «chingón»): en su servidor, `/tf void cielo
+  quitar` y volver a poner a Caelthar (o `/tf void cielo evento`); que mire la aparición entera (12 s de tormenta,
+  estalla, se abre), los sonidos (sin cristal) y la grieta abierta, también desde lejos. Si algo no le gusta, ajústalo
+  con la vista previa (`xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta --gif`) y luego en el juego
+  (`[prueba-jefes=vacio]`, capturas `00_vacio_cielo_*`). La línea de tiempo está dos veces (vista previa y
+  `SkyRiftClient.look()`): cambia las dos. Las nubes de Minecraft quedan detrás del desgarro (`renderMask`): si el
+  dueño ve nubes «cortadas» raras alrededor, es ahí.
 - **Que el dueño vea la 1.3.94**: la grieta del cielo en el mismo sitio del cielo esté donde esté, la aparición
   nueva (12 s), la grieta del Void madre sin cartel y la espada de Caelthar como un jugador.
 - **Que el dueño vea la 1.3.93** en su servidor: al poner a Caelthar en el spawn, el evento (chat, temblor, el cielo
@@ -144,9 +148,9 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 7. Prompt para empezar una sesión nueva (cópialo tal cual)
 
 ```
-Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md, tf-client/docs/grieta-cielo-2/README.md (con sus imágenes)
-y tf-client/JEFES.md (§3.10, §3.20, §11). Primero termina la grieta del cielo 2.0 (el README, §3 «Lo que falta») y
-publica la 1.3.95. Seguimos con el motor de jefes de TF Client: fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
+Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.20, §11). Seguimos con
+el motor de jefes de TF Client (1.3.95): fiel a MythicMobs 5 + ModelEngine 4. Si es sobre la grieta del cielo, lee
+también tf-client/docs/grieta-cielo-2/README.md (con sus imágenes). Responde en español, sin subagentes,
 compila solo con GitHub Actions, publica como Release, nunca subas los packs en claro. Si el dueño se queja de algo,
 reprodúcelo TÚ con la prueba en el juego ([prueba-jefes=<jefes>] en el commit, espera en segundo plano con
 tools/bosses/esperar_prueba.sh), lee el informe y las capturas, arréglalo con la semántica de MythicMobs, pasa

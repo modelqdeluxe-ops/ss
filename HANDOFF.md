@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.88, más abajo.
+> de la 1.3.95, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,25 +59,26 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, EN CURSO: grieta del cielo 2.0 para la 1.3.95) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.95) — lee esto primero
 
-**Publicado**: la 1.3.94 (abajo). **En curso, sin publicar** (rama `claude/trusting-euler-rrxyae`, reiniciada desde
-`main` tras la 1.3.94): el dueño, al ver la 1.3.94: *«la animación, el sonido de cristal, el tamaño y el diseño de la
-grieta son una mierda... esmérate por hacer algo chingón»*. Se está rehaciendo la grieta del cielo entera
-(`tf-client/JEFES.md` §3.20, con lo que falta paso a paso).
-- **Hecho (en la rama, commit «WIP grieta del cielo 2.0»)**: el shader nuevo `shaders/core/sky_rift.fsh` (+ sus uniformes
-  en `sky_rift.json`) y la vista previa `tools/void/grieta_cielo_preview.py` (fotogramas de toda la animación y un GIF con
-  `--gif`). Diseño: el cielo se rompe como un cristal golpeado (telaraña de fracturas en coordenadas logarítmico-polares),
-  un desgarro quebrado como un rayo (~66° de largo) con dientes angulosos y el borde ardiendo, grietas que siguen más allá
-  de las puntas, dentro el Void (nebulosas, estrellas con paralaje y el ojo: agujero negro con anillo de oro), alrededor un
-  vórtice de tormenta negra y violeta (~115° de cielo) con relámpagos, trozos de cristal que salen disparados al romperse
-  y luego flotan hacia el desgarro, fogonazo en estrella, y sellada, una cicatriz quebrada.
-- **Falta (Java; sin esto el juego dibuja mal la grieta nueva: NO fusionar así)**: `SkyRiftClient` tiene que pasar los
-  uniformes nuevos (`Storm`, `Shatter`, `RiftF/RiftR/RiftU`), el cuadro más grande (`ANG` 1,1, `DRAW` 30), la línea de
-  tiempo de `look()` de la vista previa, los sonidos sin cristal y `warp()` con el radio nuevo; `BossTestClient.SKY_AT`;
-  versión 1.3.95; prueba en el juego con y sin shaders; publicar. **Todo el detalle, con imágenes de cada momento, el
-  GIF, lo que el dueño rechazó y el código que falta: `tf-client/docs/grieta-cielo-2/README.md`** (resumen en JEFES
-  §3.20). PR en borrador: https://github.com/modelqdeluxe-ops/ss/pull/137.
+**1.3.95: la grieta del cielo 2.0** (`tf-client/JEFES.md` §3.20; todo el detalle con imágenes de cada momento, en la
+vista previa y en el juego: **`tf-client/docs/grieta-cielo-2/README.md`**). El dueño, al ver la 1.3.94: *«la animación,
+el sonido de cristal, el tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»*. Rehecha
+entera:
+- **Diseño** (`shaders/core/sky_rift.fsh`): el cielo se rompe como un cristal golpeado (telaraña de fracturas), un
+  desgarro quebrado como un rayo (~66° de largo) con dientes angulosos y el borde ardiendo, grietas que siguen más allá
+  de las puntas, dentro el Void (nebulosas, estrellas y el ojo: agujero negro con anillo de oro), alrededor un vórtice
+  de tormenta negra y violeta (~115° de cielo) con relámpagos, trozos de cielo que salen disparados al estallar y luego
+  flotan hacia el desgarro, fogonazo en estrella; sellada, una cicatriz quebrada.
+- **Animación** (`SkyRiftClient.look()`, la misma que la vista previa): preludio de 12 s con la tormenta que crece; se
+  rompe a saltos, estalla a los 1,8 s y se abre hasta los 5,5 s; se sella; se vuelve a abrir; el final.
+- **Sonidos sin cristal**: carga y «sonic boom» del warden, chasquidos de rayo, trueno del tridente, explosión, portal
+  del End, rugido grave del dragón; abierta, un trueno lejano cada 30–50 s.
+- **Lo que encontró la prueba en el juego y se arregló**: el borde recto del cuadro al mirarla de lado (cuadro mayor:
+  1,21 rad) y las **nubes de Minecraft delante del Void** (de lejos tapaban un 26 %): ahora una máscara de profundidad
+  las pone detrás del desgarro (0,4 %), y los bloques, el cristal y la lluvia siguen delante.
+- Rama de trabajo de esta entrega: `claude/peaceful-gauss-4nzddg` (siguió el trabajo a medias de
+  `claude/trusting-euler-rrxyae`, PR en borrador #137, que ya no hace falta).
 
 ### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.94)
 

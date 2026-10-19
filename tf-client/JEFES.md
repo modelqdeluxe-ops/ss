@@ -906,7 +906,12 @@ de tiempo que `SkyRiftClient.look()`** (si cambias una, cambia la otra); con `--
 - `sky_rift.fsh`: los trozos de cielo que flotan entran poco a poco al acabar el estallido (antes aparecían de golpe).
 - `BossTestClient.SKY_AT`: rompe 1,0 s, fogonazo 1,85 s, abre 3,5 s, abierta 7 s; reabre 1,5 / 4,5 s.
 
-**La prueba en el juego**: ver «Lo que encontró la prueba» en el README de la grieta y aquí abajo.
+**La prueba en el juego** (`[prueba-jefes=vacio]`, 6fc96a7 y 330b445 sin shaders; luego con `[shaders]`; las capturas
+`00_vacio_cielo_*`, hoja en `docs/grieta-cielo-2/12_en_el_juego_1.3.95.jpg`): el ciclo entero bien («rota: abierta»,
+cielo apagado como mucho 0,60; «al caer un jefe del Void: sellada por ahora»; «otra vez lista: abierta»; «el final:
+cerrada para siempre»; 712 fotogramas dibujada, 5 animaciones, sin errores de la grieta). Sin rectángulos ni el borde del
+cuadro, el desgarro oscuro por dentro, la tormenta sin taparlo. Lo que encontró la primera: las nubes de Minecraft
+delante del Void (de lejos, 25,7 % de nube dentro del desgarro) → con la máscara, 0,4 % (reabierta: 11,2 % → 2,2 %).
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
@@ -1257,9 +1262,13 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.94
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.95
 
-**EN CURSO**: la grieta del cielo 2.0 (§3.20): el shader está en la rama; falta el Java y probarla. Es lo primero.
+**1.3.95**: §3.20 (la grieta del cielo 2.0: rehecha entera —tormenta en espiral, telaraña de fracturas, desgarro quebrado
+con el Void y su ojo, trozos de cielo, fogonazo—, sin sonidos de cristal, y las nubes de Minecraft detrás del desgarro).
+Queda que el dueño la vea en su servidor (`/tf void cielo quitar` y volver a poner a Caelthar, o `/tf void cielo
+evento`) y diga si le gusta; si algo no, se ajusta en `sky_rift.fsh` con la vista previa
+(`tools/void/grieta_cielo_preview.py`) y la línea de tiempo en `SkyRiftClient.look()` (y en la vista previa, igual).
 
 **1.3.94**: §3.19 (la grieta del cielo en una dirección fija del cielo y más grande, aparición de 12 s más siniestra,
 la grieta del Void siempre madre y sin cartel, la espada de Caelthar como la lleva un jugador). Queda que el dueño lo

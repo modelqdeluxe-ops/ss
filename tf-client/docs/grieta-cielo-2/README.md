@@ -3,7 +3,7 @@
 Estado: **19 oct 2026, hecha y publicada en la TF Client 1.3.95** (rama `claude/peaceful-gauss-4nzddg`; antes, a
 medias, en `claude/trusting-euler-rrxyae`, PR en borrador https://github.com/modelqdeluxe-ops/ss/pull/137). El shader
 y la vista previa son los de ese trabajo; el Java, la máscara de las nubes y la prueba en el juego, de la 1.3.95
-(§3 y §5). Queda que **el dueño la vea en su servidor** (y diga si le gusta o qué cambiar).
+(§3 y §4). Queda que **el dueño la vea en su servidor** (y diga si le gusta o qué cambiar).
 
 Lee también: `CLAUDE.md` (reglas del dueño), el CHECKPOINT de `HANDOFF.md`, `SIGUIENTE-IA.md` y `tf-client/JEFES.md`
 §3.18 (el evento), §3.19 (1.3.94) y §3.20 (este trabajo, resumido).
@@ -21,7 +21,7 @@ Lee también: `CLAUDE.md` (reglas del dueño), el CHECKPOINT de `HANDOFF.md`, `S
 2. **1.3.94**: *«cuando me matan y regreso al Overworld la grieta sale ahí (junto al horizonte) y no en el cielo. Haz más
    grande esa grieta, y más épico y siniestro el aparecimiento, y un poco más de tiempo del temblor...»* → Hecho en la
    1.3.94 (dirección fija del cielo, más grande, preludio de 12 s; JEFES §3.19).
-3. **Ahora (lo que está a medias)**: *«la animación, sonido de cristal, tamaño, diseño de la grieta es una mierda...
+3. **1.3.95 (esto)**: *«la animación, sonido de cristal, tamaño, diseño de la grieta es una mierda...
    esmérate por hacer algo chingón men por favor.»* → **Grieta 2.0**: diseño, animación, tamaño y sonidos nuevos (sin
    cristal).
 
@@ -92,23 +92,27 @@ xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta [--gif] [--siz
 ```
 
 Dibuja como el juego (el cuadro a `DRAW` bloques en la dirección `SkyRift.YAW/PITCH`, cámara de 70°) sobre un cielo de
-día que se apaga como en el juego. **Su función `look(phase, t)` es la línea de tiempo buena**: hay que copiarla tal
-cual a `SkyRiftClient.look()` (fases `preludio`, `rompe`, `abierta`, `cierra`, `cicatriz`, `reabre`, `final`).
+día que se apaga como en el juego. **Su función `look(phase, t)` es la misma línea de tiempo que
+`SkyRiftClient.look()`** (fases `preludio`, `rompe`, `abierta`, `cierra`, `cicatriz`, `reabre`, `final`): si cambias
+una, cambia la otra.
 
 ---
 
-## 3. Lo que falta (Java), paso a paso
+## 3. El Java (hecho en la 1.3.95; era «lo que falta»)
 
-Todo en `src/main/java/net/tierrasfantasticas/tfclient/vacio/SkyRiftClient.java` (hoy es el de la 1.3.94).
+Todo en `src/main/java/net/tierrasfantasticas/tfclient/vacio/SkyRiftClient.java`. Se hizo como dice este plan, con
+tres cambios que salieron al probar (§3.6): el cuadro algo mayor, la máscara de las nubes y el final que se cierra
+desde como estaba.
 
 ### 3.1 El cuadro y los uniformes
 
 ```java
-private static final double DRAW = 30;     // las esquinas a ~90 bloques (dentro del plano lejano con 2 chunks: 128)
-private static final double ANG = 1.1;     // medio ancho del cuadro, radianes (cuadrado: hh = hw, ya no ×1,4)
+private static final double DRAW = 25;     // las esquinas a ~97 bloques (dentro del plano lejano con 2 chunks: 128)
+private static final double ANG = 1.21;    // medio ancho del cuadro, radianes (cuadrado). El plan decía 1,1 y DRAW 30:
+                                           // ver §3.6, el borde del cuadro se veía de lado
 ```
 
-En `quad()`: `hh = hw` (cuadrado). En `render()`, además de los de ahora:
+`quad(axes())`: cuadrado. En `render()`, además de los de ahora:
 
 ```java
 Vec3[] ax = axes();   // DIR, right, up normalizados (los de quad() sin escalar)
@@ -171,7 +175,7 @@ El `right` del cuadro ahora es enorme: el punto para medir el radio debe ser
 `DIR.scale(DRAW).add(right.normalize().scale(Math.tan(0.3) * DRAW))` (no `q[0].add(q[1].scale(0.6))`). Devuelve también
 la onda de choque (índice 5 de `warp`, como ahora: `lk[7]`).
 
-### 3.5 La prueba en el juego
+### 3.5 La prueba en el juego (el plan; lo que salió, en §4)
 
 - `bosses/BossTestClient.java`: `SKY` / `SKY_AT` para las capturas a los tiempos nuevos:
   preludio `{"preludio" 7.5, "relampago" 8.66}`, rompe `{"rompe" 1.0, "fogonazo" 1.85, "abre" 3.5, "grieta" 7.0}`,
@@ -191,7 +195,45 @@ la onda de choque (índice 5 de `warp`, como ahora: `lk[7]`).
 
 ---
 
-## 4. Trampas que ya se encontraron (no las repitas)
+### 3.6 Lo que cambió respecto al plan
+
+- **El cuadro, de 1,1 a 1,21 rad (y `DRAW` 30 → 25)**. El shader se apaga del todo a 1,2 rad del centro, pero el borde
+  de un cuadro de 1,1 rad está a 1,1 rad: mirándola de lado (o desde el horizonte) se veía **una línea recta** en el
+  fogonazo. Medido con la vista previa y cámaras de lado, al horizonte, desde abajo, al cenit y por detrás: alfa en el
+  borde del cuadro 24/255 → 1/255. Las esquinas quedan a ~97 bloques (dentro del plano lejano con 2 chunks).
+- **Las nubes de Minecraft, detrás del desgarro** (`renderMask` + `CloudMask` en el shader). En la primera prueba en el
+  juego (6fc96a7) las nubes, que Minecraft dibuja después del cielo, tapaban medio Void desde lejos:
+
+  ![Antes y después](13_nubes_antes_despues.jpg)
+
+  Antes de las nubes (`RenderLevelStageEvent.Stage.AFTER_PARTICLES`) y sin color, donde está el desgarro y su filo
+  (`tearShape(q) < 0,025`) se escribe la profundidad de un punto 2 bloques antes de la base de las nubes (la altura de
+  `level.effects().getCloudHeight()` − cámara + 0,33, como en `LevelRenderer.renderClouds`), con `LEQUAL`: las nubes de
+  detrás no pasan y lo que está más cerca (bloques, cristal, partículas, lluvia) sigue delante. No hace nada sin nubes,
+  con la cámara en ellas o por encima, ni con paquete de shaders (allí la grieta va después de la pasada final). El
+  fogonazo no entra (su recorte salía como un disco de borde duro). Medido en la prueba (píxeles de nube dentro del
+  Void): de lejos 25,7 % → 0,4 %; reabierta 11,2 % → 2,2 %.
+- **El final se cierra desde como estaba**: si el staff lanza `/tf void cielo final` con la grieta sellada, antes se
+  abría de golpe para cerrarse; ahora parte de la cicatriz (`endFromOpen`).
+- Los trozos de cielo que flotan entran poco a poco al acabar el estallido (`Shatter` 4 → 6 s; antes aparecían de golpe).
+- Abierta, un trueno lejano cada 30–50 s (`rumble`), 20 s después de la última animación.
+
+---
+
+## 4. Lo que salió en la prueba en el juego
+
+`[prueba-jefes=vacio]` en 6fc96a7 y 330b445 (sin shaders) y con `[shaders]` (Oculus + Complementary) después. Las
+capturas `00_vacio_cielo_*` de la rama `pruebas-jefes` (330b445):
+
+![En el juego](12_en_el_juego_1.3.95.jpg)
+
+- El ciclo entero: «rota: abierta» (cielo apagado como mucho 0,60), «al caer un jefe del Void: sellada por ahora», «otra
+  vez lista: abierta», «el final: cerrada para siempre»; 712 fotogramas dibujada, 5 animaciones, sin errores de la
+  grieta en el registro.
+- Ni rectángulos ni el borde del cuadro; el desgarro oscuro por dentro (el borde solo arde por fuera); la tormenta no
+  tapa el desgarro; las nubes de Minecraft detrás del desgarro y delante de la tormenta.
+
+## 5. Trampas que ya se encontraron (no las repitas)
 
 - **Sin paquete de shaders** la grieta se dibuja en `RenderLevelStageEvent.Stage.AFTER_SKY` (detrás de todo); **con
   Oculus** en `AfterShaders.end` (después de su pasada final, `AtFar` = 1, profundidad 0,9999995 con `LEQUAL`: solo donde
@@ -205,5 +247,11 @@ la onda de choque (índice 5 de `warp`, como ahora: `lk[7]`).
   diálogo que no se usó queda pendiente: `BossTest` ya lo resuelve.
 - **El rescate al caer al vacío**: un teletransporte cada 2 s como mucho (con un cliente lento no se completaba).
 - **La espada de Caelthar**: como un jugador (`ItemInHandLayer`); `PoseStack.mulPoseMatrix` no gira las normales.
-- **Vista previa vs. juego**: la vista previa no dibuja la niebla ni las nubes de Minecraft; en el juego las nubes
-  vanilla quedan delante de la grieta (se dibujan después).
+- **El cuadro tiene que ser mayor que lo que se dibuja**: el shader se apaga a 1,2 rad; si el cuadro llega a menos (su
+  borde, a `ANG` del centro), mirándola de lado se ve una línea recta. Mídelo con cámaras que no la miren de frente.
+- **Vista previa vs. juego**: la vista previa no dibuja la niebla ni las nubes de Minecraft. En el juego las nubes se
+  dibujan después de la grieta: delante de la tormenta (bien) y, gracias a la máscara (`renderMask`), detrás del
+  desgarro. Si tocas `tearShape`, la máscara la sigue sola (usa la misma función). Para ver la máscara sin el juego
+  basta un plano de nubes con prueba de profundidad después de la máscara (así se comprobó antes de la prueba).
+- **moderngl**: `fbo.color_mask` no se aplica hasta volver a llamar a `fbo.use()` (en el juego, `RenderSystem.colorMask`
+  es inmediato).
