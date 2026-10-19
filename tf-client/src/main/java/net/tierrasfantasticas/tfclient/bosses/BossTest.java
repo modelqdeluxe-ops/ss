@@ -973,18 +973,28 @@ public final class BossTest {
             case 0 -> {
                 r.event("luz tras la persecución (30 s fuera del Velo): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
-                // a 4,5 bloques, por donde el suelo no tape (en la primera prueba se quedó dentro de una loma), volando y
-                // con los chunks de alrededor ya cargados en el servidor (si no, su altura es la mínima)
+                // desde 3,5 a 6 bloques, volando, en un sitio libre y desde donde se le vea: en la primera prueba la cámara se
+                // quedó dentro de una loma y en la tercera, detrás de una columna de piedra
                 if (f != null) {
                     Vec3 c = Vec3.atCenterOf(f);
                     Vec3 best = null;
-                    for (int a = 0; a < 8; a++) {
-                        int x = (int) Math.floor(c.x + 4.5 * Math.cos(a * Math.PI / 4)), z = (int) Math.floor(c.z + 4.5 * Math.sin(a * Math.PI / 4));
-                        vl.getChunk(x >> 4, z >> 4);
-                        int g = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-                        if (g > f.getY()) continue;
-                        Vec3 at = new Vec3(x + 0.5, Math.max(g, f.getY() - 1), z + 0.5);
-                        if (best == null || at.y > best.y) best = at;
+                    for (double d : new double[] {4.5, 3.5, 6.0}) {
+                        for (int up = 0; up <= 3 && best == null; up++) {
+                            for (int a = 0; a < 8 && best == null; a++) {
+                                double x = c.x + d * Math.cos(a * Math.PI / 4), z = c.z + d * Math.sin(a * Math.PI / 4);
+                                net.minecraft.core.BlockPos feet = net.minecraft.core.BlockPos.containing(x, f.getY() - 1 + up, z);
+                                vl.getChunk(feet.getX() >> 4, feet.getZ() >> 4);
+                                if (!vl.getBlockState(feet).getCollisionShape(vl, feet).isEmpty()
+                                        || !vl.getBlockState(feet.above()).getCollisionShape(vl, feet.above()).isEmpty()) continue;
+                                Vec3 eye = new Vec3(feet.getX() + 0.5, feet.getY() + player.getEyeHeight(), feet.getZ() + 0.5);
+                                var hit = vl.clip(new net.minecraft.world.level.ClipContext(eye, c, net.minecraft.world.level.ClipContext.Block.VISUAL,
+                                        net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+                                if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS || hit.getLocation().distanceTo(c) < 0.6) {
+                                    best = new Vec3(eye.x, feet.getY(), eye.z);
+                                }
+                            }
+                        }
+                        if (best != null) break;
                     }
                     if (best == null) best = new Vec3(c.x, f.getY() + 3, c.z + 3.5);
                     double dx = c.x - best.x, dz = c.z - best.z, dy = c.y - (best.y + player.getEyeHeight());
@@ -992,6 +1002,7 @@ public final class BossTest {
                     float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
                     fly(player, true);
                     player.teleportTo(vl, best.x, best.y, best.z, yaw, pitch);
+                    r.event(String.format("el fragmento 0 en %d %d %d, mirado desde %.1f %.1f %.1f", f.getX(), f.getY(), f.getZ(), best.x, best.y, best.z));
                 }
             }
             // (7,5 s: con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las entidades de un trozo
