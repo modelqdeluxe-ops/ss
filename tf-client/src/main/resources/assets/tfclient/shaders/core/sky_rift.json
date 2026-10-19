@@ -19,6 +19,11 @@
         { "name": "Flash", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Alpha", "type": "float", "count": 1, "values": [ 1.0 ] },
         { "name": "AtFar", "type": "float", "count": 1, "values": [ 0.0 ] },
-        { "name": "Dark", "type": "float", "count": 1, "values": [ 0.0 ] }
+        { "name": "Dark", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Storm", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Shatter", "type": "float", "count": 1, "values": [ -1.0 ] },
+        { "name": "RiftF", "type": "float", "count": 3, "values": [ 0.0, 0.0, -1.0 ] },
+        { "name": "RiftR", "type": "float", "count": 3, "values": [ 1.0, 0.0, 0.0 ] },
+        { "name": "RiftU", "type": "float", "count": 3, "values": [ 0.0, 1.0, 0.0 ] }
     ]
 }
