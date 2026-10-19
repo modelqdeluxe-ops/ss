@@ -81,9 +81,8 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
 
     /**
      * (1.3.92; el dueño: «dale una espada angelical de nuestro set, animada: una blanca con dorado de las de ángel») La
-     * espada del set Hada ({@link #SWORD}: blanca y dorada, con alas y animada) en la mano derecha, como lleva Minecraft
-     * lo que tienes en la mano (ItemInHandLayer): desde el hueso del brazo (que va con la animación), pasado a los ejes
-     * de los modelos de Minecraft (y hacia abajo), y el objeto con su posición de «tercera persona, mano derecha».
+     * espada del set Hada ({@link #SWORD}: blanca y dorada, con alas y animada) en la mano derecha: desde el hueso del
+     * brazo (que va con la animación), pasado a los ejes de los modelos de Minecraft (y hacia abajo), erguida y de cara.
      */
     private void sword(KnightEntity e, VfxModel m, Matrix4f[] mats, PoseStack pose, MultiBufferSource buffers) {
         int arm = m.bone("right_arm");
@@ -100,11 +99,18 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         pose.mulPoseMatrix(mats[arm]);
         pose.translate(1F, 0F, 0F);
         pose.scale(16F, 16F, 16F);
-        // a los ejes de los modelos de Minecraft (y hacia abajo) y lo que hace ItemInHandLayer con la mano derecha
+        // a los ejes de los modelos de Minecraft (y hacia abajo); la mano, un poco por fuera y por delante del brazo
         pose.scale(-1F, -1F, 1F);
-        pose.mulPose(Axis.XP.rotationDegrees(-90F));
-        pose.mulPose(Axis.YP.rotationDegrees(180F));
-        pose.translate(1F / 16F, 0.125F, -0.625F);
+        pose.translate(-4F / 16F, 0.625F, -0.25F);
+        // Erguida, como un caballero en guardia: la hoja hacia arriba (con lo que hace ItemInHandLayer apuntaba al frente
+        // y hacia abajo, y se veía de canto, como un palo: prueba en el juego, 1.3.92), algo inclinada hacia fuera y con
+        // la cara de la hoja (y sus alas) hacia delante; a un 80 %
+        pose.mulPose(Axis.ZP.rotationDegrees(-12F));
+        pose.mulPose(Axis.XP.rotationDegrees(180F));
+        pose.mulPose(Axis.YP.rotationDegrees(270F));
+        pose.scale(0.8F, 0.8F, 0.8F);
+        // (el puño, a 3 píxeles de abajo del modelo, en la mano: contando el desplazamiento de su «tercera persona»)
+        pose.translate(0F, 3.25F / 16F, -1F / 16F);
         Minecraft.getInstance().getItemRenderer().renderStatic(swordStack, net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                 LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, pose, buffers, e.level(), e.getId());
         pose.popPose();
