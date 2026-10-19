@@ -788,7 +788,17 @@ el aura llegaba al borde del cuadro (exp(-1,6) ≈ 0,2 allí): con más contrast
 oscura alrededor de la grieta → aura más concentrada y multiplicada por `smoothstep(1, 0,6, |uv|)` (la vista previa
 ahora deja un margen del 10 % para verlo: el cielo en el borde del cuadro, igual dentro que fuera); y el diálogo no se
 abrió al volver de la vista de 600 bloques (el cliente aún no tenía a Caelthar: `KnightScreen` se cierra si no
-encuentra la entidad) → la prueba habla con él antes y 3 s después de llegar.
+encuentra la entidad) → la prueba habla con él antes y 3 s después de llegar, y `KnightScreen` espera hasta 3 s a que
+el cliente tenga al caballero.
+
+Segunda prueba (6c5553a, con shaders: Oculus + Complementary): la grieta se ve detrás de las nubes del paquete, con el
+aura redonda; todo el ciclo bien. Encontró un fallo **del rescate al caer al vacío** (de antes): `TFVoid.onPlayerTick`
+teletransportaba en cada tick mientras el jugador siguiera bajo y = 2, pero Minecraft deja al jugador donde estaba en
+el servidor hasta que su cliente confirma el teletransporte (`awaitingPositionFromClient`), y con uno nuevo en cada
+tick un cliente lento (aquí <1 fps; un jugador con <20 fps también) confirma siempre uno ya viejo: no se le rescataba
+nunca (en las pruebas con shaders de la 1.3.92 tardó 13 ticks; en esta, nunca). Ahora, un teletransporte cada 2 s como
+mucho (si no llega, lo reenvía Minecraft). Además, como el diálogo del santuario no se abrió, su «pulsa 1» quedó
+pendiente y el de Caelthar en el Overworld eligió «Llévame al Void»: la prueba borra la pulsación antes de hablar.
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
