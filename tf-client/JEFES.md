@@ -816,6 +816,9 @@ descarga y al volver es **otra entidad** (otro número): la prueba ahora busca a
   ejes del modelo (se deshace ese giro). Herramienta: `python3 -I tools/void/caballero_espada.py salida.png [--actual]`
   dibuja al caballero con la espada (de frente, de lado, de tres cuartos y por detrás, con sus texturas) con la misma
   cadena de transformaciones que `KnightRenderer.sword` y mide el puño y la punta.
+  En la prueba en el juego (ab222f6) salió en su sitio pero **gris oscura**: `PoseStack.mulPoseMatrix` no gira las
+  normales, y con el brazo adelantado 60° la luz de la espada iba con ese giro de menos. Ahora la normal se multiplica
+  también por la del hueso (94870e2: blanca y dorada, en el Overworld y en el santuario).
 - «Lo puse y no hizo nada»: el evento es de la 1.3.93 (la que publica esto); con la 1.3.92 no existe. Hace falta el jar
   nuevo en el **servidor** (el evento lo lanza el servidor) y en los clientes (lo dibujan ellos).
 
