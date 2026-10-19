@@ -822,6 +822,22 @@ descarga y al volver es **otra entidad** (otro número): la prueba ahora busca a
 - «Lo puse y no hizo nada»: el evento es de la 1.3.93 (la que publica esto); con la 1.3.92 no existe. Hace falta el jar
   nuevo en el **servidor** (el evento lo lanza el servidor) y en los clientes (lo dibujan ellos).
 
+### 3.19 La grieta del cielo en el cielo de verdad, su aparición siniestra, la grieta del Void siempre madre y la espada de Caelthar como un jugador (1.3.94)
+
+El dueño, con captura, tras la 1.3.93: *«cuando me matan y regreso al Overworld la grieta sale ahí (junto al horizonte)
+y no en el cielo. Hazla más grande, y más épico y siniestro el aparecimiento, y un poco más de tiempo del temblor; que
+la grieta del Void siempre sea grieta madre; quita el texto encima de la grieta; y la espada del caballero la pusiste
+como mierda: él vuela y se ve mal, pónsela normal, tal cual fuera un jugador»*.
+
+| Qué | Causa | Arreglo |
+|---|---|---|
+| Sale junto al horizonte | Era un punto 190 bloques sobre Caelthar (o sobre el punto de aparición): al reaparecer lejos (en tu cama) estaba a cientos de bloques, baja y pequeña. | Va en una **dirección fija del cielo**, como el sol (`SkyRift.YAW` 180 = norte, `PITCH` −50 = 50° sobre el horizonte): igual de grande y en el mismo sitio estés donde estés, en todos los mundos Overworld. `VoidNet.Sky` ya no lleva posición. |
+| Más grande | Medía ~36° de ancho de cerca y menos de lejos. | ~46° × 64° de cielo siempre (`SkyRiftClient.ANG` 0,40 rad de medio ancho). |
+| Aparición más épica, siniestra y con más temblor | El preludio duraba 6 s y solo sonaba. | **Preludio de 12 s** (`SkyRift.BURST_AT` 240): el cielo entero se apaga (un velo oscuro violeta sobre el cielo, también con paquete de shaders, y la niebla con él, `onFogColor`), una sombra violeta crece y late donde va a romperse (`Dark` en `sky_rift.fsh`), latidos cada vez más rápidos (18), retumbar del warden, lamento del guardián anciano, chillido del sculk, el Wither, rugido del warden, y cinco **relámpagos lejanos** (3,6 / 6,4 / 8,7 / 10,3 / 11,4 s) con grietas finas que parpadean, trueno a lo lejos y un golpe de temblor; el temblor crece de 0,05 a 0,5. **Se rompe a saltos** (cinco, con cristal que se quiebra en cada uno), a los 2,2 s gran fogonazo, trueno, explosión y **onda de choque** (`RiftWarp`, la de las grietas), temblor 2,0 que se apaga en ~6 s, y el desgarro se abre despacio hasta los 6 s (rugido, el «sonic boom» del warden). El cielo vuelve poco a poco y, mientras sigue abierta, queda algo apagado (0,15). Chat de dónde está, 8 s después (`WHERE_AT` 400). |
+| Grieta del Void siempre madre | Se elegía normal o madre en `/tf boss`. | `Rifts.VoidConfig.active` siempre `MOTHER` (al cargar, y `voidSetActive` lo deja así: «La grieta del Void es siempre la grieta madre»). La lista normal se guarda pero no se usa. |
+| Texto encima de la grieta | El cartel (`RiftRenderer.label`: «✦ GRIETA MADRE ✦», jefe, dificultad, estado). | La del Void va sin cartel; las grietas normales lo siguen teniendo. |
+| Espada «como un jugador» | La 1.3.93 la clavaba en el suelo con la mano en el puño (él flota: se veía mal). | Lo mismo que `ItemInHandLayer`: el brazo derecho adelantado 18° (`HumanoidModel.ArmPose.ITEM`) y `translateToHand` → girar X −90, Y 180 → trasladar 1/16, 0,125, −0,625 → `THIRD_PERSON_RIGHT_HAND`. El brazo del caballero es el de un jugador (pivote 5, 22, 0; antebrazo de x −1,25 a 3,25, mano a 10,25 px) con +y arriba: los ejes de Minecraft son los nuestros con x e y al revés (`scale(−1, −1, 1)`). `tools/void/caballero_espada.py`: el puño a 0,75 px del centro de la mano, la hoja hacia delante y algo arriba. |
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1171,7 +1187,11 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.93
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.94
+
+**1.3.94**: §3.19 (la grieta del cielo en una dirección fija del cielo y más grande, aparición de 12 s más siniestra,
+la grieta del Void siempre madre y sin cartel, la espada de Caelthar como la lleva un jugador). Queda que el dueño lo
+vea en su servidor.
 
 **1.3.93**: §3.18 (la grieta del cielo: evento al poner a Caelthar, en todos los mundos Overworld; se sella al caer un
 jefe del Void y se vuelve a abrir con el siguiente; el final con `/tf void cielo final`). Queda que el dueño lo vea en
