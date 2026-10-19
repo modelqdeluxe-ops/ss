@@ -32,6 +32,9 @@ uniform float Shatter;        // segundos desde que estalla (los trozos salen di
 uniform vec3 RiftF;           // el centro de la grieta (dirección, relativa a la cámara)
 uniform vec3 RiftR;           // su derecha
 uniform vec3 RiftU;           // su arriba
+uniform float CloudMask;      // > 0: solo la máscara de las nubes de Minecraft (la base de las nubes, bloques sobre la cámara)
+uniform mat4 ModelViewMat;
+uniform mat4 ProjMat;
 
 in vec2 uv;
 in vec3 vDir;
@@ -228,6 +231,18 @@ void main() {
     if (r > 1.25) discard;
     float ang = atan(p.y, p.x);
     vec2 q = rot(-TILT) * p;               // en los ejes del desgarro
+
+    // --- La máscara de las nubes (SkyRiftClient.renderMask): sin color, donde está el desgarro (y su filo), la
+    // profundidad de un punto 2 bloques antes de la capa de nubes; así las nubes quedan detrás. (El fogonazo no: su
+    // recorte salía como un disco de borde duro.)
+    if (CloudMask > 0.0) {
+        float m = Open > 0.002 ? step(tearShape(q), 0.025) : 0.0;
+        if (m * Alpha < 0.5 || d.y < 0.05) discard;
+        vec4 clip = ProjMat * ModelViewMat * vec4(d * max(CloudMask / d.y - 2.0, 1.0), 1.0);
+        gl_FragDepth = clamp(clip.z / clip.w * 0.5 + 0.5, 0.0, 0.9999);
+        fragColor = vec4(0.0);
+        return;
+    }
 
     vec3 col = vec3(0.0);
     float alpha = 0.0;

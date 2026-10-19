@@ -381,12 +381,18 @@ public final class SkyRiftClient {
 
     // ------------------------------------------------------------------------------------------- dibujo
 
-    /** Sin paquete de shaders: justo después del cielo (lo demás queda delante). */
+    /**
+     * Sin paquete de shaders: justo después del cielo (lo demás queda delante) y, antes de las nubes, la máscara que las
+     * pone detrás del desgarro ({@link #renderMask}).
+     */
     @SubscribeEvent
     public static void onRenderStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
         if (AfterShaders.active()) return;
-        render(event.getPoseStack().last().pose(), event.getProjectionMatrix(), false);
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
+            render(event.getPoseStack().last().pose(), event.getProjectionMatrix(), false);
+        } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+            renderMask(event.getPoseStack().last().pose(), event.getProjectionMatrix(), event.getCamera().getPosition().y);
+        }
     }
 
     /** Con paquete de shaders (AfterShaders): solo donde la escena dejó ver el cielo. */
@@ -453,37 +459,7 @@ public final class SkyRiftClient {
                 mv.popPose();
             }
             if (lk != null && lk[3] > 0.001F) {
-                Vec3[] ax = axes();
-                Vec3[] q = quad(ax);
-                Vec3 c = q[0], r = q[1], u = q[2];
-                ShaderInstance sh = shader;
-                sh.safeGetUniform("STime").set((System.currentTimeMillis() % 3_600_000L) / 1000F);
-                sh.safeGetUniform("Crack").set(lk[0]);
-                sh.safeGetUniform("Open").set(lk[1]);
-                sh.safeGetUniform("Flash").set(lk[2]);
-                sh.safeGetUniform("Alpha").set(lk[3]);
-                sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
-                sh.safeGetUniform("Dark").set(lk[4]);
-                sh.safeGetUniform("Storm").set(lk[5]);
-                sh.safeGetUniform("Shatter").set(lk[6]);
-                sh.safeGetUniform("RiftF").set((float) ax[0].x, (float) ax[0].y, (float) ax[0].z);
-                sh.safeGetUniform("RiftR").set((float) ax[1].x, (float) ax[1].y, (float) ax[1].z);
-                sh.safeGetUniform("RiftU").set((float) ax[2].x, (float) ax[2].y, (float) ax[2].z);
-                mv.pushPose();
-                mv.setIdentity();
-                mv.mulPoseMatrix(view);
-                RenderSystem.applyModelViewMatrix();
-                RenderSystem.setProjectionMatrix(new Matrix4f(proj), VertexSorting.DISTANCE_TO_ORIGIN);
-                RenderSystem.setShader(() -> sh);
-                RenderSystem.setShaderTexture(0, VoidSky.PANORAMA);
-                BufferBuilder b = Tesselator.getInstance().getBuilder();
-                b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                vertex(b, c, r, u, -1, -1, 0, 0);
-                vertex(b, c, r, u, 1, -1, 1, 0);
-                vertex(b, c, r, u, 1, 1, 1, 1);
-                vertex(b, c, r, u, -1, 1, 0, 1);
-                BufferUploader.drawWithShader(b.end());
-                mv.popPose();
+                drawRift(view, proj, lk, atFar, 0F);
                 frames++;
             }
         } catch (Throwable t) {
@@ -498,6 +474,85 @@ public final class SkyRiftClient {
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
+        }
+    }
+
+    /** El cuadro con el shader de la grieta («mask» > 0: solo la máscara de las nubes, a esa altura sobre la cámara). */
+    private static void drawRift(Matrix4f view, Matrix4f proj, float[] lk, boolean atFar, float mask) {
+        Vec3[] ax = axes();
+        Vec3[] q = quad(ax);
+        Vec3 c = q[0], r = q[1], u = q[2];
+        ShaderInstance sh = shader;
+        sh.safeGetUniform("STime").set((System.currentTimeMillis() % 3_600_000L) / 1000F);
+        sh.safeGetUniform("Crack").set(lk[0]);
+        sh.safeGetUniform("Open").set(lk[1]);
+        sh.safeGetUniform("Flash").set(lk[2]);
+        sh.safeGetUniform("Alpha").set(lk[3]);
+        sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
+        sh.safeGetUniform("Dark").set(lk[4]);
+        sh.safeGetUniform("Storm").set(lk[5]);
+        sh.safeGetUniform("Shatter").set(lk[6]);
+        sh.safeGetUniform("RiftF").set((float) ax[0].x, (float) ax[0].y, (float) ax[0].z);
+        sh.safeGetUniform("RiftR").set((float) ax[1].x, (float) ax[1].y, (float) ax[1].z);
+        sh.safeGetUniform("RiftU").set((float) ax[2].x, (float) ax[2].y, (float) ax[2].z);
+        sh.safeGetUniform("CloudMask").set(mask);
+        PoseStack mv = RenderSystem.getModelViewStack();
+        mv.pushPose();
+        mv.setIdentity();
+        mv.mulPoseMatrix(view);
+        RenderSystem.applyModelViewMatrix();
+        RenderSystem.setProjectionMatrix(new Matrix4f(proj), VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setShader(() -> sh);
+        RenderSystem.setShaderTexture(0, VoidSky.PANORAMA);
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        vertex(b, c, r, u, -1, -1, 0, 0);
+        vertex(b, c, r, u, 1, -1, 1, 0);
+        vertex(b, c, r, u, 1, 1, 1, 1);
+        vertex(b, c, r, u, -1, 1, 0, 1);
+        BufferUploader.drawWithShader(b.end());
+        mv.popPose();
+    }
+
+    /**
+     * (1.3.95) Las nubes de Minecraft, detrás del desgarro. Sin paquete de shaders la grieta se dibuja después del cielo
+     * y las nubes (que se dibujan al final) le quedaban delante: en la prueba en el juego, bloques blancos tapaban medio
+     * Void. Antes de las nubes (después de los bloques, el cristal y las partículas), donde está el desgarro (y su filo),
+     * se escribe sin color la profundidad de un punto 2 bloques antes de la capa de nubes: las nubes de detrás
+     * no pasan y lo que hay más cerca (bloques, cristal, lluvia) sigue delante. Si la cámara está en las nubes o por
+     * encima, o no hay nubes, no hace nada.
+     */
+    private static void renderMask(Matrix4f view, Matrix4f proj, double camY) {
+        if (!visibleHere()) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.getCloudsType() == net.minecraft.client.CloudStatus.OFF) return;
+        float cloud = mc.level.effects().getCloudHeight();
+        if (Float.isNaN(cloud)) return;
+        // (la base de las nubes, como en LevelRenderer.renderClouds)
+        float h = (float) (cloud - camY + 0.33);
+        if (h <= 3F) return;
+        float[] lk = look();
+        if (lk == null || lk[3] < 0.5F || lk[1] <= 0.002F) return;
+        try {
+            RenderSystem.backupProjectionMatrix();
+            RenderSystem.disableBlend();
+            RenderSystem.colorMask(false, false, false, false);
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+            RenderSystem.disableCull();
+            drawRift(view, proj, lk, false, h);
+        } catch (Throwable t) {
+            failed = true;
+            TFClient.LOGGER.error("TF Void: no se pudo dibujar la máscara de la grieta del cielo: se apaga", t);
+        } finally {
+            RenderSystem.colorMask(true, true, true, true);
+            RenderSystem.restoreProjectionMatrix();
+            RenderSystem.applyModelViewMatrix();
+            RenderSystem.enableCull();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
         }
     }
 
