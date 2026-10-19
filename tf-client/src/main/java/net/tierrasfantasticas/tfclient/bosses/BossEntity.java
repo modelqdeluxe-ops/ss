@@ -32,6 +32,7 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
 import net.tierrasfantasticas.tfclient.skills.SkillAI;
@@ -1060,6 +1061,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 SkillMobs.spawned(this);
             }
             keepOnIsland();
+            carryChunks();
             SkillMobs.tick(this);
             if (boundTo != null) {
                 // Atado a una caja de su jefe (bindhitbox): va en ella
@@ -1368,6 +1370,22 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             getNavigation().stop();
         }
     }
+
+    /**
+     * La carga que lleva consigo el jefe en la isla de The Void (se renueva cada segundo y caduca a los 3 si no): los 3×3
+     * chunks a su alrededor con sus entidades activas. Su grieta solo deja cargada su arena (7×7 chunks) y en la isla
+     * persigue mucho más lejos: en la prueba en el juego con shaders (el servidor iba lento) entró en un chunk sin sus
+     * entidades cargadas, Minecraft lo dejó de contar (Level.getEntity no lo encontraba) y la grieta se reinició con él
+     * suelto, la barra aún puesta.
+     */
+    private void carryChunks() {
+        if (owner != null || age % 20 != 0 || !island()) return;
+        ChunkPos cp = chunkPosition();
+        ((ServerLevel) level()).getChunkSource().addRegionTicket(CARRY, cp, 3, cp);
+    }
+
+    private static final net.minecraft.server.level.TicketType<ChunkPos> CARRY = net.minecraft.server.level.TicketType.create("tfclient_jefe",
+            java.util.Comparator.comparingLong(ChunkPos::toLong), 60);
 
     /** FleeSunGoal.getHidePos: un sitio cerca sin cielo encima. */
     private Vec3 shade() {

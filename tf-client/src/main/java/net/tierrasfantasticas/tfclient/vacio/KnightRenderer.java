@@ -101,7 +101,7 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         pose.scale(16F, 16F, 16F);
         // a los ejes de los modelos de Minecraft (y hacia abajo); la mano, un poco por fuera y por delante del brazo
         pose.scale(-1F, -1F, 1F);
-        pose.translate(-4F / 16F, 0.625F, -0.25F);
+        pose.translate(-2.5F / 16F, 0.625F, -0.25F);
         // Erguida, como un caballero en guardia: la hoja hacia arriba (con lo que hace ItemInHandLayer apuntaba al frente
         // y hacia abajo, y se veía de canto, como un palo: prueba en el juego, 1.3.92), algo inclinada hacia fuera y con
         // la cara de la hoja (y sus alas) hacia delante; a un 80 %
