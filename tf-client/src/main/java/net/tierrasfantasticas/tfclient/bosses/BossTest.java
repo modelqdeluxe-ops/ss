@@ -948,7 +948,13 @@ public final class BossTest {
      */
     static volatile String panorama;
     private static final String[] PANORAMAS = {"nether", "end", "void"};
-    private static final int PANO_TICKS = 520;
+    private static final int PANO_TICKS = 900;
+
+    /** El que se está probando ahora («panoramas», «vacio» o el id de un jefe; null si nada). */
+    static String currentId() {
+        Rep r = current;
+        return r == null ? null : r.id;
+    }
 
     /**
      * (1.3.96) El dueño, del agujero de gusano: «que muestre la dimensión; en el Nether hay fuego de textura, pero no sé si
@@ -977,7 +983,7 @@ public final class BossTest {
                 }
                 case "end" -> {
                     dim = server.getLevel(net.minecraft.world.level.Level.END);
-                    at = new Vec3(0.5, 82, 0.5);
+                    at = new Vec3(0.5, 74, 18.5);
                 }
                 default -> {
                     dim = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
@@ -994,12 +1000,12 @@ public final class BossTest {
             r.event("panorama " + what + ": " + dim.dimension().location() + " en " + (int) at.x + ", " + (int) at.y + ", " + (int) at.z);
         }
         if (k == 30) player.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), 0F, 0F);
-        if (k == 440) panorama = what;
+        if (k == 800) panorama = what;
     }
 
     /**
-     * El sitio más abierto del Nether cerca del origen (cuevas grandes; mejor con lava debajo): de una rejilla de puntos de
-     * aire, el que más lejos ve de media en 26 direcciones (hasta 56 bloques).
+     * El sitio más abierto del Nether cerca del origen (cuevas grandes; mucho mejor con el mar de lava justo debajo): de una
+     * rejilla de puntos de aire, el que más lejos ve de media en 26 direcciones (hasta 56 bloques).
      */
     private static Vec3 netherSpot(ServerLevel n, Rep r) {
         net.minecraft.core.BlockPos best = new net.minecraft.core.BlockPos(0, 70, 0);
@@ -1007,7 +1013,7 @@ public final class BossTest {
         boolean bestLava = false;
         for (int gx = -4; gx <= 4; gx++) {
             for (int gz = -4; gz <= 4; gz++) {
-                for (int y = 40; y <= 96; y += 8) {
+                for (int y = 36; y <= 60; y += 4) {
                     net.minecraft.core.BlockPos p = new net.minecraft.core.BlockPos(gx * 24, y, gz * 24);
                     if (!n.getBlockState(p).isAir()) continue;
                     double s = 0;
@@ -1020,7 +1026,7 @@ public final class BossTest {
                     }
                     s /= 26;
                     boolean lava = false;
-                    for (int d = 1; d < 64; d++) {
+                    for (int d = 1; d < 14; d++) {
                         net.minecraft.world.level.block.state.BlockState b = n.getBlockState(p.below(d));
                         if (b.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) {
                             lava = true;
@@ -1028,7 +1034,7 @@ public final class BossTest {
                         }
                         if (!b.isAir()) break;
                     }
-                    if (lava) s *= 1.35;
+                    if (lava) s *= 1.6;
                     if (s > bestScore) {
                         bestScore = s;
                         best = p;
@@ -1037,7 +1043,7 @@ public final class BossTest {
                 }
             }
         }
-        r.event(String.format("panorama nether: el sitio más abierto ve %.0f bloques de media%s", bestScore / (bestLava ? 1.35 : 1),
+        r.event(String.format("panorama nether: el sitio más abierto ve %.0f bloques de media%s", bestScore / (bestLava ? 1.6 : 1),
                 bestLava ? ", con lava debajo" : ""));
         return net.minecraft.world.phys.Vec3.atCenterOf(best);
     }

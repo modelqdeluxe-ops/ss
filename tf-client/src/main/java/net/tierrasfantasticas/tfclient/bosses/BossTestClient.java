@@ -61,6 +61,12 @@ public final class BossTestClient {
             ks.testPress(BossTest.dialogPress);
             BossTest.dialogPress = -1;
         }
+        // (1.3.96) para los panoramas, se ve más lejos y más claro (con 6 chunks y brillo normal el Nether era niebla roja y
+        // el End, negro)
+        if ("panoramas".equals(BossTest.currentId()) && mc.options.renderDistance().get() < 12) {
+            mc.options.renderDistance().set(12);
+            mc.options.gamma().set(1.0);
+        }
         // (1.3.96) los panoramas para el agujero de gusano: la herramienta de Minecraft (6 caras de 90°), mirando al sur
         String pano = BossTest.panorama;
         if (pano != null && mc.level != null && mc.player != null && mc.screen == null) {
