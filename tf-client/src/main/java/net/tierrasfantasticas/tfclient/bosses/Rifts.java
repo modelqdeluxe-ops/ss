@@ -210,6 +210,12 @@ public final class Rifts {
             }
         }
         if (dirty && server.getTickCount() % 100 == 0) save();
+        // La grieta del cielo (1.3.93): sellada mientras la del Void recarga; se vuelve a abrir cuando la del Void tiene
+        // otro jefe listo (y no antes de 30 s: que se vea que se cerró)
+        Rift v = voidRift();
+        if (server.getTickCount() % 20 == 0 && v != null && v.state != RiftEntity.COOLDOWN && SkillDefs.bosses().containsKey(v.boss)) {
+            net.tierrasfantasticas.tfclient.vacio.SkyRift.voidReady();
+        }
     }
 
     private static void tick(Rift r) {
@@ -483,6 +489,8 @@ public final class Rifts {
             r.readyAt = boss.level().getGameTime() + d.respawnMin() * 1200L;
             r.bossEntity = null;
             dirty = true;
+            // (1.3.93) si es la del Void, la grieta del cielo se sella... por ahora
+            if (r.fixed) net.tierrasfantasticas.tfclient.vacio.SkyRift.voidBossKilled();
             // (1.3.91) la grieta se cierra: se traga la luz (el cierre lo dibuja RiftRenderer y el fogonazo, RiftWarp)
             if (boss.level() instanceof ServerLevel sl) {
                 Vec3 c = r.pos.add(0, r.kind == RiftEntity.MOTHER ? 16.5 : 11.5, 0);

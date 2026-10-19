@@ -53,7 +53,7 @@ public class KnightScreen extends Screen {
     private static final int GOLD = 0xFFE9C46E, GOLD_HI = 0xFFFFE7A0, GOLD_DARK = 0xFF3A2306, TEXT = 0xFFF1ECFF, SUB = 0xFFB9A6E8,
             HINT = 0xFF8C7BB0;
 
-    private enum Page { GREET, LORE_VOID, LORE_RIFTS, LORE_KNIGHT, WHERE, LEAVING }
+    private enum Page { GREET, LORE_VOID, LORE_RIFTS, SKY, SEAL, LORE_KNIGHT, WHERE, LEAVING }
 
     private final VoidNet.Talk talk;
     private final int entityId;
@@ -106,7 +106,8 @@ public class KnightScreen extends Screen {
                 case GREET -> text = talk.first()
                         ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void. Allí, en el centro de la isla, late su grieta... y sobre ella, el agujero negro que lo devora todo."
                         : "Has vuelto al santuario, " + n + ". El Void te observa. ¿Regresas a casa, o te quedas un poco más?";
-                case WHERE -> text = "Esta isla es lo último que queda de una tierra que el Void se tragó. En su centro late la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Si caes al vacío, mi luz te traerá de vuelta a este santuario.";
+                case WHERE -> text = "Esta isla es lo último que queda de una tierra que el Void se tragó. En su centro late la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Si caes al vacío, mi luz te traerá de vuelta a este santuario."
+                        + (skyWound() ? " Y recuerda: es esa grieta la que desgarró el cielo de Tierras Fantásticas. Derrota lo que salga de ella y la del cielo se sellará." : "");
                 case LEAVING -> text = "Que la luz te guíe de regreso, " + n + ". Aquí estaré cuando el Void vuelva a llamarte.";
                 default -> text = "";
             }
@@ -116,26 +117,59 @@ public class KnightScreen extends Screen {
             options.add(new Option("Me quedo un rato", this::onClose));
             return;
         }
+        // (con la grieta del cielo abierta o sellada por ahora, 1.3.93, cuenta lo de la grieta del cielo y cómo se cierra)
+        boolean wound = skyWound();
         switch (p) {
-            case GREET -> text = talk.first()
-                    ? "¡Saludos, " + n + "! Que la luz guíe tus pasos. Soy " + KnightEntity.NAME + ", el último de los Caballeros Sacros, y custodio el umbral entre Tierras Fantásticas y el Void."
-                    : "¡" + n + "! Me alegra verte de nuevo, viajero. La luz aún te reconoce. ¿Volvemos al Void?";
+            case GREET -> text = greeting(n);
             case LORE_VOID -> text = "El Void es lo que hay bajo las costuras de nuestro mundo: un océano de oscuridad donde flotan islas arrancadas de otras tierras. En su cielo, un agujero negro devora la luz de mil estrellas.";
             case LORE_RIFTS -> text = "Las grietas son heridas que el Void abre en la realidad. Dentro duermen criaturas antiguas: golpea su cristal y despertarán. Quien las derrota se gana su gloria... y sus tesoros.";
-            case LORE_KNIGHT -> text = "Mi orden juró vigilar el umbral. Mi luz puede abrirte camino hasta el santuario del Void, y mi hermano de armas te traerá de vuelta cuando se lo pidas. ¿Te atreves?";
+            case SKY -> text = "Esa grieta nació en el Void. En el centro de su isla late otra, tan profunda que rompió el espacio-tiempo... y su herida se abrió aquí, en el cielo de nuestro Overworld. Para cerrar la del cielo, hay que cerrar la del Void.";
+            case SEAL -> text = "Se cierra rompiendo su cristal. Pero cuidado: al romperlo puede traer consigo a las criaturas y entidades malvadas que mi orden encerró en el Void hace eras. Hay que derrotarlas a todas. Cada vez que una cae, la grieta del cielo se sella... hasta que despierta la siguiente.";
+            case LORE_KNIGHT -> text = wound
+                    ? "Mi orden encerró a esas criaturas en el Void y juró vigilar el umbral. Mi luz puede abrirte camino hasta su santuario, y mi hermano de armas te traerá de vuelta cuando se lo pidas. ¿Te atreves?"
+                    : "Mi orden juró vigilar el umbral. Mi luz puede abrirte camino hasta el santuario del Void, y mi hermano de armas te traerá de vuelta cuando se lo pidas. ¿Te atreves?";
             case LEAVING -> text = "Cierra los ojos y no temas, " + n + ". ¡Que la luz te lleve!";
             default -> text = "";
         }
         if (p == Page.LEAVING) return;
         options.add(new Option("Llévame al Void", () -> leave(VoidNet.GO)));
         switch (p) {
-            case GREET -> options.add(new Option("¿Qué es el Void?", () -> go(Page.LORE_VOID)));
-            case LORE_VOID -> options.add(new Option("¿Y las grietas?", () -> go(Page.LORE_RIFTS)));
+            case GREET -> {
+                if (wound) options.add(new Option("¿Qué es esa grieta del cielo?", () -> go(Page.SKY)));
+                options.add(new Option("¿Qué es el Void?", () -> go(Page.LORE_VOID)));
+            }
+            case LORE_VOID -> options.add(wound ? new Option("¿Y la grieta del cielo?", () -> go(Page.SKY))
+                    : new Option("¿Y las grietas?", () -> go(Page.LORE_RIFTS)));
             case LORE_RIFTS -> options.add(new Option("¿Y tú qué haces aquí?", () -> go(Page.LORE_KNIGHT)));
+            case SKY -> options.add(new Option("¿Cómo la cerramos?", () -> go(Page.SEAL)));
+            case SEAL -> options.add(new Option("¿Y tú qué haces aquí?", () -> go(Page.LORE_KNIGHT)));
             default -> {
             }
         }
         options.add(new Option(p == Page.LORE_KNIGHT ? "Ahora no" : "Adiós", this::onClose));
+    }
+
+    /** ¿Está la herida del cielo (abierta o sellada por ahora)? */
+    private boolean skyWound() {
+        return talk.sky() == SkyRift.OPEN || talk.sky() == SkyRift.CLOSED;
+    }
+
+    private String greeting(String n) {
+        String me = "Soy " + KnightEntity.NAME + ", el último de los Caballeros Sacros, y custodio el umbral entre Tierras Fantásticas y el Void.";
+        return switch (talk.sky()) {
+            case SkyRift.OPEN -> talk.first()
+                    ? "¡Por fin llegas, " + n + "! " + me + " ¿Has visto el cielo? Esa herida no es una tormenta: es el Void, que se abre paso hasta nuestro mundo."
+                    : "¡" + n + "! La grieta del cielo sigue abierta... y el Void no descansa. ¿Estás listo para volver a él?";
+            case SkyRift.CLOSED -> talk.first()
+                    ? "¡Saludos, " + n + "! " + me + " Mira el cielo: esa cicatriz es una herida del Void, sellada solo por ahora. Otra de sus criaturas ya está despertando."
+                    : "¡" + n + "! Lo has visto: la grieta del cielo se ha sellado... pero solo por ahora. El Void ya está despertando a otra de sus criaturas.";
+            case SkyRift.ENDED -> talk.first()
+                    ? "¡Saludos, " + n + "! Que la luz guíe tus pasos. " + me + " Gracias a los héroes de esta tierra, la herida del cielo se cerró para siempre."
+                    : "¡" + n + "! Lo lograron: la herida del cielo se cerró para siempre. Pero el Void sigue ahí abajo, y sus grietas aún laten. ¿Volvemos?";
+            default -> talk.first()
+                    ? "¡Saludos, " + n + "! Que la luz guíe tus pasos. " + me
+                    : "¡" + n + "! Me alegra verte de nuevo, viajero. La luz aún te reconoce. ¿Volvemos al Void?";
+        };
     }
 
     private void leave(int what) {

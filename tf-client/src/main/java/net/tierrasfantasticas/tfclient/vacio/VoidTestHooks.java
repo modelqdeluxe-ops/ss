@@ -33,6 +33,11 @@ public final class VoidTestHooks {
         return TravelFx.lastTrip();
     }
 
+    /** La grieta del cielo (1.3.93): su estado en el servidor y lo que ve el cliente. */
+    public static String sky() {
+        return SkyRift.describe() + "; el cliente: " + SkyRiftClient.describe();
+    }
+
     /** Shaders (Oculus): si hay paquete puesto y qué se hizo con el Void. */
     public static String shaders() {
         return (ShaderPacks.inUse() ? "paquete de shaders puesto" : "sin paquete de shaders") + " (" + ShaderPacks.status + ")"

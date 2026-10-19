@@ -39,6 +39,8 @@ public final class VoidNet {
                 .encoder(Choose::write).decoder(Choose::read).consumerMainThread(Choose::handle).add();
         CHANNEL.messageBuilder(Fx.class, 2, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Fx::write).decoder(Fx::read).consumerMainThread(Fx::handle).add();
+        CHANNEL.messageBuilder(Sky.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Sky::write).decoder(Sky::read).consumerMainThread(Sky::handle).add();
     }
 
     static void fx(ServerPlayer p, int phase) {
@@ -49,17 +51,18 @@ public final class VoidNet {
      * Abre el diálogo: con quién (entidad), tu nombre, si es la primera vez que hablas con él, si es el del santuario
      * (devuelve) y, entonces, a dónde volverías.
      */
-    public record Talk(int entity, String name, boolean first, boolean home, String back) {
+    public record Talk(int entity, String name, boolean first, boolean home, String back, int sky) {
         static void write(Talk m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.entity);
             buf.writeUtf(m.name, 64);
             buf.writeBoolean(m.first);
             buf.writeBoolean(m.home);
             buf.writeUtf(m.back, 128);
+            buf.writeVarInt(m.sky);
         }
 
         static Talk read(FriendlyByteBuf buf) {
-            return new Talk(buf.readVarInt(), buf.readUtf(64), buf.readBoolean(), buf.readBoolean(), buf.readUtf(128));
+            return new Talk(buf.readVarInt(), buf.readUtf(64), buf.readBoolean(), buf.readBoolean(), buf.readUtf(128), buf.readVarInt());
         }
 
         static void handle(Talk m, Supplier<NetworkEvent.Context> ctx) {
@@ -95,6 +98,29 @@ public final class VoidNet {
 
         static void handle(Fx m, Supplier<NetworkEvent.Context> ctx) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TravelFx.start(m.phase, m.ticks));
+        }
+    }
+
+    /**
+     * La grieta del cielo (1.3.93, {@link SkyRift}): su estado, qué ver ahora (preludio, se rompe, se sella...), dónde
+     * está en el mundo de ese jugador y si ese mundo es de los que la ven (cielo de Overworld).
+     */
+    public record Sky(int state, int fx, double x, double y, double z, boolean here) {
+        static void write(Sky m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.state);
+            buf.writeVarInt(m.fx);
+            buf.writeDouble(m.x);
+            buf.writeDouble(m.y);
+            buf.writeDouble(m.z);
+            buf.writeBoolean(m.here);
+        }
+
+        static Sky read(FriendlyByteBuf buf) {
+            return new Sky(buf.readVarInt(), buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean());
+        }
+
+        static void handle(Sky m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SkyRiftClient.receive(m));
         }
     }
 }

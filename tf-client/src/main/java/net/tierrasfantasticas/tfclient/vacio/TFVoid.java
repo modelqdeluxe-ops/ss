@@ -96,7 +96,7 @@ public final class TFVoid {
 
     // ------------------------------------------------------------------------------------------- comandos
 
-    /** /tf void ... (staff): poner y quitar caballeros, ir y volver. */
+    /** /tf void ... (staff): poner y quitar caballeros, ir y volver, la grieta del cielo. */
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("void").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("npc").executes(ctx -> {
@@ -111,8 +111,15 @@ public final class TFVoid {
                     p.serverLevel().addFreshEntity(k);
                     ctx.getSource().sendSuccess(() -> Component.literal(KnightEntity.NAME + ", el " + KnightEntity.TITLE + ", puesto. Los jugadores le hablan con clic derecho.")
                             .withStyle(ChatFormatting.GOLD), true);
+                    // La primera vez que se le pone en un mundo Overworld: el evento de la grieta del cielo (1.3.93)
+                    if (SkyRift.state() == SkyRift.OFF && !SkyRift.running() && SkyRift.overworldLike(p.serverLevel())) {
+                        SkyRift.start(p.serverLevel(), k.position());
+                        ctx.getSource().sendSuccess(() -> Component.literal("Empieza el evento de la grieta del cielo en todos los mundos Overworld "
+                                + "(/tf void cielo para controlarla).").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+                    }
                     return 1;
                 }))
+                .then(SkyRift.command())
                 .then(Commands.literal("quitar").executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     int n = 0;
@@ -211,6 +218,7 @@ public final class TFVoid {
         net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
         VoidTravel.tick(server);
+        SkyRift.tick(server);
         ServerLevel level = server.getLevel(VOID);
         if (level != null) IslandUpdate.tick(level);
         if (++tick % 100 != 0) return;

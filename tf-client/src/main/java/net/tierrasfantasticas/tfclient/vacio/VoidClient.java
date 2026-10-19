@@ -59,8 +59,10 @@ public final class VoidClient {
                 });
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "wormhole"),
                         DefaultVertexFormat.POSITION), s -> TravelFx.shader = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "sky_rift"),
+                        DefaultVertexFormat.POSITION_TEX), s -> SkyRiftClient.shader = s);
             } catch (IOException e) {
-                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo o del viaje", e);
+                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo, del viaje o de la grieta del cielo", e);
             }
         }
     }
