@@ -61,6 +61,21 @@ public final class BossTestClient {
             ks.testPress(BossTest.dialogPress);
             BossTest.dialogPress = -1;
         }
+        // (1.3.96) los panoramas para el agujero de gusano: la herramienta de Minecraft (6 caras de 90°), mirando al sur
+        String pano = BossTest.panorama;
+        if (pano != null && mc.level != null && mc.player != null && mc.screen == null) {
+            BossTest.panorama = null;
+            File dir = new File(mc.gameDirectory, "pruebas/panoramas/" + pano);
+            dir.mkdirs();
+            mc.player.setYRot(0F);
+            mc.player.setXRot(0F);
+            try {
+                net.minecraft.network.chat.Component c = mc.grabPanoramixScreenshot(dir, 512, 512);
+                TFClient.LOGGER.info("Prueba de jefes: panorama {}: {}", pano, c.getString());
+            } catch (Throwable e) {
+                TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar el panorama {}", pano, e);
+            }
+        }
         if (BossTest.finished && !quitting) {
             quitting = true;
             mc.stop();

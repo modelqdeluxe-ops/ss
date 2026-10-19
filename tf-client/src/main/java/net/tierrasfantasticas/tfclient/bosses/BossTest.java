@@ -253,6 +253,8 @@ public final class BossTest {
             String only = System.getenv("TFCLIENT_PRUEBA_JEFES");
             // (1.3.88) «vacio»: la visita a The Void (el caballero, su diálogo, el viaje, el cielo y la isla), la primera
             ids.add(0, "vacio");
+            // (1.3.96) «panoramas»: captura el Nether, el End y el Void (para el agujero de gusano); solo si se pide
+            if (only != null && List.of(only.split(",")).contains("panoramas")) ids.add(0, "panoramas");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -275,6 +277,10 @@ public final class BossTest {
         player.getFoodData().setFoodLevel(20);
         if ("vacio".equals(r.id)) {
             if (!waitShot) voidStep(server, level, player, r);
+            return;
+        }
+        if ("panoramas".equals(r.id)) {
+            panoramaStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -931,6 +937,118 @@ public final class BossTest {
         p.getAbilities().mayfly = on;
         p.getAbilities().flying = on;
         p.onUpdateAbilities();
+    }
+
+    // ------------------------------------------------------------------------------------------- panoramas (1.3.96)
+
+    /**
+     * Lo que el cliente tiene que capturar ahora con la herramienta de panoramas de Minecraft (6 caras de 90°, a
+     * pruebas/panoramas/&lt;nombre&gt;/screenshots/panorama_N.png): null si nada. Los usa el agujero de gusano
+     * (tools/void/panoramas.py los pasa a equirectangulares).
+     */
+    static volatile String panorama;
+    private static final String[] PANORAMAS = {"nether", "end", "void"};
+    private static final int PANO_TICKS = 520;
+
+    /**
+     * (1.3.96) El dueño, del agujero de gusano: «que muestre la dimensión; en el Nether hay fuego de textura, pero no sé si
+     * estoy viendo el Nether de verdad». Se capturan de verdad: el Nether (el sitio más abierto, con lava debajo, de los
+     * alrededores del origen), el End (encima del portal, con las columnas alrededor) y el Void (al norte de la isla,
+     * mirando a la grieta y al agujero negro). En espectador (sin mano), mirando al sur.
+     */
+    private static void panoramaStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        int stage = t / PANO_TICKS, k = t % PANO_TICKS;
+        if (stage >= PANORAMAS.length) {
+            if (k == 1) {
+                player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+                player.teleportTo(level, 0.5, ground(level, 0, 0), 0.5, 0F, 0F);
+            }
+            if (k == 60) next(level);
+            return;
+        }
+        String what = PANORAMAS[stage];
+        if (k == 1) {
+            ServerLevel dim;
+            Vec3 at;
+            switch (what) {
+                case "nether" -> {
+                    dim = server.getLevel(net.minecraft.world.level.Level.NETHER);
+                    at = dim == null ? null : netherSpot(dim, r);
+                }
+                case "end" -> {
+                    dim = server.getLevel(net.minecraft.world.level.Level.END);
+                    at = new Vec3(0.5, 82, 0.5);
+                }
+                default -> {
+                    dim = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+                    at = new Vec3(-20.5, 125, -140.5);
+                }
+            }
+            if (dim == null || at == null) {
+                r.event("panorama " + what + ": NO HAY ESA DIMENSIÓN");
+                t = (stage + 1) * PANO_TICKS - 1;
+                return;
+            }
+            player.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            player.teleportTo(dim, at.x, at.y, at.z, 0F, 0F);
+            r.event("panorama " + what + ": " + dim.dimension().location() + " en " + (int) at.x + ", " + (int) at.y + ", " + (int) at.z);
+        }
+        if (k == 30) player.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), 0F, 0F);
+        if (k == 440) panorama = what;
+    }
+
+    /**
+     * El sitio más abierto del Nether cerca del origen (cuevas grandes; mejor con lava debajo): de una rejilla de puntos de
+     * aire, el que más lejos ve de media en 26 direcciones (hasta 56 bloques).
+     */
+    private static Vec3 netherSpot(ServerLevel n, Rep r) {
+        net.minecraft.core.BlockPos best = new net.minecraft.core.BlockPos(0, 70, 0);
+        double bestScore = -1;
+        boolean bestLava = false;
+        for (int gx = -4; gx <= 4; gx++) {
+            for (int gz = -4; gz <= 4; gz++) {
+                for (int y = 40; y <= 96; y += 8) {
+                    net.minecraft.core.BlockPos p = new net.minecraft.core.BlockPos(gx * 24, y, gz * 24);
+                    if (!n.getBlockState(p).isAir()) continue;
+                    double s = 0;
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dy = -1; dy <= 1; dy++) {
+                            for (int dz = -1; dz <= 1; dz++) {
+                                if (dx != 0 || dy != 0 || dz != 0) s += ray(n, p, dx, dy, dz, 56);
+                            }
+                        }
+                    }
+                    s /= 26;
+                    boolean lava = false;
+                    for (int d = 1; d < 64; d++) {
+                        net.minecraft.world.level.block.state.BlockState b = n.getBlockState(p.below(d));
+                        if (b.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) {
+                            lava = true;
+                            break;
+                        }
+                        if (!b.isAir()) break;
+                    }
+                    if (lava) s *= 1.35;
+                    if (s > bestScore) {
+                        bestScore = s;
+                        best = p;
+                        bestLava = lava;
+                    }
+                }
+            }
+        }
+        r.event(String.format("panorama nether: el sitio más abierto ve %.0f bloques de media%s", bestScore / (bestLava ? 1.35 : 1),
+                bestLava ? ", con lava debajo" : ""));
+        return net.minecraft.world.phys.Vec3.atCenterOf(best);
+    }
+
+    private static double ray(ServerLevel n, net.minecraft.core.BlockPos p, int dx, int dy, int dz, int max) {
+        double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        for (int s = 2; s <= max; s += 2) {
+            net.minecraft.core.BlockPos q = p.offset((int) Math.round(dx / len * s), (int) Math.round(dy / len * s), (int) Math.round(dz / len * s));
+            if (q.getY() <= n.getMinBuildHeight() || q.getY() >= n.getMaxBuildHeight() || !n.getBlockState(q).isAir()) return s;
+        }
+        return max;
     }
 
     /** Lo que hay bajo los pies al llegar al vacío (¿se generó la isla?). */

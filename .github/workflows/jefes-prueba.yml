@@ -99,6 +99,8 @@ jobs:
               im.thumbnail((800, 450))
               im.save(out, quality=82)
           EOF
+          # (1.3.96) los panoramas del agujero de gusano, enteros (PNG)
+          cp -r run/pruebas/panoramas /tmp/out/ 2>/dev/null || true
           cd /tmp/out
           git init -q
           git checkout -q -b pruebas-jefes
