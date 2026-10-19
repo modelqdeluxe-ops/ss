@@ -713,6 +713,75 @@ dorado, animada). Y su cuadro de diálogo es una mierda: va lento, el nombre mal
 | Espada de Caelthar | — | La grande del set **Hada** (`tfclient:fairy_greatsword`: blanca y dorada, con alas, animada) en la mano derecha, desde el hueso del brazo (`KnightRenderer.sword`). Con la posición de la mano de Minecraft (ItemInHandLayer) apuntaba al frente y hacia abajo y se veía de canto, como un palo (captura `caballero_mundo` de la prueba): ahora erguida, la cara de la hoja y sus alas hacia delante, algo inclinada hacia fuera y al 80 % (comprobado con shaders). |
 | Diálogo «lento, nombre mal dibujado, amatista» | El texto iba a 34 letras/s por ticks (a saltos); el nombre en Cinzel **negrita** a ×1,7 (la negrita TTF se dibuja dos veces desplazada: corrida y borrosa); clics y apertura con `AMETHYST_BLOCK_CHIME` (y el viaje, dos veces). | `KnightScreen` rehecho: escena de cine (el mundo oscurecido abajo), placa de cristal con esquinas redondeadas e hilo de oro en píxeles reales (`TFMenuPaint`), el nombre en Cinzel rasterizada al tamaño real (`font/cinzel_N`) con contorno, hilos de oro que se apagan, texto a 55 letras/s con fundido (clic para verlo entero), respuestas en pastillas que se encienden; sin retrato; sonidos suaves del TF Pad. Fuera las amatistas del viaje. |
 
+### 3.18 La grieta del cielo: el evento del Void en todos los mundos Overworld (1.3.93)
+
+El dueño: *«cuando yo coloque el NPC, una grieta grande se dibujará en el cielo, con animación épica que asuste a todo
+el server, y que cuando volteen a verla, una leve distorsión en su cámara (leve). Antes, un sonido de temblor, de que
+algo oscuro se avecina, y un leve temblorcito; un mensaje en chat del NPC: algo siniestro se avecina al Overworld; y
+luego pum, la grieta en el cielo, como que se rompe la dimensión. Luego dice en el chat dónde se encuentra, el centro de
+Tierras Fantásticas (el spawn), que lo busquen porque tiene algo que decirles, y en el diálogo cuenta todo sobre el
+Void y las grietas: para cerrar la del cielo hay que cerrar la del Void, porque rompió el espacio-tiempo y apareció en
+nuestro Overworld; se cierran rompiendo sus cristales, y al romperlos pueden traer criaturas malvadas que él encerró en
+el Void; hay que derrotarlas a todas (muchos bosses, que el staff irá habilitando). Cuando derroten uno, la grieta del
+cielo se cierra momentáneamente; cuando activemos otro, se vuelve a abrir con otro sonido; y así hasta el final, que
+decidiremos con un boss super fuerte»*. Y: *«el spawn es un Overworld aparte (un plugin lo separa del de los
+jugadores)»*.
+
+**Servidor (`vacio/SkyRift`).** Estados `OFF` (nunca ha salido), `OPEN`, `CLOSED` (sellada por ahora), `ENDED` (el
+final); se guardan en el Overworld del servidor (`data/tfclient_cielo.dat`: estado, mundo y sitio de Caelthar). Sale
+en **todos los mundos de tipo Overworld** (por su cielo, `effectsLocation` = overworld, no por su nombre; el spawn del
+plugin también): sobre Caelthar (190 bloques más arriba) en su mundo y sobre el punto de aparición en los demás.
+Cada jugador la recibe (`VoidNet.Sky`) al entrar, al cambiar de mundo o al reaparecer y, por si un plugin le cambia de
+mundo sin avisar a Forge (Mohist), cada segundo se mira en qué mundo está.
+
+- **El evento** (`SkyRift.start`): la primera vez que se pone a Caelthar con `/tf void npc` en un mundo Overworld (o
+  con `/tf void cielo evento`). Tick 0: chat de Caelthar (en todo el servidor) «Algo siniestro se avecina al
+  Overworld... La tierra tiembla y la luz se apaga. Prepárense.» y el preludio (6 s). Tick 120: se rompe el cielo
+  (`OPEN`). Tick 260: «¡El Void ha desgarrado el cielo de Tierras Fantásticas! Búsquenme en el spawn, en el centro de
+  Tierras Fantásticas: tengo algo muy importante que contarles.»
+- **Cae un jefe del Void** (`Rifts.bossKilled` con la grieta del Void): se sella (`CLOSED`) con su chat. **Se vuelve a
+  abrir** (con otro sonido y su chat) cuando la grieta del Void vuelve a tener un jefe listo (no recargando y con un
+  jefe de su lista; `Rifts.onServerTick` cada segundo) y no antes de 30 s (`MIN_CLOSED`). Si el staff deja la lista
+  del Void vacía, se queda sellada.
+- **El final** lo decide el staff: `/tf void cielo final` (se cierra para siempre con un fogonazo y su chat).
+- Comandos (`/tf void cielo ...`, permiso 2): `evento` (empieza el evento sobre el Caelthar más cercano o sobre ti),
+  `abrir`, `cerrar`, `final`, `quitar` (vuelve a `OFF`: la próxima vez que pongas a Caelthar empieza otra vez) y
+  `estado`.
+
+**Cliente (`vacio/SkyRiftClient` + shader `sky_rift`).** Un cuadro que mira a la cámara, en la dirección de la
+grieta, de su tamaño de verdad (~160 × 224 bloques) pero nunca menor que ~10° (se ve desde lejos); de pie y, mirándola
+desde debajo, orientado al norte. Sin paquete de shaders se dibuja justo después del cielo (bloques y nubes delante);
+con paquete, después de su pasada final, solo donde se ve el cielo (`AfterShaders`, como la grieta y el cielo del
+Void). El shader: 11 ramas de grieta con horquillas que crecen desde el centro (de vez en cuando las recorre un rayo),
+un aura oscura, el desgarro en S de borde vivo con el Void dentro (sus nebulosas en remolino, estrellas y el agujero
+negro con su anillo de oro), el fogonazo y, sellada, la cicatriz. Todo con bordes suaves (`fwidth`). Vista previa sin
+juego: `xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta` (estados `0_grietas` … `6_cicatriz`).
+
+| Momento | Se ve | Suena | Cámara |
+|---|---|---|---|
+| Preludio (6 s) | — | Retumbar del warden al salir, latidos cada vez más rápidos, el lamento del guardián anciano, un rugido lejano | Temblor leve que crece (0,06 → 0,36) |
+| Se rompe | Grietas (1,2 s), fogonazo, el desgarro se abre (hasta 3,4 s) | Cristal que se quiebra, ancla de reaparición, trueno, explosión, portal del End, rugido | Golpe de temblor (1,5) que se apaga |
+| Abierta | Grietas que laten, el Void dentro | — | Al mirarla: distorsión leve (lente 0,07, remolino 0,18, tinte violeta; `RiftWarp`) |
+| Se sella | El desgarro se cierra (2,5 s), fogonazo, cicatriz | Faro que se apaga, conducto | Temblor pequeño |
+| Se vuelve a abrir | La cicatriz se rompe otra vez | **El Wither al nacer**, cristal, portal del End | Temblor |
+| El final | Se cierra del todo, gran fogonazo, desaparece | Trueno y «desafío completado» | Temblor pequeño |
+
+Los sonidos son de interfaz (sin posición: los oye igual todo el que está en un mundo Overworld).
+
+**Diálogo de Caelthar** (`KnightScreen`, la grieta abierta o sellada): saludo según el estado («¿Has visto el cielo? Esa
+herida no es una tormenta: es el Void...»), «¿Qué es esa grieta del cielo?» (nació en el Void: la grieta del centro de
+su isla rompió el espacio-tiempo y su herida se abrió en nuestro cielo; para cerrarla hay que cerrar la del Void) y
+«¿Cómo la cerramos?» (rompiendo su cristal; puede traer a las criaturas y entidades malvadas que su orden encerró en el
+Void; hay que derrotarlas a todas; cuando una cae, la grieta del cielo se sella hasta que despierta la siguiente). El
+del santuario lo recuerda en «¿Dónde estoy?».
+
+**Prueba en el juego** (al final de `vacio`): 120 bloques al sur de Caelthar mirando la grieta, el evento entero
+(capturas del cliente a los tiempos de la animación: `cielo_preludio`, `cielo_rompe`, `cielo_fogonazo`, `cielo_abre`,
+`cielo_grieta`), desde ~600 bloques (`cielo_lejos`), el diálogo (`dialogo_cielo`, `dialogo_grieta`, `dialogo_sellar`),
+cae un jefe del Void (`cielo_cierra`, `cielo_cicatriz`), se vuelve a abrir sola a los 30 s porque la grieta del Void
+tiene jefe (`cielo_reabre`, `cielo_reabierta`) y el final (`cielo_final`, `cielo_sin_grieta`). El informe dice el
+estado, lo que ve el cliente, los fotogramas dibujados y el temblor más fuerte.
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1062,7 +1131,12 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.92
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.93
+
+**1.3.93**: §3.18 (la grieta del cielo: evento al poner a Caelthar, en todos los mundos Overworld; se sella al caer un
+jefe del Void y se vuelve a abrir con el siguiente; el final con `/tf void cielo final`). Queda que el dueño lo vea en
+su servidor (el spawn separado por el plugin) y **el jefe final** «super fuerte» que pasará más adelante: cuando llegue,
+su muerte puede llamar a `SkyRift.end` (hoy el final es solo el comando).
 
 **1.3.92**: §3.17 (el jefe del Void por toda la isla sin salirse, el agujero de gusano limpio con la antesala del Void,
 el agujero negro lento y sin dientes, la espada y el diálogo nuevo de Caelthar). Queda que el dueño lo vea; si la espada
