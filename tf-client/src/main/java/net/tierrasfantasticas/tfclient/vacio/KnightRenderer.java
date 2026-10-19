@@ -35,8 +35,9 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
     static final float SCALE = 1.4F;
     private static final ResourceLocation NONE = new ResourceLocation("minecraft", "textures/misc/white.png");
     private boolean[] hidden;
-    /** Lo está dibujando el retrato del diálogo (sin cartel encima). */
-    static boolean inGui;
+    /** Su espada: la grande del set Hada (blanca y dorada, con alas, animada). */
+    static final ResourceLocation SWORD = new ResourceLocation(net.tierrasfantasticas.tfclient.TFClient.MOD_ID, "fairy_greatsword");
+    private static net.minecraft.world.item.ItemStack swordStack;
 
     public KnightRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -68,13 +69,51 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
             e.layers.pose(m, e.clientAge + partial, Mth.clamp(headYaw, -60F, 60F), headPitch, mats);
             pose.pushPose();
             // Flota un poco (las alas)
-            if (!inGui) pose.translate(0, 0.06 * Mth.sin((e.clientAge + partial) * 0.07F), 0);
+            pose.translate(0, 0.06 * Mth.sin((e.clientAge + partial) * 0.07F), 0);
             pose.mulPose(Axis.YP.rotationDegrees(180F - body));
             pose.scale(SCALE, SCALE, SCALE);
             ModelDraw.draw(m, mats, hidden, pose, buffers, LightTexture.FULL_BRIGHT, 0xFFFFFF, e.clientAge, 1F);
+            sword(e, m, mats, pose, buffers);
             pose.popPose();
         }
-        if (!inGui) label(e, pose, buffers);
+        label(e, pose, buffers);
+    }
+
+    /**
+     * (1.3.92; el dueño: «dale una espada angelical de nuestro set, animada: una blanca con dorado de las de ángel») La
+     * espada del set Hada ({@link #SWORD}: blanca y dorada, con alas y animada) en la mano derecha: desde el hueso del
+     * brazo (que va con la animación), pasado a los ejes de los modelos de Minecraft (y hacia abajo), erguida y de cara.
+     */
+    private void sword(KnightEntity e, VfxModel m, Matrix4f[] mats, PoseStack pose, MultiBufferSource buffers) {
+        int arm = m.bone("right_arm");
+        if (arm < 0) return;
+        if (swordStack == null) {
+            net.minecraft.world.item.Item it = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(SWORD);
+            swordStack = it == null || it == net.minecraft.world.item.Items.AIR ? net.minecraft.world.item.ItemStack.EMPTY
+                    : new net.minecraft.world.item.ItemStack(it);
+        }
+        if (swordStack.isEmpty()) return;
+        pose.pushPose();
+        // el hueso va en píxeles; su brazo (de armadura) es un píxel más ancho hacia fuera que el de Steve
+        pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
+        pose.mulPoseMatrix(mats[arm]);
+        pose.translate(1F, 0F, 0F);
+        pose.scale(16F, 16F, 16F);
+        // a los ejes de los modelos de Minecraft (y hacia abajo); la mano, un poco por fuera y por delante del brazo
+        pose.scale(-1F, -1F, 1F);
+        pose.translate(-2.5F / 16F, 0.625F, -0.25F);
+        // Erguida, como un caballero en guardia: la hoja hacia arriba (con lo que hace ItemInHandLayer apuntaba al frente
+        // y hacia abajo, y se veía de canto, como un palo: prueba en el juego, 1.3.92), algo inclinada hacia fuera y con
+        // la cara de la hoja (y sus alas) hacia delante; a un 80 %
+        pose.mulPose(Axis.ZP.rotationDegrees(-12F));
+        pose.mulPose(Axis.XP.rotationDegrees(180F));
+        pose.mulPose(Axis.YP.rotationDegrees(270F));
+        pose.scale(0.8F, 0.8F, 0.8F);
+        // (el puño, a 3 píxeles de abajo del modelo, en la mano: contando el desplazamiento de su «tercera persona»)
+        pose.translate(0F, 3.25F / 16F, -1F / 16F);
+        Minecraft.getInstance().getItemRenderer().renderStatic(swordStack, net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, pose, buffers, e.level(), e.getId());
+        pose.popPose();
     }
 
     private void label(KnightEntity e, PoseStack pose, MultiBufferSource buffers) {

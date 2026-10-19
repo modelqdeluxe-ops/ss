@@ -33,17 +33,22 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
  * <ol>
  *   <li>0-1 s: el mundo se deforma en el centro de la pantalla y la cámara tiembla ({@link RiftWarp#travel}).</li>
  *   <li>1-2,2 s: la realidad se rasga: en el centro se abre un desgarro de borde vivo que llena la pantalla.</li>
- *   <li>El túnel, cada vez más rápido: a la ida el Overworld (sus bloques), la puerta de obsidiana con el portal del
- *   Nether (4 s), el Nether (lava, piedra luminosa), la puerta del End (5,9 s) y el End (sus estrellas); a la vuelta, End,
- *   Nether y Overworld. Pasan bloques de verdad girando (de cada mundo); al cruzar cada puerta, fogonazo.</li>
+ *   <li>El túnel, cada vez más rápido: a la ida el Overworld (cielo con nubes, campos, bosques, cerezos y ríos), la
+ *   puerta morada del Nether (3,4 s), el Nether (magma con venas de lava), la puerta turquesa del End (4,9 s), el End
+ *   (nebulosa violeta con corrientes claras y estrellas), la puerta del Void (6,3 s) y la antesala del Void (sus
+ *   nebulosas con hebras de oro) con el agujero negro al fondo, que crece y al llegar se cruza; a la vuelta, antesala,
+ *   End, Nether y Overworld. Al cruzar cada puerta, fogonazo de su color. (1.3.92, el dueño: «hazlo limpio, se ven
+ *   cuadrados; quiero una textura completa, limpia, no fragmentos; y después del End una antesala al Void»: sin
+ *   losetas de bloques ni cubos; ver el shader.)</li>
  *   <li>Al llegar (el servidor ya te ha llevado y el mundo nuevo ya se ha cargado: mientras se ve «Cargando el
  *   terreno...», se sigue viajando): la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece ondulando
  *   hasta calmarse.</li>
  * </ol>
  * Lo dibuja el shader wormhole sobre toda la pantalla (encima de la interfaz y de la pantalla de carga al cambiar de
- * mundo) al acabar cada fotograma, con texturas del propio Minecraft ({@link WormholeTextures}); los sonidos (el
- * portal, el cristal que se rompe, el viento, el viaje del Nether, un ghast, el portal del End, el dragón) suenan solo
- * para ti. Vista previa sin juego: tools/void/tunel_preview.py (mismos tiempos).
+ * mundo) al acabar cada fotograma (la antesala usa las nebulosas del cielo del Void, {@link VoidSky#PANORAMA}); los
+ * sonidos (el portal, el cristal que se rompe, el viento y los de cada puerta y cada tramo: el viaje del Nether, un
+ * ghast, el portal del End, el dragón, el zumbido del Void) suenan solo para ti. Vista previa sin juego:
+ * tools/void/tunel_preview.py (mismos tiempos).
  *
  * <p>Una llegada sin viaje (el rescate al caer al vacío del Void) es solo la luz que se va.
  */
@@ -52,8 +57,9 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
 public final class TravelFx {
     /** El shader del túnel (lo registra {@link VoidClient}). */
     static ShaderInstance shader;
-    /** Segundos desde que empieza: el desgarro se abre (de OPEN0 a OPEN1) y las dos puertas. = tunel_preview. */
-    static final float OPEN0 = 1.0F, OPEN1 = 2.2F, GATE1 = 4.0F, GATE2 = 5.9F;
+    /** Segundos desde que empieza: el desgarro se abre (de OPEN0 a OPEN1) y las tres puertas. = tunel_preview. */
+    static final float OPEN0 = 1.0F, OPEN1 = 2.2F, GATE1 = 3.4F, GATE2 = 4.9F, GATE3 = 6.3F;
+    private static final float[] GATES = {GATE1, GATE2, GATE3};
     /** Segundos desde que llegas: el túnel sigue, la luz llena la pantalla (EXIT1) y se va (EXIT2); el mundo se calma. */
     private static final float EXIT0 = 0.4F, EXIT1 = 1.5F, EXIT2 = 2.4F, CALM = 3.4F;
     /** Si no llega la llegada (se cortó algo), el túnel se acaba solo. */
@@ -84,7 +90,6 @@ public final class TravelFx {
                 sounds = 0;
                 tripFrames = 0;
                 tripId++;
-                WormholeTextures.prepare();
                 // El diálogo se cierra para que se vea
                 if (mc.screen instanceof KnightScreen) mc.setScreen(null);
             }
@@ -194,6 +199,11 @@ public final class TravelFx {
         return mc.level == null || mc.player == null || mc.screen instanceof ReceivingLevelScreen || mc.screen instanceof ProgressScreen;
     }
 
+    /** Al tramo que lleva la puerta i: 0 Overworld, 1 Nether, 2 End, 3 la antesala del Void (= worldAt del shader). */
+    private static int gateTo(int i) {
+        return back ? 2 - i : i + 1;
+    }
+
     private static void sounds(float since) {
         float t = now;
         if (once(0, t >= 0F)) play(SoundEvents.PORTAL_TRIGGER, 1.15F, 0.45F);
@@ -203,16 +213,33 @@ public final class TravelFx {
             play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.7F, 0.6F);
         }
         if (once(2, t >= OPEN1 - 0.15F)) play(SoundEvents.ELYTRA_FLYING, 1.1F, 0.5F);
-        if (once(3, back && t >= OPEN1 + 0.3F)) play(SoundEvents.ENDER_DRAGON_GROWL, 1.1F, 0.15F);
-        // la primera puerta, a la ida y a la vuelta, da al Nether
-        if (once(4, t >= GATE1 - 0.35F)) play(SoundEvents.PORTAL_TRAVEL, 1.2F, 0.3F);
-        if (once(5, t >= GATE1 + 0.5F)) play(SoundEvents.GHAST_AMBIENT, 0.75F, 0.3F);
-        if (once(6, t >= GATE2 - 0.2F)) {
-            if (back) play(SoundEvents.CONDUIT_ACTIVATE, 1.2F, 0.6F);
-            else play(SoundEvents.END_PORTAL_SPAWN, 1.1F, 0.35F);
+        // (a la vuelta se empieza en la antesala del Void: su zumbido)
+        if (once(3, back && t >= OPEN1 + 0.3F)) play(SoundEvents.BEACON_AMBIENT, 0.5F, 0.5F);
+        for (int i = 0; i < 3; i++) {
+            int to = gateTo(i);
+            if (once(4 + 2 * i, t >= GATES[i] - 0.35F)) {
+                switch (to) {
+                    case 1 -> play(SoundEvents.PORTAL_TRAVEL, 1.2F, 0.3F);
+                    case 2 -> play(SoundEvents.END_PORTAL_SPAWN, 1.1F, 0.35F);
+                    case 3 -> play(SoundEvents.BEACON_DEACTIVATE, 0.6F, 0.6F);
+                    default -> play(SoundEvents.CONDUIT_ACTIVATE, 1.2F, 0.6F);
+                }
+            }
+            if (once(5 + 2 * i, t >= GATES[i] + 0.5F)) {
+                switch (to) {
+                    case 1 -> play(SoundEvents.GHAST_AMBIENT, 0.75F, 0.3F);
+                    case 2 -> play(SoundEvents.ENDER_DRAGON_GROWL, 0.9F, 0.2F);
+                    case 3 -> play(SoundEvents.BEACON_AMBIENT, 0.5F, 0.5F);
+                    default -> {
+                    }
+                }
+            }
         }
-        if (once(7, !back && t >= GATE2 + 0.6F)) play(SoundEvents.ENDER_DRAGON_GROWL, 0.9F, 0.2F);
-        if (once(8, since >= EXIT0)) play(SoundEvents.BEACON_POWER_SELECT, 1.4F, 0.5F);
+        if (once(10, since >= EXIT0)) {
+            // a la ida se cruza el agujero negro: un estruendo hondo; y la luz
+            if (!back) play(SoundEvents.GENERIC_EXPLODE, 0.5F, 0.35F);
+            play(SoundEvents.BEACON_POWER_SELECT, 1.4F, 0.5F);
+        }
     }
 
     private static boolean once(int bit, boolean when) {
@@ -247,25 +274,18 @@ public final class TravelFx {
 
     private static void draw() {
         Minecraft mc = Minecraft.getInstance();
-        WormholeTextures.prepare();
         RenderTarget main = mc.getMainRenderTarget();
         main.bindWrite(true);
         ShaderInstance sh = shader;
         sh.safeGetUniform("WTime").set(now);
         sh.safeGetUniform("Travel").set(travel);
-        sh.safeGetUniform("Gates").set(travel(GATE1), travel(GATE2));
+        sh.safeGetUniform("Gates").set(travel(GATE1), travel(GATE2), travel(GATE3));
         sh.safeGetUniform("Open").set(open);
         sh.safeGetUniform("Exit").set(exit);
         sh.safeGetUniform("Back").set(back ? 1F : 0F);
-        sh.safeGetUniform("Frames").set(WormholeTextures.lavaFrames, WormholeTextures.portalFrames);
         sh.safeGetUniform("ScreenSize").set((float) main.width, (float) main.height);
         RenderSystem.setShader(() -> sh);
-        RenderSystem.setShaderTexture(0, WormholeTextures.PANORAMA);
-        RenderSystem.setShaderTexture(1, WormholeTextures.ATLAS);
-        RenderSystem.setShaderTexture(2, WormholeTextures.LAVA);
-        RenderSystem.setShaderTexture(3, WormholeTextures.PORTAL);
-        RenderSystem.setShaderTexture(4, WormholeTextures.STARS);
-        RenderSystem.setShaderTexture(5, WormholeTextures.END_SKY);
+        RenderSystem.setShaderTexture(1, VoidSky.PANORAMA);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();

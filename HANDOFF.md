@@ -59,7 +59,19 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (18 oct 2026, TF Client 1.3.91) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.92) — lee esto primero
+
+**1.3.92**: lo que pidió el dueño tras la 1.3.91 (`tf-client/JEFES.md` §3.17):
+- **El jefe del Void persigue por toda la isla** (ve a todo jugador de la dimensión) pero nunca a menos de 6 bloques
+  del borde: `VoidIsland.edgeField` (máscara de la isla), `BossEntity.island()/keepOnIsland()`, `Rifts.reach`. Herramienta
+  `tools/void/mascara_jefes.py`; la prueba en el juego lo mide (persecución al borde del este).
+- **Agujero de gusano limpio** (sin bloques, cubos ni texturas de píxeles): texturas continuas de ruido filtrado, tres
+  puertas y la **antesala del Void** con el agujero negro, que se cruza al llegar. Fuera `WormholeTextures`.
+- **Agujero negro**: más lento (una vuelta cada ~84 s), borde de la sombra suave (degradado por el parámetro de impacto),
+  más detalle (hebras y carriles de polvo), y la furia de la grieta ya no lo hace latir ni parpadear.
+- **Caelthar**: la espada grande del set Hada en la mano; **diálogo rehecho** (nombre nítido, texto rápido, sin amatista).
+
+### CHECKPOINT anterior (18 oct 2026, TF Client 1.3.91)
 
 **1.3.91**: el dueño pidió algo «súper épico» para la grieta y el viaje. Hecho (`tf-client/JEFES.md` §3.16):
 - **Grieta sin estrado ni garras**: cerrada (una rendija de luz) con su cristal y sus esquirlas. Al despertarla el

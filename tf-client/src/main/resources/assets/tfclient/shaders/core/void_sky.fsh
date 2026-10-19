@@ -26,6 +26,15 @@
 // grumos calientes que orbitan y laten, chorros por el eje con nudos que suben, el anillo de fotones vibra y las
 // nebulosas fluyen, laten y giran hacia el agujero. Todo lo que cambia con el tiempo da vueltas exactas en una hora
 // (VoidTime vuelve a 0 cada 3600 s): sin saltos.
+//
+// 1.3.92 (el dueño: «la animación del agujero negro es demasiado rápida, debe ser lenta y que se note el movimiento del
+// anillo; el círculo negro tiene los bordes con píxeles dentados; hazla un poquito más detallada; y con la distorsión
+// de la grieta, a veces el agujero negro como que bugueaba»): el disco da una vuelta cada ~84 s (antes ~16 s) y todo lo
+// demás va más despacio (grumos, chorros, el anillo); el borde de la sombra se suaviza con el parámetro de impacto del
+// rayo (b = |p × v|; cae dentro si b < 3√3/2): un píxel y medio de degradado, sin escalones (antes 0 píxeles entre negro
+// y el anillo); el disco lleva hebras finas a lo largo de la órbita y carriles de polvo oscuros (filtrados como el resto);
+// y la furia de una grieta ya no cambia el tamaño del agujero ni hace parpadear el anillo (eso era el «bug»): solo más
+// brillo y el color de la grieta, que entra y sale despacio (VoidSky).
 
 uniform sampler2D Sampler0;   // panorama de nebulosas (equirectangular, el de rift_sky.py)
 uniform float VoidTime;       // segundos
@@ -45,15 +54,16 @@ const float RIN = 2.35;       // borde de dentro del disco (algo más allá de l
 const float ROUT = 10.5;      // borde de fuera
 
 // El giro del disco: de conjunto (igual en todos los radios: no enrolla) y lo diferencial en capas de SPIN_P segundos
-const float SPIN_P = 12.0;                          // 3600/12 = 300 ciclos exactos por hora
-const float SPIN_K = 1.6;                           // velocidad (la 1.3.89: 0,8)
-const float SPIN_RIG = 6.2831853 * 229.0 / 3600.0;  // ≈ ω(r=4)·SPIN_K, en vueltas exactas por hora
+const float SPIN_P = 30.0;                          // 3600/30 = 120 ciclos exactos por hora
+const float SPIN_K = 0.3;                           // velocidad (la 1.3.89: 0,8; la 1.3.90: 1,6, «demasiado rápido»)
+const float SPIN_RIG = 6.2831853 * 43.0 / 3600.0;   // ≈ ω(r=4)·SPIN_K, en vueltas exactas por hora (una cada ~84 s)
+const float BC = 2.5980762;                         // parámetro de impacto crítico (3√3/2): menos, cae dentro
 const float NEB_P = 40.0;                           // capas del remolino de las nebulosas (90 por hora)
 const float JET_L = 15.0;                           // largo de los chorros (radios)
 
 // Lo que mide un píxel (en radianes de cielo); lo pone main()
 float PIX = 0.001;
-// La distancia de la cámara al agujero (DIST; con una grieta activa, late: el agujero se acerca y se aleja)
+// La distancia de la cámara al agujero
 float D = DIST;
 
 // Una velocidad angular redondeada a vueltas exactas por hora (sin salto cuando VoidTime vuelve a 0)
@@ -218,7 +228,7 @@ float hotspots(float ang, float r) {
         float a = fi * 2.39996 + qw(2.0 / (ri * sqrt(ri)) * SPIN_K) * VoidTime;
         float da = (mod(ang - a + PI, 2.0 * PI) - PI) * ri;
         float dr = r - ri;
-        float life = 0.5 + 0.5 * sin(qw(0.23 + 0.05 * fi) * VoidTime + fi * 1.7);
+        float life = 0.5 + 0.5 * sin(qw(0.07 + 0.02 * fi) * VoidTime + fi * 1.7);
         s += life * exp(-dr * dr / 0.08 - da * da / 1.4);
     }
     return s;
@@ -242,14 +252,22 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     lanes = mix(0.5, lanes, 1.0 - smoothstep(0.12, 0.3, foot * 5.2 / 6.2832));
     float arcs = smoothstep(0.28, 0.82, n2);
     float dens = (0.2 + 1.2 * n1 * n1) * (0.4 + 0.9 * arcs) * (0.78 + 0.44 * lanes);
+    // (1.3.92) más detalle: hebras finas a lo largo de la órbita (ruido en radio fino y ángulo comprimido, que gira con
+    // el disco) y carriles de polvo oscuros; los dos se apagan antes de ser más finos que ~2 píxeles
+    float rot0 = ang - SPIN_RIG * VoidTime;
+    float fil = fbmf(vec3(r * 7.5, cos(rot0) * 2.2, sin(rot0) * 2.2) + 3.3, foot * 7.5, 4);
+    dens *= 0.72 + 0.56 * fil;
+    float dw = foot * 11.0 / 6.2832;
+    float dust = smoothstep(0.82, 0.97, 0.5 + 0.5 * sin(r * 11.0 + 5.0 * n2 + 2.0 * fil));
+    dens *= 1.0 - 0.55 * dust * (1.0 - smoothstep(0.1, 0.25, dw));
     dens += 1.5 * hotspots(ang, r);
     dens *= smoothstep(RIN * 0.92, RIN * 1.3, r) * (1.0 - smoothstep(ROUT * 0.45, ROUT, r));
     // (el borde de fuera llega casi hasta la cámara: lo que pasaría a su lado se difumina, sin una lámina rara de lado)
     dens *= smoothstep(-0.9 * D, -0.5 * D, dot(q, normalize(HoleDir)));
-    // el disco respira despacio (y con una grieta activa, más brillo y los grumos más vivos)
-    dens *= 0.9 + 0.12 * sin(qw(0.55) * VoidTime);
-    dens *= 1.0 + 0.5 * Rage;
-    dens += 1.6 * Rage * hotspots(ang, r) * (0.6 + 0.4 * sin(VoidTime * 3.1));
+    // el disco respira despacio (y con una grieta activa, más brillo y los grumos más vivos, sin parpadeos)
+    dens *= 0.9 + 0.12 * sin(qw(0.2) * VoidTime);
+    dens *= 1.0 + 0.45 * Rage;
+    dens += 1.1 * Rage * hotspots(ang, r);
     float temp = pow(RIN / r, 1.5);
     // Doppler (la luz que llega a la cámara va por -v) y el corrimiento al rojo de la gravedad
     vec3 tang = normalize(cross(n, q));
@@ -260,7 +278,7 @@ vec4 disk(vec3 q, float r, vec3 v, vec3 n, vec3 e1, vec3 e2, float foot) {
     float I = dens * (0.35 + 1.9 * temp) * pow(g, 3.0) * 1.9;
     vec3 c = ramp(temp * g * 1.15);
     // (furia: se tiñe del color de la grieta)
-    c = mix(c, mix(vec3(0.75, 0.35, 1.0), vec3(1.0, 0.25, 0.4), RageMother), 0.35 * Rage);
+    c = mix(c, mix(vec3(0.75, 0.35, 1.0), vec3(1.0, 0.25, 0.4), RageMother), 0.3 * Rage);
     float a = clamp(dens * (0.45 + 0.6 * temp), 0.0, 0.92);
     return vec4(c * I, a);
 }
@@ -274,13 +292,13 @@ vec3 jet(vec3 p, vec3 n) {
     float d2 = dot(p - n * h, p - n * h) / (w * w);
     if (d2 > 9.0) return vec3(0.0);
     float side = h > 0.0 ? 0.0 : 2.1;
-    float k = 0.45 + 0.35 * sin(ah * 1.15 - qw(2.4) * VoidTime + side)
-            + 0.25 * sin(ah * 2.9 - qw(3.7) * VoidTime + side * 3.0)
-            + 0.15 * sin(ah * 0.47 - qw(0.9) * VoidTime + side * 5.0);
+    float k = 0.45 + 0.35 * sin(ah * 1.15 - qw(0.8) * VoidTime + side)
+            + 0.25 * sin(ah * 2.9 - qw(1.2) * VoidTime + side * 3.0)
+            + 0.15 * sin(ah * 0.47 - qw(0.3) * VoidTime + side * 5.0);
     float fade = smoothstep(1.2, 2.6, ah) * (1.0 - smoothstep(JET_L * 0.35, JET_L, ah));
     float core = exp(-d2);
     vec3 c = mix(vec3(0.42, 0.25, 0.95), vec3(0.85, 0.9, 1.0), exp(-d2 * 3.0));
-    return c * core * fade * max(k, 0.05) * 0.5 * (1.0 + 2.5 * Rage);
+    return c * core * fade * max(k, 0.05) * 0.5 * (1.0 + 1.5 * Rage);
 }
 
 void main() {
@@ -295,12 +313,16 @@ void main() {
     vec3 e1 = normalize(cross(n, f));
     vec3 e2 = cross(n, e1);
 
-    D = DIST * (1.0 - 0.08 * Rage * (0.5 + 0.5 * sin(VoidTime * 2.3)));
+    D = DIST;
     vec3 p = -f * D;
     vec3 v = dir;
     vec3 hc = cross(p, v);
     float h2 = dot(hc, hc);
 
+    // El borde de la sombra según el parámetro de impacto (ver abajo): 0 dentro, 1 fuera, ~1,5 píxeles de degradado
+    float b = sqrt(h2);
+    float bw = max(PIX * D * 0.8, 0.002);
+    float edgeK = smoothstep(BC - bw, BC + bw, b);
     vec3 col = vec3(0.0);
     float alpha = 0.0;
     float minR = 1e9;
@@ -333,6 +355,9 @@ void main() {
                 float slant = max(abs(dot(normalize(v), n)), 0.08);
                 float foot = PIX * (travel + length(v) * dt * k) / slant;
                 vec4 dc = disk(q, rq, v, n, e1, e2, foot);
+                // (lo que cruza el disco después de pasar junto al agujero —sus imágenes de segundo orden— solo fuera
+                // de la sombra, con su mismo degradado: con pasos finitos, junto al borde salían puntos sueltos)
+                if (minR < 2.0) dc *= edgeK;
                 col += (1.0 - alpha) * dc.rgb;
                 alpha += (1.0 - alpha) * dc.a;
             }
@@ -348,22 +373,29 @@ void main() {
         if (rn > D * 2.6 && dot(p, v) > 0.0) break;
     }
 
-    vec3 bg = captured ? vec3(0.0) : background(normalize(v));
-    // Junto al agujero la nebulosa (que la lente estira en remolinos) se apaga: el disco y la sombra mandan
-    bg *= mix(0.3, 1.0, smoothstep(2.2, 9.0, minR));
-    // El anillo de fotones (fino y brillante justo fuera de la sombra, nunca más fino que un píxel) y un halo violeta
-    // que se abre, con un poco de naranja cerca
-    if (!captured) {
-        float ringW = max(0.11, PIX * D * 1.5);
-        float ring = exp(-pow((minR - 1.55) / ringW, 2.0));
-        // (vibra: ondas de luz que le dan la vuelta)
-        float ra = atan(dot(dir, e2), dot(dir, e1));
-        ring *= 0.78 + 0.22 * sin(ra * 3.0 - qw(1.3) * VoidTime) + 0.12 * sin(ra * 7.0 + qw(2.1) * VoidTime);
-        ring *= 1.0 + 1.3 * Rage * (0.5 + 0.5 * sin(ra * 5.0 - VoidTime * 6.0));
-        bg += vec3(1.0, 0.86, 0.7) * ring * 0.95;
+    // (las ondas de luz que dan la vuelta al anillo, despacio: se ve cómo gira)
+    float ra = atan(dot(dir, e2), dot(dir, e1));
+    float wave = 0.72 + 0.28 * sin(ra * 3.0 - qw(0.35) * VoidTime) + 0.12 * sin(ra * 7.0 + qw(0.5) * VoidTime);
+    vec3 ringC = vec3(1.0, 0.86, 0.7) * 0.95 * wave * (1.0 + 0.5 * Rage);
+    vec3 halo = vec3(0.55, 0.22, 0.95) * 0.26 + vec3(1.0, 0.55, 0.3) * 0.14;
+    // Si cae dentro o no lo dice el parámetro de impacto (b = |p × v|; cae si b < 3√3/2), no los pasos del bucle: cerca
+    // de la esfera de fotones el rayo da vueltas y, con pasos finitos, algunos que caen «escapaban» (puntos sueltos
+    // dentro de la sombra) o al revés
+    // El anillo de fotones, también según b (fino y brillante justo fuera de la sombra, nunca más fino que un píxel), y
+    // un halo violeta que se abre, con un poco de naranja cerca
+    float ringB = exp(-pow((b - BC - 0.01) / max(0.03, PIX * D * 1.5), 2.0));
+    vec3 bg = ringC * ringB;
+    if (b > BC + 2.0 * bw && !captured) {
+        vec3 neb = background(normalize(v));
+        // Junto al agujero la nebulosa (que la lente estira en remolinos) se apaga: el disco y la sombra mandan
+        bg += neb * mix(0.3, 1.0, smoothstep(2.2, 9.0, minR));
         bg += vec3(0.55, 0.22, 0.95) * exp(-max(minR - 1.5, 0.0) * 0.42) * 0.26;
         bg += vec3(1.0, 0.55, 0.3) * exp(-max(minR - 1.5, 0.0) * 1.1) * 0.14;
+    } else {
+        bg += halo;
     }
+    // El borde de la sombra, suave: un degradado de ~1,5 píxeles según b (continuo de un píxel al de al lado)
+    bg *= edgeK;
     vec3 outc = col + (1.0 - alpha) * bg;
     // Tono: que lo muy brillante no se queme en blanco plano
     outc = vec3(1.0) - exp(-outc * 1.35);

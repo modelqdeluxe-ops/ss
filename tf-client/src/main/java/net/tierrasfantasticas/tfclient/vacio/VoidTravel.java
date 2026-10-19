@@ -37,10 +37,10 @@ import org.joml.Vector3f;
  * viaje por un agujero de gusano con la realidad alterada, imágenes del Overworld, el Nether y el End; de regreso End,
  * Nether y Overworld»): el viaje dura 7,5 s ({@link #LEAVE_TICKS}); en tu pantalla la realidad se rasga y cruzas el
  * agujero de gusano ({@link TravelFx}), mientras aquí flotas (y nada te hace daño). Alrededor, para los demás, dos
- * espirales de luz dorada y blanca suben cerrándose y suenan el faro y la amatista; en el último tick, chispas, el
- * sonido del portal del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la grieta del
- * centro) o donde estabas antes de ir. Al llegar, chispas que se abren y caes despacio. (1.3.89: sin el destello
- * FLASH, una mancha redonda que el dueño contaba entre los «círculos horribles».)
+ * espirales de luz dorada y blanca suben cerrándose y suena el faro (1.3.92: sin la amatista); en el último tick,
+ * chispas, el sonido del portal del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la
+ * grieta del centro) o donde estabas antes de ir. Al llegar, chispas que se abren y caes despacio. (1.3.89: sin el
+ * destello FLASH, una mancha redonda que el dueño contaba entre los «círculos horribles».)
  *
  * <p>Dónde estabas se guarda en los datos del jugador (ForgeData → «TFVoid»: dimensión, x, y, z, giro), y también si ya
  * habló con el caballero (para que la segunda vez solo te salude por tu nombre).
@@ -82,8 +82,8 @@ public final class VoidTravel {
         boolean first = !d.getBoolean(key);
         d.putBoolean(key, true);
         String back = k.home() ? backName(p.server, d) : "";
+        // (1.3.92: sin el sonido de amatista; el diálogo suena suave en tu cliente)
         VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new VoidNet.Talk(k.getId(), p.getGameProfile().getName(), first, k.home(), back));
-        p.level().playSound(null, k.getX(), k.getY() + 2, k.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 1F, 1.3F);
     }
 
     /** La prueba en el juego (BossTest): como un clic derecho en el caballero. */
@@ -151,9 +151,6 @@ public final class VoidTravel {
             }
             t.age++;
             spiral(p, t.age);
-            if (t.age == LEAVE_TICKS / 2) {
-                p.serverLevel().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 0.7F);
-            }
             if (t.age >= LEAVE_TICKS) {
                 it.remove();
                 arrive(p, t.toVoid);
@@ -235,7 +232,6 @@ public final class VoidTravel {
         ring(l, p, LIGHT, 18, 1.9, 2.8);
         if (toVoid) ring(l, p, ParticleTypes.REVERSE_PORTAL, 40, 2.0, 3.2);
         l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.PLAYERS, 1F, 1.2F);
-        l.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
         if (toVoid) {
             p.displayClientMessage(Component.literal("✦ The Void ✦").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), true);
             TFVoid.ensureHomeKnight(l);

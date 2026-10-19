@@ -654,6 +654,11 @@ public final class BossTest {
     static volatile int dialogPress = -1;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
     private static Vec3 origin;
+    /** La persecución por la isla (1.3.92): dónde espera el jugador, lo más cerca que llega el jefe y lo más cerca del borde. */
+    private static Vec3 chaseSpot;
+    private static double chaseNear;
+    private static float chaseEdge;
+    private static boolean chaseFell;
 
     /**
      * La visita a The Void (1.3.88): pone un caballero de luz delante del jugador, le habla (saludo, «¿Qué es el
@@ -662,14 +667,22 @@ public final class BossTest {
      */
     private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
         ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
-        // Caer al vacío (se le tira en el tick 1420): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
-        if (t > 1420 && t < 1450 && !voidRescued) {
+        // Caer al vacío (se le tira en el tick 2030): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
+        if (t > 2030 && t < 2060 && !voidRescued) {
             if (player.getY() > 50) {
                 voidRescued = true;
-                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 1420, player.getX(),
+                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 2030, player.getX(),
                         player.getY(), player.getZ()));
-            } else if (t == 1449) {
+            } else if (t == 2059) {
                 r.event(String.format("caer al vacío: NO RESCATADO (sigue en %.1f %.1f %.1f)", player.getX(), player.getY(), player.getZ()));
+            }
+        }
+        if (t > 1200 && t < 1800 && chaseSpot != null && t % 5 == 0) {
+            for (BossEntity b0 : vl.getEntitiesOfClass(BossEntity.class, new AABB(net.minecraft.core.BlockPos.containing(chaseSpot)).inflate(300))) {
+                if (!b0.isMainBoss()) continue;
+                chaseNear = Math.min(chaseNear, Math.sqrt(b0.distanceToSqr(player)));
+                chaseEdge = Math.min(chaseEdge, net.tierrasfantasticas.tfclient.vacio.VoidIsland.edgeDistance(b0.getX(), b0.getZ()));
+                if (b0.getY() < 40) chaseFell = true;
             }
         }
         switch (t) {
@@ -757,6 +770,9 @@ public final class BossTest {
             }
             case 1110 -> {
                 r.event(Rifts.voidSetActive(RiftEntity.NORMAL));
+                // (1.3.92) para la persecución por la isla, uno que anda y persigue (la Abominación)
+                Rifts.Rift vr0 = Rifts.voidRift();
+                if (vr0 != null && net.tierrasfantasticas.tfclient.skills.SkillDefs.bosses().containsKey("abominacion")) vr0.boss = "abominacion";
                 r.event("despertar la grieta del Void: " + (Rifts.testWake() ? "despierta" : "NO SE PUDO"));
             }
             case 1195 -> {
@@ -766,41 +782,64 @@ public final class BossTest {
                         + " (estado " + (vr == null ? -1 : vr.state) + ")");
                 shot(r, "vacio_grieta_jefe");
             }
-            case 1205 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
+            // (1.3.92) Persecución por la isla: el jugador se va al borde del este (a 2 bloques del vacío) y el jefe tiene que
+            // ir a por él por toda la isla, pero quedarse a VoidIsland.EDGE (6) bloques del borde, sin caerse
+            case 1200 -> {
+                double x = 0.5;
+                while (x < 400 && net.tierrasfantasticas.tfclient.vacio.VoidIsland.edgeDistance(x + 1, 0.5) > 2.5F) x += 1;
+                int y = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(x), 0);
+                chaseSpot = new Vec3(x, y, 0.5);
+                chaseNear = 1e9;
+                chaseEdge = 1e9F;
+                chaseFell = false;
+                player.teleportTo(vl, x, y, 0.5, 270F, 10F);
+                r.event(String.format("persecución por la isla: el jugador al borde del este, en %.0f %d 0 (a %.0f bloques de la grieta, a %.1f del vacío)",
+                        x, y, x, net.tierrasfantasticas.tfclient.vacio.VoidIsland.edgeDistance(x, 0.5)));
+            }
+            case 1500 -> shot(r, "persecucion");
+            case 1800 -> {
+                var bosses = vl.getEntitiesOfClass(BossEntity.class, new AABB(net.minecraft.core.BlockPos.containing(chaseSpot)).inflate(300));
+                BossEntity b0 = bosses.isEmpty() ? null : bosses.get(0);
+                r.event(String.format("persecución por la isla: el jefe llega a %.1f bloques del jugador; lo más cerca del borde: %.1f bloques (límite %.0f); %s",
+                        chaseNear, chaseEdge, net.tierrasfantasticas.tfclient.vacio.VoidIsland.EDGE,
+                        chaseFell ? "SE CAE AL VACÍO" : b0 == null ? "NO ESTÁ" : String.format("sigue en la isla (%.0f %.0f %.0f)", b0.getX(), b0.getY(), b0.getZ())));
+                player.teleportTo(vl, 0.5, 73, -26.5, 0F, -14F);
+            }
+            case 1815 -> r.event("reiniciar la grieta del Void: " + (Rifts.reset(Rifts.VOID_ID) ? "lista" : "NO"));
             // (las vistas desde el aire, volando: en la 1.3.89 se caía al vacío antes de la captura y salía el rescate)
             // (1.3.90: la isla ×1,5 y centrada en la grieta; con la vista de 6 chunks de la prueba se ve hasta ~96 bloques)
-            case 1220 -> {
+            case 1830 -> {
                 fly(player, true);
                 player.teleportTo(vl, 0.5, 165, 70.5, 180F, 48F);
             }
-            case 1300 -> shot(r, "vacio_isla");
-            case 1305 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
-            case 1345 -> shot(r, "vacio_planta");
-            case 1350 -> player.teleportTo(vl, 175.5, 88, 30.5, 110F, 8F);
-            case 1380 -> shot(r, "vacio_lado");
-            case 1419 -> fly(player, false);
-            case 1420 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
-            case 1450 -> {
+            case 1910 -> shot(r, "vacio_isla");
+            case 1915 -> player.teleportTo(vl, 0.5, 200, 0.5, 180F, 90F);
+            case 1955 -> shot(r, "vacio_planta");
+            case 1960 -> player.teleportTo(vl, 175.5, 88, 30.5, 110F, 8F);
+            case 1990 -> shot(r, "vacio_lado");
+            case 2029 -> fly(player, false);
+            case 2030 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
+            case 2060 -> {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
                         new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
                 r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
                 if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
             }
-            case 1570 -> shot(r, "dialogo_santuario");
-            case 1580 -> dialogPress = 0;
+            case 2180 -> shot(r, "dialogo_santuario");
+            case 2190 -> dialogPress = 0;
             // (1.3.90) un mundo con la isla de antes: se pone al día solo (el servidor del dueño)
-            case 1590 -> {
+            case 2200 -> {
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.pretendOldIsland(vl);
                 updateFrom = t;
             }
-            case 1800 -> {
+            case 2410 -> {
                 double d = origin == null ? -1 : player.position().distanceTo(origin);
                 r.event("de vuelta: dimensión " + player.level().dimension().location() + String.format(" a %.1f bloques de donde salió", d)
                         + (player.level() == level && d < 3 ? "" : " (MAL)") + "; agujero de gusano: "
                         + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.travel());
                 shot(r, "vuelta");
             }
-            case 1840 -> {
+            case 2450 -> {
                 // espera a que la isla esté al día (como mucho 4000 ticks)
                 if (!net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.islandUpdated() && updateWait++ < 4000) {
                     t--;
