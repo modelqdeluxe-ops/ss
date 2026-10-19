@@ -68,6 +68,11 @@ public final class VoidLightClient {
                 && !mc.player.isSpectator() && !mc.options.hideGui;
     }
 
+    /** Los Ecos del Alba que lleva este jugador (para el caballero del santuario). */
+    static int echoes() {
+        return echoes;
+    }
+
     /** Para la prueba en el juego: lo que ve el cliente. */
     public static String describe() {
         return has ? String.format("luz %.0f%s, ecos %d/%d", light, inside ? " (en el Velo del Alba)" : "", echoes, echoesTotal) : "sin datos";

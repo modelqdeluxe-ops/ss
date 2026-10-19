@@ -238,7 +238,8 @@ public final class VoidIsland {
             }
         }
         // Solo la parte de la isla donde está la grieta: el islote del este se une por un puente estrecho (por él se
-        // caería; mirado con la máscara en tools/void/mascara_jefes.py)
+        // caería; mirado con la máscara en tools/void/mascara_jefes.py). Y nunca dentro del Velo del Alba (1.3.96: el
+        // santuario; lo une a la isla un puente estrecho, pero por si acaso)
         boolean[] ok = new boolean[n];
         int[] queue = new int[n];
         int head = 0, tail = 0;
@@ -253,13 +254,13 @@ public final class VoidIsland {
                     int nx = x + (k == 0 ? 1 : k == 1 ? -1 : 0), nz = z + (k == 2 ? 1 : k == 3 ? -1 : 0);
                     if (nx < 0 || nx >= sx || nz < 0 || nz >= sz) continue;
                     int o = nz * sx + nx;
-                    if (ok[o] || d[o] < EDGE) continue;
+                    if (ok[o] || d[o] < EDGE || veilColumn(nx, nz)) continue;
                     ok[o] = true;
                     queue[tail++] = o;
                 }
             }
         } else {
-            for (int c = 0; c < n; c++) ok[c] = d[c] >= EDGE;
+            for (int c = 0; c < n; c++) ok[c] = d[c] >= EDGE && !veilColumn(c % sx, c / sx);
         }
         // La columna buena más cercana de cada una (anchura desde todas las buenas a la vez)
         int[] near = new int[n];
@@ -287,6 +288,13 @@ public final class VoidIsland {
         nearest = near;
         walk = ok;
         edge = d;
+    }
+
+    /** (1.3.96) ¿Cae esa columna (de la malla de la isla) dentro del Velo del Alba? Ahí no entra ningún jefe. */
+    private boolean veilColumn(int x, int z) {
+        if (bubbleR <= 0) return false;
+        double dx = x + ox + 0.5 - bubble.x, dz = z + oz + 0.5 - bubble.z;
+        return dx * dx + dz * dz < (bubbleR + 2) * (bubbleR + 2);
     }
 
     /** Lo lejos que está del borde de la isla (en bloques; 0 sobre el vacío o sin isla). */

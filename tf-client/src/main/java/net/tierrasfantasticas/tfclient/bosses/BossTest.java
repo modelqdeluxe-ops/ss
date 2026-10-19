@@ -671,19 +671,43 @@ public final class BossTest {
      * Void?», «Llévame al Void»), viaja con la animación, mira el cielo y la isla desde varios sitios, prueba el rescate
      * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
      */
+    /** (1.3.96) Lo que dura la prueba de la luz del Alba (lightStep), metida tras la persecución. */
+    private static final int LIGHT_TICKS = 340;
+    /** Cuándo empieza (en ticks de la prueba). */
+    private static final int LIGHT_AT = 1815 + 80;
+
+    /**
+     * (1.3.96) El reloj de la prueba del Void con los tiempos de antes: el viaje por el agujero de gusano dura ahora 230
+     * ticks (antes 150), así que lo de después de la ida va 80 ticks más tarde y lo de después de la vuelta, 160; y tras
+     * la persecución se mete la prueba de la luz ({@link #LIGHT_TICKS}). −1 mientras no toca nada (el viaje de vuelta).
+     */
+    private static int voidClock(int t) {
+        if (t < 480) return t;
+        if (t < LIGHT_AT) return t - 80;
+        if (t < LIGHT_AT + LIGHT_TICKS) return -1;
+        int s = t - 80 - LIGHT_TICKS;
+        if (s < 2195) return s;
+        return s < 2195 + 80 ? -1 : s - 80;
+    }
+
     private static void voidStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
         ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        if (t >= LIGHT_AT && t < LIGHT_AT + LIGHT_TICKS) {
+            lightStep(vl, player, r, t - LIGHT_AT);
+            return;
+        }
+        int s = voidClock(t);
         // Caer al vacío (se le tira en el tick 2030): ¿vuelve al santuario? (el teletransporte puede tardar unos ticks)
-        if (t > 2030 && t < 2060 && !voidRescued) {
+        if (s > 2030 && s < 2060 && !voidRescued) {
             if (player.getY() > 50) {
                 voidRescued = true;
-                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", t - 2030, player.getX(),
+                r.event(String.format("caer al vacío: rescatado a los %d ticks (queda en %.1f %.1f %.1f)", s - 2030, player.getX(),
                         player.getY(), player.getZ()));
-            } else if (t == 2059) {
+            } else if (s == 2059) {
                 r.event(String.format("caer al vacío: NO RESCATADO (sigue en %.1f %.1f %.1f)", player.getX(), player.getY(), player.getZ()));
             }
         }
-        if (t > 1200 && t < 1800 && chaseSpot != null && t % 5 == 0) {
+        if (s > 1200 && s < 1800 && chaseSpot != null && s % 5 == 0) {
             for (BossEntity b0 : vl.getEntitiesOfClass(BossEntity.class, new AABB(net.minecraft.core.BlockPos.containing(chaseSpot)).inflate(300))) {
                 if (!b0.isMainBoss()) continue;
                 chaseNear = Math.min(chaseNear, Math.sqrt(b0.distanceToSqr(player)));
@@ -691,7 +715,7 @@ public final class BossTest {
                 if (b0.getY() < 40) chaseFell = true;
             }
         }
-        switch (t) {
+        switch (s) {
             case 1 -> {
                 voidRescued = false;
                 if (vl == null) {
@@ -735,17 +759,25 @@ public final class BossTest {
                 player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -24F);
             }
             case 720 -> shot(r, "vacio_agujero");
-            // (1.3.89) el santuario nuevo, en la punta norte: desde el camino del este y por dentro, con el caballero
+            // (1.3.96) el santuario: desde el Puente de Luz (fuera del Velo del Alba, mirando al templo y al Corazón) y por
+            // dentro, con el caballero
             case 730 -> {
                 net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
-                player.teleportTo(vl, k.getX() + 19.5, k.getY() + 1, k.getZ() + 7.5, 108F, -6F);
+                player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 38.5, 180F, -12F);
             }
-            case 800 -> shot(r, "vacio_santuario");
+            case 800 -> {
+                r.event("el santuario desde el puente: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player) + "; "
+                        + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sanctuary());
+                shot(r, "vacio_santuario");
+            }
             case 810 -> {
                 net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
                 player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 4.5, 180F, -12F);
             }
-            case 870 -> shot(r, "vacio_caballero");
+            case 870 -> {
+                r.event("dentro del Velo del Alba: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_caballero");
+            }
             // la grieta del Void en el centro de la plaza
             case 880 -> {
                 net.minecraft.core.BlockPos g = net.tierrasfantasticas.tfclient.vacio.VoidIsland.riftPos();
@@ -917,6 +949,57 @@ public final class BossTest {
                 knight.discard();
                 knight = null;
                 next(level);
+            }
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * (1.3.96) La luz del Alba, tras la persecución (fuera del Velo 30 s): un fragmento de luz (verlo, cogerlo: +30 y un
+     * eco), poca luz (los bordes violeta), sin luz (la corrosión) y de vuelta dentro del Velo (se llena). La vida del
+     * jugador de la prueba se rellena cada tick: la corrosión se cuenta por sus golpes.
+     */
+    private static void lightStep(ServerLevel vl, ServerPlayer player, Rep r, int k) {
+        java.util.List<net.minecraft.core.BlockPos> shards = net.tierrasfantasticas.tfclient.vacio.VoidIsland.shards();
+        net.minecraft.core.BlockPos f = shards.isEmpty() ? null : shards.get(0);
+        switch (k) {
+            case 0 -> {
+                r.event("luz tras la persecución (30 s fuera del Velo): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
+                if (f != null) {
+                    int y = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, f.getX(), f.getZ() + 4);
+                    player.teleportTo(vl, f.getX() + 0.5, Math.max(y, f.getY() - 1), f.getZ() + 4.5, 180F, 12F);
+                }
+            }
+            case 60 -> shot(r, "vacio_fragmento");
+            case 70 -> {
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 40F);
+                if (f != null) player.teleportTo(vl, f.getX() + 0.5, f.getY(), f.getZ() + 0.5, 180F, 12F);
+            }
+            case 110 -> {
+                r.event("coger un fragmento con 40 de luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
+                shot(r, "vacio_fragmento_cogido");
+            }
+            case 120 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 8F);
+            case 170 -> {
+                r.event("poca luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_poca_luz");
+            }
+            case 180 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 0F);
+            case 250 -> {
+                r.event("sin luz (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_sin_luz");
+            }
+            case 260 -> {
+                Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
+                player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -18F);
+            }
+            case 330 -> {
+                r.event("de vuelta dentro del Velo (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sanctuary());
+                shot(r, "vacio_velo_dentro");
             }
             default -> {
             }

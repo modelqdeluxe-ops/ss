@@ -59,6 +59,8 @@ public final class VoidLight {
     public static final int EV_NONE = 0, EV_SHARD = 1, EV_ENTER = 2, EV_LEAVE = 3, EV_EMPTY = 4;
 
     private static final Map<UUID, State> STATES = new HashMap<>();
+    /** Para la prueba en el juego: golpes de corrosión dados. */
+    static int hurts;
 
     private static final class State {
         float light = MAX;
@@ -224,6 +226,7 @@ public final class VoidLight {
                 p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, false, false, true));
                 p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, false, false, true));
                 p.hurt(corrosion((ServerLevel) p.level()), HURT);
+                hurts++;
                 p.displayClientMessage(Component.literal("El Vacío te consume... busca un fragmento de luz o vuelve al santuario")
                         .withStyle(ChatFormatting.DARK_PURPLE), true);
             }
