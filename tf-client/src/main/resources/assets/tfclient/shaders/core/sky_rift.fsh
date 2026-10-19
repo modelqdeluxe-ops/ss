@@ -402,7 +402,8 @@ void main() {
                 float dist = mix(0.62, 0.06, u * u);
                 pos = vec2(cos(a0), sin(a0)) * dist;
                 size = (0.028 + 0.035 * h2) * (1.0 - 0.55 * u);
-                fade = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * Open;
+                // (al acabar el estallido entran poco a poco: si no, aparecían de golpe)
+                fade = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * Open * (Shatter < 0.0 ? 1.0 : smoothstep(4.0, 6.0, Shatter));
             }
             vec2 lp = p - pos;
             if (dot(lp, lp) > size * size * 4.0) continue;

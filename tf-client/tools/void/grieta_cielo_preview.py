@@ -19,8 +19,8 @@ RES = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources'
 SH = os.path.join(RES, 'shaders', 'core')
 
 YAW, PITCH = 180.0, -50.0     # = SkyRift.YAW, PITCH
-DRAW = 30.0
-ANG = 1.1                      # medio ancho del cuadro (radianes) = SkyRiftClient.ANG
+DRAW = 25.0                    # = SkyRiftClient.DRAW
+ANG = 1.21                     # medio ancho del cuadro (radianes) = SkyRiftClient.ANG (más de 1,2: el shader se apaga antes del borde)
 
 
 def look(phase, t):
