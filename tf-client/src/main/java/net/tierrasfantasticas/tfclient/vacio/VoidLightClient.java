@@ -16,8 +16,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * Tu luz en el Void, en pantalla (1.3.96, {@link VoidLight}): arriba a la izquierda, «LUZ DEL ALBA» con su orbe y una
- * barra dorada (en el Velo del Alba, «a salvo» y se llena; fuera, se vacía); los Ecos del Alba que llevas. Con poca luz,
+ * Tu luz en el Void, en pantalla (1.3.96, {@link VoidLight}): arriba a la izquierda, «LUZ DEL ALBA» y el número con su
+ * orbe y una barra dorada (en el Velo del Alba, «a salvo» y se llena; fuera, se vacía); los Ecos del Alba que llevas. Con poca luz,
  * los bordes de la pantalla se oscurecen de violeta y entran zarcillos (más cuanto menos luz; sin luz, laten). Al coger un
  * fragmento, un destello dorado; al cruzar el Velo, su sonido.
  */
@@ -102,16 +102,19 @@ public final class VoidLightClient {
             int a = (int) (Mth.clamp(fl, 0F, 1F) * 0.35F * 255);
             g.fill(0, 0, width, height, a << 24 | 0xFFE7A0);
         }
-        // el panel: orbe, nombre, barra y ecos
+        // el panel: orbe, nombre y número, barra, ecos y (en el Velo) «a salvo». Compacto: con la interfaz pequeña, la
+        // barra de un jefe empieza a ~110 px del borde y el nombre largo de antes se le montaba encima (prueba 1.3.96)
         int x = 6, y = 6;
         float pulse = inside ? 1F : 0.75F + 0.25F * (float) Math.sin(t * (2F + 6F * (1F - k)));
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1F, 1F, 1F, k > 0.02F ? Mth.clamp(0.45F + 0.55F * k, 0F, 1F) * pulse : 1F);
         g.blit(k > 0.02F ? ORB : ORB_OFF, x, y, 18, 18, 0F, 0F, 32, 32, 32, 32);
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        String label = inside ? "A SALVO EN EL VELO DEL ALBA" : "LUZ DEL ALBA";
-        g.drawString(mc.font, label, x + 22, y + 1, inside ? GOLD_HI : (k < 0.25F ? 0xFFE0647A : GOLD), true);
-        int bx = x + 22, by = y + 11, bw = 96, bh = 5;
+        int tx = x + 22;
+        String label = "LUZ DEL ALBA";
+        g.drawString(mc.font, label, tx, y + 1, inside ? GOLD_HI : (k < 0.25F ? 0xFFE0647A : GOLD), true);
+        g.drawString(mc.font, Math.round(shown) + "", tx + mc.font.width(label) + 5, y + 1, TEXT, true);
+        int bx = tx, by = y + 11, bw = 84, bh = 4;
         g.fill(bx - 1, by - 1, bx + bw + 1, by + bh + 1, 0xFF120A1E);
         g.fill(bx, by, bx + bw, by + bh, 0xFF2A1F3D);
         int fw = Math.round(bw * Mth.clamp(k, 0F, 1F));
@@ -121,11 +124,12 @@ public final class VoidLightClient {
             int sx = bx + (int) ((t * 40F) % (bw + 20)) - 10;
             if (sx > bx && sx < bx + fw - 2) g.fill(sx, by, sx + 2, by + bh, 0x80FFFFFF);
         }
-        String num = Math.round(shown) + "";
-        g.drawString(mc.font, num, bx + bw + 4, by - 1, TEXT, true);
+        int ly = by + bh + 4;
         if (echoesTotal > 0) {
-            g.drawString(mc.font, "Ecos del Alba " + echoes + "/" + echoesTotal, bx, by + bh + 3, DIM, true);
+            g.drawString(mc.font, "Ecos del Alba " + echoes + "/" + echoesTotal, bx, ly, DIM, true);
+            ly += 10;
         }
+        if (inside) g.drawString(mc.font, "A salvo en el Velo", bx, ly, GOLD_HI, true);
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)

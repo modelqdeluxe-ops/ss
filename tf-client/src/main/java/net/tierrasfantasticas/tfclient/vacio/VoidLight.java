@@ -144,8 +144,8 @@ public final class VoidLight {
         State s = state(p);
         s.light = Math.min(MAX, s.light + SHARD);
         s.event = EV_SHARD;
-        s.warned = 0;
-        sync(p, s, true);
+        // (los avisos vuelven a salir solo si baja otra vez de donde ha quedado)
+        s.warned = warnLevel(s.light);
         Echoes e = echoes(p.server);
         long bits = e.heard.getOrDefault(p.getUUID(), 0L);
         int i = 0;
@@ -157,6 +157,8 @@ public final class VoidLight {
             e.setDirty();
         }
         int n = Long.bitCount(e.heard.getOrDefault(p.getUUID(), 0L));
+        // (con el eco ya contado: el medidor dice los que lleva al momento)
+        sync(p, s, true);
         String[] echo = ECHOES[i];
         p.sendSystemMessage(Component.literal("✦ Eco del Alba" + (fresh ? " (" + n + "/" + ECHOES.length + ")" : "") + " · ")
                 .withStyle(ChatFormatting.GOLD)
@@ -207,12 +209,15 @@ public final class VoidLight {
         } else {
             s.light = Math.max(0F, s.light - DRAIN);
         }
-        // avisos al bajar
+        // avisos al bajar (si cruza varios de golpe, solo el más grave)
         float l = s.light;
         if (!inside && exposed(p)) {
-            if (l <= 50F && s.warned < 1) warn(p, s, 1, "Tu luz se debilita: el Void se la bebe. Busca fragmentos de luz o vuelve al santuario.");
-            else if (l <= 25F && s.warned < 2) warn(p, s, 2, "Te queda poca luz. La oscuridad te acecha.");
-            else if (l <= 10F && s.warned < 3) warn(p, s, 3, "¡Tu luz se apaga! El Void está a punto de consumirte.");
+            int lv = warnLevel(l);
+            if (lv > s.warned) {
+                warn(p, s, lv, lv == 3 ? "¡Tu luz se apaga! El Void está a punto de consumirte."
+                        : lv == 2 ? "Te queda poca luz. La oscuridad te acecha."
+                        : "Tu luz se debilita: el Void se la bebe. Busca fragmentos de luz o vuelve al santuario.");
+            }
         }
         // sin luz: el Void te consume
         if (l <= 0F && exposed(p) && !inside) {
@@ -232,6 +237,11 @@ public final class VoidLight {
             }
         }
         if (p.tickCount % 10 == 0 || s.event != EV_NONE) sync(p, s, false);
+    }
+
+    /** El aviso que toca con esa luz: 0 ninguno, 1 a la mitad, 2 a un cuarto, 3 al 10 %. */
+    private static int warnLevel(float l) {
+        return l <= 10F ? 3 : l <= 25F ? 2 : l <= 50F ? 1 : 0;
     }
 
     private static void warn(ServerPlayer p, State s, int level, String text) {

@@ -861,7 +861,13 @@ public final class BossTest {
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
                         new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
                 r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
-                if (!homes.isEmpty()) net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, homes.get(0));
+                if (!homes.isEmpty()) {
+                    // (1.3.96: el rescate deja a la entrada del santuario, a ~15 bloques: el diálogo se cierra a más de 14 y
+                    // el servidor no acepta la elección a más de 12; se habla delante de él, como un jugador)
+                    net.tierrasfantasticas.tfclient.vacio.KnightEntity hk = homes.get(0);
+                    player.teleportTo(vl, hk.getX(), hk.getY() - 1, hk.getZ() + 4, 180F, -8F);
+                    net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, hk);
+                }
             }
             case 2180 -> shot(r, "dialogo_santuario");
             case 2190 -> dialogPress = 0;
@@ -967,12 +973,33 @@ public final class BossTest {
             case 0 -> {
                 r.event("luz tras la persecución (30 s fuera del Velo): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
+                // (encima del fragmento, volando: que se cargue su chunk antes de buscar desde dónde mirarlo)
                 if (f != null) {
-                    int y = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, f.getX(), f.getZ() + 4);
-                    player.teleportTo(vl, f.getX() + 0.5, Math.max(y, f.getY() - 1), f.getZ() + 4.5, 180F, 12F);
+                    fly(player, true);
+                    player.teleportTo(vl, f.getX() + 0.5, f.getY() + 6, f.getZ() + 0.5, 180F, 60F);
+                }
+            }
+            case 20 -> {
+                // a 4,5 bloques, por donde el suelo no tape (en la primera prueba se quedó dentro de una loma)
+                if (f != null) {
+                    Vec3 c = Vec3.atCenterOf(f);
+                    Vec3 best = null;
+                    for (int a = 0; a < 8; a++) {
+                        int x = (int) Math.floor(c.x + 4.5 * Math.cos(a * Math.PI / 4)), z = (int) Math.floor(c.z + 4.5 * Math.sin(a * Math.PI / 4));
+                        int g = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                        if (g > f.getY()) continue;
+                        Vec3 at = new Vec3(x + 0.5, Math.max(g, f.getY() - 1), z + 0.5);
+                        if (best == null || at.y > best.y) best = at;
+                    }
+                    if (best == null) best = new Vec3(c.x, f.getY() + 3, c.z + 3.5);
+                    double dx = c.x - best.x, dz = c.z - best.z, dy = c.y - (best.y + player.getEyeHeight());
+                    float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90F;
+                    float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+                    player.teleportTo(vl, best.x, best.y, best.z, yaw, pitch);
                 }
             }
             case 60 -> shot(r, "vacio_fragmento");
+            case 65 -> fly(player, false);
             case 70 -> {
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 40F);
                 if (f != null) player.teleportTo(vl, f.getX() + 0.5, f.getY(), f.getZ() + 0.5, 180F, 12F);

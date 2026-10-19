@@ -1,7 +1,8 @@
 #version 150
 
 // El Velo del Alba (SanctuaryFx, 1.3.96): la burbuja de luz que guarda el santuario del Void (lo último del Alba, que
-// levantó la Orden: dentro, el Void no bebe tu luz). Una película de luz como la de una pompa (tornasol que fluye),
+// levantó la Orden: dentro, el Void no bebe tu luz). Una película de luz como la de una pompa (tornasol de oro, rosa y
+// perla que fluye),
 // cortinas de aurora que suben, chispas que titilan, un borde que brilla más cuanto más de lado se mira (Fresnel), un
 // cinturón de oro donde toca el suelo y una onda que se abre desde donde la cruzas. Mezcla aditiva (brilla sobre el
 // Void oscuro); no escribe profundidad.
@@ -43,9 +44,13 @@ void main() {
     // la película: su grosor fluye despacio hacia arriba y da el tornasol
     float th = fbm(n * 2.4 + vec3(0.0, -STime * 0.07, STime * 0.02));
     float film = th * 2.6 + ndv * 1.2 + STime * 0.04;
-    vec3 irid = 0.5 + 0.5 * cos(6.2831 * (film + vec3(0.0, 0.33, 0.67)));
+    // (solo oro, rosa y perla: con el arcoíris entero, el verde sobre el oro daba un borde verde oliva en el juego)
     vec3 gold = vec3(1.0, 0.8, 0.46);
-    vec3 col = mix(gold, irid * 0.5 + 0.5, 0.32);
+    vec3 rose = vec3(1.0, 0.64, 0.84);
+    vec3 pearl = vec3(0.74, 0.9, 1.0);
+    float ph = fract(film) * 3.0;
+    vec3 irid = ph < 1.0 ? mix(gold, rose, ph) : ph < 2.0 ? mix(rose, pearl, ph - 1.0) : mix(pearl, gold, ph - 2.0);
+    vec3 col = mix(gold, irid, 0.55);
     // cortinas de aurora que suben y ondas
     float curtain = pow(0.5 + 0.5 * sin(az * 5.0 + th * 5.0 + STime * 0.12), 4.0) * smoothstep(-0.3, 0.5, n.y);
     float wave = pow(0.5 + 0.5 * sin(n.y * 11.0 - STime * 0.9 + th * 3.0), 10.0);
@@ -65,8 +70,8 @@ void main() {
         float d = ang - 0.05 - Ripple.w * 1.4;
         rip = exp(-d * d * 90.0) * exp(-Ripple.w * 1.3) * 0.5 + exp(-ang * ang * 25.0) * exp(-Ripple.w * 4.0) * 0.08;
     }
-    col = mix(col, vec3(1.0, 0.96, 0.86), clamp(fres * 0.5 + spark + rip * 1.5 + belt * 0.5, 0.0, 1.0));
-    float a = 0.035 + 0.55 * fres + 0.06 * wave + 0.1 * curtain * (0.4 + 0.6 * th) + 0.6 * spark + 0.3 * belt + rip;
+    col = mix(col, vec3(1.0, 0.95, 0.88), clamp(fres * 0.6 + spark + rip * 1.5 + belt * 0.5, 0.0, 1.0));
+    float a = 0.05 + 0.55 * fres + 0.06 * wave + 0.1 * curtain * (0.4 + 0.6 * th) + 0.6 * spark + 0.3 * belt + rip;
     // desde dentro, más suave (que no tape la vista) pero cálido: el cielo se ve dorado
     if (Inside > 0.5) a = a * 0.7 + 0.025 * (0.6 + 0.4 * n.y);
     fragColor = vec4(col, clamp(a, 0.0, 0.9) * Alpha);

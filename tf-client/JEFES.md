@@ -951,7 +951,8 @@ grande, queda como «el Umbral».
   6 min, `DRAIN_MIN`); **dentro**, el Corazón la llena en 4 s. Avisos en el chat a la mitad, a un cuarto y al 10 %. Sin
   luz: oscuridad, lentitud y **corrosión** cada 2 s (1,5 de daño; tipo de daño propio `tfclient:corrosion_vacio`, que
   atraviesa la armadura, `data/minecraft/tags/damage_type/bypasses_armor.json`; muerte: «fue consumido por el Vacío»).
-  Al entrar en el Void (o conectarse en él), luz llena. El staff en creativo y los espectadores no la pierden.
+  Al entrar en el Void (o conectarse en él), luz llena. El staff en creativo y los espectadores no la pierden. Si la luz
+  cruza varios avisos de golpe, sale solo el más grave; tras un fragmento, solo vuelven a salir si baja otra vez.
 - `LightShards`: **28 fragmentos** por la isla grande (sitios elegidos por `tools/void/isla_alba.py`: en el terreno, a
   ≥ 9 bloques del borde, lejos de la plaza, del santuario y entre sí, ≥ 40 bloques). Cada uno es una **entidad de
   exhibición de bloque** de Minecraft (sapoluz perlado de punta, brillo máximo, gira y sube y baja con la interpolación de
@@ -960,8 +961,9 @@ grande, queda como «el Umbral».
 - **Ecos del Alba** (16, `VoidLight.ECHOES`): cada fragmento cuenta en el chat el siguiente que no has oído («✦ Eco del
   Alba (n/16) · «...» — Ser Aldric, el Primero»). Se guardan en el mundo (`tfclient_ecos`, por jugador). Con los 16,
   aviso y Caelthar lo sabe.
-- `VoidLightClient` (cliente): arriba a la izquierda, el orbe y «LUZ DEL ALBA» con su barra dorada (roja al final) y los
-  ecos; dentro del Velo, «A SALVO EN EL VELO DEL ALBA». Con poca luz, los bordes de la pantalla se oscurecen de violeta
+- `VoidLightClient` (cliente): arriba a la izquierda, el orbe, «LUZ DEL ALBA» y el número, su barra dorada (roja al
+  final), los ecos y, dentro del Velo, «A salvo en el Velo» (compacto: con la interfaz pequeña, la barra de un jefe
+  empieza a ~110 px del borde; en la primera prueba el rótulo largo de antes se le montaba encima). Con poca luz, los bordes de la pantalla se oscurecen de violeta
   (`luz_vinieta.png`; sin luz, laten); al coger un fragmento, un destello dorado; al cruzar el Velo, su sonido
   (`luz.velo_entrar` / `velo_salir`; sin luz, `luz.sin_luz`). Solo en el Void y sin creativo ni espectador.
 
