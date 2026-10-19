@@ -1,9 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **19 oct 2026, TF Client 1.3.93** (la grieta del cielo: el evento del Void al poner a Caelthar, en
-todos los mundos Overworld, que se sella al caer un jefe del Void y se vuelve a abrir con el siguiente: JEFES.md §3.18;
-antes, 1.3.92: el jefe del Void por toda la isla, el agujero de gusano limpio, la espada y el diálogo de Caelthar,
-§3.17; y el CHECKPOINT de HANDOFF.md).
+Estado al dejarlo: **19 oct 2026, TF Client 1.3.94** (la grieta del cielo en una dirección fija del cielo, más
+grande y con una aparición de 12 s más siniestra; la grieta del Void siempre madre y sin cartel; la espada de Caelthar
+como la lleva un jugador: JEFES.md §3.19; antes, 1.3.93: el evento de la grieta del cielo, §3.18; y el CHECKPOINT de
+HANDOFF.md).
 Rama de trabajo: `claude/intelligent-cray-63dqai` (o la que te asigne la sesión), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
@@ -87,7 +87,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.94**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.95**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
@@ -97,6 +97,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
+- **Que el dueño vea la 1.3.94**: la grieta del cielo en el mismo sitio del cielo esté donde esté, la aparición
+  nueva (12 s), la grieta del Void madre sin cartel y la espada de Caelthar como un jugador.
 - **Que el dueño vea la 1.3.93** en su servidor: al poner a Caelthar en el spawn, el evento (chat, temblor, el cielo
   que se rompe) en el spawn y en el Overworld de los jugadores. Si quiere repetirlo: `/tf void cielo quitar` y volver
   a poner a Caelthar (o `/tf void cielo evento`). **El jefe final** «super fuerte» lo mandará más adelante: entonces,
@@ -139,8 +141,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 7. Prompt para empezar una sesión nueva (cópialo tal cual)
 
 ```
-Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.18, §11). Seguimos con
-el motor de jefes de TF Client (1.3.93): fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
+Lee SIGUIENTE-IA.md, CLAUDE.md, el CHECKPOINT de HANDOFF.md y tf-client/JEFES.md (§3.10, §3.19, §11). Seguimos con
+el motor de jefes de TF Client (1.3.94): fiel a MythicMobs 5 + ModelEngine 4. Responde en español, sin subagentes,
 compila solo con GitHub Actions, publica como Release, nunca subas los packs en claro. Si el dueño se queja de algo,
 reprodúcelo TÚ con la prueba en el juego ([prueba-jefes=<jefes>] en el commit, espera en segundo plano con
 tools/bosses/esperar_prueba.sh), lee el informe y las capturas, arréglalo con la semántica de MythicMobs, pasa

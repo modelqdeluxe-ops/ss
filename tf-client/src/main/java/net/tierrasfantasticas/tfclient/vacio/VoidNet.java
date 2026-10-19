@@ -102,21 +102,18 @@ public final class VoidNet {
     }
 
     /**
-     * La grieta del cielo (1.3.93, {@link SkyRift}): su estado, qué ver ahora (preludio, se rompe, se sella...), dónde
-     * está en el mundo de ese jugador y si ese mundo es de los que la ven (cielo de Overworld).
+     * La grieta del cielo (1.3.93, {@link SkyRift}): su estado, qué ver ahora (preludio, se rompe, se sella...) y si el
+     * mundo de ese jugador es de los que la ven (cielo de Overworld).
      */
-    public record Sky(int state, int fx, double x, double y, double z, boolean here) {
+    public record Sky(int state, int fx, boolean here) {
         static void write(Sky m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.state);
             buf.writeVarInt(m.fx);
-            buf.writeDouble(m.x);
-            buf.writeDouble(m.y);
-            buf.writeDouble(m.z);
             buf.writeBoolean(m.here);
         }
 
         static Sky read(FriendlyByteBuf buf) {
-            return new Sky(buf.readVarInt(), buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean());
+            return new Sky(buf.readVarInt(), buf.readVarInt(), buf.readBoolean());
         }
 
         static void handle(Sky m, Supplier<NetworkEvent.Context> ctx) {

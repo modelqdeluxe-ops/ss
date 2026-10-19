@@ -126,9 +126,10 @@ public final class BossTestClient {
      * preludio; se rompe (grietas, fogonazo, se abre, abierta); se sella (cerrándose, cicatriz); se vuelve a abrir; el
      * final.
      */
-    private static final String[][] SKY = {{}, {"preludio"}, {"rompe", "fogonazo", "abre", "grieta"}, {"cierra", "cicatriz"},
+    private static final String[][] SKY = {{}, {"preludio", "relampago"}, {"rompe", "fogonazo", "abre", "grieta"}, {"cierra", "cicatriz"},
             {"reabre", "reabierta"}, {"final", "sin_grieta"}};
-    private static final float[][] SKY_AT = {{}, {4.0F}, {0.7F, 1.4F, 2.4F, 6.5F}, {1.4F, 5F}, {1.6F, 5.5F}, {2.5F, 6F}};
+    /** (1.3.93b: el preludio dura 12 s, con relámpagos a 3,6 / 6,4 / 8,7 / 10,3 / 11,4 s; se rompe del todo a los 2,2 s) */
+    private static final float[][] SKY_AT = {{}, {7.5F, 8.66F}, {1.0F, 2.35F, 4.2F, 9.0F}, {1.4F, 5F}, {1.8F, 6F}, {2.5F, 6F}};
     private static int skySeen = -1, skyNext;
 
     private static void skyShots() {

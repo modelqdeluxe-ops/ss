@@ -7,8 +7,8 @@ con el puño por debajo de la mano: flotaba al lado. Esto dibuja el modelo del c
 .json, en reposo) y la espada (models/item/fairy_greatsword.json con sus texturas) con la misma cadena de
 transformaciones que KnightRenderer.sword (pose_nueva, abajo; con --actual, la de la 1.3.92), de frente, de lado, de
 tres cuartos y por detrás, y mide dónde queda el puño de la espada respecto a la mano y la punta respecto al suelo.
-Medido: en la 1.3.92 el puño quedaba a 4,8 píxeles de la mano (por fuera y por delante); ahora, a 0, y la punta en
-y = −0,8 (clavada en el suelo).
+Medido: en la 1.3.92 el puño quedaba a 4,8 píxeles de la mano (por fuera y por delante); la 1.3.93 la clavó en el
+suelo con la mano en el puño (el dueño: «como mierda: él vuela»); la 1.3.93b, como un jugador (pose_nueva).
 
 Convenciones: el modelo va en píxeles, con +y arriba y la espalda hacia +z (el pecho mira a -z); cada hueso = padre ·
 trasladar(pivote − pivote del padre) · giro, y sus caras van respecto a su pivote (vfx/VfxPose). La espada: como
@@ -65,29 +65,21 @@ def pose_actual():
                  T(0, 3.25 / 16, -1 / 16))
 
 
-# (1.3.93) Como un guardián: la espada clavada de punta delante de él, algo hacia su lado derecho, con la mano sobre el
-# puño (el puño de la espada, entre la guarda y el pomo, dentro de la mano: la parte de abajo del brazo). El brazo se
-# adelanta y se cierra un poco (ARM_PITCH, ARM_ROLL: los añade KnightRenderer al dibujar) para llegar.
-GRIP = (8.0, 3.8, 8.0)        # el puño, en el modelo de la espada (píxeles de objeto)
-HAND = (1.0, -9.6, 0.0)       # el centro de la mano, desde el pivote del brazo (píxeles del caballero)
-ARM_PITCH = 60.0             # el brazo, hacia delante (grados)
-ARM_ROLL = -10.0             # el brazo, hacia dentro (grados)
-LEAN = 6.0                   # la espada: la punta, hacia delante (grados)
-SCALE = 0.64                 # (= KnightRenderer: la punta llega al suelo)
+# (1.3.93b, el dueño: «la pusiste como mierda, recuerda que él vuela y se ve mal; pónsela normal, tal cual fuera un
+# jugador») Como la lleva un jugador: el brazo adelantado 18° (HumanoidModel.ArmPose.ITEM: xRot·0,5 − π/10) y la espada
+# con lo mismo que ItemInHandLayer (translateToHand, girar X −90, Y 180, trasladar 1/16, 0,125, −0,625). El brazo del
+# caballero es el de un jugador (pivote 5, 22, 0; el antebrazo de x −1,25 a 3,25 y la mano a 10,25 píxeles), con +y
+# arriba en vez de abajo: los ejes de Minecraft son los nuestros con x e y al revés (escalar −1, −1, 1).
+ARM_PITCH = 18.0             # el brazo, hacia delante (grados)
 
 
 def arm_extra():
-    return R('x', ARM_PITCH) @ R('z', ARM_ROLL)
+    return R('x', ARM_PITCH)
 
 
-def sword_world():
-    # (en el modelo: la hoja hacia abajo, su cara hacia delante, la punta un poco adelantada)
-    return R('x', LEAN) @ R('z', 180) @ R('y', 90)
-
-
-def pose_nueva():
-    # del brazo (ya girado con arm_extra) a la espada: la mano, deshacer el giro extra del brazo, la espada en el modelo
-    return chain(T(*HAND), np.linalg.inv(arm_extra()), sword_world(), S(SCALE), T(-GRIP[0], -GRIP[1], -GRIP[2]))
+def pose_nueva(disp):
+    tr = [c / 16.0 for c in disp.get('translation', [0, 0, 0])]
+    return chain(S(16), S(-1, -1, 1), R('x', -90), R('y', 180), T(1 / 16.0, 0.125, -0.625), T(*tr), T(-0.5, -0.5, -0.5), S(1 / 16.0))
 
 
 def bone_mats(model, extra=None):
@@ -247,13 +239,13 @@ def main():
         tr = [c / 16.0 for c in disp.get('translation', [0, 0, 0])]
         m = mats[arm] @ pose_actual() @ T(*tr) @ T(-0.5, -0.5, -0.5) @ S(1 / 16.0)
     else:
-        m = mats[arm] @ pose_nueva()
+        m = mats[arm] @ pose_nueva(sword['display']['thirdperson_righthand'])
     tris = knight_tris(model, mats) + sword_tris(sword, m)
     # dónde queda el puño de la espada y dónde la mano (píxeles del caballero)
     grip = m @ np.array([8.0, 3.8, 8.0, 1.0])
-    hand = mats[arm] @ np.array([HAND[0], HAND[1], HAND[2], 1.0])
+    hand = mats[arm] @ np.array([1.0, -9.6, 0.0, 1.0])
     tip = m @ np.array([8.0, 32.0, 7.5, 1.0])
-    print('punta de la hoja %s (el suelo es y = 0)' % np.round(tip[:3], 2))
+    print('punta de la hoja %s' % np.round(tip[:3], 2))
     print('puño de la espada %s; mano %s; distancia %.2f px' % (np.round(grip[:3], 2), np.round(hand[:3], 2),
                                                                np.linalg.norm(grip[:3] - hand[:3])))
     # La cámara mira hacia +z en la vista (lo de menos z, delante) y la x de la pantalla es la −x de la vista (como al

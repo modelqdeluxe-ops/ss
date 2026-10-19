@@ -59,7 +59,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, TF Client 1.3.93) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.94) — lee esto primero
+
+**1.3.94** (`tf-client/JEFES.md` §3.19), lo que pidió el dueño tras ver la 1.3.93:
+- La grieta del cielo va en una **dirección fija del cielo** (norte, 50° de altura), como el sol: antes era un punto
+  sobre el spawn y, al reaparecer lejos, salía junto al horizonte. Más grande (~46° × 64°).
+- **Aparición de 12 s más siniestra**: el cielo y la niebla se apagan, sombra violeta que late, latidos, sculk, Wither,
+  rugido del warden, relámpagos lejanos con grietas que parpadean y temblor que crece; se rompe a saltos con fogonazo y
+  onda de choque y se abre despacio. Mientras está abierta, el cielo queda algo apagado.
+- La **grieta del Void siempre es la madre** y va **sin cartel** encima.
+- La **espada de Caelthar como la lleva un jugador** (ItemInHandLayer, brazo de ArmPose.ITEM).
+
+### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.93)
 
 **1.3.93**: la **grieta del cielo** (`tf-client/JEFES.md` §3.18), lo que pidió el dueño para que el Void sea «asombroso»:
 - Al poner a Caelthar la primera vez (`/tf void npc`, en un mundo Overworld) empieza el **evento** para todo el
