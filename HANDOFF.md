@@ -74,6 +74,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   que su orden encerró allí; derrotarlas a todas).
 - Código: `vacio/SkyRift` (servidor, guarda el estado en `data/tfclient_cielo.dat`), `vacio/SkyRiftClient` + shader
   `sky_rift` (cliente), `VoidNet.Sky`. Vista previa: `tools/void/grieta_cielo_preview.py`.
+- Arreglos de la 1.3.92 que vio el dueño: **un agujero negro falso** (un círculo negro sin disco) en el lado opuesto del
+  cielo del Void (el borde suave de la sombra contaba también los rayos que van al revés); **la espada de Caelthar**
+  flotaba al lado del brazo → clavada de punta delante de él con la mano en el puño (`tools/void/caballero_espada.py`
+  la dibuja y la mide); el **rescate al caer al vacío** no funcionaba con un cliente lento (teletransporte en cada tick).
+- El evento lo lanza el servidor: el dueño necesita el jar nuevo **en el servidor y en los clientes**.
 
 ### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.92)
 

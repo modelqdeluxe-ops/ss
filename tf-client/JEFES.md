@@ -708,7 +708,7 @@ dorado, animada). Y su cuadro de diálogo es una mierda: va lento, el nombre mal
 | «Se ven cuadrados, fragmentos» (agujero de gusano) | Las paredes eran losetas de bloques (atlas 4×4), pasaban cubos girando y las puertas y estrellas eran texturas de píxeles. | `wormhole.fsh` rehecho: cada tramo es una textura continua de ruido filtrado por lo que mide un píxel (nada más fino que ~2 píxeles; la vuelta del túnel como un círculo en el ruido: sin costura). Overworld: cielo con nubes y campos, bosques, cerezos y ríos con el horizonte en espiral; Nether: magma con venas de lava; End: nebulosa violeta con corrientes claras; **antesala del Void** (nueva): sus nebulosas (las del cielo del Void) con hebras de oro y el agujero negro al fondo, que crece y **se cruza** (llena la pantalla de negro y de su anillo sale la luz). Tres puertas (anillo de luz y membrana en remolino: morada, turquesa, violeta con oro). Ida: Overworld → Nether → End → antesala; vuelta: antesala → End → Nether → Overworld. Tiempos: puertas a 3,4 / 4,9 / 6,3 s. Sin texturas de Minecraft (fuera `WormholeTextures`). Vista previa: `tools/void/tunel_preview.py carpeta [--vuelta]`. |
 | «El agujero negro bugueaba» con la distorsión | La furia de la grieta (1.3.91) hacía latir el tamaño del agujero (`D` ±8 % a 0,37 Hz) y parpadear el anillo y los grumos (senos rápidos), y entraba de golpe. | La furia solo da más brillo, grumos más vivos y el color de la grieta; entra y sale en ~1 s (`VoidSky.rageShown`). |
 | «Demasiado rápido» | El disco daba una vuelta cada ~16 s (`SPIN_K` 1,6). | Una vuelta cada ~84 s (`SPIN_K` 0,3, capas de 30 s) y todo más lento (grumos, chorros, el anillo, el pulso); las ondas de luz que dan la vuelta al anillo de fotones, despacio y más marcadas: se ve cómo gira. |
-| «Bordes dentados» del círculo negro | La sombra era «cae o no cae» por rayo: medido en la vista previa a 1920×1080, **0 píxeles** entre el negro y el anillo en todas las filas (187 → 0). Además, rayos junto a la esfera de fotones «escapaban» por los pasos finitos: puntos sueltos dentro. | Se decide con el parámetro de impacto (b = \|p × v\|; cae si b < 3√3/2) y un degradado de ~1,5 píxeles (128 → 103 → 46 → 4 → 0); el anillo de fotones también según b; lo que cruza el disco tras pasar junto al agujero, con el mismo degradado. |
+| «Bordes dentados» del círculo negro (ojo: en la 1.3.93 se corrigió que esto creaba un agujero falso en el lado opuesto, §3.18) | La sombra era «cae o no cae» por rayo: medido en la vista previa a 1920×1080, **0 píxeles** entre el negro y el anillo en todas las filas (187 → 0). Además, rayos junto a la esfera de fotones «escapaban» por los pasos finitos: puntos sueltos dentro. | Se decide con el parámetro de impacto (b = \|p × v\|; cae si b < 3√3/2) y un degradado de ~1,5 píxeles (128 → 103 → 46 → 4 → 0); el anillo de fotones también según b; lo que cruza el disco tras pasar junto al agujero, con el mismo degradado. |
 | «Más detallado» | — | Hebras finas a lo largo de la órbita y carriles de polvo oscuros (filtrados como el resto). |
 | Espada de Caelthar | — | La grande del set **Hada** (`tfclient:fairy_greatsword`: blanca y dorada, con alas, animada) en la mano derecha, desde el hueso del brazo (`KnightRenderer.sword`). Con la posición de la mano de Minecraft (ItemInHandLayer) apuntaba al frente y hacia abajo y se veía de canto, como un palo (captura `caballero_mundo` de la prueba): ahora erguida, la cara de la hoja y sus alas hacia delante, algo inclinada hacia fuera y al 80 % (comprobado con shaders). |
 | Diálogo «lento, nombre mal dibujado, amatista» | El texto iba a 34 letras/s por ticks (a saltos); el nombre en Cinzel **negrita** a ×1,7 (la negrita TTF se dibuja dos veces desplazada: corrida y borrosa); clics y apertura con `AMETHYST_BLOCK_CHIME` (y el viaje, dos veces). | `KnightScreen` rehecho: escena de cine (el mundo oscurecido abajo), placa de cristal con esquinas redondeadas e hilo de oro en píxeles reales (`TFMenuPaint`), el nombre en Cinzel rasterizada al tamaño real (`font/cinzel_N`) con contorno, hilos de oro que se apagan, texto a 55 letras/s con fundido (clic para verlo entero), respuestas en pastillas que se encienden; sin retrato; sonidos suaves del TF Pad. Fuera las amatistas del viaje. |
@@ -799,6 +799,25 @@ tick un cliente lento (aquí <1 fps; un jugador con <20 fps también) confirma s
 nunca (en las pruebas con shaders de la 1.3.92 tardó 13 ticks; en esta, nunca). Ahora, un teletransporte cada 2 s como
 mucho (si no llega, lo reenvía Minecraft). Además, como el diálogo del santuario no se abrió, su «pulsa 1» quedó
 pendiente y el de Caelthar en el Overworld eligió «Llévame al Void»: la prueba borra la pulsación antes de hablar.
+Y el diálogo de la grieta del cielo seguía sin abrirse: mientras la prueba está en el Void, el chunk de Caelthar se
+descarga y al volver es **otra entidad** (otro número): la prueba ahora busca al Caelthar de ahora antes de hablar.
+
+**Lo que el dueño encontró en la 1.3.92** (con capturas, mientras tanto):
+- «¿Qué es esa mierda en el Void? Un círculo negro... hay 2 agujeros»: el borde suave de la sombra (§3.17) decidía con
+  el parámetro de impacto b = |p × v|, que **también es ~0 para los rayos que van justo al revés del agujero**: en el
+  lado opuesto del cielo salía otro agujero, un círculo negro con un anillo fino y sin disco (estaba en la captura
+  `vacio_isla` de la prueba y no se vio). Ahora b solo cuenta para los rayos que van hacia él (`dot(p, v) < 0`; al
+  cambiar de lado b vale D = 8 ≫ 2,6: sin salto). Medido con el cielo entero (equirectangular de 1600 × 800 con el
+  mismo shader, zonas negras de más de 200 píxeles): antes dos (el agujero y su antípoda), ahora una.
+- «La espada mal puesta»: iba erguida por fuera del brazo, con el puño a 4,8 píxeles de la mano (flotaba a su lado).
+  Ahora, como un guardián, **clavada de punta delante de él** (algo a su derecha, con la cara de la hoja y sus alas de
+  frente) y la mano sobre el puño: el puño de la espada en el centro de la mano (0 px) y la punta en y = −0,8 (en el
+  suelo); el brazo derecho se adelanta 60° y se cierra 10° (`KnightRenderer.ARM_PITCH/ARM_ROLL`), y la hoja va en los
+  ejes del modelo (se deshace ese giro). Herramienta: `python3 -I tools/void/caballero_espada.py salida.png [--actual]`
+  dibuja al caballero con la espada (de frente, de lado, de tres cuartos y por detrás, con sus texturas) con la misma
+  cadena de transformaciones que `KnightRenderer.sword` y mide el puño y la punta.
+- «Lo puse y no hizo nada»: el evento es de la 1.3.93 (la que publica esto); con la 1.3.92 no existe. Hace falta el jar
+  nuevo en el **servidor** (el evento lo lanza el servidor) y en los clientes (lo dibujan ellos).
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
