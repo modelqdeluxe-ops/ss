@@ -75,6 +75,8 @@ public final class TFVoid {
 
     /** Avisos de «la isla está protegida» (uno cada 3 s por jugador). */
     private static final Map<UUID, Long> WARNED = new HashMap<>();
+    /** Cuándo se rescató a cada jugador del vacío (para no repetirlo en cada tick: ver onPlayerTick). */
+    private static final Map<UUID, Long> RESCUED = new HashMap<>();
     private static int tick;
 
     private TFVoid() {}
@@ -196,8 +198,15 @@ public final class TFVoid {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer p) || !isVoid(p.level())) return;
-        // Quien cae al vacío vuelve al santuario (la isla flota sobre la nada: sin esto, se perdían las cosas)
+        // Quien cae al vacío vuelve al santuario (la isla flota sobre la nada: sin esto, se perdían las cosas).
+        // Una vez cada 2 s como mucho (1.3.93): Minecraft deja al jugador donde estaba en el servidor hasta que su
+        // cliente confirma el teletransporte, y con uno nuevo en cada tick un cliente lento (<20 fps: en la prueba con
+        // shaders, <1) siempre confirmaba uno ya viejo y no se le rescataba nunca. Si no llega, lo reenvía Minecraft.
         if (p.getY() < 2 && !p.isSpectator() && VoidTravel.idle(p)) {
+            long now = p.level().getGameTime();
+            Long last = RESCUED.get(p.getUUID());
+            if (last != null && now - last >= 0 && now - last < 40) return;
+            RESCUED.put(p.getUUID(), now);
             Vec3 a = VoidIsland.arrivePos();
             p.teleportTo(p.serverLevel(), a.x, a.y + 0.5, a.z, VoidIsland.arriveYaw(), 0F);
             p.fallDistance = 0;

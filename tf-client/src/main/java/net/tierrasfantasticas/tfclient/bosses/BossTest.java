@@ -866,6 +866,9 @@ public final class BossTest {
             // (el diálogo antes de la vista de lejos y 3 s después de llegar: al volver de 600 bloques el cliente aún
             // no tenía a Caelthar y el diálogo se cerraba en el acto)
             case 2745 -> {
+                // (si el diálogo del santuario no llegó a abrirse, su «pulsa 1» seguía pendiente y aquí elegía «Llévame
+                // al Void»)
+                dialogPress = -1;
                 fly(player, false);
                 player.teleportTo(level, knight.getX(), knight.getY(), knight.getZ() + 4, 180F, -4F);
             }

@@ -190,7 +190,8 @@ public class KnightScreen extends Screen {
         if (closeAt >= 0 && age >= closeAt) onClose();
         Minecraft mc = Minecraft.getInstance();
         Entity e = mc.level == null ? null : mc.level.getEntity(entityId);
-        if (e == null || mc.player == null || e.distanceToSqr(mc.player) > 14 * 14) {
+        // (si el cliente aún no tiene al caballero, p. ej. recién llegado de lejos, se le esperan 3 s)
+        if (mc.player == null || (e == null ? age > 60 : e.distanceToSqr(mc.player) > 14 * 14)) {
             if (closeAt < 0) onClose();
         }
     }
