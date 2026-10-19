@@ -914,6 +914,89 @@ cuadro, el desgarro oscuro por dentro, la tormenta sin taparlo. Con shaders (24a
 sin las nubes del paquete delante del Void. Lo que encontró la primera: las nubes de Minecraft
 delante del Void (de lejos, 25,7 % de nube dentro del desgarro) → con la máscara, 0,4 % (reabierta: 11,2 % → 2,2 %).
 
+### 3.21 Con shaders sin barras, la grieta del cielo más épica y con sonido corrido, la secuencia del Void, el agujero de gusano con las dimensiones de verdad y la luz del Alba (1.3.96)
+
+El dueño, con una captura con **Photon v1.3b**: *«se ve horrible con shaders. No pongas sonidos tipo explosiones que se
+oyen secuenciales, quiero un sonido fino corrido. Mejora el sonido, el efecto de apertura y aparecimiento de la grieta,
+también de cerrar. El diseño de la grieta me gusta, hazlo un poquito más grandecito y más épico. El efecto de distorsión
+casi no se nota. Con la grieta del Void, que pueda configurar los atributos para todos los bosses, la secuencia de
+bosses. La escena del agujero de gusano, que muestre la dimensión: en el Nether hay fuego de textura, pero no sé si estoy
+viendo el Nether de verdad; y el tramo final al Void, un poco pobre. Quiero lore. Que el Void robe vitalidad, que robe tu
+luz; fragmentos de luz por la isla; una isla santuario con el caballero sacro, encerrada en una burbuja brillante que
+contiene la luz y nos mantiene a salvo de esa corrosión. Inventa algo chingón.»*
+
+| Queja | Causa (medida) | Arreglo |
+|---|---|---|
+| Con Photon, barras blancas en abanico sobre la grieta del cielo | Photon pone mezclas por búfer (`blend.gbuffers_basic.colortex0 = ONE ONE_MINUS_SRC_ALPHA ...`); Oculus las aplica con `glBlendFuncSeparatei`, que la caché de `GlStateManager` no ve. Al acabar el paquete, la caché cree que la mezcla es la de Minecraft y no la vuelve a poner: lo nuestro (color sin premultiplicar) se sumaba entero, blanco donde el alfa es pequeño | `AfterShaders.syncBlend()`: antes de dibujar, la mezcla con OpenGL directo (sin índice: vale para todos los búferes). La prueba en el juego puede usar Photon: `[shaders=photon]` en el commit (sin `=photon`, Complementary) |
+| «Más grandecito y más épico» | — | `sky_rift.fsh`: desgarro de `HALF_LEN` 0,58 → 0,7 rad (~80° de largo) y `HALF_W` 0,2 → 0,25; tormenta `STORM_R` 1 → 1,1 que **gira** (`Spin`, cada vez más rápido antes de romperse, `spinRate()`); anillos de túnel dentro del Void; borde que late; chispas en las puntas; estrellas que se escapan en el preludio |
+| Apertura, aparición y cierre | — | Al romperse, una **onda de choque** que cruza el cielo (`Ring`, `ringOut`) antes del fogonazo; los trozos que flotan entran poco a poco; al cerrarse, un anillo que se encoge hacia el desgarro (`ringIn`) y la tormenta que se la traga girando |
+| «La distorsión casi no se nota» | El radio de `warp()` (0,3 rad) era pequeño para la grieta nueva | Radio 0,42 rad; en `RiftWarp`, lente 0,2·abierta + 0,3·fogonazo, remolino 0,55, ondas 0,018 |
+| «Sonidos tipo explosiones secuenciales» | Sonaban a la vez varios de Minecraft (trueno, explosión, «sonic boom», portal, un chasquido en cada salto) | **Una pista continua por momento**, sintetizada (`tools/void/sonidos_cielo.py`: `cielo/preludio`, `rompe`, `cierra`, `reabre`, `final`, `aliento`), sin ataques secos: graves que suben, viento, coro, un acorde que florece y el desgarro como tela. `--medir`: el «golpe» (lo que sube el volumen en 20 ms) de todas ≤ 10 dB. Abierta, el Void respira cada 40–70 s |
+| Configurar los jefes del Void y su secuencia | — | La lista es una **secuencia** (en orden o al azar), con ▲▼ para ordenar, «siguiente», qué pasa al acabar (repetir / parar / **el final**: la grieta del cielo se cierra para siempre) y ✎ para editar los atributos de uno (la ventana de jefes de siempre) o «a todos los del Void» (`Rifts.VoidConfig`: `secuencia`, `alAcabar`, `<lista>Actual/Siguiente`; `BossNet` 14–20; `tools/bosses/sim_gui.py` mide la ventana) |
+| «No sé si estoy viendo el Nether de verdad» | El túnel pintaba una pared con colores de cada mundo | **Panoramas de verdad**: la prueba en el juego (`[prueba-jefes=panoramas]`, `BossTest.panoramaStep`) captura el Nether (junto a un mar de lava), el End (junto al portal) y el Void con la herramienta de panoramas de Minecraft; `tools/void/panoramas.py` los pasa a equirectangulares (`textures/environment/tunel_*.png`). El Overworld, del panorama del menú de cada uno (`TunnelPanoramas`). En `wormhole.fsh` cada tramo del túnel deja ver su mundo y cada puerta, el siguiente |
+| «El tramo final al Void, un poco pobre» | — | Al final del viaje la cámara cae hacia el agujero negro del Void (zoom con su lente gravitatoria) y se llega por su luz. El viaje dura 11,5 s (`VoidTravel.LEAVE_TICKS` 230), con sonidos propios (`viaje/ida`, `vuelta`, `llegada`, `tools/void/sonidos_viaje.py`) |
+
+**El lore (inventado para el dueño; está en el juego: los Ecos, el caballero y los avisos).** Hace eras, la **Orden del
+Alba** —doce caballeros sacros— guardaba el **Alba**, una luz viva. Cuando el Void abrió sus fauces bajo el mundo, el
+Alba se quebró en mil esquirlas para cerrarlas: el **Alba Rota**. Once caballeros se hicieron luz para sellar la grieta;
+sus esquirlas son los **fragmentos de luz** que flotan por las islas, y cada una guarda un **Eco del Alba** (lo que dijo
+ese caballero). Con lo último del Alba levantaron el **Velo del Alba**, la burbuja del santuario, y arriba late su
+**Corazón**. El más joven, **Caelthar**, el único que aún creía, se quedó en pie: custodia el umbral. El Void no muerde
+la carne: **bebe la luz**; cuando ya no te queda, te consume. Las criaturas de la grieta no nacieron malas: el hambre del
+Void las vació. El agujero negro del cielo del Void es **su ojo**. El santuario de antes, en la punta norte de la isla
+grande, queda como «el Umbral».
+
+**La luz del Alba (hecho)**:
+- `VoidLight` (servidor): cada jugador lleva su luz (0–100). **Fuera del Velo** el Void se la bebe (de llena a nada en
+  6 min, `DRAIN_MIN`); **dentro**, el Corazón la llena en 4 s. Avisos en el chat a la mitad, a un cuarto y al 10 %. Sin
+  luz: oscuridad, lentitud y **corrosión** cada 2 s (1,5 de daño; tipo de daño propio `tfclient:corrosion_vacio`, que
+  atraviesa la armadura, `data/minecraft/tags/damage_type/bypasses_armor.json`; muerte: «fue consumido por el Vacío»).
+  Al entrar en el Void (o conectarse en él), luz llena. El staff en creativo y los espectadores no la pierden.
+- `LightShards`: **28 fragmentos** por la isla grande (sitios elegidos por `tools/void/isla_alba.py`: en el terreno, a
+  ≥ 9 bloques del borde, lejos de la plaza, del santuario y entre sí, ≥ 40 bloques). Cada uno es una **entidad de
+  exhibición de bloque** de Minecraft (sapoluz perlado de punta, brillo máximo, gira y sube y baja con la interpolación de
+  Minecraft; se ve igual con shaders) con chispas alrededor. Al pasar por él: +30 de luz, partículas, `luz.fragmento` y
+  su Eco; vuelve a salir a los 180 s.
+- **Ecos del Alba** (16, `VoidLight.ECHOES`): cada fragmento cuenta en el chat el siguiente que no has oído («✦ Eco del
+  Alba (n/16) · «...» — Ser Aldric, el Primero»). Se guardan en el mundo (`tfclient_ecos`, por jugador). Con los 16,
+  aviso y Caelthar lo sabe.
+- `VoidLightClient` (cliente): arriba a la izquierda, el orbe y «LUZ DEL ALBA» con su barra dorada (roja al final) y los
+  ecos; dentro del Velo, «A SALVO EN EL VELO DEL ALBA». Con poca luz, los bordes de la pantalla se oscurecen de violeta
+  (`luz_vinieta.png`; sin luz, laten); al coger un fragmento, un destello dorado; al cruzar el Velo, su sonido
+  (`luz.velo_entrar` / `velo_salir`; sin luz, `luz.sin_luz`). Solo en el Void y sin creativo ni espectador.
+
+**El santuario del Alba (hecho)**: una isla aparte, al norte de la grande y no lejos (`tools/void/isla_alba.py`, centro
+(−64, −224), radio 21): jardín con cerezos y flores, templo de cuarzo abierto con columnas y oro, el pedestal de Caelthar
+en el centro (él, en (−64, 68, −224)), luces y el **Puente de Luz** (cuarzo y cristal con varas del End, de z −203 a
+−169) hasta la isla grande. Se llega al Void a su entrada (−64, 67, −209), mirando al templo, y el rescate al caer al
+vacío te devuelve aquí. La isla va en `tfclient-void-isla.bin` **v3** (`TFVI`: además, el Velo —centro (−64, 72, −224),
+radio 31—, el Corazón —(−64, 85, −224)— y los 28 fragmentos); `isla.py` llama a `isla_alba.main` al final, así que
+rehacer la isla grande también rehace el santuario (y `isla_alba.py` se puede volver a pasar: da lo mismo). En los mundos
+ya hechos lo pone `IslandUpdate` (`VERSION` 4). **Ningún jefe entra en el Velo** (`VoidIsland.veilColumn`; el puente es
+estrecho y además se excluye; `tools/void/mascara_jefes.py` lo enseña).
+
+`SanctuaryFx` (cliente) dibuja el **Velo del Alba** (shader `velo_alba`: una esfera de radio 1 en un `VertexBuffer` que el
+shader pone en su sitio; película tornasolada como una pompa que fluye hacia arriba, cortinas de aurora, chispas que
+titilan, borde que brilla de lado —Fresnel—, un cinturón de oro donde toca el suelo y, al cruzarla, una onda que se abre
+desde ese punto) y el **Corazón del Alba** (shader `corazon_alba`: late con dos golpes cada 1,6 s y suelta un anillo de
+luz; rayos que giran; y una **columna de luz** de 160 bloques que sube al cielo para encontrar el santuario desde la isla
+grande). Motas de luz alrededor del Corazón y dentro del Velo. Aditivo, sin escribir profundidad: la isla lo tapa. Sin
+paquete de shaders, después de las partículas; con paquete, en `AfterShaders.end` con la profundidad de la escena.
+Vista previa sin el juego: `xvfb-run -a python3 -I tools/void/santuario_preview.py carpeta` (desde el puente, desde la
+isla grande, desde dentro y la onda al cruzarla). (OJO en moderngl: la máscara de profundidad va en el framebuffer,
+`fbo.depth_mask`, y vale al hacer `fbo.use()`; con `ctx.depth_mask` la esfera se tapaba a sí misma a franjas.)
+
+**Caelthar** cuenta todo eso: en el santuario, «¿Qué es esta burbuja?» (el Velo y el Corazón) → «¿Y si salgo del Velo?»
+(la luz que bebe el Void, el medidor) → «¿Qué son los fragmentos de luz?» (sus once hermanos; cuántos ecos llevas; con
+los 16, «por primera vez en eras, no me siento solo»); en el Overworld, que es lo que queda de la Orden del Alba.
+
+**La prueba en el juego** (`[prueba-jefes=vacio]`): con el viaje de 11,5 s, `BossTest.voidClock` pasa los tiempos de
+siempre (lo de después de la ida, 80 ticks más tarde; lo de después de la vuelta, 160) y tras la persecución mete
+`lightStep` (340 ticks): ver un fragmento, cogerlo con 40 de luz, poca luz (8), sin luz (corrosión) y de vuelta en el
+Velo. Capturas nuevas: `vacio_santuario` (desde el Puente de Luz), `vacio_fragmento`, `vacio_fragmento_cogido`,
+`vacio_poca_luz`, `vacio_sin_luz`, `vacio_velo_dentro`. (La vida del jugador de la prueba se rellena cada tick: la
+corrosión se cuenta por sus golpes.)
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1263,7 +1346,15 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.95
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.96
+
+**1.3.96**: §3.21 (con Photon sin barras; la grieta del cielo más épica con sonido corrido; la secuencia y los atributos
+de los jefes del Void; el agujero de gusano con las dimensiones de verdad; la luz del Alba: el Void bebe tu luz,
+fragmentos, Ecos, la isla santuario con el Velo y el Corazón, y el lore). Queda que el dueño lo vea en su servidor y
+ajustar con él los números de la luz (`VoidLight.DRAIN_MIN`, `SHARD`, `LightShards.RESPAWN_S`). Ideas para seguir si
+pide más: que los jefes del Void, al morir, dejen un fragmento (las criaturas «devuelven luz al mundo», dice un Eco);
+algo al reunir los 16 Ecos (Caelthar ya lo reconoce: una recompensa o un título); el jefe final «super fuerte» que cerraría
+la grieta del cielo para siempre (`SkyRift.end`, también desde la secuencia del Void con «al acabar: el final»).
 
 **1.3.95**: §3.20 (la grieta del cielo 2.0: rehecha entera —tormenta en espiral, telaraña de fracturas, desgarro quebrado
 con el Void y su ojo, trozos de cielo, fogonazo—, sin sonidos de cristal, y las nubes de Minecraft detrás del desgarro).

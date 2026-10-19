@@ -1,13 +1,13 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **19 oct 2026, TF Client 1.3.95** (la grieta del cielo 2.0, rehecha entera y sin sonidos de
-cristal, con las nubes de Minecraft detrás del desgarro: JEFES.md §3.20 y, con imágenes de cada momento en la vista
-previa y en el juego, **`tf-client/docs/grieta-cielo-2/README.md`**; antes: 1.3.94 §3.19, 1.3.93 §3.18; y el
-CHECKPOINT de HANDOFF.md).
+Estado al dejarlo: **19 oct 2026, TF Client 1.3.96** (con Photon sin barras blancas, la grieta del cielo más épica y
+con sonido corrido, la secuencia de jefes del Void, el agujero de gusano con las dimensiones de verdad y **la luz del
+Alba**: el Void bebe tu luz, fragmentos de luz, la isla santuario con el Velo del Alba y el lore; JEFES.md §3.21; antes:
+1.3.95 §3.20 con **`tf-client/docs/grieta-cielo-2/README.md`**, 1.3.94 §3.19; y el CHECKPOINT de HANDOFF.md).
 Rama de trabajo: la que te asigne la sesión (la última fue `claude/peaceful-gauss-4nzddg`), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
-`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.20 lo último, §11 lo que falta).
+`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.21 lo último, §11 lo que falta).
 
 ## 1. Qué estamos haciendo
 
@@ -45,7 +45,8 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
    (`.github/workflows/jefes-prueba.yml`) arranca Minecraft con TF Client en una pantalla virtual (xvfb + Mesa), crea
    un mundo plano, despierta una grieta por jefe, pelea 800 ticks con un jugador automático, lo mata y saca capturas.
    Con `[shaders]` también en el mensaje, juega con Oculus 1.8 + Embeddium + Complementary Reimagined (para ver The
-   Void y lo demás con un paquete de shaders; va lento, úsalo solo con `vacio` y uno o dos jefes).
+   Void y lo demás con un paquete de shaders; va lento, úsalo solo con `vacio` y uno o dos jefes); con
+   `[shaders=photon]`, con Photon v1.3b (el que usa el dueño).
    **No esperes con sleeps**: lanza en segundo plano
    `tf-client/tools/bosses/esperar_prueba.sh <hash corto> <carpeta del scratchpad>` (Bash con `run_in_background`);
    te avisa cuando la rama `pruebas-jefes` tenga el informe de ese commit.
@@ -76,6 +77,11 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 | Cielo del Void (agujero negro) | `xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--size 1920x1080] [--q 0.35] [--t segundos] [--furia]` (prueba con `--t 1500` y `--t 3599.9`: mucho tiempo de juego; `--furia`: con una grieta activa) |
 | Viaje por el agujero de gusano | `xvfb-run -a python3 -I tools/void/tunel_preview.py carpeta [--vuelta]` |
 | Por dónde andan los jefes en la isla del Void | `python3 -I tools/void/mascara_jefes.py tf-client/src/main/resources/tfclient-void-isla.bin salida.png` |
+| Santuario del Alba (isla, templo, puente, fragmentos) | `python3 -I tools/void/isla_alba.py [--preview carpeta]` (sobre la isla ya hecha; se puede repetir) |
+| Velo del Alba y Corazón (sus shaders) | `xvfb-run -a python3 -I tools/void/santuario_preview.py carpeta` |
+| Grieta del cielo (vista previa, GIF) | `xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta [--gif]` |
+| Sonidos de la grieta del cielo / del viaje y la luz | `python3 tools/void/sonidos_cielo.py [--medir]`, `python3 tools/void/sonidos_viaje.py` (necesitan scipy y ffmpeg) |
+| Panoramas del agujero de gusano | `[prueba-jefes=panoramas]` y luego `python3 -I tools/void/panoramas.py <carpeta de la prueba>` |
 | Alas de Caelthar (mide y escribe «reposo») | `python3 -I tools/void/caballero_alas.py [--solo-medir]` |
 | La isla (con el mapa del dueño descifrado fuera del repo) | `python3 -I tools/void/isla.py <EndCarageKitMap.schematic> [--preview carpeta]` |
 | Isla del Void (santuario, plaza) | `python3 -I tools/void/isla.py <EndCarageKitMap.schematic> --preview carpeta` (mapa cifrado en `packs/void.tar.enc`) |
@@ -87,7 +93,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.96**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.97**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
@@ -97,6 +103,13 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
+- **Que el dueño vea la 1.3.96**: con Photon, la grieta del cielo sin barras; la aparición, el estallido y el cierre
+  nuevos con su sonido corrido (si algo le suena a golpe, `tools/void/sonidos_cielo.py --medir` y bajar ese ataque); la
+  secuencia de jefes del Void en `/tf boss` (▲▼, ✎, «a todos», al acabar); el agujero de gusano (Nether, End y Void de
+  verdad); y en el Void: el medidor de luz, los fragmentos (¿se encuentran?, ¿6 min es mucho o poco?: `DRAIN_MIN`;
+  ¿+30?: `SHARD`; ¿180 s para volver?: `RESPAWN_S`), los Ecos, el santuario con el Velo y el Corazón, y lo que cuenta
+  Caelthar. Si quiere otro sitio o tamaño del santuario: constantes de `tools/void/isla_alba.py` (y volver a pasarlo;
+  en su servidor lo pone `IslandUpdate` al subir su `VERSION`).
 - **Que el dueño vea la 1.3.95** (la grieta del cielo 2.0, la que pidió «chingón»): en su servidor, `/tf void cielo
   quitar` y volver a poner a Caelthar (o `/tf void cielo evento`); que mire la aparición entera (12 s de tormenta,
   estalla, se abre), los sonidos (sin cristal) y la grieta abierta, también desde lejos. Si algo no le gusta, ajústalo

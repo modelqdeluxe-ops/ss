@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.95, más abajo.
+> de la 1.3.96, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,7 +59,29 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, TF Client 1.3.95) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.96) — lee esto primero
+
+**1.3.96** (`tf-client/JEFES.md` §3.21, con la tabla queja → causa → arreglo y el lore entero). El dueño, con una
+captura con Photon: *«se ve horrible con shaders... no pongas sonidos tipo explosiones secuenciales, quiero un sonido
+fino corrido... hazla un poquito más grandecita y más épica... la distorsión casi no se nota... que pueda configurar los
+jefes del Void y su secuencia... el agujero de gusano, que muestre la dimensión de verdad... quiero lore... que el Void
+robe tu luz, fragmentos de luz, una isla santuario con el caballero en una burbuja brillante... inventa algo chingón»*:
+- **Con Photon, sin barras blancas** (`AfterShaders.syncBlend`: Photon deja mezclas por búfer que la caché de Minecraft
+  no ve). La prueba en el juego puede usar Photon: `[shaders=photon]`.
+- **Grieta del cielo más grande y épica** (desgarro ~80°, tormenta que gira y se acelera, onda de choque al romperse,
+  anillo que se cierra al sellarse, distorsión más fuerte) y **sonido corrido**: una pista sintetizada por momento,
+  sin golpes (`tools/void/sonidos_cielo.py`).
+- **Grieta del Void**: secuencia de jefes (en orden o al azar, ▲▼, siguiente, al acabar: repetir / parar / el final) y
+  atributos de uno o de todos (✎ en `/tf boss`).
+- **Agujero de gusano con las dimensiones de verdad** (panoramas capturados en el juego; el Overworld, el del menú) y
+  el final cayendo al agujero negro del Void; 11,5 s.
+- **La luz del Alba**: el Void bebe tu luz (6 min fuera del Velo; sin luz, corrosión), 28 fragmentos de luz por la isla
+  (+30 y un Eco del Alba de los 16), el medidor arriba a la izquierda, y la **isla santuario** con el **Velo del Alba**
+  (burbuja de luz) y el **Corazón del Alba** (late y sube una columna de luz), unida por el Puente de Luz; Caelthar
+  cuenta el lore. Ningún jefe entra en el Velo.
+- Rama: `claude/peaceful-gauss-4nzddg`. Pendiente del dueño: decir si se cierra el PR en borrador #137 (ya no hace falta).
+
+### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.95)
 
 **1.3.95: la grieta del cielo 2.0** (`tf-client/JEFES.md` §3.20; todo el detalle con imágenes de cada momento, en la
 vista previa y en el juego: **`tf-client/docs/grieta-cielo-2/README.md`**). El dueño, al ver la 1.3.94: *«la animación,
