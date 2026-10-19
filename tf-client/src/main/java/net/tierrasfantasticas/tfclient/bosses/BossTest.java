@@ -863,8 +863,7 @@ public final class BossTest {
             }
             case 2560 -> r.event("grieta del cielo, en el preludio: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
             case 2720 -> r.event("grieta del cielo, rota: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
-            // (el diálogo antes de la vista de lejos y 3 s después de llegar: al volver de 600 bloques el cliente aún
-            // no tenía a Caelthar y el diálogo se cerraba en el acto)
+            // (el diálogo antes de la vista de lejos y 3 s después de llegar)
             case 2745 -> {
                 // (si el diálogo del santuario no llegó a abrirse, su «pulsa 1» seguía pendiente y aquí elegía «Llévame
                 // al Void»)
@@ -872,7 +871,15 @@ public final class BossTest {
                 fly(player, false);
                 player.teleportTo(level, knight.getX(), knight.getY(), knight.getZ() + 4, 180F, -4F);
             }
-            case 2805 -> net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            case 2805 -> {
+                // (mientras se estaba en el Void su chunk se descargó: al volver es otra entidad, con otro número, y
+                // hablar con la de antes no abría nada en el cliente)
+                var ks = level.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(knight.blockPosition()).inflate(8), k -> !k.home());
+                if (!ks.isEmpty()) knight = ks.get(0);
+                r.event("Caelthar para el diálogo de la grieta del cielo: " + (ks.isEmpty() ? "NO ESTÁ" : "está"));
+                net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            }
             case 2925 -> shot(r, "dialogo_cielo");
             case 2935 -> dialogPress = 1;
             case 3045 -> shot(r, "dialogo_grieta");
