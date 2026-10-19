@@ -41,6 +41,15 @@ public final class VoidIsland {
     final float bubbleR;
     final Vec3 heart;
     final java.util.List<BlockPos> shards;
+    /**
+     * (v4, 1.3.96) Donde está de pie el soporte con la armadura del Vacío (el Altar del Vacío del santuario); el Portal del
+     * Alba de la isla de la grieta (el centro de abajo de su hueco) y hacia dónde mira (0 = sur, 1 = oeste, 2 = norte,
+     * 3 = este); y un sitio del Páramo desde el que se busca por dónde anda su fauna.
+     */
+    final BlockPos altar;
+    final BlockPos portal;
+    final int portalFacing;
+    final BlockPos faunaSeed;
     final BlockState[] palette;
     /** Por columna: dónde empiezan sus tramos en {@link #runs} (y el final, en la siguiente). */
     final int[] colStart;
@@ -52,7 +61,7 @@ public final class VoidIsland {
         in.readFully(magic);
         if (magic[0] != 'T' || magic[1] != 'F' || magic[2] != 'V' || magic[3] != 'I') throw new IOException("no es una isla");
         int version = in.readInt();
-        if (version < 1 || version > 3) throw new IOException("versión " + version);
+        if (version < 1 || version > 4) throw new IOException("versión " + version);
         sx = in.readInt();
         sy = in.readInt();
         sz = in.readInt();
@@ -76,6 +85,17 @@ public final class VoidIsland {
             bubbleR = 0F;
             heart = bubble.add(0, 12, 0);
             shards = java.util.List.of();
+        }
+        if (version >= 4) {
+            altar = new BlockPos(in.readInt(), in.readInt(), in.readInt());
+            portal = new BlockPos(in.readInt(), in.readInt(), in.readInt());
+            portalFacing = in.readInt();
+            faunaSeed = new BlockPos(in.readInt(), in.readInt(), in.readInt());
+        } else {
+            altar = null;
+            portal = null;
+            portalFacing = 0;
+            faunaSeed = null;
         }
         int n = in.readInt();
         palette = new BlockState[n];
@@ -161,6 +181,23 @@ public final class VoidIsland {
         return i == null ? java.util.List.of() : i.shards;
     }
 
+    /** (1.3.96) Donde está de pie el soporte con la armadura del Vacío (null si la isla no tiene altar). */
+    public static BlockPos altarPos() {
+        VoidIsland i = get();
+        return i == null ? null : i.altar;
+    }
+
+    /** (1.3.96) El Portal del Alba (el centro de abajo de su hueco; null si no hay) y hacia dónde mira (0 = sur...). */
+    public static BlockPos portalPos() {
+        VoidIsland i = get();
+        return i == null ? null : i.portal;
+    }
+
+    public static int portalFacing() {
+        VoidIsland i = get();
+        return i == null ? 0 : i.portalFacing;
+    }
+
     /** Dónde va la grieta del Void (el centro de la plaza; se pisa en esa y). */
     public static BlockPos riftPos() {
         VoidIsland i = get();
@@ -191,6 +228,14 @@ public final class VoidIsland {
     private int[] nearest;
     /** Por columna: ¿puede andar un jefe? (a EDGE o más del borde y en la parte de la isla de la grieta) */
     private boolean[] walk;
+    /**
+     * (1.3.96) Lo mismo para la fauna del Páramo: a {@link #FAUNA_EDGE} o más del borde (y de la Herida y las grietas),
+     * en la parte del Páramo (los puentes son estrechos: no pasa a la isla de la grieta ni al santuario) y fuera del
+     * Velo; y la columna buena más cercana de cada una.
+     */
+    public static final float FAUNA_EDGE = 4F;
+    private boolean[] faunaWalk;
+    private int[] faunaNearest;
 
     /** Lo de arriba, hecho la primera vez (la distancia al borde con un chaflán de 8 vecinos: ~4 % de error). */
     private synchronized void edgeField() {
@@ -288,6 +333,88 @@ public final class VoidIsland {
         nearest = near;
         walk = ok;
         edge = d;
+        // (1.3.96) la fauna del Páramo, igual desde su sitio
+        boolean[] fok = new boolean[n];
+        if (faunaSeed != null) {
+            int fx = faunaSeed.getX() - ox, fz = faunaSeed.getZ() - oz;
+            if (fx >= 0 && fx < sx && fz >= 0 && fz < sz && d[fz * sx + fx] >= FAUNA_EDGE) {
+                head = 0;
+                tail = 0;
+                fok[fz * sx + fx] = true;
+                queue[tail++] = fz * sx + fx;
+                while (head < tail) {
+                    int c = queue[head++];
+                    int x = c % sx, z = c / sx;
+                    for (int k = 0; k < 4; k++) {
+                        int nx = x + (k == 0 ? 1 : k == 1 ? -1 : 0), nz = z + (k == 2 ? 1 : k == 3 ? -1 : 0);
+                        if (nx < 0 || nx >= sx || nz < 0 || nz >= sz) continue;
+                        int o = nz * sx + nx;
+                        if (fok[o] || d[o] < FAUNA_EDGE || veilColumn(nx, nz)) continue;
+                        fok[o] = true;
+                        queue[tail++] = o;
+                    }
+                }
+            }
+        }
+        int[] fnear = new int[n];
+        java.util.Arrays.fill(fnear, -1);
+        head = 0;
+        tail = 0;
+        for (int c = 0; c < n; c++) {
+            if (fok[c]) {
+                fnear[c] = c;
+                queue[tail++] = c;
+            }
+        }
+        while (head < tail) {
+            int c = queue[head++];
+            int x = c % sx, z = c / sx;
+            for (int k = 0; k < 4; k++) {
+                int nx = x + (k == 0 ? 1 : k == 1 ? -1 : 0), nz = z + (k == 2 ? 1 : k == 3 ? -1 : 0);
+                if (nx < 0 || nx >= sx || nz < 0 || nz >= sz) continue;
+                int o = nz * sx + nx;
+                if (fnear[o] >= 0) continue;
+                fnear[o] = fnear[c];
+                queue[tail++] = o;
+            }
+        }
+        faunaWalk = fok;
+        faunaNearest = fnear;
+    }
+
+    /** (1.3.96) ¿Puede andar por aquí la fauna del Páramo? */
+    public static boolean faunaWalkable(double x, double z) {
+        VoidIsland i = get();
+        if (i == null) return false;
+        i.edgeField();
+        int ix = (int) Math.floor(x) - i.ox, iz = (int) Math.floor(z) - i.oz;
+        return ix >= 0 && ix < i.sx && iz >= 0 && iz < i.sz && i.faunaWalk[iz * i.sx + ix];
+    }
+
+    /** (1.3.96) El sitio del Páramo por donde puede andar su fauna más cercano a (x, z), a la altura y; null si no hay. */
+    public static Vec3 nearestFaunaWalkable(double x, double y, double z) {
+        VoidIsland i = get();
+        if (i == null) return null;
+        i.edgeField();
+        int ix = Math.max(0, Math.min(i.sx - 1, (int) Math.floor(x) - i.ox));
+        int iz = Math.max(0, Math.min(i.sz - 1, (int) Math.floor(z) - i.oz));
+        int c = i.faunaNearest[iz * i.sx + ix];
+        if (c < 0) return null;
+        return new Vec3(c % i.sx + i.ox + 0.5, y, c / i.sx + i.oz + 0.5);
+    }
+
+    /** (1.3.96) Un sitio al azar del Páramo por donde anda su fauna, entre esas distancias de (x, z); null si no sale. */
+    public static Vec3 randomFaunaSpot(double x, double z, double min, double max, java.util.Random rnd) {
+        VoidIsland i = get();
+        if (i == null) return null;
+        i.edgeField();
+        for (int t = 0; t < 24; t++) {
+            double a = rnd.nextDouble() * Math.PI * 2, r = min + rnd.nextDouble() * (max - min);
+            int ix = (int) Math.floor(x + Math.cos(a) * r) - i.ox, iz = (int) Math.floor(z + Math.sin(a) * r) - i.oz;
+            if (ix < 0 || ix >= i.sx || iz < 0 || iz >= i.sz || !i.faunaWalk[iz * i.sx + ix]) continue;
+            return new Vec3(ix + i.ox + 0.5, 0, iz + i.oz + 0.5);
+        }
+        return null;
     }
 
     /** (1.3.96) ¿Cae esa columna (de la malla de la isla) dentro del Velo del Alba? Ahí no entra ningún jefe. */

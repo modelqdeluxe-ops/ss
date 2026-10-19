@@ -138,6 +138,8 @@ class SetWriter:
         self.set_id = set_id
         rel_root, self.ns, self.items, *rest = B.SETS[set_id]
         self.prefix = rest[0] if rest else ''
+        # (quinto campo, el set del Vacío: dónde están las capas de la armadura si no es la carpeta de los modelos)
+        self.armor_opts = rest[1] if len(rest) > 1 and isinstance(rest[1], dict) else {}
         self.root = os.path.join(packs, rel_root)
         self.textures = {}  # ref original -> ref nuevo
         self.frame_size = {}  # ref nuevo -> (ancho, alto) de un fotograma
@@ -426,7 +428,7 @@ class SetWriter:
         y el mod va cambiando de textura con el tiempo. Devuelve (capas, fotogramas, ticks por fotograma)."""
         best = {}
         fallback = {}
-        within = self.prefix.strip('/')
+        within = self.armor_opts.get('capas', self.prefix).strip('/')
         for dirpath, _dirs, files in os.walk(self.root):
             if 'trims' in dirpath or (within and within not in dirpath):
                 continue
@@ -1301,9 +1303,11 @@ def main(packs, only=None):
                 problems.append(f'{tag}: sin modelo')
                 continue
             w.write_model(item_id, model)
+            reward = set_id in {r[0] for r in getattr(C, 'REWARD_SETS', [])}
             if kind == 'armor':
-                label_full = f'{label} {set_name}'
-            elif set_id == 'nazgul' or set_id in C.COSMETICS:
+                # (los de recompensa, 1.3.96: «Peto del Coloso del Vacío»)
+                label_full = f'{label} del {set_name}' if reward else f'{label} {set_name}'
+            elif set_id == 'nazgul' or set_id in C.COSMETICS or reward:
                 label_full = label
             else:
                 label_full = f'{label} {set_name}'

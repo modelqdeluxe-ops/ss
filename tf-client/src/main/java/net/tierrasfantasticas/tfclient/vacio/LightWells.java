@@ -7,11 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -24,80 +20,57 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Los fragmentos de luz del Void (1.3.96, ver {@link VoidLight}): esquirlas del Alba que flotan por la isla grande en los
- * sitios que eligió tools/void/isla_alba.py ({@link VoidIsland#shards}). Cada una es una entidad de exhibición de bloque
- * de Minecraft (un sapoluz perlado puesto de punta, con brillo máximo, que gira despacio y sube y baja): se ve igual con
- * paquetes de shaders y no hace falta registrar objetos. Al pasar por ella se recoge (luz y su Eco del Alba) y vuelve a
- * salir a los {@link #RESPAWN_S} s (para todos: son pocas y hay que buscarlas). Alrededor, unas chispas que se ven de
- * lejos.
+ * Los Pozos de Luz del Void (1.3.96; el dueño: «no quiero andar juntando fragmentos: que parándome en un sitio de luz me
+ * cure del efecto, como cuando te ahogas y un bloque de magma te salva la respiración»). Donde cayeron las esquirlas de
+ * los once caballeros del Alba ({@link VoidIsland#shards}: 16 por el Páramo, que pone tools/void/bioma.py, y 10 por la
+ * isla de la grieta) la luz brota del suelo: quien se queda en su círculo ({@link #RADIUS}) se limpia de la corrosión
+ * ({@link VoidLight}). No se recogen ni se gastan. Encima flota la esquirla: una entidad de exhibición de bloque de
+ * Minecraft (un sapoluz perlado puesto de punta, con brillo máximo, que gira despacio y sube y baja; se ve igual con
+ * paquetes de shaders y no hace falta registrar objetos), con chispas alrededor. El círculo de luz del suelo y su
+ * columna los dibuja el cliente ({@link SanctuaryFx}).
  *
  * <p>Las entidades se guardan con su chunk: si al cargar uno ya está la suya, se usa; si sobra (o es de unos sitios que
  * ya no existen), se quita.
  */
-public final class LightShards {
-    /** Segundos hasta que vuelve a salir uno recogido. */
-    static final int RESPAWN_S = 180;
+public final class LightWells {
+    /** El radio del círculo que cura (en horizontal; el suelo es el del pozo, 2 por debajo de la esquirla). */
+    public static final double RADIUS = 3.6;
     static final String TAG = "tfclient_fragmento";
-    private static final SoundEvent PICK = SoundEvent.createVariableRangeEvent(new ResourceLocation(TFClient.MOD_ID, "luz.fragmento"));
     private static final DustParticleOptions GOLD = new DustParticleOptions(new Vector3f(1F, 0.85F, 0.45F), 1.2F);
-    /** Cuándo vuelve a salir cada uno (tiempo de juego; 0 = ya). */
-    private static long[] readyAt;
-    private static int picked;
 
-    private LightShards() {}
+    private LightWells() {}
 
-    /** Al arrancar el servidor: todos salen (no se guarda cuáles estaban recogidos). */
     static void reset() {
-        readyAt = null;
-        picked = 0;
     }
 
     static void tick(ServerLevel level) {
         List<BlockPos> list = VoidIsland.shards();
         if (list.isEmpty()) return;
-        if (readyAt == null || readyAt.length != list.size()) readyAt = new long[list.size()];
         long now = level.getGameTime();
-        if (now % 4 == 0) pickups(level, list, now);
         if (now % 20 == 0) ensure(level, list, now);
         if (now % 10 == 0) sparkle(level, list, now);
         if (now % 400 == 0) cleanup(level, list);
     }
 
-    private static boolean ready(int i, long now) {
-        return now >= readyAt[i];
-    }
-
-    /** ¿Quién pasa por un fragmento que está? (a 1,6 bloques en horizontal y 2 en vertical) */
-    private static void pickups(ServerLevel level, List<BlockPos> list, long now) {
-        for (ServerPlayer p : level.players()) {
-            if (p.isSpectator() || !p.isAlive()) continue;
-            for (int i = 0; i < list.size(); i++) {
-                if (!ready(i, now)) continue;
-                BlockPos b = list.get(i);
-                double dx = p.getX() - (b.getX() + 0.5), dz = p.getZ() - (b.getZ() + 0.5), dy = p.getY() + 0.9 - (b.getY() + 0.5);
-                if (dx * dx + dz * dz > 1.6 * 1.6 || Math.abs(dy) > 2.0) continue;
-                readyAt[i] = now + RESPAWN_S * 20L;
-                picked++;
-                for (Display.BlockDisplay d : near(level, b)) d.discard();
-                Vec3 c = Vec3.atCenterOf(b);
-                level.sendParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 40, 0.3, 0.4, 0.3, 0.12);
-                level.sendParticles(GOLD, c.x, c.y, c.z, 30, 0.6, 0.6, 0.6, 0.02);
-                level.playSound(null, c.x, c.y, c.z, PICK, SoundSource.PLAYERS, 1F, 1F);
-                VoidLight.shard(p);
-            }
+    /** ¿En qué pozo está (dentro de su círculo de luz)? −1 si en ninguno. */
+    public static int wellAt(double x, double y, double z) {
+        List<BlockPos> list = VoidIsland.shards();
+        for (int i = 0; i < list.size(); i++) {
+            BlockPos b = list.get(i);
+            double dx = x - (b.getX() + 0.5), dz = z - (b.getZ() + 0.5);
+            // (los pies, entre el suelo del pozo, 2 por debajo de la esquirla, y un poco por encima de ella)
+            double dy = y - (b.getY() - 1);
+            if (dx * dx + dz * dz <= RADIUS * RADIUS && dy > -1.5 && dy < 3.5) return i;
         }
+        return -1;
     }
 
-    /** Los que están, con su entidad; los recogidos, sin ella (solo en chunks con sus entidades cargadas). */
+    /** Cada pozo con su esquirla (solo en chunks con sus entidades cargadas). */
     private static void ensure(ServerLevel level, List<BlockPos> list, long now) {
         for (int i = 0; i < list.size(); i++) {
             BlockPos b = list.get(i);
             if (!level.hasChunkAt(b) || !level.areEntitiesLoaded(ChunkPos.asLong(b))) continue;
             List<Display.BlockDisplay> here = near(level, b);
-            if (!ready(i, now)) {
-                for (Display.BlockDisplay d : here) d.discard();
-                continue;
-            }
             for (int k = 1; k < here.size(); k++) here.get(k).discard();
             if (here.isEmpty()) {
                 Entity e = spawn(level, b, i, now);
@@ -174,10 +147,9 @@ public final class LightShards {
         d.load(tag);
     }
 
-    /** Chispas alrededor de los que están (se ven de lejos). */
+    /** Chispas alrededor de las esquirlas (se ven de lejos). */
     private static void sparkle(ServerLevel level, List<BlockPos> list, long now) {
         for (int i = 0; i < list.size(); i++) {
-            if (!ready(i, now)) continue;
             BlockPos b = list.get(i);
             if (!level.hasChunkAt(b)) continue;
             Vec3 c = Vec3.atCenterOf(b);
@@ -203,12 +175,10 @@ public final class LightShards {
     /** Para la prueba en el juego. */
     public static String describe(ServerLevel level) {
         List<BlockPos> list = VoidIsland.shards();
-        int ready = 0, spawned = 0;
-        long now = level.getGameTime();
-        for (int i = 0; i < list.size(); i++) {
-            if (readyAt == null || ready(i, now)) ready++;
-            if (level.hasChunkAt(list.get(i)) && !near(level, list.get(i)).isEmpty()) spawned++;
+        int spawned = 0;
+        for (BlockPos b : list) {
+            if (level.hasChunkAt(b) && !near(level, b).isEmpty()) spawned++;
         }
-        return list.size() + " fragmentos, " + ready + " listos, " + spawned + " con su entidad (en chunks cargados), " + picked + " recogidos";
+        return list.size() + " pozos de luz, " + spawned + " con su esquirla (en chunks cargados)";
     }
 }

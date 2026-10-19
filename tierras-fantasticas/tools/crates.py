@@ -189,7 +189,13 @@ def mod_sets():
     out.append({'id': ROULETTE_ROW[0], 'name': ROULETTE_ROW[1], 'color': ROULETTE_ROW[7][1], 'tier': CRATE_TIER})
     out += [{'id': set_id, 'name': f'Cosméticos {coll}', 'color': c2, 'tier': 'netherite'}
             for set_id, (coll, (_c1, c2), _themes) in COSMETICS.items()]
+    out += [{'id': set_id, 'name': name, 'color': hexc, 'tier': tier} for set_id, name, hexc, tier in REWARD_SETS]
     return out
+
+
+# Sets que son recompensa del juego (no se venden: no salen en la tienda ni en las crates). TF Client 1.3.96: el del
+# Vacío, la armadura que el Void no corroe (se gana derrotando jefes y se coge en el santuario del Void).
+REWARD_SETS = [('void', 'Coloso del Vacío', '#8b5cf6', CRATE_TIER)]
 
 
 def lighten(hexc, k=0.45):

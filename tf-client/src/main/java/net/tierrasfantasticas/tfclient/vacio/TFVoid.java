@@ -219,7 +219,7 @@ public final class TFVoid {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         IslandUpdate.reset();
-        LightShards.reset();
+        LightWells.reset();
     }
 
     @SubscribeEvent
@@ -232,8 +232,12 @@ public final class TFVoid {
         ServerLevel level = server.getLevel(VOID);
         if (level != null) {
             IslandUpdate.tick(level);
-            // (1.3.96) los fragmentos de luz, cuando la isla ya está al día (si no, saldrían donde aún no hay suelo)
-            if (IslandUpdate.finished()) LightShards.tick(level);
+            // (1.3.96) las esquirlas de los Pozos de Luz y el soporte del Altar del Vacío, cuando la isla ya está al día
+            // (si no, saldrían donde aún no hay suelo)
+            if (IslandUpdate.finished()) {
+                LightWells.tick(level);
+                if (level.getGameTime() % 20 == 0) VoidArmor.tickAltar(level);
+            }
         }
         if (++tick % 100 != 0) return;
         if (level == null || level.players().isEmpty()) return;

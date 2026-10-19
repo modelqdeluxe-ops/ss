@@ -84,7 +84,7 @@ public final class VoidTravel {
         String back = k.home() ? backName(p.server, d) : "";
         // (1.3.92: sin el sonido de amatista; el diálogo suena suave en tu cliente)
         VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new VoidNet.Talk(k.getId(), p.getGameProfile().getName(), first, k.home(), back,
-                SkyRift.state()));
+                SkyRift.state(), VoidArmor.kills(p)));
     }
 
     /** La prueba en el juego (BossTest): como un clic derecho en el caballero. */
@@ -98,6 +98,7 @@ public final class VoidTravel {
         if (!(e instanceof KnightEntity k) || e.distanceToSqr(p) > 12 * 12 || !idle(p)) return;
         if (what == VoidNet.GO && !k.home() && !TFVoid.isVoid(p.level())) start(p, true);
         else if (what == VoidNet.BACK && k.home() && TFVoid.isVoid(p.level())) start(p, false);
+        else if (what == VoidNet.ARMOR && k.home()) VoidArmor.claim(p);
     }
 
     /** /tf void ir|volver [jugadores] (staff). */

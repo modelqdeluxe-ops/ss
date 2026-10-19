@@ -279,7 +279,24 @@ public final class SkillDefs {
          * nombre en español. La grieta no se gana hasta que cae el último.
          */
         public final Map<String, String> successors = new HashMap<>();
+        /**
+         * (1.3.96) «fauna»: no es un jefe de grieta sino las criaturas de un bioma (las del Void, EndMobsVol1). Sus mobs
+         * son todos esbirros sin dueño (sin la barra del jefe principal; la suya del pack, BossBar, sí); los saca
+         * vacio/VoidFauna con las reglas de aparición del pack ({@link #spawns}). No salen en /tf boss ni en las grietas.
+         */
+        public boolean fauna;
+        /** (1.3.96, fauna) Las reglas de su randomspawn de MythicMobs. */
+        public List<Spawn> spawns = List.of();
+        /** (1.3.96, fauna) Sus mobs (en minúsculas) → su nombre en español. */
+        public final Map<String, String> faunaMobs = new LinkedHashMap<>();
     }
+
+    /**
+     * (1.3.96) Una regla de aparición de MythicMobs (RandomSpawns): el mob, su probabilidad cada vez que se mira, su
+     * prioridad, su recarga en segundos, dónde (LAND...) y «mobsInRadius{a=&lt;N;r=R}»: no si ya hay más de maxNear de
+     * ese mob a menos de radius bloques.
+     */
+    public record Spawn(String name, String mob, double chance, int priority, int cooldown, String position, double radius, int maxNear) {}
 
     /** Un objeto que suelta un jefe: su modelo (y el de cubrirse, si es escudo), nombre, tipo y sus skills del pack
      * (~onSwing al golpear con él, ~onTimer mientras se lleva). */
@@ -342,6 +359,39 @@ public final class SkillDefs {
         return bosses;
     }
 
+    private static Map<String, ClassDef> fauna;
+
+    /**
+     * (1.3.96) La fauna (assets/tfclient/bosses/fauna.json): packs de criaturas que no son jefes de grieta (las del bioma
+     * del Void). Van con los mismos datos que los jefes, pero aparte: no salen en /tf boss ni en las grietas.
+     */
+    public static synchronized Map<String, ClassDef> fauna() {
+        if (fauna == null) {
+            Map<String, ClassDef> out = new LinkedHashMap<>();
+            JsonElement cat = readJson("/assets/tfclient/bosses/fauna.json");
+            if (cat != null && cat.isJsonArray()) {
+                for (JsonElement e : cat.getAsJsonArray()) {
+                    String id = e.getAsJsonObject().get("id").getAsString();
+                    try {
+                        JsonElement json = readJson("/assets/tfclient/bosses/" + id + ".json");
+                        if (json != null) out.put(id, parse(json.getAsJsonObject()));
+                    } catch (Exception ex) {
+                        TFClient.LOGGER.error("TF Jefes: no se pudo leer la fauna {}", id, ex);
+                    }
+                }
+            }
+            fauna = Collections.unmodifiableMap(out);
+            TFClient.LOGGER.info("TF Jefes: {} packs de fauna cargados", fauna.size());
+        }
+        return fauna;
+    }
+
+    /** El jefe o la fauna con ese id (lo que puede ser una entidad del motor de jefes). */
+    public static ClassDef bossClass(String id) {
+        ClassDef c = bosses().get(id);
+        return c != null ? c : fauna().get(id);
+    }
+
     /** Carpeta de los modelos de ModelEngine de ese id («hidra.lr_hydra» → bosses/models/, los demás skills/models/). */
     public static String modelDir(String id) {
         // (la grieta y, desde la 1.3.88, el caballero de luz de The Void «vacio.caballero» están con los de los jefes)
@@ -352,7 +402,8 @@ public final class SkillDefs {
     public static boolean isBoss(String id) {
         if (id == null) return false;
         int dot = id.indexOf('.');
-        return bosses().containsKey(dot > 0 ? id.substring(0, dot) : id);
+        String c = dot > 0 ? id.substring(0, dot) : id;
+        return bosses().containsKey(c) || fauna().containsKey(c);
     }
 
     private static JsonElement readJson(String path) {
@@ -438,6 +489,21 @@ public final class SkillDefs {
                 }
             }
             bi.previewHide = strings(b.get("preview_hide"));
+            bi.fauna = b.has("fauna") && b.get("fauna").getAsBoolean();
+            if (b.has("spawns") && b.get("spawns").isJsonArray()) {
+                List<Spawn> sp = new ArrayList<>();
+                for (JsonElement e : b.getAsJsonArray("spawns")) {
+                    JsonObject so = e.getAsJsonObject();
+                    sp.add(new Spawn(str(so, "name", ""), str(so, "mob", ""), num(so.get("chance"), 1), (int) num(so.get("priority"), 1),
+                            (int) num(so.get("cooldown"), 0), str(so, "position", "LAND"), num(so.get("radius"), 0), (int) num(so.get("max_near"), 0)));
+                }
+                bi.spawns = List.copyOf(sp);
+            }
+            if (b.has("fauna_mobs") && b.get("fauna_mobs").isJsonObject()) {
+                for (Map.Entry<String, JsonElement> e : b.getAsJsonObject("fauna_mobs").entrySet()) {
+                    bi.faunaMobs.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());
+                }
+            }
             bi.ground = b.has("suelo") && b.get("suelo").getAsBoolean();
             bi.turnWhileAttacking = b.has("gira_al_atacar") && b.get("gira_al_atacar").getAsBoolean();
             if (o.has("drops") && o.get("drops").isJsonObject()) {

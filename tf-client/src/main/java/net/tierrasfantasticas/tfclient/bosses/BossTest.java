@@ -255,6 +255,8 @@ public final class BossTest {
             ids.add(0, "vacio");
             // (1.3.96) «panoramas»: captura el Nether, el End y el Void (para el agujero de gusano); solo si se pide
             if (only != null && List.of(only.split(",")).contains("panoramas")) ids.add(0, "panoramas");
+            // (1.3.96) «fauna»: las criaturas del Páramo del Void, una a una y luego cómo salen solas; solo si se pide
+            if (only != null && List.of(only.split(",")).contains("fauna")) ids.add(0, "fauna");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -271,7 +273,7 @@ public final class BossTest {
         // En el Void la prueba espera a que salga cada captura: con shaders el cliente va a pocos fotogramas por
         // segundo y la vista siguiente (o quitar el cielo propio) llegaba antes que la foto (10 s como mucho)
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
-        boolean waitShot = "vacio".equals(r.id) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
+        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id)) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
@@ -281,6 +283,10 @@ public final class BossTest {
         }
         if ("panoramas".equals(r.id)) {
             panoramaStep(server, level, player, r);
+            return;
+        }
+        if ("fauna".equals(r.id)) {
+            if (!waitShot) faunaStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -672,7 +678,7 @@ public final class BossTest {
      * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
      */
     /** (1.3.96) Lo que dura la prueba de la luz del Alba (lightStep), metida tras la persecución. */
-    private static final int LIGHT_TICKS = 430;
+    private static final int LIGHT_TICKS = 720;
     /** Cuándo empieza (en ticks de la prueba). */
     private static final int LIGHT_AT = 1815 + 80;
 
@@ -763,7 +769,8 @@ public final class BossTest {
             // dentro, con el caballero
             case 730 -> {
                 net.minecraft.core.BlockPos k = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
-                player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 38.5, 180F, -12F);
+                // (1.3.96: el santuario está más al norte y es más grande: desde el principio del Puente de Luz, fuera del Velo)
+                player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 54.5, 180F, -10F);
             }
             case 800 -> {
                 r.event("el santuario desde el puente: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player) + "; "
@@ -962,83 +969,192 @@ public final class BossTest {
     }
 
     /**
-     * (1.3.96) La luz del Alba, tras la persecución (fuera del Velo 30 s): un fragmento de luz (verlo, cogerlo: +30 y un
-     * eco), poca luz (los bordes violeta), sin luz (la corrosión) y de vuelta dentro del Velo (se llena). La vida del
-     * jugador de la prueba se rellena cada tick: la corrosión se cuenta por sus golpes.
+     * (1.3.96) La corrosión del Vacío y lo que la quita, tras la persecución: un Pozo de Luz del Páramo (verlo, entrar en
+     * él sin luz: se limpia y se oye su eco), la corrosión alta y al máximo (medio corazón cada 3 s), la armadura del Vacío
+     * (5 jefes, recogerla, ponérsela: no corroe), su soporte en el Altar del santuario y el Portal del Alba (de la isla de
+     * la grieta al santuario). La vida del jugador de la prueba se rellena cada tick: la corrosión se cuenta por sus golpes.
      */
     private static void lightStep(ServerLevel vl, ServerPlayer player, Rep r, int k) {
         java.util.List<net.minecraft.core.BlockPos> shards = net.tierrasfantasticas.tfclient.vacio.VoidIsland.shards();
-        net.minecraft.core.BlockPos f = shards.isEmpty() ? null : shards.get(0);
+        // (un pozo del Páramo: los 10 primeros son los de la isla de la grieta)
+        net.minecraft.core.BlockPos f = shards.size() > 10 ? shards.get(10) : shards.isEmpty() ? null : shards.get(0);
         switch (k) {
             case 0 -> {
-                r.event("luz tras la persecución (30 s fuera del Velo): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
-                        + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
-                // desde 3,5 a 6 bloques, volando, en un sitio libre y desde donde se le vea: en la primera prueba la cámara se
-                // quedó dentro de una loma y en la tercera, detrás de una columna de piedra
-                if (f != null) {
-                    Vec3 c = Vec3.atCenterOf(f);
-                    Vec3 best = null;
-                    for (double d : new double[] {4.5, 3.5, 6.0}) {
-                        for (int up = 0; up <= 3 && best == null; up++) {
-                            for (int a = 0; a < 8 && best == null; a++) {
-                                double x = c.x + d * Math.cos(a * Math.PI / 4), z = c.z + d * Math.sin(a * Math.PI / 4);
-                                net.minecraft.core.BlockPos feet = net.minecraft.core.BlockPos.containing(x, f.getY() - 1 + up, z);
-                                vl.getChunk(feet.getX() >> 4, feet.getZ() >> 4);
-                                if (!vl.getBlockState(feet).getCollisionShape(vl, feet).isEmpty()
-                                        || !vl.getBlockState(feet.above()).getCollisionShape(vl, feet.above()).isEmpty()) continue;
-                                Vec3 eye = new Vec3(feet.getX() + 0.5, feet.getY() + player.getEyeHeight(), feet.getZ() + 0.5);
-                                var hit = vl.clip(new net.minecraft.world.level.ClipContext(eye, c, net.minecraft.world.level.ClipContext.Block.VISUAL,
-                                        net.minecraft.world.level.ClipContext.Fluid.NONE, player));
-                                if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS || hit.getLocation().distanceTo(c) < 0.6) {
-                                    best = new Vec3(eye.x, feet.getY(), eye.z);
-                                }
-                            }
-                        }
-                        if (best != null) break;
-                    }
-                    if (best == null) best = new Vec3(c.x, f.getY() + 3, c.z + 3.5);
-                    double dx = c.x - best.x, dz = c.z - best.z, dy = c.y - (best.y + player.getEyeHeight());
-                    float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90F;
-                    float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
-                    fly(player, true);
-                    player.teleportTo(vl, best.x, best.y, best.z, yaw, pitch);
-                    r.event(String.format("el fragmento 0 en %d %d %d, mirado desde %.1f %.1f %.1f", f.getX(), f.getY(), f.getZ(), best.x, best.y, best.z));
-                }
+                r.event("corrosión tras la persecución (30 s fuera de la luz): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
+                if (f != null) viewSpot(vl, player, r, Vec3.atCenterOf(f), "el pozo de luz " + (shards.indexOf(f)));
             }
             // (7,5 s: con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las entidades de un trozo
-            // de mundo que aún no ha construido; en la prueba con Photon, a los 2 s no se veía ni el suelo ni el fragmento)
-            case 150 -> shot(r, "vacio_fragmento");
+            // de mundo que aún no ha construido)
+            case 150 -> shot(r, "vacio_pozo");
             case 155 -> fly(player, false);
             case 160 -> {
-                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 40F);
-                if (f != null) player.teleportTo(vl, f.getX() + 0.5, f.getY(), f.getZ() + 0.5, 180F, 12F);
+                // sin luz, dentro del círculo del pozo
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 0F);
+                if (f != null) player.teleportTo(vl, f.getX() + 0.5, f.getY() - 1, f.getZ() + 2.5, 180F, 20F);
             }
             case 200 -> {
-                r.event("coger un fragmento con 40 de luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
-                        + "; fragmentos: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shards(vl));
-                shot(r, "vacio_fragmento_cogido");
+                r.event("en un pozo de luz, sin luz, 2 s: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_pozo_dentro");
             }
-            case 210 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 8F);
+            case 210 -> {
+                if (f != null) player.teleportTo(vl, f.getX() + 9.5, f.getY() - 1, f.getZ() + 0.5, 90F, 0F);
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 30F);
+            }
             case 260 -> {
-                r.event("poca luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
-                shot(r, "vacio_poca_luz");
+                r.event("corrosión alta (luz 30): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_corrosion");
             }
             case 270 -> net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 0F);
-            case 340 -> {
-                r.event("sin luz (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
-                shot(r, "vacio_sin_luz");
+            case 400 -> {
+                r.event("corrosión al máximo (6,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                shot(r, "vacio_corrosion_max");
             }
-            case 350 -> {
+            // la armadura del Vacío: 5 jefes, recogerla y ponérsela
+            case 410 -> {
+                r.event("armadura del Vacío con 4 jefes: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armor(player, 4));
+                r.event("armadura del Vacío con 5 jefes: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armor(player, 5));
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.wearArmor(player, true);
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 50F);
+            }
+            case 470 -> {
+                r.event("con la armadura del Vacío puesta, 3 s fuera de la luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.wearArmor(player, false);
+                // el Altar del Vacío del santuario, con su soporte
+                net.minecraft.core.BlockPos a = net.tierrasfantasticas.tfclient.vacio.VoidIsland.altarPos();
+                if (a != null) player.teleportTo(vl, a.getX() + 0.5, a.getY() - 2, a.getZ() + 7.5, 180F, 0F);
+            }
+            case 560 -> {
+                r.event("el Altar del Vacío: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.altar(vl));
+                shot(r, "vacio_altar");
+            }
+            // el Portal del Alba, junto a la plaza de la grieta: verlo y cruzarlo
+            case 570 -> {
+                net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
+                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 9.5, 180F, -12F);
+            }
+            case 640 -> shot(r, "vacio_portal");
+            case 650 -> {
+                net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
+                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 180F, 0F);
+            }
+            case 700 -> {
                 Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
-                player.teleportTo(vl, ar.x, ar.y, ar.z, net.tierrasfantasticas.tfclient.vacio.VoidIsland.arriveYaw(), -18F);
-            }
-            case 420 -> {
-                r.event("de vuelta dentro del Velo (3,5 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
-                        + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sanctuary());
-                shot(r, "vacio_velo_dentro");
+                r.event(String.format("cruzar el Portal del Alba: %s (a %.1f bloques de la llegada del santuario)",
+                        net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portal(), player.position().distanceTo(ar)));
+                shot(r, "vacio_portal_llegada");
             }
             default -> {
             }
+        }
+    }
+
+    /**
+     * (1.3.96) La cámara (volando) a 3,5-6 bloques de «c», en un sitio libre y desde donde se le vea (con los chunks de
+     * alrededor ya cargados en el servidor; si no, su altura es la mínima): en las primeras pruebas se quedó dentro de una
+     * loma y detrás de una columna.
+     */
+    private static void viewSpot(ServerLevel vl, ServerPlayer player, Rep r, Vec3 c, String what) {
+        int fy = (int) Math.floor(c.y);
+        Vec3 best = null;
+        for (double d : new double[] {5.0, 4.0, 6.5}) {
+            for (int up = 0; up <= 3 && best == null; up++) {
+                for (int a = 0; a < 8 && best == null; a++) {
+                    double x = c.x + d * Math.cos(a * Math.PI / 4), z = c.z + d * Math.sin(a * Math.PI / 4);
+                    net.minecraft.core.BlockPos feet = net.minecraft.core.BlockPos.containing(x, fy - 1 + up, z);
+                    vl.getChunk(feet.getX() >> 4, feet.getZ() >> 4);
+                    if (!vl.getBlockState(feet).getCollisionShape(vl, feet).isEmpty()
+                            || !vl.getBlockState(feet.above()).getCollisionShape(vl, feet.above()).isEmpty()) continue;
+                    Vec3 eye = new Vec3(feet.getX() + 0.5, feet.getY() + player.getEyeHeight(), feet.getZ() + 0.5);
+                    var hit = vl.clip(new net.minecraft.world.level.ClipContext(eye, c, net.minecraft.world.level.ClipContext.Block.VISUAL,
+                            net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+                    if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS || hit.getLocation().distanceTo(c) < 0.6) {
+                        best = new Vec3(eye.x, feet.getY(), eye.z);
+                    }
+                }
+            }
+            if (best != null) break;
+        }
+        if (best == null) best = new Vec3(c.x, fy + 3, c.z + 3.5);
+        double dx = c.x - best.x, dz = c.z - best.z, dy = c.y - (best.y + player.getEyeHeight());
+        float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90F;
+        float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+        fly(player, true);
+        player.teleportTo(vl, best.x, best.y, best.z, yaw, pitch);
+        r.event(String.format("%s en %.0f %.0f %.0f, mirado desde %.1f %.1f %.1f", what, c.x, c.y, c.z, best.x, best.y, best.z));
+    }
+
+    // ------------------------------------------------------------------------------------------- la fauna del Páramo
+
+    /** (1.3.96) Las criaturas del Páramo (criaturas_vacio): todas menos el End Strider. */
+    private static final String[] FAUNA_MOBS = {"enderling", "enderbruiser", "ender_crawler", "ender_watchman", "end_wraith", "endermauler",
+            "empowered_enderling", "empowered_enderbruiser", "empowered_ender_crawler", "empowered_ender_watchman", "empowered_end_wraith",
+            "empowered_endermauler"};
+    private static final int FAUNA_EACH = 170, FAUNA_WILD = 900;
+    private static BossEntity faunaNow;
+    private static int faunaHits;
+
+    /**
+     * (1.3.96) La fauna del Páramo, una a una delante del jugador (en supervivencia: le atacan): a los 3 s una captura, a
+     * los 6 otra (atacando) y a los 8 lo que se vio (modelo, objetivo, si le ha golpeado); luego, con la aparición natural
+     * encendida, 45 s en el Páramo y cuántas salen solas.
+     */
+    private static void faunaStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        if (vl == null) {
+            r.event("NO HAY DIMENSIÓN tfclient:void");
+            next(level);
+            return;
+        }
+        int i = (t - 1) / FAUNA_EACH, k = (t - 1) % FAUNA_EACH;
+        Vec3 seed = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.faunaSpot();
+        if (i < FAUNA_MOBS.length) {
+            String mob = FAUNA_MOBS[i];
+            if (faunaNow != null && faunaNow.isAlive() && player.getLastHurtByMob() == faunaNow) faunaHits++;
+            switch (k) {
+                case 0 -> {
+                    if (i == 0) {
+                        player.teleportTo(vl, seed.x, seed.y, seed.z, 180F, 8F);
+                        r.event("la fauna del Páramo, desde " + String.format("%.0f %.0f %.0f", seed.x, seed.y, seed.z) + ": "
+                                + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.fauna(vl));
+                    }
+                    player.teleportTo(vl, seed.x, seed.y, seed.z, 180F, 8F);
+                    faunaHits = 0;
+                    player.setLastHurtByMob(null);
+                }
+                case 20 -> {
+                    Vec3 at = new Vec3(seed.x, seed.y, seed.z - 10);
+                    int y = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(at.x), (int) Math.floor(at.z));
+                    faunaNow = net.tierrasfantasticas.tfclient.vacio.VoidFauna.spawn(vl, mob, new Vec3(at.x, y, at.z), 0F);
+                    if (faunaNow == null) r.event(mob + ": NO SALE");
+                }
+                case 80 -> shot(r, "fauna_" + mob);
+                case 140 -> shot(r, "fauna_" + mob + "_ataca");
+                case 160 -> {
+                    BossEntity e = faunaNow;
+                    r.event(e == null ? mob + ": no está" : String.format("%s («%s»): modelo %s, vida %.0f/%.0f, a %.1f bloques, objetivo %s, "
+                                    + "me ha golpeado %s, barra propia %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
+                            e.getHealth(), e.getMaxHealth(), e.distanceTo(player), e.getTarget() == player ? "el jugador" : String.valueOf(e.getTarget()),
+                            faunaHits > 0 ? "sí" : "no", e.def() != null && e.def().barColor != null ? "sí" : "no"));
+                    if (e != null) e.discard();
+                    faunaNow = null;
+                }
+                default -> {
+                }
+            }
+            return;
+        }
+        int w = t - 1 - FAUNA_MOBS.length * FAUNA_EACH;
+        if (w == 0) {
+            command(server, "gamerule doMobSpawning true");
+            player.teleportTo(vl, seed.x, seed.y, seed.z, 0F, 0F);
+        }
+        if (w == FAUNA_WILD - 120) shot(r, "fauna_bioma");
+        if (w == FAUNA_WILD) {
+            r.event("aparición natural en el Páramo (45 s): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.fauna(vl));
+            command(server, "gamerule doMobSpawning false");
+            for (BossEntity e : vl.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(BossEntity.class), BossEntity::isFauna)) e.discard();
+            next(level);
         }
     }
 

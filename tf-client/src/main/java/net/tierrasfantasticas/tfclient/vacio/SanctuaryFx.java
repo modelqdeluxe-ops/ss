@@ -49,6 +49,9 @@ public final class SanctuaryFx {
     /** La malla de la esfera (radio 1; el shader la pone en su sitio): 96 × 48. */
     private static final int SEG_LON = 96, SEG_LAT = 48;
     private static final float HEART_HALF = 5F, BEAM_W = 2.4F, BEAM_H = 160F;
+    /** (1.3.96) Los Pozos de Luz: hasta dónde se dibujan y lo alta que es su columna. */
+    private static final double WELL_FAR = 200;
+    private static final float WELL_BEAM = 34F;
     /** Más lejos que esto, no se dibuja. */
     private static final double FAR = 420;
     private static VertexBuffer sphere;
@@ -62,7 +65,7 @@ public final class SanctuaryFx {
 
     private static boolean here(Minecraft mc) {
         return !failed && veil != null && heart != null && mc.level != null && TFVoid.isVoid(mc.level)
-                && VoidIsland.bubbleRadius() > 0;
+                && VoidIsland.get() != null;
     }
 
     @SubscribeEvent
@@ -81,7 +84,7 @@ public final class SanctuaryFx {
         if (!here(mc)) return;
         Vec3 center = VoidIsland.bubbleCenter();
         float radius = VoidIsland.bubbleRadius();
-        if (cam.distanceTo(center) > FAR) return;
+        boolean sanctuary = cam.distanceTo(center) <= FAR;
         PoseStack mv = RenderSystem.getModelViewStack();
         try {
             RenderSystem.backupProjectionMatrix();
@@ -94,37 +97,16 @@ public final class SanctuaryFx {
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.disableCull();
             float time = (System.currentTimeMillis() % 3_600_000L) / 1000F;
-            // el Velo
-            if (sphere == null) sphere = buildSphere();
-            Vec3 c = center.subtract(cam);
-            veil.safeGetUniform("STime").set(time);
-            veil.safeGetUniform("Center").set((float) c.x, (float) c.y, (float) c.z);
-            veil.safeGetUniform("Radius").set(radius);
-            float since = rippleAt < 0 ? -1F : (System.currentTimeMillis() - rippleAt) / 1000F;
-            if (since > 4F) since = -1F;
-            veil.safeGetUniform("Ripple").set((float) rippleDir.x, (float) rippleDir.y, (float) rippleDir.z, since);
-            veil.safeGetUniform("Inside").set(cam.distanceTo(center) < radius ? 1F : 0F);
-            veil.safeGetUniform("Ground").set((float) ((VoidIsland.arrivePos().y - center.y) / radius));
-            veil.safeGetUniform("Alpha").set(1F);
-            sphere.bind();
-            sphere.drawWithShader(new Matrix4f(view), new Matrix4f(proj), veil);
-            VertexBuffer.unbind();
-            // el Corazón (mira a la cámara) y su columna (gira solo alrededor de la vertical)
+            Matrix4f inv = new Matrix4f(view).invert();
+            if (sanctuary) sanctuary(view, proj, cam, center, radius, time, inv);
+            // (1.3.96) los Pozos de Luz y el velo del Portal del Alba
+            mv.setIdentity();
             mv.mulPoseMatrix(view);
             RenderSystem.applyModelViewMatrix();
             RenderSystem.setProjectionMatrix(new Matrix4f(proj), VertexSorting.DISTANCE_TO_ORIGIN);
-            Vec3 h = VoidIsland.heartPos().subtract(cam);
-            Matrix4f inv = new Matrix4f(view).invert();
-            Vector3f r = inv.transformDirection(new Vector3f(1, 0, 0)).mul(HEART_HALF);
-            Vector3f u = inv.transformDirection(new Vector3f(0, 1, 0)).mul(HEART_HALF);
             heart.safeGetUniform("STime").set(time);
-            heart.safeGetUniform("Alpha").set(1F);
-            heart.safeGetUniform("Mode").set(0F);
-            quad(h, new Vec3(r.x(), r.y(), r.z()), new Vec3(u.x(), u.y(), u.z()));
-            Vec3 flat = new Vec3(h.x, 0, h.z);
-            Vec3 side = flat.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0).cross(flat).normalize();
-            heart.safeGetUniform("Mode").set(1F);
-            quad(h.add(0, BEAM_H / 2, 0), side.scale(BEAM_W), new Vec3(0, BEAM_H / 2, 0));
+            wells(cam, inv);
+            portal(cam);
             frames++;
         } catch (Throwable t) {
             failed = true;
@@ -139,6 +121,82 @@ public final class SanctuaryFx {
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
         }
+    }
+
+    /** El Velo del Alba y el Corazón con su columna. */
+    private static void sanctuary(Matrix4f view, Matrix4f proj, Vec3 cam, Vec3 center, float radius, float time, Matrix4f inv) {
+        PoseStack mv = RenderSystem.getModelViewStack();
+        // el Velo
+        if (sphere == null) sphere = buildSphere();
+        Vec3 c = center.subtract(cam);
+        veil.safeGetUniform("STime").set(time);
+        veil.safeGetUniform("Center").set((float) c.x, (float) c.y, (float) c.z);
+        veil.safeGetUniform("Radius").set(radius);
+        float since = rippleAt < 0 ? -1F : (System.currentTimeMillis() - rippleAt) / 1000F;
+        if (since > 4F) since = -1F;
+        veil.safeGetUniform("Ripple").set((float) rippleDir.x, (float) rippleDir.y, (float) rippleDir.z, since);
+        veil.safeGetUniform("Inside").set(cam.distanceTo(center) < radius ? 1F : 0F);
+        veil.safeGetUniform("Ground").set((float) ((VoidIsland.arrivePos().y - center.y) / radius));
+        veil.safeGetUniform("Alpha").set(1F);
+        sphere.bind();
+        sphere.drawWithShader(new Matrix4f(view), new Matrix4f(proj), veil);
+        VertexBuffer.unbind();
+        // el Corazón (mira a la cámara) y su columna (gira solo alrededor de la vertical)
+        mv.mulPoseMatrix(view);
+        RenderSystem.applyModelViewMatrix();
+        RenderSystem.setProjectionMatrix(new Matrix4f(proj), VertexSorting.DISTANCE_TO_ORIGIN);
+        Vec3 h = VoidIsland.heartPos().subtract(cam);
+        Vector3f r = inv.transformDirection(new Vector3f(1, 0, 0)).mul(HEART_HALF);
+        Vector3f u = inv.transformDirection(new Vector3f(0, 1, 0)).mul(HEART_HALF);
+        heart.safeGetUniform("STime").set(time);
+        heart.safeGetUniform("Alpha").set(1F);
+        heart.safeGetUniform("Mode").set(0F);
+        quad(h, new Vec3(r.x(), r.y(), r.z()), new Vec3(u.x(), u.y(), u.z()));
+        Vec3 flat = new Vec3(h.x, 0, h.z);
+        Vec3 side = flat.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0).cross(flat).normalize();
+        heart.safeGetUniform("Mode").set(1F);
+        quad(h.add(0, BEAM_H / 2, 0), side.scale(BEAM_W), new Vec3(0, BEAM_H / 2, 0));
+    }
+
+    /**
+     * (1.3.96) Los Pozos de Luz: el círculo de luz en el suelo (donde se cura la corrosión), una columna fina que se ve de
+     * lejos y un brillo en la esquirla.
+     */
+    private static void wells(Vec3 cam, Matrix4f inv) {
+        Vector3f rv = inv.transformDirection(new Vector3f(1, 0, 0));
+        Vector3f uv = inv.transformDirection(new Vector3f(0, 1, 0));
+        float rad = (float) LightWells.RADIUS;
+        for (net.minecraft.core.BlockPos b : VoidIsland.shards()) {
+            Vec3 w = new Vec3(b.getX() + 0.5, b.getY() + 0.5, b.getZ() + 0.5).subtract(cam);
+            double d2 = w.lengthSqr();
+            if (d2 > WELL_FAR * WELL_FAR) continue;
+            // el suelo del pozo: 2 por debajo de la esquirla (su cara de arriba, 1,5 por debajo de su centro)
+            Vec3 g = w.add(0, -1.47, 0);
+            heart.safeGetUniform("Alpha").set(1F);
+            heart.safeGetUniform("Mode").set(2F);
+            quad(g, new Vec3(rad, 0, 0), new Vec3(0, 0, rad));
+            Vec3 flat = new Vec3(w.x, 0, w.z);
+            Vec3 side = flat.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0).cross(flat).normalize();
+            heart.safeGetUniform("Mode").set(1F);
+            heart.safeGetUniform("Alpha").set(0.7F);
+            quad(w.add(0, WELL_BEAM / 2, 0), side.scale(0.55), new Vec3(0, WELL_BEAM / 2, 0));
+            heart.safeGetUniform("Mode").set(0F);
+            heart.safeGetUniform("Alpha").set(0.55F);
+            quad(w, new Vec3(rv.x() * 1.4, rv.y() * 1.4, rv.z() * 1.4), new Vec3(uv.x() * 1.4, uv.y() * 1.4, uv.z() * 1.4));
+        }
+        heart.safeGetUniform("Alpha").set(1F);
+    }
+
+    /** (1.3.96) El velo del Portal del Alba: un remolino dorado en el hueco del arco (5 × 8). */
+    private static void portal(Vec3 cam) {
+        net.minecraft.core.BlockPos p = VoidIsland.portalPos();
+        if (p == null) return;
+        Vec3 c = new Vec3(p.getX() + 0.5, p.getY() + 4, p.getZ() + 0.5).subtract(cam);
+        if (c.lengthSqr() > 160 * 160) return;
+        boolean alongX = VoidIsland.portalFacing() % 2 == 0;
+        heart.safeGetUniform("Mode").set(3F);
+        heart.safeGetUniform("Alpha").set(1F);
+        quad(c, alongX ? new Vec3(2.5, 0, 0) : new Vec3(0, 0, 2.5), new Vec3(0, 4, 0));
     }
 
     private static void quad(Vec3 c, Vec3 r, Vec3 u) {

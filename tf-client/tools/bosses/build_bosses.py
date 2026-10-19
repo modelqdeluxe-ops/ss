@@ -76,6 +76,16 @@ JEFES = {
     # Pohaku (LITTLEROOM_pohaku_1.0) espera al dueño: su pelea necesita un escenario (schematic) con balistas y
     # mercenarios puestos a mano; sin ellos no se le aturde y no recibe daño
     'Littleroom_WitherStorm_1.0': {'id': 'tormenta_wither', 'mob': 'LRD_WITHERSTORM', 'vida': 1800, 'dano': 9},
+    # (1.3.96) Las criaturas del bioma del Void: EndMobsVol1 (RopeFire / tugkandeman), todas menos el End Strider (el
+    # que se monta, grande como un caballo: el dueño no lo quiere). No son jefes sino «fauna»: no salen de una grieta
+    # ni en /tf boss ni llevan la barra del jefe principal (el Endermauler lleva la suya, la del pack: BossBar); las
+    # saca vacio/VoidFauna con las reglas de su randomspawn («spawns»). «raices»: todos sus mobs (no hay uno que llame a
+    # los demás); «sin_modelos»: los .bbmodel del pack que no se convierten (los del Strider).
+    'EndMobsVol1': {'id': 'criaturas_vacio', 'mob': 'endermauler', 'vida': 160, 'dano': 0, 'fauna': True,
+                    'raices': ['enderling', 'enderbruiser', 'ender_crawler', 'ender_watchman', 'end_wraith', 'endermauler',
+                               'empowered_enderling', 'empowered_enderbruiser', 'empowered_ender_crawler',
+                               'empowered_ender_watchman', 'empowered_end_wraith', 'empowered_endermauler'],
+                    'sin_modelos': ['end_strider', 'empowered_end_strider']},
 }
 ES = json.load(open(os.path.join(HERE, 'es.json'), encoding='utf-8'))
 
@@ -130,6 +140,10 @@ HUECOS = {
     'pohaku': {
         'pohaku_movement_04': 'uno de sus movimientos al azar no viene en el pack: esa vez se queda quieto',
         'ob_headhitbox': 'el modelo trae «headhitbox» sin ob_: ModelEngine no engancha ahí la caja de la cabeza',
+    },
+    'criaturas_vacio': {
+        'root1': 'el Endermauler (y el potenciado) configuran un segmento «root1» que su modelo no tiene: en ModelEngine '
+                 'ese segment{} no hace nada (sus colas de verdad, «lace» y las demás, sí van)',
     },
     'tormenta_wither': {
         'turn_left': 'el modelo no trae las animaciones de giro: en ModelEngine gira sin ellas',
@@ -230,6 +244,9 @@ def files(pack_dir):
             if f.startswith('._'):  # basura de macOS
                 continue
             p = os.path.join(d, f)
+            # (los randomspawns no son mobs aunque lleven «Type»: los lee random_spawns)
+            if 'mythicmobs' in low and re.search(r'/randomspawns?(/|$)', low):
+                continue
             if 'mythicmobs' in low and re.search(r'/skills?(/|$)', low):
                 sk.append(p)
             elif 'mythicmobs' in low and re.search(r'/mobs?(/|$)', low):
@@ -289,9 +306,42 @@ def global_index(root):
     return _GLOBAL[root]
 
 
-def compile_boss(pack_dir, root_mob, extra_skills, notes=None):
+def random_spawns(pack_dir, mobs):
+    """(1.3.96) Las reglas de aparición del pack (MythicMobs/randomspawns/*.yml) de esos mobs: probabilidad, prioridad,
+    recarga, dónde (LAND...) y «mobsInRadius{a=<N;r=R;type=X}» (que no haya ya tantos cerca). Las de otro mundo o bioma
+    de Minecraft no cuentan: aquí el sitio lo pone el bioma del Void (VoidFauna)."""
+    out = []
+    low = {m.lower() for m in mobs}
+    for d, _, fs in sorted(os.walk(pack_dir)):
+        if not re.search(r'/randomspawns?(/|$)', d.replace('\\', '/').lower()):
+            continue
+        for f in sorted(fs):
+            if not f.lower().endswith(('.yml', '.yaml')):
+                continue
+            data = C.load(os.path.join(d, f))
+            for name, v in data.items():
+                if not isinstance(v, dict) or str(v.get('Type', '')).lower() not in low:
+                    continue
+                rule = {'name': name, 'mob': str(v['Type']), 'chance': float(v.get('Chance', 1)),
+                        'priority': int(v.get('Priority', 1)), 'cooldown': int(v.get('Cooldown', 0)),
+                        'position': str(v.get('PositionType', 'LAND')).upper()}
+                for c in v.get('Conditions') or []:
+                    m = re.match(r'\s*mobsinradius\{([^}]*)\}\s*(true|false)?', str(c), re.I)
+                    if not m:
+                        continue
+                    args = dict(kv.split('=', 1) for kv in m.group(1).split(';') if '=' in kv)
+                    amount = str(args.get('a', args.get('amount', '<1')))
+                    am = re.match(r'<\s*(\d+)', amount)
+                    rule['radius'] = float(args.get('r', args.get('radius', 0)))
+                    rule['max_near'] = int(am.group(1)) - 1 if am else 0
+                out.append(rule)
+    return out
+
+
+def compile_boss(pack_dir, root_mob, extra_skills, notes=None, extra_mobs=()):
     """El árbol de MythicMobs que alcanza el jefe: sus mecánicas, las skills que llaman, los mobs que invoca (con las
-    suyas) y los ítems que suelta. extra_skills: las que lanzan los scripts de los modelos y los objetos."""
+    suyas) y los ítems que suelta. extra_skills: las que lanzan los scripts de los modelos y los objetos. extra_mobs: más
+    raíces (la fauna, 1.3.96: todos sus mobs)."""
     sk_files, mob_files, item_files = files(pack_dir)
     tree, mobs, items = load_all(sk_files, 'skill'), load_all(mob_files, 'mob'), load_all(item_files, 'item')
     g_sk, g_mb = global_index(os.path.dirname(os.path.abspath(pack_dir)))
@@ -303,7 +353,7 @@ def compile_boss(pack_dir, root_mob, extra_skills, notes=None):
     missing = set()
     reach_s, reach_m = set(), set()
     # (en orden: un conjunto sin ordenar cambia el orden del JSON en cada pasada)
-    stack, mob_stack = sorted(extra_skills), [root_mob]
+    stack, mob_stack = sorted(extra_skills), [root_mob] + [m for m in extra_mobs if m != root_mob]
     compiled_tree, compiled_mobs = {}, {}
     used_items = set()
 
@@ -467,7 +517,7 @@ def build(pack_dir, name, conf, sound_events):
             if not f.endswith('.bbmodel'):
                 continue
             mname = f[:-len('.bbmodel')].lower()
-            if mname in me_models:
+            if mname in me_models or mname in conf.get('sin_modelos', ()):
                 continue
             m = B.convert(os.path.join(d, f), store, problems, boss=True)
             if m:
@@ -479,7 +529,8 @@ def build(pack_dir, name, conf, sound_events):
     all_items = load_all(item_files, 'item')
     if not hasattr(pack, 'notes'):
         pack.notes = []
-    prog = compile_boss(pack_dir, conf['mob'], model_scripts(converted) | item_skills(all_items), pack.notes)
+    prog = compile_boss(pack_dir, conf['mob'], model_scripts(converted) | item_skills(all_items), pack.notes,
+                        conf.get('raices', ()))
     if conf['mob'] not in prog['mobs']:
         raise SystemExit(f'{name}: no está el mob {conf["mob"]}')
 
@@ -717,6 +768,15 @@ def build(pack_dir, name, conf, sound_events):
             'preview_hide': es.get('preview_hide') if 'preview_hide' in es else spawn_hidden(prog, conf['mob'])}
     if succ:
         boss['successors'] = succ
+    # (1.3.96) fauna: sus mobs salen solos en su bioma (VoidFauna), con las reglas de aparición del pack
+    if conf.get('fauna'):
+        boss['fauna'] = True
+        boss['spawns'] = random_spawns(pack_dir, conf.get('raices', ()))
+        names = (es.get('nombres') or {})
+        boss['fauna_mobs'] = {m: names.get(m) or BS.strip_mc(prog['mobs'][m].get('display') or m)
+                              for m in conf.get('raices', ()) if m in prog['mobs']}
+        if len(boss['fauna_mobs']) != len(conf.get('raices', ())):
+            problems.append('fauna: faltan mobs ' + str(sorted(set(conf['raices']) - set(boss['fauna_mobs']))))
     # (1.3.88, orden del dueño) «suelo»: sus golpes no suben al jugador al cielo (el Contemplador, JEFES.md §3.13)
     if es.get('suelo'):
         boss['suelo'] = True
@@ -858,7 +918,7 @@ def main():
         sj = {k: v for k, v in sj.items() if not k.startswith('bosses.')}
     cat_path = os.path.join(OUT, 'catalog.json')
     old_catalog = [] if full or not os.path.exists(cat_path) else json.load(open(cat_path, encoding='utf-8'))
-    sound_events, catalog = {}, []
+    sound_events, catalog, fauna = {}, [], []
     for name, conf in confs():
         if only and name not in only:
             continue
@@ -870,7 +930,8 @@ def main():
         if not full:
             clean(conf['id'], sj)
         pack, out = build(d, name, conf, sound_events)
-        catalog.append({'id': pack.id, 'name': out['boss']['name']})
+        # (1.3.96) la fauna no va en el catálogo de jefes (la ventana /tf boss, las grietas): en bosses/fauna.json
+        (fauna if conf.get('fauna') else catalog).append({'id': pack.id, 'name': out['boss']['name']})
         print(f"{pack.id:18s} {len(out['tree'])} skills, {len(out['mobs'])} mobs, {len(out['models'])} modelos ME, "
               f"{len(out['item_models'])} modelos de ítem, {len(out['drops'])} objetos, problemas: {len(pack.problems)}")
         for p in pack.problems[:int(os.environ.get('MAXP', 20))]:
@@ -890,6 +951,12 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     with open(cat_path, 'w', encoding='utf-8') as f:
         json.dump(final, f, ensure_ascii=False, indent=1)
+    fauna_path = os.path.join(OUT, 'fauna.json')
+    old_fauna = [] if full or not os.path.exists(fauna_path) else json.load(open(fauna_path, encoding='utf-8'))
+    fmerged = {c['id']: c for c in old_fauna if c['id'] not in {c['id'] for c in fauna}}
+    fmerged.update({c['id']: c for c in fauna})
+    with open(fauna_path, 'w', encoding='utf-8') as f:
+        json.dump(list(fmerged.values()), f, ensure_ascii=False, indent=1)
     if full:
         # La grieta (geometría propia, no de un pack; 1.3.88: la 3.0, con shaders) vive en las mismas carpetas: se rehace
         import grieta3
@@ -901,7 +968,7 @@ def main():
     spec = importlib.util.spec_from_file_location('boss_audit', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit.py'))
     audit = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(audit)
-    audit.main([c['id'] for c in catalog])
+    audit.main([c['id'] for c in catalog + fauna])
 
 
 if __name__ == '__main__':

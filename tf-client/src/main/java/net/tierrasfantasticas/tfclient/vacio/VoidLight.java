@@ -14,8 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -24,39 +22,42 @@ import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La luz del jugador en el Void (1.3.96; el dueño: «hagamos que el Void robe vitalidad, o sea que robe tu luz; hay que poner
- * fragmentos de luz por la isla para que la gente los tome; una isla santuario encerrada en una burbuja brillante que
- * contiene la luz y nos mantiene a salvo de esa corrosión»).
+ * La corrosión del Vacío (1.3.96). El dueño, primero: «que el Void robe tu luz»; y luego: «no quiero un contador en
+ * pantalla, más bien un efecto de corrosión que en su máximo punto no sea molesto pero sí me haga daño, medio corazón;
+ * y que parándome en un sitio de luz me cure del efecto, como cuando te ahogas y un bloque de magma te salva la
+ * respiración; el set del Void es el único inmune».
  *
  * <ul>
- *   <li>Cada jugador lleva su luz (0..{@link #MAX}). Fuera del Velo del Alba (la burbuja del santuario,
- *   {@link VoidIsland#inBubble}) el Void se la bebe: de llena a nada en {@link #DRAIN_MIN} minutos. Dentro, el Corazón del
- *   Alba se la devuelve en unos segundos.</li>
- *   <li>Avisos a la mitad, a un cuarto y al 10 %. Sin luz, el Void te consume: oscuridad, lentitud y daño de corrosión
- *   ({@link #CORROSION}, su mensaje de muerte: «fue consumido por el Vacío») cada 2 s hasta que vuelvas a tener luz.</li>
- *   <li>Los fragmentos de luz ({@link LightShards}) devuelven {@link #SHARD} y guardan un Eco del Alba: un recuerdo de un
- *   caballero de la orden ({@link #ECHOES}); cada jugador los colecciona (se guardan en el mundo).</li>
- *   <li>Al entrar en el Void se llega con la luz llena. El staff en creativo y los espectadores no la pierden.</li>
+ *   <li>Cada jugador lleva su luz (0..{@link #MAX}; la corrosión es lo que le falta). Fuera de un sitio de luz el Vacío
+ *   se la va comiendo: de llena a nada en {@link #CORRODE_MIN} minutos. Lo ve en el borde de la pantalla
+ *   ({@code VoidLightClient}: venas de sombra violeta que crecen, sin números).</li>
+ *   <li>Sitios de luz: el Velo del Alba ({@link VoidIsland#inBubble}) y los Pozos de Luz ({@link LightWells#wellAt}); ahí
+ *   la corrosión se va en unos segundos ({@link #REGEN}).</li>
+ *   <li>Sin luz, el Vacío hace daño: medio corazón ({@link #HURT}) cada {@link #HURT_EVERY} ticks (tipo de daño
+ *   {@link #CORROSION}, que atraviesa la armadura; su muerte: «fue consumido por el Vacío»). Nada más: ni oscuridad ni
+ *   lentitud.</li>
+ *   <li>La armadura del Vacío ({@link VoidArmor}): cada pieza puesta, un 25 % más despacio; con las cuatro, nada.</li>
+ *   <li>La primera vez que se pisa cada pozo se oye un Eco del Alba ({@link #ECHOES}): lo que dijo el caballero que se
+ *   hizo luz ahí (se guardan en el mundo; sin cuenta ni nada que juntar).</li>
+ *   <li>Al entrar en el Void (o conectarse en él), luz llena. El staff en creativo y los espectadores no la pierden.</li>
  * </ul>
- * El cliente la recibe ({@link VoidNet.Light}) y la enseña ({@code VoidLightClient}).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class VoidLight {
     public static final float MAX = 100F;
-    /** Minutos que tarda el Void en beberse la luz entera fuera del Velo. */
-    static final float DRAIN_MIN = 6F;
-    private static final float DRAIN = MAX / (DRAIN_MIN * 60F * 20F);
-    /** Dentro del Velo, de nada a llena en 4 s. */
-    private static final float REGEN = MAX / (4F * 20F);
-    /** Lo que da un fragmento. */
-    public static final float SHARD = 30F;
-    /** El daño de la corrosión (sin luz) cada 2 s. */
-    private static final float HURT = 1.5F;
+    /** Minutos que tarda el Vacío en corroer del todo fuera de la luz. */
+    static final float CORRODE_MIN = 4F;
+    private static final float DRAIN = MAX / (CORRODE_MIN * 60F * 20F);
+    /** En un sitio de luz, de nada a llena en 3 s. */
+    private static final float REGEN = MAX / (3F * 20F);
+    /** El daño de la corrosión al máximo (medio corazón) y cada cuánto. */
+    static final float HURT = 1F;
+    static final int HURT_EVERY = 60;
     public static final ResourceKey<DamageType> CORROSION = ResourceKey.create(Registries.DAMAGE_TYPE,
             new ResourceLocation(TFClient.MOD_ID, "corrosion_vacio"));
 
     /** Lo que se le manda al cliente con la luz (lo que acaba de pasar). */
-    public static final int EV_NONE = 0, EV_SHARD = 1, EV_ENTER = 2, EV_LEAVE = 3, EV_EMPTY = 4;
+    public static final int EV_NONE = 0, EV_WELL = 1, EV_ENTER = 2, EV_LEAVE = 3, EV_EMPTY = 4, EV_HURT = 5, EV_PORTAL = 6;
 
     private static final Map<UUID, State> STATES = new HashMap<>();
     /** Para la prueba en el juego: golpes de corrosión dados. */
@@ -64,14 +65,18 @@ public final class VoidLight {
 
     private static final class State {
         float light = MAX;
-        boolean inside, was;
-        int sent = -1, warned;
+        /** En un sitio de luz (el Velo o un pozo) y en cuál (−1 el Velo o ninguno). */
+        boolean safe, wasSafe, inVeil;
+        int well = -1;
+        int sent = -1;
+        boolean empty;
         long nextHurt;
         int event;
+        boolean hinted;
     }
 
     /**
-     * Los Ecos del Alba: lo que recuerda cada fragmento (un caballero de la orden y lo que dijo). En orden: cada jugador oye
+     * Los Ecos del Alba: lo que recuerda cada pozo (un caballero de la orden y lo que dijo). En orden: cada jugador oye
      * primero los que no ha oído.
      */
     static final String[][] ECHOES = {
@@ -88,25 +93,28 @@ public final class VoidLight {
             {"Dama Elowen", "Cada criatura que cae devuelve un poco de luz al mundo. Por eso la herida del cielo se cierra cuando una muere."},
             {"Ser Mathis", "Éramos doce. Once nos quedamos aquí, hechos esquirlas. Uno sigue en pie. Que no esté solo."},
             {"Ser Aldric, el Primero", "Hay una criatura que no encerramos: la encerró el Alba misma, en el fondo de todo. Ruega no conocerla."},
-            {"Dama Ysolde", "Las islas del Void son trozos de mundos que perdieron su luz. Esta fue la nuestra."},
-            {"Hermano Teodric", "Cuando reúnas todos los ecos, Caelthar sabrá que no estuvimos solos en la oscuridad."},
+            {"Dama Ysolde", "Este páramo fue nuestro jardín. Donde caímos, la luz aún brota: descansa en ella, viajero, y sigue."},
+            {"Hermano Teodric", "El Coloso del Vacío fue el primero en caer. De su piel forjamos una armadura: el Vacío no se come lo que es suyo."},
             {"La Orden del Alba", "Que la luz te guíe, viajero. Nosotros ya somos parte de ella."},
     };
 
     private VoidLight() {}
 
-    /** Los ecos que ha oído cada jugador (un bit por eco), guardados en el mundo principal. */
+    /** Lo que ha oído y dónde ha estado cada jugador (un bit por eco y por pozo), guardado en el mundo principal. */
     static final class Echoes extends SavedData {
         final Map<UUID, Long> heard = new HashMap<>();
+        final Map<UUID, Long> wells = new HashMap<>();
 
         static Echoes load(CompoundTag tag) {
             Echoes e = new Echoes();
-            CompoundTag h = tag.getCompound("ecos");
-            for (String k : h.getAllKeys()) {
-                try {
-                    e.heard.put(UUID.fromString(k), h.getLong(k));
-                } catch (IllegalArgumentException ignored) {
-                    // (una entrada rota no tumba el resto)
+            for (String key : new String[] {"ecos", "pozos"}) {
+                CompoundTag h = tag.getCompound(key);
+                for (String k : h.getAllKeys()) {
+                    try {
+                        (key.equals("ecos") ? e.heard : e.wells).put(UUID.fromString(k), h.getLong(k));
+                    } catch (IllegalArgumentException ignored) {
+                        // (una entrada rota no tumba el resto)
+                    }
                 }
             }
             return e;
@@ -117,6 +125,9 @@ public final class VoidLight {
             CompoundTag h = new CompoundTag();
             heard.forEach((k, v) -> h.putLong(k.toString(), v));
             tag.put("ecos", h);
+            CompoundTag w = new CompoundTag();
+            wells.forEach((k, v) -> w.putLong(k.toString(), v));
+            tag.put("pozos", w);
             return tag;
         }
     }
@@ -134,59 +145,57 @@ public final class VoidLight {
         return STATES.computeIfAbsent(p.getUUID(), k -> new State());
     }
 
-    /** ¿Pierde luz? (no el staff en creativo ni los espectadores) */
+    /** ¿Le afecta el Vacío? (no al staff en creativo ni a los espectadores) */
     private static boolean exposed(ServerPlayer p) {
         return !p.isCreative() && !p.isSpectator();
     }
 
-    /** Un fragmento de luz recogido (LightShards): la luz y su eco. */
-    static void shard(ServerPlayer p) {
-        State s = state(p);
-        s.light = Math.min(MAX, s.light + SHARD);
-        s.event = EV_SHARD;
-        // (los avisos vuelven a salir solo si baja otra vez de donde ha quedado)
-        s.warned = warnLevel(s.light);
+    /** La primera vez en ese pozo: el eco del caballero que se hizo luz ahí (el siguiente que no ha oído). */
+    private static void visitWell(ServerPlayer p, int well) {
         Echoes e = echoes(p.server);
+        long seen = e.wells.getOrDefault(p.getUUID(), 0L);
+        if (well < 0 || well >= 64 || (seen & 1L << well) != 0) return;
+        e.wells.put(p.getUUID(), seen | 1L << well);
         long bits = e.heard.getOrDefault(p.getUUID(), 0L);
         int i = 0;
         while (i < ECHOES.length && (bits & 1L << i) != 0) i++;
-        boolean fresh = i < ECHOES.length;
-        if (!fresh) i = p.getRandom().nextInt(ECHOES.length);
-        if (fresh) {
+        if (i < ECHOES.length) {
             e.heard.put(p.getUUID(), bits | 1L << i);
-            e.setDirty();
+            String[] echo = ECHOES[i];
+            p.sendSystemMessage(Component.literal("✦ Eco del Alba · ").withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal("«" + echo[1] + "»").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
+                    .append(Component.literal(" — " + echo[0]).withStyle(ChatFormatting.GRAY)));
         }
-        int n = Long.bitCount(e.heard.getOrDefault(p.getUUID(), 0L));
-        // (con el eco ya contado: el medidor dice los que lleva al momento)
-        sync(p, s, true);
-        String[] echo = ECHOES[i];
-        p.sendSystemMessage(Component.literal("✦ Eco del Alba" + (fresh ? " (" + n + "/" + ECHOES.length + ")" : "") + " · ")
-                .withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("«" + echo[1] + "»").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
-                .append(Component.literal(" — " + echo[0]).withStyle(ChatFormatting.GRAY)));
-        if (fresh && n == ECHOES.length) {
-            p.sendSystemMessage(Component.literal("✦ Has reunido todos los Ecos del Alba. Caelthar querrá saberlo.")
-                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-        }
-        p.displayClientMessage(Component.literal("+" + (int) SHARD + " de luz").withStyle(ChatFormatting.YELLOW), true);
+        e.setDirty();
     }
 
     /** La luz llena (al entrar en el Void). */
     static void refill(ServerPlayer p) {
         State s = state(p);
         s.light = MAX;
-        s.warned = 0;
+        s.empty = false;
         s.event = EV_NONE;
+        if (!s.hinted) {
+            s.hinted = true;
+            p.sendSystemMessage(Component.literal("✦ Fuera del Velo del Alba, el Vacío corroe. Los Pozos de Luz y el Velo te limpian; "
+                    + "la armadura del Vacío te protege.").withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+        sync(p, s, true);
+    }
+
+    /** Un evento para el cliente (el portal, por ejemplo). */
+    static void event(ServerPlayer p, int ev) {
+        State s = state(p);
+        s.event = ev;
         sync(p, s, true);
     }
 
     private static void sync(ServerPlayer p, State s, boolean force) {
         int v = Math.round(s.light);
-        if (!force && v == s.sent && s.inside == s.was && s.event == EV_NONE) return;
+        if (!force && v == s.sent && s.safe == s.wasSafe && s.event == EV_NONE) return;
         s.sent = v;
-        s.was = s.inside;
-        VoidNet.CHANNEL.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> p),
-                new VoidNet.Light(v, s.inside, heard(p), ECHOES.length, s.event));
+        s.wasSafe = s.safe;
+        VoidNet.CHANNEL.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> p), new VoidNet.Light(v, s.safe, s.event));
         s.event = EV_NONE;
     }
 
@@ -198,55 +207,41 @@ public final class VoidLight {
             return;
         }
         State s = state(p);
-        boolean inside = VoidIsland.inBubble(p.getX(), p.getEyeY(), p.getZ());
-        if (inside != s.inside) s.event = inside ? EV_ENTER : EV_LEAVE;
-        s.inside = inside;
-        if (!exposed(p) || !VoidTravel.idle(p)) {
+        boolean veil = VoidIsland.inBubble(p.getX(), p.getEyeY(), p.getZ());
+        int well = veil ? -1 : LightWells.wellAt(p.getX(), p.getY(), p.getZ());
+        boolean safe = veil || well >= 0;
+        if (safe && !s.safe) s.event = veil ? EV_ENTER : EV_WELL;
+        else if (!safe && s.safe) s.event = EV_LEAVE;
+        if (well >= 0 && well != s.well) visitWell(p, well);
+        s.safe = safe;
+        s.inVeil = veil;
+        s.well = well;
+        int pieces = VoidArmor.pieces(p);
+        if (!exposed(p) || !VoidTravel.idle(p) || pieces >= 4) {
             s.light = MAX;
-        } else if (inside) {
+        } else if (safe) {
             s.light = Math.min(MAX, s.light + REGEN);
-            if (s.light >= 50F) s.warned = 0;
         } else {
-            s.light = Math.max(0F, s.light - DRAIN);
+            s.light = Math.max(0F, s.light - DRAIN * (1F - 0.25F * pieces));
         }
-        // avisos al bajar (si cruza varios de golpe, solo el más grave)
-        float l = s.light;
-        if (!inside && exposed(p)) {
-            int lv = warnLevel(l);
-            if (lv > s.warned) {
-                warn(p, s, lv, lv == 3 ? "¡Tu luz se apaga! El Void está a punto de consumirte."
-                        : lv == 2 ? "Te queda poca luz. La oscuridad te acecha."
-                        : "Tu luz se debilita: el Void se la bebe. Busca fragmentos de luz o vuelve al santuario.");
-            }
-        }
-        // sin luz: el Void te consume
-        if (l <= 0F && exposed(p) && !inside) {
+        if (s.light > 0F) s.empty = false;
+        // al máximo de corrosión: medio corazón de vez en cuando
+        if (s.light <= 0F && exposed(p) && !safe) {
             long now = p.level().getGameTime();
-            if (s.warned < 4) {
-                s.warned = 4;
+            if (!s.empty) {
+                s.empty = true;
                 s.event = EV_EMPTY;
-            }
-            if (now >= s.nextHurt) {
-                s.nextHurt = now + 40;
-                p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, false, false, true));
-                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, false, false, true));
+                s.nextHurt = now + HURT_EVERY / 2;
+                p.displayClientMessage(Component.literal("El Vacío te corroe... busca un Pozo de Luz o vuelve al Velo")
+                        .withStyle(ChatFormatting.DARK_PURPLE), true);
+            } else if (now >= s.nextHurt) {
+                s.nextHurt = now + HURT_EVERY;
                 p.hurt(corrosion((ServerLevel) p.level()), HURT);
                 hurts++;
-                p.displayClientMessage(Component.literal("El Vacío te consume... busca un fragmento de luz o vuelve al santuario")
-                        .withStyle(ChatFormatting.DARK_PURPLE), true);
+                if (s.event == EV_NONE) s.event = EV_HURT;
             }
         }
         if (p.tickCount % 10 == 0 || s.event != EV_NONE) sync(p, s, false);
-    }
-
-    /** El aviso que toca con esa luz: 0 ninguno, 1 a la mitad, 2 a un cuarto, 3 al 10 %. */
-    private static int warnLevel(float l) {
-        return l <= 10F ? 3 : l <= 25F ? 2 : l <= 50F ? 1 : 0;
-    }
-
-    private static void warn(ServerPlayer p, State s, int level, String text) {
-        s.warned = level;
-        p.sendSystemMessage(Component.literal("✦ " + text).withStyle(level >= 3 ? ChatFormatting.RED : ChatFormatting.LIGHT_PURPLE));
     }
 
     private static DamageSource corrosion(ServerLevel level) {
@@ -279,9 +274,14 @@ public final class VoidLight {
         state(p).light = Math.max(0F, Math.min(MAX, light));
     }
 
-    /** Para la prueba: ¿está dentro del Velo? */
+    /** Para la prueba: ¿está en un sitio de luz? («velo», «pozo N» o «no») */
+    public static String testWhere(ServerPlayer p) {
+        State s = STATES.get(p.getUUID());
+        return s == null || !s.safe ? "fuera de la luz" : s.inVeil ? "en el Velo del Alba" : "en el Pozo de Luz " + s.well;
+    }
+
     public static boolean testInside(ServerPlayer p) {
         State s = STATES.get(p.getUUID());
-        return s != null && s.inside;
+        return s != null && s.safe;
     }
 }

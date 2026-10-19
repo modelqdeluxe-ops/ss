@@ -533,6 +533,13 @@ public final class Rifts {
                 sl.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 1F, 1F);
             }
         }
+        // (1.3.96) La armadura del Vacío se gana derrotando jefes de las grietas: les cuenta a los que le hicieron daño
+        // y siguen cerca
+        if (r != null) {
+            List<ServerPlayer> near = new java.util.ArrayList<>();
+            for (ServerPlayer p : players) if (p.level() == boss.level() && p.distanceToSqr(boss) <= 96 * 96) near.add(p);
+            net.tierrasfantasticas.tfclient.vacio.VoidArmor.bossDefeated(near);
+        }
         // Monedas para cada jugador que le hizo daño y sigue cerca (solo los jefes de una grieta)
         if (r == null || d.coins() <= 0) return;
         for (ServerPlayer p : players) {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -11,29 +12,34 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * Tu luz en el Void, en pantalla (1.3.96, {@link VoidLight}): arriba a la izquierda, «LUZ DEL ALBA» y el número con su
- * orbe y una barra dorada (en el Velo del Alba, «a salvo» y se llena; fuera, se vacía); los Ecos del Alba que llevas. Con poca luz,
- * los bordes de la pantalla se oscurecen de violeta y entran zarcillos (más cuanto menos luz; sin luz, laten). Al coger un
- * fragmento, un destello dorado; al cruzar el Velo, su sonido.
+ * La corrosión del Vacío en pantalla (1.3.96, {@link VoidLight}; el dueño: «no quiero un contador en pantalla, más bien
+ * un efecto de corrosión que en su máximo punto no sea molesto»). Sin números ni barras:
+ * <ul>
+ *   <li>venas de sombra violeta que entran desde los bordes de la pantalla y crecen con la corrosión (como mucho a la
+ *   mitad de opacidad: se sigue viendo todo); al máximo laten despacio y, al hacer daño, se oscurecen un momento;</li>
+ *   <li>alrededor del jugador, con mucha corrosión, motas violetas que suben (pocas);</li>
+ *   <li>en un sitio de luz (un Pozo o el Velo del Alba), un resplandor dorado en los bordes mientras limpia, y un destello
+ *   al entrar, con su sonido; al cruzar el Portal del Alba, un fundido dorado.</li>
+ * </ul>
+ * Solo en el Void y jugando (no en creativo ni en espectador).
  */
 @OnlyIn(Dist.CLIENT)
 public final class VoidLightClient {
-    private static final ResourceLocation ORB = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_orbe.png");
-    private static final ResourceLocation ORB_OFF = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_orbe_apagado.png");
-    private static final ResourceLocation VIGNETTE = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta.png");
-    private static final SoundEvent S_ENTER = sound("luz.velo_entrar"), S_LEAVE = sound("luz.velo_salir"), S_EMPTY = sound("luz.sin_luz");
-    private static final int GOLD = 0xFFF2C14F, GOLD_HI = 0xFFFFE7A0, TEXT = 0xFFF1ECFF, DIM = 0xFF9A8CC0;
+    private static final ResourceLocation VEINS = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta.png");
+    private static final ResourceLocation GOLD = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta_oro.png");
+    private static final SoundEvent S_ENTER = sound("luz.velo_entrar"), S_LEAVE = sound("luz.velo_salir"), S_EMPTY = sound("luz.sin_luz"),
+            S_PORTAL = sound("viaje.llegada");
 
-    /** Lo que dijo el servidor (luz 0..100) y lo que se enseña (se mueve suave hacia ella). */
+    /** Lo que dijo el servidor (luz 0..100: 100 sin corrosión) y lo que se enseña (se mueve suave hacia ella). */
     private static float light = VoidLight.MAX, shown = VoidLight.MAX;
-    private static boolean inside, has;
-    private static int echoes, echoesTotal;
-    private static long flashAt, lastFrame;
+    private static boolean safe, has;
+    private static long goldAt, hurtAt, portalAt = -1, lastFrame;
 
     private VoidLightClient() {}
 
@@ -43,16 +49,22 @@ public final class VoidLightClient {
 
     static void receive(VoidNet.Light m) {
         light = m.light();
-        inside = m.inside();
-        echoes = m.echoes();
-        echoesTotal = m.echoesTotal();
+        safe = m.safe();
         if (!has) shown = light;
         has = true;
+        long now = System.currentTimeMillis();
         switch (m.event()) {
-            case VoidLight.EV_SHARD -> flashAt = System.currentTimeMillis();
-            case VoidLight.EV_ENTER -> play(S_ENTER, 0.8F);
-            case VoidLight.EV_LEAVE -> play(S_LEAVE, 0.7F);
-            case VoidLight.EV_EMPTY -> play(S_EMPTY, 1F);
+            case VoidLight.EV_WELL, VoidLight.EV_ENTER -> {
+                goldAt = now;
+                play(S_ENTER, m.event() == VoidLight.EV_WELL ? 0.6F : 0.8F);
+            }
+            case VoidLight.EV_LEAVE -> play(S_LEAVE, 0.5F);
+            case VoidLight.EV_EMPTY -> play(S_EMPTY, 0.9F);
+            case VoidLight.EV_HURT -> hurtAt = now;
+            case VoidLight.EV_PORTAL -> {
+                portalAt = now;
+                play(S_PORTAL, 0.8F);
+            }
             default -> {
             }
         }
@@ -68,68 +80,75 @@ public final class VoidLightClient {
                 && !mc.player.isSpectator() && !mc.options.hideGui;
     }
 
-    /** Los Ecos del Alba que lleva este jugador (para el caballero del santuario). */
-    static int echoes() {
-        return echoes;
-    }
-
     /** Para la prueba en el juego: lo que ve el cliente. */
     public static String describe() {
-        return has ? String.format("luz %.0f%s, ecos %d/%d", light, inside ? " (en el Velo del Alba)" : "", echoes, echoesTotal) : "sin datos";
+        return has ? String.format("corrosión %.0f %%%s", VoidLight.MAX - light, safe ? " (en la luz)" : "") : "sin datos";
     }
 
-    static void draw(GuiGraphics g, int width, int height, float partial) {
+    private static float smooth(float a, float b, float x) {
+        float t = Mth.clamp((x - a) / (b - a), 0F, 1F);
+        return t * t * (3 - 2 * t);
+    }
+
+    static void draw(GuiGraphics g, int width, int height) {
         Minecraft mc = Minecraft.getInstance();
-        if (!visible(mc)) return;
         long now = System.currentTimeMillis();
+        // el fundido del portal (también si ya no está en el Void: dura 1,6 s)
+        if (portalAt >= 0) {
+            float t = (now - portalAt) / 1600F;
+            if (t >= 1F) {
+                portalAt = -1;
+            } else {
+                float a = (t < 0.45F ? t / 0.45F : (1F - t) / 0.55F) * 0.92F;
+                g.fill(0, 0, width, height, ((int) (Mth.clamp(a, 0F, 1F) * 255) << 24) | 0xFFF1D2);
+            }
+        }
+        if (!visible(mc)) return;
         float dt = lastFrame == 0 ? 0F : Math.min(0.1F, (now - lastFrame) / 1000F);
         lastFrame = now;
-        shown += (light - shown) * Math.min(1F, dt * 6F);
-        float k = shown / VoidLight.MAX;
+        shown += (light - shown) * Math.min(1F, dt * 4F);
+        float c = 1F - shown / VoidLight.MAX;
         float t = (now % 100_000L) / 1000F;
-        // los bordes que se oscurecen (con poca luz; sin luz, laten)
-        float dark = Mth.clamp((0.32F - k) / 0.32F, 0F, 1F);
-        if (light <= 0.5F) dark = 0.85F + 0.15F * (float) Math.sin(t * 3.2);
-        if (dark > 0.01F && !inside) {
-            RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1F, 1F, 1F, dark);
-            g.blit(VIGNETTE, 0, 0, width, height, 0F, 0F, 256, 144, 256, 144);
-            RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        }
-        // el destello dorado al coger un fragmento
-        float fl = 1F - (now - flashAt) / 700F;
-        if (fl > 0F) {
-            int a = (int) (Mth.clamp(fl, 0F, 1F) * 0.35F * 255);
-            g.fill(0, 0, width, height, a << 24 | 0xFFE7A0);
-        }
-        // el panel: orbe, nombre y número, barra, ecos y (en el Velo) «a salvo». Compacto: con la interfaz pequeña, la
-        // barra de un jefe empieza a ~110 px del borde y el nombre largo de antes se le montaba encima (prueba 1.3.96)
-        int x = 6, y = 6;
-        float pulse = inside ? 1F : 0.75F + 0.25F * (float) Math.sin(t * (2F + 6F * (1F - k)));
+        // las venas de sombra (como mucho a la mitad: se sigue viendo)
+        float veins = smooth(0.04F, 1F, c) * 0.5F;
+        if (c > 0.97F) veins += 0.07F * (0.5F + 0.5F * (float) Math.sin(t * 2.4));
+        float hurt = 1F - (now - hurtAt) / 600F;
+        if (hurt > 0F) veins += 0.18F * hurt;
         RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1F, 1F, 1F, k > 0.02F ? Mth.clamp(0.45F + 0.55F * k, 0F, 1F) * pulse : 1F);
-        g.blit(k > 0.02F ? ORB : ORB_OFF, x, y, 18, 18, 0F, 0F, 32, 32, 32, 32);
+        RenderSystem.defaultBlendFunc();
+        if (veins > 0.01F) {
+            RenderSystem.setShaderColor(1F, 1F, 1F, Mth.clamp(veins, 0F, 0.75F));
+            g.blit(VEINS, 0, 0, width, height, 0F, 0F, 256, 144, 256, 144);
+        }
+        // el resplandor dorado: mientras limpia y al entrar en la luz
+        float gold = 0F;
+        if (safe && shown < light - 0.5F) gold = 0.22F;
+        float flash = 1F - (now - goldAt) / 1300F;
+        if (flash > 0F) gold = Math.max(gold, 0.45F * flash);
+        if (gold > 0.01F) {
+            RenderSystem.setShaderColor(1F, 1F, 1F, gold);
+            g.blit(GOLD, 0, 0, width, height, 0F, 0F, 256, 144, 256, 144);
+        }
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        int tx = x + 22;
-        String label = "LUZ DEL ALBA";
-        g.drawString(mc.font, label, tx, y + 1, inside ? GOLD_HI : (k < 0.25F ? 0xFFE0647A : GOLD), true);
-        g.drawString(mc.font, Math.round(shown) + "", tx + mc.font.width(label) + 5, y + 1, TEXT, true);
-        int bx = tx, by = y + 11, bw = 84, bh = 4;
-        g.fill(bx - 1, by - 1, bx + bw + 1, by + bh + 1, 0xFF120A1E);
-        g.fill(bx, by, bx + bw, by + bh, 0xFF2A1F3D);
-        int fw = Math.round(bw * Mth.clamp(k, 0F, 1F));
-        if (fw > 0) {
-            g.fillGradient(bx, by, bx + fw, by + bh, k < 0.25F ? 0xFFE0647A : GOLD_HI, k < 0.25F ? 0xFF9A2F4A : 0xFFD08A2A);
-            // un brillo que corre por la barra
-            int sx = bx + (int) ((t * 40F) % (bw + 20)) - 10;
-            if (sx > bx && sx < bx + fw - 2) g.fill(sx, by, sx + 2, by + bh, 0x80FFFFFF);
+    }
+
+    /** Motas violetas que suben alrededor del jugador cuando la corrosión es alta (pocas). */
+    @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
+    public static final class ForgeEvents {
+        private ForgeEvents() {}
+
+        @SubscribeEvent
+        public static void onTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            Minecraft mc = Minecraft.getInstance();
+            if (!visible(mc) || mc.isPaused()) return;
+            float c = 1F - shown / VoidLight.MAX;
+            if (c < 0.5F || mc.level.getGameTime() % Math.max(2, (int) (10 - 8 * c)) != 0) return;
+            var p = mc.player;
+            var r = mc.level.random;
+            mc.level.addParticle(ParticleTypes.REVERSE_PORTAL, p.getX() + (r.nextDouble() - 0.5) * 1.2, p.getY() + r.nextDouble() * 1.6,
+                    p.getZ() + (r.nextDouble() - 0.5) * 1.2, 0, 0.02, 0);
         }
-        int ly = by + bh + 4;
-        if (echoesTotal > 0) {
-            g.drawString(mc.font, "Ecos del Alba " + echoes + "/" + echoesTotal, bx, ly, DIM, true);
-            ly += 10;
-        }
-        if (inside) g.drawString(mc.font, "A salvo en el Velo", bx, ly, GOLD_HI, true);
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -138,7 +157,7 @@ public final class VoidLightClient {
 
         @SubscribeEvent
         public static void onOverlays(RegisterGuiOverlaysEvent event) {
-            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "tf_luz_del_alba", (gui, g, partial, width, height) -> draw(g, width, height, partial));
+            event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), "tf_corrosion_vacio", (gui, g, partial, width, height) -> draw(g, width, height));
         }
     }
 }
