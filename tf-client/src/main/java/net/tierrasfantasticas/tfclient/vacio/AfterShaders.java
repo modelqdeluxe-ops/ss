@@ -10,6 +10,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.bosses.RiftLate;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 
 /**
  * Lo que dibujamos con shaders propios (la grieta: rift_obsidian y rift_fx; el cielo del Void: void_sky) cuando hay un
@@ -25,6 +26,13 @@ import org.lwjgl.opengl.GL11;
  * misma cámara. En el Void, antes, nuestro cielo solo donde la escena dejó la profundidad en 1 (donde se ve el cielo
  * del paquete): el agujero negro vuelve, y la isla, la luz y la niebla las pone el paquete (su End,
  * {@link ShaderPacks}).
+ *
+ * <p>1.3.96 (el dueño, con captura y Photon v1.3b: «se ve horrible con shaders»: la grieta del cielo con barras blancas
+ * en abanico): Photon pone mezclas por búfer ({@code blend.gbuffers_basic.colortex0 = ONE ONE_MINUS_SRC_ALPHA ...}) y
+ * Oculus las aplica con {@code glBlendFuncSeparatei}, que la caché de {@code GlStateManager} no ve; al acabar, la caché
+ * cree que la mezcla ya es la de Minecraft y no la vuelve a poner. Lo nuestro (color sin premultiplicar, mezcla
+ * {@code SRC_ALPHA}) se sumaba entero: donde el alfa era pequeño, blanco. Ahora, antes de dibujar, {@link #syncBlend}
+ * vuelve a poner la mezcla con OpenGL directo para que la caché diga la verdad.
  */
 @OnlyIn(Dist.CLIENT)
 public final class AfterShaders {
@@ -65,6 +73,22 @@ public final class AfterShaders {
         return ShaderPacks.shadowPass();
     }
 
+    /**
+     * La mezcla de OpenGL igual que la de la caché de {@code GlStateManager} (ver arriba): sin mezcla, {@code SRC_ALPHA,
+     * ONE_MINUS_SRC_ALPHA, ONE, ZERO} y suma. {@code glEnable}/{@code glDisable} y {@code glBlendFuncSeparate} sin índice
+     * valen para todos los búferes de dibujo (también los que el paquete dejó con su mezcla propia).
+     */
+    static void syncBlend() {
+        RenderSystem.disableBlend();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFuncSeparate(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
+                com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                com.mojang.blaze3d.platform.GlStateManager.SourceFactor.ONE, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ZERO);
+        GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        RenderSystem.blendEquation(GL14.GL_FUNC_ADD);
+        RenderSystem.disableBlend();
+    }
+
     /** Después de la pasada final del paquete: el cielo del Void, la grieta del cielo y las grietas. */
     public static void end(float partial) {
         if (!frame) return;
@@ -77,6 +101,7 @@ public final class AfterShaders {
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(new Matrix4f(PROJ), VertexSorting.DISTANCE_TO_ORIGIN);
         try {
+            syncBlend();
             if (mc.level != null && TFVoid.isVoid(mc.level)) VoidSky.renderAfterShaders(VIEW, PROJ, partial);
             // (la grieta del cielo de los mundos Overworld, 1.3.93: detrás de todo, solo donde se ve el cielo)
             SkyRiftClient.renderAfterShaders(VIEW, PROJ);

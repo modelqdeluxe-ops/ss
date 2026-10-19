@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
@@ -42,19 +41,22 @@ import org.lwjgl.opengl.GL11;
  * de la grieta son una mierda... esmérate»; JEFES.md §3.20 y tf-client/docs/grieta-cielo-2): el shader se dibuja en
  * ángulos de cielo alrededor de su centro (le pasamos sus ejes: {@code RiftF}, {@code RiftR}, {@code RiftU}), así que el
  * cuadro es solo el lienzo (enorme: ~140° de cielo).
+ * 1.3.96 (el dueño: «el diseño me gusta, hazlo un poquito más grandecito y más épico; mejora el sonido y el efecto de
+ * apertura, aparecimiento y cierre; la distorsión casi no se nota»; JEFES.md §3.21): ~20 % más grande, sonidos propios
+ * (una pista continua por momento, sin golpes: {@link #sounds}), el anillo de choque ({@link #ring}), la tormenta que
+ * gira cada vez más rápido antes de romperse y al cerrarse ({@link #spinRate}) y la distorsión más fuerte ({@link #warp}).
  * <ul>
  *   <li>Preludio (12 s): el cielo entero se va apagando (y la niebla con él), un vórtice de tormenta negra y violeta crece
- *   donde va a romperse ({@code Storm}), una sombra y un resplandor que laten ({@code Dark}); latidos cada vez más
- *   rápidos, el retumbar del warden, el lamento del guardián anciano, el chillido del sculk, el Wither y un rugido;
- *   relámpagos lejanos (con grietas que parpadean y truenos) y un temblor que crece.</li>
- *   <li>Se rompe: la telaraña de fracturas se extiende a saltos (con chasquidos de rayo, sin cristal), a los 1,8 s
- *   estalla (fogonazo en estrella, trueno, explosión, el «sonic boom» del warden, onda de choque y trozos de cielo que
- *   salen disparados: {@code Shatter}) y el desgarro se abre del centro a las puntas hasta los 5,5 s (rugido grave del
- *   dragón). El cielo vuelve poco a poco, pero mientras la grieta sigue abierta queda algo apagado, y de vez en cuando
- *   retumba un trueno lejano.</li>
- *   <li>Se sella (cayó un jefe del Void): el desgarro se cierra, fogonazo, y quedan la cicatriz y una tormenta débil.</li>
- *   <li>Se vuelve a abrir (otro sonido: el del Wither al nacer): vuelve la tormenta, estalla otra vez y se abre.</li>
- *   <li>El final: se cierra del todo, gran fogonazo, y desaparece.</li>
+ *   donde va a romperse ({@code Storm}) y gira cada vez más rápido, una sombra y un resplandor que laten ({@code Dark})
+ *   en la que asoman estrellas del Void, relámpagos lejanos con grietas que parpadean y un temblor que crece.</li>
+ *   <li>Se rompe: la telaraña de fracturas se extiende a saltos, a los 1,8 s estalla (fogonazo en estrella, un anillo
+ *   de choque que cruza el cielo, onda de choque y trozos de cielo que salen disparados: {@code Shatter}) y el desgarro
+ *   se abre del centro a las puntas (con chispas en ellas) hasta los 5,5 s. El cielo vuelve poco a poco, pero mientras
+ *   la grieta sigue abierta queda algo apagado, y de vez en cuando el Void respira.</li>
+ *   <li>Se sella (cayó un jefe del Void): la tormenta se arremolina, el desgarro se cose de las puntas al centro, un
+ *   anillo se encoge, fogonazo, y quedan la cicatriz y una tormenta débil.</li>
+ *   <li>Se vuelve a abrir (con su propio sonido, más oscuro): vuelve la tormenta, estalla otra vez y se abre.</li>
+ *   <li>El final: se cierra del todo, gran fogonazo, y desaparece (con un acorde en paz).</li>
  * </ul>
  * La línea de tiempo ({@link #look()}) es la de la vista previa sin juego: tools/void/grieta_cielo_preview.py.
  */
@@ -67,7 +69,7 @@ public final class SkyRiftClient {
     private static boolean here;
     private static long fxMs;
     private static long sounds;
-    /** Abierta: cuándo retumba el siguiente trueno lejano (ms; 0 = sin contar). */
+    /** Abierta: cuándo respira el Void la próxima vez (ms; 0 = sin contar). */
     private static long rumbleAt;
     /** El final empezó con la grieta abierta (si estaba sellada, se cierra desde la cicatriz). */
     private static boolean endFromOpen = true;
@@ -205,6 +207,54 @@ public final class SkyRiftClient {
         };
     }
 
+    /**
+     * (1.3.96) El anillo de choque: cruza el cielo al estallar (al romperse y al volver a abrirse) y se encoge hacia el
+     * centro justo antes del fogonazo al sellarse y en el final. {radio en radianes de cielo (o -1), fuerza}.
+     */
+    private static float[] ring() {
+        float t = since();
+        return switch (fx) {
+            case SkyRift.FX_BURST -> ringOut(t - BREAK);
+            case SkyRift.FX_REOPEN -> ringOut(t - REBREAK);
+            case SkyRift.FX_CLOSE -> ringIn(t, 1.5F, 2.3F, 0.95F);
+            case SkyRift.FX_END -> ringIn(t, 1.7F, 2.5F, 1F);
+            default -> new float[] {-1F, 0F};
+        };
+    }
+
+    private static float[] ringOut(float u) {
+        return u >= 0F && u < 2.6F ? new float[] {u * 0.85F, 1.3F * (float) Math.exp(-u * 1.2F)} : new float[] {-1F, 0F};
+    }
+
+    private static float[] ringIn(float t, float t0, float t1, float r0) {
+        return t >= t0 && t < t1 ? new float[] {r0 * (t1 - t) / (t1 - t0), 0.9F * smooth(t0, t0 + 0.3F, t)} : new float[] {-1F, 0F};
+    }
+
+    /** (1.3.96) Lo rápido que gira la tormenta (rad/s): cada vez más antes de romperse, y al cerrarse se la traga. */
+    private static float spinRate() {
+        float t = since(), base = 0.06F;
+        return switch (fx) {
+            case SkyRift.FX_PRELUDE -> t < 14F ? base + 0.55F * smooth(9F, 12F, t) : base;
+            case SkyRift.FX_BURST -> base + 0.55F * (1F - smooth(BREAK, OPENED, t));
+            case SkyRift.FX_REOPEN -> base + 0.5F * (t < REBREAK ? smooth(0F, 1F, t) : 1F - smooth(REBREAK, 4F, t));
+            case SkyRift.FX_CLOSE -> base + 0.7F * smooth(0F, 1.8F, t) * (1F - smooth(2.3F, 3.5F, t));
+            case SkyRift.FX_END -> base + 0.8F * smooth(0F, 2.2F, t) * (1F - smooth(2.5F, 3.5F, t));
+            default -> base;
+        };
+    }
+
+    /** Lo que ha girado la tormenta (radianes) y cuándo se sumó por última vez. */
+    private static double spin = 60;
+    private static long spinNs;
+
+    private static float spinNow() {
+        long now = System.nanoTime();
+        float dt = spinNs == 0 ? 0F : Math.min(0.1F, (now - spinNs) / 1e9F);
+        spinNs = now;
+        spin = (spin + spinRate() * dt) % 3600.0;
+        return (float) spin;
+    }
+
     /** Lo apagado del cielo (0..1): crece en el preludio, se queda algo mientras está abierta y se va al sellarse. */
     private static float skyDim() {
         if (!here) return 0F;
@@ -267,79 +317,39 @@ public final class SkyRiftClient {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(s, pitch, volume));
     }
 
-    /** Los latidos del preludio: cada vez más rápidos (de 1,2 s a 0,35 s entre uno y otro). */
-    private static final float[] BEATS = new float[18];
+    /**
+     * (1.3.96) Los sonidos propios de la grieta del cielo (tools/void/sonidos_cielo.py): una pista continua por momento,
+     * sin golpes. El dueño, de la 1.3.95: «no pongas sonidos tipo explosiones que se oyen secuenciales, quiero un sonido
+     * fino corrido»: antes sonaban a la vez, o uno tras otro, varios de Minecraft (latidos, truenos, explosión, el
+     * «sonic boom» del warden, el portal, chasquidos en cada salto de las grietas).
+     */
+    private static final SoundEvent S_PRELUDE = sound("cielo.preludio"), S_BURST = sound("cielo.rompe"), S_CLOSE = sound("cielo.cierra"),
+            S_REOPEN = sound("cielo.reabre"), S_END = sound("cielo.final"), S_BREATH = sound("cielo.aliento");
 
-    static {
-        float at = 0.4F;
-        for (int i = 0; i < BEATS.length; i++) {
-            BEATS[i] = at;
-            at += 1.2F - 0.85F * i / (BEATS.length - 1);
-        }
+    private static SoundEvent sound(String id) {
+        return SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(TFClient.MOD_ID, id));
     }
 
-    /**
-     * Los sonidos de lo que está pasando (solo en los mundos que la ven). Sin cristal (el dueño se quejó del «sonido de
-     * cristal» de la 1.3.94): chasquidos de rayo, truenos, el warden, el dragón y el portal del End.
-     */
+    /** Lo que está pasando, con su pista (solo en los mundos que la ven; cada una hecha para su animación). */
     private static void sounds() {
         if (!here) return;
         rumble();
         if (fx < 0) return;
         float t = since();
-        switch (fx) {
-            case SkyRift.FX_PRELUDE -> {
-                if (once(0, t >= 0F)) play(SoundEvents.WARDEN_EMERGE, 0.5F, 1F);
-                for (int i = 0; i < BEATS.length; i++) if (BEATS[i] < 12F && once(1 + i, t >= BEATS[i])) play(SoundEvents.WARDEN_HEARTBEAT, 0.55F + 0.025F * i, 1F);
-                if (once(20, t >= 1.5F)) play(SoundEvents.ELDER_GUARDIAN_CURSE, 0.45F, 0.5F);
-                for (int i = 0; i < FLICKS.length; i++) if (once(21 + i, t >= FLICKS[i])) play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5F + 0.04F * i, 0.35F + 0.08F * i);
-                if (once(27, t >= 5F)) play(SoundEvents.SCULK_SHRIEKER_SHRIEK, 0.5F, 0.6F);
-                if (once(28, t >= 7.5F)) play(SoundEvents.WITHER_AMBIENT, 0.4F, 0.6F);
-                if (once(29, t >= 9.5F)) play(SoundEvents.ENDER_DRAGON_GROWL, 0.45F, 0.6F);
-                if (once(30, t >= 11.2F)) play(SoundEvents.WARDEN_ROAR, 0.5F, 0.7F);
-            }
-            case SkyRift.FX_BURST -> {
-                // la carga del warden; en cada salto de las grietas, un chasquido de rayo
-                if (once(0, t >= 0F)) play(SoundEvents.WARDEN_SONIC_CHARGE, 0.5F, 1F);
-                for (int i = 0; i < STEP_T.length; i++) if (once(1 + i, t >= STEP_T[i])) play(SoundEvents.LIGHTNING_BOLT_IMPACT, 0.5F + 0.05F * i, 0.6F);
-                // estalla: trueno, explosión, el «sonic boom» y el portal del End
-                if (once(10, t >= BREAK)) {
-                    play(SoundEvents.TRIDENT_THUNDER, 0.6F, 1F);
-                    play(SoundEvents.GENERIC_EXPLODE, 0.45F, 1F);
-                    play(SoundEvents.WARDEN_SONIC_BOOM, 0.5F, 0.8F);
-                    play(SoundEvents.END_PORTAL_SPAWN, 0.5F, 1F);
-                }
-                // mientras se abre, un rugido largo y grave
-                if (once(11, t >= 2.2F)) play(SoundEvents.ENDER_DRAGON_DEATH, 0.55F, 0.6F);
-                if (once(12, t >= 3F)) play(SoundEvents.PORTAL_TRIGGER, 0.4F, 0.6F);
-            }
-            case SkyRift.FX_REOPEN -> {
-                if (once(0, t >= 0F)) play(SoundEvents.WITHER_SPAWN, 0.8F, 0.55F);
-                if (once(1, t >= REBREAK)) {
-                    play(SoundEvents.TRIDENT_THUNDER, 0.7F, 1F);
-                    play(SoundEvents.END_PORTAL_SPAWN, 0.6F, 0.9F);
-                }
-            }
-            case SkyRift.FX_CLOSE -> {
-                if (once(0, t >= 0F)) play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 1F);
-                if (once(1, t >= 2.3F)) {
-                    play(SoundEvents.CONDUIT_DEACTIVATE, 0.6F, 1F);
-                    play(SoundEvents.LIGHTNING_BOLT_THUNDER, 1F, 0.5F);
-                }
-            }
-            case SkyRift.FX_END -> {
-                if (once(0, t >= 0F)) play(SoundEvents.BEACON_DEACTIVATE, 0.6F, 1F);
-                if (once(1, t >= 2.5F)) {
-                    play(SoundEvents.TRIDENT_THUNDER, 1F, 1F);
-                    play(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1F, 1F);
-                }
-            }
-            default -> {
-            }
-        }
+        // (si la animación llega con mucho retraso, su pista ya no cuadra: no suena)
+        if (t > 1.5F) return;
+        SoundEvent s = switch (fx) {
+            case SkyRift.FX_PRELUDE -> S_PRELUDE;
+            case SkyRift.FX_BURST -> S_BURST;
+            case SkyRift.FX_REOPEN -> S_REOPEN;
+            case SkyRift.FX_CLOSE -> S_CLOSE;
+            case SkyRift.FX_END -> S_END;
+            default -> null;
+        };
+        if (s != null && once(0, true)) play(s, 1F, 1F);
     }
 
-    /** Abierta (y sin animación desde hace 20 s): un trueno lejano cada 30–50 s, para que no se olvide que está ahí. */
+    /** Abierta (y sin animación desde hace 20 s): el Void respira, lejos, cada 40–70 s (para que no se olvide que está ahí). */
     private static void rumble() {
         if (state != SkyRift.OPEN || fx >= 0 && since() < 20F) {
             rumbleAt = 0;
@@ -347,10 +357,10 @@ public final class SkyRiftClient {
         }
         long now = System.currentTimeMillis();
         if (rumbleAt == 0) {
-            rumbleAt = now + java.util.concurrent.ThreadLocalRandom.current().nextLong(30_000, 50_000);
+            rumbleAt = now + java.util.concurrent.ThreadLocalRandom.current().nextLong(40_000, 70_000);
         } else if (now >= rumbleAt) {
-            play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.4F, 0.25F);
-            rumbleAt = now + java.util.concurrent.ThreadLocalRandom.current().nextLong(30_000, 50_000);
+            play(S_BREATH, 1F, 0.9F);
+            rumbleAt = now + java.util.concurrent.ThreadLocalRandom.current().nextLong(40_000, 70_000);
         }
     }
 
@@ -459,7 +469,7 @@ public final class SkyRiftClient {
                 mv.popPose();
             }
             if (lk != null && lk[3] > 0.001F) {
-                drawRift(view, proj, lk, atFar, 0F);
+                drawRift(view, proj, lk, atFar, 0F, spinNow());
                 frames++;
             }
         } catch (Throwable t) {
@@ -478,7 +488,7 @@ public final class SkyRiftClient {
     }
 
     /** El cuadro con el shader de la grieta («mask» > 0: solo la máscara de las nubes, a esa altura sobre la cámara). */
-    private static void drawRift(Matrix4f view, Matrix4f proj, float[] lk, boolean atFar, float mask) {
+    private static void drawRift(Matrix4f view, Matrix4f proj, float[] lk, boolean atFar, float mask, float spinAngle) {
         Vec3[] ax = axes();
         Vec3[] q = quad(ax);
         Vec3 c = q[0], r = q[1], u = q[2];
@@ -496,6 +506,9 @@ public final class SkyRiftClient {
         sh.safeGetUniform("RiftR").set((float) ax[1].x, (float) ax[1].y, (float) ax[1].z);
         sh.safeGetUniform("RiftU").set((float) ax[2].x, (float) ax[2].y, (float) ax[2].z);
         sh.safeGetUniform("CloudMask").set(mask);
+        float[] rg = ring();
+        sh.safeGetUniform("Ring").set(rg[0], rg[1]);
+        sh.safeGetUniform("Spin").set(spinAngle);
         PoseStack mv = RenderSystem.getModelViewStack();
         mv.pushPose();
         mv.setIdentity();
@@ -541,7 +554,7 @@ public final class SkyRiftClient {
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.disableCull();
-            drawRift(view, proj, lk, false, h);
+            drawRift(view, proj, lk, false, h, (float) spin);
         } catch (Throwable t) {
             failed = true;
             TFClient.LOGGER.error("TF Void: no se pudo dibujar la máscara de la grieta del cielo: se apaga", t);
@@ -561,22 +574,24 @@ public final class SkyRiftClient {
     }
 
     /**
-     * La distorsión leve de cuando la miras (RiftWarp): su centro en la pantalla (uv), su radio (alto de la pantalla
-     * = 1, en esas unidades), la fuerza (0..1, más al romperse), el fogonazo y la onda de choque (o -1); null si no se ve.
+     * La distorsión de cuando la miras (RiftWarp): su centro en la pantalla (uv), su radio (alto de la pantalla = 1, en
+     * esas unidades), la fuerza (0..1, más al romperse), el fogonazo y la onda de choque (o -1); null si no se ve.
+     * (1.3.96: el dueño, «el efecto de distorsión al ver la grieta casi no se nota»: radio de 0,3 a 0,42 rad y, en
+     * RiftWarp, lente, remolino y ondas más fuertes.)
      */
     public static float[] warp(Matrix4f view, Matrix4f proj, float aspect) {
         if (!visibleHere()) return null;
         float[] lk = look();
         if (lk == null || lk[3] <= 0.01F || lk[1] <= 0.01F && lk[2] <= 0.01F && lk[7] < 0F) return null;
-        // (su radio: 0,3 rad de cielo desde el centro; el cuadro es mucho más grande que la grieta)
+        // (su radio: 0,42 rad de cielo desde el centro; el cuadro es mucho más grande que la grieta)
         Vec3[] ax = axes();
         Vec3 center = ax[0].scale(DRAW);
         float[] s0 = project(view, proj, center);
-        float[] s1 = project(view, proj, center.add(ax[1].scale(Math.tan(0.3) * DRAW)));
+        float[] s1 = project(view, proj, center.add(ax[1].scale(Math.tan(0.42) * DRAW)));
         if (s0 == null || s1 == null) return null;
-        if (s0[0] < -0.2F || s0[0] > 1.2F || s0[1] < -0.2F || s0[1] > 1.2F) return null;
+        if (s0[0] < -0.4F || s0[0] > 1.4F || s0[1] < -0.4F || s0[1] > 1.4F) return null;
         float rad = (float) Math.hypot((s1[0] - s0[0]) * aspect, s1[1] - s0[1]);
-        return new float[] {s0[0], s0[1], Mth.clamp(rad, 0.05F, 0.3F), lk[1] * lk[3], lk[2], lk[7]};
+        return new float[] {s0[0], s0[1], Mth.clamp(rad, 0.05F, 0.55F), lk[1] * lk[3], lk[2], lk[7]};
     }
 
     private static float[] project(Matrix4f view, Matrix4f proj, Vec3 rel) {

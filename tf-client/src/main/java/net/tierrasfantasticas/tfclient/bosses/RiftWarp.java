@@ -214,9 +214,11 @@ public final class RiftWarp {
             s.x = sky[0];
             s.y = sky[1];
             s.r = sky[2];
-            s.lens = 0.07F * sky[3] + 0.25F * sky[4];
-            s.swirl = 0.18F * sky[3];
-            s.wave = 0.004F * sky[3];
+            // (1.3.96: «casi no se nota»: era un giro fijo y una lente débil sobre un cielo casi liso; ahora la lente
+            // dobla la tormenta y las nubes alrededor, el remolino respira y salen ondas)
+            s.lens = 0.2F * sky[3] + 0.3F * sky[4];
+            s.swirl = 0.55F * sky[3];
+            s.wave = 0.018F * sky[3];
             s.flash = 0.5F * sky[4];
             // (al romperse, la onda de choque barre la pantalla)
             s.shock = sky[5];
@@ -225,7 +227,7 @@ public final class RiftWarp {
             s.tb = 1F;
             s.weight = s.lens + s.flash + (s.shock >= 0 ? 0.5F : 0F);
             list.add(s);
-            near = Math.max(near, 0.1F * sky[3] + 0.3F * sky[4]);
+            near = Math.max(near, 0.35F * sky[3] + 0.3F * sky[4]);
         }
         if (list.isEmpty() && near <= 0.001F) return;
         list.sort((a, b) -> Float.compare(b.weight, a.weight));

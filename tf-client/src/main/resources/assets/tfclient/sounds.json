@@ -3413,5 +3413,53 @@
     "stream": true
    }
   ]
+ },
+ "cielo.preludio": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/preludio",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.rompe": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/rompe",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.cierra": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/cierra",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.reabre": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/reabre",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.final": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/final",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.aliento": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/aliento",
+    "stream": true
+   }
+  ]
  }
 }
