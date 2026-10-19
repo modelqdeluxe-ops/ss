@@ -89,7 +89,7 @@ public final class AfterShaders {
         RenderSystem.disableBlend();
     }
 
-    /** Después de la pasada final del paquete: el cielo del Void, la grieta del cielo y las grietas. */
+    /** Después de la pasada final del paquete: el cielo del Void, el santuario, la grieta del cielo y las grietas. */
     public static void end(float partial) {
         if (!frame) return;
         frame = false;
@@ -102,7 +102,11 @@ public final class AfterShaders {
         RenderSystem.setProjectionMatrix(new Matrix4f(PROJ), VertexSorting.DISTANCE_TO_ORIGIN);
         try {
             syncBlend();
-            if (mc.level != null && TFVoid.isVoid(mc.level)) VoidSky.renderAfterShaders(VIEW, PROJ, partial);
+            if (mc.level != null && TFVoid.isVoid(mc.level)) {
+                VoidSky.renderAfterShaders(VIEW, PROJ, partial);
+                // (1.3.96: el Velo del Alba y el Corazón del Alba, con la profundidad de la escena)
+                SanctuaryFx.renderAfterShaders(VIEW, PROJ);
+            }
             // (la grieta del cielo de los mundos Overworld, 1.3.93: detrás de todo, solo donde se ve el cielo)
             SkyRiftClient.renderAfterShaders(VIEW, PROJ);
             RiftLate.flush();

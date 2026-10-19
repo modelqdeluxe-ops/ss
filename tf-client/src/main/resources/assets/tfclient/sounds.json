@@ -3461,5 +3461,58 @@
     "stream": true
    }
   ]
+ },
+ "viaje.ida": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/ida",
+    "stream": true
+   }
+  ]
+ },
+ "viaje.vuelta": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/vuelta",
+    "stream": true
+   }
+  ]
+ },
+ "viaje.llegada": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/llegada",
+    "stream": true
+   }
+  ]
+ },
+ "luz.fragmento": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/fragmento",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "luz.velo_entrar": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/velo_entrar"
+   }
+  ]
+ },
+ "luz.velo_salir": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/velo_salir"
+   }
+  ]
+ },
+ "luz.sin_luz": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/sin_luz"
+   }
+  ]
  }
 }

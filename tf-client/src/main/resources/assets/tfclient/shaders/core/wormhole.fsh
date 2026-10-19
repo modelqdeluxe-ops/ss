@@ -16,10 +16,23 @@
 //  - Entre tramo y tramo, una puerta: un anillo de luz en las paredes (morado, el del Nether; turquesa con estrellas, el
 //    del End; violeta con oro, el del Void) y su membrana, un remolino suave que se cruza con un fogonazo.
 // A la ida: Overworld → Nether → End → antesala del Void; a la vuelta (Back): antesala → End → Nether → Overworld.
+//
+// 1.3.96 (el dueño: «que al menos muestre la dimensión; en el Nether hay fuego de textura, pero no sé si estoy viendo el
+// Nether de verdad; y el tramo final al Void me parece pobre»): cada tramo ES su dimensión. Se ve su panorama de verdad
+// (equirectangular: el Overworld, del panorama del menú de cada uno, TunnelPanoramas; el Nether, el End y el Void,
+// capturados en el juego, tools/void/panoramas.py) con una cámara que avanza (acerca) y mira alrededor, y el túnel queda
+// como un velo de luz por encima (más en los bordes). A través de cada puerta ya se ve la dimensión siguiente. En el
+// Void, la cámara mira a su agujero negro de verdad, que crece con una lente gravitatoria hasta tragarte; al llegar, la
+// luz dorada del Alba llena la pantalla.
 // La realidad se rasga al empezar (Open) y la luz del fondo llena la pantalla al llegar (Exit). Vista previa sin juego:
 // tools/void/tunel_preview.py (mismos tiempos que TravelFx).
 
 uniform sampler2D Sampler1;   // las nebulosas del cielo del Void (grieta_cielo.png, equirectangular)
+uniform sampler2D Sampler2;   // (1.3.96) el Overworld: el panorama del menú, equirectangular (TunnelPanoramas)
+uniform sampler2D Sampler3;   // el Nether (tunel_nether.png)
+uniform sampler2D Sampler4;   // el End (tunel_end.png)
+uniform sampler2D Sampler5;   // el Void (tunel_void.png)
+uniform float HasOverworld;   // 1 si se pudo hacer el panorama del Overworld
 uniform float WTime;          // segundos
 uniform float Travel;         // camino recorrido por el túnel
 uniform vec3 Gates;           // dónde están las tres puertas (en camino)
@@ -184,6 +197,51 @@ vec3 membrane(float i, vec2 pm) {
     return c;
 }
 
+// (1.3.96) El panorama de un tramo en la dirección d (x este, y arriba, z sur; longitud 0 = sur, en el centro)
+vec3 pano(float world, vec3 d) {
+    vec2 uv = vec2(atan(d.x, d.z) / TAU + 0.5, clamp(0.5 - asin(clamp(d.y, -1.0, 1.0)) / PI, 0.002, 0.998));
+    if (world < 0.5) return textureLod(Sampler2, uv, 0.0).rgb;
+    if (world < 1.5) return textureLod(Sampler3, uv, 0.0).rgb;
+    if (world < 2.5) return textureLod(Sampler4, uv, 0.0).rgb;
+    return textureLod(Sampler5, uv, 0.0).rgb;
+}
+
+// Cuánto se ha avanzado dentro del tramo «world» (0..1; en el del Void, hacia el agujero)
+float segment(float world) {
+    float k = Back > 0.5 ? 3.0 - world : world;
+    float a = k < 0.5 ? 0.0 : (k < 1.5 ? Gates.x : (k < 2.5 ? Gates.y : Gates.z));
+    float b = k < 0.5 ? Gates.x : (k < 1.5 ? Gates.y : (k < 2.5 ? Gates.z : Gates.z + 9.0));
+    return clamp((Travel - a) / (b - a), 0.0, 1.0);
+}
+
+// La cámara de cada tramo: hacia dónde mira el centro (yaw, pitch) y cuánto acerca. Mira a lo que se reconoce: el
+// mar de lava del Nether, las columnas del End (y su dragón), el agujero negro del Void
+vec3 camDir(float world, vec2 q) {
+    float s = segment(world);
+    float yaw, pitch, f;
+    if (world > 2.5) {
+        // el agujero negro del Void (VoidSky.HOLE: 9° al este del sur, 22,6° de altura); a la ida se acerca hasta tragarte
+        yaw = 0.157 + 0.04 * sin(WTime * 0.6);
+        pitch = 0.394 + 0.03 * sin(WTime * 0.5);
+        f = Back > 0.5 ? 1.1 : 1.0 + 1.8 * s * s + 9.0 * smoothstep(0.0, 0.75, Exit);
+        // la lente del agujero: la luz se curva a su alrededor
+        float l = (Back > 0.5 ? 0.004 : 0.004 + 0.03 * s) / max(dot(q, q), 0.0025);
+        q *= 1.0 + l;
+    } else {
+        float base = world < 0.5 ? 0.0 : (world < 1.5 ? -0.25 : 0.05);
+        yaw = base + 0.55 * sin(WTime * 0.35 + world * 1.7) + 0.5 * (s - 0.5);
+        pitch = world < 1.5 ? -0.12 : -0.02;
+        pitch += 0.06 * sin(WTime * 0.6 + world);
+        f = 0.85 + 0.6 * s;
+    }
+    vec3 d = normalize(vec3(-q.x, q.y, f));
+    // inclinar (pitch, hacia arriba +) y girar (yaw, desde el sur hacia el este +)
+    float cp = cos(pitch), sp = sin(pitch);
+    d = vec3(d.x, d.y * cp + d.z * sp, -d.y * sp + d.z * cp);
+    float cy = cos(yaw), sy = sin(yaw);
+    return vec3(d.x * cy + d.z * sy, d.y, -d.x * sy + d.z * cy);
+}
+
 // Lo que se ve a la distancia r del centro, en el ángulo a
 vec3 scene(float r, float a) {
     float rr = max(r, 0.004);
@@ -193,7 +251,14 @@ vec3 scene(float r, float a) {
     float px = 1.0 / ScreenSize.y;
     FOOT = max(K / (rr * rr) * px * 0.42, px / rr * 1.4);
     float world = worldAt(w);
-    vec3 col = worldWall(world, u, w);
+    vec3 wall = worldWall(world, u, w);
+    // (1.3.96) la dimensión de verdad (su panorama) y, por encima, el túnel como un velo de luz (más en los bordes); sin
+    // el panorama del Overworld, su pared de antes
+    vec2 q = vec2(cos(a), sin(a)) * r;
+    vec3 view = pano(world, camDir(world, q));
+    float veil = 0.1 + 0.24 * smoothstep(0.55, 1.1, r);
+    if (world < 0.5 && HasOverworld < 0.5) veil = 1.0;
+    vec3 col = mix(view, wall, veil);
     // las puertas: un anillo de luz en las paredes y, más allá, su membrana
     for (int i = 0; i < 3; i++) {
         float fi = float(i);
@@ -201,12 +266,13 @@ vec3 scene(float r, float a) {
         float dg = w - g;
         vec3 gc = gateColor(fi);
         float band = exp(-dg * dg * 6.0);
-        col = mix(col, gc * 1.6, band * 0.75);
+        // (1.3.96: la de una puerta ya cruzada, que se va por los bordes, tiñe menos: que mande la dimensión)
+        col = mix(col, gc * 1.6, band * (g > Travel ? 0.6 : 0.25));
         col += gc * exp(-dg * dg * 60.0) * 1.2;
         if (g > Travel && dg > 0.0) {
             float rg = K / (g - Travel);
             vec2 pm = vec2(cos(a), sin(a)) * r / rg;
-            col = mix(col, membrane(fi, pm), 0.55);
+            col = mix(col, membrane(fi, pm), 0.18);
         }
     }
     // niebla del color del tramo hacia el fondo (que brilla); y donde la pared ya es más fina que un par de píxeles
@@ -215,8 +281,8 @@ vec3 scene(float r, float a) {
     float f = 1.0 - exp(-depth * 0.08);
     float aaf = smoothstep(0.08, 0.3, FOOT);
     vec3 fc = fogColor(world);
-    col = mix(col, fc * 0.9, aaf * 0.8);
-    col = mix(col, fc * 1.35, f * 0.85);
+    col = mix(col, fc * 0.9, aaf * 0.8 * veil);
+    col = mix(col, fc * 1.35, f * (world > 2.5 ? 0.12 : 0.3));
     // rayas de velocidad
     float lane = floor(fract(a / TAU) * 110.0);
     float hs = hash11(lane + 17.0);
@@ -260,23 +326,10 @@ void main() {
         float x = Travel - g;
         col = mix(col, gateColor(float(i)) * 1.3, exp(-x * x * 18.0) * 0.7);
     }
-    // la antesala del Void a la ida: al fondo, el agujero negro, que crece al acercarse y al llegar llena la pantalla
-    if (Back < 0.5) {
-        float near = smoothstep(Gates.z - 4.0, Gates.z + 6.0, Travel);
-        float hr = (0.035 + 0.11 * near) * (1.0 + 18.0 * smoothstep(0.0, 0.6, Exit));
-        float sh = smoothstep(hr * 1.02, hr * 0.98, r);
-        float ring = exp(-pow((r - hr * 1.12) / (hr * 0.06 + 0.002), 2.0));
-        float glow = step(hr, r) * exp(-(r - hr) / (hr * 0.5 + 0.01));
-        float an = atan(q.y, q.x);
-        vec3 ringC = vec3(1.0, 0.75, 0.42) * (0.8 + 0.25 * sin(an * 3.0 - t * 0.8));
-        float vis = near * (1.0 - smoothstep(0.6, 1.0, Exit));
-        col = mix(col, vec3(0.0), sh * vis);
-        col += (ringC * ring * 1.8 + vec3(0.55, 0.25, 0.95) * glow * 0.35) * vis;
-    }
     // viñeta
     col *= 1.0 - 0.4 * smoothstep(0.55, 1.1, length(p));
     // la salida: la luz del fondo llena la pantalla (a la ida, sale del anillo del agujero)
-    vec3 dest = Back > 0.5 ? vec3(1.0, 0.96, 0.88) : vec3(0.88, 0.78, 1.0);
+    vec3 dest = Back > 0.5 ? vec3(1.0, 0.96, 0.88) : vec3(1.0, 0.9, 0.66);
     float er = Back > 0.5 ? Exit * 1.4 : smoothstep(0.45, 1.0, Exit) * 1.6;
     float light = smoothstep(er, er - 0.45, r) * step(0.001, Exit);
     col = mix(col, dest * 1.4, light);

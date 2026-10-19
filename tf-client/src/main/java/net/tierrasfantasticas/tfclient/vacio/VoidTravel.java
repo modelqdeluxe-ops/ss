@@ -35,7 +35,7 @@ import org.joml.Vector3f;
 /**
  * El viaje al vacío y de vuelta, en el servidor. 1.3.91 (el dueño: «la animación de teletransporte, más bonita: que
  * viaje por un agujero de gusano con la realidad alterada, imágenes del Overworld, el Nether y el End; de regreso End,
- * Nether y Overworld»): el viaje dura 7,5 s ({@link #LEAVE_TICKS}); en tu pantalla la realidad se rasga y cruzas el
+ * Nether y Overworld»): el viaje dura 11,5 s ({@link #LEAVE_TICKS}; 7,5 hasta la 1.3.95: cada dimensión se veía 1,5 s, poco para reconocerla); en tu pantalla la realidad se rasga y cruzas el
  * agujero de gusano ({@link TravelFx}), mientras aquí flotas (y nada te hace daño). Alrededor, para los demás, dos
  * espirales de luz dorada y blanca suben cerrándose y suena el faro (1.3.92: sin la amatista); en el último tick,
  * chispas, el sonido del portal del End, y apareces: en el santuario del vacío (en su puerta del este, mirando a la
@@ -47,7 +47,7 @@ import org.joml.Vector3f;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class VoidTravel {
-    public static final int LEAVE_TICKS = 150;
+    public static final int LEAVE_TICKS = 230;
     private static final DustParticleOptions GOLD = new DustParticleOptions(new Vector3f(1F, 0.8F, 0.3F), 1.4F);
     private static final DustParticleOptions LIGHT = new DustParticleOptions(new Vector3f(1F, 0.97F, 0.85F), 1.0F);
     private static final DustParticleOptions VIOLET = new DustParticleOptions(new Vector3f(0.62F, 0.3F, 1F), 1.3F);

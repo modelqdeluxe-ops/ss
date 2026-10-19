@@ -211,7 +211,7 @@ public final class TFVoid {
             p.teleportTo(p.serverLevel(), a.x, a.y + 0.5, a.z, VoidIsland.arriveYaw(), 0F);
             p.fallDistance = 0;
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 100, 0, false, false));
-            p.displayClientMessage(Component.literal("La luz del santuario te ha rescatado del vacío.").withStyle(ChatFormatting.GOLD), true);
+            p.displayClientMessage(Component.literal("La luz del Alba te ha rescatado del vacío y te ha devuelto al santuario.").withStyle(ChatFormatting.GOLD), true);
             VoidNet.fx(p, VoidNet.FX_ARRIVE);
         }
     }
@@ -219,6 +219,7 @@ public final class TFVoid {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         IslandUpdate.reset();
+        LightShards.reset();
     }
 
     @SubscribeEvent
@@ -229,7 +230,11 @@ public final class TFVoid {
         VoidTravel.tick(server);
         SkyRift.tick(server);
         ServerLevel level = server.getLevel(VOID);
-        if (level != null) IslandUpdate.tick(level);
+        if (level != null) {
+            IslandUpdate.tick(level);
+            // (1.3.96) los fragmentos de luz, cuando la isla ya está al día (si no, saldrían donde aún no hay suelo)
+            if (IslandUpdate.finished()) LightShards.tick(level);
+        }
         if (++tick % 100 != 0) return;
         if (level == null || level.players().isEmpty()) return;
         ensureHomeKnight(level);

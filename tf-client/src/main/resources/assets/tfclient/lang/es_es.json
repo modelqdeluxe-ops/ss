@@ -1,5 +1,5 @@
 {
-  "entity.tfclient.caballero": "Caelthar, Caballero Sacro",
+ "entity.tfclient.caballero": "Caelthar, Caballero Sacro",
  "item.tfclient.job_farmer": "Granjero",
  "item.tfclient.job_miner": "Minero",
  "item.tfclient.job_wood_cutter": "Leñador",
@@ -1236,5 +1236,7 @@
  "entity.tfclient.jefe": "Jefe",
  "entity.tfclient.esbirro": "Esbirro",
  "entity.tfclient.grieta": "Grieta",
- "entity.tfclient.asiento": "Asiento"
+ "entity.tfclient.asiento": "Asiento",
+ "death.attack.tfclient.corrosion_vacio": "%1$s fue consumido por el Vacío",
+ "death.attack.tfclient.corrosion_vacio.player": "%1$s fue consumido por el Vacío mientras huía de %2$s"
 }

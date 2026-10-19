@@ -22,8 +22,10 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * golpe en el servidor y cada chunk nace ya con su trozo de isla.
  *
  * <p>Formato (gzip, big-endian): «TFVI», versión, tamaño (x, y, z), dónde va su esquina en el mundo, dónde está el
- * caballero, dónde se llega (x, y, z, yaw), dónde va la grieta del Void (desde la versión 2), la paleta (estados como en /setblock) y, por columna (z por fuera, x por
- * dentro), sus tramos: (y, largo, bloque).
+ * caballero, dónde se llega (x, y, z, yaw), dónde va la grieta del Void (desde la versión 2), el Velo del Alba (centro y
+ * radio de la burbuja del santuario), el Corazón del Alba y los sitios de los fragmentos de luz (desde la versión 3,
+ * 1.3.96: tools/void/isla_alba.py), la paleta (estados como en /setblock) y, por columna (z por fuera, x por dentro), sus
+ * tramos: (y, largo, bloque).
  */
 public final class VoidIsland {
     private static volatile VoidIsland loaded;
@@ -34,6 +36,11 @@ public final class VoidIsland {
     final Vec3 arrive;
     final float arriveYaw;
     final BlockPos rift;
+    /** (v3) El Velo del Alba: centro y radio de la burbuja del santuario; el Corazón del Alba; los fragmentos de luz. */
+    final Vec3 bubble;
+    final float bubbleR;
+    final Vec3 heart;
+    final java.util.List<BlockPos> shards;
     final BlockState[] palette;
     /** Por columna: dónde empiezan sus tramos en {@link #runs} (y el final, en la siguiente). */
     final int[] colStart;
@@ -45,7 +52,7 @@ public final class VoidIsland {
         in.readFully(magic);
         if (magic[0] != 'T' || magic[1] != 'F' || magic[2] != 'V' || magic[3] != 'I') throw new IOException("no es una isla");
         int version = in.readInt();
-        if (version != 1 && version != 2) throw new IOException("versión " + version);
+        if (version < 1 || version > 3) throw new IOException("versión " + version);
         sx = in.readInt();
         sy = in.readInt();
         sz = in.readInt();
@@ -56,6 +63,20 @@ public final class VoidIsland {
         arrive = new Vec3(in.readInt() + 0.5, in.readInt(), in.readInt() + 0.5);
         arriveYaw = in.readFloat();
         rift = version >= 2 ? new BlockPos(in.readInt(), in.readInt(), in.readInt()) : new BlockPos(0, 72, 0);
+        if (version >= 3) {
+            bubble = new Vec3(in.readInt() + 0.5, in.readInt(), in.readInt() + 0.5);
+            bubbleR = in.readInt();
+            heart = new Vec3(in.readInt() + 0.5, in.readInt() + 0.5, in.readInt() + 0.5);
+            int nf = in.readInt();
+            java.util.List<BlockPos> list = new java.util.ArrayList<>();
+            for (int i = 0; i < nf; i++) list.add(new BlockPos(in.readInt(), in.readInt(), in.readInt()));
+            shards = java.util.List.copyOf(list);
+        } else {
+            bubble = new Vec3(knight.getX() + 0.5, knight.getY(), knight.getZ() + 0.5);
+            bubbleR = 0F;
+            heart = bubble.add(0, 12, 0);
+            shards = java.util.List.of();
+        }
         int n = in.readInt();
         palette = new BlockState[n];
         for (int i = 0; i < n; i++) {
@@ -109,6 +130,35 @@ public final class VoidIsland {
     public static BlockPos knightPos() {
         VoidIsland i = get();
         return i == null ? new BlockPos(0, 80, 0) : i.knight;
+    }
+
+    /** (1.3.96) El Velo del Alba: el centro de la burbuja del santuario (radio 0 si la isla no la tiene). */
+    public static Vec3 bubbleCenter() {
+        VoidIsland i = get();
+        return i == null ? Vec3.ZERO : i.bubble;
+    }
+
+    public static float bubbleRadius() {
+        VoidIsland i = get();
+        return i == null ? 0F : i.bubbleR;
+    }
+
+    /** ¿Está ese punto dentro del Velo del Alba? */
+    public static boolean inBubble(double x, double y, double z) {
+        VoidIsland i = get();
+        return i != null && i.bubbleR > 0 && i.bubble.distanceToSqr(x, y, z) < i.bubbleR * i.bubbleR;
+    }
+
+    /** (1.3.96) Donde flota el Corazón del Alba, sobre el templo. */
+    public static Vec3 heartPos() {
+        VoidIsland i = get();
+        return i == null ? new Vec3(0, 90, 0) : i.heart;
+    }
+
+    /** (1.3.96) Los sitios de los fragmentos de luz (donde flota cada uno). */
+    public static java.util.List<BlockPos> shards() {
+        VoidIsland i = get();
+        return i == null ? java.util.List.of() : i.shards;
     }
 
     /** Dónde va la grieta del Void (el centro de la plaza; se pisa en esa y). */

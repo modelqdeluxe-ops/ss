@@ -859,6 +859,9 @@ def main():
         dest = sys.argv[sys.argv.index('--preview') + 1]
         os.makedirs(dest, exist_ok=True)
         np.savez_compressed(os.path.join(dest, 'isla.npz'), g=isl.grid, names=np.array(isl.names))
+    # (1.3.96) el Santuario del Alba (la isla del caballero con su burbuja), el Puente de Luz y los fragmentos de luz
+    import isla_alba
+    isla_alba.main(OUT)
 
 
 if __name__ == '__main__':

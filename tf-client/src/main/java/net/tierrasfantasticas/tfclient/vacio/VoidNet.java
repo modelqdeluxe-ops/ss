@@ -41,6 +41,8 @@ public final class VoidNet {
                 .encoder(Fx::write).decoder(Fx::read).consumerMainThread(Fx::handle).add();
         CHANNEL.messageBuilder(Sky.class, 3, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Sky::write).decoder(Sky::read).consumerMainThread(Sky::handle).add();
+        CHANNEL.messageBuilder(Light.class, 4, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Light::write).decoder(Light::read).consumerMainThread(Light::handle).add();
     }
 
     static void fx(ServerPlayer p, int phase) {
@@ -118,6 +120,28 @@ public final class VoidNet {
 
         static void handle(Sky m, Supplier<NetworkEvent.Context> ctx) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SkyRiftClient.receive(m));
+        }
+    }
+
+    /**
+     * (1.3.96) Tu luz en el Void ({@link VoidLight}): cuánta (0..100), si estás dentro del Velo del Alba, los ecos que has
+     * oído de cuántos hay y lo que acaba de pasar (VoidLight.EV_*: fragmento, entrar o salir del Velo, sin luz).
+     */
+    public record Light(int light, boolean inside, int echoes, int echoesTotal, int event) {
+        static void write(Light m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.light);
+            buf.writeBoolean(m.inside);
+            buf.writeVarInt(m.echoes);
+            buf.writeVarInt(m.echoesTotal);
+            buf.writeVarInt(m.event);
+        }
+
+        static Light read(FriendlyByteBuf buf) {
+            return new Light(buf.readVarInt(), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
+        }
+
+        static void handle(Light m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> VoidLightClient.receive(m));
         }
     }
 }

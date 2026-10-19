@@ -123,7 +123,7 @@ public final class BossTestClient {
     private static final String[] TUNNEL = {"00_deforma", "01_rasgado", "02_tramo1", "03_puerta1", "04_tramo2", "05_puerta2",
             "06_tramo3", "07_puerta3", "08_tramo4", "09_salida", "10_luz", "11_aparece"};
     /** Segundos desde que empieza el viaje (las 9 primeras; 1.3.92: cuatro tramos, = TravelFx) o desde que llega (las 3 últimas). */
-    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 2.7F, 3.3F, 4.1F, 4.8F, 5.5F, 6.2F, 7.0F, 0.75F, 1.4F, 2.1F};
+    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 3.3F, 4.35F, 5.6F, 6.75F, 8.0F, 9.15F, 10.4F, 0.75F, 1.4F, 2.1F};
     private static final int TUNNEL_FROM_START = 9;
     private static int tunnelTrip = -1, tunnelNext;
 
