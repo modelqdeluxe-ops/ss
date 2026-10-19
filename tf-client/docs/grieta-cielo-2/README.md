@@ -232,6 +232,10 @@ capturas `00_vacio_cielo_*` de la rama `pruebas-jefes` (330b445):
   grieta en el registro.
 - Ni rectángulos ni el borde del cuadro; el desgarro oscuro por dentro (el borde solo arde por fuera); la tormenta no
   tapa el desgarro; las nubes de Minecraft detrás del desgarro y delante de la tormenta.
+- **Con shaders** (24a162e, Oculus + Complementary Reimagined): el ciclo entero igual (212 fotogramas dibujada después
+  del paquete, temblor máximo 1,2, cielo apagado como mucho 0,60); la grieta solo donde se ve el cielo y las nubes del
+  paquete no tapan el Void. Con Mesa por software va a menos de 1 fotograma por segundo, así que cada captura sale algo
+  después de su momento (el «fogonazo» ya con el desgarro abriéndose): es la prueba, no la animación.
 
 ## 5. Trampas que ya se encontraron (no las repitas)
 

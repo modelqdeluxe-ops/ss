@@ -910,7 +910,8 @@ de tiempo que `SkyRiftClient.look()`** (si cambias una, cambia la otra); con `--
 `00_vacio_cielo_*`, hoja en `docs/grieta-cielo-2/12_en_el_juego_1.3.95.jpg`): el ciclo entero bien («rota: abierta»,
 cielo apagado como mucho 0,60; «al caer un jefe del Void: sellada por ahora»; «otra vez lista: abierta»; «el final:
 cerrada para siempre»; 712 fotogramas dibujada, 5 animaciones, sin errores de la grieta). Sin rectángulos ni el borde del
-cuadro, el desgarro oscuro por dentro, la tormenta sin taparlo. Lo que encontró la primera: las nubes de Minecraft
+cuadro, el desgarro oscuro por dentro, la tormenta sin taparlo. Con shaders (24a162e) igual, solo donde se ve el cielo y
+sin las nubes del paquete delante del Void. Lo que encontró la primera: las nubes de Minecraft
 delante del Void (de lejos, 25,7 % de nube dentro del desgarro) → con la máscara, 0,4 % (reabierta: 11,2 % → 2,2 %).
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
