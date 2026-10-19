@@ -18,6 +18,7 @@
         { "name": "Open", "type": "float", "count": 1, "values": [ 1.0 ] },
         { "name": "Flash", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Alpha", "type": "float", "count": 1, "values": [ 1.0 ] },
-        { "name": "AtFar", "type": "float", "count": 1, "values": [ 0.0 ] }
+        { "name": "AtFar", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Dark", "type": "float", "count": 1, "values": [ 0.0 ] }
     ]
 }

@@ -863,23 +863,25 @@ public final class BossTest {
             }
             case 2560 -> r.event("grieta del cielo, en el preludio: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
             case 2720 -> r.event("grieta del cielo, rota: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
-            case 2745 -> skyWatch(level, player, 420, 420);
-            case 2840 -> shot(r, "cielo_lejos");
-            case 2850 -> {
+            // (el diálogo antes de la vista de lejos y 3 s después de llegar: al volver de 600 bloques el cliente aún
+            // no tenía a Caelthar y el diálogo se cerraba en el acto)
+            case 2745 -> {
                 fly(player, false);
                 player.teleportTo(level, knight.getX(), knight.getY(), knight.getZ() + 4, 180F, -4F);
             }
-            case 2870 -> net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
-            case 2990 -> shot(r, "dialogo_cielo");
-            case 3000 -> dialogPress = 1;
-            case 3110 -> shot(r, "dialogo_grieta");
-            case 3120 -> dialogPress = 1;
-            case 3240 -> shot(r, "dialogo_sellar");
-            case 3250 -> dialogPress = 2;
-            case 3260 -> {
+            case 2805 -> net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            case 2925 -> shot(r, "dialogo_cielo");
+            case 2935 -> dialogPress = 1;
+            case 3045 -> shot(r, "dialogo_grieta");
+            case 3055 -> dialogPress = 1;
+            case 3175 -> shot(r, "dialogo_sellar");
+            case 3185 -> dialogPress = 2;
+            case 3190 -> {
                 fly(player, true);
-                skyWatch(level, player, 0, 120);
+                skyWatch(level, player, 420, 420);
             }
+            case 3270 -> shot(r, "cielo_lejos");
+            case 3280 -> skyWatch(level, player, 0, 120);
             // cae un jefe del Void: se sella; y se vuelve a abrir sola cuando la grieta del Void tiene otro jefe listo (30 s)
             case 3300 -> net.tierrasfantasticas.tfclient.vacio.SkyRift.voidBossKilled();
             case 3420 -> r.event("grieta del cielo, al caer un jefe del Void: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
@@ -889,7 +891,12 @@ public final class BossTest {
                 r.event("grieta del cielo, el final: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
                 net.tierrasfantasticas.tfclient.vacio.SkyRift.testReset();
                 fly(player, false);
-                if (knight != null) knight.discard();
+                // (al alejarse 600 bloques su chunk se descargó: el que hay ahora es otra entidad)
+                for (net.tierrasfantasticas.tfclient.vacio.KnightEntity k : level.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(knight.blockPosition()).inflate(16))) {
+                    k.discard();
+                }
+                knight.discard();
                 knight = null;
                 next(level);
             }

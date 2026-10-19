@@ -35,7 +35,8 @@ import org.lwjgl.opengl.GL11;
  *
  * <ul>
  *   <li>Preludio (6 s): un retumbar hondo (el del warden al salir), latidos cada vez más rápidos, un lamento (el del
- *   guardián anciano) y un rugido lejano; la cámara tiembla un poco, cada vez más.</li>
+ *   guardián anciano) y un rugido lejano; la cámara tiembla un poco, cada vez más, y el cielo se apaga donde va a
+ *   romperse.</li>
  *   <li>Se rompe: las grietas corren por el cielo desde el centro (1,2 s, con cristal que se quiebra), fogonazo con
  *   trueno y explosión y un golpe de temblor, y el desgarro se abre al Void (hasta los 3,4 s).</li>
  *   <li>Abierta: las grietas laten y las recorren rayos; dentro, el Void.</li>
@@ -89,32 +90,36 @@ public final class SkyRiftClient {
         return fx < 0 ? 1e4F : (System.currentTimeMillis() - fxMs) / 1000F;
     }
 
-    /** Cómo se ve ahora: grietas, abierto, fogonazo, opacidad; null si no se ve. */
+    /** Cómo se ve ahora: grietas, abierto, fogonazo, opacidad y lo apagado del cielo (preludio); null si no se ve. */
     private static float[] look() {
         float t = since();
         switch (fx) {
+            case SkyRift.FX_PRELUDE -> {
+                // el cielo se apaga poco a poco donde va a romperse
+                if (t < 8F) return new float[] {0F, 0F, 0F, 1F, 0.85F * smooth(0.5F, 6F, t)};
+            }
             case SkyRift.FX_BURST -> {
                 if (t < 6F) {
                     float flash = t < 1.2F ? 0.15F * smooth(0.6F, 1.2F, t) : (float) Math.exp(-(t - 1.2F) * 2.2F);
-                    return new float[] {smooth(0F, 1.2F, t), smooth(1.2F, 3.4F, t), flash, 1F};
+                    return new float[] {smooth(0F, 1.2F, t), smooth(1.2F, 3.4F, t), flash, 1F, 0.85F * (1F - smooth(0.4F, 1.2F, t))};
                 }
             }
             case SkyRift.FX_REOPEN -> {
                 if (t < 5F) {
                     float flash = t < 0.8F ? 0F : (float) Math.exp(-(t - 0.8F) * 2.5F) * 0.8F;
-                    return new float[] {0.3F + 0.7F * smooth(0F, 0.8F, t), smooth(0.8F, 2.6F, t), flash, 1F};
+                    return new float[] {0.3F + 0.7F * smooth(0F, 0.8F, t), smooth(0.8F, 2.6F, t), flash, 1F, 0F};
                 }
             }
             case SkyRift.FX_CLOSE -> {
                 if (t < 4F) {
                     float flash = (float) Math.exp(-Math.abs(t - 2.3F) * 6F) * 0.8F;
-                    return new float[] {1F - 0.7F * smooth(0.5F, 2.5F, t), 1F - smooth(0F, 2.2F, t), flash, 1F - 0.25F * smooth(2.3F, 3.5F, t)};
+                    return new float[] {1F - 0.7F * smooth(0.5F, 2.5F, t), 1F - smooth(0F, 2.2F, t), flash, 1F - 0.25F * smooth(2.3F, 3.5F, t), 0F};
                 }
             }
             case SkyRift.FX_END -> {
                 if (t < 5F) {
                     float flash = (float) Math.exp(-Math.abs(t - 2.5F) * 3.5F) * 1.4F;
-                    return new float[] {1F - smooth(0.5F, 3F, t), 1F - smooth(0F, 2.5F, t), flash, 1F - smooth(2.6F, 4.5F, t)};
+                    return new float[] {1F - smooth(0.5F, 3F, t), 1F - smooth(0F, 2.5F, t), flash, 1F - smooth(2.6F, 4.5F, t), 0F};
                 }
                 return null;
             }
@@ -122,8 +127,8 @@ public final class SkyRiftClient {
             }
         }
         return switch (state) {
-            case SkyRift.OPEN -> new float[] {1F, 1F, 0F, 1F};
-            case SkyRift.CLOSED -> new float[] {0.3F, 0F, 0F, 0.75F};
+            case SkyRift.OPEN -> new float[] {1F, 1F, 0F, 1F, 0F};
+            case SkyRift.CLOSED -> new float[] {0.3F, 0F, 0F, 0.75F, 0F};
             default -> null;
         };
     }
@@ -287,6 +292,7 @@ public final class SkyRiftClient {
             sh.safeGetUniform("Flash").set(lk[2]);
             sh.safeGetUniform("Alpha").set(lk[3]);
             sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
+            sh.safeGetUniform("Dark").set(lk[4]);
             PoseStack mv = RenderSystem.getModelViewStack();
             mv.pushPose();
             mv.setIdentity();

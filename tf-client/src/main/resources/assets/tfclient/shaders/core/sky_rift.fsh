@@ -7,7 +7,7 @@
 //    blanca y violeta, con un halo morado; de vez en cuando un rayo recorre alguna.
 //  - El desgarro (Open): una herida vertical, de borde dentado y vivo, que se abre y deja ver el Void: sus nebulosas en
 //    remolino, estrellas y, en el fondo, el agujero negro con su anillo de oro.
-//  - Un aura oscura alrededor (el cielo se apaga cerca de la herida) y el fogonazo (Flash) al romperse.
+//  - Un aura oscura alrededor (el cielo se apaga cerca de la herida; en el preludio, Dark) y el fogonazo (Flash).
 //  - Cerrada (Open 0, Crack bajo) queda una cicatriz: la línea del desgarro y las grietas, apagadas.
 // Todo con bordes suaves (lo que mide un píxel, fwidth): nada dentado. Vista previa sin juego:
 // tools/void/grieta_cielo_preview.py.
@@ -19,6 +19,7 @@ uniform float Open;           // 0..1 el desgarro se abre
 uniform float Flash;          // 0..1 fogonazo
 uniform float Alpha;          // 0..1 todo (se apaga al cerrarse del todo)
 uniform float AtFar;          // 1 = después del paquete de shaders: solo donde se ve el cielo
+uniform float Dark;           // 0..1 en el preludio, el cielo se apaga donde va a romperse
 
 in vec2 uv;
 in vec3 vDir;
@@ -71,7 +72,8 @@ float tearHalf(float y) {
 // Una rama de grieta: del centro hacia el ángulo th, quebrada; devuelve su luz (núcleo) y su halo
 vec2 branch(vec2 p, float th, float len, float seed, float aa) {
     float r = length(p);
-    if (r > len + 0.08 || r < 0.02) return vec2(0.0);
+    // (sin grietas todavía, en el preludio: nada; smoothstep con los dos bordes iguales no está definido)
+    if (len < 0.01 || r > len + 0.08 || r < 0.02) return vec2(0.0);
     float a = atan(p.y, p.x);
     // el ángulo de la rama a esa distancia: quebrada (ruido por tramos) y algo curvada
     float s = r * 6.0 + seed * 7.0;
@@ -95,10 +97,11 @@ void main() {
     vec3 col = vec3(0.0);
     float alpha = 0.0;
 
-    // El aura oscura: el cielo se apaga junto a la herida
-    float aura = exp(-r * r * 1.6) * smoothstep(0.0, 0.6, Crack);
+    // El aura oscura: el cielo se apaga junto a la herida (y en el preludio, antes de que se rompa). Redonda y apagada
+    // del todo antes del borde del cuadro (en la 1.3.93 llegaba al borde: en la prueba se veía un rectángulo oscuro)
+    float aura = exp(-r * r * 2.2) * max(smoothstep(0.0, 0.6, Crack), Dark) * smoothstep(1.0, 0.6, length(uv));
     col += vec3(0.05, 0.0, 0.09) * aura;
-    alpha += aura * 0.55;
+    alpha += aura * 0.6;
 
     // Las grietas: 11 ramas con dos horquillas cada una, que crecen con Crack
     vec2 cr = vec2(0.0);
