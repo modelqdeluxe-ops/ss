@@ -7,67 +7,82 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.client.TFMenuPaint;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * El diálogo con Caelthar, el Caballero Sacro (hasta la 1.3.88, Aurelion; lo pidió el dueño: «al seleccionarlo hazle un diseño bonito, que salude,
- * su nombre, qué es él, un breve lore del Void, las grietas... y que le pida si quiere viajar al Void; la segunda vez,
- * solo le saluda por su nombre»).
+ * El diálogo con Caelthar, el Caballero Sacro (hasta la 1.3.88, Aurelion; lo pidió el dueño: «al seleccionarlo hazle un
+ * diseño bonito, que salude, su nombre, qué es él, un breve lore del Void, las grietas... y que le pida si quiere viajar
+ * al Void; la segunda vez, solo le saluda por su nombre»). Hay páginas de lore (qué es el Void, qué son las grietas, qué
+ * hace él); el del santuario del vacío, en vez de llevarte, te devuelve a donde estabas.
  *
- * <p>Una placa abajo, maciza (morado casi negro con marco de oro y adornos en las esquinas): a la izquierda su retrato
- * (el modelo de verdad, de tres cuartos, sobre un fondo de luz), a la derecha su nombre en Cinzel dorada, su
- * título, el texto que se va escribiendo (clic o espacio para verlo entero) y las respuestas (con el ratón o con 1, 2,
- * 3). Motas de luz suben por la placa. Hay páginas de lore (qué es el Void, qué son las grietas, qué hace él). El del
- * santuario del vacío, en vez de llevarte, te devuelve a donde estabas.
- *
- * <p>1.3.89 (el dueño: «los diálogos van a 3 fps, súper lagueados»): el halo del retrato era un círculo pintado fila a
- * fila (unos 430 rectángulos por fotograma, y en 1.20.1 cada {@code fill} es una llamada de dibujo aparte); ahora es una
- * textura que se hace una vez ({@link #halo}) y la placa y las motas se dibujan juntas ({@code drawManaged}).
+ * <p>1.3.92, rehecho (el dueño: «su cuadro de diálogo es una mierda, va lento, hay texto mal dibujado como su nombre, y
+ * tiene sonidos de amatista: quita ese sonido, hazle rework»). Ahora, como una escena de cine:
+ * <ul>
+ *   <li>El mundo se oscurece abajo (y un poco arriba) y se sigue viendo al caballero, con su espada, en medio.</li>
+ *   <li>Una placa de cristal oscuro con las esquinas redondeadas y un hilo de oro (en píxeles reales de pantalla:
+ *   {@link TFMenuPaint}, nítida con cualquier escala de interfaz), que entra subiendo y encendiéndose.</li>
+ *   <li>Su nombre en Cinzel dorada con contorno, rasterizada al tamaño real de la pantalla (font/cinzel_N: un píxel
+ *   de letra por píxel de pantalla). Antes iba en negrita a ×1,7: la negrita de una letra TTF se dibuja dos veces
+ *   desplazada y, escalada, se veía corrida y borrosa. A los lados, dos hilos de oro que se apagan.</li>
+ *   <li>El texto se escribe a {@link #CPS} letras por segundo (antes 34, por ticks: a saltos) y entra con un fundido;
+ *   clic, espacio o intro lo muestran entero.</li>
+ *   <li>Las respuestas, en pastillas redondeadas con su número, que se encienden con el ratón (o 1, 2, 3).</li>
+ *   <li>Sin el retrato (el caballero ya está delante) y sin sonidos de amatista: los suaves del TF Pad (al abrir, al
+ *   pasar por una respuesta y al elegirla).</li>
+ * </ul>
  */
 @OnlyIn(Dist.CLIENT)
 public class KnightScreen extends Screen {
-    private static final ResourceLocation CINZEL = new ResourceLocation(TFClient.MOD_ID, "cinzel");
-    private static final int BG = 0xFF140B22, BG2 = 0xFF1E1132, GOLD = 0xFFD9B45A, GOLD_HI = 0xFFFFE7A0, INNER = 0xFF3A2457,
-            TEXT = 0xFFEDE6FF, SUB = 0xFFB9A6E8, OPT = 0xFF24133A, OPT_HI = 0xFF3B1F60;
+    /** Letras por segundo del texto que se escribe. */
+    private static final float CPS = 55F;
+    private static final int GOLD = 0xFFE9C46E, GOLD_HI = 0xFFFFE7A0, GOLD_DARK = 0xFF3A2306, TEXT = 0xFFF1ECFF, SUB = 0xFFB9A6E8,
+            HINT = 0xFF8C7BB0;
 
     private enum Page { GREET, LORE_VOID, LORE_RIFTS, LORE_KNIGHT, WHERE, LEAVING }
 
     private final VoidNet.Talk talk;
     private final int entityId;
-    private Page page = Page.GREET;
     private String text = "";
     private final List<Option> options = new ArrayList<>();
-    private float shown;
     private int age, closeAt = -1;
-    private final float[][] motes = new float[26][4];
+    /** Cuándo se abrió y cuándo empezó la página (ms). */
+    private long openMs, pageMs;
+    /** Si ya se ve todo el texto (clic para verlo entero). */
+    private boolean full;
+    /** Lo encendida que está cada respuesta (0..1, se anima) y la que tiene el ratón encima. */
+    private final float[] glow = new float[8];
+    private int hovered = -1;
+    private long lastFrame;
 
     private record Option(String label, Runnable action) {}
+
+    /** Dónde va cada cosa (en píxeles de interfaz), calculado en cada fotograma. */
+    private float panelX, panelY, panelW, panelH, textX, textY, textW;
+    private final List<float[]> optRects = new ArrayList<>();
+    private List<FormattedCharSequence> lines = List.of();
 
     public KnightScreen(VoidNet.Talk talk) {
         super(Component.literal(KnightEntity.NAME));
         this.talk = talk;
         this.entityId = talk.entity();
-        java.util.Random r = new java.util.Random();
-        for (float[] m : motes) {
-            m[0] = r.nextFloat();
-            m[1] = r.nextFloat();
-            m[2] = 0.002F + r.nextFloat() * 0.004F;
-            m[3] = r.nextFloat() * 6.28F;
-        }
+        openMs = System.currentTimeMillis();
         go(Page.GREET);
+        ui("page", 0.45F, 1.0F);
     }
 
     @Override
@@ -82,8 +97,8 @@ public class KnightScreen extends Screen {
     }
 
     private void go(Page p) {
-        page = p;
-        shown = 0;
+        pageMs = System.currentTimeMillis();
+        full = false;
         options.clear();
         String n = talk.name();
         if (talk.home()) {
@@ -127,17 +142,17 @@ public class KnightScreen extends Screen {
         VoidNet.CHANNEL.sendToServer(new VoidNet.Choose(entityId, what));
         go(Page.LEAVING);
         closeAt = age + 34;
-        click(1.0F);
     }
 
-    private void click(float pitch) {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, pitch, 0.9F));
+    /** Un sonido suave del TF Pad (sin posición: suena igual mires a donde mires). */
+    private static void ui(String name, float volume, float pitch) {
+        Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(new ResourceLocation(TFClient.MOD_ID, "pad." + name),
+                SoundSource.MASTER, volume, pitch, RandomSource.create(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
     }
 
     @Override
     public void tick() {
         age++;
-        shown = Math.min(text.length(), shown + 1.7F);
         if (closeAt >= 0 && age >= closeAt) onClose();
         Minecraft mc = Minecraft.getInstance();
         Entity e = mc.level == null ? null : mc.level.getEntity(entityId);
@@ -146,199 +161,219 @@ public class KnightScreen extends Screen {
         }
     }
 
+    /** Cuántas letras se ven ya. */
+    private int shown() {
+        if (full) return text.length();
+        int n = (int) ((System.currentTimeMillis() - pageMs) / 1000F * CPS);
+        if (n >= text.length()) full = true;
+        return Math.min(text.length(), n);
+    }
+
+    private boolean done() {
+        return shown() >= text.length();
+    }
+
     // ------------------------------------------------------------------------------------------- dibujo
 
-    private int panelW() {
-        return Math.min(470, width - 24);
+    private static float ease(float x) {
+        x = Mth.clamp(x, 0F, 1F);
+        return 1F - (1F - x) * (1F - x) * (1F - x);
     }
 
-    private int panelH() {
-        return 64 + lines().size() * 10 + Math.max(1, options.size()) * 17 + 8;
+    /** La letra Cinzel rasterizada a n píxeles reales por píxel de interfaz (font/cinzel_N.json; 4 = cinzel.json). */
+    private static ResourceLocation cinzel(int n) {
+        n = Mth.clamp(n, 1, 12);
+        return new ResourceLocation(TFClient.MOD_ID, n == 4 ? "cinzel" : "cinzel_" + n);
     }
 
-    private int textW() {
-        return panelW() - portraitW() - 30;
-    }
-
-    private int portraitW() {
-        return panelW() < 360 ? 0 : 104;
-    }
-
-    private List<FormattedCharSequence> lines() {
-        return font.split(Component.literal(text), Math.max(80, textW()));
+    private void layout() {
+        textW = Math.min(380, width - 64);
+        lines = font.split(Component.literal(text), (int) textW);
+        float optH = 18F, optGap = 5F;
+        float optsH = options.isEmpty() ? 0F : options.size() * (optH + optGap) - optGap;
+        float nameH = 30F;
+        float bodyH = Math.max(3, lines.size()) * 11F;
+        panelW = textW + 48F;
+        panelH = nameH + 8F + bodyH + (optsH > 0 ? 14F + optsH : 6F) + 16F;
+        panelX = (width - panelW) / 2F;
+        panelY = height - panelH - 12F;
+        textX = panelX + 24F;
+        textY = panelY + nameH + 8F;
+        optRects.clear();
+        float oy = textY + bodyH + 14F;
+        for (int i = 0; i < options.size(); i++) {
+            String label = options.get(i).label();
+            float w = Math.min(textW, font.width(label) + 44F);
+            float x = (width - w) / 2F;
+            optRects.add(new float[] {x, oy + i * (optH + optGap), w, optH});
+        }
     }
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-        // Oscurece arriba y abajo (se sigue viendo el mundo y al caballero en medio)
-        g.fillGradient(0, 0, width, height / 3, 0xA0000000, 0x00000000);
-        g.fillGradient(0, height / 2, width, height, 0x00000000, 0xC8050010);
-        int w = panelW(), h = panelH();
-        int x0 = (width - w) / 2, y0 = height - h - 14;
-        float t = age + partial;
-        // Placa maciza con doble marco y adornos, y motas de luz que suben (todo en una sola tanda)
-        int pulse = lerpColor(GOLD, GOLD_HI, 0.5F + 0.5F * Mth.sin(t * 0.08F));
+        long nowMs = System.currentTimeMillis();
+        float dt = lastFrame == 0 ? 0F : Math.min(0.1F, (nowMs - lastFrame) / 1000F);
+        lastFrame = nowMs;
+        layout();
+        float in = ease((nowMs - openMs) / 260F);
+        float slide = (1F - in) * 14F;
+        float s = (float) Minecraft.getInstance().getWindow().getGuiScale();
+        // El mundo se oscurece abajo (y un poco arriba): se sigue viendo al caballero en medio
+        g.fillGradient(0, 0, width, height / 4, TFMenuPaint.argb(0.55F * in, 0x000000), 0x00000000);
+        g.fillGradient(0, height / 3, width, height, 0x00000000, TFMenuPaint.argb(0.82F * in, 0x07030F));
+        // La placa (en píxeles reales: esquinas suaves y un hilo de oro nítidos)
+        int rx = Math.round(panelX * s), ry = Math.round((panelY + slide) * s), rw = Math.round(panelW * s), rh = Math.round(panelH * s);
+        int rad = Math.round(10 * s);
+        g.pose().pushPose();
+        g.pose().scale(1F / s, 1F / s, 1F);
         g.drawManaged(() -> {
-            g.fill(x0 - 3, y0 - 3, x0 + w + 3, y0 + h + 3, 0xFF07030D);
-            g.fill(x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2, pulse);
-            g.fill(x0, y0, x0 + w, y0 + h, BG);
-            g.fillGradient(x0, y0, x0 + w, y0 + h, BG2, BG);
-            g.fill(x0 + 3, y0 + 3, x0 + w - 3, y0 + 4, INNER);
-            g.fill(x0 + 3, y0 + h - 4, x0 + w - 3, y0 + h - 3, INNER);
-            corner(g, x0 - 2, y0 - 2, pulse);
-            corner(g, x0 + w + 1, y0 - 2, pulse);
-            corner(g, x0 - 2, y0 + h + 1, pulse);
-            corner(g, x0 + w + 1, y0 + h + 1, pulse);
-            for (float[] m : motes) {
-                float yy = (m[1] - t * m[2]) % 1F;
-                if (yy < 0) yy += 1F;
-                int mx = x0 + 6 + (int) ((m[0] + 0.02F * Mth.sin(t * 0.05F + m[3])) * (w - 12));
-                int my = y0 + 6 + (int) (yy * (h - 12));
-                int a = (int) (110 + 100 * Mth.sin(t * 0.1F + m[3]));
-                g.fill(mx, my, mx + 1, my + 1, (Mth.clamp(a, 0, 255) << 24) | 0xFFE7A0);
+            TFMenuPaint.roundFill(g, rx, ry, rw, rh, rad, 0, 0, rh, TFMenuPaint.argb(0.86F * in, 0x1A0F2C), TFMenuPaint.argb(0.92F * in, 0x0B0616));
+            TFMenuPaint.roundRing(g, rx, ry, rw, rh, rad, Math.max(1, Math.round(s * 0.5F)), TFMenuPaint.argb(0.75F * in, 0xE9C46E),
+                    TFMenuPaint.argb(0.25F * in, 0x8A6A2A));
+            // las respuestas
+            for (int i = 0; i < optRects.size(); i++) {
+                float[] o = optRects.get(i);
+                float k = glow[i];
+                float vis = in * (done() ? 1F : 0.35F);
+                int ox = Math.round(o[0] * s), oy = Math.round((o[1] + slide) * s), ow = Math.round(o[2] * s), oh = Math.round(o[3] * s);
+                int orad = oh / 2;
+                int top = TFMenuPaint.lerp(0xFF261640, 0xFF4A2A78, k), bot = TFMenuPaint.lerp(0xFF170C28, 0xFF2E1850, k);
+                TFMenuPaint.roundFill(g, ox, oy, ow, oh, orad, 0, 0, oh, TFMenuPaint.withAlpha(top, 0.95F * vis), TFMenuPaint.withAlpha(bot, 0.95F * vis));
+                TFMenuPaint.roundRing(g, ox, oy, ow, oh, orad, Math.max(1, Math.round(s * 0.5F)),
+                        TFMenuPaint.withAlpha(TFMenuPaint.lerp(0xFF8A6A2A, GOLD_HI, k), vis), TFMenuPaint.withAlpha(TFMenuPaint.lerp(0xFF5A4420, GOLD, k), vis));
             }
         });
-        // Retrato
-        int pw = portraitW();
-        if (pw > 0) {
-            int px0 = x0 + 10, py0 = y0 + 10, px1 = px0 + pw, py1 = y0 + h - 10;
-            g.fill(px0 - 1, py0 - 1, px1 + 1, py1 + 1, GOLD);
-            g.fillGradient(px0, py0, px1, py1, 0xFF3B2160, 0xFF120922);
-            // halo de luz detrás (una textura: un disco que se apaga hacia fuera)
-            int cx = (px0 + px1) / 2, cy = py0 + (py1 - py0) * 2 / 5;
-            int hr = Math.min(40, (px1 - px0) / 2 - 2);
-            g.enableScissor(px0, py0, px1, py1);
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            g.blit(halo(), cx - hr, cy - hr, hr * 2, hr * 2, 0F, 0F, HALO, HALO, HALO, HALO);
-            RenderSystem.disableBlend();
-            g.disableScissor();
-            Minecraft mc = Minecraft.getInstance();
-            Entity e = mc.level == null ? null : mc.level.getEntity(entityId);
-            if (e instanceof KnightEntity k) {
-                g.enableScissor(px0, py0, px1, py1);
-                KnightRenderer.inGui = true;
-                try {
-                    int scale = (int) ((py1 - py0) * 0.92F / 2.9F);
-                    // De tres cuartos y quieto (siguiendo al ratón, con el ratón en una esquina se veía tumbado)
-                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, py1 - 4, scale, 14F + 4F * Mth.sin(t * 0.03F), -6F, k);
-                } finally {
-                    KnightRenderer.inGui = false;
-                }
-                g.disableScissor();
-            }
-        }
-        // Nombre, título y línea de oro
-        int tx = x0 + 10 + (pw > 0 ? pw + 12 : 4);
-        int tw = textW();
-        g.pose().pushPose();
-        g.pose().translate(tx, y0 + 10, 0);
-        g.pose().scale(1.7F, 1.7F, 1F);
-        String upper = KnightEntity.NAME.toUpperCase(java.util.Locale.ROOT);
-        g.drawString(font, Component.literal(upper).withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 1, 1, 0xFF5A3A08, false);
-        g.drawString(font, Component.literal(upper).withStyle(Style.EMPTY.withFont(CINZEL).withBold(true)), 0, 0, GOLD_HI, false);
         g.pose().popPose();
+        // Su nombre: Cinzel dorada con contorno, a un píxel de letra por píxel de pantalla
+        int n = Math.round(s * 1.7F);
+        float k = Mth.clamp(n, 1, 12) / s;
+        Component name = Component.literal(KnightEntity.NAME.toUpperCase(java.util.Locale.ROOT)).withStyle(Style.EMPTY.withFont(cinzel(n)));
+        float nw = font.width(name) * k;
+        float nx = Math.round((width - nw) / 2F * s) / s, ny = Math.round((panelY + 7F + slide) * s) / s;
+        for (int[] d : RING) drawScaled(g, name, nx + d[0] / s, ny + d[1] / s, k, TFMenuPaint.withAlpha(GOLD_DARK, in));
+        drawScaled(g, name, nx, ny, k, TFMenuPaint.withAlpha(GOLD_HI, in));
+        // los hilos de oro a los lados, que se apagan hacia fuera
+        float ly = ny + 5.5F * k;
+        float lw = Math.min(90F, (panelW - nw) / 2F - 22F);
+        if (lw > 8) {
+            fade(g, nx - 10F - lw, ly, lw, true, in);
+            fade(g, nx + nw + 10F, ly, lw, false, in);
+        }
         String sub = talk.home() ? KnightEntity.TITLE + " · Guardián del santuario" : KnightEntity.TITLE + " · Custodio del umbral";
-        g.drawString(font, sub, tx, y0 + 30, SUB, false);
-        g.fill(tx, y0 + 42, tx + tw, y0 + 43, GOLD);
-        g.fill(tx, y0 + 43, tx + tw / 2, y0 + 44, 0xFF6E5420);
-        // El texto que se va escribiendo
-        String vis = text.substring(0, Math.min(text.length(), (int) shown));
-        List<FormattedCharSequence> ls = font.split(Component.literal(vis), Math.max(80, tw));
-        int ty = y0 + 50;
+        g.drawString(font, sub, Math.round((width - font.width(sub)) / 2F), Math.round(panelY + 21F + slide), TFMenuPaint.withAlpha(SUB, in), false);
+        // El texto que se va escribiendo (entra con un fundido)
+        float tin = ease((nowMs - pageMs) / 180F) * in;
+        int vis = shown();
+        List<FormattedCharSequence> ls = font.split(Component.literal(text.substring(0, vis)), (int) textW);
+        float ty = textY + slide;
         for (FormattedCharSequence l : ls) {
-            g.drawString(font, l, tx, ty, TEXT, false);
-            ty += 10;
+            int lw2 = font.width(l);
+            g.drawString(font, l, Math.round((width - lw2) / 2F), Math.round(ty), TFMenuPaint.withAlpha(TEXT, tin), true);
+            ty += 11F;
         }
-        // Respuestas (cuando acaba de escribir)
-        int oy = y0 + 54 + lines().size() * 10;
-        boolean done = shown >= text.length();
-        for (int i = 0; i < options.size(); i++) {
-            Option o = options.get(i);
-            int bx0 = tx, by0 = oy + i * 17, bx1 = tx + tw, by1 = by0 + 15;
-            boolean hover = done && mouseX >= bx0 && mouseX < bx1 && mouseY >= by0 && mouseY < by1;
-            int bg = !done ? 0xFF1A0F2A : hover ? OPT_HI : OPT;
-            g.fill(bx0, by0, bx1, by1, bg);
-            g.fill(bx0, by0, bx0 + 2, by1, hover ? GOLD_HI : GOLD);
-            String label = (i + 1) + "  " + o.label();
-            String cut = font.plainSubstrByWidth(label, tw - 14);
+        // Las respuestas (se encienden con el ratón; hasta que acaba de escribir, apagadas)
+        boolean ready = done();
+        hovered = -1;
+        for (int i = 0; i < optRects.size(); i++) {
+            float[] o = optRects.get(i);
+            boolean over = ready && mouseX >= o[0] && mouseX < o[0] + o[2] && mouseY >= o[1] + slide && mouseY < o[1] + slide + o[3];
+            if (over) hovered = i;
+            glow[i] += ((over ? 1F : 0F) - glow[i]) * Math.min(1F, dt * 14F);
+            float a = in * (ready ? 1F : 0.35F);
+            float cy = o[1] + slide + (o[3] - 8F) / 2F;
+            String num = String.valueOf(i + 1);
+            g.drawString(font, num, Math.round(o[0] + 10F), Math.round(cy), TFMenuPaint.withAlpha(TFMenuPaint.lerp(GOLD, GOLD_HI, glow[i]), a), false);
+            String label = options.get(i).label();
+            String cut = font.plainSubstrByWidth(label, (int) (o[2] - 36F));
             if (!cut.equals(label)) cut = cut.substring(0, Math.max(0, cut.length() - 1)) + "…";
-            g.drawString(font, cut, bx0 + 8, by0 + 4, !done ? 0xFF6A5A8A : hover ? GOLD_HI : TEXT, false);
-            if (hover) g.drawString(font, "›", bx1 - 9, by0 + 4, GOLD_HI, false);
+            g.drawString(font, cut, Math.round(o[0] + 24F), Math.round(cy), TFMenuPaint.withAlpha(TFMenuPaint.lerp(TEXT, GOLD_HI, glow[i]), a), false);
         }
-        if (!done && (age / 10) % 2 == 0) g.drawString(font, "▼", x0 + w - 14, y0 + h - 13, GOLD, false);
+        if (hovered != lastHover) {
+            if (hovered >= 0) ui("hover", 0.3F, 1.0F);
+            lastHover = hovered;
+        }
+        // (mientras escribe: «clic para ver todo», que late)
+        if (!ready && options.size() > 0) {
+            String hint = "Clic para ver todo";
+            float pulse = 0.55F + 0.45F * Mth.sin(nowMs / 260F);
+            g.drawString(font, hint, Math.round((width - font.width(hint)) / 2F), Math.round(panelY + panelH - 13F + slide),
+                    TFMenuPaint.withAlpha(HINT, in * pulse), false);
+        }
         super.render(g, mouseX, mouseY, partial);
     }
 
-    private static void corner(GuiGraphics g, int x, int y, int col) {
-        g.fill(x - 3, y, x + 4, y + 1, col);
-        g.fill(x, y - 3, x + 1, y + 4, col);
-        g.fill(x - 1, y - 1, x + 2, y + 2, col);
+    private int lastHover = -1;
+
+    /** Desplazamientos del contorno del nombre, en píxeles reales. */
+    private static final int[][] RING = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+
+    private void drawScaled(GuiGraphics g, Component c, float x, float y, float scale, int argb) {
+        if ((argb >>> 24) < 4) return;
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0F);
+        g.pose().scale(scale, scale, 1F);
+        g.drawString(font, c, 0, 0, argb, false);
+        g.pose().popPose();
     }
 
-    private static final int HALO = 128;
-    private static ResourceLocation haloTex;
+    // Un hilo de oro que se apaga hacia fuera (una textura de 128×1 con la transparencia en rampa, suave)
+    private static ResourceLocation fadeTex;
 
-    /** El halo del retrato: un disco de luz dorada que se apaga hacia fuera (se hace la primera vez y se queda). */
-    private static ResourceLocation halo() {
-        if (haloTex != null) return haloTex;
-        NativeImage img = new NativeImage(NativeImage.Format.RGBA, HALO, HALO, false);
-        float c = (HALO - 1) / 2F;
-        for (int y = 0; y < HALO; y++) {
-            for (int x = 0; x < HALO; x++) {
-                float d = (float) Math.sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
-                float k = Mth.clamp(1F - d, 0F, 1F);
-                int a = (int) (255 * Math.pow(k, 1.4));
-                int col = lerpColor(0xFF6A3FA0, 0xFFFFE6A8, (float) Math.pow(k, 0.8));
-                int r = (col >> 16) & 255, gg = (col >> 8) & 255, b = col & 255;
-                img.setPixelRGBA(x, y, (a << 24) | (b << 16) | (gg << 8) | r);
+    private static void fade(GuiGraphics g, float x, float y, float w, boolean toLeft, float alpha) {
+        if (fadeTex == null) {
+            NativeImage img = new NativeImage(NativeImage.Format.RGBA, 128, 1, false);
+            for (int i = 0; i < 128; i++) {
+                float a = i / 127F;
+                a = a * a * (3 - 2 * a);
+                int r = 0xE9, gg = 0xC4, b = 0x6E;
+                img.setPixelRGBA(i, 0, ((int) (a * 255) << 24) | (b << 16) | (gg << 8) | r);
             }
+            DynamicTexture t = new DynamicTexture(img);
+            t.setFilter(true, false);
+            fadeTex = Minecraft.getInstance().getTextureManager().register("tfclient_hilo_caballero", t);
         }
-        haloTex = Minecraft.getInstance().getTextureManager().register("tfclient_halo_caballero", new DynamicTexture(img));
-        return haloTex;
-    }
-
-    private static int lerpColor(int a, int b, float k) {
-        k = Mth.clamp(k, 0F, 1F);
-        int ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255, br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
-        return 0xFF000000 | ((int) (ar + (br - ar) * k) << 16) | ((int) (ag + (bg - ag) * k) << 8) | (int) (ab + (bb - ab) * k);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        g.setColor(1F, 1F, 1F, alpha);
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0F);
+        g.pose().scale(w / 128F, 1F, 1F);
+        // (al revés, con la textura leída de derecha a izquierda: un cuadro girado en espejo no se vería, por la cara)
+        if (toLeft) g.blit(fadeTex, 0, 0, 128, 1, 0F, 0F, 128, 1, 128, 1);
+        else g.blit(fadeTex, 0, 0, 128, 1, 128F, 0F, -128, 1, 128, 1);
+        g.pose().popPose();
+        g.setColor(1F, 1F, 1F, 1F);
+        RenderSystem.disableBlend();
     }
 
     // ------------------------------------------------------------------------------------------- entrada
 
     private boolean pick(int i) {
         if (i < 0 || i >= options.size()) return false;
-        if (shown < text.length()) {
-            shown = text.length();
+        if (!done()) {
+            full = true;
             return true;
         }
         Option o = options.get(i);
-        click(1.4F + i * 0.15F);
+        ui("select", 0.55F, 1.0F + i * 0.06F);
         o.action().run();
         return true;
     }
 
     /** La prueba en el juego (BossTestClient): pulsa la respuesta i (desde 0) aunque no haya acabado de escribir. */
     public void testPress(int i) {
-        shown = text.length();
+        full = true;
         pick(i);
     }
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) return super.mouseClicked(mx, my, button);
-        if (shown < text.length()) {
-            shown = text.length();
+        if (!done()) {
+            full = true;
             return true;
         }
-        int w = panelW(), h = panelH();
-        int x0 = (width - w) / 2, y0 = height - h - 14;
-        int tx = x0 + 10 + (portraitW() > 0 ? portraitW() + 12 : 4);
-        int oy = y0 + 54 + lines().size() * 10;
-        for (int i = 0; i < options.size(); i++) {
-            int by0 = oy + i * 17;
-            if (mx >= tx && mx < tx + textW() && my >= by0 && my < by0 + 15) return pick(i);
-        }
+        if (hovered >= 0) return pick(hovered);
         return super.mouseClicked(mx, my, button);
     }
 
@@ -346,8 +381,8 @@ public class KnightScreen extends Screen {
     public boolean keyPressed(int key, int scan, int mods) {
         if (key >= GLFW.GLFW_KEY_1 && key <= GLFW.GLFW_KEY_9) return pick(key - GLFW.GLFW_KEY_1);
         if (key == GLFW.GLFW_KEY_SPACE || key == GLFW.GLFW_KEY_ENTER) {
-            if (shown < text.length()) {
-                shown = text.length();
+            if (!done()) {
+                full = true;
                 return true;
             }
             return pick(0);

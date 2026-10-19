@@ -128,6 +128,151 @@ public final class VoidIsland {
         return i == null ? 180F : i.arriveYaw;
     }
 
+    // ------------------------------------------------------------------ por dónde andan los jefes (1.3.92)
+
+    /**
+     * Lo cerca del borde de la isla que puede andar un jefe (el dueño: «que me persiga por toda la isla, pero que no se
+     * salga y caiga al vacío: unos 5 o 6 bloques antes del borde, que no me siga»).
+     */
+    public static final float EDGE = 6F;
+    /** Por columna: lo lejos que está del borde de la isla, en bloques (0 donde no hay suelo). */
+    private float[] edge;
+    /** Por columna: la columna más cercana por donde puede andar un jefe (−1 si no hay ninguna). */
+    private int[] nearest;
+    /** Por columna: ¿puede andar un jefe? (a EDGE o más del borde y en la parte de la isla de la grieta) */
+    private boolean[] walk;
+
+    /** Lo de arriba, hecho la primera vez (la distancia al borde con un chaflán de 8 vecinos: ~4 % de error). */
+    private synchronized void edgeField() {
+        if (edge != null) return;
+        int n = sx * sz;
+        float[] d = new float[n];
+        net.minecraft.world.level.EmptyBlockGetter none = net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
+        boolean[] solid = new boolean[palette.length];
+        for (int i = 0; i < palette.length; i++) {
+            BlockState st = palette[i];
+            solid[i] = !st.isAir() && !st.getCollisionShape(none, BlockPos.ZERO).isEmpty();
+        }
+        final float big = 1e6F, diag = 1.4142135F;
+        for (int c = 0; c < n; c++) {
+            boolean ground = false;
+            for (int r = colStart[c]; r < colStart[c + 1] && !ground; r += 3) {
+                int b = runs[r + 2] & 0xFFFF;
+                ground = b < palette.length && solid[b];
+            }
+            d[c] = ground ? big : 0F;
+        }
+        // (fuera del dibujo de la isla es vacío: cuenta como 0)
+        for (int z = 0; z < sz; z++) {
+            for (int x = 0; x < sx; x++) {
+                int c = z * sx + x;
+                if (d[c] == 0F) continue;
+                float v = d[c];
+                v = Math.min(v, (x > 0 ? d[c - 1] : 0F) + 1F);
+                v = Math.min(v, (z > 0 ? d[c - sx] : 0F) + 1F);
+                v = Math.min(v, (x > 0 && z > 0 ? d[c - sx - 1] : 0F) + diag);
+                v = Math.min(v, (x < sx - 1 && z > 0 ? d[c - sx + 1] : 0F) + diag);
+                d[c] = v;
+            }
+        }
+        for (int z = sz - 1; z >= 0; z--) {
+            for (int x = sx - 1; x >= 0; x--) {
+                int c = z * sx + x;
+                if (d[c] == 0F) continue;
+                float v = d[c];
+                v = Math.min(v, (x < sx - 1 ? d[c + 1] : 0F) + 1F);
+                v = Math.min(v, (z < sz - 1 ? d[c + sx] : 0F) + 1F);
+                v = Math.min(v, (x < sx - 1 && z < sz - 1 ? d[c + sx + 1] : 0F) + diag);
+                v = Math.min(v, (x > 0 && z < sz - 1 ? d[c + sx - 1] : 0F) + diag);
+                d[c] = v;
+            }
+        }
+        // Solo la parte de la isla donde está la grieta: el islote del este se une por un puente estrecho (por él se
+        // caería; mirado con la máscara en tools/void/mascara_jefes.py)
+        boolean[] ok = new boolean[n];
+        int[] queue = new int[n];
+        int head = 0, tail = 0;
+        int rc = (rift.getZ() - oz) * sx + (rift.getX() - ox);
+        if (rift.getX() - ox >= 0 && rift.getX() - ox < sx && rift.getZ() - oz >= 0 && rift.getZ() - oz < sz && d[rc] >= EDGE) {
+            ok[rc] = true;
+            queue[tail++] = rc;
+            while (head < tail) {
+                int c = queue[head++];
+                int x = c % sx, z = c / sx;
+                for (int k = 0; k < 4; k++) {
+                    int nx = x + (k == 0 ? 1 : k == 1 ? -1 : 0), nz = z + (k == 2 ? 1 : k == 3 ? -1 : 0);
+                    if (nx < 0 || nx >= sx || nz < 0 || nz >= sz) continue;
+                    int o = nz * sx + nx;
+                    if (ok[o] || d[o] < EDGE) continue;
+                    ok[o] = true;
+                    queue[tail++] = o;
+                }
+            }
+        } else {
+            for (int c = 0; c < n; c++) ok[c] = d[c] >= EDGE;
+        }
+        // La columna buena más cercana de cada una (anchura desde todas las buenas a la vez)
+        int[] near = new int[n];
+        java.util.Arrays.fill(near, -1);
+        head = 0;
+        tail = 0;
+        for (int c = 0; c < n; c++) {
+            if (ok[c]) {
+                near[c] = c;
+                queue[tail++] = c;
+            }
+        }
+        while (head < tail) {
+            int c = queue[head++];
+            int x = c % sx, z = c / sx;
+            for (int k = 0; k < 4; k++) {
+                int nx = x + (k == 0 ? 1 : k == 1 ? -1 : 0), nz = z + (k == 2 ? 1 : k == 3 ? -1 : 0);
+                if (nx < 0 || nx >= sx || nz < 0 || nz >= sz) continue;
+                int o = nz * sx + nx;
+                if (near[o] >= 0) continue;
+                near[o] = near[c];
+                queue[tail++] = o;
+            }
+        }
+        nearest = near;
+        walk = ok;
+        edge = d;
+    }
+
+    /** Lo lejos que está del borde de la isla (en bloques; 0 sobre el vacío o sin isla). */
+    public static float edgeDistance(double x, double z) {
+        VoidIsland i = get();
+        if (i == null) return 0F;
+        i.edgeField();
+        int ix = (int) Math.floor(x) - i.ox, iz = (int) Math.floor(z) - i.oz;
+        if (ix < 0 || ix >= i.sx || iz < 0 || iz >= i.sz) return 0F;
+        return i.edge[iz * i.sx + ix];
+    }
+
+    /** ¿Puede andar un jefe por aquí? (sobre la isla, a {@link #EDGE} bloques o más del borde, en la parte de la grieta) */
+    public static boolean walkable(double x, double z) {
+        VoidIsland i = get();
+        if (i == null) return false;
+        i.edgeField();
+        int ix = (int) Math.floor(x) - i.ox, iz = (int) Math.floor(z) - i.oz;
+        return ix >= 0 && ix < i.sx && iz >= 0 && iz < i.sz && i.walk[iz * i.sx + ix];
+    }
+
+    /**
+     * El sitio por donde puede andar un jefe más cercano a (x, z), en el centro de su bloque y a la altura y; null si
+     * no hay isla. (Fuera del dibujo de la isla, el de su borde más cercano.)
+     */
+    public static Vec3 nearestWalkable(double x, double y, double z) {
+        VoidIsland i = get();
+        if (i == null) return null;
+        i.edgeField();
+        int ix = Math.max(0, Math.min(i.sx - 1, (int) Math.floor(x) - i.ox));
+        int iz = Math.max(0, Math.min(i.sz - 1, (int) Math.floor(z) - i.oz));
+        int c = i.nearest[iz * i.sx + ix];
+        if (c < 0) return null;
+        return new Vec3(c % i.sx + i.ox + 0.5, y, c / i.sx + i.oz + 0.5);
+    }
+
     /** Copia en el chunk lo que le toca de la isla (y pone sus alturas de generación al día). */
     void fill(ChunkAccess chunk) {
         int cx = chunk.getPos().getMinBlockX(), cz = chunk.getPos().getMinBlockZ();

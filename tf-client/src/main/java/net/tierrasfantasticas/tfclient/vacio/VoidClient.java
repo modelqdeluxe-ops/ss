@@ -21,8 +21,6 @@ public final class VoidClient {
     /** El servidor abre el diálogo del caballero. */
     static void talk(VoidNet.Talk m) {
         Minecraft.getInstance().setScreen(new KnightScreen(m));
-        // (las texturas del agujero de gusano, ya: que el viaje no empiece con un tirón)
-        WormholeTextures.prepare();
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)

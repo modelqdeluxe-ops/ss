@@ -224,7 +224,7 @@ public final class Rifts {
         if (!level.isLoaded(bp) || !level.isPositionEntityTicking(bp)) {
             // Aún cargando: se espera. Antes se reiniciaba en el acto y el jefe seguía suelto: al golpear el cristal
             // salía otro («aparecen, se van, reaparecen»). Solo se cierra si no queda nadie cerca un buen rato
-            if (active && !anyoneNear(level, r.pos, LEASH + 24)) {
+            if (active && !anyoneNear(level, r.pos, reach(level, LEASH + 24))) {
                 if (r.emptySince < 0) {
                     r.emptySince = now;
                 } else if (now - r.emptySince > EMPTY_TICKS) {
@@ -261,7 +261,7 @@ public final class Rifts {
                     r.bossEntity = null;
                     dirty = true;
                 } else if (!boss.dying()) {
-                    boolean anyone = anyoneNear(level, r.pos, LEASH + 24);
+                    boolean anyone = anyoneNear(level, r.pos, reach(level, LEASH + 24));
                     if (anyone) r.emptySince = -1;
                     else if (r.emptySince < 0) r.emptySince = now;
                     else if (now - r.emptySince > EMPTY_TICKS) {
@@ -371,7 +371,7 @@ public final class Rifts {
                 .withStyle(s -> s.withColor(TextColor.fromRgb(bi.color)).withBold(true));
         Component sub = Component.literal(d.label()).withStyle(s -> s.withColor(TextColor.fromRgb(d.color())))
                 .append(Component.literal("  ·  " + players + (players == 1 ? " jugador" : " jugadores")).withStyle(ChatFormatting.GRAY));
-        for (ServerPlayer p : playersNear(level, at, 64)) {
+        for (ServerPlayer p : playersNear(level, at, reach(level, 64))) {
             p.connection.send(new ClientboundSetTitlesAnimationPacket(8, 50, 16));
             p.connection.send(new ClientboundSetTitleTextPacket(title));
             p.connection.send(new ClientboundSetSubtitleTextPacket(sub));
@@ -379,6 +379,14 @@ public final class Rifts {
     }
 
     /** ¿Hay alguien (también en creativo: el staff probando) cerca de la incursión? */
+    /**
+     * Lo lejos que llega la pelea de una grieta: en The Void, toda la isla (1.3.92: el jefe persigue por toda ella;
+     * {@code BossEntity.island}); en los demás sitios, lo que se pide.
+     */
+    static double reach(ServerLevel level, double r) {
+        return net.tierrasfantasticas.tfclient.vacio.TFVoid.isVoid(level) ? Math.max(r, 512) : r;
+    }
+
     static boolean anyoneNear(ServerLevel level, Vec3 at, double r) {
         for (ServerPlayer p : level.players()) if (!p.isSpectator() && p.position().distanceToSqr(at) <= r * r) return true;
         return false;
@@ -487,7 +495,7 @@ public final class Rifts {
         Component title = Component.literal(bi.name.toUpperCase(java.util.Locale.ROOT) + " HA CAÍDO")
                 .withStyle(s -> s.withColor(TextColor.fromRgb(bi.color)).withBold(true));
         if (boss.level() instanceof ServerLevel sl) {
-            for (ServerPlayer p : playersNear(sl, boss.position(), 80)) {
+            for (ServerPlayer p : playersNear(sl, boss.position(), reach(sl, 80))) {
                 p.connection.send(new ClientboundSetTitlesAnimationPacket(10, 60, 20));
                 p.connection.send(new ClientboundSetTitleTextPacket(title));
                 p.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(d.label()).withStyle(s -> s.withColor(TextColor.fromRgb(d.color())))));

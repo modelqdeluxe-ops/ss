@@ -98,10 +98,11 @@ public final class BossTestClient {
     }
 
     /** (1.3.91) Capturas del viaje por el agujero de gusano, a los tiempos del túnel (no a los de la prueba). */
-    private static final String[] TUNNEL = {"0_deforma", "1_rasgado", "2_mundo1", "3_puerta1", "4_mundo2", "5_puerta2", "6_mundo3",
-            "7_salida", "8_luz", "9_aparece"};
-    /** Segundos desde que empieza el viaje (las 7 primeras) o desde que llega (las 3 últimas). */
-    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 3.0F, 3.85F, 4.9F, 5.75F, 6.9F, 0.9F, 1.45F, 2.1F};
+    private static final String[] TUNNEL = {"00_deforma", "01_rasgado", "02_tramo1", "03_puerta1", "04_tramo2", "05_puerta2",
+            "06_tramo3", "07_puerta3", "08_tramo4", "09_salida", "10_luz", "11_aparece"};
+    /** Segundos desde que empieza el viaje (las 9 primeras; 1.3.92: cuatro tramos, = TravelFx) o desde que llega (las 3 últimas). */
+    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 2.7F, 3.3F, 4.1F, 4.8F, 5.5F, 6.2F, 7.0F, 0.75F, 1.4F, 2.1F};
+    private static final int TUNNEL_FROM_START = 9;
     private static int tunnelTrip = -1, tunnelNext;
 
     private static void tunnelShots() {
@@ -114,7 +115,7 @@ public final class BossTestClient {
         if (tunnelNext >= TUNNEL.length) return;
         float at = TUNNEL_AT[tunnelNext];
         float arrived = TravelFx.arrivedAt();
-        if (tunnelNext < 7 ? c < at : arrived < 0F || c < arrived + at) return;
+        if (tunnelNext < TUNNEL_FROM_START ? c < at : arrived < 0F || c < arrived + at) return;
         BossTest.clientShot((TravelFx.back() ? "vuelta" : "ida") + "_tunel_" + TUNNEL[tunnelNext]);
         tunnelNext++;
     }

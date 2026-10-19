@@ -39,6 +39,9 @@ public final class VoidSky {
     static ShaderInstance shader;
     private static VertexBuffer cube;
     private static boolean warned;
+    /** La furia que se ve ahora (va detrás de la de RiftWarp, suave) y el carmesí de la madre. */
+    private static float rageShown, motherShown;
+    private static long rageNanos;
 
     private VoidSky() {}
 
@@ -93,9 +96,16 @@ public final class VoidSky {
         sh.safeGetUniform("DiskNormal").set(n.x, n.y, n.z);
         sh.safeGetUniform("Quality").set(quality);
         sh.safeGetUniform("AtFar").set(atFar ? 1F : 0F);
-        // (1.3.91) una grieta activa cerca: el agujero negro se enfurece (RiftWarp)
-        sh.safeGetUniform("Rage").set(net.tierrasfantasticas.tfclient.bosses.RiftWarp.rage());
-        sh.safeGetUniform("RageMother").set(net.tierrasfantasticas.tfclient.bosses.RiftWarp.rageMother() ? 1F : 0F);
+        // (1.3.91) una grieta activa cerca: el agujero negro se enfurece (RiftWarp). 1.3.92: entra y sale despacio (~1 s),
+        // no de golpe (con la distorsión de la grieta, «a veces el agujero negro como que bugueaba»)
+        long now = System.nanoTime();
+        float dt = rageNanos == 0L ? 0F : Math.min(0.25F, (now - rageNanos) / 1e9F);
+        rageNanos = now;
+        float k = 1F - (float) Math.exp(-dt * 1.2F);
+        rageShown += (net.tierrasfantasticas.tfclient.bosses.RiftWarp.rage() - rageShown) * k;
+        motherShown += ((net.tierrasfantasticas.tfclient.bosses.RiftWarp.rageMother() ? 1F : 0F) - motherShown) * k;
+        sh.safeGetUniform("Rage").set(rageShown);
+        sh.safeGetUniform("RageMother").set(motherShown);
         RenderSystem.setShaderTexture(0, PANORAMA);
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();

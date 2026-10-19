@@ -4,41 +4,39 @@
 // con la realidad alterada, con imágenes del Overworld, el Nether y el End; y de regreso lo mismo pero End, Nether y
 // Overworld; algo súper épico»). Lo dibuja TravelFx sobre toda la pantalla (y sobre la de carga al cambiar de mundo).
 //
-//  - La realidad se rasga (Open): en el centro se abre un desgarro de borde vivo que crece hasta llenar la pantalla;
-//    fuera, el mundo (que RiftWarp deforma).
-//  - El túnel: cada píxel a la distancia r del centro ve la pared a la profundidad K/r (más el camino recorrido,
-//    Travel); el túnel se retuerce (twist) y su centro se mueve (se curva).
-//  - Las paredes de cada mundo, con texturas del propio Minecraft (WormholeTextures las junta): el Overworld, sus
-//    bloques (hierba, hojas, cerezo, troncos) con ventanas a su cielo; el Nether, netherrack, ladrillo, nilio y
-//    piedra luminosa con ríos de lava animada; el End, piedra del End, púrpur y obsidiana con ventanas a las estrellas
-//    del portal del End sobre su cielo.
-//  - Bloques de verdad, en 3D, que pasan girando (los de cada mundo: la realidad hecha trozos).
-//  - Entre mundo y mundo, una puerta (Gates): el marco (obsidiana para el Nether, piedra del End con ojos para el End)
-//    y su membrana (el portal del Nether que gira, o las estrellas), que crecen al acercarse; al cruzarla, fogonazo.
-//  - Rayas de velocidad, aberración cromática, niebla del color de cada mundo hacia el fondo, que brilla.
-//  - La salida (Exit): la luz del fondo (lila al Void, blanca y cálida al volver) llena la pantalla y se va.
-// A la ida: Overworld → Nether → End; a la vuelta (Back): End → Nether → Overworld.
+// 1.3.92 (el dueño: «hazlo limpio: se ven cuadrados; no quiero ver cuadrados, quiero ver una textura completa, limpia,
+// no fragmentos; y después del End debe haber una antesala al Void»): fuera las losetas de bloques, los cubos que
+// pasaban girando y las texturas de píxeles (portal, estrellas del End). Ahora cada tramo es una textura continua y
+// suave (ruido filtrado por lo que mide un píxel: nada más fino que ~2 píxeles; y la vuelta del túnel sin costura):
+//  - Overworld: cielo con nubes y, abajo, campos, bosques, cerezos y ríos; el horizonte da vueltas con el túnel.
+//  - Nether: magma que fluye, con venas de lava brillante sobre roca roja oscura, y ascuas.
+//  - End: nebulosa violeta con corrientes claras (el color de la piedra del End) y estrellas.
+//  - La antesala del Void: las nebulosas del cielo del Void con hebras doradas del disco y, al fondo, el agujero negro
+//    que crece; al llegar se cruza: crece hasta llenar la pantalla y de su anillo sale la luz.
+//  - Entre tramo y tramo, una puerta: un anillo de luz en las paredes (morado, el del Nether; turquesa con estrellas, el
+//    del End; violeta con oro, el del Void) y su membrana, un remolino suave que se cruza con un fogonazo.
+// A la ida: Overworld → Nether → End → antesala del Void; a la vuelta (Back): antesala → End → Nether → Overworld.
+// La realidad se rasga al empezar (Open) y la luz del fondo llena la pantalla al llegar (Exit). Vista previa sin juego:
+// tools/void/tunel_preview.py (mismos tiempos que TravelFx).
 
-uniform sampler2D Sampler0;   // panorama del menú: las 4 caras del horizonte seguidas
-uniform sampler2D Sampler1;   // 4×4 losetas de bloques: filas 0-1 Overworld, 2 Nether, 3 End
-uniform sampler2D Sampler2;   // lava (tira de fotogramas)
-uniform sampler2D Sampler3;   // portal del Nether (tira)
-uniform sampler2D Sampler4;   // estrellas del portal del End
-uniform sampler2D Sampler5;   // cielo del End
+uniform sampler2D Sampler1;   // las nebulosas del cielo del Void (grieta_cielo.png, equirectangular)
 uniform float WTime;          // segundos
 uniform float Travel;         // camino recorrido por el túnel
-uniform vec2 Gates;           // dónde están las dos puertas (en camino)
+uniform vec3 Gates;           // dónde están las tres puertas (en camino)
 uniform float Open;           // 0..1 el desgarro se abre
 uniform float Exit;           // 0..1 la luz del fondo llena la pantalla; 1..2 se va
 uniform float Back;           // 1 = la vuelta
-uniform vec2 Frames;          // fotogramas de la lava y del portal
 uniform vec2 ScreenSize;
 
 in vec2 texCoord;
 out vec4 fragColor;
 
 const float PI = 3.14159265;
+const float TAU = 6.2831853;
 const float K = 0.55;
+
+// Lo que mide un píxel en el ruido de las paredes (lo pone scene)
+float FOOT = 0.01;
 
 float hash11(float p) {
     p = fract(p * 0.1031);
@@ -47,267 +45,199 @@ float hash11(float p) {
     return fract(p);
 }
 
-float hash12(vec2 p) {
-    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y) * p3.z);
+float hash13(vec3 p) {
+    p = fract(p * 0.1031);
+    p += dot(p, p.zyx + 31.32);
+    return fract((p.x + p.y) * p.z);
 }
 
-float noise2(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
+float noise3(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash12(i), hash12(i + vec2(1.0, 0.0)), f.x), mix(hash12(i + vec2(0.0, 1.0)), hash12(i + vec2(1.0, 1.0)), f.x), f.y);
+    float a = mix(hash13(i), hash13(i + vec3(1.0, 0.0, 0.0)), f.x);
+    float b = mix(hash13(i + vec3(0.0, 1.0, 0.0)), hash13(i + vec3(1.0, 1.0, 0.0)), f.x);
+    float c = mix(hash13(i + vec3(0.0, 0.0, 1.0)), hash13(i + vec3(1.0, 0.0, 1.0)), f.x);
+    float d = mix(hash13(i + vec3(0.0, 1.0, 1.0)), hash13(i + vec3(1.0, 1.0, 1.0)), f.x);
+    return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
 }
 
-// Una loseta del atlas (0..15) en f (0..1)
-vec3 tile(float idx, vec2 f) {
-    vec2 cell = vec2(mod(idx, 4.0), floor(idx / 4.0));
-    return texture(Sampler1, (cell + clamp(fract(f), 0.002, 0.998)) / 4.0).rgb;
+// Ruido fractal filtrado: cada octava se apaga (hacia su media) antes de ser más fina que ~2 píxeles (foot = lo que
+// mide un píxel en las unidades de p)
+float fbm(vec3 p, float foot) {
+    float s = 0.0;
+    float a = 0.5;
+    float fr = 1.0;
+    for (int i = 0; i < 5; i++) {
+        float k = 1.0 - smoothstep(0.22, 0.5, fr * foot);
+        s += a * mix(0.5, noise3(p), k);
+        p = p * 2.03 + vec3(1.7, 9.2, 3.1);
+        fr *= 2.03;
+        a *= 0.5;
+    }
+    return s / 0.96875;
 }
 
-// Un fotograma de una tira animada
-vec3 strip(sampler2D s, float frames, vec2 f, float fps) {
-    float fr = mod(floor(WTime * fps), max(frames, 1.0));
-    return texture(s, vec2(fract(f.x), (fr + clamp(fract(f.y), 0.002, 0.998)) / max(frames, 1.0))).rgb;
-}
-
-// Bloques: un poco de relieve (bordes más oscuros) y brillo distinto por loseta
-vec3 block(float idx, vec2 tq, float seed) {
-    vec2 ti = floor(tq);
-    vec2 f = fract(tq);
-    vec3 c = tile(idx, f) * (0.72 + 0.36 * hash12(ti + seed));
-    vec2 e = min(f, 1.0 - f);
-    return c * (0.78 + 0.22 * smoothstep(0.0, 0.08, min(e.x, e.y)));
+// Un punto de la pared en el espacio del ruido: la vuelta del túnel (u, en vueltas) como un círculo, sin costura
+vec3 wallP(float u, float w, float ru, float sw) {
+    return vec3(cos(u * TAU) * ru, sin(u * TAU) * ru, w * sw);
 }
 
 vec3 overworld(float u, float w) {
-    // bloques del Overworld (hierba, hojas, cerezos, troncos, tierra, piedra) con ventanas a su cielo del atardecer
-    vec2 tq = vec2(u * 24.0, w * 1.4);
-    vec2 ti = floor(tq);
-    float h = hash12(ti);
-    float id = h < 0.24 ? 0.0 : (h < 0.36 ? 4.0 : (h < 0.52 ? 6.0 : (h < 0.62 ? 5.0 : (h < 0.72 ? 7.0 : (h < 0.84 ? 2.0 : (h < 0.93 ? 1.0 : 3.0))))));
-    vec3 c = block(id, tq, 5.0);
-    float win = smoothstep(0.55, 0.62, noise2(vec2(u * 6.0, w * 0.3 + 4.0)));
-    vec3 sky = texture(Sampler0, vec2(fract(u * 1.0 + 0.1), 0.08 + 0.32 * fract(w * 0.05))).rgb * 1.15;
-    return mix(c, sky, win);
+    // cielo con nubes arriba y, abajo, campos, bosques, cerezos y ríos; el horizonte da vueltas con el túnel
+    vec3 q = wallP(u, w, 1.4, 0.3) + vec3(0.0, 0.0, -WTime * 0.05);
+    float n = fbm(q, FOOT * 1.4);
+    float n2 = fbm(q * 2.2 + 5.0, FOOT * 3.1);
+    float e = sin(u * TAU - 0.6);
+    float land = smoothstep(-0.05, 0.25, -e + 0.35 * (n - 0.5));
+    vec3 sky = mix(vec3(0.42, 0.64, 0.97), vec3(0.8, 0.89, 1.0), clamp(e * 0.5 + 0.5, 0.0, 1.0));
+    sky = mix(sky, vec3(1.0, 0.99, 0.97), smoothstep(0.55, 0.82, n2) * 0.85);
+    vec3 g = mix(vec3(0.2, 0.46, 0.14), vec3(0.44, 0.7, 0.23), smoothstep(0.3, 0.7, n2));
+    g = mix(g, vec3(0.09, 0.28, 0.1), smoothstep(0.62, 0.8, n) * 0.8);
+    g = mix(g, vec3(0.97, 0.64, 0.8), smoothstep(0.78, 0.92, n2) * 0.75);
+    float river = smoothstep(0.035, 0.0, abs(n - 0.42)) * (1.0 - smoothstep(0.25, 0.6, FOOT * 28.0));
+    g = mix(g, vec3(0.28, 0.52, 0.95), river * 0.85);
+    return mix(sky, g, land);
 }
 
 vec3 nether(float u, float w) {
-    vec2 tq = vec2(u * 24.0, w * 1.5);
-    vec2 ti = floor(tq);
-    float h = hash12(ti);
-    float id = h < 0.58 ? 8.0 : (h < 0.8 ? 9.0 : (h < 0.93 ? 11.0 : 10.0));
-    vec3 c = block(id, tq, 3.0);
-    if (id == 10.0) c *= 1.9;
-    // ríos de lava que corren a lo largo
-    float lane = abs(fract(u * 5.0 + 0.12 * sin(w * 0.35 + u * 9.0)) - 0.5);
-    float lava = smoothstep(0.11, 0.06, lane);
-    vec3 lv = strip(Sampler2, Frames.x, vec2(u * 24.0, w * 0.8 + WTime * 0.35), 7.0) * 1.7;
-    c = mix(c, lv, lava);
-    c += vec3(1.0, 0.32, 0.04) * smoothstep(0.3, 0.06, lane) * 0.35;
+    // magma que fluye: roca roja oscura y venas de lava que brillan (crestas de un ruido deformado por otro)
+    vec3 q = wallP(u, w, 1.5, 0.42);
+    float n = fbm(q + vec3(0.0, 0.0, -WTime * 0.25), FOOT * 1.5);
+    float m = fbm(q * 1.6 + n * 1.8 + vec3(3.1, 1.7, WTime * 0.12), FOOT * 2.4);
+    float vein = 1.0 - abs(2.0 * m - 1.0);
+    float veinK = 1.0 - smoothstep(0.25, 0.6, FOOT * 2.4 * 6.0);
+    vein = mix(0.35, pow(vein, 7.0), veinK);
+    vec3 rock = mix(vec3(0.10, 0.015, 0.02), vec3(0.42, 0.06, 0.05), smoothstep(0.25, 0.75, n));
+    vec3 lava = mix(vec3(1.0, 0.32, 0.04), vec3(1.0, 0.86, 0.42), vein);
+    vec3 c = rock + lava * vein * 2.4;
+    c += vec3(0.9, 0.22, 0.04) * smoothstep(0.6, 0.85, n) * 0.6;
     return c;
 }
 
 vec3 endWorld(float u, float w) {
-    vec2 tq = vec2(u * 22.0, w * 1.3);
-    vec2 ti = floor(tq);
-    float h = hash12(ti);
-    float id = h < 0.55 ? 12.0 : (h < 0.8 ? 13.0 : (h < 0.93 ? 14.0 : 15.0));
-    vec3 c = block(id, tq, 7.0);
-    if (id == 15.0) c *= 1.5;
-    // ventanas al vacío del End: sus estrellas en dos capas sobre su cielo
-    float win = smoothstep(0.5, 0.58, noise2(vec2(u * 7.0, w * 0.32 - WTime * 0.05)));
-    vec3 sky = texture(Sampler5, vec2(u * 4.0, w * 0.2)).rgb * vec3(0.35, 0.18, 0.5);
-    vec3 s1 = texture(Sampler4, vec2(u * 2.0 + WTime * 0.01, w * 0.12)).rgb * vec3(0.35, 0.95, 0.85);
-    vec3 s2 = texture(Sampler4, vec2(u * 3.3 - WTime * 0.017, w * 0.19 + 0.37)).rgb * vec3(0.75, 0.45, 1.0);
-    vec3 vd = sky + (s1 + s2) * 1.2;
-    return mix(c, vd, win);
+    // nebulosa violeta con corrientes claras (el amarillo pálido de la piedra del End) que se retuercen
+    vec3 q = wallP(u, w, 1.3, 0.28) + vec3(0.0, 0.0, -WTime * 0.08);
+    float n = fbm(q, FOOT * 1.3);
+    float m = fbm(q * 1.4 + vec3(n * 1.5, 4.0, 2.0), FOOT * 1.8);
+    float stream = 1.0 - abs(2.0 * m - 1.0);
+    stream = mix(0.3, pow(stream, 5.0), 1.0 - smoothstep(0.25, 0.6, FOOT * 1.8 * 5.0));
+    vec3 c = mix(vec3(0.04, 0.015, 0.09), vec3(0.36, 0.12, 0.62), smoothstep(0.2, 0.8, n));
+    c += vec3(0.95, 0.9, 0.6) * stream * 0.55;
+    c += vec3(0.25, 0.85, 0.75) * smoothstep(0.72, 0.9, n) * 0.25;
+    return c;
+}
+
+vec3 voidWorld(float u, float w) {
+    // las nebulosas del cielo del Void, oscuras, con hebras doradas del disco del agujero que giran hacia el fondo
+    float v = 0.5 - 0.3 * cos(w * 0.16 + 0.7 * sin(u * TAU));
+    vec3 neb = texture(Sampler1, vec2(u + w * 0.015, v)).rgb;
+    neb = pow(neb, vec3(1.35)) * 0.9;
+    vec3 q = wallP(u, w, 1.0, 0.3);
+    float n = fbm(q + vec3(0.0, 0.0, -WTime * 0.1), FOOT);
+    float sp = 0.5 + 0.5 * sin(u * TAU * 3.0 + w * 0.9 - WTime * 0.6 + n * 3.0);
+    float gold = mix(0.2, pow(sp, 14.0), 1.0 - smoothstep(0.2, 0.5, FOOT * 9.0));
+    return neb + vec3(1.0, 0.68, 0.32) * gold * 0.65 * smoothstep(0.35, 0.7, n);
 }
 
 vec3 worldWall(float world, float u, float w) {
     if (world < 0.5) return overworld(u, w);
     if (world < 1.5) return nether(u, w);
-    return endWorld(u, w);
+    if (world < 2.5) return endWorld(u, w);
+    return voidWorld(u, w);
 }
 
+// El color de la niebla de cada tramo hacia el fondo (que brilla); en la antesala, oscuro: al fondo, el agujero
 vec3 fogColor(float world) {
-    if (world < 0.5) return vec3(1.0, 0.74, 0.5);
-    if (world < 1.5) return vec3(1.0, 0.33, 0.07);
-    return vec3(0.5, 0.28, 0.85);
+    if (world < 0.5) return vec3(1.0, 0.9, 0.7);
+    if (world < 1.5) return vec3(1.0, 0.36, 0.08);
+    if (world < 2.5) return vec3(0.55, 0.32, 0.9);
+    return vec3(0.16, 0.06, 0.28);
 }
 
-// Qué mundo hay a esa profundidad
+// Qué tramo hay a esa profundidad: 0 Overworld, 1 Nether, 2 End, 3 la antesala del Void
 float worldAt(float w) {
-    float k = w < Gates.x ? 0.0 : (w < Gates.y ? 1.0 : 2.0);
-    return Back > 0.5 ? 2.0 - k : k;
+    float k = w < Gates.x ? 0.0 : (w < Gates.y ? 1.0 : (w < Gates.z ? 2.0 : 3.0));
+    return Back > 0.5 ? 3.0 - k : k;
 }
 
-// La puerta i: ¿la del Nether (true) o la del End?
-bool netherGate(float i) {
-    return Back > 0.5 ? i > 0.5 : i < 0.5;
+// La puerta i lleva al tramo que hay detrás de ella; su color
+vec3 gateColor(float i) {
+    float to = worldAt((i < 0.5 ? Gates.x : (i < 1.5 ? Gates.y : Gates.z)) + 0.01);
+    if (to < 0.5) return vec3(1.0, 0.9, 0.6);       // al Overworld: luz de día
+    if (to < 1.5) return vec3(0.68, 0.25, 1.0);      // al Nether: el morado de su portal
+    if (to < 2.5) return vec3(0.3, 0.95, 0.82);      // al End: el turquesa de su portal
+    return vec3(0.55, 0.2, 0.9);                     // al Void: violeta
 }
 
-// Lo que se ve a la distancia r del centro, en el ángulo a (sin aberración)
+// La membrana de una puerta (vista de frente; pm en el disco unidad): un remolino suave de su color
+vec3 membrane(float i, vec2 pm) {
+    float rr = length(pm);
+    float an = atan(pm.y, pm.x) + rr * 3.0 - WTime * 1.6;
+    vec3 q = vec3(cos(an) * rr * 2.2, sin(an) * rr * 2.2, i * 7.0 + WTime * 0.2);
+    float n = fbm(q, 0.02);
+    vec3 gc = gateColor(i);
+    vec3 c = gc * (0.25 + 1.1 * n * n) + vec3(1.0) * pow(n, 6.0) * 0.6;
+    // (la del Void: oscura con un borde dorado)
+    float to = worldAt((i < 0.5 ? Gates.x : (i < 1.5 ? Gates.y : Gates.z)) + 0.01);
+    if (to > 2.5) c = mix(c * 0.35, vec3(1.0, 0.7, 0.3), smoothstep(0.7, 0.98, rr) * 0.7);
+    return c;
+}
+
+// Lo que se ve a la distancia r del centro, en el ángulo a
 vec3 scene(float r, float a) {
-    float w = K / max(r, 0.004) + Travel;
-    float u = a / (2.0 * PI) + 0.045 * w + 0.025 * WTime;
+    float rr = max(r, 0.004);
+    float w = K / rr + Travel;
+    float u = a / TAU + 0.045 * w + 0.02 * WTime;
+    // lo que mide un píxel en la pared: a lo largo (en profundidad) K/r² por píxel; alrededor, 1/(2πr) vueltas
+    float px = 1.0 / ScreenSize.y;
+    FOOT = max(K / (rr * rr) * px * 0.42, px / rr * 1.4);
     float world = worldAt(w);
     vec3 col = worldWall(world, u, w);
-    // las puertas: el marco (la pared a esa profundidad) y, más allá, su membrana
-    for (int i = 0; i < 2; i++) {
-        float g = i == 0 ? Gates.x : Gates.y;
-        bool ng = netherGate(float(i));
+    // las puertas: un anillo de luz en las paredes y, más allá, su membrana
+    for (int i = 0; i < 3; i++) {
+        float fi = float(i);
+        float g = i == 0 ? Gates.x : (i == 1 ? Gates.y : Gates.z);
         float dg = w - g;
-        float frame = smoothstep(0.75, 0.45, abs(dg));
-        if (frame > 0.0) {
-            vec2 tq = vec2(u * 30.0, w * 2.0);
-            vec3 fc = ng ? block(14.0, tq, 9.0) * 0.9 : block(12.0, tq, 9.0);
-            if (!ng && mod(floor(tq.x), 4.0) == 0.0) fc = mix(fc, vec3(0.2, 0.9, 0.7), 0.6);
-            col = mix(col, fc, frame);
-        }
+        vec3 gc = gateColor(fi);
+        float band = exp(-dg * dg * 6.0);
+        col = mix(col, gc * 1.6, band * 0.75);
+        col += gc * exp(-dg * dg * 60.0) * 1.2;
         if (g > Travel && dg > 0.0) {
-            // la membrana, vista de frente: un disco de radio K/(g − Travel)
             float rg = K / (g - Travel);
             vec2 pm = vec2(cos(a), sin(a)) * r / rg;
-            vec3 mc = ng ? strip(Sampler3, Frames.y, pm * 1.5 + 0.5, 12.0) * vec3(1.2, 0.9, 1.4)
-                         : (texture(Sampler4, pm * 0.8 + WTime * 0.02).rgb * vec3(0.4, 1.0, 0.9) + vec3(0.02, 0.05, 0.08));
-            col = mix(col, mc, 0.55);
+            col = mix(col, membrane(fi, pm), 0.55);
         }
     }
-    // niebla del color del mundo hacia el fondo, que brilla; y donde las losetas ya son más pequeñas que un par de
-    // píxeles (hacia el centro), su color medio (sin ruido ni rayas)
+    // niebla del color del tramo hacia el fondo (que brilla); y donde la pared ya es más fina que un par de píxeles
+    // (hacia el centro), su color medio
     float depth = w - Travel;
     float f = 1.0 - exp(-depth * 0.08);
-    float px = 1.0 / ScreenSize.y;
-    float tilePx = min(r * r / (K * 1.5) , r * 2.0 * PI / 26.0) / px;
-    float aaf = 1.0 - smoothstep(1.5, 4.0, tilePx);
-    col = mix(col, fogColor(world) * 0.9, aaf * 0.85);
-    col = mix(col, fogColor(world) * 1.35, f * 0.85);
+    float aaf = smoothstep(0.08, 0.3, FOOT);
+    vec3 fc = fogColor(world);
+    col = mix(col, fc * 0.9, aaf * 0.8);
+    col = mix(col, fc * 1.35, f * 0.85);
     // rayas de velocidad
-    float lane = floor(fract(a / (2.0 * PI)) * 110.0);
+    float lane = floor(fract(a / TAU) * 110.0);
     float hs = hash11(lane + 17.0);
     float dash = exp(-fract(w * 0.35 + hs * 7.0) * 12.0) * step(0.86, hs) * smoothstep(0.08, 0.5, r);
-    col += mix(vec3(1.0), fogColor(world), 0.3) * dash * 1.4;
+    col += mix(vec3(1.0), fc, 0.3) * dash * 1.2;
     return col;
 }
 
-// Bloques de verdad que pasan girando por el túnel (la realidad se rompe en trozos): cubos en 3D con las texturas de
-// cada mundo (hierba, troncos, hojas y cerezo; netherrack, ladrillo, nilio y piedra luminosa; piedra del End, púrpur
-// y obsidiana). (1.3.91, el dueño: nada de «imágenes» ni «fotos» que salten: bloques.) Cada píxel lanza su rayo
-// desde la cámara y mira con qué cubo choca primero (caja girada: prueba de las tres franjas).
-const int CUBES = 40;
-
-// Las losetas de un cubo según su mundo y su tipo: x = arriba, y = lados, z = abajo
-vec3 cubeTiles(float world, float h) {
-    if (world < 0.5) {
-        if (h < 0.34) return vec3(0.0, 1.0, 2.0);       // bloque de hierba
-        if (h < 0.5) return vec3(5.0);                  // tronco de roble
-        if (h < 0.68) return vec3(4.0);                 // hojas de roble
-        if (h < 0.84) return vec3(6.0);                 // hojas de cerezo
-        return vec3(3.0);                               // piedra
-    }
-    if (world < 1.5) {
-        if (h < 0.4) return vec3(8.0);                  // netherrack
-        if (h < 0.62) return vec3(9.0);                 // ladrillo del Nether
-        if (h < 0.82) return vec3(11.0, 8.0, 8.0);      // nilio carmesí
-        return vec3(10.0);                              // piedra luminosa
-    }
-    if (h < 0.45) return vec3(12.0);                    // piedra del End
-    if (h < 0.7) return vec3(13.0);                     // púrpur
-    if (h < 0.88) return vec3(14.0);                    // obsidiana
-    return vec3(15.0);                                  // obsidiana llorosa
-}
-
-mat3 rotAxis(vec3 ax, float an) {
-    float c = cos(an), s = sin(an), k = 1.0 - c;
-    return mat3(c + ax.x * ax.x * k, ax.y * ax.x * k + ax.z * s, ax.z * ax.x * k - ax.y * s,
-                ax.x * ax.y * k - ax.z * s, c + ax.y * ax.y * k, ax.z * ax.y * k + ax.x * s,
-                ax.x * ax.z * k + ax.y * s, ax.y * ax.z * k - ax.x * s, c + ax.z * ax.z * k);
-}
-
-vec4 blocks(vec2 q) {
-    vec3 rd = normalize(vec3(q, 1.0));
-    float best = 1e9;
-    vec4 res = vec4(0.0);
-    for (int i = 0; i < CUBES; i++) {
-        float fi = float(i);
-        // (los que ya pasaron vuelven a salir al fondo: si se llega tarde, siguen pasando)
-        float dz = 1.6 + fi * 0.85 + 0.4 * hash11(fi + 41.0) - Travel;
-        float cyc = dz < 0.1 ? ceil((0.1 - dz) / (float(CUBES) * 0.85)) : 0.0;
-        dz += cyc * float(CUBES) * 0.85;
-        if (dz > 15.0) continue;
-        float zc = Travel + dz;
-        float sd = fi + cyc * 57.0;
-        float th = fi * 2.39996 + 0.6 + cyc * 1.3;
-        float rho = (0.38 + 0.4 * hash11(sd + 3.0)) * K;
-        vec3 cc = vec3(cos(th) * rho, sin(th) * rho, dz);
-        float hs = (0.06 + 0.04 * hash11(sd + 13.0)) * K;
-        // (rápido: si el rayo pasa lejos del cubo, ni se mira)
-        vec3 oc = cc;
-        float tc = dot(oc, rd);
-        vec3 off = rd * tc - oc;
-        if (dot(off, off) > 3.1 * hs * hs) continue;
-        vec3 ax = normalize(vec3(hash11(sd + 5.0) - 0.5, hash11(sd + 6.0) - 0.5, hash11(sd + 7.0) - 0.5) + 0.001);
-        mat3 m = rotAxis(ax, WTime * (0.6 + 1.2 * hash11(sd + 8.0)) + sd * 1.7);
-        mat3 mt = transpose(m);
-        vec3 o = mt * (-cc);
-        vec3 d = mt * rd;
-        vec3 inv = 1.0 / d;
-        vec3 t1 = (-hs - o) * inv;
-        vec3 t2 = (hs - o) * inv;
-        vec3 tmn = min(t1, t2);
-        vec3 tmx = max(t1, t2);
-        float tn = max(max(tmn.x, tmn.y), tmn.z);
-        float tf = min(min(tmx.x, tmx.y), tmx.z);
-        if (tf < max(tn, 0.0) || tn > best) continue;
-        best = tn;
-        vec3 pl = (o + d * tn) / hs;               // en el cubo, -1..1
-        float world = worldAt(zc);
-        vec3 ids = cubeTiles(world, hash11(sd + 23.0));
-        vec2 uv;
-        float idx, shade;
-        if (tn == tmn.y) {
-            // arriba o abajo
-            uv = pl.xz * 0.5 + 0.5;
-            bool up = pl.y > 0.0;
-            idx = up ? ids.x : ids.z;
-            shade = up ? 1.0 : 0.5;
-        } else if (tn == tmn.x) {
-            uv = vec2(pl.z * 0.5 + 0.5, 0.5 - pl.y * 0.5);
-            idx = ids.y;
-            shade = 0.6;
-        } else {
-            uv = vec2(pl.x * 0.5 + 0.5, 0.5 - pl.y * 0.5);
-            idx = ids.y;
-            shade = 0.8;
-        }
-        vec3 c = tile(idx, uv);
-        vec2 e = min(uv, 1.0 - uv);
-        c *= 0.8 + 0.2 * smoothstep(0.0, 0.07, min(e.x, e.y));
-        bool glow = idx == 10.0 || idx == 15.0;
-        // la luz del fondo del túnel les da de frente y el color del mundo por detrás
-        vec3 lit = c * (glow ? 1.7 : shade * 1.15) + fogColor(world) * 0.12;
-        lit = mix(lit, fogColor(world) * 1.2, smoothstep(5.0, 14.0, dz) * 0.85);
-        float a = smoothstep(0.1, 0.35, dz) * smoothstep(15.0, 11.0, dz);
-        res = vec4(lit, a);
-    }
-    return res;
-}
-
-// Motas de cada mundo que pasan volando (pétalos, ascuas, chispas del End)
+// Ascuas, chispas y motas de luz que pasan volando (redondas y suaves)
 vec3 motes(float r, float a) {
     float w = K / max(r, 0.004) + Travel;
     float world = worldAt(w);
-    vec2 g = vec2(fract(a / (2.0 * PI)) * 70.0, w * 2.2);
+    vec2 g = vec2(fract(a / TAU) * 70.0, w * 2.2);
     vec2 gi = floor(g);
-    float h = hash12(gi + 31.0);
+    float h = hash13(vec3(gi, 31.0));
     if (h < 0.93) return vec3(0.0);
-    vec2 cpos = vec2(hash12(gi + 7.0), hash12(gi + 11.0)) * 0.8 + 0.1;
+    vec2 cpos = vec2(hash13(vec3(gi, 7.0)), hash13(vec3(gi, 11.0))) * 0.8 + 0.1;
     float d = length((fract(g) - cpos) * vec2(1.0, 0.6));
     float b = smoothstep(0.22, 0.0, d) * smoothstep(0.05, 0.3, r);
-    vec3 col = world < 0.5 ? vec3(1.0, 0.62, 0.82) : (world < 1.5 ? vec3(1.0, 0.55, 0.12) : vec3(0.8, 0.45, 1.0));
-    return col * b * 1.6;
+    vec3 col = world < 0.5 ? vec3(1.0, 0.95, 0.75) : (world < 1.5 ? vec3(1.0, 0.55, 0.12) : (world < 2.5 ? vec3(0.8, 0.6, 1.0) : vec3(1.0, 0.75, 0.4)));
+    return col * b * 1.4;
 }
 
 void main() {
@@ -319,33 +249,41 @@ void main() {
     vec2 q = p - c;
     float r = length(q);
     float a = atan(q.y, q.x);
-    // aberración cromática: cada color, un poco más cerca o más lejos
-    vec3 col;
-    col.r = scene(r * 1.012, a).r;
-    vec3 mid = scene(r, a);
-    col.g = mid.g;
-    col.b = scene(r * 0.988, a).b;
+    vec3 col = scene(r, a);
+    // (un poco de aberración: rojo hacia fuera y azul hacia dentro, en los bordes)
+    float edge = smoothstep(0.35, 0.9, r);
+    col *= vec3(1.0 + 0.06 * edge, 1.0, 1.0 - 0.04 * edge);
     col += motes(r, a);
-    vec4 bl = blocks(q);
-    col = mix(col, bl.rgb, bl.a);
-    // al cruzar una puerta, fogonazo
-    for (int i = 0; i < 2; i++) {
-        float g = i == 0 ? Gates.x : Gates.y;
+    // al cruzar una puerta, fogonazo de su color
+    for (int i = 0; i < 3; i++) {
+        float g = i == 0 ? Gates.x : (i == 1 ? Gates.y : Gates.z);
         float x = Travel - g;
-        float fl = exp(-x * x * 18.0);
-        col = mix(col, netherGate(float(i)) ? vec3(0.75, 0.35, 1.0) : vec3(0.5, 1.0, 0.9), fl * 0.7);
+        col = mix(col, gateColor(float(i)) * 1.3, exp(-x * x * 18.0) * 0.7);
+    }
+    // la antesala del Void a la ida: al fondo, el agujero negro, que crece al acercarse y al llegar llena la pantalla
+    if (Back < 0.5) {
+        float near = smoothstep(Gates.z - 4.0, Gates.z + 6.0, Travel);
+        float hr = (0.035 + 0.11 * near) * (1.0 + 18.0 * smoothstep(0.0, 0.6, Exit));
+        float sh = smoothstep(hr * 1.02, hr * 0.98, r);
+        float ring = exp(-pow((r - hr * 1.12) / (hr * 0.06 + 0.002), 2.0));
+        float glow = step(hr, r) * exp(-(r - hr) / (hr * 0.5 + 0.01));
+        float an = atan(q.y, q.x);
+        vec3 ringC = vec3(1.0, 0.75, 0.42) * (0.8 + 0.25 * sin(an * 3.0 - t * 0.8));
+        float vis = near * (1.0 - smoothstep(0.6, 1.0, Exit));
+        col = mix(col, vec3(0.0), sh * vis);
+        col += (ringC * ring * 1.8 + vec3(0.55, 0.25, 0.95) * glow * 0.35) * vis;
     }
     // viñeta
     col *= 1.0 - 0.4 * smoothstep(0.55, 1.1, length(p));
-    // la salida: la luz del fondo llena la pantalla
+    // la salida: la luz del fondo llena la pantalla (a la ida, sale del anillo del agujero)
     vec3 dest = Back > 0.5 ? vec3(1.0, 0.96, 0.88) : vec3(0.88, 0.78, 1.0);
-    float er = Exit * 1.4;
+    float er = Back > 0.5 ? Exit * 1.4 : smoothstep(0.45, 1.0, Exit) * 1.6;
     float light = smoothstep(er, er - 0.45, r) * step(0.001, Exit);
     col = mix(col, dest * 1.4, light);
     col = mix(col, dest * 1.5, smoothstep(0.85, 1.05, Exit));
     // el desgarro que se abre al empezar
     float ang = a;
-    float jag = 0.05 * (noise2(vec2(ang * 2.5, t * 1.3)) - 0.5) + 0.02 * sin(ang * 11.0 + t * 4.0);
+    float jag = 0.05 * (fbm(vec3(cos(ang) * 2.0, sin(ang) * 2.0, t * 1.3), 0.0) - 0.5) + 0.02 * sin(ang * 11.0 + t * 4.0);
     float R = 0.02 + 1.3 * Open * Open;
     float d = length(q * vec2(1.0, 1.0 + 1.6 * (1.0 - Open))) - R * (1.0 + jag);
     float inside = smoothstep(0.012, -0.012, d);

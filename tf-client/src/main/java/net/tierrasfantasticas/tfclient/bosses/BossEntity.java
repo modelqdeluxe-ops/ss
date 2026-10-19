@@ -235,7 +235,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // El jefe ve a todo el que esté en su arena (con FollowRange 32, a quien le disparaba desde 35 bloques de la
         // grieta no le hacía caso); sus esbirros, lo de su pack
         double follow = owner == null ? Math.max(def.followRange, Rifts.LEASH + 8) : def.followRange;
-        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(96, follow)));
+        // (1.3.92) En la isla de The Void persigue por toda la isla: caminos más largos
+        if (owner == null && island()) follow = 128;
+        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(owner == null && island() ? 128 : 96, follow)));
         applySpeed();
         bodyYaw = getYRot();
         lookYaw = bodyYaw;
@@ -539,7 +541,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         double range = getAttributeValue(Attributes.FOLLOW_RANGE);
         threat.entrySet().stream().sorted((a, b) -> Double.compare(b.getValue(), a.getValue())).forEach(e -> {
             Player p = sl.getPlayerByUUID(e.getKey());
-            if (p != null && p.isAlive() && !p.isSpectator() && !p.isCreative() && p.distanceToSqr(this) <= range * range) out.add(p);
+            if (p != null && p.isAlive() && !p.isSpectator() && !p.isCreative() && (island() || p.distanceToSqr(this) <= range * range)) out.add(p);
         });
         return out;
     }
@@ -1057,6 +1059,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 spawnAt = position();
                 SkillMobs.spawned(this);
             }
+            keepOnIsland();
             SkillMobs.tick(this);
             if (boundTo != null) {
                 // Atado a una caja de su jefe (bindhitbox): va en ella
@@ -1099,7 +1102,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // Astwood se quedaba a 5,2 del jugador y sus puñetazos, que piden 4, no salían nunca)
         double stop = getBbWidth() / 2 + 1.0;
         double fromHome = home == null ? 0 : position().distanceTo(home);
-        if (home != null && fromHome > Rifts.LEASH + 24 && !isPassenger()) {
+        boolean island = island();
+        if (home != null && !isPassenger() && (island ? getY() < home.y - 30 : fromHome > Rifts.LEASH + 24)) {
             // Muy lejos (una carga, un salto, un empujón): vuelve a su grieta de golpe
             Vec3 back = Rifts.ground((ServerLevel) level(), home);
             ((ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, getX(), getY(0.5), getZ(), 60,
@@ -1110,8 +1114,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             fromHome = 0;
         }
         // (el mismo margen que pickTarget: a quien sale despedido de la arena lo sigue hasta 64 bloques de su grieta)
-        boolean targetInArena = target != null && target.position().distanceToSqr(home == null ? position() : home)
-                <= (Rifts.LEASH + 24) * (Rifts.LEASH + 24);
+        // (1.3.92: en la isla de The Void su arena es toda la isla)
+        boolean targetInArena = target != null && (island || target.position().distanceToSqr(home == null ? position() : home)
+                <= (Rifts.LEASH + 24) * (Rifts.LEASH + 24));
         if (home != null && fromHome > Rifts.LEASH && !targetInArena) {
             // Fuera de su arena y sin nadie dentro a quien perseguir: vuelve (si su objetivo sigue dentro, le persigue:
             // antes lo soltaba y se iba dándole la espalda, «me ignora»)
@@ -1158,6 +1163,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             }
         }
         if (goal == gotoGoal && goal != null) speed = gotoSpeed;
+        // (1.3.92) En la isla de The Void no va más allá de VoidIsland.EDGE del borde: si su objetivo está más cerca del
+        // borde (o fuera), va al sitio bueno más cercano a él y le espera allí
+        if (island && goal != null && !net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(goal.x, goal.z)) {
+            Vec3 w = net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestWalkable(goal.x, goal.y, goal.z);
+            if (w != null) goal = w;
+        }
         if (goal != null) {
             // Persigue, vuelve a su grieta o hace su goto: deja de pasear o de huir
             wanderGoal = null;
@@ -1222,6 +1233,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         Vec3 center = target != null ? target.position() : home != null ? home : spawnAt != null ? spawnAt : position();
         if (floatGoal == null || floatGoal.distanceToSqr(position()) < 1 || floatGoal.distanceToSqr(center) > 20 * 20) {
             floatGoal = center.add((getRandom().nextFloat() * 2 - 1) * 12, 3 + getRandom().nextFloat() * 7, (getRandom().nextFloat() * 2 - 1) * 12);
+            if (island() && !net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(floatGoal.x, floatGoal.z)) {
+                Vec3 w = net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestWalkable(floatGoal.x, floatGoal.y, floatGoal.z);
+                if (w != null) floatGoal = w;
+            }
         }
         if (floatWait-- <= 0) {
             floatWait += getRandom().nextInt(5) + 2;
@@ -1305,7 +1320,53 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     private boolean inLeash(Vec3 at) {
+        if (island()) return net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(at.x, at.z);
         return home == null || at.distanceToSqr(home) < Rifts.LEASH * Rifts.LEASH;
+    }
+
+    /**
+     * ¿Está en la isla de The Void? (1.3.92; el dueño: «que me persiga por toda la isla, que su detección sea infinita,
+     * pero que no se salga de la isla y caiga al vacío: unos 5 o 6 bloques antes del borde que no me siga»). Entonces:
+     * ve a todo jugador de la dimensión, su arena es la isla entera (no la correa de su grieta) y nunca va a menos de
+     * {@link net.tierrasfantasticas.tfclient.vacio.VoidIsland#EDGE} bloques de su borde ({@link #keepOnIsland}).
+     */
+    private boolean island() {
+        return level() instanceof ServerLevel sl && net.tierrasfantasticas.tfclient.vacio.TFVoid.isVoid(sl)
+                && net.tierrasfantasticas.tfclient.vacio.VoidIsland.get() != null;
+    }
+
+    /**
+     * En la isla de The Void, que nada le saque de por donde puede andar (sus saltos, cargas y vuelos, o un empujón):
+     * en la franja de seguridad (aún hay suelo) se le quita lo que le lleva hacia fuera y se le empuja hacia dentro; si
+     * ya está sobre el vacío, vuelve en el acto al sitio bueno más cercano.
+     */
+    private void keepOnIsland() {
+        if (boundTo != null || isPassenger() || dying() || !island()) return;
+        if (net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(getX(), getZ())) return;
+        Vec3 to = net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestWalkable(getX(), getY(), getZ());
+        if (to == null) return;
+        double dx = to.x - getX(), dz = to.z - getZ(), len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 1e-4) return;
+        dx /= len;
+        dz /= len;
+        float edge = net.tierrasfantasticas.tfclient.vacio.VoidIsland.edgeDistance(getX(), getZ());
+        if (edge > 1.5F) {
+            Vec3 v = getDeltaMovement();
+            double out = -(v.x * dx + v.z * dz);
+            if (out > 0) v = v.add(dx * out, 0, dz * out);
+            double push = Math.min(0.3, 0.06 + len * 0.04);
+            setDeltaMovement(v.add(dx * push, 0, dz * push));
+            hurtMarked = true;
+        } else {
+            // (en el suelo de esa columna; volando por encima, a su altura)
+            int top = level().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(to.x), Mth.floor(to.z));
+            double y = !onGround() && getY() > top ? getY() : top;
+            ((ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, getX(), getY(0.5), getZ(), 40,
+                    getBbWidth() / 2, getBbHeight() / 2, getBbWidth() / 2, 0.2);
+            teleportTo(to.x, y, to.z);
+            setDeltaMovement(Vec3.ZERO);
+            getNavigation().stop();
+        }
     }
 
     /** FleeSunGoal.getHidePos: un sitio cerca sin cielo encima. */
@@ -1612,6 +1673,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         Vec3 c = home != null ? home : position();
+        boolean islandNow = owner == null && island();
         LivingEntity best = null;
         double bestThreat = -1, bestDist = Double.MAX_VALUE;
         double smart = difficulty.smart();
@@ -1624,7 +1686,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             // Fuera de su arena no busca a nadie; al que ya perseguía no lo suelta hasta 64 bloques (lo que salta él antes de
             // volver a su grieta): sus golpes lanzan lejos (el Druida, a más de 48) y lo perdía justo cuando iba a volar hacia él
             double arena = p == target ? Rifts.LEASH + 24 : Rifts.LEASH + 8;
-            if (d > range * range || home != null && p.position().distanceToSqr(c) > arena * arena) continue;
+            // (1.3.92: en la isla de The Void, a todos los de la dimensión)
+            if (!islandNow && (d > range * range || home != null && p.position().distanceToSqr(c) > arena * arena)) continue;
             double t = threat.getOrDefault(p.getUUID(), 0.0);
             // Listo: va a por quien se cura, a por quien le dispara desde lejos y remata a quien está a punto de caer
             if (smart >= 0.6) {
@@ -1676,6 +1739,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (age % 10 != 0) return;
         bar.setName(barTitle());
         double r = def.barRange > 0 ? Math.max(48, def.barRange) : 64;
+        // (1.3.92) En la isla de The Void la pelea es toda la isla
+        if (island()) r = Math.max(r, 512);
         List<ServerPlayer> now = new ArrayList<>();
         if (level() instanceof ServerLevel sl) for (ServerPlayer p : sl.players()) if (p.distanceToSqr(this) <= r * r) now.add(p);
         for (ServerPlayer p : new ArrayList<>(bar.getPlayers())) if (!now.contains(p)) bar.removePlayer(p);
