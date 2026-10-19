@@ -110,6 +110,9 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         // en píxeles del modelo, desde el hueso del brazo (que va con la animación) hasta el centro de la mano
         pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
         pose.mulPoseMatrix(mats[arm]);
+        // (mulPoseMatrix no gira las normales: sin esto la luz de la espada salía con el giro del brazo de menos, y con
+        // el brazo adelantado 60° se veía gris oscura en vez de blanca y dorada: prueba en el juego, 1.3.93)
+        pose.last().normal().mul(new Matrix4f(mats[arm]).normal(new org.joml.Matrix3f()));
         pose.translate(HAND_X, HAND_Y, HAND_Z);
         // sin el giro añadido al brazo; la hoja hacia abajo con su cara (y sus alas) de frente, la punta algo adelantada
         pose.mulPose(Axis.ZP.rotationDegrees(-ARM_ROLL));
