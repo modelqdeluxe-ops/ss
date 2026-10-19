@@ -4,7 +4,7 @@
 
 Lee la isla (tfclient-void-isla.bin) y hace lo mismo que VoidIsland.edgeField: la distancia de cada columna al borde
 (chaflán de 8 vecinos), lo que está a VoidIsland.EDGE (6) bloques o más (y fuera del Velo del Alba, 1.3.96) y, de
-eso, solo la parte de la grieta (el islote del este y el santuario se unen por puentes estrechos). En la imagen: verde, por donde andan; azul, andable pero en otra parte; morado,
+eso, solo la parte de la grieta (el islote del este, el Páramo y el santuario se unen por puentes estrechos). En la imagen: verde, por donde andan; azul, andable pero en otra parte; morado,
 la franja de 6 bloques; amarillo, el borde; rojo, la grieta. Dice también dónde espera el jugador en la persecución de
 la prueba en el juego (BossTest, caso 1200). (Qué bloques son suelo: aquí, por nombre; en el juego, los que tienen
 forma de choque.)
@@ -29,6 +29,9 @@ if ver >= 3:
     bubble = [i32() for _ in range(3)]; bubble_r = i32()
     heart = [i32() for _ in range(3)]
     for _ in range(i32()): [i32() for _ in range(3)]
+if ver >= 4:
+    # (1.3.96, v4) el altar, el portal (y hacia dónde mira) y el sitio de la fauna
+    [i32() for _ in range(3 + 4 + 3)]
 n = i32()
 pal = []
 for _ in range(n):
