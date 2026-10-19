@@ -77,6 +77,7 @@ public final class BossTestClient {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         tunnelShots();
+        skyShots();
         String shot = BossTest.SHOTS_PENDING.peek();
         if (shot == null || mc.level == null) {
             shotSeen = null;
@@ -118,6 +119,29 @@ public final class BossTestClient {
         if (tunnelNext < TUNNEL_FROM_START ? c < at : arrived < 0F || c < arrived + at) return;
         BossTest.clientShot((TravelFx.back() ? "vuelta" : "ida") + "_tunel_" + TUNNEL[tunnelNext]);
         tunnelNext++;
+    }
+
+    /**
+     * (1.3.93) Capturas de la grieta del cielo, a los tiempos de su animación (segundos desde que llega cada una):
+     * preludio; se rompe (grietas, fogonazo, se abre, abierta); se sella (cerrándose, cicatriz); se vuelve a abrir; el
+     * final.
+     */
+    private static final String[][] SKY = {{}, {"preludio"}, {"rompe", "fogonazo", "abre", "grieta"}, {"cierra", "cicatriz"},
+            {"reabre", "reabierta"}, {"final", "sin_grieta"}};
+    private static final float[][] SKY_AT = {{}, {4.0F}, {0.7F, 1.4F, 2.4F, 6.5F}, {1.4F, 5F}, {1.6F, 5.5F}, {2.5F, 6F}};
+    private static int skySeen = -1, skyNext;
+
+    private static void skyShots() {
+        int fx = net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.testFx();
+        if (fx < 1 || fx >= SKY.length) return;
+        int n = net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.testFxCount();
+        if (n != skySeen) {
+            skySeen = n;
+            skyNext = 0;
+        }
+        if (skyNext >= SKY[fx].length || net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.testSince() < SKY_AT[fx][skyNext]) return;
+        BossTest.clientShot("cielo_" + SKY[fx][skyNext]);
+        skyNext++;
     }
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */

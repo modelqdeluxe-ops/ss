@@ -83,7 +83,8 @@ public final class VoidTravel {
         d.putBoolean(key, true);
         String back = k.home() ? backName(p.server, d) : "";
         // (1.3.92: sin el sonido de amatista; el diálogo suena suave en tu cliente)
-        VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new VoidNet.Talk(k.getId(), p.getGameProfile().getName(), first, k.home(), back));
+        VoidNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new VoidNet.Talk(k.getId(), p.getGameProfile().getName(), first, k.home(), back,
+                SkyRift.state()));
     }
 
     /** La prueba en el juego (BossTest): como un clic derecho en el caballero. */

@@ -206,6 +206,25 @@ public final class RiftWarp {
             // (la realidad se rasga: también tiembla)
             shake = Math.max(shake, 0.6F * travel);
         }
+        // La grieta del cielo (1.3.93): al mirarla, una distorsión leve (más al romperse); y su temblor
+        shake = Math.max(shake, net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.shake());
+        float[] sky = net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.warp(view, proj, aspect);
+        if (sky != null) {
+            Src s = new Src();
+            s.x = sky[0];
+            s.y = sky[1];
+            s.r = sky[2];
+            s.lens = 0.07F * sky[3] + 0.25F * sky[4];
+            s.swirl = 0.18F * sky[3];
+            s.wave = 0.004F * sky[3];
+            s.flash = 0.5F * sky[4];
+            s.tr = 0.75F;
+            s.tg = 0.45F;
+            s.tb = 1F;
+            s.weight = s.lens + s.flash;
+            list.add(s);
+            near = Math.max(near, 0.1F * sky[3] + 0.3F * sky[4]);
+        }
         if (list.isEmpty() && near <= 0.001F) return;
         list.sort((a, b) -> Float.compare(b.weight, a.weight));
         try {

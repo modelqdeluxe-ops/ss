@@ -708,10 +708,119 @@ dorado, animada). Y su cuadro de diálogo es una mierda: va lento, el nombre mal
 | «Se ven cuadrados, fragmentos» (agujero de gusano) | Las paredes eran losetas de bloques (atlas 4×4), pasaban cubos girando y las puertas y estrellas eran texturas de píxeles. | `wormhole.fsh` rehecho: cada tramo es una textura continua de ruido filtrado por lo que mide un píxel (nada más fino que ~2 píxeles; la vuelta del túnel como un círculo en el ruido: sin costura). Overworld: cielo con nubes y campos, bosques, cerezos y ríos con el horizonte en espiral; Nether: magma con venas de lava; End: nebulosa violeta con corrientes claras; **antesala del Void** (nueva): sus nebulosas (las del cielo del Void) con hebras de oro y el agujero negro al fondo, que crece y **se cruza** (llena la pantalla de negro y de su anillo sale la luz). Tres puertas (anillo de luz y membrana en remolino: morada, turquesa, violeta con oro). Ida: Overworld → Nether → End → antesala; vuelta: antesala → End → Nether → Overworld. Tiempos: puertas a 3,4 / 4,9 / 6,3 s. Sin texturas de Minecraft (fuera `WormholeTextures`). Vista previa: `tools/void/tunel_preview.py carpeta [--vuelta]`. |
 | «El agujero negro bugueaba» con la distorsión | La furia de la grieta (1.3.91) hacía latir el tamaño del agujero (`D` ±8 % a 0,37 Hz) y parpadear el anillo y los grumos (senos rápidos), y entraba de golpe. | La furia solo da más brillo, grumos más vivos y el color de la grieta; entra y sale en ~1 s (`VoidSky.rageShown`). |
 | «Demasiado rápido» | El disco daba una vuelta cada ~16 s (`SPIN_K` 1,6). | Una vuelta cada ~84 s (`SPIN_K` 0,3, capas de 30 s) y todo más lento (grumos, chorros, el anillo, el pulso); las ondas de luz que dan la vuelta al anillo de fotones, despacio y más marcadas: se ve cómo gira. |
-| «Bordes dentados» del círculo negro | La sombra era «cae o no cae» por rayo: medido en la vista previa a 1920×1080, **0 píxeles** entre el negro y el anillo en todas las filas (187 → 0). Además, rayos junto a la esfera de fotones «escapaban» por los pasos finitos: puntos sueltos dentro. | Se decide con el parámetro de impacto (b = \|p × v\|; cae si b < 3√3/2) y un degradado de ~1,5 píxeles (128 → 103 → 46 → 4 → 0); el anillo de fotones también según b; lo que cruza el disco tras pasar junto al agujero, con el mismo degradado. |
+| «Bordes dentados» del círculo negro (ojo: en la 1.3.93 se corrigió que esto creaba un agujero falso en el lado opuesto, §3.18) | La sombra era «cae o no cae» por rayo: medido en la vista previa a 1920×1080, **0 píxeles** entre el negro y el anillo en todas las filas (187 → 0). Además, rayos junto a la esfera de fotones «escapaban» por los pasos finitos: puntos sueltos dentro. | Se decide con el parámetro de impacto (b = \|p × v\|; cae si b < 3√3/2) y un degradado de ~1,5 píxeles (128 → 103 → 46 → 4 → 0); el anillo de fotones también según b; lo que cruza el disco tras pasar junto al agujero, con el mismo degradado. |
 | «Más detallado» | — | Hebras finas a lo largo de la órbita y carriles de polvo oscuros (filtrados como el resto). |
 | Espada de Caelthar | — | La grande del set **Hada** (`tfclient:fairy_greatsword`: blanca y dorada, con alas, animada) en la mano derecha, desde el hueso del brazo (`KnightRenderer.sword`). Con la posición de la mano de Minecraft (ItemInHandLayer) apuntaba al frente y hacia abajo y se veía de canto, como un palo (captura `caballero_mundo` de la prueba): ahora erguida, la cara de la hoja y sus alas hacia delante, algo inclinada hacia fuera y al 80 % (comprobado con shaders). |
 | Diálogo «lento, nombre mal dibujado, amatista» | El texto iba a 34 letras/s por ticks (a saltos); el nombre en Cinzel **negrita** a ×1,7 (la negrita TTF se dibuja dos veces desplazada: corrida y borrosa); clics y apertura con `AMETHYST_BLOCK_CHIME` (y el viaje, dos veces). | `KnightScreen` rehecho: escena de cine (el mundo oscurecido abajo), placa de cristal con esquinas redondeadas e hilo de oro en píxeles reales (`TFMenuPaint`), el nombre en Cinzel rasterizada al tamaño real (`font/cinzel_N`) con contorno, hilos de oro que se apagan, texto a 55 letras/s con fundido (clic para verlo entero), respuestas en pastillas que se encienden; sin retrato; sonidos suaves del TF Pad. Fuera las amatistas del viaje. |
+
+### 3.18 La grieta del cielo: el evento del Void en todos los mundos Overworld (1.3.93)
+
+El dueño: *«cuando yo coloque el NPC, una grieta grande se dibujará en el cielo, con animación épica que asuste a todo
+el server, y que cuando volteen a verla, una leve distorsión en su cámara (leve). Antes, un sonido de temblor, de que
+algo oscuro se avecina, y un leve temblorcito; un mensaje en chat del NPC: algo siniestro se avecina al Overworld; y
+luego pum, la grieta en el cielo, como que se rompe la dimensión. Luego dice en el chat dónde se encuentra, el centro de
+Tierras Fantásticas (el spawn), que lo busquen porque tiene algo que decirles, y en el diálogo cuenta todo sobre el
+Void y las grietas: para cerrar la del cielo hay que cerrar la del Void, porque rompió el espacio-tiempo y apareció en
+nuestro Overworld; se cierran rompiendo sus cristales, y al romperlos pueden traer criaturas malvadas que él encerró en
+el Void; hay que derrotarlas a todas (muchos bosses, que el staff irá habilitando). Cuando derroten uno, la grieta del
+cielo se cierra momentáneamente; cuando activemos otro, se vuelve a abrir con otro sonido; y así hasta el final, que
+decidiremos con un boss super fuerte»*. Y: *«el spawn es un Overworld aparte (un plugin lo separa del de los
+jugadores)»*.
+
+**Servidor (`vacio/SkyRift`).** Estados `OFF` (nunca ha salido), `OPEN`, `CLOSED` (sellada por ahora), `ENDED` (el
+final); se guardan en el Overworld del servidor (`data/tfclient_cielo.dat`: estado, mundo y sitio de Caelthar). Sale
+en **todos los mundos de tipo Overworld** (por su cielo, `effectsLocation` = overworld, no por su nombre; el spawn del
+plugin también): sobre Caelthar (190 bloques más arriba) en su mundo y sobre el punto de aparición en los demás.
+Cada jugador la recibe (`VoidNet.Sky`) al entrar, al cambiar de mundo o al reaparecer y, por si un plugin le cambia de
+mundo sin avisar a Forge (Mohist), cada segundo se mira en qué mundo está.
+
+- **El evento** (`SkyRift.start`): la primera vez que se pone a Caelthar con `/tf void npc` en un mundo Overworld (o
+  con `/tf void cielo evento`). Tick 0: chat de Caelthar (en todo el servidor) «Algo siniestro se avecina al
+  Overworld... La tierra tiembla y la luz se apaga. Prepárense.» y el preludio (6 s). Tick 120: se rompe el cielo
+  (`OPEN`). Tick 260: «¡El Void ha desgarrado el cielo de Tierras Fantásticas! Búsquenme en el spawn, en el centro de
+  Tierras Fantásticas: tengo algo muy importante que contarles.»
+- **Cae un jefe del Void** (`Rifts.bossKilled` con la grieta del Void): se sella (`CLOSED`) con su chat. **Se vuelve a
+  abrir** (con otro sonido y su chat) cuando la grieta del Void vuelve a tener un jefe listo (no recargando y con un
+  jefe de su lista; `Rifts.onServerTick` cada segundo) y no antes de 30 s (`MIN_CLOSED`). Si el staff deja la lista
+  del Void vacía, se queda sellada.
+- **El final** lo decide el staff: `/tf void cielo final` (se cierra para siempre con un fogonazo y su chat).
+- Comandos (`/tf void cielo ...`, permiso 2): `evento` (empieza el evento sobre el Caelthar más cercano o sobre ti),
+  `abrir`, `cerrar`, `final`, `quitar` (vuelve a `OFF`: la próxima vez que pongas a Caelthar empieza otra vez) y
+  `estado`.
+
+**Cliente (`vacio/SkyRiftClient` + shader `sky_rift`).** Un cuadro que mira a la cámara, en la dirección de la
+grieta, de su tamaño de verdad (~160 × 224 bloques) pero nunca menor que ~10° (se ve desde lejos); de pie y, mirándola
+desde debajo, orientado al norte. Sin paquete de shaders se dibuja justo después del cielo (bloques y nubes delante);
+con paquete, después de su pasada final, solo donde se ve el cielo (`AfterShaders`, como la grieta y el cielo del
+Void). El shader: 11 ramas de grieta con horquillas que crecen desde el centro (de vez en cuando las recorre un rayo),
+un aura oscura (redonda y apagada del todo antes del borde del cuadro), el desgarro en S de borde vivo con el Void dentro (sus nebulosas en remolino, estrellas y el agujero
+negro con su anillo de oro), el fogonazo y, sellada, la cicatriz. Todo con bordes suaves (`fwidth`). Vista previa sin
+juego: `xvfb-run -a python3 -I tools/void/grieta_cielo_preview.py carpeta` (estados `0_grietas` … `6_cicatriz`).
+
+| Momento | Se ve | Suena | Cámara |
+|---|---|---|---|
+| Preludio (6 s) | El cielo se apaga en un círculo donde va a romperse (`Dark`) | Retumbar del warden al salir, latidos cada vez más rápidos, el lamento del guardián anciano, un rugido lejano | Temblor leve que crece (0,06 → 0,36) |
+| Se rompe | Grietas (1,2 s), fogonazo, el desgarro se abre (hasta 3,4 s) | Cristal que se quiebra, ancla de reaparición, trueno, explosión, portal del End, rugido | Golpe de temblor (1,5) que se apaga |
+| Abierta | Grietas que laten, el Void dentro | — | Al mirarla: distorsión leve (lente 0,07, remolino 0,18, tinte violeta; `RiftWarp`) |
+| Se sella | El desgarro se cierra (2,5 s), fogonazo, cicatriz | Faro que se apaga, conducto | Temblor pequeño |
+| Se vuelve a abrir | La cicatriz se rompe otra vez | **El Wither al nacer**, cristal, portal del End | Temblor |
+| El final | Se cierra del todo, gran fogonazo, desaparece | Trueno y «desafío completado» | Temblor pequeño |
+
+Los sonidos son de interfaz (sin posición: los oye igual todo el que está en un mundo Overworld).
+
+**Diálogo de Caelthar** (`KnightScreen`, la grieta abierta o sellada): saludo según el estado («¿Has visto el cielo? Esa
+herida no es una tormenta: es el Void...»), «¿Qué es esa grieta del cielo?» (nació en el Void: la grieta del centro de
+su isla rompió el espacio-tiempo y su herida se abrió en nuestro cielo; para cerrarla hay que cerrar la del Void) y
+«¿Cómo la cerramos?» (rompiendo su cristal; puede traer a las criaturas y entidades malvadas que su orden encerró en el
+Void; hay que derrotarlas a todas; cuando una cae, la grieta del cielo se sella hasta que despierta la siguiente). El
+del santuario lo recuerda en «¿Dónde estoy?».
+
+**Prueba en el juego** (al final de `vacio`): 120 bloques al sur de Caelthar mirando la grieta, el evento entero
+(capturas del cliente a los tiempos de la animación: `cielo_preludio`, `cielo_rompe`, `cielo_fogonazo`, `cielo_abre`,
+`cielo_grieta`), desde ~600 bloques (`cielo_lejos`), el diálogo (`dialogo_cielo`, `dialogo_grieta`, `dialogo_sellar`),
+cae un jefe del Void (`cielo_cierra`, `cielo_cicatriz`), se vuelve a abrir sola a los 30 s porque la grieta del Void
+tiene jefe (`cielo_reabre`, `cielo_reabierta`) y el final (`cielo_final`, `cielo_sin_grieta`). El informe dice el
+estado, lo que ve el cliente, los fotogramas dibujados y el temblor más fuerte.
+
+Primera prueba (6d622c5, sin shaders): todo el ciclo bien (abierta → sellada → se vuelve a abrir sola cuando la
+grieta del Void tiene jefe → cerrada para siempre; 2383 fotogramas dibujada; temblor máximo 1,49). Encontró dos cosas:
+el aura llegaba al borde del cuadro (exp(-1,6) ≈ 0,2 allí): con más contraste se veía una **columna rectangular**
+oscura alrededor de la grieta → aura más concentrada y multiplicada por `smoothstep(1, 0,6, |uv|)` (la vista previa
+ahora deja un margen del 10 % para verlo: el cielo en el borde del cuadro, igual dentro que fuera); y el diálogo no se
+abrió al volver de la vista de 600 bloques (el cliente aún no tenía a Caelthar: `KnightScreen` se cierra si no
+encuentra la entidad) → la prueba habla con él antes y 3 s después de llegar, y `KnightScreen` espera hasta 3 s a que
+el cliente tenga al caballero.
+
+Segunda prueba (6c5553a, con shaders: Oculus + Complementary): la grieta se ve detrás de las nubes del paquete, con el
+aura redonda; todo el ciclo bien. Encontró un fallo **del rescate al caer al vacío** (de antes): `TFVoid.onPlayerTick`
+teletransportaba en cada tick mientras el jugador siguiera bajo y = 2, pero Minecraft deja al jugador donde estaba en
+el servidor hasta que su cliente confirma el teletransporte (`awaitingPositionFromClient`), y con uno nuevo en cada
+tick un cliente lento (aquí <1 fps; un jugador con <20 fps también) confirma siempre uno ya viejo: no se le rescataba
+nunca (en las pruebas con shaders de la 1.3.92 tardó 13 ticks; en esta, nunca). Ahora, un teletransporte cada 2 s como
+mucho (si no llega, lo reenvía Minecraft). Además, como el diálogo del santuario no se abrió, su «pulsa 1» quedó
+pendiente y el de Caelthar en el Overworld eligió «Llévame al Void»: la prueba borra la pulsación antes de hablar.
+Y el diálogo de la grieta del cielo seguía sin abrirse: mientras la prueba está en el Void, el chunk de Caelthar se
+descarga y al volver es **otra entidad** (otro número): la prueba ahora busca al Caelthar de ahora antes de hablar.
+
+**Lo que el dueño encontró en la 1.3.92** (con capturas, mientras tanto):
+- «¿Qué es esa mierda en el Void? Un círculo negro... hay 2 agujeros»: el borde suave de la sombra (§3.17) decidía con
+  el parámetro de impacto b = |p × v|, que **también es ~0 para los rayos que van justo al revés del agujero**: en el
+  lado opuesto del cielo salía otro agujero, un círculo negro con un anillo fino y sin disco (estaba en la captura
+  `vacio_isla` de la prueba y no se vio). Ahora b solo cuenta para los rayos que van hacia él (`dot(p, v) < 0`; al
+  cambiar de lado b vale D = 8 ≫ 2,6: sin salto). Medido con el cielo entero (equirectangular de 1600 × 800 con el
+  mismo shader, zonas negras de más de 200 píxeles): antes dos (el agujero y su antípoda), ahora una.
+- «La espada mal puesta»: iba erguida por fuera del brazo, con el puño a 4,8 píxeles de la mano (flotaba a su lado).
+  Ahora, como un guardián, **clavada de punta delante de él** (algo a su derecha, con la cara de la hoja y sus alas de
+  frente) y la mano sobre el puño: el puño de la espada en el centro de la mano (0 px) y la punta en y = −0,8 (en el
+  suelo); el brazo derecho se adelanta 60° y se cierra 10° (`KnightRenderer.ARM_PITCH/ARM_ROLL`), y la hoja va en los
+  ejes del modelo (se deshace ese giro). Herramienta: `python3 -I tools/void/caballero_espada.py salida.png [--actual]`
+  dibuja al caballero con la espada (de frente, de lado, de tres cuartos y por detrás, con sus texturas) con la misma
+  cadena de transformaciones que `KnightRenderer.sword` y mide el puño y la punta.
+  En la prueba en el juego (ab222f6) salió en su sitio pero **gris oscura**: `PoseStack.mulPoseMatrix` no gira las
+  normales, y con el brazo adelantado 60° la luz de la espada iba con ese giro de menos. Ahora la normal se multiplica
+  también por la del hueso (94870e2: blanca y dorada, en el Overworld y en el santuario).
+- «Lo puse y no hizo nada»: el evento es de la 1.3.93 (la que publica esto); con la 1.3.92 no existe. Hace falta el jar
+  nuevo en el **servidor** (el evento lo lanza el servidor) y en los clientes (lo dibujan ellos).
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
@@ -1062,7 +1171,12 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.92
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.93
+
+**1.3.93**: §3.18 (la grieta del cielo: evento al poner a Caelthar, en todos los mundos Overworld; se sella al caer un
+jefe del Void y se vuelve a abrir con el siguiente; el final con `/tf void cielo final`). Queda que el dueño lo vea en
+su servidor (el spawn separado por el plugin) y **el jefe final** «super fuerte» que pasará más adelante: cuando llegue,
+su muerte puede llamar a `SkyRift.end` (hoy el final es solo el comando).
 
 **1.3.92**: §3.17 (el jefe del Void por toda la isla sin salirse, el agujero de gusano limpio con la antesala del Void,
 el agujero negro lento y sin dientes, la espada y el diálogo nuevo de Caelthar). Queda que el dueño lo vea; si la espada

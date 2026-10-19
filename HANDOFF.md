@@ -59,7 +59,28 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, TF Client 1.3.92) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.93) — lee esto primero
+
+**1.3.93**: la **grieta del cielo** (`tf-client/JEFES.md` §3.18), lo que pidió el dueño para que el Void sea «asombroso»:
+- Al poner a Caelthar la primera vez (`/tf void npc`, en un mundo Overworld) empieza el **evento** para todo el
+  servidor: chat de Caelthar «Algo siniestro se avecina al Overworld...», retumbar y temblor leve (6 s), el cielo se
+  rompe (grietas, fogonazo, trueno) y se abre al Void; luego Caelthar dice en el chat que lo busquen en el spawn.
+- Sale en **todos los mundos de tipo Overworld** (el spawn es un mundo aparte, de un plugin: también): sobre Caelthar
+  en el suyo y sobre el punto de aparición en los demás. Al mirarla, una distorsión leve (`RiftWarp`).
+- **Se sella** al caer un jefe del Void y **se vuelve a abrir** (sonido del Wither) cuando la grieta del Void tiene
+  otro jefe listo (30 s como mínimo). **El final** lo decide el staff: `/tf void cielo final` (también `evento`,
+  `abrir`, `cerrar`, `quitar`, `estado`).
+- Diálogo de Caelthar: qué es la grieta del cielo y cómo se cierra (romper el cristal de la del Void; las criaturas
+  que su orden encerró allí; derrotarlas a todas).
+- Código: `vacio/SkyRift` (servidor, guarda el estado en `data/tfclient_cielo.dat`), `vacio/SkyRiftClient` + shader
+  `sky_rift` (cliente), `VoidNet.Sky`. Vista previa: `tools/void/grieta_cielo_preview.py`.
+- Arreglos de la 1.3.92 que vio el dueño: **un agujero negro falso** (un círculo negro sin disco) en el lado opuesto del
+  cielo del Void (el borde suave de la sombra contaba también los rayos que van al revés); **la espada de Caelthar**
+  flotaba al lado del brazo → clavada de punta delante de él con la mano en el puño (`tools/void/caballero_espada.py`
+  la dibuja y la mide); el **rescate al caer al vacío** no funcionaba con un cliente lento (teletransporte en cada tick).
+- El evento lo lanza el servidor: el dueño necesita el jar nuevo **en el servidor y en los clientes**.
+
+### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.92)
 
 **1.3.92**: lo que pidió el dueño tras la 1.3.91 (`tf-client/JEFES.md` §3.17):
 - **El jefe del Void persigue por toda la isla** (ve a todo jugador de la dimensión) pero nunca a menos de 6 bloques

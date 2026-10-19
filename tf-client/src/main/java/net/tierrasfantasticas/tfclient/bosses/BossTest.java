@@ -852,13 +852,76 @@ public final class BossTest {
                         + "; columna de piedra de la plaza: "
                         + (vl.getBlockState(new net.minecraft.core.BlockPos(6, 75, 6)).isAir() ? "quitada" : "SIGUE"));
                 updateWait = 0;
-                if (knight != null) knight.discard();
+                // (1.3.93) la grieta del cielo: desde 120 bloques al sur de Caelthar, mirándola
+                net.tierrasfantasticas.tfclient.vacio.SkyRift.testReset();
+                fly(player, true);
+                skyWatch(level, player, 0, 120);
+            }
+            case 2470 -> {
+                net.tierrasfantasticas.tfclient.vacio.SkyRift.start(level, knight.position());
+                r.event("la grieta del cielo: empieza el evento sobre Caelthar");
+            }
+            case 2560 -> r.event("grieta del cielo, en el preludio: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
+            case 2720 -> r.event("grieta del cielo, rota: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
+            // (el diálogo antes de la vista de lejos y 3 s después de llegar)
+            case 2745 -> {
+                // (si el diálogo del santuario no llegó a abrirse, su «pulsa 1» seguía pendiente y aquí elegía «Llévame
+                // al Void»)
+                dialogPress = -1;
+                fly(player, false);
+                player.teleportTo(level, knight.getX(), knight.getY(), knight.getZ() + 4, 180F, -4F);
+            }
+            case 2805 -> {
+                // (mientras se estaba en el Void su chunk se descargó: al volver es otra entidad, con otro número, y
+                // hablar con la de antes no abría nada en el cliente)
+                var ks = level.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(knight.blockPosition()).inflate(8), k -> !k.home());
+                if (!ks.isEmpty()) knight = ks.get(0);
+                r.event("Caelthar para el diálogo de la grieta del cielo: " + (ks.isEmpty() ? "NO ESTÁ" : "está"));
+                net.tierrasfantasticas.tfclient.vacio.VoidTravel.testTalk(player, knight);
+            }
+            case 2925 -> shot(r, "dialogo_cielo");
+            case 2935 -> dialogPress = 1;
+            case 3045 -> shot(r, "dialogo_grieta");
+            case 3055 -> dialogPress = 1;
+            case 3175 -> shot(r, "dialogo_sellar");
+            case 3185 -> dialogPress = 2;
+            case 3190 -> {
+                fly(player, true);
+                skyWatch(level, player, 420, 420);
+            }
+            case 3270 -> shot(r, "cielo_lejos");
+            case 3280 -> skyWatch(level, player, 0, 120);
+            // cae un jefe del Void: se sella; y se vuelve a abrir sola cuando la grieta del Void tiene otro jefe listo (30 s)
+            case 3300 -> net.tierrasfantasticas.tfclient.vacio.SkyRift.voidBossKilled();
+            case 3420 -> r.event("grieta del cielo, al caer un jefe del Void: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
+            case 3990 -> r.event("grieta del cielo, con la grieta del Void otra vez lista: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
+            case 4100 -> net.tierrasfantasticas.tfclient.vacio.SkyRift.testEnd();
+            case 4260 -> {
+                r.event("grieta del cielo, el final: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sky());
+                net.tierrasfantasticas.tfclient.vacio.SkyRift.testReset();
+                fly(player, false);
+                // (al alejarse 600 bloques su chunk se descargó: el que hay ahora es otra entidad)
+                for (net.tierrasfantasticas.tfclient.vacio.KnightEntity k : level.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
+                        new AABB(knight.blockPosition()).inflate(16))) {
+                    k.discard();
+                }
+                knight.discard();
                 knight = null;
                 next(level);
             }
             default -> {
             }
         }
+    }
+
+    /** (1.3.93) Pone al jugador (volando) a esos bloques al este y al sur de Caelthar, mirando a la grieta del cielo. */
+    private static void skyWatch(ServerLevel level, ServerPlayer player, double east, double south) {
+        double x = knight.getX() + east, y = knight.getY() + 3, z = knight.getZ() + south;
+        double dx = knight.getX() - x, dy = knight.getY() + 190 - y, dz = knight.getZ() - z;
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.hypot(dx, dz)));
+        player.teleportTo(level, x, y, z, yaw, pitch);
     }
 
     /** Que el jugador de la prueba vuele (o deje de volar), como en creativo. */

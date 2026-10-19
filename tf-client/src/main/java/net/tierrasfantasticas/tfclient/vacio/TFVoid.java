@@ -75,6 +75,8 @@ public final class TFVoid {
 
     /** Avisos de «la isla está protegida» (uno cada 3 s por jugador). */
     private static final Map<UUID, Long> WARNED = new HashMap<>();
+    /** Cuándo se rescató a cada jugador del vacío (para no repetirlo en cada tick: ver onPlayerTick). */
+    private static final Map<UUID, Long> RESCUED = new HashMap<>();
     private static int tick;
 
     private TFVoid() {}
@@ -96,7 +98,7 @@ public final class TFVoid {
 
     // ------------------------------------------------------------------------------------------- comandos
 
-    /** /tf void ... (staff): poner y quitar caballeros, ir y volver. */
+    /** /tf void ... (staff): poner y quitar caballeros, ir y volver, la grieta del cielo. */
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("void").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("npc").executes(ctx -> {
@@ -111,8 +113,15 @@ public final class TFVoid {
                     p.serverLevel().addFreshEntity(k);
                     ctx.getSource().sendSuccess(() -> Component.literal(KnightEntity.NAME + ", el " + KnightEntity.TITLE + ", puesto. Los jugadores le hablan con clic derecho.")
                             .withStyle(ChatFormatting.GOLD), true);
+                    // La primera vez que se le pone en un mundo Overworld: el evento de la grieta del cielo (1.3.93)
+                    if (SkyRift.state() == SkyRift.OFF && !SkyRift.running() && SkyRift.overworldLike(p.serverLevel())) {
+                        SkyRift.start(p.serverLevel(), k.position());
+                        ctx.getSource().sendSuccess(() -> Component.literal("Empieza el evento de la grieta del cielo en todos los mundos Overworld "
+                                + "(/tf void cielo para controlarla).").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+                    }
                     return 1;
                 }))
+                .then(SkyRift.command())
                 .then(Commands.literal("quitar").executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     int n = 0;
@@ -189,8 +198,15 @@ public final class TFVoid {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer p) || !isVoid(p.level())) return;
-        // Quien cae al vacío vuelve al santuario (la isla flota sobre la nada: sin esto, se perdían las cosas)
+        // Quien cae al vacío vuelve al santuario (la isla flota sobre la nada: sin esto, se perdían las cosas).
+        // Una vez cada 2 s como mucho (1.3.93): Minecraft deja al jugador donde estaba en el servidor hasta que su
+        // cliente confirma el teletransporte, y con uno nuevo en cada tick un cliente lento (<20 fps: en la prueba con
+        // shaders, <1) siempre confirmaba uno ya viejo y no se le rescataba nunca. Si no llega, lo reenvía Minecraft.
         if (p.getY() < 2 && !p.isSpectator() && VoidTravel.idle(p)) {
+            long now = p.level().getGameTime();
+            Long last = RESCUED.get(p.getUUID());
+            if (last != null && now - last >= 0 && now - last < 40) return;
+            RESCUED.put(p.getUUID(), now);
             Vec3 a = VoidIsland.arrivePos();
             p.teleportTo(p.serverLevel(), a.x, a.y + 0.5, a.z, VoidIsland.arriveYaw(), 0F);
             p.fallDistance = 0;
@@ -211,6 +227,7 @@ public final class TFVoid {
         net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
         VoidTravel.tick(server);
+        SkyRift.tick(server);
         ServerLevel level = server.getLevel(VOID);
         if (level != null) IslandUpdate.tick(level);
         if (++tick % 100 != 0) return;

@@ -319,8 +319,11 @@ void main() {
     vec3 hc = cross(p, v);
     float h2 = dot(hc, hc);
 
-    // El borde de la sombra según el parámetro de impacto (ver abajo): 0 dentro, 1 fuera, ~1,5 píxeles de degradado
-    float b = sqrt(h2);
+    // El borde de la sombra según el parámetro de impacto (ver abajo): 0 dentro, 1 fuera, ~1,5 píxeles de degradado.
+    // Solo para los rayos que van hacia el agujero (dot(p, v) < 0): b = |p × v| también es ~0 para los que van justo al
+    // revés, y en la 1.3.92 salía en el lado opuesto del cielo otro agujero, un círculo negro sin disco (el dueño: «hay
+    // 2 agujeros»). Al cambiar de lado b vale D (8) ≫ BC: sin salto.
+    float b = dot(p, v) < 0.0 ? sqrt(h2) : 1e3;
     float bw = max(PIX * D * 0.8, 0.002);
     float edgeK = smoothstep(BC - bw, BC + bw, b);
     vec3 col = vec3(0.0);

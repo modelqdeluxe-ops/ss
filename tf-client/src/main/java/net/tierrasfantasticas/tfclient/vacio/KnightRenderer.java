@@ -67,6 +67,9 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
             float headYaw = Mth.wrapDegrees(Mth.rotLerp(partial, e.yHeadRotO, e.yHeadRot) - body);
             float headPitch = Mth.lerp(partial, e.xRotO, e.getXRot());
             e.layers.pose(m, e.clientAge + partial, Mth.clamp(headYaw, -60F, 60F), headPitch, mats);
+            // (1.3.93) el brazo derecho, adelantado y algo cerrado: la mano sobre el puño de la espada clavada delante
+            int arm = m.bone("right_arm");
+            if (arm >= 0) mats[arm].rotateX((float) Math.toRadians(ARM_PITCH)).rotateZ((float) Math.toRadians(ARM_ROLL));
             pose.pushPose();
             // Flota un poco (las alas)
             pose.translate(0, 0.06 * Mth.sin((e.clientAge + partial) * 0.07F), 0);
@@ -79,10 +82,20 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         label(e, pose, buffers);
     }
 
+    /** (1.3.93) La pose de la espada (medida con tools/void/caballero_espada.py: puño en la mano, punta en el suelo). */
+    static final float ARM_PITCH = 60F, ARM_ROLL = -10F, LEAN = 6F, SWORD_SCALE = 0.64F;
+    /** El centro de la mano (desde el pivote del brazo) y el puño de la espada (en su modelo), en píxeles. */
+    private static final float HAND_X = 1F, HAND_Y = -9.6F, HAND_Z = 0F, GRIP_X = 8F, GRIP_Y = 3.8F, GRIP_Z = 8F;
+    /** Lo que traslada su «tercera persona» (models/item/fairy_greatsword.json, display.thirdperson_righthand), en píxeles. */
+    private static final float DISP_Y = 1.75F, DISP_Z = 1F;
+
     /**
-     * (1.3.92; el dueño: «dale una espada angelical de nuestro set, animada: una blanca con dorado de las de ángel») La
-     * espada del set Hada ({@link #SWORD}: blanca y dorada, con alas y animada) en la mano derecha: desde el hueso del
-     * brazo (que va con la animación), pasado a los ejes de los modelos de Minecraft (y hacia abajo), erguida y de cara.
+     * La espada del set Hada ({@link #SWORD}: blanca y dorada, con alas y animada; 1.3.92, el dueño: «dale una espada
+     * angelical de nuestro set»). 1.3.93, el dueño con captura: «la espada mal puesta»: en la 1.3.92 iba erguida, por
+     * fuera del brazo y con el puño a 4,8 píxeles de la mano (flotaba a su lado). Ahora, como un guardián: clavada de
+     * punta delante de él, algo a su derecha, y la mano sobre el puño (el puño de la espada, entre la guarda y el pomo,
+     * en el centro de la mano; el brazo se adelanta y se cierra un poco en render). La hoja va en los ejes del modelo
+     * (no en los del brazo): se deshace el giro que se le añadió al brazo.
      */
     private void sword(KnightEntity e, VfxModel m, Matrix4f[] mats, PoseStack pose, MultiBufferSource buffers) {
         int arm = m.bone("right_arm");
@@ -94,23 +107,23 @@ public class KnightRenderer extends EntityRenderer<KnightEntity> {
         }
         if (swordStack.isEmpty()) return;
         pose.pushPose();
-        // el hueso va en píxeles; su brazo (de armadura) es un píxel más ancho hacia fuera que el de Steve
+        // en píxeles del modelo, desde el hueso del brazo (que va con la animación) hasta el centro de la mano
         pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
         pose.mulPoseMatrix(mats[arm]);
-        pose.translate(1F, 0F, 0F);
+        // (mulPoseMatrix no gira las normales: sin esto la luz de la espada salía con el giro del brazo de menos, y con
+        // el brazo adelantado 60° se veía gris oscura en vez de blanca y dorada: prueba en el juego, 1.3.93)
+        pose.last().normal().mul(new Matrix4f(mats[arm]).normal(new org.joml.Matrix3f()));
+        pose.translate(HAND_X, HAND_Y, HAND_Z);
+        // sin el giro añadido al brazo; la hoja hacia abajo con su cara (y sus alas) de frente, la punta algo adelantada
+        pose.mulPose(Axis.ZP.rotationDegrees(-ARM_ROLL));
+        pose.mulPose(Axis.XP.rotationDegrees(-ARM_PITCH));
+        pose.mulPose(Axis.XP.rotationDegrees(LEAN));
+        pose.mulPose(Axis.ZP.rotationDegrees(180F));
+        pose.mulPose(Axis.YP.rotationDegrees(90F));
+        pose.scale(SWORD_SCALE, SWORD_SCALE, SWORD_SCALE);
+        // el puño de la espada, en la mano (ItemRenderer le suma su «tercera persona» y le resta medio bloque)
+        pose.translate(-GRIP_X + 8F, -(GRIP_Y - 8F + DISP_Y), -(GRIP_Z - 8F + DISP_Z));
         pose.scale(16F, 16F, 16F);
-        // a los ejes de los modelos de Minecraft (y hacia abajo); la mano, un poco por fuera y por delante del brazo
-        pose.scale(-1F, -1F, 1F);
-        pose.translate(-2.5F / 16F, 0.625F, -0.25F);
-        // Erguida, como un caballero en guardia: la hoja hacia arriba (con lo que hace ItemInHandLayer apuntaba al frente
-        // y hacia abajo, y se veía de canto, como un palo: prueba en el juego, 1.3.92), algo inclinada hacia fuera y con
-        // la cara de la hoja (y sus alas) hacia delante; a un 80 %
-        pose.mulPose(Axis.ZP.rotationDegrees(-12F));
-        pose.mulPose(Axis.XP.rotationDegrees(180F));
-        pose.mulPose(Axis.YP.rotationDegrees(270F));
-        pose.scale(0.8F, 0.8F, 0.8F);
-        // (el puño, a 3 píxeles de abajo del modelo, en la mano: contando el desplazamiento de su «tercera persona»)
-        pose.translate(0F, 3.25F / 16F, -1F / 16F);
         Minecraft.getInstance().getItemRenderer().renderStatic(swordStack, net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                 LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, pose, buffers, e.level(), e.getId());
         pose.popPose();
