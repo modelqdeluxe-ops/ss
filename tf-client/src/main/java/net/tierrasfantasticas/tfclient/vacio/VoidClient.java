@@ -14,7 +14,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
-/** Lo del Void en el cliente: el dibujo del caballero, los efectos de la dimensión, el shader del cielo y el viaje. */
+/**
+ * Lo del Void en el cliente: el dibujo del caballero, los efectos de la dimensión, los shaders (el cielo, el viaje, la grieta
+ * del cielo y el santuario: {@link SanctuaryFx}) y el viaje.
+ */
 public final class VoidClient {
     private VoidClient() {}
 
@@ -61,8 +64,12 @@ public final class VoidClient {
                         DefaultVertexFormat.POSITION), s -> TravelFx.shader = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "sky_rift"),
                         DefaultVertexFormat.POSITION_TEX), s -> SkyRiftClient.shader = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "velo_alba"),
+                        DefaultVertexFormat.POSITION), s -> SanctuaryFx.veil = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(TFClient.MOD_ID, "corazon_alba"),
+                        DefaultVertexFormat.POSITION_TEX), s -> SanctuaryFx.heart = s);
             } catch (IOException e) {
-                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo, del viaje o de la grieta del cielo", e);
+                TFClient.LOGGER.error("TF Void: no se pudo cargar el shader del cielo, del viaje, de la grieta del cielo o del santuario", e);
             }
         }
     }

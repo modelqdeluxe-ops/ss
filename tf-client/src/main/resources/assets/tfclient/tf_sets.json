@@ -4991,6 +4991,91 @@
     }
    ],
    "cosmetic": true
+  },
+  {
+   "id": "void",
+   "name": "Coloso del Vacío",
+   "color": "#8b5cf6",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "void_longsword",
+     "type": "sword"
+    },
+    {
+     "id": "void_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "void_broadsword",
+     "type": "sword"
+    },
+    {
+     "id": "void_twinblade",
+     "type": "sword"
+    },
+    {
+     "id": "void_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "void_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "void_spear",
+     "type": "sword"
+    },
+    {
+     "id": "void_trident",
+     "type": "trident"
+    },
+    {
+     "id": "void_axe",
+     "type": "axe"
+    },
+    {
+     "id": "void_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "void_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "void_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "void_shield",
+     "type": "shield"
+    },
+    {
+     "id": "void_helmet",
+     "type": "head"
+    },
+    {
+     "id": "void_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/void/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "void_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "void_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "void_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
   }
  ]
 }

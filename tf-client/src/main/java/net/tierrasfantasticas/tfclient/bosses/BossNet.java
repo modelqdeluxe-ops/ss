@@ -32,7 +32,10 @@ public final class BossNet {
 
     /** Lo que se puede pulsar en la ventana (VOID_*: la pestaña de la grieta del Void; arg = tipo o tipo×1024+fila). */
     public static final int SAVE = 0, PLACE = 1, TEST = 2, RIFT_TP = 3, RIFT_SAVE = 4, RIFT_REMOVE = 5, RIFT_RESET = 6,
-            REFRESH = 7, CLEAR_TESTS = 8, VOID_ACTIVE = 9, VOID_ADD = 10, VOID_REMOVE = 11, VOID_TP = 12, VOID_RESET = 13;
+            REFRESH = 7, CLEAR_TESTS = 8, VOID_ACTIVE = 9, VOID_ADD = 10, VOID_REMOVE = 11, VOID_TP = 12, VOID_RESET = 13,
+    // (1.3.96) la secuencia de la grieta del Void: subir, bajar, editar, los mismos atributos para todos, en orden o al
+    // azar (arg 1/0), al acabar (arg = Rifts.END_*) y el siguiente
+            VOID_UP = 14, VOID_DOWN = 15, VOID_EDIT = 16, VOID_ALL = 17, VOID_MODE = 18, VOID_END = 19, VOID_NEXT = 20;
 
     private BossNet() {}
 
@@ -55,8 +58,9 @@ public final class BossNet {
      * La grieta del Void tal como la ve la ventana: si existe (el mundo tiene el Void), cuál está en el centro, sus dos
      * listas y cómo está (jefe que espera, estado, lo que falta).
      */
-    public record VoidInfo(boolean exists, int active, List<List<Rifts.Entry>> pools, String boss, Difficulty diff, int state, int left) {
-        static final VoidInfo NONE = new VoidInfo(false, 0, List.of(List.of(), List.of()), "", Difficulty.NORMAL, 0, 0);
+    public record VoidInfo(boolean exists, int active, List<List<Rifts.Entry>> pools, String boss, Difficulty diff, int state, int left,
+                           boolean sequence, int endMode, int current, int next) {
+        static final VoidInfo NONE = new VoidInfo(false, 0, List.of(List.of(), List.of()), "", Difficulty.NORMAL, 0, 0, true, 0, -1, 0);
 
         void write(FriendlyByteBuf buf) {
             buf.writeBoolean(exists);
@@ -73,6 +77,10 @@ public final class BossNet {
             diff.write(buf);
             buf.writeVarInt(state);
             buf.writeVarInt(left);
+            buf.writeBoolean(sequence);
+            buf.writeVarInt(endMode);
+            buf.writeVarInt(current + 1);
+            buf.writeVarInt(next);
         }
 
         static VoidInfo read(FriendlyByteBuf buf) {
@@ -85,7 +93,8 @@ public final class BossNet {
                 for (int i = 0; i < n; i++) pool.add(new Rifts.Entry(buf.readUtf(64), Difficulty.read(buf)));
                 pools.add(pool);
             }
-            return new VoidInfo(exists, active, pools, buf.readUtf(64), Difficulty.read(buf), buf.readVarInt(), buf.readVarInt());
+            return new VoidInfo(exists, active, pools, buf.readUtf(64), Difficulty.read(buf), buf.readVarInt(), buf.readVarInt(),
+                    buf.readBoolean(), buf.readVarInt(), buf.readVarInt() - 1, buf.readVarInt());
         }
     }
 
@@ -213,8 +222,9 @@ public final class BossNet {
             ServerLevel level = p.getServer().getLevel(vr.dim);
             long now = level == null ? 0 : level.getGameTime();
             Rifts.VoidConfig c = Rifts.voidConfig();
+            int k = c.active == RiftEntity.MOTHER ? 1 : 0;
             v = new VoidInfo(true, c.active, List.of(List.copyOf(c.pools.get(0)), List.copyOf(c.pools.get(1))), vr.boss, vr.diff, vr.state,
-                    vr.left(now));
+                    vr.left(now), c.sequence, c.endMode, c.current[k], c.next[k]);
         }
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new Open(ids, chosen, rifts, v, notice));
     }
@@ -279,6 +289,25 @@ public final class BossNet {
             }
             case VOID_RESET -> {
                 return Rifts.reset(Rifts.VOID_ID) ? "Grieta del Void lista otra vez" : "Este mundo no tiene el Void";
+            }
+            case VOID_UP, VOID_DOWN -> {
+                return Rifts.voidMove(m.arg / 1024, m.arg % 1024, m.kind == VOID_UP ? -1 : 1);
+            }
+            case VOID_EDIT -> {
+                if (cls == null) return "";
+                return Rifts.voidEdit(m.arg / 1024, m.arg % 1024, m.boss, d);
+            }
+            case VOID_ALL -> {
+                return Rifts.voidAll(m.arg, d);
+            }
+            case VOID_MODE -> {
+                return Rifts.voidMode(m.arg != 0);
+            }
+            case VOID_END -> {
+                return Rifts.voidEnd(m.arg);
+            }
+            case VOID_NEXT -> {
+                return Rifts.voidNext(m.arg / 1024, m.arg % 1024);
             }
             default -> {
                 return "";

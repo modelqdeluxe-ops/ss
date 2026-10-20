@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "tfclient:item/jefes/criaturas_vacio/ender_carapace"
+ }
+}

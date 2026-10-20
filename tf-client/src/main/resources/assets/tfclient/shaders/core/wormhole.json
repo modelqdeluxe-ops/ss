@@ -10,7 +10,11 @@
         "Position"
     ],
     "samplers": [
-        { "name": "Sampler1" }
+        { "name": "Sampler1" },
+        { "name": "Sampler2" },
+        { "name": "Sampler3" },
+        { "name": "Sampler4" },
+        { "name": "Sampler5" }
     ],
     "uniforms": [
         { "name": "WTime", "type": "float", "count": 1, "values": [ 0.0 ] },
@@ -19,6 +23,7 @@
         { "name": "Open", "type": "float", "count": 1, "values": [ 1.0 ] },
         { "name": "Exit", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Back", "type": "float", "count": 1, "values": [ 0.0 ] },
-        { "name": "ScreenSize", "type": "float", "count": 2, "values": [ 1920.0, 1080.0 ] }
+        { "name": "ScreenSize", "type": "float", "count": 2, "values": [ 1920.0, 1080.0 ] },
+        { "name": "HasOverworld", "type": "float", "count": 1, "values": [ 0.0 ] }
     ]
 }

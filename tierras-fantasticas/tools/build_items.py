@@ -141,6 +141,17 @@ SETS = {
         ('candy_pumpkin_basket', 'Cesta de Dulces'), ('candy_pumpkin_balloon', 'Globo de Caramelo')], 'item/'),
     'springcos': ('Spring/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', 'plny_springset', [
         ('wings', 'Alas de Primavera'), ('helmet', 'Corona de Primavera')]),
+    # (TF Client 1.3.96) Recompensa, no se vende: el set del Vacío (Void Colossus), la armadura que el Void no corroe; se
+    # gana derrotando jefes y se coge en el santuario del Void. Sus modelos van en void/void_colossus_<objeto> y su
+    # armadura (Nexo con «trims»: peto, grebas y botas; el yelmo es el modelo 3D) en void/armor (iconos) y void (capas):
+    # el quinto campo dice dónde buscar cada cosa.
+    'void': ('VoidSet/Void Nexo/pack/assets', 'minecraft', [
+        ('longsword', 'Espada Larga del Vacío'), ('greatsword', 'Gran Espada del Vacío'), ('broadsword', 'Mandoble del Vacío'),
+        ('twinblade', 'Doble Hoja del Vacío'), ('dagger', 'Daga del Vacío'), ('scythe', 'Guadaña del Vacío'),
+        ('spear', 'Lanza del Vacío'), ('trident', 'Tridente del Vacío'), ('axe', 'Hacha del Vacío'),
+        ('pickaxe', 'Pico del Vacío'), ('shovel', 'Pala del Vacío'), ('hoe', 'Azada del Vacío'), ('shield', 'Escudo del Vacío'),
+        ('helmet', 'Yelmo del Coloso del Vacío'), ('wings', 'Alas del Coloso del Vacío')],
+        'void/void_colossus_', {'armadura': 'void/armor', 'capas': 'void'}),
 }
 
 # Sets de cosméticos: solo las piezas de la lista (sin armadura aunque el pack la traiga)
@@ -469,6 +480,9 @@ def build_armor(packs, set_id, out_models, out_thumbs):
     rel_root, _ns, _items, *rest = SETS[set_id]
     root = os.path.join(packs, rel_root)
     within = rest[0].strip('/') if rest else ''
+    # (quinto campo: dónde están los iconos de la armadura si no es la carpeta de los modelos; el set del Vacío)
+    if len(rest) > 1 and isinstance(rest[1], dict) and 'armadura' in rest[1]:
+        within = rest[1]['armadura'].strip('/')
     listing = []
     for piece, label in ARMOR:
         icon = find_armor_icon(root, piece, within)

@@ -53,7 +53,7 @@ public class KnightScreen extends Screen {
     private static final int GOLD = 0xFFE9C46E, GOLD_HI = 0xFFFFE7A0, GOLD_DARK = 0xFF3A2306, TEXT = 0xFFF1ECFF, SUB = 0xFFB9A6E8,
             HINT = 0xFF8C7BB0;
 
-    private enum Page { GREET, LORE_VOID, LORE_RIFTS, SKY, SEAL, LORE_KNIGHT, WHERE, LEAVING }
+    private enum Page { GREET, LORE_VOID, LORE_RIFTS, SKY, SEAL, LORE_KNIGHT, WHERE, VEIL, DRAIN, SHARDS, ARMOR, ARMOR_GIVEN, LEAVING }
 
     private final VoidNet.Talk talk;
     private final int entityId;
@@ -102,18 +102,50 @@ public class KnightScreen extends Screen {
         options.clear();
         String n = talk.name();
         if (talk.home()) {
+            // (1.3.96: el Velo del Alba, el Páramo, la corrosión y los Pozos de Luz, la Orden del Alba y la armadura del Vacío)
+            int kills = talk.kills(), need = VoidArmor.NEED;
+            boolean earned = kills >= need;
             switch (p) {
                 case GREET -> text = talk.first()
-                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void. Allí, en el centro de la isla, late su grieta... y sobre ella, el agujero negro que lo devora todo."
-                        : "Has vuelto al santuario, " + n + ". El Void te observa. ¿Regresas a casa, o te quedas un poco más?";
-                case WHERE -> text = "Esta isla es lo último que queda de una tierra que el Void se tragó. En su centro late la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Si caes al vacío, mi luz te traerá de vuelta a este santuario."
-                        + (skyWound() ? " Y recuerda: es esa grieta la que desgarró el cielo de Tierras Fantásticas. Derrota lo que salga de ella y la del cielo se sellará." : "");
+                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void. Estás dentro del Velo del Alba, y aquí nada del Vacío puede tocarte. Al sur, tras el Puente de Luz, empieza el Páramo... y más allá, la isla de la grieta."
+                        : "Has vuelto al santuario, " + n + ". El Velo aún resiste. ¿Regresas a casa, o te quedas un poco más?";
+                case WHERE -> text = "Esta es la isla del Alba, lo último que queda de la tierra de mi orden. Al sur está el Páramo del Alba Rota, donde rondan criaturas que el Vacío vació por dentro; más allá, la isla de la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Junto a su plaza, el Portal del Alba te traerá de vuelta aquí."
+                        + (skyWound() ? " Es esa grieta la que desgarró el cielo de Tierras Fantásticas: derrota lo que salga de ella y la del cielo se sellará." : "");
+                case VEIL -> text = "Es el Velo del Alba. Cuando el Void se tragó nuestra tierra, el Alba, la luz que guardaba mi orden, se quebró para cerrar sus fauces. Con lo último que quedó levantamos este velo. Arriba late su Corazón: mientras brille, nada del Vacío entra aquí.";
+                case DRAIN -> text = "Fuera, el Vacío te corroe: lo notarás en los ojos, sombras que se te meten por los bordes. Cuando te llene, te herirá poco a poco. Pero donde cayeron las esquirlas de mis hermanos brota la luz: son los Pozos de Luz. Quédate en su círculo y la corrosión se irá.";
+                case SHARDS -> text = "Éramos doce, la Orden del Alba. Once se hicieron luz para sellar la grieta, y donde cayeron sus esquirlas la luz aún brota. Verás sus columnas desde lejos, por todo el Páramo. Si te detienes en uno, quizá oigas el eco de quien fue.";
+                case ARMOR -> text = "La armadura del Coloso del Vacío. El Coloso fue la primera criatura que cayó cuando el Vacío abrió sus fauces, y de su piel la forjamos: el Vacío no se come lo que es suyo. Con el yelmo, el peto, las grebas y las botas caminarás por él como uno de los suyos. "
+                        + (earned ? "Has derrotado a " + kills + " criaturas de las grietas: es tuya. Está en el altar, detrás de mí."
+                        : "La guardo en el altar para quien haya derrotado a " + need + " criaturas de las grietas. Llevas " + kills + ".");
+                case ARMOR_GIVEN -> text = "Que te guarde, " + n + ". Ya no eres presa del Vacío.";
                 case LEAVING -> text = "Que la luz te guíe de regreso, " + n + ". Aquí estaré cuando el Void vuelva a llamarte.";
                 default -> text = "";
             }
             if (p == Page.LEAVING) return;
             options.add(new Option(backLabel(), () -> leave(VoidNet.BACK)));
-            if (p != Page.WHERE) options.add(new Option("¿Dónde estoy?", () -> go(Page.WHERE)));
+            switch (p) {
+                case GREET -> {
+                    options.add(new Option("¿Qué es esta burbuja?", () -> go(Page.VEIL)));
+                    options.add(new Option("¿Hay algo que me proteja del Vacío?", () -> go(Page.ARMOR)));
+                }
+                case VEIL -> options.add(new Option("¿Y si salgo del Velo?", () -> go(Page.DRAIN)));
+                case DRAIN -> options.add(new Option("¿Qué son los Pozos de Luz?", () -> go(Page.SHARDS)));
+                case SHARDS -> options.add(new Option("¿Dónde estoy?", () -> go(Page.WHERE)));
+                case WHERE -> options.add(new Option("¿Hay algo que me proteja del Vacío?", () -> go(Page.ARMOR)));
+                case ARMOR -> {
+                    if (earned) {
+                        options.add(new Option("Dame la armadura del Vacío", () -> {
+                            VoidNet.CHANNEL.sendToServer(new VoidNet.Choose(entityId, VoidNet.ARMOR));
+                            go(Page.ARMOR_GIVEN);
+                        }));
+                    } else {
+                        options.add(new Option("¿Qué es esta burbuja?", () -> go(Page.VEIL)));
+                    }
+                }
+                case ARMOR_GIVEN -> options.add(new Option("¿Dónde estoy?", () -> go(Page.WHERE)));
+                default -> {
+                }
+            }
             options.add(new Option("Me quedo un rato", this::onClose));
             return;
         }
@@ -126,8 +158,8 @@ public class KnightScreen extends Screen {
             case SKY -> text = "Esa grieta nació en el Void. En el centro de su isla late otra, tan profunda que rompió el espacio-tiempo... y su herida se abrió aquí, en el cielo de nuestro Overworld. Para cerrar la del cielo, hay que cerrar la del Void.";
             case SEAL -> text = "Se cierra rompiendo su cristal. Pero cuidado: al romperlo puede traer consigo a las criaturas y entidades malvadas que mi orden encerró en el Void hace eras. Hay que derrotarlas a todas. Cada vez que una cae, la grieta del cielo se sella... hasta que despierta la siguiente.";
             case LORE_KNIGHT -> text = wound
-                    ? "Mi orden encerró a esas criaturas en el Void y juró vigilar el umbral. Mi luz puede abrirte camino hasta su santuario, y mi hermano de armas te traerá de vuelta cuando se lo pidas. ¿Te atreves?"
-                    : "Mi orden juró vigilar el umbral. Mi luz puede abrirte camino hasta el santuario del Void, y mi hermano de armas te traerá de vuelta cuando se lo pidas. ¿Te atreves?";
+                    ? "Soy lo que queda de la Orden del Alba. Encerramos a esas criaturas en el Void y juramos vigilar el umbral; mis once hermanos se hicieron luz para sellarlo. La mía puede abrirte camino hasta su santuario, y allí te esperaré para traerte de vuelta. ¿Te atreves?"
+                    : "Soy lo que queda de la Orden del Alba. Juramos vigilar el umbral, y mis once hermanos se hicieron luz para sellarlo. La mía puede abrirte camino hasta el santuario del Void, y allí te esperaré para traerte de vuelta. ¿Te atreves?";
             case LEAVING -> text = "Cierra los ojos y no temas, " + n + ". ¡Que la luz te lleve!";
             default -> text = "";
         }

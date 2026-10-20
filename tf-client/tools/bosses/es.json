@@ -263,5 +263,40 @@
    "Fuego bacteriano",
    "Grietas del cielo"
   ]
+ },
+ "criaturas_vacio": {
+  "name": "Criaturas del Vacío",
+  "title": "La fauna del Páramo",
+  "color": "#B07CFF",
+  "desc": "Las criaturas del bioma del Void: lo que el hambre del Vacío dejó de los seres del End. Rondan el Páramo entre el santuario y la isla de la grieta.",
+  "attacks": [],
+  "nombres": {
+   "enderling": "Enderling",
+   "enderbruiser": "Enderbruiser",
+   "ender_crawler": "Ender Crawler",
+   "ender_watchman": "Ender Watchman",
+   "end_wraith": "End Wraith",
+   "endermauler": "Endermauler",
+   "empowered_enderling": "Enderling Potenciado",
+   "empowered_enderbruiser": "Enderbruiser Potenciado",
+   "empowered_ender_crawler": "Ender Crawler Potenciado",
+   "empowered_ender_watchman": "Ender Watchman Potenciado",
+   "empowered_end_wraith": "End Wraith Potenciado",
+   "empowered_endermauler": "Endermauler Potenciado"
+  },
+  "drops": {
+   "empowered_heart_of_ender": "Corazón de Ender Potenciado",
+   "empowered_void_claw": "Garra del Vacío Potenciada",
+   "empowered_void_crystal": "Cristal del Vacío Potenciado",
+   "empowered_void_tendril": "Zarcillo del Vacío Potenciado",
+   "end_soul": "Alma del End",
+   "ender_carapace": "Caparazón de Ender",
+   "heart_of_ender": "Corazón de Ender",
+   "phantasmal_eye_of_ender": "Ojo de Ender Fantasmal",
+   "third_eye_of_ender": "Tercer Ojo de Ender",
+   "void_claw": "Garra del Vacío",
+   "void_fabric": "Tela del Vacío",
+   "void_growth": "Brote del Vacío"
+  }
  }
 }

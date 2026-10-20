@@ -219,7 +219,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         });
         SkillDefs.BossInfo bi = cls.bossInfo;
         double hp;
-        if (owner == null && bi != null && def.name.equalsIgnoreCase(bi.mob)) {
+        if (owner == null && bi != null && !bi.fauna && def.name.equalsIgnoreCase(bi.mob)) {
             hp = difficulty.healthFor(bi.health, players);
             healthScale = hp / Math.max(1, bi.packHealth);
             getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(bi.damage * difficulty.damage());
@@ -235,10 +235,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         setHealth((float) hp);
         // El jefe ve a todo el que esté en su arena (con FollowRange 32, a quien le disparaba desde 35 bloques de la
         // grieta no le hacía caso); sus esbirros, lo de su pack
-        double follow = owner == null ? Math.max(def.followRange, Rifts.LEASH + 8) : def.followRange;
+        // (1.3.96) la fauna, lo de su pack, como un esbirro
+        boolean chief = owner == null && !isFauna();
+        double follow = chief ? Math.max(def.followRange, Rifts.LEASH + 8) : def.followRange;
         // (1.3.92) En la isla de The Void persigue por toda la isla: caminos más largos
-        if (owner == null && island()) follow = 128;
-        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(owner == null && island() ? 128 : 96, follow)));
+        if (chief && island()) follow = 128;
+        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.max(16, Math.min(chief && island() ? 128 : 96, follow)));
         applySpeed();
         bodyYaw = getYRot();
         lookYaw = bodyYaw;
@@ -246,7 +248,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         yHeadRot = bodyYaw;
         this.entityData.set(BODY_YAW, bodyYaw);
         if (model != null && model.anims.containsKey("death")) deathLength = Math.max(40, (int) (model.anims.get("death").length * 20) + 15);
-        if (owner == null) {
+        // (1.3.96) la fauna, solo si su pack le pone barra (BossBar: el Endermauler), como en MythicMobs
+        if (owner == null && (!isFauna() || def.barColor != null)) {
             String color = def.barColor != null ? def.barColor : "PURPLE";
             bar = new ServerBossEvent(barTitle(), color(color), BossEvent.BossBarOverlay.NOTCHED_10);
             bar.setDarkenScreen(false);
@@ -268,7 +271,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         loadedKey = key;
         int bar = key.indexOf('|');
         if (bar < 0) return;
-        cls = SkillDefs.bosses().get(key.substring(0, bar));
+        cls = SkillDefs.bossClass(key.substring(0, bar));
         def = cls == null ? null : cls.mob(key.substring(bar + 1));
         model = def == null || def.model == null ? null : SkillMobs.model(def.model);
         refreshDimensions();
@@ -311,7 +314,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     public boolean isMainBoss() {
-        return owner == null && cls != null && cls.bossInfo != null && def != null && (successor || def.name.equalsIgnoreCase(cls.bossInfo.mob));
+        // (1.3.96) la fauna (las criaturas del bioma del Void) no tiene jefe principal: todos sus mobs son esbirros
+        return owner == null && cls != null && cls.bossInfo != null && !cls.bossInfo.fauna && def != null
+                && (successor || def.name.equalsIgnoreCase(cls.bossInfo.mob));
+    }
+
+    /** (1.3.96) ¿Es una criatura de un bioma (fauna), no un jefe ni su esbirro? */
+    public boolean isFauna() {
+        return cls != null && cls.bossInfo != null && cls.bossInfo.fauna;
     }
 
     /** ¿Es «mob» el relevo de este jefe (lo saca al morir y sigue la pelea)? */
@@ -992,7 +1002,56 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     protected void dropAllDeathLoot(DamageSource src) {
-        // Como en el pack (PreventOtherDrops): lo que suelta lo dan sus skills (el cofre del Esqueleto) y la grieta
+        // Como en el pack (PreventOtherDrops): lo que suelta lo dan sus skills (el cofre del Esqueleto) y la grieta. Los
+        // jefes no sueltan nada (orden del dueño); la fauna (1.3.96), sus Drops de MythicMobs.
+        if (isFauna() && def != null && level().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBLOOT)) faunaDrops();
+    }
+
+    /**
+     * Los Drops del pack de una criatura del Páramo, como MythicMobs: «objeto cantidad probabilidad» (la cantidad, un
+     * número o «a-b» / «atob»). Los de Minecraft y los de Oraxen del pack («oraxen void_fabric 1 0.4»: build_bosses.py los
+     * convierte en objetos del mod, {@link TFBosses#DROPS}).
+     */
+    private void faunaDrops() {
+        for (String line : def.drops) {
+            String[] p = line.trim().split("\\s+");
+            if (p.length == 0 || p[0].isEmpty()) continue;
+            net.minecraft.world.item.Item item;
+            if (p[0].equalsIgnoreCase("oraxen")) {
+                if (p.length < 2 || cls == null) continue;
+                var ro = TFBosses.DROPS.get(cls.id + ":" + p[1].toLowerCase(java.util.Locale.ROOT));
+                if (ro == null) continue;
+                item = ro.get();
+                p = java.util.Arrays.copyOfRange(p, 1, p.length);
+            } else {
+                if (p[0].contains(":") && !p[0].startsWith("minecraft:")) continue;
+                net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(p[0].toLowerCase(java.util.Locale.ROOT));
+                if (id == null) continue;
+                item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(id);
+            }
+            if (p.length >= 2 && !p[1].matches("[0-9.]+((-|to)[0-9.]+)?")) continue;
+            if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
+            double chance = 1;
+            if (p.length >= 3) {
+                try {
+                    chance = Double.parseDouble(p[2]);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+            }
+            if (random.nextDouble() >= chance) continue;
+            int n = 1;
+            if (p.length >= 2) {
+                String[] r = p[1].split("-|to");
+                try {
+                    int lo = (int) Double.parseDouble(r[0]), hi = r.length > 1 ? (int) Double.parseDouble(r[1]) : lo;
+                    n = lo + (hi > lo ? random.nextInt(hi - lo + 1) : 0);
+                } catch (NumberFormatException e) {
+                    n = 1;
+                }
+            }
+            if (n > 0) spawnAtLocation(new net.minecraft.world.item.ItemStack(item, n));
+        }
     }
 
     @Override
@@ -1344,8 +1403,13 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
      */
     private void keepOnIsland() {
         if (boundTo != null || isPassenger() || dying() || !island()) return;
-        if (net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(getX(), getZ())) return;
-        Vec3 to = net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestWalkable(getX(), getY(), getZ());
+        // (1.3.96) la fauna, en su Páramo (sin cruzar los puentes ni entrar en el Velo del Alba); los esbirros de un jefe,
+        // como siempre (en la isla de la grieta)
+        boolean fauna = isFauna();
+        if (fauna ? net.tierrasfantasticas.tfclient.vacio.VoidIsland.faunaWalkable(getX(), getZ())
+                : net.tierrasfantasticas.tfclient.vacio.VoidIsland.walkable(getX(), getZ())) return;
+        Vec3 to = fauna ? net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestFaunaWalkable(getX(), getY(), getZ())
+                : net.tierrasfantasticas.tfclient.vacio.VoidIsland.nearestWalkable(getX(), getY(), getZ());
         if (to == null) return;
         double dx = to.x - getX(), dz = to.z - getZ(), len = Math.sqrt(dx * dx + dz * dz);
         if (len < 1e-4) return;
@@ -1379,7 +1443,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
      * suelto, la barra aún puesta.
      */
     private void carryChunks() {
-        if (owner != null || age % 20 != 0 || !island()) return;
+        if (owner != null || isFauna() || age % 20 != 0 || !island()) return;
         ChunkPos cp = chunkPosition();
         ((ServerLevel) level()).getChunkSource().addRegionTicket(CARRY, cp, 3, cp);
     }
@@ -1691,7 +1755,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return;
         }
         Vec3 c = home != null ? home : position();
-        boolean islandNow = owner == null && island();
+        boolean islandNow = owner == null && !isFauna() && island();
         LivingEntity best = null;
         double bestThreat = -1, bestDist = Double.MAX_VALUE;
         double smart = difficulty.smart();
@@ -1757,8 +1821,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         if (age % 10 != 0) return;
         bar.setName(barTitle());
         double r = def.barRange > 0 ? Math.max(48, def.barRange) : 64;
-        // (1.3.92) En la isla de The Void la pelea es toda la isla
-        if (island()) r = Math.max(r, 512);
+        // (1.3.92) En la isla de The Void la pelea es toda la isla (la del jefe; 1.3.96: la fauna, su Range del pack)
+        if (island() && !isFauna()) r = Math.max(r, 512);
         List<ServerPlayer> now = new ArrayList<>();
         if (level() instanceof ServerLevel sl) for (ServerPlayer p : sl.players()) if (p.distanceToSqr(this) <= r * r) now.add(p);
         for (ServerPlayer p : new ArrayList<>(bar.getPlayers())) if (!now.contains(p)) bar.removePlayer(p);
@@ -1789,6 +1853,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private Component barTitle() {
         SkillDefs.BossInfo bi = cls == null ? null : cls.bossInfo;
         String name = bi != null ? bi.name : def != null && def.display != null ? def.display : "Jefe";
+        // (1.3.96) la fauna: el nombre de ese mob (el Endermauler), no el del pack
+        if (bi != null && bi.fauna && def != null) name = bi.faunaMobs.getOrDefault(def.name.toLowerCase(java.util.Locale.ROOT), def.name);
         if (successor && bi != null) name = bi.successors.getOrDefault(def.name.toLowerCase(java.util.Locale.ROOT), name);
         return Component.literal(name).withStyle(s -> s.withColor(TextColor.fromRgb(bi != null ? bi.color : 0xFFFFFF)).withBold(true))
                 .append(Component.literal("  ·  " + difficulty.label()).withStyle(s -> s.withColor(TextColor.fromRgb(difficulty.color())).withBold(false)));
@@ -1830,6 +1896,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             return Component.literal(cls.bossInfo.successors.get(def.name.toLowerCase(java.util.Locale.ROOT)));
         }
         if (cls != null && cls.bossInfo != null && isMainBoss()) return Component.literal(cls.bossInfo.name);
+        if (isFauna() && def != null) {
+            return Component.literal(cls.bossInfo.faunaMobs.getOrDefault(def.name.toLowerCase(java.util.Locale.ROOT), def.name));
+        }
         if (def != null && def.display != null) return Component.literal(def.display);
         return super.getName();
     }

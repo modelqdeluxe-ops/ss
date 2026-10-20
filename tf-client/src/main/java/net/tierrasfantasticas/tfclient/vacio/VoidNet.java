@@ -21,7 +21,7 @@ public final class VoidNet {
     private static boolean registered;
 
     /** Lo que se elige en el diálogo. */
-    public static final int GO = 0, BACK = 1, BYE = 2;
+    public static final int GO = 0, BACK = 1, BYE = 2, ARMOR = 3;
     /**
      * Fases de la animación: sale hacia el Void (agujero de gusano Overworld → Nether → End), llega, se cancela y sale de
      * vuelta (End → Nether → Overworld; 1.3.91). Una llegada sin viaje (el rescate al caer al vacío) es solo un fundido.
@@ -41,6 +41,8 @@ public final class VoidNet {
                 .encoder(Fx::write).decoder(Fx::read).consumerMainThread(Fx::handle).add();
         CHANNEL.messageBuilder(Sky.class, 3, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Sky::write).decoder(Sky::read).consumerMainThread(Sky::handle).add();
+        CHANNEL.messageBuilder(Light.class, 4, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Light::write).decoder(Light::read).consumerMainThread(Light::handle).add();
     }
 
     static void fx(ServerPlayer p, int phase) {
@@ -49,9 +51,10 @@ public final class VoidNet {
 
     /**
      * Abre el diálogo: con quién (entidad), tu nombre, si es la primera vez que hablas con él, si es el del santuario
-     * (devuelve) y, entonces, a dónde volverías.
+     * (devuelve) y, entonces, a dónde volverías; la grieta del cielo y (1.3.96) los jefes que llevas derrotados (para la
+     * armadura del Vacío).
      */
-    public record Talk(int entity, String name, boolean first, boolean home, String back, int sky) {
+    public record Talk(int entity, String name, boolean first, boolean home, String back, int sky, int kills) {
         static void write(Talk m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.entity);
             buf.writeUtf(m.name, 64);
@@ -59,10 +62,12 @@ public final class VoidNet {
             buf.writeBoolean(m.home);
             buf.writeUtf(m.back, 128);
             buf.writeVarInt(m.sky);
+            buf.writeVarInt(m.kills);
         }
 
         static Talk read(FriendlyByteBuf buf) {
-            return new Talk(buf.readVarInt(), buf.readUtf(64), buf.readBoolean(), buf.readBoolean(), buf.readUtf(128), buf.readVarInt());
+            return new Talk(buf.readVarInt(), buf.readUtf(64), buf.readBoolean(), buf.readBoolean(), buf.readUtf(128), buf.readVarInt(),
+                    buf.readVarInt());
         }
 
         static void handle(Talk m, Supplier<NetworkEvent.Context> ctx) {
@@ -118,6 +123,27 @@ public final class VoidNet {
 
         static void handle(Sky m, Supplier<NetworkEvent.Context> ctx) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SkyRiftClient.receive(m));
+        }
+    }
+
+    /**
+     * (1.3.96) Tu luz en el Void ({@link VoidLight}): cuánta (0..100), si estás dentro del Velo del Alba, los ecos que has
+     * oído de cuántos hay y lo que acaba de pasar (VoidLight.EV_*: fragmento, entrar o salir del Velo, sin luz).
+     */
+    /** (1.3.96) La luz del jugador en el Void (100 = sin corrosión), si está en un sitio de luz y lo que acaba de pasar. */
+    public record Light(int light, boolean safe, int event) {
+        static void write(Light m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.light);
+            buf.writeBoolean(m.safe);
+            buf.writeVarInt(m.event);
+        }
+
+        static Light read(FriendlyByteBuf buf) {
+            return new Light(buf.readVarInt(), buf.readBoolean(), buf.readVarInt());
+        }
+
+        static void handle(Light m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> VoidLightClient.receive(m));
         }
     }
 }

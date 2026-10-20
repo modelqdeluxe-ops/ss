@@ -770,6 +770,10 @@ def main(ids=None, show_warnings=True):
     sets = engine()
     if not ids:
         ids = [c['id'] for c in json.load(open(os.path.join(BOSSES, 'catalog.json'), encoding='utf-8'))]
+        # (1.3.96) y la fauna (las criaturas del Páramo del Void): mismo motor, mismas reglas
+        fauna = os.path.join(BOSSES, 'fauna.json')
+        if os.path.exists(fauna):
+            ids += [c['id'] for c in json.load(open(fauna, encoding='utf-8'))]
     total = 0
     for bid in ids:
         warns = []

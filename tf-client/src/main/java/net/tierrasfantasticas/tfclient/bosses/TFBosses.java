@@ -1,7 +1,9 @@
 package net.tierrasfantasticas.tfclient.bosses;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
@@ -47,7 +49,9 @@ public final class TFBosses {
 
     public static void init(IEventBus modBus) {
         ENTITIES.register(modBus);
-        for (SkillDefs.ClassDef c : SkillDefs.bosses().values()) {
+        List<SkillDefs.ClassDef> all = new ArrayList<>(SkillDefs.bosses().values());
+        all.addAll(SkillDefs.fauna().values());
+        for (SkillDefs.ClassDef c : all) {
             if (c.bossInfo == null) continue;
             for (SkillDefs.Drop d : c.bossInfo.drops.values()) {
                 String id = itemId(c.id, d.id());

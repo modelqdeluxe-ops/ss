@@ -914,6 +914,184 @@ cuadro, el desgarro oscuro por dentro, la tormenta sin taparlo. Con shaders (24a
 sin las nubes del paquete delante del Void. Lo que encontró la primera: las nubes de Minecraft
 delante del Void (de lejos, 25,7 % de nube dentro del desgarro) → con la máscara, 0,4 % (reabierta: 11,2 % → 2,2 %).
 
+### 3.21 Con shaders sin barras, la grieta del cielo más épica y con sonido corrido, la secuencia del Void, el agujero de gusano con las dimensiones de verdad y la luz del Alba (1.3.96)
+
+El dueño, con una captura con **Photon v1.3b**: *«se ve horrible con shaders. No pongas sonidos tipo explosiones que se
+oyen secuenciales, quiero un sonido fino corrido. Mejora el sonido, el efecto de apertura y aparecimiento de la grieta,
+también de cerrar. El diseño de la grieta me gusta, hazlo un poquito más grandecito y más épico. El efecto de distorsión
+casi no se nota. Con la grieta del Void, que pueda configurar los atributos para todos los bosses, la secuencia de
+bosses. La escena del agujero de gusano, que muestre la dimensión: en el Nether hay fuego de textura, pero no sé si estoy
+viendo el Nether de verdad; y el tramo final al Void, un poco pobre. Quiero lore. Que el Void robe vitalidad, que robe tu
+luz; fragmentos de luz por la isla; una isla santuario con el caballero sacro, encerrada en una burbuja brillante que
+contiene la luz y nos mantiene a salvo de esa corrosión. Inventa algo chingón.»*
+
+| Queja | Causa (medida) | Arreglo |
+|---|---|---|
+| Con Photon, barras blancas en abanico sobre la grieta del cielo | Photon pone mezclas por búfer (`blend.gbuffers_basic.colortex0 = ONE ONE_MINUS_SRC_ALPHA ...`); Oculus las aplica con `glBlendFuncSeparatei`, que la caché de `GlStateManager` no ve. Al acabar el paquete, la caché cree que la mezcla es la de Minecraft y no la vuelve a poner: lo nuestro (color sin premultiplicar) se sumaba entero, blanco donde el alfa es pequeño | `AfterShaders.syncBlend()`: antes de dibujar, la mezcla con OpenGL directo (sin índice: vale para todos los búferes). La prueba en el juego puede usar Photon: `[shaders=photon]` en el commit (sin `=photon`, Complementary) |
+| «Más grandecito y más épico» | — | `sky_rift.fsh`: desgarro de `HALF_LEN` 0,58 → 0,7 rad (~80° de largo) y `HALF_W` 0,2 → 0,25; tormenta `STORM_R` 1 → 1,1 que **gira** (`Spin`, cada vez más rápido antes de romperse, `spinRate()`); anillos de túnel dentro del Void; borde que late; chispas en las puntas; estrellas que se escapan en el preludio |
+| Apertura, aparición y cierre | — | Al romperse, una **onda de choque** que cruza el cielo (`Ring`, `ringOut`) antes del fogonazo; los trozos que flotan entran poco a poco; al cerrarse, un anillo que se encoge hacia el desgarro (`ringIn`) y la tormenta que se la traga girando |
+| «La distorsión casi no se nota» | El radio de `warp()` (0,3 rad) era pequeño para la grieta nueva | Radio 0,42 rad; en `RiftWarp`, lente 0,2·abierta + 0,3·fogonazo, remolino 0,55, ondas 0,018 |
+| «Sonidos tipo explosiones secuenciales» | Sonaban a la vez varios de Minecraft (trueno, explosión, «sonic boom», portal, un chasquido en cada salto) | **Una pista continua por momento**, sintetizada (`tools/void/sonidos_cielo.py`: `cielo/preludio`, `rompe`, `cierra`, `reabre`, `final`, `aliento`), sin ataques secos: graves que suben, viento, coro, un acorde que florece y el desgarro como tela. `--medir`: el «golpe» (lo que sube el volumen en 20 ms) de todas ≤ 10 dB. Abierta, el Void respira cada 40–70 s |
+| Configurar los jefes del Void y su secuencia | — | La lista es una **secuencia** (en orden o al azar), con ▲▼ para ordenar, «siguiente», qué pasa al acabar (repetir / parar / **el final**: la grieta del cielo se cierra para siempre) y ✎ para editar los atributos de uno (la ventana de jefes de siempre) o «a todos los del Void» (`Rifts.VoidConfig`: `secuencia`, `alAcabar`, `<lista>Actual/Siguiente`; `BossNet` 14–20; `tools/bosses/sim_gui.py` mide la ventana) |
+| «No sé si estoy viendo el Nether de verdad» | El túnel pintaba una pared con colores de cada mundo | **Panoramas de verdad**: la prueba en el juego (`[prueba-jefes=panoramas]`, `BossTest.panoramaStep`) captura el Nether (junto a un mar de lava), el End (junto al portal) y el Void con la herramienta de panoramas de Minecraft; `tools/void/panoramas.py` los pasa a equirectangulares (`textures/environment/tunel_*.png`). El Overworld, del panorama del menú de cada uno (`TunnelPanoramas`). En `wormhole.fsh` cada tramo del túnel deja ver su mundo y cada puerta, el siguiente |
+| «El tramo final al Void, un poco pobre» | — | Al final del viaje la cámara cae hacia el agujero negro del Void (zoom con su lente gravitatoria) y se llega por su luz. El viaje dura 11,5 s (`VoidTravel.LEAVE_TICKS` 230), con sonidos propios (`viaje/ida`, `vuelta`, `llegada`, `tools/void/sonidos_viaje.py`) |
+
+**El lore (inventado para el dueño; está en el juego: los Ecos, el caballero y los avisos).** Hace eras, la **Orden del
+Alba** —doce caballeros sacros— guardaba el **Alba**, una luz viva. Cuando el Void abrió sus fauces bajo el mundo, el
+Alba se quebró en mil esquirlas para cerrarlas: el **Alba Rota**. Once caballeros se hicieron luz para sellar la grieta;
+sus esquirlas flotan sobre los **Pozos de Luz** de las islas (donde cayó cada uno; el Vacío no puede tocar esa luz), y
+cada una guarda un **Eco del Alba** (lo que dijo ese caballero). Con lo último del Alba levantaron el **Velo del Alba**, la burbuja del santuario, y arriba late su
+**Corazón**. El más joven, **Caelthar**, el único que aún creía, se quedó en pie: custodia el umbral. El Void no muerde
+la carne: **bebe la luz**; cuando ya no te queda, te consume. Las criaturas de la grieta no nacieron malas: el hambre del
+Void las vació. El agujero negro del cielo del Void es **su ojo**. El santuario de antes, en la punta norte de la isla
+grande, queda como «el Umbral». Entre la grieta y el santuario, el **Páramo del Alba Rota**: donde cayó la mayor parte
+del Alba, tierra que el Vacío pudrió y donde se crían sus criaturas (las del End); en su centro, **la Herida**. La
+primera criatura que cayó fue el **Coloso del Vacío**: con su piel la Orden forjó una armadura que el Vacío no puede
+corroer, porque **el Vacío no se come lo que es suyo**; Caelthar la guarda en el altar del santuario para quien haya
+derrotado a cinco de sus criaturas.
+
+**Segunda ronda del dueño (tras ver la primera 1.3.96, que tenía un medidor de luz y fragmentos que se recogían)**:
+*«no quiero un contador en pantalla, más bien un efecto de corrosión que en su máximo punto no sea molesto pero sí me haga
+daño, medio corazón; y los fragmentos no quisiera que funcionen así: que parándome en un sitio de luz me cure del efecto,
+como cuando te ahogas y un bloque de magma te salva la respiración; no quiero andar juntando fragmentos. Habrá un set que
+obtendrán todos al derrotar 5 bosses para que sean inmunes al Void, disponible en el santuario; haz más grande esa isla,
+que sea bonita, bien decorada»*; y con dos zips (el set **Void** y **EndMobsVol1**): *«este es el set, y los mobs que
+quiero, menos el que se puede montar; anímalo bien, como los sets actuales; el set es el único inmune al Void; hazte un
+bioma completo: estará el santuario, y entre el santuario y la isla principal un bioma completo con estas criaturas
+hostiles, decoración del Void, grandecito; para volver al santuario, un portalito; pozos de luz en el bioma»*.
+
+**El mapa del Void ahora** (de sur a norte; `tools/void/isla_alba.py --preview carpeta` lo dibuja desde arriba):
+la isla de la grieta (la del dueño) con el Umbral (el santuario viejo) en su punta norte y el **Portal del Alba** en el
+borde oeste de la plaza (−32, 72, 0), mirando a la grieta → el **Puente de Piedra** (5 de ancho) → el **Páramo del Alba Rota** (~240 × 230, `tools/void/bioma.py`)
+→ el **Puente de Luz** → el **Santuario del Alba** (centro (−64, −471), radio 34, dentro del **Velo del Alba**, radio 47).
+Se llega del mundo al santuario; a la grieta se va cruzando el Páramo; se vuelve por el portal (o cayendo al vacío: el
+rescate deja en el santuario). Isla en `tfclient-void-isla.bin` **v4**: además del Velo, el Corazón y los pozos (v3), el
+altar, el portal (y hacia dónde mira) y el sitio desde el que se busca por dónde anda la fauna. Caja 371 × 707 desde
+(−195, −519); `isla.py` llama a `isla_alba.main` al acabar y se puede volver a pasar (sale lo mismo, comprobado con md5).
+
+**La corrosión del Vacío** (`VoidLight`, sin números):
+- Cada jugador lleva su «luz» (100 = sin corrosión). Fuera de un sitio de luz el Vacío se la come: de nada a todo en
+  **4 min** (`CORRODE_MIN`). Al máximo, **medio corazón cada 3 s** (`HURT`, `HURT_EVERY`; tipo de daño propio
+  `tfclient:corrosion_vacio`, atraviesa la armadura; muerte «fue consumido por el Vacío»). Nada más: ni oscuridad ni lentitud.
+- **Sitios de luz**: el Velo del Alba y los **Pozos de Luz** (`LightWells.wellAt`: el círculo de radio 3,6 alrededor de cada
+  esquirla). Ahí la corrosión se va en **3 s**. No se recogen ni se gastan.
+- **La armadura del Vacío** (`VoidArmor.pieces`): cada pieza puesta, un 25 % más despacio; con las cuatro (yelmo, peto,
+  grebas y botas del set Void), **inmune**. Es lo único que protege.
+- En pantalla (`VoidLightClient`): **grietas violetas que brillan y entran desde los bordes** a medida que crece la
+  corrosión (`textures/gui/corrosion_grietas.png`, de `tools/void/corrosion_textura.py --ver carpeta`, que también la
+  enseña sobre una escena oscura y una clara: se dibuja más grande que la pantalla y se va encogiendo, de 1,45 a 1; al
+  máximo llegan a un cuarto de la pantalla, opacidad 0,72, y el centro queda limpio; laten despacio y se avivan al hacer
+  daño). La primera versión (venas casi negras, RGB 18,4,40) no se veía sobre el Páramo de noche: en la prueba, del 71 %
+  al 100 % el borde de arriba solo pasaba de 49,7 a 48,1 de luminancia. Motas violetas que suben alrededor con
+  mucha corrosión, un resplandor dorado mientras un pozo o el Velo te limpian y un fundido dorado al cruzar el portal. Sonidos
+  `luz.velo_entrar` / `velo_salir` / `sin_luz`. Ni barra ni número.
+- **Ecos del Alba**: la primera vez que se pisa cada pozo se oye un eco (lo que dijo uno de los once caballeros que se
+  hizo luz ahí), en el chat y sin cuenta; son 16, en orden: los pozos que se pisan después ya no dicen nada. Se guarda por jugador en el mundo (`tfclient_ecos`: ecos y pozos visitados).
+- Al entrar en el Void, una vez por conexión, un aviso en el chat: «Fuera del Velo, el Vacío corroe; los Pozos de Luz y
+  el Velo te limpian; la armadura del Vacío te protege».
+
+**Los Pozos de Luz** (`LightWells` + `SanctuaryFx`): 26 (16 por el Páramo, a lo largo del sendero y por las zonas; 10 por
+la isla de la grieta). En el bin, su suelo de cuarzo y calcita (en el Páramo, llano), cuatro velas y una luz invisible;
+el servidor pone la esquirla (un sapoluz perlado que gira, entidad de exhibición de bloque) y chispas; el cliente dibuja
+el **círculo de luz del suelo** (shader `corazon_alba`, Mode 2: borde que brilla, runas que giran, centro claro), una
+**columna fina** que se ve de lejos (Mode 1) y un brillo en la esquirla.
+
+**El Páramo del Alba Rota** (`tools/void/bioma.py`, semilla fija): una masa flotante con colinas suaves sobre un cono de
+piedra del End, piedra negra, toba y obsidiana que acaba en estalactitas, de cuya cara de abajo cuelgan lianas con bayas que
+brillan, amatistas y espeleotemas. Zonas con borde de ruido: el **Bosque de Coros** (noroeste: micelio y piedra del End con
+46 árboles de coro como los del End, con flores secas), los **Campos de Amatista** (noreste: calcita, 16 agujas de
+amatista, racimos), el **Páramo de Obsidiana** (sureste: piedra negra, basalto, obsidiana que llora, 9 agujas de obsidiana,
+columnas de basalto), las **Ruinas de la Orden** (suroeste: un templo de cuarzo roto con doce columnas, algunas caídas,
+sculk y un pedestal con velas) y el resto, micelio gris violáceo con manchas de piedra del End, sculk y nilio distorsionado
+(raíces, brotes, enredaderas). En el centro, **la Herida**: un agujero que atraviesa la isla (se ve el vacío) con borde
+de obsidiana que llora, amatistas y columnas de purpur rotas; y cuatro **grietas** largas que también la atraviesan. El
+**Sendero de las Esquirlas** (ladrillo de piedra del End con borde de piedra negra pulida, farolas de alma y braseros de
+fuego de alma) va de la Puerta del Páramo al Puente de Luz. 14 islotes flotan encima.
+
+**La fauna** (`criaturas_vacio`): EndMobsVol1 (RopeFire / tugkandeman) convertido por `build_bosses.py` como «fauna»
+(entrada `EndMobsVol1` de `JEFES` con `fauna`, `raices` —sus 12 mobs: enderling, enderbruiser, ender crawler, ender
+watchman, end wraith, endermauler y sus «empowered»— y `sin_modelos` —los del End Strider, el que se monta, que el dueño no
+quiere—). El auditor: 0 problemas (y el hueco del pack `root1`: un `segment{}` del Endermauler a un hueso que su modelo no
+tiene; en ModelEngine no hace nada). En el juego: `SkillDefs.fauna()` (de `bosses/fauna.json`, aparte del catálogo: no sale
+en `/tf boss` ni en las grietas), `BossEntity.isFauna()` (todos sus mobs son esbirros sin dueño: sin la barra del jefe
+principal, la de su pack sí —el Endermauler—; su `FollowRange` del pack; en su Páramo, `VoidIsland.faunaWalkable`: no
+cruzan los puentes ni entran en el Velo). **Salen solas** (`VoidFauna`) con las reglas de su randomspawn de MythicMobs
+(`spawns`: probabilidad, prioridad, recarga y `mobsInRadius`; lo que era «world_the_end» aquí es el Páramo): cada 2 s y
+por jugador en el Páramo, en un sitio a 22-52 bloques; como mucho 12 cerca de cada jugador, nunca a menos de 10 de un
+pozo ni en el Velo; las que quedan a más de 110 de todos se van; nada con `doMobSpawning` apagado ni en pacífico. No se
+guardan en el mundo (como los jefes). **Sueltan sus Drops del pack** (los jefes no sueltan nada, orden del dueño; la
+fauna sí, como en MythicMobs, con `doMobLoot`): perlas de ender y los **materiales de Oraxen** que trae el pack (Tela del
+Vacío, Caparazón de Ender, Corazón de Ender, Garra del Vacío, Brote del Vacío, Ojo de Ender Fantasmal, Tercer Ojo de
+Ender, Alma del End y sus «potenciados»: 12): `build_bosses.oraxen_items` lee `plugins/Oraxen/items/*.yml` y sus
+texturas (con su animación) y salen como objetos del mod que se apilan (`BossItems.Material`, `tfclient:jefe_criaturas_vacio_<objeto>`,
+nombre en `es.json` → `drops`). Del pack son: el Enderling y el Crawler, tras golpear, a veces (10 %) se teletransportan
+a hasta 20 bloques (`teleport_away`) y, a más de 24, sueltan la pelea (`MaxCombatDistance`).
+
+**El set Void** («Coloso del Vacío»): el Void Colossus del dueño, convertido como los demás sets: en la web
+(`tierras-fantasticas/tools/build_items.py`, `SETS['void']`, con un quinto campo nuevo para decir dónde están los iconos
+y las capas de la armadura si no es la carpeta de los modelos) y en el mod (`tools/build_mod_items.py void`). Es un
+**set de recompensa** (`crates.py: REWARD_SETS`): no sale en la tienda ni en las crates. 18 objetos: 13 armas (con la
+textura animada del pack), el yelmo 3D (cosmético de cabeza, cuenta como pieza), las alas (planean) y peto, grebas y botas
+(sus capas). **OJO**: `build_mod_items.py` reescribe los idiomas y se come los nombres que pone otra herramienta (los de
+las clases y el pad de admin): tras pasarlo, deja los `lang/*.json` como estaban y añade solo los nuevos.
+
+**La armadura del Vacío** (`VoidArmor`): se gana derrotando **5 jefes de las grietas** (cuenta para quien le hizo daño y
+sigue a menos de 96 bloques al caer; `Rifts.bossKilled`; se guarda por jugador en `tfclient_jefes_vacio`; avisos en el
+chat al sumar y al llegar a 5). Está en el **Altar del Vacío** del santuario (al norte del templo): un soporte la lleva
+puesta (con la espada larga); al tocarlo, o pidiéndosela a Caelthar, se recibe el set entero vinculado (si se pierde, se
+vuelve a pedir y da lo que falte). Lore: la forjaron los caballeros del Alba con la piel del Coloso del Vacío, la primera
+criatura que cayó; el Vacío no se come lo que es suyo.
+
+**El Portal del Alba** (`VoidPortal`): el arco de cuarzo y oro en el borde oeste de la plaza de la grieta, mirando a ella
+(fuera del camino que baja del Páramo; `PORTAL` de `isla_alba.py`, con hacia dónde mira); su velo dorado lo dibuja el
+cliente (Mode 3 de `corazon_alba`). Hay que **quedarse 1 s en su velo** (`CHARGE`; suena un cristal y suben chispas),
+como el portal del Nether: cruzarlo corriendo en plena pelea no lleva a ningún sitio. Luego un fundido dorado y a los 14
+ticks, en el santuario, a la entrada, mirando al templo. (En la primera versión estaba en (0, 72, −27), justo en el
+camino del norte a la grieta: la prueba en el juego se colocó ahí para mirar la grieta y el portal se la llevó.)
+
+**El santuario** (`isla_alba.py`), más grande y decorado: templo de **doce columnas** (la Orden) con rosetón de oro en el
+suelo y **once velas** (los once que se hicieron luz), el pedestal de Caelthar; caminos de cuarzo en cruz y en anillo con
+farolas y bancos; **cerezos** con pétalos y azaleas; el **Estanque del Alba** (nenúfares, pepinos de mar que brillan); el
+**Jardín de Amatista**; **los Once** (faros de cuarzo, oro y sapoluz junto al borde); barandilla; la **Puerta del Alba**; por
+debajo amatistas y lianas que brillan; tres islotes dentro del Velo; el Corazón a 93.
+
+**Caelthar** (`KnightScreen`, en el santuario): el Velo → si sales (la corrosión, los Pozos) → qué son los Pozos (los
+once) → dónde estoy (el Páramo, la grieta, el portal) → «¿Hay algo que me proteja del Vacío?» (la armadura; cuántos jefes
+llevas; con 5, «Dame la armadura del Vacío», `VoidNet.ARMOR`).
+
+**La prueba en el juego** (`[prueba-jefes=vacio]` y `[prueba-jefes=fauna]`): con el viaje de 11,5 s,
+`BossTest.voidClock` pasa los tiempos de siempre (lo de después de la ida, 80 ticks más tarde; lo de después de la
+vuelta, 160) y tras la persecución mete `lightStep`: un Pozo de Luz del Páramo (verlo desde un sitio libre con vista
+directa, `viewSpot`; entrar sin luz: se limpia y suena su eco), la corrosión alta y al máximo (sus golpes), la armadura (con
+4 jefes no, con 5 sí; puesta, no corroe), el soporte del altar y el Portal del Alba (cruzarlo: al santuario). «fauna» (solo
+si se pide): cada criatura delante del jugador (capturas `fauna_<mob>` y `_ataca`; modelo, objetivo, si golpea, barra
+propia) y 45 s en el Páramo con la aparición natural. (La vida del jugador de la prueba se rellena cada tick: la
+corrosión se cuenta por sus golpes. Con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las
+entidades de un trozo de mundo sin construir: las capturas de cosas recién vistas esperan unos segundos.)
+
+Tercera ronda (4a0e5a3, **con Photon v1.3b**): todo igual que sin shaders (grieta, persecución, pozo, armadura, portal,
+rescate, vuelta y grieta del cielo), el santuario y los pozos con su luz rosada, el velo del portal y **las grietas de la
+corrosión** que se ven (píxeles violeta brillante en el borde de la pantalla: 0 % con las venas de antes → 1,5 % al 71 % y
+2,2 % al máximo; en el centro, 0 %).
+
+Lo que dio la segunda ronda (d4c4948 → 38e4bc3, sin shaders): **la fauna**, las 12 con su modelo, persiguen, golpean y
+se animan con lo suyo (p. ej. el Enderbruiser: idle, walk, smash, toss; el Watchman: lantern_push, summon_wraiths; el
+Endermauler potenciado: scream_of_ender), el Enderling suelta 1 perla y 1 Tela del Vacío, y en 45 s salen solas una de
+cada (sus reglas: una por tipo cerca); **el Void**, de la grieta sale la Abominación y persigue hasta 2,4 bloques del
+jugador sin pasar de 5 del borde; tras 30 s fuera de la luz, 20 % de corrosión; en el pozo, 0 → 67 de luz en 2 s y un
+eco; al máximo, 2 golpes en 6,5 s; con 4 jefes no hay armadura y con 5 da 18 objetos; con ella puesta, 0 %; el soporte
+del altar con las cuatro piezas; pasar por el portal sin pararse no lleva y quedarse, 1 viaje, a 0,0 bloques de la
+llegada; el rescate, Caelthar y la vuelta al Overworld a 0,0 bloques. Lo que encontró la primera (d4c4948): el portal en
+el camino (se llevaba a la prueba: «3 viajes», la grieta «no sacaba a nadie», la persecución en y = 0), Caelthar buscado a
+16 bloques (el santuario es más grande) y la corrosión que no se veía.
+
+Lo que dio la primera ronda (dbbc0b7 sin shaders; 95f1dc5 con **Photon v1.3b**): viaje de ida 12,4–12,5 s con el Nether,
+el End y el Void de verdad en el túnel; el rescate al caer, al santuario en 2–7 ticks; la vuelta, a 0,0 bloques de donde se
+salió; la grieta del cielo, el ciclo entero. **Con Photon, la grieta del cielo sin barras blancas** (lo casi blanco del
+cielo, < 1 %: solo el filo encendido). Lo que encontró y se arregló: la vuelta no se hacía en la prueba (el rescate deja
+lejos de Caelthar y su diálogo se cierra a más de 14 bloques: la prueba habla ahora delante de él) y el borde del Velo verde
+oliva (tornasol con el arcoíris entero: ahora oro, rosa y perla).
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1263,7 +1441,16 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.95
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.96
+
+**1.3.96**: §3.21 (con Photon sin barras; la grieta del cielo más épica con sonido corrido; la secuencia y los atributos
+de los jefes del Void; el agujero de gusano con las dimensiones de verdad; en el Void, la corrosión sin números, los
+Pozos de Luz que curan, el Páramo del Alba Rota con las criaturas del End, el santuario más grande, el set Void inmune
+tras 5 jefes y el Portal del Alba). Queda que el dueño lo vea en su servidor y ajustar con él los números
+(`VoidLight.CORRODE_MIN`, `HURT`, `HURT_EVERY`, `REGEN`; `VoidFauna.CAP`, `EVERY`; `VoidArmor.NEED`). Ideas para seguir
+si pide más: un uso para los materiales que sueltan las criaturas del Páramo (en el pack son solo materiales); algo al oír los 16 Ecos (una recompensa o un
+título); que el End Strider, el que se monta, sea montura (el dueño no lo quiso como enemigo); el jefe final «super fuerte» que cerraría
+la grieta del cielo para siempre (`SkyRift.end`, también desde la secuencia del Void con «al acabar: el final»).
 
 **1.3.95**: §3.20 (la grieta del cielo 2.0: rehecha entera —tormenta en espiral, telaraña de fracturas, desgarro quebrado
 con el Void y su ojo, trozos de cielo, fogonazo—, sin sonidos de cristal, y las nubes de Minecraft detrás del desgarro).

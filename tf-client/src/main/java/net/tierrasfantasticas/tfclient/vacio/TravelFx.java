@@ -14,7 +14,6 @@ import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -29,7 +28,7 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
  * El viaje por el agujero de gusano (1.3.91; el dueño: «la animación de teletransporte, más bonita: una escena como si
  * viajara por un agujero de gusano con la realidad alterada, con imágenes del Overworld, el Nether y el End; y de
  * regreso lo mismo pero End, Nether y Overworld; algo súper épico»). Dura lo que el viaje en el servidor
- * ({@link VoidTravel#LEAVE_TICKS}, 7,5 s) y un poco más:
+ * ({@link VoidTravel#LEAVE_TICKS}, 11,5 s desde la 1.3.96; antes 7,5) y un poco más:
  * <ol>
  *   <li>0-1 s: el mundo se deforma en el centro de la pantalla y la cámara tiembla ({@link RiftWarp#travel}).</li>
  *   <li>1-2,2 s: la realidad se rasga: en el centro se abre un desgarro de borde vivo que llena la pantalla.</li>
@@ -45,10 +44,9 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
  *   hasta calmarse.</li>
  * </ol>
  * Lo dibuja el shader wormhole sobre toda la pantalla (encima de la interfaz y de la pantalla de carga al cambiar de
- * mundo) al acabar cada fotograma (la antesala usa las nebulosas del cielo del Void, {@link VoidSky#PANORAMA}); los
- * sonidos (el portal, el cristal que se rompe, el viento y los de cada puerta y cada tramo: el viaje del Nether, un
- * ghast, el portal del End, el dragón, el zumbido del Void) suenan solo para ti. Vista previa sin juego:
- * tools/void/tunel_preview.py (mismos tiempos).
+ * mundo) al acabar cada fotograma (desde la 1.3.96, cada tramo es el panorama de su dimensión: {@link TunnelPanoramas});
+ * su sonido (una pista continua, {@link #sounds}) suena solo para ti. Vista previa sin juego: tools/void/tunel_preview.py
+ * (mismos tiempos).
  *
  * <p>Una llegada sin viaje (el rescate al caer al vacío del Void) es solo la luz que se va.
  */
@@ -58,7 +56,7 @@ public final class TravelFx {
     /** El shader del túnel (lo registra {@link VoidClient}). */
     static ShaderInstance shader;
     /** Segundos desde que empieza: el desgarro se abre (de OPEN0 a OPEN1) y las tres puertas. = tunel_preview. */
-    static final float OPEN0 = 1.0F, OPEN1 = 2.2F, GATE1 = 3.4F, GATE2 = 4.9F, GATE3 = 6.3F;
+    static final float OPEN0 = 1.0F, OPEN1 = 2.2F, GATE1 = 4.4F, GATE2 = 6.8F, GATE3 = 9.2F;
     private static final float[] GATES = {GATE1, GATE2, GATE3};
     /** Segundos desde que llegas: el túnel sigue, la luz llena la pantalla (EXIT1) y se va (EXIT2); el mundo se calma. */
     private static final float EXIT0 = 0.4F, EXIT1 = 1.5F, EXIT2 = 2.4F, CALM = 3.4F;
@@ -199,47 +197,20 @@ public final class TravelFx {
         return mc.level == null || mc.player == null || mc.screen instanceof ReceivingLevelScreen || mc.screen instanceof ProgressScreen;
     }
 
-    /** Al tramo que lleva la puerta i: 0 Overworld, 1 Nether, 2 End, 3 la antesala del Void (= worldAt del shader). */
-    private static int gateTo(int i) {
-        return back ? 2 - i : i + 1;
+    /**
+     * (1.3.96) Una pista propia para todo el viaje (tools/void/sonidos_viaje.py, a estos mismos tiempos), sin golpes: el
+     * dueño quiere «un sonido fino corrido». Antes sonaban varios de Minecraft uno tras otro (el portal, el cristal que se
+     * rompe, una explosión, el ghast, el dragón...). Al llegar, la luz del Alba.
+     */
+    private static final SoundEvent S_IDA = sound("viaje.ida"), S_VUELTA = sound("viaje.vuelta"), S_LLEGADA = sound("viaje.llegada");
+
+    private static SoundEvent sound(String id) {
+        return SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(TFClient.MOD_ID, id));
     }
 
     private static void sounds(float since) {
-        float t = now;
-        if (once(0, t >= 0F)) play(SoundEvents.PORTAL_TRIGGER, 1.15F, 0.45F);
-        if (once(1, t >= OPEN0)) {
-            // la realidad se rompe
-            play(SoundEvents.GLASS_BREAK, 0.55F, 0.7F);
-            play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.7F, 0.6F);
-        }
-        if (once(2, t >= OPEN1 - 0.15F)) play(SoundEvents.ELYTRA_FLYING, 1.1F, 0.5F);
-        // (a la vuelta se empieza en la antesala del Void: su zumbido)
-        if (once(3, back && t >= OPEN1 + 0.3F)) play(SoundEvents.BEACON_AMBIENT, 0.5F, 0.5F);
-        for (int i = 0; i < 3; i++) {
-            int to = gateTo(i);
-            if (once(4 + 2 * i, t >= GATES[i] - 0.35F)) {
-                switch (to) {
-                    case 1 -> play(SoundEvents.PORTAL_TRAVEL, 1.2F, 0.3F);
-                    case 2 -> play(SoundEvents.END_PORTAL_SPAWN, 1.1F, 0.35F);
-                    case 3 -> play(SoundEvents.BEACON_DEACTIVATE, 0.6F, 0.6F);
-                    default -> play(SoundEvents.CONDUIT_ACTIVATE, 1.2F, 0.6F);
-                }
-            }
-            if (once(5 + 2 * i, t >= GATES[i] + 0.5F)) {
-                switch (to) {
-                    case 1 -> play(SoundEvents.GHAST_AMBIENT, 0.75F, 0.3F);
-                    case 2 -> play(SoundEvents.ENDER_DRAGON_GROWL, 0.9F, 0.2F);
-                    case 3 -> play(SoundEvents.BEACON_AMBIENT, 0.5F, 0.5F);
-                    default -> {
-                    }
-                }
-            }
-        }
-        if (once(10, since >= EXIT0)) {
-            // a la ida se cruza el agujero negro: un estruendo hondo; y la luz
-            if (!back) play(SoundEvents.GENERIC_EXPLODE, 0.5F, 0.35F);
-            play(SoundEvents.BEACON_POWER_SELECT, 1.4F, 0.5F);
-        }
+        if (once(0, now >= 0F && now < 1.5F)) play(back ? S_VUELTA : S_IDA, 1F, 1F);
+        if (once(1, since >= EXIT0)) play(S_LLEGADA, 1F, 0.9F);
     }
 
     private static boolean once(int bit, boolean when) {
@@ -284,8 +255,14 @@ public final class TravelFx {
         sh.safeGetUniform("Exit").set(exit);
         sh.safeGetUniform("Back").set(back ? 1F : 0F);
         sh.safeGetUniform("ScreenSize").set((float) main.width, (float) main.height);
+        sh.safeGetUniform("HasOverworld").set(TunnelPanoramas.overworldReady() ? 1F : 0F);
         RenderSystem.setShader(() -> sh);
         RenderSystem.setShaderTexture(1, VoidSky.PANORAMA);
+        // (1.3.96) las dimensiones de verdad: sus panoramas
+        RenderSystem.setShaderTexture(2, TunnelPanoramas.overworld());
+        RenderSystem.setShaderTexture(3, TunnelPanoramas.NETHER);
+        RenderSystem.setShaderTexture(4, TunnelPanoramas.END);
+        RenderSystem.setShaderTexture(5, TunnelPanoramas.VOID);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();

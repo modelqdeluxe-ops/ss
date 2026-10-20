@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.95, más abajo.
+> de la 1.3.96, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,7 +59,48 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, TF Client 1.3.95) — lee esto primero
+### CHECKPOINT (19 oct 2026, TF Client 1.3.96) — lee esto primero
+
+**1.3.96** (`tf-client/JEFES.md` §3.21, con la tabla queja → causa → arreglo y el lore entero). El dueño, con una
+captura con Photon: *«se ve horrible con shaders... no pongas sonidos tipo explosiones secuenciales, quiero un sonido
+fino corrido... hazla un poquito más grandecita y más épica... la distorsión casi no se nota... que pueda configurar los
+jefes del Void y su secuencia... el agujero de gusano, que muestre la dimensión de verdad... quiero lore... que el Void
+robe tu luz, fragmentos de luz, una isla santuario con el caballero en una burbuja brillante... inventa algo chingón»*:
+- **Con Photon, sin barras blancas** (`AfterShaders.syncBlend`: Photon deja mezclas por búfer que la caché de Minecraft
+  no ve). La prueba en el juego puede usar Photon: `[shaders=photon]`.
+- **Grieta del cielo más grande y épica** (desgarro ~80°, tormenta que gira y se acelera, onda de choque al romperse,
+  anillo que se cierra al sellarse, distorsión más fuerte) y **sonido corrido**: una pista sintetizada por momento,
+  sin golpes (`tools/void/sonidos_cielo.py`).
+- **Grieta del Void**: secuencia de jefes (en orden o al azar, ▲▼, siguiente, al acabar: repetir / parar / el final) y
+  atributos de uno o de todos (✎ en `/tf boss`).
+- **Agujero de gusano con las dimensiones de verdad** (panoramas capturados en el juego; el Overworld, el del menú) y
+  el final cayendo al agujero negro del Void; 11,5 s.
+- **Segunda ronda** (el dueño vio la primera, con un medidor de luz y fragmentos que se recogían: *«no quiero un
+  contador en pantalla, más bien un efecto de corrosión... que parándome en un sitio de luz me cure, como el bloque de
+  magma cuando te ahogas... un set que obtendrán todos al derrotar 5 bosses para ser inmunes al Void, en el santuario...
+  haz más grande esa isla, bonita, bien decorada... los mobs del End (sin el que se monta), anímalos bien... un bioma
+  completo entre el santuario y la isla principal con estas criaturas, pozos de luz... y un portalito para volver»*):
+  - **La corrosión del Vacío** (`VoidLight`): sin números; grietas violetas que brillan y entran desde los bordes
+    (el centro siempre limpio), de nada a todo en 4 min fuera de la luz; al máximo, **medio corazón cada 3 s**.
+  - **Los Pozos de Luz** (`LightWells`, 26: 16 en el Páramo y 10 en la isla de la grieta) y el Velo del Alba curan en
+    3 s (resplandor dorado). No se recogen. La primera vez en cada pozo, un Eco del Alba en el chat.
+  - **El Páramo del Alba Rota** (`tools/void/bioma.py`): ~240 × 230 entre la isla de la grieta y el santuario: Bosque
+    de Coros, Campos de Amatista, Páramo de Obsidiana, Ruinas de la Orden, la Herida (atraviesa la isla), grietas,
+    Sendero de las Esquirlas con farolas de alma, islotes; con **las criaturas del End** (EndMobsVol1 sin el End
+    Strider, `criaturas_vacio`: 12 mobs como «fauna» del motor de jefes, con sus reglas de aparición de MythicMobs;
+    `VoidFauna`).
+  - **El santuario** (`tools/void/isla_alba.py`) al norte del Páramo, el doble de grande y decorado (templo de doce
+    columnas, Altar del Vacío, jardines con cerezos, estanque, los Once faros, islotes).
+  - **El set Void** («Coloso del Vacío», 18 objetos animados como los demás sets; set de recompensa: ni tienda ni
+    crates) y **la armadura del Vacío** (`VoidArmor`): con 5 jefes de las grietas derrotados, en el altar o pidiéndosela
+    a Caelthar; las cuatro piezas = inmune a la corrosión (cada una, un 25 %). Es lo único que protege.
+  - **El Portal del Alba** (`VoidPortal`) en el borde oeste de la plaza de la grieta: quedándose 1 s en su luz, vuelve al
+    santuario (cruzarlo corriendo no lleva).
+  - Las criaturas sueltan su botín del pack (perlas de ender y 12 materiales de Oraxen convertidos en objetos del mod).
+  - Probado en el juego (GitHub Actions) sin shaders y con Photon: JEFES §3.21, «Tercera ronda» y anteriores.
+- Rama: `claude/peaceful-gauss-4nzddg`. Pendiente del dueño: decir si se cierra el PR en borrador #137 (ya no hace falta).
+
+### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.95)
 
 **1.3.95: la grieta del cielo 2.0** (`tf-client/JEFES.md` §3.20; todo el detalle con imágenes de cada momento, en la
 vista previa y en el juego: **`tf-client/docs/grieta-cielo-2/README.md`**). El dueño, al ver la 1.3.94: *«la animación,

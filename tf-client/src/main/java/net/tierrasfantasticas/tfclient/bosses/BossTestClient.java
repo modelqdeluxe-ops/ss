@@ -61,6 +61,27 @@ public final class BossTestClient {
             ks.testPress(BossTest.dialogPress);
             BossTest.dialogPress = -1;
         }
+        // (1.3.96) para los panoramas, se ve más lejos y más claro (con 6 chunks y brillo normal el Nether era niebla roja y
+        // el End, negro)
+        if ("panoramas".equals(BossTest.currentId()) && mc.options.renderDistance().get() < 12) {
+            mc.options.renderDistance().set(12);
+            mc.options.gamma().set(1.0);
+        }
+        // (1.3.96) los panoramas para el agujero de gusano: la herramienta de Minecraft (6 caras de 90°), mirando al sur
+        String pano = BossTest.panorama;
+        if (pano != null && mc.level != null && mc.player != null && mc.screen == null) {
+            BossTest.panorama = null;
+            File dir = new File(mc.gameDirectory, "pruebas/panoramas/" + pano);
+            dir.mkdirs();
+            mc.player.setYRot(0F);
+            mc.player.setXRot(0F);
+            try {
+                net.minecraft.network.chat.Component c = mc.grabPanoramixScreenshot(dir, 512, 512);
+                TFClient.LOGGER.info("Prueba de jefes: panorama {}: {}", pano, c.getString());
+            } catch (Throwable e) {
+                TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar el panorama {}", pano, e);
+            }
+        }
         if (BossTest.finished && !quitting) {
             quitting = true;
             mc.stop();
@@ -102,7 +123,7 @@ public final class BossTestClient {
     private static final String[] TUNNEL = {"00_deforma", "01_rasgado", "02_tramo1", "03_puerta1", "04_tramo2", "05_puerta2",
             "06_tramo3", "07_puerta3", "08_tramo4", "09_salida", "10_luz", "11_aparece"};
     /** Segundos desde que empieza el viaje (las 9 primeras; 1.3.92: cuatro tramos, = TravelFx) o desde que llega (las 3 últimas). */
-    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 2.7F, 3.3F, 4.1F, 4.8F, 5.5F, 6.2F, 7.0F, 0.75F, 1.4F, 2.1F};
+    private static final float[] TUNNEL_AT = {0.7F, 1.7F, 3.3F, 4.35F, 5.6F, 6.75F, 8.0F, 9.15F, 10.4F, 0.75F, 1.4F, 2.1F};
     private static final int TUNNEL_FROM_START = 9;
     private static int tunnelTrip = -1, tunnelNext;
 

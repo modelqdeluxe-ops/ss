@@ -188,6 +188,21 @@ public final class SkyRift {
         say(server, "¡La grieta del cielo se ha vuelto a abrir! Otra criatura ha despertado en el Void.");
     }
 
+    /**
+     * (1.3.96) Ha caído el último jefe de la secuencia de la grieta del Void y al acabar va el final (lo elige el staff en
+     * /tf boss): la herida se cierra para siempre, como con {@code /tf void cielo final}.
+     */
+    public static void voidSequenceEnded() {
+        MinecraftServer server = server();
+        if (server == null) return;
+        Data d = data(server);
+        if (d.state != OPEN && d.state != CLOSED) {
+            voidBossKilled();
+            return;
+        }
+        end(server);
+    }
+
     /** El final (lo decide el staff): la herida se cierra para siempre. */
     static void end(MinecraftServer server) {
         Data d = data(server);

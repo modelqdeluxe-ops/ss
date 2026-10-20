@@ -23,6 +23,42 @@ DRAW = 25.0                    # = SkyRiftClient.DRAW
 ANG = 1.21                     # medio ancho del cuadro (radianes) = SkyRiftClient.ANG (más de 1,2: el shader se apaga antes del borde)
 
 
+def ring(phase, t):
+    """(1.3.96) El anillo de choque, como SkyRiftClient.ring(): (radio en radianes o -1, fuerza)."""
+    sm = lambda a, b, x: (lambda u: u * u * (3 - 2 * u))(min(1.0, max(0.0, (x - a) / (b - a))))
+    def out(t0):
+        u = t - t0
+        return (u * 0.85, 1.3 * math.exp(-u * 1.2)) if 0 <= u < 2.6 else (-1.0, 0.0)
+    def into(t0, t1, r0):
+        return (r0 * (t1 - t) / (t1 - t0), 0.9 * sm(t0, t0 + 0.3, t)) if t0 <= t < t1 else (-1.0, 0.0)
+    return {'rompe': lambda: out(1.8), 'reabre': lambda: out(1.2), 'cierra': lambda: into(1.5, 2.3, 0.95),
+            'final': lambda: into(1.7, 2.5, 1.0)}.get(phase, lambda: (-1.0, 0.0))()
+
+
+def spin_rate(phase, t):
+    """(1.3.96) Lo rápido que gira la tormenta (rad/s), como SkyRiftClient.spinRate()."""
+    sm = lambda a, b, x: (lambda u: u * u * (3 - 2 * u))(min(1.0, max(0.0, (x - a) / (b - a))))
+    base = 0.06
+    if phase == 'preludio':
+        return base + 0.55 * sm(9.0, 12.0, t)
+    if phase == 'rompe':
+        return base + 0.55 * (1 - sm(1.8, 5.5, t))
+    if phase == 'reabre':
+        return base + 0.5 * (sm(0.0, 1.0, t) if t < 1.2 else 1 - sm(1.2, 4.0, t))
+    if phase == 'cierra':
+        return base + 0.7 * sm(0.0, 1.8, t) * (1 - sm(2.3, 3.5, t))
+    if phase == 'final':
+        return base + 0.8 * sm(0.0, 2.2, t) * (1 - sm(2.5, 3.5, t))
+    return base
+
+
+def spin(phase, t):
+    """Lo girado: la base de siempre (como si llevara mucho rato) más lo que ha corrido en esta fase."""
+    n = max(1, int(t / 0.02))
+    extra = sum(spin_rate(phase, (i + 0.5) * t / n) - 0.06 for i in range(n)) * t / n
+    return 60.0 + 0.06 * t + extra
+
+
 def look(phase, t):
     """Lo mismo que SkyRiftClient.look() (y skyDim): crack, open, flash, alpha, dark, storm, shatter, dim."""
     sm = lambda a, b, x: (lambda u: u * u * (3 - 2 * u))(min(1.0, max(0.0, (x - a) / (b - a))))
@@ -67,7 +103,7 @@ def look(phase, t):
 
 STATES = [('preludio', 3.0), ('preludio', 7.5), ('preludio', 8.7), ('preludio', 11.6), ('rompe', 0.5), ('rompe', 1.3),
           ('rompe', 1.85), ('rompe', 2.4), ('rompe', 3.5), ('rompe', 5.5), ('abierta', 20.0), ('abierta', 27.5),
-          ('cierra', 1.5), ('cicatriz', 40.0), ('reabre', 1.4), ('reabre', 3.0), ('final', 2.5)]
+          ('cierra', 1.5), ('cierra', 2.1), ('cicatriz', 40.0), ('reabre', 1.4), ('reabre', 3.0), ('final', 2.5)]
 
 
 def direction(yaw, pitch):
@@ -140,7 +176,7 @@ def main():
             if k in prog:
                 prog[k].value = v
         for k, v in (('Sampler0', 0), ('STime', 1000.0 + t), ('AtFar', 0.0), ('RiftF', tuple(f)), ('RiftR', tuple(right)),
-                     ('RiftU', tuple(up))):
+                     ('RiftU', tuple(up)), ('Ring', ring(phase, t)), ('Spin', spin(phase, t))):
             if k in prog:
                 prog[k].value = v
         prog['ModelViewMat'].write(look_at(cams[cam]).T.astype('f4').tobytes())

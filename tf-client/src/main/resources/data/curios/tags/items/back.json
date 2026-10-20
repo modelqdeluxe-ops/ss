@@ -2,7 +2,7 @@
  "replace": false,
  "values": [
   "tfclient:valentine_wings",
-  "tfclient:necros_wings",
+  "tfclient:oni_wings",
   "tfclient:luminite_wings",
   "tfclient:mecha_wing",
   "tfclient:shadow_wing",
@@ -52,7 +52,7 @@
   "tfclient:beats_wings",
   "tfclient:darkworld_wings",
   "tfclient:malika_wings",
-  "tfclient:oni_wings",
+  "tfclient:necros_wings",
   "tfclient:eagle_wing",
   "tfclient:starlight_wings",
   "tfclient:halloween23_pumpkin_warlock_backpack",
@@ -67,6 +67,7 @@
   "tfclient:cosmeticsv1_frozen_backpack",
   "tfclient:cosmeticsv1_ender_backpack",
   "tfclient:unicorncos_unicorn_backpack",
-  "tfclient:springcos_wings"
+  "tfclient:springcos_wings",
+  "tfclient:void_wings"
  ]
 }

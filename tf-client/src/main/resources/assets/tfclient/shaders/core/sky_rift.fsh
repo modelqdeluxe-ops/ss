@@ -1,7 +1,11 @@
 #version 150
 
 // La grieta del cielo (TF Client 1.3.95; rehecha entera: el dueño, de la 1.3.94: «la animación, el sonido de cristal, el
-// tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»). La dibuja SkyRiftClient en un
+// tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»). 1.3.96 (el dueño: «el diseño me
+// gusta, hazlo un poquito más grandecito y más épico; mejora el efecto de apertura, aparecimiento y cierre»): ~20 % más
+// grande, un anillo de choque que cruza el cielo al estallar (y se encoge al cerrarse: Ring), chispas en las puntas
+// mientras se rasga o se cose, la tormenta que gira cada vez más rápido antes de romperse y al cerrarse (Spin), el borde
+// que late, un túnel de luz dentro del Void y rayos de luz más anchos. La dibuja SkyRiftClient en un
 // cuadro enorme que mira a la cámara; todo se calcula en ángulos de cielo alrededor de su centro (RiftF, con RiftR a la
 // derecha y RiftU arriba: proyección azimutal, sin estirarse en los bordes), así que mide lo mismo la mires como la mires.
 //
@@ -32,6 +36,8 @@ uniform float Shatter;        // segundos desde que estalla (los trozos salen di
 uniform vec3 RiftF;           // el centro de la grieta (dirección, relativa a la cámara)
 uniform vec3 RiftR;           // su derecha
 uniform vec3 RiftU;           // su arriba
+uniform vec2 Ring;            // el anillo de choque: radio (radianes, < 0 = no) y fuerza
+uniform float Spin;           // lo que ha girado la tormenta (radianes; más rápido al romperse y al cerrarse)
 uniform float CloudMask;      // > 0: solo la máscara de las nubes de Minecraft (la base de las nubes, bloques sobre la cámara)
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
@@ -43,9 +49,9 @@ out vec4 fragColor;
 const float PI = 3.14159265;
 const float TAU = 6.2831853;
 const float TILT = 0.42;      // el desgarro, inclinado (radianes)
-const float HALF_LEN = 0.58;  // medio largo del desgarro abierto (radianes de cielo: ~66° de largo)
-const float HALF_W = 0.2;     // medio ancho en el centro
-const float STORM_R = 1.0;    // el radio de la tormenta
+const float HALF_LEN = 0.7;   // medio largo del desgarro abierto (radianes de cielo: ~80° de largo)
+const float HALF_W = 0.25;    // medio ancho en el centro
+const float STORM_R = 1.1;    // el radio de la tormenta
 
 float hash11(float p) {
     p = fract(p * 0.1031);
@@ -197,6 +203,10 @@ vec2 bolt(vec2 p, vec2 o, float th, float len, float seed, float aa) {
     return vec2(core, halo);
 }
 
+float fk2(int k) {
+    return float(k) * 2.3;
+}
+
 // La nebulosa del Void en la dirección dd
 vec3 neb(vec3 dd) {
     vec2 tuv = vec2(fract(atan(dd.z, dd.x) / TAU + 0.5), clamp(0.5 - asin(clamp(dd.y, -1.0, 1.0)) / PI, 0.001, 0.999));
@@ -255,6 +265,10 @@ void main() {
     float ember = Dark * (1.0 - smoothstep(0.0, 0.5, Crack)) * exp(-r * r * 60.0) * pulse;
     col += vec3(0.75, 0.15, 1.0) * ember * 1.4;
     alpha += ember * 0.6;
+    // (1.3.96) en la sombra, el cielo se adelgaza y asoman las estrellas del Void
+    float leak = stars(d, 90.0, pix) * Dark * exp(-r * r * 5.0) * (1.0 - smoothstep(0.3, 0.9, Open));
+    col += vec3(0.9, 0.85, 1.0) * leak * 0.8;
+    alpha += leak * 0.5;
 
     // --- La red de fracturas (el cielo roto como un cristal golpeado en el centro)
     vec2 web = vec2(ang / TAU * NS, log(max(r, 1e-4)) * NS / TAU);
@@ -266,7 +280,7 @@ void main() {
     float tsd = tearShape(q);
     float holeK = Open > 0.002 ? smoothstep(aa, -aa, tsd) : 0.0;
     // hasta dónde llegan las grietas (con el borde irregular); las de lejos, más finas y apagadas
-    float reach = Crack * 0.6 * (0.8 + 0.3 * fbm(vec2(ang * 1.7, 3.1), 3)) + 0.005;
+    float reach = Crack * 0.72 * (0.8 + 0.3 * fbm(vec2(ang * 1.7, 3.1), 3)) + 0.005;
     float inNet = (1.0 - smoothstep(reach * 0.8, reach, r)) * smoothstep(0.004, 0.02, r);
     float fresh = exp(-max(reach - r, 0.0) * 9.0) * step(0.02, Crack) * (1.0 - step(0.99, Crack));
     float energy = clamp(0.4 + 0.6 * clamp(Open * 1.2 + Flash, 0.0, 1.0) + 0.6 * fresh, 0.0, 1.6);
@@ -284,12 +298,12 @@ void main() {
     // --- La tormenta: nubes negras y violetas en espiral alrededor, que se apartan del desgarro
     if (Storm > 0.001) {
         float sR = STORM_R * mix(0.25, 1.0, Storm);
-        float sw = 1.15 / (r + 0.25) - t * 0.06;
+        float sw = 1.15 / (r + 0.25) - Spin;
         vec2 sp = rot(sw) * p * 2.6;
         // nubes con forma (el dominio deformado por otro ruido) y con detalle fino
         vec2 wq = sp + (vec2(fbm(sp * 1.3 + vec2(t * 0.02, 1.7), 4), fbm(sp * 1.3 + vec2(5.2, t * 0.017), 4)) - 0.5) * 1.6;
         float dens = fbm(wq * 1.5, 6) + 0.18 * (fbm(sp * 7.0 + 3.3, 4) - 0.5);
-        float arms = 0.5 + 0.5 * sin(3.0 * ang + 7.0 * log(r + 0.06) - t * 0.25);
+        float arms = 0.5 + 0.5 * sin(3.0 * ang + 7.0 * log(r + 0.06) - Spin * 4.2);
         float cloud = smoothstep(0.44, 0.6, dens * 0.82 + arms * 0.24);
         float ring = smoothstep(0.06, 0.22, r) * (1.0 - smoothstep(sR * 0.55, sR, r));
         float apart = smoothstep(0.01, 0.14, tsd + 0.03 * (1.0 - Open));
@@ -326,6 +340,9 @@ void main() {
         vec3 n2 = neb(normalize(d + vec3(0.0, 0.0, 0.3)));
         vec3 voidC = pow(n1, vec3(1.1)) * 1.7 + pow(n2, vec3(1.3)) * 0.45;
         voidC *= 0.6 + 0.7 * exp(-qr * 2.2);
+        // (1.3.96) profundidad: anillos de luz que caen hacia el ojo, como un túnel
+        float tun = 0.5 + 0.5 * sin(log(qr + 0.015) * 13.0 + t * 2.6);
+        voidC += vec3(0.42, 0.16, 0.85) * pow(tun, 6.0) * exp(-qr * 3.5) * 0.55 * smoothstep(0.4, 1.0, Open);
         voidC += vec3(0.95, 0.9, 1.0) * (stars(d, 70.0, pix) * 0.8 + stars(normalize(d + vec3(0.3, 0.1, 0.0)), 160.0, pix) * 0.45);
         // la luz del borde entra un poco (una neblina violeta junto al filo, por dentro)
         float inEdge = exp(tsd / 0.025);
@@ -333,7 +350,7 @@ void main() {
         // el ojo del Void: un agujero negro pequeño con su anillo de oro, que gira
         vec2 e = q - vec2(0.0, tearAxis(0.0));
         float er = length(e * vec2(1.0, 1.6));
-        float hole = 0.032 * smoothstep(0.3, 1.0, Open);
+        float hole = 0.042 * smoothstep(0.3, 1.0, Open);
         float eyeK = smoothstep(hole + aa * 1.5, hole - aa * 1.5, er);
         float ringR = exp(-pow((er - hole * 1.25) / (hole * 0.18 + aa), 2.0)) * step(0.001, hole);
         float ea = atan(e.y * 1.6, e.x) + t * 0.4;
@@ -354,13 +371,15 @@ void main() {
         float hot = exp(-ed / (0.0025 + aa)) * near;
         float mag = exp(-ed / fw) * near;
         float vio = exp(-ed / (fw * 3.0)) * near;
-        float o = smoothstep(0.0, 0.25, Open) * (1.0 - holeK);
+        // (1.3.96) late, y de vez en cuando se enciende más
+        float beat = 0.85 + 0.15 * sin(t * 1.9) + 0.35 * pow(max(0.0, sin(t * 0.7)), 14.0);
+        float o = smoothstep(0.0, 0.25, Open) * (1.0 - holeK) * beat;
         col += (vec3(1.0, 0.95, 1.0) * hot * 2.2 + vec3(1.0, 0.25, 0.85) * mag * 1.3 + vec3(0.55, 0.15, 1.0) * vio * 0.7) * o;
         alpha += (hot + mag * 0.85 + vio * 0.45) * o;
         // las grietas siguen más allá de las puntas, quebradas como el desgarro
         float L = tearLen();
         float ax = abs(q.x);
-        float ext = 0.34 * smoothstep(0.0, 0.6, Open);
+        float ext = 0.4 * smoothstep(0.0, 0.6, Open);
         if (ax > L * 0.8 && ax < L + ext) {
             float s2 = (ax - L * 0.8) / (L * 0.2 + ext);
             float lat = abs(q.y - tearAxis(q.x));
@@ -371,9 +390,25 @@ void main() {
             alpha += cl + gl * 0.45;
         }
         // rayos de luz que salen del desgarro
-        float rays = pow(noise2(vec2(ang * 22.0, t * 0.15)), 5.0) * exp(-r * 2.4) * smoothstep(0.0, 0.05, tsd) * Open * (1.0 - holeK);
-        col += vec3(0.75, 0.4, 1.0) * rays * 0.9;
+        float rays = (pow(noise2(vec2(ang * 22.0, t * 0.15)), 5.0) + 0.8 * pow(noise2(vec2(ang * 7.0 + t * 0.03, t * 0.08 + 4.0)), 4.0))
+                * exp(-r * 2.2) * smoothstep(0.0, 0.05, tsd) * Open * (1.0 - holeK);
+        col += vec3(0.8, 0.5, 1.0) * rays * 0.9;
         alpha += rays * 0.35;
+        // (1.3.96) chispas en las puntas mientras se rasga (o se cose al cerrarse)
+        float tipK = clamp(Open * (1.0 - Open) * 4.0, 0.0, 1.0);
+        if (tipK > 0.01) {
+            for (int k = 0; k < 2; k++) {
+                float sgn = k == 0 ? 1.0 : -1.0;
+                vec2 tip = rot(TILT) * vec2(sgn * L, tearAxis(sgn * L));
+                vec2 dt = p - tip;
+                float dd = length(dt);
+                float ta = atan(dt.y, dt.x);
+                float sp = exp(-dd * dd / 0.00045) + 0.5 * exp(-dd / 0.03) * (0.6 + 0.4 * pow(abs(cos(ta * 2.0 + t * 9.0)), 30.0));
+                sp *= tipK * (0.8 + 0.2 * sin(t * 40.0 + fk2(k)));
+                col += vec3(1.0, 0.85, 1.0) * sp * 1.8;
+                alpha += sp * 0.9;
+            }
+        }
         // rayos de energía que saltan del borde hacia fuera
         for (int k = 0; k < 3; k++) {
             float fk = float(k);
@@ -455,6 +490,14 @@ void main() {
         float e2 = 0.6 + 0.4 * clamp(Flash + fresh, 0.0, 1.0);
         col += (vec3(1.0, 0.92, 1.0) * core * 1.5 + vec3(0.75, 0.25, 1.0) * glow * 0.7) * scarK * e2;
         alpha += (core + glow * 0.5) * scarK * e2;
+    }
+
+    // --- (1.3.96) El anillo de choque: cruza el cielo al estallar (y se encoge hacia el centro al cerrarse)
+    if (Ring.x >= 0.0 && Ring.y > 0.001) {
+        float dr = r - Ring.x;
+        float rk = Ring.y * (exp(-dr * dr / (0.0002 + aa * aa)) + 0.4 * exp(-dr * dr / 0.004)) * (1.0 - smoothstep(0.9, 1.2, r));
+        col += vec3(0.95, 0.85, 1.0) * rk * 1.5;
+        alpha += rk * 0.8;
     }
 
     // --- El fogonazo, con un destello en estrella

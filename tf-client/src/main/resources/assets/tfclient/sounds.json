@@ -3413,5 +3413,281 @@
     "stream": true
    }
   ]
+ },
+ "cielo.preludio": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/preludio",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.rompe": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/rompe",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.cierra": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/cierra",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.reabre": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/reabre",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.final": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/final",
+    "stream": true
+   }
+  ]
+ },
+ "cielo.aliento": {
+  "sounds": [
+   {
+    "name": "tfclient:cielo/aliento",
+    "stream": true
+   }
+  ]
+ },
+ "viaje.ida": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/ida",
+    "stream": true
+   }
+  ]
+ },
+ "viaje.vuelta": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/vuelta",
+    "stream": true
+   }
+  ]
+ },
+ "viaje.llegada": {
+  "sounds": [
+   {
+    "name": "tfclient:viaje/llegada",
+    "stream": true
+   }
+  ]
+ },
+ "luz.fragmento": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/fragmento",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "luz.velo_entrar": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/velo_entrar"
+   }
+  ]
+ },
+ "luz.velo_salir": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/velo_salir"
+   }
+  ]
+ },
+ "luz.sin_luz": {
+  "sounds": [
+   {
+    "name": "tfclient:luz/sin_luz"
+   }
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_aggro": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_aggro"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_closeslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_closeslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_teleport2": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_teleport2"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_teleport1": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_teleport1"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_tpslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_tpslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_tpbite": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_tpbite"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_scream": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_scream"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_scream_far": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_scream_far"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_ringing": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_ringing"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_dashstart": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_dashstart"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_dashbite": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_dashbite"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_rightslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_rightslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_generic_land": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_generic_land"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_idle_3": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_idle_3"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_idle_2": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_idle_2"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_idle_1": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_idle_1"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_enderling_attack": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_enderling_attack"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_enderbruiser_attack": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_enderbruiser_attack"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_enderbruiser_throw": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_enderbruiser_throw"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_enderbruiser_smash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_enderbruiser_smash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_crawler_jump": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_crawler_jump"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_crawler_horn": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_crawler_horn"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_crawler_fang": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_crawler_fang"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_watcher_lanternpush": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_watcher_lanternpush"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_watcher_summon": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_watcher_summon"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_watcher_lantern": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_watcher_lantern"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_end_wraith_dash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_end_wraith_dash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_end_wraith_spinslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_end_wraith_spinslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_end_wraith_leftslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_end_wraith_leftslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_end_wraith_rightslash": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_end_wraith_rightslash"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_idle_mauler": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_idle_mauler"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_hurt": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_hurt"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_endermauler_death": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_death"
+  ]
+ },
+ "bosses.criaturas_vacio.entity_enderman_hurt": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/entity_enderman_hurt"
+  ]
+ },
+ "bosses.criaturas_vacio.tugkandeman_ender_idle_watcher": {
+  "sounds": [
+   "tfclient:bosses/criaturas_vacio/tugkandeman_ender_idle_watcher"
+  ]
  }
 }

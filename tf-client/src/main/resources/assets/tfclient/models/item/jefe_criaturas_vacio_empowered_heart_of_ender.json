@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "tfclient:item/jefes/criaturas_vacio/empowered_heart_of_ender"
+ }
+}
