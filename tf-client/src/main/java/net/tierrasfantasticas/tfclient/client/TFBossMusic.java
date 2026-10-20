@@ -26,7 +26,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class TFBossMusic {
     private static final ResourceLocation TRACK = new ResourceLocation(TFClient.MOD_ID, "jefes.musica");
     /** Volumen (la pista es fuerte: -13 dB de media) y fundidos de entrada y de salida, en ticks. */
-    private static final float VOLUME = 0.7F;
+    /** (1.3.98, el dueño: «la música de batalla es muy alta, bájale un poquito»: antes 0,7) */
+    private static final float VOLUME = 0.5F;
     private static final int FADE_IN = 30, FADE_OUT = 60;
 
     /** Los jefes (su UUID) que piden la música ahora. */

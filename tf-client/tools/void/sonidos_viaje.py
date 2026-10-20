@@ -172,13 +172,17 @@ def velo_entrar():
 
 
 def velo_salir():
-    """Salir de la luz: cuatro notas de arpa que bajan, despacio, y un aire frío muy bajito."""
-    from instrumentos import hz, place, sala
-    t = tt(3.2)
-    x = _gliss(['A4', 'F#4', 'D4', 'A3'], 0.16, 0.7, 630, pan_from=0.4, pan_to=-0.4)[: len(t)]
-    air = whoosh(t, 0.5, 0.5, 0.9, 2500, 500, seed=631)
-    place(x, air, 0.0, 0.18)
-    return sala(x, 3.0, 0.4, 3500, seed=632)
+    """Salir de la luz (1.3.98; el dueño: «el sonido de salir del Alba es horrible»; era un arpa que bajaba con un aire
+    frío): dos notas de celesta que se despiden (La → Re), muy suaves, sobre un acorde de cuerdas que se apaga."""
+    from instrumentos import celesta, hz, pan2, place, sala
+    from musica_santuario import strings
+    t = tt(2.8)
+    x = np.zeros((len(t), 2))
+    place(x, pan2(celesta(hz('A5'), 2.6, 0.8, seed=631), 0.2), 0.0)
+    place(x, pan2(celesta(hz('D5'), 2.4, 0.7, seed=632), -0.2), 0.32)
+    st = strings(t, ('D3', 'A3', 'F#4'), 633) * (smooth(0, 0.25, t) * np.exp(-t / 0.9))[:, None]
+    place(x, st, 0.0, 0.35)
+    return sala(x, 2.6, 0.38, 4000, seed=634)
 
 
 def sin_luz():
@@ -206,7 +210,7 @@ SOUNDS = {
     'luz/velo_salir': velo_salir,
     'luz/sin_luz': sin_luz,
 }
-PEAK = {'luz/pozo_entrar': 0.55, 'luz/velo_entrar': 0.6, 'luz/velo_salir': 0.45, 'luz/sin_luz': 0.6}
+PEAK = {'luz/pozo_entrar': 0.55, 'luz/velo_entrar': 0.6, 'luz/velo_salir': 0.35, 'luz/sin_luz': 0.6}
 
 
 def main():
