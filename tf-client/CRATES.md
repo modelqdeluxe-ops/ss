@@ -91,6 +91,17 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   sino la «claridad» del shader final (la imagen menos su versión desenfocada), que dibuja un aro oscuro alrededor de lo
   que brilla suave. Ahora lo que oscurece se comprime cuando es mucho (`crate_post.fsh`): el aro desaparece y el
   detalle fino sigue igual. Los rayos llegan hasta la escalera de agua, no hasta el altar (como en la imagen).
+- **La cascada, la misma agua que el estanque y que cae** (el dueño: «texturas quebradas», «incongruente con el agua del
+  pozo», «la cascada tiene movimiento hacia abajo»): las dos usan la misma receta (`waterLook` en `crate_water.fsh`: el
+  turquesa, la textura del agua del juego —la quieta en el estanque, la que corre en las cascadas, con sus hilos
+  verticales, bajando—, sus líneas claras y los píxeles que centellean, alargados hacia abajo en la cascada) y vetas de
+  luz que bajan; nada de celdas, rejillas ni remolinos. De lejos la textura se funde (no parpadea).
+- **La cascada de los lados flotaba**: el chorro es más estrecho que su bloque y debajo no se dibujaba la superficie del
+  estanque (franja oscura alrededor del pie). Ahora sí (`under` en `buildWaterFx` y en la vista previa) y alrededor del pie
+  de cada chorro hay espuma (la orilla del shader, `splash`).
+- **Los números, iguales o por encima de la imagen en el juego** (el dueño): el juego sale con la luz media ×0,90, la alta
+  ×0,94, el contraste ×0,97, la nitidez ×1,05 y la saturación ×1,075 respecto a la vista previa (medido en la prueba
+  `24692c0`); el shader final lleva ganancia 1,12, claridad 0,56, curva 0,60 y los brillos más fuertes tirando a blanco.
 - **Los nenúfares negros**: el verde de Minecraft por la luz de la escena daba (6,41,37); los alumbra el agua turquesa
   (`LILY_LIFT`/`LILY_K` en la vista previa = `SanctuaryScene`), (15,74,39); en la imagen ~(25,85,45).
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante

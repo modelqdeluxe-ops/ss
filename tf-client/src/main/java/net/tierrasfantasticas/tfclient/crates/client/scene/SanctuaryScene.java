@@ -594,7 +594,11 @@ public final class SanctuaryScene {
             float in = falling ? (solidAt(x, top + 1, z) ? 0.3F : 0.16F) : 0.0F;
             float x0 = x + (isWater(x - 1, y, z) ? 0 : in), x1 = x + 1 - (isWater(x + 1, y, z) ? 0 : in);
             float z0 = z + (isWater(x, y, z - 1) ? 0 : in), z1 = z + 1 - (isWater(x, y, z + 1) ? 0 : in);
-            if (!above && !capped) {
+            // el estanque debajo de un chorro también lleva su superficie: el chorro es más estrecho que su bloque y, sin
+            // ella, alrededor del pie se veía el fondo (una franja oscura: la cascada parecía flotar encima del agua)
+            boolean under = above && !falling && isFalling(x, y + 1, z);
+            if (under) h = 0.875F;
+            if ((!above && !capped) || under) {
                 int[][] cs = {{x, z}, {x + 1, z}, {x + 1, z + 1}, {x, z + 1}};
                 float[][] ps = {{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}};
                 for (int i = 0; i < 4; i++) {
@@ -610,8 +614,17 @@ public final class SanctuaryScene {
                             if (glowsAt(cx + dx, y - 1, cz + dz) || glowsAt(cx + dx, y, cz + dz)) glow++;
                         }
                     }
+                    // la espuma donde cae un chorro: alrededor de su pie, como una orilla (el shader la pinta de espuma)
+                    float splash = 0.0F;
+                    for (int dx = -3; dx <= 2; dx++) {
+                        for (int dz = -3; dz <= 2; dz++) {
+                            if (!isFalling(cx + dx, y + 1, cz + dz) || isFalling(cx + dx, y, cz + dz)) continue;
+                            float ex = cx - (cx + dx + 0.5F), ez = cz - (cz + dz + 0.5F);
+                            splash = Math.max(splash, 1.0F - (float)Math.sqrt(ex * ex + ez * ez) / 2.2F);
+                        }
+                    }
                     light(cx, y + h, cz, l);
-                    bb.vertex(ps[i][0], y + h, ps[i][1]).color(dry / 4.0F, 0.0F, Math.min(1.0F, glow * 0.3F),
+                    bb.vertex(ps[i][0], y + h, ps[i][1]).color(Math.max(dry / 4.0F, splash * 0.95F), 0.0F, Math.min(1.0F, glow * 0.3F),
                             Math.min(1.0F, (l[0] + l[1] + l[2]) / 3.0F)).uv(0, 0).endVertex();
                 }
                 n++;
@@ -661,8 +674,10 @@ public final class SanctuaryScene {
         // el dibujo del agua del juego, del atlas de bloques (lo anima el juego); el shader lo lee sin mipmaps
         var atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
         TextureAtlasSprite still = atlas.apply(new ResourceLocation("minecraft", "block/water_still"));
+        TextureAtlasSprite flow = atlas.apply(new ResourceLocation("minecraft", "block/water_flow"));
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         sh.safeGetUniform("StillUV").set(still.getU0(), still.getV0(), still.getU1(), still.getV1());
+        sh.safeGetUniform("FlowUV").set(flow.getU0(), flow.getV0(), flow.getU1(), flow.getV1());
         sh.safeGetUniform("CamPos").set(eye.x, eye.y, eye.z);
         sh.safeGetUniform("LightDir").set(sun.x, sun.y, sun.z);
         sh.safeGetUniform("BeamPos").set(crate.x, crate.y, crate.z);

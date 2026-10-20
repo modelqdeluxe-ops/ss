@@ -414,7 +414,12 @@ def water_mesh(sc, light, fullat):
         x1 = x + 1 - (0 if is_water(x + 1, y, z) else inn)
         z0 = z + (0 if is_water(x, y, z - 1) else inn)
         z1 = z + 1 - (0 if is_water(x, y, z + 1) else inn)
-        if not above and not capped:
+        # el estanque debajo de un chorro también lleva su superficie (si no, alrededor del pie se ve el fondo y la cascada
+        # parece flotar) = SanctuaryScene.buildWaterFx
+        under = above and not falling and 'level=8' in sc.get(x, y + 1, z)
+        if under:
+            h = 0.875
+        if (not above and not capped) or under:
             vs = []
             for (cx, cz), (px_, pz_) in zip(((x, z), (x + 1, z), (x + 1, z + 1), (x, z + 1)), ((x0, z0), (x1, z0), (x1, z1), (x0, z1))):
                 shore = sum(0 if is_water(cx + dx, y, cz + dz) else 1 for dx in (-1, 0) for dz in (-1, 0)) / 4.0
@@ -423,6 +428,15 @@ def water_mesh(sc, light, fullat):
                     for dz in range(-2, 2):
                         if glows(cx + dx, y - 1, cz + dz) or glows(cx + dx, y, cz + dz):
                             g += 1
+                # la espuma donde cae un chorro, alrededor de su pie, como una orilla
+                splash = 0.0
+                for dx in range(-3, 3):
+                    for dz in range(-3, 3):
+                        if 'level=8' not in sc.get(cx + dx, y + 1, cz + dz) or 'level=8' in sc.get(cx + dx, y, cz + dz):
+                            continue
+                        ex, ez = cx - (cx + dx + 0.5), cz - (cz + dz + 0.5)
+                        splash = max(splash, 1.0 - math.sqrt(ex * ex + ez * ez) / 2.2)
+                shore = max(shore, splash * 0.95)
                 l = light(cx, y + h, cz)
                 vs.append((px_, y + h, pz_, shore, 0.0, min(1.0, g * 0.3), min(1.0, (l[0] + l[1] + l[2]) / 3), 0.0, 0.0))
             for q in (0, 1, 2, 0, 2, 3):
@@ -884,6 +898,7 @@ def main():
             wtex.use(2)
             wprog['Sampler0'].value = 2
             wprog['StillUV'].value = (0.0, 0.0, 16 / 48, 0.5)
+            wprog['FlowUV'].value = (16 / 48, 0.0, 1.0, 1.0)
             v_water.render()
         fx = Fx(eye, r, u)
         if os.environ.get('SIN_FX') != '1':
