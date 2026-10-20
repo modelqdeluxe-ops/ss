@@ -206,28 +206,29 @@ public final class RiftWarp {
             // (la realidad se rasga: también tiembla)
             shake = Math.max(shake, 0.6F * travel);
         }
-        // La grieta del cielo (1.3.93): al mirarla, una distorsión leve (más al romperse); y su temblor
-        shake = Math.max(shake, net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.shake());
+        // La grieta del cielo (1.3.93): al mirarla, una distorsión leve (más al romperse); su temblor va aparte (onCamera)
         float[] sky = net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.warp(view, proj, aspect);
         if (sky != null) {
             Src s = new Src();
             s.x = sky[0];
             s.y = sky[1];
             s.r = sky[2];
-            // (1.3.96: «casi no se nota»: era un giro fijo y una lente débil sobre un cielo casi liso; ahora la lente
-            // dobla la tormenta y las nubes alrededor, el remolino respira y salen ondas)
-            s.lens = 0.2F * sky[3] + 0.3F * sky[4];
-            s.swirl = 0.55F * sky[3];
-            s.wave = 0.018F * sky[3];
-            s.flash = 0.5F * sky[4];
-            // (al romperse, la onda de choque barre la pantalla)
-            s.shock = sky[5];
+            // (1.3.96: «casi no se nota» con lente 0,07 y giro 0,18; se subió a 0,2 + 0,3 en el fogonazo, giro 0,55 y
+            // ondas. 1.3.97: «es demasiado, hasta me bugea la cámara; las ondas no me gustan»: el aire que tiembla
+            // alrededor de la grieta, una lente y un giro suaves que no dan la vuelta a la imagen, sin ondas ni onda de
+            // choque, y el radio, como mucho, un tercio de la pantalla)
+            s.r = Math.min(s.r, 0.34F);
+            s.lens = 0.1F * sky[3] + 0.06F * sky[4];
+            s.swirl = 0.24F * sky[3];
+            s.wave = 0F;
+            s.flash = 0.35F * sky[4];
+            s.shock = -1F;
             s.tr = 0.75F;
             s.tg = 0.45F;
             s.tb = 1F;
             s.weight = s.lens + s.flash + (s.shock >= 0 ? 0.5F : 0F);
             list.add(s);
-            near = Math.max(near, 0.35F * sky[3] + 0.3F * sky[4]);
+            near = Math.max(near, 0.1F * sky[3] + 0.15F * sky[4]);
         }
         if (list.isEmpty() && near <= 0.001F) return;
         list.sort((a, b) -> Float.compare(b.weight, a.weight));
@@ -287,14 +288,24 @@ public final class RiftWarp {
         RenderSystem.enableDepthTest();
     }
 
-    /** El temblor de la cámara (al despertar, al estallar, en la pelea y al cerrarse). */
+    /**
+     * El temblor de la cámara (al despertar, al estallar, en la pelea y al cerrarse) y, aparte, el de la grieta del cielo:
+     * un vaivén lento, como un retumbo lejano (1.3.97: el dueño, «hasta me bugea la cámara»; antes se sumaba a las
+     * sacudidas rápidas de las grietas y llegaba a casi 2°).
+     */
     @SubscribeEvent
     public static void onCamera(ViewportEvent.ComputeCameraAngles event) {
-        float a = Math.min(shake, 3F) * 0.9F;
-        if (a <= 0.01F) return;
         double t = (System.nanoTime() % 3_600_000_000_000L) / 1e9;
-        event.setYaw(event.getYaw() + a * (float) (Math.sin(t * 31) * 0.6 + Math.sin(t * 17.3) * 0.4));
-        event.setPitch(event.getPitch() + a * (float) (Math.sin(t * 27 + 1.3) * 0.6 + Math.sin(t * 13.1 + 2) * 0.4));
-        event.setRoll(event.getRoll() + a * 0.7F * (float) Math.sin(t * 21 + 4.1));
+        float a = Math.min(shake, 3F) * 0.9F;
+        if (a > 0.01F) {
+            event.setYaw(event.getYaw() + a * (float) (Math.sin(t * 31) * 0.6 + Math.sin(t * 17.3) * 0.4));
+            event.setPitch(event.getPitch() + a * (float) (Math.sin(t * 27 + 1.3) * 0.6 + Math.sin(t * 13.1 + 2) * 0.4));
+            event.setRoll(event.getRoll() + a * 0.7F * (float) Math.sin(t * 21 + 4.1));
+        }
+        float sky = Math.min(net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.shake(), 0.5F);
+        if (sky > 0.005F) {
+            event.setYaw(event.getYaw() + sky * (float) (Math.sin(t * 5.3) * 0.6 + Math.sin(t * 3.1 + 0.7) * 0.4));
+            event.setPitch(event.getPitch() + sky * (float) (Math.sin(t * 4.4 + 1.3) * 0.6 + Math.sin(t * 2.6 + 2) * 0.4));
+        }
     }
 }

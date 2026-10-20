@@ -56,6 +56,9 @@ public class KnightScreen extends Screen {
     private enum Page { GREET, LORE_VOID, LORE_RIFTS, SKY, SEAL, LORE_KNIGHT, WHERE, VEIL, DRAIN, SHARDS, ARMOR, ARMOR_GIVEN, LEAVING }
 
     private final VoidNet.Talk talk;
+    /** (1.3.97) Un caballero sacro del santuario (SacredKnights): su saludo y sus temas, sin pasar por el servidor. */
+    private final SacredKnights.Def sacred;
+    private final String playerName;
     private final int entityId;
     private String text = "";
     private final List<Option> options = new ArrayList<>();
@@ -79,10 +82,38 @@ public class KnightScreen extends Screen {
     public KnightScreen(VoidNet.Talk talk) {
         super(Component.literal(KnightEntity.NAME));
         this.talk = talk;
+        this.sacred = null;
+        this.playerName = talk.name();
         this.entityId = talk.entity();
         openMs = System.currentTimeMillis();
         go(Page.GREET);
         ui("page", 0.45F, 1.0F);
+    }
+
+    /** (1.3.97) Con un caballero sacro del santuario. */
+    public KnightScreen(SacredKnights.Def def, int entityId, String playerName) {
+        super(Component.literal(def.name()));
+        this.talk = null;
+        this.sacred = def;
+        this.playerName = playerName;
+        this.entityId = entityId;
+        openMs = System.currentTimeMillis();
+        goSacred(-1);
+        ui("page", 0.45F, 1.0F);
+    }
+
+    /** El saludo (−1) o la respuesta a un tema; las respuestas: los demás temas y «adiós». */
+    private void goSacred(int t) {
+        pageMs = System.currentTimeMillis();
+        full = false;
+        options.clear();
+        text = t < 0 ? sacred.greet() : sacred.topics().get(t).answer();
+        for (int i = 0; i < sacred.topics().size(); i++) {
+            if (i == t) continue;
+            int k = i;
+            options.add(new Option(sacred.topics().get(i).question(), () -> goSacred(k)));
+        }
+        options.add(new Option("Que la luz te guarde, " + sacred.name().replaceAll("^(Ser|Dama|Hermano) ", ""), this::onClose));
     }
 
     @Override
@@ -107,15 +138,15 @@ public class KnightScreen extends Screen {
             boolean earned = kills >= need;
             switch (p) {
                 case GREET -> text = talk.first()
-                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void. Estás dentro del Velo del Alba, y aquí nada del Vacío puede tocarte. Al sur, tras el Puente de Luz, empieza el Páramo... y más allá, la isla de la grieta."
+                        ? "Bienvenido al santuario, " + n + ". Has cruzado el umbral: esto es el Void, o lo que queda de él. Estás dentro del Velo del Alba, y aquí nada del Vacío puede tocarte. Al sur, tras el Puente de Luz, empiezan los Fragmentos del Alba Rota... y más allá, la isla de la grieta."
                         : "Has vuelto al santuario, " + n + ". El Velo aún resiste. ¿Regresas a casa, o te quedas un poco más?";
-                case WHERE -> text = "Esta es la isla del Alba, lo último que queda de la tierra de mi orden. Al sur está el Páramo del Alba Rota, donde rondan criaturas que el Vacío vació por dentro; más allá, la isla de la grieta del Void: golpea su cristal y despertará lo que duerme dentro. Junto a su plaza, el Portal del Alba te traerá de vuelta aquí."
+                case WHERE -> text = "Esta dimensión era una tierra viva, hasta que el ojo del cielo se la tragó. Lo que flota son sus restos, y mis hermanos los sostienen con su luz para que no caigan. Este jardín era el del templo de mi orden: lo único vivo que queda, porque el Velo lo guarda. Al sur, los Fragmentos del Alba Rota; más allá, la isla de la grieta: golpea su cristal y despertará lo que duerme dentro. Donde el Puente de Piedra toca esa isla, el Portal del Alba te traerá de vuelta: quédate un momento en su luz."
                         + (skyWound() ? " Es esa grieta la que desgarró el cielo de Tierras Fantásticas: derrota lo que salga de ella y la del cielo se sellará." : "");
                 case VEIL -> text = "Es el Velo del Alba. Cuando el Void se tragó nuestra tierra, el Alba, la luz que guardaba mi orden, se quebró para cerrar sus fauces. Con lo último que quedó levantamos este velo. Arriba late su Corazón: mientras brille, nada del Vacío entra aquí.";
-                case DRAIN -> text = "Fuera, el Vacío te corroe: lo notarás en los ojos, sombras que se te meten por los bordes. Cuando te llene, te herirá poco a poco. Pero donde cayeron las esquirlas de mis hermanos brota la luz: son los Pozos de Luz. Quédate en su círculo y la corrosión se irá.";
-                case SHARDS -> text = "Éramos doce, la Orden del Alba. Once se hicieron luz para sellar la grieta, y donde cayeron sus esquirlas la luz aún brota. Verás sus columnas desde lejos, por todo el Páramo. Si te detienes en uno, quizá oigas el eco de quien fue.";
+                case DRAIN -> text = "Fuera, el Vacío te corroe despacio: lo notarás en los bordes de los ojos, venas violetas que se te meten dentro. Cuando te llenen, te herirán poco a poco. Pero donde mis hermanos se hicieron luz hay Pozos de Luz: entra en su burbuja y la corrosión se irá.";
+                case SHARDS -> text = "Éramos doce, la Orden del Alba. Once se hicieron luz para sellar la grieta y sostener lo que quedó de nuestra tierra: cada Pozo de Luz es un Ancla del Alba, uno de ellos sujetando un fragmento para que no caiga al ojo del Vacío. Verás su columna desde lejos. Si te detienes en uno, quizá oigas el eco de quien fue.";
                 case ARMOR -> text = "La armadura del Coloso del Vacío. El Coloso fue la primera criatura que cayó cuando el Vacío abrió sus fauces, y de su piel la forjamos: el Vacío no se come lo que es suyo. Con el yelmo, el peto, las grebas y las botas caminarás por él como uno de los suyos. "
-                        + (earned ? "Has derrotado a " + kills + " criaturas de las grietas: es tuya. Está en el altar, detrás de mí."
+                        + (earned ? "Has derrotado a " + kills + " criaturas de las grietas: es tuya. Está en el altar, detrás de mí. Solo hay una para cada guerrero: cuídala."
                         : "La guardo en el altar para quien haya derrotado a " + need + " criaturas de las grietas. Llevas " + kills + ".");
                 case ARMOR_GIVEN -> text = "Que te guarde, " + n + ". Ya no eres presa del Vacío.";
                 case LEAVING -> text = "Que la luz te guíe de regreso, " + n + ". Aquí estaré cuando el Void vuelva a llamarte.";
@@ -314,7 +345,8 @@ public class KnightScreen extends Screen {
         // Su nombre: Cinzel dorada con contorno, a un píxel de letra por píxel de pantalla
         int n = Math.round(s * 1.7F);
         float k = Mth.clamp(n, 1, 12) / s;
-        Component name = Component.literal(KnightEntity.NAME.toUpperCase(java.util.Locale.ROOT)).withStyle(Style.EMPTY.withFont(cinzel(n)));
+        String nm = sacred != null ? sacred.name() : KnightEntity.NAME;
+        Component name = Component.literal(nm.toUpperCase(java.util.Locale.ROOT)).withStyle(Style.EMPTY.withFont(cinzel(n)));
         float nw = font.width(name) * k;
         float nx = Math.round((width - nw) / 2F * s) / s, ny = Math.round((panelY + 7F + slide) * s) / s;
         for (int[] d : RING) drawScaled(g, name, nx + d[0] / s, ny + d[1] / s, k, TFMenuPaint.withAlpha(GOLD_DARK, in));
@@ -326,7 +358,8 @@ public class KnightScreen extends Screen {
             fade(g, nx - 10F - lw, ly, lw, true, in);
             fade(g, nx + nw + 10F, ly, lw, false, in);
         }
-        String sub = talk.home() ? KnightEntity.TITLE + " · Guardián del santuario" : KnightEntity.TITLE + " · Custodio del umbral";
+        String sub = sacred != null ? "Orden del Alba · " + sacred.title()
+                : talk.home() ? KnightEntity.TITLE + " · Guardián del santuario" : KnightEntity.TITLE + " · Custodio del umbral";
         g.drawString(font, sub, Math.round((width - font.width(sub)) / 2F), Math.round(panelY + 21F + slide), TFMenuPaint.withAlpha(SUB, in), false);
         // El texto que se va escribiendo (entra con un fundido)
         float tin = ease((nowMs - pageMs) / 180F) * in;

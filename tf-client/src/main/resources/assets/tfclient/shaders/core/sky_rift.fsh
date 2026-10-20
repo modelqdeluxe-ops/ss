@@ -3,8 +3,7 @@
 // La grieta del cielo (TF Client 1.3.95; rehecha entera: el dueño, de la 1.3.94: «la animación, el sonido de cristal, el
 // tamaño y el diseño de la grieta son una mierda... esmérate por hacer algo chingón»). 1.3.96 (el dueño: «el diseño me
 // gusta, hazlo un poquito más grandecito y más épico; mejora el efecto de apertura, aparecimiento y cierre»): ~20 % más
-// grande, un anillo de choque que cruza el cielo al estallar (y se encoge al cerrarse: Ring), chispas en las puntas
-// mientras se rasga o se cose, la tormenta que gira cada vez más rápido antes de romperse y al cerrarse (Spin), el borde
+// grande, chispas en las puntas mientras se rasga o se cose, la tormenta que gira cada vez más rápido antes de romperse y al cerrarse (Spin), el borde
 // que late, un túnel de luz dentro del Void y rayos de luz más anchos. La dibuja SkyRiftClient en un
 // cuadro enorme que mira a la cámara; todo se calcula en ángulos de cielo alrededor de su centro (RiftF, con RiftR a la
 // derecha y RiftU arriba: proyección azimutal, sin estirarse en los bordes), así que mide lo mismo la mires como la mires.
@@ -36,7 +35,6 @@ uniform float Shatter;        // segundos desde que estalla (los trozos salen di
 uniform vec3 RiftF;           // el centro de la grieta (dirección, relativa a la cámara)
 uniform vec3 RiftR;           // su derecha
 uniform vec3 RiftU;           // su arriba
-uniform vec2 Ring;            // el anillo de choque: radio (radianes, < 0 = no) y fuerza
 uniform float Spin;           // lo que ha girado la tormenta (radianes; más rápido al romperse y al cerrarse)
 uniform float CloudMask;      // > 0: solo la máscara de las nubes de Minecraft (la base de las nubes, bloques sobre la cámara)
 uniform mat4 ModelViewMat;
@@ -492,13 +490,7 @@ void main() {
         alpha += (core + glow * 0.5) * scarK * e2;
     }
 
-    // --- (1.3.96) El anillo de choque: cruza el cielo al estallar (y se encoge hacia el centro al cerrarse)
-    if (Ring.x >= 0.0 && Ring.y > 0.001) {
-        float dr = r - Ring.x;
-        float rk = Ring.y * (exp(-dr * dr / (0.0002 + aa * aa)) + 0.4 * exp(-dr * dr / 0.004)) * (1.0 - smoothstep(0.9, 1.2, r));
-        col += vec3(0.95, 0.85, 1.0) * rk * 1.5;
-        alpha += rk * 0.8;
-    }
+    // (1.3.97: sin el anillo de choque de la 1.3.96; el dueño: «el efecto de ondas de la grieta del cielo no me gusta»)
 
     // --- El fogonazo, con un destello en estrella
     float star = pow(abs(cos(ang * 3.0 + 0.4)), 60.0) + 0.6 * pow(abs(cos(ang * 2.0 + 1.3)), 90.0);

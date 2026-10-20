@@ -1,15 +1,18 @@
-"""El Santuario del Alba y el Páramo (1.3.96): lo que hay al norte de la isla de la grieta del Void.
+"""El Void entero a partir de la isla del dueño (1.3.96-1.3.97): la isla de la grieta, los Fragmentos y el Santuario.
 
     python3 -I tools/void/isla_alba.py [--preview carpeta]
 
-Se añade a la isla del Void ya hecha (src/main/resources/tfclient-void-isla.bin; también lo llama isla.py al acabar,
-así que no hace falta el mapa del dueño) y se puede volver a pasar (rehace sus zonas enteras: sale lo mismo).
+Parte de tools/void/isla_base.bin (la isla del dueño ya convertida por isla.py, con su santuario de la 1.3.89, «el
+Umbral») y escribe src/main/resources/tfclient-void-isla.bin; sale siempre lo mismo. (1.3.97, el dueño: «el Void no es
+el End; nada de lana ni tierra; todo el Void debe ser congruente»: paleta.py pasa su isla a roca del Vacío y comprueba al
+acabar que no queda nada de eso fuera del santuario.)
 
 Del sur al norte:
-  - La isla de la grieta (la del dueño, isla.py) con el Umbral (el santuario viejo) en su punta norte y, junto a la
-    plaza, el Portal del Alba (vuelve al santuario: VoidPortal; el dueño: «para volver al santuario debe haber un
-    portalito»).
-  - El Puente de Piedra y el Páramo del Alba Rota, el bioma con sus criaturas y sus Pozos de Luz (bioma.py).
+  - La isla de la grieta (la del dueño, en roca del Vacío). En su punta norte, donde llega el Puente de Piedra y donde
+    estaba el Umbral (quitado: su sitio, terreno otra vez), la Llegada: una plaza pequeña y, a su lado, el Portal del
+    Alba (vuelve al santuario quedándose en su luz: VoidPortal).
+  - El Puente de Piedra y los Fragmentos del Alba Rota (bioma.py): cuatro tierras grandes, la Herida y el Sendero con
+    sus Anclas del Alba (los Pozos de Luz).
   - El Puente de Luz y el Santuario del Alba: la isla del caballero (el dueño: «hazla más grande, que sea bonita, bien
     decorada»), dentro del Velo del Alba (la burbuja que dibuja el cliente). Radio ~34:
       · el templo del centro (doce columnas: la Orden; suelo de cuarzo con rosetón de oro; once velas por los once que se
@@ -40,19 +43,24 @@ import bioma  # noqa: E402
 
 BIN = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'tfclient-void-isla.bin'))
 
+BASE = os.path.join(HERE, 'isla_base.bin')
+
 # El santuario (coordenadas del mundo)
-CX, CZ = -64, -471
+CX, CZ = -64, -722
 TOP = 66            # la cara de arriba del suelo (se pisa en 67)
 R = 34              # radio de la isla
 DEPTH = 46          # lo que baja el cono por debajo
 CLEAR_R = 48        # se rehace todo en este radio
 BUBBLE = (CX, 72, CZ, 47)        # el Velo del Alba: centro y radio
 HEART = (CX, 93, CZ)             # el Corazón del Alba (lo dibuja el cliente)
-ALTAR = (CX, TOP + 3, CZ - 22)   # donde está de pie el soporte con la armadura del Vacío
+ALTAR = (CX, TOP + 2, CZ - 22)   # donde está de pie el soporte con la armadura del Vacío (en el suelo del ábside)
 BRIDGE_Z0, BRIDGE_Z1 = bioma.NORTH_DOOR[1] + 2, CZ + R - 2   # el Puente de Luz: del Páramo a la Puerta del Alba
-# El Portal del Alba, junto a la plaza de la grieta: el centro de abajo de su hueco (x, y, z) y hacia dónde mira (0 = sur)
-PORTAL = (-32, 72, 0, 1)   # (x, y, z, hacia dónde: 1 = el arco a lo largo de Z, se cruza de este a oeste)
-FRAGMENTS = 10      # pozos de luz en la isla de la grieta
+# La Llegada (donde estaba el Umbral, en la punta norte de la isla de la grieta): centro y suelo
+LANDING = (-64, 66, -161)
+# El Portal del Alba, a un lado de la Llegada: el centro de abajo de su hueco (x, y, z) y hacia dónde mira (1 = el arco a
+# lo largo de Z, se cruza de este a oeste: mira a la plaza; quien baja del puente hacia el sur no lo cruza)
+PORTAL = (-53, 67, -161, 1)
+FRAGMENTS = 2       # Anclas del Alba (pozos de luz) en la isla de la grieta (los de los Fragmentos, bioma.py)
 TEMPLE_R = 12.5
 RING_R = 21
 
@@ -265,15 +273,14 @@ def island(w):
                 else:
                     blk = 'calcite'
                 w.put(x, y, z, blk)
-            # por debajo: amatistas y lianas con bayas que brillan
+            # por debajo: amatistas y alguna cadena (la Orden sujeta su isla)
             bot = TOP - depth
             hh = hash2(x, z, 31)
-            if hh < 0.05:
+            if hh < 0.06:
                 w.put(x, bot - 1, z, 'amethyst_cluster[facing=down,waterlogged=false]')
-            elif hh < 0.085:
-                ln = 2 + int(hh * 1000) % 6
-                for k2 in range(ln):
-                    w.put(x, bot - 1 - k2, z, 'cave_vines_plant[berries=true]' if k2 < ln - 1 else 'cave_vines[age=25,berries=true]')
+            elif hh < 0.068:
+                for k2 in range(2 + int(hh * 1000) % 6):
+                    w.put(x, bot - 1 - k2, z, 'chain[axis=y,waterlogged=false]')
 
 
 def free(w, x, z):
@@ -316,7 +323,7 @@ def temple(w):
         for y in range(TOP + 2, TOP + 9):
             w.put(px, y, pz, 'quartz_pillar[axis=y]')
         w.put(px, TOP + 9, pz, 'gold_block')
-        w.put(px, TOP + 10, pz, 'end_rod[facing=up]')
+        w.put(px, TOP + 10, pz, 'white_candle[candles=1,lit=true,waterlogged=false]')
     # la cornisa (anillo encima de los capiteles)
     for x in range(CX - 13, CX + 14):
         for z in range(CZ - 13, CZ + 14):
@@ -346,8 +353,8 @@ def altar(w):
     # escalones (de sur a norte)
     for dx in range(-2, 3):
         w.put(ax + dx, TOP + 1, az + 6, f'smooth_quartz_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]')
-    # el pedestal del soporte
-    w.put(ax, TOP + 2, az, 'chiseled_quartz_block')
+    # (1.3.97) sin pedestal: el soporte de pie en el suelo, sobre una losa de oro (su aura la dibuja el cliente)
+    w.put(ax, TOP + 1, az, 'gold_block')
     for dx in (-2, 2):
         w.put(ax + dx, TOP + 2, az + 1, 'white_candle[candles=3,lit=true,waterlogged=false]')
     # el arco de detrás
@@ -360,7 +367,7 @@ def altar(w):
         w.put(ax + dx, TOP + 9, az - 3, 'smooth_quartz_stairs[facing=%s,half=top,shape=straight,waterlogged=false]'
               % ('east' if dx < 0 else 'west'))
     w.put(ax, TOP + 11, az - 3, 'gold_block')
-    w.put(ax, TOP + 12, az - 3, 'end_rod[facing=up]')
+    w.put(ax, TOP + 12, az - 3, 'amethyst_cluster[facing=up,waterlogged=false]')
     w.put(ax, TOP + 9, az - 3, 'chain[axis=y,waterlogged=false]')
     w.put(ax, TOP + 8, az - 3, 'soul_lantern[hanging=true,waterlogged=false]')
     # farolas a los lados
@@ -383,7 +390,7 @@ def paths(w):
                 continue
             centre = (x == CX or z == CZ) if on_cross else abs(rr - RING_R) <= 0.45
             w.put(x, TOP, z, 'smooth_quartz' if centre else 'quartz_bricks')
-            if w.get(x, TOP + 1, z) != 'minecraft:air' and 'end_rod' not in w.get(x, TOP + 1, z):
+            if w.get(x, TOP + 1, z) != 'minecraft:air':
                 w.put(x, TOP + 1, z, None)
     # farolas: a los lados de la cruz cada 5 y por fuera del anillo
     for k in range(int(TEMPLE_R) + 3, R - 2, 5):
@@ -533,14 +540,14 @@ def once(w):
         for y in range(TOP + 2, TOP + 5):
             w.put(x, y, z, 'quartz_pillar[axis=y]')
         w.put(x, TOP + 5, z, 'gold_block')
-        w.put(x, TOP + 6, z, 'pearlescent_froglight[axis=y]')
+        w.put(x, TOP + 6, z, 'beacon')
         for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             if free(w, x + dx, z + dz):
                 w.put(x + dx, TOP + 1, z + dz, 'white_candle[candles=%d,lit=true,waterlogged=false]' % (1 + (i + dx) % 3))
 
 
 def edge(w):
-    """Barandilla junto al borde (con huecos en los caminos) y varas del End."""
+    """Barandilla junto al borde (con huecos en los caminos) y farolillos."""
     for x in range(CX - R - 4, CX + R + 5):
         for z in range(CZ - R - 4, CZ + R + 5):
             ang, rr = polar(x, z)
@@ -554,7 +561,7 @@ def edge(w):
             w.put(x, TOP + 1, z, 'smooth_quartz_slab[type=bottom,waterlogged=false]')
             if hash2(x, z, 9) < 0.06:
                 w.put(x, TOP + 1, z, 'quartz_pillar[axis=y]')
-                w.put(x, TOP + 2, z, 'end_rod[facing=up]')
+                w.put(x, TOP + 2, z, 'lantern[hanging=false,waterlogged=false]')
 
 
 def gate(w):
@@ -567,7 +574,7 @@ def gate(w):
     for dx in range(-3, 4):
         w.put(CX + dx, TOP + 10, gz, 'chiseled_quartz_block')
     w.put(CX, TOP + 11, gz, 'gold_block')
-    w.put(CX, TOP + 12, gz, 'end_rod[facing=up]')
+    w.put(CX, TOP + 12, gz, 'white_candle[candles=4,lit=true,waterlogged=false]')
     for dx in (-2, 2):
         w.put(CX + dx, TOP + 9, gz, 'smooth_quartz_stairs[facing=%s,half=top,shape=straight,waterlogged=false]' % ('east' if dx < 0 else 'west'))
 
@@ -612,7 +619,7 @@ def bridge(w):
         for dx in range(-2, 3):
             x = CX + dx
             for y in range(TOP + 1, TOP + 6):
-                if 'end_rod' not in w.get(x, y, z) and 'quartz_pillar' not in w.get(x, y, z):
+                if 'lantern' not in w.get(x, y, z) and 'quartz_pillar' not in w.get(x, y, z):
                     w.put(x, y, z, None)
             w.put(x, TOP, z, 'smooth_quartz' if dx == 0 else ('quartz_bricks' if abs(dx) == 1 else 'white_stained_glass'))
             if dx == 0 and w.get(x, TOP - 1, z) == 'minecraft:air':
@@ -620,7 +627,7 @@ def bridge(w):
         if z % 4 == 0:
             for dx in (-2, 2):
                 w.put(CX + dx, TOP + 1, z, 'quartz_pillar[axis=y]')
-                w.put(CX + dx, TOP + 2, z, 'end_rod[facing=up]')
+                w.put(CX + dx, TOP + 2, z, 'lantern[hanging=false,waterlogged=false]')
 
 
 def lights(w):
@@ -685,15 +692,107 @@ def portal(w):
     for a in (-2, 2):
         put(a, py + 8, 0, stairs(a > 0, 'top'))
     put(0, py + 10, 0, 'gold_block')
-    put(0, py + 11, 0, 'end_rod[facing=up]')
+    put(0, py + 11, 0, 'white_candle[candles=4,lit=true,waterlogged=false]')
     for a in (-4, 4):
         put(a, py, 0, 'lantern[hanging=false,waterlogged=false]')
     put(0, py + 8, 0, 'light[level=15,waterlogged=false]')
 
 
+# ------------------------------------------------------------------------------------------- la Llegada (el Umbral, fuera)
+
+def llegada(w):
+    """(1.3.97, el dueño: «ese portal debe estar donde conecta el puente del bioma con la isla principal, donde era el
+    santuario antes; quita esa estructura, mejora el terreno») Quita el Umbral (el santuario de la 1.3.89, un círculo de
+    cuarzo y pizarra en la punta norte) y hace terreno otra vez: hasta la Llegada (una plaza pequeña de pizarra al nivel
+    del Puente de Piedra) baja suave al suelo de alrededor. El portal (portal()) va a su lado."""
+    lx, ly, lz = LANDING
+    rad, outer = 7.5, 15
+    # el suelo de alrededor (a 16-18 bloques, en cada dirección): lo que había antes del Umbral
+    ring = {}
+    for k in range(32):
+        a = 2 * math.pi * k / 32
+        tops = []
+        for rr in (16, 17, 18):
+            x, z = round(lx + math.cos(a) * rr), round(lz + math.sin(a) * rr)
+            t = w.top(x, z)
+            if t is not None and t > 50:
+                tops.append(t)
+        ring[k] = sorted(tops)[len(tops) // 2] if tops else None
+    for x in range(lx - outer, lx + outer + 1):
+        for z in range(lz - outer, lz + outer + 1):
+            d = math.hypot(x - lx, z - lz)
+            if d > outer:
+                continue
+            col_has = any(w.get(x, y, z) != 'minecraft:air' for y in range(40, 62))
+            for y in range(62, 100):
+                w.put(x, y, z, None)
+            if not col_has and d > rad + 1:
+                continue
+            k = int(round((math.atan2(z - lz, x - lx) % (2 * math.pi)) / (2 * math.pi) * 32)) % 32
+            far = ring.get(k) or ly
+            t = ly if d <= rad else round(ly + (far - ly) * smooth01((d - rad) / (outer - rad)))
+            for y in range(56, t):
+                w.put(x, y, z, 'deepslate' if hash2(x, z, y) < 0.6 else 'tuff')
+            if d <= rad:
+                if d <= 1.5:
+                    blk = 'chiseled_deepslate'
+                elif d <= rad - 1.2:
+                    blk = 'polished_deepslate' if (x + z) % 2 else 'deepslate_tiles'
+                else:
+                    blk = 'deepslate_bricks'
+            else:
+                hh = hash2(x, z, 5)
+                blk = 'smooth_basalt' if hh < 0.35 else ('tuff' if hh < 0.97 else 'calcite')
+            w.put(x, t, z, blk)
+    # farolas de alma alrededor de la plaza (no al norte, por donde se llega, ni al este, donde está el portal)
+    for ang in (135, 180, 225, 315, 45):
+        a = math.radians(ang)
+        x, z = round(lx + math.cos(a) * (rad + 0.6)), round(lz + math.sin(a) * (rad + 0.6))
+        if 250 < ang < 290:
+            continue
+        w.put(x, ly + 1, z, 'deepslate_brick_wall')
+        w.put(x, ly + 2, z, 'deepslate_brick_wall')
+        w.put(x, ly + 3, z, 'soul_lantern[hanging=false,waterlogged=false]')
+
+
+def smooth01(u):
+    u = min(1.0, max(0.0, u))
+    return u * u * (3 - 2 * u)
+
+
+def anchor_floor(w, x, lv, z):
+    """El suelo de un Ancla del Alba (como las de bioma.py) sobre el terreno que haya: cuarzo con oro, velas, cuatro
+    estelas y la luz."""
+    for dx in range(-5, 6):
+        for dz in range(-5, 6):
+            d = math.hypot(dx, dz)
+            if d > 4.6:
+                continue
+            t = w.top(x + dx, z + dz)
+            if t is None or abs(t - lv) > 4:
+                continue
+            for y in range(min(t, lv) + 1, lv):
+                w.put(x + dx, y, z + dz, 'tuff')
+            for y in range(lv + 1, max(t, lv) + 6):
+                w.put(x + dx, y, z + dz, None)
+            blk = 'gold_block' if d <= 1.1 else ('smooth_quartz' if d <= 2.2 else (
+                ('chiseled_quartz_block' if (dx + dz) % 2 == 0 else 'quartz_bricks') if d <= 3.4 else 'calcite'))
+            w.put(x + dx, lv, z + dz, blk)
+    for dx, dz in ((3, 0), (-3, 0), (0, 3), (0, -3)):
+        w.put(x + dx, lv + 1, z + dz, WELL_CANDLE.replace('minecraft:', ''))
+    for dx, dz in ((4, 4), (-4, 4), (4, -4), (-4, -4)):
+        t = w.top(x + dx, z + dz)
+        if t is None or abs(t - lv) > 4:
+            continue
+        w.put(x + dx, t + 1, z + dz, 'quartz_pillar[axis=y]')
+        w.put(x + dx, t + 2, z + dz, 'chiseled_quartz_block')
+        w.put(x + dx, t + 3, z + dz, 'white_candle[candles=1,lit=true,waterlogged=false]')
+    w.put(x, lv + 3, z, FRAG_LIGHT)
+
+
 # ------------------------------------------------------------------------------------------- los pozos de la isla grande
 
-TERRAIN = ('wool', 'terracotta', 'clay', 'end_stone', 'mycelium', 'stone')
+TERRAIN = ('deepslate', 'tuff', 'basalt', 'blackstone', 'calcite', 'obsidian', 'amethyst')
 # (la luz que va encima de cada pozo: su nivel, 11, solo lo usan ellos; y sus velas, las de color natural)
 FRAG_LIGHT = 'minecraft:light[level=11,waterlogged=false]'
 WELL_CANDLE = 'minecraft:candle[candles=4,lit=true,waterlogged=false]'
@@ -732,33 +831,28 @@ def fragments(w, rift):
             if not solid[iz, ix] or dist[iz, ix] < 9:
                 continue
             x, z = ix + d['ox'], iz + d['oz']
-            if math.hypot(x - rift[0], z - rift[2]) < 34 or math.hypot(x - (-64), z - (-160)) < 22:
+            if math.hypot(x - rift[0], z - rift[2]) < 40 or math.hypot(x - LANDING[0], z - LANDING[2]) < 45:
                 continue
-            if math.hypot(x - PORTAL[0], z - PORTAL[2]) < 12:
+            if math.hypot(x - PORTAL[0], z - PORTAL[2]) < 30:
                 continue
             y = tops[iz, ix] + d['oy']
             if any(g[min(H - 1, tops[iz, ix] + k), iz, ix] != 0 and not is_light[g[min(H - 1, tops[iz, ix] + k), iz, ix]] for k in range(1, 5)):
                 continue
             cand.append((x, y + 2, z))
-    rnd = [hash2(c[0], c[2], 21) for c in cand]
-    chosen = [cand[int(np.argmax(rnd))]]
+    # (1.3.97: pocas; lejos de la Llegada, de la grieta y entre sí: repartidas por el camino de una a otra)
+    fixed = [(LANDING[0], 0, LANDING[2]), (rift[0], 0, rift[2])]
+    chosen = list(fixed)
     bd = 0
-    while len(chosen) < FRAGMENTS and len(chosen) < len(cand):
+    while len(chosen) < FRAGMENTS + len(fixed) and len(chosen) < len(cand):
         best, bd = None, -1
         for c in cand:
             m = min(math.hypot(c[0] - p[0], c[2] - p[2]) for p in chosen)
             if m > bd:
                 bd, best = m, c
         chosen.append(best)
+    chosen = chosen[len(fixed):]
     for x, y, z in chosen:
-        if w.get(x, y + 1, z) == 'minecraft:air':
-            w.put(x, y + 1, z, FRAG_LIGHT)
-        # cuatro velas alrededor (donde hay suelo y aire encima)
-        for dx, dz in ((3, 0), (-3, 0), (0, 3), (0, -3)):
-            t = w.top(x + dx, z + dz)
-            if t is not None and abs(t - (y - 2)) <= 2 and w.get(x + dx, t + 1, z + dz) == 'minecraft:air' \
-                    and not w.get(x + dx, t, z + dz).startswith('minecraft:light'):
-                w.put(x + dx, t + 1, z + dz, WELL_CANDLE)
+        anchor_floor(w, x, y - 2, z)
     return chosen, bd
 
 
@@ -786,7 +880,11 @@ def main_ground(w):
 
 
 def apply(d):
+    import paleta
     w = World(d)
+    # (1.3.97) la isla del dueño, a roca del Vacío; el Umbral fuera y la Llegada en su sitio
+    paleta.repaletar(w)
+    llegada(w)
     frags, spacing = fragments(w, d['rift'])
     portal(w)
     biome = bioma.Biome(w)
@@ -808,15 +906,19 @@ def apply(d):
     # se llega dentro de la Puerta del Alba, mirando al templo y a Caelthar (al norte)
     d['arrive'] = (CX, TOP + 1, CZ + R - 6)
     d['yaw'] = 180.0
+    # nada del End, ni lana, ni tierra... fuera del santuario (dentro del Velo vive lo último del Alba)
+    malos = paleta.revisar(d, (CX, CZ, BUBBLE[3] + 2))
+    if malos:
+        raise SystemExit('quedan bloques que no van en el Void: %s' % malos)
     return frags + biome_wells, spacing, fauna, biome
 
 
-def main(path=BIN):
-    d = read_bin(path)
+def main(path=BIN, base=BASE):
+    d = read_bin(base)
     frags, spacing, fauna, biome = apply(d)
     size = write_bin(path, d, BUBBLE, HEART, frags, ALTAR, PORTAL, fauna)
     g = d['g']
-    print('Santuario y Páramo: caja %dx%dx%d desde (%d, %d, %d), %d estados, %.1f kB; caballero %s, llegada %s; %d pozos '
+    print('Void: caja %dx%dx%d desde (%d, %d, %d), %d estados, %.1f kB; caballero %s, llegada %s; %d pozos '
           '(%d en el Páramo; en la isla de la grieta a %.0f bloques como poco); fauna desde %s' % (
               g.shape[2], g.shape[0], g.shape[1], d['ox'], d['oy'], d['oz'], len(d['names']), size / 1024, d['knight'],
               d['arrive'], len(frags), len(biome.wells), spacing, fauna))
@@ -824,18 +926,19 @@ def main(path=BIN):
         preview(d, frags, fauna, sys.argv[sys.argv.index('--preview') + 1])
 
 
-COLORS = {'moss_block': (90, 130, 60), 'calcite': (225, 225, 220), 'smooth_quartz': (240, 236, 228), 'quartz_bricks': (232, 228, 220),
+COLORS = {'moss_block': (90, 130, 60), 'calcite': (222, 224, 220), 'smooth_quartz': (240, 236, 228), 'quartz_bricks': (232, 228, 220),
           'chiseled_quartz_block': (210, 205, 195), 'gold_block': (240, 200, 60), 'cherry_leaves': (240, 170, 200),
           'cherry_log': (90, 50, 60), 'white_stained_glass': (200, 220, 240), 'quartz_pillar': (235, 230, 220),
-          'end_rod': (255, 255, 230), 'amethyst_block': (150, 100, 200), 'tuff': (110, 110, 100), 'smooth_basalt': (60, 60, 65),
-          'end_stone': (219, 222, 158), 'end_stone_bricks': (205, 210, 150), 'obsidian': (25, 18, 40), 'crying_obsidian': (60, 20, 110),
-          'blackstone': (45, 40, 48), 'basalt': (75, 75, 80), 'sculk': (12, 40, 50), 'warped_nylium': (40, 115, 105),
-          'warped_roots': (30, 160, 140), 'nether_sprouts': (30, 150, 130), 'chorus_plant': (110, 70, 110), 'chorus_flower': (160, 120, 170),
-          'polished_blackstone_bricks': (55, 50, 60), 'chiseled_polished_blackstone': (65, 60, 70), 'soul_soil': (80, 60, 45),
-          'soul_fire': (80, 220, 230), 'soul_lantern': (90, 220, 230), 'lantern': (250, 200, 100), 'water': (60, 110, 200),
-          'lily_pad': (40, 140, 50), 'pink_petals': (245, 160, 200), 'candle': (230, 210, 160), 'white_candle': (250, 250, 250),
-          'amethyst_cluster': (190, 140, 240), 'large_amethyst_bud': (180, 130, 230), 'purpur_pillar': (170, 120, 170),
-          'pearlescent_froglight': (250, 225, 240), 'mycelium': (112, 96, 112), 'dead_bush': (130, 100, 60), 'polished_blackstone_wall': (55, 50, 60), 'cave_vines': (230, 180, 60)}
+          'amethyst_block': (145, 98, 200), 'budding_amethyst': (130, 86, 190), 'tuff': (108, 109, 100), 'smooth_basalt': (70, 68, 76),
+          'obsidian': (22, 16, 36), 'crying_obsidian': (70, 22, 125), 'blackstone': (44, 38, 46), 'polished_blackstone': (54, 50, 58),
+          'basalt': (82, 82, 88), 'deepslate': (78, 78, 82), 'cobbled_deepslate': (82, 82, 86), 'polished_deepslate': (68, 68, 72),
+          'deepslate_tiles': (54, 54, 58), 'cracked_deepslate_tiles': (50, 50, 54), 'deepslate_bricks': (66, 66, 68),
+          'cracked_deepslate_bricks': (62, 62, 64), 'chiseled_deepslate': (58, 58, 62), 'polished_blackstone_bricks': (55, 50, 60),
+          'cracked_polished_blackstone_bricks': (50, 46, 55), 'chiseled_polished_blackstone': (65, 60, 70), 'chain': (70, 72, 82),
+          'soul_lantern': (90, 220, 230), 'lantern': (250, 200, 100), 'water': (60, 110, 200), 'lily_pad': (40, 140, 50),
+          'pink_petals': (245, 160, 200), 'candle': (230, 210, 160), 'white_candle': (250, 250, 250), 'beacon': (120, 230, 230),
+          'amethyst_cluster': (190, 140, 240), 'large_amethyst_bud': (180, 130, 230), 'medium_amethyst_bud': (175, 125, 225),
+          'small_amethyst_bud': (170, 120, 220), 'deepslate_brick_wall': (66, 66, 68), 'purple_stained_glass': (120, 50, 170)}
 
 
 def color(n):

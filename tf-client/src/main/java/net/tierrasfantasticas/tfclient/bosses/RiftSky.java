@@ -49,14 +49,21 @@ public final class RiftSky {
     private static float strength, prevStrength;
     private static Ambient ambient;
     private static RiftMusic music;
+    /** (1.3.97) La del santuario: dentro del Velo del Alba, en vez de la del Void (con fundido entre las dos). */
+    private static RiftMusic sanctuary;
     /** ¿Toca la música del vacío ahora? (aunque no haya sonido: la prueba de jefes del CI no tiene tarjeta) */
     private static boolean musicWanted;
     private static int ticks, nextMeteor = 60;
     private static final List<Meteor> METEORS = new ArrayList<>();
 
-    /** ¿Suena la música del vacío? (la normal de Minecraft espera: MusicManagerMixin). */
+    /** ¿Suena la música del vacío (o la del santuario)? (la normal de Minecraft espera: MusicManagerMixin). */
     public static boolean musicActive() {
-        return music != null && !music.isStopped();
+        return music != null && !music.isStopped() || sanctuary != null && !sanctuary.isStopped();
+    }
+
+    /** Para la prueba en el juego: ¿quiere sonar la del santuario? */
+    public static boolean sanctuaryMusic() {
+        return sanctuary != null && !sanctuary.isStopped() && !sanctuary.leaving;
     }
 
     /** ¿Debería sonar? (en el vacío, sin pelea cerca y sin la música de un jefe) */
@@ -86,7 +93,9 @@ public final class RiftSky {
             strength = prevStrength = 0;
             METEORS.clear();
             if (music != null) mc.getSoundManager().stop(music);
+            if (sanctuary != null) mc.getSoundManager().stop(sanctuary);
             music = null;
+            sanctuary = null;
             musicWanted = false;
             return;
         }
@@ -108,22 +117,14 @@ public final class RiftSky {
             }
         }
         // La música siniestra: en el vacío y sin pelea; se va al despertar una grieta y vuelve al callarse la del jefe
-        boolean wantMusic = inVoid && !battle && !net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive();
-        musicWanted = wantMusic;
-        // (si el motor de sonido la ha soltado sin pararla, p. ej. al recargar los sonidos, se vuelve a poner)
-        if (music != null && !music.isStopped() && music.age > 40 && !mc.getSoundManager().isActive(music)) music = null;
-        if (music != null && !music.isStopped()) music.age++;
-        if (wantMusic) {
-            if (music == null || music.isStopped()) {
-                music = new RiftMusic();
-                mc.getSoundManager().play(music);
-                mc.getMusicManager().stopPlaying();
-            } else {
-                music.leaving = false;
-            }
-        } else if (music != null && !music.isStopped()) {
-            music.leaving = true;
-        }
+        boolean calm = inVoid && !battle && !net.tierrasfantasticas.tfclient.client.TFBossMusic.isActive();
+        // (1.3.97) dentro del Velo del Alba, la del santuario
+        boolean inVeil = calm && net.tierrasfantasticas.tfclient.vacio.VoidIsland.get() != null
+                && net.tierrasfantasticas.tfclient.vacio.VoidIsland.inBubble(mc.player.getX(), mc.player.getEyeY(), mc.player.getZ());
+        boolean wantMusic = calm && !inVeil;
+        musicWanted = calm;
+        music = keep(mc, music, wantMusic, BossSounds.RIFT_MUSIC);
+        sanctuary = keep(mc, sanctuary, inVeil, BossSounds.SANCTUARY_MUSIC);
         // El zumbido del vacío, en la grieta más cercana
         if (near != null && nearD < 40) {
             if (ambient == null || ambient.isStopped() || ambient.rift != near || !mc.getSoundManager().isActive(ambient)) {
@@ -294,6 +295,25 @@ public final class RiftSky {
     }
 
     /** La música siniestra de la grieta: en bucle, sin posición, con fundidos (como la de los jefes: TFBossMusic). */
+    /** Que suene (o se vaya con su fundido) una música en bucle; la devuelve (o null). */
+    private static RiftMusic keep(Minecraft mc, RiftMusic m, boolean want, net.minecraft.sounds.SoundEvent ev) {
+        // (si el motor de sonido la ha soltado sin pararla, p. ej. al recargar los sonidos, se vuelve a poner)
+        if (m != null && !m.isStopped() && m.age > 40 && !mc.getSoundManager().isActive(m)) m = null;
+        if (m != null && !m.isStopped()) m.age++;
+        if (want) {
+            if (m == null || m.isStopped()) {
+                m = new RiftMusic(ev);
+                mc.getSoundManager().play(m);
+                mc.getMusicManager().stopPlaying();
+            } else {
+                m.leaving = false;
+            }
+        } else if (m != null && !m.isStopped()) {
+            m.leaving = true;
+        }
+        return m;
+    }
+
     private static final class RiftMusic extends AbstractTickableSoundInstance {
         private static final float VOLUME = 0.6F;
         private static final int FADE_IN = 100, FADE_OUT = 40;
@@ -301,8 +321,8 @@ public final class RiftSky {
         int age;
         private float fade;
 
-        RiftMusic() {
-            super(BossSounds.RIFT_MUSIC, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
+        RiftMusic(net.minecraft.sounds.SoundEvent ev) {
+            super(ev, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
             this.looping = true;
             this.delay = 0;
             this.relative = true;

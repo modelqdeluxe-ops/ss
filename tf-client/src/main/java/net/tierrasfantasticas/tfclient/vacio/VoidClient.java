@@ -26,6 +26,13 @@ public final class VoidClient {
         Minecraft.getInstance().setScreen(new KnightScreen(m));
     }
 
+    /** (1.3.97) Hablar con un caballero sacro del santuario (lo que cuenta es fijo: no hace falta preguntar al servidor). */
+    static void sacredTalk(SacredKnight k, SacredKnights.Def d) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        mc.setScreen(new KnightScreen(d, k.getId(), mc.player.getName().getString()));
+    }
+
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
     public static final class ForgeEvents {
         private ForgeEvents() {}
@@ -45,6 +52,7 @@ public final class VoidClient {
         @SubscribeEvent
         public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(TFVoid.KNIGHT.get(), KnightRenderer::new);
+            event.registerEntityRenderer(TFVoid.SACRED.get(), KnightRenderer::new);
         }
 
         @SubscribeEvent

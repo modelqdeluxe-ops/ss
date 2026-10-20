@@ -1092,6 +1092,72 @@ cielo, < 1 %: solo el filo encendido). Lo que encontró y se arregló: la vuelta
 lejos de Caelthar y su diálogo se cierra a más de 14 bloques: la prueba habla ahora delante de él) y el borde del Velo verde
 oliva (tornasol con el arcoíris entero: ahora oro, rosa y perla).
 
+### 3.22 El Void congruente: los Fragmentos del Alba Rota, la Llegada, los caballeros sacros, el cielo que se quiebra y el agujero de gusano de verdad (1.3.97)
+
+El dueño, tras la 1.3.96: *«1. El agujero de gusano no parece que es uno, su animación dentro del túnel es una mierda,
+dale rework. 2. El sonido de la grieta no es épico, no suena el quebranto del cielo; no pongas sonidos secuenciados,
+tampoco de explosiones o cristales; el efecto de distorsión es demasiado, hasta me bugea la cámara; el efecto de ondas de
+la grieta del cielo no me gusta. 3. Debes explicar lo que es el santuario, porque no es congruente esa zona bonita en una
+dimensión de caos. No pongas bloques del End, el Void no es el End; no pongas bloques de lana, tierra, nada de eso; los
+biomas no me gustan, hazlos muchísimo más grandes; los mobs se generan demasiado y son pendejos: solo deja el mob grande
+que grita y te manda a volar con el grito, y uno que parece mago que lanza proyectiles; que no se generen muchísimos, sin
+bossbar, y que no dropeen items. 4. El portal del santuario lo pusiste al lado de la grieta: debe estar donde conecta el
+puente del bioma con la isla principal, donde era el santuario antes; quita esa estructura, mejora el terreno, hay hoyos
+con lana: todo el Void debe ser congruente. La armadura del Void está un bloque elevada del suelo; ponle un efecto
+alrededor; ese set tiene los atributos de netherita +1 como los sets de las crates, y solo reclamable una vez. 5. Los pozos
+de luz tienen un sonido feo y el del santuario también; quita ese bloque de rana luz, solo una especie de burbuja como la
+del santuario que brille, y no pongas un montón por todo el mapa (el efecto del Void es lento); suaviza esa textura (las
+rayas moradas parecen dentadas), y que baje medio corazón y un cuarto más. Que suene otra melodía dentro del santuario.
+Explica que estos fragmentos de isla son lo que queda de esta dimensión porque el agujero se lo tragó todo, y que con la
+magia de los caballeros sacros impidieron que colapsen; busca skins o modelos de caballeros sacros para el santuario, que
+tenga vida, con diálogos.»*
+
+| Queja | Causa (medida) | Arreglo |
+|---|---|---|
+| El agujero de gusano no parece uno | En la 1.3.96 cada tramo era el panorama de su dimensión con una cámara y el túnel solo como un velo (0,1–0,34) encima: se veía una foto con rayas, no un túnel | `wormhole.fsh` rehecho: **túnel en perspectiva** (a la distancia r del centro, el camino K/r) que **serpentea** (el centro de cada profundidad se aparta más cuanto más lejos: `bendAt`, resuelto en 3 pasos) y gira; **paredes hechas de la dimensión** en la que estás (su panorama envuelto: longitud alrededor, la latitud va y viene con el camino, con estela; el Void, con sus nebulosas), hebras del espacio-tiempo, 9 filamentos de luz en espiral y, en el End y el Void, estrellas estiradas; al fondo de cada tramo, **la boca**: una esfera con la dimensión siguiente entera en ojo de pez (lo de detrás de ella, apretado contra el borde; como en Interstellar), su anillo y su halo, que crece hasta que la cruzas; a la ida, la última es **el agujero negro del Void** (sombra, anillo de fotones, el disco de acreción por delante y su imagen doblada alrededor, más brillante por un lado), de cuyo anillo sale la luz al llegar. `tools/void/tunel_preview.py` (ida y `--vuelta`) |
+| El sonido de la grieta del cielo «no es épico» | Un acorde de senos que florecía, un desgarro de ruido y un brillo agudo (sonaba a cristal) | `tools/void/sonidos_cielo.py` rehecho, todo continuo y sin cristal: **el cielo cruje** (pulsos irregulares de 27 a 70 Hz que se funden en un gruñido, por resonancias graves que suben con la tensión), un **tono de Shepard** que sube sin acabar, un coro de hombres, el **braam** (metales graves enormes: sierras desafinadas por un filtro que se abre, con gruñido y saturación, que entra en 0,3 s y se hunde), el retumbo que rueda, el desgarro grave en estéreo y el coro grande; compresión lenta. `--medir`: golpe más fuerte 6,7 dB (rompe); 40 % de la energía por debajo de 120 Hz y 58 % entre 120 Hz y 1 kHz (en la primera versión, el 90 % era subgrave: en altavoces normales no se oía). (La medida contaba el arranque desde el silencio y daba un tiempo que no era: arreglado) |
+| «La distorsión es demasiada, hasta me bugea la cámara» | `RiftWarp`: lente 0,2 (+0,3 en el fogonazo) que daba la vuelta a la imagen, giro 0,55 y ondas; el temblor de la grieta del cielo, sumado a las sacudidas de las grietas (31 Hz, con giro), llegaba a 2,0 (≈ 1,8°) | Lente 0,1 (+0,06), giro 0,24, sin ondas, radio como mucho un tercio de la pantalla; **el temblor de la grieta del cielo va aparte**: un vaivén lento (3–5 rad/s, sin giro) que no pasa de 0,4 y sin golpes en los relámpagos (`SkyRiftClient.shake`, `RiftWarp.onCamera`) |
+| «El efecto de ondas no me gusta» | El anillo de choque (`Ring`) y la onda de choque de la distorsión | Fuera los dos (`sky_rift.fsh`, `.json`, `SkyRiftClient.look`) |
+| El santuario no es congruente; bloques del End, lana, tierra; hoyos con lana | La isla del dueño (su mapa del End) es de lana, terracota, piedra del End, arcilla y tierra; el Páramo de la 1.3.96 tenía piedra del End, coros, purpur, micelio, nilio, sculk | `tools/void/paleta.py`: **todo el Void a roca del Vacío** (cada color a la suya, con vetas de ruido 3D por cuantiles: lana gris → pizarra profunda, toba y piedra negra; piedra del End → basalto liso, piedra negra y basalto; terracota cian → toba; arcilla → calcita; magenta → amatista; morada → obsidiana...) y `revisar()`: `isla_alba.py` **falla** si queda algo prohibido fuera del santuario. Y el lore (abajo): el santuario es lo único vivo que queda |
+| Biomas pequeños y feos | El Páramo: ~240 × 230 | **Los Fragmentos del Alba Rota** (`tools/void/bioma.py`): ~600 × 460 (unas cuatro veces), cuatro tierras con bordes de coordenadas deformadas (los Llanos de Ceniza al sur, el Bosque de Cristal al este, las Fauces de Obsidiana al oeste, las Ruinas de la Orden al norte) y la Herida en medio (escombros que flotan colgados de cadenas), el Sendero del Alba y fragmentos que flotan |
+| Demasiados mobs y «pendejos» | 12 criaturas, hasta 12 por jugador cada 2 s | Solo el **Desgarrador del Vacío** (el Endermauler: grita y te lanza, `scream_of_ender`) y el **Vigía del Vacío** (el Ender Watchman: el «mago», lanza sus Espectros); `VoidFauna`: cada 10 s, a 28–64 bloques, **como mucho 2** cerca de cada jugador; **sin barra** (`BossEntity.hasBar`: ni la de su pack) y **sin botín** (`dropAllDeathLoot` vacío; fuera los materiales de Oraxen) |
+| El portal, al lado de la grieta | `PORTAL` estaba en el borde oeste de la plaza | **La Llegada** (`isla_alba.llegada`): donde el Puente de Piedra toca la isla de la grieta, donde estaba el Umbral (el santuario viejo, quitado), terreno rehecho hasta el suelo de alrededor, una plaza y farolas de alma; el portal a su lado (−53, 67, −161) |
+| La armadura, un bloque elevada; sin efecto; atributos; una vez | Estaba sobre un pedestal; el yelmo era un cosmético sin armadura | El soporte de pie en el suelo del ábside (sobre una losa de oro a ras), **aura** (polvo violeta y portal al revés cada segundo); el yelmo cuenta como armadura (`TFSets.ItemDef.armor`, `TFItemTypes.armorModifiers`: netherita +1 como los sets de las crates); **una vez por jugador** (`VoidArmor.claimed`: «el Coloso solo dio una piel») |
+| Pozos: sonido feo, sapoluz; demasiados | 26 pozos con un sapoluz perlado; sonidos de senos | **6 Anclas del Alba** (2 en la isla de la grieta, 4 por el Sendero), sin bloque: **una burbuja** como el Velo (shader `velo_alba`) y una columna fina; sonidos nuevos con instrumentos (`tools/void/instrumentos.py`: arpa, campana FM, flauta, coro, sala) |
+| La textura de la corrosión, dentada | 1024 de ancho, venas con quiebros, sin filtro | `tools/void/corrosion_textura.py`: 2048 × 1152, venas de curvatura suave y `.mcmeta` con `blur` |
+| Que baje «medio corazón y un cuarto más» | `HURT` 1,0 | `HURT` 1,5 (tres cuartos de corazón) cada 3 s al máximo |
+| Otra melodía en el santuario | Sonaba la del Void | `tools/void/musica_santuario.py`: re mayor, 96 s en bucle sin costura (coro, arpa, campanas, flauta en la parte B); suena dentro del Velo (`RiftSky`, `BossSounds.SANCTUARY_MUSIC`) |
+| Caballeros sacros con vida y diálogos | — | `SacredKnight` / `SacredKnights`: **cinco caballeros de la Orden** con el modelo de Caelthar en otro metal y sin alas (`tools/void/caballeros.py`: plata, acero, bronce, rosa y marfil; el pack de NPCs está cifrado y no trae otros caballeros a mano): Ser Bastian (guardián de la Puerta), Ser Varen (el Vigía), Hermano Osric (custodio del Altar), Dama Liora (la Jardinera) y Aela (la novicia). Pasean por su rincón, miran a quien llega, saludan en el chat (cada 10 min) y con clic derecho se paran y hablan (`KnightScreen` en su modo sacro) |
+
+**El lore de la 1.3.97 (lo que cuentan los caballeros y Caelthar).** Cuando el ojo del Vacío (el agujero negro del cielo
+del Void) abrió sus fauces, **se tragó esta dimensión entera**: bosques, ríos, las ciudades de la Orden. Lo que flota son
+**los Fragmentos del Alba Rota**, lo que no alcanzó a devorar; sin nada que los sujete caerían hacia él. En cada
+fragmento hay un **Ancla del Alba** (un pozo de luz): ahí un caballero se hizo luz para sostenerlo, y su magia es lo único
+que impide que estas tierras se derrumben (por eso su luz cura). Antes de que cayera lo último, Caelthar alzó el Velo
+sobre el jardín del templo: **el santuario es el último jardín vivo**, lo único vivo de todo el Void (los cerezos, el
+estanque y las flores, de semillas del último jardín). Fuera del Velo solo hay piedra y ceniza.
+
+**El mapa del Void ahora** (de sur a norte; `tools/void/isla_alba.py --preview carpeta`): la isla de la grieta, con **la
+Llegada** y el **Portal del Alba** donde el Puente de Piedra la toca (donde estaba el Umbral) → el Puente de Piedra → **los
+Fragmentos del Alba Rota** (caja x −372…244, z −660…−196) → el Puente de Luz → **el santuario** (centro (−64, −722), radio
+34, en el Velo). La isla parte de `tools/void/isla_base.bin` (la del dueño, la v2 de `isla.py`), sale igual cada vez (~28 s)
+y queda en `tfclient-void-isla.bin` v4: caja 617 × 128 × 958 desde (−372, 0, −770), 1,3 MB. `IslandUpdate.VERSION` 5: en
+el servidor del dueño se pone al día sola (~2300 trozos de mundo, unos 4 minutos).
+
+**La prueba en el juego** (`[prueba-jefes=vacio,fauna]`): además de lo de siempre, `VIEWS` (vistas desde el aire: la
+Llegada con el portal, los Llanos, el Bosque de Cristal, las Fauces, las Ruinas y la Herida), los caballeros sacros
+(`VoidTestHooks.sacred`), la música dentro del Velo, la armadura (pedirla otra vez; armadura y dureza con las piezas
+puestas), la fauna (barra «no (bien)», botín «nada (bien)») y el pozo de la prueba de luz (el índice 3).
+
+Lo que dio (c38be93f, sin shaders, 13 min): el Desgarrador y el Vigía con su modelo, persiguen y se animan (dash_bite,
+teleport_maul; summon_wraiths), **barra no**; 5 de 5 caballeros sacros en su sitio (a 0–1 bloque); dentro del Velo,
+la música del santuario; la armadura con 4 jefes no, con 5 da 18 objetos, **pedirla otra vez no da nada**, puesta: armadura
+24 y dureza 16 (netherita +1 por pieza) y no corroe; el pozo 3 limpia la corrosión (52 % → luz 67 en 2 s); el portal de la
+Llegada: pasar sin pararse no lleva, quedarse lleva al santuario; la isla de antes se pone al día (2440 trozos). En las
+capturas, el túnel con sus bocas (la del Nether, la del Void y el agujero negro al final), la Llegada con el portal, los
+Llanos y el Bosque de Cristal en roca del Vacío, Caelthar y el Hermano Osric junto a la armadura con su aura.
+
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1441,7 +1507,19 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.96
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.97
+
+**1.3.97**: §3.22 (el Void congruente: todo en roca del Vacío con `tools/void/paleta.py`, los Fragmentos del Alba Rota
+cuatro veces más grandes, la Llegada con el portal donde estaba el Umbral, solo dos criaturas —el Desgarrador y el
+Vigía—, pocas, sin barra ni botín, la armadura una vez y a ras de suelo con aura y su yelmo con armadura, 6 Anclas del
+Alba en burbuja, la corrosión suave y de tres cuartos de corazón, música propia en el santuario, cinco caballeros sacros
+con diálogos y el lore de los Fragmentos; la grieta del cielo con el cielo que se quiebra —braam, crujido, Shepard—, sin
+ondas, distorsión suave y temblor lento; el agujero de gusano rehecho: túnel en perspectiva y bocas esféricas). Queda que
+el dueño lo vea en su servidor (la isla se pone al día sola, unos 4 minutos) y: **preguntarle si los otros sets de las
+crates sin casco de armadura** (evergreen, thunderbolt, fox, akira, easter, darkworld, malika: su casco es un cosmético
+sin armadura) deben tenerlo también, como ahora el yelmo del set Void (`"armor": true` en `tf_sets.json`, lo marca
+`build_mod_items.py mark_armor_head`); si manda **otros modelos o skins de caballeros**, cambiar `SacredKnights.Def.metal`
+por su modelo (`tools/void/caballeros.py` hace los de ahora repintando a Caelthar).
 
 **1.3.96**: §3.21 (con Photon sin barras; la grieta del cielo más épica con sonido corrido; la secuencia y los atributos
 de los jefes del Void; el agujero de gusano con las dimensiones de verdad; en el Void, la corrosión sin números, los

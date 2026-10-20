@@ -1,6 +1,6 @@
 """Los sonidos del viaje por el agujero de gusano y de la luz del Void (1.3.96): sintetizados aquí, sin muestras, sin golpes.
 
-    python3 tools/void/sonidos_viaje.py [--wav carpeta] [--medir]
+    python3 tools/void/sonidos_viaje.py [nombres, p. ej. luz/pozo_entrar] [--wav carpeta] [--medir]
 
 Como los de la grieta del cielo (sonidos_cielo.py, de donde salen las herramientas): el dueño quiere «un sonido fino
 corrido», no golpes uno tras otro. El viaje sonaba con varios de Minecraft (el portal, el cristal que se rompe, una
@@ -13,9 +13,12 @@ explosión, el ghast, el dragón...). Ahora (en assets/tfclient/sounds/viaje/ y 
                  cada puerta, un soplo que sube y cambia el acorde
   viaje/vuelta   igual al revés: Void, End, Nether y el Overworld al final
   viaje/llegada  la luz al llegar: un acorde que florece y un brillo que se queda
-  luz/fragmento  al coger un fragmento de luz (mono: suena en su sitio): un arpegio cálido que sube (sin cristal)
-  luz/velo_entrar, luz/velo_salir   al cruzar el Velo del Alba: un calor que llega / un frío que se va
-  luz/sin_luz    al quedarte sin luz: un oscuro que crece, con susurros
+  (1.3.97, el dueño: «los pozos de luz tienen un sonido feo y el del santuario también»: con los instrumentos de
+  instrumentos.py, arpa, coro y campanas, en vez de acordes de senos)
+  luz/pozo_entrar  al entrar en un Pozo de Luz: glissando de arpa que sube, un «aah» y una campana
+  luz/velo_entrar  al entrar en el Velo del Alba: el coro que florece, el arpa y dos campanas
+  luz/velo_salir   al salir de la luz: cuatro notas de arpa que bajan
+  luz/sin_luz      al quedarte sin luz: un coro grave en menor que crece, con un susurro
 """
 import os
 import subprocess
@@ -133,62 +136,86 @@ def llegada():
     return stereo_reverb(ch * 2.4 + sh * 0.2 + air * 0.35, 3.0, 4000, 0.45, 263)
 
 
-def fragmento():
-    """Mono (suena en su sitio): un arpegio cálido que sube, de senos con ataque suave (nada de cristal)."""
-    t = tt(2.2)
-    x = np.zeros(len(t))
-    for i, f in enumerate((293.66, 369.99, 440.0, 587.33)):
-        at = 0.06 + i * 0.09
-        env = swell(t, at, 0.04, 0.9 - i * 0.1)
-        x += (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * 2 * f * t)) * env * (1.0 - 0.12 * i)
-    r = np.random.default_rng(270)
-    air = lp_sweep(r.standard_normal(len(t)), 600, 5000, 24) * swell(t, 0.35, 0.3, 0.4) * 0.15
-    return reverb(x + air, 2.0, 4500, 0.4, seed=271)
+def _gliss(notes, gap, vel, seed, at=0.0, pan_from=-0.5, pan_to=0.5):
+    """Un glissando de arpa (estéreo): las notas una tras otra, abriéndose de izquierda a derecha."""
+    from instrumentos import arpa, hz, pan2, place
+    out = np.zeros((int((at + gap * len(notes) + 4.0) * SR), 2))
+    for k, nme in enumerate(notes):
+        p = pan_from + (pan_to - pan_from) * k / max(1, len(notes) - 1)
+        place(out, pan2(arpa(hz(nme), 3.5, vel * (0.75 + 0.25 * k / len(notes)), seed=seed + k), p), at + k * gap)
+    return out
+
+
+def pozo_entrar():
+    """(1.3.97) Entrar en un Pozo de Luz: un glissando de arpa que sube (Re mayor pentatónica), un «aah» que se abre y una
+    campana suave al final. Cálido y corto."""
+    from instrumentos import campana, coro, hz, pan2, place, sala
+    t = tt(3.4)
+    x = _gliss(['D4', 'E4', 'F#4', 'A4', 'B4', 'D5', 'E5', 'F#5', 'A5'], 0.055, 0.9, 610)[: len(t)]
+    ch = coro(t, [hz(n) for n in ('A3', 'D4', 'F#4')], seed=611) * swell(t, 0.7, 0.55, 1.3)[:, None]
+    place(x, ch, 0.0, 0.9)
+    place(x, pan2(campana(hz('D6'), 3.0, 0.6, seed=612), 0.2), 0.55, 0.35)
+    return sala(x, 3.0, 0.4, 5000, seed=613)
 
 
 def velo_entrar():
-    t = tt(2.2)
-    ch = bloom(t, 0.45, (220.0, 277.18, 329.63, 440.0), attack=0.45, decay=0.9, seed=280, bright=3500)
-    air = whoosh(t, 0.4, 0.4, 0.5, 400, 3000, seed=281)
-    return stereo_reverb(ch * 2.2 + air * 0.3, 2.5, 3500, 0.4, 282)
+    """Entrar en el Velo del Alba (el santuario): el coro que florece en un acorde amplio, el arpa que sube y dos
+    campanas: llegas a casa."""
+    from instrumentos import campana, coro, hz, pan2, place, sala
+    t = tt(4.2)
+    x = _gliss(['A3', 'D4', 'F#4', 'A4', 'D5', 'F#5', 'A5', 'D6'], 0.075, 0.85, 620)[: len(t)]
+    ch = coro(t, [hz(n) for n in ('D3', 'A3', 'D4', 'F#4', 'A4')], seed=621) * swell(t, 0.9, 0.75, 1.8)[:, None]
+    place(x, ch, 0.0, 1.0)
+    place(x, pan2(campana(hz('A5'), 3.5, 0.55, seed=622), -0.3), 0.6, 0.35)
+    place(x, pan2(campana(hz('D6'), 3.5, 0.5, seed=623), 0.3), 0.95, 0.3)
+    return sala(x, 3.8, 0.42, 5000, seed=624)
 
 
 def velo_salir():
-    t = tt(2.0)
-    air = whoosh(t, 0.3, 0.3, 0.7, 4000, 300, seed=290)
-    low = pan(sub(t, 70, 45, 0.7), 0) * swell(t, 0.35, 0.3, 0.6)[:, None]
-    return stereo_reverb(air * 0.5 + low * 0.5, 2.0, 2000, 0.35, 291)
+    """Salir de la luz: cuatro notas de arpa que bajan, despacio, y un aire frío muy bajito."""
+    from instrumentos import hz, place, sala
+    t = tt(3.2)
+    x = _gliss(['A4', 'F#4', 'D4', 'A3'], 0.16, 0.7, 630, pan_from=0.4, pan_to=-0.4)[: len(t)]
+    air = whoosh(t, 0.5, 0.5, 0.9, 2500, 500, seed=631)
+    place(x, air, 0.0, 0.18)
+    return sala(x, 3.0, 0.4, 3500, seed=632)
 
 
 def sin_luz():
-    t = tt(3.4)
-    low = pan(sub(t, 45, 32, 1.0), 0) * swell(t, 1.2, 1.1, 1.0)[:, None]
-    dark = choir(t, (61.74, 65.41, 92.5), seed=300, vib=0.015) * swell(t, 1.3, 1.2, 1.0)[:, None] * 2.0
-    # susurros: ruido por las formantes de una voz, que van y vienen
-    wh = noise2(len(t), 301)
+    """Quedarse sin luz: un coro grave en menor que crece, el arpa que cae a lo grave y un susurro lejano."""
+    from instrumentos import coro, hz, place, sala
+    t = tt(3.6)
+    ch = coro(t, [hz(n) for n in ('B1', 'F#2', 'B2', 'D3')], seed=641) * swell(t, 1.3, 1.1, 1.2)[:, None]
+    x = np.zeros((len(t), 2))
+    place(x, ch, 0.0, 1.2)
+    place(x, _gliss(['F#3', 'D3', 'B2', 'F#2'], 0.22, 0.6, 642, pan_from=0.3, pan_to=-0.3)[: len(t)], 0.2)
+    wh = noise2(len(t), 643)
     for c in range(2):
-        wh[:, c] = bp(wh[:, c], 1800, 4200) + 0.5 * bp(wh[:, c], 700, 1100)
-    am = (0.5 + 0.5 * np.sin(2 * np.pi * np.cumsum(5 + 3 * np.sin(2 * np.pi * 0.8 * t)) / SR)) ** 4
-    wh = wh * (am * swell(t, 1.6, 1.4, 0.9))[:, None] * 0.25
-    return stereo_reverb(low * 0.8 + dark + wh, 3.0, 1800, 0.45, 302)
+        wh[:, c] = bp(wh[:, c], 1600, 3800)
+    am = (0.5 + 0.5 * np.sin(2 * np.pi * np.cumsum(4 + 2 * np.sin(2 * np.pi * 0.7 * t)) / SR)) ** 4
+    place(x, wh * (am * swell(t, 1.6, 1.2, 0.9))[:, None], 0.0, 0.12)
+    return sala(x, 3.4, 0.45, 2500, seed=644)
 
 
 SOUNDS = {
     'viaje/ida': ida,
     'viaje/vuelta': vuelta,
     'viaje/llegada': llegada,
-    'luz/fragmento': fragmento,
+    'luz/pozo_entrar': pozo_entrar,
     'luz/velo_entrar': velo_entrar,
     'luz/velo_salir': velo_salir,
     'luz/sin_luz': sin_luz,
 }
-PEAK = {'luz/velo_entrar': 0.6, 'luz/velo_salir': 0.55, 'luz/sin_luz': 0.75}
+PEAK = {'luz/pozo_entrar': 0.55, 'luz/velo_entrar': 0.6, 'luz/velo_salir': 0.45, 'luz/sin_luz': 0.6}
 
 
 def main():
     wav_dir = sys.argv[sys.argv.index('--wav') + 1] if '--wav' in sys.argv else None
     tmp = tempfile.mkdtemp()
+    only = [a for a in sys.argv[1:] if '/' in a and not a.startswith('-') and a in SOUNDS]
     for name, fn in SOUNDS.items():
+        if only and name not in only:
+            continue
         x = fn()
         mono = x.ndim == 1
         if mono:

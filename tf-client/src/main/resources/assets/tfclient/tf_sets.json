@@ -5052,7 +5052,8 @@
     },
     {
      "id": "void_helmet",
-     "type": "head"
+     "type": "head",
+     "armor": true
     },
     {
      "id": "void_wings",

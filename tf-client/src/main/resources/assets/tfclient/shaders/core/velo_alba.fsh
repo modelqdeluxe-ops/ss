@@ -13,6 +13,8 @@ uniform vec4 Ripple;
 uniform float Inside;
 uniform float Ground;
 uniform float Alpha;
+// (1.3.97) 1: la paleta violeta del Vacío (el aura de la armadura del Vacío en su altar) en vez de oro, rosa y perla
+uniform float Violet;
 
 in vec3 vPos;
 
@@ -45,9 +47,9 @@ void main() {
     float th = fbm(n * 2.4 + vec3(0.0, -STime * 0.07, STime * 0.02));
     float film = th * 2.6 + ndv * 1.2 + STime * 0.04;
     // (solo oro, rosa y perla: con el arcoíris entero, el verde sobre el oro daba un borde verde oliva en el juego)
-    vec3 gold = vec3(1.0, 0.8, 0.46);
-    vec3 rose = vec3(1.0, 0.64, 0.84);
-    vec3 pearl = vec3(0.74, 0.9, 1.0);
+    vec3 gold = mix(vec3(1.0, 0.8, 0.46), vec3(0.62, 0.3, 1.0), Violet);
+    vec3 rose = mix(vec3(1.0, 0.64, 0.84), vec3(0.92, 0.4, 1.0), Violet);
+    vec3 pearl = mix(vec3(0.74, 0.9, 1.0), vec3(0.78, 0.66, 1.0), Violet);
     float ph = fract(film) * 3.0;
     vec3 irid = ph < 1.0 ? mix(gold, rose, ph) : ph < 2.0 ? mix(rose, pearl, ph - 1.0) : mix(pearl, gold, ph - 2.0);
     vec3 col = mix(gold, irid, 0.55);
@@ -70,7 +72,7 @@ void main() {
         float d = ang - 0.05 - Ripple.w * 1.4;
         rip = exp(-d * d * 90.0) * exp(-Ripple.w * 1.3) * 0.5 + exp(-ang * ang * 25.0) * exp(-Ripple.w * 4.0) * 0.08;
     }
-    col = mix(col, vec3(1.0, 0.95, 0.88), clamp(fres * 0.6 + spark + rip * 1.5 + belt * 0.5, 0.0, 1.0));
+    col = mix(col, mix(vec3(1.0, 0.95, 0.88), vec3(0.9, 0.8, 1.0), Violet), clamp(fres * 0.6 + spark + rip * 1.5 + belt * 0.5, 0.0, 1.0));
     float a = 0.05 + 0.55 * fres + 0.06 * wave + 0.1 * curtain * (0.4 + 0.6 * th) + 0.6 * spark + 0.3 * belt + rip;
     // desde dentro, más suave (que no tape la vista) pero cálido: el cielo se ve dorado
     if (Inside > 0.5) a = a * 0.7 + 0.025 * (0.6 + 0.4 * n.y);

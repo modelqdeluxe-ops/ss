@@ -8,6 +8,8 @@
 uniform float STime;
 uniform float Mode;
 uniform float Alpha;
+// (1.3.97) 1: violeta (el círculo de la armadura del Vacío en su altar) en vez de oro
+uniform float Violet;
 
 in vec2 uv;
 
@@ -50,7 +52,8 @@ void main() {
         float ring = exp(-pow((r - 0.93) * 20.0, 2.0)) * (0.75 + 0.25 * beat);
         float runes = step(0.55, fract(a * 16.0 / 6.2831 + STime * 0.06)) * exp(-pow((r - 0.76) * 28.0, 2.0)) * 0.45;
         float inner = exp(-r * r * 7.0) * 0.3;
-        col = vec3(1.0, 0.84, 0.5) * (fill + ring + runes) + vec3(1.0, 0.97, 0.88) * inner;
+        col = mix(vec3(1.0, 0.84, 0.5), vec3(0.66, 0.36, 1.0), Violet) * (fill + ring + runes)
+                + mix(vec3(1.0, 0.97, 0.88), vec3(0.88, 0.78, 1.0), Violet) * inner;
         fade = 1.0 - smoothstep(0.97, 1.0, r);
     } else {
         // la columna: uv.x de lado a lado, uv.y de abajo (el corazón) a arriba

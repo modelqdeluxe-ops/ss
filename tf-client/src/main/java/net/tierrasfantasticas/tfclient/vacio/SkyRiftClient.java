@@ -43,18 +43,21 @@ import org.lwjgl.opengl.GL11;
  * cuadro es solo el lienzo (enorme: ~140° de cielo).
  * 1.3.96 (el dueño: «el diseño me gusta, hazlo un poquito más grandecito y más épico; mejora el sonido y el efecto de
  * apertura, aparecimiento y cierre; la distorsión casi no se nota»; JEFES.md §3.21): ~20 % más grande, sonidos propios
- * (una pista continua por momento, sin golpes: {@link #sounds}), el anillo de choque ({@link #ring}), la tormenta que
- * gira cada vez más rápido antes de romperse y al cerrarse ({@link #spinRate}) y la distorsión más fuerte ({@link #warp}).
+ * (una pista continua por momento, sin golpes: {@link #sounds}), la tormenta que gira cada vez más rápido antes de
+ * romperse y al cerrarse ({@link #spinRate}) y la distorsión más fuerte ({@link #warp}).
+ * 1.3.97 (el dueño: «el sonido no es épico, no suena el quebranto del cielo; la distorsión es demasiada, hasta me bugea
+ * la cámara; el efecto de ondas no me gusta»): sonidos nuevos (tools/void/sonidos_cielo.py), sin anillo de choque ni
+ * ondas, la distorsión mucho más suave y el temblor lento y leve (un retumbo, no sacudidas: {@link #shake}).
  * <ul>
  *   <li>Preludio (12 s): el cielo entero se va apagando (y la niebla con él), un vórtice de tormenta negra y violeta crece
  *   donde va a romperse ({@code Storm}) y gira cada vez más rápido, una sombra y un resplandor que laten ({@code Dark})
  *   en la que asoman estrellas del Void, relámpagos lejanos con grietas que parpadean y un temblor que crece.</li>
- *   <li>Se rompe: la telaraña de fracturas se extiende a saltos, a los 1,8 s estalla (fogonazo en estrella, un anillo
- *   de choque que cruza el cielo, onda de choque y trozos de cielo que salen disparados: {@code Shatter}) y el desgarro
+ *   <li>Se rompe: la telaraña de fracturas se extiende a saltos, a los 1,8 s estalla (fogonazo en estrella y trozos de
+ *   cielo que salen disparados: {@code Shatter}) y el desgarro
  *   se abre del centro a las puntas (con chispas en ellas) hasta los 5,5 s. El cielo vuelve poco a poco, pero mientras
  *   la grieta sigue abierta queda algo apagado, y de vez en cuando el Void respira.</li>
- *   <li>Se sella (cayó un jefe del Void): la tormenta se arremolina, el desgarro se cose de las puntas al centro, un
- *   anillo se encoge, fogonazo, y quedan la cicatriz y una tormenta débil.</li>
+ *   <li>Se sella (cayó un jefe del Void): la tormenta se arremolina, el desgarro se cose de las puntas al centro,
+ *   fogonazo, y quedan la cicatriz y una tormenta débil.</li>
  *   <li>Se vuelve a abrir (con su propio sonido, más oscuro): vuelve la tormenta, estalla otra vez y se abre.</li>
  *   <li>El final: se cierra del todo, gran fogonazo, y desaparece (con un acorde en paz).</li>
  * </ul>
@@ -165,18 +168,17 @@ public final class SkyRiftClient {
                     float flash = 0F;
                     for (int i = 1; i < STEP_T.length; i++) flash = Math.max(flash, 0.35F * bump(t, STEP_T[i] + 0.05F, 0.2F));
                     flash = Math.max(flash, t >= BREAK ? 1.6F * (float) Math.exp(-(t - BREAK) * 1.6F) : 0.3F * smooth(1.5F, BREAK, t));
-                    float shock = t >= BREAK && t < BREAK + 2.2F ? (t - BREAK) * 5F : -1F;
+                    // (1.3.97: sin onda de choque; el dueño: «el efecto de ondas de la grieta del cielo no me gusta»)
                     return new float[] {steps(t), smooth(BREAK, OPENED, t), flash, 1F, 0.95F * (1F - smooth(BREAK, 4F, t)), 1F,
-                            t >= BREAK ? t - BREAK : -1F, shock};
+                            t >= BREAK ? t - BREAK : -1F, -1F};
                 }
             }
             case SkyRift.FX_REOPEN -> {
                 if (t < 7F) {
                     // desde la cicatriz: vuelve la tormenta, las grietas crecen y estalla otra vez
                     float flash = t >= REBREAK ? 1.3F * (float) Math.exp(-(t - REBREAK) * 1.8F) : 0.3F * smooth(0.9F, REBREAK, t);
-                    float shock = t >= REBREAK && t < REBREAK + 2F ? (t - REBREAK) * 5F : -1F;
                     return new float[] {0.35F + 0.65F * smooth(0F, REBREAK, t), smooth(REBREAK, 4F, t), flash, 0.8F + 0.2F * smooth(0F, 0.6F, t),
-                            0.6F * (1F - smooth(REBREAK, 3F, t)), 0.25F + 0.75F * smooth(0F, 1.5F, t), t >= REBREAK ? t - REBREAK : -1F, shock};
+                            0.6F * (1F - smooth(REBREAK, 3F, t)), 0.25F + 0.75F * smooth(0F, 1.5F, t), t >= REBREAK ? t - REBREAK : -1F, -1F};
                 }
             }
             case SkyRift.FX_CLOSE -> {
@@ -205,29 +207,6 @@ public final class SkyRiftClient {
             case SkyRift.CLOSED -> new float[] {0.35F, 0F, 0F, 0.8F, 0F, 0.25F, -1F, -1F};
             default -> null;
         };
-    }
-
-    /**
-     * (1.3.96) El anillo de choque: cruza el cielo al estallar (al romperse y al volver a abrirse) y se encoge hacia el
-     * centro justo antes del fogonazo al sellarse y en el final. {radio en radianes de cielo (o -1), fuerza}.
-     */
-    private static float[] ring() {
-        float t = since();
-        return switch (fx) {
-            case SkyRift.FX_BURST -> ringOut(t - BREAK);
-            case SkyRift.FX_REOPEN -> ringOut(t - REBREAK);
-            case SkyRift.FX_CLOSE -> ringIn(t, 1.5F, 2.3F, 0.95F);
-            case SkyRift.FX_END -> ringIn(t, 1.7F, 2.5F, 1F);
-            default -> new float[] {-1F, 0F};
-        };
-    }
-
-    private static float[] ringOut(float u) {
-        return u >= 0F && u < 2.6F ? new float[] {u * 0.85F, 1.3F * (float) Math.exp(-u * 1.2F)} : new float[] {-1F, 0F};
-    }
-
-    private static float[] ringIn(float t, float t0, float t1, float r0) {
-        return t >= t0 && t < t1 ? new float[] {r0 * (t1 - t) / (t1 - t0), 0.9F * smooth(t0, t0 + 0.3F, t)} : new float[] {-1F, 0F};
     }
 
     /** (1.3.96) Lo rápido que gira la tormenta (rad/s): cada vez más antes de romperse, y al cerrarse se la traga. */
@@ -278,16 +257,21 @@ public final class SkyRiftClient {
                 && mc.level.effects().skyType() == net.minecraft.client.renderer.DimensionSpecialEffects.SkyType.NORMAL;
     }
 
-    /** El temblor de la cámara (RiftWarp lo suma): crece en el preludio (con un golpe en cada relámpago), y al romperse. */
+    /**
+     * El temblor de la cámara (un vaivén lento: {@link net.tierrasfantasticas.tfclient.bosses.RiftWarp#onCamera}): un
+     * retumbo que crece en el preludio y al romperse, y se va despacio. (1.3.97: el dueño, «la distorsión es demasiada,
+     * hasta me bugea la cámara»; antes llegaba a 2 con sacudidas rápidas y un golpe en cada relámpago; ahora no pasa de
+     * 0,4 y sin golpes.)
+     */
     public static float shake() {
         if (!here || fx < 0) return 0F;
         float t = since();
         float k = switch (fx) {
-            case SkyRift.FX_PRELUDE -> t < 13F ? 0.05F + 0.45F * smooth(0F, 12F, t) + 0.35F * flick(t) : 0F;
-            case SkyRift.FX_BURST -> t < BREAK ? 0.5F + 0.4F * (steps(t) - steps(t - 0.15F)) / 0.3F
-                    : t < 10F ? 2.0F * (float) Math.exp(-(t - BREAK) * 0.9F) : 0F;
-            case SkyRift.FX_REOPEN -> t > REBREAK && t < 6F ? 1.4F * (float) Math.exp(-(t - REBREAK) * 1.2F) : 0F;
-            case SkyRift.FX_CLOSE, SkyRift.FX_END -> t > 2F && t < 4.5F ? 0.6F * (float) Math.exp(-Math.abs(t - 2.4F) * 2F) : 0F;
+            case SkyRift.FX_PRELUDE -> t < 13.5F ? 0.03F + 0.15F * smooth(3F, 12F, t) * (1F - smooth(12.6F, 13.5F, t)) : 0F;
+            case SkyRift.FX_BURST -> t < BREAK ? 0.18F + 0.1F * smooth(0F, BREAK, t)
+                    : t < 10F ? 0.28F + 0.12F * (float) Math.exp(-(t - BREAK) * 1.5F) - 0.28F * smooth(BREAK, 9.5F, t) : 0F;
+            case SkyRift.FX_REOPEN -> t < 7F ? 0.3F * smooth(0F, REBREAK, t) * (1F - smooth(REBREAK + 0.5F, 6.5F, t)) : 0F;
+            case SkyRift.FX_CLOSE, SkyRift.FX_END -> t < 5F ? 0.2F * smooth(0.5F, 2.3F, t) * (1F - smooth(2.6F, 4.5F, t)) : 0F;
             default -> 0F;
         };
         maxShake = Math.max(maxShake, k);
@@ -506,8 +490,6 @@ public final class SkyRiftClient {
         sh.safeGetUniform("RiftR").set((float) ax[1].x, (float) ax[1].y, (float) ax[1].z);
         sh.safeGetUniform("RiftU").set((float) ax[2].x, (float) ax[2].y, (float) ax[2].z);
         sh.safeGetUniform("CloudMask").set(mask);
-        float[] rg = ring();
-        sh.safeGetUniform("Ring").set(rg[0], rg[1]);
         sh.safeGetUniform("Spin").set(spinAngle);
         PoseStack mv = RenderSystem.getModelViewStack();
         mv.pushPose();
@@ -575,9 +557,10 @@ public final class SkyRiftClient {
 
     /**
      * La distorsión de cuando la miras (RiftWarp): su centro en la pantalla (uv), su radio (alto de la pantalla = 1, en
-     * esas unidades), la fuerza (0..1, más al romperse), el fogonazo y la onda de choque (o -1); null si no se ve.
-     * (1.3.96: el dueño, «el efecto de distorsión al ver la grieta casi no se nota»: radio de 0,3 a 0,42 rad y, en
-     * RiftWarp, lente, remolino y ondas más fuertes.)
+     * esas unidades), la fuerza (0..1, más al romperse), el fogonazo y la onda de choque (siempre -1 desde la 1.3.97);
+     * null si no se ve. (1.3.96: el dueño, «el efecto de distorsión al ver la grieta casi no se nota»: radio de 0,3 a 0,42
+     * rad y, en RiftWarp, lente, remolino y ondas más fuertes. 1.3.97: «es demasiado, hasta me bugea la cámara»: en
+     * RiftWarp, una lente y un remolino suaves, sin ondas.)
      */
     public static float[] warp(Matrix4f view, Matrix4f proj, float aspect) {
         if (!visibleHere()) return null;

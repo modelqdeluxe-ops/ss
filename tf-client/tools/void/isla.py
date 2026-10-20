@@ -30,7 +30,8 @@ los packs de los jefes). Aquí:
      trilineal, sin escalones de 1-2 bloques) y las franjas de la superficie se copian de su columna; los caminos van con
      el terreno; lo construido (el templete del sureste y los farolillos) se pone a su tamaño (1:1) en su sitio nuevo,
      sobre el terreno nuevo, con cimientos; el templete del norte lo sustituye el santuario.
-  5. Se guarda en src/main/resources/tfclient-void-isla.bin (gzip): paleta de estados, posiciones (caballero, llegada,
+  5. Se guarda en tools/void/isla_base.bin (gzip; isla_alba.py hace a partir de ella la del mod,
+     src/main/resources/tfclient-void-isla.bin): paleta de estados, posiciones (caballero, llegada,
      grieta) y, por columna, tramos (y, largo, bloque). El centro de la plaza (la grieta) queda en x=0, z=0 del mundo.
 
 Los 81 enderman del mapa no se copian (la dimensión no tiene criaturas).
@@ -49,7 +50,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import nbt  # noqa: E402
 
-OUT = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'tfclient-void-isla.bin'))
+# (1.3.97) la isla del dueño convertida (la base): isla_alba.py la toma de aquí y escribe la del mod
+OUT = os.path.join(HERE, 'isla_base.bin')
 
 # Ids antiguos (id, dato) → estado de bloque de la 1.20.1. Escaleras: dato 0-3 = sube hacia este, oeste, sur, norte;
 # +4 = boca abajo. Losas: +8 = arriba. Troncos 162: dato & 3 = acacia/roble oscuro, & 12 = eje (0 y, 4 x, 8 z, 12 corteza).
@@ -859,9 +861,9 @@ def main():
         dest = sys.argv[sys.argv.index('--preview') + 1]
         os.makedirs(dest, exist_ok=True)
         np.savez_compressed(os.path.join(dest, 'isla.npz'), g=isl.grid, names=np.array(isl.names))
-    # (1.3.96) el Santuario del Alba (la isla del caballero con su burbuja), el Puente de Luz y los fragmentos de luz
+    # (1.3.96-1.3.97) el Void entero a partir de esta base: la paleta, la Llegada, los Fragmentos y el Santuario
     import isla_alba
-    isla_alba.main(OUT)
+    isla_alba.main()
 
 
 if __name__ == '__main__':

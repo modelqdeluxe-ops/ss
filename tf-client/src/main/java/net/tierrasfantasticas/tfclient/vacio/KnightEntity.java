@@ -88,12 +88,28 @@ public class KnightEntity extends PathfinderMob {
         this.setInvulnerable(true);
     }
 
+    /** ¿Se queda quieto en su sitio? (Caelthar sí; los caballeros sacros del santuario pasean, 1.3.97) */
+    protected boolean stationary() {
+        return true;
+    }
+
+    /** Su nombre y su título (los de los caballeros sacros, SacredKnights). */
+    public String displayName() {
+        return NAME;
+    }
+
+    public String displayTitle() {
+        return TITLE;
+    }
+
     @Override
     public void tick() {
         super.tick();
         // Quieto en su sitio (aunque algo le empuje)
-        Vec3 v = getDeltaMovement();
-        setDeltaMovement(0, Math.min(0, v.y), 0);
+        if (stationary()) {
+            Vec3 v = getDeltaMovement();
+            setDeltaMovement(0, Math.min(0, v.y), 0);
+        }
         // (1.3.89) el santuario se mudó a la punta norte: el caballero que se quedó en el centro de un Void de antes se va
         // (TFVoid pone otro en el santuario nuevo)
         if (!level().isClientSide && home() && tickCount % 40 == 0 && TFVoid.isVoid(level())
@@ -103,13 +119,13 @@ public class KnightEntity extends PathfinderMob {
         }
         if (level().isClientSide) {
             clientAge++;
-            // Motas de luz dorada que suben a su alrededor y alguna chispa blanca
-            if (random.nextInt(3) == 0) {
+            // Motas de luz dorada que suben a su alrededor y alguna chispa blanca (los caballeros sacros, menos)
+            if (random.nextInt(stationary() ? 3 : 9) == 0) {
                 double a = random.nextDouble() * Math.PI * 2, r = 0.6 + random.nextDouble() * 0.9;
                 level().addParticle(GOLD, getX() + Math.cos(a) * r, getY() + 0.2 + random.nextDouble() * 2.6,
                         getZ() + Math.sin(a) * r, 0, 0.02, 0);
             }
-            if (random.nextInt(10) == 0) {
+            if (stationary() && random.nextInt(10) == 0) {
                 level().addParticle(ParticleTypes.END_ROD, getX() + (random.nextDouble() - 0.5) * 1.6, getY() + 3.0,
                         getZ() + (random.nextDouble() - 0.5) * 1.6, 0, 0.01, 0);
             }
