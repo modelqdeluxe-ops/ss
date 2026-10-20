@@ -66,6 +66,24 @@ public final class VoidTestHooks {
         return n < 0 ? "aún no (" + VoidArmor.kills(p) + " de " + VoidArmor.NEED + ")" : "da " + n + " objetos";
     }
 
+    /** (1.3.97) Los caballeros sacros del santuario: quiénes están y a cuánto de su sitio (pasean). */
+    public static String sacred(net.minecraft.server.level.ServerLevel level) {
+        StringBuilder b = new StringBuilder();
+        int n = 0;
+        for (SacredKnights.Def d : SacredKnights.ALL) {
+            net.minecraft.core.BlockPos home = SacredKnights.home(d);
+            var list = level.getEntitiesOfClass(SacredKnight.class, new net.minecraft.world.phys.AABB(home).inflate(40), e -> e.variant() == d.id());
+            if (b.length() > 0) b.append(", ");
+            if (list.isEmpty()) {
+                b.append(d.name()).append(" NO ESTÁ");
+            } else {
+                n++;
+                b.append(String.format("%s a %.1f de su sitio", d.name(), Math.sqrt(list.get(0).blockPosition().distSqr(home))));
+            }
+        }
+        return n + " de " + SacredKnights.ALL.size() + " caballeros sacros: " + b;
+    }
+
     /** (1.3.97) Pedirla otra vez: no da nada (una sola vez por jugador). */
     public static String armorAgain(net.minecraft.server.level.ServerPlayer p) {
         int n = VoidArmor.claim(p);

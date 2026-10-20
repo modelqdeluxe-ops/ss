@@ -679,8 +679,18 @@ public final class BossTest {
      * Void?», «Llévame al Void»), viaja con la animación, mira el cielo y la isla desde varios sitios, prueba el rescate
      * al caer al vacío, habla con el caballero del santuario y vuelve. Capturas de cada paso.
      */
-    /** (1.3.96) Lo que dura la prueba de la luz del Alba (lightStep), metida tras la persecución. */
-    private static final int LIGHT_TICKS = 720;
+    /**
+     * (1.3.97) Las vistas desde el aire del Void nuevo (desde dónde, hacia dónde, la captura): la Llegada con el portal, los
+     * Llanos de Ceniza, el Bosque de Cristal, las Fauces de Obsidiana, las Ruinas de la Orden y la Herida. 160 ticks cada
+     * una (con shaders, el trozo de mundo tarda en construirse).
+     */
+    private static final double[][] VIEWS = {
+            {-84, 80, -182, -58, 67, -161}, {-64, 100, -232, -64, 70, -330}, {70, 104, -360, 150, 72, -450},
+            {-200, 108, -360, -280, 74, -450}, {-64, 102, -520, -64, 72, -610}, {-14, 118, -372, -14, 60, -430}};
+    private static final String[] VIEW_NAMES = {"vacio_llegada_portal", "vacio_llanos", "vacio_cristal", "vacio_fauces", "vacio_ruinas", "vacio_herida"};
+    private static final int VIEW_TICKS = 160;
+    /** (1.3.96) Lo que dura la prueba de la luz del Alba (lightStep), metida tras la persecución (y las vistas, 1.3.97). */
+    private static final int LIGHT_TICKS = 720 + 6 * VIEW_TICKS;
     /** Cuándo empieza (en ticks de la prueba). */
     private static final int LIGHT_AT = 1815 + 80;
 
@@ -787,6 +797,7 @@ public final class BossTest {
                 r.event("dentro del Velo del Alba: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
                         + "; música del santuario: " + (RiftSky.sanctuaryMusic() ? "suena" : "NO"));
                 shot(r, "vacio_caballero");
+                r.event(net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacred(vl));
             }
             // la grieta del Void en el centro de la plaza
             case 880 -> {
@@ -979,9 +990,26 @@ public final class BossTest {
      * la grieta al santuario). La vida del jugador de la prueba se rellena cada tick: la corrosión se cuenta por sus golpes.
      */
     private static void lightStep(ServerLevel vl, ServerPlayer player, Rep r, int k) {
+        if (k >= 720) {
+            int v = (k - 720) / VIEW_TICKS, kk = (k - 720) % VIEW_TICKS;
+            if (v >= VIEWS.length) return;
+            double[] a = VIEWS[v];
+            if (kk == 0) {
+                fly(player, true);
+                double dx = a[3] - a[0], dy = a[4] - a[1], dz = a[5] - a[2];
+                float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+                player.teleportTo(vl, a[0], a[1], a[2], yaw, pitch);
+            } else if (kk == VIEW_TICKS - 10) {
+                shot(r, VIEW_NAMES[v]);
+            } else if (kk == VIEW_TICKS - 1 && v == VIEWS.length - 1) {
+                fly(player, false);
+            }
+            return;
+        }
         java.util.List<net.minecraft.core.BlockPos> shards = net.tierrasfantasticas.tfclient.vacio.VoidIsland.shards();
-        // (un pozo del Páramo: los 10 primeros son los de la isla de la grieta)
-        net.minecraft.core.BlockPos f = shards.size() > 10 ? shards.get(10) : shards.isEmpty() ? null : shards.get(0);
+        // (un Ancla de los Fragmentos: las 2 primeras son las de la isla de la grieta; la 4.ª, en medio del sendero)
+        net.minecraft.core.BlockPos f = shards.size() > 3 ? shards.get(3) : shards.isEmpty() ? null : shards.get(0);
         switch (k) {
             case 0 -> {
                 r.event("corrosión tras la persecución (30 s fuera de la luz): " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
@@ -1036,11 +1064,11 @@ public final class BossTest {
             }
             // el Portal del Alba, junto a la plaza de la grieta: verlo y cruzarlo
             case 570 -> {
-                // (delante del arco, del lado de la plaza: facing 0, al sur mirando al norte; 1, al este mirando al oeste)
+                // (delante del arco, del lado de la plaza: facing 0, al sur mirando al norte; 1, al oeste mirando al este)
                 net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
                 boolean alongX = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0;
-                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : 9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
-                        alongX ? 180F : 90F, -12F);
+                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : -9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
+                        alongX ? 180F : 270F, -12F);
             }
             // pasar por el velo sin pararse (4 ticks): no lleva al santuario
             case 600 -> {
@@ -1051,8 +1079,8 @@ public final class BossTest {
             case 604 -> {
                 net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
                 boolean alongX = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0;
-                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : 9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
-                        alongX ? 180F : 90F, -12F);
+                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : -9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
+                        alongX ? 180F : 270F, -12F);
             }
             case 640 -> {
                 int n = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portalTrips() - portalTrips0;
@@ -1064,7 +1092,7 @@ public final class BossTest {
                 // (se queda en el velo: hay que estar VoidPortal.CHARGE ticks)
                 net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
                 if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 0.5,
-                        net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0 ? 180F : 90F, 0F);
+                        net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0 ? 180F : 270F, 0F);
             }
             case 700 -> {
                 Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();

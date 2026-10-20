@@ -72,6 +72,10 @@ public final class TFVoid {
     public static final RegistryObject<EntityType<KnightEntity>> KNIGHT = ENTITIES.register("caballero", () ->
             EntityType.Builder.<KnightEntity>of(KnightEntity::new, MobCategory.MISC)
                     .sized(0.9F, 2.9F).clientTrackingRange(10).updateInterval(3).fireImmune().build("caballero"));
+    /** (1.3.97) Los caballeros sacros del santuario (SacredKnights). */
+    public static final RegistryObject<EntityType<SacredKnight>> SACRED = ENTITIES.register("caballero_sacro", () ->
+            EntityType.Builder.<SacredKnight>of(SacredKnight::new, MobCategory.MISC)
+                    .sized(0.8F, 2.8F).clientTrackingRange(10).updateInterval(2).fireImmune().build("caballero_sacro"));
 
     /** Avisos de «la isla está protegida» (uno cada 3 s por jugador). */
     private static final Map<UUID, Long> WARNED = new HashMap<>();
@@ -90,6 +94,7 @@ public final class TFVoid {
 
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(KNIGHT.get(), KnightEntity.attributes().build());
+        event.put(SACRED.get(), SacredKnight.attributes().build());
     }
 
     public static boolean isVoid(Level level) {
@@ -242,6 +247,7 @@ public final class TFVoid {
         if (++tick % 100 != 0) return;
         if (level == null || level.players().isEmpty()) return;
         ensureHomeKnight(level);
+        if (IslandUpdate.finished()) SacredKnights.ensure(level);
     }
 
     /** El caballero del santuario (el que te devuelve): si no está y su chunk tiene ya sus entidades, sale. */

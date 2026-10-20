@@ -1,32 +1,32 @@
-"""El Páramo del Alba Rota (1.3.96): el bioma del Void entre la isla de la grieta y el santuario.
+"""Los Fragmentos del Alba Rota (1.3.97): la tierra del Void entre la isla de la grieta y el santuario.
 
     (lo llama isla_alba.py, que también se puede pasar solo: python3 -I tools/void/isla_alba.py [--preview carpeta])
 
-El dueño: «hazte un bioma completo: estará el santuario, y en medio del santuario y la isla principal estará un bioma
-completo con estas criaturas hostiles; genéralo bien, decoración del Void; quiero un bioma completo grandecito, y
-después ya viene la isla principal de la grieta; pozos de luz en el bioma». Se viene del santuario (al norte) por el
-Puente de Luz, se cruza el Páramo por el Sendero de las Esquirlas y se llega a la isla de la grieta (al sur) por el
-Puente de Piedra. Lo que hay:
+El dueño (1.3.97): «no pongas bloques del End, el Void no es el End; no pongas lana, tierra, nada de eso; los biomas no
+me gustan, hazlos muchísimo más grandes; todo el Void debe ser congruente». Y el lore: lo que queda de esta dimensión
+después de que el agujero negro se la tragara; los caballeros del Alba la sostienen con su magia para que no se
+derrumbe. Así que es roca del Vacío (pizarra profunda, piedra negra, basalto, toba, calcita, obsidiana, amatista) y, de
+lo de los caballeros, cuarzo, oro, velas y faroles de alma. Ni piedra del End, ni coro, ni purpur, ni varas del End, ni
+lana, ni tierra, ni micelio, ni plantas del mundo de arriba (paleta.py lo comprueba al acabar).
 
-  - La tierra: una masa flotante de ~240 × 230 bloques (varias lomas unidas, borde con ruido, colinas suaves) con la
-    cara de arriba a ~66-72 y por debajo un cono irregular de piedra del End, piedra negra, toba y obsidiana que acaba
-    en estalactitas; de su cara de abajo cuelgan lianas con bayas que brillan, amatistas y espeleotemas.
-  - Zonas (con bordes de ruido): el Bosque de Coros (noroeste: piedra del End y árboles de coro), los Campos de
-    Amatista (noreste: calcita, agujas y racimos de amatista), el Páramo de Obsidiana (sureste: piedra negra, basalto,
-    obsidiana que llora, agujas de obsidiana y braseros de fuego de alma), las Ruinas de la Orden (suroeste: un templo
-    de cuarzo roto, columnas caídas, sculk que lo cubre) y, por todo lo demás, el páramo (piedra del End con sculk y
-    nilio distorsionado con raíces, brotes y enredaderas).
-  - La Herida: en el centro, un agujero que atraviesa la isla entera (se ve el vacío y el agujero negro), con el borde
-    de obsidiana que llora, amatistas y columnas de purpur rotas. Y cuatro grietas largas y estrechas que también la
-    atraviesan.
-  - El Sendero de las Esquirlas: de la Puerta del Páramo (sur) al Puente de Luz (norte), serpenteando; ladrillo de
-    piedra del End con borde de piedra negra pulida, farolas de alma y braseros.
-  - Los Pozos de Luz (donde cayeron las esquirlas de los once caballeros): 16, a lo largo del sendero y por las zonas;
-    suelo llano de cuarzo y calcita, cuatro velas, la luz invisible encima. El cliente dibuja el círculo de luz y su
-    columna; el servidor, la esquirla que flota (LightShards). Quedarse en su luz quita la corrosión del Void.
-  - Islotes flotando por encima (piedra del End, obsidiana, amatista y lianas).
-  - El Puente de Piedra a la isla de la grieta (5 de ancho: la fauna no lo cruza, VoidIsland.faunaWalkable) con la
-    Puerta del Páramo (columnas de piedra negra con un dintel roto y farolas).
+Una masa de ~600 × 460 bloques (unas cuatro veces la del Páramo de la 1.3.96), de sur a norte:
+
+  - Los Llanos de Ceniza (sur, junto a la isla de la grieta): toba, basalto liso y calcita como ceniza, terrazas suaves,
+    árboles petrificados (troncos de basalto con ramas de piedra negra), rocas sueltas y grietas largas que atraviesan
+    la tierra hasta el vacío.
+  - El Bosque de Cristal (este): calcita y amatista, cristales gigantes de amatista inclinados (de 8 a 26 de alto),
+    rocas de amatista que brota y racimos.
+  - Las Fauces de Obsidiana (oeste): piedra negra, obsidiana y vetas de obsidiana que llora; colmillos de obsidiana
+    curvados de hasta 40 de alto, columnas de basalto y crestas escarpadas.
+  - Las Ruinas de la Orden (norte, ante el santuario): suelo de baldosas de pizarra y toba, capillas rotas de cuarzo y
+    oro, columnas caídas, estelas de los caballeros con sus velas y una muralla derruida.
+  - La Herida (en medio): un cráter que atraviesa la tierra (se ve el vacío y el agujero negro), con escombros que flotan
+    dentro, sostenidos por cadenas: la magia de la Orden.
+  - El Sendero del Alba: de la Puerta (sur) al Puente de Luz (norte), losas de pizarra con farolas de alma; a lo largo,
+    las Anclas del Alba: los Pozos de Luz (pocos: la corrosión es lenta), donde un caballero se hizo luz para sostener el
+    fragmento.
+  - Fragmentos que flotan por encima, algunos colgados de cadenas.
+  - El Puente de Piedra a la isla de la grieta (5 de ancho: la fauna no lo cruza).
 
 Todo sale de una semilla fija: pasarlo otra vez da lo mismo (antes se borra la zona entera).
 """
@@ -35,15 +35,17 @@ import random
 
 import numpy as np
 
-# La caja del bioma (coordenadas del mundo; norte = z más pequeña)
-X0, X1 = -195, 60
-Z0, Z1 = -432, -196
-SEED = 7319
+# La caja (coordenadas del mundo; norte = z más pequeña)
+X0, X1 = -372, 244
+Z0, Z1 = -660, -196
+SEED = 7397
 SOUTH_DOOR = (-64, -206)       # donde llega el Puente de Piedra
-NORTH_DOOR = (-64, -419)       # de donde sale el Puente de Luz al santuario
-STONE_BRIDGE_Z = (-206, -169)  # el Puente de Piedra: del Páramo a la puerta norte del Umbral (el santuario viejo)
-HERIDA = (-64, -312, 11.5)
-WELLS = 16
+NORTH_DOOR = (-64, -652)       # de donde sale el Puente de Luz al santuario
+STONE_BRIDGE_Z = (-206, -169)  # el Puente de Piedra: del sur de los Fragmentos a la llegada de la isla de la grieta
+HERIDA = (-14, -430, 27)
+WELLS = 4                      # Anclas del Alba a lo largo del sendero
+# (nombre, centro x, centro z, radio): las cuatro tierras
+REGIONS = [('ceniza', -64, -300, 175), ('cristal', 150, -440, 150), ('obsidiana', -280, -440, 150), ('ruinas', -64, -592, 112)]
 
 
 # ------------------------------------------------------------------------------------------- ruido (numpy)
@@ -78,7 +80,12 @@ def smoothstep(a, b, x):
     return u * u * (3 - 2 * u)
 
 
-# ------------------------------------------------------------------------------------------- el bioma
+def h01(x, z, s):
+    """Un número fijo (0..1) para esa columna."""
+    return (((x * 73856093) ^ (z * 19349663) ^ (s * 83492791)) & 0xFFFFFF) / float(0xFFFFFF)
+
+
+# ------------------------------------------------------------------------------------------- la tierra
 
 class Biome:
     def __init__(self, w):
@@ -90,7 +97,7 @@ class Biome:
         self.NZ, self.NX = self.X.shape
         self.wells = []
         self.trail = []
-        self.occupied = np.zeros(self.X.shape, bool)   # sitios ya usados por estructuras
+        self.occupied = np.zeros(self.X.shape, bool)
 
     # ---- utilidades
     def inside(self, x, z):
@@ -108,28 +115,39 @@ class Biome:
     def air(self, x, y, z):
         return self.get(x, y, z) == 'minecraft:air'
 
+    def occupy(self, x, z, r):
+        r = int(math.ceil(r))
+        for dx in range(-r, r + 1):
+            for dz in range(-r, r + 1):
+                if X0 <= x + dx <= X1 and Z0 <= z + dz <= Z1 and dx * dx + dz * dz <= r * r:
+                    self.occupied[z + dz - Z0, x + dx - X0] = True
+
     def dist_trail(self, x, z):
-        return min((math.hypot(x - px, z - pz) for px, pz in self.trail), default=1e9)
+        return min((math.hypot(x - px, z - pz) for px, pz in self.trail[::2]), default=1e9)
 
     # ---- la forma
     def shape(self, main_ground):
         from scipy import ndimage
         X, Z = self.X.astype(float), self.Z.astype(float)
-        blobs = [(-64, -314, 112, 102), (-142, -262, 50, 46), (16, -362, 48, 54), (-130, -392, 48, 38),
-                 (8, -250, 42, 36), (-64, -404, 44, 26), (-64, -226, 30, 26)]
+        blobs = [(-64, -430, 300, 205), (-64, -300, 150, 95), (-270, -470, 100, 120), (150, -470, 100, 120),
+                 (-64, -600, 140, 60), (-170, -330, 80, 70), (60, -330, 80, 70)]
         f = np.full(X.shape, -9.0)
         for cx, cz, rx, rz in blobs:
             f = np.maximum(f, 1 - ((X - cx) / rx) ** 2 - ((Z - cz) / rz) ** 2)
-        f = f + 0.42 * (fbm(X / 38, Z / 38, SEED + 1) - 0.5) + 0.14 * (fbm(X / 9, Z / 9, SEED + 2) - 0.5)
+        f = f + 0.85 * (fbm(X / 95, Z / 95, SEED + 1) - 0.5) + 0.3 * (fbm(X / 26, Z / 26, SEED + 2) - 0.5) \
+            + 0.12 * (fbm(X / 8, Z / 8, SEED + 12) - 0.5)
         mask = f > 0
-        # lejos de la isla de la grieta (menos donde llega el puente)
+        # dentro de la caja con margen
+        mask &= (X > X0 + 6) & (X < X1 - 6) & (Z > Z0 + 6) & (Z < Z1 - 3)
+        # lejos de la isla de la grieta
         if main_ground is not None:
             far = ndimage.distance_transform_edt(~main_ground)
-            mask &= far >= 12
-        # la tierra del sur llega hasta la puerta del puente
+            mask &= far >= 14
+        # la tierra del sur llega hasta la puerta del puente y la del norte hasta el Puente de Luz
         sx, sz = SOUTH_DOOR
-        mask |= (np.abs(X - sx) <= 7) & (Z >= sz - 14) & (Z <= sz) & (main_ground is None or True)
-        # la mayor pieza
+        mask |= (np.abs(X - sx) <= 8) & (Z >= sz - 18) & (Z <= sz)
+        nx, nz = NORTH_DOOR
+        mask |= (np.abs(X - nx) <= 9) & (Z >= nz) & (Z <= nz + 20)
         lab, n = ndimage.label(mask)
         if n > 1:
             sizes = ndimage.sum(mask, lab, range(1, n + 1))
@@ -138,40 +156,66 @@ class Biome:
         self.dedge = ndimage.distance_transform_edt(mask)
 
     def make_trail(self):
-        pts = [SOUTH_DOOR, (-52, -232), (-58, -258), (-84, -282), (-98, -306), (-96, -334), (-80, -356), (-56, -374),
-               (-48, -394), (-60, -410), NORTH_DOOR]
+        pts = [SOUTH_DOOR, (-44, -246), (-78, -292), (-112, -338), (-118, -388), (-96, -440), (-104, -488), (-70, -530),
+               (-44, -566), (-58, -608), NORTH_DOOR]
         out = []
-        for (ax, az), (bx, bz) in zip(pts, pts[1:]):
+        for i, ((ax, az), (bx, bz)) in enumerate(zip(pts, pts[1:])):
             n = int(math.hypot(bx - ax, bz - az))
-            for i in range(n):
-                t = i / n
-                # (suave: Catmull-Rom sin más; con este paso basta una línea con un poco de vaivén)
-                x = ax + (bx - ax) * t + 2.2 * math.sin(t * math.pi * 2 + ax * 0.1)
-                z = az + (bz - az) * t
+            for k in range(n):
+                t = k / n
+                # Catmull-Rom entre los puntos (curvas suaves)
+                p0 = pts[max(0, i - 1)]
+                p3 = pts[min(len(pts) - 1, i + 2)]
+                t2, t3 = t * t, t * t * t
+                x = 0.5 * ((2 * ax) + (-p0[0] + bx) * t + (2 * p0[0] - 5 * ax + 4 * bx - p3[0]) * t2 + (-p0[0] + 3 * ax - 3 * bx + p3[0]) * t3)
+                z = 0.5 * ((2 * az) + (-p0[1] + bz) * t + (2 * p0[1] - 5 * az + 4 * bz - p3[1]) * t2 + (-p0[1] + 3 * az - 3 * bz + p3[1]) * t3)
                 out.append((x, z))
         out.append(NORTH_DOOR)
         self.trail = out
 
+    def regions(self):
+        """Peso de cada tierra (suave, con ruido en los bordes) y la que manda en cada columna."""
+        X, Z = self.X.astype(float), self.Z.astype(float)
+        # (las coordenadas deformadas: así los bordes entre tierras serpentean en vez de ir rectos)
+        Xw = X + 150 * (fbm(X / 140, Z / 140, SEED + 60) - 0.5) + 40 * (fbm(X / 38, Z / 38, SEED + 61) - 0.5)
+        Zw = Z + 150 * (fbm(X / 140, Z / 140, SEED + 62) - 0.5) + 40 * (fbm(X / 38, Z / 38, SEED + 63) - 0.5)
+        ws = []
+        for k, (name, cx, cz, r) in enumerate(REGIONS):
+            d = np.hypot(Xw - cx, Zw - cz) / r + 0.2 * (fbm(X / 24, Z / 24, SEED + 50 + k) - 0.5)
+            ws.append(np.exp(-3.0 * d * d))
+        W = np.stack(ws)
+        W = W / np.maximum(W.sum(0), 1e-9)
+        self.weights = W
+        self.zone = np.array([r[0] for r in REGIONS], dtype=object)[np.argmax(W, 0)]
+
     def heights(self):
         from scipy import ndimage
         X, Z = self.X.astype(float), self.Z.astype(float)
-        north = np.clip((Z1 - Z) / (Z1 - Z0), 0, 1)
-        base = 66 + 3.5 * north
-        hills = 7.5 * (fbm(X / 52, Z / 52, SEED + 3) - 0.5) * 2 + 2.5 * (fbm(X / 17, Z / 17, SEED + 4) - 0.5) * 2
-        hills *= smoothstep(0, 16, self.dedge)
-        H = base + hills - 1.5 * (1 - smoothstep(0, 6, self.dedge))
-        # el sendero, llano y suave; las puertas, a su altura
+        wc, wk, wo, wr = self.weights
+        n1 = fbm(X / 62, Z / 62, SEED + 3)
+        n2 = fbm(X / 18, Z / 18, SEED + 4)
+        ceniza = 3.0 * (n1 - 0.5) * 2 + 1.0 * (n2 - 0.5)
+        # (terrazas suaves en los llanos)
+        ceniza = ceniza + 0.8 * np.sin(ceniza * math.pi / 2.2)
+        cristal = 7.5 * (fbm(X / 48, Z / 48, SEED + 5) - 0.5) * 2 + 2.0 * (n2 - 0.5)
+        ridge = 1 - np.abs(2 * fbm(X / 54, Z / 54, SEED + 6) - 1)
+        obsid = 13.0 * ridge - 5.0 + 3.5 * (n2 - 0.5) * 2
+        ruinas = 2.5 + 2.0 * (n1 - 0.5)
+        H = 68 + wc * ceniza + wk * cristal + wo * obsid + wr * ruinas
+        # hacia el borde baja un poco
+        H = H - 2.0 * (1 - smoothstep(0, 10, self.dedge))
+        # el sendero, llano y suave
         tmask = np.zeros(X.shape, bool)
         for px, pz in self.trail[::3]:
             ix, iz = int(round(px)) - X0, int(round(pz)) - Z0
             tmask[max(0, iz - 6):iz + 7, max(0, ix - 6):ix + 7] = True
         dt = ndimage.distance_transform_edt(~tmask)
-        Hs = ndimage.gaussian_filter(H, 7)
-        k = 1 - smoothstep(0, 9, dt)
+        Hs = ndimage.gaussian_filter(H, 8)
+        k = 1 - smoothstep(0, 10, dt)
         H = H * (1 - k) + Hs * k
         for (dx, dz), hh in ((SOUTH_DOOR, 66.0), (NORTH_DOOR, 69.0)):
             d = np.hypot(X - dx, Z - dz)
-            k = 1 - smoothstep(6, 26, d)
+            k = 1 - smoothstep(6, 30, d)
             H = H * (1 - k) + hh * k
         self.H = np.round(H).astype(int)
         self.H[~self.mask] = -1
@@ -182,23 +226,11 @@ class Biome:
         if not sel.any():
             return None
         lv = int(round(np.mean(self.H[sel]))) if level is None else level
-        ring = (d <= r + 4) & self.mask & ~sel
-        k = 1 - smoothstep(r, r + 4, d[ring])
+        ring = (d <= r + 5) & self.mask & ~sel
+        k = 1 - smoothstep(r, r + 5, d[ring])
         self.H[ring] = np.round(self.H[ring] * (1 - k) + lv * k).astype(int)
         self.H[sel] = lv
         return lv
-
-    def zones(self):
-        X, Z = self.X.astype(float), self.Z.astype(float)
-        centers = [('coros', -134, -362, 60), ('amatista', 14, -352, 52), ('obsidiana', 4, -252, 52), ('ruinas', -130, -262, 34)]
-        best = np.full(X.shape, 9.0)
-        zone = np.full(X.shape, 'paramo', dtype=object)
-        for k, (name, cx, cz, r) in enumerate(centers):
-            sc = np.hypot(X - cx, Z - cz) / r + 0.4 * (fbm(X / 26, Z / 26, SEED + 40 + k) - 0.5)
-            sel = (sc < 1) & (sc < best)
-            zone[sel] = name
-            best = np.where(sel, sc, best)
-        self.zone = zone
 
     # ---- el volumen
     def fill(self):
@@ -206,23 +238,26 @@ class Biome:
         g = w.d['g']
         oy = w.d['oy']
         X, Z = self.X.astype(float), self.Z.astype(float)
-        thick = 5 + 34 * np.clip(self.dedge / 46, 0, 1) ** 0.85 + 6 * (fbm(X / 21, Z / 21, SEED + 5) - 0.5) * 2
-        # estalactitas: conos colgando
+        thick = 6 + 40 * np.clip(self.dedge / 60, 0, 1) ** 0.8 + 7 * (fbm(X / 23, Z / 23, SEED + 5) - 0.5) * 2
         rnd = self.rnd
         cones = np.zeros(X.shape)
-        ys, xs = np.nonzero(self.dedge > 9)
-        for _ in range(150):
+        ys, xs = np.nonzero(self.dedge > 10)
+        for _ in range(420):
             i = rnd.randrange(len(xs))
             cx, cz = X[ys[i], xs[i]], Z[ys[i], xs[i]]
-            rad, dep = rnd.uniform(3, 7), rnd.uniform(8, 24)
-            d = np.hypot(X - cx, Z - cz)
-            cones = np.maximum(cones, dep * np.clip(1 - d / rad, 0, 1) ** 1.3)
+            rad, dep = rnd.uniform(3, 9), rnd.uniform(8, 30)
+            x0, x1 = int(cx - rad) - X0, int(cx + rad) - X0 + 2
+            z0, z1 = int(cz - rad) - Z0, int(cz + rad) - Z0 + 2
+            sub = (slice(max(0, z0), z1), slice(max(0, x0), x1))
+            d = np.hypot(X[sub] - cx, Z[sub] - cz)
+            cones[sub] = np.maximum(cones[sub], dep * np.clip(1 - d / rad, 0, 1) ** 1.3)
         bottom = (self.H - thick - cones).astype(int)
         self.bottom = bottom
         P = w.pal
         n_top = fbm(X / 7, Z / 7, SEED + 6)
-        n_patch = fbm(X / 13, Z / 13, SEED + 7)
-        n_strata = fbm(X / 30, Z / 30, SEED + 8)
+        n_patch = fbm(X / 15, Z / 15, SEED + 7)
+        n_strata = fbm(X / 34, Z / 34, SEED + 8)
+        n_vein = np.abs(2 * fbm(X / 26, Z / 26, SEED + 9) - 1)
         ids = {}
 
         def I(name):
@@ -236,294 +271,244 @@ class Biome:
                     continue
                 top, bot = int(self.H[iz, ix]), int(bottom[iz, ix])
                 zn = self.zone[iz, ix]
-                a, b, c = n_top[iz, ix], n_patch[iz, ix], n_strata[iz, ix]
-                tb, sb = self.surface(zn, a, b)
+                a, b, c, v = n_top[iz, ix], n_patch[iz, ix], n_strata[iz, ix], n_vein[iz, ix]
+                tb, sb = self.surface(zn, a, b, v)
                 gx, gz = ix + X0 - w.d['ox'], iz + Z0 - w.d['oz']
                 col = g[:, gz, gx]
                 y0 = max(bot, oy) - oy
                 mid = (bot + top) // 2 - oy
-                # cara de abajo, dos capas
-                col[y0:y0 + 2] = I('crying_obsidian') if (a * 7.3 + b) % 1 < 0.18 else I('obsidian')
-                # estratos: la mitad de abajo y la de arriba
-                low = 'blackstone' if c > 0.55 else ('tuff' if c < 0.3 else 'end_stone')
-                high = 'end_stone' if c > 0.42 or zn != 'obsidiana' else 'blackstone'
-                if zn == 'amatista':
-                    high = 'calcite'
+                # cara de abajo: obsidiana con brillos
+                col[y0:y0 + 2] = I('crying_obsidian') if (a * 7.3 + b) % 1 < 0.14 else I('obsidian')
+                low = 'blackstone' if c > 0.56 else ('basalt[axis=y]' if c < 0.3 else 'deepslate')
+                high = 'tuff' if c > 0.6 else 'deepslate'
+                if zn == 'cristal':
+                    high = 'calcite' if c > 0.4 else 'tuff'
+                elif zn == 'obsidiana':
+                    high = 'blackstone'
                 col[y0 + 2:mid] = I(low)
                 col[max(mid, y0 + 2):top - 3 - oy] = I(high)
                 col[top - 3 - oy:top - oy] = I(sb)
                 col[top - oy] = I(tb)
 
-    def surface(self, zn, a, b):
-        """La cara de arriba y lo de debajo según la zona y el ruido."""
-        if zn == 'coros':
-            if b > 0.7:
-                return 'end_stone_bricks', 'end_stone'
-            return ('mycelium' if a < 0.42 else 'end_stone'), 'end_stone'
-        if zn == 'amatista':
-            if b > 0.7:
-                return 'amethyst_block', 'calcite'
-            return ('smooth_basalt' if a < 0.25 else 'calcite'), 'calcite'
-        if zn == 'obsidiana':
-            if a > 0.78:
+    def surface(self, zn, a, b, v):
+        """La cara de arriba y lo de debajo según la tierra y el ruido."""
+        if zn == 'ceniza':
+            if v < 0.018:
                 return 'crying_obsidian', 'obsidian'
-            if a > 0.62:
+            if b > 0.7:
+                return 'calcite', 'tuff'
+            if a > 0.72:
+                return 'smooth_basalt', 'tuff'
+            if a < 0.22:
+                return 'basalt[axis=y]', 'tuff'
+            return 'tuff', 'tuff'
+        if zn == 'cristal':
+            if b > 0.72:
+                return 'amethyst_block', 'calcite'
+            if v < 0.02:
+                return 'budding_amethyst', 'amethyst_block'
+            if a < 0.25:
+                return 'smooth_basalt', 'calcite'
+            return 'calcite', 'calcite'
+        if zn == 'obsidiana':
+            if v < 0.03:
+                return 'crying_obsidian', 'obsidian'
+            if a > 0.7:
                 return 'obsidian', 'blackstone'
-            if b > 0.6:
+            if b > 0.62:
                 return 'basalt[axis=y]', 'blackstone'
-            return ('smooth_basalt' if a < 0.3 else 'blackstone'), 'blackstone'
-        if zn == 'ruinas':
-            if b > 0.66:
-                return 'sculk', 'end_stone'
-            return ('mycelium' if a < 0.5 else 'end_stone'), 'end_stone'
-        # el páramo: micelio gris violáceo (suelta esporas) con manchas de piedra del End, sculk y nilio distorsionado
-        if b > 0.7:
-            return 'warped_nylium', 'end_stone'
-        if b < 0.26:
-            return 'sculk', 'end_stone'
-        if a > 0.78:
-            return 'tuff', 'end_stone'
-        if a > 0.6:
-            return 'end_stone', 'end_stone'
-        return 'mycelium', 'end_stone'
+            return ('polished_blackstone' if a < 0.2 else 'blackstone'), 'blackstone'
+        # ruinas
+        if b > 0.66:
+            return ('cracked_deepslate_tiles' if a > 0.5 else 'deepslate_tiles'), 'deepslate'
+        if a > 0.75:
+            return 'polished_deepslate', 'deepslate'
+        return 'tuff', 'deepslate'
 
-    # ---- huecos que atraviesan la isla
+    # ---- huecos que atraviesan la tierra
+    def hole(self, x, z):
+        """Quita la columna entera (se ve el vacío)."""
+        for y in range(self.bottom[z - Z0, x - X0] - 1, self.h(x, z) + 3):
+            self.put(x, y, z, None)
+        self.mask[z - Z0, x - X0] = False
+        self.H[z - Z0, x - X0] = -1
+
     def herida(self):
+        """La Herida: un cráter que atraviesa la tierra, con escombros que flotan dentro, colgados de cadenas."""
         cx, cz, r = HERIDA
-        w = self.w
-        for x in range(int(cx - r - 6), int(cx + r + 7)):
-            for z in range(int(cz - r - 6), int(cz + r + 7)):
+        rnd = self.rnd
+        for x in range(int(cx - r - 9), int(cx + r + 10)):
+            for z in range(int(cz - r - 9), int(cz + r + 10)):
                 if not self.inside(x, z):
                     continue
                 ang = math.atan2(z - cz, x - cx)
-                rad = r + 1.6 * math.sin(ang * 3 + 1) + 1.1 * math.sin(ang * 7)
+                rad = r + 2.6 * math.sin(ang * 3 + 1) + 1.6 * math.sin(ang * 7 + 2)
                 d = math.hypot(x - cx, z - cz)
                 if d < rad:
-                    for y in range(self.bottom[z - Z0, x - X0] - 1, self.h(x, z) + 2):
-                        w.put(x, y, z, None)
-                    self.mask[z - Z0, x - X0] = False
-                    self.H[z - Z0, x - X0] = -1
-                elif d < rad + 2.6:
+                    self.hole(x, z)
+                elif d < rad + 4:
                     top = self.h(x, z)
                     for y in range(self.bottom[z - Z0, x - X0], top + 1):
-                        w.put(x, y, z, 'crying_obsidian' if (x * 7 + y * 3 + z * 5) % 9 == 0 else 'obsidian')
-                    if (x * 13 + z * 7) % 5 == 0:
-                        w.put(x, top + 1, z, 'amethyst_cluster[facing=up,waterlogged=false]')
-                self.occupied[z - Z0, x - X0] |= d < rad + 8
-        # columnas de purpur rotas alrededor
+                        self.put(x, y, z, 'crying_obsidian' if (x * 7 + y * 3 + z * 5) % 7 == 0 else 'obsidian')
+                    if h01(x, z, 3) < 0.15:
+                        self.put(x, top + 1, z, 'amethyst_cluster[facing=up,waterlogged=false]')
+                if X0 <= x <= X1 and Z0 <= z <= Z1 and d < rad + 10:
+                    self.occupied[z - Z0, x - X0] = True
+        # escombros que flotan dentro, cada uno colgado de una cadena del borde de arriba
         for i in range(9):
-            a = i * 2 * math.pi / 9 + 0.3
-            x, z = round(cx + math.cos(a) * (r + 6)), round(cz + math.sin(a) * (r + 6))
-            if not self.inside(x, z):
-                continue
-            top = self.h(x, z)
-            hh = 2 + (i * 5) % 5
-            for y in range(top + 1, top + 1 + hh):
-                w.put(x, y, z, 'purpur_pillar[axis=y]')
-            if hh >= 5:
-                w.put(x, top + 1 + hh, z, 'purpur_slab[type=bottom,waterlogged=false]')
+            a = rnd.uniform(0, 2 * math.pi)
+            rr = rnd.uniform(4, r - 6)
+            bx, bz = round(cx + math.cos(a) * rr), round(cz + math.sin(a) * rr)
+            by = rnd.randint(40, 64)
+            size = rnd.uniform(1.6, 3.4)
+            for dx in range(-4, 5):
+                for dz in range(-4, 5):
+                    for dy in range(-4, 3):
+                        e = (dx / size) ** 2 + (dz / size) ** 2 + (dy / (size * 0.8)) ** 2
+                        if e <= 1:
+                            self.put(bx + dx, by + dy, bz + dz, 'crying_obsidian' if (dx + dy + dz) % 4 == 0 else 'obsidian')
+            for y in range(by + 3, by + rnd.randint(14, 24)):
+                self.put(bx, y, bz, 'chain[axis=y,waterlogged=false]')
 
-    def chasms(self):
+    def fissures(self):
+        """Grietas largas y estrechas que atraviesan los Llanos hasta el vacío."""
         rnd = self.rnd
-        w = self.w
-        made = 0
-        tries = 0
-        while made < 4 and tries < 60:
+        made, tries = 0, 0
+        while made < 7 and tries < 160:
             tries += 1
-            ys, xs = np.nonzero((self.dedge > 22) & self.mask)
+            ys, xs = np.nonzero((self.zone == 'ceniza') & (self.dedge > 24) & self.mask)
+            if len(xs) == 0:
+                return
             i = rnd.randrange(len(xs))
             x, z = float(X0 + xs[i]), float(Z0 + ys[i])
             ang = rnd.uniform(0, math.pi)
-            length = rnd.randint(26, 40)
-            pts = []
-            ok = True
+            length = rnd.randint(34, 64)
+            pts, ok = [], True
             for s in range(length):
-                ang += rnd.uniform(-0.25, 0.25)
+                ang += rnd.uniform(-0.2, 0.2)
                 x += math.cos(ang)
                 z += math.sin(ang)
                 ix, iz = int(round(x)), int(round(z))
-                if (not self.inside(ix, iz) or self.dist_trail(ix, iz) < 9 or self.occupied[iz - Z0, ix - X0]
-                        or self.dedge[iz - Z0, ix - X0] < 10):
+                if (not self.inside(ix, iz) or self.dist_trail(ix, iz) < 12 or self.occupied[iz - Z0, ix - X0]
+                        or self.dedge[iz - Z0, ix - X0] < 12):
                     ok = False
                     break
-                pts.append((ix, iz, 1.2 + 1.3 * math.sin(math.pi * s / length)))
+                pts.append((ix, iz, 1.0 + 1.8 * math.sin(math.pi * s / length)))
             if not ok:
                 continue
             made += 1
             for ix, iz, wd in pts:
-                for dx in range(-3, 4):
-                    for dz in range(-3, 4):
+                for dx in range(-4, 5):
+                    for dz in range(-4, 5):
                         x2, z2 = ix + dx, iz + dz
                         if not self.inside(x2, z2):
                             continue
                         d = math.hypot(dx, dz)
                         if d <= wd:
-                            for y in range(self.bottom[z2 - Z0, x2 - X0] - 1, self.h(x2, z2) + 2):
-                                w.put(x2, y, z2, None)
-                            self.mask[z2 - Z0, x2 - X0] = False
-                            self.H[z2 - Z0, x2 - X0] = -1
-                        elif d <= wd + 1.2:
+                            self.hole(x2, z2)
+                        elif d <= wd + 1.4:
                             top = self.h(x2, z2)
-                            w.put(x2, top, z2, 'crying_obsidian' if (x2 + z2) % 3 == 0 else 'obsidian')
-                        self.occupied[z2 - Z0, x2 - X0] = True
+                            self.put(x2, top, z2, 'crying_obsidian' if (x2 + z2) % 3 == 0 else 'obsidian')
+                        if X0 <= x2 <= X1 and Z0 <= z2 <= Z1:
+                            self.occupied[z2 - Z0, x2 - X0] = True
 
-    # ---- el sendero y lo que hay en él
+    # ---- el sendero
     def path(self):
-        w = self.w
         done = set()
-        for i, (px, pz) in enumerate(self.trail):
-            for dx in range(-2, 3):
-                for dz in range(-2, 3):
+        for px, pz in self.trail:
+            for dx in range(-3, 4):
+                for dz in range(-3, 4):
                     x, z = int(round(px)) + dx, int(round(pz)) + dz
                     if (x, z) in done or not self.inside(x, z):
                         continue
                     d = math.hypot(x - px, z - pz)
-                    if d > 2.2:
+                    if d > 2.4:
                         continue
                     done.add((x, z))
                     top = self.h(x, z)
-                    edge = d > 1.3
-                    hsh = (x * 31 + z * 17) % 11
-                    if edge:
-                        blk = 'cracked_polished_blackstone_bricks' if hsh == 0 else 'polished_blackstone_bricks'
+                    hsh = h01(x, z, 11)
+                    if d > 1.5:
+                        blk = 'cracked_deepslate_tiles' if hsh < 0.12 else 'deepslate_tiles'
                     else:
-                        blk = 'end_stone_bricks' if hsh else 'chiseled_polished_blackstone'
-                    w.put(x, top, z, blk)
-                    for y in range(top + 1, top + 4):
+                        blk = 'chiseled_deepslate' if hsh < 0.04 else 'polished_deepslate'
+                    self.put(x, top, z, blk)
+                    for y in range(top + 1, top + 5):
                         if not self.air(x, y, z):
-                            w.put(x, y, z, None)
+                            self.put(x, y, z, None)
                     self.occupied[z - Z0, x - X0] = True
-        # farolas de alma a los lados, cada ~16 bloques
-        for i in range(8, len(self.trail) - 8, 16):
+        # farolas de alma a los lados, cada ~18 bloques
+        for i in range(10, len(self.trail) - 10, 18):
             (px, pz), (qx, qz) = self.trail[i], self.trail[i + 1]
             nx, nz = -(qz - pz), qx - px
             ln = math.hypot(nx, nz) or 1
-            side = 1 if (i // 16) % 2 == 0 else -1
-            x, z = int(round(px + side * nx / ln * 3.5)), int(round(pz + side * nz / ln * 3.5))
+            side = 1 if (i // 18) % 2 == 0 else -1
+            x, z = int(round(px + side * nx / ln * 3.8)), int(round(pz + side * nz / ln * 3.8))
             if not self.inside(x, z):
                 continue
             top = self.h(x, z)
-            w.put(x, top + 1, z, 'polished_blackstone_wall')
-            w.put(x, top + 2, z, 'polished_blackstone_wall')
-            w.put(x, top + 3, z, 'soul_lantern[hanging=false,waterlogged=false]')
+            self.put(x, top + 1, z, 'deepslate_brick_wall')
+            self.put(x, top + 2, z, 'deepslate_brick_wall')
+            self.put(x, top + 3, z, 'soul_lantern[hanging=false,waterlogged=false]')
             self.occupied[z - Z0, x - X0] = True
 
-    def brazier(self, x, z):
-        top = self.h(x, z)
-        self.put(x, top + 1, z, 'polished_blackstone')
-        self.put(x, top + 2, z, 'soul_soil')
-        self.put(x, top + 3, z, 'soul_fire')
-        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            self.put(x + dx, top + 1, z + dz, 'polished_blackstone_stairs[facing=%s,half=bottom,shape=straight,waterlogged=false]'
-                     % {(1, 0): 'west', (-1, 0): 'east', (0, 1): 'north', (0, -1): 'south'}[(dx, dz)])
-        for dx in range(-1, 2):
-            for dz in range(-1, 2):
-                if self.inside(x + dx, z + dz):
-                    self.occupied[z + dz - Z0, x + dx - X0] = True
-
-    # ---- los pozos de luz
+    # ---- las Anclas del Alba (Pozos de Luz)
     def place_wells(self):
-        rnd = self.rnd
-        chosen = []
-        # a lo largo del sendero (a un lado), cada ~30 bloques
-        for i in range(18, len(self.trail) - 10, 30):
-            (px, pz), (qx, qz) = self.trail[i], self.trail[i + 1]
+        """A lo largo del sendero, repartidas (a un lado)."""
+        n = len(self.trail)
+        out = []
+        for k in range(WELLS):
+            i = int(n * (k + 1) / (WELLS + 1))
+            (px, pz), (qx, qz) = self.trail[i], self.trail[min(n - 1, i + 1)]
             nx, nz = -(qz - pz), qx - px
             ln = math.hypot(nx, nz) or 1
-            side = -1 if (i // 30) % 2 else 1
-            x, z = int(round(px + side * nx / ln * 6)), int(round(pz + side * nz / ln * 6))
-            if self.inside(x, z) and self.dedge[z - Z0, x - X0] > 7:
-                chosen.append((x, z))
-        # y por las zonas: lo más lejos posible de los demás
-        ys, xs = np.nonzero(self.mask & (self.dedge > 10) & ~self.occupied)
-        cand = list(zip(xs + X0, ys + Z0))[::7]
-        while len(chosen) < WELLS and cand:
-            best, bd = None, -1
-            for c in cand:
-                m = min((math.hypot(c[0] - p[0], c[1] - p[1]) for p in chosen), default=1e9)
-                m = min(m, math.hypot(c[0] - HERIDA[0], c[1] - HERIDA[1]) - HERIDA[2] - 8)
-                if m > bd:
-                    bd, best = m, c
-            if best is None or bd < 22:
-                break
-            chosen.append(best)
-        rnd.shuffle(chosen)
-        out = []
-        for x, z in chosen:
-            lv = self.flatten(x, z, 3.6)
+            side = -1 if k % 2 else 1
+            x, z = int(round(px + side * nx / ln * 8)), int(round(pz + side * nz / ln * 8))
+            if not self.inside(x, z):
+                x, z = int(round(px)), int(round(pz))
+            lv = self.flatten(x, z, 5.0)
             if lv is None:
                 continue
             out.append((x, lv, z))
-            for dx in range(-5, 6):
-                for dz in range(-5, 6):
-                    if self.inside(x + dx, z + dz) and math.hypot(dx, dz) <= 5:
-                        self.occupied[z + dz - Z0, x + dx - X0] = True
+            self.occupy(x, z, 7)
         self.wells = out
 
     def build_wells(self, frag_light):
-        """Los pozos ya con el terreno hecho: suelo de luz, velas y la luz invisible (la esquirla la pone el servidor)."""
+        """El suelo del Ancla (cuarzo con oro), cuatro velas, cuatro estelas y la luz; la burbuja la dibuja el cliente."""
         out = []
         for x, lv, z in self.wells:
-            for dx in range(-4, 5):
-                for dz in range(-4, 5):
+            for dx in range(-5, 6):
+                for dz in range(-5, 6):
                     d = math.hypot(dx, dz)
-                    if d > 3.6 or not self.inside(x + dx, z + dz):
+                    if d > 4.6 or not self.inside(x + dx, z + dz):
                         continue
-                    blk = 'smooth_quartz' if d <= 1.6 else ('quartz_bricks' if d <= 2.4 else 'calcite')
+                    if d <= 1.1:
+                        blk = 'gold_block'
+                    elif d <= 2.2:
+                        blk = 'smooth_quartz'
+                    elif d <= 3.4:
+                        blk = 'chiseled_quartz_block' if (dx + dz) % 2 == 0 else 'quartz_bricks'
+                    else:
+                        blk = 'calcite'
                     self.put(x + dx, lv, z + dz, blk)
-                    for y in range(lv + 1, lv + 5):
+                    for y in range(lv + 1, lv + 6):
                         self.put(x + dx, y, z + dz, None)
             for dx, dz in ((3, 0), (-3, 0), (0, 3), (0, -3)):
                 self.put(x + dx, lv + 1, z + dz, 'candle[candles=4,lit=true,waterlogged=false]')
+            # cuatro estelas de cuarzo con su vela (en diagonal, fuera de la burbuja)
+            for dx, dz in ((4, 4), (-4, 4), (4, -4), (-4, -4)):
+                xx, zz = x + dx, z + dz
+                if not self.inside(xx, zz):
+                    continue
+                t = self.h(xx, zz)
+                self.put(xx, t + 1, zz, 'quartz_pillar[axis=y]')
+                self.put(xx, t + 2, zz, 'chiseled_quartz_block')
+                self.put(xx, t + 3, zz, 'white_candle[candles=1,lit=true,waterlogged=false]')
             self.put(x, lv + 3, z, frag_light)
-            # el sitio de la esquirla: 2 por encima del suelo (como en la isla grande)
             out.append((x, lv + 2, z))
         return out
 
-    # ---- vegetación y estructuras por zonas
-    def plants(self):
-        w = self.w
-        for iz in range(self.NZ):
-            for ix in range(self.NX):
-                if not self.mask[iz, ix] or self.occupied[iz, ix]:
-                    continue
-                x, z = ix + X0, iz + Z0
-                top = int(self.H[iz, ix])
-                tb = self.get(x, top, z)
-                r = ((x * 73856093) ^ (z * 19349663) ^ SEED) % 1000 / 1000.0
-                if not self.air(x, top + 1, z):
-                    continue
-                if tb.startswith('minecraft:warped_nylium'):
-                    if r < 0.4:
-                        w.put(x, top + 1, z, 'warped_roots')
-                    elif r < 0.62:
-                        w.put(x, top + 1, z, 'nether_sprouts')
-                    elif r < 0.67:
-                        w.put(x, top + 1, z, 'warped_fungus')
-                    elif r < 0.72:
-                        hh = 1 + int(r * 1000) % 4
-                        for k in range(hh - 1):
-                            w.put(x, top + 1 + k, z, 'twisting_vines_plant')
-                        w.put(x, top + hh, z, 'twisting_vines[age=25]')
-                elif tb == 'minecraft:calcite' or tb == 'minecraft:amethyst_block':
-                    if r < 0.07:
-                        w.put(x, top + 1, z, 'amethyst_cluster[facing=up,waterlogged=false]')
-                    elif r < 0.12:
-                        w.put(x, top + 1, z, 'large_amethyst_bud[facing=up,waterlogged=false]')
-                    elif r < 0.16:
-                        w.put(x, top + 1, z, 'medium_amethyst_bud[facing=up,waterlogged=false]')
-                elif tb == 'minecraft:end_stone' and self.zone[iz, ix] == 'paramo' and r < 0.012:
-                    w.put(x, top + 1, z, 'chorus_flower[age=5]')
-                elif tb == 'minecraft:mycelium':
-                    if r < 0.025:
-                        w.put(x, top + 1, z, 'crimson_roots' if r < 0.004 else 'warped_roots')
-                    elif r < 0.04:
-                        w.put(x, top + 1, z, 'dead_bush')
-                elif tb == 'minecraft:blackstone' and r < 0.02:
-                    w.put(x, top + 1, z, 'polished_blackstone_button[face=floor,facing=north,powered=false]')
-
-    def spots(self, zone, count, spacing, margin=8):
-        """Sitios de la zona para estructuras, separados entre sí y lejos de lo ocupado."""
+    # ---- lo que hay en cada tierra
+    def spots(self, zone, count, spacing, margin=10, trail=8):
         ys, xs = np.nonzero((self.zone == zone) & self.mask & ~self.occupied & (self.dedge > margin))
         if len(xs) == 0:
             return []
@@ -532,273 +517,303 @@ class Biome:
         out = []
         for i in order:
             x, z = int(xs[i] + X0), int(ys[i] + Z0)
-            if all(math.hypot(x - a, z - b) >= spacing for a, b in out) and self.dist_trail(x, z) > 7:
+            if all(math.hypot(x - a, z - b) >= spacing for a, b in out) and self.dist_trail(x, z) > trail:
                 out.append((x, z))
                 if len(out) >= count:
                     break
         return out
 
-    def chorus_tree(self, x, z):
-        """Un árbol de coro como los del End (ChorusFlowerBlock.generatePlant, a lo simple) con flores secas en las puntas."""
+    def petrified_tree(self, x, z):
+        """Un árbol petrificado: tronco de basalto que se tuerce y ramas de piedra negra sin hojas."""
         rnd = self.rnd
         top = self.h(x, z)
-        if self.get(x, top, z) not in ('minecraft:end_stone', 'minecraft:end_stone_bricks'):
-            return
-        cells, tips = set(), []
+        hh = rnd.randint(7, 15)
+        px, pz = float(x), float(z)
+        lean = (rnd.uniform(-0.18, 0.18), rnd.uniform(-0.18, 0.18))
+        for k in range(1, hh + 1):
+            px += lean[0]
+            pz += lean[1]
+            bx, bz = int(round(px)), int(round(pz))
+            self.put(bx, top + k, bz, 'basalt[axis=y]')
+            if k < 3 and hh > 10:
+                for dx, dz in ((1, 0), (0, 1)):
+                    self.put(bx + dx, top + k, bz + dz, 'basalt[axis=y]')
+            if k > hh * 0.45 and rnd.random() < 0.35:
+                ang = rnd.uniform(0, 2 * math.pi)
+                ln = rnd.randint(2, 5)
+                for s in range(1, ln + 1):
+                    ax = 'x' if abs(math.cos(ang)) > abs(math.sin(ang)) else 'z'
+                    self.put(bx + round(math.cos(ang) * s), top + k + s // 2, bz + round(math.sin(ang) * s),
+                             'polished_blackstone_wall' if s == ln else f'basalt[axis={ax}]')
+        self.occupy(x, z, 3)
 
-        def grow(px, py, pz, depth, length):
-            for i in range(length):
-                py += 1
-                cells.add((px, py, pz))
-            if depth >= 4 or py > top + 16:
-                tips.append((px, py + 1, pz))
-                return
-            branches = rnd.randint(1, 3 if depth else 4)
-            for _ in range(branches):
-                dx, dz = rnd.choice(((1, 0), (-1, 0), (0, 1), (0, -1)))
-                nx, nz = px + dx, pz + dz
-                if (nx, py, nz) in cells:
-                    continue
-                cells.add((nx, py, nz))
-                grow(nx, py, nz, depth + 1, rnd.randint(1, 3))
-            if rnd.random() < 0.4:
-                tips.append((px, py + 1, pz))
-
-        grow(x, top, z, 0, rnd.randint(2, 5))
-        tipset = set(tips)
-        for (px, py, pz) in cells:
-            if not self.air(px, py, pz):
-                return
-        for (px, py, pz) in cells:
-            props = {}
-            for nm, (dx, dy, dz) in (('north', (0, 0, -1)), ('south', (0, 0, 1)), ('east', (1, 0, 0)), ('west', (-1, 0, 0)),
-                                     ('up', (0, 1, 0)), ('down', (0, -1, 0))):
-                q = (px + dx, py + dy, pz + dz)
-                props[nm] = q in cells or q in tipset or (nm == 'down' and py == top + 1)
-            st = ','.join(f'{k}={"true" if v else "false"}' for k, v in sorted(props.items()))
-            self.put(px, py, pz, f'chorus_plant[{st}]')
-        for (px, py, pz) in tipset:
-            if (px, py, pz) not in cells and self.air(px, py, pz):
-                self.put(px, py, pz, 'chorus_flower[age=5]')
-        self.occupied[z - Z0, x - X0] = True
-
-    def amethyst_spire(self, x, z):
+    def boulder(self, x, z, kind):
         rnd = self.rnd
         top = self.h(x, z)
-        hh = rnd.randint(6, 15)
-        lean = (rnd.uniform(-0.25, 0.25), rnd.uniform(-0.25, 0.25))
-        r0 = rnd.uniform(1.4, 2.4)
-        for k in range(hh + 1):
-            r = r0 * (1 - k / (hh + 1)) + 0.4
-            cx, cz = x + lean[0] * k, z + lean[1] * k
-            for dx in range(-3, 4):
-                for dz in range(-3, 4):
-                    if math.hypot(cx - (x + dx), cz - (z + dz)) <= r:
-                        self.put(x + dx, top + 1 + k, z + dz, 'amethyst_block')
-        tx, tz = round(x + lean[0] * (hh + 1)), round(z + lean[1] * (hh + 1))
-        self.put(tx, top + hh + 2, tz, 'amethyst_cluster[facing=up,waterlogged=false]')
-        for dx in range(-3, 4):
-            for dz in range(-3, 4):
-                if self.inside(x + dx, z + dz):
-                    self.occupied[z + dz - Z0, x + dx - X0] = True
-
-    def needle(self, x, z):
-        """Una aguja de obsidiana con vetas de obsidiana que llora."""
-        rnd = self.rnd
-        top = self.h(x, z)
-        hh = rnd.randint(16, 30)
-        r0 = rnd.uniform(2.4, 3.6)
-        for k in range(hh + 1):
-            r = r0 * (1 - k / (hh + 1)) ** 1.2 + 0.3
-            for dx in range(-4, 5):
-                for dz in range(-4, 5):
-                    if math.hypot(dx, dz) <= r:
-                        cry = ((x + dx) * 5 + k * 3 + (z + dz) * 7) % 11 == 0
-                        self.put(x + dx, top + 1 + k, z + dz, 'crying_obsidian' if cry else 'obsidian')
-        self.put(x, top + hh + 2, z, 'end_rod[facing=up]')
+        r = rnd.uniform(1.4, 3.2)
+        mats = {'ceniza': ('cobbled_deepslate', 'tuff', 'smooth_basalt'), 'obsidiana': ('blackstone', 'obsidian', 'basalt[axis=y]'),
+                'ruinas': ('deepslate_bricks', 'cracked_deepslate_bricks', 'tuff'), 'cristal': ('budding_amethyst', 'amethyst_block', 'calcite')}[kind]
         for dx in range(-4, 5):
             for dz in range(-4, 5):
-                if self.inside(x + dx, z + dz):
-                    self.occupied[z + dz - Z0, x + dx - X0] = True
+                for dy in range(-1, 4):
+                    if (dx / r) ** 2 + (dz / r) ** 2 + (dy / (r * 0.75)) ** 2 <= 1:
+                        self.put(x + dx, top + dy, z + dz, mats[int(h01(x + dx, z + dz + dy, 5) * 3) % 3])
+        if kind == 'cristal':
+            self.put(x, top + int(r * 0.75) + 1, z, 'amethyst_cluster[facing=up,waterlogged=false]')
+        self.occupy(x, z, r + 1)
+
+    def crystal(self, x, z):
+        """Un cristal gigante de amatista: un prisma inclinado que se afila, con racimos en la punta y alrededor."""
+        rnd = self.rnd
+        top = self.h(x, z)
+        hh = rnd.randint(8, 26)
+        lean = (rnd.uniform(-0.35, 0.35), rnd.uniform(-0.35, 0.35))
+        r0 = rnd.uniform(1.6, 3.4)
+        for k in range(hh + 1):
+            r = r0 * (1 - (k / (hh + 1)) ** 1.6) + 0.35
+            cx, cz = x + lean[0] * k, z + lean[1] * k
+            for dx in range(-5, 6):
+                for dz in range(-5, 6):
+                    # (sección de seis lados, como un cristal)
+                    px, pz = x + dx - cx, z + dz - cz
+                    hexd = max(abs(px), abs(px) * 0.5 + abs(pz) * 0.866)
+                    if hexd <= r:
+                        self.put(x + dx, top + 1 + k, z + dz, 'amethyst_block' if k < hh * 0.85 else 'budding_amethyst')
+        tx, tz = round(x + lean[0] * (hh + 1)), round(z + lean[1] * (hh + 1))
+        self.put(tx, top + hh + 2, tz, 'amethyst_cluster[facing=up,waterlogged=false]')
+        for _ in range(6):
+            dx, dz = rnd.randint(-4, 4), rnd.randint(-4, 4)
+            if self.inside(x + dx, z + dz) and self.air(x + dx, self.h(x + dx, z + dz) + 1, z + dz):
+                self.put(x + dx, self.h(x + dx, z + dz) + 1, z + dz,
+                         rnd.choice(('amethyst_cluster', 'large_amethyst_bud', 'medium_amethyst_bud')) + '[facing=up,waterlogged=false]')
+        self.occupy(x, z, 5)
+
+    def fang(self, x, z):
+        """Un colmillo de obsidiana que se curva, con vetas de obsidiana que llora."""
+        rnd = self.rnd
+        top = self.h(x, z)
+        hh = rnd.randint(16, 40)
+        r0 = rnd.uniform(2.6, 4.6)
+        ang = rnd.uniform(0, 2 * math.pi)
+        bend = rnd.uniform(4, 10)
+        for k in range(hh + 1):
+            t = k / (hh + 1)
+            r = r0 * (1 - t) ** 1.25 + 0.3
+            off = bend * t * t
+            cx, cz = x + math.cos(ang) * off, z + math.sin(ang) * off
+            for dx in range(-6, 7):
+                for dz in range(-6, 7):
+                    if math.hypot(x + dx - cx, z + dz - cz) <= r:
+                        cry = h01(x + dx, z + dz, k) < 0.09
+                        self.put(x + dx, top + 1 + k, z + dz, 'crying_obsidian' if cry else 'obsidian')
+        self.occupy(x, z, 6)
 
     def basalt_columns(self, x, z):
         rnd = self.rnd
-        for _ in range(rnd.randint(4, 8)):
-            dx, dz = rnd.randint(-3, 3), rnd.randint(-3, 3)
+        for _ in range(rnd.randint(5, 10)):
+            dx, dz = rnd.randint(-4, 4), rnd.randint(-4, 4)
             if not self.inside(x + dx, z + dz):
                 continue
             top = self.h(x + dx, z + dz)
-            for k in range(rnd.randint(1, 6)):
+            for k in range(rnd.randint(2, 9)):
                 self.put(x + dx, top + 1 + k, z + dz, 'basalt[axis=y]')
+        self.occupy(x, z, 5)
 
-    def ruins(self):
-        """Las Ruinas de la Orden: un templo de cuarzo roto, cubierto de sculk."""
+    def stele(self, x, z):
+        """La estela de un caballero que cayó aquí: pizarra pulida con una vela."""
+        top = self.h(x, z)
+        self.put(x, top + 1, z, 'polished_deepslate')
+        self.put(x, top + 2, z, 'chiseled_deepslate')
+        self.put(x, top + 3, z, 'polished_deepslate_slab[type=bottom,waterlogged=false]')
+        self.put(x, top + 4, z, 'white_candle[candles=2,lit=true,waterlogged=false]')
+        self.occupy(x, z, 2)
+
+    def chapel(self, cx, cz, rot):
+        """Una capilla de la Orden, rota: planta de 15 × 11, muros de cuarzo con su zócalo de pizarra, columnas, un
+        altar con oro y velas; partes caídas."""
         rnd = self.rnd
-        cx, cz = -132, -262
-        lv = self.flatten(cx, cz, 15)
+        lv = self.flatten(cx, cz, 10)
         if lv is None:
             return
-        for x in range(cx - 16, cx + 17):
-            for z in range(cz - 16, cz + 17):
-                d = math.hypot(x - cx, z - cz)
-                if d > 15 or not self.inside(x, z):
+        hw, hl = 7, 5
+
+        def at(u, v):
+            # u a lo largo, v a lo ancho, girado
+            return (cx + u, cz + v) if rot == 0 else (cx + v, cz + u)
+
+        for u in range(-hw - 1, hw + 2):
+            for v in range(-hl - 1, hl + 2):
+                x, z = at(u, v)
+                if not self.inside(x, z):
                     continue
-                r = ((x * 92821) ^ (z * 68917)) % 100
-                if r < 12:
-                    blk = 'sculk'
-                elif r < 16:
-                    blk = 'end_stone'
-                elif d <= 4.5:
-                    blk = 'chiseled_quartz_block' if (x + z) % 2 else 'smooth_quartz'
-                elif 9.6 <= d <= 10.6:
-                    blk = 'chiseled_quartz_block'
-                else:
-                    blk = 'quartz_bricks'
-                self.put(x, lv, z, blk)
-                for y in range(lv + 1, lv + 10):
+                self.put(x, lv, z, 'quartz_bricks' if abs(v) == hl + 1 or abs(u) == hw + 1 else
+                         ('polished_deepslate' if (u + v) % 2 else 'deepslate_tiles'))
+                for y in range(lv + 1, lv + 12):
                     self.put(x, y, z, None)
-                self.occupied[z - Z0, x - X0] = True
-        # doce columnas: unas enteras, otras rotas o caídas
-        for i in range(12):
-            a = i * math.pi / 6 + 0.26
-            x, z = round(cx + math.cos(a) * 12.5), round(cz + math.sin(a) * 12.5)
-            kind = rnd.random()
-            if kind < 0.25:
-                for y in range(lv + 1, lv + 8):
+                wall = abs(u) == hw or abs(v) == hl
+                if wall:
+                    hmax = 2 + int(h01(x, z, 7) * 6)
+                    if u == -hw and abs(v) <= 1:
+                        hmax = 0  # la puerta
+                    for y in range(lv + 1, lv + 1 + hmax):
+                        self.put(x, y, z, 'polished_deepslate' if y == lv + 1 else ('quartz_bricks' if (y + u) % 4 else 'chiseled_quartz_block'))
+        # columnas dentro
+        for u in (-4, 0, 4):
+            for v in (-3, 3):
+                x, z = at(u, v)
+                hh = 2 + int(h01(x, z, 9) * 7)
+                for y in range(lv + 1, lv + 1 + hh):
                     self.put(x, y, z, 'quartz_pillar[axis=y]')
-                self.put(x, lv + 8, z, 'gold_block')
-                self.put(x, lv + 9, z, 'end_rod[facing=up]')
-            elif kind < 0.7:
-                for y in range(lv + 1, lv + 1 + rnd.randint(1, 5)):
-                    self.put(x, y, z, 'quartz_pillar[axis=y]')
-                self.put(x, lv + 1, z + 1, 'sculk')
-            else:
-                # caída: tumbada hacia fuera
-                self.put(x, lv + 1, z, 'quartz_pillar[axis=y]')
-                ax = 'x' if abs(math.cos(a)) > abs(math.sin(a)) else 'z'
-                for k in range(1, rnd.randint(4, 7)):
-                    fx, fz = (x + k * (1 if math.cos(a) > 0 else -1), z) if ax == 'x' else (x, z + k * (1 if math.sin(a) > 0 else -1))
-                    if self.inside(fx, fz):
-                        self.put(fx, self.h(fx, fz) + 1, fz, f'quartz_pillar[axis={ax}]')
-        # el pedestal roto del centro: velas y una farola de alma
-        for dx in range(-1, 2):
-            for dz in range(-1, 2):
-                self.put(cx + dx, lv + 1, cz + dz, 'chiseled_quartz_block')
-        self.put(cx, lv + 2, cz, 'quartz_pillar[axis=y]')
-        self.put(cx, lv + 3, cz, 'soul_lantern[hanging=false,waterlogged=false]')
-        for dx, dz in ((1, 1), (-1, -1), (1, -1), (-1, 1)):
-            self.put(cx + dx, lv + 2, cz + dz, 'white_candle[candles=3,lit=true,waterlogged=false]')
-        # el arco de la entrada (al este, hacia el sendero), roto
-        for side in (-2, 2):
-            for y in range(lv + 1, lv + 8 - (side > 0) * 3):
-                self.put(cx + 16, y, cz + side, 'quartz_pillar[axis=y]')
-        for dz in range(-2, 1):
-            self.put(cx + 16, lv + 8, cz + dz, 'smooth_quartz_slab[type=bottom,waterlogged=false]')
+                if hh >= 7:
+                    self.put(x, lv + 1 + hh, z, 'gold_block')
+        # el altar
+        x, z = at(hw - 2, 0)
+        self.put(x, lv + 1, z, 'chiseled_quartz_block')
+        self.put(x, lv + 2, z, 'gold_block')
+        for dv in (-1, 1):
+            xx, zz = at(hw - 2, dv)
+            self.put(xx, lv + 1, zz, 'smooth_quartz_slab[type=bottom,waterlogged=false]')
+            self.put(xx, lv + 2, zz, 'white_candle[candles=3,lit=true,waterlogged=false]')
+        # bloques caídos alrededor
+        for _ in range(10):
+            u, v = rnd.randint(-hw - 4, hw + 4), rnd.randint(-hl - 4, hl + 4)
+            x, z = at(u, v)
+            if self.inside(x, z) and (abs(u) > hw or abs(v) > hl):
+                self.put(x, self.h(x, z) + 1, z, rnd.choice(('quartz_bricks', 'chiseled_quartz_block', 'polished_deepslate')))
+        self.occupy(cx, cz, 13)
+
+    def wall_ruin(self, x0, z0, x1, z1):
+        """Un trozo de la muralla que rodeaba las tierras de la Orden: de pizarra, rota."""
+        n = int(math.hypot(x1 - x0, z1 - z0))
+        for i in range(n):
+            t = i / n
+            x, z = int(round(x0 + (x1 - x0) * t)), int(round(z0 + (z1 - z0) * t))
+            if not self.inside(x, z) or self.dist_trail(x, z) < 5:
+                continue
+            hmax = int(2 + 6 * (0.5 + 0.5 * math.sin(i * 0.31)) * h01(x, z, 13))
+            top = self.h(x, z)
+            for y in range(top + 1, top + 1 + hmax):
+                self.put(x, y, z, 'deepslate_bricks' if (y + i) % 5 else 'cracked_deepslate_bricks')
+            if hmax >= 6:
+                self.put(x, top + 1 + hmax, z, 'deepslate_brick_slab[type=bottom,waterlogged=false]')
+            self.occupied[z - Z0, x - X0] = True
 
     def islets(self):
+        """Fragmentos que flotan encima; algunos, colgados de cadenas (la magia de la Orden los sujeta)."""
         rnd = self.rnd
-        n = 0
-        tries = 0
         placed = []
-        while n < 14 and tries < 200:
+        tries = 0
+        while len(placed) < 26 and tries < 400:
             tries += 1
-            ys, xs = np.nonzero(self.mask & (self.dedge > 6))
+            ys, xs = np.nonzero(self.mask & (self.dedge > 8))
             i = rnd.randrange(len(xs))
             x, z = int(xs[i] + X0), int(ys[i] + Z0)
-            if any(math.hypot(x - a, z - b) < 28 for a, b in placed):
+            if any(math.hypot(x - a, z - b) < 40 for a, b in placed):
                 continue
-            cy = self.h(x, z) + rnd.randint(18, 40)
-            r = rnd.uniform(3, 6.5)
+            ground = self.h(x, z)
+            cy = ground + rnd.randint(22, 52)
+            r = rnd.uniform(3.5, 8.5)
             placed.append((x, z))
-            n += 1
-            for dx in range(-7, 8):
-                for dz in range(-7, 8):
+            zone = self.zone[z - Z0, x - X0]
+            topb = {'cristal': 'calcite', 'obsidiana': 'blackstone', 'ruinas': 'deepslate_tiles'}.get(zone, 'tuff')
+            for dx in range(-9, 10):
+                for dz in range(-9, 10):
                     d = math.hypot(dx, dz)
                     if d > r:
                         continue
-                    depth = int(2 + (r - d) * 1.4)
+                    depth = int(2 + (r - d) * 1.6)
                     for k in range(depth):
-                        blk = 'end_stone' if k < 2 else ('obsidian' if (dx + dz + k) % 4 == 0 else 'end_stone')
+                        blk = topb if k == 0 else ('obsidian' if (dx + dz + k) % 5 == 0 else 'deepslate')
                         self.put(x + dx, cy - k, z + dz, blk)
-                    if d < r - 1 and (dx * 3 + dz * 5) % 7 == 0:
+                    if d < r - 1 and h01(x + dx, z + dz, 17) < 0.12:
                         self.put(x + dx, cy - depth, z + dz, 'amethyst_cluster[facing=down,waterlogged=false]')
-                    if (dx * 5 + dz * 11) % 13 == 0 and d < r - 0.5:
-                        # lianas con bayas que brillan
-                        ln = 2 + (dx * dz) % 4
-                        for k in range(ln):
-                            self.put(x + dx, cy - depth - k, z + dz, 'cave_vines_plant[berries=true]' if k < ln - 1
-                                     else 'cave_vines[age=25,berries=true]')
-            if rnd.random() < 0.5:
-                self.amethyst_islet_top(x, cy, z)
-            else:
-                self.put(x, cy + 1, z, 'chorus_flower[age=5]' if rnd.random() < 0.5 else 'amethyst_cluster[facing=up,waterlogged=false]')
-
-    def amethyst_islet_top(self, x, y, z):
-        for k in range(1, 4):
-            self.put(x, y + k, z, 'amethyst_block')
-        self.put(x, y + 4, z, 'amethyst_cluster[facing=up,waterlogged=false]')
+            if zone == 'cristal':
+                for k in range(1, 5):
+                    self.put(x, cy + k, z, 'amethyst_block')
+                self.put(x, cy + 5, z, 'amethyst_cluster[facing=up,waterlogged=false]')
+            # colgado de cadenas: dos o tres hasta el suelo (o hasta donde lleguen)
+            if rnd.random() < 0.55 and ground > 0:
+                for _ in range(rnd.randint(2, 3)):
+                    dx, dz = rnd.randint(-2, 2), rnd.randint(-2, 2)
+                    depth = int(2 + (r - math.hypot(dx, dz)) * 1.6)
+                    for y in range(ground + 1, cy - depth):
+                        if self.inside(x + dx, z + dz) and self.air(x + dx, y, z + dz):
+                            self.put(x + dx, y, z + dz, 'chain[axis=y,waterlogged=false]')
 
     def underside(self):
-        """Lo que cuelga por debajo: lianas con bayas que brillan, amatistas y espeleotemas."""
-        w = self.w
+        """Lo que cuelga por debajo: amatistas y alguna cadena rota."""
         for iz in range(self.NZ):
             for ix in range(self.NX):
                 if not self.mask[iz, ix]:
                     continue
                 x, z = ix + X0, iz + Z0
                 bot = int(self.bottom[iz, ix])
-                r = ((x * 2654435761) ^ (z * 40503) ^ (SEED * 7)) % 1000 / 1000.0
+                r = h01(x, z, SEED)
                 if not self.air(x, bot - 1, z):
                     continue
-                if r < 0.035:
-                    ln = 2 + int(r * 10000) % 7
-                    for k in range(ln):
-                        w.put(x, bot - 1 - k, z, 'cave_vines_plant[berries=true]' if k < ln - 1 else 'cave_vines[age=25,berries=true]')
-                elif r < 0.06:
-                    w.put(x, bot - 1, z, 'amethyst_cluster[facing=down,waterlogged=false]')
-                elif r < 0.075:
-                    w.put(x, bot - 1, z, 'pointed_dripstone[thickness=tip,vertical_direction=down,waterlogged=false]')
+                if r < 0.03:
+                    self.put(x, bot - 1, z, 'amethyst_cluster[facing=down,waterlogged=false]')
+                elif r < 0.034:
+                    for k in range(1, 3 + int(r * 10000) % 6):
+                        self.put(x, bot - k, z, 'chain[axis=y,waterlogged=false]')
+
+    def details(self):
+        """Lo pequeño del suelo: brotes de amatista en el cristal, botones de piedra negra en las Fauces."""
+        for iz in range(self.NZ):
+            for ix in range(self.NX):
+                if not self.mask[iz, ix] or self.occupied[iz, ix]:
+                    continue
+                x, z = ix + X0, iz + Z0
+                top = int(self.H[iz, ix])
+                if not self.air(x, top + 1, z):
+                    continue
+                r = h01(x, z, 29)
+                zn = self.zone[iz, ix]
+                tb = self.get(x, top, z)
+                if zn == 'cristal' and tb in ('minecraft:calcite', 'minecraft:amethyst_block', 'minecraft:budding_amethyst'):
+                    if r < 0.05:
+                        self.put(x, top + 1, z, 'small_amethyst_bud[facing=up,waterlogged=false]')
+                    elif r < 0.075:
+                        self.put(x, top + 1, z, 'medium_amethyst_bud[facing=up,waterlogged=false]')
+                elif zn == 'obsidiana' and r < 0.012:
+                    self.put(x, top + 1, z, 'polished_blackstone_button[face=floor,facing=north,powered=false]')
+                elif zn == 'ceniza' and r < 0.006:
+                    self.put(x, top + 1, z, 'cobbled_deepslate_slab[type=bottom,waterlogged=false]')
 
     def stone_bridge(self):
-        """El Puente de Piedra a la isla de la grieta, con la Puerta del Páramo en este lado."""
+        """El Puente de Piedra a la isla de la grieta, con la Puerta de los Fragmentos en este lado."""
         w = self.w
-        z0, z1 = STONE_BRIDGE_Z[1], STONE_BRIDGE_Z[0]   # de -168 (sur) a -206 (norte)
+        z0, z1 = STONE_BRIDGE_Z[1], STONE_BRIDGE_Z[0]   # de -169 (sur) a -206 (norte)
         cx = SOUTH_DOOR[0]
         n = abs(z1 - z0)
         for i, z in enumerate(range(z0, z1 - 1, -1)):
             t = i / n
-            sag = 4.5 * math.sin(math.pi * t)
             for dx in range(-3, 4):
                 x = cx + dx
-                # (encima del tablero, nada; por debajo solo donde ya no hay isla grande: la del Umbral llega a z -176)
                 for y in range(60 if z <= -177 else 66, 72):
                     w.put(x, y, z, None)
                 if abs(dx) == 3:
                     continue
-                w.put(x, 66, z, 'end_stone_bricks' if abs(dx) <= 1 else 'polished_blackstone_bricks')
-                # por debajo, un arco de roca (más fino en medio)
+                w.put(x, 66, z, 'polished_deepslate' if abs(dx) <= 1 else 'deepslate_tiles')
                 depth = int(2 + (1 - math.sin(math.pi * t)) * 6 + (abs(dx) == 2) * -1)
                 for k in range(1, depth + 1):
-                    w.put(x, 66 - k, z, 'blackstone' if (x + z + k) % 3 else 'end_stone')
+                    w.put(x, 66 - k, z, 'blackstone' if (x + z + k) % 3 else 'deepslate')
             if i % 6 == 3:
                 for dx in (-2, 2):
-                    w.put(cx + dx, 67, z, 'polished_blackstone_wall')
+                    w.put(cx + dx, 67, z, 'deepslate_brick_wall')
                     w.put(cx + dx, 68, z, 'soul_lantern[hanging=false,waterlogged=false]')
-        # la Puerta del Páramo (en el lado del Páramo)
+        # la Puerta de los Fragmentos (en este lado)
         gz = SOUTH_DOOR[1] - 2
         top = 66
         for dx in (-4, 4):
             for y in range(top + 1, top + 10):
-                w.put(cx + dx, y, gz, 'polished_blackstone_bricks' if y % 3 else 'chiseled_polished_blackstone')
+                w.put(cx + dx, y, gz, 'deepslate_bricks' if y % 3 else 'chiseled_deepslate')
             w.put(cx + dx, top + 10, gz, 'soul_lantern[hanging=false,waterlogged=false]')
         for dx in range(-4, 2):
-            w.put(cx + dx, top + 9, gz, 'polished_blackstone_brick_slab[type=bottom,waterlogged=false]')
+            w.put(cx + dx, top + 9, gz, 'deepslate_brick_slab[type=bottom,waterlogged=false]')
         w.put(cx - 1, top + 8, gz, 'chain[axis=y,waterlogged=false]')
         w.put(cx - 1, top + 7, gz, 'soul_lantern[hanging=true,waterlogged=false]')
-        for dz in range(-3, 4):
-            for dx in range(-3, 4):
-                if self.inside(cx + dx, gz + dz):
-                    self.occupied[gz + dz - Z0, cx + dx - X0] = True
+        self.occupy(cx, gz, 4)
 
     # ---- todo
     def run(self, main_ground, frag_light):
@@ -806,47 +821,53 @@ class Biome:
         w.grow(X0, X1, Z0, Z1)
         self.shape(main_ground)
         self.make_trail()
-        self.zones()
+        self.regions()
         self.heights()
         self.place_wells()
-        self.flatten(-132, -262, 15)
-        # (se borra la zona entera: se puede volver a pasar; también el santuario de antes, el de la primera 1.3.96, que
-        # estaba aquí, en -64 -224, con su puente)
+        # (se borra la zona entera: se puede volver a pasar)
         g = w.d['g']
         X, Z = self.X, self.Z
-        clear = self.mask | (np.hypot(X + 64, Z + 224) <= 30) | ((np.abs(X + 64) <= 3) & (Z <= -177))
+        clear = self.mask | ((np.abs(X + 64) <= 3) & (Z <= -177))
         for iz, ix in zip(*np.nonzero(clear)):
             g[:, Z[iz, ix] - w.d['oz'], X[iz, ix] - w.d['ox']] = 0
+        # las capillas antes de rellenar (allanan su sitio)
+        chapels = [(-112, -585, 0), (-6, -612, 1), (-150, -628, 0), (24, -560, 1)]
+        for cx, cz, rot in chapels:
+            if self.inside(cx, cz):
+                self.flatten(cx, cz, 10)
         self.fill()
         self.herida()
-        self.chasms()
+        self.fissures()
         self.stone_bridge()
         self.path()
         well_sites = self.build_wells(frag_light)
-        self.ruins()
-        for x, z in self.spots('coros', 46, 7):
-            self.chorus_tree(x, z)
-        for x, z in self.spots('amatista', 16, 13):
-            self.amethyst_spire(x, z)
-        for x, z in self.spots('obsidiana', 9, 18):
-            self.needle(x, z)
-        for x, z in self.spots('obsidiana', 8, 12):
+        for cx, cz, rot in chapels:
+            if self.inside(cx, cz) and self.dist_trail(cx, cz) > 14:
+                self.chapel(cx, cz, rot)
+        self.wall_ruin(-190, -640, -120, -520)
+        self.wall_ruin(30, -520, 90, -640)
+        for x, z in self.spots('ruinas', 22, 14):
+            self.stele(x, z)
+        for x, z in self.spots('ruinas', 10, 22):
+            self.boulder(x, z, 'ruinas')
+        for x, z in self.spots('ceniza', 70, 13):
+            self.petrified_tree(x, z)
+        for x, z in self.spots('ceniza', 40, 18):
+            self.boulder(x, z, 'ceniza')
+        for x, z in self.spots('cristal', 46, 16):
+            self.crystal(x, z)
+        for x, z in self.spots('cristal', 18, 20):
+            self.boulder(x, z, 'cristal')
+        for x, z in self.spots('obsidiana', 26, 24):
+            self.fang(x, z)
+        for x, z in self.spots('obsidiana', 22, 16):
             self.basalt_columns(x, z)
-        for x, z in self.spots('paramo', 6, 30) + self.spots('obsidiana', 3, 20):
-            self.brazier(x, z)
-        # braseros junto al sendero, cada ~45 bloques
-        for i in range(30, len(self.trail) - 20, 45):
-            (px, pz), (qx, qz) = self.trail[i], self.trail[i + 1]
-            nx, nz = -(qz - pz), qx - px
-            ln = math.hypot(nx, nz) or 1
-            x, z = int(round(px - nx / ln * 4.5)), int(round(pz - nz / ln * 4.5))
-            if self.inside(x, z) and not self.occupied[z - Z0, x - X0]:
-                self.brazier(x, z)
-        self.plants()
+        for x, z in self.spots('obsidiana', 14, 20):
+            self.boulder(x, z, 'obsidiana')
+        self.details()
         self.islets()
         self.underside()
-        # dónde empieza la fauna (VoidIsland: por donde anda, desde aquí): lo más lejos del borde y de los huecos (la
-        # Herida y las grietas ya hechas)
+        # dónde empieza la fauna (VoidIsland: por donde anda, desde aquí): lo más lejos del borde y de los huecos
         from scipy import ndimage
         d = ndimage.distance_transform_edt(self.mask)
         iz, ix = np.unravel_index(int(np.argmax(d)), d.shape)

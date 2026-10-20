@@ -209,6 +209,11 @@ public final class VoidArmor {
     static void tickAltar(ServerLevel level) {
         BlockPos a = VoidIsland.altarPos();
         if (a == null || !level.hasChunkAt(a) || !level.areEntitiesLoaded(ChunkPos.asLong(a))) return;
+        // (los de un altar de antes, que se quedaron en el aire al mudarse el santuario, fuera)
+        for (ArmorStand old : level.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(ArmorStand.class),
+                e -> e.getTags().contains(TAG) && e.position().distanceToSqr(a.getX() + 0.5, a.getY(), a.getZ() + 0.5) > 6 * 6)) {
+            old.discard();
+        }
         List<ArmorStand> here = level.getEntitiesOfClass(ArmorStand.class, new AABB(a).inflate(3), e -> e.getTags().contains(TAG));
         for (int k = 1; k < here.size(); k++) here.get(k).discard();
         // motas violetas que suben alrededor (el aura la dibuja el cliente, SanctuaryFx)
