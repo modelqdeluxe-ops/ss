@@ -43,7 +43,8 @@ float godRays(vec2 p, vec2 sun, float aspect) {
     float s = pow(noise1(ang * 9.0 + 3.1 + Time * 0.006), 2.0) * 0.6
             + pow(noise1(ang * 21.0 - 7.7 - Time * 0.009), 2.5) * 0.4;
     float down = 1.0 - smoothstep(0.25, 0.60, abs(ang));
-    return s * down * exp(-r * 1.6) * smoothstep(0.0, 0.05, r);
+    // (en la imagen del dueño llegan hasta la escalera de agua, no hasta el altar)
+    return s * down * exp(-r * 1.45) * smoothstep(0.0, 0.05, r) * (1.0 - smoothstep(0.32, 0.62, r));
 }
 
 float linearDepth(float d) {
@@ -61,7 +62,12 @@ void main() {
     vec3 blurred = texture(BlurSampler, uv).rgb;
     // contraste local («claridad»): se separa la imagen de su versión desenfocada (la imagen del dueño tiene un 30 % más
     // de contraste local y un 40 % más de nitidez que sin esto)
-    c = max(c + (c - blurred) * 0.30, 0.0);
+    // (lo que oscurece, comprimido cuando es mucho: alrededor de lo que brilla suave —el halo de un farol, un hada— dibujaba
+    // un aro oscuro y salían «discos» en el juego; el detalle fino de las texturas, diferencias pequeñas, sigue igual)
+    vec3 dc = c - blurred;
+    float dl = dot(dc, vec3(0.299, 0.587, 0.114));
+    dc /= 1.0 + max(-dl, 0.0) * 6.0;
+    c = max(c + dc * 0.40, 0.0);
     c = mix(c, blurred, coc);
     vec3 b = texture(BloomSampler, uv).rgb;
     vec3 rays = vec3(0.0);
@@ -82,7 +88,7 @@ void main() {
     float aspect = ts.x / ts.y;
     vec2 sd = (uv - SunPos) * vec2(aspect, 1.0);
     // el foco del sol en el hueco (crema cálido, como en la imagen) y sus rayos
-    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.6 + exp(-dot(sd, sd) * 30.0) * 0.45) * SunVis;
+    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.8 + exp(-dot(sd, sd) * 30.0) * 0.45) * SunVis;
     vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)

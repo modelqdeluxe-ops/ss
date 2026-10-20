@@ -14,7 +14,6 @@ in vec2 fuv;
 
 uniform sampler2D Sampler0;
 uniform vec4 StillUV;
-uniform vec4 FlowUV;
 uniform vec3 CamPos;
 uniform vec3 LightDir;
 uniform vec3 BeamPos;
@@ -107,7 +106,7 @@ void main() {
         rim *= clamp(0.07 / (0.07 + aa * 2.0), 0.0, 1.0);
         float broken = smoothstep(0.30, 0.70, noise(fp * 2.2 + vec2(3.7, -t * 2.0)));
         float streak = noise(vec2(fuv.x * 5.0, fuv.y * 0.35 + t * 2.6)) * 0.6 + noise(vec2(fuv.x * 11.0, fuv.y * 0.6 + t * 3.4)) * 0.4;
-        col = mix(vec3(0.00, 0.28, 0.38), vec3(0.04, 0.58, 0.70), clamp(vc.z * 0.45 + streak * 0.7 - 0.05, 0.0, 1.0));
+        col = mix(vec3(0.00, 0.30, 0.33), vec3(0.05, 0.62, 0.66), clamp(vc.z * 0.45 + streak * 0.7 - 0.05, 0.0, 1.0));
         col = mix(col, vec3(0.62, 1.0, 1.0), rim * (0.30 + 0.65 * broken));
         col += vec3(0.10, 0.45, 0.45) * smoothstep(0.62, 0.9, streak) * 0.5;
         // destellos: puntos redondos pequeños que bajan con el agua y parpadean

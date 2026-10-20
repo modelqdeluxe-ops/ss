@@ -87,6 +87,12 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   regular de celdas con el borde blanco y destellos cuadrados (rectángulos blancos). Ahora son escamas irregulares
   (Voronoi) que bajan, con el borde fino y roto en destellos, vetas y destellos redondos, con antialiasing (`fwidth`)
   para que de lejos no parpadee; en el estanque, sin las rayitas blancas del agua del juego y con manchas de luz suaves.
+- **El disco detrás de los faroles (y de las hadas)**, medido en la prueba `a877326`: no era el halo (su textura es suave)
+  sino la «claridad» del shader final (la imagen menos su versión desenfocada), que dibuja un aro oscuro alrededor de lo
+  que brilla suave. Ahora lo que oscurece se comprime cuando es mucho (`crate_post.fsh`): el aro desaparece y el
+  detalle fino sigue igual. Los rayos llegan hasta la escalera de agua, no hasta el altar (como en la imagen).
+- **Los nenúfares negros**: el verde de Minecraft por la luz de la escena daba (6,41,37); los alumbra el agua turquesa
+  (`LILY_LIFT`/`LILY_K` en la vista previa = `SanctuaryScene`), (15,74,39); en la imagen ~(25,85,45).
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
   y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
 
