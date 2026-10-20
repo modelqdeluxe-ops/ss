@@ -36,7 +36,8 @@
     "GuiGraphicsMixin",
     "RiftSkyMixin",
     "RiftCloudsMixin",
-    "GameRendererLateMixin"
+    "GameRendererLateMixin",
+    "crates.LevelRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -27,6 +27,8 @@ public final class TFClient {
         net.tierrasfantasticas.tfclient.vacio.TFVoid.init(FMLJavaModLoadingContext.get().getModEventBus());
         // TF Claims: protecciones de zona (antes Fantastic Claims)
         net.tierrasfantasticas.tfclient.claims.TFClaims.init(FMLJavaModLoadingContext.get().getModEventBus());
+        // TF Crates: las crates físicas (antes Fantastic Crates; sus objetos y datos siguen con el nombre «fscrates»)
+        net.tierrasfantasticas.tfclient.crates.FSCrates.init(FMLJavaModLoadingContext.get().getModEventBus());
         net.tierrasfantasticas.tfclient.menu.TFPanelMenu.MENUS.register(FMLJavaModLoadingContext.get().getModEventBus());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(
                 (net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
