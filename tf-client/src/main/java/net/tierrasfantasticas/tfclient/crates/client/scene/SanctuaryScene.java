@@ -629,8 +629,9 @@ public final class SanctuaryScene {
                 }
                 n++;
             }
+            // (desde el pie del agua que cae, no desde el fondo del estanque: ahí empieza su espuma)
             int y0 = y;
-            while (isWater(x, y0 - 1, z) && y0 > y - 30) y0--;
+            while (isFalling(x, y0 - 1, z) && y0 > y - 30) y0--;
             // los lados que dan al aire: norte, sur, oeste, este
             int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
             for (int[] d : dirs) {

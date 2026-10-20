@@ -507,6 +507,20 @@ def top_greenery(sc):
                     sc.set(x, y0 - 1, z, 'minecraft:spore_blossom', only_air=True)
 
 
+def top_fringe(sc):
+    """Lo alto del centro, como en la imagen: follaje que cuelga del borde de las copas delante de la cascada alta, a los
+    dos lados del hueco del sol (el centro lo deja libre el haz), con flores de esporas rosas."""
+    for x in (-4, -3, -2, 3, 4, 5):
+        for z in (OPEN_Z[1], OPEN_Z[1] - 1):
+            low = CANOPY_Y - 1 - int(vhash(x, z, 211) * 3)
+            for y in range(low, CANOPY_Y + 1):
+                sc.set(x, y, z, leaves('azalea_leaves' if vhash(x, y + z, 213) < 0.6 else 'oak_leaves'), only_air=True)
+            if vhash(x, z, 215) < 0.45:
+                sc.set(x, low - 1, z, 'minecraft:spore_blossom', only_air=True)
+            elif vhash(x, z, 217) < 0.6:
+                hang(sc, x, low - 1, z, 1 + int(vhash(x, z, 219) * 2), vhash(x, z, 221))
+
+
 # (x, y del farol, z): los de la imagen del dueño, medidos con su cámara, y alguno más a los lados
 LANTERNS = ((-6, 5, -2), (-7, 3, -1), (-4, 6, -11), (-3, 4, -16), (2, 6, -7), (4, 6, -4), (6, 5, -1), (7, 3, -1),
             (-9, 4, -7), (9, 4, -8), (-8, 4, 5), (8, 4, 4), (3, 4, -16))
@@ -695,6 +709,7 @@ def build():
     altar(sc)
     roofs(sc)
     top_greenery(sc)
+    top_fringe(sc)
     lanterns(sc)
     lush(sc)
     overgrowth(sc)

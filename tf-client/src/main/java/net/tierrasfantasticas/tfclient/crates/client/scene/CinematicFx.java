@@ -308,7 +308,7 @@ public final class CinematicFx {
             // ondas
             for (int o = 0; o < 3; o++) {
                 float ph = frac(t * 0.022F + o / 3.0F + k * 0.13F);
-                ring(vc, v, land.x, pool[1] + 0.012F, land.z, 0.15F + ph * 1.3F, 0.035F, 28, 0.9F, 0.96F, 1.0F, 0.22F * (1.0F - ph));
+                ring(vc, v, land.x, pool[1] + 0.012F, land.z, 0.15F + ph * 1.3F, 0.035F, 28, 0.9F, 0.96F, 1.0F, 0.32F * (1.0F - ph));
             }
         }
         // ondas sueltas por el estanque (gotas, un pez)
@@ -647,10 +647,22 @@ public final class CinematicFx {
         float fz = sc.anchor("fall_z")[0] + 0.3F;
         float[] pond = sc.anchor("pond");
         if (f[2] <= f[3]) return;
-        for (int i = 0; i < 14; i++) {
+        // la bruma del pie de cada cascada (el dueño: que la unión con el agua de abajo no se vea cortada): nubecitas
+        // blancas que suben delante del pie, en la cascada alta, en cada salto de la escalera y en los chorros de los lados
+        for (int i = 0; i < 18; i++) {
             float ph = frac(t * 0.07F + hash(i, 241));
             float x = mix(f[0], f[1], hash(i, 243));
-            glow(vc, v, x, f[3] + 0.1F + ph * 0.5F, fz + 0.2F + ph * 0.6F, 0.3F + ph * 0.4F, 0.80F, 1.0F, 1.0F, 0.22F * (1.0F - ph));
+            glow(vc, v, x, f[3] - 0.05F + ph * 0.6F, fz + 0.2F + ph * 0.6F, 0.40F + ph * 0.5F, 0.85F, 1.0F, 1.0F,
+                    0.40F * (1.0F - ph) * Math.min(1.0F, ph * 5.0F));
+        }
+        float[] st = sc.anchor("stairs");
+        for (int k = 0; k <= (int)st[2]; k++) {
+            for (int i = 0; i < 10; i++) {
+                float ph = frac(t * 0.09F + hash(i + k * 17, 245));
+                float x = mix(-st[3], st[3] + 1.0F, hash(i + k * 17, 247));
+                glow(vc, v, x, k + 0.80F + ph * 0.4F, st[0] - k + 0.15F + ph * 0.35F, 0.22F + ph * 0.3F, 0.85F, 1.0F,
+                        1.0F, 0.32F * (1.0F - ph) * Math.min(1.0F, ph * 5.0F));
+            }
         }
         for (int o = 0; o < 4; o++) {
             float ph = frac(t * 0.02F + o / 4.0F);
@@ -660,11 +672,12 @@ public final class CinematicFx {
         for (int k = 0; k < 2; k++) {
             float[] s = sc.anchor("spring" + k);
             if (s[3] <= 0) continue;
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < 16; i++) {
                 float ph = frac(t * 0.08F + hash(i + k * 13, 251));
                 float ang = hash(i + k * 13, 253) * 6.2832F;
-                glow(vc, v, s[0] + (float)Math.cos(ang) * 0.5F * ph, s[1] + 0.08F + ph * 0.3F, s[2] + 0.4F + (float)Math.sin(ang) * 0.4F * ph,
-                        0.25F + ph * 0.3F, 0.80F, 1.0F, 1.0F, 0.24F * (1.0F - ph));
+                float x = s[0] + (hash(i + k * 13, 255) - 0.5F) * 1.6F;
+                glow(vc, v, x + (float)Math.cos(ang) * 0.4F * ph, s[1] - 0.05F + ph * 0.6F, s[2] + 0.4F + (float)Math.sin(ang) * 0.3F * ph
+                        + ph * 0.3F, 0.40F + ph * 0.5F, 0.85F, 1.0F, 1.0F, 0.42F * (1.0F - ph) * Math.min(1.0F, ph * 5.0F));
             }
             for (int o = 0; o < 3; o++) {
                 float ph = frac(t * 0.025F + o / 3.0F + k * 0.3F);

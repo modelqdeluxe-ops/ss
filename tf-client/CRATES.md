@@ -108,6 +108,11 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   ven los bloques del fondo), manchas de luz suaves y los reflejos de las cascadas en destellos redondos; los dos con el
   mismo turquesa (`WATER_DEEP`/`WATER_LIGHT` en `crate_water.fsh`). La cascada, opaca al 90 % (más transparente se veían
   las juntas del ladrillo de detrás como rayas). **No volver a meter celdas, rejillas ni líneas en el agua.**
+- **La unión de cada cascada con el agua de abajo** (el dueño: «se ve cortado… haz un efecto de espuma, así con todas»):
+  abajo la cascada se vuelve espuma blanca con el borde de arriba irregular y en movimiento (contada desde el pie del agua
+  que cae, no desde el fondo del estanque), el estanque lleva espuma blanca y ancha alrededor del pie de cada chorro, y
+  delante sube bruma (`CinematicFx.waterfallLights`: la cascada alta, cada salto de la escalera y los dos chorros). Sin
+  línea recta en ninguna.
 - **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en

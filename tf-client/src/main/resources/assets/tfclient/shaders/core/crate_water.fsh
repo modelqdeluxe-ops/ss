@@ -93,14 +93,18 @@ void main() {
         float gd = length(gf - (vec2(hash(gi), hash(gi + 3.3)) - 0.5) * 0.6);
         float tw = step(0.86, hash(gi + 9.1)) * (0.5 + 0.5 * sin(t * 6.0 + hash(gi) * 40.0));
         col = mix(col, vec3(0.92, 1.0, 1.0), (1.0 - smoothstep(0.0, 0.07 + fwidth(gd), gd)) * tw * 0.7 * fade);
-        // espuma blanca donde cae: mucha en la cascada alta y en los chorros de los lados, poca en los saltos de la escalera
-        float foam = smoothstep(1.1, 0.0, fuv.y) * (0.6 + 0.4 * noise(vec2(fuv.x * 6.0, fuv.y * 3.0 + t * 5.0))) * mix(0.55, 0.9, smoothstep(1.5, 4.0, height));
-        col = mix(col, vec3(0.90, 1.0, 1.0), foam);
-        // el golpe del agua contra el estanque: blanco que brilla (y florece con el resplandor)
-        col += vec3(0.55, 0.85, 0.85) * smoothstep(0.45, 0.0, fuv.y) * (0.6 + 0.4 * noise(vec2(fuv.x * 9.0, t * 6.0)));
+        // la espuma donde cae (el dueño: «la transición bien hecha, que no se vea cortado, así con todas»): abajo el agua se
+        // vuelve espuma blanca con el borde de arriba irregular y que se mueve, con burbujas; alta en la cascada grande y en
+        // los chorros de los lados, baja en los saltos de la escalera. Tapa la unión con el agua de abajo (que lleva su
+        // espuma alrededor del pie y la bruma por delante: no hay línea recta)
+        float edgeN = noise(vec2(fuv.x * 4.0, t * 2.5)) * 0.55 + noise(vec2(fuv.x * 11.0 + 3.0, t * 4.0)) * 0.45;
+        float foamTop = mix(0.30, 0.95, smoothstep(1.5, 4.0, height)) * (0.6 + 0.8 * edgeN);
+        float foam = 1.0 - smoothstep(foamTop * 0.45, foamTop, fuv.y + 0.125);
+        foam *= 0.72 + 0.28 * noise(vec2(fuv.x * 14.0, fuv.y * 14.0 + t * 6.0));
+        col = mix(col, vec3(0.92, 1.0, 1.0), foam * 0.92);
         col *= mix(0.86, 1.10, light);
         col += vec3(0.6, 1.0, 1.0) * beam * 0.10;
-        alpha = 0.90 + 0.09 * foam;     // (translúcida; más no: se transparentaban las juntas del ladrillo de detrás como rayas)
+        alpha = 0.90 + 0.10 * foam;     // (translúcida; más no: se transparentaban las juntas del ladrillo de detrás como rayas)
     } else {
         // el estanque: agua transparente y limpia, del mismo turquesa que las cascadas, a través de la que se ven los
         // bloques de verdad del fondo; manchas de luz suaves que se mueven (sin líneas), el reflejo de las cascadas en
@@ -125,8 +129,10 @@ void main() {
         col += vec3(1.0, 0.92, 0.70) * spec * (0.5 + 2.2 * beam);
         col += vec3(0.85, 1.0, 0.85) * beam * 0.10;
         // espuma en las orillas y al pie de los chorros
-        float foam = smoothstep(0.35, 0.95, shore * (0.75 + 0.5 * noise(p * 3.0 + vec2(t * 0.6, t * 0.4))));
-        col = mix(col, vec3(0.88, 1.0, 1.0), foam * 0.6);
+        // (con burbujas; alrededor del pie de cada chorro, blanca y ancha: tapa su unión con el estanque)
+        float foam = smoothstep(0.25, 0.75, shore * (0.80 + 0.4 * noise(p * 3.0 + vec2(t * 0.6, t * 0.4))));
+        foam *= 0.80 + 0.20 * noise(p * 9.0 + vec2(t * 1.5, -t * 1.2));
+        col = mix(col, vec3(0.92, 1.0, 1.0), foam * 0.92);
         col *= mix(0.86, 1.10, light);
         // transparente de cerca (se ve el fondo) y más opaca de lejos o con espuma o destellos
         alpha = clamp(0.40 + fres * 0.45 + foam * 0.45 + rc * 0.3, 0.0, 0.96);

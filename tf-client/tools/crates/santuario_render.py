@@ -441,8 +441,8 @@ def water_mesh(sc, light, fullat):
                 vs.append((px_, y + h, pz_, shore, 0.0, min(1.0, g * 0.3), min(1.0, (l[0] + l[1] + l[2]) / 3), 0.0, 0.0))
             for q in (0, 1, 2, 0, 2, 3):
                 out.append(vs[q])
-        y0 = y
-        while is_water(x, y0 - 1, z) and y0 > y - 30:
+        y0 = y                                         # (desde el pie del agua que cae: ahí empieza su espuma)
+        while 'level=8' in sc.get(x, y0 - 1, z) and y0 > y - 30:
             y0 -= 1
         for d, (dx, dz) in (('north', (0, -1)), ('south', (0, 1)), ('west', (-1, 0)), ('east', (1, 0))):
             if is_water(x + dx, y, z + dz) or fullat(x + dx, y, z + dz):
@@ -627,19 +627,28 @@ def effects(fx, t, lights, power=1.0):
     # donde cae el haz: el charco de luz en el altar y en el agua
     fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.12 * power)
     fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.16 * power)
-    # espuma al pie de las cascadas de los lados (CinematicFx.waterfallLights)
+    # la bruma del pie de cada cascada (CinematicFx.waterfallLights): los chorros de los lados, la cascada alta y cada salto
+    # de la escalera
     for k, sp in enumerate(S.spring_points()):
-        for i in range(8):
+        for i in range(16):
             ph = frac(t * 0.08 + hsh(i + k * 13, 251))
             ang = hsh(i + k * 13, 253) * 6.2832
-            fx.glow(sp[0] + math.cos(ang) * 0.5 * ph, sp[1] + 0.08 + ph * 0.3, sp[2] + 0.4 + math.sin(ang) * 0.4 * ph,
-                    0.25 + ph * 0.3, 0.80, 1.0, 1.0, 0.24 * (1 - ph))
+            x = sp[0] + (hsh(i + k * 13, 255) - 0.5) * 1.6
+            fx.glow(x + math.cos(ang) * 0.4 * ph, sp[1] - 0.05 + ph * 0.6, sp[2] + 0.4 + math.sin(ang) * 0.3 * ph + ph * 0.3,
+                    0.40 + ph * 0.5, 0.85, 1.0, 1.0, 0.42 * (1 - ph) * min(1.0, ph * 5.0))
     f = an['fall']
     fz = an['fall_z'][0] + 0.3
-    for i in range(14):
+    for i in range(18):
         ph = frac(t * 0.07 + hsh(i, 241))
         x = f[0] + (f[1] - f[0]) * hsh(i, 243)
-        fx.glow(x, f[3] + 0.1 + ph * 0.5, fz + 0.2 + ph * 0.6, 0.3 + ph * 0.4, 0.80, 1.0, 1.0, 0.22 * (1 - ph))
+        fx.glow(x, f[3] - 0.05 + ph * 0.6, fz + 0.2 + ph * 0.6, 0.40 + ph * 0.5, 0.85, 1.0, 1.0, 0.40 * (1 - ph) * min(1.0, ph * 5.0))
+    st = an['stairs']
+    for k in range(int(st[2]) + 1):
+        for i in range(10):
+            ph = frac(t * 0.09 + hsh(i + k * 17, 245))
+            x = -st[3] + (2 * st[3] + 1.0) * hsh(i + k * 17, 247)
+            fx.glow(x, k + 0.80 + ph * 0.4, st[0] - k + 0.15 + ph * 0.35, 0.22 + ph * 0.3, 0.85, 1.0, 1.0,
+                    0.32 * (1 - ph) * min(1.0, ph * 5.0))
     # el polvo del haz
     for i in range(130):
         along = 0.3 + hsh(i, 31) * 13.0
