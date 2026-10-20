@@ -257,6 +257,9 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("panoramas")) ids.add(0, "panoramas");
             // (1.3.96) «fauna»: las criaturas del Páramo del Void, una a una y luego cómo salen solas; solo si se pide
             if (only != null && List.of(only.split(",")).contains("fauna")) ids.add(0, "fauna");
+            // (1.3.98) «corta»: lo de la 1.3.98 en menos de 10 min (el dueño: «no hagas comprobaciones de más de 10
+            // minutos»): el viaje, los caballeros, el soporte del altar, la Llegada, el puente, la isla de la grieta y la fauna
+            if (only != null && List.of(only.split(",")).contains("corta")) ids.add(0, "corta");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -273,7 +276,7 @@ public final class BossTest {
         // En el Void la prueba espera a que salga cada captura: con shaders el cliente va a pocos fotogramas por
         // segundo y la vista siguiente (o quitar el cielo propio) llegaba antes que la foto (10 s como mucho)
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
-        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id)) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
+        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id)) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
@@ -287,6 +290,10 @@ public final class BossTest {
         }
         if ("fauna".equals(r.id)) {
             if (!waitShot) faunaStep(server, level, player, r);
+            return;
+        }
+        if ("corta".equals(r.id)) {
+            if (!waitShot) cortaStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -1256,6 +1263,109 @@ public final class BossTest {
             for (BossEntity e : vl.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(BossEntity.class), BossEntity::isFauna)) e.discard();
             next(level);
         }
+    }
+
+    // ------------------------------------------------------------------------------------------- la prueba corta (1.3.98)
+
+    /** Desde dónde y hacia dónde: la Llegada y el portal, los escalones del Puente de Luz, la isla de la grieta y el Ancla. */
+    private static final double[][] CORTA_VIEWS = {{-44, 74, -146, -55, 68, -161}, {-58, 72, -664, -64, 68, -649},
+            {25, 105, 95, 64, 72, 142}, {-115, 96, -45, -50, 70, 25}, {-30, 80, 42, -51, 73, 23}};
+    private static final String[] CORTA_NAMES = {"llegada_portal", "puente_escalones", "isla_sur", "isla_oeste", "ancla_grieta"};
+    private static double standMin, standMax;
+
+    private static void look(ServerPlayer p, ServerLevel vl, double x, double y, double z, double tx, double ty, double tz) {
+        double dx = tx - x, dy = ty - y, dz = tz - z;
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.hypot(dx, dz)));
+        p.teleportTo(vl, x, y, z, yaw, pitch);
+    }
+
+    private static void cortaStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        ServerLevel vl = server.getLevel(net.tierrasfantasticas.tfclient.vacio.TFVoid.VOID);
+        if (vl == null) {
+            r.event("NO HAY DIMENSIÓN tfclient:void");
+            next(level);
+            return;
+        }
+        if (t == 1) {
+            fly(player, true);
+            net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sendToVoid(player);
+            r.event("al Void con su viaje (las capturas del túnel)");
+        }
+        if (t == 420) r.event("el viaje: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.travel());
+        // los cinco caballeros sacros, de cerca
+        if (t >= 440 && t < 840) {
+            int i = (t - 440) / 80, k = (t - 440) % 80;
+            Entity e = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredKnight(vl, i + 1);
+            if (k == 0 && e != null) {
+                Vec3 f = Vec3.directionFromRotation(0, e.getYRot());
+                look(player, vl, e.getX() + f.x * 4.5, e.getY() + 2.2, e.getZ() + f.z * 4.5, e.getX(), e.getY() + 1.6, e.getZ());
+            }
+            if (k == 60) shot(r, "caballero_" + (i + 1));
+        }
+        if (t == 840) r.event(net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredGround(vl));
+        // el soporte de la armadura: ¿salta? (su altura durante 3 s)
+        if (t >= 850 && t <= 920) {
+            net.minecraft.core.BlockPos a = net.tierrasfantasticas.tfclient.vacio.VoidIsland.altarPos();
+            if (t == 850 && a != null) {
+                look(player, vl, a.getX() + 0.5, a.getY() + 2, a.getZ() + 5.5, a.getX() + 0.5, a.getY() + 1, a.getZ() + 0.5);
+                standMin = 1e9;
+                standMax = -1e9;
+            }
+            Entity s = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.altarStand(vl);
+            if (t > 860 && s != null) {
+                standMin = Math.min(standMin, s.getY());
+                standMax = Math.max(standMax, s.getY());
+            }
+            if (t == 900) shot(r, "altar");
+            if (t == 920) r.event(s == null ? "el soporte del altar: NO ESTÁ" : String.format("el soporte del altar: y de %.2f a %.2f (%s), sin gravedad %s",
+                    standMin, standMax, standMax - standMin < 0.01 ? "quieto, bien" : "SE MUEVE", s.isNoGravity() ? "sí" : "NO"));
+        }
+        // la Llegada, el puente, la isla de la grieta y el Ancla nueva
+        if (t >= 940 && t < 940 + CORTA_VIEWS.length * 100) {
+            int v = (t - 940) / 100, k = (t - 940) % 100;
+            double[] a = CORTA_VIEWS[v];
+            if (k == 0) look(player, vl, a[0], a[1], a[2], a[3], a[4], a[5]);
+            if (k == 80) shot(r, CORTA_NAMES[v]);
+        }
+        // la fauna: cada criatura, 12 s detrás del jugador
+        int f0 = 940 + CORTA_VIEWS.length * 100;
+        if (t >= f0 && t < f0 + 2 * 260) {
+            int i = (t - f0) / 260, k = (t - f0) % 260;
+            String mob = FAUNA_MOBS[i];
+            Vec3 seed = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.faunaSpot();
+            if (k == 0) {
+                fly(player, false);
+                player.teleportTo(vl, seed.x, seed.y, seed.z, 180F, 8F);
+                faunaHits = 0;
+                faunaTrack.setLength(0);
+                player.setLastHurtByMob(null);
+            }
+            if (k == 20) {
+                int y = vl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(seed.x), (int) Math.floor(seed.z - 10));
+                faunaNow = net.tierrasfantasticas.tfclient.vacio.VoidFauna.spawn(vl, mob, new Vec3(seed.x, y, seed.z - 10), 0F);
+                if (faunaNow == null) r.event(mob + ": NO SALE");
+            }
+            if (faunaNow != null && faunaNow.isAlive() && player.getLastHurtByMob() == faunaNow) faunaHits++;
+            if (faunaNow != null && faunaNow.isAlive() && k > 20 && k % 20 == 0) {
+                faunaTrack.append(String.format(" %.0f", faunaNow.distanceTo(player)));
+                List<BossEntity> wr = vl.getEntitiesOfClass(BossEntity.class, faunaNow.getBoundingBox().inflate(48),
+                        e -> e != faunaNow && e.isAlive() && e.def() != null && "end_wraith".equalsIgnoreCase(e.def().name));
+                if (!wr.isEmpty()) {
+                    faunaTrack.append('[');
+                    for (BossEntity w : wr) faunaTrack.append(String.format("%.0f%s ", w.distanceTo(player), w.onGround() ? "" : "^"));
+                    faunaTrack.append(']');
+                }
+            }
+            if (k == 160) shot(r, "fauna_" + mob);
+            if (k == 250) {
+                r.event(String.format("%s: me ha golpeado %s; distancia cada segundo (y sus espectros):%s", mob, faunaHits > 0 ? "sí (" + faunaHits + " ticks)" : "NO",
+                        faunaTrack));
+                for (BossEntity e : vl.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(BossEntity.class), BossEntity::isFauna)) e.discard();
+                faunaNow = null;
+            }
+        }
+        if (t == f0 + 2 * 260 + 10) next(level);
     }
 
     /**

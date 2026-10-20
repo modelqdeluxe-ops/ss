@@ -84,6 +84,47 @@ public final class VoidTestHooks {
         return n + " de " + SacredKnights.ALL.size() + " caballeros sacros: " + b;
     }
 
+    /** (1.3.98) La prueba corta: al Void como el staff (/tf void ir), con su viaje. */
+    public static void sendToVoid(net.minecraft.server.level.ServerPlayer p) {
+        VoidTravel.adminSend(p.createCommandSourceStack().withSuppressedOutput(), java.util.List.of(p), true);
+    }
+
+    /** (1.3.98) El caballero sacro n.º id (o null). */
+    public static net.minecraft.world.entity.Entity sacredKnight(net.minecraft.server.level.ServerLevel level, int id) {
+        SacredKnights.Def d = SacredKnights.def(id);
+        if (d == null) return null;
+        var list = level.getEntitiesOfClass(SacredKnight.class, new net.minecraft.world.phys.AABB(SacredKnights.home(d)).inflate(40),
+                e -> e.variant() == id);
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    /** (1.3.98) Cada caballero sacro: si pisa el suelo y sobre qué (el dueño: «están rotos porque vuelan»). */
+    public static String sacredGround(net.minecraft.server.level.ServerLevel level) {
+        StringBuilder b = new StringBuilder();
+        for (SacredKnights.Def d : SacredKnights.ALL) {
+            net.minecraft.world.entity.Entity e = sacredKnight(level, d.id());
+            if (b.length() > 0) b.append("; ");
+            if (e == null) {
+                b.append(d.name()).append(" NO ESTÁ");
+                continue;
+            }
+            net.minecraft.core.BlockPos below = net.minecraft.core.BlockPos.containing(e.getX(), e.getY() - 0.05, e.getZ());
+            b.append(String.format("%s en el suelo %s (sobre %s, a %.2f de él), lleva %s", d.name(), e.onGround() ? "sí" : "NO",
+                    net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(level.getBlockState(below).getBlock()).getPath(),
+                    e.getY() - (below.getY() + 1), d.item()));
+        }
+        return b.toString();
+    }
+
+    /** (1.3.98) El soporte de la armadura del altar (o null). */
+    public static net.minecraft.world.entity.Entity altarStand(net.minecraft.server.level.ServerLevel level) {
+        net.minecraft.core.BlockPos a = VoidIsland.altarPos();
+        if (a == null) return null;
+        var list = level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, new net.minecraft.world.phys.AABB(a).inflate(3),
+                e -> e.getTags().contains(VoidArmor.TAG));
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     /** (1.3.97) Pedirla otra vez: no da nada (una sola vez por jugador). */
     public static String armorAgain(net.minecraft.server.level.ServerPlayer p) {
         int n = VoidArmor.claim(p);
