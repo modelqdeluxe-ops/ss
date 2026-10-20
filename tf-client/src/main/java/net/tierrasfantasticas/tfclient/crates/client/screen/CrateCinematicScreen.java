@@ -996,7 +996,8 @@ public class CrateCinematicScreen extends Screen {
                 float rayK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
-                post.finish(su, sv, vis, bloomK, rayK, 1.45F, focus, 0.05F, 220.0F);
+                // (exposición medida en el juego: con 1,45 los medios tonos salían un 12 % más oscuros que la imagen)
+                post.finish(su, sv, vis, bloomK, rayK, 1.65F, focus, 0.05F, 220.0F, t);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);

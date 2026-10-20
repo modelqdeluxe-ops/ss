@@ -18,8 +18,32 @@ uniform float RayStrength;
 uniform float Exposure;
 uniform vec2 Clip;
 uniform vec2 Focus;
+uniform float Time;
 
 out vec4 fragColor;
+
+float hash1(float n) {
+    return fract(sin(n * 127.1) * 43758.5453);
+}
+
+float noise1(float x) {
+    float i = floor(x), f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(hash1(i), hash1(i + 1.0), f);
+}
+
+// los rayos de sol que bajan del hueco (como en la imagen del dueño): un abanico de haces suaves que salen del sol,
+// hechos aquí, píxel a píxel (con bandas de geometría salían «tablones» de borde duro en el juego)
+float godRays(vec2 p, vec2 sun, float aspect) {
+    vec2 d = p - sun;
+    d.x *= aspect;
+    float r = length(d);
+    float ang = atan(d.x, -d.y);
+    float s = pow(noise1(ang * 11.0 + 3.1 + Time * 0.004), 3.0) * 0.6
+            + pow(noise1(ang * 23.0 - 7.7 - Time * 0.006), 4.0) * 0.4;
+    float down = 1.0 - smoothstep(0.55, 1.05, abs(ang));
+    return s * down * exp(-r * 1.7) * smoothstep(0.0, 0.06, r);
+}
 
 float linearDepth(float d) {
     float z = d * 2.0 - 1.0;
@@ -36,7 +60,7 @@ void main() {
     vec3 blurred = texture(BlurSampler, uv).rgb;
     // contraste local («claridad»): se separa la imagen de su versión desenfocada (la imagen del dueño tiene un 30 % más
     // de contraste local y un 40 % más de nitidez que sin esto)
-    c = max(c + (c - blurred) * 0.42, 0.0);
+    c = max(c + (c - blurred) * 0.30, 0.0);
     c = mix(c, blurred, coc);
     vec3 b = texture(BloomSampler, uv).rgb;
     vec3 rays = vec3(0.0);
@@ -53,7 +77,9 @@ void main() {
         }
         rays *= SunVis / 32.0;
     }
-    vec3 col = c + b * BloomStrength + rays * RayStrength * vec3(1.0, 0.92, 0.70);
+    vec2 ts = vec2(textureSize(SceneSampler, 0));
+    vec3 shafts = vec3(1.0, 0.95, 0.80) * godRays(uv, SunPos, ts.x / ts.y) * SunVis * 0.55;
+    vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
     col = (1.0 - exp(-max(col, 0.0) * Exposure)) / (1.0 - exp(-Exposure));
@@ -63,7 +89,8 @@ void main() {
     // (solo lo amarillo y naranja: ni el turquesa del agua ni el rosa de las flores)
     col = mix(col, col * vec3(1.08, 1.0, 0.88), smoothstep(0.5, 1.0, l) * 0.2 * smoothstep(0.0, 0.15, min(col.r, col.g) - col.b));
     l = dot(col, vec3(0.299, 0.587, 0.114));
-    col = max(mix(vec3(l), col, 1.3 + 0.2 * smoothstep(0.4, 0.8, l)), 0.0);
+    // (medido en el juego: con 1,3 salía un 15 % más saturado que la imagen del dueño)
+    col = max(mix(vec3(l), col, 1.12 + 0.15 * smoothstep(0.4, 0.8, l)), 0.0);
     col = mix(col, col * col * (3.0 - 2.0 * col), 0.45);
     vec2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 0.35;      // (poca: en la imagen del dueño las esquinas también brillan)

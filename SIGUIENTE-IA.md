@@ -1,9 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
 > **⚠ TRABAJO A MEDIAS (20 oct 2026): la 1.3.99 (TF Crates y su cinemática) NO está publicada.** Sigue el prompt de
-> **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)**: qué falta (la cuadrícula sobre la cascada, el
-> agua más turquesa y brillante, menos resplandor en la crate, un haz de luz grande sobre el altar), la vista previa con
-> texturas reales y cómo publicar.
+> **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)**: la cinemática tiene que ser como la imagen del
+> dueño (`tf-client/docs/crates/imagen-del-dueno.webp`), medida con `tools/crates/comparar.py` contra la vista previa y
+> contra la captura del juego; lo último, sin probar en el juego; y cómo publicar.
 
 Estado al dejarlo: **20 oct 2026, TF Client 1.3.99 (sin publicar)** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
 y la cinemática del Bosque de las Hadas con shader propio; todo en **`tf-client/CRATES.md`**). Antes, 1.3.98 (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta

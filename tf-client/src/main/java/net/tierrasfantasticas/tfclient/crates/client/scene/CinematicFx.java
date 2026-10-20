@@ -127,8 +127,8 @@ public final class CinematicFx {
     /**
      * El haz de sol del santuario (como en la imagen del dueño): una columna ancha que baja del hueco de las copas sobre
      * el altar, con el borde marcado y el núcleo claro, más fuerte arriba que abajo (que no tape la crate), con vetas
-     * finas que se mueven dentro; el foco blanco cálido donde entra el sol, arriba en el centro; rayos que bajan en
-     * abanico desde él sobre la cascada, la escalera y el estanque; y el charco de luz en el altar y en el agua.
+     * finas que se mueven dentro; el foco blanco cálido donde entra el sol, arriba en el centro (sus rayos en abanico, en
+     * el shader final); y el charco de luz en el altar y en el agua.
      * {@code power} sube con la apertura (y baja mientras gira la ruleta, para no tapar los premios); {@code tint}, el
      * color de la rareza que se mezcla al abrir. (Lo mismo en santuario_render.effects.)
      */
@@ -152,15 +152,8 @@ public final class CinematicFx {
         glow(vc, v, spot[0], spot[1], spot[2], 3.0F, 1.0F, 0.90F, 0.55F, 0.8F * power);
         glow(vc, v, spot[0], spot[1], spot[2], 1.5F, 1.0F, 0.95F, 0.70F, 1.0F * power);
         glow(vc, v, spot[0], spot[1], spot[2], 0.7F, 1.0F, 0.98F, 0.85F, 1.0F * power);
-        Vector3f src = new Vector3f(spot[0], spot[1], spot[2]);
-        for (int i = 0; i < 9; i++) {
-            float ang = (i - 4) * 0.13F + 0.05F * (float)Math.sin(t * 0.01F + i);
-            Vector3f d = new Vector3f((float)Math.sin(ang) * 0.9F, -1.0F, 0.55F + 0.25F * hash(i, 29)).normalize();
-            float len = 9.0F + hash(i, 31) * 6.0F;
-            float life = 0.7F + 0.3F * (float)Math.sin(t * (0.02F + hash(i, 33) * 0.02F) + i * 1.7F);
-            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.14F + hash(i, 35) * 0.18F, 0.55F + hash(i, 37) * 0.6F, 1.0F, 0.96F, 0.80F,
-                    0.42F * life * power, 0.0F);
-        }
+        // (los rayos que salen del sol en abanico los pone el shader final, crate_post.godRays: como bandas de geometría
+        // salían «tablones» de borde duro en el juego)
         // vetas finas que se mueven dentro del haz
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
         Vector3f p2 = new Vector3f(sun).cross(p1).normalize();
@@ -173,17 +166,6 @@ public final class CinematicFx {
             float a = (0.06F + 0.05F * (float)Math.sin(t * (0.03F + hash(i, 9) * 0.04F) + i * 2.1F)) * power;
             band(vc, v, b0, b1, 0.10F + hash(i, 11) * 0.15F, 0.2F + hash(i, 13) * 0.3F, mix(r, 1, 0.6F), mix(g, 1, 0.6F),
                     mix(b, 1, 0.6F), a * 0.5F, a);
-        }
-        // los rayos que bajan del hueco sobre la escalera y la cascada
-        float[] op = sc.anchor("opening");
-        for (int i = 0; i < 7; i++) {
-            float x = op[0] + (hash(i, 15) - 0.5F) * 8.0F;
-            float z = op[2] + (hash(i, 17) - 0.5F) * op[3] * 1.6F;
-            Vector3f d = new Vector3f((hash(i, 19) - 0.5F) * 0.35F, -0.93F, 0.36F).normalize();
-            Vector3f b0 = new Vector3f(x, op[1] + 1.0F, z);
-            float life = 0.65F + 0.35F * (float)Math.sin(t * (0.02F + hash(i, 21) * 0.02F) + i * 1.9F);
-            band(vc, v, b0, new Vector3f(b0).add(d.mul(11.0F + hash(i, 23) * 4.0F)), 0.35F + hash(i, 25) * 0.6F, 0.9F + hash(i, 27) * 0.9F,
-                    1.0F, 0.95F, 0.78F, 0.13F * life * power, 0.0F);
         }
         // donde cae el haz: el charco de luz en el altar y en el agua
         flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.12F * power);

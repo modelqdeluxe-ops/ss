@@ -41,7 +41,11 @@ sobre la cascada», «haz más turquesa y brillante el agua… no abuses del blo
 luz bien definido y grandecito», y con la imagen: «no veo idéntica a mi foto», «esa cascada cortada», «el color para
 nada coincide», «quiero precisión en los colores».
 
-**Cómo se ajustó a la imagen (repetible):** la imagen es la referencia de `tools/crates/santuario_render.py` en el tick 0.
+**Cómo se ajustó a la imagen (repetible):** la imagen está en `docs/crates/imagen-del-dueno.webp` y es la referencia de
+`tools/crates/santuario_render.py` en el tick 0 y de la captura del juego del tick 12 (`00_crates_crate2_00_llegada.jpg`
+de la prueba). Las dos se miden con **`python3 -I tools/crates/comparar.py <imagen> --lado salida.png`** (colores por
+tipo, saturación, luz, contraste, nitidez y zonas; ejemplos en `docs/crates/comparacion-*.jpg`). El juego sale más
+saturado y más oscuro que la vista previa: manda el juego.
 Las medidas de la escena salen de tratar la foto como una cámara (un nenúfar mide un bloque): cámara a 3,7 de alto,
 10,5 bloques delante del altar, 36° de campo vertical; cascadas de los lados a ~4,5 del centro; escalera a 13 bloques y
 cascada alta a 17. Los colores se compararon **por tipo de cosa** (agua turquesa, hojas, piedra, faroles y sol, rosa,
@@ -74,6 +78,9 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   ambiental: lo que choca como un bloque entero); la vista previa ahora lo hace igual (`Mesher.occ`).
 - **Discos y burbujas en el juego**: los halos de los faroles (1,3 bloques) y las hadas (orbes de un bloque) salían como
   discos con aro (la «claridad» les dibuja el borde). Ahora son pequeños; los rayos en abanico, con el borde suave.
+- **Tablones grises en el juego**: los rayos en abanico y los que bajan del hueco, hechos con bandas de geometría,
+  en el juego salían con el borde duro (en la vista previa, suaves; no se sabe aún por qué). Ahora los rayos los hace el
+  shader final (`crate_post.fsh`, `godRays`). Sin probar en el juego al dejarlo.
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
   y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
 

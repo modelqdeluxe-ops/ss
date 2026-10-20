@@ -37,7 +37,7 @@ CACHE = os.path.expanduser('~/.cache/tfclient/minecraft-1.20.1-client.jar')
 # los de SceneLevel, SanctuaryScene y CrateCinematicScreen (si cambian allí, cámbialos aquí)
 GRASS, FOLIAGE, WATER = 0x52A048, 0x429C3E, 0x3FD8E0
 FOG, FOG_START, FOG_END = (0.10, 0.20, 0.24), 10.0, 55.0
-THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.45   # los de ScenePost y CrateCinematicScreen (sin abrir)
+THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.65   # los de ScenePost y CrateCinematicScreen (sin abrir)
 CRATE_TINT = (0.86, 0.84, 0.80)
 BARS = 0.035                       # las franjas de cine (CrateCinematicScreen.overlay)
 # la luz de la escena (SanctuaryScene.light): ambiente, haz, luz del hueco, rebote del agua
@@ -588,14 +588,8 @@ def effects(fx, t, lights, power=1.0):
     fx.glow(*src, 3.0, 1.0, 0.90, 0.55, 0.8 * power)
     fx.glow(*src, 1.5, 1.0, 0.95, 0.70, 1.0 * power)
     fx.glow(*src, 0.7, 1.0, 0.98, 0.85, 1.0 * power)
-    for i in range(9):
-        # rayos que bajan en abanico desde el foco, sobre la cascada, la escalera y el estanque
-        ang = (i - 4) * 0.13 + 0.05 * math.sin(t * 0.01 + i)
-        d = np.array([math.sin(ang) * 0.9, -1.0, 0.55 + 0.25 * hsh(i, 29)])
-        d /= np.linalg.norm(d)
-        L = 9.0 + hsh(i, 31) * 6.0
-        life = 0.7 + 0.3 * math.sin(t * (0.02 + hsh(i, 33) * 0.02) + i * 1.7)
-        fx.band(src, src + d * L, 0.14 + hsh(i, 35) * 0.18, 0.55 + hsh(i, 37) * 0.6, 1.0, 0.96, 0.80, 0.42 * life * power, 0.0)
+    # (los rayos en abanico que salen del sol los pone el shader final, crate_post.godRays)
+    # vetas finas dentro del haz
     p1 = np.cross(sun, [0, 1, 0])
     p1 /= np.linalg.norm(p1)
     p2 = np.cross(sun, p1)
@@ -608,18 +602,6 @@ def effects(fx, t, lights, power=1.0):
         b1 = b0 + sun * 24.0
         a = (0.06 + 0.05 * math.sin(t * (0.03 + hsh(i, 9) * 0.04) + i * 2.1)) * power
         fx.band(b0, b1, 0.10 + hsh(i, 11) * 0.15, 0.2 + hsh(i, 13) * 0.3, 1, 0.97, 0.88, a * 0.5, a)
-    # los rayos que bajan del hueco sobre la escalera y la cascada (y alguno hacia el estanque)
-    op = an['opening']
-    for i in range(7):
-        x = op[0] + (hsh(i, 15) - 0.5) * 8.0
-        z = op[2] + (hsh(i, 17) - 0.5) * op[3] * 1.6
-        tilt = (hsh(i, 19) - 0.5) * 0.35
-        d = np.array([tilt, -0.93, 0.36])
-        d /= np.linalg.norm(d)
-        b0 = np.array([x, op[1] + 1.0, z])
-        life = 0.65 + 0.35 * math.sin(t * (0.02 + hsh(i, 21) * 0.02) + i * 1.9)
-        a = 0.13 * life * power
-        fx.band(b0, b0 + d * (11.0 + hsh(i, 23) * 4.0), 0.35 + hsh(i, 25) * 0.6, 0.9 + hsh(i, 27) * 0.9, 1, 0.95, 0.78, a, 0.0)
     # donde cae el haz: el charco de luz en el altar y en el agua
     fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.12 * power)
     fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.16 * power)
@@ -950,6 +932,7 @@ def main():
         post['BloomStrength'].value = BLOOM
         post['RayStrength'].value = RAYS
         post['Exposure'].value = EXPOSURE
+        post['Time'].value = tick
         post['Clip'].value = (0.05, 220.0)
         post['Focus'].value = (float(np.linalg.norm(np.array(eye) - np.array([S.CRATE[0], S.CRATE[1] + 0.6, S.CRATE[2]]))), 16.0)
         qv[post].render()

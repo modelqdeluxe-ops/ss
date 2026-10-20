@@ -59,7 +59,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.99) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.99, SIN PUBLICAR) — lee esto primero
+
+> **A medias**: el dueño pidió parar y que siga otra IA. Prompt completo: **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)**
+> (su imagen en `tf-client/docs/crates/imagen-del-dueno.webp`; las dos comparaciones —vista previa y juego— con
+> `tools/crates/comparar.py`; el último cambio, los rayos de sol en el shader y el color medido en el juego, **sin
+> probar en el juego**).
 
 **1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). Fantastic Crates dentro de TF Client (`/tf crates`;
 hay que **quitar `Fantastic Crates 8.jar`** del servidor y de los clientes) y la cinemática de apertura: **el Santuario

@@ -95,10 +95,11 @@ public final class ScenePost {
     /**
      * El resplandor, la profundidad de campo y la imagen final en la pantalla. {@code sunU, sunV}: el haz en la imagen
      * (0..1, desde abajo a la izquierda; puede estar fuera); {@code sunVis}: cuánto se ven sus rayos; {@code focus}: a
-     * qué distancia está lo nítido (la crate); {@code near, far}: los planos de la proyección.
+     * qué distancia está lo nítido (la crate); {@code near, far}: los planos de la proyección; {@code time}, en ticks (los
+     * rayos de sol se mueven despacio).
      */
     public void finish(float sunU, float sunV, float sunVis, float bloomStrength, float rayStrength, float exposure, float focus,
-                       float near, float far) {
+                       float near, float far, float time) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();
@@ -131,6 +132,7 @@ public final class ScenePost {
         sh.safeGetUniform("BloomStrength").set(bloomStrength);
         sh.safeGetUniform("RayStrength").set(rayStrength);
         sh.safeGetUniform("Exposure").set(exposure);
+        sh.safeGetUniform("Time").set(time);
         quad(sh);
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
