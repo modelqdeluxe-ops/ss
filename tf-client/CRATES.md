@@ -80,7 +80,13 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   discos con aro (la «claridad» les dibuja el borde). Ahora son pequeños; los rayos en abanico, con el borde suave.
 - **Tablones grises en el juego**: los rayos en abanico y los que bajan del hueco, hechos con bandas de geometría,
   en el juego salían con el borde duro (en la vista previa, suaves; no se sabe aún por qué). Ahora los rayos los hace el
-  shader final (`crate_post.fsh`, `godRays`). Sin probar en el juego al dejarlo.
+  shader final (`crate_post.fsh`, `godRays`). **Y salen del hueco de las copas** (el punto `sunspot`, arriba en el
+  centro, como en la imagen), no del sol: el sol queda 2,4 alturas de imagen por encima de la pantalla y allí los rayos
+  ya no llegaban a verse (`CrateCinematicScreen` y la vista previa proyectan `sunspot`).
+- **Cascadas cuadriculadas** (el dueño: «no quiero texturas cuadriculadas ni quebradas»): la cascada era una rejilla
+  regular de celdas con el borde blanco y destellos cuadrados (rectángulos blancos). Ahora son escamas irregulares
+  (Voronoi) que bajan, con el borde fino y roto en destellos, vetas y destellos redondos, con antialiasing (`fwidth`)
+  para que de lejos no parpadee; en el estanque, sin las rayitas blancas del agua del juego y con manchas de luz suaves.
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
   y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
 

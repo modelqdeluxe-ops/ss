@@ -876,7 +876,8 @@ def main():
             wtex.use(2)
             wprog['Sampler0'].value = 2
             wprog['StillUV'].value = (0.0, 0.0, 16 / 48, 0.5)
-            wprog['FlowUV'].value = (16 / 48, 0.0, 1.0, 1.0)
+            if 'FlowUV' in wprog:         # (la cascada ya no usa el agua que corre del juego: salía cuadriculada)
+                wprog['FlowUV'].value = (16 / 48, 0.0, 1.0, 1.0)
             v_water.render()
         fx = Fx(eye, r, u)
         if os.environ.get('SIN_FX') != '1':
@@ -913,7 +914,8 @@ def main():
         bpass(dt_, fc, 1, 0, 0, 0, th * 1.5)
         bpass(ct_, fd, 1, 0, 0, tw * 2.5, 0)
         bpass(dt_, fc, 1, 0, 0, 0, th * 2.5)
-        sp = proj @ view @ np.array([*(np.array(eye) + np.array(S.SUN) * 1000), 1.0])
+        # (los rayos salen del hueco de las copas, como en la imagen del dueño; = CrateCinematicScreen)
+        sp = proj @ view @ np.array([*S.anchors()['sunspot'][:3], 1.0])
         su, sv, vis = 0.5, 0.5, 0.0
         if sp[3] > 1e-4:
             su, sv = sp[0] / sp[3] * 0.5 + 0.5, sp[1] / sp[3] * 0.5 + 0.5

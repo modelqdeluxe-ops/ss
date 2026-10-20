@@ -978,8 +978,10 @@ public class CrateCinematicScreen extends Screen {
         // 3) el resplandor, los rayos de sol y los colores, a la pantalla
         if (pp) {
             try {
-                Vector3f sun = sc.sunDir();
-                Vector4f sp = new Vector4f(eye.x + sun.x * 1000.0F, eye.y + sun.y * 1000.0F, eye.z + sun.z * 1000.0F, 1.0F);
+                // los rayos salen del hueco de las copas (donde brilla el sol en la imagen del dueño: arriba en el centro),
+                // no del sol, que queda muy por encima de la pantalla (allí los rayos ya no llegaban a verse)
+                float[] spot = sc.anchor("sunspot");
+                Vector4f sp = new Vector4f(spot[0], spot[1], spot[2], 1.0F);
                 view.transform(sp);
                 proj.transform(sp);
                 float su = 0.5F, sv = 0.5F, vis = 0.0F;

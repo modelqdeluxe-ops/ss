@@ -32,17 +32,18 @@ float noise1(float x) {
     return mix(hash1(i), hash1(i + 1.0), f);
 }
 
-// los rayos de sol que bajan del hueco (como en la imagen del dueño): un abanico de haces suaves que salen del sol,
-// hechos aquí, píxel a píxel (con bandas de geometría salían «tablones» de borde duro en el juego)
+// los rayos de sol que bajan del hueco (como en la imagen del dueño): un abanico de haces finos y suaves que salen del
+// hueco de las copas (arriba en el centro) y bajan hasta la escalera de agua, hechos aquí, píxel a píxel (con bandas de
+// geometría salían «tablones» de borde duro en el juego)
 float godRays(vec2 p, vec2 sun, float aspect) {
     vec2 d = p - sun;
     d.x *= aspect;
     float r = length(d);
     float ang = atan(d.x, -d.y);
-    float s = pow(noise1(ang * 11.0 + 3.1 + Time * 0.004), 3.0) * 0.6
-            + pow(noise1(ang * 23.0 - 7.7 - Time * 0.006), 4.0) * 0.4;
-    float down = 1.0 - smoothstep(0.55, 1.05, abs(ang));
-    return s * down * exp(-r * 1.7) * smoothstep(0.0, 0.06, r);
+    float s = pow(noise1(ang * 9.0 + 3.1 + Time * 0.006), 2.0) * 0.6
+            + pow(noise1(ang * 21.0 - 7.7 - Time * 0.009), 2.5) * 0.4;
+    float down = 1.0 - smoothstep(0.25, 0.60, abs(ang));
+    return s * down * exp(-r * 1.6) * smoothstep(0.0, 0.05, r);
 }
 
 float linearDepth(float d) {
@@ -72,13 +73,16 @@ void main() {
             p += stp;
             // solo lo muy claro hace rayos, y se apagan pronto (haces que salen del sol, no un velo por toda la imagen)
             vec3 s = texture(BloomSampler, clamp(p, 0.001, 0.999)).rgb;
-            rays += max(s - 0.25, 0.0) * decay;
+            rays += max(s - 0.45, 0.0) * decay;
             decay *= 0.92;
         }
         rays *= SunVis / 32.0;
     }
     vec2 ts = vec2(textureSize(SceneSampler, 0));
-    vec3 shafts = vec3(1.0, 0.95, 0.80) * godRays(uv, SunPos, ts.x / ts.y) * SunVis * 0.55;
+    float aspect = ts.x / ts.y;
+    vec2 sd = (uv - SunPos) * vec2(aspect, 1.0);
+    // el foco del sol en el hueco (crema cálido, como en la imagen) y sus rayos
+    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.6 + exp(-dot(sd, sd) * 30.0) * 0.45) * SunVis;
     vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
