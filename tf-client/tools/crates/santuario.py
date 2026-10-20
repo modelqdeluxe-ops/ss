@@ -462,7 +462,8 @@ def roofs(sc):
                     continue
                 elif v < 0.45 and x >= AISLE_IN + 3:
                     sc.set(xx, AISLE_Y - 1, z, leaves('azalea_leaves' if vv < 0.5 else 'flowering_azalea_leaves'))
-                elif v < 0.62 and x >= AISLE_IN + 1:
+                elif v < 0.62 and x >= AISLE_IN + 4:
+                    # (solo junto a la pared: cerca de las cascadas, en la imagen no cuelgan tiras de enredadera)
                     hang(sc, xx, AISLE_Y - 1, z, 2 + int(vv * 3), vv)
     # flores de esporas también en el borde de las copas de la nave (las rosas de arriba de la imagen)
     for x in range(-AISLE_IN + 1, AISLE_IN):
