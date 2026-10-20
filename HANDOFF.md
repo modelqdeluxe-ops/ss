@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.97, más abajo.
+> de la 1.3.98, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,7 +59,26 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.97) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.98) — lee esto primero
+
+**1.3.98** (`tf-client/JEFES.md` §3.23, con la tabla queja → causa → arreglo). Lo que pidió el dueño tras la 1.3.97:
+- **Caballeros sacros** en el suelo, cada uno con su postura (guardia, otear, leer, cuidar flores, alzar el farol), su
+  color (plata, azur, ónice, jade, carmesí) y su objeto (escudo, lanza, libro, brote, farol); solo Caelthar flota.
+- **El soporte de la armadura** ya no salta (no tenía «NoGravity» de verdad).
+- **La grieta del Void**: tras cada jefe se apaga hasta que el staff la enciende (`/tf void grieta encender` o el
+  siguiente en `/tf boss → VOID`), y entonces se reabre la grieta del cielo.
+- **La isla de la grieta**: sin la «iglesia», con colinas y decorada (`tools/void/isla_grieta.py`), un Ancla a 56 bloques
+  de la grieta; nada al aire (`isla_alba.limpiar`), la Llegada y el portal rellenos por debajo, escalones al final del
+  Puente de Luz. `IslandUpdate.VERSION` 6.
+- **La fauna** sin el cerebro de los jefes: va derecha a por ti (antes se plantaba a 4-7 bloques y giraba).
+- **El agujero de gusano** sin imágenes de baja calidad (paredes hechas para cada dimensión, el Void en nebulosa, al
+  final la luz del Alba) y con sonido nuevo; menos ondulación y sin temblor al salir y al llegar.
+- **Música**: «Nana del Alba» en el santuario (más baja: 0,3), el Void a 0,45 y la batalla a 0,5; salir del Velo, con
+  celesta. Diálogos a 120 letras por segundo.
+- Las pruebas en el juego, cortas (el dueño: «no más de 10 minutos»): `[prueba-jefes=corta]`.
+- Pendiente del dueño: los cascos de los otros 7 sets de crates; modelos o skins de caballeros; el PR en borrador #137.
+
+### CHECKPOINT anterior (20 oct 2026, TF Client 1.3.97)
 
 **1.3.97** (`tf-client/JEFES.md` §3.22, con la tabla queja → causa → arreglo). El dueño, tras la 1.3.96: *«el agujero de
 gusano no parece que es uno... el sonido de la grieta no es épico, no suena el quebranto del cielo; sin sonidos
