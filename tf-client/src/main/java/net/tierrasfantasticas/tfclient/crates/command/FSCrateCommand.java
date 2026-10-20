@@ -91,7 +91,7 @@ public final class FSCrateCommand {
 
    private static int help(CommandContext<CommandSourceStack> ctx) {
       CommandSourceStack s = (CommandSourceStack)ctx.getSource();
-      s.sendSystemMessage(Component.literal("§d✦ §fFantastic Crates §d✦ §7comandos:"));
+      s.sendSystemMessage(Component.literal("§d✦ §fTF Crates §d✦ §7comandos:"));
       s.sendSystemMessage(Component.literal("§e/tf crates create §7- crea y abre el editor de una crate nueva"));
       s.sendSystemMessage(Component.literal("§e/tf crates editor give <jugador> §7- da la §dVarita del Editor §7(click derecho en un cofre para editarlo)"));
       s.sendSystemMessage(Component.literal("§e/tf crates give <jugador> <crate> §7- da el item de la crate"));
@@ -267,7 +267,7 @@ public final class FSCrateCommand {
    private static int reload(CommandContext<CommandSourceStack> ctx) {
       int loaded = JsonCrateLoader.loadAll(((CommandSourceStack)ctx.getSource()).getServer());
       ((CommandSourceStack)ctx.getSource())
-         .sendSuccess(() -> Component.literal("§aFantastic Crates: §fConfiguración recargada desde JSON §7(" + loaded + " caja(s))."), true);
+         .sendSuccess(() -> Component.literal("§aTF Crates: §fConfiguración recargada desde JSON §7(" + loaded + " caja(s))."), true);
       return 1;
    }
 

@@ -7,6 +7,7 @@ import net.tierrasfantasticas.tfclient.crates.client.color.FSTextStyle;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
 import net.tierrasfantasticas.tfclient.crates.config.Rarity;
 import net.tierrasfantasticas.tfclient.crates.config.RewardEntry;
+import net.tierrasfantasticas.tfclient.crates.item.CrateItems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -116,7 +117,152 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
          pose.popPose();
       }
 
+      if (be.animating && be.sceneLidMode) {
+         this.renderSceneExtras(be, cfg, partialTick, pose, buffers, rot, overlay);
+      }
+
       this.renderHolograms(be, cfg, rarity, pose, buffers, light, crateTop);
+   }
+
+   /** minX, maxX, minY, maxY, minZ, maxZ de un modelo (en sus unidades). */
+   private static float[] bounds(BakedModel m) {
+      float[] cached = BOUNDS_CACHE.get(m);
+      if (cached != null) {
+         return cached;
+      }
+      float[] r = {Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE};
+      RandomSource rnd = RandomSource.create(42L);
+      for (Direction side : new Direction[]{null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST}) {
+         for (BakedQuad q : m.getQuads(null, side, rnd)) {
+            int[] v = q.getVertices();
+            int stride = v.length / 4;
+            for (int i = 0; i < 4; i++) {
+               for (int k = 0; k < 3; k++) {
+                  float c = Float.intBitsToFloat(v[i * stride + k]);
+                  r[k * 2] = Math.min(r[k * 2], c);
+                  r[k * 2 + 1] = Math.max(r[k * 2 + 1], c);
+               }
+            }
+         }
+      }
+      if (r[0] > r[1]) {
+         r = new float[]{0, 1, 0, 1, 0, 1};
+      }
+      BOUNDS_CACHE.put(m, r);
+      return r;
+   }
+
+   private static final Map<BakedModel, float[]> BOUNDS_CACHE = new IdentityHashMap<>();
+   private static final Map<CrateConfig, ItemStack> KEY_CACHE = new IdentityHashMap<>();
+
+   private static ItemStack keyFor(CrateConfig cfg) {
+      if (KEY_CACHE.size() > 64) {
+         KEY_CACHE.clear();
+      }
+      return KEY_CACHE.computeIfAbsent(cfg, c -> {
+         try {
+            return c.uniqueKeyEnabled ? CrateItems.buildUniqueKey(c) : CrateItems.buildKey();
+         } catch (Throwable e) {
+            return ItemStack.EMPTY;
+         }
+      });
+   }
+
+   private static float smooth(float a, float b, float x) {
+      float t = Math.max(0.0F, Math.min(1.0F, (x - a) / (b - a)));
+      return t * t * (3.0F - 2.0F * t);
+   }
+
+   /**
+    * (1.3.99) Lo que ven los demás mientras uno abre la crate (a los tiempos de su cinemática del santuario): la llave
+    * que llega flotando a la cerradura, entra y gira; al abrirse, un pilar de luz; y el premio que sube y gira encima
+    * hasta que la crate se cierra.
+    */
+   private void renderSceneExtras(CrateBlockEntity be, CrateConfig cfg, float partial, PoseStack pose, MultiBufferSource buffers, float rot,
+                                  int overlay) {
+      float t = (float)be.animTick + partial;
+      BakedModel base = CrateBakedModels.baseModel(cfg);
+      if (base == null) {
+         return;
+      }
+      float[] b = bounds(base);
+      float[] ctr = footprintCenter(base);
+      CrateStyles.Style st = CrateStyles.get(cfg.styleId);
+      boolean cine = st != null && st.isCinematic();
+      float S = CrateBakedModels.scaleFor(cfg) * Math.max(0.05F, cfg.sizeScale);
+      float dir = cine ? 1.0F : -1.0F;
+      float front = (cine ? b[5] - ctr[1] : b[4] - ctr[1]) * S;
+      float h = (b[3] - b[2]) * S;
+      float[] hinge = CrateBakedModels.hingeFor(cfg);
+      float keyY = Math.max(b[2] * S + h * 0.28F, Math.min(b[2] * S + h * 0.7F, hinge[1] * S - 0.05F));
+      pose.pushPose();
+      pose.translate(0.5, (double)cfg.yOffset, 0.5);
+      pose.mulPose(Axis.YP.rotationDegrees(-rot + 180.0F + cfg.yawOffset));
+      // la llave
+      ItemStack key = keyFor(cfg);
+      if (!key.isEmpty() && t >= CrateBlockEntity.SCENE_KEY && t < CrateBlockEntity.SCENE_OPEN + 6) {
+         float ks = 0.6F;
+         float tip = 0.44F * ks;
+         float lz = front + dir * 0.01F;
+         float x, y, z, yaw = 0.0F, turn = 0.0F, size = 1.0F;
+         if (t < CrateBlockEntity.SCENE_KEY_IN - 10) {
+            float p = smooth(CrateBlockEntity.SCENE_KEY, CrateBlockEntity.SCENE_KEY_IN - 10, t);
+            x = 0.9F * (1.0F - p);
+            y = keyY + 0.7F * (1.0F - p) + (float)Math.sin(t * 0.22F) * 0.05F * (1.0F - p);
+            z = lz + dir * (tip + 0.4F + 1.1F * (1.0F - p));
+            yaw = (1.0F - smooth(0.6F, 1.0F, p)) * (float)Math.sin(t * 0.09F) * 110.0F;
+            size = smooth(CrateBlockEntity.SCENE_KEY, CrateBlockEntity.SCENE_KEY + 10, t);
+         } else if (t < CrateBlockEntity.SCENE_KEY_IN) {
+            float p = (t - (CrateBlockEntity.SCENE_KEY_IN - 10)) / 10.0F;
+            x = 0.0F;
+            y = keyY;
+            z = lz + dir * (tip + 0.4F - (0.58F * p * p));
+         } else {
+            x = 0.0F;
+            y = keyY;
+            z = lz + dir * (tip - 0.18F);
+            turn = 90.0F * smooth(CrateBlockEntity.SCENE_TURN, CrateBlockEntity.SCENE_TURN + 10, t);
+            if (t > CrateBlockEntity.SCENE_OPEN) {
+               size = Math.max(0.0F, 1.0F - (t - CrateBlockEntity.SCENE_OPEN) / 6.0F);
+            }
+         }
+         pose.pushPose();
+         pose.translate(x, y, z);
+         // la punta de las llaves va hacia -z: hacia dentro de la crate
+         if (!cine) {
+            pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+         }
+         pose.mulPose(Axis.ZP.rotationDegrees(-turn));
+         pose.mulPose(Axis.YP.rotationDegrees(yaw));
+         pose.scale(ks * size, ks * size, ks * size);
+         Minecraft.getInstance().getItemRenderer().renderStatic(key, ItemDisplayContext.NONE, 15728880, overlay, pose, buffers, be.getLevel(), 0);
+         pose.popPose();
+      }
+      // el pilar de luz
+      float pillar = smooth(CrateBlockEntity.SCENE_OPEN, CrateBlockEntity.SCENE_OPEN + 8, t)
+         * (1.0F - smooth(CrateBlockEntity.SCENE_CLOSE_START, CrateBlockEntity.SCENE_CLOSE_START + 20, t));
+      if (pillar > 0.01F) {
+         int color = be.getAnimColor();
+         float rr = (float)(color >> 16 & 0xFF) / 255.0F;
+         float gg = (float)(color >> 8 & 0xFF) / 255.0F;
+         float bb = (float)(color & 0xFF) / 255.0F;
+         VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
+         Matrix4f m = pose.last().pose();
+         float top = b[3] * S * 0.85F;
+         float pulse = 0.03F * (float)Math.sin(t * 0.35F);
+         beamCone(vc, m, 0.0F, 0.0F, 0.26F + pulse, 0.42F + pulse, top, top + 4.5F * pillar, rr, gg, bb, 0.5F * pillar, 0.0F);
+         beamCone(vc, m, 0.0F, 0.0F, 0.12F, 0.18F, top, top + 4.0F * pillar, rr + (1 - rr) * 0.6F, gg + (1 - gg) * 0.6F, bb + (1 - bb) * 0.6F,
+            0.85F * pillar, 0.0F);
+      }
+      // el premio, encima
+      ItemStack win = be.getSceneWinner();
+      if (!win.isEmpty() && t >= CrateBlockEntity.SCENE_REVEAL && t < CrateBlockEntity.SCENE_CLOSE_START + 16) {
+         float rise = smooth(CrateBlockEntity.SCENE_REVEAL, CrateBlockEntity.SCENE_REVEAL + 16, t)
+            * (1.0F - smooth(CrateBlockEntity.SCENE_CLOSE_START, CrateBlockEntity.SCENE_CLOSE_START + 16, t));
+         float y = b[3] * S * 0.8F + 0.85F * rise + (float)Math.sin(t * 0.1F) * 0.05F;
+         this.renderItem(be, win, pose, buffers, 15728880, overlay, 0.0F, y, 0.0F, 0.75F * rise, t * 4.0F);
+      }
+      pose.popPose();
    }
 
    private float chestHop(CrateBlockEntity be, float partial) {
@@ -135,7 +281,8 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
             float JUMP_TICKS = 11.0F;
             if (u < JUMP_TICKS) {
                float p = u / JUMP_TICKS;
-               return (float)Math.sin((double)p * Math.PI) * 0.85F;
+               // (1.3.99) con la cinemática del santuario, un saltito (la llave ya está dentro)
+               return (float)Math.sin((double)p * Math.PI) * (be.sceneLidMode ? 0.22F : 0.85F);
             } else {
                float d = (u - JUMP_TICKS) / 10.0F;
                float env = (float)Math.exp((double)(-3.0F * d));
@@ -150,7 +297,9 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
          return 1.0F;
       } else {
          float t = (float)be.animTick + partial;
-         if (t < (float)be.getSpiralEndTick()) {
+         if (be.sceneLidMode && t < (float)CrateBlockEntity.SCENE_TREMBLE) {
+            return 1.0F;
+         } else if (t < (float)be.getSpiralEndTick()) {
             return 1.0F + (float)Math.sin((double)(t * 1.6F)) * 0.05F;
          } else {
             float fp = be.finaleProgress(partial);
@@ -186,6 +335,10 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
          int spiralEnd = be.getSpiralEndTick();
          if (t >= (float)spiralEnd) {
             return 0.0F;
+         } else if (be.sceneLidMode) {
+            // tiembla antes de abrirse (no mientras llega la llave)
+            float k = Math.max(0.0F, (t - (float)CrateBlockEntity.SCENE_TREMBLE) / (float)(spiralEnd - CrateBlockEntity.SCENE_TREMBLE));
+            return (float)Math.sin((double)(t * 2.0F)) * 3.0F * k;
          } else {
             float intensity = ((float)spiralEnd - t) / Math.max(1.0F, (float)spiralEnd);
             return (float)Math.sin((double)(t * 2.0F)) * 6.0F * intensity;

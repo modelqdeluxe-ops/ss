@@ -121,7 +121,9 @@ public final class CrateOpeningService {
                player.getUUID().getLeastSignificantBits()
             );
             FSNetwork.sendToNear(player.serverLevel(), pos, 48.0, packet);
-            int delay = animId.equals("instant") ? 4 : 254;
+            // (1.3.99) el premio llega al acabar la cinemática del santuario (20 s): antes llegaba a los 12,7 s y los
+            // avisos del juego («New Recipes Unlocked») salían encima del premio
+            int delay = animId.equals("instant") ? 4 : CrateCinematicTiming.TOTAL_TICKS + 2;
             DelayedDelivery.schedule(player, crate, rolled, delay);
             cooldowns.startCooldown(player.getUUID(), crate.id, crate.cooldownSeconds);
             if (crate.openOncePerPlayer && crateBe != null) {

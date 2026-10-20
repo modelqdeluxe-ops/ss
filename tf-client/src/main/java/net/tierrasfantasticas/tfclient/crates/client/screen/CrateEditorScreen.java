@@ -160,7 +160,7 @@ public class CrateEditorScreen extends Screen {
          desc("Sale encima del nombre de la caja.", "El estilo va aparte: usa §b■§7 para color y §d✦§7 para arcoiris.")
       );
       y += 10;
-      y += this.addStyledField(x, y, fieldW, fxW, this.config.sceneHeader, "§8✦ Fantastic Crates ✦");
+      y += this.addStyledField(x, y, fieldW, fxW, this.config.sceneHeader, "§8✦ TF Crates ✦");
       this.addLabel("§7Nombre de la caja §8(igual que en Info)", x, y, null);
       y += 10;
       FSTextStyle nameProxy = this.config.nameStyle == null ? (this.config.nameStyle = new FSTextStyle()) : this.config.nameStyle;
@@ -1746,7 +1746,7 @@ public class CrateEditorScreen extends Screen {
       g.fill(this.leftPos + 6, separatorY, this.leftPos + this.panelWidth - 6, separatorY + 1, -12961206);
       g.drawString(
          this.font,
-         "§d✦ §fFantastic Crates §d✦ §7- " + this.config.rarity.color() + this.config.rarity.displayName(),
+         "§d✦ §fTF Crates §d✦ §7- " + this.config.rarity.color() + this.config.rarity.displayName(),
          this.leftPos + 8,
          this.topPos + 6,
          16777215,

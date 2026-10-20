@@ -30,5 +30,5 @@
   "fscrates.editor.settings.show_odds_on": "Mostrar probabilidades: Sí",
   "fscrates.editor.settings.show_odds_off": "Mostrar probabilidades: No",
 
-  "fscrates.command.reload": "Fantastic Crates: Configuración recargada desde JSON."
+  "fscrates.command.reload": "TF Crates: Configuración recargada desde JSON."
 }

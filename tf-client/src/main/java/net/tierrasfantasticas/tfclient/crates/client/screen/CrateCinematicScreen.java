@@ -81,7 +81,7 @@ public class CrateCinematicScreen extends Screen {
     static final int RING0 = 146, RING1 = 170, SPIN0 = 162, SPIN1 = 288;
     static final int REVEAL = CrateCinematicTiming.REVEAL_TICK;
     private static final int LANDING = 74, SLOTS = 12;
-    private static final float RING_R = 1.75F;
+    private static final float RING_R = 1.6F;
     private static boolean faulted;
 
     private final CrateConfig cfg;
@@ -98,6 +98,7 @@ public class CrateCinematicScreen extends Screen {
     private int lastReelIndex = -1;
     private int[] strip;
     private final List<SoundInstance> playing = new ArrayList<>();
+    private float[] sunScreen;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
     private int frames;
@@ -484,7 +485,7 @@ public class CrateCinematicScreen extends Screen {
         return new Vector3f(c[0], c[1] + keyY, c[2] + frontZ + 0.01F);
     }
 
-    private static final float KEY_SCALE = 0.62F;
+    private static final float KEY_SCALE = 0.95F;
     /** La punta de la llave, delante del centro del modelo (las llaves 3D de Fantastic Crates van a lo largo de z). */
     private static final float KEY_TIP = 0.44F * KEY_SCALE;
 
@@ -492,12 +493,12 @@ public class CrateCinematicScreen extends Screen {
         if (keyStack.isEmpty() || t < KEY_APPEAR + 4 || t > OPEN + 6) return;
         Vector3f k = keyhole(sc);
         Vector3f align = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.55F);
-        Vector3f start = new Vector3f(k.x + 1.9F, k.y + 1.3F, k.z + 2.4F);
+        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
         Vector3f pos;
         float yaw, turn = 0.0F, size = 1.0F;
         if (t < KEY_ALIGN) {
             float p = smooth(KEY_APPEAR + 4, KEY_ALIGN, t);
-            Vector3f ctrl = new Vector3f(k.x + 0.9F, k.y + 1.6F, k.z + 1.8F);
+            Vector3f ctrl = new Vector3f(k.x + 0.7F, k.y + 1.2F, k.z + 1.4F);
             pos = bezier(start, ctrl, align, p);
             pos.y += (float)Math.sin(t * 0.22F) * 0.06F * (1.0F - p);
             yaw = (1.0F - smooth(0.55F, 1.0F, p)) * (float)Math.sin(t * 0.09F) * 120.0F;
@@ -505,10 +506,10 @@ public class CrateCinematicScreen extends Screen {
         } else if (t < KEY_IN) {
             float p = (t - KEY_ALIGN) / (KEY_IN - KEY_ALIGN);
             p = p * p;
-            pos = new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.16F), p);
+            pos = new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F), p);
             yaw = 0.0F;
         } else {
-            pos = new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.16F);
+            pos = new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F);
             yaw = 0.0F;
             turn = 90.0F * smooth(KEY_TURN0, KEY_TURN1, t);
             if (t > OPEN) size = Math.max(0.0F, 1.0F - (t - OPEN) / 6.0F);
@@ -535,7 +536,7 @@ public class CrateCinematicScreen extends Screen {
     /** La luz de la llave: el remolino en que aparece, su halo, la estela, el destello al girar y las chispas al deshacerse. */
     private void keyLights(VertexConsumer vc, CinematicFx.View v, SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
-        Vector3f start = new Vector3f(k.x + 1.9F, k.y + 1.3F, k.z + 2.4F);
+        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
         int col = rarityColor;
         float r = ((col >> 16) & 255) / 255.0F, g = ((col >> 8) & 255) / 255.0F, b = (col & 255) / 255.0F;
         // el remolino: chispas que se juntan donde aparece la llave
@@ -553,8 +554,8 @@ public class CrateCinematicScreen extends Screen {
             // halo que acompaña a la llave
             Vector3f kp = keyPos(sc, t);
             float pulse = 0.75F + 0.25F * (float)Math.sin(t * 0.35F);
-            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.42F * pulse, r, g, b, 0.45F);
-            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.16F, 1, 1, 1, 0.35F);
+            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.75F * pulse, r, g, b, 0.55F);
+            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.3F, 1, 1, 1, 0.45F);
             if (t < KEY_ALIGN) {
                 for (int i = 1; i <= 8; i++) {
                     Vector3f q = keyPos(sc, t - i * 1.6F);
@@ -590,18 +591,18 @@ public class CrateCinematicScreen extends Screen {
     private Vector3f keyPos(SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
         Vector3f align = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.55F);
-        Vector3f start = new Vector3f(k.x + 1.9F, k.y + 1.3F, k.z + 2.4F);
+        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
         if (t < KEY_ALIGN) {
             float p = smooth(KEY_APPEAR + 4, KEY_ALIGN, t);
-            Vector3f pos = bezier(start, new Vector3f(k.x + 0.9F, k.y + 1.6F, k.z + 1.8F), align, p);
+            Vector3f pos = bezier(start, new Vector3f(k.x + 0.7F, k.y + 1.2F, k.z + 1.4F), align, p);
             pos.y += (float)Math.sin(t * 0.22F) * 0.06F * (1.0F - p);
             return pos;
         }
         if (t < KEY_IN) {
             float p = (t - KEY_ALIGN) / (KEY_IN - KEY_ALIGN);
-            return new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.16F), p * p);
+            return new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F), p * p);
         }
-        return new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.16F);
+        return new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F);
     }
 
     private static float pulseAt(float t, float at, float len) {
@@ -613,7 +614,7 @@ public class CrateCinematicScreen extends Screen {
     // -------------------------------------------------------------------------------------------- los premios
     /** El centro del anillo de la ruleta. */
     private float ringY(SanctuaryScene sc) {
-        return sc.anchor("crate")[1] + crateH + 1.25F;
+        return sc.anchor("crate")[1] + crateH + 0.85F;
     }
 
     private void drawItems(PoseStack pose, MultiBufferSource buf, SanctuaryScene sc, float t, Vector3f eye) {
@@ -644,15 +645,15 @@ public class CrateCinematicScreen extends Screen {
             float rad = RING_R * stagger;
             float x = c[0] + (float)Math.sin(ang) * rad, z = c[2] + (float)Math.cos(ang) * rad;
             float y = mix(c[1] + crateH * 0.6F, cy, stagger) + (float)Math.sin(t * 0.12F + k) * 0.04F;
-            float s = 0.5F * vis * (0.75F + 0.45F * Math.max(0.0F, facing) * Math.max(0.0F, facing));
+            float s = 0.62F * vis * (0.7F + 0.5F * Math.max(0.0F, facing) * Math.max(0.0F, facing));
             if (winnerSlot) {
                 // el premio: al frente, luego al centro, delante del pilar, grande, girando despacio
                 float rp = smooth(REVEAL, REVEAL + 14, t);
-                x = mix(x, c[0] + (float)Math.sin(front) * 0.9F, rp);
-                z = mix(z, c[2] + (float)Math.cos(front) * 0.9F, rp);
-                y = mix(y, cy + 0.25F, rp) + (float)Math.sin(t * 0.1F) * 0.06F * rp;
+                x = mix(x, c[0] + (float)Math.sin(front) * 1.1F, rp);
+                z = mix(z, c[2] + (float)Math.cos(front) * 1.1F, rp);
+                y = mix(y, cy + 0.15F, rp) + (float)Math.sin(t * 0.1F) * 0.06F * rp;
                 float pulse = t < REVEAL ? 1.0F + 0.12F * (float)Math.sin((t - SPIN1) * 0.8F) : 1.0F;
-                s = mix(0.62F, 1.05F, rp) * pulse;
+                s = mix(0.74F, 1.5F, rp) * pulse;
             }
             if (s <= 0.01F) continue;
             pose.pushPose();
@@ -678,8 +679,24 @@ public class CrateCinematicScreen extends Screen {
         int ringCol = rarityColor;
         float r = ((ringCol >> 16) & 255) / 255.0F, g = ((ringCol >> 8) & 255) / 255.0F, b = (ringCol & 255) / 255.0F;
         float fade = t >= REVEAL ? 1.0F - smooth(REVEAL, REVEAL + 12, t) : 1.0F;
-        // el aro por donde pasan
+        // el aro por donde pasan y un halo detrás de cada premio (los oscuros, como un lingote de netherita, se leen)
         CinematicFx.ring(vc, v, c[0], cy - 0.35F, c[2], RING_R * form, 0.05F, 72, r, g, b, 0.35F * form * fade);
+        if (t < REVEAL + 10) {
+            float posR = t < SPIN0 ? 0.0F : reelPos(Math.min(t, SPIN1));
+            float fr = posR - (float)Math.floor(posR);
+            for (int k = -SLOTS / 2; k < SLOTS / 2; k++) {
+                float rel = k - fr;
+                float facing = (float)Math.cos(rel * Math.PI * 2 / SLOTS);
+                float vis = smooth(-0.2F, 0.6F, facing) * form * fade;
+                if (vis <= 0.02F) continue;
+                float ang = front + rel * (float)(Math.PI * 2 / SLOTS);
+                float stagger = Math.max(0.0F, Math.min(1.0F, form * 1.6F - (k + SLOTS / 2) / (float)SLOTS * 0.6F));
+                float hx = c[0] + (float)Math.sin(ang) * RING_R * stagger, hz = c[2] + (float)Math.cos(ang) * RING_R * stagger;
+                Vector3f back = new Vector3f(hx - eye.x, 0, hz - eye.z).normalize().mul(0.25F);
+                CinematicFx.glow(vc, v, hx + back.x, cy, hz + back.z, 0.42F + 0.15F * facing, mix(r, 1, 0.55F), mix(g, 1, 0.55F),
+                        mix(b, 1, 0.55F), 0.32F * vis);
+            }
+        }
         // el halo del frente
         float fx = c[0] + (float)Math.sin(front) * RING_R, fz = c[2] + (float)Math.cos(front) * RING_R;
         float spin = t < SPIN1 && t >= SPIN0 ? 1.0F - reelFrac((t - SPIN0) / (float)(SPIN1 - SPIN0)) : 0.0F;
@@ -689,7 +706,7 @@ public class CrateCinematicScreen extends Screen {
         // el premio
         if (t >= REVEAL) {
             float s = t - REVEAL;
-            float px = c[0] + (float)Math.sin(front) * 0.9F, pz = c[2] + (float)Math.cos(front) * 0.9F, py = cy + 0.25F;
+            float px = c[0] + (float)Math.sin(front) * 1.1F, pz = c[2] + (float)Math.cos(front) * 1.1F, py = cy + 0.15F;
             float wr = ((col >> 16) & 255) / 255.0F, wg = ((col >> 8) & 255) / 255.0F, wb = (col & 255) / 255.0F;
             float in = smooth(0, 10, s);
             float out = t > TOTAL - 20 ? 1.0F - (t - (TOTAL - 20)) / 20.0F : 1.0F;
@@ -713,7 +730,7 @@ public class CrateCinematicScreen extends Screen {
         if (t < REVEAL || candidates == null || candidates.isEmpty()) return;
         float[] c = sc.anchor("crate");
         float front = (float)Math.atan2(eye.x - c[0], eye.z - c[2]);
-        float px = c[0] + (float)Math.sin(front) * 0.9F, pz = c[2] + (float)Math.cos(front) * 0.9F, py = ringY(sc) + 0.25F;
+        float px = c[0] + (float)Math.sin(front) * 1.1F, pz = c[2] + (float)Math.cos(front) * 1.1F, py = ringY(sc) + 0.15F;
         // detrás del premio (un poco más lejos de la cámara)
         Vector3f back = new Vector3f(px - eye.x, py - eye.y, pz - eye.z).normalize().mul(0.3F);
         float s = t - REVEAL;
@@ -759,7 +776,7 @@ public class CrateCinematicScreen extends Screen {
         overlay(g, sc, t);
     }
 
-    private static final float[] SKY_TOP = {0.40F, 0.60F, 0.88F}, SKY_HORIZON = {1.0F, 0.87F, 0.66F}, FOG = {0.92F, 0.85F, 0.70F};
+    private static final float[] SKY_TOP = {0.34F, 0.57F, 0.93F}, SKY_HORIZON = {1.0F, 0.88F, 0.68F}, FOG = {0.94F, 0.88F, 0.74F};
 
     private void renderScene(GuiGraphics g, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
@@ -846,7 +863,8 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
             CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
             float[] c = sc.anchor("crate");
-            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.7F + 0.6F * pulseAt(t, REVEAL, 30.0F) : 1.0F);
+            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.75F + 0.6F * pulseAt(t, REVEAL, 30.0F)
+                    : t >= RING0 ? 1.0F - 0.45F * smooth(RING0, RING1, t) : 1.0F);
             if (t > TOTAL - 20) pillar *= Math.max(0.0F, (TOTAL - t) / 20.0F) * 0.5F + 0.5F;
             CinematicFx.pillar(glow, fv, c[0], c[1] + crateH * 0.75F, c[2], 9.0F, pillar, t, rarityColor);
             CinematicFx.shockwave(glow, fv, c[0], sc.anchor("pool")[1] + 0.03F, c[2], t - OPEN, 30.0F, 8.0F, rarityColor);
@@ -887,6 +905,7 @@ public class CrateCinematicScreen extends Screen {
         // el sol
         Vector3f sun = sc.sunDir();
         float[] sp = project(view, proj, new Vector3f(eye).add(new Vector3f(sun).mul(1000.0F)), w, h);
+        sunScreen = sp;
         if (sp != null) {
             glow2d(g, sp[0], sp[1], w * 1.4F, w * 1.4F, 0xFFE7B0, 0.55F);
             glow2d(g, sp[0], sp[1], w * 0.55F, w * 0.55F, 0xFFF4D6, 0.6F);
@@ -932,6 +951,7 @@ public class CrateCinematicScreen extends Screen {
     // ---------------------------------------------------------------------------------------------- lo de encima
     private void overlay(GuiGraphics g, SanctuaryScene sc, float t) {
         int w = width, h = height;
+        sunLight(g, t);
         // viñeta suave
         g.fillGradient(0, 0, w, h / 5, 0x55000000, 0x00000000);
         g.fillGradient(0, h - h / 5, w, h, 0x00000000, 0x55000000);
@@ -946,7 +966,7 @@ public class CrateCinematicScreen extends Screen {
         if (fade > 0.01F) g.fill(0, 0, w, h, ((int)(Math.min(1.0F, fade) * 255) << 24));
         // franjas de cine
         float bars = Math.min(1.0F, t / 12.0F);
-        int barH = (int)(h * 0.10F * bars);
+        int barH = (int)(h * 0.075F * bars);
         g.fill(0, 0, w, barH, 0xFF000000);
         g.fill(0, h - barH, w, h, 0xFF000000);
         // el título de la crate, al llegar
@@ -976,6 +996,44 @@ public class CrateCinematicScreen extends Screen {
         if (canSkip() && t > 20 && t < TOTAL - 20) {
             g.drawString(font, "§8[Espacio] saltar", w - font.width("[Espacio] saltar") - 6, h - barH - 12, 0xFFFFFFFF, false);
         }
+    }
+
+    /**
+     * El sol por encima de la escena: su resplandor cálido (aunque esté fuera de cuadro, arriba a la izquierda) y
+     * rayos que salen de él y respiran despacio (la luz entre los árboles que pidió el dueño: «un haz del sol sobre el
+     * lugar»). Luz que suma.
+     */
+    private void sunLight(GuiGraphics g, float t) {
+        float[] sp = sunScreen;
+        if (sp == null) return;
+        int w = width, h = height;
+        float open = smooth(OPEN - 2, OPEN + 12, t) * 0.3F + pulseAt(t, REVEAL, 30.0F) * 0.3F;
+        glow2d(g, sp[0], sp[1], w * 1.5F, w * 1.5F, 0xFFD9A0, 0.28F + open * 0.3F);
+        glow2d(g, sp[0], sp[1], w * 0.7F, w * 0.7F, 0xFFF0D0, 0.22F);
+        float base = (float)Math.atan2(h * 0.55F - sp[1], w * 0.5F - sp[0]);
+        float len = (float)Math.sqrt(w * w + h * h) * 1.4F;
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        com.mojang.blaze3d.vertex.BufferBuilder bb = com.mojang.blaze3d.vertex.Tesselator.getInstance().getBuilder();
+        bb.begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.TRIANGLES, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        Matrix4f m = g.pose().last().pose();
+        for (int i = 0; i < 13; i++) {
+            float k = i / 12.0F - 0.5F;
+            float ang = base + k * 1.15F + (float)Math.sin(t * 0.006F + i * 1.7F) * 0.03F;
+            float half = 0.012F + 0.02F * (float)Math.abs(Math.sin(i * 2.31F));
+            float breathe = 0.55F + 0.45F * (float)Math.sin(t * (0.02F + 0.01F * (i % 3)) + i * 2.0F);
+            float a = (0.075F + 0.05F * (1.0F - Math.abs(k) * 2.0F)) * breathe * (1.0F + open);
+            float x1 = sp[0] + (float)Math.cos(ang - half) * len, y1 = sp[1] + (float)Math.sin(ang - half) * len;
+            float x2 = sp[0] + (float)Math.cos(ang + half) * len, y2 = sp[1] + (float)Math.sin(ang + half) * len;
+            bb.vertex(m, sp[0], sp[1], 0).color(1.0F, 0.93F, 0.74F, a).endVertex();
+            bb.vertex(m, x1, y1, 0).color(1.0F, 0.88F, 0.62F, 0.0F).endVertex();
+            bb.vertex(m, x2, y2, 0).color(1.0F, 0.88F, 0.62F, 0.0F).endVertex();
+        }
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bb.end());
+        RenderSystem.enableCull();
+        RenderSystem.defaultBlendFunc();
     }
 
     private void drawScaled(GuiGraphics g, String s, int cx, int y, float scale, int argb) {

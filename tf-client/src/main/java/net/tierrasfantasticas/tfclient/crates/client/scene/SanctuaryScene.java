@@ -175,14 +175,15 @@ public final class SanctuaryScene {
      */
     void light(float x, float y, float z, float[] out) {
         float off = beamOffset(x, y, z);
-        float beam = (float)Math.exp(-off * off / 9.0F);
-        float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.4F);
-        float top = Math.max(0.0F, Math.min(1.0F, (y - 6.0F) / 8.0F));
-        float f = 0.74F + 0.26F * beam + 0.16F * dapple + 0.12F * top;
-        float warm = Math.min(1.0F, beam * 1.2F + dapple * 0.5F + top * 0.4F);
-        out[0] = Math.min(1.0F, f * (0.90F + 0.10F * warm));
-        out[1] = Math.min(1.0F, f * (0.95F + 0.02F * warm));
-        out[2] = Math.min(1.0F, f * (1.00F - 0.12F * warm));
+        float beam = (float)Math.exp(-off * off / 12.0F);
+        float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.5F);
+        float top = Math.max(0.0F, Math.min(1.0F, (y - 5.0F) / 7.0F));
+        // (la 1.3.99 en el juego: brillo medio 70/255 con 0,74 de base: oscura y verde; ahora más sol)
+        float f = 0.90F + 0.14F * beam + 0.10F * dapple + 0.08F * top;
+        float warm = Math.min(1.0F, beam * 1.2F + dapple * 0.6F + top * 0.5F);
+        out[0] = Math.min(1.0F, f * (0.97F + 0.06F * warm));
+        out[1] = Math.min(1.0F, f * (0.96F + 0.02F * warm));
+        out[2] = Math.min(1.0F, f * (0.95F - 0.10F * warm));
     }
 
     /** Manchas de sol entre las hojas (ruido suave con umbral). */
@@ -313,7 +314,7 @@ public final class SanctuaryScene {
         waterSprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", "block/water_still"));
         for (int[] b : blocks) {
             BlockState st = palette[b[3]];
-            if ((flags[b[3]] & F_SWAY) != 0 && st.getRenderShape() == RenderShape.MODEL) {
+            if (sways(b) && st.getRenderShape() == RenderShape.MODEL) {
                 addPlant(st, new BlockPos(b[0], b[1], b[2]), disp.getBlockModel(st));
             }
         }
@@ -324,7 +325,7 @@ public final class SanctuaryScene {
             for (int[] b : blocks) {
                 BlockState st = palette[b[3]];
                 int fl = flags[b[3]];
-                if (st.isAir() || (fl & F_SWAY) != 0) continue;
+                if (st.isAir() || sways(b)) continue;
                 BlockPos pos = new BlockPos(b[0], b[1], b[2]);
                 if ((fl & F_WATER) != 0) {
                     if (layer == SceneRenderTypes.WATER) quads += water(bb, b[0], b[1], b[2]);
@@ -360,6 +361,15 @@ public final class SanctuaryScene {
         FSCrates.LOGGER.info("[TF Crates] Santuario construido: {} bloques, {} plantas al viento, {} ms", blocks.size(), plants.size(),
                 (System.nanoTime() - t0) / 1_000_000);
     }
+
+    /** Las plantas que se mecen: las de cerca de la crate (las de lejos no se notan y van quietas en los búferes). */
+    private boolean sways(int[] b) {
+        if ((flags[b[3]] & F_SWAY) == 0) return false;
+        float dx = b[0] + 0.5F - crate.x, dz = b[2] + 0.5F - crate.z;
+        return dx * dx + dz * dz < SWAY_R * SWAY_R && b[2] > crate.z - 12.0F;
+    }
+
+    private static final float SWAY_R = 17.0F;
 
     private void addPlant(BlockState st, BlockPos pos, BakedModel model) {
         Minecraft mc = Minecraft.getInstance();

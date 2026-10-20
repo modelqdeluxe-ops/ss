@@ -118,7 +118,7 @@ def mesh(sc):
     tris += [(p, nn, (0.85, 0.62, 0.2), 1.0) for p, nn in box(cx - 0.5, cy, cz - 0.45, cx + 0.5, cy + 1.0, cz + 0.45)]
     for k in range(12):
         a = k / 12 * math.tau
-        x, z, y = cx + math.cos(a) * 1.7, cz + math.sin(a) * 1.7, cy + 2.3
+        x, z, y = cx + math.cos(a) * 1.6, cz + math.sin(a) * 1.6, cy + 1.85
         tris += [(p, nn, (0.9, 0.2, 0.9), 1.0) for p, nn in box(x - 0.2, y - 0.2, z - 0.2, x + 0.2, y + 0.2, z + 0.2)]
     return tris
 

@@ -27,7 +27,7 @@ public class CrateConfig {
    public final List<String> floatingText = new ArrayList<>();
    public final List<String> videos = new ArrayList<>();
    public final List<String> music = new ArrayList<>();
-   public FSTextStyle sceneHeader = new FSTextStyle("✦ Fantastic Crates ✦", "#FF55FF");
+   public FSTextStyle sceneHeader = new FSTextStyle("✦ TF Crates ✦", "#FF55FF");
    public FSTextStyle sceneSubtitle = new FSTextStyle("Prepárate para abrir tu caja", "#AAAAAA");
    public FSTextStyle nameStyle = new FSTextStyle("", "#FFFFFF");
    public boolean showOddsInPool = true;

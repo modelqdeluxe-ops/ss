@@ -134,19 +134,19 @@ public final class CinematicFx {
             float ox = (float)Math.cos(ang) * rad, oy = (float)Math.sin(ang) * rad;
             Vector3f base = new Vector3f(c[0], c[1] - 1.1F, c[2]).add(new Vector3f(p1).mul(ox)).add(new Vector3f(p2).mul(oy));
             Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(34.0F));
-            float w = 0.35F + hash(i, 11) * 0.75F;
-            float a = (0.055F + hash(i, 13) * 0.06F) * breathe * power;
-            band(vc, v, base, top, w * 0.8F, w * 1.6F, r, g, b, a * 0.45F, a);
+            float w = 0.45F + hash(i, 11) * 0.9F;
+            float a = (0.09F + hash(i, 13) * 0.08F) * breathe * power;
+            band(vc, v, base, top, w * 0.8F, w * 1.7F, r, g, b, a * 0.5F, a);
         }
         // el núcleo, más blanco
         Vector3f base = new Vector3f(c[0], c[1] - 1.0F, c[2]);
-        band(vc, v, base, new Vector3f(base).add(new Vector3f(sun).mul(30.0F)), 0.55F, 1.1F, 1.0F, 0.97F, 0.88F, 0.10F * power,
-                0.16F * power);
+        band(vc, v, base, new Vector3f(base).add(new Vector3f(sun).mul(30.0F)), 0.7F, 1.4F, 1.0F, 0.96F, 0.84F, 0.16F * power,
+                0.24F * power);
         // haces finos entre las copas, por la plaza
         for (int i = 0; i < 7; i++) {
             float life = frac(t / (220.0F + hash(i, 17) * 160.0F) + hash(i, 19));
             float a = (float)Math.sin(life * Math.PI);
-            a = a * a * 0.07F;
+            a = a * a * 0.11F;
             float x = -9.0F + hash(i, 21) * 18.0F + (float)Math.sin(t * 0.004F + i) * 0.5F, z = -9.0F + hash(i, 23) * 16.0F;
             if (Math.abs(x - c[0]) < 3.0F && Math.abs(z - c[2]) < 3.0F) x += 6.0F;
             Vector3f b0 = new Vector3f(x, 0.05F, z);
@@ -154,9 +154,9 @@ public final class CinematicFx {
                     a * 0.5F, a);
         }
         // donde cae el haz: luz en el pedestal y en el agua
-        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.4F, r, g, b, 0.16F * power);
+        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.24F * power);
         float[] pool = sc.anchor("pool");
-        flatGlow(vc, v, c[0] + sun.x * 0.6F, pool[1] + 0.02F, c[2] + sun.z * 0.6F, 4.2F, r, g, b, 0.08F * power);
+        flatGlow(vc, v, c[0] + sun.x * 0.6F, pool[1] + 0.02F, c[2] + sun.z * 0.6F, 4.6F, r, g, b, 0.13F * power);
     }
 
     /** El polvo que brilla en el haz de sol (y algo de polen por la plaza). */

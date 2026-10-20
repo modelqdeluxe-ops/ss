@@ -40,6 +40,14 @@ public final class ClientPacketHandler {
       }
    }
 
+   private static ItemStack winnerOf(List<ItemStack> cands, int winnerIndex) {
+      if (cands == null || cands.isEmpty()) {
+         return ItemStack.EMPTY;
+      } else {
+         return cands.get(Math.max(0, Math.min(cands.size() - 1, winnerIndex)));
+      }
+   }
+
    public static void playAnimation(BlockPos pos, String animationId, int rarityColor, int winnerIndex, int winnerRarity, CompoundTag candidates, UUID opener) {
       Minecraft mc = Minecraft.getInstance();
       ClientLevel level = mc.level;
@@ -59,12 +67,12 @@ public final class ClientPacketHandler {
                return;
             }
 
-            be.startSceneLid(rarityColor, winnerRarity, true);
+            be.startSceneLid(rarityColor, winnerRarity, true, winnerOf(cands, winnerIndex));
             return;
          }
 
          if (!isInstant) {
-            be.startSceneLid(rarityColor, winnerRarity, false);
+            be.startSceneLid(rarityColor, winnerRarity, false, winnerOf(cands, winnerIndex));
          } else {
             be.startAnimation(animationId, rarityColor, winnerIndex, winnerRarity, candRarities, cands);
          }

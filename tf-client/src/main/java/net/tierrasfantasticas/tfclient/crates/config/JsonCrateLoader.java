@@ -422,7 +422,7 @@ public final class JsonCrateLoader {
 
    private static JsonObject helpBlock() {
       JsonObject help = new JsonObject();
-      help.addProperty("queEsEsto", "Configuracion de una caja de Fantastic Crates. Editala y aplica con /tf crates reload");
+      help.addProperty("queEsEsto", "Configuracion de una caja de TF Crates. Editala y aplica con /tf crates reload");
       help.addProperty("rarezas", "COMMON, RARE, EPIC, LEGENDARY, MYTHIC");
       help.addProperty("colores", "Usa & o el caracter de seccion para colores. Ejemplo: &d&lCaja Epica");
       help.addProperty("idsDeItems", "Consulta la lista completa en config/fscrates/items_referencia.json");

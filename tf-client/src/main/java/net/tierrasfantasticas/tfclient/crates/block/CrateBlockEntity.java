@@ -88,12 +88,17 @@ public class CrateBlockEntity extends BlockEntity {
    private final Set<UUID> openedBy = new HashSet<>();
    public boolean sceneLidMode = false;
    private boolean muteAudio = false;
-   private static final int SCENE_TOTAL = 400;
-   private static final int SCENE_LID_START = 56;
-   private static final int SCENE_BURST = 76;
-   private static final int SCENE_LID_END = 82;
-   private static final int SCENE_CLOSE_START = 362;
-   private static final float SCENE_LID_MAX = 0.26F;
+   // (1.3.99) la crate del mundo, a los tiempos de la cinemática del santuario (CrateCinematicScreen): la llave llega y
+   // gira, tiembla, se abre del todo con un pilar de luz y el premio sube encima; se cierra al final
+   public static final int SCENE_TOTAL = 400;
+   public static final int SCENE_KEY = 52;
+   public static final int SCENE_KEY_IN = 100;
+   public static final int SCENE_TURN = 104;
+   public static final int SCENE_TREMBLE = 118;
+   public static final int SCENE_OPEN = 136;
+   public static final int SCENE_REVEAL = 294;
+   public static final int SCENE_CLOSE_START = 362;
+   private ItemStack sceneWinner = ItemStack.EMPTY;
 
    public boolean hasOpenedBy(UUID id) {
       return id != null && this.openedBy.contains(id);
@@ -212,18 +217,29 @@ public class CrateBlockEntity extends BlockEntity {
       }
    }
 
+   public void startSceneLid(int rarityColor, int winnerRarity, boolean muteAudio, ItemStack winner) {
+      this.startSceneLid(rarityColor, winnerRarity, muteAudio);
+      this.sceneWinner = winner == null ? ItemStack.EMPTY : winner.copy();
+   }
+
+   /** El premio que sube encima de la crate (para los que miran desde fuera). */
+   public ItemStack getSceneWinner() {
+      return this.sceneWinner;
+   }
+
    public void startSceneLid(int rarityColor, int winnerRarity, boolean muteAudio) {
       this.instant = false;
       this.sceneLidMode = true;
       this.animating = true;
       this.muteAudio = muteAudio;
+      this.sceneWinner = ItemStack.EMPTY;
       this.animation = AnimationRegistry.get(AnimationRegistry.defaultId());
       this.animTick = 0;
-      this.animTotal = 400;
-      this.tSpiralEnd = 56;
-      this.tOpenEnd = 82;
-      this.tSpinStop = 362;
-      this.tHoldEnd = 362;
+      this.animTotal = SCENE_TOTAL;
+      this.tSpiralEnd = SCENE_OPEN;
+      this.tOpenEnd = SCENE_OPEN + 10;
+      this.tSpinStop = SCENE_CLOSE_START;
+      this.tHoldEnd = SCENE_CLOSE_START;
       this.tRiseEnd = 0;
       this.animColor = rarityColor;
       Rarity[] rv = Rarity.values();
@@ -293,15 +309,18 @@ public class CrateBlockEntity extends BlockEntity {
          return 0.0F;
       } else if (this.sceneLidMode) {
          float ts = (float)this.animTick + partial;
-         if (ts <= 56.0F) {
+         if (ts < SCENE_TREMBLE) {
             return 0.0F;
-         } else if (ts < 82.0F) {
-            float p = (ts - 56.0F) / 26.0F;
-            return 0.26F * p * p;
-         } else if (ts < 362.0F) {
-            return 0.26F;
+         } else if (ts < SCENE_OPEN) {
+            // golpecitos de la tapa mientras tiembla
+            float k = (ts - SCENE_TREMBLE) / (SCENE_OPEN - SCENE_TREMBLE);
+            return Math.max(0.0F, (float)Math.sin(ts * 1.9F)) * Math.max(0.0F, (float)Math.sin(ts * 0.7F)) * (0.02F + 0.07F * k);
+         } else if (ts < SCENE_OPEN + 8) {
+            return easeOutBack((ts - SCENE_OPEN) / 8.0F);
+         } else if (ts < SCENE_CLOSE_START) {
+            return 1.0F;
          } else {
-            return ts < 400.0F ? 0.26F * (1.0F - easeInOut(Math.min(1.0F, (ts - 362.0F) / 38.0F))) : 0.0F;
+            return ts < SCENE_TOTAL ? 1.0F - easeInOut(Math.min(1.0F, (ts - SCENE_CLOSE_START) / (SCENE_TOTAL - SCENE_CLOSE_START))) : 0.0F;
          }
       } else if (this.instant) {
          return 1.0F;
@@ -322,6 +341,11 @@ public class CrateBlockEntity extends BlockEntity {
    }
 
    public float shake(float partial) {
+      if (this.animating && this.sceneLidMode) {
+         float t = (float)this.animTick + partial;
+         if (t < SCENE_TREMBLE || t >= SCENE_OPEN) return 0.0F;
+         return (float)Math.sin(t * 2.4F) * 0.045F * (t - SCENE_TREMBLE) / (SCENE_OPEN - SCENE_TREMBLE);
+      }
       if (this.animating && !this.instant) {
          float t = (float)this.animTick + partial;
          if (t >= (float)this.tSpiralEnd) {
@@ -407,6 +431,7 @@ public class CrateBlockEntity extends BlockEntity {
          if (be.animTick >= be.animTotal) {
             be.animating = false;
             be.sceneLidMode = false;
+            be.sceneWinner = ItemStack.EMPTY;
             be.animTick = 0;
             be.rewardIcon = ItemStack.EMPTY;
             be.candidates.clear();
@@ -420,13 +445,13 @@ public class CrateBlockEntity extends BlockEntity {
 
    private void advanceSceneSounds() {
       int t = this.animTick;
-      if (t == 76) {
+      if (t == SCENE_OPEN) {
          this.playOpenAccent(this.effectRarity);
-      } else if (t == 294) {
+      } else if (t == SCENE_REVEAL) {
          this.playWin(this.effectRarity);
-      } else if (t == 300) {
+      } else if (t == SCENE_REVEAL + 6) {
          this.playWinTail(this.effectRarity);
-      } else if (t == 362) {
+      } else if (t == SCENE_CLOSE_START) {
          this.playClose(this.config.rarity);
       }
    }
