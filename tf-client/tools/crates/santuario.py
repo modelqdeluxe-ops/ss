@@ -270,9 +270,23 @@ def pool(sc):
                 st = stairs('quartz_stairs', 'west')
             sc.set(x, 0, z, st)
             sc.set(x, -1, z, 'minecraft:quartz_bricks')
+    # arriba: cuarzo con esquinas cinceladas, cubierto de musgo y pétalos rosas (no un bloque blanco liso que deslumbra),
+    # dos amatistas detrás de la crate y liquen que brilla en los costados
     for x in range(-1, 2):
         for z in range(-1, 2):
-            sc.set(x, 1, z, 'minecraft:chiseled_quartz_block' if abs(x) == 1 and abs(z) == 1 else 'minecraft:calcite')
+            corner = abs(x) == 1 and abs(z) == 1
+            sc.set(x, 1, z, 'minecraft:chiseled_quartz_block' if corner or (x == 0 and z == 0) else 'minecraft:quartz_bricks')
+    sc.set(-1, 2, 0, 'minecraft:moss_carpet')
+    sc.set(0, 2, -1, 'minecraft:moss_carpet')
+    sc.set(1, 2, 0, 'minecraft:pink_petals[facing=west,flower_amount=4]')
+    sc.set(0, 2, 1, 'minecraft:pink_petals[facing=north,flower_amount=2]')
+    sc.set(-1, 2, 1, 'minecraft:pink_petals[facing=east,flower_amount=3]')
+    sc.set(1, 2, 1, 'minecraft:moss_carpet')
+    sc.set(-1, 2, -1, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
+    sc.set(1, 2, -1, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
+    for (x, z, face) in ((-2, -1, 'east'), (-2, 0, 'east'), (2, 0, 'west'), (2, 1, 'west'), (0, -2, 'south'), (-1, 2, 'north'),
+                         (1, 2, 'north')):
+        sc.set(x, 1, z, lichen(face), only_air=True)
     # pasaderas de mármol desde el camino
     for z in (3, 4, 5):
         sc.set(0, 0, z, slab('smooth_quartz_slab', 'top'))
@@ -299,27 +313,38 @@ def fountain_blocks():
 
 
 def fountains(sc):
-    """Cuatro fuentes en forma de copa de flor sobre el borde: basa cincelada, fuste de mármol, capitel con ménsulas
-    que se abren como pétalos y la copa con su agua (que rebosa hacia el estanque y echa un chorro hacia la crate)."""
+    """Dos fuentes en forma de flor sobre el borde, detrás de la crate: basa cincelada, fuste de mármol con una
+    enredadera, capitel que se abre en pétalos de cuarzo, la copa de borde escalonado con su agua (rebosa hacia el
+    estanque y echa un chorro hacia la crate), amatistas en las esquinas de la copa y bayas luminosas colgando."""
     for k, (x, z) in enumerate(fountain_blocks()):
         sc.set(x, -1, z, 'minecraft:stone_bricks')
         sc.set(x, 0, z, 'minecraft:chiseled_quartz_block')
         sc.set(x, 1, z, log('quartz_pillar'))
         sc.set(x, 2, z, log('quartz_pillar'))
         sc.set(x, 3, z, 'minecraft:chiseled_quartz_block')
+        # el capitel: pétalos (escalones del revés) a los lados y medias losas arriba en las esquinas
         for (dx, dz, face) in ((1, 0, 'west'), (-1, 0, 'east'), (0, 1, 'north'), (0, -1, 'south')):
             sc.set(x + dx, 3, z + dz, stairs('quartz_stairs', face, 'top'))
-        for dx in (-1, 0, 1):
-            for dz in (-1, 0, 1):
-                if dx or dz:
-                    sc.set(x + dx, BOWL_Y, z + dz, slab('smooth_quartz_slab'))
+        for dx in (-1, 1):
+            for dz in (-1, 1):
+                sc.set(x + dx, 3, z + dz, slab('smooth_quartz_slab', 'top'))
+        # la copa: borde escalonado (alto por fuera), el agua en medio, amatistas en las esquinas
+        for (dx, dz, face) in ((1, 0, 'east'), (-1, 0, 'west'), (0, 1, 'south'), (0, -1, 'north')):
+            sc.set(x + dx, BOWL_Y, z + dz, stairs('quartz_stairs', face))
+        for dx in (-1, 1):
+            for dz in (-1, 1):
+                sc.set(x + dx, BOWL_Y, z + dz, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
         sc.set(x, BOWL_Y, z, 'minecraft:water[level=0]')
-        # flores al pie y una enredadera
+        # bayas luminosas que cuelgan del capitel y una enredadera por el fuste
+        for (dx, dz) in ((1, 0), (-1, 0)):
+            sc.set(x + dx, 2, z + dz, 'minecraft:cave_vines_plant[berries=true]')
+            sc.set(x + dx, 1, z + dz, 'minecraft:cave_vines[age=0,berries=true]', only_air=True)
+        sc.set(x, 2, z + (1 if z < 0 else -1), vine(n=z < 0, s=z > 0), only_air=True)
+        # flores al pie
         for (dx, dz) in ((1, 1), (-1, -1), (1, -1), (-1, 1)):
             if pool_d(x + dx, z + dz) > RIM_R:
                 sc.set(x + dx, 0, z + dz, sc.pick([(2, 'minecraft:allium'), (2, 'minecraft:lily_of_the_valley'),
                                                    (1, 'minecraft:pink_tulip')]), only_air=True)
-        sc.set(x + (1 if x > 0 else -1), 2, z, vine(w=x > 0, e=x < 0), only_air=True)
     # delante, dos faroles bajos de mármol sobre el borde (no tapan la crate)
     for k in (0, 1):
         ang = math.radians(45 + 90 * k)

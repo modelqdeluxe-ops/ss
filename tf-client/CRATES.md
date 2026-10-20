@@ -38,8 +38,10 @@ estructura mejor diseñada, el fondo celestial… esas ruinas más bonitas… al
 
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que **empieza ya junto a la crate**: un bosque de
 hadas al atardecer. En medio, un estanque de agua turquesa con el fondo de linternas de mar, el borde de calcita y
-cuarzo y, sobre un pedestal, **su crate de verdad** (el modelo y la tapa de su estilo); detrás, un montículo musgoso con
-**una cascada** que cae a un remanso y el arroyo que baja al estanque; dos fuentes-copa que rebosan y dos faroles; un
+cuarzo y, sobre un pedestal con musgo, pétalos rosas, liquen que brilla y dos amatistas, **su crate de verdad** (el
+modelo y la tapa de su estilo); detrás, un montículo musgoso con
+**una cascada** que cae a un remanso y el arroyo que baja al estanque; dos fuentes en forma de flor (capitel de pétalos, copa de borde escalonado con amatistas, bayas
+luminosas colgando) que rebosan y echan su chorro; dos faroles; un
 arco élfico con lianas y amatistas; una columnata en ruinas alrededor; árboles gigantes con copas de cerezo y
 hongos-lámpara, setas que brillan, azaleas, liquen y bayas luminosas; el cielo del atardecer (oro en el horizonte, rosa,
 violeta, las primeras estrellas) y la bruma lila. Vuelan **hadas** de colores con estela, luciérnagas, pétalos y
@@ -110,7 +112,7 @@ apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
 `[prueba-jefes=crates]` en el commit (`BossTest.cratesStep`, ~1 min de juego; la prueba entera tarda menos de 10 min): comprueba que estén los registros y
 `/tf crates`, pone una crate épica de estilo clásico y otra mítica de estilo cinemático y las abre como un jugador
 (`CrateOpeningService.open`); el cliente saca 11 capturas por apertura a los tiempos de la cinemática
-(`BossTestClient.crateShots`, a los ticks 12, 40, 58, 76, 92, 107, 140, 196, 255, 272 y 318: llegada, haz, llave,
+(`BossTestClient.crateShots`, a los ticks 12, 40, 58, 76, 92, 107, 140, 196, 252, 272 y 318: llegada, haz, llave,
 gira, tiembla, abre, anillo, ruleta, para, premio, final) y el
 informe trae los fotogramas (en Actions va con Mesa, sin tarjeta: ~11-13 por segundo; en un PC normal, muchos más).
 

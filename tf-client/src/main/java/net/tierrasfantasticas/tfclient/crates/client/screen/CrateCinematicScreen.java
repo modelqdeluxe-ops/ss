@@ -169,6 +169,8 @@ public class CrateCinematicScreen extends Screen {
     @Override
     public void tick() {
         ticks++;
+        // los avisos del juego (recetas, logros) no salen encima de la escena
+        if (minecraft != null) minecraft.getToasts().clear();
         if (ticks >= TOTAL && !finished) {
             finished = true;
             onClose();
@@ -991,7 +993,7 @@ public class CrateCinematicScreen extends Screen {
                     vis = Math.max(0.0F, Math.min(1.0F, 1.3F - 0.42F * d));
                 }
                 float burst = pulseAt(t, OPEN, 36.0F) + pulseAt(t, REVEAL, 40.0F);
-                float bloomK = 0.85F + 0.25F * smooth(OPEN, OPEN + 20, t) + 0.6F * burst;
+                float bloomK = 0.85F + 0.2F * smooth(OPEN, OPEN + 20, t) + 0.45F * burst;
                 float rayK = 0.75F + 0.25F * smooth(OPEN, OPEN + 20, t) + 0.5F * burst;
                 post.finish(su, sv, vis, bloomK, rayK, 1.5F);
             } catch (Throwable e) {
@@ -1086,7 +1088,9 @@ public class CrateCinematicScreen extends Screen {
             g.fillGradient(0, h - h / 5, w, h, 0x00000000, 0x55000000);
         }
         // destellos a pantalla completa: al abrirse y en el premio
-        float flash = pulseAt(t, OPEN, 10.0F) * (pp ? 0.4F : 0.55F) + pulseAt(t, REVEAL, 14.0F) * (pp ? 0.7F : 0.85F);
+        // (con el shader, el resplandor ya hace de destello: el blanco a pantalla completa es más suave y más corto)
+        float flash = pp ? pulseAt(t, OPEN, 8.0F) * 0.28F + pulseAt(t, REVEAL, 9.0F) * 0.38F
+                : pulseAt(t, OPEN, 10.0F) * 0.55F + pulseAt(t, REVEAL, 14.0F) * 0.85F;
         if (flash > 0.01F) {
             int a = (int)(Math.min(1.0F, flash) * 255);
             g.fill(0, 0, w, h, (a << 24) | 0xFFF8E8);
