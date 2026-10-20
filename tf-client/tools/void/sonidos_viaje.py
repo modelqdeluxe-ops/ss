@@ -6,13 +6,13 @@ Como los de la grieta del cielo (sonidos_cielo.py, de donde salen las herramient
 corrido», no golpes uno tras otro. El viaje sonaba con varios de Minecraft (el portal, el cristal que se rompe, una
 explosión, el ghast, el dragón...). Ahora (en assets/tfclient/sounds/viaje/ y luz/):
 
-  viaje/ida      13 s, a los tiempos de TravelFx (se rasga a 1-2,2 s; puertas a 4,4 / 6,8 / 9,2 s): el mundo que se
-                 deforma, el desgarro, el viento del túnel que corre cada vez más; el Overworld (aire claro y un acorde
-                 mayor), el Nether (retumbo grave, lava que borbotea, un coro oscuro), el End (un brillo alto y quieto, un
-                 lamento lejano que baja) y el Void (un grave que tira hacia abajo y el coro dorado del Alba que sube); en
-                 cada puerta, un soplo que sube y cambia el acorde
+  viaje/ida      13 s, a los tiempos de TravelFx (se rasga a 1-2,2 s; puertas a 4,4 / 6,8 / 9,2 s). 1.3.98 (el dueño:
+                 «sin sonido bueno»): la realidad cruje, se rasga y se abre con un braam; el viento del túnel que aletea
+                 y gira, cada vez más rápido, y el tono de Shepard (la velocidad que no acaba); el Overworld (cuerdas en
+                 Re mayor), el Nether (retumbo y coro de hombres oscuro), el End (coro alto y frío) y el Void (el tirón
+                 grave y su coro); en cada puerta, un soplo que la cruza; al final, la luz del Alba (el coro en Re mayor)
   viaje/vuelta   igual al revés: Void, End, Nether y el Overworld al final
-  viaje/llegada  la luz al llegar: un acorde que florece y un brillo que se queda
+  viaje/llegada  la luz al llegar: un braam en Re mayor, luminoso y suave, con coro y cuerdas
   (1.3.97, el dueño: «los pozos de luz tienen un sonido feo y el del santuario también»: con los instrumentos de
   instrumentos.py, arpa, coro y campanas, en vez de acordes de senos)
   luz/pozo_entrar  al entrar en un Pozo de Luz: glissando de arpa que sube, un «aah» y una campana
@@ -30,6 +30,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'bosses'))
+from sonidos_cielo import (braam, choir_o, cruje, glue, hall, rasgar, roll, shepard, slow_noise)  # noqa: E402
 from sonidos_cielo import (bloom, band_sweep, choir, medir, noise2, pad, pan, shimmer, smooth, stereo_reverb, sub, swell, tear,  # noqa: E402
                            tt, whoosh)
 from sonidos_grieta import SR, bp, hp, lp, lp_sweep, norm, reverb, write_wav  # noqa: E402
@@ -44,47 +45,32 @@ def seg(t, a, b, fade=0.5):
     return smooth(a - fade, a + fade, t) * (1 - smooth(b - fade, b + fade, t))
 
 
+# (1.3.98, el dueño: «el agujero de gusano, sin sonido bueno»: el de la 1.3.96 eran acordes de senos con un brillo
+# agudo; ahora con lo de la grieta del cielo: el crujido, el braam, el tono de Shepard, el coro de hombres y el viento)
+
 def overworld(t, k):
+    # cálido y abierto: cuerdas en Re mayor y aire claro
     air = noise2(len(t), 200)
     for c in range(2):
-        air[:, c] = bp(air[:, c], 900, 5000)
-    chord = bloom(t, -1, (293.66, 369.99, 440.0, 587.33), attack=0.1, decay=1e9, seed=201, bright=6000)
-    return air * 0.18 + chord * 1.6 * (1 + 0.15 * np.sin(2 * np.pi * 0.4 * t))[:, None]
+        air[:, c] = bp(air[:, c], 700, 3500)
+    return pad(t, (146.83, 220.0, 293.66, 369.99), 700, 1300, seed=201) * 1.6 + air * 0.12
 
 
 def nether(t, k):
-    rum = noise2(len(t), 210)
-    for c in range(2):
-        rum[:, c] = lp(rum[:, c], 140)
-    # la lava que borbotea: ruido medio que sube y baja a ritmos lentos y desiguales (suave, sin chasquidos)
-    bub = noise2(len(t), 211)
-    for c in range(2):
-        bub[:, c] = bp(bub[:, c], 180, 700)
-    am = (0.5 + 0.5 * np.sin(2 * np.pi * 3.1 * t + 2 * np.sin(2 * np.pi * 0.7 * t))) ** 3
-    dark = choir(t, (73.42, 87.31, 110.0), seed=212, vib=0.006)
-    return rum * 1.4 + bub * am[:, None] * 0.5 + dark * 1.8 + pan(sub(t, 41, 38), 0) * 0.5
+    # el retumbo de la lava y un coro de hombres oscuro (Re menor)
+    return roll(t, 0.9, seed=210, cutoff=220) * 0.8 + choir_o(t, (73.42, 110.0, 146.83, 174.61), seed=212, vib=0.006) * 2.2
 
 
 def end(t, k):
-    hi = shimmer(t, (659.26, 739.99, 830.61, 1046.5, 1318.5), seed=220)
-    air = noise2(len(t), 221)
-    for c in range(2):
-        air[:, c] = bp(air[:, c], 400, 2400)
-    # un lamento lejano que baja (como el del dragón, pero hecho de coro)
-    moan = choir(t, (220.0,), seed=222, vib=0.02)
-    moan = moan * (np.exp(-((t - (t[0] + 1.2)) / 0.9) ** 2))[:, None]
-    return hi * 0.5 + air * 0.12 + moan * 1.5
+    # frío y quieto: coro alto en La menor y cuerdas lejanas en Mi menor (sin brillos de cristal)
+    return choir_o(t, (220.0, 261.63, 329.63), seed=222, vib=0.004) * 1.6 + pad(t, (82.41, 123.47, 164.81), 300, 700, seed=223) * 0.9
 
 
 def void(t, k):
-    pull = pan(sub(t, 48, 30, 0.8), 0) * 0.9
-    gold = choir(t, (293.66, 369.99, 440.0), seed=230, vib=0.005) * smooth(t[0], t[0] + 2.5, t)[:, None]
-    swirl = noise2(len(t), 231)
-    for c in range(2):
-        swirl[:, c] = bp(swirl[:, c], 120, 900)
-    pos = np.sin(2 * np.pi * np.cumsum(0.3 + 0.8 * smooth(t[0], t[-1], t)) / SR)
-    swirl = swirl * np.stack([0.5 - 0.35 * pos, 0.5 + 0.35 * pos], 1)
-    return pull + gold * 1.8 + swirl * 0.5
+    # el tirón grave del Void y su coro (Si bemol sobre Re); al final de la ida, la luz del Alba que llega (Re mayor)
+    pull = pan(sub(t, 44, 30, 0.8), 0) * 0.8
+    dark = choir_o(t, (73.42, 116.54, 146.83, 174.61), seed=230, vib=0.006) * 1.8
+    return pull + dark + roll(t, 0.5, seed=231, cutoff=180) * 0.6
 
 
 WORLDS = [overworld, nether, end, void]
@@ -94,13 +80,20 @@ def _viaje(back):
     dur = 13.4
     t = tt(dur)
     x = np.zeros((len(t), 2))
-    # el mundo se deforma (0-1 s) y se rasga (1-2,2 s)
-    warp = pan(sub(t, 30, 55, 1.2), 0) * (smooth(0, 1.0, t) * (1 - smooth(1.2, 2.4, t)))[:, None]
-    rip = tear(t, OPEN0, OPEN1, seed=240) * 0.8
-    # el viento del túnel, cada vez más rápido (sube el filtro con la velocidad)
-    wind = noise2(len(t), 241)
-    wind = band_sweep(wind, 300, 2600, 1.2) * (smooth(1.4, 2.6, t) * (1 - smooth(12.6, 13.3, t)))[:, None] * 0.6
-    x += warp * 0.9 + rip + wind
+    # el mundo cruje y se dobla (0-1,2 s), se rasga (1-2,4 s) y se abre el túnel con un braam
+    x += cruje(t, smooth(0.0, 0.9, t) * (1 - smooth(1.3, 2.0, t)), 30 + 25 * smooth(0, 1.2, t), 1.0 + 0.3 * smooth(0, 1.2, t), seed=240) * 0.7
+    x += pan(sub(t, 30, 52, 1.2), 0) * (smooth(0, 1.0, t) * (1 - smooth(1.4, 2.4, t)))[:, None] * 0.6
+    x += rasgar(t, OPEN0, OPEN1 + 0.3, seed=241, f0=160, f1=900) * 0.7
+    x += braam(t, 1.3, (36.71, 73.42, 110.0, 146.83, 174.61) if not back else (36.71, 73.42, 110.0, 146.83, 185.0), attack=0.3,
+               hold=0.5, release=1.8, seed=242, bright=2600, drop=0.03) * 0.8
+    # el viento del túnel, cada vez más rápido (el filtro sube con la velocidad; aletea y gira de un lado a otro)
+    wind = band_sweep(noise2(len(t), 243), 260, 2400, 1.2)
+    flutter = np.stack([slow_noise(len(t), 11, 244), slow_noise(len(t), 11, 245)], 1) ** 1.5 * 1.6
+    pos = np.sin(2 * np.pi * np.cumsum(0.2 + 0.6 * smooth(2, 12, t)) / SR)
+    wind = wind * flutter * np.stack([0.55 - 0.35 * pos, 0.55 + 0.35 * pos], 1)
+    x += wind * (smooth(1.8, 3.0, t) * (1 - smooth(12.6, 13.3, t)))[:, None] * 0.55
+    # la velocidad que no acaba: el tono de Shepard
+    x += shepard(t, 0.0, speed=0.18) * (smooth(2.0, 3.5, t) * (1 - smooth(12.4, 13.2, t)))[:, None] * 0.45
     order = [3, 2, 1, 0] if back else [0, 1, 2, 3]
     bounds = [OPEN1, GATES[0], GATES[1], GATES[2], 13.4]
     for i, w in enumerate(order):
@@ -110,14 +103,16 @@ def _viaje(back):
         part = np.zeros((len(t), 2))
         part[sl] = WORLDS[w](t[sl], i)
         x += part * m[:, None]
-    # en cada puerta, un soplo que sube (sin golpe)
+    # en cada puerta, un soplo que la cruza y un grave que sube (sin golpe)
     for g in GATES:
-        x += whoosh(t, g, 0.35, 0.5, 800, 6000, seed=int(g * 10)) * 0.5
-        x += pan(sub(t, 40, 80, 1.5), 0) * swell(t, g, 0.3, 0.4)[:, None] * 0.6
+        x += whoosh(t, g, 0.35, 0.5, 600, 5000, seed=int(g * 10)) * 0.45
+        x += pan(sub(t, 40, 70, 1.5), 0) * swell(t, g, 0.3, 0.4)[:, None] * 0.5
     if not back:
-        # (a la ida, al final, el tirón del agujero negro que sube hacia la luz)
-        x += whoosh(t, 12.2, 1.6, 0.8, 300, 4000, seed=250) * 0.4
-    return stereo_reverb(x, 3.0, 2600, 0.35, 251 if back else 252)
+        # al final de la ida, la luz del Alba que se acerca: el coro en Re mayor que crece
+        x += choir(t, (293.66, 369.99, 440.0, 587.33), seed=250, vib=0.004) * swell(t, 12.6, 1.6, 1.0)[:, None] * 1.6
+    else:
+        x += pad(t, (146.83, 220.0, 293.66, 369.99), 900, 2200, seed=251) * swell(t, 12.6, 1.4, 1.0)[:, None] * 1.4
+    return hall(x, 3.2, 0.38, 2600, 252 if back else 253)
 
 
 def ida():
@@ -129,11 +124,14 @@ def vuelta():
 
 
 def llegada():
-    t = tt(4.0)
-    ch = bloom(t, 0.3, (293.66, 440.0, 587.33, 739.99, 880.0, 1174.66), attack=0.35, decay=1.8, seed=260, bright=7000)
-    sh = shimmer(t, (1760, 2217.46, 2637.02), seed=261) * swell(t, 0.6, 0.5, 1.6)[:, None]
-    air = whoosh(t, 0.25, 0.3, 0.9, 6000, 600, seed=262)
-    return stereo_reverb(ch * 2.4 + sh * 0.2 + air * 0.35, 3.0, 4000, 0.45, 263)
+    """La luz al llegar: un braam en Re mayor, luminoso y suave, con el coro y las cuerdas (sin brillos de cristal)."""
+    t = tt(4.5)
+    x = braam(t, 0.1, (36.71, 73.42, 110.0, 146.83, 185.0), attack=0.35, hold=0.6, release=2.6, seed=260, bright=3200, drop=0.0,
+              growl=0.1, drive=1.6) * 0.7
+    x += choir(t, (293.66, 369.99, 440.0, 587.33), seed=261, vib=0.004) * swell(t, 0.5, 0.8, 2.4)[:, None] * 1.8
+    x += pad(t, (146.83, 220.0, 293.66, 369.99), 1200, 2600, seed=262) * swell(t, 0.4, 0.6, 2.2)[:, None] * 1.2
+    x += whoosh(t, 0.2, 0.3, 0.9, 5000, 600, seed=263) * 0.3
+    return hall(x, 3.2, 0.45, 4000, 264)
 
 
 def _gliss(notes, gap, vel, seed, at=0.0, pan_from=-0.5, pan_to=0.5):
@@ -226,6 +224,9 @@ def main():
             x = hp(x, 40, 2)
         else:
             x = np.stack([hp(x[:, c], 28, 2) for c in range(2)], 1)
+        # (1.3.98: el viaje, con la compresión lenta de la grieta del cielo: grande y lleno, sin subir el pico)
+        if name.startswith('viaje/') and not mono:
+            x = glue(x)
         x = norm(x, PEAK.get(name, 0.85))
         loud = np.nonzero((np.abs(x) if mono else np.abs(x).max(1)) > 0.85 * 10 ** (-60 / 20))[0]
         if len(loud):

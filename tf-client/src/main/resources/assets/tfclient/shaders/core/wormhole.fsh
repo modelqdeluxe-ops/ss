@@ -36,14 +36,19 @@
 //  - a la ida, la última boca es el agujero negro del Void (sombra, anillo de fotones, el disco de acreción que pasa por
 //    delante y su imagen doblada alrededor, más brillante por un lado), y de su anillo sale la luz al llegar; a la
 //    vuelta, la boca del Overworld, de día.
+//
+// 1.3.98 (el dueño: «sigue siendo una mierda, en especial el túnel del Void; la imagen en baja calidad del agujero negro
+// mejor no la pongas; se queda bugueado»): nada de imágenes estiradas. Las paredes de cada tramo, hechas aquí (el
+// Overworld, roca y lava del Nether, el End, las corrientes violetas y el oro del Void: worldWall); la boca hacia el
+// Void, una nebulosa con estrellas (voidSky); y al final de la ida, en vez del agujero negro, la luz del Alba que te
+// recibe (albaLight), que mientras carga el mundo sigue creciendo. Los panoramas reales (pequeños, dentro de las bocas)
+// solo del Overworld, el Nether y el End.
 // La realidad se rasga al empezar (Open) y la luz del fondo llena la pantalla al llegar (Exit). Vista previa sin juego:
 // tools/void/tunel_preview.py (mismos tiempos que TravelFx).
 
-uniform sampler2D Sampler1;   // las nebulosas del cielo del Void (grieta_cielo.png, equirectangular): las paredes del Void
 uniform sampler2D Sampler2;   // (1.3.96) el Overworld: el panorama del menú, equirectangular (TunnelPanoramas)
 uniform sampler2D Sampler3;   // el Nether (tunel_nether.png)
 uniform sampler2D Sampler4;   // el End (tunel_end.png)
-uniform sampler2D Sampler5;   // el Void (tunel_void.png)
 uniform float HasOverworld;   // 1 si se pudo hacer el panorama del Overworld
 uniform float WTime;          // segundos
 uniform float Travel;         // camino recorrido por el túnel
@@ -125,6 +130,80 @@ vec3 overworld(float u, float w) {
     return mix(sky, g, land);
 }
 
+vec3 netherWall(float u, float w) {
+    // roca roja oscura y venas de lava que fluyen hacia ti (crestas de un ruido deformado por otro)
+    vec3 q = wallP(u, w, 1.5, 0.42);
+    float n = fbm(q + vec3(0.0, 0.0, -WTime * 0.25), FOOT * 1.5);
+    float m = fbm(q * 1.6 + n * 1.8 + vec3(3.1, 1.7, WTime * 0.12), FOOT * 2.4);
+    float vein = 1.0 - abs(2.0 * m - 1.0);
+    vein = mix(0.35, pow(vein, 7.0), 1.0 - smoothstep(0.25, 0.6, FOOT * 14.0));
+    vec3 rock = mix(vec3(0.10, 0.015, 0.02), vec3(0.42, 0.06, 0.05), smoothstep(0.25, 0.75, n));
+    vec3 lava = mix(vec3(1.0, 0.32, 0.04), vec3(1.0, 0.86, 0.42), vein);
+    return rock + lava * vein * 2.2 + vec3(0.9, 0.22, 0.04) * smoothstep(0.6, 0.85, n) * 0.5;
+}
+
+vec3 endWall(float u, float w) {
+    // el cielo negro del End con corrientes de piedra pálida y destellos turquesa
+    vec3 q = wallP(u, w, 1.3, 0.28) + vec3(0.0, 0.0, -WTime * 0.08);
+    float n = fbm(q, FOOT * 1.3);
+    float m = fbm(q * 1.4 + vec3(n * 1.5, 4.0, 2.0), FOOT * 1.8);
+    float stream = 1.0 - abs(2.0 * m - 1.0);
+    stream = mix(0.3, pow(stream, 5.0), 1.0 - smoothstep(0.25, 0.6, FOOT * 9.0));
+    vec3 c = mix(vec3(0.02, 0.01, 0.05), vec3(0.28, 0.1, 0.5), smoothstep(0.3, 0.85, n));
+    return c + vec3(0.95, 0.92, 0.66) * stream * 0.5 + vec3(0.25, 0.85, 0.75) * smoothstep(0.74, 0.9, n) * 0.3;
+}
+
+vec3 voidWall(float u, float w) {
+    // el Void: añil casi negro, corrientes violetas que se enroscan y hebras de oro (el Alba) que corren hacia el fondo
+    vec3 q = wallP(u, w, 1.2, 0.3) + vec3(0.0, 0.0, -WTime * 0.12);
+    float n = fbm(q, FOOT * 1.2);
+    float m = fbm(q * 1.7 + vec3(n * 2.0, 1.3, -WTime * 0.2), FOOT * 2.0);
+    float cur = 1.0 - abs(2.0 * m - 1.0);
+    float k = 1.0 - smoothstep(0.25, 0.6, FOOT * 10.0);
+    vec3 c = mix(vec3(0.015, 0.008, 0.045), vec3(0.2, 0.06, 0.42), smoothstep(0.35, 0.9, n));
+    c += vec3(0.62, 0.28, 1.0) * mix(0.2, pow(cur, 6.0), k) * 0.9;
+    float sp = 0.5 + 0.5 * sin(u * TAU * 3.0 + w * 0.9 - WTime * 0.6 + n * 3.0);
+    c += vec3(1.0, 0.72, 0.36) * mix(0.1, pow(sp, 18.0), k) * 0.55 * smoothstep(0.4, 0.75, n);
+    return c;
+}
+
+vec3 worldWall(float world, float u, float w) {
+    if (world < 0.5) return overworld(u, w);
+    if (world < 1.5) return netherWall(u, w);
+    if (world < 2.5) return endWall(u, w);
+    return voidWall(u, w);
+}
+
+// (1.3.98) El Void visto por la boca que lleva a él: una nebulosa añil y violeta con estrellas (sin el panorama de baja
+// calidad ni su agujero negro)
+vec3 voidSky(vec3 d) {
+    vec3 p = d * 2.2 + vec3(0.0, 0.0, WTime * 0.03);
+    float n = fbm(p, 0.01);
+    float m = fbm(p * 2.1 + vec3(n * 2.5, 3.0, 1.0), 0.01);
+    vec3 c = mix(vec3(0.01, 0.006, 0.03), vec3(0.24, 0.07, 0.48), smoothstep(0.35, 0.85, n));
+    c += vec3(0.8, 0.3, 0.9) * pow(1.0 - abs(2.0 * m - 1.0), 6.0) * 0.6;
+    vec3 cell = floor(d * 90.0);
+    float h = hash13(cell);
+    if (h > 0.985) {
+        vec3 f = fract(d * 90.0) - 0.5;
+        c += vec3(1.0, 0.95, 1.0) * smoothstep(0.35, 0.0, length(f)) * (h - 0.985) / 0.015 * 2.0;
+    }
+    return c;
+}
+
+// (1.3.98) La boca del final a la ida: la luz del Alba que te recibe en el santuario (oro y blanco que gira)
+vec3 albaLight(vec2 m) {
+    float d = length(m);
+    float a = atan(m.y, m.x);
+    float sw = a + WTime * 0.6 - d * 2.5;
+    float n = fbm(vec3(cos(sw) * d * 3.0, sin(sw) * d * 3.0, WTime * 0.25), 0.02);
+    vec3 c = vec3(1.0, 0.86, 0.58) * (0.45 + 0.9 * n) * (0.75 + 0.5 * smoothstep(1.0, 0.2, d));
+    c += vec3(1.0, 0.97, 0.9) * exp(-d * d * 7.0) * 2.2;
+    float rays = pow(abs(cos(a * 6.0 + WTime * 0.4)), 24.0) + pow(abs(cos(a * 4.0 - WTime * 0.3 + 1.0)), 30.0);
+    c += vec3(1.0, 0.9, 0.7) * rays * exp(-d * 1.8) * 0.6;
+    return c;
+}
+
 // El color de la luz de cada tramo (hacia el fondo brilla)
 vec3 fogColor(float world) {
     if (world < 0.5) return vec3(1.0, 0.9, 0.7);
@@ -162,7 +241,7 @@ vec3 pano(float world, vec3 d) {
     }
     if (world < 1.5) return textureLod(Sampler3, uv, 0.0).rgb;
     if (world < 2.5) return textureLod(Sampler4, uv, 0.0).rgb;
-    return textureLod(Sampler5, uv, 0.0).rgb;
+    return voidSky(d);
 }
 
 // Hacia dónde mira la boca de cada mundo: a lo que se reconoce (el sur del Overworld, el mar de lava del Nether, las
@@ -206,25 +285,11 @@ vec3 tunnelWall(float world, float u, float w, float r) {
     // lo que mide un píxel: alrededor 1/(2πr) vueltas; en profundidad K/r² de camino
     float perU = px / (TAU * rr);
     float perW = K * px / (rr * rr);
-    vec3 c;
-    if (world < 0.5 && HasOverworld < 0.5) {
-        FOOT = max(perW * 0.42, px / rr * 1.4);
-        c = overworld(u, w);
-    } else {
-        // la dimensión envuelta en las paredes: su panorama (la longitud alrededor; la latitud, cerca del horizonte, va
-        // y viene despacio por el camino), con estela hacia el fondo
-        c = vec3(0.0);
-        for (int k = 0; k < 3; k++) {
-            float wk = w + float(k) * 0.3;
-            float v = 0.5 - 0.24 * sin(wk * 0.13 + world * 1.9) - 0.06 * sin(u * TAU * 2.0 + wk * 0.05);
-            vec2 uv = vec2(fract(u + 0.013 * wk), clamp(v, 0.05, 0.95));
-            if (world > 2.5) c += pow(textureLod(Sampler1, uv, 0.0).rgb, vec3(1.2)) * 1.3;
-            else if (world > 1.5) c += textureLod(Sampler4, uv, 0.0).rgb;
-            else if (world > 0.5) c += textureLod(Sampler3, uv, 0.0).rgb;
-            else c += textureLod(Sampler2, uv, 0.0).rgb;
-        }
-        c /= 3.0;
-    }
+    // (1.3.98, el dueño: «sin imagen buena, en especial la del túnel del Void; la imagen en baja calidad del agujero
+    // negro, mejor no la pongas»: las paredes ya no son panoramas estirados —de 1024 píxeles, borrosos— sino de cada
+    // dimensión hechas aquí, nítidas a cualquier tamaño)
+    FOOT = max(perW * 0.42, px / rr * 1.4);
+    vec3 c = worldWall(world, u, w);
     // hebras del espacio-tiempo: vetas finas alrededor y largas en profundidad, que corren hacia ti
     float fib = fbm(vec3(cos(u * TAU) * 6.0, sin(u * TAU) * 6.0, w * 0.22), max(perU * TAU * 6.0, perW * 0.22));
     float fib2 = fbm(vec3(cos(u * TAU) * 2.4, sin(u * TAU) * 2.4, w * 0.08 + 7.0), max(perU * TAU * 2.4, perW * 0.08));
@@ -261,31 +326,8 @@ vec3 sphereView(float world, vec2 m, vec3 mc) {
     float th = 2.5 * pow(d, 1.45);
     float ph = atan(m.y, m.x);
     vec3 dir = aim(world, vec3(-sin(th) * cos(ph), sin(th) * sin(ph), cos(th)));
-    vec3 v = pano(world, dir) * 1.1;
+    vec3 v = (world > 2.5 ? voidSky(dir) : pano(world, dir)) * 1.1;
     return mix(v, mc * 1.2, smoothstep(0.7, 1.0, d) * 0.4);
-}
-
-// La boca del final a la ida: el agujero negro del Void (m: en su disco unidad)
-vec3 blackHole(vec2 m) {
-    float d = length(m);
-    float ang = atan(m.y, m.x);
-    // detrás, el cielo del Void doblado alrededor (lente gravitatoria)
-    vec2 lm = m * (1.0 + 0.16 / max(d * d, 0.05));
-    vec3 bg = pano(3.0, aim(3.0, normalize(vec3(-lm.x * 0.9, lm.y * 0.9, 1.0)))) * 0.75;
-    float shadow = smoothstep(0.425, 0.4, d);
-    // el disco de acreción: una banda inclinada que pasa por delante y su imagen doblada alrededor de la sombra
-    float y = m.y - 0.16 * m.x;
-    float front = exp(-pow(y / (0.028 + 0.045 * d), 2.0)) * (1.0 - smoothstep(0.7, 1.0, d));
-    float arc = exp(-pow((d - 0.5) / 0.045, 2.0)) * (1.0 - 0.6 * front);
-    float sw = ang + WTime * 0.9 / max(d, 0.3);
-    float n = fbm(vec3(cos(sw) * d * 5.0, sin(sw) * d * 5.0, WTime * 0.3), 0.02);
-    float dop = 1.0 + 0.7 * (-m.x / max(d, 1e-3));
-    vec3 disk = mix(vec3(1.0, 0.5, 0.18), vec3(1.0, 0.93, 0.78), n) * (0.55 + 0.9 * n) * dop;
-    vec3 c = bg * (1.0 - shadow);
-    c += disk * (front + arc * 0.85) * 1.7;
-    // el anillo de fotones
-    c += vec3(1.0, 0.85, 0.6) * exp(-pow((d - 0.432) / 0.008, 2.0)) * 2.2;
-    return c;
 }
 
 // Ascuas, chispas y motas de luz que pasan volando (redondas y suaves)
@@ -323,8 +365,9 @@ void main() {
     float g = Travel < Gates.x ? Gates.x : (Travel < Gates.y ? Gates.y : (Travel < Gates.z ? Gates.z : Gates.z + END_GAP));
     float idx = Travel < Gates.x ? 0.0 : (Travel < Gates.y ? 1.0 : (Travel < Gates.z ? 2.0 : 3.0));
     float dz = g - Travel;
-    // (la del final no pasa de media pantalla hasta que llegas: entonces crece y de ella sale la luz)
-    if (idx > 2.5) dz = max(dz, 1.2) / (1.0 + 4.0 * smoothstep(0.0, 0.75, Exit));
+    // (la del final no pasa de media pantalla hasta que llegas: entonces crece y de ella sale la luz. 1.3.98, el dueño:
+    // «se queda bugueado»: si el mundo tarda en cargar, la boca ya no se queda quieta: sigue acercándose, despacio)
+    if (idx > 2.5) dz = (dz > 1.2 ? dz : 1.2 * exp(-(1.2 - dz) / 10.0)) / (1.0 + 4.0 * smoothstep(0.0, 0.75, Exit));
     float rg = K / max(dz, 0.02);
     vec2 m = (p - c0 - bendAt(dz)) / rg;
     float dm = length(m);
@@ -348,7 +391,7 @@ void main() {
     // la boca: la dimensión siguiente (o el agujero negro del Void), su anillo y su halo
     float e = max(px / rg, 1e-4);
     float inside = smoothstep(1.0 + e, 1.0 - e, dm);
-    vec3 inner = idx > 2.5 && Back < 0.5 ? blackHole(m) : sphereView(to, m, mc);
+    vec3 inner = idx > 2.5 && Back < 0.5 ? albaLight(m) : sphereView(to, m, mc);
     col = mix(col, inner, inside);
     float sd = (dm - 1.0) * rg;
     float big = smoothstep(0.004, 0.03, rg);

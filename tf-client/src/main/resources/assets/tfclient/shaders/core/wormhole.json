@@ -10,11 +10,9 @@
         "Position"
     ],
     "samplers": [
-        { "name": "Sampler1" },
         { "name": "Sampler2" },
         { "name": "Sampler3" },
-        { "name": "Sampler4" },
-        { "name": "Sampler5" }
+        { "name": "Sampler4" }
     ],
     "uniforms": [
         { "name": "WTime", "type": "float", "count": 1, "values": [ 0.0 ] },
