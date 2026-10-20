@@ -33,7 +33,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   ({@code VoidLightClient}: grietas violetas que entran desde los bordes, sin números).</li>
  *   <li>Sitios de luz: el Velo del Alba ({@link VoidIsland#inBubble}) y los Pozos de Luz ({@link LightWells#wellAt}); ahí
  *   la corrosión se va en unos segundos ({@link #REGEN}).</li>
- *   <li>Sin luz, el Vacío hace daño: medio corazón ({@link #HURT}) cada {@link #HURT_EVERY} ticks (tipo de daño
+ *   <li>Sin luz, el Vacío hace daño: tres cuartos de corazón ({@link #HURT}; 1.3.97, el dueño: «medio corazón y un cuarto
+ *   más») cada {@link #HURT_EVERY} ticks (tipo de daño
  *   {@link #CORROSION}, que atraviesa la armadura; su muerte: «fue consumido por el Vacío»). Nada más: ni oscuridad ni
  *   lentitud.</li>
  *   <li>La armadura del Vacío ({@link VoidArmor}): cada pieza puesta, un 25 % más despacio; con las cuatro, nada.</li>
@@ -50,8 +51,8 @@ public final class VoidLight {
     private static final float DRAIN = MAX / (CORRODE_MIN * 60F * 20F);
     /** En un sitio de luz, de nada a llena en 3 s. */
     private static final float REGEN = MAX / (3F * 20F);
-    /** El daño de la corrosión al máximo (medio corazón) y cada cuánto. */
-    static final float HURT = 1F;
+    /** El daño de la corrosión al máximo (tres cuartos de corazón) y cada cuánto. */
+    static final float HURT = 1.5F;
     static final int HURT_EVERY = 60;
     public static final ResourceKey<DamageType> CORROSION = ResourceKey.create(Registries.DAMAGE_TYPE,
             new ResourceLocation(TFClient.MOD_ID, "corrosion_vacio"));
@@ -225,7 +226,7 @@ public final class VoidLight {
             s.light = Math.max(0F, s.light - DRAIN * (1F - 0.25F * pieces));
         }
         if (s.light > 0F) s.empty = false;
-        // al máximo de corrosión: medio corazón de vez en cuando
+        // al máximo de corrosión: tres cuartos de corazón de vez en cuando
         if (s.light <= 0F && exposed(p) && !safe) {
             long now = p.level().getGameTime();
             if (!s.empty) {

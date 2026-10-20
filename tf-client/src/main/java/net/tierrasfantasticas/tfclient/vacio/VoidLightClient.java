@@ -35,7 +35,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class VoidLightClient {
     private static final ResourceLocation CRACKS = new ResourceLocation(TFClient.MOD_ID, "textures/gui/corrosion_grietas.png");
     private static final ResourceLocation GOLD = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta_oro.png");
-    private static final SoundEvent S_ENTER = sound("luz.velo_entrar"), S_LEAVE = sound("luz.velo_salir"), S_EMPTY = sound("luz.sin_luz"),
+    private static final SoundEvent S_ENTER = sound("luz.velo_entrar"), S_WELL = sound("luz.pozo_entrar"), S_LEAVE = sound("luz.velo_salir"),
+            S_EMPTY = sound("luz.sin_luz"),
             S_PORTAL = sound("viaje.llegada");
 
     /** Lo que dijo el servidor (luz 0..100: 100 sin corrosión) y lo que se enseña (se mueve suave hacia ella). */
@@ -58,9 +59,9 @@ public final class VoidLightClient {
         switch (m.event()) {
             case VoidLight.EV_WELL, VoidLight.EV_ENTER -> {
                 goldAt = now;
-                play(S_ENTER, m.event() == VoidLight.EV_WELL ? 0.6F : 0.8F);
+                play(m.event() == VoidLight.EV_WELL ? S_WELL : S_ENTER, 0.8F);
             }
-            case VoidLight.EV_LEAVE -> play(S_LEAVE, 0.5F);
+            case VoidLight.EV_LEAVE -> play(S_LEAVE, 0.6F);
             case VoidLight.EV_EMPTY -> play(S_EMPTY, 0.9F);
             case VoidLight.EV_HURT -> hurtAt = now;
             case VoidLight.EV_PORTAL -> {
@@ -126,7 +127,7 @@ public final class VoidLightClient {
         if (cracks > 0.01F) {
             int w = Math.round(width * scale), h = Math.round(height * scale);
             RenderSystem.setShaderColor(1F, 1F, 1F, Mth.clamp(cracks, 0F, 0.95F));
-            g.blit(CRACKS, (width - w) / 2, (height - h) / 2, w, h, 0F, 0F, 1024, 576, 1024, 576);
+            g.blit(CRACKS, (width - w) / 2, (height - h) / 2, w, h, 0F, 0F, 2048, 1152, 2048, 1152);
         }
         // el resplandor dorado: mientras limpia y al entrar en la luz
         float gold = 0F;

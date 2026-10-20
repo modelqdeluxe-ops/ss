@@ -784,7 +784,8 @@ public final class BossTest {
                 player.teleportTo(vl, k.getX() + 0.5, k.getY() - 1, k.getZ() + 4.5, 180F, -12F);
             }
             case 870 -> {
-                r.event("dentro del Velo del Alba: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                r.event("dentro del Velo del Alba: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; música del santuario: " + (RiftSky.sanctuaryMusic() ? "suena" : "NO"));
                 shot(r, "vacio_caballero");
             }
             // la grieta del Void en el centro de la plaza
@@ -1017,11 +1018,13 @@ public final class BossTest {
             case 410 -> {
                 r.event("armadura del Vacío con 4 jefes: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armor(player, 4));
                 r.event("armadura del Vacío con 5 jefes: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armor(player, 5));
+                r.event("pedirla otra vez: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armorAgain(player));
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.wearArmor(player, true);
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.setLight(player, 50F);
             }
             case 470 -> {
-                r.event("con la armadura del Vacío puesta, 3 s fuera de la luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player));
+                r.event("con la armadura del Vacío puesta, 3 s fuera de la luz: " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.light(player)
+                        + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.armorValue(player));
                 net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.wearArmor(player, false);
                 // el Altar del Vacío del santuario, con su soporte
                 net.minecraft.core.BlockPos a = net.tierrasfantasticas.tfclient.vacio.VoidIsland.altarPos();
@@ -1113,10 +1116,9 @@ public final class BossTest {
     // ------------------------------------------------------------------------------------------- la fauna del Páramo
 
     /** (1.3.96) Las criaturas del Páramo (criaturas_vacio): todas menos el End Strider. */
-    private static final String[] FAUNA_MOBS = {"enderling", "enderbruiser", "ender_crawler", "ender_watchman", "end_wraith", "endermauler",
-            "empowered_enderling", "empowered_enderbruiser", "empowered_ender_crawler", "empowered_ender_watchman", "empowered_end_wraith",
-            "empowered_endermauler"};
-    private static final int FAUNA_EACH = 170, FAUNA_WILD = 900;
+    /** (1.3.97) Solo dos (orden del dueño): el Desgarrador (Endermauler) y el Vigía (Ender Watchman, con sus espectros). */
+    private static final String[] FAUNA_MOBS = {"endermauler", "ender_watchman"};
+    private static final int FAUNA_EACH = 300, FAUNA_WILD = 900;
     private static BossEntity faunaNow;
     private static int faunaHits;
     private static Vec3 faunaDied;
@@ -1165,14 +1167,15 @@ public final class BossTest {
                 }
                 case 80 -> shot(r, "fauna_" + mob);
                 case 140 -> shot(r, "fauna_" + mob + "_ataca");
-                case 160 -> {
+                case 220 -> shot(r, "fauna_" + mob + "_ataca2");
+                case 280 -> {
                     BossEntity e = faunaNow;
                     r.event(e == null ? mob + ": no está" : String.format("%s («%s»): modelo %s, vida %.0f/%.0f, a %.1f bloques, objetivo %s, "
-                                    + "me ha golpeado %s, barra propia %s; animaciones (ticks) %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
+                                    + "me ha golpeado %s, barra %s; animaciones (ticks) %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
                             e.getHealth(), e.getMaxHealth(), e.distanceTo(player), e.getTarget() == player ? "el jugador" : String.valueOf(e.getTarget()),
-                            faunaHits > 0 ? "sí" : "no", e.def() != null && e.def().barColor != null ? "sí" : "no", faunaAnims));
+                            faunaHits > 0 ? "sí" : "no", e.hasBar() ? "SÍ (MAL)" : "no (bien)", faunaAnims));
                     if (e != null && i == 0) {
-                        // (la primera se mata: sus Drops del pack, la perla de ender)
+                        // (la primera se mata: no suelta nada, orden del dueño)
                         faunaDied = e.position();
                         e.hurt(player.damageSources().playerAttack(player), 10000F);
                     } else if (e != null) {
@@ -1180,12 +1183,12 @@ public final class BossTest {
                     }
                     faunaNow = null;
                 }
-                case 166 -> {
+                case 286 -> {
                     if (faunaDied != null) {
                         var items = vl.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(net.minecraft.core.BlockPos.containing(faunaDied)).inflate(6));
                         StringBuilder sb = new StringBuilder();
                         for (var it : items) sb.append(sb.length() == 0 ? "" : ", ").append(it.getItem().getCount()).append(' ').append(it.getItem().getItem());
-                        r.event(mob + " al morir suelta: " + (sb.length() == 0 ? "nada" : sb));
+                        r.event(mob + " al morir suelta: " + (sb.length() == 0 ? "nada (bien)" : sb + " (MAL)"));
                         for (var it : items) it.discard();
                         faunaDied = null;
                     }

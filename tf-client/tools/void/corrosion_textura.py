@@ -2,8 +2,10 @@
 
     python3 -I tools/void/corrosion_textura.py [--ver carpeta]
 
-Escribe src/main/resources/assets/tfclient/textures/gui/corrosion_grietas.png (1024 × 576): grietas violetas que brillan
-y salen de los bordes hacia dentro, ramificadas, con un halo. El cliente la dibuja más grande que la pantalla con poca
+Escribe src/main/resources/assets/tfclient/textures/gui/corrosion_grietas.png (2048 × 1152) y su .mcmeta (blur: el
+juego la suaviza al estirarla; sin él, los píxeles se veían en escalera): venas violetas que brillan y salen de los
+bordes hacia dentro, en curvas suaves (1.3.97, el dueño: «las rayas moradas parecen dentadas»), con alguna rama y un
+halo. El cliente la dibuja más grande que la pantalla con poca
 corrosión (solo asoman las puntas por los bordes) y la va encogiendo hasta su tamaño al máximo (las grietas llegan a
 ~un cuarto de la pantalla; el centro siempre queda limpio). Semilla fija: sale siempre igual.
 --ver: además, cómo queda sobre una escena oscura y una clara a 0,3 / 0,6 / 1,0 de corrosión.
@@ -18,20 +20,20 @@ from PIL import Image, ImageDraw, ImageFilter
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient', 'textures', 'gui',
                    'corrosion_grietas.png')
-W, H = 1024, 576
-SS = 3                      # supermuestreo (bordes suaves)
-CORE = (236, 196, 255)      # el filo de la grieta, casi blanco violeta
+W, H = 2048, 1152
+SS = 2                      # supermuestreo (bordes suaves)
+CORE = (214, 168, 255)      # el filo de la vena, violeta claro
 GLOW = (150, 60, 235)       # su halo
 REACH = 0.44                # hasta dónde entran, en fracción de la mitad corta de la pantalla (las largas, un poco más)
 
 
 def cracks(rng):
-    """Segmentos (x0, y0, x1, y1, grosor) de las grietas, en píxeles de la textura."""
+    """Segmentos (x0, y0, x1, y1, grosor) de las venas, en píxeles de la textura."""
     segs = []
     seeds = []
-    # sitios de salida repartidos por el borde (más en las esquinas, donde se nota menos)
-    for i in range(30):
-        t = (i + rng.uniform(-0.35, 0.35)) / 30
+    # sitios de salida repartidos por el borde
+    for i in range(36):
+        t = (i + rng.uniform(-0.35, 0.35)) / 36
         p = t * 2 * (W + H)
         if p < W:
             seeds.append((p, 0))
@@ -43,26 +45,29 @@ def cracks(rng):
             seeds.append((0, 2 * (W + H) - p))
     cx, cy = W / 2, H / 2
     for (x, y) in seeds:
-        ang = math.atan2(cy - y, cx - x) + rng.uniform(-0.5, 0.5)
+        ang = math.atan2(cy - y, cx - x) + rng.uniform(-0.45, 0.45)
         long_one = rng.random() < 0.35
         reach = min(W, H) / 2 * REACH * (1.5 if long_one else rng.uniform(0.55, 1.0))
-        grow(rng, segs, x, y, ang, reach, 4.2 if long_one else 3.2, 0)
+        grow(rng, segs, x, y, ang, reach, (11.0 if long_one else 8.5) * W / 1024 / 2, 0)
     return segs
 
 
 def grow(rng, segs, x, y, ang, reach, width, depth):
-    step = 9.0
-    n = int(reach / step)
+    """Una vena: paso corto y la curvatura cambia despacio (una curva suave, sin picos), y se afina hacia la punta."""
+    step = 3.0 * W / 1024
+    n = max(2, int(reach / step))
+    curv = rng.uniform(-0.02, 0.02)
     for k in range(n):
-        ang += rng.uniform(-0.38, 0.38)
-        # que no se vaya hacia fuera ni demasiado de lado
+        curv = curv * 0.94 + rng.gauss(0, 0.012)
+        curv = max(-0.06, min(0.06, curv))
+        ang += curv
         nx, ny = x + math.cos(ang) * step, y + math.sin(ang) * step
-        w = width * (1 - 0.75 * k / max(1, n))
-        segs.append((x, y, nx, ny, max(0.7, w)))
+        w = width * (1 - 0.8 * k / n)
+        segs.append((x, y, nx, ny, max(0.9, w)))
         x, y = nx, ny
-        if depth < 2 and k > 1 and rng.random() < 0.22:
-            grow(rng, segs, x, y, ang + rng.choice((-1, 1)) * rng.uniform(0.5, 1.0), reach * (n - k) / n * 0.7,
-                 w * 0.75, depth + 1)
+        if depth < 2 and k > n * 0.12 and rng.random() < 0.022:
+            grow(rng, segs, x, y, ang + rng.choice((-1, 1)) * rng.uniform(0.45, 0.9), reach * (n - k) / n * 0.65,
+                 w * 0.7, depth + 1)
 
 
 def render(segs):
@@ -73,9 +78,9 @@ def render(segs):
         r = w * SS / 2
         d.ellipse([x1 * SS - r, y1 * SS - r, x1 * SS + r, y1 * SS + r], fill=255)
     core = np.asarray(big.resize((W, H), Image.LANCZOS)).astype(np.float32) / 255
-    halo = np.asarray(Image.fromarray((core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(7))).astype(np.float32) / 255
+    halo = np.asarray(Image.fromarray((core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(7 * W / 1024))).astype(np.float32) / 255
     halo = np.clip(halo * 2.6, 0, 1)
-    wide = np.asarray(Image.fromarray((core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(22))).astype(np.float32) / 255
+    wide = np.asarray(Image.fromarray((core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(22 * W / 1024))).astype(np.float32) / 255
     wide = np.clip(wide * 3.0, 0, 1)
     # un velo oscuro violeta muy suave en los bordes (para que el brillo se lea también en lo claro)
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
@@ -132,6 +137,8 @@ def main():
     rng = __import__('random').Random(1396)
     tex = render(cracks(rng))
     tex.save(OUT, optimize=True)
+    with open(OUT + '.mcmeta', 'w', encoding='utf-8') as fo:
+        fo.write('{"texture": {"blur": true, "clamp": true}}\n')
     a = np.asarray(tex)[..., 3].astype(np.float32) / 255
     cy, cx = slice(H // 4, 3 * H // 4), slice(W // 4, 3 * W // 4)
     print('corrosion_grietas.png: %dx%d, %.1f kB; opacidad media %.3f (centro %.3f)' % (

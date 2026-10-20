@@ -66,6 +66,18 @@ public final class VoidTestHooks {
         return n < 0 ? "aún no (" + VoidArmor.kills(p) + " de " + VoidArmor.NEED + ")" : "da " + n + " objetos";
     }
 
+    /** (1.3.97) Pedirla otra vez: no da nada (una sola vez por jugador). */
+    public static String armorAgain(net.minecraft.server.level.ServerPlayer p) {
+        int n = VoidArmor.claim(p);
+        return n == -2 ? "no da nada (bien: una sola vez)" : "da " + n + " (MAL)";
+    }
+
+    /** La armadura y la dureza que tiene puestas (la de netherita, 20 y 12; los sets de las crates, +1 por pieza). */
+    public static String armorValue(net.minecraft.server.level.ServerPlayer p) {
+        return String.format("armadura %.1f, dureza %.1f", p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR),
+                p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS));
+    }
+
     /** Le pone (o le quita) el yelmo, el peto, las grebas y las botas del Vacío. */
     public static void wearArmor(net.minecraft.server.level.ServerPlayer p, boolean on) {
         String[] ids = {"void_helmet", "void_armor_chestplate", "void_armor_leggings", "void_armor_boots"};

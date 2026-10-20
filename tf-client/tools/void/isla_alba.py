@@ -48,7 +48,7 @@ DEPTH = 46          # lo que baja el cono por debajo
 CLEAR_R = 48        # se rehace todo en este radio
 BUBBLE = (CX, 72, CZ, 47)        # el Velo del Alba: centro y radio
 HEART = (CX, 93, CZ)             # el Corazón del Alba (lo dibuja el cliente)
-ALTAR = (CX, TOP + 3, CZ - 22)   # donde está de pie el soporte con la armadura del Vacío
+ALTAR = (CX, TOP + 2, CZ - 22)   # donde está de pie el soporte con la armadura del Vacío (en el suelo del ábside)
 BRIDGE_Z0, BRIDGE_Z1 = bioma.NORTH_DOOR[1] + 2, CZ + R - 2   # el Puente de Luz: del Páramo a la Puerta del Alba
 # El Portal del Alba, junto a la plaza de la grieta: el centro de abajo de su hueco (x, y, z) y hacia dónde mira (0 = sur)
 PORTAL = (-32, 72, 0, 1)   # (x, y, z, hacia dónde: 1 = el arco a lo largo de Z, se cruza de este a oeste)
@@ -346,8 +346,8 @@ def altar(w):
     # escalones (de sur a norte)
     for dx in range(-2, 3):
         w.put(ax + dx, TOP + 1, az + 6, f'smooth_quartz_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]')
-    # el pedestal del soporte
-    w.put(ax, TOP + 2, az, 'chiseled_quartz_block')
+    # (1.3.97) sin pedestal: el soporte de pie en el suelo, sobre una losa de oro (su aura la dibuja el cliente)
+    w.put(ax, TOP + 1, az, 'gold_block')
     for dx in (-2, 2):
         w.put(ax + dx, TOP + 2, az + 1, 'white_candle[candles=3,lit=true,waterlogged=false]')
     # el arco de detrás

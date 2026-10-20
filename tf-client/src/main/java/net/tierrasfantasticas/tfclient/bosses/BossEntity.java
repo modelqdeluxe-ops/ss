@@ -248,8 +248,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         yHeadRot = bodyYaw;
         this.entityData.set(BODY_YAW, bodyYaw);
         if (model != null && model.anims.containsKey("death")) deathLength = Math.max(40, (int) (model.anims.get("death").length * 20) + 15);
-        // (1.3.96) la fauna, solo si su pack le pone barra (BossBar: el Endermauler), como en MythicMobs
-        if (owner == null && (!isFauna() || def.barColor != null)) {
+        // (1.3.97, orden del dueño) la fauna nunca lleva barra (aunque su pack la ponga: el Endermauler)
+        if (owner == null && !isFauna()) {
             String color = def.barColor != null ? def.barColor : "PURPLE";
             bar = new ServerBossEvent(barTitle(), color(color), BossEvent.BossBarOverlay.NOTCHED_10);
             bar.setDarkenScreen(false);
@@ -320,6 +320,11 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     /** (1.3.96) ¿Es una criatura de un bioma (fauna), no un jefe ni su esbirro? */
+    /** ¿Lleva barra de jefe? (la fauna no, 1.3.97) */
+    public boolean hasBar() {
+        return bar != null;
+    }
+
     public boolean isFauna() {
         return cls != null && cls.bossInfo != null && cls.bossInfo.fauna;
     }
@@ -1002,56 +1007,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     protected void dropAllDeathLoot(DamageSource src) {
-        // Como en el pack (PreventOtherDrops): lo que suelta lo dan sus skills (el cofre del Esqueleto) y la grieta. Los
-        // jefes no sueltan nada (orden del dueño); la fauna (1.3.96), sus Drops de MythicMobs.
-        if (isFauna() && def != null && level().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBLOOT)) faunaDrops();
-    }
-
-    /**
-     * Los Drops del pack de una criatura del Páramo, como MythicMobs: «objeto cantidad probabilidad» (la cantidad, un
-     * número o «a-b» / «atob»). Los de Minecraft y los de Oraxen del pack («oraxen void_fabric 1 0.4»: build_bosses.py los
-     * convierte en objetos del mod, {@link TFBosses#DROPS}).
-     */
-    private void faunaDrops() {
-        for (String line : def.drops) {
-            String[] p = line.trim().split("\\s+");
-            if (p.length == 0 || p[0].isEmpty()) continue;
-            net.minecraft.world.item.Item item;
-            if (p[0].equalsIgnoreCase("oraxen")) {
-                if (p.length < 2 || cls == null) continue;
-                var ro = TFBosses.DROPS.get(cls.id + ":" + p[1].toLowerCase(java.util.Locale.ROOT));
-                if (ro == null) continue;
-                item = ro.get();
-                p = java.util.Arrays.copyOfRange(p, 1, p.length);
-            } else {
-                if (p[0].contains(":") && !p[0].startsWith("minecraft:")) continue;
-                net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(p[0].toLowerCase(java.util.Locale.ROOT));
-                if (id == null) continue;
-                item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(id);
-            }
-            if (p.length >= 2 && !p[1].matches("[0-9.]+((-|to)[0-9.]+)?")) continue;
-            if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
-            double chance = 1;
-            if (p.length >= 3) {
-                try {
-                    chance = Double.parseDouble(p[2]);
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-            }
-            if (random.nextDouble() >= chance) continue;
-            int n = 1;
-            if (p.length >= 2) {
-                String[] r = p[1].split("-|to");
-                try {
-                    int lo = (int) Double.parseDouble(r[0]), hi = r.length > 1 ? (int) Double.parseDouble(r[1]) : lo;
-                    n = lo + (hi > lo ? random.nextInt(hi - lo + 1) : 0);
-                } catch (NumberFormatException e) {
-                    n = 1;
-                }
-            }
-            if (n > 0) spawnAtLocation(new net.minecraft.world.item.ItemStack(item, n));
-        }
+        // Como en el pack (PreventOtherDrops): lo que suelta lo dan sus skills (el cofre del Esqueleto) y la grieta. Ni los
+        // jefes ni la fauna sueltan nada (órdenes del dueño, 1.3.83 y 1.3.97)
     }
 
     @Override

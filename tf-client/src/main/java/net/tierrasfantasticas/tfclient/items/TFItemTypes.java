@@ -285,12 +285,22 @@ public final class TFItemTypes {
         @Nullable
         private final ResourceLocation worn;
         private final boolean glides;
+        /** (1.3.97) La armadura que da puesto (el yelmo del set Void, que es su único casco), o null. */
+        @Nullable
+        private final Multimap<Attribute, AttributeModifier> modifiers;
 
-        public Cosmetic(EquipmentSlot slot, @Nullable ResourceLocation worn, boolean glides, Properties p) {
+        public Cosmetic(EquipmentSlot slot, @Nullable ResourceLocation worn, boolean glides, Properties p,
+                @Nullable Multimap<Attribute, AttributeModifier> modifiers) {
             super(p);
             this.slot = slot;
             this.worn = worn;
             this.glides = glides;
+            this.modifiers = modifiers;
+        }
+
+        @Override
+        public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+            return modifiers != null && slot == this.slot ? modifiers : super.getDefaultAttributeModifiers(slot);
         }
 
         /** Son alas: planean como unas élitros, sin gastarse (en el pecho aquí; en la espalda, {@link TFWings}). */
@@ -419,6 +429,22 @@ public final class TFItemTypes {
             ArmorItem.Type.CHESTPLATE, UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"),
             ArmorItem.Type.HELMET, UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150"));
 
+    /**
+     * Los atributos de una pieza de armadura de ese nivel (se calculan aquí, y no con los enteros de ArmorMaterial, para
+     * admitir medios puntos). También los da el yelmo 3D de un set sin otro casco (el Void, {@link Cosmetic}).
+     */
+    public static Multimap<Attribute, AttributeModifier> armorModifiers(TFTier tier, ArmorItem.Type type) {
+        UUID uuid = ARMOR_UUID.get(type);
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
+        b.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", tier.defense(type), AttributeModifier.Operation.ADDITION));
+        b.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", tier.toughness(), AttributeModifier.Operation.ADDITION));
+        float kb = tier.knockbackResistance();
+        if (kb > 0) {
+            b.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "Armor knockback resistance", kb, AttributeModifier.Operation.ADDITION));
+        }
+        return b.build();
+    }
+
     public static class Armor extends ArmorItem implements TFItem {
         private final TFSets.SetDef set;
         private final Multimap<Attribute, AttributeModifier> modifiers;
@@ -426,16 +452,7 @@ public final class TFItemTypes {
         public Armor(TFSets.SetDef set, ArmorItem.Type type, Properties p) {
             super(new Material(set.id(), set.tier()), type, p);
             this.set = set;
-            // Los atributos se calculan aquí (y no con los enteros de ArmorMaterial) para admitir medios puntos.
-            UUID uuid = ARMOR_UUID.get(type);
-            ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-            b.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", set.tier().defense(type), AttributeModifier.Operation.ADDITION));
-            b.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", set.tier().toughness(), AttributeModifier.Operation.ADDITION));
-            float kb = set.tier().knockbackResistance();
-            if (kb > 0) {
-                b.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "Armor knockback resistance", kb, AttributeModifier.Operation.ADDITION));
-            }
-            this.modifiers = b.build();
+            this.modifiers = armorModifiers(set.tier(), type);
         }
 
         @Override

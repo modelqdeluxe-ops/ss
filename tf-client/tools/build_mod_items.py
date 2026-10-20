@@ -539,6 +539,19 @@ def glides(set_id, slug):
     return kind == 'wings' if kind else bool(re.search(r'(^|_)wings?$', slug))
 
 
+def mark_armor_head(entry):
+    """(1.3.97) Un set de recompensa sin casco de armadura (el Void: su yelmo es el modelo 3D): su yelmo da la armadura de
+    un casco de su nivel (TFItemTypes.Cosmetic), como el resto de piezas."""
+    reward = entry['id'] in {r[0] for r in getattr(C, 'REWARD_SETS', [])}
+    no_helmet = not any(i['type'] == 'armor' and i.get('slot') == 'helmet' for i in entry['items'])
+    heads = [i for i in entry['items'] if i['type'] == 'head']
+    for n, item in enumerate(heads):
+        if reward and no_helmet and n == 0:
+            item['armor'] = True
+        else:
+            item.pop('armor', None)
+
+
 def mark_flags(entry):
     """Marcas que lee el mod en un set que no se reconstruye: set de cosméticos (no se vincula) y alas que planean."""
     set_id = entry['id']
@@ -546,6 +559,7 @@ def mark_flags(entry):
         entry['cosmetic'] = True
     else:
         entry.pop('cosmetic', None)
+    mark_armor_head(entry)
     for item in entry['items']:
         if item['type'] != 'back':
             continue
@@ -1316,6 +1330,7 @@ def main(packs, only=None):
         entry = {'id': set_id, 'name': set_name, 'color': color, 'tier': spec['tier'], 'items': items}
         if set_id in C.COSMETICS:
             entry['cosmetic'] = True
+        mark_armor_head(entry)
         if any(i['type'] == 'armor' for i in items):
             layers, frames, frametime = w.armor_layers()
             if layers != [1, 2]:

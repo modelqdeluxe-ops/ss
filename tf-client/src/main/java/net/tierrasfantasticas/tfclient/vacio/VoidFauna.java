@@ -32,12 +32,12 @@ import net.tierrasfantasticas.tfclient.skills.SkillDefs;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class VoidFauna {
     public static final String PACK = "criaturas_vacio";
-    /** Cada cuánto se intenta (por jugador). */
-    static final int EVERY = 40;
+    /** Cada cuánto se intenta (por jugador; 1.3.97, el dueño: «que no se generen muchísimas»: cada 10 s). */
+    static final int EVERY = 200;
     /** Distancias del sitio al jugador. */
-    static final double MIN = 22, MAX = 52;
-    /** Como mucho, criaturas a menos de 64 bloques de un jugador. */
-    static final int CAP = 12;
+    static final double MIN = 28, MAX = 64;
+    /** Como mucho, criaturas a menos de 64 bloques de un jugador (los espectros del Vigía cuentan). */
+    static final int CAP = 2;
     /** Más lejos que esto de todos los jugadores, se van. */
     static final double GONE = 110;
     /** Ni junto a un Pozo de Luz (a menos de esto). */

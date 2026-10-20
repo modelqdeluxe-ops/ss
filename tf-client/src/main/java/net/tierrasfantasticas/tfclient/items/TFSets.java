@@ -23,8 +23,9 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class TFSets {
     /** Un objeto de un set. type: sword, heavy, axe, pickaxe, shovel, hoe, bow, crossbow, fishing_rod, shield,
      *  trident, head (cosmético en la cabeza), back (cosmético en la espalda), held (cosmético en la mano), balloon
-     *  (globo en la mano) o armor. glide: unas alas, que planean (TFWings). */
-    public record ItemDef(String id, String type, String slot, String worn, boolean glide) {}
+     *  (globo en la mano) o armor. glide: unas alas, que planean (TFWings). armor (1.3.97): lo de la cabeza da la armadura
+     *  de un casco de su nivel (el set Void: su yelmo es el modelo 3D y no tiene otro casco). */
+    public record ItemDef(String id, String type, String slot, String worn, boolean glide, boolean armor) {}
 
     /** tier: nivel de atributos del set (ver TFTier). cosmetic: set de cosméticos (sus objetos no se vinculan, TFBinding). */
     public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier,
@@ -67,7 +68,8 @@ public final class TFSets {
                                 i.get("type").getAsString(),
                                 i.has("slot") ? i.get("slot").getAsString() : null,
                                 i.has("worn") ? i.get("worn").getAsString() : null,
-                                i.has("glide") && i.get("glide").getAsBoolean()));
+                                i.has("glide") && i.get("glide").getAsBoolean(),
+                                i.has("armor") && i.get("armor").getAsBoolean()));
                     }
                     int color = Integer.parseInt(s.get("color").getAsString().substring(1), 16);
                     SETS.put(s.get("id").getAsString(), new SetDef(

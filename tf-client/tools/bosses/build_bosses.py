@@ -29,7 +29,6 @@ import shutil
 import sys
 
 import yaml
-from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOLS = os.path.dirname(HERE)
@@ -51,8 +50,6 @@ OUT_ITEM_MODELS = os.path.join(RES, 'models', 'bosses')
 OUT_SOUNDS = os.path.join(RES, 'sounds', 'bosses')
 # Modelos de los objetos que sueltan: models/item/jefe_<jefe>_<objeto>.json (el id de TFBosses.itemId)
 OUT_ITEM_JSON = os.path.join(RES, 'models', 'item')
-# (1.3.96) Texturas de los objetos de Oraxen que suelta la fauna: textures/item/jefes/<jefe>/<objeto>.png
-OUT_ITEM_TEX = os.path.join(RES, 'textures', 'item', 'jefes')
 SOUNDS_JSON = BS.SOUNDS_JSON
 
 # Carpeta del pack → jefe. «mob»: el mob de MythicMobs que es el jefe.
@@ -79,16 +76,17 @@ JEFES = {
     # Pohaku (LITTLEROOM_pohaku_1.0) espera al dueño: su pelea necesita un escenario (schematic) con balistas y
     # mercenarios puestos a mano; sin ellos no se le aturde y no recibe daño
     'Littleroom_WitherStorm_1.0': {'id': 'tormenta_wither', 'mob': 'LRD_WITHERSTORM', 'vida': 1800, 'dano': 9},
-    # (1.3.96) Las criaturas del bioma del Void: EndMobsVol1 (RopeFire / tugkandeman), todas menos el End Strider (el
-    # que se monta, grande como un caballo: el dueño no lo quiere). No son jefes sino «fauna»: no salen de una grieta
-    # ni en /tf boss ni llevan la barra del jefe principal (el Endermauler lleva la suya, la del pack: BossBar); las
-    # saca vacio/VoidFauna con las reglas de su randomspawn («spawns»). «raices»: todos sus mobs (no hay uno que llame a
-    # los demás); «sin_modelos»: los .bbmodel del pack que no se convierten (los del Strider).
+    # (1.3.96) Las criaturas del bioma del Void: EndMobsVol1 (RopeFire / tugkandeman). No son jefes sino «fauna»: no
+    # salen de una grieta ni en /tf boss; las saca vacio/VoidFauna con las reglas de su randomspawn («spawns»).
+    # (1.3.97, el dueño: «solo el mob grande que grita y te manda a volar y uno que parece mago que lanza proyectiles,
+    # solo esos 2, que no se generen muchísimos, sin bossbar y sin dropear») «raices»: el Endermauler y el Ender
+    # Watchman (el del farol, que lanza sus espectros, los End Wraith: salen solo con él); «sin_modelos»: los .bbmodel
+    # del pack que no se convierten (los demás).
     'EndMobsVol1': {'id': 'criaturas_vacio', 'mob': 'endermauler', 'vida': 160, 'dano': 0, 'fauna': True,
-                    'raices': ['enderling', 'enderbruiser', 'ender_crawler', 'ender_watchman', 'end_wraith', 'endermauler',
-                               'empowered_enderling', 'empowered_enderbruiser', 'empowered_ender_crawler',
-                               'empowered_ender_watchman', 'empowered_end_wraith', 'empowered_endermauler'],
-                    'sin_modelos': ['end_strider', 'empowered_end_strider']},
+                    'raices': ['endermauler', 'ender_watchman'],
+                    'sin_modelos': ['end_strider', 'empowered_end_strider', 'enderling', 'enderbruiser', 'ender_crawler',
+                                    'empowered_enderling', 'empowered_enderbruiser', 'empowered_ender_crawler',
+                                    'empowered_ender_watchman', 'empowered_end_wraith', 'empowered_endermauler']},
 }
 ES = json.load(open(os.path.join(HERE, 'es.json'), encoding='utf-8'))
 
@@ -307,70 +305,6 @@ def global_index(root):
                 mb.setdefault(k.lower(), (name, k, v))
         _GLOBAL[root] = (sk, mb)
     return _GLOBAL[root]
-
-
-ORAXEN_RARITY = {'white': 'COMMON', 'gray': 'COMMON', 'yellow': 'UNCOMMON', 'green': 'UNCOMMON', 'aqua': 'RARE',
-                 'blue': 'RARE', 'pink': 'RARE', 'light_purple': 'RARE', 'purple': 'EPIC', 'dark_purple': 'EPIC', 'gold': 'EPIC'}
-
-
-def oraxen_items(pack_dir, bid, prog, es):
-    """(1.3.96) Los objetos de Oraxen del pack que sueltan sus mobs («Drops: - oraxen void_fabric 1 0.4»): el pack los trae
-    en plugins/Oraxen (items/*.yml con su nombre y textura, pack/textures/...). Salen como objetos del mod (materiales:
-    se apilan, sin skills), con su textura (y su animación .mcmeta) y su nombre en español (es.json, «drops»)."""
-    used = set()
-    for mob in prog['mobs'].values():
-        for line in mob.get('drops') or []:
-            p = str(line).split()
-            if len(p) >= 2 and p[0].lower() == 'oraxen':
-                used.add(p[1].lower())
-    out = {}
-    if not used:
-        return out
-    defs, tex_root = {}, None
-    for d, _, fs in sorted(os.walk(pack_dir)):
-        low = d.replace('\\', '/').lower()
-        if re.search(r'/oraxen/items(/|$)', low):
-            for f in sorted(fs):
-                if f.lower().endswith(('.yml', '.yaml')) and not f.startswith('._'):
-                    for k, v in (C.load(os.path.join(d, f)) or {}).items():
-                        if isinstance(v, dict):
-                            defs[str(k).lower()] = v
-        if low.endswith('/oraxen/pack/textures'):
-            tex_root = d
-    for iid in sorted(used):
-        v = defs.get(iid)
-        tex = ((v or {}).get('Pack') or {}).get('textures') or []
-        if not v or not tex or not tex_root:
-            continue
-        src = os.path.normpath(os.path.join(tex_root, str(tex[0]) + '.png'))
-        if not src.startswith(os.path.normpath(tex_root) + os.sep) or not os.path.isfile(src):
-            continue
-        raw = str(v.get('displayname') or iid)
-        color = re.match(r'\s*<([a-z_]+)>', raw)
-        name = re.sub(r'<[^>]*>', '', raw).strip() or iid
-        dest = os.path.join(OUT_ITEM_TEX, bid, iid + '.png')
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        im = Image.open(src)
-        im.load()
-        im.convert('RGBA').save(dest)
-        meta = src + '.mcmeta'
-        if os.path.isfile(meta):
-            try:
-                anim = json.load(open(meta, encoding='utf-8')).get('animation')
-            except ValueError:
-                anim = None
-            if isinstance(anim, dict):
-                keep = {k: anim[k] for k in ('frametime', 'interpolate', 'frames') if k in anim}
-                with open(dest + '.mcmeta', 'w', encoding='utf-8') as fo:
-                    json.dump({'animation': keep}, fo)
-        model = 'tfclient:item/' + item_id(bid, iid)
-        os.makedirs(OUT_ITEM_JSON, exist_ok=True)
-        with open(os.path.join(OUT_ITEM_JSON, item_id(bid, iid) + '.json'), 'w', encoding='utf-8') as fo:
-            json.dump({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'tfclient:item/jefes/{bid}/{iid}'}}, fo, indent=1)
-        out[iid] = {'material': str(v.get('material') or 'paper').lower(), 'model': model, 'name': name, 'type': 'MATERIAL',
-                    'rarity': ORAXEN_RARITY.get(color.group(1) if color else '', 'COMMON'), 'mechs': [],
-                    'name_es': (es.get('drops') or {}).get(iid) or name}
-    return out
 
 
 def random_spawns(pack_dir, mobs):
@@ -796,9 +730,6 @@ def build(pack_dir, name, conf, sound_events):
             with open(os.path.join(OUT_ITEM_JSON, item_id(bid, iid) + '.json'), 'w', encoding='utf-8') as fo:
                 json.dump(item, fo, indent=1)
 
-    # (1.3.96) Los objetos de Oraxen que sueltan sus mobs (la fauna)
-    drops.update(oraxen_items(pack_dir, bid, prog, ES.get(bid) or {}))
-
     glyphs = BS.write_glyphs(pack, prog, 'bosses')
 
     # Sonidos al mod
@@ -844,8 +775,8 @@ def build(pack_dir, name, conf, sound_events):
         boss['spawns'] = random_spawns(pack_dir, conf.get('raices', ()))
         names = (es.get('nombres') or {})
         boss['fauna_mobs'] = {m: names.get(m) or BS.strip_mc(prog['mobs'][m].get('display') or m)
-                              for m in conf.get('raices', ()) if m in prog['mobs']}
-        if len(boss['fauna_mobs']) != len(conf.get('raices', ())):
+                              for m in prog['mobs'] if prog['mobs'][m].get('kind') == 'entity'}
+        if not set(conf.get('raices', ())) <= set(boss['fauna_mobs']):
             problems.append('fauna: faltan mobs ' + str(sorted(set(conf['raices']) - set(boss['fauna_mobs']))))
     # (1.3.88, orden del dueño) «suelo»: sus golpes no suben al jugador al cielo (el Contemplador, JEFES.md §3.13)
     if es.get('suelo'):
@@ -962,7 +893,7 @@ def clean(bid, sj):
         for f in os.listdir(OUT_MODELS):
             if f.startswith(bid + '.'):
                 os.remove(os.path.join(OUT_MODELS, f))
-    for d in (OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS, OUT_ITEM_TEX):
+    for d in (OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS):
         shutil.rmtree(os.path.join(d, bid), ignore_errors=True)
     font = os.path.join(BS.OUT_FONTS, f'bosses_{bid}.json')
     if os.path.exists(font):
@@ -977,7 +908,7 @@ def main():
     full = not only
     sj = json.load(open(SOUNDS_JSON, encoding='utf-8')) if os.path.exists(SOUNDS_JSON) else {}
     if full:
-        for d in (OUT, OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS, OUT_ITEM_TEX):
+        for d in (OUT, OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS):
             shutil.rmtree(d, ignore_errors=True)
         for f in os.listdir(BS.OUT_FONTS) if os.path.isdir(BS.OUT_FONTS) else []:
             if f.startswith('bosses_'):

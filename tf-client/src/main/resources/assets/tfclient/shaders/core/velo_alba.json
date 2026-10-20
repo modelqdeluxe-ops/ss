@@ -17,6 +17,7 @@
         { "name": "Ripple", "type": "float", "count": 4, "values": [ 0.0, 1.0, 0.0, -1.0 ] },
         { "name": "Inside", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Ground", "type": "float", "count": 1, "values": [ -0.16 ] },
-        { "name": "Alpha", "type": "float", "count": 1, "values": [ 1.0 ] }
+        { "name": "Alpha", "type": "float", "count": 1, "values": [ 1.0 ] },
+        { "name": "Violet", "type": "float", "count": 1, "values": [ 0.0 ] }
     ]
 }

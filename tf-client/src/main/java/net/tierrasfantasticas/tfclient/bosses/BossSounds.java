@@ -30,6 +30,8 @@ public final class BossSounds {
     public static final SoundEvent DEATH_DISSOLVE = of("jefes.muerte_disolucion");
     /** La música siniestra cerca de una grieta, fuera de la pelea (la pone RiftSky, en bucle). */
     public static final SoundEvent RIFT_MUSIC = of("grieta.musica");
+    /** (1.3.97) La música del santuario del Void, dentro del Velo del Alba (tools/void/musica_santuario.py). */
+    public static final SoundEvent SANCTUARY_MUSIC = of("santuario.musica");
     /** El estallido final de la muerte épica. */
     public static final SoundEvent DEATH_BURST = of("jefes.muerte_estallido");
 }

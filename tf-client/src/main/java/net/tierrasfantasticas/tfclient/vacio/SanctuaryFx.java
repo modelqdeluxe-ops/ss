@@ -49,9 +49,9 @@ public final class SanctuaryFx {
     /** La malla de la esfera (radio 1; el shader la pone en su sitio): 96 × 48. */
     private static final int SEG_LON = 96, SEG_LAT = 48;
     private static final float HEART_HALF = 5F, BEAM_W = 2.4F, BEAM_H = 160F;
-    /** (1.3.96) Los Pozos de Luz: hasta dónde se dibujan y lo alta que es su columna. */
-    private static final double WELL_FAR = 200;
-    private static final float WELL_BEAM = 34F;
+    /** Los Pozos de Luz: hasta dónde se dibujan, lo alta que es su columna y el radio de su burbuja. */
+    private static final double WELL_FAR = 260;
+    private static final float WELL_BEAM = 40F, WELL_BUBBLE = 4.2F;
     /** Más lejos que esto, no se dibuja. */
     private static final double FAR = 420;
     private static VertexBuffer sphere;
@@ -105,7 +105,8 @@ public final class SanctuaryFx {
             RenderSystem.applyModelViewMatrix();
             RenderSystem.setProjectionMatrix(new Matrix4f(proj), VertexSorting.DISTANCE_TO_ORIGIN);
             heart.safeGetUniform("STime").set(time);
-            wells(cam, inv);
+            wells(view, proj, cam, time);
+            altar(view, proj, cam, time);
             portal(cam);
             frames++;
         } catch (Throwable t) {
@@ -159,32 +160,62 @@ public final class SanctuaryFx {
     }
 
     /**
-     * (1.3.96) Los Pozos de Luz: el círculo de luz en el suelo (donde se cura la corrosión), una columna fina que se ve de
-     * lejos y un brillo en la esquirla.
+     * Los Pozos de Luz (1.3.97, el dueño: «solo una especie de burbuja como la del santuario que brille»): una burbuja de
+     * luz como el Velo, de radio {@link #WELL_BUBBLE} y con el centro en su suelo (la mitad de abajo la tapa el suelo), y
+     * una columna fina que se ve de lejos para encontrarlos.
      */
-    private static void wells(Vec3 cam, Matrix4f inv) {
-        Vector3f rv = inv.transformDirection(new Vector3f(1, 0, 0));
-        Vector3f uv = inv.transformDirection(new Vector3f(0, 1, 0));
-        float rad = (float) LightWells.RADIUS;
+    private static void wells(Matrix4f view, Matrix4f proj, Vec3 cam, float time) {
+        if (sphere == null) sphere = buildSphere();
         for (net.minecraft.core.BlockPos b : VoidIsland.shards()) {
-            Vec3 w = new Vec3(b.getX() + 0.5, b.getY() + 0.5, b.getZ() + 0.5).subtract(cam);
+            Vec3 at = LightWells.bubbleCenter(b);
+            Vec3 w = at.subtract(cam);
             double d2 = w.lengthSqr();
             if (d2 > WELL_FAR * WELL_FAR) continue;
-            // el suelo del pozo: 2 por debajo de la esquirla (su cara de arriba, 1,5 por debajo de su centro)
-            Vec3 g = w.add(0, -1.47, 0);
-            heart.safeGetUniform("Alpha").set(1F);
-            heart.safeGetUniform("Mode").set(2F);
-            quad(g, new Vec3(rad, 0, 0), new Vec3(0, 0, rad));
+            bubble(view, proj, w, WELL_BUBBLE, d2 < WELL_BUBBLE * WELL_BUBBLE, 0.9F, 0F, time);
             Vec3 flat = new Vec3(w.x, 0, w.z);
             Vec3 side = flat.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0).cross(flat).normalize();
+            RenderSystem.setShader(() -> heart);
+            heart.safeGetUniform("Violet").set(0F);
             heart.safeGetUniform("Mode").set(1F);
-            heart.safeGetUniform("Alpha").set(0.7F);
-            quad(w.add(0, WELL_BEAM / 2, 0), side.scale(0.55), new Vec3(0, WELL_BEAM / 2, 0));
-            heart.safeGetUniform("Mode").set(0F);
-            heart.safeGetUniform("Alpha").set(0.55F);
-            quad(w, new Vec3(rv.x() * 1.4, rv.y() * 1.4, rv.z() * 1.4), new Vec3(uv.x() * 1.4, uv.y() * 1.4, uv.z() * 1.4));
+            heart.safeGetUniform("Alpha").set(0.45F);
+            quad(w.add(0, WELL_BEAM / 2 + 1, 0), side.scale(0.4), new Vec3(0, WELL_BEAM / 2, 0));
         }
-        heart.safeGetUniform("Alpha").set(1F);
+    }
+
+    /**
+     * El aura de la armadura del Vacío en su altar (1.3.97, el dueño: «ponle un efecto o algo alrededor»): una burbuja
+     * violeta alrededor del soporte y un círculo de runas violeta en el suelo.
+     */
+    private static void altar(Matrix4f view, Matrix4f proj, Vec3 cam, float time) {
+        net.minecraft.core.BlockPos a = VoidIsland.altarPos();
+        if (a == null) return;
+        Vec3 feet = new Vec3(a.getX() + 0.5, a.getY(), a.getZ() + 0.5);
+        Vec3 c = feet.add(0, 1.0, 0).subtract(cam);
+        if (c.lengthSqr() > 96 * 96) return;
+        if (sphere == null) sphere = buildSphere();
+        bubble(view, proj, c, 1.9F, c.lengthSqr() < 1.9 * 1.9, 0.75F, 1F, time);
+        RenderSystem.setShader(() -> heart);
+        heart.safeGetUniform("Violet").set(1F);
+        heart.safeGetUniform("Mode").set(2F);
+        heart.safeGetUniform("Alpha").set(0.9F);
+        quad(feet.add(0, 0.03, 0).subtract(cam), new Vec3(2.6, 0, 0), new Vec3(0, 0, 2.6));
+        heart.safeGetUniform("Violet").set(0F);
+    }
+
+    /** Una burbuja con el shader del Velo (Violet 1: la paleta violeta del Vacío en vez de la de oro). */
+    private static void bubble(Matrix4f view, Matrix4f proj, Vec3 c, float radius, boolean inside, float alpha, float violet, float time) {
+        veil.safeGetUniform("STime").set(time);
+        veil.safeGetUniform("Center").set((float) c.x, (float) c.y, (float) c.z);
+        veil.safeGetUniform("Radius").set(radius);
+        veil.safeGetUniform("Ripple").set(0F, 1F, 0F, -1F);
+        veil.safeGetUniform("Inside").set(inside ? 1F : 0F);
+        veil.safeGetUniform("Ground").set(0F);
+        veil.safeGetUniform("Alpha").set(alpha);
+        veil.safeGetUniform("Violet").set(violet);
+        sphere.bind();
+        sphere.drawWithShader(new Matrix4f(view), new Matrix4f(proj), veil);
+        VertexBuffer.unbind();
+        veil.safeGetUniform("Violet").set(0F);
     }
 
     /** (1.3.96) El velo del Portal del Alba: un remolino dorado en el hueco del arco (5 × 8). */
