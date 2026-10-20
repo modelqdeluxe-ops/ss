@@ -17,16 +17,20 @@ import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * El Portal del Alba (1.3.96; el dueño: «después del bioma viene la isla principal de la grieta; para volver al santuario
- * debe haber un portalito»): el arco de cuarzo y oro junto a la plaza de la grieta (tools/void/isla_alba.py,
- * {@link VoidIsland#portalPos}). Quien cruza su velo de luz (lo dibuja el cliente, {@link SanctuaryFx}) ve un fundido
+ * debe haber un portalito»): el arco de cuarzo y oro en el borde oeste de la plaza de la grieta, mirando a ella
+ * (tools/void/isla_alba.py, {@link VoidIsland#portalPos}). Quien se queda {@link #CHARGE} ticks en su velo de luz (lo
+ * dibuja el cliente, {@link SanctuaryFx}; como el portal del Nether, para no irse sin querer en plena pelea) ve un fundido
  * dorado ({@link VoidLightClient}) y a los {@link #DELAY} ticks está en el santuario, a la entrada, mirando al templo. De
  * ida no hay portal: al santuario se llega del mundo y a la grieta se va cruzando el Páramo.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class VoidPortal {
-    /** Del paso por el velo al santuario (el fundido está en lo más blanco). */
+    /** Lo que hay que quedarse en el velo (1 s; corriendo se cruza en un cuarto de segundo). */
+    static final int CHARGE = 20;
+    /** De ahí al santuario (el fundido está en lo más blanco). */
     static final int DELAY = 14;
     private static final Map<UUID, Long> PENDING = new HashMap<>(), COOLDOWN = new HashMap<>();
+    private static final Map<UUID, Integer> INSIDE = new HashMap<>();
     /** Para la prueba en el juego: viajes hechos. */
     static int trips;
 
@@ -62,7 +66,17 @@ public final class VoidPortal {
             }
             Long cool = COOLDOWN.get(id);
             if (cool != null && now < cool) continue;
-            if (!inside(p.getX(), p.getY(), p.getZ()) || !VoidTravel.idle(p)) continue;
+            if (!inside(p.getX(), p.getY(), p.getZ()) || !VoidTravel.idle(p)) {
+                INSIDE.remove(id);
+                continue;
+            }
+            int in = INSIDE.merge(id, 1, Integer::sum);
+            if (in == 1) {
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.2F, 0.8F);
+            }
+            if (in % 4 == 1) level.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 1, p.getZ(), 6, 0.4, 0.9, 0.4, 0.02);
+            if (in < CHARGE) continue;
+            INSIDE.remove(id);
             PENDING.put(id, now + DELAY);
             VoidLight.event(p, VoidLight.EV_PORTAL);
             level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 1F, 1.3F);

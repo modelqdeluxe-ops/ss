@@ -671,6 +671,8 @@ public final class BossTest {
     private static double chaseNear;
     private static float chaseEdge;
     private static boolean chaseFell;
+    /** (1.3.96) Los viajes del Portal del Alba antes de cada paso de su prueba. */
+    private static int portalTrips0;
 
     /**
      * La visita a The Void (1.3.88): pone un caballero de luz delante del jugador, le habla (saludo, «¿Qué es el
@@ -865,8 +867,9 @@ public final class BossTest {
             case 2029 -> fly(player, false);
             case 2030 -> player.teleportTo(vl, 0.5, 1.0, 0.5, 0F, 0F);
             case 2060 -> {
+                // (1.3.96: el santuario es más grande y el rescate deja en su puerta, a ~28 bloques de Caelthar)
                 var homes = vl.getEntitiesOfClass(net.tierrasfantasticas.tfclient.vacio.KnightEntity.class,
-                        new AABB(player.blockPosition()).inflate(16), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
+                        new AABB(player.blockPosition()).inflate(48), net.tierrasfantasticas.tfclient.vacio.KnightEntity::home);
                 r.event("caballero del santuario: " + (homes.isEmpty() ? "NO ESTÁ" : "está (" + homes.size() + ")"));
                 if (!homes.isEmpty()) {
                     // (1.3.96: el rescate deja a la entrada del santuario, a ~15 bloques: el diálogo se cierra a más de 14 y
@@ -1030,18 +1033,41 @@ public final class BossTest {
             }
             // el Portal del Alba, junto a la plaza de la grieta: verlo y cruzarlo
             case 570 -> {
+                // (delante del arco, del lado de la plaza: facing 0, al sur mirando al norte; 1, al este mirando al oeste)
                 net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
-                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 9.5, 180F, -12F);
+                boolean alongX = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0;
+                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : 9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
+                        alongX ? 180F : 90F, -12F);
             }
-            case 640 -> shot(r, "vacio_portal");
-            case 650 -> {
+            // pasar por el velo sin pararse (4 ticks): no lleva al santuario
+            case 600 -> {
+                portalTrips0 = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portalTrips();
                 net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
-                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 180F, 0F);
+                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 0.5, player.getYRot(), -12F);
+            }
+            case 604 -> {
+                net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
+                boolean alongX = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0;
+                if (p != null) player.teleportTo(vl, p.getX() + (alongX ? 0.5 : 9.5), p.getY(), p.getZ() + (alongX ? 9.5 : 0.5),
+                        alongX ? 180F : 90F, -12F);
+            }
+            case 640 -> {
+                int n = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portalTrips() - portalTrips0;
+                r.event("pasar por el Portal del Alba sin pararse: " + (n == 0 ? "no lleva (bien)" : n + " viajes (MAL)"));
+                shot(r, "vacio_portal");
+                portalTrips0 = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portalTrips();
+            }
+            case 650 -> {
+                // (se queda en el velo: hay que estar VoidPortal.CHARGE ticks)
+                net.minecraft.core.BlockPos p = net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalPos();
+                if (p != null) player.teleportTo(vl, p.getX() + 0.5, p.getY(), p.getZ() + 0.5,
+                        net.tierrasfantasticas.tfclient.vacio.VoidIsland.portalFacing() % 2 == 0 ? 180F : 90F, 0F);
             }
             case 700 -> {
                 Vec3 ar = net.tierrasfantasticas.tfclient.vacio.VoidIsland.arrivePos();
-                r.event(String.format("cruzar el Portal del Alba: %s (a %.1f bloques de la llegada del santuario)",
-                        net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portal(), player.position().distanceTo(ar)));
+                r.event(String.format("quedarse en el Portal del Alba: %d viajes al santuario (a %.1f bloques de la llegada del santuario; en toda la prueba, %s)",
+                        net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portalTrips() - portalTrips0, player.position().distanceTo(ar),
+                        net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.portal()));
                 shot(r, "vacio_portal_llegada");
             }
             default -> {
@@ -1093,6 +1119,9 @@ public final class BossTest {
     private static final int FAUNA_EACH = 170, FAUNA_WILD = 900;
     private static BossEntity faunaNow;
     private static int faunaHits;
+    private static Vec3 faunaDied;
+    /** Las animaciones que pone la criatura de ahora (las que ve el cliente; ticks de cada una). */
+    private static final Map<String, Integer> faunaAnims = new TreeMap<>();
 
     /**
      * (1.3.96) La fauna del Páramo, una a una delante del jugador (en supervivencia: le atacan): a los 3 s una captura, a
@@ -1111,6 +1140,11 @@ public final class BossTest {
         if (i < FAUNA_MOBS.length) {
             String mob = FAUNA_MOBS[i];
             if (faunaNow != null && faunaNow.isAlive() && player.getLastHurtByMob() == faunaNow) faunaHits++;
+            if (faunaNow != null && faunaNow.isAlive()) {
+                List<String> an = net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(faunaNow);
+                if (an == null) faunaAnims.merge("SIN MODELO", 1, Integer::sum);
+                else for (String a : an.subList(Math.min(1, an.size()), an.size())) faunaAnims.merge(a, 1, Integer::sum);
+            }
             switch (k) {
                 case 0 -> {
                     if (i == 0) {
@@ -1120,6 +1154,7 @@ public final class BossTest {
                     }
                     player.teleportTo(vl, seed.x, seed.y, seed.z, 180F, 8F);
                     faunaHits = 0;
+                    faunaAnims.clear();
                     player.setLastHurtByMob(null);
                 }
                 case 20 -> {
@@ -1133,11 +1168,27 @@ public final class BossTest {
                 case 160 -> {
                     BossEntity e = faunaNow;
                     r.event(e == null ? mob + ": no está" : String.format("%s («%s»): modelo %s, vida %.0f/%.0f, a %.1f bloques, objetivo %s, "
-                                    + "me ha golpeado %s, barra propia %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
+                                    + "me ha golpeado %s, barra propia %s; animaciones (ticks) %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
                             e.getHealth(), e.getMaxHealth(), e.distanceTo(player), e.getTarget() == player ? "el jugador" : String.valueOf(e.getTarget()),
-                            faunaHits > 0 ? "sí" : "no", e.def() != null && e.def().barColor != null ? "sí" : "no"));
-                    if (e != null) e.discard();
+                            faunaHits > 0 ? "sí" : "no", e.def() != null && e.def().barColor != null ? "sí" : "no", faunaAnims));
+                    if (e != null && i == 0) {
+                        // (la primera se mata: sus Drops del pack, la perla de ender)
+                        faunaDied = e.position();
+                        e.hurt(player.damageSources().playerAttack(player), 10000F);
+                    } else if (e != null) {
+                        e.discard();
+                    }
                     faunaNow = null;
+                }
+                case 166 -> {
+                    if (faunaDied != null) {
+                        var items = vl.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(net.minecraft.core.BlockPos.containing(faunaDied)).inflate(6));
+                        StringBuilder sb = new StringBuilder();
+                        for (var it : items) sb.append(sb.length() == 0 ? "" : ", ").append(it.getItem().getCount()).append(' ').append(it.getItem().getItem());
+                        r.event(mob + " al morir suelta: " + (sb.length() == 0 ? "nada" : sb));
+                        for (var it : items) it.discard();
+                        faunaDied = null;
+                    }
                 }
                 default -> {
                 }

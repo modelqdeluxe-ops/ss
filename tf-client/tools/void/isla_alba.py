@@ -51,7 +51,7 @@ HEART = (CX, 93, CZ)             # el Corazón del Alba (lo dibuja el cliente)
 ALTAR = (CX, TOP + 3, CZ - 22)   # donde está de pie el soporte con la armadura del Vacío
 BRIDGE_Z0, BRIDGE_Z1 = bioma.NORTH_DOOR[1] + 2, CZ + R - 2   # el Puente de Luz: del Páramo a la Puerta del Alba
 # El Portal del Alba, junto a la plaza de la grieta: el centro de abajo de su hueco (x, y, z) y hacia dónde mira (0 = sur)
-PORTAL = (0, 72, -27, 0)
+PORTAL = (-32, 72, 0, 1)   # (x, y, z, hacia dónde: 1 = el arco a lo largo de Z, se cruza de este a oeste)
 FRAGMENTS = 10      # pozos de luz en la isla de la grieta
 TEMPLE_R = 12.5
 RING_R = 21
@@ -639,30 +639,56 @@ def lights(w):
 
 
 def portal(w):
-    """El Portal del Alba junto a la plaza de la grieta: un arco de cuarzo y oro; su velo de luz lo dibuja el cliente y el
-    servidor lleva al santuario a quien lo cruza (VoidPortal). El hueco: 5 de ancho y 8 de alto."""
-    px, py, pz, _ = PORTAL
-    for dx in range(-4, 5):
-        for dz in range(-2, 3):
+    """El Portal del Alba en el borde oeste de la plaza de la grieta, mirando a ella (fuera del camino que baja del
+    Páramo): un arco de cuarzo y oro; su velo de luz lo dibuja el cliente y el servidor lleva al santuario a quien se
+    queda en él un momento (VoidPortal). El hueco: 5 de ancho y 8 de alto. PORTAL[3]: 0, el arco a lo largo de X (se
+    cruza yendo de norte a sur); 1, a lo largo de Z (se cruza yendo de este a oeste)."""
+    px, py, pz, facing = PORTAL
+    along_x = facing % 2 == 0
+
+    def put(a, y, b, block):
+        # a: a lo largo del arco; b: a través de él
+        if along_x:
+            w.put(px + a, y, pz + b, block)
+        else:
+            w.put(px + b, y, pz + a, block)
+
+    def stairs(toward_minus_a, half):
+        # escalón que mira hacia -a (o +a) a lo largo del arco
+        if along_x:
+            f = 'west' if toward_minus_a else 'east'
+        else:
+            f = 'north' if toward_minus_a else 'south'
+        return 'smooth_quartz_stairs[facing=%s,half=%s,shape=straight,waterlogged=false]' % (f, half)
+
+    def stairs_across(toward_minus_b):
+        if along_x:
+            f = 'north' if toward_minus_b else 'south'
+        else:
+            f = 'west' if toward_minus_b else 'east'
+        return 'smooth_quartz_stairs[facing=%s,half=bottom,shape=straight,waterlogged=false]' % f
+
+    for a in range(-4, 5):
+        for b in range(-2, 3):
             for y in range(py, py + 12):
-                w.put(px + dx, y, pz + dz, None)
-            w.put(px + dx, py - 1, pz + dz, 'chiseled_quartz_block' if abs(dx) <= 2 and dz == 0 else 'quartz_bricks')
-    for dx in (-3, 3):
-        w.put(px + dx, py, pz, 'chiseled_quartz_block')
+                put(a, y, b, None)
+            put(a, py - 1, b, 'chiseled_quartz_block' if abs(a) <= 2 and b == 0 else 'quartz_bricks')
+    for a in (-3, 3):
+        put(a, py, 0, 'chiseled_quartz_block')
         for y in range(py + 1, py + 8):
-            w.put(px + dx, y, pz, 'quartz_pillar[axis=y]')
-        w.put(px + dx, py + 8, pz, 'gold_block')
-        w.put(px + dx, py, pz - 1, 'smooth_quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]')
-        w.put(px + dx, py, pz + 1, 'smooth_quartz_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]')
-    for dx in range(-3, 4):
-        w.put(px + dx, py + 9, pz, 'chiseled_quartz_block')
-    for dx in (-2, 2):
-        w.put(px + dx, py + 8, pz, 'smooth_quartz_stairs[facing=%s,half=top,shape=straight,waterlogged=false]' % ('east' if dx < 0 else 'west'))
-    w.put(px, py + 10, pz, 'gold_block')
-    w.put(px, py + 11, pz, 'end_rod[facing=up]')
-    for dx in (-4, 4):
-        w.put(px + dx, py, pz, 'lantern[hanging=false,waterlogged=false]')
-    w.put(px, py + 8, pz, 'light[level=15,waterlogged=false]')
+            put(a, y, 0, 'quartz_pillar[axis=y]')
+        put(a, py + 8, 0, 'gold_block')
+        put(a, py, -1, stairs_across(False))
+        put(a, py, 1, stairs_across(True))
+    for a in range(-3, 4):
+        put(a, py + 9, 0, 'chiseled_quartz_block')
+    for a in (-2, 2):
+        put(a, py + 8, 0, stairs(a > 0, 'top'))
+    put(0, py + 10, 0, 'gold_block')
+    put(0, py + 11, 0, 'end_rod[facing=up]')
+    for a in (-4, 4):
+        put(a, py, 0, 'lantern[hanging=false,waterlogged=false]')
+    put(0, py + 8, 0, 'light[level=15,waterlogged=false]')
 
 
 # ------------------------------------------------------------------------------------------- los pozos de la isla grande

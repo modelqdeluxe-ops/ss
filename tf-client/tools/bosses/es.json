@@ -283,6 +283,20 @@
    "empowered_ender_watchman": "Ender Watchman Potenciado",
    "empowered_end_wraith": "End Wraith Potenciado",
    "empowered_endermauler": "Endermauler Potenciado"
+  },
+  "drops": {
+   "empowered_heart_of_ender": "Corazón de Ender Potenciado",
+   "empowered_void_claw": "Garra del Vacío Potenciada",
+   "empowered_void_crystal": "Cristal del Vacío Potenciado",
+   "empowered_void_tendril": "Zarcillo del Vacío Potenciado",
+   "end_soul": "Alma del End",
+   "ender_carapace": "Caparazón de Ender",
+   "heart_of_ender": "Corazón de Ender",
+   "phantasmal_eye_of_ender": "Ojo de Ender Fantasmal",
+   "third_eye_of_ender": "Tercer Ojo de Ender",
+   "void_claw": "Garra del Vacío",
+   "void_fabric": "Tela del Vacío",
+   "void_growth": "Brote del Vacío"
   }
  }
 }

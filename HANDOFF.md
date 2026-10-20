@@ -94,7 +94,9 @@ robe tu luz, fragmentos de luz, una isla santuario con el caballero en una burbu
   - **El set Void** («Coloso del Vacío», 18 objetos animados como los demás sets; set de recompensa: ni tienda ni
     crates) y **la armadura del Vacío** (`VoidArmor`): con 5 jefes de las grietas derrotados, en el altar o pidiéndosela
     a Caelthar; las cuatro piezas = inmune a la corrosión (cada una, un 25 %). Es lo único que protege.
-  - **El Portal del Alba** (`VoidPortal`) junto a la plaza de la grieta: vuelve al santuario.
+  - **El Portal del Alba** (`VoidPortal`) en el borde oeste de la plaza de la grieta: quedándose 1 s en su luz, vuelve al
+    santuario (cruzarlo corriendo no lleva).
+  - Las criaturas sueltan su botín del pack (perlas de ender y 12 materiales de Oraxen convertidos en objetos del mod).
 - Rama: `claude/peaceful-gauss-4nzddg`. Pendiente del dueño: decir si se cierra el PR en borrador #137 (ya no hace falta).
 
 ### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.95)

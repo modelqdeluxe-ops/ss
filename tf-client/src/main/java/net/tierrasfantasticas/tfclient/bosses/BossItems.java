@@ -31,6 +31,15 @@ public final class BossItems {
     private BossItems() {}
 
     static Item create(SkillDefs.ClassDef cls, SkillDefs.Drop d) {
+        if (d.type().equalsIgnoreCase("MATERIAL")) {
+            Rarity r;
+            try {
+                r = Rarity.valueOf(d.rarity().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                r = Rarity.COMMON;
+            }
+            return new Material(new Item.Properties().rarity(r), cls, d);
+        }
         Item.Properties props = new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant();
         String mat = d.material().toLowerCase(Locale.ROOT);
         if (mat.equals("shield")) return new Shield(props.durability(1008), cls, d);
@@ -53,6 +62,38 @@ public final class BossItems {
             if (bi != null) {
                 tip.add(Component.literal("De " + bi.name).withStyle(s -> s.withColor(TextColor.fromRgb(bi.color))));
             }
+        }
+    }
+
+    /** (1.3.96) Un material de Oraxen que suelta la fauna (Tela del Vacío, Corazón de Ender...): se apila, sin skills. */
+    static final class Material extends Item implements Owned {
+        private final SkillDefs.ClassDef cls;
+        private final SkillDefs.Drop drop;
+
+        Material(Properties p, SkillDefs.ClassDef cls, SkillDefs.Drop drop) {
+            super(p);
+            this.cls = cls;
+            this.drop = drop;
+        }
+
+        @Override
+        public SkillDefs.ClassDef cls() {
+            return cls;
+        }
+
+        @Override
+        public SkillDefs.Drop drop() {
+            return drop;
+        }
+
+        @Override
+        public Component getName(ItemStack stack) {
+            return Component.literal(drop.name());
+        }
+
+        @Override
+        public void appendHoverText(ItemStack stack, Level level, List<Component> tip, TooltipFlag flag) {
+            lore(tip);
         }
     }
 

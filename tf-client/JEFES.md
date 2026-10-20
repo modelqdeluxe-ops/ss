@@ -961,8 +961,8 @@ bioma completo: estará el santuario, y entre el santuario y la isla principal u
 hostiles, decoración del Void, grandecito; para volver al santuario, un portalito; pozos de luz en el bioma»*.
 
 **El mapa del Void ahora** (de sur a norte; `tools/void/isla_alba.py --preview carpeta` lo dibuja desde arriba):
-la isla de la grieta (la del dueño) con el Umbral (el santuario viejo) en su punta norte y el **Portal del Alba** junto a
-la plaza (0, 72, −27) → el **Puente de Piedra** (5 de ancho) → el **Páramo del Alba Rota** (~240 × 230, `tools/void/bioma.py`)
+la isla de la grieta (la del dueño) con el Umbral (el santuario viejo) en su punta norte y el **Portal del Alba** en el
+borde oeste de la plaza (−32, 72, 0), mirando a la grieta → el **Puente de Piedra** (5 de ancho) → el **Páramo del Alba Rota** (~240 × 230, `tools/void/bioma.py`)
 → el **Puente de Luz** → el **Santuario del Alba** (centro (−64, −471), radio 34, dentro del **Velo del Alba**, radio 47).
 Se llega del mundo al santuario; a la grieta se va cruzando el Páramo; se vuelve por el portal (o cayendo al vacío: el
 rescate deja en el santuario). Isla en `tfclient-void-isla.bin` **v4**: además del Velo, el Corazón y los pozos (v3), el
@@ -1015,7 +1015,13 @@ cruzan los puentes ni entran en el Velo). **Salen solas** (`VoidFauna`) con las 
 (`spawns`: probabilidad, prioridad, recarga y `mobsInRadius`; lo que era «world_the_end» aquí es el Páramo): cada 2 s y
 por jugador en el Páramo, en un sitio a 22-52 bloques; como mucho 12 cerca de cada jugador, nunca a menos de 10 de un
 pozo ni en el Velo; las que quedan a más de 110 de todos se van; nada con `doMobSpawning` apagado ni en pacífico. No se
-guardan en el mundo (como los jefes).
+guardan en el mundo (como los jefes). **Sueltan sus Drops del pack** (los jefes no sueltan nada, orden del dueño; la
+fauna sí, como en MythicMobs, con `doMobLoot`): perlas de ender y los **materiales de Oraxen** que trae el pack (Tela del
+Vacío, Caparazón de Ender, Corazón de Ender, Garra del Vacío, Brote del Vacío, Ojo de Ender Fantasmal, Tercer Ojo de
+Ender, Alma del End y sus «potenciados»: 12): `build_bosses.oraxen_items` lee `plugins/Oraxen/items/*.yml` y sus
+texturas (con su animación) y salen como objetos del mod que se apilan (`BossItems.Material`, `tfclient:jefe_criaturas_vacio_<objeto>`,
+nombre en `es.json` → `drops`). Del pack son: el Enderling y el Crawler, tras golpear, a veces (10 %) se teletransportan
+a hasta 20 bloques (`teleport_away`) y, a más de 24, sueltan la pelea (`MaxCombatDistance`).
 
 **El set Void** («Coloso del Vacío»): el Void Colossus del dueño, convertido como los demás sets: en la web
 (`tierras-fantasticas/tools/build_items.py`, `SETS['void']`, con un quinto campo nuevo para decir dónde están los iconos
@@ -1032,9 +1038,12 @@ puesta (con la espada larga); al tocarlo, o pidiéndosela a Caelthar, se recibe 
 vuelve a pedir y da lo que falte). Lore: la forjaron los caballeros del Alba con la piel del Coloso del Vacío, la primera
 criatura que cayó; el Vacío no se come lo que es suyo.
 
-**El Portal del Alba** (`VoidPortal`): el arco de cuarzo y oro junto a la plaza de la grieta; su velo dorado lo dibuja el
-cliente (Mode 3 de `corazon_alba`). Quien lo cruza ve un fundido dorado y a los 14 ticks está en el santuario, a la
-entrada, mirando al templo.
+**El Portal del Alba** (`VoidPortal`): el arco de cuarzo y oro en el borde oeste de la plaza de la grieta, mirando a ella
+(fuera del camino que baja del Páramo; `PORTAL` de `isla_alba.py`, con hacia dónde mira); su velo dorado lo dibuja el
+cliente (Mode 3 de `corazon_alba`). Hay que **quedarse 1 s en su velo** (`CHARGE`; suena un cristal y suben chispas),
+como el portal del Nether: cruzarlo corriendo en plena pelea no lleva a ningún sitio. Luego un fundido dorado y a los 14
+ticks, en el santuario, a la entrada, mirando al templo. (En la primera versión estaba en (0, 72, −27), justo en el
+camino del norte a la grieta: la prueba en el juego se colocó ahí para mirar la grieta y el portal se la llevó.)
 
 **El santuario** (`isla_alba.py`), más grande y decorado: templo de **doce columnas** (la Orden) con rosetón de oro en el
 suelo y **once velas** (los once que se hicieron luz), el pedestal de Caelthar; caminos de cuarzo en cruz y en anillo con
@@ -1419,7 +1428,7 @@ de los jefes del Void; el agujero de gusano con las dimensiones de verdad; en el
 Pozos de Luz que curan, el Páramo del Alba Rota con las criaturas del End, el santuario más grande, el set Void inmune
 tras 5 jefes y el Portal del Alba). Queda que el dueño lo vea en su servidor y ajustar con él los números
 (`VoidLight.CORRODE_MIN`, `HURT`, `HURT_EVERY`, `REGEN`; `VoidFauna.CAP`, `EVERY`; `VoidArmor.NEED`). Ideas para seguir
-si pide más: botín para las criaturas del Páramo (el pack no trae drops); algo al oír los 16 Ecos (una recompensa o un
+si pide más: un uso para los materiales que sueltan las criaturas del Páramo (en el pack son solo materiales); algo al oír los 16 Ecos (una recompensa o un
 título); que el End Strider, el que se monta, sea montura (el dueño no lo quiso como enemigo); el jefe final «super fuerte» que cerraría
 la grieta del cielo para siempre (`SkyRift.end`, también desde la secuencia del Void con «al acabar: el final»).
 

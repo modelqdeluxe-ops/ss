@@ -136,6 +136,8 @@ public final class SkillDefs {
         public boolean invincible;
         public boolean collidable = true;
         public String faction;
+        /** Drops del pack («objeto cantidad probabilidad»): solo los suelta la fauna (los jefes no sueltan nada). */
+        public List<String> drops = List.of();
         /** Modelo de ModelEngine que se pone al aparecer (para el tamaño, la vista previa y las cajas de golpe). */
         public String model;
         /** Daño que recibe por tipo (FIRE 0, FALL 0...): el multiplicador de MythicMobs. */
@@ -300,7 +302,8 @@ public final class SkillDefs {
 
     /** Un objeto que suelta un jefe: su modelo (y el de cubrirse, si es escudo), nombre, tipo y sus skills del pack
      * (~onSwing al golpear con él, ~onTimer mientras se lleva). */
-    public record Drop(String id, String material, String model, String blockingModel, String name, String type, List<Mech> mechs) {}
+    /** Un objeto de un pack de jefe. type MATERIAL (1.3.96): de Oraxen, lo que suelta la fauna (se apila; rarity: su color). */
+    public record Drop(String id, String material, String model, String blockingModel, String name, String type, List<Mech> mechs, String rarity) {}
 
     /** Las clases de arqueros (sus packs disparaban con el arco de la clase): Arquero, Arquero Despertado y Null. */
     private static final java.util.Set<String> BOW_CLASSES = java.util.Set.of("arquero", "arquero_despertado", "null");
@@ -511,7 +514,7 @@ public final class SkillDefs {
                     JsonObject d = e.getValue().getAsJsonObject();
                     bi.drops.put(e.getKey().toLowerCase(Locale.ROOT), new Drop(e.getKey(), str(d, "material", "paper"),
                             str(d, "model", null), str(d, "blocking", null), str(d, "name_es", str(d, "name", e.getKey())),
-                            str(d, "type", ""), mechs(d.get("mechs"))));
+                            str(d, "type", ""), mechs(d.get("mechs")), str(d, "rarity", "EPIC")));
                 }
             }
             c.boss = true;
@@ -573,6 +576,7 @@ public final class SkillDefs {
                 mob.invincible = bool(opt(opts, "Invincible"));
                 mob.collidable = opt(opts, "Collidable") == null || bool(opt(opts, "Collidable"));
                 mob.faction = str(m, "faction", null);
+                if (m.has("drops") && m.get("drops").isJsonArray()) mob.drops = strings(m.get("drops"));
                 mob.model = str(m, "model", null);
                 if (m.has("damage_modifiers") && m.get("damage_modifiers").isJsonArray()) {
                     for (JsonElement dm : m.getAsJsonArray("damage_modifiers")) {

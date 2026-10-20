@@ -91,6 +91,10 @@ public final class VoidTestHooks {
     }
 
     /** El Portal del Alba: viajes hechos. */
+    public static int portalTrips() {
+        return VoidPortal.trips;
+    }
+
     public static String portal() {
         return VoidPortal.trips + " viajes al santuario";
     }
