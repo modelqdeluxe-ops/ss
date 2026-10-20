@@ -4,10 +4,16 @@
 
 Dibuja la escena de santuario.py como la cinemática: los bloques con sus modelos y texturas de Minecraft 1.20.1 (el
 jar del cliente se baja de Mojang la primera vez a ~/.cache/tfclient/; no se sube al repo), la luz de la escena (la
-misma cuenta que SanctuaryScene.light: penumbra, el haz, el estanque, las luces mágicas), el agua (azul, la que cae
-también), la niebla, la crate (cine_mythical), el haz de luz, el polvo, los halos, las luciérnagas y la bruma, y luego
-los MISMOS shaders del mod (crate_sky, crate_bloom, crate_post). No hace oclusión ambiental ni dibuja la llave ni los
-premios: sirve para ver la composición, los colores y la luz antes de la prueba en el juego.
+misma cuenta que SanctuaryScene.light: la sombra verde azulada, el haz, la luz del hueco, el sol de arriba, el
+turquesa del estanque, las luces mágicas), el agua con su shader (crate_water, con la textura animada del agua del
+juego, como el atlas en el mod), la niebla, la crate (cine_mythical), el haz de sol, su foco y sus rayos, el polvo, los
+halos, las chispas y la bruma, y luego los MISMOS shaders del mod (crate_sky, crate_bloom, crate_post). No hace
+oclusión ambiental ni dibuja la llave ni los premios: sirve para ver la composición, los colores y la luz antes de la
+prueba en el juego. Lo que suma luz no escribe profundidad (como GLOW_ADD en el juego; si la escribiera, las bandas
+del haz se pisarían y saldría una cuadrícula).
+
+Para compararla con la imagen del dueño: el encuadre del tick 0 es el suyo (cámara a 3,7 de alto, 10,5 bloques delante
+del altar, 36° de campo vertical).
 """
 import io
 import json
@@ -28,12 +34,18 @@ RES = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources'
 SHADERS = os.path.join(RES, 'tfclient', 'shaders', 'core')
 CACHE = os.path.expanduser('~/.cache/tfclient/minecraft-1.20.1-client.jar')
 
-# los de SceneLevel y CrateCinematicScreen (si cambian allí, cámbialos aquí)
-GRASS, FOLIAGE, WATER = 0x58A845, 0x45A032, 0x3C8CFF
-FOG, FOG_START, FOG_END = (0.06, 0.09, 0.15), 9.0, 50.0
-WATER_GLOW = (0.62, 0.72, 0.85)
-THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.66, 0.9, 0.6, 1.6   # los de ScenePost y CrateCinematicScreen (sin abrir)
-BASE_LIGHT = (0.34, 0.40, 0.56)
+# los de SceneLevel, SanctuaryScene y CrateCinematicScreen (si cambian allí, cámbialos aquí)
+GRASS, FOLIAGE, WATER = 0x5AAE4E, 0x4AAA44, 0x3FD8E0
+FOG, FOG_START, FOG_END = (0.10, 0.19, 0.20), 18.0, 80.0
+THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.5, 0.7, 1.55   # los de ScenePost y CrateCinematicScreen (sin abrir)
+CRATE_TINT = (0.86, 0.84, 0.80)
+BARS = 0.035                       # las franjas de cine (CrateCinematicScreen.overlay)
+# la luz de la escena (SanctuaryScene.light): ambiente, haz, luz del hueco, rebote del agua
+AMB = (0.20, 0.28, 0.36)
+BEAM_C = (1.25, 1.12, 0.80)
+SKY_C = (0.34, 0.38, 0.28)
+POOL_C = (0.02, 0.30, 0.34)
+CROWN_C = (0.95, 0.90, 0.45)
 TINTS = {'mangrove_leaves': 0x92C648, 'spruce_leaves': 0x619961, 'birch_leaves': 0x80A755, 'lily_pad': 0x208030}
 
 
@@ -413,17 +425,24 @@ def water_mesh(sc, light, fullat):
                 wx, wy, wz = p
                 l = light(wx, wy, wz)
                 u = (wx + wz) * 0.5
-                vs.append((wx, wy, wz, 0.0, 1.0, 0.0, min(1.0, (l[0] + l[1] + l[2]) / 3), u, wy - y0))
+                vs.append((wx, wy, wz, min(1.0, (y + h - y0) / 16.0), 1.0, 0.0, min(1.0, (l[0] + l[1] + l[2]) / 3), u, wy - y0))
             for q in (0, 1, 2, 0, 2, 3):
                 out.append(vs[q])
     return out
 
 
 # ------------------------------------------------------------------------------------------------------- luz
+def smooth(a, b, x):
+    t = min(1.0, max(0.0, (x - a) / (b - a)))
+    return t * t * (3 - 2 * t)
+
+
 def make_light(sc):
     """La misma cuenta que SanctuaryScene.light (la luz de la escena en un punto)."""
     sun = np.array(S.SUN, float)
     crate = np.array(S.CRATE, float)
+    op = S.anchors()['opening']
+    pb = S.anchors()['poolbox']
     lights = S.lights(sc)
     grid = {}
     for l in lights:
@@ -434,18 +453,25 @@ def make_light(sc):
                     grid.setdefault((cx + gx, cy + gy, cz + gz), []).append(l)
 
     def light(x, y, z):
+        # el haz: una columna ancha con el borde marcado (y un halo suave alrededor)
         dx, dy, dz = x - crate[0], y - (crate[1] + 0.6), z - crate[2]
         along = dx * sun[0] + dy * sun[1] + dz * sun[2]
         ox, oy, oz = dx - sun[0] * along, dy - sun[1] * along, dz - sun[2] * along
-        off2 = ox * ox + oy * oy + oz * oz
-        beam = math.exp(-off2 / 5.0)
-        top = max(0.0, min(1.0, (y - 9.0) / 9.0))
-        px, pz = x - crate[0], z - crate[2]
-        pond = math.exp(-(px * px + pz * pz) / 40.0) * max(0.0, min(1.0, (4.0 - y) / 3.0))
-        r, g, b = BASE_LIGHT
-        r += 1.25 * beam + 0.06 * top + 0.06 * pond
-        g += 1.05 * beam + 0.03 * top + 0.22 * pond
-        b += 0.62 * beam + 0.12 * top + 0.34 * pond
+        off = math.sqrt(ox * ox + oy * oy + oz * oz)
+        beam = (1.0 - smooth(1.7, 2.9, off)) * 0.9 + math.exp(-off * off / 18.0) * 0.3
+        # la luz que entra por el hueco de las copas (lo de debajo y lo alto, más)
+        ex = abs(x - op[0])
+        ez = max(0.0, abs(z - op[2]) - op[3])
+        sky = math.exp(-ex * ex / 30.0) * math.exp(-ez * ez / 14.0) * (0.45 + 0.55 * min(1.0, max(0.0, (y - 1.0) / 9.0)))
+        # lo alto, alrededor del hueco: le da el sol de lleno (las hojas de arriba, verde amarillo)
+        crown = math.exp(-ex * ex / 40.0) * math.exp(-ez * ez / 8.0) * smooth(5.5, 8.5, y)
+        # el agua turquesa alumbra desde abajo lo que tiene cerca
+        px = max(0.0, abs(x - 0.5) - (pb[0] + 0.5))
+        pz = max(0.0, pb[1] - z, z - pb[2] - 1)
+        pool = math.exp(-(px * px + pz * pz) / 3.0) * min(1.0, max(0.0, (3.4 - y) / 3.0))
+        r = AMB[0] + BEAM_C[0] * beam + SKY_C[0] * sky + POOL_C[0] * pool + CROWN_C[0] * crown
+        g = AMB[1] + BEAM_C[1] * beam + SKY_C[1] * sky + POOL_C[1] * pool + CROWN_C[1] * crown
+        b = AMB[2] + BEAM_C[2] * beam + SKY_C[2] * sky + POOL_C[2] * pool + CROWN_C[2] * crown
         for l in grid.get((int(math.floor(x / 4)), int(math.floor(y / 4)), int(math.floor(z / 4))), ()):
             ddx, ddy, ddz = x - l[0], y - l[1], z - l[2]
             d2 = ddx * ddx + ddy * ddy + ddz * ddz
@@ -491,7 +517,7 @@ class Fx:
         c = np.array([x, y, z])
         self.quad([c - R - U, c + R - U, c + R + U, c - R + U], [(0, 1), (1, 1), (1, 0), (0, 0)], (r, g, b, a))
 
-    def band(self, a, b, wa, wb, r, g, bl, aa, ab):
+    def band(self, a, b, wa, wb, r, g, bl, aa, ab, u0=0.0, u1=1.0):
         a, b = np.array(a, float), np.array(b, float)
         ax = b - a
         m = (a + b) * 0.5 - self.eye
@@ -501,7 +527,7 @@ class Fx:
             return
         s /= L
         ps = [a - s * wa, a + s * wa, b + s * wb, b - s * wb]
-        for q, uv, al in zip((0, 1, 2, 0, 2, 3), ((0, .5), (1, .5), (1, .5), (0, .5), (1, .5), (0, .5)),
+        for q, uv, al in zip((0, 1, 2, 0, 2, 3), ((u0, .5), (u1, .5), (u1, .5), (u0, .5), (u1, .5), (u0, .5)),
                              (aa, aa, ab, aa, ab, ab)):
             self.v.append((*ps[q], *uv, r, g, bl, al))
 
@@ -511,8 +537,10 @@ class Fx:
 
 
 def effects(fx, t, lights, power=1.0):
+    """Lo mismo que CinematicFx (lightHalos, sunShafts, motes, waterfallLights, fireflies, mist) a la vez."""
     sun = np.array(S.SUN, float)
     c = S.CRATE
+    an = S.anchors()
     # halos de las luces mágicas
     for i, l in enumerate(lights, 1):
         d = np.array(l[:3]) - fx.eye
@@ -520,64 +548,99 @@ def effects(fx, t, lights, power=1.0):
             continue
         flick = 0.82 + 0.18 * math.sin(t * (0.07 + hsh(i, 171) * 0.08) + i)
         s = l[6]
-        fx.glow(l[0], l[1], l[2], 0.55 * s + 0.2, l[3], l[4], l[5], 0.30 * flick * min(1.0, s + 0.3))
+        fx.glow(l[0], l[1], l[2], 0.75 * s + 0.2, l[3], l[4], l[5], 0.32 * flick * min(1.0, s + 0.3))
         fx.glow(l[0], l[1], l[2], 0.18 * s + 0.08, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.45 * flick)
-    # el haz
-    r, g, b = 1.0, 0.88, 0.62
-    base = np.array([c[0], c[1] - 0.2, c[2]])
-    top = base + sun * 22.0
-    br = 0.85 + 0.15 * math.sin(t * 0.05)
-    fx.band(base, top, 2.3, 2.0, r, g, b, 0.20 * power * br, 0.10 * power * br)
-    fx.band(base, top, 1.4, 1.2, r, g, b, 0.26 * power * br, 0.14 * power * br)
-    fx.band(base, top, 0.7, 0.55, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.30 * power, 0.14 * power)
+    # el haz (CinematicFx.sunShafts): halo ancho, la columna con el borde marcado, el núcleo claro y vetas
+    r, g, b = 1.0, 0.93, 0.70
+    base = np.array([c[0], c[1] - 0.3, c[2]])
+    top = base + sun * 26.0
+    br = 0.88 + 0.12 * math.sin(t * 0.05)
+    mid = base + sun * 9.0
+    fx.band(base, mid, 3.4, 3.4, r, g, b, 0.02 * power * br, 0.04 * power * br)
+    fx.band(mid, top, 3.4, 3.0, r, g, b, 0.04 * power * br, 0.07 * power * br)
+    fx.band(base, mid, 2.2, 2.3, r, g, b, 0.04 * power * br, 0.07 * power * br, 0.16, 0.84)
+    fx.band(mid, top, 2.3, 2.3, r, g, b, 0.07 * power * br, 0.12 * power * br, 0.16, 0.84)
+    fx.band(mid, top, 1.0, 1.2, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.04 * power, 0.12 * power, 0.12, 0.88)
+    # el sol que entra por el hueco: un foco blanco cálido donde el haz sale de las copas
+    src = np.array(an['sunspot'][:3])
+    fx.glow(*src, 4.0, 1.0, 0.97, 0.85, 0.5 * power)
+    fx.glow(*src, 1.8, 1.0, 1.0, 0.94, 0.95 * power)
+    fx.glow(*src, 0.8, 1.0, 1.0, 1.0, 1.0 * power)
+    for i in range(9):
+        # rayos que bajan en abanico desde el foco, sobre la cascada, la escalera y el estanque
+        ang = (i - 4) * 0.13 + 0.05 * math.sin(t * 0.01 + i)
+        d = np.array([math.sin(ang) * 0.9, -1.0, 0.55 + 0.25 * hsh(i, 29)])
+        d /= np.linalg.norm(d)
+        L = 9.0 + hsh(i, 31) * 6.0
+        life = 0.7 + 0.3 * math.sin(t * (0.02 + hsh(i, 33) * 0.02) + i * 1.7)
+        fx.band(src, src + d * L, 0.12 + hsh(i, 35) * 0.2, 0.45 + hsh(i, 37) * 0.6, 1.0, 0.96, 0.80, 0.34 * life * power, 0.0)
     p1 = np.cross(sun, [0, 1, 0])
     p1 /= np.linalg.norm(p1)
     p2 = np.cross(sun, p1)
     p2 /= np.linalg.norm(p2)
-    for i in range(7):
-        ang = hsh(i, 3) * 6.2832 + t * 0.003 * (hsh(i, 5) - 0.5)
-        rad = 0.2 + hsh(i, 7) * 1.1
+    for i in range(9):
+        ang = hsh(i, 3) * 6.2832 + t * 0.004 * (hsh(i, 5) - 0.5)
+        rad = 0.3 + hsh(i, 7) * 1.7
         ox, oy = math.cos(ang) * rad, math.sin(ang) * rad
         b0 = base + p1 * ox + p2 * oy
-        b1 = b0 + sun * 20.0 + p1 * ox * 0.6 + p2 * oy * 0.6
-        a = (0.08 + 0.06 * math.sin(t * (0.03 + hsh(i, 9) * 0.04) + i * 2.1)) * power
-        fx.band(b0, b1, 0.08 + hsh(i, 11) * 0.12, 0.25 + hsh(i, 13) * 0.3, 1, 0.97, 0.89, a * 0.4, a)
-    fx.flat(c[0], c[1] + 0.01, c[2], 2.1, r, g, b, 0.42 * power)
-    fx.flat(c[0] + sun[0] * 0.4, 0.895, c[2] + sun[2] * 0.4, 3.8, r, g, b, 0.20 * power)
-    # espuma al pie de las fuentes de las peñas
+        b1 = b0 + sun * 24.0
+        a = (0.06 + 0.05 * math.sin(t * (0.03 + hsh(i, 9) * 0.04) + i * 2.1)) * power
+        fx.band(b0, b1, 0.10 + hsh(i, 11) * 0.15, 0.2 + hsh(i, 13) * 0.3, 1, 0.97, 0.88, a * 0.5, a)
+    # los rayos que bajan del hueco sobre la escalera y la cascada (y alguno hacia el estanque)
+    op = an['opening']
+    for i in range(7):
+        x = op[0] + (hsh(i, 15) - 0.5) * 8.0
+        z = op[2] + (hsh(i, 17) - 0.5) * op[3] * 1.6
+        tilt = (hsh(i, 19) - 0.5) * 0.35
+        d = np.array([tilt, -0.93, 0.36])
+        d /= np.linalg.norm(d)
+        b0 = np.array([x, op[1] + 1.0, z])
+        life = 0.65 + 0.35 * math.sin(t * (0.02 + hsh(i, 21) * 0.02) + i * 1.9)
+        a = 0.13 * life * power
+        fx.band(b0, b0 + d * (11.0 + hsh(i, 23) * 4.0), 0.35 + hsh(i, 25) * 0.6, 0.9 + hsh(i, 27) * 0.9, 1, 0.95, 0.78, a, 0.0)
+    # donde cae el haz: el charco de luz en el altar y en el agua
+    fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.36 * power)
+    fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.16 * power)
+    # espuma al pie de las cascadas de los lados (CinematicFx.waterfallLights)
     for k, sp in enumerate(S.spring_points()):
-        for i in range(6):
+        for i in range(8):
             ph = frac(t * 0.08 + hsh(i + k * 13, 251))
             ang = hsh(i + k * 13, 253) * 6.2832
-            fx.glow(sp[0] + math.cos(ang) * 0.3 * ph, sp[1] + 0.08 + ph * 0.25, sp[2] + math.sin(ang) * 0.3 * ph,
-                    0.18 + ph * 0.2, 0.85, 0.93, 1.0, 0.22 * (1 - ph))
+            fx.glow(sp[0] + math.cos(ang) * 0.5 * ph, sp[1] + 0.08 + ph * 0.3, sp[2] + 0.4 + math.sin(ang) * 0.4 * ph,
+                    0.25 + ph * 0.3, 0.80, 1.0, 1.0, 0.24 * (1 - ph))
+    f = an['fall']
+    fz = an['fall_z'][0] + 0.3
+    for i in range(14):
+        ph = frac(t * 0.07 + hsh(i, 241))
+        x = f[0] + (f[1] - f[0]) * hsh(i, 243)
+        fx.glow(x, f[3] + 0.1 + ph * 0.5, fz + 0.2 + ph * 0.6, 0.3 + ph * 0.4, 0.80, 1.0, 1.0, 0.22 * (1 - ph))
     # el polvo del haz
-    for i in range(110):
-        along = 0.3 + hsh(i, 31) * 10.0
+    for i in range(130):
+        along = 0.3 + hsh(i, 31) * 13.0
         ang = hsh(i, 33) * 6.2832
-        rad = math.sqrt(hsh(i, 37)) * (0.9 + along * 0.12)
+        rad = math.sqrt(hsh(i, 37)) * 2.4
         p = np.array(c) + sun * along + p1 * math.cos(ang) * rad + p2 * math.sin(ang) * rad
         tw = 0.5 + 0.5 * math.sin(t * (0.15 + hsh(i, 43) * 0.2) + i * 1.7)
-        fx.glow(*p, 0.035 + hsh(i, 45) * 0.03, 1.0, 0.93, 0.75, (0.25 + 0.55 * tw) * power)
-    # luciérnagas
-    for i in range(190):
+        fx.glow(*p, 0.035 + hsh(i, 45) * 0.03, 1.0, 0.95, 0.78, (0.25 + 0.55 * tw) * power)
+    # luciérnagas (chispas mágicas)
+    for i in range(110):
         period = 60.0 + hsh(i, 191) * 90.0
         ph = frac(t / period + hsh(i, 193))
         on = max(0.0, math.sin(ph * math.pi * 2)) ** 3
         if on < 0.02:
             continue
-        x = -20.0 + hsh(i, 195) * 40.0
-        z = -22.0 + hsh(i, 197) * 34.0
-        y = 0.3 + hsh(i, 199) * 3.2
-        fx.glow(x, y, z, 0.16, 0.8, 1.0, 0.45, 0.45 * on)
-        fx.glow(x, y, z, 0.04, 1, 1, 0.8, 0.9 * on)
-    # la bruma baja
+        x = -11.0 + hsh(i, 195) * 22.0
+        z = -16.0 + hsh(i, 197) * 26.0
+        y = 0.6 + hsh(i, 199) * 6.0
+        fx.glow(x, y, z, 0.13, 0.85, 1.0, 0.6, 0.40 * on)
+        fx.glow(x, y, z, 0.035, 1, 1, 0.85, 0.85 * on)
+    # la bruma baja sobre el agua
     for i in range(26):
-        x = -14.0 + hsh(i, 201) * 28.0
-        z = -16.0 + hsh(i, 205) * 24.0
-        y = 0.35 + hsh(i, 207) * 0.6
-        a = 0.035 * (0.6 + 0.4 * math.sin(t * 0.02 + i))
-        fx.glow(x, y, z, 2.6 + hsh(i, 209) * 2.0, 0.45, 0.62, 1.0, a)
+        x = -9.0 + hsh(i, 201) * 18.0
+        z = -14.0 + hsh(i, 205) * 24.0
+        y = 0.4 + hsh(i, 207) * 0.6
+        a = 0.03 * (0.6 + 0.4 * math.sin(t * 0.02 + i))
+        fx.glow(x, y, z, 2.6 + hsh(i, 209) * 2.0, 0.55, 0.95, 0.95, a)
 
 
 # ------------------------------------------------------------------------------------------------- la crate
@@ -610,7 +673,7 @@ def crate_quads(assets, me, light):
             wx = S.CRATE[0] + (p[0] - cx) * s
             wy = S.CRATE[1] + (p[1] - lo[1]) * s
             wz = S.CRATE[2] + (p[2] - cz) * s
-            vs.append((wx, wy, wz, ti, u, v, shade, shade * 0.98, shade * 0.92, 1.0))
+            vs.append((wx, wy, wz, ti, u, v, shade * CRATE_TINT[0], shade * CRATE_TINT[1], shade * CRATE_TINT[2], 1.0))
         for q in (0, 1, 2, 0, 2, 3):
             verts.append(vs[q])
     return verts
@@ -711,6 +774,20 @@ def main():
     v_solid, v_crate = vao(solid), vao(crate)
     wprog = ctx.program(vertex_shader=open(os.path.join(SHADERS, 'crate_water.vsh')).read(),
                         fragment_shader=open(os.path.join(SHADERS, 'crate_water.fsh')).read())
+    # la textura del agua del juego (animada: en el juego la anima el atlas de bloques), para el shader del agua
+    strips = {n: np.asarray(Image.open(io.BytesIO(assets.z.read(f'assets/minecraft/textures/block/{n}.png'))).convert('RGBA'))
+              for n in ('water_still', 'water_flow')}
+    wtex = ctx.texture((48, 32), 4)
+    wtex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+    def water_frame(tick):
+        st, fl = strips['water_still'], strips['water_flow']
+        a = np.zeros((32, 48, 4), np.uint8)
+        k = int(tick // 2) % (st.shape[0] // 16)
+        a[0:16, 0:16] = st[k * 16:(k + 1) * 16]
+        k = int(tick) % (fl.shape[0] // 32)
+        a[0:32, 16:48] = fl[k * 32:(k + 1) * 32]
+        wtex.write(a.tobytes())
     v_water = None
     if water:
         wd = np.array(water, 'f4')
@@ -760,7 +837,6 @@ def main():
         v_crate.render()
         ctx.enable(moderngl.BLEND)
         ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
-        ctx.depth_mask = False
         if v_water and os.environ.get('SIN_AGUA') != '1':
             wprog['ModelViewMat'].write(view.astype('f4').T.tobytes())
             wprog['ProjMat'].write(proj.astype('f4').T.tobytes())
@@ -770,6 +846,11 @@ def main():
             wprog['Time'].value = tick
             wprog['FogStart'].value, wprog['FogEnd'].value = FOG_START, FOG_END
             wprog['FogColor'].value = (*FOG, 1.0)
+            water_frame(tick)
+            wtex.use(2)
+            wprog['Sampler0'].value = 2
+            wprog['StillUV'].value = (0.0, 0.0, 16 / 48, 0.5)
+            wprog['FlowUV'].value = (16 / 48, 0.0, 1.0, 1.0)
             v_water.render()
         fx = Fx(eye, r, u)
         if os.environ.get('SIN_FX') != '1':
@@ -778,11 +859,12 @@ def main():
             d = np.array(fx.v, 'f4')
             va = ctx.vertex_array(fxp, [(ctx.buffer(d.tobytes()), '3f 2f 4f', 'pos', 'uv', 'col')])
             ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE
+            scene.depth_mask = False      # (en el juego, GLOW_ADD no escribe profundidad; si la escribe, el haz se pisa)
             gtex.use(0)
             fxp['glowtex'].value = 0
             fxp['mvp'].write(mvp)
             va.render()
-        ctx.depth_mask = True
+        scene.depth_mask = True
         ctx.disable(moderngl.DEPTH_TEST | moderngl.BLEND)
 
         def bpass(src, dst, mode, itx, ity, dx, dy):
@@ -825,10 +907,10 @@ def main():
         post['RayStrength'].value = RAYS
         post['Exposure'].value = EXPOSURE
         post['Clip'].value = (0.05, 220.0)
-        post['Focus'].value = (float(np.linalg.norm(np.array(eye) - np.array([S.CRATE[0], S.CRATE[1] + 0.6, S.CRATE[2]]))), 9.0)
+        post['Focus'].value = (float(np.linalg.norm(np.array(eye) - np.array([S.CRATE[0], S.CRATE[1] + 0.6, S.CRATE[2]]))), 16.0)
         qv[post].render()
         img = Image.frombytes('RGBA', (W, H), fin_t.read()).transpose(Image.FLIP_TOP_BOTTOM).convert('RGB')
-        bar = int(H * 0.075)
+        bar = int(H * BARS)
         px = img.load()
         for yy in list(range(bar)) + list(range(H - bar, H)):
             for xx in range(W):

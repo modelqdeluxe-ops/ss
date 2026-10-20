@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -32,6 +33,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -50,10 +52,10 @@ import org.joml.Vector3f;
  * la cámara) y se dibujan con el renderizador de bloques de Minecraft sobre un mundo propio (SceneLevel): oclusión
  * ambiental, caras tapadas, colores de bioma, como en el juego.
  *
- * <p>Lo quieto (suelo, ruinas, árboles, el agua del estanque) se construye una vez en búferes de la tarjeta gráfica,
- * con la luz de la escena en el color de cada vértice: más oscuro y frío a la sombra del bosque, cálido y entero en el
- * haz de sol que cae sobre la crate, con manchas de sol entre las hojas. La hierba, las flores y los helechos se dibujan
- * en cada fotograma, mecidos por el viento.
+ * <p>Lo quieto (el santuario de piedra, las enredaderas, el techo, el agua) se construye una vez en búferes de la tarjeta
+ * gráfica, con la luz de la escena en el color de cada vértice: la sombra fresca y verde azulada del santuario, cálido
+ * y entero en el haz de sol que cae sobre el altar, el sol de lleno arriba, el turquesa del estanque desde abajo y los
+ * faroles. Las flores y los helechos se dibujan en cada fotograma, mecidos por el viento.
  */
 public final class SanctuaryScene {
     private static final ResourceLocation DATA = new ResourceLocation("fscrates", "escena/santuario.bin");
@@ -74,6 +76,8 @@ public final class SanctuaryScene {
     private final BlockState[] palette;
     private final int[] flags;
     private final Vector3f sun = new Vector3f(), crate = new Vector3f();
+    /** El hueco de las copas (x, y, z del centro, media profundidad) y el estanque (media anchura, z de atrás y de delante). */
+    private float[] opening = new float[4], poolBox = new float[4];
 
     private final Map<RenderType, VertexBuffer> buffers = new HashMap<>();
     /** El agua para su shader (crate_water): superficie y cascadas, con la orilla, el brillo del fondo y la luz. */
@@ -175,6 +179,8 @@ public final class SanctuaryScene {
             sc.sun.set(s[0], s[1], s[2]).normalize();
             float[] c = sc.anchor("crate");
             sc.crate.set(c[0], c[1], c[2]);
+            sc.opening = sc.anchor("opening");
+            sc.poolBox = sc.anchor("poolbox");
             return sc;
         }
     }
@@ -192,24 +198,36 @@ public final class SanctuaryScene {
         return ((long)(x & 0xFFFFF) << 40) | ((long)(y & 0xFFFFF) << 20) | (z & 0xFFFFF);
     }
 
+    /** La luz de la escena: ambiente, haz, la luz del hueco, el sol de lleno arriba y el rebote del agua (r, g, b). */
+    private static final float[] AMB = {0.20F, 0.28F, 0.36F}, BEAM_C = {1.25F, 1.12F, 0.80F}, SKY_C = {0.34F, 0.38F, 0.28F},
+            POOL_C = {0.02F, 0.30F, 0.34F}, CROWN_C = {0.95F, 0.90F, 0.45F};
+
+    static float smooth(float a, float b, float x) {
+        float t = Math.max(0.0F, Math.min(1.0F, (x - a) / (b - a)));
+        return t * t * (3 - 2 * t);
+    }
+
     /**
-     * La luz del Bosque de las Hadas en un punto (multiplicador de r, g, b): la penumbra del atardecer, fresca y algo
-     * violeta; el haz de sol dorado que entra por el hueco de la cúpula y cae sobre la crate; manchas de sol en el
-     * suelo; las copas, rosadas arriba (les da el último sol); y la luz de las luces mágicas de alrededor (faroles,
-     * setas lámpara, liquen, bayas, el fondo del estanque), cada una de su color.
+     * La luz del Santuario de las Hadas en un punto (multiplicador de r, g, b; la misma cuenta que make_light de
+     * santuario_render.py): la sombra fresca, verde azulada, del santuario cerrado; el haz de sol (una columna ancha con
+     * el borde marcado) que entra por el hueco de las copas y cae sobre el altar; la luz que baja por el hueco; el sol de
+     * lleno en lo alto, alrededor del hueco (las hojas de arriba, verde amarillo); el turquesa del estanque que alumbra
+     * desde abajo; y la luz de las luces mágicas de alrededor (faroles, amatistas, linternas de mar), cada una de su color.
      */
     void light(float x, float y, float z, float[] out) {
         float off = beamOffset(x, y, z);
-        float beam = (float)Math.exp(-off * off / 5.0F);
-        float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.4F);
-        float top = Math.max(0.0F, Math.min(1.0F, (y - 9.0F) / 9.0F));
-        // el estanque alumbra de azul lo que tiene cerca (el pedestal, el borde), desde abajo
-        float px = x - crate.x, pz = z - crate.z;
-        float pond = (float)Math.exp(-(px * px + pz * pz) / 40.0F) * Math.max(0.0F, Math.min(1.0F, (4.0F - y) / 3.0F));
-        float r = 0.34F, g = 0.40F, b = 0.56F;
-        r += 1.25F * beam + 0.05F * dapple + 0.06F * top + 0.06F * pond;
-        g += 1.05F * beam + 0.07F * dapple + 0.03F * top + 0.22F * pond;
-        b += 0.62F * beam + 0.10F * dapple + 0.12F * top + 0.34F * pond;
+        float beam = (1.0F - smooth(1.7F, 2.9F, off)) * 0.9F + (float)Math.exp(-off * off / 18.0F) * 0.3F;
+        float ex = Math.abs(x - opening[0]);
+        float ez = Math.max(0.0F, Math.abs(z - opening[2]) - opening[3]);
+        float sky = (float)(Math.exp(-ex * ex / 30.0F) * Math.exp(-ez * ez / 14.0F))
+                * (0.45F + 0.55F * Math.max(0.0F, Math.min(1.0F, (y - 1.0F) / 9.0F)));
+        float crown = (float)(Math.exp(-ex * ex / 40.0F) * Math.exp(-ez * ez / 8.0F)) * smooth(5.5F, 8.5F, y);
+        float px = Math.max(0.0F, Math.abs(x - 0.5F) - (poolBox[0] + 0.5F));
+        float pz = Math.max(0.0F, Math.max(poolBox[1] - z, z - poolBox[2] - 1.0F));
+        float pool = (float)Math.exp(-(px * px + pz * pz) / 3.0F) * Math.max(0.0F, Math.min(1.0F, (3.4F - y) / 3.0F));
+        float r = AMB[0] + BEAM_C[0] * beam + SKY_C[0] * sky + POOL_C[0] * pool + CROWN_C[0] * crown;
+        float g = AMB[1] + BEAM_C[1] * beam + SKY_C[1] * sky + POOL_C[1] * pool + CROWN_C[1] * crown;
+        float b = AMB[2] + BEAM_C[2] * beam + SKY_C[2] * sky + POOL_C[2] * pool + CROWN_C[2] * crown;
         List<float[]> near = lightGrid.get(cell((int)Math.floor(x / 4), (int)Math.floor(y / 4), (int)Math.floor(z / 4)));
         if (near != null) {
             for (float[] l : near) {
@@ -229,26 +247,10 @@ public final class SanctuaryScene {
         out[2] = Math.min(1.0F, b);
     }
 
-    /** Manchas de sol entre las hojas (ruido suave con umbral). */
-    private static float dapple(float x, float z) {
-        float n = vnoise(x * 0.35F, z * 0.35F) * 0.65F + vnoise(x * 0.9F + 13.1F, z * 0.9F - 7.7F) * 0.35F;
-        float t = (n - 0.56F) / 0.16F;
-        return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
-    }
-
     private static float hash(int x, int z) {
         int h = x * 374761393 + z * 668265263;
         h = (h ^ (h >>> 13)) * 1274126177;
         return ((h ^ (h >>> 16)) & 0xFFFF) / 65535.0F;
-    }
-
-    static float vnoise(float x, float z) {
-        int ix = (int)Math.floor(x), iz = (int)Math.floor(z);
-        float fx = x - ix, fz = z - iz;
-        float sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
-        float a = hash(ix, iz), b = hash(ix + 1, iz), c = hash(ix, iz + 1), d = hash(ix + 1, iz + 1);
-        float ab = a + (b - a) * sx, cd = c + (d - c) * sx;
-        return ab + (cd - ab) * sz;
     }
 
     /** Pasa los vértices con el color multiplicado por la luz de la escena en su sitio (o por un color fijo). */
@@ -409,8 +411,8 @@ public final class SanctuaryScene {
         }
     }
 
-    /** Lo menos que brilla el agua (es agua de hadas: azul y viva aunque esté en la sombra). */
-    private static final float[] WATER_GLOW = {0.62F, 0.72F, 0.85F};
+    /** Lo menos que brilla el agua (es agua de hadas: turquesa y viva aunque esté en la sombra). */
+    private static final float[] WATER_GLOW = {0.45F, 0.85F, 0.92F};
 
     // ------------------------------------------------------------------------------------------ construir la escena
     /** Una planta que se mece: su sitio, su modelo, su capa, su tinte y su luz. */
@@ -540,8 +542,9 @@ public final class SanctuaryScene {
     /**
      * El agua para el shader crate_water (la misma cuenta que santuario_render.water_mesh): la superficie (14/16 de alto)
      * con, en cada esquina, cuánta orilla tiene (r), el brillo del fondo (b: linternas de mar, pepinos de mar) y la luz
-     * de la escena (a); y los lados donde el agua da al aire (las cascadas y las fuentes: g = 1, con uv = (a lo ancho,
-     * metros desde abajo)). El agua que cae va un poco más estrecha por los lados que dan al aire (un chorro, no un cubo).
+     * de la escena (a); y los lados donde el agua da al aire (las cascadas y los saltos de la escalera: g = 1, r = la
+     * altura de esa columna de agua / 16, para la espuma, con uv = (a lo ancho, metros desde abajo)). El agua que cae va
+     * un poco más estrecha por los lados que dan al aire (un chorro, no un cubo).
      */
     private void buildWaterFx() {
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
@@ -596,8 +599,8 @@ public final class SanctuaryScene {
                 }
                 for (float[] p : q) {
                     light(p[0], p[1], p[2], l);
-                    bb.vertex(p[0], p[1], p[2]).color(0.0F, 1.0F, 0.0F, Math.min(1.0F, (l[0] + l[1] + l[2]) / 3.0F))
-                            .uv((p[0] + p[2]) * 0.5F, p[1] - y0).endVertex();
+                    bb.vertex(p[0], p[1], p[2]).color(Math.min(1.0F, (y + h - y0) / 16.0F), 1.0F, 0.0F,
+                            Math.min(1.0F, (l[0] + l[1] + l[2]) / 3.0F)).uv((p[0] + p[2]) * 0.5F, p[1] - y0).endVertex();
                 }
                 n++;
             }
@@ -618,6 +621,13 @@ public final class SanctuaryScene {
     public boolean drawWaterFx(Matrix4f view, Matrix4f proj, Vector3f eye, float time) {
         ShaderInstance sh = ScenePost.water();
         if (sh == null || waterFx == null) return false;
+        // el dibujo del agua del juego, del atlas de bloques (lo anima el juego); el shader lo lee sin mipmaps
+        var atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
+        TextureAtlasSprite still = atlas.apply(new ResourceLocation("minecraft", "block/water_still"));
+        TextureAtlasSprite flow = atlas.apply(new ResourceLocation("minecraft", "block/water_flow"));
+        RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+        sh.safeGetUniform("StillUV").set(still.getU0(), still.getV0(), still.getU1(), still.getV1());
+        sh.safeGetUniform("FlowUV").set(flow.getU0(), flow.getV0(), flow.getU1(), flow.getV1());
         sh.safeGetUniform("CamPos").set(eye.x, eye.y, eye.z);
         sh.safeGetUniform("LightDir").set(sun.x, sun.y, sun.z);
         sh.safeGetUniform("BeamPos").set(crate.x, crate.y, crate.z);

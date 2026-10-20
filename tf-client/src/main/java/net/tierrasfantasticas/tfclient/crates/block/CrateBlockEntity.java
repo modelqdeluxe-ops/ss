@@ -88,7 +88,7 @@ public class CrateBlockEntity extends BlockEntity {
    private final Set<UUID> openedBy = new HashSet<>();
    public boolean sceneLidMode = false;
    private boolean muteAudio = false;
-   // (1.3.99) la crate del mundo, a los tiempos de la cinemática del Bosque de las Hadas (CrateCinematicScreen): la
+   // (1.3.99) la crate del mundo, a los tiempos de la cinemática del Santuario de las Hadas (CrateCinematicScreen): la
    // llave llega y gira, tiembla, se abre del todo con un pilar de luz y el premio sube encima; se cierra al final
    public static final int SCENE_TOTAL = 360;
    public static final int SCENE_KEY = 20;

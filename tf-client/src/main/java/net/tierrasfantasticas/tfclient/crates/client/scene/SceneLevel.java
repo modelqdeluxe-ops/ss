@@ -18,8 +18,8 @@ import net.minecraft.world.level.material.FluidState;
  * pone SanctuaryScene en el color) y los colores de la hierba, las hojas y el agua (los de un bosque de flores).
  */
 final class SceneLevel implements BlockAndTintGetter {
-    /** Colores del bioma de la escena: hierba y hojas del pantano (verdes vivos) y el agua (azul, como en los tráileres). */
-    static final int GRASS = 0x58A845, FOLIAGE = 0x45A032, WATER = 0x3C8CFF;
+    /** Colores del bioma de la escena: hierba, hojas y enredaderas (verdes vivos) y el agua (turquesa, como en la imagen). */
+    static final int GRASS = 0x5AAE4E, FOLIAGE = 0x4AAA44, WATER = 0x3FD8E0;
 
     private final BlockState[] states;
     final int x0, y0, z0, nx, ny, nz;

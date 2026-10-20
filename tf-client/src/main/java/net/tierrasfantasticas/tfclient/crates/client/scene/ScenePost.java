@@ -25,17 +25,19 @@ import org.lwjgl.opengl.GL11;
  * el resplandor más bello» y luego «sin shaders, sin bloom, sin colores vivos… no las texturas de Minecraft así»). La
  * escena no se dibuja directamente en la pantalla sino en una textura propia (con su profundidad); luego:
  * <ol>
- *   <li>el cielo de noche (crate_sky) al fondo, antes del 3D; el agua, con su shader (crate_water, desde
- *       SanctuaryScene);</li>
+ *   <li>el cielo de día (crate_sky) al fondo, antes del 3D (se ve por el hueco de las copas); el agua, con su shader
+ *       (crate_water, desde SanctuaryScene);</li>
  *   <li>el resplandor (crate_bloom): se baja a un cuarto, se queda lo que brilla y se desenfoca dos veces (estrecho y
  *       ancho); y la imagen entera baja y desenfocada, para la profundidad de campo;</li>
- *   <li>la imagen final (crate_post) en la pantalla: profundidad de campo (la crate nítida, el bosque de detrás
- *       desenfocado) + resplandor + rayos que salen del haz + colores vivos + viñeta.</li>
+ *   <li>la imagen final (crate_post) en la pantalla: algo de profundidad de campo (la crate nítida, lo de muy lejos
+ *       un poco suave) + resplandor + rayos que salen del hueco del sol + colores vivos + viñeta.</li>
  * </ol>
  * Si los shaders no cargan, la cinemática dibuja como antes, directa a la pantalla.
  */
 public final class ScenePost {
     static ShaderInstance sky, bloom, post, water;
+    /** Desde qué brillo florece (el agua turquesa y las luces sí; la crate y la piedra, no). */
+    static final float THRESHOLD = 0.78F;
     private TextureTarget scene, a, b, c, d;
 
     public static boolean ready() {
@@ -74,7 +76,7 @@ public final class ScenePost {
         scene.bindWrite(true);
     }
 
-    /** El cielo del atardecer de fondo (sin profundidad): ejes de la cámara, tangente del medio campo y el sol. */
+    /** El cielo de fondo (sin profundidad): ejes de la cámara, tangente del medio campo y el sol. */
     public void sky(Vector3f right, Vector3f up, Vector3f fwd, float tanX, float tanY, Vector3f sun, float time) {
         ShaderInstance sh = sky;
         sh.safeGetUniform("CamRight").set(right.x, right.y, right.z);
@@ -123,7 +125,7 @@ public final class ScenePost {
         sh.setSampler("BlurSampler", c.getColorTextureId());
         sh.setSampler("DepthSampler", scene.getDepthTextureId());
         sh.safeGetUniform("Clip").set(near, far);
-        sh.safeGetUniform("Focus").set(focus, 9.0F);
+        sh.safeGetUniform("Focus").set(focus, 16.0F);
         sh.safeGetUniform("SunPos").set(sunU, sunV);
         sh.safeGetUniform("SunVis").set(sunVis);
         sh.safeGetUniform("BloomStrength").set(bloomStrength);
@@ -142,7 +144,7 @@ public final class ScenePost {
         sh.safeGetUniform("InTexel").set(inTexelX, inTexelY);
         sh.safeGetUniform("Dir").set(dirX, dirY);
         sh.safeGetUniform("Mode").set((float)mode);
-        sh.safeGetUniform("Threshold").set(0.66F);
+        sh.safeGetUniform("Threshold").set(THRESHOLD);
         quad(sh);
     }
 

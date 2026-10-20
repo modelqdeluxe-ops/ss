@@ -56,15 +56,16 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 /**
- * La cinemática de apertura de las crates (TF Client 1.3.99): el Bosque de las Hadas en vivo (SanctuaryScene), al
- * atardecer, con la crate en su pedestal en medio del estanque de las hadas, la cascada detrás, el arco élfico, las
- * fuentes-copa, los faroles, las setas que brillan, las hadas y las luciérnagas, y el haz del sol encima. El dueño:
- * «una escena tipo de un santuario en la naturaleza con fuente de agua, tipo ruinas, con un haz del sol sobre el lugar,
- * una escena completa en vivo» y luego «que aparezca directamente ya cerca de la crate… mejora el shader… el
- * resplandor más bello… algo bello, como un bosque de hadas».
+ * La cinemática de apertura de las crates (TF Client 1.3.99): el Santuario de las Hadas en vivo (SanctuaryScene), como
+ * la imagen que mandó el dueño («quiero exactamente esto»): un santuario en ruinas de piedra con musgo y enredaderas, la
+ * crate en el altar con dos amatistas en medio del estanque turquesa, la cascada alta que baja por la escalera de agua
+ * al fondo, las dos cascadas de los lados, los faroles con su cadena, las flores de esporas, las hadas y las chispas, y
+ * el haz de sol que entra por el hueco de las copas. Antes: «una escena tipo de un santuario en la naturaleza con fuente
+ * de agua, tipo ruinas, con un haz del sol sobre el lugar, una escena completa en vivo».
  *
  * <pre>
- *   0-20    ya cerca de la crate (sin viaje): el título de la crate y «✦ Bosque de las Hadas ✦»
+ *   0-20    el encuadre de la imagen del dueño (de frente, el altar con la crate y la cascada al fondo), que se acerca:
+ *           el título de la crate y «✦ Santuario de las Hadas ✦»
  *   20-66   la llave: aparece en un remolino de luz, vuela hasta la cerradura, se alinea y entra
  *   70-80   gira; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza
  *   84-102  la crate tiembla, la luz se escapa por la tapa
@@ -509,7 +510,8 @@ public class CrateCinematicScreen extends Screen {
         pose.scale(scale * sxz, scale * sy, scale * sxz);
         pose.translate(-centerX, -minY, -centerZ);
         ModelBlockRenderer mr = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
-        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), 1.0F, 0.98F, 0.92F);
+        // (el dueño: «no abuses del bloom a que se vea borrosa la crate»: un poco por debajo de la luz entera, no florece)
+        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), 0.86F, 0.84F, 0.80F);
         mr.renderModel(pose.last(), vc, crateState, base, 1.0F, 1.0F, 1.0F, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 ModelData.EMPTY, RenderType.cutout());
         if (lid != null) {
@@ -824,9 +826,10 @@ public class CrateCinematicScreen extends Screen {
         overlay(g, sc, t);
     }
 
-    /** El cielo de respaldo (si el shader no carga) y la bruma del pantano de noche: azul muy oscuro (los árboles de lejos
-     *  se pierden en ella). */
-    private static final float[] SKY_TOP = {0.03F, 0.04F, 0.12F}, SKY_HORIZON = {0.20F, 0.16F, 0.34F}, FOG = {0.06F, 0.09F, 0.15F};
+    /** El cielo de respaldo (si el shader no carga) y la bruma del santuario: verde azulada oscura (lo del fondo se pierde
+     *  un poco en ella). */
+    private static final float[] SKY_TOP = {0.55F, 0.80F, 0.85F}, SKY_HORIZON = {0.90F, 0.92F, 0.80F}, FOG = {0.10F, 0.19F, 0.20F};
+    static final float FOG_START = 18.0F, FOG_END = 80.0F;
 
     private void renderScene(GuiGraphics g, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
@@ -880,8 +883,8 @@ public class CrateCinematicScreen extends Screen {
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.depthMask(true);
-        RenderSystem.setShaderFogStart(9.0F);
-        RenderSystem.setShaderFogEnd(50.0F);
+        RenderSystem.setShaderFogStart(FOG_START);
+        RenderSystem.setShaderFogEnd(FOG_END);
         RenderSystem.setShaderFogColor(FOG[0], FOG[1], FOG[2]);
         RenderSystem.setShaderFogShape(FogShape.SPHERE);
         for (ShaderInstance sh : new ShaderInstance[] {GameRenderer.getRendertypeSolidShader(), GameRenderer.getRendertypeCutoutShader(),
@@ -889,7 +892,6 @@ public class CrateCinematicScreen extends Screen {
             if (sh != null && sh.CHUNK_OFFSET != null) sh.CHUNK_OFFSET.set(0.0F, 0.0F, 0.0F);
         }
         Lighting.setupLevel(view);
-        boolean drawn = false;
         try {
             MultiBufferSource.BufferSource buf = mc.renderBuffers().bufferSource();
             PoseStack pose = new PoseStack();
@@ -955,7 +957,6 @@ public class CrateCinematicScreen extends Screen {
             itemRays(rays, fv, sc, t, eye);
             buf.endBatch(CinematicFx.raysType());
             RenderSystem.depthMask(true);
-            drawn = true;
         } finally {
             mc.gameRenderer.setPanoramicMode(panoramic);
             mv.popPose();
@@ -968,7 +969,9 @@ public class CrateCinematicScreen extends Screen {
             RenderSystem.setShaderFogShape(fogShape);
             Lighting.setupFor3DItems();
             RenderSystem.depthMask(true);
-            if (pp && !drawn) mc.getMainRenderTarget().bindWrite(true);
+            // la profundidad de la escena se queda como está (el shader la lee para la profundidad de campo; antes se
+            // borraba aquí, todo parecía lejos y la imagen entera salía desenfocada): se borra la de la pantalla
+            if (pp) mc.getMainRenderTarget().bindWrite(true);
             RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         }
 
@@ -986,14 +989,14 @@ public class CrateCinematicScreen extends Screen {
                     float d = (float)Math.sqrt((su - 0.5F) * (su - 0.5F) + (sv - 0.5F) * (sv - 0.5F));
                     vis = Math.max(0.0F, Math.min(1.0F, 1.3F - 0.42F * d));
                 }
-                // (el dueño: «el bloom no lo exageres tanto, pero así está bien» y luego «sin bloom… sin colores vivos»: en la
-                // penumbra solo brilla lo que tiene luz, así que el resplandor va fuerte)
+                // (el dueño: «que el resplandor también salga del agua… no abuses tanto del bloom a que se vea borrosa la
+                // crate»: florece lo que pasa del umbral, el agua y las luces; la crate, no)
                 float burst = pulseAt(t, OPEN, 36.0F) + pulseAt(t, REVEAL, 40.0F);
-                float bloomK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.3F * burst;
-                float rayK = 0.6F + 0.15F * smooth(OPEN, OPEN + 20, t) + 0.3F * burst;
+                float bloomK = 0.5F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
+                float rayK = 0.7F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
-                post.finish(su, sv, vis, bloomK, rayK, 1.6F, focus, 0.05F, 220.0F);
+                post.finish(su, sv, vis, bloomK, rayK, 1.55F, focus, 0.05F, 220.0F);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);
@@ -1065,8 +1068,9 @@ public class CrateCinematicScreen extends Screen {
         float fade = t < 10 ? 1.0F - t / 10.0F : t > TOTAL - 12 ? (t - (TOTAL - 12)) / 12.0F : 0.0F;
         if (fade > 0.01F) g.fill(0, 0, w, h, ((int)(Math.min(1.0F, fade) * 255) << 24));
         // franjas de cine
+        // (finas: la imagen del dueño va a pantalla entera)
         float bars = Math.min(1.0F, 0.6F + t / 20.0F);
-        int barH = (int)(h * 0.075F * bars);
+        int barH = (int)(h * 0.035F * bars);
         g.fill(0, 0, w, barH, 0xFF000000);
         g.fill(0, h - barH, w, h, 0xFF000000);
         // el título de la crate, al llegar
@@ -1075,7 +1079,7 @@ public class CrateCinematicScreen extends Screen {
             String name = cfg.displayName == null || cfg.displayName.isEmpty() ? "Crate " + cfg.rarity.displayName()
                     : cfg.displayName.replace('&', '§');
             drawScaled(g, "§l" + stripColor(name), w / 2, (int)(h * 0.16F), 2.0F, withAlpha(cfg.rarity.rgb(), a));
-            drawScaled(g, "✦ Bosque de las Hadas ✦", w / 2, (int)(h * 0.16F) + 24, 1.0F, withAlpha(0xF3E6C8, a * 0.9F));
+            drawScaled(g, "✦ Santuario de las Hadas ✦", w / 2, (int)(h * 0.16F) + 24, 1.0F, withAlpha(0xF3E6C8, a * 0.9F));
         }
         // el premio
         if (t >= REVEAL + 6 && candidates != null && !candidates.isEmpty()) {

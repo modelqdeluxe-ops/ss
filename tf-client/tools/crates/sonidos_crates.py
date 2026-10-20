@@ -3,12 +3,12 @@
     python3 -I tools/crates/sonidos_crates.py [--wav carpeta]
 
 Escribe OGG Vorbis en assets/tfclient/sounds/crates/ (los pide CrateCinematicScreen como tfclient:crates.<nombre>).
-Todo en Re mayor, a los tiempos de la cinemática del Bosque de las Hadas (20 ticks = 1 s): la llave aparece a los
+Todo en Re mayor, a los tiempos de la cinemática del Santuario de las Hadas (20 ticks = 1 s): la llave aparece a los
 1,0 s, entra a los 3,3, gira a los 3,6, las runas a los 3,8, tiembla a los 4,2, se abre a los 5,1, la ruleta de los
 6,4 a los 12,6 y el premio a los 12,9; dura 18 s.
 
-  ambiente        el bosque de las hadas de noche, en el pantano: la cascada, las hojas con el viento, grillos,
-                  ranas, campanitas de las hadas y un búho lejos (19 s, estéreo)
+  ambiente        el santuario de día: las cascadas, las hojas con el viento, gotas en el estanque, pájaros lejos
+                  (fuera, por el hueco del sol) y campanitas de las hadas (19 s, estéreo)
   musica          la música de la cinemática, a sus tiempos (18 s, estéreo): cuerdas y arpa al llegar, celesta con la
                   llave, coro y campana al girar, trémolo que sube al temblar, acorde grande al abrirse, la ruleta con
                   un ostinato que se frena, silencio para el premio y un final tranquilo
@@ -121,12 +121,12 @@ def ambiente():
     n = len(t)
     r = rng(1399)
     out = np.zeros((n, 2))
-    # la cascada, detrás: un rumor de agua que no para (grave y ancho) y su siseo
+    # las cascadas (la alta del fondo y las dos de los lados): un rumor de agua que no para (grave y ancho) y su siseo
     roar = noise2(n, 17)
     for c in range(2):
         roar[:, c] = bp(roar[:, c], 160, 1900) * 0.9 + bp(roar[:, c], 1900, 6000) * 0.22
     swirl = 0.8 + 0.2 * np.sin(2 * np.pi * 0.21 * t + 0.4) + 0.12 * lp(r.standard_normal(n), 3) * 6
-    out += roar * swirl[:, None] * 0.05
+    out += roar * swirl[:, None] * 0.065
     # el viento en las hojas, con ráfagas lentas
     wind = noise2(n, 11)
     for c in range(2):
@@ -138,23 +138,6 @@ def ambiente():
         at = r.random() * (dur - 0.1)
         f = 500 + r.random() ** 1.5 * 1400
         place(out, pan2(bubble(f, 0.03 + r.random() * 0.05, i), r.uniform(-0.3, 0.3)), at, 0.035 + 0.04 * r.random())
-
-    # grillos del atardecer: trinos cortos en grupos, cada uno con su ritmo y su sitio
-    def cricket(p, f0, rate, gap, seed, gain):
-        rr = rng(seed)
-        at = rr.random() * gap
-        while at < dur - 0.3:
-            pulses = rr.integers(3, 5)
-            for j in range(pulses):
-                d = 0.018
-                tc = tt(d)
-                x = np.sin(2 * np.pi * f0 * tc) * np.sin(np.pi * tc / d) ** 2
-                place(out, pan2(x, p), at + j / rate, gain)
-            at += gap * (0.85 + 0.3 * rr.random())
-
-    for k in range(5):
-        cricket(r.uniform(-0.9, 0.9), 4300 + 500 * r.random(), 28 + 6 * r.random(), 0.55 + 0.4 * r.random(), 1500 + k,
-                0.010 + 0.008 * r.random())
 
     # las campanitas de las hadas: notas sueltas, muy agudas y suaves (pentatónica de Re), con un brillo
     penta = ['D6', 'E6', 'F#6', 'A6', 'B6', 'D7']
@@ -170,34 +153,23 @@ def ambiente():
         k += 1
         at += 1.1 + r.random() * 1.8
 
-    # ranas del pantano: croares graves en ráfagas, cada una desde su sitio
-    def croak(at, p, f0, seed, gain):
+    # pájaros de día, lejos (fuera, por el hueco de las copas): frases cortas de trinos, cada uno desde su sitio
+    def bird(at, p, f0, seed, gain):
         rr = rng(seed)
-        for j in range(rr.integers(1, 4)):
-            d = 0.16 + rr.random() * 0.12
-            tc = tt(d)
-            env = np.sin(np.pi * tc / d) ** 1.5
-            puls = 0.5 + 0.5 * np.sign(np.sin(2 * np.pi * (22 + rr.random() * 8) * tc))
-            ph = 2 * np.pi * np.cumsum(f0 * (1 + 0.08 * tc / d)) / SR
-            x = (np.sin(ph) + 0.6 * np.sin(2 * ph) + 0.35 * np.sin(3 * ph)) * env * (0.35 + 0.65 * puls)
-            x = bp(x, 180, 1600)
-            place(out, pan2(x, p), at + j * (d + 0.08 + rr.random() * 0.1), gain)
+        for j in range(rr.integers(2, 6)):
+            d = 0.06 + rr.random() * 0.08
+            shape = ('down', 'up', 'updown')[rr.integers(3)]
+            x = chirp(f0 * (1 + 0.15 * rr.random()), f0 * (0.7 + 0.5 * rr.random()), d, shape, 0.1,
+                      trill=rr.random() * 40 if rr.random() < 0.3 else 0.0)
+            place(out, pan2(lp(x, 6000), p), at + j * (d + 0.03 + rr.random() * 0.06), gain)
 
     k = 0
-    at = 0.7
+    at = 0.5
     while at < dur - 1.0:
-        croak(at, r.uniform(-0.9, 0.9), 150 + r.random() * 120, 100 + k, 0.05 + 0.03 * r.random())
+        bird(at, r.uniform(-0.8, 0.8), 2600 + r.random() * 1800, 300 + k, 0.03 + 0.02 * r.random())
         k += 1
-        at += 1.1 + r.random() * 2.2
+        at += 0.9 + r.random() * 1.8
 
-    # un búho lejos: «uuh… uh-uuh»
-    def owl(at, p):
-        for j, (d, f) in enumerate(((0.45, 410), (0.18, 380), (0.5, 370))):
-            x = chirp(f, f * 0.95, d, 'updown', 0.25)
-            place(out, pan2(lp(x, 900), p), at + (0, 0.75, 1.0)[j], 0.045)
-
-    owl(4.2, -0.7)
-    owl(12.5, 0.6)
     out = sala(out, 3.0, 0.26, 5200, seed=1399)[:n]
     out = np.stack([hp(out[:, c], 90) for c in range(2)], 1)
     out *= smooth(0, 0.8, t)[:, None]

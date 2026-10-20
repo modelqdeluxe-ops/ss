@@ -12,9 +12,9 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Lo que se mueve en el Bosque de las Hadas de las crates (1.3.99; un pantano de hadas de noche), en el mundo de la
- * escena: el haz de luz que baja sobre el santuario y el polvo que brilla en él, el halo de las luces mágicas, las hadas
- * y las luciérnagas, la niebla baja, la espuma y las ondas de la cascada y de las fuentes (el agua la dibuja el juego),
+ * Lo que se mueve en el Santuario de las Hadas de las crates (1.3.99; la imagen del dueño), en el mundo de la escena: el
+ * haz de sol que entra por el hueco de las copas, su foco y sus rayos, el polvo que brilla en él, el halo de las luces
+ * mágicas, las hadas y las chispas, la bruma baja, la espuma y las ondas de las cascadas (el agua tiene su shader),
  * los pétalos, el anillo de runas, el pilar de luz de la crate abierta, la onda de la apertura y del premio y los
  * destellos. Todo determinista con el tiempo (en ticks), sin estado: cada partícula sale de su índice.
  */
@@ -67,6 +67,15 @@ public final class CinematicFx {
      */
     public static void band(VertexConsumer vc, View v, Vector3f a, Vector3f b, float wa, float wb, float r, float g, float bl,
                             float alphaA, float alphaB) {
+        band(vc, v, a, b, wa, wb, r, g, bl, alphaA, alphaB, 0.0F, 1.0F);
+    }
+
+    /**
+     * Lo mismo con solo el trozo {@code u0..u1} del perfil del brillo a lo ancho: con 0,16..0,84 el borde queda marcado
+     * (la columna del haz de sol, «bien definido»).
+     */
+    public static void band(VertexConsumer vc, View v, Vector3f a, Vector3f b, float wa, float wb, float r, float g, float bl,
+                            float alphaA, float alphaB, float u0, float u1) {
         float ax = b.x - a.x, ay = b.y - a.y, az = b.z - a.z;
         float mx = (a.x + b.x) * 0.5F - v.eye.x, my = (a.y + b.y) * 0.5F - v.eye.y, mz = (a.z + b.z) * 0.5F - v.eye.z;
         float sx = ay * mz - az * my, sy = az * mx - ax * mz, sz = ax * my - ay * mx;
@@ -75,10 +84,10 @@ public final class CinematicFx {
         sx /= l;
         sy /= l;
         sz /= l;
-        vc.vertex(v.m, a.x - sx * wa, a.y - sy * wa, a.z - sz * wa).color(r, g, bl, alphaA).uv(0, 0.5F).endVertex();
-        vc.vertex(v.m, a.x + sx * wa, a.y + sy * wa, a.z + sz * wa).color(r, g, bl, alphaA).uv(1, 0.5F).endVertex();
-        vc.vertex(v.m, b.x + sx * wb, b.y + sy * wb, b.z + sz * wb).color(r, g, bl, alphaB).uv(1, 0.5F).endVertex();
-        vc.vertex(v.m, b.x - sx * wb, b.y - sy * wb, b.z - sz * wb).color(r, g, bl, alphaB).uv(0, 0.5F).endVertex();
+        vc.vertex(v.m, a.x - sx * wa, a.y - sy * wa, a.z - sz * wa).color(r, g, bl, alphaA).uv(u0, 0.5F).endVertex();
+        vc.vertex(v.m, a.x + sx * wa, a.y + sy * wa, a.z + sz * wa).color(r, g, bl, alphaA).uv(u1, 0.5F).endVertex();
+        vc.vertex(v.m, b.x + sx * wb, b.y + sy * wb, b.z + sz * wb).color(r, g, bl, alphaB).uv(u1, 0.5F).endVertex();
+        vc.vertex(v.m, b.x - sx * wb, b.y - sy * wb, b.z - sz * wb).color(r, g, bl, alphaB).uv(u0, 0.5F).endVertex();
     }
 
     /** Un anillo plano (en y) hecho de segmentos con el perfil del brillo a lo ancho (ondas del agua, la onda de luz). */
@@ -116,79 +125,97 @@ public final class CinematicFx {
 
     // ------------------------------------------------------------------------------------------------ el sol
     /**
-     * El haz de luz del santuario: una columna de luz dorada que baja desde el hueco de las copas y cae sobre la crate,
-     * en capas suaves (algo más ancha y más clara abajo, con un núcleo claro), con vetas finas que se mueven despacio
-     * dentro y el charco de luz en el pedestal y en el agua; y algún rayo de luna fino entre las copas, por el pantano.
+     * El haz de sol del santuario (como en la imagen del dueño): una columna ancha que baja del hueco de las copas sobre
+     * el altar, con el borde marcado y el núcleo claro, más fuerte arriba que abajo (que no tape la crate), con vetas
+     * finas que se mueven dentro; el foco blanco cálido donde entra el sol, arriba en el centro; rayos que bajan en
+     * abanico desde él sobre la cascada, la escalera y el estanque; y el charco de luz en el altar y en el agua.
      * {@code power} sube con la apertura (y baja mientras gira la ruleta, para no tapar los premios); {@code tint}, el
-     * color de la rareza que se mezcla al abrir.
+     * color de la rareza que se mezcla al abrir. (Lo mismo en santuario_render.effects.)
      */
     public static void sunShafts(VertexConsumer vc, View v, SanctuaryScene sc, float t, float power, int tint, float tintAmt) {
         Vector3f sun = sc.sunDir();
         float[] c = sc.anchor("crate");
         float tr = ((tint >> 16) & 255) / 255.0F, tg = ((tint >> 8) & 255) / 255.0F, tb = (tint & 255) / 255.0F;
-        float r = mix(1.0F, tr, tintAmt), g = mix(0.88F, tg, tintAmt), b = mix(0.62F, tb, tintAmt);
-        Vector3f base = new Vector3f(c[0], c[1] - 0.2F, c[2]);
-        Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(22.0F));
-        float breathe = 0.85F + 0.15F * (float)Math.sin(t * 0.05F);
-        // las capas, de fuera (ancha y tenue) a dentro (estrecha y clara): una columna de luz que baja del hueco de las copas: algo más ancha y más clara abajo, donde da en el pedestal
-        band(vc, v, base, top, 2.3F, 2.0F, r, g, b, 0.20F * power * breathe, 0.10F * power * breathe);
-        band(vc, v, base, top, 1.4F, 1.2F, r, g, b, 0.26F * power * breathe, 0.14F * power * breathe);
-        band(vc, v, base, top, 0.7F, 0.55F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.30F * power, 0.14F * power);
+        float r = mix(1.0F, tr, tintAmt), g = mix(0.93F, tg, tintAmt), b = mix(0.70F, tb, tintAmt);
+        Vector3f base = new Vector3f(c[0], c[1] - 0.3F, c[2]);
+        Vector3f mid = new Vector3f(base).add(new Vector3f(sun).mul(9.0F));
+        Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(26.0F));
+        float br = 0.88F + 0.12F * (float)Math.sin(t * 0.05F);
+        // el halo ancho, la columna con el borde marcado y el núcleo claro (más fuertes arriba)
+        band(vc, v, base, mid, 3.4F, 3.4F, r, g, b, 0.02F * power * br, 0.04F * power * br);
+        band(vc, v, mid, top, 3.4F, 3.0F, r, g, b, 0.04F * power * br, 0.07F * power * br);
+        band(vc, v, base, mid, 2.2F, 2.3F, r, g, b, 0.04F * power * br, 0.07F * power * br, 0.16F, 0.84F);
+        band(vc, v, mid, top, 2.3F, 2.3F, r, g, b, 0.07F * power * br, 0.12F * power * br, 0.16F, 0.84F);
+        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.04F * power, 0.12F * power, 0.12F, 0.88F);
+        // el foco del sol, donde entra por el hueco, y los rayos que bajan en abanico desde él
+        float[] spot = sc.anchor("sunspot");
+        glow(vc, v, spot[0], spot[1], spot[2], 4.0F, 1.0F, 0.97F, 0.85F, 0.5F * power);
+        glow(vc, v, spot[0], spot[1], spot[2], 1.8F, 1.0F, 1.0F, 0.94F, 0.95F * power);
+        glow(vc, v, spot[0], spot[1], spot[2], 0.8F, 1.0F, 1.0F, 1.0F, 1.0F * power);
+        Vector3f src = new Vector3f(spot[0], spot[1], spot[2]);
+        for (int i = 0; i < 9; i++) {
+            float ang = (i - 4) * 0.13F + 0.05F * (float)Math.sin(t * 0.01F + i);
+            Vector3f d = new Vector3f((float)Math.sin(ang) * 0.9F, -1.0F, 0.55F + 0.25F * hash(i, 29)).normalize();
+            float len = 9.0F + hash(i, 31) * 6.0F;
+            float life = 0.7F + 0.3F * (float)Math.sin(t * (0.02F + hash(i, 33) * 0.02F) + i * 1.7F);
+            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.12F + hash(i, 35) * 0.2F, 0.45F + hash(i, 37) * 0.6F, 1.0F, 0.96F, 0.80F,
+                    0.34F * life * power, 0.0F);
+        }
         // vetas finas que se mueven dentro del haz
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
         Vector3f p2 = new Vector3f(sun).cross(p1).normalize();
-        for (int i = 0; i < 7; i++) {
-            float ang = hash(i, 3) * 6.2832F + t * 0.003F * (hash(i, 5) - 0.5F);
-            float rad = 0.2F + hash(i, 7) * 1.1F;
+        for (int i = 0; i < 9; i++) {
+            float ang = hash(i, 3) * 6.2832F + t * 0.004F * (hash(i, 5) - 0.5F);
+            float rad = 0.3F + hash(i, 7) * 1.7F;
             float ox = (float)Math.cos(ang) * rad, oy = (float)Math.sin(ang) * rad;
             Vector3f b0 = new Vector3f(base).add(new Vector3f(p1).mul(ox)).add(new Vector3f(p2).mul(oy));
-            Vector3f b1 = new Vector3f(b0).add(new Vector3f(sun).mul(20.0F)).add(new Vector3f(p1).mul(ox * 0.6F)).add(new Vector3f(p2).mul(oy * 0.6F));
-            float a = (0.08F + 0.06F * (float)Math.sin(t * (0.03F + hash(i, 9) * 0.04F) + i * 2.1F)) * power;
-            band(vc, v, b0, b1, 0.08F + hash(i, 11) * 0.12F, 0.25F + hash(i, 13) * 0.3F, mix(r, 1, 0.6F), mix(g, 1, 0.6F),
-                    mix(b, 1, 0.6F), a * 0.4F, a);
+            Vector3f b1 = new Vector3f(b0).add(new Vector3f(sun).mul(24.0F));
+            float a = (0.06F + 0.05F * (float)Math.sin(t * (0.03F + hash(i, 9) * 0.04F) + i * 2.1F)) * power;
+            band(vc, v, b0, b1, 0.10F + hash(i, 11) * 0.15F, 0.2F + hash(i, 13) * 0.3F, mix(r, 1, 0.6F), mix(g, 1, 0.6F),
+                    mix(b, 1, 0.6F), a * 0.5F, a);
         }
-        // rayos de luna finos entre las copas, por el pantano (aparecen y se van)
-        for (int i = 0; i < 6; i++) {
-            float life = frac(t / (200.0F + hash(i, 17) * 160.0F) + hash(i, 19));
-            float a = (float)Math.sin(life * Math.PI);
-            a = a * a * 0.06F;
-            float x = -12.0F + hash(i, 21) * 24.0F, z = -12.0F + hash(i, 23) * 18.0F;
-            if (Math.abs(x - c[0]) < 4.0F && Math.abs(z - c[2]) < 4.0F) x += 7.0F;
-            Vector3f b0 = new Vector3f(x, 0.05F, z);
-            band(vc, v, b0, new Vector3f(b0).add(new Vector3f(sun).mul(18.0F)), 0.12F + hash(i, 25) * 0.2F, 0.4F, 0.75F, 0.85F, 1.0F,
-                    a * 0.5F, a);
+        // los rayos que bajan del hueco sobre la escalera y la cascada
+        float[] op = sc.anchor("opening");
+        for (int i = 0; i < 7; i++) {
+            float x = op[0] + (hash(i, 15) - 0.5F) * 8.0F;
+            float z = op[2] + (hash(i, 17) - 0.5F) * op[3] * 1.6F;
+            Vector3f d = new Vector3f((hash(i, 19) - 0.5F) * 0.35F, -0.93F, 0.36F).normalize();
+            Vector3f b0 = new Vector3f(x, op[1] + 1.0F, z);
+            float life = 0.65F + 0.35F * (float)Math.sin(t * (0.02F + hash(i, 21) * 0.02F) + i * 1.9F);
+            band(vc, v, b0, new Vector3f(b0).add(d.mul(11.0F + hash(i, 23) * 4.0F)), 0.35F + hash(i, 25) * 0.6F, 0.9F + hash(i, 27) * 0.9F,
+                    1.0F, 0.95F, 0.78F, 0.13F * life * power, 0.0F);
         }
-        // donde cae el haz: el charco de luz en el pedestal y en el agua
-        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.1F, r, g, b, 0.42F * power);
+        // donde cae el haz: el charco de luz en el altar y en el agua
+        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.36F * power);
         float[] pool = sc.anchor("pool");
-        flatGlow(vc, v, c[0] + sun.x * 0.4F, pool[1] + 0.02F, c[2] + sun.z * 0.4F, 3.8F, r, g, b, 0.20F * power);
+        flatGlow(vc, v, c[0], pool[1] + 0.02F, c[2] - 1.0F, 4.8F, r, g, b, 0.16F * power);
     }
 
-    /** El polvo que brilla en el haz de sol (y algo de polen por la plaza). */
+    /** El polvo que brilla en el haz de sol (y algo de polen por el santuario). */
     public static void motes(VertexConsumer vc, View v, SanctuaryScene sc, float t, float power) {
         Vector3f sun = sc.sunDir();
         float[] c = sc.anchor("crate");
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
         Vector3f p2 = new Vector3f(sun).cross(p1).normalize();
-        for (int i = 0; i < 110; i++) {
-            float along = 0.3F + hash(i, 31) * 10.0F;
+        for (int i = 0; i < 130; i++) {
+            float along = 0.3F + hash(i, 31) * 13.0F;
             float ang = hash(i, 33) * 6.2832F + t * 0.004F * (hash(i, 35) - 0.5F);
-            float rad = (float)Math.sqrt(hash(i, 37)) * (0.9F + along * 0.12F);
+            float rad = (float)Math.sqrt(hash(i, 37)) * 2.4F;
             float drift = (float)Math.sin(t * 0.02F + i) * 0.25F;
             float x = c[0] + sun.x * along + p1.x * ((float)Math.cos(ang) * rad + drift) + p2.x * (float)Math.sin(ang) * rad;
             float y = c[1] + sun.y * along + p1.y * (float)Math.cos(ang) * rad + p2.y * (float)Math.sin(ang) * rad
                     + frac(t * 0.0015F * (0.5F + hash(i, 39)) + hash(i, 41)) * 1.2F - 0.6F;
             float z = c[2] + sun.z * along + p1.z * ((float)Math.cos(ang) * rad + drift) + p2.z * (float)Math.sin(ang) * rad;
             float tw = 0.5F + 0.5F * (float)Math.sin(t * (0.15F + hash(i, 43) * 0.2F) + i * 1.7F);
-            glow(vc, v, x, y, z, 0.035F + hash(i, 45) * 0.03F, 1.0F, 0.93F, 0.75F, (0.25F + 0.55F * tw) * power);
+            glow(vc, v, x, y, z, 0.035F + hash(i, 45) * 0.03F, 1.0F, 0.95F, 0.78F, (0.25F + 0.55F * tw) * power);
         }
         for (int i = 0; i < 45; i++) {
-            float x = -10.0F + hash(i, 51) * 20.0F + (float)Math.sin(t * 0.01F + i) * 1.2F + t * 0.006F;
-            x = -10.0F + frac((x + 10.0F) / 20.0F) * 20.0F;
-            float z = -10.0F + hash(i, 53) * 20.0F + (float)Math.cos(t * 0.012F + i * 0.7F) * 1.0F;
-            float y = 0.4F + hash(i, 55) * 3.5F + (float)Math.sin(t * 0.03F + i) * 0.3F;
+            float x = -9.0F + hash(i, 51) * 18.0F + (float)Math.sin(t * 0.01F + i) * 1.2F + t * 0.006F;
+            x = -9.0F + frac((x + 9.0F) / 18.0F) * 18.0F;
+            float z = -14.0F + hash(i, 53) * 22.0F + (float)Math.cos(t * 0.012F + i * 0.7F) * 1.0F;
+            float y = 0.6F + hash(i, 55) * 5.0F + (float)Math.sin(t * 0.03F + i) * 0.3F;
             float tw = 0.5F + 0.5F * (float)Math.sin(t * 0.2F + i * 2.3F);
-            glow(vc, v, x, y, z, 0.03F, 1.0F, 0.95F, 0.8F, 0.25F * tw);
+            glow(vc, v, x, y, z, 0.03F, 1.0F, 0.97F, 0.85F, 0.25F * tw);
         }
     }
 
@@ -540,7 +567,7 @@ public final class CinematicFx {
             if (dx * dx + dy * dy + dz * dz > 70 * 70) continue;
             float flick = 0.82F + 0.18F * (float)Math.sin(t * (0.07F + hash(i, 171) * 0.08F) + i);
             float s = l[6];
-            glow(vc, v, l[0], l[1], l[2], 0.55F * s + 0.2F, l[3], l[4], l[5], 0.30F * flick * Math.min(1.0F, s + 0.3F));
+            glow(vc, v, l[0], l[1], l[2], 0.75F * s + 0.2F, l[3], l[4], l[5], 0.32F * flick * Math.min(1.0F, s + 0.3F));
             glow(vc, v, l[0], l[1], l[2], 0.18F * s + 0.08F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.45F * flick);
         }
     }
@@ -597,18 +624,18 @@ public final class CinematicFx {
         }
     }
 
-    /** Luciérnagas: puntitos amarillo verdosos que se encienden y se apagan, a ras de suelo y entre las matas. */
+    /** Chispas mágicas (como luciérnagas): puntitos que se encienden y se apagan por todo el santuario. */
     public static void fireflies(VertexConsumer vc, View v, float t) {
-        for (int i = 0; i < 190; i++) {
+        for (int i = 0; i < 110; i++) {
             float period = 60.0F + hash(i, 191) * 90.0F;
             float ph = frac(t / period + hash(i, 193));
             float on = (float)Math.pow(Math.max(0.0F, (float)Math.sin(ph * Math.PI * 2)), 3.0);
             if (on < 0.02F) continue;
-            float x = -20.0F + hash(i, 195) * 40.0F + (float)Math.sin(t * 0.013F + i) * 1.2F;
-            float z = -22.0F + hash(i, 197) * 34.0F + (float)Math.cos(t * 0.011F + i * 0.7F) * 1.2F;
-            float y = 0.3F + hash(i, 199) * 3.2F + (float)Math.sin(t * 0.03F + i) * 0.35F;
-            glow(vc, v, x, y, z, 0.16F, 0.8F, 1.0F, 0.45F, 0.45F * on);
-            glow(vc, v, x, y, z, 0.04F, 1, 1, 0.8F, 0.9F * on);
+            float x = -11.0F + hash(i, 195) * 22.0F + (float)Math.sin(t * 0.013F + i) * 1.2F;
+            float z = -16.0F + hash(i, 197) * 26.0F + (float)Math.cos(t * 0.011F + i * 0.7F) * 1.2F;
+            float y = 0.6F + hash(i, 199) * 6.0F + (float)Math.sin(t * 0.03F + i) * 0.35F;
+            glow(vc, v, x, y, z, 0.13F, 0.85F, 1.0F, 0.6F, 0.40F * on);
+            glow(vc, v, x, y, z, 0.035F, 1, 1, 0.85F, 0.85F * on);
         }
     }
 
@@ -616,12 +643,12 @@ public final class CinematicFx {
     public static void mist(VertexConsumer vc, View v, SanctuaryScene sc, float t) {
         float[] pond = sc.anchor("pond");
         for (int i = 0; i < 26; i++) {
-            float x = -14.0F + hash(i, 201) * 28.0F + t * 0.006F * (0.5F + hash(i, 203));
-            x = -14.0F + frac((x + 14.0F) / 28.0F) * 28.0F;
-            float z = -16.0F + hash(i, 205) * 24.0F;
-            float y = 0.35F + hash(i, 207) * 0.6F;
-            float a = 0.035F * (0.6F + 0.4F * (float)Math.sin(t * 0.02F + i));
-            glow(vc, v, x, y, z, 2.6F + hash(i, 209) * 2.0F, 0.45F, 0.62F, 1.0F, a);
+            float x = -9.0F + hash(i, 201) * 18.0F + t * 0.006F * (0.5F + hash(i, 203));
+            x = -9.0F + frac((x + 9.0F) / 18.0F) * 18.0F;
+            float z = -14.0F + hash(i, 205) * 24.0F;
+            float y = 0.4F + hash(i, 207) * 0.6F;
+            float a = 0.03F * (0.6F + 0.4F * (float)Math.sin(t * 0.02F + i));
+            glow(vc, v, x, y, z, 2.6F + hash(i, 209) * 2.0F, 0.55F, 0.95F, 0.95F, a);
         }
         for (int i = 0; i < 10; i++) {
             float ph = frac(t * 0.008F + hash(i, 211));
@@ -630,7 +657,7 @@ public final class CinematicFx {
         }
     }
 
-    /** La luz de la cascada (luz que suma; el agua la dibuja el juego): la espuma al pie y las ondas del remanso. */
+    /** La luz de las cascadas (luz que suma; el agua tiene su shader): la espuma al pie y las ondas del rellano y del estanque. */
     public static void waterfallLights(VertexConsumer vc, View v, SanctuaryScene sc, float t) {
         float[] f = sc.anchor("fall");
         float fz = sc.anchor("fall_z")[0] + 0.3F;
@@ -639,7 +666,7 @@ public final class CinematicFx {
         for (int i = 0; i < 14; i++) {
             float ph = frac(t * 0.07F + hash(i, 241));
             float x = mix(f[0], f[1], hash(i, 243));
-            glow(vc, v, x, f[3] + 0.1F + ph * 0.5F, fz + 0.2F + ph * 0.6F, 0.3F + ph * 0.4F, 0.85F, 0.93F, 1.0F, 0.22F * (1.0F - ph));
+            glow(vc, v, x, f[3] + 0.1F + ph * 0.5F, fz + 0.2F + ph * 0.6F, 0.3F + ph * 0.4F, 0.80F, 1.0F, 1.0F, 0.22F * (1.0F - ph));
         }
         for (int o = 0; o < 4; o++) {
             float ph = frac(t * 0.02F + o / 4.0F);
@@ -649,11 +676,11 @@ public final class CinematicFx {
         for (int k = 0; k < 2; k++) {
             float[] s = sc.anchor("spring" + k);
             if (s[3] <= 0) continue;
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 float ph = frac(t * 0.08F + hash(i + k * 13, 251));
                 float ang = hash(i + k * 13, 253) * 6.2832F;
-                glow(vc, v, s[0] + (float)Math.cos(ang) * 0.3F * ph, s[1] + 0.08F + ph * 0.25F, s[2] + (float)Math.sin(ang) * 0.3F * ph,
-                        0.18F + ph * 0.2F, 0.85F, 0.93F, 1.0F, 0.22F * (1.0F - ph));
+                glow(vc, v, s[0] + (float)Math.cos(ang) * 0.5F * ph, s[1] + 0.08F + ph * 0.3F, s[2] + 0.4F + (float)Math.sin(ang) * 0.4F * ph,
+                        0.25F + ph * 0.3F, 0.80F, 1.0F, 1.0F, 0.24F * (1.0F - ph));
             }
             for (int o = 0; o < 3; o++) {
                 float ph = frac(t * 0.025F + o / 3.0F + k * 0.3F);

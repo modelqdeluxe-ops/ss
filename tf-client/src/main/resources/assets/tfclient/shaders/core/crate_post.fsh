@@ -1,10 +1,10 @@
 #version 150
 
-// (1.3.99) La imagen final de la cinemática de las crates (el pantano de las hadas, de noche), como un paquete de
-// shaders: profundidad de campo (la crate nítida, el bosque de detrás desenfocado), el resplandor de todo lo que brilla
-// (faroles, bayas, amatistas, el agua, el haz) y un poco de brillo soñador, los rayos que salen del haz, colores vivos
-// (sombras turquesa y azules, luces doradas, mucha más saturación, algo de contraste), una curva suave que redondea las
-// luces y la viñeta.
+// (1.3.99) La imagen final de la cinemática de las crates (el Santuario de las Hadas, como la imagen del dueño), como un
+// paquete de shaders: un poco de profundidad de campo (lo de muy cerca y lo de muy lejos, suave; el fondo se sigue
+// viendo), el resplandor de lo que brilla (el agua turquesa, las cascadas, el haz, los faroles, las amatistas), los
+// rayos que salen del hueco del sol, colores vivos (sombras verde azuladas, luces cálidas, más saturación, algo de
+// contraste), una curva suave que redondea las luces y la viñeta.
 in vec2 uv;
 
 uniform sampler2D SceneSampler;
@@ -31,9 +31,9 @@ void main() {
     // profundidad de campo: lo que está lejos del foco (la crate) se desenfoca; lo de detrás, más
     float dist = linearDepth(texture(DepthSampler, uv).r);
     float off = dist - Focus.x;
-    float coc = off > 0.0 ? smoothstep(0.0, Focus.y, off - 1.5) : smoothstep(0.0, Focus.y * 0.6, -off - 1.0) * 0.6;
+    float coc = off > 0.0 ? smoothstep(0.0, Focus.y, off - 2.0) * 0.45 : smoothstep(0.0, Focus.y * 0.5, -off - 1.0) * 0.6;
     vec3 blurred = texture(BlurSampler, uv).rgb;
-    c = mix(c, blurred, coc * 0.9);
+    c = mix(c, blurred, coc);
     vec3 b = texture(BloomSampler, uv).rgb;
     vec3 rays = vec3(0.0);
     if (SunVis > 0.001) {
@@ -47,16 +47,15 @@ void main() {
         }
         rays *= SunVis / 32.0;
     }
-    vec3 col = c + b * BloomStrength + rays * RayStrength * vec3(1.0, 0.85, 0.62);
-    col = 1.0 - (1.0 - clamp(col, 0.0, 4.0)) * (1.0 - b * 0.25);
+    vec3 col = c + b * BloomStrength + rays * RayStrength * vec3(1.0, 0.92, 0.70);
     col = 1.0 - exp(-max(col, 0.0) * Exposure);
-    // colores: sombras turquesa-azules, luces cálidas, más saturación y algo de contraste
+    // colores: sombras verde azuladas, luces cálidas, más saturación y algo de contraste
     float l = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(col, col * vec3(0.78, 1.0, 1.22), (1.0 - smoothstep(0.0, 0.45, l)) * 0.45);
-    col = mix(col, col * vec3(1.12, 1.0, 0.82), smoothstep(0.45, 1.0, l) * 0.35);
+    col = mix(col, col * vec3(0.82, 1.02, 1.04), (1.0 - smoothstep(0.0, 0.45, l)) * 0.5);
+    col = mix(col, col * vec3(1.08, 1.0, 0.88), smoothstep(0.5, 1.0, l) * 0.2 * (1.0 - smoothstep(0.0, 0.3, col.b - col.r)));
     l = dot(col, vec3(0.299, 0.587, 0.114));
-    col = max(mix(vec3(l), col, 1.5), 0.0);
-    col = mix(col, col * col * (3.0 - 2.0 * col), 0.35);
+    col = max(mix(vec3(l), col, 1.4), 0.0);
+    col = mix(col, col * col * (3.0 - 2.0 * col), 0.45);
     vec2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 1.0;
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
