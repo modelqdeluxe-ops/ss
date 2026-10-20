@@ -127,6 +127,12 @@ public final class TFVoid {
                     return 1;
                 }))
                 .then(SkyRift.command())
+                // (1.3.98) tras caer un jefe la grieta del Void se apaga: el staff enciende la siguiente
+                .then(Commands.literal("grieta").then(Commands.literal("encender").executes(ctx -> {
+                    String msg = net.tierrasfantasticas.tfclient.bosses.Rifts.voidActivate();
+                    ctx.getSource().sendSuccess(() -> Component.literal(msg).withStyle(ChatFormatting.LIGHT_PURPLE), true);
+                    return 1;
+                })))
                 .then(Commands.literal("quitar").executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     int n = 0;

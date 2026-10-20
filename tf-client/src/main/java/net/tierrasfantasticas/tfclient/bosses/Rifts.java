@@ -93,16 +93,28 @@ public final class Rifts {
         /** La grieta del Void (la fija del centro de la isla: sus jefes salen de {@link VoidConfig}). */
         public boolean fixed;
 
-        /** Ticks que faltan (despertar o recarga). */
+        /** Ticks que faltan (despertar o recarga); −1: apagada hasta que el staff la encienda ({@link #waitingStaff}). */
         public int left(long now) {
+            if (waitingStaff()) return -1;
             return switch (state) {
                 case RiftEntity.WAKING -> (int) Math.max(0, wakeAt - now);
                 case RiftEntity.COOLDOWN -> (int) Math.max(0, readyAt - now);
                 default -> 0;
             };
         }
+
+        /**
+         * (1.3.98) La del Void, apagada tras caer su jefe hasta que el staff encienda la siguiente (el dueño: «al derrotar
+         * un jefe no debe estar disponible el otro: debe cerrarse y apagarse la grieta hasta que el staff active el otro;
+         * al activar el otro se prende el evento de la grieta en el Overworld»).
+         */
+        public boolean waitingStaff() {
+            return state == RiftEntity.COOLDOWN && readyAt >= STAFF / 2;
+        }
     }
 
+    /** readyAt de la grieta del Void apagada: no se enciende sola ({@link Rift#waitingStaff}). */
+    static final long STAFF = Long.MAX_VALUE;
     private static final Map<UUID, Rift> RIFTS = new LinkedHashMap<>();
     private static MinecraftServer server;
     private static boolean dirty;
@@ -505,7 +517,9 @@ public final class Rifts {
         SkillDefs.BossInfo bi = boss.cls() == null ? null : boss.cls().bossInfo;
         if (r != null) {
             r.state = RiftEntity.COOLDOWN;
-            r.readyAt = boss.level().getGameTime() + d.respawnMin() * 1200L;
+            // (1.3.98) la del Void se apaga hasta que el staff encienda la siguiente (/tf void grieta encender, o el
+            // siguiente en /tf boss → VOID); las demás recargan solas
+            r.readyAt = r.fixed ? STAFF : boss.level().getGameTime() + d.respawnMin() * 1200L;
             r.bossEntity = null;
             dirty = true;
             // (1.3.93) si es la del Void, la grieta del cielo se sella... por ahora; (1.3.96) o, si era el último de la
@@ -911,6 +925,11 @@ public final class Rifts {
         List<Entry> pool = voidConfig.pools.get(k);
         if (index < 0 || index >= pool.size()) return "";
         Rift r = voidRift();
+        // (1.3.98) apagada: elegir el siguiente la enciende con él
+        if (r != null && r.kind == k && r.waitingStaff()) {
+            voidConfig.next[k] = index;
+            return voidActivate();
+        }
         if (r != null && r.kind == k && r.state == RiftEntity.READY) {
             put(r, index);
             save();
@@ -919,6 +938,29 @@ public final class Rifts {
         voidConfig.next[k] = index;
         save();
         return "Después saldrá " + name(pool.get(index).boss()) + " (n.º " + (index + 1) + ")";
+    }
+
+    /**
+     * (1.3.98) El staff enciende la grieta del Void apagada (tras caer su jefe): sale el siguiente de la secuencia (o el
+     * elegido) y se vuelve a abrir la grieta del cielo en los mundos Overworld.
+     */
+    public static String voidActivate() {
+        Rift r = voidRift();
+        if (r == null) return "No hay grieta del Void (pon a Caelthar y viaja al Void una vez)";
+        ServerLevel level = server == null ? null : server.getLevel(r.dim);
+        if (!r.waitingStaff()) {
+            return r.state == RiftEntity.COOLDOWN && level != null ? "La grieta del Void se está recargando: vuelve en " + time(r.left(level.getGameTime()))
+                    : "La grieta del Void ya está encendida";
+        }
+        r.state = RiftEntity.READY;
+        r.readyAt = 0;
+        pickVoid(r);
+        dirty = true;
+        save();
+        if (level != null) level.playSound(null, r.pos.x, r.pos.y + 2, r.pos.z, BossSounds.RIFT_READY, SoundSource.HOSTILE, 2.5F, 1F);
+        if (SkillDefs.bosses().containsKey(r.boss)) net.tierrasfantasticas.tfclient.vacio.SkyRift.voidReady(true);
+        return SkillDefs.bosses().containsKey(r.boss) ? "Grieta del Void encendida: " + name(r.boss) + ". La grieta del cielo se vuelve a abrir."
+                : "Grieta del Void encendida, pero no tiene criaturas (ponlas en /tf boss → VOID)";
     }
 
     private static String name(String boss) {

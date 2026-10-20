@@ -109,7 +109,8 @@ public class SacredKnight extends KnightEntity {
         if (level().isClientSide || tickCount % 10 != 0) return;
         // (si su casa cambió, p. ej. un santuario que se mudó, la de ahora)
         SacredKnights.Def d = def();
-        if (d != null) home = SacredKnights.home(d);
+        if (d != null && (tickCount % 200 == 10 || home.equals(BlockPos.ZERO)) && level() instanceof net.minecraft.server.level.ServerLevel sl)
+            home = SacredKnights.ground(sl, SacredKnights.home(d));
         Player p = level().getNearestPlayer(this, 6.0);
         if (p instanceof ServerPlayer sp && !sp.isSpectator()) SacredKnights.greet(this, sp);
     }

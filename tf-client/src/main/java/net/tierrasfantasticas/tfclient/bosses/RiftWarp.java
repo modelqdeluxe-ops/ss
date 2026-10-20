@@ -194,17 +194,17 @@ public final class RiftWarp {
             s.x = 0.5F;
             s.y = 0.5F;
             s.r = 0.22F;
-            s.lens = 0.5F * travel;
-            s.swirl = travelSwirl;
-            s.wave = 0.04F * travel;
+            // (1.3.98: más suave; el dueño, «se queda bugueado»: al salir y al llegar la imagen ondulaba y la cámara
+            // temblaba ~2 s)
+            s.lens = 0.3F * travel;
+            s.swirl = travelSwirl * 0.6F;
+            s.wave = 0.012F * travel;
             s.tr = 0.95F;
             s.tg = 0.85F;
             s.tb = 1F;
             s.weight = 10F;
             list.add(s);
-            near = Math.max(near, travel);
-            // (la realidad se rasga: también tiembla)
-            shake = Math.max(shake, 0.6F * travel);
+            near = Math.max(near, 0.6F * travel);
         }
         // La grieta del cielo (1.3.93): al mirarla, una distorsión leve (más al romperse); su temblor va aparte (onCamera)
         float[] sky = net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.warp(view, proj, aspect);

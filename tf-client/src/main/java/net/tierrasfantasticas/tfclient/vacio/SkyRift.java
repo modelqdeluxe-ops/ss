@@ -173,15 +173,20 @@ public final class SkyRift {
         d.setDirty();
         closedAt = server.getTickCount();
         sendAll(server, d, FX_CLOSE);
-        say(server, "La grieta del cielo se ha sellado... por ahora. El Void ya está despertando a otra de sus criaturas.");
+        say(server, "La grieta del cielo se ha sellado... por ahora. El Void duerme hasta que otra de sus criaturas despierte.");
     }
 
     /** La grieta del Void vuelve a estar lista, con otro jefe (Rifts): la del cielo se vuelve a abrir. */
     public static void voidReady() {
+        voidReady(false);
+    }
+
+    /** Igual; «now»: ya, aunque se haya sellado hace menos de 30 s (lo ha encendido el staff, 1.3.98). */
+    public static void voidReady(boolean now) {
         MinecraftServer server = server();
         if (server == null) return;
         Data d = data(server);
-        if (d.state != CLOSED || closedAt >= 0 && server.getTickCount() - closedAt < MIN_CLOSED) return;
+        if (d.state != CLOSED || !now && closedAt >= 0 && server.getTickCount() - closedAt < MIN_CLOSED) return;
         d.state = OPEN;
         d.setDirty();
         sendAll(server, d, FX_REOPEN);

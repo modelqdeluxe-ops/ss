@@ -419,7 +419,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public double smart() {
-        return difficulty.smart();
+        // (1.3.98) La fauna, sin el cerebro de los jefes (SkillBrain): como en MythicMobs, va derecha a por su objetivo
+        // (meleeattack, movetowardstarget) y sus skills salen con sus disparadores. Con el cerebro se ponía a la distancia
+        // del ataque que tenía pensado y daba vueltas esperando: en la prueba, el Desgarrador plantado a 4 bloques, los
+        // espectros a 6-7 girando y el Vigía alejándose (el dueño: «son inútiles; no me siguen y se quedan bugueados en
+        // su eje»)
+        return isFauna() ? 0.0 : difficulty.smart();
     }
 
     /**
@@ -506,6 +511,51 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 getNavigation().stop();
                 wanderGoal = null;
             }
+        }
+    }
+
+    /** (1.3.98) Desde cuándo y a qué distancia de su objetivo empezó a no poder acercarse (unstick). */
+    private int stuckSince = -1;
+    private double stuckDist;
+
+    /**
+     * (1.3.98) Solo la fauna (criaturas del End): si en 3 s no se ha acercado ni bloque y medio a su objetivo (un escalón de
+     * dos bloques de las terrazas, una columna: el camino no llega y se quedaba empujando y girando; el dueño, «no me
+     * siguen y se quedan bugueados en su eje»), se teletransporta como un enderman a 2,5-4 bloques de él, en el suelo y
+     * donde quepa (con su sonido y sus partículas). No es del pack (sus mobs no lo hacen en MythicMobs): es para que en el
+     * terreno de los Fragmentos no se queden atascados. Los jefes y sus esbirros, no.
+     */
+    private void unstick() {
+        if (!isFauna() || target == null || !ai || speedMul <= 0 || locked || !(level() instanceof ServerLevel sl)) {
+            stuckSince = -1;
+            return;
+        }
+        double d = distanceTo(target);
+        if (d < getBbWidth() / 2 + 3.0) {
+            stuckSince = -1;
+            return;
+        }
+        if (stuckSince < 0 || stuckDist - d >= 1.5) {
+            stuckSince = age;
+            stuckDist = d;
+            return;
+        }
+        if (age - stuckSince < 60) return;
+        stuckSince = -1;
+        for (int k = 0; k < 16; k++) {
+            double a = random.nextDouble() * Math.PI * 2, r = 2.5 + random.nextDouble() * 1.5;
+            double x = target.getX() + Math.cos(a) * r, z = target.getZ() + Math.sin(a) * r;
+            if (island() && !net.tierrasfantasticas.tfclient.vacio.VoidIsland.faunaWalkable(x, z)) continue;
+            int y = sl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z));
+            if (Math.abs(y - target.getY()) > 2.5) continue;
+            AABB box = getBoundingBox().move(x - getX(), y - getY(), z - getZ());
+            if (!sl.noCollision(this, box)) continue;
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, getX(), getY(0.5), getZ(), 40, getBbWidth() / 2, getBbHeight() / 2, getBbWidth() / 2, 0.3);
+            teleportTo(x, y, z);
+            getNavigation().stop();
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, x, y + getBbHeight() / 2, z, 40, getBbWidth() / 2, getBbHeight() / 2, getBbWidth() / 2, 0.3);
+            playSound(net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 1.5F, 0.9F);
+            return;
         }
     }
 
@@ -1106,6 +1156,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // El Guardián Hueco nace dormido con setai{ai=false}: aquí ya tenía objetivo y, dormido, se giraba hacia el
         // jugador con turn_left/right (animaciones de pie): «sale completo, luego se cae a pedazos y luego vuelve»
         if (age > 0 && age % 10 == 0 || target != null && (!target.isAlive() || target.isRemoved())) pickTarget();
+        if (age % 20 == 0) unstick();
         aiExtras();
         direct = false;
         if (age < moveUntil) {

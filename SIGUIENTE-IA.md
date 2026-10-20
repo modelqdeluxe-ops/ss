@@ -1,6 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **20 oct 2026, TF Client 1.3.97** (el Void congruente: todo en roca del Vacío, **los Fragmentos del
+Estado al dejarlo: **20 oct 2026, TF Client 1.3.98** (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta
+del Void que enciende el staff, la isla de la grieta decorada, nada al aire, la fauna que pelea, el agujero de gusano sin
+imágenes de baja calidad, la «Nana del Alba»; antes, 1.3.97: el Void congruente: todo en roca del Vacío, **los Fragmentos del
 Alba Rota** cuatro veces más grandes, **la Llegada** con el portal donde estaba el Umbral, solo el Desgarrador y el
 Vigía, pocos y sin barra ni botín, la armadura del Vacío una vez y a ras de suelo, 6 Anclas en burbuja, música del
 santuario, **cinco caballeros sacros** con diálogos y el lore de los Fragmentos; la grieta del cielo con el cielo que se
@@ -10,7 +12,7 @@ HANDOFF.md).
 Rama de trabajo: la que te asigne la sesión (la última fue `claude/peaceful-gauss-4nzddg`), **reiniciada desde `main`**.
 
 Lee también, en este orden: `CLAUDE.md` (reglas), el CHECKPOINT de `HANDOFF.md` (sección 0) y
-`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.22 lo último, §11 lo que falta).
+`tf-client/JEFES.md` (el motor de jefes; §3.10 la prueba en el juego, §3.23 lo último, §11 lo que falta).
 
 ## 1. Qué estamos haciendo
 
@@ -80,7 +82,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 | Cielo del Void (agujero negro) | `xvfb-run -a python3 tools/void/cielo_preview.py carpeta [--size 1920x1080] [--q 0.35] [--t segundos] [--furia]` (prueba con `--t 1500` y `--t 3599.9`: mucho tiempo de juego; `--furia`: con una grieta activa) |
 | Viaje por el agujero de gusano | `xvfb-run -a python3 -I tools/void/tunel_preview.py carpeta [--vuelta]` |
 | Por dónde andan los jefes en la isla del Void | `python3 -I tools/void/mascara_jefes.py tf-client/src/main/resources/tfclient-void-isla.bin salida.png` |
-| Santuario, Fragmentos, Anclas, la Llegada y el portal | `python3 -I tools/void/isla_alba.py [--preview carpeta]` (parte de `tools/void/isla_base.bin`, la isla del dueño; sale igual cada vez, ~28 s; pasa `tools/void/paleta.py` —todo a roca del Vacío— y `tools/void/bioma.py` —los Fragmentos—, y falla si queda un bloque prohibido; luego sube `IslandUpdate.VERSION`) |
+| Santuario, Fragmentos, Anclas, la Llegada y el portal | `python3 -I tools/void/isla_alba.py [--preview carpeta]` (parte de `tools/void/isla_base.bin`, la isla del dueño; sale igual cada vez, ~45 s; pasa `tools/void/paleta.py` —todo a roca del Vacío—, `tools/void/isla_grieta.py` —la isla de la grieta: relieve, decoración, Anclas— y `tools/void/bioma.py` —los Fragmentos—, limpia lo que queda al aire y falla si queda un bloque prohibido; luego sube `IslandUpdate.VERSION`) |
 | Caballeros sacros (sus texturas y modelos) | `python3 -I tools/void/caballeros.py [--ver carpeta]` (repinta a Caelthar en cada metal de `METALES`) |
 | Música del santuario / sonidos de la luz | `python3 tools/void/musica_santuario.py`, `python3 tools/void/sonidos_viaje.py [nombres]` (con `tools/void/instrumentos.py`: arpa, campana, flauta, coro, sala) |
 | Textura de la corrosión | `python3 tools/void/corrosion_textura.py [--ver carpeta]` (escribe también su `.mcmeta` con `blur`) |
@@ -101,7 +103,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.98**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.99**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
@@ -111,6 +113,10 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 
 ## 6. Lo que queda / lo que hay que vigilar
 
+- **El dueño no quiere pruebas en el juego de más de 10 minutos**: usa `[prueba-jefes=corta]` (o una parte: `fauna`,
+  un jefe) y no `vacio` entero salvo que haga falta; y espera con un bucle propio de 15 min como mucho.
+- **Que el dueño vea la 1.3.98** (JEFES §3.23): los caballeros, el soporte, la grieta del Void apagada tras cada jefe
+  (`/tf void grieta encender`), la isla de la grieta, la fauna, el agujero de gusano, la música y los volúmenes.
 - **Que el dueño vea la 1.3.97**: el Void entero (los Fragmentos, la Llegada con el portal, ningún bloque del End, de
   lana ni de tierra), las dos criaturas (¿pocas o muchas?: `VoidFauna.CAP`/`EVERY`), la armadura (a ras de suelo, aura,
   una vez), las Anclas en burbuja, la corrosión (textura y `HURT` 1,5), la música del santuario, los caballeros sacros

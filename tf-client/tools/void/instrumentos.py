@@ -7,6 +7,7 @@ santuario también, hazlo mejor». Aquí, instrumentos con más cuerpo:
                inarmonía y el golpecito del dedo (ruido muy corto filtrado); afinación exacta
   campana(...) campana suave por FM (portadora y moduladora 1:3,5, el índice se apaga: el brillo se va primero)
   flauta(...)  seno con 2.º y 3.er armónicos débiles, vibrato que llega tarde y el aire del soplo
+  celesta(...) caja de música: fundamental, octava y un parcial alto que se apagan antes (1.3.98)
   coro(...)    «aah» de sierras desafinadas por las formantes de la a (sonidos_cielo.choir) con aliento
   sala(...)    reverberación estéreo de sala (reflexiones tempranas + cola difusa que se oscurece)
 
@@ -85,6 +86,19 @@ def campana(f, dur=5.0, vel=1.0, seed=3):
     x += 0.35 * np.sin(2 * np.pi * f * 0.5 * t) * np.exp(-t / 2.6)
     x *= smooth(0, 0.004, t)
     return x * vel * 0.5
+
+
+def celesta(f, dur=3.0, vel=1.0, seed=9):
+    """(1.3.98) Celesta / caja de música (mono): un golpecito de martillo sobre una lámina; la fundamental, una octava y
+    un parcial alto que se apagan antes (brilla al tocarla y queda redonda), sin nada de ruido."""
+    r = rng(seed)
+    t = np.arange(int(dur * SR)) / SR
+    ph = r.uniform(0, 6.28)
+    x = (np.sin(2 * np.pi * f * t + ph) * np.exp(-t / 1.4)
+         + 0.32 * np.sin(2 * np.pi * f * 2.0 * t + ph) * np.exp(-t / 0.55)
+         + 0.12 * np.sin(2 * np.pi * f * 4.07 * t) * np.exp(-t / 0.18))
+    x *= smooth(0, 0.003, t)
+    return x * vel * 0.42
 
 
 def flauta(f, dur, vel=1.0, seed=5, attack=0.12, release=0.35):

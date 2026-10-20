@@ -19,7 +19,9 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * Los caballeros sacros del santuario (1.3.97; el dueño: «busca skins o modelos de caballeros sacros para que pongas en
  * ese santuario, que tenga vida, con diálogos»; y «debes explicar lo que es el santuario, porque no es congruente esa
  * zona bonita en una dimensión de caos»). Cinco miembros de la Orden del Alba que siguen en pie junto a Caelthar, cada uno
- * con la armadura de otro metal (tools/void/caballeros.py), su sitio, por donde pasea, y lo que cuenta: por qué el
+ * con la armadura de otro color (tools/void/caballeros.py: plata, azur, ónice, jade y carmesí desde la 1.3.98), su
+ * sitio, su postura (KnightRenderer.sacredPose: andan por el suelo; solo Caelthar flota), por donde pasea, y lo que
+ * cuenta: por qué el
  * santuario es lo único vivo del Void, qué son los Fragmentos y las Anclas que los sostienen, la armadura del Coloso,
  * el jardín, los Once. Te saludan en el chat al acercarte (una vez cada 10 minutos) y con clic derecho hablan
  * ({@link KnightScreen} en su modo de caballero sacro).
@@ -44,7 +46,7 @@ public final class SacredKnights {
     }
 
     public static final List<Def> ALL = List.of(
-            new Def(1, "Ser Bastian", "Guardián de la Puerta del Alba", "plata", "tfclient:fairy_sword", 0, -1, 26, 3F, 0F,
+            new Def(1, "Ser Bastian", "Guardián de la Puerta del Alba", "plata", "tfclient:fairy_shield", 0, -1, 26, 3F, 0F,
                     "Alto, viajero... Ah, la luz te reconoce. Soy Bastian, guardián de la Puerta del Alba. Mientras yo esté aquí, nada del Vacío cruzará este umbral.",
                     List.of(new Topic("¿Por qué este lugar es tan bonito?",
                                     "Porque es lo último. Cuando el ojo del Vacío abrió sus fauces se tragó nuestra tierra entera: los bosques, los ríos, las ciudades de la Orden. Antes de que cayera lo último, Caelthar alzó el Velo sobre el jardín del templo. Los cerezos, el estanque, las flores... es lo único vivo que queda en todo el Void. Fuera del Velo solo hay piedra y ceniza."),
@@ -53,7 +55,7 @@ public final class SacredKnights {
                             new Topic("¿Cómo vuelvo aquí desde la grieta?",
                                     "Cruza los Fragmentos por el Sendero del Alba hasta el Puente de Piedra. Donde el puente toca la isla de la grieta estaba nuestro viejo santuario; ahora hay un portal. Quédate un momento en su luz y te traerá de vuelta a esta puerta.")),
                     "La luz te guarde, viajero."),
-            new Def(2, "Ser Varen", "El Vigía", "acero", "tfclient:fairy_spear", 18, -1, 21, 4F, 0F,
+            new Def(2, "Ser Varen", "El Vigía", "azur", "tfclient:fairy_spear", 18, -1, 21, 4F, 0F,
                     "¿Ves aquello, al sur? Llevo siglos mirándolo. Soy Varen, el Vigía de la Orden.",
                     List.of(new Topic("¿Qué son esas islas que flotan?",
                                     "Restos. El agujero negro del cielo se tragó esta dimensión entera: lo que flota es lo que no alcanzó a devorar. Sin nada que lo sujete, todo caería hacia él. Mira bien: en cada fragmento hay un Ancla del Alba, un pozo de luz. Ahí un hermano mío se hizo luz para sostenerlo. Su magia es lo único que impide que estas tierras se derrumben."),
@@ -62,7 +64,7 @@ public final class SacredKnights {
                             new Topic("¿Qué hay más allá?",
                                     "Los Fragmentos del Alba Rota: los Llanos de Ceniza, el Bosque de Cristal al este, las Fauces de Obsidiana al oeste, las Ruinas de nuestra orden al norte y, en medio, la Herida, por donde se ve el ojo. Más allá, la isla de la grieta, donde duermen las criaturas que encerramos.")),
                     "No te alejes de las Anclas, viajero."),
-            new Def(3, "Hermano Osric", "Custodio del Altar del Vacío", "bronce", "minecraft:book", 3, 0, -21, 1.5F, 0F,
+            new Def(3, "Hermano Osric", "Custodio del Altar del Vacío", "onice", "minecraft:book", 3, 0, -21, 1.5F, 0F,
                     "Paz, viajero. Soy Osric, y custodio el Altar del Vacío y lo que descansa en él.",
                     List.of(new Topic("¿Qué es esa armadura?",
                                     "La piel del Coloso del Vacío, la primera criatura que cayó cuando el ojo se abrió. La Orden la forjó en armadura: el Vacío no se come lo que es suyo, y quien la viste camina por él sin que lo corroa."),
@@ -71,14 +73,14 @@ public final class SacredKnights {
                             new Topic("¿Por qué la guardáis aquí?",
                                     "Porque fuera del Velo nada dura. Aquí la luz la conserva... y nos recuerda que hasta lo que nace del Vacío puede servir a la luz.")),
                     "El Coloso aún espera a su portador."),
-            new Def(4, "Dama Liora", "La Jardinera", "rosa", "minecraft:cherry_sapling", 22, -1, 2, 6F, 270F,
+            new Def(4, "Dama Liora", "La Jardinera", "jade", "minecraft:cherry_sapling", 22, -1, 2, 6F, 270F,
                     "¡Oh! Cuidado con los pétalos... Soy Liora. Cuido lo último que florece.",
                     List.of(new Topic("¿Cómo crecen flores en el Void?",
                                     "Solo aquí dentro. El Corazón del Alba late sobre el templo y su calor llega a cada raíz; el Velo no deja pasar el hambre del Vacío. Traje las semillas del último jardín de nuestra tierra antes de que cayera. Fuera del Velo nada brota: la tierra se volvió piedra y ceniza."),
                             new Topic("¿No es triste?",
                                     "A veces. Pero cada cerezo que florece es una promesa: mientras algo viva aquí, el Vacío no ha ganado. Algún día, cuando las grietas se cierren, plantaré estos árboles en los Fragmentos.")),
                     "¿Hueles los cerezos? Es lo único que huele a casa."),
-            new Def(5, "Aela", "Novicia de la Orden", "marfil", "minecraft:lantern", -12, -1, 12, 3F, 225F,
+            new Def(5, "Aela", "Novicia de la Orden", "carmesi", "minecraft:lantern", -12, -1, 12, 3F, 225F,
                     "¡Hola! Perdona, estaba escuchando a los Once. Soy Aela, novicia de la Orden.",
                     List.of(new Topic("¿Quiénes son los Once?",
                                     "Los once caballeros que se hicieron luz para sellar la grieta. Cada faro del borde del santuario es uno de ellos, y sus ecos aún suenan en las Anclas del Alba. Si te paras en una, a veces se oye lo que dijeron."),
@@ -104,6 +106,20 @@ public final class SacredKnights {
         return new BlockPos(k.getX() + d.dx(), k.getY() + d.dy(), k.getZ() + d.dz());
     }
 
+    /**
+     * (1.3.98) El suelo de verdad en esa columna, cerca de «at» (de 4 por encima a 6 por debajo): un bloque que se pisa y
+     * dos de aire encima. Así nacen de pie en el suelo (en la 1.3.97 alguno salía en el aire o encima de un muro).
+     */
+    static BlockPos ground(ServerLevel level, BlockPos at) {
+        for (int dy = 4; dy >= -6; dy--) {
+            BlockPos p = at.above(dy);
+            if (level.getBlockState(p.below()).isFaceSturdy(level, p.below(), net.minecraft.core.Direction.UP)
+                    && level.getBlockState(p).getCollisionShape(level, p).isEmpty()
+                    && level.getBlockState(p.above()).getCollisionShape(level, p.above()).isEmpty()) return p;
+        }
+        return at;
+    }
+
     /** Cada 5 s (TFVoid): que estén todos (uno de cada) y en su sitio. */
     static void ensure(ServerLevel level) {
         if (VoidIsland.get() == null) return;
@@ -120,7 +136,7 @@ public final class SacredKnights {
             if (!here.isEmpty()) continue;
             SacredKnight k = TFVoid.SACRED.get().create(level);
             if (k == null) continue;
-            k.setup(d, at);
+            k.setup(d, ground(level, at));
             level.addFreshEntity(k);
             TFClient.LOGGER.info("TF Void: {} aparece en el santuario ({})", d.name(), at);
         }

@@ -67,9 +67,11 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
             }
             if (e.shown != 1) {
                 e.layers.clear();
-                e.layers.play(m, m.anims.containsKey("reposo") ? "reposo" : "idle", e.clientAge, 1F, 0, 0, 1, true);
+                // (los caballeros sacros, sin el reposo de Caelthar —que flota—: su postura, sacredPose)
+                if (def == null) e.layers.play(m, m.anims.containsKey("reposo") ? "reposo" : "idle", e.clientAge, 1F, 0, 0, 1, true);
                 e.shown = 1;
             }
+            if (def != null) sacredPose(e, def, m, partial);
             e.layers.prune(e.clientAge);
             Matrix4f[] mats = new Matrix4f[m.bones.length];
             for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
@@ -79,8 +81,7 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
             e.layers.pose(m, e.clientAge + partial, Mth.clamp(headYaw, -60F, 60F), headPitch, mats);
             // (1.3.93b) el brazo derecho, algo adelantado, como el de un jugador con algo en la mano
             int arm = m.bone("right_arm");
-            if (arm >= 0) mats[arm].rotateX((float) Math.toRadians(ARM_PITCH));
-            if (def != null) walk(e, m, mats, partial);
+            if (arm >= 0 && def == null) mats[arm].rotateX((float) Math.toRadians(ARM_PITCH));
             pose.pushPose();
             // Flota un poco (las alas; los caballeros sacros andan por el suelo)
             if (def == null) pose.translate(0, 0.06 * Mth.sin((e.clientAge + partial) * 0.07F), 0);
@@ -148,18 +149,93 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
     }
 
     /**
-     * (1.3.97) Al andar, las piernas y los brazos se mueven como los de un jugador (el modelo no trae animación de andar):
-     * HumanoidModel.setupAnim, con el paso y la velocidad de Minecraft (WalkAnimationState).
+     * (1.3.98) La postura de cada caballero sacro, de pie en el suelo (el dueño: «todos tienen la misma animación, están
+     * rotos porque vuelan también; el único que debe volar es el que teletransporta»; en la 1.3.97 llevaban el reposo de
+     * Caelthar, que flota). Giros a mano sobre el pivote de cada hueso (VfxLayers.animate: lo que cuelga va con él), en
+     * grados: +x adelanta un brazo o una pierna; −x inclina el cuerpo o baja la cabeza. Todos respiran; además:
+     * Bastian monta guardia con el escudo y mira a los lados; Varen otea con la lanza y de vez en cuando se hace sombra con
+     * la mano; Osric lee su libro (y pasa la página); Liora se agacha a cuidar las flores; Aela alza el farol y ladea la
+     * cabeza. Al andar, las piernas y los brazos como los de un jugador (HumanoidModel.setupAnim, con WalkAnimationState).
      */
-    private static void walk(KnightEntity e, VfxModel m, Matrix4f[] mats, float partial) {
+    private static void sacredPose(KnightEntity e, SacredKnights.Def d, VfxModel m, float partial) {
+        float t = e.clientAge + partial + (e.getId() % 97) * 13F;
+        float breath = Mth.sin(t * 0.06F);
+        float body = -1.5F - 1.2F * breath, bodyY = 0F, head = 0F, headY = 0F, headZ = 0F;
+        float la = 4F, laZ = -3F - breath, ra = 6F, raZ = 3F + breath, ll = 0F, rl = 0F;
+        switch (d.id()) {
+            case 1 -> {
+                ra = 32F;
+                raZ = -6F;
+                headY = 22F * Mth.sin(t * 0.018F);
+            }
+            case 2 -> {
+                ra = 14F;
+                float k = bump(t % 320F, 40F, 110F);
+                la = 6F + 128F * k;
+                laZ = -3F - 22F * k;
+                head = 8F * k;
+                headY = 28F * Mth.sin(t * 0.014F) * (1F - k);
+            }
+            case 3 -> {
+                float page = bump(t % 220F, 180F, 205F);
+                ra = 44F + 14F * page;
+                raZ = -12F - 10F * page;
+                la = 40F;
+                laZ = 12F;
+                head = -24F + 3F * Mth.sin(t * 0.05F);
+            }
+            case 4 -> {
+                float k = bump(t % 300F, 60F, 200F);
+                body = -1.5F - 30F * k;
+                la = 4F + 52F * k;
+                ra = 6F + 58F * k;
+                head = -12F * k;
+                headZ = 6F * Mth.sin(t * 0.03F) * (1F - k);
+            }
+            case 5 -> {
+                ra = 78F + 6F * Mth.sin(t * 0.05F);
+                raZ = -8F;
+                headZ = 9F * Mth.sin(t * 0.03F);
+                bodyY = 6F * Mth.sin(t * 0.022F);
+            }
+            default -> {
+            }
+        }
+        // al andar: las piernas y el brazo libre (y algo el de lo que lleva) como un jugador
         float speed = Math.min(1F, e.walkAnimation.speed(partial));
-        if (speed < 0.01F) return;
-        float pos = e.walkAnimation.position(partial);
-        float swing = Mth.cos(pos * 0.6662F) * 1.2F * speed;
-        int l = m.bone("left_leg"), r = m.bone("right_leg"), la = m.bone("left_arm");
-        if (l >= 0) mats[l].rotateX(swing);
-        if (r >= 0) mats[r].rotateX(-swing);
-        if (la >= 0) mats[la].rotateX(-swing * 0.6F);
+        if (speed > 0.02F) {
+            float swing = Mth.cos(e.walkAnimation.position(partial) * 0.6662F) * speed * (float) Math.toDegrees(1.1);
+            float w = Math.min(1F, speed * 3F);
+            ll = swing;
+            rl = -swing;
+            la = la + (-swing * 0.8F - la) * w;
+            ra = ra - swing * 0.25F * w;
+            body = body * (1F - w) - 2F * w;
+        }
+        pose(e, m, "main_tail", body, bodyY, 0F);
+        pose(e, m, "head", head, headY, headZ);
+        pose(e, m, "left_arm", la, 0F, laZ);
+        pose(e, m, "right_arm", ra, 0F, raZ);
+        pose(e, m, "left_leg", ll, 0F, -1.5F);
+        pose(e, m, "right_leg", rl, 0F, 1.5F);
+    }
+
+    private static final float[] ZERO3 = {0F, 0F, 0F}, ONE3 = {1F, 1F, 1F};
+
+    private static void pose(KnightEntity e, VfxModel m, String bone, float x, float y, float z) {
+        int b = m.bone(bone);
+        if (b >= 0) e.layers.animate(new int[] {b}, ZERO3, new float[] {x, y, z}, ONE3, false, false, true, false);
+    }
+
+    /** 0 → 1 → 0 entre a y b (con subida y bajada suaves, un cuarto del tramo cada una). */
+    private static float bump(float x, float a, float b) {
+        float q = (b - a) * 0.25F;
+        return smooth(a, a + q, x) * (1F - smooth(b - q, b, x));
+    }
+
+    private static float smooth(float a, float b, float x) {
+        float u = Mth.clamp((x - a) / (b - a), 0F, 1F);
+        return u * u * (3F - 2F * u);
     }
 
     private void label(KnightEntity e, PoseStack pose, MultiBufferSource buffers) {

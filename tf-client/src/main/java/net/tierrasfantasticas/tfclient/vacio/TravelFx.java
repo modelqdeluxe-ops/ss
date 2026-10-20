@@ -188,7 +188,7 @@ public final class TravelFx {
         exit = since < EXIT0 ? 0F : smooth(EXIT0, EXIT1, since) + smooth(EXIT1, EXIT2, since);
         // el mundo se deforma antes de rasgarse; al llegar, el nuevo aparece ondulando (y gira al revés) hasta calmarse
         float warp = smooth(0.1F, 1.3F, now) * (1F - smooth(OPEN1, OPEN1 + 0.3F, now));
-        float calm = since < EXIT1 ? 0F : 0.9F * (1F - smooth(EXIT1 + 0.1F, CALM, since));
+        float calm = since < EXIT1 ? 0F : 0.45F * (1F - smooth(EXIT1 + 0.1F, CALM, since));
         if (calm > 0F) RiftWarp.travel(calm, -1.6F * calm);
         else RiftWarp.travel(warp, 2.2F * warp);
         sounds(since);
@@ -261,12 +261,10 @@ public final class TravelFx {
         sh.safeGetUniform("ScreenSize").set((float) main.width, (float) main.height);
         sh.safeGetUniform("HasOverworld").set(TunnelPanoramas.overworldReady() ? 1F : 0F);
         RenderSystem.setShader(() -> sh);
-        RenderSystem.setShaderTexture(1, VoidSky.PANORAMA);
         // (1.3.96) las dimensiones de verdad: sus panoramas
         RenderSystem.setShaderTexture(2, TunnelPanoramas.overworld());
         RenderSystem.setShaderTexture(3, TunnelPanoramas.NETHER);
         RenderSystem.setShaderTexture(4, TunnelPanoramas.END);
-        RenderSystem.setShaderTexture(5, TunnelPanoramas.VOID);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();

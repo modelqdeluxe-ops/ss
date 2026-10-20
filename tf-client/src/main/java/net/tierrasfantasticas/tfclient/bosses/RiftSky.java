@@ -123,8 +123,10 @@ public final class RiftSky {
                 && net.tierrasfantasticas.tfclient.vacio.VoidIsland.inBubble(mc.player.getX(), mc.player.getEyeY(), mc.player.getZ());
         boolean wantMusic = calm && !inVeil;
         musicWanted = calm;
-        music = keep(mc, music, wantMusic, BossSounds.RIFT_MUSIC);
-        sanctuary = keep(mc, sanctuary, inVeil, BossSounds.SANCTUARY_MUSIC);
+        // (1.3.98, el dueño: «la música del santuario y de batalla es muy alta, bájale un poquito, pero más la del
+        // santuario»: la del Void de 0,6 a 0,45 y la del santuario a 0,3)
+        music = keep(mc, music, wantMusic, BossSounds.RIFT_MUSIC, 0.45F);
+        sanctuary = keep(mc, sanctuary, inVeil, BossSounds.SANCTUARY_MUSIC, 0.3F);
         // El zumbido del vacío, en la grieta más cercana
         if (near != null && nearD < 40) {
             if (ambient == null || ambient.isStopped() || ambient.rift != near || !mc.getSoundManager().isActive(ambient)) {
@@ -296,13 +298,13 @@ public final class RiftSky {
 
     /** La música siniestra de la grieta: en bucle, sin posición, con fundidos (como la de los jefes: TFBossMusic). */
     /** Que suene (o se vaya con su fundido) una música en bucle; la devuelve (o null). */
-    private static RiftMusic keep(Minecraft mc, RiftMusic m, boolean want, net.minecraft.sounds.SoundEvent ev) {
+    private static RiftMusic keep(Minecraft mc, RiftMusic m, boolean want, net.minecraft.sounds.SoundEvent ev, float volume) {
         // (si el motor de sonido la ha soltado sin pararla, p. ej. al recargar los sonidos, se vuelve a poner)
         if (m != null && !m.isStopped() && m.age > 40 && !mc.getSoundManager().isActive(m)) m = null;
         if (m != null && !m.isStopped()) m.age++;
         if (want) {
             if (m == null || m.isStopped()) {
-                m = new RiftMusic(ev);
+                m = new RiftMusic(ev, volume);
                 mc.getSoundManager().play(m);
                 mc.getMusicManager().stopPlaying();
             } else {
@@ -315,14 +317,15 @@ public final class RiftSky {
     }
 
     private static final class RiftMusic extends AbstractTickableSoundInstance {
-        private static final float VOLUME = 0.6F;
         private static final int FADE_IN = 100, FADE_OUT = 40;
+        private final float max;
         boolean leaving;
         int age;
         private float fade;
 
-        RiftMusic(net.minecraft.sounds.SoundEvent ev) {
+        RiftMusic(net.minecraft.sounds.SoundEvent ev, float volume) {
             super(ev, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
+            this.max = volume;
             this.looping = true;
             this.delay = 0;
             this.relative = true;
@@ -342,7 +345,7 @@ public final class RiftSky {
                 stop();
                 return;
             }
-            this.volume = Math.max(0.001F, fade * fade * VOLUME);
+            this.volume = Math.max(0.001F, fade * fade * max);
         }
     }
 

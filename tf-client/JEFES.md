@@ -1158,6 +1158,42 @@ capturas, el túnel con sus bocas (la del Nether, la del Void y el agujero negro
 Llanos y el Bosque de Cristal en roca del Vacío, Caelthar y el Hermano Osric junto a la armadura con su aura.
 
 
+### 3.23 Caballeros en el suelo, la grieta del Void que enciende el staff, la isla de la grieta decorada, la fauna que pelea y el agujero de gusano sin imágenes (1.3.98)
+
+El dueño, tras la 1.3.97: *«1. Los caballeros todos tienen la misma animación, están rotos porque vuelan también; el
+único que debe volar es el que teletransporta; los otros deben andar en su sitio. 2. No les pongas espadas a todos, o al
+menos no la misma. 3. El sonido de salir del Alba es horrible; la música del santuario y de batalla es muy alta, bájale
+un poquito, más la del santuario, y busca o mejora la música, más bonita. El stand de la armadura del Vacío está
+saltando. No todos los caballeros deben tener el mismo color. 4. La zona del portal tiene huecos debajo, no hay escalera
+al final del puente del santuario, algunos bloques y objetos quedan volando: sé preciso en construcción. 5. La isla de
+la grieta es demasiado pobre: un solo llano pelado; relieves, decoraciones; una zona de luz más o menos cerca de la
+grieta; elimina la estructura que parece una iglesia. 6. Los mobs son inútiles, y los chiquitos que invoca el mago no me
+siguen y se quedan bugueados en su eje. 7. Al derrotar un jefe no debe estar disponible el otro: debe cerrarse y
+apagarse la grieta hasta que el staff active el otro; al activarlo se prende el evento de la grieta en el Overworld.
+8. El agujero de gusano sigue siendo una mierda: sin buen sonido ni buena imagen, en especial el túnel del Void, se
+queda bugueado; la imagen en baja calidad del agujero negro mejor no la pongas. Las letras del diálogo van lentas.»* Y:
+*«no hagas comprobaciones de más de 10 minutos en el juego»*.
+
+| Queja | Causa (medida) | Arreglo |
+|---|---|---|
+| Caballeros que «vuelan», todos con la misma animación | Llevaban el reposo de Caelthar (que flota) y sus motas de luz que suben | `KnightRenderer.sacredPose`: cada uno su postura, girada sobre el pivote de cada hueso (`VfxLayers.animate`): Bastian de guardia con el escudo, Varen otea con la lanza y se hace sombra, Osric lee (y pasa la página), Liora se agacha a las flores, Aela alza el farol; al andar, como un jugador. Sin motas (solo Caelthar). `SacredKnights.ground`: nacen y pasean sobre un bloque firme con aire encima |
+| Espadas a todos; el mismo color | Dos armas del set Hada parecidas; bronce, rosa y marfil parecían oro | Escudo, lanza, libro, brote de cerezo y farol; plata, azur, ónice, jade y carmesí (`tools/void/caballeros.py`) |
+| El soporte de la armadura salta | «NoGravity» iba en `readAdditionalSaveData`, que no lo lee (lo lee `Entity.load`): caía y cada segundo `tickAltar` lo subía | `setNoGravity(true)` y solo se recoloca si se ha ido más de medio bloque |
+| Sonido de salir del Velo; música alta y poco bonita | Arpa que bajaba con aire frío; música del santuario a 0,6 | Salir: dos notas de celesta (`instrumentos.celesta`) sobre un acorde que se apaga. «Nana del Alba» (`tools/void/musica_santuario.py`): Re mayor a 72 sobre el bajo del Canon, cuerdas suaves, arpa en corcheas, la nana en celesta, luego flauta y las dos. Volúmenes: santuario 0,3, Void 0,45 (antes 0,6), batalla 0,5 (antes 0,7) |
+| Bloques y objetos al aire, huecos bajo el portal, sin escalera | 511 trozos sueltos (ramas de los árboles petrificados que se torcían en diagonal, muros, cadenas, velas, hojas); la Llegada se rellenaba desde y 56 y lo de debajo no siempre llegaba; el puente a 66 y el sendero a 69 | `isla_alba.limpiar` al acabar: fuera lo que no toca nada por una cara (< 60 bloques) y lo que no tiene apoyo (quedan la isla y sus 21 islotes); ramas bloque a bloque (`Biome.line`); la Llegada rellena hasta la roca (o en punta) y el portal con cimientos; `bridge_steps`: tres escalones de cuarzo; el dintel de la Puerta entero |
+| La isla de la grieta, pelada; la «iglesia»; una luz cerca de la grieta | El mapa del dueño es llano; la torre con aguja (x 53..76, z 128..154, hasta y 100) tenía en la 1.3.97 un Ancla en el tejado | `tools/void/isla_grieta.py`: la torre fuera y el suelo rehecho; colinas suaves (hasta 9 bloques, ondas de ~50) fuera de la arena de la grieta (48), de los caminos y de la Llegada; 18 árboles petrificados, 18 rocas, 12 cristales de amatista, 9 colmillos de obsidiana, 9 grupos de columnas de basalto y 10 pilares rotos de la Orden; dos Anclas: a 56 bloques de la grieta (−51, 73, 23) y lejos (59, 68, 169). `IslandUpdate.VERSION` 6 |
+| Fauna inútil; los espectros no siguen y giran | Usaban el cerebro de los jefes (`SkillBrain`): se ponían a la distancia del ataque que tenían pensado y daban vueltas esperando. Prueba (4af3dc4): el Desgarrador plantado a 4 bloques, los espectros a 6-7 girando, el Vigía a 11 y alejándose | `BossEntity.smart()` = 0 para la fauna: como en MythicMobs, `meleeattack`/`movetowardstarget` van derechos y sus skills salen con sus temporizadores. Con eso el Desgarrador ya pega (prueba corta 44a32c6: 10 golpes); el Vigía y sus espectros seguían a 6-9 bloques en las terrazas (escalones de dos bloques y columnas: el camino no llega). `BossEntity.unstick` (**solo la fauna, no es del pack**): si en 3 s no se acerca bloque y medio, se teletransporta como un enderman a 2,5-4 bloques de su objetivo, en el suelo y donde quepa |
+| Tras un jefe, el siguiente ya disponible | La del Void recargaba sola y cogía el siguiente | `Rifts`: la del Void queda **apagada** (`Rift.waitingStaff`, `readyAt = STAFF`; el cartel: «Apagada: el staff encenderá la siguiente») hasta `/tf void grieta encender` o elegir el siguiente en `/tf boss → VOID`; entonces se reabre la grieta del cielo en el Overworld (`SkyRift.voidReady(true)`) |
+| El agujero de gusano: imagen y sonido; «se queda bugueado» | Las paredes eran panoramas de 1024 px estirados (borrosos) y el final, el agujero negro con el panorama del Void; mientras cargaba el mundo la boca del final se quedaba quieta; al salir y llegar, la cámara temblaba | `wormhole.fsh`: paredes hechas para cada dimensión (`worldWall`), la boca hacia el Void una nebulosa con estrellas (`voidSky`) y al final de la ida **la luz del Alba** (`albaLight`), que sigue creciendo mientras carga; fuera `Sampler1`/`Sampler5`. Sonido (`sonidos_viaje.py`): la realidad cruje y se abre con un braam, viento que aletea, tono de Shepard, un acorde por dimensión, un soplo por puerta y la luz del Alba (golpe más fuerte 4,4 dB). `RiftWarp`: la mitad de ondulación y sin temblor |
+| Diálogos lentos | 55 letras/s | 120 (`KnightScreen.CPS`) |
+
+**La prueba corta** (`[prueba-jefes=corta]`, `BossTest.cortaStep`, ~100 s de juego, menos de 10 min en total): el viaje
+al Void (las capturas del túnel), los cinco caballeros de cerca (`sacredGround`: en el suelo, sobre qué bloque), la altura
+del soporte del altar durante 3 s, cinco vistas (la Llegada y el portal, los escalones del puente, el sur y el oeste de la
+isla de la grieta, el Ancla nueva) y el Desgarrador y el Vigía detrás del jugador 12 s cada uno (distancia cada segundo y
+sus espectros). La de la fauna (`[prueba-jefes=fauna]`) ahora también apunta cada segundo distancia, suelo y gravedad.
+
+
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
 El dueño pidió «que la IA sea muy inteligente, tipo Dark Souls o Elden Ring».
@@ -1507,7 +1543,14 @@ El servidor es **Mohist 1.20.1** (Forge + plugins de Bukkit). La vía elegida, y
 
 ---
 
-## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.97
+## 11. Lo que falta (para la siguiente IA) — estado al publicar la 1.3.98
+
+**1.3.98**: §3.23 (caballeros en el suelo con su postura, color y objeto; el soporte que saltaba; la grieta del Void que
+enciende el staff; la isla de la grieta decorada y sin la «iglesia»; nada al aire; la fauna sin el cerebro de los jefes;
+el agujero de gusano sin imágenes de baja calidad y con sonido nuevo; la «Nana del Alba» y la música más baja). Queda que
+el dueño lo vea en su servidor (la isla se pone al día sola, versión 6) y las preguntas de la 1.3.97 (los cascos de los
+otros sets de crates; modelos o skins de caballeros). Si dice que la música aún suena alta: `RiftSky` (0,3 santuario,
+0,45 Void) y `TFBossMusic.VOLUME` (0,5).
 
 **1.3.97**: §3.22 (el Void congruente: todo en roca del Vacío con `tools/void/paleta.py`, los Fragmentos del Alba Rota
 cuatro veces más grandes, la Llegada con el portal donde estaba el Umbral, solo dos criaturas —el Desgarrador y el

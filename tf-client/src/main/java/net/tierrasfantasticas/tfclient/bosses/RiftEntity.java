@@ -115,7 +115,7 @@ public class RiftEntity extends Entity {
         if (!boss.equals(boss())) this.entityData.set(BOSS, boss);
         if (state != state()) this.entityData.set(STATE, state);
         // Lo que falta, al segundo (no cada tick: no hace falta mandarlo tanto)
-        int l = state == COOLDOWN ? (left + 19) / 20 * 20 : left;
+        int l = state == COOLDOWN && left >= 0 ? (left + 19) / 20 * 20 : left;
         if (l != left()) this.entityData.set(LEFT, l);
         if (d != null) {
             if (!d.label().equals(label())) this.entityData.set(LABEL, d.label());

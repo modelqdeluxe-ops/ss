@@ -119,8 +119,9 @@ public class KnightEntity extends PathfinderMob {
         }
         if (level().isClientSide) {
             clientAge++;
-            // Motas de luz dorada que suben a su alrededor y alguna chispa blanca (los caballeros sacros, menos)
-            if (random.nextInt(stationary() ? 3 : 9) == 0) {
+            // Motas de luz dorada que suben a su alrededor y alguna chispa blanca (solo Caelthar, que es de luz y flota; los
+            // caballeros sacros no: 1.3.98, el dueño, «el único que debe volar es el que teletransporta»)
+            if (stationary() && random.nextInt(3) == 0) {
                 double a = random.nextDouble() * Math.PI * 2, r = 0.6 + random.nextDouble() * 0.9;
                 level().addParticle(GOLD, getX() + Math.cos(a) * r, getY() + 0.2 + random.nextDouble() * 2.6,
                         getZ() + Math.sin(a) * r, 0, 0.02, 0);
