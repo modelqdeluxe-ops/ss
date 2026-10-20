@@ -488,6 +488,17 @@ public final class SanctuaryScene {
                     pose.pushPose();
                     pose.translate(b[0], b[1], b[2]);
                     shade.fixed = (fl & F_GLOW) != 0;
+                    shade.fr = shade.fg = shade.fb = 1.0F;
+                    if (st.is(Blocks.LILY_PAD)) {
+                        // los nenúfares: los alumbra el agua turquesa de debajo (con la luz de la escena salían casi negros;
+                        // en la imagen del dueño son verdes) = LILY_LIFT/LILY_K de la vista previa
+                        float[] ll = new float[3];
+                        light(b[0] + 0.5F, b[1] + 0.1F, b[2] + 0.5F, ll);
+                        shade.fixed = true;
+                        shade.fr = (ll[0] + 0.25F) * 2.37F;
+                        shade.fg = (ll[1] + 0.45F) * 1.2F;
+                        shade.fb = (ll[2] + 0.45F) * 1.2F;
+                    }
                     rand.setSeed(seed);
                     mbr.tesselateBlock(level, model, st, pos, pose, shade, true, rand, seed, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, rt);
                     pose.popPose();

@@ -46,6 +46,10 @@ BEAM_C = (0.85, 0.80, 0.60)
 SKY_C = (0.22, 0.26, 0.24)
 POOL_C = (0.02, 0.20, 0.24)
 CROWN_C = (0.70, 0.80, 0.42)
+# los nenúfares: los alumbra el agua turquesa de debajo y su verde es más claro (en la imagen del dueño, ~(25,85,45); con la
+# luz de la escena salían casi negros, (6,41,37)) = SanctuaryScene.LILY_LIFT/LILY_K
+LILY_LIFT = (0.25, 0.45, 0.45)
+LILY_K = (2.37, 1.2, 1.2)
 TINTS = {'mangrove_leaves': 0x92C648, 'spruce_leaves': 0x619961, 'birch_leaves': 0x80A755, 'lily_pad': 0x208030}
 
 
@@ -341,6 +345,10 @@ def build_mesh(sc, assets, light):
                 wx, wy, wz = x + p[0], y + p[1], z + p[2]
                 if glow:
                     l = (1.0, 1.0, 1.0)
+                    ao = 1.0
+                elif name == 'minecraft:lily_pad':
+                    l0 = light(x + 0.5, y + 0.1, z + 0.5)
+                    l = tuple((l0[c] + LILY_LIFT[c]) * LILY_K[c] for c in range(3))
                     ao = 1.0
                 else:
                     l = light(wx, wy, wz, nrm)
