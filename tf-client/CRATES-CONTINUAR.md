@@ -55,7 +55,15 @@ contraste local 0,080 → 0,092 (+14 %), hojas (43,80,39) → (32,73,26) y 30,8 
 (189,145,63) → (219,165,42), rosa (182,74,149) → (201,73,87), piedra (76,81,80) → (88,99,92); el agua casi igual
 (27,168,182) → (26,168,195).
 
-## Lo último que se hizo (en el último commit, SIN probar en el juego)
+## Al día (20 oct 2026, prueba `35cabe0`, probado en el juego)
+
+Foto → juego: saturación 0,621 → 0,675; luz media 0,318 → 0,331; luz alta 0,832 → 0,834; contraste global 0,231 → 0,238;
+contraste local 0,080 → 0,095; nitidez 0,093 → 0,093 (todo igual o por encima, como pidió el dueño). Sin tablones grises
+ni discos; los rayos salen del hueco; la cascada es la misma agua que el estanque, cae (textura del agua que corre) y no
+flota (CRATES.md §2). Lo que queda lejos: la cascada alta (87,207,216) → (100,186,194), el agua de la derecha
+(23,191,203) → (21,165,187) y las hojas (23 % de la imagen en la foto, 32 % en el juego: es la escena).
+
+## Lo que se hizo antes
 
 Medido en la prueba `5ba276f`: en el juego salían **dos «tablones» grises de borde duro en diagonal** (eran los rayos en
 abanico y los que bajan del hueco, hechos con bandas de geometría: en la vista previa se ven suaves y en el juego no, sin
