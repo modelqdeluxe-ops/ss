@@ -1,6 +1,7 @@
 package net.tierrasfantasticas.tfclient.mixin.crates;
 
 import net.tierrasfantasticas.tfclient.crates.client.CinematicDiag;
+import net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicClassic;
 import net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -24,7 +25,7 @@ public class LevelRendererMixin {
    )
    private void fscrates$skipWorldDuringCinematic(CallbackInfo ci) {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.screen instanceof CrateCinematicScreen) {
+      if (mc.screen instanceof CrateCinematicScreen || mc.screen instanceof CrateCinematicClassic) {
          CinematicDiag.markCull();
          ci.cancel();
       }

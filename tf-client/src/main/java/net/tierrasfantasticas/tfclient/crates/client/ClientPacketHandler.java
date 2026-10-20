@@ -53,7 +53,7 @@ public final class ClientPacketHandler {
          boolean cinematic = isOpener && cands != null && !cands.isEmpty() && !isInstant;
          if (cinematic) {
             try {
-               mc.setScreen(new CrateCinematicScreen(be.getConfig(), rarityColor, winnerRarity, winnerIndex, cands, candRarities));
+               mc.setScreen(CrateCinematicScreen.create(be.getConfig(), rarityColor, winnerRarity, winnerIndex, cands, candRarities));
             } catch (Throwable var17) {
                be.startAnimation(animationId, rarityColor, winnerIndex, winnerRarity, candRarities, cands);
                return;
