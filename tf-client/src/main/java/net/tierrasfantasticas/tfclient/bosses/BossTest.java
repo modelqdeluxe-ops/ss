@@ -1145,7 +1145,9 @@ public final class BossTest {
 
     /** (1.3.96) Las criaturas del Páramo (criaturas_vacio): todas menos el End Strider. */
     /** (1.3.97) Solo dos (orden del dueño): el Desgarrador (Endermauler) y el Vigía (Ender Watchman, con sus espectros). */
-    private static final String[] FAUNA_MOBS = {"endermauler", "ender_watchman"};
+    private static final String[] FAUNA_MOBS = {"endermauler", "ender_watchman", "end_wraith"};
+    /** (1.3.98) Cada segundo: distancia al jugador, en el suelo, sin gravedad (y los espectros que ha invocado). */
+    private static final StringBuilder faunaTrack = new StringBuilder();
     private static final int FAUNA_EACH = 300, FAUNA_WILD = 900;
     private static BossEntity faunaNow;
     private static int faunaHits;
@@ -1170,6 +1172,20 @@ public final class BossTest {
         if (i < FAUNA_MOBS.length) {
             String mob = FAUNA_MOBS[i];
             if (faunaNow != null && faunaNow.isAlive() && player.getLastHurtByMob() == faunaNow) faunaHits++;
+            // (1.3.98, el dueño: «los mobs son inútiles, y los chiquitos que invoca el mago no me siguen y se quedan
+            // bugueados en su eje»): por dónde anda cada segundo, y sus espectros
+            if (faunaNow != null && faunaNow.isAlive() && k >= 20 && k < 280 && k % 20 == 0) {
+                faunaTrack.append(String.format(" %.0f%s%s", faunaNow.distanceTo(player), faunaNow.onGround() ? "" : "^",
+                        faunaNow.isNoGravity() ? "G" : ""));
+                List<BossEntity> wr = vl.getEntitiesOfClass(BossEntity.class, faunaNow.getBoundingBox().inflate(48),
+                        e -> e != faunaNow && e.isAlive() && e.def() != null && "end_wraith".equalsIgnoreCase(e.def().name));
+                if (!wr.isEmpty()) {
+                    faunaTrack.append('[');
+                    for (BossEntity w : wr) faunaTrack.append(String.format("%.0f%s%s%s ", w.distanceTo(player), w.onGround() ? "" : "^",
+                            w.isNoGravity() ? "G" : "", w.getTarget() == player ? "" : "?"));
+                    faunaTrack.append(']');
+                }
+            }
             if (faunaNow != null && faunaNow.isAlive()) {
                 List<String> an = net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(faunaNow);
                 if (an == null) faunaAnims.merge("SIN MODELO", 1, Integer::sum);
@@ -1185,6 +1201,7 @@ public final class BossTest {
                     player.teleportTo(vl, seed.x, seed.y, seed.z, 180F, 8F);
                     faunaHits = 0;
                     faunaAnims.clear();
+                    faunaTrack.setLength(0);
                     player.setLastHurtByMob(null);
                 }
                 case 20 -> {
@@ -1202,6 +1219,7 @@ public final class BossTest {
                                     + "me ha golpeado %s, barra %s; animaciones (ticks) %s", mob, e.getName().getString(), e.model() != null ? "sí" : "NO",
                             e.getHealth(), e.getMaxHealth(), e.distanceTo(player), e.getTarget() == player ? "el jugador" : String.valueOf(e.getTarget()),
                             faunaHits > 0 ? "sí" : "no", e.hasBar() ? "SÍ (MAL)" : "no (bien)", faunaAnims));
+                    r.event("   " + mob + " cada segundo (distancia; ^ en el aire, G sin gravedad; [espectros, ? sin objetivo el jugador]):" + faunaTrack);
                     if (e != null && i == 0) {
                         // (la primera se mata: no suelta nada, orden del dueño)
                         faunaDied = e.position();
