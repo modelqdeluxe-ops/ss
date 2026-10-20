@@ -1298,6 +1298,7 @@ public final class BossTest {
             int i = (t - 440) / 80, k = (t - 440) % 80;
             Entity e = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredKnight(vl, i + 1);
             if (k == 0 && e != null) {
+                fly(player, true);
                 Vec3 f = Vec3.directionFromRotation(0, e.getYRot());
                 look(player, vl, e.getX() + f.x * 4.5, e.getY() + 2.2, e.getZ() + f.z * 4.5, e.getX(), e.getY() + 1.6, e.getZ());
             }
@@ -1308,6 +1309,7 @@ public final class BossTest {
         if (t >= 850 && t <= 920) {
             net.minecraft.core.BlockPos a = net.tierrasfantasticas.tfclient.vacio.VoidIsland.altarPos();
             if (t == 850 && a != null) {
+                fly(player, true);
                 look(player, vl, a.getX() + 0.5, a.getY() + 2, a.getZ() + 5.5, a.getX() + 0.5, a.getY() + 1, a.getZ() + 0.5);
                 standMin = 1e9;
                 standMax = -1e9;
@@ -1325,7 +1327,9 @@ public final class BossTest {
         if (t >= 940 && t < 940 + CORTA_VIEWS.length * 100) {
             int v = (t - 940) / 100, k = (t - 940) % 100;
             double[] a = CORTA_VIEWS[v];
-            if (k == 0) look(player, vl, a[0], a[1], a[2], a[3], a[4], a[5]);
+            // (volando: tras el viaje al Void se le quitaba y caía al vacío —el rescate lo llevaba al santuario—)
+            if (k == 0) fly(player, true);
+            if (k <= 80) look(player, vl, a[0], a[1], a[2], a[3], a[4], a[5]);
             if (k == 80) shot(r, CORTA_NAMES[v]);
         }
         // la fauna: cada criatura, 12 s detrás del jugador
