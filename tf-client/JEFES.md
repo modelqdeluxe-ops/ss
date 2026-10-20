@@ -1149,6 +1149,14 @@ Llegada con el portal, los Llanos, el Bosque de Cristal, las Fauces, las Ruinas 
 (`VoidTestHooks.sacred`), la música dentro del Velo, la armadura (pedirla otra vez; armadura y dureza con las piezas
 puestas), la fauna (barra «no (bien)», botín «nada (bien)») y el pozo de la prueba de luz (el índice 3).
 
+Lo que dio (c38be93f, sin shaders, 13 min): el Desgarrador y el Vigía con su modelo, persiguen y se animan (dash_bite,
+teleport_maul; summon_wraiths), **barra no**; 5 de 5 caballeros sacros en su sitio (a 0–1 bloque); dentro del Velo,
+la música del santuario; la armadura con 4 jefes no, con 5 da 18 objetos, **pedirla otra vez no da nada**, puesta: armadura
+24 y dureza 16 (netherita +1 por pieza) y no corroe; el pozo 3 limpia la corrosión (52 % → luz 67 en 2 s); el portal de la
+Llegada: pasar sin pararse no lleva, quedarse lleva al santuario; la isla de antes se pone al día (2440 trozos). En las
+capturas, el túnel con sus bocas (la del Nether, la del Void y el agujero negro al final), la Llegada con el portal, los
+Llanos y el Bosque de Cristal en roca del Vacío, Caelthar y el Hermano Osric junto a la armadura con su aura.
+
 
 ## 4. El cerebro táctico (SkillBrain), de 1.3.77
 
