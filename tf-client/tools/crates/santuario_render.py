@@ -898,7 +898,6 @@ def main():
             wtex.use(2)
             wprog['Sampler0'].value = 2
             wprog['StillUV'].value = (0.0, 0.0, 16 / 48, 0.5)
-            wprog['FlowUV'].value = (16 / 48, 0.0, 1.0, 1.0)
             v_water.render()
         fx = Fx(eye, r, u)
         if os.environ.get('SIN_FX') != '1':

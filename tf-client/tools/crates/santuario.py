@@ -267,18 +267,20 @@ def altar(sc):
         for z in range(-1, 2):
             sc.set(x, -1, z, 'minecraft:stone_bricks')
             if x == 0:
-                sc.set(x, 0, z, 'minecraft:stone_bricks' if z != 1 else 'minecraft:chiseled_stone_bricks')
-                sc.set(x, 1, z, 'minecraft:stone_bricks' if z != 1 else 'minecraft:mossy_stone_bricks')
+                # (en la imagen: el centro, ladrillo de piedra agrietado)
+                sc.set(x, 0, z, 'minecraft:cracked_stone_bricks' if z == 1 else 'minecraft:stone_bricks')
+                sc.set(x, 1, z, 'minecraft:stone_bricks' if z == 1 else 'minecraft:mossy_stone_bricks')
             else:
-                sc.set(x, 0, z, 'minecraft:moss_block' if z < 1 else leaves('flowering_azalea_leaves'))
-                sc.set(x, 1, z, leaves('flowering_azalea_leaves') if (x + z) % 2 == 0 else 'minecraft:moss_block')
+                # los lados: piedra con musgo tapada de hojas de azalea lisas (en la imagen no hay flores moradas)
+                sc.set(x, 0, z, leaves('azalea_leaves') if z == 1 or (x + z) % 2 == 0 else 'minecraft:mossy_cobblestone')
+                sc.set(x, 1, z, leaves('azalea_leaves') if (x + z) % 2 == 0 or z == 1 else 'minecraft:mossy_stone_bricks')
     for (x, z) in ((-2, 0), (-2, 1), (-1, 2), (-2, -1)):
         sc.sym(x, -1, z, 'minecraft:stone_bricks')
-        sc.sym(x, 0, z, 'minecraft:moss_block' if (x + z) % 2 else leaves('flowering_azalea_leaves'))
+        sc.sym(x, 0, z, 'minecraft:mossy_cobblestone' if (x + z) % 2 else leaves('azalea_leaves'))
     sc.sym(-2, 1, 1, 'minecraft:pink_petals[facing=east,flower_amount=4]')
     sc.sym(-2, 1, 0, 'minecraft:pink_petals[facing=south,flower_amount=3]')
     sc.sym(-1, 1, 2, 'minecraft:pink_petals[facing=north,flower_amount=2]')
-    sc.sym(-2, 1, -1, 'minecraft:moss_carpet')
+    sc.sym(-2, 1, -1, 'minecraft:pink_petals[facing=west,flower_amount=3]')
     sc.set(0, 0, 2, slab('mossy_stone_brick_slab', 'top'))
     # arriba: las amatistas a los lados de la crate, pétalos y musgo
     sc.sym(-1, 2, 0, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
@@ -293,9 +295,7 @@ def altar(sc):
                    (3, 5), (-7, -10), (7, -9)):
         if sc.name(x, 0, z) == 'minecraft:water':
             sc.set(x, 1, z, 'minecraft:lily_pad')
-    for (x, z) in ((-3, 3), (4, -2), (-4, -1), (2, 8), (-1, -6), (6, 0)):
-        if sc.name(x, 0, z) == 'minecraft:water':
-            sc.set(x, 0, z, f'minecraft:sea_pickle[pickles={1 + int(vhash(x, z, 5) * 4) % 4},waterlogged=true]')
+    # (sin pepinos de mar: con el agua transparente, como en la imagen del dueño, se veían como bultos verdes en el agua)
 
 
 def stair_falls(sc):
@@ -355,13 +355,14 @@ def side_towers(sc):
         for y in range(1, SIDE_TOP + 1):
             sc.sym(x, y, SIDE_Z, FALLING)
     sc.sym(x0 - 1, SIDE_TOP + 1, SIDE_Z - 1, slab('mossy_stone_brick_slab'))
-    # el agua sale de debajo de un dintel de piedra con musgo (como en la imagen), no de en medio del aire
-    for x in range(x0 - 1, x1 + 2):
-        sc.sym(x, SIDE_TOP + 1, SIDE_Z, 'minecraft:mossy_cobblestone' if x in (x0, x1) else 'minecraft:mossy_stone_bricks')
-        sc.sym(x, SIDE_TOP + 1, SIDE_Z - 1, 'minecraft:mossy_stone_bricks')
-        sc.sym(x, SIDE_TOP + 2, SIDE_Z, 'minecraft:moss_carpet')
+    # (como en la imagen: el agua cae desde lo alto de su columna, sin dintel encima, y a su lado, por fuera, una columna
+    # de piedra tapada de hojas y musgo de su misma altura, pegada a ella)
     for x in (x0, x1):
         sc.sym(x, SIDE_TOP + 1, SIDE_Z - 2, 'minecraft:moss_block')
+    for x in (x1 + 1, x1 + 2):
+        for y in range(-1, SIDE_TOP + 1):
+            sc.sym(x, y, SIDE_Z, leaves('azalea_leaves') if vhash(x, y, 43) < 0.55 else stone(x, y, SIDE_Z, 47, 0.7))
+        sc.sym(x, SIDE_TOP + 1, SIDE_Z, 'minecraft:moss_carpet')
     # flores y matas encima de la columna
     for x in range(x0 - 1, x1 + 3):
         for z in range(SIDE_Z - 5, SIDE_Z - 1):
@@ -388,16 +389,14 @@ def side_halls(sc):
             if x >= WALL_X:
                 top = 15
             elif x == POOL_X + 1:
-                top = 0
+                top = 1                    # (en la imagen: un muro de ladrillo con musgo de un bloque sobre el agua)
             else:
                 # terrazas: más altas cuanto más cerca de la pared y hacia el fondo (hasta el techo de los lados)
                 top = 1 + (x - POOL_X - 2) * 2 + (1 if z < -2 else 0) + (2 if z < -9 else 0) + (1 if vhash(x, z // 3, 51) < 0.3 else 0)
                 top = min(top, AISLE_Y - 1)
             for y in range(-1, top + 1):
                 sc.sym(x, y, z, stone(x, y, z, 53 + (x >= WALL_X), 0.55))
-            if x == POOL_X + 1 and z % 2 == 0:
-                sc.sym(x, 1, z, slab('mossy_stone_brick_slab'))
-            elif x < WALL_X:
+            if x < WALL_X:
                 flower_bed(sc, x, top + 1, z, 59)
                 flower_bed(sc, -x, top + 1, z, 61)
     # columnas de piedra hasta el techo (con su capitel cincelado)
@@ -527,7 +526,8 @@ def lanterns(sc):
 
 def overgrowth(sc):
     """Enredaderas por todas partes (pilares, paredes, muros de la escalera, columnas de los lados) y liquen."""
-    ivy(sc, -WALL_X, WALL_X, 1, AISLE_Y - 1, BACK_Z + 1, Z1 - 3, 91, 1.2)
+    # (menos tiras de enredadera: en la imagen la piedra está tapada de hojas tupidas, no de tiras que cuelgan)
+    ivy(sc, -WALL_X, WALL_X, 1, AISLE_Y - 1, BACK_Z + 1, Z1 - 3, 91, 0.6)
     ivy(sc, -AISLE_IN - 2, AISLE_IN + 2, 5, CANOPY_Y - 1, BACK_Z + 1, STAIR_Z, 93, 0.6)
     for x in range(-WALL_X + 1, WALL_X):
         for y in range(1, AISLE_Y):
@@ -557,9 +557,9 @@ def lush(sc):
                 if not exposed:
                     continue
                 v = vhash(x * 17 + y * 5, z * 13 - y, 151)
-                if v < 0.34:
-                    sc.set(x, y, z, leaves(('azalea_leaves', 'flowering_azalea_leaves', 'oak_leaves')[int(vhash(x, z * 7 + y, 153) * 3) % 3]))
-                elif v < 0.44:
+                if v < 0.52:
+                    sc.set(x, y, z, leaves(('azalea_leaves', 'azalea_leaves', 'oak_leaves')[int(vhash(x, z * 7 + y, 153) * 3) % 3]))
+                elif v < 0.62:
                     sc.set(x, y, z, 'minecraft:moss_block')
 
 
@@ -570,7 +570,7 @@ def curtains(sc):
             for sgn in (1, -1):
                 xx = x * sgn
                 v = vhash(xx * 3 + 1, z * 5 - 2, 157)
-                if v > 0.6 or not sc.air(xx, AISLE_Y - 1, z):
+                if v > 0.22 or not sc.air(xx, AISLE_Y - 1, z):
                     continue
                 n = 2 + int(vhash(xx, z, 159) * 3)
                 hang(sc, xx, AISLE_Y - 1, z, n, vhash(xx, z, 161))

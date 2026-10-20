@@ -761,8 +761,12 @@ public class CrateCinematicScreen extends Screen {
             float in = smooth(0, 10, s);
             float out = t > TOTAL - 20 ? 1.0F - (t - (TOTAL - 20)) / 20.0F : 1.0F;
             float pow = in * out * (0.7F + 0.3F * (float)Math.sin(s * 0.15F));
-            CinematicFx.glow(vc, v, px, py, pz, 1.1F + 0.6F * pulseAt(t, REVEAL, 12), wr, wg, wb, 0.55F * pow + pulseAt(t, REVEAL, 10));
-            CinematicFx.glow(vc, v, px, py, pz, 0.45F, 1, 1, 1, 0.35F * pow + pulseAt(t, REVEAL, 8));
+            // el halo, DETRÁS del premio (el dueño: el brillo pasaba por encima del objeto y lo teñía del color de la rareza:
+            // el halo estaba en su centro y el objeto gira, la mitad quedaba detrás), y más suave (su resplandor no lo tapa)
+            Vector3f back = new Vector3f(px - eye.x, py - eye.y, pz - eye.z).normalize().mul(0.8F);
+            CinematicFx.glow(vc, v, px + back.x, py + back.y, pz + back.z, 1.2F + 0.5F * pulseAt(t, REVEAL, 12), wr, wg, wb,
+                    0.30F * pow + 0.6F * pulseAt(t, REVEAL, 10));
+            CinematicFx.glow(vc, v, px + back.x, py + back.y, pz + back.z, 0.5F, 1, 1, 1, 0.15F * pow + 0.5F * pulseAt(t, REVEAL, 8));
             CinematicFx.sparkBurst(vc, v, px, py, pz, s, 34.0F, 70 + winnerRarity.ordinal() * 20, 0.8F, col, 300);
             CinematicFx.shockwave(vc, v, c[0], sc.anchor("pool")[1] + 0.03F, c[2], s, 26.0F, 9.0F, col);
             // destellos que siguen brillando alrededor
@@ -781,11 +785,11 @@ public class CrateCinematicScreen extends Screen {
         float[] c = sc.anchor("crate");
         float front = (float)Math.atan2(eye.x - c[0], eye.z - c[2]);
         float px = c[0] + (float)Math.sin(front) * 1.1F, pz = c[2] + (float)Math.cos(front) * 1.1F, py = ringY(sc) + 0.15F;
-        // detrás del premio (un poco más lejos de la cámara)
-        Vector3f back = new Vector3f(px - eye.x, py - eye.y, pz - eye.z).normalize().mul(0.3F);
+        // detrás del premio (más lejos de la cámara: el premio gira y, a 0,3, su mitad quedaba detrás de los rayos)
+        Vector3f back = new Vector3f(px - eye.x, py - eye.y, pz - eye.z).normalize().mul(0.8F);
         float s = t - REVEAL;
         float out = t > TOTAL - 20 ? 1.0F - (t - (TOTAL - 20)) / 20.0F : 1.0F;
-        float pow = smooth(0, 8, s) * out * (0.55F + 0.15F * winnerRarity.ordinal());
+        float pow = smooth(0, 8, s) * out * (0.35F + 0.08F * winnerRarity.ordinal());
         CinematicFx.rays(vc, v, px + back.x, py + back.y, pz + back.z, t, pow, 2.6F + 0.4F * winnerRarity.ordinal(),
                 winnerRarity.rgb() & 0xFFFFFF);
     }
@@ -1088,17 +1092,14 @@ public class CrateCinematicScreen extends Screen {
         if (t >= REVEAL + 6 && candidates != null && !candidates.isEmpty()) {
             ItemStack win = candidates.get(winnerIndex);
             float a = smooth(REVEAL + 6, REVEAL + 18, t) * (t > TOTAL - 14 ? Math.max(0.0F, (TOTAL - t) / 14.0F) : 1.0F);
-            int y0 = h - barH - 64;
-            int boxW = Math.min(w - 40, 320);
-            int bg = (int)(a * 150) << 24;
-            g.fillGradient(w / 2 - boxW / 2, y0 - 6, w / 2 + boxW / 2, y0 + 52, bg, bg);
+            // (sobrio: el dueño, «el mensaje de abajo es demasiado exagerado»: sin caja ni rayas, sin negrita ni estrellas;
+            // el nombre del premio un poco más grande y la rareza pequeña, en su color)
+            int y0 = h - barH - 46;
             int rc = winnerRarity.rgb() & 0xFFFFFF;
-            g.fill(w / 2 - boxW / 2, y0 - 6, w / 2 + boxW / 2, y0 - 5, withAlpha(rc, a));
-            g.fill(w / 2 - boxW / 2, y0 + 51, w / 2 + boxW / 2, y0 + 52, withAlpha(rc, a));
-            drawScaled(g, "§7¡Has recibido!", w / 2, y0, 1.0F, withAlpha(0xFFFFFF, a));
-            drawScaled(g, "§l" + win.getHoverName().getString(), w / 2, y0 + 13, 1.6F, withAlpha(rc, a));
-            String stars = "★".repeat(winnerRarity.ordinal() + 1);
-            drawScaled(g, stars + "  " + winnerRarity.displayName() + "  " + stars, w / 2, y0 + 36, 1.0F, withAlpha(rc, a));
+            int soft = (((((rc >> 16) & 255) + 255) / 2) << 16) | (((((rc >> 8) & 255) + 255) / 2) << 8) | (((rc & 255) + 255) / 2);
+            drawScaled(g, "¡Has recibido!", w / 2, y0, 0.85F, withAlpha(0xD8D8D8, a * 0.85F));
+            drawScaled(g, win.getHoverName().getString(), w / 2, y0 + 11, 1.25F, withAlpha(soft, a));
+            drawScaled(g, winnerRarity.displayName(), w / 2, y0 + 25, 0.85F, withAlpha(rc, a * 0.9F));
         }
         if (canSkip() && t > 20 && t < TOTAL - 20) {
             g.drawString(font, "§8[Espacio] saltar", w - font.width("[Espacio] saltar") - 6, h - barH - 12, 0xFFFFFFFF, false);

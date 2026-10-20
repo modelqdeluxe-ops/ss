@@ -102,6 +102,18 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **Los números, iguales o por encima de la imagen en el juego** (el dueño): el juego sale con la luz media ×0,90, la alta
   ×0,94, el contraste ×0,97, la nitidez ×1,05 y la saturación ×1,075 respecto a la vista previa (medido en la prueba
   `24692c0`); el shader final lleva ganancia 1,12, claridad 0,56, curva 0,60 y los brillos más fuertes tirando a blanco.
+- **El agua como en la imagen, otra vez** (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
+  el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
+  pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en
+  columnas de destellos (`cascadeSeen`) y las escamas (`scales`: celdas redondeadas de borde fino roto en destellos). La
+  cascada, translúcida, con las mismas escamas alargadas hacia abajo y bajando, vetas y espuma blanca que brilla abajo.
+- **El premio, limpio**: el halo y los rayos estaban en su centro (el premio gira: la mitad quedaba detrás y se teñía del
+  color de la rareza); ahora van 0,8 por detrás y más suaves. El mensaje de abajo, sobrio (sin caja, rayas, negrita ni
+  estrellas).
+- **Bloques como en la imagen**: el altar (centro de ladrillo agrietado, lados de hojas de azalea lisas y piedra con
+  musgo, pétalos rosas; sin la azalea en flor de lunares morados), las cascadas de los lados caen desde lo alto de su
+  columna (sin dintel) con una columna de hojas y piedra pegada por fuera, el borde del estanque es un muro de un bloque,
+  más hojas y menos tiras de enredadera.
 - **Los nenúfares negros**: el verde de Minecraft por la luz de la escena daba (6,41,37); los alumbra el agua turquesa
   (`LILY_LIFT`/`LILY_K` en la vista previa = `SanctuaryScene`), (15,74,39); en la imagen ~(25,85,45).
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
