@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.96, más abajo.
+> de la 1.3.97, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,7 +59,43 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (19 oct 2026, TF Client 1.3.96) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.97) — lee esto primero
+
+**1.3.97** (`tf-client/JEFES.md` §3.22, con la tabla queja → causa → arreglo). El dueño, tras la 1.3.96: *«el agujero de
+gusano no parece que es uno... el sonido de la grieta no es épico, no suena el quebranto del cielo; sin sonidos
+secuenciados, explosiones ni cristales; la distorsión es demasiada, hasta me bugea la cámara; las ondas no me gustan...
+explica qué es el santuario, no es congruente esa zona bonita en una dimensión de caos; nada de bloques del End, lana ni
+tierra; biomas muchísimo más grandes; solo el mob grande que grita y el mago, pocos, sin bossbar ni botín; el portal
+donde el puente del bioma toca la isla principal, donde era el santuario antes; la armadura a ras de suelo con un
+efecto, netherita +1 y una sola vez; pozos sin sapoluz, una burbuja, pocos, mejor sonido; la textura de la corrosión
+suave y tres cuartos de corazón; otra melodía en el santuario; los fragmentos son lo que queda tras tragárselo todo el
+agujero, los sostienen los caballeros sacros; caballeros sacros con vida y diálogos»*:
+- **Todo el Void en roca del Vacío** (`tools/void/paleta.py`: la isla del dueño pasa de lana, terracota, piedra del End
+  y tierra a pizarra, toba, basalto, piedra negra, calcita, obsidiana y amatista; `isla_alba.py` falla si queda algo).
+- **Los Fragmentos del Alba Rota** (`tools/void/bioma.py`, ~600 × 460, cuatro veces el Páramo): Llanos de Ceniza,
+  Bosque de Cristal, Fauces de Obsidiana, Ruinas de la Orden y la Herida, con el Sendero del Alba.
+- **La Llegada**: el Umbral (santuario viejo) fuera; donde el Puente de Piedra toca la isla de la grieta, una plaza con
+  el **Portal del Alba** al lado.
+- **Fauna**: solo el **Desgarrador** (Endermauler, el que grita y lanza) y el **Vigía** (Ender Watchman, el «mago» de
+  los Espectros); como mucho 2 por jugador, cada 10 s; sin barra y sin botín.
+- **La armadura del Vacío**: de pie en el suelo del altar con aura; el yelmo con armadura (netherita +1, como los sets de
+  las crates); una sola vez por jugador.
+- **6 Anclas del Alba** (pozos) en burbuja, sin bloque; sonidos nuevos (`tools/void/instrumentos.py`); la corrosión con
+  textura suave (2048, `blur`) y **tres cuartos de corazón** (`HURT` 1,5); **música propia del santuario**
+  (`tools/void/musica_santuario.py`).
+- **El lore** (los caballeros y Caelthar): el ojo del Vacío se tragó la dimensión; los Fragmentos son lo que queda,
+  sostenidos por las Anclas (caballeros hechos luz); el santuario es el último jardín vivo.
+- **Cinco caballeros sacros** (`SacredKnight(s)`, `tools/void/caballeros.py`: el modelo de Caelthar en plata, acero,
+  bronce, rosa y marfil): pasean, saludan y hablan.
+- **La grieta del cielo**: sonido nuevo (el cielo cruje, Shepard, braam, coro; `tools/void/sonidos_cielo.py`), sin
+  ondas, distorsión suave y temblor lento (≤ 0,4°).
+- **El agujero de gusano rehecho**: túnel en perspectiva que serpentea, paredes de cada dimensión y bocas esféricas
+  con la dimensión siguiente; el agujero negro del Void al final de la ida.
+- `IslandUpdate.VERSION` 5 (en el servidor del dueño la isla se pone al día sola: ~2300 trozos, unos 4 minutos).
+- Pendiente del dueño: si los otros 7 sets de crates sin casco de armadura deben tenerlo (JEFES §11); si manda modelos o
+  skins de caballeros; y el PR en borrador #137.
+
+### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.96)
 
 **1.3.96** (`tf-client/JEFES.md` §3.21, con la tabla queja → causa → arreglo y el lore entero). El dueño, con una
 captura con Photon: *«se ve horrible con shaders... no pongas sonidos tipo explosiones secuenciales, quiero un sonido
