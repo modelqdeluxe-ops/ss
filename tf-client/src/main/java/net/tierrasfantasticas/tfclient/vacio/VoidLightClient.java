@@ -21,8 +21,10 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * La corrosión del Vacío en pantalla (1.3.96, {@link VoidLight}; el dueño: «no quiero un contador en pantalla, más bien
  * un efecto de corrosión que en su máximo punto no sea molesto»). Sin números ni barras:
  * <ul>
- *   <li>venas de sombra violeta que entran desde los bordes de la pantalla y crecen con la corrosión (como mucho a la
- *   mitad de opacidad: se sigue viendo todo); al máximo laten despacio y, al hacer daño, se oscurecen un momento;</li>
+ *   <li>grietas violetas que brillan y entran desde los bordes de la pantalla a medida que crece la corrosión (la textura,
+ *   tools/void/corrosion_textura.py, se dibuja más grande que la pantalla al principio y se va encogiendo: solo asoman las
+ *   puntas; al máximo llegan a un cuarto de la pantalla y el centro queda limpio); al máximo laten despacio y, al hacer
+ *   daño, se avivan un momento;</li>
  *   <li>alrededor del jugador, con mucha corrosión, motas violetas que suben (pocas);</li>
  *   <li>en un sitio de luz (un Pozo o el Velo del Alba), un resplandor dorado en los bordes mientras limpia, y un destello
  *   al entrar, con su sonido; al cruzar el Portal del Alba, un fundido dorado.</li>
@@ -31,7 +33,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
  */
 @OnlyIn(Dist.CLIENT)
 public final class VoidLightClient {
-    private static final ResourceLocation VEINS = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta.png");
+    private static final ResourceLocation CRACKS = new ResourceLocation(TFClient.MOD_ID, "textures/gui/corrosion_grietas.png");
     private static final ResourceLocation GOLD = new ResourceLocation(TFClient.MOD_ID, "textures/gui/luz_vinieta_oro.png");
     private static final SoundEvent S_ENTER = sound("luz.velo_entrar"), S_LEAVE = sound("luz.velo_salir"), S_EMPTY = sound("luz.sin_luz"),
             S_PORTAL = sound("viaje.llegada");
@@ -109,16 +111,22 @@ public final class VoidLightClient {
         shown += (light - shown) * Math.min(1F, dt * 4F);
         float c = 1F - shown / VoidLight.MAX;
         float t = (now % 100_000L) / 1000F;
-        // las venas de sombra (como mucho a la mitad: se sigue viendo)
-        float veins = smooth(0.04F, 1F, c) * 0.5F;
-        if (c > 0.97F) veins += 0.07F * (0.5F + 0.5F * (float) Math.sin(t * 2.4));
+        // las grietas (= corrosion_textura.scale_alpha): crecen desde los bordes encogiendo la textura de 1,45 a 1 pantalla
+        float grow = smooth(0F, 0.95F, c);
+        float scale = 1.45F - 0.45F * grow;
+        float cracks = smooth(0.02F, 0.25F, c) * 0.72F;
+        if (c > 0.97F) cracks += 0.08F * (0.5F + 0.5F * (float) Math.sin(t * 2.4));
         float hurt = 1F - (now - hurtAt) / 600F;
-        if (hurt > 0F) veins += 0.18F * hurt;
+        if (hurt > 0F) {
+            cracks += 0.25F * hurt;
+            scale -= 0.04F * hurt;
+        }
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        if (veins > 0.01F) {
-            RenderSystem.setShaderColor(1F, 1F, 1F, Mth.clamp(veins, 0F, 0.75F));
-            g.blit(VEINS, 0, 0, width, height, 0F, 0F, 256, 144, 256, 144);
+        if (cracks > 0.01F) {
+            int w = Math.round(width * scale), h = Math.round(height * scale);
+            RenderSystem.setShaderColor(1F, 1F, 1F, Mth.clamp(cracks, 0F, 0.95F));
+            g.blit(CRACKS, (width - w) / 2, (height - h) / 2, w, h, 0F, 0F, 1024, 576, 1024, 576);
         }
         // el resplandor dorado: mientras limpia y al entrar en la luz
         float gold = 0F;

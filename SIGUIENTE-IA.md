@@ -111,7 +111,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
   nuevos con su sonido corrido (si algo le suena a golpe, `tools/void/sonidos_cielo.py --medir` y bajar ese ataque); la
   secuencia de jefes del Void en `/tf boss` (▲▼, ✎, «a todos», al acabar); el agujero de gusano (Nether, End y Void de
   verdad); y en el Void: la corrosión (¿4 min es mucho o poco?: `VoidLight.CORRODE_MIN`; el daño: `HURT`/`HURT_EVERY`;
-  las venas: `VoidLightClient.draw`), los Pozos de Luz (¿se ven de lejos?, ¿curan rápido?: `REGEN`), el Páramo y sus
+  las grietas en pantalla: `VoidLightClient.draw` y `tools/void/corrosion_textura.py --ver carpeta`), los Pozos de Luz (¿se ven de lejos?, ¿curan rápido?: `REGEN`), el Páramo y sus
   criaturas (¿muchas o pocas?: `VoidFauna.CAP`/`EVERY`; las reglas son las del pack), la armadura del Vacío (5 jefes:
   `VoidArmor.NEED`), el altar, el portal y lo que cuenta Caelthar. Si quiere otro tamaño o sitio: constantes de
   `tools/void/bioma.py` e `isla_alba.py` (volver a pasarlo y subir `IslandUpdate.VERSION`: en su servidor la isla se

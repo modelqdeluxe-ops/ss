@@ -977,8 +977,12 @@ altar, el portal (y hacia dónde mira) y el sitio desde el que se busca por dón
   esquirla). Ahí la corrosión se va en **3 s**. No se recogen ni se gastan.
 - **La armadura del Vacío** (`VoidArmor.pieces`): cada pieza puesta, un 25 % más despacio; con las cuatro (yelmo, peto,
   grebas y botas del set Void), **inmune**. Es lo único que protege.
-- En pantalla (`VoidLightClient`): venas de sombra violeta desde los bordes que crecen con la corrosión (como mucho a la
-  mitad de opacidad; al máximo laten y se oscurecen un momento al hacer daño), motas violetas que suben alrededor con
+- En pantalla (`VoidLightClient`): **grietas violetas que brillan y entran desde los bordes** a medida que crece la
+  corrosión (`textures/gui/corrosion_grietas.png`, de `tools/void/corrosion_textura.py --ver carpeta`, que también la
+  enseña sobre una escena oscura y una clara: se dibuja más grande que la pantalla y se va encogiendo, de 1,45 a 1; al
+  máximo llegan a un cuarto de la pantalla, opacidad 0,72, y el centro queda limpio; laten despacio y se avivan al hacer
+  daño). La primera versión (venas casi negras, RGB 18,4,40) no se veía sobre el Páramo de noche: en la prueba, del 71 %
+  al 100 % el borde de arriba solo pasaba de 49,7 a 48,1 de luminancia. Motas violetas que suben alrededor con
   mucha corrosión, un resplandor dorado mientras un pozo o el Velo te limpian y un fundido dorado al cruzar el portal. Sonidos
   `luz.velo_entrar` / `velo_salir` / `sin_luz`. Ni barra ni número.
 - **Ecos del Alba**: la primera vez que se pisa cada pozo se oye un eco (lo que dijo uno de los once caballeros que se

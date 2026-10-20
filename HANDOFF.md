@@ -80,8 +80,8 @@ robe tu luz, fragmentos de luz, una isla santuario con el caballero en una burbu
   magma cuando te ahogas... un set que obtendrán todos al derrotar 5 bosses para ser inmunes al Void, en el santuario...
   haz más grande esa isla, bonita, bien decorada... los mobs del End (sin el que se monta), anímalos bien... un bioma
   completo entre el santuario y la isla principal con estas criaturas, pozos de luz... y un portalito para volver»*):
-  - **La corrosión del Vacío** (`VoidLight`): sin números; venas de sombra violeta desde los bordes que crecen (como
-    mucho a media opacidad), de nada a todo en 4 min fuera de la luz; al máximo, **medio corazón cada 3 s**.
+  - **La corrosión del Vacío** (`VoidLight`): sin números; grietas violetas que brillan y entran desde los bordes
+    (el centro siempre limpio), de nada a todo en 4 min fuera de la luz; al máximo, **medio corazón cada 3 s**.
   - **Los Pozos de Luz** (`LightWells`, 26: 16 en el Páramo y 10 en la isla de la grieta) y el Velo del Alba curan en
     3 s (resplandor dorado). No se recogen. La primera vez en cada pozo, un Eco del Alba en el chat.
   - **El Páramo del Alba Rota** (`tools/void/bioma.py`): ~240 × 230 entre la isla de la grieta y el santuario: Bosque

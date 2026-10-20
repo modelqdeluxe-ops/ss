@@ -30,7 +30,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * <ul>
  *   <li>Cada jugador lleva su luz (0..{@link #MAX}; la corrosión es lo que le falta). Fuera de un sitio de luz el Vacío
  *   se la va comiendo: de llena a nada en {@link #CORRODE_MIN} minutos. Lo ve en el borde de la pantalla
- *   ({@code VoidLightClient}: venas de sombra violeta que crecen, sin números).</li>
+ *   ({@code VoidLightClient}: grietas violetas que entran desde los bordes, sin números).</li>
  *   <li>Sitios de luz: el Velo del Alba ({@link VoidIsland#inBubble}) y los Pozos de Luz ({@link LightWells#wellAt}); ahí
  *   la corrosión se va en unos segundos ({@link #REGEN}).</li>
  *   <li>Sin luz, el Vacío hace daño: medio corazón ({@link #HURT}) cada {@link #HURT_EVERY} ticks (tipo de daño
