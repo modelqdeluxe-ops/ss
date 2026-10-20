@@ -12,11 +12,12 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Lo que se mueve en el santuario de las crates (1.3.99), en el mundo de la escena: los haces de sol entre los árboles
- * y el polvo que brilla en ellos, el agua de los caños en arco (con la textura del agua que corre), la espuma, las gotas
- * y las ondas del estanque, los pétalos de los cerezos, las mariposas, los pájaros, el anillo de runas, el pilar de luz
- * de la crate abierta, la onda de la apertura y del premio y los destellos. Todo determinista con el tiempo (en ticks),
- * sin estado: cada partícula sale de su índice.
+ * Lo que se mueve en el Bosque de las Hadas de las crates (1.3.99), en el mundo de la escena: los haces del sol del
+ * atardecer entre los árboles y el polvo que brilla en ellos, el halo de las luces mágicas, las hadas y las luciérnagas,
+ * la niebla baja, la cascada, el agua de los caños en arco y la que rebosa de las copas (con la textura del agua que
+ * corre), la espuma, las gotas y las ondas, los pétalos, las mariposas, el anillo de runas, el pilar de luz de la crate
+ * abierta, la onda de la apertura y del premio y los destellos. Todo determinista con el tiempo (en ticks), sin estado:
+ * cada partícula sale de su índice.
  */
 public final class CinematicFx {
     private CinematicFx() {}
@@ -124,7 +125,7 @@ public final class CinematicFx {
         Vector3f sun = sc.sunDir();
         float[] c = sc.anchor("crate");
         float tr = ((tint >> 16) & 255) / 255.0F, tg = ((tint >> 8) & 255) / 255.0F, tb = (tint & 255) / 255.0F;
-        float r = mix(1.0F, tr, tintAmt), g = mix(0.90F, tg, tintAmt), b = mix(0.68F, tb, tintAmt);
+        float r = mix(1.0F, tr, tintAmt), g = mix(0.80F, tg, tintAmt), b = mix(0.52F, tb, tintAmt);
         // el eje del haz grande: perpendiculares al sol para repartir las bandas
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
         Vector3f p2 = new Vector3f(sun).cross(p1).normalize();
@@ -140,7 +141,7 @@ public final class CinematicFx {
         }
         // el núcleo, más blanco
         Vector3f base = new Vector3f(c[0], c[1] - 1.0F, c[2]);
-        band(vc, v, base, new Vector3f(base).add(new Vector3f(sun).mul(30.0F)), 0.7F, 1.4F, 1.0F, 0.96F, 0.84F, 0.16F * power,
+        band(vc, v, base, new Vector3f(base).add(new Vector3f(sun).mul(30.0F)), 0.7F, 1.4F, 1.0F, 0.9F, 0.7F, 0.16F * power,
                 0.24F * power);
         // haces finos entre las copas, por la plaza
         for (int i = 0; i < 7; i++) {
@@ -150,7 +151,7 @@ public final class CinematicFx {
             float x = -9.0F + hash(i, 21) * 18.0F + (float)Math.sin(t * 0.004F + i) * 0.5F, z = -9.0F + hash(i, 23) * 16.0F;
             if (Math.abs(x - c[0]) < 3.0F && Math.abs(z - c[2]) < 3.0F) x += 6.0F;
             Vector3f b0 = new Vector3f(x, 0.05F, z);
-            band(vc, v, b0, new Vector3f(b0).add(new Vector3f(sun).mul(22.0F)), 0.18F + hash(i, 25) * 0.3F, 0.5F, 1.0F, 0.9F, 0.66F,
+            band(vc, v, b0, new Vector3f(b0).add(new Vector3f(sun).mul(22.0F)), 0.18F + hash(i, 25) * 0.3F, 0.5F, 1.0F, 0.82F, 0.56F,
                     a * 0.5F, a);
         }
         // donde cae el haz: luz en el pedestal y en el agua
@@ -223,6 +224,7 @@ public final class CinematicFx {
         int light = LightTexture.FULL_BRIGHT;
         for (int k = 0; k < 4; k++) {
             float[] spout = sc.anchor("spout" + k);
+            if (spout[1] <= 0) continue;
             int segs = 18;
             Vector3f prev = streamAt(spout, crate, pool[1], 0, surge);
             float w = 0.11F + surge * 0.05F;
@@ -261,6 +263,7 @@ public final class CinematicFx {
         float tr = ((tint >> 16) & 255) / 255.0F, tg = ((tint >> 8) & 255) / 255.0F, tb = (tint & 255) / 255.0F;
         for (int k = 0; k < 4; k++) {
             float[] spout = sc.anchor("spout" + k);
+            if (spout[1] <= 0) continue;
             // el reflejo del sol a lo largo del chorro (y el color de la rareza al girar la llave)
             Vector3f prev = streamAt(spout, crate, pool[1], 0, surge);
             for (int i = 1; i <= 12; i++) {
@@ -521,6 +524,198 @@ public final class CinematicFx {
 
     static float mix(float a, float b, float t) {
         return a + (b - a) * t;
+    }
+
+    // ------------------------------------------------------------------------------------- el bosque de las hadas
+    /** El halo de cada luz mágica (faroles, setas lámpara, liquen, bayas, linternas de mar...), que respira un poco. */
+    public static void lightHalos(VertexConsumer vc, View v, SanctuaryScene sc, float t) {
+        int i = 0;
+        for (float[] l : sc.lights) {
+            i++;
+            float dx = l[0] - v.eye.x, dy = l[1] - v.eye.y, dz = l[2] - v.eye.z;
+            if (dx * dx + dy * dy + dz * dz > 70 * 70) continue;
+            float flick = 0.82F + 0.18F * (float)Math.sin(t * (0.07F + hash(i, 171) * 0.08F) + i);
+            float s = l[6];
+            glow(vc, v, l[0], l[1], l[2], 0.55F * s + 0.2F, l[3], l[4], l[5], 0.30F * flick * Math.min(1.0F, s + 0.3F));
+            glow(vc, v, l[0], l[1], l[2], 0.18F * s + 0.08F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.45F * flick);
+        }
+    }
+
+    private static final int[] FAIRY = {0xFFB8E8, 0x9FF3FF, 0xFFE59A, 0xD8B4FF, 0xB8FFC8, 0xFFFFFF, 0xFF9FD0, 0xA8D8FF, 0xFFD2A0, 0xE0C0FF};
+
+    /** Dónde está el hada i en t: vuela en lazos por el claro, sube y baja, a veces cruza cerca de la crate. */
+    static Vector3f fairyAt(SanctuaryScene sc, int i, float t) {
+        float[] c = sc.anchor("crate");
+        float sp = 0.010F + hash(i, 173) * 0.012F;
+        float a = t * sp + hash(i, 175) * 6.2832F;
+        float R = 3.2F + hash(i, 177) * 5.0F + 1.4F * (float)Math.sin(t * 0.007F + i);
+        float x = c[0] + (float)Math.cos(a) * R + (float)Math.sin(a * 2.7F + i) * 0.9F;
+        float z = c[2] + (float)Math.sin(a) * R * 0.85F - 1.5F + (float)Math.cos(a * 1.9F) * 0.8F;
+        float y = 1.6F + hash(i, 179) * 3.6F + 0.8F * (float)Math.sin(a * 3.1F + i) + 0.25F * (float)Math.sin(t * 0.21F + i * 1.3F);
+        return new Vector3f(x, y, z);
+    }
+
+    /**
+     * Las hadas: lucecitas de colores que vuelan con alas que baten, dejando una estela de chispas. Dos pasadas: la luz
+     * (GLOW_ADD, {@code wings} false) y las alas (SOFT, {@code wings} true); {@code excite} (la apertura) las aviva.
+     */
+    public static void fairies(VertexConsumer vc, View v, SanctuaryScene sc, float t, float excite, boolean wings) {
+        for (int i = 0; i < 10; i++) {
+            Vector3f p = fairyAt(sc, i, t);
+            int c = FAIRY[i];
+            float r = ((c >> 16) & 255) / 255.0F, g = ((c >> 8) & 255) / 255.0F, b = (c & 255) / 255.0F;
+            if (wings) {
+                Vector3f q = fairyAt(sc, i, t - 0.5F);
+                float dx = p.x - q.x, dz = p.z - q.z;
+                float l = (float)Math.sqrt(dx * dx + dz * dz) + 1e-4F;
+                dx /= l;
+                dz /= l;
+                float flap = (float)Math.sin(t * 3.4F + i) * 0.9F;
+                for (int side = -1; side <= 1; side += 2) {
+                    float s = 0.11F;
+                    float wx = -dz * side * (float)Math.cos(flap) * s, wy = (float)Math.sin(flap) * s * 0.8F + 0.04F,
+                            wz = dx * side * (float)Math.cos(flap) * s;
+                    quad(vc, v.m, p.x + wx, p.y + wy, p.z + wz, wx, wy, wz, dx * s * 0.6F, 0.02F, dz * s * 0.6F, mix(r, 1, 0.6F),
+                            mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F);
+                }
+                continue;
+            }
+            VertexConsumer glowVc = vc;
+            float pulse = 0.8F + 0.2F * (float)Math.sin(t * 0.6F + i * 2.0F);
+            glow(glowVc, v, p.x, p.y, p.z, 0.5F * pulse * (1 + excite * 0.4F), r, g, b, 0.55F);
+            glow(glowVc, v, p.x, p.y, p.z, 0.12F, 1, 1, 1, 0.95F);
+            for (int k = 1; k <= 12; k++) {
+                Vector3f q = fairyAt(sc, i, t - k * 0.9F);
+                float f = 1.0F - k / 13.0F;
+                float jx = (hash(i * 31 + k, 181) - 0.5F) * 0.12F, jy = (hash(i * 31 + k, 183) - 0.5F) * 0.12F - k * 0.012F;
+                glow(glowVc, v, q.x + jx, q.y + jy, q.z, 0.05F * f + 0.02F, mix(r, 1, 0.4F), mix(g, 1, 0.4F), mix(b, 1, 0.4F), 0.6F * f);
+            }
+        }
+    }
+
+    /** Luciérnagas: puntitos amarillo verdosos que se encienden y se apagan, a ras de suelo y entre las matas. */
+    public static void fireflies(VertexConsumer vc, View v, float t) {
+        for (int i = 0; i < 130; i++) {
+            float period = 60.0F + hash(i, 191) * 90.0F;
+            float ph = frac(t / period + hash(i, 193));
+            float on = (float)Math.pow(Math.max(0.0F, (float)Math.sin(ph * Math.PI * 2)), 3.0);
+            if (on < 0.02F) continue;
+            float x = -16.0F + hash(i, 195) * 32.0F + (float)Math.sin(t * 0.013F + i) * 1.2F;
+            float z = -18.0F + hash(i, 197) * 30.0F + (float)Math.cos(t * 0.011F + i * 0.7F) * 1.2F;
+            float y = 0.3F + hash(i, 199) * 3.2F + (float)Math.sin(t * 0.03F + i) * 0.35F;
+            glow(vc, v, x, y, z, 0.16F, 0.8F, 1.0F, 0.45F, 0.45F * on);
+            glow(vc, v, x, y, z, 0.04F, 1, 1, 0.8F, 0.9F * on);
+        }
+    }
+
+    /** Niebla baja: manchas suaves y frías a ras del suelo y del agua, que se mueven despacio (más al pie de la cascada). */
+    public static void mist(VertexConsumer vc, View v, SanctuaryScene sc, float t) {
+        float[] pond = sc.anchor("pond");
+        for (int i = 0; i < 26; i++) {
+            float x = -14.0F + hash(i, 201) * 28.0F + t * 0.006F * (0.5F + hash(i, 203));
+            x = -14.0F + frac((x + 14.0F) / 28.0F) * 28.0F;
+            float z = -16.0F + hash(i, 205) * 24.0F;
+            float y = 0.35F + hash(i, 207) * 0.6F;
+            float a = 0.05F * (0.6F + 0.4F * (float)Math.sin(t * 0.02F + i));
+            glow(vc, v, x, y, z, 2.6F + hash(i, 209) * 2.0F, 0.78F, 0.78F, 0.95F, a);
+        }
+        for (int i = 0; i < 10; i++) {
+            float ph = frac(t * 0.008F + hash(i, 211));
+            glow(vc, v, pond[0] + (hash(i, 213) - 0.5F) * 4.0F, pond[1] + 0.3F + ph * 2.2F, pond[2] + (hash(i, 215) - 0.5F) * 2.0F,
+                    1.2F + ph * 1.6F, 0.9F, 0.95F, 1.0F, 0.12F * (1.0F - ph));
+        }
+    }
+
+    /**
+     * La cascada: una lámina de agua que cae (la textura del agua que corre, en tiras que se mueven), con vetas de luz
+     * que bajan, la espuma y las ondas abajo, en el remanso.
+     */
+    public static void waterfall(MultiBufferSource buf, View v, SanctuaryScene sc, float t) {
+        float[] f = sc.anchor("fall");
+        float fz = sc.anchor("fall_z")[0];
+        if (f[2] <= f[3]) return;
+        TextureAtlasSprite sp = flow();
+        VertexConsumer vc = buf.getBuffer(SceneRenderTypes.WATER);
+        int wc = SceneLevel.WATER;
+        float wr = ((wc >> 16) & 255) / 255.0F, wg = ((wc >> 8) & 255) / 255.0F, wb = (wc & 255) / 255.0F;
+        int light = LightTexture.FULL_BRIGHT;
+        int strips = 8;
+        float h = f[2] - f[3];
+        for (int i = 0; i < strips; i++) {
+            float x0 = mix(f[0], f[1], i / (float)strips), x1 = mix(f[0], f[1], (i + 1) / (float)strips);
+            float bulge = 0.25F * (float)Math.sin((i + 0.5F) / strips * Math.PI);
+            int segs = 6;
+            for (int k = 0; k < segs; k++) {
+                float y1 = f[2] - h * k / segs, y0 = f[2] - h * (k + 1) / segs;
+                float z1 = fz + bulge + 0.12F * k / segs, z0 = fz + bulge + 0.12F * (k + 1) / segs;
+                float shade = 0.85F + 0.15F * hash(i, 221);
+                vc.vertex(v.m, x0, y0, z0).color(wr * shade + 0.1F, wg * shade + 0.1F, wb * shade + 0.1F, 0.8F).uv(sp.getU0(), sp.getV1()).uv2(light)
+                        .normal(0, 0, 1).endVertex();
+                vc.vertex(v.m, x1, y0, z0).color(wr * shade + 0.1F, wg * shade + 0.1F, wb * shade + 0.1F, 0.8F).uv(sp.getU1(), sp.getV1()).uv2(light)
+                        .normal(0, 0, 1).endVertex();
+                vc.vertex(v.m, x1, y1, z1).color(wr * shade + 0.1F, wg * shade + 0.1F, wb * shade + 0.1F, 0.8F).uv(sp.getU1(), sp.getV0()).uv2(light)
+                        .normal(0, 0, 1).endVertex();
+                vc.vertex(v.m, x0, y1, z1).color(wr * shade + 0.1F, wg * shade + 0.1F, wb * shade + 0.1F, 0.8F).uv(sp.getU0(), sp.getV0()).uv2(light)
+                        .normal(0, 0, 1).endVertex();
+            }
+        }
+    }
+
+    /** La luz de la cascada (luz que suma): vetas blancas que bajan, la espuma y las ondas del remanso. */
+    public static void waterfallLights(VertexConsumer vc, View v, SanctuaryScene sc, float t) {
+        float[] f = sc.anchor("fall");
+        float fz = sc.anchor("fall_z")[0] + 0.3F;
+        float[] pond = sc.anchor("pond");
+        if (f[2] <= f[3]) return;
+        float h = f[2] - f[3];
+        for (int i = 0; i < 16; i++) {
+            float x = mix(f[0], f[1], hash(i, 231));
+            float ph = frac(t * (0.025F + hash(i, 233) * 0.02F) + hash(i, 235));
+            float y = f[2] - ph * h;
+            Vector3f a = new Vector3f(x, y + 0.9F, fz), b = new Vector3f(x, y - 0.2F, fz);
+            band(vc, v, a, b, 0.05F, 0.07F, 0.92F, 0.98F, 1.0F, 0.0F, 0.28F * (float)Math.sin(ph * Math.PI));
+        }
+        for (int i = 0; i < 14; i++) {
+            float ph = frac(t * 0.07F + hash(i, 241));
+            float x = mix(f[0], f[1], hash(i, 243));
+            glow(vc, v, x, f[3] + 0.1F + ph * 0.5F, fz + 0.2F + ph * 0.6F, 0.3F + ph * 0.4F, 1, 1, 1, 0.3F * (1.0F - ph));
+        }
+        for (int o = 0; o < 4; o++) {
+            float ph = frac(t * 0.02F + o / 4.0F);
+            ring(vc, v, (f[0] + f[1]) * 0.5F, pond[1] + 0.012F, fz + 0.9F, 0.4F + ph * 2.2F, 0.04F, 32, 0.9F, 0.97F, 1.0F, 0.2F * (1.0F - ph));
+        }
+    }
+
+    /** El agua que rebosa de las copas de las fuentes hacia el estanque (dos hilos por copa, en el borde de dentro). */
+    public static void overflow(MultiBufferSource buf, View v, SanctuaryScene sc, float t) {
+        TextureAtlasSprite sp = flow();
+        VertexConsumer vc = buf.getBuffer(SceneRenderTypes.WATER);
+        float[] c = sc.anchor("crate"), pool = sc.anchor("pool");
+        int wc = SceneLevel.WATER;
+        float wr = ((wc >> 16) & 255) / 255.0F, wg = ((wc >> 8) & 255) / 255.0F, wb = (wc & 255) / 255.0F;
+        for (int k = 0; k < 4; k++) {
+            float[] s = sc.anchor("spout" + k);
+            if (s[1] <= 0) continue;
+            float dx = c[0] - s[0], dz = c[2] - s[2];
+            float L = (float)Math.sqrt(dx * dx + dz * dz);
+            dx /= L;
+            dz /= L;
+            for (int side = -1; side <= 1; side += 2) {
+                float x = s[0] - dz * side * 0.55F, z = s[2] + dx * side * 0.55F;
+                Vector3f top = new Vector3f(x, s[1] - 0.1F, z), bot = new Vector3f(x + dx * 0.15F, pool[1], z + dz * 0.15F);
+                float mx = x - v.eye.x, mz = z - v.eye.z;
+                float ml = (float)Math.sqrt(mx * mx + mz * mz) + 1e-4F;
+                float px = -mz / ml * 0.06F, pz = mx / ml * 0.06F;
+                vc.vertex(v.m, bot.x - px, bot.y, bot.z - pz).color(wr, wg, wb, 0.7F).uv(sp.getU0(), sp.getV1()).uv2(LightTexture.FULL_BRIGHT)
+                        .normal(0, 1, 0).endVertex();
+                vc.vertex(v.m, bot.x + px, bot.y, bot.z + pz).color(wr, wg, wb, 0.7F).uv(sp.getU1(), sp.getV1()).uv2(LightTexture.FULL_BRIGHT)
+                        .normal(0, 1, 0).endVertex();
+                vc.vertex(v.m, top.x + px, top.y, top.z + pz).color(wr, wg, wb, 0.7F).uv(sp.getU1(), sp.getV0()).uv2(LightTexture.FULL_BRIGHT)
+                        .normal(0, 1, 0).endVertex();
+                vc.vertex(v.m, top.x - px, top.y, top.z - pz).color(wr, wg, wb, 0.7F).uv(sp.getU0(), sp.getV0()).uv2(LightTexture.FULL_BRIGHT)
+                        .normal(0, 1, 0).endVertex();
+            }
+        }
     }
 
     /** El tipo de capa de cada efecto, para quien los junte. */

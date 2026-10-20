@@ -3,12 +3,13 @@
     python3 -I tools/crates/sonidos_crates.py [--wav carpeta]
 
 Escribe OGG Vorbis en assets/tfclient/sounds/crates/ (los pide CrateCinematicScreen como tfclient:crates.<nombre>).
-Todo en Re mayor, a los tiempos de la cinemática (20 ticks = 1 s): la llave aparece a los 2,6 s, entra a los 5,0,
-gira a los 5,3, las runas a los 5,5, tiembla a los 5,9, se abre a los 6,8, la ruleta de los 8,1 a los 14,4 y el
-premio a los 14,7.
+Todo en Re mayor, a los tiempos de la cinemática del Bosque de las Hadas (20 ticks = 1 s): la llave aparece a los
+1,0 s, entra a los 3,3, gira a los 3,6, las runas a los 3,8, tiembla a los 4,2, se abre a los 5,1, la ruleta de los
+6,4 a los 12,6 y el premio a los 12,9; dura 18 s.
 
-  ambiente        el claro del bosque: pájaros (varios cantos), las hojas con el viento y la fuente (21 s, estéreo)
-  musica          la música de la cinemática, a sus tiempos (20 s, estéreo): cuerdas y arpa al llegar, celesta con la
+  ambiente        el bosque de las hadas al atardecer: la cascada, las hojas con el viento, grillos, campanitas de
+                  las hadas y algún mirlo que canta lejos (19 s, estéreo)
+  musica          la música de la cinemática, a sus tiempos (18 s, estéreo): cuerdas y arpa al llegar, celesta con la
                   llave, coro y campana al girar, trémolo que sube al temblar, acorde grande al abrirse, la ruleta con
                   un ostinato que se frena, silencio para el premio y un final tranquilo
   llave_aparece   brillo que sube (la llave sale de un remolino de luz)
@@ -38,8 +39,8 @@ from sonidos_grieta import SR, bp, hp, lp, rng, write_wav  # noqa: E402
 RES = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient', 'sounds', 'crates'))
 
 # los tiempos de la cinemática (s)
-KEY_APPEAR, KEY_IN, KEY_TURN, RUNES, TREMBLE, OPEN = 2.6, 5.0, 5.3, 5.5, 5.9, 6.8
-RING, SPIN0, SPIN1, REVEAL, END = 7.3, 8.1, 14.4, 14.7, 20.0
+KEY_APPEAR, KEY_IN, KEY_TURN, RUNES, TREMBLE, OPEN = 1.0, 3.3, 3.6, 3.8, 4.2, 5.1
+RING, SPIN0, SPIN1, REVEAL, END = 5.5, 6.4, 12.6, 12.9, 18.0
 
 
 def tt(dur):
@@ -115,73 +116,80 @@ def sparkle(dur, count, seed, lo=1800, hi=5200, start=0.0, spread=1.0):
 
 # --------------------------------------------------------------------------------------------- el ambiente
 def ambiente():
-    dur = 21.0
+    dur = END + 1.0
     t = tt(dur)
     n = len(t)
     r = rng(1399)
     out = np.zeros((n, 2))
-    # el viento en las hojas: ruido rosado por una banda, con ráfagas lentas
+    # la cascada, detrás: un rumor de agua que no para (grave y ancho) y su siseo
+    roar = noise2(n, 17)
+    for c in range(2):
+        roar[:, c] = bp(roar[:, c], 160, 1900) * 0.9 + bp(roar[:, c], 1900, 6000) * 0.22
+    swirl = 0.8 + 0.2 * np.sin(2 * np.pi * 0.21 * t + 0.4) + 0.12 * lp(r.standard_normal(n), 3) * 6
+    out += roar * swirl[:, None] * 0.05
+    # el viento en las hojas, con ráfagas lentas
     wind = noise2(n, 11)
     for c in range(2):
-        wind[:, c] = bp(wind[:, c], 350, 2600) * 0.5 + bp(wind[:, c], 2600, 7000) * 0.18
+        wind[:, c] = bp(wind[:, c], 350, 2600) * 0.5 + bp(wind[:, c], 2600, 7000) * 0.15
     gust = 0.45 + 0.55 * smooth(-1, 1, np.sin(2 * np.pi * 0.07 * t + 1.0) + 0.6 * np.sin(2 * np.pi * 0.13 * t + 2.2))
-    out += wind * gust[:, None] * 0.05
-    # la fuente: un lecho de agua que borbotea y gotas
-    bed = noise2(n, 13)
-    for c in range(2):
-        bed[:, c] = bp(bed[:, c], 250, 3200)
-    babble = np.abs(lp(r.standard_normal(n), 14)) * 3.0
-    out += bed * (0.5 + babble)[:, None] * 0.045
-    for i in range(int(dur * 26)):
+    out += wind * gust[:, None] * 0.035
+    # gotas en el estanque
+    for i in range(int(dur * 9)):
         at = r.random() * (dur - 0.1)
-        f = 450 + r.random() ** 1.5 * 1600
-        place(out, pan2(bubble(f, 0.03 + r.random() * 0.05, i), r.uniform(-0.35, 0.35)), at, 0.05 + 0.06 * r.random())
-    # los pájaros: tres cantos distintos, cada uno desde su sitio
-    def warble(at, p, seed):          # un mirlo: frase de notas que suben y bajan
+        f = 500 + r.random() ** 1.5 * 1400
+        place(out, pan2(bubble(f, 0.03 + r.random() * 0.05, i), r.uniform(-0.3, 0.3)), at, 0.035 + 0.04 * r.random())
+
+    # grillos del atardecer: trinos cortos en grupos, cada uno con su ritmo y su sitio
+    def cricket(p, f0, rate, gap, seed, gain):
+        rr = rng(seed)
+        at = rr.random() * gap
+        while at < dur - 0.3:
+            pulses = rr.integers(3, 5)
+            for j in range(pulses):
+                d = 0.018
+                tc = tt(d)
+                x = np.sin(2 * np.pi * f0 * tc) * np.sin(np.pi * tc / d) ** 2
+                place(out, pan2(x, p), at + j / rate, gain)
+            at += gap * (0.85 + 0.3 * rr.random())
+
+    for k in range(5):
+        cricket(r.uniform(-0.9, 0.9), 4300 + 500 * r.random(), 28 + 6 * r.random(), 0.55 + 0.4 * r.random(), 1500 + k,
+                0.010 + 0.008 * r.random())
+
+    # las campanitas de las hadas: notas sueltas, muy agudas y suaves (pentatónica de Re), con un brillo
+    penta = ['D6', 'E6', 'F#6', 'A6', 'B6', 'D7']
+    at = 0.4
+    k = 0
+    while at < dur - 1.5:
+        p = r.uniform(-0.8, 0.8)
+        for j in range(r.integers(1, 4)):
+            nt = penta[r.integers(len(penta))]
+            place(out, pan2(celesta(hz(nt), 1.6, 0.5, seed=1600 + k * 5 + j), p), at + j * 0.11, 0.05 + 0.03 * r.random())
+        if r.random() < 0.5:
+            place(out, sparkle(0.8, 4, 1700 + k) * 0.5, at + 0.05, 0.3)
+        k += 1
+        at += 1.1 + r.random() * 1.8
+
+    # un mirlo lejos que canta al atardecer (y otro que contesta)
+    def warble(at, p, seed):
         rr = rng(seed)
         k = at
-        for j in range(rr.integers(5, 9)):
-            f0 = 1800 + rr.random() * 1600
-            d = 0.06 + rr.random() * 0.1
+        for j in range(rr.integers(5, 8)):
+            f0 = 1700 + rr.random() * 1400
+            d = 0.07 + rr.random() * 0.1
             x = chirp(f0, f0 * rr.uniform(0.75, 1.35), d, 'updown' if rr.random() < 0.6 else 'down', 0.15)
-            place(out, pan2(x, p), k, 0.07 + 0.04 * rr.random())
-            k += d + 0.02 + rr.random() * 0.06
-
-    def tsee(at, p, seed):            # un herrerillo: «tsi-tsi-tsi» agudos
-        rr = rng(seed)
-        f0 = 5200 + rr.random() * 1200
-        for j in range(rr.integers(3, 6)):
-            place(out, pan2(chirp(f0, f0 * 0.82, 0.07, 'down', 0.05), p), at + j * 0.13, 0.045)
-
-    def trill(at, p, seed):           # un reyezuelo: trino rápido
-        rr = rng(seed)
-        f0 = 3800 + rr.random() * 900
-        x = chirp(f0, f0 * 1.1, 0.55 + rr.random() * 0.4, 'updown', 0.08, trill=26 + rr.random() * 8)
-        place(out, pan2(x, p), at, 0.05)
-
-    def dove(at, p):                  # una tórtola lejos: «uu-uuu»
-        for j, (d, f) in enumerate(((0.35, 520), (0.6, 490), (0.35, 470))):
-            x = chirp(f, f * 0.94, d, 'updown', 0.3)
-            place(out, pan2(lp(x, 1200), p), at + j * 0.5, 0.05)
+            place(out, pan2(lp(x, 4500), p), k, 0.035 + 0.02 * rr.random())
+            k += d + 0.03 + rr.random() * 0.07
 
     k = 0
-    at = 0.6
-    while at < dur - 2:
-        kind = r.integers(4)
-        p = r.uniform(-0.9, 0.9)
-        if kind == 0:
-            warble(at, p, 100 + k)
-        elif kind == 1:
-            tsee(at, p, 200 + k)
-        elif kind == 2:
-            trill(at, p, 300 + k)
-        elif k % 3 == 0:
-            dove(at, p * 0.6)
+    at = 1.4
+    while at < dur - 2.5:
+        warble(at, r.uniform(-0.9, 0.9), 100 + k)
         k += 1
-        at += 0.9 + r.random() * 1.6
-    out = sala(out, 2.6, 0.22, 5000, seed=1399)[:n]
-    out = np.stack([hp(out[:, c], 120) for c in range(2)], 1)
-    out *= smooth(0, 1.2, t)[:, None]
+        at += 3.2 + r.random() * 2.6
+    out = sala(out, 3.0, 0.26, 5200, seed=1399)[:n]
+    out = np.stack([hp(out[:, c], 90) for c in range(2)], 1)
+    out *= smooth(0, 0.8, t)[:, None]
     return norm(fade_out(out, 1.6), 0.55)
 
 
@@ -227,18 +235,18 @@ def musica():
             k += 1
             at += step * (1 + rit * ((at - t0) / max(1e-6, t1 - t0)) ** 2)
 
-    # la llegada: cuerdas y arpa tranquilas
-    chord_block('D', 0.3, 3.2, 0.40, attack=1.8)
-    harp_run('D', 0.5, 3.1, 0.30, 0.45, seed=100)
-    chord_block('Bm', 3.0, 4.6, 0.36)
-    harp_run('Bm', 3.2, 4.5, 0.30, 0.38, order=(0, 2, 1, 3, 2, 4, 3, 5), seed=200)
-    for k, (nt, at, d) in enumerate((('F#5', 3.15, 0.38), ('E5', 3.55, 0.38), ('D5', 3.95, 0.3), ('A4', 4.25, 0.5))):
-        place(out, pan2(flauta(hz(nt), d, 0.7, seed=300 + k), -0.1), at, 0.38)
-    # la llave aparece: celesta que sube
+    # la llegada (ya junto a la crate): cuerdas y arpa tranquilas
+    chord_block('D', 0.05, 1.7, 0.40, attack=0.9)
+    harp_run('D', 0.15, 1.6, 0.26, 0.45, seed=100)
+    # la llave aparece: celesta que sube; vuela: Si m y la flauta
     for k, nt in enumerate(('A4', 'D5', 'F#5', 'A5', 'D6', 'F#6')):
         place(out, pan2(celesta(hz(nt), 2.0, 0.7, seed=400 + k), -0.6 + 0.24 * k), KEY_APPEAR + k * 0.075, 0.38)
-    # vuela hasta la cerradura: Sol, quieto
-    chord_block('G', 4.4, 5.6, 0.30, cut=(600, 1000))
+    chord_block('Bm', 1.5, 2.8, 0.36)
+    harp_run('Bm', 1.7, 2.7, 0.26, 0.38, order=(0, 2, 1, 3, 2, 4, 3, 5), seed=200)
+    for k, (nt, at, d) in enumerate((('F#5', 1.65, 0.34), ('E5', 2.0, 0.34), ('D5', 2.35, 0.28), ('A4', 2.6, 0.45))):
+        place(out, pan2(flauta(hz(nt), d, 0.7, seed=300 + k), -0.1), at, 0.38)
+    # se alinea y entra: Sol, quieto
+    chord_block('G', 2.7, KEY_TURN + 0.3, 0.30, cut=(600, 1000))
     # gira: el coro entra en Re, suave
     t = tt(1.8)
     ch = choir(t, [hz('D4'), hz('F#4'), hz('A4')], seed=7) * (smooth(0, 0.5, t) * (1 - smooth(1.1, 1.8, t)))[:, None]
@@ -266,11 +274,12 @@ def musica():
     # se forma el anillo: destellos
     place(out, sparkle(2.2, 14, 600), RING, 0.5)
     # la ruleta: Si m, Sol, Mi m, La; un ostinato de arpa que se va frenando y las cuerdas que suben
-    plan = [('Bm', SPIN0, 9.7), ('G', 9.7, 11.3), ('Em', 11.3, 12.9), ('Asus', 12.9, SPIN1)]
+    slow = SPIN0 + 2.9
+    plan = [('Bm', SPIN0, SPIN0 + 1.6), ('G', SPIN0 + 1.6, SPIN0 + 3.2), ('Em', SPIN0 + 3.2, SPIN0 + 4.8), ('Asus', SPIN0 + 4.8, SPIN1)]
     for i, (name, a, b) in enumerate(plan):
         chord_block(name, a, b, 0.30 + 0.05 * i, cut=(700 + 300 * i, 1300 + 500 * i), attack=0.4, release=0.4, seed=60 + i)
-        step = 0.17 if a < 11.0 else 0.17 + (a - 11.0) * 0.06
-        harp_run(name, a, b, step, 0.40 + 0.04 * i, order=(0, 3, 1, 4, 2, 5, 3, 4), seed=700 + 50 * i, rit=0.6 if a >= 11.0 else 0.0)
+        step = 0.17 if a < slow else 0.17 + (a - slow) * 0.06
+        harp_run(name, a, b, step, 0.40 + 0.04 * i, order=(0, 3, 1, 4, 2, 5, 3, 4), seed=700 + 50 * i, rit=0.6 if a >= slow else 0.0)
         # el bajo en negras
         bt = a
         while bt < b:
@@ -278,15 +287,16 @@ def musica():
             fb = hz(CH[name][0])
             xb = (np.sin(2 * np.pi * fb * tb) + 0.3 * np.sin(4 * np.pi * fb * tb)) * smooth(0, 0.02, tb) * np.exp(-tb / 0.35)
             place(out, xb, bt, 0.16)
-            bt += 0.5 if a < 11.0 else 0.62
+            bt += 0.5 if a < slow else 0.62
     # un poco antes de pararse, se queda en suspenso (La con la cuarta, muy bajo) y deja sitio al premio
     t = tt(0.9)
     sus = strings(0.9, 'Asus', 90, (900, 1200)) * (smooth(0, 0.1, t) * (1 - smooth(0.25, 0.9, t)))[:, None]
     place(out, sus, SPIN1, 0.22)
     # el final: Re tranquilo, arpa y celesta
-    chord_block('D', 15.6, 19.0, 0.30, attack=1.4, release=1.2, seed=95)
-    harp_run('D', 15.8, 19.2, 0.36, 0.34, seed=900)
-    for k, (nt, at) in enumerate((('D6', 16.4), ('A5', 16.85), ('F#5', 17.3), ('E5', 17.75), ('D5', 18.3))):
+    chord_block('D', REVEAL + 0.9, END - 1.0, 0.30, attack=1.4, release=1.2, seed=95)
+    harp_run('D', REVEAL + 1.1, END - 0.8, 0.36, 0.34, seed=900)
+    for k, (nt, at) in enumerate((('D6', REVEAL + 1.7), ('A5', REVEAL + 2.15), ('F#5', REVEAL + 2.6), ('E5', REVEAL + 3.05),
+                                  ('D5', REVEAL + 3.6))):
         place(out, pan2(celesta(hz(nt), 2.4, 0.6, seed=950 + k), 0.2), at, 0.42)
     out = sala(out, 3.6, 0.32, 4800, seed=2026)[:n]
     out = np.stack([hp(out[:, c], 35, 2) for c in range(2)], 1)

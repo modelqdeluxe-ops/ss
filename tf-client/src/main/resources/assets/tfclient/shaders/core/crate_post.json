@@ -1,0 +1,13 @@
+{
+    "vertex": "tfclient:crate_quad",
+    "fragment": "tfclient:crate_post",
+    "attributes": [ "Position" ],
+    "samplers": [ { "name": "SceneSampler" }, { "name": "BloomSampler" } ],
+    "uniforms": [
+        { "name": "SunPos", "type": "float", "count": 2, "values": [ 0.2, 1.2 ] },
+        { "name": "SunVis", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "BloomStrength", "type": "float", "count": 1, "values": [ 0.9 ] },
+        { "name": "RayStrength", "type": "float", "count": 1, "values": [ 0.8 ] },
+        { "name": "Exposure", "type": "float", "count": 1, "values": [ 1.55 ] }
+    ]
+}

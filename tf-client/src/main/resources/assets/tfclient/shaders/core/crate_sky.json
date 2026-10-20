@@ -1,0 +1,14 @@
+{
+    "vertex": "tfclient:crate_quad",
+    "fragment": "tfclient:crate_sky",
+    "attributes": [ "Position" ],
+    "samplers": [],
+    "uniforms": [
+        { "name": "CamRight", "type": "float", "count": 3, "values": [ 1.0, 0.0, 0.0 ] },
+        { "name": "CamUp", "type": "float", "count": 3, "values": [ 0.0, 1.0, 0.0 ] },
+        { "name": "CamFwd", "type": "float", "count": 3, "values": [ 0.0, 0.0, -1.0 ] },
+        { "name": "TanHalf", "type": "float", "count": 2, "values": [ 1.0, 0.5 ] },
+        { "name": "SunDir", "type": "float", "count": 3, "values": [ -0.55, 0.56, -0.62 ] },
+        { "name": "Time", "type": "float", "count": 1, "values": [ 0.0 ] }
+    ]
+}

@@ -58,7 +58,7 @@ import org.joml.Vector3f;
  */
 public final class SanctuaryScene {
     private static final ResourceLocation DATA = new ResourceLocation("fscrates", "escena/santuario.bin");
-    private static final int F_SWAY = 1, F_WATER = 2;
+    private static final int F_SWAY = 1, F_WATER = 2, F_GLOW = 4;
     private static SanctuaryScene instance;
     private static boolean failed;
 
@@ -66,6 +66,10 @@ public final class SanctuaryScene {
     public final Map<String, float[]> anchors = new HashMap<>();
     /** La ruta de la cámara: tick, ojo (3), mira (3), campo de visión. */
     public final List<float[]> camera = new ArrayList<>();
+    /** Las luces mágicas (x, y, z, r, g, b, tamaño): faroles, setas, liquen, bayas, linternas de mar, amatistas... */
+    public final List<float[]> lights = new ArrayList<>();
+    /** Las luces por celdas de 4 bloques (para la luz de alrededor). */
+    private final Map<Long, List<float[]>> lightGrid = new HashMap<>();
     final SceneLevel level;
     private final List<int[]> blocks;          // x, y, z, paleta
     private final BlockState[] palette;
@@ -110,7 +114,7 @@ public final class SanctuaryScene {
             byte[] magic = new byte[4];
             d.readFully(magic);
             if (magic[0] != 'T' || magic[1] != 'F' || magic[2] != 'S' || magic[3] != 'C') throw new IOException("no es una escena");
-            d.readInt();
+            int version = d.readInt();
             int x0 = d.readInt(), y0 = d.readInt(), z0 = d.readInt();
             int np = d.readInt();
             BlockState[] pal = new BlockState[np];
@@ -151,6 +155,22 @@ public final class SanctuaryScene {
                 for (int j = 0; j < 8; j++) k[j] = d.readFloat();
                 sc.camera.add(k);
             }
+            if (version >= 2) {
+                int nl = d.readInt();
+                for (int i = 0; i < nl; i++) {
+                    float[] l = new float[7];
+                    for (int j = 0; j < 7; j++) l[j] = d.readFloat();
+                    sc.lights.add(l);
+                    for (int gx = -1; gx <= 1; gx++) {
+                        for (int gy = -1; gy <= 1; gy++) {
+                            for (int gz = -1; gz <= 1; gz++) {
+                                long key = cell((int)Math.floor(l[0] / 4) + gx, (int)Math.floor(l[1] / 4) + gy, (int)Math.floor(l[2] / 4) + gz);
+                                sc.lightGrid.computeIfAbsent(key, k -> new ArrayList<>()).add(l);
+                            }
+                        }
+                    }
+                }
+            }
             float[] s = sc.anchor("sun");
             sc.sun.set(s[0], s[1], s[2]).normalize();
             float[] c = sc.anchor("crate");
@@ -168,22 +188,42 @@ public final class SanctuaryScene {
         return (float)Math.sqrt(ox * ox + oy * oy + oz * oz);
     }
 
+    private static long cell(int x, int y, int z) {
+        return ((long)(x & 0xFFFFF) << 40) | ((long)(y & 0xFFFFF) << 20) | (z & 0xFFFFF);
+    }
+
     /**
-     * La luz de la escena en un punto (multiplicador de r, g, b): sombra del bosque fresca (0,74, algo azulada),
-     * el haz de sol cálido y entero sobre la crate, manchas de sol entre las hojas en el suelo, y las copas de los
-     * árboles más claras arriba (les da el sol).
+     * La luz del Bosque de las Hadas en un punto (multiplicador de r, g, b): la penumbra del atardecer, fresca y algo
+     * violeta; el haz de sol dorado que entra por el hueco de la cúpula y cae sobre la crate; manchas de sol en el
+     * suelo; las copas, rosadas arriba (les da el último sol); y la luz de las luces mágicas de alrededor (faroles,
+     * setas lámpara, liquen, bayas, el fondo del estanque), cada una de su color.
      */
     void light(float x, float y, float z, float[] out) {
         float off = beamOffset(x, y, z);
-        float beam = (float)Math.exp(-off * off / 12.0F);
-        float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.5F);
-        float top = Math.max(0.0F, Math.min(1.0F, (y - 5.0F) / 7.0F));
-        // (la 1.3.99 en el juego: brillo medio 70/255 con 0,74 de base: oscura y verde; ahora más sol)
-        float f = 0.90F + 0.14F * beam + 0.10F * dapple + 0.08F * top;
-        float warm = Math.min(1.0F, beam * 1.2F + dapple * 0.6F + top * 0.5F);
-        out[0] = Math.min(1.0F, f * (0.97F + 0.06F * warm));
-        out[1] = Math.min(1.0F, f * (0.96F + 0.02F * warm));
-        out[2] = Math.min(1.0F, f * (0.95F - 0.10F * warm));
+        float beam = (float)Math.exp(-off * off / 10.0F);
+        float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.4F);
+        float top = Math.max(0.0F, Math.min(1.0F, (y - 9.0F) / 9.0F));
+        float r = 0.60F, g = 0.62F, b = 0.76F;
+        r += 0.62F * beam + 0.14F * dapple + 0.22F * top;
+        g += 0.48F * beam + 0.10F * dapple + 0.10F * top;
+        b += 0.22F * beam + 0.04F * dapple + 0.12F * top;
+        List<float[]> near = lightGrid.get(cell((int)Math.floor(x / 4), (int)Math.floor(y / 4), (int)Math.floor(z / 4)));
+        if (near != null) {
+            for (float[] l : near) {
+                float dx = x - l[0], dy = y - l[1], dz = z - l[2];
+                float d2 = dx * dx + dy * dy + dz * dz;
+                float reach = 3.5F * l[6] + 1.0F;
+                if (d2 >= reach * reach) continue;
+                float k = 1.0F - (float)Math.sqrt(d2) / reach;
+                k = k * k * 0.75F * Math.min(1.2F, l[6] + 0.3F);
+                r += l[3] * k;
+                g += l[4] * k;
+                b += l[5] * k;
+            }
+        }
+        out[0] = Math.min(1.0F, r);
+        out[1] = Math.min(1.0F, g);
+        out[2] = Math.min(1.0F, b);
     }
 
     /** Manchas de sol entre las hojas (ruido suave con umbral). */
@@ -340,6 +380,7 @@ public final class SanctuaryScene {
                     if (layerOf(rt) != layer) continue;
                     pose.pushPose();
                     pose.translate(b[0], b[1], b[2]);
+                    shade.fixed = (fl & F_GLOW) != 0;
                     rand.setSeed(seed);
                     mbr.tesselateBlock(level, model, st, pos, pose, shade, true, rand, seed, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, rt);
                     pose.popPose();
@@ -376,7 +417,7 @@ public final class SanctuaryScene {
         int tint = mc.getBlockColors().getColor(st, level, pos, 0);
         if (tint == -1) tint = 0xFFFFFF;
         float[] l = new float[3];
-        light(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, l);
+        light(pos.getX() + 0.5F, pos.getY() + 0.3F, pos.getZ() + 0.5F, l);
         boolean upper = st.hasProperty(DoublePlantBlock.HALF) && st.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER;
         boolean doubleP = st.hasProperty(DoublePlantBlock.HALF);
         float amp = doubleP ? 0.085F : (st.is(Blocks.GRASS) || st.is(Blocks.FERN) ? 0.07F : 0.05F);
@@ -401,7 +442,9 @@ public final class SanctuaryScene {
         float[][] uv = {{sp.getU0(), sp.getV0()}, {sp.getU0(), sp.getV1()}, {sp.getU1(), sp.getV1()}, {sp.getU1(), sp.getV0()}};
         for (int i = 0; i < 4; i++) {
             light(corners[i][0], h, corners[i][1], l);
-            bb.vertex(corners[i][0], h, corners[i][1]).color(r * l[0], g * l[1], b * l[2], 0.78F).uv(uv[i][0], uv[i][1]).uv2(light)
+            float lift = 1.25F;
+            bb.vertex(corners[i][0], h, corners[i][1]).color(Math.min(1, r * l[0] * lift), Math.min(1, g * l[1] * lift),
+                    Math.min(1, b * l[2] * lift), 0.72F).uv(uv[i][0], uv[i][1]).uv2(light)
                     .normal(0, 1, 0).endVertex();
         }
         return 1;

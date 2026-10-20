@@ -42,7 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class CrateCinematicClassic extends Screen {
    private static final ResourceLocation GLOW_TEX = new ResourceLocation("fscrates", "textures/gui/glow.png");
-   private static final int TOTAL = 400;
+   private static final int TOTAL = net.tierrasfantasticas.tfclient.crates.crate.CrateCinematicTiming.TOTAL_TICKS;
    private static final int LAND = 24;
    private static final int LID_START = 56;
    private static final int BURST = 76;

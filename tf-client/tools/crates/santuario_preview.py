@@ -39,13 +39,23 @@ COLORS = {
     'pink_tulip': (0.95, 0.65, 0.80), 'white_tulip': (0.95, 0.95, 0.95), 'peony': (0.90, 0.70, 0.90),
     'rose_bush': (0.80, 0.15, 0.20), 'lilac': (0.80, 0.60, 0.90), 'brown_mushroom': (0.60, 0.45, 0.35),
     'red_mushroom': (0.85, 0.20, 0.15), 'azalea': (0.40, 0.58, 0.22), 'flowering_azalea': (0.60, 0.50, 0.60),
+    'quartz_block': (0.93, 0.91, 0.88), 'quartz_bricks': (0.92, 0.90, 0.87), 'chiseled_quartz_block': (0.95, 0.93, 0.9),
+    'quartz_pillar': (0.94, 0.92, 0.89), 'smooth_quartz': (0.94, 0.92, 0.89), 'smooth_quartz_slab': (0.94, 0.92, 0.89),
+    'quartz_stairs': (0.93, 0.91, 0.88), 'prismarine_bricks': (0.35, 0.65, 0.58), 'dark_prismarine': (0.2, 0.38, 0.33),
+    'sea_lantern': (0.85, 1.0, 1.0), 'sand': (0.86, 0.82, 0.62), 'tuff': (0.42, 0.42, 0.38), 'andesite': (0.53, 0.53, 0.53),
+    'dark_oak_wood': (0.26, 0.2, 0.12), 'mushroom_stem': (0.85, 0.82, 0.76), 'red_mushroom_block': (0.78, 0.18, 0.16),
+    'brown_mushroom_block': (0.58, 0.44, 0.33), 'shroomlight': (1.0, 0.7, 0.35), 'pearlescent_froglight': (1.0, 0.85, 0.95),
+    'ochre_froglight': (1.0, 0.9, 0.6), 'glow_lichen': (0.5, 0.95, 0.8), 'amethyst_cluster': (0.75, 0.5, 0.95),
+    'spore_blossom': (0.95, 0.5, 0.75), 'gold_block': (1.0, 0.85, 0.3), 'end_rod': (1.0, 1.0, 0.95),
+    'torchflower': (0.95, 0.55, 0.2), 'pitcher_plant': (0.4, 0.6, 0.85), 'sea_pickle': (0.5, 0.9, 0.5),
+    'mossy_stone_brick_slab': (0.45, 0.52, 0.40), 'stone_bricks': (0.55, 0.55, 0.55),
 }
 FLAT = {'moss_carpet': 0.06, 'pink_petals': 0.06, 'lily_pad': 0.03}
-CROSS = {'grass', 'tall_grass', 'fern', 'large_fern', 'poppy', 'dandelion', 'oxeye_daisy', 'azure_bluet', 'cornflower',
+CROSS = {'spore_blossom', 'torchflower', 'pitcher_plant', 'sea_pickle', 'end_rod', 'amethyst_cluster', 'glow_lichen', 'grass', 'tall_grass', 'fern', 'large_fern', 'poppy', 'dandelion', 'oxeye_daisy', 'azure_bluet', 'cornflower',
          'allium', 'lily_of_the_valley', 'blue_orchid', 'pink_tulip', 'white_tulip', 'peony', 'rose_bush', 'lilac',
          'brown_mushroom', 'red_mushroom', 'cave_vines', 'cave_vines_plant', 'chain'}
-SKY_TOP, SKY_HOR = np.array([0.42, 0.60, 0.86]), np.array([1.0, 0.86, 0.64])
-FOG = np.array([0.93, 0.85, 0.68])
+SKY_TOP, SKY_HOR = np.array([0.24, 0.24, 0.52]), np.array([1.0, 0.70, 0.48])
+FOG = np.array([0.55, 0.52, 0.72])
 
 
 def box(x0, y0, z0, x1, y1, z1):
@@ -70,7 +80,7 @@ def mesh(sc):
     for i, s in enumerate(sc.pal):
         n = s.split('[')[0].split(':')[1]
         full[i] = i != 0 and n in COLORS and n not in FLAT and n not in CROSS and not any(
-            k in n for k in ('slab', 'stairs', 'wall', 'lantern', 'vine', 'water', 'leaves', 'azalea'))
+            k in n for k in ('slab', 'stairs', 'wall', 'lantern', 'vine', 'water', 'leaves', 'azalea', 'chain'))
     for (i, j, k) in np.argwhere(a != 0):
         st = sc.pal[a[i, j, k]]
         n = st.split('[')[0].split(':')[1]

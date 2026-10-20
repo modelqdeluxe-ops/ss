@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.Direction;
@@ -42,6 +43,7 @@ import net.tierrasfantasticas.tfclient.crates.client.render.CrateBakedModels;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateStyles;
 import net.tierrasfantasticas.tfclient.crates.client.scene.CinematicFx;
 import net.tierrasfantasticas.tfclient.crates.client.scene.SanctuaryScene;
+import net.tierrasfantasticas.tfclient.crates.client.scene.ScenePost;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
 import net.tierrasfantasticas.tfclient.crates.config.Rarity;
 import net.tierrasfantasticas.tfclient.crates.crate.CrateCinematicTiming;
@@ -55,34 +57,37 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 /**
- * La cinemática de apertura de las crates (TF Client 1.3.99): el santuario del Alba en vivo (SanctuaryScene), con la
- * crate en su pedestal en medio de la fuente y el haz de sol encima. El dueño: «una escena tipo de un santuario en la
- * naturaleza con fuente de agua, tipo ruinas, con un haz del sol sobre el lugar, una escena completa en vivo, y ahí
- * puesta la crate correctamente, la apertura, etc.».
+ * La cinemática de apertura de las crates (TF Client 1.3.99): el Bosque de las Hadas en vivo (SanctuaryScene), al
+ * atardecer, con la crate en su pedestal en medio del estanque de las hadas, la cascada detrás, el arco élfico, las
+ * fuentes-copa, los faroles, las setas que brillan, las hadas y las luciérnagas, y el haz del sol encima. El dueño:
+ * «una escena tipo de un santuario en la naturaleza con fuente de agua, tipo ruinas, con un haz del sol sobre el lugar,
+ * una escena completa en vivo» y luego «que aparezca directamente ya cerca de la crate… mejora el shader… el
+ * resplandor más bello… algo bello, como un bosque de hadas».
  *
  * <pre>
- *   0-60    llegada: la cámara baja entre los árboles hasta la fuente; el título de la crate
- *   52-100  la llave: aparece en un remolino de luz, vuela hasta la cerradura, se alinea y entra
- *   104-114 gira; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza
- *   120-136 la crate tiembla, la luz se escapa por la tapa
- *   136     ¡se abre! la llave se deshace en chispas, la tapa salta, un pilar de luz sube, onda, ráfaga de pétalos
- *   146-288 la ruleta: los premios suben de la crate y giran en un anillo alrededor del pilar; frena en el premio
- *   294     el premio: destello, rayos, se planta delante; el nombre y la rareza
- *   400     fin
+ *   0-20    ya cerca de la crate (sin viaje): el título de la crate y «✦ Bosque de las Hadas ✦»
+ *   20-66   la llave: aparece en un remolino de luz, vuela hasta la cerradura, se alinea y entra
+ *   70-80   gira; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza
+ *   84-102  la crate tiembla, la luz se escapa por la tapa
+ *   102     ¡se abre! la llave se deshace en chispas, la tapa salta, un pilar de luz sube, onda, ráfaga de pétalos
+ *   110-252 la ruleta: los premios suben de la crate y giran en un anillo encima; frena en el premio
+ *   258     el premio: destello, rayos, se planta delante; el nombre y la rareza
+ *   360     fin (CrateCinematicTiming.TOTAL_TICKS; el servidor da el premio a los 362)
  * </pre>
- * El servidor entrega el premio a los 254 ticks (CrateOpeningService); lo que se ve a los 294 es REVEAL_TICK, como antes.
- * Si el santuario no se puede cargar o dibujar, sale la de siempre (CrateCinematicClassic).
+ * La imagen pasa por ScenePost (el cielo del atardecer, el resplandor, los rayos de sol, los colores); si sus shaders no
+ * cargan, se dibuja directa con el cielo en 2D. Si el bosque no se puede cargar o dibujar, sale la de siempre
+ * (CrateCinematicClassic).
  */
 public class CrateCinematicScreen extends Screen {
     private static final ResourceLocation GLOW_TEX = new ResourceLocation("fscrates", "textures/gui/glow.png");
-    private static final int TOTAL = 400;
-    static final int KEY_APPEAR = 52, KEY_ALIGN = 90, KEY_IN = 100, KEY_TURN0 = 104, KEY_TURN1 = 114;
-    static final int RUNES0 = 108, RUNES1 = 130, TREMBLE0 = 118, OPEN = 136;
-    static final int RING0 = 146, RING1 = 170, SPIN0 = 162, SPIN1 = 288;
+    private static final int TOTAL = CrateCinematicTiming.TOTAL_TICKS;
+    static final int KEY_APPEAR = 20, KEY_ALIGN = 56, KEY_IN = 66, KEY_TURN0 = 70, KEY_TURN1 = 80;
+    static final int RUNES0 = 74, RUNES1 = 96, TREMBLE0 = 84, OPEN = 102;
+    static final int RING0 = 110, RING1 = 136, SPIN0 = 128, SPIN1 = 252;
     static final int REVEAL = CrateCinematicTiming.REVEAL_TICK;
     private static final int LANDING = 74, SLOTS = 12;
     private static final float RING_R = 1.6F;
-    private static boolean faulted;
+    private static boolean faulted, postFailed;
 
     private final CrateConfig cfg;
     private final int rarityColor;
@@ -98,7 +103,9 @@ public class CrateCinematicScreen extends Screen {
     private int lastReelIndex = -1;
     private int[] strip;
     private final List<SoundInstance> playing = new ArrayList<>();
+    private final List<Track> tracks = new ArrayList<>();
     private float[] sunScreen;
+    private ScenePost post;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
     private int frames;
@@ -200,6 +207,13 @@ public class CrateCinematicScreen extends Screen {
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
         playing.clear();
+        // la música y el ambiente no se cortan: se apagan despacio
+        for (Track tr : tracks) tr.fadeOut(16);
+        tracks.clear();
+        if (post != null) {
+            post.close();
+            post = null;
+        }
     }
 
     private void fault(Throwable t) {
@@ -230,10 +244,42 @@ public class CrateCinematicScreen extends Screen {
 
     private void track(String name, SoundSource src, float volume) {
         if (minecraft == null) return;
-        SoundInstance s = new SimpleSoundInstance(new ResourceLocation("tfclient", "crates." + name), src, volume, 1.0F,
-                RandomSource.create(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true);
+        Track s = new Track(tf(name), src, volume);
         minecraft.getSoundManager().play(s);
-        playing.add(s);
+        tracks.add(s);
+    }
+
+    /** La música y el ambiente: suenan en todas partes y al final se apagan despacio en vez de cortarse. */
+    private static final class Track extends AbstractTickableSoundInstance {
+        private final float base;
+        private float fade = 1.0F, step;
+
+        Track(SoundEvent ev, SoundSource src, float volume) {
+            super(ev, src, SoundInstance.createUnseededRandom());
+            this.base = volume;
+            this.volume = volume;
+            this.looping = false;
+            this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
+            this.x = this.y = this.z = 0.0;
+        }
+
+        void fadeOut(int ticks) {
+            float st = 1.0F / Math.max(1, ticks);
+            if (step <= 0.0F || st > step) step = st;
+        }
+
+        @Override
+        public void tick() {
+            if (step <= 0.0F) return;
+            fade -= step;
+            if (fade <= 0.0F) {
+                volume = 0.0F;
+                stop();
+                return;
+            }
+            volume = base * fade * fade;
+        }
     }
 
     private int tier() {
@@ -264,6 +310,9 @@ public class CrateCinematicScreen extends Screen {
             }
             case SPIN1 -> ui(tf("parada"), 0.85F, 1.0F);
             case REVEAL -> ui(tf("premio" + tier()), 1.0F, 1.0F);
+            case TOTAL - 40 -> {
+                for (Track tr : tracks) tr.fadeOut(56);
+            }
             default -> {}
         }
     }
@@ -653,7 +702,7 @@ public class CrateCinematicScreen extends Screen {
                 z = mix(z, c[2] + (float)Math.cos(front) * 1.1F, rp);
                 y = mix(y, cy + 0.15F, rp) + (float)Math.sin(t * 0.1F) * 0.06F * rp;
                 float pulse = t < REVEAL ? 1.0F + 0.12F * (float)Math.sin((t - SPIN1) * 0.8F) : 1.0F;
-                s = mix(0.74F, 1.5F, rp) * pulse;
+                s = mix(0.74F, 1.15F, rp) * pulse;
             }
             if (s <= 0.01F) continue;
             pose.pushPose();
@@ -777,6 +826,8 @@ public class CrateCinematicScreen extends Screen {
     }
 
     private static final float[] SKY_TOP = {0.34F, 0.57F, 0.93F}, SKY_HORIZON = {1.0F, 0.88F, 0.68F}, FOG = {0.94F, 0.88F, 0.74F};
+    /** La bruma del atardecer en el bosque (con el shader): lila y rosa, como el cielo bajo. */
+    private static final float[] DUSK_FOG = {0.66F, 0.52F, 0.64F};
 
     private void renderScene(GuiGraphics g, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
@@ -785,10 +836,29 @@ public class CrateCinematicScreen extends Screen {
         Matrix4f view = new Matrix4f().lookAt(eye, new Vector3f(cam[3], cam[4], cam[5]), new Vector3f(0, 1, 0));
         float aspect = (float)mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight());
         Matrix4f proj = new Matrix4f().setPerspective((float)Math.toRadians(cam[6]), aspect, 0.05F, 220.0F);
+        Vector3f right = new Vector3f(view.m00(), view.m10(), view.m20());
+        Vector3f up = new Vector3f(view.m01(), view.m11(), view.m21());
 
-        // 1) el cielo (2D): degradado, el sol y unas nubes
-        sky(g, sc, view, proj, eye, t);
-        g.flush();
+        // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
+        boolean pp = ScenePost.ready() && !postFailed;
+        if (pp) {
+            try {
+                if (post == null) post = new ScenePost();
+                post.ensure(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+                post.begin();
+                Vector3f fwd = new Vector3f(-view.m02(), -view.m12(), -view.m22());
+                float tanY = (float)Math.tan(Math.toRadians(cam[6]) * 0.5);
+                post.sky(right, up, fwd, tanY * aspect, tanY, sc.sunDir(), t);
+            } catch (Throwable e) {
+                postFail(e);
+                pp = false;
+                mc.getMainRenderTarget().bindWrite(true);
+            }
+        }
+        if (!pp) {
+            sky(g, sc, view, proj, eye, t);
+            g.flush();
+        }
 
         // 2) la escena en 3D
         Matrix4f oldProj = new Matrix4f(RenderSystem.getProjectionMatrix());
@@ -797,6 +867,10 @@ public class CrateCinematicScreen extends Screen {
         float fogStart = RenderSystem.getShaderFogStart(), fogEnd = RenderSystem.getShaderFogEnd();
         float[] fogColor = RenderSystem.getShaderFogColor().clone();
         FogShape fogShape = RenderSystem.getShaderFogShape();
+        // los objetos (la llave, los premios) a la imagen principal también con gráficos «Fabulosos» (si no, irían a la
+        // capa de objetos del mundo, que en una pantalla nadie compone)
+        boolean panoramic = mc.gameRenderer.isPanoramicMode();
+        mc.gameRenderer.setPanoramicMode(true);
         PoseStack mv = RenderSystem.getModelViewStack();
         mv.pushPose();
         mv.setIdentity();
@@ -807,22 +881,22 @@ public class CrateCinematicScreen extends Screen {
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.depthMask(true);
-        RenderSystem.setShaderFogStart(26.0F);
-        RenderSystem.setShaderFogEnd(78.0F);
-        RenderSystem.setShaderFogColor(FOG[0], FOG[1], FOG[2]);
+        float[] fog = pp ? DUSK_FOG : FOG;
+        RenderSystem.setShaderFogStart(pp ? 24.0F : 26.0F);
+        RenderSystem.setShaderFogEnd(pp ? 92.0F : 78.0F);
+        RenderSystem.setShaderFogColor(fog[0], fog[1], fog[2]);
         RenderSystem.setShaderFogShape(FogShape.SPHERE);
         for (ShaderInstance sh : new ShaderInstance[] {GameRenderer.getRendertypeSolidShader(), GameRenderer.getRendertypeCutoutShader(),
                 GameRenderer.getRendertypeCutoutMippedShader(), GameRenderer.getRendertypeTranslucentShader()}) {
             if (sh != null && sh.CHUNK_OFFSET != null) sh.CHUNK_OFFSET.set(0.0F, 0.0F, 0.0F);
         }
         Lighting.setupLevel(view);
+        boolean drawn = false;
         try {
             MultiBufferSource.BufferSource buf = mc.renderBuffers().bufferSource();
             PoseStack pose = new PoseStack();
             pose.mulPose(view.getNormalizedRotation(new Quaternionf()));
             pose.translate(-eye.x, -eye.y, -eye.z);
-            Vector3f right = new Vector3f(view.m00(), view.m10(), view.m20());
-            Vector3f up = new Vector3f(view.m01(), view.m11(), view.m21());
             CinematicFx.View fv = new CinematicFx.View(pose.last().pose(), eye, right, up);
 
             sc.drawOpaque(view, proj);
@@ -836,29 +910,39 @@ public class CrateCinematicScreen extends Screen {
             drawKey(pose, buf, sc, t);
             drawItems(pose, buf, sc, t, eye);
             buf.endBatch();
+            if (pp) post.rebind();
 
-            // el agua (el estanque y los chorros), translúcida
+            // el agua (el estanque, la cascada, los chorros y lo que rebosa de las copas), translúcida
             sc.drawWater(view, proj);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
+            CinematicFx.waterfall(buf, fv, sc, t);
             CinematicFx.streams(buf, fv, sc, t, surge);
+            CinematicFx.overflow(buf, fv, sc, t);
             buf.endBatch(CinematicFx.waterType());
 
-            // pétalos, mariposas y pájaros
+            // pétalos, mariposas y las alas de las hadas
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
             CinematicFx.petals(soft, fv.m, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
             if (t >= REVEAL) CinematicFx.petals(soft, fv.m, sc, t, t - REVEAL, 0.8F);
             CinematicFx.butterflies(soft, fv.m, sc, t);
-            CinematicFx.birds(soft, fv.m, t);
+            float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
+            CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
 
-            // la luz que suma: el sol, el polvo, el agua que brilla, las runas, el pilar, la llave, los premios
+            // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
+            // agua que brilla, las runas, el pilar, la llave, los premios
             RenderSystem.depthMask(false);
             float open = smooth(OPEN - 2, OPEN + 12, t);
             float tintAmt = 0.35F * open * (0.6F + 0.4F * winnerRarity.ordinal() / 4.0F);
             VertexConsumer glow = buf.getBuffer(CinematicFx.glowType());
+            CinematicFx.mist(glow, fv, sc, t);
+            CinematicFx.lightHalos(glow, fv, sc, t);
+            CinematicFx.waterfallLights(glow, fv, sc, t);
+            CinematicFx.fireflies(glow, fv, t);
+            CinematicFx.fairies(glow, fv, sc, t, excite, false);
             CinematicFx.sunShafts(glow, fv, sc, t, 1.0F + open * 0.6F + pulseAt(t, REVEAL, 30.0F), rarityColor, tintAmt);
             CinematicFx.motes(glow, fv, sc, t, 1.0F + open * 0.5F);
-            float runeLit = smooth(RUNES0, RUNES1, t) * (t > REVEAL + 60 ? Math.max(0.3F, 1.0F - (t - REVEAL - 60) / 40.0F) : 1.0F);
+            float runeLit = smooth(RUNES0, RUNES1, t) * (t > REVEAL + 50 ? Math.max(0.3F, 1.0F - (t - REVEAL - 50) / 40.0F) : 1.0F);
             float glowWater = smooth(KEY_TURN0, KEY_TURN1 + 6, t) * (0.6F + 0.4F * pulseAt(t, OPEN, 40.0F) + 0.4F);
             CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
             CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
@@ -875,7 +959,9 @@ public class CrateCinematicScreen extends Screen {
             itemRays(rays, fv, sc, t, eye);
             buf.endBatch(CinematicFx.raysType());
             RenderSystem.depthMask(true);
+            drawn = true;
         } finally {
+            mc.gameRenderer.setPanoramicMode(panoramic);
             mv.popPose();
             RenderSystem.applyModelViewMatrix();
             RenderSystem.setProjectionMatrix(oldProj, oldSort);
@@ -886,8 +972,49 @@ public class CrateCinematicScreen extends Screen {
             RenderSystem.setShaderFogShape(fogShape);
             Lighting.setupFor3DItems();
             RenderSystem.depthMask(true);
+            if (pp && !drawn) mc.getMainRenderTarget().bindWrite(true);
             RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         }
+
+        // 3) el resplandor, los rayos de sol y los colores, a la pantalla
+        if (pp) {
+            try {
+                Vector3f sun = sc.sunDir();
+                Vector4f sp = new Vector4f(eye.x + sun.x * 1000.0F, eye.y + sun.y * 1000.0F, eye.z + sun.z * 1000.0F, 1.0F);
+                view.transform(sp);
+                proj.transform(sp);
+                float su = 0.5F, sv = 0.5F, vis = 0.0F;
+                if (sp.w > 1e-4F) {
+                    su = sp.x / sp.w * 0.5F + 0.5F;
+                    sv = sp.y / sp.w * 0.5F + 0.5F;
+                    float d = (float)Math.sqrt((su - 0.5F) * (su - 0.5F) + (sv - 0.5F) * (sv - 0.5F));
+                    vis = Math.max(0.0F, Math.min(1.0F, 1.3F - 0.42F * d));
+                }
+                float burst = pulseAt(t, OPEN, 36.0F) + pulseAt(t, REVEAL, 40.0F);
+                float bloomK = 0.85F + 0.25F * smooth(OPEN, OPEN + 20, t) + 0.6F * burst;
+                float rayK = 0.75F + 0.25F * smooth(OPEN, OPEN + 20, t) + 0.5F * burst;
+                post.finish(su, sv, vis, bloomK, rayK, 1.5F);
+            } catch (Throwable e) {
+                postFail(e);
+                mc.getMainRenderTarget().bindWrite(true);
+            }
+        }
+    }
+
+    /** Si el shader falla, la cinemática sigue sin él (directa a la pantalla, con el cielo en 2D). */
+    private void postFail(Throwable e) {
+        if (postFailed) return;
+        postFailed = true;
+        LogUtils.getLogger().error("[TF Crates] El shader de la cinemática falló: sigo sin resplandor", e);
+        if (post != null) {
+            post.close();
+            post = null;
+        }
+    }
+
+    /** Si la imagen pasa por el shader (que pone los rayos del sol y la viñeta él mismo). */
+    private boolean postActive() {
+        return post != null && !postFailed && ScenePost.ready();
     }
 
     /** El cielo: degradado del azul al dorado del horizonte, el sol (fuera de cuadro, arriba a la izquierda) y nubes. */
@@ -951,31 +1078,34 @@ public class CrateCinematicScreen extends Screen {
     // ---------------------------------------------------------------------------------------------- lo de encima
     private void overlay(GuiGraphics g, SanctuaryScene sc, float t) {
         int w = width, h = height;
-        sunLight(g, t);
-        // viñeta suave
-        g.fillGradient(0, 0, w, h / 5, 0x55000000, 0x00000000);
-        g.fillGradient(0, h - h / 5, w, h, 0x00000000, 0x55000000);
+        boolean pp = postActive();
+        if (!pp) {
+            sunLight(g, t);
+            // viñeta suave (con el shader la pone él)
+            g.fillGradient(0, 0, w, h / 5, 0x55000000, 0x00000000);
+            g.fillGradient(0, h - h / 5, w, h, 0x00000000, 0x55000000);
+        }
         // destellos a pantalla completa: al abrirse y en el premio
-        float flash = pulseAt(t, OPEN, 10.0F) * 0.55F + pulseAt(t, REVEAL, 14.0F) * 0.85F;
+        float flash = pulseAt(t, OPEN, 10.0F) * (pp ? 0.4F : 0.55F) + pulseAt(t, REVEAL, 14.0F) * (pp ? 0.7F : 0.85F);
         if (flash > 0.01F) {
             int a = (int)(Math.min(1.0F, flash) * 255);
             g.fill(0, 0, w, h, (a << 24) | 0xFFF8E8);
         }
         // fundido de entrada y de salida
-        float fade = t < 14 ? 1.0F - t / 14.0F : t > TOTAL - 12 ? (t - (TOTAL - 12)) / 12.0F : 0.0F;
+        float fade = t < 10 ? 1.0F - t / 10.0F : t > TOTAL - 12 ? (t - (TOTAL - 12)) / 12.0F : 0.0F;
         if (fade > 0.01F) g.fill(0, 0, w, h, ((int)(Math.min(1.0F, fade) * 255) << 24));
         // franjas de cine
-        float bars = Math.min(1.0F, t / 12.0F);
+        float bars = Math.min(1.0F, 0.6F + t / 20.0F);
         int barH = (int)(h * 0.075F * bars);
         g.fill(0, 0, w, barH, 0xFF000000);
         g.fill(0, h - barH, w, h, 0xFF000000);
         // el título de la crate, al llegar
-        if (t >= 14 && t < 74) {
-            float a = smooth(14, 26, t) * (1.0F - smooth(58, 74, t));
+        if (t >= 6 && t < 58) {
+            float a = smooth(6, 16, t) * (1.0F - smooth(44, 58, t));
             String name = cfg.displayName == null || cfg.displayName.isEmpty() ? "Crate " + cfg.rarity.displayName()
                     : cfg.displayName.replace('&', '§');
             drawScaled(g, "§l" + stripColor(name), w / 2, (int)(h * 0.16F), 2.0F, withAlpha(cfg.rarity.rgb(), a));
-            drawScaled(g, "✦ Santuario del Alba ✦", w / 2, (int)(h * 0.16F) + 24, 1.0F, withAlpha(0xF3E6C8, a * 0.9F));
+            drawScaled(g, "✦ Bosque de las Hadas ✦", w / 2, (int)(h * 0.16F) + 24, 1.0F, withAlpha(0xF3E6C8, a * 0.9F));
         }
         // el premio
         if (t >= REVEAL + 6 && candidates != null && !candidates.isEmpty()) {

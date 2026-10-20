@@ -1287,7 +1287,7 @@ public final class BossTest {
     }
 
     /**
-     * (1.3.99) TF Crates: que estén registradas (bloque, objetos, /tf crates) y la cinemática del santuario en dos
+     * (1.3.99) TF Crates: que estén registradas (bloque, objetos, /tf crates) y la cinemática del bosque en dos
      * aperturas de verdad (CrateOpeningService, como un jugador con su llave): una crate épica de estilo clásico y una
      * mítica de estilo cinemático (la tapa y el frente van al revés). Las capturas las saca el cliente a los tiempos de
      * la cinemática (BossTestClient.crateShots).
@@ -1309,7 +1309,7 @@ public final class BossTest {
             cratePos = player.blockPosition().offset(0, 1, -3);
         }
         for (int run = 0; run < 2; run++) {
-            int t0 = 10 + run * 470;
+            int t0 = 10 + run * 420;
             if (t == t0 && pos != null) {
                 level.setBlockAndUpdate(pos, net.tierrasfantasticas.tfclient.crates.registry.ModRegistry.CRATE_BLOCK.get().defaultBlockState());
                 if (level.getBlockEntity(pos) instanceof net.tierrasfantasticas.tfclient.crates.block.CrateBlockEntity be) {
@@ -1323,11 +1323,11 @@ public final class BossTest {
                 var res = net.tierrasfantasticas.tfclient.crates.crate.CrateOpeningService.open(player, testCrate(run), pos, ItemStack.EMPTY, false);
                 r.event("apertura " + (run + 1) + ": " + res);
             }
-            if (t == t0 + 30 + 440) {
+            if (t == t0 + 30 + 395) {
                 r.event("cinemática " + (run + 1) + ": " + net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testStats);
             }
         }
-        if (t >= 10 + 2 * 470 + 20) next(level);
+        if (t >= 10 + 2 * 420 + 20) next(level);
     }
 
     private static net.minecraft.core.BlockPos cratePos;
