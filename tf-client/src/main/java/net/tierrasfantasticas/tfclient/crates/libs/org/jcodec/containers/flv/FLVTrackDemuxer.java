@@ -92,6 +92,7 @@ public class FLVTrackDemuxer {
          }
       }
 
+      FLVTag pkt;
       while ((pkt = this.demuxer.readNextPacket()) != null && pkt.getType() != type) {
          this.packets.add(pkt);
       }
@@ -117,6 +118,7 @@ public class FLVTrackDemuxer {
          }
       }
 
+      FLVTag pkt;
       while ((pkt = this.demuxer.readPrevPacket()) != null && pkt.getType() != type) {
          this.packets.add(0, pkt);
       }

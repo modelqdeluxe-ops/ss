@@ -142,6 +142,7 @@ public final class MusicPlayer implements AutoCloseable {
          STBVorbisInfo info = STBVorbisInfo.malloc();
 
          int sampleRate;
+         int channels;
          try {
             STBVorbis.stb_vorbis_get_info(handle, info);
             channels = info.channels();

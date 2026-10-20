@@ -899,7 +899,7 @@ public class AVIReader {
          this.nSamplesPerSec = raf.readInt();
          this.nAvgBytesPerSec = raf.readInt();
          this.nBlockAlign = raf.readShort();
-         switch (this.wFormatTag) {
+         switch (this.wFormatTag & 0xFFFF) {
             case 1:
                this.wBitsPerSample = raf.readShort();
                if (this.dwChunkSize == 40) {

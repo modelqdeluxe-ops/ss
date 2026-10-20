@@ -637,7 +637,7 @@ public class SBR implements SBRConstants, SyntaxConstants, HuffmanTables {
                this.bs_rel_bord[ch][rel] = 2 * ld.readBits(2) + 2;
             }
 
-            int i = this.sbr_log2(bs_num_env + 1);
+            i = this.sbr_log2(bs_num_env + 1);
             this.bs_pointer[ch] = ld.readBits(i);
 
             for (int env = 0; env < bs_num_env; env++) {
@@ -650,14 +650,14 @@ public class SBR implements SBRConstants, SyntaxConstants, HuffmanTables {
             this.n_rel_trail[ch] = bs_num_env - 1;
             break;
          case 2:
-            int bs_abs_bord = ld.readBits(2);
+            bs_abs_bord = ld.readBits(2);
             bs_num_env = ld.readBits(2) + 1;
 
             for (int rel = 0; rel < bs_num_env - 1; rel++) {
                this.bs_rel_bord[ch][rel] = 2 * ld.readBits(2) + 2;
             }
 
-            int i = this.sbr_log2(bs_num_env + 1);
+            i = this.sbr_log2(bs_num_env + 1);
             this.bs_pointer[ch] = ld.readBits(i);
 
             for (int env = 0; env < bs_num_env; env++) {
@@ -670,7 +670,7 @@ public class SBR implements SBRConstants, SyntaxConstants, HuffmanTables {
             this.n_rel_trail[ch] = 0;
             break;
          case 3:
-            int bs_abs_bord = ld.readBits(2);
+            bs_abs_bord = ld.readBits(2);
             int bs_abs_bord_1 = ld.readBits(2) + this.numTimeSlots;
             this.bs_num_rel_0[ch] = ld.readBits(2);
             this.bs_num_rel_1[ch] = ld.readBits(2);
@@ -684,7 +684,7 @@ public class SBR implements SBRConstants, SyntaxConstants, HuffmanTables {
                this.bs_rel_bord_1[ch][var20] = 2 * ld.readBits(2) + 2;
             }
 
-            int i = this.sbr_log2(this.bs_num_rel_0[ch] + this.bs_num_rel_1[ch] + 2);
+            i = this.sbr_log2(this.bs_num_rel_0[ch] + this.bs_num_rel_1[ch] + 2);
             this.bs_pointer[ch] = ld.readBits(i);
 
             for (int env = 0; env < bs_num_env; env++) {

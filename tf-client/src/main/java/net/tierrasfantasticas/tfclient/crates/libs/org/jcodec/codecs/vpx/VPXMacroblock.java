@@ -268,10 +268,10 @@ public class VPXMacroblock {
             int alu = ALUSb.val[15];
             VPXMacroblock.Subblock ALVSb = ALMb.vSubblocks[1][1];
             int alv = ALVSb.val[15];
-            VPXMacroblock.Subblock[] aboveUSb = new VPXMacroblock.Subblock[2];
-            VPXMacroblock.Subblock[] leftUSb = new VPXMacroblock.Subblock[2];
-            VPXMacroblock.Subblock[] aboveVSb = new VPXMacroblock.Subblock[2];
-            VPXMacroblock.Subblock[] leftVSb = new VPXMacroblock.Subblock[2];
+            aboveUSb = new VPXMacroblock.Subblock[2];
+            leftUSb = new VPXMacroblock.Subblock[2];
+            aboveVSb = new VPXMacroblock.Subblock[2];
+            leftVSb = new VPXMacroblock.Subblock[2];
 
             for (int x = 0; x < 2; x++) {
                aboveUSb[x] = aboveMb.uSubblocks[1][x];

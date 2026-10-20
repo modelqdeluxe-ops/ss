@@ -176,7 +176,7 @@ public final class MKVDemuxer implements Demuxer {
 
    @Override
    public List<DemuxerTrack> getAudioTracks() {
-      return this.aTracks;
+      return new ArrayList<>(this.aTracks);
    }
 
    @Override
@@ -195,7 +195,7 @@ public final class MKVDemuxer implements Demuxer {
    }
 
    public List<DemuxerTrack> getSubtitleTracks() {
-      return this.subsTracks;
+      return new ArrayList<>(this.subsTracks);
    }
 
    public List<? extends EbmlBase> getTree() {
