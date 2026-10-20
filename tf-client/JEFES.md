@@ -1069,6 +1069,11 @@ propia) y 45 s en el Páramo con la aparición natural. (La vida del jugador de 
 corrosión se cuenta por sus golpes. Con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las
 entidades de un trozo de mundo sin construir: las capturas de cosas recién vistas esperan unos segundos.)
 
+Tercera ronda (4a0e5a3, **con Photon v1.3b**): todo igual que sin shaders (grieta, persecución, pozo, armadura, portal,
+rescate, vuelta y grieta del cielo), el santuario y los pozos con su luz rosada, el velo del portal y **las grietas de la
+corrosión** que se ven (píxeles violeta brillante en el borde de la pantalla: 0 % con las venas de antes → 1,5 % al 71 % y
+2,2 % al máximo; en el centro, 0 %).
+
 Lo que dio la segunda ronda (d4c4948 → 38e4bc3, sin shaders): **la fauna**, las 12 con su modelo, persiguen, golpean y
 se animan con lo suyo (p. ej. el Enderbruiser: idle, walk, smash, toss; el Watchman: lantern_push, summon_wraiths; el
 Endermauler potenciado: scream_of_ender), el Enderling suelta 1 perla y 1 Tela del Vacío, y en 45 s salen solas una de

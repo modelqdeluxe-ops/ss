@@ -97,6 +97,7 @@ robe tu luz, fragmentos de luz, una isla santuario con el caballero en una burbu
   - **El Portal del Alba** (`VoidPortal`) en el borde oeste de la plaza de la grieta: quedándose 1 s en su luz, vuelve al
     santuario (cruzarlo corriendo no lleva).
   - Las criaturas sueltan su botín del pack (perlas de ender y 12 materiales de Oraxen convertidos en objetos del mod).
+  - Probado en el juego (GitHub Actions) sin shaders y con Photon: JEFES §3.21, «Tercera ronda» y anteriores.
 - Rama: `claude/peaceful-gauss-4nzddg`. Pendiente del dueño: decir si se cierra el PR en borrador #137 (ya no hace falta).
 
 ### CHECKPOINT anterior (19 oct 2026, TF Client 1.3.95)
