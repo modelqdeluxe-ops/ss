@@ -11,7 +11,7 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
-> de la 1.3.98, más abajo.
+> de la 1.3.99, más abajo.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
@@ -59,7 +59,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.98) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.99) — lee esto primero
+
+**1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). El dueño: «meterás el mod que dice Fantastic Crates
+a nuestro TF Client, todo el mod sin errores, el comando será /tf crates… rework súper bonito, épico… un santuario en la
+naturaleza con fuente de agua, tipo ruinas, con un haz del sol… una escena completa en vivo» y después «que aparezca
+directamente ya cerca de la crate… mejora el shader… el resplandor más bello… algo bello, como un bosque de hadas».
+- **Fantastic Crates dentro de TF Client** (descompilado y traducido a nombres oficiales; paquete
+  `net.tierrasfantasticas.tfclient.crates`), comando **`/tf crates`**; el espacio de nombres `fscrates` se queda (las
+  crates puestas, las llaves y las cajas en JSON siguen valiendo). **Hay que quitar `Fantastic Crates 8.jar`** del
+  servidor y de los clientes (si sigue, TF Crates no se registra y lo dice en el log).
+- **La cinemática nueva: el Bosque de las Hadas** (18 s, en 3D y en vivo, empieza junto a la crate): estanque turquesa
+  con la crate en su pedestal, cascada, fuentes-copa, arco élfico, columnata en ruinas, árboles gigantes, setas que
+  brillan, hadas, luciérnagas, atardecer; la llave que entra y gira, el temblor, la apertura con pilar de luz, la
+  ruleta en anillo y el premio. **Shader propio** (`ScenePost`: cielo, resplandor, rayos de sol, colores). Los demás ven
+  la crate del mundo a los mismos tiempos. Si algo falla, sale la cinemática de siempre.
+- **La música que eligió el dueño** va en un resource pack aparte (se le dio hecho; sustituye `tfclient:crates.musica`);
+  no se sube al repo ni a las Releases. No le vuelvas a sacar el tema.
+- Prueba en el juego: `[prueba-jefes=crates]` (dos aperturas, 11 capturas cada una).
+- Pendiente del dueño: los cascos de los otros 7 sets de crates; modelos o skins de caballeros; el PR en borrador #137.
+
+### CHECKPOINT anterior (20 oct 2026, TF Client 1.3.98)
 
 **1.3.98** (`tf-client/JEFES.md` §3.23, con la tabla queja → causa → arreglo). Lo que pidió el dueño tras la 1.3.97:
 - **Caballeros sacros** en el suelo, cada uno con su postura (guardia, otear, leer, cuidar flores, alzar el farol), su
