@@ -42,15 +42,15 @@ POOL_Z0, POOL_Z1 = -12, 13         # y de z = -12 (la escalera) a 13 (detrás de
 POOL_R = 6.0                       # para las runas y las ondas, alrededor del altar
 STAIR_W = 2                        # la escalera de agua y la cascada alta, de x = -2 a 2
 STAIR_Z = -13                      # el primer escalón
-STEPS = 4                          # escalones (sube uno cada uno)
-LAND_Z = STAIR_Z - STEPS           # el rellano de arriba (z = -17, -18)
-FALL_Z = LAND_Z - 1                # la cascada alta (z = -18), delante de la pared del fondo
+STEPS = 3                          # escalones (sube uno cada uno)
+LAND_Z = STAIR_Z - STEPS           # el rellano de arriba (z = -16, -17)
+FALL_Z = LAND_Z - 1                # la cascada alta (z = -17), delante de la pared del fondo
 FALL_TOP = 19                      # de donde cae
 SIDE_X = (4, 5)                    # las cascadas de los lados (y su pareja en -x)
 SIDE_Z = -8
 SIDE_TOP = 4                       # de donde cae el agua de los lados (bloque de agua de arriba)
 WALL_X = 11                        # las paredes de los lados (x = ±11 y más)
-BACK_Z = -19                       # la pared del fondo (z = -19 y más atrás)
+BACK_Z = FALL_Z - 1                # la pared del fondo (justo detrás de la cascada alta, y más atrás)
 AISLE_Y = 7                        # el techo de los lados (vigas de roble oscuro)
 AISLE_IN = 4                       # su borde de dentro (x = ±4)
 CANOPY_Y = 10                      # las copas encima de la nave
@@ -70,8 +70,10 @@ SWAY = {'minecraft:grass', 'minecraft:tall_grass', 'minecraft:fern', 'minecraft:
 GLOW = {'minecraft:lantern': (1.0, 0.62, 0.26, 1.5), 'minecraft:shroomlight': (1.0, 0.62, 0.30, 1.2),
         'minecraft:sea_lantern': (0.45, 1.0, 0.95, 1.0), 'minecraft:glow_lichen': (0.55, 1.0, 0.85, 0.35),
         'minecraft:cave_vines': (1.0, 0.75, 0.35, 0.45), 'minecraft:cave_vines_plant': (1.0, 0.75, 0.35, 0.45),
-        'minecraft:amethyst_cluster': (0.85, 0.55, 1.0, 0.9), 'minecraft:large_amethyst_bud': (0.85, 0.55, 1.0, 0.5),
-        'minecraft:sea_pickle': (0.5, 1.0, 0.8, 0.5)}
+        'minecraft:amethyst_cluster': (0.85, 0.55, 1.0, 0.6), 'minecraft:large_amethyst_bud': (0.85, 0.55, 1.0, 0.5),
+        'minecraft:sea_pickle': (0.5, 1.0, 0.8, 0.5),
+        # las flores de esporas: en la imagen brillan rosas aunque estén a la sombra de las vigas (son de hadas)
+        'minecraft:spore_blossom': (1.0, 0.45, 0.80, 0.5)}
 STONE = ('minecraft:stone_bricks', 'minecraft:mossy_stone_bricks', 'minecraft:cracked_stone_bricks',
          'minecraft:mossy_cobblestone', 'minecraft:moss_block')
 
@@ -353,6 +355,11 @@ def side_towers(sc):
         for y in range(1, SIDE_TOP + 1):
             sc.sym(x, y, SIDE_Z, FALLING)
     sc.sym(x0 - 1, SIDE_TOP + 1, SIDE_Z - 1, slab('mossy_stone_brick_slab'))
+    # el agua sale de debajo de un dintel de piedra con musgo (como en la imagen), no de en medio del aire
+    for x in range(x0 - 1, x1 + 2):
+        sc.sym(x, SIDE_TOP + 1, SIDE_Z, 'minecraft:mossy_cobblestone' if x in (x0, x1) else 'minecraft:mossy_stone_bricks')
+        sc.sym(x, SIDE_TOP + 1, SIDE_Z - 1, 'minecraft:mossy_stone_bricks')
+        sc.sym(x, SIDE_TOP + 2, SIDE_Z, 'minecraft:moss_carpet')
     for x in (x0, x1):
         sc.sym(x, SIDE_TOP + 1, SIDE_Z - 2, 'minecraft:moss_block')
     # flores y matas encima de la columna
@@ -450,7 +457,7 @@ def roofs(sc):
                 if not sc.air(xx, AISLE_Y - 1, z):
                     continue
                 vv = vhash(xx, z, 83)
-                if v < 0.14 and z < -1:
+                if v < 0.16 and -12 < z < -5:
                     sc.set(xx, AISLE_Y - 1, z, 'minecraft:spore_blossom')
                 elif z > -3:
                     continue
@@ -459,7 +466,7 @@ def roofs(sc):
                 elif v < 0.62 and x >= AISLE_IN + 1:
                     hang(sc, xx, AISLE_Y - 1, z, 2 + int(vv * 3), vv)
     # flores de esporas también en el borde de las copas de la nave (las rosas de arriba de la imagen)
-    for x in range(-AISLE_IN, AISLE_IN + 1):
+    for x in range(-AISLE_IN + 1, AISLE_IN):
         for z in range(OPEN_Z[1] + 2, Z1 - 3, 2):
             y = CANOPY_Y - 1
             while sc.air(x, y, z) and y > 6:
@@ -467,7 +474,7 @@ def roofs(sc):
             top = CANOPY_Y - 1
             while not sc.air(x, top, z) and top > 6:
                 top -= 1
-            if vhash(x, z, 87) < 0.35 and sc.air(x, top, z):
+            if vhash(x, z, 87) < 0.35 and sc.air(x, top, z) and top >= 8:
                 sc.set(x, top, z, 'minecraft:spore_blossom')
 
 
@@ -520,7 +527,7 @@ def lanterns(sc):
 
 def overgrowth(sc):
     """Enredaderas por todas partes (pilares, paredes, muros de la escalera, columnas de los lados) y liquen."""
-    ivy(sc, -WALL_X, WALL_X, 1, AISLE_Y - 1, BACK_Z + 1, Z1 - 3, 91, 0.8)
+    ivy(sc, -WALL_X, WALL_X, 1, AISLE_Y - 1, BACK_Z + 1, Z1 - 3, 91, 1.2)
     ivy(sc, -AISLE_IN - 2, AISLE_IN + 2, 5, CANOPY_Y - 1, BACK_Z + 1, STAIR_Z, 93, 0.6)
     for x in range(-WALL_X + 1, WALL_X):
         for y in range(1, AISLE_Y):
@@ -530,6 +537,43 @@ def overgrowth(sc):
                         if sc.name(x + dx, y, z + dz) in STONE:
                             sc.set(x, y, z, lichen(face))
                             break
+
+
+def lush(sc):
+    """Como en la imagen: la piedra de los lados casi tapada de verde. Parte de las caras que dan al santuario son
+    bloques de hojas de azalea (con flor), de roble o de musgo, y las demás llevan enredadera en todas sus caras."""
+    room_x = WALL_X
+    for x in range(-room_x, room_x + 1):
+        for z in range(BACK_Z, Z1 - 3):
+            if abs(x) <= STAIR_W and z >= LAND_Z - 1:
+                continue                   # la escalera de agua y el altar, no
+            if abs(x) <= POOL_X and z > SIDE_Z - 1 and abs(x) < SIDE_X[0] - 1:
+                continue
+            for y in range(1, AISLE_Y):
+                n = sc.name(x, y, z)
+                if n not in STONE and not n.endswith('stone_bricks'):
+                    continue
+                exposed = [(dx, dz) for (dx, dz) in ((1, 0), (-1, 0), (0, 1), (0, -1)) if sc.air(x + dx, y, z + dz)]
+                if not exposed:
+                    continue
+                v = vhash(x * 17 + y * 5, z * 13 - y, 151)
+                if v < 0.34:
+                    sc.set(x, y, z, leaves(('azalea_leaves', 'flowering_azalea_leaves', 'oak_leaves')[int(vhash(x, z * 7 + y, 153) * 3) % 3]))
+                elif v < 0.44:
+                    sc.set(x, y, z, 'minecraft:moss_block')
+
+
+def curtains(sc):
+    """Cortinas largas y tupidas de enredadera que cuelgan de las vigas de los lados (como en la imagen, a la derecha)."""
+    for x in range(POOL_X + 2, WALL_X):
+        for z in range(BACK_Z + 1, 2):
+            for sgn in (1, -1):
+                xx = x * sgn
+                v = vhash(xx * 3 + 1, z * 5 - 2, 157)
+                if v > 0.6 or not sc.air(xx, AISLE_Y - 1, z):
+                    continue
+                n = 2 + int(vhash(xx, z, 159) * 3)
+                hang(sc, xx, AISLE_Y - 1, z, n, vhash(xx, z, 161))
 
 
 def clear_view(sc):
@@ -634,7 +678,7 @@ def anchors():
         'pond': (0.5, STEPS + 1.875, LAND_Z + 0.5, 2.5),
         'stairs': (STAIR_Z + 1.0, LAND_Z + 0.0, float(STEPS), float(STAIR_W)),
         'poolbox': (float(POOL_X), float(POOL_Z0), float(POOL_Z1), 0.0),
-        'sunspot': (0.5, CANOPY_Y + 0.3, OPEN_Z[1] - 2.5, 1.0),
+        'sunspot': (0.5, CANOPY_Y + 0.1, OPEN_Z[1] - 2.5, 1.0),
         'opening': (0.5, CANOPY_Y + 0.5, (OPEN_Z[0] + OPEN_Z[1] + 1) / 2.0, (OPEN_Z[1] - OPEN_Z[0] + 1) / 2.0),
         'flowers0': (-10.0, 2.5, 2.0, 3.0), 'flowers1': (11.0, 2.5, 2.0, 3.0), 'flowers2': (0.5, 6.5, -14.0, 2.5),
         **{f'spring{i}': p for i, p in enumerate(spring_points())},
@@ -651,7 +695,9 @@ def build():
     roofs(sc)
     top_greenery(sc)
     lanterns(sc)
+    lush(sc)
     overgrowth(sc)
+    curtains(sc)
     clear_view(sc)
     return sc
 

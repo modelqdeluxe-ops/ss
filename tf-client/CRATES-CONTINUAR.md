@@ -1,4 +1,4 @@
-# Prompt de continuación — TF Crates 1.3.99 (la cinemática del pantano de hadas), SIN PUBLICAR
+# Prompt de continuación — TF Crates 1.3.99 (la cinemática del Santuario de las Hadas)
 
 > Pega esto a la siguiente IA tal cual. Todo lo que necesita está aquí, en `tf-client/CRATES.md` y en el CHECKPOINT de
 > `HANDOFF.md`. Escrito el 20 oct 2026, cuando el dueño pidió parar: «para, que otra IA lo haga, pushea, guarda
@@ -73,7 +73,17 @@ publicado**: no hay PR a `main` ni Release `tfclient-v1.3.99`. `mod_version` y `
    mágico, no abuses tanto del bloom a que se vea borrosa la crate, ¿y la luz del sol? no veo haz de luz bien definido y
    grandecito iluminando gran parte del altarcito».
 
-## Lo que tienes que hacer (en este orden)
+## Hecho después (20 oct 2026, sesión siguiente)
+
+El dueño mandó **una imagen** («quiero exactamente esto») y la escena se rehízo entera como ella: el Santuario de las
+Hadas (todo en `tf-client/CRATES.md` §2, con cómo se midió la imagen y los colores por zonas). Los puntos 1-4 de abajo
+quedaron resueltos así: la cuadrícula era de la vista previa (lo que suma luz escribía profundidad); en el juego todo
+salía borroso porque se borraba la profundidad de la escena antes del shader; el agua es turquesa, clara (con el fondo
+de baldosas y la red de líneas de luz) y florece; la crate no florece; el haz es una columna con borde marcado y un sol
+con rayos. También la canción nueva del dueño (resource pack aparte) y el ambiente de día. Queda: que el dueño lo vea en
+su juego y diga qué no coincide aún con su imagen (se mide igual: por zonas, con la vista previa del tick 0).
+
+## Lo que había que hacer (ya hecho; se deja para la historia)
 
 1. **La cuadrícula sobre la cascada.** Son rayitas horizontales y verticales regulares, en la zona del haz; se ve en
    `santuario_render.py` ampliando la cascada en el tick 140.

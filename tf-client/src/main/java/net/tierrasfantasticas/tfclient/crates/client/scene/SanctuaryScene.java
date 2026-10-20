@@ -199,8 +199,8 @@ public final class SanctuaryScene {
     }
 
     /** La luz de la escena: ambiente, haz, la luz del hueco, el sol de lleno arriba y el rebote del agua (r, g, b). */
-    private static final float[] AMB = {0.20F, 0.28F, 0.36F}, BEAM_C = {1.25F, 1.12F, 0.80F}, SKY_C = {0.34F, 0.38F, 0.28F},
-            POOL_C = {0.02F, 0.30F, 0.34F}, CROWN_C = {0.95F, 0.90F, 0.45F};
+    private static final float[] AMB = {0.14F, 0.21F, 0.26F}, BEAM_C = {0.85F, 0.80F, 0.60F}, SKY_C = {0.22F, 0.26F, 0.24F},
+            POOL_C = {0.02F, 0.20F, 0.24F}, CROWN_C = {0.70F, 0.80F, 0.42F};
 
     static float smooth(float a, float b, float x) {
         float t = Math.max(0.0F, Math.min(1.0F, (x - a) / (b - a)));
@@ -215,13 +215,24 @@ public final class SanctuaryScene {
      * desde abajo; y la luz de las luces mágicas de alrededor (faroles, amatistas, linternas de mar), cada una de su color.
      */
     void light(float x, float y, float z, float[] out) {
+        light(x, y, z, 0.0F, 1.0F, 0.0F, out);
+    }
+
+    /**
+     * Lo mismo para una cara que mira hacia (nx, ny, nz): el haz y la luz del hueco vienen de arriba y de atrás, así que
+     * lo que mira hacia arriba (o hacia el sol) se lleva casi toda y lo que mira a la cámara, poca (en la imagen del
+     * dueño, el altar y los pilares están en sombra por delante y con la luz encima).
+     */
+    void light(float x, float y, float z, float nx, float ny, float nz, float[] out) {
+        float facing = 0.3F + 0.7F * Math.max(0.0F, nx * sun.x + ny * sun.y + nz * sun.z);
+        float above = 0.45F + 0.55F * Math.max(0.0F, ny);
         float off = beamOffset(x, y, z);
-        float beam = (1.0F - smooth(1.7F, 2.9F, off)) * 0.9F + (float)Math.exp(-off * off / 18.0F) * 0.3F;
+        float beam = ((1.0F - smooth(1.7F, 2.9F, off)) * 0.9F + (float)Math.exp(-off * off / 18.0F) * 0.3F) * facing;
         float ex = Math.abs(x - opening[0]);
         float ez = Math.max(0.0F, Math.abs(z - opening[2]) - opening[3]);
         float sky = (float)(Math.exp(-ex * ex / 30.0F) * Math.exp(-ez * ez / 14.0F))
-                * (0.45F + 0.55F * Math.max(0.0F, Math.min(1.0F, (y - 1.0F) / 9.0F)));
-        float crown = (float)(Math.exp(-ex * ex / 40.0F) * Math.exp(-ez * ez / 8.0F)) * smooth(5.5F, 8.5F, y);
+                * (0.45F + 0.55F * Math.max(0.0F, Math.min(1.0F, (y - 1.0F) / 9.0F))) * above;
+        float crown = (float)(Math.exp(-ex * ex / 140.0F) * Math.exp(-ez * ez / 30.0F)) * smooth(4.5F, 8.0F, y) * above;
         float px = Math.max(0.0F, Math.abs(x - 0.5F) - (poolBox[0] + 0.5F));
         float pz = Math.max(0.0F, Math.max(poolBox[1] - z, z - poolBox[2] - 1.0F));
         float pool = (float)Math.exp(-(px * px + pz * pz) / 3.0F) * Math.max(0.0F, Math.min(1.0F, (3.4F - y) / 3.0F));
@@ -233,10 +244,11 @@ public final class SanctuaryScene {
             for (float[] l : near) {
                 float dx = x - l[0], dy = y - l[1], dz = z - l[2];
                 float d2 = dx * dx + dy * dy + dz * dz;
-                float reach = 3.5F * l[6] + 1.5F;
+                // (un charco de luz cerca de cada farol, como en la imagen; el resto del santuario se queda en su sombra)
+                float reach = 2.2F * l[6] + 1.0F;
                 if (d2 >= reach * reach) continue;
                 float k = 1.0F - (float)Math.sqrt(d2) / reach;
-                k = k * k * 1.0F * Math.min(1.2F, l[6] + 0.3F);
+                k = k * k * Math.min(1.0F, l[6] + 0.2F) * 0.85F;
                 r += l[3] * k;
                 g += l[4] * k;
                 b += l[5] * k;
@@ -271,7 +283,7 @@ public final class SanctuaryScene {
             if (fixed) {
                 to.vertex(x, y, z, r * fr, g * fg, b * fb, a, u, v, overlay, light, nx, ny, nz);
             } else {
-                light(x, y, z, l);
+                light(x, y, z, nx, ny, nz, l);
                 to.vertex(x, y, z, r * l[0], g * l[1], b * l[2], a, u, v, overlay, light, nx, ny, nz);
             }
         }
@@ -529,6 +541,11 @@ public final class SanctuaryScene {
         return !level.get(x, y, z).getFluidState().isEmpty();
     }
 
+    private boolean isFalling(int x, int y, int z) {
+        BlockState st = level.get(x, y, z);
+        return st.hasProperty(LiquidBlock.LEVEL) && st.getValue(LiquidBlock.LEVEL) >= 8;
+    }
+
     private boolean solidAt(int x, int y, int z) {
         BlockState st = level.get(x, y, z);
         return !st.isAir() && st.isSolidRender(level, new BlockPos(x, y, z));
@@ -557,11 +574,16 @@ public final class SanctuaryScene {
             BlockState st = palette[b[3]];
             boolean above = isWater(x, y + 1, z);
             boolean falling = st.hasProperty(LiquidBlock.LEVEL) && st.getValue(LiquidBlock.LEVEL) >= 8;
-            float h = above ? 1.0F : 0.875F;
-            float in = falling ? 0.16F : 0.0F;
+            // el agua que sale de debajo de una piedra (las cascadas de los lados) llega hasta ella, sin rendija
+            boolean capped = falling && solidAt(x, y + 1, z);
+            float h = above || capped ? 1.0F : 0.875F;
+            // la columna que cae de debajo de una piedra (las cascadas de los lados), más estrecha: un chorro
+            int top = y;
+            while (falling && isFalling(x, top + 1, z)) top++;
+            float in = falling ? (solidAt(x, top + 1, z) ? 0.3F : 0.16F) : 0.0F;
             float x0 = x + (isWater(x - 1, y, z) ? 0 : in), x1 = x + 1 - (isWater(x + 1, y, z) ? 0 : in);
             float z0 = z + (isWater(x, y, z - 1) ? 0 : in), z1 = z + 1 - (isWater(x, y, z + 1) ? 0 : in);
-            if (!above) {
+            if (!above && !capped) {
                 int[][] cs = {{x, z}, {x + 1, z}, {x + 1, z + 1}, {x, z + 1}};
                 float[][] ps = {{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}};
                 for (int i = 0; i < 4; i++) {
@@ -589,13 +611,17 @@ public final class SanctuaryScene {
             int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
             for (int[] d : dirs) {
                 if (isWater(x + d[0], y, z + d[1]) || solidAt(x + d[0], y, z + d[1])) continue;
+                // el salto de un escalón a otro (y la cascada alta sobre el rellano) baja hasta la superficie del agua de delante,
+                // que está 1/8 más baja: así no se ve la piedra de detrás (en la imagen, ahí brilla el agua)
+                float yb = isWater(x + d[0], y - 1, z + d[1]) ? y - 0.125F : y;
+                // (un pelo hacia fuera: la parte que baja queda en el plano de la piedra del escalón y perdería con ella)
                 float[][] q;
                 if (d[1] != 0) {
-                    float zz = d[1] < 0 ? z0 : z1;
-                    q = new float[][] {{x0, y + h, zz}, {x1, y + h, zz}, {x1, y, zz}, {x0, y, zz}};
+                    float zz = (d[1] < 0 ? z0 : z1) + d[1] * 0.004F;
+                    q = new float[][] {{x0, y + h, zz}, {x1, y + h, zz}, {x1, yb, zz}, {x0, yb, zz}};
                 } else {
-                    float xx = d[0] < 0 ? x0 : x1;
-                    q = new float[][] {{xx, y + h, z0}, {xx, y + h, z1}, {xx, y, z1}, {xx, y, z0}};
+                    float xx = (d[0] < 0 ? x0 : x1) + d[0] * 0.004F;
+                    q = new float[][] {{xx, y + h, z0}, {xx, y + h, z1}, {xx, yb, z1}, {xx, yb, z0}};
                 }
                 for (float[] p : q) {
                     light(p[0], p[1], p[2], l);

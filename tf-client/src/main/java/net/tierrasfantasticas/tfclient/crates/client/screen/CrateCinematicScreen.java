@@ -828,8 +828,8 @@ public class CrateCinematicScreen extends Screen {
 
     /** El cielo de respaldo (si el shader no carga) y la bruma del santuario: verde azulada oscura (lo del fondo se pierde
      *  un poco en ella). */
-    private static final float[] SKY_TOP = {0.55F, 0.80F, 0.85F}, SKY_HORIZON = {0.90F, 0.92F, 0.80F}, FOG = {0.10F, 0.19F, 0.20F};
-    static final float FOG_START = 18.0F, FOG_END = 80.0F;
+    private static final float[] SKY_TOP = {0.55F, 0.80F, 0.85F}, SKY_HORIZON = {0.90F, 0.92F, 0.80F}, FOG = {0.10F, 0.20F, 0.24F};
+    static final float FOG_START = 10.0F, FOG_END = 55.0F;
 
     private void renderScene(GuiGraphics g, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
@@ -992,11 +992,11 @@ public class CrateCinematicScreen extends Screen {
                 // (el dueño: «que el resplandor también salga del agua… no abuses tanto del bloom a que se vea borrosa la
                 // crate»: florece lo que pasa del umbral, el agua y las luces; la crate, no)
                 float burst = pulseAt(t, OPEN, 36.0F) + pulseAt(t, REVEAL, 40.0F);
-                float bloomK = 0.5F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
-                float rayK = 0.7F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
+                float bloomK = 0.7F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
+                float rayK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
-                post.finish(su, sv, vis, bloomK, rayK, 1.55F, focus, 0.05F, 220.0F);
+                post.finish(su, sv, vis, bloomK, rayK, 1.45F, focus, 0.05F, 220.0F);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);

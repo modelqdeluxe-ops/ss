@@ -19,7 +19,7 @@ import net.minecraft.world.level.material.FluidState;
  */
 final class SceneLevel implements BlockAndTintGetter {
     /** Colores del bioma de la escena: hierba, hojas y enredaderas (verdes vivos) y el agua (turquesa, como en la imagen). */
-    static final int GRASS = 0x5AAE4E, FOLIAGE = 0x4AAA44, WATER = 0x3FD8E0;
+    static final int GRASS = 0x52A048, FOLIAGE = 0x429C3E, WATER = 0x3FD8E0;
 
     private final BlockState[] states;
     final int x0, y0, z0, nx, ny, nz;

@@ -136,30 +136,30 @@ public final class CinematicFx {
         Vector3f sun = sc.sunDir();
         float[] c = sc.anchor("crate");
         float tr = ((tint >> 16) & 255) / 255.0F, tg = ((tint >> 8) & 255) / 255.0F, tb = (tint & 255) / 255.0F;
-        float r = mix(1.0F, tr, tintAmt), g = mix(0.93F, tg, tintAmt), b = mix(0.70F, tb, tintAmt);
+        float r = mix(1.0F, tr, tintAmt), g = mix(0.97F, tg, tintAmt), b = mix(0.84F, tb, tintAmt);
         Vector3f base = new Vector3f(c[0], c[1] - 0.3F, c[2]);
         Vector3f mid = new Vector3f(base).add(new Vector3f(sun).mul(9.0F));
         Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(26.0F));
         float br = 0.88F + 0.12F * (float)Math.sin(t * 0.05F);
         // el halo ancho, la columna con el borde marcado y el núcleo claro (más fuertes arriba)
-        band(vc, v, base, mid, 3.4F, 3.4F, r, g, b, 0.02F * power * br, 0.04F * power * br);
-        band(vc, v, mid, top, 3.4F, 3.0F, r, g, b, 0.04F * power * br, 0.07F * power * br);
-        band(vc, v, base, mid, 2.2F, 2.3F, r, g, b, 0.04F * power * br, 0.07F * power * br, 0.16F, 0.84F);
-        band(vc, v, mid, top, 2.3F, 2.3F, r, g, b, 0.07F * power * br, 0.12F * power * br, 0.16F, 0.84F);
-        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.04F * power, 0.12F * power, 0.12F, 0.88F);
+        band(vc, v, base, mid, 3.4F, 3.4F, r, g, b, 0.02F * power * br, 0.03F * power * br);
+        band(vc, v, mid, top, 3.4F, 3.0F, r, g, b, 0.03F * power * br, 0.05F * power * br);
+        band(vc, v, base, mid, 2.2F, 2.3F, r, g, b, 0.03F * power * br, 0.05F * power * br, 0.16F, 0.84F);
+        band(vc, v, mid, top, 2.3F, 2.3F, r, g, b, 0.05F * power * br, 0.08F * power * br, 0.16F, 0.84F);
+        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.03F * power, 0.08F * power, 0.12F, 0.88F);
         // el foco del sol, donde entra por el hueco, y los rayos que bajan en abanico desde él
         float[] spot = sc.anchor("sunspot");
-        glow(vc, v, spot[0], spot[1], spot[2], 4.0F, 1.0F, 0.97F, 0.85F, 0.5F * power);
-        glow(vc, v, spot[0], spot[1], spot[2], 1.8F, 1.0F, 1.0F, 0.94F, 0.95F * power);
-        glow(vc, v, spot[0], spot[1], spot[2], 0.8F, 1.0F, 1.0F, 1.0F, 1.0F * power);
+        glow(vc, v, spot[0], spot[1], spot[2], 3.0F, 1.0F, 0.90F, 0.55F, 0.8F * power);
+        glow(vc, v, spot[0], spot[1], spot[2], 1.5F, 1.0F, 0.95F, 0.70F, 1.0F * power);
+        glow(vc, v, spot[0], spot[1], spot[2], 0.7F, 1.0F, 0.98F, 0.85F, 1.0F * power);
         Vector3f src = new Vector3f(spot[0], spot[1], spot[2]);
         for (int i = 0; i < 9; i++) {
             float ang = (i - 4) * 0.13F + 0.05F * (float)Math.sin(t * 0.01F + i);
             Vector3f d = new Vector3f((float)Math.sin(ang) * 0.9F, -1.0F, 0.55F + 0.25F * hash(i, 29)).normalize();
             float len = 9.0F + hash(i, 31) * 6.0F;
             float life = 0.7F + 0.3F * (float)Math.sin(t * (0.02F + hash(i, 33) * 0.02F) + i * 1.7F);
-            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.12F + hash(i, 35) * 0.2F, 0.45F + hash(i, 37) * 0.6F, 1.0F, 0.96F, 0.80F,
-                    0.34F * life * power, 0.0F);
+            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.10F + hash(i, 35) * 0.15F, 0.40F + hash(i, 37) * 0.5F, 1.0F, 0.96F, 0.80F,
+                    0.5F * life * power, 0.0F, 0.1F, 0.9F);
         }
         // vetas finas que se mueven dentro del haz
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
@@ -186,7 +186,7 @@ public final class CinematicFx {
                     1.0F, 0.95F, 0.78F, 0.13F * life * power, 0.0F);
         }
         // donde cae el haz: el charco de luz en el altar y en el agua
-        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.36F * power);
+        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.12F * power);
         float[] pool = sc.anchor("pool");
         flatGlow(vc, v, c[0], pool[1] + 0.02F, c[2] - 1.0F, 4.8F, r, g, b, 0.16F * power);
     }
@@ -567,8 +567,9 @@ public final class CinematicFx {
             if (dx * dx + dy * dy + dz * dz > 70 * 70) continue;
             float flick = 0.82F + 0.18F * (float)Math.sin(t * (0.07F + hash(i, 171) * 0.08F) + i);
             float s = l[6];
-            glow(vc, v, l[0], l[1], l[2], 0.75F * s + 0.2F, l[3], l[4], l[5], 0.32F * flick * Math.min(1.0F, s + 0.3F));
-            glow(vc, v, l[0], l[1], l[2], 0.18F * s + 0.08F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.45F * flick);
+            float big = 0.32F + 0.1F * Math.min(1.0F, s - 0.5F);       // los faroles, un halo más vivo
+            glow(vc, v, l[0], l[1], l[2], 0.75F * s + 0.2F, l[3], l[4], l[5], big * flick * Math.min(1.0F, s + 0.3F));
+            glow(vc, v, l[0], l[1], l[2], 0.24F * s + 0.08F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.6F * flick);
         }
     }
 

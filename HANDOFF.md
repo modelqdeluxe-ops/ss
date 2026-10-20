@@ -59,34 +59,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.99, SIN PUBLICAR) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.99) — lee esto primero
 
-> **A medias**: el dueño pidió parar y que siga otra IA. Prompt completo para seguir:
-> [`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md). Falta: la cuadrícula sobre la cascada (sale de la
-> capa de luz que suma), el agua más turquesa y brillante con resplandor, menos resplandor sobre la crate, un haz de luz
-> grande y bien definido sobre el altar; luego una prueba en el juego y publicar la 1.3.99.
-
-**1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). El dueño: «meterás el mod que dice Fantastic Crates
-a nuestro TF Client, todo el mod sin errores, el comando será /tf crates… rework súper bonito, épico… un santuario en la
-naturaleza con fuente de agua, tipo ruinas, con un haz del sol… una escena completa en vivo» y después «que aparezca
-directamente ya cerca de la crate… mejora el shader… el resplandor más bello… algo bello, como un bosque de hadas».
-- **Fantastic Crates dentro de TF Client** (descompilado y traducido a nombres oficiales; paquete
-  `net.tierrasfantasticas.tfclient.crates`), comando **`/tf crates`**; el espacio de nombres `fscrates` se queda (las
-  crates puestas, las llaves y las cajas en JSON siguen valiendo). **Hay que quitar `Fantastic Crates 8.jar`** del
-  servidor y de los clientes (si sigue, TF Crates no se registra y lo dice en el log).
-- **La cinemática nueva: el Bosque de las Hadas**, un pantano de hadas de noche (18 s, en 3D y en vivo, empieza junto
-  a la crate; el dueño rechazó el claro al atardecer: «veo una pradera con cerezos… quiero una escena más oscura de hada
-  pantanosa»): estanque de agua azul (la dibuja el juego) con la crate en su pedestal de piedra con musgo, **un haz de
-  luz dorada** que baja sobre el santuario, cascada de agua de verdad, arco en ruinas, manglares y robles oscuros con
-  lianas y bayas luminosas, charcas, hadas y luciérnagas; la llave que entra y gira, el temblor, la apertura con pilar
-  de luz, la ruleta en anillo y el premio. **Shader propio** (`ScenePost`: resplandor moderado, rayos, colores vivos).
-  Antes de gastar una prueba en el juego, mírala con `tools/crates/santuario_render.py` (las texturas de verdad y los
-  mismos shaders) y `cielo_visible.py` (que no se vea horizonte). El dueño pide **una sola prueba en el juego** por
-  cambio. Los demás ven la crate del mundo a los mismos tiempos. Si algo falla, sale la cinemática de siempre.
-- **La música que eligió el dueño** va en un resource pack aparte (se le dio hecho; sustituye `tfclient:crates.musica`);
-  no se sube al repo ni a las Releases. No le vuelvas a sacar el tema.
-- Prueba en el juego: `[prueba-jefes=crates]` (dos aperturas, 11 capturas cada una).
-- Pendiente del dueño: los cascos de los otros 7 sets de crates; modelos o skins de caballeros; el PR en borrador #137.
+**1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). Fantastic Crates dentro de TF Client (`/tf crates`;
+hay que **quitar `Fantastic Crates 8.jar`** del servidor y de los clientes) y la cinemática de apertura: **el Santuario
+de las Hadas**, rehecho **como la imagen que mandó el dueño** («quiero exactamente esto, colores, iluminación,
+shaders»): templo en ruinas de piedra con musgo cubierto de hiedra, vigas de roble oscuro con flores de esporas y
+faroles con cadena, sol blanco cálido con rayos desde el hueco, cascada alta y escalera de agua al fondo, dos cascadas
+de los lados (por debajo de un dintel), estanque turquesa claro con el fondo de baldosas y la red de líneas de luz, el
+altar con dos amatistas y la crate. El dueño se quejó varias veces («no veo idéntica a mi foto», «el color para nada
+coincide», «quiero precisión en los colores», «no veo mejoría en saturación, contraste»): **se compara midiendo**, no a
+ojo: por zonas (agua, hojas, piedra, faroles, rosa, sombras) y saturación, contraste local y nitidez, entre su imagen y
+`tools/crates/santuario_render.py` en el tick 0 (CRATES.md §2 tiene los números al dejarlo). Arreglos de fondo: en el
+juego todo salía **borroso** (se borraba la profundidad de la escena antes del shader); la **cuadrícula** era de la
+vista previa (moderngl no tiene `ctx.depth_mask`); la viñeta, la curva de tono y los rayos aplastaban los brillos.
+- **La canción que mandó el dueño** («La petite fille de la mer») va en un resource pack aparte
+  (`TF-Santuario-musica.zip`, se le dio hecho; sustituye `tfclient:crates.musica`); no se sube al repo ni a las
+  Releases, que son públicos.
+- Prueba en el juego: `[prueba-jefes=crates]` (dos aperturas, 11 capturas cada una; ~4 min). El dueño pide **una sola
+  prueba** por cambio; antes, la vista previa.
+- Pendiente del dueño: que lo vea en su juego; los cascos de los otros 7 sets de crates; modelos o skins de caballeros;
+  el PR en borrador #137.
 
 ### CHECKPOINT anterior (20 oct 2026, TF Client 1.3.98)
 

@@ -28,49 +28,77 @@ El dueño no tiene el código, solo el jar. Se descompiló y se tradujo:
 y crates y la carpeta `config/fscrates/cajas`): así las crates puestas en los mundos, las llaves de los jugadores y las
 cajas en JSON siguen valiendo. Arranque: `crates/FSCrates.init` (desde `TFClient`).
 
-## 2. La cinemática: el Bosque de las Hadas (1.3.99)
+## 2. La cinemática: el Santuario de las Hadas (1.3.99)
 
-El dueño: «quiero un rework súper bonito, épico… una escena tipo de un santuario en la naturaleza con fuente de agua,
-tipo ruinas, con un haz del sol sobre el lugar, una escena completa en vivo, y ahí puesta la crate correctamente, la
-apertura, la metida de llave…». Tras ver la primera versión (un santuario en un claro de día): «que aparezca
-directamente ya cerca de la crate… mejora el shader… el resplandor más bello, las fuentes de agua mejor diseñadas, la
-estructura mejor diseñada, el fondo celestial… esas ruinas más bonitas… algo bello, como un bosque de hadas».
+El dueño mandó **una imagen** de lo que quiere («quiero exactamente esto, colores, iluminación, shaders»): un santuario
+en ruinas cerrado, de piedra con musgo y cubierto de hiedra, con vigas de roble oscuro a los lados (flores de esporas
+rosas y faroles con cadena), abierto arriba en el medio por donde entra un sol blanco cálido con rayos; al fondo una
+cascada alta que baja por una escalera de agua; a los lados dos columnas de piedra de las que cae su cascada (por debajo
+de un dintel); delante un estanque turquesa claro, con el fondo de baldosas y la red de líneas de luz; en medio el altar
+de piedra con musgo, azalea en flor y dos amatistas, con la crate encima. Antes fue un pantano de hadas de noche (el
+dueño lo rechazó con esta imagen). Las quejas que llevaron hasta aquí: «¿esa es tu producto final?», «la cuadrícula
+sobre la cascada», «haz más turquesa y brillante el agua… no abuses del bloom a que se vea borrosa la crate… un haz de
+luz bien definido y grandecito», y con la imagen: «no veo idéntica a mi foto», «esa cascada cortada», «el color para
+nada coincide», «quiero precisión en los colores».
 
-Y luego: «quiero una escena más oscura de hada pantanosa… ambiente de hada oscuro, bosque oscuro, el santuario con su
-haz de luz… el agua más azulita tipo tráileres de Minecraft o Minecraft Dungeons… el bloom no lo exageres tanto… que
-el haz de la crate no tape los ítems».
+**Cómo se ajustó a la imagen (repetible):** la imagen es la referencia de `tools/crates/santuario_render.py` en el tick 0.
+Las medidas de la escena salen de tratar la foto como una cámara (un nenúfar mide un bloque): cámara a 3,7 de alto,
+10,5 bloques delante del altar, 36° de campo vertical; cascadas de los lados a ~4,5 del centro; escalera a 13 bloques y
+cascada alta a 17. Los colores se compararon **por tipo de cosa** (agua turquesa, hojas, piedra, faroles y sol, rosa,
+sombras: el color medio y el brillo del 90 %) entre la foto y la vista previa, y se cambió la luz y los shaders hasta
+que coincidieran (con un guion de comparación en el scratchpad de la sesión; vuelve a hacerlo si se cambia algo).
+Resultado al dejarlo (foto → vista previa, tick 0): imagen entera (56,105,97) → (55,100,92); agua (27,168,182) →
+(28,161,186); hojas (43,80,39) → (44,84,40); faroles (188,144,63) → (186,142,49); rosa (181,74,148) → (170,82,129);
+sombras (17,24,18) → (19,25,18); la piedra queda algo más clara (76,81,80) → (89,104,94).
 
-Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que **empieza ya junto a la crate**: un pantano de
-hadas de noche. En medio, un estanque de **agua azul** (la dibuja el juego, con su textura que se mueve; el fondo de
-linternas de mar y pepinos de mar la hace brillar) con un pedestal de piedra vieja con musgo, pétalos rosas, liquen que
-brilla y dos amatistas, y encima **su crate de verdad** (el modelo y la tapa de su estilo). **Un haz de luz dorada** baja
-desde un hueco de las copas sobre el santuario (con polvo que brilla dentro y su charco de luz). Detrás, **una cascada de
-agua de verdad** (agua que cae, como en el juego) que baja de un risco de musgo a un remanso, y el arco en ruinas de
-piedra con musgo, faroles, azalea y flores de esporas; a los lados, dos peñas con su chorro de agua que cae al estanque.
-Alrededor, **un bosque cerrado** (no se ve el cielo ni el horizonte: `python3 -I tools/crates/cielo_visible.py` lo
-comprueba con rayos desde la cámara): manglares y robles oscuros viejos con raíces en el barro y el agua, copas bajas, lianas largas, bayas
-luminosas, luces de rana colgando, setas gigantes, faroles de piedra, charcas con nenúfares y hojas de goteo, helechos,
-orquídeas azules y alliums; la bruma azul de lejos. Vuelan **hadas** de colores con estela y muchas luciérnagas.
+Lo que se encontró por el camino (y no hay que volver a romper):
+- **Todo borroso en el juego**: `renderScene` borraba la profundidad de la textura de la escena antes del shader (el
+  `RenderSystem.clear` del `finally`): la profundidad de campo creía que todo estaba lejos. Ahora se borra la de la
+  pantalla, no la de la escena.
+- **La cuadrícula sobre la cascada** era de la vista previa: moderngl no tiene `ctx.depth_mask` (está en el framebuffer),
+  así que lo que suma luz escribía profundidad y las bandas coplanares del haz se pisaban. En el juego `GLOW_ADD` no
+  escribe profundidad.
+- **La viñeta** del shader oscurecía las esquinas un 25 % (el agua de abajo no pasaba de ~214): ahora es suave.
+- **La curva de tono** no llegaba al blanco (1 salía 0,79): ahora está normalizada.
+- **El velo**: los rayos del shader arrastraban el foco del sol por toda la imagen; ahora solo hacen rayos lo muy claro
+  y se apagan pronto.
+- **Los faroles** alumbraban 6,75 bloques (todo amarillo): ahora un charco de luz de ~4.
+- **La luz según la cara**: el haz y la luz del hueco vienen de arriba y de atrás; lo que mira a la cámara recibe poca
+  (el altar y los pilares, en sombra por delante, como en la imagen). `SanctuaryScene.light(x, y, z, nx, ny, nz, …)`.
 
-La imagen va **con shaders propios, como un paquete de shaders** (el dueño: «sin shaders, sin bloom, sin colores
-vivos… no las texturas de Minecraft así»), en `ScenePost` y `shaders/core/crate_*`:
-- **el agua** (`crate_water`, desde `SanctuaryScene.drawWaterFx`): no la textura del juego, sino azul profundo y
-  turquesa en las orillas, ondas que se mueven, cáusticas, el reflejo del cielo de noche, el brillo del haz en el agua,
-  destellos, la luz que sube del fondo (linternas y pepinos de mar) y espuma en la orilla; las cascadas, con vetas
-  blancas que bajan y espuma abajo (el agua que cae va como un chorro, más estrecha que un bloque);
-- el cielo de noche entre las copas (`crate_sky`);
-- el resplandor (`crate_bloom`: se baja a un cuarto, se queda lo que brilla y se desenfoca dos veces) y la imagen
+Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
+dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con
+el fondo de linternas de mar y prismarina, el altar, la escalera de agua de 3 escalones y la cascada alta de 5 de ancho
+bajo el hueco de las copas (z −17..−5), las columnas de los lados con su cascada (x ±4..5, z −8) que sale de debajo de un
+dintel de piedra con musgo, las terrazas de los lados con columnas, flores azules y rosas y faroles en su poste, las
+vigas de roble oscuro a 7 de alto con flores de esporas (que brillan un poco: son de hadas) y cortinas de enredadera
+junto a las paredes, hiedra y bloques de hojas de azalea por toda la piedra de los lados (`lush`, `ivy`, `curtains`),
+13 faroles con cadena (puestos donde están en la imagen, medidos con su cámara) y la pared del fondo. Vuelan **hadas** y
+chispas. No se ve horizonte ni cielo de lado (`cielo_visible.py`: 0 %); por el hueco, el cielo de día.
+
+La imagen va **con shaders propios, como un paquete de shaders** (`ScenePost` y `shaders/core/crate_*`):
+- **el agua** (`crate_water`, desde `SanctuaryScene.drawWaterFx`): el estanque es claro y deja ver **el fondo de
+  baldosas** (dibujado en el shader, con la refracción de las ondas), con la **red de líneas de luz** turquesa claro
+  encima, el dibujo del agua del juego (las texturas `water_still`/`water_flow` del atlas de bloques, animadas por el
+  juego, leídas con `textureLod` nivel 0: con `fract` y mipmaps saldría una raya en cada borde de bloque), el reflejo, el
+  brillo del haz, destellos y espuma en las orillas; las cascadas, con el agua que corre del juego bien marcada, vetas,
+  destellos que bajan y espuma abajo (mucha en las cascadas altas, poca en los saltos de la escalera: el canal r del
+  vértice lleva la altura de la columna); las que salen de debajo de una piedra van más estrechas y llegan hasta ella;
+- el cielo de día por el hueco (`crate_sky`);
+- el resplandor (`crate_bloom`, umbral 0,78: florecen el agua clara, los faroles y el sol; la crate, no) y la imagen
   entera desenfocada (para la profundidad de campo);
-- la imagen final (`crate_post`): **profundidad de campo** (la crate nítida, el bosque de detrás desenfocado, con la
-  profundidad de la escena), **resplandor** fuerte en lo que brilla (en la penumbra solo brillan las luces), rayos que
-  salen del haz, **colores vivos** (sombras turquesa y azules, luces doradas, saturación ×1,5, algo de contraste) y
-  viñeta. La oclusión ambiental (la luz suave de las esquinas) la pone el renderizador de bloques del juego.
+- la imagen final (`crate_post`): **profundidad de campo suave** (el fondo se sigue viendo, como en la imagen),
+  **resplandor**, **rayos** que salen del sol, la curva de tono normalizada, **colores** (sombras verde azuladas, nada
+  amarillento en lo oscuro, luces cálidas solo en lo amarillo, saturación ×1,4, contraste) y una viñeta suave.
+- `CinematicFx.sunShafts`: la columna del haz con el borde marcado (`band` con `u0..u1`), más fuerte arriba que
+  abajo, el **foco del sol** (`sunspot`, arriba en el centro, crema cálido) con **9 rayos en abanico** y 7 rayos que bajan
+  del hueco sobre la escalera; el polvo, las chispas, la bruma y la espuma de las cascadas.
 
 Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 
 | tick (20/s) | qué pasa |
 |---|---|
-| 0–20 | ya junto a la crate; el título de la crate y «✦ Bosque de las Hadas ✦» |
+| 0–20 | el encuadre de la imagen del dueño, que se acerca; el título de la crate y «✦ Santuario de las Hadas ✦» |
 | 20–66 | **la llave** (la de la crate: Fantastic Key o la única) sale de un remolino de luz, vuela, se alinea y entra |
 | 70–80 | **gira**; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza |
 | 84–102 | la crate tiembla, la luz se escapa por la tapa |
@@ -84,8 +112,10 @@ Los demás jugadores ven **la crate del mundo** a los mismos tiempos (`CrateRend
 y el premio que sube y gira encima hasta que se cierra. La de siempre (`CrateCinematicClassic`) dura lo mismo.
 
 **La música**: `tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
-el dueño va en un resource pack aparte que sustituye `assets/tfclient/sounds/crates/musica.ogg` (se le dio hecho); no
-se sube al repo ni a las Releases, que son públicos. La música y el ambiente se
+el dueño («La petite fille de la mer», 20 oct 2026: sus primeros 20 s, con entrada y salida suaves y volumen
+normalizado) va en un resource pack aparte que sustituye `assets/tfclient/sounds/crates/musica.ogg` (se le dio hecho,
+`TF-Santuario-musica.zip`); no se sube al repo ni a las Releases, que son públicos. El ambiente (`ambiente.ogg`) es de
+día: las cascadas, el viento en las hojas, gotas, pájaros lejos y campanitas de las hadas. La música y el ambiente se
 apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
 
 ### Piezas
@@ -107,11 +137,12 @@ apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
   `xvfb-run -a python3 -I tools/crates/santuario_preview.py <carpeta> [ticks]`.
 - **`crates/client/scene/SanctuaryScene`**: carga el `.bin`, construye los bloques una vez con el renderizador de
   Minecraft (oclusión ambiental, caras tapadas, colores de bioma) sobre su mundo propio (`SceneLevel`) en búferes de la
-  tarjeta gráfica, con **la luz de la escena en el color** (`light`: la penumbra azul del pantano, el haz dorado
-  sobre la crate, el azul del estanque desde abajo y la luz de color de las luces mágicas cercanas, por celdas); los
-  bloques que brillan van sin sombra; **el agua la dibuja el renderizador de agua del juego** (`renderLiquid`, con
-  `Liquid`: la pone en su sitio y le da la luz, con un mínimo para que se vea azul y viva); las plantas cerca de la
-  crate se mecen (`drawPlants`).
+  tarjeta gráfica, con **la luz de la escena en el color** (`light(x, y, z, nx, ny, nz)`: la sombra verde azulada
+  `AMB`, el haz `BEAM_C` y la luz del hueco `SKY_C` según hacia dónde mira la cara, el sol de arriba `CROWN_C`, el
+  turquesa del estanque `POOL_C` y un charco de luz de cada luz mágica cercana, por celdas; los mismos números que
+  `make_light` de la vista previa); los bloques que brillan van sin sombra; el agua va con su shader
+  (`buildWaterFx`/`drawWaterFx`; si no carga, la dibuja el juego con `Liquid`); las plantas cerca de la crate se
+  mecen (`drawPlants`).
 - **`crates/client/scene/ScenePost`**: el shader (texturas de la escena y del resplandor, el cielo, el resplandor y la
   imagen final). Se registran en `RegisterShadersEvent` (`ScenePost.Shaders`).
 - **`crates/client/scene/CinematicFx`**: lo que se mueve (el haz de luz y su polvo, halos de las luces, hadas,

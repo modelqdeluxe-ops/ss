@@ -35,17 +35,17 @@ SHADERS = os.path.join(RES, 'tfclient', 'shaders', 'core')
 CACHE = os.path.expanduser('~/.cache/tfclient/minecraft-1.20.1-client.jar')
 
 # los de SceneLevel, SanctuaryScene y CrateCinematicScreen (si cambian allí, cámbialos aquí)
-GRASS, FOLIAGE, WATER = 0x5AAE4E, 0x4AAA44, 0x3FD8E0
-FOG, FOG_START, FOG_END = (0.10, 0.19, 0.20), 18.0, 80.0
-THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.5, 0.7, 1.55   # los de ScenePost y CrateCinematicScreen (sin abrir)
+GRASS, FOLIAGE, WATER = 0x52A048, 0x429C3E, 0x3FD8E0
+FOG, FOG_START, FOG_END = (0.10, 0.20, 0.24), 10.0, 55.0
+THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.45   # los de ScenePost y CrateCinematicScreen (sin abrir)
 CRATE_TINT = (0.86, 0.84, 0.80)
 BARS = 0.035                       # las franjas de cine (CrateCinematicScreen.overlay)
 # la luz de la escena (SanctuaryScene.light): ambiente, haz, luz del hueco, rebote del agua
-AMB = (0.20, 0.28, 0.36)
-BEAM_C = (1.25, 1.12, 0.80)
-SKY_C = (0.34, 0.38, 0.28)
-POOL_C = (0.02, 0.30, 0.34)
-CROWN_C = (0.95, 0.90, 0.45)
+AMB = (0.14, 0.21, 0.26)
+BEAM_C = (0.85, 0.80, 0.60)
+SKY_C = (0.22, 0.26, 0.24)
+POOL_C = (0.02, 0.20, 0.24)
+CROWN_C = (0.70, 0.80, 0.42)
 TINTS = {'mangrove_leaves': 0x92C648, 'spruce_leaves': 0x619961, 'birch_leaves': 0x80A755, 'lily_pad': 0x208030}
 
 
@@ -298,7 +298,7 @@ class Mesher:
                         tint = TINTS.get(name, WATER if name == 'water' else GRASS if name in (
                             'grass_block', 'grass', 'tall_grass', 'fern', 'large_fern') else FOLIAGE)
                     shade = SHADE[rot_dir(d, xr, yr)] if el.get('shade', True) else 1.0
-                    out.append((corners, uvs, ti, cull, tint, shade))
+                    out.append((corners, uvs, ti, cull, tint, shade, DIRS[rot_dir(d, xr, yr)]))
         self.cache[st] = out
         return out
 
@@ -325,7 +325,7 @@ def build_mesh(sc, assets, light):
         glow = name in S.GLOW and (sc.flags[a[i, j, k]] & S.F_GLOW)
         if name == 'minecraft:water':
             continue
-        for (corners, uvs, ti, cull, tint, shade) in me.quads(st):
+        for (corners, uvs, ti, cull, tint, shade, nrm) in me.quads(st):
             if cull is not None:
                 dx, dy, dz = DIRS[cull]
                 if fullat(x + dx, y + dy, z + dz):
@@ -338,7 +338,7 @@ def build_mesh(sc, assets, light):
                     l = (1.0, 1.0, 1.0)
                     ao = 1.0
                 else:
-                    l = light(wx, wy, wz)
+                    l = light(wx, wy, wz, nrm)
                     ao = occlusion(fullat, x, y, z, cull, p) if cull is not None else 1.0
                 vs.append((wx, wy, wz, ti, u, v, tr * shade * l[0] * ao, tg * shade * l[1] * ao, tb * shade * l[2] * ao, 1.0))
             for q in (0, 1, 2, 0, 2, 3):
@@ -388,14 +388,19 @@ def water_mesh(sc, light, fullat):
         if not is_water(x, y, z):
             continue
         above = is_water(x, y + 1, z)
-        h = 1.0 if above else 0.875
         falling = 'level=8' in sc.get(x, y, z)
-        inn = 0.16 if falling else 0.0
+        capped = falling and fullat(x, y + 1, z)       # el agua que sale de debajo de una piedra llega hasta ella
+        h = 1.0 if above or capped else 0.875
+        top = y
+        while falling and 'level=8' in sc.get(x, top + 1, z):
+            top += 1
+        narrow = falling and fullat(x, top + 1, z)     # la columna cae de debajo de una piedra: un chorro más estrecho
+        inn = (0.3 if narrow else 0.16) if falling else 0.0
         x0 = x + (0 if is_water(x - 1, y, z) else inn)
         x1 = x + 1 - (0 if is_water(x + 1, y, z) else inn)
         z0 = z + (0 if is_water(x, y, z - 1) else inn)
         z1 = z + 1 - (0 if is_water(x, y, z + 1) else inn)
-        if not above:
+        if not above and not capped:
             vs = []
             for (cx, cz), (px_, pz_) in zip(((x, z), (x + 1, z), (x + 1, z + 1), (x, z + 1)), ((x0, z0), (x1, z0), (x1, z1), (x0, z1))):
                 shore = sum(0 if is_water(cx + dx, y, cz + dz) else 1 for dx in (-1, 0) for dz in (-1, 0)) / 4.0
@@ -414,12 +419,16 @@ def water_mesh(sc, light, fullat):
         for d, (dx, dz) in (('north', (0, -1)), ('south', (0, 1)), ('west', (-1, 0)), ('east', (1, 0))):
             if is_water(x + dx, y, z + dz) or fullat(x + dx, y, z + dz):
                 continue
+            # el salto de un escalón a otro (y la cascada alta sobre el rellano) baja hasta la superficie del agua de delante,
+            # que está 1/8 más baja: así no se ve la piedra de detrás (en la imagen, ahí brilla el agua)
+            yb = y - 0.125 if is_water(x + dx, y - 1, z + dz) else y
+            # (un pelo hacia fuera: la parte que baja queda en el plano de la piedra del escalón y perdería con ella)
             if dz:
-                zz = z0 if dz < 0 else z1
-                c = [(x0, y + h, zz), (x1, y + h, zz), (x1, y, zz), (x0, y, zz)]
+                zz = (z0 if dz < 0 else z1) + dz * 0.004
+                c = [(x0, y + h, zz), (x1, y + h, zz), (x1, yb, zz), (x0, yb, zz)]
             else:
-                xx = x0 if dx < 0 else x1
-                c = [(xx, y + h, z0), (xx, y + h, z1), (xx, y, z1), (xx, y, z0)]
+                xx = (x0 if dx < 0 else x1) + dx * 0.004
+                c = [(xx, y + h, z0), (xx, y + h, z1), (xx, yb, z1), (xx, yb, z0)]
             vs = []
             for p in c:
                 wx, wy, wz = p
@@ -452,7 +461,11 @@ def make_light(sc):
                 for gz in (-1, 0, 1):
                     grid.setdefault((cx + gx, cy + gy, cz + gz), []).append(l)
 
-    def light(x, y, z):
+    def light(x, y, z, n=(0, 1, 0)):
+        # el haz y la luz del hueco vienen de arriba y de atrás: lo que mira hacia arriba (o hacia el sol) se lleva casi
+        # toda; lo que mira a la cámara, poca (como en la imagen: el altar y los pilares, en sombra por delante)
+        facing = 0.3 + 0.7 * max(0.0, n[0] * sun[0] + n[1] * sun[1] + n[2] * sun[2])
+        above = 0.45 + 0.55 * max(0.0, n[1])
         # el haz: una columna ancha con el borde marcado (y un halo suave alrededor)
         dx, dy, dz = x - crate[0], y - (crate[1] + 0.6), z - crate[2]
         along = dx * sun[0] + dy * sun[1] + dz * sun[2]
@@ -464,22 +477,25 @@ def make_light(sc):
         ez = max(0.0, abs(z - op[2]) - op[3])
         sky = math.exp(-ex * ex / 30.0) * math.exp(-ez * ez / 14.0) * (0.45 + 0.55 * min(1.0, max(0.0, (y - 1.0) / 9.0)))
         # lo alto, alrededor del hueco: le da el sol de lleno (las hojas de arriba, verde amarillo)
-        crown = math.exp(-ex * ex / 40.0) * math.exp(-ez * ez / 8.0) * smooth(5.5, 8.5, y)
+        crown = math.exp(-ex * ex / 140.0) * math.exp(-ez * ez / 30.0) * smooth(4.5, 8.0, y)
         # el agua turquesa alumbra desde abajo lo que tiene cerca
         px = max(0.0, abs(x - 0.5) - (pb[0] + 0.5))
         pz = max(0.0, pb[1] - z, z - pb[2] - 1)
         pool = math.exp(-(px * px + pz * pz) / 3.0) * min(1.0, max(0.0, (3.4 - y) / 3.0))
+        beam *= facing
+        sky *= above
+        crown *= above
         r = AMB[0] + BEAM_C[0] * beam + SKY_C[0] * sky + POOL_C[0] * pool + CROWN_C[0] * crown
         g = AMB[1] + BEAM_C[1] * beam + SKY_C[1] * sky + POOL_C[1] * pool + CROWN_C[1] * crown
         b = AMB[2] + BEAM_C[2] * beam + SKY_C[2] * sky + POOL_C[2] * pool + CROWN_C[2] * crown
         for l in grid.get((int(math.floor(x / 4)), int(math.floor(y / 4)), int(math.floor(z / 4))), ()):
             ddx, ddy, ddz = x - l[0], y - l[1], z - l[2]
             d2 = ddx * ddx + ddy * ddy + ddz * ddz
-            reach = 3.5 * l[6] + 1.5
+            reach = 2.2 * l[6] + 1.0
             if d2 >= reach * reach:
                 continue
             kk = 1.0 - math.sqrt(d2) / reach
-            kk = kk * kk * min(1.2, l[6] + 0.3)
+            kk = kk * kk * min(1.0, l[6] + 0.2) * 0.85
             r += l[3] * kk
             g += l[4] * kk
             b += l[5] * kk
@@ -548,24 +564,24 @@ def effects(fx, t, lights, power=1.0):
             continue
         flick = 0.82 + 0.18 * math.sin(t * (0.07 + hsh(i, 171) * 0.08) + i)
         s = l[6]
-        fx.glow(l[0], l[1], l[2], 0.75 * s + 0.2, l[3], l[4], l[5], 0.32 * flick * min(1.0, s + 0.3))
-        fx.glow(l[0], l[1], l[2], 0.18 * s + 0.08, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.45 * flick)
+        fx.glow(l[0], l[1], l[2], 0.75 * s + 0.2, l[3], l[4], l[5], (0.32 + 0.1 * min(1.0, s - 0.5)) * flick * min(1.0, s + 0.3))
+        fx.glow(l[0], l[1], l[2], 0.24 * s + 0.08, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.6 * flick)
     # el haz (CinematicFx.sunShafts): halo ancho, la columna con el borde marcado, el núcleo claro y vetas
-    r, g, b = 1.0, 0.93, 0.70
+    r, g, b = 1.0, 0.97, 0.84
     base = np.array([c[0], c[1] - 0.3, c[2]])
     top = base + sun * 26.0
     br = 0.88 + 0.12 * math.sin(t * 0.05)
     mid = base + sun * 9.0
-    fx.band(base, mid, 3.4, 3.4, r, g, b, 0.02 * power * br, 0.04 * power * br)
-    fx.band(mid, top, 3.4, 3.0, r, g, b, 0.04 * power * br, 0.07 * power * br)
-    fx.band(base, mid, 2.2, 2.3, r, g, b, 0.04 * power * br, 0.07 * power * br, 0.16, 0.84)
-    fx.band(mid, top, 2.3, 2.3, r, g, b, 0.07 * power * br, 0.12 * power * br, 0.16, 0.84)
-    fx.band(mid, top, 1.0, 1.2, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.04 * power, 0.12 * power, 0.12, 0.88)
+    fx.band(base, mid, 3.4, 3.4, r, g, b, 0.02 * power * br, 0.03 * power * br)
+    fx.band(mid, top, 3.4, 3.0, r, g, b, 0.03 * power * br, 0.05 * power * br)
+    fx.band(base, mid, 2.2, 2.3, r, g, b, 0.03 * power * br, 0.05 * power * br, 0.16, 0.84)
+    fx.band(mid, top, 2.3, 2.3, r, g, b, 0.05 * power * br, 0.08 * power * br, 0.16, 0.84)
+    fx.band(mid, top, 1.0, 1.2, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.03 * power, 0.08 * power, 0.12, 0.88)
     # el sol que entra por el hueco: un foco blanco cálido donde el haz sale de las copas
     src = np.array(an['sunspot'][:3])
-    fx.glow(*src, 4.0, 1.0, 0.97, 0.85, 0.5 * power)
-    fx.glow(*src, 1.8, 1.0, 1.0, 0.94, 0.95 * power)
-    fx.glow(*src, 0.8, 1.0, 1.0, 1.0, 1.0 * power)
+    fx.glow(*src, 3.0, 1.0, 0.90, 0.55, 0.8 * power)
+    fx.glow(*src, 1.5, 1.0, 0.95, 0.70, 1.0 * power)
+    fx.glow(*src, 0.7, 1.0, 0.98, 0.85, 1.0 * power)
     for i in range(9):
         # rayos que bajan en abanico desde el foco, sobre la cascada, la escalera y el estanque
         ang = (i - 4) * 0.13 + 0.05 * math.sin(t * 0.01 + i)
@@ -573,7 +589,7 @@ def effects(fx, t, lights, power=1.0):
         d /= np.linalg.norm(d)
         L = 9.0 + hsh(i, 31) * 6.0
         life = 0.7 + 0.3 * math.sin(t * (0.02 + hsh(i, 33) * 0.02) + i * 1.7)
-        fx.band(src, src + d * L, 0.12 + hsh(i, 35) * 0.2, 0.45 + hsh(i, 37) * 0.6, 1.0, 0.96, 0.80, 0.34 * life * power, 0.0)
+        fx.band(src, src + d * L, 0.10 + hsh(i, 35) * 0.15, 0.40 + hsh(i, 37) * 0.5, 1.0, 0.96, 0.80, 0.5 * life * power, 0.0, 0.1, 0.9)
     p1 = np.cross(sun, [0, 1, 0])
     p1 /= np.linalg.norm(p1)
     p2 = np.cross(sun, p1)
@@ -599,7 +615,7 @@ def effects(fx, t, lights, power=1.0):
         a = 0.13 * life * power
         fx.band(b0, b0 + d * (11.0 + hsh(i, 23) * 4.0), 0.35 + hsh(i, 25) * 0.6, 0.9 + hsh(i, 27) * 0.9, 1, 0.95, 0.78, a, 0.0)
     # donde cae el haz: el charco de luz en el altar y en el agua
-    fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.36 * power)
+    fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.12 * power)
     fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.16 * power)
     # espuma al pie de las cascadas de los lados (CinematicFx.waterfallLights)
     for k, sp in enumerate(S.spring_points()):
