@@ -41,7 +41,7 @@ THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.45   # los de ScenePost y C
 CRATE_TINT = (0.86, 0.84, 0.80)
 BARS = 0.035                       # las franjas de cine (CrateCinematicScreen.overlay)
 # la luz de la escena (SanctuaryScene.light): ambiente, haz, luz del hueco, rebote del agua
-AMB = (0.14, 0.21, 0.26)
+AMB = (0.24, 0.34, 0.42)
 BEAM_C = (0.85, 0.80, 0.60)
 SKY_C = (0.22, 0.26, 0.24)
 POOL_C = (0.02, 0.20, 0.24)
@@ -243,8 +243,12 @@ class Mesher:
         self.tex_list = []
         self.cache = {}
         self.full = np.zeros(len(sc.pal), bool)
+        # lo que oscurece las esquinas en la oclusión ambiental del juego (getShadeBrightness 0,2: lo que choca como un
+        # bloque entero; las hojas también, aunque no tapen caras)
+        self.occ = np.zeros(len(sc.pal), bool)
         for i, st in enumerate(sc.pal):
             self.full[i] = self.is_full(st)
+            self.occ[i] = self.full[i] or 'leaves' in st.split('[')[0]
 
     def tex(self, ref):
         if ref not in self.tex_index:
@@ -314,9 +318,10 @@ def build_mesh(sc, assets, light):
             return False
         return me.full[a[x - S.X0, y - S.Y0, z - S.Z0]]
 
-    def is_water(x, y, z):
-        st = sc.get(x, y, z)
-        return st.startswith('minecraft:water') or 'waterlogged=true' in st
+    def occat(x, y, z):
+        if not sc.inside(x, y, z):
+            return False
+        return me.occ[a[x - S.X0, y - S.Y0, z - S.Z0]]
 
     for (i, j, k) in np.argwhere(a != 0):
         st = sc.pal[a[i, j, k]]
@@ -339,7 +344,8 @@ def build_mesh(sc, assets, light):
                     ao = 1.0
                 else:
                     l = light(wx, wy, wz, nrm)
-                    ao = occlusion(fullat, x, y, z, cull, p) if cull is not None else 1.0
+                    # (las caras sin cara de corte —pétalos, flores— sin oclusión: en el juego la de abajo ni se ve)
+                    ao = occlusion(occat, x, y, z, cull, p) if cull is not None else 1.0
                 vs.append((wx, wy, wz, ti, u, v, tr * shade * l[0] * ao, tg * shade * l[1] * ao, tb * shade * l[2] * ao, 1.0))
             for q in (0, 1, 2, 0, 2, 3):
                 solid.append(vs[q])
@@ -564,8 +570,8 @@ def effects(fx, t, lights, power=1.0):
             continue
         flick = 0.82 + 0.18 * math.sin(t * (0.07 + hsh(i, 171) * 0.08) + i)
         s = l[6]
-        fx.glow(l[0], l[1], l[2], 0.75 * s + 0.2, l[3], l[4], l[5], (0.32 + 0.1 * min(1.0, s - 0.5)) * flick * min(1.0, s + 0.3))
-        fx.glow(l[0], l[1], l[2], 0.24 * s + 0.08, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.6 * flick)
+        fx.glow(l[0], l[1], l[2], 0.42 * s + 0.12, l[3], l[4], l[5], 0.26 * flick * min(1.0, s + 0.3))
+        fx.glow(l[0], l[1], l[2], 0.18 * s + 0.06, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.5 * flick)
     # el haz (CinematicFx.sunShafts): halo ancho, la columna con el borde marcado, el núcleo claro y vetas
     r, g, b = 1.0, 0.97, 0.84
     base = np.array([c[0], c[1] - 0.3, c[2]])
@@ -589,7 +595,7 @@ def effects(fx, t, lights, power=1.0):
         d /= np.linalg.norm(d)
         L = 9.0 + hsh(i, 31) * 6.0
         life = 0.7 + 0.3 * math.sin(t * (0.02 + hsh(i, 33) * 0.02) + i * 1.7)
-        fx.band(src, src + d * L, 0.10 + hsh(i, 35) * 0.15, 0.40 + hsh(i, 37) * 0.5, 1.0, 0.96, 0.80, 0.5 * life * power, 0.0, 0.1, 0.9)
+        fx.band(src, src + d * L, 0.14 + hsh(i, 35) * 0.18, 0.55 + hsh(i, 37) * 0.6, 1.0, 0.96, 0.80, 0.42 * life * power, 0.0)
     p1 = np.cross(sun, [0, 1, 0])
     p1 /= np.linalg.norm(p1)
     p2 = np.cross(sun, p1)
@@ -650,6 +656,28 @@ def effects(fx, t, lights, power=1.0):
         y = 0.6 + hsh(i, 199) * 6.0
         fx.glow(x, y, z, 0.13, 0.85, 1.0, 0.6, 0.40 * on)
         fx.glow(x, y, z, 0.035, 1, 1, 0.85, 0.85 * on)
+    # las hadas (CinematicFx.fairies: la luz; las alas no): chispitas de colores con su estela
+    FAIRY = (0xFFB8E8, 0x9FF3FF, 0xFFE59A, 0xD8B4FF, 0xB8FFC8, 0xFFFFFF, 0xFF9FD0, 0xA8D8FF, 0xFFD2A0, 0xE0C0FF)
+
+    def fairy_at(i, tt):
+        sp = 0.010 + hsh(i, 173) * 0.012
+        a = tt * sp + hsh(i, 175) * 6.2832
+        R = 3.2 + hsh(i, 177) * 5.0 + 1.4 * math.sin(tt * 0.007 + i)
+        x = c[0] + math.cos(a) * R + math.sin(a * 2.7 + i) * 0.9
+        z = c[2] + math.sin(a) * R * 0.85 - 1.5 + math.cos(a * 1.9) * 0.8
+        y = 1.6 + hsh(i, 179) * 3.6 + 0.8 * math.sin(a * 3.1 + i) + 0.25 * math.sin(tt * 0.21 + i * 1.3)
+        return x, y, z
+    for i in range(10):
+        x, y, z = fairy_at(i, t)
+        rr, gg, bb = rgb(FAIRY[i])
+        pulse = 0.8 + 0.2 * math.sin(t * 0.6 + i * 2.0)
+        fx.glow(x, y, z, 0.22 * pulse, rr, gg, bb, 0.45)
+        fx.glow(x, y, z, 0.07, 1, 1, 1, 0.9)
+        for k in range(1, 13):
+            qx, qy, qz = fairy_at(i, t - k * 0.9)
+            ff = 1.0 - k / 13.0
+            fx.glow(qx + (hsh(i * 31 + k, 181) - 0.5) * 0.12, qy + (hsh(i * 31 + k, 183) - 0.5) * 0.12 - k * 0.012, qz,
+                    0.05 * ff + 0.02, (rr + 1) / 2, (gg + 1) / 2, (bb + 1) / 2, 0.6 * ff)
     # la bruma baja sobre el agua
     for i in range(26):
         x = -9.0 + hsh(i, 201) * 18.0

@@ -47,9 +47,11 @@ Las medidas de la escena salen de tratar la foto como una cámara (un nenúfar m
 cascada alta a 17. Los colores se compararon **por tipo de cosa** (agua turquesa, hojas, piedra, faroles y sol, rosa,
 sombras: el color medio y el brillo del 90 %) entre la foto y la vista previa, y se cambió la luz y los shaders hasta
 que coincidieran (con un guion de comparación en el scratchpad de la sesión; vuelve a hacerlo si se cambia algo).
-Resultado al dejarlo (foto → vista previa, tick 0): imagen entera (56,105,97) → (55,100,92); agua (27,168,182) →
-(28,161,186); hojas (43,80,39) → (44,84,40); faroles (188,144,63) → (186,142,49); rosa (181,74,148) → (170,82,129);
-sombras (17,24,18) → (19,25,18); la piedra queda algo más clara (76,81,80) → (89,104,94).
+Resultado al dejarlo (foto → vista previa, tick 0, con la oclusión de las hojas como en el juego): imagen entera
+(56,105,97) → (50,102,94); agua (27,168,182) → (35,179,202); hojas (43,80,39) → (38,84,35); faroles (188,144,63) →
+(213,160,40); rosa (181,74,148) → (199,96,169); sombras (17,24,18) y 11,5 % de la imagen → (18,24,17) y 11,8 %; luz
+media 0,321 → 0,325; saturación 0,615 → 0,640; contraste local 0,081 → 0,085; nitidez 0,095 → 0,090. La piedra queda
+algo más clara (76,81,80) → (94,105,98).
 
 Lo que se encontró por el camino (y no hay que volver a romper):
 - **Todo borroso en el juego**: `renderScene` borraba la profundidad de la textura de la escena antes del shader (el
@@ -65,6 +67,15 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **Los faroles** alumbraban 6,75 bloques (todo amarillo): ahora un charco de luz de ~4.
 - **La luz según la cara**: el haz y la luz del hueco vienen de arriba y de atrás; lo que mira a la cámara recibe poca
   (el altar y los pilares, en sombra por delante, como en la imagen). `SanctuaryScene.light(x, y, z, nx, ny, nz, …)`.
+- **Plano y borroso** (el dueño: «no veo mejoría en saturación, contraste»): con los colores medios iguales, el contraste
+  local era un 30 % menor y la nitidez un 40 % menor que en su imagen. Se quitó la profundidad de campo del fondo y el
+  shader final tiene «claridad» (la imagen menos su versión desenfocada).
+- **En el juego más oscuro que en la vista previa**: el juego oscurece las esquinas también con las hojas (oclusión
+  ambiental: lo que choca como un bloque entero); la vista previa ahora lo hace igual (`Mesher.occ`).
+- **Discos y burbujas en el juego**: los halos de los faroles (1,3 bloques) y las hadas (orbes de un bloque) salían como
+  discos con aro (la «claridad» les dibuja el borde). Ahora son pequeños; los rayos en abanico, con el borde suave.
+- **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
+  y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
 
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
 dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con

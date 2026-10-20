@@ -36,7 +36,7 @@ void main() {
     vec3 blurred = texture(BlurSampler, uv).rgb;
     // contraste local («claridad»): se separa la imagen de su versión desenfocada (la imagen del dueño tiene un 30 % más
     // de contraste local y un 40 % más de nitidez que sin esto)
-    c = max(c + (c - blurred) * 0.55, 0.0);
+    c = max(c + (c - blurred) * 0.42, 0.0);
     c = mix(c, blurred, coc);
     vec3 b = texture(BloomSampler, uv).rgb;
     vec3 rays = vec3(0.0);

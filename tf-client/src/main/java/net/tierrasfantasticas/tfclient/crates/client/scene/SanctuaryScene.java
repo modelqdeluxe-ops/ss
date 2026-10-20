@@ -199,7 +199,7 @@ public final class SanctuaryScene {
     }
 
     /** La luz de la escena: ambiente, haz, la luz del hueco, el sol de lleno arriba y el rebote del agua (r, g, b). */
-    private static final float[] AMB = {0.14F, 0.21F, 0.26F}, BEAM_C = {0.85F, 0.80F, 0.60F}, SKY_C = {0.22F, 0.26F, 0.24F},
+    private static final float[] AMB = {0.24F, 0.34F, 0.42F}, BEAM_C = {0.85F, 0.80F, 0.60F}, SKY_C = {0.22F, 0.26F, 0.24F},
             POOL_C = {0.02F, 0.20F, 0.24F}, CROWN_C = {0.70F, 0.80F, 0.42F};
 
     static float smooth(float a, float b, float x) {

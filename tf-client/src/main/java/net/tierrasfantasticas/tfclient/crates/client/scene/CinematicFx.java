@@ -158,8 +158,8 @@ public final class CinematicFx {
             Vector3f d = new Vector3f((float)Math.sin(ang) * 0.9F, -1.0F, 0.55F + 0.25F * hash(i, 29)).normalize();
             float len = 9.0F + hash(i, 31) * 6.0F;
             float life = 0.7F + 0.3F * (float)Math.sin(t * (0.02F + hash(i, 33) * 0.02F) + i * 1.7F);
-            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.10F + hash(i, 35) * 0.15F, 0.40F + hash(i, 37) * 0.5F, 1.0F, 0.96F, 0.80F,
-                    0.5F * life * power, 0.0F, 0.1F, 0.9F);
+            band(vc, v, src, new Vector3f(src).add(d.mul(len)), 0.14F + hash(i, 35) * 0.18F, 0.55F + hash(i, 37) * 0.6F, 1.0F, 0.96F, 0.80F,
+                    0.42F * life * power, 0.0F);
         }
         // vetas finas que se mueven dentro del haz
         Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
@@ -567,9 +567,9 @@ public final class CinematicFx {
             if (dx * dx + dy * dy + dz * dz > 70 * 70) continue;
             float flick = 0.82F + 0.18F * (float)Math.sin(t * (0.07F + hash(i, 171) * 0.08F) + i);
             float s = l[6];
-            float big = 0.32F + 0.1F * Math.min(1.0F, s - 0.5F);       // los faroles, un halo más vivo
-            glow(vc, v, l[0], l[1], l[2], 0.75F * s + 0.2F, l[3], l[4], l[5], big * flick * Math.min(1.0F, s + 0.3F));
-            glow(vc, v, l[0], l[1], l[2], 0.24F * s + 0.08F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.6F * flick);
+            // un halo pequeño y suave (en la imagen del dueño el brillo de los faroles es del tamaño del farol, no un disco)
+            glow(vc, v, l[0], l[1], l[2], 0.42F * s + 0.12F, l[3], l[4], l[5], 0.26F * flick * Math.min(1.0F, s + 0.3F));
+            glow(vc, v, l[0], l[1], l[2], 0.18F * s + 0.06F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.5F * flick);
         }
     }
 
@@ -613,9 +613,10 @@ public final class CinematicFx {
                 continue;
             }
             VertexConsumer glowVc = vc;
+            // (chispitas, no orbes: en la imagen del dueño solo hay puntitos de luz)
             float pulse = 0.8F + 0.2F * (float)Math.sin(t * 0.6F + i * 2.0F);
-            glow(glowVc, v, p.x, p.y, p.z, 0.5F * pulse * (1 + excite * 0.4F), r, g, b, 0.55F);
-            glow(glowVc, v, p.x, p.y, p.z, 0.12F, 1, 1, 1, 0.95F);
+            glow(glowVc, v, p.x, p.y, p.z, 0.22F * pulse * (1 + excite * 0.4F), r, g, b, 0.45F);
+            glow(glowVc, v, p.x, p.y, p.z, 0.07F, 1, 1, 1, 0.9F);
             for (int k = 1; k <= 12; k++) {
                 Vector3f q = fairyAt(sc, i, t - k * 0.9F);
                 float f = 1.0F - k / 13.0F;
