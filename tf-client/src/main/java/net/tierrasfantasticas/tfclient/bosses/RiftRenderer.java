@@ -404,7 +404,7 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
                 case RiftEntity.READY -> "Golpea el cristal para despertarlo";
                 case RiftEntity.WAKING -> "¡Despierta!";
                 case RiftEntity.FIGHT -> "Incursión en curso";
-                default -> "Vuelve en " + Rifts.time(e.left());
+                default -> e.left() < 0 ? "Apagada: el staff encenderá la siguiente" : "Vuelve en " + Rifts.time(e.left());
             };
             lines.add(Component.literal(state).withStyle(s -> s.withColor(TextColor.fromRgb(st == RiftEntity.WAKING ? 0xFF6A6A : 0xD8D8E0))));
         }

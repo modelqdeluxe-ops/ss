@@ -2,7 +2,8 @@
 
     python3 -I tools/void/caballeros.py [--ver carpeta]
 
-El dueño: «busca skins o modelos de caballeros sacros para que pongas en ese santuario, que tenga vida, con diálogos».
+El dueño: «busca skins o modelos de caballeros sacros para que pongas en ese santuario, que tenga vida, con diálogos»
+(y, en la 1.3.98, «no todos los caballeros deben tener el mismo color»).
 El pack de NPCs de donde salió Caelthar (NPCs For Mini Games vol. 1) está cifrado en el repo y no trae otros caballeros
 a mano, así que los demás caballeros de la Orden son su mismo modelo (vacio.caballero) con la armadura de otro metal:
 la textura de Caelthar (oro) se repinta por luminosidad con la rampa de cada uno (lo dorado; lo demás, igual). Las alas
@@ -22,13 +23,14 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient'))
 MODEL = os.path.join(RES, 'bosses', 'models', 'vacio.caballero.json')
-# metal → la rampa (oscuro, medio, claro)
+# metal → la rampa (oscuro, medio, claro). 1.3.98 (el dueño: «no todos los caballeros deben tener el mismo color»): cada
+# uno de un tono bien distinto (el bronce, el rosa y el marfil de la 1.3.97 se parecían al oro de Caelthar)
 METALES = {
-    'plata': ((38, 42, 54), (128, 138, 158), (232, 238, 250)),
-    'acero': ((20, 30, 54), (72, 104, 156), (178, 206, 244)),
-    'bronce': ((46, 24, 12), (156, 88, 42), (246, 188, 116)),
-    'rosa': ((60, 22, 40), (196, 98, 136), (255, 210, 226)),
-    'marfil': ((92, 80, 66), (214, 202, 184), (255, 251, 240)),
+    'plata': ((34, 38, 52), (150, 160, 182), (242, 246, 255)),
+    'azur': ((8, 16, 58), (38, 82, 196), (156, 204, 255)),
+    'onice': ((12, 6, 20), (60, 38, 92), (188, 150, 240)),
+    'jade': ((4, 30, 20), (26, 142, 90), (176, 255, 206)),
+    'carmesi': ((36, 4, 10), (172, 28, 48), (255, 156, 150)),
 }
 
 

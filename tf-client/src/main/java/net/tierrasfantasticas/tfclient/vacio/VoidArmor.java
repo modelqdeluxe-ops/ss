@@ -220,9 +220,16 @@ public final class VoidArmor {
         level.sendParticles(AURA, a.getX() + 0.5, a.getY() + 0.6, a.getZ() + 0.5, 4, 0.7, 0.6, 0.7, 0.0);
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, a.getX() + 0.5, a.getY() + 1.0, a.getZ() + 0.5, 3, 0.5, 0.8, 0.5, 0.01);
         if (!here.isEmpty()) {
-            // (1.3.97) de pie en el suelo del altar: el de la 1.3.96 estaba un bloque más arriba, sobre un pedestal
+            // (1.3.97) de pie en el suelo del altar: el de la 1.3.96 estaba un bloque más arriba, sobre un pedestal.
+            // (1.3.98, el dueño: «el stand de armadura del vacío está saltando»: «NoGravity» iba en
+            // readAdditionalSaveData, que no lo lee (lo lee Entity.load): caía y aquí se le subía otra vez, a saltos.
+            // Ahora sin gravedad de verdad y solo se recoloca si se ha ido de su sitio)
             ArmorStand s = here.get(0);
-            if (s.position().distanceToSqr(a.getX() + 0.5, a.getY(), a.getZ() + 0.5) > 0.01) s.moveTo(a.getX() + 0.5, a.getY(), a.getZ() + 0.5, 0F, 0F);
+            if (!s.isNoGravity()) s.setNoGravity(true);
+            if (s.position().distanceToSqr(a.getX() + 0.5, a.getY(), a.getZ() + 0.5) > 0.25) {
+                s.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                s.moveTo(a.getX() + 0.5, a.getY(), a.getZ() + 0.5, 0F, 0F);
+            }
             return;
         }
         ArmorStand s = EntityType.ARMOR_STAND.create(level);
@@ -237,6 +244,7 @@ public final class VoidArmor {
         tag.putBoolean("Invulnerable", true);
         tag.putInt("DisabledSlots", 4144959);
         s.readAdditionalSaveData(tag);
+        s.setNoGravity(true);
         s.setInvulnerable(true);
         s.setRightArmPose(new Rotations(-20F, 0F, 10F));
         s.setLeftArmPose(new Rotations(-10F, 0F, -10F));

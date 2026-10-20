@@ -39,8 +39,9 @@ import org.lwjgl.glfw.GLFW;
  *   <li>Su nombre en Cinzel dorada con contorno, rasterizada al tamaño real de la pantalla (font/cinzel_N: un píxel
  *   de letra por píxel de pantalla). Antes iba en negrita a ×1,7: la negrita de una letra TTF se dibuja dos veces
  *   desplazada y, escalada, se veía corrida y borrosa. A los lados, dos hilos de oro que se apagan.</li>
- *   <li>El texto se escribe a {@link #CPS} letras por segundo (antes 34, por ticks: a saltos) y entra con un fundido;
- *   clic, espacio o intro lo muestran entero.</li>
+ *   <li>El texto se escribe a {@link #CPS} letras por segundo (antes 34, por ticks: a saltos; 55 hasta la 1.3.97: el
+ *   dueño, «las letras de los diálogos van lentas aún») y entra con un fundido; clic, espacio o intro lo muestran
+ *   entero.</li>
  *   <li>Las respuestas, en pastillas redondeadas con su número, que se encienden con el ratón (o 1, 2, 3).</li>
  *   <li>Sin el retrato (el caballero ya está delante) y sin sonidos de amatista: los suaves del TF Pad (al abrir, al
  *   pasar por una respuesta y al elegirla).</li>
@@ -49,7 +50,7 @@ import org.lwjgl.glfw.GLFW;
 @OnlyIn(Dist.CLIENT)
 public class KnightScreen extends Screen {
     /** Letras por segundo del texto que se escribe. */
-    private static final float CPS = 55F;
+    private static final float CPS = 120F;
     private static final int GOLD = 0xFFE9C46E, GOLD_HI = 0xFFFFE7A0, GOLD_DARK = 0xFF3A2306, TEXT = 0xFFF1ECFF, SUB = 0xFFB9A6E8,
             HINT = 0xFF8C7BB0;
 
