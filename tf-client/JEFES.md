@@ -1069,6 +1069,17 @@ propia) y 45 s en el Páramo con la aparición natural. (La vida del jugador de 
 corrosión se cuenta por sus golpes. Con shaders el cliente va a ~4 fotogramas por segundo y Minecraft no dibuja las
 entidades de un trozo de mundo sin construir: las capturas de cosas recién vistas esperan unos segundos.)
 
+Lo que dio la segunda ronda (d4c4948 → 38e4bc3, sin shaders): **la fauna**, las 12 con su modelo, persiguen, golpean y
+se animan con lo suyo (p. ej. el Enderbruiser: idle, walk, smash, toss; el Watchman: lantern_push, summon_wraiths; el
+Endermauler potenciado: scream_of_ender), el Enderling suelta 1 perla y 1 Tela del Vacío, y en 45 s salen solas una de
+cada (sus reglas: una por tipo cerca); **el Void**, de la grieta sale la Abominación y persigue hasta 2,4 bloques del
+jugador sin pasar de 5 del borde; tras 30 s fuera de la luz, 20 % de corrosión; en el pozo, 0 → 67 de luz en 2 s y un
+eco; al máximo, 2 golpes en 6,5 s; con 4 jefes no hay armadura y con 5 da 18 objetos; con ella puesta, 0 %; el soporte
+del altar con las cuatro piezas; pasar por el portal sin pararse no lleva y quedarse, 1 viaje, a 0,0 bloques de la
+llegada; el rescate, Caelthar y la vuelta al Overworld a 0,0 bloques. Lo que encontró la primera (d4c4948): el portal en
+el camino (se llevaba a la prueba: «3 viajes», la grieta «no sacaba a nadie», la persecución en y = 0), Caelthar buscado a
+16 bloques (el santuario es más grande) y la corrosión que no se veía.
+
 Lo que dio la primera ronda (dbbc0b7 sin shaders; 95f1dc5 con **Photon v1.3b**): viaje de ida 12,4–12,5 s con el Nether,
 el End y el Void de verdad en el túnel; el rescate al caer, al santuario en 2–7 ticks; la vuelta, a 0,0 bloques de donde se
 salió; la grieta del cielo, el ciclo entero. **Con Photon, la grieta del cielo sin barras blancas** (lo casi blanco del
