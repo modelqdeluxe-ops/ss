@@ -949,7 +949,9 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
             CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
             float[] c = sc.anchor("crate");
-            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.25F + 0.4F * pulseAt(t, REVEAL, 24.0F)
+            // (al salir el premio el pilar se apaga del todo: es una caja de luz y, detrás del premio, se veía como un
+            // cuadrado de color pegado a él; el dueño: «que no traspase ese brillo al item»)
+            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.3F * (1.0F - smooth(REVEAL, REVEAL + 8, t))
                     : t >= RING0 ? 1.0F - 0.7F * smooth(RING0, RING1, t) : 1.0F);
             if (t > TOTAL - 20) pillar *= Math.max(0.0F, (TOTAL - t) / 20.0F) * 0.5F + 0.5F;
             CinematicFx.pillar(glow, fv, c[0], c[1] + crateH * 0.75F, c[2], 9.0F, pillar, t, rarityColor);
@@ -1095,6 +1097,9 @@ public class CrateCinematicScreen extends Screen {
             // (sobrio: el dueño, «el mensaje de abajo es demasiado exagerado»: sin caja ni rayas, sin negrita ni estrellas;
             // el nombre del premio un poco más grande y la rareza pequeña, en su color)
             int y0 = h - barH - 46;
+            // (para que se lea sin caja: un degradado oscuro suave desde abajo)
+            int sh = (int)(a * 120) << 24;
+            g.fillGradient(0, y0 - 24, w, h - barH, 0x00000000, sh);
             int rc = winnerRarity.rgb() & 0xFFFFFF;
             int soft = (((((rc >> 16) & 255) + 255) / 2) << 16) | (((((rc >> 8) & 255) + 255) / 2) << 8) | (((rc & 255) + 255) / 2);
             drawScaled(g, "¡Has recibido!", w / 2, y0, 0.85F, withAlpha(0xD8D8D8, a * 0.85F));
