@@ -34,9 +34,13 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * <p>1.3.97: el Void entero en roca del Vacío (sin lana, tierra ni piedra del End), los Fragmentos del Alba Rota cuatro veces
  * más grandes, el santuario más al norte y la Llegada donde estaba el Umbral: la caja (617 × 958) contiene la de antes y
  * se rehace entera (versión 5; ~2300 chunks, unos 4 minutos la primera vez).
+ *
+ * <p>1.3.98: la isla de la grieta con relieve y decorada, sin la «iglesia» y con un Ancla del Alba a 56 bloques de la
+ * grieta; la Llegada y el portal rellenos por debajo, escalones al final del Puente de Luz y nada suelto al aire
+ * (tools/void/isla_grieta.py, isla_alba.limpiar): versión 6.
  */
 final class IslandUpdate {
-    static final int VERSION = 5;
+    static final int VERSION = 6;
     private static final int PER_TICK = 128;
     /** Lo que ocupaba la isla de la 1.3.88-1.3.89 (x, z del mundo; con margen). */
     private static final int OLD_X0 = -61, OLD_X1 = 140, OLD_Z0 = -163, OLD_Z1 = 97;

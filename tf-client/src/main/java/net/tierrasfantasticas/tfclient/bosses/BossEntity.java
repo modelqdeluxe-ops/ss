@@ -419,7 +419,12 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public double smart() {
-        return difficulty.smart();
+        // (1.3.98) La fauna, sin el cerebro de los jefes (SkillBrain): como en MythicMobs, va derecha a por su objetivo
+        // (meleeattack, movetowardstarget) y sus skills salen con sus disparadores. Con el cerebro se ponía a la distancia
+        // del ataque que tenía pensado y daba vueltas esperando: en la prueba, el Desgarrador plantado a 4 bloques, los
+        // espectros a 6-7 girando y el Vigía alejándose (el dueño: «son inútiles; no me siguen y se quedan bugueados en
+        // su eje»)
+        return isFauna() ? 0.0 : difficulty.smart();
     }
 
     /**

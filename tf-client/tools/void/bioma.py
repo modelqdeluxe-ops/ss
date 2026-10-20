@@ -530,22 +530,40 @@ class Biome:
         hh = rnd.randint(7, 15)
         px, pz = float(x), float(z)
         lean = (rnd.uniform(-0.18, 0.18), rnd.uniform(-0.18, 0.18))
+        prev = (x, top, z)
         for k in range(1, hh + 1):
             px += lean[0]
             pz += lean[1]
             bx, bz = int(round(px)), int(round(pz))
-            self.put(bx, top + k, bz, 'basalt[axis=y]')
+            # (1.3.98: el tronco y las ramas, cada bloque tocando al anterior por una cara; antes, al torcerse o en
+            # diagonal, quedaban trozos al aire: «bloques que quedan volando»)
+            self.line(prev, (bx, top + k, bz), 'basalt[axis=y]')
+            prev = (bx, top + k, bz)
             if k < 3 and hh > 10:
                 for dx, dz in ((1, 0), (0, 1)):
                     self.put(bx + dx, top + k, bz + dz, 'basalt[axis=y]')
             if k > hh * 0.45 and rnd.random() < 0.35:
                 ang = rnd.uniform(0, 2 * math.pi)
                 ln = rnd.randint(2, 5)
-                for s in range(1, ln + 1):
-                    ax = 'x' if abs(math.cos(ang)) > abs(math.sin(ang)) else 'z'
-                    self.put(bx + round(math.cos(ang) * s), top + k + s // 2, bz + round(math.sin(ang) * s),
-                             'polished_blackstone_wall' if s == ln else f'basalt[axis={ax}]')
+                end = (bx + round(math.cos(ang) * ln), top + k + ln // 2, bz + round(math.sin(ang) * ln))
+                self.line((bx, top + k, bz), end, 'blackstone')
+                self.put(end[0], end[1] + 1, end[2], 'polished_blackstone_wall')
         self.occupy(x, z, 3)
+
+    def line(self, a, b, block):
+        """Bloques de a a b (x, y, z), cada paso tocando al anterior por una cara."""
+        x, y, z = a
+        self.put(x, y, z, block)
+        while (x, y, z) != tuple(b):
+            dx, dy, dz = b[0] - x, b[1] - y, b[2] - z
+            ax = max((abs(dx), 0), (abs(dy), 1), (abs(dz), 2))[1]
+            if ax == 0:
+                x += 1 if dx > 0 else -1
+            elif ax == 1:
+                y += 1 if dy > 0 else -1
+            else:
+                z += 1 if dz > 0 else -1
+            self.put(x, y, z, block)
 
     def boulder(self, x, z, kind):
         rnd = self.rnd
@@ -809,8 +827,10 @@ class Biome:
             for y in range(top + 1, top + 10):
                 w.put(cx + dx, y, gz, 'deepslate_bricks' if y % 3 else 'chiseled_deepslate')
             w.put(cx + dx, top + 10, gz, 'soul_lantern[hanging=false,waterlogged=false]')
-        for dx in range(-4, 2):
-            w.put(cx + dx, top + 9, gz, 'deepslate_brick_slab[type=bottom,waterlogged=false]')
+        # (1.3.98: el dintel entero; antes iba de −4 a 1 y quedaba cojo)
+        for dx in range(-4, 5):
+            w.put(cx + dx, top + 10 if abs(dx) == 4 else top + 9, gz, 'deepslate_brick_slab[type=bottom,waterlogged=false]'
+                  if abs(dx) < 4 else 'soul_lantern[hanging=false,waterlogged=false]')
         w.put(cx - 1, top + 8, gz, 'chain[axis=y,waterlogged=false]')
         w.put(cx - 1, top + 7, gz, 'soul_lantern[hanging=true,waterlogged=false]')
         self.occupy(cx, gz, 4)

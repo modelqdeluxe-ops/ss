@@ -630,6 +630,83 @@ def bridge(w):
                 w.put(CX + dx, TOP + 2, z, 'lantern[hanging=false,waterlogged=false]')
 
 
+def bridge_steps(w):
+    """(1.3.98, el dueño: «no hay escalera al final del puente del santuario») Del tablero del Puente de Luz (a TOP) al
+    Sendero del Alba de los Fragmentos, que está más alto: escalones de cuarzo en sus últimos bloques, a lo ancho."""
+    hi = max(BRIDGE_Z0, BRIDGE_Z1)
+    zg, ground = None, None
+    for z in range(hi + 1, hi + 10):
+        t = w.top(CX, z)
+        if t is not None and t >= TOP - 4 and 'lantern' not in w.get(CX, t, z):
+            zg, ground = z, t
+            break
+    if zg is None or ground <= TOP:
+        return 0
+    diff = ground - TOP
+    # lo que hay entre el puente y el suelo, al nivel del suelo
+    for z in range(hi + 1, zg):
+        for dx in range(-2, 3):
+            for y in range(TOP, ground):
+                w.put(CX + dx, y, z, 'quartz_bricks')
+            w.put(CX + dx, ground, z, 'smooth_quartz')
+            for y in range(ground + 1, ground + 5):
+                w.put(CX + dx, y, z, None)
+    stair = 'smooth_quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'
+    for k in range(1, diff + 1):
+        z = hi - (diff - k)
+        for dx in range(-2, 3):
+            for y in range(TOP + 1, TOP + k):
+                w.put(CX + dx, y, z, 'quartz_bricks')
+            w.put(CX + dx, TOP + k, z, stair)
+            for y in range(TOP + k + 1, TOP + k + 5):
+                w.put(CX + dx, y, z, None)
+    return diff
+
+
+# lo que necesita un bloque debajo (o encima, si cuelga) para no quedarse en el aire
+_BELOW = ('candle', 'amethyst_cluster[facing=up', 'amethyst_bud[facing=up', 'hanging=false', 'torch', 'pink_petals',
+          'lily_of_the_valley', 'tulip', 'oxeye_daisy', 'azure_bluet', 'allium', 'cornflower', 'dandelion', 'poppy',
+          'sapling', 'flowering_azalea', 'azalea[', 'moss_carpet', 'carpet', 'short_grass', 'fern', 'sea_pickle')
+_ABOVE = ('hanging=true', 'amethyst_cluster[facing=down', 'amethyst_bud[facing=down')
+
+
+def limpiar(w, small=60):
+    """(1.3.98, el dueño: «algunos bloques y objetos quedan volando, no eres preciso en construcción») Al acabar: fuera
+    los trozos sueltos de menos de «small» bloques que no tocan nada por una cara (lo que solo toca en diagonal también
+    se ve al aire: ramas, muros, cadenas, velas, hojas...) y lo que necesita apoyo y no lo tiene (velas, faroles, racimos, flores; los faroles colgados, sin nada
+    encima). Los islotes que flotan a propósito son mucho más grandes y se quedan."""
+    from scipy import ndimage
+    d = w.d
+    g = d['g']
+    names = d['names']
+    is_light = np.array([n.startswith('minecraft:light') for n in names])
+    solid = (g != 0) & ~is_light[g]
+    lab, n = ndimage.label(solid)
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 1 << 30
+    gone = sizes[lab] < small
+    removed = int(gone.sum())
+    g[gone] = 0
+    del lab, gone
+    below = np.array([any(k in nm for k in _BELOW) and 'wall_torch' not in nm for nm in names])
+    above = np.array([any(k in nm for k in _ABOVE) for nm in names])
+    for _ in range(3):
+        air = (g == 0) | is_light[g]
+        nb = np.zeros_like(air)
+        nb[1:] = air[:-1]
+        na = np.zeros_like(air)
+        na[:-1] = air[1:]
+        na[-1] = True
+        nb[0] = True
+        bad = (below[g] & nb) | (above[g] & na)
+        k = int(bad.sum())
+        if not k:
+            break
+        g[bad] = 0
+        removed += k
+    return removed
+
+
 def lights(w):
     """Luz invisible por el santuario y el Puente de Luz."""
     for x in range(CX - R, CX + R + 1, 4):
@@ -680,6 +757,12 @@ def portal(w):
             for y in range(py, py + 12):
                 put(a, y, b, None)
             put(a, py - 1, b, 'chiseled_quartz_block' if abs(a) <= 2 and b == 0 else 'quartz_bricks')
+            # (1.3.98) sus cimientos, hasta el suelo (antes la losa quedaba al aire por los lados)
+            x, z = (px + a, pz + b) if along_x else (px + b, pz + a)
+            for y in range(py - 2, py - 30, -1):
+                if w.get(x, y, z) != 'minecraft:air':
+                    break
+                w.put(x, y, z, 'polished_deepslate' if y >= py - 3 else 'deepslate')
     for a in (-3, 3):
         put(a, py, 0, 'chiseled_quartz_block')
         for y in range(py + 1, py + 8):
@@ -731,7 +814,11 @@ def llegada(w):
             k = int(round((math.atan2(z - lz, x - lx) % (2 * math.pi)) / (2 * math.pi) * 32)) % 32
             far = ring.get(k) or ly
             t = ly if d <= rad else round(ly + (far - ly) * smooth01((d - rad) / (outer - rad)))
-            for y in range(56, t):
+            # (1.3.98, el dueño: «la zona del portal tiene huecos debajo»: se rellenaba desde y 56 y lo de debajo de la
+            # isla del dueño no siempre llegaba ahí) hasta la roca que haya debajo; si no hay, acaba en punta
+            below = next((y for y in range(t - 1, 14, -1) if w.get(x, y, z) != 'minecraft:air'), None)
+            bottom = below + 1 if below is not None and t - below < 50 else t - int(3 + (outer - d) * 1.6)
+            for y in range(bottom, t):
                 w.put(x, y, z, 'deepslate' if hash2(x, z, y) < 0.6 else 'tuff')
             if d <= rad:
                 if d <= 1.5:
@@ -883,10 +970,12 @@ def apply(d):
     import paleta
     w = World(d)
     # (1.3.97) la isla del dueño, a roca del Vacío; el Umbral fuera y la Llegada en su sitio
+    import isla_grieta
     paleta.repaletar(w)
     llegada(w)
-    frags, spacing = fragments(w, d['rift'])
     portal(w)
+    # (1.3.98) la isla de la grieta: sin la «iglesia», con relieve, decorada y sus dos Anclas (una a ~55 de la grieta)
+    frags, spacing = isla_grieta.run(w, d['rift'], LANDING, PORTAL, anchor_floor)
     biome = bioma.Biome(w)
     biome_wells, fauna = biome.run(main_ground(w), FRAG_LIGHT)
     island(w)
@@ -901,7 +990,9 @@ def apply(d):
     gate(w)
     islets(w)
     bridge(w)
+    bridge_steps(w)
     lights(w)
+    limpiar(w)
     d['knight'] = (CX, TOP + 2, CZ)
     # se llega dentro de la Puerta del Alba, mirando al templo y a Caelthar (al norte)
     d['arrive'] = (CX, TOP + 1, CZ + R - 6)
