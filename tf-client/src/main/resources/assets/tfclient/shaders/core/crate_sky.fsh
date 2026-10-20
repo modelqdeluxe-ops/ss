@@ -1,9 +1,8 @@
 #version 150
 
-// (1.3.99) El cielo del Bosque de las Hadas (la cinemática de las crates): el atardecer mágico. Cada píxel es la
-// dirección en que mira la cámara: de dorado en el horizonte (más cálido hacia el sol) a rosa, violeta y azul noche
-// arriba, con nubes finas teñidas de rosa y oro, las primeras estrellas que titilan y el sol con su corona (más claro
-// que el blanco de la pantalla: el resplandor y los rayos salen de él).
+// (1.3.99) El cielo del Bosque de las Hadas (la cinemática de las crates), lo poco que se ve entre las copas: la noche
+// que empieza, del violeta de abajo al azul noche de arriba, con velos finos, muchas estrellas que titilan y la luz del
+// haz (más clara que el blanco de la pantalla: el resplandor y los rayos salen de ella).
 in vec2 ndc;
 
 uniform vec3 CamRight;
@@ -43,30 +42,30 @@ void main() {
     float toward = max(dot(dFlat, sunFlat), 0.0);
     float sunAmt = max(dot(d, SunDir), 0.0);
 
-    vec3 horizon = vec3(1.00, 0.66, 0.40), low = vec3(0.95, 0.52, 0.60), mid = vec3(0.42, 0.32, 0.66), zenith = vec3(0.10, 0.11, 0.33);
+    vec3 horizon = vec3(0.30, 0.22, 0.42), low = vec3(0.20, 0.16, 0.38), mid = vec3(0.09, 0.09, 0.26), zenith = vec3(0.02, 0.03, 0.10);
     vec3 col = mix(horizon, low, smoothstep(0.0, 0.12, h));
     col = mix(col, mid, smoothstep(0.10, 0.38, h));
     col = mix(col, zenith, smoothstep(0.32, 0.9, h));
-    col += vec3(1.0, 0.52, 0.22) * pow(toward, 3.0) * (1.0 - smoothstep(0.0, 0.55, h)) * 0.5;
+    col += vec3(0.45, 0.30, 0.55) * pow(toward, 3.0) * (1.0 - smoothstep(0.0, 0.55, h)) * 0.3;
 
     // nubes finas, más cerca del horizonte, teñidas de rosa (y de oro hacia el sol)
     vec2 cp = d.xz / (max(h, 0.02) + 0.15) * 0.55 + vec2(Time * 0.0025, Time * 0.001);
     float cl = smoothstep(0.48, 0.82, fbm(cp * 1.2)) * smoothstep(0.0, 0.05, h) * (1.0 - smoothstep(0.3, 0.6, h));
-    vec3 cloud = mix(vec3(0.96, 0.58, 0.66), vec3(1.0, 0.82, 0.55), pow(toward, 2.0));
-    col = mix(col, cloud * 1.08, cl * 0.6);
+    vec3 cloud = mix(vec3(0.20, 0.18, 0.36), vec3(0.40, 0.36, 0.52), pow(toward, 2.0));
+    col = mix(col, cloud, cl * 0.5);
 
     // las primeras estrellas
     vec2 sp = vec2(atan(d.z, d.x), asin(clamp(d.y, -1.0, 1.0))) * 70.0;
     vec2 cell = floor(sp);
     float s = hash(cell);
     float dd = length(fract(sp) - vec2(hash(cell + 1.3), hash(cell + 2.7)));
-    float star = step(0.982, s) * smoothstep(0.12, 0.0, dd) * smoothstep(0.28, 0.62, h) * (0.55 + 0.45 * sin(Time * 0.12 * (0.5 + s) + s * 90.0));
+    float star = step(0.975, s) * smoothstep(0.12, 0.0, dd) * smoothstep(0.05, 0.35, h) * (0.55 + 0.45 * sin(Time * 0.12 * (0.5 + s) + s * 90.0));
     col += vec3(0.92, 0.94, 1.0) * star * (1.0 - cl) * 0.9;
 
     // el sol: disco, corona y resplandor
-    col += vec3(1.0, 0.88, 0.66) * smoothstep(0.9993, 0.9997, sunAmt) * 2.2;
-    col += vec3(1.0, 0.62, 0.34) * pow(sunAmt, 40.0) * 0.7 + vec3(1.0, 0.5, 0.32) * pow(sunAmt, 5.0) * 0.22;
+    col += vec3(1.0, 0.95, 0.82) * smoothstep(0.9993, 0.9997, sunAmt) * 2.2;
+    col += vec3(1.0, 0.90, 0.70) * pow(sunAmt, 40.0) * 0.7 + vec3(0.6, 0.55, 0.75) * pow(sunAmt, 5.0) * 0.18;
 
-    if (h < 0.0) col = mix(col, vec3(0.50, 0.40, 0.56), smoothstep(0.0, -0.2, h));
+    if (h < 0.0) col = mix(col, vec3(0.06, 0.09, 0.15), smoothstep(0.0, -0.2, h));
     fragColor = vec4(col, 1.0);
 }

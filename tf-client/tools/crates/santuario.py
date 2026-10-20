@@ -45,9 +45,11 @@ BOWL_Y = 4                         # la copa (con su agua)
 ARCH_Z = -8                        # el arco élfico
 CLIFF_Z = -17                      # el montículo de la cascada (su cara, en el centro)
 FALL_TOP = 10                      # de donde cae la cascada
+FALL_W = 2                         # la cascada, de x = -2 a x = 2
 GLADE_R = 13.0                     # el claro
-# el sol del atardecer: bajo, por la izquierda y desde atrás (entra por el hueco de la cúpula y cae sobre la crate)
-SUN = np.array([-0.55, 0.56, -0.62])
+# el haz de luz: entra casi desde arriba por el hueco de las copas (un poco desde atrás a la izquierda) y cae sobre la
+# crate (el resto del pantano, en penumbra)
+SUN = np.array([-0.16, 0.97, -0.20])
 SUN /= np.linalg.norm(SUN)
 
 F_SWAY, F_WATER, F_GLOW = 1, 2, 4
@@ -65,7 +67,7 @@ GLOW = {'minecraft:lantern': (1.0, 0.72, 0.38, 1.0), 'minecraft:shroomlight': (1
         'minecraft:verdant_froglight': (0.7, 1.0, 0.6, 1.2), 'minecraft:amethyst_cluster': (0.85, 0.55, 1.0, 0.7),
         'minecraft:large_amethyst_bud': (0.85, 0.55, 1.0, 0.5), 'minecraft:end_rod': (1.0, 0.95, 0.9, 0.9),
         'minecraft:sea_pickle': (0.6, 1.0, 0.7, 0.5), 'minecraft:soul_lantern': (0.45, 0.9, 1.0, 1.0)}
-STONE = ('minecraft:stone', 'minecraft:mossy_cobblestone', 'minecraft:andesite', 'minecraft:tuff', 'minecraft:moss_block')
+STONE = ('minecraft:tuff', 'minecraft:mossy_cobblestone', 'minecraft:cobbled_deepslate', 'minecraft:andesite', 'minecraft:moss_block')
 
 
 class Scene:
@@ -206,22 +208,24 @@ def glade_d(x, z):
 
 # ------------------------------------------------------------------------------------------------------- el suelo
 def terrain(sc):
+    """El suelo: el claro llano y, fuera, el suelo del bosque (musgo, podsol, hierba) que sube en colinas por todos
+    lados (detrás de los árboles no se ve ningún horizonte: solo más bosque)."""
     for x in range(X0, X1 + 1):
         for z in range(Z0, Z1 + 1):
             r = glade_d(x, z)
-            # el suelo del bosque ondula un poco fuera del claro y sube suave hacia los lados y el fondo
             h = 0.0
             if r > GLADE_R:
                 h = (fbm(x * 0.08, z * 0.08, 1) - 0.4) * 3.0 * smooth(GLADE_R, GLADE_R + 8, r)
-                h += smooth(20, 40, r) * (3.0 if z < 10 else 1.0)
+                h += smooth(15, 38, r) * (8.0 + 4.0 * fbm(x * 0.05, z * 0.05, 9))
             top = int(round(h)) - 1
             sc.height[(x, z)] = top
             for y in range(max(Y0, top - 2), top + 1):
                 if y == top:
                     n = fbm(x * 0.15, z * 0.15, 3)
-                    if r > GLADE_R + 2 and n < 0.42:
-                        st = sc.pick([(3, 'minecraft:podzol[snowy=false]'), (2, 'minecraft:moss_block'),
-                                      (1, 'minecraft:rooted_dirt')])
+                    if r > GLADE_R + 1:
+                        st = sc.pick([(4, 'minecraft:moss_block'), (3, 'minecraft:podzol[snowy=false]'),
+                                      (2, 'minecraft:grass_block[snowy=false]'), (1, 'minecraft:rooted_dirt')]) if n < 0.6 else \
+                            'minecraft:grass_block[snowy=false]'
                     elif n > 0.66:
                         st = 'minecraft:moss_block'
                     else:
@@ -233,49 +237,51 @@ def terrain(sc):
 
 # ---------------------------------------------------------------------------------- el estanque y el pedestal
 def pool(sc):
+    """El estanque de las hadas: fondo que brilla (prismarina, arena, alguna linterna de mar y pepinos de mar), borde
+    de piedra vieja con musgo (nada de mármol blanco), nenúfares; en medio, el pedestal de piedra cincelada."""
     cx, cz = CRATE[0], CRATE[2]
     for x in range(-8, 9):
         for z in range(-8, 9):
             d = pool_d(x, z)
             if d < POOL_R:
                 sc.set(x, -2, z, 'minecraft:stone')
-                # el fondo brilla: prismarina, arena y alguna linterna de mar (el agua turquesa se ilumina desde abajo)
                 v = vhash(x, z, 77)
-                st = ('minecraft:sea_lantern' if v < 0.10 and d > 2.6 else
-                      'minecraft:prismarine_bricks' if v < 0.45 else
-                      'minecraft:dark_prismarine' if v < 0.6 else 'minecraft:sand')
+                st = ('minecraft:sea_lantern' if v < 0.07 and d > 2.6 else
+                      'minecraft:prismarine_bricks' if v < 0.40 else
+                      'minecraft:dark_prismarine' if v < 0.62 else 'minecraft:sand')
                 sc.set(x, -1, z, st)
                 sc.set(x, 0, z, 'minecraft:water[level=0]')
             elif d < RIM_R:
                 ang = math.atan2(z + 0.5 - cz, x + 0.5 - cx)
                 sc.set(x, -1, z, 'minecraft:stone_bricks')
-                sc.set(x, 0, z, 'minecraft:chiseled_quartz_block' if abs(math.sin(ang * 4)) < 0.14 else
-                       sc.pick([(6, 'minecraft:calcite'), (3, 'minecraft:mossy_stone_bricks'), (2, 'minecraft:quartz_bricks')]))
-                if abs(x) > 1:                      # el borde se abre hacia el camino y hacia el canal de la cascada
-                    sc.set(x, 1, z, slab('smooth_quartz_slab' if sc.r() < 0.75 else 'mossy_stone_brick_slab'))
-    # el pedestal: base en cruz de mármol que sale del agua con escalones, y encima calcita con esquinas cinceladas
+                sc.set(x, 0, z, 'minecraft:chiseled_stone_bricks' if abs(math.sin(ang * 4)) < 0.12 else
+                       sc.pick([(5, 'minecraft:mossy_stone_bricks'), (3, 'minecraft:stone_bricks'), (2, 'minecraft:cracked_stone_bricks'),
+                                (2, 'minecraft:moss_block')]))
+                if abs(x) > 1 and sc.r() < 0.8:      # el borde se abre hacia el camino y hacia el canal de la cascada
+                    sc.set(x, 1, z, sc.pick([(5, slab('mossy_stone_brick_slab')), (2, slab('stone_brick_slab')),
+                                             (3, 'minecraft:moss_carpet')]))
+    # el pedestal: base en cruz de piedra con musgo que sale del agua con escalones; arriba, piedra cincelada con musgo,
+    # pétalos rosas, dos amatistas detrás de la crate y liquen que brilla en los costados
     for x in range(-2, 3):
         for z in range(-2, 3):
             if abs(x) == 2 and abs(z) == 2:
                 continue
             if abs(x) <= 1 and abs(z) <= 1:
-                st = 'minecraft:quartz_bricks'
+                st = 'minecraft:mossy_stone_bricks'
             elif z == 2:
-                st = stairs('quartz_stairs', 'north')
+                st = stairs('mossy_stone_brick_stairs', 'north')
             elif z == -2:
-                st = stairs('quartz_stairs', 'south')
+                st = stairs('mossy_stone_brick_stairs', 'south')
             elif x == -2:
-                st = stairs('quartz_stairs', 'east')
+                st = stairs('mossy_stone_brick_stairs', 'east')
             else:
-                st = stairs('quartz_stairs', 'west')
+                st = stairs('mossy_stone_brick_stairs', 'west')
             sc.set(x, 0, z, st)
-            sc.set(x, -1, z, 'minecraft:quartz_bricks')
-    # arriba: cuarzo con esquinas cinceladas, cubierto de musgo y pétalos rosas (no un bloque blanco liso que deslumbra),
-    # dos amatistas detrás de la crate y liquen que brilla en los costados
+            sc.set(x, -1, z, 'minecraft:stone_bricks')
     for x in range(-1, 2):
         for z in range(-1, 2):
             corner = abs(x) == 1 and abs(z) == 1
-            sc.set(x, 1, z, 'minecraft:chiseled_quartz_block' if corner or (x == 0 and z == 0) else 'minecraft:quartz_bricks')
+            sc.set(x, 1, z, 'minecraft:chiseled_stone_bricks' if corner or (x == 0 and z == 0) else 'minecraft:mossy_stone_bricks')
     sc.set(-1, 2, 0, 'minecraft:moss_carpet')
     sc.set(0, 2, -1, 'minecraft:moss_carpet')
     sc.set(1, 2, 0, 'minecraft:pink_petals[facing=west,flower_amount=4]')
@@ -287,10 +293,10 @@ def pool(sc):
     for (x, z, face) in ((-2, -1, 'east'), (-2, 0, 'east'), (2, 0, 'west'), (2, 1, 'west'), (0, -2, 'south'), (-1, 2, 'north'),
                          (1, 2, 'north')):
         sc.set(x, 1, z, lichen(face), only_air=True)
-    # pasaderas de mármol desde el camino
+    # pasaderas de piedra desde el camino
     for z in (3, 4, 5):
-        sc.set(0, 0, z, slab('smooth_quartz_slab', 'top'))
-    sc.set(0, 0, 6, 'minecraft:chiseled_quartz_block')
+        sc.set(0, 0, z, slab('mossy_stone_brick_slab', 'top'))
+    sc.set(0, 0, 6, 'minecraft:chiseled_stone_bricks')
     # nenúfares y pepinos de mar que brillan en el fondo
     for (x, z) in ((-3, 2), (3, -2), (-4, -2), (2, 4), (4, 2), (-2, -4), (3, 3), (-3, -3)):
         if sc.name(x, 0, z) == 'minecraft:water':
@@ -302,68 +308,48 @@ def pool(sc):
             sc.set(x, -1, z, 'minecraft:sand')
 
 
-# ------------------------------------------------------------------------------------------- las fuentes-copa
-def fountain_blocks():
-    """Las dos fuentes-copa, detrás de la crate (a los lados del arco): las de delante tapaban la cámara."""
-    out = []
-    for k in (2, 3):
-        ang = math.radians(45 + 90 * k)
-        out.append((int(math.floor(CRATE[0] + math.cos(ang) * FOUNT_R)), int(math.floor(CRATE[2] + math.sin(ang) * FOUNT_R))))
-    return out
+FALLING = 'minecraft:water[level=8]'      # agua que cae (el juego la dibuja como una cascada de verdad)
 
 
-def fountains(sc):
-    """Dos fuentes en forma de flor sobre el borde, detrás de la crate: basa cincelada, fuste de mármol con una
-    enredadera, capitel que se abre en pétalos de cuarzo, la copa de borde escalonado con su agua (rebosa hacia el
-    estanque y echa un chorro hacia la crate), amatistas en las esquinas de la copa y bayas luminosas colgando."""
-    for k, (x, z) in enumerate(fountain_blocks()):
-        sc.set(x, -1, z, 'minecraft:stone_bricks')
-        sc.set(x, 0, z, 'minecraft:chiseled_quartz_block')
-        sc.set(x, 1, z, log('quartz_pillar'))
-        sc.set(x, 2, z, log('quartz_pillar'))
-        sc.set(x, 3, z, 'minecraft:chiseled_quartz_block')
-        # el capitel: pétalos (escalones del revés) a los lados y medias losas arriba en las esquinas
-        for (dx, dz, face) in ((1, 0, 'west'), (-1, 0, 'east'), (0, 1, 'north'), (0, -1, 'south')):
-            sc.set(x + dx, 3, z + dz, stairs('quartz_stairs', face, 'top'))
-        for dx in (-1, 1):
-            for dz in (-1, 1):
-                sc.set(x + dx, 3, z + dz, slab('smooth_quartz_slab', 'top'))
-        # la copa: borde escalonado (alto por fuera), el agua en medio, amatistas en las esquinas
-        for (dx, dz, face) in ((1, 0, 'east'), (-1, 0, 'west'), (0, 1, 'south'), (0, -1, 'north')):
-            sc.set(x + dx, BOWL_Y, z + dz, stairs('quartz_stairs', face))
-        for dx in (-1, 1):
-            for dz in (-1, 1):
-                sc.set(x + dx, BOWL_Y, z + dz, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
-        sc.set(x, BOWL_Y, z, 'minecraft:water[level=0]')
-        # bayas luminosas que cuelgan del capitel y una enredadera por el fuste
-        for (dx, dz) in ((1, 0), (-1, 0)):
-            sc.set(x + dx, 2, z + dz, 'minecraft:cave_vines_plant[berries=true]')
-            sc.set(x + dx, 1, z + dz, 'minecraft:cave_vines[age=0,berries=true]', only_air=True)
-        sc.set(x, 2, z + (1 if z < 0 else -1), vine(n=z < 0, s=z > 0), only_air=True)
-        # flores al pie
-        for (dx, dz) in ((1, 1), (-1, -1), (1, -1), (-1, 1)):
-            if pool_d(x + dx, z + dz) > RIM_R:
-                sc.set(x + dx, 0, z + dz, sc.pick([(2, 'minecraft:allium'), (2, 'minecraft:lily_of_the_valley'),
-                                                   (1, 'minecraft:pink_tulip')]), only_air=True)
-    # delante, dos faroles bajos de mármol sobre el borde (no tapan la crate)
-    for k in (0, 1):
-        ang = math.radians(45 + 90 * k)
-        x = int(math.floor(CRATE[0] + math.cos(ang) * FOUNT_R))
-        z = int(math.floor(CRATE[2] + math.sin(ang) * FOUNT_R))
-        sc.set(x, 0, z, 'minecraft:chiseled_quartz_block')
-        sc.set(x, 1, z, log('quartz_pillar'))
-        sc.set(x, 2, z, 'minecraft:lantern[hanging=false,waterlogged=false]')
+SPRINGS = ((-5, -4, 1601), (5, -4, 1602))
 
 
-def spouts():
-    """Dónde empieza cada chorro: el borde de la copa que mira al pedestal."""
-    out = []
-    for (bx, bz) in fountain_blocks():
-        x, z = bx + 0.5, bz + 0.5
-        dx, dz = CRATE[0] - x, CRATE[2] - z
-        L = math.hypot(dx, dz)
-        out.append((x + dx / L * 1.05, BOWL_Y + 0.55, z + dz / L * 1.05))
-    return out
+def spring_points():
+    """Dónde cae el chorro de cada peña (x, y del agua, z, 1): para la espuma y las ondas del mod."""
+    return [(bx + 2 * (1 if bx < 0 else -1) + 0.5, 0.875, bz + 0.5, 1.0) for (bx, bz, _) in SPRINGS]
+
+
+def springs(sc):
+    """Las fuentes del estanque: dos peñas de musgo en el borde de atrás, a los lados, de las que mana un chorro de agua
+    de verdad (agua que cae, como en el juego) al estanque; liquen, helechos y bayas luminosas."""
+    for (bx, bz, seed) in SPRINGS:
+        hts = {}
+        for i in range(-1, 2):
+            for j in range(-2, 1):
+                h = 4 + (1 if j == -2 else 0) - (1 if abs(i) == 1 and j == 0 else 0) + int(vhash(i, j, seed) * 1.6)
+                hts[(i, j)] = h
+                for y in range(-1, h):
+                    n = vhash(bx * 3 + i + y, bz * 5 + j - y, seed)
+                    st = STONE[0 if n < 0.25 else 1 if n < 0.55 else 3 if n < 0.7 else 4]
+                    sc.set(bx + i, y, bz + j, st)
+                sc.set(bx + i, h, bz + j, sc.pick([(3, 'minecraft:moss_carpet'), (1, 'minecraft:fern'), (1, 'minecraft:air')]))
+        # la boca: una muesca arriba, en el lado que da al estanque, con agua; el chorro cae por ese lado hasta el agua
+        side = 1 if bx < 0 else -1
+        top = hts[(side, 0)] - 1
+        sc.set(bx + side, top, bz, 'minecraft:water[level=0]')
+        sc.set(bx + side, top + 1, bz, 'minecraft:air')
+        # la muesca, cerrada por delante con una piedra con musgo (el agua sale de la roca, no de un cubo suelto)
+        for i in (0, side):
+            for y in range(-1, top + (1 if i == side else 0)):
+                sc.set(bx + i, y, bz + 1, STONE[1] if vhash(i, y, seed + 5) < 0.6 else STONE[4])
+            sc.set(bx + i, top + (1 if i == side else 0), bz + 1, 'minecraft:moss_carpet', only_air=True)
+        for y in range(1, top + 1):
+            sc.set(bx + 2 * side, y, bz, FALLING)
+        for (dz, face) in ((-1, 'south'), (1, 'north')):
+            for y in range(1, top):
+                if vhash(y, bz + dz, seed + 3) < 0.4:
+                    sc.set(bx + 2 * side, y, bz + dz, lichen(face), only_air=True)
+        sc.set(bx + (2 if bx > 0 else -2), 2, bz - 1, 'minecraft:cave_vines[age=0,berries=true]', only_air=True)
 
 
 # ------------------------------------------------------------------------------------- el risco y la cascada
@@ -388,7 +374,7 @@ def cliff(sc):
             sc.set(x, hmax, z, 'minecraft:grass_block[snowy=false]')
             sc.height[(x, z)] = hmax
     # el arroyo de arriba (agua) que llega a la boca de la cascada, y el hueco por donde cae
-    for x in (-1, 0, 1):
+    for x in range(-FALL_W, FALL_W + 1):
         for z in range(-28, CLIFF_Z + 3):
             top = sc.height.get((x, z), FALL_TOP)
             if z <= CLIFF_Z - 1:
@@ -399,10 +385,14 @@ def cliff(sc):
             else:
                 for y in range(0, top + 2):
                     sc.set(x, y, z, 'minecraft:air')
+    # la cascada: agua que cae de verdad (el juego la dibuja como en el mundo), del arroyo de arriba al remanso
+    for x in range(-FALL_W, FALL_W + 1):
+        for y in range(1, FALL_TOP + 1):
+            sc.set(x, y, CLIFF_Z, FALLING)
     # el remanso al pie y el canal hasta el estanque
-    for x in range(-3, 4):
+    for x in range(-4, 5):
         for z in range(CLIFF_Z - 1, -10):
-            if math.hypot(x, (z - (CLIFF_Z + 2)) * 1.2) < 3.3:
+            if math.hypot(x * 0.8, (z - (CLIFF_Z + 2)) * 1.2) < 3.3:
                 sc.set(x, -2, z, 'minecraft:stone')
                 sc.set(x, -1, z, sc.pick([(3, 'minecraft:prismarine_bricks'), (1, 'minecraft:sea_lantern'), (2, 'minecraft:sand')]))
                 sc.set(x, 0, z, 'minecraft:water[level=0]')
@@ -421,7 +411,7 @@ def cliff(sc):
                 sc.set(x, 1, z, slab('mossy_stone_brick_slab'))
     # vida en la cara del risco: liquen que brilla, enredaderas y amatistas
     for x in range(-12, 13):
-        if abs(x) <= 1:
+        if abs(x) <= FALL_W:
             continue
         for y in range(1, 14):
             for z in range(-28, -9):
@@ -435,7 +425,7 @@ def cliff(sc):
                         sc.set(x, y, z, 'minecraft:amethyst_cluster[facing=south,waterlogged=false]')
     # arriba: hierba, flores, helechos y azaleas
     for (x, z) in list(sc.height):
-        if -12 <= x <= 12 and -28 <= z <= -10 and sc.height[(x, z)] >= 2 and abs(x) > 1:
+        if -12 <= x <= 12 and -28 <= z <= -10 and sc.height[(x, z)] >= 2 and abs(x) > FALL_W:
             gy = sc.height[(x, z)] + 1
             if sc.air(x, gy, z) and sc.name(x, gy - 1, z) == 'minecraft:grass_block':
                 v = vhash(x, z, 59)
@@ -450,129 +440,89 @@ def cliff(sc):
 
 
 def waterfall():
-    """La cascada (para el mod): x de un borde, x del otro, y de arriba, y de abajo; y la z de su cara."""
-    return (-1.4, 2.4, FALL_TOP + 0.9, 0.85, CLIFF_Z + 0.4)
+    """La cascada (para el mod: su espuma y su bruma): x de un borde, x del otro, y de arriba, y de abajo; y la z de su
+    cara de delante."""
+    return (-FALL_W + 0.0, FALL_W + 1.0, FALL_TOP + 0.9, 0.85, CLIFF_Z + 1.0)
 
 
 # ------------------------------------------------------------------------------------------------ el arco élfico
 def elven_arch(sc):
-    """El arco: dos columnas de mármol con basa, fuste (pilar de cuarzo) y capitel, y un arco escalonado con clave
-    cincelada y un remate de oro con una vara de luz; cubierto de azalea en flor, flores de esporas colgando y faroles."""
+    """El arco en ruinas delante de la cascada: dos columnas de piedra vieja con musgo (basa y capitel cincelados), un
+    arco escalonado con su clave y una amatista encima; cubierto de azalea, flores de esporas, lianas y faroles."""
     z = ARCH_Z
     for x in (-4, 4):
         sc.set(x, -1, z, 'minecraft:stone_bricks')
-        sc.set(x, 0, z, 'minecraft:chiseled_quartz_block')
+        sc.set(x, 0, z, 'minecraft:chiseled_stone_bricks')
         for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             if sc.name(x + dx, 0, z + dz) != 'minecraft:water':
-                sc.set(x + dx, 0, z + dz, slab('smooth_quartz_slab'), only_air=True)
+                sc.set(x + dx, 0, z + dz, slab('mossy_stone_brick_slab'), only_air=True)
         for y in range(1, 7):
-            sc.set(x, y, z, log('quartz_pillar'))
-        sc.set(x, 7, z, 'minecraft:chiseled_quartz_block')
-    # la curva del arco
+            sc.set(x, y, z, 'minecraft:mossy_stone_bricks' if vhash(x, y, 111) < 0.55 else
+                   'minecraft:cracked_stone_bricks' if vhash(x, y, 113) < 0.3 else 'minecraft:stone_bricks')
+        sc.set(x, 7, z, 'minecraft:chiseled_stone_bricks')
     for (x, y) in ((-4, 8), (4, 8), (-3, 8), (3, 8), (-3, 9), (3, 9), (-2, 9), (2, 9), (-2, 10), (2, 10), (-1, 10), (1, 10),
                    (0, 10)):
-        sc.set(x, y, z, 'minecraft:quartz_bricks')
+        sc.set(x, y, z, 'minecraft:mossy_stone_bricks' if vhash(x, y, 115) < 0.6 else 'minecraft:stone_bricks')
     for (x, face) in ((-3, 'east'), (3, 'west')):
-        sc.set(x, 7, z, stairs('quartz_stairs', face, 'top'))
+        sc.set(x, 7, z, stairs('mossy_stone_brick_stairs', face, 'top'))
     for (x, face) in ((-2, 'east'), (2, 'west')):
-        sc.set(x, 8, z, stairs('quartz_stairs', face, 'top'))
+        sc.set(x, 8, z, stairs('mossy_stone_brick_stairs', face, 'top'))
     for (x, face) in ((-1, 'east'), (1, 'west')):
-        sc.set(x, 9, z, stairs('quartz_stairs', face, 'top'))
-    sc.set(0, 9, z, slab('smooth_quartz_slab', 'top'))
-    sc.set(0, 10, z, 'minecraft:chiseled_quartz_block')
-    sc.set(0, 11, z, 'minecraft:gold_block')
-    sc.set(0, 12, z, 'minecraft:end_rod[facing=up]')
-    for (x, y) in ((-3, 10), (3, 10), (-4, 9), (4, 9)):
-        sc.set(x, y, z, slab('smooth_quartz_slab'))
-    # azalea en flor por encima y a los lados, flores de esporas y faroles colgando
+        sc.set(x, 9, z, stairs('stone_brick_stairs', face, 'top'))
+    sc.set(0, 9, z, slab('mossy_stone_brick_slab', 'top'))
+    sc.set(0, 10, z, 'minecraft:chiseled_stone_bricks')
+    sc.set(0, 11, z, 'minecraft:amethyst_cluster[facing=up,waterlogged=false]')
     for (x, y, dz) in ((-4, 10, 0), (-5, 8, 0), (-3, 11, 0), (-2, 11, 0), (-1, 11, 1), (1, 11, -1), (2, 11, 0), (3, 11, 0),
                        (4, 10, 0), (5, 8, 0), (5, 7, 0), (-5, 7, 1), (4, 9, 1), (-2, 12, 0), (3, 12, -1), (-5, 9, 0)):
-        sc.set(x, y, z + dz, leaves('flowering_azalea_leaves' if (x + y) % 2 else 'azalea_leaves'), only_air=True)
+        sc.set(x, y, z + dz, leaves('flowering_azalea_leaves' if (x + y) % 3 == 0 else 'azalea_leaves'), only_air=True)
     for (x, y) in ((-1, 8), (1, 8), (-2, 7), (2, 7)):
         sc.set(x, y, z, 'minecraft:spore_blossom', only_air=True)
     for x in (-3, 3):
         sc.set(x, 6, z, 'minecraft:chain[axis=y,waterlogged=false]', only_air=True)
         sc.set(x, 5, z, 'minecraft:lantern[hanging=true,waterlogged=false]', only_air=True)
-    for (x, n) in ((-4, 3), (4, 4)):
+    for (x, n) in ((-4, 4), (4, 5), (-2, 3), (2, 2)):
         for k in range(n):
-            sc.set(x, 6 - k, z + 1, vine(n=True), only_air=True)
+            sc.set(x, (6 if abs(x) == 4 else 8) - k, z + 1, vine(n=True), only_air=True)
 
 
-# --------------------------------------------------------------------------------------- la columnata en ruinas
-def column(sc, x, z, h, full):
-    base = ground(sc, x, z)
-    sc.set(x, base - 1, z, 'minecraft:stone_bricks')
-    sc.set(x, base, z, 'minecraft:chiseled_quartz_block')
-    for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        sc.set(x + dx, base, z + dz, slab('smooth_quartz_slab'), only_air=True)
-    top = base + h
-    for y in range(base + 1, top):
-        sc.set(x, y, z, log('quartz_pillar') if full or y < top - 1 else 'minecraft:quartz_bricks')
-    if full:
-        sc.set(x, top, z, 'minecraft:chiseled_quartz_block')
-        for (dx, dz, face) in ((1, 0, 'west'), (-1, 0, 'east'), (0, 1, 'north'), (0, -1, 'south')):
-            sc.set(x + dx, top, z + dz, stairs('quartz_stairs', face, 'top'))
-    else:
-        sc.set(x, top, z, 'minecraft:moss_carpet' if vhash(x, z, 61) < 0.6 else 'minecraft:pink_petals[facing=north,flower_amount=3]')
-    # enredaderas trepando
-    for (dx, dz, side) in ((0, 1, 'n'), (1, 0, 'w'), (-1, 0, 'e'), (0, -1, 's')):
-        if vhash(x * 3 + dx, z * 5 + dz, 63) < 0.5:
-            for k in range(int(2 + vhash(x, z + dx, 65) * (h - 1))):
-                y = top - 1 - k
-                if y <= base:
-                    break
-                sc.set(x + dx, y, z + dz, vine(**{side: True}), only_air=True)
-    return top
-
-
-def colonnade(sc):
-    """Un anillo de columnas alrededor del claro (abierto por delante, hacia la cámara, y por detrás, donde el arco):
-    unas enteras con su cornisa entre ellas (con azalea en flor y flores de esporas), otras rotas, tambores caídos."""
-    R = 11.5
-    n = 16
-    tops = {}
-    for k in range(n):
-        ang = -math.pi / 2 + (k / n) * 2 * math.pi
-        if math.sin(ang) > 0.55:              # el frente (z positivo, la cámara) queda abierto
-            continue
-        x = int(round(CRATE[0] + math.cos(ang) * R))
-        z = int(round(CRATE[2] + math.sin(ang) * R))
-        if abs(x) <= 6 and z < -6:            # detrás: el arco y el risco
-            continue
-        full = vhash(k, 7, 67) > 0.3
-        h = 8 if full else 2 + int(vhash(k, 9, 69) * 3)
-        tops[k] = (x, z, column(sc, x, z, h, full), full)
-    ks = sorted(tops)
-    for a, b in zip(ks, ks[1:]):
-        (xa, za, ta, fa), (xb, zb, tb, fb) = tops[a], tops[b]
-        if not (fa and fb) or b - a != 1 or vhash(a, b, 71) < 0.2:
-            continue
-        y = max(ta, tb) + 1
-        steps = max(abs(xb - xa), abs(zb - za))
-        for i in range(steps + 1):
-            x = round(xa + (xb - xa) * i / steps)
-            z = round(za + (zb - za) * i / steps)
-            sc.set(x, y, z, 'minecraft:smooth_quartz' if i % 3 else 'minecraft:chiseled_quartz_block')
-            if vhash(x, z, 73) < 0.45:
-                sc.set(x, y + 1, z, leaves('flowering_azalea_leaves'), only_air=True)
-            if 0 < i < steps and vhash(x, z, 75) < 0.35:
-                sc.set(x, y - 1, z, 'minecraft:spore_blossom', only_air=True)
-    for (x, z, axis, k) in ((7, 9, 'x', 3), (-9, 7, 'z', 3), (10, -4, 'z', 2)):
+# ------------------------------------------------------------------------------------------------- las ruinas
+def ruins(sc):
+    """Restos de un santuario viejo entre el pantano: columnas rotas de piedra con musgo y lianas, tambores caídos."""
+    for (x, z, h, seed) in ((-9, -5, 5, 1701), (9, -6, 3, 1702), (-10, 3, 2, 1703), (10, 2, 4, 1704), (-7, -10, 3, 1705),
+                            (8, -11, 6, 1706)):
+        g = ground(sc, x, z)
+        sc.set(x, g - 1, z, 'minecraft:stone_bricks')
+        sc.set(x, g, z, 'minecraft:chiseled_stone_bricks')
+        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            if vhash(x + dx, z + dz, seed) < 0.7:
+                sc.set(x + dx, g, z + dz, slab('mossy_stone_brick_slab'), only_air=True)
+        for y in range(g + 1, g + h):
+            sc.set(x, y, z, 'minecraft:mossy_stone_bricks' if vhash(y, seed, 121) < 0.6 else 'minecraft:cracked_stone_bricks')
+        sc.set(x, g + h, z, 'minecraft:moss_carpet' if vhash(x, z, 123) < 0.5 else 'minecraft:pink_petals[facing=south,flower_amount=4]')
+        for (dx, dz, side, face) in ((0, 1, 'n', 'north'), (1, 0, 'w', 'west'), (-1, 0, 'e', 'east'), (0, -1, 's', 'south')):
+            v = vhash(x * 3 + dx, z * 5 + dz, seed + 1)
+            for y in range(g + 1, g + h):
+                if v < 0.45:
+                    sc.set(x + dx, y, z + dz, vine(**{side: True}), only_air=True)
+                elif v < 0.6 and vhash(y, seed, 125) < 0.5:
+                    sc.set(x + dx, y, z + dz, lichen(face), only_air=True)
+    for (x, z, axis, k) in ((6, 8, 'x', 3), (-9, 7, 'z', 3), (11, -3, 'z', 2)):
         g = ground(sc, x, z)
         for i in range(k):
             px, pz = (x + i, z) if axis == 'x' else (x, z + i)
-            sc.set(px, g, pz, log('quartz_pillar', axis))
+            sc.set(px, g, pz, 'minecraft:mossy_stone_bricks')
         sc.set(x, g + 1, z, 'minecraft:moss_carpet', only_air=True)
 
 
-# ------------------------------------------------------------------------------------- los árboles de las hadas
+# ------------------------------------------------------------------------------------- los árboles del pantano
 def canopy(sc, cx, cy, cz, rx, ry, rz, mix, seed=0):
+    """Una copa (solo la cáscara: lo de dentro no se ve y pesaría)."""
     for x in range(int(cx - rx - 1), int(cx + rx + 2)):
         for y in range(int(cy - ry - 1), int(cy + ry + 2)):
             for z in range(int(cz - rz - 1), int(cz + rz + 2)):
                 d = ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 + ((z + 0.5 - cz) / rz) ** 2
-                edge = 1.0 + (vhash(x * 7 + y, z * 3 - y, seed) - 0.5) * 0.45
-                if d < edge:
+                edge = 1.0 + (vhash(x * 7 + y, z * 3 - y, seed) - 0.5) * 0.5
+                if 0.32 * edge < d < edge:
                     v = vhash(x * 13 - y, z * 7 + y, seed + 1)
                     acc = 0
                     for w, name in mix:
@@ -582,83 +532,109 @@ def canopy(sc, cx, cy, cz, rx, ry, rz, mix, seed=0):
                             break
 
 
-def line(sc, a, b, st):
+def line(sc, a, b, st, only_air=False):
     n = int(max(abs(b[0] - a[0]), abs(b[1] - a[1]), abs(b[2] - a[2]))) + 1
     for i in range(n + 1):
         t = i / n
         x, y, z = (round(a[k] + (b[k] - a[k]) * t) for k in range(3))
-        sc.set(x, y, z, st)
+        sc.set(x, y, z, st, only_air=only_air)
 
 
-FAIRY_LEAVES = [(0.36, 'flowering_azalea_leaves'), (0.26, 'azalea_leaves'), (0.22, 'cherry_leaves'), (0.16, 'dark_oak_leaves')]
+SWAMP_LEAVES = [(0.38, 'mangrove_leaves'), (0.30, 'dark_oak_leaves'), (0.22, 'azalea_leaves'), (0.10, 'flowering_azalea_leaves')]
 
 
-def giant_tree(sc, x, z, h, r, seed):
-    """Un árbol de las hadas: tronco de 3 × 3 con raíces enormes, ramas que se abren, una copa de azalea en flor y
-    cerezo; bayas luminosas y flores de esporas colgando, faroles de seta en la copa y liquen en la corteza."""
+def swamp_tree(sc, x, z, h, r, seed, kind, reach=None):
+    """Un árbol viejo del pantano: tronco de 2 × 2 (mangle con raíces que se meten en el barro y el agua, o roble oscuro
+    con raíces de madera), ramas bajas que se abren (hacia el claro si reach), copa baja y ancha; lianas largas, bayas
+    luminosas, flores de esporas y alguna luz de rana o de seta colgando; liquen y lianas en la corteza."""
     g = ground(sc, x, z)
-    bark = 'minecraft:dark_oak_wood[axis=y]'
-    for y in range(g - 1, g + h):
-        for dx in (-1, 0, 1):
-            for dz in (-1, 0, 1):
-                if abs(dx) + abs(dz) == 2 and y > g + h - 3:
-                    continue
-                sc.set(x + dx, y, z + dz, bark)
-    for k in range(6):
-        ang = vhash(k, seed, 81) * math.tau
-        L = 4 + vhash(k, seed, 83) * 3
-        a = (x + math.cos(ang) * 1.2, g + 1.5, z + math.sin(ang) * 1.2)
-        b = (x + math.cos(ang) * L, g - 0.6, z + math.sin(ang) * L)
-        line(sc, a, b, bark)
-        if vhash(k, seed, 85) < 0.5:
-            bx, bz = round(b[0]), round(b[2])
-            sc.set(bx, ground(sc, bx, bz), bz, 'minecraft:moss_carpet', only_air=True)
+    mangrove = kind == 'mangrove'
+    bark = 'minecraft:mangrove_wood[axis=y]' if mangrove else 'minecraft:dark_oak_wood[axis=y]'
+    side = 'minecraft:mangrove_wood[axis=x]' if mangrove else 'minecraft:dark_oak_wood[axis=x]'
     top = g + h
-    for k in range(5):
-        ang = vhash(k, seed, 87) * math.tau
-        L = r * (0.55 + 0.25 * vhash(k, seed, 89))
-        a = (x, top - 4 + k * 0.6, z)
-        b = (x + math.cos(ang) * L, top + 1 + vhash(k, seed, 91) * 2, z + math.sin(ang) * L)
-        line(sc, a, b, 'minecraft:dark_oak_wood[axis=x]')
-        canopy(sc, b[0] + 0.5, b[1] + 1.2, b[2] + 0.5, r * 0.55, r * 0.32, r * 0.55, FAIRY_LEAVES, seed + 10 + k)
-    canopy(sc, x + 0.5, top + 2.5, z + 0.5, r, r * 0.38, r, FAIRY_LEAVES, seed)
-    for i in range(int(r * 9)):
-        px = round(x + (vhash(i, seed, 93) - 0.5) * 2 * r)
-        pz = round(z + (vhash(i, seed, 95) - 0.5) * 2 * r)
-        for y in range(top + 6, top - 6, -1):
+    for y in range(g - 1, top):
+        for dx in (0, 1):
+            for dz in (0, 1):
+                sc.set(x + dx, y, z + dz, bark)
+    cx, cz = x + 1.0, z + 1.0
+    # raíces
+    for k in range(7):
+        ang = (k + vhash(k, seed, 81)) / 7 * math.tau
+        L = 3 + vhash(k, seed, 83) * 3
+        a = (cx - 0.5 + math.cos(ang) * 1.0, g + (3.5 if mangrove else 1.5), cz - 0.5 + math.sin(ang) * 1.0)
+        mid = (cx - 0.5 + math.cos(ang) * L * 0.6, g + (2.2 if mangrove else 0.4), cz - 0.5 + math.sin(ang) * L * 0.6)
+        b = (cx - 0.5 + math.cos(ang) * L, g - 1, cz - 0.5 + math.sin(ang) * L)
+        st = 'minecraft:mangrove_roots[waterlogged=false]' if mangrove else bark
+        line(sc, a, mid, st, only_air=True)
+        line(sc, mid, b, st, only_air=True)
+        bx, bz = round(b[0]), round(b[2])
+        if vhash(k, seed, 85) < 0.5:
+            sc.set(bx, ground(sc, bx, bz), bz, 'minecraft:moss_carpet', only_air=True)
+    # ramas y copas
+    nb = 5
+    for k in range(nb):
+        ang = (k + vhash(k, seed, 87)) / nb * math.tau
+        if reach is not None and k < 2:
+            ang = reach + (k - 0.5) * 0.7
+        L = r * (0.8 + 0.4 * vhash(k, seed, 89)) * (1.5 if reach is not None and k < 2 else 1.0)
+        y0 = g + h * (0.55 + 0.1 * k / nb)
+        a = (cx - 0.5, y0, cz - 0.5)
+        b = (cx - 0.5 + math.cos(ang) * L, y0 + 1.5 + vhash(k, seed, 91) * 2.5, cz - 0.5 + math.sin(ang) * L)
+        line(sc, a, b, side)
+        canopy(sc, b[0] + 0.5, b[1] + 1.0, b[2] + 0.5, r * 0.6, r * 0.28, r * 0.6, SWAMP_LEAVES, seed + 10 + k)
+    canopy(sc, cx, top + 1.5, cz, r, r * 0.36, r, SWAMP_LEAVES, seed)
+    # lo que cuelga de las copas
+    R = r * 1.9
+    for i in range(int(r * 16)):
+        px = round(cx + (vhash(i, seed, 93) - 0.5) * 2 * R)
+        pz = round(cz + (vhash(i, seed, 95) - 0.5) * 2 * R)
+        over_glade = pool_d(px, pz) < 9.5 or (-2 < pz < 15 and abs(px) < 8)
+        for y in range(top + 6, g + 2, -1):
             if 'leaves' in sc.name(px, y + 1, pz) and sc.air(px, y, pz):
                 v = vhash(i, seed, 97)
-                if v < 0.42:
+                if over_glade:
+                    # encima del claro y del pasillo de la cámara, solo cosas cortas que no tapen (bayas, esporas)
+                    if v < 0.5 and y > 6:
+                        for k in range(2):
+                            berry = 'true' if vhash(i + k, seed, 101) < 0.7 else 'false'
+                            sc.set(px, y - k, pz, f'minecraft:cave_vines[age=0,berries={berry}]' if k == 1 else
+                                   f'minecraft:cave_vines_plant[berries={berry}]', only_air=True)
+                    elif v < 0.8:
+                        sc.set(px, y, pz, 'minecraft:spore_blossom', only_air=True)
+                    break
+                if v < 0.45:
+                    n = 3 + int(vhash(i, seed, 99) * 7)
+                    sd = ('n', 's', 'e', 'w')[i % 4]
+                    for k in range(n):
+                        if not sc.air(px, y - k, pz) or y - k <= ground(sc, px, pz):
+                            break
+                        sc.set(px, y - k, pz, vine(**{sd: True}))
+                elif v < 0.72:
                     n = 2 + int(vhash(i, seed, 99) * 5)
                     for k in range(n):
-                        berry = 'true' if vhash(i + k, seed, 101) < 0.5 else 'false'
+                        if not sc.air(px, y - k, pz):
+                            break
+                        berry = 'true' if vhash(i + k, seed, 101) < 0.55 else 'false'
                         st = f'minecraft:cave_vines[age=0,berries={berry}]' if k == n - 1 else \
                             f'minecraft:cave_vines_plant[berries={berry}]'
-                        sc.set(px, y - k, pz, st, only_air=True)
-                elif v < 0.62:
+                        sc.set(px, y - k, pz, st)
+                elif v < 0.84:
                     sc.set(px, y, pz, 'minecraft:spore_blossom', only_air=True)
-                elif v < 0.70:
-                    sc.set(px, y + 1, pz, 'minecraft:shroomlight')
-                elif v < 0.76:
+                elif v < 0.90:
                     sc.set(px, y, pz, 'minecraft:chain[axis=y,waterlogged=false]', only_air=True)
-                    sc.set(px, y - 1, pz, 'minecraft:pearlescent_froglight' if v < 0.73 else 'minecraft:ochre_froglight',
-                           only_air=True)
+                    sc.set(px, y - 1, pz, ('minecraft:pearlescent_froglight', 'minecraft:verdant_froglight',
+                                           'minecraft:ochre_froglight')[i % 3], only_air=True)
+                elif v < 0.95:
+                    sc.set(px, y + 1, pz, 'minecraft:shroomlight')
                 break
-    for y in range(g + 1, g + h - 2):
-        for (dx, dz, face, side) in ((2, 0, 'west', 'w'), (-2, 0, 'east', 'e'), (0, 2, 'north', 'n'), (0, -2, 'south', 's')):
-            v = vhash(y * 11 + dx, seed + dz, 103)
-            if v < 0.14:
+    for y in range(g + 1, top - 1):
+        for (dx, dz, face, sd) in ((2, 0, 'west', 'w'), (-1, 0, 'east', 'e'), (0, 2, 'north', 'n'), (0, -1, 'south', 's'),
+                                   (2, 1, 'west', 'w'), (-1, 1, 'east', 'e'), (1, 2, 'north', 'n'), (1, -1, 'south', 's')):
+            v = vhash(y * 11 + dx, seed + dz * 3, 103)
+            if v < 0.12:
                 sc.set(x + dx, y, z + dz, lichen(face), only_air=True)
             elif v < 0.30:
-                sc.set(x + dx, y, z + dz, vine(**{side: True}), only_air=True)
-
-
-def small_tree(sc, x, z, h, r, kind, seed):
-    g = ground(sc, x, z)
-    for y in range(g, g + h):
-        sc.set(x, y, z, log(f'{kind}_log'))
-    mix = [(1.0, f'{kind}_leaves')] if kind != 'cherry' else [(0.8, 'cherry_leaves'), (0.2, 'flowering_azalea_leaves')]
-    canopy(sc, x + 0.5, g + h + 0.5, z + 0.5, r, r * 0.6, r, mix, seed)
+                sc.set(x + dx, y, z + dz, vine(**{sd: True}), only_air=True)
 
 
 STEM = 'minecraft:mushroom_stem[down=false,east=true,north=true,south=true,up=false,west=true]'
@@ -686,10 +662,12 @@ def mushroom(sc, x, z, h, kind):
 
 
 def lamp_mushroom(sc, x, z, h):
+    """Un farol de piedra con musgo (un poste y su farol encima) entre las flores del pantano."""
     g = ground(sc, x, z)
+    h = max(1, h - 1)
     for y in range(g, g + h):
-        sc.set(x, y, z, STEM)
-    sc.set(x, g + h, z, 'minecraft:shroomlight')
+        sc.set(x, y, z, 'minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]')
+    sc.set(x, g + h, z, 'minecraft:lantern[hanging=false,waterlogged=false]')
 
 
 def standing_stone(sc, x, z, h, seed):
@@ -714,68 +692,138 @@ def azalea_bush(sc, x, z, seed):
                     sc.set(x + dx, y0 + 1, z + dz, leaves('flowering_azalea_leaves'), only_air=True)
 
 
+def tree_spots():
+    """Dónde va cada árbol: un anillo de gigantes pegados al claro (sus ramas bajas lo cubren) y el bosque detrás, cada
+    vez más denso, sin dejar ver ningún horizonte; nada en el pasillo de la cámara ni delante de la cascada."""
+    rng = np.random.default_rng(1999)
+    pts = []
+
+    def free(x, z, mind):
+        return all((x - px) ** 2 + (z - pz) ** 2 >= mind * mind for px, pz, *_ in pts)
+
+    def blocked(x, z):
+        if pool_d(x, z) < 9.0:
+            return True
+        if -2 < z < 15 and abs(x) < 7:            # el pasillo de la cámara
+            return True
+        if -26 < z < -6 and abs(x) < 8:           # el risco, el remanso, el arco
+            return True
+        return not (X0 + 6 <= x <= X1 - 6 and Z0 + 6 <= z <= Z1 - 6)
+
+    for (r0, r1, mind, tries, size) in ((9.5, 13.5, 6.0, 900, 0), (13.5, 24.0, 6.5, 2500, 1), (24.0, 40.0, 7.0, 3000, 2)):
+        for _ in range(tries):
+            ang = rng.random() * math.tau
+            rad = r0 + rng.random() * (r1 - r0)
+            x = int(round(CRATE[0] + math.cos(ang) * rad))
+            z = int(round(CRATE[2] + math.sin(ang) * rad))
+            if blocked(x, z) or not free(x, z, mind):
+                continue
+            pts.append((x, z, size, ang))
+    return pts
+
+
 def forest(sc):
-    # los gigantes que forman la cúpula alrededor del claro (el hueco de detrás a la izquierda deja pasar el sol)
-    for (x, z, h, r, s) in ((-16, 3, 17, 8.5, 1001), (17, -3, 19, 9.0, 1002), (-13, -24, 18, 8.0, 1003),
-                            (14, -23, 20, 8.5, 1004), (-18, 18, 15, 7.5, 1005), (18, 17, 16, 7.5, 1006),
-                            (1, -37, 21, 9.5, 1007)):
-        giant_tree(sc, x, z, h, r, s)
-    k = 0
-    for (x, z) in ((-29, -10), (-31, 8), (29, -12), (31, 6), (-25, -32), (25, -33), (-37, -22), (37, -24), (-11, -42),
-                   (13, -42), (-31, 25), (31, 25), (-39, 0), (39, 0), (-22, 29), (22, 29)):
-        k += 1
-        kind = ('dark_oak', 'cherry', 'birch', 'oak')[k % 4]
-        small_tree(sc, x, z, 7 + int(vhash(x, z, 5) * 5), 3.6 + vhash(x, z, 7) * 1.6, kind, 1100 + k)
-    for (x, z, s) in ((-11, -9, 1201), (11, 10, 1202), (-10, 12, 1203)):
-        small_tree(sc, x, z, 5, 3.2, 'cherry', s)
+    for i, (x, z, size, ang) in enumerate(tree_spots()):
+        seed = 1000 + i * 7
+        kind = 'mangrove' if vhash(x, z, 131) < 0.5 else 'dark'
+        if size == 0:
+            # los del claro: ramas bajas que se abren hacia la crate (una cúpula con un hueco por donde entra el haz)
+            swamp_tree(sc, x, z, 9 + int(vhash(x, z, 133) * 3), 5.5 + vhash(x, z, 135) * 1.0, seed, kind, reach=ang + math.pi)
+        elif size == 1:
+            swamp_tree(sc, x, z, 10 + int(vhash(x, z, 133) * 4), 5.0 + vhash(x, z, 135) * 1.5, seed, kind)
+        else:
+            swamp_tree(sc, x, z, 11 + int(vhash(x, z, 133) * 5), 5.0 + vhash(x, z, 135) * 1.5, seed, kind)
     for (x, z, s) in ((-12, 7, 1301), (12, 2, 1302), (-7, -12, 1303), (7, -12, 1304), (-13, -3, 1305), (14, -9, 1306),
-                      (-5, 14, 1307), (6, 15, 1308)):
+                      (-8, 12, 1307), (9, 13, 1308)):
         azalea_bush(sc, x, z, s)
-    for (x, z, h, kind) in ((-18, -10, 5, 'red'), (20, 5, 6, 'brown'), (-22, 9, 4, 'red'), (9, -28, 7, 'brown'),
-                            (-8, -29, 5, 'red')):
+    for (x, z, h, kind) in ((-15, -9, 5, 'red'), (16, 6, 6, 'brown'), (-17, 10, 4, 'red'), (11, -16, 5, 'red'),
+                            (-12, -17, 6, 'brown')):
         mushroom(sc, x, z, h, kind)
-    for (x, z, h) in ((-10, 3, 2), (9, -2, 3), (-6, 10, 2), (8, 12, 2), (-12, -14, 3), (12, -14, 2), (-3, 12, 1), (15, 10, 3)):
+    for (x, z, h) in ((-10, 3, 2), (9, -2, 3), (-6, 10, 2), (8, 11, 2), (-12, -13, 3), (12, -13, 2), (-3, 12, 1), (14, 9, 3),
+                      (-14, 2, 2), (15, -4, 2)):
         lamp_mushroom(sc, x, z, h)
-    for (x, z, h, s) in ((-9, -4, 3, 1501), (10, -8, 2, 1502), (-11, 9, 2, 1503), (13, 6, 3, 1504), (-6, -10, 2, 1505),
-                         (5, -11, 3, 1506)):
+    for (x, z, h, s) in ((-9, -2, 3, 1501), (10, -9, 2, 1502), (-11, 9, 2, 1503), (13, 5, 3, 1504)):
         standing_stone(sc, x, z, h, s)
 
 
+def swamp(sc):
+    """El pantano alrededor del claro: charcas de agua (con barro) entre el musgo, nenúfares, pepinos de mar que brillan
+    en el agua y hojas grandes de goteo."""
+    for x in range(X0 + 1, X1):
+        for z in range(Z0 + 1, Z1):
+            r = glade_d(x, z)
+            if r < RIM_R + 1.5 or r > 30:
+                continue
+            if -26 < z < -6 and abs(x) < 9:
+                continue
+            if -2 < z < 15 and abs(x) < 5:
+                continue
+            top = sc.height.get((x, z), -1)
+            if top > 0:
+                continue
+            n = fbm(x * 0.13, z * 0.13, 141)
+            if n < 0.56 or not sc.air(x, top + 1, z):
+                continue
+            sc.set(x, top - 1, z, 'minecraft:mud')
+            sc.set(x, top, z, 'minecraft:water[level=0]')
+            v = vhash(x, z, 143)
+            if v < 0.16:
+                sc.set(x, top + 1, z, 'minecraft:lily_pad')
+            elif v < 0.20:
+                sc.set(x, top, z, f'minecraft:sea_pickle[pickles={1 + int(vhash(x, z, 145) * 4) % 4},waterlogged=true]')
+            elif v < 0.24 and n < 0.62:
+                face = ('north', 'east', 'south', 'west')[int(vhash(x, z, 147) * 4) % 4]
+                sc.set(x, top + 1, z, f'minecraft:big_dripleaf[facing={face},tilt=none,waterlogged=false]')
+
+
 # --------------------------------------------------------------------------------------------- flores y hierba
-FLOWERS = [('minecraft:allium', 'minecraft:pink_tulip'), ('minecraft:lily_of_the_valley', 'minecraft:oxeye_daisy'),
-           ('minecraft:azure_bluet', 'minecraft:blue_orchid'), ('minecraft:cornflower', 'minecraft:allium'),
-           ('minecraft:white_tulip', 'minecraft:pink_tulip'), ('minecraft:torchflower', 'minecraft:oxeye_daisy')]
+FLOWERS = [('minecraft:blue_orchid', 'minecraft:allium'), ('minecraft:lily_of_the_valley', 'minecraft:blue_orchid'),
+           ('minecraft:allium', 'minecraft:pink_tulip'), ('minecraft:azure_bluet', 'minecraft:blue_orchid')]
 
 
 def flora(sc):
+    """Lo que crece en el suelo: en el claro, flores del pantano (orquídeas azules, alliums, lirios) y hierba; en el
+    bosque, helechos, helechos grandes, hierba alta, musgo y setas."""
     for x in range(X0 + 1, X1):
         for z in range(Z0 + 1, Z1):
             gy = ground(sc, x, z)
             below = sc.name(x, gy - 1, z)
-            if not sc.air(x, gy, z) or below not in ('minecraft:grass_block', 'minecraft:moss_block', 'minecraft:podzol'):
+            if not sc.air(x, gy, z) or below not in ('minecraft:grass_block', 'minecraft:moss_block', 'minecraft:podzol',
+                                                     'minecraft:rooted_dirt'):
                 continue
             if pool_d(x, z) < RIM_R + 0.3:
                 continue
             v = sc.r()
             r = glade_d(x, z)
-            flowers = fbm(x * 0.28, z * 0.28, 23)
-            near = r < GLADE_R + 3
-            if flowers > 0.55 and v < (0.65 if near else 0.25):
-                pair = FLOWERS[int(fbm(x * 0.07, z * 0.07, 25) * 12) % len(FLOWERS)]
-                sc.set(x, gy, z, pair[0] if sc.r() < 0.6 else pair[1])
-            elif v < 0.30:
-                sc.set(x, gy, z, 'minecraft:grass')
-            elif v < 0.36 and sc.air(x, gy + 1, z):
-                tall(sc.pick([(3, 'tall_grass'), (2, 'large_fern')]), x, gy, z, sc)
-            elif v < 0.43:
-                sc.set(x, gy, z, 'minecraft:fern')
-            elif v < 0.445 and sc.air(x, gy + 1, z):
-                tall(sc.pick([(2, 'peony'), (1, 'rose_bush'), (2, 'lilac'), (1, 'pitcher_plant')]), x, gy, z, sc)
-            elif v < 0.47:
-                face = ('north', 'east', 'south', 'west')[int(vhash(x, z, 19) * 4) % 4]
-                sc.set(x, gy, z, f'minecraft:pink_petals[facing={face},flower_amount={1 + int(vhash(x, z, 23) * 4) % 4}]')
-            elif v < 0.49:
-                sc.set(x, gy, z, 'minecraft:moss_carpet')
+            if r < GLADE_R + 1:
+                flowers = fbm(x * 0.28, z * 0.28, 23)
+                if flowers > 0.52 and v < 0.6:
+                    pair = FLOWERS[int(fbm(x * 0.07, z * 0.07, 25) * 12) % len(FLOWERS)]
+                    sc.set(x, gy, z, pair[0] if sc.r() < 0.6 else pair[1])
+                elif v < 0.30:
+                    sc.set(x, gy, z, 'minecraft:grass')
+                elif v < 0.40:
+                    sc.set(x, gy, z, 'minecraft:fern')
+                elif v < 0.46 and sc.air(x, gy + 1, z):
+                    tall('large_fern', x, gy, z, sc)
+                elif v < 0.50:
+                    face = ('north', 'east', 'south', 'west')[int(vhash(x, z, 19) * 4) % 4]
+                    sc.set(x, gy, z, f'minecraft:pink_petals[facing={face},flower_amount={1 + int(vhash(x, z, 23) * 4) % 4}]')
+                elif v < 0.56:
+                    sc.set(x, gy, z, 'minecraft:moss_carpet')
+            else:
+                if v < 0.22:
+                    sc.set(x, gy, z, 'minecraft:fern')
+                elif v < 0.34 and sc.air(x, gy + 1, z):
+                    tall(sc.pick([(3, 'large_fern'), (2, 'tall_grass')]), x, gy, z, sc)
+                elif v < 0.46:
+                    sc.set(x, gy, z, 'minecraft:grass')
+                elif v < 0.56:
+                    sc.set(x, gy, z, 'minecraft:moss_carpet')
+                elif v < 0.58:
+                    sc.set(x, gy, z, sc.pick([(1, 'minecraft:red_mushroom'), (1, 'minecraft:brown_mushroom')]))
+                elif v < 0.60:
+                    sc.set(x, gy, z, 'minecraft:blue_orchid')
     for (cx, cz, rr) in ((-7, 6, 1.6), (8, 6, 1.4), (-10, -6, 1.5)):
         for k in range(10):
             a = k / 10 * math.tau
@@ -798,7 +846,16 @@ def clear_view(sc):
         d = np.array(at) - np.array(eye)
         L = float(np.linalg.norm(d))
         for s in np.arange(0.0, L, 0.4):
-            clear_ball(sc, np.array(eye) + d / L * s, 1)
+            clear_ball(sc, np.array(eye) + d / L * s, 2)
+    # y nada colgando entre la cámara y la crate (ni en la ruleta, encima)
+    for x in range(-6, 7):
+        for z in range(-3, 12):
+            for y in range(2, 12):
+                n = sc.name(x, y, z)
+                if n in ('minecraft:vine', 'minecraft:cave_vines', 'minecraft:cave_vines_plant', 'minecraft:chain') or \
+                        n.endswith('froglight'):
+                    if abs(x) < 4 or z > 2:
+                        sc.set(x, y, z, 'minecraft:air')
     for s in np.arange(4.0, 46.0, 0.6):
         clear_ball(sc, np.array(CRATE) + sun * s, 2 if s < 20 else 3, only_leaves=True)
 
@@ -812,7 +869,8 @@ def clear_ball(sc, p, r, only_leaves=False):
                 x, y, z = int(math.floor(p[0])) + dx, int(math.floor(p[1])) + dy, int(math.floor(p[2])) + dz
                 n = sc.name(x, y, z)
                 if 'leaves' in n or (not only_leaves and (n.endswith('_log') or n.endswith('_wood'))) or n in (
-                        'minecraft:cave_vines', 'minecraft:cave_vines_plant', 'minecraft:spore_blossom'):
+                        'minecraft:cave_vines', 'minecraft:cave_vines_plant', 'minecraft:spore_blossom', 'minecraft:vine',
+                        'minecraft:chain') or n.endswith('froglight'):
                     sc.set(x, y, z, 'minecraft:air')
 
 
@@ -870,19 +928,15 @@ def camera_at(tick):
 
 def anchors():
     wf = waterfall()
-    pts = {
+    return {
         'crate': CRATE,
         'pool': (CRATE[0], 0.875, CRATE[2], POOL_R),
         'sun': tuple(float(v) for v in SUN),
         'fall': wf[:4], 'fall_z': (wf[4], 0.0, 0.0, 0.0),
         'pond': (0.5, 0.875, CLIFF_Z + 2.0, 3.0),
-        'cherry0': (-10.5, 8.0, -8.5, 3.2), 'cherry1': (11.5, 8.0, 10.5, 3.2), 'cherry2': (-9.5, 8.0, 12.5, 3.2),
-        'cherry3': (-16.0, 20.0, 3.0, 8.0),
         'flowers0': (-7.0, 0.3, 7.0, 3.0), 'flowers1': (7.5, 0.3, 5.0, 3.0), 'flowers2': (-5.0, 0.3, -6.0, 2.5),
+        **{f'spring{i}': p for i, p in enumerate(spring_points())},
     }
-    for i, p in enumerate(spouts()):
-        pts[f'spout{i}'] = p
-    return pts
 
 
 def build():
@@ -890,9 +944,10 @@ def build():
     terrain(sc)
     cliff(sc)
     pool(sc)
-    fountains(sc)
+    springs(sc)
     elven_arch(sc)
-    colonnade(sc)
+    ruins(sc)
+    swamp(sc)
     forest(sc)
     flora(sc)
     clear_view(sc)

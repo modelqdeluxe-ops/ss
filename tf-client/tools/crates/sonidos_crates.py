@@ -7,8 +7,8 @@ Todo en Re mayor, a los tiempos de la cinemática del Bosque de las Hadas (20 ti
 1,0 s, entra a los 3,3, gira a los 3,6, las runas a los 3,8, tiembla a los 4,2, se abre a los 5,1, la ruleta de los
 6,4 a los 12,6 y el premio a los 12,9; dura 18 s.
 
-  ambiente        el bosque de las hadas al atardecer: la cascada, las hojas con el viento, grillos, campanitas de
-                  las hadas y algún mirlo que canta lejos (19 s, estéreo)
+  ambiente        el bosque de las hadas de noche, en el pantano: la cascada, las hojas con el viento, grillos,
+                  ranas, campanitas de las hadas y un búho lejos (19 s, estéreo)
   musica          la música de la cinemática, a sus tiempos (18 s, estéreo): cuerdas y arpa al llegar, celesta con la
                   llave, coro y campana al girar, trémolo que sube al temblar, acorde grande al abrirse, la ruleta con
                   un ostinato que se frena, silencio para el premio y un final tranquilo
@@ -170,23 +170,34 @@ def ambiente():
         k += 1
         at += 1.1 + r.random() * 1.8
 
-    # un mirlo lejos que canta al atardecer (y otro que contesta)
-    def warble(at, p, seed):
+    # ranas del pantano: croares graves en ráfagas, cada una desde su sitio
+    def croak(at, p, f0, seed, gain):
         rr = rng(seed)
-        k = at
-        for j in range(rr.integers(5, 8)):
-            f0 = 1700 + rr.random() * 1400
-            d = 0.07 + rr.random() * 0.1
-            x = chirp(f0, f0 * rr.uniform(0.75, 1.35), d, 'updown' if rr.random() < 0.6 else 'down', 0.15)
-            place(out, pan2(lp(x, 4500), p), k, 0.035 + 0.02 * rr.random())
-            k += d + 0.03 + rr.random() * 0.07
+        for j in range(rr.integers(1, 4)):
+            d = 0.16 + rr.random() * 0.12
+            tc = tt(d)
+            env = np.sin(np.pi * tc / d) ** 1.5
+            puls = 0.5 + 0.5 * np.sign(np.sin(2 * np.pi * (22 + rr.random() * 8) * tc))
+            ph = 2 * np.pi * np.cumsum(f0 * (1 + 0.08 * tc / d)) / SR
+            x = (np.sin(ph) + 0.6 * np.sin(2 * ph) + 0.35 * np.sin(3 * ph)) * env * (0.35 + 0.65 * puls)
+            x = bp(x, 180, 1600)
+            place(out, pan2(x, p), at + j * (d + 0.08 + rr.random() * 0.1), gain)
 
     k = 0
-    at = 1.4
-    while at < dur - 2.5:
-        warble(at, r.uniform(-0.9, 0.9), 100 + k)
+    at = 0.7
+    while at < dur - 1.0:
+        croak(at, r.uniform(-0.9, 0.9), 150 + r.random() * 120, 100 + k, 0.05 + 0.03 * r.random())
         k += 1
-        at += 3.2 + r.random() * 2.6
+        at += 1.1 + r.random() * 2.2
+
+    # un búho lejos: «uuh… uh-uuh»
+    def owl(at, p):
+        for j, (d, f) in enumerate(((0.45, 410), (0.18, 380), (0.5, 370))):
+            x = chirp(f, f * 0.95, d, 'updown', 0.25)
+            place(out, pan2(lp(x, 900), p), at + (0, 0.75, 1.0)[j], 0.045)
+
+    owl(4.2, -0.7)
+    owl(12.5, 0.6)
     out = sala(out, 3.0, 0.26, 5200, seed=1399)[:n]
     out = np.stack([hp(out[:, c], 90) for c in range(2)], 1)
     out *= smooth(0, 0.8, t)[:, None]

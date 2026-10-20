@@ -36,21 +36,37 @@ apertura, la metida de llave…». Tras ver la primera versión (un santuario en
 directamente ya cerca de la crate… mejora el shader… el resplandor más bello, las fuentes de agua mejor diseñadas, la
 estructura mejor diseñada, el fondo celestial… esas ruinas más bonitas… algo bello, como un bosque de hadas».
 
-Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que **empieza ya junto a la crate**: un bosque de
-hadas al atardecer. En medio, un estanque de agua turquesa con el fondo de linternas de mar, el borde de calcita y
-cuarzo y, sobre un pedestal con musgo, pétalos rosas, liquen que brilla y dos amatistas, **su crate de verdad** (el
-modelo y la tapa de su estilo); detrás, un montículo musgoso con
-**una cascada** que cae a un remanso y el arroyo que baja al estanque; dos fuentes en forma de flor (capitel de pétalos, copa de borde escalonado con amatistas, bayas
-luminosas colgando) que rebosan y echan su chorro; dos faroles; un
-arco élfico con lianas y amatistas; una columnata en ruinas alrededor; árboles gigantes con copas de cerezo y
-hongos-lámpara, setas que brillan, azaleas, liquen y bayas luminosas; el cielo del atardecer (oro en el horizonte, rosa,
-violeta, las primeras estrellas) y la bruma lila. Vuelan **hadas** de colores con estela, luciérnagas, pétalos y
-mariposas; la niebla baja se mueve sobre el agua.
+Y luego: «quiero una escena más oscura de hada pantanosa… ambiente de hada oscuro, bosque oscuro, el santuario con su
+haz de luz… el agua más azulita tipo tráileres de Minecraft o Minecraft Dungeons… el bloom no lo exageres tanto… que
+el haz de la crate no tape los ítems».
 
-La imagen pasa por **un shader propio** (`ScenePost` y `shaders/core/crate_*`): el cielo (`crate_sky`), el resplandor
-(`crate_bloom`: se baja a un cuarto, se queda lo que brilla y se desenfoca dos veces) y la imagen final (`crate_post`:
-resplandor, brillo soñador, **rayos de sol** que salen del sol aunque esté fuera de cuadro, colores del atardecer,
-curva suave y viñeta). Si los shaders no cargan, se dibuja como antes (directa, con el cielo en 2D).
+Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que **empieza ya junto a la crate**: un pantano de
+hadas de noche. En medio, un estanque de **agua azul** (la dibuja el juego, con su textura que se mueve; el fondo de
+linternas de mar y pepinos de mar la hace brillar) con un pedestal de piedra vieja con musgo, pétalos rosas, liquen que
+brilla y dos amatistas, y encima **su crate de verdad** (el modelo y la tapa de su estilo). **Un haz de luz dorada** baja
+desde un hueco de las copas sobre el santuario (con polvo que brilla dentro y su charco de luz). Detrás, **una cascada de
+agua de verdad** (agua que cae, como en el juego) que baja de un risco de musgo a un remanso, y el arco en ruinas de
+piedra con musgo, faroles, azalea y flores de esporas; a los lados, dos peñas con su chorro de agua que cae al estanque.
+Alrededor, **un bosque cerrado** (no se ve el cielo ni el horizonte: `python3 -I tools/crates/cielo_visible.py` lo
+comprueba con rayos desde la cámara): manglares y robles oscuros viejos con raíces en el barro y el agua, copas bajas, lianas largas, bayas
+luminosas, luces de rana colgando, setas gigantes, faroles de piedra, charcas con nenúfares y hojas de goteo, helechos,
+orquídeas azules y alliums; la bruma azul de lejos. Vuelan **hadas** de colores con estela y muchas luciérnagas.
+
+La imagen va **con shaders propios, como un paquete de shaders** (el dueño: «sin shaders, sin bloom, sin colores
+vivos… no las texturas de Minecraft así»), en `ScenePost` y `shaders/core/crate_*`:
+- **el agua** (`crate_water`, desde `SanctuaryScene.drawWaterFx`): no la textura del juego, sino azul profundo y
+  turquesa en las orillas, ondas que se mueven, cáusticas, el reflejo del cielo de noche, el brillo del haz en el agua,
+  destellos, la luz que sube del fondo (linternas y pepinos de mar) y espuma en la orilla; las cascadas, con vetas
+  blancas que bajan y espuma abajo (el agua que cae va como un chorro, más estrecha que un bloque);
+- el cielo de noche entre las copas (`crate_sky`);
+- el resplandor (`crate_bloom`: se baja a un cuarto, se queda lo que brilla y se desenfoca dos veces) y la imagen
+  entera desenfocada (para la profundidad de campo);
+- la imagen final (`crate_post`): **profundidad de campo** (la crate nítida, el bosque de detrás desenfocado, con la
+  profundidad de la escena), **resplandor** fuerte en lo que brilla (en la penumbra solo brillan las luces), rayos que
+  salen del haz, **colores vivos** (sombras turquesa y azules, luces doradas, saturación ×1,5, algo de contraste) y
+  viñeta. La oclusión ambiental (la luz suave de las esquinas) la pone el renderizador de bloques del juego.
+
+Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 
 | tick (20/s) | qué pasa |
 |---|---|
@@ -75,24 +91,33 @@ apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
 ### Piezas
 
 - **`tools/crates/santuario.py`** → `assets/fscrates/escena/santuario.bin` (formato v2): la escena (paleta de estados
-  de bloque de Minecraft con sus marcas —se mece, agua, brilla— + bloques), los puntos (`crate`, `pool`, `sun`,
-  `spout0..1`, `fall`/`fall_z` (la cascada), `pond` (el remanso), `cherry0..3`, `flowers0..2`), **la ruta de la
+  de bloque de Minecraft con sus marcas —se mece, agua, brilla— + bloques), los puntos (`crate`, `pool`, `sun` (la
+  dirección del haz), `fall`/`fall_z` (la cascada), `pond` (el remanso), `spring0..1` (las fuentes de las peñas),
+  `flowers0..2`), **la ruta de la
   cámara** (`CAMERA`: tick, ojo, mira, campo de visión; Catmull-Rom) y **las luces mágicas** (cada bloque que brilla,
   con su color y su tamaño: el halo y la luz de alrededor). Cambias la escena o la cámara aquí y lo vuelves a ejecutar
   (`python3 -I tools/crates/santuario.py`).
-- **`tools/crates/santuario_preview.py`**: vista previa sin el juego (bloques de colores, la crate en dorado y la
-  ruleta en magenta), desde la misma cámara: `xvfb-run -a python3 -I tools/crates/santuario_preview.py <carpeta> [ticks]`.
+- **`tools/crates/santuario_render.py`**: **la vista previa con las texturas de verdad** (los modelos y texturas de
+  Minecraft 1.20.1: baja el jar del cliente de Mojang la primera vez a `~/.cache/tfclient/`; no se sube al repo), la
+  misma luz que `SanctuaryScene.light`, el agua, la niebla, la crate, el haz, los halos, las luciérnagas, y luego los
+  **mismos shaders del mod**: `xvfb-run -a python3 -I tools/crates/santuario_render.py <carpeta> [ticks]` (unos 25 s).
+  Es lo que hay que mirar antes de gastar una prueba en el juego (no dibuja la llave ni los premios ni hace oclusión
+  ambiental). Si cambias colores, luz o niebla en el mod, cámbialos también arriba de este script.
+- **`tools/crates/santuario_preview.py`**: la vista previa rápida (bloques de colores), desde la misma cámara:
+  `xvfb-run -a python3 -I tools/crates/santuario_preview.py <carpeta> [ticks]`.
 - **`crates/client/scene/SanctuaryScene`**: carga el `.bin`, construye los bloques una vez con el renderizador de
   Minecraft (oclusión ambiental, caras tapadas, colores de bioma) sobre su mundo propio (`SceneLevel`) en búferes de la
-  tarjeta gráfica, con **la luz de la escena en el color** (`light`: el atardecer frío en la sombra, el haz cálido
-  sobre la crate, manchas de sol, las copas teñidas, y la luz de color de las luces mágicas cercanas, por celdas); los
-  bloques que brillan van sin sombra; el agua la dibuja ella; las plantas cerca de la crate se mecen (`drawPlants`).
+  tarjeta gráfica, con **la luz de la escena en el color** (`light`: la penumbra azul del pantano, el haz dorado
+  sobre la crate, el azul del estanque desde abajo y la luz de color de las luces mágicas cercanas, por celdas); los
+  bloques que brillan van sin sombra; **el agua la dibuja el renderizador de agua del juego** (`renderLiquid`, con
+  `Liquid`: la pone en su sitio y le da la luz, con un mínimo para que se vea azul y viva); las plantas cerca de la
+  crate se mecen (`drawPlants`).
 - **`crates/client/scene/ScenePost`**: el shader (texturas de la escena y del resplandor, el cielo, el resplandor y la
   imagen final). Se registran en `RegisterShadersEvent` (`ScenePost.Shaders`).
-- **`crates/client/scene/CinematicFx`**: lo que se mueve (haces de sol, polvo, halos de las luces, hadas, luciérnagas,
-  niebla, la cascada y su espuma, chorros y el agua que rebosa de las copas con la textura del agua que corre, gotas,
-  ondas, pétalos, mariposas, runas, pilar de luz, ondas de la apertura y del premio, destellos, rayos). Sin estado:
-  cada partícula sale de su índice y del tiempo.
+- **`crates/client/scene/CinematicFx`**: lo que se mueve (el haz de luz y su polvo, halos de las luces, hadas,
+  luciérnagas, niebla, la espuma y las ondas de la cascada y de las fuentes, pétalos, runas, pilar de luz, ondas de la
+  apertura y del premio, destellos, rayos). Sin estado: cada partícula sale de su índice y del tiempo. El haz y el
+  pilar bajan mientras gira la ruleta y en el premio (el dueño: que no tapen los premios).
 - **`crates/client/scene/SceneRenderTypes`**: sus capas (todas a la imagen que esté puesta: la del shader o la
   principal). La llave y los premios se dibujan con el «modo panorámico» del GameRenderer puesto mientras tanto: así
   con gráficos «Fabulosos» no se van a la capa de objetos del mundo, que en una pantalla nadie compone.
@@ -101,7 +126,7 @@ apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
   (`mixin/crates/LevelRendererMixin`). Si el bosque no carga o falla al dibujarse, sale **la de siempre**
   (`CrateCinematicClassic`, la de Fantastic Crates) y lo dice en el log; si falla solo el shader, sigue sin él.
 - **`tools/crates/sonidos_crates.py`** → `assets/tfclient/sounds/crates/*.ogg` (eventos `tfclient:crates.*` en
-  `sounds.json`): el ambiente (la cascada, el viento en las hojas, grillos, campanitas de las hadas, un mirlo lejos),
+  `sounds.json`): el ambiente (la cascada, el viento en las hojas, grillos, ranas, campanitas de las hadas, un búho),
   **la música a los tiempos de la escena** (Re mayor: llegada, llave, giro, temblor, apertura, ruleta que se frena,
   hueco para el premio, final) y los efectos (llave aparece, entra, gira; runas; temblor; apertura; tic; parada;
   premio1..3 según la rareza). Si cambias los tiempos de la cinemática, cambia los de arriba del script (`KEY_APPEAR`…)

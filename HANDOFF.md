@@ -69,11 +69,15 @@ directamente ya cerca de la crate… mejora el shader… el resplandor más bell
   `net.tierrasfantasticas.tfclient.crates`), comando **`/tf crates`**; el espacio de nombres `fscrates` se queda (las
   crates puestas, las llaves y las cajas en JSON siguen valiendo). **Hay que quitar `Fantastic Crates 8.jar`** del
   servidor y de los clientes (si sigue, TF Crates no se registra y lo dice en el log).
-- **La cinemática nueva: el Bosque de las Hadas** (18 s, en 3D y en vivo, empieza junto a la crate): estanque turquesa
-  con la crate en su pedestal, cascada, fuentes-copa, arco élfico, columnata en ruinas, árboles gigantes, setas que
-  brillan, hadas, luciérnagas, atardecer; la llave que entra y gira, el temblor, la apertura con pilar de luz, la
-  ruleta en anillo y el premio. **Shader propio** (`ScenePost`: cielo, resplandor, rayos de sol, colores). Los demás ven
-  la crate del mundo a los mismos tiempos. Si algo falla, sale la cinemática de siempre.
+- **La cinemática nueva: el Bosque de las Hadas**, un pantano de hadas de noche (18 s, en 3D y en vivo, empieza junto
+  a la crate; el dueño rechazó el claro al atardecer: «veo una pradera con cerezos… quiero una escena más oscura de hada
+  pantanosa»): estanque de agua azul (la dibuja el juego) con la crate en su pedestal de piedra con musgo, **un haz de
+  luz dorada** que baja sobre el santuario, cascada de agua de verdad, arco en ruinas, manglares y robles oscuros con
+  lianas y bayas luminosas, charcas, hadas y luciérnagas; la llave que entra y gira, el temblor, la apertura con pilar
+  de luz, la ruleta en anillo y el premio. **Shader propio** (`ScenePost`: resplandor moderado, rayos, colores vivos).
+  Antes de gastar una prueba en el juego, mírala con `tools/crates/santuario_render.py` (las texturas de verdad y los
+  mismos shaders) y `cielo_visible.py` (que no se vea horizonte). El dueño pide **una sola prueba en el juego** por
+  cambio. Los demás ven la crate del mundo a los mismos tiempos. Si algo falla, sale la cinemática de siempre.
 - **La música que eligió el dueño** va en un resource pack aparte (se le dio hecho; sustituye `tfclient:crates.musica`);
   no se sube al repo ni a las Releases. No le vuelvas a sacar el tema.
 - Prueba en el juego: `[prueba-jefes=crates]` (dos aperturas, 11 capturas cada una).

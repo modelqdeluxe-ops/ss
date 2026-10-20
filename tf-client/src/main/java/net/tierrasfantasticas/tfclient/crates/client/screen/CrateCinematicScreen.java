@@ -1,6 +1,5 @@
 package net.tierrasfantasticas.tfclient.crates.client.screen;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -79,7 +78,6 @@ import org.lwjgl.opengl.GL11;
  * (CrateCinematicClassic).
  */
 public class CrateCinematicScreen extends Screen {
-    private static final ResourceLocation GLOW_TEX = new ResourceLocation("fscrates", "textures/gui/glow.png");
     private static final int TOTAL = CrateCinematicTiming.TOTAL_TICKS;
     static final int KEY_APPEAR = 20, KEY_ALIGN = 56, KEY_IN = 66, KEY_TURN0 = 70, KEY_TURN1 = 80;
     static final int RUNES0 = 74, RUNES1 = 96, TREMBLE0 = 84, OPEN = 102;
@@ -104,7 +102,6 @@ public class CrateCinematicScreen extends Screen {
     private int[] strip;
     private final List<SoundInstance> playing = new ArrayList<>();
     private final List<Track> tracks = new ArrayList<>();
-    private float[] sunScreen;
     private ScenePost post;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
@@ -827,9 +824,9 @@ public class CrateCinematicScreen extends Screen {
         overlay(g, sc, t);
     }
 
-    private static final float[] SKY_TOP = {0.34F, 0.57F, 0.93F}, SKY_HORIZON = {1.0F, 0.88F, 0.68F}, FOG = {0.94F, 0.88F, 0.74F};
-    /** La bruma del atardecer en el bosque (con el shader): lila y rosa, como el cielo bajo. */
-    private static final float[] DUSK_FOG = {0.66F, 0.52F, 0.64F};
+    /** El cielo de respaldo (si el shader no carga) y la bruma del pantano de noche: azul muy oscuro (los árboles de lejos
+     *  se pierden en ella). */
+    private static final float[] SKY_TOP = {0.03F, 0.04F, 0.12F}, SKY_HORIZON = {0.20F, 0.16F, 0.34F}, FOG = {0.06F, 0.09F, 0.15F};
 
     private void renderScene(GuiGraphics g, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
@@ -883,10 +880,9 @@ public class CrateCinematicScreen extends Screen {
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.depthMask(true);
-        float[] fog = pp ? DUSK_FOG : FOG;
-        RenderSystem.setShaderFogStart(pp ? 24.0F : 26.0F);
-        RenderSystem.setShaderFogEnd(pp ? 92.0F : 78.0F);
-        RenderSystem.setShaderFogColor(fog[0], fog[1], fog[2]);
+        RenderSystem.setShaderFogStart(9.0F);
+        RenderSystem.setShaderFogEnd(50.0F);
+        RenderSystem.setShaderFogColor(FOG[0], FOG[1], FOG[2]);
         RenderSystem.setShaderFogShape(FogShape.SPHERE);
         for (ShaderInstance sh : new ShaderInstance[] {GameRenderer.getRendertypeSolidShader(), GameRenderer.getRendertypeCutoutShader(),
                 GameRenderer.getRendertypeCutoutMippedShader(), GameRenderer.getRendertypeTranslucentShader()}) {
@@ -914,19 +910,14 @@ public class CrateCinematicScreen extends Screen {
             buf.endBatch();
             if (pp) post.rebind();
 
-            // el agua (el estanque, la cascada, los chorros y lo que rebosa de las copas), translúcida
-            sc.drawWater(view, proj);
+            // el agua (el estanque, las charcas, la cascada y las fuentes: la dibuja el juego), translúcida
+            if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
-            CinematicFx.waterfall(buf, fv, sc, t);
-            CinematicFx.streams(buf, fv, sc, t, surge);
-            CinematicFx.overflow(buf, fv, sc, t);
-            buf.endBatch(CinematicFx.waterType());
 
-            // pétalos, mariposas y las alas de las hadas
+            // los pétalos de la apertura y del premio, y las alas de las hadas
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
             CinematicFx.petals(soft, fv.m, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
             if (t >= REVEAL) CinematicFx.petals(soft, fv.m, sc, t, t - REVEAL, 0.8F);
-            CinematicFx.butterflies(soft, fv.m, sc, t);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
             CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
@@ -942,15 +933,18 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.waterfallLights(glow, fv, sc, t);
             CinematicFx.fireflies(glow, fv, t);
             CinematicFx.fairies(glow, fv, sc, t, excite, false);
-            CinematicFx.sunShafts(glow, fv, sc, t, 1.0F + open * 0.6F + pulseAt(t, REVEAL, 30.0F), rarityColor, tintAmt);
-            CinematicFx.motes(glow, fv, sc, t, 1.0F + open * 0.5F);
+            // el haz baja mientras gira la ruleta y en el premio (que no tape los premios)
+            float ring = smooth(RING0, RING1, t) * (t >= REVEAL + 40 ? 1.0F - 0.5F * smooth(REVEAL + 40, REVEAL + 70, t) : 1.0F);
+            float shaft = (1.0F + open * 0.5F) * (1.0F - 0.45F * ring);
+            CinematicFx.sunShafts(glow, fv, sc, t, shaft, rarityColor, tintAmt);
+            CinematicFx.motes(glow, fv, sc, t, shaft);
             float runeLit = smooth(RUNES0, RUNES1, t) * (t > REVEAL + 50 ? Math.max(0.3F, 1.0F - (t - REVEAL - 50) / 40.0F) : 1.0F);
             float glowWater = smooth(KEY_TURN0, KEY_TURN1 + 6, t) * (0.6F + 0.4F * pulseAt(t, OPEN, 40.0F) + 0.4F);
             CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
             CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
             float[] c = sc.anchor("crate");
-            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.75F + 0.6F * pulseAt(t, REVEAL, 30.0F)
-                    : t >= RING0 ? 1.0F - 0.45F * smooth(RING0, RING1, t) : 1.0F);
+            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.25F + 0.4F * pulseAt(t, REVEAL, 24.0F)
+                    : t >= RING0 ? 1.0F - 0.7F * smooth(RING0, RING1, t) : 1.0F);
             if (t > TOTAL - 20) pillar *= Math.max(0.0F, (TOTAL - t) / 20.0F) * 0.5F + 0.5F;
             CinematicFx.pillar(glow, fv, c[0], c[1] + crateH * 0.75F, c[2], 9.0F, pillar, t, rarityColor);
             CinematicFx.shockwave(glow, fv, c[0], sc.anchor("pool")[1] + 0.03F, c[2], t - OPEN, 30.0F, 8.0F, rarityColor);
@@ -992,10 +986,14 @@ public class CrateCinematicScreen extends Screen {
                     float d = (float)Math.sqrt((su - 0.5F) * (su - 0.5F) + (sv - 0.5F) * (sv - 0.5F));
                     vis = Math.max(0.0F, Math.min(1.0F, 1.3F - 0.42F * d));
                 }
+                // (el dueño: «el bloom no lo exageres tanto, pero así está bien» y luego «sin bloom… sin colores vivos»: en la
+                // penumbra solo brilla lo que tiene luz, así que el resplandor va fuerte)
                 float burst = pulseAt(t, OPEN, 36.0F) + pulseAt(t, REVEAL, 40.0F);
-                float bloomK = 0.85F + 0.2F * smooth(OPEN, OPEN + 20, t) + 0.45F * burst;
-                float rayK = 0.75F + 0.25F * smooth(OPEN, OPEN + 20, t) + 0.5F * burst;
-                post.finish(su, sv, vis, bloomK, rayK, 1.5F);
+                float bloomK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.3F * burst;
+                float rayK = 0.6F + 0.15F * smooth(OPEN, OPEN + 20, t) + 0.3F * burst;
+                float[] cc = sc.anchor("crate");
+                float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
+                post.finish(su, sv, vis, bloomK, rayK, 1.6F, focus, 0.05F, 220.0F);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);
@@ -1019,7 +1017,7 @@ public class CrateCinematicScreen extends Screen {
         return post != null && !postFailed && ScenePost.ready();
     }
 
-    /** El cielo: degradado del azul al dorado del horizonte, el sol (fuera de cuadro, arriba a la izquierda) y nubes. */
+    /** El cielo de respaldo (sin el shader): un degradado de la noche. */
     private void sky(GuiGraphics g, SanctuaryScene sc, Matrix4f view, Matrix4f proj, Vector3f eye, float t) {
         int w = width, h = height;
         // la altura del horizonte en pantalla
@@ -1031,27 +1029,6 @@ public class CrateCinematicScreen extends Screen {
         int top = argb(SKY_TOP, 1.0F), hor = argb(SKY_HORIZON, 1.0F);
         if (hy > 0) g.fillGradient(0, 0, w, Math.min(h, hy), top, hor);
         if (hy < h) g.fillGradient(0, Math.max(0, hy), w, h, hor, argb(FOG, 1.0F));
-        // el sol
-        Vector3f sun = sc.sunDir();
-        float[] sp = project(view, proj, new Vector3f(eye).add(new Vector3f(sun).mul(1000.0F)), w, h);
-        sunScreen = sp;
-        if (sp != null) {
-            glow2d(g, sp[0], sp[1], w * 1.4F, w * 1.4F, 0xFFE7B0, 0.55F);
-            glow2d(g, sp[0], sp[1], w * 0.55F, w * 0.55F, 0xFFF4D6, 0.6F);
-            glow2d(g, sp[0], sp[1], w * 0.16F, w * 0.16F, 0xFFFFFF, 0.9F);
-        }
-        // nubes: grupos de manchas suaves que pasan despacio
-        for (int i = 0; i < 7; i++) {
-            float az = (float)Math.toRadians(-70 + i * 26 + t * 0.012F);
-            float el = (float)Math.toRadians(14 + (i * 37 % 19));
-            Vector3f d = new Vector3f((float)Math.sin(az) * (float)Math.cos(el), (float)Math.sin(el), -(float)Math.cos(az) * (float)Math.cos(el));
-            float[] p = project(view, proj, new Vector3f(eye).add(d.mul(1000.0F)), w, h);
-            if (p == null) continue;
-            for (int k = 0; k < 5; k++) {
-                float ox = (k - 2) * w * 0.035F, oy = (float)Math.sin(k * 1.9F + i) * h * 0.012F;
-                glow2d(g, p[0] + ox, p[1] + oy, w * (0.09F + (k % 2) * 0.04F), h * 0.06F, 0xFFF6EA, 0.38F);
-            }
-        }
     }
 
     private static float[] project(Matrix4f view, Matrix4f proj, Vector3f p, int w, int h) {
@@ -1067,22 +1044,11 @@ public class CrateCinematicScreen extends Screen {
         return ((int)(a * 255) << 24) | ((int)(c[0] * 255) << 16) | ((int)(c[1] * 255) << 8) | (int)(c[2] * 255);
     }
 
-    private static void glow2d(GuiGraphics g, float cx, float cy, float w, float h, int rgb, float alpha) {
-        if (alpha <= 0.004F || w < 1 || h < 1) return;
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        g.setColor(((rgb >> 16) & 255) / 255.0F, ((rgb >> 8) & 255) / 255.0F, (rgb & 255) / 255.0F, Math.min(1.0F, alpha));
-        g.blit(GLOW_TEX, Math.round(cx - w / 2), Math.round(cy - h / 2), Math.round(w), Math.round(h), 0, 0, 128, 128, 128, 128);
-        g.setColor(1, 1, 1, 1);
-        RenderSystem.defaultBlendFunc();
-    }
-
     // ---------------------------------------------------------------------------------------------- lo de encima
     private void overlay(GuiGraphics g, SanctuaryScene sc, float t) {
         int w = width, h = height;
         boolean pp = postActive();
         if (!pp) {
-            sunLight(g, t);
             // viñeta suave (con el shader la pone él)
             g.fillGradient(0, 0, w, h / 5, 0x55000000, 0x00000000);
             g.fillGradient(0, h - h / 5, w, h, 0x00000000, 0x55000000);
@@ -1130,44 +1096,6 @@ public class CrateCinematicScreen extends Screen {
         if (canSkip() && t > 20 && t < TOTAL - 20) {
             g.drawString(font, "§8[Espacio] saltar", w - font.width("[Espacio] saltar") - 6, h - barH - 12, 0xFFFFFFFF, false);
         }
-    }
-
-    /**
-     * El sol por encima de la escena: su resplandor cálido (aunque esté fuera de cuadro, arriba a la izquierda) y
-     * rayos que salen de él y respiran despacio (la luz entre los árboles que pidió el dueño: «un haz del sol sobre el
-     * lugar»). Luz que suma.
-     */
-    private void sunLight(GuiGraphics g, float t) {
-        float[] sp = sunScreen;
-        if (sp == null) return;
-        int w = width, h = height;
-        float open = smooth(OPEN - 2, OPEN + 12, t) * 0.3F + pulseAt(t, REVEAL, 30.0F) * 0.3F;
-        glow2d(g, sp[0], sp[1], w * 1.5F, w * 1.5F, 0xFFD9A0, 0.28F + open * 0.3F);
-        glow2d(g, sp[0], sp[1], w * 0.7F, w * 0.7F, 0xFFF0D0, 0.22F);
-        float base = (float)Math.atan2(h * 0.55F - sp[1], w * 0.5F - sp[0]);
-        float len = (float)Math.sqrt(w * w + h * h) * 1.4F;
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        com.mojang.blaze3d.vertex.BufferBuilder bb = com.mojang.blaze3d.vertex.Tesselator.getInstance().getBuilder();
-        bb.begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.TRIANGLES, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
-        Matrix4f m = g.pose().last().pose();
-        for (int i = 0; i < 13; i++) {
-            float k = i / 12.0F - 0.5F;
-            float ang = base + k * 1.15F + (float)Math.sin(t * 0.006F + i * 1.7F) * 0.03F;
-            float half = 0.012F + 0.02F * (float)Math.abs(Math.sin(i * 2.31F));
-            float breathe = 0.55F + 0.45F * (float)Math.sin(t * (0.02F + 0.01F * (i % 3)) + i * 2.0F);
-            float a = (0.075F + 0.05F * (1.0F - Math.abs(k) * 2.0F)) * breathe * (1.0F + open);
-            float x1 = sp[0] + (float)Math.cos(ang - half) * len, y1 = sp[1] + (float)Math.sin(ang - half) * len;
-            float x2 = sp[0] + (float)Math.cos(ang + half) * len, y2 = sp[1] + (float)Math.sin(ang + half) * len;
-            bb.vertex(m, sp[0], sp[1], 0).color(1.0F, 0.93F, 0.74F, a).endVertex();
-            bb.vertex(m, x1, y1, 0).color(1.0F, 0.88F, 0.62F, 0.0F).endVertex();
-            bb.vertex(m, x2, y2, 0).color(1.0F, 0.88F, 0.62F, 0.0F).endVertex();
-        }
-        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bb.end());
-        RenderSystem.enableCull();
-        RenderSystem.defaultBlendFunc();
     }
 
     private void drawScaled(GuiGraphics g, String s, int cx, int y, float scale, int argb) {

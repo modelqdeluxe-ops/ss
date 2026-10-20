@@ -25,7 +25,6 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -33,9 +32,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -62,7 +61,7 @@ public final class SanctuaryScene {
     private static SanctuaryScene instance;
     private static boolean failed;
 
-    /** Puntos de la escena (x, y, z, w): crate, pool, sun, spout0..3, cherry0..3, flowers0..2. */
+    /** Puntos de la escena (x, y, z, w): crate, pool, sun, fall, fall_z, pond, flowers0..2. */
     public final Map<String, float[]> anchors = new HashMap<>();
     /** La ruta de la cámara: tick, ojo (3), mira (3), campo de visión. */
     public final List<float[]> camera = new ArrayList<>();
@@ -77,9 +76,10 @@ public final class SanctuaryScene {
     private final Vector3f sun = new Vector3f(), crate = new Vector3f();
 
     private final Map<RenderType, VertexBuffer> buffers = new HashMap<>();
+    /** El agua para su shader (crate_water): superficie y cascadas, con la orilla, el brillo del fondo y la luz. */
+    private VertexBuffer waterFx;
     private final List<Plant> plants = new ArrayList<>();
     private Object builtFor;
-    private TextureAtlasSprite waterSprite;
 
     private SanctuaryScene(BlockState[] palette, int[] flags, List<int[]> blocks, SceneLevel level) {
         this.palette = palette;
@@ -200,22 +200,25 @@ public final class SanctuaryScene {
      */
     void light(float x, float y, float z, float[] out) {
         float off = beamOffset(x, y, z);
-        float beam = (float)Math.exp(-off * off / 10.0F);
+        float beam = (float)Math.exp(-off * off / 5.0F);
         float dapple = dapple(x, z) * (y < 2.5F ? 1.0F : 0.4F);
         float top = Math.max(0.0F, Math.min(1.0F, (y - 9.0F) / 9.0F));
-        float r = 0.60F, g = 0.62F, b = 0.76F;
-        r += 0.62F * beam + 0.14F * dapple + 0.22F * top;
-        g += 0.48F * beam + 0.10F * dapple + 0.10F * top;
-        b += 0.22F * beam + 0.04F * dapple + 0.12F * top;
+        // el estanque alumbra de azul lo que tiene cerca (el pedestal, el borde), desde abajo
+        float px = x - crate.x, pz = z - crate.z;
+        float pond = (float)Math.exp(-(px * px + pz * pz) / 40.0F) * Math.max(0.0F, Math.min(1.0F, (4.0F - y) / 3.0F));
+        float r = 0.34F, g = 0.40F, b = 0.56F;
+        r += 1.25F * beam + 0.05F * dapple + 0.06F * top + 0.06F * pond;
+        g += 1.05F * beam + 0.07F * dapple + 0.03F * top + 0.22F * pond;
+        b += 0.62F * beam + 0.10F * dapple + 0.12F * top + 0.34F * pond;
         List<float[]> near = lightGrid.get(cell((int)Math.floor(x / 4), (int)Math.floor(y / 4), (int)Math.floor(z / 4)));
         if (near != null) {
             for (float[] l : near) {
                 float dx = x - l[0], dy = y - l[1], dz = z - l[2];
                 float d2 = dx * dx + dy * dy + dz * dz;
-                float reach = 3.5F * l[6] + 1.0F;
+                float reach = 3.5F * l[6] + 1.5F;
                 if (d2 >= reach * reach) continue;
                 float k = 1.0F - (float)Math.sqrt(d2) / reach;
-                k = k * k * 0.75F * Math.min(1.2F, l[6] + 0.3F);
+                k = k * k * 1.0F * Math.min(1.2F, l[6] + 0.3F);
                 r += l[3] * k;
                 g += l[4] * k;
                 b += l[5] * k;
@@ -323,6 +326,92 @@ public final class SanctuaryScene {
         }
     }
 
+    /**
+     * Para el agua que dibuja el juego (LiquidBlockRenderer): pone sus vértices (relativos a su sección de 16) en su
+     * sitio y les da la luz de la escena, con un mínimo para que el agua mágica se vea azul y viva en la penumbra.
+     */
+    final class Liquid implements VertexConsumer {
+        VertexConsumer to;
+        float ox, oy, oz;
+        final float[] l = new float[3];
+
+        Liquid on(VertexConsumer to, int x, int y, int z) {
+            this.to = to;
+            ox = x - (x & 15);
+            oy = y - (y & 15);
+            oz = z - (z & 15);
+            return this;
+        }
+
+        @Override
+        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light,
+                           float nx, float ny, float nz) {
+            vertex((double)x, y, z);
+            color(r, g, b, a);
+            uv(u, v);
+            uv2(light);
+            normal(nx, ny, nz);
+            endVertex();
+        }
+
+        @Override
+        public VertexConsumer vertex(double x, double y, double z) {
+            float wx = (float)x + ox, wy = (float)y + oy, wz = (float)z + oz;
+            light(wx, wy, wz, l);
+            for (int i = 0; i < 3; i++) l[i] = Math.min(1.0F, Math.max(l[i], WATER_GLOW[i]) * 1.15F);
+            to.vertex(wx, wy, wz);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a) {
+            to.color((int)(r * l[0]), (int)(g * l[1]), (int)(b * l[2]), (int)(a * 0.86F));
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v) {
+            to.uv(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v) {
+            to.overlayCoords(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v) {
+            to.uv2(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z) {
+            to.normal(x, y, z);
+            return this;
+        }
+
+        @Override
+        public void endVertex() {
+            to.endVertex();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a) {
+            to.defaultColor(r, g, b, a);
+        }
+
+        @Override
+        public void unsetDefaultColor() {
+            to.unsetDefaultColor();
+        }
+    }
+
+    /** Lo menos que brilla el agua (es agua de hadas: azul y viva aunque esté en la sombra). */
+    private static final float[] WATER_GLOW = {0.62F, 0.72F, 0.85F};
+
     // ------------------------------------------------------------------------------------------ construir la escena
     /** Una planta que se mece: su sitio, su modelo, su capa, su tinte y su luz. */
     private record Plant(float x, float y, float z, BlockState state, BakedModel model, RenderType type, float r, float g, float b,
@@ -349,9 +438,9 @@ public final class SanctuaryScene {
         RandomSource rand = RandomSource.create();
         PoseStack pose = new PoseStack();
         Shade shade = new Shade();
+        Liquid liquid = new Liquid();
         int quads = 0;
         plants.clear();
-        waterSprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(new ResourceLocation("minecraft", "block/water_still"));
         for (int[] b : blocks) {
             BlockState st = palette[b[3]];
             if (sways(b) && st.getRenderShape() == RenderShape.MODEL) {
@@ -367,9 +456,13 @@ public final class SanctuaryScene {
                 int fl = flags[b[3]];
                 if (st.isAir() || sways(b)) continue;
                 BlockPos pos = new BlockPos(b[0], b[1], b[2]);
-                if ((fl & F_WATER) != 0) {
-                    if (layer == SceneRenderTypes.WATER) quads += water(bb, b[0], b[1], b[2]);
-                    continue;
+                if ((fl & F_WATER) != 0 || !st.getFluidState().isEmpty()) {
+                    // el agua, como la dibuja el juego (la que cae, la cascada, con su textura que corre)
+                    if (layer == SceneRenderTypes.WATER && !st.getFluidState().isEmpty()) {
+                        disp.renderLiquid(pos, level, liquid.on(bb, b[0], b[1], b[2]), st, st.getFluidState());
+                        quads++;
+                    }
+                    if ((fl & F_WATER) != 0) continue;
                 }
                 if (st.getRenderShape() != RenderShape.MODEL) continue;
                 BakedModel model = disp.getBlockModel(st);
@@ -399,6 +492,7 @@ public final class SanctuaryScene {
                 buffers.put(layer, vb);
             }
         }
+        buildWaterFx();
         FSCrates.LOGGER.info("[TF Crates] Santuario construido: {} bloques, {} plantas al viento, {} ms", blocks.size(), plants.size(),
                 (System.nanoTime() - t0) / 1_000_000);
     }
@@ -428,26 +522,116 @@ public final class SanctuaryScene {
         }
     }
 
-    /** La superficie del agua (14/16 de alto si no hay agua encima), con la textura del agua quieta y su color. */
-    private int water(BufferBuilder bb, int x, int y, int z) {
-        BlockState above = level.get(x, y + 1, z);
-        if (!above.getFluidState().isEmpty()) return 0;
-        TextureAtlasSprite sp = waterSprite;
-        float h = y + 0.875F;
+    // --------------------------------------------------------------------------------------------- el agua (shader)
+    private boolean isWater(int x, int y, int z) {
+        return !level.get(x, y, z).getFluidState().isEmpty();
+    }
+
+    private boolean solidAt(int x, int y, int z) {
+        BlockState st = level.get(x, y, z);
+        return !st.isAir() && st.isSolidRender(level, new BlockPos(x, y, z));
+    }
+
+    private boolean glowsAt(int x, int y, int z) {
+        BlockState st = level.get(x, y, z);
+        return st.is(Blocks.SEA_LANTERN) || st.is(Blocks.SEA_PICKLE);
+    }
+
+    /**
+     * El agua para el shader crate_water (la misma cuenta que santuario_render.water_mesh): la superficie (14/16 de alto)
+     * con, en cada esquina, cuánta orilla tiene (r), el brillo del fondo (b: linternas de mar, pepinos de mar) y la luz
+     * de la escena (a); y los lados donde el agua da al aire (las cascadas y las fuentes: g = 1, con uv = (a lo ancho,
+     * metros desde abajo)). El agua que cae va un poco más estrecha por los lados que dan al aire (un chorro, no un cubo).
+     */
+    private void buildWaterFx() {
+        BufferBuilder bb = Tesselator.getInstance().getBuilder();
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
         float[] l = new float[3];
-        int c = SceneLevel.WATER;
-        float r = ((c >> 16) & 255) / 255.0F, g = ((c >> 8) & 255) / 255.0F, b = (c & 255) / 255.0F;
-        int light = LightTexture.FULL_BRIGHT;
-        float[][] corners = {{x, z}, {x, z + 1}, {x + 1, z + 1}, {x + 1, z}};
-        float[][] uv = {{sp.getU0(), sp.getV0()}, {sp.getU0(), sp.getV1()}, {sp.getU1(), sp.getV1()}, {sp.getU1(), sp.getV0()}};
-        for (int i = 0; i < 4; i++) {
-            light(corners[i][0], h, corners[i][1], l);
-            float lift = 1.25F;
-            bb.vertex(corners[i][0], h, corners[i][1]).color(Math.min(1, r * l[0] * lift), Math.min(1, g * l[1] * lift),
-                    Math.min(1, b * l[2] * lift), 0.72F).uv(uv[i][0], uv[i][1]).uv2(light)
-                    .normal(0, 1, 0).endVertex();
+        int n = 0;
+        for (int[] b : blocks) {
+            int x = b[0], y = b[1], z = b[2];
+            if (!isWater(x, y, z)) continue;
+            BlockState st = palette[b[3]];
+            boolean above = isWater(x, y + 1, z);
+            boolean falling = st.hasProperty(LiquidBlock.LEVEL) && st.getValue(LiquidBlock.LEVEL) >= 8;
+            float h = above ? 1.0F : 0.875F;
+            float in = falling ? 0.16F : 0.0F;
+            float x0 = x + (isWater(x - 1, y, z) ? 0 : in), x1 = x + 1 - (isWater(x + 1, y, z) ? 0 : in);
+            float z0 = z + (isWater(x, y, z - 1) ? 0 : in), z1 = z + 1 - (isWater(x, y, z + 1) ? 0 : in);
+            if (!above) {
+                int[][] cs = {{x, z}, {x + 1, z}, {x + 1, z + 1}, {x, z + 1}};
+                float[][] ps = {{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}};
+                for (int i = 0; i < 4; i++) {
+                    int cx = cs[i][0], cz = cs[i][1];
+                    int dry = 0, glow = 0;
+                    for (int dx = -1; dx <= 0; dx++) {
+                        for (int dz = -1; dz <= 0; dz++) {
+                            if (!isWater(cx + dx, y, cz + dz)) dry++;
+                        }
+                    }
+                    for (int dx = -2; dx <= 1; dx++) {
+                        for (int dz = -2; dz <= 1; dz++) {
+                            if (glowsAt(cx + dx, y - 1, cz + dz) || glowsAt(cx + dx, y, cz + dz)) glow++;
+                        }
+                    }
+                    light(cx, y + h, cz, l);
+                    bb.vertex(ps[i][0], y + h, ps[i][1]).color(dry / 4.0F, 0.0F, Math.min(1.0F, glow * 0.3F),
+                            Math.min(1.0F, (l[0] + l[1] + l[2]) / 3.0F)).uv(0, 0).endVertex();
+                }
+                n++;
+            }
+            int y0 = y;
+            while (isWater(x, y0 - 1, z) && y0 > y - 30) y0--;
+            // los lados que dan al aire: norte, sur, oeste, este
+            int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+            for (int[] d : dirs) {
+                if (isWater(x + d[0], y, z + d[1]) || solidAt(x + d[0], y, z + d[1])) continue;
+                float[][] q;
+                if (d[1] != 0) {
+                    float zz = d[1] < 0 ? z0 : z1;
+                    q = new float[][] {{x0, y + h, zz}, {x1, y + h, zz}, {x1, y, zz}, {x0, y, zz}};
+                } else {
+                    float xx = d[0] < 0 ? x0 : x1;
+                    q = new float[][] {{xx, y + h, z0}, {xx, y + h, z1}, {xx, y, z1}, {xx, y, z0}};
+                }
+                for (float[] p : q) {
+                    light(p[0], p[1], p[2], l);
+                    bb.vertex(p[0], p[1], p[2]).color(0.0F, 1.0F, 0.0F, Math.min(1.0F, (l[0] + l[1] + l[2]) / 3.0F))
+                            .uv((p[0] + p[2]) * 0.5F, p[1] - y0).endVertex();
+                }
+                n++;
+            }
         }
-        return 1;
+        BufferBuilder.RenderedBuffer rb = bb.endOrDiscardIfEmpty();
+        if (rb != null) {
+            waterFx = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            waterFx.bind();
+            waterFx.upload(rb);
+            VertexBuffer.unbind();
+        }
+    }
+
+    /**
+     * El agua con su shader (crate_water); false si no se puede (entonces drawWater, la del juego). {@code time} en
+     * ticks; {@code eye}, la cámara.
+     */
+    public boolean drawWaterFx(Matrix4f view, Matrix4f proj, Vector3f eye, float time) {
+        ShaderInstance sh = ScenePost.water();
+        if (sh == null || waterFx == null) return false;
+        sh.safeGetUniform("CamPos").set(eye.x, eye.y, eye.z);
+        sh.safeGetUniform("LightDir").set(sun.x, sun.y, sun.z);
+        sh.safeGetUniform("BeamPos").set(crate.x, crate.y, crate.z);
+        sh.safeGetUniform("Time").set(time);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableCull();
+        waterFx.bind();
+        waterFx.drawWithShader(view, proj, sh);
+        VertexBuffer.unbind();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        return true;
     }
 
     // ----------------------------------------------------------------------------------------------------- dibujar
@@ -537,6 +721,10 @@ public final class SanctuaryScene {
     public void close() {
         for (VertexBuffer vb : buffers.values()) vb.close();
         buffers.clear();
+        if (waterFx != null) {
+            waterFx.close();
+            waterFx = null;
+        }
     }
 
     /** Para las pruebas: cuántas plantas y capas hay. */

@@ -22,22 +22,29 @@ import org.lwjgl.opengl.GL11;
 
 /**
  * El «shader» de la cinemática de las crates (1.3.99; el dueño: «mejora el shader, pon un shader bonito de la escena,
- * el resplandor más bello»). La escena no se dibuja directamente en la pantalla sino en una textura propia; luego:
+ * el resplandor más bello» y luego «sin shaders, sin bloom, sin colores vivos… no las texturas de Minecraft así»). La
+ * escena no se dibuja directamente en la pantalla sino en una textura propia (con su profundidad); luego:
  * <ol>
- *   <li>el cielo del atardecer (crate_sky) al fondo, antes del 3D;</li>
+ *   <li>el cielo de noche (crate_sky) al fondo, antes del 3D; el agua, con su shader (crate_water, desde
+ *       SanctuaryScene);</li>
  *   <li>el resplandor (crate_bloom): se baja a un cuarto, se queda lo que brilla y se desenfoca dos veces (estrecho y
- *       ancho);</li>
- *   <li>la imagen final (crate_post) en la pantalla: escena + resplandor + brillo soñador + rayos de sol que salen del
- *       sol + colores del atardecer + viñeta.</li>
+ *       ancho); y la imagen entera baja y desenfocada, para la profundidad de campo;</li>
+ *   <li>la imagen final (crate_post) en la pantalla: profundidad de campo (la crate nítida, el bosque de detrás
+ *       desenfocado) + resplandor + rayos que salen del haz + colores vivos + viñeta.</li>
  * </ol>
  * Si los shaders no cargan, la cinemática dibuja como antes, directa a la pantalla.
  */
 public final class ScenePost {
-    static ShaderInstance sky, bloom, post;
-    private TextureTarget scene, a, b;
+    static ShaderInstance sky, bloom, post, water;
+    private TextureTarget scene, a, b, c, d;
 
     public static boolean ready() {
         return sky != null && bloom != null && post != null;
+    }
+
+    /** El shader del agua (crate_water), o null si no cargó (entonces el agua la dibuja el juego). */
+    static ShaderInstance water() {
+        return water;
     }
 
     /** Prepara las texturas para el tamaño de la ventana (las rehace si cambia). */
@@ -47,7 +54,9 @@ public final class ScenePost {
         scene = new TextureTarget(w, h, true, Minecraft.ON_OSX);
         a = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         b = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
-        for (RenderTarget t : new RenderTarget[] {scene, a, b}) {
+        c = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
+        d = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
+        for (RenderTarget t : new RenderTarget[] {scene, a, b, c, d}) {
             t.setFilterMode(GL11.GL_LINEAR);
             t.setClearColor(0, 0, 0, 1);
         }
@@ -82,10 +91,12 @@ public final class ScenePost {
     }
 
     /**
-     * El resplandor y la imagen final en la pantalla. {@code sunU, sunV}: el sol en la imagen (0..1, desde abajo a la
-     * izquierda; puede estar fuera); {@code sunVis}: cuánto se ven sus rayos.
+     * El resplandor, la profundidad de campo y la imagen final en la pantalla. {@code sunU, sunV}: el haz en la imagen
+     * (0..1, desde abajo a la izquierda; puede estar fuera); {@code sunVis}: cuánto se ven sus rayos; {@code focus}: a
+     * qué distancia está lo nítido (la crate); {@code near, far}: los planos de la proyección.
      */
-    public void finish(float sunU, float sunV, float sunVis, float bloomStrength, float rayStrength, float exposure) {
+    public void finish(float sunU, float sunV, float sunVis, float bloomStrength, float rayStrength, float exposure, float focus,
+                       float near, float far) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();
@@ -98,11 +109,21 @@ public final class ScenePost {
         pass(b, a, 1, 0, 0, 0, th * 1.5F);
         pass(a, b, 1, 0, 0, tw * 3.5F, 0);
         pass(b, a, 1, 0, 0, 0, th * 3.5F);
+        // 2b) la imagen entera, baja y desenfocada (el fondo de la profundidad de campo)
+        pass(scene, c, 2, 1.0F / scene.width, 1.0F / scene.height, 0, 0);
+        pass(c, d, 1, 0, 0, tw * 1.5F, 0);
+        pass(d, c, 1, 0, 0, 0, th * 1.5F);
+        pass(c, d, 1, 0, 0, tw * 2.5F, 0);
+        pass(d, c, 1, 0, 0, 0, th * 2.5F);
         // 3) la imagen final, en la pantalla
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
         ShaderInstance sh = post;
         sh.setSampler("SceneSampler", scene.getColorTextureId());
         sh.setSampler("BloomSampler", a.getColorTextureId());
+        sh.setSampler("BlurSampler", c.getColorTextureId());
+        sh.setSampler("DepthSampler", scene.getDepthTextureId());
+        sh.safeGetUniform("Clip").set(near, far);
+        sh.safeGetUniform("Focus").set(focus, 9.0F);
         sh.safeGetUniform("SunPos").set(sunU, sunV);
         sh.safeGetUniform("SunVis").set(sunVis);
         sh.safeGetUniform("BloomStrength").set(bloomStrength);
@@ -121,7 +142,7 @@ public final class ScenePost {
         sh.safeGetUniform("InTexel").set(inTexelX, inTexelY);
         sh.safeGetUniform("Dir").set(dirX, dirY);
         sh.safeGetUniform("Mode").set((float)mode);
-        sh.safeGetUniform("Threshold").set(0.70F);
+        sh.safeGetUniform("Threshold").set(0.66F);
         quad(sh);
     }
 
@@ -137,10 +158,10 @@ public final class ScenePost {
     }
 
     public void close() {
-        for (RenderTarget t : new RenderTarget[] {scene, a, b}) {
+        for (RenderTarget t : new RenderTarget[] {scene, a, b, c, d}) {
             if (t != null) t.destroyBuffers();
         }
-        scene = a = b = null;
+        scene = a = b = c = d = null;
     }
 
     /** Los registra Forge al cargar los recursos. */
@@ -157,6 +178,8 @@ public final class ScenePost {
                         DefaultVertexFormat.POSITION), s -> bloom = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_post"),
                         DefaultVertexFormat.POSITION), s -> post = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_water"),
+                        DefaultVertexFormat.POSITION_COLOR_TEX), s -> water = s);
             } catch (IOException e) {
                 FSCrates.LOGGER.error("[TF Crates] No se pudieron cargar los shaders de la cinemática (va sin resplandor)", e);
             }

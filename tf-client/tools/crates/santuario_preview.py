@@ -49,13 +49,16 @@ COLORS = {
     'spore_blossom': (0.95, 0.5, 0.75), 'gold_block': (1.0, 0.85, 0.3), 'end_rod': (1.0, 1.0, 0.95),
     'torchflower': (0.95, 0.55, 0.2), 'pitcher_plant': (0.4, 0.6, 0.85), 'sea_pickle': (0.5, 0.9, 0.5),
     'mossy_stone_brick_slab': (0.45, 0.52, 0.40), 'stone_bricks': (0.55, 0.55, 0.55),
+    'mangrove_wood': (0.40, 0.21, 0.18), 'mangrove_roots': (0.32, 0.24, 0.17), 'mangrove_leaves': (0.30, 0.50, 0.18),
+    'mud': (0.24, 0.22, 0.24), 'cobbled_deepslate': (0.30, 0.30, 0.33), 'big_dripleaf': (0.40, 0.65, 0.25),
+    'verdant_froglight': (0.8, 1.0, 0.7),
 }
 FLAT = {'moss_carpet': 0.06, 'pink_petals': 0.06, 'lily_pad': 0.03}
 CROSS = {'spore_blossom', 'torchflower', 'pitcher_plant', 'sea_pickle', 'end_rod', 'amethyst_cluster', 'glow_lichen', 'grass', 'tall_grass', 'fern', 'large_fern', 'poppy', 'dandelion', 'oxeye_daisy', 'azure_bluet', 'cornflower',
          'allium', 'lily_of_the_valley', 'blue_orchid', 'pink_tulip', 'white_tulip', 'peony', 'rose_bush', 'lilac',
-         'brown_mushroom', 'red_mushroom', 'cave_vines', 'cave_vines_plant', 'chain'}
-SKY_TOP, SKY_HOR = np.array([0.24, 0.24, 0.52]), np.array([1.0, 0.70, 0.48])
-FOG = np.array([0.55, 0.52, 0.72])
+         'brown_mushroom', 'red_mushroom', 'cave_vines', 'cave_vines_plant', 'chain', 'big_dripleaf'}
+SKY_TOP, SKY_HOR = np.array([0.04, 0.05, 0.14]), np.array([0.30, 0.22, 0.40])
+FOG = np.array([0.10, 0.15, 0.22])
 
 
 def box(x0, y0, z0, x1, y1, z1):
@@ -170,8 +173,8 @@ void main(){
   // el haz de sol sobre el altar: más luz cerca de su eje
   vec3 d = wp - crate; float along = dot(d, sun); float off = length(d - sun*along);
   float beam = exp(-off*off/5.0);
-  vec3 col = c.rgb * l * (0.72 + 0.4*beam);
-  float f = clamp((dist-18.0)/(52.0-18.0), 0.0, 1.0);
+  vec3 col = c.rgb * l * (vec3(0.40, 0.46, 0.62) + vec3(0.9, 0.8, 0.6)*beam);
+  float f = clamp((dist-8.0)/(46.0-8.0), 0.0, 1.0);
   o = vec4(mix(col, fog, f*0.85), c.a);
 }
 """
