@@ -3661,5 +3661,98 @@
   "sounds": [
    "tfclient:bosses/criaturas_vacio/tugkandeman_endermauler_death"
   ]
+ },
+ "crates.ambiente": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/ambiente",
+    "stream": true
+   }
+  ]
+ },
+ "crates.musica": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/musica",
+    "stream": true
+   }
+  ]
+ },
+ "crates.llave_aparece": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/llave_aparece"
+   }
+  ]
+ },
+ "crates.llave_entra": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/llave_entra"
+   }
+  ]
+ },
+ "crates.llave_gira": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/llave_gira"
+   }
+  ]
+ },
+ "crates.runas": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/runas"
+   }
+  ]
+ },
+ "crates.tiembla": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/tiembla"
+   }
+  ]
+ },
+ "crates.apertura": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/apertura"
+   }
+  ]
+ },
+ "crates.tic": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/tic"
+   }
+  ]
+ },
+ "crates.parada": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/parada"
+   }
+  ]
+ },
+ "crates.premio1": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/premio1"
+   }
+  ]
+ },
+ "crates.premio2": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/premio2"
+   }
+  ]
+ },
+ "crates.premio3": {
+  "sounds": [
+   {
+    "name": "tfclient:crates/premio3"
+   }
+  ]
  }
 }
