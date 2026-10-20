@@ -761,7 +761,7 @@ def main():
         ctx.enable(moderngl.BLEND)
         ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
         ctx.depth_mask = False
-        if v_water:
+        if v_water and os.environ.get('SIN_AGUA') != '1':
             wprog['ModelViewMat'].write(view.astype('f4').T.tobytes())
             wprog['ProjMat'].write(proj.astype('f4').T.tobytes())
             wprog['CamPos'].value = tuple(eye)
@@ -772,7 +772,8 @@ def main():
             wprog['FogColor'].value = (*FOG, 1.0)
             v_water.render()
         fx = Fx(eye, r, u)
-        effects(fx, tick, lights)
+        if os.environ.get('SIN_FX') != '1':
+            effects(fx, tick, lights)
         if fx.v:
             d = np.array(fx.v, 'f4')
             va = ctx.vertex_array(fxp, [(ctx.buffer(d.tobytes()), '3f 2f 4f', 'pos', 'uv', 'col')])

@@ -59,7 +59,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.99) — lee esto primero
+### CHECKPOINT (20 oct 2026, TF Client 1.3.99, SIN PUBLICAR) — lee esto primero
+
+> **A medias**: el dueño pidió parar y que siga otra IA. Prompt completo para seguir:
+> [`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md). Falta: la cuadrícula sobre la cascada (sale de la
+> capa de luz que suma), el agua más turquesa y brillante con resplandor, menos resplandor sobre la crate, un haz de luz
+> grande y bien definido sobre el altar; luego una prueba en el juego y publicar la 1.3.99.
 
 **1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). El dueño: «meterás el mod que dice Fantastic Crates
 a nuestro TF Client, todo el mod sin errores, el comando será /tf crates… rework súper bonito, épico… un santuario en la
