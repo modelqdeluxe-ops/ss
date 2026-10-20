@@ -3,10 +3,11 @@ desde la 1.3.92) sin abrir el juego.
 
     xvfb-run -a python3 -I tools/void/tunel_preview.py <salida> [--vuelta] [--size 960x540]
 
-Desde la 1.3.96 cada tramo es el panorama de su dimensión (textures/environment/tunel_nether.png, tunel_end.png y
-tunel_void.png, del mod; el del Overworld lo hace el juego del panorama del menú, así que aquí sale su pared de antes:
-HasOverworld = 0) con el túnel como un velo encima. Dibuja fotogramas de todo el viaje con los mismos tiempos que
-TravelFx (travel, las tres puertas, open, exit).
+Desde la 1.3.97, un túnel en perspectiva que serpentea, con las paredes hechas de cada dimensión (su panorama:
+textures/environment/tunel_nether.png, tunel_end.png y tunel_void.png, del mod; las paredes del Void, sus nebulosas) y,
+al fondo de cada tramo, la boca esférica con la dimensión siguiente; el del Overworld lo hace el juego del panorama del
+menú, así que aquí salen su pared y su cielo de reserva (HasOverworld = 0). Dibuja fotogramas de todo el viaje con los
+mismos tiempos que TravelFx (travel, las tres puertas, open, exit).
 """
 import os
 import sys

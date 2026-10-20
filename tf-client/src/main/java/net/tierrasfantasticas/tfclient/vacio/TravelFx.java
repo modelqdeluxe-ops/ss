@@ -43,8 +43,12 @@ import net.tierrasfantasticas.tfclient.bosses.RiftWarp;
  *   terreno...», se sigue viajando): la luz del fondo llena la pantalla y se va, y el mundo nuevo aparece ondulando
  *   hasta calmarse.</li>
  * </ol>
+ * 1.3.97 (el dueño: «el agujero de gusano no parece que es uno, su animación dentro del túnel es una mierda»): un túnel
+ * de verdad, en perspectiva, que serpentea y gira, con las paredes hechas de la dimensión en la que estás (estirada por
+ * la velocidad, con hebras y filamentos de luz en espiral) y, al fondo de cada tramo, la boca del agujero: una esfera que
+ * deja ver la dimensión siguiente entera y crece hasta que la cruzas; a la ida, la última es el agujero negro del Void.
  * Lo dibuja el shader wormhole sobre toda la pantalla (encima de la interfaz y de la pantalla de carga al cambiar de
- * mundo) al acabar cada fotograma (desde la 1.3.96, cada tramo es el panorama de su dimensión: {@link TunnelPanoramas});
+ * mundo) al acabar cada fotograma (desde la 1.3.96, con el panorama de cada dimensión: {@link TunnelPanoramas});
  * su sonido (una pista continua, {@link #sounds}) suena solo para ti. Vista previa sin juego: tools/void/tunel_preview.py
  * (mismos tiempos).
  *
