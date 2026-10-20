@@ -895,9 +895,7 @@ def main():
             wprog['FogStart'].value, wprog['FogEnd'].value = FOG_START, FOG_END
             wprog['FogColor'].value = (*FOG, 1.0)
             water_frame(tick)
-            wtex.use(2)
-            wprog['Sampler0'].value = 2
-            wprog['StillUV'].value = (0.0, 0.0, 16 / 48, 0.5)
+            # (el agua ya no usa la textura del juego: salía en rayitas y escamas)
             v_water.render()
         fx = Fx(eye, r, u)
         if os.environ.get('SIN_FX') != '1':

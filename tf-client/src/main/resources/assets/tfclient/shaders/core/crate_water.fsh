@@ -1,10 +1,9 @@
 #version 150
 
-// (1.3.99) El agua del Santuario de las Hadas, con shader propio (la imagen del dueño: un estanque turquesa que brilla,
-// con el dibujo del agua de Minecraft y el resplandor que sale de ella, «porque es un lugar mágico»): turquesa claro, la
-// textura del agua del juego (la que se mueve, del atlas de bloques) para las líneas de luz, cáusticas, el reflejo del
-// santuario, el brillo del haz de sol, destellos, la luz que sube del fondo y espuma en las orillas; las cascadas, con
-// la textura del agua que corre, vetas blancas que bajan y espuma abajo.
+// (1.3.99) El agua del Santuario de las Hadas, con shader propio, limpia y continua (el dueño: nada de texturas quebradas,
+// resquebrajadas ni cuadriculadas): el estanque, transparente (se ven los bloques del fondo) con manchas de luz suaves, el
+// reflejo de las cascadas en destellos, el brillo del sol y espuma en las orillas; las cascadas, del mismo turquesa, con
+// hilos finos que bajan, destellos pequeños y espuma abajo.
 // data: r = orilla (0..1; en las cascadas, su altura / 16), g = cascada (1) o superficie (0), b = brillo del fondo
 // (0..1), a = luz de la escena.
 // fuv: en las cascadas, (a lo ancho, metros desde abajo).
@@ -12,8 +11,6 @@ in vec3 wp;
 in vec4 data;
 in vec2 fuv;
 
-uniform sampler2D Sampler0;
-uniform vec4 StillUV;
 uniform vec3 CamPos;
 uniform vec3 LightDir;
 uniform vec3 BeamPos;
@@ -23,6 +20,10 @@ uniform float FogEnd;
 uniform vec4 FogColor;
 
 out vec4 fragColor;
+
+// el turquesa del agua, el mismo en el estanque y en las cascadas
+const vec3 WATER_DEEP = vec3(0.01, 0.34, 0.46);
+const vec3 WATER_LIGHT = vec3(0.05, 0.56, 0.66);
 
 float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -39,73 +40,6 @@ float waves(vec2 p, float t) {
     h += noise(p * 2.3 - vec2(t * 0.28, -t * 0.4)) * 0.3;
     h += noise(p * 5.1 + vec2(-t * 0.6, t * 0.5)) * 0.15;
     return h;
-}
-
-// cáusticas: la red de líneas de luz que dibuja el agua al moverse
-float caustic(vec2 p, float t) {
-    float c = 0.0;
-    vec2 q = p;
-    for (int i = 0; i < 3; i++) {
-        q = vec2(q.x + sin(q.y * 1.7 + t * 0.9 + float(i)), q.y + cos(q.x * 1.5 - t * 0.8 + float(i) * 1.3));
-        c += 1.0 / (1.0 + 18.0 * abs(sin(q.x * 1.3) * sin(q.y * 1.3)));
-    }
-    return c / 3.0;
-}
-
-// el dibujo del agua del juego (gris: sus líneas claras), sin mipmaps (con fract cambiaría de nivel en cada borde)
-float still(vec2 p) {
-    return textureLod(Sampler0, mix(StillUV.xy, StillUV.zw, fract(p)), 0.0).r;
-}
-
-// la piel del agua del estanque: la textura del agua del juego (16×16, la quieta), de 0 a 1, entera y fina; de lejos,
-// cuando un píxel de la textura es más pequeño que uno de la pantalla, se funde en su valor medio (si no, parpadearía)
-float farOf(vec2 p) {
-    return smoothstep(0.7, 1.6, length(fwidth(p * 16.0)));
-}
-
-float skin(vec2 p) {
-    return mix(clamp((still(p) - 0.66) / 0.30, 0.0, 1.0), 0.16, farOf(p));
-}
-
-// el color del agua del estanque sobre su base: las líneas claras de la textura en turquesa muy claro y, sobre ellas,
-// píxeles que centellean (la escarcha de la imagen del dueño). {@code cell}: el tamaño del destello
-vec3 waterLook(vec3 base, float sk, vec2 p, vec2 cell, float t) {
-    vec3 col = base * (0.88 + 0.30 * sk);
-    col = mix(col, vec3(0.42, 1.0, 1.0), smoothstep(0.40, 0.95, sk) * 0.30);
-    vec2 tx = floor(p * cell);
-    float tw = smoothstep(0.55, 1.0, sin(t * 5.0 + hash(tx) * 60.0)) * step(0.55, hash(tx + 7.7));
-    col = mix(col, vec3(0.90, 1.0, 1.0), smoothstep(0.65, 1.0, sk) * tw * 0.75 * (1.0 - farOf(p)));
-    return col;
-}
-
-// las escamas del agua (como en la imagen del dueño): celdas redondeadas (Voronoi con el espacio ondulado: bordes curvos,
-// no rectos como un cristal roto), de borde fino y claro que se rompe en destellos. x = el borde, y = los destellos,
-// z = el tono de la celda. De lejos, cuando la celda mide pocos píxeles, el borde se funde (no parpadea).
-vec3 scales(vec2 p, float t) {
-    vec2 w = p + (vec2(noise(p * 1.3 + vec2(0.0, t * 0.4)), noise(p * 1.3 + vec2(3.1, -t * 0.4))) - 0.5) * 0.7;
-    vec2 i = floor(w), f = fract(w);
-    float d1 = 8.0, d2 = 8.0, id = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 g = vec2(float(x), float(y));
-            vec2 o = vec2(hash(i + g), hash(i + g + 17.3)) * 0.7 + 0.15;
-            float d = length(g + o - f);
-            if (d < d1) {
-                d2 = d1;
-                d1 = d;
-                id = hash(i + g + 5.7);
-            } else if (d < d2) {
-                d2 = d;
-            }
-        }
-    }
-    float e = d2 - d1;
-    float far = smoothstep(0.08, 0.3, length(fwidth(w)));
-    float line = (1.0 - smoothstep(0.0, 0.045 + fwidth(e), e)) * (1.0 - far);
-    float brk = noise(w * 4.0 + vec2(t * 1.7, -t));
-    // (el borde, roto: unos tramos brillan y otros casi no se ven)
-    float glit = line * smoothstep(0.50, 0.78, brk);
-    return vec3(line * (0.25 + 0.75 * smoothstep(0.25, 0.6, brk)), glit, mix(id, 0.5, far));
 }
 
 // cuánto se ve de una cascada en la dirección r desde p (para su reflejo en el estanque): los dos chorros de los lados
@@ -140,46 +74,51 @@ void main() {
     vec3 col;
     float alpha;
     if (fall > 0.5) {
-        // la cascada, como en la imagen del dueño: agua translúcida turquesa con escamas redondeadas alargadas hacia abajo
-        // que bajan, su borde fino brillando en destellos, vetas de luz que bajan y espuma blanca donde cae; la misma agua
-        // (las mismas escamas y destellos) que el estanque
+        // la cascada: agua limpia y continua que cae (el dueño: «nada de texturas quebradas, resquebrajadas ni
+        // cuadriculadas; textura fina y completa; que caiga»): hilos finos verticales que bajan, sin celdas ni líneas, con
+        // el mismo turquesa y la misma transparencia que el estanque, destellos pequeños y redondos y espuma abajo. De lejos
+        // los hilos más finos se funden (no parpadean).
         float height = shore * 16.0;
-        vec2 fp = vec2(fuv.x, fuv.y + t * 2.4);
-        vec3 sc = scales(vec2(fp.x * 5.6, fp.y * 3.8), t);
-        float vein = noise(vec2(fuv.x * 9.0, fp.y * 0.5)) * noise(vec2(fuv.x * 4.0 + 2.3, fp.y * 0.3 - 1.1));
-        col = mix(vec3(0.01, 0.28, 0.38), vec3(0.05, 0.50, 0.60), sc.z * 0.75 + smoothstep(0.25, 0.6, vein) * 0.35);
-        col = mix(col, vec3(0.40, 0.92, 1.0), sc.x * 0.45);
-        col = mix(col, vec3(0.92, 1.0, 1.0), sc.y * 0.80);
+        float y = fuv.y + t * 2.6;
+        float fade = clamp(1.0 - fwidth(fuv.x) * 10.0, 0.0, 1.0);
+        float s1 = noise(vec2(fuv.x * 6.0, y * 0.4));
+        float s2 = noise(vec2(fuv.x * 14.0 + 4.1, y * 0.7 + 2.7));
+        float s3 = noise(vec2(fuv.x * 30.0 - 1.3, y * 1.2 - 5.1));
+        float strands = s1 * 0.5 + mix(0.5, s2, fade) * 0.3 + mix(0.5, s3, fade) * 0.2;
+        col = mix(WATER_DEEP, WATER_LIGHT, smoothstep(0.2, 0.8, strands));
+        col = mix(col, vec3(0.55, 0.95, 1.0), smoothstep(0.62, 0.86, strands) * 0.45);
+        // destellos pequeños y redondos que bajan con el agua
+        vec2 gp = vec2(fuv.x * 8.0, fuv.y * 8.0 + t * 7.0);
+        vec2 gi = floor(gp), gf = fract(gp) - 0.5;
+        float gd = length(gf - (vec2(hash(gi), hash(gi + 3.3)) - 0.5) * 0.6);
+        float tw = step(0.86, hash(gi + 9.1)) * (0.5 + 0.5 * sin(t * 6.0 + hash(gi) * 40.0));
+        col = mix(col, vec3(0.92, 1.0, 1.0), (1.0 - smoothstep(0.0, 0.07 + fwidth(gd), gd)) * tw * 0.7 * fade);
         // espuma blanca donde cae: mucha en la cascada alta y en los chorros de los lados, poca en los saltos de la escalera
         float foam = smoothstep(1.1, 0.0, fuv.y) * (0.6 + 0.4 * noise(vec2(fuv.x * 6.0, fuv.y * 3.0 + t * 5.0))) * mix(0.55, 0.9, smoothstep(1.5, 4.0, height));
         col = mix(col, vec3(0.90, 1.0, 1.0), foam);
-        // el golpe del agua contra el estanque: blanco que brilla (y florece con el resplandor), como en la imagen
+        // el golpe del agua contra el estanque: blanco que brilla (y florece con el resplandor)
         col += vec3(0.55, 0.85, 0.85) * smoothstep(0.45, 0.0, fuv.y) * (0.6 + 0.4 * noise(vec2(fuv.x * 9.0, t * 6.0)));
         col *= mix(0.86, 1.10, light);
         col += vec3(0.6, 1.0, 1.0) * beam * 0.10;
-        alpha = 0.80 + 0.18 * max(foam, sc.y);     // (translúcida, como en la imagen: detrás se adivina la piedra)
+        alpha = 0.90 + 0.09 * foam;     // (translúcida; más no: se transparentaban las juntas del ladrillo de detrás como rayas)
     } else {
-        // el estanque, como en la imagen del dueño: agua TRANSPARENTE, turquesa, a través de la que se ven los bloques de
-        // verdad del fondo (su mosaico de píxeles, con la textura del juego), con la textura del agua encima, manchas de luz
-        // suaves y, en las ondas, el reflejo de las cascadas en columnas de destellos
+        // el estanque: agua transparente y limpia, del mismo turquesa que las cascadas, a través de la que se ven los
+        // bloques de verdad del fondo; manchas de luz suaves que se mueven (sin líneas), el reflejo de las cascadas en
+        // destellos sueltos y el brillo del sol
         vec2 p = wp.xz;
         float e = 0.08;
         float h0 = waves(p, t);
         vec3 n = normalize(vec3(-(waves(p + vec2(e, 0.0), t) - h0) / e * 0.16, 1.0, -(waves(p + vec2(0.0, e), t) - h0) / e * 0.16));
         float fres = 0.04 + 0.96 * pow(1.0 - max(dot(n, v), 0.0), 5.0);
-        col = vec3(0.02, 0.42, 0.54) + vec3(0.04, 0.30, 0.33) * glow;
-        float c = caustic(p * 1.4 + n.xz * 0.35, t);
-        col += vec3(0.10, 0.35, 0.32) * smoothstep(0.36, 0.62, c);
-        col = waterLook(col, skin(p), p, vec2(16.0), t);
-        // las mismas escamas que la cascada, más suaves (de ellas son las líneas claras y los destellos del agua)
-        vec3 sc = scales(p * 2.2 + n.xz * 0.3, t);
-        col = mix(col, vec3(0.45, 0.95, 1.0), sc.x * 0.30);
-        col = mix(col, vec3(0.92, 1.0, 1.0), sc.y * 0.60);
-        // el reflejo de las cascadas (blanco turquesa) en las ondas menudas: columnas de destellos que bajan hacia la cámara
+        col = mix(WATER_DEEP, WATER_LIGHT, 0.45) + vec3(0.04, 0.30, 0.33) * glow;
+        float r = waves(p * 0.8 + vec2(5.3, 1.7), t * 0.8);
+        col += vec3(0.05, 0.26, 0.26) * smoothstep(0.45, 0.78, r);
+        // el reflejo de las cascadas (blanco turquesa) en las ondas menudas: destellos sueltos que bajan hacia la cámara
         vec3 nf = normalize(n + vec3(noise(p * 6.0 + vec2(t * 1.3, 0.0)) - 0.5, 0.0, noise(p * 6.5 - vec2(0.0, t * 1.1)) - 0.5) * 0.5);
         float rc = cascadeSeen(wp, reflect(-v, nf));
-        // (rotos en destellos, como en la imagen: no una mancha)
-        rc *= smoothstep(0.52, 0.78, noise(p * vec2(9.0, 4.0) + vec2(t * 0.8, -t * 1.6)));
+        // (destellos redondos y suaves: el producto de dos ruidos girados, sin la rejilla de uno solo)
+        float gl = noise(p * 6.0 + vec2(t * 0.8, -t * 1.6)) * noise(vec2(p.x * 4.1 - p.y * 2.9, p.x * 2.7 + p.y * 4.3) * 1.4 - t * 0.9);
+        rc *= smoothstep(0.20, 0.42, gl);
         col += vec3(0.75, 1.0, 1.0) * rc * (0.25 + 1.2 * fres);
         vec3 L = normalize(LightDir);
         float spec = pow(max(dot(reflect(-L, nf), v), 0.0), 60.0);

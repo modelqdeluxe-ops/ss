@@ -102,7 +102,13 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **Los números, iguales o por encima de la imagen en el juego** (el dueño): el juego sale con la luz media ×0,90, la alta
   ×0,94, el contraste ×0,97, la nitidez ×1,05 y la saturación ×1,075 respecto a la vista previa (medido en la prueba
   `24692c0`); el shader final lleva ganancia 1,12, claridad 0,56, curva 0,60 y los brillos más fuertes tirando a blanco.
-- **El agua como en la imagen, otra vez** (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
+- **El agua, limpia y continua** (el dueño, con capturas: «otra vez esa mierda de resquebrajados»): fuera las escamas
+  (celdas de Voronoi: se leen como grietas), la textura del agua del juego (rayitas) y las cáusticas (red de líneas). La
+  cascada: hilos finos verticales que bajan, destellos pequeños y redondos y espuma abajo; el estanque: transparente (se
+  ven los bloques del fondo), manchas de luz suaves y los reflejos de las cascadas en destellos redondos; los dos con el
+  mismo turquesa (`WATER_DEEP`/`WATER_LIGHT` en `crate_water.fsh`). La cascada, opaca al 90 % (más transparente se veían
+  las juntas del ladrillo de detrás como rayas). **No volver a meter celdas, rejillas ni líneas en el agua.**
+- **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en
   columnas de destellos (`cascadeSeen`) y las escamas (`scales`: celdas redondeadas de borde fino roto en destellos). La

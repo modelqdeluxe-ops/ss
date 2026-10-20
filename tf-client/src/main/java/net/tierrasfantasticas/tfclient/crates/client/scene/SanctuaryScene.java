@@ -671,11 +671,6 @@ public final class SanctuaryScene {
     public boolean drawWaterFx(Matrix4f view, Matrix4f proj, Vector3f eye, float time) {
         ShaderInstance sh = ScenePost.water();
         if (sh == null || waterFx == null) return false;
-        // el dibujo del agua del juego, del atlas de bloques (lo anima el juego); el shader lo lee sin mipmaps
-        var atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-        TextureAtlasSprite still = atlas.apply(new ResourceLocation("minecraft", "block/water_still"));
-        RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-        sh.safeGetUniform("StillUV").set(still.getU0(), still.getV0(), still.getU1(), still.getV1());
         sh.safeGetUniform("CamPos").set(eye.x, eye.y, eye.z);
         sh.safeGetUniform("LightDir").set(sun.x, sun.y, sun.z);
         sh.safeGetUniform("BeamPos").set(crate.x, crate.y, crate.z);

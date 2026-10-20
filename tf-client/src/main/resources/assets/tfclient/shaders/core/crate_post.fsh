@@ -88,7 +88,7 @@ void main() {
     float aspect = ts.x / ts.y;
     vec2 sd = (uv - SunPos) * vec2(aspect, 1.0);
     // el foco del sol en el hueco (crema cálido, como en la imagen) y sus rayos
-    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.8 + exp(-dot(sd, sd) * 30.0) * 0.45) * SunVis;
+    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.8 + exp(-dot(sd, sd) * 30.0) * 0.30) * SunVis;
     vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
