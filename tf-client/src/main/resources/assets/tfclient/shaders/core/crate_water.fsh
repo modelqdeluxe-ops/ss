@@ -41,27 +41,6 @@ float waves(vec2 p, float t) {
     return h;
 }
 
-// escamas del agua que cae (celdas de Voronoi): x = distancia al centro más cercano, y = al segundo, z = valor de la celda
-vec3 cells(vec2 p) {
-    vec2 i = floor(p), f = fract(p);
-    float d1 = 8.0, d2 = 8.0, id = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 g = vec2(float(x), float(y));
-            vec2 o = vec2(hash(i + g), hash(i + g + 17.3)) * 0.8 + 0.1;
-            float d = length(g + o - f);
-            if (d < d1) {
-                d2 = d1;
-                d1 = d;
-                id = hash(i + g + 5.7);
-            } else if (d < d2) {
-                d2 = d;
-            }
-        }
-    }
-    return vec3(d1, d2, id);
-}
-
 // cáusticas: la red de líneas de luz que dibuja el agua al moverse
 float caustic(vec2 p, float t) {
     float c = 0.0;
@@ -93,35 +72,32 @@ void main() {
     vec3 col;
     float alpha;
     if (fall > 0.5) {
-        // la cascada (como en la imagen del dueño): agua translúcida turquesa con escamas irregulares que bajan, el borde
-        // de cada escama brillante, fino y roto en destellos (no una rejilla: el dueño, «nada de texturas cuadriculadas»),
-        // vetas claras que bajan, destellos redondos pequeños y espuma abajo
+        // la cascada: agua continua, de textura fina y completa (el dueño: «nada de texturas quebradas ni cuadriculadas»):
+        // hilos finos que bajan (ruido estirado a lo alto), del turquesa profundo al claro, con el brillo de la luz y
+        // destellos diminutos; sin celdas ni líneas. De lejos, los hilos más finos se funden (no parpadean).
         float height = shore * 16.0;
-        vec2 fp = vec2(fuv.x * 4.6, fuv.y * 3.6 + t * 5.0);
-        vec3 vc = cells(fp);
-        float edge = vc.y - vc.x;
-        // (el ancho del borde según lo que mide un píxel: de lejos no parpadea, se funde)
-        float aa = max(fwidth(edge), 1e-4);
-        float rim = 1.0 - smoothstep(0.0, 0.07 + aa * 1.5, edge);
-        rim *= clamp(0.07 / (0.07 + aa * 2.0), 0.0, 1.0);
-        float broken = smoothstep(0.30, 0.70, noise(fp * 2.2 + vec2(3.7, -t * 2.0)));
-        float streak = noise(vec2(fuv.x * 5.0, fuv.y * 0.35 + t * 2.6)) * 0.6 + noise(vec2(fuv.x * 11.0, fuv.y * 0.6 + t * 3.4)) * 0.4;
-        col = mix(vec3(0.00, 0.30, 0.33), vec3(0.05, 0.62, 0.66), clamp(vc.z * 0.45 + streak * 0.7 - 0.05, 0.0, 1.0));
-        col = mix(col, vec3(0.62, 1.0, 1.0), rim * (0.30 + 0.65 * broken));
-        col += vec3(0.10, 0.45, 0.45) * smoothstep(0.62, 0.9, streak) * 0.5;
-        // destellos: puntos redondos pequeños que bajan con el agua y parpadean
-        vec2 gp = vec2(fuv.x * 7.0, fuv.y * 7.0 + t * 6.0);
+        float y = fuv.y + t * 3.2;
+        float fade = clamp(1.0 - fwidth(fuv.x) * 12.0, 0.0, 1.0);
+        float s1 = noise(vec2(fuv.x * 7.0, y * 0.45));
+        float s2 = noise(vec2(fuv.x * 16.0 + 4.1, y * 0.8 + 2.7));
+        float s3 = noise(vec2(fuv.x * 34.0 - 1.3, y * 1.4 - 5.1));
+        float strands = s1 * 0.5 + mix(0.5, s2, fade) * 0.32 + mix(0.5, s3, fade * fade) * 0.18;
+        col = mix(vec3(0.00, 0.31, 0.34), vec3(0.08, 0.68, 0.72), smoothstep(0.15, 0.85, strands));
+        // hilos claros (el agua que se adelgaza y brilla)
+        col = mix(col, vec3(0.55, 0.98, 1.0), smoothstep(0.62, 0.86, strands) * 0.55);
+        // destellos diminutos y redondos que bajan con el agua
+        vec2 gp = vec2(fuv.x * 9.0, fuv.y * 9.0 + t * 7.0);
         vec2 gi = floor(gp), gf = fract(gp) - 0.5;
         vec2 go = vec2(hash(gi), hash(gi + 3.3)) - 0.5;
         float gd = length(gf - go * 0.6);
-        float tw = step(0.82, hash(gi + 9.1)) * (0.5 + 0.5 * sin(t * 6.0 + hash(gi) * 40.0));
-        col = mix(col, vec3(0.92, 1.0, 1.0), (1.0 - smoothstep(0.0, 0.09 + fwidth(gd), gd)) * tw * 0.85);
+        float tw = step(0.86, hash(gi + 9.1)) * (0.5 + 0.5 * sin(t * 6.0 + hash(gi) * 40.0));
+        col = mix(col, vec3(0.92, 1.0, 1.0), (1.0 - smoothstep(0.0, 0.06 + fwidth(gd), gd)) * tw * 0.7 * fade);
         // espuma abajo: mucha en la cascada alta, poca en los saltos de la escalera
         float foam = smoothstep(1.3, 0.0, fuv.y) * (0.6 + 0.4 * noise(vec2(fuv.x * 5.0, t * 4.0))) * mix(0.1, 0.7, smoothstep(1.5, 4.0, height));
         col = mix(col, vec3(0.85, 1.0, 1.0), foam);
         col *= mix(0.8, 1.15, light);
         col += vec3(0.6, 1.0, 1.0) * beam * 0.12;
-        alpha = 0.84 + 0.12 * foam + 0.06 * rim;
+        alpha = 0.94 + 0.05 * foam;     // (casi opaca: si no, se transparentan las filas de ladrillo de detrás como rayas)
     } else {
         vec2 p = wp.xz;
         float e = 0.08;
