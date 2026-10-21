@@ -389,7 +389,13 @@ public final class CinematicFx {
         float bx = (-v.right.x * sn + v.up.x * cs) * s * 0.6F * squash, by = (-v.right.y * sn + v.up.y * cs) * s * 0.6F * squash,
                 bz = (-v.right.z * sn + v.up.z * cs) * s * 0.6F * squash;
         float shade = 0.85F + 0.15F * hash(id, 111);
-        quad(vc, v.m, x, y, z, ax, ay, az, bx, by, bz, 0.98F * shade, 0.72F * shade, 0.84F * shade, 0.95F * alpha);
+        // (1.3.103) con forma de pétalo (punta delante, redondeado detrás) y de un rosa más hondo: rectángulos de rosa
+        // claro, con el brillo del haz, salían como papelitos blancos al abrir (el dueño, «líneas blancas»)
+        float r = 0.93F * shade, g = 0.47F * shade, b = 0.68F * shade, al = 0.95F * alpha;
+        vc.vertex(v.m, x + ax, y + ay, z + az).color(r, g, b, al).endVertex();
+        vc.vertex(v.m, x + bx * 1.2F, y + by * 1.2F, z + bz * 1.2F).color(r, g, b, al).endVertex();
+        vc.vertex(v.m, x - ax * 0.7F, y - ay * 0.7F, z - az * 0.7F).color(r, g, b, al).endVertex();
+        vc.vertex(v.m, x - bx * 1.2F, y - by * 1.2F, z - bz * 1.2F).color(r, g, b, al).endVertex();
     }
 
     /** Las mariposas: vuelan sobre las flores, con las alas que baten. */
@@ -599,15 +605,24 @@ public final class CinematicFx {
             float pulse = 0.8F + 0.2F * (float)Math.sin(t * 0.6F + i * 2.0F);
             glow(vc, v, p.x, p.y, p.z, 0.16F * pulse * (1 + excite * 0.4F), r, g, b, 0.45F);
             glow(vc, v, p.x, p.y, p.z, 0.05F, 1, 1, 1, 0.95F);
-            // la colita: chispas cada vez más pequeñas y tenues por donde ha pasado
-            for (int k = 1; k <= 18; k++) {
-                Vector3f q = fairyAt(sc, i, t - k * 0.55F);
-                float f = 1.0F - k / 19.0F;
-                float jy = -k * 0.006F;
-                glow(vc, v, q.x, q.y + jy, q.z, 0.035F * f + 0.012F, mix(r, 1, 0.4F), mix(g, 1, 0.4F), mix(b, 1, 0.4F), 0.65F * f * f);
+            // la colita: una estela continua de su color por donde ha pasado, ancha y clara junto al hada y cada vez más
+            // fina y tenue (1.3.103; antes, 18 chispas sueltas y casi blancas: de lejos se veían como rayas blancas de
+            // puntos, el dueño: «líneas blancas, como que no estuviera unida la textura»)
+            Vector3f q0 = p;
+            for (int k = 1; k <= TAIL; k++) {
+                Vector3f q1 = fairyAt(sc, i, t - k * TAIL_DT);
+                float f0 = 1.0F - (k - 1) / (float)TAIL, f1 = 1.0F - k / (float)TAIL;
+                float near = nearFade(v.eye, (q0.x + q1.x) * 0.5F, (q0.y + q1.y) * 0.5F, (q0.z + q1.z) * 0.5F, 0.1F);
+                band(vc, v, q0, q1, 0.07F * f0, 0.07F * f1, mix(r, 1, 0.15F), mix(g, 1, 0.15F), mix(b, 1, 0.15F),
+                        0.42F * f0 * f0 * near, 0.42F * f1 * f1 * near);
+                q0 = q1;
             }
         }
     }
+
+    /** La estela de cada hada: tramos y ticks entre uno y otro (= santuario_render.effects). */
+    private static final int TAIL = 16;
+    private static final float TAIL_DT = 0.6F;
 
     /** Chispas mágicas (como luciérnagas): puntitos que se encienden y se apagan por todo el santuario. */
     public static void fireflies(VertexConsumer vc, View v, float t) {

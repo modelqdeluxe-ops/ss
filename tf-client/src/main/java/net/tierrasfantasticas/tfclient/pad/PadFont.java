@@ -82,13 +82,23 @@ final class PadFont {
         load();
         String text = upper(s);
         VertexConsumer vc = begin(g);
-        Matrix4f m = g.pose().last().pose();
+        Matrix4f m = front(g);
         if (outline >= 0) {
             int o = 0xFF000000 | outline;
             for (int[] d : OUTLINE) glyphs(vc, m, text, x + d[0], y + d[1], o);
         }
         glyphs(vc, m, text, x, y, 0xFF000000 | rgb);
         end(g);
+    }
+
+    /**
+     * (1.3.103) Las letras, 1 por delante del recuadro sobre el que van: así ningún recuadro las tapa aunque se pinte
+     * después. Con mods que juntan y reordenan lo que se pinta en las pantallas (los de optimización), los rectángulos
+     * del pad salían al final y tapaban las etiquetas de las pestañas y los botones («el pad perdió sus letras»); el
+     * título, sobre una textura, sí se veía. Las ventanas que se abren encima van 50-400 más arriba: no se transparentan.
+     */
+    private static Matrix4f front(GuiGraphics g) {
+        return new Matrix4f(g.pose().last().pose()).translate(0F, 0F, 1F);
     }
 
     private static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}};
@@ -102,7 +112,7 @@ final class PadFont {
         load();
         String text = upper(s);
         VertexConsumer vc = begin(g);
-        Matrix4f m = g.pose().last().pose();
+        Matrix4f m = front(g);
         int sh = 0xFF000000 | shadow;
         glyphs(vc, m, text, x, y + 1, sh);
         glyphs(vc, m, text, x + 1, y + 1, sh);

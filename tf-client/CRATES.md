@@ -157,7 +157,14 @@ Los botones son pequeños, de cristal oscuro, abajo del todo y sin sonido (`widg
 **Recompensas** (`CratePoolScreen`, rehecha): el santuario detrás, un panel de cristal con el título y una cuadrícula de
 premios en casillas del color de su rareza (de la más rara a la común); al pasar el ratón, nombre, rareza, probabilidad y
 lo que lleve; rueda para moverse; «VOLVER» abajo.
-**Las hadas**: solo puntitos de luz con su colita de chispas, sin alas (el dueño).
+**Las hadas**: solo puntitos de luz con su colita, sin alas (el dueño). (1.3.103) La colita es una estela continua de
+su color (`CinematicFx.fairies`, TAIL tramos con `band`): eran 18 chispas sueltas casi blancas y de lejos se veían como
+rayas blancas de puntos (el dueño: «líneas blancas, como que no estuviera compacta ni unida la textura»; en su recorte,
+la pantalla de antes de abrir, eran esas). Los pétalos de la apertura, con forma de pétalo y de un rosa más hondo
+(eran rectángulos de rosa claro que, con el brillo del haz, salían como papelitos blancos).
+**El sonido** (1.3.103, el dueño: «extremadamente alto, horrible»): medido con ffmpeg (ebur128), los .ogg de las crates
+van a −12/−18 LUFS con picos de −1 dB (los del juego, −20/−25) y sonaban por «Master» a 0,8-0,9. Ahora por «Bloques»
+(se baja con su barra), efectos ×0,35 (`CrateCinematicScreen.SFX`), música 0,40, ambiente 0,35; la clásica, ×0,5.
 **Sin tirón la primera vez**: el santuario se construye a los 5 s de entrar al mundo (`MediaTicker.prewarm`); antes se
 construía al tocar la primera caja y su primer fotograma tardaba ~2,5 s (medido en la prueba: 640 ms de construcción).
 

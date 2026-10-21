@@ -58,6 +58,11 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             mc.setScreen(null);
         }
+        if (BossTest.openPad != null) {
+            String app = BossTest.openPad;
+            BossTest.openPad = null;
+            net.tierrasfantasticas.tfclient.pad.TFPadClient.openForTest(app);
+        }
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
         BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();

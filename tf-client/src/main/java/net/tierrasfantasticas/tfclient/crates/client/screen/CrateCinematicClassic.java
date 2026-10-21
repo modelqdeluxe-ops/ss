@@ -220,7 +220,8 @@ public class CrateCinematicClassic extends Screen {
 
    private void playUi(SoundEvent ev, float pitch, float volume) {
       if (this.minecraft != null) {
-         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ev, pitch, volume));
+         // (1.3.103) a la mitad: el dueño, «el sonido es extremadamente alto»
+         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ev, pitch, volume * 0.5F));
       }
    }
 

@@ -263,9 +263,18 @@ public class CrateCinematicScreen extends Screen {
         return SoundEvent.createVariableRangeEvent(new ResourceLocation("tfclient", "crates." + name));
     }
 
+    /**
+     * (1.3.103, el dueño: «el sonido es extremadamente alto, horrible») Los .ogg de la crate están muy altos (de −12 a −18
+     * LUFS con picos de −1 dB; los del juego, −20 a −25) y sonaban a 0,75-1,0 en MASTER (forUI: ni el deslizador de
+     * música ni el de ambiente los bajaban). Ahora: los efectos al 35 % y en «Bloques» (sin distancia, como antes), la
+     * música al 0,40 y el ambiente al 0,35: todo hacia −22/−25 LUFS.
+     */
+    private static final float SFX = 0.35F, MUSIC_VOL = 0.40F, AMBIENT_VOL = 0.35F;
+
     private void ui(SoundEvent ev, float volume, float pitch) {
         if (minecraft == null) return;
-        SoundInstance s = SimpleSoundInstance.forUI(ev, pitch, volume);
+        SoundInstance s = new SimpleSoundInstance(ev.getLocation(), SoundSource.BLOCKS, volume * SFX, pitch,
+                SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
         minecraft.getSoundManager().play(s);
         playing.add(s);
     }
@@ -322,8 +331,8 @@ public class CrateCinematicScreen extends Screen {
     private void sounds(int t) {
         switch (t) {
             case 0 -> {
-                track("ambiente", SoundSource.AMBIENT, 0.8F);
-                track("musica", SoundSource.MUSIC, 0.9F);
+                track("ambiente", SoundSource.AMBIENT, AMBIENT_VOL);
+                track("musica", SoundSource.MUSIC, MUSIC_VOL);
             }
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
             case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
@@ -867,7 +876,7 @@ public class CrateCinematicScreen extends Screen {
             // (el reloj vuelve atrás cada media hora para no acercarse al tick 0, donde empieza la apertura)
             t = IDLE_T0 + t % 36000.0F;
             if (tracks.isEmpty() && minecraft != null) {
-                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, 0.8F, true);
+                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, AMBIENT_VOL, true);
                 tracks.add(tr);
                 minecraft.getSoundManager().play(tr);
             }

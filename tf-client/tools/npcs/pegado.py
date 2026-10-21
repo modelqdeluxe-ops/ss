@@ -192,16 +192,55 @@ def scene_layers(mob, model):
     return out
 
 
+SKIN_LIMBS = ['head', 'body', 'right_arm', 'left_arm', 'right_leg', 'left_leg']
+
+
+def mirror_quad(q):
+    """La cara reflejada de delante atrás (z → −z en el espacio de su hueso), con su textura igual en cada vértice."""
+    q = list(q)
+    q[3] = -q[3]
+    vs = [list(q[4 + k * 5:9 + k * 5]) for k in range(4)]
+    for v in vs:
+        v[2] = -v[2]
+    return q[:4] + [x for v in vs[::-1] for x in v] + list(q[24:])
+
+
+def second_skin(skin):
+    """(1.3.103) La piel para el segundo personaje de los dúos: sus piezas head2…left_leg2. En las plantillas del pack
+    (skin.bbmodel) el segundo personaje es el primero reflejado de delante atrás (mira al primero: cara y pecho en +z);
+    las 21 pieles de los caminantes solo traen el primero (cara en −z), y puestas tal cual en head2… dejaban la cara y
+    el pecho del segundo en la espalda (el dueño: «tienen la cara atrás»)."""
+    m = {k: v for k, v in skin.items() if k not in ('bones', 'anims')}
+    by = {b['id']: b for b in skin['bones']}
+    m['anims'] = {}
+    m['bones'] = []
+    for l in SKIN_LIMBS:
+        b = by.get(l)
+        if b is None:
+            continue
+        nb = json.loads(json.dumps(b))
+        nb['id'] = l + '2'
+        nb['parent'] = -1
+        nb['quads'] = [mirror_quad(q) for q in b['quads']]
+        for k in ('sq',):
+            if k in nb:
+                nb[k] = [mirror_quad(q) for q in nb[k]]
+        m['bones'].append(nb)
+    return m
+
+
 def with_skin(model, skin, second=False):
     """El modelo con la geometría de los huesos de la piel (remapmodel; second: la del segundo personaje, changepart
-    head2 ← head…), como hoja_npcs.with_skin y el mod."""
+    head2 ← head2 de second_skin), como hoja_npcs.with_skin y el mod."""
     m = json.loads(json.dumps(model))
+    if second and not any(b['id'] == 'head2' for b in skin['bones']):
+        skin = second_skin(skin)
     by = {b['id']: b for b in skin['bones']}
     for b in m['bones']:
         ro = role(b['id'])
         if ro is None or (ro[1] == '2') != second:
             continue
-        src = by.get(b['id'][:-1] if second else b['id'])
+        src = by.get(b['id'])
         if src is not None:
             b['quads'] = src['quads']
     return m

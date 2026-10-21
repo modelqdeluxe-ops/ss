@@ -11,7 +11,9 @@ from PIL import Image, ImageDraw
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOLS = os.path.dirname(HERE)
 sys.path.insert(0, TOOLS)
+sys.path.insert(0, HERE)
 import vfx_render as R  # noqa: E402
+import pegado as P  # noqa: E402
 
 RES = os.path.normpath(os.path.join(TOOLS, '..', 'src', 'main', 'resources', 'assets', 'tfclient'))
 CELL = 300
@@ -23,9 +25,11 @@ def with_skin(model, tex, skin, skin_tex, suffix=''):
     m = json.loads(json.dumps(model))
     off = len(tex)
     m['tex'] = m['tex'] + skin['tex']
+    if suffix and not any(b['id'] == 'head2' for b in skin['bones']):
+        skin = P.second_skin(skin)  # (1.3.103) el segundo personaje, reflejado (mira al primero)
     by = {b['id']: b for b in skin['bones']}
     for b in m['bones']:
-        src = by.get(b['id'][:-len(suffix)] if suffix and b['id'].endswith(suffix) else (None if suffix else b['id']))
+        src = by.get(b['id'] if suffix and b['id'].endswith(suffix) else (None if suffix else b['id']))
         if src is None:
             continue
         quads = []

@@ -147,6 +147,25 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   colgando debajo: en las 5 animaciones con sedal, como mucho −89,9° (−90 = vertical); el pez, en el agua (de −0,9 a −5,4
   bloques en «boat», unos −4 en «fishing»). La caña, los brazos y el largo del sedal son los del pack. Solo su pista de
   giro, lineal a 60 por segundo. Volver a pasarlo no cambia nada.
+- **La caña y el anzuelo, delante del pescador (1.3.103; el dueño: «al recoger el anzuelo lo hace por detrás suyo»)**.
+  En «fishing» y «sitting» la caña del pack espera a 112° (más allá de la vertical, por detrás de la cabeza) unos 22 s
+  de cada 27 y al recoger se va a 220-233°: con el sedal colgando, el anzuelo quedaba detrás (medido: hasta 26 px, 1,6
+  bloques). Es la errata de signo de HUECOS: `sedal.rod` cambia de signo en x las claves de la caña que la dejan por
+  detrás (brazo + caña entre 90° y 270°; como en «boat», donde va bien), sin vueltas enteras entre claves. En
+  «interact» la apoyaba en el hombro (198°) con el pez a la espalda: esas claves se reflejan hacia delante (θ → 180° − θ).
+  Y si la punta no queda al menos `FRONT` (20 px) por delante (el tirón de «boat»), el sedal no cuelga recto: va tenso
+  hacia el agua de delante, lo justo (hasta 68° de la vertical). Medido a 60/s: el anzuelo, como poco, +11 px por
+  delante en «fishing», +13 en «sitting», +15 en «interact», +1 en el tirón de «boat» (antes −27, −27, −28 y −44); la
+  caña no gira más deprisa que en el pack (21°/fotograma, el lanzamiento).
+- **La cara del segundo personaje de los dúos, delante (1.3.103; el dueño: «tienen la cara atrás»)**. En las
+  plantillas del pack (skin.bbmodel) el 2.º personaje es el 1.º reflejado de delante atrás (mira al 1.º: cara y pecho en
+  +z). Las pieles del panel del 2.º («piel2_N») ponían en head2… las piezas head… de la piel del caminante, que miran a
+  −z: le quedaban la cara y el pecho en la espalda en los 210 dúos con piel (medido). Ahora usan `<piel>_2`
+  (`pegado.second_skin`, la piel reflejada como la plantilla; `build_npcs.write_second_skins` las escribe) con
+  `changepart pid=head2 npid=head2`, como el pack con sus skin_N. `pegado` y `hoja_npcs` también. Comprobado: la cara
+  del 2.º del mismo lado que el pecho de su plantilla en los 210; la del 1.º, en los 2 625 NPC×piel. Y con la piel
+  reflejada todo sigue pegado: `pegado.py` a 60/s en los 5 packs con dúos (tavern, combat_vol1, townsfolks_vol2,
+  guards_vol1, lumberjacks), 70 680 poses, «todo pegado».
 
 ## 4. Comprobarlo
 

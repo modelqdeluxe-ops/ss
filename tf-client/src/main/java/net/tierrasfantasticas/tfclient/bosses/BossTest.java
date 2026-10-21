@@ -264,6 +264,10 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("crates")) ids.add(0, "crates");
             // (1.3.101) «npcs»: los NPC de escenas (los 13 packs), el panel de NPC, sus pins, rutas y el guardado
             if (only != null && List.of(only.split(",")).contains("npcs")) ids.add(0, "npcs");
+            // (1.3.103) «pad»: el TF Pad abierto (portada, Música, Efectos) antes de todo; «padtras»: lo mismo al final (tras
+            // las crates, por si su cinemática deja algo cambiado al pintar)
+            if (only != null && List.of(only.split(",")).contains("pad")) ids.add(0, "pad");
+            if (only != null && List.of(only.split(",")).contains("padtras")) ids.add("padtras");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -306,6 +310,10 @@ public final class BossTest {
         }
         if ("npcs".equals(r.id)) {
             npcsStep(server, level, player, r);
+            return;
+        }
+        if ("pad".equals(r.id) || "padtras".equals(r.id)) {
+            padStep(level, player, r);
             return;
         }
         switch (phase) {
@@ -685,6 +693,8 @@ public final class BossTest {
     static volatile int dialogPress = -1;
     /** El cliente de la prueba cierra la pantalla que tenga abierta (el panel de NPC antes de otra captura). */
     static volatile boolean closeScreen;
+    /** El cliente de la prueba abre el pad en esa app («» = la portada; BossTest «pad»). */
+    static volatile String openPad;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
     private static Vec3 origin;
     /** La persecución por la isla (1.3.92): dónde espera el jugador, lo más cerca que llega el jefe y lo más cerca del borde. */
@@ -1600,7 +1610,19 @@ public final class BossTest {
                 look(player, level, o.x - 30 + 6, o.y + 2.5, o.z + 70 - 1.5, o.x - 30, o.y + 1.2, o.z + 70 - 1.5);
             }
             case 944 -> shot(r, "npc_pescador");
-            case 960 -> next(level);
+            // (1.3.103) Un dúo con la piel del panel, desde los dos lados: la cara de cada uno, delante (la piel del 2.º
+            // personaje le dejaba la cara y el pecho en la espalda; el dueño: «tienen la cara atrás»)
+            case 950 -> player.teleportTo(level, o.x - 36, o.y, o.z + 70, 180F, 0F);
+            case 954 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_tavern", "scene_tavern_drunk_duo", 1, 0, 0));
+                BossEntity duo = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                r.event("dúo de la prueba: " + (duo == null ? "NO SALE" : duo.getYRot() + "°"));
+            }
+            case 990 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 + 3.2, o.x - 36, o.y + 1.1, o.z + 70);
+            case 1030 -> shot(r, "npc_duo_a");
+            case 1034 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 - 3.2, o.x - 36, o.y + 1.1, o.z + 70);
+            case 1074 -> shot(r, "npc_duo_b");
+            case 1090 -> next(level);
             default -> { }
         }
         if (f > 154 && f < 434 && f % 40 == 0 && npcVendor != null) {
@@ -1610,6 +1632,22 @@ public final class BossTest {
         }
         if (f > 453 && f < 768 && f % 40 == 0 && npcWalker != null && npcWalker.isAlive()) {
             npcTrack.append(String.format(" %.1f,%.1f", npcWalker.getX() - (o.x - 60), npcWalker.getZ() - o.z));
+        }
+    }
+
+    /** (1.3.103) El TF Pad abierto: la portada, Música y Efectos (el dueño: «el pad perdió varias de sus letras»). */
+    private static void padStep(ServerLevel level, ServerPlayer player, Rep r) {
+        switch (t) {
+            case 1 -> player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+            case 20 -> openPad = "";
+            case 80 -> shot(r, "pad_portada");
+            case 90 -> openPad = "musica";
+            case 150 -> shot(r, "pad_musica");
+            case 160 -> openPad = "efectos";
+            case 220 -> shot(r, "pad_efectos");
+            case 230 -> closeScreen = true;
+            case 240 -> next(level);
+            default -> { }
         }
     }
 

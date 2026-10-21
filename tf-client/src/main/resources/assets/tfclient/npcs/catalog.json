@@ -1449,38 +1449,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_1",
-       "head"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_1",
-       "body"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1492,38 +1492,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_2",
-       "head"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_2",
-       "body"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1535,38 +1535,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_3",
-       "head"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_3",
-       "body"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1578,38 +1578,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_4",
-       "head"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_4",
-       "body"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1621,38 +1621,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_5",
-       "head"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_5",
-       "body"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1664,38 +1664,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_6",
-       "head"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_6",
-       "body"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1707,38 +1707,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_7",
-       "head"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_7",
-       "body"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1750,38 +1750,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_8",
-       "head"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_8",
-       "body"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1793,38 +1793,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_9",
-       "head"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_9",
-       "body"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1836,38 +1836,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_10",
-       "head"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_10",
-       "body"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1879,38 +1879,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_11",
-       "head"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_11",
-       "body"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1922,38 +1922,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_12",
-       "head"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_12",
-       "body"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -1965,38 +1965,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_13",
-       "head"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_13",
-       "body"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2008,38 +2008,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_14",
-       "head"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_14",
-       "body"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2051,38 +2051,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_15",
-       "head"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_15",
-       "body"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2094,38 +2094,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_16",
-       "head"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_16",
-       "body"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2137,38 +2137,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_17",
-       "head"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_17",
-       "body"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2180,38 +2180,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_18",
-       "head"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_18",
-       "body"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2223,38 +2223,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_19",
-       "head"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_19",
-       "body"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2266,38 +2266,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_20",
-       "head"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_20",
-       "body"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -2309,38 +2309,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_21",
-       "head"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_21",
-       "body"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6491,38 +6491,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_1",
-       "head"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_1",
-       "body"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6534,38 +6534,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_2",
-       "head"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_2",
-       "body"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6577,38 +6577,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_3",
-       "head"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_3",
-       "body"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6620,38 +6620,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_4",
-       "head"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_4",
-       "body"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6663,38 +6663,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_5",
-       "head"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_5",
-       "body"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6706,38 +6706,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_6",
-       "head"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_6",
-       "body"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6749,38 +6749,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_7",
-       "head"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_7",
-       "body"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6792,38 +6792,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_8",
-       "head"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_8",
-       "body"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6835,38 +6835,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_9",
-       "head"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_9",
-       "body"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6878,38 +6878,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_10",
-       "head"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_10",
-       "body"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6921,38 +6921,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_11",
-       "head"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_11",
-       "body"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -6964,38 +6964,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_12",
-       "head"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_12",
-       "body"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7007,38 +7007,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_13",
-       "head"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_13",
-       "body"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7050,38 +7050,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_14",
-       "head"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_14",
-       "body"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7093,38 +7093,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_15",
-       "head"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_15",
-       "body"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7136,38 +7136,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_16",
-       "head"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_16",
-       "body"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7179,38 +7179,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_17",
-       "head"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_17",
-       "body"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7222,38 +7222,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_18",
-       "head"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_18",
-       "body"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7265,38 +7265,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_19",
-       "head"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_19",
-       "body"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7308,38 +7308,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_20",
-       "head"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_20",
-       "body"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -7351,38 +7351,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_21",
-       "head"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_21",
-       "body"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9495,38 +9495,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_1",
-       "head"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_1",
-       "body"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9538,38 +9538,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_2",
-       "head"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_2",
-       "body"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9581,38 +9581,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_3",
-       "head"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_3",
-       "body"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9624,38 +9624,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_4",
-       "head"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_4",
-       "body"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9667,38 +9667,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_5",
-       "head"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_5",
-       "body"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9710,38 +9710,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_6",
-       "head"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_6",
-       "body"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9753,38 +9753,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_7",
-       "head"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_7",
-       "body"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9796,38 +9796,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_8",
-       "head"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_8",
-       "body"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9839,38 +9839,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_9",
-       "head"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_9",
-       "body"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9882,38 +9882,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_10",
-       "head"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_10",
-       "body"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9925,38 +9925,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_11",
-       "head"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_11",
-       "body"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -9968,38 +9968,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_12",
-       "head"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_12",
-       "body"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10011,38 +10011,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_13",
-       "head"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_13",
-       "body"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10054,38 +10054,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_14",
-       "head"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_14",
-       "body"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10097,38 +10097,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_15",
-       "head"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_15",
-       "body"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10140,38 +10140,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_16",
-       "head"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_16",
-       "body"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10183,38 +10183,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_17",
-       "head"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_17",
-       "body"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10226,38 +10226,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_18",
-       "head"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_18",
-       "body"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10269,38 +10269,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_19",
-       "head"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_19",
-       "body"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10312,38 +10312,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_20",
-       "head"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_20",
-       "body"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -10355,38 +10355,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_21",
-       "head"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_21",
-       "body"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14244,38 +14244,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_1",
-       "head"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_1",
-       "body"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14287,38 +14287,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_2",
-       "head"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_2",
-       "body"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14330,38 +14330,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_3",
-       "head"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_3",
-       "body"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14373,38 +14373,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_4",
-       "head"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_4",
-       "body"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14416,38 +14416,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_5",
-       "head"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_5",
-       "body"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14459,38 +14459,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_6",
-       "head"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_6",
-       "body"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14502,38 +14502,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_7",
-       "head"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_7",
-       "body"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14545,38 +14545,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_8",
-       "head"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_8",
-       "body"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14588,38 +14588,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_9",
-       "head"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_9",
-       "body"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14631,38 +14631,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_10",
-       "head"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_10",
-       "body"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14674,38 +14674,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_11",
-       "head"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_11",
-       "body"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14717,38 +14717,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_12",
-       "head"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_12",
-       "body"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14760,38 +14760,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_13",
-       "head"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_13",
-       "body"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14803,38 +14803,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_14",
-       "head"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_14",
-       "body"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14846,38 +14846,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_15",
-       "head"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_15",
-       "body"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14889,38 +14889,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_16",
-       "head"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_16",
-       "body"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14932,38 +14932,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_17",
-       "head"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_17",
-       "body"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -14975,38 +14975,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_18",
-       "head"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_18",
-       "body"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -15018,38 +15018,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_19",
-       "head"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_19",
-       "body"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -15061,38 +15061,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_20",
-       "head"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_20",
-       "body"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -15104,38 +15104,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_21",
-       "head"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_21",
-       "body"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18606,38 +18606,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_1",
-       "head"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_1",
-       "body"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_1",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_1_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18649,38 +18649,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_2",
-       "head"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_2",
-       "body"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_2",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_2_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18692,38 +18692,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_3",
-       "head"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_3",
-       "body"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_3",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_3_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18735,38 +18735,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_4",
-       "head"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_4",
-       "body"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_4",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_4_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18778,38 +18778,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_5",
-       "head"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_5",
-       "body"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_5",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_5_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18821,38 +18821,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_6",
-       "head"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_6",
-       "body"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_6",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_6_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18864,38 +18864,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_7",
-       "head"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_7",
-       "body"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_7",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_7_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18907,38 +18907,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_8",
-       "head"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_8",
-       "body"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_8",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_8_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18950,38 +18950,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_9",
-       "head"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_9",
-       "body"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_9",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_9_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -18993,38 +18993,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_10",
-       "head"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_10",
-       "body"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_10",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_10_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19036,38 +19036,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_11",
-       "head"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_11",
-       "body"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_11",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_11_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19079,38 +19079,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_12",
-       "head"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_12",
-       "body"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_12",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_12_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19122,38 +19122,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_13",
-       "head"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_13",
-       "body"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_13",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_13_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19165,38 +19165,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_14",
-       "head"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_14",
-       "body"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_14",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_14_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19208,38 +19208,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_15",
-       "head"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_15",
-       "body"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_15",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_15_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19251,38 +19251,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_16",
-       "head"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_16",
-       "body"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_16",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_16_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19294,38 +19294,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_17",
-       "head"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_17",
-       "body"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_17",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_17_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19337,38 +19337,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_18",
-       "head"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_18",
-       "body"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_18",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_18_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19380,38 +19380,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_19",
-       "head"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_19",
-       "body"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_19",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_19_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19423,38 +19423,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_20",
-       "head"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_20",
-       "body"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_20",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_20_2",
+       "left_leg2"
       ]
      ],
      "vars": {}
@@ -19466,38 +19466,38 @@
       [
        "part",
        "head2",
-       "npc_wanderers_vol1.wanderer_21",
-       "head"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "head2"
       ],
       [
        "part",
        "body2",
-       "npc_wanderers_vol1.wanderer_21",
-       "body"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "body2"
       ],
       [
        "part",
        "right_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_arm2"
       ],
       [
        "part",
        "left_arm2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_arm"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_arm2"
       ],
       [
        "part",
        "right_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "right_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "right_leg2"
       ],
       [
        "part",
        "left_leg2",
-       "npc_wanderers_vol1.wanderer_21",
-       "left_leg"
+       "npc_wanderers_vol1.wanderer_21_2",
+       "left_leg2"
       ]
      ],
      "vars": {}

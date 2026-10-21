@@ -65,7 +65,8 @@ HUECOS = {
                    '(«bone2», 390° = 30°, escala z 2,25-2,7) sigue hacia arriba hasta unos 10 bloques del suelo. En «boat» la '
                    'caña va a +25° y el sedal cae bien; con +58° en «fishing» colgaría al agua (errata de signo del autor, '
                    'parece). Todas sus animaciones tienen «override», así que no se suman. ModelEngine lo enseñaría igual; '
-                   'por orden del dueño (1.3.102) tools/npcs/sedal.py lo cuelga recto hacia abajo en todas las animaciones',
+                   'por orden del dueño (1.3.102) tools/npcs/sedal.py lo cuelga recto hacia abajo en todas las animaciones '
+                   'y (1.3.103) pone la caña delante (signo de x cambiado donde queda por detrás) y el anzuelo delante',
     },
     'npc_lumberjacks': {
         'lumberjack_log': 'las escalas de plank1/plank2 de «lumberjack_log» llevan «-» (Molang vacío): Blockbench y '
@@ -482,19 +483,35 @@ def self_skinned(mob, prog):
     return scan([pm for pm in prog['mobs'][mob]['mechs'] if pm.get('tr') in ('onspawn', 'onload', 'onspawnorload')])
 
 
+SECOND = '_2'  # las pieles del segundo personaje: <piel>_2 (second_skin)
+
+
+def write_second_skins(pool, models_dir):
+    """Las pieles del segundo personaje de los dúos (pegado.second_skin), junto a las del primero."""
+    sys.path.insert(0, HERE)
+    import pegado
+    for mid in pool:
+        skin = json.load(open(os.path.join(models_dir, mid + '.json'), encoding='utf-8'))
+        with open(os.path.join(models_dir, mid + SECOND + '.json'), 'w', encoding='utf-8') as f:
+            json.dump(pegado.second_skin(skin), f, ensure_ascii=False, separators=(',', ':'))
+
+
 def add_skins(catalog):
     """Pone las pieles en el catálogo (grupos skin y skin2) y la marca autoskin."""
     pool = skin_pool()
     tpl = template_texture()
     if not pool:
         return
+    write_second_skins(pool, os.path.join(BB.OUT, 'models'))
     for c in catalog.values():
         prog = json.load(open(os.path.join(BB.OUT, c['id'] + '.json'), encoding='utf-8'))
         skins = [{'id': f'piel_{i + 1}', 'name': f'Piel {i + 1}', 'ops': [['remap', mid]], 'vars': {'skin': mid}}
                  for i, mid in enumerate(pool)]
         skins.append({'id': 'piel_pack', 'name': 'Plantilla del pack', 'ops': [['remap', '']], 'vars': {'skin': ''}})
-        skins2 = [{'id': f'piel2_{i + 1}', 'name': f'Piel {i + 1}', 'ops': [['part', b + '2', mid, b] for b in LIMBS], 'vars': {}}
-                  for i, mid in enumerate(pool)]
+        # (1.3.103) el segundo personaje, con las piezas de second_skin (la piel reflejada: mira al primero, como en las
+        # plantillas del pack; con las de la piel tal cual le quedaban la cara y el pecho en la espalda)
+        skins2 = [{'id': f'piel2_{i + 1}', 'name': f'Piel {i + 1}', 'ops': [['part', b + '2', mid + SECOND, b + '2'] for b in LIMBS],
+                   'vars': {}} for i, mid in enumerate(pool)]
         skins2.append({'id': 'piel2_pack', 'name': 'Plantilla del pack', 'ops': [['part', b + '2', '', b + '2'] for b in LIMBS], 'vars': {}})
         used1 = used2 = False
         for n in c['npcs']:

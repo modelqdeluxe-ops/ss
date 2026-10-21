@@ -554,6 +554,12 @@ def frac(x):
     return x - math.floor(x)
 
 
+def near_fade(eye, c, size):
+    """0 pegado a la cámara, 1 a partir de ~2,5 bloques (= CinematicFx.nearFade)."""
+    k = min(1.0, max(0.0, (float(np.linalg.norm(np.array(c) - eye)) - 1.0 - size) / 1.5))
+    return k * k * (3 - 2 * k)
+
+
 class Fx:
     """Lo que suma luz (como CinematicFx): halos, haz, polvo, luciérnagas, bruma, espuma. Vértices con la textura del
     brillo (u, v) y color."""
@@ -705,10 +711,15 @@ def effects(fx, t, lights, power=1.0):
         pulse = 0.8 + 0.2 * math.sin(t * 0.6 + i * 2.0)
         fx.glow(x, y, z, 0.16 * pulse, rr, gg, bb, 0.45)
         fx.glow(x, y, z, 0.05, 1, 1, 1, 0.95)
-        for k in range(1, 19):     # la colita (sin alas: el dueño)
-            qx, qy, qz = fairy_at(i, t - k * 0.55)
-            ff = 1.0 - k / 19.0
-            fx.glow(qx, qy - k * 0.006, qz, 0.035 * ff + 0.012, rr * 0.6 + 0.4, gg * 0.6 + 0.4, bb * 0.6 + 0.4, 0.65 * ff * ff)
+        # la colita (sin alas: el dueño): una estela continua de su color (= CinematicFx.fairies, TAIL y TAIL_DT)
+        q0 = np.array([x, y, z])
+        for k in range(1, 17):
+            q1 = np.array(fairy_at(i, t - k * 0.6))
+            f0, f1 = 1.0 - (k - 1) / 16.0, 1.0 - k / 16.0
+            near = near_fade(fx.eye, (q0 + q1) / 2, 0.1)
+            fx.band(q0, q1, 0.07 * f0, 0.07 * f1, rr * 0.85 + 0.15, gg * 0.85 + 0.15, bb * 0.85 + 0.15,
+                    0.42 * f0 * f0 * near, 0.42 * f1 * f1 * near)
+            q0 = q1
     # la bruma baja sobre el agua
     for i in range(26):
         x = -9.0 + hsh(i, 201) * 18.0
