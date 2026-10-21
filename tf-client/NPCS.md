@@ -127,9 +127,10 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   con `pegado.py` y, aparte, con las reglas de Blockbench sobre el `.bbmodel` original, sale lo mismo al milésimo (y los
   `.bbmodel` de la taberna ya traen 0,04–0,12 px de hueco en reposo). `tools/npcs/pegar.py` (lo llama `build_npcs`) los
   pega en cada animación: una pierna → el cuerpo se acerca a ella (los pies siguen en el suelo; si es la pierna la que
-  se mueve, la pierna); un brazo o la cabeza → se acercan al cuerpo; lo justo para tocar (+0,05 px), con la plantilla y
-  con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60 por segundo, comprobado al doble
-  y repetido donde aún quedaba hueco entre dos fotogramas. Volver a pasarlo no cambia nada.
+  se mueve, la pierna); un brazo o la cabeza → se acercan al cuerpo; lo justo para tocar (+0,10 px), con la plantilla y
+  con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60 por segundo, comprobado a 4
+  veces esos fotogramas y repetido donde aún quedaba hueco entre dos (con +0,05 px y al doble quedaban restos de hasta
+  0,05 px entre fotogramas: los vio `pegado.py --azar`). Volver a pasarlo no cambia nada.
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin

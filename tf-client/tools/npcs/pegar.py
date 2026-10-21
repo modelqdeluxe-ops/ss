@@ -9,7 +9,8 @@ milésimo; ModelEngine las enseña igual). Aquí, en cada fotograma, lo justo pa
 Se mide con la geometría del modelo del pack (la «Plantilla del pack») y con la de la piel del panel (todas las pieles
 tienen la misma), y se mueve lo que pida la peor. Solo la POSICIÓN de esos huesos (sus giros, los del pack): su pista
 de posición se vuelve a hacer en fotogramas lineales (los de la animación y 60 por segundo, quitando los que sobran) con
-lo del pack más la corrección. Una animación sin huecos no se toca (volver a pasarlo no cambia nada).
+lo del pack más la corrección; +0,10 px y comprobado a 4 veces esos fotogramas,
+para que tampoco quede hueco entre dos. Una animación sin huecos no se toca (volver a pasarlo no cambia nada).
 
 Uso: python3 tools/npcs/pegar.py [carpeta assets/tfclient] [--fps N] [--procesos N]  (sin carpeta: los del jar; los
 13 packs, unos 40 min con 4 procesos). Lo llama build_npcs al convertir.
@@ -27,9 +28,10 @@ sys.path.insert(0, HERE)
 import vfx_bb as B  # noqa: E402
 import pegado as P  # noqa: E402
 
-MARGIN = 0.05      # px de más al acercar (que se toquen de verdad, también entre dos fotogramas)
+MARGIN = 0.10      # px de más al acercar (que se toquen de verdad, también entre dos fotogramas)
 TOL = 0.005        # px: lo que se permite quitar al simplificar la pista horneada
 EPS = 1e-4
+CHECK = 4          # tras cada pasada se comprueba a 4 veces los fotogramas (lo que quede entre dos)
 
 
 # ------------------------------------------------------------------------------------------- puntos más cercanos
@@ -245,7 +247,8 @@ def bake(anim, fixes, times):
 
 def fix_anim(model, name, gs, pairs, fps, passes=6):
     """Pega las extremidades en esa animación: (el hueco más grande que tenía, si se ha cambiado). Tras cada pasada se
-    comprueba al doble de fotogramas; donde aún queda hueco (entre dos fotogramas), esos instantes entran en la siguiente."""
+    comprueba a CHECK veces los fotogramas; donde aún queda hueco (entre dos fotogramas), esos instantes entran en la
+    siguiente."""
     anim = model['anims'][name]
     ov = bool(anim.get('ov'))
     ln = anim['len'] or 0
@@ -270,7 +273,7 @@ def fix_anim(model, name, gs, pairs, fps, passes=6):
             bake(anim, fixes, ts)
             changed = True
         bad = []
-        for t in grid(ln, fps * 2):
+        for t in grid(ln, fps * CHECK):
             g = gap_at(model, name, ov, gs, pairs, t)
             if g > EPS:
                 bad.append(t)
