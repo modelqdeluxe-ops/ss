@@ -425,6 +425,13 @@ public class CratePreOpenScreen extends Screen {
       }
    }
 
+   public void tick() {
+      // (los avisos del juego —logros, recetas— no salen encima del santuario)
+      if (this.sanctuary != null && this.minecraft != null) {
+         this.minecraft.getToasts().clear();
+      }
+   }
+
    public boolean isPauseScreen() {
       return false;
    }

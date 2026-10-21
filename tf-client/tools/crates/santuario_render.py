@@ -37,14 +37,16 @@ CACHE = os.path.expanduser('~/.cache/tfclient/minecraft-1.20.1-client.jar')
 # los de SceneLevel, SanctuaryScene y CrateCinematicScreen (si cambian allí, cámbialos aquí)
 GRASS, FOLIAGE, WATER = 0x52A048, 0x429C3E, 0x3FD8E0
 FOG, FOG_START, FOG_END = (0.10, 0.20, 0.24), 10.0, 55.0
-THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.65   # los de ScenePost y CrateCinematicScreen (sin abrir)
+THRESHOLD, BLOOM, RAYS, EXPOSURE = 0.78, 0.7, 0.9, 1.35   # los de ScenePost y CrateCinematicScreen (sin abrir)
 CRATE_TINT = (0.86, 0.84, 0.80)
 BARS = 0.035                       # las franjas de cine (CrateCinematicScreen.overlay)
 # la luz de la escena (SanctuaryScene.light): ambiente, haz, luz del hueco, rebote del agua
-AMB = (0.24, 0.34, 0.42)
+AMB = (0.16, 0.24, 0.30)
 BEAM_C = (0.85, 0.80, 0.60)
-SKY_C = (0.22, 0.26, 0.24)
-POOL_C = (0.02, 0.20, 0.24)
+SKY_C = (0.20, 0.24, 0.22)
+POOL_C = (0.03, 0.34, 0.38)
+# las cajas de agua que cae (= SanctuaryScene.FALLS): x0, x1, y0, y1, z0, z1
+FALLS = ((-5, -3, 0, 5, -8, -7), (4, 6, 0, 5, -8, -7), (-2, 3, 0, 20, -17, -12))
 CROWN_C = (0.70, 0.80, 0.42)
 # los nenúfares: los alumbra el agua turquesa de debajo y su verde es más claro (en la imagen del dueño, ~(25,85,45); con la
 # luz de la escena salían casi negros, (6,41,37)) = SanctuaryScene.LILY_LIFT/LILY_K
@@ -509,7 +511,12 @@ def make_light(sc):
         # el agua turquesa alumbra desde abajo lo que tiene cerca
         px = max(0.0, abs(x - 0.5) - (pb[0] + 0.5))
         pz = max(0.0, pb[1] - z, z - pb[2] - 1)
-        pool = math.exp(-(px * px + pz * pz) / 3.0) * min(1.0, max(0.0, (3.4 - y) / 3.0))
+        pool = math.exp(-(px * px + pz * pz) / 5.0) * min(1.0, max(0.0, (4.5 - y) / 4.0))
+        for f in FALLS:
+            fx = max(0.0, f[0] - x, x - f[1])
+            fy = max(0.0, f[2] - y, y - f[3])
+            fz = max(0.0, f[4] - z, z - f[5])
+            pool = max(pool, math.exp(-(fx * fx + fy * fy + fz * fz) / 2.0) * 0.8)
         beam *= facing
         sky *= above
         crown *= above
@@ -519,11 +526,11 @@ def make_light(sc):
         for l in grid.get((int(math.floor(x / 4)), int(math.floor(y / 4)), int(math.floor(z / 4))), ()):
             ddx, ddy, ddz = x - l[0], y - l[1], z - l[2]
             d2 = ddx * ddx + ddy * ddy + ddz * ddz
-            reach = 2.2 * l[6] + 1.0
+            reach = min(4.0, 2.4 * l[6] + 1.0)
             if d2 >= reach * reach:
                 continue
             kk = 1.0 - math.sqrt(d2) / reach
-            kk = kk * kk * min(1.0, l[6] + 0.2) * 0.85
+            kk = kk * kk * min(1.0, l[6] + 0.2) * 1.25
             r += l[3] * kk
             g += l[4] * kk
             b += l[5] * kk
@@ -599,6 +606,8 @@ def effects(fx, t, lights, power=1.0):
         s = l[6]
         fx.glow(l[0], l[1], l[2], 0.42 * s + 0.12, l[3], l[4], l[5], 0.26 * flick * min(1.0, s + 0.3))
         fx.glow(l[0], l[1], l[2], 0.18 * s + 0.06, (l[3] + 1) / 2, (l[4] + 1) / 2, (l[5] + 1) / 2, 0.5 * flick)
+        if s >= 1.2:   # los faroles: su resplandor, grande y muy suave (= CinematicFx.lightHalos)
+            fx.glow(l[0], l[1], l[2], 1.15 * s, l[3], l[4], l[5], 0.17 * flick)
     # el haz (CinematicFx.sunShafts): halo ancho, la columna con el borde marcado, el núcleo claro y vetas
     r, g, b = 1.0, 0.97, 0.84
     base = np.array([c[0], c[1] - 0.3, c[2]])

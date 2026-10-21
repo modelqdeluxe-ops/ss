@@ -199,8 +199,13 @@ public final class SanctuaryScene {
     }
 
     /** La luz de la escena: ambiente, haz, la luz del hueco, el sol de lleno arriba y el rebote del agua (r, g, b). */
-    private static final float[] AMB = {0.24F, 0.34F, 0.42F}, BEAM_C = {0.85F, 0.80F, 0.60F}, SKY_C = {0.22F, 0.26F, 0.24F},
-            POOL_C = {0.02F, 0.20F, 0.24F}, CROWN_C = {0.70F, 0.80F, 0.42F};
+    // (el dueño: «más contraste, más oscuro, que se note el resplandor de los faroles y que el agua refleje un poco el
+    // turquesa en los bloques cercanos»: ambiente más oscuro, más turquesa del agua y charcos de luz de los faroles)
+    private static final float[] AMB = {0.16F, 0.24F, 0.30F}, BEAM_C = {0.85F, 0.80F, 0.60F}, SKY_C = {0.20F, 0.24F, 0.22F},
+            POOL_C = {0.03F, 0.34F, 0.38F}, CROWN_C = {0.70F, 0.80F, 0.42F};
+    /** Las cajas de agua que cae (los dos chorros de los lados, la escalera y la cascada alta): x0, x1, y0, y1, z0, z1. */
+    private static final float[][] FALLS = {{-5.0F, -3.0F, 0.0F, 5.0F, -8.0F, -7.0F}, {4.0F, 6.0F, 0.0F, 5.0F, -8.0F, -7.0F},
+            {-2.0F, 3.0F, 0.0F, 20.0F, -17.0F, -12.0F}};
 
     static float smooth(float a, float b, float x) {
         float t = Math.max(0.0F, Math.min(1.0F, (x - a) / (b - a)));
@@ -235,7 +240,13 @@ public final class SanctuaryScene {
         float crown = (float)(Math.exp(-ex * ex / 140.0F) * Math.exp(-ez * ez / 30.0F)) * smooth(4.5F, 8.0F, y) * above;
         float px = Math.max(0.0F, Math.abs(x - 0.5F) - (poolBox[0] + 0.5F));
         float pz = Math.max(0.0F, Math.max(poolBox[1] - z, z - poolBox[2] - 1.0F));
-        float pool = (float)Math.exp(-(px * px + pz * pz) / 3.0F) * Math.max(0.0F, Math.min(1.0F, (3.4F - y) / 3.0F));
+        float pool = (float)Math.exp(-(px * px + pz * pz) / 5.0F) * Math.max(0.0F, Math.min(1.0F, (4.5F - y) / 4.0F));
+        // el turquesa de las cascadas en lo que tienen cerca
+        for (float[] f : FALLS) {
+            float fx = Math.max(0.0F, Math.max(f[0] - x, x - f[1])), fy = Math.max(0.0F, Math.max(f[2] - y, y - f[3]));
+            float fz = Math.max(0.0F, Math.max(f[4] - z, z - f[5]));
+            pool = Math.max(pool, (float)Math.exp(-(fx * fx + fy * fy + fz * fz) / 2.0F) * 0.8F);
+        }
         float r = AMB[0] + BEAM_C[0] * beam + SKY_C[0] * sky + POOL_C[0] * pool + CROWN_C[0] * crown;
         float g = AMB[1] + BEAM_C[1] * beam + SKY_C[1] * sky + POOL_C[1] * pool + CROWN_C[1] * crown;
         float b = AMB[2] + BEAM_C[2] * beam + SKY_C[2] * sky + POOL_C[2] * pool + CROWN_C[2] * crown;
@@ -245,10 +256,11 @@ public final class SanctuaryScene {
                 float dx = x - l[0], dy = y - l[1], dz = z - l[2];
                 float d2 = dx * dx + dy * dy + dz * dz;
                 // (un charco de luz cerca de cada farol, como en la imagen; el resto del santuario se queda en su sombra)
-                float reach = 2.2F * l[6] + 1.0F;
+                // (los faroles, un charco de luz cálida más grande y fuerte: el dueño, «que se note su iluminación»)
+                float reach = Math.min(4.0F, 2.4F * l[6] + 1.0F);
                 if (d2 >= reach * reach) continue;
                 float k = 1.0F - (float)Math.sqrt(d2) / reach;
-                k = k * k * Math.min(1.0F, l[6] + 0.2F) * 0.85F;
+                k = k * k * Math.min(1.0F, l[6] + 0.2F) * 1.25F;
                 r += l[3] * k;
                 g += l[4] * k;
                 b += l[5] * k;

@@ -66,8 +66,10 @@ void main() {
     // un aro oscuro y salían «discos» en el juego; el detalle fino de las texturas, diferencias pequeñas, sigue igual)
     vec3 dc = c - blurred;
     float dl = dot(dc, vec3(0.299, 0.587, 0.114));
-    dc /= 1.0 + max(-dl, 0.0) * 6.0;
-    c = max(c + dc * 0.560, 0.0);
+    // (y lo que aclara, también: dibujaba un borde blanco en cada arista de las texturas; el dueño, «líneas blancas,
+    // texturas no bien definidas»)
+    dc /= 1.0 + abs(dl) * 8.0;
+    c = max(c + dc * 0.35, 0.0);
     c = mix(c, blurred, coc);
     vec3 b = texture(BloomSampler, uv).rgb;
     vec3 rays = vec3(0.0);
@@ -93,9 +95,6 @@ void main() {
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
     col = (1.0 - exp(-max(col, 0.0) * Exposure)) / (1.0 - exp(-Exposure));
-    // (medido en el juego, que sale más oscuro que la vista previa: luz media ×0,90, luz alta ×0,94; con esto el juego
-    // queda igual o por encima de la imagen del dueño en luz, contraste y nitidez)
-    col *= 1.120;
     // colores: sombras verde azuladas (la imagen: nada amarillento en lo oscuro), luces cálidas, más saturación
     float l = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(col, col * vec3(0.84, 1.0, 1.16) + vec3(0.0, 0.006, 0.012), (1.0 - smoothstep(0.0, 0.5, l)) * 0.7);
@@ -104,10 +103,10 @@ void main() {
     l = dot(col, vec3(0.299, 0.587, 0.114));
     // (medido en el juego: con 1,3 salía un 15 % más saturado que la imagen del dueño)
     col = max(mix(vec3(l), col, 1.12 + 0.15 * smoothstep(0.4, 0.8, l)), 0.0);
-    col = mix(col, col * col * (3.0 - 2.0 * col), 0.600);
+    col = mix(col, col * col * (3.0 - 2.0 * col), 0.85);
     // los brillos más fuertes tiran a blanco (como los del agua de la imagen)
     float hmax = max(col.r, max(col.g, col.b));
-    col = mix(col, vec3(hmax), smoothstep(0.78, 0.97, dot(col, vec3(0.299, 0.587, 0.114))) * 0.420);
+    col = mix(col, vec3(hmax), smoothstep(0.78, 0.97, dot(col, vec3(0.299, 0.587, 0.114))) * 0.25);
     vec2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 0.35;      // (poca: en la imagen del dueño las esquinas también brillan)
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

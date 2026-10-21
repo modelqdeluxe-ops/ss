@@ -340,7 +340,7 @@ public final class CinematicFx {
      * Los pétalos de los cerezos: caen dando vueltas y el viento los lleva; {@code burst} (0..1, la apertura) suelta
      * una ráfaga que sale de la crate hacia fuera y hacia arriba.
      */
-    public static void petals(VertexConsumer vc, Matrix4f m, Vector3f eye, SanctuaryScene sc, float t, float burstT, float burstPower) {
+    public static void petals(VertexConsumer vc, View v, SanctuaryScene sc, float t, float burstT, float burstPower) {
         for (int tree = 0; tree < 4; tree++) {
             float[] ch = sc.anchor("cherry" + tree);
             if (ch[3] <= 0) continue;
@@ -356,7 +356,7 @@ public final class CinematicFx {
                 float z = ch[2] + (float)Math.sin(ang) * rad + (float)Math.cos(t * 0.04F + id) * 0.3F;
                 float y = height - 1.0F - fall;
                 if (y < 0.05F) continue;
-                petal(vc, m, x, y, z, t, id, nearFade(eye, x, y, z, 0.1F));
+                petal(vc, v, x, y, z, t, id, nearFade(v.eye, x, y, z, 0.1F));
             }
         }
         if (burstPower > 0.0F && burstT >= 0.0F) {
@@ -372,20 +372,23 @@ public final class CinematicFx {
                 float y = c[1] + 0.9F + (2.5F + hash(i, 97) * 2.0F) * (1.0F - (float)Math.exp(-s * 2.2F)) - s * s * 0.25F;
                 if (y < 0.1F) continue;
                 // (los pétalos no vuelan hacia la cámara: los que salían hacia ella pasaban pegados, enormes)
-                petal(vc, m, x, y, z, t, 900 + i, burstPower * Math.min(1.0F, (6.0F - s) * 0.8F) * nearFade(eye, x, y, z, 0.1F));
+                petal(vc, v, x, y, z, t, 900 + i, burstPower * Math.min(1.0F, (6.0F - s) * 0.8F) * nearFade(v.eye, x, y, z, 0.1F));
             }
         }
     }
 
-    private static void petal(VertexConsumer vc, Matrix4f m, float x, float y, float z, float t, int id, float alpha) {
+    private static void petal(VertexConsumer vc, View v, float x, float y, float z, float t, int id, float alpha) {
+        // (siempre de cara a la cámara, girando en su plano y aplastándose un poco: de canto se veían como rayas blancas
+        // finas sobre lo oscuro; el dueño, «líneas blancas feas»)
         float spin = t * (0.1F + hash(id, 101) * 0.15F) + hash(id, 103) * 6.0F;
-        float tilt = t * (0.07F + hash(id, 105) * 0.1F) + hash(id, 107) * 6.0F;
-        float cs = (float)Math.cos(spin), sn = (float)Math.sin(spin), ct = (float)Math.cos(tilt), st = (float)Math.sin(tilt);
+        float squash = 0.55F + 0.45F * Math.abs((float)Math.cos(t * (0.07F + hash(id, 105) * 0.1F) + hash(id, 107) * 6.0F));
+        float cs = (float)Math.cos(spin), sn = (float)Math.sin(spin);
         float s = 0.05F + hash(id, 109) * 0.03F;
-        float ax = cs * s, ay = st * s * 0.6F, az = sn * s;
-        float bx = -sn * s * 0.7F * ct, by = ct * s * 0.5F, bz = cs * s * 0.7F * ct;
+        float ax = (v.right.x * cs + v.up.x * sn) * s, ay = (v.right.y * cs + v.up.y * sn) * s, az = (v.right.z * cs + v.up.z * sn) * s;
+        float bx = (-v.right.x * sn + v.up.x * cs) * s * 0.6F * squash, by = (-v.right.y * sn + v.up.y * cs) * s * 0.6F * squash,
+                bz = (-v.right.z * sn + v.up.z * cs) * s * 0.6F * squash;
         float shade = 0.85F + 0.15F * hash(id, 111);
-        quad(vc, m, x, y, z, ax, ay, az, bx, by, bz, 0.98F * shade, 0.72F * shade, 0.84F * shade, 0.95F * alpha);
+        quad(vc, v.m, x, y, z, ax, ay, az, bx, by, bz, 0.98F * shade, 0.72F * shade, 0.84F * shade, 0.95F * alpha);
     }
 
     /** Las mariposas: vuelan sobre las flores, con las alas que baten. */
@@ -564,6 +567,8 @@ public final class CinematicFx {
             // un halo pequeño y suave (en la imagen del dueño el brillo de los faroles es del tamaño del farol, no un disco)
             glow(vc, v, l[0], l[1], l[2], 0.42F * s + 0.12F, l[3], l[4], l[5], 0.26F * flick * Math.min(1.0F, s + 0.3F));
             glow(vc, v, l[0], l[1], l[2], 0.18F * s + 0.06F, mix(l[3], 1, 0.5F), mix(l[4], 1, 0.5F), mix(l[5], 1, 0.5F), 0.5F * flick);
+            // los faroles: su resplandor, grande y muy suave (el dueño: «que se note el resplandor de los faroles»)
+            if (s >= 1.2F) glow(vc, v, l[0], l[1], l[2], 1.15F * s, l[3], l[4], l[5], 0.17F * flick);
         }
     }
 
@@ -591,21 +596,17 @@ public final class CinematicFx {
             int c = FAIRY[i];
             float r = ((c >> 16) & 255) / 255.0F, g = ((c >> 8) & 255) / 255.0F, b = (c & 255) / 255.0F;
             if (wings) {
-                Vector3f q = fairyAt(sc, i, t - 0.5F);
-                float dx = p.x - q.x, dz = p.z - q.z;
-                float l = (float)Math.sqrt(dx * dx + dz * dz) + 1e-4F;
-                dx /= l;
-                dz /= l;
                 float flap = (float)Math.sin(t * 3.4F + i) * 0.9F;
                 // (las alas de un hada que pasa pegada a la cámara se veían como cuadriláteros blancos enormes)
                 float near = nearFade(v.eye, p.x, p.y, p.z, 0.3F);
                 if (near <= 0.01F) continue;
+                // (las alas, de cara a la cámara: de canto se veían como rayas claras finas)
                 for (int side = -1; side <= 1; side += 2) {
                     float s = 0.11F;
-                    float wx = -dz * side * (float)Math.cos(flap) * s, wy = (float)Math.sin(flap) * s * 0.8F + 0.04F,
-                            wz = dx * side * (float)Math.cos(flap) * s;
-                    quad(vc, v.m, p.x + wx, p.y + wy, p.z + wz, wx, wy, wz, dx * s * 0.6F, 0.02F, dz * s * 0.6F, mix(r, 1, 0.6F),
-                            mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F * near);
+                    float c0 = side * (0.35F + 0.65F * Math.abs((float)Math.cos(flap))) * s, c1 = (float)Math.sin(flap) * s * 0.5F + 0.03F;
+                    float wx = v.right.x * c0 + v.up.x * c1, wy = v.right.y * c0 + v.up.y * c1, wz = v.right.z * c0 + v.up.z * c1;
+                    quad(vc, v.m, p.x + wx, p.y + wy, p.z + wz, wx, wy, wz, v.up.x * s * 0.55F, v.up.y * s * 0.55F, v.up.z * s * 0.55F,
+                            mix(r, 1, 0.6F), mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F * near);
                 }
                 continue;
             }

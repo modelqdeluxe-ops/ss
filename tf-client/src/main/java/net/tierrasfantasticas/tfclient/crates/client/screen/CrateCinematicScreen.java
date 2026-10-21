@@ -964,8 +964,8 @@ public class CrateCinematicScreen extends Screen {
 
             // los pétalos de la apertura y del premio, y las alas de las hadas
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
-            CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
-            if (t >= REVEAL) CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - REVEAL, 0.8F);
+            CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
+            if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
             CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
@@ -1046,8 +1046,8 @@ public class CrateCinematicScreen extends Screen {
                 float rayK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
-                // (exposición medida en el juego: con 1,45 los medios tonos salían un 12 % más oscuros que la imagen)
-                post.finish(su, sv, vis, bloomK, rayK, 1.65F, focus, 0.05F, 220.0F, t);
+                // (el dueño: «más contraste, más oscuro, que se note el resplandor de los faroles»)
+                post.finish(su, sv, vis, bloomK, rayK, 1.35F, focus, 0.05F, 220.0F, t);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);

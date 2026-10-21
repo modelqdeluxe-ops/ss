@@ -118,6 +118,14 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **El cuadrado de color detrás del premio** era la tapa abierta de la crate (y el pilar de luz): al salir el premio la
   tapa se cierra despacio (`lidAngle`) y el pilar se apaga. Las alas de las hadas que pasaban pegadas a la cámara (los
   cuadriláteros blancos) también se apagan cerca de ella.
+- **Más contraste, faroles y turquesa** (el dueño: «más oscuro, que se note el resplandor de los faroles y que el agua
+  refleje un poco el turquesa en los bloques cercanos»): ambiente `AMB` más oscuro, exposición 1,35, curva de contraste
+  0,85; los faroles alumbran hasta 4 bloques con más fuerza y llevan un resplandor grande y suave; el turquesa del agua
+  (`POOL_C`) llega más lejos y también sale de las cascadas (`FALLS`), igual en `make_light` de la vista previa.
+- **Líneas blancas** (el dueño): los pétalos y las alas de las hadas eran planos y de canto se veían como rayas claras
+  finas (ahora siempre de cara a la cámara); la «claridad» del shader final dibujaba un borde claro en cada arista (ahora
+  se comprime en los dos sentidos y es más suave); los hilos de la cascada, con ruido fino, marcaban trazos rectos (ahora
+  son ondas suaves).
 - **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en
