@@ -107,6 +107,8 @@ public class CrateCinematicScreen extends Screen {
     private final List<SoundInstance> playing = new ArrayList<>();
     private final List<Track> tracks = new ArrayList<>();
     private ScenePost post;
+    /** (1.3.103) Ya se dijo en el registro con qué se dibuja (paquete de shaders, shader de la escena). */
+    private boolean saidHow;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
     private int frames;
@@ -922,6 +924,13 @@ public class CrateCinematicScreen extends Screen {
 
         // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
         boolean pp = ScenePost.ready() && !postFailed;
+        if (!saidHow) {
+            // (1.3.103, el dueño: «la escena no me mostraba los efectos») con qué se dibuja, una vez por cinemática
+            saidHow = true;
+            LogUtils.getLogger().info("[TF Crates] Cinemática: paquete de shaders {}, shader de la escena {}{}",
+                    net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse() ? "sí" : "no", pp ? "sí" : "no",
+                    postFailed ? " (falló antes)" : ScenePost.ready() ? "" : " (no cargó)");
+        }
         if (pp) {
             try {
                 if (post == null) post = new ScenePost();
