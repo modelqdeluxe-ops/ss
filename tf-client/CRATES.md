@@ -230,11 +230,10 @@ Oculus, que empieza su pasada ahí y la acaba al final, se quedaba «dibujando e
 Con Oculus, Embeddium o sus parientes, las partículas de la crate (las capas del editor) no se dibujan en la escena:
 salían como cuadrados blancos (`CrateCinematicScreen.particleMods`); sin ellos, como antes.
 
-**Las rayas al mover la cámara (1.3.106)**: las hojas llevan dentro una copia suya oscura y maciza (`LEAF_BACK`, el
-94 %, al 22 % de luz: por sus agujeros se veía el cielo claro del fondo, rayas blancas en los bordes; las hojas macizas
-no sirven, en sus agujeros sale el color que guarda la textura, blanco en algunas), cada bloque 0,2 % más grande (tapa
-las juntas entre caras), los destellos del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel
-(`fwidth`), y `crate_post` suaviza los bordes (FXAA).
+**Las rayas al mover la cámara (1.3.106)**: cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
+del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel (`fwidth`) y `crate_post`
+suaviza los bordes (FXAA). Las hojas siguen recortadas, como antes: macizas o con una copia oscura dentro (para que por
+sus agujeros no se viera el cielo claro), en la prueba con Oculus/Embeddium salían con manchas blancas en los agujeros.
 
 | tick (20/s) | qué pasa |
 |---|---|

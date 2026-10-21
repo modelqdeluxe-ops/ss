@@ -68,8 +68,8 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    `SceneFx` los dibuja como el agua (VertexBuffer y shaders propios `crate_fx_*`); con un paquete puesto el mundo se
    sigue dibujando detrás de la cinemática (Oculus se quedaba a medias); las partículas de la caja, con esos mods, no
    van en la escena (salían cuadrados blancos). CRATES.md §2.
-2. **Rayas blancas al mover la cámara**: las hojas con una copia oscura dentro (por sus agujeros se veía el cielo
-   claro), bloques 0,2 % más grandes, el brillo del estanque y los hilos de las cascadas que se apagan donde son más
+2. **Rayas blancas al mover la cámara**: bloques 0,2 % más grandes (las hojas, recortadas como antes: macizas o con una
+   copia oscura dentro salían con manchas blancas con Oculus/Embeddium), el brillo del estanque y los hilos de las cascadas que se apagan donde son más
    finos que un píxel y FXAA en `crate_post`. **La música**: «Aerie» de Minecraft (la sintetizada fuera). CRATES.md §2.
 3. **El pad sin lo que escribe y sin algunas letras**: algo de su juego pinta los recuadros después del texto (la
    prueba lo imita: `TFPadScreen.testBoxesLast`; sin el arreglo, la casilla de Música sin texto y solo el cursor, como

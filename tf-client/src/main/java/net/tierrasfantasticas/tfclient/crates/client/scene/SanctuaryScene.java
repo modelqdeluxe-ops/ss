@@ -36,7 +36,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -284,8 +283,6 @@ public final class SanctuaryScene {
         final float[] l = new float[3];
         boolean fixed;
         float fr = 1, fg = 1, fb = 1;
-        /** Todo más oscuro (la copia de dentro de las hojas). */
-        float dim = 1;
 
         Shade on(VertexConsumer to) {
             this.to = to;
@@ -296,10 +293,10 @@ public final class SanctuaryScene {
         public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light,
                            float nx, float ny, float nz) {
             if (fixed) {
-                to.vertex(x, y, z, r * fr * dim, g * fg * dim, b * fb * dim, a, u, v, overlay, light, nx, ny, nz);
+                to.vertex(x, y, z, r * fr, g * fg, b * fb, a, u, v, overlay, light, nx, ny, nz);
             } else {
                 light(x, y, z, nx, ny, nz, l);
-                to.vertex(x, y, z, r * l[0] * dim, g * l[1] * dim, b * l[2] * dim, a, u, v, overlay, light, nx, ny, nz);
+                to.vertex(x, y, z, r * l[0], g * l[1], b * l[2], a, u, v, overlay, light, nx, ny, nz);
             }
         }
 
@@ -455,18 +452,13 @@ public final class SanctuaryScene {
     }
 
     /**
-     * (1.3.106, el dueño: «las líneas blancas en las texturas, cuando se mueve la cámara se notan muchísimo… como que no
-     * estuviera compacta ni unida la textura») las hojas llevan dentro una copia suya oscura y maciza (LEAF_BACK): por sus
-     * agujeros se veía el cielo claro de detrás y, al moverse la cámara, parpadeaban como puntos y rayas blancas. (Las
-     * hojas macizas, como con «Gráficos: rápidos», no sirven: en sus agujeros salía el color que la textura guarda ahí,
-     * blanco en algunas; lo vio la prueba con Photon.)
+     * La capa de cada bloque en la escena. (1.3.106: las hojas, como siempre, recortadas. Macizas, como con «Gráficos:
+     * rápidos», o con una copia oscura dentro, para que por sus agujeros no se viera el cielo claro, salían con manchas
+     * blancas en sus agujeros con Oculus/Embeddium: lo vio la prueba.)
      */
     private static RenderType sceneLayer(BlockState st, RenderType rt) {
         return layerOf(rt);
     }
-
-    /** La copia de dentro de las hojas: su tamaño y lo oscura que es. */
-    private static final float LEAF_BACK = 0.94F, LEAF_DIM = 0.22F;
 
     /**
      * Cada bloque, una milésima más grande por cada lado: las caras de bloques vecinos se solapan un pelo y entre ellas no
@@ -541,22 +533,6 @@ public final class SanctuaryScene {
                     rand.setSeed(seed);
                     mbr.tesselateBlock(level, model, st, pos, pose, shade, true, rand, seed, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, rt);
                     pose.popPose();
-                }
-                if (layer == RenderType.solid() && st.getBlock() instanceof LeavesBlock) {
-                    // la copia oscura de dentro de las hojas (sceneLayer): sus caras, maciza, un poco más pequeña
-                    for (RenderType rt : types) {
-                        pose.pushPose();
-                        pose.translate(b[0] + 0.5F, b[1] + 0.5F, b[2] + 0.5F);
-                        pose.scale(LEAF_BACK, LEAF_BACK, LEAF_BACK);
-                        pose.translate(-0.5F, -0.5F, -0.5F);
-                        shade.fixed = (fl & F_GLOW) != 0;
-                        shade.fr = shade.fg = shade.fb = 1.0F;
-                        shade.dim = LEAF_DIM;
-                        rand.setSeed(seed);
-                        mbr.tesselateBlock(level, model, st, pos, pose, shade, false, rand, seed, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, rt);
-                        shade.dim = 1.0F;
-                        pose.popPose();
-                    }
                 }
             }
             if (layer == SceneRenderTypes.WATER) {
