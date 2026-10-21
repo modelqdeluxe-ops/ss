@@ -904,6 +904,86 @@
      "piel_20",
      "piel_21"
     ]
+   },
+   {
+    "mob": "mueble_silla_taberna",
+    "name": "Chair",
+    "model": "npc_tavern.mueble_silla_taberna",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_mesa_taberna",
+    "name": "Table",
+    "model": "npc_tavern.mueble_mesa_taberna",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_jarra",
+    "name": "Mug",
+    "model": "npc_tavern.mueble_jarra",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_silla",
+    "name": "Chair with backrest",
+    "model": "npc_tavern.mueble_silla",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_taburete_alto",
+    "name": "Bar stool",
+    "model": "npc_tavern.mueble_taburete_alto",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_sofa",
+    "name": "Couch",
+    "model": "npc_tavern.mueble_sofa",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_banco",
+    "name": "Bench",
+    "model": "npc_tavern.mueble_banco",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
+   },
+   {
+    "mob": "mueble_escritorio",
+    "name": "Desk",
+    "model": "npc_tavern.mueble_escritorio",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
    }
   ],
   "options": {

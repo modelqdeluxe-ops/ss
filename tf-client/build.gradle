@@ -23,9 +23,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'info'
             args '--width', '1280', '--height', '720'
-            if (project.hasProperty('tfshaders') || project.hasProperty('tfmods')) {
-                // (los mixins de Oculus, Embeddium e ImmediatelyFast, compilados para el juego normal, se traducen a los
-                // nombres de aquí)
+            if (project.hasProperty('tfshaders')) {
+                // (los mixins de Oculus y Embeddium, compilados para el juego normal, se traducen a los nombres de aquí)
                 property 'mixin.env.remapRefMap', 'true'
                 property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             }
@@ -45,9 +44,7 @@ mixin {
 
 // La prueba en el juego con shaders (commit con [shaders]: .github/workflows/jefes-prueba.yml pasa -Ptfshaders): Oculus
 // y Embeddium solo para jugar en la prueba; el mod no depende de ellos (vacio/ShaderPacks los busca por reflexión).
-// (1.3.106) Con [mods=immediatelyfast] (-Ptfmods=immediatelyfast): ImmediatelyFast, el mod de optimización que agrupa
-// el dibujo de la interfaz y de lo inmediato (en muchos modpacks), para ver lo que el dueño ve.
-if (project.hasProperty('tfshaders') || project.hasProperty('tfmods')) {
+if (project.hasProperty('tfshaders')) {
     repositories {
         maven {
             url = 'https://api.modrinth.com/maven'
@@ -62,9 +59,6 @@ dependencies {
     if (project.hasProperty('tfshaders')) {
         runtimeOnly fg.deobf('maven.modrinth:embeddium:0.3.31+mc1.20.1')
         runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')
-    }
-    if (project.hasProperty('tfmods') && project.property('tfmods').toString().contains('immediatelyfast')) {
-        runtimeOnly fg.deobf('maven.modrinth:immediatelyfast:1.5.5+1.20.4-forge')
     }
 }
 
