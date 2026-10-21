@@ -22,7 +22,9 @@ import org.lwjgl.glfw.GLFW;
  *   RePág/AvPág, Q/E (con Mayús, más).</li>
  *   <li>Puntos: los pins del NPC (los sitios entre los que anda) y las rutas de los caminantes.</li>
  * </ul>
- * Todo lo hace el servidor (npcs/TFNpcs) y contesta con su estado ({@link NpcNet.State}).
+ * Todo lo hace el servidor (npcs/TFNpcs) y contesta con su estado ({@link NpcNet.State}). Si la pestaña no cabe (una
+ * pantalla pequeña o mucha escala de interfaz), se desplaza con la rueda (fuera de las listas, que tienen la suya): lo
+ * que queda fuera de la zona visible no se dibuja ni se puede pulsar, y una barrita a la derecha dice dónde estás.
  */
 public final class NpcPanelScreen extends Screen {
     private static final int W = 236;
@@ -38,9 +40,17 @@ public final class NpcPanelScreen extends Screen {
     private static String notice = "";
     private static long noticeUntil;
 
+    /** Cuánto está desplazada cada pestaña (en píxeles), si no cabe. */
+    private static final int[] page = new int[TABS.length];
+
     private boolean confirmDelete;
     /** Zonas con rueda: x, y, ancho, alto y qué desplazan (0 = packs, 1 = NPC/cercanos, 2 = pins). */
     private final List<int[]> scrollZones = new ArrayList<>();
+    /** Los botones de la pestaña (los que se desplazan) y la zona donde se ven. */
+    private final List<Flat> content = new ArrayList<>();
+    private int contentTop, contentBottom, maxPage;
+    /** Dónde acaba lo de la pestaña (sin desplazar), para saber cuánto se puede desplazar. */
+    private int contentEnd;
 
     public NpcPanelScreen() {
         super(Component.literal("Panel de NPC"));
@@ -107,14 +117,25 @@ public final class NpcPanelScreen extends Screen {
     }
 
     private Flat button(int x, int y, int w, String text, Runnable press) {
-        return addRenderableWidget(new Flat(x, y, w, 14, text, false, TEXT, press));
+        return button(x, y, w, text, false, TEXT, press);
     }
 
     private Flat button(int x, int y, int w, String text, boolean on, int color, Runnable press) {
-        return addRenderableWidget(new Flat(x, y, w, 14, text, on, color, press));
+        Flat f = addRenderableWidget(new Flat(x, y, w, 14, text, on, color, press));
+        content.add(f);
+        return f;
+    }
+
+    /** Cuánto se baja lo de la pestaña (la de Colocar ya cabe: sus listas se ajustan al alto). */
+    private int offset() {
+        return tab == 0 ? 0 : page[tab];
     }
 
     void rebuild() {
+        rebuild(true);
+    }
+
+    private void rebuild(boolean again) {
         clearWidgets();
         scrollZones.clear();
         int x0 = 8, y0 = 8;
@@ -126,14 +147,30 @@ public final class NpcPanelScreen extends Screen {
                 rebuild();
             });
         }
+        content.clear();
+        contentTop = y0 + 37;
+        contentBottom = height - 8 - 16;          // encima de la barra de avisos
+        contentEnd = 0;
+        maxPage = 0;
         if (state == null) return;
-        int y = y0 + 40;
+        int y = y0 + 40 - offset();
         if (NpcCatalog.packs().isEmpty()) return;
         switch (tab) {
             case 0 -> buildPlace(x0, y);
             case 1 -> buildEdit(x0, y);
             default -> buildPoints(x0, y);
         }
+        for (Flat f : content) contentEnd = Math.max(contentEnd, f.getY() + f.getHeight() + offset());
+        maxPage = tab == 0 ? 0 : Math.max(0, contentEnd + 4 - contentBottom);
+        if (tab != 0 && page[tab] > maxPage) {
+            page[tab] = maxPage;
+            if (again) {
+                rebuild(false);
+                return;
+            }
+        }
+        // lo que queda fuera de la zona visible, ni se ve ni se pulsa
+        for (Flat f : content) f.visible = f.getY() >= contentTop && f.getY() + f.getHeight() <= contentBottom;
     }
 
     private int rows(int y) {
@@ -248,6 +285,8 @@ public final class NpcPanelScreen extends Screen {
                 rebuild();
             }
         });
+        // debajo, la línea de las teclas (render): también cuenta para el desplazamiento
+        contentEnd = Math.max(contentEnd, yy + 30 + offset());
     }
 
     /** El cosmético siguiente o anterior de ese grupo (dando la vuelta). */
@@ -263,7 +302,7 @@ public final class NpcPanelScreen extends Screen {
         if (c == null) yy += 12;
         if (c != null && !c.pins().isEmpty()) {
             yy += 12;
-            int n = Math.max(3, Math.min(c.pins().size(), (height - 140 - yy) / 15));
+            int n = Math.max(3, Math.min(c.pins().size(), (height - 140 - yy - offset()) / 15));
             scrollC = Math.max(0, Math.min(scrollC, c.pins().size() - n));
             for (int i = 0; i < Math.min(n, c.pins().size() - scrollC); i++) {
                 String pin = c.pins().get(scrollC + i);
@@ -284,7 +323,12 @@ public final class NpcPanelScreen extends Screen {
             as.active = c != null && !c.routes().isEmpty();
             yy += 15;
         }
+        // debajo, la explicación (render): también cuenta para el desplazamiento
+        contentEnd = Math.max(contentEnd, yy + 6 + font.split(Component.literal(HELP), W - 12).size() * 9 + offset());
     }
+
+    private static final String HELP = "Ponte donde va el punto y pulsa «Aquí». Con el panel en la mano se ven los pins "
+            + "(verdes los de este NPC), las rutas y los marcadores.";
 
     // ------------------------------------------------------------------------------------------- dibujo
 
@@ -302,7 +346,9 @@ public final class NpcPanelScreen extends Screen {
         g.fill(x0, y0 + h - 1, x0 + W, y0 + h, LINE);
         g.drawString(font, "Panel de NPC de escenas", x0 + 6, y0 + 6, GOLD, false);
         super.render(g, mx, my, pt);
-        int y = y0 + 40;
+        int y = y0 + 40 - offset();
+        // los textos de la pestaña, recortados a la zona que se ve (si está desplazada)
+        g.enableScissor(x0, contentTop, x0 + W, contentBottom);
         if (state == null) {
             g.drawString(font, "Cargando…", x0 + 6, y, DIM, false);
         } else if (NpcCatalog.packs().isEmpty()) {
@@ -328,8 +374,13 @@ public final class NpcPanelScreen extends Screen {
                         g.drawString(font, NpcCatalog.GROUPS.get(gname), x0 + 6, yy + 3, DIM, false);
                         yy += 15;
                     }
+                    if (!c.options().isEmpty()) {
+                        if (!pk.options().getOrDefault("reset", List.of()).isEmpty()) yy += 15;
+                        yy += 5;
+                    }
                 }
-                g.drawString(font, "Teclas: flechas, RePág/AvPág, Q/E", x0 + 6, y0 + h - 24, DIM, false);
+                // debajo de Duplicar/Borrar (buildEdit: contentEnd)
+                g.drawString(font, "Teclas: flechas, RePág/AvPág, Q/E", x0 + 6, yy + 19, DIM, false);
             }
         } else {
             NpcCatalog.Pack pk = state.id() < 0 ? null : NpcCatalog.pack(state.pack());
@@ -341,7 +392,7 @@ public final class NpcPanelScreen extends Screen {
             } else if (!c.pins().isEmpty()) {
                 g.drawString(font, "Pins de " + c.name() + " (anda de uno a otro):", x0 + 6, yy, GOLD, false);
                 yy += 24;
-                int n = Math.max(3, Math.min(c.pins().size(), (height - 140 - yy) / 15));
+                int n = Math.max(3, Math.min(c.pins().size(), (height - 140 - yy - offset()) / 15));
                 for (int i = 0; i < Math.min(n, c.pins().size() - scrollC); i++) {
                     String pin = c.pins().get(scrollC + i);
                     NpcNet.PinInfo info = null;
@@ -364,8 +415,15 @@ public final class NpcPanelScreen extends Screen {
                 g.drawString(font, "Ruta " + r + ": " + k, x0 + 6, yy + 3, k > 0 ? GREEN : DIM, false);
                 yy += 15;
             }
-            g.drawWordWrap(font, Component.literal("Ponte donde va el punto y pulsa «Aquí». Con el panel en la mano se ven los pins "
-                    + "(verdes los de este NPC), las rutas y los marcadores."), x0 + 6, Math.min(yy + 6, y0 + h - 40), W - 12, DIM);
+            g.drawWordWrap(font, Component.literal(HELP), x0 + 6, yy + 6, W - 12, DIM);
+        }
+        g.disableScissor();
+        if (maxPage > 0) {
+            // la barrita: dónde estás de lo que hay (la rueda la mueve)
+            int track = contentBottom - contentTop, thumb = Math.max(12, track * track / (track + maxPage));
+            int ty = contentTop + (track - thumb) * page[tab] / maxPage;
+            g.fill(x0 + W - 3, contentTop, x0 + W - 1, contentBottom, 0x40FFFFFF);
+            g.fill(x0 + W - 3, ty, x0 + W - 1, ty + thumb, GOLD);
         }
         if (System.currentTimeMillis() < noticeUntil && !notice.isEmpty()) {
             g.fill(x0, y0 + h - 14, x0 + W, y0 + h, 0xE0202830);
@@ -394,6 +452,12 @@ public final class NpcPanelScreen extends Screen {
                 rebuild();
                 return true;
             }
+        }
+        // fuera de las listas: la pestaña entera, si no cabe
+        if (maxPage > 0 && mx >= 8 && mx < 8 + W && my >= contentTop && my < contentBottom) {
+            page[tab] = Math.max(0, Math.min(maxPage, page[tab] + (delta > 0 ? -15 : 15)));
+            rebuild();
+            return true;
         }
         return super.mouseScrolled(mx, my, delta);
     }

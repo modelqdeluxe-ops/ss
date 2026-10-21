@@ -51,8 +51,10 @@ final class SkillTargets {
             // En un jefe, @TT es su tabla de amenaza (MythicMobs); en las skills de clase, el objetivo heredado
             case "tt" -> ctx.host != null && ctx.caster.entity != null && SkillMobs.host(ctx.caster.entity) != null
                     ? threat(ctx, "threattable", yOff) : inherited(ctx);
-            // @TargetedTarget: el objetivo heredado (skill{s=X} @EntitiesNearOrigin → dentro de X, cada uno de ellos)
-            case "targetedtarget" -> inherited(ctx);
+            // @TargetedTarget: el objetivo heredado (skill{s=X} @EntitiesNearOrigin → dentro de X, cada uno de ellos), tal
+            // cual, también el lanzador si es a él a quien se pasó (MythicMobs: skill{s=X} @self → dentro, él mismo; así
+            // asigna el panel de NPC una ruta al caminante, NPCS.md §3)
+            case "targetedtarget" -> ctx.targets != null && !ctx.targets.isEmpty() ? new ArrayList<>(ctx.targets) : target(ctx);
             case "origin", "o", "source" -> List.of(Tgt.at(offset(m, ctx, origin(ctx)).add(0, yOff, 0)));
             case "selflocation", "casterlocation", "sl", "bosslocation", "moblocation" ->
                     List.of(Tgt.at(offset(m, ctx, ctx.caster.pos()).add(0, yOff, 0)));

@@ -40,6 +40,9 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
     piel y cosméticos de los menús del pack (piel, sombrero, espalda, manos, armadura) con ◀ ▶ y «Quitar cosméticos»; duplicar
     (con sus cosméticos) y borrar (con confirmación). Teclas: flechas, RePág/AvPág (subir/bajar), Q/E (girar); con
     Mayús, 1 bloque y 45°.
+  - Si la pestaña no cabe (pantalla pequeña o escala de interfaz grande), **se desplaza con la rueda** fuera de las
+    listas (que tienen la suya); lo que queda fuera no se ve ni se pulsa y una barrita dorada a la derecha dice dónde
+    estás.
   - **Puntos**: los pins del NPC (los sitios entre los que anda: «Aquí» pone el pin donde estás) y las rutas de los
     caminantes (1–6: añadir punto donde estás, deshacer, borrar, asignar al caminante elegido).
 - Con el panel en la mano se ven (solo tú) los pins (verdes los del NPC elegido), las rutas (una de cada color), los
@@ -56,7 +59,12 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   python3 -I tools/npcs/build_npcs.py --al-jar                                    # al jar
   python3 -I tools/npcs/build_npcs.py --auditar                                   # auditar los del jar
   ```
-  Los packs no están en el repo (es público): los tiene el dueño (los zips que mandó).
+  Los packs no están en el repo (es público): los tiene el dueño (los zips que mandó). **Los nombres de las carpetas
+  importan**: las skills comunes de la serie (`skill_scenes_npc.yml`: `movescene`, `rotatescene`…) vienen en versiones
+  distintas según el pack y se queda la del primero en orden alfabético de carpeta. Para que salga igual que lo que hay
+  en el jar, descomprime cada zip en una carpeta con el nombre que dice el campo `pack` de su `npcs/<pack>.json`
+  (por ejemplo `641d9d9d-Scenes_Blacksmith`, `0dd3e1f5-5.0_scenes_tavern`), y comprueba con `git diff` que solo cambia
+  lo que querías.
 - **Catálogo**: de los menús de DeluxeMenus del pack salen los nombres (`scenes_npcs*.yml`: `mm mobs spawn X`) y los
   cosméticos (`scene_hats`, `scene_backpacks`, `scene_leftarm`, `scene_rightarm`, `scene_armors`, `reset_cosmetics`):
   cada opción con lo que hace su skill (changepart/remapmodel y las variables que guarda). A cada NPC solo se le
@@ -88,16 +96,28 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   - changepart/remapmodel con un modelo o hueso que no existe (variables sin poner, erratas) no hacen nada.
 - **Rutas de caminantes**: el pack trae `path1`/`path_1_follow` solo de ejemplo (comentadas, con coordenadas del mundo
   de su autor). El conversor las genera como las del ejemplo (`build_npcs.route_skills`), leyendo la ruta de las
-  variables `scenes_route_N` / `scenes_route_N_start`, que escribe el panel. Usan @target en vez de @EIR (el ejemplo
-  podía coger a un jugador y teletransportarlo).
+  variables `scenes_route_N` / `scenes_route_N_start`, que escribe el panel. Usan **@TargetedTarget** en vez de @EIR
+  (el ejemplo podía coger a un jugador y teletransportarlo): el caminante al que se le pasa la skill, sea el generador
+  del pack (`skill{skill=path1} @EIR`) o el panel, que se la pasa al propio caminante. Con @target no andaban: en
+  MythicMobs es el objetivo de combate del que lanza, que un caminante no tiene (1.3.101). Para eso el motor hace
+  @TargetedTarget como MythicMobs: los objetivos heredados tal cual, también el lanzador si es a él a quien se le pasó
+  (`SkillTargets`; @TT de las clases sigue como estaba).
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin
-  modelo («command»).
+  modelo («command»), y **el sedal del pescador de «fishing», que sube al cielo**: es del pack, medido con las
+  cuentas de Blockbench (y con cualquier orden de ejes). En su pose de pesca el brazo va a −55° y la caña a −58°, así
+  que la caña queda a 113°, hacia atrás, y el sedal sigue hacia arriba hasta unos 10 bloques del suelo. En «boat» la
+  caña lleva +25° y sale bien. Todas sus animaciones tienen «override», así que no se suman. Parece una errata de signo
+  del autor: con +58° colgaría al agua. Se deja como en el pack (ModelEngine lo enseña igual); si el dueño lo quiere
+  arreglado, es cambiar esa animación del pack.
 
 ## 4. Comprobarlo
 
 - `python3 tools/bosses/verificar.py` → «todo bien» (incluye «auditor: 0 problemas en los NPC de escenas»).
-- Prueba en el juego: `[prueba-jefes=npcs]` en el commit (`BossTest.npcsStep`, ~2 min): todos los NPC en filas con
+- Prueba en el juego: `[prueba-jefes=npcs]` en el commit (`BossTest.npcsStep`, ~3 min): todos los NPC en filas con
   una captura cada 5 (`NN_npcs_npcs_<pack>_<n>.jpg`), un guardia con cosméticos movido y girado, guardado y vuelto a
   cargar, un vendedor entre dos pins, un caminante por una ruta y el panel abierto. Informe en la rama `pruebas-jefes`.
+  El jugador llega y pone cada NPC 3 ticks después (en el mismo tick el chunk no estaba cargado); antes de cada captura
+  se vuelve a buscar cada NPC cerca de su sitio (si su chunk se descargó, vuelve del disco como entidad nueva: «recargado
+  del disco» en el informe) y la captura sale 60 ticks después de mover la cámara.

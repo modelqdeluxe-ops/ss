@@ -58,6 +58,15 @@ PACKS = [
 # Fallos del propio pack, revisados uno a uno: lo que hace MythicMobs/ModelEngine con ellos (y aquí lo mismo). Clave: el
 # texto que sale en el problema (el auditor los pasa a avisos con su porqué: build_bosses.HUECOS hace lo mismo).
 HUECOS = {
+    'npc_fishermen': {
+        'fishing': 'el sedal de «fishing» sube al cielo, y es del pack: en su pose de pesca (la mayor parte de los 164 s) el '
+                   'brazo va a -55° y la caña (hueso «tool») a -58° en x, que con las cuentas de Blockbench (euler ZYX, x e y '
+                   'restadas; da igual el orden de los ejes) dejan la caña a 113°, más allá de la vertical, y el sedal '
+                   '(«bone2», 390° = 30°, escala z 2,25-2,7) sigue hacia arriba hasta unos 10 bloques del suelo. En «boat» la '
+                   'caña va a +25° y el sedal cae bien; con +58° en «fishing» colgaría al agua (errata de signo del autor, '
+                   'parece). Todas sus animaciones tienen «override», así que no se suman. Se deja como en el pack '
+                   '(ModelEngine lo enseñaría igual); arreglarlo sería cambiar su animación',
+    },
     'npc_lumberjacks': {
         'lumberjack_log': 'las escalas de plank1/plank2 de «lumberjack_log» llevan «-» (Molang vacío): Blockbench y '
                           'ModelEngine lo leen como 0 (las tablas se encogen y desaparecen); el conversor hace lo mismo',
@@ -91,7 +100,9 @@ HUECOS = {
 # mundo de su autor: «make sure to add your own paths using the tool on the scenes website»). Aquí las hace el panel de
 # control: cada ruta N son dos variables globales guardadas con el mundo (como setvariable{save=true}):
 # scenes_route_N = «(x,y,z),(x,y,z),…» y scenes_route_N_start = «x,y,z». Las skills son las del ejemplo del pack, con
-# @target en vez de @EIR (el ejemplo cogía al más cercano: podía ser un jugador y lo teletransportaba).
+# @TargetedTarget en vez de @EIR (el ejemplo cogía al más cercano: podía ser un jugador y lo teletransportaba): el
+# caminante al que se le pasa la skill, sea el generador del pack (skill{skill=pathN} @EIR) o el panel (el caminante
+# mismo). No @target: en MythicMobs es el objetivo de combate del que lanza, que un caminante no tiene.
 ROUTES = 6
 
 
@@ -102,9 +113,9 @@ def route_skills():
   TargetConditions:
   - stance stand
   Skills:
-  - setStance{{stance=path{n}}} @target
-  - setvariable{{var=global.scenes_path<target.uuid>;value={n};type=STRING;save=true}} @target
-  - teleportto{{location=<global.var.scenes_route_{n}_start>;delay=10}} @target
+  - setStance{{stance=path{n}}} @TargetedTarget
+  - setvariable{{var=global.scenes_path<target.uuid>;value={n};type=STRING;save=true}} @TargetedTarget
+  - teleportto{{location=<global.var.scenes_route_{n}_start>;delay=10}} @TargetedTarget
 path_{n}_follow:
   Skills:
   - followPath{{speed=1;tolerance=4;path=<global.var.scenes_route_{n}>}} @self
