@@ -586,7 +586,7 @@ public class CrateBlockEntity extends BlockEntity {
       return this.animating && this.sceneLidMode && this.muteAudio ? SCENE_SHARE : 1.0;
    }
 
-   private static final double SCENE_SHARE = 0.35;
+   private static final double SCENE_SHARE = 0.20;  // (1.3.105, el dueño: «un poco menos»; era 0,35)
 
    private void emitShape(Level level, BlockPos pos, ParticleLayer layer, ParticleOptions opt) {
       double crateScale = (double)this.config.rarity.sizeScale();

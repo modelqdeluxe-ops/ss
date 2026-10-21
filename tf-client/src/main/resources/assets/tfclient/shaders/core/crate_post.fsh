@@ -91,7 +91,12 @@ void main() {
     vec2 sd = (uv - SunPos) * vec2(aspect, 1.0);
     // el foco del sol en el hueco (crema cálido, como en la imagen) y sus rayos
     vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 1.35 + exp(-dot(sd, sd) * 30.0) * 0.30) * SunVis;
-    vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
+    // (1.3.105, el dueño: «el resplandor del sol tapa un poco los items») los rayos y el foco del sol se ponen aquí
+    // encima de todo: solo en lo que queda detrás de la crate (la ruleta, el premio y la crate están a su distancia), y
+    // el florecer del haz, algo menos a esa distancia (lo de delante, el agua, como antes)
+    float behind = smoothstep(Focus.x + 1.0, Focus.x + 4.0, dist);
+    float atCrate = smoothstep(Focus.x - 3.0, Focus.x - 1.5, dist) * (1.0 - behind);
+    vec3 col = c + b * BloomStrength * (1.0 - 0.4 * atCrate) + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength * behind;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
     col = (1.0 - exp(-max(col, 0.0) * Exposure)) / (1.0 - exp(-Exposure));
