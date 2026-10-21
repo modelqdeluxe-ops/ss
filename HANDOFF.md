@@ -59,7 +59,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.104) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.105) — lee esto primero
+
+**1.3.105** (el dueño: «un poco menos de partículas, y el resplandor del sol tapa un poco los items»): las partículas de
+la crate en la escena, el 20 % (era el 35 %); los rayos y el foco del sol, solo detrás de la crate, y el florecer, algo
+menos a su distancia (CRATES.md §2).
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.104, PUBLICADA)
 
 **1.3.104: las partículas de la crate, en la escena** (el dueño: «lo de efectos son las crates, por algún motivo la
 escena no me los mostraba»; no tiene que ver con los shaders). Las capas de partículas del editor de cada crate salen

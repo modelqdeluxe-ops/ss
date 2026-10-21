@@ -1,6 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.104 (21 oct 2026)**: las partículas de cada crate (las capas del editor) también dentro de la escena (CRATES.md §2).
+> **1.3.105 (21 oct 2026)**: menos partículas de la crate en la escena y el resplandor del sol detrás de los ítems
+> (CRATES.md §2).
+>
+> **1.3.104 (21 oct 2026), PUBLICADA**: las partículas de cada crate (las capas del editor) también dentro de la escena (CRATES.md §2).
 >
 > **1.3.103 (21 oct 2026), PUBLICADA**: cinco quejas del dueño (CHECKPOINT de `HANDOFF.md`): el pescador recoge el anzuelo
 > delante (NPCS.md §3), la cara del 2.º personaje de los dúos delante (NPCS.md §3), las letras del TF Pad 1 por delante de
