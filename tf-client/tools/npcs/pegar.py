@@ -12,7 +12,7 @@ de posición se vuelve a hacer en fotogramas lineales (los de la animación y 60
 lo del pack más la corrección; +0,10 px y comprobado a 4 veces esos fotogramas,
 para que tampoco quede hueco entre dos. Una animación sin huecos no se toca (volver a pasarlo no cambia nada).
 
-Uso: python3 tools/npcs/pegar.py [carpeta assets/tfclient] [--fps N] [--procesos N]  (sin carpeta: los del jar; los
+Uso: python3 tools/npcs/pegar.py [carpeta assets/tfclient] [--fps N] [--procesos N] [--modelos a,b]  (sin carpeta: los del jar; los
 13 packs, unos 40 min con 4 procesos). Lo llama build_npcs al convertir.
 """
 import json
@@ -131,24 +131,25 @@ def pairs_of(model):
     return out
 
 
-def shrunk(bone):
-    """Las caras del hueso (en su espacio) metidas SAFE hacia dentro por su normal."""
+def shrunk(bone, safe=SAFE):
+    """Las caras del hueso (en su espacio) metidas «safe» hacia dentro por su normal."""
     qs = []
     for q in bone['quads']:
         n = np.array(q[1:4], dtype=float)
         ln = np.linalg.norm(n)
         v = np.array(q[4:24], dtype=float).reshape(4, 5)[:, :3]
-        qs.append(v - n / ln * SAFE if ln > 1e-9 else v)
+        qs.append(v - n / ln * safe if ln > 1e-9 and safe else v)
     return np.array(qs) if qs else np.zeros((0, 4, 3))
 
 
-def geometries(model, skin):
-    """Las caras de cada hueso (en su espacio, encogidas SAFE) con la plantilla del pack y, si hay piel, con ella (y en
-    el 2.º personaje)."""
-    gs = [[shrunk(b) for b in model['bones']]]
+def geometries(model, skin, safe=None):
+    """Las caras de cada hueso (en su espacio, encogidas «safe»; SAFE si no se dice) con la plantilla del pack y, si hay
+    piel, con ella (y en el 2.º personaje)."""
+    safe = SAFE if safe is None else safe
+    gs = [[shrunk(b, safe) for b in model['bones']]]
     if skin is not None:
         m = P.with_skin(P.with_skin(model, skin), skin, second=True)
-        gs.append([shrunk(b) for b in m['bones']])
+        gs.append([shrunk(b, safe) for b in m['bones']])
     return gs
 
 
@@ -260,7 +261,7 @@ def bake(anim, fixes, times):
         tr['p'] = simplify(keys)
 
 
-def fix_anim(model, name, gs, pairs, fps, passes=6, extra=()):
+def fix_anim(model, name, gs, pairs, fps, passes=6, extra=(), real=None):
     """Pega las extremidades en esa animación: (el hueco más grande que tenía, si se ha cambiado). Tras cada pasada se
     comprueba a CHECK veces los fotogramas; donde aún queda hueco (entre dos fotogramas), esos instantes entran en la
     siguiente."""
@@ -287,9 +288,11 @@ def fix_anim(model, name, gs, pairs, fps, passes=6, extra=()):
         if fixes:
             bake(anim, fixes, ts)
             changed = True
+        # se da por buena con la geometría real (lo que se ve): la encogida solo sirve para encontrar los roces justos
+        # y dejarlos con margen (si también decidiera cuándo parar, las rápidas no acababan nunca)
         bad = []
         for t in grid(ln, fps * CHECK):
-            g = gap_at(model, name, ov, gs, pairs, t)
+            g = gap_at(model, name, ov, real if real is not None else gs, pairs, t)
             if g > EPS:
                 bad.append(t)
                 if not changed:
@@ -307,9 +310,10 @@ def fix_model(model, skin, fps=60):
     if not pairs:
         return {}
     gs = geometries(model, skin)
+    real = geometries(model, skin, 0.0)
     out = {}
     for name in list(model['anims']):
-        w, changed = fix_anim(model, name, gs, pairs, fps)
+        w, changed = fix_anim(model, name, gs, pairs, fps, real=real)
         if changed:
             out[name] = w
     return out
@@ -322,10 +326,11 @@ def _one(job):
     if fixed:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(model, f, separators=(',', ':'))
+    print(f'hecho: {os.path.basename(path)[:-5]} ({len(fixed)} cambiadas)', flush=True)
     return os.path.basename(path)[:-5], fixed
 
 
-def main(res=None, fps=60, procs=1):
+def main(res=None, fps=60, procs=1, only=None):
     res = res or os.path.normpath(os.path.join(TOOLS, '..', 'src', 'main', 'resources', 'assets', 'tfclient'))
     cat = json.load(open(os.path.join(res, 'npcs', 'catalog.json'), encoding='utf-8'))
     skin_id = None
@@ -342,7 +347,8 @@ def main(res=None, fps=60, procs=1):
     if skin_id:
         skin = json.load(open(os.path.join(res, 'npcs', 'models', skin_id + '.json'), encoding='utf-8'))
     # los más largos primero (el pescador: 490 s de animación)
-    jobs = [(os.path.join(res, 'npcs', 'models', mid + '.json'), skin if used[mid] else None, fps) for mid in used]
+    jobs = [(os.path.join(res, 'npcs', 'models', mid + '.json'), skin if used[mid] else None, fps) for mid in used
+            if not only or mid in only]
     jobs.sort(key=lambda j: -os.path.getsize(j[0]))
     total = 0
     if procs > 1:
@@ -367,4 +373,8 @@ if __name__ == '__main__':
     if '--procesos' in args:
         procs = int(args[args.index('--procesos') + 1])
         del args[args.index('--procesos'):args.index('--procesos') + 2]
-    main(args[0] if args else None, fps, procs)
+    only = None
+    if '--modelos' in args:
+        only = set(args[args.index('--modelos') + 1].split(','))
+        del args[args.index('--modelos'):args.index('--modelos') + 2]
+    main(args[0] if args else None, fps, procs, only)
