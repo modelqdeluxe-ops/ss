@@ -158,6 +158,8 @@ Los botones son pequeños, de cristal oscuro, abajo del todo y sin sonido (`widg
 premios en casillas del color de su rareza (de la más rara a la común); al pasar el ratón, nombre, rareza, probabilidad y
 lo que lleve; rueda para moverse; «VOLVER» abajo.
 **Las hadas**: solo puntitos de luz con su colita de chispas, sin alas (el dueño).
+**Sin tirón la primera vez**: el santuario se construye a los 5 s de entrar al mundo (`MediaTicker.prewarm`); antes se
+construía al tocar la primera caja y su primer fotograma tardaba ~2,5 s (medido en la prueba: 640 ms de construcción).
 
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
 dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con
