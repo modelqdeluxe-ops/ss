@@ -130,6 +130,19 @@ public final class TFPadClient {
         openTo(app, "");
     }
 
+    /** La prueba en el juego (BossTest «pad»): la portada («») o una app, aunque haya otra pantalla abierta. */
+    public static void openForTest(String app) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null) return;
+        if (app.isEmpty()) {
+            TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
+            PadSettings.load();
+            mc.setScreen(new TFPadScreen());
+        } else {
+            openTo(app, "");
+        }
+    }
+
     static void openServerApp(String app, String tab) {
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Open(app, tab == null ? "" : tab));
     }
