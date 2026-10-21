@@ -557,8 +557,13 @@ class Fx:
     def glow(self, x, y, z, size, r, g, b, a):
         if a <= 0.003 or size <= 0:
             return
-        R, U = self.right * size, self.up * size
         c = np.array([x, y, z])
+        # lo que pasa pegado a la cámara se apaga (= CinematicFx.nearFade)
+        k = min(1.0, max(0.0, (float(np.linalg.norm(c - self.eye)) - 1.0 - size) / 1.5))
+        a *= k * k * (3 - 2 * k)
+        if a <= 0.003:
+            return
+        R, U = self.right * size, self.up * size
         self.quad([c - R - U, c + R - U, c + R + U, c - R + U], [(0, 1), (1, 1), (1, 0), (0, 0)], (r, g, b, a))
 
     def band(self, a, b, wa, wb, r, g, bl, aa, ab, u0=0.0, u1=1.0):

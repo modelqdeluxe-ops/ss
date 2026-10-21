@@ -53,12 +53,23 @@ public final class CinematicFx {
     /** Un cuadrado de luz (la textura del brillo) de cara a la cámara. */
     public static void glow(VertexConsumer vc, View v, float x, float y, float z, float size, float r, float g, float b, float a) {
         if (a <= 0.003F || size <= 0.0F) return;
+        // lo que pasa pegado a la cámara se apaga (se veía como un disco blanco enorme tapando la imagen)
+        a *= nearFade(v.eye, x, y, z, size);
+        if (a <= 0.003F) return;
         float rx = v.right.x * size, ry = v.right.y * size, rz = v.right.z * size;
         float ux = v.up.x * size, uy = v.up.y * size, uz = v.up.z * size;
         vc.vertex(v.m, x - rx - ux, y - ry - uy, z - rz - uz).color(r, g, b, a).uv(0, 1).endVertex();
         vc.vertex(v.m, x + rx - ux, y + ry - uy, z + rz - uz).color(r, g, b, a).uv(1, 1).endVertex();
         vc.vertex(v.m, x + rx + ux, y + ry + uy, z + rz + uz).color(r, g, b, a).uv(1, 0).endVertex();
         vc.vertex(v.m, x - rx + ux, y - ry + uy, z - rz + uz).color(r, g, b, a).uv(0, 0).endVertex();
+    }
+
+    /** 0 pegado a la cámara, 1 a partir de ~2,5 bloques (más lejos cuanto más grande es lo que se dibuja). */
+    static float nearFade(Vector3f eye, float x, float y, float z, float size) {
+        float dx = x - eye.x, dy = y - eye.y, dz = z - eye.z;
+        float d = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
+        float k = Math.max(0.0F, Math.min(1.0F, (d - 1.0F - size) / 1.5F));
+        return k * k * (3.0F - 2.0F * k);
     }
 
     /**
@@ -329,7 +340,7 @@ public final class CinematicFx {
      * Los pétalos de los cerezos: caen dando vueltas y el viento los lleva; {@code burst} (0..1, la apertura) suelta
      * una ráfaga que sale de la crate hacia fuera y hacia arriba.
      */
-    public static void petals(VertexConsumer vc, Matrix4f m, SanctuaryScene sc, float t, float burstT, float burstPower) {
+    public static void petals(VertexConsumer vc, Matrix4f m, Vector3f eye, SanctuaryScene sc, float t, float burstT, float burstPower) {
         for (int tree = 0; tree < 4; tree++) {
             float[] ch = sc.anchor("cherry" + tree);
             if (ch[3] <= 0) continue;
@@ -345,7 +356,7 @@ public final class CinematicFx {
                 float z = ch[2] + (float)Math.sin(ang) * rad + (float)Math.cos(t * 0.04F + id) * 0.3F;
                 float y = height - 1.0F - fall;
                 if (y < 0.05F) continue;
-                petal(vc, m, x, y, z, t, id, 1.0F);
+                petal(vc, m, x, y, z, t, id, nearFade(eye, x, y, z, 0.1F));
             }
         }
         if (burstPower > 0.0F && burstT >= 0.0F) {
@@ -360,7 +371,8 @@ public final class CinematicFx {
                 float z = c[2] + (float)Math.sin(ang) * out;
                 float y = c[1] + 0.9F + (2.5F + hash(i, 97) * 2.0F) * (1.0F - (float)Math.exp(-s * 2.2F)) - s * s * 0.25F;
                 if (y < 0.1F) continue;
-                petal(vc, m, x, y, z, t, 900 + i, burstPower * Math.min(1.0F, (6.0F - s) * 0.8F));
+                // (los pétalos no vuelan hacia la cámara: los que salían hacia ella pasaban pegados, enormes)
+                petal(vc, m, x, y, z, t, 900 + i, burstPower * Math.min(1.0F, (6.0F - s) * 0.8F) * nearFade(eye, x, y, z, 0.1F));
             }
         }
     }

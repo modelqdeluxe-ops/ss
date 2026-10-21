@@ -113,6 +113,8 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   que cae, no desde el fondo del estanque), el estanque lleva espuma blanca y ancha alrededor del pie de cada chorro, y
   delante sube bruma (`CinematicFx.waterfallLights`: la cascada alta, cada salto de la escalera y los dos chorros). Sin
   línea recta en ninguna.
+- **Manchas blancas enormes en el premio**: pétalos y brillos que pasaban pegados a la cámara (cuanto más cerca, más
+  grandes). Ahora todo lo que vuela se apaga al acercarse a ella (`CinematicFx.nearFade`, también en la vista previa).
 - **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en

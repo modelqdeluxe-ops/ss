@@ -922,8 +922,8 @@ public class CrateCinematicScreen extends Screen {
 
             // los pétalos de la apertura y del premio, y las alas de las hadas
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
-            CinematicFx.petals(soft, fv.m, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
-            if (t >= REVEAL) CinematicFx.petals(soft, fv.m, sc, t, t - REVEAL, 0.8F);
+            CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
+            if (t >= REVEAL) CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - REVEAL, 0.8F);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
             CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
