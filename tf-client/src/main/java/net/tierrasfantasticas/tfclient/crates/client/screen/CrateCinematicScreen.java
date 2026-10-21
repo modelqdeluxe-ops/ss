@@ -26,6 +26,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +40,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateBakedModels;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateStyles;
@@ -107,6 +112,19 @@ public class CrateCinematicScreen extends Screen {
     private final List<SoundInstance> playing = new ArrayList<>();
     private final List<Track> tracks = new ArrayList<>();
     private ScenePost post;
+    /** (1.3.103) Ya se dijo en el registro con qué se dibuja (paquete de shaders, shader de la escena). */
+    private boolean saidHow;
+    /** (1.3.103) El bloque de la crate en el mundo (sus partículas se dibujan en la escena); null si no se sabe. */
+    private BlockPos cratePos;
+    private final SceneCamera particleCam = new SceneCamera();
+    /** Hasta dónde de la crate se dibujan las partículas del mundo (las de sus capas no van más lejos). */
+    private static final double PARTICLE_R = 4.5;
+    /** Las partículas a menos de esto de la cámara no se dibujan (bloques). */
+    private static final double PARTICLE_NEAR = 1.6;
+    /** La luz de la crate en la escena (drawCrate): un poco por debajo de la entera, para que no florezca. */
+    private static final float[] CRATE_TINT = {0.86F, 0.84F, 0.80F};
+    /** Para la prueba: cuántas partículas de la crate se dibujaron como mucho en un fotograma (y en cuántos alguna). */
+    private int particlesMax, particleFrames, particlesNow;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
     private int frames;
@@ -152,6 +170,12 @@ public class CrateCinematicScreen extends Screen {
         CrateCinematicScreen s = new CrateCinematicScreen(cfg, 0xFFFFFF, 0, 0, java.util.Collections.emptyList(), null);
         s.idle = true;
         return s;
+    }
+
+    /** El bloque de la crate que se abre (para dibujar sus partículas en la escena). */
+    public CrateCinematicScreen at(BlockPos pos) {
+        cratePos = pos == null ? null : pos.immutable();
+        return this;
     }
 
     /** Dibuja el santuario quieto (ver {@link #idle}); false si no se puede (entonces el fondo de siempre). */
@@ -230,6 +254,8 @@ public class CrateCinematicScreen extends Screen {
     public void removed() {
         if (!idle) testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
                 frameMax, clock() / 20.0F, SanctuaryScene.get() == null ? "sin santuario" : SanctuaryScene.get().stats())
+                + String.format("; partículas de la crate: hasta %d a la vez, en %d fotogramas%s", particlesMax, particleFrames,
+                        cratePos == null ? " (sin bloque)" : "")
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
@@ -563,7 +589,7 @@ public class CrateCinematicScreen extends Screen {
         pose.translate(-centerX, -minY, -centerZ);
         ModelBlockRenderer mr = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         // (el dueño: «no abuses del bloom a que se vea borrosa la crate»: un poco por debajo de la luz entera, no florece)
-        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), 0.86F, 0.84F, 0.80F);
+        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), CRATE_TINT[0], CRATE_TINT[1], CRATE_TINT[2]);
         mr.renderModel(pose.last(), vc, crateState, base, 1.0F, 1.0F, 1.0F, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 ModelData.EMPTY, RenderType.cutout());
         if (lid != null) {
@@ -922,6 +948,13 @@ public class CrateCinematicScreen extends Screen {
 
         // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
         boolean pp = ScenePost.ready() && !postFailed;
+        if (!saidHow) {
+            // (1.3.103, el dueño: «la escena no me mostraba los efectos») con qué se dibuja, una vez por cinemática
+            saidHow = true;
+            LogUtils.getLogger().info("[TF Crates] Cinemática: paquete de shaders {}, shader de la escena {}{}",
+                    net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse() ? "sí" : "no", pp ? "sí" : "no",
+                    postFailed ? " (falló antes)" : ScenePost.ready() ? "" : " (no cargó)");
+        }
         if (pp) {
             try {
                 if (post == null) post = new ScenePost();
@@ -993,6 +1026,7 @@ public class CrateCinematicScreen extends Screen {
 
             // el agua (el estanque, las charcas, la cascada y las fuentes: la dibuja el juego), translúcida
             if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
+            worldParticles(view, eye, sc, t);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
             // los pétalos de la apertura y del premio
@@ -1084,6 +1118,90 @@ public class CrateCinematicScreen extends Screen {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);
             }
+        }
+    }
+
+    /**
+     * (1.3.103) Las partículas de la crate: las capas del editor (reposo, anticipación, apertura, premio y final) y los
+     * acentos, que CrateBlockEntity suelta en el mundo junto al bloque de verdad, al ritmo de la escena. Mientras dura la
+     * escena el mundo no se dibuja (LevelRendererMixin), así que no se veían (el dueño: «por algún motivo la escena no me
+     * los mostraba»). Aquí se dibujan las del juego que están a menos de PARTICLE_R de la crate, con una cámara puesta en
+     * el mundo donde estaría la de la escena si la crate del santuario fuera el bloque: salen alrededor de la crate y los
+     * bloques del santuario las tapan.
+     */
+    private void worldParticles(Matrix4f view, Vector3f eye, SanctuaryScene sc, float t) {
+        Minecraft mc = Minecraft.getInstance();
+        if (cratePos == null || mc.level == null) return;
+        float[] c = sc.anchor("crate");
+        double ox = cratePos.getX() + 0.5 - c[0], oy = cratePos.getY() - c[1], oz = cratePos.getZ() + 0.5 - c[2];
+        // (1.3.104, el dueño: «más suaves en la escena»: que no tapen la crate ni el premio) lo que no se tapa, en el
+        // mundo: {x, y, z, radio}. La crate; en la ruleta, el premio que pasa por delante; y el premio al salir.
+        List<double[]> keep = new ArrayList<>();
+        keep.add(new double[] {c[0] + ox, c[1] + crateH * 0.5 + oy, c[2] + oz, Math.max(0.65, crateH * 0.6)});
+        float front = (float) Math.atan2(eye.x - c[0], eye.z - c[2]);
+        float cy = ringY(sc);
+        if (t >= RING0 && t < REVEAL) {
+            keep.add(new double[] {c[0] + Math.sin(front) * RING_R + ox, cy + oy, c[2] + Math.cos(front) * RING_R + oz, 0.5});
+        }
+        if (t >= REVEAL - 10) {
+            keep.add(new double[] {c[0] + Math.sin(front) * 1.1 + ox, cy + 0.15 + oy, c[2] + Math.cos(front) * 1.1 + oz, 0.7});
+        }
+        Vector3f f = new Vector3f(-view.m02(), -view.m12(), -view.m22()).normalize();
+        float yaw = (float) Math.toDegrees(Math.atan2(-f.x, f.z));
+        float pitch = (float) Math.toDegrees(-Math.asin(Math.max(-1.0F, Math.min(1.0F, f.y))));
+        Vec3 camAt = new Vec3(eye.x + ox, eye.y + oy, eye.z + oz);
+        particleCam.place(camAt, yaw, pitch);
+        PoseStack ps = new PoseStack();
+        ps.mulPose(view.getNormalizedRotation(new Quaternionf()));
+        Vec3 center = Vec3.atBottomCenterOf(cratePos).add(0.0, 0.8, 0.0);
+        Frustum near = new Frustum(new Matrix4f(), new Matrix4f()) {
+            @Override
+            public boolean isVisible(AABB box) {
+                Vec3 p = box.getCenter();
+                // (las que pasan pegadas a la cámara, no: en los primeros planos tapaban la crate, como los discos de
+                // luz que ya se apagan cerca de ella en CinematicFx.nearFade)
+                boolean in = p.distanceToSqr(center) < PARTICLE_R * PARTICLE_R && p.distanceToSqr(camAt) > PARTICLE_NEAR * PARTICLE_NEAR
+                        && !covers(camAt, p, keep);
+                if (in) particlesNow++;
+                return in;
+            }
+        };
+        particlesNow = 0;
+        // con la luz de la crate de la escena (CRATE_TINT, por debajo del umbral del resplandor): con la del mundo, de día a
+        // tope, florecían y salían blancas en vez de su color
+        RenderSystem.setShaderColor(CRATE_TINT[0], CRATE_TINT[1], CRATE_TINT[2], 1.0F);
+        try {
+            mc.particleEngine.render(ps, mc.renderBuffers().bufferSource(), mc.gameRenderer.lightTexture(), particleCam,
+                    mc.getFrameTime(), near);
+        } finally {
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+        particlesMax = Math.max(particlesMax, particlesNow);
+        if (particlesNow > 0) particleFrames++;
+    }
+
+    /** ¿Está p entre la cámara y algo de «keep» (dentro de su radio visto desde la cámara, y no por detrás)? */
+    private static boolean covers(Vec3 cam, Vec3 p, List<double[]> keep) {
+        double wx = p.x - cam.x, wy = p.y - cam.y, wz = p.z - cam.z;
+        for (double[] k : keep) {
+            double vx = k[0] - cam.x, vy = k[1] - cam.y, vz = k[2] - cam.z;
+            double len = Math.sqrt(vx * vx + vy * vy + vz * vz);
+            if (len < 1e-6) continue;
+            double along = (wx * vx + wy * vy + wz * vz) / len;
+            if (along <= 0.0 || along > len + k[3]) continue;
+            double px = wx - vx / len * along, py = wy - vy / len * along, pz = wz - vz / len * along;
+            // (el radio, a la distancia de la partícula: lo que tapa visto desde la cámara)
+            double r = k[3] * along / len;
+            if (px * px + py * py + pz * pz < r * r) return true;
+        }
+        return false;
+    }
+
+    /** La cámara de las partículas (Camera no deja ponerla a mano desde fuera). */
+    private static final class SceneCamera extends Camera {
+        void place(Vec3 at, float yaw, float pitch) {
+            setRotation(yaw, pitch);
+            setPosition(at);
         }
     }
 

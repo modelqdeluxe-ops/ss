@@ -162,6 +162,19 @@ su color (`CinematicFx.fairies`, TAIL tramos con `band`): eran 18 chispas suelta
 rayas blancas de puntos (el dueño: «líneas blancas, como que no estuviera compacta ni unida la textura»; en su recorte,
 la pantalla de antes de abrir, eran esas). Los pétalos de la apertura, con forma de pétalo y de un rosa más hondo
 (eran rectángulos de rosa claro que, con el brillo del haz, salían como papelitos blancos).
+**Las partículas de la crate, en la escena** (1.3.104, el dueño: «lo de efectos son las crates, por algún motivo la
+escena no me los mostraba»): las capas del editor (reposo, anticipación, apertura, premio, final) y los acentos los suelta
+`CrateBlockEntity` en el mundo, junto al bloque de verdad (al ritmo de la escena: `startSceneLid`), y el mundo no se dibuja
+mientras dura la escena. `CrateCinematicScreen.worldParticles` dibuja en la escena (y en la de antes de abrir) las del
+`ParticleEngine` del juego a menos de 4,5 bloques de la crate, con una cámara puesta en el mundo donde estaría la de la
+escena si la crate del santuario fuera el bloque (`at(pos)` desde `ClientPacketHandler` y `CratePreOpenScreen`). La prueba
+dice cuántas: «partículas de la crate: hasta N a la vez, en M fotogramas». Con la luz de la crate de la escena
+(`CRATE_TINT`: con la del mundo, de día a tope, florecían y salían blancas) y sin las que pasan a menos de 1,6 bloques de
+la cámara (en los primeros planos tapaban la crate). **Más suaves en la escena** (lo eligió el dueño al ver que, con
+las capas por defecto, ~1 000 a la vez tapaban la crate y el premio): en el juego del que abre, mientras dura la escena,
+sale el 35 % de cada capa y de los acentos (`CrateBlockEntity.SCENE_SHARE`; los demás jugadores las ven enteras en el
+mundo), y no se dibujan las que quedan entre la cámara y la crate, el premio que pasa por delante en la ruleta o el
+premio al salir (`CrateCinematicScreen.covers`).
 **El sonido** (1.3.103, el dueño: «extremadamente alto, horrible»): medido con ffmpeg (ebur128), los .ogg de las crates
 van a −12/−18 LUFS con picos de −1 dB (los del juego, −20/−25) y sonaban por «Master» a 0,8-0,9. Ahora por «Bloques»
 (se baja con su barra), efectos ×0,35 (`CrateCinematicScreen.SFX`), música 0,40, ambiente 0,35; la clásica, ×0,5.

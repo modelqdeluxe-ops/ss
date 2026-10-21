@@ -1,6 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.103 (21 oct 2026)**: cinco quejas del dueño (CHECKPOINT de `HANDOFF.md`): el pescador recoge el anzuelo
+> **1.3.104 (21 oct 2026)**: las partículas de cada crate (las capas del editor) también dentro de la escena (CRATES.md §2).
+>
+> **1.3.103 (21 oct 2026), PUBLICADA**: cinco quejas del dueño (CHECKPOINT de `HANDOFF.md`): el pescador recoge el anzuelo
 > delante (NPCS.md §3), la cara del 2.º personaje de los dúos delante (NPCS.md §3), las letras del TF Pad 1 por delante de
 > su recuadro (`PadFont.front`), y en las crates la colita de las hadas continua, pétalos rosas y el sonido más bajo
 > (CRATES.md §2).
