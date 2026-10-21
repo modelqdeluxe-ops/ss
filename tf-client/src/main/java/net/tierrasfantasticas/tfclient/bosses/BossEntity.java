@@ -1975,6 +1975,18 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         }
     }
 
+    /**
+     * (1.3.101) Al descargarse su chunk, Minecraft quita la entidad con setRemoved(UNLOADED_TO_CHUNK), sin pasar por
+     * remove(): un NPC de escena se olvida aquí (si no, al volver del disco con el mismo UUID, el motor creía que ya había
+     * nacido, no lanzaba su ~onLoad y se quedaba sin su animación de escena). Sin ~onDespawn: MythicMobs tampoco lo
+     * lanza al descargar un mob «Despawn: persistent».
+     */
+    @Override
+    public void onRemovedFromWorld() {
+        if (!level().isClientSide && isNpc() && getRemovalReason() != null && !getRemovalReason().shouldDestroy()) SkillMobs.removed(this);
+        super.onRemovedFromWorld();
+    }
+
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {

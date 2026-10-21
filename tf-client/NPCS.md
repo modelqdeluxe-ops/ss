@@ -80,7 +80,11 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   `python3 tools/npcs/hoja_npcs.py <carpeta> [pack…]` (vfx_render, las mismas cuentas que el mod).
 - **Entidad**: `tfclient:npc` = `BossEntity` en modo NPC (`isNpc()`): se guarda con el mundo (Despawn: persistent),
   sin barra ni botín, se puede tocar aunque sea invencible. Al volver del disco lleva el modelo que tenía
-  (model{save=true}) y salta **~onLoad** (`SkillMobs.spawned` con `Host.loaded()`), como MythicMobs.
+  (model{save=true}) y salta **~onLoad** (`SkillMobs.spawned` con `Host.loaded()`), como MythicMobs. Ojo: al
+  descargarse su chunk, Minecraft la quita con `setRemoved(UNLOADED_TO_CHUNK)` sin pasar por `remove()`; el NPC se
+  olvida en `BossEntity.onRemovedFromWorld` (si no, al volver con el mismo UUID el motor creía que ya había nacido,
+  no lanzaba su ~onLoad y salía en la pose de base, sin su animación: lo vio la prueba con granjeros, leñadores y la
+  taberna, 1.3.101).
 - **Cosméticos**: el panel hace lo mismo que el menú del pack: changepart sobre su modelo y
   `setvariable{var=global.hat<uuid>;save=true}`. El ~onLoad del pack los vuelve a poner con
   `<global.var.hat<caster.uuid>>`. Las variables globales con save=true se guardan con el mundo
