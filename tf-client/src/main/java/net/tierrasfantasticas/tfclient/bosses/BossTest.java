@@ -1370,7 +1370,9 @@ public final class BossTest {
         if (old != null && old.isAlive() && !old.isRemoved()) return old;
         BossEntity best = null;
         double bd = Double.MAX_VALUE;
-        for (BossEntity e : level.getEntitiesOfClass(BossEntity.class, new net.minecraft.world.phys.AABB(sp.at(), sp.at()).inflate(6))) {
+        // (a 16 bloques: los que andan se alejan de su sitio; el «handler» lleva cajas a 10 bloques. Cada NPC sale una vez
+        // por fila y las filas van a 20)
+        for (BossEntity e : level.getEntitiesOfClass(BossEntity.class, new net.minecraft.world.phys.AABB(sp.at(), sp.at()).inflate(16))) {
             if (!e.isAlive() || !sp.mob().equalsIgnoreCase(e.mobName())) continue;
             double d = e.position().distanceToSqr(sp.at());
             if (d < bd) {
@@ -1454,7 +1456,9 @@ public final class BossTest {
             int[] sh = NPC_SHOTS.get(si);
             NpcSpot a = NPC_PLAN.get(sh[0]), b = NPC_PLAN.get(sh[1] - 1);
             double cx = (a.at().x + b.at().x) / 2;
-            if (sk == 0) look(player, level, cx, o.y + 3.2, a.at().z + 10, cx, o.y + 1.0, a.at().z);
+            // a 12 bloques y por encima: a 10, la cámara quedaba dentro de la diana del arquero (bow training), que su
+            // modelo lleva 9,3-10,3 bloques por delante y 2 de alto
+            if (sk == 0) look(player, level, cx, o.y + 4.5, a.at().z + 12, cx, o.y + 1.0, a.at().z);
             if (sk == NPC_SHOT_AT) {
                 shot(r, String.format("npcs_%s_%d", a.pack().substring(4), sh[0]));
                 StringBuilder sb = new StringBuilder();
@@ -1532,6 +1536,11 @@ public final class BossTest {
                 look(player, level, m.x + 13, m.y + 2.2, m.z + 4, m.x + 6, m.y + 1, m.z + 4);
                 npcTrack.setLength(0);
             }
+            // de lado y de cerca (a 3,5 bloques de donde esté), 10 ticks antes de la captura
+            case 204 -> {
+                if (npcVendor != null) look(player, level, npcVendor.getX() + 3.5, npcVendor.getY() + 1.6, npcVendor.getZ(),
+                        npcVendor.getX(), npcVendor.getY() + 1.0, npcVendor.getZ());
+            }
             case 214 -> shot(r, "npc_pins_andando");
             case 434 -> {
                 Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);
@@ -1562,6 +1571,10 @@ public final class BossTest {
             case 453 -> {
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_ASSIGN, "", "", 1, 0, 0));
                 r.event("ruta 1 para el caminante: " + net.tierrasfantasticas.tfclient.skills.SkillSaved.global("scenes_route_1"));
+            }
+            case 590 -> {
+                if (npcWalker != null) look(player, level, npcWalker.getX() + 3.5, npcWalker.getY() + 1.6, npcWalker.getZ() + 1.0,
+                        npcWalker.getX(), npcWalker.getY() + 1.0, npcWalker.getZ());
             }
             case 600 -> shot(r, "npc_ruta_andando");
             case 768 -> {
