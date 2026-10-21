@@ -64,8 +64,8 @@ HUECOS = {
                    'restadas; da igual el orden de los ejes) dejan la caña a 113°, más allá de la vertical, y el sedal '
                    '(«bone2», 390° = 30°, escala z 2,25-2,7) sigue hacia arriba hasta unos 10 bloques del suelo. En «boat» la '
                    'caña va a +25° y el sedal cae bien; con +58° en «fishing» colgaría al agua (errata de signo del autor, '
-                   'parece). Todas sus animaciones tienen «override», así que no se suman. Se deja como en el pack '
-                   '(ModelEngine lo enseñaría igual); arreglarlo sería cambiar su animación',
+                   'parece). Todas sus animaciones tienen «override», así que no se suman. ModelEngine lo enseñaría igual; '
+                   'por orden del dueño (1.3.102) tools/npcs/sedal.py lo cuelga recto hacia abajo en todas las animaciones',
     },
     'npc_lumberjacks': {
         'lumberjack_log': 'las escalas de plank1/plank2 de «lumberjack_log» llevan «-» (Molang vacío): Blockbench y '
@@ -587,6 +587,9 @@ def convert(root, only=()):
     # (1.3.101, orden del dueño) la cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones (las del
     # pack las despegan: tools/npcs/pegar.py)
     sys.path.insert(0, HERE)
+    # (1.3.102, orden del dueño) el sedal de los pescadores cuelga por su peso (en el pack sube al cielo: sedal.py)
+    import sedal
+    sedal.main(STAGE_RES)
     import pegar
     pegar.main(STAGE_RES, procs=int(os.environ.get('PROCESOS', '4')))
     return [c for c in catalog]

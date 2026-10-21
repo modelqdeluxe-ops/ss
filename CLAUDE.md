@@ -9,7 +9,7 @@
 - Responde al dueño en español.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
 - NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.
-  La 1.3.101 está publicada; lo que queda, en `tf-client/NPCS-CONTINUAR.md`.
+  La 1.3.102 (el sedal de los pescadores) es la última; lo que queda, en `tf-client/NPCS-CONTINUAR.md`.
   La 1.3.99 está publicada; si hay que volver a tocar la cinemática, sigue `tf-client/CRATES-CONTINUAR.md`.
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
   comprobarlos sin abrir el juego).

@@ -683,6 +683,8 @@ public final class BossTest {
 
     /** Lo que el cliente de la prueba pulsa en el diálogo del caballero (1 = la primera respuesta; -1 = nada). */
     static volatile int dialogPress = -1;
+    /** El cliente de la prueba cierra la pantalla que tenga abierta (el panel de NPC antes de otra captura). */
+    static volatile boolean closeScreen;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
     private static Vec3 origin;
     /** La persecución por la isla (1.3.92): dónde espera el jugador, lo más cerca que llega el jefe y lo más cerca del borde. */
@@ -1586,7 +1588,19 @@ public final class BossTest {
             // El panel abierto con el caminante elegido (pestaña Editar)
             case 778 -> net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
             case 840 -> shot(r, "npc_panel");
-            case 880 -> next(level);
+            // (1.3.102) Un pescador de cerca y de lado: el sedal cuelga de la punta de la caña (en el pack subía al cielo)
+            case 860 -> {
+                closeScreen = true;
+                player.teleportTo(level, o.x - 30, o.y, o.z + 70, 180F, 0F);
+            }
+            case 864 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_fishermen", "scene_fisherman_standing", 1, 0, 0));
+                BossEntity fisher = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                r.event("pescador de la prueba: " + (fisher == null ? "NO SALE" : net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(fisher)));
+                look(player, level, o.x - 30 + 6, o.y + 2.5, o.z + 70 - 1.5, o.x - 30, o.y + 1.2, o.z + 70 - 1.5);
+            }
+            case 944 -> shot(r, "npc_pescador");
+            case 960 -> next(level);
             default -> { }
         }
         if (f > 154 && f < 434 && f % 40 == 0 && npcVendor != null) {
