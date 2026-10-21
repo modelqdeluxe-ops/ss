@@ -58,6 +58,10 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             mc.setScreen(null);
         }
+        if (BossTest.typePad != null) {
+            net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
+            BossTest.typePad = null;
+        }
         if (BossTest.openPad != null) {
             String app = BossTest.openPad;
             BossTest.openPad = null;

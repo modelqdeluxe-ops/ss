@@ -73,6 +73,12 @@ jobs:
             cp run/config/oculus.properties run/config/iris.properties
             echo "Con shaders: Oculus 1.8.0 + $PACK"
           fi
+          # (1.3.106) Con «[mods=a,b]»: otros mods del cliente para jugar en la prueba (immediatelyfast)
+          MODS=$(printf '%s' "$MENSAJE" | grep -oP '\[mods=\K[^\]]+' | head -n1 || true)
+          if [ -n "$MODS" ]; then
+            EXTRA="$EXTRA -Ptfmods=$MODS"
+            echo "Con mods: $MODS"
+          fi
           timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient $EXTRA --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
           tail -n 80 run/juego.log
           ls run/pruebas || true
@@ -83,7 +89,7 @@ jobs:
           python3 -m pip install --quiet pillow || true
           rm -rf /tmp/out && mkdir -p /tmp/out
           cp run/pruebas/informe.txt /tmp/out/ 2>/dev/null || echo "sin informe" > /tmp/out/informe.txt
-          grep -E "TF Jefes|TF Skills|TF Void|TF Crates|Prueba de jefes|Oculus|Iris|Exception|ERROR|WARN.*(tfclient|texture)|Caused by|^\s+at net\.tierrasfantasticas" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
+          grep -E "TF Jefes|TF Skills|TF Void|TF Crates|Prueba de jefes|Oculus|Iris|ImmediatelyFast|Exception|ERROR|WARN.*(tfclient|texture)|Caused by|^\s+at net\.tierrasfantasticas" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
           tail -n 400 run/juego.log > /tmp/out/final_del_registro.txt || true
           python3 - <<'EOF'
           import glob, os

@@ -695,6 +695,8 @@ public final class BossTest {
     static volatile boolean closeScreen;
     /** El cliente de la prueba abre el pad en esa app («» = la portada; BossTest «pad»). */
     static volatile String openPad;
+    /** (1.3.106) Lo que la prueba escribe en la casilla de Música del pad (BossTestClient). */
+    static volatile String typePad;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
     private static Vec3 origin;
     /** La persecución por la isla (1.3.92): dónde espera el jugador, lo más cerca que llega el jefe y lo más cerca del borde. */
@@ -1642,6 +1644,8 @@ public final class BossTest {
             case 20 -> openPad = "";
             case 80 -> shot(r, "pad_portada");
             case 90 -> openPad = "musica";
+            // (1.3.106) algo escrito en la casilla del link: el dueño no ve lo que escribe
+            case 120 -> typePad = "https://texto que escribo en la prueba";
             case 150 -> shot(r, "pad_musica");
             case 160 -> openPad = "efectos";
             case 220 -> shot(r, "pad_efectos");

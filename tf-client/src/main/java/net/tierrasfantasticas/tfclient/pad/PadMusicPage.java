@@ -34,6 +34,8 @@ final class PadMusicPage extends PadPage {
 
     private String input = "";
     private boolean focused;
+    /** (1.3.106) Para la prueba en el juego: lo que «escribe» en la casilla (y la deja elegida). */
+    static volatile String testInput;
     /** Modo portada: el campo pide el link de una imagen para esta canción. */
     private MusicLibrary.Track coverFor;
     private int listScroll;
@@ -146,6 +148,11 @@ final class PadMusicPage extends PadPage {
 
     @Override
     void render(GuiGraphics g, double mx, double my, float partial) {
+        if (testInput != null) {
+            input = testInput;
+            focused = true;
+            testInput = null;
+        }
         hits.clear();
         long ns = System.nanoTime();
         float dt = Math.min(0.1F, (ns - lastNs) / 1e9F);
