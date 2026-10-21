@@ -121,6 +121,15 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   MythicMobs es el objetivo de combate del que lanza, que un caminante no tiene (1.3.101). Para eso el motor hace
   @TargetedTarget como MythicMobs: los objetivos heredados tal cual, también el lanzador si es a él a quien se le pasó
   (`SkillTargets`; @TT de las clases sigue como estaba).
+- **Extremidades pegadas (orden del dueño, 1.3.101: «ninguna despegada, por más pequeñito que sea el hueco»)**: las
+  animaciones del propio pack despegan la cabeza, los brazos o las piernas del cuerpo (53 de los 130 NPC en su escena,
+  hasta 3,2 px con la piel del panel; el minero al picar, el dúo de lucha, el barco del pescador…). Es del pack: medido
+  con `pegado.py` y, aparte, con las reglas de Blockbench sobre el `.bbmodel` original, sale lo mismo al milésimo (y los
+  `.bbmodel` de la taberna ya traen 0,04–0,12 px de hueco en reposo). `tools/npcs/pegar.py` (lo llama `build_npcs`) los
+  pega en cada animación: una pierna → el cuerpo se acerca a ella (los pies siguen en el suelo; si es la pierna la que
+  se mueve, la pierna); un brazo o la cabeza → se acercan al cuerpo; lo justo para tocar (+0,05 px), con la plantilla y
+  con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60 por segundo, comprobado al doble
+  y repetido donde aún quedaba hueco entre dos fotogramas. Volver a pasarlo no cambia nada.
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin

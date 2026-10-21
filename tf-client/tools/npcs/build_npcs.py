@@ -584,6 +584,11 @@ def convert(root, only=()):
     with open(cat_path, 'w', encoding='utf-8') as f:
         json.dump(sorted(catalog.values(), key=lambda c: order.index(c['id']) if c['id'] in order else 99), f,
                   ensure_ascii=False, indent=1)
+    # (1.3.101, orden del dueño) la cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones (las del
+    # pack las despegan: tools/npcs/pegar.py)
+    sys.path.insert(0, HERE)
+    import pegar
+    pegar.main(STAGE_RES, procs=int(os.environ.get('PROCESOS', '4')))
     return [c for c in catalog]
 
 
