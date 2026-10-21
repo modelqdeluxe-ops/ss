@@ -63,6 +63,10 @@ public class CratePoolScreen extends Screen {
       }
    }
 
+   public Screen parentScreen() {
+      return this.parent;
+   }
+
    public CratePoolScreen(CrateConfig config, Screen parent) {
       super(Component.literal("Recompensas"));
       this.config = config == null ? new CrateConfig() : config;
@@ -154,7 +158,9 @@ public class CratePoolScreen extends Screen {
    }
 
    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-      if (CrateMedia.isActive()) {
+      // (detrás, lo mismo que en la pantalla de antes de abrir: el santuario o el vídeo de la caja)
+      boolean drawn = this.parent instanceof CratePreOpenScreen pre && pre.renderSanctuary(g, this.width, this.height);
+      if (!drawn && CrateMedia.isActive()) {
          CrateMedia.renderBackground(g, this.width, this.height);
       }
 

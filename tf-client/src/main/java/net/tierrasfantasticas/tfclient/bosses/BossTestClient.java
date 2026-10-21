@@ -176,7 +176,25 @@ public final class BossTestClient {
     private static Object crateSeen;
     private static int crateNext, crateRun;
 
+    /** (1.3.99) La pantalla de antes de abrir (con el santuario detrás), como cuando el jugador toca la crate. */
+    static void showPreOpen(net.tierrasfantasticas.tfclient.crates.config.CrateConfig cfg, net.minecraft.core.BlockPos pos) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.execute(() -> {
+            preOpenShot = false;
+            preOpenAt = System.nanoTime();
+            mc.setScreen(new net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen(cfg, pos));
+        });
+    }
+
+    private static boolean preOpenShot = true;
+    private static long preOpenAt;
+
     private static void crateShots(Minecraft mc) {
+        if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
+                && System.nanoTime() - preOpenAt > 1_000_000_000L) {
+            preOpenShot = true;
+            BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
+        }
         if (!(mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen cs)) return;
         if (cs != crateSeen) {
             crateSeen = cs;

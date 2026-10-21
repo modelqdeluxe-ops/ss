@@ -138,6 +138,30 @@ public class CrateCinematicScreen extends Screen {
         this.keyStack = key;
     }
 
+    /**
+     * El santuario quieto detrás de la pantalla de antes de abrir (CratePreOpenScreen): el encuadre de la imagen del dueño,
+     * con el agua, las hadas y la luz en movimiento y el ambiente en bucle; sin llave, títulos ni sonidos de la apertura.
+     * El reloj corre «antes del tick 0» (todo lo de la apertura empieza en ticks positivos), así que al pulsar ABRIR la
+     * cinemática sigue desde el mismo encuadre. Null si el santuario no está o falló en esta sesión.
+     */
+    public static CrateCinematicScreen idle(CrateConfig cfg) {
+        if (faulted || SanctuaryScene.get() == null) return null;
+        CrateCinematicScreen s = new CrateCinematicScreen(cfg, 0xFFFFFF, 0, 0, java.util.Collections.emptyList(), null);
+        s.idle = true;
+        return s;
+    }
+
+    /** Dibuja el santuario quieto (ver {@link #idle}); false si no se puede (entonces el fondo de siempre). */
+    public boolean renderIdle(GuiGraphics g, int w, int h) {
+        if (faulted) return false;
+        if (minecraft == null || width != w || height != h) init(Minecraft.getInstance(), w, h);
+        render(g, 0, 0, 0.0F);
+        return !faulted;
+    }
+
+    private static final float IDLE_T0 = -40000.0F;
+    private boolean idle;
+
     /** La de siempre si el santuario falló en esta sesión (o no hay), si no esta. */
     public static Screen create(CrateConfig cfg, int rarityColor, int winnerRarity, int winnerIndex, List<ItemStack> candidates,
                                 int[] candidateRarities) {
@@ -201,7 +225,7 @@ public class CrateCinematicScreen extends Screen {
 
     @Override
     public void removed() {
-        testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
+        if (!idle) testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
                 frameMax, clock() / 20.0F, SanctuaryScene.get() == null ? "sin santuario" : SanctuaryScene.get().stats())
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
@@ -220,6 +244,7 @@ public class CrateCinematicScreen extends Screen {
         if (faulted) return;
         faulted = true;
         LogUtils.getLogger().error("[TF Crates] La cinemática del santuario falló: sigo con la de siempre", t);
+        if (idle) return;
         Minecraft mc = Minecraft.getInstance();
         int elapsed = ticks;
         mc.tell(() -> {
@@ -255,10 +280,14 @@ public class CrateCinematicScreen extends Screen {
         private float fade = 1.0F, step;
 
         Track(SoundEvent ev, SoundSource src, float volume) {
+            this(ev, src, volume, false);
+        }
+
+        Track(SoundEvent ev, SoundSource src, float volume, boolean loop) {
             super(ev, src, SoundInstance.createUnseededRandom());
             this.base = volume;
             this.volume = volume;
-            this.looping = false;
+            this.looping = loop;
             this.relative = true;
             this.attenuation = SoundInstance.Attenuation.NONE;
             this.x = this.y = this.z = 0.0;
@@ -810,12 +839,22 @@ public class CrateCinematicScreen extends Screen {
         }
         lastFrame = now;
         float t = (float)((now - openNanos) / 5.0E7);
-        int soundTick = (int)Math.floor(t);
-        while (lastSoundTick < soundTick) {
-            lastSoundTick++;
-            sounds(lastSoundTick);
+        if (idle) {
+            // (el reloj vuelve atrás cada media hora para no acercarse al tick 0, donde empieza la apertura)
+            t = IDLE_T0 + t % 36000.0F;
+            if (tracks.isEmpty() && minecraft != null) {
+                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, 0.8F, true);
+                tracks.add(tr);
+                minecraft.getSoundManager().play(tr);
+            }
+        } else {
+            int soundTick = (int)Math.floor(t);
+            while (lastSoundTick < soundTick) {
+                lastSoundTick++;
+                sounds(lastSoundTick);
+            }
+            reelClicks(t);
         }
-        reelClicks(t);
         SanctuaryScene sc = SanctuaryScene.get();
         if (sc == null || faulted) {
             g.fill(0, 0, width, height, 0xFF000000);
@@ -830,7 +869,7 @@ public class CrateCinematicScreen extends Screen {
             g.fill(0, 0, width, height, 0xFF000000);
             return;
         }
-        overlay(g, sc, t);
+        if (!idle) overlay(g, sc, t);
     }
 
     /** El cielo de respaldo (si el shader no carga) y la bruma del santuario: verde azulada oscura (lo del fondo se pierde

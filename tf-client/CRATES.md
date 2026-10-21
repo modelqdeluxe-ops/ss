@@ -135,6 +135,13 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
   y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
 
+**Antes de abrir** (`CratePreOpenScreen`, la de ABRIR / VER RECOMPENSAS): detrás va el santuario en vivo con el encuadre de
+la imagen del dueño, el agua, las hadas y la luz en movimiento y el ambiente en bucle (`CrateCinematicScreen.idle`: el
+reloj corre antes del tick 0, así que no sale nada de la apertura; al pulsar ABRIR la cinemática sigue desde el mismo
+encuadre). Antes salía negro: su fondo era el vídeo de la caja (si la caja tiene vídeo propio en el editor, sigue saliendo
+el vídeo) y la música de siempre (con el santuario, no). El mundo no se dibuja mientras tanto (`LevelRendererMixin`).
+La prueba saca su captura (`crateN_preabrir`).
+
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
 dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con
 el fondo de linternas de mar y prismarina, el altar, la escalera de agua de 3 escalones y la cascada alta de 5 de ancho

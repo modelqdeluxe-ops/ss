@@ -23,10 +23,15 @@ public final class MediaTicker {
 
    @SubscribeEvent
    public static void onClientTick(ClientTickEvent event) {
-      if (event.phase == Phase.END && CrateMedia.isActive()) {
+      if (event.phase == Phase.END) {
          Screen screen = Minecraft.getInstance().screen;
          if (!(screen instanceof CratePreOpenScreen) && !(screen instanceof CratePoolScreen)) {
-            CrateMedia.stop();
+            if (CrateMedia.isActive()) {
+               CrateMedia.stop();
+            }
+
+            // (el santuario de detrás y su ambiente, si se salió por otro camino)
+            CratePreOpenScreen.stopIdleSanctuary();
          }
       }
    }

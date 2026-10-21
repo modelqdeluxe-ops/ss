@@ -48,6 +48,9 @@ public class CratePreOpenScreen extends Screen {
    private int confirmButtonW;
    private String notice = "";
    private long noticeUntil;
+   /** (1.3.99) El santuario de las hadas detrás (si la caja no tiene vídeo propio): el encuadre de la imagen del dueño. */
+   private CrateCinematicScreen sanctuary;
+   private boolean sanctuaryTried;
 
    public CratePreOpenScreen(CrateConfig config, BlockPos pos) {
       super(Component.literal("Pre-apertura"));
@@ -65,8 +68,14 @@ public class CratePreOpenScreen extends Screen {
          this.openedAt = System.currentTimeMillis();
       }
 
+      if (!this.sanctuaryTried) {
+         this.sanctuaryTried = true;
+         boolean ownVideo = this.config.videos.stream().anyMatch(u -> u != null && !u.isBlank());
+         this.sanctuary = ownVideo ? null : CrateCinematicScreen.idle(this.config);
+      }
+
       if (!CrateMedia.isActive()) {
-         CrateMedia.begin(this.config);
+         CrateMedia.begin(this.config, this.sanctuary == null);
       }
 
       applyVolume();
@@ -109,6 +118,7 @@ public class CratePreOpenScreen extends Screen {
          this.confirming = false;
          boolean skip = this.config.allowSkip && this.minecraft != null && this.minecraft.player != null && this.minecraft.player.isShiftKeyDown();
          CrateMedia.stop();
+         this.stopSanctuary();
          FSNetwork.sendToServer(new RequestOpenPacket(this.pos, skip));
          if (this.minecraft != null) {
             this.minecraft.setScreen(null);
@@ -117,7 +127,10 @@ public class CratePreOpenScreen extends Screen {
    }
 
    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-      CrateMedia.renderBackground(g, this.width, this.height);
+      if (!this.renderSanctuary(g, this.width, this.height)) {
+         CrateMedia.renderBackground(g, this.width, this.height);
+      }
+
       boolean ready = this.sceneReady();
       if (this.openButton != null) {
          this.openButton.visible = ready;
@@ -373,9 +386,42 @@ public class CratePreOpenScreen extends Screen {
          this.confirming = false;
       } else {
          CrateMedia.stop();
+         this.stopSanctuary();
          if (this.minecraft != null) {
             this.minecraft.setScreen(null);
          }
+      }
+   }
+
+   /** El santuario detrás (también desde «VER RECOMPENSAS»); false si no lo hay. */
+   boolean renderSanctuary(GuiGraphics g, int w, int h) {
+      current = this;
+      return this.sanctuary != null && this.sanctuary.renderIdle(g, w, h);
+   }
+
+   /** La última que dibujó el santuario (MediaTicker lo apaga si se sale de ella por otro camino). */
+   private static CratePreOpenScreen current;
+
+   /** Si en esa pantalla va el santuario detrás (entonces el mundo no se dibuja: no se ve y cuesta). */
+   public static boolean sanctuaryShown(Screen screen) {
+      if (screen instanceof CratePoolScreen pool) {
+         screen = pool.parentScreen();
+      }
+
+      return screen instanceof CratePreOpenScreen pre && pre.sanctuary != null;
+   }
+
+   public static void stopIdleSanctuary() {
+      if (current != null) {
+         current.stopSanctuary();
+         current = null;
+      }
+   }
+
+   private void stopSanctuary() {
+      if (this.sanctuary != null) {
+         this.sanctuary.removed();
+         this.sanctuary = null;
       }
    }
 
