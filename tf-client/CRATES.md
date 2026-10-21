@@ -216,6 +216,22 @@ La imagen va **con shaders propios, como un paquete de shaders** (`ScenePost` y 
 
 Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 
+**Con Oculus y un paquete de shaders (1.3.106; el dueño, con Photon: «sigo sin ver los efectos… no hay nada»)**. La
+prueba con Photon de la 1.3.103 lo reprodujo: sin halos, hadas, luciérnagas, pétalos ni anillos (el agua, los bloques, la
+crate y el post, sí). Causa: durante la cinemática `mixin/crates/LevelRendererMixin` corta `LevelRenderer.renderLevel`
+al principio (no se ve el mundo); Oculus empieza su pasada en ese mismo principio y la acaba al final, así que se
+quedaba «dibujando el mundo» y cambiaba los shaders de Minecraft (position_color, position_color_tex…) por los suyos
+también en la escena. Ahora, con paquete de shaders (`ShaderPacks.inUse`), el mundo se sigue dibujando detrás (no se
+ve). Y por si acaso, los efectos ya no van por el lote del juego: `SceneFx` los dibuja como el agua, con su BufferBuilder,
+su VertexBuffer y shaders propios (`crate_fx_glow` para lo que suma luz con la textura del brillo, `crate_fx_rays`,
+`crate_fx_soft` para lo translúcido; si uno no carga, ese efecto vuelve al lote del juego). La prueba lo cuenta
+(«efectos: propio a/b/c, del juego 0/0/0» en la línea de la cinemática).
+
+**Las rayas al mover la cámara (1.3.106)**: las hojas, opacas en la escena (`SanctuaryScene.sceneLayer`: por sus
+agujeros se veía el cielo claro del fondo, rayas blancas en los bordes), cada bloque 0,2 % más grande (tapa las juntas
+entre caras), los destellos del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel
+(`fwidth`), y `crate_post` suaviza los bordes (FXAA).
+
 | tick (20/s) | qué pasa |
 |---|---|
 | 0–20 | el encuadre de la imagen del dueño, que se acerca; el título de la crate y «✦ Santuario de las Hadas ✦» |
