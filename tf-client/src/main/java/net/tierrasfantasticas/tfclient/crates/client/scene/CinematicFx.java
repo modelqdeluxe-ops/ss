@@ -151,13 +151,14 @@ public final class CinematicFx {
         Vector3f base = new Vector3f(c[0], c[1] - 0.3F, c[2]);
         Vector3f mid = new Vector3f(base).add(new Vector3f(sun).mul(9.0F));
         Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(26.0F));
-        float br = 0.88F + 0.12F * (float)Math.sin(t * 0.05F);
+        // (el dueño: «el haz de luz del sol casi no se nota»: el doble y algo más)
+        float br = (0.88F + 0.12F * (float)Math.sin(t * 0.05F)) * 2.2F;
         // el halo ancho, la columna con el borde marcado y el núcleo claro (más fuertes arriba)
         band(vc, v, base, mid, 3.4F, 3.4F, r, g, b, 0.02F * power * br, 0.03F * power * br);
         band(vc, v, mid, top, 3.4F, 3.0F, r, g, b, 0.03F * power * br, 0.05F * power * br);
         band(vc, v, base, mid, 2.2F, 2.3F, r, g, b, 0.03F * power * br, 0.05F * power * br, 0.16F, 0.84F);
         band(vc, v, mid, top, 2.3F, 2.3F, r, g, b, 0.05F * power * br, 0.08F * power * br, 0.16F, 0.84F);
-        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.03F * power, 0.08F * power, 0.12F, 0.88F);
+        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.03F * power * br, 0.08F * power * br, 0.12F, 0.88F);
         // el foco del sol, donde entra por el hueco, y los rayos que bajan en abanico desde él
         float[] spot = sc.anchor("sunspot");
         glow(vc, v, spot[0], spot[1], spot[2], 3.0F, 1.0F, 0.90F, 0.55F, 0.8F * power);
@@ -179,9 +180,9 @@ public final class CinematicFx {
                     mix(b, 1, 0.6F), a * 0.5F, a);
         }
         // donde cae el haz: el charco de luz en el altar y en el agua
-        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.12F * power);
+        flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.2F * power);
         float[] pool = sc.anchor("pool");
-        flatGlow(vc, v, c[0], pool[1] + 0.02F, c[2] - 1.0F, 4.8F, r, g, b, 0.16F * power);
+        flatGlow(vc, v, c[0], pool[1] + 0.02F, c[2] - 1.0F, 4.8F, r, g, b, 0.26F * power);
     }
 
     /** El polvo que brilla en el haz de sol (y algo de polen por el santuario). */

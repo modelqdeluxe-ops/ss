@@ -126,6 +126,9 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   finas (ahora siempre de cara a la cámara); la «claridad» del shader final dibujaba un borde claro en cada arista (ahora
   se comprime en los dos sentidos y es más suave); los hilos de la cascada, con ruido fino, marcaban trazos rectos (ahora
   son ondas suaves).
+- **La línea negra de las cascadas** (el dueño, medida en su recorte: (31,130,154) entre (26,163,196) y (31,185,211)): las
+  caras de frente y de lado van un pelo hacia fuera y entre ellas quedaba una rendija por la que se veía la piedra; ahora
+  se solapan un pelo en la esquina (solo donde no hay más agua al lado). El haz de sol, ×2,2 (casi no se notaba).
 - **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en
@@ -183,8 +186,10 @@ Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 | tick (20/s) | qué pasa |
 |---|---|
 | 0–20 | el encuadre de la imagen del dueño, que se acerca; el título de la crate y «✦ Santuario de las Hadas ✦» |
-| 20–66 | **la llave** (la de la crate: Fantastic Key o la única) sale de un remolino de luz, vuela, se alinea y entra |
-| 70–80 | **gira**; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza |
+| 20–40 | **la llave** (la de la crate: Fantastic Key o la única) sale de un remolino de luz y flota girando |
+| 40–66 | **se lanza**: vuela en arco dando vueltas, con su estela |
+| 66 | **golpea el cofre**: destello, chispas, golpe de madera y amatista, sacudida de cámara; la llave rebota y se deshace; el cofre brinca y se tambalea |
+| 70–80 | el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza |
 | 84–102 | la crate tiembla, la luz se escapa por la tapa |
 | 102 | **¡se abre!**: la llave se deshace en chispas, la tapa salta, pilar de luz, onda, ráfaga de pétalos, más resplandor |
 | 110–252 | **la ruleta**: los premios suben y giran en un anillo encima de la crate; frena en el premio |

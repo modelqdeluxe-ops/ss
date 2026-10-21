@@ -652,13 +652,17 @@ public final class SanctuaryScene {
                 // que está 1/8 más baja: así no se ve la piedra de detrás (en la imagen, ahí brilla el agua)
                 float yb = isWater(x + d[0], y - 1, z + d[1]) ? y - 0.125F : y;
                 // (un pelo hacia fuera: la parte que baja queda en el plano de la piedra del escalón y perdería con ella)
+                // (y por los lados que dan al aire, un pelo más ancha: si no, entre la cara de frente y la del lado quedaba una
+                // rendija y se veía la piedra de detrás, una línea negra de arriba abajo; el dueño)
+                float ex0 = isWater(x - 1, y, z) ? 0.0F : 0.006F, ex1 = isWater(x + 1, y, z) ? 0.0F : 0.006F;
+                float ez0 = isWater(x, y, z - 1) ? 0.0F : 0.006F, ez1 = isWater(x, y, z + 1) ? 0.0F : 0.006F;
                 float[][] q;
                 if (d[1] != 0) {
                     float zz = (d[1] < 0 ? z0 : z1) + d[1] * 0.004F;
-                    q = new float[][] {{x0, y + h, zz}, {x1, y + h, zz}, {x1, yb, zz}, {x0, yb, zz}};
+                    q = new float[][] {{x0 - ex0, y + h, zz}, {x1 + ex1, y + h, zz}, {x1 + ex1, yb, zz}, {x0 - ex0, yb, zz}};
                 } else {
                     float xx = (d[0] < 0 ? x0 : x1) + d[0] * 0.004F;
-                    q = new float[][] {{xx, y + h, z0}, {xx, y + h, z1}, {xx, yb, z1}, {xx, yb, z0}};
+                    q = new float[][] {{xx, y + h, z0 - ez0}, {xx, y + h, z1 + ez1}, {xx, yb, z1 + ez1}, {xx, yb, z0 - ez0}};
                 }
                 for (float[] p : q) {
                     light(p[0], p[1], p[2], l);

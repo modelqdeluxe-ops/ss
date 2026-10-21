@@ -453,12 +453,17 @@ def water_mesh(sc, light, fullat):
             # que está 1/8 más baja: así no se ve la piedra de detrás (en la imagen, ahí brilla el agua)
             yb = y - 0.125 if is_water(x + dx, y - 1, z + dz) else y
             # (un pelo hacia fuera: la parte que baja queda en el plano de la piedra del escalón y perdería con ella)
+            # (por los lados que dan al aire, un pelo más ancha: si no, rendija entre la cara de frente y la del lado)
+            ex0 = 0.0 if is_water(x - 1, y, z) else 0.006
+            ex1 = 0.0 if is_water(x + 1, y, z) else 0.006
+            ez0 = 0.0 if is_water(x, y, z - 1) else 0.006
+            ez1 = 0.0 if is_water(x, y, z + 1) else 0.006
             if dz:
                 zz = (z0 if dz < 0 else z1) + dz * 0.004
-                c = [(x0, y + h, zz), (x1, y + h, zz), (x1, yb, zz), (x0, yb, zz)]
+                c = [(x0 - ex0, y + h, zz), (x1 + ex1, y + h, zz), (x1 + ex1, yb, zz), (x0 - ex0, yb, zz)]
             else:
                 xx = (x0 if dx < 0 else x1) + dx * 0.004
-                c = [(xx, y + h, z0), (xx, y + h, z1), (xx, yb, z1), (xx, yb, z0)]
+                c = [(xx, y + h, z0 - ez0), (xx, y + h, z1 + ez1), (xx, yb, z1 + ez1), (xx, yb, z0 - ez0)]
             vs = []
             for p in c:
                 wx, wy, wz = p
@@ -612,13 +617,13 @@ def effects(fx, t, lights, power=1.0):
     r, g, b = 1.0, 0.97, 0.84
     base = np.array([c[0], c[1] - 0.3, c[2]])
     top = base + sun * 26.0
-    br = 0.88 + 0.12 * math.sin(t * 0.05)
+    br = (0.88 + 0.12 * math.sin(t * 0.05)) * 2.2      # (= CinematicFx.sunShafts: el dueño, «el haz casi no se nota»)
     mid = base + sun * 9.0
     fx.band(base, mid, 3.4, 3.4, r, g, b, 0.02 * power * br, 0.03 * power * br)
     fx.band(mid, top, 3.4, 3.0, r, g, b, 0.03 * power * br, 0.05 * power * br)
     fx.band(base, mid, 2.2, 2.3, r, g, b, 0.03 * power * br, 0.05 * power * br, 0.16, 0.84)
     fx.band(mid, top, 2.3, 2.3, r, g, b, 0.05 * power * br, 0.08 * power * br, 0.16, 0.84)
-    fx.band(mid, top, 1.0, 1.2, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.03 * power, 0.08 * power, 0.12, 0.88)
+    fx.band(mid, top, 1.0, 1.2, (r + 1) / 2, (g + 1) / 2, (b + 1) / 2, 0.03 * power * br, 0.08 * power * br, 0.12, 0.88)
     # el sol que entra por el hueco: un foco blanco cálido donde el haz sale de las copas
     src = np.array(an['sunspot'][:3])
     fx.glow(*src, 3.0, 1.0, 0.90, 0.55, 0.8 * power)
@@ -639,8 +644,8 @@ def effects(fx, t, lights, power=1.0):
         a = (0.06 + 0.05 * math.sin(t * (0.03 + hsh(i, 9) * 0.04) + i * 2.1)) * power
         fx.band(b0, b1, 0.10 + hsh(i, 11) * 0.15, 0.2 + hsh(i, 13) * 0.3, 1, 0.97, 0.88, a * 0.5, a)
     # donde cae el haz: el charco de luz en el altar y en el agua
-    fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.12 * power)
-    fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.16 * power)
+    fx.flat(c[0], c[1] + 0.01, c[2], 2.6, r, g, b, 0.2 * power)
+    fx.flat(c[0], 0.895, c[2] - 1.0, 4.8, r, g, b, 0.26 * power)
     # la bruma del pie de cada cascada (CinematicFx.waterfallLights): los chorros de los lados, la cascada alta y cada salto
     # de la escalera
     for k, sp in enumerate(S.spring_points()):

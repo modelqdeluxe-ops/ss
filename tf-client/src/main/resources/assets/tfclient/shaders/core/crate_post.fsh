@@ -44,7 +44,7 @@ float godRays(vec2 p, vec2 sun, float aspect) {
             + pow(noise1(ang * 21.0 - 7.7 - Time * 0.009), 2.5) * 0.4;
     float down = 1.0 - smoothstep(0.25, 0.60, abs(ang));
     // (en la imagen del dueño llegan hasta la escalera de agua, no hasta el altar)
-    return s * down * exp(-r * 1.45) * smoothstep(0.0, 0.05, r) * (1.0 - smoothstep(0.32, 0.62, r));
+    return s * down * exp(-r * 1.1) * smoothstep(0.0, 0.05, r) * (1.0 - smoothstep(0.40, 0.75, r));
 }
 
 float linearDepth(float d) {
@@ -90,7 +90,7 @@ void main() {
     float aspect = ts.x / ts.y;
     vec2 sd = (uv - SunPos) * vec2(aspect, 1.0);
     // el foco del sol en el hueco (crema cálido, como en la imagen) y sus rayos
-    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 0.8 + exp(-dot(sd, sd) * 30.0) * 0.30) * SunVis;
+    vec3 shafts = vec3(1.0, 0.90, 0.64) * (godRays(uv, SunPos, aspect) * 1.35 + exp(-dot(sd, sd) * 30.0) * 0.30) * SunVis;
     vec3 col = c + b * BloomStrength + (rays * vec3(1.0, 0.92, 0.70) + shafts) * RayStrength;
     // la curva de tono, normalizada: lo que llega a 1 sale casi blanco (los brillos del agua, los faroles y el sol, como
     // en la imagen del dueño; sin normalizar nada pasaba de 0,79)
