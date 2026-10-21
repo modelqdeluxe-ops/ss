@@ -624,7 +624,7 @@ public class CrateCinematicScreen extends Screen {
     /** La luz de la llave: el remolino en que aparece, su halo, la estela, el destello al girar y las chispas al deshacerse. */
     private void keyLights(VertexConsumer vc, CinematicFx.View v, SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
-        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
+        Vector3f start = keyStart(k);
         int col = rarityColor;
         float r = ((col >> 16) & 255) / 255.0F, g = ((col >> 8) & 255) / 255.0F, b = (col & 255) / 255.0F;
         // el remolino: chispas que se juntan donde aparece la llave
@@ -685,10 +685,15 @@ public class CrateCinematicScreen extends Screen {
         }
     }
 
+    /** Donde aparece la llave: a la derecha del cofre, algo delante y por encima (dentro del cuadro de la cámara). */
+    private static Vector3f keyStart(Vector3f k) {
+        return new Vector3f(k.x + 1.15F, k.y + 0.45F, k.z + 1.15F);
+    }
+
     /** Dónde está la llave: flotando junto al cofre, volando en arco hasta su frente, y rebotando tras el golpe. */
     private Vector3f keyPos(SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
-        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
+        Vector3f start = keyStart(k);
         Vector3f hit = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.05F);
         if (t < KEY_THROW) {
             // (un poco hacia atrás antes de lanzarse: coge impulso)
@@ -699,7 +704,7 @@ public class CrateCinematicScreen extends Screen {
             float p = (t - KEY_THROW) / (KEY_IN - KEY_THROW);
             p = p * p * (0.6F + 0.4F * p);
             Vector3f from = new Vector3f(start.x + 0.15F, start.y + 0.12F, start.z + 0.2F);
-            Vector3f ctrl = new Vector3f((from.x + hit.x) * 0.5F, Math.max(from.y, hit.y) + 1.1F, (from.z + hit.z) * 0.5F);
+            Vector3f ctrl = new Vector3f((from.x + hit.x) * 0.5F, Math.max(from.y, hit.y) + 0.45F, (from.z + hit.z) * 0.5F);
             return bezier(from, ctrl, hit, p);
         }
         float s2 = (t - KEY_IN) / 10.0F;

@@ -192,17 +192,22 @@ public final class BossTestClient {
     private static long preOpenAt, poolAt;
 
     private static void crateShots(Minecraft mc) {
-        if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen pre
+        if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
                 && System.nanoTime() - preOpenAt > 600_000_000L) {
             preOpenShot = true;
             BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
             // y la de las recompensas, encima del santuario
             poolShot = false;
+            poolAt = 0L;
+        }
+        // (las recompensas, cuando ya se ha sacado la de antes de abrir)
+        if (!poolShot && poolAt == 0L && BossTest.SHOTS_PENDING.isEmpty()
+                && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen pre) {
             poolAt = System.nanoTime() + 300_000_000L;
             mc.setScreen(new net.tierrasfantasticas.tfclient.crates.client.screen.CratePoolScreen(preOpenCfg, pre));
         }
         if (!poolShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePoolScreen
-                && System.nanoTime() > poolAt) {
+                && poolAt != 0L && System.nanoTime() > poolAt) {
             poolShot = true;
             BossTest.clientShot("crate" + (crateRun + 1) + "_recompensas");
         }
