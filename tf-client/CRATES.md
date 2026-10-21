@@ -151,7 +151,13 @@ la imagen del dueño, el agua, las hadas y la luz en movimiento y el ambiente en
 reloj corre antes del tick 0, así que no sale nada de la apertura; al pulsar ABRIR la cinemática sigue desde el mismo
 encuadre). Antes salía negro: su fondo era el vídeo de la caja (si la caja tiene vídeo propio en el editor, sigue saliendo
 el vídeo) y la música de siempre (con el santuario, no). El mundo no se dibuja mientras tanto (`LevelRendererMixin`).
-La prueba saca su captura (`crateN_preabrir`).
+La prueba saca su captura (`crateN_preabrir`) y la de las recompensas (`crateN_recompensas`).
+Los botones son pequeños, de cristal oscuro, abajo del todo y sin sonido (`widget/GlassButton`: «ABRIR» y
+«RECOMPENSAS»; el dueño no quiere el sonido de amatista, que también se quitó de `FSButton` y del golpe de la llave).
+**Recompensas** (`CratePoolScreen`, rehecha): el santuario detrás, un panel de cristal con el título y una cuadrícula de
+premios en casillas del color de su rareza (de la más rara a la común); al pasar el ratón, nombre, rareza, probabilidad y
+lo que lleve; rueda para moverse; «VOLVER» abajo.
+**Las hadas**: solo puntitos de luz con su colita de chispas, sin alas (el dueño).
 
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
 dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con

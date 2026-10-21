@@ -588,39 +588,23 @@ public final class CinematicFx {
     }
 
     /**
-     * Las hadas: lucecitas de colores que vuelan con alas que baten, dejando una estela de chispas. Dos pasadas: la luz
-     * (GLOW_ADD, {@code wings} false) y las alas (SOFT, {@code wings} true); {@code excite} (la apertura) las aviva.
+     * Las hadas: puntitos de luz de colores que vuelan con su colita de chispas, sin alas (el dueño: «no pongas hadas,
+     * nada más partículas, puntitos simulando hadas sin alas con colita»); {@code excite} (la apertura) las aviva.
      */
-    public static void fairies(VertexConsumer vc, View v, SanctuaryScene sc, float t, float excite, boolean wings) {
+    public static void fairies(VertexConsumer vc, View v, SanctuaryScene sc, float t, float excite) {
         for (int i = 0; i < 10; i++) {
             Vector3f p = fairyAt(sc, i, t);
             int c = FAIRY[i];
             float r = ((c >> 16) & 255) / 255.0F, g = ((c >> 8) & 255) / 255.0F, b = (c & 255) / 255.0F;
-            if (wings) {
-                float flap = (float)Math.sin(t * 3.4F + i) * 0.9F;
-                // (las alas de un hada que pasa pegada a la cámara se veían como cuadriláteros blancos enormes)
-                float near = nearFade(v.eye, p.x, p.y, p.z, 0.3F);
-                if (near <= 0.01F) continue;
-                // (las alas, de cara a la cámara: de canto se veían como rayas claras finas)
-                for (int side = -1; side <= 1; side += 2) {
-                    float s = 0.11F;
-                    float c0 = side * (0.35F + 0.65F * Math.abs((float)Math.cos(flap))) * s, c1 = (float)Math.sin(flap) * s * 0.5F + 0.03F;
-                    float wx = v.right.x * c0 + v.up.x * c1, wy = v.right.y * c0 + v.up.y * c1, wz = v.right.z * c0 + v.up.z * c1;
-                    quad(vc, v.m, p.x + wx, p.y + wy, p.z + wz, wx, wy, wz, v.up.x * s * 0.55F, v.up.y * s * 0.55F, v.up.z * s * 0.55F,
-                            mix(r, 1, 0.6F), mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F * near);
-                }
-                continue;
-            }
-            VertexConsumer glowVc = vc;
-            // (chispitas, no orbes: en la imagen del dueño solo hay puntitos de luz)
             float pulse = 0.8F + 0.2F * (float)Math.sin(t * 0.6F + i * 2.0F);
-            glow(glowVc, v, p.x, p.y, p.z, 0.22F * pulse * (1 + excite * 0.4F), r, g, b, 0.45F);
-            glow(glowVc, v, p.x, p.y, p.z, 0.07F, 1, 1, 1, 0.9F);
-            for (int k = 1; k <= 12; k++) {
-                Vector3f q = fairyAt(sc, i, t - k * 0.9F);
-                float f = 1.0F - k / 13.0F;
-                float jx = (hash(i * 31 + k, 181) - 0.5F) * 0.12F, jy = (hash(i * 31 + k, 183) - 0.5F) * 0.12F - k * 0.012F;
-                glow(glowVc, v, q.x + jx, q.y + jy, q.z, 0.05F * f + 0.02F, mix(r, 1, 0.4F), mix(g, 1, 0.4F), mix(b, 1, 0.4F), 0.6F * f);
+            glow(vc, v, p.x, p.y, p.z, 0.16F * pulse * (1 + excite * 0.4F), r, g, b, 0.45F);
+            glow(vc, v, p.x, p.y, p.z, 0.05F, 1, 1, 1, 0.95F);
+            // la colita: chispas cada vez más pequeñas y tenues por donde ha pasado
+            for (int k = 1; k <= 18; k++) {
+                Vector3f q = fairyAt(sc, i, t - k * 0.55F);
+                float f = 1.0F - k / 19.0F;
+                float jy = -k * 0.006F;
+                glow(vc, v, q.x, q.y + jy, q.z, 0.035F * f + 0.012F, mix(r, 1, 0.4F), mix(g, 1, 0.4F), mix(b, 1, 0.4F), 0.65F * f * f);
             }
         }
     }

@@ -703,13 +703,12 @@ def effects(fx, t, lights, power=1.0):
         x, y, z = fairy_at(i, t)
         rr, gg, bb = rgb(FAIRY[i])
         pulse = 0.8 + 0.2 * math.sin(t * 0.6 + i * 2.0)
-        fx.glow(x, y, z, 0.22 * pulse, rr, gg, bb, 0.45)
-        fx.glow(x, y, z, 0.07, 1, 1, 1, 0.9)
-        for k in range(1, 13):
-            qx, qy, qz = fairy_at(i, t - k * 0.9)
-            ff = 1.0 - k / 13.0
-            fx.glow(qx + (hsh(i * 31 + k, 181) - 0.5) * 0.12, qy + (hsh(i * 31 + k, 183) - 0.5) * 0.12 - k * 0.012, qz,
-                    0.05 * ff + 0.02, (rr + 1) / 2, (gg + 1) / 2, (bb + 1) / 2, 0.6 * ff)
+        fx.glow(x, y, z, 0.16 * pulse, rr, gg, bb, 0.45)
+        fx.glow(x, y, z, 0.05, 1, 1, 1, 0.95)
+        for k in range(1, 19):     # la colita (sin alas: el dueño)
+            qx, qy, qz = fairy_at(i, t - k * 0.55)
+            ff = 1.0 - k / 19.0
+            fx.glow(qx, qy - k * 0.006, qz, 0.035 * ff + 0.012, rr * 0.6 + 0.4, gg * 0.6 + 0.4, bb * 0.6 + 0.4, 0.65 * ff * ff)
     # la bruma baja sobre el agua
     for i in range(26):
         x = -9.0 + hsh(i, 201) * 18.0

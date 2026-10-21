@@ -328,11 +328,9 @@ public class CrateCinematicScreen extends Screen {
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
             case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
             case KEY_IN -> {
-                // el golpe: la llave contra la madera del cofre y un tintineo mágico
+                // el golpe: la llave contra la madera del cofre (sin amatista: el dueño no la quiere)
                 ui(tf("llave_entra"), 0.9F, 1.0F);
                 ui(SoundEvents.WOOD_HIT, 0.8F, 0.8F);
-                ui(SoundEvents.AMETHYST_BLOCK_HIT, 0.9F, 1.3F);
-                ui(SoundEvents.AMETHYST_CLUSTER_BREAK, 0.5F, 1.6F);
             }
             case KEY_TURN0 + 2 -> ui(tf("llave_gira"), 0.6F, 1.0F);
             case RUNES0 + 2 -> ui(tf("runas"), 0.8F, 1.0F);
@@ -983,12 +981,11 @@ public class CrateCinematicScreen extends Screen {
             if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
-            // los pétalos de la apertura y del premio, y las alas de las hadas
+            // los pétalos de la apertura y del premio
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
             CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
             if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
-            CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
 
             // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
@@ -1001,7 +998,7 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.lightHalos(glow, fv, sc, t);
             CinematicFx.waterfallLights(glow, fv, sc, t);
             CinematicFx.fireflies(glow, fv, t);
-            CinematicFx.fairies(glow, fv, sc, t, excite, false);
+            CinematicFx.fairies(glow, fv, sc, t, excite);
             // el haz baja mientras gira la ruleta y en el premio (que no tape los premios)
             float ring = smooth(RING0, RING1, t) * (t >= REVEAL + 40 ? 1.0F - 0.5F * smooth(REVEAL + 40, REVEAL + 70, t) : 1.0F);
             float shaft = (1.0F + open * 0.5F) * (1.0F - 0.45F * ring);

@@ -180,20 +180,31 @@ public final class BossTestClient {
     static void showPreOpen(net.tierrasfantasticas.tfclient.crates.config.CrateConfig cfg, net.minecraft.core.BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
         mc.execute(() -> {
+            preOpenCfg = cfg;
             preOpenShot = false;
             preOpenAt = System.nanoTime();
             mc.setScreen(new net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen(cfg, pos));
         });
     }
 
-    private static boolean preOpenShot = true;
-    private static long preOpenAt;
+    private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig preOpenCfg;
+    private static boolean preOpenShot = true, poolShot = true;
+    private static long preOpenAt, poolAt;
 
     private static void crateShots(Minecraft mc) {
-        if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
-                && System.nanoTime() - preOpenAt > 1_000_000_000L) {
+        if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen pre
+                && System.nanoTime() - preOpenAt > 600_000_000L) {
             preOpenShot = true;
             BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
+            // y la de las recompensas, encima del santuario
+            poolShot = false;
+            poolAt = System.nanoTime() + 300_000_000L;
+            mc.setScreen(new net.tierrasfantasticas.tfclient.crates.client.screen.CratePoolScreen(preOpenCfg, pre));
+        }
+        if (!poolShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePoolScreen
+                && System.nanoTime() > poolAt) {
+            poolShot = true;
+            BossTest.clientShot("crate" + (crateRun + 1) + "_recompensas");
         }
         if (!(mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen cs)) return;
         if (cs != crateSeen) {

@@ -2,7 +2,7 @@ package net.tierrasfantasticas.tfclient.crates.client.screen;
 
 import net.tierrasfantasticas.tfclient.crates.client.color.FSTextStyle;
 import net.tierrasfantasticas.tfclient.crates.client.media.CrateMedia;
-import net.tierrasfantasticas.tfclient.crates.client.widget.FSButton;
+import net.tierrasfantasticas.tfclient.crates.client.widget.GlassButton;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
 import net.tierrasfantasticas.tfclient.crates.crate.LootEngine;
 import net.tierrasfantasticas.tfclient.crates.item.CrateItems;
@@ -38,8 +38,8 @@ public class CratePreOpenScreen extends Screen {
    private long openedAt;
    private int audioX;
    private int audioY;
-   private FSButton openButton;
-   private FSButton poolButton;
+   private GlassButton openButton;
+   private GlassButton poolButton;
    private static final long UI_SAFETY_MS = 15000L;
    private boolean confirming;
    private int confirmAcceptX;
@@ -79,13 +79,17 @@ public class CratePreOpenScreen extends Screen {
       }
 
       applyVolume();
-      int buttonWidth = Math.max(120, Math.max(this.font.width("ABRIR"), this.font.width("VER RECOMPENSAS")) + 28);
-      int gap = 10;
-      int startX = (this.width - (buttonWidth * 2 + gap)) / 2;
-      int buttonsY = this.height - 42;
-      this.openButton = (FSButton)this.addRenderableWidget(new FSButton(startX, buttonsY, buttonWidth, 20, Component.literal("ABRIR"), -11746198, this::onOpenPressed));
-      this.poolButton = (FSButton)this.addRenderableWidget(
-         new FSButton(startX + buttonWidth + gap, buttonsY, buttonWidth, 20, Component.literal("VER RECOMPENSAS"), -11884320, () -> {
+      // (pequeños y abajo del todo, de cristal y sin sonido: el dueño, «no quiero ver esos botones así… más pequeños, solo
+      // "recompensas" y más abajo de la pantalla»)
+      int accent = this.config.rarity == null ? 0xE070FF : this.config.rarity.rgb();
+      int openW = Math.max(64, GlassButton.widthFor(this.font, "ABRIR"));
+      int poolW = Math.max(64, GlassButton.widthFor(this.font, "RECOMPENSAS"));
+      int gap = 8;
+      int startX = (this.width - (openW + gap + poolW)) / 2;
+      int buttonsY = this.height - 22;
+      this.openButton = (GlassButton)this.addRenderableWidget(new GlassButton(startX, buttonsY, openW, 14, Component.literal("ABRIR"), accent, this::onOpenPressed));
+      this.poolButton = (GlassButton)this.addRenderableWidget(
+         new GlassButton(startX + openW + gap, buttonsY, poolW, 14, Component.literal("RECOMPENSAS"), accent, () -> {
             if (this.minecraft != null) {
                this.minecraft.setScreen(new CratePoolScreen(this.config, this));
             }
@@ -142,7 +146,7 @@ public class CratePreOpenScreen extends Screen {
 
       if (ready) {
          g.fillGradient(0, 0, this.width, 56, -1342177280, 0);
-         g.fillGradient(0, this.height - 76, this.width, this.height, 0, -1073741824);
+         g.fillGradient(0, this.height - 40, this.width, this.height, 0, 0x90000000);
          this.renderTexts(g);
          this.renderAudioControl(g, mouseX, mouseY);
          this.renderMediaProblems(g);
@@ -200,7 +204,7 @@ public class CratePreOpenScreen extends Screen {
       if (!this.notice.isEmpty() && System.currentTimeMillis() <= this.noticeUntil) {
          int textWidth = this.font.width(this.notice);
          int x = (this.width - textWidth) / 2;
-         int y = this.height - 74;
+         int y = this.height - 40;
          g.fill(x - 6, y - 4, x + textWidth + 6, y + 12, -1342177280);
          g.drawString(this.font, this.notice, x, y, -1, false);
       }
