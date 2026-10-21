@@ -59,7 +59,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.101, PUBLICADA) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.102) — lee esto primero
+
+**1.3.102: el sedal de los pescadores cuelga por su peso** (orden del dueño: «arregla ese porque quiero poner
+pescadores»). En el pack el sedal sube al cielo (hasta 10-13 bloques en «fishing» y «sitting»; el pez en el aire en
+«boat» e «interact»; es del pack, ModelEngine lo enseña igual). `tools/npcs/sedal.py` (lo pasa `build_npcs` antes de
+pegar) lo gira en cada fotograma para que cuelgue recto desde la punta de la caña, con el anzuelo y el pez debajo, en
+el agua. La caña y el largo del sedal, los del pack. Todo en `tf-client/NPCS.md` §3. Lo que queda: `NPCS-CONTINUAR.md`.
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.101, PUBLICADA)
 
 > **Publicada** como Release `tfclient-v1.3.101`. Lo que queda (restos de la plantilla del pack, el sedal del pescador)
 > está en **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**. Los packs de NPC no están en el repo.

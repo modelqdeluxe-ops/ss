@@ -138,12 +138,15 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin
-  modelo («command»), y **el sedal del pescador de «fishing», que sube al cielo**: es del pack, medido con las
-  cuentas de Blockbench (y con cualquier orden de ejes). En su pose de pesca el brazo va a −55° y la caña a −58°, así
-  que la caña queda a 113°, hacia atrás, y el sedal sigue hacia arriba hasta unos 10 bloques del suelo. En «boat» la
-  caña lleva +25° y sale bien. Todas sus animaciones tienen «override», así que no se suman. Parece una errata de signo
-  del autor: con +58° colgaría al agua. Se deja como en el pack (ModelEngine lo enseña igual); si el dueño lo quiere
-  arreglado, es cambiar esa animación del pack.
+  modelo («command»), y **el sedal de los pescadores, que sube al cielo** (ver abajo).
+- **El sedal de los pescadores cuelga por su peso (1.3.102, orden del dueño: «arregla ese porque quiero poner
+  pescadores»)**. En el pack (y en ModelEngine, igual) el sedal (`bone2`, hijo de la punta de la caña `tool`) sube: en
+  «fishing» y «sitting» a 71-76° sobre la horizontal y hasta 10-13 bloques de alto; en «interact» y al sacar el pez en
+  «boat», el pez queda en el aire (hasta 8,3 bloques). `tools/npcs/sedal.py` (lo llama `build_npcs`, antes de pegar) gira
+  en cada fotograma el sedal lo mínimo para que apunte recto hacia abajo desde la punta de la caña, con el anzuelo y el pez
+  colgando debajo: en las 5 animaciones con sedal, como mucho −89,9° (−90 = vertical); el pez, en el agua (de −0,9 a −5,4
+  bloques en «boat», unos −4 en «fishing»). La caña, los brazos y el largo del sedal son los del pack. Solo su pista de
+  giro, lineal a 60 por segundo. Volver a pasarlo no cambia nada.
 
 ## 4. Comprobarlo
 

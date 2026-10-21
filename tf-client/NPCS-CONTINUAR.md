@@ -1,4 +1,4 @@
-# Prompt de continuación — NPC de escenas (TF Client 1.3.101, PUBLICADA)
+# Prompt de continuación — NPC de escenas (TF Client 1.3.102)
 
 > Escrito el 21 oct 2026. Cómo funciona todo: `tf-client/NPCS.md`. Estado general: CHECKPOINT de `HANDOFF.md`.
 
@@ -6,7 +6,8 @@
 
 Eres la IA que sigue los **NPC de escenas** de TF Client en el repo `modelqdeluxe-ops/ss`. La **1.3.101 está publicada**
 (Release `tfclient-v1.3.101`): los 13 packs de Scenes (130 NPC + 4 marcadores) en el jar, el panel de `/tf npc` y la
-cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones. La siguiente versión es la 1.3.102.
+cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones. La **1.3.102** cuelga el sedal de los
+pescadores por su peso (`tools/npcs/sedal.py`). La siguiente versión es la 1.3.103.
 
 ## Reglas del dueño (no se rompen)
 
@@ -33,9 +34,7 @@ cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones. La 
    `python3 tf-client/tools/npcs/pegar.py --procesos 4 --animaciones <fichero «modelo:animación»>` (en tandas de menos de
    2 h: el contenedor corta los procesos de fondo a las 2 h). Luego `pegado.py` con y sin `--plantilla`, rejilla y
    `--azar 500` con semillas nuevas, hasta «todo pegado».
-2. **El sedal del pescador** («fishing») sube al cielo: es del pack (NPCS.md §3, «Fallos del propio pack»). Si el dueño
-   lo quiere arreglado, es cambiar esa animación del pack (con +58° en vez de −58° en la caña colgaría al agua).
-3. **El minero no muerto** se quema al sol (es un ZOMBIE sin `PreventSunburn`, igual en MythicMobs).
+2. **El minero no muerto** se quema al sol (es un ZOMBIE sin `PreventSunburn`, igual en MythicMobs).
 
 ## Cómo se comprueba (NPCS.md §4)
 

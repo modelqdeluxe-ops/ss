@@ -54,6 +54,10 @@ public final class BossTestClient {
             return;
         }
         if (mc.level != null && mc.screen != null && mc.screen.isPauseScreen()) mc.setScreen(null);
+        if (BossTest.closeScreen) {
+            BossTest.closeScreen = false;
+            mc.setScreen(null);
+        }
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
         BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();
