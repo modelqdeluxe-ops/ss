@@ -597,12 +597,15 @@ public final class CinematicFx {
                 dx /= l;
                 dz /= l;
                 float flap = (float)Math.sin(t * 3.4F + i) * 0.9F;
+                // (las alas de un hada que pasa pegada a la cámara se veían como cuadriláteros blancos enormes)
+                float near = nearFade(v.eye, p.x, p.y, p.z, 0.3F);
+                if (near <= 0.01F) continue;
                 for (int side = -1; side <= 1; side += 2) {
                     float s = 0.11F;
                     float wx = -dz * side * (float)Math.cos(flap) * s, wy = (float)Math.sin(flap) * s * 0.8F + 0.04F,
                             wz = dx * side * (float)Math.cos(flap) * s;
                     quad(vc, v.m, p.x + wx, p.y + wy, p.z + wz, wx, wy, wz, dx * s * 0.6F, 0.02F, dz * s * 0.6F, mix(r, 1, 0.6F),
-                            mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F);
+                            mix(g, 1, 0.6F), mix(b, 1, 0.6F), 0.42F * near);
                 }
                 continue;
             }

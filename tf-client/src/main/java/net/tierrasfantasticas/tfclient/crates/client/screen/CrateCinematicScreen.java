@@ -485,7 +485,10 @@ public class CrateCinematicScreen extends Screen {
             float c1 = 1.70158F, c3 = c1 + 1.0F;
             return 106.0F * (1.0F + c3 * (float)Math.pow(p - 1, 3) + c1 * (float)Math.pow(p - 1, 2));
         }
-        return 100.0F + 6.0F * (float)Math.exp(-(s - 8.0F) * 0.22F) * (float)Math.cos((s - 8.0F) * 0.8F);
+        float open = 100.0F + 6.0F * (float)Math.exp(-(s - 8.0F) * 0.22F) * (float)Math.cos((s - 8.0F) * 0.8F);
+        // al salir el premio la tapa se cierra despacio (abierta quedaba justo detrás del premio, como un cuadrado de color
+        // pegado a él: el dueño, «que no traspase ese brillo al item»)
+        return open * (1.0F - smooth(REVEAL - 6, REVEAL + 10, t));
     }
 
     private void drawCrate(PoseStack pose, MultiBufferSource buf, SanctuaryScene sc, float t) {
