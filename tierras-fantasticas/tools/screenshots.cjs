@@ -16,8 +16,14 @@ const { chromium } = require(process.env.PW || 'playwright');
       await page.evaluate(() => { document.querySelectorAll('.reveal').forEach((e) => e.classList.add('in')); document.querySelectorAll('img[loading=lazy]').forEach((i) => (i.loading = 'eager')); });
       await page.waitForTimeout(1500);
       const file = `${out}/${name}${p.replace(/[\/#?=]/g, '_') || '_home'}.png`;
-      await page.screenshot({ path: file, fullPage: true });
-      console.log(file, await page.evaluate(() => document.documentElement.scrollWidth + 'x' + document.documentElement.scrollHeight));
+      // La ventana se estira a la altura de la página (la captura «fullPage» de Chromium sin tarjeta gráfica pinta a
+      // veces las capas fijas del fondo encima del contenido y sale todo apagado)
+      const size = await page.evaluate(() => document.documentElement.scrollWidth + 'x' + document.documentElement.scrollHeight);
+      await page.setViewportSize({ width: w, height: Math.min(16000, Number(size.split('x')[1])) });
+      await page.waitForTimeout(800);
+      await page.screenshot({ path: file, timeout: 180000 });
+      await page.setViewportSize({ width: w, height: h });
+      console.log(file, size);
     }
     await ctx.close();
   }

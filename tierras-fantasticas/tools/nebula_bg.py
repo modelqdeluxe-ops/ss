@@ -1,4 +1,5 @@
-"""Fondo vivo de la web: el reino de noche oscurecido con una nebulosa de neón (rosa, violeta y cian), sin estrellas.
+"""Fondo vivo de la web: el reino de noche (azul de luna) con una aurora boreal (esmeralda, turquesa y azul), sin
+estrellas. Desde el 21 oct. 2026 nada morado ni rosa: el dueño pidió «quita ese diseño morado».
 
 Uso: python3 tools/nebula_bg.py
 Lee public/img/night-1672.webp y escribe en public/img/:
@@ -19,9 +20,10 @@ IMG = os.path.join(HERE, '..', 'public', 'img')
 SIZES = (768, 1280, 1672)
 SEED = 7
 
-MAGENTA = np.array([1.0, 0.22, 0.80])
-VIOLET = np.array([0.52, 0.26, 1.0])
-CYAN = np.array([0.12, 0.78, 1.0])
+# Los nombres antiguos se quedan (las listas de nubes los usan), pero ya son los colores de la aurora
+MAGENTA = np.array([0.10, 1.0, 0.55])   # esmeralda
+VIOLET = np.array([0.05, 0.80, 0.80])   # turquesa
+CYAN = np.array([0.20, 0.55, 1.0])      # azul
 
 
 def noise(w, h, cells, rng, blur=0.6):
@@ -55,17 +57,15 @@ def blob(u, v, cx, cy, rx, ry, angle=0.0):
 
 # Nubes de cada capa: (color, centro x, centro y, radio x, radio y, giro, fuerza), en fracciones de la imagen
 CLOUDS_A = [
-    (MAGENTA, 0.80, 0.18, 0.36, 0.22, -0.35, 0.78),
-    (VIOLET, 0.50, 0.30, 0.58, 0.18, -0.42, 0.85),
-    (CYAN, 0.16, 0.14, 0.26, 0.15, 0.25, 0.75),
-    (MAGENTA, 0.08, 0.72, 0.22, 0.16, 0.5, 0.45),
-    (VIOLET, 0.95, 0.62, 0.20, 0.18, 0.0, 0.40),
+    (MAGENTA, 0.62, 0.20, 0.62, 0.09, -0.30, 0.85),
+    (VIOLET, 0.30, 0.32, 0.50, 0.08, -0.18, 0.70),
+    (CYAN, 0.85, 0.10, 0.36, 0.10, -0.45, 0.70),
+    (MAGENTA, 0.12, 0.16, 0.30, 0.07, 0.20, 0.50),
 ]
 CLOUDS_B = [
-    (CYAN, 0.66, 0.10, 0.30, 0.16, 0.3, 0.70),
-    (MAGENTA, 0.32, 0.26, 0.34, 0.15, -0.6, 0.80),
-    (VIOLET, 0.90, 0.40, 0.24, 0.22, 0.4, 0.60),
-    (CYAN, 0.12, 0.55, 0.20, 0.14, -0.2, 0.40),
+    (VIOLET, 0.70, 0.14, 0.56, 0.08, -0.38, 0.80),
+    (MAGENTA, 0.36, 0.24, 0.48, 0.07, -0.10, 0.75),
+    (CYAN, 0.10, 0.08, 0.30, 0.09, 0.25, 0.55),
 ]
 
 
@@ -85,7 +85,7 @@ def nebula(w, h, rng, clouds):
         out += color * (shape * ridge ** 6 * power * 0.55)[..., None]
     # Núcleos casi blancos donde se juntan las nubes
     glow = np.clip(out.max(axis=2) - 0.8, 0, 1)
-    out += np.array([1.0, 0.85, 1.0]) * (glow ** 1.5 * 0.35)[..., None]
+    out += np.array([0.85, 1.0, 0.95]) * (glow ** 1.5 * 0.35)[..., None]
     # Más fuerte en el cielo; abajo (el valle) solo un reflejo
     out *= (0.30 + 0.70 * np.clip(1.25 - v * 1.35, 0, 1))[..., None]
     return np.clip(out, 0, 1)
@@ -105,10 +105,10 @@ def base(width=1672):
     img = Image.open(os.path.join(IMG, 'night-1672.webp')).convert('RGB')
     h = round(img.height * width / img.width)
     img = np.asarray(img.resize((width, h), Image.LANCZOS), dtype=np.float32) / 255.0
-    # El reino, mucho más oscuro y hacia el índigo: queda la silueta (castillo, árboles, luna)
+    # El reino, más oscuro y hacia el azul de la noche: queda la silueta (castillo, árboles, luna)
     lum = img.mean(axis=2, keepdims=True)
-    indigo = np.array([0.22, 0.17, 0.46])
-    dark = (img * 0.5 + lum * indigo * 1.0) * 0.40
+    night = np.array([0.14, 0.24, 0.42])
+    dark = (img * 0.6 + lum * night * 1.0) * 0.46
     small = nebula(420, round(420 * h / width), rng, CLOUDS_A)
     neb = np.asarray(Image.fromarray((small * 255).astype(np.uint8)).resize((width, h), Image.BICUBIC)
                      .filter(ImageFilter.GaussianBlur(width / 900)), np.float32) / 255.0 * 0.35
@@ -148,7 +148,7 @@ def stars(seed, size=512, count=90):  # ya no se usa: el dueño quitó las estre
         a[sl] = np.maximum(a[sl], spot)
     img = Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).resize((size, size), Image.LANCZOS)
     alpha = np.asarray(img, np.float32) / 255.0
-    tint = np.array([0.92, 0.9, 1.0])
+    tint = np.array([0.9, 0.95, 1.0])
     rgba = np.dstack([np.ones((size, size, 3)) * tint, alpha])
     return Image.fromarray((rgba * 255).astype(np.uint8), 'RGBA')
 

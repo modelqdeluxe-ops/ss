@@ -1,55 +1,62 @@
 /* Tierras Fantásticas — estilos de la web.
-   Concepto «nebulosa de neón»: el reino de noche bajo una nebulosa rosa, violeta y cian (una sola imagen fija),
-   tipografía Unbounded (titulares) y Figtree (texto), tarjetas opacas con filo claro que se separan del fondo y botones
-   con volumen de bloque (se elevan, brillan y cambian de color al pasar el ratón y se hunden al pulsar). Una sola
-   paleta: rosa neón, violeta y cian sobre índigo. Pensado primero para el móvil: sin desenfoques ni capas fijas; lo que se anima solo usa transform y
-   opacity, y todo se apaga con «reducir movimiento». Orden: tokens → base → carga → botones → cabecera → portada →
-   bloques comunes → pie → tienda → ventanas → cuenta → probador → tamaños de pantalla. */
+   Concepto «Portal del reino» (21 oct. 2026, el «cambio de aires» que pidió el dueño): el reino de noche (azul de
+   luna) con una aurora boreal animada (esmeralda, turquesa y azul; tools/nebula_bg.py) y, encima, todo MACIZO:
+   cabecera sólida, tarjetas de pizarra azul marino con su borde visible, botones de color liso con volumen de bloque.
+   Nada translúcido a la vista y NADA MORADO NI ROSA (el dueño: «quita ese diseño morado»; los nombres --a-*, --violet
+   y --pri-* se quedan por compatibilidad, pero ya son los colores de la aurora). Botón principal azul, comprar ámbar,
+   gratis esmeralda.
+   Tipografía: Unbounded solo en los titulares grandes (h1/h2) y Figtree en todo lo demás (botones y etiquetas en
+   minúscula, sin letras espaciadas en mayúsculas). Lo memorable es el portal de la portada: el emblema sobre un aro
+   de neón que gira despacio y sigue al ratón. Pensado primero para el móvil: lo que se anima solo usa transform y
+   opacity, y todo se apaga con «reducir movimiento».
+   Orden: tokens → base → carga → botones → cabecera → portada → bloques comunes → páginas → pie → tienda → ventanas →
+   cuenta → probador → tamaños de pantalla. */
 
 /* ---------- Tokens ---------- */
 
 :root {
-  /* Noche de neón: fondo índigo casi negro, superficies violeta oscuro y acentos rosa neón, violeta y cian */
-  --bg: #07061a;
-  --bg-2: #0b0920;
-  --bg-rgb: 7 6 26;
-  --s0: #0e0b24;
-  --s1: #13102e;
-  --s1-rgb: 19 16 46;
-  --s2: #1a1640;
-  --s3: #231d52;
-  --s4: #2e2768;
-  --line-rgb: 196 176 255;
-  --bd: rgb(var(--line-rgb) / 0.13);
-  --bd-2: rgb(var(--line-rgb) / 0.24);
-  --text: #f7f4ff;
-  --text-2: #d6cff2;
-  --muted: #a39cc8;
-  --faint: #6c6591;
-  /* Acento principal: rosa neón (los nombres --a-* sustituyen al verde de antes) */
-  --a-200: #ffd8f7;
-  --a-300: #ffa3ef;
-  --a-400: #ff5edb;
-  --a-500: #e23cc8;
-  --a-600: #a91aa0;
-  --a-rgb: 255 94 219;
-  --a2-rgb: 226 60 200;
-  --a3-rgb: 255 163 239;
+  /* Noche: fondo azul marino casi negro y superficies de pizarra azul, cada una más clara que la anterior (todas
+     macizas) */
+  --bg: #060b14;
+  --bg-2: #08101b;
+  --bg-rgb: 6 11 20;
+  --s0: #0a1220;
+  --s1: #111e31;
+  --s1-rgb: 14 24 41;
+  --s2: #17273d;
+  --s3: #1f314a;
+  --s4: #2a405e;
+  --line-rgb: 170 200 235;
+  /* Bordes macizos (antes eran blancos semitransparentes) */
+  --bd: #253955;
+  --bd-2: #365176;
+  --text: #f3f8ff;
+  --text-2: #cdd8e8;
+  --muted: #93a6bf;
+  --faint: #6b7f9b;
+  /* Acento: verde aurora (foco, lo elegido, enlaces) */
+  --a-200: #c9ffe9;
+  --a-300: #7ff5c4;
+  --a-400: #2fe6a0;
+  --a-500: #16c487;
+  --a-600: #0e8f62;
+  --a-rgb: 47 230 160;
+  --a2-rgb: 22 196 135;
+  --a3-rgb: 127 245 196;
   --on-accent: #ffffff;
   --on-accent-rgb: 255 255 255;
-  /* Botón principal y elementos activos: degradado rosa → violeta → índigo */
-  --pri-a: #ff6ad9;
-  --pri-b: #8f45f5;
-  --pri-lip: #3e1478;
-  --pri-grad: linear-gradient(135deg, #ff5ed5 0%, #b04cf2 52%, #6f5cff 100%);
-  /* El destello de los botones: rosa → violeta → azul → cian (el doble de ancho, se desliza al pasar el ratón) */
-  --shimmer: linear-gradient(110deg, #ff5ed5 0%, #b04cf2 30%, #6f5cff 55%, #3fc8ff 80%, #ff5ed5 100%);
-  /* El mismo destello en esmeralda vivo → turquesa → azul (botón «Visitar la tienda» de la portada) */
-  --shimmer-sea: linear-gradient(110deg, #057a55 0%, #0b7d6e 28%, #0b6f8c 55%, #1f4fc4 80%, #057a55 100%);
-  --violet: #a78bfa;
-  --violet-2: #7c3aed;
-  --v-rgb: 167 139 250;
-  --v2-rgb: 124 58 237;
+  --pri-a: #2fe6a0;
+  --pri-b: #2b7bf0;
+  --pri-lip: #123f8c;
+  --pri-grad: linear-gradient(135deg, #2fe6a0 0%, #16c4a8 52%, #3b8cff 100%);
+  --shimmer: linear-gradient(110deg, #2fe6a0 0%, #16c4a8 30%, #3b8cff 55%, #3fc8ff 80%, #2fe6a0 100%);
+  --shimmer-sea: linear-gradient(110deg, #057a55 0%, #0b7d6e 28%, #0b6f8c 55%, #1f64c4 80%, #057a55 100%);
+  /* El aro del portal: los colores de la aurora */
+  --neon-ring: conic-gradient(from 0deg, #2fe6a0, #16c4a8, #3b8cff, #45e9ff, #2b7bf0, #2fe6a0);
+  --violet: #5ee0d0;
+  --violet-2: #1d8fb0;
+  --v-rgb: 94 224 208;
+  --v2-rgb: 29 143 176;
   --cyan: #45e9ff;
   --c-rgb: 69 233 255;
   --ok: #3dffa8;
@@ -58,23 +65,20 @@
   --red: #ff6b8b;
   --r-sm: 8px;
   --r: 12px;
-  --r-lg: 18px;
-  --r-xl: 26px;
+  --r-lg: 16px;
+  --r-xl: 22px;
   --wrap: 1200px;
-  --gutter: 18px;
-  --header-h: 68px;
+  --gutter: 16px;
+  --header-h: 64px;
   --font-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
   --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(4, 2, 16, 0.55), 0 22px 46px -20px rgba(0, 0, 0, 0.95);
-  /* Superficie de las tarjetas: pizarra azul (no violeta como el cielo), opaca y más clara que el fondo, para que se
-     distinga siempre de la nebulosa */
-  --surface: linear-gradient(180deg, #1d2450 0%, #171d42 55%, #121734 100%);
-  --surface-2: #232b5c;
-  --surface-3: #2b3570;
-  /* Colores por función: cada acción con el suyo, así nunca se confunden
-     comprar = oro · gratis/obtener = esmeralda · secundario = cian · elegido/marca = destello rosa */
+  /* Sombra de las tarjetas: un filo de luz arriba y dos sombras (la cercana y la lejana) */
+  --card-shadow: inset 0 1px 0 #2c4466, 0 2px 4px -2px #000, 0 24px 44px -26px #000;
+  --surface: #121e2f;
+  --surface-2: #1b2b42;
+  --surface-3: #253954;
   --buy-grad: linear-gradient(110deg, #fff0a6 0%, #ffd34d 28%, #ffad2e 60%, #ff8a3d 82%, #fff0a6 100%);
   --buy-lip: #8a4705;
   --buy-fg: #2a1500;
@@ -88,51 +92,49 @@
   --tone-gratis: #46f0a6;
   --tone-rangos: #fcc94a;
   --tone-cosmeticos: #ff6fd8;
-  --tone-crates: #a78bfa;
+  --tone-crates: #3ee08f;
   --tone-vfx: #45e9ff;
   --tone-monedas: #ffb23a;
   --tone-skills: #ff6b5b;
   /* Fondo de las vistas previas (Skills y VFX): va pintado en las imágenes de Skills (tools/skills.py → PREVIEW_BG,
      el mismo color; si cambia uno, cambia el otro) */
   --sk-bg: #0c0f1f;
-  /* Tienda (rework oct. 2026): paleta sobria y legible. Superficies lisas de pizarra índigo con un borde que se ve,
-     texto claro y botones de color sólido, cada acción con el suyo:
-     comprar = ámbar · gratis/obtener = esmeralda · equipar/usar/elegido = magenta de la marca · secundario = pizarra */
-  --ui-0: #0c0f1f;
-  --ui-1: #141936;
-  --ui-2: #1c2247;
-  --ui-3: #262d5c;
-  --ui-line: #2e3768;
-  --ui-line-2: #4a5596;
-  --ui-text: #f3f4fb;
-  --ui-text-2: #c7cbe6;
-  --ui-muted: #9095bd;
-  --brand: #a933c9;
-  --brand-hover: #b941d9;
-  --brand-lip: #5c1572;
+  /* Colores de las acciones, los mismos en toda la web:
+     comprar = ámbar · gratis/obtener = esmeralda · marca/equipar/elegido = azul · secundario = pizarra */
+  --ui-0: #0c141f;
+  --ui-1: #142236;
+  --ui-2: #1c2e47;
+  --ui-3: #263c5c;
+  --ui-line: #2e4668;
+  --ui-line-2: #4a6a96;
+  --ui-text: #f3f6fb;
+  --ui-text-2: #c7d4e6;
+  --ui-muted: #90a3bd;
+  --brand: #2b7bf0;
+  --brand-hover: #4a8ff5;
+  --brand-lip: #123f8c;
   --buy: #ffc23d;
   --buy-hover: #ffcd5e;
   --buy-ink: #1f1400;
   --get: #27c98a;
   --get-hover: #36d897;
   --get-ink: #03261a;
-  --sec: #2a3266;
-  --sec-hover: #343d78;
-  --sec-lip: #11163a;
+  --sec: #263d5e;
+  --sec-hover: #314c71;
+  --sec-lip: #10213a;
   --ok-2: #34d399;
   --tone: var(--a-400);
-  --neon-border: linear-gradient(135deg, rgb(var(--a-rgb) / 0.7), rgb(var(--v-rgb) / 0.35) 45%, rgb(var(--c-rgb) / 0.6));
-  /* Neón de los bordes: un filo fino de luz y un halo suave alrededor (nunca en las letras) */
-  --edge: rgb(150 172 255 / 0.24);
-  --edge-hot: rgb(var(--a-rgb) / 0.8);
-  --haze: 0 0 30px -16px rgb(40 60 160 / 0.9);
-  --haze-hot: 0 0 0 1px rgb(var(--a-rgb) / 0.3), 0 0 36px -6px rgb(var(--a-rgb) / 0.6), 0 0 70px -18px rgb(var(--c-rgb) / 0.5);
+  --neon-border: linear-gradient(135deg, #2fe6a0, #2dd4bf 45%, #45e9ff);
+  --edge: #263b58;
+  --edge-hot: #2fe6a0;
+  --haze: 0 0 #0000;
+  --haze-hot: 0 0 0 1px #2fe6a0, 0 18px 40px -18px #0e8f62;
   --grid-lines:
-    linear-gradient(rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px,
-    linear-gradient(90deg, rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px;
+    linear-gradient(#142338 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, #142338 1px, transparent 1px) 0 0 / 44px 44px;
   /* Textura de las placas de la tienda: grano fino de ruido (blanco al 6 %), sobre colores opacos */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff5edb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232fe6a0' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
   color-scheme: dark;
   interpolate-size: allow-keywords;
 }
@@ -170,7 +172,7 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.08) 0%, rgb(var(--bg-rgb) / 0.3) 50%, rgb(var(--bg-rgb) / 0.62) 100%),
+    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.12) 0%, rgb(var(--bg-rgb) / 0.42) 55%, rgb(var(--bg-rgb) / 0.72) 100%),
     url('/img/nebula-1672.webp') 62% 30% / cover no-repeat,
     var(--bg);
   transform-origin: 70% 30%;
@@ -220,9 +222,9 @@ body::before {
 .sky .neb-glow {
   inset: -30%;
   background:
-    radial-gradient(28% 22% at 30% 35%, rgb(var(--a-rgb) / 0.34), transparent 70%),
-    radial-gradient(24% 20% at 70% 55%, rgb(var(--c-rgb) / 0.26), transparent 70%),
-    radial-gradient(30% 24% at 55% 20%, rgb(var(--a2-rgb) / 0.3), transparent 70%);
+    radial-gradient(28% 22% at 30% 35%, rgb(var(--a-rgb) / 0.3), transparent 70%),
+    radial-gradient(24% 20% at 70% 55%, rgb(var(--c-rgb) / 0.22), transparent 70%),
+    radial-gradient(30% 24% at 55% 20%, rgb(var(--a2-rgb) / 0.26), transparent 70%);
   animation: neb-glow 18s ease-in-out infinite alternate;
 }
 
@@ -278,7 +280,7 @@ body::before {
   }
 }
 
-/* Viñeta: oscurece los bordes de la pantalla para que el contenido mande */
+/* Viñeta: oscurece los bordes y la parte de abajo para que el contenido mande */
 body::after {
   content: '';
   position: fixed;
@@ -286,14 +288,14 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 45% at 0% 100%, rgb(var(--a2-rgb) / 0.12), transparent 70%),
-    radial-gradient(130% 90% at 50% 40%, transparent 50%, rgb(var(--bg-rgb) / 0.7) 100%);
+    linear-gradient(180deg, transparent 45%, rgb(var(--bg-rgb) / 0.55) 100%),
+    radial-gradient(130% 90% at 50% 35%, transparent 50%, rgb(var(--bg-rgb) / 0.75) 100%);
 }
 
 @media (max-width: 760px) {
   body::before {
     background:
-      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.06) 0%, rgb(var(--bg-rgb) / 0.32) 50%, rgb(var(--bg-rgb) / 0.66) 100%),
+      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.1) 0%, rgb(var(--bg-rgb) / 0.45) 50%, rgb(var(--bg-rgb) / 0.75) 100%),
       url('/img/nebula-768.webp') 72% 30% / cover no-repeat,
       var(--bg);
   }
@@ -324,6 +326,13 @@ button {
   cursor: pointer;
 }
 
+a,
+button,
+summary {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 :focus-visible {
   outline: 2px solid var(--a-300);
   outline-offset: 3px;
@@ -331,7 +340,7 @@ button {
 }
 
 ::selection {
-  background: rgb(var(--a-rgb) / 0.35);
+  background: var(--a-600);
   color: #fff;
 }
 
@@ -387,6 +396,7 @@ button {
 
 /* ---------- Tipografía ---------- */
 
+/* Unbounded solo en los titulares grandes; los h3/h4 (tarjetas, pasos, preguntas) van en Figtree */
 h1,
 h2,
 h3,
@@ -396,37 +406,47 @@ h4 {
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+h3,
+h4 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: -0.005em;
 }
 
 .h2,
 .section-head h2 {
-  font: 700 clamp(26px, 4.6vw, 44px) / 1.12 var(--font-display);
-  letter-spacing: -0.02em;
+  font: 700 clamp(26px, 4.2vw, 40px) / 1.12 var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 .lead {
   color: var(--text-2);
   font-size: 18px;
+  text-wrap: pretty;
 }
 
+/* Etiqueta pequeña sobre un título: en el color de la sección, en minúscula y sin cápsula */
 .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 30px;
-  padding: 0 13px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--a-rgb) / 0.25);
-  background: rgb(var(--a-rgb) / 0.09);
   color: var(--a-300);
-  font: 800 11.5px/1 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font: 700 14px/1.2 var(--font-body);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
 }
 
 .text-grad {
-  /* Palabra destacada: color liso, sin brillo ni degradado (el neón va en bordes y botones, no en las letras) */
-  color: #e8cdfc;
+  color: #c9f5e3;
 }
 
 .muted {
@@ -447,7 +467,7 @@ h4 {
 }
 
 .section {
-  padding-block: 72px;
+  padding-block: 56px;
 }
 
 .section.pt-0 {
@@ -455,55 +475,32 @@ h4 {
 }
 
 .section.pt-sm {
-  padding-top: 36px;
+  padding-top: 24px;
 }
 
 .section-head {
-  max-width: 700px;
-  margin-bottom: 36px;
+  max-width: 680px;
+  margin-bottom: 28px;
 }
 
 .section-head h2 {
-  margin-top: 16px;
+  margin-top: 10px;
+}
+
+.section-head h2:first-child {
+  margin-top: 0;
 }
 
 .section-head p {
-  margin: 14px 0 0;
+  margin: 12px 0 0;
   color: var(--text-2);
   font-size: 17px;
-  text-shadow: 0 1px 12px rgb(var(--bg-rgb) / 0.9);
+  text-wrap: pretty;
 }
 
 .section-head.center {
   margin-inline: auto;
   text-align: center;
-}
-
-/* Filo de neón bajo cada cabecera de sección (se dibuja de izquierda a derecha al aparecer) */
-.section-head::after {
-  content: '';
-  display: block;
-  width: 84px;
-  height: 3px;
-  margin-top: 20px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
-  box-shadow: 0 0 14px rgb(var(--a-rgb) / 0.55);
-  transform-origin: 0 50%;
-  transition: transform 0.9s var(--ease) 0.25s;
-}
-
-.section-head.center::after {
-  margin-inline: auto;
-  transform-origin: 50% 50%;
-}
-
-.split-head::after {
-  display: none;
-}
-
-.js .section-head.reveal:not(.in)::after {
-  transform: scaleX(0);
 }
 
 .split-head {
@@ -532,9 +529,7 @@ h4 {
   z-index: 1000;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(60% 50% at 50% 42%, rgb(var(--a2-rgb) / 0.16), transparent 70%),
-    var(--bg);
+  background: var(--bg);
   transition:
     opacity 0.55s var(--ease),
     visibility 0s linear 0.55s;
@@ -563,14 +558,14 @@ h4 {
   animation: float 3s ease-in-out infinite;
 }
 
-/* Barra como la de experiencia de Minecraft: bloques verdes que avanzan */
+/* Barra como la de experiencia de Minecraft: bloques que avanzan */
 .loader-bar {
   width: 200px;
   height: 10px;
   margin: 26px 0 14px;
   padding: 2px;
   border-radius: 4px;
-  background: var(--bg);
+  background: var(--s0);
   box-shadow: inset 0 0 0 1px var(--bd-2);
   overflow: hidden;
 }
@@ -580,16 +575,13 @@ h4 {
   width: 45%;
   height: 100%;
   border-radius: 2px;
-  background: repeating-linear-gradient(90deg, var(--a-400) 0 16px, transparent 16px 19px);
-  box-shadow: 0 0 12px rgb(var(--a-rgb) / 0.6);
+  background: repeating-linear-gradient(90deg, var(--a-400) 0 16px, var(--s0) 16px 19px);
   animation: load-bar 1.15s var(--ease) infinite;
 }
 
 .loader span {
   color: var(--muted);
-  font: 600 12px/1 var(--font-display);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font: 600 14px/1 var(--font-body);
 }
 
 @keyframes load-bar {
@@ -628,7 +620,7 @@ h4 {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(90deg, var(--s2), var(--s3), var(--s2));
   transform: translateX(-100%);
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -669,8 +661,8 @@ h4 {
 
 /* ---------- Transiciones entre páginas ---------- */
 
-/* En todos los navegadores: al pulsar un enlace de la web (app.js pone .leaving) el contenido se desvanece hacia
-   arriba con una barra de neón que corre por arriba; la página nueva entra subiendo y apareciendo. */
+/* Al pulsar un enlace de la web (app.js pone .leaving) el contenido se desvanece hacia arriba con una barra de neón
+   que corre por arriba; la página nueva entra subiendo y apareciendo. */
 .js:not(.ready) main,
 .js:not(.ready) .footer {
   opacity: 0;
@@ -678,22 +670,20 @@ h4 {
 
 .ready main,
 .ready .footer {
-  animation: page-in 0.7s var(--ease) backwards;
+  animation: page-in 0.6s var(--ease) backwards;
 }
 
 .ready .footer {
-  animation-delay: 0.12s;
+  animation-delay: 0.1s;
 }
 
 .leaving main,
 .leaving .footer {
   opacity: 0;
-  transform: translateY(-18px) scale(0.99);
-  filter: saturate(1.4);
+  transform: translateY(-14px);
   transition:
-    opacity 0.3s var(--ease),
-    transform 0.3s var(--ease),
-    filter 0.3s;
+    opacity 0.28s var(--ease),
+    transform 0.28s var(--ease);
 }
 
 .page-bar {
@@ -702,7 +692,6 @@ h4 {
   z-index: 200;
   height: 3px;
   background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
-  box-shadow: 0 0 14px rgb(var(--a-rgb) / 0.8);
   transform: scaleX(0);
   transform-origin: 0 50%;
   pointer-events: none;
@@ -716,22 +705,21 @@ h4 {
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(26px);
+    transform: translateY(20px);
   }
 }
 
-/* ---------- Botones: bloques con volumen ---------- */
+/* ---------- Botones: bloques macizos con volumen ---------- */
 
+/* Cada botón es un color liso con un canto más oscuro debajo (el volumen de un bloque). Al pasar el ratón sube y se
+   aclara; al pulsarlo se hunde. Texto en Figtree, en minúscula. Cada acción con su color, el mismo en toda la web. */
 .btn {
-  --a: var(--s4);
-  --b: var(--s2);
-  --lip: var(--bg);
-  --fg: var(--text);
-  --glow: rgba(0, 0, 0, 0);
+  --a: var(--sec);
+  --b: var(--sec-hover);
+  --lip: var(--sec-lip);
+  --fg: #fff;
   --lift: 4px;
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -740,62 +728,37 @@ h4 {
   padding: 0 22px;
   border: 0;
   border-radius: var(--r);
-  font: 700 12.5px/1 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font: 800 15px/1 var(--font-body);
+  letter-spacing: 0;
   white-space: nowrap;
   color: var(--fg);
-  /* El degradado de cada botón va al doble de ancho: al pasar el ratón se desliza (el destello, en su color) */
-  background: linear-gradient(110deg, var(--a) 0%, var(--b) 45%, var(--c3, var(--a)) 80%, var(--a) 100%) 0 0 / 220% 100%;
+  background: var(--a);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
     0 var(--lift) 0 var(--lip),
-    0 12px 24px -12px var(--glow);
+    0 12px 22px -14px #000;
   transition:
-    transform 0.25s var(--spring),
-    box-shadow 0.25s var(--ease),
-    background-position 0.6s var(--ease),
-    color 0.2s,
-    filter 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Destello que cruza el botón al pasar el ratón */
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.32) 50%, transparent 65%);
-  transform: translateX(-120%);
-  transition: transform 0.75s var(--ease);
-  pointer-events: none;
+    transform 0.22s var(--spring),
+    box-shadow 0.22s var(--ease),
+    background-color 0.18s,
+    color 0.18s;
 }
 
 .btn:hover {
-  background-position: 100% 0;
-  transform: translateY(-3px) scale(1.03);
-  filter: brightness(1.1) saturate(1.1);
+  background: var(--b);
+  transform: translateY(-2px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
     0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 18px 32px -12px var(--glow);
-}
-
-.btn:hover::after {
-  transform: translateX(120%);
+    0 16px 26px -14px #000;
 }
 
 .btn:active {
-  transform: translateY(calc(var(--lift) - 1px)) scale(0.99);
-  filter: brightness(0.97);
+  transform: translateY(calc(var(--lift) - 1px));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
     0 1px 0 var(--lip),
-    0 4px 10px -6px var(--glow);
+    0 4px 10px -6px #000;
   transition-duration: 0.06s;
 }
 
@@ -807,49 +770,7 @@ h4 {
 }
 
 .btn:hover svg:last-child:not(:first-child) {
-  transform: translateX(5px);
-}
-
-.btn:hover svg:first-child:not(:last-child) {
-  transform: scale(1.15) rotate(-6deg);
-}
-
-/* Variantes de la tienda (rework oct. 2026): color sólido, sin degradados ni destellos, con buen contraste y un borde
-   inferior más oscuro (el volumen de bloque). Cada acción con su color, el mismo en toda la web:
-   marca/equipar = magenta · comprar = ámbar · gratis = esmeralda · secundario = pizarra · monedas = oro */
-.btn-primary,
-.btn-theme,
-.btn-ghost,
-.btn-buy,
-.btn-claim,
-.btn-coin {
-  --glow: rgba(0, 0, 0, 0);
-  background: var(--a);
-  text-shadow: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 var(--lift) 0 var(--lip),
-    0 10px 20px -12px rgba(0, 0, 0, 0.9);
-  transition:
-    transform 0.25s var(--spring),
-    box-shadow 0.25s var(--ease),
-    background-color 0.2s,
-    color 0.2s;
-}
-
-.btn-primary:hover,
-.btn-theme:hover,
-.btn-ghost:hover,
-.btn-buy:hover,
-.btn-claim:hover,
-.btn-coin:hover {
-  background: var(--b);
-  filter: none;
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 14px 24px -12px rgba(0, 0, 0, 0.95);
+  transform: translateX(4px);
 }
 
 .btn-primary,
@@ -860,25 +781,25 @@ h4 {
   --fg: #fff;
 }
 
+/* Secundario: pizarra clara con borde visible (nunca transparente) */
 .btn-ghost {
-  /* Secundario: pizarra clara con borde visible (nunca transparente: se distingue del fondo y de la tarjeta) */
   --a: var(--sec);
   --b: var(--sec-hover);
   --lip: var(--sec-lip);
   --fg: #fff;
   box-shadow:
     inset 0 0 0 1px var(--ui-line-2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
     0 var(--lift) 0 var(--lip),
-    0 10px 20px -12px rgba(0, 0, 0, 0.9);
+    0 12px 22px -14px #000;
 }
 
 .btn-ghost:hover {
   box-shadow:
-    inset 0 0 0 1px #6570b4,
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px #6586b4,
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
     0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 14px 24px -12px rgba(0, 0, 0, 0.95);
+    0 16px 26px -14px #000;
 }
 
 /* Comprar: ámbar (lo único ámbar de la tienda junto a los precios, para que se vea a la primera) */
@@ -897,65 +818,51 @@ h4 {
   --fg: var(--get-ink);
 }
 
-/* Pestañas: al pasar el ratón no hay relleno de neón (solo cambia el fondo, ver .tab:hover) */
 .tab::before {
   display: none;
 }
 
 .btn-discord {
-  --a: #7d87ff;
-  --b: #5865f2;
-  --c3: #a78bfa;
-  --lip: #343db0;
+  --a: #5865f2;
+  --b: #6b76ff;
+  --lip: #2f3699;
   --fg: #fff;
-  --glow: rgba(88, 101, 242, 0.65);
 }
 
 .btn-whatsapp {
-  --a: #4fe08a;
-  --b: #1faa55;
-  --c3: #2dd4bf;
-  --lip: #0d6b33;
+  --a: #1fae55;
+  --b: #25c463;
+  --lip: #0b5c2b;
   --fg: #fff;
-  --glow: rgba(37, 211, 102, 0.6);
-  text-shadow: 0 1px 2px rgba(0, 40, 15, 0.45);
 }
 
-/* «Visitar la tienda» de la portada: el mismo destello que el botón principal, en esmeralda vivo y azul */
+/* «Visitar la tienda» de la portada: el azul de la marca, el botón más importante de la web */
 .btn-shop {
-  --lip: #023b2e;
+  --a: var(--brand);
+  --b: var(--brand-hover);
+  --lip: var(--brand-lip);
   --fg: #fff;
-  --glow: rgb(5 150 105 / 0.7);
-  background: var(--shimmer-sea) 0 0 / 220% 100%;
-  text-shadow: 0 1px 2px rgba(0, 40, 40, 0.5);
   box-shadow:
-    inset 0 0 0 1px rgb(160 240 210 / 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
     0 var(--lift) 0 var(--lip),
-    0 0 22px -6px rgb(16 185 129 / 0.5),
-    0 12px 26px -12px var(--glow);
+    0 0 0 1px #7fb2ff,
+    0 18px 40px -16px #2b7bf0;
 }
 
 .btn-shop:hover {
-  background-position: 100% 0;
   box-shadow:
-    inset 0 0 0 1px rgb(200 255 240 / 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.32),
     0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 34px -2px rgb(16 220 170 / 0.75),
-    0 0 60px -14px rgb(60 140 255 / 0.65);
-  animation: btn-breathe-sea 1.8s ease-in-out 0.3s infinite;
+    0 0 0 1px #b9d5ff,
+    0 22px 46px -14px #4a8ff5;
 }
 
 /* PayPal: su amarillo y su azul (como pide su guía de marca) */
 .btn-paypal {
-  --a: #ffd55e;
-  --b: #ffc439;
+  --a: #ffc439;
+  --b: #ffd05e;
   --lip: #c08a00;
   --fg: #142c8e;
-  --glow: rgba(255, 196, 57, 0.55);
-  text-transform: none;
-  letter-spacing: 0;
   font-size: 15px;
 }
 
@@ -968,8 +875,8 @@ h4 {
   color: #0079c1;
 }
 
+/* Comprar con monedas: oro más claro que el de comprar con dinero, con texto oscuro */
 .btn-coin {
-  /* Comprar con monedas: oro más claro que el de comprar con dinero, con texto oscuro */
   --a: #f2d27a;
   --b: #f8de96;
   --lip: #8a6510;
@@ -981,7 +888,7 @@ h4 {
   min-height: 40px;
   padding: 0 16px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .btn-lg {
@@ -989,7 +896,7 @@ h4 {
   min-height: 56px;
   padding: 0 28px;
   border-radius: 14px;
-  font-size: 13.5px;
+  font-size: 16.5px;
 }
 
 .btn-block {
@@ -1003,12 +910,8 @@ h4 {
   filter: grayscale(0.75) brightness(0.7);
   transform: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
     0 2px 0 var(--lip);
-}
-
-.btn:disabled::after {
-  display: none;
 }
 
 /* Mientras espera al servidor: una rueda delante del texto */
@@ -1033,64 +936,49 @@ h4 {
   padding: 0;
   border: 0;
   background: none;
-  color: #a5b0ff;
+  color: #a5caff;
   font-size: 14px;
   font-weight: 700;
   transition: color 0.2s;
 }
 
 .link-btn:hover {
-  color: #c7cdff;
+  color: #c7deff;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 /* ---------- Cabecera ---------- */
 
+/* Siempre sólida (también sobre la portada), con un filo de neón abajo */
 .header {
   position: fixed;
   inset: 0 0 auto;
   z-index: 50;
   height: var(--header-h);
-  border-bottom: 1px solid transparent;
+  background: #08101c;
+  box-shadow:
+    inset 0 -1px 0 #22354f,
+    0 10px 30px -18px #000;
   view-transition-name: header;
-  transition:
-    background-color 0.35s,
-    border-color 0.35s,
-    box-shadow 0.35s;
 }
 
-/* Sobre la portada, un degradado oscuro para leer los enlaces; al bajar, sólida */
-.header::before {
+.header::after {
   content: '';
   position: absolute;
-  inset: 0 0 -30px;
-  z-index: -1;
-  background: linear-gradient(180deg, rgb(var(--bg-rgb) / 0.7), transparent);
-  pointer-events: none;
-  transition: opacity 0.35s;
-}
-
-.header.solid,
-body:not([data-hero]) .header {
-  /* Sólida al bajar, con una línea de neón abajo */
-  background:
-    linear-gradient(90deg, transparent 4%, rgb(var(--a-rgb) / 0.55), rgb(var(--v-rgb) / 0.4), rgb(var(--c-rgb) / 0.5), transparent 96%) bottom / 100% 1px no-repeat,
-    linear-gradient(180deg, #0d0a26, #09071c);
-  border-bottom-color: transparent;
-  box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.9);
-}
-
-.header.solid::before,
-body:not([data-hero]) .header::before {
-  opacity: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #22354f 5%, #2fe6a0 35%, #2dd4bf 55%, #45e9ff 75%, #22354f 95%);
+  opacity: 0.85;
 }
 
 .header-inner {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .brand {
@@ -1113,46 +1001,41 @@ body:not([data-hero]) .header::before {
 
 .brand span {
   font: 700 14px/1 var(--font-display);
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
+/* Las secciones: un mando de botones con el elegido iluminado (escritorio) */
 .nav {
   display: none;
 }
 
 .nav a {
-  position: relative;
-  padding: 10px 2px;
-  font-size: 15px;
-  font-weight: 600;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
   color: var(--text-2);
-  transition: color 0.2s;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    color 0.18s,
+    background-color 0.18s;
 }
 
-.nav a::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
-  box-shadow: 0 0 10px rgb(var(--a-rgb) / 0.7);
-  transform: scaleX(0);
-  transition: transform 0.35s var(--ease);
+.nav a:hover {
+  color: #fff;
+  background: var(--s3);
 }
 
-.nav a:hover,
 .nav a[aria-current='page'] {
   color: #fff;
-}
-
-.nav a:hover::after,
-.nav a[aria-current='page']::after {
-  transform: scaleX(1);
+  background: var(--s4);
+  box-shadow:
+    inset 0 0 0 1px #3e5c85,
+    inset 0 -2px 0 var(--a-400);
 }
 
 .header-actions {
@@ -1167,6 +1050,11 @@ body:not([data-hero]) .header::before {
   display: none;
 }
 
+.header-actions .btn-buy {
+  --lift: 3px;
+}
+
+/* La IP con el estado del servidor: un clic la copia */
 .ip-chip {
   display: none;
   align-items: center;
@@ -1175,22 +1063,18 @@ body:not([data-hero]) .header::before {
   padding: 0 5px 0 14px;
   border-radius: var(--r);
   border: 1px solid var(--bd-2);
-  background: rgb(var(--bg-rgb) / 0.75);
-  font: 700 13px/1 var(--font-body);
+  background: var(--s1);
+  font: 700 13.5px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   transition:
-    border-color 0.2s,
-    background-color 0.2s;
+    border-color 0.18s,
+    background-color 0.18s;
 }
 
 .ip-chip:hover {
-  border-color: rgb(var(--a-rgb) / 0.5);
-}
-
-.ip-chip:hover .hint {
-  color: #fff;
-  background: var(--shimmer) 100% 0 / 220% 100%;
+  border-color: #5a7aa8;
+  background: var(--s2);
 }
 
 .ip-chip .hint {
@@ -1200,15 +1084,18 @@ body:not([data-hero]) .header::before {
   height: 32px;
   padding: 0 10px;
   border-radius: 8px;
-  background: rgb(var(--a-rgb) / 0.12);
-  color: var(--a-300);
-  font-size: 11.5px;
+  background: var(--s3);
+  color: var(--text-2);
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   transition:
-    background-color 0.2s,
-    color 0.2s;
+    background-color 0.18s,
+    color 0.18s;
+}
+
+.ip-chip:hover .hint {
+  background: var(--brand);
+  color: #fff;
 }
 
 .ip-chip .hint svg {
@@ -1217,12 +1104,12 @@ body:not([data-hero]) .header::before {
 }
 
 .ip-chip.copied .hint {
-  background: var(--a-400);
-  color: var(--on-accent);
+  background: var(--get);
+  color: var(--get-ink);
   animation: pop 0.45s var(--spring);
 }
 
-/* Punto de estado del servidor (verde en línea, rojo apagado): un indicador quieto, sin brillo ni latido */
+/* Punto de estado del servidor (verde en línea, rojo apagado) */
 .dot {
   position: relative;
   flex: none;
@@ -1234,10 +1121,12 @@ body:not([data-hero]) .header::before {
 
 .dot.online {
   background: var(--ok);
+  box-shadow: 0 0 0 3px #0f3b2c;
 }
 
 .dot.offline {
   background: var(--red);
+  box-shadow: 0 0 0 3px #3d141c;
 }
 
 .menu-btn,
@@ -1249,12 +1138,12 @@ body:not([data-hero]) .header::before {
   height: 42px;
   border-radius: var(--r);
   border: 1px solid var(--bd-2);
-  background: rgb(var(--bg-rgb) / 0.75);
+  background: var(--s1);
   color: var(--text);
   transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    transform 0.2s var(--ease);
+    border-color 0.18s,
+    background-color 0.18s,
+    transform 0.18s var(--ease);
 }
 
 .menu-btn {
@@ -1265,13 +1154,13 @@ body:not([data-hero]) .header::before {
 .account-chip {
   max-width: 190px;
   padding: 0 14px;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
 }
 
 .menu-btn:hover,
 .account-chip:hover {
-  border-color: rgb(var(--a-rgb) / 0.5);
+  border-color: #5a7aa8;
   background: var(--s2);
 }
 
@@ -1314,10 +1203,10 @@ body:not([data-hero]) .header::before {
   margin-left: 2px;
   padding: 3px 9px 3px 5px;
   border-radius: 999px;
-  background: rgb(252 201 74 / 0.12);
-  box-shadow: inset 0 0 0 1px rgb(252 201 74 / 0.3);
+  background: #2e2510;
+  box-shadow: inset 0 0 0 1px #6b5418;
   color: #ffd977;
-  font: 700 12.5px/1 var(--font-display);
+  font: 800 13px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1328,12 +1217,26 @@ body:not([data-hero]) .header::before {
   flex: none;
   border-radius: 50%;
   image-rendering: auto;
-  filter: drop-shadow(0 1px 3px rgb(245 158 11 / 0.45));
 }
 
 .coin-img {
   width: 20px;
   height: 20px;
+}
+
+/* En los teléfonos estrechos la cuenta va en el menú («Mi cuenta»): así caben el nombre, la tienda y el menú */
+@media (max-width: 479px) {
+  .header-inner {
+    gap: 10px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .header-actions .account-chip {
+    display: none;
+  }
 }
 
 @media (max-width: 599px) {
@@ -1352,7 +1255,7 @@ body:not([data-hero]) .header::before {
   }
 }
 
-/* Menú del móvil: entra desde la derecha */
+/* Menú del móvil: entra desde la derecha, macizo */
 .sheet {
   position: fixed;
   inset: 0;
@@ -1360,22 +1263,20 @@ body:not([data-hero]) .header::before {
   display: flex;
   flex-direction: column;
   padding: 0 var(--gutter) calc(24px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(120% 55% at 100% 0%, rgb(var(--a2-rgb) / 0.14), transparent 60%),
-    radial-gradient(110% 50% at 0% 100%, rgb(var(--v2-rgb) / 0.16), transparent 60%),
-    var(--bg);
+  background: var(--bg-2);
   overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateX(100%);
   visibility: hidden;
   transition:
-    transform 0.45s var(--ease),
-    visibility 0s linear 0.45s;
+    transform 0.4s var(--ease),
+    visibility 0s linear 0.4s;
 }
 
 .sheet.open {
   transform: none;
   visibility: visible;
-  transition: transform 0.45s var(--ease);
+  transition: transform 0.4s var(--ease);
 }
 
 .sheet-top {
@@ -1384,6 +1285,7 @@ body:not([data-hero]) .header::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--bd);
 }
 
 .sheet nav {
@@ -1396,14 +1298,15 @@ body:not([data-hero]) .header::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
+  min-height: 60px;
+  padding: 0 20px;
   border-radius: var(--r-lg);
   border: 1px solid var(--bd);
-  background: rgb(var(--s1-rgb) / 0.85);
-  font: 600 18px/1.2 var(--font-display);
+  background: var(--s1);
+  font: 800 18px/1.2 var(--font-body);
   transition:
-    border-color 0.2s,
-    background-color 0.2s;
+    border-color 0.18s,
+    background-color 0.18s;
 }
 
 .sheet nav a svg {
@@ -1413,8 +1316,9 @@ body:not([data-hero]) .header::before {
 }
 
 .sheet nav a[aria-current='page'] {
-  border-color: rgb(var(--a-rgb) / 0.45);
-  color: var(--a-300);
+  border-color: #2fa889;
+  background: var(--s3);
+  box-shadow: inset 4px 0 0 var(--a-400);
 }
 
 .sheet nav a[aria-current='page'] svg {
@@ -1422,23 +1326,23 @@ body:not([data-hero]) .header::before {
 }
 
 .sheet.open nav a {
-  animation: rise 0.5s var(--ease) both;
+  animation: rise 0.45s var(--ease) both;
 }
 
 .sheet.open nav a:nth-child(2) {
-  animation-delay: 0.05s;
+  animation-delay: 0.04s;
 }
 
 .sheet.open nav a:nth-child(3) {
-  animation-delay: 0.1s;
+  animation-delay: 0.08s;
 }
 
 .sheet.open nav a:nth-child(4) {
-  animation-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 
 .sheet.open nav a:nth-child(5) {
-  animation-delay: 0.2s;
+  animation-delay: 0.16s;
 }
 
 .sheet-foot {
@@ -1448,7 +1352,7 @@ body:not([data-hero]) .header::before {
   padding-top: 28px;
 }
 
-/* ---------- Caja de la IP (portada y menú) ---------- */
+/* ---------- Caja de la IP (portada, menú y pie) ---------- */
 
 .ip-box {
   display: flex;
@@ -1457,20 +1361,20 @@ body:not([data-hero]) .header::before {
   gap: 14px;
   width: 100%;
   min-height: 64px;
-  padding: 8px 8px 8px 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgb(var(--bg-rgb) / 0.82);
-  box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.9);
+  padding: 8px 8px 8px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+  box-shadow: var(--card-shadow);
   text-align: left;
   transition:
-    border-color 0.25s,
-    transform 0.25s var(--ease);
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .ip-box:hover {
-  border-color: rgb(var(--a-rgb) / 0.55);
-  transform: translateY(-2px);
+  border-color: #5a7aa8;
+  background: var(--s2);
 }
 
 .ip-box:active {
@@ -1479,24 +1383,21 @@ body:not([data-hero]) .header::before {
 
 .ip-text {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .ip-text small {
   color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .ip-box .ip {
   overflow: hidden;
   text-overflow: ellipsis;
-  font: 800 18px/1.1 var(--font-body);
+  font: 800 19px/1.1 var(--font-body);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
 }
 
 .ip-copy {
@@ -1506,16 +1407,14 @@ body:not([data-hero]) .header::before {
   flex: none;
   height: 46px;
   padding: 0 16px;
-  border-radius: 11px;
-  background: rgb(var(--a-rgb) / 0.13);
-  color: var(--a-300);
-  font: 700 11.5px/1 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  border-radius: 10px;
+  background: var(--s3);
+  color: var(--text);
+  font: 800 14.5px/1 var(--font-body);
+  box-shadow: inset 0 0 0 1px var(--bd-2);
   transition:
-    background-color 0.25s,
-    box-shadow 0.25s,
-    color 0.25s;
+    background-color 0.18s,
+    color 0.18s;
 }
 
 .ip-copy svg {
@@ -1524,138 +1423,42 @@ body:not([data-hero]) .header::before {
 }
 
 .ip-box:hover .ip-copy {
+  background: var(--brand);
   color: #fff;
-  background: var(--shimmer) 100% 0 / 220% 100%;
-  box-shadow: 0 0 22px -6px rgb(var(--a-rgb) / 0.7);
+  box-shadow: none;
 }
 
 .ip-box.copied {
-  border-color: var(--a-400);
+  border-color: var(--get);
 }
 
 .ip-box.copied .ip-copy {
-  background: var(--a-400);
-  color: var(--on-accent);
+  background: var(--get);
+  color: var(--get-ink);
   animation: pop 0.45s var(--spring);
 }
 
-/* ---------- Portada: héroe ---------- */
+/* ---------- Portada ---------- */
 
+/* En el móvil, todo centrado y en columna (el portal arriba); desde 960 px, el texto a la izquierda y el portal a
+   la derecha. Debajo, las tres tarjetas para entrar a la comunidad. */
 .hero {
   position: relative;
-  isolation: isolate;
+  padding: calc(var(--header-h) + 28px) 0 64px;
+}
+
+.hero-grid {
   display: grid;
-  align-items: center;
-  min-height: min(100svh, 920px);
-  padding: calc(var(--header-h) + 28px) 0 120px;
-  overflow: hidden;
+  justify-items: center;
+  gap: 8px;
   text-align: center;
 }
 
-.hero-art,
-.page-hero .hero-art,
-.shop-head .hero-art {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  overflow: hidden;
-}
-
-.hero-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero .hero-art img {
-  object-position: 50% 40%;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  /* El héroe deja ver el fondo fijo (el reino de noche): solo una viñeta suave detrás del texto */
-  background:
-    radial-gradient(60% 45% at 50% 52%, rgb(var(--bg-rgb) / 0.45), transparent 75%),
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.35) 0%, transparent 25%);
-}
-
-/* Luz de neón sobre el arte del reino: rosa abajo a la izquierda, violeta a la derecha y cian en el centro */
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(60% 50% at 0% 85%, rgb(var(--a2-rgb) / 0.34), transparent 70%),
-    radial-gradient(55% 55% at 100% 75%, rgb(var(--v2-rgb) / 0.4), transparent 70%),
-    radial-gradient(40% 30% at 50% 95%, rgb(var(--c-rgb) / 0.16), transparent 70%);
-  /* Que la luz se apague antes del borde inferior: sin cortes al pasar a la sección siguiente */
-  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
-  pointer-events: none;
-}
-
-.hero-inner {
+.hero-copy {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.logo-mark {
-  position: relative;
-  width: 168px;
-  margin-bottom: 18px;
-}
-
-.logo-mark img {
-  position: relative;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
-  animation: float 6s ease-in-out infinite;
-}
-
-.logo-mark .glow {
-  position: absolute;
-  inset: -22%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(var(--a-rgb) / 0.35), rgb(var(--v2-rgb) / 0.18) 55%, transparent 75%);
-  animation: glow 6s ease-in-out infinite;
-}
-
-/* Destello que cruza el emblema cada pocos segundos, recortado a su silueta. Va dentro de la misma capa que flota. */
-.logo-mark .shine {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  -webkit-mask: url('/img/logo.webp') center / contain no-repeat;
-  mask: url('/img/logo.webp') center / contain no-repeat;
-  animation: float 6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.logo-mark .shine::before {
-  content: '';
-  position: absolute;
-  top: -10%;
-  bottom: -10%;
-  left: -60%;
-  width: 45%;
-  background: linear-gradient(105deg, transparent 10%, rgba(255, 246, 255, 0.18) 35%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 246, 255, 0.18) 65%, transparent 90%);
-  transform: translateX(0) skewX(-14deg);
-  animation: shine 6s var(--ease) infinite;
-}
-
-/* Al entrar en la página el emblema aparece con un pequeño salto */
-.js .logo-mark {
-  animation: logo-in 1.1s var(--spring) both;
-}
-
-.js:not(.ready) .logo-mark {
-  animation-play-state: paused;
+  min-width: 0;
 }
 
 .live-pill {
@@ -1663,23 +1466,20 @@ body:not([data-hero]) .header::before {
   align-items: center;
   gap: 10px;
   height: 36px;
-  padding: 0 16px;
+  padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgb(var(--bg-rgb) / 0.72);
-  font-size: 14px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+  font-size: 14.5px;
   font-weight: 700;
 }
 
 .hero-title {
   margin-top: 18px;
-  font: 800 clamp(34px, 8vw, 80px) / 1.02 var(--font-display);
-  letter-spacing: -0.03em;
+  font: 800 clamp(38px, 10vw, 84px) / 0.98 var(--font-display);
+  letter-spacing: -0.04em;
   color: #fff;
-  /* Letras limpias: solo una sombra oscura para que se lean sobre la imagen */
-  text-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.3),
-    0 10px 36px rgba(0, 0, 0, 0.65);
+  text-shadow: 0 6px 30px #05061299;
 }
 
 /* Las letras del título suben una a una (cada letra lleva --i en pages.py; las palabras no se parten) */
@@ -1699,130 +1499,327 @@ body:not([data-hero]) .header::before {
 }
 
 .hero .lead {
-  max-width: 620px;
-  margin: 20px auto 0;
-  color: #dfe4ee;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+  max-width: 34em;
+  margin: 18px 0 0;
+  color: #e2eaf5;
+  text-shadow: 0 2px 14px #04080f;
+}
+
+.hero .lead b {
+  color: #fff;
 }
 
 .hero-cta {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   max-width: 440px;
-  margin-top: 32px;
+  margin-top: 28px;
+}
+
+.hero-cta .btn-shop {
+  min-height: 64px;
 }
 
 .hero-meta {
-  margin-top: 22px;
+  margin-top: 16px;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 14.5px;
+  font-weight: 600;
 }
 
-/* Debajo de «Minecraft Java · Forge»: Discord, WhatsApp y cómo entrar, en una fila (en el móvil, uno debajo de otro) */
+/* El portal: un disco macizo con el aro de neón que gira despacio y, encima, el emblema (que sigue al ratón en el
+   escritorio: app.js pone --px y --py) */
+.portal {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(66vw, 250px);
+  aspect-ratio: 1;
+  margin-bottom: 6px;
+}
+
+.portal-disc,
+.portal-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.portal-disc {
+  inset: 7%;
+  background: radial-gradient(circle at 50% 40%, #11524f 0%, #0d3040 45%, #0b1626 72%, #081120 100%);
+  box-shadow:
+    inset 0 0 0 1px #1f6b62,
+    inset 0 -18px 40px #060b14,
+    0 30px 60px -30px #000;
+}
+
+.portal-ring {
+  background: var(--neon-ring);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  animation: spin 26s linear infinite;
+}
+
+/* Un segundo aro, más fino y hacia el otro lado */
+.portal-ring.inner {
+  inset: 12%;
+  opacity: 0.55;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  animation-duration: 40s;
+  animation-direction: reverse;
+}
+
+/* La luz del portal, detrás de todo (solo opacidad: late despacio) */
+.portal-glow {
+  position: absolute;
+  inset: -14%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #2b7bf0 0%, #ff5edb55 45%, transparent 72%);
+  opacity: 0.45;
+  animation: glow 6s ease-in-out infinite;
+}
+
+.portal img {
+  position: relative;
+  width: 74%;
+  height: auto;
+  filter: drop-shadow(0 18px 24px #000a);
+  transform: translate3d(calc(var(--px) * 14px), calc(var(--py) * 10px), 0) rotate(calc(var(--px) * 3deg));
+  transition: transform 0.6s var(--ease);
+}
+
+.js .portal {
+  animation: logo-in 1.1s var(--spring) both;
+}
+
+.js:not(.ready) .portal {
+  animation-play-state: paused;
+}
+
+/* Las tres tarjetas para entrar a la comunidad */
 .hero-links {
   display: grid;
   gap: 12px;
-  width: 100%;
-  max-width: 440px;
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
-.hero-links .btn {
-  min-height: 46px;
+.link-card {
+  --c: var(--brand);
+  --c-ink: #fff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  padding: 14px 18px 14px 14px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--bd);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  transition:
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
-@media (min-width: 760px) {
-  .hero-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 980px;
-  }
+.link-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--c);
+  background: var(--s2);
 }
 
-/* Entrada escalonada del héroe cuando termina la carga */
-.hero-inner > *,
+.link-card .lc-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--c);
+  color: var(--c-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.link-card .lc-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.link-card .lc-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+
+.link-card b {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.link-card small {
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.35;
+}
+
+.link-card > svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  color: var(--muted);
+  transition:
+    transform 0.25s var(--ease),
+    color 0.2s;
+}
+
+.link-card:hover > svg {
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.lc-discord {
+  --c: #5865f2;
+}
+
+.lc-whatsapp {
+  --c: #1fae55;
+}
+
+.lc-help {
+  --c: #2b7bf0;
+}
+
+/* Entrada escalonada de la portada cuando termina la carga */
+.hero-copy > *,
+.hero-links,
 .page-hero .wrap > *,
 .shop-head-inner > * {
-  animation: rise 0.9s var(--ease) both;
+  animation: rise 0.8s var(--ease) both;
 }
 
-.js:not(.ready) .hero-inner > *,
+.js:not(.ready) .hero-copy > *,
+.js:not(.ready) .hero-links,
 .js:not(.ready) .page-hero .wrap > *,
 .js:not(.ready) .shop-head-inner > * {
   animation-play-state: paused;
 }
 
-.hero-inner > :nth-child(2),
+.hero-copy > :nth-child(2),
 .page-hero .wrap > :nth-child(2),
 .shop-head-inner > :nth-child(2) {
   animation-delay: 0.08s;
 }
 
-.hero-inner > :nth-child(3),
+.hero-copy > :nth-child(3),
 .page-hero .wrap > :nth-child(3) {
   animation-delay: 0.16s;
 }
 
-.hero-inner > :nth-child(4) {
+.hero-copy > :nth-child(4) {
   animation-delay: 0.24s;
 }
 
-.hero-inner > :nth-child(5) {
-  animation-delay: 0.32s;
+.hero-copy > :nth-child(5) {
+  animation-delay: 0.3s;
 }
 
-.hero-inner > :nth-child(6) {
+.hero-links {
   animation-delay: 0.4s;
 }
 
-.hero-inner > :nth-child(7) {
-  animation-delay: 0.48s;
-}
-
-/* ---------- Portada: cifras del servidor ---------- */
-
 /* ---------- Tarjetas (superficie común) ---------- */
 
-/* Superficie opaca y más clara que el fondo, con un filo claro alrededor, una línea de neón arriba, una sombra que la
-   despega del fondo y un halo violeta suave. Así cada tarjeta se distingue sobre la nebulosa. */
+/* Pizarra índigo maciza, más clara que el fondo, con su borde, un filo de luz arriba y sombra: se distingue siempre
+   de la nebulosa. Las de la tienda llevan arriba una línea del color de su sección (--tone). */
 .panel,
 .frame {
   position: relative;
   border-radius: var(--r-lg);
   border: 1px solid var(--edge);
-  background:
-    linear-gradient(90deg, transparent 4%, color-mix(in srgb, var(--tone) 85%, transparent), transparent 96%) top / 100% 1px no-repeat,
-    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tone) 9%, transparent), transparent 60%),
-    var(--surface);
-  box-shadow: var(--card-shadow), var(--haze);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
 }
 
-/* ---------- Portada: pilares ---------- */
-
-/* ---------- Páginas interiores: cabecera con el arte ---------- */
+/* ---------- Páginas interiores: cabecera ---------- */
 
 .page-hero,
 .shop-head {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
 }
 
 .page-hero {
-  padding: calc(var(--header-h) + 64px) 0 56px;
-  text-align: center;
+  padding: calc(var(--header-h) + 32px) 0 8px;
 }
 
-/* Página 404: el número enorme con el degradado de neón detrás del título */
+/* Miga de pan: dónde estás */
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.crumbs a {
+  color: var(--text-2);
+  transition: color 0.18s;
+}
+
+.crumbs a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.crumbs svg {
+  width: 14px;
+  height: 14px;
+  color: var(--faint);
+}
+
+.crumbs [aria-current] {
+  color: var(--a-300);
+}
+
+.page-hero h1 {
+  max-width: 18em;
+  margin-top: 14px;
+  font: 800 clamp(34px, 7vw, 64px) / 1.02 var(--font-display);
+  letter-spacing: -0.035em;
+  text-shadow: 0 6px 30px #04080f;
+}
+
+.page-hero p {
+  max-width: 38em;
+  margin: 16px 0 0;
+  color: var(--text-2);
+  font-size: 18px;
+  text-wrap: pretty;
+  text-shadow: 0 2px 14px #04080f;
+}
+
+/* Página 404: el número enorme en el neón de la marca */
 .page-hero.lost {
   display: grid;
   align-items: center;
   min-height: min(88svh, 820px);
+  padding-bottom: 56px;
+  text-align: center;
+}
+
+.page-hero.lost h1,
+.page-hero.lost p {
+  margin-inline: auto;
 }
 
 .lost-code {
@@ -1834,7 +1831,6 @@ body:not([data-hero]) .header::before {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 12px 40px rgb(var(--a-rgb) / 0.35));
   animation:
     shimmer-flow 6s ease-in-out infinite alternate,
     float 6s ease-in-out infinite;
@@ -1848,89 +1844,12 @@ body:not([data-hero]) .header::before {
   margin-top: 28px;
 }
 
-.page-hero .hero-art img,
-.shop-head .hero-art img {
-  object-position: 50% 30%;
-  opacity: 0.45;
-}
-
-.page-hero::before,
-.shop-head::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(60% 80% at 15% 75%, rgb(var(--a2-rgb) / 0.14), transparent 70%),
-    radial-gradient(55% 80% at 90% 65%, rgb(var(--v2-rgb) / 0.16), transparent 70%),
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.3), transparent);
-  /* Se funde abajo con el fondo: sin corte al final de la cabecera */
-  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
-  mask-image: linear-gradient(180deg, #000 55%, transparent);
-}
-
-.page-hero h1 {
-  margin-top: 18px;
-  font: 800 clamp(32px, 7vw, 60px) / 1.06 var(--font-display);
-  letter-spacing: -0.03em;
-}
-
-.page-hero p {
-  max-width: 640px;
-  margin: 18px auto 0;
-  color: var(--text-2);
-  font-size: 18px;
-}
-
 /* ---------- Bloques comunes ---------- */
 
-.feature {
-  padding: 24px;
-  transition:
-    transform 0.35s var(--ease),
-    border-color 0.3s;
-}
-
-.feature:hover {
-  transform: translateY(-4px);
-  border-color: var(--edge-hot);
-  box-shadow: var(--card-shadow), var(--haze-hot);
-}
-
-.feature .icon,
-.trust .icon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  color: var(--a-300);
-  background: rgb(var(--a-rgb) / 0.1);
-  box-shadow: inset 0 0 0 1px rgb(var(--a-rgb) / 0.25);
-}
-
-.feature .icon svg,
-.trust .icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.feature h3 {
-  margin-top: 18px;
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.feature p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
+/* Imagen y texto lado a lado (El mundo) */
 .split {
   display: grid;
-  gap: 32px;
+  gap: 28px;
   align-items: center;
 }
 
@@ -1953,12 +1872,18 @@ body:not([data-hero]) .header::before {
 }
 
 .split .h2 {
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .split .muted {
   margin: 14px 0 0;
+  color: var(--text-2);
   font-size: 17px;
+}
+
+.split > div:not(.media),
+.section-head {
+  text-shadow: 0 1px 12px #04080f;
 }
 
 .list-check {
@@ -1972,7 +1897,7 @@ body:not([data-hero]) .header::before {
 .list-check li,
 .perks li {
   position: relative;
-  padding-left: 32px;
+  padding-left: 34px;
   color: var(--text-2);
 }
 
@@ -1985,126 +1910,199 @@ body:not([data-hero]) .header::before {
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  background: var(--check) center / 14px no-repeat, rgb(var(--a-rgb) / 0.12);
+  background: var(--check) center / 14px no-repeat, #0f3a2c;
 }
 
-.steps {
+/* El TF Client: el título a la izquierda (fijo al bajar) y las cuatro ventajas a la derecha */
+.feature-board {
+  display: grid;
+  gap: 24px;
+}
+
+.feature-board .section-head {
+  margin-bottom: 0;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.feature {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px;
+  transition:
+    transform 0.25s var(--ease),
+    border-color 0.2s;
+}
+
+.feature:hover {
+  transform: translateY(-3px);
+  border-color: #5a7aa8;
+}
+
+.feature .icon,
+.rule .icon,
+.shop-trust .icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  color: #fff;
+  background: var(--brand);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 3px 0 var(--brand-lip);
+}
+
+.feature .icon svg,
+.rule .icon svg,
+.shop-trust .icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.feature h3 {
+  font-size: 17.5px;
+}
+
+.feature p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15.5px;
+}
+
+/* Pasos (una secuencia de verdad): círculos numerados unidos por una línea */
+.stepper {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   counter-reset: step;
 }
 
-.step {
-  overflow: hidden;
-  padding: 26px 24px;
-  transition:
-    transform 0.35s var(--ease),
-    border-color 0.3s;
-}
-
-.step:hover {
-  transform: translateY(-4px);
-  border-color: var(--edge-hot);
-  box-shadow: var(--card-shadow), var(--haze-hot);
-}
-
-.step::after {
-  counter-increment: step;
-  content: counter(step);
-  position: absolute;
-  top: 6px;
-  right: 18px;
-  font: 800 72px/1 var(--font-display);
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgb(var(--a-rgb) / 0.25);
-}
-
-.step h3 {
+.stepper li {
   position: relative;
-  max-width: 80%;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.step p {
-  position: relative;
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.rules {
-  counter-reset: rule;
   display: grid;
-  gap: 12px;
+  grid-template-columns: 48px 1fr;
+  gap: 4px 18px;
+  padding-bottom: 28px;
+  counter-increment: step;
+}
+
+.stepper li:last-child {
+  padding-bottom: 0;
+}
+
+/* El número */
+.stepper li::before {
+  content: counter(step);
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font: 800 18px/1 var(--font-display);
+  box-shadow:
+    0 0 0 5px var(--surface),
+    0 0 0 6px #1c6b57;
+}
+
+/* La línea que une un paso con el siguiente */
+.stepper li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 23px;
+  top: 54px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #22b884, #24365a);
+}
+
+.stepper h3 {
+  align-self: end;
+  padding-top: 4px;
+  font-size: 18px;
+}
+
+.stepper p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15.5px;
+}
+
+.stepper-card {
+  padding: 28px 24px;
+}
+
+/* Las normas: una sola tarjeta con una fila por norma (no son una secuencia: van con icono, no con número) */
+.rule-list {
+  padding: 6px 0;
 }
 
 .rule {
   display: flex;
   gap: 18px;
   align-items: flex-start;
-  padding: 20px 22px;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.3s;
+  padding: 18px 22px;
 }
 
-.rule:hover {
-  transform: translateX(4px);
-  border-color: var(--edge-hot);
-  box-shadow: var(--card-shadow), var(--haze-hot);
+.rule + .rule {
+  border-top: 1px solid var(--bd);
 }
 
-.rule::before {
-  counter-increment: rule;
-  content: counter(rule);
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
+.rule .icon {
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  font: 700 16px/1 var(--font-display);
-  color: var(--on-accent);
-  background: var(--pri-grad);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 3px 0 var(--pri-lip);
+  background: var(--s3);
+  color: var(--a-300);
+  box-shadow: inset 0 0 0 1px var(--bd-2);
 }
 
 .rule b {
   display: block;
-  font: 600 16px/1.3 var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
 .rule span {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 15.5px;
 }
 
-/* Preguntas frecuentes: se abren con una transición de altura donde el navegador lo admite */
+/* Preguntas frecuentes: una sola tarjeta con una fila por pregunta; se abren con una transición de altura */
 .faq {
   display: grid;
-  gap: 10px;
-  max-width: 860px;
-  margin-inline: auto;
+  overflow: hidden;
+  padding: 0;
 }
 
 .faq details {
-  border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background: var(--s1);
-  transition:
-    border-color 0.3s,
-    background-color 0.3s;
+  transition: background-color 0.2s;
+}
+
+.faq details + details {
+  border-top: 1px solid var(--bd);
 }
 
 .faq details:hover {
-  border-color: var(--bd-2);
+  background: #152438;
 }
 
 .faq details[open] {
-  border-color: rgb(var(--a-rgb) / 0.35);
   background: var(--s2);
 }
 
@@ -2125,9 +2123,10 @@ body:not([data-hero]) .header::before {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 22px;
+  min-height: 64px;
+  padding: 16px 22px;
   font-size: 16.5px;
-  font-weight: 700;
+  font-weight: 800;
   list-style: none;
   cursor: pointer;
 }
@@ -2144,112 +2143,149 @@ body:not([data-hero]) .header::before {
   height: 30px;
   border-radius: 9px;
   background:
-    linear-gradient(var(--a-300), var(--a-300)) center / 12px 2px no-repeat,
-    linear-gradient(var(--a-300), var(--a-300)) center / 2px 12px no-repeat,
-    rgb(var(--a-rgb) / 0.1);
-  transition: transform 0.35s var(--ease);
+    linear-gradient(var(--text-2), var(--text-2)) center / 12px 2px no-repeat,
+    linear-gradient(var(--text-2), var(--text-2)) center / 2px 12px no-repeat,
+    var(--s3);
+  transition:
+    transform 0.35s var(--ease),
+    background-color 0.2s;
 }
 
 .faq details[open] summary::after {
   transform: rotate(135deg);
+  background:
+    linear-gradient(#fff, #fff) center / 12px 2px no-repeat,
+    linear-gradient(#fff, #fff) center / 2px 12px no-repeat,
+    var(--brand);
 }
 
 .faq details p {
+  max-width: 68ch;
   margin: 0;
   padding: 0 22px 22px;
   color: var(--text-2);
 }
 
-.timeline {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* Buscador de las preguntas */
+.faq-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  margin-bottom: 14px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+  transition:
+    border-color 0.18s,
+    background-color 0.18s;
 }
 
-.timeline li {
-  padding: 26px 24px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background: linear-gradient(180deg, var(--s2), var(--s1));
-  box-shadow: var(--card-shadow);
+.faq-search:focus-within {
+  border-color: var(--a-400);
+  background: var(--s2);
 }
 
-.timeline .num {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  margin-bottom: 18px;
-  border-radius: 13px;
-  font: 700 18px var(--font-display);
-  color: var(--on-accent);
-  background: var(--pri-grad);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 4px 0 var(--pri-lip);
-}
-
-.timeline h3 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.timeline p {
-  margin: 10px 0 0;
+.faq-search svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
   color: var(--muted);
+}
+
+.faq-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: 16.5px;
+}
+
+.faq-search input::placeholder {
+  color: var(--faint);
+}
+
+.faq-empty {
+  margin: 0;
+  padding: 22px;
+  color: var(--muted);
+}
+
+/* Ayuda: cómo entrar y el contacto a la izquierda (fijos al bajar en el escritorio) y las preguntas a la derecha */
+.help-layout {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+.help-side {
+  display: grid;
+  gap: 16px;
+}
+
+.help-side h2 {
+  font: 800 20px/1.25 var(--font-body);
+  letter-spacing: -0.01em;
+}
+
+.help-side .stepper {
+  margin-top: 22px;
+}
+
+.help-side .stepper h3 {
+  font-size: 16.5px;
+}
+
+.help-side .stepper p {
   font-size: 15px;
 }
 
-/* Banda final: el arte del reino con la luz esmeralda y amatista */
+.contact-card {
+  padding: 22px 24px;
+}
+
+.contact-card p {
+  margin: 8px 0 18px;
+  color: var(--muted);
+  font-size: 15.5px;
+}
+
+.contact-card .actions {
+  display: grid;
+  gap: 10px;
+}
+
+/* Banda final: Discord y WhatsApp sobre un panel macizo del verde de la aurora */
 .cta-band {
+  display: grid;
+  gap: 24px;
   overflow: hidden;
-  isolation: isolate;
-  padding: 48px 22px;
+  padding: 32px 24px;
   border-radius: var(--r-xl);
-  text-align: center;
-  background: var(--s0);
-}
-
-.cta-band::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -2;
+  border: 1px solid #1d5a55;
   background:
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.78), rgb(var(--bg-rgb) / 0.92)),
-    url('/img/nebula-1280.webp') center 35% / cover no-repeat;
-}
-
-.cta-band::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(50% 80% at 0% 100%, rgb(var(--a2-rgb) / 0.3), transparent 70%),
-    radial-gradient(50% 80% at 100% 0%, rgb(var(--v2-rgb) / 0.32), transparent 70%);
+    radial-gradient(70% 120% at 100% 0%, #10584f 0%, #0f3a40 45%, #0f1c33 100%);
+  box-shadow: var(--card-shadow);
 }
 
 .cta-band h2 {
-  margin-top: 16px;
-  font: 800 clamp(26px, 5vw, 44px) / 1.1 var(--font-display);
-  letter-spacing: -0.02em;
+  font: 800 clamp(26px, 4.6vw, 40px) / 1.1 var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 .cta-band p {
-  max-width: 540px;
-  margin: 16px auto 0;
-  color: var(--text-2);
+  max-width: 34em;
+  margin: 12px 0 0;
+  color: #d3f5ea;
   font-size: 17px;
 }
 
 .cta-band .actions {
   display: grid;
   gap: 12px;
-  max-width: 340px;
-  margin: 30px auto 0;
 }
 
 /* ---------- Páginas legales ---------- */
@@ -2257,7 +2293,13 @@ body:not([data-hero]) .header::before {
 .legal-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  padding: 6px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--bd);
+  background: var(--s0);
 }
 
 .legal-tabs a {
@@ -2265,33 +2307,30 @@ body:not([data-hero]) .header::before {
   align-items: center;
   height: 40px;
   padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid var(--bd-2);
-  background: var(--s1);
+  border-radius: 10px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   transition:
-    border-color 0.2s,
-    color 0.2s,
-    background-color 0.2s;
+    color 0.18s,
+    background-color 0.18s;
 }
 
 .legal-tabs a:hover {
-  border-color: rgb(var(--a-rgb) / 0.45);
+  background: var(--s3);
   color: #fff;
 }
 
 .legal-tabs a[aria-current='page'] {
-  border-color: transparent;
-  background: var(--pri-grad);
-  color: var(--on-accent);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
 
 .legal-layout {
   display: grid;
-  gap: 24px;
-  margin-top: 28px;
+  gap: 20px;
+  margin-top: 24px;
 }
 
 .legal-toc {
@@ -2302,16 +2341,15 @@ body:not([data-hero]) .header::before {
 }
 
 .legal-toc b {
-  font: 800 12px/1 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .legal-toc ol {
   display: grid;
-  gap: 4px;
-  margin: 14px 0 0;
+  gap: 2px;
+  margin: 12px 0 0;
   padding: 0;
   list-style: none;
   counter-reset: toc;
@@ -2320,21 +2358,28 @@ body:not([data-hero]) .header::before {
 .legal-toc a {
   display: flex;
   gap: 10px;
-  padding: 6px 0;
+  padding: 7px 10px;
+  margin-inline: -10px;
+  border-radius: 8px;
   color: var(--text-2);
   font-size: 14.5px;
-  transition: color 0.2s;
+  transition:
+    color 0.18s,
+    background-color 0.18s;
 }
 
 .legal-toc a::before {
   counter-increment: toc;
-  content: counter(toc, decimal-leading-zero);
+  content: counter(toc);
+  min-width: 1.4em;
   color: var(--faint);
-  font: 700 12px/1.9 var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .legal-toc a:hover {
-  color: var(--a-300);
+  background: var(--s3);
+  color: #fff;
 }
 
 .legal-date {
@@ -2342,12 +2387,12 @@ body:not([data-hero]) .header::before {
   padding-top: 14px;
   border-top: 1px solid var(--bd);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 .legal-doc {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -2355,29 +2400,31 @@ body:not([data-hero]) .header::before {
   padding: 26px 24px;
   border-radius: var(--r-lg);
   border: 1px solid var(--bd);
-  background: linear-gradient(180deg, var(--s2), var(--s1));
+  background: var(--surface);
   box-shadow: var(--card-shadow);
   scroll-margin-top: calc(var(--header-h) + 16px);
 }
 
 .legal-section:target {
-  border-color: rgb(var(--a-rgb) / 0.5);
+  border-color: var(--a-400);
 }
 
 .legal-section h2 {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  font: 700 clamp(18px, 2.6vw, 22px) / 1.25 var(--font-display);
+  font: 800 clamp(19px, 2.6vw, 23px) / 1.25 var(--font-body);
+  letter-spacing: -0.01em;
 }
 
 .legal-section h2 span {
-  color: var(--a-400);
-  font-size: 0.75em;
+  color: var(--a-300);
+  font-variant-numeric: tabular-nums;
 }
 
 .legal-section p,
 .legal-section li {
+  max-width: 72ch;
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.7;
@@ -2407,17 +2454,18 @@ body:not([data-hero]) .header::before {
 .shop-legal a,
 .pay-legal a,
 .faq a,
-.disclaimer a {
+.disclaimer a,
+.contact-card a:not(.btn) {
   color: var(--a-300);
   text-decoration: underline;
-  text-decoration-color: rgb(var(--a3-rgb) / 0.4);
+  text-decoration-color: #2a7a5e;
   text-underline-offset: 3px;
 }
 
 .legal-section code {
   padding: 1px 6px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--s3);
   font-size: 0.9em;
 }
 
@@ -2426,8 +2474,8 @@ body:not([data-hero]) .header::before {
   margin-top: 16px;
   padding: 16px 18px;
   border-radius: var(--r);
-  border: 1px solid rgba(252, 201, 74, 0.4);
-  background: rgba(252, 201, 74, 0.08);
+  border: 1px solid #6b5418;
+  background: #221d14;
 }
 
 .legal-callout p {
@@ -2467,20 +2515,20 @@ body:not([data-hero]) .header::before {
 
 .footer {
   position: relative;
-  margin-top: 0;
-  padding: 56px 0 calc(40px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--bd);
-  background: var(--bg-2);
+  margin-top: 40px;
+  padding: 48px 0 calc(40px + env(safe-area-inset-bottom));
+  background: #050911;
+  box-shadow: inset 0 1px 0 #1d2e47;
 }
 
 .footer::before {
   content: '';
   position: absolute;
-  top: -1px;
-  left: 10%;
-  right: 10%;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--a-400), var(--violet), transparent);
+  background: linear-gradient(90deg, #1d2e47 5%, #2fe6a0 35%, #2dd4bf 55%, #45e9ff 75%, #1d2e47 95%);
   opacity: 0.6;
 }
 
@@ -2490,9 +2538,16 @@ body:not([data-hero]) .header::before {
 }
 
 .footer-brand {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  max-width: 400px;
+}
+
+.footer-brand .brand-row {
   display: flex;
   gap: 14px;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .footer-brand img {
@@ -2502,13 +2557,56 @@ body:not([data-hero]) .header::before {
 }
 
 .footer-brand b {
-  font: 700 16px/1.3 var(--font-display);
+  font: 700 17px/1.3 var(--font-display);
 }
 
 .footer-brand p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
+}
+
+.footer-brand .ip-box {
+  min-height: 56px;
+}
+
+.footer-brand .ip-box .ip {
+  font-size: 16.5px;
+}
+
+.footer-brand .ip-copy {
+  height: 40px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+}
+
+.footer-social a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+  color: var(--text-2);
+  transition:
+    background-color 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+
+.footer-social a:hover {
+  border-color: transparent;
+  background: var(--c, var(--brand));
+  color: #fff;
+}
+
+.footer-social svg {
+  width: 20px;
+  height: 20px;
 }
 
 .footer-cols {
@@ -2518,43 +2616,41 @@ body:not([data-hero]) .header::before {
 }
 
 .footer h4 {
-  font: 800 12px/1 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .footer ul {
   display: grid;
   gap: 10px;
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .footer ul a {
   display: inline-block;
-  color: var(--text-2);
+  color: var(--muted);
   font-size: 15px;
-  transition:
-    color 0.2s,
-    transform 0.25s var(--ease);
+  transition: color 0.18s;
 }
 
 .footer ul a:hover {
-  color: var(--a-300);
-  transform: translateX(3px);
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* Aviso de no afiliación con Mojang y Microsoft (obligatorio, en todas las páginas) */
 .disclaimer {
-  margin: 40px 0 0;
+  margin: 36px 0 0;
   padding: 16px 18px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
-  background: rgba(255, 255, 255, 0.02);
+  background: #0a1220;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.6;
 }
 
@@ -2565,8 +2661,8 @@ body:not([data-hero]) .header::before {
 .disclaimer span {
   display: block;
   margin-top: 6px;
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  letter-spacing: 0.03em;
   color: var(--faint);
 }
 
@@ -2578,7 +2674,7 @@ body:not([data-hero]) .header::before {
   padding-top: 22px;
   border-top: 1px solid var(--bd);
   color: var(--faint);
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 .copyright {
@@ -2597,7 +2693,6 @@ body:not([data-hero]) .header::before {
   font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--faint);
-  opacity: 0.75;
 }
 
 /* ---------- Tarjetas de la tienda y precios ---------- */
@@ -2609,25 +2704,19 @@ body:not([data-hero]) .header::before {
   gap: 12px;
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid rgb(var(--line-rgb) / 0.12);
+  border-top: 1px solid var(--bd);
 }
 
-/* El botón de cada tarjeta: algo más grande, con la flecha, y se enciende cuando el ratón está sobre la tarjeta */
 .card-foot .btn {
   --lift: 3px;
   min-height: 42px;
   padding: 0 18px;
   border-radius: 12px;
-  font-size: 11.5px;
+  font-size: 14.5px;
 }
-
-.card-foot .btn::after {
-  transition-duration: 0.9s;
-}
-
 
 .price {
-  font: 700 21px/1 var(--font-display);
+  font: 800 22px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   color: #ffd76a;
@@ -2636,7 +2725,7 @@ body:not([data-hero]) .header::before {
 .price small {
   display: block;
   margin-bottom: 5px;
-  font: 600 12px/1.2 var(--font-body);
+  font: 600 12.5px/1.2 var(--font-body);
   letter-spacing: 0;
   color: var(--muted);
 }
@@ -2657,10 +2746,10 @@ body:not([data-hero]) .header::before {
   margin: 22px 0 0;
   padding: 14px 16px;
   border-radius: var(--r);
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid #7a2c3a;
+  background: #2a1216;
   color: #fecaca;
-  font-size: 14px;
+  font-size: 14.5px;
 }
 
 .notice svg {
@@ -2672,48 +2761,147 @@ body:not([data-hero]) .header::before {
 
 /* ---------- Tienda ---------- */
 
+/* La cabecera: el título a la izquierda y, a la derecha (debajo en el móvil), las tres garantías en una placa */
 .shop-head {
-  padding: calc(var(--header-h) + 48px) 0 4px;
+  padding: calc(var(--header-h) + 32px) 0 0;
 }
 
 .shop-head-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 22px 24px;
+  display: grid;
+  gap: 24px;
+  align-items: end;
 }
 
 .shop-head h1 {
-  margin-top: 16px;
+  margin-top: 14px;
   font: 800 clamp(38px, 7vw, 64px) / 1.02 var(--font-display);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
+  text-shadow: 0 6px 30px #04080f;
 }
 
 .shop-head .lead {
-  max-width: 580px;
-  margin: 16px 0 0;
+  max-width: 32em;
+  margin: 14px 0 0;
+  text-shadow: 0 2px 14px #04080f;
+}
+
+.shop-trust {
+  display: grid;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--edge);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+.shop-trust li {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 18px;
+}
+
+.shop-trust li + li {
+  border-top: 1px solid var(--bd);
+}
+
+.shop-trust .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--s3);
+  color: var(--a-300);
+  box-shadow: inset 0 0 0 1px var(--bd-2);
+}
+
+.shop-trust .icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.shop-trust b {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 800;
+}
+
+.shop-trust span:not(.icon) {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* En el móvil y la tablet, las garantías en una fila compacta (icono y título) para que las categorías se vean
+   enseguida */
+@media (max-width: 959px) {
+  .shop-trust {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0;
+  }
+
+  .shop-trust li {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 6px;
+    text-align: center;
+  }
+
+  .shop-trust li + li {
+    border-top: 0;
+    border-left: 1px solid var(--bd);
+  }
+
+  .shop-trust b {
+    font-size: 13.5px;
+    line-height: 1.25;
+  }
+
+  .shop-trust span:not(.icon) {
+    display: none;
+  }
+}
+
+.shop-body {
+  padding-bottom: 64px;
+}
+
+/* Encima del catálogo: lo que hay en la sección y, en las crates, el buscador */
+.shop-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-top: 22px;
+}
+
+.shop-bar:has(.shop-intro[hidden]):has(.shop-search[hidden]) {
+  display: none;
 }
 
 .shop-search {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(340px, 100%);
+  width: min(360px, 100%);
   height: 50px;
   padding: 0 16px;
   border-radius: var(--r);
   border: 1px solid var(--bd-2);
-  background: rgb(var(--bg-rgb) / 0.85);
+  background: var(--s1);
   color: var(--muted);
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.18s,
+    background-color 0.18s;
 }
 
 .shop-search:focus-within {
   border-color: var(--a-400);
-  box-shadow: 0 0 0 4px rgb(var(--a-rgb) / 0.14);
+  background: var(--s2);
 }
 
 .shop-search svg {
@@ -2728,109 +2916,93 @@ body:not([data-hero]) .header::before {
   height: 100%;
   border: 0;
   outline: 0;
-  background: transparent;
+  background: none;
   color: var(--text);
   font-size: 16px;
 }
 
-.shop-body {
-  padding-bottom: 64px;
-}
-
-/* Barra de categorías (la «tarjeta de botones»), rehecha del todo el 13 oct. 2026: una tarjeta por sección con el
-   dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py) sobre su color VIVO: el color detrás del dibujo y su tono
-   profundo abajo, donde va el nombre (nunca mezclado con negro, que lo vuelve marrón). Contorno de su tono claro. La
-   elegida se enciende (tono claro → color), con contorno blanco, anillo de su color y su brillo. Nada translúcido.
-   Cada sección: --t (su color), --t-hi (claro), --t-lo (profundo), --t-ink (casi negro de su tono). */
+/* Barra de categorías (21 oct. 2026): cada sección es una tarjeta maciza de pizarra con el dibujo de lo que hay
+   dentro (img/tabs/, tools/tab_art.py) sobre una placa de su color VIVO (nunca mezclado con negro). La elegida se
+   llena entera de su color, con el nombre en su tono casi negro: se ve a la primera cuál es.
+   Cada sección: --t (su color), --t-hi (claro), --t-lo (profundo), --t-ink (casi negro de su tono).
+   En el móvil y la tablet, tres arriba y dos abajo (dibujo arriba, nombre debajo); desde 1000 px, las cinco en fila
+   con el dibujo a la izquierda. */
 .shop-tabs {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 30px;
+  margin-top: 28px;
 }
 
 .tab {
   --t: var(--a-400);
   --t-hi: var(--t);
   --t-lo: var(--t);
-  --t-ink: #07080c;
+  --t-ink: #07090c;
   position: relative;
-  display: flex;
+  display: grid;
   grid-column: span 2;
-  align-items: flex-end;
+  grid-template-areas: 'art' 'label';
+  align-content: start;
+  gap: 8px;
   min-width: 0;
-  min-height: 104px;
-  padding: 10px 10px 9px;
-  overflow: hidden;
-  border: 2px solid var(--t-hi);
+  padding: 6px 6px 10px;
+  border: 1px solid var(--bd-2);
   border-radius: 14px;
-  background:
-    var(--grain),
-    radial-gradient(120% 110% at 82% 18%, var(--t) 0%, var(--t-lo) 52%, var(--t-ink) 100%);
-  color: #fff;
-  text-align: left;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.25),
-    0 3px 0 var(--t-ink),
-    0 14px 26px -16px #000;
+  background: var(--s1);
+  color: var(--text);
+  text-align: center;
+  box-shadow: var(--card-shadow);
   transition:
-    transform 0.25s var(--ease),
-    border-color 0.2s,
-    box-shadow 0.25s,
-    filter 0.2s;
+    transform 0.22s var(--ease),
+    border-color 0.18s,
+    background-color 0.18s,
+    box-shadow 0.22s;
 }
 
-/* En el móvil y la tablet, tres arriba y dos abajo (más anchas) */
 .tab:nth-child(n + 4) {
   grid-column: span 3;
 }
 
 .tab[data-category='rangos'] { --t: #fcc94a; --t-hi: #fddb86; --t-lo: #b05c03; --t-ink: #4d2101; }
 .tab[data-category='cosmeticos'] { --t: #ff6fd8; --t-hi: #ff99e3; --t-lo: #c90093; --t-ink: #580040; }
-.tab[data-category='crates'] { --t: #a78bfa; --t-hi: #b59dfb; --t-lo: #3a09cd; --t-ink: #19045a; }
+.tab[data-category='crates'] { --t: #3ee08f; --t-hi: #8ff0bd; --t-lo: #0a8a55; --t-ink: #023a24; }
 .tab[data-category='vfx'] { --t: #45e9ff; --t-hi: #82f0ff; --t-lo: #009db2; --t-ink: #00454e; }
 .tab[data-category='skills'] { --t: #ff6b5b; --t-hi: #ffa298; --t-lo: #be1300; --t-ink: #530800; }
 
-/* El dibujo, arriba a la derecha y con su sombra */
+/* El dibujo sobre la placa de su color */
 .tab-art {
-  position: absolute;
-  top: 8px;
-  right: 6px;
-  width: 72%;
-  height: 66%;
+  grid-area: art;
+  width: 100%;
+  height: 64px;
+  padding: 6px;
   object-fit: contain;
-  object-position: 100% 50%;
-  filter: drop-shadow(0 6px 8px var(--t-ink));
-  transition: transform 0.35s var(--spring);
-  pointer-events: none;
+  border-radius: 10px;
+  background: radial-gradient(120% 120% at 50% 20%, var(--t-hi) 0%, var(--t) 40%, var(--t-lo) 100%);
+  box-shadow: inset 0 -3px 0 var(--t-ink);
+  transition: transform 0.3s var(--spring);
 }
 
 .tab-label {
-  position: relative;
-  max-width: 100%;
-  font: 800 10px/1.2 var(--font-display);
-  letter-spacing: 0;
-  text-transform: uppercase;
-  text-shadow:
-    0 1px 0 var(--t-ink),
-    0 0 10px var(--t-ink);
+  grid-area: label;
+  min-width: 0;
+  font: 800 13.5px/1.2 var(--font-body);
 }
 
-/* El número, arriba a la izquierda en una pastilla de su tono oscuro */
+/* El número: una pastilla sobre la esquina de la placa */
 .tab .count {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
   display: inline-grid;
   place-items: center;
-  min-width: 24px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 6px;
-  border: 1px solid var(--t-hi);
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 7px;
   background: var(--t-ink);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -2840,7 +3012,8 @@ body:not([data-hero]) .header::before {
 }
 
 .tab:hover {
-  filter: brightness(1.08) saturate(1.05);
+  border-color: var(--t);
+  background: var(--s2);
 }
 
 .tab:active {
@@ -2852,25 +3025,20 @@ body:not([data-hero]) .header::before {
   outline-offset: 3px;
 }
 
-/* La elegida: encendida (su tono claro detrás del dibujo), contorno blanco, anillo de su color y su brillo */
+/* La elegida: llena de su color */
 .tab[aria-selected='true'] {
-  border-color: #fff;
-  background:
-    var(--grain),
-    radial-gradient(130% 120% at 82% 18%, var(--t-hi) 0%, var(--t) 36%, var(--t-lo) 76%, var(--t-ink) 112%);
+  border-color: var(--t-hi);
+  background: var(--t);
+  color: var(--t-ink);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.45),
-    0 0 0 3px var(--t),
-    0 4px 0 3px var(--t-ink),
-    0 18px 36px -10px var(--t);
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 4px 0 var(--t-lo),
+    0 18px 34px -16px var(--t);
 }
 
 .tab[aria-selected='true'] .tab-art {
-  transform: scale(1.08);
-}
-
-.tab[aria-selected='true'] .count {
-  border-color: #fff;
+  background: radial-gradient(120% 120% at 50% 20%, #fff 0%, var(--t-hi) 45%, var(--t) 100%);
+  box-shadow: inset 0 -3px 0 var(--t-lo);
 }
 
 @media (hover: hover) {
@@ -2878,8 +3046,8 @@ body:not([data-hero]) .header::before {
     transform: translateY(-3px);
   }
 
-  .tab:hover:not([aria-selected='true']) .tab-art {
-    transform: scale(1.06) rotate(-2deg);
+  .tab:hover .tab-art {
+    transform: scale(1.04);
   }
 }
 
@@ -2888,22 +3056,20 @@ body:not([data-hero]) .header::before {
     gap: 12px;
   }
 
-  .tab {
-    min-height: 116px;
-    padding: 12px 12px 11px;
+  .tab-art {
+    height: 84px;
   }
 
   .tab-label {
-    font-size: 12px;
-    letter-spacing: 0.02em;
+    font-size: 15px;
   }
 }
 
-/* Desde 1000 px, las cinco en una fila */
+/* Desde 1000 px: las cinco en fila, el dibujo a la izquierda y el nombre al lado */
 @media (min-width: 1000px) {
   .shop-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
   }
 
   .tab,
@@ -2912,63 +3078,64 @@ body:not([data-hero]) .header::before {
   }
 
   .tab {
-    min-height: 128px;
-    padding: 14px 14px 12px;
-    border-radius: 16px;
+    grid-template-areas: 'art label';
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px 8px 8px;
+    text-align: left;
+  }
+
+  .tab-art {
+    height: 64px;
+    padding: 4px;
   }
 
   .tab-label {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .tab .count {
-    top: 10px;
-    left: 10px;
+    top: 4px;
+    left: 4px;
+    min-width: 24px;
+    height: 20px;
+    font-size: 11.5px;
   }
 }
 
 .shop-intro {
-  margin: 26px 0 0;
-  max-width: 760px;
+  margin: 0;
+  max-width: 62ch;
+  color: var(--text-2);
   font-size: 16px;
+  text-shadow: 0 1px 10px #04080f;
 }
 
 .products {
-  margin-top: 24px;
+  margin-top: 22px;
 }
 
 /* Al cambiar de pestaña, el contenido entra escalonado */
 .products > * {
   /* backwards: al terminar deja de aplicarse, así la tarjeta se eleva suave al pasar el ratón */
-  animation: rise 0.6s var(--ease) backwards;
+  animation: rise 0.5s var(--ease) backwards;
 }
 
 .products > :nth-child(2) {
-  animation-delay: 0.05s;
+  animation-delay: 0.04s;
 }
 
 .products > :nth-child(3) {
-  animation-delay: 0.1s;
+  animation-delay: 0.08s;
 }
 
 .products > :nth-child(4) {
-  animation-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 
-.products > :nth-child(5) {
-  animation-delay: 0.2s;
-}
-
-.products > :nth-child(6) {
-  animation-delay: 0.25s;
-}
-
-.products > :nth-child(7) {
-  animation-delay: 0.3s;
-}
-
-.products > :nth-child(n + 8) {
-  animation-delay: 0.35s;
+.products > :nth-child(n + 5) {
+  animation-delay: 0.16s;
 }
 
 .crate-empty {
@@ -2982,9 +3149,8 @@ body:not([data-hero]) .header::before {
   flex-direction: column;
   overflow: hidden;
   transition:
-    transform 0.4s var(--ease),
-    border-color 0.3s,
-    box-shadow 0.4s var(--ease);
+    transform 0.3s var(--ease),
+    border-color 0.2s;
 }
 
 .product::before,
@@ -2998,13 +3164,8 @@ body:not([data-hero]) .header::before {
 }
 
 .product:hover {
-  transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--t1) 50%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 0 0 1px color-mix(in srgb, var(--t1) 30%, transparent),
-    0 0 34px -10px color-mix(in srgb, var(--t1) 80%, transparent),
-    0 28px 50px -26px color-mix(in srgb, var(--t1) 70%, transparent);
+  transform: translateY(-4px);
+  border-color: var(--t1);
 }
 
 /* min-height: 0 para que la proporción mande y todas las imágenes midan lo mismo */
@@ -3015,8 +3176,8 @@ body:not([data-hero]) .header::before {
   min-height: 0;
   overflow: hidden;
   background:
-    radial-gradient(55% 75% at 50% 62%, var(--t3, rgba(252, 201, 74, 0.2)), transparent 75%),
-    linear-gradient(180deg, var(--s1), var(--s0));
+    radial-gradient(55% 75% at 50% 62%, var(--t3, #3a2f12), transparent 75%),
+    var(--s0);
   border-bottom: 1px solid var(--bd);
 }
 
@@ -3035,7 +3196,7 @@ body:not([data-hero]) .header::before {
   height: 74%;
   min-height: 0;
   object-fit: contain;
-  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 14px 18px #000);
 }
 
 .product:hover .thumb img.ok {
@@ -3054,16 +3215,14 @@ body:not([data-hero]) .header::before {
 .viewer .cat,
 .cv-head .cat,
 .account-card .cat {
-  font: 800 11px/1.2 var(--font-body);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font: 800 13px/1.2 var(--font-body);
+  letter-spacing: 0;
   color: var(--t1, var(--a-300));
 }
 
 .product h3 {
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 19px;
-  font-weight: 600;
 }
 
 .product p {
@@ -3092,34 +3251,9 @@ body:not([data-hero]) .header::before {
   background-size: 12px;
 }
 
-.trust {
-  display: grid;
-  gap: 12px;
-  margin-top: 48px;
-}
-
-.trust .item {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 20px;
-}
-
-.trust b {
-  display: block;
-  font: 600 15px/1.35 var(--font-display);
-}
-
-.trust span:not(.icon) {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 /* Lo que compras es tuyo para siempre: permanentes, irrompibles y vinculados a la cuenta */
 .owned {
-  margin-top: 16px;
+  margin-top: 48px;
   padding: 26px 22px;
   scroll-margin-top: calc(var(--header-h) + 24px);
 }
@@ -3136,12 +3270,12 @@ body:not([data-hero]) .header::before {
   flex: none;
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  border-radius: 15px;
   color: #fff;
-  background: var(--pri-grad);
+  background: var(--brand);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 0 26px -6px rgb(var(--a-rgb) / 0.7);
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 4px 0 var(--brand-lip);
 }
 
 .owned-head .icon svg {
@@ -3151,7 +3285,8 @@ body:not([data-hero]) .header::before {
 
 .owned h2 {
   margin: 2px 0 6px;
-  font-size: clamp(19px, 2.4vw, 24px);
+  font: 800 clamp(20px, 2.4vw, 26px) / 1.2 var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 .owned-head p {
@@ -3161,41 +3296,33 @@ body:not([data-hero]) .header::before {
 
 .owned-list {
   display: grid;
-  gap: 12px;
+  gap: 0;
   margin: 22px 0 0;
   padding: 0;
   list-style: none;
+  gap: 1px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--bd);
+  overflow: hidden;
 }
 
 .owned-list li {
-  padding: 16px 18px 16px 46px;
-  border-radius: var(--r);
-  background:
-    var(--check) 16px 18px / 18px no-repeat,
-    rgb(var(--bg-rgb) / 0.45);
-  box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.16);
-  transition:
-    box-shadow 0.3s var(--ease),
-    transform 0.3s var(--ease);
-}
-
-.owned-list li:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--a-rgb) / 0.5),
-    0 0 24px -10px rgb(var(--a-rgb) / 0.7);
+  padding: 16px 18px 16px 48px;
+  background: var(--check) 18px 19px / 18px no-repeat, var(--s0);
 }
 
 .owned-list b {
   display: block;
-  font: 600 15px/1.35 var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .owned-list span {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 14.5px;
 }
 
 /* ---------- Rangos: la escalera y el escaparate con el personaje (un solo lienzo 3D) ---------- */
@@ -3595,7 +3722,7 @@ body:not([data-hero]) .header::before {
   padding: 3px 8px;
   border-radius: 999px;
   background: var(--rk);
-  color: #0b0b10;
+  color: #0b0d10;
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -3721,7 +3848,7 @@ body:not([data-hero]) .header::before {
   --a: var(--rk2);
   --b: var(--rk);
   --lip: color-mix(in srgb, var(--rk) 50%, #000);
-  --fg: #0b0b10;
+  --fg: #0b0d10;
   --glow: var(--rk3);
 }
 
@@ -3960,19 +4087,18 @@ body:not([data-hero]) .header::before {
   min-width: 0;
   overflow: hidden;
   transition:
-    transform 0.4s var(--ease),
-    border-color 0.3s,
-    box-shadow 0.4s var(--ease);
+    transform 0.3s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.3s var(--ease);
 }
 
 .crate-tile:hover {
-  transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--t2, var(--a-400)) 55%, transparent);
+  transform: translateY(-5px);
+  border-color: var(--t2, var(--a-400));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 0 0 1px color-mix(in srgb, var(--t2, var(--a-400)) 30%, transparent),
-    0 0 36px -10px var(--t2, var(--a-400)),
-    0 28px 50px -24px var(--t2, var(--a-400));
+    var(--card-shadow),
+    0 0 0 1px var(--t2, var(--a-400)),
+    0 26px 44px -26px var(--t2, var(--a-400));
 }
 
 .crate-tile-art {
@@ -3985,9 +4111,8 @@ body:not([data-hero]) .header::before {
   padding: 0;
   border: 0;
   overflow: hidden;
-  background:
-    radial-gradient(80% 60% at 50% 100%, rgba(0, 0, 0, 0.4), transparent 70%),
-    linear-gradient(180deg, var(--s1), var(--s0));
+  border-bottom: 1px solid var(--bd);
+  background: linear-gradient(180deg, #152337, var(--s0));
   cursor: pointer;
 }
 
@@ -4006,27 +4131,6 @@ body:not([data-hero]) .header::before {
 .crate-tile:hover .crate-tile-art img.ok {
   scale: 1.1;
   translate: 0 -6px;
-}
-
-/* Destello que cruza la tarjeta al pasar el ratón */
-.crate-tile::after,
-.product::after,
-.cos-piece::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: inherit;
-  background: linear-gradient(105deg, transparent 36%, rgba(255, 255, 255, 0.13) 47%, rgb(var(--c-rgb) / 0.12) 53%, transparent 64%);
-  transform: translateX(-115%);
-  transition: transform 0.9s var(--ease);
-  pointer-events: none;
-}
-
-.crate-tile:hover::after,
-.product:hover::after,
-.cos-piece:hover::after {
-  transform: translateX(115%);
 }
 
 .cos-piece {
@@ -4069,14 +4173,12 @@ body:not([data-hero]) .header::before {
   bottom: 12px;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--t1, var(--a-300)) 45%, transparent);
-  background: rgb(var(--bg-rgb) / 0.85);
-  font-size: 11.5px;
+  border: 1px solid var(--t1, var(--a-300));
+  background: var(--s0);
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   white-space: nowrap;
-  color: var(--t1, var(--a-300));
+  color: #fff;
   opacity: 0;
   transform: translate(-50%, 6px);
   transition:
@@ -4101,8 +4203,7 @@ body:not([data-hero]) .header::before {
 }
 
 .crate-tile h3 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
 }
 
 .crate-tile p,
@@ -4114,8 +4215,8 @@ body:not([data-hero]) .header::before {
 }
 
 .pieces {
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--t1, var(--a-300));
 }
 
@@ -4364,20 +4465,20 @@ body:not([data-hero]) .header::before {
 
 .cx {
   --c: var(--a-400);
-  --cx-0: #07080b;
-  --cx-1: #0e1015;
+  --cx-0: #07090b;
+  --cx-1: #0e1115;
   --cx-2: #15181e;
-  --cx-3: #1d2028;
-  --cx-line: #242832;
+  --cx-3: #1d2228;
+  --cx-line: #242a32;
   --cx-line-2: #343a47;
-  --cx-tx-2: #b8bdc9;
+  --cx-tx-2: #b8bfc9;
   --cx-tx-3: #858b9a;
   position: relative;
   border: 1px solid #262a33;
   border-radius: 20px;
   background:
     var(--grain),
-    linear-gradient(180deg, #111318 0%, #0a0b0e 260px, #0a0b0e 100%);
+    linear-gradient(180deg, #111418 0%, #0a0c0e 260px, #0a0c0e 100%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.07),
     0 0 0 1px #000,
@@ -4409,7 +4510,7 @@ body:not([data-hero]) .header::before {
   padding: 0 10px;
   border-radius: 6px;
   background: var(--c);
-  color: #07080b;
+  color: #07090b;
   font: 800 11px/1 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4630,7 +4731,7 @@ body:not([data-hero]) .header::before {
   padding: 0 7px;
   border-radius: 5px;
   border: 1px solid #3a404d;
-  background: #07080b;
+  background: #07090b;
   color: #fff;
   font: 800 9.5px/1 var(--font-body);
   letter-spacing: 0.08em;
@@ -4735,7 +4836,7 @@ body:not([data-hero]) .header::before {
   padding: 4px;
   border-radius: 11px;
   border: 1px solid #2c313c;
-  background: #07080b;
+  background: #07090b;
   transform: translateX(-50%);
 }
 
@@ -4745,8 +4846,8 @@ body:not([data-hero]) .header::before {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  border: 1px solid #333947;
-  background: #1b1e26;
+  border: 1px solid #333b47;
+  background: #1b2026;
   color: #fff;
   transition:
     background-color 0.2s,
@@ -4762,7 +4863,7 @@ body:not([data-hero]) .header::before {
 .cx-step:hover {
   border-color: var(--c);
   background: var(--c);
-  color: #07080b;
+  color: #07090b;
 }
 
 .cx-step:focus-visible {
@@ -4891,11 +4992,11 @@ body:not([data-hero]) .header::before {
 
 /* El secundario dentro de la ventana: grafito claro, macizo */
 .cx .btn-ghost {
-  --a: #2a2f3b;
-  --b: #353b4a;
+  --a: #2a313b;
+  --b: #353e4a;
   --lip: #050608;
   box-shadow:
-    inset 0 0 0 1px #4a5162,
+    inset 0 0 0 1px #4a5462,
     inset 0 1px 0 rgb(255 255 255 / 0.12),
     0 var(--lift) 0 var(--lip);
 }
@@ -5021,7 +5122,7 @@ body:not([data-hero]) .header::before {
   border-bottom: 1px solid #000;
   background:
     var(--grain),
-    linear-gradient(100deg, var(--c-lo) 0%, var(--c-ink) 62%, #0e1015 100%);
+    linear-gradient(100deg, var(--c-lo) 0%, var(--c-ink) 62%, #0e1115 100%);
 }
 
 .sk-emblem {
@@ -5032,7 +5133,7 @@ body:not([data-hero]) .header::before {
   height: 62px;
   border-radius: 13px;
   border: 2px solid #fff;
-  background: #07080b;
+  background: #07090b;
   box-shadow:
     0 0 0 4px var(--c-lo),
     0 12px 24px -10px #000;
@@ -5069,7 +5170,7 @@ body:not([data-hero]) .header::before {
   padding: 0 11px;
   border-radius: 7px;
   border: 1px solid var(--g);
-  background: #07080b;
+  background: #07090b;
   color: #fff;
   font: 700 12px/1 var(--font-body);
   white-space: nowrap;
@@ -5078,7 +5179,7 @@ body:not([data-hero]) .header::before {
 .sk-head-desc {
   grid-column: 1 / -1;
   margin: 10px 0 0;
-  color: #dfe2ea;
+  color: #dfe4ea;
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -5192,7 +5293,7 @@ body:not([data-hero]) .header::before {
   padding: 0;
   border-radius: 9px;
   border: 1px solid #3a404d;
-  background: #07080b;
+  background: #07090b;
   cursor: pointer;
   transition:
     transform 0.2s var(--ease),
@@ -5219,7 +5320,7 @@ body:not([data-hero]) .header::before {
   border-radius: 5px;
   border: 1px solid #000;
   background: #fff;
-  color: #07080b;
+  color: #07090b;
   font: 800 10.5px/1 var(--font-body);
 }
 
@@ -5311,7 +5412,7 @@ body:not([data-hero]) .header::before {
   padding: 0 4px;
   border-radius: 4px;
   background: #fff;
-  color: #07080b;
+  color: #07090b;
   font: 800 11px/1 var(--font-body);
 }
 
@@ -5478,7 +5579,7 @@ body:not([data-hero]) .header::before {
 
 .cx-own.is-owned .cx-own-ico {
   background: var(--c);
-  color: #07080b;
+  color: #07090b;
 }
 
 .cx-own.is-pending .cx-own-ico {
@@ -7581,16 +7682,24 @@ body:not([data-hero]) .header::before {
   }
 
   .section {
-    padding-block: 88px;
+    padding-block: 72px;
   }
 
-  .logo-mark {
-    width: 200px;
+  .portal {
+    width: 280px;
   }
 
   .hero-cta {
     grid-template-columns: minmax(0, 1fr) auto;
     max-width: 640px;
+  }
+
+  .hero-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .grid-2 {
@@ -7599,14 +7708,6 @@ body:not([data-hero]) .header::before {
 
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .timeline {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .trust {
-    grid-template-columns: repeat(3, 1fr);
   }
 
   .owned {
@@ -7647,15 +7748,13 @@ body:not([data-hero]) .header::before {
   }
 
   .cta-band {
-    padding: 72px 40px;
+    padding: 44px 40px;
   }
 
   .cta-band .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    max-width: none;
+    gap: 12px;
   }
 
   .orders li {
@@ -7781,13 +7880,13 @@ body:not([data-hero]) .header::before {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   :root {
-    --header-h: 78px;
+    --header-h: 72px;
   }
 
   .nav {
     display: flex;
-    gap: 30px;
-    margin-left: 40px;
+    gap: 4px;
+    margin-left: 28px;
   }
 
   .ip-chip,
@@ -7800,7 +7899,7 @@ body:not([data-hero]) .header::before {
   }
 
   .section {
-    padding-block: 112px;
+    padding-block: 88px;
   }
 
   .section.pt-0 {
@@ -7823,8 +7922,75 @@ body:not([data-hero]) .header::before {
     aspect-ratio: 16 / 10;
   }
 
-  .logo-mark {
-    width: 230px;
+  /* La portada: el texto a la izquierda y el portal a la derecha */
+  .hero {
+    padding: calc(var(--header-h) + 56px) 0 72px;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: 40px;
+    text-align: left;
+  }
+
+  .hero-copy {
+    align-items: flex-start;
+  }
+
+  .hero-title {
+    font-size: clamp(64px, 6.6vw, 92px);
+  }
+
+  .portal {
+    order: 2;
+    justify-self: center;
+    width: min(100%, 440px);
+  }
+
+  .hero-links {
+    margin-top: 56px;
+  }
+
+  .page-hero {
+    padding-top: calc(var(--header-h) + 48px);
+  }
+
+  .shop-head-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 48px;
+  }
+
+  .feature-board {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  .feature-board .section-head {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+  }
+
+  .help-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+    gap: 28px;
+  }
+
+  .help-side {
+    position: sticky;
+    top: calc(var(--header-h) + 20px);
+  }
+
+  .cta-band {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 48px 52px;
+  }
+
+  .cta-band .actions {
+    justify-content: flex-end;
   }
 
   .crate-grid {
@@ -7839,11 +8005,12 @@ body:not([data-hero]) .header::before {
 
   .split {
     grid-template-columns: 1.05fr 1fr;
-    gap: 64px;
+    gap: 56px;
   }
 
   .footer-inner {
-    grid-template-columns: 1.2fr 2fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 56px;
   }
 
   .legal-layout {
@@ -7892,8 +8059,7 @@ body:not([data-hero]) .header::before {
   }
 
   .nav {
-    gap: 22px;
-    margin-left: 28px;
+    margin-left: 12px;
   }
 }
 
@@ -7903,8 +8069,7 @@ body:not([data-hero]) .header::before {
   .crate-tile:hover,
   .product:hover,
   .feature:hover,
-  .step:hover,
-  .rule:hover,
+  .link-card:hover,
   .reel-item:hover,
   .odds li:hover,
   .ip-box:hover {
@@ -7935,12 +8100,18 @@ body:not([data-hero]) .header::before {
     animation-iteration-count: infinite !important;
   }
 
-  .logo-mark img,
-  .logo-mark .glow,
-  .logo-mark .shine,
-  .logo-mark .shine::before {
+  .portal-glow {
     animation-duration: 6s !important;
     animation-iteration-count: infinite !important;
+  }
+
+  .portal-ring {
+    animation-duration: 26s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .portal-ring.inner {
+    animation-duration: 40s !important;
   }
 
   .crate-glow,
@@ -7986,11 +8157,5 @@ body:not([data-hero]) .header::before {
 
   .ready .footer {
     animation-delay: 0.12s !important;
-  }
-
-  .btn-shop:hover {
-    animation-duration: 1.8s !important;
-    animation-iteration-count: infinite !important;
-    animation-delay: 0.3s !important;
   }
 }

@@ -107,7 +107,7 @@ def header(page):
     links = '\n'.join(
         f'        <a href="{href}"{cur if key == page else ""}>{label}</a>'
         for key, href, label in NAV)
-    arrow = I['arrow']
+    arrow = I['chevron']
     sheet_links = '\n'.join(
         f'      <a href="{href}"{cur if key == page else ""}>{label}{arrow}</a>'
         for key, href, label in NAV + SHEET_EXTRA)
@@ -156,11 +156,21 @@ def footer():
   <footer class="footer">
     <div class="wrap footer-inner">
       <div class="footer-brand">
-        <img src="/img/logo.webp" alt="" width="48" height="53" loading="lazy">
-        <div>
-          <b data-server-name>Tierras Fantásticas</b>
-          <p>Servidor de Minecraft de survival, aventura, fantasía y rol.</p>
-          <p>IP: <span data-server-ip>{IP}</span></p>
+        <div class="brand-row">
+          <img src="/img/logo.webp" alt="" width="48" height="53" loading="lazy">
+          <div>
+            <b data-server-name>Tierras Fantásticas</b>
+            <p>Servidor de Minecraft de survival, aventura, fantasía y rol.</p>
+          </div>
+        </div>
+        <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+          <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
+          <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
+        </button>
+        <div class="footer-social">
+          <a href="/discord" target="_blank" rel="noopener" aria-label="Discord" style="--c:#5865f2">{I['discord']}</a>
+          <a href="/whatsapp" target="_blank" rel="noopener" aria-label="Grupo de WhatsApp" style="--c:#1fae55">{I['whatsapp']}</a>
+          <a href="mailto:{EMAIL}" aria-label="Correo: {EMAIL}">{I['mail']}</a>
         </div>
       </div>
       <div class="footer-cols">
@@ -216,17 +226,17 @@ def footer():
 '''
 
 
-def hero_art(cls='hero-art'):
-    # El arte del reino (de noche) es el fondo fijo de toda la web (body::before en styles.css): las cabeceras ya no
-    # llevan imagen propia, dejan verlo detrás.
-    return ''
+def crumbs(label, parent=None):
+    """Miga de pan: Inicio › (sección) › página."""
+    mid = f'<a href="{parent[0]}">{parent[1]}</a>{I["chevron"]}' if parent else ''
+    return (f'<nav class="crumbs" aria-label="Estás en"><a href="/">Inicio</a>{I["chevron"]}{mid}'
+            f'<span aria-current="page">{label}</span></nav>')
 
 
-def page_hero(eyebrow, title, text):
+def page_hero(crumb, title, text, parent=None):
     return f'''    <section class="page-hero">
-      {hero_art()}
       <div class="wrap">
-        <span class="eyebrow">{eyebrow}</span>
+        {crumbs(crumb, parent)}
         <h1>{title}</h1>
         <p>{text}</p>
       </div>
@@ -235,29 +245,29 @@ def page_hero(eyebrow, title, text):
 
 
 def feature(icon, title, text):
-    return f'''        <article class="panel feature reveal">
-          <span class="icon">{I[icon]}</span>
-          <h3>{title}</h3>
-          <p>{text}</p>
-        </article>'''
+    return f'''          <article class="panel feature">
+            <span class="icon">{I[icon]}</span>
+            <div><h3>{title}</h3><p>{text}</p></div>
+          </article>'''
 
 
 def step(title, text):
-    return f'''        <article class="panel step reveal">
-          <h3>{title}</h3>
-          <p>{text}</p>
-        </article>'''
+    return f'''        <li><h3>{title}</h3><p>{text}</p></li>'''
 
 
-DISCORD_BAND = f'''    <section class="wrap section">
-      <div class="panel cta-band reveal">
-        <span class="eyebrow">Comunidad</span>
-        <h2>Únete al Discord del reino</h2>
-        <p>Novedades, eventos, sorteos, el modpack y soporte del staff en Discord, y avisos rápidos en el grupo de WhatsApp.</p>
+def rule(icon, title, text):
+    return f'''        <div class="rule"><span class="icon">{I[icon]}</span><div><b>{title}</b><span>{text}</span></div></div>'''
+
+
+DISCORD_BAND = f'''    <section class="wrap section pt-0">
+      <div class="cta-band">
+        <div>
+          <h2>Únete al Discord del reino</h2>
+          <p>Novedades, eventos, sorteos, el modpack y soporte del staff en Discord, y avisos rápidos en el grupo de WhatsApp.</p>
+        </div>
         <div class="actions">
           <a href="/discord" class="btn btn-discord btn-lg" target="_blank" rel="noopener">{I['discord']}Entrar al Discord</a>
           <a href="/whatsapp" class="btn btn-whatsapp btn-lg" target="_blank" rel="noopener">{I['whatsapp']}Grupo de WhatsApp</a>
-          <a href="/ayuda" class="btn btn-ghost btn-lg">Ver ayuda</a>
         </div>
       </div>
     </section>
@@ -292,29 +302,34 @@ def index():
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
   <main id="main">
     <section class="hero">
-      {hero_art()}
-      <div class="wrap hero-inner">
-        <div class="logo-mark">
-          <span class="glow" aria-hidden="true"></span>
-          <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
-          <span class="shine" aria-hidden="true"></span>
+      <div class="wrap">
+        <div class="hero-grid">
+          <div class="portal" data-portal aria-hidden="true">
+            <span class="portal-glow"></span>
+            <span class="portal-disc"></span>
+            <span class="portal-ring"></span>
+            <span class="portal-ring inner"></span>
+            <img src="/img/logo.webp" alt="" width="743" height="820">
+          </div>
+          <div class="hero-copy">
+            <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+            {hero_title('Tierras Fantásticas')}
+            <p class="lead">Servidor de Minecraft de <b>survival</b>, <b>aventura</b>, <b>fantasía</b> y <b>rol</b>. Crea tu
+              historia, explora, combate y forja alianzas con otros jugadores.</p>
+            <div class="hero-cta">
+              <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+                <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
+                <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
+              </button>
+              <a href="/tienda" class="btn btn-shop btn-lg">Visitar la tienda</a>
+            </div>
+            <span class="hero-meta">Minecraft Java 1.20.1 con Forge</span>
+          </div>
         </div>
-        <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
-        {hero_title('Tierras Fantásticas')}
-        <p class="lead">Servidor de Minecraft de <b>survival</b>, <b>aventura</b>, <b>fantasía</b> y <b>rol</b>. Crea tu
-          historia, explora, combate y forja alianzas con otros jugadores.</p>
-        <div class="hero-cta">
-          <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-            <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
-            <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
-          </button>
-          <a href="/tienda" class="btn btn-shop btn-lg">Visitar la tienda {I['arrow']}</a>
-        </div>
-        <span class="hero-meta">Minecraft Java 1.20.1 · Forge</span>
         <nav class="hero-links" aria-label="Únete a la comunidad">
-          <a href="/discord" class="btn btn-discord" target="_blank" rel="noopener">{I['discord']}Entra a nuestro Discord</a>
-          <a href="/whatsapp" class="btn btn-whatsapp" target="_blank" rel="noopener">{I['whatsapp']}Grupo de WhatsApp</a>
-          <a href="/ayuda#como-entrar" class="btn btn-ghost">{I['help']}Cómo entrar al server</a>
+          <a href="/discord" class="link-card lc-discord" target="_blank" rel="noopener"><span class="lc-icon">{I['discord']}</span><span class="lc-text"><b>Entra a nuestro Discord</b><small>Novedades, eventos y soporte del staff</small></span>{I['chevron']}</a>
+          <a href="/whatsapp" class="link-card lc-whatsapp" target="_blank" rel="noopener"><span class="lc-icon">{I['whatsapp']}</span><span class="lc-text"><b>Grupo de WhatsApp</b><small>Avisos rápidos del servidor</small></span>{I['chevron']}</a>
+          <a href="/ayuda#como-entrar" class="link-card lc-help"><span class="lc-icon">{I['help']}</span><span class="lc-text"><b>Cómo entrar al server</b><small>Modpack, TF Client y la IP</small></span>{I['chevron']}</a>
         </nav>
       </div>
     </section>
@@ -336,18 +351,17 @@ def tienda():
                 'tienda') + header('tienda') + f'''
   <main id="main">
     <section class="shop-head">
-      {hero_art()}
       <div class="wrap shop-head-inner">
-        <div>
-          <span class="eyebrow">Tienda oficial</span>
+        <div class="shop-title">
+          {crumbs('Tienda')}
           <h1>Tienda</h1>
-          <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar. Pago seguro con tarjeta.</p>
+          <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar.</p>
         </div>
-        <label class="shop-search" id="shop-search-wrap" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <span class="sr-only">Buscar crate</span>
-          <input id="shop-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
-        </label>
+        <ul class="shop-trust">
+          <li><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></li>
+          <li><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></li>
+          <li><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></li>
+        </ul>
       </div>
     </section>
     <section class="wrap shop-body">
@@ -355,16 +369,18 @@ def tienda():
 {tab_html}
       </div>
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
-      <p class="shop-intro muted" id="shop-intro"></p>
+      <div class="shop-bar">
+        <p class="shop-intro muted" id="shop-intro"></p>
+        <label class="shop-search" id="shop-search-wrap" hidden>
+          {I['search']}
+          <span class="sr-only">Buscar crate</span>
+          <input id="shop-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
       <div class="products" id="products" role="tabpanel">
         {skeletons(8)}
       </div>
-      <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
-      <div class="trust">
-        <div class="panel item"><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></div>
-        <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
-        <div class="panel item"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
-      </div>
+      <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda. Prueba con otro nombre o un color.</p>
       <section class="owned frame" id="vinculados" aria-labelledby="owned-title">
         <div class="owned-head">
           <span class="icon">{I['shield']}</span>
@@ -416,12 +432,11 @@ def mundo():
                 'Así es Tierras Fantásticas: supervivencia de aventura con reinos, mazmorras, más de 200 mods y el TF Client.',
                 'mundo') + header('mundo') + f'''
   <main id="main">
-{page_hero('El reino', 'El mundo te espera', 'Supervivencia con alma de aventura: castillos que asaltar, reinos que fundar y una comunidad que te recibe con los brazos abiertos.')}
-    <section class="wrap section">
+{page_hero('El mundo', 'El mundo te espera', 'Supervivencia con alma de aventura: castillos que asaltar, reinos que fundar y una comunidad que te recibe con los brazos abiertos.')}
+    <section class="wrap section pt-sm">
       <div class="split">
-        <div class="media frame reveal"><img src="/img/hero-1280.webp" alt="Castillo y dragón en Tierras Fantásticas" width="1280" height="720" loading="lazy"></div>
-        <div class="reveal">
-          <span class="eyebrow">Supervivencia de aventura</span>
+        <div class="media frame"><img src="/img/hero-1280.webp" alt="Castillo y dragón en Tierras Fantásticas" width="1280" height="720" loading="lazy"></div>
+        <div>
           <h2 class="h2">Un mundo hecho para explorar</h2>
           <p class="muted">Biomas nuevos, estructuras que no verás en otro sitio y criaturas que hacen que cada salida sea una aventura. Juega solo, con amigos o al frente de tu propio reino.</p>
           <ul class="list-check">
@@ -435,41 +450,47 @@ def mundo():
     </section>
 
     <section class="wrap section">
-      <div class="section-head reveal">
-        <span class="eyebrow">TF Client</span>
-        <h2>El cliente oficial del servidor</h2>
-        <p>Viene en el modpack. Hace que entrar sea tan fácil como pulsar un botón.</p>
-      </div>
-      <div class="grid grid-2 grid-4">
+      <div class="feature-board">
+        <div class="section-head">
+          <h2>TF Client, el cliente oficial del servidor</h2>
+          <p>Viene en el modpack. Hace que entrar sea tan fácil como pulsar un botón.</p>
+        </div>
+        <div class="feature-grid">
 {feature('plug', 'Conexión directa', 'Un botón para entrar a Tierras Fantásticas. Antes revisa tus mods y te dice si falta alguno.')}
 {feature('castle', 'Menú propio', 'Pantalla de carga y menú con el arte del reino, sin textos de Mojang.')}
 {feature('music', 'Música del reino', 'Banda sonora propia en la carga y el menú; se apaga al entrar a jugar.')}
 {feature('gift', 'Compras al instante', 'Lo que compras en la tienda te llega dentro del juego, con aviso en pantalla.')}
+        </div>
       </div>
     </section>
 
-    <section class="wrap section">
-      <div class="section-head reveal">
-        <span class="eyebrow">Cómo jugar</span>
-        <h2>Únete en tres pasos</h2>
-      </div>
-      <div class="grid grid-3 steps">
+    <section class="wrap section pt-0">
+      <div class="feature-board">
+        <div class="section-head">
+          <h2>Únete en tres pasos</h2>
+          <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
+        </div>
+        <div class="panel stepper-card">
+          <ol class="stepper">
 {JOIN_STEPS}
+          </ol>
+        </div>
       </div>
     </section>
 
     <section class="wrap section" id="normas">
-      <div class="section-head reveal">
-        <span class="eyebrow">Normas</span>
-        <h2>Las leyes del reino</h2>
-        <p>Pocas y claras, para que todos disfrutemos. El staff puede sancionar lo que rompa el espíritu de estas normas.</p>
-      </div>
-      <div class="rules">
-        <div class="panel rule reveal"><div><b>Respeto ante todo</b><span>Nada de insultos, acoso, discriminación ni spam, en el juego ni en Discord.</span></div></div>
-        <div class="panel rule reveal"><div><b>Sin trampas</b><span>Prohibidos los hacks, X-ray, duplicaciones y aprovechar fallos. Si encuentras uno, avísanos.</span></div></div>
-        <div class="panel rule reveal"><div><b>No destruyas lo ajeno</b><span>El grifeo y el robo fuera de las zonas de guerra pactadas se sancionan.</span></div></div>
-        <div class="panel rule reveal"><div><b>Cuida el servidor</b><span>Evita granjas o máquinas que causen lag. Ante la duda, pregunta al staff.</span></div></div>
-        <div class="panel rule reveal"><div><b>Una cuenta por persona</b><span>Nada de multicuentas para saltarse límites o sanciones.</span></div></div>
+      <div class="feature-board">
+        <div class="section-head">
+          <h2>Las leyes del reino</h2>
+          <p>Pocas y claras, para que todos disfrutemos. El staff puede sancionar lo que rompa el espíritu de estas normas.</p>
+        </div>
+        <div class="panel rule-list">
+{rule('heart', 'Respeto ante todo', 'Nada de insultos, acoso, discriminación ni spam, en el juego ni en Discord.')}
+{rule('shield', 'Sin trampas', 'Prohibidos los hacks, X-ray, duplicaciones y aprovechar fallos. Si encuentras uno, avísanos.')}
+{rule('castle', 'No destruyas lo ajeno', 'El grifeo y el robo fuera de las zonas de guerra pactadas se sancionan.')}
+{rule('zap', 'Cuida el servidor', 'Evita granjas o máquinas que causen lag. Ante la duda, pregunta al staff.')}
+{rule('user', 'Una cuenta por persona', 'Nada de multicuentas para saltarse límites o sanciones.')}
+        </div>
       </div>
     </section>
 
@@ -490,7 +511,7 @@ def legal_page(key, title, desc, intro, sections):
         </section>''' for i, (sid, head_, html) in enumerate(sections, 1))
     return head(f'{title} — Tierras Fantásticas', desc, key) + header(key) + f'''
   <main id="main">
-{page_hero('Legal', title, intro)}
+{page_hero(title, title, intro)}
     <section class="wrap section pt-sm">
       <nav class="legal-tabs" aria-label="Documentos legales">
 {tabs}
@@ -547,20 +568,31 @@ def ayuda():
                 'ayuda') + header('ayuda') + f'''
   <main id="main">
 {page_hero('Ayuda', 'Preguntas frecuentes', 'Todo lo que necesitas saber para entrar al servidor y sobre la tienda.')}
-    <section class="wrap section" id="como-entrar">
-      <div class="section-head reveal">
-        <span class="eyebrow">Cómo jugar</span>
-        <h2>Dentro en tres pasos</h2>
-        <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
-      </div>
-      <ol class="timeline">
-        <li><span class="num">1</span><h3>Prepara el modpack</h3><p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p></li>
-        <li><span class="num">2</span><h3>Pulsa «Tierras Fantásticas»</h3><p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p></li>
-        <li><span class="num">3</span><h3>Empieza tu aventura</h3><p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es {IP}.</p></li>
-      </ol>
-    </section>
-    <section class="wrap section pt-0">
-      <div class="faq">
+    <section class="wrap section pt-sm">
+      <div class="help-layout">
+        <aside class="help-side">
+          <div class="panel stepper-card" id="como-entrar">
+            <h2>Cómo entrar al servidor</h2>
+            <ol class="stepper">
+{JOIN_STEPS}
+            </ol>
+          </div>
+          <div class="panel contact-card">
+            <h2>¿No encuentras tu respuesta?</h2>
+            <p>Escríbenos con tu nombre de jugador y, si es por una compra, el número de pedido.</p>
+            <div class="actions">
+              <a href="/discord" class="btn btn-discord" target="_blank" rel="noopener">{I['discord']}Pregunta en Discord</a>
+              <a href="mailto:{EMAIL}" class="btn btn-ghost">{I['mail']}{EMAIL}</a>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <label class="faq-search">
+            {I['search']}
+            <span class="sr-only">Buscar en las preguntas</span>
+            <input type="search" data-faq-search placeholder="Busca tu pregunta: pago, rango, crate…" autocomplete="off">
+          </label>
+          <div class="panel faq" data-faq>
 {faq('¿Cómo entro al servidor?', f'Necesitas Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas (lo tienes en nuestro Discord). Con el TF Client pulsa «Tierras Fantásticas» en el menú; si entras a mano, la IP es {IP}.')}
 {faq('Se queda en «Conectando» o me dice que faltan mods', 'El servidor usa más de 200 mods y necesitas los mismos. El TF Client revisa tus mods antes de conectar y te dice cuáles faltan. Instala el modpack completo desde nuestro Discord.')}
 {faq('¿Cuánto tarda en llegar mi compra?', 'Al confirmarse el pago, el servidor te la entrega en segundos si estás conectado. Si no lo estás, te espera y la recibes al entrar, con un aviso en pantalla.')}
@@ -575,6 +607,9 @@ def ayuda():
 {faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', f'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> o por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de jugador.')}
+            <p class="faq-empty" data-faq-empty hidden>Ninguna pregunta coincide. Prueba con otra palabra o pregúntanos en Discord.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -629,14 +664,12 @@ def notfound():
     return head('Página no encontrada — Tierras Fantásticas', 'Esta página no existe en Tierras Fantásticas.', '404') + header('') + f'''
   <main id="main">
     <section class="page-hero lost">
-      {hero_art()}
       <div class="wrap">
         <span class="lost-code" aria-hidden="true">404</span>
-        <span class="eyebrow">Fuera del mapa</span>
         <h1>Esta tierra aún no existe</h1>
         <p>La página que buscas no está en el reino: puede que el enlace esté mal escrito o que la hayamos movido.</p>
         <div class="actions">
-          <a href="/" class="btn btn-primary btn-lg">Volver al inicio {I['arrow']}</a>
+          <a href="/" class="btn btn-primary btn-lg">Volver al inicio</a>
           <a href="/tienda" class="btn btn-ghost btn-lg">Ir a la tienda</a>
           <a href="/ayuda" class="btn btn-ghost btn-lg">Ayuda</a>
         </div>
