@@ -319,15 +319,16 @@ def fix_model(model, skin, fps=60):
     return out
 
 
-def _one(job):
-    path, skin, fps = job
+def _one_anim(job):
+    """Una animación de un modelo (para repartirlas entre procesos): (modelo, animación, la animación nueva o None)."""
+    path, name, skin, fps = job
     model = json.load(open(path, encoding='utf-8'))
-    fixed = fix_model(model, skin, fps)
-    if fixed:
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(model, f, separators=(',', ':'))
-    print(f'hecho: {os.path.basename(path)[:-5]} ({len(fixed)} cambiadas)', flush=True)
-    return os.path.basename(path)[:-5], fixed
+    pairs = pairs_of(model)
+    if not pairs:
+        return path, name, None, 0.0
+    w, changed = fix_anim(model, name, geometries(model, skin), pairs, fps, real=geometries(model, skin, 0.0))
+    print(f'hecho: {os.path.basename(path)[:-5]} {name}' + (f' (pegada; {w:.2f} px)' if changed else ''), flush=True)
+    return path, name, model['anims'][name] if changed else None, w
 
 
 def main(res=None, fps=60, procs=1, only=None):
@@ -346,22 +347,36 @@ def main(res=None, fps=60, procs=1, only=None):
     skin = None
     if skin_id:
         skin = json.load(open(os.path.join(res, 'npcs', 'models', skin_id + '.json'), encoding='utf-8'))
-    # los más largos primero (el pescador: 490 s de animación)
-    jobs = [(os.path.join(res, 'npcs', 'models', mid + '.json'), skin if used[mid] else None, fps) for mid in used
-            if not only or mid in only]
-    jobs.sort(key=lambda j: -os.path.getsize(j[0]))
-    total = 0
+    # cada animación por su lado (la más larga primero: «fishing» del pescador, 164 s)
+    jobs = []
+    for mid in used:
+        if only and mid not in only:
+            continue
+        path = os.path.join(res, 'npcs', 'models', mid + '.json')
+        model = json.load(open(path, encoding='utf-8'))
+        for name, a in model['anims'].items():
+            jobs.append((a['len'] or 0, (path, name, skin if used[mid] else None, fps)))
+    jobs = [j for _l, j in sorted(jobs, key=lambda x: -x[0])]
     if procs > 1:
         from concurrent.futures import ProcessPoolExecutor
         with ProcessPoolExecutor(procs) as ex:
-            results = list(ex.map(_one, jobs))
+            results = list(ex.map(_one_anim, jobs))
     else:
-        results = [_one(j) for j in jobs]
-    for mid, fixed in sorted(results):
-        if fixed:
-            total += len(fixed)
-            print(f'{mid}: ' + ', '.join(f'{k} ({v:.2f} px)' for k, v in sorted(fixed.items())))
-    print(f'{len(used)} modelos, {total} animaciones pegadas')
+        results = [_one_anim(j) for j in jobs]
+    changed = {}
+    for path, name, anim, w in results:
+        if anim is not None:
+            changed.setdefault(path, {})[name] = (anim, w)
+    total = 0
+    for path, anims in sorted(changed.items()):
+        model = json.load(open(path, encoding='utf-8'))
+        for name, (anim, _w) in anims.items():
+            model['anims'][name] = anim
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(model, f, separators=(',', ':'))
+        total += len(anims)
+        print(f'{os.path.basename(path)[:-5]}: ' + ', '.join(f'{k} ({v[1]:.2f} px)' for k, v in sorted(anims.items())))
+    print(f'{len(used) if not only else len(only)} modelos, {total} animaciones pegadas')
 
 
 if __name__ == '__main__':
