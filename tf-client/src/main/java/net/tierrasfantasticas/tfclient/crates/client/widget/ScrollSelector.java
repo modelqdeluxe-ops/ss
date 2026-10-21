@@ -1,0 +1,231 @@
+package net.tierrasfantasticas.tfclient.crates.client.widget;
+
+import net.tierrasfantasticas.tfclient.crates.client.screen.FSGui;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+
+public class ScrollSelector<T> extends AbstractWidget {
+   private static final int BAR_WIDTH = 5;
+   private final List<T> all = new ArrayList<>();
+   private final List<T> filtered = new ArrayList<>();
+   private final Function<T, String> displayName;
+   private final Function<T, String> filterText;
+   private final Function<T, ItemStack> icon;
+   private Consumer<T> onSelect = t -> {
+   };
+   private final int rowHeight;
+   private int scroll = 0;
+   private int selectedIndex = -1;
+   private String query = "";
+   private final ScrollbarDrag scrollbarDrag = new ScrollbarDrag();
+   private ScrollMemory memory;
+
+   public ScrollSelector(
+      int x, int y, int width, int height, int rowHeight, Function<T, String> displayName, Function<T, String> filterText, Function<T, ItemStack> icon
+   ) {
+      super(x, y, width, height, Component.empty());
+      this.rowHeight = rowHeight;
+      this.displayName = displayName;
+      this.filterText = filterText;
+      this.icon = icon;
+   }
+
+   public ScrollSelector<T> onSelect(Consumer<T> cb) {
+      this.onSelect = cb;
+      return this;
+   }
+
+   public ScrollSelector<T> remember(ScrollMemory memory) {
+      this.memory = memory;
+      return this;
+   }
+
+   public void setItems(List<T> items) {
+      this.all.clear();
+      this.all.addAll(items);
+      this.applyFilter(true);
+   }
+
+   public void setQuery(String q) {
+      this.query = q == null ? "" : q.toLowerCase(Locale.ROOT).trim();
+      this.applyFilter(false);
+   }
+
+   private void applyFilter(boolean keepPosition) {
+      this.filtered.clear();
+      if (this.query.isEmpty()) {
+         this.filtered.addAll(this.all);
+      } else {
+         for (T t : this.all) {
+            if (this.filterText.apply(t).toLowerCase(Locale.ROOT).contains(this.query)) {
+               this.filtered.add(t);
+            }
+         }
+      }
+
+      if (!keepPosition) {
+         this.selectedIndex = -1;
+         if (this.memory != null) {
+            this.memory.selected = null;
+         }
+
+         this.setScroll(0);
+      } else {
+         this.selectedIndex = -1;
+         Object wanted = this.memory == null ? null : this.memory.selected;
+         if (wanted != null) {
+            for (int i = 0; i < this.filtered.size(); i++) {
+               if (this.filtered.get(i) == wanted) {
+                  this.selectedIndex = i;
+                  break;
+               }
+            }
+         }
+
+         this.setScroll(this.memory == null ? this.scroll : this.memory.scroll);
+      }
+   }
+
+   private void setScroll(int value) {
+      this.scroll = Math.max(0, Math.min(this.maxScroll(), value));
+      if (this.memory != null) {
+         this.memory.scroll = this.scroll;
+      }
+   }
+
+   public T getSelected() {
+      return this.selectedIndex >= 0 && this.selectedIndex < this.filtered.size() ? this.filtered.get(this.selectedIndex) : null;
+   }
+
+   private int visibleRows() {
+      return Math.max(1, this.height / this.rowHeight);
+   }
+
+   private int maxScroll() {
+      return Math.max(0, this.filtered.size() - this.visibleRows());
+   }
+
+   protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+      g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -1072689128);
+      g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + 1, -12961206);
+      g.fill(this.getX(), this.getY() + this.height - 1, this.getX() + this.width, this.getY() + this.height, -12961206);
+      Font font = Minecraft.getInstance().font;
+      int rows = this.visibleRows();
+
+      int index;
+      for (int i = 0; i < rows && (index = this.scroll + i) >= 0 && index < this.filtered.size(); i++) {
+         T entry = this.filtered.get(index);
+         int rowY = this.getY() + i * this.rowHeight;
+         boolean hovered = mouseX >= this.getX() && mouseX < this.getX() + this.width - 6 && mouseY >= rowY && mouseY < rowY + this.rowHeight;
+         if (index == this.selectedIndex) {
+            g.fill(this.getX(), rowY, this.getX() + this.width - 6, rowY + this.rowHeight, -13800225);
+         } else if (hovered) {
+            g.fill(this.getX(), rowY, this.getX() + this.width - 6, rowY + this.rowHeight, 1090519039);
+         }
+
+         int textX = this.getX() + 3;
+         if (this.icon != null) {
+            ItemStack stack = this.icon.apply(entry);
+            if (stack != null && !stack.isEmpty()) {
+               g.renderItem(stack, this.getX() + 1, rowY + (this.rowHeight - 16) / 2);
+            }
+
+            textX = this.getX() + 20;
+         }
+
+         String name = this.displayName.apply(entry);
+         String trimmed = font.plainSubstrByWidth(name, this.width - (textX - this.getX()) - 8);
+         g.drawString(font, trimmed, textX, rowY + (this.rowHeight - 8) / 2, 14737632, false);
+      }
+
+      if (this.maxScroll() > 0) {
+         int barX = this.barX();
+         boolean onThumb = this.scrollbarDrag.isDragging() || ScrollbarDrag.overTrack((double)mouseX, (double)mouseY, barX, 5, this.getY(), this.height);
+         FSGui.scrollbar(g, barX, this.getY(), 5, this.height, this.thumbTop(), this.thumbHeight(), onThumb);
+      }
+   }
+
+   private int barX() {
+      return this.getX() + this.width - 5 - 1;
+   }
+
+   private int thumbHeight() {
+      return ScrollbarDrag.thumbHeight(this.height, this.visibleRows(), this.filtered.size());
+   }
+
+   private int thumbTop() {
+      return ScrollbarDrag.thumbTop(this.getY(), this.height, this.thumbHeight(), this.scroll, this.maxScroll());
+   }
+
+   public boolean mouseClicked(double mouseX, double mouseY, int button) {
+      if (ScrollbarDrag.isDragButton(button)
+         && this.maxScroll() > 0
+         && ScrollbarDrag.overTrack(mouseX, mouseY, this.barX(), 5, this.getY(), this.height)) {
+         this.setScroll(this.scrollbarDrag.beginOnTrack(mouseY, this.scroll, this.getY(), this.height, this.thumbHeight(), this.maxScroll()));
+         return true;
+      } else if (this.isMouseOver(mouseX, mouseY) && button == 0) {
+         int row = (int)((mouseY - (double)this.getY()) / (double)this.rowHeight);
+         int index = this.scroll + row;
+         if (index >= 0 && index < this.filtered.size() && mouseX < (double)(this.getX() + this.width - 6)) {
+            this.selectedIndex = index;
+            if (this.memory != null) {
+               this.memory.selected = this.filtered.get(index);
+            }
+
+            this.onSelect.accept(this.filtered.get(index));
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+      if (this.scrollbarDrag.isDragging()) {
+         this.setScroll(this.scrollbarDrag.drag(mouseY, this.height, this.thumbHeight(), this.maxScroll()));
+         return true;
+      } else {
+         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+      }
+   }
+
+   public boolean mouseReleased(double mouseX, double mouseY, int button) {
+      if (this.scrollbarDrag.isDragging()) {
+         this.scrollbarDrag.end();
+         return true;
+      } else {
+         return super.mouseReleased(mouseX, mouseY, button);
+      }
+   }
+
+   public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+      if (!this.isMouseOver(mouseX, mouseY)) {
+         return false;
+      } else {
+         this.setScroll(this.scroll - (int)Math.signum(delta));
+         return true;
+      }
+   }
+
+   public boolean isMouseOver(double mouseX, double mouseY) {
+      return mouseX >= (double)this.getX()
+         && mouseX < (double)(this.getX() + this.width)
+         && mouseY >= (double)this.getY()
+         && mouseY < (double)(this.getY() + this.height);
+   }
+
+   protected void updateWidgetNarration(NarrationElementOutput out) {
+   }
+}

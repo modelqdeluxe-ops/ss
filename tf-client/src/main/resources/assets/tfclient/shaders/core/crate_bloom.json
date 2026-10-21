@@ -1,0 +1,12 @@
+{
+    "vertex": "tfclient:crate_quad",
+    "fragment": "tfclient:crate_bloom",
+    "attributes": ["Position"],
+    "samplers": [{"name": "InSampler"}],
+    "uniforms": [
+        {"name": "InTexel", "type": "float", "count": 2, "values": [0.001, 0.001]},
+        {"name": "Dir", "type": "float", "count": 2, "values": [0.001, 0.0]},
+        {"name": "Mode", "type": "float", "count": 1, "values": [0.0]},
+        {"name": "Threshold", "type": "float", "count": 1, "values": [0.78]}
+    ]
+}

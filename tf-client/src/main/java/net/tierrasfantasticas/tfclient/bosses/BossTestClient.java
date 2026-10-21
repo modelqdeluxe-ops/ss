@@ -99,6 +99,7 @@ public final class BossTestClient {
         Minecraft mc = Minecraft.getInstance();
         tunnelShots();
         skyShots();
+        crateShots(mc);
         String shot = BossTest.SHOTS_PENDING.peek();
         if (shot == null || mc.level == null) {
             shotSeen = null;
@@ -167,6 +168,24 @@ public final class BossTestClient {
         if (skyNext >= SKY[fx].length || net.tierrasfantasticas.tfclient.vacio.SkyRiftClient.testSince() < SKY_AT[fx][skyNext]) return;
         BossTest.clientShot("cielo_" + SKY[fx][skyNext]);
         skyNext++;
+    }
+
+    /** (1.3.99) Capturas de la cinemática de las crates, a sus tiempos (ticks desde que empieza). */
+    private static final String[] CRATE = {"llegada", "haz", "llave", "gira", "tiembla", "abre", "anillo", "ruleta", "para", "premio", "final"};
+    private static final float[] CRATE_AT = {12, 40, 58, 76, 92, 107, 140, 196, 252, 272, 318};
+    private static Object crateSeen;
+    private static int crateNext, crateRun;
+
+    private static void crateShots(Minecraft mc) {
+        if (!(mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen cs)) return;
+        if (cs != crateSeen) {
+            crateSeen = cs;
+            crateNext = 0;
+            crateRun++;
+        }
+        if (crateNext >= CRATE.length || cs.clock() < CRATE_AT[crateNext]) return;
+        BossTest.clientShot("crate" + crateRun + "_" + String.format("%02d", crateNext) + "_" + CRATE[crateNext]);
+        crateNext++;
     }
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */

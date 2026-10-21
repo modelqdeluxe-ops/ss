@@ -11,7 +11,7 @@ dest="$2"
 for i in $(seq 1 120); do
   rm -rf "$dest"
   if git clone -q --depth 1 -b pruebas-jefes https://github.com/modelqdeluxe-ops/ss.git "$dest" 2>/dev/null \
-      && (cd "$dest" && git log -1 --format=%s) | grep -q "$hash"; then
+      && (cd "$dest" && git log -1 --format=%s) | grep -q "${hash:0:7}"; then
     echo "listo: $dest/informe.txt"
     exit 0
   fi

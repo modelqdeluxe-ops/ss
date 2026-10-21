@@ -260,6 +260,8 @@ public final class BossTest {
             // (1.3.98) «corta»: lo de la 1.3.98 en menos de 10 min (el dueño: «no hagas comprobaciones de más de 10
             // minutos»): el viaje, los caballeros, el soporte del altar, la Llegada, el puente, la isla de la grieta y la fauna
             if (only != null && List.of(only.split(",")).contains("corta")) ids.add(0, "corta");
+            // (1.3.99) «crates»: TF Crates (Fantastic Crates dentro del mod) y la cinemática del santuario, dos aperturas
+            if (only != null && List.of(only.split(",")).contains("crates")) ids.add(0, "crates");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -294,6 +296,10 @@ public final class BossTest {
         }
         if ("corta".equals(r.id)) {
             if (!waitShot) cortaStep(server, level, player, r);
+            return;
+        }
+        if ("crates".equals(r.id)) {
+            cratesStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -1278,6 +1284,72 @@ public final class BossTest {
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.hypot(dx, dz)));
         p.teleportTo(vl, x, y, z, yaw, pitch);
+    }
+
+    /**
+     * (1.3.99) TF Crates: que estén registradas (bloque, objetos, /tf crates) y la cinemática del bosque en dos
+     * aperturas de verdad (CrateOpeningService, como un jugador con su llave): una crate épica de estilo clásico y una
+     * mítica de estilo cinemático (la tapa y el frente van al revés). Las capturas las saca el cliente a los tiempos de
+     * la cinemática (BossTestClient.crateShots).
+     */
+    private static void cratesStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        net.minecraft.core.BlockPos pos = cratePos;
+        if (t == 1) {
+            fly(player, true);
+            var blocks = net.minecraftforge.registries.ForgeRegistries.BLOCKS;
+            var items = net.minecraftforge.registries.ForgeRegistries.ITEMS;
+            net.minecraft.resources.ResourceLocation crate = new net.minecraft.resources.ResourceLocation("fscrates", "crate");
+            r.event("TF Crates: activo " + net.tierrasfantasticas.tfclient.crates.FSCrates.enabled() + "; bloque fscrates:crate "
+                    + blocks.containsKey(crate) + "; objetos crate/fantastic_key/unique_key/editor_wand " + items.containsKey(crate) + "/"
+                    + items.containsKey(new net.minecraft.resources.ResourceLocation("fscrates", "fantastic_key")) + "/"
+                    + items.containsKey(new net.minecraft.resources.ResourceLocation("fscrates", "unique_key")) + "/"
+                    + items.containsKey(new net.minecraft.resources.ResourceLocation("fscrates", "editor_wand")));
+            int res = server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "tf crates help");
+            r.event("/tf crates help → " + res);
+            cratePos = player.blockPosition().offset(0, 1, -3);
+        }
+        for (int run = 0; run < 2; run++) {
+            int t0 = 10 + run * 420;
+            if (t == t0 && pos != null) {
+                level.setBlockAndUpdate(pos, net.tierrasfantasticas.tfclient.crates.registry.ModRegistry.CRATE_BLOCK.get().defaultBlockState());
+                if (level.getBlockEntity(pos) instanceof net.tierrasfantasticas.tfclient.crates.block.CrateBlockEntity be) {
+                    be.setConfig(testCrate(run));
+                    r.event("crate " + (run + 1) + " puesta en " + pos.toShortString() + " (" + testCrate(run).styleId + ")");
+                } else {
+                    r.event("crate " + (run + 1) + ": NO HAY BLOQUE DE CRATE");
+                }
+            }
+            if (t == t0 + 30 && pos != null) {
+                var res = net.tierrasfantasticas.tfclient.crates.crate.CrateOpeningService.open(player, testCrate(run), pos, ItemStack.EMPTY, false);
+                r.event("apertura " + (run + 1) + ": " + res);
+            }
+            if (t == t0 + 30 + 395) {
+                r.event("cinemática " + (run + 1) + ": " + net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testStats);
+            }
+        }
+        if (t >= 10 + 2 * 420 + 20) next(level);
+    }
+
+    private static net.minecraft.core.BlockPos cratePos;
+
+    private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig testCrate(int run) {
+        var cfg = new net.tierrasfantasticas.tfclient.crates.config.CrateConfig("prueba_" + run);
+        cfg.displayName = run == 0 ? "§5✦ Crate Épica ✦" : "§c✦ Crate Mítica ✦";
+        cfg.rarity = run == 0 ? net.tierrasfantasticas.tfclient.crates.config.Rarity.EPIC : net.tierrasfantasticas.tfclient.crates.config.Rarity.MYTHIC;
+        cfg.styleId = run == 0 ? "classic_epic" : "cine_mythical";
+        cfg.consumeKey = false;
+        cfg.rarityChances.clear();
+        cfg.rarityChances.put(cfg.rarity, 100.0);
+        net.minecraft.world.item.Item[] its = {Items.DIAMOND, Items.NETHERITE_INGOT, Items.GOLDEN_APPLE, Items.EMERALD, Items.DIAMOND_SWORD,
+                Items.ENCHANTED_BOOK, Items.TOTEM_OF_UNDYING, Items.ELYTRA, Items.BEACON, Items.NETHER_STAR};
+        for (net.minecraft.world.item.Item it : its) {
+            var re = new net.tierrasfantasticas.tfclient.crates.config.RewardEntry();
+            re.item = new ItemStack(it);
+            re.chance = 10.0;
+            re.label = it.getDescription().getString();
+            cfg.rewards.add(re);
+        }
+        return cfg;
     }
 
     private static void cortaStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {

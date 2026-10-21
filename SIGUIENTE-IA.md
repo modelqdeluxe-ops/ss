@@ -1,6 +1,11 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-Estado al dejarlo: **20 oct 2026, TF Client 1.3.98** (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta
+> **1.3.99 publicada (21 oct 2026)**: TF Crates y su cinemática como la imagen del dueño. Si vuelve a quejarse de la
+> cinemática, sigue **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)** (las dos comparaciones con
+> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). La siguiente versión es la 1.3.100.
+
+Estado al dejarlo: **21 oct 2026, TF Client 1.3.99 (publicada)** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
+y la cinemática del Bosque de las Hadas con shader propio; todo en **`tf-client/CRATES.md`**). Antes, 1.3.98 (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta
 del Void que enciende el staff, la isla de la grieta decorada, nada al aire, la fauna que pelea, el agujero de gusano sin
 imágenes de baja calidad, la «Nana del Alba»; antes, 1.3.97: el Void congruente: todo en roca del Vacío, **los Fragmentos del
 Alba Rota** cuatro veces más grandes, **la Llegada** con el portal donde estaba el Umbral, solo el Desgarrador y el
@@ -103,7 +108,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.99**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.100**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar
