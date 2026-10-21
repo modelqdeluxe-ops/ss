@@ -21,12 +21,48 @@ public final class MediaTicker {
    private MediaTicker() {
    }
 
+   private static int inWorld;
+   private static boolean warmed;
+
+   /**
+    * (1.3.100) El santuario de las crates se construye a los 5 s de entrar al mundo (y no al tocar la primera caja: la
+    * primera vez tardaba ~2,5 s y el juego se quedaba congelado al abrir la pantalla de la caja).
+    */
+   private static void prewarm() {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.level == null || mc.player == null) {
+         inWorld = 0;
+         return;
+      }
+
+      if (warmed || !net.tierrasfantasticas.tfclient.crates.FSCrates.enabled() || ++inWorld < 100) {
+         return;
+      }
+
+      warmed = true;
+
+      try {
+         net.tierrasfantasticas.tfclient.crates.client.scene.SanctuaryScene sc = net.tierrasfantasticas.tfclient.crates.client.scene.SanctuaryScene.get();
+         if (sc != null) {
+            sc.ensureBuilt();
+         }
+      } catch (Throwable t) {
+         net.tierrasfantasticas.tfclient.crates.FSCrates.LOGGER.warn("[TF Crates] No se pudo preparar el santuario al entrar", t);
+      }
+   }
+
    @SubscribeEvent
    public static void onClientTick(ClientTickEvent event) {
-      if (event.phase == Phase.END && CrateMedia.isActive()) {
+      if (event.phase == Phase.END) {
+         prewarm();
          Screen screen = Minecraft.getInstance().screen;
          if (!(screen instanceof CratePreOpenScreen) && !(screen instanceof CratePoolScreen)) {
-            CrateMedia.stop();
+            if (CrateMedia.isActive()) {
+               CrateMedia.stop();
+            }
+
+            // (el santuario de detrás y su ambiente, si se salió por otro camino)
+            CratePreOpenScreen.stopIdleSanctuary();
          }
       }
    }

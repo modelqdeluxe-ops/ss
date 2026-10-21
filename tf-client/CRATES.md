@@ -118,6 +118,17 @@ Lo que se encontró por el camino (y no hay que volver a romper):
 - **El cuadrado de color detrás del premio** era la tapa abierta de la crate (y el pilar de luz): al salir el premio la
   tapa se cierra despacio (`lidAngle`) y el pilar se apaga. Las alas de las hadas que pasaban pegadas a la cámara (los
   cuadriláteros blancos) también se apagan cerca de ella.
+- **Más contraste, faroles y turquesa** (el dueño: «más oscuro, que se note el resplandor de los faroles y que el agua
+  refleje un poco el turquesa en los bloques cercanos»): ambiente `AMB` más oscuro, exposición 1,35, curva de contraste
+  0,85; los faroles alumbran hasta 4 bloques con más fuerza y llevan un resplandor grande y suave; el turquesa del agua
+  (`POOL_C`) llega más lejos y también sale de las cascadas (`FALLS`), igual en `make_light` de la vista previa.
+- **Líneas blancas** (el dueño): los pétalos y las alas de las hadas eran planos y de canto se veían como rayas claras
+  finas (ahora siempre de cara a la cámara); la «claridad» del shader final dibujaba un borde claro en cada arista (ahora
+  se comprime en los dos sentidos y es más suave); los hilos de la cascada, con ruido fino, marcaban trazos rectos (ahora
+  son ondas suaves).
+- **La línea negra de las cascadas** (el dueño, medida en su recorte: (31,130,154) entre (26,163,196) y (31,185,211)): las
+  caras de frente y de lado van un pelo hacia fuera y entre ellas quedaba una rendija por la que se veía la piedra; ahora
+  se solapan un pelo en la esquina (solo donde no hay más agua al lado). El haz de sol, ×2,2 (casi no se notaba).
 - **El agua como en la imagen, otra vez** (lo que se probó antes y se quitó) (el dueño: «no coinciden la cascada, la textura del agua ni su transparencia»):
   el estanque es transparente (se ven los bloques de verdad del fondo, su mosaico de píxeles, teñidos de turquesa; sin
   pepinos de mar, que se veían como bultos), con la textura del agua, manchas de luz, el reflejo de las cascadas en
@@ -134,6 +145,21 @@ Lo que se encontró por el camino (y no hay que volver a romper):
   (`LILY_LIFT`/`LILY_K` en la vista previa = `SanctuaryScene`), (15,74,39); en la imagen ~(25,85,45).
 - **Bandas de piedra entre los escalones**: la cara del agua que cae baja 1/8 hasta la superficie del agua de delante
   y va un pelo hacia fuera (en el plano de la piedra perdía con ella en la profundidad).
+
+**Antes de abrir** (`CratePreOpenScreen`, la de ABRIR / VER RECOMPENSAS): detrás va el santuario en vivo con el encuadre de
+la imagen del dueño, el agua, las hadas y la luz en movimiento y el ambiente en bucle (`CrateCinematicScreen.idle`: el
+reloj corre antes del tick 0, así que no sale nada de la apertura; al pulsar ABRIR la cinemática sigue desde el mismo
+encuadre). Antes salía negro: su fondo era el vídeo de la caja (si la caja tiene vídeo propio en el editor, sigue saliendo
+el vídeo) y la música de siempre (con el santuario, no). El mundo no se dibuja mientras tanto (`LevelRendererMixin`).
+La prueba saca su captura (`crateN_preabrir`) y la de las recompensas (`crateN_recompensas`).
+Los botones son pequeños, de cristal oscuro, abajo del todo y sin sonido (`widget/GlassButton`: «ABRIR» y
+«RECOMPENSAS»; el dueño no quiere el sonido de amatista, que también se quitó de `FSButton` y del golpe de la llave).
+**Recompensas** (`CratePoolScreen`, rehecha): el santuario detrás, un panel de cristal con el título y una cuadrícula de
+premios en casillas del color de su rareza (de la más rara a la común); al pasar el ratón, nombre, rareza, probabilidad y
+lo que lleve; rueda para moverse; «VOLVER» abajo.
+**Las hadas**: solo puntitos de luz con su colita de chispas, sin alas (el dueño).
+**Sin tirón la primera vez**: el santuario se construye a los 5 s de entrar al mundo (`MediaTicker.prewarm`); antes se
+construía al tocar la primera caja y su primer fotograma tardaba ~2,5 s (medido en la prueba: 640 ms de construcción).
 
 Al abrir una crate, quien la abre ve una **escena 3D en vivo** (18 s) que empieza con **el encuadre de la imagen del
 dueño** (de frente, centrado) y se acerca a la crate para la llave. La escena (`santuario.py`): el estanque (x −6..6) con
@@ -168,8 +194,10 @@ Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 | tick (20/s) | qué pasa |
 |---|---|
 | 0–20 | el encuadre de la imagen del dueño, que se acerca; el título de la crate y «✦ Santuario de las Hadas ✦» |
-| 20–66 | **la llave** (la de la crate: Fantastic Key o la única) sale de un remolino de luz, vuela, se alinea y entra |
-| 70–80 | **gira**; el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza |
+| 20–40 | **la llave** (la de la crate: Fantastic Key o la única) sale de un remolino de luz y flota girando |
+| 40–66 | **se lanza**: vuela en arco dando vueltas, con su estela |
+| 66 | **golpea el cofre**: destello, chispas, golpe de madera y amatista, sacudida de cámara; la llave rebota y se deshace; el cofre brinca y se tambalea |
+| 70–80 | el anillo de runas se enciende sobre el agua y los chorros brillan del color de la rareza |
 | 84–102 | la crate tiembla, la luz se escapa por la tapa |
 | 102 | **¡se abre!**: la llave se deshace en chispas, la tapa salta, pilar de luz, onda, ráfaga de pétalos, más resplandor |
 | 110–252 | **la ruleta**: los premios suben y giran en un anillo encima de la crate; frena en el premio |

@@ -1,66 +1,50 @@
 package net.tierrasfantasticas.tfclient.crates.client.screen;
 
 import net.tierrasfantasticas.tfclient.crates.client.media.CrateMedia;
-import net.tierrasfantasticas.tfclient.crates.client.widget.FSButton;
-import net.tierrasfantasticas.tfclient.crates.client.widget.ScrollbarDrag;
+import net.tierrasfantasticas.tfclient.crates.client.widget.GlassButton;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
 import net.tierrasfantasticas.tfclient.crates.config.Rarity;
 import net.tierrasfantasticas.tfclient.crates.config.RewardEntry;
+import net.tierrasfantasticas.tfclient.crates.crate.LootEngine;
 import net.tierrasfantasticas.tfclient.crates.item.CrateItems;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag.Default;
 
+/**
+ * (1.3.99) Las recompensas de la caja, rehechas (el dueño: «dale rework a todo eso de ver recompensas»): el santuario
+ * sigue vivo detrás; encima, un panel de cristal oscuro con el título y una cuadrícula de premios, cada uno en su casilla
+ * con el color de su rareza (de la más rara a la más común); al pasar el ratón, su nombre, su rareza, su probabilidad y lo
+ * que lleve (encantamientos, efectos…). Se mueve con la rueda; abajo, un botón pequeño para volver.
+ */
 public class CratePoolScreen extends Screen {
-   private static final int ROW_HEIGHT = 20;
-   private static final int BAR_WIDTH = 5;
+   private static final int CELL = 24;
+   private static final int GAP = 4;
    private final CrateConfig config;
    private final Screen parent;
-   private int scroll;
-   private final List<CratePoolScreen.Row> rows = new ArrayList<>();
-   private final ScrollbarDrag scrollbarDrag = new ScrollbarDrag();
-   private int leftPos;
-   private int topPos;
-   private int panelWidth;
-   private int panelHeight;
-   private ItemStack detailStack = ItemStack.EMPTY;
-   private int detailWidth;
-   private static final int DETAIL_WIDTH = 166;
-   private static final int DETAIL_GAP = 6;
-   private static final int MIN_DETAIL_WIDTH = 104;
-   private static final float SHIFT_MS = 170.0F;
-   private int centeredLeft;
-   private int shiftedLeft;
-   private float shift;
+   private final List<CratePoolScreen.Cell> cells = new ArrayList<>();
+   private int panelX;
+   private int panelY;
+   private int panelW;
+   private int panelH;
+   private int cols;
+   private int gridX;
+   private int gridY;
+   private int gridH;
+   private float scroll;
+   private float scrollTarget;
    private long lastFrameMs = System.currentTimeMillis();
-   private FSButton closeButton;
+   private long openedAt;
 
-   private static boolean hasDetails(ItemStack stack) {
-      if (stack == null || stack.isEmpty()) {
-         return false;
-      } else if (CrateItems.isKey(stack) || CrateItems.isUniqueKey(stack) || CrateItems.isCrate(stack)) {
-         return false;
-      } else if (stack.isEnchanted()) {
-         return true;
-      } else {
-         CompoundTag tag = stack.getTag();
-         return tag == null
-            ? false
-            : tag.contains("StoredEnchantments")
-               || tag.contains("AttributeModifiers")
-               || tag.contains("CustomPotionEffects")
-               || tag.contains("Potion")
-               || tag.getCompound("display").contains("Lore");
-      }
+   public Screen parentScreen() {
+      return this.parent;
    }
 
    public CratePoolScreen(CrateConfig config, Screen parent) {
@@ -70,35 +54,34 @@ public class CratePoolScreen extends Screen {
    }
 
    protected void init() {
-      this.panelHeight = Math.min(this.height - 20, 220);
-      this.topPos = (this.height - this.panelHeight) / 2;
-      this.panelWidth = Math.min(this.width - 20, 330);
-      this.centeredLeft = (this.width - this.panelWidth) / 2;
-      int room = this.width - this.panelWidth - 6 - 8;
-      this.detailWidth = room >= 104 ? Math.min(166, room) : 0;
-      this.shiftedLeft = this.detailWidth > 0 ? Math.max(4, (this.width - (this.panelWidth + 6 + this.detailWidth)) / 2) : this.centeredLeft;
-      this.leftPos = Math.round((float)this.centeredLeft + (float)(this.shiftedLeft - this.centeredLeft) * this.shift);
-      int closeWidth = Math.max(70, this.font.width("Cerrar") + 30);
-      this.closeButton = (FSButton)this.addRenderableWidget(
-         new FSButton(
-            this.leftPos + (this.panelWidth - closeWidth) / 2,
-            this.topPos + this.panelHeight - 26,
-            closeWidth,
-            20,
-            Component.literal("Cerrar"),
-            -11884320,
-            this::onClose
-         )
-      );
-      this.rebuildRows();
+      if (this.openedAt == 0L) {
+         this.openedAt = System.currentTimeMillis();
+      }
+
+      this.rebuild();
+      this.panelW = Math.min(this.width - 32, 300);
+      this.cols = Math.max(1, (this.panelW - 24 + GAP) / (CELL + GAP));
+      int maxGrid = Math.max(CELL, this.height - 110);
+      this.gridH = Math.min(maxGrid, this.contentH());
+      this.panelH = this.gridH + 52;
+      this.panelX = (this.width - this.panelW) / 2;
+      this.panelY = Math.max(10, (this.height - 30 - this.panelH) / 2);
+      int gridW = this.cols * (CELL + GAP) - GAP;
+      this.gridX = this.panelX + (this.panelW - gridW) / 2;
+      this.gridY = this.panelY + 38;
+      this.scrollTarget = Math.min(this.scrollTarget, this.maxScroll());
+      this.scroll = Math.min(this.scroll, this.maxScroll());
+      int accent = this.config.rarity == null ? 0xE070FF : this.config.rarity.rgb();
+      int backW = Math.max(64, GlassButton.widthFor(this.font, "VOLVER"));
+      this.addRenderableWidget(new GlassButton((this.width - backW) / 2, this.height - 22, backW, 14, Component.literal("VOLVER"), accent, this::onClose));
    }
 
-   private void rebuildRows() {
-      this.rows.clear();
+   private void rebuild() {
+      this.cells.clear();
       List<RewardEntry> ordered = new ArrayList<>();
 
       for (RewardEntry entry : this.config.rewards) {
-         if (entry.type == RewardEntry.Type.ITEM) {
+         if (entry.type == RewardEntry.Type.ITEM && entry.item != null && !entry.item.isEmpty()) {
             ordered.add(entry);
          }
       }
@@ -107,14 +90,11 @@ public class CratePoolScreen extends Screen {
          Comparator.<RewardEntry>comparingInt(e -> -e.effectiveRarity(this.config.rarity).ordinal()).thenComparing(e -> labelOf(e).toLowerCase(Locale.ROOT))
       );
 
-      for (RewardEntry entryx : ordered) {
-         String label = labelOf(entryx);
-         Rarity rarity = entryx.effectiveRarity(this.config.rarity);
-         String odds = this.config.showOddsInPool ? String.format(Locale.ROOT, "%.2f%%", this.config.normalizedPercentInPool(entryx)) : "";
-         this.rows.add(new CratePoolScreen.Row(entryx.item, label, rarity.displayName(), rarity.rgb(), odds));
+      for (RewardEntry e : ordered) {
+         Rarity rarity = e.effectiveRarity(this.config.rarity);
+         String odds = this.config.showOddsInPool ? String.format(Locale.ROOT, "%.2f%%", this.config.normalizedPercentInPool(e)) : "";
+         this.cells.add(new CratePoolScreen.Cell(e.item, labelOf(e), rarity.displayName(), rarity.rgb() & 0xFFFFFF, odds));
       }
-
-      this.scroll = Math.max(0, Math.min(this.maxScroll(), this.scroll));
    }
 
    private static String labelOf(RewardEntry entry) {
@@ -125,258 +105,171 @@ public class CratePoolScreen extends Screen {
       }
    }
 
-   private int listTop() {
-      return this.topPos + 22;
+   private int contentH() {
+      int rows = Math.max(1, (this.cells.size() + this.cols - 1) / this.cols);
+      return rows * (CELL + GAP) - GAP;
    }
 
-   private int listHeight() {
-      return this.panelHeight - 22 - 30;
-   }
-
-   private int visibleRows() {
-      return Math.max(1, this.listHeight() / 20);
-   }
-
-   private int maxScroll() {
-      return Math.max(0, this.rows.size() - this.visibleRows());
-   }
-
-   private int barX() {
-      return this.leftPos + this.panelWidth - 9 - 5;
-   }
-
-   private int thumbHeight() {
-      return ScrollbarDrag.thumbHeight(this.listHeight(), this.visibleRows(), this.rows.size());
-   }
-
-   private int thumbTop() {
-      return ScrollbarDrag.thumbTop(this.listTop(), this.listHeight(), this.thumbHeight(), this.scroll, this.maxScroll());
+   private float maxScroll() {
+      return Math.max(0, this.contentH() - this.gridH);
    }
 
    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-      if (CrateMedia.isActive()) {
+      // detrás, el santuario en vivo (o el vídeo de la caja)
+      boolean drawn = this.parent instanceof CratePreOpenScreen pre && pre.renderSanctuary(g, this.width, this.height);
+      if (!drawn && CrateMedia.isActive()) {
          CrateMedia.renderBackground(g, this.width, this.height);
       }
 
-      this.detailStack = this.pickDetail(mouseX, mouseY);
-      this.updateShift(!this.detailStack.isEmpty());
-      this.leftPos = Math.round((float)this.centeredLeft + (float)(this.shiftedLeft - this.centeredLeft) * this.shift);
-      if (this.closeButton != null) {
-         this.closeButton.setX(this.leftPos + (this.panelWidth - this.closeButton.getWidth()) / 2);
-      }
-
-      g.fill(0, 0, this.width, this.height, 1627389952);
-      FSGui.panel(g, this.leftPos, this.topPos, this.panelWidth, this.panelHeight);
-      String title = "§d✦ §fRecompensas §8(" + this.rows.size() + ")";
-      g.drawString(this.font, title, this.leftPos + 9, this.topPos + 9, 16777215, false);
-      this.fadeLine(g, this.leftPos + 8, this.topPos + 20, this.panelWidth - 16);
-      this.renderRows(g, mouseX, mouseY);
-      this.renderDetails(g);
-      super.render(g, mouseX, mouseY, partialTick);
-   }
-
-   private ItemStack pickDetail(int mouseX, int mouseY) {
-      if (this.detailWidth > 0 && !this.rows.isEmpty()) {
-         int listTop = this.listTop();
-         if (mouseY >= listTop && mouseY < listTop + this.listHeight()) {
-            int bandLeft = Math.min(this.centeredLeft, this.shiftedLeft);
-            int bandRight = Math.max(this.centeredLeft, this.shiftedLeft) + this.panelWidth;
-            if (mouseX >= bandLeft && mouseX < bandRight) {
-               int index = this.scroll + (mouseY - listTop) / 20;
-               if (index >= 0 && index < this.rows.size()) {
-                  ItemStack stack = this.rows.get(index).icon();
-                  return hasDetails(stack) ? stack : ItemStack.EMPTY;
-               } else {
-                  return ItemStack.EMPTY;
-               }
-            } else {
-               return ItemStack.EMPTY;
-            }
-         } else {
-            return ItemStack.EMPTY;
-         }
-      } else {
-         return ItemStack.EMPTY;
-      }
-   }
-
-   private void updateShift(boolean wantsDetails) {
       long now = System.currentTimeMillis();
-      float step = Math.min(1.0F, Math.max(0.0F, (float)(now - this.lastFrameMs) / 170.0F));
+      float dt = Math.min(1.0F, (float)(now - this.lastFrameMs) / 120.0F);
       this.lastFrameMs = now;
-      this.shift = Math.max(0.0F, Math.min(1.0F, this.shift + (wantsDetails ? step : -step)));
-   }
-
-   private void renderDetails(GuiGraphics g) {
-      ItemStack stack = this.detailStack;
-      if (stack != null && !stack.isEmpty() && this.minecraft != null) {
-         if (this.detailWidth > 0 && !(this.shift < 0.55F)) {
-            List<Component> raw = stack.getTooltipLines(this.minecraft.player, Default.NORMAL);
-            if (!raw.isEmpty()) {
-               int padding = 7;
-               int step = 9 + 1;
-               int maxText = this.detailWidth - padding * 2;
-               int maxLines = Math.max(4, (this.height - 16 - padding * 2) / step);
-               List<FormattedCharSequence> lines = new ArrayList<>();
-               boolean cut = false;
-
-               label54:
-               for (Component line : raw) {
-                  Iterator x = this.font.split(line, maxText).iterator();
-
-                  while (true) {
-                     if (x.hasNext()) {
-                        FormattedCharSequence part = (FormattedCharSequence)x.next();
-                        if (lines.size() < maxLines) {
-                           lines.add(part);
-                           continue;
-                        }
-
-                        cut = true;
-                     }
-
-                     if (cut) {
-                        break label54;
-                     }
-                     break;
-                  }
-               }
-
-               if (!lines.isEmpty()) {
-                  if (cut) {
-                     lines.set(lines.size() - 1, Component.literal("§8...").getVisualOrderText());
-                  }
-
-                  int boxWidth = this.detailWidth;
-                  int boxHeight = lines.size() * step + padding * 2 - 1;
-                  int x = this.leftPos + this.panelWidth + 6;
-                  int y = this.topPos + (this.panelHeight - boxHeight) / 2;
-                  y = Math.max(4, Math.min(y, this.height - boxHeight - 4));
-                  g.pose().pushPose();
-                  g.pose().translate(0.0F, 0.0F, 400.0F);
-                  FSGui.panel(g, x, y, boxWidth, boxHeight);
-                  int textY = y + padding;
-
-                  for (FormattedCharSequence line : lines) {
-                     g.drawString(this.font, line, x + padding, textY, -1644826);
-                     textY += step;
-                  }
-
-                  g.flush();
-                  g.pose().popPose();
-               }
-            }
-         }
+      this.scroll += (this.scrollTarget - this.scroll) * dt;
+      float appear = Math.min(1.0F, (float)(now - this.openedAt) / 220.0F);
+      appear = appear * appear * (3.0F - 2.0F * appear);
+      int accent = this.config.rarity == null ? 0xE070FF : this.config.rarity.rgb() & 0xFFFFFF;
+      // oscurece un poco el santuario, sobre todo abajo
+      g.fillGradient(0, 0, this.width, this.height / 2, (int)(0x70 * appear) << 24, (int)(0x40 * appear) << 24);
+      g.fillGradient(0, this.height / 2, this.width, this.height, (int)(0x40 * appear) << 24, (int)(0x90 * appear) << 24);
+      int py = this.panelY + Math.round((1.0F - appear) * 8.0F);
+      int dy = py - this.panelY;
+      // el panel de cristal: oscuro y translúcido, con un borde fino del color de la caja
+      glass(g, this.panelX, py, this.panelW, this.panelH, appear, accent);
+      String crate = LootEngine.colorize(this.config.displayName == null ? "" : this.config.displayName).replaceAll("§.", "");
+      g.drawCenteredString(this.font, "Recompensas", this.width / 2, py + 9, alpha(0xFFFFFF, appear));
+      String sub = (crate.isBlank() ? "" : crate + "  ·  ") + this.cells.size() + (this.cells.size() == 1 ? " premio" : " premios");
+      g.pose().pushPose();
+      g.pose().translate(this.width / 2.0F, py + 21, 0.0F);
+      g.pose().scale(0.8F, 0.8F, 1.0F);
+      g.drawCenteredString(this.font, sub, 0, 0, alpha(0xA8B4B2, appear));
+      g.pose().popPose();
+      int lineW = this.panelW - 40;
+      for (int i = 0; i < 20; i++) {
+         float f = 1.0F - Math.abs((i + 0.5F) / 20.0F - 0.5F) * 2.0F;
+         g.fill(this.panelX + 20 + lineW * i / 20, py + 31, this.panelX + 20 + lineW * (i + 1) / 20, py + 32, (int)(0x50 * f * appear) << 24 | accent);
       }
-   }
 
-   private void fadeLine(GuiGraphics g, int x, int y, int width) {
-      int segments = 24;
-
-      for (int i = 0; i < segments; i++) {
-         int x1 = x + width * i / segments;
-         int x2 = x + width * (i + 1) / segments;
-         if (x2 > x1) {
-            float t = ((float)i + 0.5F) / (float)segments;
-            float strength = 1.0F - Math.abs(t - 0.5F) * 2.0F;
-            int alpha = (int)(46.0F * strength);
-            if (alpha > 1) {
-               g.fill(x1, y, x2, y + 1, alpha << 24 | 16777215);
-            }
-         }
-      }
-   }
-
-   private void renderRows(GuiGraphics g, int mouseX, int mouseY) {
-      int listTop = this.listTop();
-      int listBottom = listTop + this.listHeight();
-      boolean scrollable = this.maxScroll() > 0;
-      int rowsLeft = this.leftPos + 9;
-      int rowsWide = this.panelWidth - 18 - (scrollable ? 8 : 0);
-      FSGui.inset(g, rowsLeft - 1, listTop - 1, rowsWide + 2, this.listHeight() + 2);
-      if (this.rows.isEmpty()) {
-         g.drawCenteredString(this.font, "§8(sin items en el pool)", this.leftPos + this.panelWidth / 2, listTop + this.listHeight() / 2 - 4, 11184810);
+      Cell hovered = null;
+      if (this.cells.isEmpty()) {
+         g.drawCenteredString(this.font, "Esta caja no tiene premios", this.width / 2, this.gridY + dy + this.gridH / 2 - 4, alpha(0x8A9492, appear));
       } else {
-         g.enableScissor(rowsLeft, listTop, rowsLeft + rowsWide, listBottom);
-         int visible = this.visibleRows();
-
-         for (int i = 0; i < visible; i++) {
-            int index = this.scroll + i;
-            if (index < 0 || index >= this.rows.size()) {
-               break;
+         int top = this.gridY + dy;
+         g.enableScissor(this.panelX + 2, top - 2, this.panelX + this.panelW - 2, top + this.gridH + 2);
+         int off = Math.round(this.scroll);
+         for (int i = 0; i < this.cells.size(); i++) {
+            Cell c = this.cells.get(i);
+            int cx = this.gridX + i % this.cols * (CELL + GAP);
+            int cy = top + i / this.cols * (CELL + GAP) - off;
+            if (cy + CELL < top - 2 || cy > top + this.gridH + 2) {
+               continue;
             }
 
-            CratePoolScreen.Row row = this.rows.get(index);
-            int rowY = listTop + i * 20;
-            int textY = rowY + 6;
-            boolean hovered = mouseX >= rowsLeft && mouseX < rowsLeft + rowsWide && mouseY >= rowY && mouseY < rowY + 20;
-            if (hovered) {
-               g.fillGradient(rowsLeft, rowY, rowsLeft + rowsWide, rowY + 20, 654311423, 268435455);
-               g.fill(rowsLeft, rowY, rowsLeft + 1, rowY + 20, 1724939496);
-            } else if ((index & 1) == 1) {
-               g.fill(rowsLeft, rowY, rowsLeft + rowsWide, rowY + 20, 184549375);
+            boolean over = mouseX >= cx && mouseX < cx + CELL && mouseY >= cy && mouseY < cy + CELL && mouseY >= top && mouseY < top + this.gridH;
+            if (over) {
+               hovered = c;
             }
 
-            if (row.icon() != null && !row.icon().isEmpty()) {
-               g.renderItem(row.icon(), rowsLeft + 2, rowY + 2);
-            }
-
-            int right = rowsLeft + rowsWide - 3;
-            if (!row.odds().isEmpty()) {
-               int oddsWidth = this.font.width(row.odds());
-               g.drawString(this.font, row.odds(), right - oddsWidth, textY, 11184810, false);
-               right -= oddsWidth + 6;
-            }
-
-            int rarityWidth = this.font.width(row.rarity());
-            g.drawString(this.font, row.rarity(), right - rarityWidth, textY, row.rarityColor(), false);
-            right -= rarityWidth + 6;
-            int nameX = rowsLeft + 22;
-            String name = this.font.plainSubstrByWidth(row.name(), Math.max(12, right - nameX));
-            g.drawString(this.font, name, nameX, textY, 14737632, false);
+            this.cell(g, cx, cy, c, over, appear);
          }
 
          g.disableScissor();
-         if (scrollable) {
-            boolean onThumb = this.scrollbarDrag.isDragging()
-               || ScrollbarDrag.overThumb((double)mouseX, (double)mouseY, this.barX(), 5, this.thumbTop(), this.thumbHeight());
-            FSGui.scrollbar(g, this.barX(), listTop, 5, this.listHeight(), this.thumbTop(), this.thumbHeight(), onThumb);
+         if (this.maxScroll() > 0.0F) {
+            // la barrita de la derecha: dónde estás
+            int trackX = this.panelX + this.panelW - 7;
+            g.fill(trackX, top, trackX + 2, top + this.gridH, 0x20FFFFFF);
+            int thumbH = Math.max(12, this.gridH * this.gridH / this.contentH());
+            int thumbY = top + Math.round((this.gridH - thumbH) * (this.scroll / this.maxScroll()));
+            g.fill(trackX, thumbY, trackX + 2, thumbY + thumbH, 0x90000000 | accent);
          }
       }
-   }
 
-   public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      if (ScrollbarDrag.isDragButton(button)
-         && this.maxScroll() > 0
-         && ScrollbarDrag.overTrack(mouseX, mouseY, this.barX(), 5, this.listTop(), this.listHeight())) {
-         this.scroll = this.scrollbarDrag.beginOnTrack(mouseY, this.scroll, this.listTop(), this.listHeight(), this.thumbHeight(), this.maxScroll());
-         return true;
-      } else {
-         return super.mouseClicked(mouseX, mouseY, button);
+      super.render(g, mouseX, mouseY, partialTick);
+      if (hovered != null) {
+         this.tooltip(g, hovered, mouseX, mouseY);
       }
    }
 
-   public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-      if (this.scrollbarDrag.isDragging()) {
-         this.scroll = this.scrollbarDrag.drag(mouseY, this.listHeight(), this.thumbHeight(), this.maxScroll());
-         return true;
-      } else {
-         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+   private static void glass(GuiGraphics g, int x, int y, int w, int h, float a, int accent) {
+      for (int ring = 3; ring >= 1; ring--) {
+         g.fill(x - ring, y - ring + 1, x + w + ring, y + h + ring, (int)(14 * ring * a) << 24);
+      }
+
+      int top = (int)(0xB0 * a) << 24 | 0x0D1719, bottom = (int)(0xC8 * a) << 24 | 0x060B0C;
+      g.fillGradient(x + 1, y, x + w - 1, y + h, top, bottom);
+      g.fillGradient(x, y + 1, x + 1, y + h - 1, top, bottom);
+      g.fillGradient(x + w - 1, y + 1, x + w, y + h - 1, top, bottom);
+      int b = (int)(0x48 * a) << 24 | mixRgb(0xFFFFFF, accent, 0.35F);
+      g.fill(x + 1, y, x + w - 1, y + 1, b);
+      g.fill(x + 1, y + h - 1, x + w - 1, y + h, b);
+      g.fill(x, y + 1, x + 1, y + h - 1, b);
+      g.fill(x + w - 1, y + 1, x + w, y + h - 1, b);
+      // un reflejo suave arriba
+      g.fillGradient(x + 1, y + 1, x + w - 1, y + 14, (int)(0x14 * a) << 24 | 0xFFFFFF, 0);
+   }
+
+   private void cell(GuiGraphics g, int x, int y, Cell c, boolean over, float a) {
+      int rc = c.rarityColor();
+      // la casilla: oscura, teñida de su rareza, con su borde fino; al pasar el ratón, se enciende
+      int fillTop = (int)((over ? 0x70 : 0x48) * a) << 24 | mixRgb(0x0A1214, rc, over ? 0.30F : 0.16F);
+      int fillBot = (int)((over ? 0x90 : 0x68) * a) << 24 | mixRgb(0x050909, rc, over ? 0.18F : 0.08F);
+      g.fillGradient(x + 1, y, x + CELL - 1, y + CELL, fillTop, fillBot);
+      g.fillGradient(x, y + 1, x + 1, y + CELL - 1, fillTop, fillBot);
+      g.fillGradient(x + CELL - 1, y + 1, x + CELL, y + CELL - 1, fillTop, fillBot);
+      int ba = (int)((over ? 0xE0 : 0x70) * a);
+      g.fill(x + 1, y, x + CELL - 1, y + 1, ba << 24 | rc);
+      g.fill(x + 1, y + CELL - 1, x + CELL - 1, y + CELL, ba << 24 | rc);
+      g.fill(x, y + 1, x + 1, y + CELL - 1, ba << 24 | rc);
+      g.fill(x + CELL - 1, y + 1, x + CELL, y + CELL - 1, ba << 24 | rc);
+      if (a > 0.5F) {
+         g.renderItem(c.icon(), x + (CELL - 16) / 2, y + (CELL - 16) / 2);
+         g.renderItemDecorations(this.font, c.icon(), x + (CELL - 16) / 2, y + (CELL - 16) / 2);
       }
    }
 
-   public boolean mouseReleased(double mouseX, double mouseY, int button) {
-      if (this.scrollbarDrag.isDragging()) {
-         this.scrollbarDrag.end();
+   private void tooltip(GuiGraphics g, Cell c, int mouseX, int mouseY) {
+      List<Component> lines = new ArrayList<>();
+      lines.add(Component.literal(c.name()).withStyle(s -> s.withColor(mixRgb(c.rarityColor(), 0xFFFFFF, 0.25F))));
+      String info = c.rarity() + (c.odds().isEmpty() ? "" : "  ·  " + c.odds());
+      lines.add(Component.literal(info).withStyle(s -> s.withColor(c.rarityColor())));
+      if (hasDetails(c.icon()) && this.minecraft != null) {
+         List<Component> raw = c.icon().getTooltipLines(this.minecraft.player, Default.NORMAL);
+         for (int i = 1; i < raw.size() && lines.size() < 14; i++) {
+            lines.add(raw.get(i));
+         }
+      }
+
+      g.renderComponentTooltip(this.font, lines, mouseX, mouseY);
+   }
+
+   private static boolean hasDetails(ItemStack stack) {
+      if (stack == null || stack.isEmpty()) {
+         return false;
+      } else if (CrateItems.isKey(stack) || CrateItems.isUniqueKey(stack) || CrateItems.isCrate(stack)) {
+         return false;
+      } else if (stack.isEnchanted()) {
          return true;
       } else {
-         return super.mouseReleased(mouseX, mouseY, button);
+         CompoundTag tag = stack.getTag();
+         return tag != null
+            && (tag.contains("StoredEnchantments") || tag.contains("AttributeModifiers") || tag.contains("CustomPotionEffects")
+               || tag.contains("Potion") || tag.getCompound("display").contains("Lore"));
       }
+   }
+
+   private static int alpha(int rgb, float a) {
+      return Math.max(4, (int)(255 * a)) << 24 | rgb & 0xFFFFFF;
+   }
+
+   private static int mixRgb(int a, int b, float t) {
+      int r = (int)(((a >> 16) & 255) + (((b >> 16) & 255) - ((a >> 16) & 255)) * t);
+      int gg = (int)(((a >> 8) & 255) + (((b >> 8) & 255) - ((a >> 8) & 255)) * t);
+      int bl = (int)((a & 255) + ((b & 255) - (a & 255)) * t);
+      return r << 16 | gg << 8 | bl;
    }
 
    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-      if (this.maxScroll() > 0) {
-         this.scroll = Math.max(0, Math.min(this.maxScroll(), this.scroll - (int)Math.signum(delta)));
+      if (this.maxScroll() > 0.0F) {
+         this.scrollTarget = Math.max(0.0F, Math.min(this.maxScroll(), this.scrollTarget - (float)delta * (CELL + GAP)));
          return true;
       } else {
          return super.mouseScrolled(mouseX, mouseY, delta);
@@ -393,6 +286,6 @@ public class CratePoolScreen extends Screen {
       return false;
    }
 
-   private static record Row(ItemStack icon, String name, String rarity, int rarityColor, String odds) {
+   private static record Cell(ItemStack icon, String name, String rarity, int rarityColor, String odds) {
    }
 }

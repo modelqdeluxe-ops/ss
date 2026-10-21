@@ -24,6 +24,11 @@ public final class CrateMedia {
    }
 
    public static synchronized void begin(CrateConfig config) {
+      begin(config, true);
+   }
+
+   /** {@code defaultMusic}: false si detrás va el santuario de TF Crates (lleva su ambiente: la música de siempre, no). */
+   public static synchronized void begin(CrateConfig config, boolean defaultMusic) {
       stop();
       active = true;
       List<String> videoUrls = validUrls(config == null ? null : config.videos);
@@ -41,7 +46,7 @@ public final class CrateMedia {
       videoFuture = chosenVideo != null ? MediaCache.obtain(chosenVideo, MediaCache.Kind.VIDEO) : null;
       musicFuture = chosenMusic != null
          ? MediaCache.obtain(chosenMusic, MediaCache.Kind.MUSIC)
-         : CompletableFuture.supplyAsync(() -> pickPath(DefaultMedia.music()));
+         : (defaultMusic ? CompletableFuture.supplyAsync(() -> pickPath(DefaultMedia.music())) : null);
    }
 
    public static synchronized void ensurePlayers() {

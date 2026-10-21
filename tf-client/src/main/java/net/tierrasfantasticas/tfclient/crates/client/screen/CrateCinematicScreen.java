@@ -80,7 +80,10 @@ import org.lwjgl.opengl.GL11;
  */
 public class CrateCinematicScreen extends Screen {
     private static final int TOTAL = CrateCinematicTiming.TOTAL_TICKS;
-    static final int KEY_APPEAR = 20, KEY_ALIGN = 56, KEY_IN = 66, KEY_TURN0 = 70, KEY_TURN1 = 80;
+    // (el dueño: «la llave se lanza y le pega al cofre, sale brillito, se mueve el cofre y se abre»): aparece (KEY_APPEAR), se
+    // lanza (KEY_THROW), golpea el cofre (KEY_IN), se deshace en chispas; el cofre salta, se encienden las runas
+    // (KEY_TURN0..1), tiembla y se abre
+    static final int KEY_APPEAR = 20, KEY_THROW = 40, KEY_IN = 66, KEY_TURN0 = 70, KEY_TURN1 = 80;
     static final int RUNES0 = 74, RUNES1 = 96, TREMBLE0 = 84, OPEN = 102;
     static final int RING0 = 110, RING1 = 136, SPIN0 = 128, SPIN1 = 252;
     static final int REVEAL = CrateCinematicTiming.REVEAL_TICK;
@@ -137,6 +140,30 @@ public class CrateCinematicScreen extends Screen {
         }
         this.keyStack = key;
     }
+
+    /**
+     * El santuario quieto detrás de la pantalla de antes de abrir (CratePreOpenScreen): el encuadre de la imagen del dueño,
+     * con el agua, las hadas y la luz en movimiento y el ambiente en bucle; sin llave, títulos ni sonidos de la apertura.
+     * El reloj corre «antes del tick 0» (todo lo de la apertura empieza en ticks positivos), así que al pulsar ABRIR la
+     * cinemática sigue desde el mismo encuadre. Null si el santuario no está o falló en esta sesión.
+     */
+    public static CrateCinematicScreen idle(CrateConfig cfg) {
+        if (faulted || SanctuaryScene.get() == null) return null;
+        CrateCinematicScreen s = new CrateCinematicScreen(cfg, 0xFFFFFF, 0, 0, java.util.Collections.emptyList(), null);
+        s.idle = true;
+        return s;
+    }
+
+    /** Dibuja el santuario quieto (ver {@link #idle}); false si no se puede (entonces el fondo de siempre). */
+    public boolean renderIdle(GuiGraphics g, int w, int h) {
+        if (faulted) return false;
+        if (minecraft == null || width != w || height != h) init(Minecraft.getInstance(), w, h);
+        render(g, 0, 0, 0.0F);
+        return !faulted;
+    }
+
+    private static final float IDLE_T0 = -40000.0F;
+    private boolean idle;
 
     /** La de siempre si el santuario falló en esta sesión (o no hay), si no esta. */
     public static Screen create(CrateConfig cfg, int rarityColor, int winnerRarity, int winnerIndex, List<ItemStack> candidates,
@@ -201,7 +228,7 @@ public class CrateCinematicScreen extends Screen {
 
     @Override
     public void removed() {
-        testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
+        if (!idle) testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
                 frameMax, clock() / 20.0F, SanctuaryScene.get() == null ? "sin santuario" : SanctuaryScene.get().stats())
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
@@ -220,6 +247,7 @@ public class CrateCinematicScreen extends Screen {
         if (faulted) return;
         faulted = true;
         LogUtils.getLogger().error("[TF Crates] La cinemática del santuario falló: sigo con la de siempre", t);
+        if (idle) return;
         Minecraft mc = Minecraft.getInstance();
         int elapsed = ticks;
         mc.tell(() -> {
@@ -255,10 +283,14 @@ public class CrateCinematicScreen extends Screen {
         private float fade = 1.0F, step;
 
         Track(SoundEvent ev, SoundSource src, float volume) {
+            this(ev, src, volume, false);
+        }
+
+        Track(SoundEvent ev, SoundSource src, float volume, boolean loop) {
             super(ev, src, SoundInstance.createUnseededRandom());
             this.base = volume;
             this.volume = volume;
-            this.looping = false;
+            this.looping = loop;
             this.relative = true;
             this.attenuation = SoundInstance.Attenuation.NONE;
             this.x = this.y = this.z = 0.0;
@@ -294,14 +326,13 @@ public class CrateCinematicScreen extends Screen {
                 track("musica", SoundSource.MUSIC, 0.9F);
             }
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
+            case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
             case KEY_IN -> {
+                // el golpe: la llave contra la madera del cofre (sin amatista: el dueño no la quiere)
                 ui(tf("llave_entra"), 0.9F, 1.0F);
-                ui(SoundEvents.IRON_TRAPDOOR_CLOSE, 0.35F, 1.7F);
+                ui(SoundEvents.WOOD_HIT, 0.8F, 0.8F);
             }
-            case KEY_TURN0 + 2 -> {
-                ui(tf("llave_gira"), 0.9F, 1.0F);
-                ui(SoundEvents.LEVER_CLICK, 0.45F, 0.75F);
-            }
+            case KEY_TURN0 + 2 -> ui(tf("llave_gira"), 0.6F, 1.0F);
             case RUNES0 + 2 -> ui(tf("runas"), 0.8F, 1.0F);
             case TREMBLE0 -> ui(tf("tiembla"), 0.75F, 1.0F);
             case OPEN -> {
@@ -393,7 +424,7 @@ public class CrateCinematicScreen extends Screen {
         eye[0] += (float)Math.sin(t * 0.071F) * hand;
         eye[1] += (float)Math.sin(t * 0.053F + 1.3F) * hand;
         at[0] += (float)Math.sin(t * 0.047F + 0.4F) * hand * 0.6F;
-        float shake = impulse(t, OPEN, 0.07F, 0.16F) + impulse(t, REVEAL, 0.05F, 0.14F) + impulse(t, KEY_IN, 0.012F, 0.4F)
+        float shake = impulse(t, OPEN, 0.07F, 0.16F) + impulse(t, REVEAL, 0.05F, 0.14F) + impulse(t, KEY_IN, 0.05F, 0.3F)
                 + (t >= TREMBLE0 && t < OPEN ? 0.008F * (t - TREMBLE0) / (OPEN - TREMBLE0) : 0.0F);
         if (shake > 0) {
             eye[0] += (float)Math.sin(t * 2.7F) * shake;
@@ -505,6 +536,15 @@ public class CrateCinematicScreen extends Screen {
             sy = 1.0F + 0.10F * (float)Math.exp(-s * 0.3F) * (float)Math.cos(s * 0.9F);
             hop = 0.12F * (float)Math.exp(-s * 0.35F) * Math.abs((float)Math.sin(s * 0.55F));
         }
+        if (t >= KEY_IN && t < KEY_IN + 24) {
+            // el golpe de la llave: el cofre da un brinco y se tambalea
+            float s2 = t - KEY_IN;
+            float e = (float)Math.exp(-s2 * 0.28F);
+            hop += 0.10F * e * Math.abs((float)Math.sin(s2 * 0.8F));
+            roll += 7.0F * e * (float)Math.sin(s2 * 1.1F);
+            yawJ += 5.0F * e * (float)Math.sin(s2 * 0.9F + 0.6F);
+            sy *= 1.0F - 0.06F * e * (float)Math.cos(s2 * 1.4F);
+        }
         float sxz = 1.0F / (float)Math.sqrt(sy);
         pose.pushPose();
         pose.translate(c[0], c[1] + hop, c[2]);
@@ -543,34 +583,29 @@ public class CrateCinematicScreen extends Screen {
     private static final float KEY_TIP = 0.44F * KEY_SCALE;
 
     private void drawKey(PoseStack pose, MultiBufferSource buf, SanctuaryScene sc, float t) {
-        if (keyStack.isEmpty() || t < KEY_APPEAR + 4 || t > OPEN + 6) return;
-        Vector3f k = keyhole(sc);
-        Vector3f align = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.55F);
-        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
-        Vector3f pos;
-        float yaw, turn = 0.0F, size = 1.0F;
-        if (t < KEY_ALIGN) {
-            float p = smooth(KEY_APPEAR + 4, KEY_ALIGN, t);
-            Vector3f ctrl = new Vector3f(k.x + 0.7F, k.y + 1.2F, k.z + 1.4F);
-            pos = bezier(start, ctrl, align, p);
-            pos.y += (float)Math.sin(t * 0.22F) * 0.06F * (1.0F - p);
-            yaw = (1.0F - smooth(0.55F, 1.0F, p)) * (float)Math.sin(t * 0.09F) * 120.0F;
+        if (keyStack.isEmpty() || t < KEY_APPEAR + 4 || t > KEY_IN + 10) return;
+        Vector3f pos = keyPos(sc, t);
+        float yaw = 0.0F, tumble = 0.0F, size = 1.0F;
+        if (t < KEY_THROW) {
+            // flota donde apareció, girando despacio
             size = smooth(KEY_APPEAR + 4, KEY_APPEAR + 14, t);
+            yaw = (t - KEY_APPEAR) * 9.0F;
         } else if (t < KEY_IN) {
-            float p = (t - KEY_ALIGN) / (KEY_IN - KEY_ALIGN);
-            p = p * p;
-            pos = new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F), p);
-            yaw = 0.0F;
+            // lanzada: da vueltas de punta a punta en el aire
+            float p = (t - KEY_THROW) / (KEY_IN - KEY_THROW);
+            yaw = (KEY_THROW - KEY_APPEAR) * 9.0F * (1.0F - p);
+            tumble = 1080.0F * p * p;
         } else {
-            pos = new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F);
-            yaw = 0.0F;
-            turn = 90.0F * smooth(KEY_TURN0, KEY_TURN1, t);
-            if (t > OPEN) size = Math.max(0.0F, 1.0F - (t - OPEN) / 6.0F);
+            // tras el golpe: rebota hacia atrás y se deshace en chispas
+            float s2 = (t - KEY_IN) / 10.0F;
+            tumble = -160.0F * s2;
+            size = Math.max(0.0F, 1.0F - s2 * s2);
         }
+        if (size <= 0.01F) return;
         pose.pushPose();
         pose.translate(pos.x, pos.y, pos.z);
-        pose.mulPose(Axis.ZP.rotationDegrees(-turn));
         pose.mulPose(Axis.YP.rotationDegrees(yaw));
+        pose.mulPose(Axis.XP.rotationDegrees(tumble));
         if (keyFlat) {
             pose.mulPose(Axis.YP.rotationDegrees(90.0F));
             pose.mulPose(Axis.ZP.rotationDegrees(-45.0F));
@@ -589,7 +624,7 @@ public class CrateCinematicScreen extends Screen {
     /** La luz de la llave: el remolino en que aparece, su halo, la estela, el destello al girar y las chispas al deshacerse. */
     private void keyLights(VertexConsumer vc, CinematicFx.View v, SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
-        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
+        Vector3f start = keyStart(k);
         int col = rarityColor;
         float r = ((col >> 16) & 255) / 255.0F, g = ((col >> 8) & 255) / 255.0F, b = (col & 255) / 255.0F;
         // el remolino: chispas que se juntan donde aparece la llave
@@ -603,25 +638,34 @@ public class CrateCinematicScreen extends Screen {
             }
             CinematicFx.glow(vc, v, start.x, start.y, start.z, 0.6F * (float)Math.sin(p * Math.PI), r, g, b, 0.6F);
         }
-        if (t >= KEY_APPEAR + 4 && t < OPEN + 2) {
-            // halo que acompaña a la llave
+        if (t >= KEY_APPEAR + 4 && t < KEY_IN + 8) {
+            // halo que acompaña a la llave y su estela al volar
             Vector3f kp = keyPos(sc, t);
             float pulse = 0.75F + 0.25F * (float)Math.sin(t * 0.35F);
-            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.75F * pulse, r, g, b, 0.55F);
-            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.3F, 1, 1, 1, 0.45F);
-            if (t < KEY_ALIGN) {
-                for (int i = 1; i <= 8; i++) {
-                    Vector3f q = keyPos(sc, t - i * 1.6F);
-                    CinematicFx.glow(vc, v, q.x, q.y, q.z, 0.1F * (1.0F - i / 9.0F), mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F),
-                            0.5F * (1.0F - i / 9.0F));
+            float fade = t > KEY_IN ? 1.0F - (t - KEY_IN) / 8.0F : 1.0F;
+            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.6F * pulse, r, g, b, 0.45F * fade);
+            CinematicFx.glow(vc, v, kp.x, kp.y, kp.z, 0.25F, 1, 1, 1, 0.4F * fade);
+            if (t >= KEY_THROW && t < KEY_IN) {
+                for (int i = 1; i <= 10; i++) {
+                    Vector3f q = keyPos(sc, Math.max(KEY_THROW, t - i * 0.8F));
+                    CinematicFx.glow(vc, v, q.x, q.y, q.z, 0.12F * (1.0F - i / 11.0F), mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F),
+                            0.55F * (1.0F - i / 11.0F));
                 }
             }
         }
-        // el clic: destello en la cerradura al entrar y al girar, y la luz que se escapa por la tapa al temblar
-        float flash = Math.max(pulseAt(t, KEY_IN, 7.0F), pulseAt(t, KEY_TURN1, 10.0F));
+        // el golpe: destello blanco en el frente del cofre y una explosión de chispas
+        float flash = pulseAt(t, KEY_IN, 9.0F);
         if (flash > 0) {
-            CinematicFx.glow(vc, v, k.x, k.y, k.z + 0.05F, 0.9F * flash + 0.2F, mix(r, 1, 0.3F), mix(g, 1, 0.3F), mix(b, 1, 0.3F),
-                    flash * 0.8F);
+            CinematicFx.glow(vc, v, k.x, k.y, k.z + 0.15F, 1.4F * flash + 0.3F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), flash);
+            CinematicFx.glow(vc, v, k.x, k.y, k.z + 0.15F, 0.5F, 1, 1, 1, flash);
+        }
+        if (t >= KEY_IN && t < KEY_IN + 26) {
+            CinematicFx.sparkBurst(vc, v, k.x, k.y, k.z + 0.2F, t - KEY_IN, 26.0F, 70, 0.75F, col, 400);
+        }
+        // las runas del cofre que se encienden (la luz que se escapa por la tapa al temblar va después)
+        float rune = pulseAt(t, KEY_TURN1, 12.0F);
+        if (rune > 0) {
+            CinematicFx.glow(vc, v, k.x, k.y, k.z + 0.05F, 0.6F * rune + 0.2F, mix(r, 1, 0.3F), mix(g, 1, 0.3F), mix(b, 1, 0.3F), rune * 0.5F);
         }
         if (t >= TREMBLE0 && t < OPEN + 4) {
             float[] c = sc.anchor("crate");
@@ -641,21 +685,30 @@ public class CrateCinematicScreen extends Screen {
         }
     }
 
+    /** Donde aparece la llave: a la derecha del cofre, algo delante y por encima (dentro del cuadro de la cámara). */
+    private static Vector3f keyStart(Vector3f k) {
+        return new Vector3f(k.x + 1.15F, k.y + 0.45F, k.z + 1.15F);
+    }
+
+    /** Dónde está la llave: flotando junto al cofre, volando en arco hasta su frente, y rebotando tras el golpe. */
     private Vector3f keyPos(SanctuaryScene sc, float t) {
         Vector3f k = keyhole(sc);
-        Vector3f align = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.55F);
-        Vector3f start = new Vector3f(k.x + 1.3F, k.y + 0.9F, k.z + 1.7F);
-        if (t < KEY_ALIGN) {
-            float p = smooth(KEY_APPEAR + 4, KEY_ALIGN, t);
-            Vector3f pos = bezier(start, new Vector3f(k.x + 0.7F, k.y + 1.2F, k.z + 1.4F), align, p);
-            pos.y += (float)Math.sin(t * 0.22F) * 0.06F * (1.0F - p);
-            return pos;
+        Vector3f start = keyStart(k);
+        Vector3f hit = new Vector3f(k.x, k.y, k.z + KEY_TIP + 0.05F);
+        if (t < KEY_THROW) {
+            // (un poco hacia atrás antes de lanzarse: coge impulso)
+            float back = smooth(KEY_THROW - 8, KEY_THROW, t);
+            return new Vector3f(start.x + 0.15F * back, start.y + (float)Math.sin(t * 0.22F) * 0.06F + 0.12F * back, start.z + 0.2F * back);
         }
         if (t < KEY_IN) {
-            float p = (t - KEY_ALIGN) / (KEY_IN - KEY_ALIGN);
-            return new Vector3f(align).lerp(new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F), p * p);
+            float p = (t - KEY_THROW) / (KEY_IN - KEY_THROW);
+            p = p * p * (0.6F + 0.4F * p);
+            Vector3f from = new Vector3f(start.x + 0.15F, start.y + 0.12F, start.z + 0.2F);
+            Vector3f ctrl = new Vector3f((from.x + hit.x) * 0.5F, Math.max(from.y, hit.y) + 0.45F, (from.z + hit.z) * 0.5F);
+            return bezier(from, ctrl, hit, p);
         }
-        return new Vector3f(k.x, k.y, k.z + KEY_TIP - 0.22F);
+        float s2 = (t - KEY_IN) / 10.0F;
+        return new Vector3f(hit.x + 0.1F * s2, hit.y + 0.35F * (float)Math.sin(Math.min(1.0F, s2) * Math.PI), hit.z + 0.45F * s2);
     }
 
     private static float pulseAt(float t, float at, float len) {
@@ -810,12 +863,22 @@ public class CrateCinematicScreen extends Screen {
         }
         lastFrame = now;
         float t = (float)((now - openNanos) / 5.0E7);
-        int soundTick = (int)Math.floor(t);
-        while (lastSoundTick < soundTick) {
-            lastSoundTick++;
-            sounds(lastSoundTick);
+        if (idle) {
+            // (el reloj vuelve atrás cada media hora para no acercarse al tick 0, donde empieza la apertura)
+            t = IDLE_T0 + t % 36000.0F;
+            if (tracks.isEmpty() && minecraft != null) {
+                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, 0.8F, true);
+                tracks.add(tr);
+                minecraft.getSoundManager().play(tr);
+            }
+        } else {
+            int soundTick = (int)Math.floor(t);
+            while (lastSoundTick < soundTick) {
+                lastSoundTick++;
+                sounds(lastSoundTick);
+            }
+            reelClicks(t);
         }
-        reelClicks(t);
         SanctuaryScene sc = SanctuaryScene.get();
         if (sc == null || faulted) {
             g.fill(0, 0, width, height, 0xFF000000);
@@ -830,7 +893,7 @@ public class CrateCinematicScreen extends Screen {
             g.fill(0, 0, width, height, 0xFF000000);
             return;
         }
-        overlay(g, sc, t);
+        if (!idle) overlay(g, sc, t);
     }
 
     /** El cielo de respaldo (si el shader no carga) y la bruma del santuario: verde azulada oscura (lo del fondo se pierde
@@ -923,12 +986,11 @@ public class CrateCinematicScreen extends Screen {
             if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
-            // los pétalos de la apertura y del premio, y las alas de las hadas
+            // los pétalos de la apertura y del premio
             VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
-            CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
-            if (t >= REVEAL) CinematicFx.petals(soft, fv.m, fv.eye, sc, t, t - REVEAL, 0.8F);
+            CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
+            if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
-            CinematicFx.fairies(soft, fv, sc, t, excite, true);
             buf.endBatch(CinematicFx.softType());
 
             // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
@@ -941,7 +1003,7 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.lightHalos(glow, fv, sc, t);
             CinematicFx.waterfallLights(glow, fv, sc, t);
             CinematicFx.fireflies(glow, fv, t);
-            CinematicFx.fairies(glow, fv, sc, t, excite, false);
+            CinematicFx.fairies(glow, fv, sc, t, excite);
             // el haz baja mientras gira la ruleta y en el premio (que no tape los premios)
             float ring = smooth(RING0, RING1, t) * (t >= REVEAL + 40 ? 1.0F - 0.5F * smooth(REVEAL + 40, REVEAL + 70, t) : 1.0F);
             float shaft = (1.0F + open * 0.5F) * (1.0F - 0.45F * ring);
@@ -1007,8 +1069,8 @@ public class CrateCinematicScreen extends Screen {
                 float rayK = 0.9F + 0.1F * smooth(OPEN, OPEN + 20, t) + 0.25F * burst;
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
-                // (exposición medida en el juego: con 1,45 los medios tonos salían un 12 % más oscuros que la imagen)
-                post.finish(su, sv, vis, bloomK, rayK, 1.65F, focus, 0.05F, 220.0F, t);
+                // (el dueño: «más contraste, más oscuro, que se note el resplandor de los faroles»)
+                post.finish(su, sv, vis, bloomK, rayK, 1.35F, focus, 0.05F, 220.0F, t);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);

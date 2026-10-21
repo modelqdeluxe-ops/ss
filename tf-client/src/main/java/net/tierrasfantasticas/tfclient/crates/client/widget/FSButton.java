@@ -5,10 +5,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 
 public class FSButton extends AbstractButton {
    private static final float HOVER_MS = 160.0F;
@@ -20,7 +18,6 @@ public class FSButton extends AbstractButton {
    private long lastFrameMs = System.currentTimeMillis();
    private float clock;
    private boolean wasHovered;
-   private static long lastHoverSoundMs;
 
    public FSButton(int x, int y, int width, int height, Component message, int accent, Runnable action) {
       super(x, y, width, height, message);
@@ -39,19 +36,11 @@ public class FSButton extends AbstractButton {
       }
    }
 
+   // (1.3.99: sin el sonido de amatista al pulsar ni al pasar el ratón; el dueño, «no quiero su sonido de amatista, nada»)
    public void playDownSound(SoundManager sounds) {
-      sounds.play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 0.92F, 0.9F));
    }
 
    private void playHoverSound() {
-      long now = System.currentTimeMillis();
-      if (now - lastHoverSoundMs >= 90L) {
-         lastHoverSoundMs = now;
-         Minecraft mc = Minecraft.getInstance();
-         if (mc != null && mc.getSoundManager() != null) {
-            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 1.45F, 0.32F));
-         }
-      }
    }
 
    protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {

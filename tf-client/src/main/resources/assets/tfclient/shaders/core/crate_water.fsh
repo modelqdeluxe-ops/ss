@@ -81,12 +81,14 @@ void main() {
         float height = shore * 16.0;
         float y = fuv.y + t * 2.6;
         float fade = clamp(1.0 - fwidth(fuv.x) * 10.0, 0.0, 1.0);
-        float s1 = noise(vec2(fuv.x * 6.0, y * 0.4));
-        float s2 = noise(vec2(fuv.x * 14.0 + 4.1, y * 0.7 + 2.7));
-        float s3 = noise(vec2(fuv.x * 30.0 - 1.3, y * 1.2 - 5.1));
-        float strands = s1 * 0.5 + mix(0.5, s2, fade) * 0.3 + mix(0.5, s3, fade) * 0.2;
-        col = mix(WATER_DEEP, WATER_LIGHT, smoothstep(0.2, 0.8, strands));
-        col = mix(col, vec3(0.55, 0.95, 1.0), smoothstep(0.62, 0.86, strands) * 0.45);
+        // (hilos suaves: ondas de seno a lo ancho, deformadas por un ruido grande; con ruido fino salían trazos oscuros
+        // rectos —la rejilla del ruido—, el dueño: «líneas feas»)
+        float wob = noise(vec2(fuv.x * 2.5, y * 0.25)) * 6.2832;
+        float s1 = 0.5 + 0.5 * sin(fuv.x * 9.0 + wob + sin(y * 0.35) * 0.8);
+        float s2 = 0.5 + 0.5 * sin(fuv.x * 21.0 - wob * 1.3 + y * 0.12);
+        float strands = s1 * 0.65 + mix(0.5, s2, fade) * 0.35;
+        col = mix(WATER_DEEP, WATER_LIGHT, smoothstep(0.15, 0.85, strands));
+        col = mix(col, vec3(0.55, 0.95, 1.0), smoothstep(0.70, 0.95, strands) * 0.35);
         // destellos pequeños y redondos que bajan con el agua
         vec2 gp = vec2(fuv.x * 8.0, fuv.y * 8.0 + t * 7.0);
         vec2 gi = floor(gp), gf = fract(gp) - 0.5;
