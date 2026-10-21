@@ -80,12 +80,10 @@ Bajarla: `tf-client/tools/bosses/esperar_prueba.sh 6771c9c3 <carpeta>` (en segun
   el enlace de tu sesión, fusión squash, comprobar la Release `tfclient-v1.3.101`, rehacer la rama desde `main` y dar el
   enlace al dueño).
 
-## Los packs (el dueño quiere que no haya que volver a adjuntarlos)
+## Los packs
 
-- Los 13 zips de NPC (y `EndMobsVol1.zip`, la fauna del Void) **no están en el repo**. Se intentó guardarlos cifrados
-  en `packs/npcs-13.tar.enc` (AES-256, como `packs/jefes-17.tar.enc`) pero el permiso de la sesión lo bloqueó (subir
-  archivos comprados a un repo público). Hay que preguntarle al dueño cómo quiere guardarlos (cifrados en este repo con
-  su contraseña, en un repo privado, o que los vuelva a adjuntar). Si dice que sí al cifrado: mismo comando que en
-  `packs/README.md`, con un `README.md` dentro que diga qué zip es cada pack (los nombres están en la tabla de NPCS.md),
-  y la contraseña nunca en el repo.
-- Para convertir hacen falta descomprimidos, cada zip en su carpeta, y datos no fiables: Python con `-I`.
+- Los 13 zips de NPC **no están en el repo** (es público y son packs comprados). **El dueño te los adjunta** con este
+  prompt. Descomprime cada zip en su propia carpeta (datos no fiables: Python con `-I`, tus scripts fuera de esa
+  carpeta) y convierte con `python3 -I tf-client/tools/npcs/build_npcs.py <carpeta con las 13>`; luego `--al-jar`. La
+  tabla de NPCS.md §1 dice qué zip es cada pack (`find_pack` los reconoce por el nombre: «scenes_tavern»,
+  «scenes_market», «scenes_wanderers_vol_1»…).
