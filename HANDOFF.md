@@ -59,7 +59,31 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.105) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.106) — lee esto primero
+
+**1.3.106: cinco quejas del dueño** (con cinco capturas suyas; juega con **Oculus + Photon**):
+1. **Crates sin ningún efecto** (ni los de serie): con Oculus/Embeddium instalados (aun sin paquete) no salía nada de lo
+   que la escena dibujaba por el lote del juego (halos, hadas, luciérnagas, pétalos, anillos, haz, runas, premios). Lo
+   reproduce la prueba con `[shaders=photon]` (en su máquina Photon no arranca, pero Oculus y Embeddium bastan). Ahora
+   `SceneFx` los dibuja como el agua (VertexBuffer y shaders propios `crate_fx_*`); con un paquete puesto el mundo se
+   sigue dibujando detrás de la cinemática (Oculus se quedaba a medias); las partículas de la caja, con esos mods, no
+   van en la escena (salían cuadrados blancos). CRATES.md §2.
+2. **Rayas blancas al mover la cámara**: las hojas con una copia oscura dentro (por sus agujeros se veía el cielo
+   claro), bloques 0,2 % más grandes, el brillo del estanque y los hilos de las cascadas que se apagan donde son más
+   finos que un píxel y FXAA en `crate_post`. **La música**: «Aerie» de Minecraft (la sintetizada fuera). CRATES.md §2.
+3. **El pad sin lo que escribe y sin algunas letras**: algo de su juego pinta los recuadros después del texto (la
+   prueba lo imita: `TFPadScreen.testBoxesLast`; sin el arreglo, la casilla de Música sin texto y solo el cursor, como
+   su captura). Ahora cada cosa que pinta el pad va 0,005 más adelante que la anterior (`TFPadScreen.nextOrder`, en
+   `GuiGraphicsMixin`, `PadSkin.mat` y `PadFont.front`): la profundidad respeta el orden aunque se pinten en otro.
+   (Subir solo el texto 1, como se probó primero, sacaba la marca de agua «TF» del fondo por encima de los paneles.)
+4. **NPC sentados en algo que no está**: `tools/npcs/muebles.py`: los muebles de Nexo de la taberna (Chair, Table, Mug)
+   y cinco hechos con su madera en el panel (Scenes Tavern); y a 13 NPC de Townsfolks Vol 3 su silla, sofá, taburete
+   alto, banco, escritorio o la mesa de la taberna, a su medida (`npcs/props.json`, `SkillClient.renderProps`). NPCS.md §3.
+5. **Panel de NPC**: «El más cercano» ya no tapa «Cerca de ti:».
+
+La prueba: `[prueba-jefes=pad,crates,npcs] [shaders=photon]` (dos rondas: 4ee9e243 y 7bd7ba88).
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.105, PUBLICADA)
 
 **1.3.105** (el dueño: «un poco menos de partículas, y el resplandor del sol tapa un poco los items»): las partículas de
 la crate en la escena, el 20 % (era el 35 %); los rayos y el foco del sol, solo detrás de la crate, y el florecer, algo
