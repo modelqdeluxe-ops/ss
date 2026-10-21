@@ -1,0 +1,103 @@
+# NPC de escenas (TF Client 1.3.101)
+
+Los 13 packs de **Scenes** (MythicMobs 5 + ModelEngine 4) que mandó el dueño, convertidos y metidos en el jar con su
+orden («ya puedes meterlos», 21 oct 2026). Lo que pidió:
+
+> «Ve convirtiendo todos estos packs al TF Client: son NPC de escenas para ambientar lugares. Los quiero todos
+> correctamente, con sus animaciones correctas, sin errores de textura ni de animación. Crea un ítem tipo panel de
+> control para colocarlos, con posición en tiempo real, rotación y todo eso. Cada pack tendrá el nombre que ya trae. El
+> comando para el ítem es /tf npc, y me lo entrega solo a mí, al que ejecuta el comando.»
+
+## 1. Qué hay
+
+| Pack (id en el mod) | NPC | Qué hacen |
+|---|---|---|
+| Scenes Tavern (`npc_tavern`) | 12 | camarero, peleas, borrachos, charlas, risas |
+| Scenes Market (`npc_market`) | 21 + 1 marcador | vendedores y clientes; 4 vendedores y 2 clientes andan entre pins |
+| Scenes Fishermen (`npc_fishermen`) | 5 | pescadores (de pie, sentado, en barca…) |
+| Scenes Combat Vol 1 (`npc_combat_vol1`) | 10 | duelos, entrenamiento con arco, heridos, médico, público |
+| Scenes Townsfolks Vol 1 (`npc_townsfolks_vol1`) | 11 | aldeanos; el banco donde se sienta el jugador |
+| Scenes Townsfolks Vol 2 (`npc_townsfolks_vol2`) | 5 | cocinero, barrendero, mozos de carga |
+| Scenes Townsfolks Vol 3 (`npc_townsfolks_vol3`) | 19 | sentados, tumbados, lectores, escritor, columpio, mendigo |
+| Scenes Wanderers Vol 1 (`npc_wanderers_vol1`) | 5 + 3 marcadores | caminantes por rutas (a pie y a caballo); generadores y quitador |
+| Scenes Guards Vol 1 (`npc_guards_vol1`) | 12 | de guardia, saludando, durmiendo, patrullas entre pins |
+| Scenes Miners (`npc_miners`) | 9 | mineros con farol y casco; uno no muerto que ataca |
+| Scenes Blacksmith (`npc_blacksmith`) | 5 | herreros en su yunque |
+| Scenes Farmers (`npc_farmers`) | 9 | regar, sembrar, recoger; tres andan entre pins |
+| Scenes Lumberjacks (`npc_lumberjacks`) | 7 | talar, serrar, cargar troncos; tres andan entre pins |
+
+Cada NPC sale con el nombre del menú del pack («Blacksmith 1») y hace lo de su pack: su modelo, su animación de
+escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
+
+## 2. El panel de control (`/tf npc`)
+
+- `/tf npc` (staff, nivel 2): da el **Panel de NPC** solo a quien lo ejecuta (`TFNpcs.command`).
+- **Clic derecho al aire**: abre el panel. **Clic derecho a un NPC** con el panel: lo elige (no salta su ~onInteract).
+- El panel va a la izquierda y **no pausa el juego**: lo que se toca se ve en el momento.
+  - **Colocar**: pack → NPC (» = anda, · = marcador) → «Colocar donde miro» o «a mis pies»; sale mirándote.
+  - **Editar**: el NPC elegido (o «Más cercano» / «Siguiente»). Mover respecto a como lo ves (izquierda, derecha, lejos,
+    cerca, subir, bajar) con paso 0,05 / 0,25 / 1; girar 5° o 45° o «Mirarme»; «A donde miro» / «A mis pies»;
+    piel y cosméticos de los menús del pack (piel, sombrero, espalda, manos, armadura) con ◀ ▶ y «Quitar cosméticos»; duplicar
+    (con sus cosméticos) y borrar (con confirmación). Teclas: flechas, RePág/AvPág (subir/bajar), Q/E (girar); con
+    Mayús, 1 bloque y 45°.
+  - **Puntos**: los pins del NPC (los sitios entre los que anda: «Aquí» pone el pin donde estás) y las rutas de los
+    caminantes (1–6: añadir punto donde estás, deshacer, borrar, asignar al caminante elegido).
+- Con el panel en la mano se ven (solo tú) los pins (verdes los del NPC elegido), las rutas (una de cada color), los
+  marcadores sin modelo y un anillo blanco en el NPC elegido.
+
+## 3. Cómo funciona (fiel a MythicMobs / ModelEngine)
+
+- **Conversor**: `tools/npcs/build_npcs.py` usa el de los jefes (`tools/bosses/build_bosses.py`, `KIND = 'npcs'`). La
+  salida va a `tf-client/npcs/` (no se sube) y con `--al-jar` a `src/main/resources/assets/tfclient/`:
+  `npcs/<pack>.json`, `npcs/catalog.json` (lo que enseña el panel), `npcs/models/`, `textures/npcs/`, `sounds/npcs/`
+  y sus sonidos en `sounds.json` (claves `npcs.`).
+  ```
+  python3 -I tools/npcs/build_npcs.py <carpeta con los 13 packs descomprimidos>   # convertir (+ auditor)
+  python3 -I tools/npcs/build_npcs.py --al-jar                                    # al jar
+  python3 -I tools/npcs/build_npcs.py --auditar                                   # auditar los del jar
+  ```
+  Los packs no están en el repo (es público): los tiene el dueño (los zips que mandó).
+- **Catálogo**: de los menús de DeluxeMenus del pack salen los nombres (`scenes_npcs*.yml`: `mm mobs spawn X`) y los
+  cosméticos (`scene_hats`, `scene_backpacks`, `scene_leftarm`, `scene_rightarm`, `scene_armors`, `reset_cosmetics`):
+  cada opción con lo que hace su skill (changepart/remapmodel y las variables que guarda). A cada NPC solo se le
+  ofrecen las que tienen sus huesos. Las pieles «skin_1…skin_52» **no salen**: son plantillas para que el dueño del
+  servidor haga las suyas, y el pack no trae esos modelos.
+- **Pieles**: casi todos los NPC del pack llevan la **piel de plantilla amarilla con una «S»** (el autor espera que el
+  dueño del servidor haga las suyas con su web: «skin_1…», que no vienen). Los packs traen 21 pieles medievales de
+  verdad (las de los caminantes, `npc_wanderers_vol1.wanderer_N`): son el grupo **Piel** del panel para todos
+  (remapmodel, como el menú del pack) y **Piel del 2.º** para el segundo personaje de los dúos (changepart head2…).
+  Al colocar un NPC con la plantilla, el panel le pone una (catálogo: `autoskin`; los guardias, de las de yelmo y
+  armadura; los demás, de aldeano), distinta según su UUID. «Plantilla del pack» la devuelve. Los caminantes y el
+  minero no muerto se ponen la suya solos (como en el pack). Vista previa de todos con su piel:
+  `python3 tools/npcs/hoja_npcs.py <carpeta> [pack…]` (vfx_render, las mismas cuentas que el mod).
+- **Entidad**: `tfclient:npc` = `BossEntity` en modo NPC (`isNpc()`): se guarda con el mundo (Despawn: persistent),
+  sin barra ni botín, se puede tocar aunque sea invencible. Al volver del disco lleva el modelo que tenía
+  (model{save=true}) y salta **~onLoad** (`SkillMobs.spawned` con `Host.loaded()`), como MythicMobs.
+- **Cosméticos**: el panel hace lo mismo que el menú del pack: changepart sobre su modelo y
+  `setvariable{var=global.hat<uuid>;save=true}`. El ~onLoad del pack los vuelve a poner con
+  `<global.var.hat<caster.uuid>>`. Las variables globales con save=true se guardan con el mundo
+  (`skills/SkillSaved`, `data/tfclient_mythic.dat`); al borrar un NPC se borran las suyas.
+- **Motor** (lo que les faltaba; en `JEFES.md` §3.6/§11 la lista de ModelEngine):
+  - variables anidadas y con valor por defecto (`<global.var.skin<caster.uuid>|scene_guards>`): `SkillVars.text`;
+  - `@pin{name}` y `?distanceFromPin{pin;distance}` (pins de /mm pin, guardados con el mundo; los pone el panel);
+  - `followPath{path;speed;tolerance}`: sigue los puntos desde el más cercano y vuelve a empezar (las rutas del panel
+    son circuitos);
+  - `teleportTo{location}` lleva a los **objetivos** (en las clases, como siempre);
+  - `light{m;p;block}` de ModelEngine = el brillo del hueso (el farol y el casco del minero);
+  - `meleeHit{triggerskills}`: el golpe de su tipo, con sus ~onAttack (el minero no muerto);
+  - changepart/remapmodel con un modelo o hueso que no existe (variables sin poner, erratas) no hacen nada.
+- **Rutas de caminantes**: el pack trae `path1`/`path_1_follow` solo de ejemplo (comentadas, con coordenadas del mundo
+  de su autor). El conversor las genera como las del ejemplo (`build_npcs.route_skills`), leyendo la ruta de las
+  variables `scenes_route_N` / `scenes_route_N_start`, que escribe el panel. Usan @target en vez de @EIR (el ejemplo
+  podía coger a un jugador y teletransportarlo).
+- **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
+  (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
+  mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin
+  modelo («command»).
+
+## 4. Comprobarlo
+
+- `python3 tools/bosses/verificar.py` → «todo bien» (incluye «auditor: 0 problemas en los NPC de escenas»).
+- Prueba en el juego: `[prueba-jefes=npcs]` en el commit (`BossTest.npcsStep`, ~2 min): todos los NPC en filas con
+  una captura cada 5 (`NN_npcs_npcs_<pack>_<n>.jpg`), un guardia con cosméticos movido y girado, guardado y vuelto a
+  cargar, un vendedor entre dos pins, un caminante por una ruta y el panel abierto. Informe en la rama `pruebas-jefes`.

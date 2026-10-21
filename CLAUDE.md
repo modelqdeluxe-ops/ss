@@ -8,6 +8,7 @@
 - Cuando el dueño mande capturas, **mídelas** (recorta, amplía, colores con PIL) antes de decir que algo está arreglado.
 - Responde al dueño en español.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
+- NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.
   La 1.3.99 está publicada; si hay que volver a tocar la cinemática, sigue `tf-client/CRATES-CONTINUAR.md`.
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
   comprobarlos sin abrir el juego).

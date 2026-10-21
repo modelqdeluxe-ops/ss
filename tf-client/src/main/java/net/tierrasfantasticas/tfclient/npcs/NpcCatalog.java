@@ -20,9 +20,12 @@ public final class NpcCatalog {
     /** Una opción de un menú del pack: lo que cambia (part/remap; «» = el modelo del NPC) y las variables que guarda. */
     public record Option(String id, String name, List<String[]> ops, Map<String, String> vars) {}
 
-    /** Un NPC del pack. marker = sin modelo (un generador o un puesto del pack: solo lo ve el staff con el panel). */
+    /**
+     * Un NPC del pack. marker = sin modelo (un generador o un puesto del pack: solo lo ve el staff con el panel);
+     * autoskin = las pieles entre las que el panel le elige una al colocarlo (lleva la plantilla «S» del pack).
+     */
     public record Npc(String mob, String name, String model, boolean marker, boolean walks, boolean hostile,
-                      Map<String, List<String>> options, List<String> pins, List<Integer> routes) {
+                      Map<String, List<String>> options, List<String> pins, List<Integer> routes, List<String> autoskin) {
         /** Su modelo sin el pack delante («scene_guards»): lo que el pack llama «skinchange». */
         public String bareModel() {
             return model == null ? "" : model.substring(model.indexOf('.') + 1);
@@ -42,9 +45,10 @@ public final class NpcCatalog {
     }
 
     /** Los grupos de opciones, en el orden del panel, con su nombre. */
-    public static final Map<String, String> GROUPS = Map.of("skin", "Piel", "hat", "Sombrero", "back", "Espalda",
-            "left", "Mano izquierda", "right", "Mano derecha", "armor", "Armadura");
-    public static final List<String> GROUP_ORDER = List.of("hat", "back", "left", "right", "armor", "skin");
+    public static final Map<String, String> GROUPS = Map.of("skin", "Piel", "skin2", "Piel del 2.º", "hat", "Sombrero",
+            "back", "Espalda", "left", "Mano izquierda", "right", "Mano derecha", "armor", "Armadura");
+    /** En este orden se ponen (la piel primero: remapmodel deja cada hueso como en la piel y quita los cosméticos). */
+    public static final List<String> GROUP_ORDER = List.of("skin", "skin2", "hat", "back", "left", "right", "armor");
 
     private static List<Pack> packs;
 
@@ -93,10 +97,13 @@ public final class NpcCatalog {
                     if (n.has("pins")) for (JsonElement x : n.getAsJsonArray("pins")) pins.add(x.getAsString().toLowerCase(Locale.ROOT));
                     List<Integer> routes = new ArrayList<>();
                     if (n.has("routes")) for (JsonElement x : n.getAsJsonArray("routes")) routes.add(x.getAsInt());
+                    List<String> autoskin = new ArrayList<>();
+                    if (n.has("autoskin") && n.get("autoskin").isJsonArray()) for (JsonElement x : n.getAsJsonArray("autoskin")) autoskin.add(x.getAsString());
                     npcs.add(new Npc(n.get("mob").getAsString(), n.get("name").getAsString(),
                             n.has("model") && !n.get("model").isJsonNull() ? n.get("model").getAsString() : null,
                             n.has("marker") && n.get("marker").getAsBoolean(), n.has("walks") && n.get("walks").getAsBoolean(),
-                            n.has("hostile") && n.get("hostile").getAsBoolean(), opts, List.copyOf(pins), List.copyOf(routes)));
+                            n.has("hostile") && n.get("hostile").getAsBoolean(), opts, List.copyOf(pins), List.copyOf(routes),
+                            List.copyOf(autoskin)));
                 }
                 out.add(new Pack(id, o.get("name").getAsString(), List.copyOf(npcs), options));
             }

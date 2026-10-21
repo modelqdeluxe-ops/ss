@@ -234,37 +234,53 @@ def option_ops(skill):
     return ops, vs
 
 
-def pack_options(pack_dir, skills, models):
-    """Las opciones de los menús del pack que se pueden poner de verdad: las que solo usan modelos que trae el pack (las
-    pieles «skin_N» son plantillas para que el dueño del servidor haga las suyas: no vienen, así que no salen)."""
+def shared_menus(root):
+    """Los menús de los packs de la serie (son comunes: cada pack trae los de su época; las tabernas y el mercado, ninguno)
+    y las skills de sus opciones → ([(menú, nombre, comandos)], {skill: entrada})."""
+    menus, skills, seen = [], {}, set()
+    for name in sorted(os.listdir(root)):
+        d = os.path.join(root, name)
+        if not os.path.isdir(d):
+            continue
+        for p in menu_files(d):
+            base = os.path.basename(p)[:-4]
+            for _key, shown, cmds in menu_items(p):
+                k = (base, shown, tuple(cmds))
+                if k not in seen:
+                    seen.add(k)
+                    menus.append((base, shown, cmds))
+        sk_files, _mb, _it = BB.files(d)
+        for k, v in BB.load_all(sk_files, 'skill').items():
+            skills.setdefault(k, v)
+    return menus, skills
+
+
+def pack_options(menus, shared_skills, skills, models):
+    """Las opciones de los menús que se pueden poner de verdad en este pack: las que solo usan modelos que trae (las
+    pieles «skin_N» de los menús son plantillas para el dueño del servidor y no vienen: las pieles van aparte,
+    add_skins). La skill, la del pack o, si no la trae, la de la serie."""
     groups, notes = {}, []
     seen = set()
-    for p in menu_files(pack_dir):
-        base = os.path.basename(p)[:-4]
+    for base, shown, cmds in menus:
         g = next((gid for pre, gid, _l in MENU_GROUPS if base.startswith(pre)), None)
-        for _key, shown, cmds in menu_items(p):
-            for c in cmds:
-                m = CAST.search(c)
-                if not m:
-                    continue
-                sk = m.group(1)
-                gid = 'reset' if sk == 'reset_cosmetics' else g
-                if not gid or (gid, sk) in seen:
-                    continue
-                seen.add((gid, sk))
-                ops, vs = option_ops(skills.get(sk))
-                if not ops:
-                    continue
-                need = {o[2] for o in ops if o[0] == 'part' and o[2]} | {o[1] for o in ops if o[0] == 'remap' and o[1]}
-                missing = sorted(n for n in need if n not in models)
-                if missing:
-                    notes.append(f'opción «{shown}» ({sk}) sin modelo en el pack: {", ".join(missing)}')
-                    continue
-                groups.setdefault(gid, []).append({'id': sk, 'name': shown, 'ops': ops, 'vars': vs})
-    skipped = [n for n in notes if '(skin' in n]
-    notes = [n for n in notes if '(skin' not in n]
-    if skipped:
-        notes.append(f'{len(skipped)} pieles del menú sin modelo (skin_N: plantillas para el dueño del servidor)')
+        for c in cmds:
+            m = CAST.search(c)
+            if not m:
+                continue
+            sk = m.group(1)
+            gid = 'reset' if sk == 'reset_cosmetics' else g
+            if not gid or gid == 'skin' or (gid, sk) in seen:
+                continue
+            seen.add((gid, sk))
+            ops, vs = option_ops(skills.get(sk) or shared_skills.get(sk))
+            if not ops:
+                continue
+            need = {o[2] for o in ops if o[0] == 'part' and o[2]} | {o[1] for o in ops if o[0] == 'remap' and o[1]}
+            missing = sorted(n for n in need if n not in models)
+            if missing:
+                notes.append(f'opción «{shown}» ({sk}) sin modelo en el pack: {", ".join(missing)}')
+                continue
+            groups.setdefault(gid, []).append({'id': sk, 'name': shown, 'ops': ops, 'vars': vs})
     return groups, notes
 
 
@@ -379,6 +395,117 @@ def catalog_entry(bid, title, out, names, options):
     return {'id': bid, 'name': title, 'npcs': npcs, 'options': options}
 
 
+# Las pieles: casi todos los NPC de Scenes llevan la piel de plantilla del pack (amarilla, con una «S»): el autor espera
+# que el dueño del servidor haga las suyas con su web («skin_1»…, que no vienen). Los packs sí traen 21 pieles
+# medievales de verdad (las de los caminantes, que se las ponen solos): son las pieles del panel para todos. Encajan en
+# cualquier NPC (los mismos huesos head/body/right_arm…, con la geometría relativa a su hueso); en los dúos, el segundo
+# personaje (head2…) con changepart. A los que llevan la plantilla y no se ponen piel solos, el panel les pone una al
+# colocarlos (autoskin).
+SKIN_PACK = 'npc_wanderers_vol1'
+# Las que les pone el panel al colocarlos (mirando las 21: las de yelmo y armadura, para los guardias; las demás, de
+# aldeano, para el resto). El panel deja elegir cualquiera.
+ARMORED = {1, 2, 3, 5, 9, 14}
+ARMORED_PACKS = {'npc_guards_vol1'}
+SKIN_RE = re.compile(r'^wanderer_(\d+)$')
+LIMBS = ['head', 'body', 'right_arm', 'left_arm', 'right_leg', 'left_leg']
+
+
+def skin_pool():
+    """Las pieles de verdad (pack.modelo), en orden."""
+    d = os.path.join(BB.OUT, 'models')
+    found = []
+    for f in os.listdir(d) if os.path.isdir(d) else []:
+        if not f.startswith(SKIN_PACK + '.'):
+            continue
+        m = SKIN_RE.match(f[len(SKIN_PACK) + 1:-5])
+        if m:
+            found.append((int(m.group(1)), f[:-5]))
+    return [mid for _n, mid in sorted(found)]
+
+
+def template_texture():
+    """La textura de la plantilla «S» (la del modelo «skin» del pack de las pieles)."""
+    from PIL import Image
+    import numpy as np
+    p = os.path.join(BB.OUT, 'models', SKIN_PACK + '.skin.json')
+    if not os.path.exists(p):
+        return None
+    t = json.load(open(p, encoding='utf-8'))['tex'][0]['path'].split('/')[-1]
+    return np.asarray(Image.open(os.path.join(BB.OUT_TEX, SKIN_PACK, 'me', t)).convert('RGBA'), dtype=float)
+
+
+def uses_template(pack_id, mid, tpl):
+    from PIL import Image
+    import numpy as np
+    if tpl is None:
+        return False
+    m = json.load(open(os.path.join(BB.OUT, 'models', mid + '.json'), encoding='utf-8'))
+    for t in m['tex']:
+        im = np.asarray(Image.open(os.path.join(BB.OUT_TEX, pack_id, 'me', t['path'].split('/')[-1])).convert('RGBA'), dtype=float)
+        if im.shape == tpl.shape and np.abs(im - tpl).mean() < 5:
+            return True
+    return False
+
+
+def self_skinned(mob, prog):
+    """¿Se pone una piel él solo (remapmodel a un modelo fijo al aparecer: los caminantes, el minero no muerto)?"""
+    seen = set()
+
+    def scan(mechs, depth=0):
+        for pm in mechs or []:
+            a = pm.get('a') or {}
+            if pm['m'] == 'remapmodel' and '<' not in str(a.get('n', '<')):
+                return True
+            names = []
+            if pm['m'] in ('skill', 's', 'metaskill'):
+                names = [a.get('s') or a.get('skill')]
+            elif pm['m'] == 'randomskill':
+                names = str(a.get('skills') or a.get('s') or '').split(',')
+            for k in names:
+                k = str(k or '').strip().lower()
+                if k and k not in seen and k in prog['tree'] and depth < 4:
+                    seen.add(k)
+                    if scan(prog['tree'][k]['mechs'], depth + 1):
+                        return True
+        return False
+    return scan([pm for pm in prog['mobs'][mob]['mechs'] if pm.get('tr') in ('onspawn', 'onload', 'onspawnorload')])
+
+
+def add_skins(catalog):
+    """Pone las pieles en el catálogo (grupos skin y skin2) y la marca autoskin."""
+    pool = skin_pool()
+    tpl = template_texture()
+    if not pool:
+        return
+    for c in catalog.values():
+        prog = json.load(open(os.path.join(BB.OUT, c['id'] + '.json'), encoding='utf-8'))
+        skins = [{'id': f'piel_{i + 1}', 'name': f'Piel {i + 1}', 'ops': [['remap', mid]], 'vars': {'skin': mid}}
+                 for i, mid in enumerate(pool)]
+        skins.append({'id': 'piel_pack', 'name': 'Plantilla del pack', 'ops': [['remap', '']], 'vars': {'skin': ''}})
+        skins2 = [{'id': f'piel2_{i + 1}', 'name': f'Piel {i + 1}', 'ops': [['part', b + '2', mid, b] for b in LIMBS], 'vars': {}}
+                  for i, mid in enumerate(pool)]
+        skins2.append({'id': 'piel2_pack', 'name': 'Plantilla del pack', 'ops': [['part', b + '2', '', b + '2'] for b in LIMBS], 'vars': {}})
+        used1 = used2 = False
+        for n in c['npcs']:
+            if not n.get('model'):
+                continue
+            bones = model_bones(n['model'])
+            tpl_skin = uses_template(c['id'], n['model'], tpl)
+            if 'head' in bones:
+                n['options'] = {'skin': [o['id'] for o in skins], **n['options']}
+                used1 = True
+            if 'head2' in bones:
+                n['options'] = {'skin2': [o['id'] for o in skins2], **n['options']}
+                used2 = True
+            if tpl_skin and not self_skinned(n['mob'], prog):
+                armored = c['id'] in ARMORED_PACKS
+                n['autoskin'] = [f'piel_{i + 1}' for i in range(len(pool)) if ((i + 1) in ARMORED) == armored]
+        if used1:
+            c['options']['skin'] = skins
+        if used2:
+            c['options']['skin2'] = skins2
+
+
 def convert(root, only=()):
     stage_paths()
     if not only:
@@ -390,6 +517,7 @@ def convert(root, only=()):
     catalog = {c['id']: c for c in (json.load(open(cat_path, encoding='utf-8')) if os.path.exists(cat_path) else [])}
     total_problems = 0
     names = all_npc_names(root)
+    menus, shared_skills = shared_menus(root)
     for key, bid, title in PACKS:
         if only and bid not in only and key not in only:
             continue
@@ -425,7 +553,7 @@ def convert(root, only=()):
         out['boss']['npc'] = True
         sk_files, _mb, _it = BB.files(d)
         skills = BB.load_all(sk_files, 'skill')
-        options, opt_notes = pack_options(d, skills, {k.split('.', 1)[-1] for k in out['models']})
+        options, opt_notes = pack_options(menus, shared_skills, skills, {k.split('.', 1)[-1] for k in out['models']})
         pack.notes.extend(opt_notes)
         catalog[bid] = catalog_entry(bid, title, out, names, options)
         with open(os.path.join(BB.OUT, bid + '.json'), 'w', encoding='utf-8') as f:
@@ -440,6 +568,7 @@ def convert(root, only=()):
             print('   ·', n)
     with open(sj_path, 'w', encoding='utf-8') as f:
         json.dump(sj, f, ensure_ascii=False, indent=1)
+    add_skins(catalog)
     order = [b for _k, b, _t in PACKS]
     with open(cat_path, 'w', encoding='utf-8') as f:
         json.dump(sorted(catalog.values(), key=lambda c: order.index(c['id']) if c['id'] in order else 99), f,

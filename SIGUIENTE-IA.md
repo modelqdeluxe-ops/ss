@@ -1,8 +1,11 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1.3.101 (21 oct 2026)**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de control de `/tf npc`;
+> todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**. La siguiente versión es la 1.3.102.
+>
 > **1.3.100 (21 oct 2026)**: TF Crates y su cinemática como pidió el dueño (CRATES.md §2). Si vuelve a quejarse de la
 > cinemática, sigue **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)** (las dos comparaciones con
-> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). La siguiente versión es la 1.3.101.
+> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). (Siguiente versión: ver arriba.)
 
 Estado al dejarlo: **21 oct 2026, TF Client 1.3.100** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
 y la cinemática del Bosque de las Hadas con shader propio; todo en **`tf-client/CRATES.md`**). Antes, 1.3.98 (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta

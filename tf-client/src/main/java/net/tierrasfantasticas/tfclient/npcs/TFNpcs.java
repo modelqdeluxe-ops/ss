@@ -120,6 +120,9 @@ public final class TFNpcs {
                 BossEntity e = spawn(level, pk, n, at, p.getYRot() + 180F);
                 if (e != null) {
                     SELECTED.put(p.getUUID(), e.getUUID());
+                    // La plantilla «S» del pack, no: una piel de verdad (cuando ya tenga su modelo)
+                    Map<String, String> skin = autoskin(e, n);
+                    if (!skin.isEmpty()) PENDING.add(new Pending(e.getUUID(), skin, level.getGameTime() + 25));
                     notice = "Colocado: " + n.name();
                 }
             }
@@ -180,6 +183,15 @@ public final class TFNpcs {
                 NpcCatalog.Option o = pk == null ? null : pk.option(m.a(), m.b());
                 if (n == null || o == null) break;
                 apply(sel, n, m.a(), o);
+                // remapmodel deja cada hueso como en la piel (fuera los cosméticos): se vuelven a poner los demás
+                if (m.a().startsWith("skin")) {
+                    Map<String, String> ch = chosen(sel.getUUID());
+                    for (String g : NpcCatalog.GROUP_ORDER) {
+                        if (g.equals(m.a()) || !ch.containsKey(g) || g.equals("skin")) continue;
+                        NpcCatalog.Option other = pk.option(g, ch.get(g));
+                        if (other != null) apply(sel, n, g, other);
+                    }
+                }
                 notice = NpcCatalog.GROUPS.getOrDefault(m.a(), m.a()) + ": " + o.name();
             }
             case NpcNet.RESET -> {
@@ -203,7 +215,8 @@ public final class TFNpcs {
                 BossEntity copy = spawn(level, pk, n, at, sel.getYRot());
                 if (copy == null) break;
                 copy.setNoGravity(sel.isNoGravity());
-                PENDING.add(new Pending(copy.getUUID(), chosen(sel.getUUID()), level.getGameTime() + 30));
+                Map<String, String> ch = chosen(sel.getUUID());
+                PENDING.add(new Pending(copy.getUUID(), ch.isEmpty() ? autoskin(copy, n) : ch, level.getGameTime() + 25));
                 SELECTED.put(p.getUUID(), copy.getUUID());
                 notice = "Duplicado: " + n.name();
             }
@@ -280,6 +293,40 @@ public final class TFNpcs {
         // Como setvariable{var=global.hat<target.uuid>;save=true} del pack: su ~onLoad lo vuelve a poner
         o.vars().forEach((k, v) -> SkillSaved.setGlobal(k + id, v.isEmpty() ? own : v));
         if (!group.equals("reset")) SkillSaved.setGlobal("tfnpc_" + group + id, o.id());
+    }
+
+    /**
+     * La piel de un NPC nuevo con la plantilla del pack: una de las suyas (catálogo: autoskin), según su UUID (cada uno
+     * distinta); en los dúos, otra para el segundo personaje.
+     */
+    private static Map<String, String> autoskin(BossEntity e, NpcCatalog.Npc n) {
+        Map<String, String> out = new LinkedHashMap<>();
+        List<String> pool = n.autoskin();
+        if (pool.isEmpty() || !n.options().containsKey("skin")) return out;
+        int i = Math.floorMod(e.getUUID().hashCode(), pool.size());
+        out.put("skin", pool.get(i));
+        if (n.options().containsKey("skin2")) out.put("skin2", pool.get((i + 3) % pool.size()).replace("piel_", "piel2_"));
+        return out;
+    }
+
+    /**
+     * Un NPC que vuelve del disco, después de su ~onLoad: lo que se le eligió con el panel, en orden (la piel primero).
+     * El ~onLoad del pack ya pone su piel y sus cosméticos, pero no la piel del segundo personaje de los dúos.
+     */
+    public static void restore(BossEntity e) {
+        Map<String, String> ch = chosen(e.getUUID());
+        if (ch.isEmpty()) return;
+        NpcCatalog.Pack pk = NpcCatalog.pack(e.bossId());
+        NpcCatalog.Npc n = pk == null ? null : pk.npc(e.mobName());
+        if (n == null) return;
+        applyAll(e, pk, n, ch);
+    }
+
+    private static void applyAll(BossEntity e, NpcCatalog.Pack pk, NpcCatalog.Npc n, Map<String, String> ch) {
+        for (String g : NpcCatalog.GROUP_ORDER) {
+            NpcCatalog.Option o = ch.containsKey(g) ? pk.option(g, ch.get(g)) : null;
+            if (o != null) apply(e, n, g, o);
+        }
     }
 
     /** reset_cosmetics del pack: cada pieza vuelve a la suya. */
@@ -490,10 +537,7 @@ public final class TFNpcs {
                 NpcCatalog.Pack pk = NpcCatalog.pack(e.bossId());
                 NpcCatalog.Npc n = pk == null ? null : pk.npc(e.mobName());
                 if (n == null) break;
-                pd.chosen().forEach((g, id) -> {
-                    NpcCatalog.Option o = pk.option(g, id);
-                    if (o != null) apply(e, n, g, o);
-                });
+                applyAll(e, pk, n, pd.chosen());
                 break;
             }
         }

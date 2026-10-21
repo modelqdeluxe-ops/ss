@@ -59,7 +59,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.100) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.101) — lee esto primero
+
+**1.3.101: los NPC de escenas** (todo en **`tf-client/NPCS.md`**). El dueño mandó 13 packs de Scenes (MythicMobs +
+ModelEngine) y pidió convertirlos todos «correctamente, con sus animaciones», un panel de control para colocarlos
+(posición en tiempo real, rotación…) y `/tf npc` que lo dé solo a quien lo ejecuta; luego: «ya puedes meterlos».
+- Conversor `tools/npcs/build_npcs.py` (con el de los jefes): 13 packs, 130 NPC + 4 marcadores; nombres y cosméticos de
+  los menús del pack; **auditor 0 problemas** en los 13 (y `verificar.py` «todo bien», que ahora también los audita).
+- Motor fiel a MythicMobs/ModelEngine: variables anidadas y con «|por defecto», globales con save=true guardadas con el
+  mundo (`skills/SkillSaved`), `@pin`/`distanceFromPin`, `followPath`, `teleportTo` a los objetivos, `light` (brillo
+  del hueso), `meleeHit`, ~onLoad de los NPC que vuelven del disco, changepart/remapmodel sin modelo no hacen nada.
+- Entidad `tfclient:npc` (BossEntity en modo NPC: se guarda con el mundo); panel `npcs/` (`TFNpcs`, `NpcNet`,
+  `NpcCatalog`, `NpcPanelItem`, `client/NpcPanelScreen`).
+- Prueba en el juego: `[prueba-jefes=npcs]` (`BossTest.npcsStep`).
+- Los packs no están en el repo (los zips los tiene el dueño); para reconvertir, NPCS.md §3.
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.100)
 
 **1.3.100: TF Crates, lo que pidió el dueño al ver la 1.3.99** (todo en `tf-client/CRATES.md` §2):
 - el santuario **siempre en vivo**: también detrás de la pantalla de antes de abrir y de las recompensas (antes, negro);
