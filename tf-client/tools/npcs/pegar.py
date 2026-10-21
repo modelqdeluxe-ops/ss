@@ -12,7 +12,7 @@ de posición se vuelve a hacer en fotogramas lineales (los de la animación y 60
 lo del pack más la corrección; +0,10 px y comprobado a 4 veces esos fotogramas,
 para que tampoco quede hueco entre dos. Una animación sin huecos no se toca (volver a pasarlo no cambia nada).
 
-Uso: python3 tools/npcs/pegar.py [carpeta assets/tfclient] [--fps N] [--procesos N] [--modelos a,b]  (sin carpeta: los del jar; los
+Uso: python3 tools/npcs/pegar.py [carpeta assets/tfclient] [--fps N] [--procesos N] [--modelos a,b] [--animaciones fichero «modelo:animación»]  (sin carpeta: los del jar; los
 13 packs, unos 40 min con 4 procesos). Lo llama build_npcs al convertir.
 """
 import json
@@ -228,6 +228,21 @@ def grid(ln, fps):
     return [round(ln * k / n, 5) for k in range(n + 1)]
 
 
+JUNTOS = 0.012     # s: entre dos fotogramas clave así de juntos (un salto del pack o dos correcciones seguidas) se mide
+STEP = 0.0005      # cada 0,5 ms (en «grab» del aldeano que lleva cajas quedaba un hueco de 0,35 px en 4 ms entre dos)
+
+
+def close_times(anim):
+    """Instantes cada STEP en los tramos entre dos fotogramas clave a menos de JUNTOS (y un poco antes y después)."""
+    ks = sorted({k[0] for tr in anim['tracks'] for ch in ('r', 'p', 's') for k in tr.get(ch) or []})
+    out = set()
+    for a, b in zip(ks, ks[1:]):
+        if b - a < JUNTOS:
+            out.update(round(float(t), 5) for t in np.arange(a - 0.002, b + 0.002 + STEP / 2, STEP))
+    ln = anim['len'] or 0
+    return {t for t in out if 0 <= t <= ln}
+
+
 def gap_at(model, name, ov, gs, pairs, t):
     """El hueco más grande de esa pose (0 si todo toca)."""
     mats = P.pose(model, P.extra_of(model, [(name, t, 1.0, ov)]))
@@ -268,7 +283,7 @@ def fix_anim(model, name, gs, pairs, fps, passes=6, extra=(), real=None):
     anim = model['anims'][name]
     ov = bool(anim.get('ov'))
     ln = anim['len'] or 0
-    times = set(grid(ln, fps)) | {round(t, 5) for t in extra if 0 <= t <= ln}
+    times = set(grid(ln, fps)) | {round(t, 5) for t in extra if 0 <= t <= ln} | close_times(anim)
     for tr in anim['tracks']:
         for ch in ('r', 'p', 's'):
             for kf in tr.get(ch) or []:
@@ -291,7 +306,7 @@ def fix_anim(model, name, gs, pairs, fps, passes=6, extra=(), real=None):
         # se da por buena con la geometría real (lo que se ve): la encogida solo sirve para encontrar los roces justos
         # y dejarlos con margen (si también decidiera cuándo parar, las rápidas no acababan nunca)
         bad = []
-        for t in grid(ln, fps * CHECK):
+        for t in sorted(set(grid(ln, fps * CHECK)) | close_times(anim)):
             g = gap_at(model, name, ov, real if real is not None else gs, pairs, t)
             if g > EPS:
                 bad.append(t)
@@ -331,7 +346,7 @@ def _one_anim(job):
     return path, name, model['anims'][name] if changed else None, w
 
 
-def main(res=None, fps=60, procs=1, only=None):
+def main(res=None, fps=60, procs=1, only=None, pairs_only=None):
     res = res or os.path.normpath(os.path.join(TOOLS, '..', 'src', 'main', 'resources', 'assets', 'tfclient'))
     cat = json.load(open(os.path.join(res, 'npcs', 'catalog.json'), encoding='utf-8'))
     skin_id = None
@@ -355,6 +370,8 @@ def main(res=None, fps=60, procs=1, only=None):
         path = os.path.join(res, 'npcs', 'models', mid + '.json')
         model = json.load(open(path, encoding='utf-8'))
         for name, a in model['anims'].items():
+            if pairs_only and f'{mid}:{name}' not in pairs_only:
+                continue
             jobs.append((a['len'] or 0, (path, name, skin if used[mid] else None, fps)))
     jobs = [j for _l, j in sorted(jobs, key=lambda x: -x[0])]
     if procs > 1:
@@ -392,4 +409,8 @@ if __name__ == '__main__':
     if '--modelos' in args:
         only = set(args[args.index('--modelos') + 1].split(','))
         del args[args.index('--modelos'):args.index('--modelos') + 2]
-    main(args[0] if args else None, fps, procs, only)
+    pairs_only = None
+    if '--animaciones' in args:
+        pairs_only = set(open(args[args.index('--animaciones') + 1], encoding='utf-8').read().split())
+        del args[args.index('--animaciones'):args.index('--animaciones') + 2]
+    main(args[0] if args else None, fps, procs, only, pairs_only)
