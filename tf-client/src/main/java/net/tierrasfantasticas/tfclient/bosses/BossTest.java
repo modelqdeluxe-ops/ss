@@ -1610,7 +1610,19 @@ public final class BossTest {
                 look(player, level, o.x - 30 + 6, o.y + 2.5, o.z + 70 - 1.5, o.x - 30, o.y + 1.2, o.z + 70 - 1.5);
             }
             case 944 -> shot(r, "npc_pescador");
-            case 960 -> next(level);
+            // (1.3.103) Un dúo con la piel del panel, desde los dos lados: la cara de cada uno, delante (la piel del 2.º
+            // personaje le dejaba la cara y el pecho en la espalda; el dueño: «tienen la cara atrás»)
+            case 950 -> player.teleportTo(level, o.x - 36, o.y, o.z + 70, 180F, 0F);
+            case 954 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_tavern", "scene_tavern_drunk_duo", 1, 0, 0));
+                BossEntity duo = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                r.event("dúo de la prueba: " + (duo == null ? "NO SALE" : duo.getYRot() + "°"));
+            }
+            case 990 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 + 3.2, o.x - 36, o.y + 1.1, o.z + 70);
+            case 1030 -> shot(r, "npc_duo_a");
+            case 1034 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 - 3.2, o.x - 36, o.y + 1.1, o.z + 70);
+            case 1074 -> shot(r, "npc_duo_b");
+            case 1090 -> next(level);
             default -> { }
         }
         if (f > 154 && f < 434 && f % 40 == 0 && npcVendor != null) {

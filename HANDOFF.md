@@ -59,7 +59,28 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.102) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.103) — lee esto primero
+
+**1.3.103: cinco quejas del dueño** (con tres capturas suyas: el Pad en Música, las pestañas de Efectos y un farol de
+la crate):
+1. **«El pescador al recoger el anzuelo lo hace por detrás suyo»**: la caña del pack espera a 112° y recoge a 220-233°
+   (por detrás de la cabeza; la errata de signo de HUECOS) y en «interact» va al hombro con el pez a la espalda.
+   `tools/npcs/sedal.py` la pone delante (`rod`) y, si la punta aún queda por detrás, tensa el sedal hacia el agua de
+   delante. Medido: el anzuelo, siempre por delante (de −27/−28/−44 px a +11/+15/+1). NPCS.md §3.
+2. **«La cara la tienen atrás»**: las pieles del panel para el 2.º personaje de los dúos le ponían las piezas del
+   caminante, que miran al otro lado: cara y pecho en la espalda en los 210 dúos con piel (medido). Ahora,
+   `<piel>_2` (la piel reflejada, como las plantillas del pack). NPCS.md §3.
+3. **«El pad perdió sus letras»**: no se borró nada (el código del pad no cambió desde la 1.3.73) y en la prueba se
+   ven. A él le faltan solo las de PadFont encima de un recuadro (pestañas, botones): como si algo (un mod de
+   optimización) dibujara los recuadros después de las letras. `PadFont` las dibuja ahora 1 por delante (escriben la
+   profundidad: el recuadro ya no las tapa). Lo de «la GUI de Efectos solapada» era eso (pestañas sin nombre).
+4. **Crates**: las «líneas blancas» de su recorte eran la colita de las hadas (18 chispas sueltas casi blancas): ahora
+   una estela continua de su color; los pétalos de la apertura, rosas y con forma de pétalo; el sonido, medido, mucho
+   más bajo y por «Bloques». CRATES.md §2.
+5. La prueba en el juego guarda enteras (PNG) las capturas de antes de abrir y de la apertura de la crate 1, y saca
+   un dúo con piel desde los dos lados (`npc_duo_a`, `npc_duo_b`).
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.102)
 
 **1.3.102: el sedal de los pescadores cuelga por su peso** (orden del dueño: «arregla ese porque quiero poner
 pescadores»). En el pack el sedal sube al cielo (hasta 10-13 bloques en «fishing» y «sitting»; el pez en el aire en

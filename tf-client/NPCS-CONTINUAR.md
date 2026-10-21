@@ -1,4 +1,4 @@
-# Prompt de continuación — NPC de escenas (TF Client 1.3.102)
+# Prompt de continuación — NPC de escenas (TF Client 1.3.103)
 
 > Escrito el 21 oct 2026. Cómo funciona todo: `tf-client/NPCS.md`. Estado general: CHECKPOINT de `HANDOFF.md`.
 
@@ -7,7 +7,9 @@
 Eres la IA que sigue los **NPC de escenas** de TF Client en el repo `modelqdeluxe-ops/ss`. La **1.3.101 está publicada**
 (Release `tfclient-v1.3.101`): los 13 packs de Scenes (130 NPC + 4 marcadores) en el jar, el panel de `/tf npc` y la
 cabeza, los brazos y las piernas pegados al cuerpo en todas las animaciones. La **1.3.102** cuelga el sedal de los
-pescadores por su peso (`tools/npcs/sedal.py`). La siguiente versión es la 1.3.103.
+pescadores por su peso (`tools/npcs/sedal.py`). La **1.3.103** pone la caña y el anzuelo delante del pescador y la
+cara del 2.º personaje de los dúos delante (sus pieles, `<piel>_2`, reflejadas como las plantillas del pack). La
+siguiente versión es la 1.3.104.
 
 ## Reglas del dueño (no se rompen)
 
