@@ -61,7 +61,10 @@ public final class ClientPacketHandler {
          boolean cinematic = isOpener && cands != null && !cands.isEmpty() && !isInstant;
          if (cinematic) {
             try {
-               mc.setScreen(CrateCinematicScreen.create(be.getConfig(), rarityColor, winnerRarity, winnerIndex, cands, candRarities));
+               net.minecraft.client.gui.screens.Screen cine = CrateCinematicScreen.create(be.getConfig(), rarityColor, winnerRarity, winnerIndex, cands, candRarities);
+               // (1.3.103) sus partículas, las del bloque de verdad, también en la escena
+               if (cine instanceof CrateCinematicScreen cs) cs.at(pos);
+               mc.setScreen(cine);
             } catch (Throwable var17) {
                be.startAnimation(animationId, rarityColor, winnerIndex, winnerRarity, candRarities, cands);
                return;

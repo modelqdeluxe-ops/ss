@@ -73,6 +73,7 @@ public class CratePreOpenScreen extends Screen {
          this.sanctuaryTried = true;
          boolean ownVideo = this.config.videos.stream().anyMatch(u -> u != null && !u.isBlank());
          this.sanctuary = ownVideo ? null : CrateCinematicScreen.idle(this.config);
+         if (this.sanctuary != null) this.sanctuary.at(this.pos);
       }
 
       if (!CrateMedia.isActive()) {

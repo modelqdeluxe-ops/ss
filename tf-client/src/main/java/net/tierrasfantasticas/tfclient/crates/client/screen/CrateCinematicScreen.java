@@ -26,6 +26,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +40,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateBakedModels;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateStyles;
@@ -109,6 +114,13 @@ public class CrateCinematicScreen extends Screen {
     private ScenePost post;
     /** (1.3.103) Ya se dijo en el registro con qué se dibuja (paquete de shaders, shader de la escena). */
     private boolean saidHow;
+    /** (1.3.103) El bloque de la crate en el mundo (sus partículas se dibujan en la escena); null si no se sabe. */
+    private BlockPos cratePos;
+    private final SceneCamera particleCam = new SceneCamera();
+    /** Hasta dónde de la crate se dibujan las partículas del mundo (las de sus capas no van más lejos). */
+    private static final double PARTICLE_R = 4.5;
+    /** Para la prueba: cuántas partículas de la crate se dibujaron como mucho en un fotograma (y en cuántos alguna). */
+    private int particlesMax, particleFrames, particlesNow;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
     private int frames;
@@ -154,6 +166,12 @@ public class CrateCinematicScreen extends Screen {
         CrateCinematicScreen s = new CrateCinematicScreen(cfg, 0xFFFFFF, 0, 0, java.util.Collections.emptyList(), null);
         s.idle = true;
         return s;
+    }
+
+    /** El bloque de la crate que se abre (para dibujar sus partículas en la escena). */
+    public CrateCinematicScreen at(BlockPos pos) {
+        cratePos = pos == null ? null : pos.immutable();
+        return this;
     }
 
     /** Dibuja el santuario quieto (ver {@link #idle}); false si no se puede (entonces el fondo de siempre). */
@@ -232,6 +250,8 @@ public class CrateCinematicScreen extends Screen {
     public void removed() {
         if (!idle) testStats = String.format("%d fotogramas, %.1f ms de media, el peor %.1f ms, %.1f s; %s", frames, frames == 0 ? 0 : frameSum / frames,
                 frameMax, clock() / 20.0F, SanctuaryScene.get() == null ? "sin santuario" : SanctuaryScene.get().stats())
+                + String.format("; partículas de la crate: hasta %d a la vez, en %d fotogramas%s", particlesMax, particleFrames,
+                        cratePos == null ? " (sin bloque)" : "")
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
@@ -1002,6 +1022,7 @@ public class CrateCinematicScreen extends Screen {
 
             // el agua (el estanque, las charcas, la cascada y las fuentes: la dibuja el juego), translúcida
             if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
+            worldParticles(view, eye, sc);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
             // los pétalos de la apertura y del premio
@@ -1093,6 +1114,49 @@ public class CrateCinematicScreen extends Screen {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);
             }
+        }
+    }
+
+    /**
+     * (1.3.103) Las partículas de la crate: las capas del editor (reposo, anticipación, apertura, premio y final) y los
+     * acentos, que CrateBlockEntity suelta en el mundo junto al bloque de verdad, al ritmo de la escena. Mientras dura la
+     * escena el mundo no se dibuja (LevelRendererMixin), así que no se veían (el dueño: «por algún motivo la escena no me
+     * los mostraba»). Aquí se dibujan las del juego que están a menos de PARTICLE_R de la crate, con una cámara puesta en
+     * el mundo donde estaría la de la escena si la crate del santuario fuera el bloque: salen alrededor de la crate y los
+     * bloques del santuario las tapan.
+     */
+    private void worldParticles(Matrix4f view, Vector3f eye, SanctuaryScene sc) {
+        Minecraft mc = Minecraft.getInstance();
+        if (cratePos == null || mc.level == null) return;
+        float[] c = sc.anchor("crate");
+        double ox = cratePos.getX() + 0.5 - c[0], oy = cratePos.getY() - c[1], oz = cratePos.getZ() + 0.5 - c[2];
+        Vector3f f = new Vector3f(-view.m02(), -view.m12(), -view.m22()).normalize();
+        float yaw = (float) Math.toDegrees(Math.atan2(-f.x, f.z));
+        float pitch = (float) Math.toDegrees(-Math.asin(Math.max(-1.0F, Math.min(1.0F, f.y))));
+        particleCam.place(new Vec3(eye.x + ox, eye.y + oy, eye.z + oz), yaw, pitch);
+        PoseStack ps = new PoseStack();
+        ps.mulPose(view.getNormalizedRotation(new Quaternionf()));
+        Vec3 center = Vec3.atBottomCenterOf(cratePos).add(0.0, 0.8, 0.0);
+        Frustum near = new Frustum(new Matrix4f(), new Matrix4f()) {
+            @Override
+            public boolean isVisible(AABB box) {
+                boolean in = box.getCenter().distanceToSqr(center) < PARTICLE_R * PARTICLE_R;
+                if (in) particlesNow++;
+                return in;
+            }
+        };
+        particlesNow = 0;
+        mc.particleEngine.render(ps, mc.renderBuffers().bufferSource(), mc.gameRenderer.lightTexture(), particleCam,
+                mc.getFrameTime(), near);
+        particlesMax = Math.max(particlesMax, particlesNow);
+        if (particlesNow > 0) particleFrames++;
+    }
+
+    /** La cámara de las partículas (Camera no deja ponerla a mano desde fuera). */
+    private static final class SceneCamera extends Camera {
+        void place(Vec3 at, float yaw, float pitch) {
+            setRotation(yaw, pitch);
+            setPosition(at);
         }
     }
 
