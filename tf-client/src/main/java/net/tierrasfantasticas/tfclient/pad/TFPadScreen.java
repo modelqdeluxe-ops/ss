@@ -541,7 +541,7 @@ public final class TFPadScreen extends Screen {
 
     /**
      * Pinta ya lo que el pad lleva en el lote, en blanco, y deja el estado como el pad lo espera: el color de antes, la
-     * mezcla encendida y la normal (1.3.70). Antes de cada textura y (1.3.106) de cada texto: GuiGraphicsMixin y PadFont.
+     * mezcla encendida y la normal (1.3.70). Antes de cada textura (GuiGraphicsMixin).
      */
     /**
      * (1.3.106) Para la prueba en el juego: los recuadros del pad (fill, fillGradient) se guardan y se pintan al final,
@@ -556,6 +556,24 @@ public final class TFPadScreen extends Screen {
     /** ¿Se guarda este recuadro para el final? (GuiGraphicsMixin) */
     public static boolean deferBox() {
         return testBoxesLast && PadSkin.batching && !replaying;
+    }
+
+    /**
+     * (1.3.106) Cuánto más adelante va cada cosa que pinta el pad respecto a la anterior (unidades de la interfaz: unas
+     * 2 000 por fotograma, unas 10 en total; las ventanas de encima van 50-400 más arriba). La profundidad respeta así
+     * el orden de pintado aunque algo del juego lo cambie.
+     */
+    static final float ORDER_STEP = 0.005F;
+    private static int order;
+
+    /** ¿Lleva cada cosa del pad su escalón? (mientras pinta en lote; en la prueba, testNoLift lo quita: como antes) */
+    public static boolean liftOn() {
+        return PadSkin.batching && !testNoLift && !replaying;
+    }
+
+    /** El escalón de la siguiente cosa que se pinta (GuiGraphicsMixin, PadSkin, PadFont). */
+    public static float nextOrder() {
+        return ++order * ORDER_STEP;
     }
 
     private static void replayBoxes(GuiGraphics g) {
@@ -595,6 +613,7 @@ public final class TFPadScreen extends Screen {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
         RuntimeException[] error = new RuntimeException[1];
+        order = 0;
         g.drawManaged(() -> {
             PadSkin.batching = true;
             try {

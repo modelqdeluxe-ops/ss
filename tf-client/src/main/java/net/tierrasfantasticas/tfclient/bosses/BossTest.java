@@ -1361,6 +1361,19 @@ public final class BossTest {
     /** Lo que se pone en las filas: pack, NPC y dónde. */
     private record NpcSpot(String pack, String mob, Vec3 at, int row) {}
 
+    /** (1.3.106) Los NPC con muebles y los muebles del panel que se ven de cerca: de 4 en 4, en fila. */
+    private static final String[][] MUEBLES = {
+            {"npc_townsfolks_vol3", "scene_townsfolk_sit_chair_1"}, {"npc_townsfolks_vol3", "scene_townsfolk_writer"},
+            {"npc_townsfolks_vol3", "scene_townsfolk_sit_couch_1"}, {"npc_townsfolks_vol3", "scene_townsfolk_sit_bar_1"},
+            {"npc_townsfolks_vol3", "scene_townsfolk_sit_chair_4"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_back_1"},
+            {"npc_townsfolks_vol3", "scene_townsfolk_readers_book_2"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_front_2"},
+            {"npc_tavern", "mueble_mesa_taberna"}, {"npc_tavern", "mueble_silla_taberna"}, {"npc_tavern", "mueble_jarra"},
+            {"npc_tavern", "mueble_sofa"}};
+
+    private static Vec3 mueble(Vec3 o, int i) {
+        return new Vec3(o.x - 60 + (i % 4) * 3.5, o.y, o.z + 100 + (i / 4) * 14);
+    }
+
     private static final List<NpcSpot> NPC_PLAN = new ArrayList<>();
     private static final List<BossEntity> NPC_PLACED = new ArrayList<>();
     /** Las capturas de las filas: {primer NPC, último + 1}. */
@@ -1600,6 +1613,12 @@ public final class BossTest {
             // El panel abierto con el caminante elegido (pestaña Editar)
             case 778 -> net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
             case 840 -> shot(r, "npc_panel");
+            // (1.3.106) sin ninguno elegido: «El más cercano» tapaba «Cerca de ti:» (la captura del dueño)
+            case 842 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.DESELECT, "", "", 0, 0, 0));
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
+            }
+            case 856 -> shot(r, "npc_panel_sin_elegir");
             // (1.3.102) Un pescador de cerca y de lado: el sedal cuelga de la punta de la caña (en el pack subía al cielo)
             case 860 -> {
                 closeScreen = true;
@@ -1624,8 +1643,29 @@ public final class BossTest {
             case 1030 -> shot(r, "npc_duo_a");
             case 1034 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 - 3.2, o.x - 36, o.y + 1.1, o.z + 70);
             case 1074 -> shot(r, "npc_duo_b");
-            case 1090 -> next(level);
+            case 1570 -> next(level);
             default -> { }
+        }
+        // (1.3.106) De cerca, los NPC que se sientan o se tumban en algo, con sus muebles (tools/npcs/muebles.py), y los
+        // muebles de la taberna puestos con el panel (el dueño: «se sientan en algo que no está; mete su silla, su mesa»)
+        if (f >= 1090 && f < 1090 + MUEBLES.length * 8) {
+            int mi = (f - 1090) / 8, ms = (f - 1090) % 8;
+            Vec3 mat = mueble(o, mi);
+            if (ms == 0) player.teleportTo(level, mat.x, mat.y, mat.z, 180F, 0F);
+            if (ms == 4) {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, MUEBLES[mi][0], MUEBLES[mi][1], 1, 0, 0));
+                BossEntity mb = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                r.event("mueble " + MUEBLES[mi][1] + ": " + (mb == null ? "NO SALE" : "puesto (" + mb.mobName() + ")"));
+            }
+        }
+        int m0 = 1090 + MUEBLES.length * 8 + 10;
+        for (int mg = 0; mg < 3; mg++) {
+            Vec3 ma = mueble(o, mg * 4), mz = mueble(o, Math.min(MUEBLES.length - 1, mg * 4 + 3));
+            double mx = (ma.x + mz.x) / 2;
+            if (f == m0 + mg * 120) look(player, level, mx + 2.5, o.y + 2.6, ma.z + 6.5, mx, o.y + 0.7, ma.z);
+            if (f == m0 + mg * 120 + 50) shot(r, "npc_muebles_" + (mg + 1) + "_frente");
+            if (f == m0 + mg * 120 + 60) look(player, level, mx + 7.5, o.y + 2.2, ma.z + 1.5, mx, o.y + 0.7, ma.z);
+            if (f == m0 + mg * 120 + 110) shot(r, "npc_muebles_" + (mg + 1) + "_lado");
         }
         if (f > 154 && f < 434 && f % 40 == 0 && npcVendor != null) {
             Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);

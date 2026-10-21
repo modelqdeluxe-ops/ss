@@ -1140,9 +1140,24 @@ public class CrateCinematicScreen extends Screen {
      * el mundo donde estaría la de la escena si la crate del santuario fuera el bloque: salen alrededor de la crate y los
      * bloques del santuario las tapan.
      */
+    private static Boolean particleMods;
+
+    /** ¿Está Oculus, Embeddium o uno de sus parientes (cambian cómo se dibujan las partículas)? */
+    private static boolean particleMods() {
+        if (particleMods == null) {
+            net.minecraftforge.fml.ModList ml = net.minecraftforge.fml.ModList.get();
+            particleMods = ml != null && java.util.stream.Stream.of("oculus", "embeddium", "rubidium", "iris", "sodium", "magnesium")
+                    .anyMatch(ml::isLoaded);
+        }
+        return particleMods;
+    }
+
     private void worldParticles(Matrix4f view, Vector3f eye, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
         if (cratePos == null || mc.level == null) return;
+        // (1.3.106) con Oculus o Embeddium, no: en la escena salían como cuadrados blancos (la prueba con Oculus +
+        // Embeddium, aun sin paquete de shaders). Los efectos de la escena (los de serie, SceneFx) sí salen
+        if (particleMods()) return;
         float[] c = sc.anchor("crate");
         double ox = cratePos.getX() + 0.5 - c[0], oy = cratePos.getY() - c[1], oz = cratePos.getZ() + 0.5 - c[2];
         // (1.3.104, el dueño: «más suaves en la escena»: que no tapen la crate ni el premio) lo que no se tapa, en el

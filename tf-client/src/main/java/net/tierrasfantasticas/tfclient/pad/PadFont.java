@@ -98,7 +98,9 @@ final class PadFont {
      * título, sobre una textura, sí se veía. Las ventanas que se abren encima van 50-400 más arriba: no se transparentan.
      */
     private static Matrix4f front(GuiGraphics g) {
-        return new Matrix4f(g.pose().last().pose()).translate(0F, 0F, 1F);
+        // (1.3.106) en el pad, su escalón en el orden de pintado, como todo (TFPadScreen.nextOrder): 1 por delante
+        // tapaba también lo que va encima de ellas
+        return new Matrix4f(g.pose().last().pose()).translate(0F, 0F, TFPadScreen.liftOn() ? TFPadScreen.nextOrder() : 1F);
     }
 
     private static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}};
@@ -127,8 +129,6 @@ final class PadFont {
      * transparente (setColor), se vuelve a blanco (lo de antes ya se pintó con el suyo).
      */
     private static VertexConsumer begin(GuiGraphics g) {
-        // (1.3.106) lo de debajo (el lote), ya pintado: como el texto de Minecraft en el pad (GuiGraphicsMixin)
-        if (PadSkin.batching) TFPadScreen.flushBatch(g);
         float[] c = RenderSystem.getShaderColor();
         if (c[0] != 1F || c[1] != 1F || c[2] != 1F || c[3] != 1F) g.setColor(1F, 1F, 1F, 1F);
         if (type == null) type = PadRenderTypes.font(TEX);
