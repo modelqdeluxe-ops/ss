@@ -245,14 +245,14 @@ def bake(anim, fixes, times):
         tr['p'] = simplify(keys)
 
 
-def fix_anim(model, name, gs, pairs, fps, passes=6):
+def fix_anim(model, name, gs, pairs, fps, passes=6, extra=()):
     """Pega las extremidades en esa animación: (el hueco más grande que tenía, si se ha cambiado). Tras cada pasada se
     comprueba a CHECK veces los fotogramas; donde aún queda hueco (entre dos fotogramas), esos instantes entran en la
     siguiente."""
     anim = model['anims'][name]
     ov = bool(anim.get('ov'))
     ln = anim['len'] or 0
-    times = set(grid(ln, fps))
+    times = set(grid(ln, fps)) | {round(t, 5) for t in extra if 0 <= t <= ln}
     for tr in anim['tracks']:
         for ch in ('r', 'p', 's'):
             for kf in tr.get(ch) or []:
