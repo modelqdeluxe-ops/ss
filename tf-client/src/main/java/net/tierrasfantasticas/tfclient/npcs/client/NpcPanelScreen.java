@@ -338,6 +338,19 @@ public final class NpcPanelScreen extends Screen {
         return c == null ? mob : c.name() + " · " + NpcCatalog.shortName(pk);
     }
 
+    /** Un texto de la pestaña, solo si cabe entero en la zona que se ve (como los botones: recortado asomaba medio renglón). */
+    private void label(GuiGraphics g, String s, int x, int y, int color) {
+        if (y >= contentTop && y + font.lineHeight <= contentBottom) g.drawString(font, s, x, y, color, false);
+    }
+
+    /** Lo mismo con un texto largo, partido en renglones (como drawWordWrap). */
+    private void wrap(GuiGraphics g, String s, int x, int y, int color) {
+        for (net.minecraft.util.FormattedCharSequence line : font.split(Component.literal(s), W - 12)) {
+            if (y >= contentTop && y + font.lineHeight <= contentBottom) g.drawString(font, line, x, y, color, false);
+            y += font.lineHeight;
+        }
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         int x0 = 8, y0 = 8, h = height - 16;
@@ -350,28 +363,28 @@ public final class NpcPanelScreen extends Screen {
         // los textos de la pestaña, recortados a la zona que se ve (si está desplazada)
         g.enableScissor(x0, contentTop, x0 + W, contentBottom);
         if (state == null) {
-            g.drawString(font, "Cargando…", x0 + 6, y, DIM, false);
+            label(g, "Cargando…", x0 + 6, y, DIM);
         } else if (NpcCatalog.packs().isEmpty()) {
-            g.drawWordWrap(font, Component.literal("Este TF Client no trae NPC de escenas."), x0 + 6, y, W - 12, DIM);
+            wrap(g, "Este TF Client no trae NPC de escenas.", x0 + 6, y, DIM);
         } else if (tab == 0) {
-            g.drawString(font, "Packs", x0 + 6, y, DIM, false);
-            g.drawString(font, "NPC   (» anda, · marcador)", x0 + 102, y, DIM, false);
+            label(g, "Packs", x0 + 6, y, DIM);
+            label(g, "NPC   (» anda, · marcador)", x0 + 102, y, DIM);
         } else if (tab == 1) {
             if (state.id() < 0) {
-                g.drawWordWrap(font, Component.literal("Clic derecho a un NPC con el panel en la mano para elegirlo, o:"), x0 + 6, y, W - 12, DIM);
-                g.drawString(font, "Cerca de ti:", x0 + 6, y + 34, DIM, false);
+                wrap(g, "Clic derecho a un NPC con el panel en la mano para elegirlo, o:", x0 + 6, y, DIM);
+                label(g, "Cerca de ti:", x0 + 6, y + 34, DIM);
             } else {
-                g.drawString(font, name(state.pack(), state.mob()), x0 + 6, y, GOLD, false);
-                g.drawString(font, String.format(Locale.ROOT, "%.2f  %.2f  %.2f   giro %.0f°", state.x(), state.y(), state.z(), state.yaw()),
-                        x0 + 6, y + 12, TEXT, false);
-                g.drawString(font, "Paso", x0 + 6, y + 50, DIM, false);
+                label(g, name(state.pack(), state.mob()), x0 + 6, y, GOLD);
+                label(g, String.format(Locale.ROOT, "%.2f  %.2f  %.2f   giro %.0f°", state.x(), state.y(), state.z(), state.yaw()),
+                        x0 + 6, y + 12, TEXT);
+                label(g, "Paso", x0 + 6, y + 50, DIM);
                 NpcCatalog.Pack pk = NpcCatalog.pack(state.pack());
                 NpcCatalog.Npc c = pk == null ? null : pk.npc(state.mob());
                 int yy = y + 134;
                 if (c != null) {
                     for (String gname : NpcCatalog.GROUP_ORDER) {
                         if (c.options().getOrDefault(gname, List.of()).isEmpty()) continue;
-                        g.drawString(font, NpcCatalog.GROUPS.get(gname), x0 + 6, yy + 3, DIM, false);
+                        label(g, NpcCatalog.GROUPS.get(gname), x0 + 6, yy + 3, DIM);
                         yy += 15;
                     }
                     if (!c.options().isEmpty()) {
@@ -380,17 +393,17 @@ public final class NpcPanelScreen extends Screen {
                     }
                 }
                 // debajo de Duplicar/Borrar (buildEdit: contentEnd)
-                g.drawString(font, "Teclas: flechas, RePág/AvPág, Q/E", x0 + 6, yy + 19, DIM, false);
+                label(g, "Teclas: flechas, RePág/AvPág, Q/E", x0 + 6, yy + 19, DIM);
             }
         } else {
             NpcCatalog.Pack pk = state.id() < 0 ? null : NpcCatalog.pack(state.pack());
             NpcCatalog.Npc c = pk == null ? null : pk.npc(state.mob());
             int yy = y;
             if (c == null) {
-                g.drawWordWrap(font, Component.literal("Elige un NPC (pestaña Editar) para ver sus pins."), x0 + 6, yy, W - 12, DIM);
+                wrap(g, "Elige un NPC (pestaña Editar) para ver sus pins.", x0 + 6, yy, DIM);
                 yy += 24;
             } else if (!c.pins().isEmpty()) {
-                g.drawString(font, "Pins de " + c.name() + " (anda de uno a otro):", x0 + 6, yy, GOLD, false);
+                label(g, "Pins de " + c.name() + " (anda de uno a otro):", x0 + 6, yy, GOLD);
                 yy += 24;
                 int n = Math.max(3, Math.min(c.pins().size(), (height - 140 - yy - offset()) / 15));
                 for (int i = 0; i < Math.min(n, c.pins().size() - scrollC); i++) {
@@ -399,23 +412,23 @@ public final class NpcPanelScreen extends Screen {
                     for (NpcNet.PinInfo pi : state.pins()) if (pi.name().equals(pin)) info = pi;
                     String st = info == null ? "sin poner" : info.here()
                             ? String.format(Locale.ROOT, "%.0f %.0f %.0f", info.x(), info.y(), info.z()) : "en otro mundo";
-                    g.drawString(font, pin, x0 + 6, yy + i * 15 + 3, info == null ? RED : GREEN, false);
-                    g.drawString(font, st, x0 + 84, yy + i * 15 + 3, DIM, false);
+                    label(g, pin, x0 + 6, yy + i * 15 + 3, info == null ? RED : GREEN);
+                    label(g, st, x0 + 84, yy + i * 15 + 3, DIM);
                 }
                 yy += n * 15 + 6;
             } else {
-                g.drawString(font, c.name() + " no anda entre pins.", x0 + 6, yy, DIM, false);
+                label(g, c.name() + " no anda entre pins.", x0 + 6, yy, DIM);
                 yy += 12;
             }
-            g.drawString(font, "Rutas de caminantes", x0 + 6, yy, GOLD, false);
+            label(g, "Rutas de caminantes", x0 + 6, yy, GOLD);
             yy += 12;
             List<Integer> routes = c != null && !c.routes().isEmpty() ? c.routes() : List.of(1, 2, 3, 4, 5, 6);
             for (int r : routes) {
                 int k = r - 1 < state.routes().length ? state.routes()[r - 1] : 0;
-                g.drawString(font, "Ruta " + r + ": " + k, x0 + 6, yy + 3, k > 0 ? GREEN : DIM, false);
+                label(g, "Ruta " + r + ": " + k, x0 + 6, yy + 3, k > 0 ? GREEN : DIM);
                 yy += 15;
             }
-            g.drawWordWrap(font, Component.literal(HELP), x0 + 6, yy + 6, W - 12, DIM);
+            wrap(g, HELP, x0 + 6, yy + 6, DIM);
         }
         g.disableScissor();
         if (maxPage > 0) {
