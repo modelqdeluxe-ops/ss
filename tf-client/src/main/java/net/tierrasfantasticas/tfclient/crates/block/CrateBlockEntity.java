@@ -573,8 +573,20 @@ public class CrateBlockEntity extends BlockEntity {
    }
 
    private double particleDensity() {
-      return this.config.rarity == Rarity.COMMON ? 0.55 : 1.0;
+      return (this.config.rarity == Rarity.COMMON ? 0.55 : 1.0) * this.sceneShare();
    }
+
+   /**
+    * (1.3.104, el dueño: «más suaves en la escena») Quien abre la crate ve sus partículas dentro de la escena
+    * (CrateCinematicScreen.worldParticles), donde se miran de cerca y con unas 1 000 a la vez tapaban la crate: en su
+    * juego (muteAudio: solo el que abre), mientras dura la escena, sale SCENE_SHARE de cada capa. Los demás jugadores
+    * las siguen viendo enteras en el mundo (cada cliente suelta las suyas).
+    */
+   private double sceneShare() {
+      return this.animating && this.sceneLidMode && this.muteAudio ? SCENE_SHARE : 1.0;
+   }
+
+   private static final double SCENE_SHARE = 0.35;
 
    private void emitShape(Level level, BlockPos pos, ParticleLayer layer, ParticleOptions opt) {
       double crateScale = (double)this.config.rarity.sizeScale();
@@ -671,11 +683,12 @@ public class CrateBlockEntity extends BlockEntity {
          double cz = (double)pos.getZ() + 0.5;
          double cyTop = (double)pos.getY() + 1.5;
          RandomSource rng = level.random;
+         double share = this.sceneShare();
          if (t >= this.tOpenEnd && t < this.tSpinStop && t % 3 == 0) {
             ParticleOptions amb = this.themeParticle(this.animation.theme());
             double ang = rng.nextDouble() * (Math.PI * 2);
             double rad = 0.5 + rng.nextDouble() * 0.2;
-            level.addParticle(
+            if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(
                amb,
                cx + Math.cos(ang) * rad,
                (double)pos.getY() + 0.2 + rng.nextDouble() * 0.5,
@@ -693,20 +706,20 @@ public class CrateBlockEntity extends BlockEntity {
             for (int i = 0; i < burst; i++) {
                double a2 = rng.nextDouble() * (Math.PI * 2);
                double s = 0.2 + rng.nextDouble() * 0.5;
-               level.addParticle(fin, cx, cyTop, cz, Math.cos(a2) * s, 0.15 + rng.nextDouble() * 0.3, Math.sin(a2) * s);
+               if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(fin, cx, cyTop, cz, Math.cos(a2) * s, 0.15 + rng.nextDouble() * 0.3, Math.sin(a2) * s);
             }
 
             for (int var19 = 0; var19 < 3; var19++) {
                double a3 = rng.nextDouble() * (Math.PI * 2);
                double s2 = 0.15 + rng.nextDouble() * 0.35;
-               level.addParticle(this.dust(this.animColor, 1.5F), cx, cyTop, cz, Math.cos(a3) * s2, 0.1 + rng.nextDouble() * 0.2, Math.sin(a3) * s2);
+               if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(this.dust(this.animColor, 1.5F), cx, cyTop, cz, Math.cos(a3) * s2, 0.1 + rng.nextDouble() * 0.2, Math.sin(a3) * s2);
             }
          }
 
          if (t >= this.tHoldEnd && t < this.animTotal && t % 2 == 0) {
             double a4 = rng.nextDouble() * (Math.PI * 2);
             double rad2 = 0.2 + rng.nextDouble() * 0.25;
-            level.addParticle(this.dust(this.config.rarity.rgb(), 1.2F), cx + Math.cos(a4) * rad2, cyTop - 0.2, cz + Math.sin(a4) * rad2, 0.0, -0.06, 0.0);
+            if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(this.dust(this.config.rarity.rgb(), 1.2F), cx + Math.cos(a4) * rad2, cyTop - 0.2, cz + Math.sin(a4) * rad2, 0.0, -0.06, 0.0);
          }
       }
    }

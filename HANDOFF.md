@@ -64,7 +64,8 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 **1.3.104: las partículas de la crate, en la escena** (el dueño: «lo de efectos son las crates, por algún motivo la
 escena no me los mostraba»; no tiene que ver con los shaders). Las capas de partículas del editor de cada crate salen
 en el mundo, junto al bloque, y el mundo no se dibuja durante la escena: no se veían. Ahora se dibujan dentro de la
-escena (CRATES.md §2). La cinemática dice además en el registro si hay paquete de shaders y si su shader cargó.
+escena (CRATES.md §2), más suaves que en el mundo (lo eligió el dueño: el 35 % y sin tapar la crate ni el premio). La
+cinemática dice además en el registro si hay paquete de shaders y si su shader cargó.
 
 ### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.103, PUBLICADA)
 

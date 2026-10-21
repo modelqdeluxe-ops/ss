@@ -1026,7 +1026,7 @@ public class CrateCinematicScreen extends Screen {
 
             // el agua (el estanque, las charcas, la cascada y las fuentes: la dibuja el juego), translúcida
             if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
-            worldParticles(view, eye, sc);
+            worldParticles(view, eye, sc, t);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
             // los pétalos de la apertura y del premio
@@ -1129,11 +1129,23 @@ public class CrateCinematicScreen extends Screen {
      * el mundo donde estaría la de la escena si la crate del santuario fuera el bloque: salen alrededor de la crate y los
      * bloques del santuario las tapan.
      */
-    private void worldParticles(Matrix4f view, Vector3f eye, SanctuaryScene sc) {
+    private void worldParticles(Matrix4f view, Vector3f eye, SanctuaryScene sc, float t) {
         Minecraft mc = Minecraft.getInstance();
         if (cratePos == null || mc.level == null) return;
         float[] c = sc.anchor("crate");
         double ox = cratePos.getX() + 0.5 - c[0], oy = cratePos.getY() - c[1], oz = cratePos.getZ() + 0.5 - c[2];
+        // (1.3.104, el dueño: «más suaves en la escena»: que no tapen la crate ni el premio) lo que no se tapa, en el
+        // mundo: {x, y, z, radio}. La crate; en la ruleta, el premio que pasa por delante; y el premio al salir.
+        List<double[]> keep = new ArrayList<>();
+        keep.add(new double[] {c[0] + ox, c[1] + crateH * 0.5 + oy, c[2] + oz, Math.max(0.65, crateH * 0.6)});
+        float front = (float) Math.atan2(eye.x - c[0], eye.z - c[2]);
+        float cy = ringY(sc);
+        if (t >= RING0 && t < REVEAL) {
+            keep.add(new double[] {c[0] + Math.sin(front) * RING_R + ox, cy + oy, c[2] + Math.cos(front) * RING_R + oz, 0.5});
+        }
+        if (t >= REVEAL - 10) {
+            keep.add(new double[] {c[0] + Math.sin(front) * 1.1 + ox, cy + 0.15 + oy, c[2] + Math.cos(front) * 1.1 + oz, 0.7});
+        }
         Vector3f f = new Vector3f(-view.m02(), -view.m12(), -view.m22()).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(-f.x, f.z));
         float pitch = (float) Math.toDegrees(-Math.asin(Math.max(-1.0F, Math.min(1.0F, f.y))));
@@ -1148,7 +1160,8 @@ public class CrateCinematicScreen extends Screen {
                 Vec3 p = box.getCenter();
                 // (las que pasan pegadas a la cámara, no: en los primeros planos tapaban la crate, como los discos de
                 // luz que ya se apagan cerca de ella en CinematicFx.nearFade)
-                boolean in = p.distanceToSqr(center) < PARTICLE_R * PARTICLE_R && p.distanceToSqr(camAt) > PARTICLE_NEAR * PARTICLE_NEAR;
+                boolean in = p.distanceToSqr(center) < PARTICLE_R * PARTICLE_R && p.distanceToSqr(camAt) > PARTICLE_NEAR * PARTICLE_NEAR
+                        && !covers(camAt, p, keep);
                 if (in) particlesNow++;
                 return in;
             }
@@ -1165,6 +1178,23 @@ public class CrateCinematicScreen extends Screen {
         }
         particlesMax = Math.max(particlesMax, particlesNow);
         if (particlesNow > 0) particleFrames++;
+    }
+
+    /** ¿Está p entre la cámara y algo de «keep» (dentro de su radio visto desde la cámara, y no por detrás)? */
+    private static boolean covers(Vec3 cam, Vec3 p, List<double[]> keep) {
+        double wx = p.x - cam.x, wy = p.y - cam.y, wz = p.z - cam.z;
+        for (double[] k : keep) {
+            double vx = k[0] - cam.x, vy = k[1] - cam.y, vz = k[2] - cam.z;
+            double len = Math.sqrt(vx * vx + vy * vy + vz * vz);
+            if (len < 1e-6) continue;
+            double along = (wx * vx + wy * vy + wz * vz) / len;
+            if (along <= 0.0 || along > len + k[3]) continue;
+            double px = wx - vx / len * along, py = wy - vy / len * along, pz = wz - vz / len * along;
+            // (el radio, a la distancia de la partícula: lo que tapa visto desde la cámara)
+            double r = k[3] * along / len;
+            if (px * px + py * py + pz * pz < r * r) return true;
+        }
+        return false;
     }
 
     /** La cámara de las partículas (Camera no deja ponerla a mano desde fuera). */
