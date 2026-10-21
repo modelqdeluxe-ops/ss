@@ -168,7 +168,9 @@ escena no me los mostraba»): las capas del editor (reposo, anticipación, apert
 mientras dura la escena. `CrateCinematicScreen.worldParticles` dibuja en la escena (y en la de antes de abrir) las del
 `ParticleEngine` del juego a menos de 4,5 bloques de la crate, con una cámara puesta en el mundo donde estaría la de la
 escena si la crate del santuario fuera el bloque (`at(pos)` desde `ClientPacketHandler` y `CratePreOpenScreen`). La prueba
-dice cuántas: «partículas de la crate: hasta N a la vez, en M fotogramas».
+dice cuántas: «partículas de la crate: hasta N a la vez, en M fotogramas». Con la luz de la crate de la escena
+(`CRATE_TINT`: con la del mundo, de día a tope, florecían y salían blancas) y sin las que pasan a menos de 1,6 bloques de
+la cámara (en los primeros planos tapaban la crate).
 **El sonido** (1.3.103, el dueño: «extremadamente alto, horrible»): medido con ffmpeg (ebur128), los .ogg de las crates
 van a −12/−18 LUFS con picos de −1 dB (los del juego, −20/−25) y sonaban por «Master» a 0,8-0,9. Ahora por «Bloques»
 (se baja con su barra), efectos ×0,35 (`CrateCinematicScreen.SFX`), música 0,40, ambiente 0,35; la clásica, ×0,5.

@@ -119,6 +119,10 @@ public class CrateCinematicScreen extends Screen {
     private final SceneCamera particleCam = new SceneCamera();
     /** Hasta dónde de la crate se dibujan las partículas del mundo (las de sus capas no van más lejos). */
     private static final double PARTICLE_R = 4.5;
+    /** Las partículas a menos de esto de la cámara no se dibujan (bloques). */
+    private static final double PARTICLE_NEAR = 1.6;
+    /** La luz de la crate en la escena (drawCrate): un poco por debajo de la entera, para que no florezca. */
+    private static final float[] CRATE_TINT = {0.86F, 0.84F, 0.80F};
     /** Para la prueba: cuántas partículas de la crate se dibujaron como mucho en un fotograma (y en cuántos alguna). */
     private int particlesMax, particleFrames, particlesNow;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
@@ -585,7 +589,7 @@ public class CrateCinematicScreen extends Screen {
         pose.translate(-centerX, -minY, -centerZ);
         ModelBlockRenderer mr = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         // (el dueño: «no abuses del bloom a que se vea borrosa la crate»: un poco por debajo de la luz entera, no florece)
-        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), 0.86F, 0.84F, 0.80F);
+        VertexConsumer vc = sc.tinted(buf.getBuffer(RenderType.cutout()), CRATE_TINT[0], CRATE_TINT[1], CRATE_TINT[2]);
         mr.renderModel(pose.last(), vc, crateState, base, 1.0F, 1.0F, 1.0F, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 ModelData.EMPTY, RenderType.cutout());
         if (lid != null) {
@@ -1133,21 +1137,32 @@ public class CrateCinematicScreen extends Screen {
         Vector3f f = new Vector3f(-view.m02(), -view.m12(), -view.m22()).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(-f.x, f.z));
         float pitch = (float) Math.toDegrees(-Math.asin(Math.max(-1.0F, Math.min(1.0F, f.y))));
-        particleCam.place(new Vec3(eye.x + ox, eye.y + oy, eye.z + oz), yaw, pitch);
+        Vec3 camAt = new Vec3(eye.x + ox, eye.y + oy, eye.z + oz);
+        particleCam.place(camAt, yaw, pitch);
         PoseStack ps = new PoseStack();
         ps.mulPose(view.getNormalizedRotation(new Quaternionf()));
         Vec3 center = Vec3.atBottomCenterOf(cratePos).add(0.0, 0.8, 0.0);
         Frustum near = new Frustum(new Matrix4f(), new Matrix4f()) {
             @Override
             public boolean isVisible(AABB box) {
-                boolean in = box.getCenter().distanceToSqr(center) < PARTICLE_R * PARTICLE_R;
+                Vec3 p = box.getCenter();
+                // (las que pasan pegadas a la cámara, no: en los primeros planos tapaban la crate, como los discos de
+                // luz que ya se apagan cerca de ella en CinematicFx.nearFade)
+                boolean in = p.distanceToSqr(center) < PARTICLE_R * PARTICLE_R && p.distanceToSqr(camAt) > PARTICLE_NEAR * PARTICLE_NEAR;
                 if (in) particlesNow++;
                 return in;
             }
         };
         particlesNow = 0;
-        mc.particleEngine.render(ps, mc.renderBuffers().bufferSource(), mc.gameRenderer.lightTexture(), particleCam,
-                mc.getFrameTime(), near);
+        // con la luz de la crate de la escena (CRATE_TINT, por debajo del umbral del resplandor): con la del mundo, de día a
+        // tope, florecían y salían blancas en vez de su color
+        RenderSystem.setShaderColor(CRATE_TINT[0], CRATE_TINT[1], CRATE_TINT[2], 1.0F);
+        try {
+            mc.particleEngine.render(ps, mc.renderBuffers().bufferSource(), mc.gameRenderer.lightTexture(), particleCam,
+                    mc.getFrameTime(), near);
+        } finally {
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
         particlesMax = Math.max(particlesMax, particlesNow);
         if (particlesNow > 0) particleFrames++;
     }
