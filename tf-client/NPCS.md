@@ -110,7 +110,9 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
     lo hacen (mercado 20, townsfolks vol3 14, taberna 11, combate 9, guardias, leñadores y mineros 1) y, como sus
     animaciones no llevan «override», salían con cada giro y cada desplazamiento al doble: el «angry 1» de la taberna con
     el torso tumbado y partido de las piernas (lo vio el dueño; con la vista previa, angry1 al doble a los 4 s da esa
-    misma pose). Ningún jefe tiene esa combinación.
+    misma pose). Y la de reposo o la de andar puesta por state{} se para cuando deja de ser la que toca
+    (`VfxLayers.stopped`): el vendedor del mercado lleva «vendor_2_idle» por state{} y, al andar, se le sumaba a la de
+    andar. Ningún jefe tiene esas combinaciones.
 - **Rutas de caminantes**: el pack trae `path1`/`path_1_follow` solo de ejemplo (comentadas, con coordenadas del mundo
   de su autor). El conversor las genera como las del ejemplo (`build_npcs.route_skills`), leyendo la ruta de las
   variables `scenes_route_N` / `scenes_route_N_start`, que escribe el panel. Usan **@TargetedTarget** en vez de @EIR
@@ -132,6 +134,11 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
 ## 4. Comprobarlo
 
 - `python3 tools/bosses/verificar.py` → «todo bien» (incluye «auditor: 0 problemas en los NPC de escenas»).
+- `python3 tools/npcs/pegado.py [pack…] [--plantilla]`: la cabeza, los brazos y las piernas de cada NPC pegados a su
+  cuerpo en cada animación de su modelo y en la pose de su escena, con las mismas cuentas que el mod (distancias
+  exactas entre caras, en píxeles de Blockbench). Sin `--plantilla`, con la piel que les pone el panel (las 21 tienen la
+  misma geometría: lo comprueba); con él, con la geometría del propio modelo del pack. Unos 90 s por pack (los 13 packs en
+  paralelo: `xargs -P 4`).
 - Prueba en el juego: `[prueba-jefes=npcs]` en el commit (`BossTest.npcsStep`, ~3 min): todos los NPC en filas con
   una captura cada 5 (`NN_npcs_npcs_<pack>_<n>.jpg`), un guardia con cosméticos movido y girado, guardado y vuelto a
   cargar, un vendedor entre dos pins, un caminante por una ruta y el panel abierto. Informe en la rama `pruebas-jefes`.

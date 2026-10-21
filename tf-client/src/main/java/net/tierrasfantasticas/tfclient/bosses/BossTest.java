@@ -1355,7 +1355,8 @@ public final class BossTest {
     private static net.minecraft.nbt.CompoundTag npcSaved;
     private static final StringBuilder npcTrack = new StringBuilder();
     private static int npcMinerHits;
-    private static final int NPC_GAP = 5, NPC_PER_SHOT = 5;
+    /** Entre NPC de una fila y entre filas: la cámara va a 10 bloques de la suya (a 12, quedaba dentro del barco del pescador). */
+    private static final int NPC_GAP = 5, NPC_ROW = 20, NPC_PER_SHOT = 5;
     /** Ticks por NPC al ponerlos: el jugador llega en el primero y lo pone en el último (su chunk ya cargado). */
     private static final int NPC_SLOT = 4;
     /** Ticks por captura de las filas: la cámara se mueve en el 0 y la captura sale en el 60 (los chunks cargados). */
@@ -1410,7 +1411,7 @@ public final class BossTest {
                         markers++;
                         continue; // los generadores y quitadores de caminantes harían su trabajo en la fila
                     }
-                    NPC_PLAN.add(new NpcSpot(pk.id(), n.mob(), new Vec3(o.x + col * NPC_GAP, o.y, o.z - row * 12), row));
+                    NPC_PLAN.add(new NpcSpot(pk.id(), n.mob(), new Vec3(o.x + col * NPC_GAP, o.y, o.z - row * NPC_ROW), row));
                     col++;
                 }
                 for (int k = first; k < NPC_PLAN.size(); k += NPC_PER_SHOT) NPC_SHOTS.add(new int[] {k, Math.min(NPC_PLAN.size(), k + NPC_PER_SHOT)});
@@ -1527,15 +1528,20 @@ public final class BossTest {
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_market", "scene_market_vendor_walk_1", 1, 0, 0));
                 npcVendor = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
                 if (npcVendor == null) r.event("vendedor de la prueba: NO SALE");
-                look(player, level, m.x + 3, m.y + 6, m.z + 16, m.x + 3, m.y, m.z + 4);
+                // de lado y cerca: anda del pin 1 al 2 (a lo largo de z) y se le ven las piernas y los brazos
+                look(player, level, m.x + 13, m.y + 2.2, m.z + 4, m.x + 6, m.y + 1, m.z + 4);
                 npcTrack.setLength(0);
             }
+            case 214 -> shot(r, "npc_pins_andando");
             case 434 -> {
                 Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);
                 r.event("vendedor entre pins (cada 2 s: distancia al pin 1 / al pin 2):" + npcTrack + (npcVendor == null ? " NO ESTÁ"
                         : String.format(" — al final a %.1f del pin 2; animaciones %s", npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z + 8)),
                         net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(npcVendor))));
                 shot(r, "npc_pins");
+            }
+            case 444 -> {
+                // (la captura sale unos ticks después de pedirla: lo siguiente, 10 ticks más tarde)
                 // Un caminante por la ruta 1 del panel (un cuadrado de 8 bloques)
                 Vec3 w = new Vec3(o.x - 60, o.y, o.z);
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_CLEAR, "", "", 1, 0, 0));
@@ -1545,28 +1551,29 @@ public final class BossTest {
                 }
                 player.teleportTo(level, w.x, w.y, w.z, 180F, 0F);
             }
-            case 438 -> {
+            case 448 -> {
                 Vec3 w = new Vec3(o.x - 60, o.y, o.z);
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_wanderers_vol1", "scene_wanderer_stick", 1, 0, 0));
                 npcWalker = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
                 if (npcWalker == null) r.event("caminante de la prueba: NO SALE");
-                look(player, level, w.x + 4, w.y + 9, w.z + 20, w.x + 4, w.y, w.z + 4);
+                look(player, level, w.x + 4, w.y + 4, w.z + 15, w.x + 4, w.y + 1, w.z + 4);
                 npcTrack.setLength(0);
             }
-            case 443 -> {
+            case 453 -> {
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_ASSIGN, "", "", 1, 0, 0));
                 r.event("ruta 1 para el caminante: " + net.tierrasfantasticas.tfclient.skills.SkillSaved.global("scenes_route_1"));
             }
-            case 758 -> {
+            case 600 -> shot(r, "npc_ruta_andando");
+            case 768 -> {
                 r.event("caminante por la ruta 1 (cada 2 s: x z):" + npcTrack + (npcWalker == null || !npcWalker.isAlive() ? " NO ESTÁ"
                         : " — animaciones " + net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(npcWalker)));
                 shot(r, "npc_ruta");
                 r.event("golpes del minero no muerto al jugador: " + npcMinerHits);
-                // El panel abierto con el caminante elegido (pestaña Editar)
-                net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
             }
-            case 820 -> shot(r, "npc_panel");
-            case 860 -> next(level);
+            // El panel abierto con el caminante elegido (pestaña Editar)
+            case 778 -> net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
+            case 840 -> shot(r, "npc_panel");
+            case 880 -> next(level);
             default -> { }
         }
         if (f > 154 && f < 434 && f % 40 == 0 && npcVendor != null) {
@@ -1574,7 +1581,7 @@ public final class BossTest {
             npcTrack.append(String.format(" %.1f/%.1f", npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z)),
                     npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z + 8))));
         }
-        if (f > 443 && f < 758 && f % 40 == 0 && npcWalker != null && npcWalker.isAlive()) {
+        if (f > 453 && f < 768 && f % 40 == 0 && npcWalker != null && npcWalker.isAlive()) {
             npcTrack.append(String.format(" %.1f,%.1f", npcWalker.getX() - (o.x - 60), npcWalker.getZ() - o.z));
         }
     }
