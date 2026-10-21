@@ -1,7 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.101 (21 oct 2026), A MEDIAS Y SIN PUBLICAR**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de
-> control de `/tf npc` (todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**). El dueño pidió parar: sigue
+> **1.3.101 (21 oct 2026), PUBLICADA**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de control de
+> `/tf npc` (todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**), con la cabeza, los brazos y las piernas pegados al
+> cuerpo en todas las animaciones (`tools/npcs/pegar.py`, medido con `pegado.py`). Lo que queda:
 > **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**.
 >
 > **1.3.100 (21 oct 2026)**: TF Crates y su cinemática como pidió el dueño (CRATES.md §2). Si vuelve a quejarse de la
@@ -112,7 +113,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.101**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.102**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar

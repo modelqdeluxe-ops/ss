@@ -59,10 +59,25 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.101, SIN PUBLICAR) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.101, PUBLICADA) — lee esto primero
 
-> **A medias**: el dueño pidió parar y que siga otra IA. Sigue **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**
-> (lo que salió en la prueba en el juego, los 4 arreglos que faltan y cómo publicar). Los packs de NPC no están en el repo.
+> **Publicada** como Release `tfclient-v1.3.101`. Lo que queda (restos de la plantilla del pack, el sedal del pescador)
+> está en **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**. Los packs de NPC no están en el repo.
+
+**Lo último (lo que pidió el dueño al ver las pruebas)**, todo en `tf-client/NPCS.md` §3:
+- **«Ninguna extremidad despegada, por más pequeñito que sea el hueco»**: las animaciones del propio pack despegan la
+  cabeza, los brazos o las piernas (53 de los 130 NPC en su escena, hasta 3,2 px; lo mismo al milésimo con las reglas de
+  Blockbench sobre el `.bbmodel` original). `tools/npcs/pegar.py` (lo pasa `build_npcs`) las pega en cada animación
+  (solo la posición; los giros son los del pack) y `tools/npcs/pegado.py` lo mide: con la piel del panel, **0 huecos en
+  1 456 420 poses** (rejilla de 60/s y 3 semillas al azar). Con la «Plantilla del pack» quedan restos de 0,003-0,35 px
+  en ventanas de 4-5 ms (NPCS-CONTINUAR.md).
+- **Motor como ModelEngine 4**: una animación suena una sola vez (la de reposo y un state{} del mismo nombre no se suman:
+  57 NPC salían con cada giro al doble, el «angry 1» con el torso partido); la de reposo o la de andar puesta por state{}
+  se para al dejar de tocar (el vendedor andaba con la de reposo sumada); changepart{m} solo en el mob que lleva ese
+  modelo (el dúo de la sierra volvía a la plantilla amarilla); los NPC que vuelven del disco con su chunk lanzan su
+  ~onLoad (`SkillMobs.reborn`/`sweep`).
+- Caminantes por su ruta (@TargetedTarget), panel con rueda y textos que no asoman cortados, prueba en el juego con
+  filas a 20 bloques, capturas sin pisarse y el vendedor y el caminante andando de cerca.
 
 **1.3.101: los NPC de escenas** (todo en **`tf-client/NPCS.md`**). El dueño mandó 13 packs de Scenes (MythicMobs +
 ModelEngine) y pidió convertirlos todos «correctamente, con sus animaciones», un panel de control para colocarlos

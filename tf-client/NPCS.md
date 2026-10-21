@@ -132,7 +132,9 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   mueve tanto. Con la plantilla y con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60
   por segundo, comprobado a 4 veces esos fotogramas y repetido donde aún quedaba hueco. (Sin encoger, con +0,05/+0,10 px
   de margen, `pegado.py --azar` seguía encontrando restos de hasta 0,05 y luego 0,005 px en ventanas de menos de 4 ms;
-  así, ninguno con tres semillas.) Volver a pasarlo no cambia nada.
+  así, ninguno con tres semillas.) Entre dos fotogramas clave a menos de 12 ms se mide cada 0,5 ms (`close_times`).
+  Volver a pasarlo no cambia nada. Medido al publicar la 1.3.101: con la piel, 0 huecos en 1 456 420 poses; con la
+  plantilla, dos restos de 0,003 y 0,35 px en ventanas de 4-5 ms (lo que queda: `NPCS-CONTINUAR.md`).
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin
