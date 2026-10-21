@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **18 de octubre de 2026** (TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **21 de octubre de 2026** (web: «cambio de aires» sin morado, aurora boreal; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,6 +12,34 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
+
+### Web (21 oct 2026): «cambio de aires» de toda la web, SIN MORADO (hecho y publicado)
+Pedido del dueño: «que la página web sea mucho más profesional, más bonita, más interactiva, mejor colocados los
+elementos… un cambio de aires. Nada transparente ni UX fea. Primero busca plugins o skills seguros que te ayuden a
+diseñar». A mitad: **«quita ese diseño morado»** → **nada morado ni rosa en la web** (no lo vuelvas a meter).
+Guías usadas: la skill `frontend-design` de Anthropic (el dueño instaló el plugin; también `Design`) y las Web Interface
+Guidelines de Vercel. Concepto «Portal del reino»:
+- **Fondo**: el reino de noche (azul de luna) con una **aurora boreal** esmeralda/turquesa/azul que se mueve (la misma
+  capa única de antes, regenerada con `python3 tools/nebula_bg.py`: mismos archivos `nebula-*.webp`).
+- **Colores**: pizarra azul marino maciza (`--s0…--s4`, `--surface`, bordes `--bd` macizos), acento verde aurora
+  (`--a-*`, el nombre viejo se queda), **botón principal azul** (`--brand` #2b7bf0), comprar ámbar, gratis esmeralda.
+  Las pestañas de categoría: Crates pasó de violeta a esmeralda. Los colores de contenido (rangos, categorías de VFX,
+  clases de skills, cosméticos rosa) no se tocaron.
+- **Tipografía**: Unbounded solo en h1/h2; Figtree en botones, h3 y etiquetas (en minúscula, sin mayúsculas espaciadas).
+- **Cabecera** siempre sólida (también en la portada), con el elegido iluminado; en teléfonos < 480 px la cuenta va en
+  el menú («Mi cuenta») para que quepan nombre, Tienda y menú (antes el botón del menú se salía por la derecha).
+- **Portada**: texto a la izquierda y el emblema sobre un **portal** (aro de la aurora que gira despacio y sigue al
+  ratón: `[data-portal]` en app.js); debajo tres tarjetas (Discord, WhatsApp, cómo entrar).
+- **Páginas interiores**: miga de pan (`crumbs()` en pages.py) y título a la izquierda. El mundo: título fijo a la
+  izquierda y contenido a la derecha (`.feature-board`), pasos con línea que los une (`.stepper`), normas en una lista
+  con iconos (`rule()`). Ayuda: cómo entrar + contacto fijos a la izquierda, preguntas con **buscador**
+  (`[data-faq-search]`) a la derecha. Pie nuevo con la IP para copiar y botones de Discord/WhatsApp/correo.
+- **Tienda**: las garantías (pago seguro, entrega, rol) arriba a la derecha (en el móvil, una fila compacta); barra de
+  categorías maciza (la elegida, llena de su color); el texto de la sección y el buscador en una barra; tarjetas de
+  crate sin destellos translúcidos.
+- `tools/screenshots.cjs` ahora estira la ventana a la altura de la página (la captura `fullPage` de Chromium sin GPU
+  pintaba el fondo fijo encima del contenido y salía apagado). Para vistas previas «como las ve un jugador» usa capturas
+  de la pantalla (1440×900 / 390×844) en varias alturas.
 
 ### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
 Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de

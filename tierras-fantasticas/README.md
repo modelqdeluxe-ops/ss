@@ -3,14 +3,16 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con una página para cada una. Concepto «Minecraft moderno»: noche profunda con luz esmeralda y
-  amatista, titulares en Unbounded y texto en Figtree, botones con volumen de bloque (se elevan al pasar el ratón y se
-  hunden al pulsar), tarjetas con profundidad, pantalla de carga en la primera visita, esqueletos mientras carga la
-  tienda y transiciones suaves entre páginas. Pensado primero para el móvil: nada se sale de la pantalla, sin
+- Web por secciones con una página para cada una. Concepto «Portal del reino» (21 oct. 2026): el reino de noche azul
+  con una aurora boreal verde que se mueve despacio, todo macizo (nada translúcido ni morado), titulares en Unbounded
+  y texto en Figtree, botones con volumen de bloque (azul el principal, ámbar comprar, esmeralda gratis), tarjetas de
+  pizarra azul marino, pantalla de carga en la primera visita, esqueletos mientras carga la tienda y transiciones
+  suaves entre páginas. Pensado primero para el móvil: nada se sale de la pantalla, sin
   partículas, desenfoques ni capas fijas (solo animaciones de `transform`/`opacity`, que se apagan con «reducir
   movimiento»):
-  - **Inicio** (`/`): el emblema, el estado del servidor en vivo, la IP (clic para copiar), las cifras del servidor,
-    tres pilares y cuatro crates.
+  - **Inicio** (`/`): a la izquierda el estado del servidor en vivo, el título, la IP (clic para copiar) y «Visitar la
+    tienda»; a la derecha el emblema sobre un portal (un aro con los colores de la aurora que gira despacio y sigue al
+    ratón); debajo, tres tarjetas: Discord, WhatsApp y cómo entrar.
   - **Tienda** (`/tienda`), con pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**, **Rangos**,
     **Cosméticos**, **Crates**, **VFX** y **Skills**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) con contenido fijo y a la
@@ -55,13 +57,13 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     del set se pueden poner y quitar en el personaje. Debajo del escaparate sale lo que trae el rango en el servidor con sus
     comandos (`RANK_SERVER_PERKS`: hogares, /hat, /fly en el lobby, /pp, /nick, colores, /ptime, /pweather…; cada rango
     suma lo del anterior). Esos permisos se dan en LuckPerms: la lista está en `HANDOFF.md` («Rangos: comandos»).
-  - **Portada** (`/`): solo el emblema, el título, la IP, «Visitar la tienda» (destello esmeralda → azul, `btn-shop`) y
-    debajo de «Minecraft Java 1.20.1 · Forge» los botones de Discord, WhatsApp y «Cómo entrar al server»
-    (`/ayuda#como-entrar`).
+  - **Portada** (`/`): solo el emblema (en su portal), el título, la IP, «Visitar la tienda» (azul, `btn-shop`) y
+    las tarjetas de Discord, WhatsApp y «Cómo entrar al server» (`/ayuda#como-entrar`).
   - **Enlaces fijos de la comunidad**: `/discord` y `/whatsapp` redirigen a la invitación vigente (`DISCORD_URL` y
     `WHATSAPP_URL` en `wrangler.jsonc`). Si el enlace del grupo cambia, se cambia solo ahí y todos los botones siguen
     funcionando.
-  - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
+  - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`: cómo entrar y el contacto fijos a la izquierda; a la derecha las
+    preguntas, con un buscador que filtra pregunta y respuesta). Las páginas interiores llevan miga de pan.
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.
 - **PayPal (opcional)**: con los Secrets `PAYPAL_CLIENT_ID` y `PAYPAL_CLIENT_SECRET` (y `PAYPAL_WEBHOOK_ID`) aparece el

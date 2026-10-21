@@ -48,13 +48,44 @@
     $$('[data-count]').forEach((el) => io.observe(el));
   }
 
-  // --- Cabecera: transparente sobre la portada y sólida al bajar ---
-  const header = $('#header');
-  if (document.body.hasAttribute('data-hero') && 'IntersectionObserver' in window) {
-    const sentinel = document.createElement('div');
-    sentinel.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:80px;pointer-events:none';
-    document.body.prepend(sentinel);
-    new IntersectionObserver(([e]) => header.classList.toggle('solid', !e.isIntersecting)).observe(sentinel);
+  // --- Portada: el emblema del portal sigue al ratón (solo con ratón; --px y --py van de -1 a 1, styles.css) ---
+  const portal = $('[data-portal]');
+  if (portal && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let frame = 0;
+    let last = null;
+    document.addEventListener(
+      'pointermove',
+      (e) => {
+        last = e;
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          const r = portal.getBoundingClientRect();
+          if (r.bottom < 0) return;
+          const k = (v) => Math.max(-1, Math.min(1, v)).toFixed(3);
+          portal.style.setProperty('--px', k((last.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
+          portal.style.setProperty('--py', k((last.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
+        });
+      },
+      { passive: true },
+    );
+  }
+
+  // --- Ayuda: buscador de las preguntas (busca en la pregunta y en la respuesta; sin tildes ni mayúsculas) ---
+  const faqSearch = $('[data-faq-search]');
+  if (faqSearch) {
+    const plain = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const items = $$('[data-faq] details');
+    faqSearch.addEventListener('input', () => {
+      const q = plain(faqSearch.value.trim());
+      let shown = 0;
+      for (const d of items) {
+        const ok = !q || plain(d.textContent).includes(q);
+        d.hidden = !ok;
+        shown += ok;
+      }
+      $('[data-faq-empty]').hidden = shown > 0;
+    });
   }
 
   // --- Menú del móvil ---
@@ -203,7 +234,7 @@
       const count = data.players?.online ?? 0;
       dots.forEach((el) => el.classList.add(online ? 'online' : 'offline'));
       const word = count === 1 ? 'jugador' : 'jugadores';
-      texts.forEach((el) => (el.textContent = online ? `En línea · ${count} ${word} ${count === 1 ? "conectado" : "conectados"}` : 'Servidor desconectado'));
+      texts.forEach((el) => (el.textContent = online ? `En línea, ${count} ${word} ${count === 1 ? 'conectado' : 'conectados'}` : 'Servidor desconectado'));
       $$('[data-players]').forEach((el) => (online ? countTo(el, count) : (el.textContent = 'Off')));
     } catch {
       texts.forEach((el) => (el.textContent = 'Estado no disponible'));
@@ -353,7 +384,7 @@
   const piecesText = (p) => {
     const n = (p.models || []).length;
     const armor = (p.models || []).some((m) => m.id.startsWith('armor_'));
-    return `${n} objetos${armor ? ' · armadura completa' : ''}`;
+    return `${n} objetos${armor ? ', armadura completa' : ''}`;
   };
 
   async function loadProducts() {
