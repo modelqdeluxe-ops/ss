@@ -8,12 +8,13 @@ Las pieles del panel (remapmodel y, en los dúos, changepart del segundo persona
 hueso: se mide con la piel puesta (lo que se ve; las 21 tienen la misma geometría, se comprueba) y, con --plantilla, con
 la geometría del propio modelo del pack.
 
-Uso: python3 tools/npcs/pegado.py [pack…] [--fps N] [--umbral PX] [--plantilla]  → la lista de huecos (en píxeles de Blockbench,
+Uso: python3 tools/npcs/pegado.py [pack…] [--fps N] [--azar N] [--umbral PX] [--plantilla]  → la lista de huecos (en píxeles de Blockbench,
 1/16 de bloque) y «todo pegado» si no hay ninguno.
 """
 import json
 import os
 import sys
+import zlib
 
 import numpy as np
 
@@ -237,6 +238,10 @@ def main():
     if '--fps' in args:
         fps = int(args[args.index('--fps') + 1])
         del args[args.index('--fps'):args.index('--fps') + 2]
+    azar = 0
+    if '--azar' in args:
+        azar = int(args[args.index('--azar') + 1])
+        del args[args.index('--azar'):args.index('--azar') + 2]
     plantilla = '--plantilla' in args
     if plantilla:
         args.remove('--plantilla')
@@ -295,8 +300,12 @@ def main():
                 ln = max(model['anims'][a]['len'] for a, _, _ in layers) or 0
                 steps = max(1, int(round(ln * fps)) + 1)
                 worst = {}
-                for k in range(steps):
-                    t = ln * k / max(1, steps - 1)
+                ts = [ln * k / max(1, steps - 1) for k in range(steps)]
+                if azar:
+                    # instantes al azar (siempre los mismos): lo que quede entre los fotogramas de cualquier rejilla
+                    rng = np.random.default_rng(zlib.crc32((mid + label).encode()))
+                    ts += sorted(rng.uniform(0, ln, azar).tolist()) if ln > 0 else []
+                for t in ts:
                     mats = pose(model, extra_of(model, [(a, t, w, ov) for a, w, ov in layers]))
                     frames += 1
                     world = lambda i: (local[i] @ mats[i][:3, :3].T) + mats[i][:3, 3]  # noqa: E731
