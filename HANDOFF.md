@@ -59,7 +59,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.101) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.101, SIN PUBLICAR) — lee esto primero
+
+> **A medias**: el dueño pidió parar y que siga otra IA. Sigue **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**
+> (lo que salió en la prueba en el juego, los 4 arreglos que faltan y cómo publicar). Los packs de NPC no están en el repo.
 
 **1.3.101: los NPC de escenas** (todo en **`tf-client/NPCS.md`**). El dueño mandó 13 packs de Scenes (MythicMobs +
 ModelEngine) y pidió convertirlos todos «correctamente, con sus animaciones», un panel de control para colocarlos

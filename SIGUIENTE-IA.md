@@ -1,7 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.101 (21 oct 2026)**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de control de `/tf npc`;
-> todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**. La siguiente versión es la 1.3.102.
+> **1.3.101 (21 oct 2026), A MEDIAS Y SIN PUBLICAR**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de
+> control de `/tf npc` (todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**). El dueño pidió parar: sigue
+> **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**.
 >
 > **1.3.100 (21 oct 2026)**: TF Crates y su cinemática como pidió el dueño (CRATES.md §2). Si vuelve a quejarse de la
 > cinemática, sigue **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)** (las dos comparaciones con
