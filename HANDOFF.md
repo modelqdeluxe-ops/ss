@@ -59,12 +59,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (20 oct 2026, TF Client 1.3.99, SIN PUBLICAR) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.99, PUBLICADA) — lee esto primero
 
-> **A medias**: el dueño pidió parar y que siga otra IA. Prompt completo: **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)**
-> (su imagen en `tf-client/docs/crates/imagen-del-dueno.webp`; las dos comparaciones —vista previa y juego— con
-> `tools/crates/comparar.py`; el último cambio, los rayos de sol en el shader y el color medido en el juego, **sin
-> probar en el juego**).
+> **Publicada** como Release `tfclient-v1.3.99` (el dueño pidió el jar). La cinemática de las crates, medida contra su
+> imagen (`tf-client/docs/crates/imagen-del-dueno.webp`) con `tools/crates/comparar.py`, en el juego (prueba `7e24e2c`):
+> saturación 0,652 (foto 0,621), luz media 0,347 (0,318), luz alta 0,903 (0,832), contraste 0,260 (0,231), contraste
+> local 0,096 (0,080), nitidez 0,093 (0,093). Agua limpia y continua (el dueño **odia** las texturas quebradas,
+> resquebrajadas o cuadriculadas: nada de celdas, escamas, rejillas ni líneas en el agua), espuma y bruma en el pie de
+> cada cascada (sin corte), premio limpio, mensaje sobrio. Todo en `tf-client/CRATES.md` §2 y
+> `tf-client/CRATES-CONTINUAR.md`.
 
 **1.3.99: TF Crates** (guía completa en **`tf-client/CRATES.md`**). Fantastic Crates dentro de TF Client (`/tf crates`;
 hay que **quitar `Fantastic Crates 8.jar`** del servidor y de los clientes) y la cinemática de apertura: **el Santuario

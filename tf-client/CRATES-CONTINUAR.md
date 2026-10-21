@@ -61,8 +61,8 @@ Foto → juego: saturación 0,621 → 0,652; luz media 0,318 → 0,347; luz alta
 contraste local 0,080 → 0,096; nitidez 0,093 → 0,093 (todo igual o por encima, como pidió el dueño). Agua limpia y
 continua (sin escamas, rayitas, rejillas ni líneas: el dueño las odia), cascadas que caen con espuma y bruma en el pie (sin
 corte), estanque transparente del mismo turquesa, el premio limpio (sin tapa ni pilar detrás, sin manchas pegadas a la
-cámara), mensaje sobrio, bloques del altar y de las cascadas de los lados como la imagen (CRATES.md §2). Falta: que el
-dueño diga que está bien y publicar.
+cámara), mensaje sobrio, bloques del altar y de las cascadas de los lados como la imagen (CRATES.md §2). Publicada como Release
+`tfclient-v1.3.99` (21 oct 2026).
 
 ## Lo que se hizo antes
 

@@ -8,7 +8,7 @@
 - Cuando el dueño mande capturas, **mídelas** (recorta, amplía, colores con PIL) antes de decir que algo está arreglado.
 - Responde al dueño en español.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
-  La 1.3.99 está **a medias y sin publicar**: sigue `tf-client/CRATES-CONTINUAR.md`.
+  La 1.3.99 está publicada; si hay que volver a tocar la cinemática, sigue `tf-client/CRATES-CONTINUAR.md`.
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
   comprobarlos sin abrir el juego).
 - **El motor de jefes tiene que ser fiel a MythicMobs/ModelEngine para TODOS los packs que metamos** (orden del dueño).

@@ -1,11 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **⚠ TRABAJO A MEDIAS (20 oct 2026): la 1.3.99 (TF Crates y su cinemática) NO está publicada.** Sigue el prompt de
-> **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)**: la cinemática tiene que ser como la imagen del
-> dueño (`tf-client/docs/crates/imagen-del-dueno.webp`), medida con `tools/crates/comparar.py` contra la vista previa y
-> contra la captura del juego; lo último, sin probar en el juego; y cómo publicar.
+> **1.3.99 publicada (21 oct 2026)**: TF Crates y su cinemática como la imagen del dueño. Si vuelve a quejarse de la
+> cinemática, sigue **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)** (las dos comparaciones con
+> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). La siguiente versión es la 1.3.100.
 
-Estado al dejarlo: **20 oct 2026, TF Client 1.3.99 (sin publicar)** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
+Estado al dejarlo: **21 oct 2026, TF Client 1.3.99 (publicada)** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
 y la cinemática del Bosque de las Hadas con shader propio; todo en **`tf-client/CRATES.md`**). Antes, 1.3.98 (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta
 del Void que enciende el staff, la isla de la grieta decorada, nada al aire, la fauna que pelea, el agujero de gusano sin
 imágenes de baja calidad, la «Nana del Alba»; antes, 1.3.97: el Void congruente: todo en roca del Vacío, **los Fragmentos del
