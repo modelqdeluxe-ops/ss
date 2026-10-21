@@ -59,7 +59,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.99, PUBLICADA) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.100) — lee esto primero
+
+**1.3.100: TF Crates, lo que pidió el dueño al ver la 1.3.99** (todo en `tf-client/CRATES.md` §2):
+- el santuario **siempre en vivo**: también detrás de la pantalla de antes de abrir y de las recompensas (antes, negro);
+- botones **pequeños de cristal, abajo y sin sonido** («ABRIR», «RECOMPENSAS»; nada de amatista en ningún sitio);
+- **recompensas rehechas**: cuadrícula de premios por rareza en un panel de cristal sobre el santuario;
+- **la llave se lanza y golpea el cofre** (destello, chispas, el cofre brinca, tiembla y se abre);
+- sin rayas blancas (pétalos y partículas siempre de cara a la cámara, claridad sin bordes), sin la línea negra de las
+  cascadas, escena más oscura y con más contraste, faroles con resplandor, turquesa del agua en lo cercano, haz de sol
+  que se nota, hadas como puntitos con colita.
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.99, PUBLICADA)
 
 > **Publicada** como Release `tfclient-v1.3.99` (el dueño pidió el jar). La cinemática de las crates, medida contra su
 > imagen (`tf-client/docs/crates/imagen-del-dueno.webp`) con `tools/crates/comparar.py`, en el juego (prueba `7e24e2c`):

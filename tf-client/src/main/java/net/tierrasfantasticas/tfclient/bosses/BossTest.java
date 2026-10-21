@@ -1320,8 +1320,8 @@ public final class BossTest {
                 }
             }
             // (la pantalla de antes de abrir, con el santuario detrás: el cliente la abre y saca su captura)
-            if (t == t0 + 2 && pos != null) {
-                BossTestClient.showPreOpen(testCrate(run), pos);
+            if (t == Math.max(2, t0 - 8) && cratePos != null) {
+                BossTestClient.showPreOpen(testCrate(run), cratePos);
             }
             if (t == t0 + 30 && pos != null) {
                 var res = net.tierrasfantasticas.tfclient.crates.crate.CrateOpeningService.open(player, testCrate(run), pos, ItemStack.EMPTY, false);

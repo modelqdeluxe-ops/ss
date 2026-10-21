@@ -193,7 +193,7 @@ public final class BossTestClient {
 
     private static void crateShots(Minecraft mc) {
         if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
-                && System.nanoTime() - preOpenAt > 600_000_000L) {
+                && System.nanoTime() - preOpenAt > 1_200_000_000L) {
             preOpenShot = true;
             BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
             // y la de las recompensas, encima del santuario
