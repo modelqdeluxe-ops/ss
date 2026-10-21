@@ -844,6 +844,23 @@ public final class SkillMobs {
         }
     }
 
+    /**
+     * (1.3.101) Al descargarse su chunk, Minecraft primero deja de seguir al mob (onRemovedFromWorld, aún sin motivo de
+     * baja: el chunk solo se oculta) y, al guardarlo, lo quita con setRemoved(UNLOADED_TO_CHUNK), sin pasar por remove()
+     * ni avisar a nadie: su estado se quedaba aquí. Un NPC de escena que vuelve del disco trae el mismo UUID y, con el
+     * estado del de antes, el motor creía que ya había nacido: no lanzaba su ~onLoad y salía sin su animación de escena
+     * (en los brazos de su modelo, prueba en el juego). Se llama en su primer tick, antes de nada.
+     */
+    public static void reborn(Host h) {
+        State s = STATES.get(h.mob().getUUID());
+        if (s != null && s.host != h) removed(s.host);
+    }
+
+    /** Cada 10 s: se olvida lo de los mobs que se fueron así (descargados) y no han vuelto. */
+    static void sweep() {
+        for (State s : new ArrayList<>(STATES.values())) if (s.host.mob().isRemoved()) removed(s.host);
+    }
+
     static void clear() {
         STATES.clear();
     }

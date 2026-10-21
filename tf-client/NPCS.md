@@ -81,10 +81,12 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
 - **Entidad**: `tfclient:npc` = `BossEntity` en modo NPC (`isNpc()`): se guarda con el mundo (Despawn: persistent),
   sin barra ni botín, se puede tocar aunque sea invencible. Al volver del disco lleva el modelo que tenía
   (model{save=true}) y salta **~onLoad** (`SkillMobs.spawned` con `Host.loaded()`), como MythicMobs. Ojo: al
-  descargarse su chunk, Minecraft la quita con `setRemoved(UNLOADED_TO_CHUNK)` sin pasar por `remove()`; el NPC se
-  olvida en `BossEntity.onRemovedFromWorld` (si no, al volver con el mismo UUID el motor creía que ya había nacido,
-  no lanzaba su ~onLoad y salía en la pose de base, sin su animación: lo vio la prueba con granjeros, leñadores y la
-  taberna, 1.3.101).
+  descargarse su chunk, Minecraft primero deja de seguirla (`onRemovedFromWorld`, **sin** motivo de baja: el chunk
+  solo se oculta) y luego la quita con `setRemoved(UNLOADED_TO_CHUNK)` sin pasar por `remove()` ni avisar: su estado
+  se quedaba en `SkillMobs`. Al volver con el mismo UUID el motor creía que ya había nacido, no lanzaba su ~onLoad y
+  salía en la pose de base, sin su animación (lo vio la prueba con granjeros, leñadores y la taberna, 1.3.101). Ahora
+  `SkillMobs.reborn` olvida lo del de antes en su primer tick y `SkillMobs.sweep` (cada 10 s) lo de los descargados
+  que no vuelven. Un `onRemovedFromWorld` que mire el motivo de baja **no sirve** (se probó: nunca lo ve).
 - **Cosméticos**: el panel hace lo mismo que el menú del pack: changepart sobre su modelo y
   `setvariable{var=global.hat<uuid>;save=true}`. El ~onLoad del pack los vuelve a poner con
   `<global.var.hat<caster.uuid>>`. Las variables globales con save=true se guardan con el mundo

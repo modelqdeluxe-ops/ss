@@ -1218,6 +1218,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } else if (def != null) {
             if (age == 1) {
                 spawnAt = position();
+                // Lo que quedaba del de antes con su UUID (se descargó su chunk: ver SkillMobs.reborn)
+                SkillMobs.reborn(this);
                 // Un NPC que vuelve del disco lleva el modelo que tenía (model{save=true} de ModelEngine), antes de su ~onLoad
                 if (npcLoaded && npcModel != null && !npcModel.isEmpty()) SkillMobs.mech(this, "model", Map.of("mid", npcModel), null);
                 SkillMobs.spawned(this);
@@ -1973,18 +1975,6 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } catch (IllegalArgumentException e) {
             return BossEvent.BossBarColor.PURPLE;
         }
-    }
-
-    /**
-     * (1.3.101) Al descargarse su chunk, Minecraft quita la entidad con setRemoved(UNLOADED_TO_CHUNK), sin pasar por
-     * remove(): un NPC de escena se olvida aquí (si no, al volver del disco con el mismo UUID, el motor creía que ya había
-     * nacido, no lanzaba su ~onLoad y se quedaba sin su animación de escena). Sin ~onDespawn: MythicMobs tampoco lo
-     * lanza al descargar un mob «Despawn: persistent».
-     */
-    @Override
-    public void onRemovedFromWorld() {
-        if (!level().isClientSide && isNpc() && getRemovalReason() != null && !getRemovalReason().shouldDestroy()) SkillMobs.removed(this);
-        super.onRemovedFromWorld();
     }
 
     @Override

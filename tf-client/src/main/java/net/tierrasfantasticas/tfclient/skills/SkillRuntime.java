@@ -2307,6 +2307,7 @@ public final class SkillRuntime {
         if (clock % 200 == 0) {
             STATES.values().removeIf(s -> clock - s.touched > 6000 && s.auras.isEmpty());
             SKILL_HITS.values().removeIf(h -> clock - h.at() > 40);
+            SkillMobs.sweep();
         }
     }
 
