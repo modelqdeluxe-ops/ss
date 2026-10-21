@@ -1,8 +1,13 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1.3.101 (21 oct 2026), PUBLICADA**: los NPC de escenas (13 packs de Scenes) en el jar, con el panel de control de
+> `/tf npc` (todo en **[`tf-client/NPCS.md`](tf-client/NPCS.md)**), con la cabeza, los brazos y las piernas pegados al
+> cuerpo en todas las animaciones (`tools/npcs/pegar.py`, medido con `pegado.py`). Lo que queda:
+> **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**.
+>
 > **1.3.100 (21 oct 2026)**: TF Crates y su cinemática como pidió el dueño (CRATES.md §2). Si vuelve a quejarse de la
 > cinemática, sigue **[`tf-client/CRATES-CONTINUAR.md`](tf-client/CRATES-CONTINUAR.md)** (las dos comparaciones con
-> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). La siguiente versión es la 1.3.101.
+> `tools/crates/comparar.py`, una prueba `[prueba-jefes=crates]` por cambio). (Siguiente versión: ver arriba.)
 
 Estado al dejarlo: **21 oct 2026, TF Client 1.3.100** (**TF Crates**: Fantastic Crates dentro del mod con `/tf crates`
 y la cinemática del Bosque de las Hadas con shader propio; todo en **`tf-client/CRATES.md`**). Antes, 1.3.98 (JEFES.md §3.23: caballeros en el suelo con su postura, la grieta
@@ -108,7 +113,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 ## 5. Publicar una versión
 
 1. Sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
-   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.101**).
+   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales; la siguiente es **1.3.102**).
 2. Apunta la entrega en `HANDOFF.md` (CHECKPOINT) y en `JEFES.md`.
 3. Push a la rama → espera `tf-client.yml` en verde → PR a `main` → **squash** merge.
 4. El workflow crea la Release `tfclient-v<versión>` con el jar (no la marca «latest»). **Compruébala** antes de dar

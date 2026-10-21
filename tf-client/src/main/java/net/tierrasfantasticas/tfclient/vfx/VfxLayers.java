@@ -467,8 +467,12 @@ public final class VfxLayers {
         // Abajo: la animación por defecto (y la anterior desvaneciéndose)
         String b = baseFor(m, now);
         float fade = Math.min(1F, Math.max(0F, (now - baseSince) / DEFAULT_FADE));
-        if (prevBase != null && fade < 1F) addBase(m, m.anim(prevBase), now - prevStart, 1F - fade, extra, v);
-        if (b != null) addBase(m, m.anim(b), now - baseStart, prevBase != null ? fade : 1F, extra, v);
+        // Una animación suena una sola vez, como en ModelEngine 4 (van por su nombre): si la de reposo también la pone un
+        // state{} (defaultstate idle=angry1 y state angry1: 57 NPC de escenas), no se suman las dos; sin override salían
+        // con cada giro doble (el «angry 1» de la taberna, con el torso partido de las piernas). Mientras la del state
+        // entra o se va, la de reposo pone el resto.
+        if (prevBase != null && fade < 1F) addBase(m, m.anim(prevBase), now - prevStart, (1F - fade) * (1F - sameAs(prevBase, b, now)), extra, v);
+        if (b != null) addBase(m, m.anim(b), now - baseStart, (prevBase != null ? fade : 1F) * (1F - sameAs(b, b, now)), extra, v);
         // Encima: las de state{}, de menos a más prioridad
         if (!layers.isEmpty()) {
             List<Layer> sorted = new ArrayList<>(layers);
@@ -476,6 +480,7 @@ public final class VfxLayers {
             for (Layer l : sorted) {
                 float w = l.weight(now);
                 if (w <= 0F) continue;
+                if (stopped(l, b)) continue;
                 float t = l.time(now);
                 for (VfxModel.Track tr : l.anim.tracks) {
                     if (tr.bone < 0 || tr.bone >= n) continue;
@@ -533,6 +538,21 @@ public final class VfxLayers {
             }
         }
         VfxPose.build(m, extra, headYaw, headPitch, out, headLimits, global);
+    }
+
+    /**
+     * La de reposo o la de andar puesta por state{} se para (por su nombre, como en ModelEngine 4) cuando deja de ser la
+     * que toca: el vendedor del mercado lleva «vendor_2_idle» por state{} y, al andar, se le sumaba a la de andar.
+     */
+    private boolean stopped(Layer l, String base) {
+        return !l.name.equalsIgnoreCase(base) && (l.name.equalsIgnoreCase(idle) || l.name.equalsIgnoreCase(walk));
+    }
+
+    /** Cuánto suena ya esa animación por un state{} (0-1): lo que no le toca a la de reposo del mismo nombre. */
+    private float sameAs(String name, String base, float now) {
+        float w = 0F;
+        for (Layer l : layers) if (l.name.equalsIgnoreCase(name) && !stopped(l, base)) w = Math.max(w, l.weight(now));
+        return Math.min(1F, w);
     }
 
     /** La animación por defecto «ticks» después de empezar, con su peso. */

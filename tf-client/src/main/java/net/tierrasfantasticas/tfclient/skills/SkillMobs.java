@@ -166,6 +166,15 @@ public final class SkillMobs {
         default void goTo(Vec3 at, double speed) {
         }
 
+        /** followPath{path;speed;tolerance}: anda por esos puntos, uno tras otro (y vuelta a empezar). */
+        default void followPath(List<Vec3> points, double speed, double tolerance) {
+        }
+
+        /** Ha vuelto del disco (un NPC de escena guardado con el mundo): salta ~onLoad en vez de ~onSpawn. */
+        default boolean loaded() {
+            return false;
+        }
+
         /** setmaxhealth{amount;set}: vida máxima nueva (ya en su escala); con «set», también la vida. */
         default void setMaxHealth(double max, boolean alsoHealth) {
         }
@@ -391,6 +400,13 @@ public final class SkillMobs {
         State s = state(h);
         if (s.spawned) return;
         s.spawned = true;
+        // Un NPC de escena que vuelve del disco (al cargar su chunk o arrancar el servidor): ~onLoad, como MythicMobs con
+        // los mobs «Despawn: persistent» (vuelve a poner su modelo, sus cosméticos y su postura)
+        if (h.loaded()) {
+            run(h, "onload", null, null, null);
+            run(h, "onspawnorload", null, null, null);
+            return;
+        }
         run(h, "onspawn", null, null, null);
         run(h, "onspawnorload", null, null, null);
         if (h.boss() == h) run(h, "onready", null, null, null);
@@ -828,6 +844,23 @@ public final class SkillMobs {
         }
     }
 
+    /**
+     * (1.3.101) Al descargarse su chunk, Minecraft primero deja de seguir al mob (onRemovedFromWorld, aún sin motivo de
+     * baja: el chunk solo se oculta) y, al guardarlo, lo quita con setRemoved(UNLOADED_TO_CHUNK), sin pasar por remove()
+     * ni avisar a nadie: su estado se quedaba aquí. Un NPC de escena que vuelve del disco trae el mismo UUID y, con el
+     * estado del de antes, el motor creía que ya había nacido: no lanzaba su ~onLoad y salía sin su animación de escena
+     * (en los brazos de su modelo, prueba en el juego). Se llama en su primer tick, antes de nada.
+     */
+    public static void reborn(Host h) {
+        State s = STATES.get(h.mob().getUUID());
+        if (s != null && s.host != h) removed(s.host);
+    }
+
+    /** Cada 10 s: se olvida lo de los mobs que se fueron así (descargados) y no han vuelto. */
+    static void sweep() {
+        for (State s : new ArrayList<>(STATES.values())) if (s.host.mob().isRemoved()) removed(s.host);
+    }
+
     static void clear() {
         STATES.clear();
     }
@@ -897,6 +930,44 @@ public final class SkillMobs {
         } finally {
             SkillRuntime.setCurrent(null);
         }
+    }
+
+    /**
+     * (1.3.101) Una mecánica suelta con este mob como lanzador, sobre él (o sobre «target»): lo que hace el panel de NPC
+     * (ponerle su modelo guardado, un cosmético o una piel de su pack).
+     */
+    public static void mech(Host h, String name, Map<String, String> args, Entity target) {
+        Mech m = new Mech();
+        m.m = name;
+        m.a = args;
+        m.t = target == null ? "self" : "target";
+        Ctx c = ctx(h);
+        if (target != null) c.targets = List.of(Tgt.of(Who.of(target)));
+        SkillRuntime.setCurrent(c);
+        try {
+            SkillRuntime.exec(m, c);
+        } catch (SkillRuntime.CancelSkill ignored) {
+            // nada
+        } catch (Throwable t) {
+            TFClient.LOGGER.debug("TF NPC: error en {} de {}", name, h.def().name, t);
+        } finally {
+            SkillRuntime.setCurrent(null);
+        }
+    }
+
+    /** (1.3.101, la prueba) Las piezas cambiadas de su modelo (changepart): «hueso=modelo». */
+    public static List<String> parts(Host h) {
+        SkillActor a = SkillModels.disguise(h.mob().getUUID());
+        List<String> out = new ArrayList<>();
+        if (a == null) return out;
+        for (SkillNet.Prop p : a.sticky.values()) if (p.key().equals("part")) out.add(p.a() + "=" + p.b());
+        return out;
+    }
+
+    /** El modelo que lleva ahora ese mob (con su pack delante: «npc_guards_vol1.scene_guards»), o null. */
+    public static String currentModel(java.util.UUID mob) {
+        SkillActor a = SkillModels.disguise(mob);
+        return a == null || !a.alive ? null : a.me;
     }
 
     /** Para quien lo use desde fuera: lanza una skill del jefe con este mob como lanzador (los objetos que suelta). */

@@ -289,6 +289,11 @@ public final class SkillDefs {
         public List<Spawn> spawns = List.of();
         /** (1.3.96, fauna) Sus mobs (en minúsculas) → su nombre en español. */
         public final Map<String, String> faunaMobs = new LinkedHashMap<>();
+        /**
+         * (1.3.101) NPC de escena (assets/tfclient/npcs/, tools/npcs/build_npcs.py): cada mob del pack es un NPC que el
+         * staff pone con el panel de NPC; se guardan con el mundo, sin barra ni botín.
+         */
+        public boolean npc;
     }
 
     /**
@@ -386,15 +391,50 @@ public final class SkillDefs {
         return fauna;
     }
 
-    /** El jefe o la fauna con ese id (lo que puede ser una entidad del motor de jefes). */
+    private static Map<String, ClassDef> npcs;
+    private static com.google.gson.JsonArray npcCatalog;
+
+    /**
+     * (1.3.101) Los packs de NPC de escenas (assets/tfclient/npcs/catalog.json): los que el panel de NPC deja poner. Vacío
+     * mientras no estén en el jar (tools/npcs/build_npcs.py --al-jar, cuando lo diga el dueño).
+     */
+    public static synchronized Map<String, ClassDef> npcs() {
+        if (npcs == null) {
+            Map<String, ClassDef> out = new LinkedHashMap<>();
+            JsonElement cat = readJson("/assets/tfclient/npcs/catalog.json");
+            npcCatalog = cat != null && cat.isJsonArray() ? cat.getAsJsonArray() : new com.google.gson.JsonArray();
+            for (JsonElement e : npcCatalog) {
+                String id = e.getAsJsonObject().get("id").getAsString();
+                try {
+                    JsonElement json = readJson("/assets/tfclient/npcs/" + id + ".json");
+                    if (json != null) out.put(id, parse(json.getAsJsonObject()));
+                } catch (Exception ex) {
+                    TFClient.LOGGER.error("TF NPC: no se pudo leer el pack {}", id, ex);
+                }
+            }
+            npcs = Collections.unmodifiableMap(out);
+            TFClient.LOGGER.info("TF NPC: {} packs de NPC de escenas cargados", npcs.size());
+        }
+        return npcs;
+    }
+
+    /** El catálogo de los NPC (lo que enseña el panel: packs, NPC, opciones, pins y rutas), tal cual lo escribe el conversor. */
+    public static synchronized com.google.gson.JsonArray npcCatalog() {
+        npcs();
+        return npcCatalog;
+    }
+
+    /** El jefe, la fauna o el pack de NPC con ese id (lo que puede ser una entidad del motor de jefes). */
     public static ClassDef bossClass(String id) {
         ClassDef c = bosses().get(id);
-        return c != null ? c : fauna().get(id);
+        if (c == null) c = fauna().get(id);
+        return c != null ? c : npcs().get(id);
     }
 
     /** Carpeta de los modelos de ModelEngine de ese id («hidra.lr_hydra» → bosses/models/, los demás skills/models/). */
     public static String modelDir(String id) {
         // (la grieta y, desde la 1.3.88, el caballero de luz de The Void «vacio.caballero» están con los de los jefes)
+        if (isNpc(id)) return "npcs/models/";
         return id != null && (id.startsWith("grieta.") || id.startsWith("vacio.")) || isBoss(id) ? "bosses/models/" : "skills/models/";
     }
 
@@ -403,7 +443,14 @@ public final class SkillDefs {
         if (id == null) return false;
         int dot = id.indexOf('.');
         String c = dot > 0 ? id.substring(0, dot) : id;
-        return bosses().containsKey(c) || fauna().containsKey(c);
+        return bosses().containsKey(c) || fauna().containsKey(c) || npcs().containsKey(c);
+    }
+
+    /** (1.3.101) ¿Es de un pack de NPC de escenas ese id de clase o de modelo («npc_guards_vol1.scene_guards»)? */
+    public static boolean isNpc(String id) {
+        if (id == null || !id.startsWith("npc_")) return false;
+        int dot = id.indexOf('.');
+        return npcs().containsKey(dot > 0 ? id.substring(0, dot) : id);
     }
 
     private static JsonElement readJson(String path) {
@@ -490,6 +537,7 @@ public final class SkillDefs {
             }
             bi.previewHide = strings(b.get("preview_hide"));
             bi.fauna = b.has("fauna") && b.get("fauna").getAsBoolean();
+            bi.npc = b.has("npc") && b.get("npc").getAsBoolean();
             if (b.has("spawns") && b.get("spawns").isJsonArray()) {
                 List<Spawn> sp = new ArrayList<>();
                 for (JsonElement e : b.getAsJsonArray("spawns")) {

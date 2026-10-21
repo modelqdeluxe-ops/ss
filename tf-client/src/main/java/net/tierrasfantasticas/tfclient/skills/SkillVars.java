@@ -48,11 +48,22 @@ final class SkillVars {
 
     /** Sustituye las variables de un texto (y si queda una cuenta, la resuelve). */
     static String text(String s, Ctx ctx, Tgt target) {
-        Matcher mt = TAG.matcher(s);
-        StringBuilder sb = new StringBuilder();
-        while (mt.find()) mt.appendReplacement(sb, Matcher.quoteReplacement(value(mt.group(1), ctx, target)));
-        mt.appendTail(sb);
-        String out = sb.toString();
+        // De dentro afuera, como MythicMobs: «<global.var.skin<caster.uuid>|scene_guards>» (los NPC de escenas) resuelve
+        // primero <caster.uuid> y luego la variable con ese nombre
+        String out = s;
+        for (int pass = 0; pass < 4; pass++) {
+            Matcher mt = TAG.matcher(out);
+            StringBuilder sb = new StringBuilder();
+            boolean changed = false;
+            while (mt.find()) {
+                String v = value(mt.group(1), ctx, target);
+                changed |= !v.equals(mt.group());
+                mt.appendReplacement(sb, Matcher.quoteReplacement(v));
+            }
+            mt.appendTail(sb);
+            out = sb.toString();
+            if (!changed || out.indexOf('<') < 0) break;
+        }
         if (out.matches(".*\\d\\s*[*/+\\-]\\s*[\\d(].*") && out.matches("[\\d\\s.+\\-*/()]+")) {
             Double r = eval(out);
             if (r != null) return SkillRuntime.fmt(r);
@@ -62,6 +73,13 @@ final class SkillVars {
 
     private static String value(String tag, Ctx ctx, Tgt target) {
         String t = tag.trim();
+        // «<caster.var.x|otro>»: lo que vale si la variable no está puesta (MythicMobs; sin él, 0)
+        String dflt = null;
+        int bar = t.indexOf('|');
+        if (bar > 0 && t.indexOf('<') < 0) {
+            dflt = t.substring(bar + 1);
+            t = t.substring(0, bar).trim();
+        }
         String low = t.toLowerCase(Locale.ROOT);
         // Números al azar
         Matcher r = Pattern.compile("random\\.float\\.(-?[\\d.]+)to(-?[\\d.]+)").matcher(low);
@@ -78,7 +96,7 @@ final class SkillVars {
         for (String prefix : new String[] {"modifier.", "spell.mod.", "skill.mod.", "mod."}) {
             if (low.startsWith(prefix)) return SkillRuntime.fmt(ctx.mods.getOrDefault(low.substring(prefix.length()), 0.0));
         }
-        if (low.startsWith("skill.var.")) return orZero(ctx.vars == null ? null : ctx.vars.get(low.substring(10)));
+        if (low.startsWith("skill.var.")) return or(ctx.vars == null ? null : ctx.vars.get(low.substring(10)), dflt);
         if (low.equals("skill.power")) return SkillRuntime.fmt(ctx.power);
         if (low.equals("skill.targets")) return String.valueOf(ctx.targets == null ? 1 : ctx.targets.size());
         if (low.startsWith("skill.")) {
@@ -91,7 +109,7 @@ final class SkillVars {
         // «<damage.modifier>» (el Pícaro, al revés en el pack): es <modifier.damage>
         if (low.equals("damage.modifier")) return SkillRuntime.fmt(ctx.mods.getOrDefault("damage", 0.0));
         if (low.startsWith("stat.")) return SkillRuntime.fmt(stat(ctx.caster.player(), low.substring(5)));
-        if (low.startsWith("global.var.")) return orZero(SkillRuntime.varScope("global.x", ctx, null).get(low.substring(11)));
+        if (low.startsWith("global.var.")) return or(SkillRuntime.varScope("global.x", ctx, null).get(low.substring(11)), dflt);
         // De quién: caster, target, trigger
         Who who;
         String rest;
@@ -117,7 +135,7 @@ final class SkillVars {
         }
         if (rest.startsWith("var.")) {
             SkillRuntime.WhoState st = SkillRuntime.stateIfAny(who);
-            return orZero(st == null ? null : st.vars.get(rest.substring(4)));
+            return or(st == null ? null : st.vars.get(rest.substring(4)), dflt);
         }
         if (rest.startsWith("l.")) {
             String k = rest.substring(2);
@@ -172,6 +190,11 @@ final class SkillVars {
 
     private static String orZero(String s) {
         return s == null ? "0" : s;
+    }
+
+    /** Una variable: lo que vale, o lo de después del «|» si no está puesta (o 0). */
+    private static String or(String s, String dflt) {
+        return s != null ? s : dflt != null ? dflt : "0";
     }
 
     private static double round(double d) {

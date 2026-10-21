@@ -257,6 +257,9 @@ final class SkillModels {
         String to = m.arg(null, "newmodelid", "n", "nm", "newmodel");
         if (to == null) return;
         String nm = to.contains(".") ? to : ctx.cls.id + "." + to.toLowerCase(Locale.ROOT);
+        // Un modelo que no existe (una variable sin poner: «<global.var.skin<caster.uuid>>» de los NPC de escenas, una
+        // errata): ModelEngine no hace nada
+        if (load(nm) == null) return;
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
             if (a != null) a.prop("remap", nm, null, null);
@@ -344,9 +347,19 @@ final class SkillModels {
         if (part == null || newModel == null) return;
         // El otro modelo, con el mismo nombre que en el pack
         String nm = newModel.contains(".") ? newModel : ctx.cls.id + "." + newModel.toLowerCase(Locale.ROOT);
+        // Sin ese modelo o sin ese hueso en él (los cosméticos guardados de un NPC de escena que no los lleva): ModelEngine
+        // no hace nada
+        VfxModel nmod = load(nm);
+        if (nmod == null || nmod.bone(newPart) < 0) return;
+        // «m»: el modelo del mob al que se le cambia la pieza; en ModelEngine, si no lleva ese modelo, nada. Los dúos de
+        // escenas lo ponen con <global.var.skinchange> (el último NPC que alguien tocó): sin mirarlo, a los 40 ticks de
+        // su ~onLoad el segundo personaje volvía a la plantilla «S» amarilla (el dúo de la sierra de los leñadores)
+        String on = modelId(m);
+        String onId = on == null ? null : on.contains(".") ? on : ctx.cls.id + "." + on.toLowerCase(Locale.ROOT);
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
-            if (a != null) a.prop("part", part, nm, newPart);
+            if (a == null || onId != null && !onId.equalsIgnoreCase(a.me)) continue;
+            a.prop("part", part, nm, newPart);
         }
     }
 

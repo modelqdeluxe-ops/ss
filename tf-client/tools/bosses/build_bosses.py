@@ -51,6 +51,9 @@ OUT_SOUNDS = os.path.join(RES, 'sounds', 'bosses')
 # Modelos de los objetos que sueltan: models/item/jefe_<jefe>_<objeto>.json (el id de TFBosses.itemId)
 OUT_ITEM_JSON = os.path.join(RES, 'models', 'item')
 SOUNDS_JSON = BS.SOUNDS_JSON
+# La carpeta del mod en la que salen texturas, sonidos y modelos de ítem («bosses»; los NPC de escena, tools/npcs/
+# build_npcs.py, la cambian a «npcs»)
+KIND = 'bosses'
 
 # Carpeta del pack → jefe. «mob»: el mob de MythicMobs que es el jefe.
 # «vida» y «dano»: vida y daño base del jefe en dificultad Normal para un jugador (los de los packs son de
@@ -512,7 +515,7 @@ def build(pack_dir, name, conf, sound_events):
 
     # Modelos de ModelEngine (todos los del pack: las skills los nombran por su nombre de archivo)
     me_models, converted = {}, {}
-    store = B.TextureStore(os.path.join(OUT_TEX, bid, 'me'), f'tfclient:textures/bosses/{bid}/me/')
+    store = B.TextureStore(os.path.join(OUT_TEX, bid, 'me'), f'tfclient:textures/{KIND}/{bid}/me/')
     for d, _, fs in sorted(os.walk(pack_dir)):
         for f in sorted(fs):
             if not f.endswith('.bbmodel'):
@@ -544,7 +547,7 @@ def build(pack_dir, name, conf, sound_events):
         bare = s.split(':', 1)[-1]
         found = sounds.get(s) or sounds.get(bare) or BS.similar_sound(sounds, s)
         if found:
-            ev = f'bosses.{bid}.{BS.slug(bare)}'
+            ev = f'{KIND}.{bid}.{BS.slug(bare)}'
             used_sounds.setdefault(ev, found)
             return f'tfclient:{ev}'
         vanilla = bare if s.startswith('minecraft:') or ':' not in s else None
@@ -558,7 +561,7 @@ def build(pack_dir, name, conf, sound_events):
     # Sus texturas «modelengine:entity/x» las genera ModelEngine desde los .bbmodel (el pack no las trae): se sacan de
     # ahí a un resource pack de apoyo
     pack.roots.append(me_textures(pack_dir, bid))
-    models = BS.ItemModels(pack, 'bosses')
+    models = BS.ItemModels(pack, KIND)
     item_models = {}
 
     def display_model(material, cmd):
@@ -730,7 +733,7 @@ def build(pack_dir, name, conf, sound_events):
             with open(os.path.join(OUT_ITEM_JSON, item_id(bid, iid) + '.json'), 'w', encoding='utf-8') as fo:
                 json.dump(item, fo, indent=1)
 
-    glyphs = BS.write_glyphs(pack, prog, 'bosses')
+    glyphs = BS.write_glyphs(pack, prog, KIND)
 
     # Sonidos al mod
     for ev, srcs in used_sounds.items():
@@ -740,7 +743,7 @@ def build(pack_dir, name, conf, sound_events):
             dest = os.path.join(OUT_SOUNDS, bid, nm + '.ogg')
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             shutil.copyfile(src, dest)
-            rels.append(f'tfclient:bosses/{bid}/{nm}')
+            rels.append(f'tfclient:{KIND}/{bid}/{nm}')
         sound_events[ev] = {'sounds': rels}
 
     # Modelos de ModelEngine al mod

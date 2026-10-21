@@ -59,7 +59,40 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.100) — lee esto primero
+### CHECKPOINT (21 oct 2026, TF Client 1.3.101, PUBLICADA) — lee esto primero
+
+> **Publicada** como Release `tfclient-v1.3.101`. Lo que queda (restos de la plantilla del pack, el sedal del pescador)
+> está en **[`tf-client/NPCS-CONTINUAR.md`](tf-client/NPCS-CONTINUAR.md)**. Los packs de NPC no están en el repo.
+
+**Lo último (lo que pidió el dueño al ver las pruebas)**, todo en `tf-client/NPCS.md` §3:
+- **«Ninguna extremidad despegada, por más pequeñito que sea el hueco»**: las animaciones del propio pack despegan la
+  cabeza, los brazos o las piernas (53 de los 130 NPC en su escena, hasta 3,2 px; lo mismo al milésimo con las reglas de
+  Blockbench sobre el `.bbmodel` original). `tools/npcs/pegar.py` (lo pasa `build_npcs`) las pega en cada animación
+  (solo la posición; los giros son los del pack) y `tools/npcs/pegado.py` lo mide: con la piel del panel, **0 huecos en
+  1 456 420 poses** (rejilla de 60/s y 3 semillas al azar). Con la «Plantilla del pack» quedan restos de 0,003-0,35 px
+  en ventanas de 4-5 ms (NPCS-CONTINUAR.md).
+- **Motor como ModelEngine 4**: una animación suena una sola vez (la de reposo y un state{} del mismo nombre no se suman:
+  57 NPC salían con cada giro al doble, el «angry 1» con el torso partido); la de reposo o la de andar puesta por state{}
+  se para al dejar de tocar (el vendedor andaba con la de reposo sumada); changepart{m} solo en el mob que lleva ese
+  modelo (el dúo de la sierra volvía a la plantilla amarilla); los NPC que vuelven del disco con su chunk lanzan su
+  ~onLoad (`SkillMobs.reborn`/`sweep`).
+- Caminantes por su ruta (@TargetedTarget), panel con rueda y textos que no asoman cortados, prueba en el juego con
+  filas a 20 bloques, capturas sin pisarse y el vendedor y el caminante andando de cerca.
+
+**1.3.101: los NPC de escenas** (todo en **`tf-client/NPCS.md`**). El dueño mandó 13 packs de Scenes (MythicMobs +
+ModelEngine) y pidió convertirlos todos «correctamente, con sus animaciones», un panel de control para colocarlos
+(posición en tiempo real, rotación…) y `/tf npc` que lo dé solo a quien lo ejecuta; luego: «ya puedes meterlos».
+- Conversor `tools/npcs/build_npcs.py` (con el de los jefes): 13 packs, 130 NPC + 4 marcadores; nombres y cosméticos de
+  los menús del pack; **auditor 0 problemas** en los 13 (y `verificar.py` «todo bien», que ahora también los audita).
+- Motor fiel a MythicMobs/ModelEngine: variables anidadas y con «|por defecto», globales con save=true guardadas con el
+  mundo (`skills/SkillSaved`), `@pin`/`distanceFromPin`, `followPath`, `teleportTo` a los objetivos, `light` (brillo
+  del hueso), `meleeHit`, ~onLoad de los NPC que vuelven del disco, changepart/remapmodel sin modelo no hacen nada.
+- Entidad `tfclient:npc` (BossEntity en modo NPC: se guarda con el mundo); panel `npcs/` (`TFNpcs`, `NpcNet`,
+  `NpcCatalog`, `NpcPanelItem`, `client/NpcPanelScreen`).
+- Prueba en el juego: `[prueba-jefes=npcs]` (`BossTest.npcsStep`).
+- Los packs no están en el repo (los zips los tiene el dueño); para reconvertir, NPCS.md §3.
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.100)
 
 **1.3.100: TF Crates, lo que pidió el dueño al ver la 1.3.99** (todo en `tf-client/CRATES.md` §2):
 - el santuario **siempre en vivo**: también detrás de la pantalla de antes de abrir y de las recompensas (antes, negro);

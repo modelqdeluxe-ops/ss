@@ -896,7 +896,9 @@ class Sim:
             return [Tgt(c.owner())] if c.owner() else []
         if t == 'trigger':
             return [Tgt(ctx.trigger or c)]
-        if t in ('targetedtarget', 'tt'):  # SkillTargets: el objetivo heredado (cada uno de los de @ENO...)
+        if t == 'targetedtarget':  # SkillTargets: el objetivo heredado tal cual (también el lanzador si se le pasó)
+            return list(ctx.targets) if ctx.targets else self.target(ctx)
+        if t == 'tt':  # SkillTargets: en las clases, el objetivo heredado (cada uno de los de @ENO...)
             inh = [x for x in (ctx.targets or []) if x.who is not None and not x.who.same(ctx.caster)]
             return inh or self.target(ctx)
         if t in ('target', 't', 'targetedentity', 'targeted'):

@@ -234,6 +234,61 @@ final class SkillMotion {
         }
     }
 
+    /**
+     * teleportto{location} de MythicMobs: cada objetivo va a ese sitio («x,y,z», «mundo,x,y,z» o un @objetivo de sitio:
+     * «@selflocation»), sin quedar dentro de un bloque. Si el sitio sale de una variable sin poner («0»), nada.
+     */
+    static void teleportTo(Mech m, Ctx ctx, List<Tgt> targets) {
+        String loc = SkillRuntime.unquote(m.arg("", "location", "loc", "l")).trim();
+        Vec3 to = null;
+        if (loc.startsWith("@")) {
+            List<Tgt> r = SkillTargets.fromString(loc, ctx);
+            if (!r.isEmpty()) to = r.get(0).pos();
+        } else {
+            String[] p = loc.split(",");
+            int o = p.length >= 4 ? p.length - 3 : 0;
+            if (p.length >= 3) {
+                try {
+                    to = new Vec3(Double.parseDouble(p[o].trim()), Double.parseDouble(p[o + 1].trim()), Double.parseDouble(p[o + 2].trim()));
+                } catch (NumberFormatException ignored) {
+                    // no es un sitio
+                }
+            }
+        }
+        if (to == null) return;
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e == null || e instanceof ServerPlayer && ctx.ambient) continue;
+            ServerLevel level = (ServerLevel) e.level();
+            Vec3 at = safe(level, to, e);
+            if (at == null) continue;
+            if (e instanceof ServerPlayer p) {
+                p.teleportTo(level, at.x, at.y, at.z, p.getYRot(), p.getXRot());
+                SkillServer.noFall(p.getUUID(), 40);
+            } else {
+                e.teleportTo(at.x, at.y, at.z);
+            }
+            e.fallDistance = 0;
+        }
+    }
+
+    private static final java.util.regex.Pattern POINT =
+            java.util.regex.Pattern.compile("\\(\\s*(-?[\\d.]+)\\s*,\\s*(-?[\\d.]+)\\s*,\\s*(-?[\\d.]+)\\s*\\)");
+
+    /** Los puntos de followPath{path=(x,y,z),(x,y,z),…} (lo que no sea un punto se salta: el «@forward» del ejemplo). */
+    static List<Vec3> pathPoints(String s) {
+        List<Vec3> out = new java.util.ArrayList<>();
+        java.util.regex.Matcher mt = POINT.matcher(s == null ? "" : s);
+        while (mt.find()) {
+            try {
+                out.add(new Vec3(Double.parseDouble(mt.group(1)), Double.parseDouble(mt.group(2)), Double.parseDouble(mt.group(3))));
+            } catch (NumberFormatException ignored) {
+                // no es un número
+            }
+        }
+        return out;
+    }
+
     /** teleport: quien lanza va al objetivo (con un poco de desvío si lo pide), sin quedar dentro de un bloque. */
     static void teleport(Mech m, Ctx ctx, List<Tgt> targets) {
         double sh = SkillRuntime.num(m.arg("0", "spreadh", "sh"), 0);

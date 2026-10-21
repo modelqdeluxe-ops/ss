@@ -421,6 +421,12 @@ final class SkillConds {
                 boolean within = t != null && t.isAlive() && t.position().distanceTo(ctx.caster.pos()) <= d;
                 yield c.m().equals("targetnotwithin") != within;
             }
+            // distanceFromPin{pin;distance} (MythicMobs): a qué distancia está del pin (sin el pin en este mundo: no)
+            case "distancefrompin" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                Vec3 pin = SkillSaved.pinIn(arg(a, null, "pin", "p", "name", "n"), ctx.caster.level());
+                yield pin != null && inRange(p.distanceTo(pin), arg(a, ">0", "distance", "d"));
+            }
             case "distance", "distancefromorigin" -> {
                 Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
                 Vec3 from = c.m().equals("distance") ? ctx.caster.pos() : SkillTargets.origin(ctx);

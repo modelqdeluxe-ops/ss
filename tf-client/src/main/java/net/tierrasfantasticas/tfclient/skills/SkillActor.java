@@ -217,6 +217,13 @@ public final class SkillActor {
                             || k.startsWith("seg:") || PER_MODEL.stream().anyMatch(k::startsWith));
                     hiddenNow = null;
                 }
+                // remapmodel deja cada hueso como en el otro modelo (el cliente quita los changepart de antes): quien llega
+                // tarde ve primero el remapeo y luego los changepart que vinieron después (las pieles de los NPC y sus
+                // cosméticos)
+                if (key.equals("remap")) {
+                    sticky.keySet().removeIf(k -> k.startsWith("part:"));
+                    sticky.remove("remap");
+                }
                 sticky.put(key + (key.equals("dstate") ? ":" + a : ""), p);
             }
             case "vis" -> {
