@@ -171,8 +171,8 @@ public final class BossTestClient {
     }
 
     /** (1.3.99) Capturas de la cinemática de las crates, a sus tiempos (ticks desde que empieza). */
-    private static final String[] CRATE = {"llegada", "haz", "llave", "gira", "tiembla", "abre", "anillo", "ruleta", "para", "premio", "final"};
-    private static final float[] CRATE_AT = {12, 40, 58, 76, 92, 107, 140, 196, 252, 272, 318};
+    private static final String[] CRATE = {"llegada", "haz", "llave", "golpe", "tiembla", "abre", "anillo", "ruleta", "para", "premio", "final"};
+    private static final float[] CRATE_AT = {12, 40, 56, 68, 92, 107, 140, 196, 252, 272, 318};
     private static Object crateSeen;
     private static int crateNext, crateRun;
 
