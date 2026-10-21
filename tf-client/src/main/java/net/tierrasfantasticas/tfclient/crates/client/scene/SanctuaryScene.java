@@ -36,6 +36,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -451,6 +452,24 @@ public final class SanctuaryScene {
         return SceneRenderTypes.WATER;
     }
 
+    /**
+     * (1.3.106, el dueño: «las líneas blancas en las texturas, cuando se mueve la cámara se notan muchísimo… como que no
+     * estuviera compacta ni unida la textura») la capa de cada bloque en la escena: las hojas, macizas (como con
+     * «Gráficos: rápidos»; con sus agujeros se veía el cielo claro de detrás y, al moverse la cámara, parpadeaban como
+     * puntos y rayas blancas: medido en la prueba, píxeles color cielo en los bordes de las hojas).
+     */
+    private static RenderType sceneLayer(BlockState st, RenderType rt) {
+        RenderType l = layerOf(rt);
+        return l != SceneRenderTypes.WATER && st.getBlock() instanceof LeavesBlock ? RenderType.solid() : l;
+    }
+
+    /**
+     * Cada bloque, una milésima más grande por cada lado: las caras de bloques vecinos se solapan un pelo y entre ellas no
+     * queda ninguna rendija por la que se vea el cielo (de lejos, menos de una décima de píxel; las caras de al lado no
+     * cambian de sitio).
+     */
+    private static final float GROW = 1.002F;
+
     /** Construye los búferes si hace falta (la primera vez o tras recargar los recursos). */
     public void ensureBuilt() {
         Minecraft mc = Minecraft.getInstance();
@@ -496,9 +515,12 @@ public final class SanctuaryScene {
                 rand.setSeed(seed);
                 ChunkRenderTypeSet types = model.getRenderTypes(st, rand, ModelData.EMPTY);
                 for (RenderType rt : types) {
-                    if (layerOf(rt) != layer) continue;
+                    if (sceneLayer(st, rt) != layer) continue;
                     pose.pushPose();
                     pose.translate(b[0], b[1], b[2]);
+                    pose.translate(0.5F, 0.5F, 0.5F);
+                    pose.scale(GROW, GROW, GROW);
+                    pose.translate(-0.5F, -0.5F, -0.5F);
                     shade.fixed = (fl & F_GLOW) != 0;
                     shade.fr = shade.fg = shade.fb = 1.0F;
                     if (st.is(Blocks.LILY_PAD)) {

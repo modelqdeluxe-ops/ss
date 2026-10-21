@@ -47,6 +47,7 @@ import net.tierrasfantasticas.tfclient.crates.client.render.CrateBakedModels;
 import net.tierrasfantasticas.tfclient.crates.client.render.CrateStyles;
 import net.tierrasfantasticas.tfclient.crates.client.scene.CinematicFx;
 import net.tierrasfantasticas.tfclient.crates.client.scene.SanctuaryScene;
+import net.tierrasfantasticas.tfclient.crates.client.scene.SceneFx;
 import net.tierrasfantasticas.tfclient.crates.client.scene.ScenePost;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
 import net.tierrasfantasticas.tfclient.crates.config.Rarity;
@@ -256,6 +257,7 @@ public class CrateCinematicScreen extends Screen {
                 frameMax, clock() / 20.0F, SanctuaryScene.get() == null ? "sin santuario" : SanctuaryScene.get().stats())
                 + String.format("; partículas de la crate: hasta %d a la vez, en %d fotogramas%s", particlesMax, particleFrames,
                         cratePos == null ? " (sin bloque)" : "")
+                + "; efectos: " + SceneFx.stats()
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
@@ -296,6 +298,8 @@ public class CrateCinematicScreen extends Screen {
      * música al 0,40 y el ambiente al 0,35: todo hacia −22/−25 LUFS.
      */
     private static final float SFX = 0.35F, MUSIC_VOL = 0.40F, AMBIENT_VOL = 0.35F;
+    /** «Aerie» va a −25 LUFS en sus primeros 18 s (medido; la sintetizada, −12/−18): casi entera. */
+    private static final float MC_MUSIC_VOL = 0.9F;
 
     private void ui(SoundEvent ev, float volume, float pitch) {
         if (minecraft == null) return;
@@ -358,7 +362,12 @@ public class CrateCinematicScreen extends Screen {
         switch (t) {
             case 0 -> {
                 track("ambiente", SoundSource.AMBIENT, AMBIENT_VOL);
-                track("musica", SoundSource.MUSIC, MUSIC_VOL);
+                // (1.3.106, el dueño: «la música… estaba horrible») la de Minecraft, «Aerie» (Lena Raine), salvo que un
+                // paquete de recursos traiga la suya en tfclient:sounds/crates/musica.ogg (la canción del dueño); la
+                // sintetizada ya no va en el jar
+                boolean own = minecraft != null
+                        && minecraft.getResourceManager().getResource(new ResourceLocation("tfclient", "sounds/crates/musica.ogg")).isPresent();
+                track(own ? "musica" : "musica_mc", SoundSource.MUSIC, own ? MUSIC_VOL : MC_MUSIC_VOL);
             }
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
             case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
@@ -1030,18 +1039,20 @@ public class CrateCinematicScreen extends Screen {
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
             // los pétalos de la apertura y del premio
-            VertexConsumer soft = buf.getBuffer(CinematicFx.softType());
+            // (1.3.106) los efectos, como el agua: con su VertexBuffer y sus shaders (SceneFx); por el lote del juego no le
+            // salían al dueño
+            VertexConsumer soft = SceneFx.begin(SceneFx.Kind.SOFT, buf);
             CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
             if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
             float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
-            buf.endBatch(CinematicFx.softType());
+            SceneFx.end(SceneFx.Kind.SOFT, buf);
 
             // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
             // agua que brilla, las runas, el pilar, la llave, los premios
             RenderSystem.depthMask(false);
             float open = smooth(OPEN - 2, OPEN + 12, t);
             float tintAmt = 0.35F * open * (0.6F + 0.4F * winnerRarity.ordinal() / 4.0F);
-            VertexConsumer glow = buf.getBuffer(CinematicFx.glowType());
+            VertexConsumer glow = SceneFx.begin(SceneFx.Kind.GLOW, buf);
             CinematicFx.mist(glow, fv, sc, t);
             CinematicFx.lightHalos(glow, fv, sc, t);
             CinematicFx.waterfallLights(glow, fv, sc, t);
@@ -1066,10 +1077,10 @@ public class CrateCinematicScreen extends Screen {
             CinematicFx.shockwave(glow, fv, c[0], sc.anchor("pool")[1] + 0.03F, c[2], t - OPEN, 30.0F, 8.0F, rarityColor);
             keyLights(glow, fv, sc, t);
             itemLights(glow, fv, sc, t, eye);
-            buf.endBatch(CinematicFx.glowType());
-            VertexConsumer rays = buf.getBuffer(CinematicFx.raysType());
+            SceneFx.end(SceneFx.Kind.GLOW, buf);
+            VertexConsumer rays = SceneFx.begin(SceneFx.Kind.RAYS, buf);
             itemRays(rays, fv, sc, t, eye);
-            buf.endBatch(CinematicFx.raysType());
+            SceneFx.end(SceneFx.Kind.RAYS, buf);
             RenderSystem.depthMask(true);
         } finally {
             mc.gameRenderer.setPanoramicMode(panoramic);

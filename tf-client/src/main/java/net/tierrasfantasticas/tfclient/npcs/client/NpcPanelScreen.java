@@ -213,15 +213,19 @@ public final class NpcPanelScreen extends Screen {
 
     private void buildEdit(int x0, int y) {
         if (state.id() < 0) {
-            button(x0 + 4, y + 24, 112, "El más cercano", () -> act(NpcNet.SELECT_NEAR));
-            int n = rows(y + 44);
+            // (1.3.106, captura del dueño: «Cerca de ti:» salía encima del botón) debajo del texto, que puede ocupar
+            // dos líneas o más según la escala de la interfaz, el botón; luego «Cerca de ti:» y la lista
+            int top = y + nearIntroHeight() + 4;
+            button(x0 + 4, top, 112, "El más cercano", () -> act(NpcNet.SELECT_NEAR));
+            int list = top + NEAR_LIST;
+            int n = rows(list);
             scrollB = Math.max(0, Math.min(scrollB, state.near().size() - n));
             for (int i = 0; i < Math.min(n, state.near().size() - scrollB); i++) {
                 NpcNet.Near nr = state.near().get(scrollB + i);
-                button(x0 + 4, y + 44 + i * 15, 228, name(nr.pack(), nr.mob()) + String.format(Locale.ROOT, "  (%.0f m)", nr.dist()),
+                button(x0 + 4, list + i * 15, 228, name(nr.pack(), nr.mob()) + String.format(Locale.ROOT, "  (%.0f m)", nr.dist()),
                         () -> NpcNet.toServer(new NpcNet.Act(NpcNet.SELECT, nr.id(), "", "", 0, 0, 0)));
             }
-            scrollZones.add(new int[] {x0 + 4, y + 44, 228, n * 15, 1});
+            scrollZones.add(new int[] {x0 + 4, list, 228, n * 15, 1});
             return;
         }
         int yy = y + 26;
@@ -344,6 +348,15 @@ public final class NpcPanelScreen extends Screen {
     }
 
     /** Lo mismo con un texto largo, partido en renglones (como drawWordWrap). */
+    private static final String NEAR_INTRO = "Clic derecho a un NPC con el panel en la mano para elegirlo, o:";
+    /** Desde el botón «El más cercano»: dónde va «Cerca de ti:» y dónde empieza la lista (el botón mide 14). */
+    private static final int NEAR_LABEL = 18, NEAR_LIST = 30;
+
+    /** Lo que ocupa el texto de arriba de la pestaña Editar sin NPC elegido (las líneas que salgan). */
+    private int nearIntroHeight() {
+        return font.split(Component.literal(NEAR_INTRO), W - 12).size() * font.lineHeight;
+    }
+
     private void wrap(GuiGraphics g, String s, int x, int y, int color) {
         for (net.minecraft.util.FormattedCharSequence line : font.split(Component.literal(s), W - 12)) {
             if (y >= contentTop && y + font.lineHeight <= contentBottom) g.drawString(font, line, x, y, color, false);
@@ -371,8 +384,9 @@ public final class NpcPanelScreen extends Screen {
             label(g, "NPC   (» anda, · marcador)", x0 + 102, y, DIM);
         } else if (tab == 1) {
             if (state.id() < 0) {
-                wrap(g, "Clic derecho a un NPC con el panel en la mano para elegirlo, o:", x0 + 6, y, DIM);
-                label(g, "Cerca de ti:", x0 + 6, y + 34, DIM);
+                wrap(g, NEAR_INTRO, x0 + 6, y, DIM);
+                // (debajo del botón «El más cercano»: buildEdit)
+                label(g, "Cerca de ti:", x0 + 6, y + nearIntroHeight() + 4 + NEAR_LABEL, DIM);
             } else {
                 label(g, name(state.pack(), state.mob()), x0 + 6, y, GOLD);
                 label(g, String.format(Locale.ROOT, "%.2f  %.2f  %.2f   giro %.0f°", state.x(), state.y(), state.z(), state.yaw()),

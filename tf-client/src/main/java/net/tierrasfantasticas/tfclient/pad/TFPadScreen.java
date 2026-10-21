@@ -540,6 +540,52 @@ public final class TFPadScreen extends Screen {
     }
 
     /**
+     * Pinta ya lo que el pad lleva en el lote, en blanco, y deja el estado como el pad lo espera: el color de antes, la
+     * mezcla encendida y la normal (1.3.70). Antes de cada textura y (1.3.106) de cada texto: GuiGraphicsMixin y PadFont.
+     */
+    /**
+     * (1.3.106) Para la prueba en el juego: los recuadros del pad (fill, fillGradient) se guardan y se pintan al final,
+     * después de todo el texto, como en el juego del dueño ({@code testBoxesLast}); y el texto sin subir 1
+     * ({@code testNoLift}: cómo se veía antes del arreglo).
+     */
+    public static volatile boolean testBoxesLast, testNoLift;
+    /** Los recuadros guardados: la matriz y {gradiente (0/1), x1, y1, x2, y2, z, color1, color2}, con su capa. */
+    public static final List<Object[]> testBoxes = new java.util.ArrayList<>();
+    private static boolean replaying;
+
+    /** ¿Se guarda este recuadro para el final? (GuiGraphicsMixin) */
+    public static boolean deferBox() {
+        return testBoxesLast && PadSkin.batching && !replaying;
+    }
+
+    private static void replayBoxes(GuiGraphics g) {
+        replaying = true;
+        try {
+            for (Object[] b : testBoxes) {
+                int[] v = (int[]) b[2];
+                g.pose().pushPose();
+                g.pose().last().pose().set((org.joml.Matrix4f) b[0]);
+                if (v[0] == 0) g.fill((net.minecraft.client.renderer.RenderType) b[1], v[1], v[2], v[3], v[4], v[5], v[6]);
+                else g.fillGradient((net.minecraft.client.renderer.RenderType) b[1], v[1], v[2], v[3], v[4], v[6], v[7], v[5]);
+                g.pose().popPose();
+            }
+        } finally {
+            testBoxes.clear();
+            replaying = false;
+        }
+    }
+
+    public static void flushBatch(GuiGraphics g) {
+        float[] c = RenderSystem.getShaderColor();
+        float r = c[0], gr = c[1], b = c[2], a = c[3];
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+        g.flush();
+        RenderSystem.setShaderColor(r, gr, b, a);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+    }
+
+    /**
      * 1.3.67 (fluidez): todo el pad se pinta en lote (drawManaged): rectángulos, degradados, luces y textos seguidos van
      * juntos a la tarjeta gráfica en vez de uno a uno (antes eran miles de llamadas por fotograma). El orden no cambia:
      * las texturas y los objetos vacían el lote antes de pintarse (GuiGraphicsMixin) y los recortes también. Las mismas
@@ -553,6 +599,7 @@ public final class TFPadScreen extends Screen {
             PadSkin.batching = true;
             try {
                 renderPad(g, mouseX, mouseY, partialTick);
+                if (!testBoxes.isEmpty()) replayBoxes(g);
             } catch (RuntimeException e) {
                 error[0] = e;
             } finally {

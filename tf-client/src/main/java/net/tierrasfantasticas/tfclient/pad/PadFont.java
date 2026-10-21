@@ -127,6 +127,8 @@ final class PadFont {
      * transparente (setColor), se vuelve a blanco (lo de antes ya se pintó con el suyo).
      */
     private static VertexConsumer begin(GuiGraphics g) {
+        // (1.3.106) lo de debajo (el lote), ya pintado: como el texto de Minecraft en el pad (GuiGraphicsMixin)
+        if (PadSkin.batching) TFPadScreen.flushBatch(g);
         float[] c = RenderSystem.getShaderColor();
         if (c[0] != 1F || c[1] != 1F || c[2] != 1F || c[3] != 1F) g.setColor(1F, 1F, 1F, 1F);
         if (type == null) type = PadRenderTypes.font(TEX);

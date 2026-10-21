@@ -1647,10 +1647,23 @@ public final class BossTest {
             // (1.3.106) algo escrito en la casilla del link: el dueño no ve lo que escribe
             case 120 -> typePad = "https://texto que escribo en la prueba";
             case 150 -> shot(r, "pad_musica");
-            case 160 -> openPad = "efectos";
-            case 220 -> shot(r, "pad_efectos");
-            case 230 -> closeScreen = true;
-            case 240 -> next(level);
+            // (1.3.106) como en el juego del dueño: los recuadros, después del texto; primero sin el arreglo (el texto
+            // sin subir: así lo veía él) y luego con él
+            case 152 -> {
+                net.tierrasfantasticas.tfclient.pad.TFPadScreen.testNoLift = true;
+                net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = true;
+            }
+            case 170 -> shot(r, "pad_musica_recuadros_despues_sin_arreglo");
+            case 172 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testNoLift = false;
+            case 190 -> shot(r, "pad_musica_recuadros_despues");
+            case 192 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = false;
+            case 200 -> openPad = "efectos";
+            case 260 -> shot(r, "pad_efectos");
+            case 262 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = true;
+            case 280 -> shot(r, "pad_efectos_recuadros_despues");
+            case 282 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = false;
+            case 290 -> closeScreen = true;
+            case 300 -> next(level);
             default -> { }
         }
     }

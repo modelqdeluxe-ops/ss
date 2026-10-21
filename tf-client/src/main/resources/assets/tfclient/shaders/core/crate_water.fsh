@@ -86,7 +86,10 @@ void main() {
         float wob = noise(vec2(fuv.x * 2.5, y * 0.25)) * 6.2832;
         float s1 = 0.5 + 0.5 * sin(fuv.x * 9.0 + wob + sin(y * 0.35) * 0.8);
         float s2 = 0.5 + 0.5 * sin(fuv.x * 21.0 - wob * 1.3 + y * 0.12);
-        float strands = s1 * 0.65 + mix(0.5, s2, fade) * 0.35;
+        // (1.3.106, el dueño: «líneas blancas que se notan muchísimo cuando se mueve la cámara») de lejos también los
+        // hilos gruesos se funden: más finos que un píxel, al moverse, parpadeaban como rayas
+        float fade1 = clamp(1.0 - fwidth(fuv.x) * 4.0, 0.0, 1.0);
+        float strands = mix(0.5, s1, fade1) * 0.65 + mix(0.5, s2, fade) * 0.35;
         col = mix(WATER_DEEP, WATER_LIGHT, smoothstep(0.15, 0.85, strands));
         col = mix(col, vec3(0.55, 0.95, 1.0), smoothstep(0.70, 0.95, strands) * 0.35);
         // destellos pequeños y redondos que bajan con el agua
@@ -125,9 +128,13 @@ void main() {
         // (destellos redondos y suaves: el producto de dos ruidos girados, sin la rejilla de uno solo)
         float gl = noise(p * 6.0 + vec2(t * 0.8, -t * 1.6)) * noise(vec2(p.x * 4.1 - p.y * 2.9, p.x * 2.7 + p.y * 4.3) * 1.4 - t * 0.9);
         rc *= smoothstep(0.20, 0.42, gl);
+        // (1.3.106) los destellos (6 por bloque) se apagan donde son más pequeños que un píxel: de lejos, al moverse la
+        // cámara, saltaban de sitio cada fotograma y se veían como rayas blancas (el dueño)
+        float aa = 1.0 - smoothstep(0.30, 0.80, length(fwidth(p)) * 6.0);
+        rc *= aa;
         col += vec3(0.75, 1.0, 1.0) * rc * (0.25 + 1.2 * fres);
         vec3 L = normalize(LightDir);
-        float spec = pow(max(dot(reflect(-L, nf), v), 0.0), 60.0);
+        float spec = pow(max(dot(reflect(-L, nf), v), 0.0), 60.0) * aa;
         col += vec3(1.0, 0.92, 0.70) * spec * (0.5 + 2.2 * beam);
         col += vec3(0.85, 1.0, 0.85) * beam * 0.10;
         // espuma en las orillas y al pie de los chorros

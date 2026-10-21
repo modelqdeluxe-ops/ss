@@ -449,6 +449,9 @@ def main():
     for name, fn in SOUNDS.items():
         if only and name not in only:
             continue
+        # (1.3.106) la música ya no va en el jar (el dueño: «horrible»; ahora suena «Aerie» de Minecraft): solo si se pide
+        if name == 'musica' and 'musica' not in only:
+            continue
         x = fn()
         espectro(x, 'crates/' + name)
         wav = os.path.join(wav_dir or tmp, f'crates_{name}.wav')

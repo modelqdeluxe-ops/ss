@@ -47,13 +47,36 @@ float godRays(vec2 p, vec2 sun, float aspect) {
     return s * down * exp(-r * 1.1) * smoothstep(0.0, 0.05, r) * (1.0 - smoothstep(0.40, 0.75, r));
 }
 
+// (1.3.106, el dueño: «líneas blancas en las texturas cuando se mueve la cámara, se notan muchísimo») suavizado de
+// bordes (FXAA, la versión corta de Lottes): las aristas de un píxel y los bordes de los píxeles de las texturas, que al
+// moverse la cámara saltaban de píxel en píxel como rayas, se funden con sus vecinos a lo largo de su dirección
+vec3 fxaa(sampler2D tex, vec2 p, vec2 px) {
+    vec3 nw = texture(tex, p + vec2(-1.0, -1.0) * px).rgb;
+    vec3 ne = texture(tex, p + vec2(1.0, -1.0) * px).rgb;
+    vec3 sw = texture(tex, p + vec2(-1.0, 1.0) * px).rgb;
+    vec3 se = texture(tex, p + vec2(1.0, 1.0) * px).rgb;
+    vec3 m = texture(tex, p).rgb;
+    vec3 k = vec3(0.299, 0.587, 0.114);
+    float lnw = dot(nw, k), lne = dot(ne, k), lsw = dot(sw, k), lse = dot(se, k), lm = dot(m, k);
+    float lmin = min(lm, min(min(lnw, lne), min(lsw, lse)));
+    float lmax = max(lm, max(max(lnw, lne), max(lsw, lse)));
+    vec2 dir = vec2(-((lnw + lne) - (lsw + lse)), (lnw + lsw) - (lne + lse));
+    float reduce = max((lnw + lne + lsw + lse) * (0.25 / 8.0), 1.0 / 128.0);
+    float rcpMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + reduce);
+    dir = clamp(dir * rcpMin, vec2(-8.0), vec2(8.0)) * px;
+    vec3 a = 0.5 * (texture(tex, p + dir * (1.0 / 3.0 - 0.5)).rgb + texture(tex, p + dir * (2.0 / 3.0 - 0.5)).rgb);
+    vec3 b = a * 0.5 + 0.25 * (texture(tex, p - dir * 0.5).rgb + texture(tex, p + dir * 0.5).rgb);
+    float lb = dot(b, k);
+    return (lb < lmin || lb > lmax) ? a : b;
+}
+
 float linearDepth(float d) {
     float z = d * 2.0 - 1.0;
     return 2.0 * Clip.x * Clip.y / (Clip.y + Clip.x - z * (Clip.y - Clip.x));
 }
 
 void main() {
-    vec3 c = texture(SceneSampler, uv).rgb;
+    vec3 c = fxaa(SceneSampler, uv, 1.0 / vec2(textureSize(SceneSampler, 0)));
     // profundidad de campo: lo que está lejos del foco (la crate) se desenfoca; lo de detrás, más
     float dist = linearDepth(texture(DepthSampler, uv).r);
     float off = dist - Focus.x;

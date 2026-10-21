@@ -3678,6 +3678,14 @@
    }
   ]
  },
+ "crates.musica_mc": {
+  "sounds": [
+   {
+    "name": "minecraft:music/game/swamp/aerie",
+    "stream": true
+   }
+  ]
+ },
  "crates.llave_aparece": {
   "sounds": [
    {

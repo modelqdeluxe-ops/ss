@@ -233,7 +233,12 @@ Los demás jugadores ven **la crate del mundo** a los mismos tiempos (`CrateRend
 `CrateBlockEntity.SCENE_*`): la llave que llega, entra y gira, el temblor, la tapa que se abre del todo, el pilar de luz
 y el premio que sube y gira encima hasta que se cierra. La de siempre (`CrateCinematicClassic`) dura lo mismo.
 
-**La música**: `tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
+**La música** (1.3.106, el dueño: «la música… estaba horrible»): `tfclient:crates.musica_mc`, «Aerie» de la banda
+sonora de Minecraft (Lena Raine; `minecraft:music/game/swamp/aerie`, la tienen todos: no se sube nada), elegida midiendo
+los primeros 18 s de las tranquilas de la 1.20.1 (suena desde los 0,7 s, −25 LUFS; «Floating Dream» empieza con 4,8 s
+de silencio, «An Ordinary Day» con 11, «Bromeliad» entra fuerte). La sintetizada (`sonidos_crates.py musica`) ya no va
+en el jar. Si un paquete de recursos trae `tfclient:sounds/crates/musica.ogg`, suena esa (`crates.musica`). Antes:
+`tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
 el dueño («La petite fille de la mer», 20 oct 2026: sus primeros 20 s, con entrada y salida suaves y volumen
 normalizado) va en un resource pack aparte que sustituye `assets/tfclient/sounds/crates/musica.ogg` (se le dio hecho,
 `TF-Santuario-musica.zip`); no se sube al repo ni a las Releases, que son públicos. El ambiente (`ambiente.ogg`) es de
