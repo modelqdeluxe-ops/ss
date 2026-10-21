@@ -163,7 +163,9 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   −z: le quedaban la cara y el pecho en la espalda en los 210 dúos con piel (medido). Ahora usan `<piel>_2`
   (`pegado.second_skin`, la piel reflejada como la plantilla; `build_npcs.write_second_skins` las escribe) con
   `changepart pid=head2 npid=head2`, como el pack con sus skin_N. `pegado` y `hoja_npcs` también. Comprobado: la cara
-  del 2.º del mismo lado que el pecho de su plantilla en los 210; la del 1.º, en los 2 625 NPC×piel.
+  del 2.º del mismo lado que el pecho de su plantilla en los 210; la del 1.º, en los 2 625 NPC×piel. Y con la piel
+  reflejada todo sigue pegado: `pegado.py` a 60/s en los 5 packs con dúos (tavern, combat_vol1, townsfolks_vol2,
+  guards_vol1, lumberjacks), 70 680 poses, «todo pegado».
 
 ## 4. Comprobarlo
 
