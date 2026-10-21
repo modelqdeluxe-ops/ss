@@ -28,7 +28,10 @@ sys.path.insert(0, HERE)
 import vfx_bb as B  # noqa: E402
 import pegado as P  # noqa: E402
 
-MARGIN = 0.10      # px de más al acercar (que se toquen de verdad, también entre dos fotogramas)
+MARGIN = 0.02      # px de más al acercar
+SAFE = 0.10        # px: se mide con cada pieza encogida esto hacia dentro (por la normal de cada cara): lo que se pega
+                   # se solapa al menos 2×SAFE, y entre dos fotogramas comprobados nada se mueve tanto (con 0,10 de margen
+                   # y sin encoger quedaban restos de hasta 0,005 px en ventanas de menos de 4 ms: pegado.py --azar)
 TOL = 0.005        # px: lo que se permite quitar al simplificar la pista horneada
 EPS = 1e-4
 CHECK = 4          # tras cada pasada se comprueba a 4 veces los fotogramas (lo que quede entre dos)
@@ -128,12 +131,24 @@ def pairs_of(model):
     return out
 
 
+def shrunk(bone):
+    """Las caras del hueso (en su espacio) metidas SAFE hacia dentro por su normal."""
+    qs = []
+    for q in bone['quads']:
+        n = np.array(q[1:4], dtype=float)
+        ln = np.linalg.norm(n)
+        v = np.array(q[4:24], dtype=float).reshape(4, 5)[:, :3]
+        qs.append(v - n / ln * SAFE if ln > 1e-9 else v)
+    return np.array(qs) if qs else np.zeros((0, 4, 3))
+
+
 def geometries(model, skin):
-    """Las caras de cada hueso (en su espacio) con la plantilla del pack y, si hay piel, con ella (y en el 2.º)."""
-    gs = [[P.quads_of(b) for b in model['bones']]]
+    """Las caras de cada hueso (en su espacio, encogidas SAFE) con la plantilla del pack y, si hay piel, con ella (y en
+    el 2.º personaje)."""
+    gs = [[shrunk(b) for b in model['bones']]]
     if skin is not None:
         m = P.with_skin(P.with_skin(model, skin), skin, second=True)
-        gs.append([P.quads_of(b) for b in m['bones']])
+        gs.append([shrunk(b) for b in m['bones']])
     return gs
 
 

@@ -127,10 +127,12 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   con `pegado.py` y, aparte, con las reglas de Blockbench sobre el `.bbmodel` original, sale lo mismo al milésimo (y los
   `.bbmodel` de la taberna ya traen 0,04–0,12 px de hueco en reposo). `tools/npcs/pegar.py` (lo llama `build_npcs`) los
   pega en cada animación: una pierna → el cuerpo se acerca a ella (los pies siguen en el suelo; si es la pierna la que
-  se mueve, la pierna); un brazo o la cabeza → se acercan al cuerpo; lo justo para tocar (+0,10 px), con la plantilla y
-  con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60 por segundo, comprobado a 4
-  veces esos fotogramas y repetido donde aún quedaba hueco entre dos (con +0,05 px y al doble quedaban restos de hasta
-  0,05 px entre fotogramas: los vio `pegado.py --azar`). Volver a pasarlo no cambia nada.
+  se mueve, la pierna); un brazo o la cabeza → se acercan al cuerpo; midiendo con cada pieza **encogida 0,10 px** por la
+  normal de sus caras (`pegar.SAFE`): lo pegado queda solapado al menos 0,2 px y entre dos fotogramas comprobados nada se
+  mueve tanto. Con la plantilla y con la piel. Solo la posición (los giros son los del pack), en fotogramas lineales a 60
+  por segundo, comprobado a 4 veces esos fotogramas y repetido donde aún quedaba hueco. (Sin encoger, con +0,05/+0,10 px
+  de margen, `pegado.py --azar` seguía encontrando restos de hasta 0,05 y luego 0,005 px en ventanas de menos de 4 ms;
+  así, ninguno con tres semillas.) Volver a pasarlo no cambia nada.
 - **Fallos del propio pack** (avisos con su porqué en `build_npcs.HUECOS`): Molang «-» en las tablas del leñador
   (= 0, como Blockbench), el sonido `lumberjack_interact` que no viene, la caja del banco no cuadrada, la errata del
   mendigo en su ~onLoad, la animación «sawing» que el dúo de guardias pide al segundo modelo, los marcadores sin
@@ -144,7 +146,7 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
 ## 4. Comprobarlo
 
 - `python3 tools/bosses/verificar.py` → «todo bien» (incluye «auditor: 0 problemas en los NPC de escenas»).
-- `python3 tools/npcs/pegado.py [pack…] [--plantilla]`: la cabeza, los brazos y las piernas de cada NPC pegados a su
+- `python3 tools/npcs/pegado.py [pack…] [--plantilla] [--fps N] [--azar N --semilla S]`: la cabeza, los brazos y las piernas de cada NPC pegados a su
   cuerpo en cada animación de su modelo y en la pose de su escena, con las mismas cuentas que el mod (distancias
   exactas entre caras, en píxeles de Blockbench). Sin `--plantilla`, con la piel que les pone el panel (las 21 tienen la
   misma geometría: lo comprueba); con él, con la geometría del propio modelo del pack. Unos 90 s por pack (los 13 packs en
