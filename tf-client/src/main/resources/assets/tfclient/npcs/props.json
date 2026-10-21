@@ -1,0 +1,238 @@
+{
+ "npc_townsfolks_vol3|scene_townsfolk_lay_back_1": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_lay_back_1_bench",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_lay_front_2": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_lay_front_2_bench",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_readers_book_1": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_readers_book_1_couch",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_readers_book_2": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_readers_book_2_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_readers_newspaper": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_readers_newspaper_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_bar_1": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_bar_1_bar_stool",
+   "p": [
+    0.0,
+    0.0,
+    -7.404
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_bar_2": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_bar_2_bar_stool",
+   "p": [
+    0.0,
+    0.0,
+    -7.404
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_chair_1": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_chair_1_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_chair_2": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_chair_2_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_chair_3": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_chair_3_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_chair_4": [
+  {
+   "m": "npc_tavern.mueble_silla_taberna",
+   "p": [
+    0.0,
+    0.0,
+    -2.766
+   ],
+   "r": 0.0,
+   "s": [
+    1.0,
+    0.9874,
+    1.0
+   ]
+  },
+  {
+   "m": "npc_tavern.mueble_mesa_taberna",
+   "p": [
+    0.0,
+    0.0,
+    -17.771
+   ],
+   "r": 0.0,
+   "s": [
+    1.0,
+    1.1015,
+    1.0
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_sit_couch_1": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_sit_couch_1_couch",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "npc_townsfolks_vol3|scene_townsfolk_writer": [
+  {
+   "m": "npc_townsfolks_vol3.mueble_writer_chair",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "m": "npc_townsfolks_vol3.mueble_writer_desk",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ]
+}

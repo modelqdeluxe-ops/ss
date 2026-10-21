@@ -451,6 +451,22 @@ public final class SanctuaryScene {
         return SceneRenderTypes.WATER;
     }
 
+    /**
+     * La capa de cada bloque en la escena. (1.3.106: las hojas, como siempre, recortadas. Macizas, como con «Gráficos:
+     * rápidos», o con una copia oscura dentro, para que por sus agujeros no se viera el cielo claro, salían con manchas
+     * blancas en sus agujeros con Oculus/Embeddium: lo vio la prueba.)
+     */
+    private static RenderType sceneLayer(BlockState st, RenderType rt) {
+        return layerOf(rt);
+    }
+
+    /**
+     * Cada bloque, una milésima más grande por cada lado: las caras de bloques vecinos se solapan un pelo y entre ellas no
+     * queda ninguna rendija por la que se vea el cielo (de lejos, menos de una décima de píxel; las caras de al lado no
+     * cambian de sitio).
+     */
+    private static final float GROW = 1.002F;
+
     /** Construye los búferes si hace falta (la primera vez o tras recargar los recursos). */
     public void ensureBuilt() {
         Minecraft mc = Minecraft.getInstance();
@@ -496,9 +512,12 @@ public final class SanctuaryScene {
                 rand.setSeed(seed);
                 ChunkRenderTypeSet types = model.getRenderTypes(st, rand, ModelData.EMPTY);
                 for (RenderType rt : types) {
-                    if (layerOf(rt) != layer) continue;
+                    if (sceneLayer(st, rt) != layer) continue;
                     pose.pushPose();
                     pose.translate(b[0], b[1], b[2]);
+                    pose.translate(0.5F, 0.5F, 0.5F);
+                    pose.scale(GROW, GROW, GROW);
+                    pose.translate(-0.5F, -0.5F, -0.5F);
                     shade.fixed = (fl & F_GLOW) != 0;
                     shade.fr = shade.fg = shade.fb = 1.0F;
                     if (st.is(Blocks.LILY_PAD)) {

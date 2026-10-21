@@ -130,6 +130,11 @@ public final class TFPadClient {
         openTo(app, "");
     }
 
+    /** (1.3.106) Para la prueba en el juego: escribe eso en la casilla del link de Música. */
+    public static void typeForTest(String text) {
+        PadMusicPage.testInput = text;
+    }
+
     /** La prueba en el juego (BossTest «pad»): la portada («») o una app, aunque haya otra pantalla abierta. */
     public static void openForTest(String app) {
         Minecraft mc = Minecraft.getInstance();

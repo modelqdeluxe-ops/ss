@@ -216,6 +216,25 @@ La imagen va **con shaders propios, como un paquete de shaders** (`ScenePost` y 
 
 Si los shaders no cargan, se dibuja sin ellos (directa, con el agua del juego).
 
+**Con Oculus/Embeddium (1.3.106; el dueño, con Photon: «sigo sin ver los efectos… no hay nada»)**. La prueba con
+`[shaders=photon]` lo reproduce (en la máquina de la prueba Photon no arranca —«Failed to create shader rendering
+pipeline»—, pero basta con tener Oculus y Embeddium): sin halos, hadas, luciérnagas, pétalos ni anillos; el agua, los
+bloques, la crate y el post, sí. Lo que no salía iba por el lote del juego (`renderBuffers().bufferSource()` con sus
+RenderType y los shaders position_color / position_color_tex de Minecraft); lo que sí, con VertexBuffer y shaders
+propios. Ahora `SceneFx` dibuja los efectos como el agua: su BufferBuilder, su VertexBuffer y shaders propios
+(`crate_fx_glow` para lo que suma luz con la textura del brillo, `crate_fx_rays`, `crate_fx_soft` para lo translúcido;
+si uno no carga, ese efecto vuelve al lote del juego). La prueba lo cuenta en la línea de la cinemática («efectos:
+propio 171/46/97, del juego 0/0/0»). Además, con un paquete de shaders puesto (`ShaderPacks.inUse`) el mundo se sigue
+dibujando detrás de la cinemática: `mixin/crates/LevelRendererMixin` cortaba `LevelRenderer.renderLevel` al principio y
+Oculus, que empieza su pasada ahí y la acaba al final, se quedaba «dibujando el mundo».
+Con Oculus, Embeddium o sus parientes, las partículas de la crate (las capas del editor) no se dibujan en la escena:
+salían como cuadrados blancos (`CrateCinematicScreen.particleMods`); sin ellos, como antes.
+
+**Las rayas al mover la cámara (1.3.106)**: cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
+del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel (`fwidth`) y `crate_post`
+suaviza los bordes (FXAA). Las hojas siguen recortadas, como antes: macizas o con una copia oscura dentro (para que por
+sus agujeros no se viera el cielo claro), en la prueba con Oculus/Embeddium salían con manchas blancas en los agujeros.
+
 | tick (20/s) | qué pasa |
 |---|---|
 | 0–20 | el encuadre de la imagen del dueño, que se acerca; el título de la crate y «✦ Santuario de las Hadas ✦» |
@@ -233,7 +252,12 @@ Los demás jugadores ven **la crate del mundo** a los mismos tiempos (`CrateRend
 `CrateBlockEntity.SCENE_*`): la llave que llega, entra y gira, el temblor, la tapa que se abre del todo, el pilar de luz
 y el premio que sube y gira encima hasta que se cierra. La de siempre (`CrateCinematicClassic`) dura lo mismo.
 
-**La música**: `tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
+**La música** (1.3.106, el dueño: «la música… estaba horrible»): `tfclient:crates.musica_mc`, «Aerie» de la banda
+sonora de Minecraft (Lena Raine; `minecraft:music/game/swamp/aerie`, la tienen todos: no se sube nada), elegida midiendo
+los primeros 18 s de las tranquilas de la 1.20.1 (suena desde los 0,7 s, −25 LUFS; «Floating Dream» empieza con 4,8 s
+de silencio, «An Ordinary Day» con 11, «Bromeliad» entra fuerte). La sintetizada (`sonidos_crates.py musica`) ya no va
+en el jar. Si un paquete de recursos trae `tfclient:sounds/crates/musica.ogg`, suena esa (`crates.musica`). Antes:
+`tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
 el dueño («La petite fille de la mer», 20 oct 2026: sus primeros 20 s, con entrada y salida suaves y volumen
 normalizado) va en un resource pack aparte que sustituye `assets/tfclient/sounds/crates/musica.ogg` (se le dio hecho,
 `TF-Santuario-musica.zip`); no se sube al repo ni a las Releases, que son públicos. El ambiente (`ambiente.ogg`) es de

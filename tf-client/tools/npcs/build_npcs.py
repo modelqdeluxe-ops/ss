@@ -609,7 +609,11 @@ def convert(root, only=()):
     sedal.main(STAGE_RES)
     import pegar
     pegar.main(STAGE_RES, procs=int(os.environ.get('PROCESOS', '4')))
-    return [c for c in catalog]
+    # (1.3.106, orden del dueño) los muebles: los de Nexo de la taberna en el panel y, a los que se sientan o se tumban en
+    # algo que no está, el suyo (muebles.py)
+    import muebles
+    muebles.main(root, STAGE_RES)
+    return [c['id'] for c in json.load(open(cat_path, encoding='utf-8'))]
 
 
 def audit(ids, res=None):

@@ -36,6 +36,8 @@ import org.lwjgl.opengl.GL11;
  */
 public final class ScenePost {
     static ShaderInstance sky, bloom, post, water;
+    /** (1.3.106) Los de los efectos de luz (SceneFx): lo que suma con textura, los rayos y lo translúcido. */
+    static ShaderInstance fxGlow, fxRays, fxSoft;
     /** Desde qué brillo florece (el agua turquesa y las luces sí; la crate y la piedra, no). */
     static final float THRESHOLD = 0.78F;
     private TextureTarget scene, a, b, c, d;
@@ -184,6 +186,12 @@ public final class ScenePost {
                         DefaultVertexFormat.POSITION), s -> post = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_water"),
                         DefaultVertexFormat.POSITION_COLOR_TEX), s -> water = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_fx_glow"),
+                        DefaultVertexFormat.POSITION_COLOR_TEX), s -> fxGlow = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_fx_rays"),
+                        DefaultVertexFormat.POSITION_COLOR), s -> fxRays = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_fx_soft"),
+                        DefaultVertexFormat.POSITION_COLOR), s -> fxSoft = s);
             } catch (IOException e) {
                 FSCrates.LOGGER.error("[TF Crates] No se pudieron cargar los shaders de la cinemática (va sin resplandor)", e);
             }

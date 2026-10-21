@@ -1,6 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.105 (21 oct 2026)**: menos partículas de la crate en la escena y el resplandor del sol detrás de los ítems
+> **1.3.106 (21 oct 2026)**: efectos de las crates con Oculus/Embeddium, rayas, música de Minecraft, el texto del pad en
+> su orden, los muebles de los NPC y el panel de NPC (CHECKPOINT de `HANDOFF.md`; CRATES.md §2; NPCS.md §3). El dueño
+> juega con Oculus + Photon: prueba la cinemática y el pad con `[shaders=photon]`.
+>
+> **1.3.105 (21 oct 2026), PUBLICADA**: menos partículas de la crate en la escena y el resplandor del sol detrás de los ítems
 > (CRATES.md §2).
 >
 > **1.3.104 (21 oct 2026), PUBLICADA**: las partículas de cada crate (las capas del editor) también dentro de la escena (CRATES.md §2).

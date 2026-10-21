@@ -833,7 +833,94 @@ public final class SkillClient {
                 .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
         a.poseOrigin = at;
         a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
+        if (e instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity be && be.isNpc()) renderProps(be, a, yaw, pose, buffers, light);
         return true;
+    }
+
+    // ------------------------------------------------------------------------------------------- muebles (1.3.106)
+
+    /** Un mueble de un NPC (npcs/props.json): su modelo, dónde (px, en el espacio del modelo), su giro (grados) y su escala. */
+    private record Prop(String model, float x, float y, float z, float yaw, float sx, float sy, float sz) {}
+
+    /** «pack|mob» → sus muebles (tools/npcs/muebles.py); se lee la primera vez. */
+    private static Map<String, List<Prop>> props;
+
+    private static List<Prop> propsOf(String key) {
+        if (props == null) {
+            props = new HashMap<>();
+            ResourceLocation rl = new ResourceLocation(TFClient.MOD_ID, "npcs/props.json");
+            try {
+                var res = Minecraft.getInstance().getResourceManager().getResource(rl);
+                if (res.isPresent()) {
+                    try (var in = new java.io.InputStreamReader(res.get().open(), java.nio.charset.StandardCharsets.UTF_8)) {
+                        com.google.gson.JsonObject o = com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
+                        for (Map.Entry<String, com.google.gson.JsonElement> e : o.entrySet()) {
+                            List<Prop> list = new ArrayList<>();
+                            for (com.google.gson.JsonElement pe : e.getValue().getAsJsonArray()) {
+                                com.google.gson.JsonObject po = pe.getAsJsonObject();
+                                com.google.gson.JsonArray p = po.getAsJsonArray("p"), sc = po.getAsJsonArray("s");
+                                list.add(new Prop(po.get("m").getAsString(), p.get(0).getAsFloat(), p.get(1).getAsFloat(),
+                                        p.get(2).getAsFloat(), po.get("r").getAsFloat(), sc.get(0).getAsFloat(), sc.get(1).getAsFloat(),
+                                        sc.get(2).getAsFloat()));
+                            }
+                            props.put(e.getKey(), list);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                TFClient.LOGGER.error("TF NPC: no se pudieron leer los muebles de los NPC ({})", rl, ex);
+            }
+        }
+        return props.getOrDefault(key, List.of());
+    }
+
+    /**
+     * (1.3.106) La silla, el sofá, el taburete, el banco o la mesa del NPC de escena que en su animación se sienta, se
+     * tumba o sube los pies en algo que el pack no trae (el dueño: «se sientan en algo que no está; mete su silla, su
+     * mesa… completo con sus cosas»): hechos a su medida (tools/npcs/muebles.py), donde está él y girados con él, a la
+     * luz de su sitio. Quietos: el NPC se mueve encima, como sobre un mueble de verdad.
+     */
+    private static void renderProps(net.tierrasfantasticas.tfclient.bosses.BossEntity e, Actor a, float yaw, PoseStack pose,
+                                    MultiBufferSource buffers, int light) {
+        List<Prop> list = propsOf(e.bossId() + "|" + e.mobName());
+        if (list.isEmpty()) return;
+        Matrix4f root = new Matrix4f().rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
+        Vector3f n = new Vector3f();
+        Vector4f v = new Vector4f();
+        for (Prop p : list) {
+            VfxModel m = model(p.model());
+            if (m == null) continue;
+            Matrix4f inst = new Matrix4f(root).translate(p.x(), p.y(), p.z()).rotate(Axis.YP.rotationDegrees(p.yaw()))
+                    .scale(p.sx(), p.sy(), p.sz());
+            Matrix4f base = new Matrix4f(pose.last().pose()).mul(inst);
+            Matrix3f normalBase = new Matrix3f(pose.last().normal()).mul(new Matrix3f(inst));
+            Matrix4f[] rest = m.rest();
+            Matrix4f full = new Matrix4f();
+            Matrix3f normal = new Matrix3f();
+            for (int bi = 0; bi < m.bones.length; bi++) {
+                VfxModel.Bone bone = m.bones[bi];
+                if (bone.hidden || bone.quadCount == 0) continue;
+                full.set(base).mul(rest[bi]);
+                normal.set(normalBase).mul(new Matrix3f(rest[bi]));
+                float[] qd = bone.quads;
+                for (int q = 0; q < bone.quadCount; q++) {
+                    int o = q * VfxModel.QUAD;
+                    int ti = (int) qd[o];
+                    if (ti < 0 || ti >= m.tex.length) continue;
+                    VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(m, ti)));
+                    n.set(qd[o + 1], qd[o + 2], qd[o + 3]).mul(normal).normalize();
+                    if (!Float.isFinite(n.x)) n.set(0, 1, 0);
+                    float[] c = VfxModel.uvCenter(qd, o);
+                    for (int k = 0; k < 4; k++) {
+                        int pi = o + 4 + k * 5;
+                        v.set(qd[pi], qd[pi + 1], qd[pi + 2], 1F);
+                        full.transform(v);
+                        vc.vertex(v.x, v.y, v.z).color(1F, 1F, 1F, 1F).uv(VfxModel.insetUv(qd[pi + 3], c[0]), VfxModel.insetUv(qd[pi + 4], c[1]))
+                                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n.x, n.y, n.z).endVertex();
+                    }
+                }
+            }
+        }
     }
 
     /** La sombra de un mob de jefe: la del hueso «shadow» de su modelo (radio, en bloques), o 0. */

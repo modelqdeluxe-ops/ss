@@ -1,4 +1,4 @@
-# NPC de escenas (TF Client 1.3.101)
+# NPC de escenas (TF Client 1.3.101; muebles, 1.3.106)
 
 Los 13 packs de **Scenes** (MythicMobs 5 + ModelEngine 4) que mandó el dueño, convertidos y metidos en el jar con su
 orden («ya puedes meterlos», 21 oct 2026). Lo que pidió:
@@ -12,7 +12,7 @@ orden («ya puedes meterlos», 21 oct 2026). Lo que pidió:
 
 | Pack (id en el mod) | NPC | Qué hacen |
 |---|---|---|
-| Scenes Tavern (`npc_tavern`) | 12 | camarero, peleas, borrachos, charlas, risas |
+| Scenes Tavern (`npc_tavern`) | 12 + 8 muebles | camarero, peleas, borrachos, charlas, risas; sus muebles (1.3.106) |
 | Scenes Market (`npc_market`) | 21 + 1 marcador | vendedores y clientes; 4 vendedores y 2 clientes andan entre pins |
 | Scenes Fishermen (`npc_fishermen`) | 5 | pescadores (de pie, sentado, en barca…) |
 | Scenes Combat Vol 1 (`npc_combat_vol1`) | 10 | duelos, entrenamiento con arco, heridos, médico, público |
@@ -166,6 +166,30 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   del 2.º del mismo lado que el pecho de su plantilla en los 210; la del 1.º, en los 2 625 NPC×piel. Y con la piel
   reflejada todo sigue pegado: `pegado.py` a 60/s en los 5 packs con dúos (tavern, combat_vol1, townsfolks_vol2,
   guards_vol1, lumberjacks), 70 680 poses, «todo pegado».
+
+- **Los muebles (1.3.106; el dueño: «algunos tienen animación de estar sentados en algo pero no está su modelo; debes
+  meter su silla, su mesa… por ejemplo en la taberna; completo con sus cosas»)**. `tools/npcs/muebles.py` (lo llama
+  `build_npcs.convert` al final; solo: `python3 -I tools/npcs/muebles.py <carpeta con los packs>`, sobre el jar):
+  - **En el panel** (Scenes Tavern, después de los NPC): los muebles de Nexo del pack de la taberna (`Furnitures ( Nexo
+    )`: **Chair** —un taburete—, **Table** —la mesa larga, 2,6 × 1,1 bloques— y **Mug**), convertidos de su modelo de
+    objeto al formato de los NPC al tamaño con que se ven (display «fixed» × la escala 0,5 del mueble); y los que no
+    trae ningún pack, hechos con su misma madera (sus tablones con clavos, los cantos y la veta de las patas; el sofá
+    con tela): **Chair with backrest**, **Bar stool**, **Couch**, **Bench**, **Desk**. Son mobs del pack
+    (`mueble_*` en `npc_tavern.json`, `furniture: true` en el catálogo, sin cosméticos): se colocan, se mueven, se
+    giran, se duplican, se borran y se guardan con el mundo como un NPC.
+  - **Con su NPC** (`npcs/props.json` → `SkillClient.renderProps`: donde está el NPC, girado con él, a la luz de su
+    sitio): a los 13 de Townsfolks Vol 3 que se sientan o se tumban en el aire, el suyo **hecho a su medida** con su
+    animación de escena (las cuentas de `pegado.pose`, con la piel del panel): el asiento bajo el culo y los muslos
+    (lo más bajo del 95 % de la escena, menos 0,15 px: un instante al cambiar de postura puede rozarlo), hasta delante
+    mientras las piernas, rectas desde la cadera, no se metan más de 1 px en el tablón; el respaldo detrás de la
+    espalda, inclinado como ella (hasta 20°; el sofá, 25°); el reposapiés del taburete alto bajo los pies; el
+    escritorio bajo el papel del escritor. Silla: Sit Chair 1-3, los lectores del libro 2 y del periódico, el escritor
+    (con escritorio); Sit Chair 4 (se echa atrás con los pies a 18 px): la silla de la taberna y su mesa bajo los pies;
+    sofá: Sit Couch y el lector del libro 1 (las piernas recogidas encima); taburete alto: los dos de la barra; banco:
+    los dos tumbados en alto (Lay back 1, Lay front 2). Los de Townsfolks Vol 1 y del mercado ya traen su banco o su
+    taburete en el modelo; los demás se sientan o se tumban en el suelo.
+  - Vista previa: `python3 -I tools/npcs/muebles.py --hoja <png> [mob…]` (cada uno con sus muebles, de lado y en 3/4,
+    en tres momentos de su escena).
 
 ## 4. Comprobarlo
 

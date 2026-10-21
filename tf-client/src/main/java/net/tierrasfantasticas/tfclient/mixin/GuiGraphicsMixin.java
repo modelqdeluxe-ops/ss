@@ -1,13 +1,16 @@
 package net.tierrasfantasticas.tfclient.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.tierrasfantasticas.tfclient.pad.TFPadScreen;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Fluidez del pad (1.3.67): el pad pinta «en lote» (drawManaged: rectángulos y textos seguidos van juntos a la tarjeta
@@ -18,11 +21,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * luces, con transparencia) salía opaca: lo transparente, blanco (la captura del dueño). Y lo del lote se pintaba con el
  * color y la transparencia ya puestos para esa textura. Ahora, en el pad, el lote se vacía en blanco y luego se deja todo
  * como estaba: color de la textura, mezcla encendida y la normal (el pad siempre pinta así).
+ * <p>
+ * 1.3.106: cada cosa que pinta el pad (recuadros, degradados, texturas y texto) va un poco más adelante que la anterior
+ * (TFPadScreen.nextOrder): la profundidad respeta el orden aunque algo del juego cambie el orden en que se pintan. En
+ * el del dueño, el texto sobre recuadros de color no salía (sobre una textura, sí: lo que escribe en Música, las
+ * etiquetas): algo pinta los recuadros después del texto (lo reproduce la prueba en el juego, TFPadScreen.testBoxesLast).
  */
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {
     @Shadow
     private boolean managed;
+
+    /** Cuántas cosas del pad van ahora mismo con su escalón puesto (tfclient$lift / tfclient$unlift). */
+    @Unique
+    private int tfclient$lifted;
+
+    @Unique
+    private void tfclient$lift() {
+        if (!managed || !TFPadScreen.liftOn()) return;
+        GuiGraphics g = (GuiGraphics) (Object) this;
+        g.pose().pushPose();
+        g.pose().translate(0F, 0F, TFPadScreen.nextOrder());
+        tfclient$lifted++;
+    }
+
+    @Unique
+    private void tfclient$unlift() {
+        if (tfclient$lifted == 0) return;
+        tfclient$lifted--;
+        ((GuiGraphics) (Object) this).pose().popPose();
+    }
 
     @Inject(method = {"innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFF)V",
             "innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFFFFFF)V"}, at = @At("HEAD"))
@@ -33,12 +61,62 @@ public abstract class GuiGraphicsMixin {
             g.flush();
             return;
         }
-        float[] c = RenderSystem.getShaderColor();
-        float r = c[0], gr = c[1], b = c[2], a = c[3];
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        g.flush();
-        RenderSystem.setShaderColor(r, gr, b, a);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        TFPadScreen.flushBatch(g);
+        tfclient$lift();
+    }
+
+    @Inject(method = {"innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFF)V",
+            "innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFFFFFF)V"}, at = @At("RETURN"))
+    private void tfclient$afterBlit(CallbackInfo ci) {
+        tfclient$unlift();
+    }
+
+    @Inject(method = {"drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I",
+            "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I"}, at = @At("HEAD"))
+    private void tfclient$textOrder(CallbackInfoReturnable<Integer> cir) {
+        tfclient$lift();
+    }
+
+    @Inject(method = {"drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I",
+            "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I"}, at = @At("RETURN"))
+    private void tfclient$textOrderEnd(CallbackInfoReturnable<Integer> cir) {
+        tfclient$unlift();
+    }
+
+    /** Su escalón y, en la prueba en el juego (TFPadScreen.testBoxesLast), se guarda para pintarlo al final. */
+    @Inject(method = "fill(Lnet/minecraft/client/renderer/RenderType;IIIIII)V", at = @At("HEAD"), cancellable = true)
+    private void tfclient$boxOrder(RenderType type, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci) {
+        if (managed && TFPadScreen.deferBox()) {
+            GuiGraphics g = (GuiGraphics) (Object) this;
+            Matrix4f m = new Matrix4f(g.pose().last().pose());
+            if (TFPadScreen.liftOn()) m.translate(0F, 0F, TFPadScreen.nextOrder());
+            TFPadScreen.testBoxes.add(new Object[] {m, type, new int[] {0, x1, y1, x2, y2, z, color, 0}});
+            ci.cancel();
+            return;
+        }
+        tfclient$lift();
+    }
+
+    @Inject(method = "fill(Lnet/minecraft/client/renderer/RenderType;IIIIII)V", at = @At("RETURN"))
+    private void tfclient$boxOrderEnd(CallbackInfo ci) {
+        tfclient$unlift();
+    }
+
+    @Inject(method = "fillGradient(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V", at = @At("HEAD"), cancellable = true)
+    private void tfclient$gradientOrder(RenderType type, int x1, int y1, int x2, int y2, int from, int to, int z, CallbackInfo ci) {
+        if (managed && TFPadScreen.deferBox()) {
+            GuiGraphics g = (GuiGraphics) (Object) this;
+            Matrix4f m = new Matrix4f(g.pose().last().pose());
+            if (TFPadScreen.liftOn()) m.translate(0F, 0F, TFPadScreen.nextOrder());
+            TFPadScreen.testBoxes.add(new Object[] {m, type, new int[] {1, x1, y1, x2, y2, z, from, to}});
+            ci.cancel();
+            return;
+        }
+        tfclient$lift();
+    }
+
+    @Inject(method = "fillGradient(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V", at = @At("RETURN"))
+    private void tfclient$gradientOrderEnd(CallbackInfo ci) {
+        tfclient$unlift();
     }
 }

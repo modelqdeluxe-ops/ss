@@ -98,7 +98,9 @@ final class PadFont {
      * título, sobre una textura, sí se veía. Las ventanas que se abren encima van 50-400 más arriba: no se transparentan.
      */
     private static Matrix4f front(GuiGraphics g) {
-        return new Matrix4f(g.pose().last().pose()).translate(0F, 0F, 1F);
+        // (1.3.106) en el pad, su escalón en el orden de pintado, como todo (TFPadScreen.nextOrder): 1 por delante
+        // tapaba también lo que va encima de ellas
+        return new Matrix4f(g.pose().last().pose()).translate(0F, 0F, TFPadScreen.liftOn() ? TFPadScreen.nextOrder() : 1F);
     }
 
     private static final int[][] OUTLINE = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}};
