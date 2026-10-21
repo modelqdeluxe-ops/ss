@@ -351,9 +351,15 @@ final class SkillModels {
         // no hace nada
         VfxModel nmod = load(nm);
         if (nmod == null || nmod.bone(newPart) < 0) return;
+        // «m»: el modelo del mob al que se le cambia la pieza; en ModelEngine, si no lleva ese modelo, nada. Los dúos de
+        // escenas lo ponen con <global.var.skinchange> (el último NPC que alguien tocó): sin mirarlo, a los 40 ticks de
+        // su ~onLoad el segundo personaje volvía a la plantilla «S» amarilla (el dúo de la sierra de los leñadores)
+        String on = modelId(m);
+        String onId = on == null ? null : on.contains(".") ? on : ctx.cls.id + "." + on.toLowerCase(Locale.ROOT);
         for (Tgt t : targets) {
             SkillActor a = holder(t, false, ctx);
-            if (a != null) a.prop("part", part, nm, newPart);
+            if (a == null || onId != null && !onId.equalsIgnoreCase(a.me)) continue;
+            a.prop("part", part, nm, newPart);
         }
     }
 

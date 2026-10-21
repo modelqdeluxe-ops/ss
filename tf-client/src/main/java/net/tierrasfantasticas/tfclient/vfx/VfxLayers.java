@@ -467,8 +467,12 @@ public final class VfxLayers {
         // Abajo: la animación por defecto (y la anterior desvaneciéndose)
         String b = baseFor(m, now);
         float fade = Math.min(1F, Math.max(0F, (now - baseSince) / DEFAULT_FADE));
-        if (prevBase != null && fade < 1F) addBase(m, m.anim(prevBase), now - prevStart, 1F - fade, extra, v);
-        if (b != null) addBase(m, m.anim(b), now - baseStart, prevBase != null ? fade : 1F, extra, v);
+        // Una animación suena una sola vez, como en ModelEngine 4 (van por su nombre): si la de reposo también la pone un
+        // state{} (defaultstate idle=angry1 y state angry1: 57 NPC de escenas), no se suman las dos; sin override salían
+        // con cada giro doble (el «angry 1» de la taberna, con el torso partido de las piernas). Mientras la del state
+        // entra o se va, la de reposo pone el resto.
+        if (prevBase != null && fade < 1F) addBase(m, m.anim(prevBase), now - prevStart, (1F - fade) * (1F - sameAs(prevBase, now)), extra, v);
+        if (b != null) addBase(m, m.anim(b), now - baseStart, (prevBase != null ? fade : 1F) * (1F - sameAs(b, now)), extra, v);
         // Encima: las de state{}, de menos a más prioridad
         if (!layers.isEmpty()) {
             List<Layer> sorted = new ArrayList<>(layers);
@@ -536,6 +540,13 @@ public final class VfxLayers {
     }
 
     /** La animación por defecto «ticks» después de empezar, con su peso. */
+    /** Cuánto suena ya esa animación por un state{} (0-1): lo que no le toca a la de reposo del mismo nombre. */
+    private float sameAs(String name, float now) {
+        float w = 0F;
+        for (Layer l : layers) if (l.name.equalsIgnoreCase(name)) w = Math.max(w, l.weight(now));
+        return Math.min(1F, w);
+    }
+
     private static void addBase(VfxModel m, VfxModel.Anim a, float ticks, float w, float[] extra, float[] v) {
         if (a == null || w <= 0F) return;
         float t = a.length > 0 ? (ticks / 20F) % a.length : 0F;

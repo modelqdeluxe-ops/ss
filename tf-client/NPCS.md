@@ -99,7 +99,18 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
   - `teleportTo{location}` lleva a los **objetivos** (en las clases, como siempre);
   - `light{m;p;block}` de ModelEngine = el brillo del hueso (el farol y el casco del minero);
   - `meleeHit{triggerskills}`: el golpe de su tipo, con sus ~onAttack (el minero no muerto);
-  - changepart/remapmodel con un modelo o hueso que no existe (variables sin poner, erratas) no hacen nada.
+  - changepart/remapmodel con un modelo o hueso que no existe (variables sin poner, erratas) no hacen nada;
+  - changepart{m} solo cambia la pieza si el mob lleva **ese** modelo (ModelEngine). Los dúos lo ponen con
+    `<global.var.skinchange>` (el último NPC que alguien tocó) a los 40 ticks de su ~onLoad: sin mirarlo, el segundo
+    personaje volvía a la plantilla «S» amarilla (el dúo de la sierra, prueba 938bc382: 26 % de su figura en ese
+    amarillo). Y el panel vuelve a poner lo elegido a los **55** ticks, después de la línea más tardía de los ~onLoad de
+    los 13 packs (50 ticks), no a los 30;
+  - **una animación suena una sola vez**, como en ModelEngine 4 (van por nombre): si la de reposo
+    (`defaultstate{t=idle;s=angry1}`) también la pone un `state{s=angry1}`, no se suman (`VfxLayers.sameAs`). 57 NPC
+    lo hacen (mercado 20, townsfolks vol3 14, taberna 11, combate 9, guardias, leñadores y mineros 1) y, como sus
+    animaciones no llevan «override», salían con cada giro y cada desplazamiento al doble: el «angry 1» de la taberna con
+    el torso tumbado y partido de las piernas (lo vio el dueño; con la vista previa, angry1 al doble a los 4 s da esa
+    misma pose). Ningún jefe tiene esa combinación.
 - **Rutas de caminantes**: el pack trae `path1`/`path_1_follow` solo de ejemplo (comentadas, con coordenadas del mundo
   de su autor). El conversor las genera como las del ejemplo (`build_npcs.route_skills`), leyendo la ruta de las
   variables `scenes_route_N` / `scenes_route_N_start`, que escribe el panel. Usan **@TargetedTarget** en vez de @EIR

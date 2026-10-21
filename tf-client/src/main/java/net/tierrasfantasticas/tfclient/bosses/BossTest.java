@@ -1439,8 +1439,11 @@ public final class BossTest {
                 net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, new net.tierrasfantasticas.tfclient.npcs.NpcNet.Act(
                         net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, -1, sp.pack(), sp.mob(), 1, 0, 0));
                 BossEntity e = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                // (en un chunk que aún se está cargando, el mundo todavía no lo enseña por su UUID: se busca en su
+                // captura; si entonces no está, sale «NO ESTÁ» en su fila)
+                if (e == null) e = npcNear(level, sp, null);
                 NPC_PLACED.add(e);
-                if (e == null) r.event(sp.pack() + "/" + sp.mob() + ": NO SALE");
+                if (e == null) r.event(sp.pack() + "/" + sp.mob() + ": aún no se ve al ponerlo (se busca en su captura)");
             }
             return;
         }

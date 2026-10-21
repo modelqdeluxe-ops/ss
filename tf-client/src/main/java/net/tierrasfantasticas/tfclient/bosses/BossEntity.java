@@ -1224,8 +1224,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
                 if (npcLoaded && npcModel != null && !npcModel.isEmpty()) SkillMobs.mech(this, "model", Map.of("mid", npcModel), null);
                 SkillMobs.spawned(this);
             }
-            // (1.3.101) Tras su ~onLoad (que pone su piel a los 10 ticks y sus cosméticos a los 20): lo elegido con el panel
-            if (npcLoaded && age == 30) net.tierrasfantasticas.tfclient.npcs.TFNpcs.restore(this);
+            // (1.3.101) Tras todo su ~onLoad (la línea más tardía de los 13 packs va a los 50 ticks; las de los dúos, con
+            // <global.var.skinchange>, a los 40, y podían volver a poner la plantilla encima): lo elegido con el panel
+            if (npcLoaded && age == 55) net.tierrasfantasticas.tfclient.npcs.TFNpcs.restore(this);
             keepOnIsland();
             carryChunks();
             SkillMobs.tick(this);
