@@ -89,6 +89,12 @@ final class SkillTargets {
             case "randomlocationsnearcaster", "rlnc", "randomlocationsnearorigin", "rlno" -> random(m, ctx, yOff, t.endsWith("origin") || t.equals("rlno"));
             case "modelpart", "mp" -> SkillModels.modelPart(m, ctx, yOff);
             case "location", "l" -> location(m, ctx);
+            // @pin{name} (MythicMobs, /mm pin): el sitio con ese nombre, si está en este mundo (los NPC de escenas que
+            // andan entre sus puntos; los pone el panel de NPC: SkillSaved)
+            case "pin" -> {
+                Vec3 p = SkillSaved.pinIn(m.targetArg(null, "name", "n", "pin", "p"), ctx.caster.level());
+                yield p == null ? List.of() : List.of(Tgt.at(p.add(0, yOff, 0)));
+            }
             case "spawnlocation", "casterspawnlocation", "spawn" -> {
                 // Donde apareció (un jefe: su grieta); un efecto, donde está
                 SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);

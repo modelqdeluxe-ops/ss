@@ -103,6 +103,8 @@ public final class TFCommands {
                 .then(net.tierrasfantasticas.tfclient.bosses.TFBosses.command())
                 // /tf void npc|quitar|ir|volver (staff): el caballero de luz y el viaje a The Void
                 .then(net.tierrasfantasticas.tfclient.vacio.TFVoid.command())
+                // (1.3.101) /tf npc (staff): el panel de control de los NPC de escenas, solo para quien lo ejecuta
+                .then(net.tierrasfantasticas.tfclient.npcs.TFNpcs.command())
                 // (1.3.99) las crates (antes /fscrate de Fantastic Crates)
                 .then(net.tierrasfantasticas.tfclient.crates.FSCrates.command())
                 // /tf claim give <jugadores> <id> [cantidad]: dar protecciones a mano

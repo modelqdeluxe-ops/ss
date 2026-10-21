@@ -224,6 +224,9 @@ def main():
     ok &= run_ok('auditor: 0 problemas en todos los jefes', [PY, os.path.join(HERE, 'audit.py'), '--sin-avisos'])
     ok &= run_ok('autoprueba del auditor', [PY, os.path.join(HERE, 'audit.py'), '--prueba'])
     ok &= run_ok('pruebas del conversor y de los simuladores', [PY, os.path.join(HERE, 'test_convert.py')], 'todo bien')
+    # (1.3.101) Los NPC de escenas (assets/tfclient/npcs/, tools/npcs/build_npcs.py): el mismo auditor, 0 problemas
+    ok &= run_ok('auditor: 0 problemas en los NPC de escenas',
+                 [PY, '-I', os.path.join(os.path.dirname(HERE), 'npcs', 'build_npcs.py'), '--auditar'])
     for bid in ids:
         ok &= compare(os.path.join(REFS, bid + '.ficha.txt'), ficha(bid), f'{bid}: ficha (cajas, modelos, colas)')
         ok &= compare(os.path.join(REFS, bid + '.sim.txt'), sim(bid), f'{bid}: simulador de la pelea')

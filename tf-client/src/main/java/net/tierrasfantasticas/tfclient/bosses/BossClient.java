@@ -41,6 +41,7 @@ public final class BossClient {
         public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(TFBosses.JEFE.get(), BossRenderer::new);
             event.registerEntityRenderer(TFBosses.ESBIRRO.get(), BossRenderer::new);
+            event.registerEntityRenderer(TFBosses.NPC.get(), BossRenderer::new);
             event.registerEntityRenderer(TFBosses.GRIETA.get(), RiftRenderer::new);
             event.registerEntityRenderer(TFBosses.ASIENTO.get(), NoopRenderer::new);
         }

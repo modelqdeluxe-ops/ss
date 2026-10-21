@@ -771,7 +771,15 @@ public final class SkillRuntime {
             case "jump" -> SkillMotion.jump(m, ctx, targets);
             case "velocity" -> SkillMotion.velocity(m, ctx, targets);
             case "propel" -> SkillMotion.propel(m, ctx, targets);
-            case "teleport", "tp", "teleportto", "tpt" -> SkillMotion.teleport(m, ctx, targets);
+            // teleportto{location} de MythicMobs: lleva a los OBJETIVOS a ese sitio (los NPC de escenas: «movescene», el
+            // inicio de su ruta). Las clases, como siempre (su teleportto se probó llevando a quien lanza)
+            case "teleport", "tp", "teleportto", "tpt", "tpto" -> {
+                if (!m.m.equals("teleport") && !m.m.equals("tp") && ctx.host != null && m.a.containsKey("location")) {
+                    SkillMotion.teleportTo(m, ctx, targets);
+                } else {
+                    SkillMotion.teleport(m, ctx, targets);
+                }
+            }
             case "stun", "prison" -> SkillMotion.stun(m, ctx, targets);
             case "freeze" -> SkillMotion.freeze(m, ctx, targets);
             case "mount", "mounttarget", "dismount" -> { /* los actores no se montan */ }
@@ -966,7 +974,34 @@ public final class SkillRuntime {
                     }
                 }
             }
-            case "brightness" -> SkillModels.brightness(m, ctx, targets);
+            // light{m;p;block} de ModelEngine (el farol y el casco de minero de los NPC de escenas): el brillo de ese hueso
+            case "brightness", "light" -> SkillModels.brightness(m, ctx, targets);
+            // meleeHit{triggerskills} (MythicMobs): el golpe cuerpo a cuerpo de su tipo al objetivo; con triggerskills,
+            // con sus ~onAttack (el minero no muerto: su golpe y su animación salen de ahí)
+            case "meleehit" -> {
+                SkillMobs.Host h = ctx.caster.entity == null ? null : SkillMobs.host(ctx.caster.entity);
+                boolean trig = bool(m.arg("false", "triggerskills", "ts"));
+                for (Tgt t : h == null ? List.<Tgt>of() : targets) {
+                    if (!(t.entity() instanceof LivingEntity le) || le == h.mob() || !le.isAlive()) continue;
+                    if (trig) {
+                        h.mob().doHurtTarget(le);
+                    } else {
+                        le.hurt(h.mob().damageSources().mobAttack(h.mob()),
+                                (float) h.mob().getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE));
+                    }
+                }
+            }
+            // followPath{path=(x,y,z),(x,y,z)…;speed;tolerance} (MythicMobs): anda por esos puntos, uno tras otro (los
+            // caminantes de escenas, con las rutas que pone el panel de NPC)
+            case "followpath" -> {
+                List<Vec3> pts = SkillMotion.pathPoints(m.arg("", "path", "p", "locations", "l"));
+                double sp = num(m.arg("1", "speed", "s", "speedmodifier", "sm"), 1);
+                double tol = num(m.arg("1", "tolerance", "t", "radius", "r"), 1);
+                for (Tgt t : pts.isEmpty() ? List.<Tgt>of() : targets) {
+                    SkillMobs.Host h = t.entity() == null ? null : SkillMobs.host(t.entity());
+                    if (h != null) h.followPath(pts, sp, tol);
+                }
+            }
             case "defaultstate" -> SkillModels.defaultState(m, ctx, targets);
             case "remapmodel" -> SkillModels.remap(m, ctx, targets);
             case "displaytransformation" -> SkillModels.displayTransform(m, ctx, targets);
@@ -2003,6 +2038,11 @@ public final class SkillRuntime {
 
     private static final Map<String, String> GLOBAL_VARS = new HashMap<>();
 
+    /** Las variables global.X (SkillSaved guarda las de save=true con el mundo). */
+    static Map<String, String> globalVars() {
+        return GLOBAL_VARS;
+    }
+
     private static void setVariable(Mech m, Ctx ctx, List<Tgt> targets) {
         String var = m.arg(null, "var", "variable", "name", "key", "k");
         if (var == null) return;
@@ -2010,6 +2050,10 @@ public final class SkillRuntime {
         int duration = (int) num(m.arg("0", "duration", "d"), 0);
         if (var.toLowerCase(Locale.ROOT).startsWith("target.")) {
             for (Tgt t : targets) putVar(varScope(var, ctx, t), varName(var), val, duration);
+        } else if (var.toLowerCase(Locale.ROOT).startsWith("global.")) {
+            // Las globales (y, con save=true, también en el disco: SkillSaved; las pieles y cosméticos de los NPC)
+            putVar(GLOBAL_VARS, varName(var), val, duration);
+            if (duration <= 0 && bool(m.arg("false", "save"))) SkillSaved.saveVar(varName(var), val);
         } else {
             // Las de un jefe van a su tempo: casi siempre marcan «estoy atacando» (la Abominación, Astwood) y, si el
             // ataque va más rápido, la marca tiene que acabar con él
@@ -2078,6 +2122,7 @@ public final class SkillRuntime {
         String var = m.arg(null, "var", "variable", "name", "key", "k");
         if (var == null) return;
         varScope(var, ctx, targets.isEmpty() ? null : targets.get(0)).remove(varName(var));
+        if (var.toLowerCase(Locale.ROOT).startsWith("global.")) SkillSaved.forgetVar(varName(var));
     }
 
     /**

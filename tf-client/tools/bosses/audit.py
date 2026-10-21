@@ -359,9 +359,20 @@ def audit(bid, engine_sets, warnings=None, prog=None):
             for tg in re.findall(r'@(\w+)', str(v)):
                 if tg.lower() not in targset and not str(v).startswith('<'):
                     problems.append(f'{where}: objetivo «@{tg}» (en un argumento) sin implementar')
+        # (NPC de escenas) changepart/remapmodel con el modelo o la pieza sacados de una variable («<global.var.hat
+        # <caster.uuid>>»: los cosméticos que guarda el menú del pack; «<global.var.skinchange>»: el último NPC editado).
+        # Se resuelve al ejecutar; si ese modelo o ese hueso no existen, ModelEngine no hace nada y el motor tampoco
+        # (SkillModels.changePart/remap): no se puede comprobar aquí y no es un fallo
+        var_line = m in ('changepart', 'remapmodel') and any(
+            '<' in str(a.get(k, '')) for k in ('m', 'mid', 'modelid', 'nm', 'n', 'nmid', 'newmodelid', 'newmodel'))
         for mid, part, em in refs:
             cands = [mid] if mid else models
             if not cands:
+                continue
+            if var_line:
+                if any('<' in str(x) for x in cands) or not any(model(x) and bone(model(x), part, em) for x in cands):
+                    warns.append((f'{m} con un modelo de variable o sin el hueso «{part}» en {", ".join(c for c in cands if c)}: '
+                                  f'plantilla del pack, ModelEngine no hace nada si no existe (aquí tampoco)', where))
                 continue
             if not any(model(x) and bone(model(x), part, em) for x in cands):
                 problems.append(f'{where}: el hueso «{part}» no está en {", ".join(c for c in cands if c)}')

@@ -79,6 +79,8 @@ public final class TFItems {
         COIN = ITEMS.register("fantastic_coin", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), false));
         GREEN_COIN = ITEMS.register("fantastic_coin_green", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.RARE), true));
         ADMIN_PAD = ITEMS.register("pad_admin", net.tierrasfantasticas.tfclient.pad.AdminPadItem::new);
+        // (1.3.101) El panel de control de los NPC de escenas (/tf npc)
+        net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL = ITEMS.register("npc_panel", net.tierrasfantasticas.tfclient.npcs.NpcPanelItem::new);
         ITEMS.register(modBus);
         TABS.register(modBus);
     }

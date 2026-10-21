@@ -141,6 +141,16 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     private int lookUntil;
     /** A quién le ha pedido la música de la pelea (client/TFBossMusic): los que ven su barra. */
     private final List<ServerPlayer> musicFor = new ArrayList<>();
+    /**
+     * (1.3.101) NPC de escena que vuelve del disco: su modelo de entonces (model{save=true} de ModelEngine lo conserva) y
+     * que en su primer tick salte ~onLoad en vez de ~onSpawn.
+     */
+    private boolean npcLoaded;
+    private String npcModel;
+    /** followPath{} del pack: los puntos, por cuál va, a qué velocidad, cuándo cuenta como llegado y hasta cuándo. */
+    private List<Vec3> route;
+    private int routeIdx, routeUntil;
+    private double routeSpeed = 1.0, routeTol = 1.0;
 
     public BossEntity(EntityType<? extends BossEntity> type, Level level, boolean main) {
         super(type, level);
@@ -219,7 +229,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         });
         SkillDefs.BossInfo bi = cls.bossInfo;
         double hp;
-        if (owner == null && bi != null && !bi.fauna && def.name.equalsIgnoreCase(bi.mob)) {
+        if (owner == null && bi != null && !bi.fauna && !bi.npc && def.name.equalsIgnoreCase(bi.mob)) {
             hp = difficulty.healthFor(bi.health, players);
             healthScale = hp / Math.max(1, bi.packHealth);
             getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(bi.damage * difficulty.damage());
@@ -236,7 +246,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         // El jefe ve a todo el que esté en su arena (con FollowRange 32, a quien le disparaba desde 35 bloques de la
         // grieta no le hacía caso); sus esbirros, lo de su pack
         // (1.3.96) la fauna, lo de su pack, como un esbirro
-        boolean chief = owner == null && !isFauna();
+        boolean chief = owner == null && !isFauna() && !isNpc();
         double follow = chief ? Math.max(def.followRange, Rifts.LEASH + 8) : def.followRange;
         // (1.3.92) En la isla de The Void persigue por toda la isla: caminos más largos
         if (chief && island()) follow = 128;
@@ -248,8 +258,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         yHeadRot = bodyYaw;
         this.entityData.set(BODY_YAW, bodyYaw);
         if (model != null && model.anims.containsKey("death")) deathLength = Math.max(40, (int) (model.anims.get("death").length * 20) + 15);
-        // (1.3.97, orden del dueño) la fauna nunca lleva barra (aunque su pack la ponga: el Endermauler)
-        if (owner == null && !isFauna()) {
+        // (1.3.97, orden del dueño) la fauna nunca lleva barra (aunque su pack la ponga: el Endermauler); los NPC de
+        // escena (1.3.101) tampoco
+        if (owner == null && !isFauna() && !isNpc()) {
             String color = def.barColor != null ? def.barColor : "PURPLE";
             bar = new ServerBossEvent(barTitle(), color(color), BossEvent.BossBarOverlay.NOTCHED_10);
             bar.setDarkenScreen(false);
@@ -314,8 +325,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     }
 
     public boolean isMainBoss() {
-        // (1.3.96) la fauna (las criaturas del bioma del Void) no tiene jefe principal: todos sus mobs son esbirros
-        return owner == null && cls != null && cls.bossInfo != null && !cls.bossInfo.fauna && def != null
+        // (1.3.96) la fauna (las criaturas del bioma del Void) no tiene jefe principal: todos sus mobs son esbirros; los
+        // NPC de escena (1.3.101), tampoco
+        return owner == null && cls != null && cls.bossInfo != null && !cls.bossInfo.fauna && !cls.bossInfo.npc && def != null
                 && (successor || def.name.equalsIgnoreCase(cls.bossInfo.mob));
     }
 
@@ -327,6 +339,21 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     public boolean isFauna() {
         return cls != null && cls.bossInfo != null && cls.bossInfo.fauna;
+    }
+
+    /** (1.3.101) ¿Es un NPC de escena (assets/tfclient/npcs/)? Se guarda con el mundo y se maneja con el panel de NPC. */
+    public boolean isNpc() {
+        return cls != null && cls.bossInfo != null && cls.bossInfo.npc;
+    }
+
+    /** El mob de su pack («scene_guard_stand»), o «» si aún no tiene. */
+    public String mobName() {
+        return def == null ? "" : def.name;
+    }
+
+    @Override
+    public boolean loaded() {
+        return npcLoaded;
     }
 
     /** ¿Es «mob» el relevo de este jefe (lo saca al morir y sigue la pelea)? */
@@ -625,6 +652,48 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         repath = 0;
     }
 
+    /**
+     * followPath{} (MythicMobs): sigue los puntos uno tras otro, empezando por el más cercano; al acabar, vuelve al
+     * primero (las rutas del panel son circuitos: los caminantes del pack las repiten con ~onTimer:100 mientras siguen en
+     * su postura «pathN»). Si se vuelve a pedir la misma ruta, sigue por donde iba.
+     */
+    @Override
+    public void followPath(List<Vec3> points, double speed, double tolerance) {
+        if (points.isEmpty()) return;
+        if (route == null || !route.equals(points)) {
+            route = List.copyOf(points);
+            routeIdx = 0;
+            double best = Double.MAX_VALUE;
+            for (int i = 0; i < route.size(); i++) {
+                double d = route.get(i).distanceToSqr(position());
+                if (d < best) {
+                    best = d;
+                    routeIdx = i;
+                }
+            }
+        }
+        routeSpeed = speed <= 0 ? 1.0 : speed;
+        routeTol = Math.max(1.0, tolerance);
+        routeUntil = age + 240;
+    }
+
+    /** El siguiente punto de su followPath: lo lleva con su goto. */
+    private void routeStep() {
+        if (route == null) return;
+        if (age >= routeUntil) {
+            route = null;
+            return;
+        }
+        Vec3 p = route.get(routeIdx);
+        if (Math.sqrt(horizontalDistanceSqr(p)) <= routeTol && Math.abs(p.y - getY()) < 3) {
+            routeIdx = (routeIdx + 1) % route.size();
+            p = route.get(routeIdx);
+        }
+        gotoGoal = p;
+        gotoUntil = age + 40;
+        gotoSpeed = routeSpeed;
+    }
+
     @Override
     public void setMaxHealth(double max, boolean alsoHealth) {
         float hp = (float) Math.max(1, max);
@@ -910,6 +979,10 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     protected net.minecraft.world.InteractionResult mobInteract(Player player, net.minecraft.world.InteractionHand hand) {
+        // (1.3.101) Con el panel de NPC en la mano, un NPC de escena se elige (no salta su ~onInteract)
+        if (isNpc() && net.tierrasfantasticas.tfclient.npcs.TFNpcs.panelInteract(player, this)) {
+            return net.minecraft.world.InteractionResult.sidedSuccess(level().isClientSide);
+        }
         // ~onInteract (clic derecho), una vez por clic (no por cada mano)
         if (!level().isClientSide && def != null && hand == net.minecraft.world.InteractionHand.MAIN_HAND) SkillMobs.interacted(this, player);
         return net.minecraft.world.InteractionResult.PASS;
@@ -1078,7 +1151,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public boolean isPickable() {
-        return !dying() && def != null && !def.invincible && (this.entityData.get(HB_FLAGS) & 2) == 0;
+        // Un NPC de escena se puede tocar aunque sea invencible (MythicMobs: ~onInteract, y el panel lo selecciona)
+        return !dying() && def != null && (!def.invincible || isNpc()) && (this.entityData.get(HB_FLAGS) & 2) == 0;
     }
 
     @Override
@@ -1092,7 +1166,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public boolean shouldBeSaved() {
-        return false;
+        // Los jefes y su fauna nunca vuelven del disco; los NPC de escena sí (Despawn: persistent en su pack)
+        return isNpc() && !isRemoved();
     }
 
     /** No pasa por portales: su copia en el otro mundo no tendría su programa (y se iría de su grieta). */
@@ -1104,6 +1179,25 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (!isNpc()) return;
+        CompoundTag n = new CompoundTag();
+        n.putString("key", this.entityData.get(KEY));
+        String me = SkillMobs.currentModel(getUUID());
+        if (me != null) n.putString("model", me);
+        tag.put("tf_npc", n);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (!tag.contains("tf_npc")) return;
+        CompoundTag n = tag.getCompound("tf_npc");
+        String key = n.getString("key");
+        int bar = key.indexOf('|');
+        if (bar <= 0) return;
+        configure(key.substring(0, bar), key.substring(bar + 1), Difficulty.NORMAL, 1, null);
+        npcLoaded = true;
+        npcModel = n.contains("model") ? n.getString("model") : null;
     }
 
     // ------------------------------------------------------------------------------------------- cada tick
@@ -1124,6 +1218,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         } else if (def != null) {
             if (age == 1) {
                 spawnAt = position();
+                // Un NPC que vuelve del disco lleva el modelo que tenía (model{save=true} de ModelEngine), antes de su ~onLoad
+                if (npcLoaded && npcModel != null && !npcModel.isEmpty()) SkillMobs.mech(this, "model", Map.of("mid", npcModel), null);
                 SkillMobs.spawned(this);
             }
             keepOnIsland();
@@ -1165,6 +1261,7 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
             turnBody();
             return;
         }
+        routeStep();
         Vec3 goal = null;
         double speed = 1.0;
         // Se acerca hasta casi tocarlo, como los mobs de Minecraft con los que van los packs (con 2 bloques de más,

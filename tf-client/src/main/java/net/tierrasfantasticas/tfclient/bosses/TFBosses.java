@@ -35,6 +35,10 @@ public final class TFBosses {
     public static final RegistryObject<EntityType<BossEntity>> ESBIRRO = ENTITIES.register("esbirro", () ->
             EntityType.Builder.<BossEntity>of((t, l) -> new BossEntity(t, l, false), MobCategory.MONSTER)
                     .sized(0.8F, 1.9F).clientTrackingRange(8).updateInterval(2).build("esbirro"));
+    /** (1.3.101) Los NPC de escenas (npcs/): el mismo motor que los esbirros, pero se guardan con el mundo. */
+    public static final RegistryObject<EntityType<BossEntity>> NPC = ENTITIES.register("npc", () ->
+            EntityType.Builder.<BossEntity>of((t, l) -> new BossEntity(t, l, false), MobCategory.MISC)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).updateInterval(2).noSummon().build("npc"));
     public static final RegistryObject<EntityType<RiftEntity>> GRIETA = ENTITIES.register("grieta", () ->
             EntityType.Builder.<RiftEntity>of(RiftEntity::new, MobCategory.MISC)
                     .sized(3.2F, 8.5F).clientTrackingRange(10).updateInterval(5).noSummon().fireImmune().build("grieta"));
@@ -71,6 +75,7 @@ public final class TFBosses {
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(JEFE.get(), BossEntity.attributes().build());
         event.put(ESBIRRO.get(), BossEntity.attributes().build());
+        event.put(NPC.get(), BossEntity.attributes().build());
     }
 
     /** /tf boss (staff, nivel 2): la ventana de jefes, dificultades y grietas. */

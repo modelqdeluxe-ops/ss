@@ -3754,5 +3754,110 @@
     "name": "tfclient:crates/premio3"
    }
   ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_swords_5": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_swords_5"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_swords_4": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_swords_4"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_swords_3": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_swords_3"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_swords_2": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_swords_2"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_swords_1": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_swords_1"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_shields_5": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_shields_5"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_shields_4": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_shields_4"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_shields_3": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_shields_3"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_shields_2": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_shields_2"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_shields_1": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_shields_1"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_9": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_9"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_8": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_8"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_7": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_7"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_6": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_6"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_5": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_5"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_4": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_4"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_3": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_3"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_2": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_2"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_10": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_10"
+  ]
+ },
+ "npcs.npc_combat_vol1.scenes_combat_boxing_1": {
+  "sounds": [
+   "tfclient:npcs/npc_combat_vol1/scenes_combat_boxing_1"
+  ]
+ },
+ "npcs.npc_lumberjacks.scenes_saw": {
+  "sounds": [
+   "tfclient:npcs/npc_lumberjacks/scenes_saw"
+  ]
  }
 }

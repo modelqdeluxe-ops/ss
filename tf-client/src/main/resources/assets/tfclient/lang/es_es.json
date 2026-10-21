@@ -1257,5 +1257,7 @@
  "item.tfclient.void_armor_chestplate": "Peto del Coloso del Vacío",
  "item.tfclient.void_armor_leggings": "Grebas del Coloso del Vacío",
  "item.tfclient.void_armor_boots": "Botas del Coloso del Vacío",
- "tfclient.set.void": "Coloso del Vacío"
+ "tfclient.set.void": "Coloso del Vacío",
+ "item.tfclient.npc_panel": "Panel de NPC",
+ "entity.tfclient.npc": "NPC de escena"
 }

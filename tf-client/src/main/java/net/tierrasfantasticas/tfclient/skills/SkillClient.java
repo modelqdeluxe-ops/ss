@@ -1916,7 +1916,7 @@ public final class SkillClient {
      */
     static Set<ResourceLocation> itemModels() {
         Set<ResourceLocation> out = new HashSet<>();
-        for (Map<String, SkillDefs.ClassDef> defs : List.of(SkillDefs.all(), SkillDefs.bosses(), SkillDefs.fauna())) {
+        for (Map<String, SkillDefs.ClassDef> defs : List.of(SkillDefs.all(), SkillDefs.bosses(), SkillDefs.fauna(), SkillDefs.npcs())) {
             for (SkillDefs.ClassDef c : defs.values()) {
                 for (String m : c.itemModels) {
                     ResourceLocation rl = ResourceLocation.tryParse(m);

@@ -262,6 +262,8 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("corta")) ids.add(0, "corta");
             // (1.3.99) «crates»: TF Crates (Fantastic Crates dentro del mod) y la cinemática del santuario, dos aperturas
             if (only != null && List.of(only.split(",")).contains("crates")) ids.add(0, "crates");
+            // (1.3.101) «npcs»: los NPC de escenas (los 13 packs), el panel de NPC, sus pins, rutas y el guardado
+            if (only != null && List.of(only.split(",")).contains("npcs")) ids.add(0, "npcs");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -300,6 +302,10 @@ public final class BossTest {
         }
         if ("crates".equals(r.id)) {
             cratesStep(server, level, player, r);
+            return;
+        }
+        if ("npcs".equals(r.id)) {
+            npcsStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -1335,6 +1341,207 @@ public final class BossTest {
     }
 
     private static net.minecraft.core.BlockPos cratePos;
+
+    // ------------------------------------------------------------------------------------------- NPC de escenas (1.3.101)
+
+    /** Lo que se pone en las filas: pack, NPC y dónde. */
+    private record NpcSpot(String pack, String mob, Vec3 at, int row) {}
+
+    private static final List<NpcSpot> NPC_PLAN = new ArrayList<>();
+    private static final List<BossEntity> NPC_PLACED = new ArrayList<>();
+    /** Las capturas de las filas: {primer NPC, último + 1}. */
+    private static final List<int[]> NPC_SHOTS = new ArrayList<>();
+    private static BossEntity npcGuard, npcVendor, npcWalker;
+    private static net.minecraft.nbt.CompoundTag npcSaved;
+    private static final StringBuilder npcTrack = new StringBuilder();
+    private static int npcMinerHits;
+    private static final int NPC_GAP = 5, NPC_PER_SHOT = 5;
+
+    /**
+     * (1.3.101) Los NPC de escenas: el catálogo, /tf npc (el panel, a quien lo ejecuta), todos los NPC de los 13 packs
+     * puestos con el panel (una fila por pack, mirando a la cámara; una captura cada 5) con su modelo y sus animaciones,
+     * un cosmético del menú del pack, moverlo y girarlo, guardarlo y volver a cargarlo (su modelo y su cosmético vuelven
+     * con ~onLoad), un vendedor del mercado entre dos pins, un caminante por una ruta del panel y el panel abierto.
+     */
+    private static void npcsStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        List<net.tierrasfantasticas.tfclient.npcs.NpcCatalog.Pack> packs = net.tierrasfantasticas.tfclient.npcs.NpcCatalog.packs();
+        Vec3 o = arena;
+        if (player.getLastHurtByMob() instanceof BossEntity b && "scene_miner_undead".equalsIgnoreCase(b.mobName())) {
+            npcMinerHits++;
+            player.setLastHurtByMob(null);
+        }
+        if (t == 1) {
+            fly(player, true);
+            NPC_PLAN.clear();
+            NPC_PLACED.clear();
+            NPC_SHOTS.clear();
+            npcTrack.setLength(0);
+            npcMinerHits = 0;
+            int total = 0, markers = 0;
+            for (int row = 0; row < packs.size(); row++) {
+                var pk = packs.get(row);
+                int col = 0, first = NPC_PLAN.size();
+                for (var n : pk.npcs()) {
+                    total++;
+                    if (n.marker()) {
+                        markers++;
+                        continue; // los generadores y quitadores de caminantes harían su trabajo en la fila
+                    }
+                    NPC_PLAN.add(new NpcSpot(pk.id(), n.mob(), new Vec3(o.x + col * NPC_GAP, o.y, o.z - row * 12), row));
+                    col++;
+                }
+                for (int k = first; k < NPC_PLAN.size(); k += NPC_PER_SHOT) NPC_SHOTS.add(new int[] {k, Math.min(NPC_PLAN.size(), k + NPC_PER_SHOT)});
+            }
+            r.event("catálogo: " + packs.size() + " packs, " + total + " NPC (" + markers + " marcadores sin modelo); objeto tfclient:npc_panel "
+                    + net.minecraftforge.registries.ForgeRegistries.ITEMS.containsKey(new net.minecraft.resources.ResourceLocation("tfclient", "npc_panel")));
+            int before = player.getInventory().countItem(net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL.get());
+            int res = server.getCommands().performPrefixedCommand(player.createCommandSourceStack().withSuppressedOutput(), "tf npc");
+            r.event("/tf npc → " + res + "; paneles en el inventario " + before + " -> "
+                    + player.getInventory().countItem(net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL.get()));
+            for (var pk : packs) {
+                StringBuilder sb = new StringBuilder(pk.id() + ": ");
+                for (var n : pk.npcs()) sb.append(n.name()).append(n.marker() ? "[marcador]" : "").append(n.pins().isEmpty() ? "" : "[" + n.pins().size() + " pins]")
+                        .append(n.routes().isEmpty() ? "" : "[rutas " + n.routes() + "]").append(n.options().isEmpty() ? "" : "[cosméticos " + n.options().keySet() + "]").append(", ");
+                r.event("   " + sb);
+            }
+        }
+        int placeAt = 10;
+        int k = t - placeAt;
+        if (k >= 0 && k < NPC_PLAN.size()) {
+            // Con el panel, como el staff: a mis pies (mirando al norte: el NPC mira al sur, a la cámara)
+            NpcSpot sp = NPC_PLAN.get(k);
+            player.teleportTo(level, sp.at().x, sp.at().y, sp.at().z, 180F, 0F);
+            net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, new net.tierrasfantasticas.tfclient.npcs.NpcNet.Act(
+                    net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, -1, sp.pack(), sp.mob(), 1, 0, 0));
+            BossEntity e = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+            NPC_PLACED.add(e);
+            if (e == null) r.event(sp.pack() + "/" + sp.mob() + ": NO SALE");
+            return;
+        }
+        int shots0 = placeAt + NPC_PLAN.size() + 40;
+        int si = (t - shots0) / 40, sk = (t - shots0) % 40;
+        if (t >= shots0 && si < NPC_SHOTS.size()) {
+            int[] sh = NPC_SHOTS.get(si);
+            NpcSpot a = NPC_PLAN.get(sh[0]), b = NPC_PLAN.get(sh[1] - 1);
+            double cx = (a.at().x + b.at().x) / 2;
+            if (sk == 0) look(player, level, cx, o.y + 3.2, a.at().z + 10, cx, o.y + 1.0, a.at().z);
+            if (sk == 30) {
+                shot(r, String.format("npcs_%s_%d", a.pack().substring(4), sh[0]));
+                StringBuilder sb = new StringBuilder();
+                for (int i = sh[0]; i < sh[1]; i++) {
+                    BossEntity e = NPC_PLACED.get(i);
+                    NpcSpot sp = NPC_PLAN.get(i);
+                    List<String> an = e == null ? null : net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(e);
+                    sb.append(sp.mob()).append(e == null || !e.isAlive() ? " (NO ESTÁ)" : an == null ? " (SIN MODELO)" : " " + an).append("; ");
+                }
+                r.event("fila " + a.pack() + ": " + sb);
+            }
+            return;
+        }
+        int f0 = shots0 + NPC_SHOTS.size() * 40 + 10;
+        int f = t - f0;
+        Vec3 g = new Vec3(o.x - 30, o.y, o.z + 20);
+        switch (f) {
+            case 0 -> {
+                player.teleportTo(level, g.x, g.y, g.z, 180F, 0F);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_guards_vol1", "scene_guard_stand", 1, 0, 0));
+                npcGuard = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                look(player, level, g.x, g.y + 2.2, g.z + 5, g.x, g.y + 1.2, g.z);
+            }
+            case 30 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.OPTION, "hat", "hat1", 0, 0, 0));
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.OPTION, "back", "backpack_1", 0, 0, 0));
+                r.event("guardia con el sombrero 1 y la espalda 1 del menú: piezas " + (npcGuard == null ? "-" : net.tierrasfantasticas.tfclient.skills.SkillMobs.parts(npcGuard)));
+            }
+            case 35 -> {
+                if (npcGuard == null) break;
+                Vec3 p0 = npcGuard.position();
+                float y0 = npcGuard.getYRot();
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.MOVE, "", "", 1, 0, 0));
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROTATE, "", "", 45, 0, 0));
+                r.event(String.format("mover a la derecha 1 y girar 45: (%.2f %.2f %.2f) %.0f° -> (%.2f %.2f %.2f) %.0f°", p0.x, p0.y, p0.z, y0,
+                        npcGuard.getX(), npcGuard.getY(), npcGuard.getZ(), npcGuard.getYRot()));
+            }
+            case 45 -> shot(r, "npc_cosmetico");
+            case 50 -> {
+                if (npcGuard == null) break;
+                npcSaved = new net.minecraft.nbt.CompoundTag();
+                r.event("guardar el guardia: " + npcGuard.save(npcSaved) + " (se guarda con el mundo: " + npcGuard.shouldBeSaved() + ")");
+                npcGuard.discard();
+            }
+            case 55 -> {
+                if (npcSaved == null) break;
+                Entity back = net.minecraft.world.entity.EntityType.loadEntityRecursive(npcSaved, level, e -> e);
+                npcGuard = back instanceof BossEntity b ? b : null;
+                r.event("volver a cargarlo: " + (npcGuard != null && level.addFreshEntity(npcGuard)));
+            }
+            case 110 -> {
+                r.event("recargado (a los 55 ticks, tras su ~onLoad): " + (npcGuard == null ? "NO ESTÁ" : String.format("%s, piezas %s, (%.2f %.2f %.2f) %.0f°",
+                        net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(npcGuard), net.tierrasfantasticas.tfclient.skills.SkillMobs.parts(npcGuard),
+                        npcGuard.getX(), npcGuard.getY(), npcGuard.getZ(), npcGuard.getYRot())));
+                shot(r, "npc_recargado");
+            }
+            case 120 -> {
+                // Un vendedor del mercado entre dos pins (los demás de su ronda sin poner: se para en el segundo)
+                Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);
+                player.teleportTo(level, m.x + 6, m.y, m.z, 180F, 0F);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PIN_SET, "marketvendor1", "", 0, 0, 0));
+                player.teleportTo(level, m.x + 6, m.y, m.z + 8, 180F, 0F);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PIN_SET, "marketvendor2", "", 0, 0, 0));
+                player.teleportTo(level, m.x, m.y, m.z, 180F, 0F);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_market", "scene_market_vendor_walk_1", 1, 0, 0));
+                npcVendor = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                look(player, level, m.x + 3, m.y + 6, m.z + 16, m.x + 3, m.y, m.z + 4);
+                npcTrack.setLength(0);
+            }
+            case 400 -> {
+                Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);
+                r.event("vendedor entre pins (cada 2 s: distancia al pin 1 / al pin 2):" + npcTrack + (npcVendor == null ? " NO ESTÁ"
+                        : String.format(" — al final a %.1f del pin 2; animaciones %s", npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z + 8)),
+                        net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(npcVendor))));
+                shot(r, "npc_pins");
+                // Un caminante por la ruta 1 del panel (un cuadrado de 8 bloques)
+                Vec3 w = new Vec3(o.x - 60, o.y, o.z);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_CLEAR, "", "", 1, 0, 0));
+                for (Vec3 d : new Vec3[] {Vec3.ZERO, new Vec3(8, 0, 0), new Vec3(8, 0, 8), new Vec3(0, 0, 8)}) {
+                    player.teleportTo(level, w.x + d.x, w.y, w.z + d.z, 180F, 0F);
+                    net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_ADD, "", "", 1, 0, 0));
+                }
+                player.teleportTo(level, w.x, w.y, w.z, 180F, 0F);
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_wanderers_vol1", "scene_wanderer_stick", 1, 0, 0));
+                npcWalker = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                look(player, level, w.x + 4, w.y + 9, w.z + 20, w.x + 4, w.y, w.z + 4);
+                npcTrack.setLength(0);
+            }
+            case 405 -> {
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.ROUTE_ASSIGN, "", "", 1, 0, 0));
+                r.event("ruta 1 para el caminante: " + net.tierrasfantasticas.tfclient.skills.SkillSaved.global("scenes_route_1"));
+            }
+            case 720 -> {
+                r.event("caminante por la ruta 1 (cada 2 s: x z):" + npcTrack + (npcWalker == null || !npcWalker.isAlive() ? " NO ESTÁ"
+                        : " — animaciones " + net.tierrasfantasticas.tfclient.skills.SkillMobs.animNames(npcWalker)));
+                shot(r, "npc_ruta");
+                r.event("golpes del minero no muerto al jugador: " + npcMinerHits);
+                // El panel abierto con el caminante elegido (pestaña Editar)
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.send(player, "", true);
+            }
+            case 760 -> shot(r, "npc_panel");
+            case 800 -> next(level);
+            default -> { }
+        }
+        if (f > 120 && f < 400 && f % 40 == 0 && npcVendor != null) {
+            Vec3 m = new Vec3(o.x - 30, o.y, o.z + 40);
+            npcTrack.append(String.format(" %.1f/%.1f", npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z)),
+                    npcVendor.position().distanceTo(new Vec3(m.x + 6, m.y, m.z + 8))));
+        }
+        if (f > 405 && f < 720 && f % 40 == 0 && npcWalker != null && npcWalker.isAlive()) {
+            npcTrack.append(String.format(" %.1f,%.1f", npcWalker.getX() - (o.x - 60), npcWalker.getZ() - o.z));
+        }
+    }
+
+    private static net.tierrasfantasticas.tfclient.npcs.NpcNet.Act npcAct(int op, String a, String b, double x, double y, double z) {
+        return new net.tierrasfantasticas.tfclient.npcs.NpcNet.Act(op, -1, a, b, x, y, z);
+    }
 
     private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig testCrate(int run) {
         var cfg = new net.tierrasfantasticas.tfclient.crates.config.CrateConfig("prueba_" + run);
