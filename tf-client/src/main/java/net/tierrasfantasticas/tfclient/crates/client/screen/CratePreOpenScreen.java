@@ -1,5 +1,6 @@
 package net.tierrasfantasticas.tfclient.crates.client.screen;
 
+import net.tierrasfantasticas.tfclient.crates.FSCrates;
 import net.tierrasfantasticas.tfclient.crates.client.color.FSTextStyle;
 import net.tierrasfantasticas.tfclient.crates.client.media.CrateMedia;
 import net.tierrasfantasticas.tfclient.crates.client.widget.GlassButton;
@@ -400,8 +401,19 @@ public class CratePreOpenScreen extends Screen {
    /** El santuario detrás (también desde «VER RECOMPENSAS»); false si no lo hay. */
    boolean renderSanctuary(GuiGraphics g, int w, int h) {
       current = this;
-      return this.sanctuary != null && this.sanctuary.renderIdle(g, w, h);
+      long t0 = System.nanoTime();
+      boolean ok = this.sanctuary != null && this.sanctuary.renderIdle(g, w, h);
+      if (this.loggedFrames < 3) {
+         // (los primeros fotogramas, al log: la primera vez se construye el santuario y tarda)
+         this.loggedFrames++;
+         FSCrates.LOGGER.info("[TF Crates] Antes de abrir, fotograma {}: santuario {} ({}), {} ms", this.loggedFrames,
+            this.sanctuary == null ? "no" : "sí", ok ? "dibujado" : "sin dibujar", (System.nanoTime() - t0) / 1000000L);
+      }
+
+      return ok;
    }
+
+   private int loggedFrames;
 
    /** La última que dibujó el santuario (MediaTicker lo apaga si se sale de ella por otro camino). */
    private static CratePreOpenScreen current;

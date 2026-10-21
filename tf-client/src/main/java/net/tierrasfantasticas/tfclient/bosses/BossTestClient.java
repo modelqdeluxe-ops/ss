@@ -195,6 +195,8 @@ public final class BossTestClient {
         if (!preOpenShot && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
                 && System.nanoTime() - preOpenAt > 1_200_000_000L) {
             preOpenShot = true;
+            TFClient.LOGGER.info("Prueba de jefes: captura de antes de abrir (pantalla {}, mundo {})", mc.screen.getClass().getSimpleName(),
+                    mc.level != null);
             BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
             // y la de las recompensas, encima del santuario
             poolShot = false;
