@@ -19,7 +19,7 @@ iniciales («sebastianrv», «NicoPL», «SRTJuan»), letras repetidas («Tomiin
 Así que se generan con esas plantillas en esas proporciones (semilla fija: sale siempre lo mismo), con estas reglas:
   - nada de «Adjetivo + Sustantivo» (ni «Balón Rojo» ni «SneakyOtter»): es lo que el dueño ya no quiere ver;
   - ningún MOLDE (la forma: minúsculas «a», Mayúscula «Aa», MAYÚSCULAS «AA», cifras «9», «_») más de 4 veces (los de
-    una sola palabra, «a» y «Aa», 9-10: «fovesel» y «francomedina» no se parecen), como mucho el 45 % con cifras, cada
+    una sola palabra, «a» y «Aa», 10-12: «fovesel» y «francomedina» no se parecen), como mucho el 45 % con cifras, cada
     plantilla como mucho su parte según lo medido (TOPE, nunca más de 3) y ningún apodo dos veces (en el TAB se ven 10
     o 20 a la vez: nada debe parecer de serie);
   - ninguna raíz repetida (dos nombres no comparten 5 letras seguidas, ni apellido, ni dos inventados el final) ni nombres de una sola palabra corriente;
@@ -226,9 +226,9 @@ def candidatos(rng, skin, n=1500):
 _PESOS = {p[0]: p[1] for p in plantillas(random.Random(0), "nico")}
 TOPE = {k: 1 if w == 1 else min(6 if k.startswith("inventado") else 3, round(w / sum(_PESOS.values()) * SKINS * 2.2))
         for k, w in _PESOS.items()}  # las raras (peso 1: «_Delfi_», «xLisandro», «9Nico»…), una sola vez
-# Cada molde, 4 veces como mucho; los de una sola palabra sin cifras («fovesel», «francomedina», «Razinon»), 9-10: no se
+# Cada molde, 4 veces como mucho; los de una sola palabra sin cifras («fovesel», «francomedina», «Razinon»), 10-12: no se
 # parecen entre sí y en la muestra son casi un tercio de todos
-MAX_MOLDE = {"a": 10, "Aa": 9}
+MAX_MOLDE = {"a": 12, "Aa": 10}
 # Las coletillas (xD, Rex, god, Ok…) se notan en el TAB: cada una, una vez; y «The»/«Its»/«Soy» delante, dos en total
 COLETILLAS = "xd rex time gg we uwu ok xz yt god crack pro gamer mc".split()
 DELANTE = ("the", "its", "soy")
