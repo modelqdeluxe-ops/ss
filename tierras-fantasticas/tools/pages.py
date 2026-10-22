@@ -346,11 +346,6 @@ def tienda():
           <h1>Tienda</h1>
           <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar.</p>
         </div>
-        <ul class="shop-trust">
-          <li><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></li>
-          <li><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></li>
-          <li><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></li>
-        </ul>
       </div>
     </section>
     <section class="wrap shop-body">
@@ -370,6 +365,12 @@ def tienda():
         {skeletons(8)}
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda. Prueba con otro nombre o un color.</p>
+      <ul class="shop-trust">
+        <li><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></li>
+        <li><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></li>
+        <li><span class="icon">{I['gift']}</span><div><b>Para regalar</b><span>Con el botón del regalo, cómpraselo a otro jugador del servidor. Le llega con tu nombre.</span></div></li>
+        <li><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></li>
+      </ul>
       <section class="owned frame" id="vinculados" aria-labelledby="owned-title">
         <div class="owned-head">
           <span class="icon">{I['shield']}</span>
@@ -384,7 +385,8 @@ def tienda():
             a ti.</span></li>
           <li><b>Solo para ti</b><span>Nadie más puede cogerlas, ponérselas ni usarlas. Si otro jugador las saca de un
             cofre, vuelven a ti.</span></li>
-          <li><b>No transferibles</b><span>No se pueden regalar, vender ni intercambiar.</span></li>
+          <li><b>No transferibles</b><span>En el juego no se pasan a otro jugador, ni se venden ni se intercambian. Para
+            regalar, cómpralo como regalo en la tienda.</span></li>
           <li><b>Cosméticos libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas) no se vinculan: puedes
             regalarlos e intercambiarlos. Las alas planean como unas élitros.</span></li>
         </ul>

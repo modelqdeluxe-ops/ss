@@ -156,6 +156,10 @@ const MIGRATIONS = [
   // Saldo de monedas del jugador según el puente (se actualiza mientras está conectado) y cuándo se leyó.
   'ALTER TABLE players ADD COLUMN coins INTEGER',
   'ALTER TABLE players ADD COLUMN coins_at INTEGER',
+  // Comprar como regalo: gift = { fromUuid, fromName, message } (quién paga y su mensaje) y gift_from el UUID de quien
+  // paga, para que vea en su cuenta los regalos que hizo. El pedido (username/uuid) es el del jugador que lo recibe.
+  'ALTER TABLE orders ADD COLUMN gift TEXT',
+  'ALTER TABLE orders ADD COLUMN gift_from TEXT',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -206,6 +210,7 @@ function rowToOrder(row) {
     termsVersion: row.terms_version || null,
     method: row.method || (row.session_id ? 'stripe' : null),
     prizes: row.prizes ? JSON.parse(row.prizes) : null,
+    gift: row.gift ? JSON.parse(row.gift) : null,
     error: row.error,
     refunded: row.refunded,
     createdAt: row.created_at,
@@ -283,8 +288,8 @@ export function createStore(db) {
     await db
       .prepare(
         `INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, discord, discord_id,
-           session_id, rank_from, terms_version, method, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           session_id, rank_from, terms_version, method, gift, gift_from, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         order.id,
@@ -301,6 +306,8 @@ export function createStore(db) {
         order.rankFrom || null,
         order.termsVersion || null,
         order.method || null,
+        order.gift ? JSON.stringify(order.gift) : null,
+        order.gift ? String(order.gift.fromUuid).toLowerCase() : null,
         at,
         at,
       )
@@ -329,10 +336,11 @@ export function createStore(db) {
       .prepare(
         `SELECT * FROM orders
          WHERE status NOT IN ('pending', 'expired')
-           AND ((discord_id IS NOT NULL AND discord_id = ?) OR (uuid IS NOT NULL AND lower(uuid) = lower(?)))
+           AND ((discord_id IS NOT NULL AND discord_id = ?) OR (uuid IS NOT NULL AND lower(uuid) = lower(?))
+             OR (gift_from IS NOT NULL AND gift_from = lower(?)))
          ORDER BY created_at DESC LIMIT 50`,
       )
-      .bind(discordId || '', uuid || '')
+      .bind(discordId || '', uuid || '', uuid || '')
       .all();
     return results.map(rowToOrder);
   }

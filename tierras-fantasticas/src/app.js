@@ -38,7 +38,18 @@ const TERMS_VERSION = legal.version;
 // (una disputa o contracargo pasado el plazo): baneo de IP del servidor (EssentialsX, tempbanip) de 6 días.
 const REFUND_DAYS = 5;
 const PENALTY = '6d';
-const CONTEXT_LABEL = { cuenta: 'al crear la cuenta', compra: 'al pagar', actualizacion: 'al aceptar la versión nueva' };
+const CONTEXT_LABEL = { cuenta: 'al crear la cuenta', compra: 'al pagar', regalo: 'al pagar un regalo', actualizacion: 'al aceptar la versión nueva' };
+
+// Mensaje de un regalo: una línea corta, sin códigos de color (§) ni caracteres de control (va en un tellraw)
+const GIFT_MESSAGE_MAX = 100;
+function cleanGiftMessage(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/[\p{Cc}\p{Cf}§]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, GIFT_MESSAGE_MAX);
+}
 
 // Días hábiles (lunes a viernes) que han pasado desde una fecha
 function businessDaysSince(iso, now = Date.now()) {
@@ -467,6 +478,7 @@ export function createApp(env) {
       createdAt: order.createdAt,
       deliveredAt: order.deliveredAt,
       discord: order.discord ? { username: order.discord.username, status: order.discord.status || null } : null,
+      gift: order.gift ? { from: order.gift.fromName, message: order.gift.message || null } : null,
     };
   }
 
@@ -979,6 +991,15 @@ export function createApp(env) {
       }
       if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
 
+      // Comprar como regalo: hace falta la cuenta de quien paga (el regalo dice de quién es y la firma de los Términos
+      // y la sanción por reembolso injustificado son suyas, no del que lo recibe)
+      const gift = body.gift === true;
+      const buyer = await currentUser(req);
+      if (gift && !buyer) {
+        return json({ error: 'Inicia sesión para regalar: así sabrá quién se lo regala.', code: 'login' }, 401);
+      }
+      const giverName = gift ? (await store.playerByUuid(buyer.uuid))?.name || buyer.name : null;
+
       const player = await store.findPlayer(body.username);
       if (!player) {
         return json(
@@ -991,15 +1012,21 @@ export function createApp(env) {
         return json({ error: 'El jugador ha cambiado. Vuelve a comprobar el nombre.', code: 'player_changed' }, 409);
       }
 
+      if (gift && player.uuid === String(buyer.uuid).toLowerCase()) {
+        return json({ error: 'Ese eres tú: para comprártelo a ti, usa «Comprar».', code: 'gift_self' }, 400);
+      }
+
       const q = await quote(product, player.uuid);
       if (q.blocked) return json({ error: q.blocked, code: q.code || 'rank_owned' }, 409);
 
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
       const amount = q.unit * quantity;
-      // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord.
-      const buyer = await currentUser(req);
-      const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord. En un regalo, no: el
+      // rol es del que lo recibe (si tiene su Discord conectado a su cuenta).
+      const account = !gift && buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
+      const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
       try {
         let checkout;
@@ -1007,7 +1034,7 @@ export function createApp(env) {
           const created = await paypal.createOrder({
             amount,
             currency: CURRENCY,
-            description: `Para ${player.name} en ${SERVER_NAME}`.slice(0, 127),
+            description: `${forWhom} en ${SERVER_NAME}`.slice(0, 127),
             customId: id,
             item: { name, quantity, unitAmount: q.unit },
             brandName: SERVER_NAME,
@@ -1024,11 +1051,11 @@ export function createApp(env) {
             unitAmount: q.unit,
             quantity,
             name,
-            description: `Para ${player.name} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
+            description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
             image: base.startsWith('https://') && product.image ? `${base}/${product.image.replace(/^\//, '')}` : undefined,
             successUrl: `${base}/success?order=${id}`,
             cancelUrl: `${base}/tienda?cancel=${id}`,
-            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid },
+            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid, ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}) },
           });
         }
         await store.createOrder({
@@ -1047,8 +1074,14 @@ export function createApp(env) {
           rankFrom: q.from?.id,
           termsVersion: TERMS_VERSION,
           method,
+          gift: giftInfo,
         });
-        await recordTerms(req, { uuid: player.uuid, username: player.name, context: 'compra', orderId: id });
+        await recordTerms(
+          req,
+          gift
+            ? { uuid: giftInfo.fromUuid, username: giverName, context: 'regalo', orderId: id }
+            : { uuid: player.uuid, username: player.name, context: 'compra', orderId: id },
+        );
         return json({ id, url: checkout.url });
       } catch (err) {
         log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : 'Stripe'}:`, err.message);
@@ -1554,6 +1587,15 @@ export function createApp(env) {
       prizes = prizes.map(({ commands: _c, ...p }) => p);
       await store.updateOrder(id, { prizes });
     }
+    // Regalo: el que lo recibe ve en el chat de quién es y su mensaje (texto JSON, sin nada que el jugador pueda colar)
+    if (local.gift) {
+      const parts = [
+        { text: '¡Regalo! ', color: 'gold', bold: true },
+        { text: `${local.gift.fromName} te ha regalado ${product.name}${local.quantity > 1 ? ` ×${local.quantity}` : ''}`, color: 'yellow' },
+      ];
+      if (local.gift.message) parts.push({ text: ` «${local.gift.message}»`, color: 'white', italic: true });
+      commands.push(`tellraw {player} ${JSON.stringify(['', ...parts])}`);
+    }
     if (rank) {
       // Al mejorar se quitan los grupos de los rangos inferiores (si no los tiene, LuckPerms no hace nada).
       for (const lower of ranks) if (lower.tier < rank.tier) commands.push(`lp user {player} parent remove ${lower.rank.group}`);
@@ -1564,6 +1606,7 @@ export function createApp(env) {
       rank: rankInfo(rank),
       upgradeFrom: local.rankFrom ? productById.get(local.rankFrom)?.name || null : null,
       prizes: prizes ? prizes.map((p) => p.name) : null,
+      gift: local.gift ? { from: local.gift.fromName } : null,
     };
 
     const queued = await store.queueDelivery(id, { username: local.username, uuid: local.uuid, commands, extra, paymentIntent });
@@ -1597,13 +1640,15 @@ export function createApp(env) {
     const since = businessDaysSince(order.deliveredAt || order.paidAt || order.createdAt);
     const late = since > REFUND_DAYS;
     let penalty = false;
+    // En un regalo la sanción es para quien pagó (y reclamó el dinero), no para el que lo recibió
+    const payer = order.gift ? (await store.playerByUuid(order.gift.fromUuid))?.name || order.gift.fromName : order.username;
     if (dispute && late && CLAIMED.includes(order.status)) {
       penalty = await store.queuePenalty(order, [
-        `tempbanip {player} ${PENALTY} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasados ${REFUND_DAYS} días hábiles)`,
+        `tempbanip ${order.gift ? payer : '{player}'} ${PENALTY} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasados ${REFUND_DAYS} días hábiles)`,
       ]);
       if (penalty) {
         await store.updateOrder(order.id, { refunded: `${what} fuera de plazo · baneo de IP de 6 días` });
-        log.warn(`Pedido ${order.id}: baneo de IP de 6 días en cola para ${order.username}`);
+        log.warn(`Pedido ${order.id}: baneo de IP de 6 días en cola para ${payer}`);
       }
     }
 
@@ -1613,7 +1658,7 @@ export function createApp(env) {
       const { pdf, rows } = await receiptFor(fresh, true);
       const verdict = dispute
         ? late
-          ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ' Se puso en cola el baneo de IP de 6 días.' : ''}`
+          ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de 6 días para ${payer}.` : ''}`
           : `Disputa abierta ${since} días hábiles después de la entrega (dentro del plazo de ${REFUND_DAYS}).`
         : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
       const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor. Responde la disputa con el recibo adjunto, la firma de los Términos y la entrega registrada.`;
@@ -1705,8 +1750,8 @@ export function createApp(env) {
       const upgrade = order.rankFrom ? productById.get(order.rankFrom)?.name : null;
       await discord.announce({
         embed: {
-          title: rank ? `👑 ¡${order.username} ahora es ${rank.rank.prefix}!` : '🎉 ¡Nueva compra en la tienda!',
-          description: `${who} ha conseguido **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}${
+          title: rank ? `👑 ¡${order.username} ahora es ${rank.rank.prefix}!` : order.gift ? '🎁 ¡Un regalo en la tienda!' : '🎉 ¡Nueva compra en la tienda!',
+          description: `${order.gift ? `**${order.gift.fromName}** le ha regalado a ${who}` : `${who} ha conseguido`} **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}${
             order.prizes?.length ? `: ${order.prizes.map((p) => `**${p.name}**`).join(', ')}` : ''
           }. ¡Gracias por apoyar ${SERVER_NAME}!`,
           color: Number.parseInt((rank?.rank.hex || product.colors?.[1] || '#f4c95d').slice(1), 16),

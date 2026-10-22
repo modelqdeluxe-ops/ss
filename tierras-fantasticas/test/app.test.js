@@ -1614,3 +1614,53 @@ test('cada firma de los Términos y cada recibo llegan por correo; el recibo en 
   await signedEvent({ type: 'charge.refunded', data: { object: { id: `ch_${refunded}`, payment_intent: sessionOf(refunded).payment_intent, refunded: true } } });
   assert.deepStrictEqual((await (await poll([])).json()).deliveries.map((d) => d.kind), ['revocacion']);
 });
+
+test('comprar como regalo: con la cuenta de quien paga, para otro jugador verificado, con su mensaje y la sanción para quien paga', async () => {
+  received.length = 0;
+  discordCalls.length = 0;
+  announcements.length = 0;
+  mails.length = 0;
+  await seen('Regalado_MC');
+  const cookie = cookieValue(await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' }), 'tf_session');
+
+  // Sin cuenta no se regala; a uno mismo, tampoco; el que lo recibe tiene que haber entrado al servidor
+  const gift = { productId: 'crate-dracula', username: 'Regalado_MC', gift: true, message: '¡Feliz\ncumple! §4rojo' };
+  let res = await post('/api/checkout', { acceptTerms: true, ...gift });
+  assert.deepStrictEqual([res.status, (await res.json()).code], [401, 'login']);
+  res = await post('/api/checkout', { acceptTerms: true, ...gift, username: 'Alex_MC' }, cookie);
+  assert.deepStrictEqual([res.status, (await res.json()).code], [400, 'gift_self']);
+  res = await post('/api/checkout', { acceptTerms: true, ...gift, username: 'Nadie_MC' }, cookie);
+  assert.strictEqual(res.status, 404);
+
+  const id = await checkout(gift, cookie);
+  assert.match(sessionOf(id).line_items?.[0]?.price_data?.product_data?.description || JSON.stringify(sessionOf(id)), /Regalo de Alex_MC para Regalado_MC/);
+  // La firma de los Términos es de quien paga
+  const firma = mails.find((m) => m.subject.startsWith('Firma de los Términos') && m.text.includes(id));
+  assert.match(firma.subject, /Alex_MC · al pagar un regalo/);
+  await pay(id);
+  await serverDelivers('Regalado_MC');
+  // Lo recibe Regalado_MC, con el aviso de quién se lo regala y su mensaje (sin saltos de línea ni códigos de color)
+  const notice = received.find((c) => c.startsWith('tellraw Regalado_MC '));
+  assert.ok(notice, 'aviso del regalo en el juego');
+  const parts = JSON.parse(notice.slice('tellraw Regalado_MC '.length));
+  assert.match(parts.map((p) => p.text || '').join(''), /^¡Regalo! Alex_MC te ha regalado Crate Drácula «¡Feliz cumple! 4rojo»$/);
+  // El rol no va al Discord de quien paga; el anuncio dice que es un regalo
+  assert.ok(!discordCalls.some((c) => c.url.includes('/members/111111111111111111/')));
+  assert.match(announcements[0].embeds[0].description, /\*\*Alex_MC\*\* le ha regalado a \*\*Regalado_MC\*\* \*\*Crate Drácula\*\*/);
+  // Los dos lo ven: el que lo recibe (es suyo) y quien lo pagó, en «Mis compras»
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.deepStrictEqual([order.username, order.gift], ['Regalado_MC', { from: 'Alex_MC', message: '¡Feliz cumple! 4rojo' }]);
+  const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
+  assert.ok(orders.some((o) => o.id === id && o.gift?.from === 'Alex_MC'));
+  const pdf = Buffer.from(await (await get(`/api/order/${id}/receipt`)).arrayBuffer()).toString('latin1');
+  assert.ok(pdf.includes('Regalo de Alex_MC') && pdf.includes('Jugador que lo recibe'));
+
+  // Disputa fuera de plazo: se retira el regalo y el baneo es para quien pagó
+  const old = new Date(Date.now() - 14 * 86400000).toISOString();
+  await env.DB.prepare('UPDATE orders SET delivered_at = ?, paid_at = ? WHERE id = ?').bind(old, old, id).run();
+  await signedEvent({ type: 'charge.dispute.created', data: { object: { id: `dp_${id}`, payment_intent: sessionOf(id).payment_intent } } });
+  const { deliveries } = await (await poll([])).json();
+  const ban = deliveries.find((d) => d.kind === 'penalizacion');
+  assert.match(ban.commands[0], new RegExp(`^tempbanip Alex_MC 6d Reembolso injustificado del pedido ${id}`));
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+});
