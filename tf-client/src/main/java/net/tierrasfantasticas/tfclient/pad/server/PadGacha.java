@@ -123,7 +123,7 @@ public final class PadGacha {
             return null;
         }
         if (!PadGreen.take(player, cost)) {
-            TFPadNet.notice(player, "Te faltan monedas verdes: se ganan con el TF Pass.");
+            TFPadNet.notice(player, "Te faltan Fantastic Gacha Coins: se ganan con el TF Pass.");
             return null;
         }
         JsonObject data = STORE_IMPL.player(player.getUUID());

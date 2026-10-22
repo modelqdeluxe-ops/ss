@@ -77,6 +77,8 @@ public final class MusicSpeaker {
     private static final Map<UUID, Heard> HEARD = new HashMap<>();
     private static final Set<String> DOWNLOADING = new HashSet<>();
     private static final Map<String, Long> FAILED = new HashMap<>();
+    /** (1.3.114) Desde cuándo se espera una canción del servidor que aún no empieza a llegar. */
+    private static final Map<String, Long> WAIT_SINCE = new HashMap<>();
     private static boolean published;
     private static long lastPublish;
     private static int ticks;
@@ -91,9 +93,10 @@ public final class MusicSpeaker {
     static void publish() {
         if (Minecraft.getInstance().getConnection() == null) return;
         MusicLibrary.Track t = MusicPlayer.current();
-        boolean on = MusicLibrary.speaker() && MusicPlayer.playing() && t != null && !t.url().isBlank();
+        String url = t == null ? null : shareUrl(t);
+        boolean on = MusicLibrary.speaker() && MusicPlayer.playing() && url != null;
         if (on) {
-            PadSpeakerNet.toServer(new PadSpeakerNet.Up(true, t.url(), t.shownTitle(), t.artist(), MusicPlayer.position(), t.durationMs()));
+            PadSpeakerNet.toServer(new PadSpeakerNet.Up(true, url, t.shownTitle(), t.artist(), MusicPlayer.position(), t.durationMs()));
             published = true;
         } else if (published) {
             PadSpeakerNet.toServer(new PadSpeakerNet.Up(false, "", "", "", 0, 0));
@@ -109,9 +112,119 @@ public final class MusicSpeaker {
         publish();
         if (!on) return "Altavoz apagado";
         MusicLibrary.Track t = MusicPlayer.current();
-        if (t != null && t.url().isBlank()) return "Altavoz encendido · esta canción no la pueden oír los demás";
+        if (t != null && shareUrl(t) == null) return "Altavoz encendido · esta canción pesa demasiado para compartirla";
         return "Altavoz encendido · te oyen a " + RANGE + " bloques";
     }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.114) Las canciones sin link (las de tu carpeta): las reparte el servidor (PadSpeakerNet.LOCAL)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** El hash de cada canción de la carpeta (por su archivo, tamaño y fecha), y de cada hash, su archivo. */
+    private static final Map<String, String> HASH_OF = new HashMap<>();
+    private static final Map<String, Path> FILE_OF = new HashMap<>();
+    /** Lo que falta por subir (unos pocos trozos por tick). */
+    private static final java.util.ArrayDeque<PadSpeakerNet.UpPart> UPLOAD = new java.util.ArrayDeque<>();
+    private static String uploading = "";
+
+    /** Lo que se cuenta al servidor: el link, o tfaudio:&lt;sha1&gt; si es de la carpeta; null si no se puede compartir. */
+    private static String shareUrl(MusicLibrary.Track t) {
+        if (!t.url().isBlank()) return t.url();
+        Path f = MusicLibrary.file(t);
+        try {
+            long size = Files.size(f);
+            if (size <= 0 || size > PadSpeakerNet.MAX_BYTES) return null;
+            String key = f + ":" + size + ":" + f.toFile().lastModified();
+            String hash = HASH_OF.get(key);
+            if (hash == null) {
+                hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(Files.readAllBytes(f)));
+                HASH_OF.put(key, hash);
+            }
+            FILE_OF.put(hash, f);
+            return PadSpeakerNet.LOCAL + hash;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** El servidor no tiene la canción que suena en mi altavoz: se sube a trozos. */
+    public static void upload(String hash) {
+        Path f = FILE_OF.get(hash);
+        if (f == null || hash.equals(uploading) && !UPLOAD.isEmpty()) return;
+        try {
+            byte[] all = Files.readAllBytes(f);
+            if (all.length > PadSpeakerNet.MAX_BYTES) return;
+            UPLOAD.clear();
+            uploading = hash;
+            int total = Math.max(1, (all.length + PadSpeakerNet.UP_PART - 1) / PadSpeakerNet.UP_PART);
+            for (int i = 0; i < total; i++) {
+                int from = i * PadSpeakerNet.UP_PART, to = Math.min(all.length, from + PadSpeakerNet.UP_PART);
+                UPLOAD.add(new PadSpeakerNet.UpPart(hash, i, total, all.length, java.util.Arrays.copyOfRange(all, from, to)));
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.info("Música: no se pudo subir la canción del altavoz: {}", e.toString());
+        }
+    }
+
+    private static final class Incoming {
+        final byte[] data;
+        final boolean[] have;
+        int got;
+        long lastMs = System.currentTimeMillis();
+
+        Incoming(int size, int total) {
+            data = new byte[size];
+            have = new boolean[total];
+        }
+    }
+
+    private static final Map<String, Incoming> INCOMING = new HashMap<>();
+
+    /** Un trozo de una canción de altavoz que reparte el servidor. */
+    public static void part(PadSpeakerNet.DownPart m) {
+        String url = PadSpeakerNet.LOCAL + m.hash();
+        if (!DOWNLOADING.contains(url) || m.size() <= 0 || m.size() > PadSpeakerNet.MAX_BYTES || m.total() <= 0
+                || m.index() < 0 || m.index() >= m.total()) return;
+        Incoming in = INCOMING.get(m.hash());
+        if (in == null || in.data.length != m.size() || in.have.length != m.total()) {
+            in = new Incoming(m.size(), m.total());
+            INCOMING.put(m.hash(), in);
+        }
+        in.lastMs = System.currentTimeMillis();
+        int off = m.index() * PadSpeakerNet.DOWN_PART;
+        if (in.have[m.index()] || off + m.data().length > in.data.length) return;
+        System.arraycopy(m.data(), 0, in.data, off, m.data().length);
+        in.have[m.index()] = true;
+        if (++in.got < in.have.length) return;
+        INCOMING.remove(m.hash());
+        Path file = cacheFile(url);
+        boolean ok = false;
+        try {
+            if (file != null && HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(in.data)).equals(m.hash())) {
+                Files.createDirectories(file.getParent());
+                Files.write(file, in.data);
+                ok = AudioDecoder.AudioFormatSniffer.sniff(file) != AudioDecoder.Kind.UNKNOWN;
+                trimCache();
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.info("Música: no se pudo guardar la canción de un altavoz: {}", e.toString());
+        }
+        finish(url, file, ok);
+    }
+
+    /** Acabó de bajarse (o falló) la canción de un altavoz: suena en los que la tienen puesta, a la par. */
+    private static void finish(String url, Path file, boolean ok) {
+        DOWNLOADING.remove(url);
+        if (!ok) {
+            if (FAILED.size() > 50) FAILED.clear();
+            FAILED.put(url, System.currentTimeMillis());
+            return;
+        }
+        for (Map.Entry<UUID, Heard> e : HEARD.entrySet()) {
+            if (e.getValue().url.equals(url) && MusicLibrary.hearOthers()) play(e.getKey(), e.getValue(), file);
+        }
+    }
+
 
     // ---------------------------------------------------------------------------------------------------------------
     // Los altavoces de los demás
@@ -131,7 +244,7 @@ public final class MusicSpeaker {
         if (old != null) stopSound(old);
         if (!m.playing()) return;
         String url = m.url();
-        if (!(url.startsWith("https://") || url.startsWith("http://"))) return;
+        if (!(url.startsWith("https://") || url.startsWith("http://") || url.startsWith(PadSpeakerNet.LOCAL))) return;
         Heard h = new Heard(url, origin, m.durationMs());
         HEARD.put(m.speaker(), h);
         if (MusicLibrary.hearOthers()) ensure(m.speaker(), h);
@@ -157,6 +270,11 @@ public final class MusicSpeaker {
         Long failed = FAILED.get(h.url);
         if (failed != null && System.currentTimeMillis() - failed < 120_000) return; // un link que falló: no se reintenta en 2 min
         if (!DOWNLOADING.add(h.url)) return;
+        // (1.3.114) una canción de la carpeta del que la pone: la reparte el servidor (llega a trozos, part())
+        if (h.url.startsWith(PadSpeakerNet.LOCAL)) {
+            PadSpeakerNet.toServerAny(new PadSpeakerNet.Get(h.url.substring(PadSpeakerNet.LOCAL.length())));
+            return;
+        }
         Thread t = new Thread(() -> {
             boolean ok = false;
             Path part = file.resolveSibling(file.getFileName() + ".part");
@@ -237,7 +355,29 @@ public final class MusicSpeaker {
 
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || ++ticks % 20 != 0) return;
+        if (event.phase != TickEvent.Phase.END) return;
+        // (1.3.114) la subida de mi canción, 4 trozos de 30 KB por tick (~2,4 MB/s)
+        for (int i = 0; i < 4 && !UPLOAD.isEmpty(); i++) PadSpeakerNet.toServerAny(UPLOAD.poll());
+        if (++ticks % 20 != 0) return;
+        // lo que se bajaba del servidor y dejó de llegar (1 min), o que no empieza a llegar (90 s): falló
+        long now = System.currentTimeMillis();
+        for (String hash : Set.copyOf(INCOMING.keySet())) {
+            if (now - INCOMING.get(hash).lastMs > 60_000) {
+                INCOMING.remove(hash);
+                finish(PadSpeakerNet.LOCAL + hash, null, false);
+            }
+        }
+        for (String url : Set.copyOf(DOWNLOADING)) {
+            if (url.startsWith(PadSpeakerNet.LOCAL) && !INCOMING.containsKey(url.substring(PadSpeakerNet.LOCAL.length()))) {
+                long since = WAIT_SINCE.computeIfAbsent(url, k -> now);
+                if (now - since > 90_000) {
+                    WAIT_SINCE.remove(url);
+                    finish(url, null, false);
+                }
+            } else {
+                WAIT_SINCE.remove(url);
+            }
+        }
         // mi altavoz: un recordatorio cada 10 s para que los demás vayan a la par
         if (published && System.currentTimeMillis() - lastPublish > 10_000) publish();
         // los de los demás: si el motor de sonido se reinició, vuelven donde iban; si la canción acabó, se olvida
@@ -262,6 +402,10 @@ public final class MusicSpeaker {
         HEARD.values().forEach(MusicSpeaker::stopSound);
         HEARD.clear();
         published = false;
+        UPLOAD.clear();
+        INCOMING.clear();
+        WAIT_SINCE.clear();
+        DOWNLOADING.removeIf(u -> u.startsWith(PadSpeakerNet.LOCAL));
     }
 
     /** La canción de un altavoz: situada en el jugador que la pone, en mono, y apagándose hasta RANGE bloques. */

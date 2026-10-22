@@ -34,7 +34,7 @@ public final class TFCoinItem extends Item {
             int n = stack.getCount();
             if (TFCoins.credit(sp, stack.copy())) {
                 stack.setCount(0);
-                sp.displayClientMessage(Component.literal("+" + n + (green ? (n == 1 ? " moneda verde" : " monedas verdes") : (n == 1 ? " moneda" : " monedas"))
+                sp.displayClientMessage(Component.literal("+" + n + (green ? (n == 1 ? " Fantastic Gacha Coin" : " Fantastic Gacha Coins") : (n == 1 ? " Fantastic Coin" : " Fantastic Coins"))
                         + " en tu monedero").withStyle(green ? ChatFormatting.GREEN : ChatFormatting.GOLD), true);
                 sp.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.MASTER, 0.7F, 1.2F);
             }

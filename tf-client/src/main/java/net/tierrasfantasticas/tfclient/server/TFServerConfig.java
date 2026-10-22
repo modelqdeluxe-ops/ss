@@ -34,7 +34,7 @@ public final class TFServerConfig {
     private static String economyMode = "auto";
     private static String economyGive = "eco give {player} {amount}";
     private static String economyTake = "eco take {player} {amount}";
-    private static String currency = "monedas";
+    private static String currency = "Fantastic Coins";
 
     private TFServerConfig() {}
 
@@ -126,7 +126,10 @@ public final class TFServerConfig {
         economyMode = props.getProperty("economy.mode", "auto").trim().toLowerCase(java.util.Locale.ROOT);
         economyGive = props.getProperty("economy.give", economyGive).trim();
         economyTake = props.getProperty("economy.take", economyTake).trim();
-        currency = props.getProperty("economy.currency", "monedas").trim();
+        currency = props.getProperty("economy.currency", "Fantastic Coins").trim();
+        // (1.3.114, el dueño: «no se llaman monedas, se llaman Fantastic Coin y Fantastic Gacha Coin») el nombre de
+        // antes, que se escribía solo en el archivo, pasa al nuevo
+        if (currency.isEmpty() || currency.equalsIgnoreCase("monedas")) currency = "Fantastic Coins";
         url = props.getProperty("bridge.url", DEFAULT_URL).trim().replaceAll("/+$", "");
         secret = props.getProperty("bridge.secret", "").trim();
         try {

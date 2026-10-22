@@ -125,8 +125,8 @@ public final class PadKits {
 
     /** «+25 monedas · +3 monedas verdes» (o "" si no trae ninguna). */
     static String coinsText(long coins, long greens) {
-        String out = coins > 0 ? "+" + TFEconomy.number(coins) + (coins == 1 ? " moneda" : " monedas") : "";
-        if (greens > 0) out += (out.isEmpty() ? "" : " · ") + "+" + TFEconomy.number(greens) + (greens == 1 ? " moneda verde" : " monedas verdes");
+        String out = coins > 0 ? "+" + TFEconomy.number(coins) + (coins == 1 ? " Fantastic Coin" : " Fantastic Coins") : "";
+        if (greens > 0) out += (out.isEmpty() ? "" : " · ") + "+" + TFEconomy.number(greens) + (greens == 1 ? " Fantastic Gacha Coin" : " Fantastic Gacha Coins");
         return out;
     }
 
@@ -144,10 +144,10 @@ public final class PadKits {
             return;
         }
         if (coins > 0) {
-            b.card(coinIcon(false), coins == 1 ? "Moneda" : "Monedas", 0xF6B628, "+" + PadView.money(coins), PadView.TONE_GREEN, -1, "", "", false);
+            b.card(coinIcon(false), coins == 1 ? "Fantastic Coin" : "Fantastic Coins", 0xF6B628, "+" + PadView.money(coins), PadView.TONE_GREEN, -1, "", "", false);
         }
         if (greens > 0) {
-            b.card(coinIcon(true), greens == 1 ? "Moneda verde" : "Monedas verdes", 0x40C850, "+" + PadView.number(greens), PadView.TONE_GREEN,
+            b.card(coinIcon(true), greens == 1 ? "Fantastic Gacha Coin" : "Fantastic Gacha Coins", 0x40C850, "+" + PadView.number(greens), PadView.TONE_GREEN,
                     -1, "", "", false);
         }
         for (ItemStack s : items) b.card(s.copy(), s.getHoverName().getString(), 0x3496FA, "", "", false);

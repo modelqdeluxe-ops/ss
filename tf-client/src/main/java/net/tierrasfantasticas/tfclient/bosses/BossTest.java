@@ -1991,7 +1991,8 @@ public final class BossTest {
             }
             if (t == 900) shot(r, "altar");
             if (t == 920) r.event(s == null ? "el soporte del altar: NO ESTÁ" : String.format("el soporte del altar: y de %.2f a %.2f (%s), sin gravedad %s",
-                    standMin, standMax, standMax - standMin < 0.01 ? "quieto, bien" : "SE MUEVE", s.isNoGravity() ? "sí" : "NO"));
+                    standMin, standMax, standMax - standMin < 0.01 ? "quieto, bien" : "SE MUEVE", s.isNoGravity() ? "sí" : "NO")
+                    + "; " + net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.standGround(vl));
         }
         // la Llegada, el puente, la isla de la grieta y el Ancla nueva
         if (t >= 940 && t < 940 + CORTA_VIEWS.length * 100) {
