@@ -89,6 +89,52 @@ public final class ShaderPacks {
         }
     }
 
+    private static boolean blendLooked, blendWarned;
+    private static Method blendLocked, restoreBlend;
+    /** Para la prueba en el juego: cuántas veces estaba bloqueada al pintar un objeto, y sin el arreglo. */
+    public static volatile int blendUnlocks;
+    public static volatile boolean testNoUnlock;
+
+    /**
+     * Objetos encantados como siluetas moradas en el inventario con shaders (1.3.114, el dueño con Oculus + Photon; su
+     * captura: los encantados, enteros de morado oscuro 63,30,102). Es el brillo de encantamiento pintado sin mezcla: Oculus
+     * «bloquea» la mezcla (BlendModeStorage) mientras usa un programa del paquete que la cambia, y si ese bloqueo sigue
+     * puesto al pintar la interfaz, el enableBlend del brillo se ignora y el brillo tapa el objeto. Antes de pintar cada
+     * objeto en la interfaz, si sigue bloqueada, se suelta (lo mismo que hace Oculus al acabar con ese programa). Sin
+     * Oculus o sin paquete no hace nada.
+     */
+    public static void unlockBlendForGui() {
+        if (!blendLooked) {
+            blendLooked = true;
+            lookup();
+            if (api == null) return;
+            for (String base : new String[] {"net.irisshaders.iris", "net.coderbot.iris"}) {
+                try {
+                    Class<?> c = Class.forName(base + ".gl.blending.BlendModeStorage");
+                    blendLocked = c.getMethod("isBlendLocked");
+                    restoreBlend = c.getMethod("restoreBlend");
+                    break;
+                } catch (Throwable ignored) {
+                    blendLocked = null;
+                }
+            }
+        }
+        if (blendLocked == null) return;
+        try {
+            if (!(Boolean) blendLocked.invoke(null)) return;
+            blendUnlocks++;
+            if (testNoUnlock) return;
+            restoreBlend.invoke(null);
+            if (!blendWarned) {
+                blendWarned = true;
+                TFClient.LOGGER.info("TF Client: Oculus dejó la mezcla bloqueada al pintar la interfaz; se suelta para que el brillo de "
+                        + "encantamiento no tape los objetos");
+            }
+        } catch (Throwable t) {
+            blendLocked = null;
+        }
+    }
+
     /** ¿Está dibujando ahora la pasada de sombras del paquete? (los jefes y la grieta se dibujan también en ella) */
     public static boolean shadowPass() {
         if (api == null || shadowPass == null) return false;

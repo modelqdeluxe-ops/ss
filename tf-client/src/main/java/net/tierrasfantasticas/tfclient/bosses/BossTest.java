@@ -1906,10 +1906,44 @@ public final class BossTest {
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
             }
-            case 874 -> next(level);
+            // (1.3.114, el dueño con shaders: «mis items se ven así», los encantados como siluetas moradas) el inventario
+            // con objetos encantados, con el arreglo (ShaderPacks.unlockBlendForGui) y sin él
+            case 874 -> {
+                ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+                net.minecraft.world.item.EnchantedBookItem.addEnchantment(book,
+                        new net.minecraft.world.item.enchantment.EnchantmentInstance(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 5));
+                ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
+                sword.enchant(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 5);
+                ItemStack chest = new ItemStack(Items.IRON_CHESTPLATE);
+                chest.enchant(net.minecraft.world.item.enchantment.Enchantments.ALL_DAMAGE_PROTECTION, 4);
+                ItemStack[] items = {book, sword, chest, new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 3), new ItemStack(Items.EXPERIENCE_BOTTLE, 64),
+                        new ItemStack(Items.BREAD, 16)};
+                for (int i = 0; i < items.length; i++) player.getInventory().setItem(9 + i, items[i]);
+                player.getInventory().setItem(0, book.copy());
+                openInventory = true;
+            }
+            case 900 -> shot(r, "inventario_encantados");
+            case 902 -> net.tierrasfantasticas.tfclient.vacio.ShaderPacks.testNoUnlock = true;
+            case 920 -> shot(r, "inventario_encantados_sin_arreglo");
+            case 922 -> {
+                net.tierrasfantasticas.tfclient.vacio.ShaderPacks.testNoUnlock = false;
+                r.event("inventario con shaders: " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse() + "; la mezcla de Oculus estaba "
+                        + "bloqueada al pintar un objeto " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.blendUnlocks + " veces");
+                closeScreen = true;
+                for (int i = 0; i < 16; i++) player.getInventory().setItem(i, ItemStack.EMPTY);
+            }
+            case 926 -> next(level);
             default -> { }
         }
     }
+
+    /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
+    static volatile boolean openInventory;
+
+    /** (1.3.114) Sin el HUD en las capturas (las de los caballeros: el chat tapaba las piernas). */
+    static volatile boolean hideGui;
+    /** (1.3.114) Lo que ve el cliente de los caballeros sacros: lo más rápido que van y lo más que mueven las piernas. */
+    static volatile String clientKnights = "?";
 
     /** (1.3.113) La cámara del cliente de la prueba: 0 primera persona, 1 de espaldas, 2 de frente (-1: no se toca). */
     static volatile int cameraType = -1;
@@ -1969,12 +2003,24 @@ public final class BossTest {
             Entity e = net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredKnight(vl, i + 1);
             if (k == 0 && e != null) {
                 fly(player, true);
+                hideGui = true;
                 Vec3 f = Vec3.directionFromRotation(0, e.getYRot());
                 look(player, vl, e.getX() + f.x * 4.5, e.getY() + 2.2, e.getZ() + f.z * 4.5, e.getX(), e.getY() + 1.6, e.getZ());
             }
             if (k == 60) shot(r, "caballero_" + (i + 1));
+            // (1.3.114, el dueño: «los caballeros hacen la animación de volar, no caminan») que ande de lado delante de la
+            // cámara: la captura y lo que mide el cliente (BossTestClient: las piernas al andar)
+            if (k == 62 && e instanceof net.minecraft.world.entity.Mob mob) {
+                Vec3 f = Vec3.directionFromRotation(0, e.getYRot() + 90F);
+                mob.getNavigation().moveTo(e.getX() + f.x * 5, e.getY(), e.getZ() + f.z * 5, 0.55);
+            }
+            if (k == 76) shot(r, "caballero_" + (i + 1) + "_andando");
         }
-        if (t == 840) r.event(net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredGround(vl));
+        if (t == 840) {
+            hideGui = false;
+            r.event(net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.sacredGround(vl));
+            r.event("caballeros en el cliente: " + clientKnights);
+        }
         // el soporte de la armadura: ¿salta? (su altura durante 3 s)
         if (t >= 850 && t <= 920) {
             net.minecraft.core.BlockPos a = net.tierrasfantasticas.tfclient.vacio.VoidIsland.altarPos();

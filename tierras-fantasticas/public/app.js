@@ -329,7 +329,7 @@
   // --- Productos ---
   const CATEGORY_LABEL = {
     gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro', cosmeticos: 'Cosmético',
-    skills: 'Clase de skills', protecciones: 'Protección',
+    skills: 'Clase de skills', protecciones: 'Protección', vfx: 'Efecto de kill',
   };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
@@ -689,8 +689,14 @@
   function vfxAction(k) {
     const st = vfxState('kill', k.id);
     const attrs = `data-vfx-kind="kill" data-vfx-id="${escapeHtml(k.id)}"`;
+    // (1.3.114) los efectos se venden: el que no es tuyo se compra (2,99 USD) y queda en tu cuenta para siempre
+    const paid = vfxData && vfxData.free === false;
+    const prod = paid ? products.find((p) => p.id === `vfx-${k.id}`) : null;
     const [title, sub, btn] = {
-      free: ['Gratis', vfxData?.me ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
+      free: paid
+        ? [formatPrice(prod?.price ?? vfxData.price ?? 299), 'Cómpralo y queda en tu cuenta para siempre; se equipa solo.',
+           `<button class="btn btn-buy" type="button" ${prod ? buyAttrs(prod) : 'disabled'}>Comprar</button>`]
+        : ['Gratis', vfxData?.me ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
       owned: [`${IC.star}Es tuyo`, 'Equípalo y sale solo en el juego.', `<button class="btn btn-primary" type="button" data-vfx-equip ${attrs}>Equipar</button>`],
       on: [`${IC.check}Equipado`, 'Ya sale en el juego al derrotar a alguien.', `<button class="btn btn-ghost" type="button" data-vfx-remove ${attrs}>Quitar</button>`],
     }[st];
@@ -770,7 +776,8 @@
   function vfxTile(k, tone) {
     const sel = vfxSel === k.id;
     const st = vfxState('kill', k.id);
-    const tag = st === 'on' ? `<span class="cx-tag is-on">${IC.check}Equipado</span>` : st === 'owned' ? '<span class="cx-tag">Tuyo</span>' : '';
+    const tag = st === 'on' ? `<span class="cx-tag is-on">${IC.check}Equipado</span>` : st === 'owned' ? '<span class="cx-tag">Tuyo</span>'
+      : vfxData?.free === false ? `<span class="cx-tag">${formatPrice(vfxData.price ?? 299)}</span>` : '';
     return `<button type="button" class="cx-tile${sel ? ' is-sel' : ''}" style="${tone}" data-vfx-pick="${escapeHtml(k.id)}"
         data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
         <span class="cx-tile-art">${img(k.image, '')}</span>
@@ -791,7 +798,9 @@
       vfxSel = (list.find((k) => vfxState('kill', k.id) === 'free') || list[0])?.id || null;
     }
     box.innerHTML = `<section class="cx" style="--c:var(--tone-vfx)">
-        ${cxHead(IC.spark, 'VFX', 'Efectos de kill', `${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.`)}
+        ${cxHead(IC.spark, 'VFX', 'Efectos de kill', vfxData.free === false
+          ? `${vfxData.kills.length} efectos, ${formatPrice(vfxData.price ?? 299)} cada uno. El que compres queda en tu cuenta para siempre y en el juego sale solo al derrotar a alguien.`
+          : `${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.`)}
         <div class="cx-layout">
           <div class="cx-catalog">${cats
             .map((c) => {
@@ -1594,7 +1603,8 @@
     box.innerHTML = `
       <span class="cos-buy-art">${img(p.image, '', '', ' width="52" height="52"')}</span>
       <span class="cos-buy-text"><small>${escapeHtml(p.theme)} · ${SLOT_LABEL[p.slot] || ''}</small><b>${escapeHtml(p.name)}</b></span>
-      <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button></span>`;
+      <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button></span>
+      ${p.coinPrice ? `<button class="btn btn-ghost btn-sm cos-coins" type="button" data-coin-buy="${escapeHtml(p.id)}"><img src="/img/coin.png" alt="" width="18" height="18" class="coin-img"> ${fmtCoins(p.coinPrice)} Fantastic Coins</button>` : ''}`;
   }
 
   async function drawCosmetics() {
@@ -1925,6 +1935,9 @@
   document.addEventListener('click', (e) => {
     const id = e.target.closest('[data-buy]')?.dataset.buy;
     if (id) openCheckout(id);
+    // (1.3.114) comprar con las Fantastic Coins del servidor (cosméticos): se cobra en el juego al estar conectado
+    const coinBtn = e.target.closest('[data-coin-buy]');
+    if (coinBtn) buyWithCoins(coinBtn);
     const gift = e.target.closest('[data-gift]')?.dataset.gift;
     if (gift) openCheckout(gift, { gift: true });
   });
@@ -1946,6 +1959,28 @@
     updateTotal();
     renderDiscordBox();
     lookupPlayer();
+  }
+
+  async function buyWithCoins(btn) {
+    if (!me.user) {
+      toast('Entra con tu cuenta para comprar con tus monedas');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`), 900);
+      return;
+    }
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    try {
+      const { res, data } = await postWithTerms('/api/coins/buy', { productId: btn.dataset.coinBuy });
+      if (res.ok) {
+        location.href = `/success?order=${encodeURIComponent(data.id)}`;
+        return;
+      }
+      toast(data.error || 'No se pudo comprar ahora mismo.');
+    } catch {
+      toast('No se pudo completar. Revisa tu conexión.');
+    }
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
   }
 
   function openCheckout(id, { gift = false } = {}) {

@@ -166,7 +166,7 @@ public final class TFJobsConfig {
 
     public static final List<String> BACKGROUNDS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
-    static final List<String> TYPES = List.of("romper", "cosechar", "colocar", "matar", "pescar", "fabricar", "fundir", "preparar",
+    public static final List<String> TYPES = List.of("romper", "cosechar", "colocar", "matar", "pescar", "fabricar", "fundir", "preparar",
             "encantar", "reparar", "criar");
 
     // Ajustes generales

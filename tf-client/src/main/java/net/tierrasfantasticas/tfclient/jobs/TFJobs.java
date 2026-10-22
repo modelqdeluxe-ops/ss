@@ -76,6 +76,7 @@ public final class TFJobs {
     @SubscribeEvent
     public static void onStarted(ServerStartedEvent event) {
         server = event.getServer();
+        net.tierrasfantasticas.tfclient.util.TFConfigDir.writeGuide();
         TFJobsConfig.load();
         TFPlacedBlocks.load(server);
     }

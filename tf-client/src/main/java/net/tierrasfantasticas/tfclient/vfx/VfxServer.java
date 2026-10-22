@@ -232,6 +232,43 @@ public final class VfxServer {
         }
     }
 
+    // (1.3.114, el dueño: «los efectos de kill los vendemos a 2.99 cada uno») qué efectos de kill tiene cada conectado
+    // (lo manda la web en cada consulta: vfxOwned) y si siguen siendo gratis (vfxFree; sin puente, todos)
+    private static final Map<UUID, java.util.Set<String>> OWNED = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile boolean webFree = true;
+
+    public static void applyOwned(boolean free, JsonArray list) {
+        webFree = free;
+        Map<UUID, java.util.Set<String>> fresh = new HashMap<>();
+        for (JsonElement el : list) {
+            if (!el.isJsonObject()) continue;
+            JsonObject o = el.getAsJsonObject();
+            try {
+                UUID uuid = UUID.fromString(TFJson.str(o, "uuid", ""));
+                java.util.Set<String> kills = new java.util.HashSet<>();
+                if (o.has("kills") && o.get("kills").isJsonArray()) for (JsonElement k : o.getAsJsonArray("kills")) kills.add(k.getAsString());
+                fresh.put(uuid, kills);
+            } catch (Exception ignored) {
+                // uno mal escrito: se salta
+            }
+        }
+        OWNED.clear();
+        OWNED.putAll(fresh);
+    }
+
+    /** ¿Puede llevar este efecto de kill? (si se venden, solo los suyos; el que ya lleva, también) */
+    public static boolean ownsKill(UUID uuid, String id) {
+        if (webFree || !net.tierrasfantasticas.tfclient.server.TFBridge.connected()) return true;
+        if (id != null && id.equals(equip(uuid).kill())) return true;
+        java.util.Set<String> mine = OWNED.get(uuid);
+        return mine != null && mine.contains(id);
+    }
+
+    /** ¿Se venden los efectos de kill (la web dice que no son gratis)? */
+    public static boolean killsForSale() {
+        return !webFree && net.tierrasfantasticas.tfclient.server.TFBridge.connected();
+    }
+
     /** Lo equipado: {efecto de kill, paquete de skills} (null = nada). */
     public static String[] equipped(UUID uuid) {
         Equip e = equip(uuid);

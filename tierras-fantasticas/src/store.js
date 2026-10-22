@@ -494,6 +494,12 @@ export function createStore(db) {
       .run();
   }
 
+  // (1.3.114) Quita uno de su cuenta (un efecto comprado y reembolsado).
+  async function vfxTake(uuid, item) {
+    await init();
+    await db.prepare('DELETE FROM vfx_owned WHERE uuid = ? AND item = ?').bind(String(uuid).toLowerCase(), item).run();
+  }
+
   // Equipa (o quita, con null) el efecto de kill o el paquete de skills. Siempre con una hora nueva: el servidor solo
   // aplica lo que es más reciente que lo que ya tiene.
   async function vfxEquip(uuid, kind, id) {
@@ -612,10 +618,24 @@ export function createStore(db) {
     const { results } = await db
       .prepare(
         `SELECT DISTINCT product_id FROM orders
-         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?) AND status IN (${CLAIMED.map(() => '?').join(', ')})
+         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?)
+           AND (status = 'delivered' OR (id NOT LIKE 'COIN%' AND status IN (${CLAIMED.map(() => '?').join(', ')})))
            AND (refunded IS NULL OR refunded = '')`,
       )
       .bind(uuid, ...CLAIMED)
+      .all();
+    return results.map((r) => r.product_id);
+  }
+
+  // (1.3.114) Lo que está comprando con monedas (en cola hasta que el servidor lo cobre), que no sean clases.
+  async function coinPending(uuid) {
+    await init();
+    const { results } = await db
+      .prepare(
+        `SELECT DISTINCT product_id FROM orders
+         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?) AND id LIKE 'COIN%' AND status = 'queued'`,
+      )
+      .bind(String(uuid))
       .all();
     return results.map((r) => r.product_id);
   }
@@ -1021,6 +1041,7 @@ export function createStore(db) {
     setRank,
     vfxFor,
     vfxGive,
+    vfxTake,
     vfxEquip,
     vfxEquipFor,
     skillsOwned,
@@ -1030,6 +1051,7 @@ export function createStore(db) {
     skillActiveFor,
     coinSkillDeliveries,
     ownedProducts,
+    coinPending,
     wardrobeFor,
     setWardrobe,
     wardrobesFor,

@@ -381,7 +381,7 @@ public final class PadWardrobe {
             String[] eq = VfxServer.equipped(player.getUUID());
             PadView.Builder b = PadView.of("efectos").tab("", "AL MATAR").tab("skills", "SKILLS").selected(skills ? "skills" : "");
             if (!skills) {
-                killsTab(b, eq[0]);
+                killsTab(b, player.getUUID(), eq[0]);
             } else {
                 skillsTab(player, b);
             }
@@ -393,7 +393,7 @@ public final class PadWardrobe {
          * agrupados por categoría (la vitrina, de su color) y con la categoría en la etiqueta. Pulsar uno lo equipa; el
          * equipado sale marcado (oro, «EQUIPADO») y se quita con QUITAR EFECTO abajo.
          */
-        private static void killsTab(PadView.Builder b, String equipped) {
+        private static void killsTab(PadView.Builder b, java.util.UUID uuid, String equipped) {
             List<VfxCatalog.Kill> kills = new ArrayList<>(VfxCatalog.kills().values());
             kills.sort(java.util.Comparator.comparingInt(k -> killMeta(k.id()).order()));
             VfxCatalog.Kill on = VfxCatalog.kill(equipped);
@@ -402,14 +402,19 @@ public final class PadWardrobe {
                 b.header("Equipado: " + on.name() + (desc.isEmpty() ? "." : " · " + desc));
                 b.footer(PadView.Btn.of("QUITAR EFECTO", "quitar:kill", PadView.RED));
             } else {
-                b.header("Elige el efecto que sale al matar. Gratis.");
+                b.header(VfxServer.killsForSale() ? "Elige el efecto que sale al matar. Los que no tienes se compran en la web."
+                        : "Elige el efecto que sale al matar. Gratis.");
             }
             b.gallery();
+            // (1.3.114) primero los tuyos; los que no tienes, en gris («EN LA WEB»)
+            kills.sort(java.util.Comparator.comparing((VfxCatalog.Kill k) -> !VfxServer.ownsKill(uuid, k.id())));
             for (VfxCatalog.Kill k : kills) {
                 FxMeta m = killMeta(k.id());
                 boolean sel = on != null && k.id().equals(on.id());
+                boolean mine = VfxServer.ownsKill(uuid, k.id());
                 b.cell(new PadView.Cell(new ItemStack(Items.NETHER_STAR), k.name(), m.color(), sel ? "" : "kill:" + k.id(), sel,
-                        sel ? "EQUIPADO" : m.cat().isEmpty() ? "EQUIPAR" : m.cat(), -1, "", sel ? PadView.TONE_GREEN : PadView.TONE_BLUE)
+                        sel ? "EQUIPADO" : !mine ? "EN LA WEB" : m.cat().isEmpty() ? "EQUIPAR" : m.cat(), -1, "",
+                        sel ? PadView.TONE_GREEN : mine ? PadView.TONE_BLUE : PadView.TONE_GRAY)
                         .image(PadView.padImage("fx/kill_" + k.id())));
             }
             if (kills.isEmpty()) b.empty("Sin efectos.");
@@ -483,6 +488,10 @@ public final class PadWardrobe {
                 case "kill" -> {
                     VfxCatalog.Kill k = VfxCatalog.kill(a[1]);
                     if (k == null) return null;
+                    if (!VfxServer.ownsKill(player.getUUID(), a[1])) {
+                        TFPadNet.notice(player, k.name() + " no es tuyo: cómpralo en " + TFBridge.storeHost() + " (pestaña VFX).");
+                        return null;
+                    }
                     VfxServer.setFromPad(player, true, a[1]);
                     TFBridge.padVfx(player.getUUID(), a[0], a[1]);
                     TFPadNet.notice(player, "Efecto equipado: " + k.name() + ".");

@@ -92,6 +92,13 @@ public abstract class GuiGraphicsMixin {
         tfclient$unlift();
     }
 
+    /** Con shaders, el brillo de encantamiento mezclado como debe (1.3.114: si no, siluetas moradas; ver ShaderPacks). */
+    @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V",
+            at = @At("HEAD"))
+    private void tfclient$glintBlend(CallbackInfo ci) {
+        net.tierrasfantasticas.tfclient.vacio.ShaderPacks.unlockBlendForGui();
+    }
+
     @Inject(method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I", at = @At("HEAD"), cancellable = true)
     private void tfclient$textOrder(Font font, String text, int x, int y, int color, boolean shadow, CallbackInfoReturnable<Integer> cir) {
         if (managed && text != null && TFPadScreen.deferText()) {

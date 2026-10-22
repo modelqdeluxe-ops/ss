@@ -67,7 +67,12 @@
     ],
     "commands": [
       "lp user {player} parent add mortal",
-      "tf web sets give {player} patrick"
+      "tf web sets give {player} patrick",
+      "give {player} tfclient:proteccion_100x100 1",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ],
     "image": "img/crates/patrick.webp",
     "tier": 1,
@@ -165,6 +170,8 @@
     "perks": [
       "Prefijo «Mortal» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
+      "Recursos: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia",
       "Rol Mortal en Discord"
     ],
     "serverPerks": [
@@ -221,7 +228,13 @@
     ],
     "commands": [
       "lp user {player} parent add inmortal",
-      "tf web sets give {player} beats"
+      "tf web sets give {player} beats",
+      "give {player} tfclient:proteccion_100x100 1",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 16"
     ],
     "image": "img/crates/beats.webp",
     "tier": 2,
@@ -319,6 +332,8 @@
     "perks": [
       "Prefijo «Inmortal» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
+      "Recursos: 32 filetes, 6 manzanas doradas, 5 diamantes, 32 botellas de experiencia y 16 lingotes de hierro",
       "Rol Inmortal en Discord"
     ],
     "serverPerks": [
@@ -375,7 +390,14 @@
     ],
     "commands": [
       "lp user {player} parent add magico",
-      "tf web sets give {player} darkworld"
+      "tf web sets give {player} darkworld",
+      "give {player} tfclient:proteccion_100x100 1",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 48",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ],
     "image": "img/crates/darkworld.webp",
     "tier": 3,
@@ -469,6 +491,8 @@
     "perks": [
       "Prefijo «Mágico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
+      "Recursos: 32 zanahorias doradas, 8 manzanas doradas, 8 diamantes, 48 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender",
       "Rol Mágico en Discord"
     ],
     "serverPerks": [
@@ -530,7 +554,15 @@
     ],
     "commands": [
       "lp user {player} parent add eterno",
-      "tf web sets give {player} malika"
+      "tf web sets give {player} malika",
+      "give {player} tfclient:proteccion_150x150 1",
+      "give {player} minecraft:golden_carrot 48",
+      "give {player} minecraft:golden_apple 12",
+      "give {player} minecraft:diamond 12",
+      "give {player} minecraft:experience_bottle 64",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 16",
+      "give {player} minecraft:emerald 16"
     ],
     "image": "img/crates/malika.webp",
     "tier": 4,
@@ -624,6 +656,8 @@
     "perks": [
       "Prefijo «Eterno» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
+      "Recursos: 48 zanahorias doradas, 12 manzanas doradas, 12 diamantes, 64 botellas de experiencia, 32 lingotes de hierro, 16 perlas de ender y 16 esmeraldas",
       "Rol Eterno en Discord"
     ],
     "serverPerks": [
@@ -690,7 +724,15 @@
     ],
     "commands": [
       "lp user {player} parent add cosmico",
-      "tf web sets give {player} necros"
+      "tf web sets give {player} necros",
+      "give {player} tfclient:proteccion_150x150 1",
+      "give {player} minecraft:golden_carrot 64",
+      "give {player} minecraft:golden_apple 16",
+      "give {player} minecraft:diamond 16",
+      "give {player} minecraft:experience_bottle 64",
+      "give {player} minecraft:iron_ingot 64",
+      "give {player} minecraft:ender_pearl 16",
+      "give {player} minecraft:emerald 32"
     ],
     "image": "img/crates/necros.webp",
     "tier": 5,
@@ -788,6 +830,8 @@
     "perks": [
       "Prefijo «Cósmico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
+      "Recursos: 64 zanahorias doradas, 16 manzanas doradas, 16 diamantes, 64 botellas de experiencia, 64 lingotes de hierro, 16 perlas de ender y 32 esmeraldas",
       "Rol Cósmico en Discord"
     ],
     "serverPerks": [
@@ -854,7 +898,16 @@
     ],
     "commands": [
       "lp user {player} parent add celestial",
-      "tf web sets give {player} eagle"
+      "tf web sets give {player} eagle",
+      "give {player} tfclient:proteccion_250x250 1",
+      "give {player} minecraft:golden_carrot 64",
+      "give {player} minecraft:golden_apple 24",
+      "give {player} minecraft:diamond 24",
+      "give {player} minecraft:experience_bottle 128",
+      "give {player} minecraft:iron_ingot 64",
+      "give {player} minecraft:ender_pearl 32",
+      "give {player} minecraft:emerald 48",
+      "give {player} minecraft:gold_ingot 32"
     ],
     "image": "img/crates/eagle.webp",
     "tier": 6,
@@ -956,6 +1009,8 @@
     "perks": [
       "Prefijo «Celestial» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 250×250: una zona tuya a salvo de grifeo",
+      "Recursos: 64 zanahorias doradas, 24 manzanas doradas, 24 diamantes, 128 botellas de experiencia, 64 lingotes de hierro, 32 perlas de ender, 48 esmeraldas y 32 lingotes de oro",
       "Rol Celestial en Discord"
     ],
     "serverPerks": [
@@ -1027,7 +1082,16 @@
     ],
     "commands": [
       "lp user {player} parent add fantastico",
-      "tf web sets give {player} starlight"
+      "tf web sets give {player} starlight",
+      "give {player} tfclient:proteccion_250x250 1",
+      "give {player} minecraft:golden_carrot 128",
+      "give {player} minecraft:golden_apple 32",
+      "give {player} minecraft:diamond 32",
+      "give {player} minecraft:experience_bottle 192",
+      "give {player} minecraft:iron_ingot 128",
+      "give {player} minecraft:ender_pearl 32",
+      "give {player} minecraft:emerald 64",
+      "give {player} minecraft:gold_ingot 64"
     ],
     "image": "img/crates/starlight.webp",
     "tier": 7,
@@ -1113,6 +1177,8 @@
     "perks": [
       "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
+      "Piedra de protección 250×250: una zona tuya a salvo de grifeo",
+      "Recursos: 128 zanahorias doradas, 32 manzanas doradas, 32 diamantes, 192 botellas de experiencia, 128 lingotes de hierro, 32 perlas de ender, 64 esmeraldas y 64 lingotes de oro",
       "Rol Fantástico en Discord"
     ],
     "serverPerks": [
@@ -1191,9 +1257,9 @@
       "#ff4f8b"
     ],
     "tagline": "Oro rosa forjado con corazones",
-    "description": "Armas y herramientas animadas de oro rosa con corazones y pétalos. Incluye armadura completa, alas y casco a juego.",
+    "description": "Armas y herramientas animadas de oro rosa con corazones y pétalos. Incluye armadura completa, alas y casco a juego. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/valentine.webp",
-    "price": 299,
+    "price": 499,
     "maxQuantity": 1,
     "set": "valentine",
     "models": [
@@ -1282,8 +1348,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} valentine"
+      "tf web sets give {player} valentine",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -1296,9 +1372,9 @@
       "#e11d48"
     ],
     "tagline": "La máscara del demonio",
-    "description": "El arsenal del guerrero oni: gran espada, hacha de batalla, martillo, lanza, espadas y lanzas dobles, armadura completa, alas con aro carmesí y casco.",
+    "description": "El arsenal del guerrero oni: gran espada, hacha de batalla, martillo, lanza, espadas y lanzas dobles, armadura completa, alas con aro carmesí y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/oni.webp",
-    "price": 449,
+    "price": 599,
     "maxQuantity": 1,
     "set": "oni",
     "models": [
@@ -1387,8 +1463,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} oni"
+      "tf web sets give {player} oni",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -1401,9 +1489,9 @@
       "#4aa8ff"
     ],
     "tagline": "Cristal de luz y energía arcana",
-    "description": "Cristal azul que brilla con energía arcana: armas, herramientas, armadura, alas y casco con destellos animados.",
+    "description": "Cristal azul que brilla con energía arcana: armas, herramientas, armadura, alas y casco con destellos animados. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/luminite.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "luminite",
     "models": [
@@ -1492,8 +1580,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} luminite"
+      "tf web sets give {player} luminite",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -1506,9 +1606,9 @@
       "#a3e635"
     ],
     "tagline": "Acero de dragón y núcleos de energía",
-    "description": "El arsenal del Dragón Mecha Overlord: placas negras con núcleos verde ácido, armadura mecánica, alas y sombrero a juego.",
+    "description": "El arsenal del Dragón Mecha Overlord: placas negras con núcleos verde ácido, armadura mecánica, alas y sombrero a juego. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/mecha.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "mecha",
     "models": [
@@ -1605,8 +1705,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} mecha"
+      "tf web sets give {player} mecha",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -1619,9 +1733,9 @@
       "#8b6cf6"
     ],
     "tagline": "Plata, oro y sombra",
-    "description": "El set del Shadow Slayer: hojas plateadas con filos de oro y núcleos oscuros, armadura completa, alas y sombrero.",
+    "description": "El set del Shadow Slayer: hojas plateadas con filos de oro y núcleos oscuros, armadura completa, alas y sombrero. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/shadow.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "shadow",
     "models": [
@@ -1714,8 +1828,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} shadow"
+      "tf web sets give {player} shadow",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -1728,9 +1852,9 @@
       "#14b8a6"
     ],
     "tagline": "El éter que arde",
-    "description": "Metal turquesa con runas incandescentes: hacha de batalla, hoz, lanza, bastón, armadura y alas del Aetherburn.",
+    "description": "Metal turquesa con runas incandescentes: hacha de batalla, hoz, lanza, bastón, armadura y alas del Aetherburn. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/aether.webp",
-    "price": 449,
+    "price": 599,
     "maxQuantity": 1,
     "set": "aether",
     "models": [
@@ -1807,8 +1931,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} aether"
+      "tf web sets give {player} aether",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -1821,9 +1957,9 @@
       "#e2a72e"
     ],
     "tagline": "La herencia de los reyes guerreros",
-    "description": "Oro, jade y acero de los antiguos conquistadores: espadas, estoques, guadaña, armadura completa, alas y sombrero.",
+    "description": "Oro, jade y acero de los antiguos conquistadores: espadas, estoques, guadaña, armadura completa, alas y sombrero. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/conqueror.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "conqueror",
     "models": [
@@ -1916,8 +2052,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} conqueror"
+      "tf web sets give {player} conqueror",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -1930,9 +2076,9 @@
       "#c026d3"
     ],
     "tagline": "Escamas y fuego del End",
-    "description": "Forjado con escamas del dragón del End: armas, herramientas, guantelete, armadura, alas y casco con energía violeta.",
+    "description": "Forjado con escamas del dragón del End: armas, herramientas, guantelete, armadura, alas y casco con energía violeta. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/ender.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "ender",
     "models": [
@@ -2021,8 +2167,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} ender"
+      "tf web sets give {player} ender",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -2035,9 +2195,9 @@
       "#e879f9"
     ],
     "tagline": "Magia de arcoíris y estrellas",
-    "description": "Pastel, brillos y cuernos de unicornio: un set adorable con armas, herramientas, armadura, alas y casco animados.",
+    "description": "Pastel, brillos y cuernos de unicornio: un set adorable con armas, herramientas, armadura, alas y casco animados. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/unicorn.webp",
-    "price": 349,
+    "price": 499,
     "maxQuantity": 1,
     "set": "unicorn",
     "models": [
@@ -2126,8 +2286,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} unicorn"
+      "tf web sets give {player} unicorn",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2140,9 +2310,9 @@
       "#3b82f6"
     ],
     "tagline": "Galaxias en tus manos",
-    "description": "Armas con el cielo estrellado dentro: hoja, alabarda, hoz, daga, armadura y alas del pack Cosmo.",
+    "description": "Armas con el cielo estrellado dentro: hoja, alabarda, hoz, daga, armadura y alas del pack Cosmo. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/cosmo.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "cosmo",
     "models": [
@@ -2227,8 +2397,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} cosmo"
+      "tf web sets give {player} cosmo",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2241,9 +2421,9 @@
       "#dc2626"
     ],
     "tagline": "La sangre del conde",
-    "description": "El arsenal del conde vampiro: hojas carmesí, alabarda, hoz, armadura gótica y alas de murciélago.",
+    "description": "El arsenal del conde vampiro: hojas carmesí, alabarda, hoz, armadura gótica y alas de murciélago. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/dracula.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "dracula",
     "models": [
@@ -2328,8 +2508,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} dracula"
+      "tf web sets give {player} dracula",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2342,9 +2532,9 @@
       "#eab308"
     ],
     "tagline": "La tormenta hecha acero",
-    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas, mochila y casco.",
+    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas, mochila y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/lightning.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "lightning",
     "models": [
@@ -2437,8 +2627,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} lightning"
+      "tf web sets give {player} lightning",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -2451,9 +2653,9 @@
       "#7c8799"
     ],
     "tagline": "La maldición del Wither",
-    "description": "Hueso negro y almas en pena: gran espada, guadaña, tridente, armadura, capa y casco del Dark Wither.",
+    "description": "Hueso negro y almas en pena: gran espada, guadaña, tridente, armadura, capa y casco del Dark Wither. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/wither.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "wither",
     "models": [
@@ -2542,8 +2744,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} wither"
+      "tf web sets give {player} wither",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2556,9 +2768,9 @@
       "#f472b6"
     ],
     "tagline": "Elegancia en rosa y oro",
-    "description": "El set Pink Legacy: alabarda, hacha de batalla, martillo, armadura y alas en rosa y oro.",
+    "description": "El set Pink Legacy: alabarda, hacha de batalla, martillo, armadura y alas en rosa y oro. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/pink.webp",
-    "price": 349,
+    "price": 499,
     "maxQuantity": 1,
     "set": "pink",
     "models": [
@@ -2635,8 +2847,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} pink"
+      "tf web sets give {player} pink",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2649,9 +2871,9 @@
       "#a8a29e"
     ],
     "tagline": "El ejército de los huesos",
-    "description": "El arsenal del Skeleton Overlord: gran espada, guantelete, maza, alabarda, armadura y alas de hueso.",
+    "description": "El arsenal del Skeleton Overlord: gran espada, guantelete, maza, alabarda, armadura y alas de hueso. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/skeleton.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "skeleton",
     "models": [
@@ -2744,8 +2966,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} skeleton"
+      "tf web sets give {player} skeleton",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2758,9 +2990,9 @@
       "#818cf8"
     ],
     "tagline": "La luz plateada de la luna",
-    "description": "El dragón lunar de 2024: gran espada, guadaña, tridente, armadura completa, alas y cola animadas.",
+    "description": "El dragón lunar de 2024: gran espada, guadaña, tridente, armadura completa, alas y cola animadas. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/lunar.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "lunar",
     "models": [
@@ -2853,8 +3085,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} lunar"
+      "tf web sets give {player} lunar",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -2867,9 +3113,9 @@
       "#dc2626"
     ],
     "tagline": "Oro, rubí y naipes del rey",
-    "description": "El arsenal del rey de las cartas: oro y rubí con naipes. Martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "El arsenal del rey de las cartas: oro y rubí con naipes. Martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/cardael.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "cardael",
     "models": [
@@ -2958,8 +3204,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} cardael"
+      "tf web sets give {player} cardael",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -2972,9 +3228,9 @@
       "#38bdf8"
     ],
     "tagline": "Acero azul de las profundidades",
-    "description": "Hojas de cristal azul con núcleos dorados: gran espada, hacha, guadaña, tridente, armadura, alas y casco.",
+    "description": "Hojas de cristal azul con núcleos dorados: gran espada, hacha, guadaña, tridente, armadura, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/azure.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "azure",
     "models": [
@@ -3063,8 +3319,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} azure"
+      "tf web sets give {player} azure",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3077,9 +3343,9 @@
       "#f97316"
     ],
     "tagline": "Fuego y escamas de dragón",
-    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, bandera, mochila, armadura completa, alas y casco.",
+    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, bandera, mochila, armadura completa, alas y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/littledragon.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "littledragon",
     "models": [
@@ -3176,8 +3442,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} littledragon"
+      "tf web sets give {player} littledragon",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -3190,9 +3468,9 @@
       "#8f9bb3"
     ],
     "tagline": "El rey de los dragones",
-    "description": "Acero oscuro y escamas de dragón: gran espada, garrote, guantelete, maza, alabarda, armadura completa, alas y casco.",
+    "description": "Acero oscuro y escamas de dragón: gran espada, garrote, guantelete, maza, alabarda, armadura completa, alas y casco. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/bahamut.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "bahamut",
     "models": [
@@ -3293,8 +3571,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} bahamut"
+      "tf web sets give {player} bahamut",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -3307,9 +3599,9 @@
       "#facc15"
     ],
     "tagline": "Plata, oro y alas de hada",
-    "description": "Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/fairy.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "fairy",
     "models": [
@@ -3398,8 +3690,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} fairy"
+      "tf web sets give {player} fairy",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3412,9 +3714,9 @@
       "#f472b6"
     ],
     "tagline": "Rosa pastel con un toque turquesa",
-    "description": "Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/bonita.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "bonita",
     "models": [
@@ -3507,8 +3809,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} bonita"
+      "tf web sets give {player} bonita",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3521,9 +3833,9 @@
       "#22a6e6"
     ],
     "tagline": "Reliquias de oro y zafiro",
-    "description": "Las armas de las Crónicas: oro antiguo con núcleos de zafiro. Hacha de batalla, hoja, alabarda, armadura completa, alas y casco.",
+    "description": "Las armas de las Crónicas: oro antiguo con núcleos de zafiro. Hacha de batalla, hoja, alabarda, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/chronicles.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "chronicles",
     "models": [
@@ -3604,8 +3916,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} chronicles"
+      "tf web sets give {player} chronicles",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3618,9 +3940,9 @@
       "#ef4444"
     ],
     "tagline": "Tecnología de combate",
-    "description": "Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/protocal.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "protocal",
     "models": [
@@ -3709,8 +4031,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} protocal"
+      "tf web sets give {player} protocal",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -3723,9 +4057,9 @@
       "#e5483b"
     ],
     "tagline": "La furia del guerrero",
-    "description": "Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker.",
+    "description": "Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/berserker.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "berserker",
     "models": [
@@ -3806,8 +4140,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} berserker"
+      "tf web sets give {player} berserker",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3820,9 +4164,9 @@
       "#d9822b"
     ],
     "tagline": "El botín de los siete mares",
-    "description": "Oro, calaveras y plumas del capitán: espada, estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero pirata.",
+    "description": "Oro, calaveras y plumas del capitán: espada, estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero pirata. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/pirate.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "pirate",
     "models": [
@@ -3915,8 +4259,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} pirate"
+      "tf web sets give {player} pirate",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -3929,9 +4283,9 @@
       "#e0457b"
     ],
     "tagline": "Flechazos en rosa y negro",
-    "description": "El lado oscuro del amor: rosa y negro con corazones y lazos. Estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero.",
+    "description": "El lado oscuro del amor: rosa y negro con corazones y lazos. Estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/cupido.webp",
-    "price": 349,
+    "price": 499,
     "maxQuantity": 1,
     "set": "cupido",
     "models": [
@@ -4024,8 +4378,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} cupido"
+      "tf web sets give {player} cupido",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4038,9 +4402,9 @@
       "#22c55e"
     ],
     "tagline": "Piedra antigua y hojas eternas",
-    "description": "Piedra rúnica, cobre y hojas que nunca se marchitan: gran espada, martillo, guadaña, tridente, ballesta, armadura, alas y corona.",
+    "description": "Piedra rúnica, cobre y hojas que nunca se marchitan: gran espada, martillo, guadaña, tridente, ballesta, armadura, alas y corona. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/evergreen.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "evergreen",
     "models": [
@@ -4125,8 +4489,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} evergreen"
+      "tf web sets give {player} evergreen",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4139,9 +4513,9 @@
       "#38bdf8"
     ],
     "tagline": "Rayos de plata y zafiro",
-    "description": "Plata y zafiro cargados de electricidad: espada, martillo, guadaña, lanza, bastón, armadura, alas y casco.",
+    "description": "Plata y zafiro cargados de electricidad: espada, martillo, guadaña, lanza, bastón, armadura, alas y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/thunderbolt.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "thunderbolt",
     "models": [
@@ -4214,8 +4588,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} thunderbolt"
+      "tf web sets give {player} thunderbolt",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -4228,9 +4614,9 @@
       "#e11d48"
     ],
     "tagline": "Neón rojo del futuro",
-    "description": "Acero negro con neón rojo de otro siglo: espada, cuchillo, hoz, lanza, bastón, armadura completa, alas y casco.",
+    "description": "Acero negro con neón rojo de otro siglo: espada, cuchillo, hoz, lanza, bastón, armadura completa, alas y casco. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/cyber.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "cyber",
     "models": [
@@ -4311,8 +4697,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} cyber"
+      "tf web sets give {player} cyber",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -4325,9 +4725,9 @@
       "#9f1239"
     ],
     "tagline": "Alas de la noche",
-    "description": "Acero negro y ojos carmesí de la colonia de murciélagos: espada, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.",
+    "description": "Acero negro y ojos carmesí de la colonia de murciélagos: espada, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/bat.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "bat",
     "models": [
@@ -4400,8 +4800,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} bat"
+      "tf web sets give {player} bat",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4414,9 +4824,9 @@
       "#f59e0b"
     ],
     "tagline": "La tribu del kitsune",
-    "description": "Oro y rojo de la tribu del zorro de nueve colas: espada, estoque, guadaña, tridente, ballesta, armadura, alas y sombrero.",
+    "description": "Oro y rojo de la tribu del zorro de nueve colas: espada, estoque, guadaña, tridente, ballesta, armadura, alas y sombrero. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/fox.webp",
-    "price": 499,
+    "price": 599,
     "maxQuantity": 1,
     "set": "fox",
     "models": [
@@ -4501,8 +4911,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} fox"
+      "tf web sets give {player} fox",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -4515,9 +4937,9 @@
       "#22c55e"
     ],
     "tagline": "Filo de nanotecnología",
-    "description": "Blanco y verde ácido de alta tecnología: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Blanco y verde ácido de alta tecnología: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/nanoedge.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "nanoedge",
     "models": [
@@ -4606,8 +5028,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} nanoedge"
+      "tf web sets give {player} nanoedge",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4620,9 +5052,9 @@
       "#2563eb"
     ],
     "tagline": "Fuego azul que no se apaga",
-    "description": "Metal oscuro envuelto en llamas azules: hoja, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.",
+    "description": "Metal oscuro envuelto en llamas azules: hoja, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/blueflame.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "blueflame",
     "models": [
@@ -4703,8 +5135,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} blueflame"
+      "tf web sets give {player} blueflame",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4717,9 +5159,9 @@
       "#0d9488"
     ],
     "tagline": "La fuerza de la selva",
-    "description": "Madera, hojas y jade de la naturaleza salvaje: gran espada, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.",
+    "description": "Madera, hojas y jade de la naturaleza salvaje: gran espada, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/wild.webp",
-    "price": 399,
+    "price": 499,
     "maxQuantity": 1,
     "set": "wild",
     "models": [
@@ -4812,8 +5254,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} wild"
+      "tf web sets give {player} wild",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -4826,9 +5278,9 @@
       "#f97316"
     ],
     "tagline": "Acero negro y fuego dorado",
-    "description": "Acero negro con filos de fuego y oro: gran espada, guadaña, lanza, bastón, escudo, armadura, alas y casco.",
+    "description": "Acero negro con filos de fuego y oro: gran espada, guadaña, lanza, bastón, escudo, armadura, alas y casco. Además: 32 filetes, 8 manzanas doradas, 8 diamantes, 32 botellas de experiencia, 32 lingotes de hierro y 8 perlas de ender.",
     "image": "img/crates/akira.webp",
-    "price": 499,
+    "price": 699,
     "maxQuantity": 1,
     "set": "akira",
     "models": [
@@ -4901,8 +5353,22 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "32 filetes",
+      "8 manzanas doradas",
+      "8 diamantes",
+      "32 botellas de experiencia",
+      "32 lingotes de hierro",
+      "8 perlas de ender"
+    ],
     "commands": [
-      "tf web sets give {player} akira"
+      "tf web sets give {player} akira",
+      "give {player} minecraft:cooked_beef 32",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:iron_ingot 32",
+      "give {player} minecraft:ender_pearl 8"
     ]
   },
   {
@@ -4915,9 +5381,9 @@
       "#06b6d4"
     ],
     "tagline": "El frío que corta",
-    "description": "Hielo eterno y acero escarchado: martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Hielo eterno y acero escarchado: martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/frostbite.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "frostbite",
     "models": [
@@ -5006,8 +5472,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} frostbite"
+      "tf web sets give {player} frostbite",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -5020,9 +5496,9 @@
       "#ea580c"
     ],
     "tagline": "Juramento de sombra",
-    "description": "Acero negro y brasas de los caballeros leales a la oscuridad: guadaña doble, hacha de batalla, tridente, ballesta, armadura completa, alas y casco.",
+    "description": "Acero negro y brasas de los caballeros leales a la oscuridad: guadaña doble, hacha de batalla, tridente, ballesta, armadura completa, alas y casco. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/darkloyal.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "darkloyal",
     "models": [
@@ -5115,8 +5591,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} darkloyal"
+      "tf web sets give {player} darkloyal",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -5129,9 +5615,9 @@
       "#be123c"
     ],
     "tagline": "Obsidiana y fuego carmesí",
-    "description": "El arsenal del genio Ifrit: obsidiana verde con llamas carmesí. Espada, martillo, hoz, lanza, bastón, ballesta, armadura completa, alas, carcaj y casco.",
+    "description": "El arsenal del genio Ifrit: obsidiana verde con llamas carmesí. Espada, martillo, hoz, lanza, bastón, ballesta, armadura completa, alas, carcaj y casco. Además: 24 filetes, 6 manzanas doradas, 5 diamantes, 24 botellas de experiencia y 16 lingotes de hierro.",
     "image": "img/crates/ifrit.webp",
-    "price": 449,
+    "price": 599,
     "maxQuantity": 1,
     "set": "ifrit",
     "models": [
@@ -5216,8 +5702,20 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "24 filetes",
+      "6 manzanas doradas",
+      "5 diamantes",
+      "24 botellas de experiencia",
+      "16 lingotes de hierro"
+    ],
     "commands": [
-      "tf web sets give {player} ifrit"
+      "tf web sets give {player} ifrit",
+      "give {player} minecraft:cooked_beef 24",
+      "give {player} minecraft:golden_apple 6",
+      "give {player} minecraft:diamond 5",
+      "give {player} minecraft:experience_bottle 24",
+      "give {player} minecraft:iron_ingot 16"
     ]
   },
   {
@@ -5230,9 +5728,9 @@
       "#d946ef"
     ],
     "tagline": "Huevos, zanahorias y conejos",
-    "description": "El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo.",
+    "description": "El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/easter.webp",
-    "price": 349,
+    "price": 499,
     "maxQuantity": 1,
     "set": "easter",
     "models": [
@@ -5325,8 +5823,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} easter"
+      "tf web sets give {player} easter",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -5339,9 +5847,9 @@
       "#14b8a6"
     ],
     "tagline": "Calaveras y fuego de almas",
-    "description": "Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.",
+    "description": "Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas. Además: 16 filetes, 4 manzanas doradas, 3 diamantes y 16 botellas de experiencia.",
     "image": "img/crates/soulskull.webp",
-    "price": 449,
+    "price": 499,
     "maxQuantity": 1,
     "set": "soulskull",
     "models": [
@@ -5418,8 +5926,18 @@
         "name": "Botas"
       }
     ],
+    "extras": [
+      "16 filetes",
+      "4 manzanas doradas",
+      "3 diamantes",
+      "16 botellas de experiencia"
+    ],
     "commands": [
-      "tf web sets give {player} soulskull"
+      "tf web sets give {player} soulskull",
+      "give {player} minecraft:cooked_beef 16",
+      "give {player} minecraft:golden_apple 4",
+      "give {player} minecraft:diamond 3",
+      "give {player} minecraft:experience_bottle 16"
     ]
   },
   {
@@ -5432,6 +5950,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5453,6 +5972,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5474,6 +5994,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5495,6 +6016,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5516,6 +6038,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5537,6 +6060,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5558,6 +6082,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5579,6 +6104,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5600,6 +6126,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5621,6 +6148,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5642,6 +6170,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5663,6 +6192,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#fdba74",
       "#f97316"
@@ -5684,6 +6214,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5705,6 +6236,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5726,6 +6258,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5747,6 +6280,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5768,6 +6302,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5789,6 +6324,7 @@
     "slot": "back",
     "price": 299,
     "maxQuantity": 1,
+    "coinPrice": 3750,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5810,6 +6346,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5831,6 +6368,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5852,6 +6390,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5873,6 +6412,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5894,6 +6434,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5915,6 +6456,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#c4b5fd",
       "#8b5cf6"
@@ -5936,6 +6478,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -5957,6 +6500,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -5978,6 +6522,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -5999,6 +6544,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6020,6 +6566,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6041,6 +6588,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6062,6 +6610,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6083,6 +6632,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6104,6 +6654,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6125,6 +6676,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6146,6 +6698,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6167,6 +6720,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6188,6 +6742,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6209,6 +6764,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6230,6 +6786,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#93c5fd",
       "#3b82f6"
@@ -6251,6 +6808,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#fbcfe8",
       "#ec4899"
@@ -6272,6 +6830,7 @@
     "slot": "back",
     "price": 249,
     "maxQuantity": 1,
+    "coinPrice": 3100,
     "colors": [
       "#fbcfe8",
       "#ec4899"
@@ -6293,6 +6852,7 @@
     "slot": "held",
     "price": 149,
     "maxQuantity": 1,
+    "coinPrice": 1850,
     "colors": [
       "#fbcfe8",
       "#ec4899"
@@ -6314,6 +6874,7 @@
     "slot": "balloon",
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 1250,
     "colors": [
       "#fbcfe8",
       "#ec4899"
@@ -6335,6 +6896,7 @@
     "slot": "head",
     "price": 199,
     "maxQuantity": 1,
+    "coinPrice": 2500,
     "colors": [
       "#fda4af",
       "#f43f5e"
@@ -6356,6 +6918,7 @@
     "slot": "back",
     "price": 299,
     "maxQuantity": 1,
+    "coinPrice": 3750,
     "colors": [
       "#fda4af",
       "#f43f5e"
@@ -6372,7 +6935,7 @@
     "category": "protecciones",
     "name": "Protección 250×250",
     "description": "Una piedra de protección: ponla y 250×250 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración.",
-    "price": 499,
+    "price": 1000,
     "maxQuantity": 5,
     "image": "img/protecciones/250x250.webp",
     "colors": [
@@ -6394,7 +6957,7 @@
     "category": "protecciones",
     "name": "Protección 300×300",
     "description": "Una piedra de protección: ponla y 300×300 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración, resistencia y velocidad.",
-    "price": 799,
+    "price": 1500,
     "maxQuantity": 5,
     "image": "img/protecciones/300x300.webp",
     "colors": [
@@ -6418,7 +6981,7 @@
     "category": "protecciones",
     "name": "Protección 500×500",
     "description": "Una piedra de protección: ponla y 500×500 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración, resistencia, velocidad y vuelo libre.",
-    "price": 1299,
+    "price": 2000,
     "maxQuantity": 5,
     "image": "img/protecciones/500x500.webp",
     "colors": [

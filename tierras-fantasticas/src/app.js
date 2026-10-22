@@ -85,11 +85,31 @@ const skillProducts = skillClasses.map((c) => ({
   commands: [],
   discordRoles: [],
 }));
-const allProducts = [...products, ...skillProducts];
+// --- VFX (efectos de kill) ---
+// (TF Client 1.3.114, el dueño: «los efectos de kill los vendemos a 2.99 cada uno») cada efecto es un producto
+// «vfx-<id>»: al pagarse queda en la cuenta (vfx_owned) y se equipa. Los que ya se obtuvieron gratis siguen siendo suyos.
+const VFX_FREE = false;
+const VFX_PREFIX = 'vfx-';
+const VFX_PRICE = 299;
+const vfxCatColor = new Map((vfx.cats || []).map((c) => [c.id, c.color]));
+const vfxProducts = vfx.kills.map((k) => ({
+  id: `${VFX_PREFIX}${k.id}`,
+  category: 'vfx',
+  vfxKill: k.id,
+  name: `Efecto ${k.name}`,
+  description: `Efecto de kill: ${k.desc} Sale en el juego al derrotar a alguien; queda en tu cuenta para siempre.`,
+  price: VFX_PRICE,
+  maxQuantity: 1,
+  image: k.image,
+  colors: [vfxCatColor.get(k.cat) || '#45e9ff', vfxCatColor.get(k.cat) || '#45e9ff'],
+  // No se entrega con comandos: queda en la cuenta y el puente lo manda equipado al servidor.
+  commands: [],
+  discordRoles: [],
+}));
+const allProducts = [...products, ...skillProducts, ...vfxProducts];
 const productById = new Map(allProducts.map((p) => [p.id, p]));
 const skillOf = (product) => (product?.category === 'skills' ? skillById.get(product.skillClass) || null : null);
-// VFX (efectos de kill): por ahora todos gratis.
-const VFX_FREE = true;
+const vfxOf = (product) => (product?.category === 'vfx' && product.vfxKill ? { kind: 'kill', id: product.vfxKill, key: `kill:${product.vfxKill}` } : null);
 // --- Armario: lo comprado que se puede llevar puesto (solo apariencia) ---
 // Huecos del armario y qué piezas van en cada uno (por el id de la pieza en el set).
 const WARDROBE_SLOTS = ['head', 'chest', 'legs', 'feet', 'back'];
@@ -286,6 +306,16 @@ export function createApp(env) {
     return out;
   }
 
+  // Para el puente: los efectos de kill de cada conectado que tenga alguno
+  async function vfxOwnedForServer(uuids) {
+    const out = [];
+    for (const raw of uuids) {
+      const kills = (await store.vfxFor(raw)).owned.filter((k) => k.startsWith('kill:')).map((k) => k.slice(5));
+      if (kills.length) out.push({ uuid: raw.toLowerCase(), kills });
+    }
+    return out;
+  }
+
   // Para el puente: de cada conectado con clases, la activa (solo si sigue siendo suya) y las que tiene (el TF Pad las
   // enseña para activarlas desde el juego)
   async function skillsForServer(uuids) {
@@ -443,6 +473,11 @@ export function createApp(env) {
       if ((await store.skillsOwned(uuid)).includes(cls.id)) return { blocked: `Este jugador ya tiene la clase ${cls.name}.`, code: 'owned' };
       return { unit: product.price };
     }
+    const fx = vfxOf(product);
+    if (fx) {
+      if ((await store.vfxFor(uuid)).owned.includes(fx.key)) return { blocked: `Este jugador ya tiene ${product.name}.`, code: 'owned' };
+      return { unit: product.price };
+    }
     if (!rankById.has(product.id)) return { unit: product.price };
     const current = await store.getRank(uuid);
     const owned = current && rankById.get(current.rankId);
@@ -589,7 +624,7 @@ export function createApp(env) {
     // VFX: el catálogo y, con la cuenta iniciada, lo que tiene y lleva equipado el jugador.
     'GET /api/vfx': async (req) => {
       const user = await currentUser(req);
-      return json({ free: VFX_FREE, cats: vfx.cats, kills: vfx.kills, me: user ? await vfxView(user.uuid) : null });
+      return json({ free: VFX_FREE, price: VFX_PRICE, cats: vfx.cats, kills: vfx.kills, me: user ? await vfxView(user.uuid) : null });
     },
 
     // Obtener un VFX (gratis): queda en la cuenta y se equipa; el servidor lo pone en la siguiente consulta del puente.
@@ -674,6 +709,38 @@ export function createApp(env) {
         extra: { kind: 'tienda-monedas', color: cls.color },
       });
       log.log(`Clase con monedas ${id}: ${cls.name} (${cls.coinPrice} monedas) para ${username} (${user.uuid}), en cola del puente`);
+      return json({ id, status: 'queued' });
+    },
+
+    // (1.3.114, el dueño: «en la tienda web ponle precio en monedas a las skills y a los cosméticos») un cosmético con
+    // las Fantastic Coins del servidor: como las clases, se cobra en el juego (tf web monedas quitar) y, solo si se
+    // pudo cobrar, se da (el mod para en el primer comando que falla de un pedido con monedas).
+    'POST /api/coins/buy': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para comprar con tus monedas.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
+      const body = (await readJson(req)) || {};
+      const product = productById.get(String(body.productId || ''));
+      if (!product || product.category !== 'cosmeticos' || !Number.isSafeInteger(product.coinPrice) || product.coinPrice < 1) {
+        return json({ error: 'Esto no se vende con monedas.' }, 400);
+      }
+      if ((await store.ownedProducts(user.uuid)).includes(product.id)) return json({ error: `Ya tienes ${product.name}.`, code: 'owned' }, 409);
+      if ((await store.coinPending(user.uuid)).includes(product.id)) {
+        return json({ error: `Ya estás comprando ${product.name}: se cobra en cuanto entres al servidor.`, code: 'pending' }, 409);
+      }
+      const player = await store.playerByUuid(user.uuid);
+      const username = player?.name || user.name;
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      const id = `COIN${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+      await store.createOrder({ id, status: 'pending', username, uuid: user.uuid, productId: product.id, quantity: 1, amount: 0, currency: CURRENCY });
+      await store.queueDelivery(id, {
+        username,
+        uuid: user.uuid,
+        commands: [`tf web monedas quitar {player} ${product.coinPrice}`, ...product.commands],
+        extra: { kind: 'tienda-monedas', color: product.colors?.[1] || '#f4c95d' },
+      });
+      log.log(`Cosmético con monedas ${id}: ${product.name} (${product.coinPrice} monedas) para ${username} (${user.uuid}), en cola del puente`);
       return json({ id, status: 'queued' });
     },
 
@@ -1457,6 +1524,9 @@ export function createApp(env) {
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
         vfx: await store.vfxEquipFor(online),
+        // (1.3.114) los efectos de kill se compran: el pad del juego enseña cuáles son de cada conectado
+        vfxFree: VFX_FREE,
+        vfxOwned: await vfxOwnedForServer(online),
         // Clase de skills activa de los conectados (null = ninguna); el mod solo aplica un «at» más nuevo que el último
         skills: await skillsForServer(online),
         // Armario de los conectados: «set/pieza» por hueco (el mod lo convierte en tfclient:set_pieza)
@@ -1615,6 +1685,12 @@ export function createApp(env) {
     // Clase de skills pagada: ya es suya y pasa a ser la activa (el puente la manda al servidor)
     const cls = skillOf(product);
     if (cls && local.uuid) await store.setSkillActive(local.uuid, cls.id);
+    // Efecto de kill pagado: queda en su cuenta y se equipa (el puente lo manda al servidor)
+    const fx = vfxOf(product);
+    if (fx && local.uuid) {
+      await store.vfxGive(local.uuid, fx.key);
+      await store.vfxEquip(local.uuid, fx.kind, fx.id);
+    }
     log.log(`Pedido ${id} ${product.price === 0 ? 'reclamado (gratis)' : 'pagado'}: ${product.name} x${local.quantity} para ${local.username} (${local.uuid}), en cola del puente`);
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
@@ -1683,6 +1759,15 @@ export function createApp(env) {
         await store.setSkillActive(order.uuid, null);
         log.warn(`Pedido ${order.id}: clase ${cls.id} retirada de ${order.username}`);
       }
+      return;
+    }
+    // Efecto de kill reembolsado: deja de ser suyo (y se quita si lo llevaba)
+    const fx = vfxOf(product);
+    if (fx && order.uuid) {
+      await store.vfxTake(order.uuid, fx.key);
+      const mine = await store.vfxFor(order.uuid);
+      if (mine.kill === fx.id) await store.vfxEquip(order.uuid, 'kill', null);
+      log.warn(`Pedido ${order.id}: efecto ${fx.id} retirado de ${order.username}`);
       return;
     }
     const rank = rankById.get(product.id);

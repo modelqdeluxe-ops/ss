@@ -430,6 +430,11 @@ public final class TFBridge {
         }
         if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
         // VFX equipados en la web (efecto de kill y paquete de skills) de los conectados
+        // (1.3.114) los efectos de kill que tiene cada conectado (se venden en la web)
+        if (json.has("vfxOwned") && json.get("vfxOwned").isJsonArray()) {
+            net.tierrasfantasticas.tfclient.vfx.VfxServer.applyOwned(!json.has("vfxFree") || json.get("vfxFree").getAsBoolean(),
+                    json.getAsJsonArray("vfxOwned"));
+        }
         if (json.has("vfx") && json.get("vfx").isJsonArray()) {
             net.tierrasfantasticas.tfclient.vfx.VfxServer.applyWeb(srv, json.getAsJsonArray("vfx"));
         }
@@ -500,6 +505,8 @@ public final class TFBridge {
                 if (!failed.isEmpty() && !command.contains(" parent remove ")) {
                     // Con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
                     errors.add(coinSpin ? String.join("; ", failed) : command + " → " + String.join("; ", failed));
+                    // (1.3.114) si no se pudo cobrar, no se da nada (lo de después del cobro iba gratis)
+                    if (coinSpin) break;
                 }
             }
         } finally {

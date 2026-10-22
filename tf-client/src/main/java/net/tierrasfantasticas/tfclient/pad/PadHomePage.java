@@ -40,20 +40,23 @@ final class PadHomePage extends PadPage {
             new App("a_apps", "APPS", "apps"), new App("a_tienda", "TIENDA", "tienda"), new App("a_kits", "KITS", "kits"),
             new App("a_recompensas", "RECOMPENSAS", "recompensas"), new App("a_viajes", "VIAJES", "viajes"),
             new App("a_gts", "GTS", "gts"), new App("a_comunidad", "COMUNIDAD", "comunidad"),
-            new App("a_oficios", "OFICIOS", "oficios"), new App("a_cazas", "CAZAS", "cazas"), new App("a_ajustes", "AJUSTES", "admin"));
+            new App("a_oficios", "OFICIOS", "oficios"), new App("a_cazas", "CAZAS", "cazas"), new App("a_pase", "TF PASS", "pase"),
+            new App("a_gacha", "GACHAPÓN", "gachapon"), new App("a_ajustes", "AJUSTES", "admin"));
 
     /** Lo que configura cada app del pad de administrador: sale abajo, en su franja, al pasar el ratón (1.3.66). */
-    private static final java.util.Map<String, String> ADMIN_HINTS = java.util.Map.of(
-            "a_apps", "Qué apps salen en el pad de los jugadores: pulsa una para mostrarla u ocultarla.",
-            "a_tienda", "Categorías, objetos y precios de compra y de venta de la tienda.",
-            "a_kits", "Crea kits paso a paso: objetos, monedas, cada cuánto y quién puede.",
-            "a_recompensas", "El calendario diario y las recompensas sueltas (diarias, semanales...).",
-            "a_viajes", "Los puntos de viaje (se ponen donde estás) y qué warps se ven.",
-            "a_gts", "Lo que está a la venta entre jugadores. RETIRAR se lo devuelve a su dueño.",
-            "a_comunidad", "Las fotos denunciadas y las recientes: bórralas o dalas por buenas.",
-            "a_oficios", "Cuántos oficios a la vez, esperas, cada cuánto se paga y antitrampas.",
-            "a_cazas", "Las presas que rotan cada 12 h: mob, cantidad, monedas e icono.",
-            "a_ajustes", "Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs.");
+    private static final java.util.Map<String, String> ADMIN_HINTS = java.util.Map.ofEntries(
+            java.util.Map.entry("a_apps", "Qué apps salen en el pad de los jugadores: pulsa una para mostrarla u ocultarla."),
+            java.util.Map.entry("a_tienda", "Categorías, objetos y precios de compra y de venta de la tienda."),
+            java.util.Map.entry("a_kits", "Crea kits paso a paso: objetos, monedas, cada cuánto y quién puede."),
+            java.util.Map.entry("a_recompensas", "El calendario diario y las recompensas sueltas (diarias, semanales...)."),
+            java.util.Map.entry("a_viajes", "Los puntos de viaje (se ponen donde estás) y qué warps se ven."),
+            java.util.Map.entry("a_gts", "Lo que está a la venta entre jugadores. RETIRAR se lo devuelve a su dueño."),
+            java.util.Map.entry("a_comunidad", "Las fotos denunciadas y las recientes: bórralas o dalas por buenas."),
+            java.util.Map.entry("a_oficios", "Ajustes de los oficios y, en cada uno, lo que paga y sus misiones."),
+            java.util.Map.entry("a_cazas", "Las presas que rotan cada 12 h: mob, cantidad, monedas e icono."),
+            java.util.Map.entry("a_pase", "La temporada del TF Pass, la XP y los premios de cada nivel."),
+            java.util.Map.entry("a_gacha", "Precio de la tirada, garantía, rarezas y los premios del Gachapón."),
+            java.util.Map.entry("a_ajustes", "Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs."));
 
     /** Ficha (textura de 40x40 + 2 de sombra) e icono (32x32, a 4 del borde). */
     private static final int TILE_TEX = 40, ICON_OFF = 4;

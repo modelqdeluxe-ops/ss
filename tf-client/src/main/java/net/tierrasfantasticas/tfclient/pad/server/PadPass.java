@@ -268,6 +268,15 @@ public final class PadPass {
             o = defaults();
             if (!Files.exists(file)) TFJson.write(file, o);
         }
+        // (1.3.114) la de antes, con la economía estable (las monedas, ~15 %; los objetos raros, menos)
+        o = PadEconomy.deflate(file, o, 0.15, "pase.json");
+        o = PadEconomy.help(file, o,
+                "TF Pass (app Pase del pad). También se cambia desde el TF Pad de administrador (TF PASS). Tras editar a mano: /tf reload.",
+                "temporada: numero (al cambiarlo todos empiezan de cero), nombre, inicio (AAAA-MM-DD), dias, renovar (true: al acabar empieza otra).",
+                "niveles: cuántos tiene; xpPorNivel: la XP de cada nivel (+ xpExtraPorNivel por cada nivel); xp: la que dan diaria, semanal y caza.",
+                "premios: [{nivel: N, premios: [...]}]. Un premio: {tipo: monedas, cantidad} (Fantastic Coins), {tipo: verdes, cantidad} "
+                        + "(Fantastic Gacha Coins) u {tipo: objeto, id: minecraft:diamond, cantidad}.",
+                "Economía: un diamante vale 150 Fantastic Coins en la tienda; un jugador gana ~400 al día. No regales más que eso.");
         enabled = TFJson.bool(o, "activado", true);
         JsonObject s = TFJson.obj(o, "temporada");
         seasonNumber = (int) Math.max(1, TFJson.num(s, "numero", 1));
@@ -325,7 +334,7 @@ public final class PadPass {
      */
     private static JsonObject defaults() {
         JsonObject o = new JsonObject();
-        o.addProperty("version", 1);
+        o.addProperty("version", 2);
         o.addProperty("activado", true);
         JsonObject s = new JsonObject();
         s.addProperty("numero", 1);
@@ -342,22 +351,23 @@ public final class PadPass {
         xp.addProperty("semanal", 500);
         xp.addProperty("caza", 40);
         o.add("xp", xp);
+        // (1.3.114, economía estable: PadEconomy) objetos útiles y pocos raros
         String[][] items = {{"minecraft:bread", "16"}, {"minecraft:iron_ingot", "8"}, {"minecraft:experience_bottle", "8"},
-                {"minecraft:golden_carrot", "8"}, {"minecraft:diamond", "2"}, {"minecraft:ender_pearl", "4"}, {"minecraft:golden_apple", "2"},
+                {"minecraft:golden_carrot", "8"}, {"minecraft:diamond", "1"}, {"minecraft:ender_pearl", "2"}, {"minecraft:golden_apple", "1"},
                 {"minecraft:lapis_lazuli", "32"}};
-        String[][] big = {{"minecraft:diamond", "8"}, {"minecraft:enchanted_golden_apple", "1"}, {"minecraft:totem_of_undying", "1"},
-                {"minecraft:netherite_scrap", "2"}, {"minecraft:netherite_ingot", "1"}};
+        String[][] big = {{"minecraft:diamond", "3"}, {"minecraft:golden_apple", "3"}, {"minecraft:totem_of_undying", "1"},
+                {"minecraft:netherite_scrap", "1"}, {"minecraft:netherite_ingot", "1"}};
         JsonArray ls = new JsonArray();
         for (int n = 1; n <= 50; n++) {
             if (n % 10 == 0) {
                 String[] it = big[n / 10 - 1];
                 ls.add(level(n, PadPrize.of("verdes", n == 50 ? 10 : 5, null), PadPrize.of("objeto", Long.parseLong(it[1]), it[0])));
             } else if (n % 5 == 0) {
-                ls.add(level(n, PadPrize.of("verdes", 3, null), PadPrize.of("monedas", 250L * (n / 5 + 1), null)));
+                ls.add(level(n, PadPrize.of("verdes", 3, null), PadPrize.of("monedas", 40L * (n / 5 + 1), null)));
             } else if (n % 2 == 1) {
                 ls.add(level(n, PadPrize.of("verdes", 1, null)));
             } else if (n % 4 == 0) {
-                ls.add(level(n, PadPrize.of("monedas", 100L + n * 10L, null)));
+                ls.add(level(n, PadPrize.of("monedas", 15L + n * 2L, null)));
             } else {
                 String[] it = items[(n / 2) % items.length];
                 ls.add(level(n, PadPrize.of("objeto", Long.parseLong(it[1]), it[0])));
