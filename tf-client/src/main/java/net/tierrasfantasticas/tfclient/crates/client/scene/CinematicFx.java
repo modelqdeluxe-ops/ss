@@ -153,12 +153,14 @@ public final class CinematicFx {
         Vector3f top = new Vector3f(base).add(new Vector3f(sun).mul(26.0F));
         // (el dueño: «el haz de luz del sol casi no se nota»: el doble y algo más)
         float br = (0.88F + 0.12F * (float)Math.sin(t * 0.05F)) * 2.2F;
-        // el halo ancho, la columna con el borde marcado y el núcleo claro (más fuertes arriba)
+        // el halo ancho, la columna y el núcleo claro (más fuertes arriba). (1.3.107, el dueño: «tus rayas aún se ven»: la
+        // columna tenía el borde marcado —el perfil del brillo cortado a 0,16..0,84— y de lado eran dos líneas claras
+        // junto a las columnas de piedra que, al moverse la cámara, saltaban de píxel en píxel: ahora, borde suave)
         band(vc, v, base, mid, 3.4F, 3.4F, r, g, b, 0.02F * power * br, 0.03F * power * br);
         band(vc, v, mid, top, 3.4F, 3.0F, r, g, b, 0.03F * power * br, 0.05F * power * br);
-        band(vc, v, base, mid, 2.2F, 2.3F, r, g, b, 0.03F * power * br, 0.05F * power * br, 0.16F, 0.84F);
-        band(vc, v, mid, top, 2.3F, 2.3F, r, g, b, 0.05F * power * br, 0.08F * power * br, 0.16F, 0.84F);
-        band(vc, v, mid, top, 1.0F, 1.2F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.03F * power * br, 0.08F * power * br, 0.12F, 0.88F);
+        band(vc, v, base, mid, 2.6F, 2.7F, r, g, b, 0.035F * power * br, 0.06F * power * br);
+        band(vc, v, mid, top, 2.7F, 2.7F, r, g, b, 0.06F * power * br, 0.10F * power * br);
+        band(vc, v, mid, top, 1.4F, 1.6F, mix(r, 1, 0.5F), mix(g, 1, 0.5F), mix(b, 1, 0.5F), 0.03F * power * br, 0.08F * power * br);
         // el foco del sol, donde entra por el hueco, y los rayos que bajan en abanico desde él
         float[] spot = sc.anchor("sunspot");
         glow(vc, v, spot[0], spot[1], spot[2], 3.0F, 1.0F, 0.90F, 0.55F, 0.8F * power);
@@ -166,19 +168,8 @@ public final class CinematicFx {
         glow(vc, v, spot[0], spot[1], spot[2], 0.7F, 1.0F, 0.98F, 0.85F, 1.0F * power);
         // (los rayos que salen del sol en abanico los pone el shader final, crate_post.godRays: como bandas de geometría
         // salían «tablones» de borde duro en el juego)
-        // vetas finas que se mueven dentro del haz
-        Vector3f p1 = new Vector3f(sun).cross(0, 1, 0).normalize();
-        Vector3f p2 = new Vector3f(sun).cross(p1).normalize();
-        for (int i = 0; i < 9; i++) {
-            float ang = hash(i, 3) * 6.2832F + t * 0.004F * (hash(i, 5) - 0.5F);
-            float rad = 0.3F + hash(i, 7) * 1.7F;
-            float ox = (float)Math.cos(ang) * rad, oy = (float)Math.sin(ang) * rad;
-            Vector3f b0 = new Vector3f(base).add(new Vector3f(p1).mul(ox)).add(new Vector3f(p2).mul(oy));
-            Vector3f b1 = new Vector3f(b0).add(new Vector3f(sun).mul(24.0F));
-            float a = (0.06F + 0.05F * (float)Math.sin(t * (0.03F + hash(i, 9) * 0.04F) + i * 2.1F)) * power;
-            band(vc, v, b0, b1, 0.10F + hash(i, 11) * 0.15F, 0.2F + hash(i, 13) * 0.3F, mix(r, 1, 0.6F), mix(g, 1, 0.6F),
-                    mix(b, 1, 0.6F), a * 0.5F, a);
-        }
+        // (1.3.107: sin las 9 vetas finas que se movían dentro del haz: de 0,1-0,25 de ancho, eran rayas claras de uno o dos
+        // píxeles que parpadeaban al moverse la cámara)
         // donde cae el haz: el charco de luz en el altar y en el agua
         flatGlow(vc, v, c[0], c[1] + 0.01F, c[2], 2.6F, r, g, b, 0.2F * power);
         float[] pool = sc.anchor("pool");

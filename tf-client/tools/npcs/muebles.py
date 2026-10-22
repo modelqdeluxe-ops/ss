@@ -51,6 +51,7 @@ OWN_ITEMS = {
     'mueble_sofa': 'Couch',
     'mueble_banco': 'Bench',
     'mueble_escritorio': 'Desk',
+    'mueble_barra': 'Bar counter',
 }
 PREFIX = 'mueble_'
 
@@ -59,7 +60,8 @@ PREFIX = 'mueble_'
 #  - Sit Chair 4 se echa atrás con los pies en alto (a 18 px): la silla (taburete) de la taberna y su mesa bajo los pies;
 #  - sofá: Sit Couch y el lector del libro 1 (las piernas recogidas encima del asiento);
 #  - taburete alto: los dos de la barra (los pies a 1,7 px del suelo: el reposapiés);
-#  - banco: los dos tumbados en alto (boca arriba con la cabeza fuera, boca abajo).
+#  - banco: los dos tumbados en alto (boca arriba con la cabeza fuera, boca abajo);
+#  - barra: el camarero de la taberna (1.3.107).
 NEEDS = {
     ('npc_townsfolks_vol3', 'scene_townsfolk_sit_chair_1'): ['chair'],
     ('npc_townsfolks_vol3', 'scene_townsfolk_sit_chair_2'): ['chair'],
@@ -74,6 +76,8 @@ NEEDS = {
     ('npc_townsfolks_vol3', 'scene_townsfolk_sit_bar_2'): ['bar_stool'],
     ('npc_townsfolks_vol3', 'scene_townsfolk_lay_back_1'): ['bench'],
     ('npc_townsfolks_vol3', 'scene_townsfolk_lay_front_2'): ['bench'],
+    # (1.3.107) el camarero limpia la jarra con las manos siempre delante: detrás de su barra
+    ('npc_tavern', 'scene_tavern_bartender'): ['bar'],
 }
 SAMPLES = 120          # fotogramas de la escena que se miran
 CLEAR = 0.15           # lo que queda el mueble por debajo de lo que se apoya en él (px): ni se hunde ni flota
@@ -265,6 +269,24 @@ def bench(name, tex, top, z0, z1, width=10.0):
         box('leg1', (-hw + 0.5, 0, z1 - 3.5), (hw - 0.5, top - 2, z1 - 1.5), 'D', 3),
         box('rail', (-0.75, 2, z0 + 3.5), (0.75, 3.5, z1 - 3.5), 'post', 4)])
     b.hitbox(min(1.0, (z1 - z0) / 16), top / 16)
+    return b
+
+
+def bar(name, tex, back_z, top=17.0, width=32.0, depth=12.0):
+    """Barra de taberna: tablero de tablones con su cara de arriba a «top» px y canto; delante, tablas verticales de
+    madera oscura con dos fajas; su cara de detrás (la del camarero) en z = back_z y el resto hacia delante (−z)."""
+    b = Builder(name, tex)
+    hw = width / 2
+    z1, z0 = back_z, back_z - depth
+    els = [box('top', (-hw - 1, top - 2, z0 - 1), (hw + 1, top, z1 + 0.5), 'slab', 1),
+           box('body', (-hw, 0, z0 + 1), (hw, top - 2, z1), 'D', 2),
+           box('rail_low', (-hw - 0.5, 2, z0 + 0.5), (hw + 0.5, 4, z0 + 1.5), 'slab', 3),
+           box('rail_high', (-hw - 0.5, top - 5, z0 + 0.5), (hw + 0.5, top - 3, z0 + 1.5), 'slab', 4)]
+    for i in range(int(width // 8)):
+        x = -hw + 2 + i * 8
+        els.append(box(f'plank{i}', (x, 0, z0 + 0.5), (x + 2, top - 2, z0 + 1), 'post', 5 + i))
+    b.group('bar', [0, 0, (z0 + z1) / 2], elements=els)
+    b.hitbox(1.0, top / 16)
     return b
 
 
@@ -510,6 +532,13 @@ def props_for(pose, needs, tex, store, problems, pack, mob, report):
             mdl = bench(mid.split('.', 1)[1], tex, top, zlo, zhi).convert(store, problems)
             report.append(f'{mob}: banco, a {top:.1f} px de z {zlo:.1f} a {zhi:.1f}, se hunde '
                           f'{sink_of(pose, top, -5, 5, zlo, zhi):.2f} px')
+        elif need == 'bar':
+            # el camarero, detrás de su barra: la barra, por delante de lo más adelantado de sus manos
+            hands = all_v(pose.dense(['left_arm', 'right_arm', 'left_item', 'right_item', 'mug']))
+            front = float(np.percentile(hands[:, 2], 1)) if len(hands) else -9.0
+            back_z = front - 0.5
+            mdl = bar(mid.split('.', 1)[1], tex, back_z).convert(store, problems)
+            report.append(f'{mob}: barra, de z {back_z - 12:.1f} a {back_z:.1f} (sus manos llegan hasta {front:.1f})')
         elif need == 'desk':
             paper = all_v(pose.verts(['paint']))
             if not len(paper):
@@ -632,6 +661,7 @@ def main(root, res):
         'mueble_sofa': couch('mueble_sofa', tex, 6.5, -8.0, 4.0, 8.0),
         'mueble_banco': bench('mueble_banco', tex, 8.0, -12.0, 12.0),
         'mueble_escritorio': desk('mueble_escritorio', tex, 13.0, 0.0),
+        'mueble_barra': bar('mueble_barra', tex, 6.0),
     }
     for mob, b in own.items():
         mid = f'{TAVERN}.{mob}'

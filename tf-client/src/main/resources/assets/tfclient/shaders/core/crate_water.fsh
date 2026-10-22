@@ -110,6 +110,14 @@ void main() {
         col *= mix(0.86, 1.10, light);
         col += vec3(0.6, 1.0, 1.0) * beam * 0.10;
         alpha = 0.90 + 0.10 * foam;     // (translúcida; más no: se transparentaban las juntas del ladrillo de detrás como rayas)
+        // (1.3.107, el dueño: «tus rayas aún se ven») los costados de cada chorro, vistos casi de canto, eran una tira de uno
+        // o dos píxeles de agua clara (la espuma, el brillo del haz) que al moverse la cámara parpadeaba como una raya
+        // junto a la piedra: de canto se apagan
+        vec3 fn = cross(dFdx(wp), dFdy(wp));
+        float facing = length(fn) > 1e-8 ? abs(dot(normalize(fn), v)) : 1.0;
+        float edgeOn = smoothstep(0.08, 0.35, facing);
+        col = mix(WATER_DEEP, col, edgeOn);
+        alpha *= edgeOn;
     } else {
         // el estanque: agua transparente y limpia, del mismo turquesa que las cascadas, a través de la que se ven los
         // bloques de verdad del fondo; manchas de luz suaves que se mueven (sin líneas), el reflejo de las cascadas en

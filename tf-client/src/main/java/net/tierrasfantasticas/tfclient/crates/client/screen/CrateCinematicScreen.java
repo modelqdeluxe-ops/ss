@@ -309,17 +309,38 @@ public class CrateCinematicScreen extends Screen {
         playing.add(s);
     }
 
-    private void track(String name, SoundSource src, float volume) {
+    /**
+     * (1.3.107, el dueño: «la música es horrible; pon esta —Dalarna—, deja de fondo los sonidos de la fuente; 3 minutos y
+     * en bucle») la música y el ambiente de la fuente, en bucle y compartidos: empiezan en la pantalla de antes de abrir y
+     * siguen en la apertura sin cortarse; cuando ya no se ve ninguna escena de crate se apagan despacio (Track.tick).
+     * La música es la de tfclient:sounds/crates/musica.ogg si un paquete de recursos la trae (la del dueño: el repo y las
+     * Releases son públicos, no va en el jar); si no, «Aerie» de Minecraft.
+     */
+    private static Track music, ambient;
+    private static volatile long sceneSeen;
+
+    private void loops() {
+        sceneSeen = System.nanoTime();
         if (minecraft == null) return;
-        Track s = new Track(tf(name), src, volume);
-        minecraft.getSoundManager().play(s);
-        tracks.add(s);
+        if (ambient == null || ambient.isStopped()) {
+            ambient = new Track(tf("ambiente"), SoundSource.AMBIENT, AMBIENT_VOL, true);
+            ambient.shared = true;
+            minecraft.getSoundManager().play(ambient);
+        }
+        if (music == null || music.isStopped()) {
+            boolean own = minecraft.getResourceManager().getResource(new ResourceLocation("tfclient", "sounds/crates/musica.ogg")).isPresent();
+            music = new Track(tf(own ? "musica" : "musica_mc"), SoundSource.MUSIC, own ? MUSIC_VOL : MC_MUSIC_VOL, true);
+            music.shared = true;
+            minecraft.getSoundManager().play(music);
+        }
     }
 
     /** La música y el ambiente: suenan en todas partes y al final se apagan despacio en vez de cortarse. */
     private static final class Track extends AbstractTickableSoundInstance {
         private final float base;
         private float fade = 1.0F, step;
+        /** La música o el ambiente compartidos (loops): se apagan solos cuando ya no hay escena de crate. */
+        boolean shared;
 
         Track(SoundEvent ev, SoundSource src, float volume) {
             this(ev, src, volume, false);
@@ -342,6 +363,7 @@ public class CrateCinematicScreen extends Screen {
 
         @Override
         public void tick() {
+            if (shared && step <= 0.0F && System.nanoTime() - sceneSeen > 600_000_000L) fadeOut(30);
             if (step <= 0.0F) return;
             fade -= step;
             if (fade <= 0.0F) {
@@ -360,15 +382,7 @@ public class CrateCinematicScreen extends Screen {
 
     private void sounds(int t) {
         switch (t) {
-            case 0 -> {
-                track("ambiente", SoundSource.AMBIENT, AMBIENT_VOL);
-                // (1.3.106, el dueño: «la música… estaba horrible») la de Minecraft, «Aerie» (Lena Raine), salvo que un
-                // paquete de recursos traiga la suya en tfclient:sounds/crates/musica.ogg (la canción del dueño); la
-                // sintetizada ya no va en el jar
-                boolean own = minecraft != null
-                        && minecraft.getResourceManager().getResource(new ResourceLocation("tfclient", "sounds/crates/musica.ogg")).isPresent();
-                track(own ? "musica" : "musica_mc", SoundSource.MUSIC, own ? MUSIC_VOL : MC_MUSIC_VOL);
-            }
+            // (la música y el ambiente: loops(), desde la pantalla de antes de abrir)
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
             case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
             case KEY_IN -> {
@@ -387,6 +401,8 @@ public class CrateCinematicScreen extends Screen {
             case REVEAL -> ui(tf("premio" + tier()), 1.0F, 1.0F);
             case TOTAL - 40 -> {
                 for (Track tr : tracks) tr.fadeOut(56);
+                if (music != null) music.fadeOut(56);
+                if (ambient != null) ambient.fadeOut(56);
             }
             default -> {}
         }
@@ -907,14 +923,11 @@ public class CrateCinematicScreen extends Screen {
         }
         lastFrame = now;
         float t = (float)((now - openNanos) / 5.0E7);
+        // (al acabar la apertura —sus últimos 2 s— la música y el ambiente se apagan: no se vuelven a poner)
+        if (idle || t < TOTAL - 40) loops();
         if (idle) {
             // (el reloj vuelve atrás cada media hora para no acercarse al tick 0, donde empieza la apertura)
             t = IDLE_T0 + t % 36000.0F;
-            if (tracks.isEmpty() && minecraft != null) {
-                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, AMBIENT_VOL, true);
-                tracks.add(tr);
-                minecraft.getSoundManager().play(tr);
-            }
         } else {
             int soundTick = (int)Math.floor(t);
             while (lastSoundTick < soundTick) {

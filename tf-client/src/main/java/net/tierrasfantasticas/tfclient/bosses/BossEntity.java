@@ -346,6 +346,14 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
         return cls != null && cls.bossInfo != null && cls.bossInfo.npc;
     }
 
+    /**
+     * (1.3.107) «jefe|mob» tal cual lo manda el servidor («npc_townsfolks_vol3|scene_townsfolk_sit_chair_1»): los muebles
+     * de los NPC (npcs/props.json) van por esto, sin depender de lo que el cliente haya cargado.
+     */
+    public String sceneKey() {
+        return this.entityData.get(KEY);
+    }
+
     /** El mob de su pack («scene_guard_stand»), o «» si aún no tiene. */
     public String mobName() {
         return def == null ? "" : def.name;

@@ -984,6 +984,16 @@
     "hostile": false,
     "options": {},
     "furniture": true
+   },
+   {
+    "mob": "mueble_barra",
+    "name": "Bar counter",
+    "model": "npc_tavern.mueble_barra",
+    "state": null,
+    "walks": false,
+    "hostile": false,
+    "options": {},
+    "furniture": true
    }
   ],
   "options": {

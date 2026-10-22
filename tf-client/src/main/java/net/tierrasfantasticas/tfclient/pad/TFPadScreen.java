@@ -737,30 +737,24 @@ public final class TFPadScreen extends Screen {
     private static final int GLASS_L = 205, GLASS_T = 250, GLASS_R = 1361, GLASS_B = 795; // build_pad.SCREEN_BOX
 
     /**
-     * El papel del cristal: monogramas «TF» pequeños y muy suaves en filas alternas que se deslizan despacio en
-     * diagonal (quietos sin animaciones). Van debajo de todo: se ven entre las apps y alrededor de las ventanas.
+     * (1.3.107; el dueño: «quita ese TF del pad, se ve horrible; cambia ese fondo; dibuja un TF oscuro de fondo como el
+     * logo de arriba a la izquierda») en vez del papel de monogramas «TF» repetidos: el logo de Tierras Fantásticas en
+     * azul noche (fondo_tf.png, tools/pad/fondo_tf.py), grande y centrado detrás de las apps.
      */
-    private void monograms(GuiGraphics g, int x0, int y0, int x1, int y1, int rgb) {
-        int sx = 46, sy = 30;
-        float t = PadSettings.animations ? PadSkin.time() : 0F;
-        float ox = (t * 3F) % sx, oy = (t * 2F) % (sy * 2);
-        int col = 0x1C000000 | rgb, shade = 0x0C000000;
-        for (int row = -2; row * sy + oy < y1 + sy; row++) {
-            float y = y0 + row * sy + oy;
-            float shift = (row & 1) == 0 ? 0 : sx / 2F;
-            for (float x = x0 - sx + ox + shift; x < x1 + sx; x += sx) {
-                g.pose().pushPose();
-                g.pose().translate(x, y, 0);
-                g.drawString(font, "TF", 1, 1, shade, false);
-                g.drawString(font, "TF", 0, 0, col, false);
-                g.pose().popPose();
-            }
-        }
+    private void emblem(GuiGraphics g) {
+        ResourceLocation loc = tex("fondo_tf");
+        int[] sz = size(loc);
+        if (sz[0] == 0) return;
+        float h = unitsH * EMBLEM_H, w = h * sz[0] / sz[1];
+        PadSkin.texture(g, loc, (unitsW - w) / 2F, (unitsH - h) / 2F + unitsH * 0.03F, w, h, EMBLEM_ALPHA, 0xFFFFFF, true);
     }
+
+    /** Lo alto del logo del fondo (del cristal) y lo que se ve. */
+    private static final float EMBLEM_H = 0.92F, EMBLEM_ALPHA = 0.55F;
 
     /**
      * La base del cristal en TODO su hueco (recortada a píxeles reales; el marco, que va encima, le da la forma): el
-     * color del tema en degradado (el de Cielo es el azul de marco.png), los monogramas, la trama y una sombra suave
+     * color del tema en degradado (el de Cielo es el azul de marco.png), el logo oscuro, la trama y una sombra suave
      * abajo. Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
      */
     /** Lo que el hueco del cristal sobresale de GX/GY/GW/GH a la izquierda, a la derecha y abajo (unidades). */
@@ -828,7 +822,7 @@ public final class TFPadScreen extends Screen {
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
         PadSettings.Theme th = PadSettings.theme();
         g.fillGradient(-mL, -mT, unitsW + mR, unitsH + mB, 0xFF000000 | th.top(), 0xFF000000 | th.bottom());
-        monograms(g, -mL, -mT, unitsW + mR, unitsH + mB, PadSettings.theme().deco());
+        emblem(g);
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
         // debajo quedaba más clara y parecía otra pantalla detrás

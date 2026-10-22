@@ -1368,7 +1368,7 @@ public final class BossTest {
             {"npc_townsfolks_vol3", "scene_townsfolk_sit_chair_4"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_back_1"},
             {"npc_townsfolks_vol3", "scene_townsfolk_readers_book_2"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_front_2"},
             {"npc_tavern", "mueble_mesa_taberna"}, {"npc_tavern", "mueble_silla_taberna"}, {"npc_tavern", "mueble_jarra"},
-            {"npc_tavern", "mueble_sofa"}};
+            {"npc_tavern", "mueble_sofa"}, {"npc_tavern", "scene_tavern_bartender"}, {"npc_tavern", "mueble_barra"}};
 
     private static Vec3 mueble(Vec3 o, int i) {
         return new Vec3(o.x - 60 + (i % 4) * 3.5, o.y, o.z + 100 + (i / 4) * 14);
@@ -1643,7 +1643,7 @@ public final class BossTest {
             case 1030 -> shot(r, "npc_duo_a");
             case 1034 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 - 3.2, o.x - 36, o.y + 1.1, o.z + 70);
             case 1074 -> shot(r, "npc_duo_b");
-            case 1570 -> next(level);
+            case 1720 -> next(level);
             default -> { }
         }
         // (1.3.106) De cerca, los NPC que se sientan o se tumban en algo, con sus muebles (tools/npcs/muebles.py), y los
@@ -1659,7 +1659,7 @@ public final class BossTest {
             }
         }
         int m0 = 1090 + MUEBLES.length * 8 + 10;
-        for (int mg = 0; mg < 3; mg++) {
+        for (int mg = 0; mg < (MUEBLES.length + 3) / 4; mg++) {
             Vec3 ma = mueble(o, mg * 4), mz = mueble(o, Math.min(MUEBLES.length - 1, mg * 4 + 3));
             double mx = (ma.x + mz.x) / 2;
             if (f == m0 + mg * 120) look(player, level, mx + 2.5, o.y + 2.6, ma.z + 6.5, mx, o.y + 0.7, ma.z);
