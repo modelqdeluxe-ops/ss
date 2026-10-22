@@ -137,6 +137,12 @@ def plantillas(rng, nom):
         ("leet+cifras", 2, lambda: leet(nom + rng.choice(["", iniciales(rng, 1)])) + cifras(rng, 2)),
         ("MAYÚSCULAS+cifras", 1, lambda: leet(nom).upper() + cifras(rng, 2)),
         ("apodo+palabra", 3, lambda: nom + rng.choice(["crack", "pro", "gamer", "mc", "uwu", "god"]) + rng.choice(["", cifras(rng, 2)])),
+        ("inicial+apodo+cifras", 2, lambda: rng.choice("dmjklt") + nom + cifras(rng, 2)),
+        ("dos apodos", 2, lambda: nom + rng.choice([n for n in CHICO + CHICA if n != nom])[:3] + rng.choice(["", cifras(rng, 4)])),
+        ("El_Apodo", 1, lambda: ("La_" if nom in CHICA else "El_") + N + rng.choice(["", "x"])),
+        ("apodo+xx", 2, lambda: nom + rng.choice(["xx", "zz", "kk"])),
+        ("diminutivo+cifras", 2, lambda: re.sub(r"[aeiou]$", "", nom) + ("ita" if nom in CHICA else "ito") + cifras(rng, 2)),
+        ("The+Palabra+cifras", 1, lambda: "The" + en() + cifras(rng, 3)),
         ("xApodo", 1, lambda: "x" + N + rng.choice(["", cifras(rng, 2)])),
     ]
 
