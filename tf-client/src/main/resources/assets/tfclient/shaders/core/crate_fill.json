@@ -1,0 +1,10 @@
+{
+    "vertex": "tfclient:crate_quad",
+    "fragment": "tfclient:crate_fill",
+    "attributes": ["Position"],
+    "samplers": [{"name": "InSampler"}, {"name": "DepthSampler"}],
+    "uniforms": [
+        {"name": "InTexel", "type": "float", "count": 2, "values": [0.001, 0.001]},
+        {"name": "Clip", "type": "float", "count": 2, "values": [0.05, 220.0]}
+    ]
+}

@@ -445,11 +445,8 @@ def premio(level):
     return norm(fade_out(out, 1.6), 0.9)
 
 
-SOUNDS = {
-    'ambiente': ambiente, 'musica': musica, 'llave_aparece': llave_aparece, 'llave_entra': llave_entra,
-    'llave_gira': llave_gira, 'runas': runas, 'tiembla': tiembla, 'apertura': apertura, 'tic': tic, 'parada': parada,
-    'premio1': lambda: premio(1), 'premio2': lambda: premio(2), 'premio3': lambda: premio(3),
-}
+# (1.3.113) los efectos (la llave, la ruleta, la apertura, el premio…) ya no salen de aquí: los hace sfx_crates.py
+SOUNDS = {'ambiente': ambiente, 'musica': musica}
 
 
 def main():

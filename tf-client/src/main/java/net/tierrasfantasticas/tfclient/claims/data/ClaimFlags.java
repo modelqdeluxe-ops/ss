@@ -20,6 +20,8 @@ public class ClaimFlags {
     public String welcomeMessage = "";
     public boolean showLeave = false;
     public String leaveMessage = "";
+    /** (1.3.113) Los mensajes al entrar y al salir, como título en medio de la pantalla (si no, encima de la barra). */
+    public boolean messageAsTitle = false;
     public boolean showBorder = false;
     public boolean showParticles = false;
     public String borderParticle = "minecraft:happy_villager";

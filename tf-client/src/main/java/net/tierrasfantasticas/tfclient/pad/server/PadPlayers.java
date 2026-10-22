@@ -29,6 +29,7 @@ import net.tierrasfantasticas.tfclient.pad.PadConfig;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
+import net.tierrasfantasticas.tfclient.server.TFBots;
 import net.tierrasfantasticas.tfclient.server.TFRanks;
 import net.tierrasfantasticas.tfclient.util.TFChat;
 
@@ -63,42 +64,52 @@ public final class PadPlayers {
                 UUID who = uuid(tab.substring(2));
                 if (who != null) return tab.startsWith("r:") && !who.equals(player.getUUID()) ? gift(player, who) : profile(player, who);
             }
-            List<ServerPlayer> online = new ArrayList<>(player.getServer().getPlayerList().getPlayers());
-            online.sort(Comparator.comparing((ServerPlayer p) -> !p.getUUID().equals(player.getUUID()))
-                    .thenComparing(p -> p.getGameProfile().getName(), String.CASE_INSENSITIVE_ORDER));
+            // los de verdad y los bots de /tf bots (1.3.113: salen igual, con su cara y su ficha)
+            record Who(UUID id, String name) {}
+            List<Who> online = new ArrayList<>();
+            for (ServerPlayer p : player.getServer().getPlayerList().getPlayers()) online.add(new Who(p.getUUID(), p.getGameProfile().getName()));
+            for (TFBots.Bot bot : TFBots.online()) online.add(new Who(bot.id(), bot.name()));
+            online.sort(Comparator.comparing((Who p) -> !p.id().equals(player.getUUID()))
+                    .thenComparing(Who::name, String.CASE_INSENSITIVE_ORDER));
             PadView.Builder b = PadView.of("jugadores").header(online.size() + (online.size() == 1 ? " conectado" : " conectados")
                     + (PadConfig.on("regalos.activado") ? " · pulsa uno para ver su ficha o hacerle un regalo." : " · pulsa uno para ver su ficha."));
-            for (ServerPlayer p : online) {
-                String name = p.getGameProfile().getName();
-                TFRanks.Rank rank = TFRanks.of(p.getUUID());
-                boolean me = p.getUUID().equals(player.getUUID());
+            for (Who p : online) {
+                TFRanks.Rank rank = TFRanks.of(p.id());
+                boolean me = p.id().equals(player.getUUID());
                 int color = rank != null && rank.hex() >= 0 ? rank.hex() : 0x3496FA;
-                b.card(PadClans.head(p.getUUID(), name), me ? name + " (tú)" : name, color, rank == null ? "" : rank.name(),
-                        "tab:f:" + p.getUUID(), me);
+                b.card(PadClans.head(p.id(), p.name()), me ? p.name() + " (tú)" : p.name(), color, rank == null ? "" : rank.name(),
+                        "tab:f:" + p.id(), me);
             }
             return b.build();
         }
 
         private static PadView.Builder tabs(ServerPlayer viewer, UUID uuid, String sel) {
             PadView.Builder b = PadView.of("jugadores").tab("f:" + uuid, "FICHA");
-            if (!uuid.equals(viewer.getUUID()) && PadConfig.on("regalos.activado")) b.tab("r:" + uuid, "REGALAR");
+            if (!uuid.equals(viewer.getUUID()) && TFBots.byId(uuid) == null && PadConfig.on("regalos.activado")) b.tab("r:" + uuid, "REGALAR");
             return b.selected(sel + uuid);
         }
 
         private static String name(ServerPlayer viewer, UUID uuid) {
             ServerPlayer online = viewer.getServer().getPlayerList().getPlayer(uuid);
-            return online != null ? online.getGameProfile().getName() : PadStats.nameOf(uuid);
+            TFBots.Bot bot = TFBots.byId(uuid);
+            return online != null ? online.getGameProfile().getName() : bot != null ? bot.name() : PadStats.nameOf(uuid);
         }
 
         private PadView profile(ServerPlayer viewer, UUID uuid) {
             String name = name(viewer, uuid);
-            boolean online = viewer.getServer().getPlayerList().getPlayer(uuid) != null;
+            TFBots.Bot bot = TFBots.byId(uuid);
+            boolean online = viewer.getServer().getPlayerList().getPlayer(uuid) != null || bot != null;
             TFRanks.Rank rank = TFRanks.of(uuid);
             PadView.Builder b = tabs(viewer, uuid, "f:");
             b.row(new PadView.Row(PadClans.head(uuid, name), name, TEXT, List.of((rank == null ? "Sin rango" : rank.name())
                     + " · " + (online ? "conectado" : "desconectado")), -1, "", null, null));
             String clan = PadClans.clanNameOf(uuid);
             b.row(info(new ItemStack(Items.WHITE_BANNER), "Clan", clan.isEmpty() ? "Sin clan" : clan));
+            if (bot != null) {
+                botRows(b, bot);
+                b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
+                return b.build();
+            }
             // los tres oficios con más nivel
             var jobs = TFJobsData.get(viewer.getServer()).player(uuid).jobs;
             List<Map.Entry<String, TFJobsData.JobProgress>> top = new ArrayList<>(jobs.entrySet());
@@ -147,6 +158,21 @@ public final class PadPlayers {
                 b.input("monedas:" + uuid, "MONEDAS", 12, "REGALAR");
             }
             return b.build();
+        }
+
+        /** La ficha de un bot: sus oficios y lo que ha hecho, de TFBots.card (nunca a 0 ni con clan). */
+        private static void botRows(PadView.Builder b, TFBots.Bot bot) {
+            TFBots.Card c = TFBots.card(bot, new ArrayList<>(TFJobsConfig.jobs.keySet()), TFJobsConfig.maxJobs);
+            StringBuilder js = new StringBuilder();
+            for (int i = 0; i < c.jobs().size(); i++) {
+                TFJobsConfig.Job job = TFJobsConfig.job(c.jobs().get(i));
+                if (js.length() > 0) js.append(" · ");
+                js.append(job == null ? c.jobs().get(i) : job.name()).append(" ").append(c.jobLevels()[i]);
+            }
+            b.row(info(new ItemStack(Items.IRON_PICKAXE), "Oficios", js.length() == 0 ? "Sin oficio" : js.toString()));
+            b.row(info(new ItemStack(Items.WRITABLE_BOOK), "Misiones y cazas", c.missions() + " misiones · " + c.hunts() + " cazas"));
+            b.row(info(new ItemStack(Items.PAINTING), "Comunidad", c.photos() + " fotos · " + c.likes() + " likes recibidos"));
+            b.row(info(new ItemStack(Items.SPYGLASS), "Aventura", c.explores() + " exploraciones · " + c.travels() + " viajes"));
         }
 
         private static PadView.Row info(ItemStack icon, String title, String value) {

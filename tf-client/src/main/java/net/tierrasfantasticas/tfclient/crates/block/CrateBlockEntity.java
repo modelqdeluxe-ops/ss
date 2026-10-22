@@ -36,7 +36,6 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -945,7 +944,7 @@ public class CrateBlockEntity extends BlockEntity {
             if (idx != this.lastReelIndex) {
                this.lastReelIndex = idx;
                float pitch = 0.85F + rp * 0.45F;
-               this.play(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 0.22F, pitch);
+               CrateSfx.tick(this.sfx, 0.5F, pitch);
             }
          }
 

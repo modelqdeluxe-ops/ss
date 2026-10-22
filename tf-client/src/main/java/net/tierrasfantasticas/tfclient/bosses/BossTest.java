@@ -1822,8 +1822,6 @@ public final class BossTest {
                 java.util.List<String> both = new java.util.ArrayList<>(second);
                 both.retainAll(botsFirst);
                 r.event("bots, segunda tanda: " + second + "; repetidos de la primera: " + both.size());
-                var src = player.createCommandSourceStack().withPermission(4);
-                level.getServer().getCommands().performPrefixedCommand(src, "tf bots remove all");
             }
             // (1.3.109, el dueño: «dale rework a la textura de las claims, pon texturas buenas, oscuras») las diez piedras
             // de protección en fila, de cerca
@@ -1842,10 +1840,79 @@ public final class BossTest {
                 net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(arena.x - 9, arena.y, arena.z + 7);
                 for (int i = 0; i < 10; i++) level.setBlock(base.offset(i * 2, 0, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
-            case 684 -> next(level);
+            // (1.3.113, el dueño: «los bots debe reconocerlos el pad, deben salir conectados, con trabajos y datos») la
+            // lista de Jugadores del pad con los bots de la segunda tanda y la ficha de uno
+            case 686 -> openPad = "jugadores";
+            case 720 -> shot(r, "pad_jugadores");
+            case 722 -> {
+                var bots = net.tierrasfantasticas.tfclient.server.TFBots.online();
+                if (!bots.isEmpty()) {
+                    openPad = "jugadores/f:" + bots.get(0).id();
+                    var c = net.tierrasfantasticas.tfclient.server.TFBots.card(bots.get(0),
+                            new java.util.ArrayList<>(net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.jobs.keySet()),
+                            net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.maxJobs);
+                    r.event("pad: ficha del bot " + bots.get(0).name() + ": oficios " + c.jobs() + " " + java.util.Arrays.toString(c.jobLevels())
+                            + ", " + c.missions() + " misiones, " + c.hunts() + " cazas, " + c.photos() + " fotos, " + c.likes() + " likes, "
+                            + c.explores() + " exploraciones, " + c.travels() + " viajes");
+                }
+            }
+            case 756 -> shot(r, "pad_jugadores_bot");
+            // (1.3.113, el dueño: «etiqueta solapada en el TF Pass y los números muy pegados abajo»)
+            case 758 -> openPad = "pase";
+            case 800 -> shot(r, "pad_pase");
+            case 802 -> {
+                closeScreen = true;
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots remove all");
+                // (1.3.113, el dueño: «el mensaje de bienvenida como un título, tipo Casa de Juan, sin (protección)») una
+                // zona con su mensaje como título, a la que se entra
+                var claim = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance().createClaim(level,
+                        net.minecraft.core.BlockPos.containing(arena.x + 60, arena.y, arena.z), player,
+                        net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_25x25"));
+                if (claim != null) {
+                    claim.getFlags().welcomeMessage = "Casa de Juan";
+                    claim.getFlags().showWelcome = true;
+                    claim.getFlags().messageAsTitle = true;
+                    padClaim = claim.getClaimId();
+                }
+                r.event("zona con título: " + (claim == null ? "NO SE CREÓ" : padClaim));
+            }
+            case 806 -> player.teleportTo(level, arena.x + 60, arena.y, arena.z, 0F, 0F);
+            case 826 -> shot(r, "proteccion_titulo");
+            case 830 -> {
+                if (padClaim != null) {
+                    var cm = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance();
+                    var c = cm.findClaimById(padClaim);
+                    if (c != null) cm.removeClaim(level, new net.minecraft.core.BlockPos(c.getX(), c.getY(), c.getZ()));
+                }
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+            }
+            // (1.3.113, el dueño: «no arreglaste la textura del modelo Oni, ¿no ves esa flecha?») las lanzas de Oni en
+            // las dos manos, mirando al cielo como en su captura, y desde delante
+            case 834 -> {
+                for (var hand : net.minecraft.world.InteractionHand.values()) {
+                    net.minecraft.world.item.Item it = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(
+                            "tfclient", hand == net.minecraft.world.InteractionHand.MAIN_HAND ? "oni_left_spear" : "oni_right_spear"));
+                    player.setItemInHand(hand, it == null ? ItemStack.EMPTY : new ItemStack(it));
+                }
+                r.event("en las manos: " + player.getMainHandItem().getItem() + " y " + player.getOffhandItem().getItem());
+                player.teleportTo(level, arena.x, arena.y, arena.z, 20F, -40F);
+            }
+            case 850 -> shot(r, "oni_lanzas_mano");
+            case 852 -> cameraType = 2;
+            case 868 -> shot(r, "oni_lanzas_delante");
+            case 870 -> {
+                cameraType = 0;
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            }
+            case 874 -> next(level);
             default -> { }
         }
     }
+
+    /** (1.3.113) La cámara del cliente de la prueba: 0 primera persona, 1 de espaldas, 2 de frente (-1: no se toca). */
+    static volatile int cameraType = -1;
 
     private static java.util.List<String> botsFirst = java.util.List.of();
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * El TF Pass, el pase de temporada gratis. 1.3.67, rehecho de cero como un MAPA DE LA TEMPORADA (el dueño: «el pase
@@ -463,7 +464,7 @@ final class PadPassPage extends PadDataPage {
         // el premio
         List<JsonObject> prizes = list(l, "p");
         if (!prizes.isEmpty()) {
-            PadUi.item(g, stack(prizes.get(0)), Math.round(cx - 16), Math.round(cy - 16), 2);
+            prize(g, stack(prizes.get(0)), cx, cy, r);
             if (prizes.size() > 1) {
                 String more = "+" + (prizes.size() - 1);
                 g.pose().pushPose();
@@ -478,7 +479,10 @@ final class PadPassPage extends PadDataPage {
         g.pose().translate(0, 0, 220);
         if (state == 0 && n > lv) {
             PadSkin.disc(g, cx, cy, r - 3, 0x80E4EEF8);
-            lock(g, Math.round(cx + r - 9), Math.round(cy + r - 11), 0xFF6A80A4);
+            // el candado en su chapa redonda, como la marca de lo cobrado (suelto, pisaba el aro y el camino)
+            PadSkin.disc(g, cx + r - 5, cy + r - 6, 6, 0xFF102040);
+            PadSkin.disc(g, cx + r - 5, cy + r - 6, 5, 0xFF8FA6C8);
+            lock(g, Math.round(cx + r - 8.5F), Math.round(cy + r - 10), 0xFF102040);
         } else if (state == 2) {
             PadSkin.disc(g, cx + r - 5, cy + r - 6, 6, PadUi.GOLD_LO);
             PadSkin.disc(g, cx + r - 5, cy + r - 6, 5, PadUi.GOLD);
@@ -489,10 +493,12 @@ final class PadPassPage extends PadDataPage {
             }
         }
         // la placa con el número
+        // (1.3.113, el dueño: «esos números están muy pegados en la parte inferior de su tarjeta») la placa 1 más alta
+        // y más separada del medallón: la cifra (7 de alto, 2 por debajo de su y) con 2 libres arriba y abajo
         String num = Integer.toString(n);
-        int pw = Math.max(16, PadFont.width(num) + 8), px = Math.round(cx - pw / 2F), py = Math.round(cy + r + 1);
-        PadUi.box(g, px, py, pw, 11, 0xFF102040);
-        g.fillGradient(px + 1, py + 1, px + pw - 1, py + 10, state > 0 ? PadUi.GOLD_HI : 0xFFF2F7FD, state > 0 ? PadUi.GOLD : 0xFFC4D6EA);
+        int pw = Math.max(16, PadFont.width(num) + 8), px = Math.round(cx - pw / 2F), py = Math.round(cy + r + 2);
+        PadUi.box(g, px, py, pw, 12, 0xFF102040);
+        g.fillGradient(px + 1, py + 1, px + pw - 1, py + 11, state > 0 ? PadUi.GOLD_HI : 0xFFF2F7FD, state > 0 ? PadUi.GOLD : 0xFFC4D6EA);
         PadFont.drawCentered(g, num, Math.round(cx), py + 1, state > 0 ? 0x5A3A00 : 0x34507E, false);
         // los hitos, con su banderín
         if (big) {
@@ -517,6 +523,28 @@ final class PadPassPage extends PadDataPage {
             PadFont.drawShadow(g, "COBRAR", tx + tu + 4, ty + 2, 0xFFFFFF, 0xFF0E5626);
             for (int i = 0; i < 3; i++) g.fill(Math.round(cx) - 2 + i, ty + 12 + i, Math.round(cx) + 3 - i, ty + 13 + i, 0xFF1A9442);
         }
+        g.pose().popPose();
+    }
+
+    /**
+     * El premio dentro del medallón (1.3.113, el dueño: «etiqueta solapada en el TF Pass»): a 1,5 (a 2 se salía del
+     * círculo blanco y la etiqueta de la cantidad, en su esquina, pisaba el aro y el camino); la cantidad, centrada abajo
+     * dentro del círculo.
+     */
+    private static void prize(GuiGraphics g, ItemStack s, float cx, float cy, int r) {
+        boolean many = s.getCount() > 1;
+        g.pose().pushPose();
+        g.pose().translate(cx - 12, cy - 12 - (many ? 2 : 0), 0);
+        g.pose().scale(1.5F, 1.5F, 1);
+        g.renderItem(s, 0, 0);
+        g.pose().popPose();
+        if (!many) return;
+        String c = PadView.countLabel(s.getCount(), true);
+        int w = PadFont.width(c) + 6, bx = Math.round(cx - w / 2F), by = Math.round(cy + r - 14);
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
+        PadUi.box(g, bx, by, w, 10, 0xFF22346E);
+        PadFont.draw(g, c, bx + 3, by, 0xFFFFFF, false);
         g.pose().popPose();
     }
 

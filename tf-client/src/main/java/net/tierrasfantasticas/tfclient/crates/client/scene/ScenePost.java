@@ -39,6 +39,11 @@ public final class ScenePost {
     static ShaderInstance sky, bloom, post, water;
     /** (1.3.106) Los de los efectos de luz (SceneFx): lo que suma con textura, los rayos y lo translúcido. */
     static ShaderInstance fxGlow, fxRays, fxSoft;
+    /** (1.3.113) Tapa las rendijas entre caras por las que se veía el cielo (crate_fill.fsh). */
+    static ShaderInstance fill;
+    /** (1.3.113) Para la prueba en el juego (CrateCinematicScreen.testOff): sin supermuestreo, sin nitidez ni suavizado
+     *  (la claridad y el FXAA de crate_post) y sin tapar rendijas, para saber qué pinta las rayas. */
+    public static volatile boolean testScale1, testNoSharp, testNoFill;
     /** Desde qué brillo florece (el agua turquesa y las luces sí; la crate y la piedra, no). */
     static final float THRESHOLD = 0.78F;
     /**
@@ -51,7 +56,7 @@ public final class ScenePost {
     private static int timed, slow;
     private static long lastFrame;
     private int scale = 1, outW, outH;
-    private TextureTarget scene, half, a, b, c, d;
+    private TextureTarget scene, fixed, half, a, b, c, d;
 
     public static boolean ready() {
         return sky != null && bloom != null && post != null;
@@ -64,6 +69,7 @@ public final class ScenePost {
 
     /** A cuántas muestras por lado va la escena en una ventana de w x h (2 hasta 2560 x 1440 si la tarjeta puede). */
     private static int scaleFor(int w, int h) {
+        if (testScale1) return 1;
         int max = RenderSystem.maxSupportedTextureSize();
         return ssaa > 1 && (long)w * h <= 2560L * 1440L && w * ssaa <= max && h * ssaa <= max ? ssaa : 1;
     }
@@ -97,13 +103,14 @@ public final class ScenePost {
         outW = w;
         outH = h;
         scene = new TextureTarget(w * s, h * s, true, Minecraft.ON_OSX);
+        fixed = new TextureTarget(w * s, h * s, false, Minecraft.ON_OSX);
         // (la escena bajada a la pantalla, de donde salen el resplandor y el desenfoque, como antes)
         half = s > 1 ? new TextureTarget(w, h, false, Minecraft.ON_OSX) : null;
         a = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         b = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         c = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         d = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
-        for (RenderTarget t : new RenderTarget[] {scene, half, a, b, c, d}) {
+        for (RenderTarget t : new RenderTarget[] {scene, fixed, half, a, b, c, d}) {
             if (t == null) continue;
             t.setFilterMode(GL11.GL_LINEAR);
             t.setClearColor(0, 0, 0, 1);
@@ -156,10 +163,22 @@ public final class ScenePost {
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
         float tw = 1.0F / a.width, th = 1.0F / a.height;
-        // 0) con supermuestreo, la escena a la pantalla (cada píxel, la media de sus cuatro muestras)
-        RenderTarget src = scene;
+        // 0) (1.3.113) las rendijas por las que se veía el cielo, tapadas con lo de sus lados (crate_fill.fsh)
+        RenderTarget full = scene;
+        if (fill != null && fixed != null && !testNoFill) {
+            fixed.bindWrite(true);
+            ShaderInstance fs = fill;
+            fs.setSampler("InSampler", scene.getColorTextureId());
+            fs.setSampler("DepthSampler", scene.getDepthTextureId());
+            fs.safeGetUniform("InTexel").set(1.0F / scene.width, 1.0F / scene.height);
+            fs.safeGetUniform("Clip").set(near, far);
+            quad(fs);
+            full = fixed;
+        }
+        // 0b) con supermuestreo, la escena a la pantalla (cada píxel, la media de sus cuatro muestras)
+        RenderTarget src = full;
         if (half != null) {
-            pass(scene, half, 2, 0.5F / scene.width, 0.5F / scene.height, 0, 0);
+            pass(full, half, 2, 0.5F / full.width, 0.5F / full.height, 0, 0);
             src = half;
         }
         // 1) se baja a un cuarto y se queda lo que brilla
@@ -178,7 +197,7 @@ public final class ScenePost {
         // 3) la imagen final, en la pantalla
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
         ShaderInstance sh = post;
-        sh.setSampler("SceneSampler", scene.getColorTextureId());
+        sh.setSampler("SceneSampler", full.getColorTextureId());
         sh.setSampler("BloomSampler", a.getColorTextureId());
         sh.setSampler("BlurSampler", c.getColorTextureId());
         sh.setSampler("DepthSampler", scene.getDepthTextureId());
@@ -191,6 +210,7 @@ public final class ScenePost {
         sh.safeGetUniform("Exposure").set(exposure);
         sh.safeGetUniform("Time").set(time);
         sh.safeGetUniform("SceneScale").set((float)scale);
+        sh.safeGetUniform("Sharp").set(testNoSharp ? 0.0F : 1.0F);
         quad(sh);
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
@@ -220,10 +240,10 @@ public final class ScenePost {
     }
 
     public void close() {
-        for (RenderTarget t : new RenderTarget[] {scene, half, a, b, c, d}) {
+        for (RenderTarget t : new RenderTarget[] {scene, fixed, half, a, b, c, d}) {
             if (t != null) t.destroyBuffers();
         }
-        scene = half = a = b = c = d = null;
+        scene = fixed = half = a = b = c = d = null;
     }
 
     /** Los registra Forge al cargar los recursos. */
@@ -240,6 +260,8 @@ public final class ScenePost {
                         DefaultVertexFormat.POSITION), s -> bloom = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_post"),
                         DefaultVertexFormat.POSITION), s -> post = s);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_fill"),
+                        DefaultVertexFormat.POSITION), s -> fill = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_water"),
                         DefaultVertexFormat.POSITION_COLOR_TEX), s -> water = s);
                 event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_fx_glow"),

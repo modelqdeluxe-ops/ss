@@ -250,6 +250,10 @@ public final class PadClaims {
                     else f.showLeave = on;
                     manager.save();
                 }
+                case "estilo" -> { // estilo:<zona>:1|0 (1.3.113: los mensajes como título o encima de la barra)
+                    f.messageAsTitle = arg.equals("1");
+                    manager.save();
+                }
                 case "editar" -> PadServer.put(player, "protecciones.editar", arg);
                 case "texto" -> {
                     String what = PadServer.get(player, "protecciones.editar", "");
@@ -536,6 +540,9 @@ public final class PadClaims {
                 answer("SÍ", f.showLeave, "msg:" + id + ":salir:1"), answer("NO", !f.showLeave, "msg:" + id + ":salir:0")));
         b.row(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Escribir el mensaje al salir", TEXT, List.of(), -1, "",
                 PadView.Btn.of("EDITAR", "editar:" + id + ":salir", PadView.BLUE), null).selected(editing.equals("salir")));
+        b.row(new PadView.Row(new ItemStack(Items.NAME_TAG), "¿Cómo se ven los mensajes?", TEXT,
+                List.of(f.messageAsTitle ? "Como título, en medio de la pantalla." : "Encima de la barra, como siempre."), -1, "",
+                answer("TÍTULO", f.messageAsTitle, "estilo:" + id + ":1"), answer("BARRA", !f.messageAsTitle, "estilo:" + id + ":0")));
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
         if (g == null) {
             b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Unir zonas en un grupo", TEXT,

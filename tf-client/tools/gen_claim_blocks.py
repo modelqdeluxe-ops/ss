@@ -40,14 +40,6 @@ TIERS = [
 ]
 PAID = {"250x250", "300x300", "500x500"}
 
-# el marco: piedra negra pulida o, en las de pago, oro viejo oscuro (base, canto de luz y de sombra, el borde del
-# hueco y los remaches)
-STONE = {"base": (36, 38, 48), "hi": (66, 70, 86), "lo": (14, 15, 20), "in_lo": (10, 11, 15), "in_hi": (54, 58, 72),
-         "stud": (104, 110, 128), "stud_hi": (150, 156, 176)}
-GOLD = {"base": (78, 60, 28), "hi": (150, 114, 52), "lo": (34, 24, 10), "in_lo": (22, 16, 6), "in_hi": (120, 92, 42),
-        "stud": (190, 150, 72), "stud_hi": (238, 204, 120)}
-PANEL = (16, 17, 23)
-
 # las letras TF (6 de ancho cada una, 2 de hueco, 10 de alto)
 GLYPH_T = ["######", "######", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##.."]
 GLYPH_F = ["######", "######", "##....", "##....", "#####.", "#####.", "##....", "##....", "##....", "##...."]
@@ -57,27 +49,95 @@ def mix(a, b, t):
     return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
 
 
-def frame(seed, m):
-    """La piedra (o el oro) del marco: un grano muy suave (vetas oscuras) y el canto (2 px) con luz arriba/izquierda y
-    sombra abajo/derecha."""
+# 1.3.113 (el dueño: «no me gusta el diseño de las piedras, sus contornos y eso; dale rework a todas y no pongas en
+# todas las caras el TF»): fuera el marco biselado de 2 px, el panel hundido y los remaches. Ahora es un bloque de piedra
+# oscura de verdad (grano en dos escalas y alguna grieta, como la pizarra profunda pulida), con un canto de 1 px apenas
+# marcado, y por dentro **vetas de cristal** del color del nivel que brillan de noche (como la obsidiana llorosa). Las
+# letras TF, grabadas y del color, **solo en la cara de delante**; los lados, solo piedra y vetas; arriba, las vetas
+# salen de un cristal en bruto en el centro; abajo, solo piedra. Las de pago (250, 300 y 500), con pepitas de oro en la
+# piedra (como la piedra negra dorada) y las vetas más gruesas.
+STONE = (38, 40, 50)
+STONE_PAID = (40, 36, 40)
+
+
+def noise2(rnd, cell):
+    """Ruido de valores suave (celdas de `cell` px, interpolado y que da la vuelta): para el grano grande."""
+    n = N // cell
+    g = [[rnd.uniform(-1, 1) for _ in range(n)] for _ in range(n)]
+    out = {}
+    for y in range(N):
+        for x in range(N):
+            fx, fy = x / cell, y / cell
+            x0, y0 = int(fx) % n, int(fy) % n
+            x1, y1 = (x0 + 1) % n, (y0 + 1) % n
+            tx, ty = fx - int(fx), fy - int(fy)
+            tx, ty = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
+            a = g[y0][x0] + (g[y0][x1] - g[y0][x0]) * tx
+            b = g[y1][x0] + (g[y1][x1] - g[y1][x0]) * tx
+            out[x, y] = a + (b - a) * ty
+    return out
+
+
+def stone(seed, paid):
+    """La piedra: grano grande y fino, alguna grieta oscura y el canto de 1 px (luz arriba-izquierda, sombra abajo-derecha,
+    muy suave)."""
     rnd = random.Random(seed)
+    base = STONE_PAID if paid else STONE
+    big, mid = noise2(rnd, 8), noise2(rnd, 4)
     px = {}
     for y in range(N):
         for x in range(N):
-            v = rnd.choice((-3, -2, -1, 0, 0, 0, 1, 2))
-            if rnd.random() < 0.04:
-                v -= 6  # alguna veta
-            px[x, y] = tuple(max(0, min(255, c + v)) for c in m["base"])
+            v = big[x, y] * 7 + mid[x, y] * 4 + rnd.choice((-2, -1, 0, 0, 1, 2))
+            px[x, y] = tuple(max(0, min(255, int(c + v))) for c in base)
+    # grietas: cortas, de 1 px, un poco más oscuras
+    for _ in range(3):
+        x, y = rnd.randrange(N), rnd.randrange(N)
+        dx = rnd.choice((-1, 1))
+        for _ in range(rnd.randint(4, 8)):
+            if 0 <= x < N and 0 <= y < N:
+                px[x, y] = mix(px[x, y], (6, 6, 9), 0.55)
+            y += 1
+            x += dx if rnd.random() < 0.5 else 0
+    if paid:  # pepitas de oro (2-3 px, con su brillo)
+        for _ in range(7):
+            x, y = rnd.randrange(2, N - 3), rnd.randrange(2, N - 3)
+            px[x, y] = (214, 170, 74)
+            px[x + 1, y] = (150, 112, 44)
+            if rnd.random() < 0.6:
+                px[x, y + 1] = (120, 88, 34)
+            px[x - 1, y - 1] = mix(px[x - 1, y - 1], (246, 220, 140), 0.35)
     for i in range(N):
-        for j in range(2):
-            px[i, j] = px[j, i] = m["hi"] if j == 0 else mix(m["hi"], m["base"], 0.5)
-            px[i, N - 1 - j] = px[N - 1 - j, i] = m["lo"] if j == 0 else mix(m["lo"], m["base"], 0.5)
-    # los remaches de las esquinas (2x2 con su brillo)
-    for cx, cy in ((2, 2), (N - 4, 2), (2, N - 4), (N - 4, N - 4)):
-        px[cx, cy] = m["stud_hi"]
-        px[cx + 1, cy] = px[cx, cy + 1] = m["stud"]
-        px[cx + 1, cy + 1] = mix(m["stud"], m["lo"], 0.5)
+        px[i, 0] = mix(px[i, 0], (255, 255, 255), 0.10)
+        px[0, i] = mix(px[0, i], (255, 255, 255), 0.07)
+        px[i, N - 1] = mix(px[i, N - 1], (0, 0, 0), 0.40)
+        px[N - 1, i] = mix(px[N - 1, i], (0, 0, 0), 0.30)
     return px
+
+
+def veins(rnd, starts, steps, avoid=frozenset(), branches=1):
+    """Vetas que serpentean (el rumbo gira poco a poco, como una grieta de verdad) desde (x, y, ángulo en grados); alguna
+    se abre en dos. Sin salirse del bloque ni pisar lo de `avoid`."""
+    import math
+    cells, seen = [], set()
+    todo = [(float(x), float(y), math.radians(a), steps) for x, y, a in starts]
+    while todo:
+        x, y, ang, left = todo.pop(0)
+        turn = 0.0
+        for k in range(left):
+            c = (int(round(x)), int(round(y)))
+            if not (1 <= c[0] < N - 1 and 1 <= c[1] < N - 1) or c in avoid:
+                break
+            if c not in seen:
+                seen.add(c)
+                cells.append(c)
+            turn = max(-0.5, min(0.5, turn + rnd.uniform(-0.22, 0.22)))
+            ang += turn * 0.5
+            x += math.cos(ang)
+            y += math.sin(ang)
+            if branches > 0 and k > 3 and rnd.random() < 0.09:
+                branches -= 1
+                todo.append((x, y, ang + rnd.choice((-1, 1)) * rnd.uniform(0.6, 1.0), max(3, (left - k) // 2)))
+    return cells
 
 
 def letters():
@@ -96,39 +156,61 @@ def letters():
 
 
 def face(kind, label, color, seed):
-    """Una cara: el marco y, menos abajo, el panel hundido casi negro con su filo de luz y las letras TF grabadas, que
-    brillan del color del nivel (lit: lo que va también en la capa _glow, a plena luz)."""
-    m = GOLD if label in PAID else STONE
-    px = frame(seed, m)
+    """Una cara (lit: lo que va también en la capa _glow, a plena luz)."""
+    paid = label in PAID
+    rnd = random.Random(seed * 7 + len(label))
+    px = stone(seed, paid)
     lit = {}
-    if kind != "bottom":
-        p0, p1 = 6, N - 6
-        # el hueco del panel: sombra arriba/izquierda, luz abajo/derecha (2 px)
-        for i in range(4, N - 4):
-            for j in range(2):
-                px[i, 4 + j] = px[4 + j, i] = m["in_lo"]
-                px[i, N - 5 - j] = px[N - 5 - j, i] = m["in_hi"] if j == 0 else mix(m["in_hi"], PANEL, 0.5)
-        # el panel, casi negro, un pelo más claro abajo
-        for y in range(p0, p1):
-            for x in range(p0, p1):
-                t = (y - p0) / (p1 - p0 - 1)
-                px[x, y] = mix(PANEL, mix(PANEL, color, 0.10), t)
-        # el filo de luz del color, por dentro del hueco (1 px), con las esquinas apagadas
-        rim = mix(color, (0, 0, 0), 0.35)
-        for i in range(p0 + 1, p1 - 1):
-            lit[i, p0] = lit[i, p1 - 1] = lit[p0, i] = lit[p1 - 1, i] = rim
-        # las letras grabadas: su sombra (oscura, sin brillo) y la letra del color, con luz arriba y sombra abajo
+    dim, core, hot = mix(color, (0, 0, 0), 0.45), mix(color, (255, 255, 255), 0.12), mix(color, (255, 255, 255), 0.55)
+    avoid = set()
+    if kind == "front":
         cells = letters()
-        outline = {(x + dx, y + dy) for x, y in cells for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - cells
-        for c in outline:
-            if c in lit:
-                del lit[c]
-            px[c] = (6, 7, 10)
-        face_c = mix(color, (255, 255, 255), 0.18)
-        top_c = mix(color, (255, 255, 255), 0.6)
-        low_c = mix(color, (0, 0, 0), 0.28)
+        avoid = {(x + dx, y + dy) for x, y in cells for dx in (-2, -1, 0, 1, 2) for dy in (-2, -1, 0, 1, 2)}
+        # dos vetas: una baja desde debajo de la T y otra sube desde encima de la F
+        vs = veins(rnd, [(10, 24, 100), (21, 7, -75)], 12, avoid=avoid)
+    elif kind == "side":
+        vs = veins(rnd, [(rnd.randint(7, 12), 1, 80), (rnd.randint(20, 25), N - 2, -95)], 22, branches=2)
+    elif kind == "top":
+        c0 = N // 2
+        vs = veins(rnd, [(c0 + 3, c0, 10), (c0 - 4, c0 - 1, 200), (c0, c0 + 3, 95), (c0 - 1, c0 - 4, -80)], 12, branches=2)
+    else:
+        vs = []
+    for i, (x, y) in enumerate(vs):
+        lit[x, y] = hot if i % 6 == 0 else core
+        if paid and (x + 1, y) not in vs and x + 1 < N - 1:
+            lit.setdefault((x + 1, y), dim)
+        # el halo oscuro de la veta en la piedra (sin brillo)
+        for ddx, ddy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            c = (x + ddx, y + ddy)
+            if c not in lit and 0 < c[0] < N - 1 and 0 < c[1] < N - 1:
+                px[c] = mix(px[c], color, 0.12)
+    if kind == "top":
+        # el cristal en bruto del centro
+        c0 = N // 2
+        shape = ["..##..", ".####.", "######", "######", ".####.", "..##.."]
+        for r, row in enumerate(shape):
+            for cidx, ch in enumerate(row):
+                if ch == "#":
+                    x, y = c0 - 3 + cidx, c0 - 3 + r
+                    lit[x, y] = hot if (r < 2 or cidx < 2) else core if r < 4 else dim
+        for x, y in [(c0 - 4, c0 - 1), (c0 + 3, c0), (c0 - 1, c0 - 4), (c0, c0 + 3)]:
+            px[x, y] = (6, 7, 10)
+    if kind == "front":
+        cells = letters()
+        # grabadas: el surco (sombra abajo-derecha, 1 px) y la letra del color, con luz arriba y sombra abajo
         for x, y in cells:
-            lit[x, y] = top_c if (x, y - 1) not in cells else low_c if (x, y + 1) not in cells else face_c
+            for ddx, ddy in ((1, 1), (1, 0), (0, 1)):
+                c = (x + ddx, y + ddy)
+                if c not in cells:
+                    px[c] = (8, 8, 12)
+                    lit.pop(c, None)
+            for ddx, ddy in ((-1, 0), (0, -1), (-1, -1)):
+                c = (x + ddx, y + ddy)
+                if c not in cells:
+                    px[c] = mix(px[c], (0, 0, 0), 0.35)
+                    lit.pop(c, None)
+        for x, y in cells:
+            lit[x, y] = hot if (x, y - 1) not in cells else mix(color, (0, 0, 0), 0.22) if (x, y + 1) not in cells else core
     px.update(lit)
     img = Image.new("RGBA", (N, N))
     for (x, y), col in px.items():

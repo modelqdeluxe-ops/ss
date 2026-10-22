@@ -33,7 +33,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -134,6 +133,8 @@ public class CrateCinematicScreen extends Screen {
      */
     public static volatile int testOff;
     public static final int TEST_FX = 1, TEST_RAYS = 2, TEST_POST = 4, TEST_WATER = 8, TEST_PLANTS = 16;
+    /** (1.3.113) Sin supermuestreo, sin la claridad ni el FXAA de crate_post, sin tapar rendijas (ScenePost.test*). */
+    public static final int TEST_SSAA = 32, TEST_SHARP = 64, TEST_FILL = 128;
     private int frames;
     private double frameSum, frameMax;
     private long lastFrame;
@@ -388,28 +389,23 @@ public class CrateCinematicScreen extends Screen {
         }
     }
 
+    /** (1.3.113, el dueño: «sonidos por rarezas») uno por rareza: 1 común … 5 mítica. */
     private int tier() {
-        int o = winnerRarity.ordinal();
-        return o <= 1 ? 1 : o == 2 ? 2 : 3;
+        return Math.min(5, winnerRarity.ordinal() + 1);
     }
 
     private void sounds(int t) {
         switch (t) {
             // (la música y el ambiente: loops(), desde la pantalla de antes de abrir)
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
-            case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
-            case KEY_IN -> {
-                // el golpe: la llave contra la madera del cofre (sin amatista: el dueño no la quiere)
-                ui(tf("llave_entra"), 0.9F, 1.0F);
-                ui(SoundEvents.WOOD_HIT, 0.8F, 0.8F);
-            }
+            // (1.3.113) los sonidos propios de tools/crates/sfx_crates.py (antes, los del juego: el dueño, «horribles»)
+            case KEY_THROW -> ui(tf("llave_lanza"), 0.8F, 1.0F);
+            // el golpe: la llave contra la madera del cofre (va dentro del sonido)
+            case KEY_IN -> ui(tf("llave_entra"), 0.9F, 1.0F);
             case KEY_TURN0 + 2 -> ui(tf("llave_gira"), 0.6F, 1.0F);
             case RUNES0 + 2 -> ui(tf("runas"), 0.8F, 1.0F);
             case TREMBLE0 -> ui(tf("tiembla"), 0.75F, 1.0F);
-            case OPEN -> {
-                ui(tf("apertura"), 1.0F, 1.0F);
-                ui(SoundEvents.CHEST_OPEN, 0.55F, 0.75F);
-            }
+            case OPEN -> ui(tf("apertura"), 1.0F, 1.0F);
             case SPIN1 -> ui(tf("parada"), 0.85F, 1.0F);
             case REVEAL -> ui(tf("premio" + tier()), 1.0F, 1.0F);
             case TOTAL - 40 -> {
@@ -983,6 +979,9 @@ public class CrateCinematicScreen extends Screen {
 
         // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
         boolean pp = ScenePost.ready() && !postFailed && (testOff & TEST_POST) == 0;
+        ScenePost.testScale1 = (testOff & TEST_SSAA) != 0;
+        ScenePost.testNoSharp = (testOff & TEST_SHARP) != 0;
+        ScenePost.testNoFill = (testOff & TEST_FILL) != 0;
         if (!saidHow) {
             // (1.3.103, el dueño: «la escena no me mostraba los efectos») con qué se dibuja, una vez por cinemática
             saidHow = true;

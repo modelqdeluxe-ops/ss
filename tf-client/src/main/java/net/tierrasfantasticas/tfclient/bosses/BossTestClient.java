@@ -58,6 +58,10 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             mc.setScreen(null);
         }
+        if (BossTest.cameraType >= 0) {
+            mc.options.setCameraType(net.minecraft.client.CameraType.values()[Math.min(2, BossTest.cameraType)]);
+            BossTest.cameraType = -1;
+        }
         if (BossTest.typePad != null) {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
@@ -216,9 +220,11 @@ public final class BossTestClient {
     }
 
     /** (1.3.107) Las capturas de antes de abrir sin cada cosa (CrateCinematicScreen.testOff). */
-    private static final int[] OFF = {0, 1, 2, 4, 8, 16};
-    private static final String[] OFF_NAME = {"otra", "sin_efectos", "sin_rayos_post", "sin_post", "sin_agua", "sin_plantas"};
-    private static int offNext = 6;
+    // (1.3.113) primero lo que más importa para las rayas (si la cinemática se abre antes, faltan las últimas)
+    private static final int[] OFF = {0, 32, 64, 4, 128, 1, 8, 16, 2};
+    private static final String[] OFF_NAME = {"otra", "sin_supermuestreo", "sin_nitidez", "sin_post", "sin_rendijas", "sin_efectos",
+            "sin_agua", "sin_plantas", "sin_rayos_post"};
+    private static int offNext = OFF.length;
     private static long offAt;
 
     private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig preOpenCfg;
@@ -243,7 +249,7 @@ public final class BossTestClient {
                 && BossTest.SHOTS_PENDING.isEmpty()) {
             if (offAt == 0L) {
                 net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testOff = OFF[offNext];
-                offAt = System.nanoTime() + (OFF[offNext] == 0 ? 40_000_000L : 400_000_000L);
+                offAt = System.nanoTime() + (OFF[offNext] == 0 ? 40_000_000L : 300_000_000L);
             } else if (System.nanoTime() > offAt) {
                 BossTest.clientShot("crate1_preabrir_" + OFF_NAME[offNext]);
                 offNext++;
