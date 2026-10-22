@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **21 de octubre de 2026** (web: «cambio de aires» sin morado, aurora boreal; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **22 de octubre de 2026** (web: diseño «Atardecer» claro con botones cartoon cel-shading; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -13,7 +13,31 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
-### Web (21 oct 2026): «cambio de aires» de toda la web, SIN MORADO (hecho y publicado)
+### Web (22 oct 2026): diseño «Atardecer» claro + botones cartoon «cel-shading» (hecho y publicado)
+Después del rediseño de la aurora (abajo), el dueño dijo «pasamos de mierda a más mierda… los colores, animaciones, el
+frontend, es horrendo» (la colocación de la tienda sí le gustaba). Se le enseñaron maquetas (scripts de prueba con CSS
+inyectado, sin tocar la web): 9 estilos oscuros → «¿por qué todos tus diseños son negros?» → 6 claros/de color →
+**eligió «C · Atardecer»** → 14 variantes de él → se quedó con **la C1 (la primera)**. Botones: rechazó 8 variantes
+de color, 8 de forma, 8 colores del «juego móvil», 8 con texturas («horribles») y 8 «pro»; pidió **«diseño cartoon
+profesional, pero no la tipografía sino el botón»** y eligió **el 4: cel-shading**. Lecciones: **no le enseñes 9
+variantes del mismo diseño oscuro con otro acento; enséñale cosas de verdad distintas, y en grande**; no metas
+morado; letra normal (no cartoon).
+Lo que hay ahora (styles.css, comentario de arriba):
+- **Web clara**: tokens `--s*`, `--text*`, `--bd*` claros; acento naranja `--a-400` #f26b1d. `body::before` = el reino
+  de día (`hero-1920.webp`, `hero-768.webp` en el móvil) arriba de la página, **absoluto** (se va al bajar; fijo
+  tapaba el texto) y fundido con melocotón → crema `#fff6ec`.
+- **Botones** `.btn`: cel-shading con variables `--l --c --d --o --fg` (luz, cara, sombra, contorno/canto, texto).
+  Principal/`btn-shop`/`btn-primary` naranja, `btn-buy` oro con letra marrón, `btn-ghost` azul, `btn-claim` verde,
+  Discord/WhatsApp con sus colores, `btn-rank` con el color del rango.
+- **Islas oscuras** que se quedan: el pie (`.footer` redefine sus tokens), las ventanas de VFX/Skills (`.cx`), la
+  placa de las imágenes de las crates y las burbujas de chat/nametag de los rangos.
+- Textos con el color del rango o de la crate: mezclados con marrón (`color-mix(... #2a1d14)`) para leerse en blanco.
+- **Sin animaciones en bucle**: fuera la aurora (`.sky`), las letras del título que saltaban y el aro del portal.
+  `tools/nebula_bg.py` y las `img/nebula-*.webp` ya no se usan (se pueden borrar si nadie quiere volver a la aurora).
+- Maquetas que vio el dueño (por si pide otra): estaban en el scratchpad de la sesión; para rehacer una, inyecta CSS
+  con Playwright (`addInitScript` que añade un `<style>`) sobre `tools/preview.mjs`.
+
+### Web (21 oct 2026): «cambio de aires» de toda la web, SIN MORADO (publicado y luego sustituido por el Atardecer)
 Pedido del dueño: «que la página web sea mucho más profesional, más bonita, más interactiva, mejor colocados los
 elementos… un cambio de aires. Nada transparente ni UX fea. Primero busca plugins o skills seguros que te ayuden a
 diseñar». A mitad: **«quita ese diseño morado»** → **nada morado ni rosa en la web** (no lo vuelvas a meter).
