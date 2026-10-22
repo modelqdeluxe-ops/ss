@@ -55,8 +55,10 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * entrar y al salir, el mensaje amarillo de siempre. No tienen entidad, ni posición, ni conexión: no ocupan nada.
  * <ul>
  *   <li>Las skins: tfclient/bots/skins.json (68, de MineSkin, con su firma: tools/bots/skins_bots.py).</li>
- *   <li>Los nombres: tfclient/bots/nombres.json (68 inventados que no usa ninguna cuenta: tools/bots/nombres_bots.py).</li>
- *   <li>Los que están dentro se guardan en config/tfclient-bots.json y vuelven solos al reiniciar el servidor.</li>
+ *   <li>Los nombres: tfclient/bots/nombres.json (68 que no usa ninguna cuenta, como los de jugadores de verdad y sin
+ *       dos hechos con el mismo molde; 1.3.110, medido en 190 000 nombres reales: tools/bots/nombres_bots.py).</li>
+ *   <li>Los que están dentro se guardan en config/tfclient-bots.json y vuelven solos al reiniciar el servidor (si
+ *       el nombre guardado ya no está en el mod, vuelve otro: los mismos que había).</li>
  *   <li>El servidor en la lista de servidores cuenta también los bots (MinecraftServerMixin).</li>
  * </ul>
  */
@@ -255,13 +257,24 @@ public final class TFBots {
         ping.clear();
         toAdd = toRemove = 0;
         // los que estaban dentro al apagar, otra vez dentro (sin mensaje: ya «estaban»)
+        int missing = 0;
         for (String name : load()) {
-            for (Bot b : pool()) {
-                if (b.name().equalsIgnoreCase(name) && !online.contains(b)) {
-                    online.add(b);
-                    ping.put(b.id(), 25 + RANDOM.nextInt(110));
-                }
+            Bot found = null;
+            for (Bot b : pool()) if (b.name().equalsIgnoreCase(name)) found = b;
+            if (found == null) missing++;
+            else if (!online.contains(found)) {
+                online.add(found);
+                ping.put(found.id(), 25 + RANDOM.nextInt(110));
             }
+        }
+        // los guardados con un nombre que ya no está en el mod (1.3.110 cambió los nombres): los mismos que había, con
+        // otros nombres de la lista
+        List<Bot> free = new ArrayList<>(pool());
+        free.removeAll(online);
+        Collections.shuffle(free, RANDOM);
+        for (int i = 0; i < missing && i < free.size(); i++) {
+            online.add(free.get(i));
+            ping.put(free.get(i).id(), 25 + RANDOM.nextInt(110));
         }
         if (!online.isEmpty()) TFClient.LOGGER.info("TF Bots: {} vuelven a estar dentro", online.size());
     }

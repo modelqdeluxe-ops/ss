@@ -13,7 +13,7 @@ Las skins de un perfil solo se ven si su «textures» va firmada por Mojang (el 
 las de MineSkin más recientes son casi todas plantillas iguales; se bajaron 1 400, se quitaron las de plantilla y las
 repetidas (hoja), se eligieron a ojo de cuerpo entero las que parecen de jugadores de verdad (ropa, pelo; sin mobs,
 memes ni personajes famosos) y de esas, 68 sin dos parecidas (cuerpo de frente ≥ 30 y cara ≥ 32 de diferencia media).
-Los nombres (nombres.json) van emparejados con la skin del mismo número, por su aspecto.
+Los nombres (nombres.json, tools/bots/nombres_bots.py) van emparejados con la skin del mismo número (chica o chico).
 
 Uso: python3 -I tools/bots/skins_bots.py <carpeta> --listar 1400 | --hoja | --elegir <ids.txt> | --comprobar
 """
