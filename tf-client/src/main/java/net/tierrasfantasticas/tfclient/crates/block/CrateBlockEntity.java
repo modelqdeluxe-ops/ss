@@ -983,6 +983,14 @@ public class CrateBlockEntity extends BlockEntity {
       CrateSfx.spiralRise(this.sfx, r, p);
    }
 
+   private static int peakHoldTicks(Rarity r) {
+      return 44;
+   }
+
+   private static int spiralBonusTicks(Rarity r) {
+      return 24;
+   }
+
    private void playSpiralPeak(Rarity r) {
       CrateSfx.spiralPeak(this.sfx, r);
    }
