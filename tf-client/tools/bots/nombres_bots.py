@@ -192,7 +192,7 @@ def tomados(names):
     return out
 
 
-def candidatos(rng, skin, n=600):
+def candidatos(rng, skin, n=1500):
     lista = CHICA if skin in CHICAS else CHICO
     out, vistos = [], set()
     while len(out) < n:
@@ -242,7 +242,7 @@ MAX_CIFRAS = round(SKINS * 0.45)
 
 def elegir(pool, ocupados):
     """Prueba el orden normal de las skins y, si alguna se queda sin nombre, otros órdenes."""
-    for intento in range(300):
+    for intento in range(1000):
         orden = list(range(len(pool)))
         if intento:
             random.Random(intento).shuffle(orden)
