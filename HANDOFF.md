@@ -110,6 +110,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    texturas `land_*` siguen para el mapa del TF Pass); detrás de las apps, un emblema dibujado a píxeles: las letras «TF»
    dentro de un aro, en azules oscuros (el dueño: «no copia y pega el logo»; `tools/pad/fondo_tf.py`, `fondo_tf.png`).
 
+La prueba: `[prueba-jefes=pad,crates,npcs] [shaders=photon]` en 299cd5d7 (muebles, panel, pad) y
+`[prueba-jefes=pad,crates] [shaders=photon]` en 29f241d4 (la vista sin cada cosa) y 352a4319 (supermuestreo: «escena a
+2x»; en la zona del recorte del dueño, las rayitas que parpadean entre dos fotogramas, de 54 a 33, y en las paredes de
+87 a 33 y de 18 a 5; lo que queda son las hadas, las luciérnagas y el brillo de los faroles, que se mueven; el pad sin
+aldeas, con el aro del tono del logo de antes, ≈ (104, 154, 179)). Los fotogramas de la prueba, 216 ms (eran 150: la
+tarjeta de la máquina es de mentira).
+
 ### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.106, PUBLICADA)
 
 **1.3.106: cinco quejas del dueño** (con cinco capturas suyas; juega con **Oculus + Photon**):
