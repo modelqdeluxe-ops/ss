@@ -47,5 +47,12 @@ void main() {
     col = mix(col, mix(vec3(0.95, 0.97, 0.95), vec3(1.0, 0.95, 0.80), pow(sunAmt, 4.0)), cl * 0.5);
     // el sol: el disco, la corona y el resplandor cálido alrededor
     col += vec3(1.0, 0.96, 0.82) * pow(sunAmt, 60.0) * 1.2 + vec3(1.0, 0.92, 0.70) * pow(sunAmt, 8.0) * 0.45;
+    // (1.3.113, el dueño: «siguen las rayas blancas en la escena, antes de abrirla») por debajo de unos 6° de altura, la
+    // bruma oscura del santuario (FOG de CrateCinematicScreen), como el cielo de respaldo sin shader. Ese cielo no se ve
+    // nunca (cielo_visible.py: ~0 %) salvo por las rendijas entre las caras de los bloques de las paredes, que miran al
+    // horizonte: ahí salía el horizonte crema, (175,172,151) en la prueba contra (40,37,31) de la pared, en líneas de
+    // 1-2 px en los cantos verticales de los bloques que saltaban al moverse la cámara. Sin shader (la prueba
+    // «sin_post») no salían: allí lo de debajo del horizonte ya era la bruma.
+    col = mix(vec3(0.10, 0.20, 0.24), col, smoothstep(0.10, 0.35, h));
     fragColor = vec4(col, 1.0);
 }

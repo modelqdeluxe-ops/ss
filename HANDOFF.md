@@ -199,11 +199,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    rasterización deja líneas de 1-2 muestras sin pintar y por ellas se veía el cielo claro de fondo). Pasada nueva
    `crate_fill.fsh` (`ScenePost.finish`, antes del resplandor y de bajar la imagen): la muestra que está mucho más lejos
    que lo que tiene a ambos lados (a 1-3 muestras, en horizontal o vertical, por la profundidad) toma el color de esos
-   lados (solo donde se ve el cielo: sin coste en lo demás). **Ojo: en la prueba `75389eb` las rayas siguieron**
-   (líneas claras de 1-2 px en los cantos verticales de los bloques de las paredes, (175,172,151) donde sin el shader
-   de la escena hay (40,37,31)): no son cielo. Solo salen con el shader de la escena; la prueba siguiente saca la vista
-   de antes de abrir sin supermuestreo, sin nitidez (claridad y FXAA de `crate_post`) y sin tapar rendijas
-   (`TEST_SSAA`, `TEST_SHARP`, `TEST_FILL`) para saber cuál las pinta.
+   lados (solo donde se ve el cielo: sin coste en lo demás). No bastó: la prueba `97207d7` (vista de antes de abrir sin
+   supermuestreo, sin nitidez —`TEST_SHARP`— y sin tapar rendijas) las sacó en todas y solo no salían sin el shader de
+   la escena («sin_post»). La causa: `crate_sky` pintaba el horizonte crema también por debajo del horizonte y las
+   rendijas de las paredes miran ahí; el cielo de respaldo sin shader, debajo del horizonte, es la bruma oscura.
+   **Arreglo**: en `crate_sky`, por debajo de ~6° de altura, la bruma (FOG) como sin shader (el cielo de verdad no se
+   ve en ningún encuadre: `cielo_visible.py` ~0 %).
 2. **Piedras de protección rehechas** (`tools/gen_claim_blocks.py`; «no me gusta el diseño, sus contornos; no pongas
    el TF en todas las caras»): sin el marco biselado ni el panel ni los remaches; piedra oscura con grano y grietas,
    vetas de cristal del color del nivel que serpentean y brillan de noche, el **TF solo delante**, arriba un cristal en
