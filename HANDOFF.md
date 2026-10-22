@@ -190,7 +190,19 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.110, PUBLICADA) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.111) — lee esto primero
+
+**1.3.111: los bots entran al azar y con habituales** (el dueño: «al poner uno o varios nunca debe ser el mismo que
+puse, no debe ser lineal unirlos, debe ser al azar, y a veces que toque uno de los que ya salieron anteriormente, para
+que se note que son jugadores ocasionales o activos»). `TFBots`:
+- `pick`: uno de cada tres más o menos (`RETURNING` = 0,35) es uno que ya estuvo y salió hace más de 5 min
+  (`BACK_AFTER_MS`), con más probabilidad cuantas más veces ha venido; si no, uno que no ha venido nunca.
+- `jitter`: entre uno y otro (al entrar y al salir), una espera al azar de 0,35 a 1,65 veces los segundos pedidos.
+- `remove all` los saca en orden al azar.
+- Los vistos (`veces`, `salio`) se guardan en `config/tfclient-bots.json` junto a los de dentro.
+- La prueba del pad mete una segunda tanda y apunta cuántos repite de la primera (`BossTest`, ticks 664 y 670).
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.110, PUBLICADA)
 
 Prueba en el juego (2e1ccc51, `[prueba-jefes=pad]`): `/tf bots add 4` → en el TAB «_Brisa_», «chinoXD29», «Fakozun»
 y «FedeeUwu» con su cara (y el jugador «Dev»); `remove all` los quita. Para volver a generar los nombres:

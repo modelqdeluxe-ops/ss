@@ -1789,13 +1789,27 @@ public final class BossTest {
             case 640 -> shot(r, "tablista");
             case 644 -> {
                 tabList = false;
+                botsFirst = botNames();
                 r.event("bots: " + net.tierrasfantasticas.tfclient.server.TFBots.count() + " dentro en el servidor; el cliente ve "
-                        + clientTab + " en la lista (" + clientTabSkins + " con su skin)");
+                        + clientTab + " en la lista (" + clientTabSkins + " con su skin): " + botsFirst);
                 var src = player.createCommandSourceStack().withPermission(4);
                 level.getServer().getCommands().performPrefixedCommand(src, "tf bots remove all");
             }
             case 660 -> r.event("bots tras /tf bots remove all: " + net.tierrasfantasticas.tfclient.server.TFBots.count()
                     + " en el servidor; el cliente ve " + clientTab + " en la lista");
+            // (1.3.111) otra tanda: al azar, no los mismos (los que acaban de salir no vuelven enseguida)
+            case 664 -> {
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 0");
+            }
+            case 670 -> {
+                java.util.List<String> second = botNames();
+                java.util.List<String> both = new java.util.ArrayList<>(second);
+                both.retainAll(botsFirst);
+                r.event("bots, segunda tanda: " + second + "; repetidos de la primera: " + both.size());
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots remove all");
+            }
             // (1.3.109, el dueño: «dale rework a la textura de las claims, pon texturas buenas, oscuras») las diez piedras
             // de protección en fila, de cerca
             case 662 -> {
@@ -1816,6 +1830,14 @@ public final class BossTest {
             case 684 -> next(level);
             default -> { }
         }
+    }
+
+    private static java.util.List<String> botsFirst = java.util.List.of();
+
+    private static java.util.List<String> botNames() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (var b : net.tierrasfantasticas.tfclient.server.TFBots.online()) out.add(b.name());
+        return out;
     }
 
     /** (1.3.109) La lista de jugadores abierta (la tecla del TAB) y lo que ve el cliente en ella (BossTestClient). */
