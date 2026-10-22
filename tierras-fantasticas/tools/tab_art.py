@@ -21,6 +21,8 @@ ART = {
     # La crate entera es muy ancha: solo el cofre y las armas del centro
     'crates': ('img/crates/luminite.webp', False, (0.27, 0.0, 0.73, 1.0)),
     'vfx': ('img/vfx/kill_knockout.webp', False, None),
+    # (1.3.112) la piedra de 500x500, la más grande
+    'protecciones': ('img/protecciones/500x500.webp', False, None),
 }
 # Skills: tres clases de colores distintos (fuego, rayo, vacío)
 SKILL_ICONS = ['guerrero_llama', 'mago_rayo', 'filo_vacio']

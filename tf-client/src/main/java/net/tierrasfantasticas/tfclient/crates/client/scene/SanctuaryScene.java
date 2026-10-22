@@ -589,6 +589,10 @@ public final class SanctuaryScene {
         return st.hasProperty(LiquidBlock.LEVEL) && st.getValue(LiquidBlock.LEVEL) >= 8;
     }
 
+    private boolean airAt(int x, int y, int z) {
+        return level.get(x, y, z).isAir();
+    }
+
     private boolean solidAt(int x, int y, int z) {
         BlockState st = level.get(x, y, z);
         return !st.isAir() && st.isSolidRender(level, new BlockPos(x, y, z));
@@ -624,8 +628,13 @@ public final class SanctuaryScene {
             int top = y;
             while (falling && isFalling(x, top + 1, z)) top++;
             float in = falling ? (solidAt(x, top + 1, z) ? 0.3F : 0.16F) : 0.0F;
-            float x0 = x + (isWater(x - 1, y, z) ? 0 : in), x1 = x + 1 - (isWater(x + 1, y, z) ? 0 : in);
-            float z0 = z + (isWater(x, y, z - 1) ? 0 : in), z1 = z + 1 - (isWater(x, y, z + 1) ? 0 : in);
+            // (1.3.112, el dueño: «las líneas blancas a los lados de la cascada de en medio, error que ya tiempo no han podido
+            // arreglar») solo se estrecha por los lados que dan al aire: junto a la piedra (la cascada alta entre sus
+            // pilares) se estrechaba igual y ahí no lleva cara de lado, así que quedaba una rendija abierta de arriba
+            // abajo por la que se veía la luz de detrás (en la prueba de la 1.3.109, una línea crema (215,217,190) de 1-2 px); junto
+            // a enredaderas u hojas, igual
+            float x0 = x + (airAt(x - 1, y, z) ? in : 0), x1 = x + 1 - (airAt(x + 1, y, z) ? in : 0);
+            float z0 = z + (airAt(x, y, z - 1) ? in : 0), z1 = z + 1 - (airAt(x, y, z + 1) ? in : 0);
             // el estanque debajo de un chorro también lleva su superficie: el chorro es más estrecho que su bloque y, sin
             // ella, alrededor del pie se veía el fondo (una franja oscura: la cascada parecía flotar encima del agua)
             boolean under = above && !falling && isFalling(x, y + 1, z);

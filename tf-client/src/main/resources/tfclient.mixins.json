@@ -15,7 +15,8 @@
     "claims.FluidGuardMixin",
     "claims.ExplosionCalculatorGuardMixin",
     "claims.EntityExplosionCalculatorGuardMixin",
-    "MinecraftServerBotsMixin"
+    "MinecraftServerBotsMixin",
+    "BotCommandsMixin"
   ],
   "client": [
     "LoadingOverlayAccessor",

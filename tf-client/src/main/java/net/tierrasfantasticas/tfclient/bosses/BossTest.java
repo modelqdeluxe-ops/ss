@@ -1785,6 +1785,19 @@ public final class BossTest {
                 var src = player.createCommandSourceStack().withPermission(4);
                 level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 1");
             }
+            // (1.3.112) /tpa y /msg a un bot: los contesta BotCommands como EssentialsX (sin «entidad no encontrada») y la
+            // petición se deniega sola a los 5 s
+            case 560 -> {
+                var bots = net.tierrasfantasticas.tfclient.server.TFBots.online();
+                if (!bots.isEmpty()) {
+                    String b = bots.get(0).name();
+                    var src = player.createCommandSourceStack();
+                    level.getServer().getCommands().performPrefixedCommand(src, "tpa " + b);
+                    level.getServer().getCommands().performPrefixedCommand(src, "msg " + b + " hola, ¿vienes a la mina?");
+                    r.event("bots: /tpa y /msg a " + b + "; peticiones esperando: "
+                            + net.tierrasfantasticas.tfclient.server.BotCommands.pending(player.getUUID()));
+                }
+            }
             case 600 -> tabList = true;
             case 640 -> shot(r, "tablista");
             case 644 -> {
@@ -1802,6 +1815,8 @@ public final class BossTest {
                 var src = player.createCommandSourceStack().withPermission(4);
                 level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 0");
             }
+            case 672 -> r.event("bots: a los 5 s, peticiones esperando: "
+                    + net.tierrasfantasticas.tfclient.server.BotCommands.pending(player.getUUID()) + " (0 = el bot la denegó)");
             case 670 -> {
                 java.util.List<String> second = botNames();
                 java.util.List<String> both = new java.util.ArrayList<>(second);

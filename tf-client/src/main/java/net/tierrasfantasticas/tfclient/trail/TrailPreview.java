@@ -98,8 +98,15 @@ public final class TrailPreview {
         TRAIL.strength = 1;
         if (TrailSettings.enabled) {
             MultiBufferSource.BufferSource buffers = g.bufferSource();
+            // (1.3.112, el dueño: «la estela del efecto no se muestra en el apartado de efectos de combate del pad»; las
+            // siete capturas de la prueba, la espada sin estela en ningún momento del tajo) la estela va con prueba de
+            // profundidad (LEQUAL, como en el mundo) y quedaba a la misma altura que el fondo de la vista previa: la
+            // tapaba. Un poco por delante del fondo y por detrás del arma (que se pinta a +150)
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 100);
             TrailClient.draw(TRAIL, buffers, g.pose().last().pose(), 0, 0, 0, new Vector3f(1, 0, 0), new Vector3f(0, -1, 0), now, 1F);
             buffers.endBatch();
+            g.pose().popPose();
         } else {
             TRAIL.samples.clear();
         }

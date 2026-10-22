@@ -190,7 +190,36 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.111) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.112) — lee esto primero
+
+**1.3.112: cinco cosas del dueño** (con 5 capturas):
+1. **Sets limpios**: las espadas y lanzas left/right de Oni llevaban el cofre de la crate de Oni pegado a la empuñadura y
+   el casco de Bahamut un bloque suelto. `tools/limpiar_piezas.py` (lista `LIMPIAR`): agrupa los cubos que se tocan y
+   deja el grupo del cubo más largo, en el mod, en el visor de la web y en su miniatura. Revisados los 55 sets (hoja de
+   miniaturas y grupos sueltos): el resto de piezas separadas son del diseño. Si se reimportan los packs, repasarlo.
+2. **Crates**: las partículas propias (luz/destello/fogonazo) salían como cuadrados claros con un punto (también en la
+   prueba de la 1.3.109): ahora van como las translúcidas del juego (`PARTICLE_SHEET_TRANSLUCENT`, texturas de alfa
+   normal; fuera `crate_particle` y la mezcla premultiplicada). **Las líneas a los lados de la cascada de en medio**: el
+   agua que cae se estrechaba 0,16 también junto a la piedra (sin cara de lado): una rendija abierta de arriba abajo por
+   la que se veía la luz de detrás (línea crema (215,217,190) en la prueba). Ahora solo se estrecha donde hay aire
+   (`SanctuaryScene.airAt`, igual en `santuario_render.py`). **Sonido**: el ambiente sin campanitas («rin»), 60 s de
+   cascada, viento, gotas y pájaros en bucle sin costura (`sonidos_crates.py ambiente`); música al 0,70 y ambiente al
+   0,45. **El volumen de la esquina** ahora mueve también la música y el ambiente del santuario
+   (`CratePreOpenScreen.audioGain`, rueda ±10 %). **ABRIR** abre sin «¿Consumir 1 llave?». **Botones** de cristal
+   teñidos del color de la rareza (`GlassButton`).
+3. **Pad**: la estela no salía en la vista previa de Combate (con prueba de profundidad, a la altura del fondo): un poco
+   por delante (`TrailPreview`, z +100). Decoración: rombos de oro en el borde de las ventanas, halo al pasar el ratón
+   por las tarjetas, brillo en las pestañas y rombos en la elegida (`PadUi`).
+4. **Bots**: `/tpa`, `/tpahere`, `/msg` (y alias), `/r` y `/tpacancel` a un bot los contesta `server/BotCommands` con los
+   mensajes de EssentialsX (idioma y colores de su `config.yml`); la petición se deniega a los 5 s y los mensajes no se
+   responden. Entra por `mixin/BotCommandsMixin` (`performChatCommand`, tras validar la firma del chat) y por el
+   `CommandEvent` de Forge. Los bots salen en el TAB como un usuario sin rango (sin equipo ni prefijo), igual que los de
+   verdad con el rango por defecto.
+5. **Web**: sección **Protecciones** en la tienda (`tools/crates.py` `PROTECTIONS`: 250×250 4,99, 300×300 7,99 y 500×500
+   12,99 USD, precios puestos por la IA; se entregan con `give {player} tfclient:proteccion_<tamaño> 1`), imágenes de
+   `tools/protecciones.py`, pestaña azul (`tab_art.py`, seis en una fila desde 1000 px).
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.111)
 
 **1.3.111: los bots entran al azar y con habituales** (el dueño: «al poner uno o varios nunca debe ser el mismo que
 puse, no debe ser lineal unirlos, debe ser al azar, y a veces que toque uno de los que ya salieron anteriormente, para

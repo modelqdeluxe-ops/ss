@@ -6366,5 +6366,76 @@
     "commands": [
       "tf web sets give {player} springcos wings"
     ]
+  },
+  {
+    "id": "proteccion-250x250",
+    "category": "protecciones",
+    "name": "Protección 250×250",
+    "description": "Una piedra de protección: ponla y 250×250 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración.",
+    "price": 499,
+    "maxQuantity": 5,
+    "image": "img/protecciones/250x250.webp",
+    "colors": [
+      "#f29b9b",
+      "#e84a4a"
+    ],
+    "perks": [
+      "Zona de 250×250 bloques",
+      "Regeneración dentro de tu zona",
+      "Para ti y los miembros de tu zona",
+      "Se configura en el TF Pad"
+    ],
+    "commands": [
+      "give {player} tfclient:proteccion_250x250 1"
+    ]
+  },
+  {
+    "id": "proteccion-300x300",
+    "category": "protecciones",
+    "name": "Protección 300×300",
+    "description": "Una piedra de protección: ponla y 300×300 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración, resistencia y velocidad.",
+    "price": 799,
+    "maxQuantity": 5,
+    "image": "img/protecciones/300x300.webp",
+    "colors": [
+      "#ffc389",
+      "#ff9228"
+    ],
+    "perks": [
+      "Zona de 300×300 bloques",
+      "Regeneración dentro de tu zona",
+      "Resistencia dentro de tu zona",
+      "Velocidad dentro de tu zona",
+      "Para ti y los miembros de tu zona",
+      "Se configura en el TF Pad"
+    ],
+    "commands": [
+      "give {player} tfclient:proteccion_300x300 1"
+    ]
+  },
+  {
+    "id": "proteccion-500x500",
+    "category": "protecciones",
+    "name": "Protección 500×500",
+    "description": "Una piedra de protección: ponla y 500×500 bloques son tuyos, a salvo de grifeo y robos. Dentro de tu zona: regeneración, resistencia, velocidad y vuelo libre.",
+    "price": 1299,
+    "maxQuantity": 5,
+    "image": "img/protecciones/500x500.webp",
+    "colors": [
+      "#ffe799",
+      "#ffd446"
+    ],
+    "perks": [
+      "Zona de 500×500 bloques",
+      "Regeneración dentro de tu zona",
+      "Resistencia dentro de tu zona",
+      "Velocidad dentro de tu zona",
+      "Vuelo libre dentro de tu zona",
+      "Para ti y los miembros de tu zona",
+      "Se configura en el TF Pad"
+    ],
+    "commands": [
+      "give {player} tfclient:proteccion_500x500 1"
+    ]
   }
 ]

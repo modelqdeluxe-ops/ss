@@ -275,6 +275,36 @@ def rank_permissions(key):
     return out
 
 
+# Protecciones (1.3.112, el dueño: «agrega en la tienda web una sección de Protecciones: las 3 últimas de pago, las más
+# grandes, que tienen efectos»). Las piedras del TF Client (tfclient:proteccion_<tamaño>): al ponerla, la zona es tuya.
+# Los efectos los da el mod a quien pueda construir en la zona (el dueño y sus miembros; PassiveEffectsManager) y se
+# apagan o encienden en el TF Pad. Precios puestos al crear la sección: cámbialos aquí.
+PROTECTIONS = [
+    # (tamaño, nombre, precio en céntimos de USD, color, efectos)
+    ('250x250', 'Protección 250×250', 499, '#e84a4a', ['Regeneración']),
+    ('300x300', 'Protección 300×300', 799, '#ff9228', ['Regeneración', 'Resistencia', 'Velocidad']),
+    ('500x500', 'Protección 500×500', 1299, '#ffd446', ['Regeneración', 'Resistencia', 'Velocidad', 'Vuelo libre']),
+]
+
+
+def protection_products():
+    out = []
+    for size, name, price, color, effects in PROTECTIONS:
+        side = size.split('x')[0]
+        fx = ', '.join(effects[:-1]) + (' y ' if len(effects) > 1 else '') + effects[-1]
+        out.append({
+            'id': f'proteccion-{size}', 'category': 'protecciones', 'name': name,
+            'description': f'Una piedra de protección: ponla y {side}×{side} bloques son tuyos, a salvo de grifeo y robos. '
+                           f'Dentro de tu zona: {fx.lower()}.',
+            'price': price, 'maxQuantity': 5, 'image': f'img/protecciones/{size}.webp',
+            'colors': [lighten(color), color],
+            'perks': [f'Zona de {side}×{side} bloques', *[f'{e} dentro de tu zona' for e in effects],
+                      'Para ti y los miembros de tu zona', 'Se configura en el TF Pad'],
+            'commands': [f'give {{player}} tfclient:proteccion_{size} 1'],
+        })
+    return out
+
+
 def rank_products():
     out = []
     for tier, (key, name, set_id, _set_name, price, (mc, hexc), _attrs) in enumerate(RANKS, 1):
@@ -396,9 +426,10 @@ def main():
     gifts = [x for x in data if x['category'] == 'gratis']
     cosmetics = cosmetic_products()
     ranks = rank_products()
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'cosmeticos') + RETIRED]
+    protections = protection_products()
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'cosmeticos', 'protecciones') + RETIRED]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
-        json.dump(gifts + ranks + crates + cosmetics + roulette + rest, fh, ensure_ascii=False, indent=2)
+        json.dump(gifts + ranks + crates + cosmetics + protections + roulette + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
     print(len(ranks), 'rangos,', len(cosmetics), 'cosméticos,', len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
           f'ruleta con {len(weapons)} armas' if ROULETTE_ENABLED else 'ruleta retirada')
