@@ -62,6 +62,21 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
         }
+        // (1.3.109) la lista de jugadores (TAB) y cuántos hay en ella, y cuántos con su skin (los bots)
+        mc.options.keyPlayerList.setDown(BossTest.tabList);
+        if (mc.getConnection() != null) {
+            int n = 0, skins = 0;
+            for (net.minecraft.client.multiplayer.PlayerInfo info : mc.getConnection().getListedOnlinePlayers()) {
+                n++;
+                if (!info.getSkinLocation().equals(net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin(info.getProfile().getId()))) skins++;
+            }
+            BossTest.clientTab = n;
+            BossTest.clientTabSkins = skins;
+        }
+        if (BossTest.actPad != null && BossTest.openPad == null) {
+            net.tierrasfantasticas.tfclient.pad.TFPadClient.actForTest(BossTest.actPad);
+            BossTest.actPad = null;
+        }
         if (BossTest.openPad != null) {
             String app = BossTest.openPad;
             BossTest.openPad = null;

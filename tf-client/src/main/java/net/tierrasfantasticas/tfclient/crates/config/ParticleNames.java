@@ -40,6 +40,10 @@ public final class ParticleNames {
    }
 
    static {
+      // (1.3.109) las propias de TF (CrateParticles): las de serie de las crates
+      put("crate_glow", "✦ Luz mágica (TF)");
+      put("crate_spark", "✦ Destello (TF)");
+      put("crate_flash", "✦ Fogonazo (TF)");
       put("dust", "Polvo de color");
       put("dust_color_transition", "Polvo bicolor");
       put("enchant", "Encantamiento");

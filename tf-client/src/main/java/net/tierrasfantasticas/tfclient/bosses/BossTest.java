@@ -697,6 +697,10 @@ public final class BossTest {
     static volatile String openPad;
     /** (1.3.106) Lo que la prueba escribe en la casilla de Música del pad (BossTestClient). */
     static volatile String typePad;
+    /** (1.3.109) Una acción para la app abierta del pad («tab:combate», «§scroll:400»). */
+    static volatile String actPad;
+    private static net.tierrasfantasticas.tfclient.bosses.BossEntity padNpc;
+    private static java.util.UUID padClaim;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
     private static Vec3 origin;
     /** La persecución por la isla (1.3.92): dónde espera el jugador, lo más cerca que llega el jefe y lo más cerca del borde. */
@@ -1353,7 +1357,16 @@ public final class BossTest {
                 r.event("cinemática " + (run + 1) + ": " + net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testStats);
             }
         }
-        if (t >= 60 + 2 * 540 + 20) next(level);
+        // (1.3.109, el dueño: «dale rework a los efectos VFX de la crate») la crate del mundo, en reposo, con sus luces y
+        // destellos nuevos (CrateParticles), de cerca
+        int w0 = 60 + 2 * 540 + 20;
+        if (t == w0) closeScreen = true;
+        if (t == w0 + 4 && pos != null) {
+            look(player, level, pos.getX() + 0.5, pos.getY() - 0.4, pos.getZ() + 3.6, pos.getX() + 0.5, pos.getY() + 0.7, pos.getZ() + 0.5);
+        }
+        if (t == w0 + 50) shot(r, "crate_mundo");
+        if (t == w0 + 56) shot(r, "crate_mundo_2");
+        if (t >= w0 + 64) next(level);
     }
 
     private static net.minecraft.core.BlockPos cratePos;
@@ -1704,11 +1717,98 @@ public final class BossTest {
             case 262 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = true;
             case 280 -> shot(r, "pad_efectos_recuadros_despues");
             case 282 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = false;
-            case 290 -> closeScreen = true;
-            case 300 -> next(level);
+            // (1.3.109, el dueño: «la espada Valentine está invertida en la vista previa de combate y no se ve la
+            // estela») con la Valentine en la mano, la pestaña COMBATE de Efectos, varias veces durante el tajo
+            case 284 -> {
+                net.minecraft.world.item.Item sword = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                        new net.minecraft.resources.ResourceLocation("tfclient", "valentine_sword"));
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(sword == null ? Items.DIAMOND_SWORD : sword));
+                r.event("en la mano: " + player.getMainHandItem().getItem());
+            }
+            case 286 -> openPad = "efectos";
+            case 330 -> actPad = "tab:combate";
+            case 360, 362, 364, 366, 368, 370, 372 -> shot(r, "pad_combate_" + (t - 358) / 2);
+            // (1.3.109, el dueño: «en el pad te comiste cosas: texto borrado en las protes») una zona de verdad, su
+            // página de ajustes bajando hasta «La zona», normal y con los recuadros después del texto; y un NPC dentro
+            // con «¿Arden los monstruos?» (el dueño: «los NPC se mueren dentro de la prote, se queman»)
+            case 376 -> {
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                var claim = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance().createClaim(level, player.blockPosition(), player,
+                        net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_300x300"));
+                claim.getFlags().burnHostiles = true;
+                padClaim = claim.getClaimId();
+                net.tierrasfantasticas.tfclient.npcs.TFNpcs.act(player, npcAct(net.tierrasfantasticas.tfclient.npcs.NpcNet.PLACE, "npc_guards_vol1", "scene_guard_stand", 1, 0, 0));
+                padNpc = net.tierrasfantasticas.tfclient.npcs.TFNpcs.selected(player);
+                r.event("zona de la prueba " + padClaim + " (300x300, arden los monstruos); NPC dentro: " + (padNpc == null ? "NO SALE" : String.format(
+                        "vida %.1f en %.1f %.1f %.1f", padNpc.getHealth(), padNpc.getX(), padNpc.getY(), padNpc.getZ())));
+            }
+            case 380 -> openPad = "protecciones/z:" + padClaim + ":a";
+            case 420 -> shot(r, "pad_protecciones");
+            case 422 -> actPad = "§scroll:380";
+            case 432 -> shot(r, "pad_protecciones_380");
+            case 434 -> actPad = "§scroll:470";
+            case 444 -> shot(r, "pad_protecciones_470");
+            case 446 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = true;
+            case 456 -> shot(r, "pad_protecciones_470_recuadros_despues");
+            case 458 -> {
+                net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = false;
+                actPad = "§scroll:560";
+            }
+            case 468 -> shot(r, "pad_protecciones_560");
+            case 480 -> {
+                closeScreen = true;
+                r.event("NPC en la zona tras 5 s: " + (padNpc == null ? "-" : String.format("%s, vida %.1f, ardiendo %s, en %.1f %.1f %.1f",
+                        padNpc.isAlive() ? "vivo" : "MUERTO", padNpc.getHealth(), padNpc.isOnFire() ? "SÍ" : "no", padNpc.getX(), padNpc.getY(), padNpc.getZ())));
+            }
+            case 482 -> {
+                if (padNpc != null) padNpc.discard();
+                if (padClaim != null) {
+                    var cm = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance();
+                    var c = cm.findClaimById(padClaim);
+                    if (c != null) cm.removeClaim(level, new net.minecraft.core.BlockPos(c.getX(), c.getY(), c.getZ()));
+                }
+            }
+            // (1.3.109) los bots: 4 que entran de uno en uno, la lista de jugadores (TAB) con sus caras y fuera
+            case 492 -> {
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 1");
+            }
+            case 600 -> tabList = true;
+            case 640 -> shot(r, "tablista");
+            case 644 -> {
+                tabList = false;
+                r.event("bots: " + net.tierrasfantasticas.tfclient.server.TFBots.count() + " dentro en el servidor; el cliente ve "
+                        + clientTab + " en la lista (" + clientTabSkins + " con su skin)");
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots remove all");
+            }
+            case 660 -> r.event("bots tras /tf bots remove all: " + net.tierrasfantasticas.tfclient.server.TFBots.count()
+                    + " en el servidor; el cliente ve " + clientTab + " en la lista");
+            // (1.3.109, el dueño: «dale rework a la textura de las claims, pon texturas buenas, oscuras») las diez piedras
+            // de protección en fila, de cerca
+            case 662 -> {
+                String[] tiers = {"10x10", "25x25", "40x40", "64x64", "80x80", "100x100", "150x150", "250x250", "300x300", "500x500"};
+                net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(arena.x - 9, arena.y, arena.z + 7);
+                for (int i = 0; i < tiers.length; i++) {
+                    var blk = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(
+                            new net.minecraft.resources.ResourceLocation("tfclient", "proteccion_" + tiers[i]));
+                    if (blk != null) level.setBlock(base.offset(i * 2, 0, 0), blk.defaultBlockState(), 3);
+                }
+                look(player, level, arena.x, arena.y + 1.0, arena.z, arena.x, arena.y + 0.5, arena.z + 7.5);
+            }
+            case 676 -> shot(r, "piedras_proteccion");
+            case 678 -> {
+                net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(arena.x - 9, arena.y, arena.z + 7);
+                for (int i = 0; i < 10; i++) level.setBlock(base.offset(i * 2, 0, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            case 684 -> next(level);
             default -> { }
         }
     }
+
+    /** (1.3.109) La lista de jugadores abierta (la tecla del TAB) y lo que ve el cliente en ella (BossTestClient). */
+    static volatile boolean tabList;
+    static volatile int clientTab, clientTabSkins;
 
     private static net.tierrasfantasticas.tfclient.npcs.NpcNet.Act npcAct(int op, String a, String b, double x, double y, double z) {
         return new net.tierrasfantasticas.tfclient.npcs.NpcNet.Act(op, -1, a, b, x, y, z);

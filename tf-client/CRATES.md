@@ -274,6 +274,20 @@ cortarse; en sus últimos 2 s, o cuando ya no se ve ninguna escena de crate, se 
 el bucle no salte, −15 LUFS; `ffmpeg … -t 180 -af "afade=t=in:d=2,afade=t=out:st=175:d=5,loudnorm=I=-16"`) va en
 `TF-Santuario-musica.zip` (se le dio hecho; para que la oigan todos, en el paquete de recursos del servidor): no se sube
 al repo ni a las Releases, que son públicos. Antes («La petite fille de la mer», 20 oct 2026), igual.
+**(1.3.109, el dueño: «no quiero un paquete de recursos, quiero que lo metas al mod cifrado»)** ahora va dentro del mod,
+cifrada: `tools/crates/cifrar_musica.py <musica.ogg>` escribe `assets/tfclient/sounds/crates/musica.ogg` como «TFENC1»
++ vector inicial + el .ogg en AES-128/CTR (la clave sale de `SealedAudio.SEED`, la misma en el script y en el mod);
+`mixin/SoundBufferLibraryMixin` la descifra en memoria al sonar (un .ogg normal, el de un paquete de recursos, sigue
+igual). Quien abra el jar no la puede escuchar tal cual; la clave va en el mod, así que no frena al que se empeñe.
+**Los efectos de sonido** (1.3.109, el dueño: «ese sonido horrendo, odio ese sonido»): los de la escena son sonidos de
+Minecraft (`sounds.json`, con `"type": "event"`: encantamiento, brújula imantada, cadena, faro, ancla, botón de madera,
+orbe de experiencia, subir de nivel, desafío completado; `CrateCinematicScreen.SFX` 0,8); los sintetizados se
+borraron (`sonidos_crates.py` ya solo hace falta para el ambiente). Los de la crate del mundo y de la apertura clásica
+(`util/CrateSfx`, una sola paleta para las dos) ya no llevan el Warden, truenos, el Wither ni los lamentos del valle de
+las almas. **Los efectos de la crate** (las capas del editor): partículas propias, `tfclient:crate_glow` (luz suave),
+`crate_spark` (destello) y `crate_flash` (fogonazo) (`util/CrateParticles`, `client/fx/CrateFxParticle`, texturas de
+`tools/crates/particulas_crates.py`), sumando luz; las de serie (`ParticleLayer.defaults`) son esas y las crates con
+las de serie de antes pasan solas a las nuevas (`ParticleLayer.legacyDefaults`); las que el dueño cambió, no.
 
 ### Piezas
 

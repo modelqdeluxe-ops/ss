@@ -144,47 +144,89 @@ public class ParticleLayer {
       }
    }
 
+   /**
+    * Las capas de serie. (1.3.109, el dueño: «dale rework a los efectos VFX de la crate, me parecen feos») con las
+    * partículas propias de TF (CrateParticles: luces suaves y destellos que suman luz, del color de la rareza) en vez del
+    * polvo de redstone, las letras de encantamiento, las varas del End y los fuegos artificiales de antes.
+    */
    public static List<ParticleLayer> defaults() {
       ArrayList<ParticleLayer> list = new ArrayList<>();
-      ParticleLayer halo = new ParticleLayer("minecraft:enchant", ParticleLayer.Phase.IDLE, ParticleLayer.Shape.HALO);
-      halo.count = 3;
-      halo.interval = 4;
+      // en reposo: unas luces que flotan alrededor y algún destello más bajo
+      ParticleLayer halo = new ParticleLayer("tfclient:crate_glow", ParticleLayer.Phase.IDLE, ParticleLayer.Shape.HALO);
+      halo.count = 2;
+      halo.interval = 5;
+      halo.speed = 0.01;
       list.add(halo);
-      ParticleLayer ring = new ParticleLayer("minecraft:dust", ParticleLayer.Phase.IDLE, ParticleLayer.Shape.RING);
-      ring.count = 12;
-      ring.interval = 8;
+      ParticleLayer ring = new ParticleLayer("tfclient:crate_spark", ParticleLayer.Phase.IDLE, ParticleLayer.Shape.RING);
+      ring.count = 4;
+      ring.interval = 9;
+      ring.speed = 0.008;
+      ring.radius = 0.9;
+      ring.yOffset = 0.55;
       list.add(ring);
-      ParticleLayer spiral = new ParticleLayer("minecraft:dust", ParticleLayer.Phase.ANTICIPATION, ParticleLayer.Shape.SPIRAL);
-      spiral.count = 16;
+      // tensión: una espiral de luces con destellos
+      ParticleLayer spiral = new ParticleLayer("tfclient:crate_glow", ParticleLayer.Phase.ANTICIPATION, ParticleLayer.Shape.SPIRAL);
+      spiral.count = 10;
       spiral.radius = 0.85;
       spiral.yOffset = 0.2;
-      spiral.speed = 0.05;
-      spiral.useRarityColor = false;
-      spiral.colorHex = "#FFE08A";
+      spiral.speed = 0.04;
       list.add(spiral);
-      ParticleLayer spiralSpark = new ParticleLayer("minecraft:end_rod", ParticleLayer.Phase.ANTICIPATION, ParticleLayer.Shape.SPIRAL);
-      spiralSpark.count = 10;
+      ParticleLayer spiralSpark = new ParticleLayer("tfclient:crate_spark", ParticleLayer.Phase.ANTICIPATION, ParticleLayer.Shape.SPIRAL);
+      spiralSpark.count = 6;
       spiralSpark.radius = 0.7;
       spiralSpark.yOffset = 0.2;
-      spiralSpark.speed = 0.06;
+      spiralSpark.speed = 0.05;
       list.add(spiralSpark);
-      ParticleLayer open = new ParticleLayer("minecraft:end_rod", ParticleLayer.Phase.OPEN, ParticleLayer.Shape.FOUNTAIN);
-      open.count = 12;
-      open.speed = 0.3;
-      open.spread = 0.35;
+      // apertura: una fuente de destellos y un golpe de luz
+      ParticleLayer open = new ParticleLayer("tfclient:crate_spark", ParticleLayer.Phase.OPEN, ParticleLayer.Shape.FOUNTAIN);
+      open.count = 14;
+      open.speed = 0.28;
+      open.spread = 0.3;
       list.add(open);
-      ParticleLayer reveal = new ParticleLayer("minecraft:dust", ParticleLayer.Phase.REVEAL, ParticleLayer.Shape.VORTEX);
-      reveal.count = 18;
-      reveal.radius = 0.95;
+      ParticleLayer openGlow = new ParticleLayer("tfclient:crate_glow", ParticleLayer.Phase.OPEN, ParticleLayer.Shape.BURST);
+      openGlow.count = 8;
+      openGlow.speed = 0.1;
+      openGlow.spread = 0.2;
+      list.add(openGlow);
+      // el premio: un remolino de luces
+      ParticleLayer reveal = new ParticleLayer("tfclient:crate_glow", ParticleLayer.Phase.REVEAL, ParticleLayer.Shape.VORTEX);
+      reveal.count = 12;
+      reveal.radius = 0.9;
       reveal.yOffset = 1.15;
       list.add(reveal);
-      ParticleLayer finale = new ParticleLayer("minecraft:firework", ParticleLayer.Phase.FINALE, ParticleLayer.Shape.BURST);
-      finale.count = 28;
-      finale.speed = 0.45;
-      finale.spread = 0.7;
+      // el final: un estallido de destellos y luces
+      ParticleLayer finale = new ParticleLayer("tfclient:crate_spark", ParticleLayer.Phase.FINALE, ParticleLayer.Shape.BURST);
+      finale.count = 22;
+      finale.speed = 0.35;
+      finale.spread = 0.5;
       finale.yOffset = 1.0;
       list.add(finale);
+      ParticleLayer finaleGlow = new ParticleLayer("tfclient:crate_glow", ParticleLayer.Phase.FINALE, ParticleLayer.Shape.BURST);
+      finaleGlow.count = 10;
+      finaleGlow.speed = 0.18;
+      finaleGlow.spread = 0.3;
+      finaleGlow.yOffset = 1.0;
+      list.add(finaleGlow);
       return list;
+   }
+
+   /** Las capas de serie de antes de la 1.3.109 (polvo, encantamiento, varas del End, fuegos): partícula, fase y forma. */
+   private static final String[][] LEGACY = {
+      {"minecraft:enchant", "IDLE", "HALO"}, {"minecraft:dust", "IDLE", "RING"}, {"minecraft:dust", "ANTICIPATION", "SPIRAL"},
+      {"minecraft:end_rod", "ANTICIPATION", "SPIRAL"}, {"minecraft:end_rod", "OPEN", "FOUNTAIN"}, {"minecraft:dust", "REVEAL", "VORTEX"},
+      {"minecraft:firework", "FINALE", "BURST"}};
+
+   /**
+    * ¿Son las capas de serie de antes, sin tocar (las de las crates ya puestas)? Esas se cambian solas por las nuevas al
+    * cargar (CrateConfig.load); las que el dueño cambió en el editor se quedan como estén.
+    */
+   public static boolean legacyDefaults(List<ParticleLayer> layers) {
+      if (layers.size() != LEGACY.length) return false;
+      for (int i = 0; i < LEGACY.length; i++) {
+         ParticleLayer l = layers.get(i);
+         if (!LEGACY[i][0].equals(l.particleId) || !LEGACY[i][1].equals(l.phase.name()) || !LEGACY[i][2].equals(l.shape.name())) return false;
+      }
+      return true;
    }
 
    public static enum Phase {

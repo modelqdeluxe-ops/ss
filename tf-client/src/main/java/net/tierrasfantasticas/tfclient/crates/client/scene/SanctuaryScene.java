@@ -45,6 +45,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import net.tierrasfantasticas.tfclient.crates.FSCrates;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 /**
  * El santuario de las crates (1.3.99): la escena en vivo de la cinemática de apertura. Los bloques vienen de
@@ -739,15 +740,51 @@ public final class SanctuaryScene {
     private void draw(RenderType rt, Matrix4f view, Matrix4f proj) {
         VertexBuffer vb = buffers.get(rt);
         if (vb == null) return;
-        rt.setupRenderState();
+        // (1.3.109, el dueño: «aún quedan rayas a los lados de la cascada de en medio») las enredaderas del costado del
+        // pilar junto a la cascada alta se ven casi de canto: su textura, aplastada, salía en rayitas claras que
+        // bailaban (la prueba: siguen sin agua, sin efectos y sin plantas al viento). Lo recortado se dibuja con
+        // mipmaps (como las hojas) y toda la piedra y las enredaderas con filtrado anisotrópico, solo en la escena
+        RenderType state = rt == RenderType.cutout() ? RenderType.cutoutMipped() : rt;
+        state.setupRenderState();
         ShaderInstance sh = RenderSystem.getShader();
+        float aniso = anisotropy();
+        if (aniso > 1.0F) {
+            RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+            Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).bind();
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, aniso);
+        }
         if (sh != null) {
             if (sh.CHUNK_OFFSET != null) sh.CHUNK_OFFSET.set(0.0F, 0.0F, 0.0F);
             vb.bind();
             vb.drawWithShader(view, proj, sh);
             VertexBuffer.unbind();
         }
-        rt.clearRenderState();
+        if (aniso > 1.0F) {
+            Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).bind();
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, 1.0F);
+        }
+        state.clearRenderState();
+    }
+
+    /** GL_TEXTURE_MAX_ANISOTROPY (EXT_texture_filter_anisotropic, y de serie en OpenGL 4.6) y su máximo. */
+    private static final int GL_TEXTURE_MAX_ANISOTROPY = 0x84FE, GL_MAX_TEXTURE_MAX_ANISOTROPY = 0x84FF;
+    private static float anisotropy = -1.0F;
+
+    /** Hasta 16x, si la tarjeta lo tiene (si no, 1: sin él). */
+    private static float anisotropy() {
+        if (anisotropy < 0.0F) {
+            anisotropy = 1.0F;
+            try {
+                var caps = org.lwjgl.opengl.GL.getCapabilities();
+                if (caps.GL_EXT_texture_filter_anisotropic || caps.GL_ARB_texture_filter_anisotropic || caps.OpenGL46) {
+                    anisotropy = Math.min(16.0F, GL11.glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY));
+                }
+            } catch (Throwable t) {
+                anisotropy = 1.0F;
+            }
+            FSCrates.LOGGER.info("[TF Crates] Santuario: filtrado anisotrópico {}x", anisotropy);
+        }
+        return anisotropy;
     }
 
     /**

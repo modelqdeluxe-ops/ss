@@ -3689,77 +3689,77 @@
  "crates.llave_aparece": {
   "sounds": [
    {
-    "name": "tfclient:crates/llave_aparece"
+    "name": "minecraft:block.enchantment_table.use", "type": "event", "volume": 1.0, "pitch": 1.1
    }
   ]
  },
  "crates.llave_entra": {
   "sounds": [
    {
-    "name": "tfclient:crates/llave_entra"
+    "name": "minecraft:item.lodestone_compass.lock", "type": "event", "volume": 1.0, "pitch": 1.0
    }
   ]
  },
  "crates.llave_gira": {
   "sounds": [
    {
-    "name": "tfclient:crates/llave_gira"
+    "name": "minecraft:block.chain.place", "type": "event", "volume": 0.9, "pitch": 1.25
    }
   ]
  },
  "crates.runas": {
   "sounds": [
    {
-    "name": "tfclient:crates/runas"
+    "name": "minecraft:block.beacon.power_select", "type": "event", "volume": 0.8, "pitch": 1.2
    }
   ]
  },
  "crates.tiembla": {
   "sounds": [
    {
-    "name": "tfclient:crates/tiembla"
+    "name": "minecraft:block.respawn_anchor.charge", "type": "event", "volume": 0.7, "pitch": 1.25
    }
   ]
  },
  "crates.apertura": {
   "sounds": [
    {
-    "name": "tfclient:crates/apertura"
+    "name": "minecraft:block.beacon.activate", "type": "event", "volume": 1.0, "pitch": 1.15
    }
   ]
  },
  "crates.tic": {
   "sounds": [
    {
-    "name": "tfclient:crates/tic"
+    "name": "minecraft:block.wooden_button.click_on", "type": "event", "volume": 0.7, "pitch": 1.0
    }
   ]
  },
  "crates.parada": {
   "sounds": [
    {
-    "name": "tfclient:crates/parada"
+    "name": "minecraft:entity.experience_orb.pickup", "type": "event", "volume": 0.9, "pitch": 0.8
    }
   ]
  },
  "crates.premio1": {
   "sounds": [
    {
-    "name": "tfclient:crates/premio1"
+    "name": "minecraft:entity.player.levelup", "type": "event", "volume": 0.9, "pitch": 1.0
    }
   ]
  },
  "crates.premio2": {
   "sounds": [
    {
-    "name": "tfclient:crates/premio2"
+    "name": "minecraft:ui.toast.challenge_complete", "type": "event", "volume": 0.8, "pitch": 1.0
    }
   ]
  },
  "crates.premio3": {
   "sounds": [
    {
-    "name": "tfclient:crates/premio3"
+    "name": "minecraft:ui.toast.challenge_complete", "type": "event", "volume": 0.9, "pitch": 0.95
    }
   ]
  },

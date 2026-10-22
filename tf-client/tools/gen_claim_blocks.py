@@ -8,6 +8,11 @@ cuatro lados y arriba; abajo, solo la piedra. De noche se ven el panel y las let
 colores (verde → turquesa → celeste → azul → violeta → magenta → coral → rojo → naranja → oro) son los del borde de la
 zona (ClaimTier) y del nombre del objeto (ClaimBlocks.colorForTier).
 
+1.3.109 (el dueño: «dale rework a la textura de las claims, me parecen horrendas; pon texturas buenas, oscuras»): piedra
+negra pulida (de basalto pulido, con el canto biselado y cuatro remaches; las de pago, con el marco de oro viejo), un
+panel hundido casi negro con un filo de luz del color del nivel y las letras TF grabadas, que brillan de ese color (no
+blancas). De noche se ven el filo y las letras (capa _glow a plena luz, recortada: solo píxeles enteros).
+
 Uso: python3 tools/gen_claim_blocks.py [--preview DIR]
 """
 import os
@@ -35,9 +40,13 @@ TIERS = [
 ]
 PAID = {"250x250", "300x300", "500x500"}
 
-# el marco: piedra pulida gris o, en las de pago, oro viejo (base, canto de luz y de sombra, y el borde del hueco)
-STONE = {"base": (126, 128, 136), "hi": (158, 160, 168), "lo": (86, 88, 96), "in_lo": (92, 94, 102), "in_hi": (162, 164, 172)}
-GOLD = {"base": (196, 152, 70), "hi": (236, 198, 112), "lo": (128, 90, 34), "in_lo": (120, 84, 32), "in_hi": (240, 206, 124)}
+# el marco: piedra negra pulida o, en las de pago, oro viejo oscuro (base, canto de luz y de sombra, el borde del
+# hueco y los remaches)
+STONE = {"base": (36, 38, 48), "hi": (66, 70, 86), "lo": (14, 15, 20), "in_lo": (10, 11, 15), "in_hi": (54, 58, 72),
+         "stud": (104, 110, 128), "stud_hi": (150, 156, 176)}
+GOLD = {"base": (78, 60, 28), "hi": (150, 114, 52), "lo": (34, 24, 10), "in_lo": (22, 16, 6), "in_hi": (120, 92, 42),
+        "stud": (190, 150, 72), "stud_hi": (238, 204, 120)}
+PANEL = (16, 17, 23)
 
 # las letras TF (6 de ancho cada una, 2 de hueco, 10 de alto)
 GLYPH_T = ["######", "######", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##.."]
@@ -49,17 +58,25 @@ def mix(a, b, t):
 
 
 def frame(seed, m):
-    """La piedra (o el oro) del marco: un grano muy suave y el canto (2 px) con luz arriba/izquierda y sombra abajo/derecha."""
+    """La piedra (o el oro) del marco: un grano muy suave (vetas oscuras) y el canto (2 px) con luz arriba/izquierda y
+    sombra abajo/derecha."""
     rnd = random.Random(seed)
     px = {}
     for y in range(N):
         for x in range(N):
-            v = rnd.choice((-4, -2, 0, 0, 0, 2, 3))
+            v = rnd.choice((-3, -2, -1, 0, 0, 0, 1, 2))
+            if rnd.random() < 0.04:
+                v -= 6  # alguna veta
             px[x, y] = tuple(max(0, min(255, c + v)) for c in m["base"])
     for i in range(N):
         for j in range(2):
-            px[i, j] = px[j, i] = m["hi"]
-            px[i, N - 1 - j] = px[N - 1 - j, i] = m["lo"]
+            px[i, j] = px[j, i] = m["hi"] if j == 0 else mix(m["hi"], m["base"], 0.5)
+            px[i, N - 1 - j] = px[N - 1 - j, i] = m["lo"] if j == 0 else mix(m["lo"], m["base"], 0.5)
+    # los remaches de las esquinas (2x2 con su brillo)
+    for cx, cy in ((2, 2), (N - 4, 2), (2, N - 4), (N - 4, N - 4)):
+        px[cx, cy] = m["stud_hi"]
+        px[cx + 1, cy] = px[cx, cy + 1] = m["stud"]
+        px[cx + 1, cy + 1] = mix(m["stud"], m["lo"], 0.5)
     return px
 
 
@@ -79,27 +96,37 @@ def letters():
 
 
 def face(kind, label, color, seed):
-    """Una cara: el marco y, menos abajo, el panel del color (hundido) con TF y su contorno."""
+    """Una cara: el marco y, menos abajo, el panel hundido casi negro con su filo de luz y las letras TF grabadas, que
+    brillan del color del nivel (lit: lo que va también en la capa _glow, a plena luz)."""
     m = GOLD if label in PAID else STONE
     px = frame(seed, m)
     lit = {}
     if kind != "bottom":
         p0, p1 = 6, N - 6
+        # el hueco del panel: sombra arriba/izquierda, luz abajo/derecha (2 px)
+        for i in range(4, N - 4):
+            for j in range(2):
+                px[i, 4 + j] = px[4 + j, i] = m["in_lo"]
+                px[i, N - 5 - j] = px[N - 5 - j, i] = m["in_hi"] if j == 0 else mix(m["in_hi"], PANEL, 0.5)
+        # el panel, casi negro, un pelo más claro abajo
         for y in range(p0, p1):
             for x in range(p0, p1):
                 t = (y - p0) / (p1 - p0 - 1)
-                lit[x, y] = mix(mix(color, (255, 255, 255), 0.22), mix(color, (0, 0, 0), 0.22), t)
-        for x in range(p0 + 1, p1 - 1):
-            lit[x, p0] = mix(color, (255, 255, 255), 0.5)  # la luz de arriba del panel
-        for i in range(4, N - 4):
-            for j in range(2):  # el hueco del panel: sombra arriba/izquierda, luz abajo/derecha
-                px[i, 4 + j] = px[4 + j, i] = m["in_lo"]
-                px[i, N - 5 - j] = px[N - 5 - j, i] = m["in_hi"]
+                px[x, y] = mix(PANEL, mix(PANEL, color, 0.10), t)
+        # el filo de luz del color, por dentro del hueco (1 px), con las esquinas apagadas
+        rim = mix(color, (0, 0, 0), 0.35)
+        for i in range(p0 + 1, p1 - 1):
+            lit[i, p0] = lit[i, p1 - 1] = lit[p0, i] = lit[p1 - 1, i] = rim
+        # las letras grabadas: su sombra (oscura, sin brillo) y la letra del color, con luz arriba y sombra abajo
         cells = letters()
         outline = {(x + dx, y + dy) for x, y in cells for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - cells
         for c in outline:
-            lit[c] = mix(color, (0, 0, 0), 0.62)
-        face_c, top_c, low_c = mix(color, (255, 255, 255), 0.85), (255, 255, 255), mix(color, (255, 255, 255), 0.55)
+            if c in lit:
+                del lit[c]
+            px[c] = (6, 7, 10)
+        face_c = mix(color, (255, 255, 255), 0.18)
+        top_c = mix(color, (255, 255, 255), 0.6)
+        low_c = mix(color, (0, 0, 0), 0.28)
         for x, y in cells:
             lit[x, y] = top_c if (x, y - 1) not in cells else low_c if (x, y + 1) not in cells else face_c
     px.update(lit)

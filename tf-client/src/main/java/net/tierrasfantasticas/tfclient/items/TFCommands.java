@@ -107,6 +107,8 @@ public final class TFCommands {
                 .then(net.tierrasfantasticas.tfclient.npcs.TFNpcs.command())
                 // (1.3.99) las crates (antes /fscrate de Fantastic Crates)
                 .then(net.tierrasfantasticas.tfclient.crates.FSCrates.command())
+                // (1.3.109) /tf bots add|remove <cantidad> [segundos] (staff): jugadores de mentira en la lista
+                .then(net.tierrasfantasticas.tfclient.server.TFBots.command())
                 // /tf claim give <jugadores> <id> [cantidad]: dar protecciones a mano
                 .then(Commands.literal("claim").requires(s -> s.hasPermission(2))
                         .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.giveCommand()))

@@ -302,9 +302,12 @@ public class CrateCinematicScreen extends Screen {
      * (1.3.103, el dueño: «el sonido es extremadamente alto, horrible») Los .ogg de la crate están muy altos (de −12 a −18
      * LUFS con picos de −1 dB; los del juego, −20 a −25) y sonaban a 0,75-1,0 en MASTER (forUI: ni el deslizador de
      * música ni el de ambiente los bajaban). Ahora: los efectos al 35 % y en «Bloques» (sin distancia, como antes), la
-     * música al 0,40 y el ambiente al 0,35: todo hacia −22/−25 LUFS.
+     * música al 0,40 y el ambiente al 0,35: todo hacia −22/−25 LUFS. (1.3.109, el dueño: «ese sonido horrendo de las
+     * crates, odio ese sonido»: los efectos ya no son los sintetizados, son sonidos de Minecraft —encantamiento, brújula
+     * imantada, cadena, faro, ancla, botón de madera, orbe de experiencia, subir de nivel y desafío completado—, que van
+     * a −20/−25 LUFS como los del juego: al 80 %.)
      */
-    private static final float SFX = 0.35F, MUSIC_VOL = 0.40F, AMBIENT_VOL = 0.35F;
+    private static final float SFX = 0.8F, MUSIC_VOL = 0.40F, AMBIENT_VOL = 0.35F;
     /** «Aerie» va a −25 LUFS en sus primeros 18 s (medido; la sintetizada, −12/−18): casi entera. */
     private static final float MC_MUSIC_VOL = 0.9F;
 
@@ -320,8 +323,8 @@ public class CrateCinematicScreen extends Screen {
      * (1.3.107, el dueño: «la música es horrible; pon esta —Dalarna—, deja de fondo los sonidos de la fuente; 3 minutos y
      * en bucle») la música y el ambiente de la fuente, en bucle y compartidos: empiezan en la pantalla de antes de abrir y
      * siguen en la apertura sin cortarse; cuando ya no se ve ninguna escena de crate se apagan despacio (Track.tick).
-     * La música es la de tfclient:sounds/crates/musica.ogg si un paquete de recursos la trae (la del dueño: el repo y las
-     * Releases son públicos, no va en el jar); si no, «Aerie» de Minecraft.
+     * La música es tfclient:sounds/crates/musica.ogg: (1.3.109) la del dueño, dentro del mod y cifrada (SealedAudio; el
+     * repo y las Releases son públicos); si faltara, «Aerie» de Minecraft.
      */
     private static Track music, ambient;
     private static volatile long sceneSeen;

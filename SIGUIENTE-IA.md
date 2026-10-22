@@ -1,6 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.108 (22 oct 2026)**: el pad con el cristal limpio (sin el emblema de la 1.3.107) y las fichas de la portada
+> **1.3.109 (22 oct 2026)**: rayas de la cascada (anisotrópico), sonidos y música de las crates (la del dueño,
+> cifrada en el mod), efectos nuevos de la crate, texto del pad, NPC que no arden, piedras de protección oscuras, la
+> vista previa de las estelas y los bots de `/tf bots` (CHECKPOINT de `HANDOFF.md`).
+>
+> **1.3.108 (22 oct 2026), PUBLICADA**: el pad con el cristal limpio (sin el emblema de la 1.3.107) y las fichas de la portada
 > centradas a lo alto (CHECKPOINT de `HANDOFF.md`).
 >
 > **1.3.107 (22 oct 2026), PUBLICADA**: las rayas del haz, del sol y de las cascadas, y la escena de las crates con supermuestreo (lo

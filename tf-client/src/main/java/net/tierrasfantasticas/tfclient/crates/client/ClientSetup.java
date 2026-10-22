@@ -8,6 +8,8 @@ public final class ClientSetup {
    }
 
    public static void init() {
+      // (1.3.109) las partículas propias de las crates (luces y destellos: CrateParticles)
+      net.tierrasfantasticas.tfclient.crates.client.fx.CrateFxParticle.install();
       DefaultMedia.warmUp();
       MediaGuide.write();
    }

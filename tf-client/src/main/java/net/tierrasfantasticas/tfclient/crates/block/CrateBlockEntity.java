@@ -1,5 +1,7 @@
 package net.tierrasfantasticas.tfclient.crates.block;
 
+import net.tierrasfantasticas.tfclient.crates.util.CrateParticles;
+import net.tierrasfantasticas.tfclient.crates.util.CrateSfx;
 import net.tierrasfantasticas.tfclient.crates.animation.AnimationRegistry;
 import net.tierrasfantasticas.tfclient.crates.animation.CrateAnimation;
 import net.tierrasfantasticas.tfclient.crates.config.CrateConfig;
@@ -456,9 +458,34 @@ public class CrateBlockEntity extends BlockEntity {
       }
    }
 
+   /**
+    * (1.3.109, el dueño: «dale rework a los efectos VFX de la crate, me parecen feos») una partícula que se suelta: las de
+    * Minecraft (las que el dueño elija en el editor) o las propias de TF (CrateParticles: luces suaves y destellos que
+    * suman luz), que sustituyen al polvo, las letras de encantamiento, las varas del End, los fuegos y las explosiones.
+    */
+   private interface Fx {
+      void at(Level level, double x, double y, double z, double vx, double vy, double vz);
+   }
+
+   private static Fx vanilla(ParticleOptions o) {
+      return (l, x, y, z, vx, vy, vz) -> l.addParticle(o, x, y, z, vx, vy, vz);
+   }
+
+   private static Fx tf(int kind, int rgb, float size) {
+      return (l, x, y, z, vx, vy, vz) -> CrateParticles.add(l, kind, x, y, z, vx, vy, vz, rgb, size);
+   }
+
+   private Fx light(int rgb, float size) {
+      return tf(CrateParticles.GLOW, rgb, size);
+   }
+
+   private Fx sparkle(int rgb, float size) {
+      return tf(CrateParticles.SPARK, rgb, size);
+   }
+
    private void emitLayers(Level level, BlockPos pos, ParticleLayer.Phase phase) {
       for (ParticleLayer layer : this.config.particleLayers) {
-         ParticleOptions opt;
+         Fx opt;
          if (layer.phase == phase
             && (phase != ParticleLayer.Phase.IDLE || level.getGameTime() % (long)Math.max(1, layer.interval) == 0L)
             && (opt = this.resolve(layer)) != null) {
@@ -467,10 +494,24 @@ public class CrateBlockEntity extends BlockEntity {
       }
    }
 
-   private ParticleOptions resolve(ParticleLayer layer) {
+   private Fx resolve(ParticleLayer layer) {
       String id = layer.particleId == null ? "" : layer.particleId.trim();
       String path = id.contains(":") ? id.substring(id.indexOf(58) + 1) : id;
       int color = layer.useRarityColor ? this.animColor : parseHex(layer.colorHex, this.animColor);
+      switch (path) {
+         case "crate_glow":
+            return this.light(color, 1.0F);
+         case "crate_spark":
+            return this.sparkle(color, 1.0F);
+         case "crate_flash":
+            return tf(CrateParticles.FLASH, color, 1.6F);
+         default:
+            ParticleOptions o = this.resolveVanilla(layer, id, path, color);
+            return o == null ? null : vanilla(o);
+      }
+   }
+
+   private ParticleOptions resolveVanilla(ParticleLayer layer, String id, String path, int color) {
       if (path.startsWith("fs_")) {
          return this.resolveFsPreset(path, color);
       } else {
@@ -588,7 +629,7 @@ public class CrateBlockEntity extends BlockEntity {
 
    private static final double SCENE_SHARE = 0.20;  // (1.3.105, el dueño: «un poco menos»; era 0,35)
 
-   private void emitShape(Level level, BlockPos pos, ParticleLayer layer, ParticleOptions opt) {
+   private void emitShape(Level level, BlockPos pos, ParticleLayer layer, Fx opt) {
       double crateScale = (double)this.config.rarity.sizeScale();
       double scale = 1.0 + (crateScale - 1.0) * 0.22;
       double cx = (double)pos.getX() + 0.5;
@@ -605,8 +646,8 @@ public class CrateBlockEntity extends BlockEntity {
          switch (layer.shape) {
             case HALO: {
                double angle = t + (double)i * ((Math.PI * 2) / (double)n);
-               level.addParticle(
-                  opt,
+               opt.at(
+                  level,
                   cx + Math.cos(angle) * r,
                   cy + 0.05 * scale * Math.sin(t * 1.7 + (double)i),
                   cz + Math.sin(angle) * r,
@@ -618,7 +659,7 @@ public class CrateBlockEntity extends BlockEntity {
             }
             case RING: {
                double angle = (double)i * ((Math.PI * 2) / (double)n);
-               level.addParticle(opt, cx + Math.cos(angle) * r, cy, cz + Math.sin(angle) * r, Math.cos(angle) * sp, 0.0, Math.sin(angle) * sp);
+               opt.at(level, cx + Math.cos(angle) * r, cy, cz + Math.sin(angle) * r, Math.cos(angle) * sp, 0.0, Math.sin(angle) * sp);
                break;
             }
             case BURST:
@@ -626,11 +667,11 @@ public class CrateBlockEntity extends BlockEntity {
                double az = (rng.nextDouble() - 0.5) * 2.0;
                double ay = 0.4 + rng.nextDouble() * 0.6;
                double mag = Math.max(0.001, Math.sqrt(ax * ax + ay * ay + az * az));
-               level.addParticle(opt, cx, cy, cz, ax / mag * (sp + spread), ay / mag * (sp + spread), az / mag * (sp + spread));
+               opt.at(level, cx, cy, cz, ax / mag * (sp + spread), ay / mag * (sp + spread), az / mag * (sp + spread));
                break;
             case COLUMN:
-               level.addParticle(
-                  opt, cx + (rng.nextDouble() - 0.5) * spread, cy + rng.nextDouble() * (0.4 * scale + r), cz + (rng.nextDouble() - 0.5) * spread, 0.0, sp, 0.0
+               opt.at(
+                  level, cx + (rng.nextDouble() - 0.5) * spread, cy + rng.nextDouble() * (0.4 * scale + r), cz + (rng.nextDouble() - 0.5) * spread, 0.0, sp, 0.0
                );
                break;
             case SPIRAL:
@@ -638,18 +679,18 @@ public class CrateBlockEntity extends BlockEntity {
                double frac = (double)((i + (int)(this.ambientTime % 3.0F)) % n) / (double)n;
                double ang = tt + frac * (Math.PI * 4);
                double rr = r * (1.05 - frac * 0.4);
-               level.addParticle(opt, cx + Math.cos(ang) * rr, cy + frac * 1.5 * scale, cz + Math.sin(ang) * rr, -Math.sin(ang) * sp, sp + 0.02, Math.cos(ang) * sp);
+               opt.at(level, cx + Math.cos(ang) * rr, cy + frac * 1.5 * scale, cz + Math.sin(ang) * rr, -Math.sin(ang) * sp, sp + 0.02, Math.cos(ang) * sp);
                break;
             case FOUNTAIN: {
                double angle = rng.nextDouble() * Math.PI * 2.0;
-               level.addParticle(opt, cx, cy, cz, Math.cos(angle) * spread, sp + rng.nextDouble() * 0.15, Math.sin(angle) * spread);
+               opt.at(level, cx, cy, cz, Math.cos(angle) * spread, sp + rng.nextDouble() * 0.15, Math.sin(angle) * spread);
                break;
             }
             case VORTEX: {
                double angle = t * 4.0 + (double)i * ((Math.PI * 2) / (double)n);
                double rr2 = r * (0.6 + 0.4 * Math.sin(t * 2.0 + (double)i));
-               level.addParticle(
-                  opt,
+               opt.at(
+                  level,
                   cx + Math.cos(angle) * rr2,
                   cy + rng.nextDouble() * 0.5 * scale,
                   cz + Math.sin(angle) * rr2,
@@ -660,8 +701,8 @@ public class CrateBlockEntity extends BlockEntity {
                break;
             }
             case RAIN:
-               level.addParticle(
-                  opt,
+               opt.at(
+                  level,
                   cx + (rng.nextDouble() - 0.5) * (spread + r * 2.0),
                   cy + rng.nextDouble() * 0.5 * scale,
                   cz + (rng.nextDouble() - 0.5) * (spread + r * 2.0),
@@ -671,7 +712,7 @@ public class CrateBlockEntity extends BlockEntity {
                );
                break;
             case POINT:
-               level.addParticle(opt, cx, cy, cz, (rng.nextDouble() - 0.5) * sp, rng.nextDouble() * sp, (rng.nextDouble() - 0.5) * sp);
+               opt.at(level, cx, cy, cz, (rng.nextDouble() - 0.5) * sp, rng.nextDouble() * sp, (rng.nextDouble() - 0.5) * sp);
          }
       }
    }
@@ -685,11 +726,11 @@ public class CrateBlockEntity extends BlockEntity {
          RandomSource rng = level.random;
          double share = this.sceneShare();
          if (t >= this.tOpenEnd && t < this.tSpinStop && t % 3 == 0) {
-            ParticleOptions amb = this.themeParticle(this.animation.theme());
+            Fx amb = this.themeFx(this.animation.theme());
             double ang = rng.nextDouble() * (Math.PI * 2);
             double rad = 0.5 + rng.nextDouble() * 0.2;
-            if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(
-               amb,
+            if (share >= 1.0 || rng.nextDouble() < share) amb.at(
+               level,
                cx + Math.cos(ang) * rad,
                (double)pos.getY() + 0.2 + rng.nextDouble() * 0.5,
                cz + Math.sin(ang) * rad,
@@ -700,39 +741,28 @@ public class CrateBlockEntity extends BlockEntity {
          }
 
          if (t >= this.tSpinStop && t < this.tHoldEnd && t % 2 == 0) {
-            ParticleOptions fin = this.finaleParticle(this.effectRarity);
+            Fx fin = this.sparkle(this.effectRarity.rgb(), 1.2F);
             int burst = t < this.tSpinStop + 12 ? 6 : 2;
 
             for (int i = 0; i < burst; i++) {
                double a2 = rng.nextDouble() * (Math.PI * 2);
                double s = 0.2 + rng.nextDouble() * 0.5;
-               if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(fin, cx, cyTop, cz, Math.cos(a2) * s, 0.15 + rng.nextDouble() * 0.3, Math.sin(a2) * s);
+               if (share >= 1.0 || rng.nextDouble() < share) fin.at(level, cx, cyTop, cz, Math.cos(a2) * s, 0.15 + rng.nextDouble() * 0.3, Math.sin(a2) * s);
             }
 
             for (int var19 = 0; var19 < 3; var19++) {
                double a3 = rng.nextDouble() * (Math.PI * 2);
                double s2 = 0.15 + rng.nextDouble() * 0.35;
-               if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(this.dust(this.animColor, 1.5F), cx, cyTop, cz, Math.cos(a3) * s2, 0.1 + rng.nextDouble() * 0.2, Math.sin(a3) * s2);
+               if (share >= 1.0 || rng.nextDouble() < share) this.light(this.animColor, 1.5F).at(level, cx, cyTop, cz, Math.cos(a3) * s2, 0.1 + rng.nextDouble() * 0.2, Math.sin(a3) * s2);
             }
          }
 
          if (t >= this.tHoldEnd && t < this.animTotal && t % 2 == 0) {
             double a4 = rng.nextDouble() * (Math.PI * 2);
             double rad2 = 0.2 + rng.nextDouble() * 0.25;
-            if (share >= 1.0 || rng.nextDouble() < share) level.addParticle(this.dust(this.config.rarity.rgb(), 1.2F), cx + Math.cos(a4) * rad2, cyTop - 0.2, cz + Math.sin(a4) * rad2, 0.0, -0.06, 0.0);
+            if (share >= 1.0 || rng.nextDouble() < share) this.light(this.config.rarity.rgb(), 1.2F).at(level, cx + Math.cos(a4) * rad2, cyTop - 0.2, cz + Math.sin(a4) * rad2, 0.0, -0.06, 0.0);
          }
       }
-   }
-
-   private ParticleOptions finaleParticle(Rarity r) {
-      return switch (r) {
-         case COMMON -> ParticleTypes.END_ROD;
-         case RARE -> ParticleTypes.GLOW;
-         case EPIC -> ParticleTypes.WITCH;
-         case LEGENDARY -> ParticleTypes.FIREWORK;
-         case MYTHIC -> ParticleTypes.FLAME;
-         default -> ParticleTypes.FIREWORK;
-      };
    }
 
    private void emitBuildupSpiral(Level level, BlockPos pos) {
@@ -747,8 +777,8 @@ public class CrateBlockEntity extends BlockEntity {
                double cx = (double)pos.getX() + 0.5;
                double cz = (double)pos.getZ() + 0.5;
                double baseY = (double)pos.getY() + 0.1;
-               DustParticleOptions dust = this.dust(r.rgb(), 1.2F);
-               ParticleOptions spark = this.openingSparkle(r);
+               Fx dust = this.light(r.rgb(), 1.2F);
+               Fx spark = this.sparkle(r.rgb(), 1.0F);
                int arms = common ? 1 + Math.round(p * 1.0F) : 2 + Math.round(p * 4.0F);
                double turns = 2.0 + (double)p * 1.5;
                double height = (1.25 + (double)p * 0.45) * pscale;
@@ -767,10 +797,10 @@ public class CrateBlockEntity extends BlockEntity {
                      double pz = cz + Math.sin(ang) * rr;
                      double py = baseY + frac * height;
                      double vTan = 0.04 + (double)p * 0.05;
-                     level.addParticle(dust, px, py, pz, -Math.sin(ang) * vTan, 0.02 + (double)p * 0.03, Math.cos(ang) * vTan);
+                     dust.at(level, px, py, pz, -Math.sin(ang) * vTan, 0.02 + (double)p * 0.03, Math.cos(ang) * vTan);
                      boolean addSpark = common ? s == steps - 1 : s == steps - 1 || p > 0.6F;
                      if (addSpark) {
-                        level.addParticle(spark, px, py, pz, -Math.sin(ang) * vTan * 0.6, 0.03, Math.cos(ang) * vTan * 0.6);
+                        spark.at(level, px, py, pz, -Math.sin(ang) * vTan * 0.6, 0.03, Math.cos(ang) * vTan * 0.6);
                      }
                   }
                }
@@ -789,15 +819,15 @@ public class CrateBlockEntity extends BlockEntity {
          double cz = (double)pos.getZ() + 0.5;
          double y = (double)pos.getY() + 0.6 * scale;
          double rad = 0.5 * scale;
-         DustParticleOptions dust = this.dust(r.rgb(), 1.4F);
-         ParticleOptions spark = this.openingSparkle(r);
+         Fx dust = this.light(r.rgb(), 1.4F);
+         Fx spark = this.sparkle(r.rgb(), 1.3F);
          float power = 1.0F + (float)tier * 0.35F;
-         level.addParticle(ParticleTypes.FLASH, cx, y, cz, 0.0, 0.0, 0.0);
+         tf(CrateParticles.FLASH, r.rgb(), 2.4F + tier * 0.4F).at(level, cx, y, cz, 0.0, 0.0, 0.0);
          int puffs = 2 + tier;
 
          for (int i = 0; i < puffs; i++) {
-            level.addParticle(
-               ParticleTypes.EXPLOSION,
+            this.light(r.rgb(), 2.6F).at(
+               level,
                cx + (rng.nextDouble() - 0.5) * rad,
                y + (rng.nextDouble() - 0.5) * 0.3 * scale,
                cz + (rng.nextDouble() - 0.5) * rad,
@@ -814,8 +844,8 @@ public class CrateBlockEntity extends BlockEntity {
             double px = cx + Math.cos(ang) * rad;
             double pz = cz + Math.sin(ang) * rad;
             double v = 0.18 * (double)power;
-            level.addParticle(dust, px, y, pz, Math.cos(ang) * v, 0.06, Math.sin(ang) * v);
-            level.addParticle(spark, px, y, pz, Math.cos(ang) * v * 0.7, 0.08, Math.sin(ang) * v * 0.7);
+            dust.at(level, px, y, pz, Math.cos(ang) * v, 0.06, Math.sin(ang) * v);
+            spark.at(level, px, y, pz, Math.cos(ang) * v * 0.7, 0.08, Math.sin(ang) * v * 0.7);
          }
 
          puffs = 24 + tier * 10;
@@ -826,8 +856,8 @@ public class CrateBlockEntity extends BlockEntity {
             double az = rng.nextDouble() - 0.5;
             double mag = Math.max(0.001, Math.sqrt(ax * ax + ay * ay + az * az));
             double sp = (0.25 + rng.nextDouble() * 0.35) * (double)power;
-            ParticleOptions p = (ParticleOptions)(k % 3 == 0 ? ParticleTypes.FIREWORK : (k % 3 == 1 ? spark : dust));
-            level.addParticle(p, cx, y, cz, ax / mag * sp, ay / mag * sp, az / mag * sp);
+            Fx p = k % 3 == 0 ? this.sparkle(0xFFFFFF, 1.1F) : (k % 3 == 1 ? spark : dust);
+            p.at(level, cx, y, cz, ax / mag * sp, ay / mag * sp, az / mag * sp);
          }
 
          puffs = 8 + tier * 4;
@@ -835,8 +865,8 @@ public class CrateBlockEntity extends BlockEntity {
          for (int l = 0; l < puffs; l++) {
             double a = rng.nextDouble() * (Math.PI * 2);
             double rr = rng.nextDouble() * rad * 0.6;
-            level.addParticle(
-               spark,
+            spark.at(
+               level,
                cx + Math.cos(a) * rr,
                y,
                cz + Math.sin(a) * rr,
@@ -848,28 +878,17 @@ public class CrateBlockEntity extends BlockEntity {
       }
    }
 
-   private ParticleOptions openingSparkle(Rarity r) {
-      return switch (r) {
-         case COMMON -> ParticleTypes.END_ROD;
-         case RARE -> ParticleTypes.GLOW;
-         case EPIC -> ParticleTypes.WITCH;
-         case LEGENDARY -> ParticleTypes.ENCHANT;
-         case MYTHIC -> ParticleTypes.FLAME;
-         default -> ParticleTypes.END_ROD;
+   private Fx themeFx(CrateAnimation.Theme t) {
+      return switch (t) {
+         case INFERNAL -> this.sparkle(0xFF8A3A, 1.0F);
+         case CELESTIAL -> this.sparkle(0xCFE4FF, 1.0F);
+         case NEON -> this.light(0x4CFFE0, 1.0F);
+         case MAGIC -> this.sparkle(0xC77DFF, 1.0F);
+         case ANCIENT -> this.light(0xFFD27A, 1.0F);
+         case NATURE -> this.light(0x8CFF7A, 1.0F);
+         case CASINO -> this.sparkle(0xFFE24A, 1.0F);
+         default -> this.light(this.animColor, 1.0F);
       };
-   }
-
-   private ParticleOptions themeParticle(CrateAnimation.Theme t) {
-      return (ParticleOptions)(switch (t) {
-         case INFERNAL -> ParticleTypes.FLAME;
-         case CELESTIAL -> ParticleTypes.END_ROD;
-         case NEON -> ParticleTypes.GLOW;
-         case MAGIC -> ParticleTypes.WITCH;
-         case ANCIENT -> ParticleTypes.ENCHANT;
-         case NATURE -> ParticleTypes.HAPPY_VILLAGER;
-         case CASINO -> ParticleTypes.FIREWORK;
-         default -> this.dust(this.animColor, 1.0F);
-      });
    }
 
    private static int parseHex(String hex, int fallback) {
@@ -947,321 +966,41 @@ public class CrateBlockEntity extends BlockEntity {
       }
    }
 
+   // (1.3.109, el dueño: «ese sonido horrendo de las crates, odio ese sonido»: el estampido del Warden, truenos, el Wither
+   // y los lamentos del valle de las almas) los sonidos de la crate del mundo son los de CrateSfx, como los de la apertura
+   // clásica: una sola paleta, mágica y limpia
+   private final CrateSfx.Sink sfx = this::play;
+
    private void playUnlock(Rarity r) {
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.5F, 1.35F);
-            this.play(SoundEvents.BEACON_POWER_SELECT, 0.45F, 1.25F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.55F, 1.0F);
-            break;
-         case RARE:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.55F, 1.2F);
-            this.play(SoundEvents.BEACON_POWER_SELECT, 0.45F, 1.15F);
-            this.play(SoundEvents.ENCHANTMENT_TABLE_USE, 0.4F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.6F, 1.0F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 1.05F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.5F, 1.15F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.45F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.6F, 1.0F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 0.95F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.55F, 1.0F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.5F, 1.1F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.35F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.65F, 0.95F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 0.8F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.55F, 0.9F);
-            this.play(SoundEvents.END_PORTAL_FRAME_FILL, 0.55F, 0.9F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.45F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.7F, 0.9F);
-      }
+      CrateSfx.unlock(this.sfx, r);
    }
 
    private void playSpiralCharge(Rarity r) {
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.45F, 1.4F);
-            break;
-         case RARE:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.5F, 1.25F);
-            this.play(SoundEvents.BEACON_AMBIENT, 0.4F, 1.2F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.55F, 1.1F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.45F, 1.1F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 1.0F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.4F, 1.0F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 0.85F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.5F, 0.9F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.45F, 0.9F);
-      }
+      CrateSfx.spiralCharge(this.sfx, r);
    }
 
    private void playSpiralRise(Rarity r, float p) {
-      float vol = Math.min(1.0F, 0.45F + p * 0.55F);
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.BEACON_POWER_SELECT, vol * 0.85F, Math.min(1.6F, 0.6F + p * 1.0F));
-            break;
-         case RARE:
-            this.play(SoundEvents.BEACON_POWER_SELECT, vol * 0.85F, Math.min(1.55F, 0.6F + p * 0.95F));
-            if (p > 0.55F) {
-               this.play(SoundEvents.CONDUIT_AMBIENT, vol * 0.3F, 0.9F + p * 0.4F);
-            }
-            break;
-         case EPIC:
-            this.play(SoundEvents.BEACON_POWER_SELECT, vol, Math.min(1.5F, 0.55F + p * 1.0F));
-            if (p > 0.4F) {
-               this.play(SoundEvents.CONDUIT_ACTIVATE, vol * 0.3F, 0.7F + p * 0.5F);
-            }
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.BEACON_POWER_SELECT, vol, Math.min(1.4F, 0.45F + p * 0.9F));
-            if (p > 0.4F) {
-               this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.15F + p * 0.3F, 0.7F + p * 0.45F);
-            }
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.BEACON_POWER_SELECT, vol, Math.min(1.25F, 0.35F + p * 0.85F));
-            if (p > 0.3F) {
-               this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.2F + p * 0.3F, 0.6F + p * 0.5F);
-            }
-
-            if (p > 0.75F) {
-               this.play(SoundEvents.CONDUIT_ACTIVATE, vol * 0.4F, 0.9F + p * 0.3F);
-            }
-      }
-   }
-
-   private static int peakHoldTicks(Rarity r) {
-      return 44;
-   }
-
-   private static int spiralBonusTicks(Rarity r) {
-      return 24;
+      CrateSfx.spiralRise(this.sfx, r, p);
    }
 
    private void playSpiralPeak(Rarity r) {
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.7F, 1.5F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.55F, 1.6F);
-            break;
-         case RARE:
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.75F, 1.35F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.6F, 1.4F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.45F, 1.4F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.8F, 1.2F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.65F, 1.3F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.55F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.6F, 0.9F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.8F, 1.05F);
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.68F, 1.15F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.6F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.65F, 0.85F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.WARDEN_SONIC_CHARGE, 0.75F, 1.0F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.7F, 0.95F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.6F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.7F, 0.8F);
-      }
+      CrateSfx.spiralPeak(this.sfx, r);
    }
 
    private void playOpenAccent(Rarity r) {
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 0.55F);
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.45F, 0.7F);
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.4F, 1.5F);
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.65F, 1.5F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.8F, 1.2F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.7F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.6F, 1.0F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.22F, 0.7F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.5F, 1.05F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.5F, 1.3F);
-            break;
-         case RARE:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.75F, 1.3F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.7F, 1.25F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.75F, 1.15F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.6F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.6F, 0.95F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.24F, 0.68F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.55F, 1.0F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.5F, 1.15F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.5F, 1.3F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.85F, 1.1F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.1F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.7F, 1.2F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.75F, 1.25F);
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.55F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.65F, 0.9F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.26F, 0.66F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.6F, 0.95F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.55F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.52F, 1.35F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.42F, 0.8F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.9F, 0.95F);
-            this.play(SoundEvents.WITHER_SPAWN, 0.7F, 0.95F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.9F, 1.0F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.8F, 1.1F);
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.6F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.65F, 0.85F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.28F, 0.64F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.62F, 0.9F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.6F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 1.35F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.45F, 0.78F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.95F, 0.75F);
-            this.play(SoundEvents.WITHER_SPAWN, 0.85F, 0.9F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.9F, 0.85F);
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.75F, 0.9F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.8F, 1.0F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.7F, 0.9F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.32F, 0.62F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.65F, 0.85F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.65F, 1.25F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.58F, 1.4F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.48F, 0.75F);
-      }
+      CrateSfx.openAccent(this.sfx, r);
    }
 
    private void playWin(Rarity r) {
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 0.55F);
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.45F, 0.7F);
-      this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.4F, 1.55F);
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.BEACON_POWER_SELECT, 0.6F, 1.5F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.5F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 1.15F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.2F, 0.72F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.5F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.55F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.5F, 1.3F);
-            break;
-         case RARE:
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.65F, 1.2F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.55F, 1.3F);
-            this.play(SoundEvents.ENCHANTMENT_TABLE_USE, 0.5F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.6F, 1.15F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.22F, 0.7F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.55F, 1.05F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.55F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.5F, 1.3F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.7F, 1.15F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.65F, 1.25F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.6F, 1.2F);
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.5F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.65F, 1.2F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.24F, 0.68F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.6F, 1.0F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.6F, 1.25F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.52F, 1.35F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.45F, 0.8F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.7F, 1.1F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.05F);
-            this.play(SoundEvents.TRIDENT_THUNDER, 0.7F, 1.15F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.65F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.7F, 1.2F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.26F, 0.66F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.62F, 0.95F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.62F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 1.35F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.48F, 0.78F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.WITHER_SPAWN, 0.8F, 0.95F);
-            this.play(SoundEvents.WARDEN_SONIC_BOOM, 0.8F, 0.9F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.05F);
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.7F, 1.0F);
-            this.play(SoundEvents.CONDUIT_ACTIVATE, 0.7F, 1.1F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.75F, 1.2F);
-            this.play(SoundEvents.WITHER_AMBIENT, 0.3F, 0.64F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.65F, 0.9F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.65F, 1.25F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.58F, 1.4F);
-            this.play(SoundEvents.SOUL_ESCAPE, 0.5F, 0.75F);
-      }
+      CrateSfx.win(this.sfx, r);
    }
 
    private void playWinTail(Rarity r) {
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.BEACON_POWER_SELECT, 0.45F, 1.8F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.5F, 1.1F);
-            break;
-         case RARE:
-            this.play(SoundEvents.BEACON_POWER_SELECT, 0.5F, 1.7F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.4F, 1.3F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.5F, 1.1F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.ENCHANTMENT_TABLE_USE, 0.5F, 1.3F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.45F, 1.2F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD, 0.55F, 1.05F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.TRIDENT_RETURN, 0.55F, 1.1F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.5F, 1.1F);
-            this.play(SoundEvents.BEACON_ACTIVATE, 0.5F, 1.5F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.55F, 1.0F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.END_PORTAL_SPAWN, 0.55F, 1.2F);
-            this.play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5F, 1.2F);
-            this.play(SoundEvents.CONDUIT_AMBIENT, 0.5F, 0.95F);
-            this.play(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS, 0.6F, 0.95F);
-      }
+      CrateSfx.winTail(this.sfx, r);
    }
 
    private void playClose(Rarity r) {
-      switch (r) {
-         case COMMON:
-            this.play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 1.1F);
-            break;
-         case RARE:
-            this.play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 1.0F);
-            this.play(SoundEvents.CONDUIT_DEACTIVATE, 0.4F, 1.2F);
-            break;
-         case EPIC:
-            this.play(SoundEvents.BEACON_DEACTIVATE, 0.55F, 1.0F);
-            this.play(SoundEvents.CONDUIT_DEACTIVATE, 0.45F, 0.9F);
-            break;
-         case LEGENDARY:
-            this.play(SoundEvents.CONDUIT_DEACTIVATE, 0.55F, 0.95F);
-            this.play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 0.85F);
-            break;
-         case MYTHIC:
-            this.play(SoundEvents.CONDUIT_DEACTIVATE, 0.55F, 0.9F);
-            this.play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 0.8F);
-      }
+      CrateSfx.close(this.sfx, r);
    }
 
    private void play(SoundEvent sound, float vol, float pitch) {

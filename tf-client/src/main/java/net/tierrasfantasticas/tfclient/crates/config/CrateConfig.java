@@ -342,6 +342,11 @@ public class CrateConfig {
          for (int k = 0; k < particleList.size(); k++) {
             c.particleLayers.add(ParticleLayer.load(particleList.getCompound(k)));
          }
+         // (1.3.109) las de serie de antes (polvo, encantamiento, varas del End, fuegos), a las nuevas de TF
+         if (ParticleLayer.legacyDefaults(c.particleLayers)) {
+            c.particleLayers.clear();
+            c.particleLayers.addAll(ParticleLayer.defaults());
+         }
       } else {
          c.particleLayers.addAll(ParticleLayer.defaults());
       }

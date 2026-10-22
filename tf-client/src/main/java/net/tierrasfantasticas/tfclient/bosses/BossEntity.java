@@ -1144,7 +1144,8 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public boolean fireImmune() {
-        return def != null && def.damageModifiers.getOrDefault("FIRE", 1.0) <= 0 || super.fireImmune();
+        // (1.3.109) los NPC de escena no arden (son decorado: ni al sol, ni en las protecciones, ni con fuego)
+        return isNpc() || def != null && def.damageModifiers.getOrDefault("FIRE", 1.0) <= 0 || super.fireImmune();
     }
 
     @Override
@@ -1606,8 +1607,9 @@ public class BossEntity extends PathfinderMob implements SkillMobs.Host, Enemy {
 
     @Override
     public void aiStep() {
-        // Se quema al sol como su tipo de Minecraft (zombi, esqueleto...), si el pack no lo evita con PreventSunburn
-        if (!level().isClientSide && def != null && def.sunburn && ai && isAlive() && isSunBurnTick()) setSecondsOnFire(8);
+        // Se quema al sol como su tipo de Minecraft (zombi, esqueleto...), si el pack no lo evita con PreventSunburn. (1.3.109)
+        // Los NPC de escena, nunca: los de Scenes vienen de un zombi y ardían de día (el dueño: «se queman»)
+        if (!level().isClientSide && def != null && def.sunburn && !isNpc() && ai && isAlive() && isSunBurnTick()) setSecondsOnFire(8);
         super.aiStep();
         if (!level().isClientSide && steer && !locked && def != null) {
             // Andando, el cuerpo va justo hacia donde le ha movido Minecraft este tick (BodyRotationControl: cuerpo = yRot)
