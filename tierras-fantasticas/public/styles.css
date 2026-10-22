@@ -14,6 +14,36 @@
 /* ---------- Tokens ---------- */
 
 :root {
+  /* Escalas fijas (no inventes tonos sueltos: usa estas). Grises cálidos 50-900, naranja 100-900 (el color de
+     acción), azul (gratis/obtener) y el caramelo de los escenarios 3D y las miniaturas (nunca blanco: hay armaduras y
+     alas blancas). Contraste medido con tools/contrast_audit.py. */
+  --n-50: #fbf8f4;
+  --n-100: #f4eee7;
+  --n-200: #e8dfd4;
+  --n-300: #d6c8b8;
+  --n-400: #b3a291;
+  --n-500: #8c7a69;
+  --n-600: #6b5a4b;
+  --n-700: #4f4137;
+  --n-800: #362c25;
+  --n-900: #221b16;
+  --o-100: #ffedd5;
+  --o-200: #fed7aa;
+  --o-300: #fdba74;
+  --o-400: #fb923c;
+  --o-500: #f97316;
+  --o-600: #ea580c;
+  --o-700: #c2410c;
+  --o-800: #9a3412;
+  --o-900: #6b2109;
+  --b-100: #dbeafe;
+  --b-300: #93c5fd;
+  --b-500: #3b82f6;
+  --b-600: #2563eb;
+  --b-700: #1d4ed8;
+  --b-900: #172f6e;
+  --stage: radial-gradient(75% 65% at 50% 40%, #ecd0aa 0%, #cf9f6e 58%, #a8774b 100%);
+  --tile: #e3c49d;
   /* Noche: fondo azul marino casi negro y superficies de pizarra azul, cada una más clara que la anterior (todas
      macizas) */
   --bg: #fff6ec;
@@ -30,12 +60,12 @@
   --bd: #f0dcc7;
   --bd-2: #e3c6a8;
   --text: #2a1d14;
-  --text-2: #4a3628;
-  --muted: #7d6656;
-  --faint: #a8917f;
+  --text-2: #3f3127;
+  --muted: #6b5a4b;
+  --faint: #8c7a69;
   /* Acento: verde aurora (foco, lo elegido, enlaces) */
   --a-200: #ffd7b8;
-  --a-300: #d9541a;
+  --a-300: #a63a0e;
   --a-400: #f26b1d;
   --a-500: #d95a12;
   --a-600: #a8430a;
@@ -608,11 +638,11 @@ h4 {
    Cada acción con su color, el mismo en toda la web: principal = naranja · comprar = oro · secundario = azul ·
    gratis = verde. Variables: --l (luz), --c (cara), --d (sombra), --o (contorno y canto), --fg (texto). */
 .btn {
-  --l: #8fd6ff;
-  --c: #3db4ff;
-  --d: #1d8fe0;
-  --o: #0b3d70;
-  --fg: #fff;
+  --l: #ffffff;
+  --c: #fbf6f0;
+  --d: var(--n-200);
+  --o: var(--n-700);
+  --fg: var(--n-900);
   --lift: 5px;
   position: relative;
   display: inline-flex;
@@ -627,7 +657,7 @@ h4 {
   letter-spacing: 0;
   white-space: nowrap;
   color: var(--fg);
-  text-shadow: 0 2px 0 var(--o);
+  text-shadow: none;
   background: linear-gradient(160deg, var(--l) 0 38%, var(--c) 38% 72%, var(--d) 72%);
   box-shadow: 0 var(--lift) 0 var(--o);
   transition:
@@ -674,44 +704,58 @@ h4 {
   transform: translateX(4px);
 }
 
-/* Principal: naranja */
+/* Jerarquía (guías de botones + WCAG): UN color de acción con relleno = principal y comprar; el secundario es
+   BLANCO con contorno oscuro (se distingue por la forma y el relleno, no solo por el color); gratis = azul (naranja y
+   azul se distinguen también con daltonismo; naranja y verde, no). Letra oscura sobre naranja (el blanco sobre
+   naranja no llega a 4.5:1). */
+
+/* Principal y comprar: naranja con letra marrón muy oscura */
 .btn-primary,
 .btn-theme,
-.btn-shop {
-  --l: #ffb45c;
-  --c: #ff8a1f;
-  --d: #e2620a;
-  --o: #7a2e04;
-}
-
-/* Secundario: azul cielo */
-.btn-ghost {
-  --l: #8fd6ff;
-  --c: #3db4ff;
-  --d: #1d8fe0;
-  --o: #0b3d70;
-}
-
-/* Comprar: oro, con la letra marrón oscuro (el blanco no se lee sobre el oro) */
+.btn-shop,
 .btn-buy {
-  --l: #ffe27a;
-  --c: #ffcb2e;
-  --d: #f0a800;
-  --o: #7a4f00;
-  --fg: #4a2c00;
-  text-shadow: 0 1px 0 #fff1a8;
+  --l: var(--o-300);
+  --c: var(--o-400);
+  --d: var(--o-500);
+  --o: var(--o-900);
+  --fg: #2a1100;
+  text-shadow: 0 1px 0 #ffd2a6;
 }
 
+.btn-primary svg,
+.btn-theme svg,
+.btn-shop svg,
 .btn-buy svg {
   filter: none;
 }
 
-/* Gratis / obtener: verde hierba */
+/* Secundario: blanco con contorno y letra oscuros (también comprar con monedas, la alternativa al dinero) */
+.btn-ghost,
+.btn-coin {
+  --l: #ffffff;
+  --c: #fbf6f0;
+  --d: var(--n-200);
+  --o: var(--n-700);
+  --fg: var(--n-900);
+  text-shadow: none;
+}
+
+.btn-ghost::before,
+.btn-coin::before {
+  background: var(--n-100);
+}
+
+.btn-ghost svg,
+.btn-coin svg {
+  filter: none;
+}
+
+/* Gratis / obtener: azul con letra blanca */
 .btn-claim {
-  --l: #a8e86a;
-  --c: #5cbf3a;
-  --d: #3f9a26;
-  --o: #1f4d10;
+  --l: var(--b-600);
+  --c: var(--b-700);
+  --d: #1e40af;
+  --o: var(--b-900);
 }
 
 .tab::before {
@@ -719,17 +763,26 @@ h4 {
 }
 
 .btn-discord {
-  --l: #9aa3ff;
-  --c: #5865f2;
-  --d: #4752c4;
-  --o: #262c7a;
+  --l: #5865f2;
+  --c: #4752c4;
+  --d: #3c45a5;
+  --o: #1f2466;
+  --fg: #fff;
+  text-shadow: 0 2px 0 var(--o);
 }
 
 .btn-whatsapp {
-  --l: #6fe39a;
-  --c: #25c463;
-  --d: #1aa14f;
-  --o: #0b4a24;
+  --l: #0f7f3c;
+  --c: #0c6b33;
+  --d: #0a5a2b;
+  --o: #042812;
+  --fg: #fff;
+  text-shadow: 0 2px 0 var(--o);
+}
+
+.btn-claim {
+  --fg: #fff;
+  text-shadow: 0 2px 0 var(--o);
 }
 
 .btn-shop {
@@ -754,14 +807,6 @@ h4 {
 
 .pp-word i {
   color: #0079c1;
-}
-
-/* Comprar con monedas: oro más claro */
-.btn-coin {
-  --l: #fff1b8;
-  --c: #f2d27a;
-  --d: #dcb550;
-  --o: #6b4d08;
 }
 
 .btn-sm {
@@ -902,14 +947,15 @@ h4 {
 }
 
 .nav a:hover {
-  color: var(--text);
-  background: var(--s3);
+  color: var(--n-900);
+  background: var(--n-100);
 }
 
 .nav a[aria-current='page'] {
-  color: var(--text);
-  background: var(--s3);
-  box-shadow: inset 0 -3px 0 var(--a-400);
+  color: var(--n-900);
+  background: none;
+  border-radius: 0;
+  box-shadow: inset 0 -3px 0 var(--o-500);
 }
 
 .header-actions {
@@ -958,8 +1004,9 @@ h4 {
   height: 32px;
   padding: 0 10px;
   border-radius: 8px;
-  background: var(--s3);
-  color: var(--text-2);
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--n-600);
+  color: var(--n-900);
   font-size: 13px;
   font-weight: 800;
   transition:
@@ -968,8 +1015,8 @@ h4 {
 }
 
 .ip-chip:hover .hint {
-  background: var(--brand);
-  color: #fff;
+  background: var(--n-100);
+  color: var(--n-900);
 }
 
 .ip-chip .hint svg {
@@ -1282,10 +1329,10 @@ h4 {
   height: 46px;
   padding: 0 16px;
   border-radius: 10px;
-  background: var(--s3);
-  color: var(--text);
+  background: #fff;
+  color: var(--n-900);
   font: 800 14.5px/1 var(--font-body);
-  box-shadow: inset 0 0 0 1px var(--bd-2);
+  box-shadow: inset 0 0 0 1.5px var(--n-600), 0 3px 0 var(--n-600);
   transition:
     background-color 0.18s,
     color 0.18s;
@@ -1297,9 +1344,8 @@ h4 {
 }
 
 .ip-box:hover .ip-copy {
-  background: var(--brand);
-  color: #fff;
-  box-shadow: none;
+  background: var(--n-100);
+  color: var(--n-900);
 }
 
 .ip-box.copied {
@@ -1386,7 +1432,7 @@ h4 {
 
 .hero-meta {
   margin-top: 16px;
-  color: var(--muted);
+  color: var(--n-700);
   font-size: 14.5px;
   font-weight: 600;
 }
@@ -1586,7 +1632,7 @@ h4 {
 }
 
 .crumbs a {
-  color: var(--text-2);
+  color: var(--n-800);
   transition: color 0.18s;
 }
 
@@ -1603,7 +1649,8 @@ h4 {
 }
 
 .crumbs [aria-current] {
-  color: var(--a-300);
+  color: var(--n-900);
+  font-weight: 800;
 }
 
 .page-hero h1 {
@@ -1616,7 +1663,7 @@ h4 {
 .page-hero p {
   max-width: 38em;
   margin: 16px 0 0;
-  color: var(--text-2);
+  color: var(--n-800);
   font-size: 18px;
   text-wrap: pretty;
 }
@@ -2140,8 +2187,8 @@ h4 {
 }
 
 .legal-tabs a[aria-current='page'] {
-  background: var(--brand);
-  color: #fff;
+  background: var(--o-400);
+  color: #2a1100;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
 
@@ -2335,8 +2382,8 @@ h4 {
   /* Isla oscura: sus propios colores (el resto de la web es clara) */
   --text: #f4f1ec;
   --text-2: #d9d2c9;
-  --muted: #a69d92;
-  --faint: #7a7168;
+  --muted: #b5ada3;
+  --faint: #a39a90;
   --s0: #1a1d24;
   --s1: #21252d;
   --s2: #282d36;
@@ -3044,7 +3091,7 @@ h4 {
 .account-card .cat {
   font: 800 13px/1.2 var(--font-body);
   letter-spacing: 0;
-  color: color-mix(in srgb, var(--t1, var(--a-400)) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--t1, var(--a-400)) 40%, #1f1408);
 }
 
 .product h3 {
@@ -3230,7 +3277,7 @@ h4 {
 
 .rk-step-name {
   font: 800 12px/1.1 var(--font-body);
-  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
   white-space: nowrap;
 }
 
@@ -3265,6 +3312,7 @@ h4 {
   position: relative;
   isolation: isolate;
   height: 440px;
+  background: var(--stage);
   cursor: grab;
   touch-action: pan-y;
 }
@@ -3354,9 +3402,12 @@ h4 {
   position: absolute;
   right: 14px;
   bottom: 24px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--faint);
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--n-800);
   pointer-events: none;
 }
 
@@ -3379,14 +3430,13 @@ h4 {
   font: 800 11.5px/1 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
 }
 
 .rk-name {
   margin: 10px 0 0;
   font: 800 clamp(38px, 9vw, 64px) / 1 var(--font-display);
-  color: var(--rk);
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--rk) 45%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1600);
   overflow-wrap: anywhere;
 }
 
@@ -3409,7 +3459,8 @@ h4 {
   margin-top: 16px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.45);
+  background: #1b1714;
+  color: #fff;
   font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
@@ -3421,7 +3472,7 @@ h4 {
 }
 
 .rk-chat-msg {
-  color: var(--text-2);
+  color: #e8e2dc;
 }
 
 .rk-perks {
@@ -3447,7 +3498,7 @@ h4 {
   padding: 4px;
   border-radius: 7px;
   background: var(--rk3);
-  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
 }
 
 /* Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos */
@@ -3463,7 +3514,7 @@ h4 {
 }
 
 .rk-cmds-name {
-  color: color-mix(in srgb, var(--rk) 60%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 45%, #1f1408);
 }
 
 .rk-cmds-head p {
@@ -3473,7 +3524,7 @@ h4 {
 }
 
 .rk-cmds-head b {
-  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
 }
 
 .rk-cmd-list {
@@ -3517,7 +3568,7 @@ h4 {
   border-radius: 7px;
   background: #fff;
   border: 1px solid var(--bd-2);
-  color: color-mix(in srgb, var(--rk) 50%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 40%, #1f1408);
   font: 700 13px/1.2 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   text-align: center;
 }
@@ -3535,7 +3586,7 @@ h4 {
   padding: 4px;
   border-radius: 7px;
   background: var(--rk3);
-  color: color-mix(in srgb, var(--rk) 50%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 40%, #1f1408);
 }
 
 .rk-cmd-text {
@@ -3588,7 +3639,7 @@ h4 {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--rk) 45%, transparent);
   background: var(--rk3);
-  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
   font: 800 11px/1 var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -3676,7 +3727,8 @@ h4 {
   --l: var(--rk2);
   --c: var(--rk);
   --d: color-mix(in srgb, var(--rk) 78%, #000);
-  --o: color-mix(in srgb, var(--rk) 35%, #000);
+  --o: color-mix(in srgb, var(--rk) 30%, #000);
+  --fg: #1a1208;
 }
 
 /* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
@@ -3702,10 +3754,8 @@ h4 {
   height: 270px;
   overflow: hidden;
   border-radius: var(--r-xl);
-  border: 1px solid color-mix(in srgb, var(--t2, var(--a-400)) 30%, var(--bd));
-  background:
-    radial-gradient(80% 60% at 50% 40%, var(--t3, rgb(var(--a-rgb) / 0.2)), transparent 70%),
-    linear-gradient(180deg, var(--s1), var(--bg-2));
+  border: 1px solid var(--n-300);
+  background: var(--stage);
 }
 
 .cos-stage .rk-drag {
@@ -3763,6 +3813,7 @@ h4 {
 
 .cos-head p {
   margin: 8px 0 0;
+  color: var(--n-700);
   font-size: 15px;
 }
 
@@ -3797,10 +3848,9 @@ h4 {
 }
 
 .chip[aria-pressed='true'] {
-  border-color: #7a2e04;
-  background: var(--brand);
-  color: #fff;
-  text-shadow: 0 1px 0 #7a2e04;
+  border-color: var(--o-900);
+  background: var(--o-400);
+  color: #2a1100;
 }
 
 .cos-themes {
@@ -3829,7 +3879,7 @@ h4 {
 .cos-theme h3 {
   margin: 0;
   font-size: 17px;
-  color: color-mix(in srgb, var(--t1, var(--text)) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--t1, var(--text)) 40%, #1f1408);
 }
 
 .cos-pieces {
@@ -3940,7 +3990,7 @@ h4 {
   border: 0;
   overflow: hidden;
   border-bottom: 1px solid var(--bd);
-  background: linear-gradient(180deg, #152337, var(--s0));
+  background: var(--stage);
   cursor: pointer;
 }
 
@@ -4045,7 +4095,7 @@ h4 {
 .pieces {
   font-size: 13px;
   font-weight: 800;
-  color: color-mix(in srgb, var(--t2, var(--a-400)) 60%, #2a1d14);
+  color: color-mix(in srgb, var(--t2, var(--a-400)) 42%, #1f1408);
 }
 
 .crate-tile .card-foot {
@@ -4278,7 +4328,7 @@ h4 {
   text-transform: none;
   letter-spacing: 0;
   font-weight: 500;
-  color: color-mix(in srgb, var(--t1, var(--a-400)) 55%, #2a1d14);
+  color: color-mix(in srgb, var(--t1, var(--a-400)) 40%, #1f1408);
 }
 
 /* ---------- VFX y Skills (rework completo 13 oct. 2026) ---------- */
@@ -4452,7 +4502,7 @@ h4 {
   border-radius: 6px;
   border: 1px solid var(--c-lo);
   background: var(--c-ink);
-  color: var(--c-hi);
+  color: #fff;
   font-size: 11.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -4701,7 +4751,7 @@ h4 {
 
 .cx-count {
   min-width: 70px;
-  color: var(--cx-tx-3);
+  color: #b9bec8;
   font: 700 12px/1 var(--font-body);
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -4722,7 +4772,7 @@ h4 {
 }
 
 .cx-kicker {
-  color: var(--c-hi, var(--c));
+  color: #fff;
   font: 800 11px/1.2 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4967,7 +5017,7 @@ h4 {
 }
 
 .sk-head-text .cx-kicker {
-  color: var(--c-hi);
+  color: #fff;
 }
 
 .sk-head h3 {
@@ -4996,9 +5046,10 @@ h4 {
 .sk-head-desc {
   grid-column: 1 / -1;
   margin: 10px 0 0;
-  color: #dfe4ea;
+  color: #fff;
   font-size: 13.5px;
   line-height: 1.5;
+  text-shadow: 0 1px 2px #000;
 }
 
 .sk-group i {
@@ -5683,10 +5734,8 @@ h4 {
   margin-top: 16px;
   height: min(62vh, 500px);
   border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background:
-    radial-gradient(60% 60% at 50% 50%, rgb(var(--v2-rgb) / 0.2), transparent 70%),
-    linear-gradient(180deg, var(--s1), var(--bg));
+  border: 1px solid var(--n-300);
+  background: var(--stage);
   overflow: hidden;
   touch-action: none;
 }
@@ -6202,10 +6251,8 @@ h4 {
   height: 300px;
   overflow: hidden;
   border-radius: var(--r-xl);
-  border: 1px solid color-mix(in srgb, rgb(var(--sec-rgb)) 28%, var(--bd));
-  background:
-    radial-gradient(70% 55% at 50% 42%, rgb(var(--sec-rgb) / 0.16), transparent 70%),
-    linear-gradient(180deg, var(--s1), var(--bg-2));
+  border: 1px solid var(--n-300);
+  background: var(--stage);
   cursor: grab;
   touch-action: pan-y;
 }
@@ -6497,12 +6544,11 @@ h4 {
 }
 
 .auth-tabs button[aria-selected='true'] {
-  color: var(--on-accent);
-  background: var(--shimmer) 0 0 / 220% 100%;
-  animation: shimmer-flow 5s ease-in-out infinite alternate;
+  color: #2a1100;
+  background: var(--o-400);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 3px 0 var(--pri-lip);
+    inset 0 0 0 2px var(--o-900),
+    0 3px 0 var(--o-900);
 }
 
 .auth-card .field:first-child {
@@ -6517,7 +6563,7 @@ h4 {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--faint);
+  color: var(--n-600);
   font-size: 13px;
 }
 
@@ -6888,9 +6934,7 @@ h4 {
   position: relative;
   flex: none;
   height: min(54vh, 460px);
-  background:
-    radial-gradient(55% 60% at 50% 55%, var(--t3, rgb(var(--a-rgb) / 0.14)), transparent 72%),
-    linear-gradient(180deg, var(--s1), var(--bg));
+  background: var(--stage);
   touch-action: none;
 }
 
@@ -6952,11 +6996,11 @@ h4 {
   height: 42px;
   padding: 0 4px 0 12px;
   border-radius: 12px;
-  border: 1px solid var(--bd-2);
-  background: rgb(var(--bg-rgb) / 0.82);
+  border: 1px solid var(--n-300);
+  background: #fff;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
+  font-weight: 800;
+  color: var(--n-800);
   transition: border-color 0.2s;
 }
 
@@ -7896,4 +7940,25 @@ h4 {
   .ready .footer {
     animation-delay: 0.12s !important;
   }
+}
+
+/* ---------- Miniaturas de piezas sobre caramelo (las piezas blancas se ven) ---------- */
+.rk-piece,
+.cos-art,
+.wd-slot-art,
+.cv-item img,
+.wd-piece img {
+  background: var(--tile);
+}
+
+.rk-piece,
+.cos-art,
+.cv-item img,
+.wd-piece img {
+  border-radius: 10px;
+}
+
+.cos-art,
+.cv-item img {
+  padding: 4px;
 }
