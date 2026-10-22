@@ -138,6 +138,18 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
     UUID, para que llegue al jugador que eliges. Revisa bien el nombre: si te equivocas de jugador, escríbenos.</li>
 </ul>'''),
 
+    ('regalos', 'Comprar como regalo', '''
+<ul>
+  <li>Puedes comprar cualquier producto como regalo para otro jugador. Necesitas tu cuenta de la web (el regalo dice de
+    quién es) y el jugador que lo recibe tiene que haber entrado al servidor al menos una vez con ese nombre.</li>
+  <li>Al pagar un regalo, quien paga es quien acepta estos Términos y quien puede pedir la cancelación o el reembolso.
+    Lo regalado es del jugador que lo recibe y se le entrega a él, con un aviso en el juego de quién se lo regala.</li>
+  <li>Si un regalo se reembolsa o se disputa, se le retira al jugador que lo recibió igual que cualquier compra. La
+    sanción por reembolso injustificado (el baneo de IP de 6 días) es para <b>quien pagó</b>, no para quien lo recibió.</li>
+  <li>El mensaje del regalo es opcional, de hasta 100 caracteres, y tiene que respetar las <a href="/mundo#normas">normas
+    del servidor</a>.</li>
+</ul>'''),
+
     ('entrega', 'Entrega', '''
 <p>Cuando Stripe o PayPal confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
@@ -164,7 +176,8 @@ pedido.</p>'''),
     la misma forma que con un reembolso. Escríbenos primero: casi siempre es más rápido.</li>
   <li><b>Reembolso injustificado: baneo de IP de 6 días.</b> Si pasados los 5 días hábiles reclamas el dinero por otra vía
     (una disputa o un contracargo con tu banco o tu tarjeta, Stripe o PayPal) sin que se dé ninguno de los casos de
-    arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 6 días</b>.
+    arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 6 días</b> (en un
+    regalo, el jugador que lo pagó).
     Además respondemos a la disputa con las pruebas de la compra (ver «Registro de la aceptación y recibos»). Si la
     disputa se resuelve a nuestro favor, te devolvemos lo retirado.</li>
   <li>Las recompensas gratis y lo comprado con monedas del servidor no tienen reembolso en dinero, porque no se pagaron

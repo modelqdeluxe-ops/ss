@@ -738,6 +738,51 @@ h4 {
   text-shadow: 0 1px 0 #e4fbb4;
 }
 
+/* Comprar como regalo: blanco con contorno y letra rosa oscura (secundario, como «Ver»; el lima sigue siendo comprar).
+   #7a1238 sobre blanco: 10:1 */
+.btn-gift {
+  --l: #ffffff;
+  --c: #fff4f8;
+  --d: #fbd3e2;
+  --o: #7a1238;
+  --fg: #7a1238;
+  text-shadow: none;
+}
+
+.btn-gift::before {
+  background: #fff0f6;
+}
+
+.btn-gift svg {
+  width: 20px;
+  height: 20px;
+  filter: none;
+}
+
+/* Botón solo con icono (el del regalo en las tarjetas): cuadrado */
+.btn.btn-icon {
+  flex: none;
+  min-width: 0;
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.btn.btn-icon::before {
+  display: none;
+}
+
+/* El regalo y el de comprar, juntos */
+.buy-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.buy-pair > .btn:not(.btn-icon) {
+  flex: 1 1 auto;
+}
+
 /* Secundario: blanco con contorno y letra oscuros (también comprar con monedas, la alternativa al dinero) */
 .btn-ghost,
 .btn-coin {
@@ -877,14 +922,15 @@ h4 {
   padding: 0;
   border: 0;
   background: none;
-  color: #a5caff;
+  color: var(--b-700);
   font-size: 14px;
+  white-space: nowrap;
   font-weight: 700;
   transition: color 0.2s;
 }
 
 .link-btn:hover {
-  color: #c7deff;
+  color: var(--b-900);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -2662,7 +2708,7 @@ h4 {
 
 /* ---------- Tienda ---------- */
 
-/* La cabecera: el título a la izquierda y, a la derecha (debajo en el móvil), las tres garantías en una placa */
+/* La cabecera de la tienda: el título y la frase (las garantías van debajo de los productos, en .shop-trust) */
 .shop-head {
   padding: calc(var(--header-h) + 32px) 0 0;
 }
@@ -2684,26 +2730,25 @@ h4 {
   margin: 14px 0 0;
 }
 
+/* Las garantías: una fila de cuatro placas debajo de los productos (en la cabecera estorbaban); dos por fila en la
+   tablet y una debajo de otra en el móvil */
 .shop-trust {
   display: grid;
-  margin: 0;
-  padding: 6px 0;
+  gap: 12px;
+  margin: 40px 0 0;
+  padding: 0;
   list-style: none;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--edge);
-  background: var(--surface);
-  box-shadow: var(--card-shadow);
 }
 
 .shop-trust li {
   display: flex;
   gap: 14px;
-  align-items: center;
-  padding: 12px 18px;
-}
-
-.shop-trust li + li {
-  border-top: 1px solid var(--bd);
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 2px solid var(--n-300);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 0 var(--n-300);
 }
 
 .shop-trust .icon {
@@ -2734,33 +2779,19 @@ h4 {
   line-height: 1.45;
 }
 
-/* En el móvil y la tablet, las garantías en una fila compacta (icono y título) para que las categorías se vean
-   enseguida */
-@media (max-width: 959px) {
+.shop-trust span span {
+  display: inline;
+}
+
+@media (min-width: 640px) {
   .shop-trust {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .shop-trust li {
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 6px;
-    text-align: center;
-  }
-
-  .shop-trust li + li {
-    border-top: 0;
-    border-left: 1px solid var(--bd);
-  }
-
-  .shop-trust b {
-    font-size: 13.5px;
-    line-height: 1.25;
-  }
-
-  .shop-trust span:not(.icon) {
-    display: none;
+@media (min-width: 1100px) {
+  .shop-trust {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -2829,7 +2860,7 @@ h4 {
 .shop-tabs {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 28px;
 }
 
@@ -2846,12 +2877,12 @@ h4 {
   gap: 8px;
   min-width: 0;
   padding: 6px 6px 10px;
-  border: 2px solid var(--n-400);
+  border: 2px solid var(--t-lo);
   border-radius: 14px;
-  background: #fff;
-  color: var(--n-900);
+  background: color-mix(in srgb, var(--t) 16%, #fff);
+  color: var(--t-ink);
   text-align: center;
-  box-shadow: 0 3px 0 var(--n-400);
+  box-shadow: 0 4px 0 var(--t-lo);
   transition:
     transform 0.22s var(--ease),
     border-color 0.18s,
@@ -2911,8 +2942,7 @@ h4 {
 }
 
 .tab:hover {
-  border-color: var(--t);
-  background: var(--s2);
+  background: color-mix(in srgb, var(--t) 30%, #fff);
 }
 
 .tab:active {
@@ -2925,13 +2955,15 @@ h4 {
 }
 
 /* La elegida: llena de su color */
+/* La elegida: llena de su color, con el borde de su tono casi negro y un aro de su color alrededor */
 .tab[aria-selected='true'] {
-  border-color: var(--t-hi);
+  border-color: var(--t-ink);
   background: var(--t);
   color: var(--t-ink);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.4),
-    0 4px 0 var(--t-lo),
+    0 4px 0 var(--t-ink),
+    0 0 0 4px color-mix(in srgb, var(--t) 45%, transparent),
     0 18px 34px -16px var(--t);
 }
 
@@ -2952,7 +2984,7 @@ h4 {
 
 @media (min-width: 640px) {
   .shop-tabs {
-    gap: 12px;
+    gap: 14px;
   }
 
   .tab-art {
@@ -2968,7 +3000,7 @@ h4 {
 @media (min-width: 1000px) {
   .shop-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
+    gap: 18px;
   }
 
   .tab,
@@ -4104,7 +4136,19 @@ h4 {
 }
 
 .crate-tile .card-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
   padding-top: 12px;
+}
+
+.crate-tile .card-foot .buy-pair {
+  display: contents;
+}
+
+.crate-tile .card-foot .btn:not(.btn-icon) {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 /* ---------- Ruleta ---------- */
@@ -5375,6 +5419,10 @@ h4 {
   min-height: 42px;
 }
 
+.sk-buy-row .btn-icon {
+  min-width: 0;
+}
+
 .sk-buy-note {
   margin: 8px 0 0;
   color: var(--cx-tx-3);
@@ -5476,9 +5524,22 @@ h4 {
     padding: 12px;
   }
 
-  .sk-buy-row .btn {
+  .sk-buy-row .btn,
+  .sk-buy-row .buy-pair {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .sk-buy-row .buy-pair {
+    flex-wrap: nowrap;
+  }
+
+  .sk-buy-row .buy-pair .btn:not(.btn-icon) {
+    width: auto;
+  }
+
+  .sk-buy-row .buy-pair .btn-icon {
+    width: 42px;
   }
 }
 
@@ -5889,7 +5950,7 @@ h4 {
 .field input:focus {
   outline: none;
   border-color: var(--a-400);
-  background: #0d121c;
+  background: #fff;
   box-shadow: 0 0 0 4px rgb(var(--a-rgb) / 0.15);
 }
 
@@ -6052,7 +6113,7 @@ h4 {
 }
 
 .terms-check a {
-  color: var(--a-200);
+  color: var(--a-300);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -6103,9 +6164,9 @@ h4 {
 .player-card.invalid,
 .player-card.error,
 .player-card.blocked {
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.06);
-  color: #f3c1c1;
+  border-color: #f2b8b5;
+  background: #fff1f0;
+  color: #9b1c1c;
 }
 
 .player-name {
@@ -6119,7 +6180,7 @@ h4 {
 
 .player-ok {
   display: block;
-  color: var(--a-400);
+  color: #166534;
 }
 
 .player-ok .on {
@@ -6129,11 +6190,11 @@ h4 {
 .player-note {
   display: block;
   margin-top: 4px;
-  color: var(--gold);
+  color: #7a4a00;
 }
 
 .player-note.bad {
-  color: var(--red);
+  color: #9b1c1c;
 }
 
 .rank-pill {
@@ -7512,14 +7573,7 @@ h4 {
     font-size: 11px;
   }
 
-  .crate-tile .card-foot {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .crate-tile .card-foot .btn {
-    width: 100%;
+  .crate-tile .card-foot .btn:not(.btn-icon) {
     padding: 0 6px;
   }
 
@@ -7834,11 +7888,6 @@ h4 {
     padding-top: calc(var(--header-h) + 48px);
   }
 
-  .shop-head-inner {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
-    gap: 48px;
-  }
-
   .feature-board {
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: 48px;
@@ -8008,4 +8057,74 @@ h4 {
 .cos-art,
 .cv-item img {
   padding: 4px;
+}
+
+/* ---------- Comprar como regalo: en la ventana de pago, «Para mí» o «Como regalo» ---------- */
+.buy-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding: 5px;
+  border: 2px solid var(--n-300);
+  border-radius: 14px;
+  background: var(--n-50);
+}
+
+.buy-mode button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--n-700);
+  font: 800 15px/1 var(--font-body);
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.buy-mode button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.buy-mode button:hover {
+  background: #fff;
+}
+
+.buy-mode button[aria-checked='true'] {
+  border-color: var(--n-700);
+  background: #fff;
+  color: var(--n-900);
+  box-shadow: 0 3px 0 var(--n-700);
+}
+
+.buy-mode button[data-mode='gift'][aria-checked='true'] {
+  border-color: #7a1238;
+  color: #7a1238;
+  box-shadow: 0 3px 0 #7a1238;
+}
+
+.buy-mode button:focus-visible {
+  outline: 2px solid var(--a-300);
+  outline-offset: 2px;
+}
+
+.gift-hint {
+  margin: 6px 0 0;
+}
+
+.order-gift {
+  width: 15px;
+  height: 15px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: #7a1238;
 }

@@ -241,6 +241,10 @@ del dueño con [Resend](https://resend.com). Todo queda además en D1 (`terms_ac
 Sin estos Secrets no se envía nada y las compras siguen igual. El jugador descarga su propio recibo en PDF al terminar
 de pagar (`GET /api/order/<id>/receipt`, solo pedidos pagados con dinero), aparte del de Stripe o PayPal.
 
+**Comprar como regalo**: con la cuenta iniciada, el botón del regalo (o «Como regalo» en la ventana de pago) compra
+para otro jugador que haya entrado al servidor. El pedido es del que lo recibe (le llega con un `tellraw` de quién es
+y el mensaje); la firma de los Términos, el recibo y la sanción por reembolso injustificado son de quien paga.
+
 **Reembolso injustificado**: si llega una disputa o contracargo pasados 5 días hábiles desde la entrega (y el pedido se
 había entregado), además de retirar lo comprado se encola en el puente `tempbanip <jugador> 6d …` (EssentialsX), como
 dicen los Términos. Los reembolsos que hace el dueño desde Stripe o PayPal no banean.

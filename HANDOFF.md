@@ -13,6 +13,25 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (22 oct 2026, 5.ª ronda): COMPRAR COMO REGALO, garantías fuera de la cabecera, pestañas con color (hecho y publicado)
+- **Regalo**: botón rosa con un regalo (`.btn-gift`, `data-gift`) junto a cada «Comprar» (tarjetas, crates, visor 3D,
+  cosméticos, skills, rangos) y conmutador «Para mí / Como regalo» en la ventana de pago (`setGiftMode` en app.js).
+  Hace falta la cuenta de quien paga; el que lo recibe tiene que haber entrado al servidor (`/api/player`); a uno
+  mismo, no (`gift_self`). Mensaje opcional (100 caracteres, sin § ni controles: `cleanGiftMessage`).
+  Backend: columnas `orders.gift` (JSON `{fromUuid, fromName, message}`) y `gift_from` (UUID de quien paga, para que lo
+  vea en «Mis compras»); el pedido (username/uuid) es del que lo recibe. Al entregar se añade un `tellraw {player}`
+  con «¡Regalo! X te ha regalado …» y el mensaje. La firma de los Términos es de quien paga (contexto `regalo`), el rol
+  de Discord NO va al Discord de quien paga, el anuncio dice «X le ha regalado a Y», el recibo lleva los dos, y la
+  sanción por disputa fuera de plazo es `tempbanip <quien pagó> 6d …`. Términos 2026-10-22.2, sección «Comprar como
+  regalo». Prueba en `test/app.test.js` (56).
+- **Garantías** (Pago seguro, Entrega, Para regalar, Rol en Discord): ya no en la cabecera de la tienda (estorbaban);
+  fila de 4 placas debajo de los productos (`.shop-trust`).
+- **Pestañas de la tienda**: cada una con su color (fondo claro, borde y canto de su tono, letra de su tono casi
+  negro), más separadas (18 px); la elegida, llena y con aro.
+- Arreglos de contraste en la ventana de pago (restos del tema oscuro): el campo enfocado se ponía NEGRO
+  (`#0d121c` → blanco), «Jugador verificado» verde oscuro, enlaces de los Términos y «Mi cuenta» oscuros, errores en
+  rojo oscuro sobre rosa claro.
+
 ### Web (22 oct 2026, 4.ª ronda): comprar LIMA, Tienda AMARILLA, recibos, registros por correo y sanción (hecho y publicado)
 Pedidos del dueño: comprar más verde claro/lima, «Tienda» más amarilla, quitar la pastilla blanca de las crates al
 pasar el ratón, el logo flotando arriba y abajo con brillo de medalla (no siguiendo al ratón), Términos con «sin

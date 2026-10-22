@@ -12,7 +12,7 @@ export const REFUND_POLICY = [
   'Cancelación: puedes cancelar la compra y recuperar tu dinero dentro de los 5 días hábiles siguientes a la entrega, escribiendo a ' +
     CONTACT + ' con tu número de pedido. Al reembolsar se retira del servidor todo lo entregado con esta compra.',
   'Pasado ese plazo no hay reembolsos: la compra es definitiva (salvo que no se entregara, se cobrara dos veces o por error, o la hiciera un menor sin permiso).',
-  'Reembolso injustificado: si pasado el plazo se reclama el dinero por otra vía (disputa o contracargo con el banco, la tarjeta, Stripe o PayPal), se retira todo lo de esta compra y el jugador recibe un baneo de IP del servidor de 6 días. Este recibo, el registro del pago y de la entrega y la aceptación de los Términos se presentan como prueba.',
+  'Reembolso injustificado: si pasado el plazo se reclama el dinero por otra vía (disputa o contracargo con el banco, la tarjeta, Stripe o PayPal), se retira todo lo de esta compra y el jugador recibe un baneo de IP del servidor de 6 días (en un regalo, el jugador que lo pagó). Este recibo, el registro del pago y de la entrega y la aceptación de los Términos se presentan como prueba.',
 ];
 
 const fmtDate = (iso) => {
@@ -34,8 +34,15 @@ export function receiptRows({ order, productName, acceptance, owner = false }) {
     ['Número de pedido', order.id],
     ['Fecha del pedido', fmtDate(order.createdAt)],
     ['Fecha del pago', fmtDate(order.paidAt)],
-    ['Jugador de Minecraft', order.username],
-    ['UUID del jugador', order.uuid || '—'],
+    ...(order.gift
+      ? [
+          ['Compra', `Regalo de ${order.gift.fromName} (paga y acepta los Términos) para ${order.username}`],
+          ['UUID de quien paga', order.gift.fromUuid || '—'],
+          ...(order.gift.message ? [['Mensaje del regalo', order.gift.message]] : []),
+        ]
+      : []),
+    [order.gift ? 'Jugador que lo recibe' : 'Jugador de Minecraft', order.username],
+    [order.gift ? 'UUID de quien lo recibe' : 'UUID del jugador', order.uuid || '—'],
     ['Producto', `${productName}${order.quantity > 1 ? ` ×${order.quantity}` : ''}`],
     ['Importe total pagado', `${money(order.amount, order.currency)} (${order.currency}, precio final)`],
     ['Medio de pago', METHOD[order.method] || order.method || '—'],
