@@ -190,7 +190,30 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.109, PUBLICADA) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.110, PUBLICADA) — lee esto primero
+
+Prueba en el juego (2e1ccc51, `[prueba-jefes=pad]`): `/tf bots add 4` → en el TAB «_Brisa_», «chinoXD29», «Fakozun»
+y «FedeeUwu» con su cara (y el jugador «Dev»); `remove all` los quita. Para volver a generar los nombres:
+`MOJANG_CACHE=<archivo.json> python3 -I tools/bots/nombres_bots.py` (la caché evita volver a preguntar a Mojang).
+
+**1.3.110: los nombres de los bots** (el dueño, con una captura del TAB: «los nombres son iguales, genera nombres únicos
+sin patrones idénticos» y «¿por qué siempre usas un apellido tipo Balón Rojo, Oso Marino? Investiga cómo usan los
+nombres de Minecraft las personas reales»). Los de la 1.3.109 eran casi todos «Palabra_Palabra» en español.
+- **Investigación**: 190 222 nombres reales de cuentas Java (muestra repartida por todo el dataset
+  huggingface.co/datasets/mudkipdev/minecraft-usernames, 51,5 millones): largo medio 9,5; 37 % acaban en cifras (2 o 4
+  sobre todo); solo 14 % llevan «_»; 32 % minúsculas, 29 % Mayúscula inicial, 28 % CamelCase, 5 % MAYÚSCULAS; «xX…Xx»
+  0,1 % y «xNombre» 0,7 %. Los hispanos (6 131), igual: apodo + cifras («Mati39», «juancu17»), apodo + iniciales
+  («sebastianrv», «NicoPL»), letras repetidas («Tomiinoo»), «xd», Its/The/Soy + apodo, nombre + apellido
+  («ivangallego»), apodos inventados («Iynox»).
+- **`tools/bots/nombres_bots.py`** los genera con esas plantillas y pesos (semilla fija) y con reglas: nada de
+  Adjetivo + Sustantivo; ningún molde más de 4 veces (los de una palabra, 7); como mucho 45 % con cifras; cada plantilla
+  hasta su parte medida (las raras, una vez); ningún apodo ni raíz de 5 letras repetidos; cada coletilla (xD, Rex,
+  god…) una vez y The/Its/Soy dos; chica o chico según la skin (CHICAS, mirado en la hoja de skins); y libres en la API
+  de Mojang.
+- **`TFBots`**: los bots guardados con un nombre viejo (en `config/tfclient-bots.json`) vuelven con otro nombre de la
+  lista, los mismos que había.
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.109, PUBLICADA)
 
 **Prueba en el juego** (43bcf13c, `[prueba-jefes=pad,crates,npcs] [shaders=photon]`, informe en `pruebas-jefes`): el NPC
 dentro de una zona con «arden los monstruos» sigue vivo y sin arder a los 5 s; `/tf bots add 4 1` → 4 en el servidor y
