@@ -10,7 +10,7 @@
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
 - NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.
   La 1.3.106 (los muebles: los de la taberna en el panel y la silla, el sofá, el taburete o el banco de los que se
-  sientan o se tumban en el aire, `tools/npcs/muebles.py`) es la última; lo que queda, en `tf-client/NPCS-CONTINUAR.md`.
+  sientan o se tumban en el aire, `tools/npcs/muebles.py`; 1.3.107: se dibujan con el modelo y la barra del camarero) es la última; lo que queda, en `tf-client/NPCS-CONTINUAR.md`.
   La 1.3.99 está publicada; si hay que volver a tocar la cinemática, sigue `tf-client/CRATES-CONTINUAR.md`. El dueño
   juega con Oculus + Photon: las pruebas de la cinemática y del pad, con `[shaders=photon]` (1.3.106: Photon no arranca
   en la máquina de la prueba, pero con Oculus y Embeddium ya se ve lo que él ve; sin ellos, no).

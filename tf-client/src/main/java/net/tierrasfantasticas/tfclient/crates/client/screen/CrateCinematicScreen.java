@@ -128,6 +128,12 @@ public class CrateCinematicScreen extends Screen {
     private int particlesMax, particleFrames, particlesNow;
     /** Para la prueba en el juego: fotogramas, tiempo medio y peor fotograma de la última cinemática. */
     public static volatile String testStats = "";
+    /**
+     * (1.3.107) Para la prueba en el juego: lo que no se dibuja (para saber qué pinta las rayas del dueño, una captura
+     * sin cada cosa): los efectos (SceneFx), los rayos del sol del post, el post entero, el agua, las plantas.
+     */
+    public static volatile int testOff;
+    public static final int TEST_FX = 1, TEST_RAYS = 2, TEST_POST = 4, TEST_WATER = 8, TEST_PLANTS = 16;
     private int frames;
     private double frameSum, frameMax;
     private long lastFrame;
@@ -258,6 +264,7 @@ public class CrateCinematicScreen extends Screen {
                 + String.format("; partículas de la crate: hasta %d a la vez, en %d fotogramas%s", particlesMax, particleFrames,
                         cratePos == null ? " (sin bloque)" : "")
                 + "; efectos: " + SceneFx.stats()
+                + (post != null ? "; escena a " + post.scale() + "x" : "; sin shader de la escena")
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
@@ -309,17 +316,38 @@ public class CrateCinematicScreen extends Screen {
         playing.add(s);
     }
 
-    private void track(String name, SoundSource src, float volume) {
+    /**
+     * (1.3.107, el dueño: «la música es horrible; pon esta —Dalarna—, deja de fondo los sonidos de la fuente; 3 minutos y
+     * en bucle») la música y el ambiente de la fuente, en bucle y compartidos: empiezan en la pantalla de antes de abrir y
+     * siguen en la apertura sin cortarse; cuando ya no se ve ninguna escena de crate se apagan despacio (Track.tick).
+     * La música es la de tfclient:sounds/crates/musica.ogg si un paquete de recursos la trae (la del dueño: el repo y las
+     * Releases son públicos, no va en el jar); si no, «Aerie» de Minecraft.
+     */
+    private static Track music, ambient;
+    private static volatile long sceneSeen;
+
+    private void loops() {
+        sceneSeen = System.nanoTime();
         if (minecraft == null) return;
-        Track s = new Track(tf(name), src, volume);
-        minecraft.getSoundManager().play(s);
-        tracks.add(s);
+        if (ambient == null || ambient.isStopped()) {
+            ambient = new Track(tf("ambiente"), SoundSource.AMBIENT, AMBIENT_VOL, true);
+            ambient.shared = true;
+            minecraft.getSoundManager().play(ambient);
+        }
+        if (music == null || music.isStopped()) {
+            boolean own = minecraft.getResourceManager().getResource(new ResourceLocation("tfclient", "sounds/crates/musica.ogg")).isPresent();
+            music = new Track(tf(own ? "musica" : "musica_mc"), SoundSource.MUSIC, own ? MUSIC_VOL : MC_MUSIC_VOL, true);
+            music.shared = true;
+            minecraft.getSoundManager().play(music);
+        }
     }
 
     /** La música y el ambiente: suenan en todas partes y al final se apagan despacio en vez de cortarse. */
     private static final class Track extends AbstractTickableSoundInstance {
         private final float base;
         private float fade = 1.0F, step;
+        /** La música o el ambiente compartidos (loops): se apagan solos cuando ya no hay escena de crate. */
+        boolean shared;
 
         Track(SoundEvent ev, SoundSource src, float volume) {
             this(ev, src, volume, false);
@@ -342,6 +370,7 @@ public class CrateCinematicScreen extends Screen {
 
         @Override
         public void tick() {
+            if (shared && step <= 0.0F && System.nanoTime() - sceneSeen > 600_000_000L) fadeOut(30);
             if (step <= 0.0F) return;
             fade -= step;
             if (fade <= 0.0F) {
@@ -360,15 +389,7 @@ public class CrateCinematicScreen extends Screen {
 
     private void sounds(int t) {
         switch (t) {
-            case 0 -> {
-                track("ambiente", SoundSource.AMBIENT, AMBIENT_VOL);
-                // (1.3.106, el dueño: «la música… estaba horrible») la de Minecraft, «Aerie» (Lena Raine), salvo que un
-                // paquete de recursos traiga la suya en tfclient:sounds/crates/musica.ogg (la canción del dueño); la
-                // sintetizada ya no va en el jar
-                boolean own = minecraft != null
-                        && minecraft.getResourceManager().getResource(new ResourceLocation("tfclient", "sounds/crates/musica.ogg")).isPresent();
-                track(own ? "musica" : "musica_mc", SoundSource.MUSIC, own ? MUSIC_VOL : MC_MUSIC_VOL);
-            }
+            // (la música y el ambiente: loops(), desde la pantalla de antes de abrir)
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
             case KEY_THROW -> ui(SoundEvents.TRIDENT_THROW, 0.35F, 1.6F);
             case KEY_IN -> {
@@ -387,6 +408,8 @@ public class CrateCinematicScreen extends Screen {
             case REVEAL -> ui(tf("premio" + tier()), 1.0F, 1.0F);
             case TOTAL - 40 -> {
                 for (Track tr : tracks) tr.fadeOut(56);
+                if (music != null) music.fadeOut(56);
+                if (ambient != null) ambient.fadeOut(56);
             }
             default -> {}
         }
@@ -907,14 +930,11 @@ public class CrateCinematicScreen extends Screen {
         }
         lastFrame = now;
         float t = (float)((now - openNanos) / 5.0E7);
+        // (al acabar la apertura —sus últimos 2 s— la música y el ambiente se apagan: no se vuelven a poner)
+        if (idle || t < TOTAL - 40) loops();
         if (idle) {
             // (el reloj vuelve atrás cada media hora para no acercarse al tick 0, donde empieza la apertura)
             t = IDLE_T0 + t % 36000.0F;
-            if (tracks.isEmpty() && minecraft != null) {
-                Track tr = new Track(tf("ambiente"), SoundSource.AMBIENT, AMBIENT_VOL, true);
-                tracks.add(tr);
-                minecraft.getSoundManager().play(tr);
-            }
         } else {
             int soundTick = (int)Math.floor(t);
             while (lastSoundTick < soundTick) {
@@ -956,7 +976,7 @@ public class CrateCinematicScreen extends Screen {
         Vector3f up = new Vector3f(view.m01(), view.m11(), view.m21());
 
         // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
-        boolean pp = ScenePost.ready() && !postFailed;
+        boolean pp = ScenePost.ready() && !postFailed && (testOff & TEST_POST) == 0;
         if (!saidHow) {
             // (1.3.103, el dueño: «la escena no me mostraba los efectos») con qué se dibuja, una vez por cinemática
             saidHow = true;
@@ -967,6 +987,7 @@ public class CrateCinematicScreen extends Screen {
         if (pp) {
             try {
                 if (post == null) post = new ScenePost();
+                ScenePost.frame();
                 post.ensure(mc.getWindow().getWidth(), mc.getWindow().getHeight());
                 post.begin();
                 Vector3f fwd = new Vector3f(-view.m02(), -view.m12(), -view.m22());
@@ -1022,7 +1043,7 @@ public class CrateCinematicScreen extends Screen {
 
             sc.drawOpaque(view, proj);
             float gust = pulseAt(t, OPEN, 40.0F) + pulseAt(t, REVEAL, 30.0F) * 0.6F;
-            sc.drawPlants(pose, buf, t / 20.0F, gust);
+            if ((testOff & TEST_PLANTS) == 0) sc.drawPlants(pose, buf, t / 20.0F, gust);
             buf.endBatch(RenderType.cutout());
             buf.endBatch(RenderType.cutoutMipped());
             buf.endBatch(RenderType.solid());
@@ -1034,53 +1055,55 @@ public class CrateCinematicScreen extends Screen {
             if (pp) post.rebind();
 
             // el agua (el estanque, las charcas, la cascada y las fuentes: la dibuja el juego), translúcida
-            if (!(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
+            if ((testOff & TEST_WATER) == 0 && !(pp && sc.drawWaterFx(view, proj, eye, t))) sc.drawWater(view, proj);
             worldParticles(view, eye, sc, t);
             float surge = pulseAt(t, OPEN, 50.0F) + pulseAt(t, REVEAL, 40.0F);
 
             // los pétalos de la apertura y del premio
             // (1.3.106) los efectos, como el agua: con su VertexBuffer y sus shaders (SceneFx); por el lote del juego no le
             // salían al dueño
-            VertexConsumer soft = SceneFx.begin(SceneFx.Kind.SOFT, buf);
-            CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
-            if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
-            float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
-            SceneFx.end(SceneFx.Kind.SOFT, buf);
+            if ((testOff & TEST_FX) == 0) {
+                VertexConsumer soft = SceneFx.begin(SceneFx.Kind.SOFT, buf);
+                CinematicFx.petals(soft, fv, sc, t, t - OPEN, t >= OPEN ? 1.0F : 0.0F);
+                if (t >= REVEAL) CinematicFx.petals(soft, fv, sc, t, t - REVEAL, 0.8F);
+                float excite = pulseAt(t, OPEN, 60.0F) + pulseAt(t, REVEAL, 60.0F);
+                SceneFx.end(SceneFx.Kind.SOFT, buf);
 
-            // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
-            // agua que brilla, las runas, el pilar, la llave, los premios
-            RenderSystem.depthMask(false);
-            float open = smooth(OPEN - 2, OPEN + 12, t);
-            float tintAmt = 0.35F * open * (0.6F + 0.4F * winnerRarity.ordinal() / 4.0F);
-            VertexConsumer glow = SceneFx.begin(SceneFx.Kind.GLOW, buf);
-            CinematicFx.mist(glow, fv, sc, t);
-            CinematicFx.lightHalos(glow, fv, sc, t);
-            CinematicFx.waterfallLights(glow, fv, sc, t);
-            CinematicFx.fireflies(glow, fv, t);
-            CinematicFx.fairies(glow, fv, sc, t, excite);
-            // el haz baja mientras gira la ruleta y en el premio (que no tape los premios)
-            float ring = smooth(RING0, RING1, t) * (t >= REVEAL + 40 ? 1.0F - 0.5F * smooth(REVEAL + 40, REVEAL + 70, t) : 1.0F);
-            float shaft = (1.0F + open * 0.5F) * (1.0F - 0.45F * ring);
-            CinematicFx.sunShafts(glow, fv, sc, t, shaft, rarityColor, tintAmt);
-            CinematicFx.motes(glow, fv, sc, t, shaft);
-            float runeLit = smooth(RUNES0, RUNES1, t) * (t > REVEAL + 50 ? Math.max(0.3F, 1.0F - (t - REVEAL - 50) / 40.0F) : 1.0F);
-            float glowWater = smooth(KEY_TURN0, KEY_TURN1 + 6, t) * (0.6F + 0.4F * pulseAt(t, OPEN, 40.0F) + 0.4F);
-            CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
-            CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
-            float[] c = sc.anchor("crate");
-            // (al salir el premio el pilar se apaga del todo: es una caja de luz y, detrás del premio, se veía como un
-            // cuadrado de color pegado a él; el dueño: «que no traspase ese brillo al item»)
-            float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.3F * (1.0F - smooth(REVEAL, REVEAL + 8, t))
-                    : t >= RING0 ? 1.0F - 0.7F * smooth(RING0, RING1, t) : 1.0F);
-            if (t > TOTAL - 20) pillar *= Math.max(0.0F, (TOTAL - t) / 20.0F) * 0.5F + 0.5F;
-            CinematicFx.pillar(glow, fv, c[0], c[1] + crateH * 0.75F, c[2], 9.0F, pillar, t, rarityColor);
-            CinematicFx.shockwave(glow, fv, c[0], sc.anchor("pool")[1] + 0.03F, c[2], t - OPEN, 30.0F, 8.0F, rarityColor);
-            keyLights(glow, fv, sc, t);
-            itemLights(glow, fv, sc, t, eye);
-            SceneFx.end(SceneFx.Kind.GLOW, buf);
-            VertexConsumer rays = SceneFx.begin(SceneFx.Kind.RAYS, buf);
-            itemRays(rays, fv, sc, t, eye);
-            SceneFx.end(SceneFx.Kind.RAYS, buf);
+                // la luz que suma: las luces mágicas, las hadas, las luciérnagas, la niebla, la cascada, el sol, el polvo, el
+                // agua que brilla, las runas, el pilar, la llave, los premios
+                RenderSystem.depthMask(false);
+                float open = smooth(OPEN - 2, OPEN + 12, t);
+                float tintAmt = 0.35F * open * (0.6F + 0.4F * winnerRarity.ordinal() / 4.0F);
+                VertexConsumer glow = SceneFx.begin(SceneFx.Kind.GLOW, buf);
+                CinematicFx.mist(glow, fv, sc, t);
+                CinematicFx.lightHalos(glow, fv, sc, t);
+                CinematicFx.waterfallLights(glow, fv, sc, t);
+                CinematicFx.fireflies(glow, fv, t);
+                CinematicFx.fairies(glow, fv, sc, t, excite);
+                // el haz baja mientras gira la ruleta y en el premio (que no tape los premios)
+                float ring = smooth(RING0, RING1, t) * (t >= REVEAL + 40 ? 1.0F - 0.5F * smooth(REVEAL + 40, REVEAL + 70, t) : 1.0F);
+                float shaft = (1.0F + open * 0.5F) * (1.0F - 0.45F * ring);
+                CinematicFx.sunShafts(glow, fv, sc, t, shaft, rarityColor, tintAmt);
+                CinematicFx.motes(glow, fv, sc, t, shaft);
+                float runeLit = smooth(RUNES0, RUNES1, t) * (t > REVEAL + 50 ? Math.max(0.3F, 1.0F - (t - REVEAL - 50) / 40.0F) : 1.0F);
+                float glowWater = smooth(KEY_TURN0, KEY_TURN1 + 6, t) * (0.6F + 0.4F * pulseAt(t, OPEN, 40.0F) + 0.4F);
+                CinematicFx.streamLights(glow, fv, sc, t, Math.min(1.0F, glowWater), rarityColor, surge);
+                CinematicFx.runes(glow, fv, sc, t, runeLit, pulseAt(t, OPEN, 24.0F), rarityColor);
+                float[] c = sc.anchor("crate");
+                // (al salir el premio el pilar se apaga del todo: es una caja de luz y, detrás del premio, se veía como un
+                // cuadrado de color pegado a él; el dueño: «que no traspase ese brillo al item»)
+                float pillar = smooth(OPEN, OPEN + 8, t) * (t >= REVEAL ? 0.3F * (1.0F - smooth(REVEAL, REVEAL + 8, t))
+                        : t >= RING0 ? 1.0F - 0.7F * smooth(RING0, RING1, t) : 1.0F);
+                if (t > TOTAL - 20) pillar *= Math.max(0.0F, (TOTAL - t) / 20.0F) * 0.5F + 0.5F;
+                CinematicFx.pillar(glow, fv, c[0], c[1] + crateH * 0.75F, c[2], 9.0F, pillar, t, rarityColor);
+                CinematicFx.shockwave(glow, fv, c[0], sc.anchor("pool")[1] + 0.03F, c[2], t - OPEN, 30.0F, 8.0F, rarityColor);
+                keyLights(glow, fv, sc, t);
+                itemLights(glow, fv, sc, t, eye);
+                SceneFx.end(SceneFx.Kind.GLOW, buf);
+                VertexConsumer rays = SceneFx.begin(SceneFx.Kind.RAYS, buf);
+                itemRays(rays, fv, sc, t, eye);
+                SceneFx.end(SceneFx.Kind.RAYS, buf);
+            }
             RenderSystem.depthMask(true);
         } finally {
             mc.gameRenderer.setPanoramicMode(panoramic);
@@ -1124,7 +1147,7 @@ public class CrateCinematicScreen extends Screen {
                 float[] cc = sc.anchor("crate");
                 float focus = new Vector3f(cc[0], cc[1] + 0.6F, cc[2]).distance(eye);
                 // (el dueño: «más contraste, más oscuro, que se note el resplandor de los faroles»)
-                post.finish(su, sv, vis, bloomK, rayK, 1.35F, focus, 0.05F, 220.0F, t);
+                post.finish(su, sv, vis, bloomK, (testOff & TEST_RAYS) != 0 ? 0.0F : rayK, 1.35F, focus, 0.05F, 220.0F, t);
             } catch (Throwable e) {
                 postFail(e);
                 mc.getMainRenderTarget().bindWrite(true);

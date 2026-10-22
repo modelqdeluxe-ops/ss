@@ -111,7 +111,37 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (21 oct 2026, TF Client 1.3.106) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.107) — lee esto primero
+
+**1.3.107: cuatro quejas del dueño** (juega con Oculus 1.8 + Embeddium + ImmediatelyFast + EMF/ETF + EntityCulling):
+1. **«Tus rayas aún se ven»**: eran la columna del haz de sol con el borde marcado y sus 9 vetas finas (líneas claras
+   junto a las columnas de piedra), los rayos del sol en pantalla de `crate_post` (cada luciérnaga u hada dejaba una
+   ristra de rayitas hacia el sol) y los costados de las cascadas vistos de canto. Ahora: borde suave y sin vetas;
+   rayos solo desde el hueco del sol y con el punto de partida distinto en cada píxel; costados que se apagan de canto.
+   Y lo que quedaba (la prueba con dos fotogramas seguidos, `crate1_preabrir` y `_otra`: rayitas de 1 px que cambian de
+   uno a otro en la pared de enredaderas junto a la cascada alta, justo donde las recortó el dueño): lo más fino que un
+   píxel caía cada fotograma en un píxel distinto. **Supermuestreo**: la escena se dibuja al doble de ancho y de alto y
+   se baja al final (`ScenePost.ssaa`, hasta 2560×1440; si de 60 fotogramas más de la mitad pasan de 40 ms, vuelve a 1).
+   Se mide con `parpadeo_fino.py` (lo que parpadea entre las dos) y `verticales.py`. CRATES.md §2.
+2. **La música**: la que mandó (Dalarna, 3 min, en bucle) con el ambiente de la fuente debajo, desde la pantalla de
+   antes de abrir hasta el final sin cortarse (`CrateCinematicScreen.loops`). Va en un paquete de recursos aparte
+   (`TF-Santuario-musica.zip`, `tfclient:sounds/crates/musica.ogg`): el repo y las Releases son públicos. CRATES.md §2.
+3. **«Los NPC no tienen sus modelos (silla…)» en su servidor**: los muebles se dibujaban solo por el camino de la
+   entidad y con la clave que calcula el cliente; ahora con el modelo (`Actor.renderModel`, por cualquiera de sus
+   caminos) y con la que manda el servidor (`BossEntity.sceneKey`); el registro dice «TF NPC: <clave> con N mueble(s)».
+   El camarero, detrás de su barra (y la barra en el panel). NPCS.md §3.
+4. **El pad**: sin los monogramas «TF» y sin el paisaje de aldeas de abajo (`TFPadScreen.landscape`, fuera; las
+   texturas `land_*` siguen para el mapa del TF Pass); detrás de las apps, un emblema dibujado a píxeles: las letras «TF»
+   dentro de un aro, en azules oscuros (el dueño: «no copia y pega el logo»; `tools/pad/fondo_tf.py`, `fondo_tf.png`).
+
+La prueba: `[prueba-jefes=pad,crates,npcs] [shaders=photon]` en 299cd5d7 (muebles, panel, pad) y
+`[prueba-jefes=pad,crates] [shaders=photon]` en 29f241d4 (la vista sin cada cosa) y 352a4319 (supermuestreo: «escena a
+2x»; en la zona del recorte del dueño, las rayitas que parpadean entre dos fotogramas, de 54 a 33, y en las paredes de
+87 a 33 y de 18 a 5; lo que queda son las hadas, las luciérnagas y el brillo de los faroles, que se mueven; el pad sin
+aldeas, con el aro del tono del logo de antes, ≈ (104, 154, 179)). Los fotogramas de la prueba, 216 ms (eran 150: la
+tarjeta de la máquina es de mentira).
+
+### CHECKPOINT anterior (21 oct 2026, TF Client 1.3.106, PUBLICADA)
 
 **1.3.106: cinco quejas del dueño** (con cinco capturas suyas; juega con **Oculus + Photon**):
 1. **Crates sin ningún efecto** (ni los de serie): con Oculus/Embeddium instalados (aun sin paquete) no salía nada de lo
@@ -705,7 +735,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
   alianzas y rivales, guerra de clanes programada (opt-in), cofre del clan, nombres y permisos de rol · **4** app CLANES en el
   pad de administrador, coste de fundar, página de clanes en la web, logros. Espera a que el dueño elija.
 - «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
-  color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + monogramas TF. Ideas no hechas: teñir también las
+  color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + el emblema «TF» en un aro de fondo (1.3.107; antes,
+  monogramas TF y el paisaje de aldeas). Ideas no hechas: teñir también las
   fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
 - Música: FLAC no se lee (MP3, MP4/M4A, AAC, OGG y WAV sí). El MP3 empieza con ~50 ms de silencio (retardo del codificador y el
   frame Xing/Info): se podría recortar con la etiqueta LAME.
@@ -1174,7 +1205,7 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > - **App Guía** (`PadGuidePage`, icono `iconos4.guia`: libro abierto con «?» y marcapáginas): Primeros pasos, las 23
 >   apps y Ajustes; cada tema con secciones, pasos numerados, puntos y CONSEJO, y ABRIR para ir a la app. El texto está
 >   en el Java (si cambia una app, cambia su tema). 24 apps: 8 + 8 + 8. El staff la puede apagar (APPS del admin).
-> - **Fondo**: paisaje de pixel art abajo del cristal (`TFPadScreen.landscape`, `build_skin.land_*`: montañas con nieve,
+> - **Fondo** (fuera en la 1.3.107): paisaje de pixel art abajo del cristal (`TFPadScreen.landscape`, `build_skin.land_*`: montañas con nieve,
 >   colinas con robles y abetos, el castillo y casitas), tres capas del color del tema que se deslizan (paralaje),
 >   delante de las nubes. **Barra de estado** de cristal escarchado detrás del título, la hora y las monedas.
 
@@ -1185,8 +1216,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   logo ni las gemas) al generar frame.png. El fondo animado se recorta en el borde real (`glassBase` deja el recorte).
 > - **Temas del pad** (Ajustes › Tema del pad, `PadSettings.THEMES`): Cielo, Rosa, Lavanda, Menta, Atardecer, Oro, Fresa,
 >   Noche. El cristal con su forma exacta (`glass_shape.png` del color de abajo + `glass_fade.png` del de arriba) y los
->   neones/gemas del marco teñidos (`neon.png`), de `build_pad.glass_masks`. Papel de monogramas «TF» suaves que se
->   deslizan (`TFPadScreen.monograms`). Se guarda en pad-cliente.properties (`tema`).
+>   neones/gemas del marco teñidos (`neon.png`), de `build_pad.glass_masks`. (1.3.107: en vez del papel de monogramas «TF»
+>   y del paisaje, el emblema «TF» en un aro azul oscuro detrás de las apps, `TFPadScreen.emblem`, `tools/pad/fondo_tf.py`.) Se guarda en pad-cliente.properties (`tema`).
 > - Pestañas de Comunidad/Música y etiquetas oscuras (SONANDO, RULETA) del mismo alto (17) y letra a la misma altura.
 > - Armario › SKINS: escaparate con tu modelo 3D grande (cabecera de 96 con `PadView.SELF_MODEL`) y tarjetas de galería.
 > - Música: **cualquier MP3** (MPEG-1 con JavaMP3; MPEG-2/2.5 con JLayer 1.0.1, `javazoom.jl.decoder`, LGPL 2.1, copiado sin

@@ -833,7 +833,6 @@ public final class SkillClient {
                 .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
         a.poseOrigin = at;
         a.renderModel(Vec3.ZERO, yaw, partial, pose, buffers, light);
-        if (e instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity be && be.isNpc()) renderProps(be, a, yaw, pose, buffers, light);
         return true;
     }
 
@@ -844,6 +843,9 @@ public final class SkillClient {
 
     /** «pack|mob» → sus muebles (tools/npcs/muebles.py); se lee la primera vez. */
     private static Map<String, List<Prop>> props;
+
+    /** Las claves de las que ya se dijo en el registro que llevan muebles (una vez cada una). */
+    private static final Set<String> PROPS_SAID = new HashSet<>();
 
     private static List<Prop> propsOf(String key) {
         if (props == null) {
@@ -878,22 +880,24 @@ public final class SkillClient {
      * (1.3.106) La silla, el sofá, el taburete, el banco o la mesa del NPC de escena que en su animación se sienta, se
      * tumba o sube los pies en algo que el pack no trae (el dueño: «se sientan en algo que no está; mete su silla, su
      * mesa… completo con sus cosas»): hechos a su medida (tools/npcs/muebles.py), donde está él y girados con él, a la
-     * luz de su sitio. Quietos: el NPC se mueve encima, como sobre un mueble de verdad.
+     * luz de su sitio. Quietos: el NPC se mueve encima, como sobre un mueble de verdad. (1.3.107: se dibujan con el modelo,
+     * en Actor.renderModel, por cualquiera de sus dos caminos —la entidad o los efectos del mundo—, y la clave es la que
+     * manda el servidor, BossEntity.sceneKey: en el servidor del dueño no salían.) modelMat: la matriz del modelo (con la
+     * cámara, su sitio, su giro y su escala).
      */
-    private static void renderProps(net.tierrasfantasticas.tfclient.bosses.BossEntity e, Actor a, float yaw, PoseStack pose,
-                                    MultiBufferSource buffers, int light) {
-        List<Prop> list = propsOf(e.bossId() + "|" + e.mobName());
+    private static void renderProps(String key, Matrix4f modelMat, Matrix3f modelNormal, MultiBufferSource buffers, int light) {
+        List<Prop> list = propsOf(key);
         if (list.isEmpty()) return;
-        Matrix4f root = new Matrix4f().rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(a.scale / 16F);
+        if (PROPS_SAID.add(key)) TFClient.LOGGER.info("TF NPC: {} con {} mueble(s)", key, list.size());
         Vector3f n = new Vector3f();
         Vector4f v = new Vector4f();
         for (Prop p : list) {
             VfxModel m = model(p.model());
             if (m == null) continue;
-            Matrix4f inst = new Matrix4f(root).translate(p.x(), p.y(), p.z()).rotate(Axis.YP.rotationDegrees(p.yaw()))
+            Matrix4f inst = new Matrix4f().translate(p.x(), p.y(), p.z()).rotate(Axis.YP.rotationDegrees(p.yaw()))
                     .scale(p.sx(), p.sy(), p.sz());
-            Matrix4f base = new Matrix4f(pose.last().pose()).mul(inst);
-            Matrix3f normalBase = new Matrix3f(pose.last().normal()).mul(new Matrix3f(inst));
+            Matrix4f base = new Matrix4f(modelMat).mul(inst);
+            Matrix3f normalBase = new Matrix3f(modelNormal).mul(new Matrix3f(inst));
             Matrix4f[] rest = m.rest();
             Matrix4f full = new Matrix4f();
             Matrix3f normal = new Matrix3f();
@@ -1438,6 +1442,10 @@ public final class SkillClient {
                 }
             }
             if (boneGlint != null) drawGlint(base, pose, plain);
+            // (1.3.106) los muebles del NPC de escena (renderProps), con su modelo
+            if (follow >= 0 && mc.level != null && mc.level.getEntity(follow) instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity be) {
+                renderProps(be.sceneKey(), base, normalBase, plain, baseLight);
+            }
             if (boneItem != null) drawItems(base, pose, plain, baseLight);
             if (boneTag != null) drawTags(base, pose, plain, baseLight);
             if (leashes != null || selfLeashes != null) drawLeashes(inst, pose, plain, partial);

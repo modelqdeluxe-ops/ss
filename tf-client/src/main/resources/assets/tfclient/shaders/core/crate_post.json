@@ -11,6 +11,7 @@
         {"name": "Exposure", "type": "float", "count": 1, "values": [1.55]},
         {"name": "Clip", "type": "float", "count": 2, "values": [0.05, 220.0]},
         {"name": "Focus", "type": "float", "count": 2, "values": [6.0, 16.0]},
-        {"name": "Time", "type": "float", "count": 1, "values": [0.0]}
+        {"name": "Time", "type": "float", "count": 1, "values": [0.0]},
+        {"name": "SceneScale", "type": "float", "count": 1, "values": [1.0]}
     ]
 }

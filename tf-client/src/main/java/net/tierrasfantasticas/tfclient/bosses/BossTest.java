@@ -1329,7 +1329,9 @@ public final class BossTest {
             cratePos = player.blockPosition().offset(0, 1, -3);
         }
         for (int run = 0; run < 2; run++) {
-            int t0 = 60 + run * 420;      // (la primera, a los 3 s: que el santuario esté preparado y la pantalla dibuje)
+            int t0 = 60 + run * 540;      // (la primera, a los 3 s: que el santuario esté preparado y la pantalla dibuje)
+            // (1.3.107) en la primera, 6 s más antes de abrir: las capturas de antes de abrir sin cada cosa (BossTestClient.OFF)
+            int open = t0 + (run == 0 ? 150 : 30);
             if (t == t0 && pos != null) {
                 level.setBlockAndUpdate(pos, net.tierrasfantasticas.tfclient.crates.registry.ModRegistry.CRATE_BLOCK.get().defaultBlockState());
                 if (level.getBlockEntity(pos) instanceof net.tierrasfantasticas.tfclient.crates.block.CrateBlockEntity be) {
@@ -1343,15 +1345,15 @@ public final class BossTest {
             if (t == Math.max(2, t0 - 8) && cratePos != null) {
                 BossTestClient.showPreOpen(testCrate(run), cratePos);
             }
-            if (t == t0 + 30 && pos != null) {
+            if (t == open && pos != null) {
                 var res = net.tierrasfantasticas.tfclient.crates.crate.CrateOpeningService.open(player, testCrate(run), pos, ItemStack.EMPTY, false);
                 r.event("apertura " + (run + 1) + ": " + res);
             }
-            if (t == t0 + 30 + 395) {
+            if (t == open + 395) {
                 r.event("cinemática " + (run + 1) + ": " + net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testStats);
             }
         }
-        if (t >= 60 + 2 * 420 + 20) next(level);
+        if (t >= 60 + 2 * 540 + 20) next(level);
     }
 
     private static net.minecraft.core.BlockPos cratePos;
@@ -1368,7 +1370,7 @@ public final class BossTest {
             {"npc_townsfolks_vol3", "scene_townsfolk_sit_chair_4"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_back_1"},
             {"npc_townsfolks_vol3", "scene_townsfolk_readers_book_2"}, {"npc_townsfolks_vol3", "scene_townsfolk_lay_front_2"},
             {"npc_tavern", "mueble_mesa_taberna"}, {"npc_tavern", "mueble_silla_taberna"}, {"npc_tavern", "mueble_jarra"},
-            {"npc_tavern", "mueble_sofa"}};
+            {"npc_tavern", "mueble_sofa"}, {"npc_tavern", "scene_tavern_bartender"}, {"npc_tavern", "mueble_barra"}};
 
     private static Vec3 mueble(Vec3 o, int i) {
         return new Vec3(o.x - 60 + (i % 4) * 3.5, o.y, o.z + 100 + (i / 4) * 14);
@@ -1643,7 +1645,7 @@ public final class BossTest {
             case 1030 -> shot(r, "npc_duo_a");
             case 1034 -> look(player, level, o.x - 36 + 3.2, o.y + 2.2, o.z + 70 - 3.2, o.x - 36, o.y + 1.1, o.z + 70);
             case 1074 -> shot(r, "npc_duo_b");
-            case 1570 -> next(level);
+            case 1720 -> next(level);
             default -> { }
         }
         // (1.3.106) De cerca, los NPC que se sientan o se tumban en algo, con sus muebles (tools/npcs/muebles.py), y los
@@ -1659,7 +1661,7 @@ public final class BossTest {
             }
         }
         int m0 = 1090 + MUEBLES.length * 8 + 10;
-        for (int mg = 0; mg < 3; mg++) {
+        for (int mg = 0; mg < (MUEBLES.length + 3) / 4; mg++) {
             Vec3 ma = mueble(o, mg * 4), mz = mueble(o, Math.min(MUEBLES.length - 1, mg * 4 + 3));
             double mx = (ma.x + mz.x) / 2;
             if (f == m0 + mg * 120) look(player, level, mx + 2.5, o.y + 2.6, ma.z + 6.5, mx, o.y + 0.7, ma.z);

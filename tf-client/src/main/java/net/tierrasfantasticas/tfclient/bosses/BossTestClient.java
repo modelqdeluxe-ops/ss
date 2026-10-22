@@ -200,6 +200,12 @@ public final class BossTestClient {
         });
     }
 
+    /** (1.3.107) Las capturas de antes de abrir sin cada cosa (CrateCinematicScreen.testOff). */
+    private static final int[] OFF = {0, 1, 2, 4, 8, 16};
+    private static final String[] OFF_NAME = {"otra", "sin_efectos", "sin_rayos_post", "sin_post", "sin_agua", "sin_plantas"};
+    private static int offNext = 6;
+    private static long offAt;
+
     private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig preOpenCfg;
     private static boolean preOpenShot = true, poolShot = true;
     private static long preOpenAt, poolAt;
@@ -211,9 +217,28 @@ public final class BossTestClient {
             TFClient.LOGGER.info("Prueba de jefes: captura de antes de abrir (pantalla {}, mundo {})", mc.screen.getClass().getSimpleName(),
                     mc.level != null);
             BossTest.clientShot("crate" + (crateRun + 1) + "_preabrir");
-            // y la de las recompensas, encima del santuario
-            poolShot = false;
+            // (1.3.107) en la primera, la misma vista otra vez (lo que parpadea de un fotograma a otro) y sin cada cosa
+            // (para saber qué pinta las rayas del dueño); luego, la de las recompensas, encima del santuario
+            offNext = crateRun == 0 ? 0 : OFF.length;
+            offAt = 0L;
+            poolShot = offNext < OFF.length;
             poolAt = 0L;
+        }
+        if (offNext < OFF.length && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen
+                && BossTest.SHOTS_PENDING.isEmpty()) {
+            if (offAt == 0L) {
+                net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testOff = OFF[offNext];
+                offAt = System.nanoTime() + (OFF[offNext] == 0 ? 40_000_000L : 400_000_000L);
+            } else if (System.nanoTime() > offAt) {
+                BossTest.clientShot("crate1_preabrir_" + OFF_NAME[offNext]);
+                offNext++;
+                offAt = 0L;
+                if (offNext >= OFF.length) {
+                    net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testOff = 0;
+                    poolShot = false;
+                }
+            }
+            return;
         }
         // (las recompensas, cuando ya se ha sacado la de antes de abrir)
         if (!poolShot && poolAt == 0L && BossTest.SHOTS_PENDING.isEmpty()
@@ -232,10 +257,19 @@ public final class BossTestClient {
             crateNext = 0;
             crateRun++;
         }
+        // (1.3.107) la de la apertura, otra vez en el fotograma siguiente (con la cámara en marcha: lo que parpadea)
+        if (abreOtra && BossTest.SHOTS_PENDING.isEmpty()) {
+            abreOtra = false;
+            BossTest.clientShot("crate1_05_abre_otra");
+            return;
+        }
         if (crateNext >= CRATE.length || cs.clock() < CRATE_AT[crateNext]) return;
         BossTest.clientShot("crate" + crateRun + "_" + String.format("%02d", crateNext) + "_" + CRATE[crateNext]);
+        abreOtra = crateRun == 1 && "abre".equals(CRATE[crateNext]);
         crateNext++;
     }
+
+    private static boolean abreOtra;
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */
     private static int bars(Minecraft mc) {

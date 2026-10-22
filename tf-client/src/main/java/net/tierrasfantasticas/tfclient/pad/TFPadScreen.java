@@ -725,8 +725,6 @@ public final class TFPadScreen extends Screen {
         }
         // en la portada, además, su cielo animado (por detrás del logo y de las fichas)
         if (page == home) home.ambient(g, t);
-        // el paisaje, delante del cielo (las nubes y las luces pasan por detrás de las montañas)
-        landscape(g, t);
         noScissor(g);
     }
 
@@ -737,82 +735,27 @@ public final class TFPadScreen extends Screen {
     private static final int GLASS_L = 205, GLASS_T = 250, GLASS_R = 1361, GLASS_B = 795; // build_pad.SCREEN_BOX
 
     /**
-     * El papel del cristal: monogramas «TF» pequeños y muy suaves en filas alternas que se deslizan despacio en
-     * diagonal (quietos sin animaciones). Van debajo de todo: se ven entre las apps y alrededor de las ventanas.
+     * (1.3.107; el dueño: «quita ese TF del pad, se ve horrible; cambia ese fondo» y luego «quita ese fondo de aldeas y
+     * deja un logo dibujado, solo las TF encerradas en un círculo, en azul oscuro; no copia y pega el logo») en vez del
+     * papel de monogramas «TF» repetidos y del paisaje de aldeas de abajo: un emblema dibujado a píxeles, las letras «TF»
+     * dentro de un aro, en azules oscuros (fondo_tf.png, tools/pad/fondo_tf.py), grande y centrado detrás de las apps.
      */
-    private void monograms(GuiGraphics g, int x0, int y0, int x1, int y1, int rgb) {
-        int sx = 46, sy = 30;
-        float t = PadSettings.animations ? PadSkin.time() : 0F;
-        float ox = (t * 3F) % sx, oy = (t * 2F) % (sy * 2);
-        int col = 0x1C000000 | rgb, shade = 0x0C000000;
-        for (int row = -2; row * sy + oy < y1 + sy; row++) {
-            float y = y0 + row * sy + oy;
-            float shift = (row & 1) == 0 ? 0 : sx / 2F;
-            for (float x = x0 - sx + ox + shift; x < x1 + sx; x += sx) {
-                g.pose().pushPose();
-                g.pose().translate(x, y, 0);
-                g.drawString(font, "TF", 1, 1, shade, false);
-                g.drawString(font, "TF", 0, 0, col, false);
-                g.pose().popPose();
-            }
-        }
+    private void emblem(GuiGraphics g) {
+        ResourceLocation loc = tex("fondo_tf");
+        int[] sz = size(loc);
+        if (sz[0] == 0) return;
+        float h = unitsH * EMBLEM_H, w = h * sz[0] / sz[1];
+        PadSkin.texture(g, loc, (unitsW - w) / 2F, (unitsH - h) / 2F + unitsH * 0.03F, w, h, EMBLEM_ALPHA, 0xFFFFFF, true);
     }
+
+    /** Lo alto del logo del fondo (del cristal) y lo que se ve. */
+    private static final float EMBLEM_H = 0.92F, EMBLEM_ALPHA = 0.68F;
 
     /**
      * La base del cristal en TODO su hueco (recortada a píxeles reales; el marco, que va encima, le da la forma): el
-     * color del tema en degradado (el de Cielo es el azul de marco.png), los monogramas, la trama y una sombra suave
+     * color del tema en degradado (el de Cielo es el azul de marco.png), el emblema «TF», la trama y una sombra suave
      * abajo. Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
      */
-    /** Lo que el hueco del cristal sobresale de GX/GY/GW/GH a la izquierda, a la derecha y abajo (unidades). */
-    private int glassL, glassR, glassB;
-
-    /** Las capas del paisaje y su alfa (las lejanas, más transparentes: bruma). */
-    private static final String[] LAND = {"land_far", "land_mid", "land_near"};
-    private static final float[] LAND_ALPHA = {0.72F, 0.86F, 0.95F};
-    /** Tamaño de las texturas del paisaje y la boca de cada chimenea (build_skin.LAND_W/H y CHIMNEYS). */
-    private static final int LAND_W = 480, LAND_H = 56;
-    private static final int[][] CHIMNEYS = {{79, 31}, {209, 30}};
-
-    /**
-     * El paisaje de abajo del cristal (tools/pad/build_skin.py land_*): montañas con nieve, colinas con robles y
-     * abetos y delante el castillo de Tierras Fantásticas (uno solo) con dos casitas. Una panorámica más ancha que el
-     * cristal, quieta y centrada (1.3.64: antes se repetía en mosaico y salían dos castillos), del color del tema (más
-     * claras las lejanas, como con bruma). Nítida: cada píxel de la textura son big píxeles reales. Las chimeneas echan
-     * humo (bocanadas que suben, crecen y se desvanecen; quietas sin animaciones).
-     */
-    private void landscape(GuiGraphics g, float t) {
-        int b = 0xFF000000 | PadSettings.theme().bottom();
-        int lum = ((b >> 16 & 255) * 3 + (b >> 8 & 255) * 6 + (b & 255)) / 10;
-        boolean dark = lum < 110;
-        int[] col = {PadSkin.mix(b, 0xFFFFFFFF, dark ? 0.2F : 0.5F), PadSkin.mix(b, dark ? 0xFF0A1028 : 0xFF18265C, 0.3F),
-                PadSkin.mix(b, dark ? 0xFF060A1A : 0xFF18265C, 0.5F)};
-        float k = big / (float) cs;
-        float w = LAND_W * k, h = LAND_H * k;
-        float x = Math.round((unitsW - w) / 2F * cs) / (float) cs; // centrada, a píxel real
-        float top = unitsH + glassB - h;
-        for (int i = 0; i < LAND.length; i++) {
-            PadSkin.texture(g, tex(LAND[i]), x, top, w, h, LAND_ALPHA[i], col[i] & 0xFFFFFF, false);
-        }
-        // el humo: 4 bocanadas por chimenea, cada una sube unos 14 píxeles de textura en 4 s y se apaga
-        int smoke = PadSkin.mix(b, 0xFFFFFFFF, dark ? 0.35F : 0.75F) & 0xFFFFFF;
-        float life = 4F;
-        for (int c = 0; c < CHIMNEYS.length; c++) {
-            for (int i = 0; i < 4; i++) {
-                float p = PadSettings.animations ? ((t + i * life / 4 + c * 0.7F) % life) / life : 0.15F + i * 0.2F;
-                float px = x + (CHIMNEYS[c][0] + 2.5F * p * p + (float) Math.sin(p * 6 + c) * 0.6F) * k;
-                float py = top + (CHIMNEYS[c][1] - 1 - 14 * p) * k;
-                float r = (1 + 1.6F * p) * k;
-                int a = Math.round(150 * (1 - p) * Math.min(1F, p * 6));
-                if (a <= 0) continue;
-                // cuadradito de píxeles (como el humo de Minecraft), con su cara de luz arriba
-                float s = Math.max(k, Math.round(r * 2 / k) * k / 2);
-                PadSkin.rect(g, px - s, py - s, px + s, py + s, PadSkin.alpha(smoke, a));
-                PadSkin.rect(g, px - s, py - s, px + s, py - s + k, PadSkin.alpha(0xFFFFFF, a / 2));
-            }
-        }
-        g.flush();
-    }
-
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
         int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
@@ -820,15 +763,12 @@ public final class TFPadScreen extends Screen {
         int top = gy + lift;
         int mL = Math.max(0, (gx - x0 + cs - 1) / cs), mT = Math.max(0, (top - y0 + cs - 1) / cs);
         int mR = Math.max(0, (x1 - gx - unitsW * cs + cs - 1) / cs), mB = Math.max(0, (y1 - top - unitsH * cs + cs - 1) / cs);
-        glassL = mL;
-        glassR = mR;
-        glassB = mB;
         g.flush();
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
         PadSettings.Theme th = PadSettings.theme();
         g.fillGradient(-mL, -mT, unitsW + mR, unitsH + mB, 0xFF000000 | th.top(), 0xFF000000 | th.bottom());
-        monograms(g, -mL, -mT, unitsW + mR, unitsH + mB, PadSettings.theme().deco());
+        emblem(g);
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
         // debajo quedaba más clara y parecía otra pantalla detrás

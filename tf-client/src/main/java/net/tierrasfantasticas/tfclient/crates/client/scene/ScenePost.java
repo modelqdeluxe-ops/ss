@@ -16,6 +16,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.tierrasfantasticas.tfclient.bosses.BossTest;
 import net.tierrasfantasticas.tfclient.crates.FSCrates;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -40,7 +41,17 @@ public final class ScenePost {
     static ShaderInstance fxGlow, fxRays, fxSoft;
     /** Desde qué brillo florece (el agua turquesa y las luces sí; la crate y la piedra, no). */
     static final float THRESHOLD = 0.78F;
-    private TextureTarget scene, a, b, c, d;
+    /**
+     * (1.3.107, el dueño: «tus putas rayas aún se ven» al mover la cámara) la escena se dibuja al doble de ancho y de alto
+     * y se baja al final (supermuestreo, 4 muestras por píxel): lo más fino que un píxel (las hojitas de las enredaderas,
+     * los bordes del agua, las aristas) caía cada fotograma en un píxel distinto y salía como rayitas que bailaban (lo
+     * midió la prueba: dos fotogramas seguidos). Si el equipo no llega, vuelve a 1 (frame).
+     */
+    private static int ssaa = 2;
+    private static int timed, slow;
+    private static long lastFrame;
+    private int scale = 1, outW, outH;
+    private TextureTarget scene, half, a, b, c, d;
 
     public static boolean ready() {
         return sky != null && bloom != null && post != null;
@@ -51,19 +62,57 @@ public final class ScenePost {
         return water;
     }
 
+    /** A cuántas muestras por lado va la escena en una ventana de w x h (2 hasta 2560 x 1440 si la tarjeta puede). */
+    private static int scaleFor(int w, int h) {
+        int max = RenderSystem.maxSupportedTextureSize();
+        return ssaa > 1 && (long)w * h <= 2560L * 1440L && w * ssaa <= max && h * ssaa <= max ? ssaa : 1;
+    }
+
+    /**
+     * Cada fotograma de la escena (para el supermuestreo): si de 60 seguidos más de la mitad tardan más de 40 ms (menos
+     * de 25 por segundo), la escena vuelve a la resolución de la pantalla hasta que se cierre el juego. En la prueba en el
+     * juego no (allí todo va lento: la tarjeta de la máquina es de mentira, la dibuja el procesador).
+     */
+    public static void frame() {
+        long now = System.nanoTime(), dt = now - lastFrame;
+        lastFrame = now;
+        if (ssaa <= 1 || BossTest.ON || dt > 250_000_000L) return;
+        timed++;
+        if (dt > 40_000_000L) slow++;
+        if (timed < 60) return;
+        if (slow * 2 > timed) {
+            ssaa = 1;
+            FSCrates.LOGGER.info("[TF Crates] Cinemática: el equipo no llega con el supermuestreo ({} de {} fotogramas lentos); "
+                    + "va a la resolución de la pantalla", slow, timed);
+        }
+        timed = slow = 0;
+    }
+
     /** Prepara las texturas para el tamaño de la ventana (las rehace si cambia). */
     public void ensure(int w, int h) {
-        if (scene != null && scene.width == w && scene.height == h) return;
+        int s = scaleFor(w, h);
+        if (scene != null && outW == w && outH == h && scale == s) return;
         close();
-        scene = new TextureTarget(w, h, true, Minecraft.ON_OSX);
+        scale = s;
+        outW = w;
+        outH = h;
+        scene = new TextureTarget(w * s, h * s, true, Minecraft.ON_OSX);
+        // (la escena bajada a la pantalla, de donde salen el resplandor y el desenfoque, como antes)
+        half = s > 1 ? new TextureTarget(w, h, false, Minecraft.ON_OSX) : null;
         a = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         b = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         c = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
         d = new TextureTarget(Math.max(1, w / 4), Math.max(1, h / 4), false, Minecraft.ON_OSX);
-        for (RenderTarget t : new RenderTarget[] {scene, a, b, c, d}) {
+        for (RenderTarget t : new RenderTarget[] {scene, half, a, b, c, d}) {
+            if (t == null) continue;
             t.setFilterMode(GL11.GL_LINEAR);
             t.setClearColor(0, 0, 0, 1);
         }
+    }
+
+    /** A cuántas muestras por lado va ahora (para la prueba). */
+    public int scale() {
+        return scale;
     }
 
     /** Empieza a dibujar la escena en su textura (borrada). */
@@ -107,15 +156,21 @@ public final class ScenePost {
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
         float tw = 1.0F / a.width, th = 1.0F / a.height;
+        // 0) con supermuestreo, la escena a la pantalla (cada píxel, la media de sus cuatro muestras)
+        RenderTarget src = scene;
+        if (half != null) {
+            pass(scene, half, 2, 0.5F / scene.width, 0.5F / scene.height, 0, 0);
+            src = half;
+        }
         // 1) se baja a un cuarto y se queda lo que brilla
-        pass(scene, a, 0, 1.0F / scene.width, 1.0F / scene.height, 0, 0);
+        pass(src, a, 0, 1.0F / src.width, 1.0F / src.height, 0, 0);
         // 2) desenfoque estrecho y otro ancho
         pass(a, b, 1, 0, 0, tw * 1.5F, 0);
         pass(b, a, 1, 0, 0, 0, th * 1.5F);
         pass(a, b, 1, 0, 0, tw * 3.5F, 0);
         pass(b, a, 1, 0, 0, 0, th * 3.5F);
         // 2b) la imagen entera, baja y desenfocada (el fondo de la profundidad de campo)
-        pass(scene, c, 2, 1.0F / scene.width, 1.0F / scene.height, 0, 0);
+        pass(src, c, 2, 1.0F / src.width, 1.0F / src.height, 0, 0);
         pass(c, d, 1, 0, 0, tw * 1.5F, 0);
         pass(d, c, 1, 0, 0, 0, th * 1.5F);
         pass(c, d, 1, 0, 0, tw * 2.5F, 0);
@@ -135,6 +190,7 @@ public final class ScenePost {
         sh.safeGetUniform("RayStrength").set(rayStrength);
         sh.safeGetUniform("Exposure").set(exposure);
         sh.safeGetUniform("Time").set(time);
+        sh.safeGetUniform("SceneScale").set((float)scale);
         quad(sh);
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
@@ -164,10 +220,10 @@ public final class ScenePost {
     }
 
     public void close() {
-        for (RenderTarget t : new RenderTarget[] {scene, a, b, c, d}) {
+        for (RenderTarget t : new RenderTarget[] {scene, half, a, b, c, d}) {
             if (t != null) t.destroyBuffers();
         }
-        scene = a = b = c = d = null;
+        scene = half = a = b = c = d = null;
     }
 
     /** Los registra Forge al cargar los recursos. */

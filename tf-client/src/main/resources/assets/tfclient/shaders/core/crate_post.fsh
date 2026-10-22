@@ -19,6 +19,9 @@ uniform float Exposure;
 uniform vec2 Clip;
 uniform vec2 Focus;
 uniform float Time;
+// (1.3.107) cuántas muestras por lado tiene la escena (ScenePost.ssaa): 2, al doble de la pantalla; cada píxel lee el
+// centro de sus cuatro muestras (con el filtro lineal, su media)
+uniform float SceneScale;
 
 out vec4 fragColor;
 
@@ -76,7 +79,8 @@ float linearDepth(float d) {
 }
 
 void main() {
-    vec3 c = fxaa(SceneSampler, uv, 1.0 / vec2(textureSize(SceneSampler, 0)));
+    // (el suavizado, sobre los píxeles de la pantalla: con supermuestreo, cada lectura ya es la media de cuatro muestras)
+    vec3 c = fxaa(SceneSampler, uv, max(SceneScale, 1.0) / vec2(textureSize(SceneSampler, 0)));
     // profundidad de campo: lo que está lejos del foco (la crate) se desenfoca; lo de detrás, más
     float dist = linearDepth(texture(DepthSampler, uv).r);
     float off = dist - Focus.x;
@@ -98,13 +102,18 @@ void main() {
     vec3 rays = vec3(0.0);
     if (SunVis > 0.001) {
         vec2 stp = (SunPos - uv) / 32.0;
-        vec2 p = uv;
+        // (1.3.107, el dueño: «tus rayas aún se ven»: cada cosa que brillaba —una luciérnaga, un hada, la espuma— dejaba
+        // una ristra de rayitas hacia el sol, una por paso, que se movían con la cámara) el punto de partida, distinto en
+        // cada píxel (las rayitas se funden en un velo suave) y solo hace rayos lo claro del hueco del sol
+        vec2 p = uv + stp * fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+        vec2 asp = vec2(float(textureSize(SceneSampler, 0).x) / float(textureSize(SceneSampler, 0).y), 1.0);
         float decay = 1.0;
         for (int i = 0; i < 32; i++) {
             p += stp;
             // solo lo muy claro hace rayos, y se apagan pronto (haces que salen del sol, no un velo por toda la imagen)
             vec3 s = texture(BloomSampler, clamp(p, 0.001, 0.999)).rgb;
-            rays += max(s - 0.45, 0.0) * decay;
+            float nearSun = 1.0 - smoothstep(0.10, 0.24, length((p - SunPos) * asp));
+            rays += max(s - 0.45, 0.0) * decay * nearSun;
             decay *= 0.92;
         }
         rays *= SunVis / 32.0;

@@ -1,4 +1,20 @@
 {
+ "npc_tavern|scene_tavern_bartender": [
+  {
+   "m": "npc_tavern.mueble_tavern_bartender_bar",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "r": 0.0,
+   "s": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
  "npc_townsfolks_vol3|scene_townsfolk_lay_back_1": [
   {
    "m": "npc_townsfolks_vol3.mueble_lay_back_1_bench",
