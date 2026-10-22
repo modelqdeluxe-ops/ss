@@ -27,7 +27,7 @@ Así que se generan con esas plantillas en esas proporciones (semilla fija: sale
     («Tomiii») en 3 como mucho;
   - los de chica, en las skins de chica (CHICAS); los demás, de chico o neutros.
 
-Uso: python3 -I tools/bots/nombres_bots.py
+Uso: [MOJANG_CACHE=<archivo.json>] python3 -I tools/bots/nombres_bots.py
 """
 import json
 import os
@@ -172,9 +172,14 @@ def leet_inverso(s):
     return s.translate(str.maketrans("4301", "aeoi"))
 
 
+CACHE = os.environ.get("MOJANG_CACHE")  # opcional: un .json donde guardar lo ya preguntado entre ejecuciones
+
+
 def tomados(names):
     """Los que ya son de una cuenta (la API de Mojang, de 10 en 10)."""
-    out = set()
+    cache = json.load(open(CACHE)) if CACHE and os.path.exists(CACHE) else {}
+    out = {n.lower() for n in names if cache.get(n.lower()) is True}
+    names = [n for n in names if n.lower() not in cache]
     for i in range(0, len(names), 10):
         part = names[i:i + 10]
         for k in range(6):
@@ -182,13 +187,18 @@ def tomados(names):
                 req = urllib.request.Request("https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname",
                                              data=json.dumps(part).encode(), headers=UA)
                 with urllib.request.urlopen(req, timeout=30) as r:
-                    out |= {p["name"].lower() for p in json.loads(r.read())}
+                    ya = {p["name"].lower() for p in json.loads(r.read())}
+                out |= ya
+                cache.update({n.lower(): n.lower() in ya for n in part})
                 break
             except urllib.error.HTTPError as e:
                 if e.code not in (403, 429) or k == 5:
                     raise
                 time.sleep(15 + k * 15)
         time.sleep(1.5)
+    if CACHE:
+        with open(CACHE, "w") as f:
+            json.dump(cache, f)
     return out
 
 
@@ -200,7 +210,8 @@ def candidatos(rng, skin, n=1500):
         pls = plantillas(rng, nom)
         nombre, _, f = rng.choices(pls, weights=[p[1] for p in pls])[0]
         cand = f()
-        if re.fullmatch(r"[A-Za-z0-9_]{5,16}", cand) and cand.lower() not in vistos:
+        # de 7 a 16 (en la muestra el largo medio es 9,5; los cortos y sencillos ya son casi todos de alguien)
+        if re.fullmatch(r"[A-Za-z0-9_]{7,16}", cand) and cand.lower() not in vistos:
             vistos.add(cand.lower())
             rasgos = {"ap:" + a for a in APELLIDO if a in cand.lower()}
             if nombre.startswith("inventado"):
