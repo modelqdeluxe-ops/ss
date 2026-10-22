@@ -204,7 +204,7 @@ def candidatos(rng, skin, n=600):
 
 # Cuántas veces puede salir cada plantilla: su parte de los 68 según su peso, con algo de holgura (y nunca más de 3)
 _PESOS = {p[0]: p[1] for p in plantillas(random.Random(0), "nico")}
-TOPE = {k: 1 if w == 1 else min(6 if k.startswith("inventado") else 3, round(w / sum(_PESOS.values()) * SKINS * 1.6))
+TOPE = {k: 1 if w == 1 else min(6 if k.startswith("inventado") else 3, round(w / sum(_PESOS.values()) * SKINS * 2.2))
         for k, w in _PESOS.items()}  # las raras (peso 1: «_Delfi_», «xLisandro», «9Nico»…), una sola vez
 # Cada molde, 4 veces como mucho; los de una sola palabra sin cifras («fovesel», «francomedina», «Razinon»), 9-10: no se
 # parecen entre sí y en la muestra son casi un tercio de todos
@@ -221,6 +221,8 @@ def coletilla(name):
     return next((c for c in COLETILLAS if low.endswith(c) and len(low) > len(c) + 2), None)
 
 
+# «Pixelx27», «Stormx616», «Owlx954» o «Dami_59», «Jere_2006», «Facu_27»: con tres ya se ve el molde
+TOPE.update({"Palabra inglesa+cifras": 2, "Apodo_cifras": 2})
 # Como en la muestra: el 37 % acaba en cifras (aquí, como mucho el 45 %)
 MAX_CIFRAS = round(SKINS * 0.45)
 
