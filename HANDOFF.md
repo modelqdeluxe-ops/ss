@@ -123,7 +123,9 @@ iconos, ¿no ves que están muy abajo?»):
    `logoRight`, que llega a la fila 86 del pad cuando el dibujo acaba en la 82 (medido en frame.png). Ahora la portada usa
    `TFPadScreen.logoInk` (el borde exacto, fila a fila; `logoRight` sigue para las ventanas de las apps), la primera
    fila empieza justo debajo del logo y, si hace falta, las filas se juntan (hasta `MIN_GAP`) para que debajo quede el
-   mismo aire que encima. Primera prueba (8a0dbff0, aún con `logoRight`): 24 px arriba y 10 abajo.
+   mismo aire que encima. Medido en la portada de la prueba (800×450): 1.3.107, 23 px arriba y 4 abajo; 8a0dbff0 (aún
+   con `logoRight`), 24 y 10; f5fdf206, **16 y 13**, y la ficha de Música justo debajo de la hierba del logo, sin pisarla.
+   `[prueba-jefes=pad] [shaders=photon]`.
 
 ### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.107, PUBLICADA)
 
