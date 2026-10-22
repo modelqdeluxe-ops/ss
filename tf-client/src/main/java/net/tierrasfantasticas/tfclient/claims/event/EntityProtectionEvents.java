@@ -1,5 +1,6 @@
 package net.tierrasfantasticas.tfclient.claims.event;
 
+import net.tierrasfantasticas.tfclient.claims.util.ClaimMobs;
 import net.tierrasfantasticas.tfclient.claims.data.Claim;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimConfig;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimFlags;
@@ -63,7 +64,7 @@ public final class EntityProtectionEvents {
         Claim claim;
         LivingEntity livingentity = livingtickevent.getEntity();
         Level level = livingentity.level();
-        if (!level.isClientSide() && livingentity instanceof Enemy && livingentity.tickCount % 5 == 0 && (claim = ClaimManager.getInstance().getClaimAt(level, livingentity.blockPosition())) != null && claim.getFlags().burnHostiles) {
+        if (!level.isClientSide() && ClaimMobs.hostile(livingentity) && livingentity.tickCount % 5 == 0 && (claim = ClaimManager.getInstance().getClaimAt(level, livingentity.blockPosition())) != null && claim.getFlags().burnHostiles) {
             EntityProtectionEvents.repelHostile(claim, livingentity);
         }
     }
@@ -116,7 +117,7 @@ public final class EntityProtectionEvents {
         DamageSource damagesource;
         LivingEntity livingentity = livingdropsevent.getEntity();
         Level level = livingentity.level();
-        if (!level.isClientSide() && livingentity instanceof Enemy && ((damagesource = livingdropsevent.getSource()) == null || !(damagesource.getEntity() instanceof Player)) && EntityProtectionEvents.killedByBarrier(livingentity, level)) {
+        if (!level.isClientSide() && ClaimMobs.hostile(livingentity) && ((damagesource = livingdropsevent.getSource()) == null || !(damagesource.getEntity() instanceof Player)) && EntityProtectionEvents.killedByBarrier(livingentity, level)) {
             livingdropsevent.setCanceled(true);
         }
     }
@@ -124,7 +125,7 @@ public final class EntityProtectionEvents {
     @SubscribeEvent
     public void onHostileXp(LivingExperienceDropEvent livingexperiencedropevent) {
         LivingEntity livingentity = livingexperiencedropevent.getEntity();
-        if (livingentity instanceof Enemy && livingexperiencedropevent.getAttackingPlayer() == null && EntityProtectionEvents.killedByBarrier(livingentity, livingentity.level())) {
+        if (ClaimMobs.hostile(livingentity) && livingexperiencedropevent.getAttackingPlayer() == null && EntityProtectionEvents.killedByBarrier(livingentity, livingentity.level())) {
             livingexperiencedropevent.setCanceled(true);
         }
     }
@@ -193,7 +194,7 @@ public final class EntityProtectionEvents {
             if (mob.tickCount == 0) {
                 Claim claim;
                 if (!(mob instanceof Monster) || (claim = ClaimManager.getInstance().getClaimAt(level, mob.blockPosition())) == null || !claim.getFlags().blockMobSpawn && !claim.getFlags().publicMode) {
-                    if (!(mob instanceof Enemy)) {
+                    if (!ClaimMobs.hostile(mob)) {
                         return;
                     }
                     if (!(entityjoinlevelevent.loadedFromDisk() || mob.getPersistentData().getBoolean(SPAWN_OK_TAG) || EntityProtectionEvents.isPlayerOwnedMob(mob))) {
@@ -255,7 +256,7 @@ public final class EntityProtectionEvents {
         Entity entity;
         Player player = attackentityevent.getEntity();
         Level level = player.level();
-        if (!(level.isClientSide() || EntityProtectionEvents.isBypassing(player) || (entity = attackentityevent.getTarget()) instanceof Enemy || entity instanceof Player)) {
+        if (!(level.isClientSide() || EntityProtectionEvents.isBypassing(player) || ClaimMobs.hostile(entity = attackentityevent.getTarget()) || entity instanceof Player)) {
             if (DecorationProtection.isDecoration(entity)) {
                 if (DecorationProtection.blocksPlayer(DecorationProtection.claimFor(level, entity), player)) {
                     EntityProtectionEvents.deny(player, "[!] No puedes romper la decoraci\u00f3n de esta zona.");

@@ -653,7 +653,9 @@ final class PadViewPage extends PadPage {
             tx = x + ICON_C + 11;
         } else if (icon) {
             int iy = yy + (h - ICON_BOX) / 2;
-            PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, ICON_BOX * 1.05F, tint & 0xFFFFFF, hover ? 150 : 105);
+            // (1.3.109) el brillo, dentro de su tarjeta: salía por encima y tapaba el título de la sección de arriba
+            float gr = TFPadScreen.testNoSoft ? ICON_BOX * 1.05F : Math.min(ICON_BOX * 1.05F, h / 2F + 3F);
+            PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, gr, tint & 0xFFFFFF, hover ? 150 : 105);
             PadSkin.tile(g, x + 7, iy, ICON_BOX, tint, hover);
             int bob = hover ? Math.round((float) Math.sin(t * 4.4F)) : 0;
             boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), x + 9, iy + 2 + bob, ICON_BOX - 4);
@@ -790,6 +792,12 @@ final class PadViewPage extends PadPage {
             }
         }
         return false;
+    }
+
+    /** (1.3.109) Para la prueba en el juego: hace esa acción como si se pulsara (p. ej. «tab:combate»). */
+    void actForTest(String action) {
+        if (action.startsWith("§scroll:")) scroll = Integer.parseInt(action.substring(8));
+        else run(action);
     }
 
     /** Acciones del propio pad («§open:app») o del servidor. */

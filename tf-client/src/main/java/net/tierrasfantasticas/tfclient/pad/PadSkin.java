@@ -164,8 +164,14 @@ final class PadSkin {
         return TFPadScreen.liftOn() ? new Matrix4f(m).translate(0F, 0F, TFPadScreen.nextOrder()) : m;
     }
 
-    private static VertexConsumer vc(GuiGraphics g) {
-        return g.bufferSource().getBuffer(RenderType.gui());
+    /** (1.3.109) La capa de lo que lleva estos colores: la translúcida sin profundidad (PadRenderTypes.SOFT) si alguno no es opaco. */
+    private static VertexConsumer vc(GuiGraphics g, int c0, int c1) {
+        return g.bufferSource().getBuffer(TFPadScreen.soft(Math.min(c0 >>> 24, c1 >>> 24)) ? PadRenderTypes.SOFT : RenderType.gui());
+    }
+
+    /** (1.3.109) Lo que siempre es translúcido (brillos, haces). */
+    private static VertexConsumer vcSoft(GuiGraphics g) {
+        return g.bufferSource().getBuffer(TFPadScreen.soft(0) ? PadRenderTypes.SOFT : RenderType.gui());
     }
 
     private static void v(VertexConsumer vc, Matrix4f m, float x, float y, int c) {
@@ -196,7 +202,7 @@ final class PadSkin {
     /** Rectángulo de un color dentro de un lote (como fill, pero sin pintarlo aún: luego g.flush()). */
     static void rect(GuiGraphics g, float x0, float y0, float x1, float y1, int c) {
         if (x1 <= x0 || y1 <= y0) return;
-        quad(vc(g), mat(g), x0, y0, c, x0, y1, c, x1, y1, c, x1, y0, c);
+        quad(vc(g, c, c), mat(g), x0, y0, c, x0, y1, c, x1, y1, c, x1, y0, c);
     }
 
     /** Un trazo de (x0, y0) a (x1, y1) de grueso w, de un color (sin flush): el camino del TF Pass. */
@@ -204,25 +210,25 @@ final class PadSkin {
         float dx = x1 - x0, dy = y1 - y0, len = (float) Math.sqrt(dx * dx + dy * dy);
         if (len < 0.01F) return;
         float nx = -dy / len * w / 2, ny = dx / len * w / 2;
-        quad(vc(g), mat(g), x0 + nx, y0 + ny, c, x1 + nx, y1 + ny, c, x1 - nx, y1 - ny, c, x0 - nx, y0 - ny, c);
+        quad(vc(g, c, c), mat(g), x0 + nx, y0 + ny, c, x1 + nx, y1 + ny, c, x1 - nx, y1 - ny, c, x0 - nx, y0 - ny, c);
     }
 
     /** Triángulo de un color (sin flush). */
     static void tri(GuiGraphics g, float x0, float y0, float x1, float y1, float x2, float y2, int c) {
-        quad(vc(g), mat(g), x0, y0, c, x1, y1, c, x2, y2, c, x2, y2, c);
+        quad(vc(g, c, c), mat(g), x0, y0, c, x1, y1, c, x2, y2, c, x2, y2, c);
     }
 
     /** Degradado a lo ancho: cl a la izquierda, cr a la derecha (ARGB, con alfa). */
     static void hgrad(GuiGraphics g, float x0, float y0, float x1, float y1, int cl, int cr) {
         if (x1 <= x0 || y1 <= y0) return;
-        quad(vc(g), mat(g), x0, y0, cl, x0, y1, cl, x1, y1, cr, x1, y0, cr);
+        quad(vc(g, cl, cr), mat(g), x0, y0, cl, x0, y1, cl, x1, y1, cr, x1, y0, cr);
         done(g);
     }
 
     /** Degradado vertical con alfa (fillGradient, pero en float). */
     static void vgrad(GuiGraphics g, float x0, float y0, float x1, float y1, int ct, int cb) {
         if (x1 <= x0 || y1 <= y0) return;
-        quad(vc(g), mat(g), x0, y0, ct, x0, y1, cb, x1, y1, cb, x1, y0, ct);
+        quad(vc(g, ct, cb), mat(g), x0, y0, ct, x0, y1, cb, x1, y1, cb, x1, y0, ct);
         done(g);
     }
 
@@ -243,7 +249,7 @@ final class PadSkin {
      */
     static void glow(GuiGraphics g, float cx, float cy, float r, int rgb, int a) {
         if (r <= 0 || a <= 0) return;
-        VertexConsumer vc = vc(g);
+        VertexConsumer vc = vcSoft(g);
         Matrix4f m = mat(g);
         int c0 = alpha(rgb, a), c1 = alpha(rgb, Math.round(a * 0.4F)), c2 = alpha(rgb, 0);
         float ri = r * 0.45F;
@@ -260,7 +266,7 @@ final class PadSkin {
 
     /** Círculo lleno de un color (24 lados). */
     static void disc(GuiGraphics g, float cx, float cy, float r, int argb) {
-        VertexConsumer vc = vc(g);
+        VertexConsumer vc = vc(g, argb, argb);
         Matrix4f m = mat(g);
         for (int i = 0; i < SIDES; i++) {
             float x0 = cx + COS[i] * r, y0 = cy + SIN[i] * r;
@@ -275,7 +281,7 @@ final class PadSkin {
      * apaga a los lados en half unidades. cx: dónde corta la mitad de la altura.
      */
     static void beam(GuiGraphics g, float cx, float half, float w, float h, float a) {
-        VertexConsumer vc = vc(g);
+        VertexConsumer vc = vcSoft(g);
         Matrix4f m = mat(g);
         float slope = 0.6F;
         // en y la línea central está en x = cx - (y - h/2) * slope

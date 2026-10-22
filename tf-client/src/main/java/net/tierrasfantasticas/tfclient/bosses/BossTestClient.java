@@ -62,6 +62,21 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
         }
+        // (1.3.109) la lista de jugadores (TAB) y cuántos hay en ella, y cuántos con su skin (los bots)
+        mc.options.keyPlayerList.setDown(BossTest.tabList);
+        if (mc.getConnection() != null) {
+            int n = 0, skins = 0;
+            for (net.minecraft.client.multiplayer.PlayerInfo info : mc.getConnection().getListedOnlinePlayers()) {
+                n++;
+                if (!info.getSkinLocation().equals(net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin(info.getProfile().getId()))) skins++;
+            }
+            BossTest.clientTab = n;
+            BossTest.clientTabSkins = skins;
+        }
+        if (BossTest.actPad != null && BossTest.openPad == null) {
+            net.tierrasfantasticas.tfclient.pad.TFPadClient.actForTest(BossTest.actPad);
+            BossTest.actPad = null;
+        }
         if (BossTest.openPad != null) {
             String app = BossTest.openPad;
             BossTest.openPad = null;
@@ -239,6 +254,14 @@ public final class BossTestClient {
                 }
             }
             return;
+        }
+        // (1.3.109) si la cinemática se abre antes de acabar las de «sin cada cosa», se dejan: con lo último apagado
+        // la cinemática salía «sin shader de la escena»
+        if (offNext < OFF.length && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen) {
+            TFClient.LOGGER.info("Prueba de jefes: la cinemática se abrió antes de acabar las capturas sin cada cosa (van {} de {})", offNext, OFF.length);
+            net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testOff = 0;
+            offNext = OFF.length;
+            poolShot = true;
         }
         // (las recompensas, cuando ya se ha sacado la de antes de abrir)
         if (!poolShot && poolAt == 0L && BossTest.SHOTS_PENDING.isEmpty()

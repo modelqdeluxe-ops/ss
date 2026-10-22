@@ -190,7 +190,53 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.108) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.109, PUBLICADA) — lee esto primero
+
+**Prueba en el juego** (43bcf13c, `[prueba-jefes=pad,crates,npcs] [shaders=photon]`, informe en `pruebas-jefes`): el NPC
+dentro de una zona con «arden los monstruos» sigue vivo y sin arder a los 5 s; `/tf bots add 4 1` → 4 en el servidor y
+el TAB con 5 (4 con su cara y el jugador), mensajes amarillos de entrar y salir, y `remove all` los quita; las dos
+aperturas y las dos cinemáticas, bien (efectos propios dibujándose; ~250 ms por fotograma en la máquina de la prueba);
+«La zona» se lee entera (la prueba sin el arreglo también la ve bien: el fallo depende del juego del dueño, así que
+falta que él lo confirme); la Valentine apunta bien en Combate; las piedras de protección, oscuras con las TF de color;
+y junto a la cascada alta ya no se ven las rayitas. La sesión que la hizo se cayó tras la prueba; la publicó otra (la
+de la web) sin tocar el código.
+
+**1.3.109: siete cosas del dueño** (con 4 capturas suyas):
+1. **Las rayas a los lados de la cascada del medio**: las enredaderas del costado del pilar que da a la cascada alta se
+   ven casi de canto y su textura aplastada salía en rayitas (la prueba las veía igual sin agua, sin efectos y sin
+   plantas al viento). `SanctuaryScene.draw`: lo recortado con mipmaps (como las hojas) y filtrado anisotrópico (hasta
+   16x; el registro dice cuánto) en la piedra y las enredaderas de la escena. CRATES.md §2.
+2. **El sonido y la música de las crates**: el «sonido horrendo» era el de la crate del mundo (y de la apertura
+   clásica): el estampido y la carga del Warden, truenos, el Wither y los lamentos del valle de las almas. `CrateSfx`,
+   nueva paleta (encantamiento, brújula imantada, faro, conducto, cofre, subir de nivel, desafío completado, fuegos), y
+   la crate del mundo la usa también. Los efectos de la escena, sonidos de Minecraft (`sounds.json`, eventos) en vez
+   de los sintetizados. **La música del dueño (Dalarna) va dentro del mod, cifrada** (`tools/crates/cifrar_musica.py`,
+   `crates/client/media/SealedAudio`, `mixin/SoundBufferLibraryMixin`: AES-128/CTR, la clave va en el mod: frena al que
+   abra el jar, no al que se empeñe). **Los efectos de la crate** (no la escena): partículas propias
+   (`CrateParticles` → `client/fx/CrateFxParticle`: luz suave, destello de 4 puntas y fogonazo, sumando luz, del color
+   de la rareza; texturas de `tools/crates/particulas_crates.py`) en vez de polvo, encantamiento, varas del End, fuegos y
+   explosiones; capas de serie nuevas (`ParticleLayer.defaults`; las de antes sin tocar pasan solas: `legacyDefaults`).
+3. **Texto borrado en el pad** (Protecciones: el título «La zona» sin texto salvo la última letra): el brillo redondo
+   del icono de la fila siguiente sobresalía de su tarjeta y, como algo del juego del dueño pinta el texto después,
+   lo tapaba con su profundidad aunque fuera transparente. Ahora lo translúcido no escribe profundidad
+   (`PadRenderTypes.SOFT` para recuadros y degradados con alfa, `depthMask(false)` en texturas con alfa) y el brillo no
+   sale de la tarjeta. La prueba lo imita con `TFPadScreen.testTextLast` (todo el texto al final).
+4. **Los NPC ardían en las protecciones**: «¿Arden los monstruos?» (de serie, sí) empujaba, quemaba y hería a todo lo
+   Enemy, y los NPC (BossEntity) lo son por dentro. `claims/util/ClaimMobs.hostile` (ni NPC ni fauna) en todas las
+   reglas de monstruos de las protecciones; y los NPC ni arden al sol ni con fuego (`BossEntity.fireImmune`).
+5. **Las piedras de protección, oscuras**: `tools/gen_claim_blocks.py`: piedra negra pulida con remaches (las de pago,
+   marco de oro viejo), panel casi negro con un filo de luz y las letras TF grabadas del color de su tamaño.
+6. **La espada Valentine al revés en la vista previa de Combate** (y sin estela): muchas armas 3D, en su posición
+   «gui», apuntan arriba a la izquierda (−118°…−137°) y no a −45° como las de Minecraft. `TrailPreview` las gira según
+   hacia dónde apunta su hoja y las pone del largo de una espada normal.
+7. **Bots** (`/tf bots add <cantidad> [segundos]`, `/tf bots remove <cantidad|all> [segundos]`, `/tf bots list`,
+   staff): `server/TFBots`: jugadores de mentira que solo están en la lista de jugadores (el TAB), con su cara (68 skins
+   firmadas de MineSkin: `tools/bots/skins_bots.py`), 68 nombres inventados que no usa ninguna cuenta
+   (`tools/bots/nombres_bots.py`, comprobados en la API de Mojang), su ping y el mensaje amarillo de entrar y salir; sin
+   entidad ni conexión. Entran de uno en uno cada N segundos (el primero, ya; sin segundos, cada 3). Se guardan en
+   `config/tfclient-bots.json` y vuelven al reiniciar. La lista de servidores los cuenta (`MinecraftServerBotsMixin`).
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.108, PUBLICADA)
 
 **1.3.108: el pad** (el dueño, al ver la 1.3.107: «déjalo sin fondo, sin el logo ese que pusiste, que quede limpio; y los
 iconos, ¿no ves que están muy abajo?»):

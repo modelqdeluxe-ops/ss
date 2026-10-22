@@ -135,6 +135,11 @@ public final class TFPadClient {
         PadMusicPage.testInput = text;
     }
 
+    /** (1.3.109) La prueba en el juego: pulsa esa acción en la app abierta (p. ej. «tab:combate»). */
+    public static void actForTest(String action) {
+        if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadViewPage v) v.actForTest(action);
+    }
+
     /** La prueba en el juego (BossTest «pad»): la portada («») o una app, aunque haya otra pantalla abierta. */
     public static void openForTest(String app) {
         Minecraft mc = Minecraft.getInstance();
@@ -144,7 +149,9 @@ public final class TFPadClient {
             PadSettings.load();
             mc.setScreen(new TFPadScreen());
         } else {
-            openTo(app, "");
+            // («app/pestaña»: la prueba abre también una pestaña, p. ej. «efectos/combate» o la zona de una protección)
+            int slash = app.indexOf('/');
+            openTo(slash < 0 ? app : app.substring(0, slash), slash < 0 ? "" : app.substring(slash + 1));
         }
     }
 

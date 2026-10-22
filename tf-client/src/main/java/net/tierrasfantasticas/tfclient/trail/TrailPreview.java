@@ -73,6 +73,16 @@ public final class TrailPreview {
         // la empuñadura en la mano (el pivote), como en el juego
         Vector3f grip = gui.transformPosition(blade.along(1.25F), new Vector3f());
         float hx = grip.x, hy = grip.y;
+        // (1.3.109, el dueño: «la espada Valentine está invertida en la vista previa») las espadas de Minecraft se pintan
+        // con la punta arriba a la derecha (−45°), pero muchas armas 3D, en su posición «gui», apuntan arriba a la
+        // izquierda (la Valentine, −137°: salía boca abajo y pegada al suelo, y su estela, fuera de la vista). Se giran
+        // lo que haga falta para que la hoja vaya a −45° y se ponen del largo de una espada normal (18 px de la punta a
+        // la mano)
+        Vector3f tipG = gui.transformPosition(blade.along(0), new Vector3f());
+        float dx = tipG.x - hx, dy = tipG.y - hy, len = (float) Math.sqrt(dx * dx + dy * dy);
+        float fix = len > 1e-3F ? -45F - (float) Math.toDegrees(Math.atan2(dy, dx)) : 0F;
+        if (len > 1e-3F) k *= Math.max(0.5F, Math.min(1.8F, 18.1F / len));
+        angle += fix;
         Matrix4f m = new Matrix4f().translate(px, py, 0).rotateZ((float) Math.toRadians(angle)).scale(k, k, 1).translate(-hx, -hy, 0);
         if (swinging) {
             TrailProfile profile = TrailProfile.current();

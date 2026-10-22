@@ -97,6 +97,10 @@ public final class RegistryLists {
       }
 
       list.sort(Comparator.comparing(ResourceLocation::toString));
+      // (1.3.109) primero, las propias de TF (las de serie de las crates)
+      list.add(0, new ResourceLocation("tfclient", "crate_flash"));
+      list.add(0, new ResourceLocation("tfclient", "crate_spark"));
+      list.add(0, new ResourceLocation("tfclient", "crate_glow"));
       return list;
    }
 }

@@ -572,6 +572,51 @@ public final class TFPadScreen extends Screen {
     }
 
     /**
+     * (1.3.109) Para la prueba en el juego: todo el texto se guarda y se pinta al final, después de los brillos y de las
+     * texturas ({@code testTextLast}: así se le borraba el título «La zona» al dueño); y {@code testNoSoft}, sin el
+     * arreglo (lo translúcido escribe la profundidad y el brillo del icono sale de su tarjeta, como antes).
+     */
+    public static volatile boolean testTextLast, testNoSoft;
+    /** Los textos guardados: la matriz (con su escalón), la letra, el texto (String o FormattedCharSequence), x, y, color, sombra. */
+    public static final List<Object[]> testTexts = new java.util.ArrayList<>();
+
+    /** ¿Se guarda este texto para el final? (GuiGraphicsMixin) */
+    public static boolean deferText() {
+        return testTextLast && PadSkin.batching && !replaying;
+    }
+
+    /**
+     * (1.3.109) ¿Va en la capa translúcida sin profundidad (PadRenderTypes.SOFT) algo con este alfa (0-255)? En el pad,
+     * lo que no es opaco; fuera del pad o con testNoSoft, nada.
+     */
+    public static boolean soft(int alpha) {
+        return alpha < 0xF0 && PadSkin.batching && !testNoSoft;
+    }
+
+    /** La capa translúcida sin profundidad (GuiGraphicsMixin). */
+    public static net.minecraft.client.renderer.RenderType softType() {
+        return PadRenderTypes.SOFT;
+    }
+
+    private static void replayTexts(GuiGraphics g) {
+        replaying = true;
+        try {
+            for (Object[] t : testTexts) {
+                g.pose().pushPose();
+                g.pose().last().pose().set((org.joml.Matrix4f) t[0]);
+                net.minecraft.client.gui.Font font = (net.minecraft.client.gui.Font) t[1];
+                int[] v = (int[]) t[3];
+                if (t[2] instanceof String str) g.drawString(font, str, v[0], v[1], v[2], v[3] != 0);
+                else g.drawString(font, (net.minecraft.util.FormattedCharSequence) t[2], v[0], v[1], v[2], v[3] != 0);
+                g.pose().popPose();
+            }
+        } finally {
+            testTexts.clear();
+            replaying = false;
+        }
+    }
+
+    /**
      * (1.3.106) Cuánto más adelante va cada cosa que pinta el pad respecto a la anterior (unidades de la interfaz: unas
      * 2 000 por fotograma, unas 10 en total; las ventanas de encima van 50-400 más arriba). La profundidad respeta así
      * el orden de pintado aunque algo del juego lo cambie.
@@ -632,6 +677,7 @@ public final class TFPadScreen extends Screen {
             try {
                 renderPad(g, mouseX, mouseY, partialTick);
                 if (!testBoxes.isEmpty()) replayBoxes(g);
+                if (!testTexts.isEmpty()) replayTexts(g);
             } catch (RuntimeException e) {
                 error[0] = e;
             } finally {
