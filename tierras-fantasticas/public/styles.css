@@ -709,16 +709,16 @@ h4 {
    azul se distinguen también con daltonismo; naranja y verde, no). Letra oscura sobre naranja (el blanco sobre
    naranja no llega a 4.5:1). */
 
-/* Principal (ir, entrar): naranja con letra marrón muy oscura */
+/* Principal (ir, entrar, la tienda): amarillo dorado con letra marrón muy oscura */
 .btn-primary,
 .btn-theme,
 .btn-shop {
-  --l: var(--o-300);
-  --c: var(--o-400);
-  --d: var(--o-500);
-  --o: var(--o-900);
-  --fg: #2a1100;
-  text-shadow: 0 1px 0 #ffd2a6;
+  --l: #fde68a;
+  --c: #fcd34d;
+  --d: #f5b316;
+  --o: #5c3405;
+  --fg: #2a1600;
+  text-shadow: 0 1px 0 #fff3c4;
 }
 
 .btn-primary svg,
@@ -727,15 +727,15 @@ h4 {
   filter: none;
 }
 
-/* Comprar: VERDE, un color propio que no usa ningún otro botón (pagar se distingue a la primera de navegar). Letra
-   blanca: el verde más claro del botón da 5:1 (medido con tools/contrast_audit.py) */
+/* Comprar: VERDE LIMA, un color propio que no usa ningún otro botón (pagar se distingue a la primera de navegar). Letra
+   verde casi negra: más de 7:1 sobre el lima (medido con tools/contrast_audit.py) */
 .btn-buy {
-  --l: #15803d;
-  --c: #116c33;
-  --d: #0e5a2a;
-  --o: #052e16;
-  --fg: #fff;
-  text-shadow: 0 2px 0 var(--o);
+  --l: #bef264;
+  --c: #a3e635;
+  --d: #84cc16;
+  --o: #1f3a07;
+  --fg: #172b04;
+  text-shadow: 0 1px 0 #e4fbb4;
 }
 
 /* Secundario: blanco con contorno y letra oscuros (también comprar con monedas, la alternativa al dinero) */
@@ -1442,22 +1442,41 @@ h4 {
   font-weight: 600;
 }
 
-/* El emblema, grande y con su sombra; en el escritorio sigue un poco al ratón (app.js pone --px y --py) */
+/* El emblema, grande y con su sombra: flota arriba y abajo y de vez en cuando le cruza un brillo, como una medalla
+   reluciente (el brillo es un degradado recortado con la forma del logo) */
 .portal {
-  --px: 0;
-  --py: 0;
   display: grid;
   place-items: center;
   width: min(62vw, 240px);
   margin-bottom: 6px;
 }
 
+.portal-medal {
+  position: relative;
+  display: block;
+  width: 100%;
+  animation: logo-float 6s ease-in-out infinite;
+}
+
 .portal img {
+  display: block;
   width: 100%;
   height: auto;
   filter: drop-shadow(0 24px 30px #5a2d0d66);
-  transform: translate3d(calc(var(--px) * 12px), calc(var(--py) * 8px), 0) rotate(calc(var(--px) * 2deg));
-  transition: transform 0.6s var(--ease);
+  animation: logo-glint 6s ease-in-out infinite;
+}
+
+.portal-medal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url('/img/logo.webp') center / 100% 100% no-repeat;
+  mask: url('/img/logo.webp') center / 100% 100% no-repeat;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 248 220 / 0.25) 45%, rgb(255 252 235 / 0.75) 50%, rgb(255 248 220 / 0.25) 55%, transparent 60%) no-repeat;
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  animation: logo-shine 6s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .js .portal {
@@ -3708,14 +3727,14 @@ h4 {
   font: 800 30px/1.1 var(--font-display);
 }
 
-/* Comprar el rango: el mismo verde que todos los botones de comprar */
+/* Comprar el rango: el mismo lima que todos los botones de comprar */
 .btn-rank {
-  --l: #15803d;
-  --c: #116c33;
-  --d: #0e5a2a;
-  --o: #052e16;
-  --fg: #fff;
-  text-shadow: 0 2px 0 var(--o);
+  --l: #bef264;
+  --c: #a3e635;
+  --d: #84cc16;
+  --o: #1f3a07;
+  --fg: #172b04;
+  text-shadow: 0 1px 0 #e4fbb4;
 }
 
 /* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
@@ -4040,11 +4059,11 @@ h4 {
   padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid var(--t1, var(--a-300));
-  background: var(--s0);
+  background: var(--s1);
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
-  color: #fff;
+  color: var(--text);
   opacity: 0;
   transform: translate(-50%, 6px);
   transition:
@@ -4052,8 +4071,6 @@ h4 {
     transform 0.3s var(--ease);
 }
 
-.crate-tile:hover .try-on,
-.crate-tile-art:focus-visible .try-on,
 .product:hover .try-on,
 .thumb-try:focus-visible .try-on {
   opacity: 1;
@@ -7254,6 +7271,43 @@ h4 {
   }
 }
 
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+/* El brillo cruza el logo en la subida y el logo se ilumina un poco a la vez */
+@keyframes logo-shine {
+  0%,
+  30% {
+    background-position: 130% 0;
+  }
+
+  60%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+
+@keyframes logo-glint {
+  0%,
+  30%,
+  65%,
+  100% {
+    filter: drop-shadow(0 24px 30px #5a2d0d66);
+  }
+
+  45% {
+    filter: drop-shadow(0 24px 30px #5a2d0d66) brightness(1.12) saturate(1.08);
+  }
+}
+
 @keyframes logo-in {
   from {
     opacity: 0;
@@ -7453,9 +7507,6 @@ h4 {
     font-size: 12.5px;
   }
 
-  .crate-grid .try-on {
-    display: none;
-  }
 
   .pieces {
     font-size: 11px;
@@ -7901,7 +7952,6 @@ h4 {
     transform: none;
   }
 
-  .crate-grid .try-on,
   .product .try-on {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -7926,6 +7976,12 @@ h4 {
 
   .ready .footer {
     animation-delay: 0.12s !important;
+  }
+
+  .portal img,
+  .portal-medal::after {
+    animation-duration: 6s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 

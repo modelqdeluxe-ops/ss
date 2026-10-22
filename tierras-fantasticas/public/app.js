@@ -48,29 +48,6 @@
     $$('[data-count]').forEach((el) => io.observe(el));
   }
 
-  // --- Portada: el emblema del portal sigue al ratón (solo con ratón; --px y --py van de -1 a 1, styles.css) ---
-  const portal = $('[data-portal]');
-  if (portal && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    let frame = 0;
-    let last = null;
-    document.addEventListener(
-      'pointermove',
-      (e) => {
-        last = e;
-        if (frame) return;
-        frame = requestAnimationFrame(() => {
-          frame = 0;
-          const r = portal.getBoundingClientRect();
-          if (r.bottom < 0) return;
-          const k = (v) => Math.max(-1, Math.min(1, v)).toFixed(3);
-          portal.style.setProperty('--px', k((last.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
-          portal.style.setProperty('--py', k((last.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
-        });
-      },
-      { passive: true },
-    );
-  }
-
   // --- Ayuda: buscador de las preguntas (busca en la pregunta y en la respuesta; sin tildes ni mayúsculas) ---
   const faqSearch = $('[data-faq-search]');
   if (faqSearch) {
@@ -441,7 +418,6 @@
       <article class="panel crate-tile" data-crate="${escapeHtml(p.id)}"${themeAttr(p)}>
         <button type="button" class="crate-tile-art" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver ${escapeHtml(p.name)} y probártelo">
           ${glow(i)}${img(p.image, '')}
-          <span class="try-on">Pruébatelo en 3D</span>
         </button>
         <div class="body">
           <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
@@ -1873,7 +1849,7 @@
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
       </div>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
-      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra.
+      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;

@@ -13,6 +13,28 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (22 oct 2026, 4.ª ronda): comprar LIMA, Tienda AMARILLA, recibos, registros por correo y sanción (hecho y publicado)
+Pedidos del dueño: comprar más verde claro/lima, «Tienda» más amarilla, quitar la pastilla blanca de las crates al
+pasar el ratón, el logo flotando arriba y abajo con brillo de medalla (no siguiendo al ratón), Términos con «sin
+reembolso pasados 5 días» y baneo de IP de 6 días por reembolso injustificado, cada firma de los Términos y cada recibo
+por correo al dueño, y que al comprar se descargue solo un recibo aparte del de Stripe.
+- **Botones**: `.btn-buy`/`.btn-rank` lima (#bef264/#a3e635/#84cc16, letra #172b04, >7:1); `.btn-primary`/`.btn-shop`/
+  `.btn-theme` amarillo dorado (#fde68a/#fcd34d/#f5b316, letra #2a1600). Auditoría: solo los falsos positivos conocidos.
+- **Crates**: fuera el `<span class="try-on">` de `crateCard` (app.js). En los cosméticos con set sigue, ya legible.
+- **Logo**: `<span class="portal-medal">` (pages.py); `logo-float` (6 s, 14 px) + `logo-shine` (degradado recortado con
+  `mask: url(/img/logo.webp)`) + `logo-glint` (un poco más de brillo). Fuera el JS de seguir al ratón. Con «menos
+  movimiento» no flota pero el brillo se queda.
+- **Backend**: `src/pdf.js` (PDF a mano), `src/receipt.js` (recibo y `REFUND_POLICY`), `src/mail.js` (Resend). Correos:
+  firma de Términos (`recordTerms`), recibo al entregar (`mailReceipt` en `fulfill`), reembolso/disputa con veredicto
+  y PDF (`handleReversal`). Disputa pasados 5 días hábiles de un pedido entregado → `queuePenalty` encola `B<pedido>`
+  con `tempbanip {player} 6d …`. `GET /api/order/:id/receipt` da el PDF; `success.js` lo descarga solo una vez
+  (localStorage `tf-recibo-<id>`) y deja el botón «Descargar recibo (PDF)». Prueba nueva en `test/app.test.js` (55).
+- **Términos 2026-10-22.1** (`tools/legal.py`): «Pasados esos 5 días hábiles no hay reembolsos», «Reembolso
+  injustificado: baneo de IP de 6 días», sección nueva «Registro de la aceptación y recibos»; privacidad con Resend y
+  las copias. Aviso corto también en la ventana de pago, la tienda y la FAQ.
+- **FALTA (lo hace el dueño)**: crear la cuenta de Resend con su correo y poner en Cloudflare los Secrets
+  `RESEND_API_KEY` y `RECORDS_EMAIL` (README, «Registros por correo y recibos»). El correo NO va al repo (es público).
+
 ### Web (22 oct 2026, 3.ª ronda): comprar en VERDE, rangos sin «nuevo», tarjetas con borde (hecho y publicado)
 Quejas: «¿por qué el botón de comprar son los mismos colores?» (comprar era naranja como «Tienda»), «en los rangos
 quita lo de nuevo y pon una breve explicación de cada comando, pero no cómo se usa», «las tarjetas de arriba no se
