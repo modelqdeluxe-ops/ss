@@ -520,6 +520,19 @@ public final class TFPadScreen extends Screen {
         return units(padX - GX);
     }
 
+    /**
+     * (1.3.108) Hasta dónde llega el dibujo del logo (en unidades) en lo que queda por debajo de la altura y: medido
+     * en frame.png, fila a fila (el logo acaba en la fila 82 del pad; logoRight, con su margen para las ventanas de
+     * las apps, llega a la 86). Para la rejilla de la portada: con logoRight bajaba 6 unidades de más (el dueño: «los
+     * iconos están muy abajo»).
+     */
+    int logoInk(int y) {
+        double padY = GY + y * cs / (double) ps;
+        double padX = padY < 67 ? 81 : padY < 69 ? 79 : padY < 71 ? 72.5 : padY < 74 ? 70 : padY < 76 ? 68.5
+                : padY < 79 ? 65 : padY < 82 ? 60.5 : GX;
+        return (int) Math.ceil((padX - GX) * ps / cs);
+    }
+
     private int liftReal() {
         if (!PadSettings.animations) return 0;
         float p = Math.min(1F, (System.currentTimeMillis() - openedAt) / 160F);
@@ -735,26 +748,9 @@ public final class TFPadScreen extends Screen {
     private static final int GLASS_L = 205, GLASS_T = 250, GLASS_R = 1361, GLASS_B = 795; // build_pad.SCREEN_BOX
 
     /**
-     * (1.3.107; el dueño: «quita ese TF del pad, se ve horrible; cambia ese fondo» y luego «quita ese fondo de aldeas y
-     * deja un logo dibujado, solo las TF encerradas en un círculo, en azul oscuro; no copia y pega el logo») en vez del
-     * papel de monogramas «TF» repetidos y del paisaje de aldeas de abajo: un emblema dibujado a píxeles, las letras «TF»
-     * dentro de un aro, en azules oscuros (fondo_tf.png, tools/pad/fondo_tf.py), grande y centrado detrás de las apps.
-     */
-    private void emblem(GuiGraphics g) {
-        ResourceLocation loc = tex("fondo_tf");
-        int[] sz = size(loc);
-        if (sz[0] == 0) return;
-        float h = unitsH * EMBLEM_H, w = h * sz[0] / sz[1];
-        PadSkin.texture(g, loc, (unitsW - w) / 2F, (unitsH - h) / 2F + unitsH * 0.03F, w, h, EMBLEM_ALPHA, 0xFFFFFF, true);
-    }
-
-    /** Lo alto del logo del fondo (del cristal) y lo que se ve. */
-    private static final float EMBLEM_H = 0.92F, EMBLEM_ALPHA = 0.68F;
-
-    /**
      * La base del cristal en TODO su hueco (recortada a píxeles reales; el marco, que va encima, le da la forma): el
-     * color del tema en degradado (el de Cielo es el azul de marco.png), el emblema «TF», la trama y una sombra suave
-     * abajo. Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
+     * color del tema en degradado (el de Cielo es el azul de marco.png), la trama y una sombra suave abajo; nada más
+     * (1.3.108, el dueño: «déjalo sin fondo, sin el logo, que quede limpio»: ni monogramas, ni logo, ni aldeas). Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
      */
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
@@ -768,7 +764,6 @@ public final class TFPadScreen extends Screen {
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
         PadSettings.Theme th = PadSettings.theme();
         g.fillGradient(-mL, -mT, unitsW + mR, unitsH + mB, 0xFF000000 | th.top(), 0xFF000000 | th.bottom());
-        emblem(g);
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
         // debajo quedaba más clara y parecía otra pantalla detrás

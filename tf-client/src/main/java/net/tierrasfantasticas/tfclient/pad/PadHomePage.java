@@ -143,8 +143,19 @@ final class PadHomePage extends PadPage {
             int contentH = rows * cellH + (rows - 1) * gapY;
             int x0 = (SW - gridW) / 2;
             int top = fits ? Y + (H - contentH) / 2 : Y + 2;
-            // el logo de arriba a la izquierda: si la primera fila lo fuera a pisar, la rejilla baja un poco
-            while (pad.logoRight(top) + 2 > x0 && top + contentH < Y + H) top++;
+            // el logo de arriba a la izquierda: la primera fila empieza por debajo de él. (1.3.108, el dueño: «los
+            // iconos están muy abajo»: antes bajaba la rejilla entera y los nombres de la última fila quedaban pegados
+            // al marco.) Ahora las filas se juntan lo que haga falta (hasta MIN_GAP) para que debajo quede el mismo aire
+            // que encima, entre la barra y la primera fila.
+            int clear = Y;
+            while (pad.logoInk(clear) + 2 > x0 && clear < Y + H) clear++;
+            if (top < clear) {
+                int fitGap = rows > 1 ? (H - 2 * (clear - Y) - rows * cellH) / (rows - 1) : gapY;
+                gapY = Math.max(MIN_GAP, Math.min(gapY, fitGap));
+                pitchY = cellH + gapY;
+                contentH = rows * cellH + (rows - 1) * gapY;
+                top = Math.max(clear, Y + (H - contentH) / 2);
+            }
             Grid gr = new Grid(ts, t, cols, rows, gap, x0, top, pitchX, pitchY, contentH + 4);
             if (fits || k == kMin) return gr;
             if (best == null) best = gr;
