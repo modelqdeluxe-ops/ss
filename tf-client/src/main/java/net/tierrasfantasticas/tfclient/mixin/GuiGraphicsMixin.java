@@ -96,7 +96,7 @@ public abstract class GuiGraphicsMixin {
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V",
             at = @At("HEAD"))
     private void tfclient$glintBlend(CallbackInfo ci) {
-        net.tierrasfantasticas.tfclient.vacio.ShaderPacks.unlockBlendForGui();
+        net.tierrasfantasticas.tfclient.vacio.ShaderPacks.fixBlendForGui();
     }
 
     @Inject(method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I", at = @At("HEAD"), cancellable = true)

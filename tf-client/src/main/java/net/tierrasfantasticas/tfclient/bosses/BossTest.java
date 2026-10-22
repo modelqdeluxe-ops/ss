@@ -284,7 +284,9 @@ public final class BossTest {
         // En el Void la prueba espera a que salga cada captura: con shaders el cliente va a pocos fotogramas por
         // segundo y la vista siguiente (o quitar el cielo propio) llegaba antes que la foto (10 s como mucho)
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
-        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id)) && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
+        // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
+        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id))
+                && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
@@ -313,7 +315,7 @@ public final class BossTest {
             return;
         }
         if ("pad".equals(r.id) || "padtras".equals(r.id)) {
-            padStep(level, player, r);
+            if (!waitShot) padStep(level, player, r);
             return;
         }
         switch (phase) {
@@ -1907,7 +1909,7 @@ public final class BossTest {
                 player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
             }
             // (1.3.114, el dueño con shaders: «mis items se ven así», los encantados como siluetas moradas) el inventario
-            // con objetos encantados, con el arreglo (ShaderPacks.unlockBlendForGui) y sin él
+            // con objetos encantados, con el arreglo (ShaderPacks.fixBlendForGui) y sin él
             case 874 -> {
                 ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
                 net.minecraft.world.item.EnchantedBookItem.addEnchantment(book,
@@ -1928,7 +1930,8 @@ public final class BossTest {
             case 922 -> {
                 net.tierrasfantasticas.tfclient.vacio.ShaderPacks.testNoUnlock = false;
                 r.event("inventario con shaders: " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.inUse() + "; la mezcla de Oculus estaba "
-                        + "bloqueada al pintar un objeto " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.blendUnlocks + " veces");
+                        + "bloqueada al pintar un objeto " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.blendUnlocks + " veces y OpenGL "
+                        + "no coincidía con la caché de Minecraft " + net.tierrasfantasticas.tfclient.vacio.ShaderPacks.blendDesyncs + " veces");
                 closeScreen = true;
                 for (int i = 0; i < 16; i++) player.getInventory().setItem(i, ItemStack.EMPTY);
             }

@@ -89,25 +89,36 @@ public final class ShaderPacks {
         }
     }
 
-    private static boolean blendLooked, blendWarned;
+    private static boolean blendLooked, blendWarned, glLooked;
     private static Method blendLocked, restoreBlend;
-    /** Para la prueba en el juego: cuántas veces estaba bloqueada al pintar un objeto, y sin el arreglo. */
-    public static volatile int blendUnlocks;
+    private static Field glBlend, glBlendMode, glBlendOn;
+    private static Field[] glBlendFunc;
+    private static int glChecks;
+    /** Para la prueba en el juego: cuántas veces estaba bloqueada o desajustada al pintar un objeto, y sin el arreglo. */
+    public static volatile int blendUnlocks, blendDesyncs;
     public static volatile boolean testNoUnlock;
 
     /**
      * Objetos encantados como siluetas moradas en el inventario con shaders (1.3.114, el dueño con Oculus + Photon; su
-     * captura: los encantados, enteros de morado oscuro 63,30,102). Es el brillo de encantamiento pintado sin mezcla: Oculus
-     * «bloquea» la mezcla (BlendModeStorage) mientras usa un programa del paquete que la cambia, y si ese bloqueo sigue
-     * puesto al pintar la interfaz, el enableBlend del brillo se ignora y el brillo tapa el objeto. Antes de pintar cada
-     * objeto en la interfaz, si sigue bloqueada, se suelta (lo mismo que hace Oculus al acabar con ese programa). Sin
-     * Oculus o sin paquete no hace nada.
+     * captura: los encantados, enteros de morado oscuro 63,30,102). Es el brillo de encantamiento pintado sin su mezcla
+     * (la suya suma: SRC_COLOR, ONE); con ONE, ONE_MINUS_SRC_ALPHA y el alfa 1 de su textura, el brillo tapa el objeto.
+     * Photon pide a Oculus otra mezcla en casi todos sus programas, también por búfer («blend.gbuffers_X.colortex13 =
+     * ONE ONE_MINUS_SRC_ALPHA…»), y Oculus la pone directamente en OpenGL (glBlendFunci/glEnablei) sin que se entere la
+     * caché de Minecraft (GlStateManager); al acabar «la deja como estaba» por esa caché, que no ha cambiado, así que no
+     * hace nada y el búfer 0 se queda con la mezcla del paquete. Después, el brillo pide la suya, la caché dice que ya está
+     * y Minecraft no la pone. Antes de pintar cada objeto en la interfaz con un paquete puesto: (1) si Oculus sigue con la
+     * mezcla bloqueada (BlendModeStorage), se suelta; (2) OpenGL vuelve a lo que cree la caché (activada o no y la
+     * función, para todos los búferes). La primera vez que no coincidían se apunta en el registro. Sin paquete, nada.
      */
-    public static void unlockBlendForGui() {
+    public static void fixBlendForGui() {
+        if (!inUse()) return;
+        unlockBlend();
+        if (!testNoUnlock) syncBlend();
+    }
+
+    private static void unlockBlend() {
         if (!blendLooked) {
             blendLooked = true;
-            lookup();
-            if (api == null) return;
             for (String base : new String[] {"net.irisshaders.iris", "net.coderbot.iris"}) {
                 try {
                     Class<?> c = Class.forName(base + ".gl.blending.BlendModeStorage");
@@ -132,6 +143,77 @@ public final class ShaderPacks {
             }
         } catch (Throwable t) {
             blendLocked = null;
+        }
+    }
+
+    /** La caché de la mezcla de Minecraft (GlStateManager.BLEND), buscada por tipo: los nombres cambian fuera del entorno. */
+    private static void lookupGl() {
+        glLooked = true;
+        try {
+            for (Field f : com.mojang.blaze3d.platform.GlStateManager.class.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) && f.getType().getName().endsWith("GlStateManager$BlendState")) glBlend = f;
+            }
+            glBlend.setAccessible(true);
+            java.util.List<Field> ints = new java.util.ArrayList<>();
+            for (Field f : glBlend.getType().getDeclaredFields()) {
+                if (f.getType().getName().endsWith("GlStateManager$BooleanState")) glBlendMode = f;
+                else if (f.getType() == int.class) ints.add(f);
+            }
+            glBlendMode.setAccessible(true);
+            for (Field f : glBlendMode.getType().getDeclaredFields()) if (f.getType() == boolean.class) glBlendOn = f;
+            glBlendOn.setAccessible(true);
+            if (ints.size() == 4) {
+                for (Field f : ints) f.setAccessible(true);
+                // el orden de los cuatro (srcRgb, dstRgb, srcAlpha, dstAlpha) se comprueba poniendo una mezcla con los
+                // cuatro distintos y viendo dónde cae cada uno; luego se deja la que había
+                Object state = glBlend.get(null);
+                int[] before = new int[4], probe = new int[4], want = {770, 771, 1, 0};
+                for (int i = 0; i < 4; i++) before[i] = ints.get(i).getInt(state);
+                com.mojang.blaze3d.platform.GlStateManager._blendFuncSeparate(want[0], want[1], want[2], want[3]);
+                for (int i = 0; i < 4; i++) probe[i] = ints.get(i).getInt(state);
+                Field[] order = new Field[4];
+                int[] at = new int[4];
+                for (int k = 0; k < 4; k++) {
+                    for (int i = 0; i < 4; i++) if (probe[i] == want[k]) at[k] = i;
+                    order[k] = ints.get(at[k]);
+                }
+                if (new java.util.HashSet<>(java.util.Arrays.asList(order)).size() == 4) glBlendFunc = order;
+                com.mojang.blaze3d.platform.GlStateManager._blendFuncSeparate(before[at[0]], before[at[1]], before[at[2]], before[at[3]]);
+            }
+        } catch (Throwable t) {
+            glBlend = null;
+            TFClient.LOGGER.warn("TF Client: no se encontró la caché de la mezcla de Minecraft: {}", t.toString());
+        }
+    }
+
+    private static void syncBlend() {
+        if (!glLooked) lookupGl();
+        if (glBlend == null) return;
+        try {
+            Object state = glBlend.get(null);
+            boolean on = glBlendOn.getBoolean(glBlendMode.get(state));
+            int[] fn = glBlendFunc == null ? null : new int[] {glBlendFunc[0].getInt(state), glBlendFunc[1].getInt(state),
+                    glBlendFunc[2].getInt(state), glBlendFunc[3].getInt(state)};
+            // las primeras veces se mira si OpenGL (el búfer 0) coincide con la caché, para el registro y la prueba
+            if (glChecks < 400) {
+                glChecks++;
+                boolean realOn = org.lwjgl.opengl.GL30.glIsEnabledi(org.lwjgl.opengl.GL11.GL_BLEND, 0);
+                int src = org.lwjgl.opengl.GL30.glGetIntegeri(org.lwjgl.opengl.GL14.GL_BLEND_SRC_RGB, 0);
+                int dst = org.lwjgl.opengl.GL30.glGetIntegeri(org.lwjgl.opengl.GL14.GL_BLEND_DST_RGB, 0);
+                if (realOn != on || (fn != null && (src != fn[0] || dst != fn[1]))) {
+                    blendDesyncs++;
+                    if (blendDesyncs == 1) {
+                        TFClient.LOGGER.info("TF Client: con shaders, la mezcla de OpenGL no era la que cree Minecraft al pintar un objeto "
+                                + "(OpenGL {} {}/{}, Minecraft {} {}/{}): se corrige", realOn, src, dst, on,
+                                fn == null ? "?" : fn[0], fn == null ? "?" : fn[1]);
+                    }
+                }
+            }
+            if (on) org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_BLEND);
+            else org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_BLEND);
+            if (fn != null) org.lwjgl.opengl.GL14.glBlendFuncSeparate(fn[0], fn[1], fn[2], fn[3]);
+        } catch (Throwable t) {
+            glBlend = null;
         }
     }
 
