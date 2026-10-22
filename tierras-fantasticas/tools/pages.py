@@ -118,7 +118,7 @@ def header(page):
         <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
           <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint">{I['copy']}<span data-copy-hint>Copiar</span></span>
         </button>
-        <a href="/tienda" class="btn btn-buy btn-sm">Tienda</a>
+        <a href="/tienda" class="btn btn-primary btn-sm">Tienda</a>
         <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta">{I['users']}<span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">{I['menu']}</button>
       </div>
@@ -298,7 +298,7 @@ def index():
       <div class="wrap">
         <div class="hero-grid">
           <div class="portal" data-portal aria-hidden="true">
-            <img src="/img/logo.webp" alt="" width="743" height="820">
+            <span class="portal-medal"><img src="/img/logo.webp" alt="" width="743" height="820"></span>
           </div>
           <div class="hero-copy">
             <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
@@ -346,11 +346,6 @@ def tienda():
           <h1>Tienda</h1>
           <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar.</p>
         </div>
-        <ul class="shop-trust">
-          <li><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></li>
-          <li><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></li>
-          <li><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></li>
-        </ul>
       </div>
     </section>
     <section class="wrap shop-body">
@@ -370,6 +365,12 @@ def tienda():
         {skeletons(8)}
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda. Prueba con otro nombre o un color.</p>
+      <ul class="shop-trust">
+        <li><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></li>
+        <li><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></li>
+        <li><span class="icon">{I['gift']}</span><div><b>Para regalar</b><span>Con el botón del regalo, cómpraselo a otro jugador del servidor. Le llega con tu nombre.</span></div></li>
+        <li><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></li>
+      </ul>
       <section class="owned frame" id="vinculados" aria-labelledby="owned-title">
         <div class="owned-head">
           <span class="icon">{I['shield']}</span>
@@ -384,14 +385,15 @@ def tienda():
             a ti.</span></li>
           <li><b>Solo para ti</b><span>Nadie más puede cogerlas, ponérselas ni usarlas. Si otro jugador las saca de un
             cofre, vuelven a ti.</span></li>
-          <li><b>No transferibles</b><span>No se pueden regalar, vender ni intercambiar.</span></li>
+          <li><b>No transferibles</b><span>En el juego no se pasan a otro jugador, ni se venden ni se intercambian. Para
+            regalar, cómpralo como regalo en la tienda.</span></li>
           <li><b>Cosméticos libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas) no se vinculan: puedes
             regalarlos e intercambiarlos. Las alas planean como unas élitros.</span></li>
         </ul>
       </section>
       <p class="shop-legal">Tierras Fantásticas es un servidor independiente. {DISCLAIMER_ES} En la tienda no hay nada al
         azar y las monedas del servidor solo se ganan jugando. Precios en USD, finales.
-        Tienes 5 días hábiles para cancelar una compra. Al comprar aceptas los <a href="/terminos">Términos y
+        Tienes 5 días hábiles para cancelar una compra; pasado ese plazo no hay reembolsos. Al comprar aceptas los <a href="/terminos">Términos y
         condiciones</a> y el <a href="/privacidad">Aviso de privacidad</a>.</p>
     </section>
   </main>
@@ -592,7 +594,7 @@ def ayuda():
 {faq('¿Puedo regalar o intercambiar lo que compro?', 'Los cosméticos y la ropa, sí. Las armas, herramientas y armaduras de los rangos y de las crates, no: quedan vinculadas a tu cuenta y solo tú puedes usarlas. Lo tienes explicado en la <a href="/tienda#vinculados">tienda</a>.')}
 {faq('¿Las alas sirven para volar?', 'Sí: todas las alas de la tienda planean como unas élitros, en el pecho o en el hueco de la espalda (con la pechera puesta), y nunca se gastan. Las mochilas, capas y colas son solo de adorno.')}
 {faq('¿Cómo funcionan las clases de skills?', 'Cada clase trae sus skills, sin armas ni objetos: solo las skills. En el juego eliges una con las teclas 5, 6, 7, 8, 9 o 0 (no se lanza al pulsarla) y la usas con el clic izquierdo; las clases de arco, al disparar con tu arco. La skill que eliges se queda puesta: cada clic la usa en cuanto está lista, hasta que elijas otra. Las pasivas van solas. Las teclas se cambian en Opciones › Controles › «TF Skills». Se compran con dinero o con las monedas que ganas jugando. Las que compras son tuyas para siempre, pero llevas una sola a la vez: eliges la activa en la tienda (sección Skills) o en el TF Pad (Efectos › Skills) y el servidor te la cambia en unos segundos. Las monedas no se venden con dinero y no se pueden cambiar por dinero.')}
-{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Al reembolsarla, el servidor retira todo lo que se entregó con esa compra, esté donde esté (también en cofres), y el rango o la clase de skills si lo era. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
+{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Al reembolsarla, el servidor retira todo lo que se entregó con esa compra, esté donde esté (también en cofres), y el rango o la clase de skills si lo era. Pasado ese plazo no hay reembolsos, y si reclamas el dinero a tu banco, Stripe o PayPal sin motivo, se retira la compra y tu jugador recibe un baneo de IP del servidor de 6 días. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
 {faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', f'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> o por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de jugador.')}
@@ -626,6 +628,7 @@ def success():
           <ul id="prize-list"></ul>
         </div>
         <div class="receipt-actions">
+          <a href="#" class="btn btn-primary" id="receipt-pdf" download hidden>Descargar recibo (PDF)</a>
           <a href="/" class="btn btn-primary">Volver al inicio</a>
           <a href="/tienda" class="btn btn-ghost">Seguir comprando</a>
         </div>

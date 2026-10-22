@@ -9,6 +9,8 @@ import { createD1 } from './d1.js';
 
 const servers = [];
 let env;
+// Correos que la web ha mandado (Resend simulado): firmas, recibos y reembolsos
+const mails = [];
 // Lo que el servidor de Minecraft (puente) ha ejecutado.
 const received = [];
 const BRIDGE_SECRET = 'clave-del-puente';
@@ -220,6 +222,14 @@ before(async () => {
     PAYPAL_CLIENT_SECRET: 'pp-secret',
     PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
     PAYPAL_WEBHOOK_ID: 'WH-1',
+    RESEND_API_KEY: 're_prueba',
+    RECORDS_EMAIL: 'duenio@correo.test',
+    MAIL_FETCH: async (url, init) => {
+      assert.strictEqual(url, 'https://api.resend.com/emails');
+      assert.strictEqual(init.headers.Authorization, 'Bearer re_prueba');
+      mails.push(JSON.parse(init.body));
+      return new Response('{"id":"m"}', { status: 200 });
+    },
   };
 });
 
@@ -1537,4 +1547,120 @@ test('Skills: con varias clases se elige la activa en la web (solo una) y el ser
   res = await (await poll(['Varias_MC'], [], { pad: { skills: [{ uuid, clase: null }] } })).json();
   assert.strictEqual(res.skills[0].clase, null);
   assert.strictEqual((await (await get('/api/skills', { Cookie: cookie })).json()).me.active, null);
+});
+
+test('cada firma de los Términos y cada recibo llegan por correo; el recibo en PDF se descarga; una disputa fuera de plazo banea la IP 6 días', async () => {
+  mails.length = 0;
+  await seen('Recibo_MC');
+  const order = await checkout({ productId: 'crate-oni', username: 'Recibo_MC' });
+  // La firma al pagar llega al correo de registros, con el pedido, la versión y la IP
+  const firma = mails.find((m) => m.subject.startsWith('Firma de los Términos') && m.text.includes(order));
+  assert.ok(firma, 'llega la firma');
+  assert.deepStrictEqual(firma.to, ['duenio@correo.test']);
+  assert.match(firma.text, /Versión de los Términos: \d{4}-\d{2}-\d{2}/);
+  assert.match(firma.text, /IP: /);
+
+  // Sin pagar no hay recibo; al pagar, el PDF (el de la página del pedido) y la copia por correo con el PDF adjunto
+  assert.strictEqual((await get(`/api/order/${order}/receipt`)).status, 404);
+  await pay(order);
+  const res = await get(`/api/order/${order}/receipt`);
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.headers.get('Content-Type'), 'application/pdf');
+  assert.match(res.headers.get('Content-Disposition'), new RegExp(`attachment; filename="recibo-${order}.pdf"`));
+  const pdf = Buffer.from(await res.arrayBuffer()).toString('latin1');
+  assert.ok(pdf.startsWith('%PDF-1.4') && pdf.trimEnd().endsWith('%%EOF'));
+  assert.ok(pdf.includes(order) && pdf.includes('Recibo_MC') && pdf.includes('5 días hábiles') && pdf.includes('baneo de IP'));
+  assert.ok(!pdf.includes('IP de la aceptación'), 'el recibo del jugador no lleva su IP');
+  const recibo = mails.find((m) => m.subject.startsWith(`Recibo ${order}`));
+  assert.ok(recibo, 'llega la copia del recibo');
+  assert.match(recibo.text, /IP de la aceptación: /);
+  assert.strictEqual(recibo.attachments[0].filename, `recibo-${order}.pdf`);
+  assert.ok(Buffer.from(recibo.attachments[0].content, 'base64').toString('latin1').startsWith('%PDF'));
+  await serverDelivers('Recibo_MC');
+
+  // Disputa dentro del plazo: se retira, sin baneo
+  const dispute = (id) => signedEvent({ type: 'charge.dispute.created', data: { object: { id: `dp_${id}`, payment_intent: sessionOf(id).payment_intent } } });
+  await dispute(order);
+  let { deliveries } = await (await poll([])).json();
+  assert.deepStrictEqual(deliveries.map((d) => d.kind), ['revocacion']);
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+  assert.ok(mails.some((m) => m.subject === `DISPUTA · pedido ${order} · Recibo_MC` && m.text.includes('dentro del plazo')));
+
+  // Disputa pasados 5 días hábiles desde la entrega: se retira y baneo de IP de 6 días (aunque no esté conectado)
+  const late = await checkout({ productId: 'crate-valentine', username: 'Recibo_MC' });
+  await pay(late);
+  await serverDelivers('Recibo_MC');
+  const old = new Date(Date.now() - 14 * 86400000).toISOString();
+  await env.DB.prepare('UPDATE orders SET delivered_at = ?, paid_at = ? WHERE id = ?').bind(old, old, late).run();
+  await dispute(late);
+  ({ deliveries } = await (await poll([])).json());
+  assert.deepStrictEqual(deliveries.map((d) => d.kind), ['revocacion', 'penalizacion']);
+  const ban = deliveries.find((d) => d.kind === 'penalizacion');
+  assert.strictEqual(ban.order, late);
+  assert.match(ban.commands[0], new RegExp(`^tempbanip \\{player\\} 6d Reembolso injustificado del pedido ${late}`));
+  assert.match((await (await get(`/api/order/${late}`)).json()).refunded, /fuera de plazo · baneo de IP de 6 días/);
+  const aviso = mails.find((m) => m.subject === `DISPUTA · pedido ${late} · Recibo_MC`);
+  assert.ok(aviso.text.includes('reembolso injustificado') && aviso.attachments[0].filename === `recibo-${late}.pdf`);
+  // Otro aviso de la misma disputa no duplica el baneo
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+  await dispute(late);
+  assert.deepStrictEqual((await (await poll([])).json()).deliveries, []);
+
+  // Un reembolso hecho por el dueño fuera de plazo no banea
+  const refunded = await checkout({ productId: 'crate-luminite', username: 'Recibo_MC' });
+  await pay(refunded);
+  await serverDelivers('Recibo_MC');
+  await env.DB.prepare('UPDATE orders SET delivered_at = ? WHERE id = ?').bind(old, refunded).run();
+  await signedEvent({ type: 'charge.refunded', data: { object: { id: `ch_${refunded}`, payment_intent: sessionOf(refunded).payment_intent, refunded: true } } });
+  assert.deepStrictEqual((await (await poll([])).json()).deliveries.map((d) => d.kind), ['revocacion']);
+});
+
+test('comprar como regalo: con la cuenta de quien paga, para otro jugador verificado, con su mensaje y la sanción para quien paga', async () => {
+  received.length = 0;
+  discordCalls.length = 0;
+  announcements.length = 0;
+  mails.length = 0;
+  await seen('Regalado_MC');
+  const cookie = cookieValue(await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' }), 'tf_session');
+
+  // Sin cuenta no se regala; a uno mismo, tampoco; el que lo recibe tiene que haber entrado al servidor
+  const gift = { productId: 'crate-dracula', username: 'Regalado_MC', gift: true, message: '¡Feliz\ncumple! §4rojo' };
+  let res = await post('/api/checkout', { acceptTerms: true, ...gift });
+  assert.deepStrictEqual([res.status, (await res.json()).code], [401, 'login']);
+  res = await post('/api/checkout', { acceptTerms: true, ...gift, username: 'Alex_MC' }, cookie);
+  assert.deepStrictEqual([res.status, (await res.json()).code], [400, 'gift_self']);
+  res = await post('/api/checkout', { acceptTerms: true, ...gift, username: 'Nadie_MC' }, cookie);
+  assert.strictEqual(res.status, 404);
+
+  const id = await checkout(gift, cookie);
+  assert.match(sessionOf(id).line_items?.[0]?.price_data?.product_data?.description || JSON.stringify(sessionOf(id)), /Regalo de Alex_MC para Regalado_MC/);
+  // La firma de los Términos es de quien paga
+  const firma = mails.find((m) => m.subject.startsWith('Firma de los Términos') && m.text.includes(id));
+  assert.match(firma.subject, /Alex_MC · al pagar un regalo/);
+  await pay(id);
+  await serverDelivers('Regalado_MC');
+  // Lo recibe Regalado_MC, con el aviso de quién se lo regala y su mensaje (sin saltos de línea ni códigos de color)
+  const notice = received.find((c) => c.startsWith('tellraw Regalado_MC '));
+  assert.ok(notice, 'aviso del regalo en el juego');
+  const parts = JSON.parse(notice.slice('tellraw Regalado_MC '.length));
+  assert.match(parts.map((p) => p.text || '').join(''), /^¡Regalo! Alex_MC te ha regalado Crate Drácula «¡Feliz cumple! 4rojo»$/);
+  // El rol no va al Discord de quien paga; el anuncio dice que es un regalo
+  assert.ok(!discordCalls.some((c) => c.url.includes('/members/111111111111111111/')));
+  assert.match(announcements[0].embeds[0].description, /\*\*Alex_MC\*\* le ha regalado a \*\*Regalado_MC\*\* \*\*Crate Drácula\*\*/);
+  // Los dos lo ven: el que lo recibe (es suyo) y quien lo pagó, en «Mis compras»
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.deepStrictEqual([order.username, order.gift], ['Regalado_MC', { from: 'Alex_MC', message: '¡Feliz cumple! 4rojo' }]);
+  const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
+  assert.ok(orders.some((o) => o.id === id && o.gift?.from === 'Alex_MC'));
+  const pdf = Buffer.from(await (await get(`/api/order/${id}/receipt`)).arrayBuffer()).toString('latin1');
+  assert.ok(pdf.includes('Regalo de Alex_MC') && pdf.includes('Jugador que lo recibe'));
+
+  // Disputa fuera de plazo: se retira el regalo y el baneo es para quien pagó
+  const old = new Date(Date.now() - 14 * 86400000).toISOString();
+  await env.DB.prepare('UPDATE orders SET delivered_at = ?, paid_at = ? WHERE id = ?').bind(old, old, id).run();
+  await signedEvent({ type: 'charge.dispute.created', data: { object: { id: `dp_${id}`, payment_intent: sessionOf(id).payment_intent } } });
+  const { deliveries } = await (await poll([])).json();
+  const ban = deliveries.find((d) => d.kind === 'penalizacion');
+  assert.match(ban.commands[0], new RegExp(`^tempbanip Alex_MC 6d Reembolso injustificado del pedido ${id}`));
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
 });

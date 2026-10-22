@@ -42,8 +42,8 @@
   --b-600: #2563eb;
   --b-700: #1d4ed8;
   --b-900: #172f6e;
-  --stage: radial-gradient(75% 65% at 50% 40%, #ecd0aa 0%, #cf9f6e 58%, #a8774b 100%);
-  --tile: #e3c49d;
+  --stage: radial-gradient(75% 65% at 50% 40%, #a47b53 0%, #7d5a3d 58%, #54392a 100%);
+  --tile: #6f5038;
   /* Noche: fondo azul marino casi negro y superficies de pizarra azul, cada una más clara que la anterior (todas
      macizas) */
   --bg: #fff6ec;
@@ -57,7 +57,7 @@
   --s4: #f0dfcf;
   --line-rgb: 120 80 50;
   /* Bordes macizos (antes eran blancos semitransparentes) */
-  --bd: #f0dcc7;
+  --bd: #e3cdb4;
   --bd-2: #e3c6a8;
   --text: #2a1d14;
   --text-2: #3f3127;
@@ -153,7 +153,7 @@
   --ok-2: #34d399;
   --tone: var(--a-400);
   --neon-border: linear-gradient(135deg, #ff8a1f, #ffcb2e 45%, #3db4ff);
-  --edge: #f0dcc7;
+  --edge: #e3cdb4;
   --edge-hot: #f26b1d;
   --haze: 0 0 #0000;
   --haze-hot: 0 0 0 1px #f26b1d, 0 18px 40px -18px #a8430a;
@@ -709,24 +709,78 @@ h4 {
    azul se distinguen también con daltonismo; naranja y verde, no). Letra oscura sobre naranja (el blanco sobre
    naranja no llega a 4.5:1). */
 
-/* Principal y comprar: naranja con letra marrón muy oscura */
+/* Principal (ir, entrar, la tienda): amarillo dorado con letra marrón muy oscura */
 .btn-primary,
 .btn-theme,
-.btn-shop,
-.btn-buy {
-  --l: var(--o-300);
-  --c: var(--o-400);
-  --d: var(--o-500);
-  --o: var(--o-900);
-  --fg: #2a1100;
-  text-shadow: 0 1px 0 #ffd2a6;
+.btn-shop {
+  --l: #fde68a;
+  --c: #fcd34d;
+  --d: #f5b316;
+  --o: #5c3405;
+  --fg: #2a1600;
+  text-shadow: 0 1px 0 #fff3c4;
 }
 
 .btn-primary svg,
 .btn-theme svg,
-.btn-shop svg,
-.btn-buy svg {
+.btn-shop svg {
   filter: none;
+}
+
+/* Comprar: VERDE LIMA, un color propio que no usa ningún otro botón (pagar se distingue a la primera de navegar). Letra
+   verde casi negra: más de 7:1 sobre el lima (medido con tools/contrast_audit.py) */
+.btn-buy {
+  --l: #bef264;
+  --c: #a3e635;
+  --d: #84cc16;
+  --o: #1f3a07;
+  --fg: #172b04;
+  text-shadow: 0 1px 0 #e4fbb4;
+}
+
+/* Comprar como regalo: blanco con contorno y letra rosa oscura (secundario, como «Ver»; el lima sigue siendo comprar).
+   #7a1238 sobre blanco: 10:1 */
+.btn-gift {
+  --l: #ffffff;
+  --c: #fff4f8;
+  --d: #fbd3e2;
+  --o: #7a1238;
+  --fg: #7a1238;
+  text-shadow: none;
+}
+
+.btn-gift::before {
+  background: #fff0f6;
+}
+
+.btn-gift svg {
+  width: 20px;
+  height: 20px;
+  filter: none;
+}
+
+/* Botón solo con icono (el del regalo en las tarjetas): cuadrado */
+.btn.btn-icon {
+  flex: none;
+  min-width: 0;
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.btn.btn-icon::before {
+  display: none;
+}
+
+/* El regalo y el de comprar, juntos */
+.buy-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.buy-pair > .btn:not(.btn-icon) {
+  flex: 1 1 auto;
 }
 
 /* Secundario: blanco con contorno y letra oscuros (también comprar con monedas, la alternativa al dinero) */
@@ -868,14 +922,15 @@ h4 {
   padding: 0;
   border: 0;
   background: none;
-  color: #a5caff;
+  color: var(--b-700);
   font-size: 14px;
+  white-space: nowrap;
   font-weight: 700;
   transition: color 0.2s;
 }
 
 .link-btn:hover {
-  color: #c7deff;
+  color: var(--b-900);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -948,7 +1003,7 @@ h4 {
 
 .nav a:hover {
   color: var(--n-900);
-  background: var(--n-100);
+  box-shadow: inset 0 -3px 0 var(--n-300);
 }
 
 .nav a[aria-current='page'] {
@@ -966,11 +1021,7 @@ h4 {
   gap: 10px;
 }
 
-.header-actions .btn-primary {
-  display: none;
-}
-
-.header-actions .btn-buy {
+.header-actions .btn {
   --lift: 3px;
 }
 
@@ -1437,22 +1488,41 @@ h4 {
   font-weight: 600;
 }
 
-/* El emblema, grande y con su sombra; en el escritorio sigue un poco al ratón (app.js pone --px y --py) */
+/* El emblema, grande y con su sombra: flota arriba y abajo y de vez en cuando le cruza un brillo, como una medalla
+   reluciente (el brillo es un degradado recortado con la forma del logo) */
 .portal {
-  --px: 0;
-  --py: 0;
   display: grid;
   place-items: center;
   width: min(62vw, 240px);
   margin-bottom: 6px;
 }
 
+.portal-medal {
+  position: relative;
+  display: block;
+  width: 100%;
+  animation: logo-float 5s ease-in-out infinite;
+}
+
 .portal img {
+  display: block;
   width: 100%;
   height: auto;
   filter: drop-shadow(0 24px 30px #5a2d0d66);
-  transform: translate3d(calc(var(--px) * 12px), calc(var(--py) * 8px), 0) rotate(calc(var(--px) * 2deg));
-  transition: transform 0.6s var(--ease);
+  animation: logo-glint 5s ease-in-out infinite;
+}
+
+.portal-medal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url('/img/logo.webp') center / 100% 100% no-repeat;
+  mask: url('/img/logo.webp') center / 100% 100% no-repeat;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 248 220 / 0.25) 45%, rgb(255 252 235 / 0.75) 50%, rgb(255 248 220 / 0.25) 55%, transparent 60%) no-repeat;
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  animation: logo-shine 5s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .js .portal {
@@ -2638,7 +2708,7 @@ h4 {
 
 /* ---------- Tienda ---------- */
 
-/* La cabecera: el título a la izquierda y, a la derecha (debajo en el móvil), las tres garantías en una placa */
+/* La cabecera de la tienda: el título y la frase (las garantías van debajo de los productos, en .shop-trust) */
 .shop-head {
   padding: calc(var(--header-h) + 32px) 0 0;
 }
@@ -2660,26 +2730,25 @@ h4 {
   margin: 14px 0 0;
 }
 
+/* Las garantías: una fila de cuatro placas debajo de los productos (en la cabecera estorbaban); dos por fila en la
+   tablet y una debajo de otra en el móvil */
 .shop-trust {
   display: grid;
-  margin: 0;
-  padding: 6px 0;
+  gap: 12px;
+  margin: 40px 0 0;
+  padding: 0;
   list-style: none;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--edge);
-  background: var(--surface);
-  box-shadow: var(--card-shadow);
 }
 
 .shop-trust li {
   display: flex;
   gap: 14px;
-  align-items: center;
-  padding: 12px 18px;
-}
-
-.shop-trust li + li {
-  border-top: 1px solid var(--bd);
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 2px solid var(--n-300);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 0 var(--n-300);
 }
 
 .shop-trust .icon {
@@ -2710,33 +2779,19 @@ h4 {
   line-height: 1.45;
 }
 
-/* En el móvil y la tablet, las garantías en una fila compacta (icono y título) para que las categorías se vean
-   enseguida */
-@media (max-width: 959px) {
+.shop-trust span span {
+  display: inline;
+}
+
+@media (min-width: 640px) {
   .shop-trust {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .shop-trust li {
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 6px;
-    text-align: center;
-  }
-
-  .shop-trust li + li {
-    border-top: 0;
-    border-left: 1px solid var(--bd);
-  }
-
-  .shop-trust b {
-    font-size: 13.5px;
-    line-height: 1.25;
-  }
-
-  .shop-trust span:not(.icon) {
-    display: none;
+@media (min-width: 1100px) {
+  .shop-trust {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -2805,7 +2860,7 @@ h4 {
 .shop-tabs {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 28px;
 }
 
@@ -2822,12 +2877,12 @@ h4 {
   gap: 8px;
   min-width: 0;
   padding: 6px 6px 10px;
-  border: 1px solid var(--bd-2);
+  border: 2px solid var(--t-lo);
   border-radius: 14px;
-  background: var(--s1);
-  color: var(--text);
+  background: color-mix(in srgb, var(--t) 16%, #fff);
+  color: var(--t-ink);
   text-align: center;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 4px 0 var(--t-lo);
   transition:
     transform 0.22s var(--ease),
     border-color 0.18s,
@@ -2887,8 +2942,7 @@ h4 {
 }
 
 .tab:hover {
-  border-color: var(--t);
-  background: var(--s2);
+  background: color-mix(in srgb, var(--t) 30%, #fff);
 }
 
 .tab:active {
@@ -2901,13 +2955,15 @@ h4 {
 }
 
 /* La elegida: llena de su color */
+/* La elegida: llena de su color, con el borde de su tono casi negro y un aro de su color alrededor */
 .tab[aria-selected='true'] {
-  border-color: var(--t-hi);
+  border-color: var(--t-ink);
   background: var(--t);
   color: var(--t-ink);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.4),
-    0 4px 0 var(--t-lo),
+    0 4px 0 var(--t-ink),
+    0 0 0 4px color-mix(in srgb, var(--t) 45%, transparent),
     0 18px 34px -16px var(--t);
 }
 
@@ -2928,7 +2984,7 @@ h4 {
 
 @media (min-width: 640px) {
   .shop-tabs {
-    gap: 12px;
+    gap: 14px;
   }
 
   .tab-art {
@@ -2944,7 +3000,7 @@ h4 {
 @media (min-width: 1000px) {
   .shop-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
+    gap: 18px;
   }
 
   .tab,
@@ -3208,16 +3264,15 @@ h4 {
 }
 
 /* La escalera de rangos, de menor a mayor; en el móvil se desliza de lado */
+/* Cada rango es una tarjeta con borde que se ve (2 px, casi 3:1 con el fondo); el elegido se llena del color del
+   rango, con letra oscura y su canto, como los botones */
 .rk-ladder {
   position: relative;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 92px;
-  gap: 6px;
-  padding: 6px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background: var(--s1);
+  grid-auto-columns: 96px;
+  gap: 8px;
+  padding: 4px 2px 8px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
@@ -3233,62 +3288,61 @@ h4 {
   justify-items: center;
   gap: 6px;
   padding: 12px 4px 10px;
-  border: 1px solid transparent;
-  border-radius: 13px;
-  background: transparent;
-  color: var(--text-2);
+  border: 2px solid var(--n-400);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--n-900);
   cursor: pointer;
   scroll-snap-align: center;
+  box-shadow: 0 3px 0 var(--n-400);
   transition:
-    background-color 0.3s,
-    border-color 0.3s,
-    transform 0.3s var(--ease);
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s var(--ease);
 }
 
 .rk-step:hover {
   transform: translateY(-2px);
-  background: var(--s2);
+  border-color: color-mix(in srgb, var(--rk) 60%, #1f1408);
 }
 
 .rk-step[aria-pressed='true'] {
-  border-color: var(--rk);
-  background: color-mix(in srgb, var(--rk) 18%, #fff);
+  border-color: color-mix(in srgb, var(--rk) 35%, #000);
+  background: var(--rk);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--rk) 35%, #000);
 }
 
 .rk-gem {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 3px;
   background: linear-gradient(135deg, var(--rk2, var(--t1)), var(--rk, var(--t2)));
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rk) 35%, #000);
   transform: rotate(45deg);
-  transition:
-    transform 0.4s var(--spring),
-    box-shadow 0.4s;
+  transition: transform 0.3s var(--spring);
 }
 
 .rk-step[aria-pressed='true'] .rk-gem {
-  transform: rotate(45deg) scale(1.3);
-  box-shadow:
-    0 0 0 3px rgba(0, 0, 0, 0.35),
-    0 0 18px var(--rk);
+  transform: rotate(45deg) scale(1.2);
+  background: #fff;
 }
 
 .rk-step-name {
-  font: 800 12px/1.1 var(--font-body);
-  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
+  font: 800 13px/1.1 var(--font-body);
+  color: color-mix(in srgb, var(--rk) 40%, #1f1408);
   white-space: nowrap;
 }
 
 .rk-step-price {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--n-700);
 }
 
+.rk-step[aria-pressed='true'] .rk-step-name,
 .rk-step[aria-pressed='true'] .rk-step-price {
-  color: var(--text);
+  color: #1a1208;
 }
 
 .rk-show {
@@ -3556,11 +3610,6 @@ h4 {
   animation-delay: 0.08s;
 }
 
-.rk-cmd-list li.is-new {
-  border-color: var(--rk);
-  background: color-mix(in srgb, var(--rk) 14%, #fff);
-}
-
 .rk-cmd-list code {
   flex: none;
   min-width: 86px;
@@ -3593,18 +3642,6 @@ h4 {
   flex: 1;
   min-width: 0;
   color: var(--text);
-}
-
-.rk-new {
-  flex: none;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--rk);
-  color: #0b0d10;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 @media (min-width: 760px) {
@@ -3722,13 +3759,14 @@ h4 {
   font: 800 30px/1.1 var(--font-display);
 }
 
-/* Comprar el rango: el botón cartoon en el color del rango */
+/* Comprar el rango: el mismo lima que todos los botones de comprar */
 .btn-rank {
-  --l: var(--rk2);
-  --c: var(--rk);
-  --d: color-mix(in srgb, var(--rk) 78%, #000);
-  --o: color-mix(in srgb, var(--rk) 30%, #000);
-  --fg: #1a1208;
+  --l: #bef264;
+  --c: #a3e635;
+  --d: #84cc16;
+  --o: #1f3a07;
+  --fg: #172b04;
+  text-shadow: 0 1px 0 #e4fbb4;
 }
 
 /* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
@@ -3964,6 +4002,7 @@ h4 {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+  border: 2px solid var(--n-300);
   transition:
     transform 0.3s var(--ease),
     border-color 0.2s,
@@ -4052,11 +4091,11 @@ h4 {
   padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid var(--t1, var(--a-300));
-  background: var(--s0);
+  background: var(--s1);
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
-  color: #fff;
+  color: var(--text);
   opacity: 0;
   transform: translate(-50%, 6px);
   transition:
@@ -4064,8 +4103,6 @@ h4 {
     transform 0.3s var(--ease);
 }
 
-.crate-tile:hover .try-on,
-.crate-tile-art:focus-visible .try-on,
 .product:hover .try-on,
 .thumb-try:focus-visible .try-on {
   opacity: 1;
@@ -4099,7 +4136,19 @@ h4 {
 }
 
 .crate-tile .card-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
   padding-top: 12px;
+}
+
+.crate-tile .card-foot .buy-pair {
+  display: contents;
+}
+
+.crate-tile .card-foot .btn:not(.btn-icon) {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 /* ---------- Ruleta ---------- */
@@ -5370,6 +5419,10 @@ h4 {
   min-height: 42px;
 }
 
+.sk-buy-row .btn-icon {
+  min-width: 0;
+}
+
 .sk-buy-note {
   margin: 8px 0 0;
   color: var(--cx-tx-3);
@@ -5471,9 +5524,22 @@ h4 {
     padding: 12px;
   }
 
-  .sk-buy-row .btn {
+  .sk-buy-row .btn,
+  .sk-buy-row .buy-pair {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .sk-buy-row .buy-pair {
+    flex-wrap: nowrap;
+  }
+
+  .sk-buy-row .buy-pair .btn:not(.btn-icon) {
+    width: auto;
+  }
+
+  .sk-buy-row .buy-pair .btn-icon {
+    width: 42px;
   }
 }
 
@@ -5884,7 +5950,7 @@ h4 {
 .field input:focus {
   outline: none;
   border-color: var(--a-400);
-  background: #0d121c;
+  background: #fff;
   box-shadow: 0 0 0 4px rgb(var(--a-rgb) / 0.15);
 }
 
@@ -6047,7 +6113,7 @@ h4 {
 }
 
 .terms-check a {
-  color: var(--a-200);
+  color: var(--a-300);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -6098,9 +6164,9 @@ h4 {
 .player-card.invalid,
 .player-card.error,
 .player-card.blocked {
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.06);
-  color: #f3c1c1;
+  border-color: #f2b8b5;
+  background: #fff1f0;
+  color: #9b1c1c;
 }
 
 .player-name {
@@ -6114,7 +6180,7 @@ h4 {
 
 .player-ok {
   display: block;
-  color: var(--a-400);
+  color: #166534;
 }
 
 .player-ok .on {
@@ -6124,11 +6190,11 @@ h4 {
 .player-note {
   display: block;
   margin-top: 4px;
-  color: var(--gold);
+  color: #7a4a00;
 }
 
 .player-note.bad {
-  color: var(--red);
+  color: #9b1c1c;
 }
 
 .rank-pill {
@@ -7266,6 +7332,43 @@ h4 {
   }
 }
 
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-22px);
+  }
+}
+
+/* El brillo cruza el logo en la subida y el logo se ilumina un poco a la vez */
+@keyframes logo-shine {
+  0%,
+  30% {
+    background-position: 130% 0;
+  }
+
+  60%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+
+@keyframes logo-glint {
+  0%,
+  30%,
+  65%,
+  100% {
+    filter: drop-shadow(0 24px 30px #5a2d0d66);
+  }
+
+  45% {
+    filter: drop-shadow(0 24px 30px #5a2d0d66) brightness(1.12) saturate(1.08);
+  }
+}
+
 @keyframes logo-in {
   from {
     opacity: 0;
@@ -7465,22 +7568,12 @@ h4 {
     font-size: 12.5px;
   }
 
-  .crate-grid .try-on {
-    display: none;
-  }
 
   .pieces {
     font-size: 11px;
   }
 
-  .crate-tile .card-foot {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .crate-tile .card-foot .btn {
-    width: 100%;
+  .crate-tile .card-foot .btn:not(.btn-icon) {
     padding: 0 6px;
   }
 
@@ -7727,8 +7820,7 @@ h4 {
     margin-left: 28px;
   }
 
-  .ip-chip,
-  .header-actions .btn-primary {
+  .ip-chip {
     display: inline-flex;
   }
 
@@ -7769,7 +7861,7 @@ h4 {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     align-items: center;
     justify-items: stretch;
-    gap: 40px;
+    gap: 56px;
     text-align: left;
   }
 
@@ -7777,14 +7869,15 @@ h4 {
     align-items: flex-start;
   }
 
+  /* «Fantásticas» mide 7.5 em: con este tamaño cabe en su columna con aire y no se mete debajo del logo */
   .hero-title {
-    font-size: clamp(64px, 6.6vw, 92px);
+    font-size: clamp(56px, 5.9vw, 78px);
   }
 
   .portal {
     order: 2;
     justify-self: center;
-    width: min(100%, 440px);
+    width: min(100%, 400px);
   }
 
   .hero-links {
@@ -7793,11 +7886,6 @@ h4 {
 
   .page-hero {
     padding-top: calc(var(--header-h) + 48px);
-  }
-
-  .shop-head-inner {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
-    gap: 48px;
   }
 
   .feature-board {
@@ -7914,7 +8002,6 @@ h4 {
     transform: none;
   }
 
-  .crate-grid .try-on,
   .product .try-on {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -7940,6 +8027,15 @@ h4 {
   .ready .footer {
     animation-delay: 0.12s !important;
   }
+
+  /* El logo sigue flotando y brillando (lo pidió el dueño; Windows con «Efectos de animación» apagados activa este
+     modo y el logo se quedaba quieto) */
+  .portal-medal,
+  .portal img,
+  .portal-medal::after {
+    animation-duration: 5s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
 
 /* ---------- Miniaturas de piezas sobre caramelo (las piezas blancas se ven) ---------- */
@@ -7961,4 +8057,74 @@ h4 {
 .cos-art,
 .cv-item img {
   padding: 4px;
+}
+
+/* ---------- Comprar como regalo: en la ventana de pago, «Para mí» o «Como regalo» ---------- */
+.buy-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding: 5px;
+  border: 2px solid var(--n-300);
+  border-radius: 14px;
+  background: var(--n-50);
+}
+
+.buy-mode button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--n-700);
+  font: 800 15px/1 var(--font-body);
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.buy-mode button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.buy-mode button:hover {
+  background: #fff;
+}
+
+.buy-mode button[aria-checked='true'] {
+  border-color: var(--n-700);
+  background: #fff;
+  color: var(--n-900);
+  box-shadow: 0 3px 0 var(--n-700);
+}
+
+.buy-mode button[data-mode='gift'][aria-checked='true'] {
+  border-color: #7a1238;
+  color: #7a1238;
+  box-shadow: 0 3px 0 #7a1238;
+}
+
+.buy-mode button:focus-visible {
+  outline: 2px solid var(--a-300);
+  outline-offset: 2px;
+}
+
+.gift-hint {
+  margin: 6px 0 0;
+}
+
+.order-gift {
+  width: 15px;
+  height: 15px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: #7a1238;
 }

@@ -23,6 +23,22 @@
     $('message').textContent = message;
   }
 
+  function receipt(order) {
+    const link = $('receipt-pdf');
+    link.href = `/api/order/${encodeURIComponent(order.id || orderId)}/receipt`;
+    link.download = `recibo-${order.id || orderId}.pdf`;
+    link.hidden = false;
+    link.nextElementSibling.classList.replace('btn-primary', 'btn-ghost');
+    const key = `tf-recibo-${order.id || orderId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+    } catch {
+      // Sin almacenamiento: se descarga igualmente
+    }
+    link.click();
+  }
+
   if (!orderId) {
     show('bad', 'Sin pedido', 'Pedido no encontrado', 'No hemos encontrado ningún pedido asociado a esta página.');
     return;
@@ -47,7 +63,7 @@
       : order.amount === 0
         ? 'Gratis'
         : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
-    $('d-user').textContent = order.username;
+    $('d-user').textContent = order.gift ? `${order.username} · regalo de ${order.gift.from}` : order.username;
     $('d-product').textContent = (order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product) + (order.upgradeFrom ? ` (mejora desde ${order.upgradeFrom})` : '');
     $('d-total').textContent = total;
     $('d-delivery').textContent = deliveryText[order.status] || order.status;
@@ -127,8 +143,16 @@
         : `Tu recompensa llegará a ${order.username} en cuanto entre al servidor (si ya está dentro, en unos segundos).`);
       return;
     }
+    // Pagado con dinero: el recibo en PDF (además del de Stripe o PayPal) se descarga solo una vez y queda el botón
+    if (['queued', 'delivered', 'delivery_failed'].includes(order.status) && order.amount > 0) receipt(order);
     if (PAID.includes(order.status) && order.kind === 'skills') {
       show('ok', 'Pagado', '¡Gracias por tu compra!', `Tu pago se ha completado. ${order.product} ya es de ${order.username} para siempre y es su clase activa: la tendrá en el servidor en unos segundos si está conectado o al entrar. La clase activa se cambia en la tienda, en Skills.`);
+      return;
+    }
+    if (PAID.includes(order.status) && order.gift) {
+      show('ok', 'Pagado', '¡Regalo enviado!', order.status === 'delivered'
+        ? `${order.username} ya tiene tu regalo en el servidor, con un aviso de que es tuyo.`
+        : `Tu pago se ha completado. ${order.username} recibirá tu regalo en cuanto entre al servidor (si ya está dentro, en unos segundos), con un aviso de que es tuyo${order.gift.message ? ' y tu mensaje' : ''}.`);
       return;
     }
     if (PAID.includes(order.status)) {

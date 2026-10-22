@@ -10,6 +10,8 @@
     '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.7zM8.3 15.3c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>';
   const ICON_LOCK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+  const ICON_GIFT =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>';
   const ICON_ARROW =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
@@ -46,29 +48,6 @@
       }
     });
     $$('[data-count]').forEach((el) => io.observe(el));
-  }
-
-  // --- Portada: el emblema del portal sigue al ratón (solo con ratón; --px y --py van de -1 a 1, styles.css) ---
-  const portal = $('[data-portal]');
-  if (portal && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    let frame = 0;
-    let last = null;
-    document.addEventListener(
-      'pointermove',
-      (e) => {
-        last = e;
-        if (frame) return;
-        frame = requestAnimationFrame(() => {
-          frame = 0;
-          const r = portal.getBoundingClientRect();
-          if (r.bottom < 0) return;
-          const k = (v) => Math.max(-1, Math.min(1, v)).toFixed(3);
-          portal.style.setProperty('--px', k((last.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
-          portal.style.setProperty('--py', k((last.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
-        });
-      },
-      { passive: true },
-    );
   }
 
   // --- Ayuda: buscador de las preguntas (busca en la pregunta y en la respuesta; sin tildes ni mayúsculas) ---
@@ -374,6 +353,11 @@
     }
   }
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
+  // Comprar como regalo: el botón del regalo (solo el icono en las tarjetas; con texto donde hay sitio)
+  const giftAttrs = (p) => `data-gift="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
+  const giftIcon = (p) =>
+    `<button class="btn btn-gift btn-sm btn-icon" type="button" ${giftAttrs(p)} aria-label="Comprar ${escapeHtml(p.name)} como regalo" title="Comprar como regalo">${ICON_GIFT}</button>`;
+  const giftBtn = (p, cls = '') => `<button class="btn btn-gift ${cls}" type="button" ${giftAttrs(p)}>${ICON_GIFT}<span>Regalar</span></button>`;
   const isPixel = (src) => /\/ranks\/|coins-|\/gifts\/|\/skills\/.*\.png$/.test(src || '');
   // Las imágenes aparecen con un fundido cuando terminan de cargar (clase «ok», ver .fx en styles.css).
   const img = (src, alt, cls = '', extra = '') =>
@@ -429,7 +413,7 @@
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
+            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button></span>`}
           </div>
         </div>
       </article>`;
@@ -441,7 +425,6 @@
       <article class="panel crate-tile" data-crate="${escapeHtml(p.id)}"${themeAttr(p)}>
         <button type="button" class="crate-tile-art" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver ${escapeHtml(p.name)} y probártelo">
           ${glow(i)}${img(p.image, '')}
-          <span class="try-on">Pruébatelo en 3D</span>
         </button>
         <div class="body">
           <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
@@ -449,7 +432,7 @@
           <span class="pieces">${escapeHtml(piecesText(p))}</span>
           <div class="card-foot">
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button>
+            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button></span>
           </div>
         </div>
       </article>`;
@@ -490,9 +473,9 @@
     if (!q) return '';
     if (q.owned) {
       const mine = me.user.rank.id === p.id;
-      return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button>`;
+      return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><span class="buy-pair">${giftIcon(p)}<button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button></span>`;
     }
-    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
+    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button></span>`;
   }
 
   function rerenderRanks() {
@@ -1002,7 +985,7 @@
         <div class="sk-buy-row is-money">
           <span class="sk-buy-label">Con dinero</span>
           <span class="sk-buy-price">${formatPrice(c.price)}</span>
-          <button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button>
+          <span class="buy-pair">${product ? giftIcon(product) : ''}<button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button></span>
         </div>
         <div class="sk-buy-row is-coins">
           <span class="sk-buy-label">Con monedas</span>
@@ -1403,9 +1386,9 @@
     const q = ownedQuote(p);
     const mine = q?.owned && me.user?.rank?.id === p.id;
     const buy = q?.owned
-      ? `<div class="rk-price"><span class="rk-price-main">${mine ? 'Tu rango' : 'Incluido'}</span></div><button class="btn btn-ghost btn-lg" type="button" disabled>${mine ? ICON_CHECK + ' Ya lo tienes' : 'Ya tienes uno mayor'}</button>`
+      ? `<div class="rk-price"><span class="rk-price-main">${mine ? 'Tu rango' : 'Incluido'}</span></div><span class="buy-pair"><button class="btn btn-ghost btn-lg" type="button" disabled>${mine ? ICON_CHECK + ' Ya lo tienes' : 'Ya tienes uno mayor'}</button>${giftBtn(p, 'btn-lg')}</span>`
       : `<div class="rk-price">${q ? `<small>Mejora desde tu rango · antes ${formatPrice(p.price)}</small>` : '<small>Pago único · para siempre</small>'}<span class="rk-price-main">${formatPrice(q ? q.unit : p.price)}</span></div>
-         <button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>`;
+         <span class="buy-pair"><button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>${giftBtn(p, 'btn-lg')}</span>`;
     $('#rk-info').innerHTML = `
       <div class="rk-anim">
         <span class="rk-tier">Rango ${n} de ${all.length}${n === all.length ? ' · el más alto' : ''}</span>
@@ -1426,21 +1409,19 @@
         </div>
         <div class="rk-buy">${buy}</div>
       </div>`;
-    // Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos (lo que no tenía el anterior, marcado)
-    const prev = all[n - 2];
-    const prevName = prev ? prev.rank?.prefix || prev.name.replace(/^Rango\s+/i, '') : '';
+    // Debajo del escaparate: lo que trae el rango en el servidor, cada comando con lo que es
     const cmds = $('#rk-cmds');
     cmds.setAttribute('style', rankVars(p));
     cmds.innerHTML = `
       <div class="rk-cmds-head">
         <h3>Lo que trae <span class="rk-cmds-name">${escapeHtml(prefix)}</span> en el servidor</h3>
-        <p>${prev ? `Lo marcado como <b>nuevo</b> no lo tiene ${escapeHtml(prevName)}.` : 'Tu primer rango del reino.'} Se activa solo al entrar al servidor.</p>
+        <p>Se activa solo al entrar al servidor.</p>
       </div>
       <ul class="rk-cmd-list">${(p.serverPerks || [])
         .map(
-          (x) => `<li class="${x.new && prev ? 'is-new' : ''}">
+          (x) => `<li>
             ${x.cmd ? `<code>${escapeHtml(x.cmd)}</code>` : `<span class="rk-cmd-ico">${ICON_CHECK}</span>`}
-            <span class="rk-cmd-text">${escapeHtml(x.text)}</span>${x.new && prev ? '<b class="rk-new">Nuevo</b>' : ''}
+            <span class="rk-cmd-text">${escapeHtml(x.text)}</span>
           </li>`,
         )
         .join('')}</ul>`;
@@ -1612,7 +1593,7 @@
     box.innerHTML = `
       <span class="cos-buy-art">${img(p.image, '', '', ' width="52" height="52"')}</span>
       <span class="cos-buy-text"><small>${escapeHtml(p.theme)} · ${SLOT_LABEL[p.slot] || ''}</small><b>${escapeHtml(p.name)}</b></span>
-      <button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button>`;
+      <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button></span>`;
   }
 
   async function drawCosmetics() {
@@ -1673,7 +1654,7 @@
         <p class="cv-bound">${ICON_LOCK}<span>Permanente e irrompible, vinculado a tu cuenta: solo tú puedes usarlo. Los cosméticos (alas, sombreros, mochilas) sí se pueden intercambiar.</span></p>
         <div class="cv-buy">
           <span class="price"><small>Set completo</small><span id="cv-price"></span></span>
-          <button class="btn btn-buy btn-lg" type="button" id="cv-buy">Comprar crate</button>
+          <span class="buy-pair"><button class="btn btn-gift btn-lg btn-icon" type="button" id="cv-gift" aria-label="Comprar como regalo" title="Comprar como regalo">${ICON_GIFT}</button><button class="btn btn-buy btn-lg" type="button" id="cv-buy">Comprar crate</button></span>
         </div>
       </div>
     </div>
@@ -1707,6 +1688,10 @@
         dialog.close();
         openCheckout(cv.crate.id);
       });
+      $('#cv-gift', dialog).addEventListener('click', () => {
+        dialog.close();
+        openCheckout(cv.crate.id, { gift: true });
+      });
       let t = null;
       $('#cv-skin', dialog).addEventListener('input', (e) => {
         clearTimeout(t);
@@ -1730,7 +1715,7 @@
     $('#cv-price').textContent = formatPrice(p.price);
     $('#cv-price').previousElementSibling.textContent = isRank ? 'Rango con su set' : 'Set completo';
     $('#cv-buy').textContent = isRank ? 'Comprar rango' : 'Comprar crate';
-    $('#cv-buy').disabled = !config.paymentsEnabled;
+    $('#cv-buy').disabled = $('#cv-gift').disabled = !config.paymentsEnabled;
     $('#cv-skin').value = storageGet('tf-skin') || me.user?.name || storageGet('tf-username') || '';
     $('#cv-status').hidden = false;
     $('#cv-status').textContent = 'Cargando el set…';
@@ -1841,10 +1826,20 @@
       </div>
       <p class="dialog-desc" id="dialog-desc"></p>
 
+      <div class="buy-mode" role="radiogroup" aria-label="¿Para quién es?">
+        <button type="button" role="radio" data-mode="me" aria-checked="true">Para mí</button>
+        <button type="button" role="radio" data-mode="gift" aria-checked="false">${ICON_GIFT}Como regalo</button>
+      </div>
+
       <div class="field">
-        <label for="username">Tu nombre de Minecraft</label>
+        <label for="username" id="username-label">Tu nombre de Minecraft</label>
         <input id="username" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Steve_123" aria-describedby="player-card">
         <div class="player-card" id="player-card" aria-live="polite" hidden></div>
+      </div>
+      <div class="field" id="gift-field" hidden>
+        <label for="gift-message">Mensaje del regalo <span class="muted">(opcional)</span></label>
+        <input id="gift-message" maxlength="100" autocomplete="off" placeholder="¡Feliz cumpleaños! Nos vemos en el servidor">
+        <p class="muted small gift-hint">Le llega en el chat del juego con tu nombre al recibir el regalo.</p>
       </div>
       <div class="field" id="quantity-field">
         <label for="quantity" id="quantity-label">Cantidad</label>
@@ -1875,7 +1870,7 @@
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
       </div>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
-      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra.
+      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;
@@ -1891,10 +1886,13 @@
 
   // Jugador comprobado contra el servidor: { name, uuid, quote, ... } o null.
   let player = null;
+  // Comprar como regalo: para otro jugador del servidor, con la cuenta de quien paga
+  let giftMode = false;
   let lookupSeq = 0;
   let lookupTimer = null;
 
-  const unitPrice = () => (player?.quote?.unit ?? ownedQuote(selected)?.unit ?? selected.price);
+  const unitPrice = () => (player?.quote?.unit ?? (giftMode ? null : ownedQuote(selected)?.unit) ?? selected.price);
+  const isSelf = () => Boolean(giftMode && player && me.user && player.uuid?.toLowerCase() === me.user.uuid?.toLowerCase());
 
   function updateTotal() {
     const qty = Math.max(1, Number.parseInt(qtyInput.value, 10) || 1);
@@ -1904,7 +1902,7 @@
   }
 
   function setPayable() {
-    const blocked = Boolean(player?.quote?.blocked);
+    const blocked = Boolean(player?.quote?.blocked) || isSelf() || (giftMode && !me.user);
     const off = !player || blocked || paying || !$('#pay-terms').checked;
     $('#pay-btn').disabled = off;
     $('#pay-paypal').disabled = off;
@@ -1926,9 +1924,30 @@
   document.addEventListener('click', (e) => {
     const id = e.target.closest('[data-buy]')?.dataset.buy;
     if (id) openCheckout(id);
+    const gift = e.target.closest('[data-gift]')?.dataset.gift;
+    if (gift) openCheckout(gift, { gift: true });
   });
 
-  function openCheckout(id) {
+  // Para mí / como regalo: cambia el nombre que se pide (el tuyo o el de a quién se lo regalas) y el mensaje
+  function setGiftMode(on) {
+    giftMode = on;
+    $$('[data-mode]', dialog).forEach((b) => b.setAttribute('aria-checked', String((b.dataset.mode === 'gift') === on)));
+    dialog.classList.toggle('is-gift', on);
+    $('#username-label').textContent = on ? '¿A quién se lo regalas? (su nombre de Minecraft)' : 'Tu nombre de Minecraft';
+    $('#gift-field').hidden = !on;
+    $('#dialog-cat').textContent = `${on ? 'Regalo · ' : ''}${selected.category === 'crates' ? 'Crate · set completo' : CATEGORY_LABEL[selected.category] || selected.category}`;
+    const mine = me.user?.name || storageGet('tf-username');
+    const typed = $('#username').value.trim();
+    if (on && typed && typed.toLowerCase() === me.user?.name?.toLowerCase()) $('#username').value = '';
+    if (!on && !typed) $('#username').value = mine || '';
+    player = null;
+    renderPlayer();
+    updateTotal();
+    renderDiscordBox();
+    lookupPlayer();
+  }
+
+  function openCheckout(id, { gift = false } = {}) {
     selected = products.find((p) => p.id === id);
     if (!selected || !config.paymentsEnabled || !dialog) return;
 
@@ -1955,14 +1974,12 @@
     $('#pay-btn').classList.remove('is-loading');
     $('#pay-paypal').classList.remove('is-loading');
     renderPayMethods();
-    // Con la cuenta vinculada, el jugador ya se sabe.
-    $('#username').value = me.user?.name || storageGet('tf-username');
-    player = null;
-    renderPlayer();
-    updateTotal();
-    renderDiscordBox();
+    // Con la cuenta vinculada, el jugador ya se sabe (en un regalo se escribe el de quien lo recibe).
+    $('#username').value = gift ? '' : me.user?.name || storageGet('tf-username');
+    $('#gift-message').value = '';
     dialog.showModal();
-    lookupPlayer();
+    setGiftMode(gift);
+    if (gift) $('#username').focus();
   }
 
   // --- Comprobar el jugador: la tienda solo vende a nombres que han entrado al servidor ---
@@ -2007,6 +2024,9 @@
       card.innerHTML = `<span><b>${escapeHtml(name)}</b> nunca ha entrado a ${escapeHtml(config.serverName || 'el servidor')}. Revisa el nombre o entra una vez al servidor y vuelve aquí.</span>`;
     } else if (state === 'error') {
       card.innerHTML = '<span>No pudimos comprobar el nombre. Revisa tu conexión.</span>';
+    } else if (state === 'found' && isSelf()) {
+      card.className = 'player-card missing';
+      card.innerHTML = '<span>Ese eres tú. Para comprártelo a ti, elige «Para mí».</span>';
     } else if (state === 'found') {
       const p = player;
       const rank = p.rank
@@ -2020,7 +2040,7 @@
         <img src="${escapeHtml(p.head)}" alt="" width="40" height="40" class="pixel-img">
         <div>
           <div class="player-name"><b>${escapeHtml(p.name)}</b>${rank}</div>
-          <span class="player-ok">✓ Jugador verificado · ${p.online ? '<span class="on">conectado ahora</span>' : 'se le entrega al entrar'}</span>
+          <span class="player-ok">✓ Jugador verificado${giftMode ? ' · recibirá tu regalo' : ''} · ${p.online ? '<span class="on">conectado ahora</span>' : 'se le entrega al entrar'}</span>
           ${blocked}${upgrade}
         </div>`;
       if (p.quote?.blocked) card.classList.add('blocked');
@@ -2073,7 +2093,15 @@
     const user = me.user;
     $('#discord-linked').hidden = !user;
     $('#discord-unlinked').hidden = Boolean(user);
-    if (user) {
+    if (user && giftMode) {
+      $('#discord-name').textContent = user.name;
+      $('#discord-avatar').src = user.head;
+      $('#discord-linked-hint').textContent = 'El regalo va de tu parte: le llega con tu nombre.';
+    } else if (giftMode) {
+      $('#discord-login').href = `/cuenta?return=${encodeURIComponent(`${location.pathname}?buy=${selected.id}&gift=1`)}`;
+      $('#discord-login').textContent = 'Entra para regalar';
+      $('#discord-unlinked-hint').textContent = 'Para regalar necesitas tu cuenta: así sabrá quién se lo regala.';
+    } else if (user) {
       $('#discord-name').textContent = user.name;
       $('#discord-avatar').src = user.head;
       $('#discord-linked-hint').textContent = user.discord
@@ -2083,6 +2111,7 @@
         : 'Conecta tu Discord en «Mi cuenta» para recibir el rol.';
     } else {
       $('#discord-login').href = `/cuenta?return=${encodeURIComponent(`${location.pathname}?buy=${selected.id}`)}`;
+      $('#discord-login').textContent = 'Entrar o crear cuenta';
       $('#discord-unlinked-hint').textContent = 'Opcional: con tu cuenta se rellena tu nombre, ves tus compras y recibes el rol de Discord.';
     }
   }
@@ -2106,7 +2135,7 @@
     }
     history.replaceState(null, '', `${location.pathname}${hash}`);
     if (cancelled) toast('Pago cancelado. No se ha realizado ningún cargo.');
-    if (buy) openCheckout(buy);
+    if (buy) openCheckout(buy, { gift: params.get('gift') === '1' });
     else if (result === 'ok') toast('Sesión iniciada');
   }
 
@@ -2116,6 +2145,7 @@
 
   if (sells) {
     $('#username').addEventListener('input', scheduleLookup);
+    $$('[data-mode]', dialog).forEach((b) => b.addEventListener('click', () => setGiftMode(b.dataset.mode === 'gift')));
     qtyInput.addEventListener('input', updateTotal);
     $('#dialog-close').addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', (e) => {
@@ -2130,7 +2160,8 @@
 
   // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe o de PayPal.
   async function pay(method) {
-    if (paying || !player || player.quote?.blocked) return;
+    if (paying || !player || player.quote?.blocked || isSelf()) return;
+    if (giftMode && !me.user) return showError('Entra con tu cuenta para regalar.');
     if (!$('#pay-terms').checked) return showError('Marca la casilla para aceptar los Términos y el Aviso de privacidad.');
     const quantity = Number.parseInt(qtyInput.value, 10) || 1;
     const max = selected.maxQuantity || 10;
@@ -2146,11 +2177,19 @@
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selected.id, username: player.name, uuid: player.uuid, quantity, acceptTerms: true, method }),
+        body: JSON.stringify({
+          productId: selected.id,
+          username: player.name,
+          uuid: player.uuid,
+          quantity,
+          acceptTerms: true,
+          method,
+          ...(giftMode ? { gift: true, message: $('#gift-message').value.trim() } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo iniciar el pago.');
-      storageSet('tf-username', player.name);
+      if (!giftMode) storageSet('tf-username', player.name);
       window.location.href = data.url;
     } catch (err) {
       paying = false;
@@ -2397,7 +2436,7 @@
         <div id="wd-body"><p class="muted">Cargando…</p></div>
       </section>
       <section class="panel account-card account-orders">
-        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>
+        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
 
@@ -2473,7 +2512,7 @@
     }
     if (!wd.view.owned.length) {
       box.innerHTML = `<div class="wd-empty"><p class="muted">Aquí aparecen las armaduras, cascos y alas de tus crates y tu rango, y
-        los cosméticos de cabeza y espalda.</p><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>`;
+        los cosméticos de cabeza y espalda.</p><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>`;
       return;
     }
     wd.slot ||= wd.view.slots.find((s) => wd.view.owned.some((x) => x.slot === s));
@@ -2620,7 +2659,7 @@
             ${o.image ? img(o.image, '', 'order-img') : '<span class="order-img"></span>'}
             <div class="order-main">
               <b>${escapeHtml(o.product)}${o.quantity > 1 ? ` ×${o.quantity}` : ''}</b>
-              <span class="muted small">${escapeHtml(o.username)} · ${escapeHtml(date)} · ${escapeHtml(o.id)}${o.upgradeFrom ? ` · mejora desde ${escapeHtml(o.upgradeFrom)}` : ''}</span>
+              <span class="muted small">${o.gift ? `${ICON_GIFT.replace('<svg ', '<svg class="order-gift" ')}Regalo de ${escapeHtml(o.gift.from)} para ${escapeHtml(o.username)}` : escapeHtml(o.username)} · ${escapeHtml(date)} · ${escapeHtml(o.id)}${o.upgradeFrom ? ` · mejora desde ${escapeHtml(o.upgradeFrom)}` : ''}</span>
             </div>
             <div class="order-side">
               <b>${orderTotal(o)}</b>

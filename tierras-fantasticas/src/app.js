@@ -11,6 +11,9 @@ import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
 import { hashPassword, verifyPassword } from './password.js';
+import { createMailer, mailHtml, fieldsText } from './mail.js';
+import { receiptPdf, receiptRows, money, REFUND_POLICY } from './receipt.js';
+import { toBase64 } from './pdf.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const ORDER_ID_RE = /^[A-Z0-9]{5,40}$/;
@@ -31,6 +34,34 @@ const BRIDGE_TEMPLATES = 2;
 
 // Versión vigente de los Términos y del Aviso de privacidad (la fecha de config/legal.json, la misma que muestran).
 const TERMS_VERSION = legal.version;
+// Reembolsos: plazo para cancelar (días hábiles desde la entrega) y la penalización de un reembolso injustificado
+// (una disputa o contracargo pasado el plazo): baneo de IP del servidor (EssentialsX, tempbanip) de 6 días.
+const REFUND_DAYS = 5;
+const PENALTY = '6d';
+const CONTEXT_LABEL = { cuenta: 'al crear la cuenta', compra: 'al pagar', regalo: 'al pagar un regalo', actualizacion: 'al aceptar la versión nueva' };
+
+// Mensaje de un regalo: una línea corta, sin códigos de color (§) ni caracteres de control (va en un tellraw)
+const GIFT_MESSAGE_MAX = 100;
+function cleanGiftMessage(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/[\p{Cc}\p{Cf}§]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, GIFT_MESSAGE_MAX);
+}
+
+// Días hábiles (lunes a viernes) que han pasado desde una fecha
+function businessDaysSince(iso, now = Date.now()) {
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return 0;
+  let days = 0;
+  for (let t = start.getTime() + 86400000; t <= now; t += 86400000) {
+    const d = new Date(t).getUTCDay();
+    if (d !== 0 && d !== 6) days++;
+  }
+  return days;
+}
 const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
 // --- Skills: las clases del TF Client (config/skills.json, de tools/skills.py) ---
@@ -194,6 +225,8 @@ export function createApp(env) {
   const log = env.LOGGER || console;
 
   const store = createStore(env.DB);
+  // Copias por correo para el dueño (src/mail.js): firmas de los Términos, recibos y reembolsos o disputas
+  const mailer = createMailer(env, log);
 
   // Lo del jugador para la web: lo suyo, lo equipado y, si tenía alguno, sus paquetes viejos (nombre y miniatura)
   async function vfxView(uuid) {
@@ -348,14 +381,48 @@ export function createApp(env) {
 
   // Prueba de la aceptación de los Términos: versión, fecha, quién, dónde y desde qué IP y navegador.
   async function recordTerms(req, { uuid, username, context, orderId }) {
-    await store.acceptTerms({
-      uuid,
-      username,
-      context,
-      version: TERMS_VERSION,
-      orderId,
-      ip: req.headers.get('CF-Connecting-IP') || null,
-      userAgent: req.headers.get('User-Agent') || null,
+    const ip = req.headers.get('CF-Connecting-IP') || null;
+    const userAgent = req.headers.get('User-Agent') || null;
+    await store.acceptTerms({ uuid, username, context, version: TERMS_VERSION, orderId, ip, userAgent });
+    // Copia de la firma para el dueño (si el correo está configurado; si falla, la firma ya está guardada)
+    const rows = [
+      ['Jugador', username || '—'],
+      ['UUID', uuid || '—'],
+      ['Cuándo firmó', `${CONTEXT_LABEL[context] || context}`],
+      ['Fecha y hora (UTC)', new Date().toISOString()],
+      ['Versión de los Términos', `${TERMS_VERSION} (${legal.date})`],
+      ['Pedido', orderId || '—'],
+      ['IP', ip || '—'],
+      ['Navegador', userAgent || '—'],
+      ['Términos', `${PUBLIC_URL || 'https://xn--tierrasfantsticas-hpb.store'}/terminos`],
+    ];
+    const intro = `${username || 'Un jugador'} aceptó los Términos y condiciones y el Aviso de privacidad de ${SERVER_NAME} marcando la casilla.`;
+    await mailer.send({
+      subject: `Firma de los Términos · ${username || uuid} · ${CONTEXT_LABEL[context] || context}`,
+      text: `${intro}\n\n${fieldsText(rows)}`,
+      html: mailHtml('Firma de los Términos y condiciones', intro, rows),
+    });
+  }
+
+  // Recibo (PDF) y sus datos: el del jugador y la copia del dueño (con IP y navegador de la aceptación)
+  async function receiptFor(order, owner) {
+    const acceptance = await store.termsForOrder(order.id);
+    const productName = orderView(order).product;
+    return { pdf: receiptPdf({ order, productName, acceptance, owner }), rows: receiptRows({ order, productName, acceptance, owner }) };
+  }
+
+  // Copia del recibo de cada compra pagada con dinero, para el dueño
+  async function mailReceipt(orderId) {
+    if (!mailer.enabled) return;
+    const order = await store.getOrder(orderId);
+    if (!order || !order.amount) return;
+    const { pdf, rows } = await receiptFor(order, true);
+    const intro = `Compra pagada en ${SERVER_NAME}: ${order.username}, ${money(order.amount, order.currency)}.`;
+    await mailer.send({
+      subject: `Recibo ${order.id} · ${order.username} · ${money(order.amount, order.currency)}`,
+      text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
+      html: mailHtml('Recibo de compra', intro, rows, REFUND_POLICY.join(' ')),
+      attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
     });
   }
 
@@ -411,6 +478,7 @@ export function createApp(env) {
       createdAt: order.createdAt,
       deliveredAt: order.deliveredAt,
       discord: order.discord ? { username: order.discord.username, status: order.discord.status || null } : null,
+      gift: order.gift ? { from: order.gift.fromName, message: order.gift.message || null } : null,
     };
   }
 
@@ -923,6 +991,15 @@ export function createApp(env) {
       }
       if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
 
+      // Comprar como regalo: hace falta la cuenta de quien paga (el regalo dice de quién es y la firma de los Términos
+      // y la sanción por reembolso injustificado son suyas, no del que lo recibe)
+      const gift = body.gift === true;
+      const buyer = await currentUser(req);
+      if (gift && !buyer) {
+        return json({ error: 'Inicia sesión para regalar: así sabrá quién se lo regala.', code: 'login' }, 401);
+      }
+      const giverName = gift ? (await store.playerByUuid(buyer.uuid))?.name || buyer.name : null;
+
       const player = await store.findPlayer(body.username);
       if (!player) {
         return json(
@@ -935,15 +1012,21 @@ export function createApp(env) {
         return json({ error: 'El jugador ha cambiado. Vuelve a comprobar el nombre.', code: 'player_changed' }, 409);
       }
 
+      if (gift && player.uuid === String(buyer.uuid).toLowerCase()) {
+        return json({ error: 'Ese eres tú: para comprártelo a ti, usa «Comprar».', code: 'gift_self' }, 400);
+      }
+
       const q = await quote(product, player.uuid);
       if (q.blocked) return json({ error: q.blocked, code: q.code || 'rank_owned' }, 409);
 
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
       const amount = q.unit * quantity;
-      // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord.
-      const buyer = await currentUser(req);
-      const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord. En un regalo, no: el
+      // rol es del que lo recibe (si tiene su Discord conectado a su cuenta).
+      const account = !gift && buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
+      const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
       try {
         let checkout;
@@ -951,7 +1034,7 @@ export function createApp(env) {
           const created = await paypal.createOrder({
             amount,
             currency: CURRENCY,
-            description: `Para ${player.name} en ${SERVER_NAME}`.slice(0, 127),
+            description: `${forWhom} en ${SERVER_NAME}`.slice(0, 127),
             customId: id,
             item: { name, quantity, unitAmount: q.unit },
             brandName: SERVER_NAME,
@@ -968,11 +1051,11 @@ export function createApp(env) {
             unitAmount: q.unit,
             quantity,
             name,
-            description: `Para ${player.name} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
+            description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
             image: base.startsWith('https://') && product.image ? `${base}/${product.image.replace(/^\//, '')}` : undefined,
             successUrl: `${base}/success?order=${id}`,
             cancelUrl: `${base}/tienda?cancel=${id}`,
-            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid },
+            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid, ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}) },
           });
         }
         await store.createOrder({
@@ -991,8 +1074,14 @@ export function createApp(env) {
           rankFrom: q.from?.id,
           termsVersion: TERMS_VERSION,
           method,
+          gift: giftInfo,
         });
-        await recordTerms(req, { uuid: player.uuid, username: player.name, context: 'compra', orderId: id });
+        await recordTerms(
+          req,
+          gift
+            ? { uuid: giftInfo.fromUuid, username: giverName, context: 'regalo', orderId: id }
+            : { uuid: player.uuid, username: player.name, context: 'compra', orderId: id },
+        );
         return json({ id, url: checkout.url });
       } catch (err) {
         log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : 'Stripe'}:`, err.message);
@@ -1102,6 +1191,20 @@ export function createApp(env) {
       });
       log.log(`Tienda de monedas ${id}: ${item.name} (${item.price} monedas) para ${user.name} (${user.uuid}), en cola del puente`);
       return json({ id, status: 'queued' });
+    },
+
+    // El recibo en PDF de una compra pagada con dinero (la página del pedido lo descarga sola al confirmarse el pago)
+    'GET /api/order/:id/receipt': async (req, { params }) => {
+      const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
+      if (!order || !order.amount || !CLAIMED.includes(order.status)) return json({ error: 'Recibo no disponible.' }, 404);
+      const { pdf } = await receiptFor(order, false);
+      return new Response(pdf, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="recibo-${order.id}.pdf"`,
+          'Cache-Control': 'private, no-store',
+        },
+      });
     },
 
     'GET /api/order/:id': async (req, { params }) => {
@@ -1484,6 +1587,15 @@ export function createApp(env) {
       prizes = prizes.map(({ commands: _c, ...p }) => p);
       await store.updateOrder(id, { prizes });
     }
+    // Regalo: el que lo recibe ve en el chat de quién es y su mensaje (texto JSON, sin nada que el jugador pueda colar)
+    if (local.gift) {
+      const parts = [
+        { text: '¡Regalo! ', color: 'gold', bold: true },
+        { text: `${local.gift.fromName} te ha regalado ${product.name}${local.quantity > 1 ? ` ×${local.quantity}` : ''}`, color: 'yellow' },
+      ];
+      if (local.gift.message) parts.push({ text: ` «${local.gift.message}»`, color: 'white', italic: true });
+      commands.push(`tellraw {player} ${JSON.stringify(['', ...parts])}`);
+    }
     if (rank) {
       // Al mejorar se quitan los grupos de los rangos inferiores (si no los tiene, LuckPerms no hace nada).
       for (const lower of ranks) if (lower.tier < rank.tier) commands.push(`lp user {player} parent remove ${lower.rank.group}`);
@@ -1494,6 +1606,7 @@ export function createApp(env) {
       rank: rankInfo(rank),
       upgradeFrom: local.rankFrom ? productById.get(local.rankFrom)?.name || null : null,
       prizes: prizes ? prizes.map((p) => p.name) : null,
+      gift: local.gift ? { from: local.gift.fromName } : null,
     };
 
     const queued = await store.queueDelivery(id, { username: local.username, uuid: local.uuid, commands, extra, paymentIntent });
@@ -1506,6 +1619,7 @@ export function createApp(env) {
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
     await deliverDiscord(id, product, ctx.discord);
+    await mailReceipt(id);
     return 'queued';
   }
 
@@ -1520,6 +1634,41 @@ export function createApp(env) {
     log.warn(`Pedido ${order.id} (${order.username}): ${what}`);
     if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
     if (full && CLAIMED.includes(order.status)) await revoke(order, ctx);
+
+    // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasados los 5 días
+    // hábiles desde la entrega → baneo de IP del servidor de 6 días. Los reembolsos que hace el dueño no se castigan.
+    const since = businessDaysSince(order.deliveredAt || order.paidAt || order.createdAt);
+    const late = since > REFUND_DAYS;
+    let penalty = false;
+    // En un regalo la sanción es para quien pagó (y reclamó el dinero), no para el que lo recibió
+    const payer = order.gift ? (await store.playerByUuid(order.gift.fromUuid))?.name || order.gift.fromName : order.username;
+    if (dispute && late && CLAIMED.includes(order.status)) {
+      penalty = await store.queuePenalty(order, [
+        `tempbanip ${order.gift ? payer : '{player}'} ${PENALTY} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasados ${REFUND_DAYS} días hábiles)`,
+      ]);
+      if (penalty) {
+        await store.updateOrder(order.id, { refunded: `${what} fuera de plazo · baneo de IP de 6 días` });
+        log.warn(`Pedido ${order.id}: baneo de IP de 6 días en cola para ${payer}`);
+      }
+    }
+
+    // Aviso para el dueño, con todo lo que sirve de prueba (y el recibo adjunto)
+    if (mailer.enabled) {
+      const fresh = (await store.getOrder(order.id)) || order;
+      const { pdf, rows } = await receiptFor(fresh, true);
+      const verdict = dispute
+        ? late
+          ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de 6 días para ${payer}.` : ''}`
+          : `Disputa abierta ${since} días hábiles después de la entrega (dentro del plazo de ${REFUND_DAYS}).`
+        : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
+      const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor. Responde la disputa con el recibo adjunto, la firma de los Términos y la entrega registrada.`;
+      await mailer.send({
+        subject: `${dispute ? 'DISPUTA' : 'Reembolso'} · pedido ${order.id} · ${order.username}`,
+        text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
+        html: mailHtml(dispute ? 'Disputa de un pago' : 'Reembolso de un pago', intro, rows, REFUND_POLICY.join(' ')),
+        attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
+      });
+    }
   }
 
   // Lo que hay que deshacer de un pedido: los sets que dio y el grupo de su rango (si sigue siendo su rango actual).
@@ -1601,8 +1750,8 @@ export function createApp(env) {
       const upgrade = order.rankFrom ? productById.get(order.rankFrom)?.name : null;
       await discord.announce({
         embed: {
-          title: rank ? `👑 ¡${order.username} ahora es ${rank.rank.prefix}!` : '🎉 ¡Nueva compra en la tienda!',
-          description: `${who} ha conseguido **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}${
+          title: rank ? `👑 ¡${order.username} ahora es ${rank.rank.prefix}!` : order.gift ? '🎁 ¡Un regalo en la tienda!' : '🎉 ¡Nueva compra en la tienda!',
+          description: `${order.gift ? `**${order.gift.fromName}** le ha regalado a ${who}` : `${who} ha conseguido`} **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}${
             order.prizes?.length ? `: ${order.prizes.map((p) => `**${p.name}**`).join(', ')}` : ''
           }. ¡Gracias por apoyar ${SERVER_NAME}!`,
           color: Number.parseInt((rank?.rank.hex || product.colors?.[1] || '#f4c95d').slice(1), 16),

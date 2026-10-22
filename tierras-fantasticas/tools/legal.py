@@ -138,6 +138,18 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
     UUID, para que llegue al jugador que eliges. Revisa bien el nombre: si te equivocas de jugador, escríbenos.</li>
 </ul>'''),
 
+    ('regalos', 'Comprar como regalo', '''
+<ul>
+  <li>Puedes comprar cualquier producto como regalo para otro jugador. Necesitas tu cuenta de la web (el regalo dice de
+    quién es) y el jugador que lo recibe tiene que haber entrado al servidor al menos una vez con ese nombre.</li>
+  <li>Al pagar un regalo, quien paga es quien acepta estos Términos y quien puede pedir la cancelación o el reembolso.
+    Lo regalado es del jugador que lo recibe y se le entrega a él, con un aviso en el juego de quién se lo regala.</li>
+  <li>Si un regalo se reembolsa o se disputa, se le retira al jugador que lo recibió igual que cualquier compra. La
+    sanción por reembolso injustificado (el baneo de IP de 6 días) es para <b>quien pagó</b>, no para quien lo recibió.</li>
+  <li>El mensaje del regalo es opcional, de hasta 100 caracteres, y tiene que respetar las <a href="/mundo#normas">normas
+    del servidor</a>.</li>
+</ul>'''),
+
     ('entrega', 'Entrega', '''
 <p>Cuando Stripe o PayPal confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
@@ -157,13 +169,35 @@ pedido.</p>'''),
     clase de skills, deja de ser tuya (y, si era tu clase activa, se quita).</li>
   <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
     o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
+  <li><b>Pasados esos 5 días hábiles no hay reembolsos.</b> La compra es definitiva, salvo en los casos del punto anterior.</li>
   <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe o PayPal al mismo medio de pago; tu banco puede
     tardar de 5 a 10 días hábiles en mostrarlo.</li>
-  <li>Si abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de la misma forma
-    que con un reembolso. Si la disputa se resuelve a nuestro favor, te lo devolvemos. Escríbenos primero: casi siempre
-    es más rápido.</li>
+  <li>Si dentro del plazo abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de
+    la misma forma que con un reembolso. Escríbenos primero: casi siempre es más rápido.</li>
+  <li><b>Reembolso injustificado: baneo de IP de 6 días.</b> Si pasados los 5 días hábiles reclamas el dinero por otra vía
+    (una disputa o un contracargo con tu banco o tu tarjeta, Stripe o PayPal) sin que se dé ninguno de los casos de
+    arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 6 días</b> (en un
+    regalo, el jugador que lo pagó).
+    Además respondemos a la disputa con las pruebas de la compra (ver «Registro de la aceptación y recibos»). Si la
+    disputa se resuelve a nuestro favor, te devolvemos lo retirado.</li>
   <li>Las recompensas gratis y lo comprado con monedas del servidor no tienen reembolso en dinero, porque no se pagaron
     con dinero.</li>
+</ul>'''),
+
+    ('registros', 'Registro de la aceptación y recibos', '''
+<p>Para poder demostrar cada compra ante una duda, una disputa o un contracargo:</p>
+<ul>
+  <li><b>Cada aceptación de estos Términos queda registrada</b> (al crear la cuenta, al comprar, al reclamar una
+    recompensa o cuando cambian): la versión aceptada, la fecha y la hora, tu jugador o tu cuenta, el pedido y la
+    dirección IP y el navegador desde los que aceptaste.</li>
+  <li><b>Cada compra con dinero tiene su recibo</b>: número de pedido, jugador y UUID, producto, importe, medio de pago y
+    su referencia, fechas del pedido, del pago y de la entrega en el servidor, la versión de los Términos aceptada y esta
+    política de cancelación y reembolsos.</li>
+  <li><b>Tu recibo en PDF se descarga solo</b> al terminar de pagar, aparte del que te dan Stripe o PayPal; también lo
+    puedes volver a descargar desde la página de tu compra.</li>
+  <li>Una copia de cada aceptación, de cada recibo y de cada aviso de reembolso o disputa se envía al correo de la
+    administración de Tierras Fantásticas y se guarda junto al registro de la entrega en el servidor.</li>
+  <li>Estos registros se pueden presentar como prueba ante tu banco, Stripe, PayPal o cualquier autoridad.</li>
 </ul>'''),
 
     ('cambios-contenido', 'Cambios en el servidor', '''
@@ -216,7 +250,10 @@ dirección ni teléfono.</p>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
   <li><b>Aceptación de los términos:</b> cada vez que aceptas los Términos y este aviso (al crear la cuenta, al comprar
     o cuando cambian), la versión aceptada, la fecha y la hora, tu jugador o tu cuenta, el pedido, y la dirección IP y el
-    navegador desde los que aceptaste, como prueba de esa aceptación.</li>
+    navegador desde los que aceptaste, como prueba de esa aceptación. Una copia llega al correo de la administración.</li>
+  <li><b>Recibos:</b> los datos de cada compra con dinero (los de «Compras», tu jugador y la aceptación de los términos)
+    van en un recibo en PDF que descargas tú y cuya copia llega al correo de la administración, como prueba ante
+    reembolsos, disputas y contracargos.</li>
   <li><b>Técnicos:</b> nuestro proveedor de alojamiento (Cloudflare) procesa tu dirección IP y datos de navegación para
     servir la web y protegerla de ataques. Aparte del registro de aceptación, nosotros no guardamos tu IP.</li>
 </ul>'''),
@@ -230,7 +267,8 @@ dirección ni teléfono.</p>
   <li>Atender tus mensajes, cancelaciones, reembolsos y reclamaciones.</li>
   <li>Proteger la web y las cuentas, y cumplir las obligaciones legales (por ejemplo, conservar los registros de las
     ventas).</li>
-  <li>Poder demostrar qué términos aceptaste y cuándo, si hay una duda o una reclamación.</li>
+  <li>Poder demostrar qué términos aceptaste y cuándo y qué compraste, si hay una duda, una reclamación, una disputa o
+    un contracargo, y aplicar la sanción por reembolso injustificado de los Términos.</li>
 </ul>
 <p><b>Finalidad voluntaria:</b> anunciar tu compra en el chat del juego y en nuestro Discord (con tu nombre de jugador
 y lo que compraste). Si no quieres, escríbenos a {MAIL} y dejaremos de anunciar tus compras.</p>
@@ -245,6 +283,8 @@ prestar su servicio (algunos están fuera de México, sobre todo en Estados Unid
   <li><b>PayPal:</b> pagos, solo si pagas con PayPal. Ve tu cuenta o tarjeta y tu correo, según su propia política de
     privacidad.</li>
   <li><b>Discord:</b> solo si conectas tu cuenta, para iniciar sesión y darte roles.</li>
+  <li><b>Resend:</b> envía al correo de la administración las copias de las aceptaciones de los términos, de los
+    recibos y de los avisos de reembolso o disputa.</li>
   <li><b>mc-heads.net:</b> recibe tu nombre de jugador para mostrar tu cabeza y tu skin.</li>
   <li><b>api.mcsrvstat.us:</b> tu navegador le pregunta si el servidor está en línea cuando nuestro servidor no lo
     sabe.</li>

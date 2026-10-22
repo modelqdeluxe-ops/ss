@@ -13,6 +13,62 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (22 oct 2026, 5.ª ronda): COMPRAR COMO REGALO, garantías fuera de la cabecera, pestañas con color (hecho y publicado)
+- **Regalo**: botón rosa con un regalo (`.btn-gift`, `data-gift`) junto a cada «Comprar» (tarjetas, crates, visor 3D,
+  cosméticos, skills, rangos) y conmutador «Para mí / Como regalo» en la ventana de pago (`setGiftMode` en app.js).
+  Hace falta la cuenta de quien paga; el que lo recibe tiene que haber entrado al servidor (`/api/player`); a uno
+  mismo, no (`gift_self`). Mensaje opcional (100 caracteres, sin § ni controles: `cleanGiftMessage`).
+  Backend: columnas `orders.gift` (JSON `{fromUuid, fromName, message}`) y `gift_from` (UUID de quien paga, para que lo
+  vea en «Mis compras»); el pedido (username/uuid) es del que lo recibe. Al entregar se añade un `tellraw {player}`
+  con «¡Regalo! X te ha regalado …» y el mensaje. La firma de los Términos es de quien paga (contexto `regalo`), el rol
+  de Discord NO va al Discord de quien paga, el anuncio dice «X le ha regalado a Y», el recibo lleva los dos, y la
+  sanción por disputa fuera de plazo es `tempbanip <quien pagó> 6d …`. Términos 2026-10-22.2, sección «Comprar como
+  regalo». Prueba en `test/app.test.js` (56).
+- **Garantías** (Pago seguro, Entrega, Para regalar, Rol en Discord): ya no en la cabecera de la tienda (estorbaban);
+  fila de 4 placas debajo de los productos (`.shop-trust`).
+- **Pestañas de la tienda**: cada una con su color (fondo claro, borde y canto de su tono, letra de su tono casi
+  negro), más separadas (18 px); la elegida, llena y con aro.
+- Arreglos de contraste en la ventana de pago (restos del tema oscuro): el campo enfocado se ponía NEGRO
+  (`#0d121c` → blanco), «Jugador verificado» verde oscuro, enlaces de los Términos y «Mi cuenta» oscuros, errores en
+  rojo oscuro sobre rosa claro.
+
+### Web (22 oct 2026, 4.ª ronda): comprar LIMA, Tienda AMARILLA, recibos, registros por correo y sanción (hecho y publicado)
+Pedidos del dueño: comprar más verde claro/lima, «Tienda» más amarilla, quitar la pastilla blanca de las crates al
+pasar el ratón, el logo flotando arriba y abajo con brillo de medalla (no siguiendo al ratón), Términos con «sin
+reembolso pasados 5 días» y baneo de IP de 6 días por reembolso injustificado, cada firma de los Términos y cada recibo
+por correo al dueño, y que al comprar se descargue solo un recibo aparte del de Stripe.
+- **Botones**: `.btn-buy`/`.btn-rank` lima (#bef264/#a3e635/#84cc16, letra #172b04, >7:1); `.btn-primary`/`.btn-shop`/
+  `.btn-theme` amarillo dorado (#fde68a/#fcd34d/#f5b316, letra #2a1600). Auditoría: solo los falsos positivos conocidos.
+- **Crates**: fuera el `<span class="try-on">` de `crateCard` (app.js). En los cosméticos con set sigue, ya legible.
+- **Logo**: `<span class="portal-medal">` (pages.py); `logo-float` (6 s, 14 px) + `logo-shine` (degradado recortado con
+  `mask: url(/img/logo.webp)`) + `logo-glint` (un poco más de brillo). Fuera el JS de seguir al ratón. 2.º ajuste
+  (el dueño no veía la flotación y el logo chocaba con el título): 5 s y 22 px, y flota también con «menos movimiento»
+  (Windows con los efectos de animación apagados lo activa); el título de la portada en escritorio pasa a
+  `clamp(56px, 5.9vw, 78px)` («Fantásticas» se salía de su columna y se metía bajo la espada), logo 400 px y hueco 56 px.
+- **Backend**: `src/pdf.js` (PDF a mano), `src/receipt.js` (recibo y `REFUND_POLICY`), `src/mail.js` (Resend). Correos:
+  firma de Términos (`recordTerms`), recibo al entregar (`mailReceipt` en `fulfill`), reembolso/disputa con veredicto
+  y PDF (`handleReversal`). Disputa pasados 5 días hábiles de un pedido entregado → `queuePenalty` encola `B<pedido>`
+  con `tempbanip {player} 6d …`. `GET /api/order/:id/receipt` da el PDF; `success.js` lo descarga solo una vez
+  (localStorage `tf-recibo-<id>`) y deja el botón «Descargar recibo (PDF)». Prueba nueva en `test/app.test.js` (55).
+- **Términos 2026-10-22.1** (`tools/legal.py`): «Pasados esos 5 días hábiles no hay reembolsos», «Reembolso
+  injustificado: baneo de IP de 6 días», sección nueva «Registro de la aceptación y recibos»; privacidad con Resend y
+  las copias. Aviso corto también en la ventana de pago, la tienda y la FAQ.
+- **FALTA (lo hace el dueño)**: crear la cuenta de Resend con su correo y poner en Cloudflare los Secrets
+  `RESEND_API_KEY` y `RECORDS_EMAIL` (README, «Registros por correo y recibos»). El correo NO va al repo (es público).
+
+### Web (22 oct 2026, 3.ª ronda): comprar en VERDE, rangos sin «nuevo», tarjetas con borde (hecho y publicado)
+Quejas: «¿por qué el botón de comprar son los mismos colores?» (comprar era naranja como «Tienda»), «en los rangos
+quita lo de nuevo y pon una breve explicación de cada comando, pero no cómo se usa», «las tarjetas de arriba no se
+contrastan» (los rangos, blancos sobre crema y el elegido casi igual), y las piezas rosas/doradas sobre caramelo.
+- **Comprar = VERDE** (`.btn-buy`, `.btn-rank`; #15803d con letra blanca, 5:1): ningún otro botón es verde. Navegar
+  (`Tienda` de la cabecera, «Ir a la tienda») = naranja `.btn-primary`. Gratis = azul. Secundario = blanco.
+- **Rangos**: cada rango es una tarjeta con borde de 2 px y canto; el elegido, lleno de su color con letra oscura.
+  Los comandos: solo «qué es» (`RANK_PERK_INFO` en `tools/crates.py`, p. ej. «Yunque portátil», «Vuelo libre»), sin
+  «nuevo» ni cómo se usa; después `python3 tools/crates.py`.
+- **Escenarios y miniaturas sobre CAFÉ** (`--stage`, `--tile` #6f5038), no caramelo: con piezas blancas, rosas y
+  doradas contrasta; caramelo se comía las piezas cálidas.
+- Las categorías de la tienda y las crates: borde de 2 px y canto (se distinguen del fondo).
+
 ### Web (22 oct 2026, 2.ª ronda): contraste medido, jerarquía de botones y escenarios caramelo (hecho y publicado)
 Queja del dueño sobre el Atardecer: «en la presentación de los modelos el fondo es blanco y con armaduras blancas no se
 ve… los colores de los botones son una mierda, todos se parecen, no contrastan… eres autónomo, estúdiate las buenas
@@ -134,7 +190,16 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.109) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.109, PUBLICADA) — lee esto primero
+
+**Prueba en el juego** (43bcf13c, `[prueba-jefes=pad,crates,npcs] [shaders=photon]`, informe en `pruebas-jefes`): el NPC
+dentro de una zona con «arden los monstruos» sigue vivo y sin arder a los 5 s; `/tf bots add 4 1` → 4 en el servidor y
+el TAB con 5 (4 con su cara y el jugador), mensajes amarillos de entrar y salir, y `remove all` los quita; las dos
+aperturas y las dos cinemáticas, bien (efectos propios dibujándose; ~250 ms por fotograma en la máquina de la prueba);
+«La zona» se lee entera (la prueba sin el arreglo también la ve bien: el fallo depende del juego del dueño, así que
+falta que él lo confirme); la Valentine apunta bien en Combate; las piedras de protección, oscuras con las TF de color;
+y junto a la cascada alta ya no se ven las rayitas. La sesión que la hizo se cayó tras la prueba; la publicó otra (la
+de la web) sin tocar el código.
 
 **1.3.109: siete cosas del dueño** (con 4 capturas suyas):
 1. **Las rayas a los lados de la cascada del medio**: las enredaderas del costado del pilar que da a la cascada alta se

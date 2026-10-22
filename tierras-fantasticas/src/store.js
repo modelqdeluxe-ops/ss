@@ -156,6 +156,10 @@ const MIGRATIONS = [
   // Saldo de monedas del jugador según el puente (se actualiza mientras está conectado) y cuándo se leyó.
   'ALTER TABLE players ADD COLUMN coins INTEGER',
   'ALTER TABLE players ADD COLUMN coins_at INTEGER',
+  // Comprar como regalo: gift = { fromUuid, fromName, message } (quién paga y su mensaje) y gift_from el UUID de quien
+  // paga, para que vea en su cuenta los regalos que hizo. El pedido (username/uuid) es el del jugador que lo recibe.
+  'ALTER TABLE orders ADD COLUMN gift TEXT',
+  'ALTER TABLE orders ADD COLUMN gift_from TEXT',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -206,6 +210,7 @@ function rowToOrder(row) {
     termsVersion: row.terms_version || null,
     method: row.method || (row.session_id ? 'stripe' : null),
     prizes: row.prizes ? JSON.parse(row.prizes) : null,
+    gift: row.gift ? JSON.parse(row.gift) : null,
     error: row.error,
     refunded: row.refunded,
     createdAt: row.created_at,
@@ -283,8 +288,8 @@ export function createStore(db) {
     await db
       .prepare(
         `INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, discord, discord_id,
-           session_id, rank_from, terms_version, method, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           session_id, rank_from, terms_version, method, gift, gift_from, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         order.id,
@@ -301,6 +306,8 @@ export function createStore(db) {
         order.rankFrom || null,
         order.termsVersion || null,
         order.method || null,
+        order.gift ? JSON.stringify(order.gift) : null,
+        order.gift ? String(order.gift.fromUuid).toLowerCase() : null,
         at,
         at,
       )
@@ -329,10 +336,11 @@ export function createStore(db) {
       .prepare(
         `SELECT * FROM orders
          WHERE status NOT IN ('pending', 'expired')
-           AND ((discord_id IS NOT NULL AND discord_id = ?) OR (uuid IS NOT NULL AND lower(uuid) = lower(?)))
+           AND ((discord_id IS NOT NULL AND discord_id = ?) OR (uuid IS NOT NULL AND lower(uuid) = lower(?))
+             OR (gift_from IS NOT NULL AND gift_from = lower(?)))
          ORDER BY created_at DESC LIMIT 50`,
       )
-      .bind(discordId || '', uuid || '')
+      .bind(discordId || '', uuid || '', uuid || '')
       .all();
     return results.map(rowToOrder);
   }
@@ -733,6 +741,30 @@ export function createStore(db) {
     await db.batch(statements);
   }
 
+  // La aceptación de los Términos hecha al pagar este pedido (la prueba que va en el recibo)
+  async function termsForOrder(orderId) {
+    await init();
+    const r = await db
+      .prepare('SELECT * FROM terms_acceptances WHERE order_id = ? ORDER BY id DESC LIMIT 1')
+      .bind(orderId)
+      .first();
+    return r ? { version: r.version, at: r.created_at, ip: r.ip, userAgent: r.user_agent, context: r.context } : null;
+  }
+
+  // Penalización por un reembolso injustificado (baneo de IP): otra entrega para el puente, aparte de la retirada
+  // (B<pedido>), que el servidor recibe aunque el jugador no esté conectado. Una sola por pedido.
+  async function queuePenalty(order, commands) {
+    await init();
+    const res = await db
+      .prepare(
+        `INSERT OR IGNORE INTO deliveries (order_id, revoke_of, username, uuid, commands, extra, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(`B${order.id}`, order.id, order.username, order.uuid || null, JSON.stringify(commands), JSON.stringify({ kind: 'penalizacion' }), now())
+      .run();
+    return res.meta.changes === 1;
+  }
+
   async function termsAcceptances(uuid) {
     await init();
     const { results } = await db
@@ -864,7 +896,8 @@ export function createStore(db) {
           db
             .prepare(
               `UPDATE orders SET refunded = COALESCE(refunded, 'reembolsado') || ' · retirado del servidor', updated_at = ?
-               WHERE id = (SELECT revoke_of FROM deliveries WHERE id = ?) AND COALESCE(refunded, '') NOT LIKE '%retirado%'`,
+               WHERE id = (SELECT revoke_of FROM deliveries WHERE id = ? AND order_id LIKE 'R%')
+                 AND COALESCE(refunded, '') NOT LIKE '%retirado%'`,
             )
             .bind(at, item.id),
         );
@@ -1009,6 +1042,8 @@ export function createStore(db) {
     setPassword,
     accountByUuid,
     acceptTerms,
+    termsForOrder,
+    queuePenalty,
     termsAcceptances,
     loginLocked,
     loginFailed,

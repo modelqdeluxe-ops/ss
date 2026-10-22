@@ -170,28 +170,23 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 5 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 5 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": true
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": true
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": true
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": true
+        "text": "Cualquier bloque como sombrero"
       }
     ],
     "rank": {
@@ -329,28 +324,23 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 7 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 7 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       }
     ],
     "rank": {
@@ -484,33 +474,27 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 8 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 8 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       },
       {
         "cmd": "/enderchest",
-        "text": "Tu cofre de ender donde estés",
-        "new": true
+        "text": "Tu cofre de ender, siempre a mano"
       }
     ],
     "rank": {
@@ -645,38 +629,31 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 10 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 10 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       },
       {
         "cmd": "/enderchest",
-        "text": "Tu cofre de ender donde estés",
-        "new": false
+        "text": "Tu cofre de ender, siempre a mano"
       },
       {
         "cmd": "/heal",
-        "text": "Recupera toda la vida",
-        "new": true
+        "text": "Vida al completo al instante"
       }
     ],
     "rank": {
@@ -816,38 +793,31 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 12 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 12 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       },
       {
         "cmd": "/enderchest",
-        "text": "Tu cofre de ender donde estés",
-        "new": false
+        "text": "Tu cofre de ender, siempre a mano"
       },
       {
         "cmd": "/feed",
-        "text": "Quita el hambre",
-        "new": true
+        "text": "Hambre saciada al instante"
       }
     ],
     "rank": {
@@ -991,43 +961,35 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 15 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 15 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       },
       {
         "cmd": "/enderchest",
-        "text": "Tu cofre de ender donde estés",
-        "new": false
+        "text": "Tu cofre de ender, siempre a mano"
       },
       {
         "cmd": "/repair",
-        "text": "Repara el objeto que llevas en la mano",
-        "new": true
+        "text": "Reparación de armas, herramientas y armaduras"
       },
       {
         "cmd": "/fly",
-        "text": "Vuela",
-        "new": true
+        "text": "Vuelo libre"
       }
     ],
     "rank": {
@@ -1156,53 +1118,43 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 20 hogares; vuelve a ellos con /home",
-        "new": true
+        "text": "Hasta 20 hogares a los que viajar al instante"
       },
       {
         "cmd": "/craft",
-        "text": "Mesa de crafteo donde estés (también /workbench)",
-        "new": false
+        "text": "Mesa de crafteo portátil"
       },
       {
         "cmd": "/anvil",
-        "text": "Yunque donde estés",
-        "new": false
+        "text": "Yunque portátil"
       },
       {
         "cmd": "/loom",
-        "text": "Telar donde estés",
-        "new": false
+        "text": "Telar portátil"
       },
       {
         "cmd": "/hat",
-        "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": false
+        "text": "Cualquier bloque como sombrero"
       },
       {
         "cmd": "/enderchest",
-        "text": "Tu cofre de ender donde estés",
-        "new": false
+        "text": "Tu cofre de ender, siempre a mano"
       },
       {
         "cmd": "/repair",
-        "text": "Repara el objeto que llevas en la mano",
-        "new": false
+        "text": "Reparación de armas, herramientas y armaduras"
       },
       {
         "cmd": "/heal",
-        "text": "Recupera toda la vida",
-        "new": true
+        "text": "Vida al completo al instante"
       },
       {
         "cmd": "/feed",
-        "text": "Quita el hambre",
-        "new": true
+        "text": "Hambre saciada al instante"
       },
       {
         "cmd": "/fly",
-        "text": "Vuela",
-        "new": false
+        "text": "Vuelo libre"
       }
     ],
     "rank": {
