@@ -111,7 +111,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.107) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.108) — lee esto primero
+
+**1.3.108: el pad** (el dueño, al ver la 1.3.107: «déjalo sin fondo, sin el logo ese que pusiste, que quede limpio; y los
+iconos, ¿no ves que están muy abajo?»):
+1. **Cristal limpio**: fuera el emblema «TF» en un aro (`TFPadScreen.emblem`, `fondo_tf.png`, `tools/pad/fondo_tf.py`):
+   solo el degradado del tema, la trama, las luces y la sombra de abajo. Ni monogramas, ni logo, ni aldeas.
+2. **Las fichas de la portada, centradas**: medido en la captura de la 1.3.107 (800×450), 23 px de aire entre la barra y
+   la primera fila y 3 px entre los nombres de la última y el marco. Era `PadHomePage.layout`: para que la primera fila
+   no pisara el logo del castillo (que baja hasta la esquina del cristal) bajaba la rejilla entera. Ahora la primera fila
+   empieza justo debajo del logo y las filas se juntan (hasta `MIN_GAP`) para que debajo quede el mismo aire que encima.
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.107, PUBLICADA)
 
 **1.3.107: cuatro quejas del dueño** (juega con Oculus 1.8 + Embeddium + ImmediatelyFast + EMF/ETF + EntityCulling):
 1. **«Tus rayas aún se ven»**: eran la columna del haz de sol con el borde marcado y sus 9 vetas finas (líneas claras
@@ -735,8 +746,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
   alianzas y rivales, guerra de clanes programada (opt-in), cofre del clan, nombres y permisos de rol · **4** app CLANES en el
   pad de administrador, coste de fundar, página de clanes en la web, logros. Espera a que el dueño elija.
 - «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
-  color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + el emblema «TF» en un aro de fondo (1.3.107; antes,
-  monogramas TF y el paisaje de aldeas). Ideas no hechas: teñir también las
+  color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas, el cristal limpio (1.3.108; antes, monogramas TF,
+  el paisaje de aldeas y, en la 1.3.107, un emblema «TF»). Ideas no hechas: teñir también las
   fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
 - Música: FLAC no se lee (MP3, MP4/M4A, AAC, OGG y WAV sí). El MP3 empieza con ~50 ms de silencio (retardo del codificador y el
   frame Xing/Info): se podría recortar con la etiqueta LAME.
@@ -1216,8 +1227,8 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 >   logo ni las gemas) al generar frame.png. El fondo animado se recorta en el borde real (`glassBase` deja el recorte).
 > - **Temas del pad** (Ajustes › Tema del pad, `PadSettings.THEMES`): Cielo, Rosa, Lavanda, Menta, Atardecer, Oro, Fresa,
 >   Noche. El cristal con su forma exacta (`glass_shape.png` del color de abajo + `glass_fade.png` del de arriba) y los
->   neones/gemas del marco teñidos (`neon.png`), de `build_pad.glass_masks`. (1.3.107: en vez del papel de monogramas «TF»
->   y del paisaje, el emblema «TF» en un aro azul oscuro detrás de las apps, `TFPadScreen.emblem`, `tools/pad/fondo_tf.py`.) Se guarda en pad-cliente.properties (`tema`).
+>   neones/gemas del marco teñidos (`neon.png`), de `build_pad.glass_masks`. (1.3.108: el cristal limpio, sin el papel de
+>   monogramas «TF», sin el paisaje y sin el emblema de la 1.3.107.) Se guarda en pad-cliente.properties (`tema`).
 > - Pestañas de Comunidad/Música y etiquetas oscuras (SONANDO, RULETA) del mismo alto (17) y letra a la misma altura.
 > - Armario › SKINS: escaparate con tu modelo 3D grande (cabecera de 96 con `PadView.SELF_MODEL`) y tarjetas de galería.
 > - Música: **cualquier MP3** (MPEG-1 con JavaMP3; MPEG-2/2.5 con JLayer 1.0.1, `javazoom.jl.decoder`, LGPL 2.1, copiado sin

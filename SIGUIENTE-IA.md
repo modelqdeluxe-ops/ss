@@ -1,6 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.107 (22 oct 2026)**: las rayas del haz, del sol y de las cascadas, y la escena de las crates con supermuestreo (lo
+> **1.3.108 (22 oct 2026)**: el pad con el cristal limpio (sin el emblema de la 1.3.107) y las fichas de la portada
+> centradas a lo alto (CHECKPOINT de `HANDOFF.md`).
+>
+> **1.3.107 (22 oct 2026), PUBLICADA**: las rayas del haz, del sol y de las cascadas, y la escena de las crates con supermuestreo (lo
 > fino que parpadeaba al mover la cámara); la música del dueño en bucle (paquete aparte); los muebles de los NPC con su
 > modelo (también en servidor) y la barra del camarero; el pad sin el paisaje de aldeas y con el emblema «TF» en un aro
 > (CHECKPOINT de `HANDOFF.md`).
