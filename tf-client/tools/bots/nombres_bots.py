@@ -22,7 +22,7 @@ Así que se generan con esas plantillas en esas proporciones (semilla fija: sale
     una sola palabra, «a» y «Aa», 9-10: «fovesel» y «francomedina» no se parecen), como mucho el 45 % con cifras, cada
     plantilla como mucho su parte según lo medido (TOPE, nunca más de 3) y ningún apodo dos veces (en el TAB se ven 10
     o 20 a la vez: nada debe parecer de serie);
-  - ninguna raíz repetida (dos nombres no comparten 5 letras seguidas) ni nombres de una sola palabra corriente;
+  - ninguna raíz repetida (dos nombres no comparten 5 letras seguidas, ni apellido, ni dos inventados el final) ni nombres de una sola palabra corriente;
   - cada coletilla (xD, Rex, god, Ok…) una sola vez, «The»/«Its»/«Soy» delante dos en total y letras repetidas
     («Tomiii») en 3 como mucho;
   - los de chica, en las skins de chica (CHICAS); los demás, de chico o neutros.
@@ -196,7 +196,10 @@ def candidatos(rng, skin, n=600):
         cand = f()
         if re.fullmatch(r"[A-Za-z0-9_]{5,16}", cand) and cand.lower() not in vistos:
             vistos.add(cand.lower())
-            out.append((cand, nombre, nom, molde(cand), frozenset(raices(cand)), coletilla(cand),
+            rasgos = {"ap:" + a for a in APELLIDO if a in cand.lower()}
+            if nombre.startswith("inventado"):
+                rasgos.add("fin:" + re.sub(r"[^a-z]", "", cand.lower())[-3:])
+            out.append((cand, nombre, nom, molde(cand), frozenset(raices(cand) | rasgos), coletilla(cand),
                         cand.lower().startswith(DELANTE), bool(re.search(r"\d$", cand)),
                         nom if nom in leet_inverso(cand.lower()) else None))
     return out
@@ -223,6 +226,10 @@ def coletilla(name):
 
 # «Pixelx27», «Stormx616», «Owlx954» o «Dami_59», «Jere_2006», «Facu_27»: con tres ya se ve el molde
 TOPE.update({"Palabra inglesa+cifras": 2, "Apodo_cifras": 2})
+# Con tres de una misma plantilla poco común ya se ve el molde («LLBGonza», «TZFBastian», «HJZJoaco»): dos; las de
+# apodo + cifras (las más comunes de verdad) siguen con tres
+COMUNES = {"apodo+2cifras", "Apodo+2cifras", "apodo+3cifras", "apodo+4cifras", "Apodo+4cifras", "Apodo+1cifra"}
+TOPE.update({k: min(v, 2) for k, v in TOPE.items() if k not in COMUNES and not k.startswith("inventado")})
 # Como en la muestra: el 37 % acaba en cifras (aquí, como mucho el 45 %)
 MAX_CIFRAS = round(SKINS * 0.45)
 
