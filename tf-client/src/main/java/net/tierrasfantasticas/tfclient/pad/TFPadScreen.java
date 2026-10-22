@@ -750,7 +750,7 @@ public final class TFPadScreen extends Screen {
     }
 
     /** Lo alto del logo del fondo (del cristal) y lo que se ve. */
-    private static final float EMBLEM_H = 0.92F, EMBLEM_ALPHA = 0.55F;
+    private static final float EMBLEM_H = 0.92F, EMBLEM_ALPHA = 0.68F;
 
     /**
      * La base del cristal en TODO su hueco (recortada a píxeles reales; el marco, que va encima, le da la forma): el

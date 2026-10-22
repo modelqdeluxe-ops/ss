@@ -1329,7 +1329,9 @@ public final class BossTest {
             cratePos = player.blockPosition().offset(0, 1, -3);
         }
         for (int run = 0; run < 2; run++) {
-            int t0 = 60 + run * 420;      // (la primera, a los 3 s: que el santuario esté preparado y la pantalla dibuje)
+            int t0 = 60 + run * 540;      // (la primera, a los 3 s: que el santuario esté preparado y la pantalla dibuje)
+            // (1.3.107) en la primera, 6 s más antes de abrir: las capturas de antes de abrir sin cada cosa (BossTestClient.OFF)
+            int open = t0 + (run == 0 ? 150 : 30);
             if (t == t0 && pos != null) {
                 level.setBlockAndUpdate(pos, net.tierrasfantasticas.tfclient.crates.registry.ModRegistry.CRATE_BLOCK.get().defaultBlockState());
                 if (level.getBlockEntity(pos) instanceof net.tierrasfantasticas.tfclient.crates.block.CrateBlockEntity be) {
@@ -1343,15 +1345,15 @@ public final class BossTest {
             if (t == Math.max(2, t0 - 8) && cratePos != null) {
                 BossTestClient.showPreOpen(testCrate(run), cratePos);
             }
-            if (t == t0 + 30 && pos != null) {
+            if (t == open && pos != null) {
                 var res = net.tierrasfantasticas.tfclient.crates.crate.CrateOpeningService.open(player, testCrate(run), pos, ItemStack.EMPTY, false);
                 r.event("apertura " + (run + 1) + ": " + res);
             }
-            if (t == t0 + 30 + 395) {
+            if (t == open + 395) {
                 r.event("cinemática " + (run + 1) + ": " + net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testStats);
             }
         }
-        if (t >= 60 + 2 * 420 + 20) next(level);
+        if (t >= 60 + 2 * 540 + 20) next(level);
     }
 
     private static net.minecraft.core.BlockPos cratePos;
