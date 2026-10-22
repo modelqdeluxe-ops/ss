@@ -60,6 +60,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   <li>Los que están dentro se guardan en config/tfclient-bots.json y vuelven solos al reiniciar el servidor (si
  *       el nombre guardado ya no está en el mod, vuelve otro: los mismos que había).</li>
  *   <li>El servidor en la lista de servidores cuenta también los bots (MinecraftServerMixin).</li>
+ *   <li>(1.3.111) Quién entra, al azar con memoria: a veces vuelve uno que ya estuvo (más los que más vienen) y si
+ *       no, uno nuevo; entre uno y otro, una espera al azar alrededor de los segundos pedidos (no a ritmo fijo).</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
@@ -80,6 +82,17 @@ public final class TFBots {
     /** Lo que falta por entrar o salir, y cada cuántos ticks (la cadena se corta al acabar). */
     private static int toAdd, toRemove, addEvery, removeEvery;
     private static long tick, nextAdd, nextRemove, nextPing;
+    /**
+     * Los que ya han estado alguna vez (1.3.111, el dueño: «nunca debe ser el mismo que puse, debe ser al azar, y a veces
+     * que toque uno de los que ya salieron, para que se note que son jugadores ocasionales o activos»): cuántas veces
+     * han entrado y cuándo salieron por última vez. Se guarda en config/tfclient-bots.json.
+     */
+    private record Seen(int times, long lastLeft) {}
+    private static final Map<String, Seen> seen = new HashMap<>();
+    /** Más o menos uno de cada tres que entran es uno que ya estuvo (los que vienen más, con más probabilidad). */
+    private static final double RETURNING = 0.35;
+    /** Uno que acaba de salir no vuelve enseguida. */
+    private static final long BACK_AFTER_MS = 5 * 60 * 1000;
 
     private TFBots() {}
 
@@ -116,7 +129,8 @@ public final class TFBots {
         addEvery = Math.max(0, seconds) * 20;
         nextAdd = tick; // el primero, ya
         ctx.getSource().sendSuccess(() -> Component.literal("Entran " + take + " bot" + (take == 1 ? "" : "s")
-                + (take > 1 ? ", uno cada " + seconds + " s" : "") + (take < n ? " (no hay más libres)" : "") + "."), true);
+                + (take > 1 && seconds > 0 ? ", uno cada " + seconds + " s más o menos (al azar)" : "")
+                + (take < n ? " (no hay más libres)" : "") + "."), true);
         return take;
     }
 
@@ -133,7 +147,7 @@ public final class TFBots {
         removeEvery = Math.max(0, seconds) * 20;
         nextRemove = tick;
         ctx.getSource().sendSuccess(() -> Component.literal("Salen " + take + " bot" + (take == 1 ? "" : "s")
-                + (take > 1 ? ", uno cada " + seconds + " s" : "") + "."), true);
+                + (take > 1 && seconds > 0 ? ", uno cada " + seconds + " s más o menos (al azar)" : "") + "."), true);
         return take;
     }
 
@@ -141,7 +155,7 @@ public final class TFBots {
         server = src.getServer();
         int n = online.size();
         toAdd = toRemove = 0;
-        while (!online.isEmpty()) leave(online.get(online.size() - 1), true);
+        while (!online.isEmpty()) leave(online.get(RANDOM.nextInt(online.size())), true);
         src.sendSuccess(() -> Component.literal("Fuera los " + n + " bots."), true);
         return n;
     }
@@ -180,9 +194,41 @@ public final class TFBots {
         return out;
     }
 
+    /**
+     * El que entra ahora: a veces (RETURNING) uno que ya estuvo y salió hace rato, con más probabilidad cuantas más veces
+     * ha venido (los «activos»); si no, uno que no ha venido nunca (o, si ya vinieron todos, cualquiera libre).
+     */
+    private static Bot pick(List<Bot> free) {
+        long now = System.currentTimeMillis();
+        List<Bot> fresh = new ArrayList<>(), back = new ArrayList<>();
+        for (Bot b : free) {
+            Seen s = seen.get(b.name().toLowerCase());
+            if (s == null) fresh.add(b);
+            else if (now - s.lastLeft() >= BACK_AFTER_MS) back.add(b);
+        }
+        if (!back.isEmpty() && (fresh.isEmpty() || RANDOM.nextDouble() < RETURNING)) {
+            int total = 0;
+            for (Bot b : back) total += 1 + seen.get(b.name().toLowerCase()).times();
+            int r = RANDOM.nextInt(total);
+            for (Bot b : back) {
+                r -= 1 + seen.get(b.name().toLowerCase()).times();
+                if (r < 0) return b;
+            }
+        }
+        List<Bot> from = fresh.isEmpty() ? free : fresh;
+        return from.get(RANDOM.nextInt(from.size()));
+    }
+
+    /** La espera hasta el siguiente: entre un tercio y algo más del doble de lo pedido, al azar (como gente de verdad). */
+    private static long jitter(int ticks) {
+        return ticks <= 0 ? 0 : Math.max(1, Math.round(ticks * (0.35 + RANDOM.nextDouble() * 1.3)));
+    }
+
     private static void join(Bot b, boolean announce) {
         if (server == null || online.contains(b)) return;
         online.add(b);
+        Seen s = seen.get(b.name().toLowerCase());
+        seen.put(b.name().toLowerCase(), new Seen(s == null ? 1 : s.times() + 1, s == null ? 0 : s.lastLeft()));
         ping.put(b.id(), 25 + RANDOM.nextInt(110));
         server.getPlayerList().broadcastAll(addPacket(List.of(b)));
         if (announce) {
@@ -195,6 +241,8 @@ public final class TFBots {
     private static void leave(Bot b, boolean announce) {
         if (server == null || !online.remove(b)) return;
         ping.remove(b.id());
+        Seen s = seen.get(b.name().toLowerCase());
+        seen.put(b.name().toLowerCase(), new Seen(s == null ? 1 : s.times(), System.currentTimeMillis()));
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(b.id())));
         if (announce) {
             server.getPlayerList().broadcastSystemMessage(
@@ -302,9 +350,9 @@ public final class TFBots {
             if (free.isEmpty()) {
                 toAdd = 0;
             } else {
-                join(free.get(RANDOM.nextInt(free.size())), true);
+                join(pick(free), true);
                 toAdd--;
-                nextAdd = tick + addEvery;
+                nextAdd = tick + jitter(addEvery);
             }
         }
         if (toRemove > 0 && tick >= nextRemove) {
@@ -313,7 +361,7 @@ public final class TFBots {
             } else {
                 leave(online.get(RANDOM.nextInt(online.size())), true);
                 toRemove--;
-                nextRemove = tick + removeEvery;
+                nextRemove = tick + jitter(removeEvery);
             }
         }
         if (!online.isEmpty() && tick >= nextPing) {
@@ -361,6 +409,14 @@ public final class TFBots {
             for (Bot b : online) a.add(b.name());
             JsonObject o = new JsonObject();
             o.add("dentro", a);
+            JsonObject v = new JsonObject();
+            for (Map.Entry<String, Seen> e : seen.entrySet()) {
+                JsonObject one = new JsonObject();
+                one.addProperty("veces", e.getValue().times());
+                one.addProperty("salio", e.getValue().lastLeft());
+                v.add(e.getKey(), one);
+            }
+            o.add("vistos", v);
             new Gson().toJson(o, w);
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Bots: no se pudo guardar {}", file(), e);
@@ -373,6 +429,13 @@ public final class TFBots {
         try (Reader r = Files.newBufferedReader(file(), StandardCharsets.UTF_8)) {
             JsonObject o = new Gson().fromJson(r, JsonObject.class);
             if (o != null && o.has("dentro")) for (JsonElement e : o.getAsJsonArray("dentro")) out.add(e.getAsString());
+            seen.clear();
+            if (o != null && o.has("vistos")) {
+                for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("vistos").entrySet()) {
+                    JsonObject one = e.getValue().getAsJsonObject();
+                    seen.put(e.getKey(), new Seen(one.get("veces").getAsInt(), one.get("salio").getAsLong()));
+                }
+            }
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Bots: no se pudo leer {}", file(), e);
         }
