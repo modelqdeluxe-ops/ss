@@ -148,7 +148,7 @@ final class PadHomePage extends PadPage {
             // al marco.) Ahora las filas se juntan lo que haga falta (hasta MIN_GAP) para que debajo quede el mismo aire
             // que encima, entre la barra y la primera fila.
             int clear = Y;
-            while (pad.logoRight(clear) + 2 > x0 && clear < Y + H) clear++;
+            while (pad.logoInk(clear) + 2 > x0 && clear < Y + H) clear++;
             if (top < clear) {
                 int fitGap = rows > 1 ? (H - 2 * (clear - Y) - rows * cellH) / (rows - 1) : gapY;
                 gapY = Math.max(MIN_GAP, Math.min(gapY, fitGap));

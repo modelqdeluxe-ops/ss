@@ -520,6 +520,19 @@ public final class TFPadScreen extends Screen {
         return units(padX - GX);
     }
 
+    /**
+     * (1.3.108) Hasta dónde llega el dibujo del logo (en unidades) en lo que queda por debajo de la altura y: medido
+     * en frame.png, fila a fila (el logo acaba en la fila 82 del pad; logoRight, con su margen para las ventanas de
+     * las apps, llega a la 86). Para la rejilla de la portada: con logoRight bajaba 6 unidades de más (el dueño: «los
+     * iconos están muy abajo»).
+     */
+    int logoInk(int y) {
+        double padY = GY + y * cs / (double) ps;
+        double padX = padY < 67 ? 81 : padY < 69 ? 79 : padY < 71 ? 72.5 : padY < 74 ? 70 : padY < 76 ? 68.5
+                : padY < 79 ? 65 : padY < 82 ? 60.5 : GX;
+        return (int) Math.ceil((padX - GX) * ps / cs);
+    }
+
     private int liftReal() {
         if (!PadSettings.animations) return 0;
         float p = Math.min(1F, (System.currentTimeMillis() - openedAt) / 160F);
