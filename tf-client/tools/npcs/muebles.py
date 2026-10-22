@@ -279,7 +279,7 @@ def bar(name, tex, back_z, top=17.0, width=32.0, depth=12.0):
     hw = width / 2
     z1, z0 = back_z, back_z - depth
     els = [box('top', (-hw - 1, top - 2, z0 - 1), (hw + 1, top, z1 + 0.5), 'slab', 1),
-           box('body', (-hw, 0, z0 + 1), (hw, top - 2, z1), 'D', 2),
+           box('front', (-hw, 0, z0 + 1), (hw, top - 2, z1), 'D', 2),
            box('rail_low', (-hw - 0.5, 2, z0 + 0.5), (hw + 0.5, 4, z0 + 1.5), 'slab', 3),
            box('rail_high', (-hw - 0.5, top - 5, z0 + 0.5), (hw + 0.5, top - 3, z0 + 1.5), 'slab', 4)]
     for i in range(int(width // 8)):
