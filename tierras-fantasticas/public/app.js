@@ -329,7 +329,7 @@
   // --- Productos ---
   const CATEGORY_LABEL = {
     gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro', cosmeticos: 'Cosmético',
-    skills: 'Clase de skills',
+    skills: 'Clase de skills', protecciones: 'Protección',
   };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
@@ -491,6 +491,7 @@
     vfx: '',
     monedas: 'Monedas de oro para la economía del servidor.',
     skills: '',
+    protecciones: 'Piedras de protección: ponla en el suelo y la zona es tuya, a salvo de grifeo y robos. Estas tres, las más grandes, además te dan efectos dentro de tu zona (a ti y a tus miembros), y se configuran en el TF Pad.',
   };
 
   let currentCategory = null;

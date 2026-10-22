@@ -7,8 +7,8 @@ Todo en Re mayor, a los tiempos de la cinemática del Santuario de las Hadas (20
 1,0 s, entra a los 3,3, gira a los 3,6, las runas a los 3,8, tiembla a los 4,2, se abre a los 5,1, la ruleta de los
 6,4 a los 12,6 y el premio a los 12,9; dura 18 s.
 
-  ambiente        el santuario de día: las cascadas, las hojas con el viento, gotas en el estanque, pájaros lejos
-                  (fuera, por el hueco del sol) y campanitas de las hadas (19 s, estéreo)
+  ambiente        el santuario de día: las cascadas, las hojas con el viento, gotas en el estanque y pájaros (fuera,
+                  por el hueco del sol); 60 s en bucle sin costura, sin campanitas (1.3.112)
   musica          la música de la cinemática, a sus tiempos (18 s, estéreo): cuerdas y arpa al llegar, celesta con la
                   llave, coro y campana al girar, trémolo que sube al temblar, acorde grande al abrirse, la ruleta con
                   un ostinato que se frena, silencio para el premio y un final tranquilo
@@ -115,8 +115,15 @@ def sparkle(dur, count, seed, lo=1800, hi=5200, start=0.0, spread=1.0):
 
 
 # --------------------------------------------------------------------------------------------- el ambiente
+AMB_DUR, AMB_XFADE = 60.0, 3.0
+
+
 def ambiente():
-    dur = END + 1.0
+    """(1.3.112, el dueño: «quita ese sonido de campana que tiene como un rin; deja el ambiente de pajaritos y el agua pero
+    no lo cortes, solo dura 3 segundos; quiero una ambientación completa») un minuto de cascadas, viento en las hojas,
+    gotas y pájaros, sin campanitas de hadas ni destellos, y sin fundidos: el final se funde con el principio (AMB_XFADE),
+    así el bucle no tiene costura. Antes: 19 s con entrada y salida en silencio (en bucle sonaba a cortes) y campanitas."""
+    dur = AMB_DUR + AMB_XFADE
     t = tt(dur)
     n = len(t)
     r = rng(1399)
@@ -126,7 +133,13 @@ def ambiente():
     for c in range(2):
         roar[:, c] = bp(roar[:, c], 160, 1900) * 0.9 + bp(roar[:, c], 1900, 6000) * 0.22
     swirl = 0.8 + 0.2 * np.sin(2 * np.pi * 0.21 * t + 0.4) + 0.12 * lp(r.standard_normal(n), 3) * 6
-    out += roar * swirl[:, None] * 0.065
+    out += roar * swirl[:, None] * 0.07
+    # el chapoteo cerca: el pie de la cascada en el estanque (más agudo y con burbujeo)
+    splash = noise2(n, 23)
+    for c in range(2):
+        splash[:, c] = bp(splash[:, c], 900, 4200)
+    churn = 0.6 + 0.4 * lp(np.abs(r.standard_normal(n)), 8) * 3
+    out += splash * churn[:, None] * 0.02
     # el viento en las hojas, con ráfagas lentas
     wind = noise2(n, 11)
     for c in range(2):
@@ -139,41 +152,39 @@ def ambiente():
         f = 500 + r.random() ** 1.5 * 1400
         place(out, pan2(bubble(f, 0.03 + r.random() * 0.05, i), r.uniform(-0.3, 0.3)), at, 0.035 + 0.04 * r.random())
 
-    # las campanitas de las hadas: notas sueltas, muy agudas y suaves (pentatónica de Re), con un brillo
-    penta = ['D6', 'E6', 'F#6', 'A6', 'B6', 'D7']
-    at = 0.4
-    k = 0
-    while at < dur - 1.5:
-        p = r.uniform(-0.8, 0.8)
-        for j in range(r.integers(1, 4)):
-            nt = penta[r.integers(len(penta))]
-            place(out, pan2(celesta(hz(nt), 1.6, 0.5, seed=1600 + k * 5 + j), p), at + j * 0.11, 0.05 + 0.03 * r.random())
-        if r.random() < 0.5:
-            place(out, sparkle(0.8, 4, 1700 + k) * 0.5, at + 0.05, 0.3)
-        k += 1
-        at += 1.1 + r.random() * 1.8
-
-    # pájaros de día, lejos (fuera, por el hueco de las copas): frases cortas de trinos, cada uno desde su sitio
-    def bird(at, p, f0, seed, gain):
+    # pájaros de día (fuera, por el hueco de las copas): varias especies, cada una con su canto y su sitio
+    def bird(at, p, f0, seed, gain, notes=(2, 6), gap=(0.03, 0.09)):
         rr = rng(seed)
-        for j in range(rr.integers(2, 6)):
+        for j in range(rr.integers(*notes)):
             d = 0.06 + rr.random() * 0.08
             shape = ('down', 'up', 'updown')[rr.integers(3)]
             x = chirp(f0 * (1 + 0.15 * rr.random()), f0 * (0.7 + 0.5 * rr.random()), d, shape, 0.1,
                       trill=rr.random() * 40 if rr.random() < 0.3 else 0.0)
-            place(out, pan2(lp(x, 6000), p), at + j * (d + 0.03 + rr.random() * 0.06), gain)
+            place(out, pan2(lp(x, 6000), p), at + j * (d + gap[0] + rr.random() * (gap[1] - gap[0])), gain)
 
+    especies = [  # (tono, notas, separación, volumen, cada cuánto)
+        (2600, (2, 6), (0.03, 0.09), 0.045, (0.9, 2.6)),    # gorrión: frases cortas de trinos
+        (3800, (5, 11), (0.01, 0.03), 0.03, (3.0, 7.0)),    # mosquitero: un trino rápido que baja
+        (1500, (2, 4), (0.12, 0.25), 0.05, (4.0, 9.0)),     # mirlo: notas largas, más grave
+    ]
     k = 0
-    at = 0.5
-    while at < dur - 1.0:
-        bird(at, r.uniform(-0.8, 0.8), 2600 + r.random() * 1800, 300 + k, 0.03 + 0.02 * r.random())
-        k += 1
-        at += 0.9 + r.random() * 1.8
+    for f0, notes, gap, gain, every in especies:
+        p0 = r.uniform(-0.8, 0.8)
+        at = r.uniform(0.2, 2.0)
+        while at < dur - 1.0:
+            bird(at, float(np.clip(p0 + r.uniform(-0.25, 0.25), -0.9, 0.9)), f0 * (0.9 + 0.2 * r.random()), 300 + k,
+                 gain * (0.7 + 0.6 * r.random()), notes, gap)
+            k += 1
+            at += r.uniform(*every)
 
     out = sala(out, 3.0, 0.26, 5200, seed=1399)[:n]
     out = np.stack([hp(out[:, c], 90) for c in range(2)], 1)
-    out *= smooth(0, 0.8, t)[:, None]
-    return norm(fade_out(out, 1.6), 0.55)
+    # el bucle sin costura: los últimos AMB_XFADE s se funden encima de los primeros (potencia constante)
+    m = int(AMB_XFADE * SR)
+    body = out[:n - m].copy()
+    w = np.linspace(0, 1, m)[:, None]
+    body[:m] = body[:m] * np.sqrt(w) + out[n - m:] * np.sqrt(1 - w)
+    return norm(body, 0.6)
 
 
 # ---------------------------------------------------------------------------------------------- la música

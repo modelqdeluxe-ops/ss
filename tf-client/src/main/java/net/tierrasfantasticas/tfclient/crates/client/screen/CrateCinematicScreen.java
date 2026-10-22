@@ -305,9 +305,10 @@ public class CrateCinematicScreen extends Screen {
      * música al 0,40 y el ambiente al 0,35: todo hacia −22/−25 LUFS. (1.3.109, el dueño: «ese sonido horrendo de las
      * crates, odio ese sonido»: los efectos ya no son los sintetizados, son sonidos de Minecraft —encantamiento, brújula
      * imantada, cadena, faro, ancla, botón de madera, orbe de experiencia, subir de nivel y desafío completado—, que van
-     * a −20/−25 LUFS como los del juego: al 80 %.)
+     * a −20/−25 LUFS como los del juego: al 80 %.) (1.3.112, el dueño: «súbele volumen a la música de fondo de la crate»
+     * y «quiero una ambientación completa»: la música al 0,70 y el ambiente —ahora de un minuto, sin campanitas— al 0,45.)
      */
-    private static final float SFX = 0.8F, MUSIC_VOL = 0.40F, AMBIENT_VOL = 0.35F;
+    private static final float SFX = 0.8F, MUSIC_VOL = 0.70F, AMBIENT_VOL = 0.45F;
     /** «Aerie» va a −25 LUFS en sus primeros 18 s (medido; la sintetizada, −12/−18): casi entera. */
     private static final float MC_MUSIC_VOL = 0.9F;
 
@@ -359,7 +360,7 @@ public class CrateCinematicScreen extends Screen {
         Track(SoundEvent ev, SoundSource src, float volume, boolean loop) {
             super(ev, src, SoundInstance.createUnseededRandom());
             this.base = volume;
-            this.volume = volume;
+            this.volume = volume * CratePreOpenScreen.audioGain();
             this.looping = loop;
             this.relative = true;
             this.attenuation = SoundInstance.Attenuation.NONE;
@@ -374,14 +375,16 @@ public class CrateCinematicScreen extends Screen {
         @Override
         public void tick() {
             if (shared && step <= 0.0F && System.nanoTime() - sceneSeen > 600_000_000L) fadeOut(30);
-            if (step <= 0.0F) return;
-            fade -= step;
-            if (fade <= 0.0F) {
-                volume = 0.0F;
-                stop();
-                return;
+            if (step > 0.0F) {
+                fade -= step;
+                if (fade <= 0.0F) {
+                    volume = 0.0F;
+                    stop();
+                    return;
+                }
             }
-            volume = base * fade * fade;
+            // (1.3.112) el volumen de la esquina de la pantalla de antes de abrir (clic: silenciar; rueda: ±10 %)
+            volume = base * fade * fade * CratePreOpenScreen.audioGain();
         }
     }
 

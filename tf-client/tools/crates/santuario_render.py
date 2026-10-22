@@ -412,10 +412,13 @@ def water_mesh(sc, light, fullat):
             top += 1
         narrow = falling and fullat(x, top + 1, z)     # la columna cae de debajo de una piedra: un chorro más estrecho
         inn = (0.3 if narrow else 0.16) if falling else 0.0
-        x0 = x + (0 if is_water(x - 1, y, z) else inn)
-        x1 = x + 1 - (0 if is_water(x + 1, y, z) else inn)
-        z0 = z + (0 if is_water(x, y, z - 1) else inn)
-        z1 = z + 1 - (0 if is_water(x, y, z + 1) else inn)
+        # (1.3.112) solo por los lados que dan al aire: junto a la piedra o las enredaderas quedaba una rendija (= SanctuaryScene)
+        def aire(xx, yy, zz):
+            return sc.name(xx, yy, zz) == 'minecraft:air'
+        x0 = x + (inn if aire(x - 1, y, z) else 0)
+        x1 = x + 1 - (inn if aire(x + 1, y, z) else 0)
+        z0 = z + (inn if aire(x, y, z - 1) else 0)
+        z1 = z + 1 - (inn if aire(x, y, z + 1) else 0)
         # el estanque debajo de un chorro también lleva su superficie (si no, alrededor del pie se ve el fondo y la cascada
         # parece flotar) = SanctuaryScene.buildWaterFx
         under = above and not falling and 'level=8' in sc.get(x, y + 1, z)

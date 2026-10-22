@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 /**
  * (1.3.99) Un botón pequeño de cristal oscuro, encima del santuario de las hadas (la pantalla de antes de abrir y la de
  * las recompensas): translúcido, con un borde fino que se enciende del color de la rareza al pasar el ratón y sin sonido
- * (el dueño: «más pequeños esos botones… no quiero su sonido de amatista, nada»).
+ * (el dueño: «más pequeños esos botones… no quiero su sonido de amatista, nada»). (1.3.112) Con el color de la rareza.
  */
 public class GlassButton extends AbstractButton {
    private static final float HOVER_MS = 140.0F;
@@ -48,26 +48,28 @@ public class GlassButton extends AbstractButton {
       this.hover = Math.max(0.0F, Math.min(1.0F, this.hover + (target ? step : -step)));
       int x = this.getX(), y = this.getY(), w = this.getWidth(), h = this.getHeight();
       float lit = this.hover;
-      // el cristal: oscuro y translúcido, algo más claro arriba
-      int top = (int)(0x70 + 0x30 * lit) << 24 | 0x0E1A1C;
-      int bottom = (int)(0x90 + 0x30 * lit) << 24 | 0x050A0B;
+      // (1.3.112, el dueño: «dale un poco más de color a esos botones, se ven demasiado opacos») el cristal teñido del
+      // color de la rareza (más al pasar el ratón), el borde siempre de ese color y un brillo arriba
+      int top = (int)(0xB0 + 0x30 * lit) << 24 | mix(0x10181A, this.accent, 0.42F + 0.25F * lit);
+      int bottom = (int)(0xC8 + 0x28 * lit) << 24 | mix(0x060A0B, this.accent, 0.22F + 0.2F * lit);
       g.fillGradient(x + 1, y, x + w - 1, y + h, top, bottom);
       g.fillGradient(x, y + 1, x + 1, y + h - 1, top, bottom);
       g.fillGradient(x + w - 1, y + 1, x + w, y + h - 1, top, bottom);
-      // el borde fino: blanco tenue, y del color de la rareza al pasar el ratón
-      int border = mix(0xFFFFFF, this.accent, lit);
-      int ba = (int)(0x38 + 0x90 * lit);
+      int border = mix(this.accent, 0xFFFFFF, 0.25F + 0.35F * lit);
+      int ba = (int)(0xB0 + 0x4F * lit);
       g.fill(x + 1, y, x + w - 1, y + 1, ba << 24 | border);
       g.fill(x + 1, y + h - 1, x + w - 1, y + h, ba << 24 | border);
       g.fill(x, y + 1, x + 1, y + h - 1, ba << 24 | border);
       g.fill(x + w - 1, y + 1, x + w, y + h - 1, ba << 24 | border);
+      // el brillo del cristal: una franja clara arriba
+      g.fill(x + 2, y + 1, x + w - 2, y + 2, (int)(0x50 + 0x40 * lit) << 24 | 0xFFFFFF);
       if (lit > 0.01F) {
          // un brillo suave que sube desde abajo
-         g.fillGradient(x + 1, y + h / 2, x + w - 1, y + h - 1, 0, (int)(0x40 * lit) << 24 | this.accent);
+         g.fillGradient(x + 1, y + h / 2, x + w - 1, y + h - 1, 0, (int)(0x55 * lit) << 24 | this.accent);
       }
 
       Font font = Minecraft.getInstance().font;
-      int text = this.active ? mix(0xD8DEDC, 0xFFFFFF, lit) : 0x707070;
+      int text = this.active ? 0xFFFFFF : 0x707070;
       g.drawCenteredString(font, this.getMessage(), x + w / 2, y + (h - 8) / 2, 0xFF000000 | text);
    }
 

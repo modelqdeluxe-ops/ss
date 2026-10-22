@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -42,11 +41,6 @@ public class CratePreOpenScreen extends Screen {
    private GlassButton openButton;
    private GlassButton poolButton;
    private static final long UI_SAFETY_MS = 15000L;
-   private boolean confirming;
-   private int confirmAcceptX;
-   private int confirmRejectX;
-   private int confirmButtonY;
-   private int confirmButtonW;
    private String notice = "";
    private long noticeUntil;
    /** (1.3.99) El santuario de las hadas detrás (si la caja no tiene vídeo propio): el encuadre de la imagen del dueño. */
@@ -109,11 +103,10 @@ public class CratePreOpenScreen extends Screen {
          if (this.usableKey().isEmpty()) {
             this.notice = "§cTe falta la llave: " + CrateItems.requiredKeyName(this.config);
             this.noticeUntil = System.currentTimeMillis() + 4000L;
-            this.confirming = false;
-         } else if (!this.config.consumeKey) {
-            this.requestOpen();
          } else {
-            this.confirming = true;
+            // (1.3.112, el dueño: «al presionar abrir salta un mensaje de aceptar algo, quita esa mierda; solo al presionar
+            // abrir que se abra y ya») sin «¿Consumir 1 llave?»
+            this.requestOpen();
          }
       }
    }
@@ -121,7 +114,6 @@ public class CratePreOpenScreen extends Screen {
    private void requestOpen() {
       if (!this.handedOff) {
          this.handedOff = true;
-         this.confirming = false;
          boolean skip = this.config.allowSkip && this.minecraft != null && this.minecraft.player != null && this.minecraft.player.isShiftKeyDown();
          CrateMedia.stop();
          this.stopSanctuary();
@@ -159,47 +151,9 @@ public class CratePreOpenScreen extends Screen {
       }
 
       super.render(g, mouseX, mouseY, partialTick);
-      if (this.confirming) {
-         this.renderConfirm(g, mouseX, mouseY);
-      }
 
       this.renderNotice(g);
       this.renderTransitions(g);
-   }
-
-   private void renderConfirm(GuiGraphics g, int mouseX, int mouseY) {
-      int boxW = Math.min(this.width - 40, 226);
-      int boxH = 62;
-      int x = (this.width - boxW) / 2;
-      int y = (this.height - boxH) / 2;
-      g.fill(0, 0, this.width, this.height, 1711276032);
-      FSGui.panel(g, x, y, boxW, boxH);
-      g.drawCenteredString(this.font, "§f¿Consumir 1 llave?", x + boxW / 2, y + 10, -1);
-      ItemStack key = this.usableKey();
-      String keyName = key.isEmpty() ? "-" : key.getHoverName().getString();
-      g.drawCenteredString(this.font, "§7" + this.font.plainSubstrByWidth(keyName, boxW - 20), x + boxW / 2, y + 23, -5592406);
-      int bw = (boxW - 30) / 2;
-      int by = y + boxH - 26;
-      this.confirmAcceptX = x + 10;
-      this.confirmRejectX = x + 20 + bw;
-      this.confirmButtonY = by;
-      this.confirmButtonW = bw;
-      drawMiniButton(g, this.font, this.confirmAcceptX, by, bw, "Aceptar", -11746198, mouseX, mouseY);
-      drawMiniButton(g, this.font, this.confirmRejectX, by, bw, "Rechazar", -2796465, mouseX, mouseY);
-   }
-
-   private static void drawMiniButton(GuiGraphics g, Font font, int x, int y, int w, String label, int accent, int mouseX, int mouseY) {
-      int h = 18;
-      boolean hovered = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
-      g.fill(x, y, x + w, y + h, -16777216);
-      g.fill(x + 1, y + 1, x + w - 1, y + h - 1, hovered ? -7300954 : -9539986);
-      g.fill(x + 1, y + 1, x + w - 1, y + 2, hovered ? -4800821 : -7566196);
-      g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, -12632257);
-      if (hovered) {
-         g.fill(x + 1, y + h - 1, x + w - 1, y + h, accent);
-      }
-
-      g.drawCenteredString(font, label, x + w / 2, y + (h - 9) / 2 + 1, -1);
    }
 
    private void renderNotice(GuiGraphics g) {
@@ -267,6 +221,10 @@ public class CratePreOpenScreen extends Screen {
          g.fill(x + 14 - 1, y, x + 14, y + 14, 1627389951);
       }
 
+      if (hovered) {
+         String tip = (muted ? "Silenciado" : "Volumen " + Math.min(100, masterVolume) + " %") + " · clic: silenciar · rueda: subir/bajar";
+         g.drawString(this.font, tip, x - 4 - this.font.width(tip), y + 3, -1, true);
+      }
       String icon = muted ? "§8♪" : "§f♪";
       g.drawCenteredString(this.font, icon, x + 7, y + 3, 16777215);
       if (!muted) {
@@ -352,21 +310,7 @@ public class CratePreOpenScreen extends Screen {
    }
 
    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      if (this.confirming) {
-         if (button == 0 && mouseY >= (double)this.confirmButtonY && mouseY < (double)(this.confirmButtonY + 18)) {
-            if (mouseX >= (double)this.confirmAcceptX && mouseX < (double)(this.confirmAcceptX + this.confirmButtonW)) {
-               this.requestOpen();
-               return true;
-            }
-
-            if (mouseX >= (double)this.confirmRejectX && mouseX < (double)(this.confirmRejectX + this.confirmButtonW)) {
-               this.confirming = false;
-               return true;
-            }
-         }
-
-         return true;
-      } else if (button == 0 && this.isOverAudio(mouseX, mouseY)) {
+      if (button == 0 && this.isOverAudio(mouseX, mouseY)) {
          muted = !muted;
          applyVolume();
          saveVolumeState();
@@ -378,7 +322,9 @@ public class CratePreOpenScreen extends Screen {
 
    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
       if (this.isOverAudio(mouseX, mouseY) && delta != 0.0) {
-         masterVolume = Math.max(0, masterVolume + (delta > 0.0 ? 1 : -1));
+         // (de 10 en 10: de 1 en 1 no se notaba)
+         masterVolume = Math.max(0, Math.min(100, masterVolume + (delta > 0.0 ? 10 : -10)));
+         if (masterVolume > 0) muted = false;
          applyVolume();
          saveVolumeState();
          return true;
@@ -388,14 +334,10 @@ public class CratePreOpenScreen extends Screen {
    }
 
    public void onClose() {
-      if (this.confirming) {
-         this.confirming = false;
-      } else {
-         CrateMedia.stop();
-         this.stopSanctuary();
-         if (this.minecraft != null) {
-            this.minecraft.setScreen(null);
-         }
+      CrateMedia.stop();
+      this.stopSanctuary();
+      if (this.minecraft != null) {
+         this.minecraft.setScreen(null);
       }
    }
 
@@ -454,7 +396,16 @@ public class CratePreOpenScreen extends Screen {
    }
 
    private static void applyVolume() {
-      CrateMedia.applyVolume(muted ? 0.0F : (float)masterVolume / 100.0F);
+      CrateMedia.applyVolume(audioGain());
+   }
+
+   /**
+    * (1.3.112, el dueño: «quita el icono de subir y bajar volumen si no sirve, no funciona, o arréglalo») el volumen de la
+    * esquina: antes solo movía el vídeo y la música del editor (CrateMedia), no la música ni el ambiente del santuario,
+    * que son lo que suena; ahora también (CrateCinematicScreen.Track lo lee en cada tick). Clic: silenciar; rueda: ±10 %.
+    */
+   public static float audioGain() {
+      return muted ? 0.0F : Math.min(100, masterVolume) / 100.0F;
    }
 
    private static Path volumeFile() {

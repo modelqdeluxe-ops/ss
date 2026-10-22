@@ -100,6 +100,12 @@ final class PadUi {
         g.fill(x + 2, y + 1, x + w - 2, y + 2, PANEL_HI);
         g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, 0xFFC6DAEE);
         if (w >= 16 && h >= 16) corners(g, x, y, w, h);
+        // (1.3.112, el dueño: «a los diseños de las guis dentro de las apps dales o mejora la decoración; mejorar, no
+        // cambiar») un rombo de oro en el centro del borde de arriba y del de abajo, como el del marco del pad
+        if (w >= 60 && h >= 30) {
+            diamond(g, x + w / 2, y);
+            diamond(g, x + w / 2, y + h - 1);
+        }
     }
 
     /** Escuadras de oro de 4 px en las esquinas de dentro. */
@@ -122,9 +128,17 @@ final class PadUi {
         int top = state == 2 ? 0xFFFFFBEA : state == 1 ? 0xFFF2F9FF : 0xFFFFFFFF;
         int bot = state == 2 ? 0xFFFFEFC0 : state == 1 ? 0xFFDCEEFF : 0xFFF1F7FD;
         g.fill(x + 1, y + h, x + w - 1, y + h + 1, state == 1 ? 0x5A3496FA : 0x2D285AA0); // sombra
+        // (1.3.112) al pasar el ratón, un halo azul alrededor
+        if (state == 1) {
+            g.fill(x + 1, y - 1, x + w - 1, y, 0x553496FA);
+            g.fill(x - 1, y + 1, x, y + h - 1, 0x553496FA);
+            g.fill(x + w, y + 1, x + w + 1, y + h - 1, 0x553496FA);
+        }
         box(g, x, y, w, h, edge);
         if (w > 2 && h > 2) g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+        // (1.3.112) una sombra fina por dentro abajo: la tarjeta, con volumen
+        if (w > 4 && h > 6) g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, state == 2 ? 0x40B07A10 : 0x1E285AA0);
     }
 
     /** Medallón para un objeto: azul hielo, o del color de su fila (color != 0). */
@@ -334,10 +348,19 @@ final class PadUi {
             g.fillGradient(x + 1, y + 1, x + w - 1, y + 16, 0xFFFFFFFF, PANEL_TOP);
             g.fill(x + 2, y + 1, x + w - 2, y + 3, GOLD);
             g.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI);
+            // (1.3.112) la barra de oro de la elegida, rematada con un rombo pequeño en cada punta
+            if (w >= 24) {
+                for (int cx : new int[] {x + 3, x + w - 4}) {
+                    g.fill(cx - 1, y + 2, cx + 2, y + 3, GOLD_LO);
+                    g.fill(cx, y + 1, cx + 1, y + 4, GOLD_TEXT);
+                }
+            }
             PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x18265C, false);
         } else {
             box(g, x, y + 2, w, 13, 0xFF6A88B8);
             g.fillGradient(x + 1, y + 3, x + w - 1, y + 14, state == 1 ? 0xFFF2F9FF : 0xFFE2EFFB, state == 1 ? 0xFFCFE3F6 : 0xFFC0D7EE);
+            // (1.3.112) su brillo arriba, como los botones
+            g.fill(x + 2, y + 3, x + w - 2, y + 4, state == 1 ? 0xFFFFFFFF : 0xCCFFFFFF);
             PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x34507E, false);
         }
     }
@@ -347,7 +370,10 @@ final class PadUi {
         g.drawString(font(), bold(title), x, y + 1, color, false);
         int lx = x + boldWidth(title) + 5;
         if (lx < x + w - 8) {
-            g.fill(lx, y + 5, x + w - 6, y + 6, 0xFFDAB46E);
+            // (1.3.112) la línea de oro, más intensa junto al título y que se aclara hacia el rombo del final
+            int mid = lx + (x + w - 6 - lx) * 2 / 3;
+            g.fill(lx, y + 5, mid, y + 6, 0xFFD3A95A);
+            g.fill(mid, y + 5, x + w - 6, y + 6, 0xFFE6CC98);
             g.fill(lx, y + 6, x + w - 6, y + 7, 0xFFFFFFFF);
         }
         int cx = x + w - 4;

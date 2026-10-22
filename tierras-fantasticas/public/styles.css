@@ -122,6 +122,7 @@
   --tone-cosmeticos: #ff6fd8;
   --tone-crates: #3ee08f;
   --tone-vfx: #45e9ff;
+  --tone-protecciones: #5b8cff;
   --tone-monedas: #ffb23a;
   --tone-skills: #ff6b5b;
   /* Fondo de las vistas previas (Skills y VFX): va pintado en las imágenes de Skills (tools/skills.py → PREVIEW_BG,
@@ -759,12 +760,20 @@ h4 {
   filter: none;
 }
 
-/* Botón solo con icono (el del regalo en las tarjetas): cuadrado */
+/* Botón solo con icono (el del regalo en las tarjetas): cuadrado, del alto de su botón */
 .btn.btn-icon {
   flex: none;
+  width: 50px;
+  height: 50px;
   min-width: 0;
   padding: 0;
-  aspect-ratio: 1;
+}
+
+.btn-sm.btn-icon,
+.card-foot .btn.btn-icon,
+.sk-buy-row .btn.btn-icon {
+  width: 42px;
+  height: 42px;
 }
 
 .btn.btn-icon::before {
@@ -2890,7 +2899,8 @@ h4 {
     box-shadow 0.22s;
 }
 
-.tab:nth-child(n + 4) {
+/* (con cinco pestañas, las dos últimas más anchas; con seis, tres por fila) */
+.shop-tabs:has(.tab:nth-child(5):last-child) .tab:nth-child(n + 4) {
   grid-column: span 3;
 }
 
@@ -2899,6 +2909,7 @@ h4 {
 .tab[data-category='crates'] { --t: #3ee08f; --t-hi: #8ff0bd; --t-lo: #0a8a55; --t-ink: #023a24; }
 .tab[data-category='vfx'] { --t: #45e9ff; --t-hi: #82f0ff; --t-lo: #009db2; --t-ink: #00454e; }
 .tab[data-category='skills'] { --t: #ff6b5b; --t-hi: #ffa298; --t-lo: #be1300; --t-ink: #530800; }
+.tab[data-category='protecciones'] { --t: #5b8cff; --t-hi: #9db8ff; --t-lo: #2546b8; --t-ink: #0c1a55; }
 
 /* El dibujo sobre la placa de su color */
 .tab-art {
@@ -3001,6 +3012,25 @@ h4 {
   .shop-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 18px;
+  }
+
+  /* (1.3.112) seis secciones con Protecciones: en una fila, el dibujo un poco más pequeño */
+  .shop-tabs:has(.tab:nth-child(6)) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .shop-tabs:has(.tab:nth-child(6)) .tab {
+    grid-template-columns: 50px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .shop-tabs:has(.tab:nth-child(6)) .tab-art {
+    height: 50px;
+  }
+
+  .shop-tabs:has(.tab:nth-child(6)) .tab-label {
+    font-size: 14.5px;
   }
 
   .tab,
