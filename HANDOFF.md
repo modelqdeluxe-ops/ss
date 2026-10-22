@@ -190,7 +190,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.110) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.110, PUBLICADA) — lee esto primero
+
+Prueba en el juego (2e1ccc51, `[prueba-jefes=pad]`): `/tf bots add 4` → en el TAB «_Brisa_», «chinoXD29», «Fakozun»
+y «FedeeUwu» con su cara (y el jugador «Dev»); `remove all` los quita. Para volver a generar los nombres:
+`MOJANG_CACHE=<archivo.json> python3 -I tools/bots/nombres_bots.py` (la caché evita volver a preguntar a Mojang).
 
 **1.3.110: los nombres de los bots** (el dueño, con una captura del TAB: «los nombres son iguales, genera nombres únicos
 sin patrones idénticos» y «¿por qué siempre usas un apellido tipo Balón Rojo, Oso Marino? Investiga cómo usan los
