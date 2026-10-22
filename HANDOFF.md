@@ -190,20 +190,29 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.114, EN PRUEBA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.114, PUBLICADA) — lee esto primero
 
 **1.3.114: nueve quejas del dueño** (con 5 capturas; «toma en serio esto por favor» lo de la economía):
 1. **Las monedas se llaman Fantastic Coin y Fantastic Gacha Coin** (no «monedas» ni «moneda verde»): en el pad, los
    premios, los kits, el objeto (lang es/en) y `TFServerConfig` (`economy.currency` por defecto «Fantastic Coins»; el
    «monedas» de antes se cambia solo).
 2. **Void**: el soporte de la armadura del altar flotaba 1 bloque (la prueba lo midió: 1,00 sobre el cuarzo liso):
-   `VoidArmor.groundY` busca el suelo de verdad. Los caballeros del santuario «hacen la animación de volar»: la prueba
-   `corta` mide en el cliente su velocidad y lo que mueven las piernas (`BossTestClient.KNIGHT_MAX`) y saca capturas de
-   lado sin HUD (`caballero_N_andando`).
-3. **Encantados morados con shaders** (su captura: el inventario, los encantados enteros de 63,30,102): es el brillo
-   pintado sin mezcla; Oculus deja la mezcla bloqueada (`BlendModeStorage`) y el `enableBlend` del brillo se ignora.
-   `ShaderPacks.unlockBlendForGui` la suelta antes de pintar cada objeto en la interfaz (`GuiGraphicsMixin`). La prueba
-   del pad abre el inventario con encantados (`inventario_encantados` y `..._sin_arreglo`) y cuenta los bloqueos.
+   `VoidArmor.groundY` busca el suelo de verdad; **comprobado** (prueba `69ce034`: a 0,00 del cuarzo). Los caballeros
+   del santuario «hacen la animación de volar»: la prueba `corta` mide en el cliente su velocidad y sus piernas
+   (`BossTestClient.KNIGHT_MAX`: hasta 0,23 bloques/tick y piernas hasta 0,73) y en las capturas de lado sin HUD
+   (`caballero_N_andando`) andan por el suelo con las piernas en paso: **no se reproduce**. Si el dueño lo sigue viendo,
+   pedirle un vídeo (puede ser su servidor: si los mueve a saltos, el cuerpo se desliza sin mover las piernas).
+3. **Encantados morados con shaders** (su captura: el inventario, los encantados enteros de 63,30,102 con la forma de
+   su modelo): el brillo se pinta tapando el objeto en vez de sumarse. Causa (leído en Oculus 1.7/1.8 y en el
+   `shaders.properties` de Photon, que pone `blend.gbuffers_X = off` y mezclas por búfer `blend.X.colortexN`): Oculus
+   pone las mezclas por búfer con `glBlendFunci`/`glEnablei` sin pasar por la caché de `GlStateManager` y al acabar
+   «restaura» por esa caché (no hace nada), así que el búfer 0 se queda con la mezcla del paquete y el brillo (alfa 1)
+   con ONE, ONE_MINUS_SRC_ALPHA tapa el objeto. `ShaderPacks.fixBlendForGui` (`GuiGraphicsMixin`, antes de cada objeto
+   en la interfaz con un paquete puesto): suelta el bloqueo de `BlendModeStorage` y pone en OpenGL la mezcla de la caché
+   (los campos de `GlStateManager.BLEND` se buscan por tipo y su orden se comprueba en marcha). La prueba `75e21a6`
+   (Complementary; Photon no arranca en la máquina de la prueba) vio **93 desajustes** entre OpenGL y la caché al pintar
+   objetos; el inventario con encantados sale bien con el arreglo (sin romper textos ni transparencias). La primera
+   vez que hay desajuste se apunta en el registro del dueño («la mezcla de OpenGL no era la que cree Minecraft»).
 4. **TF Pad admin**: apps nuevas **TF PASS** (`PadAdminPass`, a_pase: temporada, niveles, XP y los premios de cada
    nivel) y **GACHAPÓN** (`PadAdminGacha`, a_gacha: precios, garantía, rarezas y premios con su peso); en **OFICIOS**
    cada oficio se abre (`PadAdminJobMissions`): lo que paga cada acción y sus misiones (todas sus claves) y misiones
