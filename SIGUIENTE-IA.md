@@ -1,6 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **1.3.106 (21 oct 2026)**: efectos de las crates con Oculus/Embeddium, rayas, música de Minecraft, el texto del pad en
+> **1.3.107 (22 oct 2026)**: las rayas del haz, del sol y de las cascadas; la música del dueño en bucle (paquete aparte);
+> los muebles de los NPC con su modelo (también en servidor) y la barra del camarero; el pad con el logo oscuro de fondo
+> (CHECKPOINT de `HANDOFF.md`).
+>
+> **1.3.106 (21 oct 2026), PUBLICADA**: efectos de las crates con Oculus/Embeddium, rayas, música de Minecraft, el texto del pad en
 > su orden, los muebles de los NPC y el panel de NPC (CHECKPOINT de `HANDOFF.md`; CRATES.md §2; NPCS.md §3). El dueño
 > juega con Oculus + Photon: prueba la cinemática y el pad con `[shaders=photon]`.
 >

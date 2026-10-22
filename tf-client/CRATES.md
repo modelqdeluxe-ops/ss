@@ -230,7 +230,12 @@ Oculus, que empieza su pasada ahí y la acaba al final, se quedaba «dibujando e
 Con Oculus, Embeddium o sus parientes, las partículas de la crate (las capas del editor) no se dibujan en la escena:
 salían como cuadrados blancos (`CrateCinematicScreen.particleMods`); sin ellos, como antes.
 
-**Las rayas al mover la cámara (1.3.106)**: cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
+**Las rayas al mover la cámara (1.3.107; el dueño: «tus rayas aún se ven»)**: la columna del haz de sol ya no tiene el
+borde marcado (era el perfil del brillo cortado a 0,16..0,84: de lado, dos líneas claras junto a las columnas de piedra)
+ni sus 9 vetas finas (de 0,1-0,25 de ancho); los rayos del sol en pantalla (`crate_post`) solo salen de lo claro del
+hueco del sol y empiezan en un punto distinto en cada píxel (cada luciérnaga, hada o espuma dejaba una ristra de rayitas
+hacia el sol, una por paso); los costados de las cascadas, vistos de canto (una tira de uno o dos píxeles de agua clara),
+se apagan (`crate_water`, con la normal de la cara por sus derivadas). Antes (1.3.106): cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
 del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel (`fwidth`) y `crate_post`
 suaviza los bordes (FXAA). Las hojas siguen recortadas, como antes: macizas o con una copia oscura dentro (para que por
 sus agujeros no se viera el cielo claro), en la prueba con Oculus/Embeddium salían con manchas blancas en los agujeros.
@@ -252,17 +257,15 @@ Los demás jugadores ven **la crate del mundo** a los mismos tiempos (`CrateRend
 `CrateBlockEntity.SCENE_*`): la llave que llega, entra y gira, el temblor, la tapa que se abre del todo, el pilar de luz
 y el premio que sube y gira encima hasta que se cierra. La de siempre (`CrateCinematicClassic`) dura lo mismo.
 
-**La música** (1.3.106, el dueño: «la música… estaba horrible»): `tfclient:crates.musica_mc`, «Aerie» de la banda
-sonora de Minecraft (Lena Raine; `minecraft:music/game/swamp/aerie`, la tienen todos: no se sube nada), elegida midiendo
-los primeros 18 s de las tranquilas de la 1.20.1 (suena desde los 0,7 s, −25 LUFS; «Floating Dream» empieza con 4,8 s
-de silencio, «An Ordinary Day» con 11, «Bromeliad» entra fuerte). La sintetizada (`sonidos_crates.py musica`) ya no va
-en el jar. Si un paquete de recursos trae `tfclient:sounds/crates/musica.ogg`, suena esa (`crates.musica`). Antes:
-`tfclient:crates.musica` (la nuestra, sintetizada, a los tiempos de la escena). La canción que eligió
-el dueño («La petite fille de la mer», 20 oct 2026: sus primeros 20 s, con entrada y salida suaves y volumen
-normalizado) va en un resource pack aparte que sustituye `assets/tfclient/sounds/crates/musica.ogg` (se le dio hecho,
-`TF-Santuario-musica.zip`); no se sube al repo ni a las Releases, que son públicos. El ambiente (`ambiente.ogg`) es de
-día: las cascadas, el viento en las hojas, gotas, pájaros lejos y campanitas de las hadas. La música y el ambiente se
-apagan despacio al final (`CrateCinematicScreen.Track`), no se cortan.
+**La música** (1.3.107; el dueño: «la música es horrible; pon esta —Dalarna—, extrae su audio y deja de fondo los
+sonidos ambientales de la fuente; 3 minutos y en bucle»): la música y el ambiente de la fuente suenan en bucle y
+compartidos (`CrateCinematicScreen.loops`): empiezan en la pantalla de antes de abrir y siguen en la apertura sin
+cortarse; en sus últimos 2 s, o cuando ya no se ve ninguna escena de crate, se apagan despacio. La música es
+`tfclient:crates.musica` si un paquete de recursos trae `tfclient:sounds/crates/musica.ogg`; si no, `crates.musica_mc`
+(«Aerie» de Minecraft). La del dueño (Dalarna: sus primeros 3:00 de los 3:32, entrada de 2 s y salida de 5 s para que
+el bucle no salte, −15 LUFS; `ffmpeg … -t 180 -af "afade=t=in:d=2,afade=t=out:st=175:d=5,loudnorm=I=-16"`) va en
+`TF-Santuario-musica.zip` (se le dio hecho; para que la oigan todos, en el paquete de recursos del servidor): no se sube
+al repo ni a las Releases, que son públicos. Antes («La petite fille de la mer», 20 oct 2026), igual.
 
 ### Piezas
 

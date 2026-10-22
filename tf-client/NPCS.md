@@ -188,6 +188,14 @@ escena, lo que hace al verte o al hacerle clic, andar entre sus pins, etc.
     sofá: Sit Couch y el lector del libro 1 (las piernas recogidas encima); taburete alto: los dos de la barra; banco:
     los dos tumbados en alto (Lay back 1, Lay front 2). Los de Townsfolks Vol 1 y del mercado ya traen su banco o su
     taburete en el modelo; los demás se sientan o se tumban en el suelo.
+  - (1.3.107) **El camarero de la taberna, detrás de su barra** (limpia la jarra con las manos siempre delante, a la
+    cintura: la barra, de 1 bloque de alto, por delante de lo más adelantado de sus manos); la barra («Bar counter»),
+    también en el panel. Los demás de la taberna gesticulan en el aire (hablan, ríen, pelean, el dúo de borrachos se
+    tambalea y uno acaba en el suelo): sin mueble. El pescador sentado y el de la barca traen su silla y su barca en
+    el modelo.
+  - (1.3.107) **Se dibujan con el modelo** (`Actor.renderModel`, por cualquiera de sus dos caminos: la entidad o los
+    efectos del mundo) y con la clave que manda el servidor (`BossEntity.sceneKey`, «pack|mob»): en el servidor del
+    dueño no salían. La primera vez que salen los de un NPC, el registro dice «TF NPC: <clave> con N mueble(s)».
   - Vista previa: `python3 -I tools/npcs/muebles.py --hoja <png> [mob…]` (cada uno con sus muebles, de lado y en 3/4,
     en tres momentos de su escena).
 
