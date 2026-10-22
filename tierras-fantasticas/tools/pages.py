@@ -39,13 +39,6 @@ BOOT = ("<script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList
         "else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}"
         "})(document)</script>")
 
-# Fondo vivo: el degradado de neón (la nebulosa que se desplaza y respira; styles.css, «Fondo vivo»). Sin estrellas
-# ni puntos de colores (el dueño los quitó). Detrás de todo, sin eventos del ratón.
-SKY = '''  <div class="sky" aria-hidden="true">
-    <i class="neb-a"></i><i class="neb-b"></i><i class="neb-glow"></i>
-  </div>
-'''
-
 LOADER = '''  <div class="loader" aria-hidden="true">
     <div class="loader-inner">
       <img src="/img/logo.webp" alt="" width="104" height="115">
@@ -71,8 +64,8 @@ PATHS = {'inicio': '/', 'tienda': '/tienda', 'mundo': '/mundo', 'ayuda': '/ayuda
 
 
 def head(title, desc, page, hero=False, preload_hero=False):
-    preload = ('\n  <link rel="preload" as="image" href="/img/nebula-1672.webp" media="(min-width: 761px)">'
-               '\n  <link rel="preload" as="image" href="/img/nebula-mobile.webp" media="(max-width: 760px)">'
+    preload = ('\n  <link rel="preload" as="image" href="/img/hero-1920.webp" media="(min-width: 761px)">'
+               '\n  <link rel="preload" as="image" href="/img/hero-768.webp" media="(max-width: 760px)">'
                )
     return f'''<!doctype html>
 <html lang="es">
@@ -81,7 +74,7 @@ def head(title, desc, page, hero=False, preload_hero=False):
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{title}</title>
   <meta name="description" content="{desc}">
-  <meta name="theme-color" content="#0a0d14">
+  <meta name="theme-color" content="#ffc58a">
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{desc}">
   <meta property="og:image" content="{SITE}/img/og.jpg">
@@ -98,7 +91,7 @@ def head(title, desc, page, hero=False, preload_hero=False):
   {BOOT}
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
-{SKY}{LOADER}'''
+{LOADER}'''
 
 
 def header(page):
@@ -305,10 +298,6 @@ def index():
       <div class="wrap">
         <div class="hero-grid">
           <div class="portal" data-portal aria-hidden="true">
-            <span class="portal-glow"></span>
-            <span class="portal-disc"></span>
-            <span class="portal-ring"></span>
-            <span class="portal-ring inner"></span>
             <img src="/img/logo.webp" alt="" width="743" height="820">
           </div>
           <div class="hero-copy">

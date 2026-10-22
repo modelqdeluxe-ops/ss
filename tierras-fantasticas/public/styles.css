@@ -1,62 +1,60 @@
 /* Tierras Fantásticas — estilos de la web.
-   Concepto «Portal del reino» (21 oct. 2026, el «cambio de aires» que pidió el dueño): el reino de noche (azul de
-   luna) con una aurora boreal animada (esmeralda, turquesa y azul; tools/nebula_bg.py) y, encima, todo MACIZO:
-   cabecera sólida, tarjetas de pizarra azul marino con su borde visible, botones de color liso con volumen de bloque.
-   Nada translúcido a la vista y NADA MORADO NI ROSA (el dueño: «quita ese diseño morado»; los nombres --a-*, --violet
-   y --pri-* se quedan por compatibilidad, pero ya son los colores de la aurora). Botón principal azul, comprar ámbar,
-   gratis esmeralda.
-   Tipografía: Unbounded solo en los titulares grandes (h1/h2) y Figtree en todo lo demás (botones y etiquetas en
-   minúscula, sin letras espaciadas en mayúsculas). Lo memorable es el portal de la portada: el emblema sobre un aro
-   de neón que gira despacio y sigue al ratón. Pensado primero para el móvil: lo que se anima solo usa transform y
-   opacity, y todo se apaga con «reducir movimiento».
-   Orden: tokens → base → carga → botones → cabecera → portada → bloques comunes → páginas → pie → tienda → ventanas →
-   cuenta → probador → tamaños de pantalla. */
+   Concepto «Atardecer» (22 oct. 2026, elegido por el dueño entre muchas propuestas; antes hubo una noche morada y una
+   aurora verde que rechazó): web CLARA. Arriba de cada página, el reino de día (hero-*.webp) que se funde con un cielo
+   melocotón; debajo, crema. Tarjetas blancas con borde cálido, texto marrón oscuro, acento naranja. El pie es una
+   isla oscura con sus propios colores. Las ventanas de VFX y Skills (.cx) y las placas de las crates siguen oscuras
+   (sus dibujos están hechos para fondo oscuro).
+   Botones «cel-shading» (el 4 de la hoja de botones cartoon): dos tonos cortados en diagonal, contorno grueso, trazo
+   de brillo y canto; la letra es la normal. Principal naranja · comprar oro (letra marrón) · secundario azul ·
+   gratis verde. Nada morado. Los nombres viejos de las variables (--a-*, --violet, --pri-*) se quedan por
+   compatibilidad, pero ya son los colores del atardecer.
+   Animaciones finas: solo las que responden a lo que haces (botones, tarjetas, cambio de pestaña) y la entrada de
+   cada página; nada se mueve solo en bucle. Tipografía: Unbounded en h1/h2 y Figtree en todo lo demás. */
 
 /* ---------- Tokens ---------- */
 
 :root {
   /* Noche: fondo azul marino casi negro y superficies de pizarra azul, cada una más clara que la anterior (todas
      macizas) */
-  --bg: #060b14;
-  --bg-2: #08101b;
-  --bg-rgb: 6 11 20;
-  --s0: #0a1220;
-  --s1: #111e31;
-  --s1-rgb: 14 24 41;
-  --s2: #17273d;
-  --s3: #1f314a;
-  --s4: #2a405e;
-  --line-rgb: 170 200 235;
+  --bg: #fff6ec;
+  --bg-2: #fff1e3;
+  --bg-rgb: 255 246 236;
+  --s0: #fffaf5;
+  --s1: #ffffff;
+  --s1-rgb: 255 255 255;
+  --s2: #fdf6ef;
+  --s3: #f7ebdf;
+  --s4: #f0dfcf;
+  --line-rgb: 120 80 50;
   /* Bordes macizos (antes eran blancos semitransparentes) */
-  --bd: #253955;
-  --bd-2: #365176;
-  --text: #f3f8ff;
-  --text-2: #cdd8e8;
-  --muted: #93a6bf;
-  --faint: #6b7f9b;
+  --bd: #f0dcc7;
+  --bd-2: #e3c6a8;
+  --text: #2a1d14;
+  --text-2: #4a3628;
+  --muted: #7d6656;
+  --faint: #a8917f;
   /* Acento: verde aurora (foco, lo elegido, enlaces) */
-  --a-200: #c9ffe9;
-  --a-300: #7ff5c4;
-  --a-400: #2fe6a0;
-  --a-500: #16c487;
-  --a-600: #0e8f62;
-  --a-rgb: 47 230 160;
-  --a2-rgb: 22 196 135;
-  --a3-rgb: 127 245 196;
+  --a-200: #ffd7b8;
+  --a-300: #d9541a;
+  --a-400: #f26b1d;
+  --a-500: #d95a12;
+  --a-600: #a8430a;
+  --a-rgb: 242 107 29;
+  --a2-rgb: 217 90 18;
+  --a3-rgb: 255 180 120;
   --on-accent: #ffffff;
   --on-accent-rgb: 255 255 255;
-  --pri-a: #2fe6a0;
-  --pri-b: #2b7bf0;
-  --pri-lip: #123f8c;
-  --pri-grad: linear-gradient(135deg, #2fe6a0 0%, #16c4a8 52%, #3b8cff 100%);
-  --shimmer: linear-gradient(110deg, #2fe6a0 0%, #16c4a8 30%, #3b8cff 55%, #3fc8ff 80%, #2fe6a0 100%);
+  --pri-a: #ff8a1f;
+  --pri-b: #f26b1d;
+  --pri-lip: #7a2e04;
+  --pri-grad: linear-gradient(135deg, #ffb45c 0%, #ff8a1f 52%, #e2620a 100%);
+  --shimmer: linear-gradient(110deg, #ffb45c 0%, #ff8a1f 30%, #ffcb2e 55%, #ff8a1f 80%, #ffb45c 100%);
   --shimmer-sea: linear-gradient(110deg, #057a55 0%, #0b7d6e 28%, #0b6f8c 55%, #1f64c4 80%, #057a55 100%);
   /* El aro del portal: los colores de la aurora */
-  --neon-ring: conic-gradient(from 0deg, #2fe6a0, #16c4a8, #3b8cff, #45e9ff, #2b7bf0, #2fe6a0);
-  --violet: #5ee0d0;
-  --violet-2: #1d8fb0;
-  --v-rgb: 94 224 208;
-  --v2-rgb: 29 143 176;
+  --violet: #ff8a1f;
+  --violet-2: #e2620a;
+  --v-rgb: 255 138 31;
+  --v2-rgb: 226 98 10;
   --cyan: #45e9ff;
   --c-rgb: 69 233 255;
   --ok: #3dffa8;
@@ -75,10 +73,10 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   /* Sombra de las tarjetas: un filo de luz arriba y dos sombras (la cercana y la lejana) */
-  --card-shadow: inset 0 1px 0 #2c4466, 0 2px 4px -2px #000, 0 24px 44px -26px #000;
-  --surface: #121e2f;
-  --surface-2: #1b2b42;
-  --surface-3: #253954;
+  --card-shadow: 0 1px 2px #5a2d0d1a, 0 14px 30px -18px #5a2d0d59;
+  --surface: #ffffff;
+  --surface-2: #fdf6ef;
+  --surface-3: #f7ebdf;
   --buy-grad: linear-gradient(110deg, #fff0a6 0%, #ffd34d 28%, #ffad2e 60%, #ff8a3d 82%, #fff0a6 100%);
   --buy-lip: #8a4705;
   --buy-fg: #2a1500;
@@ -110,32 +108,30 @@
   --ui-text: #f3f6fb;
   --ui-text-2: #c7d4e6;
   --ui-muted: #90a3bd;
-  --brand: #2b7bf0;
-  --brand-hover: #4a8ff5;
-  --brand-lip: #123f8c;
+  --brand: #ff8a1f;
+  --brand-hover: #ffa042;
+  --brand-lip: #7a2e04;
   --buy: #ffc23d;
   --buy-hover: #ffcd5e;
   --buy-ink: #1f1400;
   --get: #27c98a;
   --get-hover: #36d897;
   --get-ink: #03261a;
-  --sec: #263d5e;
-  --sec-hover: #314c71;
-  --sec-lip: #10213a;
+  --sec: #3db4ff;
+  --sec-hover: #5cc2ff;
+  --sec-lip: #0b3d70;
   --ok-2: #34d399;
   --tone: var(--a-400);
-  --neon-border: linear-gradient(135deg, #2fe6a0, #2dd4bf 45%, #45e9ff);
-  --edge: #263b58;
-  --edge-hot: #2fe6a0;
+  --neon-border: linear-gradient(135deg, #ff8a1f, #ffcb2e 45%, #3db4ff);
+  --edge: #f0dcc7;
+  --edge-hot: #f26b1d;
   --haze: 0 0 #0000;
-  --haze-hot: 0 0 0 1px #2fe6a0, 0 18px 40px -18px #0e8f62;
-  --grid-lines:
-    linear-gradient(#142338 1px, transparent 1px) 0 0 / 44px 44px,
-    linear-gradient(90deg, #142338 1px, transparent 1px) 0 0 / 44px 44px;
+  --haze-hot: 0 0 0 1px #f26b1d, 0 18px 40px -18px #a8430a;
+  --grid-lines: linear-gradient(#f3e3d2 1px, transparent 1px) 0 0 / 44px 44px, linear-gradient(90deg, #f3e3d2 1px, transparent 1px) 0 0 / 44px 44px;
   /* Textura de las placas de la tienda: grano fino de ruido (blanco al 6 %), sobre colores opacos */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232fe6a0' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
-  color-scheme: dark;
+  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f26b1d' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  color-scheme: light;
   interpolate-size: allow-keywords;
 }
 
@@ -155,7 +151,6 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
   color: var(--text);
   font: 400 16px/1.6 var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -163,141 +158,37 @@ body {
   overflow-x: hidden;
 }
 
-/* Fondo: la nebulosa de neón sobre el reino de noche (tools/nebula_bg.py la genera ya oscurecida), fija detrás de
-   todo. Es una sola capa fija que solo se acerca muy despacio (transform: la mueve la tarjeta gráfica). */
+/* Fondo «Atardecer» (oct. 2026): el cielo cálido (melocotón que se aclara hacia abajo) y, arriba, el reino de día
+   (hero-*.webp) que se funde con él. Una sola capa fija y quieta (no se anima: el dueño eligió animaciones finas, solo
+   las que responden a lo que haces). */
+body {
+  background: #fff6ec;
+}
+
+body {
+  position: relative;
+}
+
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.12) 0%, rgb(var(--bg-rgb) / 0.42) 55%, rgb(var(--bg-rgb) / 0.72) 100%),
-    url('/img/nebula-1672.webp') 62% 30% / cover no-repeat,
-    var(--bg);
-  transform-origin: 70% 30%;
-  will-change: transform;
-  animation: night-drift 60s ease-in-out infinite alternate;
-}
-
-/* ---------- Fondo vivo ---------- */
-
-/* Encima de la base fija (body::before) y debajo de la viñeta (body::after): la nebulosa A se desplaza y respira, la B
-   (con las nubes en otro sitio) aparece y se apaga, y así el color del cielo cambia despacio. Sin estrellas ni puntos
-   de colores (los quitó el dueño). Solo transform y opacity (lo mueve la tarjeta gráfica). En el móvil va solo la
-   nebulosa A. Lo genera tools/nebula_bg.py. */
-.sky {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sky i {
   position: absolute;
-  display: block;
-}
-
-.sky .neb-a,
-.sky .neb-b {
-  inset: -8%;
-  background: 62% 30% / cover no-repeat;
-}
-
-.sky .neb-a {
-  background-image: url('/img/nebula-a-1280.webp');
-  opacity: 0.8;
-  animation: neb-a 24s ease-in-out infinite alternate;
-}
-
-.sky .neb-b {
-  background-image: url('/img/nebula-b-1280.webp');
-  opacity: 0;
-  animation: neb-b 15s ease-in-out infinite alternate;
-}
-
-/* Corrientes de luz de la nebulosa: dos manchas grandes (rosa y cian) que cruzan el cielo despacio y cambian el color
-   del fondo; es lo que hace que la nebulosa se vea viva */
-.sky .neb-glow {
-  inset: -30%;
-  background:
-    radial-gradient(28% 22% at 30% 35%, rgb(var(--a-rgb) / 0.3), transparent 70%),
-    radial-gradient(24% 20% at 70% 55%, rgb(var(--c-rgb) / 0.22), transparent 70%),
-    radial-gradient(30% 24% at 55% 20%, rgb(var(--a2-rgb) / 0.26), transparent 70%);
-  animation: neb-glow 18s ease-in-out infinite alternate;
-}
-
-@keyframes neb-a {
-  from {
-    transform: translate3d(1.5%, -1%, 0) scale(1) rotate(0deg);
-    opacity: 0.6;
-  }
-  to {
-    transform: translate3d(-5%, 3%, 0) scale(1.14) rotate(1.5deg);
-    opacity: 1;
-  }
-}
-
-@keyframes neb-b {
-  0% {
-    transform: translate3d(4%, -2%, 0) scale(1.06);
-    opacity: 0;
-  }
-  100% {
-    transform: translate3d(-4%, 3%, 0) scale(1.16);
-    opacity: 0.95;
-  }
-}
-
-@keyframes neb-glow {
-  0% {
-    transform: translate3d(-8%, 4%, 0) rotate(-6deg) scale(1);
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate3d(8%, -5%, 0) rotate(8deg) scale(1.12);
-    opacity: 0.7;
-  }
-}
-
-/* Móvil: menos capas (la nebulosa A más pequeña) */
-@media (max-width: 760px) {
-  .sky .neb-a {
-    background-image: url('/img/nebula-a-640.webp');
-    background-position: 72% 30%;
-  }
-
-  .sky .neb-b {
-    display: none;
-  }
-
-  .sky .neb-glow {
-    animation-duration: 24s;
-  }
-}
-
-/* Viñeta: oscurece los bordes y la parte de abajo para que el contenido mande */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+  inset: 0 0 auto;
+  z-index: -2;
+  height: 980px;
   pointer-events: none;
   background:
-    linear-gradient(180deg, transparent 45%, rgb(var(--bg-rgb) / 0.55) 100%),
-    radial-gradient(130% 90% at 50% 35%, transparent 50%, rgb(var(--bg-rgb) / 0.75) 100%);
+    linear-gradient(180deg, #ffc58a40 0%, #ffe2c2b8 42%, #ffeedd 72%, #fff6ec 100%),
+    url('/img/hero-1920.webp') 50% 12% / cover no-repeat,
+    #ffc58a;
 }
 
 @media (max-width: 760px) {
   body::before {
+    height: 760px;
     background:
-      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.1) 0%, rgb(var(--bg-rgb) / 0.45) 50%, rgb(var(--bg-rgb) / 0.75) 100%),
-      url('/img/nebula-768.webp') 72% 30% / cover no-repeat,
-      var(--bg);
+      linear-gradient(180deg, #ffc58a33 0%, #ffe2c2d0 34%, #ffeedd 64%, #fff6ec 100%),
+      url('/img/hero-768.webp') 58% 0 / cover no-repeat,
+      #ffc58a;
   }
 }
 
@@ -446,7 +337,7 @@ h4 {
 }
 
 .text-grad {
-  color: #c9f5e3;
+  color: var(--a-300);
 }
 
 .muted {
@@ -709,56 +600,65 @@ h4 {
   }
 }
 
-/* ---------- Botones: bloques macizos con volumen ---------- */
+/* ---------- Botones: cartoon con sombreado de dos tonos («cel-shading») ---------- */
 
-/* Cada botón es un color liso con un canto más oscuro debajo (el volumen de un bloque). Al pasar el ratón sube y se
-   aclara; al pulsarlo se hunde. Texto en Figtree, en minúscula. Cada acción con su color, el mismo en toda la web. */
+/* Elegidos por el dueño (oct. 2026, «el 4»): como un dibujo animado. Cara con dos tonos cortados en diagonal (luz
+   arriba a la izquierda, sombra abajo a la derecha), contorno grueso del tono más oscuro, un trazo de brillo blanco
+   arriba a la izquierda y el canto debajo. La letra es la normal (Figtree), con una sombra del color del contorno.
+   Cada acción con su color, el mismo en toda la web: principal = naranja · comprar = oro · secundario = azul ·
+   gratis = verde. Variables: --l (luz), --c (cara), --d (sombra), --o (contorno y canto), --fg (texto). */
 .btn {
-  --a: var(--sec);
-  --b: var(--sec-hover);
-  --lip: var(--sec-lip);
+  --l: #8fd6ff;
+  --c: #3db4ff;
+  --d: #1d8fe0;
+  --o: #0b3d70;
   --fg: #fff;
-  --lift: 4px;
+  --lift: 5px;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 48px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: var(--r);
-  font: 800 15px/1 var(--font-body);
+  min-height: 50px;
+  padding: 0 24px;
+  border: 3px solid var(--o);
+  border-radius: 14px;
+  font: 900 16px/1 var(--font-body);
   letter-spacing: 0;
   white-space: nowrap;
   color: var(--fg);
-  background: var(--a);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.22),
-    0 var(--lift) 0 var(--lip),
-    0 12px 22px -14px #000;
+  text-shadow: 0 2px 0 var(--o);
+  background: linear-gradient(160deg, var(--l) 0 38%, var(--c) 38% 72%, var(--d) 72%);
+  box-shadow: 0 var(--lift) 0 var(--o);
   transition:
-    transform 0.22s var(--spring),
-    box-shadow 0.22s var(--ease),
-    background-color 0.18s,
-    color 0.18s;
+    transform 0.2s var(--spring),
+    box-shadow 0.2s var(--ease),
+    filter 0.2s;
+}
+
+/* El trazo de brillo */
+.btn::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 6px;
+  width: 22px;
+  height: 5px;
+  border-radius: 5px;
+  background: #fff;
+  transform: rotate(-8deg);
+  pointer-events: none;
 }
 
 .btn:hover {
-  background: var(--b);
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.28),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 16px 26px -14px #000;
+  filter: brightness(1.06) saturate(1.05);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 calc(var(--lift) + 2px) 0 var(--o);
 }
 
 .btn:active {
   transform: translateY(calc(var(--lift) - 1px));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.18),
-    0 1px 0 var(--lip),
-    0 4px 10px -6px #000;
+  box-shadow: 0 1px 0 var(--o);
   transition-duration: 0.06s;
 }
 
@@ -766,6 +666,7 @@ h4 {
   width: 18px;
   height: 18px;
   flex: none;
+  filter: drop-shadow(0 2px 0 var(--o));
   transition: transform 0.3s var(--ease);
 }
 
@@ -773,49 +674,44 @@ h4 {
   transform: translateX(4px);
 }
 
+/* Principal: naranja */
 .btn-primary,
-.btn-theme {
-  --a: var(--brand);
-  --b: var(--brand-hover);
-  --lip: var(--brand-lip);
-  --fg: #fff;
+.btn-theme,
+.btn-shop {
+  --l: #ffb45c;
+  --c: #ff8a1f;
+  --d: #e2620a;
+  --o: #7a2e04;
 }
 
-/* Secundario: pizarra clara con borde visible (nunca transparente) */
+/* Secundario: azul cielo */
 .btn-ghost {
-  --a: var(--sec);
-  --b: var(--sec-hover);
-  --lip: var(--sec-lip);
-  --fg: #fff;
-  box-shadow:
-    inset 0 0 0 1px var(--ui-line-2),
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 var(--lift) 0 var(--lip),
-    0 12px 22px -14px #000;
+  --l: #8fd6ff;
+  --c: #3db4ff;
+  --d: #1d8fe0;
+  --o: #0b3d70;
 }
 
-.btn-ghost:hover {
-  box-shadow:
-    inset 0 0 0 1px #6586b4,
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 16px 26px -14px #000;
-}
-
-/* Comprar: ámbar (lo único ámbar de la tienda junto a los precios, para que se vea a la primera) */
+/* Comprar: oro, con la letra marrón oscuro (el blanco no se lee sobre el oro) */
 .btn-buy {
-  --a: var(--buy);
-  --b: var(--buy-hover);
-  --lip: #9a5a00;
-  --fg: var(--buy-ink);
+  --l: #ffe27a;
+  --c: #ffcb2e;
+  --d: #f0a800;
+  --o: #7a4f00;
+  --fg: #4a2c00;
+  text-shadow: 0 1px 0 #fff1a8;
 }
 
-/* Gratis / obtener: esmeralda */
+.btn-buy svg {
+  filter: none;
+}
+
+/* Gratis / obtener: verde hierba */
 .btn-claim {
-  --a: var(--get);
-  --b: var(--get-hover);
-  --lip: #0b6b49;
-  --fg: var(--get-ink);
+  --l: #a8e86a;
+  --c: #5cbf3a;
+  --d: #3f9a26;
+  --o: #1f4d10;
 }
 
 .tab::before {
@@ -823,46 +719,31 @@ h4 {
 }
 
 .btn-discord {
-  --a: #5865f2;
-  --b: #6b76ff;
-  --lip: #2f3699;
-  --fg: #fff;
+  --l: #9aa3ff;
+  --c: #5865f2;
+  --d: #4752c4;
+  --o: #262c7a;
 }
 
 .btn-whatsapp {
-  --a: #1fae55;
-  --b: #25c463;
-  --lip: #0b5c2b;
-  --fg: #fff;
+  --l: #6fe39a;
+  --c: #25c463;
+  --d: #1aa14f;
+  --o: #0b4a24;
 }
 
-/* «Visitar la tienda» de la portada: el azul de la marca, el botón más importante de la web */
 .btn-shop {
-  --a: var(--brand);
-  --b: var(--brand-hover);
-  --lip: var(--brand-lip);
-  --fg: #fff;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.28),
-    0 var(--lift) 0 var(--lip),
-    0 0 0 1px #7fb2ff,
-    0 18px 40px -16px #2b7bf0;
-}
-
-.btn-shop:hover {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.32),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 0 1px #b9d5ff,
-    0 22px 46px -14px #4a8ff5;
+  min-height: 58px;
 }
 
 /* PayPal: su amarillo y su azul (como pide su guía de marca) */
 .btn-paypal {
-  --a: #ffc439;
-  --b: #ffd05e;
-  --lip: #c08a00;
+  --l: #ffe08a;
+  --c: #ffc439;
+  --d: #f0b020;
+  --o: #8a6500;
   --fg: #142c8e;
+  text-shadow: none;
   font-size: 15px;
 }
 
@@ -875,28 +756,35 @@ h4 {
   color: #0079c1;
 }
 
-/* Comprar con monedas: oro más claro que el de comprar con dinero, con texto oscuro */
+/* Comprar con monedas: oro más claro */
 .btn-coin {
-  --a: #f2d27a;
-  --b: #f8de96;
-  --lip: #8a6510;
-  --fg: #241700;
+  --l: #fff1b8;
+  --c: #f2d27a;
+  --d: #dcb550;
+  --o: #6b4d08;
 }
 
 .btn-sm {
-  --lift: 3px;
-  min-height: 40px;
+  --lift: 4px;
+  min-height: 42px;
   padding: 0 16px;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: 12px;
+  font-size: 14.5px;
+}
+
+.btn-sm::before {
+  left: 8px;
+  top: 5px;
+  width: 16px;
+  height: 4px;
 }
 
 .btn-lg {
-  --lift: 5px;
-  min-height: 56px;
+  --lift: 6px;
+  min-height: 58px;
   padding: 0 28px;
-  border-radius: 14px;
-  font-size: 16.5px;
+  border-radius: 16px;
+  font-size: 17px;
 }
 
 .btn-block {
@@ -907,11 +795,10 @@ h4 {
 .btn[disabled] {
   cursor: not-allowed;
   animation: none;
-  filter: grayscale(0.75) brightness(0.7);
+  filter: grayscale(0.8) brightness(0.95);
+  opacity: 0.75;
   transform: none;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    0 2px 0 var(--lip);
+  box-shadow: 0 3px 0 var(--o);
 }
 
 /* Mientras espera al servidor: una rueda delante del texto */
@@ -956,22 +843,11 @@ h4 {
   inset: 0 0 auto;
   z-index: 50;
   height: var(--header-h);
-  background: #08101c;
+  background: #ffffff;
   box-shadow:
-    inset 0 -1px 0 #22354f,
-    0 10px 30px -18px #000;
+    inset 0 -1px 0 #f0dcc7,
+    0 6px 20px -14px #8f4a10;
   view-transition-name: header;
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, #22354f 5%, #2fe6a0 35%, #2dd4bf 55%, #45e9ff 75%, #22354f 95%);
-  opacity: 0.85;
 }
 
 .header-inner {
@@ -1026,16 +902,14 @@ h4 {
 }
 
 .nav a:hover {
-  color: #fff;
+  color: var(--text);
   background: var(--s3);
 }
 
 .nav a[aria-current='page'] {
-  color: #fff;
-  background: var(--s4);
-  box-shadow:
-    inset 0 0 0 1px #3e5c85,
-    inset 0 -2px 0 var(--a-400);
+  color: var(--text);
+  background: var(--s3);
+  box-shadow: inset 0 -3px 0 var(--a-400);
 }
 
 .header-actions {
@@ -1316,7 +1190,7 @@ h4 {
 }
 
 .sheet nav a[aria-current='page'] {
-  border-color: #2fa889;
+  border-color: var(--a-400);
   background: var(--s3);
   box-shadow: inset 4px 0 0 var(--a-400);
 }
@@ -1478,8 +1352,7 @@ h4 {
   margin-top: 18px;
   font: 800 clamp(38px, 10vw, 84px) / 0.98 var(--font-display);
   letter-spacing: -0.04em;
-  color: #fff;
-  text-shadow: 0 6px 30px #05061299;
+  color: var(--text);
 }
 
 /* Las letras del título suben una a una (cada letra lleva --i en pages.py; las palabras no se parten) */
@@ -1488,25 +1361,15 @@ h4 {
   white-space: nowrap;
 }
 
-.js .hero-title .ch {
-  display: inline-block;
-  animation: letter-in 0.9s var(--spring) both;
-  animation-delay: calc(0.25s + var(--i) * 0.035s);
-}
-
-.js:not(.ready) .hero-title .ch {
-  animation-play-state: paused;
-}
 
 .hero .lead {
   max-width: 34em;
   margin: 18px 0 0;
-  color: #e2eaf5;
-  text-shadow: 0 2px 14px #04080f;
+  color: var(--text-2);
 }
 
 .hero .lead b {
-  color: #fff;
+  color: var(--text);
 }
 
 .hero-cta {
@@ -1528,74 +1391,26 @@ h4 {
   font-weight: 600;
 }
 
-/* El portal: un disco macizo con el aro de neón que gira despacio y, encima, el emblema (que sigue al ratón en el
-   escritorio: app.js pone --px y --py) */
+/* El emblema, grande y con su sombra; en el escritorio sigue un poco al ratón (app.js pone --px y --py) */
 .portal {
   --px: 0;
   --py: 0;
-  position: relative;
   display: grid;
   place-items: center;
-  width: min(66vw, 250px);
-  aspect-ratio: 1;
+  width: min(62vw, 240px);
   margin-bottom: 6px;
 }
 
-.portal-disc,
-.portal-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-}
-
-.portal-disc {
-  inset: 7%;
-  background: radial-gradient(circle at 50% 40%, #11524f 0%, #0d3040 45%, #0b1626 72%, #081120 100%);
-  box-shadow:
-    inset 0 0 0 1px #1f6b62,
-    inset 0 -18px 40px #060b14,
-    0 30px 60px -30px #000;
-}
-
-.portal-ring {
-  background: var(--neon-ring);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
-  animation: spin 26s linear infinite;
-}
-
-/* Un segundo aro, más fino y hacia el otro lado */
-.portal-ring.inner {
-  inset: 12%;
-  opacity: 0.55;
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
-  animation-duration: 40s;
-  animation-direction: reverse;
-}
-
-/* La luz del portal, detrás de todo (solo opacidad: late despacio) */
-.portal-glow {
-  position: absolute;
-  inset: -14%;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, #2b7bf0 0%, #ff5edb55 45%, transparent 72%);
-  opacity: 0.45;
-  animation: glow 6s ease-in-out infinite;
-}
-
 .portal img {
-  position: relative;
-  width: 74%;
+  width: 100%;
   height: auto;
-  filter: drop-shadow(0 18px 24px #000a);
-  transform: translate3d(calc(var(--px) * 14px), calc(var(--py) * 10px), 0) rotate(calc(var(--px) * 3deg));
+  filter: drop-shadow(0 24px 30px #5a2d0d66);
+  transform: translate3d(calc(var(--px) * 12px), calc(var(--py) * 8px), 0) rotate(calc(var(--px) * 2deg));
   transition: transform 0.6s var(--ease);
 }
 
 .js .portal {
-  animation: logo-in 1.1s var(--spring) both;
+  animation: logo-in 1s var(--spring) both;
 }
 
 .js:not(.ready) .portal {
@@ -1694,7 +1509,7 @@ h4 {
 }
 
 .lc-help {
-  --c: #2b7bf0;
+  --c: #ff8a1f;
 }
 
 /* Entrada escalonada de la portada cuando termina la carga */
@@ -1796,7 +1611,6 @@ h4 {
   margin-top: 14px;
   font: 800 clamp(34px, 7vw, 64px) / 1.02 var(--font-display);
   letter-spacing: -0.035em;
-  text-shadow: 0 6px 30px #04080f;
 }
 
 .page-hero p {
@@ -1805,7 +1619,6 @@ h4 {
   color: var(--text-2);
   font-size: 18px;
   text-wrap: pretty;
-  text-shadow: 0 2px 14px #04080f;
 }
 
 /* Página 404: el número enorme en el neón de la marca */
@@ -1881,11 +1694,6 @@ h4 {
   font-size: 17px;
 }
 
-.split > div:not(.media),
-.section-head {
-  text-shadow: 0 1px 12px #04080f;
-}
-
 .list-check {
   display: grid;
   gap: 12px;
@@ -1910,7 +1718,7 @@ h4 {
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  background: var(--check) center / 14px no-repeat, #0f3a2c;
+  background: var(--check) center / 14px no-repeat, #ffe4cc;
 }
 
 /* El TF Client: el título a la izquierda (fijo al bajar) y las cuatro ventajas a la derecha */
@@ -2013,7 +1821,7 @@ h4 {
   font: 800 18px/1 var(--font-display);
   box-shadow:
     0 0 0 5px var(--surface),
-    0 0 0 6px #1c6b57;
+    0 0 0 6px #f0b37a;
 }
 
 /* La línea que une un paso con el siguiente */
@@ -2025,7 +1833,7 @@ h4 {
   bottom: 6px;
   width: 2px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #22b884, #24365a);
+  background: linear-gradient(180deg, #ff8a1f, #f0dcc7);
 }
 
 .stepper h3 {
@@ -2258,6 +2066,16 @@ h4 {
   gap: 10px;
 }
 
+/* El correo es largo: en el móvil puede partirse en dos líneas */
+.contact-card .btn {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.2;
+  padding-block: 10px;
+}
+
 /* Banda final: Discord y WhatsApp sobre un panel macizo del verde de la aurora */
 .cta-band {
   display: grid;
@@ -2265,9 +2083,9 @@ h4 {
   overflow: hidden;
   padding: 32px 24px;
   border-radius: var(--r-xl);
-  border: 1px solid #1d5a55;
+  border: 2px solid #f0b37a;
   background:
-    radial-gradient(70% 120% at 100% 0%, #10584f 0%, #0f3a40 45%, #0f1c33 100%);
+    radial-gradient(70% 120% at 100% 0%, #ffb45c 0%, #ffd2a1 45%, #ffe8d1 100%);
   box-shadow: var(--card-shadow);
 }
 
@@ -2279,7 +2097,7 @@ h4 {
 .cta-band p {
   max-width: 34em;
   margin: 12px 0 0;
-  color: #d3f5ea;
+  color: var(--text-2);
   font-size: 17px;
 }
 
@@ -2458,7 +2276,7 @@ h4 {
 .contact-card a:not(.btn) {
   color: var(--a-300);
   text-decoration: underline;
-  text-decoration-color: #2a7a5e;
+  text-decoration-color: #f0b37a;
   text-underline-offset: 3px;
 }
 
@@ -2474,8 +2292,8 @@ h4 {
   margin-top: 16px;
   padding: 16px 18px;
   border-radius: var(--r);
-  border: 1px solid #6b5418;
-  background: #221d14;
+  border: 1px solid #f0c98a;
+  background: #fff4dc;
 }
 
 .legal-callout p {
@@ -2514,11 +2332,24 @@ h4 {
 /* ---------- Pie ---------- */
 
 .footer {
+  /* Isla oscura: sus propios colores (el resto de la web es clara) */
+  --text: #f4f1ec;
+  --text-2: #d9d2c9;
+  --muted: #a69d92;
+  --faint: #7a7168;
+  --s0: #1a1d24;
+  --s1: #21252d;
+  --s2: #282d36;
+  --s3: #313741;
+  --bd: #2f343d;
+  --bd-2: #444a55;
+  --surface: #21252d;
+  --card-shadow: none;
   position: relative;
   margin-top: 40px;
   padding: 48px 0 calc(40px + env(safe-area-inset-bottom));
-  background: #050911;
-  box-shadow: inset 0 1px 0 #1d2e47;
+  background: #171a21;
+  color: var(--text);
 }
 
 .footer::before {
@@ -2527,9 +2358,8 @@ h4 {
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, #1d2e47 5%, #2fe6a0 35%, #2dd4bf 55%, #45e9ff 75%, #1d2e47 95%);
-  opacity: 0.6;
+  height: 4px;
+  background: linear-gradient(90deg, #ffb45c, #ff8a1f, #ffcb2e);
 }
 
 .footer-inner {
@@ -2648,7 +2478,7 @@ h4 {
   padding: 16px 18px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
-  background: #0a1220;
+  background: var(--s0);
   color: var(--muted);
   font-size: 13.5px;
   line-height: 1.6;
@@ -2708,7 +2538,7 @@ h4 {
 }
 
 .card-foot .btn {
-  --lift: 3px;
+  --lift: 4px;
   min-height: 42px;
   padding: 0 18px;
   border-radius: 12px;
@@ -2719,7 +2549,7 @@ h4 {
   font: 800 22px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  color: #ffd76a;
+  color: #b9470c;
 }
 
 .price small {
@@ -2776,13 +2606,11 @@ h4 {
   margin-top: 14px;
   font: 800 clamp(38px, 7vw, 64px) / 1.02 var(--font-display);
   letter-spacing: -0.035em;
-  text-shadow: 0 6px 30px #04080f;
 }
 
 .shop-head .lead {
   max-width: 32em;
   margin: 14px 0 0;
-  text-shadow: 0 2px 14px #04080f;
 }
 
 .shop-trust {
@@ -3109,7 +2937,6 @@ h4 {
   max-width: 62ch;
   color: var(--text-2);
   font-size: 16px;
-  text-shadow: 0 1px 10px #04080f;
 }
 
 .products {
@@ -3217,7 +3044,7 @@ h4 {
 .account-card .cat {
   font: 800 13px/1.2 var(--font-body);
   letter-spacing: 0;
-  color: var(--t1, var(--a-300));
+  color: color-mix(in srgb, var(--t1, var(--a-400)) 55%, #2a1d14);
 }
 
 .product h3 {
@@ -3373,12 +3200,12 @@ h4 {
 
 .rk-step:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--s2);
 }
 
 .rk-step[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--rk) 55%, transparent);
-  background: linear-gradient(180deg, var(--rk3), transparent 90%);
+  border-color: var(--rk);
+  background: color-mix(in srgb, var(--rk) 18%, #fff);
 }
 
 .rk-gem {
@@ -3402,8 +3229,8 @@ h4 {
 }
 
 .rk-step-name {
-  font: 700 11px/1.1 var(--font-display);
-  color: var(--rk2);
+  font: 800 12px/1.1 var(--font-body);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
   white-space: nowrap;
 }
 
@@ -3552,14 +3379,14 @@ h4 {
   font: 800 11.5px/1 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
 }
 
 .rk-name {
   margin: 10px 0 0;
   font: 800 clamp(38px, 9vw, 64px) / 1 var(--font-display);
   color: var(--rk);
-  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--rk) 45%, #2a1d14);
   overflow-wrap: anywhere;
 }
 
@@ -3620,7 +3447,7 @@ h4 {
   padding: 4px;
   border-radius: 7px;
   background: var(--rk3);
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
 }
 
 /* Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos */
@@ -3636,7 +3463,7 @@ h4 {
 }
 
 .rk-cmds-name {
-  color: var(--rk);
+  color: color-mix(in srgb, var(--rk) 60%, #2a1d14);
 }
 
 .rk-cmds-head p {
@@ -3646,7 +3473,7 @@ h4 {
 }
 
 .rk-cmds-head b {
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
 }
 
 .rk-cmd-list {
@@ -3665,7 +3492,7 @@ h4 {
   padding: 10px 12px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
-  background: rgb(var(--bg-rgb) / 0.45);
+  background: var(--s0);
   font-size: 14.5px;
   animation: rise 0.5s var(--ease) both;
 }
@@ -3679,8 +3506,8 @@ h4 {
 }
 
 .rk-cmd-list li.is-new {
-  border-color: color-mix(in srgb, var(--rk) 45%, transparent);
-  background: linear-gradient(90deg, var(--rk3), rgb(var(--bg-rgb) / 0.45) 70%);
+  border-color: var(--rk);
+  background: color-mix(in srgb, var(--rk) 14%, #fff);
 }
 
 .rk-cmd-list code {
@@ -3688,9 +3515,9 @@ h4 {
   min-width: 86px;
   padding: 5px 9px;
   border-radius: 7px;
-  background: rgb(var(--bg-rgb) / 0.75);
+  background: #fff;
   border: 1px solid var(--bd-2);
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 50%, #2a1d14);
   font: 700 13px/1.2 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   text-align: center;
 }
@@ -3708,7 +3535,7 @@ h4 {
   padding: 4px;
   border-radius: 7px;
   background: var(--rk3);
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 50%, #2a1d14);
 }
 
 .rk-cmd-text {
@@ -3761,7 +3588,7 @@ h4 {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--rk) 45%, transparent);
   background: var(--rk3);
-  color: var(--rk2);
+  color: color-mix(in srgb, var(--rk) 55%, #2a1d14);
   font: 800 11px/1 var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -3844,12 +3671,12 @@ h4 {
   font: 800 30px/1.1 var(--font-display);
 }
 
+/* Comprar el rango: el botón cartoon en el color del rango */
 .btn-rank {
-  --a: var(--rk2);
-  --b: var(--rk);
-  --lip: color-mix(in srgb, var(--rk) 50%, #000);
-  --fg: #0b0d10;
-  --glow: var(--rk3);
+  --l: var(--rk2);
+  --c: var(--rk);
+  --d: color-mix(in srgb, var(--rk) 78%, #000);
+  --o: color-mix(in srgb, var(--rk) 35%, #000);
 }
 
 /* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
@@ -3951,9 +3778,9 @@ h4 {
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid var(--ui-line);
-  background: var(--ui-2);
-  color: var(--ui-text-2);
+  border: 2px solid var(--bd-2);
+  background: #fff;
+  color: var(--text-2);
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
@@ -3964,15 +3791,16 @@ h4 {
 }
 
 .chip:hover {
-  border-color: var(--ui-line-2);
-  background: var(--ui-3);
-  color: #fff;
+  border-color: var(--a-400);
+  background: var(--s2);
+  color: var(--text);
 }
 
 .chip[aria-pressed='true'] {
-  border-color: var(--brand);
+  border-color: #7a2e04;
   background: var(--brand);
   color: #fff;
+  text-shadow: 0 1px 0 #7a2e04;
 }
 
 .cos-themes {
@@ -4001,7 +3829,7 @@ h4 {
 .cos-theme h3 {
   margin: 0;
   font-size: 17px;
-  color: var(--t1, var(--text));
+  color: color-mix(in srgb, var(--t1, var(--text)) 55%, #2a1d14);
 }
 
 .cos-pieces {
@@ -4217,7 +4045,7 @@ h4 {
 .pieces {
   font-size: 13px;
   font-weight: 800;
-  color: var(--t1, var(--a-300));
+  color: color-mix(in srgb, var(--t2, var(--a-400)) 60%, #2a1d14);
 }
 
 .crate-tile .card-foot {
@@ -4450,7 +4278,7 @@ h4 {
   text-transform: none;
   letter-spacing: 0;
   font-weight: 500;
-  color: var(--t1, var(--a-300));
+  color: color-mix(in srgb, var(--t1, var(--a-400)) 55%, #2a1d14);
 }
 
 /* ---------- VFX y Skills (rework completo 13 oct. 2026) ---------- */
@@ -4988,17 +4816,6 @@ h4 {
 
 .cx-deal .btn {
   flex: 1 1 170px;
-}
-
-/* El secundario dentro de la ventana: grafito claro, macizo */
-.cx .btn-ghost {
-  --a: #2a313b;
-  --b: #353e4a;
-  --lip: #050608;
-  box-shadow:
-    inset 0 0 0 1px #4a5462,
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 var(--lift) 0 var(--lip);
 }
 
 /* Los paquetes de skills antiguos, al final de VFX */
@@ -7512,31 +7329,8 @@ h4 {
 
 /* ---------- Móvil ---------- */
 
-/* Teléfonos y tabletas: el fondo es una sola imagen vertical y quieta (nebula-mobile.webp, con la nebulosa y las
-   estrellas dentro) y nada se anima en bucle detrás del contenido. Las capas fijas miden lo que la pantalla con la
-   barra del navegador escondida (100lvh): al hacer scroll la barra aparece y desaparece sin que el fondo cambie de
-   tamaño (antes se volvía a dibujar entero en cada cambio: eso era el parpadeo y los tirones). */
+/* Teléfonos y tabletas: nada se anima en bucle (el fondo ya es quieto en todas partes; ver «Fondo «Atardecer»») */
 @media (max-width: 760px), (hover: none) and (pointer: coarse) {
-  .sky {
-    display: none;
-  }
-
-  body::before,
-  body::after {
-    inset: 0 0 auto;
-    height: 100lvh;
-  }
-
-  body::before {
-    background:
-      linear-gradient(180deg, transparent 0%, rgb(var(--bg-rgb) / 0.25) 55%, rgb(var(--bg-rgb) / 0.6) 100%),
-      url('/img/nebula-mobile.webp') center top / cover no-repeat,
-      var(--bg);
-    transform: none;
-    will-change: auto;
-    animation: none;
-  }
-
   /* Sin bucles en las tarjetas y las pestañas (el brillo de las crates se queda, quieto) */
   .crate-glow,
   .rk-aura,
@@ -8091,62 +7885,6 @@ h4 {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     animation-delay: 0s !important;
-  }
-
-  /* El dueño quiere ver la web viva también con las animaciones de Windows apagadas: se quedan el fondo que se
-     acerca muy despacio, el emblema que flota y su halo, y los brillos (movimientos lentos y pequeños) */
-  body::before {
-    animation-duration: 60s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  .portal-glow {
-    animation-duration: 6s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  .portal-ring {
-    animation-duration: 26s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  .portal-ring.inner {
-    animation-duration: 40s !important;
-  }
-
-  .crate-glow,
-  .rk-aura {
-    animation-duration: 3.6s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  .auth-tabs button[aria-selected='true'],
-  .cv-modes button[aria-pressed='true'],
-  .chip[aria-pressed='true'] {
-    animation-duration: 5s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  .crate-tile-art img.ok {
-    animation-duration: 7s !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  /* El fondo vivo (movimientos muy lentos) se queda */
-  .sky i {
-    animation-iteration-count: infinite !important;
-  }
-
-  .sky .neb-a {
-    animation-duration: 24s !important;
-  }
-
-  .sky .neb-b {
-    animation-duration: 15s !important;
-  }
-
-  .sky .neb-glow {
-    animation-duration: 18s !important;
   }
 
   /* La entrada de cada página (corta y suave) y el halo de los botones al pasar el ratón también se quedan */
