@@ -30,7 +30,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -140,22 +139,11 @@ public class CrateCinematicClassic extends Screen {
       }
    }
 
+   // (1.3.113) sin el estampido del Warden, la caída ni la mesa de encantamientos: el ambiente lo ponen los sonidos de
+   // CrateSfx (los propios de las crates)
    private void playAtmosphere(int t) {
-      switch (t) {
-         case 2:
-            this.playUi(SoundEvents.BEACON_POWER_SELECT, 0.6F, 1.3F);
-            this.playUi(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.5F, 1.2F);
-            break;
-         case 24:
-            this.playUi(SoundEvents.WARDEN_SONIC_BOOM, 0.6F, 0.7F);
-            this.playUi(SoundEvents.GENERIC_BIG_FALL, 0.8F, 0.72F);
-            break;
-         case 56:
-            this.playUi(SoundEvents.WOOD_HIT, 0.4F, 0.7F);
-            break;
-         case 68:
-            this.playUi(SoundEvents.CONDUIT_ACTIVATE, 0.4F, 1.6F);
-            this.playUi(SoundEvents.BEACON_POWER_SELECT, 0.4F, 1.7F);
+      if (t == 2) {
+         this.playUi(CrateSfx.tf("runas"), 1.0F, 0.6F);
       }
    }
 
@@ -195,14 +183,6 @@ public class CrateCinematicClassic extends Screen {
          if (t == 92 || t == 108 || t == 124) {
             float sp = Math.min(1.0F, (float)(t - 76) / 52.0F);
             CrateSfx.openSustain(this.sfxSink, this.winnerRarity, sp);
-         } else if (t == 156) {
-            this.playUi((SoundEvent)SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD.value(), 0.9F, 0.65F);
-         } else if (t == 196) {
-            this.playUi((SoundEvent)SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 0.88F, 0.7F);
-         } else if (t == 236) {
-            this.playUi((SoundEvent)SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD.value(), 0.85F, 0.75F);
-         } else if (t == 272) {
-            this.playUi((SoundEvent)SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 0.85F, 0.8F);
          }
       }
 
@@ -236,7 +216,7 @@ public class CrateCinematicClassic extends Screen {
          } else if (idx > this.lastReelIndex) {
             this.lastReelIndex = idx;
             float pitch = 0.85F + rp * 0.45F;
-            this.playUi(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, pitch, 0.28F);
+            this.playUi(CrateSfx.tf("tic"), pitch, 0.5F);
          }
       }
    }

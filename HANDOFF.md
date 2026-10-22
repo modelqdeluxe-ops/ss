@@ -190,7 +190,40 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.112) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.113) — lee esto primero
+
+**1.3.113: seis quejas del dueño** (con 3 capturas; la 1.3.112 está PUBLICADA):
+1. **Rayas blancas de la escena de las crates** (las veía antes de abrir, al moverse la cámara; «con capturas no las
+   aprecias»): medido en la captura `crate1_preabrir` de la prueba de la 1.3.112, píxeles sueltos de (237,237,211) junto
+   a los lados de la cascada del centro = el horizonte del cielo de `crate_sky`: eran **rendijas** entre caras (la
+   rasterización deja líneas de 1-2 muestras sin pintar y por ellas se veía el cielo claro de fondo). Pasada nueva
+   `crate_fill.fsh` (`ScenePost.finish`, antes del resplandor y de bajar la imagen): la muestra que está mucho más lejos
+   que lo que tiene a ambos lados (a 1-3 muestras, en horizontal o vertical, por la profundidad) toma el color de esos
+   lados.
+2. **Piedras de protección rehechas** (`tools/gen_claim_blocks.py`; «no me gusta el diseño, sus contornos; no pongas
+   el TF en todas las caras»): sin el marco biselado ni el panel ni los remaches; piedra oscura con grano y grietas,
+   vetas de cristal del color del nivel que serpentean y brillan de noche, el **TF solo delante**, arriba un cristal en
+   bruto del que salen las vetas, abajo solo piedra; las de pago, con pepitas de oro. Las imágenes de la tienda web
+   (`tierras-fantasticas/tools/protecciones.py`), rehechas.
+3. **Los bots en el pad**: Jugadores los enseña conectados (con su cara) y su ficha tiene oficio con nivel, misiones,
+   cazas, fotos, likes, exploraciones y viajes (`TFBots.card`: siempre lo mismo para el mismo bot, sale de su nombre,
+   un poco más cada vez que vuelve), sin clan; sin la pestaña REGALAR (un regalo a un bot se perdería).
+4. **Oni**: la captura del dueño tiene las piezas rojas del cofre en la lanza, las que quitó la 1.3.112: su juego no
+   tenía aún la 1.3.112. La prueba saca las lanzas en la mano (`oni_lanzas_mano`, `oni_lanzas_delante`).
+5. **TF Pass**: el premio del medallón a 1,5 (a 2 se salía del círculo y la etiqueta de la cantidad pisaba el aro y el
+   camino), la cantidad centrada dentro, el candado en su chapa redonda y la placa del número 1 más alta y separada.
+   **Protecciones**: ajuste nuevo en la zona (pad › Protecciones › la zona): «¿Cómo se ven los mensajes?» TÍTULO (el
+   texto en medio de la pantalla, del tamaño del subtítulo de Minecraft) o BARRA (como siempre); sin «[Protección]»
+   delante (`PlayerTracker.show`, `ClaimFlags.messageAsTitle`).
+6. **Sonidos de las crates, propios** (`tools/crates/sfx_crates.py`, «horribles, no te estás tomando el tiempo»): la
+   llave (aparece, vuela girando, golpea y entra, gira con trinquete y campana), las runas, el temblor que sube hasta
+   el golpe de la apertura, la apertura (golpe grave, la tapa, metales y colchón que florecen, lluvia de destellos), el
+   tic de la ruleta, la parada y **un premio por rareza** (común … mítica, cada uno más grande). Lo mecánico con
+   grabaciones CC0 de Kenney (`tools/crates/muestras/`), lo mágico sintetizado, con sala y volumen medido. La crate del
+   mundo usa sus versiones mono (`mundo_*`, `CrateSfx`); fuera el Warden y el valle de las almas de la clásica.
+   `sonidos_crates.py` solo hace ya el ambiente y la música.
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.112, PUBLICADA)
 
 **1.3.112: cinco cosas del dueño** (con 5 capturas):
 1. **Sets limpios**: las espadas y lanzas left/right de Oni llevaban el cofre de la crate de Oni pegado a la empuñadura y

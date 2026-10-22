@@ -58,6 +58,10 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             mc.setScreen(null);
         }
+        if (BossTest.cameraType >= 0) {
+            mc.options.setCameraType(net.minecraft.client.CameraType.values()[Math.min(2, BossTest.cameraType)]);
+            BossTest.cameraType = -1;
+        }
         if (BossTest.typePad != null) {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;

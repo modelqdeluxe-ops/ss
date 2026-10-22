@@ -58,8 +58,9 @@ public final class PlayerTracker {
         } else {
             Claim claim1 = PlayerTracker.resolveZone(uuid1);
             if (claim1 != null) {
-                MutableComponent mutablecomponent = claim1.getFlags().showLeave && claim1.getFlags().leaveMessage != null && !claim1.getFlags().leaveMessage.isBlank() ? Component.literal((String)"[Protecci\u00f3n] ").withStyle(ChatFormatting.GRAY).append((Component)Component.literal((String)PlayerTracker.truncate(claim1.getFlags().leaveMessage, 50)).withStyle(ChatFormatting.GOLD)) : Component.literal((String)"[Protecci\u00f3n] ").withStyle(ChatFormatting.GRAY).append((Component)Component.literal((String)"Saliendo de la zona ").withStyle(ChatFormatting.RED)).append((Component)Component.literal((String)PlayerTracker.truncate(PlayerTracker.zoneLabel(claim1), 24)).withStyle(new ChatFormatting[]{ChatFormatting.WHITE, ChatFormatting.BOLD}));
-                serverplayer.displayClientMessage((Component)mutablecomponent, true);
+                // (1.3.113, el dueño: «quita eso que dice (protección), solo el texto») sin «[Protección]» delante
+                MutableComponent mutablecomponent = claim1.getFlags().showLeave && claim1.getFlags().leaveMessage != null && !claim1.getFlags().leaveMessage.isBlank() ? Component.literal((String)PlayerTracker.truncate(claim1.getFlags().leaveMessage, 50)).withStyle(ChatFormatting.GOLD) : Component.literal((String)"Saliendo de la zona ").withStyle(ChatFormatting.RED).append((Component)Component.literal((String)PlayerTracker.truncate(PlayerTracker.zoneLabel(claim1), 24)).withStyle(new ChatFormatting[]{ChatFormatting.WHITE, ChatFormatting.BOLD}));
+                PlayerTracker.show(serverplayer, mutablecomponent, claim1.getFlags().messageAsTitle);
                 serverplayer.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 2.0f, 0.9f);
             }
             if (claim != null) {
@@ -68,8 +69,8 @@ public final class PlayerTracker {
                     lastClaim.remove(serverplayer.getUUID());
                     return;
                 }
-                MutableComponent mutablecomponent2 = claim.getFlags().showWelcome && claim.getFlags().welcomeMessage != null && !claim.getFlags().welcomeMessage.isBlank() ? Component.literal((String)"[Protecci\u00f3n] ").withStyle(ChatFormatting.GRAY).append((Component)Component.literal((String)PlayerTracker.truncate(claim.getFlags().welcomeMessage, 50)).withStyle(ChatFormatting.GREEN)) : Component.literal((String)"[Protecci\u00f3n] ").withStyle(ChatFormatting.GRAY).append((Component)Component.literal((String)"Entrando a la zona ").withStyle(ChatFormatting.GREEN)).append((Component)Component.literal((String)PlayerTracker.truncate(PlayerTracker.zoneLabel(claim), 24)).withStyle(new ChatFormatting[]{ChatFormatting.WHITE, ChatFormatting.BOLD}));
-                serverplayer.displayClientMessage((Component)mutablecomponent2, true);
+                MutableComponent mutablecomponent2 = claim.getFlags().showWelcome && claim.getFlags().welcomeMessage != null && !claim.getFlags().welcomeMessage.isBlank() ? Component.literal((String)PlayerTracker.truncate(claim.getFlags().welcomeMessage, 50)).withStyle(ChatFormatting.GREEN) : Component.literal((String)"Entrando a la zona ").withStyle(ChatFormatting.GREEN).append((Component)Component.literal((String)PlayerTracker.truncate(PlayerTracker.zoneLabel(claim), 24)).withStyle(new ChatFormatting[]{ChatFormatting.WHITE, ChatFormatting.BOLD}));
+                PlayerTracker.show(serverplayer, mutablecomponent2, claim.getFlags().messageAsTitle);
                 serverplayer.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 2.0f, 1.4f);
                 if (claim.getFlags().trespasserAlerts && !claim.canModify((Player)serverplayer)) {
                     long i = serverlevel.getGameTime();
@@ -92,6 +93,22 @@ public final class PlayerTracker {
                 lastClaim.put(serverplayer.getUUID(), uuid);
             }
         }
+    }
+
+    /**
+     * (1.3.113, el dueño: «que las piedras tengan un ajuste en el mensaje de bienvenida: el texto como un título, no tan
+     * grande ni tan pequeño, tipo Casa de Juan; que esté la opción original pero esa también») como título: el texto en
+     * el subtítulo de Minecraft (el tamaño mediano, en medio de la pantalla) con el título vacío; si no, encima de la
+     * barra, como siempre.
+     */
+    private static void show(ServerPlayer player, Component text, boolean asTitle) {
+        if (!asTitle) {
+            player.displayClientMessage(text, true);
+            return;
+        }
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(8, 50, 14));
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.empty()));
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(text));
     }
 
     private static UUID zoneId(Claim claim) {

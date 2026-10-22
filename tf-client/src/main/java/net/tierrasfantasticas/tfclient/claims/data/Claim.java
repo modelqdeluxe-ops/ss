@@ -342,6 +342,7 @@ public class Claim {
         jsonObject.addProperty("welcomeMessage", this.flags.welcomeMessage == null ? "" : this.flags.welcomeMessage);
         jsonObject.addProperty("showLeave", Boolean.valueOf(this.flags.showLeave));
         jsonObject.addProperty("leaveMessage", this.flags.leaveMessage == null ? "" : this.flags.leaveMessage);
+        jsonObject.addProperty("messageAsTitle", Boolean.valueOf(this.flags.messageAsTitle));
         jsonObject.addProperty("showBorder", Boolean.valueOf(this.flags.showBorder));
         jsonObject.addProperty("showParticles", Boolean.valueOf(this.flags.showParticles));
         jsonObject.addProperty("borderParticle", this.flags.borderParticle == null ? "happy" : this.flags.borderParticle);
@@ -473,6 +474,9 @@ public class Claim {
             if (jsonobject1.has("leaveMessage")) {
                 claim.flags.leaveMessage = jsonobject1.get("leaveMessage").getAsString();
             }
+            Claim.applyBool(jsonobject1, "messageAsTitle", flag -> {
+                claim.flags.messageAsTitle = flag;
+            });
             Claim.applyBool(jsonobject1, "showBorder", flag -> {
                 claim.flags.showBorder = flag;
             });

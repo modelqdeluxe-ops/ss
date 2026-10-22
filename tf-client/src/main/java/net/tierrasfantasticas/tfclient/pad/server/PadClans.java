@@ -153,8 +153,11 @@ public final class PadClans {
         com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(uuid, name);
         net.minecraft.server.MinecraftServer server = PadServer.server();
         ServerPlayer online = server == null ? null : server.getPlayerList().getPlayer(uuid);
+        net.tierrasfantasticas.tfclient.server.TFBots.Bot bot = net.tierrasfantasticas.tfclient.server.TFBots.byId(uuid);
         if (online != null) {
             profile.getProperties().putAll(online.getGameProfile().getProperties());
+        } else if (bot != null) {
+            profile.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", bot.value(), bot.signature()));
         } else {
             String[] skin = PadStats.skinOf(uuid);
             if (skin != null) {
