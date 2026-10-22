@@ -13,6 +13,19 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (22 oct 2026, 3.ª ronda): comprar en VERDE, rangos sin «nuevo», tarjetas con borde (hecho y publicado)
+Quejas: «¿por qué el botón de comprar son los mismos colores?» (comprar era naranja como «Tienda»), «en los rangos
+quita lo de nuevo y pon una breve explicación de cada comando, pero no cómo se usa», «las tarjetas de arriba no se
+contrastan» (los rangos, blancos sobre crema y el elegido casi igual), y las piezas rosas/doradas sobre caramelo.
+- **Comprar = VERDE** (`.btn-buy`, `.btn-rank`; #15803d con letra blanca, 5:1): ningún otro botón es verde. Navegar
+  (`Tienda` de la cabecera, «Ir a la tienda») = naranja `.btn-primary`. Gratis = azul. Secundario = blanco.
+- **Rangos**: cada rango es una tarjeta con borde de 2 px y canto; el elegido, lleno de su color con letra oscura.
+  Los comandos: solo «qué es» (`RANK_PERK_INFO` en `tools/crates.py`, p. ej. «Yunque portátil», «Vuelo libre»), sin
+  «nuevo» ni cómo se usa; después `python3 tools/crates.py`.
+- **Escenarios y miniaturas sobre CAFÉ** (`--stage`, `--tile` #6f5038), no caramelo: con piezas blancas, rosas y
+  doradas contrasta; caramelo se comía las piezas cálidas.
+- Las categorías de la tienda y las crates: borde de 2 px y canto (se distinguen del fondo).
+
 ### Web (22 oct 2026, 2.ª ronda): contraste medido, jerarquía de botones y escenarios caramelo (hecho y publicado)
 Queja del dueño sobre el Atardecer: «en la presentación de los modelos el fondo es blanco y con armaduras blancas no se
 ve… los colores de los botones son una mierda, todos se parecen, no contrastan… eres autónomo, estúdiate las buenas

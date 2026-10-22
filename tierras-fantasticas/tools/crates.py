@@ -231,15 +231,15 @@ RANK_PITCH = {
 # grupo de cada rango con estos permisos de EssentialsX y los hogares en su config.yml (sethome-multiple).
 # Cada ventaja: (comando que se ve en la web, texto, permisos de EssentialsX).
 RANK_PERK_INFO = {
-    'craft': ('/craft', 'Mesa de crafteo donde estés (también /workbench)', ['essentials.workbench']),
-    'anvil': ('/anvil', 'Yunque donde estés', ['essentials.anvil']),
-    'loom': ('/loom', 'Telar donde estés', ['essentials.loom']),
-    'hat': ('/hat', 'Ponte en la cabeza el bloque que tengas en la mano', ['essentials.hat']),
-    'enderchest': ('/enderchest', 'Tu cofre de ender donde estés', ['essentials.enderchest']),
-    'heal': ('/heal', 'Recupera toda la vida', ['essentials.heal']),
-    'feed': ('/feed', 'Quita el hambre', ['essentials.feed']),
-    'repair': ('/repair', 'Repara el objeto que llevas en la mano', ['essentials.repair']),
-    'fly': ('/fly', 'Vuela', ['essentials.fly']),
+    'craft': ('/craft', 'Mesa de crafteo portátil', ['essentials.workbench']),
+    'anvil': ('/anvil', 'Yunque portátil', ['essentials.anvil']),
+    'loom': ('/loom', 'Telar portátil', ['essentials.loom']),
+    'hat': ('/hat', 'Cualquier bloque como sombrero', ['essentials.hat']),
+    'enderchest': ('/enderchest', 'Tu cofre de ender, siempre a mano', ['essentials.enderchest']),
+    'heal': ('/heal', 'Vida al completo al instante', ['essentials.heal']),
+    'feed': ('/feed', 'Hambre saciada al instante', ['essentials.feed']),
+    'repair': ('/repair', 'Reparación de armas, herramientas y armaduras', ['essentials.repair']),
+    'fly': ('/fly', 'Vuelo libre', ['essentials.fly']),
 }
 # Hogares: /sethome, /home y /delhome, con el máximo de cada rango
 HOME_PERMS = ['essentials.sethome', 'essentials.home', 'essentials.delhome', 'essentials.sethome.multiple']
@@ -256,15 +256,13 @@ RANK_SERVER_PERKS = {
 
 
 def rank_server_perks(key):
-    """Lo que trae el rango en el servidor, marcando lo que no tenía el rango anterior."""
-    order = [r[0] for r in RANKS]
-    i = order.index(key)
+    """Lo que trae el rango en el servidor: cada comando con una explicación breve de lo que es (sin marcar lo nuevo
+    ni explicar cómo se usa: lo pidió el dueño)."""
     homes, perks = RANK_SERVER_PERKS[key]
-    prev = RANK_SERVER_PERKS[order[i - 1]] if i > 0 else (0, [])
-    out = [{'cmd': '/sethome', 'text': f'Hasta {homes} hogares; vuelve a ellos con /home', 'new': homes > prev[0]}]
+    out = [{'cmd': '/sethome', 'text': f'Hasta {homes} hogares a los que viajar al instante'}]
     for perk in perks:
         cmd, text, _ = RANK_PERK_INFO[perk]
-        out.append({'cmd': cmd, 'text': text, 'new': perk not in prev[1]})
+        out.append({'cmd': cmd, 'text': text})
     return out
 
 
