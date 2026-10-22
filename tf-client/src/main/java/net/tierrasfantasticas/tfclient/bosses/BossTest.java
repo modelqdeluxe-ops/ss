@@ -1727,6 +1727,8 @@ public final class BossTest {
             }
             case 286 -> openPad = "efectos";
             case 330 -> actPad = "tab:combate";
+            // (en el cliente de la prueba las estelas van apagadas: se encienden aquí, como el botón ENCENDER)
+            case 334 -> actPad = "on";
             case 360, 362, 364, 366, 368, 370, 372 -> shot(r, "pad_combate_" + (t - 358) / 2);
             // (1.3.109, el dueño: «en el pad te comiste cosas: texto borrado en las protes») una zona de verdad, su
             // página de ajustes bajando hasta «La zona», normal y con los recuadros después del texto; y un NPC dentro
@@ -1752,10 +1754,20 @@ public final class BossTest {
             case 456 -> shot(r, "pad_protecciones_470_recuadros_despues");
             case 458 -> {
                 net.tierrasfantasticas.tfclient.pad.TFPadScreen.testBoxesLast = false;
-                actPad = "§scroll:560";
+                actPad = "§scroll:680";
             }
-            case 468 -> shot(r, "pad_protecciones_560");
-            case 480 -> {
+            case 466 -> shot(r, "pad_protecciones_680");
+            // como en el juego del dueño: el texto, después de todo lo demás (ahí se borraba «La zona»); luego así y
+            // sin el arreglo (para ver que la prueba lo reproduce)
+            case 468 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testTextLast = true;
+            case 472 -> shot(r, "pad_protecciones_680_texto_despues");
+            case 474 -> net.tierrasfantasticas.tfclient.pad.TFPadScreen.testNoSoft = true;
+            case 478 -> {
+                shot(r, "pad_protecciones_680_texto_despues_sin_arreglo");
+                net.tierrasfantasticas.tfclient.pad.TFPadScreen.testNoSoft = false;
+                net.tierrasfantasticas.tfclient.pad.TFPadScreen.testTextLast = false;
+            }
+            case 481 -> {
                 closeScreen = true;
                 r.event("NPC en la zona tras 5 s: " + (padNpc == null ? "-" : String.format("%s, vida %.1f, ardiendo %s, en %.1f %.1f %.1f",
                         padNpc.isAlive() ? "vivo" : "MUERTO", padNpc.getHealth(), padNpc.isOnFire() ? "SÍ" : "no", padNpc.getX(), padNpc.getY(), padNpc.getZ())));

@@ -7,40 +7,52 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import java.io.IOException;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.crates.util.CrateParticles;
+import net.tierrasfantasticas.tfclient.vacio.ShaderPacks;
 
 /**
  * (1.3.109) Las partículas de las crates (CrateParticles): solo del cliente, sin registrar ni viajar por la red (como el
  * polvo mágico de las protecciones). Texturas propias en el atlas de partículas (textures/particle/crate_glow.png y
- * crate_spark.png, de tools/crates/particulas_crates.py) y pintadas sumando luz, a plena luz, sin escribir profundidad:
+ * crate_spark.png, de tools/crates/particulas_crates.py), premultiplicadas: el alfa es un halo del color de la rareza
+ * que tapa un poco lo de detrás y el centro suma luz por encima. Sumando luz sin más (la primera prueba), de día
+ * salían bolas blancas sobre el cielo. A plena luz y sin escribir profundidad:
  * <ul>
  *   <li>luz: un orbe suave que aparece, flota frenándose y sube un poco, y se apaga encogiendo;</li>
  *   <li>destello: una estrella de cuatro puntas pequeña que gira despacio y parpadea;</li>
  *   <li>fogonazo: una luz grande que se abre y se apaga en un instante (la apertura).</li>
  * </ul>
- * El color va hacia blanco en el centro (la textura es blanca y suma).
+ * Sin paquete de shaders van con su shader (crate_particle: el particle del juego descarta lo que tiene menos de 0,1
+ * de alfa y cortaba el halo en un aro); con uno, con el particle del juego, que el paquete sustituye por el suyo.
  */
 public final class CrateFxParticle extends TextureSheetParticle {
-   /** Sumando luz (como los halos de la escena) y sin escribir profundidad (no se tapan entre ellas). */
-   static final ParticleRenderType ADDITIVE = new ParticleRenderType() {
+   /** Premultiplicado (ONE, ONE_MINUS_SRC_ALPHA) y sin escribir profundidad (no se tapan entre ellas). */
+   static final ParticleRenderType PREMULTIPLIED = new ParticleRenderType() {
       @Override
       public void begin(BufferBuilder builder, TextureManager textures) {
+         if (shader != null && !ShaderPacks.inUse()) RenderSystem.setShader(() -> shader);
          RenderSystem.depthMask(false);
          RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
          RenderSystem.enableBlend();
-         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
          builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
 
@@ -53,15 +65,18 @@ public final class CrateFxParticle extends TextureSheetParticle {
 
       @Override
       public String toString() {
-         return "TFCLIENT_CRATE_ADDITIVE";
+         return "TFCLIENT_CRATE_PREMULTIPLIED";
       }
    };
+
+   /** crate_particle (lo registra {@link Shaders}); null si no cargó: entonces, el particle del juego. */
+   static ShaderInstance shader;
 
    private static final ResourceLocation GLOW_TEX = new ResourceLocation("tfclient", "crate_glow");
    private static final ResourceLocation SPARK_TEX = new ResourceLocation("tfclient", "crate_spark");
 
    private final int kind;
-   private final float baseSize, baseAlpha, spin, phase;
+   private final float baseSize, baseAlpha, spin, phase, baseR, baseG, baseB;
 
    private CrateFxParticle(ClientLevel level, int kind, double x, double y, double z, double vx, double vy, double vz, int rgb, float size,
                            TextureAtlasSprite sprite) {
@@ -73,8 +88,10 @@ public final class CrateFxParticle extends TextureSheetParticle {
       this.hasPhysics = false;
       this.setSprite(sprite);
       float r = (rgb >> 16 & 255) / 255.0F, g = (rgb >> 8 & 255) / 255.0F, b = (rgb & 255) / 255.0F;
-      // un poco hacia blanco: con el color puro, en la noche, salían manchas planas
-      this.setColor(Mth.lerp(0.18F, r, 1.0F), Mth.lerp(0.18F, g, 1.0F), Mth.lerp(0.18F, b, 1.0F));
+      // un poco hacia blanco: con el color puro, el centro salía plano
+      this.baseR = Mth.lerp(0.12F, r, 1.0F);
+      this.baseG = Mth.lerp(0.12F, g, 1.0F);
+      this.baseB = Mth.lerp(0.12F, b, 1.0F);
       this.phase = this.random.nextFloat() * 6.28F;
       switch (kind) {
          case CrateParticles.SPARK -> {
@@ -156,6 +173,10 @@ public final class CrateFxParticle extends TextureSheetParticle {
          }
       }
       this.quadSize = size;
+      // premultiplicado: el color también se apaga con el alfa
+      this.rCol = this.baseR * this.alpha;
+      this.gCol = this.baseG * this.alpha;
+      this.bCol = this.baseB * this.alpha;
       if (this.alpha > 0.004F) super.render(buffer, camera, partialTicks);
    }
 
@@ -166,6 +187,22 @@ public final class CrateFxParticle extends TextureSheetParticle {
 
    @Override
    public ParticleRenderType getRenderType() {
-      return ADDITIVE;
+      return PREMULTIPLIED;
+   }
+
+   /** Lo registra Forge al cargar los recursos. */
+   @Mod.EventBusSubscriber(modid = "tfclient", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+   public static final class Shaders {
+      private Shaders() {}
+
+      @SubscribeEvent
+      public static void onShaders(RegisterShadersEvent event) {
+         try {
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("tfclient", "crate_particle"),
+                    DefaultVertexFormat.PARTICLE), s -> shader = s);
+         } catch (IOException e) {
+            TFClient.LOGGER.error("TF Crates: no se pudo cargar crate_particle (las partículas van con el shader del juego)", e);
+         }
+      }
    }
 }

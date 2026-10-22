@@ -255,6 +255,14 @@ public final class BossTestClient {
             }
             return;
         }
+        // (1.3.109) si la cinemática se abre antes de acabar las de «sin cada cosa», se dejan: con lo último apagado
+        // la cinemática salía «sin shader de la escena»
+        if (offNext < OFF.length && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen) {
+            TFClient.LOGGER.info("Prueba de jefes: la cinemática se abrió antes de acabar las capturas sin cada cosa (van {} de {})", offNext, OFF.length);
+            net.tierrasfantasticas.tfclient.crates.client.screen.CrateCinematicScreen.testOff = 0;
+            offNext = OFF.length;
+            poolShot = true;
+        }
         // (las recompensas, cuando ya se ha sacado la de antes de abrir)
         if (!poolShot && poolAt == 0L && BossTest.SHOTS_PENDING.isEmpty()
                 && mc.screen instanceof net.tierrasfantasticas.tfclient.crates.client.screen.CratePreOpenScreen pre) {
