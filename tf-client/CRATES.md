@@ -235,7 +235,15 @@ borde marcado (era el perfil del brillo cortado a 0,16..0,84: de lado, dos líne
 ni sus 9 vetas finas (de 0,1-0,25 de ancho); los rayos del sol en pantalla (`crate_post`) solo salen de lo claro del
 hueco del sol y empiezan en un punto distinto en cada píxel (cada luciérnaga, hada o espuma dejaba una ristra de rayitas
 hacia el sol, una por paso); los costados de las cascadas, vistos de canto (una tira de uno o dos píxeles de agua clara),
-se apagan (`crate_water`, con la normal de la cara por sus derivadas). Antes (1.3.106): cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
+se apagan (`crate_water`, con la normal de la cara por sus derivadas). Y **supermuestreo** (`ScenePost.ssaa`): la
+escena se dibuja al doble de ancho y de alto (pantallas de hasta 2560×1440) y se baja al final (cada píxel, la media de
+cuatro muestras; de ahí salen el resplandor y el desenfoque, como antes, y `crate_post` lee la escena grande con
+`SceneScale`). Lo encontró la prueba con dos fotogramas seguidos (`crate1_preabrir` y `crate1_preabrir_otra`;
+`crate1_05_abre` y `_otra`, con la cámara en marcha): en la pared de enredaderas junto a la cascada alta, rayitas de
+1 px que cambiaban de un fotograma a otro (lo más fino que un píxel caía cada vez en un píxel distinto). Si el equipo no
+llega (de 60 fotogramas, más de la mitad pasan de 40 ms), vuelve a la resolución de la pantalla y lo dice el registro
+(en la prueba en el juego, nunca). La prueba también saca la vista de antes de abrir sin cada cosa
+(`CrateCinematicScreen.testOff`: efectos, rayos del post, post, agua, plantas) para saber qué pinta una raya. Antes (1.3.106): cada bloque 0,2 % más grande (tapa las juntas entre caras), los destellos
 del estanque y los hilos finos de las cascadas se apagan donde son más pequeños que un píxel (`fwidth`) y `crate_post`
 suaviza los bordes (FXAA). Las hojas siguen recortadas, como antes: macizas o con una copia oscura dentro (para que por
 sus agujeros no se viera el cielo claro), en la prueba con Oculus/Embeddium salían con manchas blancas en los agujeros.

@@ -19,6 +19,9 @@ uniform float Exposure;
 uniform vec2 Clip;
 uniform vec2 Focus;
 uniform float Time;
+// (1.3.107) cuántas muestras por lado tiene la escena (ScenePost.ssaa): 2, al doble de la pantalla; cada píxel lee el
+// centro de sus cuatro muestras (con el filtro lineal, su media)
+uniform float SceneScale;
 
 out vec4 fragColor;
 
@@ -76,7 +79,8 @@ float linearDepth(float d) {
 }
 
 void main() {
-    vec3 c = fxaa(SceneSampler, uv, 1.0 / vec2(textureSize(SceneSampler, 0)));
+    // (el suavizado, sobre los píxeles de la pantalla: con supermuestreo, cada lectura ya es la media de cuatro muestras)
+    vec3 c = fxaa(SceneSampler, uv, max(SceneScale, 1.0) / vec2(textureSize(SceneSampler, 0)));
     // profundidad de campo: lo que está lejos del foco (la crate) se desenfoca; lo de detrás, más
     float dist = linearDepth(texture(DepthSampler, uv).r);
     float off = dist - Focus.x;

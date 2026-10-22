@@ -264,6 +264,7 @@ public class CrateCinematicScreen extends Screen {
                 + String.format("; partículas de la crate: hasta %d a la vez, en %d fotogramas%s", particlesMax, particleFrames,
                         cratePos == null ? " (sin bloque)" : "")
                 + "; efectos: " + SceneFx.stats()
+                + (post != null ? "; escena a " + post.scale() + "x" : "; sin shader de la escena")
                 + (faulted ? " (FALLÓ: la de siempre)" : "");
         Minecraft mc = Minecraft.getInstance();
         for (SoundInstance s : playing) mc.getSoundManager().stop(s);
@@ -986,6 +987,7 @@ public class CrateCinematicScreen extends Screen {
         if (pp) {
             try {
                 if (post == null) post = new ScenePost();
+                ScenePost.frame();
                 post.ensure(mc.getWindow().getWidth(), mc.getWindow().getHeight());
                 post.begin();
                 Vector3f fwd = new Vector3f(-view.m02(), -view.m12(), -view.m22());

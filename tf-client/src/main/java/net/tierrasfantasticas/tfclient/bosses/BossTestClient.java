@@ -257,10 +257,19 @@ public final class BossTestClient {
             crateNext = 0;
             crateRun++;
         }
+        // (1.3.107) la de la apertura, otra vez en el fotograma siguiente (con la cámara en marcha: lo que parpadea)
+        if (abreOtra && BossTest.SHOTS_PENDING.isEmpty()) {
+            abreOtra = false;
+            BossTest.clientShot("crate1_05_abre_otra");
+            return;
+        }
         if (crateNext >= CRATE.length || cs.clock() < CRATE_AT[crateNext]) return;
         BossTest.clientShot("crate" + crateRun + "_" + String.format("%02d", crateNext) + "_" + CRATE[crateNext]);
+        abreOtra = crateRun == 1 && "abre".equals(CRATE[crateNext]);
         crateNext++;
     }
+
+    private static boolean abreOtra;
 
     /** Las barras de jefe que ve el jugador (BossHealthOverlay.events). */
     private static int bars(Minecraft mc) {
