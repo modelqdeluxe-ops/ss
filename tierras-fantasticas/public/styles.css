@@ -42,8 +42,8 @@
   --b-600: #2563eb;
   --b-700: #1d4ed8;
   --b-900: #172f6e;
-  --stage: radial-gradient(75% 65% at 50% 40%, #ecd0aa 0%, #cf9f6e 58%, #a8774b 100%);
-  --tile: #e3c49d;
+  --stage: radial-gradient(75% 65% at 50% 40%, #a47b53 0%, #7d5a3d 58%, #54392a 100%);
+  --tile: #6f5038;
   /* Noche: fondo azul marino casi negro y superficies de pizarra azul, cada una más clara que la anterior (todas
      macizas) */
   --bg: #fff6ec;
@@ -57,7 +57,7 @@
   --s4: #f0dfcf;
   --line-rgb: 120 80 50;
   /* Bordes macizos (antes eran blancos semitransparentes) */
-  --bd: #f0dcc7;
+  --bd: #e3cdb4;
   --bd-2: #e3c6a8;
   --text: #2a1d14;
   --text-2: #3f3127;
@@ -153,7 +153,7 @@
   --ok-2: #34d399;
   --tone: var(--a-400);
   --neon-border: linear-gradient(135deg, #ff8a1f, #ffcb2e 45%, #3db4ff);
-  --edge: #f0dcc7;
+  --edge: #e3cdb4;
   --edge-hot: #f26b1d;
   --haze: 0 0 #0000;
   --haze-hot: 0 0 0 1px #f26b1d, 0 18px 40px -18px #a8430a;
@@ -709,11 +709,10 @@ h4 {
    azul se distinguen también con daltonismo; naranja y verde, no). Letra oscura sobre naranja (el blanco sobre
    naranja no llega a 4.5:1). */
 
-/* Principal y comprar: naranja con letra marrón muy oscura */
+/* Principal (ir, entrar): naranja con letra marrón muy oscura */
 .btn-primary,
 .btn-theme,
-.btn-shop,
-.btn-buy {
+.btn-shop {
   --l: var(--o-300);
   --c: var(--o-400);
   --d: var(--o-500);
@@ -724,9 +723,19 @@ h4 {
 
 .btn-primary svg,
 .btn-theme svg,
-.btn-shop svg,
-.btn-buy svg {
+.btn-shop svg {
   filter: none;
+}
+
+/* Comprar: VERDE, un color propio que no usa ningún otro botón (pagar se distingue a la primera de navegar). Letra
+   blanca: el verde más claro del botón da 5:1 (medido con tools/contrast_audit.py) */
+.btn-buy {
+  --l: #15803d;
+  --c: #116c33;
+  --d: #0e5a2a;
+  --o: #052e16;
+  --fg: #fff;
+  text-shadow: 0 2px 0 var(--o);
 }
 
 /* Secundario: blanco con contorno y letra oscuros (también comprar con monedas, la alternativa al dinero) */
@@ -948,7 +957,7 @@ h4 {
 
 .nav a:hover {
   color: var(--n-900);
-  background: var(--n-100);
+  box-shadow: inset 0 -3px 0 var(--n-300);
 }
 
 .nav a[aria-current='page'] {
@@ -966,11 +975,7 @@ h4 {
   gap: 10px;
 }
 
-.header-actions .btn-primary {
-  display: none;
-}
-
-.header-actions .btn-buy {
+.header-actions .btn {
   --lift: 3px;
 }
 
@@ -2822,12 +2827,12 @@ h4 {
   gap: 8px;
   min-width: 0;
   padding: 6px 6px 10px;
-  border: 1px solid var(--bd-2);
+  border: 2px solid var(--n-400);
   border-radius: 14px;
-  background: var(--s1);
-  color: var(--text);
+  background: #fff;
+  color: var(--n-900);
   text-align: center;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 3px 0 var(--n-400);
   transition:
     transform 0.22s var(--ease),
     border-color 0.18s,
@@ -3208,16 +3213,15 @@ h4 {
 }
 
 /* La escalera de rangos, de menor a mayor; en el móvil se desliza de lado */
+/* Cada rango es una tarjeta con borde que se ve (2 px, casi 3:1 con el fondo); el elegido se llena del color del
+   rango, con letra oscura y su canto, como los botones */
 .rk-ladder {
   position: relative;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 92px;
-  gap: 6px;
-  padding: 6px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background: var(--s1);
+  grid-auto-columns: 96px;
+  gap: 8px;
+  padding: 4px 2px 8px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
@@ -3233,62 +3237,61 @@ h4 {
   justify-items: center;
   gap: 6px;
   padding: 12px 4px 10px;
-  border: 1px solid transparent;
-  border-radius: 13px;
-  background: transparent;
-  color: var(--text-2);
+  border: 2px solid var(--n-400);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--n-900);
   cursor: pointer;
   scroll-snap-align: center;
+  box-shadow: 0 3px 0 var(--n-400);
   transition:
-    background-color 0.3s,
-    border-color 0.3s,
-    transform 0.3s var(--ease);
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s var(--ease);
 }
 
 .rk-step:hover {
   transform: translateY(-2px);
-  background: var(--s2);
+  border-color: color-mix(in srgb, var(--rk) 60%, #1f1408);
 }
 
 .rk-step[aria-pressed='true'] {
-  border-color: var(--rk);
-  background: color-mix(in srgb, var(--rk) 18%, #fff);
+  border-color: color-mix(in srgb, var(--rk) 35%, #000);
+  background: var(--rk);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--rk) 35%, #000);
 }
 
 .rk-gem {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 3px;
   background: linear-gradient(135deg, var(--rk2, var(--t1)), var(--rk, var(--t2)));
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rk) 35%, #000);
   transform: rotate(45deg);
-  transition:
-    transform 0.4s var(--spring),
-    box-shadow 0.4s;
+  transition: transform 0.3s var(--spring);
 }
 
 .rk-step[aria-pressed='true'] .rk-gem {
-  transform: rotate(45deg) scale(1.3);
-  box-shadow:
-    0 0 0 3px rgba(0, 0, 0, 0.35),
-    0 0 18px var(--rk);
+  transform: rotate(45deg) scale(1.2);
+  background: #fff;
 }
 
 .rk-step-name {
-  font: 800 12px/1.1 var(--font-body);
-  color: color-mix(in srgb, var(--rk) 42%, #1f1408);
+  font: 800 13px/1.1 var(--font-body);
+  color: color-mix(in srgb, var(--rk) 40%, #1f1408);
   white-space: nowrap;
 }
 
 .rk-step-price {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--n-700);
 }
 
+.rk-step[aria-pressed='true'] .rk-step-name,
 .rk-step[aria-pressed='true'] .rk-step-price {
-  color: var(--text);
+  color: #1a1208;
 }
 
 .rk-show {
@@ -3556,11 +3559,6 @@ h4 {
   animation-delay: 0.08s;
 }
 
-.rk-cmd-list li.is-new {
-  border-color: var(--rk);
-  background: color-mix(in srgb, var(--rk) 14%, #fff);
-}
-
 .rk-cmd-list code {
   flex: none;
   min-width: 86px;
@@ -3593,18 +3591,6 @@ h4 {
   flex: 1;
   min-width: 0;
   color: var(--text);
-}
-
-.rk-new {
-  flex: none;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--rk);
-  color: #0b0d10;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 @media (min-width: 760px) {
@@ -3722,13 +3708,14 @@ h4 {
   font: 800 30px/1.1 var(--font-display);
 }
 
-/* Comprar el rango: el botón cartoon en el color del rango */
+/* Comprar el rango: el mismo verde que todos los botones de comprar */
 .btn-rank {
-  --l: var(--rk2);
-  --c: var(--rk);
-  --d: color-mix(in srgb, var(--rk) 78%, #000);
-  --o: color-mix(in srgb, var(--rk) 30%, #000);
-  --fg: #1a1208;
+  --l: #15803d;
+  --c: #116c33;
+  --d: #0e5a2a;
+  --o: #052e16;
+  --fg: #fff;
+  text-shadow: 0 2px 0 var(--o);
 }
 
 /* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
@@ -3964,6 +3951,7 @@ h4 {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+  border: 2px solid var(--n-300);
   transition:
     transform 0.3s var(--ease),
     border-color 0.2s,
@@ -7727,8 +7715,7 @@ h4 {
     margin-left: 28px;
   }
 
-  .ip-chip,
-  .header-actions .btn-primary {
+  .ip-chip {
     display: inline-flex;
   }
 

@@ -1426,21 +1426,19 @@
         </div>
         <div class="rk-buy">${buy}</div>
       </div>`;
-    // Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos (lo que no tenía el anterior, marcado)
-    const prev = all[n - 2];
-    const prevName = prev ? prev.rank?.prefix || prev.name.replace(/^Rango\s+/i, '') : '';
+    // Debajo del escaparate: lo que trae el rango en el servidor, cada comando con lo que es
     const cmds = $('#rk-cmds');
     cmds.setAttribute('style', rankVars(p));
     cmds.innerHTML = `
       <div class="rk-cmds-head">
         <h3>Lo que trae <span class="rk-cmds-name">${escapeHtml(prefix)}</span> en el servidor</h3>
-        <p>${prev ? `Lo marcado como <b>nuevo</b> no lo tiene ${escapeHtml(prevName)}.` : 'Tu primer rango del reino.'} Se activa solo al entrar al servidor.</p>
+        <p>Se activa solo al entrar al servidor.</p>
       </div>
       <ul class="rk-cmd-list">${(p.serverPerks || [])
         .map(
-          (x) => `<li class="${x.new && prev ? 'is-new' : ''}">
+          (x) => `<li>
             ${x.cmd ? `<code>${escapeHtml(x.cmd)}</code>` : `<span class="rk-cmd-ico">${ICON_CHECK}</span>`}
-            <span class="rk-cmd-text">${escapeHtml(x.text)}</span>${x.new && prev ? '<b class="rk-new">Nuevo</b>' : ''}
+            <span class="rk-cmd-text">${escapeHtml(x.text)}</span>
           </li>`,
         )
         .join('')}</ul>`;
@@ -2397,7 +2395,7 @@
         <div id="wd-body"><p class="muted">Cargando…</p></div>
       </section>
       <section class="panel account-card account-orders">
-        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>
+        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
 
@@ -2473,7 +2471,7 @@
     }
     if (!wd.view.owned.length) {
       box.innerHTML = `<div class="wd-empty"><p class="muted">Aquí aparecen las armaduras, cascos y alas de tus crates y tu rango, y
-        los cosméticos de cabeza y espalda.</p><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>`;
+        los cosméticos de cabeza y espalda.</p><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>`;
       return;
     }
     wd.slot ||= wd.view.slots.find((s) => wd.view.owned.some((x) => x.slot === s));
