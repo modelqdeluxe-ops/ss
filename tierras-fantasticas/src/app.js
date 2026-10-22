@@ -11,6 +11,9 @@ import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
 import { hashPassword, verifyPassword } from './password.js';
+import { createMailer, mailHtml, fieldsText } from './mail.js';
+import { receiptPdf, receiptRows, money, REFUND_POLICY } from './receipt.js';
+import { toBase64 } from './pdf.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const ORDER_ID_RE = /^[A-Z0-9]{5,40}$/;
@@ -31,6 +34,23 @@ const BRIDGE_TEMPLATES = 2;
 
 // Versión vigente de los Términos y del Aviso de privacidad (la fecha de config/legal.json, la misma que muestran).
 const TERMS_VERSION = legal.version;
+// Reembolsos: plazo para cancelar (días hábiles desde la entrega) y la penalización de un reembolso injustificado
+// (una disputa o contracargo pasado el plazo): baneo de IP del servidor (EssentialsX, tempbanip) de 6 días.
+const REFUND_DAYS = 5;
+const PENALTY = '6d';
+const CONTEXT_LABEL = { cuenta: 'al crear la cuenta', compra: 'al pagar', actualizacion: 'al aceptar la versión nueva' };
+
+// Días hábiles (lunes a viernes) que han pasado desde una fecha
+function businessDaysSince(iso, now = Date.now()) {
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return 0;
+  let days = 0;
+  for (let t = start.getTime() + 86400000; t <= now; t += 86400000) {
+    const d = new Date(t).getUTCDay();
+    if (d !== 0 && d !== 6) days++;
+  }
+  return days;
+}
 const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
 // --- Skills: las clases del TF Client (config/skills.json, de tools/skills.py) ---
@@ -194,6 +214,8 @@ export function createApp(env) {
   const log = env.LOGGER || console;
 
   const store = createStore(env.DB);
+  // Copias por correo para el dueño (src/mail.js): firmas de los Términos, recibos y reembolsos o disputas
+  const mailer = createMailer(env, log);
 
   // Lo del jugador para la web: lo suyo, lo equipado y, si tenía alguno, sus paquetes viejos (nombre y miniatura)
   async function vfxView(uuid) {
@@ -348,14 +370,48 @@ export function createApp(env) {
 
   // Prueba de la aceptación de los Términos: versión, fecha, quién, dónde y desde qué IP y navegador.
   async function recordTerms(req, { uuid, username, context, orderId }) {
-    await store.acceptTerms({
-      uuid,
-      username,
-      context,
-      version: TERMS_VERSION,
-      orderId,
-      ip: req.headers.get('CF-Connecting-IP') || null,
-      userAgent: req.headers.get('User-Agent') || null,
+    const ip = req.headers.get('CF-Connecting-IP') || null;
+    const userAgent = req.headers.get('User-Agent') || null;
+    await store.acceptTerms({ uuid, username, context, version: TERMS_VERSION, orderId, ip, userAgent });
+    // Copia de la firma para el dueño (si el correo está configurado; si falla, la firma ya está guardada)
+    const rows = [
+      ['Jugador', username || '—'],
+      ['UUID', uuid || '—'],
+      ['Cuándo firmó', `${CONTEXT_LABEL[context] || context}`],
+      ['Fecha y hora (UTC)', new Date().toISOString()],
+      ['Versión de los Términos', `${TERMS_VERSION} (${legal.date})`],
+      ['Pedido', orderId || '—'],
+      ['IP', ip || '—'],
+      ['Navegador', userAgent || '—'],
+      ['Términos', `${PUBLIC_URL || 'https://xn--tierrasfantsticas-hpb.store'}/terminos`],
+    ];
+    const intro = `${username || 'Un jugador'} aceptó los Términos y condiciones y el Aviso de privacidad de ${SERVER_NAME} marcando la casilla.`;
+    await mailer.send({
+      subject: `Firma de los Términos · ${username || uuid} · ${CONTEXT_LABEL[context] || context}`,
+      text: `${intro}\n\n${fieldsText(rows)}`,
+      html: mailHtml('Firma de los Términos y condiciones', intro, rows),
+    });
+  }
+
+  // Recibo (PDF) y sus datos: el del jugador y la copia del dueño (con IP y navegador de la aceptación)
+  async function receiptFor(order, owner) {
+    const acceptance = await store.termsForOrder(order.id);
+    const productName = orderView(order).product;
+    return { pdf: receiptPdf({ order, productName, acceptance, owner }), rows: receiptRows({ order, productName, acceptance, owner }) };
+  }
+
+  // Copia del recibo de cada compra pagada con dinero, para el dueño
+  async function mailReceipt(orderId) {
+    if (!mailer.enabled) return;
+    const order = await store.getOrder(orderId);
+    if (!order || !order.amount) return;
+    const { pdf, rows } = await receiptFor(order, true);
+    const intro = `Compra pagada en ${SERVER_NAME}: ${order.username}, ${money(order.amount, order.currency)}.`;
+    await mailer.send({
+      subject: `Recibo ${order.id} · ${order.username} · ${money(order.amount, order.currency)}`,
+      text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
+      html: mailHtml('Recibo de compra', intro, rows, REFUND_POLICY.join(' ')),
+      attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
     });
   }
 
@@ -1104,6 +1160,20 @@ export function createApp(env) {
       return json({ id, status: 'queued' });
     },
 
+    // El recibo en PDF de una compra pagada con dinero (la página del pedido lo descarga sola al confirmarse el pago)
+    'GET /api/order/:id/receipt': async (req, { params }) => {
+      const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
+      if (!order || !order.amount || !CLAIMED.includes(order.status)) return json({ error: 'Recibo no disponible.' }, 404);
+      const { pdf } = await receiptFor(order, false);
+      return new Response(pdf, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="recibo-${order.id}.pdf"`,
+          'Cache-Control': 'private, no-store',
+        },
+      });
+    },
+
     'GET /api/order/:id': async (req, { params }) => {
       const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
@@ -1506,6 +1576,7 @@ export function createApp(env) {
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
     await deliverDiscord(id, product, ctx.discord);
+    await mailReceipt(id);
     return 'queued';
   }
 
@@ -1520,6 +1591,39 @@ export function createApp(env) {
     log.warn(`Pedido ${order.id} (${order.username}): ${what}`);
     if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
     if (full && CLAIMED.includes(order.status)) await revoke(order, ctx);
+
+    // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasados los 5 días
+    // hábiles desde la entrega → baneo de IP del servidor de 6 días. Los reembolsos que hace el dueño no se castigan.
+    const since = businessDaysSince(order.deliveredAt || order.paidAt || order.createdAt);
+    const late = since > REFUND_DAYS;
+    let penalty = false;
+    if (dispute && late && CLAIMED.includes(order.status)) {
+      penalty = await store.queuePenalty(order, [
+        `tempbanip {player} ${PENALTY} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasados ${REFUND_DAYS} días hábiles)`,
+      ]);
+      if (penalty) {
+        await store.updateOrder(order.id, { refunded: `${what} fuera de plazo · baneo de IP de 6 días` });
+        log.warn(`Pedido ${order.id}: baneo de IP de 6 días en cola para ${order.username}`);
+      }
+    }
+
+    // Aviso para el dueño, con todo lo que sirve de prueba (y el recibo adjunto)
+    if (mailer.enabled) {
+      const fresh = (await store.getOrder(order.id)) || order;
+      const { pdf, rows } = await receiptFor(fresh, true);
+      const verdict = dispute
+        ? late
+          ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ' Se puso en cola el baneo de IP de 6 días.' : ''}`
+          : `Disputa abierta ${since} días hábiles después de la entrega (dentro del plazo de ${REFUND_DAYS}).`
+        : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
+      const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor. Responde la disputa con el recibo adjunto, la firma de los Términos y la entrega registrada.`;
+      await mailer.send({
+        subject: `${dispute ? 'DISPUTA' : 'Reembolso'} · pedido ${order.id} · ${order.username}`,
+        text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
+        html: mailHtml(dispute ? 'Disputa de un pago' : 'Reembolso de un pago', intro, rows, REFUND_POLICY.join(' ')),
+        attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
+      });
+    }
   }
 
   // Lo que hay que deshacer de un pedido: los sets que dio y el grupo de su rango (si sigue siendo su rango actual).

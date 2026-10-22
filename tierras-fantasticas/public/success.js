@@ -23,6 +23,22 @@
     $('message').textContent = message;
   }
 
+  function receipt(order) {
+    const link = $('receipt-pdf');
+    link.href = `/api/order/${encodeURIComponent(order.id || orderId)}/receipt`;
+    link.download = `recibo-${order.id || orderId}.pdf`;
+    link.hidden = false;
+    link.nextElementSibling.classList.replace('btn-primary', 'btn-ghost');
+    const key = `tf-recibo-${order.id || orderId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+    } catch {
+      // Sin almacenamiento: se descarga igualmente
+    }
+    link.click();
+  }
+
   if (!orderId) {
     show('bad', 'Sin pedido', 'Pedido no encontrado', 'No hemos encontrado ningún pedido asociado a esta página.');
     return;
@@ -127,6 +143,8 @@
         : `Tu recompensa llegará a ${order.username} en cuanto entre al servidor (si ya está dentro, en unos segundos).`);
       return;
     }
+    // Pagado con dinero: el recibo en PDF (además del de Stripe o PayPal) se descarga solo una vez y queda el botón
+    if (['queued', 'delivered', 'delivery_failed'].includes(order.status) && order.amount > 0) receipt(order);
     if (PAID.includes(order.status) && order.kind === 'skills') {
       show('ok', 'Pagado', '¡Gracias por tu compra!', `Tu pago se ha completado. ${order.product} ya es de ${order.username} para siempre y es su clase activa: la tendrá en el servidor en unos segundos si está conectado o al entrar. La clase activa se cambia en la tienda, en Skills.`);
       return;

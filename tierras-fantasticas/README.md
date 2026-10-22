@@ -226,6 +226,25 @@ están, darles los roles y volver a comprobarlo sin pasar por Discord.
 > rol automáticamente cuando LuckPerms les da el rango. Puedes usar las dos cosas a la vez: la tienda da el rol al
 > instante y DiscordSRV lo mantiene sincronizado (por ejemplo, si el rango caduca o se lo quitas).
 
+### Registros por correo y recibos (Resend)
+
+Cada aceptación de los Términos (versión, fecha, jugador, pedido, IP y navegador), cada recibo de compra (PDF adjunto)
+y cada aviso de reembolso o disputa (con el veredicto: dentro del plazo o reembolso injustificado) se envían al correo
+del dueño con [Resend](https://resend.com). Todo queda además en D1 (`terms_acceptances`, `orders`, `deliveries`).
+
+1. Crea una cuenta gratis en Resend **con el mismo correo donde quieres recibir las copias**.
+2. **API Keys → Create API Key** (permiso *Sending access*). En Cloudflare, como *Secret*: `RESEND_API_KEY` = la clave
+   y `RECORDS_EMAIL` = tu correo (no va en el repositorio: es público).
+3. Opcional: verifica tu dominio en Resend y añade `MAIL_FROM` (p. ej. `Tierras Fantásticas <registros@tu-dominio>`).
+   Sin él se usa el remitente de pruebas de Resend, que solo escribe al correo de la cuenta de Resend.
+
+Sin estos Secrets no se envía nada y las compras siguen igual. El jugador descarga su propio recibo en PDF al terminar
+de pagar (`GET /api/order/<id>/receipt`, solo pedidos pagados con dinero), aparte del de Stripe o PayPal.
+
+**Reembolso injustificado**: si llega una disputa o contracargo pasados 5 días hábiles desde la entrega (y el pedido se
+había entregado), además de retirar lo comprado se encola en el puente `tempbanip <jugador> 6d …` (EssentialsX), como
+dicen los Términos. Los reembolsos que hace el dueño desde Stripe o PayPal no banean.
+
 ### 4. Productos
 
 Edita `config/products.json`. Cada producto tiene:

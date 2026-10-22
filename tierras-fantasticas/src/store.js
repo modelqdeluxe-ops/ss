@@ -733,6 +733,30 @@ export function createStore(db) {
     await db.batch(statements);
   }
 
+  // La aceptación de los Términos hecha al pagar este pedido (la prueba que va en el recibo)
+  async function termsForOrder(orderId) {
+    await init();
+    const r = await db
+      .prepare('SELECT * FROM terms_acceptances WHERE order_id = ? ORDER BY id DESC LIMIT 1')
+      .bind(orderId)
+      .first();
+    return r ? { version: r.version, at: r.created_at, ip: r.ip, userAgent: r.user_agent, context: r.context } : null;
+  }
+
+  // Penalización por un reembolso injustificado (baneo de IP): otra entrega para el puente, aparte de la retirada
+  // (B<pedido>), que el servidor recibe aunque el jugador no esté conectado. Una sola por pedido.
+  async function queuePenalty(order, commands) {
+    await init();
+    const res = await db
+      .prepare(
+        `INSERT OR IGNORE INTO deliveries (order_id, revoke_of, username, uuid, commands, extra, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(`B${order.id}`, order.id, order.username, order.uuid || null, JSON.stringify(commands), JSON.stringify({ kind: 'penalizacion' }), now())
+      .run();
+    return res.meta.changes === 1;
+  }
+
   async function termsAcceptances(uuid) {
     await init();
     const { results } = await db
@@ -864,7 +888,8 @@ export function createStore(db) {
           db
             .prepare(
               `UPDATE orders SET refunded = COALESCE(refunded, 'reembolsado') || ' · retirado del servidor', updated_at = ?
-               WHERE id = (SELECT revoke_of FROM deliveries WHERE id = ?) AND COALESCE(refunded, '') NOT LIKE '%retirado%'`,
+               WHERE id = (SELECT revoke_of FROM deliveries WHERE id = ? AND order_id LIKE 'R%')
+                 AND COALESCE(refunded, '') NOT LIKE '%retirado%'`,
             )
             .bind(at, item.id),
         );
@@ -1009,6 +1034,8 @@ export function createStore(db) {
     setPassword,
     accountByUuid,
     acceptTerms,
+    termsForOrder,
+    queuePenalty,
     termsAcceptances,
     loginLocked,
     loginFailed,
