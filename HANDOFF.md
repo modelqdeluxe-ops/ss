@@ -199,7 +199,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    rasterización deja líneas de 1-2 muestras sin pintar y por ellas se veía el cielo claro de fondo). Pasada nueva
    `crate_fill.fsh` (`ScenePost.finish`, antes del resplandor y de bajar la imagen): la muestra que está mucho más lejos
    que lo que tiene a ambos lados (a 1-3 muestras, en horizontal o vertical, por la profundidad) toma el color de esos
-   lados.
+   lados (solo donde se ve el cielo: sin coste en lo demás). **Ojo: en la prueba `75389eb` las rayas siguieron**
+   (líneas claras de 1-2 px en los cantos verticales de los bloques de las paredes, (175,172,151) donde sin el shader
+   de la escena hay (40,37,31)): no son cielo. Solo salen con el shader de la escena; la prueba siguiente saca la vista
+   de antes de abrir sin supermuestreo, sin nitidez (claridad y FXAA de `crate_post`) y sin tapar rendijas
+   (`TEST_SSAA`, `TEST_SHARP`, `TEST_FILL`) para saber cuál las pinta.
 2. **Piedras de protección rehechas** (`tools/gen_claim_blocks.py`; «no me gusta el diseño, sus contornos; no pongas
    el TF en todas las caras»): sin el marco biselado ni el panel ni los remaches; piedra oscura con grano y grietas,
    vetas de cristal del color del nivel que serpentean y brillan de noche, el **TF solo delante**, arriba un cristal en
@@ -208,8 +212,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 3. **Los bots en el pad**: Jugadores los enseña conectados (con su cara) y su ficha tiene oficio con nivel, misiones,
    cazas, fotos, likes, exploraciones y viajes (`TFBots.card`: siempre lo mismo para el mismo bot, sale de su nombre,
    un poco más cada vez que vuelve), sin clan; sin la pestaña REGALAR (un regalo a un bot se perdería).
-4. **Oni**: la captura del dueño tiene las piezas rojas del cofre en la lanza, las que quitó la 1.3.112: su juego no
-   tenía aún la 1.3.112. La prueba saca las lanzas en la mano (`oni_lanzas_mano`, `oni_lanzas_delante`).
+4. **Oni, la «flecha»**: la prueba (`oni_lanzas_mano`) la sacó igual que en la captura del dueño: era un plano de 16x16
+   con un rayo amarillo y verde animado (`animation_02`) al lado de la hoja; en la mano cada fotograma sale suelto, como
+   una flecha flotando (al agrupar cubos no salía: el plano toca la hoja). Fuera de las 15 armas y del escudo de Oni,
+   en el mod, en el visor de la web y en sus miniaturas (`tools/limpiar_piezas.py`, `QUITAR_TEXTURA`). Las piezas rojas
+   junto a la empuñadura son del diseño (la guarda).
 5. **TF Pass**: el premio del medallón a 1,5 (a 2 se salía del círculo y la etiqueta de la cantidad pisaba el aro y el
    camino), la cantidad centrada dentro, el candado en su chapa redonda y la placa del número 1 más alta y separada.
    **Protecciones**: ajuste nuevo en la zona (pad › Protecciones › la zona): «¿Cómo se ven los mensajes?» TÍTULO (el

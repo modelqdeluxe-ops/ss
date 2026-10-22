@@ -41,6 +41,9 @@ public final class ScenePost {
     static ShaderInstance fxGlow, fxRays, fxSoft;
     /** (1.3.113) Tapa las rendijas entre caras por las que se veía el cielo (crate_fill.fsh). */
     static ShaderInstance fill;
+    /** (1.3.113) Para la prueba en el juego (CrateCinematicScreen.testOff): sin supermuestreo, sin nitidez ni suavizado
+     *  (la claridad y el FXAA de crate_post) y sin tapar rendijas, para saber qué pinta las rayas. */
+    public static volatile boolean testScale1, testNoSharp, testNoFill;
     /** Desde qué brillo florece (el agua turquesa y las luces sí; la crate y la piedra, no). */
     static final float THRESHOLD = 0.78F;
     /**
@@ -66,6 +69,7 @@ public final class ScenePost {
 
     /** A cuántas muestras por lado va la escena en una ventana de w x h (2 hasta 2560 x 1440 si la tarjeta puede). */
     private static int scaleFor(int w, int h) {
+        if (testScale1) return 1;
         int max = RenderSystem.maxSupportedTextureSize();
         return ssaa > 1 && (long)w * h <= 2560L * 1440L && w * ssaa <= max && h * ssaa <= max ? ssaa : 1;
     }
@@ -161,7 +165,7 @@ public final class ScenePost {
         float tw = 1.0F / a.width, th = 1.0F / a.height;
         // 0) (1.3.113) las rendijas por las que se veía el cielo, tapadas con lo de sus lados (crate_fill.fsh)
         RenderTarget full = scene;
-        if (fill != null && fixed != null) {
+        if (fill != null && fixed != null && !testNoFill) {
             fixed.bindWrite(true);
             ShaderInstance fs = fill;
             fs.setSampler("InSampler", scene.getColorTextureId());
@@ -206,6 +210,7 @@ public final class ScenePost {
         sh.safeGetUniform("Exposure").set(exposure);
         sh.safeGetUniform("Time").set(time);
         sh.safeGetUniform("SceneScale").set((float)scale);
+        sh.safeGetUniform("Sharp").set(testNoSharp ? 0.0F : 1.0F);
         quad(sh);
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);

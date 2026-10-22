@@ -30,6 +30,15 @@ sys.path.insert(0, os.path.join(WEB, 'tools'))
 LIMPIAR = [('oni', 'left_sword'), ('oni', 'right_sword'), ('oni', 'left_spear'), ('oni', 'right_spear'),
            ('bahamut', 'helmet')]
 
+# (1.3.113, el dueño: «no arreglaste la textura del modelo Oni, ¿no ves esa flecha?», con su captura y la de la prueba
+# en el juego) las armas de Oni llevan, al lado de la hoja, planos de 16x16 con un rayo amarillo y verde animado
+# (animation_02): en la mano, cada fotograma sale suelto junto al arma, como una flecha flotando. Al agrupar cubos no
+# salía (el plano toca la hoja). Fuera de todas las armas y del escudo de Oni (los pétalos, animation_01, y las alas,
+# se quedan).
+QUITAR_TEXTURA = [(('oni', o), 'animation_02') for o in (
+    'sword', 'big_sword', 'left_sword', 'right_sword', 'spear', 'left_spear', 'right_spear', 'axe', 'battle_axe',
+    'pickaxe', 'shovel', 'hoe', 'hammer', 'bow', 'shield')]
+
 
 def caja(e):
     f, t = np.array(e['from'], float), np.array(e['to'], float)
@@ -73,14 +82,22 @@ def que_quitar(elements):
     return sorted(i for g in gs if largo not in g for i in g)
 
 
+def con_textura(m, nombre):
+    """Los cubos con alguna cara de esa textura (por el final de su ruta)."""
+    claves = {k for k, v in m.get('textures', {}).items() if isinstance(v, str) and v.endswith('/' + nombre)}
+    return sorted(i for i, e in enumerate(m['elements'])
+                  if any(f.get('texture', '').lstrip('#') in claves for f in e.get('faces', {}).values()))
+
+
 def main():
     import build_items as B
     assets = os.path.normpath(os.path.join(MOD, '..', '..', '..'))
-    for set_id, obj in LIMPIAR:
+    trabajo = [(k, None) for k in LIMPIAR] + QUITAR_TEXTURA
+    for (set_id, obj), textura in trabajo:
         mod_path = os.path.join(MOD, f'{set_id}_{obj}.json')
         web_path = os.path.join(WEB, 'public', 'models', set_id, f'{obj}.json')
         m = json.load(open(mod_path))
-        fuera = que_quitar(m['elements'])
+        fuera = que_quitar(m['elements']) if textura is None else con_textura(m, textura)
         if not fuera:
             print(f'{set_id}/{obj}: ya está limpio')
             continue

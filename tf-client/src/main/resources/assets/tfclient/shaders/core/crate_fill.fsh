@@ -22,6 +22,11 @@ float lin(vec2 p) {
 
 void main() {
     vec3 c = texture(InSampler, uv).rgb;
+    // (solo donde se ve el cielo: lo demás, tal cual y sin coste)
+    if (texture(DepthSampler, uv).r < 0.99999) {
+        fragColor = vec4(c, 1.0);
+        return;
+    }
     float d = lin(uv);
     vec3 acc = vec3(0.0);
     float n = 0.0;

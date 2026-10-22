@@ -133,6 +133,8 @@ public class CrateCinematicScreen extends Screen {
      */
     public static volatile int testOff;
     public static final int TEST_FX = 1, TEST_RAYS = 2, TEST_POST = 4, TEST_WATER = 8, TEST_PLANTS = 16;
+    /** (1.3.113) Sin supermuestreo, sin la claridad ni el FXAA de crate_post, sin tapar rendijas (ScenePost.test*). */
+    public static final int TEST_SSAA = 32, TEST_SHARP = 64, TEST_FILL = 128;
     private int frames;
     private double frameSum, frameMax;
     private long lastFrame;
@@ -977,6 +979,9 @@ public class CrateCinematicScreen extends Screen {
 
         // 1) el cielo: con el shader, el atardecer en la textura de la escena; si no, el de siempre en 2D
         boolean pp = ScenePost.ready() && !postFailed && (testOff & TEST_POST) == 0;
+        ScenePost.testScale1 = (testOff & TEST_SSAA) != 0;
+        ScenePost.testNoSharp = (testOff & TEST_SHARP) != 0;
+        ScenePost.testNoFill = (testOff & TEST_FILL) != 0;
         if (!saidHow) {
             // (1.3.103, el dueño: «la escena no me mostraba los efectos») con qué se dibuja, una vez por cinemática
             saidHow = true;
