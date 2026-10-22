@@ -155,19 +155,20 @@ final class PadAdminJobMissions {
         return b.build();
     }
 
-    private record Field(String key, String title, String help, String hint, ItemStack icon) {}
+    /** (el icono, al pintar: las monedas son objetos del mod y no existen aún al cargar la clase) */
+    private record Field(String key, String title, String help, String hint, java.util.function.Supplier<ItemStack> icon) {}
 
     private static final List<Field> FIELDS = List.of(
-            new Field("nombre", "Nombre", "El que ve el jugador.", "NOMBRE", new ItemStack(Items.NAME_TAG)),
-            new Field("descripcion", "Descripción", "Una línea (vacía: se explica sola).", "DESCRIPCIÓN", new ItemStack(Items.PAPER)),
-            new Field("icono", "Icono", "Un objeto: minecraft:wheat.", "ID DEL OBJETO", new ItemStack(Items.ITEM_FRAME)),
+            new Field("nombre", "Nombre", "El que ve el jugador.", "NOMBRE", () -> new ItemStack(Items.NAME_TAG)),
+            new Field("descripcion", "Descripción", "Una línea (vacía: se explica sola).", "DESCRIPCIÓN", () -> new ItemStack(Items.PAPER)),
+            new Field("icono", "Icono", "Un objeto: minecraft:wheat.", "ID DEL OBJETO", () -> new ItemStack(Items.ITEM_FRAME)),
             new Field("objetivo", "Objetivo", "Un id (minecraft:wheat), una etiqueta (#minecraft:logs), * o, al matar, hostil / animal.",
-                    "OBJETIVO", new ItemStack(Items.TARGET)),
+                    "OBJETIVO", () -> new ItemStack(Items.TARGET)),
             new Field("cantidad", "Cantidad", "Cuántos hacen falta (las diarias suben solas hasta x2,5 en la temporada).", "CANTIDAD",
-                    new ItemStack(Items.HOPPER)),
-            new Field("nivel", "Nivel del oficio", "Desde qué nivel le puede tocar.", "NIVEL (1 A 50)", new ItemStack(Items.EXPERIENCE_BOTTLE)),
-            new Field("recompensa.monedas", "Fantastic Coins", "Las que cobra al cumplirla.", "FANTASTIC COINS", PadKits.coinIcon(false)),
-            new Field("recompensa.xp", "XP del oficio", "La que da para subir de nivel el oficio.", "XP", new ItemStack(Items.LAPIS_LAZULI)));
+                    () -> new ItemStack(Items.HOPPER)),
+            new Field("nivel", "Nivel del oficio", "Desde qué nivel le puede tocar.", "NIVEL (1 A 50)", () -> new ItemStack(Items.EXPERIENCE_BOTTLE)),
+            new Field("recompensa.monedas", "Fantastic Coins", "Las que cobra al cumplirla.", "FANTASTIC COINS", () -> PadKits.coinIcon(false)),
+            new Field("recompensa.xp", "XP del oficio", "La que da para subir de nivel el oficio.", "XP", () -> new ItemStack(Items.LAPIS_LAZULI)));
 
     private static Field field(String key) {
         for (Field fd : FIELDS) if (fd.key.equals(key)) return fd;
@@ -194,7 +195,7 @@ final class PadAdminJobMissions {
                 case "monedas", "xp" -> dec(TFJson.dec(p, k, 0));
                 default -> TFJson.str(p, k, "");
             };
-            b.row(PadAdminUi.value(fd.icon, fd.title, fd.help, value, "f:" + fd.key, f.equals(fd.key)));
+            b.row(PadAdminUi.value(fd.icon.get(), fd.title, fd.help, value, "f:" + fd.key, f.equals(fd.key)));
         }
         boolean sure = PadServer.confirming(player, APP_ID + ".borrar:" + id + ":" + i);
         b.row(PadAdminUi.button(new ItemStack(Items.BARRIER), "Borrar la misión", sure ? "Pulsa otra vez para borrarla." : "", "",

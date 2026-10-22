@@ -76,14 +76,15 @@ public final class PadAdminGacha {
     }
 
     /** Los campos de arriba: clave (a.b = el campo b del objeto a), título, explicación, icono y límites. */
-    private record Field(String key, String title, String help, ItemStack icon, long min, long max) {}
+    /** (el icono, al pintar: las monedas son objetos del mod y no existen aún al cargar la clase) */
+    private record Field(String key, String title, String help, java.util.function.Supplier<ItemStack> icon, long min, long max) {}
 
     private static final List<Field> FIELDS = List.of(
-            new Field("precio", "Precio de una tirada", "En Fantastic Gacha Coins.", PadKits.coinIcon(true), 1, 10_000),
-            new Field("tiradaMultiple.tiradas", "Tirada múltiple: tiradas", "Cuántas de golpe (de 1 a 10).", new ItemStack(Items.HOPPER), 1, 10),
-            new Field("tiradaMultiple.precio", "Tirada múltiple: precio", "En Fantastic Gacha Coins.", PadKits.coinIcon(true), 1, 100_000),
+            new Field("precio", "Precio de una tirada", "En Fantastic Gacha Coins.", () -> PadKits.coinIcon(true), 1, 10_000),
+            new Field("tiradaMultiple.tiradas", "Tirada múltiple: tiradas", "Cuántas de golpe (de 1 a 10).", () -> new ItemStack(Items.HOPPER), 1, 10),
+            new Field("tiradaMultiple.precio", "Tirada múltiple: precio", "En Fantastic Gacha Coins.", () -> PadKits.coinIcon(true), 1, 100_000),
             new Field("garantia.cada", "Garantía: cada", "Cada cuántas tiradas sale seguro la rareza de abajo (0 = nunca).",
-                    new ItemStack(Items.TOTEM_OF_UNDYING), 0, 1000));
+                    () -> new ItemStack(Items.TOTEM_OF_UNDYING), 0, 1000));
 
     private static Field field(String key) {
         for (Field f : FIELDS) if (f.key.equals(key)) return f;
@@ -116,7 +117,7 @@ public final class PadAdminGacha {
             b.row(PadAdminUi.toggle(new ItemStack(Items.LIME_DYE), "Gachapón activado", "Si está apagado no se puede tirar.",
                     TFJson.bool(o, "activado", true), "Activado.", "Apagado.", "toggle"));
             for (Field fd : FIELDS) {
-                b.row(PadAdminUi.value(fd.icon, fd.title, fd.help, PadView.number(TFJson.num(parent(o, fd.key), leaf(fd.key), 0)),
+                b.row(PadAdminUi.value(fd.icon.get(), fd.title, fd.help, PadView.number(TFJson.num(parent(o, fd.key), leaf(fd.key), 0)),
                         "f:" + fd.key, f.equals(fd.key)));
             }
             String pity = TFJson.str(obj(o, "garantia"), "rareza", "epico");
