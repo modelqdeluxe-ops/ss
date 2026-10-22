@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **22 de octubre de 2026** (web: diseño «Atardecer» claro con botones cartoon cel-shading; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **22 de octubre de 2026** (web: Atardecer con contraste medido —`tools/contrast_audit.py`—, botones con jerarquía y escenarios caramelo; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,6 +12,29 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
+
+### Web (22 oct 2026, 2.ª ronda): contraste medido, jerarquía de botones y escenarios caramelo (hecho y publicado)
+Queja del dueño sobre el Atardecer: «en la presentación de los modelos el fondo es blanco y con armaduras blancas no se
+ve… los colores de los botones son una mierda, todos se parecen, no contrastan… eres autónomo, estúdiate las buenas
+prácticas». **Lección: antes de enseñarle nada, MIDE (contraste, que los botones se distingan, piezas blancas sobre
+fondo) en vez de esperar a que él lo encuentre.** Reglas aplicadas (Refactoring UI, WebAIM/WCAG 2.2, guías de
+jerarquía de botones), que hay que seguir en adelante:
+- **Texto ≥ 4.5:1** (3:1 si es grande: 24 px o 18.66 px en negrita); **bordes de controles ≥ 3:1**.
+- **Un solo color de acción** (naranja, relleno, letra marrón oscura #2a1100): principal y comprar. **Secundario =
+  blanco con contorno oscuro** (se distingue por la forma, no solo por el color). **Gratis = azul** (naranja y azul
+  se distinguen con daltonismo; naranja y verde NO). Discord/WhatsApp con sus colores, en tonos profundos para que el
+  blanco se lea. Lo elegido (chips, pestañas legales, Entrar/Crear cuenta) en naranja con letra oscura.
+- **Escalas fijas** en `:root`: grises cálidos `--n-50…900`, naranja `--o-100…900`, azul `--b-*`. No inventes tonos.
+- **Escenarios 3D, visor, armario, imágenes de las crates y miniaturas de piezas sobre CARAMELO** (`--stage`,
+  `--tile`), nunca blanco: hay alas y armaduras blancas.
+- Textos con el color del rango/crate/colección: `color-mix(... 40-45%, #1f1408)` (oscurecidos). El nombre del rango
+  sin `-webkit-text-stroke` (en Unbounded deja rayas dentro de las letras). El chat del rango, negro como en el juego.
+- Navegación: el elegido sin relleno (texto oscuro y raya naranja) para no parecerse a un botón.
+- **Herramienta nueva**: `python3 tools/contrast_audit.py <carpeta>` (con la vista previa encendida y
+  `PW=$(npm root -g)/playwright`): mide el contraste de cada texto contra los píxeles reales de detrás, en escritorio
+  y móvil. Pasó de 268 fallos a 29, todos falsos positivos comprobados a ojo (teclas de skills y contadores dentro de
+  píldoras pequeñas, una respuesta cerrada de la ayuda, una etiqueta oculta en el móvil y el aviso legal pegado a la
+  sombra de una tarjeta). Pásala antes de publicar cualquier cambio de colores.
 
 ### Web (22 oct 2026): diseño «Atardecer» claro + botones cartoon «cel-shading» (hecho y publicado)
 Después del rediseño de la aurora (abajo), el dueño dijo «pasamos de mierda a más mierda… los colores, animaciones, el

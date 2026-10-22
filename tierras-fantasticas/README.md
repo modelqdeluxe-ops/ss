@@ -283,6 +283,12 @@ nombres), añade su línea en `tools/crates.py` (nombre, frase, descripción, pr
 los tres scripts (y `wear_export.py` tras regenerar el mod). Para el mod basta con rehacer los sets nuevos:
 `python3 tf-client/tools/build_mod_items.py <packs> <set> [set ...]` deja los demás como están. Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
 
+## Contraste
+
+`python3 tools/contrast_audit.py <carpeta>` (con `node tools/preview.mjs` encendido y `PW=$(npm root -g)/playwright`)
+mide el contraste WCAG de cada texto de la web contra el fondo real, en escritorio y móvil, y lista los que fallan.
+Pásalo antes de publicar un cambio de colores.
+
 ## Pruebas
 
 ```bash
