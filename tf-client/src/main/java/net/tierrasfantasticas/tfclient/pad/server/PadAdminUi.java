@@ -194,7 +194,7 @@ final class PadAdminUi {
         if (k != TFCoins.Kind.NONE) {
             String key = k == TFCoins.Kind.GOLD ? "monedas" : "verdes";
             target.addProperty(key, Math.max(0, TFJson.num(target, key, 0)) + s.getCount());
-            return "Las monedas no van como objeto: +" + s.getCount() + (k == TFCoins.Kind.GOLD ? " monedas" : " monedas verdes")
+            return "Las monedas no van como objeto: +" + s.getCount() + (k == TFCoins.Kind.GOLD ? " Fantastic Coins" : " Fantastic Gacha Coins")
                     + " que se ingresan en el monedero.";
         }
         JsonArray a = objects(target);
@@ -252,10 +252,10 @@ final class PadAdminUi {
      */
     static void coins(PadView.Builder b, ServerPlayer p, String app, String target, long coins, long greens) {
         String f = field(p, app, target);
-        b.row(stepper(PadKits.coinIcon(false), "Monedas", "Al monedero; pulsa la fila para escribirlas.",
+        b.row(stepper(PadKits.coinIcon(false), "Fantastic Coins", "Al monedero; pulsa la fila para escribirlas.",
                 coins > 0 ? "+" + PadView.moneyExact(coins) : "Ninguna", "c.step:monedas:-", "c.step:monedas:+", "c.f:monedas",
                 f.equals("monedas")));
-        b.row(stepper(PadKits.coinIcon(true), "Monedas verdes", "Del Gachapón; pulsa la fila para escribirlas.",
+        b.row(stepper(PadKits.coinIcon(true), "Fantastic Gacha Coins", "Del Gachapón; pulsa la fila para escribirlas.",
                 greens > 0 ? "+" + PadView.number(greens) : "Ninguna", "c.step:verdes:-", "c.step:verdes:+", "c.f:verdes", f.equals("verdes")));
     }
 
@@ -267,7 +267,7 @@ final class PadAdminUi {
         }
         String f = field(p, app, target);
         if (f.equals("monedas") || f.equals("verdes")) {
-            b.input("c.val", f.equals("monedas") ? "MONEDAS (0 = NINGUNA)" : "MONEDAS VERDES (0 = NINGUNA)", 12, "GUARDAR");
+            b.input("c.val", f.equals("monedas") ? "MONEDAS (0 = NINGUNA)" : "FANTASTIC GACHA COINS (0 = NINGUNA)", 12, "GUARDAR");
             return true;
         }
         return false;
@@ -324,8 +324,8 @@ final class PadAdminUi {
                 if (v < 0) return true;
                 edit.accept(o -> o.addProperty(f, v));
                 stopEditing(p, app);
-                TFPadNet.notice(p, v == 0 ? "Sin " + (f.equals("monedas") ? "monedas." : "monedas verdes.")
-                        : "Guardado: +" + PadView.number(v) + (f.equals("monedas") ? " monedas" : " monedas verdes") + " al monedero.");
+                TFPadNet.notice(p, v == 0 ? "Sin " + (f.equals("monedas") ? "Fantastic Coins." : "Fantastic Gacha Coins.")
+                        : "Guardado: +" + PadView.number(v) + (f.equals("monedas") ? " Fantastic Coins" : " Fantastic Gacha Coins") + " al monedero.");
             }
             case "c.step" -> { // c.step:monedas:+ o c.step:verdes:-
                 String[] k = arg.split(":");

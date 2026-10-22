@@ -286,8 +286,8 @@ final class PadGuidePage extends PadPage {
                 h("La barra de arriba"),
                 b("Flecha azul: vuelve a la portada."),
                 b("Sol o luna con la hora: la hora del mundo."),
-                b("Moneda verde: tus monedas verdes. Se ganan con el TF Pass y se gastan en el Gachapón."),
-                b("Moneda de oro: tus monedas (Fantastic Coin), para la Tienda, el GTS y los kits de pago."),
+                b("Fantastic Gacha Coin (verde): se ganan con el TF Pass y se gastan en el Gachapón."),
+                b("Fantastic Coin (oro): para la Tienda, el GTS y los kits de pago."),
                 b("Engranaje: los Ajustes del pad (sonidos, animaciones, volumen y color)."),
                 b("Barritas verdes que bailan: hay música sonando. Púlsalas para ir a Música."),
                 h("Moverse por las apps"),
@@ -353,7 +353,7 @@ final class PadGuidePage extends PadPage {
                 tip("No cuentan los bloques que pusiste tú, los monstruos de spawner ni el modo creativo."));
 
         topic("pase", "TF Pass", "pase",
-                p("El pase de temporada, gratis para todos: sube de nivel y cobra premios, sobre todo monedas verdes."),
+                p("El pase de temporada, gratis para todos: sube de nivel y cobra premios, sobre todo Fantastic Gacha Coins."),
                 h("Cómo se sube"),
                 s("Completa misiones (diarias y semanales) y cazas: dan XP de pase."),
                 s("Con la XP subes de nivel. La barra de arriba te dice cuánto falta para el siguiente."),
@@ -364,9 +364,9 @@ final class PadGuidePage extends PadPage {
                 tip("Mira la cuenta atrás de la temporada: al acabar, los niveles vuelven a cero y lo que no hayas cobrado se pierde."));
 
         topic("gachapon", "Gachapón", "gachapon",
-                p("Gira la ruleta con monedas verdes y gana un premio."),
+                p("Gira la ruleta con Fantastic Gacha Coins y gana un premio."),
                 h("Girar"),
-                s("Consigue monedas verdes con el TF Pass."),
+                s("Consigue Fantastic Gacha Coins con el TF Pass."),
                 s("Pulsa GIRAR para una tirada o GIRAR X5 para varias de golpe. Cada botón dice lo que cuesta."),
                 s("La ruleta se para en tu premio y te llega al momento. Aunque cierres el pad a mitad, ya es tuyo."),
                 h("Saber qué puede tocar"),

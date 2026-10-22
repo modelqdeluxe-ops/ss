@@ -965,6 +965,8 @@ public final class PadAdmin {
             new JobField("esperaCambioMinutos", "Espera para cambiar", "Tras unirse a uno, para poder dejarlo o cambiarlo.", false, "", "", 0, 1440,
                     "min", Items.CLOCK),
             new JobField("pagoCadaSegundos", "Pago cada", "Cada cuánto se cobra lo ganado.", false, "", "", 1, 600, "s", Items.GOLD_NUGGET),
+            new JobField("misionesDiariasPorOficio", "Misiones diarias", "Cuántas le tocan al día de cada oficio (de las «diaria»).", false, "", "",
+                    1, 8, "", Items.PAPER),
             new JobField("bloquesColocadosNoCuentan", "Bloques colocados no cuentan", "", true, "Romper lo que uno mismo puso no paga (evita trampas).",
                     "Ojo: se puede poner y romper para ganar.", 0, 1, "", Items.STONE),
             new JobField("generadoresCuentan", "Mobs de generador cuentan", "", true, "Pagan aunque salgan de un generador (granjas).",
@@ -1002,11 +1004,12 @@ public final class PadAdmin {
     private static final class Jobs implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
+            if (PadAdminJobMissions.handles(tab)) return PadAdminJobMissions.view(player, tab);
             JsonObject root = TFJson.read(TFJobsConfig.file());
             if (root == null) root = new JsonObject();
             String f = PadAdminUi.field(player, JOBS_ID, "");
-            PadView.Builder b = PadView.of(JOBS_ID).compact().header("Ajustes de los oficios. Lo que paga cada uno, sus misiones y niveles: en "
-                    + "config/tfclient/oficios.json (y RECARGAR).");
+            PadView.Builder b = PadView.of(JOBS_ID).selected("").compact().header("Ajustes de los oficios. Pulsa un oficio para cambiar lo que paga "
+                    + "y sus misiones (todo va a config/tfclient/oficios.json).");
             b.row(PadAdminUi.section("General"));
             for (JobField fd : JOB_FIELDS) {
                 if (fd.bool) {
@@ -1018,9 +1021,11 @@ public final class PadAdmin {
             }
             b.row(PadAdminUi.section("Oficios (" + TFJobsConfig.jobs.size() + ")"));
             for (TFJobsConfig.Job job : TFJobsConfig.jobs.values()) {
+                String go = "tab:j:" + job.id();
                 b.row(new PadView.Row(new ItemStack(net.tierrasfantasticas.tfclient.jobs.TFJobsMenu.icon(job)), job.name(), job.color(),
                         List.of(count(job.actions().size(), "forma de ganar", "formas de ganar") + " · "
-                                + count(job.missions().size(), "misión", "misiones")), -1, "", null, null));
+                                + count(job.missions().size(), "misión", "misiones")), -1, "", PadView.Btn.of("EDITAR", go, PadView.BLUE), null)
+                        .clickable(go));
             }
             JobField fd = jobField(f);
             if (fd != null && !fd.bool) {
@@ -1035,6 +1040,7 @@ public final class PadAdmin {
 
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
+            if (PadAdminJobMissions.handles(tab)) return PadAdminJobMissions.action(player, tab, action, text);
             String[] a = action.split(":", 2);
             String arg = a.length > 1 ? a[1] : "";
             switch (a[0]) {

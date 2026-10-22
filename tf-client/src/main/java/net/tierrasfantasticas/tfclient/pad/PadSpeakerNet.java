@@ -28,15 +28,114 @@ public final class PadSpeakerNet {
                 .encoder(Up::write).decoder(Up::read).consumerMainThread(Up::handle).add();
         ch.messageBuilder(Down.class, base + 1, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Down::write).decoder(Down::read).consumerMainThread(Down::handle).add();
+        ch.messageBuilder(Need.class, base + 2, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Need::write).decoder(Need::read).consumerMainThread(Need::handle).add();
+        ch.messageBuilder(UpPart.class, base + 3, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(UpPart::write).decoder(UpPart::read).consumerMainThread(UpPart::handle).add();
+        ch.messageBuilder(Get.class, base + 4, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Get::write).decoder(Get::read).consumerMainThread(Get::handle).add();
+        ch.messageBuilder(DownPart.class, base + 5, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DownPart::write).decoder(DownPart::read).consumerMainThread(DownPart::handle).add();
+    }
+
+    /**
+     * (1.3.114, el dueño: «el mensaje al prender el parlante dice que las personas no pueden oírme, wtf») las canciones
+     * sin link (las de la carpeta de música) se oían solo en tu juego: los demás no tenían de dónde bajarlas. Ahora van
+     * por el servidor: su «link» es tfaudio:&lt;sha1 del archivo&gt;; el servidor, si no la tiene, se la pide al que la
+     * pone (Need), este la sube a trozos (UpPart) y los de cerca la piden (Get) y la bajan a trozos (DownPart).
+     */
+    public static final String LOCAL = "tfaudio:";
+    /** El tamaño de cada trozo: de subida, lo que cabe en un paquete al servidor; de bajada, más. */
+    public static final int UP_PART = 30_000, DOWN_PART = 262_144;
+    /** Lo más grande que se reparte (como las que se bajan de un link). */
+    public static final int MAX_BYTES = 24 * 1024 * 1024;
+
+    public static void toPlayer(ServerPlayer p, Object m) {
+        if (channel != null && TFPadNet.hasPad(p)) channel.send(PacketDistributor.PLAYER.with(() -> p), m);
+    }
+
+    public static void toServerAny(Object m) {
+        if (channel != null) channel.sendToServer(m);
+    }
+
+    /** El servidor al que pone la música: súbeme esta canción (no la tengo). */
+    public record Need(String hash) {
+        static void write(Need m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.hash, 64);
+        }
+
+        static Need read(FriendlyByteBuf buf) {
+            return new Need(buf.readUtf(64));
+        }
+
+        static void handle(Need m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.upload(m.hash));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Un trozo de la canción que sube el que la pone (index de total). */
+    public record UpPart(String hash, int index, int total, int size, byte[] data) {
+        static void write(UpPart m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.hash, 64);
+            buf.writeVarInt(m.index);
+            buf.writeVarInt(m.total);
+            buf.writeVarInt(m.size);
+            buf.writeByteArray(m.data);
+        }
+
+        static UpPart read(FriendlyByteBuf buf) {
+            return new UpPart(buf.readUtf(64), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readByteArray(UP_PART));
+        }
+
+        static void handle(UpPart m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) net.tierrasfantasticas.tfclient.pad.server.PadSpeakers.uploaded(p, m);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Uno de cerca pide la canción de un altavoz (tfaudio:). */
+    public record Get(String hash) {
+        static void write(Get m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.hash, 64);
+        }
+
+        static Get read(FriendlyByteBuf buf) {
+            return new Get(buf.readUtf(64));
+        }
+
+        static void handle(Get m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) net.tierrasfantasticas.tfclient.pad.server.PadSpeakers.requested(p, m.hash);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Un trozo de la canción que baja el que la oye. */
+    public record DownPart(String hash, int index, int total, int size, byte[] data) {
+        static void write(DownPart m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.hash, 64);
+            buf.writeVarInt(m.index);
+            buf.writeVarInt(m.total);
+            buf.writeVarInt(m.size);
+            buf.writeByteArray(m.data);
+        }
+
+        static DownPart read(FriendlyByteBuf buf) {
+            return new DownPart(buf.readUtf(64), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readByteArray(DOWN_PART));
+        }
+
+        static void handle(DownPart m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.part(m));
+            ctx.get().setPacketHandled(true);
+        }
     }
 
     public static void toServer(Up m) {
         if (channel != null) channel.sendToServer(m);
     }
 
-    public static void toPlayer(ServerPlayer p, Down m) {
-        if (channel != null && TFPadNet.hasPad(p)) channel.send(PacketDistributor.PLAYER.with(() -> p), m);
-    }
 
     /** Del que pone la música: lo que suena ahora (playing false = apagó el altavoz o paró). */
     public record Up(boolean playing, String url, String title, String artist, long positionMs, long durationMs) {

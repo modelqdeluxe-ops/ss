@@ -123,7 +123,7 @@ public final class PadGacha {
             return null;
         }
         if (!PadGreen.take(player, cost)) {
-            TFPadNet.notice(player, "Te faltan monedas verdes: se ganan con el TF Pass.");
+            TFPadNet.notice(player, "Te faltan Fantastic Gacha Coins: se ganan con el TF Pass.");
             return null;
         }
         JsonObject data = STORE_IMPL.player(player.getUUID());
@@ -244,6 +244,16 @@ public final class PadGacha {
             o = defaults();
             if (!Files.exists(file)) TFJson.write(file, o);
         }
+        // (1.3.114) la de antes, con la economía estable (las monedas, la quinta parte; los objetos raros, menos)
+        o = PadEconomy.deflate(file, o, 0.2, "gachapon.json");
+        o = PadEconomy.help(file, o,
+                "Gachapón (app del pad). También se cambia desde el TF Pad de administrador (GACHAPÓN). Tras editar a mano: /tf reload.",
+                "precio: Fantastic Gacha Coins por tirada; tiradaMultiple: {tiradas, precio}; historial: cuántas tiradas se recuerdan.",
+                "garantia: cada N tiradas sin sacar la rareza «rareza» (o mejor), la siguiente la saca seguro (0 = nunca).",
+                "rarezas: [{id, nombre, color, peso}]; la probabilidad de una rareza es su peso entre la suma de todos.",
+                "premios: [{rareza, peso, tipo, cantidad, id}]; dentro de su rareza, sale según su peso. tipo: monedas (Fantastic Coins), "
+                        + "verdes (Fantastic Gacha Coins) u objeto (con id).",
+                "Economía: las Fantastic Gacha Coins salen del TF Pass (~65 por temporada); un diamante vale 150 Fantastic Coins en la tienda.");
         RARITIES.clear();
         PRIZES.clear();
         enabled = TFJson.bool(o, "activado", true);
@@ -315,7 +325,7 @@ public final class PadGacha {
      */
     private static JsonObject defaults() {
         JsonObject o = new JsonObject();
-        o.addProperty("version", 1);
+        o.addProperty("version", 2);
         o.addProperty("activado", true);
         o.addProperty("precio", 1);
         JsonObject multi = new JsonObject();
@@ -334,28 +344,28 @@ public final class PadGacha {
         rs.add(rarityJson("legendario", "Legendario", "#F6B628", 2));
         o.add("rarezas", rs);
         JsonArray ps = new JsonArray();
-        ps.add(prize("comun", 10, "monedas", 100, null));
-        ps.add(prize("comun", 7, "monedas", 200, null));
+        ps.add(prize("comun", 10, "monedas", 20, null));
+        ps.add(prize("comun", 7, "monedas", 40, null));
         ps.add(prize("comun", 8, "objeto", 16, "minecraft:bread"));
         ps.add(prize("comun", 8, "objeto", 8, "minecraft:cooked_beef"));
         ps.add(prize("comun", 8, "objeto", 8, "minecraft:iron_ingot"));
         ps.add(prize("comun", 6, "objeto", 8, "minecraft:experience_bottle"));
         ps.add(prize("comun", 6, "objeto", 16, "minecraft:arrow"));
-        ps.add(prize("raro", 8, "monedas", 500, null));
-        ps.add(prize("raro", 8, "objeto", 3, "minecraft:diamond"));
-        ps.add(prize("raro", 6, "objeto", 2, "minecraft:golden_apple"));
+        ps.add(prize("raro", 8, "monedas", 100, null));
+        ps.add(prize("raro", 8, "objeto", 1, "minecraft:diamond"));
+        ps.add(prize("raro", 6, "objeto", 1, "minecraft:golden_apple"));
         ps.add(prize("raro", 6, "objeto", 8, "minecraft:golden_carrot"));
-        ps.add(prize("raro", 5, "objeto", 4, "minecraft:ender_pearl"));
+        ps.add(prize("raro", 5, "objeto", 2, "minecraft:ender_pearl"));
         ps.add(prize("raro", 4, "objeto", 16, "minecraft:experience_bottle"));
-        ps.add(prize("epico", 6, "monedas", 1500, null));
-        ps.add(prize("epico", 5, "objeto", 8, "minecraft:diamond"));
+        ps.add(prize("epico", 6, "monedas", 300, null));
+        ps.add(prize("epico", 5, "objeto", 3, "minecraft:diamond"));
         ps.add(prize("epico", 4, "objeto", 1, "minecraft:enchanted_golden_apple"));
-        ps.add(prize("epico", 4, "objeto", 2, "minecraft:netherite_scrap"));
+        ps.add(prize("epico", 4, "objeto", 1, "minecraft:netherite_scrap"));
         ps.add(prize("epico", 3, "objeto", 1, "minecraft:totem_of_undying"));
-        ps.add(prize("legendario", 5, "monedas", 5000, null));
+        ps.add(prize("legendario", 5, "monedas", 1000, null));
         ps.add(prize("legendario", 4, "objeto", 1, "minecraft:netherite_ingot"));
-        ps.add(prize("legendario", 3, "objeto", 2, "minecraft:totem_of_undying"));
-        ps.add(prize("legendario", 3, "objeto", 3, "minecraft:enchanted_golden_apple"));
+        ps.add(prize("legendario", 3, "objeto", 1, "minecraft:totem_of_undying"));
+        ps.add(prize("legendario", 3, "objeto", 1, "minecraft:enchanted_golden_apple"));
         o.add("premios", ps);
         return o;
     }

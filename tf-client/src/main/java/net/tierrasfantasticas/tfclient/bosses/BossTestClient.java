@@ -58,6 +58,20 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             mc.setScreen(null);
         }
+        if ("corta".equals(BossTest.currentId())) mc.options.hideGui = BossTest.hideGui;
+        // (1.3.114) los caballeros sacros: lo más rápido que van y lo que se mueven sus piernas (walkAnimation)
+        if (mc.level != null && "corta".equals(BossTest.currentId())) {
+            for (net.minecraft.world.entity.Entity en : mc.level.entitiesForRendering()) {
+                if (!(en instanceof net.tierrasfantasticas.tfclient.vacio.SacredKnight k)) continue;
+                double v = Math.hypot(k.getX() - k.xo, k.getZ() - k.zo);
+                float leg = k.walkAnimation.speed();
+                KNIGHT_MAX.merge(k.displayName(), new double[] {v, leg, k.walkAnimation.position()},
+                        (o, n) -> new double[] {Math.max(o[0], n[0]), Math.max(o[1], n[1]), n[2]});
+            }
+            StringBuilder b = new StringBuilder();
+            for (var e : KNIGHT_MAX.entrySet()) b.append(String.format("%s: hasta %.2f bloques/tick, piernas hasta %.2f; ", e.getKey(), e.getValue()[0], e.getValue()[1]));
+            BossTest.clientKnights = b.toString();
+        }
         if (BossTest.cameraType >= 0) {
             mc.options.setCameraType(net.minecraft.client.CameraType.values()[Math.min(2, BossTest.cameraType)]);
             BossTest.cameraType = -1;
@@ -80,6 +94,10 @@ public final class BossTestClient {
         if (BossTest.actPad != null && BossTest.openPad == null) {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.actForTest(BossTest.actPad);
             BossTest.actPad = null;
+        }
+        if (BossTest.openInventory && mc.player != null) {
+            BossTest.openInventory = false;
+            mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
         }
         if (BossTest.openPad != null) {
             String app = BossTest.openPad;
@@ -229,6 +247,7 @@ public final class BossTestClient {
 
     private static net.tierrasfantasticas.tfclient.crates.config.CrateConfig preOpenCfg;
     private static boolean preOpenShot = true, poolShot = true;
+    private static final java.util.Map<String, double[]> KNIGHT_MAX = new java.util.TreeMap<>();
     private static long preOpenAt, poolAt;
 
     private static void crateShots(Minecraft mc) {

@@ -190,7 +190,49 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.113, PUBLICADA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.114, PUBLICADA) — lee esto primero
+
+**1.3.114: nueve quejas del dueño** (con 5 capturas; «toma en serio esto por favor» lo de la economía):
+1. **Las monedas se llaman Fantastic Coin y Fantastic Gacha Coin** (no «monedas» ni «moneda verde»): en el pad, los
+   premios, los kits, el objeto (lang es/en) y `TFServerConfig` (`economy.currency` por defecto «Fantastic Coins»; el
+   «monedas» de antes se cambia solo).
+2. **Void**: el soporte de la armadura del altar flotaba 1 bloque (la prueba lo midió: 1,00 sobre el cuarzo liso):
+   `VoidArmor.groundY` busca el suelo de verdad; **comprobado** (prueba `69ce034`: a 0,00 del cuarzo). Los caballeros
+   del santuario «hacen la animación de volar»: la prueba `corta` mide en el cliente su velocidad y sus piernas
+   (`BossTestClient.KNIGHT_MAX`: hasta 0,23 bloques/tick y piernas hasta 0,73) y en las capturas de lado sin HUD
+   (`caballero_N_andando`) andan por el suelo con las piernas en paso: **no se reproduce**. Si el dueño lo sigue viendo,
+   pedirle un vídeo (puede ser su servidor: si los mueve a saltos, el cuerpo se desliza sin mover las piernas).
+3. **Encantados morados con shaders** (su captura: el inventario, los encantados enteros de 63,30,102 con la forma de
+   su modelo): el brillo se pinta tapando el objeto en vez de sumarse. Causa (leído en Oculus 1.7/1.8 y en el
+   `shaders.properties` de Photon, que pone `blend.gbuffers_X = off` y mezclas por búfer `blend.X.colortexN`): Oculus
+   pone las mezclas por búfer con `glBlendFunci`/`glEnablei` sin pasar por la caché de `GlStateManager` y al acabar
+   «restaura» por esa caché (no hace nada), así que el búfer 0 se queda con la mezcla del paquete y el brillo (alfa 1)
+   con ONE, ONE_MINUS_SRC_ALPHA tapa el objeto. `ShaderPacks.fixBlendForGui` (`GuiGraphicsMixin`, antes de cada objeto
+   en la interfaz con un paquete puesto): suelta el bloqueo de `BlendModeStorage` y pone en OpenGL la mezcla de la caché
+   (los campos de `GlStateManager.BLEND` se buscan por tipo y su orden se comprueba en marcha). La prueba `75e21a6`
+   (Complementary; Photon no arranca en la máquina de la prueba) vio **93 desajustes** entre OpenGL y la caché al pintar
+   objetos; el inventario con encantados sale bien con el arreglo (sin romper textos ni transparencias). La primera
+   vez que hay desajuste se apunta en el registro del dueño («la mezcla de OpenGL no era la que cree Minecraft»).
+4. **TF Pad admin**: apps nuevas **TF PASS** (`PadAdminPass`, a_pase: temporada, niveles, XP y los premios de cada
+   nivel) y **GACHAPÓN** (`PadAdminGacha`, a_gacha: precios, garantía, rarezas y premios con su peso); en **OFICIOS**
+   cada oficio se abre (`PadAdminJobMissions`): lo que paga cada acción y sus misiones (todas sus claves) y misiones
+   diarias por oficio.
+5. **Todo configurable a mano o con una IA**: el mod escribe `config/tfclient/LEEME-IA.md` al arrancar (qué archivo
+   cambia cada cosa, cómo se escriben los premios, `/tf reload`); `pase.json` y `gachapon.json` llevan `_ayuda`.
+6. **Piedras de protección dibujadas a mano** (`tools/gen_claim_blocks.py`): marco tallado con bisel y cantoneras de
+   metal (cobre hasta 40, hierro hasta 150, oro en 250/300/500), escudo de cristal del color del nivel (TF en relieve
+   solo delante, con contorno para que se lea también en la de oro), gema tallada arriba con canales de luz; las de
+   300 y 500 con gemas en el marco. De noche brilla el cristal. Imágenes de la web rehechas, con la cara del TF.
+7. **Economía** (`PadEconomy`): el TF Pass y el Gachapón regalaban más que todo lo trabajado; las configs de antes se
+   rebajan solas al cargar (monedas del pase al 15 %, del gacha al 20 %, objetos raros menos; copia `.antes-v2.json`).
+   **Web**: piedras 10/15/20 $; efectos de muerte de pago a 2,99 $ (`vfx_owned`, el pad solo deja equipar los
+   comprados); crates a 4,99 $ y las imponentes a 5,99/6,99 $, todas con recursos fáciles (filetes, manzanas doradas,
+   diamantes, botellas de XP…); rangos con su piedra (100x100 los 3 primeros, 150x150 eterno y cósmico, 250x250
+   celestial y fantástico) y recursos según el rango; cosméticos y skills con precio en Fantastic Coins (1.250 por
+   dólar; clase de skills 7.500).
+8. **El altavoz del pad** ya no dice que los demás no te oyen: las canciones de la carpeta se reparten a los cercanos.
+
+### CHECKPOINT anterior (22 oct 2026, TF Client 1.3.113, PUBLICADA)
 
 **1.3.113: seis quejas del dueño** (con 3 capturas; la 1.3.112 está PUBLICADA):
 1. **Rayas blancas de la escena de las crates** (las veía antes de abrir, al moverse la cámara; «con capturas no las

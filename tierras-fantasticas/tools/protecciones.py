@@ -42,7 +42,7 @@ def main():
         model = {'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16],
                                'faces': {k: {'texture': '#' + v, 'uv': [0, 0, 16, 16]} for k, v in faces.items()}}],
                  # de lado, con la cara (la de las letras TF) mirando a la izquierda, como un bloque en el inventario
-                 'display': {'gui': {'rotation': [30, 45, 0], 'translation': [0, 0, 0], 'scale': [0.625] * 3}}}
+                 'display': {'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625] * 3}}}
         out = os.path.join(OUT, f'{size}.webp')
         B.finish_thumb(B.render(model, texs, B.THUMB), B.THUMB, out)
         print('→', os.path.relpath(out))

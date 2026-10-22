@@ -55,7 +55,10 @@ public final class PadSpeakers {
         Long last = LAST.get(p.getUUID());
         if (last != null && now - last < 250) return;
         String url = m.url().trim();
-        if (!(url.startsWith("https://") || url.startsWith("http://")) || url.length() > 500) return;
+        boolean local = isLocal(url);
+        if (!(url.startsWith("https://") || url.startsWith("http://") || local) || url.length() > 500) return;
+        // (1.3.114) una canción de su carpeta: si el servidor no la tiene, se la pide (la sube a trozos)
+        if (local) needFrom(p, url.substring(PadSpeakerNet.LOCAL.length()));
         State old = SPEAKERS.get(p.getUUID());
         Long changed = URL_AT.get(p.getUUID());
         boolean newUrl = old == null || !old.url.equals(url);
@@ -117,6 +120,165 @@ public final class PadSpeakers {
         }
     }
 
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.114) Las canciones sin link (las de la carpeta de música del que la pone): pasan por el servidor
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static final class Upload {
+        final UUID from;
+        final int total, size;
+        final byte[][] parts;
+        int got;
+        long lastMs = System.currentTimeMillis();
+
+        Upload(UUID from, int total, int size) {
+            this.from = from;
+            this.total = total;
+            this.size = size;
+            this.parts = new byte[total][];
+        }
+    }
+
+    /** Lo que se está subiendo, por hash; quién espera cada canción; lo que falta por mandar a cada uno. */
+    private static final Map<String, Upload> UPLOADS = new HashMap<>();
+    private static final Map<String, Set<UUID>> WAITING = new HashMap<>();
+    private static final Map<UUID, java.util.ArrayDeque<PadSpeakerNet.DownPart>> SENDING = new HashMap<>();
+    /** Como mucho, lo guardado en el servidor (se borran las más viejas). */
+    private static final long MAX_STORED = 400L * 1024 * 1024;
+
+    private static boolean isLocal(String url) {
+        return url.startsWith(PadSpeakerNet.LOCAL) && url.substring(PadSpeakerNet.LOCAL.length()).matches("[0-9a-f]{40}");
+    }
+
+    private static java.nio.file.Path dir() {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        return server == null ? null
+                : server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("tfclient").resolve("altavoz");
+    }
+
+    private static java.nio.file.Path stored(String hash) {
+        java.nio.file.Path d = dir();
+        return d == null ? null : d.resolve(hash + ".audio");
+    }
+
+    private static void needFrom(ServerPlayer p, String hash) {
+        java.nio.file.Path f = stored(hash);
+        if (f == null || java.nio.file.Files.exists(f)) return;
+        Upload u = UPLOADS.get(hash);
+        if (u != null && System.currentTimeMillis() - u.lastMs < 30_000) return; // ya se está subiendo
+        UPLOADS.remove(hash);
+        PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Need(hash));
+    }
+
+    /** Un trozo de lo que sube el que pone la música (solo de una canción que suena en su altavoz). */
+    public static void uploaded(ServerPlayer p, PadSpeakerNet.UpPart m) {
+        State st = SPEAKERS.get(p.getUUID());
+        if (st == null || !st.url.equals(PadSpeakerNet.LOCAL + m.hash()) || !isLocal(st.url)) return;
+        long maxParts = (PadSpeakerNet.MAX_BYTES + PadSpeakerNet.UP_PART - 1) / PadSpeakerNet.UP_PART;
+        if (m.total() <= 0 || m.total() > maxParts || m.index() < 0 || m.index() >= m.total() || m.size() <= 0
+                || m.size() > PadSpeakerNet.MAX_BYTES || m.data().length > PadSpeakerNet.UP_PART) return;
+        Upload u = UPLOADS.get(m.hash());
+        if (u == null || !u.from.equals(p.getUUID()) || u.total != m.total() || u.size != m.size()) {
+            if (u != null && System.currentTimeMillis() - u.lastMs < 30_000 && !u.from.equals(p.getUUID())) return;
+            u = new Upload(p.getUUID(), m.total(), m.size());
+            UPLOADS.put(m.hash(), u);
+        }
+        u.lastMs = System.currentTimeMillis();
+        if (u.parts[m.index()] == null) {
+            u.parts[m.index()] = m.data();
+            u.got++;
+        }
+        if (u.got < u.total) return;
+        UPLOADS.remove(m.hash());
+        byte[] all = new byte[u.size];
+        int off = 0;
+        for (byte[] part : u.parts) {
+            int n = Math.min(part.length, all.length - off);
+            System.arraycopy(part, 0, all, off, n);
+            off += n;
+        }
+        try {
+            String got = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-1").digest(all));
+            if (off != u.size || !got.equals(m.hash())) {
+                TFClient.LOGGER.warn("TF Pad: la canción del altavoz de {} llegó mal (no coincide)", p.getGameProfile().getName());
+                return;
+            }
+            java.nio.file.Path f = stored(m.hash());
+            java.nio.file.Files.createDirectories(f.getParent());
+            java.nio.file.Files.write(f, all);
+            trim();
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo guardar la canción de un altavoz", e);
+            return;
+        }
+        Set<UUID> waiting = WAITING.remove(m.hash());
+        MinecraftServer server = p.getServer();
+        if (waiting != null && server != null) {
+            for (UUID w : waiting) {
+                ServerPlayer l = server.getPlayerList().getPlayer(w);
+                if (l != null) requested(l, m.hash());
+            }
+        }
+    }
+
+    /** Uno de cerca pide la canción: se le manda a trozos (unos pocos por tick) o, si aún no está, cuando llegue. */
+    public static void requested(ServerPlayer p, String hash) {
+        if (!hash.matches("[0-9a-f]{40}")) return;
+        java.nio.file.Path f = stored(hash);
+        if (f == null) return;
+        if (!java.nio.file.Files.exists(f)) {
+            Set<UUID> w = WAITING.computeIfAbsent(hash, k -> new HashSet<>());
+            if (w.size() < 64) w.add(p.getUUID());
+            return;
+        }
+        java.util.ArrayDeque<PadSpeakerNet.DownPart> q = SENDING.computeIfAbsent(p.getUUID(), k -> new java.util.ArrayDeque<>());
+        for (PadSpeakerNet.DownPart d : q) if (d.hash().equals(hash)) return; // ya se le está mandando
+        try {
+            byte[] all = java.nio.file.Files.readAllBytes(f);
+            f.toFile().setLastModified(System.currentTimeMillis());
+            int total = Math.max(1, (all.length + PadSpeakerNet.DOWN_PART - 1) / PadSpeakerNet.DOWN_PART);
+            for (int i = 0; i < total; i++) {
+                int from = i * PadSpeakerNet.DOWN_PART, to = Math.min(all.length, from + PadSpeakerNet.DOWN_PART);
+                q.add(new PadSpeakerNet.DownPart(hash, i, total, all.length, java.util.Arrays.copyOfRange(all, from, to)));
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo leer la canción de un altavoz", e);
+        }
+    }
+
+    /** Lo guardado no pasa de MAX_STORED: se borran las canciones que hace más que nadie pide. */
+    private static void trim() {
+        java.nio.file.Path d = dir();
+        if (d == null) return;
+        try (java.util.stream.Stream<java.nio.file.Path> s = java.nio.file.Files.list(d)) {
+            java.util.List<java.io.File> files = new java.util.ArrayList<>(s.map(java.nio.file.Path::toFile)
+                    .filter(f -> f.getName().endsWith(".audio")).toList());
+            files.sort(java.util.Comparator.comparingLong(java.io.File::lastModified));
+            long total = 0;
+            for (java.io.File f : files) total += f.length();
+            for (java.io.File f : files) {
+                if (total <= MAX_STORED) break;
+                total -= f.length();
+                f.delete();
+            }
+        } catch (Exception ignored) {
+            // se intenta la próxima vez
+        }
+    }
+
+    @SubscribeEvent
+    public static void onSendTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || SENDING.isEmpty()) return;
+        MinecraftServer server = event.getServer();
+        // 2 trozos de 256 KB por tick a cada uno (~10 MB/s): una canción, en un segundo o dos
+        SENDING.entrySet().removeIf(e -> {
+            ServerPlayer l = server.getPlayerList().getPlayer(e.getKey());
+            if (l == null) return true;
+            for (int i = 0; i < 2 && !e.getValue().isEmpty(); i++) PadSpeakerNet.toPlayer(l, e.getValue().poll());
+            return e.getValue().isEmpty();
+        });
+    }
+
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || SPEAKERS.isEmpty() || ++ticks % 20 != 0) return;
@@ -137,6 +299,9 @@ public final class PadSpeakers {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID u = event.getEntity().getUUID();
         stop(u);
+        SENDING.remove(u);
+        UPLOADS.values().removeIf(up -> up.from.equals(u));
+        for (Set<UUID> w : WAITING.values()) w.remove(u);
         LAST.remove(u);
         URL_AT.remove(u);
         for (Set<UUID> told : TOLD.values()) told.remove(u);

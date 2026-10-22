@@ -102,8 +102,8 @@ public record PadPrize(String type, long amount, String id, String nbt, String c
     public String shownName() {
         if (!name.isEmpty()) return name;
         return switch (type) {
-            case "verdes" -> amount + (amount == 1 ? " moneda verde" : " monedas verdes");
-            case "monedas" -> TFEconomy.number(amount) + (amount == 1 ? " moneda" : " monedas");
+            case "verdes" -> amount + (amount == 1 ? " Fantastic Gacha Coin" : " Fantastic Gacha Coins");
+            case "monedas" -> TFEconomy.number(amount) + (amount == 1 ? " Fantastic Coin" : " Fantastic Coins");
             case "comando" -> "Premio especial";
             default -> "";
         };

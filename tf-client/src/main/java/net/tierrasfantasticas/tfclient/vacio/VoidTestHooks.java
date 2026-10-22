@@ -125,6 +125,23 @@ public final class VoidTestHooks {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    /** (1.3.114, el dueño: «la armadura del Void está volando 1 bloque del suelo») qué tiene el soporte debajo y a cuánto. */
+    public static String standGround(net.minecraft.server.level.ServerLevel level) {
+        net.minecraft.world.entity.Entity s = altarStand(level);
+        if (s == null) return "sin soporte";
+        StringBuilder b = new StringBuilder();
+        for (int dy = 0; dy <= 3; dy++) {
+            net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.containing(s.getX(), s.getY() - 0.05 - dy, s.getZ());
+            var st = level.getBlockState(p);
+            if (!st.getCollisionShape(level, p).isEmpty()) {
+                double top = p.getY() + st.getCollisionShape(level, p).max(net.minecraft.core.Direction.Axis.Y);
+                return String.format("sobre %s, a %.2f de él", net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath(), s.getY() - top);
+            }
+            b.append(dy == 0 ? "" : ",").append(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath());
+        }
+        return "en el aire (debajo: " + b + ")";
+    }
+
     /** (1.3.97) Pedirla otra vez: no da nada (una sola vez por jugador). */
     public static String armorAgain(net.minecraft.server.level.ServerPlayer p) {
         int n = VoidArmor.claim(p);

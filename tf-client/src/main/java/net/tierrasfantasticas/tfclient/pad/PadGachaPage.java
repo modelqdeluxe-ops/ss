@@ -266,7 +266,7 @@ final class PadGachaPage extends PadDataPage {
         int hy = top + 5;
         pad.blit(g, "coin_green", x + 7, hy - 1);
         PadFont.drawShadow(g, PadUi.THOUSANDS.format(greens), x + 21, hy, 0x8CF0B4, 0x0A3A20);
-        PadUi.text(g, greens == 1 ? "moneda verde" : "monedas verdes", x + 25 + PadFont.width(PadUi.THOUSANDS.format(greens)), hy + 1, 0xFF8C96C8);
+        PadUi.text(g, greens == 1 ? "Fantastic Gacha Coin" : "Fantastic Gacha Coins", x + 25 + PadFont.width(PadUi.THOUSANDS.format(greens)), hy + 1, 0xFF8C96C8);
         drawPity(g, x + w - 7, hy);
         // el carrete
         int rh = Math.max(44, Math.min(70, h - 22 - 28 - 40));
@@ -568,7 +568,7 @@ final class PadGachaPage extends PadDataPage {
         priceButton(g, mx, my, bx + w1 + 10, by, "GIRAR X" + num(data, "multi", 5), num(data, "precioMulti", 5), PadView.GOLD, can5,
                 "§girar5", () -> spin("girarMulti"));
         if (active && greens < num(data, "precio", 1)) {
-            String need = "Te faltan monedas verdes: se ganan en el TF Pass";
+            String need = "Te faltan Fantastic Gacha Coins: se ganan en el TF Pass";
             PadUi.text(g, need, x + (w - PadUi.font().width(need)) / 2, by - 11, 0xFFE07890);
         }
     }

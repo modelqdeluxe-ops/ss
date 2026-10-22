@@ -219,6 +219,9 @@ public final class VoidArmor {
         // motas violetas que suben alrededor (el aura la dibuja el cliente, SanctuaryFx)
         level.sendParticles(AURA, a.getX() + 0.5, a.getY() + 0.6, a.getZ() + 0.5, 4, 0.7, 0.6, 0.7, 0.0);
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, a.getX() + 0.5, a.getY() + 1.0, a.getZ() + 0.5, 3, 0.5, 0.8, 0.5, 0.01);
+        // (1.3.114, el dueño: «la armadura del Void está volando 1 bloque del suelo»; la prueba: a 1,00 sobre el cuarzo) de pie
+        // sobre lo primero sólido que tenga debajo, no en la altura guardada del altar
+        double gy = groundY(level, a);
         if (!here.isEmpty()) {
             // (1.3.97) de pie en el suelo del altar: el de la 1.3.96 estaba un bloque más arriba, sobre un pedestal.
             // (1.3.98, el dueño: «el stand de armadura del vacío está saltando»: «NoGravity» iba en
@@ -226,15 +229,15 @@ public final class VoidArmor {
             // Ahora sin gravedad de verdad y solo se recoloca si se ha ido de su sitio)
             ArmorStand s = here.get(0);
             if (!s.isNoGravity()) s.setNoGravity(true);
-            if (s.position().distanceToSqr(a.getX() + 0.5, a.getY(), a.getZ() + 0.5) > 0.25) {
+            if (s.position().distanceToSqr(a.getX() + 0.5, gy, a.getZ() + 0.5) > 0.0025) {
                 s.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-                s.moveTo(a.getX() + 0.5, a.getY(), a.getZ() + 0.5, 0F, 0F);
+                s.moveTo(a.getX() + 0.5, gy, a.getZ() + 0.5, 0F, 0F);
             }
             return;
         }
         ArmorStand s = EntityType.ARMOR_STAND.create(level);
         if (s == null) return;
-        s.moveTo(a.getX() + 0.5, a.getY(), a.getZ() + 0.5, 0F, 0F);
+        s.moveTo(a.getX() + 0.5, gy, a.getZ() + 0.5, 0F, 0F);
         CompoundTag tag = new CompoundTag();
         s.addAdditionalSaveData(tag);
         tag.putBoolean("Invisible", false);
@@ -258,6 +261,19 @@ public final class VoidArmor {
         s.setCustomName(Component.literal("Armadura del Coloso del Vacío").withStyle(ChatFormatting.LIGHT_PURPLE));
         s.setCustomNameVisible(true);
         level.addFreshEntity(s);
+    }
+
+    /** La altura del suelo en el altar: lo de arriba de lo primero sólido desde su sitio hacia abajo (hasta 4 bloques). */
+    static double groundY(ServerLevel level, BlockPos a) {
+        for (int dy = 0; dy <= 4; dy++) {
+            BlockPos p = a.below(dy);
+            var shape = level.getBlockState(p).getCollisionShape(level, p);
+            if (!shape.isEmpty()) {
+                double top = p.getY() + shape.max(net.minecraft.core.Direction.Axis.Y);
+                if (top <= a.getY() + 0.5) return top;
+            }
+        }
+        return a.getY();
     }
 
     /** Tocar el soporte del altar: recoger la armadura (sin cambiarle nada al soporte). */

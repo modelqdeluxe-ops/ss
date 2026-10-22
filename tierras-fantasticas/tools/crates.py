@@ -100,6 +100,40 @@ CRATES = [
      'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]
 
+# (1.3.114, el dueño: «las crates 5 cada una y las que veas que son cool e imponentes, 6 a 7; a todas agrégales más
+# items o recursos, fáciles de conseguir: manzanas doradas, diamantes, comida… nada de netherita») el precio de cada
+# crate (manda sobre el de la tabla de arriba y sobre el que hubiera en products.json) y los recursos que trae además
+# del set. Las de 6,99: los dragones y lo más imponente; las de 5,99: las míticas y las de fuego/oni.
+CRATE_PRICE = 499
+CRATE_PRICE_COOL = 599
+CRATE_PRICE_TOP = 699
+CRATES_TOP = {'bahamut', 'ender', 'lunar', 'mecha', 'akira', 'cyber'}
+CRATES_COOL = {'luminite', 'aether', 'lightning', 'littledragon', 'protocal', 'thunderbolt', 'fox', 'oni', 'ifrit'}
+# Recursos de cada crate según su precio: (cantidad, id de Minecraft, nombre en la web)
+CRATE_EXTRAS = {
+    CRATE_PRICE: [(16, 'cooked_beef', 'filetes'), (4, 'golden_apple', 'manzanas doradas'), (3, 'diamond', 'diamantes'),
+                  (16, 'experience_bottle', 'botellas de experiencia')],
+    CRATE_PRICE_COOL: [(24, 'cooked_beef', 'filetes'), (6, 'golden_apple', 'manzanas doradas'), (5, 'diamond', 'diamantes'),
+                       (24, 'experience_bottle', 'botellas de experiencia'), (16, 'iron_ingot', 'lingotes de hierro')],
+    CRATE_PRICE_TOP: [(32, 'cooked_beef', 'filetes'), (8, 'golden_apple', 'manzanas doradas'), (8, 'diamond', 'diamantes'),
+                      (32, 'experience_bottle', 'botellas de experiencia'), (32, 'iron_ingot', 'lingotes de hierro'),
+                      (8, 'ender_pearl', 'perlas de ender')],
+}
+
+
+def crate_price(set_id):
+    return CRATE_PRICE_TOP if set_id in CRATES_TOP else CRATE_PRICE_COOL if set_id in CRATES_COOL else CRATE_PRICE
+
+
+def give_commands(extras):
+    return [f'give {{player}} minecraft:{item} {n}' for n, item, _ in extras]
+
+
+def extras_text(extras):
+    parts = [f'{n} {name}' for n, _, name in extras]
+    return ', '.join(parts[:-1]) + ' y ' + parts[-1] if len(parts) > 1 else parts[0]
+
+
 # Nivel de los atributos de los sets (lo usa el TF Client; la web no los enseña). «netherite+1» es la netherita con 1
 # punto más de daño, de armadura en cada pieza y de dureza.
 CRATE_TIER = 'netherite+1'
@@ -154,6 +188,16 @@ COSMETICS = {
 }
 
 
+# (1.3.114, el dueño: «en la tienda web ponle precio en monedas a las skills y a los cosméticos») ~1.250 Fantastic Coins
+# por dólar, como las clases de skills (5,99 USD o 7.500 monedas, tools/skills.py): un globo de 0,99, 1.250; un sombrero
+# de 1,99, 2.500; unas alas de 2,99, 3.750. Con la economía de la 1.3.114 un jugador normal gana ~400 al día.
+COINS_PER_DOLLAR = 1250
+
+
+def coin_price(cents):
+    return int(round(cents / 100 * COINS_PER_DOLLAR / 50) * 50)
+
+
 def cosmetic_type(set_id, slug):
     for _theme, pieces in COSMETICS.get(set_id, ('', '', []))[2]:
         for piece, kind, _price in pieces:
@@ -176,6 +220,7 @@ def cosmetic_products():
                     'id': f'cos-{set_id}-{piece}'.replace('_', '-'), 'category': 'cosmeticos', 'name': names[piece],
                     'description': f'Cosmético animado que se lleva {where}, de la colección {theme}. Solo cambia tu aspecto.',
                     'collection': collection, 'theme': theme, 'slot': kind, 'price': price, 'maxQuantity': 1,
+                    'coinPrice': coin_price(price),
                     'colors': [c1, c2], 'set': set_id, 'item': piece, 'image': f'img/items/{set_id}/{piece}.webp',
                     'commands': [f'tf web sets give {{player}} {set_id} {piece}'],
                 })
@@ -255,6 +300,34 @@ RANK_SERVER_PERKS = {
 }
 
 
+# (1.3.114, el dueño: «a los rangos, de cajón, ponles claims: a los 3 primeros la 100×100, a eterno y cósmico la
+# 150×150 y a celestial y fantástico la 250×250; y más items según el rango») la piedra de protección de cada rango y
+# los recursos que trae (fáciles de conseguir: nada de netherita), cada rango algo más que el anterior.
+RANK_CLAIM = {'mortal': '100x100', 'inmortal': '100x100', 'magico': '100x100', 'eterno': '150x150', 'cosmico': '150x150',
+              'celestial': '250x250', 'fantastico': '250x250'}
+RANK_EXTRAS = {
+    'mortal': [(16, 'cooked_beef', 'filetes'), (4, 'golden_apple', 'manzanas doradas'), (3, 'diamond', 'diamantes'),
+               (16, 'experience_bottle', 'botellas de experiencia')],
+    'inmortal': [(32, 'cooked_beef', 'filetes'), (6, 'golden_apple', 'manzanas doradas'), (5, 'diamond', 'diamantes'),
+                 (32, 'experience_bottle', 'botellas de experiencia'), (16, 'iron_ingot', 'lingotes de hierro')],
+    'magico': [(32, 'golden_carrot', 'zanahorias doradas'), (8, 'golden_apple', 'manzanas doradas'), (8, 'diamond', 'diamantes'),
+               (48, 'experience_bottle', 'botellas de experiencia'), (32, 'iron_ingot', 'lingotes de hierro'),
+               (8, 'ender_pearl', 'perlas de ender')],
+    'eterno': [(48, 'golden_carrot', 'zanahorias doradas'), (12, 'golden_apple', 'manzanas doradas'), (12, 'diamond', 'diamantes'),
+               (64, 'experience_bottle', 'botellas de experiencia'), (32, 'iron_ingot', 'lingotes de hierro'),
+               (16, 'ender_pearl', 'perlas de ender'), (16, 'emerald', 'esmeraldas')],
+    'cosmico': [(64, 'golden_carrot', 'zanahorias doradas'), (16, 'golden_apple', 'manzanas doradas'), (16, 'diamond', 'diamantes'),
+                (64, 'experience_bottle', 'botellas de experiencia'), (64, 'iron_ingot', 'lingotes de hierro'),
+                (16, 'ender_pearl', 'perlas de ender'), (32, 'emerald', 'esmeraldas')],
+    'celestial': [(64, 'golden_carrot', 'zanahorias doradas'), (24, 'golden_apple', 'manzanas doradas'), (24, 'diamond', 'diamantes'),
+                  (128, 'experience_bottle', 'botellas de experiencia'), (64, 'iron_ingot', 'lingotes de hierro'),
+                  (32, 'ender_pearl', 'perlas de ender'), (48, 'emerald', 'esmeraldas'), (32, 'gold_ingot', 'lingotes de oro')],
+    'fantastico': [(128, 'golden_carrot', 'zanahorias doradas'), (32, 'golden_apple', 'manzanas doradas'), (32, 'diamond', 'diamantes'),
+                   (192, 'experience_bottle', 'botellas de experiencia'), (128, 'iron_ingot', 'lingotes de hierro'),
+                   (32, 'ender_pearl', 'perlas de ender'), (64, 'emerald', 'esmeraldas'), (64, 'gold_ingot', 'lingotes de oro')],
+}
+
+
 def rank_server_perks(key):
     """Lo que trae el rango en el servidor: cada comando con una explicación breve de lo que es (sin marcar lo nuevo
     ni explicar cómo se usa: lo pidió el dueño)."""
@@ -280,10 +353,10 @@ def rank_permissions(key):
 # Los efectos los da el mod a quien pueda construir en la zona (el dueño y sus miembros; PassiveEffectsManager) y se
 # apagan o encienden en el TF Pad. Precios puestos al crear la sección: cámbialos aquí.
 PROTECTIONS = [
-    # (tamaño, nombre, precio en céntimos de USD, color, efectos)
-    ('250x250', 'Protección 250×250', 499, '#e84a4a', ['Regeneración']),
-    ('300x300', 'Protección 300×300', 799, '#ff9228', ['Regeneración', 'Resistencia', 'Velocidad']),
-    ('500x500', 'Protección 500×500', 1299, '#ffd446', ['Regeneración', 'Resistencia', 'Velocidad', 'Vuelo libre']),
+    # (tamaño, nombre, precio en céntimos de USD, color, efectos). Precios del dueño (1.3.114): 10, 15 y 20 dólares.
+    ('250x250', 'Protección 250×250', 1000, '#e84a4a', ['Regeneración']),
+    ('300x300', 'Protección 300×300', 1500, '#ff9228', ['Regeneración', 'Resistencia', 'Velocidad']),
+    ('500x500', 'Protección 500×500', 2000, '#ffd446', ['Regeneración', 'Resistencia', 'Velocidad', 'Vuelo libre']),
 ]
 
 
@@ -319,10 +392,13 @@ def rank_products():
             'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}', 'tagline': tagline,
             'description': pitch,
             'price': price, 'maxQuantity': 1, 'discordRoles': [f'ID_ROL_{key.upper()}'],
-            'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}'],
+            'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}',
+                         f'give {{player}} tfclient:proteccion_{RANK_CLAIM[key]} 1', *give_commands(RANK_EXTRAS[key])],
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
             'set': set_id, 'models': models,
-            'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces, f'Rol {name} en Discord'],
+            'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces,
+                      f'Piedra de protección {RANK_CLAIM[key].replace("x", "×")}: una zona tuya a salvo de grifeo',
+                      f'Recursos: {extras_text(RANK_EXTRAS[key])}', f'Rol {name} en Discord'],
             'serverPerks': rank_server_perks(key),
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc, 'homes': RANK_SERVER_PERKS[key][0],
                      'permissions': rank_permissions(key)},
@@ -402,14 +478,16 @@ def main():
     crates = []
     for set_id, name, _rarity, tagline, desc, _key, price, (c1, c2) in CRATES:
         pid = f'crate-{set_id}'
-        prev = old.get(pid, {})
         models = listing(set_id)
+        cp = crate_price(set_id)
+        extras = CRATE_EXTRAS[cp]
         crate = {
             'id': pid, 'category': 'crates', 'name': name, 'theme': set_id, 'colors': [c1, c2],
-            'tagline': tagline, 'description': desc, 'image': f'img/crates/{set_id}.webp',
-            'price': prev.get('price', price), 'maxQuantity': 1, 'set': set_id, 'models': models,
-            # La crate es el set completo: se entrega entero con el comando del TF Client.
-            'commands': [f'tf web sets give {{player}} {set_id}'],
+            'tagline': tagline, 'description': f'{desc} Además: {extras_text(extras)}.', 'image': f'img/crates/{set_id}.webp',
+            'price': cp, 'maxQuantity': 1, 'set': set_id, 'models': models,
+            'extras': [f'{n} {nm}' for n, _, nm in extras],
+            # La crate es el set completo (se entrega entero con el comando del TF Client) y sus recursos.
+            'commands': [f'tf web sets give {{player}} {set_id}', *give_commands(extras)],
         }
         crates.append(crate)
     weapons = listing(ROULETTE_SET)
