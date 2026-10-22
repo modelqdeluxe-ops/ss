@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (22 oct 2026, TF Client 1.3.113) — lee esto primero
+### CHECKPOINT (22 oct 2026, TF Client 1.3.113, PUBLICADA) — lee esto primero
 
 **1.3.113: seis quejas del dueño** (con 3 capturas; la 1.3.112 está PUBLICADA):
 1. **Rayas blancas de la escena de las crates** (las veía antes de abrir, al moverse la cámara; «con capturas no las
@@ -204,7 +204,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    la escena («sin_post»). La causa: `crate_sky` pintaba el horizonte crema también por debajo del horizonte y las
    rendijas de las paredes miran ahí; el cielo de respaldo sin shader, debajo del horizonte, es la bruma oscura.
    **Arreglo**: en `crate_sky`, por debajo de ~6° de altura, la bruma (FOG) como sin shader (el cielo de verdad no se
-   ve en ningún encuadre: `cielo_visible.py` ~0 %).
+   ve en ningún encuadre: `cielo_visible.py` ~0 %). **Comprobado** en la prueba `7d9dac6`: sin las líneas de las
+   paredes ni las de las vigas ni a los lados de la cascada; los píxeles claros finos de la vista de antes de abrir,
+   de 4079 a 2100 (sin el shader, 1960: lo que queda son flores, pétalos y destellos del agua).
 2. **Piedras de protección rehechas** (`tools/gen_claim_blocks.py`; «no me gusta el diseño, sus contornos; no pongas
    el TF en todas las caras»): sin el marco biselado ni el panel ni los remaches; piedra oscura con grano y grietas,
    vetas de cristal del color del nivel que serpentean y brillan de noche, el **TF solo delante**, arriba un cristal en
