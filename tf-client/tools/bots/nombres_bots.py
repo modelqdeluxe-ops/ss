@@ -251,16 +251,18 @@ TOPE.update({k: min(v, 2) for k, v in TOPE.items() if k not in COMUNES and not k
 MAX_CIFRAS = round(SKINS * 0.45)
 
 
-def elegir(pool, ocupados):
+def elegir(pool, ocupados, salir=True):
     """Prueba el orden normal de las skins y, si alguna se queda sin nombre, otros órdenes."""
-    for intento in range(1000):
+    for intento in range(300):
         orden = list(range(len(pool)))
         if intento:
             random.Random(intento).shuffle(orden)
         r = elegir_en_orden(pool, ocupados, orden)
         if r:
             return r
-    sys.exit("no salen 68 nombres con estas reglas")
+    if salir:
+        sys.exit("no salen 68 nombres con estas reglas")
+    return None
 
 
 def elegir_en_orden(pool, ocupados, orden, fijos=None):
@@ -311,30 +313,18 @@ def elegir_en_orden(pool, ocupados, orden, fijos=None):
 def main():
     rng = random.Random(1310)
     pool = [candidatos(rng, skin) for skin in range(SKINS)]
-    # se eligen y se mira en Mojang solo lo elegido; si alguno ya es de una cuenta, se repone solo ese (los demás
-    # quedan como estaban) y, si no hay cómo, se vuelve a elegir todo sin él
-    ocupados, mirados = set(), set()
-    elegidos, info, moldes, picks = elegir(pool, ocupados)
-    while True:
-        nuevos = [n for n in elegidos if n.lower() not in mirados]
-        if not nuevos:
-            break
-        mirados |= {n.lower() for n in nuevos}
-        ya = tomados(nuevos)
-        print("mirados %d, ya existen %d: %s" % (len(nuevos), len(ya), " ".join(sorted(ya))))
-        if not ya:
-            break
-        ocupados |= ya
-        malos = [skin for skin, n in enumerate(elegidos) if n.lower() in ya]
-        fijos = {skin: i for skin, i in picks.items() if skin not in malos}
-        r = None
-        for intento in range(200):
-            orden = list(malos)
-            random.Random(intento).shuffle(orden)
-            r = elegir_en_orden(pool, ocupados, orden, fijos)
-            if r:
-                break
-        elegidos, info, moldes, picks = r or elegir(pool, ocupados)
+    # se mira en Mojang de una vez los primeros candidatos de cada skin y se elige solo entre los libres; si no salen
+    # los 68 con las reglas, se miran 40 más de cada una
+    k, r = 0, None
+    while r is None:
+        k += 40
+        if k > 1500:
+            sys.exit("no salen 68 nombres con estas reglas")
+        ya = tomados(sorted({c[0] for fila in pool for c in fila[:k]}))
+        libres = [[c for c in fila[:k] if c[0].lower() not in ya] for fila in pool]
+        print("con %d candidatos por skin: %d libres (de %d)" % (k, sum(map(len, libres)), 68 * k))
+        r = elegir(libres, set(), salir=False)
+    elegidos, info, moldes, _ = r
     for skin, (n, (nombre, m)) in enumerate(zip(elegidos, info)):
         print("%2d %-16s %-24s %s" % (skin, n, nombre, m))
     # la comprobación final, otra vez y de una
