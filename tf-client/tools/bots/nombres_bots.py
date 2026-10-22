@@ -252,13 +252,20 @@ def elegir(pool, ocupados):
     sys.exit("no salen 68 nombres con estas reglas")
 
 
-def elegir_en_orden(pool, ocupados, orden):
+def elegir_en_orden(pool, ocupados, orden, fijos=None):
+    """Elige en ese orden; «fijos» (skin → candidato) se quedan como están y cuentan para las reglas."""
     elegidos, info, moldes, usos, raiz, apodos = [None] * len(pool), [None] * len(pool), Counter(), Counter(), set(), set()
     con_cifras = 0
     colas, delante, repetidas = set(), 0, 0
-    for skin in orden:
+    picks = dict(fijos or {})
+    for skin in list(picks) + list(orden):
         hecho, mejor = None, None
         for i, (cand, nombre, nom, m, rz, cola, dl, cif, apodo) in enumerate(pool[skin]):
+            if skin in (fijos or {}):
+                if i != fijos[skin]:
+                    continue
+                hecho = (cand, nombre, m, rz, cola, dl, cif, apodo)
+                break
             if cand.lower() in ocupados or usos[nombre] >= TOPE[nombre] or moldes[m] >= MAX_MOLDE.get(m, 4):
                 continue
             if rz & raiz or (apodo and apodo in apodos) or (cif and con_cifras >= MAX_CIFRAS):
@@ -271,6 +278,7 @@ def elegir_en_orden(pool, ocupados, orden):
             peso = (usos[nombre] / TOPE[nombre] + moldes[m] / MAX_MOLDE.get(m, 4), i)
             if mejor is None or peso < mejor:
                 mejor, hecho = peso, (cand, nombre, m, rz, cola, dl, cif, apodo)
+                picks[skin] = i
         if not hecho:
             return None
         cand, nombre, m, rz, cola, dl, cif, apodo = hecho
@@ -286,23 +294,36 @@ def elegir_en_orden(pool, ocupados, orden):
             colas.add(cola)
         if apodo:
             apodos.add(apodo)
-    return elegidos, info, moldes
+    return elegidos, info, moldes, picks
 
 
 def main():
     rng = random.Random(1310)
     pool = [candidatos(rng, skin) for skin in range(SKINS)]
-    # se eligen y se mira en Mojang solo lo elegido; si alguno ya es de una cuenta, se vuelve a elegir sin él
+    # se eligen y se mira en Mojang solo lo elegido; si alguno ya es de una cuenta, se repone solo ese (los demás
+    # quedan como estaban) y, si no hay cómo, se vuelve a elegir todo sin él
     ocupados, mirados = set(), set()
+    elegidos, info, moldes, picks = elegir(pool, ocupados)
     while True:
-        elegidos, info, moldes = elegir(pool, ocupados)
         nuevos = [n for n in elegidos if n.lower() not in mirados]
         if not nuevos:
             break
         mirados |= {n.lower() for n in nuevos}
         ya = tomados(nuevos)
         print("mirados %d, ya existen %d: %s" % (len(nuevos), len(ya), " ".join(sorted(ya))))
+        if not ya:
+            break
         ocupados |= ya
+        malos = [skin for skin, n in enumerate(elegidos) if n.lower() in ya]
+        fijos = {skin: i for skin, i in picks.items() if skin not in malos}
+        r = None
+        for intento in range(200):
+            orden = list(malos)
+            random.Random(intento).shuffle(orden)
+            r = elegir_en_orden(pool, ocupados, orden, fijos)
+            if r:
+                break
+        elegidos, info, moldes, picks = r or elegir(pool, ocupados)
     for skin, (n, (nombre, m)) in enumerate(zip(elegidos, info)):
         print("%2d %-16s %-24s %s" % (skin, n, nombre, m))
     # la comprobación final, otra vez y de una
