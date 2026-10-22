@@ -22,8 +22,10 @@ por correo al dueño, y que al comprar se descargue solo un recibo aparte del de
   `.btn-theme` amarillo dorado (#fde68a/#fcd34d/#f5b316, letra #2a1600). Auditoría: solo los falsos positivos conocidos.
 - **Crates**: fuera el `<span class="try-on">` de `crateCard` (app.js). En los cosméticos con set sigue, ya legible.
 - **Logo**: `<span class="portal-medal">` (pages.py); `logo-float` (6 s, 14 px) + `logo-shine` (degradado recortado con
-  `mask: url(/img/logo.webp)`) + `logo-glint` (un poco más de brillo). Fuera el JS de seguir al ratón. Con «menos
-  movimiento» no flota pero el brillo se queda.
+  `mask: url(/img/logo.webp)`) + `logo-glint` (un poco más de brillo). Fuera el JS de seguir al ratón. 2.º ajuste
+  (el dueño no veía la flotación y el logo chocaba con el título): 5 s y 22 px, y flota también con «menos movimiento»
+  (Windows con los efectos de animación apagados lo activa); el título de la portada en escritorio pasa a
+  `clamp(56px, 5.9vw, 78px)` («Fantásticas» se salía de su columna y se metía bajo la espada), logo 400 px y hueco 56 px.
 - **Backend**: `src/pdf.js` (PDF a mano), `src/receipt.js` (recibo y `REFUND_POLICY`), `src/mail.js` (Resend). Correos:
   firma de Términos (`recordTerms`), recibo al entregar (`mailReceipt` en `fulfill`), reembolso/disputa con veredicto
   y PDF (`handleReversal`). Disputa pasados 5 días hábiles de un pedido entregado → `queuePenalty` encola `B<pedido>`

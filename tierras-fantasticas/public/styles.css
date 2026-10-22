@@ -1455,7 +1455,7 @@ h4 {
   position: relative;
   display: block;
   width: 100%;
-  animation: logo-float 6s ease-in-out infinite;
+  animation: logo-float 5s ease-in-out infinite;
 }
 
 .portal img {
@@ -1463,7 +1463,7 @@ h4 {
   width: 100%;
   height: auto;
   filter: drop-shadow(0 24px 30px #5a2d0d66);
-  animation: logo-glint 6s ease-in-out infinite;
+  animation: logo-glint 5s ease-in-out infinite;
 }
 
 .portal-medal::after {
@@ -1475,7 +1475,7 @@ h4 {
   background: linear-gradient(115deg, transparent 40%, rgb(255 248 220 / 0.25) 45%, rgb(255 252 235 / 0.75) 50%, rgb(255 248 220 / 0.25) 55%, transparent 60%) no-repeat;
   background-size: 260% 100%;
   background-position: 130% 0;
-  animation: logo-shine 6s ease-in-out infinite;
+  animation: logo-shine 5s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -7278,7 +7278,7 @@ h4 {
   }
 
   50% {
-    transform: translateY(-14px);
+    transform: translateY(-22px);
   }
 }
 
@@ -7807,7 +7807,7 @@ h4 {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     align-items: center;
     justify-items: stretch;
-    gap: 40px;
+    gap: 56px;
     text-align: left;
   }
 
@@ -7815,14 +7815,15 @@ h4 {
     align-items: flex-start;
   }
 
+  /* «Fantásticas» mide 7.5 em: con este tamaño cabe en su columna con aire y no se mete debajo del logo */
   .hero-title {
-    font-size: clamp(64px, 6.6vw, 92px);
+    font-size: clamp(56px, 5.9vw, 78px);
   }
 
   .portal {
     order: 2;
     justify-self: center;
-    width: min(100%, 440px);
+    width: min(100%, 400px);
   }
 
   .hero-links {
@@ -7978,9 +7979,12 @@ h4 {
     animation-delay: 0.12s !important;
   }
 
+  /* El logo sigue flotando y brillando (lo pidió el dueño; Windows con «Efectos de animación» apagados activa este
+     modo y el logo se quedaba quieto) */
+  .portal-medal,
   .portal img,
   .portal-medal::after {
-    animation-duration: 6s !important;
+    animation-duration: 5s !important;
     animation-iteration-count: infinite !important;
   }
 }
