@@ -38,7 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Menú principal de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de los botones y los botones
- * de la lámina del dueño (TFMenuButton + TFMenuPlates), colocados como en ella. El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
+ * de TF (TFMenuButton: pastillas de cristal oscuro con hilo de oro, TFPill), en una columna. El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
  * Realms, idioma ni accesibilidad (idioma y accesibilidad siguen en Opciones).
  *
  * Importante: sin lambdas ni referencias a métodos aquí (van en TFMenuButton); en un mixin pueden generar métodos que
@@ -77,8 +77,9 @@ public abstract class TitleScreenMixin extends Screen {
             target = "Lnet/minecraft/client/gui/components/LogoRenderer;renderLogo(Lnet/minecraft/client/gui/GuiGraphics;IF)V"))
     private void tfclient$drawLogo(LogoRenderer logoRenderer, GuiGraphics g, int screenWidth, float alpha) {
         int buttonsTop = this.tfclient$buttonsTop > 0 ? this.tfclient$buttonsTop : this.height / 4 + 48;
-        int top = 4;
-        int logoHeight = Math.min(170, buttonsTop - top - 8); // margen para que flote sin tocar los botones
+        int logoHeight = Math.min(170, buttonsTop - 4 - 8); // margen para que flote sin tocar los botones
+        // (1.3.120) justo encima de los botones: si sobra alto, el emblema baja con ellos (el conjunto, centrado)
+        int top = Math.max(4, buttonsTop - 8 - logoHeight);
         try {
             if (logoHeight > 16) TFLogoRenderer.render(g, screenWidth / 2, top, logoHeight, alpha);
         } catch (Throwable t) {

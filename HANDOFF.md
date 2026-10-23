@@ -190,7 +190,58 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.119) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.120) — lee esto primero
+
+**1.3.120: nueve pedidos del dueño** (4 capturas y un mensaje a mitad: «rework de los botones del menú principal»):
+1. **Círculos detrás de los iconos del pad**: fuera el `PadSkin.glow` de detrás del icono de cada fila
+   (`PadViewPage`); y `TFPadScreen.render` llama a `ShaderPacks.fixBlendForGui()` al empezar (con Photon, la caché de
+   mezcla de GlStateManager desfasada volvía discos sólidos los brillos suaves).
+2. **Etiquetas del pad más arriba** (las letras iban pegadas abajo): pestañas y botones de `PadSkin`, `PadUi`,
+   `PadDataPage` y `PadMusicPage` 1-2 píxeles más arriba.
+3. **Bots** (`server/TFBots`): `/tf bots add cantidad <n> [segundos]` y `/tf bots add nombre <nombre>` (sugiere los
+   libres), `/tf bots remove nombre <nombre>`, `/tf bots limpiar` (fuera todos y su registro). El registro empieza de
+   cero: `FILE_VERSION = 2`, un `config/tfclient-bots.json` de antes se ignora; solo tienen datos los que se unan.
+4. **Empezar limpios** (`server/TFDataReset`): al arrancar la 1.3.120 por primera vez (marca
+   `<mundo>/tfclient/limpieza-1.3.120.hecha`) pasan a `<mundo>/tfclient/respaldo-<fecha>/` monedas, monedas del
+   gachapón, estadísticas/ranking, títulos, hogares, regalos, clanes, oficios, skills, efectos, armario, tienda y su
+   registro, GTS y su registro, Comunidad (fotos y skins), las protecciones (`claimblocks_data.json`) y los bots; de
+   Viajes, Pase, Gachapón, Kits y Recompensas solo «jugadores» (lo del staff se queda). Los UUID que tenían datos van a
+   `reinicio-web.json`: `TFBridge` los manda en `/bridge/poll` como `reset` y la web (`store.resetPlayer`) borra sus
+   rangos, efectos, skills y armario, cancela las entregas pendientes y marca sus pedidos «reiniciado»; con `resetDone`
+   se borra el archivo. Otra vez: `/tf limpiar datos` (staff 4; al reiniciar el servidor).
+5. **Piedra de protección en la mano** (`claims/client/ClaimPreviewLines`): el borde de la zona que haría, como una
+   valla de luz del color de la piedra (línea gruesa a ras de suelo, otra 2 bloques más arriba, postes cada 4 y las
+   esquinas altas; tenue a través del terreno), no partículas (`ClaimOutlineRenderer` ya no pinta la vista previa).
+   Colocada, el contorno de partículas de siempre.
+6. **Cámara** (`PadCamera`): clic derecho = selfie (tercera persona de frente; Esc vuelve a la cámara de antes), rueda =
+   zoom (1-8x). Foto publicada hasta 1920x1080 (4,2 MB; antes 1280x720), 10 fotos en memoria. Las fotos se sacan del
+   fotograma ya pintado (con shaders si los lleva): los demás las ven igual.
+7. **Regalos** (`PadPlayers.gift`): tocar un objeto ya no te saca (las vistas de regalo no tenían pestaña y el pad
+   volvía a la lista); eliges el objeto, escribes la cantidad (hasta lo que tienes; TODOS) y sale de tu inventario; las
+   monedas, igual. Mismo arreglo en el menú del jugador y en elegir zona.
+8. **Comentarios en las fotos** (`PadCommunity*`): botón Comentarios (con cuántos) que abre su ventana encima de la
+   lista: la foto en pequeño (clic = en grande), cada comentario con la cara de la skin (la del Armario, la del
+   conectado o la última que se le vio), nombre, cuándo, texto con emojis y sus reacciones (una por jugador, como las
+   fotos; 12 emojis distintos), botón de reaccionar (el mismo selector) y la X de borrar (el que lo escribió, el dueño
+   de la foto o el staff; dos clics). Campo abajo (140 letras, Intro envía, Ctrl+V). En `comunidad.json`:
+   `comentarios: [{id, autor, nombre, texto, fecha, reacciones}]`, 300 por foto, uno cada 4 s. Paquetes 17-19 del
+   canal del pad. La tarjeta: like, Reaccionar y Comentarios en una barra abajo (a ras del pie de la foto, se acortan si
+   no caben), las reacciones encima y BORRAR/DENUNCIAR arriba a la derecha.
+9. **Botones del menú principal, rehechos** (`client/TFPill`, `TFMenuButton`, `TFButtonTheme`): sin texturas (fuera
+   `menu_main.png/.json`, `button_slice.png`, `menu_glow.png`, `button_shine.png`, `TFMenuPlates` y
+   `tools/gen_menu_buttons.py`). Pastillas de cristal oscuro con hilo de oro como las respuestas de los caballeros, en
+   píxeles reales: sombra, halo de su color con el ratón (oro; rojo Salir, verde WhatsApp, azul Discord), cristal,
+   destello al entrar el ratón (el principal, cada 6,5 s), hilos de oro a los lados del texto que crecen con el ratón
+   (en Tierras Fantásticas siempre, con doble hilo), sube un píxel y se hunde al pulsar. Columna limpia: Tierras
+   Fantásticas; Mundo local; Mods; Opciones | Salir; WhatsApp | Web | Discord; el emblema baja con los botones. Los
+   demás menús (Opciones, mundos…) y los deslizadores, con la misma pastilla. Texto centrado a la vista medido con
+   `tools/menu_sim.py` (±1 píxel real; ahora simula el diseño nuevo).
+
+Prueba en el juego: la de `pad` saca también Comunidad (una foto de un bot con comentarios: `pad_comunidad`,
+`pad_comentarios`, `pad_comentarios_emojis`), la piedra en la mano (`piedra_en_mano*`) y el menú principal y Opciones
+(`menu_principal`, `menu_principal_raton`, `menu_opciones`).
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.119, PUBLICADA)
 
 **1.3.119** (el dueño: «Cósmico y Celestial no traen heal, pónselos; el pad debe estar ligado a los hogares o permisos;
 usamos Multiverse, el spawn está en otro overworld (un mundo vacío): los tp entre dimensiones y Explorar siempre fuera
@@ -526,7 +577,8 @@ de la web) sin tocar el código.
 6. **La espada Valentine al revés en la vista previa de Combate** (y sin estela): muchas armas 3D, en su posición
    «gui», apuntan arriba a la izquierda (−118°…−137°) y no a −45° como las de Minecraft. `TrailPreview` las gira según
    hacia dónde apunta su hoja y las pone del largo de una espada normal.
-7. **Bots** (`/tf bots add <cantidad> [segundos]`, `/tf bots remove <cantidad|all> [segundos]`, `/tf bots list`,
+7. **Bots** (`/tf bots add <cantidad> [segundos]` —desde la 1.3.120 `/tf bots add cantidad <n> [segundos]` o
+   `add nombre <nombre>`—, `/tf bots remove <cantidad|all> [segundos]`, `/tf bots list`,
    staff): `server/TFBots`: jugadores de mentira que solo están en la lista de jugadores (el TAB), con su cara (68 skins
    firmadas de MineSkin: `tools/bots/skins_bots.py`), 68 nombres inventados que no usa ninguna cuenta
    (`tools/bots/nombres_bots.py`, comprobados en la API de Mojang), su ping y el mensaje amarillo de entrar y salir; sin

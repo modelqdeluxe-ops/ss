@@ -37,6 +37,13 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class PadCamera {
     private static boolean active;
     private static boolean prevHideGui;
+    /**
+     * (1.3.120, el dueño: «en el modo cámara agrega selfie y zoom») selfie: la cámara de delante (como F5 dos veces) con
+     * el clic derecho; zoom: la rueda del ratón (de 1x a 8x); al salir, todo como estaba.
+     */
+    private static boolean selfie;
+    private static net.minecraft.client.CameraType prevCamera;
+    private static double zoom = 1.0;
     private static int shootIn = -1;
     /** Para el destello del pad al volver. */
     static long flashAt;
@@ -81,23 +88,56 @@ public final class PadCamera {
         active = true;
         prevHideGui = mc.options.hideGui;
         mc.options.hideGui = true;
+        prevCamera = mc.options.getCameraType();
+        selfie = false;
+        zoom = 1.0;
         SystemToast.addOrUpdate(mc.getToasts(), SystemToast.SystemToastIds.TUTORIAL_HINT,
-                Component.literal("Modo foto"), Component.literal("Clic izquierdo: foto · Esc: volver al pad"));
+                Component.literal("Modo foto"), Component.literal("Clic izq.: foto · Clic der.: selfie · Rueda: zoom · Esc: volver"));
     }
 
     static void stop() {
         shootIn = -1;
         if (!active) return;
         active = false;
-        Minecraft.getInstance().options.hideGui = prevHideGui;
+        Minecraft mc = Minecraft.getInstance();
+        mc.options.hideGui = prevHideGui;
+        if (prevCamera != null) mc.options.setCameraType(prevCamera);
+        selfie = false;
+        zoom = 1.0;
     }
 
-    /** Clic izquierdo en modo foto: no pega ni rompe; dispara. */
+    /** Clic derecho en modo foto: selfie (la cámara de delante) o vuelta a la de antes. */
+    private static void toggleSelfie() {
+        Minecraft mc = Minecraft.getInstance();
+        selfie = !selfie;
+        mc.options.setCameraType(selfie ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
+                : prevCamera != null ? prevCamera : net.minecraft.client.CameraType.FIRST_PERSON);
+    }
+
+    /** La rueda en modo foto: zoom (no cambia de objeto en la barra). */
+    @SubscribeEvent
+    public static void onScroll(net.minecraftforge.client.event.InputEvent.MouseScrollingEvent event) {
+        if (!active || Minecraft.getInstance().screen != null) return;
+        event.setCanceled(true);
+        zoom = Math.max(1.0, Math.min(8.0, zoom * (event.getScrollDelta() > 0 ? 1.15 : 1 / 1.15)));
+        if (zoom < 1.02) zoom = 1.0;
+    }
+
+    /** El zoom: el campo de visión dividido (como el catalejo). */
+    @SubscribeEvent
+    public static void onFov(net.minecraftforge.client.event.ViewportEvent.ComputeFov event) {
+        if (!active || zoom <= 1.0 || !event.usedConfiguredFov()) return;
+        event.setFOV(event.getFOV() / zoom);
+    }
+
+    /** Clic izquierdo en modo foto: no pega ni rompe; dispara. Clic derecho: selfie (no usa nada). */
     @SubscribeEvent
     public static void onMouse(net.minecraftforge.client.event.InputEvent.MouseButton.Pre event) {
-        if (!active || event.getButton() != 0 || Minecraft.getInstance().screen != null) return;
+        if (!active || (event.getButton() != 0 && event.getButton() != 1) || Minecraft.getInstance().screen != null) return;
         event.setCanceled(true);
-        if (event.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS && shootIn < 0) shoot();
+        if (event.getAction() != org.lwjgl.glfw.GLFW.GLFW_PRESS || shootIn >= 0) return;
+        if (event.getButton() == 0) shoot();
+        else toggleSelfie();
     }
 
     /** Fuera avisos y, dos fotogramas después, la foto. */

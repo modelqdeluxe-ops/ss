@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1.3.120 (23 oct 2026)**: círculos del pad fuera, etiquetas más arriba, bots por cantidad o nombre con registro
+> nuevo, limpieza de los datos de jugadores (y de la web), la piedra en la mano con línea, selfie y zoom, regalos con
+> cantidad, comentarios en las fotos y los botones del menú rehechos (CHECKPOINT de `HANDOFF.md`).
+>
 > **1.3.109 (22 oct 2026)**: rayas de la cascada (anisotrópico), sonidos y música de las crates (la del dueño,
 > cifrada en el mod), efectos nuevos de la crate, texto del pad, NPC que no arden, piedras de protección oscuras, la
 > vista previa de las estelas y los bots de `/tf bots` (CHECKPOINT de `HANDOFF.md`).

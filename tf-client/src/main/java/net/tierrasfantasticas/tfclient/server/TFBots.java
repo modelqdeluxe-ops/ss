@@ -16,6 +16,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.netty.buffer.Unpooled;
@@ -39,6 +40,7 @@ import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
@@ -110,13 +112,26 @@ public final class TFBots {
         return Commands.literal("bots").requires(s -> s.hasPermission(3))
                 .executes(ctx -> status(ctx.getSource()))
                 .then(Commands.literal("list").executes(ctx -> list(ctx.getSource())))
+                // (1.3.120, el dueño: «en add, otro subcomando: cantidad o por nombre, para tener más control de cuáles entran»)
                 .then(Commands.literal("add")
-                        .then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 500))
-                                .executes(ctx -> add(ctx, 3))
-                                .then(Commands.argument("segundos", IntegerArgumentType.integer(0, 3600))
-                                        .executes(ctx -> add(ctx, IntegerArgumentType.getInteger(ctx, "segundos"))))))
+                        .then(Commands.literal("cantidad")
+                                .then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 500))
+                                        .executes(ctx -> add(ctx, 3))
+                                        .then(Commands.argument("segundos", IntegerArgumentType.integer(0, 3600))
+                                                .executes(ctx -> add(ctx, IntegerArgumentType.getInteger(ctx, "segundos"))))))
+                        .then(Commands.literal("nombre")
+                                .then(Commands.argument("nombre", StringArgumentType.word())
+                                        .suggests((ctx, b) -> SharedSuggestionProvider.suggest(free().stream().map(Bot::name), b))
+                                        .executes(ctx -> addNamed(ctx.getSource(), StringArgumentType.getString(ctx, "nombre"))))))
+                // (1.3.120, el dueño: «limpia los registros de todos los bots, déjalos limpios») fuera los de dentro y lo
+                // que se recuerda de los que vinieron (veces, salidas): el Ranking y sus fichas empiezan de cero
+                .then(Commands.literal("limpiar").executes(ctx -> wipe(ctx.getSource())))
                 .then(Commands.literal("remove")
                         .then(Commands.literal("all").executes(ctx -> removeAll(ctx.getSource())))
+                        .then(Commands.literal("nombre")
+                                .then(Commands.argument("nombre", StringArgumentType.word())
+                                        .suggests((ctx, b) -> SharedSuggestionProvider.suggest(online.stream().map(Bot::name), b))
+                                        .executes(ctx -> removeNamed(ctx.getSource(), StringArgumentType.getString(ctx, "nombre")))))
                         .then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 500))
                                 .executes(ctx -> remove(ctx, 3))
                                 .then(Commands.argument("segundos", IntegerArgumentType.integer(0, 3600))
@@ -140,6 +155,54 @@ public final class TFBots {
                 + (take > 1 && seconds > 0 ? ", uno cada " + seconds + " s más o menos (al azar)" : "")
                 + (take < n ? " (no hay más libres)" : "") + "."), true);
         return take;
+    }
+
+    /** Entra ese bot (por su nombre, de los del mod), ya. */
+    private static int addNamed(CommandSourceStack src, String name) {
+        server = src.getServer();
+        Bot b = null;
+        for (Bot x : pool()) if (x.name().equalsIgnoreCase(name)) b = x;
+        if (b == null) {
+            src.sendFailure(Component.literal("No hay ningún bot «" + name + "». Pulsa Tab para ver los libres."));
+            return 0;
+        }
+        if (online.contains(b)) {
+            src.sendFailure(Component.literal(b.name() + " ya está dentro."));
+            return 0;
+        }
+        if (server.getPlayerList().getPlayerByName(b.name()) != null) {
+            src.sendFailure(Component.literal("Hay un jugador de verdad que se llama " + b.name() + "."));
+            return 0;
+        }
+        join(b, true);
+        Bot joined = b;
+        src.sendSuccess(() -> Component.literal("Entra " + joined.name() + "."), true);
+        return 1;
+    }
+
+    /** Sale ese bot, ya. */
+    private static int removeNamed(CommandSourceStack src, String name) {
+        server = src.getServer();
+        for (Bot b : new ArrayList<>(online)) {
+            if (!b.name().equalsIgnoreCase(name)) continue;
+            leave(b, true);
+            src.sendSuccess(() -> Component.literal("Sale " + b.name() + "."), true);
+            return 1;
+        }
+        src.sendFailure(Component.literal("No hay ningún bot «" + name + "» dentro."));
+        return 0;
+    }
+
+    /** Borra todo lo de los bots: fuera los de dentro (sin mensaje) y su registro (veces que vinieron, salidas). */
+    private static int wipe(CommandSourceStack src) {
+        server = src.getServer();
+        int n = online.size(), known = seen.size();
+        toAdd = toRemove = 0;
+        while (!online.isEmpty()) leave(online.get(0), false);
+        seen.clear();
+        save();
+        src.sendSuccess(() -> Component.literal("Bots limpios: salieron " + n + " y se borró el registro de " + known + "."), true);
+        return known;
     }
 
     private static int remove(CommandContext<CommandSourceStack> ctx, int seconds) {
@@ -171,7 +234,8 @@ public final class TFBots {
     private static int status(CommandSourceStack src) {
         src.sendSuccess(() -> Component.literal("Bots: " + online.size() + " dentro de " + pool().size()
                 + (toAdd > 0 ? "; faltan por entrar " + toAdd : "") + (toRemove > 0 ? "; faltan por salir " + toRemove : "")
-                + ". /tf bots add <cantidad> [segundos] · /tf bots remove <cantidad|all> [segundos] · /tf bots list"), false);
+                + ". /tf bots add cantidad <n> [segundos] · /tf bots add nombre <nombre> · /tf bots remove <cantidad|all|nombre> · "
+                + "/tf bots list · /tf bots limpiar"), false);
         return online.size();
     }
 
@@ -491,6 +555,7 @@ public final class TFBots {
             JsonArray a = new JsonArray();
             for (Bot b : online) a.add(b.name());
             JsonObject o = new JsonObject();
+            o.addProperty("version", FILE_VERSION);
             o.add("dentro", a);
             JsonObject v = new JsonObject();
             for (Map.Entry<String, Seen> e : seen.entrySet()) {
@@ -506,11 +571,22 @@ public final class TFBots {
         }
     }
 
+    /**
+     * (1.3.120, el dueño: «limpia los registros de todos los bots, ranking, todo, sin datos residuales; solo tendrán datos
+     * los que yo una») el archivo de antes de la versión 2 no se lee: se empieza de cero una vez.
+     */
+    private static final int FILE_VERSION = 2;
+
     private static List<String> load() {
         List<String> out = new ArrayList<>();
         if (!Files.exists(file())) return out;
         try (Reader r = Files.newBufferedReader(file(), StandardCharsets.UTF_8)) {
             JsonObject o = new Gson().fromJson(r, JsonObject.class);
+            if (o == null || !o.has("version") || o.get("version").getAsInt() < FILE_VERSION) {
+                seen.clear();
+                TFClient.LOGGER.info("TF Bots: registro de bots anterior borrado (se empieza de cero)");
+                return out;
+            }
             if (o != null && o.has("dentro")) for (JsonElement e : o.getAsJsonArray("dentro")) out.add(e.getAsString());
             seen.clear();
             if (o != null && o.has("vistos")) {

@@ -677,6 +677,9 @@ public final class TFPadScreen extends Screen {
      */
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // (1.3.120) con un paquete de shaders (Photon pone mezclas por búfer que la caché de Minecraft no ve) los brillos
+        // translúcidos salían como discos sólidos: la mezcla de OpenGL, igual que la caché, antes de pintar el pad
+        net.tierrasfantasticas.tfclient.vacio.ShaderPacks.fixBlendForGui();
         renderBackground(g);
         RuntimeException[] error = new RuntimeException[1];
         order = 0;

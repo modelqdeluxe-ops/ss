@@ -196,7 +196,7 @@ final class PadCameraPage extends PadPage {
             int cy = py + PH / 2 - 10;
             PadSkin.glow(g, px + PW / 2F, cy, 30, acc & 0xFFFFFF, 140);
             PadSkin.iconCrisp(g, pad, "camara", px + PW / 2F, cy + Math.round((float) Math.sin(PadSkin.time() * 2.2F) * 1.5F), 30);
-            String hint = "Sin fotos. MODO FOTO y clic izquierdo.";
+            String hint = "Sin fotos. MODO FOTO: clic izquierdo foto, derecho selfie, rueda zoom.";
             int n = PadUi.lines(hint, PW - 20);
             PadUi.wrap(g, hint, px + (PW - Math.min(PW - 20, PadUi.font().width(hint))) / 2, cy + 20, PW - 20, 0xFFE0ECFF, Math.max(1, n));
         } else {

@@ -383,13 +383,11 @@ y `discord.url` el enlace de reserva si el widget no responde.
 - Fondo del menú: `src/main/resources/assets/tfclient/textures/gui/menu_background.png` (16:9; el paisaje de noche de la web, `tierras-fantasticas/public/img/night-1672.webp` en 1920x1080, sin la nebulosa).
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
-- Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png`, `sparkle.png` y
-  `button_shine.png` (la línea luminosa de los botones de oro) a partir de `logo.png` (vuelve a ejecutarlo si cambias el emblema).
-- Botones: `tools/gen_menu_buttons.py <lámina del menú> <lámina de ajustes>` recorta las dos láminas del dueño (el
-  fondo de cuadritos viene pintado y se quita) y genera `menu_main.png` + `menu_main.json` (las 8 placas del menú
-  principal, su cuerpo, zonas lisas que se estiran, gemas y faroles, y su sitio en la composición), `menu_glow.png` y
-  `button_slice.png` (la placa de piedra de los demás menús: normal, ratón encima y desactivada). Las láminas no van en
-  el repo. Vista previa sin abrir el juego: `tools/menu_sim.py <carpeta>`.
+- Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png` y `sparkle.png` a partir de
+  `logo.png` (vuelve a ejecutarlo si cambias el emblema).
+- Botones (1.3.120): sin texturas. Son pastillas de cristal oscuro con hilo de oro, como las respuestas de los
+  caballeros, dibujadas en píxeles reales (`client/TFPill.java`; el menú principal en `TFMenuButton`, los demás menús en
+  `TFButtonTheme`). Vista previa sin abrir el juego (mismas cuentas): `tools/menu_sim.py <carpeta>`.
 - Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en
   `OFL-Cinzel.txt`).
 - Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:
