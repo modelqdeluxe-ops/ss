@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
+> AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
+> suelo (CHECKPOINT de `HANDOFF.md`).
+>
 > **1.3.120 (23 oct 2026)**: círculos del pad fuera, etiquetas más arriba, bots por cantidad o nombre con registro
 > nuevo, limpieza de los datos de jugadores (y de la web), la piedra en la mano con línea, selfie y zoom, regalos con
 > cantidad, comentarios en las fotos y los botones del menú rehechos (CHECKPOINT de `HANDOFF.md`).

@@ -10,16 +10,16 @@ on:
 
 jobs:
   ping:
-    name: Estado de 216.163.187.40:19001
+    name: Estado de tierras.ultramc.co
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Conexión TCP
-        run: timeout 10 bash -c '</dev/tcp/216.163.187.40/19001' && echo "Puerto 19001 abierto" || echo "Puerto 19001 NO responde"
+        run: timeout 10 bash -c '</dev/tcp/tierras.ultramc.co/25565' && echo "Puerto 25565 abierto" || echo "Puerto 25565 NO responde"
       - name: Ping de Minecraft
-        run: python3 .github/scripts/server_ping.py 216.163.187.40 19001 || true
+        run: python3 .github/scripts/server_ping.py tierras.ultramc.co 25565 || true
       - name: Prueba de inicio de sesión
-        run: python3 .github/scripts/server_login_probe.py 216.163.187.40 19001 || true
+        run: python3 .github/scripts/server_login_probe.py tierras.ultramc.co 25565 || true
       - name: Invitación de Discord
         run: |
           curl -sS "https://discord.com/api/v10/invites/tRrunHBZE?with_counts=true" | python3 -c "

@@ -18,9 +18,13 @@ import net.tierrasfantasticas.tfclient.TFConfig;
 public final class TFServer {
     private TFServer() {}
 
-    /** Botón del menú: primero comprueba los mods del servidor y después conecta. */
+    /**
+     * Botón del menú: sin AutoModpack, se pide primero (TFAutoModpack); con él, se conecta y AutoModpack descarga los
+     * mods y recursos del servidor (1.3.121: ya no se enseña la lista de mods que faltan).
+     */
     public static void join(Screen parent) {
-        Minecraft.getInstance().setScreen(new TFServerCheckScreen(parent));
+        if (!TFAutoModpack.present()) Minecraft.getInstance().setScreen(new TFAutoModpack.Missing(parent));
+        else connect(parent);
     }
 
     /** Conecta directamente al servidor y acepta su paquete de recursos (modelos animados) sin preguntar. */

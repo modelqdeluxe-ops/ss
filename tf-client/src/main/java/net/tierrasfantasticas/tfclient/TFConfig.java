@@ -20,17 +20,17 @@ import net.minecraftforge.fml.loading.FMLPaths;
 /** Ajustes en config/tfclient/cliente.properties (se crea con los valores por defecto la primera vez). */
 public final class TFConfig {
     private static final String DEFAULT_NAME = "Tierras Fantásticas";
-    /** Servidor de pruebas por ahora. El de siempre es 216.163.187.40:19001. */
-    private static final String DEFAULT_ADDRESS = "216.163.187.40:19229";
-    private static final String OLD_DEFAULT_ADDRESS = "216.163.187.40:19001";
-    /** tierrasfantásticas.store escrito en ASCII (punycode), como lo usa internet. */
-    private static final String DEFAULT_WEB = "https://xn--tierrasfantsticas-hpb.store";
+    /**
+     * tierrasfantásticas.store escrito en ASCII (punycode), como lo usa internet. La IP del servidor se pregunta siempre
+     * a esta (TFLock.fetchOfficial), aunque alguien cambie web.url en cliente.properties.
+     */
+    public static final String OFFICIAL_WEB = "https://xn--tierrasfantsticas-hpb.store";
+    private static final String DEFAULT_WEB = OFFICIAL_WEB;
     private static final String OLD_DEFAULT_WEB = "https://tienda.tierrasfantasticas.net";
     private static final String DEFAULT_DISCORD_GUILD = "1439703812368765082";
     private static final String DEFAULT_DISCORD_URL = "https://discord.gg/tRrunHBZE";
 
     private static String serverName = DEFAULT_NAME;
-    private static String serverAddress = DEFAULT_ADDRESS;
     private static String webUrl = DEFAULT_WEB;
     private static String discordGuildId = DEFAULT_DISCORD_GUILD;
     private static String discordUrl = DEFAULT_DISCORD_URL;
@@ -41,8 +41,9 @@ public final class TFConfig {
         return serverName;
     }
 
+    /** (1.3.121) La IP del servidor: la del mod o la que puso el dueño en la web (TFLock); no se lee de ningún archivo. */
     public static String serverAddress() {
-        return serverAddress;
+        return net.tierrasfantasticas.tfclient.client.TFLock.address();
     }
 
     public static String webUrl() {
@@ -80,12 +81,10 @@ public final class TFConfig {
             }
         }
         serverName = props.getProperty("server.name", DEFAULT_NAME).trim();
-        serverAddress = props.getProperty("server.address", DEFAULT_ADDRESS).trim();
-        // Quien tenía la IP por defecto anterior pasa a la nueva (si la cambió a mano, se respeta).
-        // (1.3.117) y nadie puede poner otro servidor: el TF Client es solo de Tierras Fantásticas (client/TFLock)
-        boolean oldAddress = serverAddress.isEmpty() || serverAddress.equals(OLD_DEFAULT_ADDRESS)
-                || !net.tierrasfantasticas.tfclient.client.TFLock.OFFICIAL.contains(serverAddress);
-        if (oldAddress) serverAddress = DEFAULT_ADDRESS;
+        // (1.3.121) server.address ya no se lee: la IP es la del mod o la de la web (client/TFLock); se quita del archivo
+        boolean oldAddress = props.containsKey("server.address");
+        props.remove("server.address");
+        net.tierrasfantasticas.tfclient.client.TFLock.fetchOfficial();
         webUrl = props.getProperty("web.url", DEFAULT_WEB).trim();
         // La dirección provisional de versiones anteriores pasa a ser el dominio de verdad.
         boolean oldWeb = webUrl.isEmpty() || webUrl.equals(OLD_DEFAULT_WEB);
@@ -97,7 +96,6 @@ public final class TFConfig {
         boolean missing = oldWeb || oldAddress || !props.containsKey("web.url") || !props.containsKey("discord.guild.id") || !props.containsKey("discord.url");
         if (!Files.exists(file) || missing) {
             props.setProperty("server.name", serverName);
-            props.setProperty("server.address", serverAddress);
             props.setProperty("web.url", webUrl);
             props.setProperty("discord.guild.id", discordGuildId);
             props.setProperty("discord.url", discordUrl);

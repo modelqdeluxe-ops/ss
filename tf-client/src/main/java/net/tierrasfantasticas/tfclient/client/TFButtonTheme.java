@@ -25,18 +25,16 @@ import net.minecraft.util.Mth;
  * Tema de TF para los botones fuera de una partida (mundos, opciones, conexión...). 1.3.120 (el dueño: «rework completo
  * de los botones; no me gustan las texturas actuales; como los de los diálogos de los NPC, mejor diseñados»): la misma
  * pastilla de cristal oscuro con hilo de oro que el menú principal ({@link TFPill}), sin texturas, y letra Cinzel. Con el
- * ratón encima se enciende con un fundido, echa un halo de oro, la cruza un destello y (en los anchos) le crecen hilos
- * de oro a los lados del texto; al pulsar se hunde. Los deslizadores, con un tirador de oro. Dentro de una partida no
+ * ratón encima se enciende con un fundido, echa un halo de oro y (en los anchos) le crecen hilos de oro a los lados del
+ * texto; al pulsar se hunde (1.3.121: sin el destello). Los deslizadores, con un tirador de oro. Dentro de una partida no
  * se toca nada, para que cada jugador vea sus paquetes de recursos.
  */
 public final class TFButtonTheme {
     private static final float HOVER_MS = 140f;
-    /** Lo de cada botón: el fundido del ratón, el último fotograma, cuándo empezó el destello y si tenía el ratón. */
+    /** Lo de cada botón: el fundido del ratón y el último fotograma. */
     private static final class State {
         float hover;
         long last;
-        long shine = -1L;
-        boolean hot;
     }
 
     private static final java.util.Map<AbstractWidget, State> STATES = new java.util.WeakHashMap<>();
@@ -65,7 +63,7 @@ public final class TFButtonTheme {
         g.pose().pushPose();
         g.pose().translate(0f, lift, 0f);
         TFPill.paint(g, button.getX(), button.getY(), button.getWidth(), button.getHeight(), TFPill.Style.VIOLET, e, pressed, button.active,
-                false, 1f, shine(st));
+                false, 1f);
         int color = !button.active ? 0x8A8494 : TFMenuPaint.lerp(0xFFEAE4D8, 0xFFFFE9A8, e) & 0xFFFFFF;
         drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, button.getWidth() >= 120 ? e : 0f, e, false);
         g.pose().popPose();
@@ -82,7 +80,7 @@ public final class TFButtonTheme {
         int y = slider.getY();
         int w = slider.getWidth();
         int h = slider.getHeight();
-        TFPill.paint(g, x, y, w, h, TFPill.Style.VIOLET, 0.6f * e, false, slider.active, false, 1f, -1f);
+        TFPill.paint(g, x, y, w, h, TFPill.Style.VIOLET, 0.6f * e, false, slider.active, false, 1f);
         int handleX = x + 3 + (int) (Mth.clamp(value, 0.0, 1.0) * (w - 6 - 6));
         TFPill.knob(g, handleX, y + 3, 6, h - 6, hot, slider.active);
         int color = !slider.active ? 0x8A8494 : TFMenuPaint.lerp(0xFFEAE4D8, 0xFFFFE9A8, e) & 0xFFFFFF;
@@ -91,14 +89,12 @@ public final class TFButtonTheme {
         return true;
     }
 
-    /** El fundido del ratón (y el destello: empieza cuando entra el ratón). */
+    /** El fundido del ratón. */
     private static State state(AbstractWidget widget, boolean hot) {
         State st = STATES.computeIfAbsent(widget, w -> new State());
         long now = net.minecraft.Util.getMillis();
         float dt = st.last == 0L || now < st.last ? 1000f : Math.min(250f, now - st.last);
         st.last = now;
-        if (hot && !st.hot) st.shine = now;
-        st.hot = hot;
         float step = dt / HOVER_MS;
         st.hover = hot ? Math.min(1f, st.hover + step) : Math.max(0f, st.hover - step);
         return st;
@@ -106,11 +102,6 @@ public final class TFButtonTheme {
 
     private static float ease(float f) {
         return f * f * (3f - 2f * f);
-    }
-
-    private static float shine(State st) {
-        long t = net.minecraft.Util.getMillis() - st.shine;
-        return st.shine >= 0L && t < TFPill.SHINE_MS ? t / (float) TFPill.SHINE_MS : -1f;
     }
 
     /**

@@ -35,15 +35,17 @@ import org.joml.Matrix4f;
 /**
  * La vista previa de una piedra de protección en la mano (1.3.120, el dueño: «el contorno, cuando la tengo en la mano
  * antes de ponerla, hazlo una línea sólida, no con partículas, porque no se ve; colocada, el contorno de partículas de
- * siempre»): el borde de la zona que haría si la pusiera donde está, como una valla de luz del color de la piedra: una
- * línea gruesa a ras de suelo (sigue el terreno), otra 2 bloques más arriba, un poste cada 4 bloques y las cuatro
- * esquinas altas. Se ve también a través del terreno, más tenue, para saber por dónde va detrás de una loma. Solo el
- * trozo a menos de {@link #RANGE} bloques del jugador (una zona de 500 tiene 2000 bloques de borde).
+ * siempre»): el borde de la zona que haría si la pusiera donde está, como una valla de luz del color de la piedra.
+ * (1.3.121, el dueño: «no quiero ver esas líneas en el suelo, solo las líneas hasta la altura de la piedra y las de las
+ * esquinas») Sin líneas a ras de suelo: un poste cada 4 bloques desde el suelo hasta la altura de la piedra (lo alto
+ * del bloque donde se pondría), una línea recta a esa altura que los une y las cuatro esquinas altas. Se ve también a
+ * través del terreno, más tenue, para saber por dónde va detrás de una loma. Solo el trozo a menos de {@link #RANGE}
+ * bloques del jugador (una zona de 500 tiene 2000 bloques de borde).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ClaimPreviewLines {
     private static final int RANGE = 56;
-    private static final double LIFT = 0.06, FENCE = 2.0, CORNER = 14.0, SNAP = 12.0;
+    private static final double LIFT = 0.06, CORNER = 14.0, SNAP = 12.0;
     private static final int POST_EVERY = 4;
 
     private ClaimPreviewLines() {}
@@ -93,17 +95,19 @@ public final class ClaimPreviewLines {
             VertexConsumer vc = buffers.getBuffer(through ? Types.THROUGH : Types.SOLID);
             int a = through ? 70 : 235;
             double py = player.getY();
+            // lo alto de la piedra si se pone donde está el jugador
+            double top = p.getY() + 1.0;
             // los cuatro lados, cada uno con su línea de suelo, la de arriba y los postes
             // (el borde va por las aristas de los bloques: x0..x1 y z0..z1 con x1 y z1 justo fuera de la zona; el suelo se
             // mira en la fila de bloques de dentro)
-            side(vc, m, n, level, py, true, z0, z0, x0, x1, hr, hg, hb, a);
-            side(vc, m, n, level, py, true, z1, z1 - 1, x0, x1, hr, hg, hb, a);
-            side(vc, m, n, level, py, false, x0, x0, z0, z1, hr, hg, hb, a);
-            side(vc, m, n, level, py, false, x1, x1 - 1, z0, z1, hr, hg, hb, a);
+            side(vc, m, n, level, py, top, true, z0, z0, x0, x1, hr, hg, hb, a);
+            side(vc, m, n, level, py, top, true, z1, z1 - 1, x0, x1, hr, hg, hb, a);
+            side(vc, m, n, level, py, top, false, x0, x0, z0, z1, hr, hg, hb, a);
+            side(vc, m, n, level, py, top, false, x1, x1 - 1, z0, z1, hr, hg, hb, a);
             for (int[] c : new int[][] {{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}}) {
                 if (Math.abs(c[0] - player.getX()) > RANGE || Math.abs(c[1] - player.getZ()) > RANGE) continue;
                 double y = ground(level, c[0], c[1], py);
-                line(vc, m, n, c[0], y, c[1], c[0], y + CORNER, c[1], hr, hg, hb, a);
+                line(vc, m, n, c[0], Math.min(y, top), c[1], c[0], Math.max(y, top) + CORNER, c[1], hr, hg, hb, a);
             }
             buffers.endBatch(through ? Types.THROUGH : Types.SOLID);
         }
@@ -112,32 +116,26 @@ public final class ClaimPreviewLines {
     }
 
     /**
-     * Un lado: a lo largo de x (alongX, en z = fixed) o de z (en x = fixed), de from a to; el suelo, en la fila de dentro
-     * (inside). Solo el trozo cerca del jugador.
+     * Un lado: a lo largo de x (alongX, en z = fixed) o de z (en x = fixed), de from a to; el suelo de los postes, en la
+     * fila de dentro (inside). La línea recta a la altura de la piedra (top) y un poste cada {@link #POST_EVERY} bloques
+     * desde el suelo hasta ella. Solo el trozo cerca del jugador.
      */
-    private static void side(VertexConsumer vc, Matrix4f m, Matrix3f n, ClientLevel level, double py, boolean alongX, int fixed, int inside,
-                             int from, int to, int r, int g, int b, int a) {
+    private static void side(VertexConsumer vc, Matrix4f m, Matrix3f n, ClientLevel level, double py, double top, boolean alongX, int fixed,
+                             int inside, int from, int to, int r, int g, int b, int a) {
         Minecraft mc = Minecraft.getInstance();
         double px = mc.player.getX(), pz = mc.player.getZ();
         if (Math.abs(fixed - (alongX ? pz : px)) > RANGE) return;
         double mid = alongX ? px : pz;
         int s = (int) Math.max(from, Math.floor(mid - RANGE)), e = (int) Math.min(to, Math.ceil(mid + RANGE));
         if (s >= e) return;
-        double prevY = Double.NaN;
+        line(vc, m, n, alongX ? s : fixed, top, alongX ? fixed : s, alongX ? e : fixed, top, alongX ? fixed : e, r, g, b, a);
         for (int k = s; k <= e; k++) {
+            if (Math.floorMod(k, POST_EVERY) != 0) continue;
             int along = Math.min(k, to - 1);
             double y = alongX ? ground(level, along, inside, py) : ground(level, inside, along, py);
+            if (y >= top - 0.05) continue;
             double x = alongX ? k : fixed, z = alongX ? fixed : k;
-            if (!Double.isNaN(prevY)) {
-                double lx = alongX ? k - 1 : fixed, lz = alongX ? fixed : k - 1;
-                // a ras de suelo (con su escalón si cambia la altura) y la de arriba
-                line(vc, m, n, lx, prevY, lz, x, prevY, z, r, g, b, a);
-                if (y != prevY) line(vc, m, n, x, prevY, z, x, y, z, r, g, b, a);
-                line(vc, m, n, lx, prevY + FENCE, lz, x, prevY + FENCE, z, r, g, b, a * 3 / 4);
-                if (y != prevY) line(vc, m, n, x, prevY + FENCE, z, x, y + FENCE, z, r, g, b, a * 3 / 4);
-            }
-            if (Math.floorMod(k, POST_EVERY) == 0) line(vc, m, n, x, y, z, x, y + FENCE, z, r, g, b, a * 3 / 4);
-            prevY = y;
+            line(vc, m, n, x, y, z, x, top, z, r, g, b, a * 3 / 4);
         }
     }
 
