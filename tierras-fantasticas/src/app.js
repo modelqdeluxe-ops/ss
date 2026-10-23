@@ -241,7 +241,7 @@ function rankSetup(rank) {
 
 export function createApp(env) {
   const SERVER_NAME = env.SERVER_NAME || 'Tierras Fantásticas';
-  const SERVER_IP = env.SERVER_IP || 'tierras.ultramc.co';
+  const SERVER_IP = env.SERVER_IP || '216.163.187.40:19015';
   // La IP que se enseña en la web y a la que conecta TF Client: la que el dueño pone en /staff (con ADMIN_KEY) o, si
   // no puso ninguna, SERVER_IP. El mod la lee de /api/config y, si la web no responde, usa la suya (TFLock.OFFICIAL).
   const SERVER_IP_RE = /^(?=.{1,253}(?::\d{1,5})?$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?::\d{1,5})?$/i;
@@ -1212,7 +1212,7 @@ export function createApp(env) {
       if (denied) return denied;
       const body = (await readJson(req)) || {};
       const ip = typeof body.ip === 'string' ? body.ip.trim().toLowerCase() : '';
-      if (ip && !SERVER_IP_RE.test(ip)) return json({ error: 'Esa IP no es válida (ejemplo: tierras.ultramc.co o 1.2.3.4:25565).' }, 400);
+      if (ip && !SERVER_IP_RE.test(ip)) return json({ error: 'Esa IP no es válida (ejemplo: 216.163.187.40:19015 o 1.2.3.4:25565).' }, 400);
       const port = ip.includes(':') ? Number(ip.split(':')[1]) : 25565;
       if (port < 1 || port > 65535) return json({ error: 'El puerto tiene que ir de 1 a 65535.' }, 400);
       await store.setSetting('server_ip', ip);

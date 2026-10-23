@@ -15,7 +15,7 @@
   const ICON_ARROW =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-  let config = { serverIp: 'tierras.ultramc.co', currency: 'USD', paymentsEnabled: false };
+  let config = { serverIp: '216.163.187.40:19015', currency: 'USD', paymentsEnabled: false };
   let products = [];
   let selected = null;
 

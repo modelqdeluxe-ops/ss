@@ -1773,12 +1773,12 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
 
   // La IP del servidor (la de la web y la de TF Client): se cambia desde el panel y /api/config la da
   const setIp = (ip, key) => staff('/api/staff/server', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }), key });
-  assert.deepStrictEqual(await (await staff('/api/staff/server')).json(), { ip: 'tierras.ultramc.co', default: 'tierras.ultramc.co' });
+  assert.deepStrictEqual(await (await staff('/api/staff/server')).json(), { ip: '216.163.187.40:19015', default: '216.163.187.40:19015' });
   assert.strictEqual((await setIp('nueva.ip.test:25570', 'otra-clave')).status, 401);
   assert.strictEqual((await setIp('evil.com/x')).status, 400);
   assert.strictEqual((await setIp('a:70000')).status, 400);
   assert.strictEqual((await setIp('Nueva.IP.test:25570')).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, 'nueva.ip.test:25570');
   assert.strictEqual((await setIp('')).status, 200);
-  assert.strictEqual((await (await get('/api/config')).json()).serverIp, 'tierras.ultramc.co');
+  assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
 });
