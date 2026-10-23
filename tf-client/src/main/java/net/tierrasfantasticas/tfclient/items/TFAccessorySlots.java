@@ -42,6 +42,9 @@ import org.slf4j.Logger;
  *   <li>Si eso no se puede, BackLayer busca los objetos puestos en los huecos y los dibuja él.</li>
  * </ol>
  * En el registro del juego (latest.log) queda una línea «TF Client: accesorios ...» con el camino que se usa.
+ * <p>(1.3.125, el dueño: «me pongo las alas en cosméticos y no aparecen en mi espalda») aunque el mod de accesorios
+ * tenga nuestro dibujante, si no lo llama para ese jugador (otra versión del mod, el hueco cosmético…), BackLayer dibuja
+ * lo que haya en los huecos de espalda, también en los cosméticos.
  */
 public final class TFAccessorySlots {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -61,6 +64,21 @@ public final class TFAccessorySlots {
     private static boolean curiosFailed;
     private static boolean loggedAccessories;
     private static boolean loggedCurios;
+    private static boolean loggedFallback;
+    /** Cuándo dibujó el mod de accesorios (con nuestro dibujante) algo de cada jugador por última vez (System.nanoTime). */
+    private static final java.util.Map<LivingEntity, Long> DRAWN = new java.util.WeakHashMap<>();
+    /** Si el mod no lo dibujó en este tiempo, lo dibuja BackLayer (250 ms: unos fotogramas). */
+    private static final long DRAWN_NS = 250_000_000L;
+
+    private static void drawn(@Nullable LivingEntity entity) {
+        if (entity != null) DRAWN.put(entity, System.nanoTime());
+    }
+
+    /** ¿El mod de accesorios dibujó hace nada algo de este jugador con nuestro dibujante? */
+    private static boolean drawnRecently(LivingEntity entity) {
+        Long at = DRAWN.get(entity);
+        return at != null && System.nanoTime() - at < DRAWN_NS;
+    }
 
     private TFAccessorySlots() {}
 
@@ -110,6 +128,7 @@ public final class TFAccessorySlots {
             LivingEntity entity = entityOf(arg(args, 1));
             if (stack == null || pose == null || buffers == null || model == null || light == null) return null;
             if (entity != null && entity.isInvisible()) return null;
+            drawn(entity);
             renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
             return null;
         });
@@ -139,6 +158,7 @@ public final class TFAccessorySlots {
             if (stack == null || pose == null || buffers == null || parent == null || light == null) return null;
             if (!(parent.getModel() instanceof HumanoidModel<?> model)) return null;
             if (entity != null && entity.isInvisible()) return null;
+            drawn(entity);
             renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
             return null;
         });
@@ -243,9 +263,37 @@ public final class TFAccessorySlots {
     public static List<ItemStack> backCosmetics(LivingEntity entity) {
         List<ItemStack> out = new ArrayList<>();
         ModList mods = ModList.get();
+        // (1.3.125) con nuestro dibujante registrado, solo si el mod no lo ha llamado para este jugador
+        boolean fallback = (accessoriesDraws || curiosDraws) && !drawnRecently(entity);
+        if (fallback) {
+            if (!accessoriesFailed && mods.isLoaded("accessories")) {
+                try {
+                    TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+                    TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+                } catch (Throwable t) {
+                    accessoriesFailed = true;
+                    LOGGER.warn("TF Client: accesorios: no se pudieron leer los huecos de Accessories", t);
+                }
+            }
+            if (out.isEmpty() && !curiosFailed && mods.isLoaded("curios")) {
+                try {
+                    TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
+                    TFAccessoryLookup.cosmeticsFromCurios(entity, IS_BACK, out);
+                } catch (Throwable t) {
+                    curiosFailed = true;
+                    LOGGER.warn("TF Client: accesorios: no se pudieron leer los huecos de Curios", t);
+                }
+            }
+            if (!out.isEmpty() && !loggedFallback) {
+                loggedFallback = true;
+                LOGGER.info("TF Client: accesorios: el mod de accesorios no dibujó {}: lo dibuja el TF Client en la espalda", out);
+            }
+            return out;
+        }
         if (!accessoriesDraws && !accessoriesFailed && mods.isLoaded("accessories")) {
             try {
                 TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+                TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
                 if (!loggedAccessories && !out.isEmpty()) {
                     loggedAccessories = true;
                     LOGGER.info("TF Client: accesorios: encontrado en los huecos de Accessories {}", out);
@@ -258,6 +306,7 @@ public final class TFAccessorySlots {
         if (out.isEmpty() && !accessoriesDraws && !curiosDraws && !curiosFailed && mods.isLoaded("curios")) {
             try {
                 TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
+                TFAccessoryLookup.cosmeticsFromCurios(entity, IS_BACK, out);
                 if (!loggedCurios && !out.isEmpty()) {
                     loggedCurios = true;
                     LOGGER.info("TF Client: accesorios: encontrado en los huecos de Curios {}", out);

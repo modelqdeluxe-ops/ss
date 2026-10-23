@@ -1216,8 +1216,10 @@ test('un reembolso completo retira del servidor lo comprado, aunque el jugador n
   assert.deepStrictEqual(
     deliveries.map((d) => [d.kind, d.order, d.uuid, d.commands]),
     [
-      ['revocacion', crate, uuid, [`tf web sets revoke {uuid} ${crate} valentine`]],
-      ['revocacion', magico, uuid, ['lp user {uuid} parent remove magico', `tf web sets revoke {uuid} ${magico} darkworld`, 'lp user {uuid} parent add mortal']],
+      // (1.3.125) y las monedas que dio la crate: si ya las gastó, saldo negativo en el servidor
+      ['revocacion', crate, uuid, [`tf web sets revoke {uuid} ${crate} valentine`, 'tf web monedas retirar {uuid} 100', 'tf web verdes retirar {uuid} 1']],
+      ['revocacion', magico, uuid, ['lp user {uuid} parent remove magico', `tf web sets revoke {uuid} ${magico} darkworld`,
+        'tf web monedas retirar {uuid} 200', 'tf web verdes retirar {uuid} 4', 'lp user {uuid} parent add mortal']],
     ],
   );
   // Vuelve a su rango anterior en la web.
@@ -1271,7 +1273,7 @@ test('pagar con PayPal: se aprueba en PayPal, se cobra al volver y un reembolso 
   assert.strictEqual((await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.REFUNDED', resource: refund })).status, 200);
   assert.strictEqual((await (await get(`/api/order/${id}`)).json()).refunded, 'reembolsado');
   const { deliveries } = await (await poll([])).json();
-  assert.deepStrictEqual(deliveries.map((d) => [d.kind, d.commands]), [['revocacion', [`tf web sets revoke {uuid} ${id} valentine`]]]);
+  assert.deepStrictEqual(deliveries.map((d) => [d.kind, d.commands]), [['revocacion', [`tf web sets revoke {uuid} ${id} valentine`, 'tf web monedas retirar {uuid} 100', 'tf web verdes retirar {uuid} 1']]]);
   await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
 });
 

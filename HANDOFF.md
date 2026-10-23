@@ -190,7 +190,52 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.124) — lee esto primero
+### CHECKPOINT (23 oct 2026, 1.3.125 A MEDIAS: rama `claude/focused-archimedes-qzw2g1`, sin publicar) — lee esto primero
+
+Pedidos del dueño (con la 1.3.124 en el servidor; 3 capturas: inventario con alas en el hueco cosmético, TAB con los
+bots y «MIEMBRO», chat con «Bots limpios… 2Ezequiel se ha unido» y `/tpa` que solo sugiere a Pewez777):
+1. «Los comandos de los rangos no se aplican» — HECHO (sin probar en el servidor). Causa probable: `TFRankPerms` se
+   fiaba de `<mundo>/tfclient/rank_perms.json`; con el mundo traído de otro servidor decía «ya está» y los grupos no
+   existían en LuckPerms, así que `lp user X parent set <rango>` fallaba y el jugador seguía en default («MIEMBRO» en el
+   TAB). Ahora `TFLuckPerms.group` mira con la API (GroupManager: existe, permisos, prefijo, peso) y `onRankList` vuelve
+   a poner todo si falta algo (como mucho cada 5 min); `setRank` crea los grupos antes si no existe el del rango
+   (`TFRankPerms.ensureGroups`); al crear un grupo, `setweight 100+tier*10` y `meta setprefix` «&<color>&l<RANGO>&r »
+   si no tiene (lo del staff no se toca).
+2. «Los encantamientos de las armaduras de los rangos no se aplican» — HECHO. Con el inventario lleno las piezas caían
+   al suelo y `sets encantar` (justo después de `give`) no las veía. `TFSetEnchant.enchantNow`: inventario, las tiradas
+   a 8 bloques y, 10 minutos, las que recoja (`EntityItemPickupEvent`) o le entren al inventario (cada segundo).
+3. Menú principal «contorno raro» y «WhatsApp se ve comida» — HECHO. Sin contorno (con la Cinzel de la 1.3.124 se veía
+   mal): sombra suave de un píxel real. El ancho del botón se mide con la misma letra que se dibuja (`fontIndex`) y si
+   no cabe se baja un paso de letra entera (n−1), nunca una escala rota (perdía columnas). La prueba del pad saca
+   también `menu_principal_escala2`. `tools/menu_sim.py` sigue simulando el diseño de la 1.3.121 (Titan One).
+4. Alas en el hueco cosmético que no salen — HECHO A CIEGAS (sin Curios/Accessories en la prueba). `TFAccessorySlots`:
+   si el mod de accesorios no llama a nuestro dibujante para ese jugador en 250 ms, BackLayer dibuja lo de los huecos de
+   espalda, también los COSMÉTICOS (`TFAccessoryLookup.cosmeticsFromCurios/cosmeticsFromAccessories`). Queda en el log
+   «TF Client: accesorios: el mod de accesorios no dibujó …». Pedir al dueño las líneas «TF Client: accesorios» y
+   «alas» de su latest.log si sigue sin verse.
+5. Reembolso que quite las monedas (saldo negativo) — HECHO. Web (`revoke` en `src/app.js`): por cada
+   `tf web monedas|verdes dar {player} N` del producto, `tf web monedas|verdes retirar {uuid} N`. Mod: `economy/TFDebt`
+   (`<mundo>/tfclient/deudas.json`): se quita lo que tenga (también desconectado; TF, Vault o comandos) y el resto es
+   deuda; `TFEconomy.balance` y `PadGreen.balance` la restan (saldo negativo, no puede gastar); lo que gane paga antes la
+   deuda (`TFEconomy.give`, `PadGreen.add`); al entrar y cada minuto se cobra lo que le entre por otro camino. Web: 52
+   pasan y los mismos 7 de `main` fallan (rangos gratis de la prueba de la tienda de otra sesión); con los precios de
+   verdad de los rangos (de 4d4aa9e9), 59/59.
+6. Bots — POR HACER. El dueño: que no tienen rango de LuckPerms al unirlos, que TAB (plugin), el servidor y la consola
+   no los cuentan como jugadores («Jugadores En Linea: 1»), que no salen en `/tpa`; y que se borre todo dato de bots
+   (registro, rankings) al actualizar el mod (regla, aunque ya esté `/tf bots limpiar`). Idea: bots de verdad como los
+   de Carpet (ServerPlayer con una `Connection` falsa, `EmbeddedChannel`, `PlayerList.placeNewPlayer`) para que Mohist
+   cree su CraftPlayer y los plugins (TAB, LuckPerms, EssentialsX) los vean; en espectador, sin chunks propios; `/tpa`
+   a un bot → `tpdeny` como el bot a los 5 s (`TFBukkit.playerCommand`); quitar la cuenta extra de
+   `MinecraftServerBotsMixin`; con opción para volver al modo «solo lista» si en Mohist falla. Y al cambiar
+   `TFClient.VERSION`, borrar `config/tfclient-bots.json` y los datos de bots (ranking, sus .dat, userdata de EssentialsX).
+7. Entrar más rápido al servidor (cachear la verificación de mods de Forge) — POR HACER. Mirar qué tarda al conectar
+   (AutoModpack, la sincronización de registros de Forge, el árbol de búsqueda creativo / JEI al entrar, lo del propio TF
+   Client al entrar); pedir al dueño el latest.log de una entrada para medir.
+
+Sin compilar en Actions todavía en el momento del checkpoint (comprobada la sintaxis con `javac`). Versión sin subir
+(sigue 1.3.124).
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.124, PUBLICADA)
 
 **1.3.124** (el dueño: «sigue habiendo lag en los botones y su animación, hasta los botones de ajustes»): cada pastilla
 (`TFPill.paint`) se pinta una vez en una imagen de su tamaño en píxeles reales (`TFPill.texture`: relleno, cristal, hilo

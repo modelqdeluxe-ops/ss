@@ -2020,16 +2020,20 @@ public final class BossTest {
             case 1190 -> shot(r, "menu_principal");
             case 1192 -> openMenu = "principal-raton";
             case 1226 -> shot(r, "menu_principal_raton");
-            case 1228 -> openMenu = "opciones";
-            case 1256 -> shot(r, "menu_opciones");
+            // (1.3.125, el dueño: «el contorno de las letras se ve raro y la de WhatsApp se ve comida») también con la
+            // interfaz a escala 2 (la de la prueba es 3), con el ratón en Mundo local
+            case 1228 -> openMenu = "principal-escala2";
+            case 1256 -> shot(r, "menu_principal_escala2");
+            case 1258 -> openMenu = "opciones";
+            case 1286 -> shot(r, "menu_opciones");
             // (1.3.121) la pantalla que sale sin AutoModpack al ir a entrar al servidor
-            case 1258 -> openMenu = "automodpack";
-            case 1284 -> shot(r, "falta_automodpack");
-            case 1286 -> {
+            case 1288 -> openMenu = "automodpack";
+            case 1314 -> shot(r, "falta_automodpack");
+            case 1316 -> {
                 keepMenu = false;
                 closeScreen = true;
             }
-            case 1290 -> next(level);
+            case 1320 -> next(level);
             default -> { }
         }
     }

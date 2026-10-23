@@ -121,6 +121,13 @@ public final class TFLuckPerms {
 
     /** lp user X parent set G (o, si tiene un grupo del staff, add G y fuera los otros rangos) y su comprobación. */
     private static List<String> setRank(MinecraftServer srv, String name, String group, int tries) {
+        // (1.3.125) sin el grupo en LuckPerms, «parent set» falla y el jugador se queda en default («MIEMBRO» en el
+        // TAB): antes se crean los grupos de los rangos con sus permisos (LuckPerms hace los comandos en orden)
+        GroupInfo info = group(group);
+        if (info != null && !info.exists()) {
+            TFClient.LOGGER.warn("TF LuckPerms: no existe el grupo «{}»: se crean los grupos de los rangos antes de ponérselo a {}", group, name);
+            TFRankPerms.ensureGroups(srv);
+        }
         ServerPlayer online = srv.getPlayerList().getPlayerByName(name);
         UUID uuid = online != null ? online.getUUID() : null;
         Set<String> parents = uuid == null ? null : Api.parents(uuid);
@@ -225,6 +232,16 @@ public final class TFLuckPerms {
         return Api.find();
     }
 
+    /**
+     * Lo que tiene un grupo en LuckPerms: si existe, sus permisos (los suyos, sin heredados), si tiene prefijo y peso
+     * propios. null si no se puede saber (sin la API).
+     */
+    record GroupInfo(boolean exists, Set<String> permissions, boolean prefix, boolean weight) {}
+
+    static GroupInfo group(String name) {
+        return Api.group(name);
+    }
+
     /** Para la prueba en el juego: los grupos de un jugador en LuckPerms (o por qué no se pueden ver). */
     public static String describe(UUID uuid) {
         Set<String> p = Api.parents(uuid);
@@ -267,6 +284,9 @@ public final class TFLuckPerms {
         private static Object api;
         private static Method getUserManager, getUser, getNodes, getGroupName;
         private static Object inheritance;
+        /** (1.3.125) los grupos: GroupManager.getGroup, sus nodos de permiso, prefijo y peso. */
+        private static Method getGroupManager, getGroup, groupNodes, permissionOf;
+        private static Object permissionType, prefixType, weightType;
         static String why = "no mirado";
 
         private static boolean find() {
@@ -310,6 +330,21 @@ public final class TFLuckPerms {
                 getNodes = user.getMethod("getNodes", nodeType);
                 getGroupName = inh.getMethod("getGroupName");
                 inheritance = nodeType.getField("INHERITANCE").get(null);
+                try {
+                    Class<?> gm = Class.forName("net.luckperms.api.model.group.GroupManager", false, cl);
+                    Class<?> group = Class.forName("net.luckperms.api.model.group.Group", false, cl);
+                    Class<?> perm = Class.forName("net.luckperms.api.node.types.PermissionNode", false, cl);
+                    getGroupManager = lp.getMethod("getGroupManager");
+                    getGroup = gm.getMethod("getGroup", String.class);
+                    groupNodes = group.getMethod("getNodes", nodeType);
+                    permissionOf = perm.getMethod("getPermission");
+                    permissionType = nodeType.getField("PERMISSION").get(null);
+                    prefixType = nodeType.getField("PREFIX").get(null);
+                    weightType = nodeType.getField("WEIGHT").get(null);
+                } catch (Throwable t) {
+                    getGroup = null;
+                    TFClient.LOGGER.warn("TF LuckPerms: sin la parte de grupos de la API: {}", t.toString());
+                }
                 api = found;
                 why = "API de LuckPerms encontrada";
                 TFClient.LOGGER.info("TF LuckPerms: API encontrada ({})", found.getClass().getName());
@@ -317,6 +352,23 @@ public final class TFLuckPerms {
             } catch (Throwable t) {
                 why = t instanceof ClassNotFoundException ? "no está LuckPerms" : t.toString();
                 return false;
+            }
+        }
+
+        /** Un grupo (existe, permisos propios, prefijo y peso), o null si no se puede saber. */
+        static GroupInfo group(String name) {
+            if (!find() || getGroup == null) return null;
+            try {
+                Object g = getGroup.invoke(getGroupManager.invoke(api), name.toLowerCase(Locale.ROOT));
+                if (g == null) return new GroupInfo(false, Set.of(), false, false);
+                Set<String> perms = new LinkedHashSet<>();
+                for (Object node : (Collection<?>) groupNodes.invoke(g, permissionType)) perms.add(String.valueOf(permissionOf.invoke(node)));
+                boolean prefix = !((Collection<?>) groupNodes.invoke(g, prefixType)).isEmpty();
+                boolean weight = !((Collection<?>) groupNodes.invoke(g, weightType)).isEmpty();
+                return new GroupInfo(true, perms, prefix, weight);
+            } catch (Throwable t) {
+                why = t.toString();
+                return null;
             }
         }
 

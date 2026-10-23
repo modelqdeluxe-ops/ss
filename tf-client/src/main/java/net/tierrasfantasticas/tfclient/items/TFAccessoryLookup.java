@@ -100,6 +100,59 @@ public final class TFAccessoryLookup {
         if (all != null) collect(all.invoke(handler, wanted), wanted, out, onlyVisible);
     }
 
+    /**
+     * (1.3.125) Lo puesto en los huecos COSMÉTICOS de Accessories (el que se ve en lugar del de verdad):
+     * getContainers → getCosmeticAccessories (un Container).
+     */
+    public static void cosmeticsFromAccessories(LivingEntity entity, Predicate<ItemStack> wanted, List<ItemStack> out) throws Exception {
+        Class<?> api = Class.forName("io.wispforest.accessories.api.AccessoriesCapability");
+        Object capability = null;
+        for (String name : new String[] {"get", "getOptionally"}) {
+            Method m = find(api, name, LivingEntity.class);
+            if (m != null) capability = unwrap(m.invoke(null, entity));
+            if (capability != null) break;
+        }
+        if (capability == null) return;
+        Method containers = find(capability.getClass(), "getContainers");
+        Object map = containers == null ? null : containers.invoke(capability);
+        if (!(map instanceof Map<?, ?> byName)) return;
+        for (Object container : byName.values()) {
+            Method cosmetic = container == null ? null : find(container.getClass(), "getCosmeticAccessories");
+            collect(cosmetic == null ? null : cosmetic.invoke(container), wanted, out, false);
+        }
+    }
+
+    /**
+     * (1.3.125) Lo puesto en los huecos COSMÉTICOS de Curios: getCuriosInventory → getCurios (nombre → manejador) →
+     * getCosmeticStacks (getSlots / getStackInSlot); sin los huecos en los que el jugador apagó el dibujo (getRenders).
+     */
+    public static void cosmeticsFromCurios(LivingEntity entity, Predicate<ItemStack> wanted, List<ItemStack> out) throws Exception {
+        Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
+        Method inventory = find(api, "getCuriosInventory", LivingEntity.class);
+        Object handler = inventory == null ? null : unwrap(inventory.invoke(null, entity));
+        if (handler == null) return;
+        Method curios = find(handler.getClass(), "getCurios");
+        Object map = curios == null ? null : curios.invoke(handler);
+        if (!(map instanceof Map<?, ?> byName)) return;
+        for (Object stacks : byName.values()) {
+            if (stacks == null) continue;
+            Method cosmetic = find(stacks.getClass(), "getCosmeticStacks");
+            Object items = cosmetic == null ? null : cosmetic.invoke(stacks);
+            if (items == null) continue;
+            Method slots = find(items.getClass(), "getSlots");
+            Method get = find(items.getClass(), "getStackInSlot", int.class);
+            if (slots == null || get == null) continue;
+            Method renders = find(stacks.getClass(), "getRenders");
+            Object shown = renders == null ? null : renders.invoke(stacks);
+            int n = (Integer) slots.invoke(items);
+            for (int i = 0; i < n; i++) {
+                if (shown instanceof List<?> list && i < list.size() && Boolean.FALSE.equals(list.get(i))) continue;
+                Object stack = get.invoke(items, i);
+                if (stack instanceof ItemStack st && wanted.test(st) && !out.contains(st)) out.add(st);
+            }
+        }
+    }
+
     /** Recoge los objetos de una lista, un Optional, un Container o un resultado (SlotEntryReference / SlotResult). */
     private static void collect(@Nullable Object result, Predicate<ItemStack> wanted, List<ItemStack> out, boolean onlyVisible)
             throws Exception {

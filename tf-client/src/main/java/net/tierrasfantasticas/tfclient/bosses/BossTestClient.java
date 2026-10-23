@@ -66,13 +66,23 @@ public final class BossTestClient {
             BossTest.closeScreen = false;
             net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = null;
             net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = false;
+            if (mc.options.guiScale().get() != 0) {
+                mc.options.guiScale().set(0);
+                mc.resizeDisplay();
+            }
             mc.setScreen(null);
         }
         if (BossTest.openMenu != null) {
             String what = BossTest.openMenu;
             BossTest.openMenu = null;
-            net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = what.equals("principal-raton")
+            net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = what.equals("principal-raton") || what.equals("principal-escala2")
                     ? net.tierrasfantasticas.tfclient.client.TFMenuButton.BLUE_1 : null;
+            // (1.3.125) el menú también a escala 2 de interfaz; lo demás, a la automática
+            int scale = what.equals("principal-escala2") ? 2 : 0;
+            if (mc.options.guiScale().get() != scale) {
+                mc.options.guiScale().set(scale);
+                mc.resizeDisplay();
+            }
             net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = what.equals("opciones");
             // (que no pausen: son pantallas de pausa y, en un mundo de un jugador, el servidor se pararía y la prueba
             // no seguiría nunca)

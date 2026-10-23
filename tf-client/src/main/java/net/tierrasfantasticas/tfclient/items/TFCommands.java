@@ -210,7 +210,8 @@ public final class TFCommands {
 
     /**
      * (1.3.116) Encanta las piezas del set que lleva el jugador (inventario, armadura y la otra mano) y aún no están
-     * encantadas: lo que acaba de recibir con «give». Las que no cupieron y cayeron al suelo se quedan sin encantar.
+     * encantadas: lo que acaba de recibir con «give». (1.3.125) Las que no cupieron y cayeron al suelo, también, y las que
+     * recoja en los 10 minutos siguientes (TFSetEnchant.enchantNow).
      */
     private static int enchant(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
@@ -222,17 +223,8 @@ public final class TFCommands {
         java.util.Set<Item> ofSet = new java.util.HashSet<>();
         for (RegistryObject<Item> o : items) ofSet.add(o.get());
         int n = 0;
-        for (ServerPlayer player : players) {
-            net.minecraft.world.entity.player.Inventory inv = player.getInventory();
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                ItemStack stack = inv.getItem(i);
-                if (!stack.isEmpty() && ofSet.contains(stack.getItem()) && !stack.isEnchanted()) {
-                    TFSetEnchant.apply(stack, level);
-                    if (stack.isEnchanted()) n++;
-                }
-            }
-            player.containerMenu.broadcastChanges();
-        }
+        // (1.3.125) también lo tirado cerca (inventario lleno) y, durante 10 min, lo que recoja después
+        for (ServerPlayer player : players) n += TFSetEnchant.enchantNow(player, ofSet, level);
         int done = n;
         ctx.getSource().sendSuccess(() -> Component.literal("Encantadas " + done + " piezas del set " + set.name() + " (nivel " + level + ")")
                 .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color()))), true);

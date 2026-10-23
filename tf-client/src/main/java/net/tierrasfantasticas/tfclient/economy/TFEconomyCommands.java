@@ -27,6 +27,8 @@ import net.minecraft.server.level.ServerPlayer;
  * /tf web monedas dar|quitar &lt;jugador&gt; &lt;n&gt;    dar o quitar (nivel 3); lo usan los premios y productos de la web
  * /tf web monedas poner &lt;jugador&gt; &lt;n&gt;         saldo exacto (solo con las monedas del TF Client)
  * /tf web verdes ver|dar|quitar &lt;jugador&gt; [n]   las Fantastic Gacha Coins (1.3.115: las dan los rangos y crates)
+ * /tf web monedas|verdes retirar &lt;uuid|jugador&gt; &lt;n&gt;  (1.3.125) reembolso: quita lo que tenga (también desconectado) y
+ *                                                  lo que falte queda como deuda (saldo negativo; TFDebt)
  * </pre>
  */
 public final class TFEconomyCommands {
@@ -39,7 +41,48 @@ public final class TFEconomyCommands {
                                 .executes(ctx -> show(ctx, EntityArgument.getPlayer(ctx, "jugador")))))
                 .then(change("dar", 0))
                 .then(change("quitar", 1))
-                .then(change("poner", 2));
+                .then(change("poner", 2))
+                .then(revoke(false));
+    }
+
+    /** (1.3.125) retirar &lt;uuid|jugador&gt; &lt;n&gt;: lo manda la web al reembolsar una compra que dio monedas. */
+    private static LiteralArgumentBuilder<CommandSourceStack> revoke(boolean green) {
+        return Commands.literal("retirar").requires(s -> s.hasPermission(3))
+                .then(Commands.argument("jugador", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .then(Commands.argument("cantidad", LongArgumentType.longArg(1, 1_000_000_000_000L)).executes(ctx -> {
+                            String who = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "jugador");
+                            long n = LongArgumentType.getLong(ctx, "cantidad");
+                            net.minecraft.server.MinecraftServer server = ctx.getSource().getServer();
+                            java.util.UUID uuid = null;
+                            String name = who;
+                            try {
+                                uuid = java.util.UUID.fromString(who);
+                            } catch (IllegalArgumentException notUuid) {
+                                ServerPlayer online = server.getPlayerList().getPlayerByName(who);
+                                if (online != null) uuid = online.getUUID();
+                                else if (server.getProfileCache() != null) {
+                                    uuid = server.getProfileCache().get(who).map(com.mojang.authlib.GameProfile::getId).orElse(null);
+                                }
+                            }
+                            if (uuid == null) {
+                                ctx.getSource().sendFailure(Component.literal("No conozco a «" + who + "»."));
+                                return 0;
+                            }
+                            ServerPlayer online = server.getPlayerList().getPlayer(uuid);
+                            if (online != null) name = online.getGameProfile().getName();
+                            long now = green ? net.tierrasfantasticas.tfclient.pad.server.PadGreen.revoke(server, uuid, n)
+                                    : TFEconomy.revoke(server, uuid, online != null ? name : null, n);
+                            long debt = n - now;
+                            String what = green ? " Fantastic Gacha Coins" : " monedas";
+                            if (online != null) {
+                                online.sendSystemMessage(Component.literal("Reembolso: se te retiran " + n + what
+                                        + (debt > 0 ? " (te faltaban " + debt + ": saldo negativo, se paga con lo próximo que ganes)" : "") + ".")
+                                        .withStyle(ChatFormatting.RED));
+                            }
+                            String done = "Retiradas " + n + what + " a " + name + (debt > 0 ? " (" + debt + " quedan como deuda)" : "");
+                            ctx.getSource().sendSuccess(() -> Component.literal(done).withStyle(ChatFormatting.YELLOW), true);
+                            return 1;
+                        })));
     }
 
     /** (1.3.115) Las Fantastic Gacha Coins (las verdes del Gachapón): ver, dar y quitar. */
@@ -54,7 +97,8 @@ public final class TFEconomyCommands {
                             return (int) Math.min(Integer.MAX_VALUE, n);
                         })))
                 .then(greenChange("dar", true))
-                .then(greenChange("quitar", false));
+                .then(greenChange("quitar", false))
+                .then(revoke(true));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> greenChange(String name, boolean give) {
