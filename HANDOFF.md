@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.123) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.124) — lee esto primero
+
+**1.3.124** (el dueño: «sigue habiendo lag en los botones y su animación, hasta los botones de ajustes»): cada pastilla
+(`TFPill.paint`) se pinta una vez en una imagen de su tamaño en píxeles reales (`TFPill.texture`: relleno, cristal, hilo
+y el doble hilo del principal, con los bordes suavizados) y se dibuja de un solo trazo; con el ratón se funde encima la
+imagen encendida. Antes eran miles de rectángulos por botón y fotograma (las esquinas píxel a píxel). Vale para el menú
+principal, Opciones y todos los botones con el tema de TF. Además (el dueño: «los botones siguen algo grandes, el
+contorno de las letras un poco pasado, la tipografía no me convence con la forma del botón»): filas 21/17/17/17/15,
+menos aire a los lados, contorno de un píxel y letra **Cinzel** en el menú principal (antes Titan One; sus
+`titanone_N.json` siguen en el jar por si se quiere volver), `MENU_TEXT_UP` 3.9.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.123, PUBLICADA)
 
 **1.3.123** (el dueño: «no me reconoce el server, pon mediante IP y puerto en el jar: 216.163.187.40:19015, rápido»):
 `TFLock.EMBEDDED` = `216.163.187.40:19015` (el dominio `tierras.ultramc.co` no llevaba al servidor). También en la web

@@ -42,6 +42,11 @@ import net.tierrasfantasticas.tfclient.TFConfig;
  * azul siempre, sin destello, el texto 1,45 píxeles de letra más arriba (medido en la captura de la prueba de la
  * 1.3.120: las mayúsculas quedaban 3,5 píxeles por debajo del centro de la pastilla) y dibujado en un solo lote (antes
  * cada letra de cada copia del contorno se mandaba sola a la tarjeta: ~2000 veces por fotograma).
+ *
+ * <p>1.3.124 (el dueño: «los botones siguen algo grandes; el contorno de las letras está un poco pasado; la tipografía
+ * no me termina de convencer con la forma de su botón»): filas y aire más pequeños, contorno de un píxel y letra Cinzel
+ * (la de los demás menús y de los caballeros, que va con el hilo de oro) en lugar de Titan One, centrada con 3,9 (en
+ * Opciones, la Cinzel con 4 queda a un píxel del centro de la pastilla).
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -71,11 +76,11 @@ public class TFMenuButton extends Button {
      * La columna del menú principal: alto de cada fila a tamaño completo (Tierras Fantásticas; Mundo local; Mods;
      * Opciones | Salir; WhatsApp | Web | Discord), qué botones van en cada una y los huecos (en interfaz).
      */
-    private static final int[] ROW_H = {24, 19, 19, 19, 17};
+    private static final int[] ROW_H = {21, 17, 17, 17, 15};
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
     private static final int GAP_Y = 7, GAP_X = 8, BOTTOM_MARGIN = 10;
     /** Alto de las mayúsculas de Titan One a escala 1 y qué parte del alto del botón ocupan (principal, demás, redes). */
-    private static final float CAP_HEIGHT = 6.2f, CAP_TF = 0.44f, CAP = 0.42f, CAP_SOCIAL = 0.36f;
+    private static final float CAP_HEIGHT = 5.19f, CAP_TF = 0.44f, CAP = 0.42f, CAP_SOCIAL = 0.38f;
     /** Tamaños de letra del menú principal (nítidos: n/escala), calculados en mainLayout. */
     private static float mainTextSize = 1f, tfTextSize = 1f, socialTextSize = 1f;
 
@@ -85,9 +90,9 @@ public class TFMenuButton extends Button {
      * El texto se dibuja en el centro - TEXT_UP (en píxeles de letra): así las mayúsculas quedan centradas a la vista
      * (Cinzel en las demás pantallas; Titan One en el menú, medido con tools/menu_sim.py: a ±1 píxel real).
      */
-    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4.5f;
+    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 3.9f;
     /** Cuánto más juntas van las letras del menú (píxeles de glifo a escala 1 entre cada dos letras). */
-    private static final float TRACKING = 0.45f;
+    private static final float TRACKING = 0f;
     private static final float HOVER_MS = 160f;
     /** Contorno de las letras: violeta muy oscuro (oro oscuro en las de oro), sin sombra. */
     private static final int EDGE = 0x1A0E2E, GOLD_EDGE = 0x3A2306;
@@ -163,10 +168,10 @@ public class TFMenuButton extends Button {
             float row = GAP_X * (n - 1);
             for (int j = 0; j < n; j++) {
                 int i = ROWS[r][j];
-                float textW = new Tracked(mc.font, labels[i], MENU_FONT_AT_SCALE[3]).width * size;
+                float textW = new Tracked(mc.font, labels[i], FONT_AT_SCALE[3]).width * size;
                 boolean withIcon = i >= 5;
                 // aire de los lados: el radio de la pastilla, el hueco y los hilos de oro (los de icono, sin hilos)
-                float pad = hs[r] * (r == 0 ? 3.4f : withIcon ? 1.2f : 2.7f);
+                float pad = hs[r] * (r == 0 ? 3.0f : withIcon ? 1.0f : 2.3f);
                 ws[j] = 2 * Math.round((textW + (withIcon ? (TFMenuIcons.SIZE + GAP) * size : 0f) + pad) / 2f);
                 row += ws[j];
             }
@@ -272,7 +277,7 @@ public class TFMenuButton extends Button {
         int ink = !this.active ? DISABLED : goldText ? fill(true, e) : fill(false, e);
 
         // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo; como mucho un 10 % más que `size`): nítida
-        ResourceLocation[] fonts = menu ? MENU_FONT_AT_SCALE : FONT_AT_SCALE;
+        ResourceLocation[] fonts = FONT_AT_SCALE;
         int n = Mth.clamp(Math.round(s * size), 1, fonts.length);
         if (n > 1 && n / (float) s > size * 1.1f) n--;
         float scale = n / (float) s;
@@ -307,9 +312,8 @@ public class TFMenuButton extends Button {
             return;
         }
 
-        // Menú principal: letra gruesa con contorno fino (5 % de la letra), sin sombra
-        int ro = Math.max(1, Math.round(10f * scale * s * 0.05f));
-        int[][] ring = ring(ro);
+        // Menú principal: contorno de un píxel real, suave (1.3.124: el de antes, del 5 % de la letra, «un poco pasado»)
+        int[][] ring = ring(1);
         if (withIcon) {
             float sz = TFMenuIcons.SIZE * scale;
             float iy = snap(centerY - sz / 2f, s);
@@ -320,7 +324,7 @@ public class TFMenuButton extends Button {
         float ty = snap(centerY - MENU_TEXT_UP * scale, s), tx = gx, sc = scale;
         // todo el texto (contorno y letra) en un solo lote: una sola vez a la tarjeta gráfica
         g.drawManaged(() -> {
-            for (int[] d : ring) tracked.draw(g, font, tx + d[0] / (float) s, ty + d[1] / (float) s, sc, TFMenuPaint.argb(alpha, edge));
+            for (int[] d : ring) tracked.draw(g, font, tx + d[0] / (float) s, ty + d[1] / (float) s, sc, TFMenuPaint.argb(0.8f * alpha, edge));
             tracked.draw(g, font, tx, ty, sc, TFMenuPaint.argb(alpha, ink));
         });
     }
