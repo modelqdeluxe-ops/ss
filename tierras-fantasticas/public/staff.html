@@ -46,6 +46,9 @@
     .block { margin-bottom: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
     .block label { display: block; margin-bottom: 8px; }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tests { margin-top: 10px; max-height: 320px; overflow-y: auto; display: grid; gap: 6px; }
+    .test { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+    .test .grow { flex: 1; min-width: 0; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -66,6 +69,14 @@
         <button class="main" type="submit">Guardar IP</button>
       </div>
     </form>
+    <section class="block">
+      <label for="testPlayer">Probar productos en el juego <span class="dim">(gratis, como si se hubiera comprado: rango, rol de Discord, anuncio y lo del juego; luego se puede reembolsar abajo)</span></label>
+      <div class="row">
+        <input id="testPlayer" type="text" autocomplete="off" spellcheck="false" placeholder="Jugador (su nombre en Minecraft)">
+        <input id="testFilter" type="search" autocomplete="off" placeholder="Buscar producto (rango, crate, pack…)">
+      </div>
+      <div id="testList" class="tests"></div>
+    </section>
     <div class="bar">
       <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal.</span>
       <button id="reload" type="button">Recargar</button>
@@ -115,6 +126,7 @@
       const { orders } = await api('/api/staff/orders');
       $('login').hidden = true;
       $('panel').hidden = false;
+      loadCatalog();
       $('rows').innerHTML = orders.length
         ? orders.map((o) => `<tr>
             <td class="dim">${esc(new Date(o.createdAt).toLocaleString('es'))}</td>
@@ -150,6 +162,41 @@
     load();
   });
   $('reload').addEventListener('click', load);
+  // Probar productos: el catálogo de la tienda (menos efectos y skills, que no se entregan con comandos)
+  let catalog = [];
+  async function loadCatalog() {
+    if (catalog.length) return renderCatalog();
+    try {
+      catalog = (await (await fetch('/api/products')).json()).filter((p) => !['vfx', 'skills'].includes(p.category));
+    } catch {
+      catalog = [];
+    }
+    renderCatalog();
+  }
+  function renderCatalog() {
+    const q = $('testFilter').value.trim().toLowerCase();
+    const list = catalog.filter((p) => !q || `${p.name} ${p.category} ${p.id}`.toLowerCase().includes(q));
+    $('testList').innerHTML = list.map((p) => `<div class="test"><span class="grow">${esc(p.name)} <span class="dim">· ${esc(p.category)}</span></span>
+      <button type="button" data-test="${esc(p.id)}" data-name="${esc(p.name)}">Test</button></div>`).join('') || '<span class="dim">Nada.</span>';
+  }
+  $('testFilter').addEventListener('input', renderCatalog);
+  try { $('testPlayer').value = localStorage.getItem('staffTestPlayer') || ''; } catch {}
+  $('testList').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-test]');
+    if (!btn) return;
+    const username = $('testPlayer').value.trim();
+    if (!username) return show('Escribe el jugador al que dárselo.', 'err');
+    try { localStorage.setItem('staffTestPlayer', username); } catch {}
+    btn.disabled = true;
+    try {
+      const data = await api('/api/staff/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: btn.dataset.test, username }) });
+      await load();
+      show(`Dado de prueba: ${data.product} a ${data.username} (${data.status === 'delivered' ? 'entregado' : 'en cola: le llega al entrar o en unos segundos'}).`, 'ok');
+    } catch (err) {
+      show(err.message, 'err');
+    }
+    btn.disabled = false;
+  });
   $('server').addEventListener('submit', async (e) => {
     e.preventDefault();
     const ip = $('ip').value.trim();

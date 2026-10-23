@@ -1789,5 +1789,15 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
     headers: { 'Content-Type': 'application/json', Cookie: cookie, Authorization: `Bearer ${key}`, 'CF-Connecting-IP': '198.51.100.7' } });
   assert.strictEqual((await testClaim('otra-clave')).status, 401);
   assert.strictEqual((await testClaim('clave-del-staff')).status, 200);
+
+  // Probar desde el panel cualquier producto (una crate) a un jugador: se entrega y se puede reembolsar
+  const tryIt = (body, key) => staff('/api/staff/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), key });
+  assert.strictEqual((await tryIt({ productId: 'crate-valentine', username: 'Staff_MC' }, 'otra-clave')).status, 401);
+  assert.strictEqual((await tryIt({ productId: 'crate-valentine', username: 'Nadie_MC' })).status, 404);
+  const tried = await tryIt({ productId: 'crate-valentine', username: 'Staff_MC' });
+  assert.strictEqual(tried.status, 200);
+  const triedId = (await tried.json()).id;
+  assert.match(triedId, /^TEST[0-9A-Z]+$/);
+  assert.strictEqual((await refund(triedId)).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
 });

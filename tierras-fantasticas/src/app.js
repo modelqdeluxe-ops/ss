@@ -1220,6 +1220,38 @@ export function createApp(env) {
       return json({ ok: true, ip: await serverIp() });
     },
 
+    // Probar cualquier producto (rangos, crates, packs…) en el juego: se entrega gratis a un jugador como un pedido de
+    // verdad (rango, rol de Discord, anuncio y comandos) y se puede reembolsar desde el mismo panel.
+    'POST /api/staff/test': async (req, ctx) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const body = (await readJson(req)) || {};
+      const product = productById.get(body.productId);
+      if (!product || !(product.commands || []).length) return json({ error: 'Ese producto no se entrega en el juego.' }, 400);
+      const player = typeof body.username === 'string' && USERNAME_RE.test(body.username) ? await store.findPlayer(body.username) : null;
+      if (!player) return json({ error: 'Ese jugador no ha entrado nunca al servidor.' }, 404);
+      const rank = rankById.get(product.id);
+      const current = rank ? await store.getRank(player.uuid) : null;
+      const account = await store.accountByUuid(player.uuid);
+      const id = `TEST${Date.now().toString(36).toUpperCase()}${randomHex(6).toUpperCase()}`.slice(0, 40);
+      await store.createOrder({
+        id,
+        status: 'pending',
+        username: player.name,
+        uuid: player.uuid,
+        productId: product.id,
+        quantity: 1,
+        amount: 0,
+        currency: CURRENCY,
+        discord: account?.discordId ? { id: account.discordId, username: account.username } : null,
+        discordId: account?.discordId,
+        rankFrom: current && current.rankId !== rank.id && rankById.get(current.rankId)?.tier < rank.tier ? current.rankId : undefined,
+      });
+      const status = await fulfill(await store.getOrder(id), ctx, null);
+      log.warn(`Prueba desde el panel de staff: ${product.id} para ${player.name} (${id})`);
+      return json({ ok: true, id, status, product: product.name, username: player.name });
+    },
+
     'POST /api/staff/refund': async (req, ctx) => {
       const denied = await staffDenied(req);
       if (denied) return denied;
