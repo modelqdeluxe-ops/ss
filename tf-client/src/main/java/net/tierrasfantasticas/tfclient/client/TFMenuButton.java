@@ -31,9 +31,17 @@ import net.tierrasfantasticas.tfclient.TFConfig;
  * <p>Menú principal: una columna limpia bajo el emblema, Tierras Fantásticas (el principal: más alto, doble hilo, letras
  * de oro que respiran, hilos de oro a los lados y un destello cada pocos segundos); Mundo local; Mods; Opciones | Salir;
  * WhatsApp | Web | Discord (con sus iconos). Con el ratón encima la pastilla sube un píxel, se enciende con un fundido,
- * echa un halo de su color (oro; rojo en Salir, verde en WhatsApp, azul en Discord), la cruza un destello y le crecen
- * los hilos de oro desde el texto; al pulsar se hunde. Letra Titan One gruesa con contorno oscuro, nítida (a la escala
- * de la interfaz), centrada a la vista. En las demás pantallas (sin «plate»), la misma pastilla con letra Cinzel.
+ * echa un halo de su color y le crecen los hilos de oro desde el texto; al pulsar se hunde. Letra Titan One gruesa con
+ * contorno oscuro, nítida (a la escala de la interfaz), centrada a la vista. En las demás pantallas (sin «plate»), la
+ * misma pastilla con letra Cinzel.
+ *
+ * <p>1.3.121 (el dueño: «los botones están demasiado grandes, ajústalos al tamaño de la palabra; los de las redes no
+ * están con su color, el de salir tampoco; quita la animación de gema reluciente porque laguea; al pasar el mouse
+ * también laguea; la letra no está centrada; la animación de los palitos de los lados no la quites»): cada botón del
+ * ancho de su palabra (con sitio para los hilos), filas más bajas, Salir rojo, WhatsApp verde, Web morado y Discord
+ * azul siempre, sin destello, el texto 1,45 píxeles de letra más arriba (medido en la captura de la prueba de la
+ * 1.3.120: las mayúsculas quedaban 3,5 píxeles por debajo del centro de la pastilla) y dibujado en un solo lote (antes
+ * cada letra de cada copia del contorno se mandaba sola a la tarjeta: ~2000 veces por fotograma).
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -54,7 +62,7 @@ public class TFMenuButton extends Button {
         }
     }
 
-    public enum Kind { PRIMARY, SECONDARY, DANGER, WHATSAPP, DISCORD }
+    public enum Kind { PRIMARY, SECONDARY, DANGER, WHATSAPP, DISCORD, WEB }
 
     /** Los botones del menú principal (qué es cada uno: su color al pasar el ratón). */
     public static final String TF = "tf", BLUE_1 = "blue1", BLUE_2 = "blue2", GRAY = "gray", RED = "red", GREEN = "green",
@@ -63,7 +71,7 @@ public class TFMenuButton extends Button {
      * La columna del menú principal: alto de cada fila a tamaño completo (Tierras Fantásticas; Mundo local; Mods;
      * Opciones | Salir; WhatsApp | Web | Discord), qué botones van en cada una y los huecos (en interfaz).
      */
-    private static final int[] ROW_H = {28, 22, 22, 22, 20};
+    private static final int[] ROW_H = {24, 19, 19, 19, 17};
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
     private static final int GAP_Y = 7, GAP_X = 8, BOTTOM_MARGIN = 10;
     /** Alto de las mayúsculas de Titan One a escala 1 y qué parte del alto del botón ocupan (principal, demás, redes). */
@@ -77,7 +85,7 @@ public class TFMenuButton extends Button {
      * El texto se dibuja en el centro - TEXT_UP (en píxeles de letra): así las mayúsculas quedan centradas a la vista
      * (Cinzel en las demás pantallas; Titan One en el menú, medido con tools/menu_sim.py: a ±1 píxel real).
      */
-    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 3.05f;
+    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4.5f;
     /** Cuánto más juntas van las letras del menú (píxeles de glifo a escala 1 entre cada dos letras). */
     private static final float TRACKING = 0.45f;
     private static final float HOVER_MS = 160f;
@@ -99,9 +107,6 @@ public class TFMenuButton extends Button {
     private long lastFrame;
     /** (La prueba en el juego) El botón del menú principal con el ratón encima a la fuerza (TF, BLUE_1...). */
     public static volatile String testHot;
-    /** Cuándo empezó el destello (al entrar el ratón) y si el ratón estaba encima en el fotograma anterior. */
-    private long shineStart = -1L;
-    private boolean wasHot;
 
     public TFMenuButton(int x, int y, int width, int height, Component message, OnPress onPress, boolean primary) {
         this(x, y, width, height, message, onPress, primary ? Kind.PRIMARY : Kind.SECONDARY, null, null);
@@ -124,9 +129,9 @@ public class TFMenuButton extends Button {
 
     /**
      * Rectángulos (x, y, ancho, alto) de los 8 botones del menú principal y al final {arriba de la columna}. Las filas
-     * a su alto (más bajas si la ventana es baja: el emblema se queda al menos el 40 % del alto), una debajo de otra;
-     * la columna del ancho que pide el texto más largo de cada fila (con aire a los lados), centrada; los botones de una
-     * fila, iguales. Lo que sobre de alto se reparte arriba y abajo (TitleScreenMixin baja el emblema con los botones).
+     * a su alto (más bajas si la ventana es baja: el emblema se queda al menos el 40 % del alto), una debajo de otra y
+     * centradas; cada botón del ancho de su palabra (y su icono) más el aire de los lados, que deja sitio a los hilos de
+     * oro (1.3.121). Lo que sobre de alto se reparte arriba y abajo (TitleScreenMixin baja el emblema con los botones).
      */
     public static int[][] mainLayout(int width, int height) {
         Minecraft mc = Minecraft.getInstance();
@@ -149,25 +154,27 @@ public class TFMenuButton extends Button {
         mainTextSize = crisp(CAP * hs[1] / CAP_HEIGHT, s);
         socialTextSize = crisp(CAP_SOCIAL * hs[4] / CAP_HEIGHT, s);
         String[] labels = {TFConfig.serverName(), "Mundo local", "Mods", "Opciones", "Salir", "WhatsApp", "Web", "Discord"};
-        float col = Mth.clamp(width * 0.36f, 210f, 280f);
-        for (int r = 0; r < ROWS.length; r++) {
-            float size = r == 0 ? tfTextSize : r == 4 ? socialTextSize : mainTextSize;
-            float need = 0f;
-            for (int i : ROWS[r]) {
-                float textW = new Tracked(mc.font, labels[i], MENU_FONT_AT_SCALE[3]).width * size;
-                boolean withIcon = i >= 5;
-                need = Math.max(need, textW + (withIcon ? (TFMenuIcons.SIZE + GAP) * size : 0f) + hs[r] * (withIcon ? 1.0f : 1.9f));
-            }
-            col = Math.max(col, need * ROWS[r].length + GAP_X * (ROWS[r].length - 1));
-        }
-        col = 2 * Math.round(Math.min(col, width - 16) / 2f);
         int[][] out = new int[9][];
         float y = top;
         for (int r = 0; r < ROWS.length; r++) {
+            float size = r == 0 ? tfTextSize : r == 4 ? socialTextSize : mainTextSize;
             int n = ROWS[r].length;
-            float bw = (col - GAP_X * (n - 1)) / (float) n, x = (width - col) / 2f;
+            float[] ws = new float[n];
+            float row = GAP_X * (n - 1);
             for (int j = 0; j < n; j++) {
-                out[ROWS[r][j]] = new int[] {Math.round(x + j * (bw + GAP_X)), Math.round(y), Math.round(bw), hs[r]};
+                int i = ROWS[r][j];
+                float textW = new Tracked(mc.font, labels[i], MENU_FONT_AT_SCALE[3]).width * size;
+                boolean withIcon = i >= 5;
+                // aire de los lados: el radio de la pastilla, el hueco y los hilos de oro (los de icono, sin hilos)
+                float pad = hs[r] * (r == 0 ? 3.4f : withIcon ? 1.2f : 2.7f);
+                ws[j] = 2 * Math.round((textW + (withIcon ? (TFMenuIcons.SIZE + GAP) * size : 0f) + pad) / 2f);
+                row += ws[j];
+            }
+            float fit = Math.min(1f, (width - 16f) / row);
+            float x = (width - row * fit) / 2f;
+            for (int j = 0; j < n; j++) {
+                out[ROWS[r][j]] = new int[] {Math.round(x), Math.round(y), Math.round(ws[j] * fit), hs[r]};
+                x += ws[j] * fit + GAP_X * fit;
             }
             y += hs[r] + gy + (r == 0 ? extra : 0);
         }
@@ -191,7 +198,7 @@ public class TFMenuButton extends Button {
     /** Botón de la web del servidor. */
     public static TFMenuButton web(int[] r) {
         return new TFMenuButton(r[0], r[1], r[2], r[3], label("Web"), button -> TFDiscord.openUrl(TFConfig.webUrl()),
-                Kind.SECONDARY, TFMenuIcons.Icon.WEB, PURPLE);
+                Kind.WEB, TFMenuIcons.Icon.WEB, PURPLE);
     }
 
     /** Botón del Discord del servidor (invitación del servidor, no de una persona). */
@@ -223,6 +230,7 @@ public class TFMenuButton extends Button {
         if (kind == Kind.DANGER) return TFPill.Style.RED;
         if (kind == Kind.WHATSAPP) return TFPill.Style.GREEN;
         if (kind == Kind.DISCORD) return TFPill.Style.BLURPLE;
+        if (kind == Kind.WEB) return TFPill.Style.PURPLE;
         return TFPill.Style.VIOLET;
     }
 
@@ -234,8 +242,6 @@ public class TFMenuButton extends Button {
         // el foco solo cuenta con el teclado: tras un clic el botón se queda con el foco y no debe seguir encendido
         boolean hot = this.active && (this.isHovered() || this.isFocused() && mc.getLastInputType().isKeyboard()
                 || plate != null && plate.equals(testHot));
-        if (hot && !wasHot) shineStart = now; // el destello, al entrar el ratón
-        wasHot = hot;
         float dt = lastFrame == 0L ? 1000f : Math.min(250f, now - lastFrame);
         lastFrame = now;
         float step = dt / HOVER_MS;
@@ -244,22 +250,15 @@ public class TFMenuButton extends Button {
         float e = this.active ? hover * hover * (3f - 2f * hover) : 0f;
         float alpha = this.alpha;
         boolean menu = plate != null, primary = kind == Kind.PRIMARY && menu;
-        float shine = -1f;
-        if (shineStart >= 0L && now - shineStart < TFPill.SHINE_MS) {
-            shine = (now - shineStart) / (float) TFPill.SHINE_MS;
-        } else if (primary) {
-            long c = now % TFPill.SHINE_EVERY;
-            if (c < TFPill.SHINE_MS) shine = c / (float) TFPill.SHINE_MS;
-        }
         // sube un píxel real con el ratón y se hunde medio al pulsar (en píxeles reales: nítido)
         float lift = pressed ? Math.max(1, Math.round(0.5f * s)) / (float) s : -Math.round(e * s) / (float) s;
         g.pose().pushPose();
         g.pose().translate(0f, lift, 0f);
-        TFPill.paint(g, getX(), getY(), getWidth(), getHeight(), style(), e, pressed, this.active, primary, alpha, shine);
+        TFPill.paint(g, getX(), getY(), getWidth(), getHeight(), style(), e, pressed, this.active, primary, alpha);
         float size = !menu ? 1f : primary ? tfTextSize : icon != null ? socialTextSize : mainTextSize;
         float side = menu ? getHeight() * 0.5f : getWidth() * 0.14f;
         // los hilos de oro: siempre en el principal; en los demás (sin icono), crecen con el ratón
-        float thread = primary ? 1f : icon == null && getWidth() >= 90 ? e : 0f;
+        float thread = primary ? 1f : icon == null ? e : 0f;
         paintContent(g, mc.font, s, getX() + side, getX() + getWidth() - side, getY() + getHeight() / 2f, size, e, alpha, thread);
         g.pose().popPose();
         RenderSystem.defaultBlendFunc();
@@ -318,9 +317,12 @@ public class TFMenuButton extends Button {
             icon(g, gx, iy, sz, ink, alpha);
             gx += iconW;
         }
-        float ty = snap(centerY - MENU_TEXT_UP * scale, s);
-        for (int[] d : ring) tracked.draw(g, font, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
-        tracked.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+        float ty = snap(centerY - MENU_TEXT_UP * scale, s), tx = gx, sc = scale;
+        // todo el texto (contorno y letra) en un solo lote: una sola vez a la tarjeta gráfica
+        g.drawManaged(() -> {
+            for (int[] d : ring) tracked.draw(g, font, tx + d[0] / (float) s, ty + d[1] / (float) s, sc, TFMenuPaint.argb(alpha, edge));
+            tracked.draw(g, font, tx, ty, sc, TFMenuPaint.argb(alpha, ink));
+        });
     }
 
     /** Un texto dibujado letra a letra con las letras un poco más juntas (TRACKING píxeles de glifo menos entre cada dos). */
@@ -348,16 +350,16 @@ public class TFMenuButton extends Button {
         }
     }
 
-    /** Desplazamientos (en píxeles reales) del contorno: 16 direcciones a ro y 8 a la mitad, sin repetir. */
+    /** Desplazamientos (en píxeles reales) del contorno: 8 direcciones a ro y, si es grueso, 8 a la mitad, sin repetir. */
     private static int[][] ring(int ro) {
         int[][] cached = RINGS.get(ro);
         if (cached != null) return cached;
         java.util.LinkedHashSet<Long> seen = new java.util.LinkedHashSet<>();
         java.util.List<int[]> out = new java.util.ArrayList<>();
         for (int pass = 0; pass < 2; pass++) {
-            int n = pass == 0 ? 16 : 8;
+            int n = 8;
             float r = pass == 0 ? ro : ro / 2f;
-            if (pass == 1 && ro < 2) break;
+            if (pass == 1 && ro < 3) break;
             for (int i = 0; i < n; i++) {
                 double a = i * 2 * Math.PI / n;
                 int dx = (int) Math.round(Math.cos(a) * r), dy = (int) Math.round(Math.sin(a) * r);

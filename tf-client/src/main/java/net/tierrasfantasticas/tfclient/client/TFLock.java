@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import java.util.List;
 import java.util.Locale;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -44,8 +43,8 @@ import net.tierrasfantasticas.tfclient.util.TFConfigDir;
  * <ul>
  *   <li><b>Servidores:</b> toda conexión (el botón del menú, la lista de servidores, la conexión directa, un servidor LAN
  *   o un enlace de juego rápido) pasa por {@code ConnectScreen.startConnecting} ({@code ConnectScreenMixin}): si no es
- *   el servidor oficial ({@link #OFFICIAL}), se conecta al oficial. La dirección de cliente.properties ya no puede ser
- *   otra ({@link TFConfig}).</li>
+ *   el servidor oficial ({@link #address}), se conecta al oficial. La dirección de cliente.properties ya no cuenta
+ *   ({@link TFConfig}).</li>
  *   <li><b>Mundos locales</b> (un jugador y abrirlo en LAN): solo con la contraseña. Al abrir la lista de mundos o crear
  *   uno se pide ({@link TFLocalLockScreen}); y si se entra a un mundo local por otro camino, se sale. Aquí solo está su
  *   huella (PBKDF2 con sal y el SHA-256 de eso): la contraseña no está en el código ni en el repositorio. Bien puesta,
@@ -57,10 +56,17 @@ import net.tierrasfantasticas.tfclient.util.TFConfigDir;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class TFLock {
     /**
-     * Los servidores oficiales (host:puerto). Ahora el de pruebas; cuando el dueño pase la IP final, se añade aquí (y en
-     * TFConfig.DEFAULT_ADDRESS) y se publica una versión.
+     * El servidor oficial puesto en el mod (1.3.121, el dueño: «ya vamos a migrar al server real, esta será la IP,
+     * incrústala y que nadie, solo nosotros, podamos cambiarla, con una autorización por contraseña»). Nadie la cambia
+     * desde el juego ni desde los archivos de configuración: solo el dueño, en la web (tierrasfantásticas.store/staff,
+     * con su clave ADMIN_KEY). Al abrir el juego se pregunta a la web cuál es ({@link #fetchOfficial}, siempre a la web
+     * puesta en el código, {@link TFConfig#OFFICIAL_WEB}, no a la de cliente.properties); si no responde, esta.
      */
-    public static final List<String> OFFICIAL = List.of("216.163.187.40:19229");
+    public static final String EMBEDDED = "tierras.ultramc.co";
+    /** La que dijo la web al abrir el juego (null: no respondió; se usa {@link #EMBEDDED}). */
+    private static volatile String remote;
+    private static final java.util.regex.Pattern ADDRESS = java.util.regex.Pattern.compile(
+            "^(?=.{1,253}(?::\\d{1,5})?$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?::\\d{1,5})?$");
 
     private static final byte[] SALT = HexFormat.of().parseHex("08dc3e7dfe669487930e5ab7eddff2ed");
     private static final int ITERATIONS = 200_000;
@@ -73,14 +79,47 @@ public final class TFLock {
 
     // ------------------------------------------------------------------------------------------------- servidores
 
-    /** ¿Es uno de los servidores oficiales? (sin mayúsculas; sin puerto, el 25565) */
+    /** La dirección del servidor oficial ahora mismo (host o host:puerto). */
+    public static String address() {
+        String r = remote;
+        return r != null ? r : EMBEDDED;
+    }
+
+    /** ¿Es el servidor oficial? (sin mayúsculas; sin puerto, el 25565) */
     public static boolean official(ServerAddress address) {
         String a = address.getHost().toLowerCase(Locale.ROOT) + ":" + address.getPort();
-        for (String o : OFFICIAL) {
-            ServerAddress p = ServerAddress.parseString(o);
-            if (a.equals(p.getHost().toLowerCase(Locale.ROOT) + ":" + p.getPort())) return true;
-        }
-        return false;
+        ServerAddress p = ServerAddress.parseString(address());
+        return a.equals(p.getHost().toLowerCase(Locale.ROOT) + ":" + p.getPort());
+    }
+
+    /** Pregunta a la web (la del código) la IP del servidor que puso el dueño en /staff. En segundo plano, al arrancar. */
+    public static void fetchOfficial() {
+        if (BossTest.ON) return;
+        Thread thread = new Thread(() -> {
+            try {
+                java.net.HttpURLConnection c = (java.net.HttpURLConnection) java.net.URI.create(TFConfig.OFFICIAL_WEB + "/api/config")
+                        .toURL().openConnection();
+                c.setConnectTimeout(6000);
+                c.setReadTimeout(6000);
+                c.setInstanceFollowRedirects(false);
+                c.setRequestProperty("User-Agent", "TFClient/" + TFClient.VERSION);
+                if (c.getResponseCode() != 200) return;
+                String body;
+                try (java.io.InputStream in = c.getInputStream()) {
+                    body = new String(in.readNBytes(65536), StandardCharsets.UTF_8);
+                }
+                com.google.gson.JsonElement ip = com.google.gson.JsonParser.parseString(body).getAsJsonObject().get("serverIp");
+                String value = ip == null || !ip.isJsonPrimitive() ? "" : ip.getAsString().trim().toLowerCase(Locale.ROOT);
+                if (ADDRESS.matcher(value).matches() && ServerAddress.isValidAddress(value)) {
+                    remote = value;
+                    TFClient.LOGGER.info("TF Client: IP del servidor (la de la web): {}", value);
+                }
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("TF Client: no se pudo preguntar la IP del servidor a la web ({}); se usa {}", e.getMessage(), EMBEDDED);
+            }
+        }, "TF Client: IP del servidor");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public static boolean official(String address) {
@@ -89,7 +128,7 @@ public final class TFLock {
 
     /** Lo que se conecta en lugar de otro servidor: el oficial, con su paquete de recursos aceptado. */
     public static void redirect(Screen parent, Minecraft mc, ServerAddress wanted, boolean quickPlay) {
-        String address = OFFICIAL.get(0);
+        String address = address();
         TFClient.LOGGER.info("TF Client: solo se juega en {}: {} → {}", TFConfig.serverName(), wanted.getHost() + ":" + wanted.getPort(), address);
         ServerData data = new ServerData(TFConfig.serverName(), address, false);
         data.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);

@@ -2022,11 +2022,14 @@ public final class BossTest {
             case 1226 -> shot(r, "menu_principal_raton");
             case 1228 -> openMenu = "opciones";
             case 1256 -> shot(r, "menu_opciones");
-            case 1258 -> {
+            // (1.3.121) la pantalla que sale sin AutoModpack al ir a entrar al servidor
+            case 1258 -> openMenu = "automodpack";
+            case 1284 -> shot(r, "falta_automodpack");
+            case 1286 -> {
                 keepMenu = false;
                 closeScreen = true;
             }
-            case 1262 -> next(level);
+            case 1290 -> next(level);
             default -> { }
         }
     }
@@ -2233,10 +2236,10 @@ public final class BossTest {
                 fly(player, true);
                 player.teleportTo(vl, kp.getX() + 0.5, kp.getY() - 1, kp.getZ() + 6.5, 180F, 10F);
                 // (1.3.117) el TF Client solo para el servidor oficial (client/TFLock)
-                r.event("solo el servidor oficial " + net.tierrasfantasticas.tfclient.client.TFLock.OFFICIAL + ": el oficial "
-                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:19229") + ", otro (play.example.com) "
+                r.event("solo el servidor oficial " + net.tierrasfantasticas.tfclient.client.TFLock.address() + ": el oficial "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("tierras.ultramc.co") + ", otro (play.example.com) "
                         + net.tierrasfantasticas.tfclient.client.TFLock.official("play.example.com") + ", el oficial con otro puerto "
-                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:25565") + "; mundos locales en la prueba: "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("tierras.ultramc.co:25570") + "; mundos locales en la prueba: "
                         + (net.tierrasfantasticas.tfclient.client.TFLock.unlocked() ? "abiertos (sin contraseña, solo la prueba)" : "CERRADOS"));
                 // (1.3.117) el rango a LuckPerms (aquí no hay LuckPerms ni Bukkit: tiene que decirlo, sin romperse)
                 List<String> lp = net.tierrasfantasticas.tfclient.server.TFBridge.run(level.getServer(),

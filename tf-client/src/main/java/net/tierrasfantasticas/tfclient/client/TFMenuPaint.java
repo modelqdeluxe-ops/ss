@@ -71,45 +71,128 @@ public final class TFMenuPaint {
     }
 
     /**
+     * (1.3.121, el dueño: «al pasar el mouse laguea los botones») Las formas ya calculadas: cada relleno o borde se
+     * guarda como una lista de rectángulos (relativos a su esquina) por tamaño, radio y colores, y se vuelve a pintar
+     * tal cual. Antes se recalculaba píxel a píxel cada fotograma (decenas de miles de cuentas por botón).
+     */
+    private record Shape(int kind, int w, int h, int r, int a, int b, int c, int top, int bot) {}
+
+    private static final Map<Shape, int[]> SHAPES = new java.util.LinkedHashMap<>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Shape, int[]> eldest) {
+            return size() > 768;
+        }
+    };
+
+    /** Pinta los rectángulos guardados (x0, y0, x1, y1, color arriba, color abajo) en (x, y). */
+    private static void replay(GuiGraphics g, int x, int y, int[] ops) {
+        for (int i = 0; i < ops.length; i += 6) {
+            if (ops[i + 4] == ops[i + 5]) g.fill(x + ops[i], y + ops[i + 1], x + ops[i + 2], y + ops[i + 3], ops[i + 4]);
+            else g.fillGradient(x + ops[i], y + ops[i + 1], x + ops[i + 2], y + ops[i + 3], ops[i + 4], ops[i + 5]);
+        }
+    }
+
+    /** Donde se apuntan los rectángulos de una forma (y junta los píxeles seguidos del mismo color de una fila). */
+    private static final class Ops {
+        private int[] a = new int[96];
+        private int n;
+        private int rx0, rx1, ry, rc;
+
+        void rect(int x0, int y0, int x1, int y1, int c0, int c1) {
+            if (x1 <= x0 || y1 <= y0 || ((c0 >>> 24) == 0 && (c1 >>> 24) == 0)) return;
+            if (n + 6 > a.length) a = java.util.Arrays.copyOf(a, a.length * 2);
+            a[n++] = x0;
+            a[n++] = y0;
+            a[n++] = x1;
+            a[n++] = y1;
+            a[n++] = c0;
+            a[n++] = c1;
+        }
+
+        void put(int x, int y, int color) {
+            if (rc != 0 && y == ry && x == rx1 && color == rc) {
+                rx1++;
+                return;
+            }
+            flush();
+            rx0 = x;
+            rx1 = x + 1;
+            ry = y;
+            rc = color;
+        }
+
+        void flush() {
+            if (rc != 0) rect(rx0, ry, rx1, ry + 1, rc, rc);
+            rc = 0;
+        }
+
+        int[] done() {
+            flush();
+            return java.util.Arrays.copyOf(a, n);
+        }
+    }
+
+    /**
      * Relleno del rectángulo redondeado (x, y, w, h, radio r) metido `inset` píxeles (lo de dentro del borde), solo en
      * las filas [ya, yb) relativas a y, con degradado vertical de top a bot repartido en esas filas.
      */
     public static void roundFill(GuiGraphics g, int x, int y, int w, int h, int r, int inset, int ya, int yb, int top, int bot) {
+        Shape key = new Shape(0, w, h, r, inset, ya, yb, top, bot);
+        int[] ops = SHAPES.get(key);
+        if (ops == null) {
+            ops = buildFill(w, h, r, inset, ya, yb, top, bot);
+            SHAPES.put(key, ops);
+        }
+        replay(g, x, y, ops);
+    }
+
+    private static int[] buildFill(int w, int h, int r, int inset, int ya, int yb, int top, int bot) {
+        Ops o = new Ops();
         ya = Math.max(ya, inset);
         yb = Math.min(yb, h - inset);
-        if (yb <= ya) return;
+        if (yb <= ya) return o.done();
         float span = yb - ya;
         // Filas rectas: todo el ancho dentro del borde
         int a = Math.max(ya, r);
         int b = Math.min(yb, h - r);
-        if (b > a) g.fillGradient(x + inset, y + a, x + w - inset, y + b, lerp(top, bot, (a - ya) / span), lerp(top, bot, (b - ya) / span));
+        if (b > a) o.rect(inset, a, w - inset, b, lerp(top, bot, (a - ya) / span), lerp(top, bot, (b - ya) / span));
         // Filas de las esquinas: el centro de un bloque y las esquinas píxel a píxel
-        Runs runs = new Runs(g);
         for (int part = 0; part < 2; part++) {
             int r0 = part == 0 ? ya : Math.max(ya, h - r);
             int r1 = part == 0 ? Math.min(yb, r) : yb;
             if (r1 <= r0) continue;
-            g.fillGradient(x + r, y + r0, x + w - r, y + r1, lerp(top, bot, (r0 - ya) / span), lerp(top, bot, (r1 - ya) / span));
+            o.rect(r, r0, w - r, r1, lerp(top, bot, (r0 - ya) / span), lerp(top, bot, (r1 - ya) / span));
             for (int row = r0; row < r1; row++) {
                 int c = lerp(top, bot, (row + 0.5f - ya) / span);
                 for (int i = 0; i < 2 * r; i++) {
                     int col = i < r ? i : w - 2 * r + i;
                     float k = cov(sdf(col + 0.5f, row + 0.5f, w, h, r) + inset);
-                    if (k > 0f) runs.put(x + col, y + row, withAlpha(c, k));
+                    if (k > 0f) o.put(col, row, withAlpha(c, k));
                 }
-                runs.flush();
+                o.flush();
             }
         }
+        return o.done();
     }
 
     /** Borde de grosor t con degradado vertical (top arriba, bot abajo) y las esquinas suavizadas. */
     public static void roundRing(GuiGraphics g, int x, int y, int w, int h, int r, int t, int top, int bot) {
+        Shape key = new Shape(1, w, h, r, t, 0, 0, top, bot);
+        int[] ops = SHAPES.get(key);
+        if (ops == null) {
+            ops = buildRing(w, h, r, t, top, bot);
+            SHAPES.put(key, ops);
+        }
+        replay(g, x, y, ops);
+    }
+
+    private static int[] buildRing(int w, int h, int r, int t, int top, int bot) {
+        Ops o = new Ops();
         float fh = h;
-        g.fillGradient(x, y + r, x + t, y + h - r, lerp(top, bot, r / fh), lerp(top, bot, (h - r) / fh));
-        g.fillGradient(x + w - t, y + r, x + w, y + h - r, lerp(top, bot, r / fh), lerp(top, bot, (h - r) / fh));
-        g.fillGradient(x + r, y, x + w - r, y + t, top, lerp(top, bot, t / fh));
-        g.fillGradient(x + r, y + h - t, x + w - r, y + h, lerp(top, bot, (h - t) / fh), bot);
-        Runs runs = new Runs(g);
+        o.rect(0, r, t, h - r, lerp(top, bot, r / fh), lerp(top, bot, (h - r) / fh));
+        o.rect(w - t, r, w, h - r, lerp(top, bot, r / fh), lerp(top, bot, (h - r) / fh));
+        o.rect(r, 0, w - r, t, top, lerp(top, bot, t / fh));
+        o.rect(r, h - t, w - r, h, lerp(top, bot, (h - t) / fh), bot);
         for (int j = 0; j < 2 * r; j++) {
             int row = j < r ? j : h - 2 * r + j;
             int c = lerp(top, bot, (row + 0.5f) / fh);
@@ -117,40 +200,11 @@ public final class TFMenuPaint {
                 int col = i < r ? i : w - 2 * r + i;
                 float d = sdf(col + 0.5f, row + 0.5f, w, h, r);
                 float k = cov(d) - cov(d + t);
-                if (k > 0f) runs.put(x + col, y + row, withAlpha(c, k));
+                if (k > 0f) o.put(col, row, withAlpha(c, k));
             }
-            runs.flush();
+            o.flush();
         }
-    }
-
-    /** Junta los píxeles seguidos del mismo color de una fila en un solo rectángulo. */
-    private static final class Runs {
-        private final GuiGraphics g;
-        private int x0;
-        private int x1;
-        private int y;
-        private int c;
-
-        Runs(GuiGraphics g) {
-            this.g = g;
-        }
-
-        void put(int x, int y, int color) {
-            if (c != 0 && y == this.y && x == x1 && color == c) {
-                x1++;
-                return;
-            }
-            flush();
-            x0 = x;
-            x1 = x + 1;
-            this.y = y;
-            c = color;
-        }
-
-        void flush() {
-            if (c != 0 && (c >>> 24) != 0) g.fill(x0, y, x1, y + 1, c);
-            c = 0;
-        }
+        return o.done();
     }
 
     // --------------------------------------------------------------------------------------------- halo

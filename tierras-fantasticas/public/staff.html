@@ -43,6 +43,9 @@
       td:last-child { text-align: left; padding-top: 8px; }
       td:last-child:empty { display: none; }
     }
+    .block { margin-bottom: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+    .block label { display: block; margin-bottom: 8px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -56,6 +59,13 @@
   </form>
 
   <section id="panel" hidden>
+    <form id="server" class="block">
+      <label for="ip">IP del servidor <span class="dim">(la de la web y a la que entra TF Client; vacía = <span id="ipDefault"></span>)</span></label>
+      <div class="row">
+        <input id="ip" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="tierras.ultramc.co">
+        <button class="main" type="submit">Guardar IP</button>
+      </div>
+    </form>
     <div class="bar">
       <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal.</span>
       <button id="reload" type="button">Recargar</button>
@@ -99,6 +109,9 @@
   async function load() {
     show('Cargando…');
     try {
+      const server = await api('/api/staff/server');
+      $('ip').value = server.ip === server.default ? '' : server.ip;
+      $('ipDefault').textContent = server.default;
       const { orders } = await api('/api/staff/orders');
       $('login').hidden = true;
       $('panel').hidden = false;
@@ -135,6 +148,17 @@
     load();
   });
   $('reload').addEventListener('click', load);
+  $('server').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const ip = $('ip').value.trim();
+    if (!confirm(`¿Cambiar la IP del servidor a «${ip || $('ipDefault').textContent}»?\n\nTF Client conectará a esa IP (al abrir el juego) y la web la enseñará.`)) return;
+    try {
+      const data = await api('/api/staff/server', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }) });
+      show(`IP guardada: ${data.ip}.`, 'ok');
+    } catch (err) {
+      show(err.message, 'err');
+    }
+  });
   $('logout').addEventListener('click', () => { logout(); show(''); });
   $('rows').addEventListener('click', async (e) => {
     const btn = e.target.closest('button.refund');

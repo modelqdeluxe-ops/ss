@@ -18,15 +18,17 @@ import net.minecraft.client.gui.GuiGraphics;
  * cristal oscuro con hilo de oro de las respuestas de los caballeros, sin texturas, dibujada en píxeles reales de
  * pantalla ({@link TFMenuPaint}: nítida con cualquier escala de interfaz).
  * <ul>
- *   <li>Debajo, una sombra suave; con el ratón encima, un halo del color del botón (oro, rojo en Salir, verde en
- *   WhatsApp, azul en Discord) y el relleno que se enciende con un fundido.</li>
+ *   <li>Debajo, una sombra suave; con el ratón encima, un halo del color del botón y el relleno que se enciende con un
+ *   fundido.</li>
+ *   <li>(1.3.121, el dueño: «los de las redes no están con su color, el de salir tampoco») Salir, WhatsApp, Web y
+ *   Discord rellenos de su color siempre (rojo, verde, morado y el azul de Discord), no solo con el ratón.</li>
  *   <li>Cristal: luz arriba y sombra abajo, dentro del hilo; el hilo de oro con degradado (más claro con el ratón).</li>
  *   <li>El principal (Tierras Fantásticas): doble hilo y siempre un halo de oro tenue.</li>
- *   <li>Destello: una banda de luz inclinada que cruza el botón (recortada a su forma) al entrar el ratón, y en el
- *   principal cada pocos segundos.</li>
  *   <li>Hilos de oro a los lados del texto (como el nombre de los caballeros) que crecen hacia las puntas con el ratón
  *   (en el principal, siempre) y acaban en un rombo.</li>
  * </ul>
+ * (1.3.121, el dueño: «quítales esa animación de gema reluciente, los blanquitos que van de izquierda a derecha, porque
+ * laguea») Sin destello. Las esquinas y el borde se calculan una vez por tamaño y color ({@link TFMenuPaint}).
  * Vista previa sin abrir el juego: tools/menu_sim.py (mismas cuentas).
  */
 public final class TFPill {
@@ -36,9 +38,10 @@ public final class TFPill {
     public enum Style {
         GOLD(0x2C1A4A, 0x120922, 0x4E2E82, 0x24123E, 0xE9C46E, 0x7A5A22, 0xFFEDB0, 0xE0B456, 0xFFC860),
         VIOLET(0x2A1846, 0x110920, 0x4A2C7E, 0x22123C, 0xD9B465, 0x6E5020, 0xFFE9A8, 0xD8AC50, 0xC9A0FF),
-        RED(0x2A1846, 0x110920, 0x6A1E34, 0x2E0A16, 0xD9B465, 0x6E5020, 0xFFC0B0, 0xD8604A, 0xFF6A50),
-        GREEN(0x2A1846, 0x110920, 0x1D5E44, 0x0B2A1E, 0xD9B465, 0x6E5020, 0xC0F6D6, 0x48C080, 0x5CE89A),
-        BLURPLE(0x2A1846, 0x110920, 0x3E44A8, 0x1A1C52, 0xD9B465, 0x6E5020, 0xD6DAFF, 0x7C84F4, 0x8C96FF);
+        RED(0x9A2A2E, 0x561018, 0xC23A3C, 0x701620, 0xD9B465, 0x6E5020, 0xFFC0B0, 0xD8604A, 0xFF6A50),
+        GREEN(0x1E9A52, 0x0B5A2C, 0x28BE66, 0x12763C, 0xD9B465, 0x6E5020, 0xC0F6D6, 0x48C080, 0x5CE89A),
+        PURPLE(0x6E36B8, 0x381670, 0x8A4AE0, 0x4A2090, 0xD9B465, 0x6E5020, 0xFFE9A8, 0xD8AC50, 0xC9A0FF),
+        BLURPLE(0x5865F2, 0x2C34A0, 0x7480FF, 0x3A44C4, 0xD9B465, 0x6E5020, 0xD6DAFF, 0x7C84F4, 0x8C96FF);
 
         final int top, bot, hotTop, hotBot, ring, ringBot, hotRing, hotRingBot, glow;
 
@@ -55,9 +58,6 @@ public final class TFPill {
         }
     }
 
-    /** Lo que dura el destello y cada cuánto pasa por el botón principal (ms). */
-    public static final long SHINE_MS = 700L, SHINE_EVERY = 6500L;
-
     /** La escala de la interfaz (píxeles reales por píxel de interfaz), entera. */
     public static int scale() {
         return Math.max(1, (int) Math.round(Minecraft.getInstance().getWindow().getGuiScale()));
@@ -70,10 +70,10 @@ public final class TFPill {
     /**
      * La pastilla (sin el texto) en (x, y, w, h) de interfaz. e: lo encendida que está con el ratón (0..1); pressed: se
      * está pulsando; primary: doble hilo y halo de oro siempre; alpha: la opacidad del botón (el menú entra con un
-     * fundido); shine: el destello (0..1) o menos de 0 sin él.
+     * fundido).
      */
     public static void paint(GuiGraphics g, int x, int y, int w, int h, Style st, float e, boolean pressed, boolean active, boolean primary,
-                             float alpha, float shine) {
+                             float alpha) {
         if (alpha <= 0.01f || w <= 2 || h <= 2) return;
         int s = scale();
         int bx = x * s, by = y * s, bw = w * s, bh = h * s;
@@ -106,30 +106,8 @@ public final class TFPill {
                             TFMenuPaint.argb((0.25f + 0.3f * k) * alpha, rb));
                 }
             }
-            if (shine >= 0f && active) shine(g, bx, by, bw, bh, r, shine, alpha);
         });
         g.pose().popPose();
-    }
-
-    /** El destello: una banda de luz inclinada que cruza la pastilla, recortada a su forma fila a fila (píxeles reales). */
-    private static void shine(GuiGraphics g, int x, int y, int w, int h, int r, float t, float alpha) {
-        if (t <= 0f || t >= 1f) return;
-        float e = t * t * (3f - 2f * t);
-        float bw = h * 0.9f, slant = 0.45f;
-        float c0 = x - bw - h * slant + e * (w + 2 * bw + h * slant);
-        float k = (float) Math.sin(t * Math.PI) * alpha;
-        float[][] bands = {{-1f, -0.5f, 0.35f}, {-0.5f, -0.17f, 0.7f}, {-0.17f, 0.17f, 1f}, {0.17f, 0.5f, 0.7f}, {0.5f, 1f, 0.35f}};
-        for (int j = 0; j < h; j++) {
-            float yy = j + 0.5f;
-            float dy = Math.max(0f, Math.max(r - yy, yy - (h - r)));
-            float xl = dy > 0f ? r - (float) Math.sqrt(Math.max(0f, r * r - dy * dy)) : 0f;
-            int lo = x + (int) Math.ceil(xl), hi = x + w - (int) Math.ceil(xl);
-            float c = c0 + (h - yy) * slant;
-            for (float[] b : bands) {
-                int a = Math.max(lo, Math.round(c + b[0] * bw)), z = Math.min(hi, Math.round(c + b[1] * bw));
-                if (z > a) g.fill(a, y + j, z, y + j + 1, TFMenuPaint.argb(0.20f * k * b[2], 0xFFFFFF));
-            }
-        }
     }
 
     /**

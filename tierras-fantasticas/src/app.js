@@ -241,7 +241,14 @@ function rankSetup(rank) {
 
 export function createApp(env) {
   const SERVER_NAME = env.SERVER_NAME || 'Tierras Fantásticas';
-  const SERVER_IP = env.SERVER_IP || '216.163.187.40:19001';
+  const SERVER_IP = env.SERVER_IP || 'tierras.ultramc.co';
+  // La IP que se enseña en la web y a la que conecta TF Client: la que el dueño pone en /staff (con ADMIN_KEY) o, si
+  // no puso ninguna, SERVER_IP. El mod la lee de /api/config y, si la web no responde, usa la suya (TFLock.OFFICIAL).
+  const SERVER_IP_RE = /^(?=.{1,253}(?::\d{1,5})?$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?::\d{1,5})?$/i;
+  async function serverIp() {
+    const saved = (await store.getSetting('server_ip'))?.value;
+    return saved && SERVER_IP_RE.test(saved) ? saved : SERVER_IP;
+  }
   const DISCORD_URL = env.DISCORD_URL || 'https://discord.gg/tRrunHBZE';
   // Grupo de WhatsApp. La web siempre enlaza a /whatsapp: si algún día el enlace del grupo cambia, basta con poner el
   // nuevo en la variable WHATSAPP_URL de Cloudflare (o aquí) y todos los botones siguen funcionando.
@@ -609,7 +616,7 @@ export function createApp(env) {
     'GET /api/config': async (req, { discord }) =>
       json({
         serverName: SERVER_NAME,
-        serverIp: SERVER_IP,
+        serverIp: await serverIp(),
         discordUrl: DISCORD_URL,
         discordLogin: discord.loginEnabled,
         currency: CURRENCY,
@@ -1191,6 +1198,26 @@ export function createApp(env) {
           refundable: CLAIMED.includes(o.status) && !o.refunded,
         })),
       });
+    },
+
+    // La IP del servidor (la de la web y la de TF Client): verla y cambiarla. Vacía = la de SERVER_IP.
+    'GET /api/staff/server': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      return json({ ip: await serverIp(), default: SERVER_IP });
+    },
+
+    'POST /api/staff/server': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const body = (await readJson(req)) || {};
+      const ip = typeof body.ip === 'string' ? body.ip.trim().toLowerCase() : '';
+      if (ip && !SERVER_IP_RE.test(ip)) return json({ error: 'Esa IP no es válida (ejemplo: tierras.ultramc.co o 1.2.3.4:25565).' }, 400);
+      const port = ip.includes(':') ? Number(ip.split(':')[1]) : 25565;
+      if (port < 1 || port > 65535) return json({ error: 'El puerto tiene que ir de 1 a 65535.' }, 400);
+      await store.setSetting('server_ip', ip);
+      log.warn(`IP del servidor cambiada desde el panel de staff: ${ip || `(la de siempre: ${SERVER_IP})`}`);
+      return json({ ok: true, ip: await serverIp() });
     },
 
     'POST /api/staff/refund': async (req, ctx) => {

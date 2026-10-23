@@ -545,10 +545,10 @@ def pill(g, S, x, y, w, h, style, e, pressed=False, active=True, primary=False, 
 LABELS = [('Tierras Fantásticas', None, 'gold', True), ('Mundo local', None, 'violet', False), ('Mods', None, 'violet', False),
           ('Opciones', None, 'violet', False), ('Salir', None, 'red', False), ('WhatsApp', 'whatsapp', 'green', False),
           ('Web', 'web', 'violet', False), ('Discord', 'discord', 'blurple', False)]
-ROW_H = [28, 22, 22, 22, 20]
+ROW_H = [24, 19, 19, 19, 17]  # 1.3.121 (el ancho de cada botón, el de su palabra: TFMenuButton.mainLayout)
 ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 GAP_Y, GAP_X = 7, 8
-TEXT_UP = 3.05
+TEXT_UP = 4.5  # 1.3.121: medido en la captura del juego (con 3.05 las mayúsculas quedaban bajas)
 
 
 def layout(w, h, S):
