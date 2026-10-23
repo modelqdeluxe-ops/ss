@@ -190,18 +190,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.115, EN PRUEBA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.115, PUBLICADA) — lee esto primero
 
 **1.3.115: once quejas del dueño** (con 2 capturas y un mp3; la 1.3.114 está PUBLICADA):
 1. **Caballeros del santuario «con la animación de volar»** (su captura: Osric de cerca, con la postura de «leer»:
    brazos adelante, cabeza baja): fuera las posturas propias (leer, agacharse, alzar el farol, hacerse sombra).
    `KnightRenderer.sacredPose` ahora es la de un jugador: derechos, vaivén de brazos de `bobArms`, el brazo de lo que
    llevan a 18° y al andar piernas y brazos como `HumanoidModel`. La prueba `corta` saca a cada uno de frente y de lado
-   (`caballero_N_lado`) con la cámara donde no la tape nada (`BossTest.knightCam`).
+   (`caballero_N_lado`) con la cámara donde no la tape nada (`BossTest.knightCam`). **Comprobado** (prueba `16ecf50`):
+   derechos, de lado y andando (piernas hasta 0,60).
 2. **Altar de la armadura del Void** (`VoidArmor.pedestal`): tarima de piedra negra pulida 5×5, escalón con 4 racimos de
    amatista y obsidiana llorosa en el centro; el soporte de pie encima. Se construye una vez, también en mundos de antes,
    sin romper nada. La burbuja (`SanctuaryFx.altar`) va centrada en el soporte de verdad (era asimétrica: centrada en la
-   altura guardada del altar) y sin el círculo del suelo.
+   altura guardada del altar) y sin el círculo del suelo. **Comprobado** (`16ecf50`): de pie sobre la obsidiana llorosa
+   (a 0,00) y la burbuja redonda alrededor.
 3. **Sonidos de las crates por rareza** (`tools/crates/sfx_crates.py`, `premio()`): los cinco eran de la misma familia
    (Re mayor, celesta y destellos). Ahora cada uno con su carácter y graves de verdad: común (golpe seco y metales), rara
    (soplo que estalla en cristal y arpa, Mi mayor), épica (al revés, caída al subgrave, coro «ooh» en Re menor),
