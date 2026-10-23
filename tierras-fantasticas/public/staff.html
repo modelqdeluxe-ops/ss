@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff — Tierras Fantásticas</title>
+  <!-- Panel privado del dueño: no se enlaza desde ninguna página y no se indexa. Los datos solo llegan con la clave
+       (el secreto ADMIN_KEY de Cloudflare); sin ella la web no devuelve nada. -->
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root { --bg: #07080d; --card: #12141c; --line: #262a36; --text: #ece8df; --dim: #9a958b; --gold: #e3b74c; --red: #e5484d; --green: #46a758; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, sans-serif; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 20px; margin: 0 0 16px; color: var(--gold); }
+    form { display: flex; gap: 8px; flex-wrap: wrap; }
+    input { flex: 1 1 220px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; }
+    button { padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+    button.main { background: var(--gold); border-color: var(--gold); color: #1a1408; font-weight: 600; }
+    button.refund { border-color: var(--red); color: var(--red); }
+    button:disabled { opacity: .5; cursor: default; }
+    .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .bar .grow { flex: 1 1 320px; color: var(--dim); }
+    .msg { margin: 12px 0; padding: 10px 12px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); }
+    .msg.err { border-color: var(--red); }
+    .msg.ok { border-color: var(--green); }
+    .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: var(--dim); font-weight: 500; font-size: 13px; background: var(--card); }
+    tr:last-child td { border-bottom: 0; }
+    .dim { color: var(--dim); font-size: 13px; }
+    .tag { font-size: 13px; }
+    .tag.refunded { color: var(--red); }
+    td:last-child { text-align: right; }
+    /* En el móvil cada pedido es una tarjeta, con el botón a la vista */
+    @media (max-width: 640px) {
+      .wrap { border: 0; }
+      thead { display: none; }
+      table, tbody, tr, td { display: block; }
+      tr { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; background: var(--card); }
+      td { border: 0; padding: 3px 0; }
+      td:last-child { text-align: left; padding-top: 8px; }
+      td:last-child:empty { display: none; }
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Panel de staff</h1>
+
+  <form id="login">
+    <input id="key" type="password" autocomplete="current-password" placeholder="Clave de staff (ADMIN_KEY)" required>
+    <button class="main" type="submit">Entrar</button>
+  </form>
+
+  <section id="panel" hidden>
+    <div class="bar">
+      <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal.</span>
+      <button id="reload" type="button">Recargar</button>
+      <button id="logout" type="button">Salir</button>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Jugador</th><th>Producto</th><th>Importe</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="msg" class="msg" hidden></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const STATUS = { queued: 'En cola', delivered: 'Entregado', delivery_failed: 'Entrega fallida', paid: 'Pagado' };
+  // La clave se guarda solo en esta pestaña (al cerrarla hay que volver a ponerla)
+  let key = '';
+  try { key = sessionStorage.getItem('staffKey') || ''; } catch {}
+
+  function show(text, kind) {
+    const m = $('msg');
+    m.hidden = !text;
+    m.className = `msg ${kind || ''}`;
+    m.textContent = text || '';
+  }
+
+  const money = (cents, currency) =>
+    cents === 0 ? 'Gratis' : new Intl.NumberFormat('es', { style: 'currency', currency: (currency || 'usd').toUpperCase() }).format(cents / 100);
+
+  async function api(path, init = {}) {
+    const res = await fetch(path, { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${key}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(data.error || `Error ${res.status}`), { status: res.status });
+    return data;
+  }
+
+  async function load() {
+    show('Cargando…');
+    try {
+      const { orders } = await api('/api/staff/orders');
+      $('login').hidden = true;
+      $('panel').hidden = false;
+      $('rows').innerHTML = orders.length
+        ? orders.map((o) => `<tr>
+            <td class="dim">${esc(new Date(o.createdAt).toLocaleString('es'))}</td>
+            <td>${esc(o.username)}</td>
+            <td>${esc(o.product)}<div class="dim">${esc(o.id)}</div></td>
+            <td>${esc(money(o.amount, o.currency))}${o.amount ? `<div class="dim">${esc(o.method)}</div>` : ''}</td>
+            <td class="tag ${o.refunded ? 'refunded' : ''}">${esc(o.refunded ? o.refunded[0].toUpperCase() + o.refunded.slice(1) : STATUS[o.status] || o.status)}</td>
+            <td>${o.refundable ? `<button class="refund" data-id="${esc(o.id)}" data-what="${esc(`${o.product} de ${o.username}`)}">Reembolsar</button>` : ''}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="6" class="dim">No hay pedidos.</td></tr>';
+      show('');
+    } catch (err) {
+      if (err.status === 401 || err.status === 429 || err.status === 503) logout();
+      show(err.message, 'err');
+    }
+  }
+
+  function logout() {
+    key = '';
+    try { sessionStorage.removeItem('staffKey'); } catch {}
+    $('panel').hidden = true;
+    $('login').hidden = false;
+    $('rows').innerHTML = '';
+  }
+
+  $('login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    key = $('key').value.trim();
+    $('key').value = '';
+    try { sessionStorage.setItem('staffKey', key); } catch {}
+    load();
+  });
+  $('reload').addEventListener('click', load);
+  $('logout').addEventListener('click', () => { logout(); show(''); });
+  $('rows').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.refund');
+    if (!btn) return;
+    if (!confirm(`¿Reembolsar ${btn.dataset.what}?\n\nSe le quita lo entregado en el servidor y sus roles de Discord. No se puede deshacer.`)) return;
+    btn.disabled = true;
+    try {
+      await api('/api/staff/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: btn.dataset.id }) });
+      await load();
+      show(`Reembolsado: ${btn.dataset.what}.`, 'ok');
+    } catch (err) {
+      btn.disabled = false;
+      show(err.message, 'err');
+    }
+  });
+
+  if (key) load();
+</script>
+</body>
+</html>

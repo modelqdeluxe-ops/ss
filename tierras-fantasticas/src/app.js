@@ -1169,6 +1169,43 @@ export function createApp(env) {
       }
     },
 
+    // Panel de staff (/staff), con la clave ADMIN_KEY (secreto de Cloudflare): los últimos pedidos y reembolsar uno a
+    // mano. Es lo mismo que un reembolso completo en Stripe/PayPal: se retira del servidor lo entregado (el rango y sus
+    // objetos) y sus roles de Discord. Sirve también para lo reclamado gratis, que no tiene pago que reembolsar. El
+    // dinero, si lo hubo, se devuelve aparte desde Stripe o PayPal (si se hace allí, esto ya pasa solo).
+    'GET /api/staff/orders': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const orders = await store.recentOrders(100);
+      return json({
+        orders: orders.map((o) => ({
+          id: o.id,
+          status: o.status,
+          username: o.username,
+          product: productById.get(o.productId)?.name || o.productId,
+          amount: o.amount,
+          currency: o.currency,
+          method: o.method || (o.amount === 0 ? 'gratis' : 'stripe'),
+          refunded: o.refunded || null,
+          createdAt: o.createdAt,
+          refundable: CLAIMED.includes(o.status) && !o.refunded,
+        })),
+      });
+    },
+
+    'POST /api/staff/refund': async (req, ctx) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const body = (await readJson(req)) || {};
+      const order = typeof body.id === 'string' ? await store.getOrder(body.id) : null;
+      if (!order) return json({ error: 'Ese pedido no existe.' }, 404);
+      if (order.refunded) return json({ error: `Ese pedido ya está ${order.refunded}.` }, 409);
+      if (!CLAIMED.includes(order.status)) return json({ error: 'Ese pedido no se llegó a entregar: no hay nada que retirar.' }, 400);
+      await handleReversal({ order, full: true, dispute: false, manual: true }, ctx);
+      log.warn(`Pedido ${order.id} (${order.username}): reembolsado a mano desde el panel de staff`);
+      return json({ ok: true, order: (await store.getOrder(order.id))?.refunded || 'reembolsado' });
+    },
+
     // Regalos gratis (precio 0): sin Stripe, con la cuenta iniciada y una sola vez por jugador.
     'POST /api/claim': async (req, ctx) => {
       const user = await currentUser(req);
@@ -1714,13 +1751,26 @@ export function createApp(env) {
   // quita los objetos marcados con el pedido estén donde estén (inventario, cofres, cofre de ender, suelo…), se quita
   // el grupo del rango (volviendo al anterior si fue una mejora) y sus roles de Discord. Un reembolso parcial solo se
   // apunta en el pedido.
-  async function handleReversal({ paymentIntent, full, dispute }, ctx) {
-    const order = paymentIntent ? await store.findOrderByPaymentIntent(paymentIntent) : null;
+  // La clave del panel de staff (ADMIN_KEY). Tras varios intentos fallidos desde una IP, esa IP espera unos minutos.
+  async function staffDenied(req) {
+    if (!env.ADMIN_KEY) return json({ error: 'El panel de staff no está configurado: falta el secreto ADMIN_KEY en Cloudflare.' }, 503);
+    const key = `staff:${req.headers.get('CF-Connecting-IP') || 'local'}`;
+    if (await store.loginLocked(key)) return json({ error: 'Demasiados intentos con una clave incorrecta. Espera unos minutos.' }, 429);
+    if (!safeEqual(req.headers.get('Authorization') || '', `Bearer ${env.ADMIN_KEY}`)) {
+      await store.loginFailed(key);
+      return json({ error: 'Clave incorrecta.' }, 401);
+    }
+    await store.loginSucceeded(key);
+    return null;
+  }
+
+  async function handleReversal({ paymentIntent, full, dispute, order: given = null, manual = false }, ctx) {
+    const order = given || (paymentIntent ? await store.findOrderByPaymentIntent(paymentIntent) : null);
     if (!order) return;
     const what = dispute ? 'disputa' : full ? 'reembolsado' : 'reembolso parcial';
     log.warn(`Pedido ${order.id} (${order.username}): ${what}`);
     if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
-    if (full && CLAIMED.includes(order.status)) await revoke(order, ctx);
+    if (full && CLAIMED.includes(order.status)) await revoke(order, ctx, { manual });
 
     // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasados los 5 días
     // hábiles desde la entrega → baneo de IP del servidor de 6 días. Los reembolsos que hace el dueño no se castigan.
@@ -1747,7 +1797,9 @@ export function createApp(env) {
         ? late
           ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de 6 días para ${payer}.` : ''}`
           : `Disputa abierta ${since} días hábiles después de la entrega (dentro del plazo de ${REFUND_DAYS}).`
-        : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
+        : manual
+          ? `Reembolso hecho a mano desde el panel de staff, ${since} días hábiles después de la entrega.`
+          : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
       const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor. Responde la disputa con el recibo adjunto, la firma de los Términos y la entrega registrada.`;
       await mailer.send({
         subject: `${dispute ? 'DISPUTA' : 'Reembolso'} · pedido ${order.id} · ${order.username}`,
@@ -1759,7 +1811,9 @@ export function createApp(env) {
   }
 
   // Lo que hay que deshacer de un pedido: los sets que dio y el grupo de su rango (si sigue siendo su rango actual).
-  async function revoke(order, ctx) {
+  // Desde el panel de staff (manual) se quitan el grupo y el rol de ese rango aunque ya no sea el actual: el staff
+  // retira ese pedido entero (p. ej. rangos reclamados gratis en una prueba, que no guardan el rango anterior).
+  async function revoke(order, ctx, { manual = false } = {}) {
     const product = productById.get(order.productId);
     if (!product) return;
     // Clase de skills reembolsada: deja de ser suya; si era la activa, se quita también en el servidor
@@ -1785,12 +1839,13 @@ export function createApp(env) {
     const current = rank && order.uuid ? await store.getRank(order.uuid) : null;
     const rankStillCurrent = Boolean(rank && current?.rankId === rank.id);
     const from = order.rankFrom ? rankById.get(order.rankFrom) : null;
+    const strip = !rank || rankStillCurrent || manual;
     const commands = [];
     for (const command of product.commands || []) {
       const set = command.match(/^tf web sets give \{player\} (\S+)(?: (\S+))?$/);
       if (set) commands.push(`tf web sets revoke {uuid} ${order.id} ${set[1]}${set[2] ? ` ${set[2]}` : ''}`);
       const group = command.match(/^lp user \{player\} parent (?:add|set) (\S+)$/);
-      if (group && (!rank || rankStillCurrent)) commands.push(`lp user {uuid} parent remove ${group[1]}`);
+      if (group && strip) commands.push(`lp user {uuid} parent remove ${group[1]}`);
     }
     if (rankStillCurrent && from) commands.push(`lp user {uuid} parent add ${from.rank.group}`);
     const queued = commands.length ? await store.queueRevocation(order, [...new Set(commands)]) : false;
@@ -1800,10 +1855,10 @@ export function createApp(env) {
     // Roles de Discord del producto (y los del rango anterior, si era una mejora)
     const account = order.discordId ? { discordId: order.discordId } : order.uuid ? await store.accountByUuid(order.uuid) : null;
     const discord = ctx?.discord;
-    if (queued && account?.discordId && discord?.rolesEnabled && (!rank || rankStillCurrent)) {
+    if (queued && account?.discordId && discord?.rolesEnabled && strip) {
       try {
         await discord.removeRoles({ userId: account.discordId, roleIds: await productRoles(product, discord), reason: `Reembolso del pedido ${order.id}` });
-        if (from) await discord.grantRoles({ userId: account.discordId, roleIds: await productRoles(from, discord), reason: `Reembolso del pedido ${order.id}` });
+        if (from && rankStillCurrent) await discord.grantRoles({ userId: account.discordId, roleIds: await productRoles(from, discord), reason: `Reembolso del pedido ${order.id}` });
       } catch (err) {
         log.error(`No se pudieron quitar los roles de Discord del pedido ${order.id}:`, err.message);
       }
