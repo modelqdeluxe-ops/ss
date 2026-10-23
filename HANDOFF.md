@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.117) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.117, PUBLICADA) — lee esto primero
 
 **1.3.117: ocho quejas del dueño** (5 capturas y un zip de NPC de Wardenful Studio) **y el rango en LuckPerms** (9):
 1. **Ranking del pad**: salen los bots que han entrado alguna vez (`TFBots.known`, `rankValue`): misiones, cazas y
@@ -247,7 +247,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 8. El zip «NPCs For Mini Games vol.1» (bedwars, pvp, rtp, skywars, spleef: un `idle` cada uno; el «pvp» es un gato con
    orejas y cola, no un caballero) no se ha metido: se le preguntó para qué lo quiere.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.116, PUBLICADA) — lee esto primero
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.116, PUBLICADA)
 
 **1.3.116** (el dueño, tras la 1.3.115: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets
 custom? Esos encantamientos no los muestres; no muestres ningún item extra porque va contra las reglas: en el juego se
