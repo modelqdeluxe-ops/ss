@@ -176,6 +176,13 @@ public final class TFLock {
     @SubscribeEvent
     public static void onScreen(ScreenEvent.Opening event) {
         Screen next = event.getNewScreen();
+        // (1.3.125, el dueño: «al volver atrás por conexión perdida me manda a la lista de servidores; debe mandarme al
+        // menú principal para entrar otra vez») La lista de servidores no sirve (solo se juega en el oficial): siempre
+        // el menú principal.
+        if (next instanceof net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen) {
+            event.setNewScreen(new TitleScreen());
+            return;
+        }
         if ((next instanceof SelectWorldScreen || next instanceof CreateWorldScreen) && !unlocked()) {
             Screen back = event.getCurrentScreen() instanceof TFLocalLockScreen ? new TitleScreen() : event.getCurrentScreen();
             event.setNewScreen(new TFLocalLockScreen(back == null ? new TitleScreen() : back, next));

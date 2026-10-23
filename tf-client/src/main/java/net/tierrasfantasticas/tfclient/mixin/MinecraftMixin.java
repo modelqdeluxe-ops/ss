@@ -38,6 +38,17 @@ public abstract class MinecraftMixin {
         return overlay;
     }
 
+    /**
+     * (1.3.125, el dueño: «los botones del menú siguen con lag, y los de ajustes») Fuera de una partida Minecraft 1.20.1
+     * dibuja a 60 FPS como mucho, aunque el jugador tenga más: en un monitor de 144 Hz los botones y su animación van a
+     * tirones. En los menús, el límite de FPS de las opciones del jugador (como en la partida).
+     */
+    @Inject(method = "getFramerateLimit", at = @At("HEAD"), cancellable = true, require = 0)
+    private void tfclient$menuFramerate(CallbackInfoReturnable<Integer> cir) {
+        Minecraft mc = (Minecraft) (Object) this;
+        if (mc.level == null && mc.getOverlay() == null) cir.setReturnValue(mc.getWindow().getFramerateLimit());
+    }
+
     /** Título de la ventana del juego. */
     @Inject(method = "createTitle", at = @At("RETURN"), cancellable = true, require = 0)
     private void tfclient$windowTitle(CallbackInfoReturnable<String> cir) {

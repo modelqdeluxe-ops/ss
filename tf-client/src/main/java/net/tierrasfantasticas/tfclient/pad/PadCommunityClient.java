@@ -245,6 +245,10 @@ final class PadCommunityClient {
         ResourceLocation worn = net.tierrasfantasticas.tfclient.skins.SkinClient.texture(who);
         if (worn != null) return worn;
         net.minecraft.client.multiplayer.PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(who);
+        boolean me = mc.player != null && mc.player.getUUID().equals(who);
+        if (info != null && (!me || !info.getProfile().getProperties().get("textures").isEmpty())) return info.getSkinLocation();
+        // (1.3.125) la propia, sin skin del servidor (sin premium): la de la cuenta de Minecraft
+        if (me && PadSkinModel.account() != null) return PadSkinModel.account();
         if (info != null) return info.getSkinLocation();
         if (!skin.isEmpty()) {
             ResourceLocation rl = FACES.get(skin);

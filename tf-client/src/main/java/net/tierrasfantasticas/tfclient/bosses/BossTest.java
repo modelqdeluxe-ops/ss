@@ -2033,7 +2033,27 @@ public final class BossTest {
                 keepMenu = false;
                 closeScreen = true;
             }
-            case 1320 -> next(level);
+            // (1.3.125, el dueño: «la espada del kit Cósmico se pone al revés») la de Necros en la mano, de frente y de
+            // espaldas, con el casco de Eterno (ahora con armadura)
+            case 1320 -> {
+                net.minecraft.world.item.Item sword = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                        new net.minecraft.resources.ResourceLocation("tfclient", "necros_sword"));
+                net.minecraft.world.item.Item helmet = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                        new net.minecraft.resources.ResourceLocation("tfclient", "malika_helmet"));
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(sword == null ? Items.DIAMOND_SWORD : sword));
+                if (helmet != null) player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(helmet));
+                r.event("en la mano: " + player.getMainHandItem().getItem() + "; armadura con el casco de Eterno: " + player.getArmorValue());
+                cameraType = 2;
+            }
+            case 1336 -> shot(r, "espada_cosmico_delante");
+            case 1338 -> cameraType = 1;
+            case 1352 -> shot(r, "espada_cosmico_detras");
+            case 1354 -> {
+                cameraType = 0;
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
+            }
+            case 1358 -> next(level);
             default -> { }
         }
     }

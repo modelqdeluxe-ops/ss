@@ -71,11 +71,48 @@ final class PadSkinModel {
         PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(me);
         SkinClient.bypass = true;
         try {
+            if (info != null && !info.getProfile().getProperties().get("textures").isEmpty()) {
+                return new Skin(info.getSkinLocation(), "slim".equals(info.getModelName()));
+            }
+            // (1.3.125, el dueño: «la cabecita de mi skin en el pad sale con una skin por defecto y no la mía») un
+            // servidor sin premium no manda la skin: la de la cuenta de Minecraft de este ordenador
+            ResourceLocation account = account();
+            if (account != null) return new Skin(account, accountSlim);
             if (info != null) return new Skin(info.getSkinLocation(), "slim".equals(info.getModelName()));
             return new Skin(DefaultPlayerSkin.getDefaultSkin(me), "slim".equals(DefaultPlayerSkin.getSkinModelName(me)));
         } finally {
             SkinClient.bypass = false;
         }
+    }
+
+    private static volatile ResourceLocation accountSkin;
+    private static volatile boolean accountSlim;
+    private static boolean accountAsked;
+
+    /** La skin de la cuenta de Minecraft con la que se juega (se pide a Mojang una vez, en segundo plano); null mientras. */
+    public static ResourceLocation account() {
+        if (!accountAsked) {
+            accountAsked = true;
+            Minecraft mc = Minecraft.getInstance();
+            Thread thread = new Thread(() -> {
+                try {
+                    com.mojang.authlib.properties.PropertyMap props = mc.getProfileProperties();
+                    if (props == null || props.get("textures").isEmpty()) return;
+                    com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(mc.getUser().getProfileId(), mc.getUser().getName());
+                    gp.getProperties().putAll(props);
+                    mc.execute(() -> mc.getSkinManager().registerSkins(gp, (type, loc, tex) -> {
+                        if (type != com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.SKIN) return;
+                        accountSlim = "slim".equals(tex.getMetadata("model"));
+                        accountSkin = loc;
+                    }, true));
+                } catch (Throwable t) {
+                    net.tierrasfantasticas.tfclient.TFClient.LOGGER.warn("TF Client: no se pudo pedir la skin de la cuenta: {}", t.toString());
+                }
+            }, "TF Client: skin de la cuenta");
+            thread.setDaemon(true);
+            thread.start();
+        }
+        return accountSkin;
     }
 
     private static PlayerModel<AbstractClientPlayer> model(boolean thin) {

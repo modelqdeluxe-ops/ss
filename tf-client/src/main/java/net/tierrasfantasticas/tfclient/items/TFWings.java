@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 
 /**
  * Las alas de los sets planean como unas élitros, sin gastarse nunca (las mochilas, capas, colas y demás no), hasta
- * 10 segundos seguidos: luego se pliegan, caes, y a los 3 segundos se pueden volver a abrir (sin barra en pantalla).
+ * 30 segundos seguidos (1.3.125): luego se pliegan, caes, y a los 3 segundos se pueden volver a abrir (sin barra en pantalla).
  *
  * <p>Puestas en el pecho lo hace el propio objeto ({@link TFItemTypes.Cosmetic#canElytraFly}). Puestas en el hueco de
  * la espalda de Accessories o Curios (con la pechera en el pecho), Minecraft no las mira: ItemStackMixin pregunta aquí
@@ -36,8 +36,8 @@ public final class TFWings {
     private static final Map<LivingEntity, long[]> CACHE = new WeakHashMap<>();
     private static boolean accessoriesFailed;
     private static boolean curiosFailed;
-    /** Lo más que se puede planear seguido con unas alas (10 s): la «barra» del planeo. */
-    public static final int GLIDE_TICKS = 200;
+    /** Lo más que se puede planear seguido con unas alas (1.3.125, el dueño: «el planeo a 30 segundos, todas»). */
+    public static final int GLIDE_TICKS = 600;
     /** Enfriamiento después de gastar el planeo (3 s); luego la barra vuelve a estar llena. */
     public static final int COOLDOWN_TICKS = 60;
     /**
