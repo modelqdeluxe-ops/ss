@@ -110,17 +110,6 @@ CRATES = [
 #   tipo «item»: give de Minecraft (con sus encantamientos, si lleva); «coins»: Fantastic Coins (tf web monedas dar);
 #   «gacha»: Fantastic Gacha Coins (tf web verdes dar); «piedra»: una piedra de protección del TF Client.
 CRATE_PRICE = 499
-ENCH_ES = {
-    'protection': 'Protección', 'unbreaking': 'Irrompibilidad', 'mending': 'Reparación', 'sharpness': 'Filo',
-    'looting': 'Saqueo', 'fire_aspect': 'Aspecto ígneo', 'knockback': 'Empuje', 'sweeping': 'Filo arrasador',
-    'efficiency': 'Eficiencia', 'fortune': 'Fortuna', 'feather_falling': 'Caída de pluma', 'respiration': 'Respiración',
-    'aqua_affinity': 'Afinidad acuática', 'depth_strider': 'Agilidad acuática', 'swift_sneak': 'Sigilo rápido',
-    'soul_speed': 'Velocidad de alma', 'thorns': 'Espinas', 'power': 'Poder', 'punch': 'Retroceso', 'flame': 'Fuego',
-    'infinity': 'Infinidad', 'luck_of_the_sea': 'Suerte marina', 'lure': 'Atracción',
-}
-ROMAN = ['', 'I', 'II', 'III', 'IV', 'V']
-
-
 def it(n, item, name, ench=None):
     return ('item', n, item, name, ench or {})
 
@@ -147,84 +136,37 @@ def crate_price(set_id):
     return CRATE_PRICE
 
 
-# El equipo encantado de cada rango (vanilla, al máximo que permite el juego en los dos últimos)
-FULL_ARMOR = {
-    'helmet': {'protection': 4, 'unbreaking': 3, 'mending': 1, 'respiration': 3, 'aqua_affinity': 1, 'thorns': 3},
-    'chestplate': {'protection': 4, 'unbreaking': 3, 'mending': 1, 'thorns': 3},
-    'leggings': {'protection': 4, 'unbreaking': 3, 'mending': 1, 'swift_sneak': 3, 'thorns': 3},
-    'boots': {'protection': 4, 'unbreaking': 3, 'mending': 1, 'feather_falling': 4, 'depth_strider': 3, 'soul_speed': 3, 'thorns': 3},
-}
-FULL_TOOLS = [
-    ('sword', 'espada', {'sharpness': 5, 'unbreaking': 3, 'mending': 1, 'looting': 3, 'fire_aspect': 2, 'knockback': 2, 'sweeping': 3}),
-    ('pickaxe', 'pico', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'fortune': 3}),
-    ('axe', 'hacha', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'sharpness': 5, 'fortune': 3}),
-    ('shovel', 'pala', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'fortune': 3}),
-    ('hoe', 'azada', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'fortune': 3}),
-]
-PIECE_ES = {'helmet': 'casco', 'chestplate': 'peto', 'leggings': 'grebas', 'boots': 'botas'}
-
-
-def gear(mat, mat_es, armor, tools):
-    """La armadura (4 piezas con los encantamientos de armor[pieza]) y las herramientas [(tipo, nombre, encantamientos)]."""
-    out = [it(1, f'{mat}_{p}', f'{PIECE_ES[p]} de {mat_es}', e) for p, e in armor.items()]
-    out += [it(1, f'{mat}_{t}', f'{name} de {mat_es}', e) for t, name, e in tools]
-    return out
-
-
-def armor_all(e, boots_extra=None):
-    out = {p: dict(e) for p in ('helmet', 'chestplate', 'leggings', 'boots')}
-    if boots_extra:
-        out['boots'].update(boots_extra)
-    return out
-
-
+# (1.3.116, el dueño: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets custom?»; «esos
+# encantamientos no los muestres; no muestres ningún item extra, va contra las reglas: en el juego se les dan, pero en
+# la página no se mencionan, o pon "y más cosas en el juego"») sin armaduras ni herramientas vanilla: lo que se encanta
+# es el set propio del rango, al entregarlo (/tf web sets encantar <jugador> <set> <nivel> justo después del give,
+# TFSetEnchant del mod: 1 Mortal …
+# 5 Cósmico; 6 Celestial y Fantástico, todos los encantamientos vanilla al máximo). En la web no sale nada de esto: ni
+# los encantamientos ni los recursos ni las monedas; solo «Y más cosas en el juego».
+RANK_ENCHANT = {'mortal': 1, 'inmortal': 2, 'magico': 3, 'eterno': 4, 'cosmico': 5, 'celestial': 6, 'fantastico': 6}
 RANK_CLAIM = {'mortal': '100x100', 'inmortal': '100x100', 'magico': '100x100', 'eterno': '150x150', 'cosmico': '150x150',
               'celestial': '250x250', 'fantastico': '250x250'}
 FOOD = lambda n: it(n, 'golden_carrot', 'zanahorias doradas')  # noqa: E731
 RANK_EXTRAS = {
-    'mortal': [coins(100), gacha(2), *gear('iron', 'hierro', armor_all({'protection': 2, 'unbreaking': 2}),
-                                           [('sword', 'espada', {'sharpness': 2, 'unbreaking': 2})]),
-               it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),
+    'mortal': [coins(100), gacha(2), it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),
                it(8, 'diamond', 'diamantes'), it(32, 'experience_bottle', 'botellas de experiencia'), FOOD(32)],
-    'inmortal': [coins(150), gacha(3), *gear('diamond', 'diamante', armor_all({'protection': 2, 'unbreaking': 2}),
-                                              [('sword', 'espada', {'sharpness': 3, 'unbreaking': 2}),
-                                               ('pickaxe', 'pico', {'efficiency': 3, 'unbreaking': 2})]),
-                 it(12, 'golden_apple', 'manzanas doradas'), it(2, 'enchanted_golden_apple', 'manzanas de Notch'),
+    'inmortal': [coins(150), gacha(3), it(12, 'golden_apple', 'manzanas doradas'), it(2, 'enchanted_golden_apple', 'manzanas de Notch'),
                  it(1, 'totem_of_undying', 'tótem de la inmortalidad'), it(12, 'diamond', 'diamantes'),
                  it(48, 'experience_bottle', 'botellas de experiencia'), FOOD(48)],
-    'magico': [coins(200), gacha(4), *gear('diamond', 'diamante', armor_all({'protection': 3, 'unbreaking': 3}),
-                                             [('sword', 'espada', {'sharpness': 4, 'unbreaking': 3, 'looting': 1}),
-                                              ('pickaxe', 'pico', {'efficiency': 4, 'unbreaking': 3, 'fortune': 2})]),
-               it(16, 'golden_apple', 'manzanas doradas'), it(3, 'enchanted_golden_apple', 'manzanas de Notch'),
+    'magico': [coins(200), gacha(4), it(16, 'golden_apple', 'manzanas doradas'), it(3, 'enchanted_golden_apple', 'manzanas de Notch'),
                it(2, 'totem_of_undying', 'tótems de la inmortalidad'), it(16, 'diamond', 'diamantes'),
                it(64, 'experience_bottle', 'botellas de experiencia'), it(16, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'eterno': [coins(300), gacha(5), *gear('diamond', 'diamante', armor_all({'protection': 4, 'unbreaking': 3}, {'feather_falling': 4}),
-                                             [('sword', 'espada', {'sharpness': 5, 'unbreaking': 3, 'looting': 2, 'fire_aspect': 1}),
-                                              ('pickaxe', 'pico', {'efficiency': 5, 'unbreaking': 3, 'fortune': 3}),
-                                              ('axe', 'hacha', {'efficiency': 4, 'unbreaking': 3})]),
-               it(24, 'golden_apple', 'manzanas doradas'), it(4, 'enchanted_golden_apple', 'manzanas de Notch'),
+    'eterno': [coins(300), gacha(5), it(24, 'golden_apple', 'manzanas doradas'), it(4, 'enchanted_golden_apple', 'manzanas de Notch'),
                it(3, 'totem_of_undying', 'tótems de la inmortalidad'), it(24, 'diamond', 'diamantes'),
                it(96, 'experience_bottle', 'botellas de experiencia'), it(16, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'cosmico': [coins(350), gacha(6), *gear('diamond', 'diamante',
-                                              armor_all({'protection': 4, 'unbreaking': 3, 'mending': 1}, {'feather_falling': 4}),
-                                              [('sword', 'espada', {'sharpness': 5, 'unbreaking': 3, 'mending': 1, 'looting': 3, 'fire_aspect': 2}),
-                                               ('pickaxe', 'pico', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'fortune': 3}),
-                                               ('axe', 'hacha', {'efficiency': 5, 'unbreaking': 3, 'mending': 1}),
-                                               ('shovel', 'pala', {'efficiency': 5, 'unbreaking': 3, 'mending': 1})]),
-                it(32, 'golden_apple', 'manzanas doradas'), it(6, 'enchanted_golden_apple', 'manzanas de Notch'),
+    'cosmico': [coins(350), gacha(6), it(32, 'golden_apple', 'manzanas doradas'), it(6, 'enchanted_golden_apple', 'manzanas de Notch'),
                 it(4, 'totem_of_undying', 'tótems de la inmortalidad'), it(32, 'diamond', 'diamantes'),
                 it(128, 'experience_bottle', 'botellas de experiencia'), it(32, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'celestial': [coins(400), gacha(8), *gear('diamond', 'diamante', FULL_ARMOR, FULL_TOOLS),
-                  it(1, 'bow', 'arco', {'power': 5, 'unbreaking': 3, 'punch': 2, 'flame': 1, 'infinity': 1}),
-                  it(1, 'arrow', 'flecha para el arco'),
-                  it(1, 'fishing_rod', 'caña de pescar', {'luck_of_the_sea': 3, 'lure': 3, 'unbreaking': 3, 'mending': 1}),
+    'celestial': [coins(400), gacha(8),
                   it(48, 'golden_apple', 'manzanas doradas'), it(8, 'enchanted_golden_apple', 'manzanas de Notch'),
                   it(6, 'totem_of_undying', 'tótems de la inmortalidad'), it(48, 'diamond', 'diamantes'),
                   it(192, 'experience_bottle', 'botellas de experiencia'), it(32, 'ender_pearl', 'perlas de ender'), FOOD(128)],
-    'fantastico': [coins(500), gacha(10), *gear('diamond', 'diamante', FULL_ARMOR, FULL_TOOLS),
-                   it(1, 'bow', 'arco', {'power': 5, 'unbreaking': 3, 'punch': 2, 'flame': 1, 'infinity': 1}),
-                   it(1, 'arrow', 'flecha para el arco'),
-                   it(1, 'fishing_rod', 'caña de pescar', {'luck_of_the_sea': 3, 'lure': 3, 'unbreaking': 3, 'mending': 1}),
+    'fantastico': [coins(500), gacha(10),
                    it(64, 'golden_apple', 'manzanas doradas'), it(12, 'enchanted_golden_apple', 'manzanas de Notch'),
                    it(8, 'totem_of_undying', 'tótems de la inmortalidad'), it(64, 'diamond', 'diamantes'),
                    it(256, 'experience_bottle', 'botellas de experiencia'), it(64, 'ender_pearl', 'perlas de ender'), FOOD(128)],
@@ -236,10 +178,6 @@ def ench_nbt(ench):
         return ''
     parts = ','.join(f'{{id:"minecraft:{k}",lvl:{v}s}}' for k, v in ench.items())
     return f'{{Enchantments:[{parts}]}}'
-
-
-def ench_text(ench):
-    return ', '.join(f'{ENCH_ES.get(k, k)} {ROMAN[v] if v < len(ROMAN) else v}' for k, v in ench.items())
 
 
 def give_commands(extras):
@@ -254,30 +192,6 @@ def give_commands(extras):
         else:
             out.append(f'give {{player}} minecraft:{item}{ench_nbt(ench)} {n}')
     return out
-
-
-def reward_list(extras):
-    """Lo que enseña la web con su icono: cantidad, nombre, icono, si está encantado y con qué."""
-    out = []
-    for kind, n, item, name, ench in extras:
-        icon = ('img/coin.png' if kind == 'coins' else 'img/coin-green.png' if kind == 'gacha'
-                else f'img/protecciones/{item.split("_", 1)[1]}.webp' if kind == 'piedra' else f'/api/itemicon/{item}')
-        r = {'count': n, 'name': name, 'icon': icon}
-        if ench or item == 'enchanted_golden_apple':
-            r['enchanted'] = True
-        if ench:
-            r['detail'] = ench_text(ench)
-        out.append(r)
-    return out
-
-
-def extras_text(extras):
-    parts = []
-    for kind, n, item, name, ench in extras:
-        if kind == 'item' and ench:
-            continue
-        parts.append(f'{n:,}'.replace(',', '.') + f' {name}' if kind in ('coins', 'gacha') else f'{n} {name}')
-    return ', '.join(parts[:-1]) + ' y ' + parts[-1] if len(parts) > 1 else parts[0]
 
 
 # Nivel de los atributos de los sets (lo usa el TF Client; la web no los enseña). «netherite+1» es la netherita con 1
@@ -503,18 +417,6 @@ DISCORD_ROLE = {'fantastico': '🌋┆FANTÁSTICO', 'celestial': '🌠┆CELESTI
                 'magico': '🔮┆MÁGICO', 'inmortal': '🛡️┆INMORTAL', 'mortal': '🌳┆MORTAL'}
 
 
-def rank_gear_text(key):
-    """«Armadura de diamante y espada encantadas» / «… con todos los encantamientos al máximo»."""
-    items = [x for x in RANK_EXTRAS[key] if x[0] == 'item' and x[4]]
-    mat = 'netherita' if any('netherite' in x[2] for x in items) else 'diamante' if any('diamond' in x[2] for x in items) else 'hierro'
-    tools = [x[3].split(' de ')[0] for x in items if not any(p in x[2] for p in ('helmet', 'chestplate', 'leggings', 'boots'))]
-    full = key in ('celestial', 'fantastico')
-    what = ', '.join(tools[:-1]) + ' y ' + tools[-1] if len(tools) > 1 else tools[0]
-    fem = all(t in ('espada', 'pala', 'azada', 'hacha', 'caña') for t in tools)
-    head = f'Armadura de {mat} y {what}' if len(tools) == 1 else f'Armadura de {mat}, {what}'
-    return f'{head} con todos los encantamientos al máximo' if full else f'{head} encantad{"as" if fem else "os"}'
-
-
 def rank_products():
     out = []
     for tier, (key, name, set_id, _set_name, price, (mc, hexc), _attrs) in enumerate(RANKS, 1):
@@ -530,13 +432,13 @@ def rank_products():
             'description': pitch,
             'price': price, 'maxQuantity': 1, 'discordRoles': [DISCORD_ROLE[key]],
             'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}',
+                         f'tf web sets encantar {{player}} {set_id} {RANK_ENCHANT[key]}',
                          *give_commands([stone(RANK_CLAIM[key]), *RANK_EXTRAS[key]])],
-            'rewards': reward_list([stone(RANK_CLAIM[key]), *RANK_EXTRAS[key]]),
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
             'set': set_id, 'models': models,
             'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces,
                       f'Piedra de protección {RANK_CLAIM[key].replace("x", "×")}: una zona tuya a salvo de grifeo',
-                      rank_gear_text(key), f'Además: {extras_text(RANK_EXTRAS[key])}', f'Rol {name} en Discord'],
+                      f'Rol {name} en Discord', 'Y más cosas en el juego'],
             'serverPerks': rank_server_perks(key),
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc, 'homes': RANK_SERVER_PERKS[key][0],
                      'permissions': rank_permissions(key)},
@@ -621,10 +523,8 @@ def main():
         extras = CRATE_EXTRAS
         crate = {
             'id': pid, 'category': 'crates', 'name': name, 'theme': set_id, 'colors': [c1, c2],
-            'tagline': tagline, 'description': f'{desc} Además: {extras_text(extras)}.', 'image': f'img/crates/{set_id}.webp',
+            'tagline': tagline, 'description': f'{desc} Y más cosas en el juego.', 'image': f'img/crates/{set_id}.webp',
             'price': cp, 'maxQuantity': 1, 'set': set_id, 'models': models,
-            'extras': [f'{n} {nm}' for _k, n, _i, nm, _e in extras],
-            'rewards': reward_list(extras),
             # La crate es el set completo (se entrega entero con el comando del TF Client) y sus recursos.
             'commands': [f'tf web sets give {{player}} {set_id}', *give_commands(extras)],
         }

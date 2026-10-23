@@ -140,6 +140,14 @@ public final class TFCommands {
                                                         .then(Commands.argument("item", StringArgumentType.word())
                                                                 .suggests(ITEMS)
                                                                 .executes(ctx -> give(ctx, StringArgumentType.getString(ctx, "item")))))))
+                                // (1.3.116) el set de un rango, encantado según el rango (TFSetEnchant, 1 a 6): la web lo
+                                // manda justo después de «give» (aparte, para que con un mod de antes el set llegue igual)
+                                .then(Commands.literal("encantar")
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .then(Commands.argument("set", StringArgumentType.word())
+                                                        .suggests(SETS)
+                                                        .then(Commands.argument("nivel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, TFSetEnchant.MAX))
+                                                                .executes(TFCommands::enchant)))))
                                 .then(Commands.literal("revoke")
                                         .then(Commands.argument("uuid", StringArgumentType.word())
                                                 .then(Commands.argument("order", StringArgumentType.word())
@@ -189,6 +197,37 @@ public final class TFCommands {
         ctx.getSource().sendSuccess(() -> Component.literal("Retirada la compra " + order + " (" + setId + (itemId != null ? " " + itemId : "")
                 + "): " + removed + " objetos quitados ya; el resto se quita en cuanto se cargue").withStyle(ChatFormatting.RED), true);
         return Math.max(1, removed);
+    }
+
+    /**
+     * (1.3.116) Encanta las piezas del set que lleva el jugador (inventario, armadura y la otra mano) y aún no están
+     * encantadas: lo que acaba de recibir con «give». Las que no cupieron y cayeron al suelo se quedan sin encantar.
+     */
+    private static int enchant(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
+        String setId = StringArgumentType.getString(ctx, "set");
+        int level = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "nivel");
+        TFSets.SetDef set = TFSets.get(setId);
+        List<RegistryObject<Item>> items = TFItems.BY_SET.get(setId);
+        if (set == null || items == null) throw UNKNOWN_SET.create(setId);
+        java.util.Set<Item> ofSet = new java.util.HashSet<>();
+        for (RegistryObject<Item> o : items) ofSet.add(o.get());
+        int n = 0;
+        for (ServerPlayer player : players) {
+            net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                ItemStack stack = inv.getItem(i);
+                if (!stack.isEmpty() && ofSet.contains(stack.getItem()) && !stack.isEnchanted()) {
+                    TFSetEnchant.apply(stack, level);
+                    if (stack.isEnchanted()) n++;
+                }
+            }
+            player.containerMenu.broadcastChanges();
+        }
+        int done = n;
+        ctx.getSource().sendSuccess(() -> Component.literal("Encantadas " + done + " piezas del set " + set.name() + " (nivel " + level + ")")
+                .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color()))), true);
+        return Math.max(1, n);
     }
 
     private static int give(CommandContext<CommandSourceStack> ctx, String itemId) throws CommandSyntaxException {
