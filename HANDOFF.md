@@ -190,7 +190,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.128) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.129) — lee esto primero
+
+**1.3.129**: el puente da todos los `give` (también los de Minecraft) con la marca del pedido (`TFRevocations.stampAny`),
+así un reembolso quita también los objetos extra del rango; FALTA cobrar en monedas lo ya consumido (necesita contar lo
+dado por pedido). Los rangos del pad con el peto de su set (`PadAccount.icon`, sin atributos). La cara propia en el pad,
+con la skin que el juego usa para el jugador (`PadUi.ownHead` en `PadUi.item`, premium o no). Los sets de rango se llaman
+como su rango (Mortal, Inmortal, Mágico, Eterno, Cósmico, Celestial, Fantástico) en `tf_sets.json` y `lang/es_es.json`.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.128, PUBLICADA)
 
 **1.3.128** (el dueño, al 5 % de uso): escudos de los sets que no tapan la vista al cubrirse (`ItemInHandRendererMixin`:
 más abajo y a su lado en primera persona); fuera el «Test» de la tienda (queda en `/staff`); la piedra en la mano solo

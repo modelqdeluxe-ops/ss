@@ -204,15 +204,18 @@ public final class PadAccount {
             return b.build();
         }
 
+        /** (1.3.129, el dueño: «quita esos minerales de los rangos; pon una foto del set de armadura de cada rango») */
+        private static final String[] SET_BY_TIER = {"patrick", "patrick", "beats", "darkworld", "malika", "necros", "eagle", "starlight"};
+
         private static ItemStack icon(TFRanks.Rank r) {
-            return new ItemStack(switch (Math.max(0, Math.min(6, r.tier()))) {
-                case 0, 1 -> Items.IRON_INGOT;
-                case 2 -> Items.GOLD_INGOT;
-                case 3 -> Items.EMERALD;
-                case 4 -> Items.DIAMOND;
-                case 5 -> Items.NETHERITE_INGOT;
-                default -> Items.NETHER_STAR;
-            });
+            String set = SET_BY_TIER[Math.max(0, Math.min(SET_BY_TIER.length - 1, r.tier()))];
+            net.minecraft.world.item.Item piece = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                    new net.minecraft.resources.ResourceLocation("tfclient", set + "_armor_chestplate"));
+            if (piece == null || piece == Items.AIR) return new ItemStack(Items.NETHERITE_CHESTPLATE);
+            // solo es la imagen: sin atributos ni descripción
+            ItemStack stack = new ItemStack(piece);
+            stack.getOrCreateTag().putInt("HideFlags", 127);
+            return stack;
         }
     }
 }
