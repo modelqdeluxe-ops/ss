@@ -1,4 +1,4 @@
-# Configuración de TF Client (guía para editar a mano o con una IA)
+# Configuración de TF Client (guía para editar a mano)
 
 Este archivo lo escribe el mod cada vez que arranca el servidor: no lo cambies, cambia los de al lado.
 

@@ -66,17 +66,19 @@ public final class TFConfigDir {
     }
 
     /**
-     * config/tfclient/LEEME-IA.md (1.3.114, el dueño: «que se pueda configurar todo desde la config, fácil de hacer con
-     * una IA»): qué archivo cambia cada cosa, cómo se escriben los premios y cómo se recarga. Se reescribe al arrancar el
-     * servidor para que siempre vaya con la versión del mod.
+     * config/tfclient/LEEME.md (1.3.114, el dueño: «que se pueda configurar todo desde la config, fácil»): qué archivo
+     * cambia cada cosa, cómo se escriben los premios y cómo se recarga. Se reescribe al arrancar el servidor para que
+     * siempre vaya con la versión del mod. (1.3.122, el dueño: «quita el que dice LEEME-IA, quita el apellido IA») Se
+     * llama LEEME.md y el LEEME-IA.md de versiones anteriores se borra.
      */
     public static void writeGuide() {
         try (java.io.InputStream in = TFConfigDir.class.getResourceAsStream("/tfclient-config-leeme.md")) {
             if (in == null) return;
             Files.createDirectories(dir());
-            Files.write(dir().resolve("LEEME-IA.md"), in.readAllBytes());
+            Files.write(dir().resolve("LEEME.md"), in.readAllBytes());
+            Files.deleteIfExists(dir().resolve("LEEME-IA.md"));
         } catch (Exception e) {
-            TFClient.LOGGER.warn("TF Client: no se pudo escribir config/tfclient/LEEME-IA.md: {}", e.getMessage());
+            TFClient.LOGGER.warn("TF Client: no se pudo escribir config/tfclient/LEEME.md: {}", e.getMessage());
         }
     }
 

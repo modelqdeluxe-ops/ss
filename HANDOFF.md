@@ -190,7 +190,12 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.121) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.122) — lee esto primero
+
+**1.3.122**: la guía de la config se llama `config/tfclient/LEEME.md` (el dueño: «quita el apellido IA»); el
+`LEEME-IA.md` de antes se borra al arrancar (`TFConfigDir.writeGuide`). Lo demás, como la 1.3.121 (abajo).
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.121, PUBLICADA)
 
 **1.3.121: migración al servidor de verdad y cuatro pedidos del dueño** (dos imágenes nuevas: fondo y carga):
 1. **IP `tierras.ultramc.co`** (`client/TFLock.EMBEDDED`): el mod solo entra ahí (`ConnectScreenMixin`). Solo el dueño
@@ -411,7 +416,7 @@ les dan, en la página no se mencionan, o pon "y más cosas en el juego"»):
 8. **Piedras de protección**: el escudo se queda; fuera el grano, los desconchones, las grietas, los remaches, las rayas
    de reflejo y los canales de arriba (las gemas del marco, solo en la de 500). Icono de la pestaña de la tienda rehecho.
 9. **La config del servidor manda**: el cliente usa la web que le dice el servidor (`TFPadNet.State.web`,
-   `TFConfig.webUrl`); `LEEME-IA.md` explica que en el cliente solo cuentan cliente.properties y las preferencias.
+   `TFConfig.webUrl`); `LEEME.md` (antes `LEEME-IA.md`) explica que en el cliente solo cuentan cliente.properties y las preferencias.
 10. **Roles de Discord al comprar un rango**: por su nombre (`DISCORD_ROLE` en crates.py; `Discord.resolveRoles` los busca
    con el bot, exactos o sin adornos). Hace falta el bot con permiso de gestionar roles y su rol por encima de los rangos.
 
@@ -442,7 +447,7 @@ les dan, en la página no se mencionan, o pon "y más cosas en el juego"»):
    nivel) y **GACHAPÓN** (`PadAdminGacha`, a_gacha: precios, garantía, rarezas y premios con su peso); en **OFICIOS**
    cada oficio se abre (`PadAdminJobMissions`): lo que paga cada acción y sus misiones (todas sus claves) y misiones
    diarias por oficio.
-5. **Todo configurable a mano o con una IA**: el mod escribe `config/tfclient/LEEME-IA.md` al arrancar (qué archivo
+5. **Todo configurable a mano o con una IA**: el mod escribe `config/tfclient/LEEME.md` (hasta la 1.3.121, `LEEME-IA.md`) al arrancar (qué archivo
    cambia cada cosa, cómo se escriben los premios, `/tf reload`); `pase.json` y `gachapon.json` llevan `_ayuda`.
 6. **Piedras de protección dibujadas a mano** (`tools/gen_claim_blocks.py`): marco tallado con bisel y cantoneras de
    metal (cobre hasta 40, hierro hasta 150, oro en 250/300/500), escudo de cristal del color del nivel (TF en relieve
