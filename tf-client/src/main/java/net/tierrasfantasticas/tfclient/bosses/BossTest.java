@@ -1940,6 +1940,28 @@ public final class BossTest {
         }
     }
 
+    /**
+     * (1.3.115) La cámara a 4,5 bloques del caballero, mirándolo, desde su frente girado `turn` grados; si ahí hay un
+     * bloque (a Osric lo tapaba la columna del altar), prueba girando de 45 en 45.
+     */
+    private static void knightCam(ServerPlayer player, ServerLevel level, Entity e, float turn) {
+        for (int k = 0; k < 8; k++) {
+            Vec3 f = Vec3.directionFromRotation(0, e.getYRot() + turn + k * 45F);
+            Vec3 cam = new Vec3(e.getX() + f.x * 4.5, e.getY() + 2.2, e.getZ() + f.z * 4.5);
+            boolean free = true;
+            for (int s = 1; s <= 9 && free; s++) {
+                Vec3 q = cam.lerp(new Vec3(e.getX(), e.getY() + 1.6, e.getZ()), s / 10.0);
+                free = level.getBlockState(net.minecraft.core.BlockPos.containing(q)).getCollisionShape(level,
+                        net.minecraft.core.BlockPos.containing(q)).isEmpty();
+            }
+            if (free && level.getBlockState(net.minecraft.core.BlockPos.containing(cam)).getCollisionShape(level,
+                    net.minecraft.core.BlockPos.containing(cam)).isEmpty() || k == 7) {
+                look(player, level, cam.x, cam.y, cam.z, e.getX(), e.getY() + 1.6, e.getZ());
+                return;
+            }
+        }
+    }
+
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
 
@@ -2007,10 +2029,12 @@ public final class BossTest {
             if (k == 0 && e != null) {
                 fly(player, true);
                 hideGui = true;
-                Vec3 f = Vec3.directionFromRotation(0, e.getYRot());
-                look(player, vl, e.getX() + f.x * 4.5, e.getY() + 2.2, e.getZ() + f.z * 4.5, e.getX(), e.getY() + 1.6, e.getZ());
+                knightCam(player, vl, e, 0F);
             }
-            if (k == 60) shot(r, "caballero_" + (i + 1));
+            if (k == 40) shot(r, "caballero_" + (i + 1));
+            // (1.3.115, el dueño: «siguen con la animación de volar», su captura era de lado) de lado
+            if (k == 42 && e != null) knightCam(player, vl, e, 90F);
+            if (k == 60) shot(r, "caballero_" + (i + 1) + "_lado");
             // (1.3.114, el dueño: «los caballeros hacen la animación de volar, no caminan») que ande de lado delante de la
             // cámara: la captura y lo que mide el cliente (BossTestClient: las piernas al andar)
             if (k == 62 && e instanceof net.minecraft.world.entity.Mob mob) {

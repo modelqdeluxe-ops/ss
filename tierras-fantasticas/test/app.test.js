@@ -1042,7 +1042,7 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
 
   const [delivery] = await serverDelivers('Regalo_MC');
   assert.strictEqual(delivery.uuid, uuidOf('Regalo_MC'));
-  assert.deepStrictEqual(received, ['give Regalo_MC minecraft:diamond 5']);
+  assert.deepStrictEqual(received, ['give Regalo_MC minecraft:diamond 3']);
   const order = await (await get(`/api/order/${id}`)).json();
   assert.strictEqual(order.status, 'delivered');
   assert.strictEqual(order.amount, 0);
@@ -1680,4 +1680,32 @@ test('comprar como regalo: con la cuenta de quien paga, para otro jugador verifi
   const ban = deliveries.find((d) => d.kind === 'penalizacion');
   assert.match(ban.commands[0], new RegExp(`^tempbanip Alex_MC 6d Reembolso injustificado del pedido ${id}`));
   await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+});
+
+test('los roles de los rangos se buscan por su nombre en el Discord (exacto o sin adornos) y los ids valen tal cual', async () => {
+  const { Discord } = await import('../src/discord.js');
+  const real = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async (url) => {
+    calls++;
+    assert.match(String(url), /\/guilds\/123456789012345678\/roles$/);
+    const roles = [
+      { id: '111111111111111111', name: '🌳┆MORTAL' },
+      { id: '222222222222222222', name: '🛡️ INMORTAL' },
+      { id: '333333333333333333', name: '🌋┆FANTÁSTICO' },
+    ];
+    return new Response(JSON.stringify(roles), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const d = new Discord({ botToken: 'b', guildId: '123456789012345678' });
+    assert.deepEqual(await d.resolveRoles(['🌳┆MORTAL']), ['111111111111111111']);
+    // sin el «┆» ni el mismo emoji: se encuentra igual
+    assert.deepEqual(await d.resolveRoles(['🛡️┆INMORTAL']), ['222222222222222222']);
+    assert.deepEqual(await d.resolveRoles(['🌋┆FANTÁSTICO', '999999999999999999']), ['999999999999999999', '333333333333333333']);
+    // uno que no existe no se inventa; los marcadores de antes se ignoran
+    assert.deepEqual(await d.resolveRoles(['🌠┆CELESTIAL', 'ID_ROL_MORTAL']), []);
+    assert.equal(calls, 1, 'la lista de roles se pide una vez y se recuerda');
+  } finally {
+    globalThis.fetch = real;
+  }
 });

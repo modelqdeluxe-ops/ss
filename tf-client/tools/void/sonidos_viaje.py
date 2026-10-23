@@ -15,10 +15,11 @@ explosión, el ghast, el dragón...). Ahora (en assets/tfclient/sounds/viaje/ y 
   viaje/llegada  la luz al llegar: un braam en Re mayor, luminoso y suave, con coro y cuerdas
   (1.3.97, el dueño: «los pozos de luz tienen un sonido feo y el del santuario también»: con los instrumentos de
   instrumentos.py, arpa, coro y campanas, en vez de acordes de senos)
-  luz/pozo_entrar  al entrar en un Pozo de Luz: glissando de arpa que sube, un «aah» y una campana
-  luz/velo_entrar  al entrar en el Velo del Alba: el coro que florece, el arpa y dos campanas
-  luz/velo_salir   al salir de la luz: cuatro notas de arpa que bajan
-  luz/sin_luz      al quedarte sin luz: un coro grave en menor que crece, con un susurro
+  (1.3.115: sin coro ni campanas ni arpa; ver pozo_entrar)
+  luz/pozo_entrar  al entrar en un Pozo de Luz: un soplo cálido, un colchón de senos que se abre y un brillo alto
+  luz/velo_entrar  al entrar en el Velo del Alba: lo mismo, más grande y hondo
+  luz/velo_salir   al salir de la luz: el soplo que se va y el colchón que se cierra
+  luz/sin_luz      al quedarte sin luz: un zumbido grave en menor que crece, con un susurro
 """
 import os
 import subprocess
@@ -144,59 +145,68 @@ def _gliss(notes, gap, vel, seed, at=0.0, pan_from=-0.5, pan_to=0.5):
     return out
 
 
+# 1.3.115 (el dueño: «el sonido de entrar y salir de los pozos de luz del alba son horribles, parecen acordeones; pon un
+# sonido mejor que no sean campanas ni sonidos de interruptores»): el «acordeón» era el coro sintetizado (sierras por
+# formantes «aah», que suenan a armonio) y las campanas y el arpa, lo demás. Ahora la luz suena a **aire y calor**: un
+# soplo que te envuelve, un colchón de senos puros (sin sierras: nada de acordeón) que se abre despacio y un brillo muy
+# alto que tiembla; al salir, lo mismo al revés y apagándose. Sin golpes, sin campanas, sin clics.
+
+
+def warm(t, freqs, seed, attack, decay, at=0.0, chorus=0.0035):
+    """Colchón cálido de senos puros (tres voces apenas desafinadas por nota, estéreo), sin ataque."""
+    r = np.random.default_rng(seed)
+    out = np.zeros((len(t), 2))
+    for f in freqs:
+        for c in range(2):
+            for v in range(3):
+                det = 1 + r.uniform(-chorus, chorus)
+                out[:, c] += np.sin(2 * np.pi * f * det * t + r.uniform(0, 6.28)) * (1.0 if f < 400 else 0.6)
+    return out / (3 * len(freqs)) * swell(t, at, attack, decay)[:, None]
+
+
 def pozo_entrar():
-    """(1.3.97) Entrar en un Pozo de Luz: un glissando de arpa que sube (Re mayor pentatónica), un «aah» que se abre y una
-    campana suave al final. Cálido y corto."""
-    from instrumentos import campana, coro, hz, pan2, place, sala
-    t = tt(3.4)
-    x = _gliss(['D4', 'E4', 'F#4', 'A4', 'B4', 'D5', 'E5', 'F#5', 'A5'], 0.055, 0.9, 610)[: len(t)]
-    ch = coro(t, [hz(n) for n in ('A3', 'D4', 'F#4')], seed=611) * swell(t, 0.7, 0.55, 1.3)[:, None]
-    place(x, ch, 0.0, 0.9)
-    place(x, pan2(campana(hz('D6'), 3.0, 0.6, seed=612), 0.2), 0.55, 0.35)
-    return sala(x, 3.0, 0.4, 5000, seed=613)
+    """Entrar en un Pozo de Luz: un soplo cálido que te envuelve y sube, un colchón de senos en Re mayor que se abre y un
+    brillo alto que tiembla. 2,6 s, suave."""
+    t = tt(2.8)
+    x = whoosh(t, 0.55, 0.5, 0.8, 300, 3200, seed=650) * 0.35
+    x += warm(t, (146.83, 220.0, 293.66, 369.99), 651, 0.5, 1.0, at=0.5) * 0.9
+    x += shimmer(t, (1174.66, 1479.98, 1760.0, 2349.32), seed=652) * swell(t, 0.8, 0.6, 0.9)[:, None] * 0.18
+    x += np.stack([sub(t, 55, 73.42) * swell(t, 0.5, 0.45, 0.7)] * 2, 1) * 0.25
+    return hall(x, 2.6, 0.4, 4500, 653)
 
 
 def velo_entrar():
-    """Entrar en el Velo del Alba (el santuario): el coro que florece en un acorde amplio, el arpa que sube y dos
-    campanas: llegas a casa."""
-    from instrumentos import campana, coro, hz, pan2, place, sala
-    t = tt(4.2)
-    x = _gliss(['A3', 'D4', 'F#4', 'A4', 'D5', 'F#5', 'A5', 'D6'], 0.075, 0.85, 620)[: len(t)]
-    ch = coro(t, [hz(n) for n in ('D3', 'A3', 'D4', 'F#4', 'A4')], seed=621) * swell(t, 0.9, 0.75, 1.8)[:, None]
-    place(x, ch, 0.0, 1.0)
-    place(x, pan2(campana(hz('A5'), 3.5, 0.55, seed=622), -0.3), 0.6, 0.35)
-    place(x, pan2(campana(hz('D6'), 3.5, 0.5, seed=623), 0.3), 0.95, 0.3)
-    return sala(x, 3.8, 0.42, 5000, seed=624)
+    """Entrar en el Velo del Alba (el santuario): lo mismo, más grande y más hondo; llegas a casa."""
+    t = tt(3.6)
+    x = whoosh(t, 0.8, 0.75, 1.1, 200, 4200, seed=660) * 0.4
+    x += warm(t, (73.42, 146.83, 220.0, 293.66, 369.99, 440.0), 661, 0.8, 1.6, at=0.8) * 1.0
+    x += shimmer(t, (1174.66, 1479.98, 1760.0, 2349.32, 2959.96), seed=662) * swell(t, 1.1, 0.8, 1.4)[:, None] * 0.2
+    x += np.stack([sub(t, 41.2, 55.0) * swell(t, 0.8, 0.7, 1.2)] * 2, 1) * 0.3
+    return hall(x, 3.4, 0.45, 4500, 663)
 
 
 def velo_salir():
-    """Salir de la luz (1.3.98; el dueño: «el sonido de salir del Alba es horrible»; era un arpa que bajaba con un aire
-    frío): dos notas de celesta que se despiden (La → Re), muy suaves, sobre un acorde de cuerdas que se apaga."""
-    from instrumentos import celesta, hz, pan2, place, sala
-    from musica_santuario import strings
-    t = tt(2.8)
-    x = np.zeros((len(t), 2))
-    place(x, pan2(celesta(hz('A5'), 2.6, 0.8, seed=631), 0.2), 0.0)
-    place(x, pan2(celesta(hz('D5'), 2.4, 0.7, seed=632), -0.2), 0.32)
-    st = strings(t, ('D3', 'A3', 'F#4'), 633) * (smooth(0, 0.25, t) * np.exp(-t / 0.9))[:, None]
-    place(x, st, 0.0, 0.35)
-    return sala(x, 2.6, 0.38, 4000, seed=634)
+    """Salir de la luz: el soplo se va (de agudo a grave) y el colchón se apaga cerrándose; nada que suene a despedida
+    triste ni a golpe."""
+    t = tt(2.4)
+    x = whoosh(t, 0.15, 0.15, 0.9, 2600, 250, seed=670) * 0.3
+    pad_ = warm(t, (146.83, 220.0, 293.66), 671, 0.12, 0.8, at=0.12)
+    for c in range(2):
+        pad_[:, c] = lp_sweep(pad_[:, c], 3000, 300, 48)
+    x += pad_ * 0.8
+    return hall(x, 2.2, 0.35, 3000, 672)
 
 
 def sin_luz():
-    """Quedarse sin luz: un coro grave en menor que crece, el arpa que cae a lo grave y un susurro lejano."""
-    from instrumentos import coro, hz, place, sala
-    t = tt(3.6)
-    ch = coro(t, [hz(n) for n in ('B1', 'F#2', 'B2', 'D3')], seed=641) * swell(t, 1.3, 1.1, 1.2)[:, None]
-    x = np.zeros((len(t), 2))
-    place(x, ch, 0.0, 1.2)
-    place(x, _gliss(['F#3', 'D3', 'B2', 'F#2'], 0.22, 0.6, 642, pan_from=0.3, pan_to=-0.3)[: len(t)], 0.2)
-    wh = noise2(len(t), 643)
+    """Quedarse sin luz: un zumbido grave en menor que crece (senos, sin coro) y un susurro de aire lejano."""
+    t = tt(3.4)
+    x = warm(t, (61.74, 92.5, 123.47, 146.83), 680, 1.2, 1.4, at=1.2, chorus=0.006) * 1.1
+    wh = noise2(len(t), 681)
     for c in range(2):
-        wh[:, c] = bp(wh[:, c], 1600, 3800)
-    am = (0.5 + 0.5 * np.sin(2 * np.pi * np.cumsum(4 + 2 * np.sin(2 * np.pi * 0.7 * t)) / SR)) ** 4
-    place(x, wh * (am * swell(t, 1.6, 1.2, 0.9))[:, None], 0.0, 0.12)
-    return sala(x, 3.4, 0.45, 2500, seed=644)
+        wh[:, c] = bp(wh[:, c], 1400, 3600)
+    am = (0.5 + 0.5 * np.sin(2 * np.pi * np.cumsum(3 + 1.5 * np.sin(2 * np.pi * 0.6 * t)) / SR)) ** 4
+    x += wh * (am * swell(t, 1.5, 1.2, 0.9))[:, None] * 0.1
+    return hall(x, 3.2, 0.42, 2500, 682)
 
 
 SOUNDS = {

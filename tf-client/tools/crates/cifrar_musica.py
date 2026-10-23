@@ -9,7 +9,10 @@ frena a cualquiera, no a quien se empeñe).
 Formato: «TFENC1» (6 bytes) + vector inicial (16) + el .ogg cifrado. La clave: los 16 primeros bytes del SHA-256 de
 SealedAudio.SEED (la misma cadena que en el mod).
 
-Uso: python3 -I tools/crates/cifrar_musica.py <musica.ogg>   (el .ogg ya hecho: 3:00, −15 LUFS; ver CRATES.md)
+Uso: python3 -I tools/crates/cifrar_musica.py <musica.ogg> [--salida <ruta del .ogg cifrado>]
+     (el .ogg ya hecho: 3:00, −15 LUFS; ver CRATES.md). Por defecto, la de la escena de las crates.
+     (1.3.115) --salida assets/.../sounds/santuario/musica.ogg: la del santuario del Void (SealedAudio también la abre).
+     python3 -I tools/crates/cifrar_musica.py --descifrar <cifrado.ogg> <salida.ogg>   (para volver a tocarla)
 """
 import hashlib
 import os
@@ -23,7 +26,24 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "src"
                    "sounds", "crates", "musica.ogg")
 
 
+def descifrar(src, dst):
+    raw = open(src, "rb").read()
+    if raw[:len(MAGIC)] != MAGIC:
+        sys.exit("no está cifrada: " + src)
+    key = hashlib.sha256(SEED.encode("utf-8")).digest()[:16]
+    iv = raw[len(MAGIC):len(MAGIC) + 16]
+    dec = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
+    open(dst, "wb").write(dec.update(raw[len(MAGIC) + 16:]) + dec.finalize())
+    print(f"descifrada: {dst}")
+
+
 def main():
+    global OUT
+    if sys.argv[1] == "--descifrar":
+        descifrar(sys.argv[2], sys.argv[3])
+        return
+    if "--salida" in sys.argv:
+        OUT = sys.argv[sys.argv.index("--salida") + 1]
     src = sys.argv[1]
     data = open(src, "rb").read()
     if data[:4] != b"OggS":

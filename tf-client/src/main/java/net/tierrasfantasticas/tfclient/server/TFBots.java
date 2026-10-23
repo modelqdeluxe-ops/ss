@@ -203,21 +203,23 @@ public final class TFBots {
         Random r = new Random(b.name().toLowerCase().hashCode() * 31L + 7);
         Seen s = seen.get(b.name().toLowerCase());
         int times = s == null ? 1 : Math.max(1, s.times());
-        // como los de verdad: casi todos con uno (lo que deja el servidor), algunos sin probar más
+        // (1.3.115, el dueño: «¿por qué tienen esas stats de comunidad si no han subido nada? Ponles 0, y menos stats: al
+        // inicio no es creíble que tengan 30 misiones hechas, mínimo 3 o 5») como alguien que acaba de empezar en un
+        // servidor nuevo: un oficio (alguno, dos) de nivel bajo, de 0 a 5 misiones, alguna caza, ninguna foto ni like y
+        // pocos viajes; cada vez que vuelve, un poco más (despacio)
         List<String> pool = new ArrayList<>(jobIds);
         Collections.shuffle(pool, r);
-        int n = Math.min(pool.size(), Math.max(1, Math.min(maxJobs, 1 + r.nextInt(3))));
+        int n = Math.min(pool.size(), Math.max(1, Math.min(maxJobs, r.nextInt(5) == 0 ? 2 : 1)));
         List<String> jobs = new ArrayList<>(pool.subList(0, n));
         int[] levels = new int[n];
-        for (int i = 0; i < n; i++) levels[i] = Math.min(50, 2 + r.nextInt(i == 0 ? 22 : 10) + Math.min(10, times / 2));
-        int active = 1 + r.nextInt(4); // 1 poco, 4 mucho
+        for (int i = 0; i < n; i++) levels[i] = Math.min(50, 1 + r.nextInt(i == 0 ? 5 : 3) + Math.min(6, times / 3));
         return new Card(jobs, levels,
-                active * (2 + r.nextInt(9)) + times * r.nextInt(3),
-                active * r.nextInt(6) + times / 3,
-                r.nextInt(2 + active * 3),
-                active * (1 + r.nextInt(8)),
-                active * (2 + r.nextInt(7)) + times,
-                active * (3 + r.nextInt(10)) + times * (1 + r.nextInt(2)));
+                r.nextInt(6) + Math.min(12, times / 2),
+                r.nextInt(3) + Math.min(5, times / 4),
+                0,
+                0,
+                r.nextInt(4) + Math.min(8, times / 2),
+                1 + r.nextInt(5) + Math.min(10, times / 2));
     }
 
     private static List<Bot> free() {

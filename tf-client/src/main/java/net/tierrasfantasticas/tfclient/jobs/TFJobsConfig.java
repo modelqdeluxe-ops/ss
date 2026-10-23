@@ -226,6 +226,8 @@ public final class TFJobsConfig {
             }
             // 1.3.29: economía nueva (pagos más bajos, misiones que rotan): la de antes se guarda y se cambia
             json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionEconomia", 2, defaults(), "oficios.json");
+            // (1.3.115) economía exigente: lo que paga cada acción, las misiones y los niveles, al 60 % (una vez)
+            json = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.scale(file, json, 0.6, "oficios.json", "monedas", "monedasPorNivel");
         }
         if (json == null) return warnings;
         enabled = TFJson.bool(json, "activado", true);

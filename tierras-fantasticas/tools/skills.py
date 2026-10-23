@@ -33,7 +33,7 @@ OUT_IMG = os.path.join(WEB, 'public', 'img', 'skills')
 
 # --- Precio de cada clase (el mismo para todas mientras el dueño no diga otra cosa) ---
 PRICE_CENTS = 599  # con dinero (Stripe), en céntimos de USD: 5,99 USD
-COIN_PRICE = 7500  # ~2,5 semanas jugando 2 h al día con la economía de la 1.3.114 (ver HANDOFF, economía)
+COIN_PRICE = 15000  # (1.3.115, economía exigente) ~2 meses jugando 2 h al día; la mitad que antes de lo que se gana
 PRICE_OVERRIDES = {}  # 'glacia': {'price': 799, 'coinPrice': 40000}
 
 # Teclas por defecto de la barra de skills del mod (SkillHud.DEFAULT_KEYS): las skills con tecla, por orden.

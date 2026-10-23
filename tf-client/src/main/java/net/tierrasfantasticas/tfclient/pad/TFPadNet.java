@@ -128,7 +128,13 @@ public final class TFPadNet {
      * Datos del jugador para el pad. balance es -1 si la economía no deja ver el saldo; rank vacío si no tiene rango;
      * homes -1 si no se sabe.
      */
-    public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled, long green) {
+    /**
+     * (1.3.115, el dueño: «la config del servidor debe aplicarse al cliente por encima de todo») web: la dirección de la
+     * tienda que usa el servidor (su servidor.properties o la que dice la web por el puente); mientras se está en él, el
+     * cliente usa esa (botón WEB del pad, del menú) y no la de su cliente.properties.
+     */
+    public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled, long green,
+                        String web) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeLong(m.balance);
             buf.writeLong(m.green);
@@ -138,6 +144,7 @@ public final class TFPadNet {
             buf.writeInt(m.homes);
             buf.writeVarInt(Math.min(64, m.disabled.size()));
             for (int i = 0; i < Math.min(64, m.disabled.size()); i++) buf.writeUtf(m.disabled.get(i), 32);
+            buf.writeUtf(m.web == null ? "" : m.web, 256);
         }
 
         static State read(FriendlyByteBuf buf) {
@@ -146,11 +153,15 @@ public final class TFPadNet {
             int color = buf.readInt(), homes = buf.readInt();
             List<String> off = new java.util.ArrayList<>();
             for (int i = buf.readVarInt(); i > 0; i--) off.add(buf.readUtf(32));
-            return new State(balance, currency, rank, color, homes, off, green);
+            String web = buf.readUtf(256);
+            return new State(balance, currency, rank, color, homes, off, green, web);
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.receive(m));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                net.tierrasfantasticas.tfclient.TFConfig.serverWeb(m.web());
+                TFPadClient.receive(m);
+            });
             ctx.get().setPacketHandled(true);
         }
     }
@@ -264,7 +275,8 @@ public final class TFPadNet {
         State state = new State(balance.isPresent() ? balance.getAsLong() : -1, cut(TFServerConfig.currency()),
                 rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
                 rank == null ? -1 : rank.homes(), PadConfig.disabledApps(),
-                net.tierrasfantasticas.tfclient.pad.server.PadGreen.balance(player.getUUID()));
+                net.tierrasfantasticas.tfclient.pad.server.PadGreen.balance(player.getUUID()),
+                "https://" + net.tierrasfantasticas.tfclient.server.TFBridge.storeHost());
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), state);
     }
 

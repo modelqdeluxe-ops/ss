@@ -355,6 +355,8 @@ public final class PadMissions {
         } else {
             // 1.3.29: listas nuevas y economía nueva (rotan por temporadas); la de antes se guarda y se cambia
             o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 2, defaults(), "misiones.json");
+            // (1.3.115) economía exigente: misiones y cazas al 60 % (una vez)
+            o = PadEconomy.scale(file, o, 0.6, "misiones.json", "monedas");
         }
         DAILY.clear();
         HUNT.clear();

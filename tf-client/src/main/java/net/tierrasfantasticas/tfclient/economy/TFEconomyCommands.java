@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
  * /tf web monedas ver &lt;jugador&gt;                las de un jugador (nivel 2)
  * /tf web monedas dar|quitar &lt;jugador&gt; &lt;n&gt;    dar o quitar (nivel 3); lo usan los premios y productos de la web
  * /tf web monedas poner &lt;jugador&gt; &lt;n&gt;         saldo exacto (solo con las monedas del TF Client)
+ * /tf web verdes ver|dar|quitar &lt;jugador&gt; [n]   las Fantastic Gacha Coins (1.3.115: las dan los rangos y crates)
  * </pre>
  */
 public final class TFEconomyCommands {
@@ -31,6 +32,39 @@ public final class TFEconomyCommands {
                 .then(change("dar", 0))
                 .then(change("quitar", 1))
                 .then(change("poner", 2));
+    }
+
+    /** (1.3.115) Las Fantastic Gacha Coins (las verdes del Gachapón): ver, dar y quitar. */
+    public static LiteralArgumentBuilder<CommandSourceStack> green() {
+        return Commands.literal("verdes")
+                .then(Commands.literal("ver").requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("jugador", EntityArgument.player()).executes(ctx -> {
+                            ServerPlayer p = EntityArgument.getPlayer(ctx, "jugador");
+                            long n = net.tierrasfantasticas.tfclient.pad.server.PadGreen.balance(p.getUUID());
+                            ctx.getSource().sendSuccess(() -> Component.literal(p.getGameProfile().getName() + " tiene " + n
+                                    + " Fantastic Gacha Coins").withStyle(ChatFormatting.GREEN), false);
+                            return (int) Math.min(Integer.MAX_VALUE, n);
+                        })))
+                .then(greenChange("dar", true))
+                .then(greenChange("quitar", false));
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> greenChange(String name, boolean give) {
+        return Commands.literal(name).requires(s -> s.hasPermission(3))
+                .then(Commands.argument("jugador", EntityArgument.player())
+                        .then(Commands.argument("cantidad", LongArgumentType.longArg(1, 1_000_000L)).executes(ctx -> {
+                            ServerPlayer p = EntityArgument.getPlayer(ctx, "jugador");
+                            long n = LongArgumentType.getLong(ctx, "cantidad");
+                            if (give) {
+                                net.tierrasfantasticas.tfclient.pad.server.PadGreen.add(p, n);
+                            } else if (!net.tierrasfantasticas.tfclient.pad.server.PadGreen.take(p, n)) {
+                                ctx.getSource().sendFailure(Component.literal(p.getGameProfile().getName() + " no tiene bastantes Fantastic Gacha Coins."));
+                                return 0;
+                            }
+                            ctx.getSource().sendSuccess(() -> Component.literal((give ? "Dadas " : "Quitadas ") + n + " Fantastic Gacha Coins a "
+                                    + p.getGameProfile().getName()).withStyle(ChatFormatting.GREEN), true);
+                            return 1;
+                        })));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> change(String name, int kind) {

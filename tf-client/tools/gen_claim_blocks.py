@@ -62,7 +62,9 @@ def mix(a, b, t):
 #   - arriba: una gema tallada en su engaste con cuatro garras y cuatro canales de luz hacia las esquinas;
 #   - abajo: solo la piedra.
 # De noche brilla el cristal (capa _glow a plena luz) con un halo tenue alrededor; el metal y las letras, no: el TF se
-# lee en negro sobre el escudo encendido. Las de 300 y 500 llevan además gemas engastadas en el marco.
+# lee en negro sobre el escudo encendido. La de 500 lleva además gemas engastadas en el marco.
+# 1.3.115 (el dueño: «me gusta el escudo; lo que no me gusta es tanto punto y rayas»): piedra lisa (sin grano, desconchones
+# ni grietas), cantoneras sin remache, el cristal sin rayas de reflejo ni estrella y la tapa sin canales.
 
 def noise2(rnd, cell):
     """Ruido de valores suave (celdas de `cell` px, interpolado y que da la vuelta): para el grano grande."""
@@ -164,7 +166,8 @@ def carved(seed, label):
     for y in range(N):
         for x in range(N):
             frame = x < 4 or y < 4 or x > N - 5 or y > N - 5
-            v = big[x, y] * (6 if frame else 4) + rnd.choice((-3, -2, -1, 0, 0, 0, 1, 2, 3) if frame else (-2, -1, -1, 0, 0, 0, 1, 1, 2))
+            # (1.3.115, el dueño: «no me gusta tanto punto y rayas») lisa: solo una ondulación muy suave, sin puntos
+            v = big[x, y] * 2.5
             base = s3 if frame else s1
             if frame and (x in (1, 2) or y in (1, 2)) and not (x > N - 4 or y > N - 4):
                 base = mix(s3, s4, 0.25)
@@ -189,19 +192,6 @@ def carved(seed, label):
             px[4, i] = mix(px[4, i], s0, 0.4)
     px[3, N - 4] = s1
     px[N - 4, 3] = s1
-    # desconchones del marco (un píxel hundido con su luz debajo) y alguna grieta fina en el panel
-    for _ in range(4):
-        side = rnd.randrange(4)
-        k = rnd.randrange(6, N - 7)
-        x, y = [(k, 1), (k, N - 3), (1, k), (N - 3, k)][side]
-        px[x, y] = mix(s1, s2, 0.5)
-        px[x, y + 1] = mix(px[x, y + 1], s4, 0.4)
-    for _ in range(2):
-        x, y = rnd.randrange(6, N - 7), rnd.randrange(6, N - 7)
-        for _ in range(rnd.randint(3, 5)):
-            px[x, y] = mix(px[x, y], s0, 0.6)
-            x += rnd.choice((-1, 0, 1))
-            y += 1
     return px
 
 
@@ -217,16 +207,11 @@ def corners(px, label):
                 elif y == 4 or x == 4:
                     c = m0 if (x == 4 and y == 4) else m1
                 px[ox + x, oy + y] = c
-        # el remache
-        px[ox + 2, oy + 2] = m4
-        px[ox + 3, oy + 2] = m1
-        px[ox + 2, oy + 3] = m1
-        px[ox + 3, oy + 3] = m0
 
 
 def studs(px, lit, label, color):
     """Gemas pequeñas engastadas en el centro de cada lado del marco (solo 300 y 500)."""
-    if label not in ("300x300", "500x500"):
+    if label != "500x500":
         return
     m0, m1, m2, m3, m4 = metal_of(label)
     g0, g1, g2, g3, g4 = ramp(color)
@@ -279,19 +264,6 @@ def shield(px, lit, label, color, letters_on):
             c = g1 if t < 0.6 else g0
         px[x, y] = c
         lit[x, y] = c
-    # los reflejos del cristal: rayas diagonales finas (como en un cristal de verdad), que no pisan el canto
-    for x0, y0, n, col in ((CX - 7, SHIELD_TOP + 11, 6, g4), (CX - 6, SHIELD_TOP + 13, 3, g3), (CX + 2, SHIELD_TOP + 8, 4, g2)):
-        for k in range(n):
-            c = (x0 + k, y0 - k)
-            if c in cells and not edge(cells, c) and c[0] not in (CX - 1, CX):
-                px[c] = col
-                lit[c] = col
-    # el destello: una estrella de 4 puntas arriba a la izquierda
-    sx, sy = CX - 5, SHIELD_TOP + 3
-    for c in ((sx, sy), (sx - 1, sy), (sx + 1, sy), (sx, sy - 1), (sx, sy + 1)):
-        if c in cells and not edge(cells, c):
-            px[c] = (255, 255, 255) if c == (sx, sy) else g4
-            lit[c] = px[c]
     if letters_on:
         rel = relief_cells()
         for x, y in rel:
@@ -318,17 +290,6 @@ def gem(px, lit, label, color):
     m0, m1, m2, m3, m4 = metal_of(label)
     g0, g1, g2, g3, g4 = ramp(color)
     cells = gem_cells()
-    # los canales (diagonales de 1 px desde la cantonera hasta el engaste), con su surco
-    for k in range(5, 11):
-        for x, y, sx in ((k, k, 1), (N - 1 - k, k, -1), (k, N - 1 - k, 1), (N - 1 - k, N - 1 - k, -1)):
-            if (x, y) in cells:
-                continue
-            px[x, y] = g3 if k > 6 else g4
-            lit[x, y] = px[x, y]
-            c = (x + sx, y)
-            if c not in cells and c not in lit:
-                px[c] = g1
-                lit[c] = g1
     halo(px, lit, cells, color, label)
     for x, y in cells:
         if edge(cells, (x, y)):
@@ -350,9 +311,6 @@ def gem(px, lit, label, color):
             c = mix(c, (255, 255, 255), 0.35) if dx + dy < 0 else mix(c, (0, 0, 0), 0.35)
         px[x, y] = c
         lit[x, y] = c
-    for c in ((CX - 3, CX - 3), (CX - 4, CX - 3), (CX - 3, CX - 4)):
-        px[c] = (255, 255, 255) if c == (CX - 3, CX - 3) else g4
-        lit[c] = px[c]
     # las garras del engaste (N, S, E, O), de metal y sin brillo
     for c, col in (((CX - 1, CX - 7), m4), ((CX, CX - 7), m3), ((CX - 1, CX + 6), m2), ((CX, CX + 6), m1),
                    ((CX - 7, CX - 1), m4), ((CX - 7, CX), m3), ((CX + 6, CX - 1), m2), ((CX + 6, CX), m1)):

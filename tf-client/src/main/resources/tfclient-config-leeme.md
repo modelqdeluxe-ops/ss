@@ -2,6 +2,14 @@
 
 Este archivo lo escribe el mod cada vez que arranca el servidor: no lo cambies, cambia los de al lado.
 
+## Servidor o cliente
+
+Manda **siempre la config del servidor**. Estos archivos solo valen en el ordenador donde corre el servidor; si los ves
+en la carpeta de un jugador es porque jugó un mundo local, y en un servidor no se usan (la economía, el pase, el
+gachapón, los oficios, las misiones, la tienda, las zonas… los decide el servidor, y la dirección de la web también: el
+cliente usa la que le manda el servidor). En el cliente solo cuentan `cliente.properties` (el menú y el servidor al que
+conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada jugador).
+
 ## Cómo se cambia algo
 
 1. Abre el archivo de la tabla, cambia el valor y guarda. Los `.json` tienen que seguir siendo JSON válido (comillas

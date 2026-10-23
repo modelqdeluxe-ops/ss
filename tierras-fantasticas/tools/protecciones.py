@@ -15,7 +15,8 @@ import build_items as B  # noqa: E402
 
 TEX = os.path.join(HERE, '..', '..', 'tf-client', 'src', 'main', 'resources', 'assets', 'tfclient', 'textures', 'block', 'claims')
 OUT = os.path.join(HERE, '..', 'public', 'img', 'protecciones')
-SIZES = ['250x250', '300x300', '500x500']
+# (1.3.115) también las de los rangos (100x100 y 150x150: sus iconos en la lista de premios)
+SIZES = ['100x100', '150x150', '250x250', '300x300', '500x500']
 
 
 def capa(size, part, tmp):

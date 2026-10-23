@@ -126,7 +126,8 @@ public final class RiftSky {
         // (1.3.98, el dueño: «la música del santuario y de batalla es muy alta, bájale un poquito, pero más la del
         // santuario»: la del Void de 0,6 a 0,45 y la del santuario a 0,3)
         music = keep(mc, music, wantMusic, BossSounds.RIFT_MUSIC, 0.45F);
-        sanctuary = keep(mc, sanctuary, inVeil, BossSounds.SANCTUARY_MUSIC, 0.3F);
+        // (1.3.115) la del dueño («La petite fille de la mer», cifrada en el mod: SealedAudio), a −12,5 LUFS
+        sanctuary = keep(mc, sanctuary, inVeil, BossSounds.SANCTUARY_MUSIC, 0.5F);
         // El zumbido del vacío, en la grieta más cercana
         if (near != null && nearD < 40) {
             if (ambient == null || ambient.isStopped() || ambient.rift != near || !mc.getSoundManager().isActive(ambient)) {

@@ -38,7 +38,17 @@ public final class TFConfig {
     }
 
     public static String webUrl() {
+        String w = serverWeb;
+        // (1.3.115) dentro de un servidor, la web que dice el servidor (TFPadNet.State.web), no la de este archivo
+        if (w != null && net.minecraft.client.Minecraft.getInstance().getConnection() != null) return w;
         return webUrl;
+    }
+
+    /** La web que manda el servidor en el que estás (vacío o null: la de cliente.properties). */
+    private static volatile String serverWeb;
+
+    public static void serverWeb(String web) {
+        serverWeb = web == null || web.isBlank() || web.equals("https://") ? null : web.replaceAll("/+$", "");
     }
 
     /** ID del servidor de Discord: el botón pide a su widget una invitación del servidor (no de una persona). */

@@ -117,6 +117,7 @@ public final class TFCommands {
                         .then(TFCoinShop.command())
                         .then(TFBridgeCommands.rango())
                         .then(TFEconomyCommands.command())
+                        .then(TFEconomyCommands.green())
                         .then(TFRoulette.command())
                         .then(net.tierrasfantasticas.tfclient.vfx.VfxServer.command())
                         .then(net.tierrasfantasticas.tfclient.skills.SkillServer.command())

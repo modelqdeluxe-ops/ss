@@ -189,17 +189,25 @@ public final class SanctuaryFx {
     private static void altar(Matrix4f view, Matrix4f proj, Vec3 cam, float time) {
         net.minecraft.core.BlockPos a = VoidIsland.altarPos();
         if (a == null) return;
+        // (1.3.115, el dueño: «esa burbuja le queda asimétrica en todo») centrada en el soporte de verdad (ahora de pie sobre
+        // su altar, VoidArmor.pedestal), no en la altura guardada del altar; sin el círculo del suelo (quedaría debajo)
         Vec3 feet = new Vec3(a.getX() + 0.5, a.getY(), a.getZ() + 0.5);
+        net.minecraft.client.multiplayer.ClientLevel lvl = net.minecraft.client.Minecraft.getInstance().level;
+        if (lvl != null) {
+            double best = 9.0;
+            for (net.minecraft.world.entity.decoration.ArmorStand st : lvl.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class,
+                    new net.minecraft.world.phys.AABB(a).inflate(3))) {
+                double d = st.position().distanceToSqr(feet.x, st.getY(), feet.z);
+                if (d < best) {
+                    best = d;
+                    feet = st.position();
+                }
+            }
+        }
         Vec3 c = feet.add(0, 1.0, 0).subtract(cam);
         if (c.lengthSqr() > 96 * 96) return;
         if (sphere == null) sphere = buildSphere();
-        bubble(view, proj, c, 1.9F, c.lengthSqr() < 1.9 * 1.9, 0.75F, 1F, time);
-        RenderSystem.setShader(() -> heart);
-        heart.safeGetUniform("Violet").set(1F);
-        heart.safeGetUniform("Mode").set(2F);
-        heart.safeGetUniform("Alpha").set(0.9F);
-        quad(feet.add(0, 0.03, 0).subtract(cam), new Vec3(2.6, 0, 0), new Vec3(0, 0, 2.6));
-        heart.safeGetUniform("Violet").set(0F);
+        bubble(view, proj, c, 1.55F, c.lengthSqr() < 1.55 * 1.55, 0.75F, 1F, time);
     }
 
     /** Una burbuja con el shader del Velo (Violet 1: la paleta violeta del Vacío en vez de la de oro). */

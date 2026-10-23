@@ -19,7 +19,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * Las configs del servidor que ya existían (pase.json y gachapon.json, version 1) se rebajan igual al cargar, sin
  * cambiar nada más (la temporada, los niveles, lo que añadió el dueño): se guarda una copia «.antes-v2.json».
  */
-final class PadEconomy {
+public final class PadEconomy {
     private PadEconomy() {}
 
     /** Los objetos raros, a cuánto se quedan (lo demás, igual). */
@@ -51,6 +51,53 @@ final class PadEconomy {
             TFClient.LOGGER.warn("TF Pad: no se pudo rebajar {}: {}", what, e.getMessage());
         }
         return o;
+    }
+
+    /**
+     * (1.3.115, el dueño: «no quiero una economía inflada, que se dé mucho dinero; el server va para largo, así que debe
+     * ser una economía más exigente, ya que habrá muchas formas de ganar dinero») lo que se gana trabajando también baja:
+     * los oficios (lo que paga cada acción, las misiones y los niveles), las misiones del pad y las cazas, al 60 %. A las
+     * configs que ya había se les aplica una vez (marca «economia»: 3; copia «.antes-economia3.json»), sin tocar nada
+     * más de lo que cambió el dueño. Devuelve la que vale.
+     */
+    public static JsonObject scale(Path file, JsonObject o, double factor, String what, String... fields) {
+        if (o == null || TFJson.num(o, "economia", 0) >= 3) return o;
+        try {
+            String name = file.getFileName().toString().replaceFirst("\\.json$", "");
+            Path backup = file.resolveSibling(name + ".antes-economia3.json");
+            if (Files.exists(file) && !Files.exists(backup)) Files.copy(file, backup);
+            int[] n = {0};
+            scaleWalk(o, factor, java.util.Set.of(fields), n);
+            o.addProperty("economia", 3);
+            TFJson.write(file, o);
+            TFClient.LOGGER.info("TF Pad: {}: economía exigente (1.3.115), {} pagos al {} % (la de antes, en {})", what, n[0],
+                    Math.round(factor * 100), backup.getFileName());
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo ajustar {}: {}", what, e.getMessage());
+        }
+        return o;
+    }
+
+    private static void scaleWalk(JsonElement e, double f, java.util.Set<String> fields, int[] n) {
+        if (e == null) return;
+        if (e.isJsonArray()) {
+            for (JsonElement c : e.getAsJsonArray()) scaleWalk(c, f, fields, n);
+            return;
+        }
+        if (!e.isJsonObject()) return;
+        JsonObject o = e.getAsJsonObject();
+        for (Map.Entry<String, JsonElement> c : o.entrySet()) {
+            JsonElement v = c.getValue();
+            if (fields.contains(c.getKey()) && v.isJsonPrimitive() && v.getAsJsonPrimitive().isNumber()) {
+                double d = v.getAsDouble() * f;
+                if (v.getAsDouble() > 0) {
+                    c.setValue(new com.google.gson.JsonPrimitive(d < 10 ? Math.round(d * 100) / 100.0 : (double) Math.max(1, Math.round(d))));
+                    n[0]++;
+                }
+            } else if (v.isJsonObject() || v.isJsonArray()) {
+                scaleWalk(v, f, fields, n);
+            }
+        }
     }
 
     /**
