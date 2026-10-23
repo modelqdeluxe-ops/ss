@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.116, EN PRUEBA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.116, PUBLICADA) — lee esto primero
 
 **1.3.116** (el dueño, tras la 1.3.115: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets
 custom? Esos encantamientos no los muestres; no muestres ningún item extra porque va contra las reglas: en el juego se
@@ -200,7 +200,8 @@ les dan, en la página no se mencionan, o pon "y más cosas en el juego"»):
   antes el set llega igual, sin encantar, y la entrega sale con error). `items/TFSetEnchant`: cada pieza recibe los
   encantamientos vanilla de su nivel que el juego le permite (`Enchantment.canEnchant`, compatibles): 1 Mortal …
   5 Cósmico; 6 Celestial y Fantástico, todos al máximo (sin maldiciones). La prueba del pad entrega el de Fantástico y
-  apunta lo que lleva cada pieza.
+  apunta lo que lleva cada pieza. **Comprobado** (`8ff9480`): armas con filo 5, saqueo 3, aspecto ígneo 2…; armadura con
+  protección 4, reparación, espinas 3…; arco con poder 5; escudo con irrompibilidad y reparación; las alas, nada.
 - En la web no sale nada extra (ni monedas, ni recursos, ni encantamientos, ni iconos): en los rangos, «Y más cosas en
   el juego»; en las crates, la misma frase al final de la descripción. Se siguen dando igual en el juego.
 - **Hay que poner la 1.3.116 en el servidor** (si no, `encantar` falla).
