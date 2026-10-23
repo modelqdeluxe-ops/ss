@@ -196,7 +196,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 (`TFPill.paint`) se pinta una vez en una imagen de su tamaño en píxeles reales (`TFPill.texture`: relleno, cristal, hilo
 y el doble hilo del principal, con los bordes suavizados) y se dibuja de un solo trazo; con el ratón se funde encima la
 imagen encendida. Antes eran miles de rectángulos por botón y fotograma (las esquinas píxel a píxel). Vale para el menú
-principal, Opciones y todos los botones con el tema de TF.
+principal, Opciones y todos los botones con el tema de TF. Además (el dueño: «los botones siguen algo grandes, el
+contorno de las letras un poco pasado, la tipografía no me convence con la forma del botón»): filas 21/17/17/17/15,
+menos aire a los lados, contorno de un píxel y letra **Cinzel** en el menú principal (antes Titan One; sus
+`titanone_N.json` siguen en el jar por si se quiere volver), `MENU_TEXT_UP` 3.9.
 
 ### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.123, PUBLICADA)
 
