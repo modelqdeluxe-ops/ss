@@ -190,7 +190,28 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.118) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.119) — lee esto primero
+
+**1.3.119** (el dueño: «Cósmico y Celestial no traen heal, pónselos; el pad debe estar ligado a los hogares o permisos;
+usamos Multiverse, el spawn está en otro overworld (un mundo vacío): los tp entre dimensiones y Explorar siempre fuera
+del overworld del spawn»):
+- Web (`tools/crates.py`, `RANK_SERVER_PERKS`): /heal también en Cósmico y Celestial (`essentials.heal`). El TF Client
+  lo pone solo en LuckPerms al cambiar la lista de rangos.
+- `server/TFBukkit` (reflexión, Mohist): comandos como el jugador (`Player.performCommand`), si un plugin tiene un
+  comando, el nombre de Bukkit del mundo del jugador y sus permisos.
+- Hogares del pad (`PadHomes`): el límite **como lo cuenta EssentialsX** (1; con `essentials.sethome.multiple`, el
+  «default» de `sethome-multiple`; el mayor de cada grupo cuyo permiso `essentials.sethome.multiple.<grupo>` tenga;
+  `…unlimited` = sin límite), con los permisos de Bukkit (LuckPerms). /home, /sethome y /delhome como el jugador por
+  Bukkit (EssentialsX lleva entre los mundos de Multiverse). Los mundos de Multiverse se ven por su nombre («Spawn»).
+- Viajes (`PadTravel`): Spawn = el mundo de `pad.json → mundos.spawn` si se puso; si no, el `/spawn` de EssentialsX
+  como el jugador; si no, el del mundo normal. Los warps, como el jugador por Bukkit.
+- Explorar: el mundo de `mundos.explorar` si se puso; si no, el mundo normal y, si es un mundo vacío (todos los intentos
+  caen al vacío), los demás overworlds con terreno (primero los «surv…»); nunca el del spawn ni uno ya visto vacío.
+  `/tf web viajes explorar|spawn aqui|auto` y `/tf web viajes lista`.
+- **No probado en el juego** (sin Multiverse ni EssentialsX en GitHub Actions): compilado. En el servidor: `/tf web
+  viajes lista` dice a qué mundo van Explorar y Spawn.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.118, PUBLICADA)
 
 **1.3.118** (el dueño: «¿y lo de los permisos cómo quedó?»): dos fallos de los permisos de los rangos (`TFRankPerms`):
 - Con `parent set` el jugador sale del grupo `default` y los grupos de rango no lo heredaban: perdía lo básico que el

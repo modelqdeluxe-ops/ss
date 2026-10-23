@@ -755,8 +755,8 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
     inmortal: [7, []],
     magico: [8, ['enderchest']],
     eterno: [10, ['enderchest', 'heal']],
-    cosmico: [12, ['enderchest', 'feed']],
-    celestial: [15, ['enderchest', 'repair', 'fly']],
+    cosmico: [12, ['enderchest', 'heal', 'feed']],
+    celestial: [15, ['enderchest', 'heal', 'repair', 'fly']],
     fantastico: [20, ['enderchest', 'repair', 'heal', 'feed', 'fly']],
   };
   for (const [group, [homes, extra]] of Object.entries(perks)) {

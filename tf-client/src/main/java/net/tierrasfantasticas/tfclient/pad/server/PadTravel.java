@@ -196,7 +196,9 @@ public final class PadTravel {
             PadView.Builder b = PadView.of("viajes").header(wait > 0 ? "Puedes volver a viajar en " + PadKits.time(wait) + "."
                     : countdown > 0 ? "Pulsa un destino y quédate quieto " + countdown + " s." : "Pulsa un destino.");
             String go = wait > 0 ? "" : "ir:";
-            b.card(new ItemStack(Items.COMPASS), "Spawn", 0x3496FA, "Mundo normal", wait > 0 ? "" : go + "spawn", false);
+            ServerLevel spawnAt = spawnLevel(player.getServer());
+            b.card(new ItemStack(Items.COMPASS), "Spawn", 0x3496FA, spawnAt != null ? dimName(spawnAt.dimension().location().toString())
+                    : "Al spawn", wait > 0 ? "" : go + "spawn", false);
             BlockPos bed = player.getRespawnPosition();
             if (bed != null) b.card(new ItemStack(Items.RED_BED), "Tu cama", 0xE83446, dimName(player.getRespawnDimension().location().toString()),
                     wait > 0 ? "" : go + "cama", false);
@@ -236,11 +238,25 @@ public final class PadTravel {
                 TFPadNet.close(player);
                 used(player, "viaje");
                 PadStats.add(player, PadStats.TRAVELS, 1);
-                server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "warp " + id);
+                // (1.3.119) en Mohist, como el jugador por Bukkit (así viaja entre los mundos de Multiverse)
+                if (net.tierrasfantasticas.tfclient.server.TFBukkit.playerCommand(player, "warp " + id) == null) {
+                    server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "warp " + id);
+                }
                 return null;
             }
             if (where.equals("spawn")) {
-                ServerLevel level = server.overworld();
+                // (1.3.119, Multiverse: el spawn está en otro overworld) el mundo puesto en pad.json («mundos.spawn»); si
+                // no, el /spawn de EssentialsX como el jugador (lleva al spawn que puso el staff, en el mundo que sea); si
+                // tampoco, el del mundo normal
+                ServerLevel set = spawnLevel(server);
+                if (set == null && net.tierrasfantasticas.tfclient.server.TFBukkit.hasCommand("spawn")) {
+                    TFPadNet.close(player);
+                    used(player, "viaje");
+                    PadStats.add(player, PadStats.TRAVELS, 1);
+                    net.tierrasfantasticas.tfclient.server.TFBukkit.playerCommand(player, "spawn");
+                    return null;
+                }
+                ServerLevel level = set != null ? set : server.overworld();
                 BlockPos s = level.getSharedSpawnPos();
                 warmup(player, "Viajando al spawn", () -> {
                     used(player, "viaje");
@@ -286,8 +302,59 @@ public final class PadTravel {
             case "minecraft:overworld" -> "Mundo normal";
             case "minecraft:the_nether" -> "Nether";
             case "minecraft:the_end" -> "El End";
-            default -> dim;
+            case "tfclient:void" -> "The Void";
+            default -> {
+                // un mundo de Multiverse («minecraft:spawn» → «Spawn»)
+                String n = dim.substring(dim.indexOf(':') + 1).replace('_', ' ').replace('-', ' ').trim();
+                yield n.isEmpty() ? dim : Character.toUpperCase(n.charAt(0)) + n.substring(1);
+            }
         };
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Mundos (1.3.119: Multiverse)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Los overworlds que se vio que están vacíos (sin suelo donde caer: el del spawn de Multiverse). */
+    private static final java.util.Set<ResourceKey<Level>> EMPTY = new java.util.HashSet<>();
+
+    private static ServerLevel level(MinecraftServer server, String id) {
+        if (id == null || id.isBlank()) return null;
+        ResourceLocation rl = ResourceLocation.tryParse(id.contains(":") ? id : "minecraft:" + id.toLowerCase(java.util.Locale.ROOT));
+        return rl == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, rl));
+    }
+
+    /** El mundo del spawn puesto en pad.json, o null (entonces /spawn de EssentialsX o el mundo normal). */
+    static ServerLevel spawnLevel(MinecraftServer server) {
+        return level(server, PadConfig.spawnWorld());
+    }
+
+    private static boolean overworldLike(ServerLevel l) {
+        return l.dimensionTypeId().equals(net.minecraft.world.level.dimension.BuiltinDimensionTypes.OVERWORLD)
+                && !net.tierrasfantasticas.tfclient.vacio.TFVoid.isVoid(l);
+    }
+
+    /**
+     * Dónde se explora: el mundo puesto en pad.json («mundos.explorar»); si no, el mundo normal y, si es un mundo vacío
+     * (el del spawn con Multiverse), los demás overworlds con terreno (primero los que se llamen «surv…»). Nunca el del
+     * spawn puesto en pad.json ni uno que ya se vio vacío.
+     */
+    static List<ServerLevel> exploreLevels(MinecraftServer server) {
+        ServerLevel set = level(server, PadConfig.exploreWorld());
+        if (set != null) return List.of(set);
+        ServerLevel spawn = spawnLevel(server);
+        List<ServerLevel> out = new ArrayList<>();
+        ServerLevel main = server.overworld();
+        if (main != spawn && !EMPTY.contains(main.dimension())) out.add(main);
+        List<ServerLevel> others = new ArrayList<>();
+        for (ServerLevel l : server.getAllLevels()) {
+            if (l == main || l == spawn || !overworldLike(l) || EMPTY.contains(l.dimension())) continue;
+            others.add(l);
+        }
+        others.sort(java.util.Comparator.comparing((ServerLevel l) -> !l.dimension().location().getPath().contains("surv"))
+                .thenComparing(l -> l.dimension().location().toString()));
+        out.addAll(others);
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -298,8 +365,9 @@ public final class PadTravel {
         @Override
         public PadView view(ServerPlayer player, String tab) {
             long wait = left(player, "explorar", exploreCooldown());
+            List<ServerLevel> worlds = exploreLevels(player.getServer());
             PadView.Builder b = PadView.of("explorar")
-                    .header("Un sitio seguro al azar, lejos del spawn.");
+                    .header("Un sitio seguro al azar, lejos del spawn" + (worlds.isEmpty() ? "." : ", en " + dimName(worlds.get(0).dimension().location().toString()) + "."));
             List<String> lines = new ArrayList<>();
             lines.add("Entre " + exploreMin() + " y " + exploreMax() + " bloques del spawn. Nunca en agua, lava ni zonas protegidas.");
             lines.add("Has explorado " + PadStats.get(player.getUUID(), PadStats.EXPLORES) + " veces.");
@@ -312,8 +380,16 @@ public final class PadTravel {
         public String action(ServerPlayer player, String tab, String action, String text) {
             if (!action.equals("explorar") || !PadConfig.on("explorar.activado") || left(player, "explorar", exploreCooldown()) > 0) return null;
             warmup(player, "Explorando", () -> {
-                ServerLevel level = player.getServer().overworld();
-                BlockPos spot = findSpot(level);
+                // (1.3.119) nunca al overworld vacío del spawn (Multiverse): exploreLevels
+                ServerLevel level = null;
+                BlockPos spot = null;
+                for (ServerLevel l : exploreLevels(player.getServer())) {
+                    spot = findSpot(l);
+                    if (spot != null) {
+                        level = l;
+                        break;
+                    }
+                }
                 if (spot == null) {
                     // un minuto de espera para no buscar sin parar (cada búsqueda genera terreno)
                     STORE_IMPL.player(player.getUUID()).addProperty("explorar", System.currentTimeMillis() - (exploreCooldown() - 60) * 1000);
@@ -335,7 +411,8 @@ public final class PadTravel {
         Random r = new Random();
         BlockPos spawn = level.getSharedSpawnPos();
         var border = level.getWorldBorder();
-        for (int i = 0, generated = 0; i < 24 && generated < 6; i++) {
+        int generated = 0, voidHits = 0;
+        for (int i = 0; i < 24 && generated < 6; i++) {
             double a = r.nextDouble() * Math.PI * 2;
             int d = exploreMin() + r.nextInt(Math.max(1, exploreMax() - exploreMin()));
             int x = spawn.getX() + (int) (Math.cos(a) * d), z = spawn.getZ() + (int) (Math.sin(a) * d);
@@ -347,10 +424,15 @@ public final class PadTravel {
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             BlockPos feet = new BlockPos(x, y, z);
             BlockState ground = level.getBlockState(feet.below());
+            if (y <= level.getMinBuildHeight() + 2) voidHits++;
             if (y <= level.getMinBuildHeight() + 2 || !safe(ground)) continue;
             if (!level.getBlockState(feet).isAir() || !level.getBlockState(feet.above()).isAir()) continue;
             if (ClaimManager.getInstance().getClaimAt(level, feet) != null) continue;
             return feet;
+        }
+        // (1.3.119) todo vacío: es un mundo sin terreno (el spawn de Multiverse): ya no se explora ahí
+        if (generated > 0 && voidHits == generated && EMPTY.add(level.dimension())) {
+            net.tierrasfantasticas.tfclient.TFClient.LOGGER.info("TF Pad: {} es un mundo vacío: Explorar no lleva ahí", level.dimension().location());
         }
         return null;
     }
@@ -373,8 +455,20 @@ public final class PadTravel {
                     List<Point> ps = points();
                     ctx.getSource().sendSuccess(() -> Component.literal(ps.isEmpty() ? "No hay puntos de viaje."
                             : "Puntos: " + String.join(", ", ps.stream().map(p -> p.id + " (" + p.name + ")").toList())), false);
+                    List<ServerLevel> ex = exploreLevels(ctx.getSource().getServer());
+                    ServerLevel sp = spawnLevel(ctx.getSource().getServer());
+                    ctx.getSource().sendSuccess(() -> Component.literal("Explorar: " + (ex.isEmpty() ? "ningún mundo con terreno" : ex.get(0).dimension().location())
+                            + (PadConfig.exploreWorld().isEmpty() ? " (automático)" : "") + " · Spawn: "
+                            + (sp != null ? sp.dimension().location() : net.tierrasfantasticas.tfclient.server.TFBukkit.hasCommand("spawn") ? "/spawn de EssentialsX" : "el del mundo normal")), false);
                     return ps.size();
                 }))
+                // (1.3.119) los mundos de Explorar y del Spawn (Multiverse): el de donde estás, o automático
+                .then(Commands.literal("explorar")
+                        .then(Commands.literal("aqui").executes(ctx -> world(ctx.getSource(), true, true)))
+                        .then(Commands.literal("auto").executes(ctx -> world(ctx.getSource(), true, false))))
+                .then(Commands.literal("spawn")
+                        .then(Commands.literal("aqui").executes(ctx -> world(ctx.getSource(), false, true)))
+                        .then(Commands.literal("auto").executes(ctx -> world(ctx.getSource(), false, false))))
                 .then(Commands.literal("quitar").then(Commands.argument("id", StringArgumentType.word()).executes(ctx -> {
                     String id = StringArgumentType.getString(ctx, "id");
                     removePoint(id);
@@ -385,6 +479,16 @@ public final class PadTravel {
                         .executes(ctx -> put(ctx.getSource(), StringArgumentType.getString(ctx, "id"), ""))
                         .then(Commands.argument("nombre", StringArgumentType.greedyString())
                                 .executes(ctx -> put(ctx.getSource(), StringArgumentType.getString(ctx, "id"), StringArgumentType.getString(ctx, "nombre"))))));
+    }
+
+    private static int world(CommandSourceStack source, boolean explore, boolean here) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        String id = here ? source.getPlayerOrException().level().dimension().location().toString() : "";
+        if (explore) PadConfig.worlds(id, null);
+        else PadConfig.worlds(null, id);
+        EMPTY.clear();
+        String what = explore ? "Explorar" : "Spawn";
+        source.sendSuccess(() -> Component.literal(what + ": " + (here ? dimName(id) + " (" + id + ")" : "automático")).withStyle(ChatFormatting.GREEN), true);
+        return 1;
     }
 
     private static int put(CommandSourceStack source, String id, String name) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
