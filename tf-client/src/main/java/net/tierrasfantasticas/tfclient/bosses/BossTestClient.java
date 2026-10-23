@@ -153,12 +153,6 @@ public final class BossTestClient {
         }
     }
 
-    /**
-     * Las capturas, al acabar de dibujar un fotograma que empezó después de pedirla (antes se sacaban en el tick del
-     * cliente, con el último fotograma dibujado: con shaders, a pocos fotogramas por segundo, podía ser de antes de la
-     * vista pedida).
-     */
-    @SubscribeEvent
     private static Field lightPixels;
 
     /**
@@ -190,6 +184,12 @@ public final class BossTestClient {
         return b.toString();
     }
 
+    /**
+     * Las capturas, al acabar de dibujar un fotograma que empezó después de pedirla (antes se sacaban en el tick del
+     * cliente, con el último fotograma dibujado: con shaders, a pocos fotogramas por segundo, podía ser de antes de la
+     * vista pedida).
+     */
+    @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
