@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.bosses;
 
 import com.mojang.blaze3d.platform.NativeImage;
@@ -59,6 +67,7 @@ public final class BossTestClient {
             mc.setScreen(null);
         }
         if ("corta".equals(BossTest.currentId())) mc.options.hideGui = BossTest.hideGui;
+        if (mc.level != null && mc.player != null && "corta".equals(BossTest.currentId())) BossTest.clientItemsLight = itemsLight(mc);
         // (1.3.114) los caballeros sacros: lo más rápido que van y lo que se mueven sus piernas (walkAnimation)
         if (mc.level != null && "corta".equals(BossTest.currentId())) {
             for (net.minecraft.world.entity.Entity en : mc.level.entitiesForRendering()) {
@@ -70,6 +79,12 @@ public final class BossTestClient {
             }
             StringBuilder b = new StringBuilder();
             for (var e : KNIGHT_MAX.entrySet()) b.append(String.format("%s: hasta %.2f bloques/tick, piernas hasta %.2f; ", e.getKey(), e.getValue()[0], e.getValue()[1]));
+            // (1.3.117) la animación de reposo que les pone VfxLayers por debajo («-» = ninguna; «idle» era flotar)
+            java.util.Set<String> idles = new java.util.TreeSet<>();
+            for (net.minecraft.world.entity.Entity en : mc.level.entitiesForRendering()) {
+                if (en instanceof net.tierrasfantasticas.tfclient.vacio.SacredKnight k) idles.add(k.layers.idleName());
+            }
+            b.append("reposo por debajo: ").append(idles);
             BossTest.clientKnights = b.toString();
         }
         if (BossTest.cameraType >= 0) {
@@ -144,6 +159,37 @@ public final class BossTestClient {
      * vista pedida).
      */
     @SubscribeEvent
+    private static Field lightPixels;
+
+    /**
+     * (1.3.117, objetos negros con shaders en el Void) Lo que ilumina un objeto: el paquete, la luz del jugador (bloque y
+     * cielo) y el mapa de luz de Minecraft en sus esquinas (ABGR: oscuridad total, solo bloque, solo cielo, todo; la
+     * interfaz usa «todo»).
+     */
+    private static String itemsLight(Minecraft mc) {
+        StringBuilder b = new StringBuilder(mc.level.dimension().location().toString()).append(", ")
+                .append(net.tierrasfantasticas.tfclient.vacio.VoidTestHooks.shaders());
+        int packed = mc.getEntityRenderDispatcher().getPackedLightCoords(mc.player, 1F);
+        b.append("; luz del jugador: bloque ").append(net.minecraft.client.renderer.LightTexture.block(packed)).append(", cielo ")
+                .append(net.minecraft.client.renderer.LightTexture.sky(packed));
+        try {
+            if (lightPixels == null) {
+                for (Field f : net.minecraft.client.renderer.LightTexture.class.getDeclaredFields()) {
+                    if (f.getType() == com.mojang.blaze3d.platform.NativeImage.class) {
+                        f.setAccessible(true);
+                        lightPixels = f;
+                    }
+                }
+            }
+            com.mojang.blaze3d.platform.NativeImage img = (com.mojang.blaze3d.platform.NativeImage) lightPixels.get(mc.gameRenderer.lightTexture());
+            b.append(String.format("; mapa de luz: 0/0 %08X, bloque 15 %08X, cielo 15 %08X, 15/15 %08X", img.getPixelRGBA(0, 0), img.getPixelRGBA(15, 0),
+                    img.getPixelRGBA(0, 15), img.getPixelRGBA(15, 15)));
+        } catch (Throwable t) {
+            b.append("; mapa de luz: ").append(t);
+        }
+        return b.toString();
+    }
+
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();

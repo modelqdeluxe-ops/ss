@@ -546,20 +546,26 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
   assert.deepStrictEqual(received, cmdsOf('crate-oni', 'Alex'));
 });
 
-test('un cosmético se compra por pieza y llega solo esa pieza al juego', async () => {
+test('un cosmético se compra por pieza, solo con Fantastic Coins, y llega solo esa pieza al juego', async () => {
   const list = await (await get('/api/products')).json();
   const cos = list.filter((p) => p.category === 'cosmeticos');
   assert.ok(cos.length > 0 && cos.every((p) => p.set && p.item && p.slot && p.theme && p.collection && p.description));
+  assert.ok(cos.every((p) => p.coinsOnly === true && Number.isSafeInteger(p.coinPrice) && p.coinPrice > 0));
   const balloon = cos.find((p) => p.id === 'cos-halloween23-spider-balloon');
   assert.strictEqual(balloon.slot, 'balloon');
 
-  received.length = 0;
+  // Con dinero, no (TF Client 1.3.117: el dueño, «tiene precio en dinero, no en coins»)
   await seen('Globos_MC');
-  const id = await checkout({ productId: balloon.id, username: 'Globos_MC' });
-  assert.strictEqual(sessionOf(id).amount_total, balloon.price);
-  await pay(id);
+  const money = await post('/api/checkout', { acceptTerms: true, productId: balloon.id, username: 'Globos_MC' });
+  assert.strictEqual(money.status, 400);
+  assert.strictEqual((await money.json()).code, 'coins');
+
+  received.length = 0;
+  const cookie = await register('Globos_MC');
+  const res = await post('/api/coins/buy', { productId: balloon.id }, cookie);
+  assert.strictEqual(res.status, 200);
   await serverDelivers('Globos_MC');
-  assert.deepStrictEqual(received, ['tf web sets give Globos_MC halloween23 spider_balloon']);
+  assert.deepStrictEqual(received, [`tf web monedas quitar Globos_MC ${balloon.coinPrice}`, 'tf web sets give Globos_MC halloween23 spider_balloon']);
 });
 
 test('la ruleta da premios por su probabilidad (armas solo de vez en cuando) y la compra dice cuáles tocaron', async () => {
@@ -1417,56 +1423,15 @@ test('el catálogo de Skills: 39 clases con sus skills, iconos y vistas previas,
   }
 });
 
-test('Skills con Stripe: se paga, la clase es suya, pasa a ser la activa y el puente la manda al servidor', async () => {
-  received.length = 0;
+test('Skills: ya no se venden con dinero, solo con Fantastic Coins', async () => {
   await seen('Clase_MC');
-  const uuid = uuidOf('Clase_MC');
-  const cat = await (await get('/api/skills')).json();
-  const glacia = cat.classes.find((c) => c.id === 'glacia');
-
-  const id = await checkout({ productId: 'clase-glacia', username: 'Clase_MC' });
-  const session = sessionOf(id);
-  assert.strictEqual(session.amount_total, glacia.price);
-  assert.strictEqual(session.form['line_items[0][price_data][product_data][name]'], 'Clase Glacia');
-  const order = await pay(id);
-  assert.strictEqual(order.status, 'queued');
-  assert.strictEqual(order.kind, 'skills');
-  assert.strictEqual(order.product, 'Clase Glacia');
-
-  // El servidor recibe la clase activa del conectado (y una entrega sin comandos, solo para el anuncio)
-  const res = await (await poll(['Clase_MC'])).json();
-  assert.strictEqual(res.skills.length, 1);
-  const [entry] = res.skills;
-  assert.deepStrictEqual({ uuid: entry.uuid, clase: entry.clase }, { uuid, clase: 'glacia' });
-  assert.ok(Number.isInteger(entry.at) && entry.at > 0);
-  const [delivery] = res.deliveries;
-  assert.deepStrictEqual(delivery.commands, []);
-  assert.strictEqual(delivery.kind, 'skills');
-  assert.strictEqual(delivery.product, 'Clase Glacia');
-  await poll(['Clase_MC'], [{ id: delivery.id, ok: true }]);
-  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'delivered');
-  // Si no está conectado no se manda nada
-  assert.deepStrictEqual((await (await poll(['Otro_MC'])).json()).skills, []);
-
-  // No se puede volver a comprar la misma clase (ni con dinero ni con monedas)
-  const quote = await (await get('/api/player/Clase_MC?product=clase-glacia')).json();
-  assert.match(quote.quote.blocked, /ya tiene la clase Glacia/);
-  const again = await post('/api/checkout', { acceptTerms: true, productId: 'clase-glacia', username: 'Clase_MC' });
-  assert.strictEqual(again.status, 409);
-  assert.strictEqual((await again.json()).code, 'owned');
-  const cookie = await register('Clase_MC');
-  assert.strictEqual((await post('/api/skills/coins', { id: 'glacia' }, cookie)).status, 409);
-  const mine = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
-  assert.deepStrictEqual({ owned: mine.owned, active: mine.active, pending: mine.pending }, { owned: ['glacia'], active: 'glacia', pending: [] });
-
-  // Un reembolso completo se la quita y el servidor recibe «sin clase» con una hora más nueva
-  await signedEvent({ type: 'charge.refunded', data: { object: { id: `ch_${id}`, payment_intent: sessionOf(id).payment_intent, refunded: true } } });
-  const after = (await (await poll(['Clase_MC'])).json()).skills;
-  assert.deepStrictEqual(after.map((s) => [s.uuid, s.clase]), [[uuid, null]]);
-  assert.ok(after[0].at > entry.at);
-  assert.deepStrictEqual((await (await get('/api/skills', { Cookie: cookie })).json()).me.owned, []);
-  assert.strictEqual(received.length, 0, 'la clase no se entrega con comandos');
+  const res = await post('/api/checkout', { acceptTerms: true, productId: 'clase-glacia', username: 'Clase_MC' });
+  assert.strictEqual(res.status, 400);
+  assert.strictEqual((await res.json()).code, 'coins');
+  const list = await (await get('/api/products')).json();
+  assert.ok(list.filter((p) => p.category === 'skills').every((p) => p.coinsOnly === true && p.coinPrice >= 50000));
 });
+
 
 test('Skills con monedas: se cobra en el juego con /tf web monedas quitar y, al confirmarlo, la clase es suya y activa', async () => {
   // Sin cuenta, o con una clase que no existe, no
@@ -1517,8 +1482,10 @@ test('Skills: con varias clases se elige la activa en la web (solo una) y el ser
   assert.strictEqual((await post('/api/skills/active', { id: 'mago' }, cookie)).status, 403);
   assert.strictEqual((await post('/api/skills/active', { id: 'nada' }, cookie)).status, 400);
 
-  // Compra Mago con dinero y Zephyr con monedas: la última comprada queda activa
-  await pay(await checkout({ productId: 'clase-mago', username: 'Varias_MC' }));
+  // Compra Mago y después Zephyr, con monedas: la última comprada queda activa
+  await post('/api/skills/coins', { id: 'mago' }, cookie);
+  const first = (await (await poll(['Varias_MC'])).json()).deliveries;
+  await poll(['Varias_MC'], first.map((d) => ({ id: d.id, ok: true })));
   await post('/api/skills/coins', { id: 'zephyr' }, cookie);
   const pending = (await (await poll(['Varias_MC'])).json()).deliveries;
   const coin = pending.find((d) => d.kind === 'tienda-monedas');

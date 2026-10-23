@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.vacio;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -69,6 +77,13 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
                 e.layers.clear();
                 // (los caballeros sacros, sin el reposo de Caelthar —que flota—: su postura, sacredPose)
                 if (def == null) e.layers.play(m, m.anims.containsKey("reposo") ? "reposo" : "idle", e.clientAge, 1F, 0, 0, 1, true);
+                // (1.3.117, el dueño: «siguen con la animación de elevarse y caer; el único que debe volar es Caelthar») su
+                // modelo es el de Caelthar y trae «idle» (flotar: sube y baja); VfxLayers pone sola la animación de reposo
+                // por defecto por debajo de todo: a los sacros, ninguna (solo su postura de jugador)
+                if (def != null) {
+                    e.layers.setDefault("idle", "-", e.clientAge);
+                    e.layers.setDefault("walk", "-", e.clientAge);
+                }
                 e.shown = 1;
             }
             if (def != null) sacredPose(e, def, m, partial);

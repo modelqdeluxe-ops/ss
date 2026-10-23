@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.bosses;
 
 import java.io.IOException;
@@ -1843,7 +1851,8 @@ public final class BossTest {
                 for (int i = 0; i < 10; i++) level.setBlock(base.offset(i * 2, 0, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
             // (1.3.113, el dueño: «los bots debe reconocerlos el pad, deben salir conectados, con trabajos y datos») la
-            // lista de Jugadores del pad con los bots de la segunda tanda y la ficha de uno
+            // lista de Jugadores del pad con los bots de la segunda tanda y, al tocar uno (1.3.117: sin ficha), lo que se le
+            // puede hacer (invitar al clan, a la protección, regalo)
             case 686 -> openPad = "jugadores";
             case 720 -> shot(r, "pad_jugadores");
             case 722 -> {
@@ -1954,7 +1963,14 @@ public final class BossTest {
             case 930 -> {
                 for (int i = 0; i < player.getInventory().getContainerSize(); i++) player.getInventory().setItem(i, ItemStack.EMPTY);
             }
-            case 932 -> next(level);
+            // (1.3.117, el dueño: «los bots no tienen ranking; bajo, sin números redondos como ese 500; y no veo su nombre»)
+            // el Ranking de monedas con los bots que entraron antes
+            case 932 -> openPad = "ranking/monedas";
+            case 964 -> shot(r, "pad_ranking_monedas");
+            case 966 -> openPad = "ranking/misiones";
+            case 996 -> shot(r, "pad_ranking_misiones");
+            case 998 -> closeScreen = true;
+            case 1002 -> next(level);
             default -> { }
         }
     }
@@ -1983,6 +1999,9 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
+
+    /** (1.3.117) Lo que ve el cliente de la luz de los objetos (shaders, la luz del jugador y el mapa de luz). */
+    static volatile String clientItemsLight = "?";
 
     /** (1.3.114) Sin el HUD en las capturas (las de los caballeros: el chat tapaba las piernas). */
     static volatile boolean hideGui;
@@ -2132,7 +2151,62 @@ public final class BossTest {
                 faunaNow = null;
             }
         }
-        if (t == f0 + 2 * 260 + 10) next(level);
+        // (1.3.117, el dueño: «los items se me ponen negros cuando uso shaders dentro del Void; fuera, normales») la mano, la
+        // barra y el inventario con objetos de colores, en el santuario y luego en el mundo normal; y el mapa de luz
+        int o0 = f0 + 2 * 260 + 10;
+        if (t >= o0 && t <= o0 + 170) itemsStep(level, vl, player, r, t - o0);
+        if (t == o0 + 172) next(level);
+    }
+
+    /** (1.3.117) Los objetos con shaders en el Void y fuera (ver cortaStep). */
+    private static void itemsStep(ServerLevel level, ServerLevel vl, ServerPlayer player, Rep r, int k) {
+        switch (k) {
+            case 0 -> {
+                hideGui = false;
+                ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
+                sword.enchant(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 5);
+                ItemStack[] items = {new ItemStack(Items.GOLDEN_APPLE, 5), sword, new ItemStack(Items.RED_WOOL, 32), new ItemStack(Items.GRASS_BLOCK, 16),
+                        new ItemStack(Items.DIAMOND, 8), new ItemStack(Items.BREAD, 16), new ItemStack(Items.TORCH, 32), new ItemStack(Items.ENDER_PEARL, 4),
+                        new ItemStack(Items.LIME_DYE, 9)};
+                for (int i = 0; i < items.length; i++) {
+                    player.getInventory().setItem(i, items[i]);
+                    player.getInventory().setItem(9 + i, items[i].copy());
+                }
+                player.getInventory().selected = 0;
+                net.minecraft.core.BlockPos kp = net.tierrasfantasticas.tfclient.vacio.VoidIsland.knightPos();
+                fly(player, true);
+                player.teleportTo(vl, kp.getX() + 0.5, kp.getY() - 1, kp.getZ() + 6.5, 180F, 10F);
+                // (1.3.117) el TF Client solo para el servidor oficial (client/TFLock)
+                r.event("solo el servidor oficial " + net.tierrasfantasticas.tfclient.client.TFLock.OFFICIAL + ": el oficial "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:19229") + ", otro (play.example.com) "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("play.example.com") + ", el oficial con otro puerto "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:25565") + "; mundos locales en la prueba: "
+                        + (net.tierrasfantasticas.tfclient.client.TFLock.unlocked() ? "abiertos (sin contraseña, solo la prueba)" : "CERRADOS"));
+            }
+            case 40 -> {
+                r.event("objetos en el Void: " + clientItemsLight);
+                shot(r, "objetos_void");
+            }
+            case 44 -> openInventory = true;
+            case 70 -> shot(r, "objetos_void_inventario");
+            case 72 -> {
+                closeScreen = true;
+                net.minecraft.core.BlockPos sp = level.getSharedSpawnPos();
+                int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sp.getX(), sp.getZ());
+                player.teleportTo(level, sp.getX() + 0.5, y + 1, sp.getZ() + 0.5, 180F, 10F);
+            }
+            case 120 -> {
+                r.event("objetos en el mundo normal: " + clientItemsLight);
+                shot(r, "objetos_mundo");
+            }
+            case 124 -> openInventory = true;
+            case 150 -> shot(r, "objetos_mundo_inventario");
+            case 152 -> closeScreen = true;
+            case 170 -> {
+                for (int i = 0; i < player.getInventory().getContainerSize(); i++) player.getInventory().setItem(i, ItemStack.EMPTY);
+            }
+            default -> { }
+        }
     }
 
     /**

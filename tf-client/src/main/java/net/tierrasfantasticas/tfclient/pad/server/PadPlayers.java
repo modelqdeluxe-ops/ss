@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.pad.server;
 
 import com.google.gson.JsonArray;
@@ -7,7 +15,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -22,8 +29,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomy;
-import net.tierrasfantasticas.tfclient.jobs.TFJobsConfig;
-import net.tierrasfantasticas.tfclient.jobs.TFJobsData;
 import net.tierrasfantasticas.tfclient.market.TFMarket;
 import net.tierrasfantasticas.tfclient.pad.PadConfig;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
@@ -34,10 +39,11 @@ import net.tierrasfantasticas.tfclient.server.TFRanks;
 import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
- * Jugadores: los conectados en tarjetas (cabeza, nombre y rango). Al pulsar uno, su ficha (rango, clan, oficios,
- * misiones, fotos…) y REGALAR: un objeto de tu inventario o monedas. Si está desconectado, el regalo le llega al entrar.
- * Lo que va ligado a su dueño o se compró en la web no se puede regalar (como en el GTS). Límite diario en pad.json.
- * Pestañas: "" la lista; "f:&lt;uuid&gt;" la ficha; "r:&lt;uuid&gt;" regalar.
+ * Jugadores: los conectados en tarjetas (cabeza, nombre y rango), también los bots. Al pulsar uno (1.3.117, sin su
+ * ficha): Invitar al clan (si eres líder u oficial y él no tiene clan), Invitar a la protección (eliges la zona) y
+ * Enviar regalo: un objeto de tu inventario o monedas. Si está desconectado, el regalo le llega al entrar. Lo que va
+ * ligado a su dueño o se compró en la web no se puede regalar (como en el GTS). Límite diario en pad.json.
+ * Pestañas: "" la lista; "f:&lt;uuid&gt;" lo que se le puede hacer; "p:&lt;uuid&gt;" a qué zona; "r:&lt;uuid&gt;" regalar.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadPlayers {
@@ -60,11 +66,17 @@ public final class PadPlayers {
     static final class App implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
-            if (tab.length() > 2 && (tab.startsWith("f:") || tab.startsWith("r:"))) {
+            if (tab.length() > 2 && (tab.startsWith("f:") || tab.startsWith("r:") || tab.startsWith("p:"))) {
                 UUID who = uuid(tab.substring(2));
-                if (who != null) return tab.startsWith("r:") && !who.equals(player.getUUID()) ? gift(player, who) : profile(player, who);
+                if (who != null && !who.equals(player.getUUID())) {
+                    return switch (tab.charAt(0)) {
+                        case 'r' -> gift(player, who);
+                        case 'p' -> zones(player, who);
+                        default -> menu(player, who);
+                    };
+                }
             }
-            // los de verdad y los bots de /tf bots (1.3.113: salen igual, con su cara y su ficha)
+            // los de verdad y los bots de /tf bots (1.3.113: salen igual, con su cara)
             record Who(UUID id, String name) {}
             List<Who> online = new ArrayList<>();
             for (ServerPlayer p : player.getServer().getPlayerList().getPlayers()) online.add(new Who(p.getUUID(), p.getGameProfile().getName()));
@@ -72,68 +84,62 @@ public final class PadPlayers {
             online.sort(Comparator.comparing((Who p) -> !p.id().equals(player.getUUID()))
                     .thenComparing(Who::name, String.CASE_INSENSITIVE_ORDER));
             PadView.Builder b = PadView.of("jugadores").header(online.size() + (online.size() == 1 ? " conectado" : " conectados")
-                    + (PadConfig.on("regalos.activado") ? " · pulsa uno para ver su ficha o hacerle un regalo." : " · pulsa uno para ver su ficha."));
+                    + " · pulsa uno para invitarlo o hacerle un regalo.");
             for (Who p : online) {
                 TFRanks.Rank rank = TFRanks.of(p.id());
                 boolean me = p.id().equals(player.getUUID());
                 int color = rank != null && rank.hex() >= 0 ? rank.hex() : 0x3496FA;
                 b.card(PadClans.head(p.id(), p.name()), me ? p.name() + " (tú)" : p.name(), color, rank == null ? "" : rank.name(),
-                        "tab:f:" + p.id(), me);
+                        me ? "" : "tab:f:" + p.id(), me);
             }
             return b.build();
         }
 
-        private static PadView.Builder tabs(ServerPlayer viewer, UUID uuid, String sel) {
-            PadView.Builder b = PadView.of("jugadores").tab("f:" + uuid, "FICHA");
-            if (!uuid.equals(viewer.getUUID()) && TFBots.byId(uuid) == null && PadConfig.on("regalos.activado")) b.tab("r:" + uuid, "REGALAR");
-            return b.selected(sel + uuid);
-        }
-
         private static String name(ServerPlayer viewer, UUID uuid) {
-            ServerPlayer online = viewer.getServer().getPlayerList().getPlayer(uuid);
-            TFBots.Bot bot = TFBots.byId(uuid);
-            return online != null ? online.getGameProfile().getName() : bot != null ? bot.name() : PadStats.nameOf(uuid);
+            return nameOf(viewer.getServer(), uuid);
         }
 
-        private PadView profile(ServerPlayer viewer, UUID uuid) {
+        /**
+         * (1.3.117, el dueño: «elimina esa opción de ver la tarjeta del jugador; al tocar el nombre: Invitar al clan (si
+         * aplica), Invitar a la protección (elegir la prote, paso siguiente) y Enviar regalo (elegir un objeto de mi
+         * inventario)») lo que se le puede hacer a un jugador o a un bot, sin su ficha.
+         */
+        private PadView menu(ServerPlayer viewer, UUID uuid) {
             String name = name(viewer, uuid);
-            TFBots.Bot bot = TFBots.byId(uuid);
-            boolean online = viewer.getServer().getPlayerList().getPlayer(uuid) != null || bot != null;
+            boolean online = viewer.getServer().getPlayerList().getPlayer(uuid) != null || TFBots.byId(uuid) != null;
             TFRanks.Rank rank = TFRanks.of(uuid);
-            PadView.Builder b = tabs(viewer, uuid, "f:");
-            b.row(new PadView.Row(PadClans.head(uuid, name), name, TEXT, List.of((rank == null ? "Sin rango" : rank.name())
+            PadView.Builder b = PadView.of("jugadores");
+            b.hero(new PadView.Row(PadClans.head(uuid, name), name, TEXT, List.of((rank == null ? "Sin rango" : rank.name())
                     + " · " + (online ? "conectado" : "desconectado")), -1, "", null, null));
-            String clan = PadClans.clanNameOf(uuid);
-            b.row(info(new ItemStack(Items.WHITE_BANNER), "Clan", clan.isEmpty() ? "Sin clan" : clan));
-            if (bot != null) {
-                botRows(b, bot);
-                b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
-                return b.build();
+            if (PadClans.canInvite(viewer, uuid)) {
+                b.row(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "Invitar al clan", TEXT,
+                        List.of("A " + PadClans.clanNameOf(viewer.getUUID()) + "."), -1, "", null, null).clickable("clan:" + uuid));
             }
-            // los tres oficios con más nivel
-            var jobs = TFJobsData.get(viewer.getServer()).player(uuid).jobs;
-            List<Map.Entry<String, TFJobsData.JobProgress>> top = new ArrayList<>(jobs.entrySet());
-            top.sort(Comparator.comparingInt((Map.Entry<String, TFJobsData.JobProgress> e) -> e.getValue().level).reversed());
-            StringBuilder js = new StringBuilder();
-            for (int i = 0; i < Math.min(3, top.size()); i++) {
-                TFJobsConfig.Job job = TFJobsConfig.job(top.get(i).getKey());
-                if (js.length() > 0) js.append(" · ");
-                js.append(job == null ? top.get(i).getKey() : job.name()).append(" ").append(top.get(i).getValue().level);
+            boolean zones = !net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance().getClaimsOf(viewer.getUUID()).isEmpty();
+            b.row(new PadView.Row(new ItemStack(Items.SHIELD), "Invitar a la protección", zones ? TEXT : MUTED,
+                    List.of(zones ? "Elige a cuál de tus zonas." : "Aún no tienes ninguna zona."), -1, "", null, null)
+                    .clickable(zones ? "tab:p:" + uuid : ""));
+            if (PadConfig.on("regalos.activado")) {
+                int left = (int) Math.max(0, PadConfig.get("regalos.porDia") - sentToday(viewer.getUUID()));
+                b.row(new PadView.Row(new ItemStack(Items.CHEST), "Enviar regalo", TEXT,
+                        List.of("Un objeto de tu inventario o monedas · te quedan " + left + " hoy."), -1, "", null, null).clickable("tab:r:" + uuid));
             }
-            b.row(info(new ItemStack(Items.IRON_PICKAXE), "Oficios", js.length() == 0 ? "Sin oficio" : js.toString()));
-            b.row(info(new ItemStack(Items.WRITABLE_BOOK), "Misiones y cazas",
-                    PadStats.get(uuid, PadStats.MISSIONS) + " misiones · " + PadStats.get(uuid, PadStats.HUNTS) + " cazas"));
-            b.row(info(new ItemStack(Items.PAINTING), "Comunidad",
-                    PadStats.get(uuid, PadStats.PHOTOS) + " fotos · " + PadStats.get(uuid, PadStats.LIKES) + " likes recibidos"));
-            b.row(info(new ItemStack(Items.SPYGLASS), "Aventura",
-                    PadStats.get(uuid, PadStats.EXPLORES) + " exploraciones · " + PadStats.get(uuid, PadStats.TRAVELS) + " viajes"));
+            b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
+            return b.build();
+        }
+
+        /** Invitar a la protección: a cuál de sus zonas (al pulsarla, ya es miembro). */
+        private PadView zones(ServerPlayer viewer, UUID uuid) {
+            PadView.Builder b = PadView.of("jugadores").header("¿A qué zona invitas a " + name(viewer, uuid) + "?");
+            for (PadView.Row r : PadClaims.zonesFor(viewer, uuid, "zona:" + uuid + ":")) b.row(r);
+            b.empty("No tienes zonas. Coloca una piedra de protección.");
             b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
             return b.build();
         }
 
         private PadView gift(ServerPlayer viewer, UUID uuid) {
             String name = name(viewer, uuid);
-            PadView.Builder b = tabs(viewer, uuid, "r:");
+            PadView.Builder b = PadView.of("jugadores");
             int left = (int) Math.max(0, PadConfig.get("regalos.porDia") - sentToday(viewer.getUUID()));
             Integer slot = PadServer.get(viewer, "jugadores.slot", null);
             ItemStack snap = PadServer.get(viewer, "jugadores.snap", null);
@@ -160,32 +166,32 @@ public final class PadPlayers {
             return b.build();
         }
 
-        /** La ficha de un bot: sus oficios y lo que ha hecho, de TFBots.card (nunca a 0 ni con clan). */
-        private static void botRows(PadView.Builder b, TFBots.Bot bot) {
-            TFBots.Card c = TFBots.card(bot, new ArrayList<>(TFJobsConfig.jobs.keySet()), TFJobsConfig.maxJobs);
-            StringBuilder js = new StringBuilder();
-            for (int i = 0; i < c.jobs().size(); i++) {
-                TFJobsConfig.Job job = TFJobsConfig.job(c.jobs().get(i));
-                if (js.length() > 0) js.append(" · ");
-                js.append(job == null ? c.jobs().get(i) : job.name()).append(" ").append(c.jobLevels()[i]);
-            }
-            b.row(info(new ItemStack(Items.IRON_PICKAXE), "Oficios", js.length() == 0 ? "Sin oficio" : js.toString()));
-            b.row(info(new ItemStack(Items.WRITABLE_BOOK), "Misiones y cazas", c.missions() + " misiones · " + c.hunts() + " cazas"));
-            b.row(info(new ItemStack(Items.PAINTING), "Comunidad", c.photos() + " fotos · " + c.likes() + " likes recibidos"));
-            b.row(info(new ItemStack(Items.SPYGLASS), "Aventura", c.explores() + " exploraciones · " + c.travels() + " viajes"));
-        }
-
-        private static PadView.Row info(ItemStack icon, String title, String value) {
-            return new PadView.Row(icon, title, MUTED, List.of(value), -1, "", null, null);
-        }
-
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
             String[] a = action.split(":", 2);
             switch (a[0]) {
                 case "volver" -> {
                     PadServer.put(player, "jugadores.slot", null);
+                    if (tab.startsWith("r:") || tab.startsWith("p:")) return "f:" + tab.substring(2);
                     return tab.isEmpty() ? null : "";
+                }
+                case "clan" -> {
+                    UUID to = uuid(a.length > 1 ? a[1] : "");
+                    if (to != null && PadClans.canInvite(player, to)) PadClans.invite(player, to, nameOf(player.getServer(), to));
+                    return null;
+                }
+                case "zona" -> { // zona:<jugador>:<zona>
+                    String[] z = a.length > 1 ? a[1].split(":", 2) : new String[0];
+                    UUID to = z.length == 2 ? uuid(z[0]) : null;
+                    if (to == null || to.equals(player.getUUID())) return null;
+                    String who = nameOf(player.getServer(), to);
+                    if (TFBots.byId(to) != null || TFBots.ofId(to) != null) {
+                        // un bot no es un jugador de verdad: no entra en los datos de la zona (como quien no contesta)
+                        TFPadNet.notice(player, "Invitación a tu zona enviada a " + who + ".");
+                    } else {
+                        PadClaims.addMember(player, z[1], to, who);
+                    }
+                    return "f:" + to;
                 }
                 case "elegir" -> {
                     int slot;
@@ -260,6 +266,17 @@ public final class PadPlayers {
 
     // ---------------------------------------------------------------------------------------------------------------
 
+    /** El nombre de un jugador o bot (conectado, del pad o de la caché de perfiles del servidor). */
+    static String nameOf(net.minecraft.server.MinecraftServer server, UUID uuid) {
+        ServerPlayer online = server.getPlayerList().getPlayer(uuid);
+        if (online != null) return online.getGameProfile().getName();
+        TFBots.Bot bot = TFBots.ofId(uuid);
+        if (bot != null) return bot.name();
+        String n = PadStats.nameOf(uuid);
+        if (!"?".equals(n) || server.getProfileCache() == null) return n;
+        return server.getProfileCache().get(uuid).map(com.mojang.authlib.GameProfile::getName).orElse(n);
+    }
+
     private static String today() {
         return LocalDate.now().toString();
     }
@@ -304,7 +321,7 @@ public final class PadPlayers {
         ServerPlayer target = from.getServer().getPlayerList().getPlayer(to);
         if (target != null) receive(target, fromName, what);
         from.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.4F, 1.8F);
-        TFPadNet.notice(from, "Regalaste " + what + " a " + (target != null ? target.getGameProfile().getName() : PadStats.nameOf(to)) + ".");
+        TFPadNet.notice(from, "Regalaste " + what + " a " + nameOf(from.getServer(), to) + ".");
     }
 
     /** Un regalo en el buzón: quién, qué (texto), el objeto (o vacío) y las monedas (0 si es un objeto). */

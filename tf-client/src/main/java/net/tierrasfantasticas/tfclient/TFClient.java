@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient;
 
 import com.mojang.logging.LogUtils;
@@ -16,7 +24,7 @@ import org.slf4j.Logger;
 @Mod(TFClient.MOD_ID)
 public final class TFClient {
     public static final String MOD_ID = "tfclient";
-    public static final String VERSION = "1.3.116";
+    public static final String VERSION = "1.3.117";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFClient() {

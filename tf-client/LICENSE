@@ -1,0 +1,19 @@
+TF Client — Tierras Fantásticas
+Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+
+Este software (el mod TF Client: su código, sus modelos, texturas, sonidos, música, textos y demás recursos) es
+propiedad de Tierras Fantásticas y es exclusivo del servidor de Minecraft Tierras Fantásticas.
+
+Sin permiso escrito de Tierras Fantásticas queda prohibido:
+  - copiarlo, modificarlo, traducirlo o crear obras derivadas, entero o en parte;
+  - descompilarlo, desensamblarlo o aplicarle ingeniería inversa;
+  - redistribuirlo, venderlo, sublicenciarlo o publicarlo;
+  - usarlo en otros servidores, redes o proyectos.
+
+Que el código fuente se pueda ver no da ningún permiso de uso. Las compras hechas en la tienda de Tierras
+Fantásticas solo valen dentro de su servidor oficial.
+
+Bibliotecas de terceros incluidas, con sus propias licencias (no las cubre este aviso):
+  - JLayer (javazoom.jl): LGPL.
+  - JAAD (net.sourceforge.jaad): sus autores, con su licencia.
+  - JCodec (org.jcodec): licencia BSD de sus autores.

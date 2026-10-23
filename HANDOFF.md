@@ -190,6 +190,41 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (23 oct 2026, TF Client 1.3.117) — lee esto primero
+
+**1.3.117: ocho quejas del dueño** (5 capturas y un zip de NPC de Wardenful Studio):
+1. **Ranking del pad**: salen los bots que han entrado alguna vez (`TFBots.known`, `rankValue`): misiones, cazas y
+   exploraciones de su ficha y monedas de quien empieza (de unas decenas a poco más de mil, nunca múltiplo de 5), sin
+   likes. El «2º ?» era alguien sin nombre en el pad: el nombre sale del pad, del conectado, del bot o de la caché de
+   perfiles del servidor; si no se sabe, no sale (`PadRanking.withBots`, `name`).
+2. **Jugadores del pad sin ficha**: al tocar a alguien (jugador o bot), Invitar al clan (si eres líder u oficial y él
+   no tiene clan: `PadClans.canInvite/invite`), Invitar a la protección (eliges la zona; un jugador pasa a ser miembro,
+   un bot no entra en los datos: `PadClaims.zonesFor/addMember`) y Enviar regalo (el de antes: objeto del inventario o
+   monedas; ahora también a los bots). Pestañas `f:` (menú), `p:` (zona), `r:` (regalo).
+3. **Caballeros que suben y bajan**: su modelo es el de Caelthar y trae `idle` (flotar); `VfxLayers` lo ponía solo por
+   debajo de todo. `KnightRenderer`: a los sacros, sin reposo ni andar por defecto (`setDefault(idle/walk, "-")`). La
+   prueba `corta` apunta «reposo por debajo: [-]».
+4. **Objetos negros con shaders en el Void**: sin captura del fallo; la prueba `corta` ahora pone objetos en la mano y en
+   el inventario en el santuario y en el mundo normal, con capturas (`objetos_void*`, `objetos_mundo*`) y el mapa de
+   luz de Minecraft (`BossTestClient.itemsLight`). Ver el informe antes de tocar nada.
+5. **Llamas del Archivista pegadas**: `SkillRuntime.exec`/`cancelCast`: lo que hace un efecto (actor) no lleva el uso
+   del jefe; el combo del cerebro ya no cancela su `remove{delay=20}` (JEFES.md §3, tabla de MythicMobs).
+6. **Web**: cosméticos y clases de skills **solo con Fantastic Coins** (`coinsOnly`; `/api/checkout` los rechaza con
+   `code: coins`); skills a **50.000** (`tools/skills.py`); tarjetas de crates y protecciones con el precio centrado y
+   el regalo y comprar debajo, del mismo alto; en el móvil la crate dice solo «Comprar». `npm test` 57/57.
+7. **TF Client solo para Tierras Fantásticas** (`client/TFLock`, `mixin/ConnectScreenMixin`): toda conexión a un
+   servidor que no es el oficial (`TFLock.OFFICIAL`, ahora `216.163.187.40:19229`) va al oficial; cliente.properties ya
+   no puede poner otro. **Cuando el dueño pase la IP final: añadirla a `TFLock.OFFICIAL` y a `TFConfig.DEFAULT_ADDRESS`.**
+   Mundos locales solo con contraseña (`TFLocalLockScreen`; en el repo solo su huella PBKDF2 con sal: **la contraseña
+   la tiene el dueño, no la escribas en el repo**); la prueba en el juego entra sin ella (`BossTest.ON`).
+   Copyright en los 420 archivos propios (no en `crates/libs`, `javazoom`, `net/sourceforge`: son de terceros),
+   `LICENSE` (y `LICENSE-TFCLIENT.txt` en el jar), mods.toml y el manifiesto. **No hay forma de impedir descompilar un
+   jar** ni contraseña para eso (Minecraft tiene que poder leerlo); ofuscar con ProGuard rompería mixins y reflexión.
+   Lo que sí protege de verdad: **el repo es público** (cualquiera lee el código sin descompilar nada). Se le propuso
+   hacerlo privado y servir el jar desde otro sitio (las Releases de un repo privado no se descargan sin cuenta).
+8. El zip «NPCs For Mini Games vol.1» (bedwars, pvp, rtp, skywars, spleef: un `idle` cada uno; el «pvp» es un gato con
+   orejas y cola, no un caballero) no se ha metido: se le preguntó para qué lo quiere.
+
 ### CHECKPOINT (23 oct 2026, TF Client 1.3.116, PUBLICADA) — lee esto primero
 
 **1.3.116** (el dueño, tras la 1.3.115: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets

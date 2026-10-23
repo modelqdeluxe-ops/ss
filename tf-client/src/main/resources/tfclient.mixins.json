@@ -40,7 +40,8 @@
     "RiftCloudsMixin",
     "GameRendererLateMixin",
     "crates.LevelRendererMixin",
-    "SoundBufferLibraryMixin"
+    "SoundBufferLibraryMixin",
+    "ConnectScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 0

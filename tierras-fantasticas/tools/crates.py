@@ -281,7 +281,9 @@ def cosmetic_products():
                     'id': f'cos-{set_id}-{piece}'.replace('_', '-'), 'category': 'cosmeticos', 'name': names[piece],
                     'description': f'Cosmético animado que se lleva {where}, de la colección {theme}. Solo cambia tu aspecto.',
                     'collection': collection, 'theme': theme, 'slot': kind, 'price': price, 'maxQuantity': 1,
-                    'coinPrice': coin_price(price),
+                    # (1.3.117, el dueño: «los cosméticos tienen precio en dinero, no en coins») solo con Fantastic Coins:
+                    # «price» queda solo para calcular las monedas (la web no los cobra con dinero: coinsOnly)
+                    'coinPrice': coin_price(price), 'coinsOnly': True,
                     'colors': [c1, c2], 'set': set_id, 'item': piece, 'image': f'img/items/{set_id}/{piece}.webp',
                     'commands': [f'tf web sets give {{player}} {set_id} {piece}'],
                 })
