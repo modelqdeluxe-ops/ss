@@ -38,14 +38,21 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  *   <li>EssentialsX: el número de hogares de cada grupo en «sethome-multiple» de su config.yml (y «essentials
  *   reload»). Se guarda una copia del archivo original la primera vez.</li>
  * </ul>
- * Solo se hace cuando cambia lo que manda la web (lo último aplicado va en &lt;mundo&gt;/tfclient/rank_perms.json) o
- * con /tf web rango permisos. Se desactiva con ranks.permissions=false en tfclient-server.properties.
+ * Se hace cuando cambia lo que manda la web (lo último aplicado va en &lt;mundo&gt;/tfclient/rank_perms.json), con /tf web
+ * rango permisos y (1.3.125) siempre que LuckPerms no tenga de verdad los grupos o sus permisos: se mira con su API, no
+ * solo el archivo (con un mundo traído de otro servidor, el archivo decía «ya está» y los grupos no existían: «parent
+ * set» fallaba y el jugador se quedaba en default). Al crear un grupo se le pone también el prefijo del rango (con su
+ * color) y su peso, si no los tiene (los que ponga el staff no se tocan). Se desactiva con ranks.permissions=false en
+ * tfclient-server.properties.
  */
 public final class TFRankPerms {
     private static final Pattern GROUP = Pattern.compile("[a-z0-9_\\-]{1,36}");
     private static final Pattern NODE = Pattern.compile("[A-Za-z0-9_\\-.*]{1,100}");
-    /** Lo que ya se intentó en esta sesión (para no repetirlo en cada consulta si falta LuckPerms). */
+    /** Lo que ya se intentó en esta sesión (para no repetirlo en cada consulta si falta LuckPerms) y cuándo. */
     private static String tried = "";
+    private static long triedAt;
+    /** Volver a intentarlo si LuckPerms sigue sin tenerlo, como mucho cada 5 minutos. */
+    private static final long RETRY_MS = 300_000;
 
     private TFRankPerms() {}
 
@@ -53,11 +60,49 @@ public final class TFRankPerms {
     public static void onRankList(MinecraftServer server) {
         if (!TFServerConfig.rankPermissions()) return;
         Plan plan = plan(TFRanks.list());
-        if (plan.groups.isEmpty() || plan.signature.equals(tried)) return;
-        tried = plan.signature;
+        if (plan.groups.isEmpty()) return;
+        long now = System.currentTimeMillis();
+        if (plan.signature.equals(tried) && now - triedAt < RETRY_MS) return;
         JsonObject state = TFJson.read(stateFile(server));
-        if (state != null && plan.signature.equals(TFJson.str(state, "signature", ""))) return;
+        boolean applied = state != null && plan.signature.equals(TFJson.str(state, "signature", ""));
+        List<String> missing = missing(plan);
+        if (applied && (missing == null || missing.isEmpty())) {
+            tried = plan.signature;
+            triedAt = now;
+            return;
+        }
+        if (plan.signature.equals(tried) && missing == null) return; // sin la API: lo del archivo manda
+        tried = plan.signature;
+        triedAt = now;
+        if (missing != null && !missing.isEmpty()) TFClient.LOGGER.warn("TF Ranks: a LuckPerms le falta {}: se pone otra vez", missing);
         for (String line : apply(server, plan, state)) TFClient.LOGGER.info("TF Ranks: {}", line);
+    }
+
+    /** (1.3.125) Antes de poner un rango cuyo grupo no existe: los grupos ya (como mucho uno cada 30 s). */
+    static void ensureGroups(MinecraftServer server) {
+        long now = System.currentTimeMillis();
+        if (now - forcedAt < 30_000) return;
+        forcedAt = now;
+        for (String line : force(server)) TFClient.LOGGER.info("TF Ranks: {}", line);
+    }
+
+    private static long forcedAt;
+
+    /** Lo que le falta a LuckPerms (grupos o permisos), vacío si nada, o null si no se puede mirar (sin su API). */
+    static List<String> missing(Plan plan) {
+        List<String> out = new ArrayList<>();
+        for (Map.Entry<String, Set<String>> e : plan.groups.entrySet()) {
+            TFLuckPerms.GroupInfo info = TFLuckPerms.group(e.getKey());
+            if (info == null) return null;
+            if (!info.exists()) {
+                out.add("el grupo " + e.getKey());
+                continue;
+            }
+            int lacking = 0;
+            for (String node : e.getValue()) if (!info.permissions().contains(node)) lacking++;
+            if (lacking > 0) out.add(lacking + " permisos de " + e.getKey());
+        }
+        return out;
     }
 
     /** /tf web rango permisos: lo vuelve a poner todo aunque no haya cambiado. Devuelve qué se hizo. */
@@ -91,6 +136,14 @@ public final class TFRankPerms {
         return new Plan(groups, homes, "v2|" + groups + "|" + homes);
     }
 
+    /** El código de color de Minecraft de un color con nombre («green» → «a»), o «f». */
+    private static String colorCode(String name) {
+        String[] names = {"black", "dark_blue", "dark_green", "dark_aqua", "dark_red", "dark_purple", "gold", "gray", "dark_gray", "blue",
+                "green", "aqua", "red", "light_purple", "yellow", "white"};
+        for (int i = 0; i < names.length; i++) if (names[i].equalsIgnoreCase(name == null ? "" : name.trim())) return Integer.toHexString(i);
+        return "f";
+    }
+
     private static List<String> apply(MinecraftServer server, Plan plan, JsonObject state) {
         List<String> report = new ArrayList<>();
         // Lo que puso el TF Client la última vez (para quitar solo lo suyo)
@@ -105,9 +158,20 @@ public final class TFRankPerms {
         boolean luckPerms = TFBridge.hasLuckPerms(server);
         if (luckPerms) {
             int set = 0, unset = 0;
+            Map<String, TFRanks.Rank> byGroup = new LinkedHashMap<>();
+            for (TFRanks.Rank r : TFRanks.list()) byGroup.put(r.group().toLowerCase(java.util.Locale.ROOT), r);
             for (Map.Entry<String, Set<String>> e : plan.groups.entrySet()) {
                 String group = e.getKey();
+                TFLuckPerms.GroupInfo info = TFLuckPerms.group(group);
                 run(server, "lp creategroup " + group);
+                // (1.3.125) su peso (el orden de los rangos) y su prefijo con el color del rango, si no los tiene: sin
+                // ellos el TAB enseñaba el de default («MIEMBRO») aunque tuviera el rango
+                TFRanks.Rank rank = byGroup.get(group);
+                if (rank != null && (info == null || !info.weight())) run(server, "lp group " + group + " setweight " + (100 + rank.tier() * 10));
+                if (rank != null && (info == null || !info.prefix()) && !rank.prefix().isBlank()) {
+                    String prefix = "&" + colorCode(rank.color()) + "&l" + rank.prefix().toUpperCase(java.util.Locale.ROOT).replace("\"", "") + "&r ";
+                    run(server, "lp group " + group + " meta setprefix " + (100 + rank.tier() * 10) + " \"" + prefix + "\"");
+                }
                 // (1.3.118) con «parent set» el jugador deja el grupo default: el rango lo hereda, para que no pierda lo
                 // básico que el staff tenga ahí (spawn, tpa, msg…)
                 run(server, "lp group " + group + " parent add default");

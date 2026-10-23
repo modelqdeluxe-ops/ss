@@ -168,7 +168,9 @@ public class TFMenuButton extends Button {
             float row = GAP_X * (n - 1);
             for (int j = 0; j < n; j++) {
                 int i = ROWS[r][j];
-                float textW = new Tracked(mc.font, labels[i], FONT_AT_SCALE[3]).width * size;
+                // (1.3.125) medido con la misma letra que se dibuja (cinzel_n): con otra, el ancho no cuadraba por medio
+                // píxel y el texto se encogía con una escala rota («WhatsApp» se veía comido)
+                float textW = new Tracked(mc.font, labels[i], FONT_AT_SCALE[fontIndex(size, s)]).width * size;
                 boolean withIcon = i >= 5;
                 // aire de los lados: el radio de la pastilla, el hueco y los hilos de oro (los de icono, sin hilos)
                 float pad = hs[r] * (r == 0 ? 3.0f : withIcon ? 1.0f : 2.3f);
@@ -185,6 +187,11 @@ public class TFMenuButton extends Button {
         }
         out[8] = new int[] {Math.round(top)};
         return out;
+    }
+
+    /** La letra a la escala de la interfaz para ese tamaño (índice en FONT_AT_SCALE: n - 1). */
+    private static int fontIndex(float size, int s) {
+        return Mth.clamp(Math.round(s * size), 1, FONT_AT_SCALE.length) - 1;
     }
 
     /** El tamaño de letra nítido que usa paintContent: n/escala con n entero, como mucho un 10 % más que size. */
@@ -286,11 +293,23 @@ public class TFMenuButton extends Button {
         // en el menú, las letras un poco más juntas (TRACKING menos entre cada dos)
         Tracked tracked = menu ? new Tracked(font, getMessage().getString(), fonts[n - 1]) : null;
         float textW = tracked != null ? tracked.width : font.width(text);
-        float maxW = x1 - x0;
         boolean withIcon = icon != null;
+        // en el menú puede ocupar también parte de las puntas redondas
+        float maxW = menu ? x1 - x0 + getHeight() * 0.5f : x1 - x0;
         float iconW = withIcon ? (TFMenuIcons.SIZE + GAP) * scale : 0f; // el icono crece con la letra
         float group = textW * scale + iconW;
-        if (group > maxW && group > 0f) {
+        // (1.3.125) si no cabe, una letra más pequeña pero nítida (n - 1 píxeles por píxel de letra), nunca una escala
+        // rota: con ella se perdían columnas de píxeles de las letras
+        while (menu && group > maxW && n > 1) {
+            n--;
+            scale = n / (float) s;
+            text = Component.literal(getMessage().getString()).setStyle(Style.EMPTY.withFont(fonts[n - 1]));
+            tracked = new Tracked(font, getMessage().getString(), fonts[n - 1]);
+            textW = tracked.width;
+            iconW = withIcon ? (TFMenuIcons.SIZE + GAP) * scale : 0f;
+            group = textW * scale + iconW;
+        }
+        if (!menu && group > maxW && group > 0f) {
             scale *= Math.max(0.6f, (maxW - iconW) / (textW * scale));
             group = textW * scale + iconW;
         }
@@ -312,20 +331,22 @@ public class TFMenuButton extends Button {
             return;
         }
 
-        // Menú principal: contorno de un píxel real, suave (1.3.124: el de antes, del 5 % de la letra, «un poco pasado»)
-        int[][] ring = ring(1);
+        // Menú principal (1.3.125, el dueño: «el contorno de las letras se ve raro»): sin contorno (la Cinzel es fina y el
+        // contorno de un píxel la emborronaba); una sombra suave de un píxel real debajo, como el texto de los diálogos
+        float shadow = Math.max(1, Math.round(s * 0.5f)) / (float) s;
         if (withIcon) {
             float sz = TFMenuIcons.SIZE * scale;
             float iy = snap(centerY - sz / 2f, s);
-            for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + d[1] / (float) s, sz, edge, alpha);
+            icon(g, gx, iy + shadow, sz, edge, 0.6f * alpha);
             icon(g, gx, iy, sz, ink, alpha);
             gx += iconW;
         }
         float ty = snap(centerY - MENU_TEXT_UP * scale, s), tx = gx, sc = scale;
-        // todo el texto (contorno y letra) en un solo lote: una sola vez a la tarjeta gráfica
+        Tracked letters = tracked;
+        // todo el texto (sombra y letra) en un solo lote: una sola vez a la tarjeta gráfica
         g.drawManaged(() -> {
-            for (int[] d : ring) tracked.draw(g, font, tx + d[0] / (float) s, ty + d[1] / (float) s, sc, TFMenuPaint.argb(0.8f * alpha, edge));
-            tracked.draw(g, font, tx, ty, sc, TFMenuPaint.argb(alpha, ink));
+            letters.draw(g, font, tx, ty + shadow, sc, TFMenuPaint.argb(0.6f * alpha, edge));
+            letters.draw(g, font, tx, ty, sc, TFMenuPaint.argb(alpha, ink));
         });
     }
 

@@ -60,8 +60,18 @@ public final class TFEconomy {
         }
     }
 
-    /** Saldo del jugador (vacío si la economía no deja verlo). */
+    /**
+     * Saldo del jugador (vacío si la economía no deja verlo). (1.3.125) Menos lo que deba por un reembolso
+     * ({@link TFDebt}): puede ser negativo.
+     */
     public static OptionalLong balance(MinecraftServer server, UUID uuid) {
+        OptionalLong raw = rawBalance(server, uuid);
+        if (raw.isEmpty()) return raw;
+        return OptionalLong.of(raw.getAsLong() - TFDebt.get(server, uuid, TFDebt.COINS));
+    }
+
+    /** Lo que tiene de verdad en la economía (sin restar la deuda). */
+    private static OptionalLong rawBalance(MinecraftServer server, UUID uuid) {
         return switch (mode()) {
             case TF -> OptionalLong.of(TFWallet.get(server).balance(uuid));
             case VAULT -> {
@@ -83,9 +93,15 @@ public final class TFEconomy {
         };
     }
 
-    /** Paga al jugador. */
+    /** Paga al jugador. (1.3.125) Si debe monedas de un reembolso, primero se paga la deuda. */
     public static boolean give(MinecraftServer server, UUID uuid, String name, long amount) {
         if (amount <= 0) return true;
+        amount = TFDebt.payFrom(server, uuid, TFDebt.COINS, amount);
+        if (amount <= 0) return true;
+        return deposit(server, uuid, name, amount);
+    }
+
+    private static boolean deposit(MinecraftServer server, UUID uuid, String name, long amount) {
         return switch (mode()) {
             case TF -> {
                 TFWallet.get(server).add(uuid, amount);
@@ -94,6 +110,47 @@ public final class TFEconomy {
             case VAULT -> vault().deposit(uuid, amount);
             case COMMANDS -> run(server, TFServerConfig.economyGive(), name, amount);
         };
+    }
+
+    /**
+     * (1.3.125) Reembolso: quita amount; lo que no tenga (ya lo gastó) queda como deuda. Funciona aunque no esté
+     * conectado (con la economía del TF Client o Vault). Devuelve lo que se le quitó ya.
+     */
+    public static long revoke(MinecraftServer server, UUID uuid, String name, long amount) {
+        if (amount <= 0) return 0;
+        long now = 0;
+        switch (mode()) {
+            case TF -> {
+                now = Math.min(amount, Math.max(0, TFWallet.get(server).balance(uuid)));
+                if (now > 0) TFWallet.get(server).take(uuid, now);
+            }
+            case VAULT -> {
+                Double have = vault().balance(uuid);
+                now = have == null ? 0 : Math.min(amount, Math.max(0, (long) Math.floor(have)));
+                if (now > 0 && !vault().withdraw(uuid, now)) now = 0;
+            }
+            case COMMANDS -> {
+                // sin ver el saldo: o lo tiene entero o va todo a la deuda
+                if (name != null && run(server, TFServerConfig.economyTake(), name, amount)) now = amount;
+            }
+        }
+        TFDebt.add(server, uuid, TFDebt.COINS, amount - now);
+        return now;
+    }
+
+    /** (1.3.125) Si debe y tiene monedas (le entraron por otro camino), se cobra lo que se pueda. */
+    static void collectDebt(MinecraftServer server, ServerPlayer player) {
+        long debt = TFDebt.get(server, player.getUUID(), TFDebt.COINS);
+        if (debt <= 0) return;
+        OptionalLong raw = rawBalance(server, player.getUUID());
+        if (raw.isEmpty() || raw.getAsLong() <= 0) return;
+        long pay = Math.min(debt, raw.getAsLong());
+        boolean ok = switch (mode()) {
+            case TF -> TFWallet.get(server).take(player.getUUID(), pay);
+            case VAULT -> vault().withdraw(player.getUUID(), pay);
+            case COMMANDS -> false;
+        };
+        if (ok) TFDebt.payFrom(server, player.getUUID(), TFDebt.COINS, pay);
     }
 
     /** Pone el saldo exacto (solo con las monedas del TF Client). */

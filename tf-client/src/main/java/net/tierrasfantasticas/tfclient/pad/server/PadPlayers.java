@@ -79,7 +79,9 @@ public final class PadPlayers {
             // los de verdad y los bots de /tf bots (1.3.113: salen igual, con su cara)
             record Who(UUID id, String name) {}
             List<Who> online = new ArrayList<>();
-            for (ServerPlayer p : player.getServer().getPlayerList().getPlayers()) online.add(new Who(p.getUUID(), p.getGameProfile().getName()));
+            for (ServerPlayer p : player.getServer().getPlayerList().getPlayers()) {
+                if (!TFBots.isBotPlayer(p)) online.add(new Who(p.getUUID(), p.getGameProfile().getName())); // (los bots, abajo)
+            }
             for (TFBots.Bot bot : TFBots.online()) online.add(new Who(bot.id(), bot.name()));
             online.sort(Comparator.comparing((Who p) -> !p.id().equals(player.getUUID()))
                     .thenComparing(Who::name, String.CASE_INSENSITIVE_ORDER));

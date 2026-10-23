@@ -38,6 +38,8 @@ public final class TFServerConfig {
     private static boolean fireworks = true;
     private static boolean nametag = true;
     private static boolean rankPermissions = true;
+    /** (1.3.125) Bots de /tf bots como jugadores de verdad (TFBotPlayer); false = solo en la lista del TAB, como antes. */
+    private static boolean realBots = true;
     private static String essentialsConfig = "plugins/Essentials/config.yml";
     private static String economyMode = "auto";
     private static String economyGive = "eco give {player} {amount}";
@@ -78,6 +80,11 @@ public final class TFServerConfig {
     }
 
     /** Monedas del servidor: auto (Vault si está, si no las del TF Client), vault, tf o comandos. */
+    /** (1.3.125) Bots como jugadores de verdad: los ven el servidor, la consola, los plugins (TAB, LuckPerms) y /tpa. */
+    public static boolean realBots() {
+        return realBots;
+    }
+
     /** Poner en LuckPerms y EssentialsX lo que trae cada rango (TFRankPerms). */
     public static boolean rankPermissions() {
         return rankPermissions;
@@ -130,6 +137,7 @@ public final class TFServerConfig {
         fireworks = flag(props, "broadcast.fireworks", true);
         nametag = flag(props, "ranks.nametag", true);
         rankPermissions = flag(props, "ranks.permissions", true);
+        realBots = flag(props, "bots.reales", true);
         essentialsConfig = props.getProperty("ranks.essentials", essentialsConfig).trim();
         economyMode = props.getProperty("economy.mode", "auto").trim().toLowerCase(java.util.Locale.ROOT);
         economyGive = props.getProperty("economy.give", economyGive).trim();
@@ -154,7 +162,7 @@ public final class TFServerConfig {
         }
         boolean missing = false;
         for (String key : new String[] {"bridge.enabled", "bridge.url", "bridge.interval", "broadcast.enabled", "broadcast.fireworks", "ranks.nametag",
-                "ranks.permissions", "ranks.essentials", "economy.mode", "economy.give", "economy.take", "economy.currency"}) {
+                "ranks.permissions", "ranks.essentials", "economy.mode", "economy.give", "economy.take", "economy.currency", "bots.reales"}) {
             missing |= !props.containsKey(key);
         }
         if (created || missing) {
@@ -163,6 +171,7 @@ public final class TFServerConfig {
             props.setProperty("broadcast.fireworks", Boolean.toString(fireworks));
             props.setProperty("ranks.nametag", Boolean.toString(nametag));
             props.setProperty("ranks.permissions", Boolean.toString(rankPermissions));
+            props.setProperty("bots.reales", Boolean.toString(realBots));
             props.setProperty("ranks.essentials", essentialsConfig);
             props.setProperty("bridge.url", url);
             props.setProperty("bridge.secret", secret);
