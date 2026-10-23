@@ -20,7 +20,7 @@
   let selected = null;
 
   const formatPrice = (cents) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: config.currency || 'USD' }).format(cents / 100);
+    cents === 0 ? 'Gratis' : new Intl.NumberFormat('en-US', { style: 'currency', currency: config.currency || 'USD' }).format(cents / 100);
 
   $$('[data-year]').forEach((el) => (el.textContent = new Date().getFullYear()));
 
@@ -352,7 +352,9 @@
       else el.style.removeProperty(k);
     }
   }
-  const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
+  // Lo que cuesta 0 (los rangos durante una prueba) se reclama con la cuenta (/api/claim), sin pasar por el pago
+  const buyAttrs = (p) =>
+    p.price === 0 ? `data-claim="${escapeHtml(p.id)}"` : `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
   // Comprar como regalo: el botón del regalo (solo el icono en las tarjetas; con texto donde hay sitio)
   const giftAttrs = (p) => `data-gift="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
   const giftIcon = (p) =>
@@ -2116,6 +2118,7 @@
     const owned = me.user?.rank;
     if (!owned || p?.category !== 'rangos' || !p.tier) return null;
     if (owned.tier >= p.tier) return { owned: true };
+    if (p.price === 0) return null; // gratis: sin precio de mejora
     const from = products.find((x) => x.id === owned.id);
     return from ? { unit: Math.max(50, p.price - from.price) } : null;
   }
