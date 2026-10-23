@@ -209,7 +209,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    Complementary): el objeto en la mano, luminancia 45 en el Void frente a 108 fuera (el inventario, igual en los dos);
    en el Void la luz del jugador es bloque 0 y cielo 0, y el paquete (con sus programas del End) solo le da su ambiente.
    `vacio/VoidItemLight`: con paquete y en el Void, la mano (`ItemInHandRendererMixin`) y los objetos tirados
-   (`ItemEntityRendererMixin`) con luz de cielo 15 y de bloque 12.
+   (`ItemEntityRendererMixin`) con luz de cielo 15 y de bloque 12. **Comprobado** (`eaf789b`): 68 en el Void (la
+   manzana dorada se ve dorada). Si el dueño los sigue viendo oscuros con Photon, subir `VoidItemLight.BLOCK` (máx. 15).
+   También comprobado en `a64be32`: caballeros «reposo por debajo: [-]», el Archivista sin efectos pegados, el ranking
+   con bots (332, 311, 241… monedas; 5, 5, 4… misiones) y el menú de un bot sin ficha.
 5. **Llamas del Archivista pegadas**: `SkillRuntime.exec`/`cancelCast`: lo que hace un efecto (actor) no lleva el uso
    del jefe; el combo del cerebro ya no cancela su `remove{delay=20}` (JEFES.md §3, tabla de MythicMobs).
 6. **Web**: cosméticos y clases de skills **solo con Fantastic Coins** (`coinsOnly`; `/api/checkout` los rechaza con
