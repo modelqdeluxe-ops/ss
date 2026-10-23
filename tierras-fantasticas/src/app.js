@@ -1572,10 +1572,23 @@ export function createApp(env) {
         padData.push({ uuid: uuid.toLowerCase(), owned: (await ownedPieces(uuid)).map(({ set, id, name, slot, from }) => ({ set, id, name, slot, from })) });
       }
 
+      // (TF Client 1.3.120) el servidor empezó limpio: lo de estos jugadores en la web, también (store.resetPlayer)
+      let resetDone = null;
+      const resetList = list(body.reset, 100).filter((u) => typeof u === 'string' && UUID_RE.test(u));
+      if (resetList.length) {
+        resetDone = 0;
+        for (const uuid of resetList) {
+          await store.resetPlayer(uuid);
+          resetDone++;
+        }
+        log.warn(`Puente: reiniciados en la web ${resetDone} jugadores (el servidor empezó limpio)`);
+      }
+
       const playerRanks = (await store.ranksFor(online)).map((r) => ({ uuid: r.uuid, ...rankInfo(rankById.get(r.rankId)) })).filter((r) => r.id);
 
       return json({
         deliveries,
+        ...(resetDone !== null ? { resetDone } : {}),
         interval: BRIDGE_INTERVAL_S,
         ranks: playerRanks,
         rankList: ranks.map(rankSetup),

@@ -29,10 +29,11 @@ import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * Comunidad en el cliente: la lista de publicaciones que manda el servidor, las fotos (se bajan una vez y se guardan en
- * .minecraft/tfclient/cache/comunidad) y la subida de una foto propia (recortada a 16:9 y reducida a 480x270).
+ * .minecraft/tfclient/cache/comunidad) y la subida de una foto propia (recortada a 16:9, hasta 1920x1080).
  */
 final class PadCommunityClient {
-    static final int PHOTO_W = 1280, PHOTO_H = 720;
+    /** (1.3.120) la foto publicada, a 1920x1080 (antes 1280x720); si pesa demasiado, más pequeña. */
+    static final int PHOTO_W = 1920, PHOTO_H = 1080;
 
     /** Lo que se ve: publicaciones cargadas de la pestaña actual (varias páginas seguidas). */
     static final List<PadCommunityNet.Post> POSTS = new ArrayList<>();
@@ -118,35 +119,11 @@ final class PadCommunityClient {
             PadCommunityNet.Post p = POSTS.get(i);
             if (!p.id().equals(id)) continue;
             if (action.equals("like")) {
-                POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(),
-                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete(), p.reactions()));
+                POSTS.set(i, p.withLike(!p.liked()));
             } else if (action.startsWith("react:")) {
-                // al momento, como en el servidor: una reacción por jugador; el mismo emoji la quita, otro la cambia
-                String emoji = PadEmojis.canonical(action.substring(6));
-                if (emoji == null) break;
-                List<PadCommunityNet.Reaction> r = new ArrayList<>(p.reactions());
-                for (int k = r.size() - 1; k >= 0; k--) {
-                    PadCommunityNet.Reaction old = r.get(k);
-                    if (!old.mine() || old.emoji().equals(emoji)) continue;
-                    if (old.count() <= 1) r.remove(k);
-                    else r.set(k, new PadCommunityNet.Reaction(old.emoji(), old.count() - 1, false));
-                }
-                int at = -1;
-                for (int k = 0; k < r.size(); k++) if (r.get(k).emoji().equals(emoji)) at = k;
-                if (at >= 0) {
-                    PadCommunityNet.Reaction old = r.get(at);
-                    int n = Math.max(0, old.count() + (old.mine() ? -1 : 1));
-                    if (n == 0) r.remove(at);
-                    else r.set(at, new PadCommunityNet.Reaction(emoji, n, !old.mine()));
-                    if (!old.mine()) used(emoji);
-                } else if (r.size() < PadCommunityNet.MAX_REACTIONS) {
-                    r.add(new PadCommunityNet.Reaction(emoji, 1, true));
-                    used(emoji);
-                } else {
-                    break;
-                }
-                POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(), p.likes(), p.liked(),
-                        p.mine(), p.canDelete(), List.copyOf(r)));
+                List<PadCommunityNet.Reaction> r = toggle(p.reactions(), action.substring(6), PadCommunityNet.MAX_REACTIONS);
+                if (r == null) break;
+                POSTS.set(i, p.withReactions(r));
             } else if (action.equals("borrar")) {
                 POSTS.remove(i);
                 total = Math.max(0, total - 1);
@@ -154,6 +131,135 @@ final class PadCommunityClient {
             break;
         }
         if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadCommunityPage p) p.updated();
+    }
+
+    /**
+     * Al momento, como en el servidor: una reacción por jugador; el mismo emoji la quita, otro la cambia. null si es un
+     * emoji desconocido o ya hay max distintos.
+     */
+    static List<PadCommunityNet.Reaction> toggle(List<PadCommunityNet.Reaction> rs, String id, int max) {
+        String emoji = PadEmojis.canonical(id);
+        if (emoji == null) return null;
+        List<PadCommunityNet.Reaction> r = new ArrayList<>(rs);
+        for (int k = r.size() - 1; k >= 0; k--) {
+            PadCommunityNet.Reaction old = r.get(k);
+            if (!old.mine() || old.emoji().equals(emoji)) continue;
+            if (old.count() <= 1) r.remove(k);
+            else r.set(k, new PadCommunityNet.Reaction(old.emoji(), old.count() - 1, false));
+        }
+        int at = -1;
+        for (int k = 0; k < r.size(); k++) if (r.get(k).emoji().equals(emoji)) at = k;
+        if (at >= 0) {
+            PadCommunityNet.Reaction old = r.get(at);
+            int n = Math.max(0, old.count() + (old.mine() ? -1 : 1));
+            if (n == 0) r.remove(at);
+            else r.set(at, new PadCommunityNet.Reaction(emoji, n, !old.mine()));
+            if (!old.mine()) used(emoji);
+        } else if (r.size() < max) {
+            r.add(new PadCommunityNet.Reaction(emoji, 1, true));
+            used(emoji);
+        } else {
+            return null;
+        }
+        return List.copyOf(r);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Comentarios (1.3.120): los de la foto abierta en la ventana de comentarios
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** La foto cuya ventana de comentarios está abierta (null: ninguna). */
+    static String commentsPost;
+    static final List<PadCommunityNet.Comment> COMMENTS = new ArrayList<>();
+    static int commentsTotal;
+    static boolean commentsLoading;
+    /** Cuándo llegaron los últimos (la ventana baja al final al llegar uno nuevo tuyo). */
+    static long commentsAt;
+    /** Skins de quien comenta, por sus datos («textures» en base64), ya registradas. */
+    private static final Map<String, ResourceLocation> FACES = new HashMap<>();
+    private static final Set<String> FACE_ASKED = new HashSet<>();
+
+    static void openComments(String post) {
+        if (!post.equals(commentsPost)) {
+            COMMENTS.clear();
+            commentsTotal = 0;
+        }
+        commentsPost = post;
+        commentsLoading = true;
+        PadCommunityNet.toServer(new PadCommunityNet.CommentsReq(post));
+    }
+
+    static void closeComments() {
+        commentsPost = null;
+        COMMENTS.clear();
+        commentsLoading = false;
+    }
+
+    static void comments(PadCommunityNet.Comments m) {
+        // el número del botón COMENTARIOS de su tarjeta, siempre al día
+        for (int i = 0; i < POSTS.size(); i++) {
+            if (POSTS.get(i).id().equals(m.post())) POSTS.set(i, POSTS.get(i).withComments(m.total()));
+        }
+        if (!m.post().equals(commentsPost)) return;
+        commentsLoading = false;
+        COMMENTS.clear();
+        COMMENTS.addAll(m.comments());
+        commentsTotal = m.total();
+        commentsAt = System.currentTimeMillis();
+    }
+
+    /** Escribir un comentario en la foto abierta (el servidor contesta con la lista nueva). */
+    static void comment(String text) {
+        String t = text.strip();
+        if (commentsPost == null || t.isEmpty()) return;
+        if (t.length() > PadCommunityNet.COMMENT_MAX) t = t.substring(0, PadCommunityNet.COMMENT_MAX);
+        commentsLoading = true;
+        PadCommunityNet.toServer(new PadCommunityNet.CommentAct(commentsPost, "add", "", t));
+    }
+
+    /** react:&lt;emoji&gt; o borrar en un comentario; se cambia aquí mismo lo que se ve. */
+    static void commentAct(String action, String comment) {
+        if (commentsPost == null) return;
+        for (int i = 0; i < COMMENTS.size(); i++) {
+            PadCommunityNet.Comment c = COMMENTS.get(i);
+            if (!c.id().equals(comment)) continue;
+            if (action.startsWith("react:")) {
+                List<PadCommunityNet.Reaction> r = toggle(c.reactions(), action.substring(6), PadCommunityNet.COMMENT_REACTIONS);
+                if (r == null) return;
+                COMMENTS.set(i, c.withReactions(r));
+            } else if (action.equals("borrar")) {
+                COMMENTS.remove(i);
+                commentsTotal = Math.max(0, commentsTotal - 1);
+            }
+            break;
+        }
+        PadCommunityNet.toServer(new PadCommunityNet.CommentAct(commentsPost, action, comment, ""));
+    }
+
+    /**
+     * La skin de quien comentó, para su cara: la del Armario o la del jugador conectado (como en la lista de Tab), la de
+     * sus datos de skin (se baja una vez) o, mientras, la de por defecto.
+     */
+    static ResourceLocation face(java.util.UUID who, String skin) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation worn = net.tierrasfantasticas.tfclient.skins.SkinClient.texture(who);
+        if (worn != null) return worn;
+        net.minecraft.client.multiplayer.PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(who);
+        if (info != null) return info.getSkinLocation();
+        if (!skin.isEmpty()) {
+            ResourceLocation rl = FACES.get(skin);
+            if (rl != null) return rl;
+            if (FACE_ASKED.add(skin)) {
+                // con un uuid inventado: así no se le pregunta a Mojang por el perfil, solo se bajan esos datos
+                com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(
+                        java.util.UUID.nameUUIDFromBytes(skin.getBytes(java.nio.charset.StandardCharsets.UTF_8)), "tfskin");
+                gp.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", skin));
+                mc.getSkinManager().registerSkins(gp, (type, loc, tex) -> {
+                    if (type == com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.SKIN) FACES.put(skin, loc);
+                }, false);
+            }
+        }
+        return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultSkin(who);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -261,9 +367,9 @@ final class PadCommunityClient {
         trim();
     }
 
-    /** Como mucho 12 fotos en memoria de vídeo (a 1280x720, unos 44 MB). */
+    /** Como mucho 10 fotos en memoria de vídeo (a 1920x1080, unos 83 MB). */
     private static void trim() {
-        while (TEXTURES.size() > 12) {
+        while (TEXTURES.size() > 10) {
             String oldest = TEXTURES.keySet().iterator().next();
             Tex t = TEXTURES.remove(oldest);
             Minecraft.getInstance().getTextureManager().release(t.loc);
@@ -281,9 +387,12 @@ final class PadCommunityClient {
         Util.backgroundExecutor().execute(() -> {
             byte[] png;
             try (InputStream in = Files.newInputStream(file); NativeImage src = NativeImage.read(in)) {
-                png = encode(src, PHOTO_W, PHOTO_H);
+                // nunca más grande que la foto (si la pantalla era pequeña, a su tamaño)
+                int w = Math.min(PHOTO_W, Math.max(640, src.getWidth()));
+                png = encode(src, w, w * 9 / 16);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1600, 900);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1280, 720);
                 if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 960, 540);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 640, 360);
             } catch (Exception e) {
                 TFClient.LOGGER.warn("Comunidad: no se pudo preparar la foto", e);
                 Minecraft.getInstance().execute(() -> result(new PadCommunityNet.Result(false, "No se pudo leer la foto.")));
@@ -391,6 +500,9 @@ final class PadCommunityClient {
         DOWNLOADS.clear();
         DECODING.clear();
         OUTBOX.clear();
+        closeComments();
+        FACES.clear();
+        FACE_ASKED.clear();
         for (Tex t : TEXTURES.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         TEXTURES.clear();
         PadEmojiDraw.clear();

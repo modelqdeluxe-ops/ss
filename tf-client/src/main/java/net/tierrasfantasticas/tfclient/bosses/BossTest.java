@@ -709,6 +709,12 @@ public final class BossTest {
     static volatile String typePad;
     /** (1.3.109) Una acción para la app abierta del pad («tab:combate», «§scroll:400»). */
     static volatile String actPad;
+    /**
+     * (1.3.120) El cliente de la prueba abre el menú principal («principal», «principal-raton»: con el ratón forzado en
+     * Mundo local) u Opciones con el tema de TF; keepMenu: no se cierran solas (son pantallas de pausa).
+     */
+    static volatile String openMenu;
+    static volatile boolean keepMenu;
     private static net.tierrasfantasticas.tfclient.bosses.BossEntity padNpc;
     private static java.util.UUID padClaim;
     private static net.tierrasfantasticas.tfclient.vacio.KnightEntity knight;
@@ -1793,7 +1799,7 @@ public final class BossTest {
             // (1.3.109) los bots: 4 que entran de uno en uno, la lista de jugadores (TAB) con sus caras y fuera
             case 492 -> {
                 var src = player.createCommandSourceStack().withPermission(4);
-                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 1");
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add cantidad 4 1");
             }
             // (1.3.112) /tpa y /msg a un bot: los contesta BotCommands como EssentialsX (sin «entidad no encontrada») y la
             // petición se deniega sola a los 5 s
@@ -1823,7 +1829,7 @@ public final class BossTest {
             // (1.3.111) otra tanda: al azar, no los mismos (los que acaban de salir no vuelven enseguida)
             case 664 -> {
                 var src = player.createCommandSourceStack().withPermission(4);
-                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add 4 0");
+                level.getServer().getCommands().performPrefixedCommand(src, "tf bots add cantidad 4 0");
             }
             case 672 -> r.event("bots: a los 5 s, peticiones esperando: "
                     + net.tierrasfantasticas.tfclient.server.BotCommands.pending(player.getUUID()) + " (0 = el bot la denegó)");
@@ -1969,8 +1975,58 @@ public final class BossTest {
             case 964 -> shot(r, "pad_ranking_monedas");
             case 966 -> openPad = "ranking/misiones";
             case 996 -> shot(r, "pad_ranking_misiones");
-            case 998 -> closeScreen = true;
-            case 1002 -> next(level);
+            // (1.3.120, el dueño: «comentarios con nombre y la cara de la skin, reacciones en los comentarios, su propia
+            // ventana; los botones de reaccionar abajo, no en medio») una foto de un bot con comentarios: la tarjeta, la
+            // ventana de comentarios y el selector de emojis de un comentario
+            case 998 -> {
+                java.util.List<java.util.UUID> who = new java.util.ArrayList<>();
+                java.util.List<String> names = new java.util.ArrayList<>();
+                for (var b : net.tierrasfantasticas.tfclient.server.TFBots.known()) {
+                    who.add(b.id());
+                    names.add(b.name());
+                }
+                r.event("comunidad: foto de prueba " + net.tierrasfantasticas.tfclient.pad.PadCommunityServer.testPost(player, who, names)
+                        + " de " + (names.isEmpty() ? "nadie (sin bots)" : names.subList(0, Math.min(3, names.size()))));
+                openPad = "comunidad";
+            }
+            case 1040 -> shot(r, "pad_comunidad");
+            case 1042 -> actPad = "comentarios";
+            case 1080 -> shot(r, "pad_comentarios");
+            case 1082 -> actPad = "emojis-comentario";
+            case 1100 -> shot(r, "pad_comentarios_emojis");
+            // (1.3.120, el dueño: «el contorno de la piedra en la mano, antes de ponerla, una línea sólida») una piedra de
+            // 25x25 en la mano, mirando al suelo
+            case 1102 -> {
+                closeScreen = true;
+                net.minecraft.world.item.Item stone = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                        new net.minecraft.resources.ResourceLocation("tfclient", "proteccion_25x25"));
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stone == null ? ItemStack.EMPTY : new ItemStack(stone));
+                player.teleportTo(level, arena.x, arena.y, arena.z - 6, 0F, 38F);
+                r.event("en la mano: " + player.getMainHandItem().getItem());
+            }
+            case 1130 -> shot(r, "piedra_en_mano");
+            case 1132 -> cameraType = 1;
+            case 1150 -> shot(r, "piedra_en_mano_detras");
+            case 1152 -> {
+                cameraType = 0;
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            }
+            // (1.3.120, el dueño: «rework completo de los botones del menú principal, como los de los diálogos de los
+            // NPC pero mejor») el menú principal, con el ratón (forzado) en Mundo local, y Opciones con el tema de TF
+            case 1154 -> {
+                keepMenu = true;
+                openMenu = "principal";
+            }
+            case 1190 -> shot(r, "menu_principal");
+            case 1192 -> openMenu = "principal-raton";
+            case 1226 -> shot(r, "menu_principal_raton");
+            case 1228 -> openMenu = "opciones";
+            case 1256 -> shot(r, "menu_opciones");
+            case 1258 -> {
+                keepMenu = false;
+                closeScreen = true;
+            }
+            case 1262 -> next(level);
             default -> { }
         }
     }

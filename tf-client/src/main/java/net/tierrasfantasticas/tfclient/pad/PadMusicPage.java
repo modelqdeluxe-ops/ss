@@ -203,7 +203,7 @@ final class PadMusicPage extends PadPage {
         g.fillGradient(x + 5, tabTop + 1, x + 4 + tw - 1, tabTop + PadSkin.TABS + 1, 0xFF323C80, CARD_TOP);
         g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 3, GOLD);
         g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 2, GOLD_LIGHT);
-        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, tabTop + 4, 0xFFE680, false);
+        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, tabTop + 3, 0xFFE680, false);
         // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
@@ -602,7 +602,7 @@ final class PadMusicPage extends PadPage {
         boolean sure = label.startsWith("¿");
         int acc = PadSkin.deep(PadSkin.accent("musica"));
         String shown = PadFont.fit(label, tw - X_ROOM - 10);
-        PadFont.drawShadowCentered(g, shown, tx + (tw - X_ROOM) / 2 + 1, y + 4, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
+        PadFont.drawShadowCentered(g, shown, tx + (tw - X_ROOM) / 2 + 1, y + 2, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
         int bx = tx + tw - 13, by = y + 4;
         boolean xh = PadUi.inside(mx, my, bx, by, 9, 9);
         if (xh) {

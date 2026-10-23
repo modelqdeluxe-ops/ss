@@ -24,7 +24,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
-import net.tierrasfantasticas.tfclient.claims.ClaimBlocks;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimTier;
 import org.joml.Vector3f;
 
@@ -133,13 +132,11 @@ public final class ClaimOutlineRenderer {
         ++ticks;
         List<double[]> walls = ClientBorderStore.walls();
         List<double[]> corners = ClientBorderStore.corners();
-        // Vista previa de la piedra de protección en la mano (misma zona que antes, sin techo)
+        // Vista previa de la piedra de protección en la mano: (1.3.120, el dueño: «antes de ponerla, una línea sólida, no
+        // partículas, que no se ven») ahora la dibuja ClaimPreviewLines; aquí ya no salen motas
         PREVIEW_WALLS.clear();
         PREVIEW_CORNERS.clear();
-        ClaimTier claimtier = ClaimBlocks.readTier(localplayer.getMainHandItem());
-        if (claimtier == null) {
-            claimtier = ClaimBlocks.readTier(localplayer.getOffhandItem());
-        }
+        ClaimTier claimtier = null;
         if (claimtier != null) {
             BlockPos blockpos = localplayer.blockPosition();
             PREVIEW_BOXES.clear();

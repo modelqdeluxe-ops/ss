@@ -8,7 +8,6 @@
  */
 package net.tierrasfantasticas.tfclient.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.HashMap;
@@ -26,7 +25,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * Quien llama escala la pose a 1/escala y pasa coordenadas en píxeles reales. Relleno y borde se hacen con
  * rectángulos (las esquinas píxel a píxel, juntando los iguales); los halos con una textura 9-slice generada para
  * cada tamaño y dibujada 1:1 (las tiras del medio solo se estiran a lo largo, donde no cambian).
- * Herramienta para verlo sin abrir el juego: el simulador tools/menu_sim.py (mismas cuentas).
+ * Lo usan los botones de TF (TFPill) y el diálogo de los caballeros. Herramienta para verlo sin abrir el juego: el
+ * simulador tools/menu_sim.py (mismas cuentas).
  */
 public final class TFMenuPaint {
     private TFMenuPaint() {}
@@ -218,34 +218,5 @@ public final class TFMenuPaint {
             HALOS.put(key, null);
             return null;
         }
-    }
-
-    // --------------------------------------------------------------------------------------------- destello
-
-    /**
-     * Línea luminosa (button_shine.png) que cruza el botón de izquierda a derecha; t de 0 a 1 y fuerza máxima
-     * `strength`. En unidades de interfaz; se recorta dentro del borde y lejos de las esquinas redondeadas.
-     */
-    public static void sweep(GuiGraphics g, int x, int y, int w, int h, float t, float strength) {
-        if (!TFTextures.BUTTON_SHINE.ready() || w < 20 || t <= 0f || t >= 1f) return;
-        float eased = t * t * (3f - 2f * t); // entra y sale suave
-        float bandW = h * 2.4f;
-        float bandX = x - bandW + eased * (w + bandW);
-        float k = Mth.clamp(strength * (float) Math.sin(t * Math.PI), 0f, 1f); // se enciende y se apaga, nunca de golpe
-        if (k <= 0.004f) return;
-        g.enableScissor(x + 3, y + 1, x + w - 3, y + h - 1);
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        g.setColor(1f, 1f, 1f, k);
-        g.pose().pushPose();
-        g.pose().translate(bandX, y, 0f);
-        int tw = TFTextures.BUTTON_SHINE.width();
-        int th = TFTextures.BUTTON_SHINE.height();
-        g.pose().scale(bandW / tw, h / (float) th, 1f);
-        g.blit(TFTextures.BUTTON_SHINE.id(), 0, 0, 0f, 0f, tw, th, tw, th);
-        g.pose().popPose();
-        g.setColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
-        g.disableScissor();
     }
 }

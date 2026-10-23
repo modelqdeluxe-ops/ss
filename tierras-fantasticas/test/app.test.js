@@ -1676,6 +1676,23 @@ test('los roles de los rangos se buscan por su nombre en el Discord (exacto o si
   }
 });
 
+test('el servidor empieza limpio: la web reinicia a esos jugadores (clase, rango, efectos, armario y pedidos)', async () => {
+  const cookie = await register('Limpio_MC');
+  const uuid = uuidOf('Limpio_MC');
+  await post('/api/skills/coins', { id: 'thor' }, cookie);
+  const [d] = (await (await poll(['Limpio_MC'])).json()).deliveries;
+  await poll(['Limpio_MC'], [{ id: d.id, ok: true }]);
+  let me = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
+  assert.deepStrictEqual([me.owned, me.active], [['thor'], 'thor']);
+
+  // TF Client 1.3.120: el servidor manda en «reset» los que tenían datos (TFDataReset) y borra su lista al ver resetDone
+  const res = await (await poll(['Limpio_MC'], [], { reset: [uuid, 'no-es-un-uuid'] })).json();
+  assert.strictEqual(res.resetDone, 1);
+  me = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
+  assert.deepStrictEqual([me.owned, me.active], [[], null]);
+  assert.strictEqual((await post('/api/skills/coins', { id: 'thor' }, cookie)).status, 200, 'se puede volver a comprar');
+});
+
 // --- Panel de staff (/staff) ---
 test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (también lo gratis) quitando el rango y su rol', async () => {
   const staff = (path, { key = 'clave-del-staff', ip = '198.51.100.7', ...init } = {}) =>

@@ -28,7 +28,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 public final class PadCommunityNet {
     static final int UP_CHUNK = 28_000;
     static final int DOWN_CHUNK = 60_000;
-    static final int MAX_PHOTO = 1_800_000;
+    /** (1.3.120, el dueño: «aumenta la calidad de la foto en la publicación») hasta 1920x1080 en PNG. */
+    static final int MAX_PHOTO = 4_200_000;
 
     private static SimpleChannel channel;
 
@@ -50,6 +51,13 @@ public final class PadCommunityNet {
                 .encoder(Img::write).decoder(Img::read).consumerMainThread(Img::handle).add();
         ch.messageBuilder(Result.class, base + 6, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Result::write).decoder(Result::read).consumerMainThread(Result::handle).add();
+        // 1.3.120: comentarios (los ids 17-19 del canal; el parlante empieza en el 20)
+        ch.messageBuilder(CommentsReq.class, base + 7, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(CommentsReq::write).decoder(CommentsReq::read).consumerMainThread(CommentsReq::handle).add();
+        ch.messageBuilder(Comments.class, base + 8, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Comments::write).decoder(Comments::read).consumerMainThread(Comments::handle).add();
+        ch.messageBuilder(CommentAct.class, base + 9, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(CommentAct::write).decoder(CommentAct::read).consumerMainThread(CommentAct::handle).add();
     }
 
     static void toServer(Object msg) {
@@ -100,10 +108,24 @@ public final class PadCommunityNet {
 
     /**
      * Una foto de la lista tal como la ve un jugador. reactions: las reacciones con emoji que tiene (en el orden en que
-     * se pusieron, como en Discord), cada una con cuántos la pusieron y si este jugador es uno de ellos.
+     * se pusieron, como en Discord), cada una con cuántos la pusieron y si este jugador es uno de ellos; comments:
+     * cuántos comentarios tiene.
      */
     public record Post(String id, UUID author, String name, String caption, long time, int likes, boolean liked,
-                       boolean mine, boolean canDelete, List<Reaction> reactions) {}
+                       boolean mine, boolean canDelete, List<Reaction> reactions, int comments) {
+        Post withReactions(List<Reaction> r) {
+            return new Post(id, author, name, caption, time, likes, liked, mine, canDelete, r, comments);
+        }
+
+        Post withLike(boolean on) {
+            return new Post(id, author, name, caption, time, Math.max(0, likes + (on == liked ? 0 : on ? 1 : -1)), on, mine, canDelete,
+                    reactions, comments);
+        }
+
+        Post withComments(int n) {
+            return new Post(id, author, name, caption, time, likes, liked, mine, canDelete, reactions, Math.max(0, n));
+        }
+    }
 
     /** Una reacción de una foto: el emoji (id de {@link PadEmojis}), cuántos la pusieron y si tú la pusiste. */
     public record Reaction(String emoji, int count, boolean mine) {}
@@ -138,6 +160,7 @@ public final class PadCommunityNet {
                     buf.writeVarInt(re.count);
                     buf.writeBoolean(re.mine);
                 }
+                buf.writeVarInt(p.comments);
             }
         }
 
@@ -156,7 +179,7 @@ public final class PadCommunityNet {
                 if (n < 0 || n > MAX_REACTIONS) throw new IllegalArgumentException("Demasiadas reacciones: " + n);
                 List<Reaction> reactions = new ArrayList<>(n);
                 for (int r = 0; r < n; r++) reactions.add(new Reaction(buf.readUtf(PadEmojis.ID_MAX), buf.readVarInt(), buf.readBoolean()));
-                posts.add(new Post(id, author, name, caption, time, likes, liked, mine, canDelete, List.copyOf(reactions)));
+                posts.add(new Post(id, author, name, caption, time, likes, liked, mine, canDelete, List.copyOf(reactions), buf.readVarInt()));
             }
             return new Feed(tab, page, pages, total, posts);
         }
@@ -237,6 +260,124 @@ public final class PadCommunityNet {
 
         static void handle(Result m, Supplier<NetworkEvent.Context> ctx) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> PadCommunityClient.result(m));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Comentarios (1.3.120, el dueño: «que el comentario salga con nombre y foto de la skin, reaccionar a los
+    // comentarios, en su propia ventana»)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Lo más largo de un comentario. */
+    public static final int COMMENT_MAX = 140;
+    /** Comentarios que se mandan de una foto (los últimos). */
+    public static final int COMMENTS_SENT = 100;
+    /** Emojis distintos por comentario. */
+    public static final int COMMENT_REACTIONS = 12;
+    /** Lo más largo de los datos de la skin (la propiedad «textures» en base64; las de Mojang rondan los 600). */
+    static final int SKIN_MAX = 4096;
+
+    /**
+     * Un comentario tal como lo ve un jugador: quién (uuid, nombre y los datos de su skin, «textures» en base64 o vacío),
+     * el texto, cuándo, sus reacciones y si es suyo o lo puede borrar (el autor del comentario, el de la foto o el staff).
+     */
+    public record Comment(String id, UUID author, String name, String skin, String text, long time, List<Reaction> reactions,
+                          boolean mine, boolean canDelete) {
+        Comment withReactions(List<Reaction> r) {
+            return new Comment(id, author, name, skin, text, time, r, mine, canDelete);
+        }
+    }
+
+    /** Pide los comentarios de una foto. */
+    public record CommentsReq(String post) {
+        static void write(CommentsReq m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.post, 32);
+        }
+
+        static CommentsReq read(FriendlyByteBuf buf) {
+            return new CommentsReq(buf.readUtf(32));
+        }
+
+        static void handle(CommentsReq m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) PadCommunityServer.requestComments(p, m.post);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Los comentarios de una foto (los últimos {@link #COMMENTS_SENT}, del más viejo al más nuevo) y cuántos tiene. */
+    public record Comments(String post, int total, List<Comment> comments) {
+        static void write(Comments m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.post, 32);
+            buf.writeVarInt(m.total);
+            int n = Math.min(COMMENTS_SENT, m.comments.size());
+            buf.writeVarInt(n);
+            for (int i = m.comments.size() - n; i < m.comments.size(); i++) {
+                Comment c = m.comments.get(i);
+                buf.writeUtf(c.id, 32);
+                buf.writeUUID(c.author);
+                buf.writeUtf(c.name, 32);
+                buf.writeUtf(c.skin.length() > SKIN_MAX ? "" : c.skin, SKIN_MAX);
+                buf.writeUtf(c.text, COMMENT_MAX);
+                buf.writeLong(c.time);
+                int r = Math.min(COMMENT_REACTIONS, c.reactions.size());
+                buf.writeVarInt(r);
+                for (int k = 0; k < r; k++) {
+                    Reaction re = c.reactions.get(k);
+                    buf.writeUtf(re.emoji, PadEmojis.ID_MAX);
+                    buf.writeVarInt(re.count);
+                    buf.writeBoolean(re.mine);
+                }
+                buf.writeBoolean(c.mine);
+                buf.writeBoolean(c.canDelete);
+            }
+        }
+
+        static Comments read(FriendlyByteBuf buf) {
+            String post = buf.readUtf(32);
+            int total = buf.readVarInt(), n = buf.readVarInt();
+            if (n < 0 || n > COMMENTS_SENT) throw new IllegalArgumentException("Demasiados comentarios: " + n);
+            List<Comment> list = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                String id = buf.readUtf(32);
+                UUID author = buf.readUUID();
+                String name = buf.readUtf(32), skin = buf.readUtf(SKIN_MAX), text = buf.readUtf(COMMENT_MAX);
+                long time = buf.readLong();
+                int r = buf.readVarInt();
+                if (r < 0 || r > COMMENT_REACTIONS) throw new IllegalArgumentException("Demasiadas reacciones: " + r);
+                List<Reaction> reactions = new ArrayList<>(r);
+                for (int k = 0; k < r; k++) reactions.add(new Reaction(buf.readUtf(PadEmojis.ID_MAX), buf.readVarInt(), buf.readBoolean()));
+                list.add(new Comment(id, author, name, skin, text, time, List.copyOf(reactions), buf.readBoolean(), buf.readBoolean()));
+            }
+            return new Comments(post, total, list);
+        }
+
+        static void handle(Comments m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> PadCommunityClient.comments(m));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /**
+     * Algo con los comentarios de una foto: «add» (escribir uno: text), «react:&lt;emoji&gt;» (poner o quitar esa reacción en
+     * el comentario comment) o «borrar» (el comentario comment). El servidor contesta con los comentarios.
+     */
+    public record CommentAct(String post, String action, String comment, String text) {
+        static void write(CommentAct m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.post, 32);
+            buf.writeUtf(m.action, ACTION_MAX);
+            buf.writeUtf(m.comment, 32);
+            buf.writeUtf(m.text, COMMENT_MAX);
+        }
+
+        static CommentAct read(FriendlyByteBuf buf) {
+            return new CommentAct(buf.readUtf(32), buf.readUtf(ACTION_MAX), buf.readUtf(32), buf.readUtf(COMMENT_MAX));
+        }
+
+        static void handle(CommentAct m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) PadCommunityServer.commentAct(p, m);
             ctx.get().setPacketHandled(true);
         }
     }

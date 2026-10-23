@@ -339,9 +339,9 @@ final class PadUi {
             int ax = x + 6, ay = y + 7;
             for (int i = 0; i < 4; i++) g.fill(ax + i, ay - i, ax + i + 1, ay + i + 1, 0xFF000000 | text);
             g.fill(ax + 1, ay, ax + 7, ay + 1, 0xFF000000 | text);
-            PadFont.drawCentered(g, label, x + w / 2 + 4, y + 2, text, true);
+            PadFont.drawCentered(g, label, x + w / 2 + 4, y + 1, text, true);
         } else {
-            PadFont.drawCentered(g, label, x + w / 2, y + 2, text, true);
+            PadFont.drawCentered(g, label, x + w / 2, y + 1, text, true);
         }
     }
 
@@ -363,13 +363,13 @@ final class PadUi {
                     g.fill(cx, y + 1, cx + 1, y + 4, GOLD_TEXT);
                 }
             }
-            PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x18265C, false);
+            PadFont.drawCentered(g, label, x + w / 2, y + 3, 0x18265C, false);
         } else {
             box(g, x, y + 2, w, 13, 0xFF6A88B8);
             g.fillGradient(x + 1, y + 3, x + w - 1, y + 14, state == 1 ? 0xFFF2F9FF : 0xFFE2EFFB, state == 1 ? 0xFFCFE3F6 : 0xFFC0D7EE);
             // (1.3.112) su brillo arriba, como los botones
             g.fill(x + 2, y + 3, x + w - 2, y + 4, state == 1 ? 0xFFFFFFFF : 0xCCFFFFFF);
-            PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x34507E, false);
+            PadFont.drawCentered(g, label, x + w / 2, y + 3, 0x34507E, false);
         }
     }
 

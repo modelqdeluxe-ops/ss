@@ -65,6 +65,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.util.TFChat;
+import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Puente entre el servidor de Minecraft y la web de Tierras Fantásticas (solo en servidores dedicados).
@@ -331,6 +332,9 @@ public final class TFBridge {
             padWant.keySet().forEach(u -> want.add(u.toString()));
             body.add("padWant", want);
         }
+        // (1.3.120) los jugadores reiniciados al empezar limpio (TFDataReset): la web también los reinicia
+        JsonObject webReset = TFJson.read(TFJson.worldFile(srv, TFDataReset.WEB_RESET));
+        if (webReset != null && webReset.has("uuids") && webReset.get("uuids").isJsonArray()) body.add("reset", webReset.getAsJsonArray("uuids"));
         // Si la consulta falla, todo vuelve a la cola para la siguiente.
         Runnable requeue = () -> {
             sending.forEach(done::addLast);
@@ -426,6 +430,14 @@ public final class TFBridge {
         }
 
         JsonObject json = JsonParser.parseString(text).getAsJsonObject();
+        if (json.has("resetDone")) {
+            try {
+                Files.deleteIfExists(TFJson.worldFile(srv, TFDataReset.WEB_RESET));
+                TFClient.LOGGER.warn("TF Bridge: la web reinició {} jugadores (empezar limpio)", json.get("resetDone").getAsInt());
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("TF Bridge: no se pudo borrar {}: {}", TFDataReset.WEB_RESET, e.toString());
+            }
+        }
         if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
         if (json.has("rankList")) {
             TFRanks.setList(json.getAsJsonArray("rankList"));

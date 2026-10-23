@@ -61,10 +61,34 @@ public final class BossTestClient {
                     reg -> reg.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions());
             return;
         }
-        if (mc.level != null && mc.screen != null && mc.screen.isPauseScreen()) mc.setScreen(null);
+        if (mc.level != null && mc.screen != null && mc.screen.isPauseScreen() && !BossTest.keepMenu) mc.setScreen(null);
         if (BossTest.closeScreen) {
             BossTest.closeScreen = false;
+            net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = null;
+            net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = false;
             mc.setScreen(null);
+        }
+        if (BossTest.openMenu != null) {
+            String what = BossTest.openMenu;
+            BossTest.openMenu = null;
+            net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = what.equals("principal-raton")
+                    ? net.tierrasfantasticas.tfclient.client.TFMenuButton.BLUE_1 : null;
+            net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = what.equals("opciones");
+            // (que no pausen: son pantallas de pausa y, en un mundo de un jugador, el servidor se pararía y la prueba
+            // no seguiría nunca)
+            mc.setScreen(what.equals("opciones")
+                    ? new net.minecraft.client.gui.screens.OptionsScreen(new net.minecraft.client.gui.screens.TitleScreen(), mc.options) {
+                        @Override
+                        public boolean isPauseScreen() {
+                            return false;
+                        }
+                    }
+                    : new net.minecraft.client.gui.screens.TitleScreen() {
+                        @Override
+                        public boolean isPauseScreen() {
+                            return false;
+                        }
+                    });
         }
         if ("corta".equals(BossTest.currentId())) mc.options.hideGui = BossTest.hideGui;
         if (mc.level != null && mc.player != null && "corta".equals(BossTest.currentId())) BossTest.clientItemsLight = itemsLight(mc);

@@ -108,7 +108,8 @@ public final class PadPlayers {
             String name = name(viewer, uuid);
             boolean online = viewer.getServer().getPlayerList().getPlayer(uuid) != null || TFBots.byId(uuid) != null;
             TFRanks.Rank rank = TFRanks.of(uuid);
-            PadView.Builder b = PadView.of("jugadores");
+            // (1.3.120) la vista dice en qué pantalla está (sin esto, al tocar algo el pad volvía a la lista)
+            PadView.Builder b = PadView.of("jugadores").selected("f:" + uuid);
             b.hero(new PadView.Row(PadClans.head(uuid, name), name, TEXT, List.of((rank == null ? "Sin rango" : rank.name())
                     + " · " + (online ? "conectado" : "desconectado")), -1, "", null, null));
             if (PadClans.canInvite(viewer, uuid)) {
@@ -130,40 +131,86 @@ public final class PadPlayers {
 
         /** Invitar a la protección: a cuál de sus zonas (al pulsarla, ya es miembro). */
         private PadView zones(ServerPlayer viewer, UUID uuid) {
-            PadView.Builder b = PadView.of("jugadores").header("¿A qué zona invitas a " + name(viewer, uuid) + "?");
+            PadView.Builder b = PadView.of("jugadores").selected("p:" + uuid).header("¿A qué zona invitas a " + name(viewer, uuid) + "?");
             for (PadView.Row r : PadClaims.zonesFor(viewer, uuid, "zona:" + uuid + ":")) b.row(r);
             b.empty("No tienes zonas. Coloca una piedra de protección.");
             b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
             return b.build();
         }
 
+        /**
+         * Regalar (1.3.120, el dueño: «el sistema de regalos no me gusta: toco el objeto y me saca; debo tocar el objeto,
+         * poner la cantidad que quiero darle de lo que tengo, y al regalar se va de mi inventario»): toca un objeto de tu
+         * inventario y escribe cuántos (de todos los que tienes de ese, en cualquier hueco); o, sin elegir nada, monedas.
+         */
         private PadView gift(ServerPlayer viewer, UUID uuid) {
             String name = name(viewer, uuid);
-            PadView.Builder b = PadView.of("jugadores");
+            PadView.Builder b = PadView.of("jugadores").selected("r:" + uuid);
             int left = (int) Math.max(0, PadConfig.get("regalos.porDia") - sentToday(viewer.getUUID()));
-            Integer slot = PadServer.get(viewer, "jugadores.slot", null);
-            ItemStack snap = PadServer.get(viewer, "jugadores.snap", null);
-            var items = viewer.getInventory().items;
-            if (slot != null && (slot >= items.size() || snap == null || !ItemStack.matches(items.get(slot), snap))) {
-                slot = null;
-                PadServer.put(viewer, "jugadores.slot", null);
+            ItemStack snap = chosen(viewer);
+            if (snap != null) {
+                int have = count(viewer, snap);
+                b.header("Regalo para " + name + " · te quedan " + left + " hoy.");
+                b.hero(new PadView.Row(snap.copyWithCount(1), snap.getHoverName().getString(), TEXT,
+                        List.of("Tienes " + have + ". Escribe cuántos le das y pulsa REGALAR."), -1, "", null, null));
+                b.input("dar:" + uuid, "CANTIDAD (1-" + have + ")", 6, "REGALAR");
+                b.footer(PadView.Btn.of("OTRO OBJETO", "soltar", PadView.BLUE));
+                if (have > 1) b.footer(PadView.Btn.of("TODOS (" + have + ")", "dar:" + uuid + ":" + have, PadView.GOLD));
+                return b.build();
             }
-            b.header("Regalo para " + name + " · te quedan " + left + " hoy.");
+            b.header("Regalo para " + name + " · toca un objeto o regala monedas · te quedan " + left + " hoy.");
+            var items = viewer.getInventory().items;
             for (int i = 0; i < items.size(); i++) {
                 ItemStack s = items.get(i);
                 if (s.isEmpty()) continue;
                 boolean ok = TFMarket.whyNot(s) == null;
-                b.cell(s, ok ? "" : "NO", MUTED, "elegir:" + i, slot != null && slot == i);
+                b.cell(s, ok ? "" : "NO", MUTED, "elegir:" + i, false);
             }
             b.empty("Tu inventario está vacío.");
+            b.input("monedas:" + uuid, "MONEDAS", 12, "REGALAR");
             b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
-            if (slot != null) {
-                boolean sure = PadServer.confirming(viewer, "regalo:" + uuid);
-                b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "REGALAR " + items.get(slot).getCount(), "regalar:" + uuid, PadView.GOLD));
-            } else {
-                b.input("monedas:" + uuid, "MONEDAS", 12, "REGALAR");
-            }
             return b.build();
+        }
+
+        /** El objeto elegido para regalar (si aún tiene alguno), o null. */
+        private static ItemStack chosen(ServerPlayer player) {
+            ItemStack snap = PadServer.get(player, "jugadores.snap", null);
+            if (snap == null || snap.isEmpty()) return null;
+            if (count(player, snap) <= 0) {
+                PadServer.put(player, "jugadores.snap", null);
+                return null;
+            }
+            return snap;
+        }
+
+        /** Cuántos de ese objeto (el mismo, con sus datos) tiene en el inventario. */
+        private static int count(ServerPlayer player, ItemStack like) {
+            int n = 0;
+            for (ItemStack s : player.getInventory().items) if (!s.isEmpty() && ItemStack.isSameItemSameTags(s, like)) n += s.getCount();
+            return n;
+        }
+
+        /** Saca n de ese objeto del inventario y los devuelve en montones de su tamaño máximo. */
+        private static List<ItemStack> take(ServerPlayer player, ItemStack like, int n) {
+            List<ItemStack> out = new ArrayList<>();
+            int left = n;
+            var items = player.getInventory().items;
+            for (int i = 0; i < items.size() && left > 0; i++) {
+                ItemStack s = items.get(i);
+                if (s.isEmpty() || !ItemStack.isSameItemSameTags(s, like)) continue;
+                int k = Math.min(left, s.getCount());
+                s.shrink(k);
+                left -= k;
+            }
+            int max = Math.max(1, like.getMaxStackSize()), given = n - left;
+            while (given > 0) {
+                int k = Math.min(max, given);
+                out.add(like.copyWithCount(k));
+                given -= k;
+            }
+            player.getInventory().setChanged();
+            player.containerMenu.broadcastChanges();
+            return out;
         }
 
         @Override
@@ -171,7 +218,7 @@ public final class PadPlayers {
             String[] a = action.split(":", 2);
             switch (a[0]) {
                 case "volver" -> {
-                    PadServer.put(player, "jugadores.slot", null);
+                    PadServer.put(player, "jugadores.snap", null);
                     if (tab.startsWith("r:") || tab.startsWith("p:")) return "f:" + tab.substring(2);
                     return tab.isEmpty() ? null : "";
                 }
@@ -202,38 +249,42 @@ public final class PadPlayers {
                     }
                     if (slot < 0 || slot >= player.getInventory().items.size()) return null;
                     ItemStack s = player.getInventory().items.get(slot);
+                    if (s.isEmpty()) return null;
                     String why = TFMarket.whyNot(s);
                     if (why != null) {
                         TFPadNet.notice(player, why.replace("vender", "regalar").replace("GTS", "pad"));
                         return null;
                     }
-                    Integer cur = PadServer.get(player, "jugadores.slot", null);
-                    if (cur != null && cur == slot) {
-                        PadServer.put(player, "jugadores.slot", null);
-                    } else {
-                        PadServer.put(player, "jugadores.slot", slot);
-                        PadServer.put(player, "jugadores.snap", s.copy());
-                    }
+                    PadServer.put(player, "jugadores.snap", s.copyWithCount(1));
                     return null;
                 }
-                case "regalar" -> {
-                    UUID to = uuid(a.length > 1 ? a[1] : "");
+                case "soltar" -> {
+                    PadServer.put(player, "jugadores.snap", null);
+                    return null;
+                }
+                case "dar" -> { // dar:<jugador> (la cantidad escrita) o dar:<jugador>:<cantidad>
+                    String[] d = a.length > 1 ? a[1].split(":", 2) : new String[0];
+                    UUID to = d.length > 0 ? uuid(d[0]) : null;
                     if (to == null || to.equals(player.getUUID()) || !canGift(player)) return null;
-                    Integer slot = PadServer.get(player, "jugadores.slot", null);
-                    ItemStack snap = PadServer.get(player, "jugadores.snap", null);
-                    if (slot == null || slot >= player.getInventory().items.size()) return null;
-                    ItemStack s = player.getInventory().items.get(slot);
-                    if (snap == null || !ItemStack.matches(s, snap) || TFMarket.whyNot(s) != null) {
+                    ItemStack snap = chosen(player);
+                    if (snap == null) {
                         TFPadNet.notice(player, "Ese objeto ya no está. Elige otro.");
-                        PadServer.put(player, "jugadores.slot", null);
                         return null;
                     }
-                    if (!PadServer.confirm(player, "regalo:" + to)) return null;
-                    ItemStack gift = s.copy();
-                    player.getInventory().items.set(slot, ItemStack.EMPTY);
-                    player.getInventory().setChanged();
-                    player.containerMenu.broadcastChanges();
-                    PadServer.put(player, "jugadores.slot", null);
+                    if (TFMarket.whyNot(snap) != null) return null;
+                    int have = count(player, snap), n;
+                    try {
+                        n = Integer.parseInt((d.length > 1 ? d[1] : text).trim());
+                    } catch (Exception e) {
+                        TFPadNet.notice(player, "Escribe cuántos (de 1 a " + have + ").");
+                        return null;
+                    }
+                    if (n < 1 || n > have) {
+                        TFPadNet.notice(player, "Tienes " + have + ": escribe de 1 a " + have + ".");
+                        return null;
+                    }
+                    List<ItemStack> gift = take(player, snap, n);
+                    PadServer.put(player, "jugadores.snap", null);
                     deliver(player, to, gift, 0);
                     return null;
                 }
@@ -253,7 +304,7 @@ public final class PadPlayers {
                         TFPadNet.notice(player, "No tienes " + TFEconomy.format(amount) + ".");
                         return null;
                     }
-                    deliver(player, to, ItemStack.EMPTY, amount);
+                    deliver(player, to, List.of(), amount);
                     TFPadNet.sendState(player);
                     return null;
                 }
@@ -303,7 +354,8 @@ public final class PadPlayers {
      * Manda el regalo (objeto o monedas) al buzón de quien lo recibe: lo recoge en el pad, Recompensas › REGALOS (esté
      * conectado o no). Si está conectado, se le avisa por el chat.
      */
-    private static void deliver(ServerPlayer from, UUID to, ItemStack item, long coins) {
+    /** Manda el regalo (objetos, en montones, o monedas) al buzón de quien lo recibe; cuenta como un regalo del día. */
+    private static void deliver(ServerPlayer from, UUID to, List<ItemStack> items, long coins) {
         JsonObject me = GIFTS.player(from.getUUID());
         if (!today().equals(JsonStore.str(me, "dia"))) {
             me.addProperty("dia", today());
@@ -311,12 +363,23 @@ public final class PadPlayers {
         }
         me.addProperty("enviados", JsonStore.num(me, "enviados") + 1);
         String fromName = from.getGameProfile().getName();
-        String what = coins > 0 ? TFEconomy.format(coins) : TFMarket.describe(item);
-        JsonObject g = note(fromName, what);
-        if (coins > 0) g.addProperty("monedas", coins);
-        else g.addProperty("objeto", item.save(new CompoundTag()).toString());
-        g.addProperty("fecha", System.currentTimeMillis());
-        mailbox(to).add(g);
+        int total = 0;
+        for (ItemStack st : items) total += st.getCount();
+        String what = coins > 0 ? TFEconomy.format(coins)
+                : items.isEmpty() ? "nada" : (total > 1 ? total + "× " : "") + items.get(0).getHoverName().getString();
+        if (coins > 0) {
+            JsonObject g = note(fromName, what);
+            g.addProperty("monedas", coins);
+            g.addProperty("fecha", System.currentTimeMillis());
+            mailbox(to).add(g);
+        } else {
+            for (ItemStack st : items) {
+                JsonObject g = note(fromName, what);
+                g.addProperty("objeto", st.save(new CompoundTag()).toString());
+                g.addProperty("fecha", System.currentTimeMillis());
+                mailbox(to).add(g);
+            }
+        }
         GIFTS.changed();
         ServerPlayer target = from.getServer().getPlayerList().getPlayer(to);
         if (target != null) receive(target, fromName, what);

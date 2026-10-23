@@ -677,7 +677,9 @@ final class PadSkin {
                 g.fill(cx - hw, y + TAB_H + i, cx + hw + 1, y + TAB_H + i + 1, edge);
                 if (hw > 0) g.fill(cx - hw + 1, y + TAB_H + i, cx + hw, y + TAB_H + i + 1, low);
             }
-            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, darken(c, 0.42F));
+            // (1.3.120, el dueño: «los textos de las etiquetas, centrados más arriba: están pegados abajo») la letra (y su
+            // sombra) en medio de la cara de la pestaña: la celda de la fuente lleva 2 filas de tilde arriba
+            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, darken(c, 0.42F));
             return;
         }
         boolean hover = state == 1;
@@ -686,7 +688,7 @@ final class PadSkin {
         PadUi.box(g, x, yy, w, TAB_H, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
         g.fillGradient(x + 1, yy + 1, x + w - 1, yy + TAB_H - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
         g.fill(x + 1, yy + TAB_H - 2, x + w - 1, yy + TAB_H - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
-        if (!label.isEmpty()) PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
+        if (!label.isEmpty()) PadFont.drawCentered(g, label, x + w / 2, yy + 2, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
     }
 
     /**
@@ -755,9 +757,10 @@ final class PadSkin {
                 for (int i = 0; i < 4; i++) g.fill(ax + i, ay - i + k, ax + i + 1, ay + i + 1 + k, col);
                 g.fill(ax + 1, ay + k, ax + 7, ay + 1 + k, col);
             }
-            PadFont.drawShadowCentered(g, label, x + w / 2 + 4, yy + 2, text, shade);
+            PadFont.drawShadowCentered(g, label, x + w / 2 + 4, yy + 1, text, shade);
         } else if (!label.isEmpty()) {
-            PadFont.drawShadowCentered(g, label, x + w / 2, yy + 2, text, shade);
+            // (1.3.120) 1 más arriba: en medio de la cara (sin contar la sombra de abajo del botón)
+            PadFont.drawShadowCentered(g, label, x + w / 2, yy + 1, text, shade);
         }
     }
 

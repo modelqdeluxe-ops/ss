@@ -467,6 +467,30 @@ export function createStore(db) {
     return results.map((r) => ({ uuid: r.uuid, rankId: r.rank_id, tier: r.tier }));
   }
 
+  // (TF Client 1.3.120, el dueño: «vamos a comenzar limpios: quita todo su registro, lo que haya comprado») Reinicia lo
+  // que un jugador tiene en la web: rango, efectos, clase de skills y armario fuera, y sus pedidos pasan a «reiniciado»
+  // (siguen en el historial, pero ya no cuentan como suyos ni se entregan). Lo pide el servidor por el puente.
+  async function resetPlayer(uuid) {
+    await init();
+    const id = String(uuid).toLowerCase();
+    const now = new Date().toISOString();
+    for (const table of ['player_ranks', 'vfx_owned', 'vfx_equip', 'skill_active', 'wardrobe']) {
+      await db.prepare(`DELETE FROM ${table} WHERE lower(uuid) = ?`).bind(id).run();
+    }
+    await db
+      .prepare(
+        `UPDATE deliveries SET status = 'cancelled', error = 'Reinicio del servidor', done_at = ?
+         WHERE status IN ('pending', 'sent') AND order_id IN (SELECT id FROM orders WHERE uuid IS NOT NULL AND lower(uuid) = ?)`,
+      )
+      .bind(now, id)
+      .run();
+    const res = await db
+      .prepare(`UPDATE orders SET status = 'reiniciado', updated_at = ? WHERE uuid IS NOT NULL AND lower(uuid) = ? AND status != 'reiniciado'`)
+      .bind(now, id)
+      .run();
+    return res?.meta?.changes ?? 0;
+  }
+
   // Solo sube de rango (una compra antigua o repetida nunca baja a nadie); `force` lo pone tal cual (staff).
   async function setRank(uuid, rankId, tier, { force = false } = {}) {
     await init();
@@ -1049,6 +1073,7 @@ export function createStore(db) {
     getRank,
     ranksFor,
     setRank,
+    resetPlayer,
     vfxFor,
     vfxGive,
     vfxTake,

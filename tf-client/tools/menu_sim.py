@@ -1,8 +1,9 @@
 """Simulador del menú principal de TF Client (mismas medidas y la misma lógica de dibujo que el código Java).
 
-Reproduce TitleScreenMixin (posiciones), TFLogoRenderer (emblema y halo), TFMenuButton + TFMenuPaint (botones dibujados
-en píxeles reales: relleno, borde, halo, iconos) y la letra Cinzel tal como la pinta Minecraft (glifos a 4x, muestreo
-sin suavizar). Uso: python3 tools/menu_sim.py [carpeta_salida] [filtro]  (capturas a 1280x720..2560x1440, escalas 1-6)
+Reproduce TitleScreenMixin (posiciones), TFLogoRenderer (emblema y halo), TFMenuButton + TFPill + TFMenuPaint (1.3.120:
+pastillas de cristal oscuro con hilo de oro dibujadas en píxeles reales: sombra, halo, relleno, cristal, hilo, destello,
+hilos de oro e iconos) y la letra Titan One tal como la pinta Minecraft (glifos a n píxeles por píxel de interfaz,
+muestreo sin suavizar). Uso: python3 tools/menu_sim.py [carpeta_salida] [filtro]  (capturas a 1280x720..2560x1440, escalas 1-6)
 """
 import math
 import os
@@ -374,21 +375,11 @@ def draw_text(g, s, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0, os_=None):
     g.composite(arr, x, y, (1, 1, 1, alpha))
 
 
-# ------------------------------------------------------------------------------------------------ botón (TFMenuButton)
-import json
-
-PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
-GAP = 3          # entre icono y texto (interfaz)
-TEXT_UP = 4.6    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Titan One)
-INK, INK_HOT, OUTLINE = 0xE7E1D5, 0xFFFBF2, 0x140A04
-MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
-ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
-SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
-K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 10  # el emblema: al menos el 44 % del alto
-ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
-CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.52, 0.7
-LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
-_menu = {}
+# ------------------------------------------------------------------------------------------------ botón (TFPill)
+GAP = 3                     # entre icono y texto (interfaz)
+TRACKING = 0.45             # letras del menú un poco más juntas (TFMenuButton.TRACKING)
+CAP_HEIGHT = 6.2            # alto de las mayúsculas de Titan One a escala 1
+GOLD_FILL, GOLD_HOT, WHITE_FILL, WHITE_HOT = 0xF0CF7E, 0xFBE7B4, 0xEAE4D8, 0xFFE9A8
 
 
 def ease(t):
@@ -403,177 +394,8 @@ def rgb3(c):
     return ((c >> 16) & 255, (c >> 8) & 255, c & 255)
 
 
-def menu_data():
-    if not _menu:
-        _menu['json'] = json.load(open(GUI + '/menu_main.json'))
-        _menu['atlas'] = Image.open(GUI + '/menu_main.png').convert('RGBA')
-        _menu['glow'] = Image.open(GUI + '/menu_glow.png').convert('RGBA')
-        _menu['nav'] = Image.open(GUI + '/button_slice.png').convert('RGBA')
-    return _menu
-
-
 def snapS(v, S):
     return round(v * S) / S
-
-
-class Placed:
-    """TFMenuPlates.Placed: escala por la altura del cuerpo y zonas lisas estiradas a lo ancho."""
-
-    def __init__(self, p, bx, by, bw, bh, S):
-        self.p = p
-        body = p['body']
-        self.k = k = bh / (body[3] - body[1])
-        # cada lado de la gema del centro se estira lo suyo: la gema cae en el centro del botón (TFMenuPlates.Placed)
-        mid = (body[0] + body[2]) / 2
-        near = [g[0] for g in p['sparks'] if abs(g[0] - mid) < (body[2] - body[0]) * 0.1]
-        anchor = sum(near) / len(near) if near else mid
-        fill_l = sum(f[1] - f[0] for f in p['fills'] if f[1] <= anchor)
-        fill_r = sum(f[1] - f[0] for f in p['fills'] if f[1] > anchor)
-        fixed_l, fixed_r = anchor - body[0] - fill_l, body[2] - anchor - fill_r
-        if fill_l > 0 and fill_r > 0:
-            kl = max(k * 0.25, (bw / 2 - fixed_l * k) / fill_l)
-            kr = max(k * 0.25, (bw / 2 - fixed_r * k) / fill_r)
-        else:
-            tot, extra = fill_l + fill_r, bw - (body[2] - body[0]) * k
-            kl = kr = max(k * 0.25, k + extra / tot) if tot > 0 else k
-        src, scale = [0.0], []
-        for f in p['fills']:
-            src += [f[0], f[1]]
-            scale += [k, kl if f[1] <= anchor else kr]
-        src.append(p['uv'][2])
-        scale.append(k)
-        rel = [0.0]
-        for j in range(1, len(src)):
-            rel.append(rel[-1] + (src[j] - src[j - 1]) * scale[j - 1])
-        self.src = src
-        body_rel = self._at(rel, src, body[0])
-        self.left = bx - body_rel
-        self.top = by - body[1] * k
-        self.gui = [snapS(self.left + r, S) for r in rel]
-
-    @staticmethod
-    def _at(out, inn, sx):
-        for j in range(1, len(inn)):
-            if sx <= inn[j] or j == len(inn) - 1:
-                t = (sx - inn[j - 1]) / max(1e-3, inn[j] - inn[j - 1])
-                return out[j - 1] + (out[j] - out[j - 1]) * t
-        return out[0]
-
-    def x(self, sx):
-        return self._at(self.gui, self.src, sx)
-
-    def y(self, sy):
-        return self.top + sy * self.k
-
-
-def draw_plate(g, S, at, tint=(1, 1, 1, 1), additive=False, dy=0.0):
-    """TFMenuPlates.draw: pieza a pieza (con mipmaps y filtro lineal en el juego: aquí LANCZOS)."""
-    m = menu_data()
-    p = at.p
-    u, v, w, h = p['uv']
-    hh = h * at.k
-    for j in range(1, len(at.src)):
-        sx0, sx1 = at.src[j - 1], at.src[j]
-        gx0, gx1 = at.gui[j - 1], at.gui[j]
-        if sx1 - sx0 < 0.5 or gx1 - gx0 <= 0:
-            continue
-        u0 = round(sx0)
-        uw = max(1, round(sx1) - u0)
-        piece = m['atlas'].crop((u + u0, v, u + u0 + uw, v + h))
-        rw, rh = round((gx1 - gx0) * S), round(hh * S)
-        if rw <= 0 or rh <= 0:
-            continue
-        piece = piece.convert('RGBa').resize((rw, rh), Image.LANCZOS).convert('RGBA')
-        g.composite(to_float_img(piece), round(gx0 * S), round((at.top + dy) * S), tint, additive)
-
-
-def draw_glow(g, S, img, x, y, r, tint):
-    n = max(1, round(2 * r * S))
-    im = img.resize((n, n), Image.BILINEAR)
-    g.composite(to_float_img(im), round((x - r) * S), round((y - r) * S), tint, additive=True)
-
-
-def draw_nav(g, S, x, y, w, h, hover, active=True):
-    """TFButtonTheme.drawPlate: puntas a la altura del botón y el centro cortado; estado ratón fundido encima."""
-    tex = menu_data()['nav']
-    PH, PAD, CL, CR = 135, 16, 115, 114
-    fill = tex.width - CL - CR
-
-    def state(i, a):
-        k = h / PH
-        cl, cr = CL * k, CR * k
-        if cl + cr > w:
-            f = w / (cl + cr)
-            cl, cr = cl * f, cr * f
-        xl, xr = snapS(x + cl, S), snapS(x + w - cr, S)
-        v = PAD + i * (PH + PAD)
-        parts = [(x, xl - x, 0, CL)]
-        at = xl
-        while at < xr - 0.01:
-            seg = min(fill * k, xr - at)
-            parts.append((at, seg, CL, max(1, min(fill, round(seg / k)))))
-            at += seg
-        parts.append((xr, x + w - xr, tex.width - CR, CR))
-        for px, pw, u, uw in parts:
-            rw = round((px + pw) * S) - round(px * S)
-            if rw <= 0:
-                continue
-            piece = tex.crop((u, v, u + uw, v + PH)).convert('RGBa').resize((rw, round(h * S)), Image.LANCZOS)
-            g.composite(to_float_img(piece.convert('RGBA')), round(px * S), round(y * S), (1, 1, 1, a))
-
-    if not active:
-        state(2, 1)
-    else:
-        state(0, 1)
-        if hover > 0.01:
-            state(1, hover)
-
-
-def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shine=None, tint='806040'):
-    """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.5 S) píxeles reales; Tierras
-    Fantásticas en oro (degradado, luz detrás y brillo que cruza en `shine`, 0..1)."""
-    ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
-    n = max(1, min(12, round(S * size)))
-    if n > 1 and n / S > size * 1.1:
-        n -= 1
-    scale = n / S
-    tw = tracked_width(label)
-    maxw = x1 - x0
-    icon_w = (ICON + GAP) * scale if icon else 0
-    group = tw * scale + icon_w  # el icono crece con la letra
-    if group > maxw and group > 0:
-        scale *= max(0.6, (maxw - icon_w) / (tw * scale))
-        group = tw * scale + icon_w
-    gx = snapS((x0 + x1) / 2 - group / 2, S)
-    # contorno grueso (un 8,5 % de la letra) en 16 direcciones + 8 a media distancia, y sombra debajo
-    gold_text = kind == PRIMARY and active
-    ro = max(1, round(10 * scale * S * 0.05))
-    ring = ring_offsets(ro)
-    edge = tuple(round(c * (GOLD_OUTLINE_SHADE if gold_text else OUTLINE_SHADE)) for c in rgb3(int(tint, 16)))
-    if icon:
-        sz = round(ICON * scale * S)
-        img = menu_icon(icon, sz)
-        ix, iy = round(gx * S), round(cy * S - sz / 2)
-        for dx, dy in ring:
-            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in edge) + (1,))
-        g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
-        gx += icon_w
-    ty = snapS(cy - TEXT_UP * scale, S)
-    if gold_text:  # TFMenuButton.goldGlow
-        glow = menu_data()['glow']
-        w = tw * scale
-        gw, gh = w + 24, 13 * scale
-        im = glow.resize((max(1, round(gw * S)), max(1, round(gh * S))), Image.BILINEAR)
-        g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
-                    (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
-    for dx, dy in ring:
-        draw_tracked(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
-    # letras de un color liso (sin franjas ni sombreado): oro en Tierras Fantásticas, blanco crema en las demás
-    c = fill(gold_text, e) if active else 0x9A9AA6
-    draw_tracked(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
-
-
-GOLD_FILL, GOLD_HOT, WHITE_FILL, WHITE_HOT = 0xF0CF7E, 0xFBE7B4, 0xEAE4D8, 0xFFFAF0
 
 
 def fill(gold_text, e, breath=0.5):
@@ -581,9 +403,6 @@ def fill(gold_text, e, breath=0.5):
     if not gold_text:
         return mix_rgb(WHITE_FILL, WHITE_HOT, e)
     return mix_rgb(GOLD_FILL, GOLD_HOT, min(1.0, 0.25 * breath + e))
-
-
-TRACKING = 0.45  # letras del menú un poco más juntas (TFMenuButton.TRACKING)
 
 
 def tracked_width(label):
@@ -598,14 +417,6 @@ def draw_tracked(g, label, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0, os_=
     for c in label:
         draw_text(g, c, gx + x * scale, gy, S, rgb, alpha, dy_real, scale, os_)
         x += font_os(64).getlength(c) / 64 - (0 if c == ' ' else TRACKING)
-
-
-def texture(rgb, t, i):
-    """TFMenuButton.texture: brillo de bisel arriba, sombra abajo y grano fino."""
-    k = 1.0 + 0.16 * max(0.0, 1 - abs(t - 0.22) / 0.1) - 0.12 * min(1.0, max(0.0, (t - 0.72) / 0.28))
-    k += 0.025 if i % 2 == 0 else -0.025
-    r, g, b = (rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255
-    return (min(255, max(0, round(r * k))) << 16) | (min(255, max(0, round(g * k))) << 8) | min(255, max(0, round(b * k)))
 
 
 def ring_offsets(ro):
@@ -626,12 +437,6 @@ def ring_offsets(ro):
     return res
 
 
-def ramp(cols, t):
-    p = t * (len(cols) - 1)
-    i = min(len(cols) - 2, int(p))
-    return lerp_argb(0xFF000000 | cols[i], 0xFF000000 | cols[i + 1], p - i) & 0xFFFFFF
-
-
 _icons = {}
 
 
@@ -644,65 +449,6 @@ def menu_icon(name, n):
     return to_float_img(im)
 
 
-GOLD = [0xF9EBC4, 0xF4DA96, 0xE8C06A, 0xD8A955, 0xCB9C4E]
-GOLD_OUTLINE = 0x2A1204
-GOLD_TOP, GOLD_BOTTOM = 0.0, 6.7
-WHITE = [0xE6E0D3, 0xD9D2C3, 0xBDB5A6]
-OUTLINE_SHADE, GOLD_OUTLINE_SHADE = 0.55, 0.72  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
-
-
-def gold(t, e):
-    p = t * (len(GOLD) - 1)
-    i = min(len(GOLD) - 2, int(p))
-    c = lerp_argb(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i)
-    return lerp_argb(c, 0xFFFBEFCF, 0.35 * e) & 0xFFFFFF
-
-
-def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, size=1.0):
-    """TFMenuButton.renderWidget con placa (sin el zoom de 2 %: aquí solo sube 0,8 al pasar el ratón)."""
-    label, icon, kind, plate, x, y, w, h = b
-    m = menu_data()
-    p = m['json']['plates'][plate]
-    e = ease(hover) if active else 0.0
-    lift = 0.5 if pressed else -0.6 * e
-    at = Placed(p, x, y + lift, w, h, S)
-    shade = 0.45 if not active else 0.8 if pressed else 1.0
-    draw_plate(g, S, at, (shade, shade, shade, 1))
-    if e > 0.01 and not pressed:
-        draw_plate(g, S, at, (1, 1, 1, 0.16 * e), additive=True)
-    for i, l in enumerate(p['lights']):
-        flick = 0.5 + 0.18 * math.sin(i * 2.1) + 0.1 * math.sin(i * 4.3)
-        draw_glow(g, S, m['glow'], at.x(l[0]), at.y(l[1]), l[2] * at.k * (3.0 + 0.25 * flick),
-                  (1, 0.6, 0.22, min(1, flick * (0.55 + 0.25 * e))))
-    if e > 0.01:
-        for gem in p['sparks']:
-            draw_glow(g, S, m['glow'], at.x(gem[0]), at.y(gem[1]), gem[2] * at.k * 2.2, (0.35, 0.75, 1, 0.5 * e))
-    bh = p['body'][3] - p['body'][1]
-    paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
-                  kind, size, e, active, shine=None, tint=p.get('tint', '806040'))
-
-
-_shine = None
-
-
-def paint_sweep(g, S, gx, gy, gw, gh, t, strength, lift):
-    """TFMenuPaint.sweep: línea luminosa (button_shine.png) que cruza el botón; t de 0 a 1. Recortada dentro del
-    borde (tijera en unidades de interfaz, como enableScissor)."""
-    global _shine
-    if _shine is None:
-        _shine = Image.open(GUI + '/button_shine.png').convert('RGBA')
-    eased = t * t * (3 - 2 * t)
-    band_w = gh * 2.4
-    band_x = gx - band_w + eased * (gw + band_w)
-    k = strength * math.sin(t * math.pi)
-    inset = 3
-    g.scissor = ((gx + inset) * S, (gy + 1) * S, (gx + gw - inset) * S, (gy + gh - 1) * S)
-    im = _shine.resize((max(1, int(band_w * S)), gh * S), Image.BILINEAR)
-    g.composite(to_float_img(im), int(band_x * S), gy * S - lift, (1, 1, 1, k), additive=True)
-    g.scissor = None
-
-
-# ------------------------------------------------------------------------------------------------ pantalla de título
 def gui_size(fbw, fbh, S):
     return -(-fbw // S), -(-fbh // S)
 
@@ -714,14 +460,6 @@ def auto_scale(fbw, fbh, limit=0):
     return i
 
 
-VIS_GAP = 30  # hueco entre lo que se ve de cada fila (gemas incluidas), en píxeles de la lámina
-PAD = 0.4  # aire a cada lado del texto, en altos de la placa
-GROUP_GAP = 14  # entre los botones de una misma fila (interfaz)
-BLUE_MIN = 0.62  # Mundo local y Mods, como poco este tanto del ancho de Tierras Fantásticas
-GROUPS = [[0], [1, 2], [3, 4], [5, 7], [6]]  # los de un grupo, del mismo ancho (simetría en espejo)
-ROW_OF = [0, 1, 2, 3, 3, 4, 4, 4]
-
-
 def crisp(size, S):
     """El tamaño nítido que usa paintContent: n/S con n entero, como mucho un 10 % más que size."""
     n = max(1, min(12, round(S * size)))
@@ -730,148 +468,243 @@ def crisp(size, S):
     return n / S
 
 
-def layout(w, h, S=4, fbw=None):
-    """TFMenuButton.mainLayout + TitleScreenMixin: (texto, icono, tipo, placa, x, y, ancho, alto) y los tamaños de
-    letra (botones, Tierras Fantásticas). Alto: la lámina con filas separadas lo justo; ancho: cada botón a su texto
-    (los de una fila, iguales), todo centrado."""
-    d = menu_data()['json']
-    comp = d['composition']
-    ctop, cbot = comp['top'], comp['bottom']
-    P = [d['plates'][n] for n in MAIN]
-    L = [p['layout'] for p in P]
-    rows = [[0], [1], [2], [3, 4], [5, 6, 7]]
-    # mismo hueco entre lo que se ve de cada fila (gemas incluidas): TFMenuButton.VIS_GAP
-    row_y = {}
-    ny, last_bottom = 0.0, 0.0
-    for r, row in enumerate(rows):
-        above = max(P[i]['body'][1] - P[i]['vis'][0] for i in row)
-        below = max(P[i]['vis'][1] - P[i]['body'][1] for i in row)
-        body_top = above if r == 0 else ny + above
-        for i in row:
-            row_y[i] = body_top
-        last_bottom = body_top + below
-        ny = last_bottom + VIS_GAP
-    comp_h = last_bottom
-    ctop = 0
-    k = min(K_MAX, (h - BOTTOM_MARGIN - round(h * LOGO_FRAC) - 6) / comp_h)
-    free = h - BOTTOM_MARGIN - comp_h * k
+# TFPill.Style: (relleno arriba, abajo; relleno con ratón arriba, abajo; hilo arriba, abajo; hilo con ratón arriba, abajo; halo)
+STYLES = {
+    'gold':    (0x2C1A4A, 0x120922, 0x4E2E82, 0x24123E, 0xE9C46E, 0x7A5A22, 0xFFEDB0, 0xE0B456, 0xFFC860),
+    'violet':  (0x2A1846, 0x110920, 0x4A2C7E, 0x22123C, 0xD9B465, 0x6E5020, 0xFFE9A8, 0xD8AC50, 0xC9A0FF),
+    'red':     (0x2A1846, 0x110920, 0x6A1E34, 0x2E0A16, 0xD9B465, 0x6E5020, 0xFFC0B0, 0xD8604A, 0xFF6A50),
+    'green':   (0x2A1846, 0x110920, 0x1D5E44, 0x0B2A1E, 0xD9B465, 0x6E5020, 0xC0F6D6, 0x48C080, 0x5CE89A),
+    'blurple': (0x2A1846, 0x110920, 0x3E44A8, 0x1A1C52, 0xD9B465, 0x6E5020, 0xD6DAFF, 0x7C84F4, 0x8C96FF),
+}
+
+
+def lerp(a, b, t):
+    return lerp_argb(0xFF000000 | a, 0xFF000000 | b, t) & 0xFFFFFF
+
+
+def shine(g, X, Y, W, H, r, t, strength):
+    """Destello: una banda inclinada que cruza la placa (recortada a su forma, fila a fila)."""
+    if t <= 0 or t >= 1:
+        return
+    e = t * t * (3 - 2 * t)
+    bw = H * 0.9
+    slant = 0.45
+    cx0 = X - bw - H * slant + e * (W + 2 * bw + H * slant)
+    k = strength * math.sin(t * math.pi)
+    for j in range(H):
+        y = j + 0.5
+        dy = max(0.0, r - y, y - (H - r))
+        xl = r - math.sqrt(max(0.0, r * r - dy * dy)) if dy > 0 else 0.0
+        lo, hi = X + math.ceil(xl), X + W - math.ceil(xl)
+        c = cx0 + (H - y) * slant
+        for a0, a1, f in ((-1.0, -0.5, 0.35), (-0.5, -0.17, 0.7), (-0.17, 0.17, 1.0), (0.17, 0.5, 0.7), (0.5, 1.0, 0.35)):
+            x0, x1 = max(lo, round(c + a0 * bw)), min(hi, round(c + a1 * bw))
+            if x1 > x0:
+                g.fill(x0, Y + j, x1, Y + j + 1, argb(0.20 * k * f, 0xFFFFFF))
+
+
+def pill(g, S, x, y, w, h, style, e, pressed=False, active=True, primary=False, shine_t=None):
+    """TFPill.paint: la pastilla (sombra, halo, relleno, cristal, hilo; doble hilo en el principal; destello)."""
+    st = STYLES[style]
+    lift = 0 if pressed else -round(e * S)
+    X, Y, W, H = round(x * S), round(y * S) + lift + (max(1, round(0.5 * S)) if pressed else 0), round(w * S), round(h * S)
+    r = H // 2
+    t = max(1, round(S * 0.6))
+    # sombra y halo
+    halo(g, X, Y + max(1, S // 2), W, H, r, round(4 * S), argb(0.55, 0x000000))
+    glow = e if not pressed else 0.5 * e
+    if primary:
+        breath = 0.5
+        glow = max(glow, 0.22 + 0.1 * breath)
+    if glow > 0.01:
+        halo(g, X, Y, W, H, r, round(7 * S), argb(0.55 * glow, st[8]))
+    k = e if active else 0.0
+    if pressed:
+        k *= 0.6
+    top = lerp(st[0], st[2], k)
+    bot = lerp(st[1], st[3], k)
+    if not active:
+        top, bot = 0x26222E, 0x15131A
+    round_fill(g, X, Y, W, H, r, 0, 0, H, argb(0.93, top), argb(0.95, bot))
+    # vidrio: luz arriba y sombra abajo, dentro del hilo
+    round_fill(g, X, Y, W, H, r, t, t, H // 2, argb(0.13 + 0.07 * k, 0xFFFFFF), argb(0.0, 0xFFFFFF))
+    round_fill(g, X, Y, W, H, r, t, H * 3 // 4, H - t, argb(0.0, 0x000000), argb(0.22, 0x000000))
+    # hilo
+    rt, rb = lerp(st[4], st[6], k), lerp(st[5], st[7], k)
+    if not active:
+        rt, rb = 0x6A6470, 0x3A3640
+    round_ring(g, X, Y, W, H, r, t, argb(0.95, rt), argb(0.95, rb))
+    if primary:
+        ins = t + max(1, round(S * 1.2))
+        round_ring(g, X + ins, Y + ins, W - 2 * ins, H - 2 * ins, r - ins, 1, argb(0.45 + 0.35 * k, rt), argb(0.25 + 0.3 * k, rb))
+    if shine_t is not None:
+        shine(g, X, Y, W, H, r, shine_t, 1.0)
+    return X, Y, W, H
+
+
+LABELS = [('Tierras Fantásticas', None, 'gold', True), ('Mundo local', None, 'violet', False), ('Mods', None, 'violet', False),
+          ('Opciones', None, 'violet', False), ('Salir', None, 'red', False), ('WhatsApp', 'whatsapp', 'green', False),
+          ('Web', 'web', 'violet', False), ('Discord', 'discord', 'blurple', False)]
+ROW_H = [28, 22, 22, 22, 20]
+ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
+GAP_Y, GAP_X = 7, 8
+TEXT_UP = 3.05
+
+
+def layout(w, h, S):
+    """TFMenuButton.mainLayout: (arriba, [(índice, x, y, ancho, alto, tamaño de letra)])."""
+    total = sum(ROW_H) + GAP_Y * (len(ROW_H) - 1) + 3
+    avail = h - 10 - max(84, h * 0.40)
+    k = max(0.62, min(1.0, avail / total))
+    hs = [max(14, round(v * k)) for v in ROW_H]
+    gy = max(3, round(GAP_Y * k))
+    comp = sum(hs) + gy * (len(hs) - 1) + round(3 * k)
+    free = h - 10 - comp
     top = free - max(0.0, (free - 186) / 2)
-    hs = [max(1, round((P[i]['body'][3] - P[i]['body'][1]) * k)) for i in range(8)]
-    # filas apiladas con la escala real de cada placa (TFMenuButton.mainLayout: shiftY)
-    ys = [0.0] * 8
-    cursor, gap = top, round(VIS_GAP * k * S) / S
-    for row in rows:
-        kk = {i: hs[i] / (P[i]['body'][3] - P[i]['body'][1]) for i in row}
-        above = max((P[i]['body'][1] - P[i]['vis'][0]) * kk[i] for i in row)
-        below = max((P[i]['vis'][1] - P[i]['body'][1]) * kk[i] for i in row)
-        body_top = round((cursor + above) * S) / S
+    sizes = [0.44 * hs[0] / 6.2] + [0.42 * hs[i] / 6.2 for i in range(1, 4)] + [0.36 * hs[4] / 6.2]
+    # ancho de la columna: lo que pide el texto más ancho de cada fila
+    col = max(210, min(280, w * 0.36))
+    for r, row in enumerate(ROWS):
+        need = 0
         for i in row:
-            ys[i] = body_top
-        cursor = round((body_top + below) * S) / S + gap
-    size = max(1.0, min(CAP_FILL * INTERIOR * hs[i] / CAP_HEIGHT for i in range(1, 8)))
-    tf = max(size, TF_CAP_FILL * INTERIOR * hs[0] / CAP_HEIGHT)
-    labels = [('Tierras Fantásticas', None, PRIMARY), ('Mundo local', None, SECONDARY), ('Mods', None, SECONDARY),
-              ('Opciones', None, SECONDARY), ('Salir', None, DANGER), ('WhatsApp', 'whatsapp', SECONDARY),
-              ('Web', 'web', SECONDARY), ('Discord', 'discord', SECONDARY)]
-    for _ in range(4):  # si una fila no cabe a lo ancho, letra un poco más pequeña
-        eff, efft = crisp(size, S), crisp(tf, S)
-        need = []
-        for i, (label, icon, kind) in enumerate(labels):
-            sc = efft if i == 0 else eff
-            body, text = P[i]['body'], P[i]['text']
-            side = (text[0] - body[0]) * k
-            fills = sum(f[1] - f[0] for f in P[i]['fills'])
-            min_w = ((body[2] - body[0]) - fills * 0.75) * k
-            need.append(max(min_w, (tracked_width(label) + (ICON + GAP if icon else 0)) * sc + 2 * (side + PAD * hs[i])))
-        widths = [0.0] * 8
-        for grp in GROUPS:
-            for i in grp:
-                widths[i] = max(need[j] for j in grp)
-        for i in (1, 2):
-            widths[i] = max(widths[i], BLUE_MIN * widths[0])
-        widest = max(sum(widths[i] for i in row) + GROUP_GAP * (len(row) - 1) for row in rows)
-        if widest <= w - 16 or size <= 0.6:
-            break
-        size, tf = size * 0.9, tf * 0.9
-    cx = w / 2 if fbw is None else fbw / (2 * S)  # el centro de verdad de la ventana (TFMenuButton.mainLayout)
-    rects = [None] * 8
-    for row in rows:
-        even = lambda v: 2 * round(v / 2)  # anchos pares: todas las filas con el mismo centro exacto
-        tot = sum(even(widths[i]) for i in row) + GROUP_GAP * (len(row) - 1)
-        x = round(cx - tot / 2)
-        shift = cx - (x + tot / 2)  # TFMenuButton.mainShiftX: medio píxel si el ancho es impar
-        for i in row:
-            y0 = ys[i]
-            rects[i] = (x + shift, y0, even(widths[i]), hs[i])
-            x += even(widths[i]) + GROUP_GAP
-    out = [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]
-    return round(top), out, (eff, efft)
+            lab, icon, _, prim = LABELS[i]
+            sc = crisp(sizes[r], S)
+            tw = tracked_width(lab) * sc + ((ICON + 3) * sc if icon else 0)
+            need = max(need, tw + hs[r] * (1.9 if icon is None else 1.0))
+        col = max(col, need * len(row) + GAP_X * (len(row) - 1))
+    col = min(col, w - 16)
+    col = 2 * round(col / 2)
+    out = []
+    y = top
+    for r, row in enumerate(ROWS):
+        n = len(row)
+        bw = (col - GAP_X * (n - 1)) / n
+        x = (w - col) / 2
+        for j, i in enumerate(row):
+            out.append((i, round(x + j * (bw + GAP_X)), round(y), round(bw), hs[r], crisp(sizes[r], S)))
+        y += hs[r] + gy + (round(3 * k) if r == 0 else 0)
+    return round(top), out
 
 
-_bg = None
-_logo = None
-_glow = None
+def threads(g, S, X, Y, W, H, r, tx0, tx1, amount, k):
+    """Hilos de oro a los dos lados del texto (como el nombre de los caballeros): salen del texto hacia las puntas
+    (amount de 0 a 1), se apagan hacia fuera y acaban en un rombo pequeño."""
+    if amount <= 0.01:
+        return
+    th = max(1, round(S * 0.5))
+    cy = Y + H // 2 - th // 2
+    gap = round(5 * S)
+    d = max(1, round(S * 0.8))
+    col = lerp(0xE9C46E, 0xFFF0C0, k)
+    for side in (-1, 1):
+        start = tx0 - gap if side < 0 else tx1 + gap
+        end_full = X + r if side < 0 else X + W - r
+        length = abs(end_full - start)
+        if length < 4 * S:
+            continue
+        L = length * amount
+        steps = 12
+        for i in range(steps):
+            a0, a1 = i / steps, (i + 1) / steps
+            alpha = 0.95 * (1 - a0) ** 1.3 * min(1.0, amount * 1.5)
+            if side < 0:
+                x1, x0 = round(start - a0 * L), round(start - a1 * L)
+            else:
+                x0, x1 = round(start + a0 * L), round(start + a1 * L)
+            if x1 > x0:
+                g.fill(x0, cy, x1, cy + th, argb(alpha, col))
+        tip = round(start - L) if side < 0 else round(start + L)
+        ty = cy + th // 2
+        a = min(1.0, amount * 1.5)
+        for j in range(-d, d + 1):
+            hw = d - abs(j)
+            g.fill(tip - hw, ty + j, tip + hw + 1, ty + j + 1, argb(a, col))
 
 
-def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hover_sweep=None):
-    global _bg, _logo, _glow
-    S = S or auto_scale(fbw, fbh)
+def text(g, S, lab, icon, x, y, w, h, size, e, primary, active=True, thread=0.0):
+    """TFMenuButton.paintContent (menú principal): hilos, icono y letras con contorno, centradas a la vista."""
+    n = max(1, min(12, round(S * size)))
+    if n > 1 and n / S > size * 1.1:
+        n -= 1
+    sc = n / S
+    tw = tracked_width(lab) * sc
+    iw = (ICON + 3) * sc if icon else 0
+    gx = snapS(x + w / 2 - (tw + iw) / 2, S)
+    cy = y + h / 2
+    ro = max(1, round(10 * sc * S * 0.05))
+    ring = ring_offsets(ro)
+    edge = (0x3A, 0x23, 0x06) if primary else (0x1A, 0x0E, 0x2E)
+    ink = fill(primary, e)  # TFMenuButton.fill: oro que respira o crema que pasa a oro claro
+    if not active:
+        ink = 0x8A8494
+    if thread > 0:
+        X, Y, W, H = round(x * S), round(y * S), round(w * S), round(h * S)
+        threads(g, S, X, Y, W, H, H // 2, round(gx * S), round((gx + tw + iw) * S), thread, e)
+    if icon:
+        sz = round(ICON * sc * S)
+        img = menu_icon(icon, sz)
+        ix, iy = round(gx * S), round(cy * S - sz / 2)
+        for dx, dy in ring:
+            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in edge) + (1,))
+        g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
+        gx += iw
+    ty = snapS(cy - TEXT_UP * sc, S)
+    for dx, dy in ring:
+        draw_tracked(g, lab, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, sc, n)
+    draw_tracked(g, lab, gx, ty, S, rgb3(ink), 1.0, 0, sc, n)
+
+
+def render(fbw, fbh, S, hover=None, pressed=None, shine_t=None, out=None):
     w, h = gui_size(fbw, fbh, S)
     g = Canvas(fbw, fbh)
-    if _bg is None:
-        _bg = Image.open(GUI + '/menu_background.png').convert('RGB')
-        _logo = Image.open(GUI + '/logo.png').convert('RGBA')
-        _glow = Image.open(GUI + '/logo_glow.png').convert('RGBA')
-    # Fondo (TFDraw.cover en interfaz)
-    sc = max(w / _bg.width, h / _bg.height)
-    dw, dh = math.ceil(_bg.width * sc), math.ceil(_bg.height * sc)
-    bg = _bg.resize((dw * S, dh * S), Image.LANCZOS)
-    g.composite(to_float_img(bg), (w - dw) // 2 * S, (h - dh) // 2 * S)
-    top, buttons, (eff, efft) = layout(w, h, S, fbw)
-    # Emblema
+    bg = Image.open(GUI + '/menu_background.png').convert('RGB')
+    logo = Image.open(GUI + '/logo.png').convert('RGBA')
+    glow = Image.open(GUI + '/logo_glow.png').convert('RGBA')
+    sc = max(w / bg.width, h / bg.height)
+    dw, dh = math.ceil(bg.width * sc), math.ceil(bg.height * sc)
+    g.composite(to_float_img(bg.resize((dw * S, dh * S), Image.LANCZOS)), (w - dw) // 2 * S, (h - dh) // 2 * S)
+    top, rects = layout(w, h, S)
     lh = min(170, top - 4 - 8)
-    if lh > 16:
-        lw = lh * _logo.width / _logo.height
-        cx, cy = w / 2.0, 4 + lh / 2.0
+    if lh > 16:  # TitleScreenMixin: justo encima de los botones
+        lw = lh * logo.width / logo.height
+        cx, cy = w / 2.0, max(4, top - 8 - lh) + lh / 2.0
         gw_, gh_ = lw * 1.5, lh * 1.5
-        gl = _glow.resize((int(gw_ * S), int(gh_ * S)), Image.LANCZOS)
-        g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
-        lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
-        g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
-    for i, b in enumerate(buttons):
-        paint_button(g, S, b, size=efft if i == 0 else eff, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
-                     sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
+        g.composite(to_float_img(glow.resize((int(gw_ * S), int(gh_ * S)), Image.LANCZOS)), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
+        g.composite(to_float_img(logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
+    for i, x, y, bw, bh, size in rects:
+        lab, icon, style, prim = LABELS[i]
+        e = 1.0 if hover == i else 0.0
+        pr = pressed == i
+        X, Y, W, H = pill(g, S, x, y, bw, bh, style, e, pr, True, prim, shine_t=shine_t if (hover == i or prim) else None)
+        text(g, S, lab, icon, X / S, Y / S, W / S, H / S, size, e, prim, thread=1.0 if prim else (e if icon is None and bw >= 90 else 0.0))
     im = g.image()
     if out:
         im.save(out)
-    return im, S, (w, h), buttons
+        ys = [r[2] for r in rects]
+        y0 = min(ys) - 14
+        y1 = max(r[2] + r[4] for r in rects) + 12
+        x0 = min(r[1] for r in rects) - 16
+        x1 = max(r[1] + r[3] for r in rects) + 16
+        im.crop((x0 * S, y0 * S, x1 * S, y1 * S)).save(out.replace('.png', '_botones.png'))
+    return im
+
 
 
 if __name__ == '__main__':
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(__import__('tempfile').gettempdir(), 'tf_menu_sim')
     os.makedirs(out, exist_ok=True)
     scenes = [
-        ('1920x1080_escala4', 1920, 1080, 4, None, None, None),
         ('1920x1080_escala3_raton_mundo', 1920, 1080, 3, 1, None, None),
-        ('1920x1080_escala3_raton_whatsapp', 1920, 1080, 3, 5, None, None),
+        ('1920x1080_escala4_raton_whatsapp', 1920, 1080, 4, 5, None, None),
         ('1920x1080_escala2_raton_discord', 1920, 1080, 2, 7, None, None),
-        ('1920x1080_escala3_raton_web', 1920, 1080, 3, 6, None, None),
-        ('1280x720_escala3_raton_servidor', 1280, 720, 3, 0, None, None),
-        ('1280x720_escala2', 1280, 720, 2, None, None, None),
-        ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 4, None, None),
-        ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 3, 3, None),
-        ('1920x1080_escala4_destello', 1920, 1080, 4, None, None, 0.45),
+        ('1280x720_escala2_raton_salir', 1280, 720, 2, 4, None, None),
+        ('1920x1080_escala3_destello_servidor', 1920, 1080, 3, 0, None, 0.45),
+        ('2560x1440_escala4_pulsado_opciones', 2560, 1440, 4, 3, 3, None),
         ('2560x1440_escala6', 2560, 1440, 6, None, None, None),
     ]
     only = sys.argv[2] if len(sys.argv) > 2 else None
     for name, fw, fh, S, hv, pr, sw in scenes:
         if only and only not in name:
             continue
-        im, S, gsz, buttons = render(fw, fh, S, hv, pr, sw, f'{out}/{name}.png')
-        # Recorte de los botones a tamaño real
-        top = min(b[5] for b in buttons) - 12
-        bot = max(b[5] + b[7] for b in buttons) + 8
-        left = min(b[4] for b in buttons) - 14
-        right = max(b[4] + b[6] for b in buttons) + 14
-        im.crop((left * S, top * S, right * S, bot * S)).save(f'{out}/{name}_botones.png')
-        print(name, 'escala', S, 'interfaz', gsz)
+        render(fw, fh, S, hover=hv, pressed=pr, shine_t=sw, out=f'{out}/{name}.png')
+        print(name, 'escala', S, 'interfaz', gui_size(fw, fh, S))

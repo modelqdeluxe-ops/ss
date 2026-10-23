@@ -39,9 +39,12 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Comunidad en el servidor: guarda las fotos que publican los jugadores (&lt;mundo&gt;/tfclient/comunidad/&lt;id&gt;.png) y sus
- * datos (comunidad.json: autor, texto, fecha, likes y denuncias), y se las manda a quien las mira.
+ * datos (comunidad.json: autor, texto, fecha, likes, reacciones, comentarios y denuncias), y se las manda a quien las mira.
  * <ul>
- *   <li>Solo PNG de hasta 640x360 y 600 KB; una cada 90 s y como mucho 40 por jugador (las más viejas no se tocan).</li>
+ *   <li>Solo PNG de hasta 1920x1080 y 4,2 MB; una cada 90 s y como mucho 40 por jugador (las más viejas no se tocan).</li>
+ *   <li>Comentarios (1.3.120): «comentarios»: [{id, autor, nombre, texto, fecha, reacciones}], como mucho
+ *   {@link #MAX_COMMENTS} por foto y uno cada {@link #COMMENT_COOLDOWN} ms por jugador. Los borra quien lo escribió, el
+ *   dueño de la foto o el staff. Reacciones como en las fotos: una por jugador y comentario.</li>
  *   <li>Like: uno por jugador y foto (también a las tuyas). El autor suma en sus estadísticas los likes de los demás.</li>
  *   <li>Borrar: el autor o el staff (nivel 2). Denunciar: avisa al staff conectado; con 5 denuncias se oculta.</li>
  * </ul>
@@ -51,7 +54,10 @@ public final class PadCommunityServer {
     private static final int MAX_PER_PLAYER = 40;
     private static final long POST_COOLDOWN = 90_000;
     private static final int HIDE_AT = 5;
-    private static final int MAX_W = 1280, MAX_H = 720;
+    private static final int MAX_W = 1920, MAX_H = 1080;
+    private static final int MAX_COMMENTS = 300;
+    private static final long COMMENT_COOLDOWN = 4_000;
+    private static final Map<UUID, Long> LAST_COMMENT = new HashMap<>();
 
     /** Una subida a medias. */
     private static final class Up {
@@ -100,6 +106,7 @@ public final class PadCommunityServer {
             UPLOADS.clear();
             RATE.clear();
             LIKE_TOLD.clear();
+            LAST_COMMENT.clear();
         }
 
         @Override
@@ -176,13 +183,46 @@ public final class PadCommunityServer {
         return n;
     }
 
-    /** Las reacciones de una foto para un jugador (solo emojis que existen, como mucho MAX_REACTIONS). */
-    private static List<PadCommunityNet.Reaction> reactions(JsonObject p, String me) {
+    /**
+     * Pone o quita la reacción emoji (cualquiera, validado aquí) de un jugador en una foto o un comentario: UNA por
+     * jugador; el mismo emoji la quita, otro la cambia. Como mucho max emojis distintos.
+     */
+    private static void react(ServerPlayer player, JsonObject p, String reaction, int max, String what) {
+        String emoji = PadEmojis.canonical(reaction);
+        if (emoji == null) return;
+        String me = player.getUUID().toString();
+        if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
+        JsonObject re = p.getAsJsonObject("reacciones");
+        Set<String> who = set(re, emoji);
+        if (who.remove(me)) {
+            if (who.isEmpty()) re.remove(emoji);
+            else put(re, emoji, who);
+        } else {
+            // quita la reacción que tuviera antes ahí
+            for (String other : new java.util.ArrayList<>(re.keySet())) {
+                Set<String> was = set(re, other);
+                if (!was.remove(me)) continue;
+                if (was.isEmpty()) re.remove(other);
+                else put(re, other, was);
+            }
+            if (who.isEmpty() && kinds(re) >= max) {
+                TFPadNet.notice(player, what + " ya tiene " + max + " emojis distintos.");
+                dirty = true;
+                return;
+            }
+            who.add(me);
+            put(re, emoji, who);
+        }
+        dirty = true;
+    }
+
+    /** Las reacciones de una foto o un comentario para un jugador (solo emojis que existen, como mucho max). */
+    private static List<PadCommunityNet.Reaction> reactions(JsonObject p, String me, int max) {
         List<PadCommunityNet.Reaction> out = new ArrayList<>();
         JsonObject re = TFJson.obj(p, "reacciones");
         if (re == null) return out;
         for (Map.Entry<String, JsonElement> e : re.entrySet()) {
-            if (out.size() >= PadCommunityNet.MAX_REACTIONS) break;
+            if (out.size() >= max) break;
             String emoji = PadEmojis.canonical(e.getKey());
             if (emoji == null || !e.getValue().isJsonArray()) continue;
             Set<String> who = set(re, e.getKey());
@@ -306,8 +346,12 @@ public final class PadCommunityServer {
     }
 
     private static String clean(String s) {
+        return clean(s, 120);
+    }
+
+    private static String clean(String s, int max) {
         String t = s == null ? "" : s.replaceAll("[\\p{Cntrl}§]", "").trim();
-        return t.length() > 120 ? t.substring(0, 120) : t;
+        return t.length() > max ? t.substring(0, max) : t;
     }
 
     /** Que sea un PNG de verdad y del tamaño permitido (se lee la cabecera IHDR, sin decodificar). */
@@ -370,9 +414,9 @@ public final class PadCommunityServer {
             } catch (IllegalArgumentException e) {
                 continue;
             }
-            List<PadCommunityNet.Reaction> reactions = reactions(p, me);
+            List<PadCommunityNet.Reaction> reactions = reactions(p, me, PadCommunityNet.MAX_REACTIONS);
             out.add(new PadCommunityNet.Post(TFJson.str(p, "id", ""), author, TFJson.str(p, "nombre", "?"), TFJson.str(p, "texto", ""),
-                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff, reactions));
+                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff, reactions, comments(p).size()));
         }
         PadCommunityNet.toPlayer(player, new PadCommunityNet.Feed(tab, pg, pages, list.size(), out));
     }
@@ -445,32 +489,7 @@ public final class PadCommunityServer {
                     put(p, "likes", likes);
                     dirty = true;
                 }
-                case "react" -> { // cualquier emoji (validado aquí); UNO por jugador: el mismo lo quita, otro lo cambia
-                    String emoji = PadEmojis.canonical(reaction);
-                    if (emoji == null) break;
-                    if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
-                    JsonObject re = p.getAsJsonObject("reacciones");
-                    Set<String> who = set(re, emoji);
-                    if (who.remove(me)) {
-                        if (who.isEmpty()) re.remove(emoji);
-                        else put(re, emoji, who);
-                    } else {
-                        // quita la reacción que tuviera antes en esta foto
-                        for (String other : new java.util.ArrayList<>(re.keySet())) {
-                            Set<String> was = set(re, other);
-                            if (!was.remove(me)) continue;
-                            if (was.isEmpty()) re.remove(other);
-                            else put(re, other, was);
-                        }
-                        if (who.isEmpty() && kinds(re) >= PadCommunityNet.MAX_REACTIONS) {
-                            TFPadNet.notice(player, "Esa foto ya tiene " + PadCommunityNet.MAX_REACTIONS + " emojis distintos.");
-                            break;
-                        }
-                        who.add(me);
-                        put(re, emoji, who);
-                    }
-                    dirty = true;
-                }
+                case "react" -> react(player, p, reaction, PadCommunityNet.MAX_REACTIONS, "Esa foto");
                 case "borrar" -> {
                     if (!author.equals(me) && !player.hasPermissions(2)) break;
                     remove(m.id());
@@ -497,6 +516,213 @@ public final class PadCommunityServer {
             }
         }
         if (m.page() >= 0) sendFeed(player, m.tab(), m.page());
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Comentarios
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Los comentarios de una foto (del más viejo al más nuevo); vacío si no tiene. */
+    private static JsonArray comments(JsonObject p) {
+        return p.has("comentarios") && p.get("comentarios").isJsonArray() ? p.getAsJsonArray("comentarios") : new JsonArray();
+    }
+
+    private static JsonObject findComment(JsonObject p, String id) {
+        for (JsonElement e : comments(p)) {
+            if (e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals(id)) return e.getAsJsonObject();
+        }
+        return null;
+    }
+
+    /** ¿La ve este jugador? (con {@link #HIDE_AT} denuncias, solo su autor y el staff, como en la lista) */
+    private static boolean visible(ServerPlayer player, JsonObject p) {
+        return player.hasPermissions(2) || TFJson.str(p, "autor", "").equals(player.getUUID().toString()) || set(p, "denuncias").size() < HIDE_AT;
+    }
+
+    /** Los datos de la skin de un jugador («textures» en base64): el conectado, el bot o la última que se le vio; "" si no. */
+    private static String skin(UUID uuid) {
+        ServerPlayer online = server == null ? null : server.getPlayerList().getPlayer(uuid);
+        if (online != null) {
+            for (com.mojang.authlib.properties.Property pr : online.getGameProfile().getProperties().get("textures")) return pr.getValue();
+            return "";
+        }
+        net.tierrasfantasticas.tfclient.server.TFBots.Bot bot = net.tierrasfantasticas.tfclient.server.TFBots.ofId(uuid);
+        if (bot != null) return bot.value();
+        String[] s = PadStats.skinOf(uuid);
+        return s == null ? "" : s[0];
+    }
+
+    static void requestComments(ServerPlayer player, String post) {
+        if (rate(player)) sendComments(player, post);
+    }
+
+    static void sendComments(ServerPlayer player, String post) {
+        JsonObject p = find(post);
+        if (p == null || !visible(player, p)) {
+            PadCommunityNet.toPlayer(player, new PadCommunityNet.Comments(post, 0, List.of()));
+            return;
+        }
+        String me = player.getUUID().toString();
+        boolean mod = player.hasPermissions(2) || TFJson.str(p, "autor", "").equals(me);
+        JsonArray all = comments(p);
+        List<PadCommunityNet.Comment> out = new ArrayList<>();
+        Map<UUID, String> skins = new HashMap<>();
+        for (int i = Math.max(0, all.size() - PadCommunityNet.COMMENTS_SENT); i < all.size(); i++) {
+            if (!all.get(i).isJsonObject()) continue;
+            JsonObject c = all.get(i).getAsJsonObject();
+            UUID author;
+            try {
+                author = UUID.fromString(TFJson.str(c, "autor", ""));
+            } catch (IllegalArgumentException e) {
+                continue;
+            }
+            boolean mine = author.toString().equals(me);
+            out.add(new PadCommunityNet.Comment(TFJson.str(c, "id", ""), author, TFJson.str(c, "nombre", "?"), skins.computeIfAbsent(author, PadCommunityServer::skin),
+                    clean(TFJson.str(c, "texto", ""), PadCommunityNet.COMMENT_MAX), TFJson.num(c, "fecha", 0),
+                    reactions(c, me, PadCommunityNet.COMMENT_REACTIONS), mine, mine || mod));
+        }
+        PadCommunityNet.toPlayer(player, new PadCommunityNet.Comments(post, all.size(), out));
+    }
+
+    /** Escribir, reaccionar o borrar un comentario; siempre se le contesta con los comentarios como quedan. */
+    static void commentAct(ServerPlayer player, PadCommunityNet.CommentAct m) {
+        if (!rate(player)) return;
+        JsonObject p = find(m.post());
+        if (p != null && visible(player, p)) {
+            UUID uuid = player.getUUID();
+            String me = uuid.toString(), name = player.getGameProfile().getName();
+            String action = m.action();
+            if (action.equals("add")) {
+                String text = clean(m.text(), PadCommunityNet.COMMENT_MAX);
+                Long last = LAST_COMMENT.get(uuid);
+                long now = System.currentTimeMillis();
+                if (text.isEmpty()) {
+                    TFPadNet.notice(player, "Escribe algo para comentar.");
+                } else if (last != null && now - last < COMMENT_COOLDOWN && !player.hasPermissions(2)) {
+                    TFPadNet.notice(player, "Espera un momento antes de comentar otra vez.");
+                } else if (comments(p).size() >= MAX_COMMENTS) {
+                    TFPadNet.notice(player, "Esta foto ya tiene " + MAX_COMMENTS + " comentarios.");
+                } else {
+                    if (!p.has("comentarios") || !p.get("comentarios").isJsonArray()) p.add("comentarios", new JsonArray());
+                    JsonObject c = new JsonObject();
+                    c.addProperty("id", Long.toString(now, 36) + Integer.toString((int) (Math.random() * 1296), 36));
+                    c.addProperty("autor", me);
+                    c.addProperty("nombre", name);
+                    c.addProperty("texto", text);
+                    c.addProperty("fecha", now);
+                    p.getAsJsonArray("comentarios").add(c);
+                    dirty = true;
+                    LAST_COMMENT.put(uuid, now);
+                    // al dueño de la foto, si está conectado (y no es él)
+                    String author = TFJson.str(p, "autor", "");
+                    if (!author.equals(me)) {
+                        try {
+                            ServerPlayer a = server.getPlayerList().getPlayer(UUID.fromString(author));
+                            if (a != null) a.displayClientMessage(Component.literal("✎ " + name + " comentó tu foto: «"
+                                    + (text.length() > 40 ? text.substring(0, 40) + "…" : text) + "»").withStyle(ChatFormatting.AQUA), true);
+                        } catch (IllegalArgumentException ignored) {
+                            // autor raro
+                        }
+                    }
+                }
+            } else if (action.startsWith("react:")) {
+                JsonObject c = findComment(p, m.comment());
+                if (c != null) react(player, c, action.substring(6), PadCommunityNet.COMMENT_REACTIONS, "Ese comentario");
+            } else if (action.equals("borrar")) {
+                JsonObject c = findComment(p, m.comment());
+                boolean may = c != null && (TFJson.str(c, "autor", "").equals(me) || TFJson.str(p, "autor", "").equals(me) || player.hasPermissions(2));
+                if (may) {
+                    JsonArray keep = new JsonArray();
+                    for (JsonElement e : comments(p)) if (e != c) keep.add(e);
+                    p.add("comentarios", keep);
+                    dirty = true;
+                }
+            }
+        }
+        sendComments(player, m.post());
+    }
+
+    /**
+     * (La prueba en el juego, BossTest «pad») Una foto de prueba (un atardecer de 640x360) de otro jugador con likes,
+     * reacciones y cuatro comentarios (uno tuyo, uno largo, con emojis y con reacciones). others: quiénes (uuid y nombre;
+     * los bots que han entrado, con su skin). Devuelve su id.
+     */
+    public static String testPost(ServerPlayer player, List<UUID> others, List<String> names) {
+        try {
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(640, 360, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            for (int y = 0; y < 360; y++) {
+                for (int x = 0; x < 640; x++) {
+                    double t = y / 360.0, sun = Math.hypot(x - 420, y - 210) / 70.0;
+                    int r = (int) (255 * Math.min(1, 0.35 + t * 0.75)), g = (int) (255 * Math.min(1, 0.25 + t * 0.4)), b = (int) (255 * (0.55 - t * 0.35));
+                    if (sun < 1) {
+                        r = 255;
+                        g = 236;
+                        b = 160;
+                    }
+                    if (y > 250 + 12 * Math.sin(x / 40.0)) {
+                        r /= 4;
+                        g /= 3;
+                        b /= 3;
+                    }
+                    img.setRGB(x, y, (Math.max(0, r) << 16) | (Math.max(0, g) << 8) | Math.max(0, b));
+                }
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(img, "png", out);
+            String id = Long.toString(System.currentTimeMillis(), 36) + "t";
+            Files.createDirectories(dir());
+            Files.write(dir().resolve(id + ".png"), out.toByteArray());
+            String me = player.getUUID().toString();
+            String[] who = new String[3], name = new String[3];
+            for (int i = 0; i < 3; i++) {
+                who[i] = i < others.size() ? others.get(i).toString() : UUID.nameUUIDFromBytes(("prueba" + i).getBytes()).toString();
+                name[i] = i < names.size() ? names.get(i) : new String[] {"Luna", "Kai", "Nico"}[i];
+            }
+            long now = System.currentTimeMillis();
+            JsonObject p = new JsonObject();
+            p.addProperty("id", id);
+            p.addProperty("autor", who[0]);
+            p.addProperty("nombre", name[0]);
+            p.addProperty("texto", "Atardecer desde el lago del spawn :sunglasses:");
+            p.addProperty("fecha", now - 3_600_000L);
+            put(p, "likes", new java.util.LinkedHashSet<>(List.of(who[1], who[2], me)));
+            p.add("denuncias", new JsonArray());
+            JsonObject re = new JsonObject();
+            put(re, "fire", new java.util.LinkedHashSet<>(List.of(who[1], who[2])));
+            put(re, "heart_eyes", new java.util.LinkedHashSet<>(List.of(me)));
+            p.add("reacciones", re);
+            JsonArray cs = new JsonArray();
+            String[][] comments = {
+                    {who[1], name[1], "¡Qué foto más bonita! :heart_eyes:", "joy:" + me + "," + who[2]},
+                    {who[2], name[2], "Ese atardecer está brutal, ¿dónde es? Quiero ir a construir cerca de ahí con mi clan este fin de semana :fire:",
+                            "fire:" + who[1] + ";thumbsup:" + me},
+                    {me, player.getGameProfile().getName(), "En el spawn, al lado del lago :sunglasses:", ""},
+                    {who[0], name[0], "jajaja :joy:", ""}};
+            for (int i = 0; i < comments.length; i++) {
+                JsonObject c = new JsonObject();
+                c.addProperty("id", id + "c" + i);
+                c.addProperty("autor", comments[i][0]);
+                c.addProperty("nombre", comments[i][1]);
+                c.addProperty("texto", comments[i][2]);
+                c.addProperty("fecha", now - (comments.length - i) * 600_000L);
+                if (!comments[i][3].isEmpty()) {
+                    JsonObject cr = new JsonObject();
+                    for (String part : comments[i][3].split(";")) {
+                        String[] kv = part.split(":");
+                        put(cr, kv[0], new java.util.LinkedHashSet<>(List.of(kv[1].split(","))));
+                    }
+                    c.add("reacciones", cr);
+                }
+                cs.add(c);
+            }
+            p.add("comentarios", cs);
+            posts().add(p);
+            dirty = true;
+            return id;
+        } catch (Exception e) {
+            TFClient.LOGGER.error("Comunidad: no se pudo hacer la foto de prueba", e);
+            return "NO SE HIZO: " + e;
+        }
     }
 
     /** Una publicación para el pad de administrador. */
