@@ -459,39 +459,50 @@ public final class TFBridge {
                 TFClient.LOGGER.warn("TF Bridge: no se pudo borrar {}: {}", TFDataReset.WEB_RESET, e.toString());
             }
         }
-        if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
-        if (json.has("rankList")) {
-            TFRanks.setList(json.getAsJsonArray("rankList"));
-            // Lo que trae cada rango (permisos de LuckPerms y hogares de EssentialsX), si cambió
-            TFRankPerms.onRankList(srv);
-        }
-        if (json.has("roulette") && json.get("roulette").isJsonObject()) {
-            net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
-        }
-        // VFX equipados en la web (efecto de kill y paquete de skills) de los conectados
-        // (1.3.114) los efectos de kill que tiene cada conectado (se venden en la web)
-        if (json.has("vfxOwned") && json.get("vfxOwned").isJsonArray()) {
-            net.tierrasfantasticas.tfclient.vfx.VfxServer.applyOwned(!json.has("vfxFree") || json.get("vfxFree").getAsBoolean(),
-                    json.getAsJsonArray("vfxOwned"));
-        }
-        if (json.has("vfx") && json.get("vfx").isJsonArray()) {
-            net.tierrasfantasticas.tfclient.vfx.VfxServer.applyWeb(srv, json.getAsJsonArray("vfx"));
-        }
-        // Clase de skills de cada conectado (la compra en la web)
-        if (json.has("skills") && json.get("skills").isJsonArray()) {
-            net.tierrasfantasticas.tfclient.skills.SkillServer.applyWeb(srv, json.getAsJsonArray("skills"));
-        }
-        // Armario de la web (lo que se ve en cada hueco) de los conectados
-        if (json.has("wardrobe") && json.get("wardrobe").isJsonArray()) {
-            net.tierrasfantasticas.tfclient.items.TFWardrobe.applyWeb(srv, json.getAsJsonArray("wardrobe"));
-        }
-        // Lo que tienen en el armario los que lo abrieron en el pad
-        if (json.has("padData") && json.get("padData").isJsonArray()) {
-            net.tierrasfantasticas.tfclient.pad.server.PadWardrobe.receive(srv, json.getAsJsonArray("padData"));
+        // (1.3.127, el dueño: «el test no sirve, no me llegan los items ni el rango») si algo de lo de antes falla (efectos,
+        // skills, armario…), las entregas se hacen igual: antes la excepción cortaba aquí y no llegaba ninguna
+        try {
+            if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
+            if (json.has("rankList")) {
+                TFRanks.setList(json.getAsJsonArray("rankList"));
+                // Lo que trae cada rango (permisos de LuckPerms y hogares de EssentialsX), si cambió
+                TFRankPerms.onRankList(srv);
+            }
+            if (json.has("roulette") && json.get("roulette").isJsonObject()) {
+                net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
+            }
+            // VFX equipados en la web (efecto de kill y paquete de skills) de los conectados
+            // (1.3.114) los efectos de kill que tiene cada conectado (se venden en la web)
+            if (json.has("vfxOwned") && json.get("vfxOwned").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.vfx.VfxServer.applyOwned(!json.has("vfxFree") || json.get("vfxFree").getAsBoolean(),
+                        json.getAsJsonArray("vfxOwned"));
+            }
+            if (json.has("vfx") && json.get("vfx").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.vfx.VfxServer.applyWeb(srv, json.getAsJsonArray("vfx"));
+            }
+            // Clase de skills de cada conectado (la compra en la web)
+            if (json.has("skills") && json.get("skills").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.skills.SkillServer.applyWeb(srv, json.getAsJsonArray("skills"));
+            }
+            // Armario de la web (lo que se ve en cada hueco) de los conectados
+            if (json.has("wardrobe") && json.get("wardrobe").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.items.TFWardrobe.applyWeb(srv, json.getAsJsonArray("wardrobe"));
+            }
+            // Lo que tienen en el armario los que lo abrieron en el pad
+            if (json.has("padData") && json.get("padData").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.pad.server.PadWardrobe.receive(srv, json.getAsJsonArray("padData"));
+            }
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Bridge: error al aplicar la respuesta de la web (las entregas siguen)", t);
         }
         JsonArray deliveries = json.has("deliveries") ? json.getAsJsonArray("deliveries") : new JsonArray();
         for (JsonElement element : deliveries) {
-            deliver(srv, element.getAsJsonObject());
+            // (1.3.127) una entrega que falla no impide las demás
+            try {
+                deliver(srv, element.getAsJsonObject());
+            } catch (Throwable t) {
+                TFClient.LOGGER.error("TF Bridge: no se pudo hacer la entrega {}", element, t);
+            }
         }
         // (1.3.117) los rangos de los conectados, después de las entregas: la compra de un rango ya pone su grupo de
         // LuckPerms, y TFRanks.update solo arregla al que le falte (TFLuckPerms.ensure)

@@ -133,7 +133,7 @@
             <td>${esc(o.username)}</td>
             <td>${esc(o.product)}<div class="dim">${esc(o.id)}</div></td>
             <td>${esc(money(o.amount, o.currency))}${o.amount ? `<div class="dim">${esc(o.method)}</div>` : ''}</td>
-            <td class="tag ${o.refunded ? 'refunded' : ''}">${esc(o.refunded ? o.refunded[0].toUpperCase() + o.refunded.slice(1) : STATUS[o.status] || o.status)}</td>
+            <td class="tag ${o.refunded ? 'refunded' : ''}">${esc(o.refunded ? o.refunded[0].toUpperCase() + o.refunded.slice(1) : STATUS[o.status] || o.status)}${o.status === 'queued' && !o.refunded ? '<div class="dim">esperando a que el servidor lo entregue</div>' : ''}${o.error ? `<div class="dim">${esc(o.error)}</div>` : ''}</td>
             <td>${o.refundable ? `<button class="refund" data-id="${esc(o.id)}" data-what="${esc(`${o.product} de ${o.username}`)}">Reembolsar</button>` : ''}</td>
           </tr>`).join('')
         : '<tr><td colspan="6" class="dim">No hay pedidos.</td></tr>';
