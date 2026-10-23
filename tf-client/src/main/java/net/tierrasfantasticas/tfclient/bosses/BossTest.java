@@ -1935,7 +1935,26 @@ public final class BossTest {
                 closeScreen = true;
                 for (int i = 0; i < 16; i++) player.getInventory().setItem(i, ItemStack.EMPTY);
             }
-            case 926 -> next(level);
+            // (1.3.116) el set de un rango, encantado como lo entrega la web (give + encantar): qué lleva cada pieza
+            case 926 -> {
+                var src = player.createCommandSourceStack().withPermission(4);
+                level.getServer().getCommands().performPrefixedCommand(src, "tf web sets give " + player.getGameProfile().getName() + " starlight");
+                level.getServer().getCommands().performPrefixedCommand(src, "tf web sets encantar " + player.getGameProfile().getName() + " starlight 6");
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                    ItemStack st = player.getInventory().getItem(i);
+                    if (st.isEmpty()) continue;
+                    var en = net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(st);
+                    b.append(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem()).getPath()).append(": ");
+                    en.forEach((e, l) -> b.append(net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getKey(e).getPath()).append(' ').append(l).append(", "));
+                    b.append("; ");
+                }
+                r.event("set Fantástico encantado (nivel 6): " + b);
+            }
+            case 930 -> {
+                for (int i = 0; i < player.getInventory().getContainerSize(); i++) player.getInventory().setItem(i, ItemStack.EMPTY);
+            }
+            case 932 -> next(level);
             default -> { }
         }
     }

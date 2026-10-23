@@ -365,25 +365,6 @@
       .filter(Boolean)
       .join(' ')}" onload="this.classList.add('ok')" onerror="this.classList.add('ok')"${extra}>`;
   const thumbOf = (set, id) => `/img/items/${set}/${id}.webp`;
-  // (1.3.115, el dueño: «pon los iconos de todos los items que damos, no solo el texto») lo que trae un rango o una
-  // crate además de su set: cada cosa con su icono, la cantidad y, si va encantada, con qué (al pasar el ratón o tocar)
-  const fmtCount = (n) => (n >= 1000 ? n.toLocaleString('es-ES') : String(n));
-  function rewardsGrid(p, title) {
-    const list = Array.isArray(p.rewards) ? p.rewards : [];
-    if (!list.length) return '';
-    return `<section class="rw" aria-label="${escapeHtml(title)}">
-        <h4>${escapeHtml(title)}</h4>
-        <ul class="rw-grid">${list
-          .map(
-            (r) => `<li class="rw-it${r.enchanted ? ' is-ench' : ''}" title="${escapeHtml(`${fmtCount(r.count)} × ${r.name}${r.detail ? ` · ${r.detail}` : ''}`)}">
-              <span class="rw-ico">${img(r.icon, '', 'pixel-img', ' width="40" height="40"')}${r.count > 1 ? `<b class="rw-n">${fmtCount(r.count)}</b>` : ''}</span>
-              <span class="rw-name">${escapeHtml(r.name)}</span>
-              ${r.detail ? `<span class="rw-detail">${escapeHtml(r.detail)}</span>` : ''}
-            </li>`,
-          )
-          .join('')}</ul>
-      </section>`;
-  }
   const piecesText = (p) => {
     const n = (p.models || []).length;
     const armor = (p.models || []).some((m) => m.id.startsWith('armor_'));
@@ -1427,7 +1408,6 @@
         <div class="rk-chat" aria-label="Así se ve tu nombre en el chat"><span class="rk-chat-prefix">[${escapeHtml(prefix)}]</span> <span class="rk-chat-name">${escapeHtml(who)}</span><span class="rk-chat-msg">: ¡Hola, reino!</span></div>
         <ul class="rk-perks">${(p.perks || []).map((x) => `<li>${ICON_CHECK}<span>${escapeHtml(x)}</span></li>`).join('')}
           <li>${ICON_CHECK}<span>Llega al instante a tu cuenta del servidor</span></li></ul>
-        ${rewardsGrid(p, 'Todo lo que recibes')}
         <div class="rk-try">
           <div class="rk-try-head"><span>Pruébate las piezas</span><button type="button" class="rk-reset" data-rk-reset>Set completo</button></div>
           <div class="rk-pieces" role="group" aria-label="Piezas del set: toca una para ponértela">${(p.models || [])
@@ -1680,7 +1660,6 @@
       </div>
       <div class="cv-side">
         <p class="cv-desc" id="cv-desc"></p>
-        <div id="cv-rewards"></div>
         <h4>Incluye <span id="cv-count"></span> <span class="hint3d">· toca uno para verlo y equipártelo</span></h4>
         <div class="cv-items" id="cv-items"></div>
         <p class="cv-bound">${ICON_LOCK}<span>Permanente e irrompible, vinculado a tu cuenta: solo tú puedes usarlo. Los cosméticos (alas, sombreros, mochilas) sí se pueden intercambiar.</span></p>
@@ -1743,7 +1722,6 @@
     $('#cv-tag').textContent = p.tagline || '';
     $('#cv-desc').textContent = p.description || '';
     const isRank = p.category === 'rangos';
-    $('#cv-rewards').innerHTML = rewardsGrid(p, isRank ? 'Todo lo que recibes' : 'Además del set');
     $('#cv-cat').textContent = isRank ? 'Rango' : 'Crate';
     $('#cv-price').textContent = formatPrice(p.price);
     $('#cv-price').previousElementSibling.textContent = isRank ? 'Rango con su set' : 'Set completo';
