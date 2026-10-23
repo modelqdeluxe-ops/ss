@@ -67,7 +67,7 @@ public final class TFButtonTheme {
         TFPill.paint(g, button.getX(), button.getY(), button.getWidth(), button.getHeight(), TFPill.Style.VIOLET, e, pressed, button.active,
                 false, 1f, shine(st));
         int color = !button.active ? 0x8A8494 : TFMenuPaint.lerp(0xFFEAE4D8, 0xFFFFE9A8, e) & 0xFFFFFF;
-        drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, button.getWidth() >= 120 ? e : 0f, e);
+        drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, button.getWidth() >= 120 ? e : 0f, e, false);
         g.pose().popPose();
         return true;
     }
@@ -83,10 +83,11 @@ public final class TFButtonTheme {
         int w = slider.getWidth();
         int h = slider.getHeight();
         TFPill.paint(g, x, y, w, h, TFPill.Style.VIOLET, 0.6f * e, false, slider.active, false, 1f, -1f);
-        int handleX = x + 2 + (int) (Mth.clamp(value, 0.0, 1.0) * (w - 4 - 10));
-        TFPill.knob(g, handleX, y + 3, 10, h - 6, hot, slider.active);
+        int handleX = x + 3 + (int) (Mth.clamp(value, 0.0, 1.0) * (w - 6 - 6));
+        TFPill.knob(g, handleX, y + 3, 6, h - 6, hot, slider.active);
         int color = !slider.active ? 0x8A8494 : TFMenuPaint.lerp(0xFFEAE4D8, 0xFFFFE9A8, e) & 0xFFFFFF;
-        drawLabel(g, slider.getMessage(), x, y, w, h, color, 1f, 0f, e);
+        // (con contorno oscuro: el texto pasa por encima del tirador de oro)
+        drawLabel(g, slider.getMessage(), x, y, w, h, color, 1f, 0f, e, true);
         return true;
     }
 
@@ -116,7 +117,8 @@ public final class TFButtonTheme {
      * Texto centrado con la letra de TF (si no cabe, se reduce un poco) y, con thread &gt; 0, los hilos de oro a sus
      * lados (e: el ratón).
      */
-    public static void drawLabel(GuiGraphics g, Component message, int x, int y, int w, int h, int rgb, float alpha, float thread, float e) {
+    public static void drawLabel(GuiGraphics g, Component message, int x, int y, int w, int h, int rgb, float alpha, float thread, float e,
+                                 boolean outline) {
         Font font = Minecraft.getInstance().font;
         MutableComponent text = Component.empty().setStyle(Style.EMPTY.withFont(TFMenuButton.FONT)).append(message);
         int textW = font.width(text);
@@ -127,7 +129,14 @@ public final class TFButtonTheme {
         g.pose().pushPose();
         g.pose().translate(x + w / 2f, y + h / 2f - 4f * scale, 0f);
         g.pose().scale(scale, scale, 1f);
-        g.drawString(font, text, -textW / 2, 0, rgb | a, true);
+        if (outline) {
+            // contorno violeta muy oscuro (como las letras del menú principal) en lugar de la sombra
+            int dark = Mth.ceil(Mth.clamp(alpha, 0.02f, 1f) * 230f) << 24 | 0x1A0E2E;
+            for (int[] d : new int[][] {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) g.drawString(font, text, -textW / 2 + d[0], d[1], dark, false);
+            g.drawString(font, text, -textW / 2, 0, rgb | a, false);
+        } else {
+            g.drawString(font, text, -textW / 2, 0, rgb | a, true);
+        }
         g.pose().popPose();
     }
 }

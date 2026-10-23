@@ -154,6 +154,10 @@ public abstract class TitleScreenMixin extends Screen {
     @Unique
     private void tfclient$swap(Button original, int[] rect, String text, TFMenuButton.Kind kind, String plate) {
         this.removeWidget(original);
+        // (1.3.120) fuera de la pantalla: Forge pinta su aviso de actualizaciones de mods (un punto verde) donde esté el
+        // botón de Mods original, y caía encima de los botones nuevos (el modpack lo pone el servidor)
+        original.setX(-10000);
+        original.setY(-10000);
         this.addRenderableWidget(TFMenuButton.wrapping(original, rect, text, kind, plate));
     }
 }
