@@ -60,7 +60,7 @@
     "name": "Rango Mortal",
     "tagline": "Tu leyenda empieza aquí",
     "description": "El primer paso del reino: tu nombre con color y un equipo completo para salir a la aventura desde el primer día.",
-    "price": 0,
+    "price": 499,
     "giftCode": "RMOR",
     "maxQuantity": 1,
     "discordRoles": [
@@ -226,7 +226,7 @@
     "name": "Rango Inmortal",
     "tagline": "Más fuerte que la muerte",
     "description": "Un equipo de neón que late al ritmo de la batalla y un prefijo que todo el servidor va a reconocer.",
-    "price": 0,
+    "price": 799,
     "giftCode": "RINM",
     "maxQuantity": 1,
     "discordRoles": [
@@ -393,7 +393,7 @@
     "name": "Rango Mágico",
     "tagline": "Domina la magia oscura",
     "description": "Armas envueltas en energía arcana, armadura sombría y alas violetas que se ven desde lejos.",
-    "price": 0,
+    "price": 1199,
     "giftCode": "RMAG",
     "maxQuantity": 1,
     "discordRoles": [
@@ -562,7 +562,7 @@
     "name": "Rango Eterno",
     "tagline": "Forjado en fuego eterno",
     "description": "Acero, fuego y alas en llamas: el equipo de quienes no piensan rendirse nunca.",
-    "price": 0,
+    "price": 1599,
     "giftCode": "RETE",
     "maxQuantity": 1,
     "discordRoles": [
@@ -736,7 +736,7 @@
     "name": "Rango Cósmico",
     "tagline": "Fuego del vacío",
     "description": "Acero maldito envuelto en llamas violetas que nunca se apagan: armas de nigromante, armadura completa y alas del vacío.",
-    "price": 0,
+    "price": 1999,
     "giftCode": "RCOS",
     "maxQuantity": 1,
     "discordRoles": [
@@ -919,7 +919,7 @@
     "name": "Rango Celestial",
     "tagline": "Bendecido por los cielos",
     "description": "Oro y sombra para los que vuelan más alto: alas de águila majestuosas y armas dignas de los elegidos.",
-    "price": 0,
+    "price": 2499,
     "giftCode": "RCEL",
     "maxQuantity": 1,
     "discordRoles": [
@@ -1111,7 +1111,7 @@
     "name": "Rango Fantástico",
     "tagline": "La cima de Tierras Fantásticas",
     "description": "El rango más alto del reino. Oro y luz de las constelaciones, alas blancas que brillan de verdad y el equipo más espectacular del servidor.",
-    "price": 0,
+    "price": 2999,
     "giftCode": "RFAN",
     "maxQuantity": 1,
     "discordRoles": [
