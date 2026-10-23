@@ -104,6 +104,53 @@ public final class TFRevocations {
         if (currentOrder != null && stack.getItem() instanceof TFItem) stack.getOrCreateTag().putString(ORDER, currentOrder);
     }
 
+    /** (1.3.128) Cualquier objeto entregado (p. ej. la piedra de protección de un rango) lleva la marca de su pedido. */
+    public static void stampAny(ItemStack stack) {
+        if (currentOrder != null && !stack.isEmpty()) stack.getOrCreateTag().putString(ORDER, currentOrder);
+    }
+
+    /**
+     * (1.3.128, el dueño: «la piedra de protección va ligada al jugador: si reembolsa debe desaparecer, y romperse si
+     * está colocada») Una piedra con pedido colocada: se apunta su zona; al reembolsar ese pedido se borra y se rompe.
+     */
+    public static void claimPlaced(ServerLevel level, net.minecraft.core.BlockPos pos, ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(ORDER, Tag.TAG_STRING)) return;
+        Data data = Data.get(level.getServer());
+        String order = tag.getString(ORDER);
+        if (data.orders.contains(order)) return;
+        data.claims.put(level.dimension().location() + ";" + pos.asLong(), order);
+        data.setDirty();
+    }
+
+    /** El pedido de la piedra colocada en pos (y se olvida), o null: al romperla vuelve con su marca. */
+    @Nullable
+    public static String claimRemoved(ServerLevel level, net.minecraft.core.BlockPos pos) {
+        Data data = Data.get(level.getServer());
+        String order = data.claims.remove(level.dimension().location() + ";" + pos.asLong());
+        if (order != null) data.setDirty();
+        return order;
+    }
+
+    /** Rompe las piedras colocadas de los pedidos reembolsados (y borra sus zonas). */
+    private static void breakClaims(MinecraftServer server, Data data) {
+        var it = data.claims.entrySet().iterator();
+        while (it.hasNext()) {
+            var e = it.next();
+            if (!data.orders.contains(e.getValue())) continue;
+            String[] k = e.getKey().split(";");
+            ServerLevel level = server.getLevel(ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                    new net.minecraft.resources.ResourceLocation(k[0])));
+            if (level != null) {
+                net.minecraft.core.BlockPos pos = net.minecraft.core.BlockPos.of(Long.parseLong(k[1]));
+                net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance().removeClaim(level, pos);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            }
+            it.remove();
+            data.setDirty();
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------------------------
     // Reembolso: se apunta y se retira lo que ya está cargado
     // ---------------------------------------------------------------------------------------------------------------
@@ -112,6 +159,7 @@ public final class TFRevocations {
     public static int revoke(MinecraftServer server, Entry entry) {
         Data data = Data.get(server);
         data.add(entry);
+        breakClaims(server, data);
         int removed = 0;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) removed += purgePlayer(player, data);
         for (ServerLevel level : server.getAllLevels()) {
@@ -131,9 +179,10 @@ public final class TFRevocations {
     // ---------------------------------------------------------------------------------------------------------------
 
     static boolean revoked(Data data, ItemStack stack) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof TFItem)) return false;
+        if (stack.isEmpty()) return false;
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.contains(ORDER, Tag.TAG_STRING)) return data.orders.contains(tag.getString(ORDER));
+        if (!(stack.getItem() instanceof TFItem)) return false;
         // Objetos de antes de esta versión (sin pedido): por su dueño y su set.
         UUID owner = TFBinding.owner(stack);
         List<Entry> entries = owner != null ? data.byOwner.get(owner) : null;
@@ -410,6 +459,8 @@ public final class TFRevocations {
         private final List<Entry> entries = new ArrayList<>();
         final Set<String> orders = new HashSet<>();
         final Map<UUID, List<Entry>> byOwner = new HashMap<>();
+        /** Piedras de protección colocadas con pedido: «dimensión;pos» → pedido. */
+        final Map<String, String> claims = new HashMap<>();
 
         static Data get(MinecraftServer server) {
             return server.overworld().getDataStorage().computeIfAbsent(Data::load, Data::new, NAME);
@@ -440,6 +491,8 @@ public final class TFRevocations {
                 data.index(new Entry(e.getUUID("owner"), e.getString("order"), e.getString("set"),
                         e.contains("item", Tag.TAG_STRING) ? e.getString("item") : null));
             }
+            CompoundTag claims = tag.getCompound("claims");
+            for (String k : claims.getAllKeys()) data.claims.put(k, claims.getString(k));
             return data;
         }
 
@@ -455,6 +508,9 @@ public final class TFRevocations {
                 list.add(e);
             }
             tag.put("entries", list);
+            CompoundTag claimsTag = new CompoundTag();
+            claims.forEach(claimsTag::putString);
+            tag.put("claims", claimsTag);
             return tag;
         }
     }

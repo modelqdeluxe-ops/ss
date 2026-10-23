@@ -364,8 +364,8 @@
       return '';
     }
   })();
-  const testBtn = (p) =>
-    p.testClaim && staffKey ? `<button class="btn btn-ghost btn-sm" type="button" data-claim="${escapeHtml(p.id)}" data-test>Test</button>` : '';
+  // (el dueño: «quita el test de la página principal, déjalo solo en la del staff») ya no se pinta en la tienda
+  const testBtn = () => '';
   // Comprar como regalo: el botón del regalo (solo el icono en las tarjetas; con texto donde hay sitio)
   const giftAttrs = (p) => `data-gift="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
   const giftIcon = (p) =>

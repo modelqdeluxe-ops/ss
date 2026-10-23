@@ -34,6 +34,13 @@ public abstract class ItemInHandRendererMixin {
     private void tfclient$trailCapture(LivingEntity entity, ItemStack stack, ItemDisplayContext ctx, boolean left, PoseStack pose,
                                        MultiBufferSource buffers, int light, CallbackInfo ci) {
         TrailClient.capture(entity, stack, ctx, left, pose);
+        // (1.3.128, el dueño: «los escudos me tapan la vista cuando me cubro, de todo set») en primera persona, al
+        // cubrirse con un escudo de los sets, más abajo y hacia su lado (el que llama hace pushPose/popPose)
+        if (ctx.firstPerson() && stack.getItem() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Shield
+                && entity.isUsingItem() && entity.getUseItem() == stack) {
+            pose.translate(left ? -0.28F : 0.28F, -0.32F, 0.05F);
+            pose.scale(0.8F, 0.8F, 0.8F);
+        }
     }
 
     /** (1.3.117) En el Void con shaders, lo que se tiene en la mano con luz (VoidItemLight: si no, sale casi negro). */

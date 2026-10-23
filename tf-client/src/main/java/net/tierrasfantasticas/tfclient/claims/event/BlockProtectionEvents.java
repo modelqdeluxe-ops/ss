@@ -100,8 +100,13 @@ public final class BlockProtectionEvents {
                         breakevent.setCanceled(true);
                     } else {
                         ClaimManager.getInstance().removeClaim(level, blockpos);
-                        if (!player.getAbilities().instabuild) {
+                        // (1.3.128, el dueño: «al romperla en creativo desaparece: que vuelva a mi inventario») también en creativo
+                        {
                             ItemStack itemstack = ClaimBlocks.createTierItem(claimtier, 1);
+                            // (1.3.128) vuelve con la marca de su pedido (si se reembolsa, desaparece)
+                            String order = level instanceof net.minecraft.server.level.ServerLevel sl
+                                    ? net.tierrasfantasticas.tfclient.items.TFRevocations.claimRemoved(sl, blockpos) : null;
+                            if (order != null) itemstack.getOrCreateTag().putString(net.tierrasfantasticas.tfclient.items.TFRevocations.ORDER, order);
                             if (!player.getInventory().add(itemstack)) {
                                 player.drop(itemstack, false);
                             }
@@ -236,6 +241,9 @@ public final class BlockProtectionEvents {
         level.setBlockAndUpdate(blockpos1, block instanceof ProtectionBlock ? ((ProtectionBlock)block).facing(player.getDirection()) : block.defaultBlockState());
         level.playSound(null, blockpos1, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.BLOCKS, 0.8f, 1.2f);
         Claim claim2 = claimmanager.createClaim(level, blockpos1, player, claimtier);
+        if (claim2 != null && level instanceof net.minecraft.server.level.ServerLevel sl) {
+            net.tierrasfantasticas.tfclient.items.TFRevocations.claimPlaced(sl, blockpos1, itemstack);
+        }
         if (uuid != null && claim2 != null) {
             claimmanager.joinClaimToGroup(claim2, uuid);
         }
