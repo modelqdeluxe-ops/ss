@@ -572,7 +572,22 @@ final class PadUi {
         if (conn == null) return;
         net.minecraft.client.multiplayer.PlayerInfo info = owner.hasUUID("Id") ? conn.getPlayerInfo(owner.getUUID("Id")) : null;
         if (info == null && owner.contains("Name", 8)) info = conn.getPlayerInfo(owner.getString("Name"));
-        if (info == null || info.getProfile().getProperties().get("textures").isEmpty()) return;
+        if (info == null || info.getProfile().getProperties().get("textures").isEmpty()) {
+            // (1.3.127, el dueño: «sigo sin ver mi skin y los bots sí») la propia, sin skin del servidor (sin premium):
+            // la de la cuenta de Minecraft de este ordenador
+            var me = Minecraft.getInstance().player;
+            boolean mine = me != null && (owner.hasUUID("Id") && me.getUUID().equals(owner.getUUID("Id"))
+                    || owner.getString("Name").equalsIgnoreCase(me.getGameProfile().getName()));
+            com.mojang.authlib.properties.Property textures = mine ? PadSkinModel.accountTextures : null;
+            if (textures == null) {
+                if (mine) PadSkinModel.account(); // la pide (una vez) para la próxima vez que se dibuje
+                return;
+            }
+            com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(me.getUUID(), me.getGameProfile().getName());
+            gp.getProperties().put("textures", textures);
+            tag.put("SkullOwner", net.minecraft.nbt.NbtUtils.writeGameProfile(new net.minecraft.nbt.CompoundTag(), gp));
+            return;
+        }
         tag.put("SkullOwner", net.minecraft.nbt.NbtUtils.writeGameProfile(new net.minecraft.nbt.CompoundTag(), info.getProfile()));
     }
 

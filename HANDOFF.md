@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.126) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.127) — lee esto primero
+
+**1.3.127** (el dueño, con capturas): (1) «el Test no sirve, no llegan items ni rango»: el puente aplica la respuesta de
+la web en un try (un fallo en efectos/skills/armario ya no impide las entregas) y cada entrega en su try; el panel
+`/staff` enseña el error de cada pedido y «esperando a que el servidor lo entregue» (si sigue sin llegar, mirar ahí y
+el latest.log, «TF Bridge»). (2) Su cabeza en la lista de jugadores del pad sin skin: `PadUi.skin` usa la de la cuenta
+(`PadSkinModel.accountTextures`). (3) Alas que se quedan en la espalda: probablemente puestas en el Armario (pad › Armario
+› Espalda), que se dibuja encima de todo (`BackLayer`). (4) Neones del pad sobre las abrazaderas naranjas: quitados de
+`neon.png`/`neon_core.png` donde `frame.png` es naranja. (5) Daga Dark World (Mágico) tumbada en la mano: la colocación de
+la espada de su set (`darkworld_dagger.json`).
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.126, PUBLICADA)
 
 **1.3.126** (ocho quejas del dueño desde el servidor real):
 1. Alas en el hueco de espalda: se queda el arreglo de la 1.3.125 de la otra sesión (BackLayer las dibuja si el mod de

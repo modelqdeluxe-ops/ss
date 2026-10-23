@@ -1194,6 +1194,7 @@ export function createApp(env) {
           currency: o.currency,
           method: o.method || (o.amount === 0 ? 'gratis' : 'stripe'),
           refunded: o.refunded || null,
+          error: o.error || null,
           createdAt: o.createdAt,
           refundable: CLAIMED.includes(o.status) && !o.refunded,
         })),

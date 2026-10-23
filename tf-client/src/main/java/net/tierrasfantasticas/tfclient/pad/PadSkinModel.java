@@ -86,6 +86,8 @@ final class PadSkinModel {
     }
 
     private static volatile ResourceLocation accountSkin;
+    /** La propiedad «textures» de la cuenta (para las cabezas de jugador del pad), o null mientras llega. */
+    static volatile com.mojang.authlib.properties.Property accountTextures;
     private static volatile boolean accountSlim;
     private static boolean accountAsked;
 
@@ -98,6 +100,7 @@ final class PadSkinModel {
                 try {
                     com.mojang.authlib.properties.PropertyMap props = mc.getProfileProperties();
                     if (props == null || props.get("textures").isEmpty()) return;
+                    accountTextures = props.get("textures").iterator().next();
                     com.mojang.authlib.GameProfile gp = new com.mojang.authlib.GameProfile(mc.getUser().getProfileId(), mc.getUser().getName());
                     gp.getProperties().putAll(props);
                     mc.execute(() -> mc.getSkinManager().registerSkins(gp, (type, loc, tex) -> {
