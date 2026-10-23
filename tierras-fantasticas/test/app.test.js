@@ -1740,4 +1740,17 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
   assert.ok((await (await staff('/api/staff/orders')).json()).orders.every((o) => o.username !== 'Staff_MC' || !o.refundable));
   // Al dueño le llega el aviso de cada uno
   assert.ok(mails.some((m) => m.subject === `Reembolso · pedido ${crate} · Staff_MC` && m.text.includes('panel de staff')));
+
+  // Lo gratis reembolsado se puede volver a reclamar (con otro número); mientras lo tiene, no.
+  const claim = () => post('/api/claim', { productId: 'regalo-diamantes' }, cookie);
+  const first = (await (await claim()).json()).id;
+  assert.strictEqual((await claim()).status, 409);
+  assert.strictEqual((await refund(first)).status, 200);
+  const again = await claim();
+  assert.strictEqual(again.status, 200);
+  const second = (await again.json()).id;
+  assert.ok(second !== first && /^GIFT[0-9A-Z]{2,4}[0-9A-F]{30}01$/.test(second), second);
+  assert.strictEqual((await claim()).status, 409);
+  await serverDelivers('Staff_MC');
+  assert.strictEqual((await (await get(`/api/order/${second}`)).json()).status, 'delivered');
 });

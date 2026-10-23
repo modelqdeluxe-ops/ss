@@ -81,8 +81,8 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   panel está apagado) y tras 8 claves malas desde una IP la bloquea 15 minutos. Lista los últimos pedidos
   (`GET /api/staff/orders`) y «Reembolsar» (`POST /api/staff/refund`) hace lo mismo que un reembolso completo de
   Stripe/PayPal, también con lo reclamado gratis (que no tiene pago): retira del servidor lo entregado y sus roles de
-  Discord. Desde el panel se quitan el grupo y el rol de ese rango aunque ya no sea el actual. Los `give` (objetos,
-  monedas) no se pueden quitar. El dinero se devuelve aparte en Stripe o PayPal (y si se hace allí, todo esto va solo).
+  Discord. Desde el panel se quitan el grupo y el rol de ese rango aunque ya no sea el actual. Lo gratis reembolsado se
+  puede volver a reclamar (con otro número de pedido, `…01`, `…02`). Los `give` (objetos, monedas) no se pueden quitar. El dinero se devuelve aparte en Stripe o PayPal (y si se hace allí, todo esto va solo).
 - **Página 404** (`public/404.html`, la sirve el Worker en `src/index.js`), botón «volver arriba», iconos para el
   móvil (`img/icon-180.png`, `img/icon-32.png`), vistas previas con dirección completa (`og:image`, `og:url`) y
   `sitemap.xml` (lo genera `pages.py`).

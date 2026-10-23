@@ -1216,11 +1216,19 @@ export function createApp(env) {
       const product = productById.get(body.productId);
       if (!product || product.price !== 0) return json({ error: 'Ese regalo no existe.' }, 400);
       const player = await store.playerByUuid(user.uuid);
-      // El número de pedido sale del jugador y del regalo: el mismo jugador nunca puede reclamarlo dos veces.
-      // giftCode fijo en products.json: no cambia aunque se reordene el catálogo.
+      // El número de pedido sale del jugador y del regalo: el mismo jugador nunca lo tiene dos veces a la vez.
+      // giftCode fijo en products.json: no cambia aunque se reordene el catálogo. Si el staff se lo reembolsó (/staff),
+      // lo puede volver a reclamar, con otro número (…01, …02).
       const code = String(product.giftCode || product.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
-      const id = `GIFT${code}${user.uuid.replaceAll('-', '').toUpperCase()}`.slice(0, 40);
-      if (await store.getOrder(id)) return json({ error: 'Ya reclamaste este regalo.', code: 'claimed', id }, 409);
+      const hex = user.uuid.replaceAll('-', '').toUpperCase();
+      let id = null;
+      for (let n = 0; n < 100 && !id; n++) {
+        const next = (n ? `GIFT${code}${hex.slice(0, 30)}${String(n).padStart(2, '0')}` : `GIFT${code}${hex}`).slice(0, 40);
+        const old = await store.getOrder(next);
+        if (!old) id = next;
+        else if (!old.refunded) return json({ error: 'Ya reclamaste este regalo.', code: 'claimed', id: next }, 409);
+      }
+      if (!id) return json({ error: 'Ya reclamaste este regalo.', code: 'claimed' }, 409);
       try {
         await store.createOrder({
           id,
