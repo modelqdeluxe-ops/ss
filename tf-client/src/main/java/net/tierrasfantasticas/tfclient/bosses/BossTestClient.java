@@ -74,9 +74,21 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.client.TFMenuButton.testHot = what.equals("principal-raton")
                     ? net.tierrasfantasticas.tfclient.client.TFMenuButton.BLUE_1 : null;
             net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = what.equals("opciones");
+            // (que no pausen: son pantallas de pausa y, en un mundo de un jugador, el servidor se pararía y la prueba
+            // no seguiría nunca)
             mc.setScreen(what.equals("opciones")
-                    ? new net.minecraft.client.gui.screens.OptionsScreen(new net.minecraft.client.gui.screens.TitleScreen(), mc.options)
-                    : new net.minecraft.client.gui.screens.TitleScreen());
+                    ? new net.minecraft.client.gui.screens.OptionsScreen(new net.minecraft.client.gui.screens.TitleScreen(), mc.options) {
+                        @Override
+                        public boolean isPauseScreen() {
+                            return false;
+                        }
+                    }
+                    : new net.minecraft.client.gui.screens.TitleScreen() {
+                        @Override
+                        public boolean isPauseScreen() {
+                            return false;
+                        }
+                    });
         }
         if ("corta".equals(BossTest.currentId())) mc.options.hideGui = BossTest.hideGui;
         if (mc.level != null && mc.player != null && "corta".equals(BossTest.currentId())) BossTest.clientItemsLight = itemsLight(mc);
