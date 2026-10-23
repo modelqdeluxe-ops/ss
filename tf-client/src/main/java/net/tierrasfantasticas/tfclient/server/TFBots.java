@@ -72,6 +72,12 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   <li>El servidor en la lista de servidores cuenta también los bots (MinecraftServerMixin).</li>
  *   <li>(1.3.111) Quién entra, al azar con memoria: a veces vuelve uno que ya estuvo (más los que más vienen) y si
  *       no, uno nuevo; entre uno y otro, una espera al azar alrededor de los segundos pedidos (no a ritmo fijo).</li>
+ *   <li>(1.3.125, el dueño: «no tienen rango de LuckPerms, el TAB, el servidor y la consola no los reconocen como
+ *       jugadores activos, no salen en /tpa») entran como jugadores de verdad ({@link TFBotPlayer}: sin cuerpo para
+ *       nadie); con bots.reales=false, o si falla, solo en la lista como antes.</li>
+ *   <li>(1.3.125, el dueño: «borra todo dato guardado de los bots al actualizar el mod; pon esa regla») al arrancar con
+ *       otra versión del TF Client se borra su registro y sus datos (lo de Minecraft, EssentialsX, LuckPerms y el pad),
+ *       como /tf bots limpiar.</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
@@ -88,6 +94,11 @@ public final class TFBots {
     /** Los que están dentro, por orden de entrada. */
     private static final List<Bot> online = new ArrayList<>();
     private static final Map<UUID, Integer> ping = new HashMap<>();
+    /** (1.3.125) Los que están dentro como jugadores de verdad (los demás, solo en la lista). */
+    private static final Map<UUID, ServerPlayer> REAL = new HashMap<>();
+    /** Los que estaban dentro al apagar: vuelven a entrar de uno en uno en cuanto arranca. */
+    private static final java.util.ArrayDeque<Bot> RESTORE = new java.util.ArrayDeque<>();
+    private static boolean stopping;
     private static MinecraftServer server;
     /** Lo que falta por entrar o salir, y cada cuántos ticks (la cadena se corta al acabar). */
     private static int toAdd, toRemove, addEvery, removeEvery;
@@ -198,7 +209,9 @@ public final class TFBots {
         server = src.getServer();
         int n = online.size(), known = seen.size();
         toAdd = toRemove = 0;
+        RESTORE.clear();
         while (!online.isEmpty()) leave(online.get(0), false);
+        wipeData(server, new HashSet<>(seen.keySet()));
         seen.clear();
         save();
         src.sendSuccess(() -> Component.literal("Bots limpios: salieron " + n + " y se borró el registro de " + known + "."), true);
@@ -246,11 +259,53 @@ public final class TFBots {
         return online.size();
     }
 
+    /**
+     * (1.3.125) Lo que el servidor guarda de los bots, fuera: sus archivos de jugador de Minecraft (playerdata, stats,
+     * advancements), su usuario de EssentialsX, sus datos en LuckPerms (los que vinieron) y su ficha del pad.
+     */
+    private static void wipeData(MinecraftServer srv, Set<String> cameNames) {
+        if (srv == null) return;
+        int files = 0;
+        Path essentials = srv.getServerDirectory().toPath().resolve("plugins").resolve("Essentials").resolve("userdata");
+        for (Bot b : pool()) {
+            String id = b.id().toString();
+            for (Path f : List.of(srv.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).resolve(id + ".dat"),
+                    srv.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).resolve(id + ".dat_old"),
+                    srv.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_STATS_DIR).resolve(id + ".json"),
+                    srv.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_ADVANCEMENTS_DIR).resolve(id + ".json"),
+                    essentials.resolve(id + ".yml"))) {
+                try {
+                    if (Files.deleteIfExists(f)) files++;
+                } catch (Exception e) {
+                    TFClient.LOGGER.warn("TF Bots: no se pudo borrar {}: {}", f, e.toString());
+                }
+            }
+            net.tierrasfantasticas.tfclient.pad.server.PadStats.forget(b.id());
+            if (cameNames.contains(b.name().toLowerCase())) TFLuckPerms.dispatch(srv, "lp user " + id + " clear");
+        }
+        TFClient.LOGGER.info("TF Bots: datos de bots borrados ({} archivos, {} usuarios de LuckPerms)", files, cameNames.size());
+    }
+
     // ------------------------------------------------------------------------------------------------- lo de dentro
 
-    /** Los bots que hay ahora (para la lista de servidores: MinecraftServerMixin). */
+    /** Los bots que hay ahora (los de verdad y los de solo la lista). */
     public static List<Bot> online() {
         return Collections.unmodifiableList(online);
+    }
+
+    /**
+     * (1.3.125) Los que están solo en la lista del TAB (los de verdad ya los cuenta el servidor: MinecraftServerBotsMixin
+     * suma solo estos).
+     */
+    public static List<Bot> listOnly() {
+        List<Bot> out = new ArrayList<>();
+        for (Bot b : online) if (!REAL.containsKey(b.id())) out.add(b);
+        return out;
+    }
+
+    /** (1.3.125) ¿Es un bot metido como jugador de verdad? */
+    public static boolean isBotPlayer(ServerPlayer player) {
+        return player instanceof TFBotPlayer;
     }
 
     public static int count() {
@@ -372,15 +427,21 @@ public final class TFBots {
     }
 
     private static void join(Bot b, boolean announce) {
-        if (server == null || online.contains(b)) return;
+        if (server == null || online.contains(b) || server.getPlayerList().getPlayer(b.id()) != null) return;
         online.add(b);
         Seen s = seen.get(b.name().toLowerCase());
         seen.put(b.name().toLowerCase(), new Seen(s == null ? 1 : s.times() + 1, s == null ? 0 : s.lastLeft()));
         ping.put(b.id(), 25 + RANDOM.nextInt(110));
-        server.getPlayerList().broadcastAll(addPacket(List.of(b)));
-        if (announce) {
-            server.getPlayerList().broadcastSystemMessage(
-                    Component.translatable("multiplayer.player.joined", Component.literal(b.name())).withStyle(ChatFormatting.YELLOW), false);
+        // (1.3.125) como jugador de verdad (el servidor anuncia su entrada); si no se puede, solo en la lista
+        ServerPlayer real = TFServerConfig.realBots() ? TFBotPlayer.spawn(server, b, ping.get(b.id())) : null;
+        if (real != null) {
+            REAL.put(b.id(), real);
+        } else {
+            server.getPlayerList().broadcastAll(addPacket(List.of(b)));
+            if (announce) {
+                server.getPlayerList().broadcastSystemMessage(
+                        Component.translatable("multiplayer.player.joined", Component.literal(b.name())).withStyle(ChatFormatting.YELLOW), false);
+            }
         }
         save();
     }
@@ -390,10 +451,15 @@ public final class TFBots {
         ping.remove(b.id());
         Seen s = seen.get(b.name().toLowerCase());
         seen.put(b.name().toLowerCase(), new Seen(s == null ? 1 : s.times(), System.currentTimeMillis()));
-        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(b.id())));
-        if (announce) {
-            server.getPlayerList().broadcastSystemMessage(
-                    Component.translatable("multiplayer.player.left", Component.literal(b.name())).withStyle(ChatFormatting.YELLOW), false);
+        ServerPlayer real = REAL.remove(b.id());
+        if (real != null) {
+            TFBotPlayer.despawn(real); // (sale como un jugador: el servidor anuncia su salida)
+        } else {
+            server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(b.id())));
+            if (announce) {
+                server.getPlayerList().broadcastSystemMessage(
+                        Component.translatable("multiplayer.player.left", Component.literal(b.name())).withStyle(ChatFormatting.YELLOW), false);
+            }
         }
         save();
     }
@@ -426,11 +492,11 @@ public final class TFBots {
     }
 
     /** El ping de todos (cambia un poco cada medio minuto, como el de verdad). */
-    private static ClientboundPlayerInfoUpdatePacket pingPacket() {
+    private static ClientboundPlayerInfoUpdatePacket pingPacket(List<Bot> bots) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeEnumSet(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY), ClientboundPlayerInfoUpdatePacket.Action.class);
-        buf.writeVarInt(online.size());
-        for (Bot b : online) {
+        buf.writeVarInt(bots.size());
+        for (Bot b : bots) {
             int p = Math.max(12, Math.min(260, ping.getOrDefault(b.id(), 60) + RANDOM.nextInt(31) - 15));
             ping.put(b.id(), p);
             buf.writeUUID(b.id());
@@ -448,30 +514,33 @@ public final class TFBots {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         server = event.getServer();
+        stopping = false;
         online.clear();
         ping.clear();
+        REAL.clear();
+        RESTORE.clear();
         toAdd = toRemove = 0;
-        // los que estaban dentro al apagar, otra vez dentro (sin mensaje: ya «estaban»)
+        // los que estaban dentro al apagar, otra vez dentro (de uno en uno en los primeros ticks)
         int missing = 0;
         for (String name : load()) {
             Bot found = null;
             for (Bot b : pool()) if (b.name().equalsIgnoreCase(name)) found = b;
             if (found == null) missing++;
-            else if (!online.contains(found)) {
-                online.add(found);
-                ping.put(found.id(), 25 + RANDOM.nextInt(110));
-            }
+            else if (!RESTORE.contains(found)) RESTORE.add(found);
         }
         // los guardados con un nombre que ya no está en el mod (1.3.110 cambió los nombres): los mismos que había, con
         // otros nombres de la lista
         List<Bot> free = new ArrayList<>(pool());
-        free.removeAll(online);
+        free.removeAll(RESTORE);
         Collections.shuffle(free, RANDOM);
-        for (int i = 0; i < missing && i < free.size(); i++) {
-            online.add(free.get(i));
-            ping.put(free.get(i).id(), 25 + RANDOM.nextInt(110));
-        }
-        if (!online.isEmpty()) TFClient.LOGGER.info("TF Bots: {} vuelven a estar dentro", online.size());
+        for (int i = 0; i < missing && i < free.size(); i++) RESTORE.add(free.get(i));
+        if (!RESTORE.isEmpty()) TFClient.LOGGER.info("TF Bots: {} vuelven a entrar", RESTORE.size());
+    }
+
+    /** Al apagar, el servidor echa a todos: los bots no «salen» (vuelven al arrancar). */
+    @SubscribeEvent
+    public static void onServerStopping(net.minecraftforge.event.server.ServerStoppingEvent event) {
+        stopping = true;
     }
 
     @SubscribeEvent
@@ -479,19 +548,38 @@ public final class TFBots {
         server = null;
         online.clear();
         ping.clear();
+        REAL.clear();
+        RESTORE.clear();
         toAdd = toRemove = 0;
     }
 
     /** Al que entra, los bots que ya están (después de la lista de los de verdad, que la manda Minecraft al entrar). */
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!online.isEmpty() && event.getEntity() instanceof ServerPlayer p) p.connection.send(addPacket(online));
+        if (!(event.getEntity() instanceof ServerPlayer p) || p instanceof TFBotPlayer) return;
+        List<Bot> list = listOnly();
+        if (!list.isEmpty()) p.connection.send(addPacket(list));
+    }
+
+    /** (1.3.125) Un bot de verdad que sale sin pasar por aquí (lo echaron con /kick): fuera de la lista de dentro. */
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (stopping || !(event.getEntity() instanceof TFBotPlayer p) || REAL.remove(p.getUUID()) == null) return;
+        for (Bot b : new ArrayList<>(online)) {
+            if (!b.id().equals(p.getUUID())) continue;
+            online.remove(b);
+            ping.remove(b.id());
+            Seen s = seen.get(b.name().toLowerCase());
+            seen.put(b.name().toLowerCase(), new Seen(s == null ? 1 : s.times(), System.currentTimeMillis()));
+            save();
+        }
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || server == null) return;
         tick++;
+        if (!RESTORE.isEmpty() && tick % 2 == 0) join(RESTORE.poll(), false);
         if (toAdd > 0 && tick >= nextAdd) {
             List<Bot> free = free();
             if (free.isEmpty()) {
@@ -513,7 +601,14 @@ public final class TFBots {
         }
         if (!online.isEmpty() && tick >= nextPing) {
             nextPing = tick + 600;
-            server.getPlayerList().broadcastAll(pingPacket());
+            // los de verdad: su ping lo manda Minecraft (cada 30 s); los de la lista, este paquete
+            for (Map.Entry<UUID, ServerPlayer> e : REAL.entrySet()) {
+                int p = Math.max(12, Math.min(260, ping.getOrDefault(e.getKey(), 60) + RANDOM.nextInt(31) - 15));
+                ping.put(e.getKey(), p);
+                e.getValue().latency = p;
+            }
+            List<Bot> list = listOnly();
+            if (!list.isEmpty()) server.getPlayerList().broadcastAll(pingPacket(list));
         }
     }
 
@@ -556,6 +651,7 @@ public final class TFBots {
             for (Bot b : online) a.add(b.name());
             JsonObject o = new JsonObject();
             o.addProperty("version", FILE_VERSION);
+            o.addProperty("mod", TFClient.VERSION);
             o.add("dentro", a);
             JsonObject v = new JsonObject();
             for (Map.Entry<String, Seen> e : seen.entrySet()) {
@@ -585,6 +681,17 @@ public final class TFBots {
             if (o == null || !o.has("version") || o.get("version").getAsInt() < FILE_VERSION) {
                 seen.clear();
                 TFClient.LOGGER.info("TF Bots: registro de bots anterior borrado (se empieza de cero)");
+                return out;
+            }
+            // (1.3.125, regla del dueño) con otra versión del mod, todo lo de los bots se borra y se empieza de cero
+            if (!o.has("mod") || !TFClient.VERSION.equals(o.get("mod").getAsString())) {
+                Set<String> came = new HashSet<>();
+                if (o.has("vistos")) came.addAll(o.getAsJsonObject("vistos").keySet());
+                if (o.has("dentro")) for (JsonElement e : o.getAsJsonArray("dentro")) came.add(e.getAsString().toLowerCase());
+                seen.clear();
+                wipeData(server, came);
+                TFClient.LOGGER.info("TF Bots: versión nueva del TF Client ({}): registro y datos de los bots borrados", TFClient.VERSION);
+                save();
                 return out;
             }
             if (o != null && o.has("dentro")) for (JsonElement e : o.getAsJsonArray("dentro")) out.add(e.getAsString());

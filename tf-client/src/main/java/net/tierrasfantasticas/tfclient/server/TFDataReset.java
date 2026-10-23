@@ -51,7 +51,7 @@ public final class TFDataReset {
     private static final String ASKED = "LIMPIAR";
     private static final List<String> WHOLE = List.of("monedas.json", "monedas-verdes.json", "pad-estadisticas.json", "titulos.json",
             "hogares.json", "regalos.json", "clanes.json", "oficios.json", "skills.json", "vfx.json", "wardrobe.json", "tienda.json",
-            "tienda-registro.log", "gts.json", "gts-registro.log", "comunidad.json", "comunidad", "skins");
+            "tienda-registro.log", "gts.json", "gts-registro.log", "comunidad.json", "comunidad", "skins", "deudas.json");
     private static final List<String> PLAYERS_ONLY = List.of("viajes.json", "pase.json", "gachapon.json", "kits.json", "recompensas.json");
     private static final List<String> WORLD_ROOT = List.of("claimblocks_data.json", "claimblocks_data.json.bak");
 

@@ -2020,18 +2020,22 @@ public final class BossTest {
             case 1190 -> shot(r, "menu_principal");
             case 1192 -> openMenu = "principal-raton";
             case 1226 -> shot(r, "menu_principal_raton");
-            case 1228 -> openMenu = "opciones";
-            case 1256 -> shot(r, "menu_opciones");
+            // (1.3.125, el dueño: «el contorno de las letras se ve raro y la de WhatsApp se ve comida») también con la
+            // interfaz a escala 2 (la de la prueba es 3), con el ratón en Mundo local
+            case 1228 -> openMenu = "principal-escala2";
+            case 1256 -> shot(r, "menu_principal_escala2");
+            case 1258 -> openMenu = "opciones";
+            case 1286 -> shot(r, "menu_opciones");
             // (1.3.121) la pantalla que sale sin AutoModpack al ir a entrar al servidor
-            case 1258 -> openMenu = "automodpack";
-            case 1284 -> shot(r, "falta_automodpack");
-            case 1286 -> {
+            case 1288 -> openMenu = "automodpack";
+            case 1314 -> shot(r, "falta_automodpack");
+            case 1316 -> {
                 keepMenu = false;
                 closeScreen = true;
             }
             // (1.3.125, el dueño: «la espada del kit Cósmico se pone al revés») la de Necros en la mano, de frente y de
             // espaldas, con el casco de Eterno (ahora con armadura)
-            case 1290 -> {
+            case 1320 -> {
                 net.minecraft.world.item.Item sword = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
                         new net.minecraft.resources.ResourceLocation("tfclient", "necros_sword"));
                 net.minecraft.world.item.Item helmet = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
@@ -2041,15 +2045,15 @@ public final class BossTest {
                 r.event("en la mano: " + player.getMainHandItem().getItem() + "; armadura con el casco de Eterno: " + player.getArmorValue());
                 cameraType = 2;
             }
-            case 1306 -> shot(r, "espada_cosmico_delante");
-            case 1308 -> cameraType = 1;
-            case 1322 -> shot(r, "espada_cosmico_detras");
-            case 1324 -> {
+            case 1336 -> shot(r, "espada_cosmico_delante");
+            case 1338 -> cameraType = 1;
+            case 1352 -> shot(r, "espada_cosmico_detras");
+            case 1354 -> {
                 cameraType = 0;
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
             }
-            case 1328 -> next(level);
+            case 1358 -> next(level);
             default -> { }
         }
     }

@@ -1901,6 +1901,10 @@ export function createApp(env) {
       if (set) commands.push(`tf web sets revoke {uuid} ${order.id} ${set[1]}${set[2] ? ` ${set[2]}` : ''}`);
       const group = command.match(/^lp user \{player\} parent (?:add|set) (\S+)$/);
       if (group && strip) commands.push(`lp user {uuid} parent remove ${group[1]}`);
+      // TF Client 1.3.125: las monedas que dio la compra se retiran (si ya las gastó, saldo negativo que paga con lo
+      // que gane: TFDebt en el mod)
+      const coins = command.match(/^tf web (monedas|verdes) dar \{player\} (\d+)$/);
+      if (coins) commands.push(`tf web ${coins[1]} retirar {uuid} ${coins[2]}`);
     }
     if (rankStillCurrent && from) commands.push(`lp user {uuid} parent add ${from.rank.group}`);
     const queued = commands.length ? await store.queueRevocation(order, [...new Set(commands)]) : false;
