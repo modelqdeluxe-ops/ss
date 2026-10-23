@@ -66,7 +66,7 @@
       "🌳┆MORTAL"
     ],
     "commands": [
-      "lp user {player} parent add mortal",
+      "lp user {player} parent set mortal",
       "tf web sets give {player} patrick",
       "tf web sets encantar {player} patrick 1",
       "give {player} tfclient:proteccion_100x100 1",
@@ -231,7 +231,7 @@
       "🛡️┆INMORTAL"
     ],
     "commands": [
-      "lp user {player} parent add inmortal",
+      "lp user {player} parent set inmortal",
       "tf web sets give {player} beats",
       "tf web sets encantar {player} beats 2",
       "give {player} tfclient:proteccion_100x100 1",
@@ -397,7 +397,7 @@
       "🔮┆MÁGICO"
     ],
     "commands": [
-      "lp user {player} parent add magico",
+      "lp user {player} parent set magico",
       "tf web sets give {player} darkworld",
       "tf web sets encantar {player} darkworld 3",
       "give {player} tfclient:proteccion_100x100 1",
@@ -565,7 +565,7 @@
       "🔥┆ETERNO"
     ],
     "commands": [
-      "lp user {player} parent add eterno",
+      "lp user {player} parent set eterno",
       "tf web sets give {player} malika",
       "tf web sets encantar {player} malika 4",
       "give {player} tfclient:proteccion_150x150 1",
@@ -738,7 +738,7 @@
       "✨┆CÓSMICO"
     ],
     "commands": [
-      "lp user {player} parent add cosmico",
+      "lp user {player} parent set cosmico",
       "tf web sets give {player} necros",
       "tf web sets encantar {player} necros 5",
       "give {player} tfclient:proteccion_150x150 1",
@@ -915,7 +915,7 @@
       "🌠┆CELESTIAL"
     ],
     "commands": [
-      "lp user {player} parent add celestial",
+      "lp user {player} parent set celestial",
       "tf web sets give {player} eagle",
       "tf web sets encantar {player} eagle 6",
       "give {player} tfclient:proteccion_250x250 1",
@@ -1101,7 +1101,7 @@
       "🌋┆FANTÁSTICO"
     ],
     "commands": [
-      "lp user {player} parent add fantastico",
+      "lp user {player} parent set fantastico",
       "tf web sets give {player} starlight",
       "tf web sets encantar {player} starlight 6",
       "give {player} tfclient:proteccion_250x250 1",

@@ -69,6 +69,11 @@ public final class TFBridgeCommands {
                 ? Component.literal(name + " no tiene rango de la tienda.").withStyle(ChatFormatting.GRAY)
                 : Component.literal(name + " tiene ").withStyle(ChatFormatting.GRAY).append(rank.tag());
         ctx.getSource().sendSuccess(() -> text, false);
+        // (1.3.117) y lo que dice LuckPerms (sus grupos) y lo último que hizo el TF Client con LuckPerms
+        String groups = TFLuckPerms.describe(player.getUUID());
+        String last = TFLuckPerms.last;
+        ctx.getSource().sendSuccess(() -> Component.literal("LuckPerms: " + groups + (last.isEmpty() ? "" : " · último: " + last))
+                .withStyle(ChatFormatting.GRAY), false);
         return rank == null ? 0 : rank.tier();
     }
 
@@ -89,15 +94,18 @@ public final class TFBridgeCommands {
             }
         }
 
-        // Los mismos comandos que una compra: el grupo nuevo y fuera los demás grupos de rango.
+        // (1.3.117) Lo mismo que una compra: «lp user X parent set <rango>» (TFLuckPerms: por la consola de Bukkit, sin
+        // quitar los grupos del staff y comprobado); con «ninguno», fuera los grupos de rango.
         MinecraftServer server = ctx.getSource().getServer();
         String name = player.getGameProfile().getName();
         List<String> failed = new ArrayList<>();
-        for (TFRanks.Rank r : TFRanks.list()) {
-            if (r.group().isEmpty()) continue;
-            boolean add = rank != null && r.id().equals(rank.id());
-            String command = "lp user " + name + " parent " + (add ? "add " : "remove ") + r.group();
-            if (!TFBridge.run(server, command).isEmpty() && add) failed.add(command);
+        if (rank != null && !rank.group().isEmpty()) {
+            String command = "lp user " + name + " parent set " + rank.group();
+            if (!TFBridge.run(server, command).isEmpty()) failed.add(command);
+        } else if (rank == null) {
+            for (TFRanks.Rank r : TFRanks.list()) {
+                if (!r.group().isEmpty()) TFBridge.run(server, "lp user " + name + " parent remove " + r.group());
+            }
         }
         TFRanks.set(server, player, rank);
         TFBridge.queueRankChange(player.getUUID(), rank == null ? null : rank.id());
@@ -107,7 +115,7 @@ public final class TFBridgeCommands {
                 ? Component.literal("Quitado el rango de " + name).withStyle(ChatFormatting.YELLOW)
                 : Component.literal("Ahora " + name + " es ").withStyle(ChatFormatting.YELLOW).append(finalRank.tag()), true);
         if (!failed.isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("No está LuckPerms (/lp): no se ha podido poner el grupo «" + failed.get(0) + "»."));
+            ctx.getSource().sendFailure(Component.literal("LuckPerms no ha podido con «" + failed.get(0) + "» (¿está LuckPerms?)."));
         }
         return 1;
     }

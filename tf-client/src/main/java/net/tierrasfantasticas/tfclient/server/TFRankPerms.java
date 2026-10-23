@@ -167,7 +167,8 @@ public final class TFRankPerms {
             Files.writeString(tmp, updated, StandardCharsets.UTF_8);
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             // Su respuesta llega por el mismo sitio que los errores: no se mira
-            if (hasCommand(server, "essentials")) TFBridge.run(server, "essentials reload");
+            // (1.3.117) EssentialsX es un plugin de Bukkit en Mohist: por su consola; sin Bukkit, por la de Minecraft
+            if (TFLuckPerms.console("essentials reload") == null && hasCommand(server, "essentials")) TFBridge.run(server, "essentials reload");
             return "EssentialsX: hogares de los rangos puestos en " + TFServerConfig.essentialsConfig() + " y recargado.";
         } catch (IOException e) {
             return "EssentialsX: no se pudo cambiar " + file + ": " + e.getMessage();

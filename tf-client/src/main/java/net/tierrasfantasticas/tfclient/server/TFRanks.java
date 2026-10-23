@@ -154,6 +154,8 @@ public final class TFRanks {
         }
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             set(server, player, fresh.get(player.getUUID()));
+            // (1.3.117) y su grupo en LuckPerms, si no lo tiene (TFLuckPerms)
+            TFLuckPerms.ensure(server, player, fresh.get(player.getUUID()));
         }
     }
 

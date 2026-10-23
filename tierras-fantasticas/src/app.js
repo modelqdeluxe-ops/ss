@@ -1679,10 +1679,8 @@ export function createApp(env) {
       if (local.gift.message) parts.push({ text: ` «${local.gift.message}»`, color: 'white', italic: true });
       commands.push(`tellraw {player} ${JSON.stringify(['', ...parts])}`);
     }
-    if (rank) {
-      // Al mejorar se quitan los grupos de los rangos inferiores (si no los tiene, LuckPerms no hace nada).
-      for (const lower of ranks) if (lower.tier < rank.tier) commands.push(`lp user {player} parent remove ${lower.rank.group}`);
-    }
+    // (TF Client 1.3.117) Al mejorar no hace falta quitar los rangos inferiores: «parent set» deja solo el nuevo (y el
+    // TF Client no le quita al staff su grupo).
     const extra = {
       kind: product.category,
       color: rank?.rank.hex || product.colors?.[1] || '#f4c95d',
@@ -1791,7 +1789,7 @@ export function createApp(env) {
     for (const command of product.commands || []) {
       const set = command.match(/^tf web sets give \{player\} (\S+)(?: (\S+))?$/);
       if (set) commands.push(`tf web sets revoke {uuid} ${order.id} ${set[1]}${set[2] ? ` ${set[2]}` : ''}`);
-      const group = command.match(/^lp user \{player\} parent add (\S+)$/);
+      const group = command.match(/^lp user \{player\} parent (?:add|set) (\S+)$/);
       if (group && (!rank || rankStillCurrent)) commands.push(`lp user {uuid} parent remove ${group[1]}`);
     }
     if (rankStillCurrent && from) commands.push(`lp user {uuid} parent add ${from.rank.group}`);

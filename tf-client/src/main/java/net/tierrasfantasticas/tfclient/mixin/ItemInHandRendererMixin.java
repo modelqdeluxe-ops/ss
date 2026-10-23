@@ -19,6 +19,7 @@ import net.tierrasfantasticas.tfclient.trail.TrailClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
@@ -33,6 +34,13 @@ public abstract class ItemInHandRendererMixin {
     private void tfclient$trailCapture(LivingEntity entity, ItemStack stack, ItemDisplayContext ctx, boolean left, PoseStack pose,
                                        MultiBufferSource buffers, int light, CallbackInfo ci) {
         TrailClient.capture(entity, stack, ctx, left, pose);
+    }
+
+    /** (1.3.117) En el Void con shaders, lo que se tiene en la mano con luz (VoidItemLight: si no, sale casi negro). */
+    @ModifyVariable(method = "renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V",
+            at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private int tfclient$voidHandLight(int light) {
+        return net.tierrasfantasticas.tfclient.vacio.VoidItemLight.lift(light);
     }
 
     @Inject(method = "renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V",

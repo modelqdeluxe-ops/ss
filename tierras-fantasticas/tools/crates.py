@@ -433,7 +433,9 @@ def rank_products():
             'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}', 'tagline': tagline,
             'description': pitch,
             'price': price, 'maxQuantity': 1, 'discordRoles': [DISCORD_ROLE[key]],
-            'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}',
+            # (TF Client 1.3.117, el dueño: «/lp user (usuario) parent set (rango)») queda con ese grupo de LuckPerms y
+            # hereda sus permisos (EssentialsX incluido); el TF Client lo manda por la consola y lo comprueba
+            'commands': [f'lp user {{player}} parent set {key}', f'tf web sets give {{player}} {set_id}',
                          f'tf web sets encantar {{player}} {set_id} {RANK_ENCHANT[key]}',
                          *give_commands([stone(RANK_CLAIM[key]), *RANK_EXTRAS[key]])],
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],

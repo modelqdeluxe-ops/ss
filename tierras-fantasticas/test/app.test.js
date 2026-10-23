@@ -739,11 +739,9 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
   assert.strictEqual(order.upgradeFrom, 'Rango Mortal');
   const [second] = await serverDelivers('Rangos_MC');
   assert.strictEqual(second.upgradeFrom, 'Rango Mortal');
-  assert.deepStrictEqual(received, [
-    ...cmdsOf('rango-magico', 'Rangos_MC'),
-    'lp user Rangos_MC parent remove mortal',
-    'lp user Rangos_MC parent remove inmortal',
-  ]);
+  // «parent set» deja solo el rango nuevo: no hace falta quitar los de abajo
+  assert.deepStrictEqual(received, cmdsOf('rango-magico', 'Rangos_MC'));
+  assert.strictEqual(received[0], 'lp user Rangos_MC parent set magico');
   assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'rango-inmortal', username: 'Rangos_MC' })).status, 409);
 
   // El servidor recibe el rango de los conectados para su nametag.
@@ -970,7 +968,7 @@ test('comprar con la sesión iniciada da el rol, anuncia la compra y sale en "mi
   assert.strictEqual((await pay(id)).status, 'queued');
 
   await serverDelivers('Alex_MC');
-  assert.strictEqual(received[0], 'lp user Alex_MC parent add inmortal');
+  assert.strictEqual(received[0], 'lp user Alex_MC parent set inmortal');
   const roleCall = discordCalls.find((c) => c.url.endsWith(`/roles/${ROLE_ID}`));
   assert.ok(roleCall, 'debe dar el rol');
   assert.strictEqual(roleCall.url, `/guilds/333333333333333333/members/111111111111111111/roles/${ROLE_ID}`);
@@ -1008,7 +1006,7 @@ test('un fallo en Discord no impide la entrega en el juego', async () => {
     const id = await checkout({ productId: 'rango-inmortal', username: 'Fallo_MC' }, cookie);
     assert.strictEqual((await pay(id)).status, 'queued');
     await serverDelivers('Fallo_MC');
-    assert.strictEqual(received[0], 'lp user Fallo_MC parent add inmortal');
+    assert.strictEqual(received[0], 'lp user Fallo_MC parent set inmortal');
     const order = await (await get(`/api/order/${id}`)).json();
     assert.strictEqual(order.status, 'delivered');
     assert.strictEqual(order.discord.status, 'failed');

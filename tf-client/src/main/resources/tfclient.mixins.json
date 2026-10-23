@@ -41,7 +41,8 @@
     "GameRendererLateMixin",
     "crates.LevelRendererMixin",
     "SoundBufferLibraryMixin",
-    "ConnectScreenMixin"
+    "ConnectScreenMixin",
+    "ItemEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 0

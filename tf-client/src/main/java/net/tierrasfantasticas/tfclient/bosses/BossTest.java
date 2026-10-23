@@ -2182,6 +2182,10 @@ public final class BossTest {
                         + net.tierrasfantasticas.tfclient.client.TFLock.official("play.example.com") + ", el oficial con otro puerto "
                         + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:25565") + "; mundos locales en la prueba: "
                         + (net.tierrasfantasticas.tfclient.client.TFLock.unlocked() ? "abiertos (sin contraseña, solo la prueba)" : "CERRADOS"));
+                // (1.3.117) el rango a LuckPerms (aquí no hay LuckPerms ni Bukkit: tiene que decirlo, sin romperse)
+                List<String> lp = net.tierrasfantasticas.tfclient.server.TFBridge.run(level.getServer(),
+                        "lp user " + player.getGameProfile().getName() + " parent set mortal");
+                r.event("rango a LuckPerms sin LuckPerms: errores " + lp + "; " + net.tierrasfantasticas.tfclient.server.TFLuckPerms.describe(player.getUUID()));
             }
             case 40 -> {
                 r.event("objetos en el Void: " + clientItemsLight);
