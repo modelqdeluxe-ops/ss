@@ -4312,7 +4312,8 @@
     },
     {
      "id": "malika_helmet",
-     "type": "head"
+     "type": "head",
+     "armor": true
     },
     {
      "id": "malika_wings",

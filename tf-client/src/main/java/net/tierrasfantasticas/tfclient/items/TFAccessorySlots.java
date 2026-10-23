@@ -68,7 +68,12 @@ public final class TFAccessorySlots {
     // Camino oficial: dibujantes registrados en el mod de accesorios (solo cliente, en FMLClientSetupEvent)
     // ---------------------------------------------------------------------------------------------------------------
 
-    public static void registerRenderers(List<Item> items, BackRenderer renderer) {
+    public static void registerRenderers(List<Item> items, BackRenderer ignored) {
+        // (1.3.125, el dueño: «las alas de los rangos y crates no se ven en el hueco de la espalda de Accessories») En
+        // su servidor Accessories no llamaba a nuestro dibujante y, como BackLayer ya no buscaba en los huecos, no se
+        // veían. Ahora el mod de accesorios recibe un dibujante que no pinta nada (para que no ponga el objeto plano) y
+        // las dibuja siempre BackLayer, buscándolas en sus huecos (backCosmetics), como las del pecho.
+        BackRenderer renderer = (pose, buffers, light, stack, model, armored) -> { };
         ModList mods = ModList.get();
         if (mods.isLoaded("accessories")) {
             try {
@@ -89,6 +94,9 @@ public final class TFAccessorySlots {
             LOGGER.info("TF Client: accesorios: Curios {}", curiosDraws
                     ? "dibuja las alas con nuestro dibujante" : "sin dibujante; se buscan en sus huecos");
         }
+        accessoriesDraws = false;
+        curiosDraws = false;
+        LOGGER.info("TF Client: accesorios: las alas y mochilas de los huecos de espalda las dibuja TF Client");
     }
 
     /**

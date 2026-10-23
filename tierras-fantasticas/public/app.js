@@ -293,9 +293,9 @@
   }
 
   // Envía una petición de la cuenta; si el servidor pide aceptar los Términos actualizados, los pide y la repite.
-  async function postWithTerms(url, body) {
+  async function postWithTerms(url, body, headers = {}) {
     const send = () =>
-      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
     let res = await send();
     let data = await res.clone().json().catch(() => ({}));
     if (res.status === 403 && data.code === 'terms' && (await askTerms())) {
@@ -355,6 +355,17 @@
   // Lo que cuesta 0 (los rangos durante una prueba) se reclama con la cuenta (/api/claim), sin pasar por el pago
   const buyAttrs = (p) =>
     p.price === 0 ? `data-claim="${escapeHtml(p.id)}"` : `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
+  // Botón «Test» de los rangos (reclamarlo gratis para probarlo en el juego): solo en el navegador donde se entró al
+  // panel de staff (/staff guarda la clave) y la web lo comprueba con esa clave.
+  const staffKey = (() => {
+    try {
+      return localStorage.getItem('staffKey') || '';
+    } catch {
+      return '';
+    }
+  })();
+  const testBtn = (p) =>
+    p.testClaim && staffKey ? `<button class="btn btn-ghost btn-sm" type="button" data-claim="${escapeHtml(p.id)}" data-test>Test</button>` : '';
   // Comprar como regalo: el botón del regalo (solo el icono en las tarjetas; con texto donde hay sitio)
   const giftAttrs = (p) => `data-gift="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
   const giftIcon = (p) =>
@@ -415,7 +426,7 @@
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
-            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button></span>`}
+            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>${testBtn(p)}</span>`}
           </div>
         </div>
       </article>`;
@@ -456,7 +467,8 @@
     btn.disabled = true;
     btn.classList.add('is-loading');
     try {
-      const { res, data } = await postWithTerms('/api/claim', { productId: btn.dataset.claim });
+      const { res, data } = await postWithTerms('/api/claim', { productId: btn.dataset.claim },
+        'test' in btn.dataset ? { Authorization: `Bearer ${staffKey}` } : {});
       if (res.ok) {
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
@@ -477,7 +489,7 @@
       const mine = me.user.rank.id === p.id;
       return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><span class="buy-pair">${giftIcon(p)}<button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button></span>`;
     }
-    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button></span>`;
+    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>${testBtn(p)}</span>`;
   }
 
   function rerenderRanks() {
@@ -1395,7 +1407,7 @@
     const buy = q?.owned
       ? `<div class="rk-price"><span class="rk-price-main">${mine ? 'Tu rango' : 'Incluido'}</span></div><span class="buy-pair"><button class="btn btn-ghost btn-lg" type="button" disabled>${mine ? ICON_CHECK + ' Ya lo tienes' : 'Ya tienes uno mayor'}</button>${giftBtn(p, 'btn-lg')}</span>`
       : `<div class="rk-price">${q ? `<small>Mejora desde tu rango · antes ${formatPrice(p.price)}</small>` : '<small>Pago único · para siempre</small>'}<span class="rk-price-main">${formatPrice(q ? q.unit : p.price)}</span></div>
-         <span class="buy-pair"><button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>${giftBtn(p, 'btn-lg')}</span>`;
+         <span class="buy-pair"><button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>${giftBtn(p, 'btn-lg')}${testBtn(p)}</span>`;
     $('#rk-info').innerHTML = `
       <div class="rk-anim">
         <span class="rk-tier">Rango ${n} de ${all.length}${n === all.length ? ' · el más alto' : ''}</span>

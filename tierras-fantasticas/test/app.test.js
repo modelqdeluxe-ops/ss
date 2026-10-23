@@ -1780,5 +1780,12 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
   assert.strictEqual((await setIp('Nueva.IP.test:25570')).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, 'nueva.ip.test:25570');
   assert.strictEqual((await setIp('')).status, 200);
+
+  // Botón «Test» de los rangos: uno de pago se reclama gratis solo con la clave del panel de staff
+  assert.strictEqual((await post('/api/claim', { productId: 'rango-mortal' }, cookie)).status, 400);
+  const testClaim = (key) => call('/api/claim', { method: 'POST', body: JSON.stringify({ productId: 'rango-mortal' }),
+    headers: { 'Content-Type': 'application/json', Cookie: cookie, Authorization: `Bearer ${key}`, 'CF-Connecting-IP': '198.51.100.7' } });
+  assert.strictEqual((await testClaim('otra-clave')).status, 401);
+  assert.strictEqual((await testClaim('clave-del-staff')).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
 });

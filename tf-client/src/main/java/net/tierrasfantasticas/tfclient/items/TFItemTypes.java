@@ -326,6 +326,27 @@ public final class TFItemTypes {
             return glides && TFWings.canGlide(entity);
         }
 
+        /**
+         * (1.3.125, el dueño: «el casco de Eterno es cosmético, haz ese casco un casco real con protección y sus
+         * encantamientos») Un casco con armadura (def.armor) admite los encantamientos de armadura y de casco
+         * (protección, respiración, afinidad acuática…), así «/tf web sets give … encantado» también lo encanta.
+         */
+        @Override
+        public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.world.item.enchantment.Enchantment enchantment) {
+            if (modifiers != null && slot == EquipmentSlot.HEAD) {
+                net.minecraft.world.item.enchantment.EnchantmentCategory c = enchantment.category;
+                if (c == net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR
+                        || c == net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_HEAD
+                        || c == net.minecraft.world.item.enchantment.EnchantmentCategory.WEARABLE) return true;
+            }
+            return super.canApplyAtEnchantingTable(stack, enchantment);
+        }
+
+        @Override
+        public int getEnchantmentValue() {
+            return modifiers != null ? 15 : super.getEnchantmentValue();
+        }
+
         /** Modelo que se dibuja en la espalda (null para los de la cabeza, que dibuja Minecraft). */
         @Nullable
         public ResourceLocation wornModel() {

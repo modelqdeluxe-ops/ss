@@ -134,7 +134,7 @@
 
   function logout() {
     key = '';
-    try { sessionStorage.removeItem('staffKey'); } catch {}
+    try { sessionStorage.removeItem('staffKey'); localStorage.removeItem('staffKey'); } catch {}
     $('panel').hidden = true;
     $('login').hidden = false;
     $('rows').innerHTML = '';
@@ -145,6 +145,8 @@
     key = $('key').value.trim();
     $('key').value = '';
     try { sessionStorage.setItem('staffKey', key); } catch {}
+    // (para el botón «Test» de los rangos en la tienda, en este navegador)
+    try { localStorage.setItem('staffKey', key); } catch {}
     load();
   });
   $('reload').addEventListener('click', load);

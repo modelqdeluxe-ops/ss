@@ -190,7 +190,25 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.124) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.125) — lee esto primero
+
+**1.3.125** (ocho quejas del dueño desde el servidor real):
+1. Alas en el hueco de espalda de Accessories que no se veían: el mod de accesorios recibe un dibujante vacío y las
+   dibuja siempre `BackLayer` buscándolas en sus huecos (`TFAccessorySlots.registerRenderers`).
+2. Planeo de las alas: 30 s (`TFWings.GLIDE_TICKS` = 600).
+3. Al perder la conexión (o desconectar) se vuelve al menú principal, nunca a la lista de servidores (`TFLock.onScreen`).
+4. Piedras de protección de los rangos que no llegaban: el puente da él mismo los `give <jugador> <mod:objeto> [n]` de
+   objetos de mods (`TFBridge.run`; en Mohist el /give puede ser el de Bukkit, que no los conoce).
+5. Casco de Eterno (`malika_helmet`): `"armor": true` (protección de su nivel) y encantable como casco
+   (`Cosmetic.canApplyAtEnchantingTable`). La espada de Cósmico: capturas `espada_cosmico_*` en la prueba de `pad`.
+6. Web: los rangos con su precio y `testClaim`: botón «Test» solo en el navegador donde se entró a `/staff` (guarda la
+   clave en localStorage) y `/api/claim` lo exige con `ADMIN_KEY`.
+7. Lag de los botones fuera de partida: Minecraft limitaba los menús a 60 FPS; ahora el límite del jugador
+   (`MinecraftMixin.getFramerateLimit`).
+8. La cara/muñeco propio del pad sin la skin (servidor sin premium): la de la cuenta de Minecraft
+   (`PadSkinModel.account`, también en `PadCommunityClient.face`).
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.124, PUBLICADA)
 
 **1.3.124** (el dueño: «sigue habiendo lag en los botones y su animación, hasta los botones de ajustes»): cada pastilla
 (`TFPill.paint`) se pinta una vez en una imagen de su tamaño en píxeles reales (`TFPill.texture`: relleno, cristal, hilo

@@ -185,10 +185,31 @@ public final class TFBridge {
         soon();
     }
 
+    private static final java.util.regex.Pattern GIVE = java.util.regex.Pattern.compile("^give (\\S+) ([a-z0-9_.-]+:[a-z0-9_./-]+)(?: (\\d+))?$");
+
     /** Ejecuta un comando como la consola y devuelve los errores (vacío si fue bien). */
     public static List<String> run(MinecraftServer srv, String command) {
         // (1.3.117) LuckPerms, por la consola de Bukkit y comprobado (TFLuckPerms)
         if (TFLuckPerms.isLuckPerms(command)) return TFLuckPerms.run(srv, command);
+        // (1.3.125, el dueño: «las piedras de protección de los rangos no están siendo entregadas») En Mohist el /give
+        // puede ser el de Bukkit, que no conoce los objetos de los mods: «give <jugador> <mod:objeto> [n]» de un mod se
+        // da aquí directamente (al inventario o, si no cabe, a sus pies).
+        java.util.regex.Matcher give = GIVE.matcher(command.trim());
+        if (give.matches() && !give.group(2).startsWith("minecraft:")) {
+            ServerPlayer target = srv.getPlayerList().getPlayerByName(give.group(1));
+            net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                    net.minecraft.resources.ResourceLocation.tryParse(give.group(2)));
+            if (target != null && item != null && item != net.minecraft.world.item.Items.AIR) {
+                int count = give.group(3) == null ? 1 : Math.max(1, Math.min(6400, Integer.parseInt(give.group(3))));
+                while (count > 0) {
+                    int n = Math.min(count, item.getMaxStackSize());
+                    net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item, n);
+                    if (!target.getInventory().add(stack) || !stack.isEmpty()) target.drop(stack, false);
+                    count -= n;
+                }
+                return new ArrayList<>();
+            }
+        }
         ErrorCollector collector = new ErrorCollector();
         try {
             CommandSourceStack source = srv.createCommandSourceStack().withSource(collector);

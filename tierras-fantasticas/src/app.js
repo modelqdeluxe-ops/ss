@@ -1241,7 +1241,14 @@ export function createApp(env) {
       if (terms) return terms;
       const body = (await readJson(req)) || {};
       const product = productById.get(body.productId);
-      if (!product || product.price !== 0) return json({ error: 'Ese regalo no existe.' }, 400);
+      // (1.3.125, el dueño: «ponles el precio a los rangos, solo déjame a un lado el botón de test para probarlos en el
+      // juego») Los de pago con testClaim se reclaman gratis solo con la clave del panel de staff (ADMIN_KEY).
+      const test = product && product.price !== 0 && product.testClaim && req.headers.get('Authorization');
+      if (!product || (product.price !== 0 && !test)) return json({ error: 'Ese regalo no existe.' }, 400);
+      if (test) {
+        const denied = await staffDenied(req);
+        if (denied) return denied;
+      }
       const player = await store.playerByUuid(user.uuid);
       // El número de pedido sale del jugador y del regalo: el mismo jugador nunca lo tiene dos veces a la vez.
       // giftCode fijo en products.json: no cambia aunque se reordene el catálogo. Si el staff se lo reembolsó (/staff),
