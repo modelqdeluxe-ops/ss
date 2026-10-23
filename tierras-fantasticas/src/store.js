@@ -329,6 +329,16 @@ export function createStore(db) {
     await db.prepare(`UPDATE orders SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
   }
 
+  // Los últimos pedidos de todos (el panel de staff), sin los que no se llegaron a pagar.
+  async function recentOrders(limit = 100) {
+    await init();
+    const { results } = await db
+      .prepare(`SELECT * FROM orders WHERE status NOT IN ('pending', 'expired') ORDER BY created_at DESC LIMIT ?`)
+      .bind(limit)
+      .all();
+    return results.map(rowToOrder);
+  }
+
   // Compras de una cuenta: las hechas con su Discord y las de su jugador de Minecraft vinculado.
   async function ordersFor({ discordId, uuid }) {
     await init();
@@ -1068,6 +1078,7 @@ export function createStore(db) {
     queuePenalty,
     termsAcceptances,
     loginLocked,
+    recentOrders,
     loginFailed,
     loginSucceeded,
     bridgePoll,
