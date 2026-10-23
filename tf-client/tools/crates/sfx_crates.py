@@ -22,7 +22,7 @@ La cinemática (estéreo, sin distancia; los pide CrateCinematicScreen como tfcl
   apertura       ¡se abre!: golpe grave, la tapa, el acorde que florece y una lluvia de destellos
   tic            cada premio que pasa por la ruleta (el mod le sube el tono al frenar)
   parada         la ruleta se para: un toque de madera y una campana
-  premio1..5     el premio, uno por rareza: común, rara, épica, legendaria y mítica (cada uno más grande)
+  premio1..5     el premio, uno por rareza, cada uno con su carácter (1.3.115: ver premio())
 
 La crate del mundo (mono: suena en su sitio, para los de alrededor; CrateSfx): mundo_llave, mundo_carga, mundo_sube,
 mundo_pico, mundo_abre, mundo_tic, mundo_premio1..5 y mundo_cierra.
@@ -529,51 +529,138 @@ def parada():
     return master(room(out, wet=0.34, rt=2.0, seed=39), -22)
 
 
+# 1.3.115 (el dueño: «quiero uno distinto para cada rareza, que sean épicos y macizos, y dejaste el mismo»): los cinco
+# de la 1.3.113 eran de la misma familia (Re mayor, celesta y destellos, cada uno algo más grande) y se oían iguales.
+# Ahora cada rareza tiene su carácter, su tonalidad y su golpe, todos con graves de verdad y sala grande:
+#   1 común       golpe seco y macizo: bombo grave, el metal que canta y un acorde corto de metales (Re)
+#   2 rara        soplo que sube y estalla en cristal: arpa en glissando hacia arriba y campanas (Mi mayor, aire)
+#   3 épica       magia oscura: caída al subgrave, coro «ooh» en Re menor, metales graves y un soplo al revés
+#   4 legendaria  fanfarria heroica: redoble de timbal que estalla, metales en tresillo (Re–Re–Re–La), coro y platillo
+#   5 mítica      cósmica: sube durante 1,2 s, doble golpe, coro que asciende, órgano de metales y una campana enorme
+E3, B3, Gs4, Cs5, E5b, Gs5, B5b, E6b, Gs6, B6b = 164.81, 246.94, 415.30, 554.37, 659.26, 830.61, 987.77, 1318.51, 1661.22, 1975.53
+F4, C5, F5, Bb4, Bb3, F3 = 349.23, 523.25, 698.46, 466.16, 233.08, 174.61
+
+
+def cymbal(dur=2.5, gain=1.0, swell=0.0, seed=101):
+    """Platillo (ruido brillante que se apaga despacio); swell > 0: crece hasta el golpe (de platillo al revés)."""
+    rnd = np.random.default_rng(seed)
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = hp(rnd.standard_normal(n), 3500, 2) + 0.4 * bp(rnd.standard_normal(n), 5000, 12000)
+    if swell > 0:
+        e = np.clip(t / swell, 0, 1) ** 3 * np.where(t < swell, 1.0, np.exp(-(t - swell) / 0.05))
+    else:
+        e = np.exp(-t / (dur * 0.35)) * np.clip(t / 0.002, 0, 1)
+    return tailfade(x * e * gain, 0.2)
+
+
+def roll(dur, f0=62, gain=1.0, seed=103):
+    """Redoble de timbal que crece (golpes cada vez más seguidos y fuertes)."""
+    rnd = np.random.default_rng(seed)
+    out = np.zeros(int((dur + 1.0) * SR))
+    at = 0.0
+    while at < dur:
+        k = at / dur
+        b = boom(f0 * rnd.uniform(0.98, 1.02), f0 * 0.6, 0.6, gain=(0.25 + 0.75 * k ** 2) * rnd.uniform(0.85, 1.0), punch=0.5)
+        place(out, b, at)
+        at += 0.11 - 0.07 * k
+    return out * gain
+
+
+def subdrop(dur=2.0, f0=110, f1=28, gain=1.0):
+    """Caída al subgrave (el «drop» del cine): un seno que baja de tono durante todo el sonido."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    f = f1 + (f0 - f1) * np.exp(-t / (dur * 0.25))
+    s = np.tanh(1.4 * np.sin(2 * np.pi * np.cumsum(f) / SR)) / np.tanh(1.4)
+    return tailfade(s * np.exp(-t / (dur * 0.5)) * np.clip(t / 0.01, 0, 1) * gain, 0.3)
+
+
+def reverse_swell(dur=1.0, freqs=(D4, A4, D5), gain=1.0):
+    """Acorde al revés (crece y se corta de golpe en el golpe): la cola de una campana dada la vuelta."""
+    x = np.zeros(int(dur * SR))
+    for f in freqs:
+        c = crystal(f, dur, 1.0)
+        x[:len(c)] += c[:len(x)]
+    x = x[::-1]
+    return tailfade(x / max(1e-9, np.max(np.abs(x))) * gain, 0.0, 0.01)
+
+
+# cuándo llega el golpe en cada uno (s): la escena lo pide antes para que el golpe caiga justo al salir el premio
+# (CrateCinematicScreen.PRIZE_LEAD, en ticks); la crate del mundo y la clásica usan la versión sin la subida
+HIT = {1: 0.0, 2: 0.68, 3: 0.9, 4: 0.85, 5: 1.25}
+
+
 def premio(level):
-    """El premio. 1 común: dos notas; 2 rara: arpegio y brillos; 3 épica: arpegio, acorde y golpe suave; 4 legendaria:
-    metales, coro, timbal y cascada de brillos; 5 mítica: todo más grande, con el coro que sube y una campana al final."""
-    dur = (1.8, 2.3, 3.0, 3.8, 4.6)[level - 1]
-    out = silence(dur)
+    """El premio, uno por rareza (ver arriba)."""
     if level == 1:
-        place(out, st(celesta(D6, 1.4, 0.7), -0.2), 0.0)
-        place(out, st(celesta(A6, 1.4, 0.6), 0.2), 0.12)
-        place(out, sparkles(1.5, 5, 91, lo=D7, start=0.2, spread=0.5, gain=0.3), 0)
-        return master(room(out, wet=0.32, rt=1.6, seed=40), -22)
+        out = silence(2.2)
+        place(out, st(boom(68, 36, 1.6, gain=1.0, punch=1.2)), 0.0)
+        place(out, st(lp(load('impactMetal_light_000.ogg', 0.7), 5000) * 0.55), 0.0)
+        place(out, st(metal_ring(0.9, 1800, 0.35)), 0.01)
+        place(out, brass([D3, A3, D4, Fs4], 1.2, swell=0.03, hold=0.18, release=0.45, gain=0.7), 0.0)
+        place(out, st(cymbal(1.4, 0.28, seed=111)), 0.0)
+        return master(room(out, wet=0.34, rt=1.8, seed=40), -17)
     if level == 2:
-        for i, f in enumerate((D6, Fs6, A6, D7)):
-            place(out, st(celesta(f, 1.6, 0.6 + 0.08 * i), -0.4 + 0.27 * i), 0.09 * i)
-        place(out, st(harp(D5, 1.8, 0.35)), 0.0)
-        place(out, pad([D5, A5, Fs5], 2.0, attack=0.15, release=1.2, cutoff=3000, gain=0.7), 0.05)
-        place(out, sparkles(2.2, 12, 92, lo=A6, start=0.25, spread=0.9, gain=0.45), 0)
-        return master(room(out, wet=0.36, rt=1.9, seed=41), -20)
+        out = silence(3.2)
+        place(out, st(whoosh(0.7, 400, 6500, width=0.5, gain=0.7, shape='swell', seed=121)), 0.0)
+        hit = 0.68
+        place(out, st(boom(80, 44, 1.6, gain=0.85, punch=0.9)), hit)
+        for i, f in enumerate((E3, B3, E4, Gs4, B4, E5b, Gs5, B5b, E6b)):
+            place(out, st(harp(f, 1.8, 0.45), -0.7 + 0.17 * i), hit + 0.028 * i)
+        for i, f in enumerate((E6b, Gs6, B6b)):
+            place(out, st(crystal(f, 2.4, 0.4), -0.4 + 0.4 * i), hit + 0.02 * i)
+        place(out, pad([E4, B4, Gs5, E5b], 2.4, attack=0.03, release=1.6, cutoff=5200, gain=1.1), hit)
+        place(out, st(cymbal(2.0, 0.32, seed=122)), hit)
+        place(out, sparkles(2.4, 20, 123, lo=E6b, start=hit, spread=1.2, gain=0.55), 0)
+        return master(room(out, wet=0.4, rt=2.4, bright=0.75, seed=41), -16)
     if level == 3:
-        for i, f in enumerate((A5, D6, Fs6, A6, D7)):
-            place(out, st(celesta(f, 1.8, 0.6 + 0.08 * i), -0.5 + 0.25 * i), 0.07 * i)
-        for i, f in enumerate((D4, A4, D5, Fs5)):
-            place(out, st(harp(f, 2.2, 0.4)), 0.02 * i)
-        place(out, pad([D4, A4, D5, Fs5, A5, E6], 2.8, attack=0.12, release=1.6, cutoff=4200, gain=1.2), 0.0)
-        place(out, st(boom(70, 42, 1.4, gain=0.5, punch=0.4)), 0.0)
-        place(out, sparkles(2.9, 22, 93, start=0.3, spread=1.5, gain=0.6, fall=True), 0)
-        return master(room(out, wet=0.38, rt=2.2, seed=42), -18)
+        out = silence(4.0)
+        place(out, st(reverse_swell(0.9, (D4, F4, A4, D5), 0.6)), 0.0)
+        hit = 0.9
+        place(out, st(subdrop(2.6, 120, 30, 1.0)), hit)
+        place(out, st(boom(60, 32, 2.0, gain=0.9, punch=1.0)), hit)
+        place(out, choir([D3 * 2, F4, A4, D5], 3.0, attack=0.12, release=1.5, vowel='o', gain=0.75, seed=131), hit)
+        place(out, brass([D3, A3, D4, F4], 2.8, swell=0.06, hold=0.7, release=1.2, gain=0.65, seed=132), hit)
+        place(out, st(whoosh(1.6, 5000, 300, width=0.6, gain=0.4, shape='burst', seed=133)), hit)
+        place(out, st(crystal(D6, 2.8, 0.3), -0.3), hit + 0.05)
+        place(out, st(crystal(F5 * 2, 2.6, 0.22), 0.3), hit + 0.09)
+        return master(room(out, wet=0.46, rt=3.2, bright=0.45, seed=42), -15)
     if level == 4:
-        place(out, st(boom(76, 40, 2.4, gain=0.9)), 0.0)
-        place(out, brass([D3, A3, D4, Fs4, A4], 3.2, swell=0.09, hold=0.9, release=1.2, gain=0.55), 0.0)
-        place(out, choir([D4, A4, D5, Fs5], 3.6, attack=0.4, release=1.5, gain=0.4), 0.1)
-        for i, f in enumerate((D6, Fs6, A6, D7, Fs7)):
-            place(out, st(celesta(f, 1.8, 0.55 + 0.06 * i), -0.6 + 0.3 * i), 0.15 + 0.07 * i)
-        place(out, sparkles(3.6, 36, 94, start=0.2, spread=2.2, gain=0.75, fall=True), 0)
-        return master(room(out, wet=0.38, rt=2.6, bright=0.6, seed=43), -16)
+        out = silence(4.6)
+        place(out, st(roll(0.85, 64, 0.9)), 0.0)
+        place(out, st(cymbal(0.85, 0.5, swell=0.85, seed=141)), 0.0)
+        hit = 0.85
+        place(out, st(boom(72, 38, 2.4, gain=1.0, punch=1.2)), hit)
+        place(out, st(cymbal(3.0, 0.45, seed=142)), hit)
+        # la fanfarria: Re Re Re (tresillo) – La (largo) – Re (más largo, con todo)
+        for at, chord, d in ((0.0, [D4, Fs4, A4], 0.16), (0.14, [D4, Fs4, A4], 0.16), (0.28, [D4, Fs4, A4], 0.16),
+                             (0.44, [A3, E4, A4, Cs5], 0.42), (0.92, [D3, A3, D4, Fs4, A4, D5], 2.4)):
+            place(out, brass(chord, d + 0.5, swell=0.035, hold=d, release=0.6 if d < 1 else 1.4, gain=0.75, seed=143), hit + at)
+        place(out, choir([D4, A4, D5, Fs5], 2.8, attack=0.3, release=1.4, gain=0.55, seed=144), hit + 0.92)
+        place(out, st(boom(76, 40, 1.8, gain=0.8, punch=1.0)), hit + 0.92)
+        place(out, sparkles(3.0, 30, 145, start=hit + 0.92, spread=1.8, gain=0.6, fall=True), 0)
+        return master(room(out, wet=0.42, rt=3.0, bright=0.6, seed=43), -14)
     # mítica
-    place(out, st(boom(70, 34, 2.8, gain=1.0)), 0.0)
-    place(out, st(boom(90, 45, 1.2, gain=0.5)), 0.45)
-    place(out, brass([D3, A3, D4, Fs4, A4, D5], 3.8, swell=0.1, hold=1.2, release=1.4, gain=0.6), 0.0)
-    place(out, choir([D4, A4, D5, Fs5, A5], 4.2, attack=0.6, release=1.6, gain=0.5, seed=8), 0.05)
-    place(out, st(whoosh(1.2, 400, 7000, width=0.5, gain=0.3, shape='swell', seed=95)), 0.0)
-    for i, f in enumerate((A5, D6, Fs6, A6, D7, Fs7, A7)):
-        place(out, st(celesta(f, 1.8, 0.5 + 0.05 * i), -0.7 + 0.23 * i), 0.12 + 0.06 * i)
-    place(out, sparkles(4.4, 48, 96, start=0.15, spread=2.8, gain=0.8, fall=True), 0)
-    place(out, st(crystal(D7, 2.4, 0.35)), 1.4)
-    return master(room(out, wet=0.42, rt=3.0, bright=0.7, seed=44), -15)
+    out = silence(6.0)
+    place(out, st(whoosh(1.25, 200, 9000, width=0.45, gain=0.8, shape='swell', seed=151)), 0.0)
+    place(out, st(roll(1.2, 58, 0.7, seed=152)), 0.0)
+    place(out, st(reverse_swell(1.2, (D3 * 2, A4, D5, Fs5), 0.5)), 0.05)
+    hit = 1.25
+    place(out, st(subdrop(3.2, 130, 26, 1.0)), hit)
+    place(out, st(boom(64, 30, 2.8, gain=1.0, punch=1.3)), hit)
+    place(out, st(boom(84, 40, 1.6, gain=0.8, punch=1.0)), hit + 0.42)
+    place(out, st(cymbal(3.5, 0.5, seed=153)), hit)
+    # el coro que asciende (Re → Mi → Fa# → La en la cima) sobre un órgano de metales
+    for k, (at, chord) in enumerate(((0.0, [D4, A4, D5, Fs5]), (0.55, [E4, B4, E5b, Gs5]), (1.1, [Fs4, Cs5, Fs5, A5]),
+                                     (1.65, [D4, A4, D5, Fs5, A5, D6]))):
+        place(out, choir(chord, 1.0 if k < 3 else 3.0, attack=0.15, release=0.5 if k < 3 else 1.8, gain=0.6, seed=154 + k), hit + at)
+    place(out, brass([D3, A3, D4, Fs4, A4, D5], 4.2, swell=0.1, hold=2.2, release=1.6, gain=0.6, seed=158), hit)
+    place(out, pad([D3, A3, D4, A4, D5], 4.0, attack=0.05, release=2.2, cutoff=2600, gain=1.2, seed=159), hit)
+    place(out, st(crystal(D6, 3.6, 0.55)), hit + 1.65)
+    place(out, st(crystal(A6, 3.2, 0.35), 0.3), hit + 1.7)
+    place(out, sparkles(4.6, 50, 160, start=hit + 1.65, spread=2.6, gain=0.7, fall=True), 0)
+    return master(room(out, wet=0.46, rt=3.6, bright=0.65, seed=44), -13)
 
 
 # ------------------------------------------------------------------------------------------------ la crate del mundo
@@ -584,6 +671,12 @@ def cierra():
     place(out, st(celesta(A5, 1.2, 0.35)), 0.12)
     place(out, st(celesta(D5, 1.3, 0.3)), 0.26)
     return room(out, wet=0.25, rt=1.3, seed=45)
+
+
+def sin_subida(level):
+    """El premio desde 50 ms antes del golpe (la crate del mundo y la clásica lo piden al salir el premio)."""
+    x = premio(level)
+    return fade(x[int(max(0.0, HIT[level] - 0.05) * SR):], 0.02, 0)
 
 
 def mundo(x, db):
@@ -602,9 +695,9 @@ SOUNDS = {
     'mundo_pico': lambda: mundo(tiembla(), -21),
     'mundo_abre': lambda: mundo(apertura(), -18),
     'mundo_tic': lambda: mundo(tic(), -26),
-    'mundo_premio1': lambda: mundo(premio(1), -21), 'mundo_premio2': lambda: mundo(premio(2), -20),
-    'mundo_premio3': lambda: mundo(premio(3), -19), 'mundo_premio4': lambda: mundo(premio(4), -18),
-    'mundo_premio5': lambda: mundo(premio(5), -17),
+    'mundo_premio1': lambda: mundo(sin_subida(1), -18), 'mundo_premio2': lambda: mundo(sin_subida(2), -17),
+    'mundo_premio3': lambda: mundo(sin_subida(3), -16), 'mundo_premio4': lambda: mundo(sin_subida(4), -15),
+    'mundo_premio5': lambda: mundo(sin_subida(5), -14),
     'mundo_cierra': lambda: mundo(cierra(), -23),
 }
 

@@ -8158,3 +8158,102 @@ h4 {
   vertical-align: -2px;
   color: #7a1238;
 }
+
+/* (1.3.115) Lo que trae un rango o una crate además del set: cada cosa con su icono, la cantidad y sus encantamientos */
+.rw {
+  margin-top: 16px;
+}
+
+.rw h4 {
+  margin: 0 0 8px;
+  font: 800 12px/1.4 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rw-it {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  text-align: center;
+}
+
+.rw-ico {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+}
+
+.rw-ico img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* el brillo de lo encantado (como en el juego, pero dorado y suave) */
+.rw-it.is-ench .rw-ico::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 6px;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 236, 170, 0.55) 45%, transparent 60%) 0 0 / 300% 100%;
+  mix-blend-mode: screen;
+  animation: rw-glint 2.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rw-glint {
+  from { background-position: 100% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-it.is-ench .rw-ico::after { animation: none; }
+}
+
+.rw-n {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: #1c1410;
+  color: #fff;
+  font: 800 11px/1.4 var(--font-body);
+}
+
+.rw-name {
+  display: block;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.rw-name::first-letter {
+  text-transform: uppercase;
+}
+
+.rw-detail {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+}

@@ -25,7 +25,8 @@ public final class SealedAudio {
 
     /** ¿Puede ser uno de los nuestros? (solo se miran los sonidos de las crates) */
     public static boolean candidate(ResourceLocation loc) {
-        return "tfclient".equals(loc.getNamespace()) && loc.getPath().startsWith("sounds/crates/");
+        // (1.3.115) también la música del santuario del Void (la del dueño, «La petite fille de la mer», cifrada en el mod)
+        return "tfclient".equals(loc.getNamespace()) && (loc.getPath().startsWith("sounds/crates/") || loc.getPath().startsWith("sounds/santuario/"));
     }
 
     /** Los bytes del .ogg (descifrados si venían cifrados), o null si el recurso no está cifrado. */

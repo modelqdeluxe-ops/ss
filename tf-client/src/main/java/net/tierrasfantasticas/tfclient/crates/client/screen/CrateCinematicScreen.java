@@ -309,7 +309,8 @@ public class CrateCinematicScreen extends Screen {
      * a −20/−25 LUFS como los del juego: al 80 %.) (1.3.112, el dueño: «súbele volumen a la música de fondo de la crate»
      * y «quiero una ambientación completa»: la música al 0,70 y el ambiente —ahora de un minuto, sin campanitas— al 0,45.)
      */
-    private static final float SFX = 0.8F, MUSIC_VOL = 0.70F, AMBIENT_VOL = 0.45F;
+    // (1.3.115, el dueño: «súbele más volumen a la música»: a 1 y el archivo, de −15 a −12 LUFS)
+    private static final float SFX = 0.8F, MUSIC_VOL = 1.0F, AMBIENT_VOL = 0.4F;
     /** «Aerie» va a −25 LUFS en sus primeros 18 s (medido; la sintetizada, −12/−18): casi entera. */
     private static final float MC_MUSIC_VOL = 0.9F;
 
@@ -394,7 +395,14 @@ public class CrateCinematicScreen extends Screen {
         return Math.min(5, winnerRarity.ordinal() + 1);
     }
 
+    /**
+     * (1.3.115) Cuántos ticks antes de salir el premio empieza su sonido: los de rara para arriba suben antes del golpe
+     * (tools/crates/sfx_crates.py, HIT) y el golpe tiene que caer justo con el premio.
+     */
+    private static final int[] PRIZE_LEAD = {0, 14, 18, 17, 25};
+
     private void sounds(int t) {
+        if (t == REVEAL - PRIZE_LEAD[tier() - 1]) ui(tf("premio" + tier()), 1.0F, 1.0F);
         switch (t) {
             // (la música y el ambiente: loops(), desde la pantalla de antes de abrir)
             case KEY_APPEAR -> ui(tf("llave_aparece"), 0.8F, 1.0F);
@@ -407,7 +415,6 @@ public class CrateCinematicScreen extends Screen {
             case TREMBLE0 -> ui(tf("tiembla"), 0.75F, 1.0F);
             case OPEN -> ui(tf("apertura"), 1.0F, 1.0F);
             case SPIN1 -> ui(tf("parada"), 0.85F, 1.0F);
-            case REVEAL -> ui(tf("premio" + tier()), 1.0F, 1.0F);
             case TOTAL - 40 -> {
                 for (Track tr : tracks) tr.fadeOut(56);
                 if (music != null) music.fadeOut(56);

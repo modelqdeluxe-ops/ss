@@ -217,11 +217,13 @@ public final class VoidArmor {
         List<ArmorStand> here = level.getEntitiesOfClass(ArmorStand.class, new AABB(a).inflate(3), e -> e.getTags().contains(TAG));
         for (int k = 1; k < here.size(); k++) here.get(k).discard();
         // motas violetas que suben alrededor (el aura la dibuja el cliente, SanctuaryFx)
-        level.sendParticles(AURA, a.getX() + 0.5, a.getY() + 0.6, a.getZ() + 0.5, 4, 0.7, 0.6, 0.7, 0.0);
-        level.sendParticles(ParticleTypes.REVERSE_PORTAL, a.getX() + 0.5, a.getY() + 1.0, a.getZ() + 0.5, 3, 0.5, 0.8, 0.5, 0.01);
+
         // (1.3.114, el dueño: «la armadura del Void está volando 1 bloque del suelo»; la prueba: a 1,00 sobre el cuarzo) de pie
-        // sobre lo primero sólido que tenga debajo, no en la altura guardada del altar
-        double gy = groundY(level, a);
+        // sobre lo primero sólido que tenga debajo, no en la altura guardada del altar.
+        // (1.3.115, el dueño: «esa armadura está mal ahí, hazle una especie de altar al menos») de pie sobre su altar
+        double gy = pedestal(level, a);
+        level.sendParticles(AURA, a.getX() + 0.5, gy + 0.6, a.getZ() + 0.5, 4, 0.6, 0.6, 0.6, 0.0);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, a.getX() + 0.5, gy + 1.0, a.getZ() + 0.5, 3, 0.4, 0.8, 0.4, 0.01);
         if (!here.isEmpty()) {
             // (1.3.97) de pie en el suelo del altar: el de la 1.3.96 estaba un bloque más arriba, sobre un pedestal.
             // (1.3.98, el dueño: «el stand de armadura del vacío está saltando»: «NoGravity» iba en
@@ -261,6 +263,49 @@ public final class VoidArmor {
         s.setCustomName(Component.literal("Armadura del Coloso del Vacío").withStyle(ChatFormatting.LIGHT_PURPLE));
         s.setCustomNameVisible(true);
         level.addFreshEntity(s);
+    }
+
+    /**
+     * El altar de la armadura (1.3.115): sobre el suelo del ábside, una tarima de piedra negra pulida de 5 × 5 (losas
+     * alrededor y ladrillos en el centro), encima un escalón con cuatro racimos de amatista en las esquinas y, en medio,
+     * un bloque de obsidiana llorosa sobre el que está de pie el soporte. Se construye una vez (en los mundos de antes
+     * también: si no está la obsidiana) sin tocar nada que no sea aire, velas o plantas. Devuelve la altura de los pies.
+     */
+    static double pedestal(ServerLevel level, BlockPos a) {
+        net.minecraft.world.level.block.state.BlockState cry = net.minecraft.world.level.block.Blocks.CRYING_OBSIDIAN.defaultBlockState();
+        for (int dy = 2; dy >= -4; dy--) {
+            BlockPos c = a.offset(0, dy, 0);
+            if (level.getBlockState(c).is(net.minecraft.world.level.block.Blocks.CRYING_OBSIDIAN)) return c.getY() + 1;
+        }
+        int g = (int) Math.round(groundY(level, a));
+        var slab = net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICK_SLAB.defaultBlockState();
+        var bricks = net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        var chiseled = net.minecraft.world.level.block.Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState();
+        var cluster = net.minecraft.world.level.block.Blocks.AMETHYST_CLUSTER.defaultBlockState();
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                boolean ring = Math.abs(dx) == 2 || Math.abs(dz) == 2;
+                place(level, new BlockPos(a.getX() + dx, g, a.getZ() + dz), ring ? slab : (dx == 0 && dz == 0) ? chiseled : bricks);
+                if (ring) continue;
+                BlockPos up = new BlockPos(a.getX() + dx, g + 1, a.getZ() + dz);
+                if (dx == 0 && dz == 0) place(level, up, cry);
+                else if (dx != 0 && dz != 0) place(level, up, cluster);
+                else place(level, up, slab);
+            }
+        }
+        TFClient.LOGGER.info("TF Void: altar de la armadura construido en {} {} {}", a.getX(), g, a.getZ());
+        return level.getBlockState(new BlockPos(a.getX(), g + 1, a.getZ())).is(net.minecraft.world.level.block.Blocks.CRYING_OBSIDIAN)
+                ? g + 2 : groundY(level, a);
+    }
+
+    /** Pone el bloque si ahí hay aire, una vela o una planta (nunca rompe lo construido). */
+    private static void place(ServerLevel level, BlockPos p, net.minecraft.world.level.block.state.BlockState b) {
+        var cur = level.getBlockState(p);
+        if (cur.isAir() || cur.canBeReplaced() || cur.getBlock() instanceof net.minecraft.world.level.block.CandleBlock
+                || cur.is(net.minecraft.world.level.block.Blocks.GOLD_BLOCK) || cur.is(net.minecraft.world.level.block.Blocks.SMOOTH_QUARTZ)
+                || cur.is(net.minecraft.world.level.block.Blocks.CHISELED_QUARTZ_BLOCK)) {
+            level.setBlock(p, b, 2);
+        }
     }
 
     /** La altura del suelo en el altar: lo de arriba de lo primero sólido desde su sitio hacia abajo (hasta 4 bloques). */

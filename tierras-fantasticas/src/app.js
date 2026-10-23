@@ -152,7 +152,16 @@ function vfxEquipable(kind, id) {
   if (kind === 'pack' && typeof id === 'string' && VFX_OLD_PACKS.has(id)) return { kind, id, key: `pack:${id}` };
   return vfxItem(kind, id);
 }
-const productRoles = (p) => (p.discordRoles || []).filter(isSnowflake);
+// Los roles de Discord de un producto: ids o nombres de rol (1.3.115: los rangos van por nombre, Discord.resolveRoles)
+const hasRoles = (p) => (p.discordRoles || []).some((r) => isSnowflake(r) || !/^ID_ROL_/.test(String(r)));
+const productRoles = async (p, discord) => {
+  try {
+    return await discord.resolveRoles(p.discordRoles || []);
+  } catch (err) {
+    console.error('No se pudieron leer los roles del Discord:', err.message);
+    return (p.discordRoles || []).filter(isSnowflake);
+  }
+};
 const ranks = products.filter((p) => p.category === 'rangos' && p.rank && Number.isInteger(p.tier));
 const rankById = new Map(ranks.map((r) => [r.id, r]));
 
@@ -617,7 +626,7 @@ export function createApp(env) {
         allProducts.map(({ commands, discordRoles, ...p }) => ({
           ...p,
           ...(p.pool ? { pool: p.pool.map(({ give, ...entry }) => entry) } : {}),
-          discordRole: discord.rolesEnabled && productRoles({ discordRoles }).length > 0,
+          discordRole: discord.rolesEnabled && hasRoles({ discordRoles }),
         })),
       ),
 
@@ -1791,8 +1800,8 @@ export function createApp(env) {
     const discord = ctx?.discord;
     if (queued && account?.discordId && discord?.rolesEnabled && (!rank || rankStillCurrent)) {
       try {
-        await discord.removeRoles({ userId: account.discordId, roleIds: productRoles(product), reason: `Reembolso del pedido ${order.id}` });
-        if (from) await discord.grantRoles({ userId: account.discordId, roleIds: productRoles(from), reason: `Reembolso del pedido ${order.id}` });
+        await discord.removeRoles({ userId: account.discordId, roleIds: await productRoles(product, discord), reason: `Reembolso del pedido ${order.id}` });
+        if (from) await discord.grantRoles({ userId: account.discordId, roleIds: await productRoles(from, discord), reason: `Reembolso del pedido ${order.id}` });
       } catch (err) {
         log.error(`No se pudieron quitar los roles de Discord del pedido ${order.id}:`, err.message);
       }
@@ -1807,7 +1816,7 @@ export function createApp(env) {
       const account = await store.accountByUuid(order.uuid);
       if (account) linked = { id: account.discordId, username: account.username };
     }
-    const roles = productRoles(product);
+    const roles = linked && discord.rolesEnabled && hasRoles(product) ? await productRoles(product, discord) : [];
 
     if (linked && roles.length && discord.rolesEnabled) {
       let discordStatus;

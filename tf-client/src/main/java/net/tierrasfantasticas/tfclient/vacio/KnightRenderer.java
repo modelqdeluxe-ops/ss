@@ -152,72 +152,42 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
      * (1.3.98) La postura de cada caballero sacro, de pie en el suelo (el dueño: «todos tienen la misma animación, están
      * rotos porque vuelan también; el único que debe volar es el que teletransporta»; en la 1.3.97 llevaban el reposo de
      * Caelthar, que flota). Giros a mano sobre el pivote de cada hueso (VfxLayers.animate: lo que cuelga va con él), en
-     * grados: +x adelanta un brazo o una pierna; −x inclina el cuerpo o baja la cabeza. Todos respiran; además:
-     * Bastian monta guardia con el escudo y mira a los lados; Varen otea con la lanza y de vez en cuando se hace sombra con
-     * la mano; Osric lee su libro (y pasa la página); Liora se agacha a cuidar las flores; Aela alza el farol y ladea la
-     * cabeza. Al andar, las piernas y los brazos como los de un jugador (HumanoidModel.setupAnim, con WalkAnimationState).
+     * grados: +x adelanta un brazo o una pierna; −x inclina el cuerpo o baja la cabeza.
+     * <p>
+     * 1.3.115 (el dueño, otra vez: «siguen con la animación de volar»; su captura: Osric de cerca, con los brazos
+     * adelante, la cabeza baja y el cuerpo inclinado de «leer el libro»): fuera las posturas propias (leer, agacharse a las
+     * flores, alzar el farol, hacerse sombra): de lado parecían volar. Ahora son **como un jugador** (HumanoidModel): de pie
+     * y derechos, los brazos con el vaivén suave de los jugadores quietos (AnimationUtils.bobArms), el brazo de lo que
+     * llevan algo adelantado (ArmPose.ITEM) y, al andar, piernas y brazos como los de un jugador (WalkAnimationState).
+     * Solo la cabeza mira a los lados de vez en cuando (Bastian y Varen, que vigilan).
      */
     private static void sacredPose(KnightEntity e, SacredKnights.Def d, VfxModel m, float partial) {
-        float t = e.clientAge + partial + (e.getId() % 97) * 13F;
-        float breath = Mth.sin(t * 0.06F);
-        float body = -1.5F - 1.2F * breath, bodyY = 0F, head = 0F, headY = 0F, headZ = 0F;
-        float la = 4F, laZ = -3F - breath, ra = 6F, raZ = 3F + breath, ll = 0F, rl = 0F;
-        switch (d.id()) {
-            case 1 -> {
-                ra = 32F;
-                raZ = -6F;
-                headY = 22F * Mth.sin(t * 0.018F);
-            }
-            case 2 -> {
-                ra = 14F;
-                float k = bump(t % 320F, 40F, 110F);
-                la = 6F + 128F * k;
-                laZ = -3F - 22F * k;
-                head = 8F * k;
-                headY = 28F * Mth.sin(t * 0.014F) * (1F - k);
-            }
-            case 3 -> {
-                float page = bump(t % 220F, 180F, 205F);
-                ra = 44F + 14F * page;
-                raZ = -12F - 10F * page;
-                la = 40F;
-                laZ = 12F;
-                head = -24F + 3F * Mth.sin(t * 0.05F);
-            }
-            case 4 -> {
-                float k = bump(t % 300F, 60F, 200F);
-                body = -1.5F - 30F * k;
-                la = 4F + 52F * k;
-                ra = 6F + 58F * k;
-                head = -12F * k;
-                headZ = 6F * Mth.sin(t * 0.03F) * (1F - k);
-            }
-            case 5 -> {
-                ra = 78F + 6F * Mth.sin(t * 0.05F);
-                raZ = -8F;
-                headZ = 9F * Mth.sin(t * 0.03F);
-                bodyY = 6F * Mth.sin(t * 0.022F);
-            }
-            default -> {
-            }
-        }
-        // al andar: las piernas y el brazo libre (y algo el de lo que lleva) como un jugador
+        float age = e.clientAge + partial + (e.getId() % 97) * 13F;
+        float t = age;
+        // brazos quietos como los de un jugador: ±3° adelante/atrás y hacia fuera (bobArms, en grados)
+        float bobX = (float) Math.toDegrees(Mth.sin(age * 0.067F) * 0.05F);
+        float bobZ = (float) Math.toDegrees(Mth.cos(age * 0.09F) * 0.05F + 0.05F);
+        float body = 0F, bodyY = 0F, head = 0F, headY = 0F, headZ = 0F;
+        // el brazo de lo que lleva, adelantado como el de un jugador con algo en la mano (18°)
+        float la = -bobX, laZ = -2F - bobZ, ra = ARM_PITCH + bobX, raZ = 2F + bobZ, ll = 0F, rl = 0F;
+        if (d.id() == 1 || d.id() == 2) headY = 22F * Mth.sin(t * 0.016F);
+        // al andar: como un jugador (rightLeg = cos(p·0,6662)·1,4·v; brazos = cos(p·0,6662 + π)·v, el de la mano a la mitad)
         float speed = Math.min(1F, e.walkAnimation.speed(partial));
-        if (speed > 0.02F) {
-            float swing = Mth.cos(e.walkAnimation.position(partial) * 0.6662F) * speed * (float) Math.toDegrees(1.1);
-            float w = Math.min(1F, speed * 3F);
-            ll = swing;
-            rl = -swing;
-            la = la + (-swing * 0.8F - la) * w;
-            ra = ra - swing * 0.25F * w;
-            body = body * (1F - w) - 2F * w;
+        if (speed > 0.01F) {
+            float p = e.walkAnimation.position(partial) * 0.6662F;
+            float leg = (float) Math.toDegrees(Mth.cos(p) * 1.4F * speed);
+            float arm = (float) Math.toDegrees(Mth.cos(p) * speed);
+            ll = leg;
+            rl = -leg;
+            la = la - arm;
+            ra = ra + arm * 0.5F;
         }
         pose(e, m, "main_tail", body, bodyY, 0F);
         pose(e, m, "head", head, headY, headZ);
         pose(e, m, "left_arm", la, 0F, laZ);
         pose(e, m, "right_arm", ra, 0F, raZ);
-        pose(e, m, "left_leg", ll, 0F, -1.5F);
-        pose(e, m, "right_leg", rl, 0F, 1.5F);
+        pose(e, m, "left_leg", ll, 0F, -1F);
+        pose(e, m, "right_leg", rl, 0F, 1F);
     }
 
     private static final float[] ZERO3 = {0F, 0F, 0F}, ONE3 = {1F, 1F, 1F};
@@ -225,17 +195,6 @@ public class KnightRenderer<T extends KnightEntity> extends EntityRenderer<T> {
     private static void pose(KnightEntity e, VfxModel m, String bone, float x, float y, float z) {
         int b = m.bone(bone);
         if (b >= 0) e.layers.animate(new int[] {b}, ZERO3, new float[] {x, y, z}, ONE3, false, false, true, false);
-    }
-
-    /** 0 → 1 → 0 entre a y b (con subida y bajada suaves, un cuarto del tramo cada una). */
-    private static float bump(float x, float a, float b) {
-        float q = (b - a) * 0.25F;
-        return smooth(a, a + q, x) * (1F - smooth(b - q, b, x));
-    }
-
-    private static float smooth(float a, float b, float x) {
-        float u = Mth.clamp((x - a) / (b - a), 0F, 1F);
-        return u * u * (3F - 2F * u);
     }
 
     private void label(KnightEntity e, PoseStack pose, MultiBufferSource buffers) {

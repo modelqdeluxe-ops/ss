@@ -6,6 +6,13 @@ const DEFAULT_API = 'https://discord.com/api/v10';
 const SNOWFLAKE_RE = /^\d{17,20}$/;
 
 export const isSnowflake = (id) => SNOWFLAKE_RE.test(String(id));
+// El nombre de un rol sin emojis, separadores ni tildes («🛡️┆INMORTAL» → «INMORTAL»), para buscarlo aunque cambie un adorno
+const roleKey = (name) =>
+  String(name || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase();
 
 export class Discord {
   constructor({ clientId, clientSecret, botToken, guildId, webhookUrl, redirectUri, apiBase }) {
@@ -145,6 +152,28 @@ export class Discord {
       body: { access_token: accessToken },
     });
     return res.status === 201 || res.status === 204;
+  }
+
+  // (1.3.115) Los roles de los productos por su nombre (los rangos: «🌳┆MORTAL», «🌋┆FANTÁSTICO»…; el dueño los pasó así):
+  // se buscan con el bot entre los del servidor de Discord, exactos o, si no, sin adornos (roleKey) y solo si hay uno.
+  // Los ids (números) valen tal cual. La lista de roles se recuerda 10 minutos.
+  async resolveRoles(refs) {
+    const list = (refs || []).map(String);
+    const ids = list.filter(isSnowflake);
+    const names = list.filter((r) => !isSnowflake(r) && !/^ID_ROL_/.test(r));
+    if (!names.length || !this.botToken || !this.guildId) return ids;
+    if (!this.roleCache || Date.now() - this.roleCache.at > 600_000) {
+      const { data } = await this.request('GET', `/guilds/${this.guildId}/roles`, { auth: `Bot ${this.botToken}` });
+      this.roleCache = { at: Date.now(), roles: Array.isArray(data) ? data : [] };
+    }
+    const roles = this.roleCache.roles;
+    for (const name of names) {
+      const loose = roles.filter((r) => roleKey(r.name) === roleKey(name));
+      const hit = roles.find((r) => r.name === name) || (loose.length === 1 ? loose[0] : null);
+      if (hit) ids.push(String(hit.id));
+      else console.warn(`Discord: no hay ningún rol «${name}» en el servidor`);
+    }
+    return [...new Set(ids)];
   }
 
   // Da los roles al usuario. Si no está en el servidor de Discord, lo añade con esos roles.

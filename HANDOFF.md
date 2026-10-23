@@ -190,7 +190,48 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.114, PUBLICADA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.115, PUBLICADA) — lee esto primero
+
+**1.3.115: once quejas del dueño** (con 2 capturas y un mp3; la 1.3.114 está PUBLICADA):
+1. **Caballeros del santuario «con la animación de volar»** (su captura: Osric de cerca, con la postura de «leer»:
+   brazos adelante, cabeza baja): fuera las posturas propias (leer, agacharse, alzar el farol, hacerse sombra).
+   `KnightRenderer.sacredPose` ahora es la de un jugador: derechos, vaivén de brazos de `bobArms`, el brazo de lo que
+   llevan a 18° y al andar piernas y brazos como `HumanoidModel`. La prueba `corta` saca a cada uno de frente y de lado
+   (`caballero_N_lado`) con la cámara donde no la tape nada (`BossTest.knightCam`). **Comprobado** (prueba `16ecf50`):
+   derechos, de lado y andando (piernas hasta 0,60).
+2. **Altar de la armadura del Void** (`VoidArmor.pedestal`): tarima de piedra negra pulida 5×5, escalón con 4 racimos de
+   amatista y obsidiana llorosa en el centro; el soporte de pie encima. Se construye una vez, también en mundos de antes,
+   sin romper nada. La burbuja (`SanctuaryFx.altar`) va centrada en el soporte de verdad (era asimétrica: centrada en la
+   altura guardada del altar) y sin el círculo del suelo. **Comprobado** (`16ecf50`): de pie sobre la obsidiana llorosa
+   (a 0,00) y la burbuja redonda alrededor.
+3. **Sonidos de las crates por rareza** (`tools/crates/sfx_crates.py`, `premio()`): los cinco eran de la misma familia
+   (Re mayor, celesta y destellos). Ahora cada uno con su carácter y graves de verdad: común (golpe seco y metales), rara
+   (soplo que estalla en cristal y arpa, Mi mayor), épica (al revés, caída al subgrave, coro «ooh» en Re menor),
+   legendaria (redoble y fanfarria en tresillo con platillo) y mítica (subida de 1,25 s, doble golpe, coro que asciende,
+   campana). La escena los pide antes (`CrateCinematicScreen.PRIZE_LEAD`) para que el golpe caiga al salir el premio; la
+   crate del mundo y la clásica usan la versión sin subida. **Música de las crates más alta**: a 1,0 y el archivo de
+   −15 a −12 LUFS (`cifrar_musica.py --descifrar` y vuelta a cifrar).
+4. **Bots** (`TFBots.card`): 0 fotos y 0 likes; un oficio de nivel bajo, de 0 a 5 misiones, alguna caza y pocos viajes.
+5. **Tienda web** (`tools/crates.py`): todas las crates a 4,99 $ con 750 Fantastic Coins, 3 Gacha Coins, 8 manzanas
+   doradas, 1 de Notch, 8 diamantes, 32 botellas de XP, 32 zanahorias doradas y 16 perlas. Rangos con su piedra,
+   Fantastic Coins (1.000 a 15.000) y Gacha Coins (5 a 50), manzanas doradas y de Notch, tótems (desde Inmortal) y
+   armadura y herramientas encantadas según el rango (vanilla); Celestial, de diamante y Fantástico, de netherita, con
+   todos los encantamientos al máximo. Comandos nuevos del mod: `/tf web verdes dar|quitar|ver`. **Cada premio con su
+   icono** en la web (`rewards` en products.json, `rewardsGrid` en public/app.js: icono, cantidad, encantamientos).
+6. **Pozos de luz** (`tools/void/sonidos_viaje.py`): el «acordeón» era el coro sintetizado; ahora soplo cálido, colchón de
+   senos puros y brillo alto (sin coro, campanas ni arpa). **Música del santuario**: la del dueño («La petite fille de la
+   mer», 5:55, −12,5 LUFS), cifrada en el jar (`sounds/santuario/musica.ogg`; `SealedAudio` también abre esa carpeta).
+7. **Economía exigente**: oficios (acciones, misiones y niveles), misiones del pad y cazas al 60 % (`PadEconomy.scale`,
+   una vez, marca `economia: 3`, copia `.antes-economia3.json`; los archivos por defecto, ya rebajados); en la web,
+   2.500 Fantastic Coins por dólar (antes 1.250) y la clase de skills a 15.000; el regalo de diamantes, 3 (antes 5).
+8. **Piedras de protección**: el escudo se queda; fuera el grano, los desconchones, las grietas, los remaches, las rayas
+   de reflejo y los canales de arriba (las gemas del marco, solo en la de 500). Icono de la pestaña de la tienda rehecho.
+9. **La config del servidor manda**: el cliente usa la web que le dice el servidor (`TFPadNet.State.web`,
+   `TFConfig.webUrl`); `LEEME-IA.md` explica que en el cliente solo cuentan cliente.properties y las preferencias.
+10. **Roles de Discord al comprar un rango**: por su nombre (`DISCORD_ROLE` en crates.py; `Discord.resolveRoles` los busca
+   con el bot, exactos o sin adornos). Hace falta el bot con permiso de gestionar roles y su rol por encima de los rangos.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.114, PUBLICADA)
 
 **1.3.114: nueve quejas del dueño** (con 5 capturas; «toma en serio esto por favor» lo de la economía):
 1. **Las monedas se llaman Fantastic Coin y Fantastic Gacha Coin** (no «monedas» ni «moneda verde»): en el pad, los
