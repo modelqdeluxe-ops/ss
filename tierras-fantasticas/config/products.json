@@ -63,7 +63,7 @@
     "price": 499,
     "maxQuantity": 1,
     "discordRoles": [
-      "🌳┆MORTAL"
+      "1562833462329872414"
     ],
     "commands": [
       "lp user {player} parent set mortal",
@@ -228,7 +228,7 @@
     "price": 799,
     "maxQuantity": 1,
     "discordRoles": [
-      "🛡️┆INMORTAL"
+      "1562834035116474388"
     ],
     "commands": [
       "lp user {player} parent set inmortal",
@@ -394,7 +394,7 @@
     "price": 1199,
     "maxQuantity": 1,
     "discordRoles": [
-      "🔮┆MÁGICO"
+      "1562834460297273344"
     ],
     "commands": [
       "lp user {player} parent set magico",
@@ -562,7 +562,7 @@
     "price": 1599,
     "maxQuantity": 1,
     "discordRoles": [
-      "🔥┆ETERNO"
+      "1562834997352595527"
     ],
     "commands": [
       "lp user {player} parent set eterno",
@@ -735,7 +735,7 @@
     "price": 1999,
     "maxQuantity": 1,
     "discordRoles": [
-      "✨┆CÓSMICO"
+      "1562835394930937896"
     ],
     "commands": [
       "lp user {player} parent set cosmico",
@@ -917,7 +917,7 @@
     "price": 2499,
     "maxQuantity": 1,
     "discordRoles": [
-      "🌠┆CELESTIAL"
+      "1562836155790270474"
     ],
     "commands": [
       "lp user {player} parent set celestial",
@@ -1108,7 +1108,7 @@
     "price": 2999,
     "maxQuantity": 1,
     "discordRoles": [
-      "🌋┆FANTÁSTICO"
+      "1506471880444350685"
     ],
     "commands": [
       "lp user {player} parent set fantastico",
