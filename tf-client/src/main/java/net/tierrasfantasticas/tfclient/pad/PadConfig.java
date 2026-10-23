@@ -102,6 +102,28 @@ public final class PadConfig {
         save();
     }
 
+    /**
+     * (1.3.119, el dueño: «usamos Multiverse; el spawn está en otro overworld, un mundo vacío; Explorar siempre debe
+     * mandarte fuera del overworld del spawn») los mundos de Viajes y Explorar, por su id de Minecraft
+     * («minecraft:overworld», «minecraft:spawn»…). Vacío = solo: Explorar busca el overworld con terreno (salta los
+     * vacíos) y Spawn usa el /spawn de EssentialsX si está. Se ponen con /tf web viajes explorar|spawn aqui|auto.
+     */
+    private static String exploreWorld = "", spawnWorld = "";
+
+    public static String exploreWorld() {
+        return exploreWorld;
+    }
+
+    public static String spawnWorld() {
+        return spawnWorld;
+    }
+
+    public static void worlds(String explore, String spawn) {
+        if (explore != null) exploreWorld = explore;
+        if (spawn != null) spawnWorld = spawn;
+        save();
+    }
+
     public static List<String> hiddenWarps() {
         return List.copyOf(HIDDEN_WARPS);
     }
@@ -115,6 +137,8 @@ public final class PadConfig {
         VALUES.clear();
         DISABLED.clear();
         HIDDEN_WARPS.clear();
+        exploreWorld = "";
+        spawnWorld = "";
         Path f = file();
         if (Files.isRegularFile(f)) {
             try {
@@ -128,6 +152,11 @@ public final class PadConfig {
                 }
                 if (root.has("appsApagadas")) for (JsonElement e : root.getAsJsonArray("appsApagadas")) DISABLED.add(e.getAsString());
                 if (root.has("warpsOcultos")) for (JsonElement e : root.getAsJsonArray("warpsOcultos")) HIDDEN_WARPS.add(e.getAsString());
+                if (root.has("mundos") && root.get("mundos").isJsonObject()) {
+                    JsonObject w = root.getAsJsonObject("mundos");
+                    exploreWorld = w.has("explorar") && w.get("explorar").isJsonPrimitive() ? w.get("explorar").getAsString().trim() : "";
+                    spawnWorld = w.has("spawn") && w.get("spawn").isJsonPrimitive() ? w.get("spawn").getAsString().trim() : "";
+                }
             } catch (Exception e) {
                 TFClient.LOGGER.error("TF Pad: config/tfclient/pad.json no se pudo leer; se usan los valores por defecto", e);
                 return;
@@ -151,6 +180,12 @@ public final class PadConfig {
         JsonArray hidden = new JsonArray();
         HIDDEN_WARPS.forEach(hidden::add);
         root.add("warpsOcultos", hidden);
+        JsonObject worlds = new JsonObject();
+        worlds.addProperty("_ayuda", "Mundos de Viajes y Explorar por su id («minecraft:overworld», «minecraft:survival»…). "
+                + "Vacío = automático: Explorar va al overworld con terreno (nunca a uno vacío como el del spawn) y Spawn usa /spawn.");
+        worlds.addProperty("explorar", exploreWorld);
+        worlds.addProperty("spawn", spawnWorld);
+        root.add("mundos", worlds);
         try {
             Path f = file();
             Path tmp = f.resolveSibling("pad.json.tmp");

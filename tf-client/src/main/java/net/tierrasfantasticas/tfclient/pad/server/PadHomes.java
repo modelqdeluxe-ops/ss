@@ -75,7 +75,9 @@ public final class PadHomes {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static boolean essentials(MinecraftServer server) {
-        return server.getCommands().getDispatcher().getRoot().getChild("sethome") != null && Files.isDirectory(userdata(server));
+        // (1.3.119) en Mohist, el comando del plugin puede no estar en el despachador de Minecraft: también por Bukkit
+        return (server.getCommands().getDispatcher().getRoot().getChild("sethome") != null
+                || net.tierrasfantasticas.tfclient.server.TFBukkit.hasCommand("sethome")) && Files.isDirectory(userdata(server));
     }
 
     private static Path userdata(MinecraftServer server) {
@@ -156,34 +158,76 @@ public final class PadHomes {
         return out;
     }
 
-    /** Los hogares que puede tener: los de su rango, o los «default» de EssentialsX, o 3. */
+    /** Sin límite (essentials.sethome.multiple.unlimited). */
+    static final int UNLIMITED = Integer.MAX_VALUE;
+
+    /**
+     * Los hogares que puede tener. (1.3.119, el dueño: «el pad debe estar ligado a los hogares o permisos») Con EssentialsX
+     * en Mohist, exactamente como lo cuenta EssentialsX (Settings.getHomeLimit): 1; con essentials.sethome.multiple, los
+     * de «default» de sethome-multiple; y el mayor de cada grupo de sethome-multiple cuyo permiso
+     * essentials.sethome.multiple.&lt;grupo&gt; tenga (los rangos los traen en LuckPerms: TFRankPerms); con
+     * essentials.sethome.multiple.unlimited, sin límite. Sin Bukkit: los de su rango de la web, o los «default», o los del
+     * pad.
+     */
     static int limit(ServerPlayer player) {
+        boolean ess = essentials(player.getServer());
+        Map<String, Integer> multiple = ess ? sethomeMultiple(player.getServer()) : Map.of();
+        Boolean multi = net.tierrasfantasticas.tfclient.server.TFBukkit.hasPermission(player, "essentials.sethome.multiple");
+        if (ess && multi != null) {
+            if (Boolean.TRUE.equals(net.tierrasfantasticas.tfclient.server.TFBukkit.hasPermission(player, "essentials.sethome.multiple.unlimited"))) {
+                return UNLIMITED;
+            }
+            int limit = 1;
+            if (multi) limit = multiple.getOrDefault("default", 1);
+            for (Map.Entry<String, Integer> e : multiple.entrySet()) {
+                if (e.getValue() > limit && Boolean.TRUE.equals(net.tierrasfantasticas.tfclient.server.TFBukkit.hasPermission(player,
+                        "essentials.sethome.multiple." + e.getKey()))) {
+                    limit = e.getValue();
+                }
+            }
+            return limit;
+        }
         TFRanks.Rank rank = TFRanks.full(TFRanks.of(player.getUUID()));
         if (rank != null && rank.homes() > 0) return rank.homes();
-        if (essentials(player.getServer())) {
-            try {
-                Path config = player.getServer().getServerDirectory().toPath().resolve(TFServerConfig.essentialsConfig()).normalize();
-                boolean inBlock = false;
-                for (String line : Files.readAllLines(config, StandardCharsets.UTF_8)) {
-                    if (line.startsWith("sethome-multiple:")) {
-                        inBlock = true;
-                        continue;
-                    }
-                    if (inBlock && !line.isBlank() && !Character.isWhitespace(line.charAt(0))) break;
-                    Matcher m = Pattern.compile("^\\s+['\"]?default['\"]?:\\s*(\\d+)").matcher(line);
-                    if (inBlock && m.find()) return Integer.parseInt(m.group(1));
-                }
-            } catch (Exception ignored) {
-                // sin config: el de siempre
-            }
-        }
+        if (multiple.containsKey("default")) return multiple.get("default");
         return (int) net.tierrasfantasticas.tfclient.pad.PadConfig.get("hogares.sinRango");
     }
 
+    private static final Pattern MULTI_ENTRY = Pattern.compile("^\\s+['\"]?([^'\":\\s#]+)['\"]?:\\s*(-?\\d+)");
+
+    /** El bloque «sethome-multiple» del config.yml de EssentialsX: grupo → hogares. */
+    private static Map<String, Integer> sethomeMultiple(MinecraftServer server) {
+        Map<String, Integer> out = new LinkedHashMap<>();
+        try {
+            Path config = server.getServerDirectory().toPath().resolve(TFServerConfig.essentialsConfig()).normalize();
+            boolean inBlock = false;
+            for (String line : Files.readAllLines(config, StandardCharsets.UTF_8)) {
+                if (line.startsWith("sethome-multiple:")) {
+                    inBlock = true;
+                    continue;
+                }
+                if (inBlock && !line.isBlank() && !Character.isWhitespace(line.charAt(0))) break;
+                Matcher m = MULTI_ENTRY.matcher(line);
+                if (inBlock && m.find()) out.put(m.group(1).toLowerCase(Locale.ROOT), Integer.parseInt(m.group(2)));
+            }
+        } catch (Exception ignored) {
+            // sin config: nada
+        }
+        return out;
+    }
+
     private static String where(Home h) {
-        String w = h.world.toLowerCase(Locale.ROOT);
-        String dim = w.contains("nether") || w.endsWith("dim-1") ? "Nether" : w.contains("end") || w.endsWith("dim1") ? "El End" : "Mundo normal";
-        return dim + " · " + (int) Math.floor(h.x) + ", " + (int) Math.floor(h.y) + ", " + (int) Math.floor(h.z);
+        return worldLabel(h.world) + " · " + (int) Math.floor(h.x) + ", " + (int) Math.floor(h.y) + ", " + (int) Math.floor(h.z);
+    }
+
+    /** El nombre del mundo para el jugador: los tres de siempre y, los de Multiverse, por su nombre («spawn» → Spawn). */
+    private static String worldLabel(String world) {
+        String w = world.toLowerCase(Locale.ROOT);
+        if (w.contains(":")) return PadTravel.dimName(w);
+        if (w.equals("world") || w.equals("overworld")) return "Mundo normal";
+        if (w.equals("world_nether") || w.endsWith("dim-1")) return "Nether";
+        if (w.equals("world_the_end") || w.endsWith("dim1")) return "El End";
+        return PadTravel.dimName("minecraft:" + w);
     }
 
     private static ItemStack icon(Home h) {
@@ -194,6 +238,9 @@ public final class PadHomes {
     }
 
     private static boolean sameWorld(ServerPlayer player, Home h) {
+        // (1.3.119) con Bukkit, por el nombre del mundo (los de Multiverse son overworlds con otro nombre)
+        String bukkit = net.tierrasfantasticas.tfclient.server.TFBukkit.worldName(player);
+        if (bukkit != null && !h.world.contains(":")) return bukkit.equalsIgnoreCase(h.world);
         String dim = player.level().dimension().location().toString();
         String w = h.world.toLowerCase(Locale.ROOT);
         if (w.contains(":")) return w.equals(dim);
@@ -210,8 +257,8 @@ public final class PadHomes {
             Map<String, Home> homes = homes(player);
             int limit = limit(player);
             PadView.Builder b = PadView.of("hogares");
-            b.header(homes.size() + " de " + limit + " hogares." + (homes.size() < limit ? ""
-                    : " Borra uno para guardar otro."));
+            b.header(limit == UNLIMITED ? homes.size() + " hogares (sin límite)." : homes.size() + " de " + limit + " hogares."
+                    + (homes.size() < limit ? "" : " Borra uno para guardar otro."));
             for (Home h : homes.values()) {
                 List<String> lines = new ArrayList<>();
                 String line = where(h);
@@ -306,6 +353,8 @@ public final class PadHomes {
 
     /** El nombre de mundo de Bukkit (lo que EssentialsX guarda en «world-name»). */
     private static String worldName(ServerPlayer player) {
+        String bukkit = net.tierrasfantasticas.tfclient.server.TFBukkit.worldName(player);
+        if (bukkit != null) return bukkit;
         String dim = player.level().dimension().location().toString();
         return switch (dim) {
             case "minecraft:the_nether" -> "world_nether";
@@ -314,8 +363,12 @@ public final class PadHomes {
         };
     }
 
-    /** Un comando como si lo escribiera el jugador (los de EssentialsX están en el mismo despachador en Mohist). */
+    /**
+     * Un comando como si lo escribiera el jugador: (1.3.119) en Mohist por Bukkit (Player.performCommand: EssentialsX lleva
+     * entre los mundos de Multiverse); sin Bukkit, por el despachador de Minecraft.
+     */
     private static void run(ServerPlayer player, String command) {
+        if (net.tierrasfantasticas.tfclient.server.TFBukkit.playerCommand(player, command) != null) return;
         try {
             player.getServer().getCommands().performPrefixedCommand(player.createCommandSourceStack(), command);
         } catch (Exception e) {

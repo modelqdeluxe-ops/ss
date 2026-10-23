@@ -48,7 +48,7 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
 | `vfx.json` | Efectos de muerte y demás efectos visuales (los de pago se compran en la web). |
 | `skills.json` | Clases de skills. |
 | `ayuda.json` | Textos de la Guía del pad. |
-| `pad.json` | Qué apps del pad ven los jugadores y ajustes del pad. |
+| `pad.json` | Qué apps del pad ven los jugadores y ajustes del pad. En `mundos`: `explorar` (el mundo al que lleva Explorar) y `spawn` (el del botón Spawn), por su id (`minecraft:overworld`, `minecraft:survival`…); vacío = automático (Explorar nunca va a un mundo vacío como el spawn de Multiverse; Spawn usa el `/spawn` de EssentialsX). También con `/tf web viajes explorar aqui` o `spawn aqui` estando en ese mundo, y `/tf web viajes lista` para ver cuáles son. |
 | `jefes.json` | Jefes de incursión. |
 
 Las crates (cajas) van aparte, en `config/fscrates/cajas/` (un JSON por caja; `config/fscrates/items_referencia.json`

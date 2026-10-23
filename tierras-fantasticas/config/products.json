@@ -878,6 +878,10 @@
         "text": "Tu cofre de ender, siempre a mano"
       },
       {
+        "cmd": "/heal",
+        "text": "Vida al completo al instante"
+      },
+      {
         "cmd": "/feed",
         "text": "Hambre saciada al instante"
       }
@@ -899,6 +903,7 @@
         "essentials.loom",
         "essentials.hat",
         "essentials.enderchest",
+        "essentials.heal",
         "essentials.feed"
       ]
     }
@@ -1059,6 +1064,10 @@
         "text": "Tu cofre de ender, siempre a mano"
       },
       {
+        "cmd": "/heal",
+        "text": "Vida al completo al instante"
+      },
+      {
         "cmd": "/repair",
         "text": "Reparación de armas, herramientas y armaduras"
       },
@@ -1084,6 +1093,7 @@
         "essentials.loom",
         "essentials.hat",
         "essentials.enderchest",
+        "essentials.heal",
         "essentials.repair",
         "essentials.fly"
       ]

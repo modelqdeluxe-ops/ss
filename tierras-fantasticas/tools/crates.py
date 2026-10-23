@@ -357,8 +357,9 @@ RANK_SERVER_PERKS = {
     'inmortal': (7, ['craft', 'anvil', 'loom', 'hat']),
     'magico': (8, ['craft', 'anvil', 'loom', 'hat', 'enderchest']),
     'eterno': (10, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'heal']),
-    'cosmico': (12, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'feed']),
-    'celestial': (15, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'repair', 'fly']),
+    # (TF Client 1.3.119, el dueño: «Cósmico y Celestial no traen heal, pónselos»)
+    'cosmico': (12, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'heal', 'feed']),
+    'celestial': (15, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'heal', 'repair', 'fly']),
     'fantastico': (20, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'repair', 'heal', 'feed', 'fly']),
 }
 
