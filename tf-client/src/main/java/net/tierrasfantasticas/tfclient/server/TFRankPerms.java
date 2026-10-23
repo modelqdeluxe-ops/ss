@@ -32,8 +32,9 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * Lo que trae cada rango en el servidor, puesto solo: la web manda en la lista de rangos los permisos de EssentialsX de
  * cada uno (/craft, /anvil, /hat, /fly…) y sus hogares, y aquí se dejan así en LuckPerms y EssentialsX:
  * <ul>
- *   <li>LuckPerms: crea el grupo de cada rango (si no existe) y le pone sus permisos. Si un permiso que puso el TF
- *   Client deja de estar en la web, se lo quita. Los permisos que el staff ponga a mano en esos grupos no se tocan.</li>
+ *   <li>LuckPerms: crea el grupo de cada rango (si no existe), le hace heredar de «default» (1.3.118: el rango se pone
+ *   con «parent set», que saca al jugador de default) y le pone sus permisos. Si un permiso que puso el TF Client deja
+ *   de estar en la web, se lo quita. Los permisos que el staff ponga a mano en esos grupos no se tocan.</li>
  *   <li>EssentialsX: el número de hogares de cada grupo en «sethome-multiple» de su config.yml (y «essentials
  *   reload»). Se guarda una copia del archivo original la primera vez.</li>
  * </ul>
@@ -85,7 +86,9 @@ public final class TFRankPerms {
             groups.put(group, nodes);
             if (rank.homes() > 0) homes.put(group, rank.homes());
         }
-        return new Plan(groups, homes, groups + "|" + homes);
+        // (1.3.118) «v2»: con la versión anterior los comandos iban por el despachador de Forge y en Mohist podían no
+        // llegar a LuckPerms sin que se notara; al cambiar la firma se vuelve a poner todo una vez (por la consola)
+        return new Plan(groups, homes, "v2|" + groups + "|" + homes);
     }
 
     private static List<String> apply(MinecraftServer server, Plan plan, JsonObject state) {
@@ -105,6 +108,9 @@ public final class TFRankPerms {
             for (Map.Entry<String, Set<String>> e : plan.groups.entrySet()) {
                 String group = e.getKey();
                 run(server, "lp creategroup " + group);
+                // (1.3.118) con «parent set» el jugador deja el grupo default: el rango lo hereda, para que no pierda lo
+                // básico que el staff tenga ahí (spawn, tpa, msg…)
+                run(server, "lp group " + group + " parent add default");
                 for (String node : e.getValue()) {
                     run(server, "lp group " + group + " permission set " + node + " true");
                     set++;

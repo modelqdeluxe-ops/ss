@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.117, PUBLICADA) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.118) — lee esto primero
+
+**1.3.118** (el dueño: «¿y lo de los permisos cómo quedó?»): dos fallos de los permisos de los rangos (`TFRankPerms`):
+- Con `parent set` el jugador sale del grupo `default` y los grupos de rango no lo heredaban: perdía lo básico que el
+  staff tenga en default. Ahora cada grupo de rango hereda de default (`lp group <rango> parent add default`).
+- La firma de lo aplicado (`<mundo>/tfclient/rank_perms.json`) pasa a «v2|…»: si con la versión anterior los comandos
+  se dieron por buenos sin llegar a LuckPerms (iban por el despachador de Forge), al arrancar la 1.3.118 se vuelve a
+  poner todo una vez, ya por la consola de Bukkit. A mano: `/tf web rango permisos`.
+- Permisos de cada rango (de `tierras-fantasticas/tools/crates.py`, `RANK_SERVER_PERKS`): ver la respuesta al dueño;
+  Cósmico no trae /heal (Eterno sí) y Celestial no trae /heal ni /feed: se le preguntó si es así.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.117, PUBLICADA)
 
 **1.3.117: ocho quejas del dueño** (5 capturas y un zip de NPC de Wardenful Studio) **y el rango en LuckPerms** (9):
 1. **Ranking del pad**: salen los bots que han entrado alguna vez (`TFBots.known`, `rankValue`): misiones, cazas y
