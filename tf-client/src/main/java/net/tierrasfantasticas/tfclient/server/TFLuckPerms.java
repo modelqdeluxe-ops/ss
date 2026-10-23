@@ -242,6 +242,14 @@ public final class TFLuckPerms {
         return Api.group(name);
     }
 
+    /**
+     * (1.3.125) Que LuckPerms cargue (o cree, con su grupo por defecto) a un bot que entra sin pasar por la red: así
+     * tiene su grupo y su prefijo como cualquiera (TAB los lee de LuckPerms).
+     */
+    static void loadUser(UUID uuid, String name) {
+        Api.loadUser(uuid, name);
+    }
+
     /** Para la prueba en el juego: los grupos de un jugador en LuckPerms (o por qué no se pueden ver). */
     public static String describe(UUID uuid) {
         Set<String> p = Api.parents(uuid);
@@ -284,8 +292,8 @@ public final class TFLuckPerms {
         private static Object api;
         private static Method getUserManager, getUser, getNodes, getGroupName;
         private static Object inheritance;
-        /** (1.3.125) los grupos: GroupManager.getGroup, sus nodos de permiso, prefijo y peso. */
-        private static Method getGroupManager, getGroup, groupNodes, permissionOf;
+        /** (1.3.125) los grupos: GroupManager.getGroup, sus nodos de permiso, prefijo y peso; y UserManager.loadUser. */
+        private static Method getGroupManager, getGroup, groupNodes, permissionOf, loadUser;
         private static Object permissionType, prefixType, weightType;
         static String why = "no mirado";
 
@@ -338,6 +346,7 @@ public final class TFLuckPerms {
                     getGroup = gm.getMethod("getGroup", String.class);
                     groupNodes = group.getMethod("getNodes", nodeType);
                     permissionOf = perm.getMethod("getPermission");
+                    loadUser = um.getMethod("loadUser", UUID.class, String.class);
                     permissionType = nodeType.getField("PERMISSION").get(null);
                     prefixType = nodeType.getField("PREFIX").get(null);
                     weightType = nodeType.getField("WEIGHT").get(null);
@@ -352,6 +361,15 @@ public final class TFLuckPerms {
             } catch (Throwable t) {
                 why = t instanceof ClassNotFoundException ? "no está LuckPerms" : t.toString();
                 return false;
+            }
+        }
+
+        static void loadUser(UUID uuid, String name) {
+            if (!find() || loadUser == null) return;
+            try {
+                loadUser.invoke(getUserManager.invoke(api), uuid, name);
+            } catch (Throwable t) {
+                TFClient.LOGGER.warn("TF LuckPerms: no se pudo cargar a {}: {}", name, t.toString());
             }
         }
 

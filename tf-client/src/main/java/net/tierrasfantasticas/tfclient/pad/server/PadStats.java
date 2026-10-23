@@ -43,6 +43,12 @@ public final class PadStats {
         PadTitles.check(player);
     }
 
+    /** (1.3.125) Olvida a un jugador (los bots al limpiar su registro: Ranking y fichas sin restos). */
+    public static void forget(UUID uuid) {
+        com.google.gson.JsonElement all = STORE_IMPL.root.get("jugadores");
+        if (all != null && all.isJsonObject() && all.getAsJsonObject().remove(uuid.toString()) != null) STORE_IMPL.changed();
+    }
+
     public static long get(UUID uuid, String key) {
         JsonObject p = STORE_IMPL.playerIfAny(uuid);
         return p == null ? 0 : JsonStore.num(p, key);

@@ -28,13 +28,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MinecraftServerBotsMixin {
     @Inject(method = "getPlayerCount", at = @At("RETURN"), cancellable = true)
     private void tfclient$bots(CallbackInfoReturnable<Integer> cir) {
-        int bots = TFBots.count();
+        int bots = TFBots.listOnly().size(); // (1.3.125: los de verdad ya los cuenta el servidor)
         if (bots > 0) cir.setReturnValue(cir.getReturnValueI() + bots);
     }
 
     @Inject(method = "buildPlayerStatus", at = @At("RETURN"), cancellable = true)
     private void tfclient$botsStatus(CallbackInfoReturnable<ServerStatus.Players> cir) {
-        List<TFBots.Bot> bots = TFBots.online();
+        List<TFBots.Bot> bots = TFBots.listOnly();
         ServerStatus.Players p = cir.getReturnValue();
         if (bots.isEmpty() || p == null) return;
         List<GameProfile> sample = new ArrayList<>(p.sample());

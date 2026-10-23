@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, 1.3.125 A MEDIAS: rama `claude/focused-archimedes-qzw2g1`, sin publicar) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.125) — lee esto primero
 
 Pedidos del dueño (con la 1.3.124 en el servidor; 3 capturas: inventario con alas en el hueco cosmético, TAB con los
 bots y «MIEMBRO», chat con «Bots limpios… 2Ezequiel se ha unido» y `/tpa` que solo sugiere a Pewez777):
@@ -220,20 +220,25 @@ bots y «MIEMBRO», chat con «Bots limpios… 2Ezequiel se ha unido» y `/tpa` 
    deuda (`TFEconomy.give`, `PadGreen.add`); al entrar y cada minuto se cobra lo que le entre por otro camino. Web: 52
    pasan y los mismos 7 de `main` fallan (rangos gratis de la prueba de la tienda de otra sesión); con los precios de
    verdad de los rangos (de 4d4aa9e9), 59/59.
-6. Bots — POR HACER. El dueño: que no tienen rango de LuckPerms al unirlos, que TAB (plugin), el servidor y la consola
-   no los cuentan como jugadores («Jugadores En Linea: 1»), que no salen en `/tpa`; y que se borre todo dato de bots
-   (registro, rankings) al actualizar el mod (regla, aunque ya esté `/tf bots limpiar`). Idea: bots de verdad como los
-   de Carpet (ServerPlayer con una `Connection` falsa, `EmbeddedChannel`, `PlayerList.placeNewPlayer`) para que Mohist
-   cree su CraftPlayer y los plugins (TAB, LuckPerms, EssentialsX) los vean; en espectador, sin chunks propios; `/tpa`
-   a un bot → `tpdeny` como el bot a los 5 s (`TFBukkit.playerCommand`); quitar la cuenta extra de
-   `MinecraftServerBotsMixin`; con opción para volver al modo «solo lista» si en Mohist falla. Y al cambiar
-   `TFClient.VERSION`, borrar `config/tfclient-bots.json` y los datos de bots (ranking, sus .dat, userdata de EssentialsX).
-7. Entrar más rápido al servidor (cachear la verificación de mods de Forge) — POR HACER. Mirar qué tarda al conectar
+6. Bots — HECHO (sin probar en el juego: el dueño pidió solo compilar). `server/TFBotPlayer`: cada bot entra como un
+   jugador de verdad (`PlayerList.placeNewPlayer` con una conexión falsa: `Connection` con un `EmbeddedChannel` puesto
+   por reflexión, que no manda nada y da por enviado lo que le mandan, así `/kick` lo saca), para que Mohist le cree su
+   jugador de Bukkit y lo vean TAB, la consola, EssentialsX (`/tpa` lo sugiere) y LuckPerms (`TFLuckPerms.loadUser` lo
+   carga antes, con su grupo por defecto). No se manda su entidad a nadie (`broadcastToPlayer` false), cuenta como
+   espectador para el juego (monstruos, dormir, empujones) pero el TAB lo enseña en supervivencia, no recibe daño.
+   `TFBots`: los de verdad en `REAL`; los que estaban vuelven de uno en uno al arrancar (`RESTORE`); al apagar no
+   «salen»; un `/kick` lo saca de la lista (`onLogout`); el ping es `ServerPlayer.latency`. `MinecraftServerBotsMixin`
+   y el envío de la lista al entrar solo suman/mandan los de solo-lista (`listOnly`). `PadPlayers` no los repite. Con
+   `bots.reales=false` (servidor.properties) o si falla al meter uno, va solo en la lista como antes.
+   **Regla del dueño**: al arrancar con otra versión del TF Client (`mod` en `config/tfclient-bots.json`), y con
+   `/tf bots limpiar`, se borra el registro y los datos de los bots (`wipeData`: playerdata/stats/advancements de
+   Minecraft, `plugins/Essentials/userdata/<uuid>.yml`, `lp user <uuid> clear` de los que vinieron y su ficha del pad,
+   `PadStats.forget`).
+7. Entrar más rápido al servidor (cachear la verificación de mods de Forge) — POR HACER (no entra en la 1.3.125). Mirar qué tarda al conectar
    (AutoModpack, la sincronización de registros de Forge, el árbol de búsqueda creativo / JEI al entrar, lo del propio TF
    Client al entrar); pedir al dueño el latest.log de una entrada para medir.
 
-Sin compilar en Actions todavía en el momento del checkpoint (comprobada la sintaxis con `javac`). Versión sin subir
-(sigue 1.3.124).
+Publicada sin prueba en el juego (el dueño: «haz lo de los bots rápido y así compila el mod, no pruebes in game»).
 
 ### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.124, PUBLICADA)
 
