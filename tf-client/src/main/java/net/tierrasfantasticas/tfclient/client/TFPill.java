@@ -8,9 +8,16 @@
  */
 package net.tierrasfantasticas.tfclient.client;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * Los botones de TF (1.3.120, el dueño: «rework completo de los botones del menú principal, todos; no me gustan las
@@ -71,6 +78,11 @@ public final class TFPill {
      * La pastilla (sin el texto) en (x, y, w, h) de interfaz. e: lo encendida que está con el ratón (0..1); pressed: se
      * está pulsando; primary: doble hilo y halo de oro siempre; alpha: la opacidad del botón (el menú entra con un
      * fundido).
+     *
+     * <p>(1.3.124, el dueño: «sigue habiendo lag en los botones y su animación, hasta los de ajustes») La pastilla se
+     * pinta una vez en una imagen de su tamaño en píxeles reales ({@link #texture}) y se dibuja de un solo trazo; con el
+     * ratón encima se funde encima la imagen encendida. Antes eran miles de rectángulos por botón y fotograma (las
+     * esquinas suavizadas píxel a píxel).
      */
     public static void paint(GuiGraphics g, int x, int y, int w, int h, Style st, float e, boolean pressed, boolean active, boolean primary,
                              float alpha) {
@@ -78,36 +90,120 @@ public final class TFPill {
         int s = scale();
         int bx = x * s, by = y * s, bw = w * s, bh = h * s;
         int r = Math.min(bw, bh) / 2;
-        int t = Math.max(1, Math.round(s * 0.6f));
         float k = active ? (pressed ? 0.6f * e : e) : 0f;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.pose().pushPose();
         g.pose().scale(1f / s, 1f / s, 1f);
-        // sombra y halo (texturas: van antes que los rellenos, que se pintan juntos al final)
+        // sombra y halo (texturas)
         TFMenuPaint.halo(g, bx, by + Math.max(1, s / 2), bw, bh, r, Math.round(4 * s), TFMenuPaint.argb(0.55f * alpha, 0x000000));
         float glow = !active ? 0f : pressed ? 0.5f * e : e;
         if (primary && active) glow = Math.max(glow, 0.27f);
         if (glow > 0.01f) TFMenuPaint.halo(g, bx, by, bw, bh, r, Math.round(7 * s), TFMenuPaint.argb(0.55f * glow * alpha, st.glow));
-        g.drawManaged(() -> {
+        draw(g, texture(bw, bh, s, st, false, primary, active), bx, by, bw, bh, alpha);
+        if (active && k > 0.01f) draw(g, texture(bw, bh, s, st, true, primary, true), bx, by, bw, bh, alpha * k);
+        g.pose().popPose();
+    }
+
+    private static void draw(GuiGraphics g, ResourceLocation id, int x, int y, int w, int h, float alpha) {
+        if (id == null) return;
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        g.setColor(1f, 1f, 1f, Math.min(1f, alpha));
+        g.blit(id, x, y, 0f, 0f, w, h, w, h);
+        g.setColor(1f, 1f, 1f, 1f);
+    }
+
+    /** Cada pastilla ya pintada: su tamaño en píxeles reales, la escala, el estilo y si está encendida, principal o activa. */
+    private record Key(int w, int h, int s, Style st, boolean hot, boolean primary, boolean active) {}
+
+    private static final Map<Key, ResourceLocation> TEXTURES = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Key, ResourceLocation> eldest) {
+            if (size() <= 160) return false;
+            if (eldest.getValue() != null) Minecraft.getInstance().getTextureManager().release(eldest.getValue());
+            return true;
+        }
+    };
+    private static int next;
+
+    /**
+     * La pastilla en una imagen (las mismas capas que antes se pintaban cada fotograma): relleno con degradado, cristal
+     * (luz arriba y sombra abajo, dentro del hilo), el hilo de oro con degradado y, en el principal, otro fino por dentro.
+     * Los bordes, suavizados con la distancia a la forma (TFMenuPaint.sdf).
+     */
+    private static ResourceLocation texture(int w, int h, int s, Style st, boolean hot, boolean primary, boolean active) {
+        Key key = new Key(w, h, s, st, hot, primary, active);
+        if (TEXTURES.containsKey(key)) return TEXTURES.get(key);
+        ResourceLocation id = null;
+        try {
+            int r = Math.min(w, h) / 2;
+            int t = Math.max(1, Math.round(s * 0.6f));
+            float k = hot ? 1f : 0f;
             int top = active ? rgb(st.top, st.hotTop, k) : 0x26222E, bot = active ? rgb(st.bot, st.hotBot, k) : 0x15131A;
-            TFMenuPaint.roundFill(g, bx, by, bw, bh, r, 0, 0, bh, TFMenuPaint.argb(0.93f * alpha, top), TFMenuPaint.argb(0.95f * alpha, bot));
-            // cristal: luz arriba y sombra abajo, dentro del hilo
-            TFMenuPaint.roundFill(g, bx, by, bw, bh, r, t, t, bh / 2, TFMenuPaint.argb((0.13f + 0.07f * k) * alpha, 0xFFFFFF),
-                    TFMenuPaint.argb(0f, 0xFFFFFF));
-            TFMenuPaint.roundFill(g, bx, by, bw, bh, r, t, bh * 3 / 4, bh - t, TFMenuPaint.argb(0f, 0x000000), TFMenuPaint.argb(0.22f * alpha, 0x000000));
-            // el hilo de oro (y en el principal, otro fino por dentro)
             int rt = active ? rgb(st.ring, st.hotRing, k) : 0x6A6470, rb = active ? rgb(st.ringBot, st.hotRingBot, k) : 0x3A3640;
-            TFMenuPaint.roundRing(g, bx, by, bw, bh, r, t, TFMenuPaint.argb(0.95f * alpha, rt), TFMenuPaint.argb(0.95f * alpha, rb));
-            if (primary) {
-                int in = t + Math.max(1, Math.round(s * 1.2f));
-                if (bw > 2 * in + 4 && bh > 2 * in + 4) {
-                    TFMenuPaint.roundRing(g, bx + in, by + in, bw - 2 * in, bh - 2 * in, r - in, 1, TFMenuPaint.argb((0.45f + 0.35f * k) * alpha, rt),
-                            TFMenuPaint.argb((0.25f + 0.3f * k) * alpha, rb));
+            int in = t + Math.max(1, Math.round(s * 1.2f));
+            boolean inner = primary && w > 2 * in + 4 && h > 2 * in + 4;
+            NativeImage img = new NativeImage(NativeImage.Format.RGBA, w, h, true);
+            float[] px = new float[4];
+            for (int j = 0; j < h; j++) {
+                float yy = j + 0.5f, fy = yy / h;
+                for (int i = 0; i < w; i++) {
+                    float xx = i + 0.5f;
+                    float d = TFMenuPaint.sdf(xx, yy, w, h, r);
+                    float cover = TFMenuPaint.cov(d);
+                    if (cover <= 0f) {
+                        img.setPixelRGBA(i, j, 0);
+                        continue;
+                    }
+                    px[0] = px[1] = px[2] = px[3] = 0f;
+                    // relleno (opacidad 0,93 arriba y 0,95 abajo)
+                    over(px, rgb(top, bot, fy), (0.93f + 0.02f * fy) * cover);
+                    float inside = TFMenuPaint.cov(d + t);
+                    // cristal: luz arriba (de la fila t a la mitad) y sombra abajo (de 3/4 al hilo)
+                    if (inside > 0f && yy >= t && yy < h / 2f) {
+                        float f = (yy - t) / Math.max(1f, h / 2f - t);
+                        over(px, 0xFFFFFF, (0.13f + 0.07f * k) * (1f - f) * inside);
+                    }
+                    if (inside > 0f && yy >= h * 0.75f && yy < h - t) {
+                        float f = (yy - h * 0.75f) / Math.max(1f, h * 0.25f - t);
+                        over(px, 0x000000, 0.22f * f * inside);
+                    }
+                    // el hilo de oro
+                    float ring = cover - inside;
+                    if (ring > 0f) over(px, rgb(rt, rb, fy), 0.95f * ring);
+                    // el hilo fino de dentro del principal
+                    if (inner) {
+                        float d2 = TFMenuPaint.sdf(xx - in, yy - in, w - 2 * in, h - 2 * in, r - in);
+                        float ring2 = TFMenuPaint.cov(d2) - TFMenuPaint.cov(d2 + 1f);
+                        float f2 = Mth.clamp((yy - in) / (h - 2f * in), 0f, 1f);
+                        if (ring2 > 0f) over(px, rgb(rt, rb, f2), ((0.45f + 0.35f * k) * (1f - f2) + (0.25f + 0.3f * k) * f2) * ring2);
+                    }
+                    int a = Math.round(Mth.clamp(px[3], 0f, 1f) * 255f);
+                    int cr = Math.round(Mth.clamp(px[0], 0f, 1f) * 255f), cg = Math.round(Mth.clamp(px[1], 0f, 1f) * 255f),
+                            cb = Math.round(Mth.clamp(px[2], 0f, 1f) * 255f);
+                    img.setPixelRGBA(i, j, a << 24 | cb << 16 | cg << 8 | cr); // NativeImage: ABGR
                 }
             }
-        });
-        g.pose().popPose();
+            id = new ResourceLocation(TFClient.MOD_ID, "dynamic/pill_" + (next++));
+            Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(img));
+        } catch (Throwable ex) {
+            TFClient.LOGGER.error("TF Client: no se pudo pintar un botón", ex);
+        }
+        TEXTURES.put(key, id);
+        return id;
+    }
+
+    /** Pone un color (rgb, opacidad a) encima de px = {r, g, b, a} (color sin premultiplicar). */
+    private static void over(float[] px, int rgb, float a) {
+        if (a <= 0f) return;
+        float out = a + px[3] * (1f - a);
+        if (out <= 0f) return;
+        float r = ((rgb >> 16) & 255) / 255f, g = ((rgb >> 8) & 255) / 255f, b = (rgb & 255) / 255f;
+        px[0] = (r * a + px[0] * px[3] * (1f - a)) / out;
+        px[1] = (g * a + px[1] * px[3] * (1f - a)) / out;
+        px[2] = (b * a + px[2] * px[3] * (1f - a)) / out;
+        px[3] = out;
     }
 
     /**
