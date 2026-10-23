@@ -144,8 +144,9 @@ def crate_price(set_id):
 # 5 Cósmico; 6 Celestial y Fantástico, todos los encantamientos vanilla al máximo). En la web no sale nada de esto: ni
 # los encantamientos ni los recursos ni las monedas; solo «Y más cosas en el juego».
 RANK_ENCHANT = {'mortal': 1, 'inmortal': 2, 'magico': 3, 'eterno': 4, 'cosmico': 5, 'celestial': 6, 'fantastico': 6}
-RANK_CLAIM = {'mortal': '100x100', 'inmortal': '100x100', 'magico': '100x100', 'eterno': '150x150', 'cosmico': '150x150',
-              'celestial': '250x250', 'fantastico': '250x250'}
+# (el dueño: «la 250 es de paga; la máxima de los 3 rangos más caros, 150; las demás, 100; Mortal, 80»)
+RANK_CLAIM = {'mortal': '80x80', 'inmortal': '100x100', 'magico': '100x100', 'eterno': '100x100', 'cosmico': '150x150',
+              'celestial': '150x150', 'fantastico': '150x150'}
 FOOD = lambda n: it(n, 'golden_carrot', 'zanahorias doradas')  # noqa: E731
 RANK_EXTRAS = {
     'mortal': [coins(100), gacha(2), it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),

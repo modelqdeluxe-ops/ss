@@ -100,14 +100,9 @@ public final class ClaimPreviewLines {
             // los cuatro lados, cada uno con su línea de suelo, la de arriba y los postes
             // (el borde va por las aristas de los bloques: x0..x1 y z0..z1 con x1 y z1 justo fuera de la zona; el suelo se
             // mira en la fila de bloques de dentro)
-            side(vc, m, n, level, py, top, true, z0, z0, x0, x1, hr, hg, hb, a);
-            side(vc, m, n, level, py, top, true, z1, z1 - 1, x0, x1, hr, hg, hb, a);
-            side(vc, m, n, level, py, top, false, x0, x0, z0, z1, hr, hg, hb, a);
-            side(vc, m, n, level, py, top, false, x1, x1 - 1, z0, z1, hr, hg, hb, a);
             for (int[] c : new int[][] {{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}}) {
-                if (Math.abs(c[0] - player.getX()) > RANGE || Math.abs(c[1] - player.getZ()) > RANGE) continue;
-                double y = ground(level, c[0], c[1], py);
-                line(vc, m, n, c[0], Math.min(y, top), c[1], c[0], Math.max(y, top) + CORNER, c[1], hr, hg, hb, a);
+                // (1.3.128, el dueño: «quita esa silueta, solo las 4 líneas de las esquinas, hasta el infinito de altura»)
+                line(vc, m, n, c[0], level.getMinBuildHeight(), c[1], c[0], level.getMaxBuildHeight(), c[1], hr, hg, hb, a);
             }
             buffers.endBatch(through ? Types.THROUGH : Types.SOLID);
         }

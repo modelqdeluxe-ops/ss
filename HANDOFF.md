@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.127) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.128) — lee esto primero
+
+**1.3.128** (el dueño, al 5 % de uso): escudos de los sets que no tapan la vista al cubrirse (`ItemInHandRendererMixin`:
+más abajo y a su lado en primera persona); fuera el «Test» de la tienda (queda en `/staff`); la piedra en la mano solo
+con las 4 esquinas de suelo a techo del mundo (`ClaimPreviewLines`); piedras de los rangos: Mortal 80, Inmortal/Mágico/
+Eterno 100, Cósmico/Celestial/Fantástico 150 (`tools/crates.py RANK_CLAIM` y `products.json`; la 250 es de pago); las
+piedras entregadas llevan la marca de su pedido (`TFRevocations.stampAny`): al reembolsar desaparecen de inventarios y
+cofres, y si están colocadas se borra la zona y se rompen (`TFRevocations.claimPlaced/breakClaims`, guardado en
+`tfclient_revocations`); al romperla su dueño vuelve con la marca; en creativo también vuelve al inventario. Lo gastado
+de un reembolso se cobra con la deuda de la 1.3.125 (`TFDebt`). Sin prueba en el juego.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.127, PUBLICADA)
 
 **1.3.127** (el dueño, con capturas): (1) «el Test no sirve, no llegan items ni rango»: el puente aplica la respuesta de
 la web en un try (un fallo en efectos/skills/armario ya no impide las entregas) y cada entrega en su try; el panel

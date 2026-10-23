@@ -204,6 +204,7 @@ public final class TFBridge {
                 while (count > 0) {
                     int n = Math.min(count, item.getMaxStackSize());
                     net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item, n);
+                    net.tierrasfantasticas.tfclient.items.TFRevocations.stampAny(stack); // ligado a su pedido (reembolsos)
                     if (!target.getInventory().add(stack) || !stack.isEmpty()) target.drop(stack, false);
                     count -= n;
                 }

@@ -71,7 +71,7 @@
       "lp user {player} parent set mortal",
       "tf web sets give {player} patrick",
       "tf web sets encantar {player} patrick 1",
-      "give {player} tfclient:proteccion_100x100 1",
+      "give {player} tfclient:proteccion_80x80 1",
       "tf web monedas dar {player} 100",
       "tf web verdes dar {player} 2",
       "give {player} minecraft:golden_apple 8",
@@ -176,7 +176,7 @@
     "perks": [
       "Prefijo «Mortal» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
-      "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
+      "Piedra de protección 80×80: una zona tuya a salvo de grifeo",
       "Rol Mortal en Discord",
       "Y más cosas en el juego"
     ],
@@ -576,7 +576,7 @@
       "lp user {player} parent set eterno",
       "tf web sets give {player} malika",
       "tf web sets encantar {player} malika 4",
-      "give {player} tfclient:proteccion_150x150 1",
+      "give {player} tfclient:proteccion_100x100 1",
       "tf web monedas dar {player} 300",
       "tf web verdes dar {player} 5",
       "give {player} minecraft:golden_apple 24",
@@ -679,7 +679,7 @@
     "perks": [
       "Prefijo «Eterno» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
-      "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
+      "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
       "Rol Eterno en Discord",
       "Y más cosas en el juego"
     ],
@@ -935,7 +935,7 @@
       "lp user {player} parent set celestial",
       "tf web sets give {player} eagle",
       "tf web sets encantar {player} eagle 6",
-      "give {player} tfclient:proteccion_250x250 1",
+      "give {player} tfclient:proteccion_150x150 1",
       "tf web monedas dar {player} 400",
       "tf web verdes dar {player} 8",
       "give {player} minecraft:golden_apple 48",
@@ -1046,7 +1046,7 @@
     "perks": [
       "Prefijo «Celestial» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
-      "Piedra de protección 250×250: una zona tuya a salvo de grifeo",
+      "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
       "Rol Celestial en Discord",
       "Y más cosas en el juego"
     ],
@@ -1128,7 +1128,7 @@
       "lp user {player} parent set fantastico",
       "tf web sets give {player} starlight",
       "tf web sets encantar {player} starlight 6",
-      "give {player} tfclient:proteccion_250x250 1",
+      "give {player} tfclient:proteccion_150x150 1",
       "tf web monedas dar {player} 500",
       "tf web verdes dar {player} 10",
       "give {player} minecraft:golden_apple 64",
@@ -1223,7 +1223,7 @@
     "perks": [
       "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
-      "Piedra de protección 250×250: una zona tuya a salvo de grifeo",
+      "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
       "Rol Fantástico en Discord",
       "Y más cosas en el juego"
     ],
