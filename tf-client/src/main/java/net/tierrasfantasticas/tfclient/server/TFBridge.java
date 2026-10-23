@@ -195,7 +195,9 @@ public final class TFBridge {
         // puede ser el de Bukkit, que no conoce los objetos de los mods: «give <jugador> <mod:objeto> [n]» de un mod se
         // da aquí directamente (al inventario o, si no cabe, a sus pies).
         java.util.regex.Matcher give = GIVE.matcher(command.trim());
-        if (give.matches() && !give.group(2).startsWith("minecraft:")) {
+        // (1.3.129, el dueño: «no se reembolsaron los objetos extra del rango») también los de Minecraft: así todos llevan
+        // la marca de su pedido y un reembolso los quita
+        if (give.matches()) {
             ServerPlayer target = srv.getPlayerList().getPlayerByName(give.group(1));
             net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
                     net.minecraft.resources.ResourceLocation.tryParse(give.group(2)));

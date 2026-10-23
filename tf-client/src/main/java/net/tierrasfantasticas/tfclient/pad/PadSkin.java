@@ -361,6 +361,14 @@ final class PadSkin {
             return;
         }
         if (alpha >= 1F) glow(g, 16, 16, 17, 0xFFFFFF, 90); // una luz suave detrás: el objeto se despega del fondo
+        // (1.3.129) la cabeza propia: la cara de la skin que usa el juego (premium o no)
+        if (PadUi.ownHead(stack)) {
+            g.setColor(1, 1, 1, alpha);
+            net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, net.minecraft.client.Minecraft.getInstance().player
+                    .getSkinTextureLocation(), 3, 3, 26);
+            g.setColor(1, 1, 1, 1);
+            return;
+        }
         g.flush();
         g.pose().pushPose();
         g.pose().scale(2, 2, 1);

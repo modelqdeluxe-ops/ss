@@ -3957,7 +3957,7 @@
   },
   {
    "id": "patrick",
-   "name": "San Patricio",
+   "name": "Mortal",
    "color": "#4ade80",
    "items": [
     {
@@ -4055,7 +4055,7 @@
   },
   {
    "id": "beats",
-   "name": "Beats",
+   "name": "Inmortal",
    "color": "#7c6cff",
    "items": [
     {
@@ -4153,7 +4153,7 @@
   },
   {
    "id": "darkworld",
-   "name": "Dark World",
+   "name": "Mágico",
    "color": "#c026d3",
    "tier": "netherite",
    "items": [
@@ -4246,7 +4246,7 @@
   },
   {
    "id": "malika",
-   "name": "Malika",
+   "name": "Eterno",
    "color": "#ef4444",
    "tier": "netherite+1",
    "items": [
@@ -4340,7 +4340,7 @@
   },
   {
    "id": "necros",
-   "name": "Necros",
+   "name": "Cósmico",
    "color": "#22d3ee",
    "items": [
     {
@@ -4438,7 +4438,7 @@
   },
   {
    "id": "eagle",
-   "name": "Eagle Ascendant",
+   "name": "Celestial",
    "color": "#fde047",
    "tier": "netherite+2",
    "items": [
@@ -4540,7 +4540,7 @@
   },
   {
    "id": "starlight",
-   "name": "Luz de Estrella",
+   "name": "Fantástico",
    "color": "#f59e0b",
    "items": [
     {

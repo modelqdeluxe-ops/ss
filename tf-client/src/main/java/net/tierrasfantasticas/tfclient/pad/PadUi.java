@@ -539,6 +539,13 @@ final class PadUi {
      * a tamaño normal en la esquina de abajo a la derecha (al doble salía enorme).
      */
     static void item(GuiGraphics g, net.minecraft.world.item.ItemStack stack, int x, int y, int k) {
+        // (1.3.129, el dueño: «sigo sin ver mi cara real; debe reconocerla sea premium o no») la cabeza propia, con la cara
+        // de la skin que el juego ya usa para el jugador (la de la cuenta o la del Armario, premium o no)
+        if (ownHead(stack)) {
+            var me = Minecraft.getInstance().player;
+            net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, me.getSkinTextureLocation(), x + k, y + k, 14 * k);
+            return;
+        }
         g.pose().pushPose();
         g.pose().translate(x, y, 0);
         g.pose().scale(k, k, 1);
@@ -589,6 +596,18 @@ final class PadUi {
             return;
         }
         tag.put("SkullOwner", net.minecraft.nbt.NbtUtils.writeGameProfile(new net.minecraft.nbt.CompoundTag(), info.getProfile()));
+    }
+
+    /** ¿Es la cabeza del jugador de este ordenador? (por su UUID o su nombre en SkullOwner) */
+    static boolean ownHead(net.minecraft.world.item.ItemStack stack) {
+        var me = Minecraft.getInstance().player;
+        if (me == null || !stack.is(net.minecraft.world.item.Items.PLAYER_HEAD) || stack.getTag() == null) return false;
+        net.minecraft.nbt.CompoundTag tag = stack.getTag();
+        if (tag.contains("SkullOwner", 8)) return tag.getString("SkullOwner").equalsIgnoreCase(me.getGameProfile().getName());
+        if (!tag.contains("SkullOwner", 10)) return false;
+        net.minecraft.nbt.CompoundTag owner = tag.getCompound("SkullOwner");
+        return owner.hasUUID("Id") && owner.getUUID("Id").equals(me.getUUID())
+                || owner.getString("Name").equalsIgnoreCase(me.getGameProfile().getName());
     }
 
     static boolean inside(double x, double y, int x0, int y0, int w, int h) {
