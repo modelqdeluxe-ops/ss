@@ -212,11 +212,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
    crate del mundo y la clásica usan la versión sin subida. **Música de las crates más alta**: a 1,0 y el archivo de
    −15 a −12 LUFS (`cifrar_musica.py --descifrar` y vuelta a cifrar).
 4. **Bots** (`TFBots.card`): 0 fotos y 0 likes; un oficio de nivel bajo, de 0 a 5 misiones, alguna caza y pocos viajes.
-5. **Tienda web** (`tools/crates.py`): todas las crates a 4,99 $ con 750 Fantastic Coins, 3 Gacha Coins, 8 manzanas
+5. **Tienda web** (`tools/crates.py`): todas las crates a 4,99 $ con 100 Fantastic Coins, 1 Gacha Coin, 8 manzanas
    doradas, 1 de Notch, 8 diamantes, 32 botellas de XP, 32 zanahorias doradas y 16 perlas. Rangos con su piedra,
-   Fantastic Coins (1.000 a 15.000) y Gacha Coins (5 a 50), manzanas doradas y de Notch, tótems (desde Inmortal) y
-   armadura y herramientas encantadas según el rango (vanilla); Celestial, de diamante y Fantástico, de netherita, con
-   todos los encantamientos al máximo. Comandos nuevos del mod: `/tf web verdes dar|quitar|ver`. **Cada premio con su
+   Fantastic Coins (100 a 500) y Gacha Coins (2 a 10), manzanas doradas y de Notch, tótems (desde Inmortal) y armadura y
+   herramientas encantadas según el rango (vanilla); Celestial y Fantástico, de diamante con todos los encantamientos
+   al máximo. (Después de publicar, el dueño: «te pasaste con las monedas, nada de 15k ni más de 700, y nada de
+   netherita»: eran 750 en las crates y de 1.000 a 15.000 en los rangos, y Fantástico iba de netherita. **No dar más
+   de ~500 monedas por compra ni nada de netherita.**) Comandos nuevos del mod: `/tf web verdes dar|quitar|ver`. **Cada premio con su
    icono** en la web (`rewards` en products.json, `rewardsGrid` en public/app.js: icono, cantidad, encantamientos).
 6. **Pozos de luz** (`tools/void/sonidos_viaje.py`): el «acordeón» era el coro sintetizado; ahora soplo cálido, colchón de
    senos puros y brillo alto (sin coro, campanas ni arpa). **Música del santuario**: la del dueño («La petite fille de la

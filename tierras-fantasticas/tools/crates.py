@@ -104,7 +104,9 @@ CRATES = [
 # todas y da más cosas, ¿cómo que 30 de hierro?; que sea atractiva la oferta; da más en los rangos: notch, tótems…;
 # encanta la armadura según el rango, a los 2 más caros full encantamientos para armaduras, armas y herramientas
 # (los vanilla, nada de filo 10); en crates y rangos da también coins doradas y verdes del gacha; y pon los iconos de
-# todo lo que damos, no solo el texto»). Cada premio es (tipo, cantidad, id, nombre, encantamientos):
+# todo lo que damos, no solo el texto»). (1.3.115b, el dueño: «te pasaste con las monedas, no quiero una economía
+# inflada: nada de 15k ni más de 700; y nada de netherita») monedas pocas: 100 en las crates y de 100 a 500 en los
+# rangos (con ~240 al día trabajando, como mucho dos días de juego); verdes de 1 a 10; todo el equipo, de diamante. Cada premio es (tipo, cantidad, id, nombre, encantamientos):
 #   tipo «item»: give de Minecraft (con sus encantamientos, si lleva); «coins»: Fantastic Coins (tf web monedas dar);
 #   «gacha»: Fantastic Gacha Coins (tf web verdes dar); «piedra»: una piedra de protección del TF Client.
 CRATE_PRICE = 499
@@ -136,7 +138,7 @@ def stone(size):
 
 
 # Todas las crates, lo mismo además de su set (5 USD): monedas de los dos tipos y recursos que se consiguen jugando
-CRATE_EXTRAS = [coins(750), gacha(3), it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),
+CRATE_EXTRAS = [coins(100), gacha(1), it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),
                 it(8, 'diamond', 'diamantes'), it(32, 'experience_bottle', 'botellas de experiencia'),
                 it(32, 'golden_carrot', 'zanahorias doradas'), it(16, 'ender_pearl', 'perlas de ender')]
 
@@ -180,30 +182,30 @@ RANK_CLAIM = {'mortal': '100x100', 'inmortal': '100x100', 'magico': '100x100', '
               'celestial': '250x250', 'fantastico': '250x250'}
 FOOD = lambda n: it(n, 'golden_carrot', 'zanahorias doradas')  # noqa: E731
 RANK_EXTRAS = {
-    'mortal': [coins(1000), gacha(5), *gear('iron', 'hierro', armor_all({'protection': 2, 'unbreaking': 2}),
+    'mortal': [coins(100), gacha(2), *gear('iron', 'hierro', armor_all({'protection': 2, 'unbreaking': 2}),
                                            [('sword', 'espada', {'sharpness': 2, 'unbreaking': 2})]),
                it(8, 'golden_apple', 'manzanas doradas'), it(1, 'enchanted_golden_apple', 'manzana de Notch'),
                it(8, 'diamond', 'diamantes'), it(32, 'experience_bottle', 'botellas de experiencia'), FOOD(32)],
-    'inmortal': [coins(2000), gacha(8), *gear('diamond', 'diamante', armor_all({'protection': 2, 'unbreaking': 2}),
+    'inmortal': [coins(150), gacha(3), *gear('diamond', 'diamante', armor_all({'protection': 2, 'unbreaking': 2}),
                                               [('sword', 'espada', {'sharpness': 3, 'unbreaking': 2}),
                                                ('pickaxe', 'pico', {'efficiency': 3, 'unbreaking': 2})]),
                  it(12, 'golden_apple', 'manzanas doradas'), it(2, 'enchanted_golden_apple', 'manzanas de Notch'),
                  it(1, 'totem_of_undying', 'tótem de la inmortalidad'), it(12, 'diamond', 'diamantes'),
                  it(48, 'experience_bottle', 'botellas de experiencia'), FOOD(48)],
-    'magico': [coins(3000), gacha(12), *gear('diamond', 'diamante', armor_all({'protection': 3, 'unbreaking': 3}),
+    'magico': [coins(200), gacha(4), *gear('diamond', 'diamante', armor_all({'protection': 3, 'unbreaking': 3}),
                                              [('sword', 'espada', {'sharpness': 4, 'unbreaking': 3, 'looting': 1}),
                                               ('pickaxe', 'pico', {'efficiency': 4, 'unbreaking': 3, 'fortune': 2})]),
                it(16, 'golden_apple', 'manzanas doradas'), it(3, 'enchanted_golden_apple', 'manzanas de Notch'),
                it(2, 'totem_of_undying', 'tótems de la inmortalidad'), it(16, 'diamond', 'diamantes'),
                it(64, 'experience_bottle', 'botellas de experiencia'), it(16, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'eterno': [coins(5000), gacha(18), *gear('diamond', 'diamante', armor_all({'protection': 4, 'unbreaking': 3}, {'feather_falling': 4}),
+    'eterno': [coins(300), gacha(5), *gear('diamond', 'diamante', armor_all({'protection': 4, 'unbreaking': 3}, {'feather_falling': 4}),
                                              [('sword', 'espada', {'sharpness': 5, 'unbreaking': 3, 'looting': 2, 'fire_aspect': 1}),
                                               ('pickaxe', 'pico', {'efficiency': 5, 'unbreaking': 3, 'fortune': 3}),
                                               ('axe', 'hacha', {'efficiency': 4, 'unbreaking': 3})]),
                it(24, 'golden_apple', 'manzanas doradas'), it(4, 'enchanted_golden_apple', 'manzanas de Notch'),
                it(3, 'totem_of_undying', 'tótems de la inmortalidad'), it(24, 'diamond', 'diamantes'),
                it(96, 'experience_bottle', 'botellas de experiencia'), it(16, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'cosmico': [coins(7000), gacha(25), *gear('diamond', 'diamante',
+    'cosmico': [coins(350), gacha(6), *gear('diamond', 'diamante',
                                               armor_all({'protection': 4, 'unbreaking': 3, 'mending': 1}, {'feather_falling': 4}),
                                               [('sword', 'espada', {'sharpness': 5, 'unbreaking': 3, 'mending': 1, 'looting': 3, 'fire_aspect': 2}),
                                                ('pickaxe', 'pico', {'efficiency': 5, 'unbreaking': 3, 'mending': 1, 'fortune': 3}),
@@ -212,14 +214,14 @@ RANK_EXTRAS = {
                 it(32, 'golden_apple', 'manzanas doradas'), it(6, 'enchanted_golden_apple', 'manzanas de Notch'),
                 it(4, 'totem_of_undying', 'tótems de la inmortalidad'), it(32, 'diamond', 'diamantes'),
                 it(128, 'experience_bottle', 'botellas de experiencia'), it(32, 'ender_pearl', 'perlas de ender'), FOOD(64)],
-    'celestial': [coins(10000), gacha(35), *gear('diamond', 'diamante', FULL_ARMOR, FULL_TOOLS),
+    'celestial': [coins(400), gacha(8), *gear('diamond', 'diamante', FULL_ARMOR, FULL_TOOLS),
                   it(1, 'bow', 'arco', {'power': 5, 'unbreaking': 3, 'punch': 2, 'flame': 1, 'infinity': 1}),
                   it(1, 'arrow', 'flecha para el arco'),
                   it(1, 'fishing_rod', 'caña de pescar', {'luck_of_the_sea': 3, 'lure': 3, 'unbreaking': 3, 'mending': 1}),
                   it(48, 'golden_apple', 'manzanas doradas'), it(8, 'enchanted_golden_apple', 'manzanas de Notch'),
                   it(6, 'totem_of_undying', 'tótems de la inmortalidad'), it(48, 'diamond', 'diamantes'),
                   it(192, 'experience_bottle', 'botellas de experiencia'), it(32, 'ender_pearl', 'perlas de ender'), FOOD(128)],
-    'fantastico': [coins(15000), gacha(50), *gear('netherite', 'netherita', FULL_ARMOR, FULL_TOOLS),
+    'fantastico': [coins(500), gacha(10), *gear('diamond', 'diamante', FULL_ARMOR, FULL_TOOLS),
                    it(1, 'bow', 'arco', {'power': 5, 'unbreaking': 3, 'punch': 2, 'flame': 1, 'infinity': 1}),
                    it(1, 'arrow', 'flecha para el arco'),
                    it(1, 'fishing_rod', 'caña de pescar', {'luck_of_the_sea': 3, 'lure': 3, 'unbreaking': 3, 'mending': 1}),
