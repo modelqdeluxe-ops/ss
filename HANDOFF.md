@@ -190,7 +190,33 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.120) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.121) — lee esto primero
+
+**1.3.121: migración al servidor de verdad y cuatro pedidos del dueño** (dos imágenes nuevas: fondo y carga):
+1. **IP `tierras.ultramc.co`** (`client/TFLock.EMBEDDED`): el mod solo entra ahí (`ConnectScreenMixin`). Solo el dueño
+   la cambia: en `tierrasfantásticas.store/staff` (clave `ADMIN_KEY`), «IP del servidor» (`POST /api/staff/server`,
+   setting `server_ip` de la web; vacía = `SERVER_IP` de `wrangler.jsonc`). El mod la pregunta al arrancar
+   (`TFLock.fetchOfficial`, siempre a `TFConfig.OFFICIAL_WEB`, no a `web.url` de `cliente.properties`); si la web no
+   responde, la del mod. `server.address` de `cliente.properties` ya no se lee (se borra del archivo). La web enseña la
+   misma IP (`/api/config → serverIp`). `server-ping.yml` mira `tierras.ultramc.co:25565`.
+2. **Piedra de protección en la mano** (`claims/client/ClaimPreviewLines`): sin líneas a ras de suelo; postes cada 4
+   bloques del suelo a lo alto de la piedra (bloque del jugador + 1), una línea recta a esa altura y las esquinas altas.
+3. **Menú principal** (`TFMenuButton`, `TFPill`, `TFMenuPaint`): cada botón del ancho de su palabra (con sitio para
+   los hilos de oro de los lados, que se quedan), filas más bajas (`ROW_H` 24/19/19/19/17), sin destello (fuera
+   `TFPill.shine`), Salir rojo, WhatsApp verde, Web morado y Discord azul siempre, texto 1,45 px de letra más arriba
+   (`MENU_TEXT_UP` 4.5: medido en la captura de la 1.3.120, las mayúsculas quedaban 3,5 px bajo el centro). Lag: el
+   texto (contorno y letras) en un solo `drawManaged` (antes ~2000 envíos por fotograma), contorno con 8 copias y las
+   formas de las pastillas en caché (`TFMenuPaint.SHAPES`; también las del diálogo de los caballeros). Fondo
+   (`menu_background.png`) y carga (`loading_background.png`, con el título) nuevos: las del dueño (1536x865) a
+   1920x1080 con Lanczos y un enfoque suave.
+4. **AutoModpack primero** (`client/TFAutoModpack`): sin AutoModpack (modId `automodpack` o un `automodpack*.jar` en
+   mods) no se entra al servidor: pantalla «Necesitas AutoModpack» (carpeta mods, Discord, volver). Sin versión fija
+   (el dueño: «nosotros la compartimos»). Con él, se conecta sin mirar los demás mods: fuera `TFServerCheck`,
+   `TFServerCheckScreen` y `TFMissingModsScreen`.
+
+Prueba en el juego: la de `pad` saca también `falta_automodpack`.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.120)
 
 **1.3.120: nueve pedidos del dueño** (4 capturas y un mensaje a mitad: «rework de los botones del menú principal»):
 1. **Círculos detrás de los iconos del pad**: fuera el `PadSkin.glow` de detrás del icono de cada fila
