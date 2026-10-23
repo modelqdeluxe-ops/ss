@@ -190,7 +190,14 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.122) — lee esto primero
+### CHECKPOINT (23 oct 2026, TF Client 1.3.123) — lee esto primero
+
+**1.3.123** (el dueño: «no me reconoce el server, pon mediante IP y puerto en el jar: 216.163.187.40:19015, rápido»):
+`TFLock.EMBEDDED` = `216.163.187.40:19015` (el dominio `tierras.ultramc.co` no llevaba al servidor). También en la web
+(`SERVER_IP` de `wrangler.jsonc`, el valor por defecto y las páginas) porque el mod pregunta la IP a la web y la de la
+web manda; y en `server-ping.yml`. Se sigue pudiendo cambiar desde `/staff`.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.122, PUBLICADA)
 
 **1.3.122**: la guía de la config se llama `config/tfclient/LEEME.md` (el dueño: «quita el apellido IA»); el
 `LEEME-IA.md` de antes se borra al arrancar (`TFConfigDir.writeGuide`). Lo demás, como la 1.3.121 (abajo).

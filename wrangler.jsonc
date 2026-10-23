@@ -17,7 +17,7 @@
   "observability": { "enabled": true },
   "vars": {
     "SERVER_NAME": "Tierras Fantásticas",
-    "SERVER_IP": "tierras.ultramc.co",
+    "SERVER_IP": "216.163.187.40:19015",
     "DISCORD_URL": "https://discord.gg/tRrunHBZE",
     // Grupo de WhatsApp: los botones de la web van a /whatsapp, que lleva aquí. Si el enlace cambia, se cambia solo aquí.
     "WHATSAPP_URL": "https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm",

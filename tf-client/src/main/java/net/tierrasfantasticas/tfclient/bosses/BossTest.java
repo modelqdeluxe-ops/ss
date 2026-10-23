@@ -2237,9 +2237,9 @@ public final class BossTest {
                 player.teleportTo(vl, kp.getX() + 0.5, kp.getY() - 1, kp.getZ() + 6.5, 180F, 10F);
                 // (1.3.117) el TF Client solo para el servidor oficial (client/TFLock)
                 r.event("solo el servidor oficial " + net.tierrasfantasticas.tfclient.client.TFLock.address() + ": el oficial "
-                        + net.tierrasfantasticas.tfclient.client.TFLock.official("tierras.ultramc.co") + ", otro (play.example.com) "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:19015") + ", otro (play.example.com) "
                         + net.tierrasfantasticas.tfclient.client.TFLock.official("play.example.com") + ", el oficial con otro puerto "
-                        + net.tierrasfantasticas.tfclient.client.TFLock.official("tierras.ultramc.co:25570") + "; mundos locales en la prueba: "
+                        + net.tierrasfantasticas.tfclient.client.TFLock.official("216.163.187.40:25565") + "; mundos locales en la prueba: "
                         + (net.tierrasfantasticas.tfclient.client.TFLock.unlocked() ? "abiertos (sin contraseña, solo la prueba)" : "CERRADOS"));
                 // (1.3.117) el rango a LuckPerms (aquí no hay LuckPerms ni Bukkit: tiene que decirlo, sin romperse)
                 List<String> lp = net.tierrasfantasticas.tfclient.server.TFBridge.run(level.getServer(),

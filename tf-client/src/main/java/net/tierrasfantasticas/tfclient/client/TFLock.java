@@ -62,7 +62,7 @@ public final class TFLock {
      * con su clave ADMIN_KEY). Al abrir el juego se pregunta a la web cuál es ({@link #fetchOfficial}, siempre a la web
      * puesta en el código, {@link TFConfig#OFFICIAL_WEB}, no a la de cliente.properties); si no responde, esta.
      */
-    public static final String EMBEDDED = "tierras.ultramc.co";
+    public static final String EMBEDDED = "216.163.187.40:19015";
     /** La que dijo la web al abrir el juego (null: no respondió; se usa {@link #EMBEDDED}). */
     private static volatile String remote;
     private static final java.util.regex.Pattern ADDRESS = java.util.regex.Pattern.compile(
