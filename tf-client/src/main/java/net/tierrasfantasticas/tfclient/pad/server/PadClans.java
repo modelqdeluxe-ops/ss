@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.pad.server;
 
 import com.google.gson.JsonArray;
@@ -88,6 +96,41 @@ public final class PadClans {
         return TFJson.str(c, "nombre", "") + " [" + TFJson.str(c, "etiqueta", "") + "]";
     }
 
+    /**
+     * (1.3.117) ¿Puede invitar a ese jugador a su clan? (es líder u oficial de uno y el otro no está en ninguno). Lo usa
+     * Jugadores del pad: «Invitar al clan», si aplica.
+     */
+    public static boolean canInvite(ServerPlayer player, UUID other) {
+        String id = clanIdOf(player.getUUID());
+        if (id == null || other.equals(player.getUUID()) || clanIdOf(other) != null) return false;
+        return !role(clan(id), player.getUUID()).equals("miembro");
+    }
+
+    /** Invita a ese jugador (o bot) al clan del que invita; se lo dice por el chat si está conectado. */
+    public static void invite(ServerPlayer player, UUID other, String otherName) {
+        String id = clanIdOf(player.getUUID());
+        if (id == null) return;
+        JsonObject c = clan(id);
+        if (role(c, player.getUUID()).equals("miembro")) return;
+        if (members(c).size() >= MAX_MEMBERS) {
+            TFPadNet.notice(player, "El clan está lleno (" + MAX_MEMBERS + " miembros).");
+            return;
+        }
+        if (clanIdOf(other) != null) {
+            TFPadNet.notice(player, otherName + " ya está en un clan.");
+            return;
+        }
+        INVITES.computeIfAbsent(other, k -> new HashSet<>()).add(id);
+        ServerPlayer online = player.getServer().getPlayerList().getPlayer(other);
+        if (online != null) {
+            online.sendSystemMessage(Component.literal("[Clan] ").withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal(player.getGameProfile().getName() + " te invita a " + TFJson.str(c, "nombre", "?")
+                            + ". Abre el pad (C) → Clanes para unirte.").withStyle(ChatFormatting.YELLOW)));
+            online.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.MASTER, 0.6F, 1.2F);
+        }
+        TFPadNet.notice(player, "Invitación al clan enviada a " + otherName + ".");
+    }
+
     static List<UUID> members(JsonObject c) {
         List<UUID> out = new ArrayList<>();
         if (c.has("miembros")) for (JsonElement e : c.getAsJsonArray("miembros")) out.add(UUID.fromString(e.getAsString()));
@@ -153,7 +196,7 @@ public final class PadClans {
         com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(uuid, name);
         net.minecraft.server.MinecraftServer server = PadServer.server();
         ServerPlayer online = server == null ? null : server.getPlayerList().getPlayer(uuid);
-        net.tierrasfantasticas.tfclient.server.TFBots.Bot bot = net.tierrasfantasticas.tfclient.server.TFBots.byId(uuid);
+        net.tierrasfantasticas.tfclient.server.TFBots.Bot bot = net.tierrasfantasticas.tfclient.server.TFBots.ofId(uuid);
         if (online != null) {
             profile.getProperties().putAll(online.getGameProfile().getProperties());
         } else if (bot != null) {
@@ -286,25 +329,12 @@ public final class PadClans {
             switch (verb) {
                 case "invitar" -> {
                     if (!officer) return null;
-                    if (list.size() >= MAX_MEMBERS) {
-                        TFPadNet.notice(player, "El clan está lleno (" + MAX_MEMBERS + " miembros).");
-                        return null;
-                    }
                     ServerPlayer other = player.getServer().getPlayerList().getPlayerByName(text.trim());
                     if (other == null) {
                         TFPadNet.notice(player, "No hay nadie conectado con ese nombre.");
                         return null;
                     }
-                    if (clanIdOf(other.getUUID()) != null) {
-                        TFPadNet.notice(player, other.getGameProfile().getName() + " ya está en un clan.");
-                        return null;
-                    }
-                    INVITES.computeIfAbsent(other.getUUID(), k -> new HashSet<>()).add(id);
-                    other.sendSystemMessage(Component.literal("[Clan] ").withStyle(ChatFormatting.GOLD)
-                            .append(Component.literal(player.getGameProfile().getName() + " te invita a " + TFJson.str(c, "nombre", "?")
-                                    + ". Abre el pad (C) → Clanes para unirte.").withStyle(ChatFormatting.YELLOW)));
-                    other.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.MASTER, 0.6F, 1.2F);
-                    TFPadNet.notice(player, "Invitación enviada a " + other.getGameProfile().getName() + ".");
+                    invite(player, other.getUUID(), other.getGameProfile().getName());
                 }
                 case "subir", "bajar" -> {
                     if (!boss || target == null || !list.contains(target)) return null;

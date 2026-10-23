@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.server;
 
 import com.google.gson.JsonArray;
@@ -159,7 +167,8 @@ public final class TFRankPerms {
             Files.writeString(tmp, updated, StandardCharsets.UTF_8);
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             // Su respuesta llega por el mismo sitio que los errores: no se mira
-            if (hasCommand(server, "essentials")) TFBridge.run(server, "essentials reload");
+            // (1.3.117) EssentialsX es un plugin de Bukkit en Mohist: por su consola; sin Bukkit, por la de Minecraft
+            if (TFLuckPerms.console("essentials reload") == null && hasCommand(server, "essentials")) TFBridge.run(server, "essentials reload");
             return "EssentialsX: hogares de los rangos puestos en " + TFServerConfig.essentialsConfig() + " y recargado.";
         } catch (IOException e) {
             return "EssentialsX: no se pudo cambiar " + file + ": " + e.getMessage();

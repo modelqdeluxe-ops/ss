@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.skills;
 
 import java.util.ArrayList;
@@ -377,7 +385,8 @@ public final class SkillRuntime {
     static void cancelCast(long cast) {
         if (cast == 0L) return;
         TASKS.removeIf(t -> t.cast() == cast);
-        SCRIPTS.removeIf(s -> s.ctx.cast == cast);
+        // (1.3.117) las listas de un efecto (actor) siguen: ver exec
+        SCRIPTS.removeIf(s -> s.ctx.cast == cast && s.ctx.caster.actor == null);
     }
 
     /** Lo rápido que ataca el jefe (1 = como el pack): los retardos se dividen y sus animaciones se aceleran igual. */
@@ -680,12 +689,17 @@ public final class SkillRuntime {
         // Como en MythicMobs, si el efecto que la lanza ya no existe, se acaba.
         int[] left = {Math.min(repeat, MAX_REPEAT)};
         Runnable[] step = new Runnable[1];
+        // (1.3.117, el dueño: «las llamas del Archivista se quedan pegadas, perdieron su animación») lo que hace un efecto
+        // (un actor: las llamas, el área) va por su cuenta, como un mob invocado en MythicMobs: si el cerebro del jefe corta
+        // su ataque para encadenar otro (cancelCast), no se cancela su remove{delay=20} ni sus repeticiones. Antes heredaba
+        // el uso del jefe (Ctx.as): las llamas acababan su animación y se quedaban para siempre.
+        long owner = ctx.caster.actor != null ? 0L : ctx.cast;
         step[0] = () -> {
             if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
             once.run();
-            if (left[0]-- > 0) later(every, ctx.cast, step[0]);
+            if (left[0]-- > 0) later(every, owner, step[0]);
         };
-        later(delay, ctx.cast, step[0]);
+        later(delay, owner, step[0]);
     }
 
     /** Repeticiones como mucho de una línea (repeat=999 de los efectos que duran lo que viven). */

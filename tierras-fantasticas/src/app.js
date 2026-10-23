@@ -65,8 +65,9 @@ function businessDaysSince(iso, now = Date.now()) {
 const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
 // --- Skills: las clases del TF Client (config/skills.json, de tools/skills.py) ---
-// Cada clase se vende como un producto «clase-<id>» (con dinero por Stripe/PayPal o con las monedas del servidor). Las
-// compradas son del jugador para siempre; tiene UNA activa a la vez, la que el puente manda al servidor.
+// Cada clase es un producto «clase-<id>»; (TF Client 1.3.117, el dueño: «no se venderán por dinero, se venderán por
+// coins») solo se compra con las monedas del servidor (POST /api/skills/coins). Las compradas son del jugador para
+// siempre; tiene UNA activa a la vez, la que el puente manda al servidor.
 const SKILL_PREFIX = 'clase-';
 const skillClasses = skillsCatalog.classes;
 const skillById = new Map(skillClasses.map((c) => [c.id, c]));
@@ -78,6 +79,7 @@ const skillProducts = skillClasses.map((c) => ({
   description: `${c.role}. ${c.desc}`,
   price: c.price,
   coinPrice: c.coinPrice,
+  coinsOnly: true,
   maxQuantity: 1,
   image: c.icon,
   colors: [c.color, c.color],
@@ -1058,6 +1060,8 @@ export function createApp(env) {
       const quantity = Number.parseInt(body.quantity ?? 1, 10);
       if (!product) return json({ error: 'Producto no válido.' }, 400);
       if (product.price === 0) return json({ error: 'Este regalo es gratis: reclámalo con tu cuenta.', code: 'free' }, 400);
+      // (1.3.117) los cosméticos solo con Fantastic Coins (POST /api/coins/buy)
+      if (product.coinsOnly) return json({ error: 'Esto solo se compra con Fantastic Coins.', code: 'coins' }, 400);
       if (typeof body.username !== 'string' || !USERNAME_RE.test(body.username)) {
         return json({ error: 'Nombre de usuario de Minecraft no válido (3-16 letras, números o _).' }, 400);
       }
@@ -1675,10 +1679,8 @@ export function createApp(env) {
       if (local.gift.message) parts.push({ text: ` «${local.gift.message}»`, color: 'white', italic: true });
       commands.push(`tellraw {player} ${JSON.stringify(['', ...parts])}`);
     }
-    if (rank) {
-      // Al mejorar se quitan los grupos de los rangos inferiores (si no los tiene, LuckPerms no hace nada).
-      for (const lower of ranks) if (lower.tier < rank.tier) commands.push(`lp user {player} parent remove ${lower.rank.group}`);
-    }
+    // (TF Client 1.3.117) Al mejorar no hace falta quitar los rangos inferiores: «parent set» deja solo el nuevo (y el
+    // TF Client no le quita al staff su grupo).
     const extra = {
       kind: product.category,
       color: rank?.rank.hex || product.colors?.[1] || '#f4c95d',
@@ -1787,7 +1789,7 @@ export function createApp(env) {
     for (const command of product.commands || []) {
       const set = command.match(/^tf web sets give \{player\} (\S+)(?: (\S+))?$/);
       if (set) commands.push(`tf web sets revoke {uuid} ${order.id} ${set[1]}${set[2] ? ` ${set[2]}` : ''}`);
-      const group = command.match(/^lp user \{player\} parent add (\S+)$/);
+      const group = command.match(/^lp user \{player\} parent (?:add|set) (\S+)$/);
       if (group && (!rank || rankStillCurrent)) commands.push(`lp user {uuid} parent remove ${group[1]}`);
     }
     if (rankStillCurrent && from) commands.push(`lp user {uuid} parent add ${from.rank.group}`);

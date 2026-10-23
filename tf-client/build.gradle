@@ -79,6 +79,8 @@ tasks.named('jar', Jar).configure {
             'Implementation-Title'    : project.name,
             'Implementation-Version'  : project.jar.archiveVersion,
             'Implementation-Vendor'   : 'Tierras Fantásticas',
+            'Copyright'               : 'Copyright (c) 2026 Tierras Fantásticas. All rights reserved.',
+            'License'                 : 'Proprietary - see LICENSE',
             'MixinConfigs'            : 'tfclient.mixins.json'
         ])
     }

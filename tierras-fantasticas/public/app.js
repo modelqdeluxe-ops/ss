@@ -432,7 +432,7 @@
           <span class="pieces">${escapeHtml(piecesText(p))}</span>
           <div class="card-foot">
             <span class="price">${formatPrice(p.price)}</span>
-            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button></span>
+            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar<span class="crate-word"> crate</span></button></span>
           </div>
         </div>
       </article>`;
@@ -969,10 +969,10 @@
     return `<div class="sk-screen${sk.preview ? '' : ' is-still'}">${art}</div>`;
   }
 
-  // Comprar, usar o quitar: según lo que tenga el jugador. Sin la clase, dos filas: con dinero y con monedas
+  // Comprar, usar o quitar: según lo que tenga el jugador. Sin la clase, comprarla con monedas (TF Client 1.3.117, el
+  // dueño: «no se venderán por dinero, se venderán por coins»)
   function skBuy(c) {
     const st = skState(c);
-    const product = products.find((p) => p.skillClass === c.id);
     const mine = skData.me;
     const activeCls = mine?.active ? skClass(mine.active) : null;
     const own = (cls, icon, title, text, btn = '') =>
@@ -992,15 +992,10 @@
     const coins = Number.isFinite(mine?.coins) ? mine.coins : null;
     const short = coins !== null && coins < c.coinPrice;
     return `<div class="sk-buy">
-        <div class="sk-buy-row is-money">
-          <span class="sk-buy-label">Con dinero</span>
-          <span class="sk-buy-price">${formatPrice(c.price)}</span>
-          <span class="buy-pair">${product ? giftIcon(product) : ''}<button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button></span>
-        </div>
         <div class="sk-buy-row is-coins">
-          <span class="sk-buy-label">Con monedas</span>
+          <span class="sk-buy-label">Fantastic Coins</span>
           <span class="sk-buy-price"><img src="/img/coin.png" alt="" width="22" height="22" class="coin-img">${fmtCoins(c.coinPrice)}</span>
-          <button class="btn btn-ghost" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
+          <button class="btn btn-buy" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar</button>
         </div>
       </div>
       <p class="sk-buy-note">Con monedas se cobra en el juego cuando estés conectado; si no tienes bastantes, no se cobra nada.${
@@ -1536,7 +1531,7 @@
                     (p) => `<button type="button" class="cos-piece" data-cos="${escapeHtml(p.id)}" aria-pressed="false">
                       <span class="cos-art">${img(p.image, '', '', ' width="72" height="72"')}<i class="worn-dot" aria-hidden="true"></i></span>
                       <span class="cos-name">${escapeHtml(p.name)}</span>
-                      <span class="cos-meta"><span>${SLOT_LABEL[p.slot] || ''}</span><b>${formatPrice(p.price)}</b></span>
+                      <span class="cos-meta"><span>${SLOT_LABEL[p.slot] || ''}</span><b class="cos-coin"><img src="/img/coin.png" alt="" width="14" height="14" class="coin-img">${fmtCoins(p.coinPrice)}</b></span>
                     </button>`,
                   )
                   .join('')}</div>
@@ -1603,8 +1598,8 @@
     box.innerHTML = `
       <span class="cos-buy-art">${img(p.image, '', '', ' width="52" height="52"')}</span>
       <span class="cos-buy-text"><small>${escapeHtml(p.theme)} · ${SLOT_LABEL[p.slot] || ''}</small><b>${escapeHtml(p.name)}</b></span>
-      <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button></span>
-      ${p.coinPrice ? `<button class="btn btn-ghost btn-sm cos-coins" type="button" data-coin-buy="${escapeHtml(p.id)}"><img src="/img/coin.png" alt="" width="18" height="18" class="coin-img"> ${fmtCoins(p.coinPrice)} Fantastic Coins</button>` : ''}`;
+      <span class="cos-buy-price"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmtCoins(p.coinPrice)}</span>
+      <button class="btn btn-buy" type="button" data-coin-buy="${escapeHtml(p.id)}">Comprar</button>`;
   }
 
   async function drawCosmetics() {

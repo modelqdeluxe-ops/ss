@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.server;
 
 import com.google.gson.JsonArray;
@@ -178,6 +186,8 @@ public final class TFBridge {
 
     /** Ejecuta un comando como la consola y devuelve los errores (vacío si fue bien). */
     public static List<String> run(MinecraftServer srv, String command) {
+        // (1.3.117) LuckPerms, por la consola de Bukkit y comprobado (TFLuckPerms)
+        if (TFLuckPerms.isLuckPerms(command)) return TFLuckPerms.run(srv, command);
         ErrorCollector collector = new ErrorCollector();
         try {
             CommandSourceStack source = srv.createCommandSourceStack().withSource(collector);
@@ -185,16 +195,13 @@ public final class TFBridge {
         } catch (Throwable t) {
             collector.errors.add(t.toString());
         }
-        // LuckPerms (plugin en Mohist o mod) contesta por el mismo sitio que los errores, también cuando va bien, y
-        // hace el trabajo en su propio hilo: lo único que se puede comprobar aquí es que el comando exista.
-        if ((command.startsWith("lp ") || command.startsWith("luckperms ")) && hasLuckPerms(srv)) return List.of();
         return collector.errors;
     }
 
-    /** ¿Está LuckPerms? (su comando /lp está registrado). */
+    /** ¿Está LuckPerms? (su comando /lp está registrado en Minecraft o su API está cargada: plugin de Bukkit o mod). */
     public static boolean hasLuckPerms(MinecraftServer srv) {
         var root = srv.getCommands().getDispatcher().getRoot();
-        return root.getChild("lp") != null || root.getChild("luckperms") != null;
+        return root.getChild("lp") != null || root.getChild("luckperms") != null || TFLuckPerms.present();
     }
 
     /** Una pieza del armario puesta (o quitada, con id null) desde el pad. */
@@ -428,7 +435,6 @@ public final class TFBridge {
         if (json.has("roulette") && json.get("roulette").isJsonObject()) {
             net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
         }
-        if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
         // VFX equipados en la web (efecto de kill y paquete de skills) de los conectados
         // (1.3.114) los efectos de kill que tiene cada conectado (se venden en la web)
         if (json.has("vfxOwned") && json.get("vfxOwned").isJsonArray()) {
@@ -454,6 +460,9 @@ public final class TFBridge {
         for (JsonElement element : deliveries) {
             deliver(srv, element.getAsJsonObject());
         }
+        // (1.3.117) los rangos de los conectados, después de las entregas: la compra de un rango ya pone su grupo de
+        // LuckPerms, y TFRanks.update solo arregla al que le falte (TFLuckPerms.ensure)
+        if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
     }
 
     private static String text(JsonObject o, String key, String def) {

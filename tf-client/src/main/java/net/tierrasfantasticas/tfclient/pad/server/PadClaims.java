@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.pad.server;
 
 import java.util.ArrayList;
@@ -352,6 +360,43 @@ public final class PadClaims {
             }
             PadServer.refresh(player, "protecciones", "z:" + id + ":m");
         });
+    }
+
+    /** (1.3.117) Las zonas del jugador, para «Invitar a la protección» de Jugadores: icono, nombre y dónde. */
+    public static List<PadView.Row> zonesFor(ServerPlayer player, UUID who, String actionPrefix) {
+        List<PadView.Row> out = new ArrayList<>();
+        for (Claim c : ClaimManager.getInstance().getClaimsOf(player.getUUID())) {
+            List<String> lines = new ArrayList<>();
+            lines.add(dim(c.getWorld()) + " · " + c.getX() + ", " + c.getY() + ", " + c.getZ());
+            int m = c.getMembers().size();
+            lines.add(m == 0 ? "Sin miembros" : m + (m == 1 ? " miembro" : " miembros"));
+            boolean in = c.isMember(who);
+            out.add(new PadView.Row(icon(c), title(c), TEXT, lines, -1, in ? "YA ES MIEMBRO" : "", null, null)
+                    .clickable(in ? "" : actionPrefix + c.getClaimId()));
+        }
+        return out;
+    }
+
+    /** (1.3.117) Hace a ese jugador miembro de esa zona del jugador (Jugadores del pad: «Invitar a la protección»). */
+    public static void addMember(ServerPlayer player, String claimId, UUID who, String name) {
+        Claim c = claim(claimId);
+        if (c == null || !c.isOwner(player.getUUID())) return;
+        if (c.isOwner(who)) {
+            TFPadNet.notice(player, "Ese jugador es el dueño.");
+        } else if (c.isMember(who)) {
+            TFPadNet.notice(player, name + " ya es miembro.");
+        } else {
+            int max = ClaimConfig.get().maxMembersPerClaim;
+            if (max > 0 && c.getMembers().size() >= max) {
+                TFPadNet.notice(player, "Esta zona ya tiene el máximo de miembros (" + max + ").");
+                return;
+            }
+            if (c.isBanned(who)) c.unbanPlayer(who);
+            c.addMember(who, name);
+            ClaimManager.getInstance().save();
+            TFPadNet.notice(player, name + " ahora es miembro de tu zona «" + title(c) + "».");
+            tell(player.server.getPlayerList().getPlayer(who), who, "[Protección] Eres miembro de la zona de " + player.getName().getString(), ChatFormatting.AQUA);
+        }
     }
 
     private static void ban(ServerPlayer player, Claim c, String name) {

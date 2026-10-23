@@ -4019,6 +4019,25 @@ h4 {
   color: var(--text);
 }
 
+/* (1.3.117) los cosméticos, solo con Fantastic Coins: su precio con la moneda */
+.cos-meta .cos-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #8a5a00;
+  font-variant-numeric: tabular-nums;
+}
+
+.cos-buy-price {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  font: 800 17px/1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  color: #8a5a00;
+}
+
 /* ---------- Crates: la tarjeta con el brillo de su color ---------- */
 
 .crate-grid {
@@ -4165,20 +4184,38 @@ h4 {
   color: color-mix(in srgb, var(--t2, var(--a-400)) 42%, #1f1408);
 }
 
-.crate-tile .card-foot {
+/* (el dueño: «el precio de las crates mal ubicado, asimétrico; las protecciones también») en las tarjetas estrechas
+   (crates y protecciones): el precio centrado arriba y debajo, a lo ancho, el regalo y comprar del mismo alto */
+.crate-tile .card-foot,
+.product .card-foot {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
-  padding-top: 12px;
+  padding-top: 14px;
 }
 
-.crate-tile .card-foot .buy-pair {
-  display: contents;
+.crate-tile .card-foot .price,
+.product .card-foot .price {
+  justify-self: center;
+  text-align: center;
 }
 
-.crate-tile .card-foot .btn:not(.btn-icon) {
-  grid-column: 1 / -1;
-  width: 100%;
+.crate-tile .card-foot .buy-pair,
+.product .card-foot .buy-pair {
+  flex-wrap: nowrap;
+}
+
+.crate-tile .card-foot .buy-pair > .btn:not(.btn-icon),
+.product .card-foot .buy-pair > .btn:not(.btn-icon) {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* en el móvil (dos crates por fila) el botón dice solo «Comprar» */
+@media (max-width: 479px) {
+  .crate-tile .crate-word {
+    display: none;
+  }
 }
 
 /* ---------- Ruleta ---------- */
@@ -7603,7 +7640,7 @@ h4 {
     font-size: 11px;
   }
 
-  .crate-tile .card-foot .btn:not(.btn-icon) {
+  .crate-tile .card-foot .buy-pair > .btn:not(.btn-icon) {
     padding: 0 6px;
   }
 

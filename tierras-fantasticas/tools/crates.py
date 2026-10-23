@@ -281,7 +281,9 @@ def cosmetic_products():
                     'id': f'cos-{set_id}-{piece}'.replace('_', '-'), 'category': 'cosmeticos', 'name': names[piece],
                     'description': f'Cosmético animado que se lleva {where}, de la colección {theme}. Solo cambia tu aspecto.',
                     'collection': collection, 'theme': theme, 'slot': kind, 'price': price, 'maxQuantity': 1,
-                    'coinPrice': coin_price(price),
+                    # (1.3.117, el dueño: «los cosméticos tienen precio en dinero, no en coins») solo con Fantastic Coins:
+                    # «price» queda solo para calcular las monedas (la web no los cobra con dinero: coinsOnly)
+                    'coinPrice': coin_price(price), 'coinsOnly': True,
                     'colors': [c1, c2], 'set': set_id, 'item': piece, 'image': f'img/items/{set_id}/{piece}.webp',
                     'commands': [f'tf web sets give {{player}} {set_id} {piece}'],
                 })
@@ -431,7 +433,9 @@ def rank_products():
             'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}', 'tagline': tagline,
             'description': pitch,
             'price': price, 'maxQuantity': 1, 'discordRoles': [DISCORD_ROLE[key]],
-            'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}',
+            # (TF Client 1.3.117, el dueño: «/lp user (usuario) parent set (rango)») queda con ese grupo de LuckPerms y
+            # hereda sus permisos (EssentialsX incluido); el TF Client lo manda por la consola y lo comprueba
+            'commands': [f'lp user {{player}} parent set {key}', f'tf web sets give {{player}} {set_id}',
                          f'tf web sets encantar {{player}} {set_id} {RANK_ENCHANT[key]}',
                          *give_commands([stone(RANK_CLAIM[key]), *RANK_EXTRAS[key]])],
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],

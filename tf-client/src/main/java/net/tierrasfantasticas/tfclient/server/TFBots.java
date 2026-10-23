@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient.server;
 
 import com.google.gson.Gson;
@@ -220,6 +228,44 @@ public final class TFBots {
                 0,
                 r.nextInt(4) + Math.min(8, times / 2),
                 1 + r.nextInt(5) + Math.min(10, times / 2));
+    }
+
+    /** (1.3.117) Un bot del mod por su UUID, esté dentro o no (null si no es un bot). */
+    public static Bot ofId(UUID id) {
+        if (id == null) return null;
+        for (Bot b : pool()) if (b.id().equals(id)) return b;
+        return null;
+    }
+
+    /** (1.3.117) Los bots que están dentro o han estado alguna vez (los del Ranking del pad). */
+    public static List<Bot> known() {
+        List<Bot> out = new ArrayList<>();
+        for (Bot b : pool()) if (online.contains(b) || seen.containsKey(b.name().toLowerCase())) out.add(b);
+        return out;
+    }
+
+    /**
+     * (1.3.117, el dueño: «los bots en el pad no tienen ranking; bajo, sí, no tan alto, y no números exactos como ese
+     * 500») lo que lleva un bot en el Ranking del pad: sus misiones, cazas y exploraciones de su ficha (card) y unas
+     * monedas de quien empieza (de unas decenas a poco más de mil, más cuantas más veces ha venido), nunca redondas.
+     * Likes, ninguno (no ha subido fotos). Siempre lo mismo para el mismo bot mientras no vuelva a entrar.
+     */
+    public static long rankValue(Bot b, String what, List<String> jobIds, int maxJobs) {
+        Card c = card(b, jobIds, maxJobs);
+        return switch (what) {
+            case "misiones" -> c.missions();
+            case "cazas" -> c.hunts();
+            case "exploraciones" -> c.explores();
+            case "monedas" -> {
+                Random r = new Random(b.name().toLowerCase().hashCode() * 131L + 17);
+                Seen s = seen.get(b.name().toLowerCase());
+                int times = s == null ? 1 : Math.max(1, s.times());
+                long v = 37 + r.nextInt(260) + (long) Math.min(times, 20) * (18 + r.nextInt(47));
+                while (v % 5 == 0) v += 1 + r.nextInt(3);
+                yield v;
+            }
+            default -> 0;
+        };
     }
 
     private static List<Bot> free() {

@@ -1,3 +1,11 @@
+/*
+ * TF Client — Tierras Fantásticas
+ * Copyright (c) 2026 Tierras Fantásticas. Todos los derechos reservados.
+ *
+ * Software propietario y exclusivo del servidor de Minecraft Tierras Fantásticas. Queda prohibido copiarlo, modificarlo,
+ * descompilarlo, redistribuirlo o usarlo, entero o en parte, en otros servidores o proyectos sin permiso escrito de
+ * Tierras Fantásticas. Ver LICENSE.
+ */
 package net.tierrasfantasticas.tfclient;
 
 import java.io.IOException;
@@ -74,7 +82,9 @@ public final class TFConfig {
         serverName = props.getProperty("server.name", DEFAULT_NAME).trim();
         serverAddress = props.getProperty("server.address", DEFAULT_ADDRESS).trim();
         // Quien tenía la IP por defecto anterior pasa a la nueva (si la cambió a mano, se respeta).
-        boolean oldAddress = serverAddress.isEmpty() || serverAddress.equals(OLD_DEFAULT_ADDRESS);
+        // (1.3.117) y nadie puede poner otro servidor: el TF Client es solo de Tierras Fantásticas (client/TFLock)
+        boolean oldAddress = serverAddress.isEmpty() || serverAddress.equals(OLD_DEFAULT_ADDRESS)
+                || !net.tierrasfantasticas.tfclient.client.TFLock.OFFICIAL.contains(serverAddress);
         if (oldAddress) serverAddress = DEFAULT_ADDRESS;
         webUrl = props.getProperty("web.url", DEFAULT_WEB).trim();
         // La dirección provisional de versiones anteriores pasa a ser el dominio de verdad.

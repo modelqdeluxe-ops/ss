@@ -115,7 +115,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
  Jugador ──► Web: escribe "steve" ──► ✓ Steve (UUID del servidor) ──► Stripe (paga) ──► webhook firmado
                                                                                           │
       ┌───────────────────────────────────────────────────────────────────────────────────┤
-      ├─► Cola de entregas por UUID ◄── puente cada 10 s: lp user {player} parent add hechicero
+      ├─► Cola de entregas por UUID ◄── puente cada 10 s: lp user {player} parent set mortal
       │        └─► anuncio en el chat para todos + fuegos artificiales + [HECHICERO] en el nametag
       ├─► Discord (bot): rol "Hechicero" a su cuenta (sesión iniciada o jugador vinculado)
       └─► Discord (webhook): "👑 ¡Steve ahora es Hechicero!"

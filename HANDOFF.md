@@ -190,6 +190,63 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (23 oct 2026, TF Client 1.3.117) — lee esto primero
+
+**1.3.117: ocho quejas del dueño** (5 capturas y un zip de NPC de Wardenful Studio) **y el rango en LuckPerms** (9):
+1. **Ranking del pad**: salen los bots que han entrado alguna vez (`TFBots.known`, `rankValue`): misiones, cazas y
+   exploraciones de su ficha y monedas de quien empieza (de unas decenas a poco más de mil, nunca múltiplo de 5), sin
+   likes. El «2º ?» era alguien sin nombre en el pad: el nombre sale del pad, del conectado, del bot o de la caché de
+   perfiles del servidor; si no se sabe, no sale (`PadRanking.withBots`, `name`).
+2. **Jugadores del pad sin ficha**: al tocar a alguien (jugador o bot), Invitar al clan (si eres líder u oficial y él
+   no tiene clan: `PadClans.canInvite/invite`), Invitar a la protección (eliges la zona; un jugador pasa a ser miembro,
+   un bot no entra en los datos: `PadClaims.zonesFor/addMember`) y Enviar regalo (el de antes: objeto del inventario o
+   monedas; ahora también a los bots). Pestañas `f:` (menú), `p:` (zona), `r:` (regalo).
+3. **Caballeros que suben y bajan**: su modelo es el de Caelthar y trae `idle` (flotar); `VfxLayers` lo ponía solo por
+   debajo de todo. `KnightRenderer`: a los sacros, sin reposo ni andar por defecto (`setDefault(idle/walk, "-")`). La
+   prueba `corta` apunta «reposo por debajo: [-]».
+4. **Objetos negros con shaders en el Void**: la prueba `corta` pone objetos en la mano y en el inventario en el
+   santuario y en el mundo normal (`objetos_void*`, `objetos_mundo*`, `BossTestClient.itemsLight`). Medido (`a64be32`,
+   Complementary): el objeto en la mano, luminancia 45 en el Void frente a 108 fuera (el inventario, igual en los dos);
+   en el Void la luz del jugador es bloque 0 y cielo 0, y el paquete (con sus programas del End) solo le da su ambiente.
+   `vacio/VoidItemLight`: con paquete y en el Void, la mano (`ItemInHandRendererMixin`) y los objetos tirados
+   (`ItemEntityRendererMixin`) con luz de cielo 15 y de bloque 12. **Comprobado** (`eaf789b`): 68 en el Void (la
+   manzana dorada se ve dorada). Si el dueño los sigue viendo oscuros con Photon, subir `VoidItemLight.BLOCK` (máx. 15).
+   También comprobado en `a64be32`: caballeros «reposo por debajo: [-]», el Archivista sin efectos pegados, el ranking
+   con bots (332, 311, 241… monedas; 5, 5, 4… misiones) y el menú de un bot sin ficha.
+5. **Llamas del Archivista pegadas**: `SkillRuntime.exec`/`cancelCast`: lo que hace un efecto (actor) no lleva el uso
+   del jefe; el combo del cerebro ya no cancela su `remove{delay=20}` (JEFES.md §3, tabla de MythicMobs).
+6. **Web**: cosméticos y clases de skills **solo con Fantastic Coins** (`coinsOnly`; `/api/checkout` los rechaza con
+   `code: coins`); skills a **50.000** (`tools/skills.py`); tarjetas de crates y protecciones con el precio centrado y
+   el regalo y comprar debajo, del mismo alto; en el móvil la crate dice solo «Comprar». `npm test` 57/57.
+7. **TF Client solo para Tierras Fantásticas** (`client/TFLock`, `mixin/ConnectScreenMixin`): toda conexión a un
+   servidor que no es el oficial (`TFLock.OFFICIAL`, ahora `216.163.187.40:19229`) va al oficial; cliente.properties ya
+   no puede poner otro. **Cuando el dueño pase la IP final: añadirla a `TFLock.OFFICIAL` y a `TFConfig.DEFAULT_ADDRESS`.**
+   Mundos locales solo con contraseña (`TFLocalLockScreen`; en el repo solo su huella PBKDF2 con sal: **la contraseña
+   la tiene el dueño, no la escribas en el repo**); la prueba en el juego entra sin ella (`BossTest.ON`).
+   Copyright en los 420 archivos propios (no en `crates/libs`, `javazoom`, `net/sourceforge`: son de terceros),
+   `LICENSE` (y `LICENSE-TFCLIENT.txt` en el jar), mods.toml y el manifiesto. **No hay forma de impedir descompilar un
+   jar** ni contraseña para eso (Minecraft tiene que poder leerlo); ofuscar con ProGuard rompería mixins y reflexión.
+   Lo que sí protege de verdad: **el repo es público** (cualquiera lee el código sin descompilar nada). Se le propuso
+   hacerlo privado y servir el jar desde otro sitio (las Releases de un repo privado no se descargan sin cuenta).
+9. **El rango comprado, en LuckPerms** (el dueño: «/lp user (usuario) parent set (rango)»; rangos mortal, inmortal,
+   magico, eterno, cosmico, celestial, fantastico; «con Essentials también»): la web manda `lp user {player} parent set
+   <rango>` (antes `parent add`, y al mejorar quitaba los de abajo). `server/TFLuckPerms`: todo comando de LuckPerms
+   (también los de `TFRankPerms`: crear los grupos y sus permisos de EssentialsX) va **por la consola de Bukkit**
+   (`Bukkit.dispatchCommand(getConsoleSender())`, por reflexión), como si lo escribiera el staff; antes iba por el
+   despachador de Forge con una fuente propia, que en Mohist puede no llegar al plugin, y se daba por bueno sin mirar.
+   Sin Bukkit (LuckPerms como mod), por la consola de Minecraft. A los 2 s mira con la **API de LuckPerms** (por
+   reflexión: ServicesManager de Bukkit o `LuckPermsProvider`) que tenga el grupo; si no, lo repite; si sigue sin
+   tenerlo, error en la consola y aviso al staff conectado. **Staff**: si tiene un grupo que no es de la tienda (admin,
+   mod…), no se le quita: `parent add` del rango y fuera solo los otros rangos. Al entrar y en cada consulta, si la web
+   dice que un conectado tiene un rango y LuckPerms no le tiene el grupo (ni uno igual o más alto), se le pone
+   (`TFLuckPerms.ensure`). Los reembolsos siguen con `parent remove` (y `parent add` del anterior). `/tf web rango
+   <jugador>` enseña además sus grupos en LuckPerms y lo último que hizo el TF Client. EssentialsX: sus permisos van en
+   el grupo de cada rango (`TFRankPerms`) y `essentials reload` también por la consola de Bukkit. **No se puede probar en
+   GitHub Actions** (LuckPerms para Forge está compilado para el servidor de verdad): la prueba solo comprueba que sin
+   LuckPerms lo dice y no se rompe. Hay que mirarlo en el servidor del dueño con una compra o con `/tf web rango`.
+8. El zip «NPCs For Mini Games vol.1» (bedwars, pvp, rtp, skywars, spleef: un `idle` cada uno; el «pvp» es un gato con
+   orejas y cola, no un caballero) no se ha metido: se le preguntó para qué lo quiere.
+
 ### CHECKPOINT (23 oct 2026, TF Client 1.3.116, PUBLICADA) — lee esto primero
 
 **1.3.116** (el dueño, tras la 1.3.115: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets
