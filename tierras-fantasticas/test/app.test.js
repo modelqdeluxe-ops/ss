@@ -218,6 +218,7 @@ before(async () => {
     DISCORD_API_BASE: `http://127.0.0.1:${discordPort}`,
     DISCORD_WEBHOOK_URL: `http://127.0.0.1:${discordPort}/webhook`,
     BRIDGE_SECRET,
+    ADMIN_KEY: 'clave-del-staff',
     PAYPAL_CLIENT_ID: 'pp-client',
     PAYPAL_CLIENT_SECRET: 'pp-secret',
     PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
@@ -1690,4 +1691,83 @@ test('el servidor empieza limpio: la web reinicia a esos jugadores (clase, rango
   me = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
   assert.deepStrictEqual([me.owned, me.active], [[], null]);
   assert.strictEqual((await post('/api/skills/coins', { id: 'thor' }, cookie)).status, 200, 'se puede volver a comprar');
+});
+
+// --- Panel de staff (/staff) ---
+test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (también lo gratis) quitando el rango y su rol', async () => {
+  const staff = (path, { key = 'clave-del-staff', ip = '198.51.100.7', ...init } = {}) =>
+    call(path, { ...init, headers: { ...(init.headers || {}), 'CF-Connecting-IP': ip, ...(key ? { Authorization: `Bearer ${key}` } : {}) } });
+  const refund = (id, opts) => staff('/api/staff/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }), ...opts });
+
+  // Sin la clave no se ve nada; sin ADMIN_KEY en Cloudflare el panel está apagado; muchos fallos bloquean esa IP.
+  assert.strictEqual((await staff('/api/staff/orders', { key: null })).status, 401);
+  assert.strictEqual((await refund('GIFTX', { key: 'otra-clave' })).status, 401);
+  const saved = env.ADMIN_KEY;
+  delete env.ADMIN_KEY;
+  assert.strictEqual((await staff('/api/staff/orders')).status, 503);
+  env.ADMIN_KEY = saved;
+  for (let i = 0; i < 8; i++) await staff('/api/staff/orders', { key: `mala-${i}`, ip: '203.0.113.50' });
+  assert.strictEqual((await staff('/api/staff/orders', { ip: '203.0.113.50' })).status, 429);
+
+  // Un jugador con su Discord: dos rangos (gratis durante una prueba de la tienda, de pago si no) y una crate pagada.
+  received.length = 0;
+  const profile = discordProfile;
+  discordProfile = { id: '666666666666666666', username: 'staffer', global_name: null, avatar: null };
+  let cookie;
+  try {
+    cookie = await register('Staff_MC');
+    await viaDiscord(cookie);
+  } finally {
+    discordProfile = profile;
+  }
+  const getRank = async (productId) => {
+    if (products.find((p) => p.id === productId).price === 0) return (await (await post('/api/claim', { productId }, cookie)).json()).id;
+    const id = await checkout({ productId, username: 'Staff_MC' }, cookie);
+    await pay(id);
+    return id;
+  };
+  const inmortal = await getRank('rango-inmortal');
+  const magico = await getRank('rango-magico');
+  const crate = await checkout({ productId: 'crate-valentine', username: 'Staff_MC' });
+  await pay(crate);
+  await serverDelivers('Staff_MC');
+  assert.strictEqual((await (await get('/api/player/Staff_MC')).json()).rank.id, 'rango-magico');
+
+  const { orders } = await (await staff('/api/staff/orders')).json();
+  const row = (id) => orders.find((o) => o.id === id);
+  assert.ok([inmortal, magico, crate].every((id) => row(id)?.username === 'Staff_MC' && row(id).refundable), 'salen los tres, reembolsables');
+  assert.strictEqual(row(crate).product, products.find((p) => p.id === 'crate-valentine').name);
+
+  // Reembolsar: del rango más alto al más bajo. Al final no le queda rango ni rol, y lo de la crate se retira.
+  assert.strictEqual((await refund('NO_EXISTE')).status, 404);
+  mails.length = 0;
+  assert.strictEqual((await refund(magico)).status, 200);
+  discordCalls.length = 0;
+  assert.strictEqual((await refund(inmortal)).status, 200);
+  assert.ok(discordCalls.some((c) => c.method === 'DELETE' && c.url === `/guilds/333333333333333333/members/666666666666666666/roles/${ROLE_ID}`), 'quita el rol de Discord');
+  assert.strictEqual((await refund(crate)).status, 200);
+  assert.strictEqual((await refund(crate)).status, 409);
+  assert.strictEqual((await (await get('/api/player/Staff_MC')).json()).rank, null);
+  const { deliveries } = await (await poll([])).json();
+  const commands = deliveries.flatMap((d) => d.commands);
+  for (const c of ['lp user {uuid} parent remove magico', 'lp user {uuid} parent remove inmortal', `tf web sets revoke {uuid} ${crate} valentine`]) {
+    assert.ok(commands.includes(c), `falta «${c}»`);
+  }
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+  assert.ok((await (await staff('/api/staff/orders')).json()).orders.every((o) => o.username !== 'Staff_MC' || !o.refundable));
+  // Al dueño le llega el aviso de cada uno
+  assert.ok(mails.some((m) => m.subject === `Reembolso · pedido ${crate} · Staff_MC` && m.text.includes('panel de staff')));
+
+  // Lo gratis reembolsado se puede volver a reclamar (con otro número); mientras lo tiene, no.
+  const claim = () => post('/api/claim', { productId: 'regalo-diamantes' }, cookie);
+  const first = (await (await claim()).json()).id;
+  assert.strictEqual((await claim()).status, 409);
+  assert.strictEqual((await refund(first)).status, 200);
+  const again = await claim();
+  assert.strictEqual(again.status, 200);
+  const second = (await again.json()).id;
+  assert.ok(second !== first && /^GIFT[0-9A-Z]{2,4}[0-9A-F]{30}01$/.test(second), second);
+  assert.strictEqual((await claim()).status, 409);
+  await serverDelivers('Staff_MC');
+  assert.strictEqual((await (await get(`/api/order/${second}`)).json()).status, 'delivered');
 });

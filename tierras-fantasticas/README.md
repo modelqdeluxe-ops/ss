@@ -76,6 +76,13 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   jugador no esté conectado: `tf web sets revoke {uuid} <pedido> <set>`, quitar el grupo del rango (volviendo al
   anterior si fue una mejora) y sus roles de Discord. El mod (1.3.11) quita lo de ese pedido esté donde esté. El
   pedido queda «reembolsado · retirado del servidor». Un reembolso parcial solo se apunta.
+- **Panel de staff** (`/staff`, `public/staff.html`): solo para el dueño. No lo enlaza ninguna página y no se indexa;
+  se abre escribiendo `tierrasfantásticas.store/staff`. Pide la clave `ADMIN_KEY` (*Secret* en Cloudflare; sin él, el
+  panel está apagado) y tras 8 claves malas desde una IP la bloquea 15 minutos. Lista los últimos pedidos
+  (`GET /api/staff/orders`) y «Reembolsar» (`POST /api/staff/refund`) hace lo mismo que un reembolso completo de
+  Stripe/PayPal, también con lo reclamado gratis (que no tiene pago): retira del servidor lo entregado y sus roles de
+  Discord. Desde el panel se quitan el grupo y el rol de ese rango aunque ya no sea el actual. Lo gratis reembolsado se
+  puede volver a reclamar (con otro número de pedido, `…01`, `…02`). Los `give` (objetos, monedas) no se pueden quitar. El dinero se devuelve aparte en Stripe o PayPal (y si se hace allí, todo esto va solo).
 - **Página 404** (`public/404.html`, la sirve el Worker en `src/index.js`), botón «volver arriba», iconos para el
   móvil (`img/icon-180.png`, `img/icon-32.png`), vistas previas con dirección completa (`og:image`, `og:url`) y
   `sitemap.xml` (lo genera `pages.py`).
@@ -135,8 +142,8 @@ permisos…), el pago queda registrado en la base de datos con lo que falta por 
    La base de datos D1 se crea sola en el primer despliegue. Cada cambio en `main` se publica solo.
 3. **Settings → Domains & Routes → Add → Custom domain**: `tierrasfantásticas.store` (y `www.` si quieres).
    Cloudflare crea el registro DNS y el certificado HTTPS.
-4. **Settings → Variables and Secrets**: añade como *Secret* las claves de Stripe, Discord y `BRIDGE_SECRET`
-   (ver abajo). Las variables públicas (nombre, IP, moneda) están en `wrangler.jsonc` (raíz del repositorio).
+4. **Settings → Variables and Secrets**: añade como *Secret* las claves de Stripe, Discord, `BRIDGE_SECRET` y
+   `ADMIN_KEY` (la clave del panel de staff, `/staff`: una contraseña larga que solo sepas tú) (ver abajo). Las variables públicas (nombre, IP, moneda) están en `wrangler.jsonc` (raíz del repositorio).
    Las claves **nunca** van en el repositorio ni se comparten por chat.
 
 Para probarla en tu PC (Node.js 22.13 o superior):
