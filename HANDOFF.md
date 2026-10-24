@@ -190,7 +190,14 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.131) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.132) — lee esto primero
+
+**1.3.132**: editor de color de la etiqueta del clan (pestaña COLOR del líder, `PadClans.colorView`): paleta de 12 tonos
+en 5 luces, grises, los 16 de Minecraft y campo `#RRGGBB`; el color se guarda en hex (`rgbOf`, acepta los nombres de
+antes) y sale exacto en el chat y en el sufijo (`&#RRGGBB`). El sufijo del clan se pone por la API de LuckPerms
+(`TFLuckPerms.setSuffix`), sin el mensaje de los comandos /lp en el chat. Sin prueba en el juego.
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.131, PUBLICADA)
 
 **1.3.131**: el selector de objetos del pad de admin (`PadItemPicker`, «TODOS LOS OBJETOS»: tienda, recompensas, kits…)
 enseña todos los objetos del juego en una sola lista con scroll (`PAGE` y `PadView.MAX_CELLS` 4096; la rejilla solo
