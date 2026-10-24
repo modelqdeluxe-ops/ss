@@ -190,7 +190,36 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.133) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.134) — lee esto primero
+
+**1.3.134** (tres pedidos del dueño):
+1. **La tienda nueva** («estudia lo que cuesta ganar monedas, fija precios justos, no regalados; todos los objetos del
+   juego por categorías; la tienda solo compra Tesoros con límite diario»). Estudio y reglas en
+   **[`tf-client/TIENDA.md`](tf-client/TIENDA.md)**; la tabla, en `tf-client/TIENDA-PRECIOS.md`. La genera
+   `tf-client/tools/tienda/precios.py` con las recetas del jar de 1.20.1, la lista de minecraft-data y los nombres de
+   `es_es.json` (cómo se bajan, en su cabecera): 1.039 objetos en 10 categorías (Construcción, Decorativos, Minerales,
+   Equipo, Drops de mobs, Granja y Comida, Redstone y Transporte, Utilidades, Protecciones y Tesoros), una hora de
+   trabajo ≈ 75 monedas y comprar = 6 veces lo que ganarías en el rato de conseguirlo; fuera el diamante, la netherita y
+   lo que los lleva, lo del Nether que hace avanzar y todo lo del End. La tienda solo compra los 16 Tesoros (límite al
+   día). El servidor cambia su `tienda.json` solo (`versionTienda` 2, `TFShopConfig.VERSION`; copia
+   `tienda.antes-v2.json`). VENDER del pad enseña también los Tesoros que no llevas (`PadShop.sell`).
+2. **Clanes**: el cobro de la 1.3.133 está bien (`PadClans`: avisa al escribir el nombre y cobra al crear el clan); lo
+   mira la prueba «tienda». **Compartir canciones** (el dueño: «al clicar en una canción, compartir: me crea un disco en
+   la mano, se lo doy a otro, lo consume y se le guarda en una pestaña nueva, COMPARTIDOS»): botón morado en cada fila de
+   Música (`PadMusicPage`), objeto `tfclient:disco_compartido` (`SharedDiscItem`, textura `tools/musica/disco_compartido.py`),
+   servidor `PadMusicShare` (las de la carpeta se suben como las del altavoz y se guardan en `<mundo>/tfclient/compartidas/`,
+   2 GB), cliente `MusicShare` (baja la canción y la mete en `MusicLibrary.SHARED`; lo pendiente, en
+   `musica/compartidas-pendientes.json`). Mensajes `Share`/`Shared` (ids 26 y 27 del canal del pad).
+3. **Compras de la web en el suelo** («que no desaparezcan aunque pase un clear lag»): `items/TFWebDrops` (con la marca
+   `TFOrder` o un objeto de set con dueño): vida sin límite, invulnerable (lava, fuego, explosiones), y
+   `mixin/EntityRemoveMixin` no deja que los borre `/kill` ni una clase de plugin o mod con «clear», «lag», «clean»,
+   «limpi», «remove», «purge», «kill» o «butcher» en el nombre (las 8 llamadas de encima). Cogerlo, tolvas, imanes, juntar
+   pilas, el vacío y los reembolsos siguen igual (sin duplicar). Si el servidor usa otro limpiador con otro nombre, el log
+   no dirá «TF Web: … se queda»: añadir su palabra a `TFWebDrops.CLEANERS`.
+
+Prueba en el juego nueva: `[prueba-jefes=tienda]` (tienda, clan, disco y suelo; menos de 2 min).
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.133)
 
 **1.3.133**: fundar un clan cuesta 1.500 monedas (el dueño: «que crear un clan valga 1500 monedas y sea ajustable en el
 pad de admin»). Ajuste `clanes.precio` de `pad.json` (`PadConfig.SETTINGS`, grupo `economia`; 0 = gratis), en el pad

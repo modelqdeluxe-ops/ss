@@ -311,6 +311,8 @@ public final class TFRevocations {
             ItemStack stack = item.getItem();
             if (revoked(data, stack)) {
                 removed = stack.getCount();
+                // (1.3.134) vacío antes de quitarlo: así TFWebDrops (que guarda en el suelo lo de la web) lo deja ir
+                item.setItem(ItemStack.EMPTY);
                 item.discard();
             } else if (purgeNested(data, stack) > 0) {
                 item.setItem(stack.copy());

@@ -276,6 +276,9 @@ public final class BossTest {
             // las crates, por si su cinemática deja algo cambiado al pintar)
             if (only != null && List.of(only.split(",")).contains("pad")) ids.add(0, "pad");
             if (only != null && List.of(only.split(",")).contains("padtras")) ids.add("padtras");
+            // (1.3.134) «tienda»: la tienda nueva (comprar, Tesoros, VENDER), el precio del clan, el disco de una canción
+            // compartida y las compras de la web en el suelo frente a un clear lag
+            if (only != null && List.of(only.split(",")).contains("tienda")) ids.add(0, "tienda");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -293,7 +296,8 @@ public final class BossTest {
         // segundo y la vista siguiente (o quitar el cielo propio) llegaba antes que la foto (10 s como mucho)
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
-        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id))
+        boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
+                || "tienda".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -324,6 +328,10 @@ public final class BossTest {
         }
         if ("pad".equals(r.id) || "padtras".equals(r.id)) {
             if (!waitShot) padStep(level, player, r);
+            return;
+        }
+        if ("tienda".equals(r.id)) {
+            if (!waitShot) tiendaStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -707,6 +715,10 @@ public final class BossTest {
     static volatile String openPad;
     /** (1.3.106) Lo que la prueba escribe en la casilla de Música del pad (BossTestClient). */
     static volatile String typePad;
+    /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
+    static volatile String musicCmd;
+    /** (1.3.134) Lo que cuenta el cliente de su música: canciones, las de COMPARTIDOS y lo que falta por bajar. */
+    static volatile String clientMusic = "?";
     /** (1.3.109) Una acción para la app abierta del pad («tab:combate», «§scroll:400»). */
     static volatile String actPad;
     /**
@@ -2054,6 +2066,220 @@ public final class BossTest {
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
             }
             case 1358 -> next(level);
+            default -> { }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.134) «tienda»: la tienda, el clan, el disco de una canción y las compras de la web en el suelo
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static long tiendaB0;
+    private static ItemEntity webDrop, plainDrop, lavaDrop, hopperDrop;
+    private static net.minecraft.core.BlockPos hopperAt;
+
+    private static long balance(ServerPlayer p) {
+        return net.tierrasfantasticas.tfclient.economy.TFEconomy.balance(p.server, p.getUUID()).orElse(-1);
+    }
+
+    private static net.tierrasfantasticas.tfclient.shop.TFShopConfig.Entry shopEntry(String item) {
+        for (var c : net.tierrasfantasticas.tfclient.shop.TFShopConfig.categories.values()) {
+            for (var e : c.entries()) if (e.itemId().equals(item)) return e;
+        }
+        return null;
+    }
+
+    private static ItemEntity drop(ServerLevel level, double x, double y, double z, ItemStack stack) {
+        ItemEntity e = new ItemEntity(level, x, y, z, stack, 0, 0, 0);
+        e.setPickUpDelay(32767);
+        level.addFreshEntity(e);
+        return e;
+    }
+
+    private static void tiendaStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        String name = player.getGameProfile().getName();
+        switch (t) {
+            case 1 -> player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+            // la tienda de antes (sin versionTienda, con diamantes) se cambia sola por la nueva y se guarda la vieja
+            case 4 -> {
+                try {
+                    Path f = net.tierrasfantasticas.tfclient.shop.TFShopConfig.file();
+                    Files.writeString(f, "{\"titulo\":\"vieja\",\"categorias\":[{\"id\":\"bloques\",\"nombre\":\"Bloques\",\"objetos\":"
+                            + "[{\"objeto\":\"minecraft:diamond\",\"cantidad\":1,\"comprar\":150,\"vender\":40}]}]}", StandardCharsets.UTF_8);
+                    List<String> warnings = net.tierrasfantasticas.tfclient.shop.TFShopConfig.load();
+                    var now = net.tierrasfantasticas.tfclient.util.TFJson.read(f);
+                    StringBuilder b = new StringBuilder();
+                    int total = 0;
+                    for (var c : net.tierrasfantasticas.tfclient.shop.TFShopConfig.categories.values()) {
+                        long buy = c.entries().stream().filter(e -> e.buyable()).count(), sell = c.entries().stream().filter(e -> e.sellable()).count();
+                        b.append(c.id()).append(' ').append(c.entries().size()).append(" (compra ").append(buy).append(", vende ").append(sell).append("); ");
+                        total += c.entries().size();
+                    }
+                    r.event("tienda: la de antes " + (net.tierrasfantasticas.tfclient.util.TFJson.num(now, "versionTienda", 0) >= 2 ? "se cambió por la nueva" : "NO SE CAMBIÓ")
+                            + ", copia " + (Files.exists(f.resolveSibling("tienda.antes-v2.json")) ? "guardada" : "NO GUARDADA") + "; " + total + " objetos: " + b
+                            + "avisos: " + warnings.size() + (warnings.isEmpty() ? "" : " → " + String.join(" | ", warnings.subList(0, Math.min(8, warnings.size())))));
+                    var dia = shopEntry("minecraft:diamond");
+                    var neth = shopEntry("minecraft:netherite_ingot");
+                    var pearl = shopEntry("minecraft:ender_pearl");
+                    r.event("tienda: diamante " + (dia == null ? "fuera (bien)" : "A LA VENTA (mal)") + ", netherita " + (neth == null ? "fuera (bien)" : "A LA VENTA (mal)")
+                            + ", perla de ender " + (pearl == null ? "fuera (bien)" : "A LA VENTA (mal)"));
+                } catch (Exception e) {
+                    r.event("tienda: FALLO al probar la tienda de antes: " + e);
+                }
+            }
+            // comprar, vender un Tesoro (con su límite) y que no compre el diamante
+            case 10 -> {
+                net.tierrasfantasticas.tfclient.economy.TFEconomy.give(server, player.getUUID(), name, 50_000);
+                player.getInventory().clearContent();
+                long b0 = balance(player);
+                var cob = shopEntry("minecraft:cobblestone");
+                boolean bought = cob != null && net.tierrasfantasticas.tfclient.shop.TFShop.buy(player, cob, 2);
+                long b1 = balance(player);
+                r.event("tienda: comprar 2 lotes de roca (" + (cob == null ? "?" : cob.amount() + " por " + cob.buy()) + "): " + (bought ? "sí" : "NO")
+                        + ", saldo " + b0 + " → " + b1 + " (" + (b1 - b0) + "), roca en el inventario " + player.getInventory().countItem(Items.COBBLESTONE));
+                player.getInventory().add(new ItemStack(Items.TOTEM_OF_UNDYING, 2));
+                player.getInventory().add(new ItemStack(Items.DIAMOND, 5));
+                var tot = shopEntry("minecraft:totem_of_undying");
+                boolean s1 = tot != null && net.tierrasfantasticas.tfclient.shop.TFShop.sell(player, tot, 1, true);
+                long b2 = balance(player);
+                boolean s2 = tot != null && net.tierrasfantasticas.tfclient.shop.TFShop.sell(player, tot, 1, true);
+                long b3 = balance(player);
+                net.tierrasfantasticas.tfclient.shop.TFShop.sellAll(player);
+                long b4 = balance(player);
+                r.event("tienda: vender un tótem (Tesoro, " + (tot == null ? "?" : tot.sell() + ", " + tot.sellDaily() + " al día") + "): " + (s1 ? "sí" : "NO") + " (+" + (b2 - b1)
+                        + "); el segundo el mismo día: " + (s2 ? "SÍ (mal: límite)" : "no (bien: límite)") + " (+" + (b3 - b2) + "); vender todo con 5 diamantes: +"
+                        + (b4 - b3) + ", diamantes que quedan " + player.getInventory().countItem(Items.DIAMOND));
+                int totem = player.getInventory().findSlotMatchingItem(new ItemStack(Items.TOTEM_OF_UNDYING));
+                if (totem >= 0) player.getInventory().removeItem(totem, 64);
+            }
+            case 20 -> openPad = "tienda";
+            case 60 -> shot(r, "tienda_portada");
+            case 62 -> actPad = "tab:c:0";
+            case 100 -> shot(r, "tienda_construccion");
+            case 102 -> actPad = "tab:c:2";
+            case 140 -> shot(r, "tienda_minerales");
+            case 142 -> actPad = "tab:c:8";
+            case 180 -> shot(r, "tienda_protecciones");
+            case 182 -> {
+                var cats = net.tierrasfantasticas.tfclient.shop.TFShop.visible(player);
+                var c = cats.get(0);
+                int i = c.entries().indexOf(shopEntry("minecraft:oak_log"));
+                actPad = "tab:i:0:" + Math.max(0, i) + ":b";
+            }
+            case 220 -> shot(r, "tienda_ficha_tronco");
+            case 222 -> {
+                player.getInventory().add(new ItemStack(Items.TOTEM_OF_UNDYING, 1));
+                closeScreen = true;
+            }
+            case 226 -> openPad = "tienda/v";
+            case 266 -> shot(r, "tienda_vender");
+            case 268 -> closeScreen = true;
+            // el clan: sin dinero no se funda; con dinero, se cobra lo de pad.json (clanes.precio)
+            case 280 -> {
+                long price = net.tierrasfantasticas.tfclient.pad.PadConfig.get("clanes.precio");
+                long have = balance(player);
+                net.tierrasfantasticas.tfclient.economy.TFEconomy.take(player, Math.max(0, have - 100));
+                long b0 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.APP.action(player, "", "crear", "Clan de Prueba");
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.APP.action(player, "", "etiqueta", "PRU");
+                long b1 = balance(player);
+                String clan = net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(player.getUUID());
+                r.event("clan: cuesta " + price + "; con " + b0 + " monedas: " + (clan == null ? "no se funda (bien)" : "SE FUNDA (mal)") + ", saldo " + b0 + " → " + b1);
+                net.tierrasfantasticas.tfclient.economy.TFEconomy.give(server, player.getUUID(), name, 10_000);
+                long b2 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.APP.action(player, "", "crear", "Clan de Prueba");
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.APP.action(player, "", "etiqueta", "PRU");
+                long b3 = balance(player);
+                clan = net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(player.getUUID());
+                r.event("clan: con " + b2 + " monedas: " + (clan != null ? "fundado" : "NO SE FUNDA") + ", saldo " + b2 + " → " + b3 + " (" + (b3 - b2)
+                        + (b2 - b3 == price ? ", cobra justo el precio: bien)" : ", NO COBRA EL PRECIO)"));
+            }
+            case 282 -> openPad = "clanes";
+            case 322 -> shot(r, "clan_fundado");
+            case 324 -> closeScreen = true;
+            // el disco de una canción: una de la carpeta, compartida, el disco en la mano, gastarlo y a COMPARTIDOS
+            case 330 -> {
+                player.getInventory().clearContent();
+                musicCmd = "crear";
+            }
+            case 380 -> {
+                r.event("música antes de compartir: " + clientMusic);
+                musicCmd = "compartir";
+            }
+            case 480 -> {
+                ItemStack hand = player.getMainHandItem();
+                boolean disc = net.tierrasfantasticas.tfclient.items.TFItems.SHARED_DISC != null && hand.is(net.tierrasfantasticas.tfclient.items.TFItems.SHARED_DISC.get());
+                r.event("disco: en la mano " + (disc ? "el disco «" + hand.getHoverName().getString() + "» " + hand.getTag() : "NO HAY DISCO (" + hand + ")"));
+            }
+            case 490 -> shot(r, "disco_en_mano");
+            case 500 -> {
+                ItemStack hand = player.getMainHandItem();
+                var res = hand.use(level, player, InteractionHand.MAIN_HAND);
+                r.event("disco: clic derecho → " + res.getResult() + ", en la mano queda " + player.getMainHandItem());
+            }
+            case 600 -> {
+                r.event("música tras gastar el disco: " + clientMusic);
+                musicCmd = "lista:compartidos";
+            }
+            case 604 -> openPad = "musica";
+            case 650 -> shot(r, "musica_compartidos");
+            case 652 -> musicCmd = "hover";
+            case 670 -> shot(r, "musica_compartidos_botones");
+            case 672 -> musicCmd = "lista:";
+            case 690 -> shot(r, "musica_todas_botones");
+            case 692 -> {
+                musicCmd = "nohover";
+                closeScreen = true;
+            }
+            // las compras de la web en el suelo: sin caducar, sin romperse y sin que las borre un clear lag (ni /kill)
+            case 700 -> {
+                player.getInventory().clearContent();
+                double x = arena.x + 4, y = arena.y + 0.2, z = arena.z;
+                ItemStack web = new ItemStack(Items.DIAMOND, 3);
+                web.getOrCreateTag().putString(net.tierrasfantasticas.tfclient.items.TFRevocations.ORDER, "prueba-web");
+                webDrop = drop(level, x, y, z, web);
+                plainDrop = drop(level, x, y, z + 2, new ItemStack(Items.EMERALD, 3));
+                // en lava
+                net.minecraft.core.BlockPos lava = net.minecraft.core.BlockPos.containing(x + 3, y, z);
+                level.setBlockAndUpdate(lava, net.minecraft.world.level.block.Blocks.LAVA.defaultBlockState());
+                ItemStack hot = new ItemStack(Items.GOLD_INGOT, 2);
+                hot.getOrCreateTag().putString(net.tierrasfantasticas.tfclient.items.TFRevocations.ORDER, "prueba-web");
+                lavaDrop = drop(level, x + 3.5, y + 0.3, z + 0.5, hot);
+                // encima de una tolva (no se duplica)
+                hopperAt = net.minecraft.core.BlockPos.containing(x - 4, y, z);
+                level.setBlockAndUpdate(hopperAt, net.minecraft.world.level.block.Blocks.HOPPER.defaultBlockState());
+                ItemStack toHopper = new ItemStack(Items.IRON_INGOT, 2);
+                toHopper.getOrCreateTag().putString(net.tierrasfantasticas.tfclient.items.TFRevocations.ORDER, "prueba-web");
+                hopperDrop = drop(level, hopperAt.getX() + 0.5, hopperAt.getY() + 1.1, hopperAt.getZ() + 0.5, toHopper);
+                hopperDrop.setPickUpDelay(0);
+            }
+            case 706 -> r.event("web: en el suelo, el de la web: edad " + webDrop.getAge() + ", invulnerable " + webDrop.isInvulnerable()
+                    + "; el normal: edad " + plainDrop.getAge() + ", invulnerable " + plainDrop.isInvulnerable());
+            case 710 -> command(server, "kill @e[type=item,distance=..40]");
+            case 712 -> r.event("web: tras /kill @e[type=item]: el de la web " + (webDrop.isRemoved() ? "BORRADO (mal)" : "sigue (bien)")
+                    + ", el normal " + (plainDrop.isRemoved() ? "borrado (bien)" : "SIGUE (mal)"));
+            case 716 -> {
+                int n = prueba.clearlag.ClearLagSimulado.limpiar(level, webDrop.getBoundingBox().inflate(3));
+                r.event("web: un clear lag (plugin) borra " + n + " objeto(s): el de la web " + (webDrop.isRemoved() ? "BORRADO (mal)" : "sigue (bien)"));
+            }
+            case 760 -> {
+                int inHopper = 0;
+                if (level.getBlockEntity(hopperAt) instanceof net.minecraft.world.level.block.entity.HopperBlockEntity h) {
+                    for (int i = 0; i < h.getContainerSize(); i++) if (h.getItem(i).is(Items.IRON_INGOT)) inHopper += h.getItem(i).getCount();
+                }
+                int onFloor = level.getEntitiesOfClass(ItemEntity.class, new AABB(hopperAt).inflate(3), e -> e.getItem().is(Items.IRON_INGOT)).size();
+                r.event("web: en lava tras 3 s: " + (lavaDrop.isRemoved() ? "QUEMADO (mal)" : "sigue (bien)") + "; la tolva lo recoge: dentro " + inHopper
+                        + ", en el suelo " + onFloor + (inHopper == 2 && onFloor == 0 ? " (bien, sin duplicar)" : " (MAL)"));
+                webDrop.setPickUpDelay(0);
+                player.teleportTo(level, webDrop.getX(), webDrop.getY(), webDrop.getZ(), 0F, 0F);
+            }
+            case 800 -> {
+                int have = player.getInventory().countItem(Items.DIAMOND);
+                r.event("web: el jugador lo recoge: en el inventario " + have + ", en el suelo " + (webDrop.isRemoved() ? "ya no está" : "SIGUE")
+                        + (have == 3 && webDrop.isRemoved() ? " (bien)" : " (MAL)"));
+                if (!lavaDrop.isRemoved()) lavaDrop.discard();
+            }
+            case 806 -> next(level);
             default -> { }
         }
     }

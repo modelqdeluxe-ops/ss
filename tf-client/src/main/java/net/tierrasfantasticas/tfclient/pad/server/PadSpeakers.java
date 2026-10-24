@@ -154,7 +154,7 @@ public final class PadSpeakers {
     /** Como mucho, lo guardado en el servidor (se borran las más viejas). */
     private static final long MAX_STORED = 400L * 1024 * 1024;
 
-    private static boolean isLocal(String url) {
+    static boolean isLocal(String url) {
         return url.startsWith(PadSpeakerNet.LOCAL) && url.substring(PadSpeakerNet.LOCAL.length()).matches("[0-9a-f]{40}");
     }
 
@@ -164,9 +164,21 @@ public final class PadSpeakers {
                 : server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("tfclient").resolve("altavoz");
     }
 
-    private static java.nio.file.Path stored(String hash) {
+    /** Donde se guarda la canción de un altavoz (exista o no). */
+    static java.nio.file.Path speakerFile(String hash) {
         java.nio.file.Path d = dir();
         return d == null ? null : d.resolve(hash + ".audio");
+    }
+
+    /** La canción: la de los discos (PadMusicShare) si está; si no, la del altavoz (exista o no). */
+    private static java.nio.file.Path stored(String hash) {
+        java.nio.file.Path shared = PadMusicShare.stored(hash);
+        return shared != null ? shared : speakerFile(hash);
+    }
+
+    /** (1.3.134) Para el disco de una canción de su carpeta: que la suba. */
+    static void askUpload(ServerPlayer p, String hash) {
+        needFrom(p, hash);
     }
 
     private static void needFrom(ServerPlayer p, String hash) {
@@ -178,10 +190,14 @@ public final class PadSpeakers {
         PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Need(hash));
     }
 
-    /** Un trozo de lo que sube el que pone la música (solo de una canción que suena en su altavoz). */
+    /**
+     * Un trozo de lo que sube el que pone la música: de una canción que suena en su altavoz o (1.3.134) de la que
+     * comparte en un disco (PadMusicShare).
+     */
     public static void uploaded(ServerPlayer p, PadSpeakerNet.UpPart m) {
         State st = SPEAKERS.get(p.getUUID());
-        if (st == null || !st.url.equals(PadSpeakerNet.LOCAL + m.hash()) || !isLocal(st.url)) return;
+        boolean speaking = st != null && st.url.equals(PadSpeakerNet.LOCAL + m.hash()) && isLocal(st.url);
+        if (!speaking && !(m.hash().matches("[0-9a-f]{40}") && PadMusicShare.waiting(p, m.hash()))) return;
         long maxParts = (PadSpeakerNet.MAX_BYTES + PadSpeakerNet.UP_PART - 1) / PadSpeakerNet.UP_PART;
         if (m.total() <= 0 || m.total() > maxParts || m.index() < 0 || m.index() >= m.total() || m.size() <= 0
                 || m.size() > PadSpeakerNet.MAX_BYTES || m.data().length > PadSpeakerNet.UP_PART) return;
@@ -211,7 +227,7 @@ public final class PadSpeakers {
                 TFClient.LOGGER.warn("TF Pad: la canción del altavoz de {} llegó mal (no coincide)", p.getGameProfile().getName());
                 return;
             }
-            java.nio.file.Path f = stored(m.hash());
+            java.nio.file.Path f = speakerFile(m.hash());
             java.nio.file.Files.createDirectories(f.getParent());
             java.nio.file.Files.write(f, all);
             trim();
@@ -219,6 +235,7 @@ public final class PadSpeakers {
             TFClient.LOGGER.warn("TF Pad: no se pudo guardar la canción de un altavoz", e);
             return;
         }
+        PadMusicShare.uploaded(p, m.hash());
         Set<UUID> waiting = WAITING.remove(m.hash());
         MinecraftServer server = p.getServer();
         if (waiting != null && server != null) {

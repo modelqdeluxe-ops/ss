@@ -89,6 +89,9 @@ public final class TFShopConfig {
             Map.entry("sinPermiso", "&cNo tienes permiso para esto."),
             Map.entry("desactivada", "&cLa tienda está cerrada ahora mismo."));
 
+    /** La versión de la tienda por defecto (versionTienda; la misma que VERSION de tools/tienda/precios.py). */
+    static final int VERSION = 2;
+
     private TFShopConfig() {}
 
     public static Path file() {
@@ -119,6 +122,9 @@ public final class TFShopConfig {
                 warnings.add(file.getFileName() + " no es un JSON válido: se mantiene la tienda de antes");
                 return warnings;
             }
+            // (1.3.134) todos los objetos del juego con precios del estudio de la economía (tools/tienda/precios.py,
+            // TIENDA.md) y la tienda solo compra Tesoros: la de antes se guarda (tienda.antes-v2.json) y se cambia
+            json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionTienda", VERSION, defaults(), "tienda.json");
         }
         if (json == null) return warnings;
         enabled = TFJson.bool(json, "activada", true);

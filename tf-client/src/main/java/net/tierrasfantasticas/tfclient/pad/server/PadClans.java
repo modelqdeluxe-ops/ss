@@ -82,7 +82,7 @@ public final class PadClans {
         return e != null && e.isJsonObject() ? e.getAsJsonObject() : null;
     }
 
-    static String clanIdOf(UUID uuid) {
+    public static String clanIdOf(UUID uuid) {
         JsonObject p = STORE_IMPL.playerIfAny(uuid);
         String id = p == null ? "" : TFJson.str(p, "clan", "");
         return !id.isEmpty() && clan(id) != null ? id : null;

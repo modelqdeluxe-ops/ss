@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.tierrasfantasticas.tfclient.pad.music.MusicDownloader;
 import net.tierrasfantasticas.tfclient.pad.music.MusicLibrary;
 import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
+import net.tierrasfantasticas.tfclient.pad.music.MusicShare;
 
 /**
  * Música: un reproductor completo dentro del pad (solo lo oye el jugador).
@@ -33,6 +34,9 @@ import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
  *       Abajo, la descarga en curso con su barra y el campo para pegar el link directo de una canción (MP3, MP4, M4A, AAC, OGG o WAV;
  *       los links de compartir de Google Drive y Dropbox se convierten solos).</li>
  *   <li>El botón del altavoz (al final de los controles): los de cerca oyen tu música (ver MusicSpeaker).</li>
+ *   <li>(1.3.134) Compartir: cada canción, al pasar el ratón, tiene su botón (la flecha morada): te da en la mano un
+ *       disco con ella para dárselo a otro; con clic derecho se gasta y la canción le llega a su pestaña COMPARTIDOS
+ *       (siempre la primera tras TODAS; sin X ni ELEGIR CANCIONES). Ver MusicShare y PadMusicShare.</li>
  * </ul>
  * La música sigue sonando con el pad cerrado (ver {@link MusicPlayer}). Teclas: espacio = play/pausa, ←/→ = 5 s.
  */
@@ -44,6 +48,8 @@ final class PadMusicPage extends PadPage {
     private boolean focused;
     /** (1.3.106) Para la prueba en el juego: lo que «escribe» en la casilla (y la deja elegida). */
     static volatile String testInput;
+    /** (1.3.134) Para la prueba en el juego: la primera canción de la lista, como con el ratón encima (sus botones). */
+    static volatile boolean testHoverFirst;
     /** Modo portada: el campo pide el link de una imagen para esta canción. */
     private MusicLibrary.Track coverFor;
     private int listScroll;
@@ -488,6 +494,14 @@ final class PadMusicPage extends PadPage {
     private void drawListHeader(GuiGraphics g, double mx, double my, int x, int top, int w, String list) {
         MusicLibrary.Playlist p = MusicLibrary.playlist(list);
         int n = p == null ? 0 : MusicLibrary.queue().size();
+        if (list.equals(MusicLibrary.SHARED)) {
+            picking = false;
+            String info = n == 0 ? "Las canciones que te pasen con un disco" : n == 1 ? "1 canción que te compartieron"
+                    : n + " canciones que te compartieron";
+            PadUi.text(g, PadUi.fitEnd(info, w - 16), x + 8, top + 8, PadUi.MUTED);
+            g.fill(x + 6, top + LIST_HEADER - 2, x + w - 6, top + LIST_HEADER - 1, 0xFFC8E4F8);
+            return;
+        }
         String label = picking ? "LISTO" : "ELEGIR CANCIONES";
         int bw = PadUi.buttonWidth(label), bx = x + w - 6 - bw, by = top + 4;
         String info = picking ? "Marca las que van en «" + (p == null ? "" : p.name()) + "»"
@@ -593,7 +607,7 @@ final class PadMusicPage extends PadPage {
 
     /** La pestaña elegida: blanca y unida a la ventana; en una playlist, el nombre y su X para borrarla. */
     private void drawChosenTab(GuiGraphics g, double mx, double my, int tx, int y, int tw, String label, String id) {
-        if (id.isEmpty()) {
+        if (id.isEmpty() || id.equals(MusicLibrary.SHARED)) {
             PadSkin.tab(g, tx, y, tw, label, 2, PadSkin.accent("musica"));
             return;
         }
@@ -669,7 +683,9 @@ final class PadMusicPage extends PadPage {
     }
 
     private void drawEmptyList(GuiGraphics g, int x, int top, int w, int h) {
-        String[] lines = {"Esta lista está vacía.", "Pulsa ELEGIR CANCIONES para traer de tu música", "o pega abajo el link de una canción."};
+        String[] lines = MusicLibrary.SHARED.equals(MusicLibrary.currentList())
+                ? new String[] {"Aún no te han compartido canciones.", "Cuando alguien te dé un disco de canción,", "haz clic derecho con él en la mano."}
+                : new String[] {"Esta lista está vacía.", "Pulsa ELEGIR CANCIONES para traer de tu música", "o pega abajo el link de una canción."};
         int cy = top + h / 2 - 15;
         for (int i = 0; i < lines.length; i++) {
             String l = PadUi.fitEnd(lines[i], w - 16);
@@ -679,7 +695,8 @@ final class PadMusicPage extends PadPage {
 
     private void drawRow(GuiGraphics g, MusicLibrary.Track t, int x, int y, int w, double mx, double my, boolean inList, boolean current,
                          String list) {
-        boolean hover = inList && PadUi.inside(mx, my, x, y, w, ROW - 1);
+        boolean hover = inList && PadUi.inside(mx, my, x, y, w, ROW - 1)
+                || testHoverFirst && !MusicLibrary.queue().isEmpty() && MusicLibrary.queue().get(0).id().equals(t.id());
         boolean in = picking && MusicLibrary.inList(list, t.id());
         if (current && !picking || hover || in) PadUi.card(g, x, y, w, ROW - 1, current && !picking ? 2 : 1);
         else g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFFC8E4F8);
@@ -693,6 +710,7 @@ final class PadMusicPage extends PadPage {
         // TODAS: [X o ¿BORRAR?] · playlist: [−] · eligiendo: [casilla] (siempre a la vista)
         int sb = ROW_BUTTON, by = y + (ROW - 1 - sb) / 2;
         boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
+        int rightStart = right;
         if (picking) {
             int bx = right - sb;
             rowButton(g, mx, my, bx, by, sb, in ? CHECK : PLUS, 0xFF1E9E46, in, "§marcar" + t.id(), () -> toggleIn(list, t));
@@ -727,6 +745,15 @@ final class PadMusicPage extends PadPage {
                 });
                 right = bx - 6;
             }
+        }
+        // (1.3.134) compartir: un disco con ella en tu mano, para dárselo a otro
+        if (!picking && hover && !sure && right < rightStart) {
+            int bx = right - sb;
+            rowButton(g, mx, my, bx, by, sb, SHARE, 0xFF8B4FE8, false, "§compartir" + t.id(), () -> {
+                pad.showNotice(MusicShare.share(t));
+                pad.sound("like", 0.7F);
+            });
+            right = bx - 6;
         }
         if (!dur.isEmpty()) {
             PadUi.text(g, dur, right - PadUi.font().width(dur), y + 10, PadUi.MUTED);
@@ -917,6 +944,8 @@ final class PadMusicPage extends PadPage {
     private static final int[][] CROSS = glyph("##....##", "###..###", ".######.", "..####..", "..####..", ".######.", "###..###", "##....##");
     private static final int[][] PLUS = glyph("...##...", "...##...", "...##...", "########", "########", "...##...", "...##...", "...##...");
     private static final int[][] MINUS = glyph("........", "........", "........", "########", "########", "........", "........", "........");
+    // compartir: la flecha que sale de la bandeja
+    private static final int[][] SHARE = glyph("...##...", "..####..", ".##..##.", "...##...", "...##...", "##.##.##", "##....##", "########");
     private static final int[][] CHECK = glyph("......##", ".....###", "#....##.", "##..###.", "###.##..", ".####...", "..###...", "...#....");
     private static final int[][] CROSS_SMALL = glyph("#...#", ".#.#.", "..#..", ".#.#.", "#...#");
     private static final int[][] ARROW_LEFT = glyph("....#", "...##", "..###", ".####", "#####", ".####", "..###", "...##", "....#");

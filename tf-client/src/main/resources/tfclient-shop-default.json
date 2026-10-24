@@ -1,458 +1,7493 @@
 {
-  "activada": true,
-  "titulo": "&6&lTienda del servidor",
-  "relleno": "minecraft:black_stained_glass_pane",
-  "sonidos": true,
-  "botonVenderTodo": true,
-  "venderDesdeInventario": true,
-  "registro": true,
-  "pasos": [
-    1,
-    8,
-    64
-  ],
-  "maximoPorCompra": 64,
-  "mensajes": {
-    "compra": "&a✔ Compraste &f{cantidad}× {objeto} &apor &6{precio}&a.",
-    "venta": "&a✔ Vendiste &f{cantidad}× {objeto} &apor &6{precio}&a.",
-    "ventaTodo": "&a✔ Vendiste {lineas} objetos por &6{precio}&a.",
-    "sinDinero": "&cNo tienes bastantes monedas: cuesta &6{precio}&c (te faltan &6{faltan}&c).",
-    "sinObjetos": "&cNo tienes {objeto} para vender (sin nombre, encantamientos ni daño).",
-    "nadaQueVender": "&cNo tienes nada que se pueda vender aquí.",
-    "limiteCompra": "&cHoy ya no puedes comprar más {objeto} (límite diario: {limite}).",
-    "limiteCompraQueda": "&cHoy solo puedes comprar {quedan} más de {objeto} (límite diario: {limite}).",
-    "limiteVenta": "&cHoy ya no puedes vender más {objeto} (límite diario: {limite}).",
-    "sinPermiso": "&cNo tienes permiso para esto.",
-    "desactivada": "&cLa tienda está cerrada ahora mismo."
-  },
-  "categorias": [
+ "_ayuda": [
+  "Tienda del servidor (/tf shop y la app Tienda del pad). Generada por tf-client/tools/tienda/precios.py (1.3.134): todos los objetos de Minecraft 1.20.1 con precios sacados de lo que se gana (tf-client/TIENDA.md).",
+  "cantidad: unidades por lote; comprar / vender: precio de un lote (0 = no). limiteCompraDiario / limiteVentaDiario: unidades al día por jugador (0 = sin límite).",
+  "La tienda solo compra los Tesoros (vender > 0), con límite diario. Cambia lo que quieras desde el pad de administrador o aquí y usa /tf reload."
+ ],
+ "versionTienda": 2,
+ "activada": true,
+ "titulo": "&6&lTienda del servidor",
+ "relleno": "minecraft:black_stained_glass_pane",
+ "sonidos": true,
+ "botonVenderTodo": true,
+ "venderDesdeInventario": true,
+ "registro": true,
+ "pasos": [
+  1,
+  8,
+  64
+ ],
+ "maximoPorCompra": 64,
+ "mensajes": {
+  "compra": "&a✔ Compraste &f{cantidad}× {objeto} &apor &6{precio}&a.",
+  "venta": "&a✔ Vendiste &f{cantidad}× {objeto} &apor &6{precio}&a.",
+  "ventaTodo": "&a✔ Vendiste {lineas} objetos por &6{precio}&a.",
+  "sinDinero": "&cNo tienes bastantes monedas: cuesta &6{precio}&c (te faltan &6{faltan}&c).",
+  "sinObjetos": "&cNo tienes {objeto} para vender (sin nombre, encantamientos ni daño).",
+  "nadaQueVender": "&cNo tienes nada que se pueda vender aquí.",
+  "limiteCompra": "&cHoy ya no puedes comprar más {objeto} (límite diario: {limite}).",
+  "limiteCompraQueda": "&cHoy solo puedes comprar {quedan} más de {objeto} (límite diario: {limite}).",
+  "limiteVenta": "&cHoy ya no puedes vender más {objeto} (límite diario: {limite}).",
+  "sinPermiso": "&cNo tienes permiso para esto.",
+  "desactivada": "&cLa tienda está cerrada ahora mismo."
+ },
+ "categorias": [
+  {
+   "id": "construccion",
+   "nombre": "Bloques y Materiales de Construcción",
+   "descripcion": [
+    "Piedra, madera, ladrillos, cristal, lana, hormigón y terracota."
+   ],
+   "icono": "minecraft:bricks",
+   "color": "#f59e0b",
+   "hueco": 10,
+   "objetos": [
     {
-      "id": "bloques",
-      "nombre": "Bloques",
-      "descripcion": [
-        "Madera, piedra y bloques para construir."
-      ],
-      "icono": "minecraft:grass_block",
-      "color": "#4ade80",
-      "hueco": 11,
-      "objetos": [
-        {
-          "objeto": "minecraft:oak_log",
-          "cantidad": 16,
-          "comprar": 32,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:spruce_log",
-          "cantidad": 16,
-          "comprar": 32,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:birch_log",
-          "cantidad": 16,
-          "comprar": 32,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:dark_oak_log",
-          "cantidad": 16,
-          "comprar": 40,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:stone",
-          "cantidad": 64,
-          "comprar": 24,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cobblestone",
-          "cantidad": 64,
-          "comprar": 12,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:deepslate",
-          "cantidad": 64,
-          "comprar": 32,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:sand",
-          "cantidad": 64,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:gravel",
-          "cantidad": 64,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:glass",
-          "cantidad": 64,
-          "comprar": 48,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:bricks",
-          "cantidad": 64,
-          "comprar": 64,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:quartz_block",
-          "cantidad": 16,
-          "comprar": 96,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:dirt",
-          "cantidad": 64,
-          "comprar": 8,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:obsidian",
-          "cantidad": 4,
-          "comprar": 40,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:stone",
+     "nombre": "Piedra",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
     },
     {
-      "id": "minerales",
-      "nombre": "Minerales",
-      "descripcion": [
-        "Lo que sacas de la mina vale dinero."
-      ],
-      "icono": "minecraft:diamond",
-      "color": "#67e8f9",
-      "hueco": 13,
-      "objetos": [
-        {
-          "objeto": "minecraft:coal",
-          "cantidad": 1,
-          "comprar": 4,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:copper_ingot",
-          "cantidad": 1,
-          "comprar": 6,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:iron_ingot",
-          "cantidad": 1,
-          "comprar": 12,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:gold_ingot",
-          "cantidad": 1,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:redstone",
-          "cantidad": 1,
-          "comprar": 3,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:lapis_lazuli",
-          "cantidad": 1,
-          "comprar": 4,
-          "vender": 1
-        },
-        {
-          "objeto": "minecraft:quartz",
-          "cantidad": 1,
-          "comprar": 6,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:amethyst_shard",
-          "cantidad": 1,
-          "comprar": 8,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:emerald",
-          "cantidad": 1,
-          "comprar": 40,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:diamond",
-          "cantidad": 1,
-          "comprar": 150,
-          "vender": 40,
-          "limiteVentaDiario": 64
-        },
-        {
-          "objeto": "minecraft:netherite_scrap",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 180,
-          "limiteVentaDiario": 16
-        }
-      ]
+     "objeto": "minecraft:granite",
+     "nombre": "Granito",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
     },
     {
-      "id": "granja",
-      "nombre": "Granja",
-      "descripcion": [
-        "Cultivos y semillas."
-      ],
-      "icono": "minecraft:wheat",
-      "color": "#fcc94a",
-      "hueco": 15,
-      "objetos": [
-        {
-          "objeto": "minecraft:wheat_seeds",
-          "cantidad": 8,
-          "comprar": 2,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:carrot",
-          "cantidad": 1,
-          "comprar": 3,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:potato",
-          "cantidad": 1,
-          "comprar": 3,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:beetroot",
-          "cantidad": 1,
-          "comprar": 3,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:pumpkin",
-          "cantidad": 1,
-          "comprar": 12,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:melon_slice",
-          "cantidad": 1,
-          "comprar": 2,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:sugar_cane",
-          "cantidad": 1,
-          "comprar": 4,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:bamboo",
-          "cantidad": 4,
-          "comprar": 2,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cactus",
-          "cantidad": 1,
-          "comprar": 4,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cocoa_beans",
-          "cantidad": 1,
-          "comprar": 4,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:nether_wart",
-          "cantidad": 1,
-          "comprar": 8,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:bone_meal",
-          "cantidad": 8,
-          "comprar": 2,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:polished_granite",
+     "nombre": "Granito pulido",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
     },
     {
-      "id": "comida",
-      "nombre": "Comida",
-      "descripcion": [
-        "Para no pasar hambre en la aventura."
-      ],
-      "icono": "minecraft:cooked_beef",
-      "color": "#fb923c",
-      "hueco": 29,
-      "objetos": [
-        {
-          "objeto": "minecraft:bread",
-          "cantidad": 8,
-          "comprar": 10,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cooked_beef",
-          "cantidad": 8,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cooked_porkchop",
-          "cantidad": 8,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cooked_chicken",
-          "cantidad": 8,
-          "comprar": 16,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:baked_potato",
-          "cantidad": 8,
-          "comprar": 10,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:apple",
-          "cantidad": 4,
-          "comprar": 12,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:golden_carrot",
-          "cantidad": 4,
-          "comprar": 40,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:cake",
-          "cantidad": 1,
-          "comprar": 30,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:diorite",
+     "nombre": "Diorita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
     },
     {
-      "id": "botin",
-      "nombre": "Botín de criaturas",
-      "descripcion": [
-        "Vende lo que sueltan los monstruos."
-      ],
-      "icono": "minecraft:bone",
-      "color": "#c4b5fd",
-      "hueco": 31,
-      "objetos": [
-        {
-          "objeto": "minecraft:gunpowder",
-          "cantidad": 1,
-          "comprar": 12,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:ender_pearl",
-          "cantidad": 1,
-          "comprar": 40,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:blaze_rod",
-          "cantidad": 1,
-          "comprar": 40,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:slime_ball",
-          "cantidad": 1,
-          "comprar": 16,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:leather",
-          "cantidad": 1,
-          "comprar": 10,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:polished_diorite",
+     "nombre": "Diorita pulida",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
     },
     {
-      "id": "pesca",
-      "nombre": "Pesca",
-      "descripcion": [
-        "Lo que pescas en el río y el mar."
-      ],
-      "icono": "minecraft:cod",
-      "color": "#60a5fa",
-      "hueco": 33,
-      "objetos": [
-        {
-          "objeto": "minecraft:ink_sac",
-          "cantidad": 1,
-          "comprar": 6,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:andesite",
+     "nombre": "Andesita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
     },
     {
-      "id": "varios",
-      "nombre": "Varios",
-      "descripcion": [
-        "Objetos útiles que no se fabrican."
-      ],
-      "icono": "minecraft:name_tag",
-      "color": "#f472b6",
-      "hueco": 22,
-      "objetos": [
-        {
-          "objeto": "minecraft:name_tag",
-          "cantidad": 1,
-          "comprar": 120,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:saddle",
-          "cantidad": 1,
-          "comprar": 150,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:lead",
-          "cantidad": 1,
-          "comprar": 30,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:experience_bottle",
-          "cantidad": 4,
-          "comprar": 30,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:map",
-          "cantidad": 1,
-          "comprar": 20,
-          "vender": 0
-        },
-        {
-          "objeto": "minecraft:compass",
-          "cantidad": 1,
-          "comprar": 30,
-          "vender": 0
-        }
-      ]
+     "objeto": "minecraft:polished_andesite",
+     "nombre": "Andesita pulida",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate",
+     "nombre": "Pizarra profunda",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobbled_deepslate",
+     "nombre": "Pizarra profunda rocosa",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_deepslate",
+     "nombre": "Pizarra profunda pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:calcite",
+     "nombre": "Calcita",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tuff",
+     "nombre": "Toba",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dripstone_block",
+     "nombre": "Bloque de caliza",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:grass_block",
+     "nombre": "Césped",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dirt",
+     "nombre": "Tierra",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:coarse_dirt",
+     "nombre": "Tierra estéril",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:podzol",
+     "nombre": "Podsol",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rooted_dirt",
+     "nombre": "Tierra enraizada",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mud",
+     "nombre": "Barro",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_nylium",
+     "nombre": "Necelio carmesí",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_nylium",
+     "nombre": "Necelio distorsionado",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobblestone",
+     "nombre": "Roca",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_planks",
+     "nombre": "Tablones de roble",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_planks",
+     "nombre": "Tablones de abeto",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_planks",
+     "nombre": "Tablones de abedul",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_planks",
+     "nombre": "Tablones de jungla",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_planks",
+     "nombre": "Tablones de acacia",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_planks",
+     "nombre": "Tablones de cerezo",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_planks",
+     "nombre": "Tablones de roble oscuro",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_planks",
+     "nombre": "Tablones de mangle",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_planks",
+     "nombre": "Tablones de bambú",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_planks",
+     "nombre": "Tablones carmesí",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_planks",
+     "nombre": "Tablones distorsionados",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_mosaic",
+     "nombre": "Mosaico de bambú",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sand",
+     "nombre": "Arena",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_sand",
+     "nombre": "Arena roja",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gravel",
+     "nombre": "Grava",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:exposed_copper",
+     "nombre": "Cobre expuesto",
+     "cantidad": 8,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:weathered_copper",
+     "nombre": "Cobre degradado",
+     "cantidad": 8,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oxidized_copper",
+     "nombre": "Cobre oxidado",
+     "cantidad": 8,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_copper",
+     "nombre": "Cobre cortado",
+     "cantidad": 16,
+     "comprar": 65,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:exposed_cut_copper",
+     "nombre": "Cobre cortado expuesto",
+     "cantidad": 16,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:weathered_cut_copper",
+     "nombre": "Cobre cortado degradado",
+     "cantidad": 16,
+     "comprar": 69,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oxidized_cut_copper",
+     "nombre": "Cobre cortado oxidado",
+     "cantidad": 16,
+     "comprar": 71,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado",
+     "cantidad": 16,
+     "comprar": 65,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:exposed_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado expuesto",
+     "cantidad": 16,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:weathered_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado degradado",
+     "cantidad": 16,
+     "comprar": 69,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oxidized_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado oxidado",
+     "cantidad": 16,
+     "comprar": 71,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_copper_slab",
+     "nombre": "Losa de cobre cortado",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:exposed_cut_copper_slab",
+     "nombre": "Losa de cobre cortado expuesto",
+     "cantidad": 64,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:weathered_cut_copper_slab",
+     "nombre": "Losa de cobre cortado degradado",
+     "cantidad": 64,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oxidized_cut_copper_slab",
+     "nombre": "Losa de cobre cortado oxidado",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_copper_block",
+     "nombre": "Bloque de cobre encerado",
+     "cantidad": 8,
+     "comprar": 155,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_exposed_copper",
+     "nombre": "Cobre expuesto encerado",
+     "cantidad": 8,
+     "comprar": 160,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_weathered_copper",
+     "nombre": "Cobre degradado encerado",
+     "cantidad": 8,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_oxidized_copper",
+     "nombre": "Cobre oxidado encerado",
+     "cantidad": 8,
+     "comprar": 170,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_cut_copper",
+     "nombre": "Cobre cortado encerado",
+     "cantidad": 16,
+     "comprar": 78,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_exposed_cut_copper",
+     "nombre": "Cobre cortado expuesto encerado",
+     "cantidad": 16,
+     "comprar": 80,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_weathered_cut_copper",
+     "nombre": "Cobre cortado degradado encerado",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_oxidized_cut_copper",
+     "nombre": "Cobre cortado oxidado encerado",
+     "cantidad": 16,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado encerado",
+     "cantidad": 16,
+     "comprar": 78,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_exposed_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado expuesto encerado",
+     "cantidad": 16,
+     "comprar": 80,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_weathered_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado degradado encerado",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_oxidized_cut_copper_stairs",
+     "nombre": "Escaleras de cobre cortado oxidado encerado",
+     "cantidad": 16,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_cut_copper_slab",
+     "nombre": "Losa de cobre cortado encerado",
+     "cantidad": 64,
+     "comprar": 155,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_exposed_cut_copper_slab",
+     "nombre": "Losa de cobre cortado expuesto encerado",
+     "cantidad": 64,
+     "comprar": 160,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_weathered_cut_copper_slab",
+     "nombre": "Losa de cobre cortado degradado encerado",
+     "cantidad": 64,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:waxed_oxidized_cut_copper_slab",
+     "nombre": "Losa de cobre cortado oxidado encerado",
+     "cantidad": 64,
+     "comprar": 170,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_log",
+     "nombre": "Tronco de roble",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_log",
+     "nombre": "Tronco de abeto",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_log",
+     "nombre": "Tronco de abedul",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_log",
+     "nombre": "Tronco de jungla",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_log",
+     "nombre": "Tronco de acacia",
+     "cantidad": 64,
+     "comprar": 44,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_log",
+     "nombre": "Tronco de cerezo",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_log",
+     "nombre": "Tronco de roble oscuro",
+     "cantidad": 64,
+     "comprar": 44,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_log",
+     "nombre": "Tronco de mangle",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_stem",
+     "nombre": "Tallo carmesí",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_stem",
+     "nombre": "Tallo distorsionado",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_block",
+     "nombre": "Bloque de bambú",
+     "cantidad": 64,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_oak_log",
+     "nombre": "Tronco de roble sin corteza",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_spruce_log",
+     "nombre": "Tronco de abeto sin corteza",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_birch_log",
+     "nombre": "Tronco de abedul sin corteza",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_jungle_log",
+     "nombre": "Tronco de jungla sin corteza",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_acacia_log",
+     "nombre": "Tronco de acacia sin corteza",
+     "cantidad": 64,
+     "comprar": 44,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_cherry_log",
+     "nombre": "Tronco de cerezo sin corteza",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_dark_oak_log",
+     "nombre": "Tronco de roble oscuro sin corteza",
+     "cantidad": 64,
+     "comprar": 44,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_mangrove_log",
+     "nombre": "Tronco de mangle sin corteza",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_crimson_stem",
+     "nombre": "Tallo carmesí pelado",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_warped_stem",
+     "nombre": "Tallo distorsionado pelado",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_oak_wood",
+     "nombre": "Leño de roble sin corteza",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_spruce_wood",
+     "nombre": "Leño de abeto sin corteza",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_birch_wood",
+     "nombre": "Leño de abedul sin corteza",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_jungle_wood",
+     "nombre": "Leño de jungla sin corteza",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_acacia_wood",
+     "nombre": "Leño de acacia sin corteza",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_cherry_wood",
+     "nombre": "Leño de cerezo sin corteza",
+     "cantidad": 64,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_dark_oak_wood",
+     "nombre": "Leño de roble oscuro sin corteza",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_mangrove_wood",
+     "nombre": "Leño de mangle sin corteza",
+     "cantidad": 64,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_crimson_hyphae",
+     "nombre": "Hifas carmesí peladas",
+     "cantidad": 64,
+     "comprar": 81,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_warped_hyphae",
+     "nombre": "Hifas distorsionadas peladas",
+     "cantidad": 64,
+     "comprar": 81,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stripped_bamboo_block",
+     "nombre": "Bloque de bambú pelado",
+     "cantidad": 64,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_wood",
+     "nombre": "Leño de roble",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_wood",
+     "nombre": "Leño de abeto",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_wood",
+     "nombre": "Leño de abedul",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_wood",
+     "nombre": "Leño de jungla",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_wood",
+     "nombre": "Leño de acacia",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_wood",
+     "nombre": "Leño de cerezo",
+     "cantidad": 64,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_wood",
+     "nombre": "Leño de roble oscuro",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_wood",
+     "nombre": "Leño de mangle",
+     "cantidad": 64,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_hyphae",
+     "nombre": "Hifas carmesí",
+     "cantidad": 64,
+     "comprar": 81,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_hyphae",
+     "nombre": "Hifas distorsionadas",
+     "cantidad": 64,
+     "comprar": 81,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sponge",
+     "nombre": "Esponja",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wet_sponge",
+     "nombre": "Esponja mojada",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glass",
+     "nombre": "Cristal",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sandstone",
+     "nombre": "Arenisca",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_sandstone",
+     "nombre": "Arenisca cincelada",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_sandstone",
+     "nombre": "Arenisca cortada",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_wool",
+     "nombre": "Lana blanca",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_wool",
+     "nombre": "Lana naranja",
+     "cantidad": 64,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_wool",
+     "nombre": "Lana magenta",
+     "cantidad": 64,
+     "comprar": 110,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_wool",
+     "nombre": "Lana azul claro",
+     "cantidad": 64,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_wool",
+     "nombre": "Lana amarilla",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_wool",
+     "nombre": "Lana verde lima",
+     "cantidad": 64,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_wool",
+     "nombre": "Lana rosa",
+     "cantidad": 64,
+     "comprar": 88,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_wool",
+     "nombre": "Lana gris",
+     "cantidad": 64,
+     "comprar": 155,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_wool",
+     "nombre": "Lana gris claro",
+     "cantidad": 64,
+     "comprar": 125,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_wool",
+     "nombre": "Lana cian",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_wool",
+     "nombre": "Lana morada",
+     "cantidad": 64,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_wool",
+     "nombre": "Lana azul",
+     "cantidad": 64,
+     "comprar": 175,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_wool",
+     "nombre": "Lana marrón",
+     "cantidad": 64,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_wool",
+     "nombre": "Lana verde",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_wool",
+     "nombre": "Lana roja",
+     "cantidad": 64,
+     "comprar": 86,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_wool",
+     "nombre": "Lana negra",
+     "cantidad": 64,
+     "comprar": 210,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:moss_block",
+     "nombre": "Bloque de musgo",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_slab",
+     "nombre": "Losa de roble",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_slab",
+     "nombre": "Losa de abeto",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_slab",
+     "nombre": "Losa de abedul",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_slab",
+     "nombre": "Losa de jungla",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_slab",
+     "nombre": "Losa de acacia",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_slab",
+     "nombre": "Losa de cerezo",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_slab",
+     "nombre": "Losa de roble oscuro",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_slab",
+     "nombre": "Losa de mangle",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_slab",
+     "nombre": "Losa de bambú",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_mosaic_slab",
+     "nombre": "Losa de mosaico de bambú",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_slab",
+     "nombre": "Losa carmesí",
+     "cantidad": 64,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_slab",
+     "nombre": "Losa distorsionada",
+     "cantidad": 64,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_slab",
+     "nombre": "Losa de piedra",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_stone_slab",
+     "nombre": "Losa de piedra lisa",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sandstone_slab",
+     "nombre": "Losa de arenisca",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_sandstone_slab",
+     "nombre": "Losa de arenisca cortada",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobblestone_slab",
+     "nombre": "Losa de roca",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brick_slab",
+     "nombre": "Losa de ladrillos",
+     "cantidad": 64,
+     "comprar": 74,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_brick_slab",
+     "nombre": "Losa de ladrillos de piedra",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mud_brick_slab",
+     "nombre": "Losa de ladrillos de adobe",
+     "cantidad": 64,
+     "comprar": 31,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_brick_slab",
+     "nombre": "Losa de ladrillos del Nether",
+     "cantidad": 64,
+     "comprar": 42,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz_slab",
+     "nombre": "Losa de cuarzo",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_sandstone_slab",
+     "nombre": "Losa de arenisca roja",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_red_sandstone_slab",
+     "nombre": "Losa de arenisca roja cortada",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_slab",
+     "nombre": "Losa de prismarina",
+     "cantidad": 64,
+     "comprar": 200,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_brick_slab",
+     "nombre": "Losa de ladrillos de prismarina",
+     "cantidad": 16,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_prismarine_slab",
+     "nombre": "Losa de prismarina oscura",
+     "cantidad": 16,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_quartz",
+     "nombre": "Bloque de cuarzo liso",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_red_sandstone",
+     "nombre": "Arenisca roja lisa",
+     "cantidad": 64,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_sandstone",
+     "nombre": "Arenisca lisa",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_stone",
+     "nombre": "Piedra lisa",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bricks",
+     "nombre": "Ladrillos",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_cobblestone",
+     "nombre": "Roca musgosa",
+     "cantidad": 64,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:obsidian",
+     "nombre": "Obsidiana",
+     "cantidad": 16,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:ladder",
+     "nombre": "Escalera de mano",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobblestone_stairs",
+     "nombre": "Escaleras de roca",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:snow",
+     "nombre": "Capa de nieve",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:ice",
+     "nombre": "Hielo",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:snow_block",
+     "nombre": "Bloque de nieve",
+     "cantidad": 64,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:clay",
+     "nombre": "Bloque de arcilla",
+     "cantidad": 64,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_fence",
+     "nombre": "Valla de roble",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_fence",
+     "nombre": "Valla de abeto",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_fence",
+     "nombre": "Valla de abedul",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_fence",
+     "nombre": "Valla de jungla",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_fence",
+     "nombre": "Valla de acacia",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_fence",
+     "nombre": "Valla de cerezo",
+     "cantidad": 64,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_fence",
+     "nombre": "Valla de roble oscuro",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_fence",
+     "nombre": "Valla de mangle",
+     "cantidad": 64,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_fence",
+     "nombre": "Valla de bambú",
+     "cantidad": 64,
+     "comprar": 37,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_fence",
+     "nombre": "Valla carmesí",
+     "cantidad": 64,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_fence",
+     "nombre": "Valla distorsionada",
+     "cantidad": 64,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:netherrack",
+     "nombre": "Netherrack",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:soul_sand",
+     "nombre": "Arena de almas",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:soul_soil",
+     "nombre": "Tierra de almas",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:basalt",
+     "nombre": "Basalto",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_basalt",
+     "nombre": "Basalto pulido",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_basalt",
+     "nombre": "Basalto liso",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_bricks",
+     "nombre": "Ladrillos de piedra",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_stone_bricks",
+     "nombre": "Ladrillos de piedra musgosos",
+     "cantidad": 64,
+     "comprar": 49,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cracked_stone_bricks",
+     "nombre": "Ladrillos de piedra agrietados",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_stone_bricks",
+     "nombre": "Ladrillos de piedra cincelados",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:packed_mud",
+     "nombre": "Adobe",
+     "cantidad": 64,
+     "comprar": 59,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mud_bricks",
+     "nombre": "Ladrillos de adobe",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_bricks",
+     "nombre": "Ladrillos de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cracked_deepslate_bricks",
+     "nombre": "Ladrillos de pizarra profunda agrietados",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_tiles",
+     "nombre": "Baldosas de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cracked_deepslate_tiles",
+     "nombre": "Baldosas de pizarra profunda agrietadas",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_deepslate",
+     "nombre": "Pizarra profunda cincelada",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brick_stairs",
+     "nombre": "Escaleras de ladrillos",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_brick_stairs",
+     "nombre": "Escaleras de ladrillos de piedra",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mud_brick_stairs",
+     "nombre": "Escaleras de ladrillos de adobe",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mycelium",
+     "nombre": "Micelio",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_bricks",
+     "nombre": "Ladrillos del Nether",
+     "cantidad": 64,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cracked_nether_bricks",
+     "nombre": "Ladrillos del Nether agrietados",
+     "cantidad": 64,
+     "comprar": 99,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_nether_bricks",
+     "nombre": "Ladrillos del Nether cincelados",
+     "cantidad": 64,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_brick_fence",
+     "nombre": "Valla de ladrillos del Nether",
+     "cantidad": 64,
+     "comprar": 66,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_brick_stairs",
+     "nombre": "Escaleras de ladrillos del Nether",
+     "cantidad": 64,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sandstone_stairs",
+     "nombre": "Escaleras de arenisca",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_stairs",
+     "nombre": "Escaleras de roble",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_stairs",
+     "nombre": "Escaleras de abeto",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_stairs",
+     "nombre": "Escaleras de abedul",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_stairs",
+     "nombre": "Escaleras de jungla",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_stairs",
+     "nombre": "Escaleras de acacia",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_stairs",
+     "nombre": "Escaleras de cerezo",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_stairs",
+     "nombre": "Escaleras de roble oscuro",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_stairs",
+     "nombre": "Escaleras de mangle",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_stairs",
+     "nombre": "Escaleras de bambú",
+     "cantidad": 64,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_mosaic_stairs",
+     "nombre": "Escaleras de mosaico de bambú",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_stairs",
+     "nombre": "Escaleras carmesí",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_stairs",
+     "nombre": "Escaleras distorsionadas",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobblestone_wall",
+     "nombre": "Muro de roca",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_cobblestone_wall",
+     "nombre": "Muro de roca musgosa",
+     "cantidad": 64,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brick_wall",
+     "nombre": "Muro de ladrillos",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_wall",
+     "nombre": "Muro de prismarina",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_sandstone_wall",
+     "nombre": "Muro de arenisca roja",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_stone_brick_wall",
+     "nombre": "Muro de ladrillos de piedra musgosos",
+     "cantidad": 64,
+     "comprar": 49,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:granite_wall",
+     "nombre": "Muro de granito",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_brick_wall",
+     "nombre": "Muro de ladrillos de piedra",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mud_brick_wall",
+     "nombre": "Muro de ladrillos de adobe",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_brick_wall",
+     "nombre": "Muro de ladrillos del Nether",
+     "cantidad": 64,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:andesite_wall",
+     "nombre": "Muro de andesita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sandstone_wall",
+     "nombre": "Muro de arenisca",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:diorite_wall",
+     "nombre": "Muro de diorita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blackstone_wall",
+     "nombre": "Muro de piedra negra",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_wall",
+     "nombre": "Muro de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_brick_wall",
+     "nombre": "Muro de ladrillos de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobbled_deepslate_wall",
+     "nombre": "Muro de pizarra profunda rocosa",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_deepslate_wall",
+     "nombre": "Muro de pizarra profunda pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_brick_wall",
+     "nombre": "Muro de ladrillos de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_tile_wall",
+     "nombre": "Muro de baldosas de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_quartz_block",
+     "nombre": "Cuarzo cincelado",
+     "cantidad": 16,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz_bricks",
+     "nombre": "Ladrillos de cuarzo",
+     "cantidad": 16,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz_pillar",
+     "nombre": "Pilar de cuarzo",
+     "cantidad": 16,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz_stairs",
+     "nombre": "Escaleras de cuarzo",
+     "cantidad": 16,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_terracotta",
+     "nombre": "Terracota blanca",
+     "cantidad": 64,
+     "comprar": 125,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_terracotta",
+     "nombre": "Terracota naranja",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_terracotta",
+     "nombre": "Terracota magenta",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_terracotta",
+     "nombre": "Terracota azul claro",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_terracotta",
+     "nombre": "Terracota amarilla",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_terracotta",
+     "nombre": "Terracota verde lima",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_terracotta",
+     "nombre": "Terracota rosa",
+     "cantidad": 64,
+     "comprar": 125,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_terracotta",
+     "nombre": "Terracota gris",
+     "cantidad": 64,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_terracotta",
+     "nombre": "Terracota gris claro",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_terracotta",
+     "nombre": "Terracota cian",
+     "cantidad": 64,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_terracotta",
+     "nombre": "Terracota morada",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_terracotta",
+     "nombre": "Terracota azul",
+     "cantidad": 64,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_terracotta",
+     "nombre": "Terracota marrón",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_terracotta",
+     "nombre": "Terracota verde",
+     "cantidad": 64,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_terracotta",
+     "nombre": "Terracota roja",
+     "cantidad": 64,
+     "comprar": 125,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_terracotta",
+     "nombre": "Terracota negra",
+     "cantidad": 64,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:terracotta",
+     "nombre": "Terracota",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:packed_ice",
+     "nombre": "Hielo compacto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine",
+     "nombre": "Prismarina",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_bricks",
+     "nombre": "Ladrillos de prismarina",
+     "cantidad": 16,
+     "comprar": 225,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_prismarine",
+     "nombre": "Prismarina oscura",
+     "cantidad": 16,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_stairs",
+     "nombre": "Escaleras de prismarina",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_brick_stairs",
+     "nombre": "Escaleras de ladrillos de prismarina",
+     "cantidad": 16,
+     "comprar": 225,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_prismarine_stairs",
+     "nombre": "Escaleras de prismarina oscura",
+     "cantidad": 16,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_sandstone",
+     "nombre": "Arenisca roja",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_red_sandstone",
+     "nombre": "Arenisca roja cincelada",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cut_red_sandstone",
+     "nombre": "Arenisca roja cortada",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_sandstone_stairs",
+     "nombre": "Escaleras de arenisca roja",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magma_block",
+     "nombre": "Bloque de magma",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_wart_block",
+     "nombre": "Bloque de verrugas distorsionadas",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_concrete",
+     "nombre": "Hormigón blanco",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_concrete",
+     "nombre": "Hormigón naranja",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_concrete",
+     "nombre": "Hormigón magenta",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_concrete",
+     "nombre": "Hormigón azul claro",
+     "cantidad": 64,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_concrete",
+     "nombre": "Hormigón amarillo",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_concrete",
+     "nombre": "Hormigón verde lima",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_concrete",
+     "nombre": "Hormigón rosa",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_concrete",
+     "nombre": "Hormigón gris",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_concrete",
+     "nombre": "Hormigón gris claro",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_concrete",
+     "nombre": "Hormigón cian",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_concrete",
+     "nombre": "Hormigón morado",
+     "cantidad": 64,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_concrete",
+     "nombre": "Hormigón azul",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_concrete",
+     "nombre": "Hormigón marrón",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_concrete",
+     "nombre": "Hormigón verde",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_concrete",
+     "nombre": "Hormigón rojo",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_concrete",
+     "nombre": "Hormigón negro",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_concrete_powder",
+     "nombre": "Cemento blanco",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_concrete_powder",
+     "nombre": "Cemento naranja",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_concrete_powder",
+     "nombre": "Cemento magenta",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_concrete_powder",
+     "nombre": "Cemento azul claro",
+     "cantidad": 64,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_concrete_powder",
+     "nombre": "Cemento amarillo",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_concrete_powder",
+     "nombre": "Cemento verde lima",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_concrete_powder",
+     "nombre": "Cemento rosa",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_concrete_powder",
+     "nombre": "Cemento gris",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_concrete_powder",
+     "nombre": "Cemento gris claro",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_concrete_powder",
+     "nombre": "Cemento cian",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_concrete_powder",
+     "nombre": "Cemento morado",
+     "cantidad": 64,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_concrete_powder",
+     "nombre": "Cemento azul",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_concrete_powder",
+     "nombre": "Cemento marrón",
+     "cantidad": 64,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_concrete_powder",
+     "nombre": "Cemento verde",
+     "cantidad": 64,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_concrete_powder",
+     "nombre": "Cemento rojo",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_concrete_powder",
+     "nombre": "Cemento negro",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_ice",
+     "nombre": "Hielo azul",
+     "cantidad": 16,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_granite_stairs",
+     "nombre": "Escaleras de granito pulido",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_red_sandstone_stairs",
+     "nombre": "Escaleras de arenisca roja lisa",
+     "cantidad": 64,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_stone_brick_stairs",
+     "nombre": "Escaleras de ladrillos de piedra musgosos",
+     "cantidad": 64,
+     "comprar": 49,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_diorite_stairs",
+     "nombre": "Escaleras de diorita pulida",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_cobblestone_stairs",
+     "nombre": "Escaleras de roca musgosa",
+     "cantidad": 64,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_stairs",
+     "nombre": "Escaleras de piedra",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_sandstone_stairs",
+     "nombre": "Escaleras de arenisca lisa",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_quartz_stairs",
+     "nombre": "Escaleras de cuarzo liso",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:granite_stairs",
+     "nombre": "Escaleras de granito",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:andesite_stairs",
+     "nombre": "Escaleras de andesita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_andesite_stairs",
+     "nombre": "Escaleras de andesita pulida",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:diorite_stairs",
+     "nombre": "Escaleras de diorita",
+     "cantidad": 64,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobbled_deepslate_stairs",
+     "nombre": "Escaleras de pizarra profunda rocosa",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_deepslate_stairs",
+     "nombre": "Escaleras de pizarra profunda pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_brick_stairs",
+     "nombre": "Escaleras de ladrillos de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_tile_stairs",
+     "nombre": "Escaleras de baldosas de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_granite_slab",
+     "nombre": "Losa de granito pulido",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_red_sandstone_slab",
+     "nombre": "Losa de arenisca roja lisa",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_stone_brick_slab",
+     "nombre": "Losa de ladrillos de piedra musgosos",
+     "cantidad": 64,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_diorite_slab",
+     "nombre": "Losa de diorita pulida",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mossy_cobblestone_slab",
+     "nombre": "Losa de roca musgosa",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_sandstone_slab",
+     "nombre": "Losa de arenisca lisa",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smooth_quartz_slab",
+     "nombre": "Losa de cuarzo liso",
+     "cantidad": 64,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:granite_slab",
+     "nombre": "Losa de granito",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:andesite_slab",
+     "nombre": "Losa de andesita",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_andesite_slab",
+     "nombre": "Losa de andesita pulida",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:diorite_slab",
+     "nombre": "Losa de diorita",
+     "cantidad": 64,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cobbled_deepslate_slab",
+     "nombre": "Losa de pizarra profunda rocosa",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_deepslate_slab",
+     "nombre": "Losa de pizarra profunda pulida",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_brick_slab",
+     "nombre": "Losa de ladrillos de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_tile_slab",
+     "nombre": "Losa de baldosas de pizarra profunda",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:scaffolding",
+     "nombre": "Andamio",
+     "cantidad": 64,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_door",
+     "nombre": "Puerta de hierro",
+     "cantidad": 8,
+     "comprar": 200,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_door",
+     "nombre": "Puerta de roble",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_door",
+     "nombre": "Puerta de abeto",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_door",
+     "nombre": "Puerta de abedul",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_door",
+     "nombre": "Puerta de jungla",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_door",
+     "nombre": "Puerta de acacia",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_door",
+     "nombre": "Puerta de cerezo",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_door",
+     "nombre": "Puerta de roble oscuro",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_door",
+     "nombre": "Puerta de mangle",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_door",
+     "nombre": "Puerta de bambú",
+     "cantidad": 64,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_door",
+     "nombre": "Puerta carmesí",
+     "cantidad": 64,
+     "comprar": 32,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_door",
+     "nombre": "Puerta distorsionada",
+     "cantidad": 64,
+     "comprar": 32,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_trapdoor",
+     "nombre": "Trampilla de hierro",
+     "cantidad": 1,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_trapdoor",
+     "nombre": "Trampilla de roble",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_trapdoor",
+     "nombre": "Trampilla de abeto",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_trapdoor",
+     "nombre": "Trampilla de abedul",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_trapdoor",
+     "nombre": "Trampilla de jungla",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_trapdoor",
+     "nombre": "Trampilla de acacia",
+     "cantidad": 64,
+     "comprar": 37,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_trapdoor",
+     "nombre": "Trampilla de cerezo",
+     "cantidad": 64,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_trapdoor",
+     "nombre": "Trampilla de roble oscuro",
+     "cantidad": 64,
+     "comprar": 37,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_trapdoor",
+     "nombre": "Trampilla de mangle",
+     "cantidad": 64,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_trapdoor",
+     "nombre": "Trampilla de bambú",
+     "cantidad": 64,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_trapdoor",
+     "nombre": "Trampilla carmesí",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_trapdoor",
+     "nombre": "Trampilla distorsionada",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_fence_gate",
+     "nombre": "Puerta de valla de roble",
+     "cantidad": 64,
+     "comprar": 46,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_fence_gate",
+     "nombre": "Puerta de valla de abeto",
+     "cantidad": 64,
+     "comprar": 46,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_fence_gate",
+     "nombre": "Puerta de valla de abedul",
+     "cantidad": 64,
+     "comprar": 46,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_fence_gate",
+     "nombre": "Puerta de valla de jungla",
+     "cantidad": 64,
+     "comprar": 46,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_fence_gate",
+     "nombre": "Puerta de valla de acacia",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_fence_gate",
+     "nombre": "Puerta de valla de cerezo",
+     "cantidad": 64,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_fence_gate",
+     "nombre": "Puerta de valla de roble oscuro",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_fence_gate",
+     "nombre": "Puerta de valla de mangle",
+     "cantidad": 64,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_fence_gate",
+     "nombre": "Puerta de valla de bambú",
+     "cantidad": 64,
+     "comprar": 74,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_fence_gate",
+     "nombre": "Puerta de valla carmesí",
+     "cantidad": 64,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_fence_gate",
+     "nombre": "Puerta de valla distorsionada",
+     "cantidad": 64,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:honeycomb_block",
+     "nombre": "Bloque de panal",
+     "cantidad": 16,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crying_obsidian",
+     "nombre": "Obsidiana llorosa",
+     "cantidad": 8,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blackstone",
+     "nombre": "Piedra negra",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blackstone_slab",
+     "nombre": "Losa de piedra negra",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blackstone_stairs",
+     "nombre": "Escaleras de piedra negra",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gilded_blackstone",
+     "nombre": "Piedra negra áurea",
+     "cantidad": 8,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone",
+     "nombre": "Piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_slab",
+     "nombre": "Losa de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_stairs",
+     "nombre": "Escaleras de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_polished_blackstone",
+     "nombre": "Piedra negra pulida cincelada",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_bricks",
+     "nombre": "Ladrillos de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_brick_slab",
+     "nombre": "Losa de ladrillos de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_brick_stairs",
+     "nombre": "Escaleras de ladrillos de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cracked_polished_blackstone_bricks",
+     "nombre": "Ladrillos de piedra negra pulida agrietados",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
     }
-  ]
+   ]
+  },
+  {
+   "id": "decoracion",
+   "nombre": "Decorativos",
+   "descripcion": [
+    "Flores, plantas, luces, alfombras, estandartes, camas, carteles y más."
+   ],
+   "icono": "minecraft:flower_pot",
+   "color": "#f472b6",
+   "hueco": 11,
+   "objetos": [
+    {
+     "objeto": "minecraft:mangrove_roots",
+     "nombre": "Raíces de mangle",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:muddy_mangrove_roots",
+     "nombre": "Raíces de mangle embarradas",
+     "cantidad": 64,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_leaves",
+     "nombre": "Hojas de roble",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_leaves",
+     "nombre": "Hojas de abeto",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_leaves",
+     "nombre": "Hojas de abedul",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_leaves",
+     "nombre": "Hojas de jungla",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_leaves",
+     "nombre": "Hojas de acacia",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_leaves",
+     "nombre": "Hojas de cerezo",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_leaves",
+     "nombre": "Hojas de roble oscuro",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_leaves",
+     "nombre": "Hojas de mangle",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:azalea_leaves",
+     "nombre": "Hojas de azalea",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flowering_azalea_leaves",
+     "nombre": "Hojas de azalea florecida",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tinted_glass",
+     "nombre": "Cristal opaco",
+     "cantidad": 64,
+     "comprar": 255,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:grass",
+     "nombre": "Hierba",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fern",
+     "nombre": "Helecho",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:azalea",
+     "nombre": "Azalea",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flowering_azalea",
+     "nombre": "Azalea florecida",
+     "cantidad": 64,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_bush",
+     "nombre": "Arbusto muerto",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:seagrass",
+     "nombre": "Hierba marina",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sea_pickle",
+     "nombre": "Pepino de mar",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dandelion",
+     "nombre": "Diente de león",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:poppy",
+     "nombre": "Amapola",
+     "cantidad": 64,
+     "comprar": 58,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_orchid",
+     "nombre": "Orquídea azul",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:allium",
+     "nombre": "Allium",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:azure_bluet",
+     "nombre": "Azure bluet",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_tulip",
+     "nombre": "Tulipán rojo",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_tulip",
+     "nombre": "Tulipán naranja",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_tulip",
+     "nombre": "Tulipán blanco",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_tulip",
+     "nombre": "Tulipán rosa",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oxeye_daisy",
+     "nombre": "Margarita",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cornflower",
+     "nombre": "Aciano",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lily_of_the_valley",
+     "nombre": "Convalaria",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:torchflower",
+     "nombre": "Plantorcha",
+     "cantidad": 16,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pitcher_plant",
+     "nombre": "Planta odre",
+     "cantidad": 16,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spore_blossom",
+     "nombre": "Flor de esporas",
+     "cantidad": 8,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_roots",
+     "nombre": "Raíces carmesí",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_roots",
+     "nombre": "Raíces distorsionadas",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_sprouts",
+     "nombre": "Rastrojo del Nether",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:weeping_vines",
+     "nombre": "Enredaderas lacrimosas",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:twisting_vines",
+     "nombre": "Enredaderas retorcidas",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:moss_carpet",
+     "nombre": "Capa de musgo",
+     "cantidad": 64,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_petals",
+     "nombre": "Pétalos rosas",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:hanging_roots",
+     "nombre": "Raíces colgantes",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:big_dripleaf",
+     "nombre": "Plantaforma grande",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:small_dripleaf",
+     "nombre": "Plantaforma pequeña",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bookshelf",
+     "nombre": "Librería",
+     "cantidad": 8,
+     "comprar": 130,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chiseled_bookshelf",
+     "nombre": "Estantería",
+     "cantidad": 64,
+     "comprar": 86,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:decorated_pot",
+     "nombre": "Vasija decorada",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:torch",
+     "nombre": "Antorcha",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jack_o_lantern",
+     "nombre": "Calabaza de Halloween",
+     "cantidad": 64,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:soul_torch",
+     "nombre": "Antorcha de almas",
+     "cantidad": 64,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glowstone",
+     "nombre": "Piedra luminosa",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_mushroom_block",
+     "nombre": "Bloque de champiñón marrón",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_mushroom_block",
+     "nombre": "Bloque de champiñón rojo",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mushroom_stem",
+     "nombre": "Tallo de champiñón",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_bars",
+     "nombre": "Barrotes de hierro",
+     "cantidad": 16,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chain",
+     "nombre": "Cadena",
+     "cantidad": 16,
+     "comprar": 250,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glass_pane",
+     "nombre": "Panel de cristal",
+     "cantidad": 64,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:vine",
+     "nombre": "Enredaderas",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glow_lichen",
+     "nombre": "Liquen luminoso",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lily_pad",
+     "nombre": "Nenúfar",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sculk",
+     "nombre": "Sculk",
+     "cantidad": 64,
+     "comprar": 36,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sculk_vein",
+     "nombre": "Vena de sculk",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_carpet",
+     "nombre": "Alfombra blanca",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_carpet",
+     "nombre": "Alfombra naranja",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_carpet",
+     "nombre": "Alfombra magenta",
+     "cantidad": 64,
+     "comprar": 78,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_carpet",
+     "nombre": "Alfombra azul claro",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_carpet",
+     "nombre": "Alfombra amarilla",
+     "cantidad": 64,
+     "comprar": 80,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_carpet",
+     "nombre": "Alfombra verde lima",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_carpet",
+     "nombre": "Alfombra rosa",
+     "cantidad": 64,
+     "comprar": 62,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_carpet",
+     "nombre": "Alfombra gris",
+     "cantidad": 64,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_carpet",
+     "nombre": "Alfombra gris claro",
+     "cantidad": 64,
+     "comprar": 87,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_carpet",
+     "nombre": "Alfombra cian",
+     "cantidad": 64,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_carpet",
+     "nombre": "Alfombra morada",
+     "cantidad": 64,
+     "comprar": 95,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_carpet",
+     "nombre": "Alfombra azul",
+     "cantidad": 64,
+     "comprar": 125,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_carpet",
+     "nombre": "Alfombra marrón",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_carpet",
+     "nombre": "Alfombra verde",
+     "cantidad": 64,
+     "comprar": 80,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_carpet",
+     "nombre": "Alfombra roja",
+     "cantidad": 64,
+     "comprar": 60,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_carpet",
+     "nombre": "Alfombra negra",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sunflower",
+     "nombre": "Girasol",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lilac",
+     "nombre": "Lila",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rose_bush",
+     "nombre": "Rosal",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:peony",
+     "nombre": "Peonía",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tall_grass",
+     "nombre": "Hierba alta",
+     "cantidad": 64,
+     "comprar": 48,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:large_fern",
+     "nombre": "Helecho grande",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_stained_glass",
+     "nombre": "Cristal tintado de blanco",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_stained_glass",
+     "nombre": "Cristal tintado de naranja",
+     "cantidad": 64,
+     "comprar": 28,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_stained_glass",
+     "nombre": "Cristal tintado de magenta",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_stained_glass",
+     "nombre": "Cristal tintado de azul claro",
+     "cantidad": 64,
+     "comprar": 32,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_stained_glass",
+     "nombre": "Cristal tintado de amarillo",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_stained_glass",
+     "nombre": "Cristal tintado de verde lima",
+     "cantidad": 64,
+     "comprar": 28,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_stained_glass",
+     "nombre": "Cristal tintado de rosa",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_stained_glass",
+     "nombre": "Cristal tintado de gris",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_stained_glass",
+     "nombre": "Cristal tintado de gris claro",
+     "cantidad": 64,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_stained_glass",
+     "nombre": "Cristal tintado de cian",
+     "cantidad": 64,
+     "comprar": 34,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_stained_glass",
+     "nombre": "Cristal tintado de morado",
+     "cantidad": 64,
+     "comprar": 32,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_stained_glass",
+     "nombre": "Cristal tintado de azul",
+     "cantidad": 64,
+     "comprar": 37,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_stained_glass",
+     "nombre": "Cristal tintado de marrón",
+     "cantidad": 64,
+     "comprar": 28,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_stained_glass",
+     "nombre": "Cristal tintado de verde",
+     "cantidad": 64,
+     "comprar": 29,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_stained_glass",
+     "nombre": "Cristal tintado de rojo",
+     "cantidad": 64,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_stained_glass",
+     "nombre": "Cristal tintado de negro",
+     "cantidad": 64,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de blanco",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de naranja",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de magenta",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de azul claro",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de amarillo",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de verde lima",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de rosa",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de gris",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de gris claro",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de cian",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de morado",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de azul",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de marrón",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de verde",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de rojo",
+     "cantidad": 64,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_stained_glass_pane",
+     "nombre": "Panel de cristal tintado de negro",
+     "cantidad": 64,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sea_lantern",
+     "nombre": "Linterna marina",
+     "cantidad": 8,
+     "comprar": 210,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_glazed_terracotta",
+     "nombre": "Azulejo blanco",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_glazed_terracotta",
+     "nombre": "Azulejo naranja",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_glazed_terracotta",
+     "nombre": "Azulejo magenta",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_glazed_terracotta",
+     "nombre": "Azulejo azul claro",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_glazed_terracotta",
+     "nombre": "Azulejo amarillo",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_glazed_terracotta",
+     "nombre": "Azulejo verde lima",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_glazed_terracotta",
+     "nombre": "Azulejo rosa",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_glazed_terracotta",
+     "nombre": "Azulejo gris",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_glazed_terracotta",
+     "nombre": "Azulejo gris claro",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_glazed_terracotta",
+     "nombre": "Azulejo cian",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_glazed_terracotta",
+     "nombre": "Azulejo morado",
+     "cantidad": 64,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_glazed_terracotta",
+     "nombre": "Azulejo azul",
+     "cantidad": 64,
+     "comprar": 155,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_glazed_terracotta",
+     "nombre": "Azulejo marrón",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_glazed_terracotta",
+     "nombre": "Azulejo verde",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_glazed_terracotta",
+     "nombre": "Azulejo rojo",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_glazed_terracotta",
+     "nombre": "Azulejo negro",
+     "cantidad": 64,
+     "comprar": 160,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_tube_coral_block",
+     "nombre": "Bloque de coral de tubo muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_brain_coral_block",
+     "nombre": "Bloque de coral de cerebro muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_bubble_coral_block",
+     "nombre": "Bloque de coral de burbuja muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_fire_coral_block",
+     "nombre": "Bloque de coral de fuego muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_horn_coral_block",
+     "nombre": "Bloque de coral de cuerno muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tube_coral_block",
+     "nombre": "Bloque de coral de tubo",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brain_coral_block",
+     "nombre": "Bloque de coral de cerebro",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bubble_coral_block",
+     "nombre": "Bloque de coral de burbuja",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fire_coral_block",
+     "nombre": "Bloque de coral de fuego",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:horn_coral_block",
+     "nombre": "Bloque de coral de cuerno",
+     "cantidad": 64,
+     "comprar": 145,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tube_coral",
+     "nombre": "Coral de tubo",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brain_coral",
+     "nombre": "Coral de cerebro",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bubble_coral",
+     "nombre": "Coral de burbuja",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fire_coral",
+     "nombre": "Coral de fuego",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:horn_coral",
+     "nombre": "Coral de cuerno",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_brain_coral",
+     "nombre": "Coral de cerebro muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_bubble_coral",
+     "nombre": "Coral de burbuja muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_fire_coral",
+     "nombre": "Coral de fuego muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_horn_coral",
+     "nombre": "Coral de cuerno muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_tube_coral",
+     "nombre": "Coral de tubo muerto",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tube_coral_fan",
+     "nombre": "Gorgonia de tubo",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brain_coral_fan",
+     "nombre": "Gorgonia de cerebro",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bubble_coral_fan",
+     "nombre": "Gorgonia de burbuja",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fire_coral_fan",
+     "nombre": "Gorgonia de fuego",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:horn_coral_fan",
+     "nombre": "Gorgonia de cuerno",
+     "cantidad": 64,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_tube_coral_fan",
+     "nombre": "Gorgonia de tubo muerta",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_brain_coral_fan",
+     "nombre": "Gorgonia de cerebro muerta",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_bubble_coral_fan",
+     "nombre": "Gorgonia de burbuja muerta",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_fire_coral_fan",
+     "nombre": "Gorgonia de fuego muerta",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dead_horn_coral_fan",
+     "nombre": "Gorgonia de cuerno muerta",
+     "cantidad": 64,
+     "comprar": 96,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:painting",
+     "nombre": "Cuadro",
+     "cantidad": 64,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_sign",
+     "nombre": "Cartel de roble",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_sign",
+     "nombre": "Cartel de abeto",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_sign",
+     "nombre": "Cartel de abedul",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_sign",
+     "nombre": "Cartel de jungla",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_sign",
+     "nombre": "Cartel de acacia",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_sign",
+     "nombre": "Cartel de cerezo",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_sign",
+     "nombre": "Cartel de roble oscuro",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_sign",
+     "nombre": "Cartel de mangle",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_sign",
+     "nombre": "Cartel de bambú",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_sign",
+     "nombre": "Cartel carmesí",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_sign",
+     "nombre": "Cartel distorsionado",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_hanging_sign",
+     "nombre": "Cartel colgante de roble",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_hanging_sign",
+     "nombre": "Cartel colgante de abeto",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_hanging_sign",
+     "nombre": "Cartel colgante de abedul",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_hanging_sign",
+     "nombre": "Cartel colgante de jungla",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_hanging_sign",
+     "nombre": "Cartel colgante de acacia",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_hanging_sign",
+     "nombre": "Cartel colgante de cerezo",
+     "cantidad": 16,
+     "comprar": 99,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_hanging_sign",
+     "nombre": "Cartel colgante de roble oscuro",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_hanging_sign",
+     "nombre": "Cartel colgante de mangle",
+     "cantidad": 16,
+     "comprar": 99,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_hanging_sign",
+     "nombre": "Cartel colgante de bambú",
+     "cantidad": 16,
+     "comprar": 99,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_hanging_sign",
+     "nombre": "Cartel colgante carmesí",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_hanging_sign",
+     "nombre": "Cartel colgante distorsionado",
+     "cantidad": 16,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_bed",
+     "nombre": "Cama blanca",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_bed",
+     "nombre": "Cama naranja",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_bed",
+     "nombre": "Cama magenta",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_bed",
+     "nombre": "Cama azul claro",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_bed",
+     "nombre": "Cama amarilla",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_bed",
+     "nombre": "Cama verde lima",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_bed",
+     "nombre": "Cama rosa",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_bed",
+     "nombre": "Cama gris",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_bed",
+     "nombre": "Cama gris claro",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_bed",
+     "nombre": "Cama cian",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_bed",
+     "nombre": "Cama morada",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_bed",
+     "nombre": "Cama azul",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_bed",
+     "nombre": "Cama marrón",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_bed",
+     "nombre": "Cama verde",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_bed",
+     "nombre": "Cama roja",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_bed",
+     "nombre": "Cama negra",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:item_frame",
+     "nombre": "Marco",
+     "cantidad": 64,
+     "comprar": 250,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glow_item_frame",
+     "nombre": "Marco luminoso",
+     "cantidad": 16,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flower_pot",
+     "nombre": "Maceta",
+     "cantidad": 64,
+     "comprar": 110,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:skeleton_skull",
+     "nombre": "Calavera de esqueleto",
+     "cantidad": 1,
+     "comprar": 110,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:zombie_head",
+     "nombre": "Cabeza de zombi",
+     "cantidad": 1,
+     "comprar": 110,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:creeper_head",
+     "nombre": "Cabeza de creeper",
+     "cantidad": 1,
+     "comprar": 110,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:armor_stand",
+     "nombre": "Soporte para armadura",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_banner",
+     "nombre": "Estandarte blanco",
+     "cantidad": 16,
+     "comprar": 77,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_banner",
+     "nombre": "Estandarte naranja",
+     "cantidad": 16,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_banner",
+     "nombre": "Estandarte magenta",
+     "cantidad": 16,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_banner",
+     "nombre": "Estandarte azul claro",
+     "cantidad": 16,
+     "comprar": 215,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_banner",
+     "nombre": "Estandarte amarillo",
+     "cantidad": 16,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_banner",
+     "nombre": "Estandarte verde lima",
+     "cantidad": 16,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_banner",
+     "nombre": "Estandarte rosa",
+     "cantidad": 16,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_banner",
+     "nombre": "Estandarte gris",
+     "cantidad": 16,
+     "comprar": 245,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_banner",
+     "nombre": "Estandarte gris claro",
+     "cantidad": 16,
+     "comprar": 195,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_banner",
+     "nombre": "Estandarte cian",
+     "cantidad": 16,
+     "comprar": 240,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_banner",
+     "nombre": "Estandarte morado",
+     "cantidad": 16,
+     "comprar": 215,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_banner",
+     "nombre": "Estandarte azul",
+     "cantidad": 8,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_banner",
+     "nombre": "Estandarte marrón",
+     "cantidad": 16,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_banner",
+     "nombre": "Estandarte verde",
+     "cantidad": 16,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_banner",
+     "nombre": "Estandarte rojo",
+     "cantidad": 16,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_banner",
+     "nombre": "Estandarte negro",
+     "cantidad": 8,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bell",
+     "nombre": "Campana",
+     "cantidad": 8,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lantern",
+     "nombre": "Farol",
+     "cantidad": 16,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:soul_lantern",
+     "nombre": "Farol de almas",
+     "cantidad": 16,
+     "comprar": 195,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:campfire",
+     "nombre": "Hoguera",
+     "cantidad": 64,
+     "comprar": 205,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:soul_campfire",
+     "nombre": "Hoguera de almas",
+     "cantidad": 64,
+     "comprar": 175,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:shroomlight",
+     "nombre": "Brillongo",
+     "cantidad": 64,
+     "comprar": 190,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:candle",
+     "nombre": "Vela",
+     "cantidad": 64,
+     "comprar": 250,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_candle",
+     "nombre": "Vela blanca",
+     "cantidad": 16,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_candle",
+     "nombre": "Vela naranja",
+     "cantidad": 16,
+     "comprar": 79,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_candle",
+     "nombre": "Vela magenta",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_candle",
+     "nombre": "Vela azul claro",
+     "cantidad": 16,
+     "comprar": 88,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_candle",
+     "nombre": "Vela amarilla",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_candle",
+     "nombre": "Vela verde lima",
+     "cantidad": 16,
+     "comprar": 79,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_candle",
+     "nombre": "Vela rosa",
+     "cantidad": 16,
+     "comprar": 76,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_candle",
+     "nombre": "Vela gris",
+     "cantidad": 16,
+     "comprar": 92,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_candle",
+     "nombre": "Vela gris claro",
+     "cantidad": 16,
+     "comprar": 85,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_candle",
+     "nombre": "Vela cian",
+     "cantidad": 16,
+     "comprar": 91,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_candle",
+     "nombre": "Vela morada",
+     "cantidad": 16,
+     "comprar": 87,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_candle",
+     "nombre": "Vela azul",
+     "cantidad": 16,
+     "comprar": 98,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_candle",
+     "nombre": "Vela marrón",
+     "cantidad": 16,
+     "comprar": 79,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_candle",
+     "nombre": "Vela verde",
+     "cantidad": 16,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_candle",
+     "nombre": "Vela roja",
+     "cantidad": 16,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_candle",
+     "nombre": "Vela negra",
+     "cantidad": 16,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:small_amethyst_bud",
+     "nombre": "Brote de amatista pequeño",
+     "cantidad": 16,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:medium_amethyst_bud",
+     "nombre": "Brote de amatista mediano",
+     "cantidad": 16,
+     "comprar": 90,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:large_amethyst_bud",
+     "nombre": "Brote de amatista grande",
+     "cantidad": 16,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:amethyst_cluster",
+     "nombre": "Cúmulo de amatista",
+     "cantidad": 16,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pointed_dripstone",
+     "nombre": "Caliza puntiaguda",
+     "cantidad": 64,
+     "comprar": 72,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:angler_pottery_sherd",
+     "nombre": "Fragmento de cerámica de caña de pescar",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:archer_pottery_sherd",
+     "nombre": "Fragmento de cerámica de arco",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:arms_up_pottery_sherd",
+     "nombre": "Fragmento de cerámica de monigote",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blade_pottery_sherd",
+     "nombre": "Fragmento de cerámica de espada",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brewer_pottery_sherd",
+     "nombre": "Fragmento de cerámica de poción",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:burn_pottery_sherd",
+     "nombre": "Fragmento de cerámica de fuego",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:danger_pottery_sherd",
+     "nombre": "Fragmento de cerámica de creeper",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:explorer_pottery_sherd",
+     "nombre": "Fragmento de cerámica de mapa",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:friend_pottery_sherd",
+     "nombre": "Fragmento de cerámica de amistad",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:heart_pottery_sherd",
+     "nombre": "Fragmento de cerámica de corazón",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:heartbreak_pottery_sherd",
+     "nombre": "Fragmento de cerámica de corazón roto",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:howl_pottery_sherd",
+     "nombre": "Fragmento de cerámica de lobo",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:miner_pottery_sherd",
+     "nombre": "Fragmento de cerámica de pico",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mourner_pottery_sherd",
+     "nombre": "Fragmento de cerámica de warden",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:plenty_pottery_sherd",
+     "nombre": "Fragmento de cerámica de cofre",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prize_pottery_sherd",
+     "nombre": "Fragmento de cerámica de gema",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sheaf_pottery_sherd",
+     "nombre": "Fragmento de cerámica de paja",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:shelter_pottery_sherd",
+     "nombre": "Fragmento de cerámica de refugio",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:skull_pottery_sherd",
+     "nombre": "Fragmento de cerámica de calavera",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:snort_pottery_sherd",
+     "nombre": "Fragmento de cerámica de sniffer",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "minerales",
+   "nombre": "Minerales",
+   "descripcion": [
+    "Carbón, hierro, oro, cobre, redstone, lapislázuli, esmeralda, cuarzo y amatista. Sin diamante ni netherita."
+   ],
+   "icono": "minecraft:iron_ingot",
+   "color": "#94a3b8",
+   "hueco": 12,
+   "objetos": [
+    {
+     "objeto": "minecraft:coal_ore",
+     "nombre": "Mena de carbón",
+     "cantidad": 1,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_coal_ore",
+     "nombre": "Mena de carbón de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_ore",
+     "nombre": "Mena de hierro",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_iron_ore",
+     "nombre": "Mena de hierro de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:copper_ore",
+     "nombre": "Mena de cobre",
+     "cantidad": 1,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_copper_ore",
+     "nombre": "Mena de cobre de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gold_ore",
+     "nombre": "Mena de oro",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_gold_ore",
+     "nombre": "Mena de oro de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:redstone_ore",
+     "nombre": "Mena de redstone",
+     "cantidad": 1,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_redstone_ore",
+     "nombre": "Mena de redstone de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:emerald_ore",
+     "nombre": "Mena de esmeralda",
+     "cantidad": 1,
+     "comprar": 150,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_emerald_ore",
+     "nombre": "Mena de esmeralda de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 225,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lapis_ore",
+     "nombre": "Mena de lapislázuli",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:deepslate_lapis_ore",
+     "nombre": "Mena de lapislázuli de pizarra profunda",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_gold_ore",
+     "nombre": "Mena de oro del Nether",
+     "cantidad": 1,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_quartz_ore",
+     "nombre": "Mena de cuarzo del Nether",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:coal_block",
+     "nombre": "Bloque de carbón",
+     "cantidad": 1,
+     "comprar": 35,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_iron_block",
+     "nombre": "Bloque de hierro en bruto",
+     "cantidad": 1,
+     "comprar": 105,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_copper_block",
+     "nombre": "Bloque de cobre en bruto",
+     "cantidad": 1,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_gold_block",
+     "nombre": "Bloque de oro en bruto",
+     "cantidad": 1,
+     "comprar": 195,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:amethyst_block",
+     "nombre": "Bloque de amatista",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_block",
+     "nombre": "Bloque de hierro",
+     "cantidad": 1,
+     "comprar": 115,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:copper_block",
+     "nombre": "Bloque de cobre",
+     "cantidad": 1,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gold_block",
+     "nombre": "Bloque de oro",
+     "cantidad": 1,
+     "comprar": 180,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lapis_block",
+     "nombre": "Bloque de lapislázuli",
+     "cantidad": 1,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:emerald_block",
+     "nombre": "Bloque de esmeralda",
+     "cantidad": 1,
+     "comprar": 355,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz_block",
+     "nombre": "Cuarzo",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:redstone",
+     "nombre": "Polvo de redstone",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:redstone_block",
+     "nombre": "Bloque de redstone",
+     "cantidad": 1,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:coal",
+     "nombre": "Carbón",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:charcoal",
+     "nombre": "Carbón vegetal",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:emerald",
+     "nombre": "Esmeralda",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lapis_lazuli",
+     "nombre": "Lapislázuli",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:quartz",
+     "nombre": "Cuarzo del Nether",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:amethyst_shard",
+     "nombre": "Fragmento de amatista",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_iron",
+     "nombre": "Hierro en bruto",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_ingot",
+     "nombre": "Lingote de hierro",
+     "cantidad": 1,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_copper",
+     "nombre": "Cobre en bruto",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:copper_ingot",
+     "nombre": "Lingote de cobre",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:raw_gold",
+     "nombre": "Oro en bruto",
+     "cantidad": 1,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gold_ingot",
+     "nombre": "Lingote de oro",
+     "cantidad": 1,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flint",
+     "nombre": "Pedernal",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glowstone_dust",
+     "nombre": "Polvo de piedra luminosa",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gold_nugget",
+     "nombre": "Pepita de oro",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_nugget",
+     "nombre": "Pepita de hierro",
+     "cantidad": 16,
+     "comprar": 22,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "equipo",
+   "nombre": "Equipo",
+   "descripcion": [
+    "Armaduras, espadas, herramientas, arcos, escudos y flechas. Sin diamante ni netherita."
+   ],
+   "icono": "minecraft:iron_sword",
+   "color": "#60a5fa",
+   "hueco": 13,
+   "objetos": [
+    {
+     "objeto": "minecraft:carrot_on_a_stick",
+     "nombre": "Caña con zanahoria",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_fungus_on_a_stick",
+     "nombre": "Caña con hongo distorsionado",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:turtle_helmet",
+     "nombre": "Caparazón de tortuga",
+     "cantidad": 1,
+     "comprar": 59,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flint_and_steel",
+     "nombre": "Mechero",
+     "cantidad": 1,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bow",
+     "nombre": "Arco",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:arrow",
+     "nombre": "Flecha",
+     "cantidad": 16,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wooden_sword",
+     "nombre": "Espada de madera",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wooden_shovel",
+     "nombre": "Pala de madera",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wooden_pickaxe",
+     "nombre": "Pico de madera",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wooden_axe",
+     "nombre": "Hacha de madera",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wooden_hoe",
+     "nombre": "Azada de madera",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_sword",
+     "nombre": "Espada de piedra",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_shovel",
+     "nombre": "Pala de piedra",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_pickaxe",
+     "nombre": "Pico de piedra",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_axe",
+     "nombre": "Hacha de piedra",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_hoe",
+     "nombre": "Azada de piedra",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_sword",
+     "nombre": "Espada de oro",
+     "cantidad": 1,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_shovel",
+     "nombre": "Pala de oro",
+     "cantidad": 1,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_pickaxe",
+     "nombre": "Pico de oro",
+     "cantidad": 1,
+     "comprar": 60,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_axe",
+     "nombre": "Hacha de oro",
+     "cantidad": 1,
+     "comprar": 60,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_hoe",
+     "nombre": "Azada de oro",
+     "cantidad": 1,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_sword",
+     "nombre": "Espada de hierro",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_shovel",
+     "nombre": "Pala de hierro",
+     "cantidad": 1,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_pickaxe",
+     "nombre": "Pico de hierro",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_axe",
+     "nombre": "Hacha de hierro",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_hoe",
+     "nombre": "Azada de hierro",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather_helmet",
+     "nombre": "Sombrero de cuero",
+     "cantidad": 1,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather_chestplate",
+     "nombre": "Túnica de cuero",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather_leggings",
+     "nombre": "Pantalones de cuero",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather_boots",
+     "nombre": "Botas de cuero",
+     "cantidad": 1,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chainmail_helmet",
+     "nombre": "Casco de cota de mallas",
+     "cantidad": 1,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chainmail_chestplate",
+     "nombre": "Peto de cota de mallas",
+     "cantidad": 1,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chainmail_leggings",
+     "nombre": "Grebas de cota de mallas",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chainmail_boots",
+     "nombre": "Botas de cota de mallas",
+     "cantidad": 1,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_helmet",
+     "nombre": "Casco de hierro",
+     "cantidad": 1,
+     "comprar": 63,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_chestplate",
+     "nombre": "Peto de hierro",
+     "cantidad": 1,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_leggings",
+     "nombre": "Grebas de hierro",
+     "cantidad": 1,
+     "comprar": 88,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_boots",
+     "nombre": "Botas de hierro",
+     "cantidad": 1,
+     "comprar": 50,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_helmet",
+     "nombre": "Casco de oro",
+     "cantidad": 1,
+     "comprar": 100,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_chestplate",
+     "nombre": "Peto de oro",
+     "cantidad": 1,
+     "comprar": 160,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_leggings",
+     "nombre": "Grebas de oro",
+     "cantidad": 1,
+     "comprar": 140,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_boots",
+     "nombre": "Botas de oro",
+     "cantidad": 1,
+     "comprar": 80,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fishing_rod",
+     "nombre": "Caña de pescar",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spyglass",
+     "nombre": "Catalejo",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:shears",
+     "nombre": "Tijeras",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:iron_horse_armor",
+     "nombre": "Armadura de hierro para caballo",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_horse_armor",
+     "nombre": "Armadura de oro para caballo",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather_horse_armor",
+     "nombre": "Armadura de cuero para caballo",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spectral_arrow",
+     "nombre": "Flecha espectral",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:shield",
+     "nombre": "Escudo",
+     "cantidad": 1,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crossbow",
+     "nombre": "Ballesta",
+     "cantidad": 1,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brush",
+     "nombre": "Pincel",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "botin",
+   "nombre": "Drops de mobs",
+   "descripcion": [
+    "Lo que sueltan las criaturas del mundo normal (nada del Nether ni del End)."
+   ],
+   "icono": "minecraft:bone",
+   "color": "#a3e635",
+   "hueco": 14,
+   "objetos": [
+    {
+     "objeto": "minecraft:cobweb",
+     "nombre": "Telaraña",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bone_block",
+     "nombre": "Bloque de huesos",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:turtle_egg",
+     "nombre": "Huevo de tortuga",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:slime_block",
+     "nombre": "Bloque de slime",
+     "cantidad": 1,
+     "comprar": 71,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:scute",
+     "nombre": "Escama",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:string",
+     "nombre": "Hilo",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:feather",
+     "nombre": "Pluma",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gunpowder",
+     "nombre": "Pólvora",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:leather",
+     "nombre": "Cuero",
+     "cantidad": 8,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:slime_ball",
+     "nombre": "Bola de slime",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:egg",
+     "nombre": "Huevo",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:ink_sac",
+     "nombre": "Saco de tinta",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glow_ink_sac",
+     "nombre": "Saco de tinta luminosa",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bone",
+     "nombre": "Hueso",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rotten_flesh",
+     "nombre": "Carne podrida",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spider_eye",
+     "nombre": "Ojo de araña",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fermented_spider_eye",
+     "nombre": "Ojo de araña fermentado",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_shard",
+     "nombre": "Fragmento de prismarina",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:prismarine_crystals",
+     "nombre": "Cristales de prismarina",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rabbit_foot",
+     "nombre": "Pata de conejo",
+     "cantidad": 1,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rabbit_hide",
+     "nombre": "Piel de conejo",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:phantom_membrane",
+     "nombre": "Membrana de fantasma",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nautilus_shell",
+     "nombre": "Caparazón de nautilo",
+     "cantidad": 1,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:honeycomb",
+     "nombre": "Panal",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "granja",
+   "nombre": "Granja y Comida",
+   "descripcion": [
+    "Semillas, cultivos, brotes, animales y comida."
+   ],
+   "icono": "minecraft:wheat",
+   "color": "#4ade80",
+   "hueco": 15,
+   "objetos": [
+    {
+     "objeto": "minecraft:oak_sapling",
+     "nombre": "Brote de roble",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_sapling",
+     "nombre": "Brote de abeto",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_sapling",
+     "nombre": "Brote de abedul",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_sapling",
+     "nombre": "Brote de jungla",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_sapling",
+     "nombre": "Brote de acacia",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_sapling",
+     "nombre": "Brote de cerezo",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_sapling",
+     "nombre": "Brote de roble oscuro",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_propagule",
+     "nombre": "Propágulo de mangle",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_mushroom",
+     "nombre": "Champiñón marrón",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_mushroom",
+     "nombre": "Champiñón rojo",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_fungus",
+     "nombre": "Hongo carmesí",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_fungus",
+     "nombre": "Hongo distorsionado",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sugar_cane",
+     "nombre": "Caña de azúcar",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:kelp",
+     "nombre": "Alga",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo",
+     "nombre": "Bambú",
+     "cantidad": 64,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cactus",
+     "nombre": "Cactus",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pumpkin",
+     "nombre": "Calabaza",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:carved_pumpkin",
+     "nombre": "Calabaza tallada",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:melon",
+     "nombre": "Sandía",
+     "cantidad": 8,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:hay_block",
+     "nombre": "Bala de heno",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:apple",
+     "nombre": "Manzana",
+     "cantidad": 8,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mushroom_stew",
+     "nombre": "Estofado de champiñones",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wheat_seeds",
+     "nombre": "Semillas de trigo",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:wheat",
+     "nombre": "Trigo",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bread",
+     "nombre": "Pan",
+     "cantidad": 8,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:porkchop",
+     "nombre": "Chuleta de cerdo cruda",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_porkchop",
+     "nombre": "Chuleta de cerdo cocinada",
+     "cantidad": 8,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_apple",
+     "nombre": "Manzana dorada",
+     "cantidad": 1,
+     "comprar": 165,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:milk_bucket",
+     "nombre": "Cubo con leche",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pufferfish_bucket",
+     "nombre": "Cubo con pez globo",
+     "cantidad": 1,
+     "comprar": 56,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:salmon_bucket",
+     "nombre": "Cubo con salmón",
+     "cantidad": 1,
+     "comprar": 46,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cod_bucket",
+     "nombre": "Cubo con bacalao",
+     "cantidad": 1,
+     "comprar": 42,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tropical_fish_bucket",
+     "nombre": "Cubo con pez tropical",
+     "cantidad": 1,
+     "comprar": 61,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:axolotl_bucket",
+     "nombre": "Cubo con ajolote",
+     "cantidad": 1,
+     "comprar": 53,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tadpole_bucket",
+     "nombre": "Cubo con renacuajo",
+     "cantidad": 1,
+     "comprar": 41,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dried_kelp_block",
+     "nombre": "Bloque de algas secas",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cod",
+     "nombre": "Bacalao crudo",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:salmon",
+     "nombre": "Salmón crudo",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tropical_fish",
+     "nombre": "Pez tropical",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pufferfish",
+     "nombre": "Pez globo",
+     "cantidad": 1,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_cod",
+     "nombre": "Bacalao cocinado",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_salmon",
+     "nombre": "Salmón ahumado",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cocoa_beans",
+     "nombre": "Semillas de cacao",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bone_meal",
+     "nombre": "Polvo de hueso",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sugar",
+     "nombre": "Azúcar",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cake",
+     "nombre": "Tarta",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cookie",
+     "nombre": "Galleta",
+     "cantidad": 64,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:melon_slice",
+     "nombre": "Rodaja de sandía",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dried_kelp",
+     "nombre": "Algas secas",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pumpkin_seeds",
+     "nombre": "Semillas de calabaza",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:melon_seeds",
+     "nombre": "Semillas de sandía",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:beef",
+     "nombre": "Filete crudo",
+     "cantidad": 8,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_beef",
+     "nombre": "Filete asado",
+     "cantidad": 8,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chicken",
+     "nombre": "Pollo crudo",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_chicken",
+     "nombre": "Pollo asado",
+     "cantidad": 8,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glistering_melon_slice",
+     "nombre": "Rodaja de sandía reluciente",
+     "cantidad": 1,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:carrot",
+     "nombre": "Zanahoria",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:potato",
+     "nombre": "Patata",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:baked_potato",
+     "nombre": "Patata cocida",
+     "cantidad": 16,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:poisonous_potato",
+     "nombre": "Patata venenosa",
+     "cantidad": 1,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:golden_carrot",
+     "nombre": "Zanahoria dorada",
+     "cantidad": 1,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pumpkin_pie",
+     "nombre": "Tarta de calabaza",
+     "cantidad": 8,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rabbit",
+     "nombre": "Conejo crudo",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_rabbit",
+     "nombre": "Conejo asado",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rabbit_stew",
+     "nombre": "Estofado de conejo",
+     "cantidad": 1,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lead",
+     "nombre": "Rienda",
+     "cantidad": 1,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mutton",
+     "nombre": "Cordero crudo",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cooked_mutton",
+     "nombre": "Cordero asado",
+     "cantidad": 8,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:torchflower_seeds",
+     "nombre": "Semillas de plantorcha",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pitcher_pod",
+     "nombre": "Vaina de planta odre",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:beetroot",
+     "nombre": "Remolacha",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:beetroot_seeds",
+     "nombre": "Semillas de remolacha",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:beetroot_soup",
+     "nombre": "Estofado de remolacha",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:suspicious_stew",
+     "nombre": "Estofado sospechoso",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:composter",
+     "nombre": "Compostador",
+     "cantidad": 16,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sweet_berries",
+     "nombre": "Bayas dulces",
+     "cantidad": 16,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glow_berries",
+     "nombre": "Bayas luminosas",
+     "cantidad": 16,
+     "comprar": 18,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bee_nest",
+     "nombre": "Colmena",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:beehive",
+     "nombre": "Apiario",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:honey_bottle",
+     "nombre": "Frasco con miel",
+     "cantidad": 8,
+     "comprar": 24,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "redstone",
+   "nombre": "Redstone y Transporte",
+   "descripcion": [
+    "Pistones, tolvas, raíles, vagonetas, barcas y mecanismos."
+   ],
+   "icono": "minecraft:redstone",
+   "color": "#ef4444",
+   "hueco": 16,
+   "objetos": [
+    {
+     "objeto": "minecraft:sculk_catalyst",
+     "nombre": "Catalizador de sculk",
+     "cantidad": 1,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sculk_shrieker",
+     "nombre": "Chillador de sculk",
+     "cantidad": 1,
+     "comprar": 30,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:redstone_torch",
+     "nombre": "Antorcha de redstone",
+     "cantidad": 8,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:repeater",
+     "nombre": "Repetidor de redstone",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:comparator",
+     "nombre": "Comparador de redstone",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:piston",
+     "nombre": "Pistón",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sticky_piston",
+     "nombre": "Pistón pegajoso",
+     "cantidad": 1,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:honey_block",
+     "nombre": "Bloque de miel",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:observer",
+     "nombre": "Observador",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:hopper",
+     "nombre": "Tolva",
+     "cantidad": 1,
+     "comprar": 64,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dispenser",
+     "nombre": "Dispensador",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dropper",
+     "nombre": "Soltador",
+     "cantidad": 8,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:target",
+     "nombre": "Diana",
+     "cantidad": 1,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lever",
+     "nombre": "Palanca",
+     "cantidad": 64,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lightning_rod",
+     "nombre": "Pararrayos",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:daylight_detector",
+     "nombre": "Sensor de luz solar",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:sculk_sensor",
+     "nombre": "Sensor de sculk",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:calibrated_sculk_sensor",
+     "nombre": "Sensor de sculk calibrado",
+     "cantidad": 1,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tripwire_hook",
+     "nombre": "Gancho de cuerda",
+     "cantidad": 1,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:trapped_chest",
+     "nombre": "Cofre trampa",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tnt",
+     "nombre": "Dinamita",
+     "cantidad": 1,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:redstone_lamp",
+     "nombre": "Lámpara de redstone",
+     "cantidad": 1,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:note_block",
+     "nombre": "Bloque musical",
+     "cantidad": 8,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_button",
+     "nombre": "Botón de piedra",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_button",
+     "nombre": "Botón de piedra negra pulida",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_button",
+     "nombre": "Botón de roble",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_button",
+     "nombre": "Botón de abeto",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_button",
+     "nombre": "Botón de abedul",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_button",
+     "nombre": "Botón de jungla",
+     "cantidad": 64,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_button",
+     "nombre": "Botón de acacia",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_button",
+     "nombre": "Botón de cerezo",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_button",
+     "nombre": "Botón de roble oscuro",
+     "cantidad": 64,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_button",
+     "nombre": "Botón de mangle",
+     "cantidad": 64,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_button",
+     "nombre": "Botón de bambú",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_button",
+     "nombre": "Botón carmesí",
+     "cantidad": 64,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_button",
+     "nombre": "Botón distorsionado",
+     "cantidad": 64,
+     "comprar": 16,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stone_pressure_plate",
+     "nombre": "Placa de presión de piedra",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:polished_blackstone_pressure_plate",
+     "nombre": "Placa de presión de piedra negra pulida",
+     "cantidad": 16,
+     "comprar": 10,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_weighted_pressure_plate",
+     "nombre": "Placa de presión para peso ligero",
+     "cantidad": 1,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:heavy_weighted_pressure_plate",
+     "nombre": "Placa de presión para peso elevado",
+     "cantidad": 1,
+     "comprar": 25,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_pressure_plate",
+     "nombre": "Placa de presión de roble",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_pressure_plate",
+     "nombre": "Placa de presión de abeto",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_pressure_plate",
+     "nombre": "Placa de presión de abedul",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_pressure_plate",
+     "nombre": "Placa de presión de jungla",
+     "cantidad": 64,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_pressure_plate",
+     "nombre": "Placa de presión de acacia",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_pressure_plate",
+     "nombre": "Placa de presión de cerezo",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_pressure_plate",
+     "nombre": "Placa de presión de roble oscuro",
+     "cantidad": 16,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_pressure_plate",
+     "nombre": "Placa de presión de mangle",
+     "cantidad": 16,
+     "comprar": 7,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_pressure_plate",
+     "nombre": "Placa de presión de bambú",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crimson_pressure_plate",
+     "nombre": "Placa de presión carmesí",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:warped_pressure_plate",
+     "nombre": "Placa de presión distorsionada",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:powered_rail",
+     "nombre": "Raíl propulsor",
+     "cantidad": 1,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:detector_rail",
+     "nombre": "Raíl detector",
+     "cantidad": 1,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:rail",
+     "nombre": "Raíl",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:activator_rail",
+     "nombre": "Raíl activador",
+     "cantidad": 1,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:saddle",
+     "nombre": "Montura",
+     "cantidad": 1,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:minecart",
+     "nombre": "Vagoneta",
+     "cantidad": 1,
+     "comprar": 63,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chest_minecart",
+     "nombre": "Vagoneta con cofre",
+     "cantidad": 1,
+     "comprar": 67,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:furnace_minecart",
+     "nombre": "Vagoneta con horno",
+     "cantidad": 1,
+     "comprar": 68,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:tnt_minecart",
+     "nombre": "Vagoneta con dinamita",
+     "cantidad": 1,
+     "comprar": 87,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:hopper_minecart",
+     "nombre": "Vagoneta con tolva",
+     "cantidad": 1,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_boat",
+     "nombre": "Barca de roble",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:oak_chest_boat",
+     "nombre": "Barca de roble con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_boat",
+     "nombre": "Barca de abeto",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:spruce_chest_boat",
+     "nombre": "Barca de abeto con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_boat",
+     "nombre": "Barca de abedul",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:birch_chest_boat",
+     "nombre": "Barca de abedul con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_boat",
+     "nombre": "Barca de jungla",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:jungle_chest_boat",
+     "nombre": "Barca de jungla con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_boat",
+     "nombre": "Barca de acacia",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:acacia_chest_boat",
+     "nombre": "Barca de acacia con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_boat",
+     "nombre": "Barca de cerezo",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cherry_chest_boat",
+     "nombre": "Barca de cerezo con cofre",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_boat",
+     "nombre": "Barca de roble oscuro",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:dark_oak_chest_boat",
+     "nombre": "Barca de roble oscuro con cofre",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_boat",
+     "nombre": "Barca de mangle",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:mangrove_chest_boat",
+     "nombre": "Barca de mangle con cofre",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_raft",
+     "nombre": "Balsa de bambú",
+     "cantidad": 1,
+     "comprar": 2,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bamboo_chest_raft",
+     "nombre": "Balsa de bambú con cofre",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "utilidades",
+   "nombre": "Utilidades",
+   "descripcion": [
+    "Mesas de trabajo, hornos, cofres, cubos, mapas, libros, tintes y discos."
+   ],
+   "icono": "minecraft:crafting_table",
+   "color": "#22d3ee",
+   "hueco": 19,
+   "objetos": [
+    {
+     "objeto": "minecraft:chest",
+     "nombre": "Cofre",
+     "cantidad": 16,
+     "comprar": 23,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:crafting_table",
+     "nombre": "Mesa de trabajo",
+     "cantidad": 16,
+     "comprar": 11,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:furnace",
+     "nombre": "Horno",
+     "cantidad": 8,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:anvil",
+     "nombre": "Yunque",
+     "cantidad": 1,
+     "comprar": 405,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:chipped_anvil",
+     "nombre": "Yunque dañado",
+     "cantidad": 1,
+     "comprar": 270,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:damaged_anvil",
+     "nombre": "Yunque muy dañado",
+     "cantidad": 1,
+     "comprar": 135,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lectern",
+     "nombre": "Atril",
+     "cantidad": 1,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stick",
+     "nombre": "Palo",
+     "cantidad": 64,
+     "comprar": 6,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bowl",
+     "nombre": "Cuenco",
+     "cantidad": 64,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:bucket",
+     "nombre": "Cubo",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:water_bucket",
+     "nombre": "Cubo con agua",
+     "cantidad": 1,
+     "comprar": 38,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lava_bucket",
+     "nombre": "Cubo con lava",
+     "cantidad": 1,
+     "comprar": 40,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:powder_snow_bucket",
+     "nombre": "Cubo con nieve polvo",
+     "cantidad": 1,
+     "comprar": 39,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:snowball",
+     "nombre": "Bola de nieve",
+     "cantidad": 16,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brick",
+     "nombre": "Ladrillo",
+     "cantidad": 16,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:clay_ball",
+     "nombre": "Bola de arcilla",
+     "cantidad": 64,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:paper",
+     "nombre": "Papel",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:book",
+     "nombre": "Libro",
+     "cantidad": 1,
+     "comprar": 5,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:compass",
+     "nombre": "Brújula",
+     "cantidad": 1,
+     "comprar": 52,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:clock",
+     "nombre": "Reloj",
+     "cantidad": 1,
+     "comprar": 82,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:white_dye",
+     "nombre": "Tinte blanco",
+     "cantidad": 16,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:orange_dye",
+     "nombre": "Tinte naranja",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:magenta_dye",
+     "nombre": "Tinte magenta",
+     "cantidad": 16,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_blue_dye",
+     "nombre": "Tinte azul claro",
+     "cantidad": 16,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:yellow_dye",
+     "nombre": "Tinte amarillo",
+     "cantidad": 16,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:lime_dye",
+     "nombre": "Tinte verde lima",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:pink_dye",
+     "nombre": "Tinte rosa",
+     "cantidad": 16,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:gray_dye",
+     "nombre": "Tinte gris",
+     "cantidad": 8,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:light_gray_dye",
+     "nombre": "Tinte gris claro",
+     "cantidad": 16,
+     "comprar": 17,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cyan_dye",
+     "nombre": "Tinte cian",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:purple_dye",
+     "nombre": "Tinte morado",
+     "cantidad": 16,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blue_dye",
+     "nombre": "Tinte azul",
+     "cantidad": 8,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:brown_dye",
+     "nombre": "Tinte marrón",
+     "cantidad": 16,
+     "comprar": 13,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:green_dye",
+     "nombre": "Tinte verde",
+     "cantidad": 16,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:red_dye",
+     "nombre": "Tinte rojo",
+     "cantidad": 16,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:black_dye",
+     "nombre": "Tinte negro",
+     "cantidad": 8,
+     "comprar": 19,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:glass_bottle",
+     "nombre": "Frasco de cristal",
+     "cantidad": 64,
+     "comprar": 21,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cauldron",
+     "nombre": "Caldero",
+     "cantidad": 1,
+     "comprar": 88,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:experience_bottle",
+     "nombre": "Frasco con experiencia",
+     "cantidad": 1,
+     "comprar": 8,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:writable_book",
+     "nombre": "Libro y pluma",
+     "cantidad": 1,
+     "comprar": 9,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:map",
+     "nombre": "Mapa en blanco",
+     "cantidad": 1,
+     "comprar": 59,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:firework_rocket",
+     "nombre": "Cohete de fuegos artificiales",
+     "cantidad": 16,
+     "comprar": 24,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:firework_star",
+     "nombre": "Estrella de fuegos artificiales",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:nether_brick",
+     "nombre": "Ladrillo del Nether",
+     "cantidad": 64,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:name_tag",
+     "nombre": "Etiqueta",
+     "cantidad": 1,
+     "comprar": 75,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_13",
+     "nombre": "Disco de música (C418 - 13)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_cat",
+     "nombre": "Disco de música (C418 - cat)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_blocks",
+     "nombre": "Disco de música (C418 - blocks)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_chirp",
+     "nombre": "Disco de música (C418 - chirp)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_far",
+     "nombre": "Disco de música (C418 - far)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_mall",
+     "nombre": "Disco de música (C418 - mall)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_mellohi",
+     "nombre": "Disco de música (C418 - mellohi)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_stal",
+     "nombre": "Disco de música (C418 - stal)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_strad",
+     "nombre": "Disco de música (C418 - strad)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_ward",
+     "nombre": "Disco de música (C418 - ward)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_11",
+     "nombre": "Disco de música (C418 - 11)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:music_disc_wait",
+     "nombre": "Disco de música (C418 - wait)",
+     "cantidad": 1,
+     "comprar": 45,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:loom",
+     "nombre": "Telar",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:flower_banner_pattern",
+     "nombre": "Diseño de estandarte (Estampado de flor)",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:creeper_banner_pattern",
+     "nombre": "Diseño de estandarte (Estampado de creeper)",
+     "cantidad": 1,
+     "comprar": 120,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:globe_banner_pattern",
+     "nombre": "Diseño de estandarte (Estampado de planeta)",
+     "cantidad": 1,
+     "comprar": 15,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:goat_horn",
+     "nombre": "Cuerno de cabra",
+     "cantidad": 1,
+     "comprar": 22,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:barrel",
+     "nombre": "Barril",
+     "cantidad": 16,
+     "comprar": 20,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smoker",
+     "nombre": "Ahumador",
+     "cantidad": 1,
+     "comprar": 4,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:blast_furnace",
+     "nombre": "Alto horno",
+     "cantidad": 1,
+     "comprar": 66,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:cartography_table",
+     "nombre": "Mesa de cartografía",
+     "cantidad": 8,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:fletching_table",
+     "nombre": "Mesa de flechas",
+     "cantidad": 1,
+     "comprar": 3,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:grindstone",
+     "nombre": "Afiladora",
+     "cantidad": 16,
+     "comprar": 12,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:smithing_table",
+     "nombre": "Mesa de herrería",
+     "cantidad": 1,
+     "comprar": 26,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:stonecutter",
+     "nombre": "Cortapiedras",
+     "cantidad": 1,
+     "comprar": 14,
+     "vender": 0
+    },
+    {
+     "objeto": "minecraft:respawn_anchor",
+     "nombre": "Nexo de reaparición",
+     "cantidad": 1,
+     "comprar": 160,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "protecciones",
+   "nombre": "Protecciones",
+   "descripcion": [
+    "Piedras de protección para tu terreno (las de 250, 300 y 500, en la web)."
+   ],
+   "icono": "tfclient:proteccion_25x25",
+   "color": "#c084fc",
+   "hueco": 20,
+   "objetos": [
+    {
+     "objeto": "tfclient:proteccion_10x10",
+     "nombre": "Piedra de protección 10x10",
+     "cantidad": 1,
+     "comprar": 300,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_25x25",
+     "nombre": "Piedra de protección 25x25",
+     "cantidad": 1,
+     "comprar": 1000,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_40x40",
+     "nombre": "Piedra de protección 40x40",
+     "cantidad": 1,
+     "comprar": 2500,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_64x64",
+     "nombre": "Piedra de protección 64x64",
+     "cantidad": 1,
+     "comprar": 5000,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_80x80",
+     "nombre": "Piedra de protección 80x80",
+     "cantidad": 1,
+     "comprar": 8000,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_100x100",
+     "nombre": "Piedra de protección 100x100",
+     "cantidad": 1,
+     "comprar": 12000,
+     "vender": 0
+    },
+    {
+     "objeto": "tfclient:proteccion_150x150",
+     "nombre": "Piedra de protección 150x150",
+     "cantidad": 1,
+     "comprar": 20000,
+     "vender": 0
+    }
+   ]
+  },
+  {
+   "id": "tesoros",
+   "nombre": "Tesoros",
+   "descripcion": [
+    "La tienda solo compra esto: objetos rarísimos, con un límite al día. Véndelos en VENDER."
+   ],
+   "icono": "minecraft:heart_of_the_sea",
+   "color": "#fcc94a",
+   "hueco": 22,
+   "objetos": [
+    {
+     "objeto": "minecraft:dragon_egg",
+     "nombre": "Huevo de dragón",
+     "descripcion": [
+      "Solo hay uno en el mundo."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 5000,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:nether_star",
+     "nombre": "Estrella del Nether",
+     "descripcion": [
+      "Del Wither."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 1800,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:elytra",
+     "nombre": "Élitros",
+     "descripcion": [
+      "De los barcos del End. Sin usar."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 1200,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:dragon_head",
+     "nombre": "Cabeza de dragón",
+     "descripcion": [
+      "De los barcos del End."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 700,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:enchanted_golden_apple",
+     "nombre": "Manzana dorada encantada",
+     "descripcion": [
+      "Solo sale en cofres."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 600,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:music_disc_5",
+     "nombre": "Disco de música (Samuel Åberg - 5)",
+     "descripcion": [
+      "El disco de los 9 fragmentos."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 500,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:heart_of_the_sea",
+     "nombre": "Corazón del mar",
+     "descripcion": [
+      "De los tesoros enterrados."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 450,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:music_disc_otherside",
+     "nombre": "Disco de música (Lena Raine - otherside)",
+     "descripcion": [
+      "De las fortalezas y ciudades antiguas."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 400,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:music_disc_pigstep",
+     "nombre": "Disco de música (Lena Raine - Pigstep)",
+     "descripcion": [
+      "De los bastiones."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 350,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:music_disc_relic",
+     "nombre": "Disco de música (Aaron Cherof - Relic)",
+     "descripcion": [
+      "De la arqueología."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 350,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:trident",
+     "nombre": "Tridente",
+     "descripcion": [
+      "De los ahogados. Sin usar."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 350,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:totem_of_undying",
+     "nombre": "Tótem de inmortalidad",
+     "descripcion": [
+      "De los evocadores."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 300,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:sniffer_egg",
+     "nombre": "Huevo de sniffer",
+     "descripcion": [
+      "De la arqueología en las ruinas del océano."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 200,
+     "limiteVentaDiario": 1
+    },
+    {
+     "objeto": "minecraft:wither_skeleton_skull",
+     "nombre": "Calavera de esqueleto del Wither",
+     "descripcion": [
+      "De los esqueletos del Wither."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 150,
+     "limiteVentaDiario": 2
+    },
+    {
+     "objeto": "minecraft:echo_shard",
+     "nombre": "Fragmento resonante",
+     "descripcion": [
+      "De las ciudades antiguas."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 80,
+     "limiteVentaDiario": 4
+    },
+    {
+     "objeto": "minecraft:disc_fragment_5",
+     "nombre": "Fragmento de disco (Disco de música - 5)",
+     "descripcion": [
+      "De las ciudades antiguas."
+     ],
+     "cantidad": 1,
+     "comprar": 0,
+     "vender": 40,
+     "limiteVentaDiario": 9
+    }
+   ]
+  }
+ ]
 }

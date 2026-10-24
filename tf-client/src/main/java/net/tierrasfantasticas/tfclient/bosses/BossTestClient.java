@@ -38,7 +38,7 @@ import net.tierrasfantasticas.tfclient.vacio.TravelFx;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class BossTestClient {
     private static boolean started, quitting;
-    private static int menuTicks;
+    private static int menuTicks, musicTicks;
     private static Field barsField;
     private static String shotSeen;
 
@@ -137,6 +137,28 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
         }
+        // (1.3.134) la app Música para la prueba «tienda»: una canción en la carpeta, compartirla y lo que hay en COMPARTIDOS
+        if (BossTest.musicCmd != null) {
+            String cmd = BossTest.musicCmd;
+            BossTest.musicCmd = null;
+            music(cmd);
+        }
+        if ("tienda".equals(BossTest.currentId()) && musicTicks++ % 10 == 0) {
+            var shared = net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.playlist(net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.SHARED);
+            StringBuilder b = new StringBuilder();
+            b.append(net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.tracks().size()).append(" canciones; COMPARTIDOS: ");
+            if (shared == null) b.append("NO EXISTE");
+            else {
+                b.append(shared.tracks().size());
+                for (String id : shared.tracks()) {
+                    var tr = net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.get(id);
+                    if (tr != null) b.append(" «").append(tr.shownTitle()).append("» (").append(tr.file()).append(", ").append(tr.url()).append(")");
+                }
+            }
+            java.nio.file.Path pend = net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.dir().resolve("compartidas-pendientes.json");
+            b.append("; pendientes: ").append(java.nio.file.Files.exists(pend) ? "sí" : "ninguna");
+            BossTest.clientMusic = b.toString();
+        }
         // (1.3.109) la lista de jugadores (TAB) y cuántos hay en ella, y cuántos con su skin (los bots)
         mc.options.keyPlayerList.setDown(BossTest.tabList);
         if (mc.getConnection() != null) {
@@ -192,6 +214,37 @@ public final class BossTestClient {
         if (BossTest.finished && !quitting) {
             quitting = true;
             mc.stop();
+        }
+    }
+
+    /** (1.3.134) Prueba «tienda»: crear (una canción WAV de 3 s en la carpeta), compartir, lista:<id>, hover, nohover. */
+    private static void music(String cmd) {
+        try {
+            if (cmd.equals("crear")) {
+                java.nio.file.Path dir = net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.dir();
+                java.nio.file.Files.createDirectories(dir);
+                int rate = 22050, n = rate * 3;
+                java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(44 + n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                b.put("RIFF".getBytes()).putInt(36 + n * 2).put("WAVE".getBytes()).put("fmt ".getBytes()).putInt(16).putShort((short) 1)
+                        .putShort((short) 1).putInt(rate).putInt(rate * 2).putShort((short) 2).putShort((short) 16).put("data".getBytes()).putInt(n * 2);
+                for (int i = 0; i < n; i++) b.putShort((short) (Math.sin(2 * Math.PI * 440 * i / rate) * 6000 * Math.min(1, (n - i) / 2000.0)));
+                java.nio.file.Files.write(dir.resolve("prueba_compartir.wav"), b.array());
+                net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.scanFolder();
+            } else if (cmd.equals("compartir")) {
+                for (var tr : net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.tracks()) {
+                    if (tr.file().contains("prueba_compartir")) {
+                        TFClient.LOGGER.info("Prueba de jefes: compartir «{}»: {}", tr.shownTitle(), net.tierrasfantasticas.tfclient.pad.music.MusicShare.share(tr));
+                        return;
+                    }
+                }
+                TFClient.LOGGER.warn("Prueba de jefes: no está la canción de la prueba para compartirla");
+            } else if (cmd.startsWith("lista:")) {
+                net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.selectList(cmd.substring(6));
+            } else if (cmd.equals("hover") || cmd.equals("nohover")) {
+                net.tierrasfantasticas.tfclient.pad.TFPadClient.hoverMusicForTest(cmd.equals("hover"));
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Prueba de jefes: música «{}» falló", cmd, e);
         }
     }
 

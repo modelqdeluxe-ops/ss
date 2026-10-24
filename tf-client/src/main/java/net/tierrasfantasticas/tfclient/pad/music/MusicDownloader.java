@@ -44,6 +44,8 @@ public final class MusicDownloader {
         public final boolean cover;
         /** La playlist donde se mete la canción al acabar ("" = solo a la música). */
         public final String listId;
+        /** (1.3.134) El título y el artista que se le ponen (los del disco compartido); "" = los de la canción. */
+        volatile String title = "", artist = "";
         public volatile long done, total = -1;
         public volatile String status = "Conectando…";
         public volatile String error;
@@ -88,6 +90,18 @@ public final class MusicDownloader {
         String url = direct(link);
         if (busy() || url == null) return false;
         Job j = new Job(url, false, listId);
+        job = j;
+        start(j, () -> downloadSong(j));
+        return true;
+    }
+
+    /** (1.3.134) Como download, pero con el título y el artista del disco que la compartió. */
+    public static boolean download(String link, String listId, String title, String artist) {
+        String url = direct(link);
+        if (busy() || url == null) return false;
+        Job j = new Job(url, false, listId);
+        j.title = title == null ? "" : title;
+        j.artist = artist == null ? "" : artist;
         job = j;
         start(j, () -> downloadSong(j));
         return true;
@@ -198,9 +212,10 @@ public final class MusicDownloader {
             MusicTags.Tags tags = MusicTags.read(part);
             String ext = kind.ext();
             boolean cover = tags.cover() != null && saveCover(tags.cover(), dir.resolve(id + ".png"));
-            String title = !tags.title().isBlank() ? tags.title() : name;
+            String title = !j.title.isBlank() ? j.title : !tags.title().isBlank() ? tags.title() : name;
+            String artist = !j.artist.isBlank() ? j.artist : tags.artist();
             Files.move(part, dir.resolve(id + ext), StandardCopyOption.REPLACE_EXISTING);
-            MusicLibrary.Track t = new MusicLibrary.Track(id, title, tags.artist(), id + ext, cover, duration, j.url, System.currentTimeMillis());
+            MusicLibrary.Track t = new MusicLibrary.Track(id, title, artist, id + ext, cover, duration, j.url, System.currentTimeMillis());
             MusicLibrary.add(t);
             if (!j.listId.isEmpty()) MusicLibrary.addToList(j.listId, t.id());
             j.result = t;
