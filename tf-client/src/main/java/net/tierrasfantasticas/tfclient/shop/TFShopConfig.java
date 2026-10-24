@@ -90,7 +90,48 @@ public final class TFShopConfig {
             Map.entry("desactivada", "&cLa tienda está cerrada ahora mismo."));
 
     /** La versión de la tienda por defecto (versionTienda; la misma que VERSION de tools/tienda/precios.py). */
-    static final int VERSION = 2;
+    static final int VERSION = 3;
+
+    /**
+     * (1.3.135, el dueño: «en la tienda solo la x10, x25, x40, x64 y x80; las de 100 en adelante van con los rangos») Las
+     * piedras de protección que ya no se venden en la tienda.
+     */
+    private static final List<String> RANK_STONES = List.of("tfclient:proteccion_100x100",
+            "tfclient:proteccion_150x150", "tfclient:proteccion_250x250", "tfclient:proteccion_300x300", "tfclient:proteccion_500x500");
+
+    /** Una tienda de la versión 2: quita esas piedras (copia «tienda.antes-v3.json») y la deja en la versión 3. */
+    private static JsonObject dropRankStones(Path file, JsonObject json) {
+        if (json == null || TFJson.num(json, "versionTienda", 0) >= VERSION) return json;
+        int removed = 0;
+        if (json.has("categorias") && json.get("categorias").isJsonArray()) {
+            for (JsonElement c : json.getAsJsonArray("categorias")) {
+                if (!c.isJsonObject() || !c.getAsJsonObject().has("objetos") || !c.getAsJsonObject().get("objetos").isJsonArray()) continue;
+                JsonArray items = c.getAsJsonObject().getAsJsonArray("objetos");
+                for (int i = items.size() - 1; i >= 0; i--) {
+                    JsonElement o = items.get(i);
+                    if (o.isJsonObject() && RANK_STONES.contains(TFJson.str(o.getAsJsonObject(), "objeto", ""))) {
+                        items.remove(i);
+                        removed++;
+                    }
+                }
+                if (TFJson.str(c.getAsJsonObject(), "id", "").equals("protecciones")) {
+                    JsonArray d = new JsonArray();
+                    d.add("Piedras de protección: 10x10 a 80x80 (las de 100x100 en adelante van con los rangos).");
+                    c.getAsJsonObject().add("descripcion", d);
+                }
+            }
+        }
+        try {
+            Path backup = file.resolveSibling("tienda.antes-v3.json");
+            if (!Files.exists(backup)) Files.copy(file, backup);
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Tienda: no se pudo guardar la copia de tienda.json: {}", e.getMessage());
+        }
+        json.addProperty("versionTienda", VERSION);
+        TFJson.write(file, json);
+        TFClient.LOGGER.info("TF Tienda: quitadas {} piedras de protección de los rangos (la de antes, en tienda.antes-v3.json)", removed);
+        return json;
+    }
 
     private TFShopConfig() {}
 
@@ -124,7 +165,9 @@ public final class TFShopConfig {
             }
             // (1.3.134) todos los objetos del juego con precios del estudio de la economía (tools/tienda/precios.py,
             // TIENDA.md) y la tienda solo compra Tesoros: la de antes se guarda (tienda.antes-v2.json) y se cambia
-            json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionTienda", VERSION, defaults(), "tienda.json");
+            json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionTienda", 2, defaults(), "tienda.json");
+            // (1.3.135) a la de la 1.3.134 solo se le quitan las piedras que van con los rangos (sin tocar lo demás)
+            json = dropRankStones(file, json);
         }
         if (json == null) return warnings;
         enabled = TFJson.bool(json, "activada", true);

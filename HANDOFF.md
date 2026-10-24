@@ -190,7 +190,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.134) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.135) — lee esto primero
+
+**1.3.135** (el dueño: «las protecciones de la tienda son la x10, x25, x40, x64 y x80; las de 100 en adelante van con
+los rangos, no las podemos dar en la tienda»): `tools/tienda/precios.py` (`PROTECCIONES`, `VERSION` 3) y
+`TFShopConfig.VERSION` 3. A una tienda de la 1.3.134 el servidor solo le quita las de 100x100 en adelante
+(`TFShopConfig.dropRankStones`, copia `tienda.antes-v3.json`), sin tocar lo demás; una más vieja se cambia entera
+como en la 1.3.134. Lo mira la prueba «tienda».
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.134, PUBLICADA)
 
 **1.3.134** (tres pedidos del dueño):
 1. **La tienda nueva** («estudia lo que cuesta ganar monedas, fija precios justos, no regalados; todos los objetos del

@@ -8,7 +8,7 @@ regalados. Y como tienda no compramos nada más que Tesoros, objetos extremadame
 - La tienda: `config/tfclient/tienda.json` (por defecto, `src/main/resources/tfclient-shop-default.json`). Se genera
   con `tools/tienda/precios.py`; la tabla entera de precios, en [`TIENDA-PRECIOS.md`](TIENDA-PRECIOS.md).
 - Al arrancar la 1.3.134, el servidor cambia su `tienda.json` por la nueva (lleva `versionTienda: 2`; la de antes se
-  guarda en `tienda.antes-v2.json`). Lo que cambie el dueño después (en el pad de administrador o en el archivo) se
+  guarda en `tienda.antes-v2.json`); la 1.3.135 (versión 3) solo le quita las piedras de los rangos. Lo que cambie el dueño después (en el pad de administrador o en el archivo) se
   queda. Si vuelven a cambiar los precios: subir `VERSION` en `precios.py` y en `TFShopConfig.VERSION`.
 
 ## 1. Lo que se gana (medido en la configuración por defecto del mod)
@@ -61,7 +61,7 @@ daño, pero son de vez en cuando.
 **Qué compras con un día normal (~270)**: 22 lingotes de hierro, o 14 de oro, o 6 pilas de troncos, o 11 pilas de
 cristal, o un peto y una espada de hierro con su pico, o una manzana dorada y media.
 
-## 3. Lo que hay en la tienda (1.039 objetos en 10 categorías)
+## 3. Lo que hay en la tienda (1.037 objetos en 10 categorías)
 
 | Categoría | Objetos | Ejemplos |
 |---|---:|---|
@@ -73,12 +73,13 @@ cristal, o un peto y una espada de hierro con su pico, o una manzana dorada y me
 | Granja y Comida | 80 | semillas, brotes, cultivos, carne, pan 13/8, manzana dorada 165, zanahoria dorada 19 |
 | Redstone y Transporte | 79 | pistón 15, tolva 64, raíles, vagonetas, barcas, montura 75 |
 | Utilidades | 71 | cofre 23/16, horno 13/8, yunque 405, cubo 38, mapa 59, etiqueta 75, discos 45, tintes |
-| Protecciones | 7 | 10x10 300 · 25x25 1.000 · 40x40 2.500 · 64x64 5.000 · 80x80 8.000 · 100x100 12.000 · 150x150 20.000 |
+| Protecciones | 5 | 10x10 300 · 25x25 1.000 · 40x40 2.500 · 64x64 5.000 · 80x80 8.000 |
 | Tesoros (solo VENDER) | 16 | ver abajo |
 
-**Las protecciones**: la de 250x250 cuesta 10 $ en la web, que son 25.000 monedas (2.500 por dólar), así que la de
-150x150 se queda por debajo (20.000, ~10 semanas de un jugador normal) y la de 10x10 cuesta un día. Las de 250, 300 y
-500 siguen siendo solo de la web.
+**Las protecciones** (1.3.135, el dueño): en la tienda solo las de 10x10 a 80x80 (la de 10x10 cuesta un día de un
+jugador normal; la de 80x80, ~4 semanas). Las de 100x100 y 150x150 van con los rangos y las de 250, 300 y 500 son de
+pago en la web: no se venden aquí. A una tienda de la 1.3.134 (`versionTienda` 2) el servidor solo le quita esas
+(`TFShopConfig.dropRankStones`, copia `tienda.antes-v3.json`); lo demás que haya cambiado el dueño se queda.
 
 **Fuera de la venta (238)**, con su motivo en `precios.py`:
 - No se consiguen en supervivencia: bedrock, generadores, bloques de comandos, huevos de criatura, pociones, libros
