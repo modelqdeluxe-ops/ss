@@ -2135,7 +2135,7 @@ public final class BossTest {
             }
             case 102 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
             case 140 -> {
-                r.event("armario 3 (se quita la pechera): " + clientWardrobe + (clientWardrobe.startsWith("pecho: nada") && clientWardrobe.endsWith("espalda: nada")
+                r.event("armario 3 (se quita la pechera): " + clientWardrobe + (clientWardrobe.startsWith("pecho: nada") && clientWardrobe.split(" \\| ")[0].endsWith("espalda: nada")
                         ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
                 shot(r, "armario_3_sin_pechera");
             }
@@ -2148,7 +2148,7 @@ public final class BossTest {
             }
             case 182 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
             case 220 -> {
-                r.event("armario 5 (se quitan las alas): " + clientWardrobe + (clientWardrobe.endsWith("espalda: nada") ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
+                r.event("armario 5 (se quitan las alas): " + clientWardrobe + (clientWardrobe.split(" \\| ")[0].endsWith("espalda: nada") ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
                 shot(r, "armario_5_sin_alas");
             }
             case 222 -> {
