@@ -174,8 +174,35 @@ public final class PadClans {
         ServerPlayer p = server.getPlayerList().getPlayer(uuid);
         if (p != null) {
             p.refreshDisplayName();
-            p.refreshTabListName();
+            if (!tabPlugin(server)) p.refreshTabListName();
+            syncSuffix(p);
         }
+    }
+
+    /** ¿Está el plugin TAB? Entonces la lista es suya: no se toca (si no, se pisa su formato con el prefijo de LuckPerms). */
+    public static boolean tabPlugin(net.minecraft.server.MinecraftServer server) {
+        return server.getCommands().getDispatcher().getRoot().getChild("tab") != null;
+    }
+
+    /**
+     * (1.3.130, el dueño: «al hacer un clan y unirme el prefijo de LuckPerms se jode; no debe cambiar nada del prefijo,
+     * solo agregar la etiqueta del clan al lado del nombre») La etiqueta del clan, como sufijo de LuckPerms (lo que TAB y
+     * el chat enseñan detrás del nombre); sin clan, se quita. Al entrar y al cambiar de clan.
+     */
+    public static void syncSuffix(ServerPlayer p) {
+        var server = p.getServer();
+        if (server == null || !net.tierrasfantasticas.tfclient.server.TFBridge.hasLuckPerms(server)) return;
+        String id = clanIdOf(p.getUUID());
+        String name = p.getGameProfile().getName();
+        if (id == null) {
+            net.tierrasfantasticas.tfclient.server.TFLuckPerms.run(server, "lp user " + name + " meta removesuffix 50");
+            return;
+        }
+        JsonObject c = clan(id);
+        ChatFormatting color = ChatFormatting.getByName(TFJson.str(c, "color", "gold"));
+        String tag = TFJson.str(c, "etiqueta", "?").replaceAll("[^A-Za-z0-9_\\-]", "");
+        net.tierrasfantasticas.tfclient.server.TFLuckPerms.run(server, "lp user " + name + " meta setsuffix 50 \" &"
+                + (color == null ? '6' : color.getChar()) + "[" + tag + "]\"");
     }
 
     private static void tellClan(JsonObject c, String text) {

@@ -172,7 +172,11 @@ public final class PadTitles {
         if (t != null) out.append(Component.literal("«" + t.name + "» ").withStyle(t.color));
         out.append(name);
         Component tag = PadClans.tagOf(uuid);
-        if (tag != null) out.append(Component.literal(" ")).append(tag);
+        // (1.3.130) con LuckPerms la etiqueta del clan va como su sufijo (PadClans.syncSuffix): no se repite aquí
+        var server = PadServer.server();
+        if (tag != null && (server == null || !net.tierrasfantasticas.tfclient.server.TFBridge.hasLuckPerms(server))) {
+            out.append(Component.literal(" ")).append(tag);
+        }
         return out;
     }
 
@@ -187,6 +191,8 @@ public final class PadTitles {
         if (event.getEntity().level().isClientSide || PadServer.server() == null) return;
         UUID uuid = event.getEntity().getUUID();
         if (equipped(uuid) == null && PadClans.tagOf(uuid) == null) return;
+        // (1.3.130) con el plugin TAB la lista es suya (el clan va como sufijo de LuckPerms): no se toca
+        if (event.getEntity().getServer() != null && PadClans.tabPlugin(event.getEntity().getServer())) return;
         Component base = event.getDisplayName() != null ? event.getDisplayName() : Component.literal(event.getEntity().getGameProfile().getName());
         // con nombre propio en la lista, el cliente ya no pone el prefijo del rango: se pone aquí
         event.setDisplayName(PlayerTeam.formatNameForTeam(event.getEntity().getTeam(), decorate(uuid, base)));
@@ -197,7 +203,8 @@ public final class PadTitles {
         if (event.getEntity() instanceof ServerPlayer p) {
             PadStats.name(p);
             p.refreshDisplayName();
-            p.refreshTabListName();
+            if (!PadClans.tabPlugin(p.server)) p.refreshTabListName();
+            PadClans.syncSuffix(p);
         }
     }
 }

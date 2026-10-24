@@ -190,7 +190,14 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (23 oct 2026, TF Client 1.3.129) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.130) — lee esto primero
+
+**1.3.130**: el clan ya no pisa el prefijo de LuckPerms en la lista: con el plugin TAB no se toca la lista
+(`PadClans.tabPlugin`), y la etiqueta del clan va como sufijo de LuckPerms (`PadClans.syncSuffix`, prioridad 50, al entrar
+y al cambiar de clan; con LuckPerms el nombre ya no la añade para no repetirla). El escudo al cubrirse, un poco más arriba
+(-0,18). «Traer su skin» también de jugadores conectados y bots (su perfil, `SkinMojang.get`). Sin prueba en el juego.
+
+### CHECKPOINT anterior (23 oct 2026, TF Client 1.3.129, PUBLICADA)
 
 **1.3.129**: el puente da todos los `give` (también los de Minecraft) con la marca del pedido (`TFRevocations.stampAny`),
 así un reembolso quita también los objetos extra del rango; FALTA cobrar en monedas lo ya consumido (necesita contar lo
