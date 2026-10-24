@@ -2200,6 +2200,39 @@ public final class BossTest {
         }
     }
 
+    /** Pone (o quita) algo en el hueco de espalda de Accessories o, sin él, de Curios (real o cosmético). */
+    private static void setBack(ServerPlayer player, boolean cosmetic, ItemStack stack, Rep r) {
+        if (net.minecraftforge.fml.ModList.get().isLoaded("accessories")) {
+            var c = accessorySlot(player, cosmetic, r);
+            if (c != null) {
+                c.setItem(0, stack);
+                c.setChanged();
+            }
+            return;
+        }
+        // Curios: CuriosApi.getCuriosInventory(p) → getStacksHandler("back") → getStacks() / getCosmeticStacks() → setStackInSlot
+        try {
+            Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
+            Object inv = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class).invoke(null, player);
+            if (inv instanceof net.minecraftforge.common.util.LazyOptional<?> lo) inv = lo.resolve().orElse(null);
+            else if (inv instanceof java.util.Optional<?> o) inv = o.orElse(null);
+            if (inv == null) {
+                r.event("accesorios: sin inventario de Curios");
+                return;
+            }
+            Object h = inv.getClass().getMethod("getStacksHandler", String.class).invoke(inv, "back");
+            if (h instanceof java.util.Optional<?> o) h = o.orElse(null);
+            if (h == null) {
+                r.event("accesorios: Curios sin hueco back");
+                return;
+            }
+            Object stacks = h.getClass().getMethod(cosmetic ? "getCosmeticStacks" : "getStacks").invoke(h);
+            if (stacks instanceof net.minecraftforge.items.IItemHandlerModifiable m) m.setStackInSlot(0, stack);
+        } catch (Exception e) {
+            r.event("accesorios: FALLO con Curios: " + e);
+        }
+    }
+
     private static void accesoriosStep(ServerLevel level, ServerPlayer player, Rep r) {
         switch (t) {
             case 1 -> {
@@ -2210,49 +2243,34 @@ public final class BossTest {
                         wardrobeWings = new ItemStack(o.get());
                     }
                 }
-                r.event("accesorios: Accessories " + (net.minecraftforge.fml.ModList.get().isLoaded("accessories") ? "cargado" : "NO CARGADO")
+                r.event("accesorios: Accessories " + (net.minecraftforge.fml.ModList.get().isLoaded("accessories") ? "cargado" : "no")
+                        + ", Curios " + (net.minecraftforge.fml.ModList.get().isLoaded("curios") ? "cargado" : "no")
                         + "; alas " + (wardrobeWings == null ? "NINGUNAS" : pieceKey(wardrobeWings.getItem())));
             }
             case 5 -> cameraType = 1;
             case 10 -> {
-                var c = accessorySlot(player, false, r);
-                if (c != null && wardrobeWings != null) {
-                    c.setItem(0, wardrobeWings.copy());
-                    c.setChanged();
-                }
+                if (wardrobeWings != null) setBack(player, false, wardrobeWings.copy(), r);
             }
             case 60 -> {
                 r.event("accesorios 1 (alas en el hueco de espalda): " + clientWardrobe);
                 shot(r, "accesorios_1_puestas");
             }
             case 62 -> {
-                var c = accessorySlot(player, false, r);
-                if (c != null) {
-                    c.setItem(0, ItemStack.EMPTY);
-                    c.setChanged();
-                }
+                setBack(player, false, ItemStack.EMPTY, r);
             }
             case 100 -> {
                 r.event("accesorios 2 (se quitan): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
                 shot(r, "accesorios_2_quitadas");
             }
             case 102 -> {
-                var c = accessorySlot(player, true, r);
-                if (c != null && wardrobeWings != null) {
-                    c.setItem(0, wardrobeWings.copy());
-                    c.setChanged();
-                }
+                if (wardrobeWings != null) setBack(player, true, wardrobeWings.copy(), r);
             }
             case 140 -> {
                 r.event("accesorios 3 (alas en el hueco cosmético): " + clientWardrobe);
                 shot(r, "accesorios_3_cosmetico");
             }
             case 142 -> {
-                var c = accessorySlot(player, true, r);
-                if (c != null) {
-                    c.setItem(0, ItemStack.EMPTY);
-                    c.setChanged();
-                }
+                setBack(player, true, ItemStack.EMPTY, r);
             }
             case 180 -> {
                 r.event("accesorios 4 (se quitan del cosmético): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
