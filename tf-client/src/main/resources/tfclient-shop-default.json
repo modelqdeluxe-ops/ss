@@ -7252,49 +7252,49 @@
    "objetos": [
     {
      "objeto": "tfclient:proteccion_10x10",
-     "nombre": "Protección 10x10",
+     "nombre": "Prote 10x10",
      "cantidad": 1,
      "comprar": 300,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_25x25",
-     "nombre": "Protección 25x25",
+     "nombre": "Prote 25x25",
      "cantidad": 1,
      "comprar": 1000,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_40x40",
-     "nombre": "Protección 40x40",
+     "nombre": "Prote 40x40",
      "cantidad": 1,
      "comprar": 2500,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_64x64",
-     "nombre": "Protección 64x64",
+     "nombre": "Prote 64x64",
      "cantidad": 1,
      "comprar": 5000,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_80x80",
-     "nombre": "Protección 80x80",
+     "nombre": "Prote 80x80",
      "cantidad": 1,
      "comprar": 8000,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_100x100",
-     "nombre": "Protección 100x100",
+     "nombre": "Prote 100x100",
      "cantidad": 1,
      "comprar": 12000,
      "vender": 0
     },
     {
      "objeto": "tfclient:proteccion_150x150",
-     "nombre": "Protección 150x150",
+     "nombre": "Prote 150x150",
      "cantidad": 1,
      "comprar": 20000,
      "vender": 0

@@ -1062,13 +1062,13 @@ Versión 2. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo q
 
 | Objeto | Lote | Compra | Vende la tienda |
 |---|---:|---:|---:|
-| Protección 10x10 | 1 | 300 | — |
-| Protección 25x25 | 1 | 1000 | — |
-| Protección 40x40 | 1 | 2500 | — |
-| Protección 64x64 | 1 | 5000 | — |
-| Protección 80x80 | 1 | 8000 | — |
-| Protección 100x100 | 1 | 12000 | — |
-| Protección 150x150 | 1 | 20000 | — |
+| Prote 10x10 | 1 | 300 | — |
+| Prote 25x25 | 1 | 1000 | — |
+| Prote 40x40 | 1 | 2500 | — |
+| Prote 64x64 | 1 | 5000 | — |
+| Prote 80x80 | 1 | 8000 | — |
+| Prote 100x100 | 1 | 12000 | — |
+| Prote 150x150 | 1 | 20000 | — |
 
 ## Tesoros (16)
 
