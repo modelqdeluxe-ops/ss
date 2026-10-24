@@ -180,8 +180,11 @@ public final class TFItemsClient {
             boolean inChest = chest.getItem() instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
             String back = wardrobe != null && (inChest || TFAccessorySlots.wearsBack(player)) ? "armario " + key(wardrobe)
                     : inChest ? "puestas " + key(chest) : "nada";
+            List<ItemStack> fallback = TFAccessorySlots.backCosmetics(player);
+            if (back.equals("nada") && !fallback.isEmpty()) back = "huecos " + key(fallback.get(0));
             return "pecho: " + (armor.getItem() instanceof ArmorItem ? key(armor) : "nada") + " (lleva " + (chest.isEmpty() ? "nada" : key(chest))
-                    + "); espalda: " + back;
+                    + "); espalda: " + back + " | accesorios: lleva " + TFAccessorySlots.wearsBack(player) + ", los dibuja su mod "
+                    + TFAccessorySlots.modDraws(player) + ", respaldo " + fallback.size();
         }
 
         private static String key(ItemStack stack) {

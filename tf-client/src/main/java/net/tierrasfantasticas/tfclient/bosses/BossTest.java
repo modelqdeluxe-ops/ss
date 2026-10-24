@@ -281,6 +281,8 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("tienda")) ids.add(0, "tienda");
             // (1.3.137) «armario»: la pieza del Armario solo se ve sobre lo que se lleva puesto (pechera y alas)
             if (only != null && List.of(only.split(",")).contains("armario")) ids.add(0, "armario");
+            // (1.3.137) «accesorios» (con [accesorios]: Accessories): alas en el hueco de espalda y en el cosmético, y quitarlas
+            if (only != null && List.of(only.split(",")).contains("accesorios")) ids.add(0, "accesorios");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -299,7 +301,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id) || "armario".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -338,6 +340,10 @@ public final class BossTest {
         }
         if ("armario".equals(r.id)) {
             if (!waitShot) armarioStep(level, player, r);
+            return;
+        }
+        if ("accesorios".equals(r.id)) {
+            if (!waitShot) accesoriosStep(level, player, r);
             return;
         }
         switch (phase) {
@@ -2151,6 +2157,109 @@ public final class BossTest {
                 cameraType = 0;
             }
             case 230 -> next(level);
+            default -> { }
+        }
+    }
+
+    /**
+     * (1.3.137) El contenedor de Accessories de un hueco («back» o «cape»), real o cosmético, por reflexión
+     * (AccessoriesCapability.get(entity).getContainers().get(nombre).getAccessories() / getCosmeticAccessories()).
+     */
+    private static net.minecraft.world.Container accessorySlot(ServerPlayer player, boolean cosmetic, Rep r) {
+        try {
+            Class<?> api = Class.forName("io.wispforest.accessories.api.AccessoriesCapability");
+            Object cap = null;
+            for (String n : new String[] {"get", "getOptionally"}) {
+                try {
+                    Object o = api.getMethod(n, net.minecraft.world.entity.LivingEntity.class).invoke(null, player);
+                    if (o instanceof java.util.Optional<?> opt) o = opt.orElse(null);
+                    if (o != null) {
+                        cap = o;
+                        break;
+                    }
+                } catch (NoSuchMethodException ignored) {
+                    // otra versión
+                }
+            }
+            if (cap == null) {
+                r.event("accesorios: sin capacidad de Accessories");
+                return null;
+            }
+            Object map = cap.getClass().getMethod("getContainers").invoke(cap);
+            if (!(map instanceof java.util.Map<?, ?> m)) return null;
+            Object container = m.containsKey("back") ? m.get("back") : m.get("cape");
+            if (container == null) {
+                r.event("accesorios: no hay hueco back ni cape; huecos: " + m.keySet());
+                return null;
+            }
+            Object c = container.getClass().getMethod(cosmetic ? "getCosmeticAccessories" : "getAccessories").invoke(container);
+            return c instanceof net.minecraft.world.Container ct ? ct : null;
+        } catch (Exception e) {
+            r.event("accesorios: FALLO al leer Accessories: " + e);
+            return null;
+        }
+    }
+
+    private static void accesoriosStep(ServerLevel level, ServerPlayer player, Rep r) {
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("back", List.of())) {
+                    if (o.get() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.wornModel() != null && wardrobeWings == null) {
+                        wardrobeWings = new ItemStack(o.get());
+                    }
+                }
+                r.event("accesorios: Accessories " + (net.minecraftforge.fml.ModList.get().isLoaded("accessories") ? "cargado" : "NO CARGADO")
+                        + "; alas " + (wardrobeWings == null ? "NINGUNAS" : pieceKey(wardrobeWings.getItem())));
+            }
+            case 5 -> cameraType = 1;
+            case 10 -> {
+                var c = accessorySlot(player, false, r);
+                if (c != null && wardrobeWings != null) {
+                    c.setItem(0, wardrobeWings.copy());
+                    c.setChanged();
+                }
+            }
+            case 60 -> {
+                r.event("accesorios 1 (alas en el hueco de espalda): " + clientWardrobe);
+                shot(r, "accesorios_1_puestas");
+            }
+            case 62 -> {
+                var c = accessorySlot(player, false, r);
+                if (c != null) {
+                    c.setItem(0, ItemStack.EMPTY);
+                    c.setChanged();
+                }
+            }
+            case 100 -> {
+                r.event("accesorios 2 (se quitan): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
+                shot(r, "accesorios_2_quitadas");
+            }
+            case 102 -> {
+                var c = accessorySlot(player, true, r);
+                if (c != null && wardrobeWings != null) {
+                    c.setItem(0, wardrobeWings.copy());
+                    c.setChanged();
+                }
+            }
+            case 140 -> {
+                r.event("accesorios 3 (alas en el hueco cosmético): " + clientWardrobe);
+                shot(r, "accesorios_3_cosmetico");
+            }
+            case 142 -> {
+                var c = accessorySlot(player, true, r);
+                if (c != null) {
+                    c.setItem(0, ItemStack.EMPTY);
+                    c.setChanged();
+                }
+            }
+            case 180 -> {
+                r.event("accesorios 4 (se quitan del cosmético): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
+                shot(r, "accesorios_4_cosmetico_quitado");
+            }
+            case 182 -> cameraType = 0;
+            case 190 -> next(level);
             default -> { }
         }
     }
