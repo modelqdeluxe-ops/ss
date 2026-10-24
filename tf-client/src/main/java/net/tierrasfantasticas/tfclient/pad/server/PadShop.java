@@ -331,7 +331,28 @@ public final class PadShop {
             b.row(new PadView.Row(shown(e, v[2]), TFShop.name(e), TEXT, lines, -1, lots > 0 ? "+" + coins(pay) : "", btn, null)
                     .clickable("tab:i:" + v[0] + ":" + v[1] + ":s"));
         }
+        // (1.3.134) la tienda solo compra Tesoros: debajo, los que no llevas, con lo que pagan y cuántos al día
+        java.util.Set<String> listed = new java.util.HashSet<>();
+        for (Entry e : found.keySet()) listed.add(e.itemId() + "|" + e.nbt());
+        for (int ci = 0; ci < cats.size(); ci++) {
+            Category c = cats.get(ci);
+            for (int ei = 0; ei < c.entries().size(); ei++) {
+                Entry e = c.entries().get(ei);
+                if (!e.sellable() || !player.hasPermissions(e.permission()) || !listed.add(e.itemId() + "|" + e.nbt())) continue;
+                List<String> lines = new ArrayList<>();
+                lines.add("Paga " + TFEconomy.format(e.sell()) + (e.amount() == 1 ? " la unidad" : " por " + units(e.amount()))
+                        + (e.sellDaily() > 0 ? " · hasta " + units(e.sellDaily()) + " al día" : "") + ".");
+                for (String d : e.lore()) {
+                    String p = plain(d);
+                    if (!p.isBlank()) lines.add(p);
+                    if (lines.size() >= 2) break;
+                }
+                b.row(new PadView.Row(shown(e, e.amount()), TFShop.name(e), 0x8A96B4, lines, -1, "+" + coins(e.sell()), null, null)
+                        .clickable("tab:i:" + ci + ":" + ei + ":s"));
+            }
+        }
         if (found.isEmpty()) {
+            b.header("La tienda solo compra Tesoros (objetos rarísimos, con límite al día). No llevas ninguno.");
             b.empty("No llevas nada que la tienda compre.");
         } else {
             b.header(total > 0 ? "Puedes ganar " + TFEconomy.format(total) + " con lo que llevas." : "Hoy ya no puedes vender más de lo que llevas.");

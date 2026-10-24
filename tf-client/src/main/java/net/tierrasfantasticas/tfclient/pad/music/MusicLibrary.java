@@ -60,6 +60,12 @@ public final class MusicLibrary {
     /** Una playlist: su nombre y las canciones (ids), en orden. */
     public record Playlist(String id, String name, List<String> tracks) {}
 
+    /**
+     * (1.3.134) La pestaña COMPARTIDOS: las canciones que te pasaron con un disco (MusicShare). Siempre está (la
+     * primera tras TODAS) y no se borra; sacar una de ella no la borra de tu música.
+     */
+    public static final String SHARED = "compartidos";
+
     private static final List<Track> TRACKS = new ArrayList<>();
     private static final List<Playlist> LISTS = new ArrayList<>();
     /** La lista que suena y se ve ("" = todas las canciones). */
@@ -144,6 +150,7 @@ public final class MusicLibrary {
 
     public static synchronized void deleteList(String id) {
         load();
+        if (SHARED.equals(id)) return;
         LISTS.removeIf(p -> p.id().equals(id));
         if (currentList.equals(id)) currentList = "";
         save();
@@ -357,6 +364,11 @@ public final class MusicLibrary {
     static synchronized void load() {
         if (loaded) return;
         loaded = true;
+        read();
+        if (playlist(SHARED) == null) LISTS.add(0, new Playlist(SHARED, "Compartidos", new ArrayList<>()));
+    }
+
+    private static void read() {
         Path json = dir().resolve("biblioteca.json");
         if (!Files.exists(json)) return;
         try {

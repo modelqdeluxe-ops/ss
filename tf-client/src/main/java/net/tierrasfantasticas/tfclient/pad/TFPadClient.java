@@ -164,6 +164,11 @@ public final class TFPadClient {
         }
     }
 
+    /** (1.3.134) Prueba «tienda»: la primera canción de Música, como con el ratón encima (sus botones a la vista). */
+    public static void hoverMusicForTest(boolean on) {
+        PadMusicPage.testHoverFirst = on;
+    }
+
     static void openServerApp(String app, String tab) {
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Open(app, tab == null ? "" : tab));
     }

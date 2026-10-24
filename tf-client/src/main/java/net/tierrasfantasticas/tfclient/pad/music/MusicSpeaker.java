@@ -136,7 +136,9 @@ public final class MusicSpeaker {
     private static String uploading = "";
 
     /** Lo que se cuenta al servidor: el link, o tfaudio:&lt;sha1&gt; si es de la carpeta; null si no se puede compartir. */
-    private static String shareUrl(MusicLibrary.Track t) {
+    static String shareUrl(MusicLibrary.Track t) {
+        // (1.3.134) una que te pasaron con un disco desde la carpeta de otro: su tfaudio: (por si el servidor la pide)
+        if (t.url().startsWith(PadSpeakerNet.LOCAL)) FILE_OF.put(t.url().substring(PadSpeakerNet.LOCAL.length()), MusicLibrary.file(t));
         if (!t.url().isBlank()) return t.url();
         Path f = MusicLibrary.file(t);
         try {
@@ -220,9 +222,21 @@ public final class MusicSpeaker {
         finish(url, file, ok);
     }
 
+    /**
+     * (1.3.134) La canción de un disco compartido que guarda el servidor (tfaudio:): se pide como la de un altavoz y,
+     * al llegar, MusicShare la mete en la música. false si ya se estaba bajando.
+     */
+    static boolean fetchShared(String url) {
+        if (!url.startsWith(PadSpeakerNet.LOCAL) || !DOWNLOADING.add(url)) return false;
+        FAILED.remove(url);
+        PadSpeakerNet.toServerAny(new PadSpeakerNet.Get(url.substring(PadSpeakerNet.LOCAL.length())));
+        return true;
+    }
+
     /** Acabó de bajarse (o falló) la canción de un altavoz: suena en los que la tienen puesta, a la par. */
     private static void finish(String url, Path file, boolean ok) {
         DOWNLOADING.remove(url);
+        MusicShare.arrived(url, file, ok);
         if (!ok) {
             if (FAILED.size() > 50) FAILED.clear();
             FAILED.put(url, System.currentTimeMillis());

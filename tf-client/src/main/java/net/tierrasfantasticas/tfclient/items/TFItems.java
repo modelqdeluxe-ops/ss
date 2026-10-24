@@ -48,6 +48,8 @@ public final class TFItems {
      *  servidor (pad/server/PadGreen) y solo se gana con el TF Pass. */
     public static RegistryObject<Item> GREEN_COIN;
     public static RegistryObject<Item> ADMIN_PAD;
+    /** (1.3.134) El disco de una canción compartida desde la app Música (pad/SharedDiscItem). */
+    public static RegistryObject<Item> SHARED_DISC;
     public static final List<String> JOB_ICONS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
 
@@ -87,6 +89,7 @@ public final class TFItems {
         COIN = ITEMS.register("fantastic_coin", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), false));
         GREEN_COIN = ITEMS.register("fantastic_coin_green", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.RARE), true));
         ADMIN_PAD = ITEMS.register("pad_admin", net.tierrasfantasticas.tfclient.pad.AdminPadItem::new);
+        SHARED_DISC = ITEMS.register("disco_compartido", net.tierrasfantasticas.tfclient.pad.SharedDiscItem::new);
         // (1.3.101) El panel de control de los NPC de escenas (/tf npc)
         net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL = ITEMS.register("npc_panel", net.tierrasfantasticas.tfclient.npcs.NpcPanelItem::new);
         ITEMS.register(modBus);

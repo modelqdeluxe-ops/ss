@@ -44,6 +44,11 @@ public final class PadSpeakerNet {
                 .encoder(Get::write).decoder(Get::read).consumerMainThread(Get::handle).add();
         ch.messageBuilder(DownPart.class, base + 5, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(DownPart::write).decoder(DownPart::read).consumerMainThread(DownPart::handle).add();
+        // (1.3.134) compartir una canción con un disco (SharedDiscItem)
+        ch.messageBuilder(Share.class, base + 6, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Share::write).decoder(Share::read).consumerMainThread(Share::handle).add();
+        ch.messageBuilder(Shared.class, base + 7, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Shared::write).decoder(Shared::read).consumerMainThread(Shared::handle).add();
     }
 
     /**
@@ -136,6 +141,46 @@ public final class PadSpeakerNet {
 
         static void handle(DownPart m, Supplier<NetworkEvent.Context> ctx) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.part(m));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** (1.3.134) El que comparte: hazme el disco de esta canción (link o tfaudio:, título, artista, duración). */
+    public record Share(String url, String title, String artist, long durationMs) {
+        static void write(Share m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.url, 512);
+            buf.writeUtf(m.title, 80);
+            buf.writeUtf(m.artist, 80);
+            buf.writeVarLong(Math.max(0, m.durationMs));
+        }
+
+        static Share read(FriendlyByteBuf buf) {
+            return new Share(buf.readUtf(512), buf.readUtf(80), buf.readUtf(80), buf.readVarLong());
+        }
+
+        static void handle(Share m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) net.tierrasfantasticas.tfclient.pad.server.PadMusicShare.share(p, m);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** (1.3.134) Al que gasta el disco: la canción que se guarda en su música (COMPARTIDOS) y quién se la pasó. */
+    public record Shared(String url, String title, String artist, long durationMs, String from) {
+        static void write(Shared m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.url, 512);
+            buf.writeUtf(m.title, 80);
+            buf.writeUtf(m.artist, 80);
+            buf.writeVarLong(Math.max(0, m.durationMs));
+            buf.writeUtf(m.from, 40);
+        }
+
+        static Shared read(FriendlyByteBuf buf) {
+            return new Shared(buf.readUtf(512), buf.readUtf(80), buf.readUtf(80), buf.readVarLong(), buf.readUtf(40));
+        }
+
+        static void handle(Shared m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.pad.music.MusicShare.received(m));
             ctx.get().setPacketHandled(true);
         }
     }

@@ -26,8 +26,10 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
   `{"tipo": "monedas", "cantidad": 50}`.
 - **Fantastic Gacha Coins**: las del Gachapón (antes «monedas verdes»). En los premios: `{"tipo": "verdes", "cantidad": 1}`.
 - Un objeto: `{"tipo": "objeto", "id": "minecraft:diamond", "cantidad": 2}`.
-- Referencia de la economía: un diamante vale 150 Fantastic Coins en la tienda y un jugador normal gana unas 400 al
-  día trabajando. Antes de subir un premio, compáralo con eso: la moneda tiene que valer algo.
+- Referencia de la economía (1.3.134, estudio en `TIENDA.md` del mod): una hora de oficio da unas 75 Fantastic Coins
+  y un jugador normal gana unas 270 al día (oficio, misiones, cazas y calendario). En la tienda, algo cuesta unas 6
+  veces lo que ganarías en el rato de conseguirlo tú (hierro 12, oro 19, carbón 4; el diamante y la netherita no se
+  venden). Antes de subir un premio, compáralo con eso: la moneda tiene que valer algo.
 
 ## Qué archivo cambia cada cosa
 
@@ -40,7 +42,7 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
 | `misiones.json` | Misiones diarias y semanales del pad y las cazas (presas que rotan cada 12 h). |
 | `recompensas.json` | Calendario de recompensas diarias y recompensas sueltas. |
 | `kits.json` | Kits: objetos, monedas, espera y quién puede cogerlos. |
-| `tienda.json` | Tienda del servidor: categorías, objetos, precio de compra y de venta. |
+| `tienda.json` | Tienda del servidor: todos los objetos del juego por categorías, precio de compra y los Tesoros (lo único que compra la tienda, con límite al día). |
 | `tienda-monedas.json` | La «Tienda de monedas» de la web: objetos del servidor que se compran con Fantastic Coins (mejor con `/tf web tienda add <precio>` con el objeto en la mano). |
 | `ruleta.json` | Copia de la ruleta de la web (la manda la web por el puente: cámbiala allí). |
 | `protecciones.json` | Piedras de protección: tamaños, límites y opciones de las zonas. |
