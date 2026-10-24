@@ -2118,6 +2118,24 @@ public final class BossTest {
                     r.event("tienda: la de antes " + (net.tierrasfantasticas.tfclient.util.TFJson.num(now, "versionTienda", 0) >= 2 ? "se cambió por la nueva" : "NO SE CAMBIÓ")
                             + ", copia " + (Files.exists(f.resolveSibling("tienda.antes-v2.json")) ? "guardada" : "NO GUARDADA") + "; " + total + " objetos: " + b
                             + "avisos: " + warnings.size() + (warnings.isEmpty() ? "" : " → " + String.join(" | ", warnings.subList(0, Math.min(8, warnings.size())))));
+                    // (1.3.135) una de la 1.3.134 (versión 2): solo pierde las piedras de los rangos (100x100 y más)
+                    Files.writeString(f, "{\"versionTienda\":2,\"titulo\":\"mia\",\"categorias\":[{\"id\":\"protecciones\",\"nombre\":\"Protecciones\",\"objetos\":["
+                            + "{\"objeto\":\"tfclient:proteccion_64x64\",\"cantidad\":1,\"comprar\":5000},{\"objeto\":\"tfclient:proteccion_100x100\",\"cantidad\":1,\"comprar\":12000},"
+                            + "{\"objeto\":\"tfclient:proteccion_150x150\",\"cantidad\":1,\"comprar\":20000}]}]}", StandardCharsets.UTF_8);
+                    net.tierrasfantasticas.tfclient.shop.TFShopConfig.load();
+                    var mine = net.tierrasfantasticas.tfclient.util.TFJson.read(f);
+                    boolean keeps64 = shopEntry("tfclient:proteccion_64x64") != null, has100 = shopEntry("tfclient:proteccion_100x100") != null
+                            || shopEntry("tfclient:proteccion_150x150") != null;
+                    r.event("tienda: la de la 1.3.134 → versión " + (long) net.tierrasfantasticas.tfclient.util.TFJson.num(mine, "versionTienda", 0)
+                            + ", título «" + net.tierrasfantasticas.tfclient.util.TFJson.str(mine, "titulo", "") + "» (se queda lo del dueño), 64x64 "
+                            + (keeps64 ? "sigue (bien)" : "QUITADA (mal)") + ", 100x100/150x150 " + (has100 ? "SIGUEN (mal)" : "quitadas (bien)"));
+                    // y otra vez la de por defecto, para lo demás de la prueba
+                    Files.delete(f);
+                    net.tierrasfantasticas.tfclient.shop.TFShopConfig.load();
+                    StringBuilder protes = new StringBuilder();
+                    var pc = net.tierrasfantasticas.tfclient.shop.TFShopConfig.category("protecciones");
+                    if (pc != null) for (var e : pc.entries()) protes.append(e.itemId().replace("tfclient:proteccion_", "")).append(' ').append(e.buy()).append("; ");
+                    r.event("tienda: protecciones a la venta: " + protes);
                     var dia = shopEntry("minecraft:diamond");
                     var neth = shopEntry("minecraft:netherite_ingot");
                     var pearl = shopEntry("minecraft:ender_pearl");

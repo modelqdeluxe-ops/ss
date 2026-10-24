@@ -1,6 +1,6 @@
 # Precios de la tienda (generado por `tools/tienda/precios.py`; el estudio, en `TIENDA.md`)
 
-Versión 2. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo que ganarías en el rato de conseguirlo tú; lo fabricado, sus ingredientes + 5 %.
+Versión 3. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo que ganarías en el rato de conseguirlo tú; lo fabricado, sus ingredientes + 5 %.
 
 ## Bloques y Materiales de Construcción (391)
 
@@ -1058,7 +1058,7 @@ Versión 2. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo q
 | Cortapiedras | 1 | 14 | — |
 | Nexo de reaparición | 1 | 160 | — |
 
-## Protecciones (7)
+## Protecciones (5)
 
 | Objeto | Lote | Compra | Vende la tienda |
 |---|---:|---:|---:|
@@ -1067,8 +1067,6 @@ Versión 2. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo q
 | Prote 40x40 | 1 | 2500 | — |
 | Prote 64x64 | 1 | 5000 | — |
 | Prote 80x80 | 1 | 8000 | — |
-| Prote 100x100 | 1 | 12000 | — |
-| Prote 150x150 | 1 | 20000 | — |
 
 ## Tesoros (16)
 

@@ -4,7 +4,7 @@
   "cantidad: unidades por lote; comprar / vender: precio de un lote (0 = no). limiteCompraDiario / limiteVentaDiario: unidades al día por jugador (0 = sin límite).",
   "La tienda solo compra los Tesoros (vender > 0), con límite diario. Cambia lo que quieras desde el pad de administrador o aquí y usa /tf reload."
  ],
- "versionTienda": 2,
+ "versionTienda": 3,
  "activada": true,
  "titulo": "&6&lTienda del servidor",
  "relleno": "minecraft:black_stained_glass_pane",
@@ -7244,7 +7244,7 @@
    "id": "protecciones",
    "nombre": "Protecciones",
    "descripcion": [
-    "Piedras de protección para tu terreno (las de 250, 300 y 500, en la web)."
+    "Piedras de protección: 10x10 a 80x80 (las de 100x100 en adelante van con los rangos)."
    ],
    "icono": "tfclient:proteccion_25x25",
    "color": "#c084fc",
@@ -7283,20 +7283,6 @@
      "nombre": "Prote 80x80",
      "cantidad": 1,
      "comprar": 8000,
-     "vender": 0
-    },
-    {
-     "objeto": "tfclient:proteccion_100x100",
-     "nombre": "Prote 100x100",
-     "cantidad": 1,
-     "comprar": 12000,
-     "vender": 0
-    },
-    {
-     "objeto": "tfclient:proteccion_150x150",
-     "nombre": "Prote 150x150",
-     "cantidad": 1,
-     "comprar": 20000,
      "vender": 0
     }
    ]

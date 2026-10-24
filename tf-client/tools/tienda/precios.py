@@ -37,7 +37,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 MOD = os.path.normpath(os.path.join(AQUI, '..', '..'))
 
 # Sube cuando cambien los precios: el mod cambia la tienda del servidor por la nueva (copia «.antes-vN.json»).
-VERSION = 2
+VERSION = 3
 
 SALARIO_HORA = 75.0
 PRIMA = 6.0
@@ -190,10 +190,9 @@ TESOROS = [
 ]
 
 # --- Protecciones (piedras del mod): las de 250, 300 y 500 son de pago en la web; 2.500 monedas = 1 $ ---
-PROTECCIONES = [
-    ('proteccion_10x10', 300), ('proteccion_25x25', 1000), ('proteccion_40x40', 2500), ('proteccion_64x64', 5000),
-    ('proteccion_80x80', 8000), ('proteccion_100x100', 12000), ('proteccion_150x150', 20000),
-]
+# (1.3.135, el dueño: «en la tienda solo la x10, x25, x40, x64 y x80; las de 100 en adelante van con los rangos»)
+PROTECCIONES = [('proteccion_10x10', 300), ('proteccion_25x25', 1000), ('proteccion_40x40', 2500), ('proteccion_64x64', 5000),
+                ('proteccion_80x80', 8000)]
 
 CATEGORIAS = [
     # id, nombre, descripción, icono, color, hueco del menú de cofre
@@ -212,7 +211,7 @@ CATEGORIAS = [
      'minecraft:redstone', '#ef4444', 16),
     ('utilidades', 'Utilidades', 'Mesas de trabajo, hornos, cofres, cubos, mapas, libros, tintes y discos.',
      'minecraft:crafting_table', '#22d3ee', 19),
-    ('protecciones', 'Protecciones', 'Piedras de protección para tu terreno (las de 250, 300 y 500, en la web).',
+    ('protecciones', 'Protecciones', 'Piedras de protección: 10x10 a 80x80 (las de 100x100 en adelante van con los rangos).',
      'tfclient:proteccion_25x25', '#c084fc', 20),
     ('tesoros', 'Tesoros', 'La tienda solo compra esto: objetos rarísimos, con un límite al día. Véndelos en VENDER.',
      'minecraft:heart_of_the_sea', '#fcc94a', 22),
