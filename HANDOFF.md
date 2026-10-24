@@ -201,7 +201,14 @@ accesorios, salían las del Armario y las puestas a la vez). Ahora el Armario so
 Armario si lleva alas o mochila en el pecho o en un hueco de accesorios (`TFAccessorySlots.wearsBack`), y si las dibuja
 el mod de accesorios, nuestro dibujante pone las del Armario en su lugar (`TFAccessorySlots.wardrobe`). El pad lo dice
 en la cabecera del hueco. Prueba en el juego: `[prueba-jefes=armario]` (pechera, Armario, quitarla, alas, quitarlas;
-`TFItemsClient.BackLayer.debug`).
+`TFItemsClient.BackLayer.debug`). El dueño después: «el casco Dragón Mecha de un jugador seguía tras reiniciar sin
+llevar nada» (el «Sombrero Dragón Mecha» en su Armario: se guarda en wardrobe.json y en la web; con esto deja de verse sin
+borrar su data) y «yo lo vi con las alas en el hueco de espalda de Accessories». Accessories 1.20.1 no arranca en la
+prueba (pide Mixin nuevo y piezas de Fabric: Sinytra Connector); con Curios (`[prueba-jefes=accesorios]
+[accesorios=curios]`, `-Ptfaccessories=curios` en build.gradle) quitar las alas, del hueco normal y del cosmético, deja de
+dibujarlas. Para Accessories, nuestro dibujante solo pinta unas alas si siguen puestas en sus huecos
+(`TFAccessorySlots.stillWorn`; si la lectura de huecos no ha funcionado nunca, no tapa nada). Si vuelve a pasar con
+Accessories, pedir la línea «TF Client: accesorios: Accessories quería dibujar … que ya no lleva puesto» del latest.log.
 
 ### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.136, PUBLICADA)
 

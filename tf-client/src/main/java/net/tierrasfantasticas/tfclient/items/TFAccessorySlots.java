@@ -128,6 +128,9 @@ public final class TFAccessorySlots {
             LivingEntity entity = entityOf(arg(args, 1));
             if (stack == null || pose == null || buffers == null || model == null || light == null) return null;
             if (entity != null && entity.isInvisible()) return null;
+            // (1.3.137, el dueño: «me quité las alas del hueco de espalda de Accessories y se seguían viendo») solo si
+            // siguen puestas de verdad: si Accessories pasa unas que ya no están (lo que tenga guardado para dibujar), nada
+            if (entity != null && !stillWorn(entity, stack)) return null;
             drawn(entity);
             renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
@@ -260,6 +263,36 @@ public final class TFAccessorySlots {
         ItemStack o = entity == null ? null : TFWardrobe.back(entity);
         return o != null && IS_BACK.test(o) ? o : real;
     }
+
+    /** La lectura de los huecos de Accessories ya encontró alguna vez lo que dibujaba (así se puede fiar de ella). */
+    private static volatile boolean lookupWorks;
+
+    /**
+     * ¿Sigue puesto este objeto (o uno igual) en los huecos de Accessories de la entidad? Mientras la lectura de los
+     * huecos no haya encontrado nunca lo que se dibuja (otra versión de Accessories), siempre sí: no se tapa nada.
+     */
+    private static boolean stillWorn(LivingEntity entity, ItemStack stack) {
+        List<ItemStack> out = new ArrayList<>();
+        try {
+            TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+            TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+        } catch (Throwable t) {
+            return true;
+        }
+        for (ItemStack s : out) {
+            if (s == stack || ItemStack.isSameItem(s, stack)) {
+                lookupWorks = true;
+                return true;
+            }
+        }
+        if (lookupWorks && !loggedStale) {
+            loggedStale = true;
+            LOGGER.info("TF Client: accesorios: Accessories quería dibujar {} que ya no lleva puesto: no se dibuja", stack);
+        }
+        return !lookupWorks;
+    }
+
+    private static boolean loggedStale;
 
     /** ¿El mod de accesorios está dibujando ahora lo de la espalda de este jugador (con nuestro dibujante)? */
     public static boolean modDraws(LivingEntity entity) {
