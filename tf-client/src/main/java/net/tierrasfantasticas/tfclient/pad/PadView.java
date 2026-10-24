@@ -344,7 +344,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     // ---------------------------------------------------------------------------------------------------------------
 
     private static final int MAX_ROWS = 80;
-    private static final int MAX_CELLS = 120;
+    /** (1.3.131) el selector de objetos del pad de admin manda todos los del juego en una lista con scroll */
+    private static final int MAX_CELLS = 4096;
 
     public void write(FriendlyByteBuf buf) {
         buf.writeUtf(app, 32);

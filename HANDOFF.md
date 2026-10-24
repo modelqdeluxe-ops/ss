@@ -190,7 +190,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.130) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.131) — lee esto primero
+
+**1.3.131**: el selector de objetos del pad de admin (`PadItemPicker`, «TODOS LOS OBJETOS»: tienda, recompensas, kits…)
+enseña todos los objetos del juego en una sola lista con scroll (`PAGE` y `PadView.MAX_CELLS` 4096; la rejilla solo
+dibuja lo visible). Sin prueba en el juego.
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.130, PUBLICADA)
 
 **1.3.130**: el clan ya no pisa el prefijo de LuckPerms en la lista: con el plugin TAB no se toca la lista
 (`PadClans.tabPlugin`), y la etiqueta del clan va como sufijo de LuckPerms (`PadClans.syncSuffix`, prioridad 50, al entrar
