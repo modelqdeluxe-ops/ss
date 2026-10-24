@@ -175,7 +175,7 @@ public final class PadAdmin {
             {"", "VIAJES", "viajes", "Las esperas y los warps de la app Viajes."},
             {"explorar", "EXPLORAR", "explorar", "Explorar: lleva a un sitio seguro al azar del mundo."},
             {"jugadores", "JUGADORES", "jugadores", "Hogares sin rango y regalos entre jugadores."},
-            {"economia", "ECONOMÍA", "economia", "Envíos del Monedero y el GTS (el mercado)."},
+            {"economia", "ECONOMÍA", "economia", "Envíos del Monedero, el GTS (el mercado) y lo que cuesta fundar un clan."},
             {"sistema", "SISTEMA", "", "Todo se guarda al momento en config/tfclient/."}};
 
     /** El valor como se lee: «30 s», «Sin espera», «800 bloques», «¤1.000.000», «7 días». */
@@ -214,6 +214,7 @@ public final class PadAdmin {
             case "hogares.sinRango" -> Items.OAK_DOOR;
             case "regalos.activado", "regalos.porDia" -> Items.CHEST;
             case "gts.maxPublicaciones" -> Items.EMERALD;
+            case "clanes.precio" -> Items.WHITE_BANNER;
             default -> null;
         };
         return i == null ? PadKits.coinIcon(false) : new ItemStack(i);
