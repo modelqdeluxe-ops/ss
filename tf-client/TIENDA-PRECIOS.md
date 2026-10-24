@@ -1062,13 +1062,13 @@ Versión 2. Una hora de trabajo ≈ 75 monedas; comprar algo cuesta 6 veces lo q
 
 | Objeto | Lote | Compra | Vende la tienda |
 |---|---:|---:|---:|
-| Piedra de protección 10x10 | 1 | 300 | — |
-| Piedra de protección 25x25 | 1 | 1000 | — |
-| Piedra de protección 40x40 | 1 | 2500 | — |
-| Piedra de protección 64x64 | 1 | 5000 | — |
-| Piedra de protección 80x80 | 1 | 8000 | — |
-| Piedra de protección 100x100 | 1 | 12000 | — |
-| Piedra de protección 150x150 | 1 | 20000 | — |
+| Protección 10x10 | 1 | 300 | — |
+| Protección 25x25 | 1 | 1000 | — |
+| Protección 40x40 | 1 | 2500 | — |
+| Protección 64x64 | 1 | 5000 | — |
+| Protección 80x80 | 1 | 8000 | — |
+| Protección 100x100 | 1 | 12000 | — |
+| Protección 150x150 | 1 | 20000 | — |
 
 ## Tesoros (16)
 

@@ -445,7 +445,7 @@ def main():
                         'comprar': bonito(u * lote), 'vender': 0})
     for pid, p in PROTECCIONES:
         n = pid.split('_')[1]
-        cats['protecciones'].append({'objeto': f'tfclient:{pid}', 'nombre': f'Piedra de protección {n}', 'cantidad': 1,
+        cats['protecciones'].append({'objeto': f'tfclient:{pid}', 'nombre': f'Protección {n}', 'cantidad': 1,
                                      'comprar': p, 'vender': 0})
     for n, paga, al_dia, de_donde in TESOROS:
         cats['tesoros'].append({'objeto': f'minecraft:{n}', 'nombre': nombre(n), 'descripcion': [de_donde],

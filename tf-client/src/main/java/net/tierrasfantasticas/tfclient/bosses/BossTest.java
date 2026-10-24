@@ -2255,7 +2255,7 @@ public final class BossTest {
             }
             case 706 -> r.event("web: en el suelo, el de la web: edad " + webDrop.getAge() + ", invulnerable " + webDrop.isInvulnerable()
                     + "; el normal: edad " + plainDrop.getAge() + ", invulnerable " + plainDrop.isInvulnerable());
-            case 710 -> command(server, "kill @e[type=item,distance=..40]");
+            case 710 -> command(server, "execute at " + name + " run kill @e[type=item,distance=..40]");
             case 712 -> r.event("web: tras /kill @e[type=item]: el de la web " + (webDrop.isRemoved() ? "BORRADO (mal)" : "sigue (bien)")
                     + ", el normal " + (plainDrop.isRemoved() ? "borrado (bien)" : "SIGUE (mal)"));
             case 716 -> {

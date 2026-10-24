@@ -52,7 +52,7 @@ final class PadSkin {
         theme("misiones", 0x22A884, "Retos diarios y semanales con premio.");
         theme("cazas", 0xC8553D, "Caza criaturas y gana premios.");
         theme("recompensas", 0xE2466A, "Tu premio de cada día: no rompas la racha.");
-        theme("tienda", 0xE6A019, "Compra y vende al momento.");
+        theme("tienda", 0xE6A019, "Compra de todo; la tienda solo te compra Tesoros.");
         theme("gts", 0x8B5CF0, "El mercado entre jugadores.");
         theme("monedero", 0xD49A12, "Tus monedas y tus movimientos.");
         theme("viajes", 0x1AA3C8, "Viaja por el mundo en un momento.");
