@@ -129,7 +129,7 @@ public final class TFAccessorySlots {
             if (stack == null || pose == null || buffers == null || model == null || light == null) return null;
             if (entity != null && entity.isInvisible()) return null;
             drawn(entity);
-            renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
+            renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
         });
         Supplier<Object> supplier = () -> proxy;
@@ -159,7 +159,7 @@ public final class TFAccessorySlots {
             if (!(parent.getModel() instanceof HumanoidModel<?> model)) return null;
             if (entity != null && entity.isInvisible()) return null;
             drawn(entity);
-            renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
+            renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
         });
         Supplier<Object> supplier = () -> proxy;
@@ -253,6 +253,39 @@ public final class TFAccessorySlots {
 
     public static boolean armored(LivingEntity entity) {
         return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorItem;
+    }
+
+    /** (1.3.137) Lo que se dibuja de las alas puestas en un hueco: las del Armario si ha elegido otras (solo apariencia). */
+    private static ItemStack wardrobe(@Nullable LivingEntity entity, ItemStack real) {
+        ItemStack o = entity == null ? null : TFWardrobe.back(entity);
+        return o != null && IS_BACK.test(o) ? o : real;
+    }
+
+    /** ¿El mod de accesorios está dibujando ahora lo de la espalda de este jugador (con nuestro dibujante)? */
+    public static boolean modDraws(LivingEntity entity) {
+        return (accessoriesDraws || curiosDraws) && drawnRecently(entity);
+    }
+
+    /**
+     * (1.3.137) ¿Lleva algo en la espalda en un hueco de accesorios (lo dibuje quien lo dibuje)? Para el Armario: sin
+     * nada puesto en la espalda, sus alas no se ven.
+     */
+    public static boolean wearsBack(LivingEntity entity) {
+        List<ItemStack> out = new ArrayList<>();
+        ModList mods = ModList.get();
+        try {
+            if (!accessoriesFailed && mods.isLoaded("accessories")) {
+                TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+                TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+            }
+            if (out.isEmpty() && !curiosFailed && mods.isLoaded("curios")) {
+                TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
+                TFAccessoryLookup.cosmeticsFromCurios(entity, IS_BACK, out);
+            }
+        } catch (Throwable t) {
+            return false;
+        }
+        return !out.isEmpty();
     }
 
     // ---------------------------------------------------------------------------------------------------------------

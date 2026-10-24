@@ -279,6 +279,8 @@ public final class BossTest {
             // (1.3.134) «tienda»: la tienda nueva (comprar, Tesoros, VENDER), el precio del clan, el disco de una canción
             // compartida y las compras de la web en el suelo frente a un clear lag
             if (only != null && List.of(only.split(",")).contains("tienda")) ids.add(0, "tienda");
+            // (1.3.137) «armario»: la pieza del Armario solo se ve sobre lo que se lleva puesto (pechera y alas)
+            if (only != null && List.of(only.split(",")).contains("armario")) ids.add(0, "armario");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -297,7 +299,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -332,6 +334,10 @@ public final class BossTest {
         }
         if ("tienda".equals(r.id)) {
             if (!waitShot) tiendaStep(server, level, player, r);
+            return;
+        }
+        if ("armario".equals(r.id)) {
+            if (!waitShot) armarioStep(level, player, r);
             return;
         }
         switch (phase) {
@@ -717,6 +723,8 @@ public final class BossTest {
     static volatile String typePad;
     /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
     static volatile String musicCmd;
+    /** (1.3.137) Lo que dibuja el cliente en el pecho y la espalda del jugador (TFItemsClient.BackLayer.debug). */
+    static volatile String clientWardrobe = "?";
     /** (1.3.134) Lo que cuenta el cliente de su música: canciones, las de COMPARTIDOS y lo que falta por bajar. */
     static volatile String clientMusic = "?";
     /** (1.3.109) Una acción para la app abierta del pad («tab:combate», «§scroll:400»). */
@@ -2066,6 +2074,83 @@ public final class BossTest {
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
             }
             case 1358 -> next(level);
+            default -> { }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.137) «armario»: el dueño: «las armaduras y sets de la web se quedan en el jugador cuando las desequipa, y las alas»
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static ItemStack wardrobeChestA, wardrobeChestB, wardrobeWings;
+
+    /** «set/pieza» de un objeto de set (como lo guarda el Armario). */
+    private static String pieceKey(net.minecraft.world.item.Item item) {
+        var set = net.tierrasfantasticas.tfclient.items.TFItemTypes.setOf(item);
+        String path = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item).getPath();
+        return set == null ? "" : set.id() + "/" + path.substring(set.id().length() + 1);
+    }
+
+    private static void armarioStep(ServerLevel level, ServerPlayer player, Rep r) {
+        java.util.UUID me = player.getUUID();
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                java.util.List<net.minecraft.world.item.Item> chests = new java.util.ArrayList<>();
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("armor", List.of())) {
+                    if (o.get() instanceof net.minecraft.world.item.ArmorItem a && a.getType() == net.minecraft.world.item.ArmorItem.Type.CHESTPLATE) chests.add(o.get());
+                }
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("back", List.of())) {
+                    if (o.get() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.wornModel() != null && wardrobeWings == null) {
+                        wardrobeWings = new ItemStack(o.get());
+                    }
+                }
+                if (chests.size() >= 2) {
+                    wardrobeChestA = new ItemStack(chests.get(0));
+                    wardrobeChestB = new ItemStack(chests.get(chests.size() - 1));
+                }
+                r.event("armario: pechera puesta " + (wardrobeChestA == null ? "NINGUNA" : pieceKey(wardrobeChestA.getItem())) + ", la del Armario "
+                        + (wardrobeChestB == null ? "NINGUNA" : pieceKey(wardrobeChestB.getItem())) + ", alas " + (wardrobeWings == null ? "NINGUNAS" : pieceKey(wardrobeWings.getItem())));
+                if (wardrobeChestA != null) player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, wardrobeChestA.copy());
+            }
+            case 20 -> cameraType = 1;
+            case 60 -> {
+                r.event("armario 1 (pechera puesta, sin Armario): " + clientWardrobe);
+                shot(r, "armario_1_pechera");
+            }
+            case 62 -> {
+                if (wardrobeChestB != null) net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.CHEST, pieceKey(wardrobeChestB.getItem()));
+                if (wardrobeWings != null) net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.BACK, pieceKey(wardrobeWings.getItem()));
+            }
+            case 100 -> {
+                r.event("armario 2 (pechera puesta, Armario con otra pechera y alas; sin alas puestas): " + clientWardrobe);
+                shot(r, "armario_2_con_armario");
+            }
+            case 102 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
+            case 140 -> {
+                r.event("armario 3 (se quita la pechera): " + clientWardrobe + (clientWardrobe.startsWith("pecho: nada") && clientWardrobe.endsWith("espalda: nada")
+                        ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
+                shot(r, "armario_3_sin_pechera");
+            }
+            case 142 -> {
+                if (wardrobeWings != null) player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, wardrobeWings.copy());
+            }
+            case 180 -> {
+                r.event("armario 4 (alas puestas): " + clientWardrobe + (clientWardrobe.contains("espalda: armario") ? " (bien: las del Armario)" : " (MAL)"));
+                shot(r, "armario_4_alas");
+            }
+            case 182 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
+            case 220 -> {
+                r.event("armario 5 (se quitan las alas): " + clientWardrobe + (clientWardrobe.endsWith("espalda: nada") ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
+                shot(r, "armario_5_sin_alas");
+            }
+            case 222 -> {
+                net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.CHEST, "");
+                net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.BACK, "");
+                cameraType = 0;
+            }
+            case 230 -> next(level);
             default -> { }
         }
     }

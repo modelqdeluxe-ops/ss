@@ -137,6 +137,10 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
         }
+        // (1.3.137) prueba «armario»: lo que se dibuja en el pecho y la espalda del jugador
+        if ("armario".equals(BossTest.currentId()) && mc.player != null) {
+            BossTest.clientWardrobe = net.tierrasfantasticas.tfclient.items.TFItemsClient.BackLayer.debug(mc.player);
+        }
         // (1.3.134) la app Música para la prueba «tienda»: una canción en la carpeta, compartirla y lo que hay en COMPARTIDOS
         if (BossTest.musicCmd != null) {
             String cmd = BossTest.musicCmd;

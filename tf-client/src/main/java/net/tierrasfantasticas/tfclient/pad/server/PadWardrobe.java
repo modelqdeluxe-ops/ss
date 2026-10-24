@@ -41,7 +41,8 @@ import net.tierrasfantasticas.tfclient.vfx.VfxServer;
 
 /**
  * Armario y Efectos dentro del pad. Armario: lo que tienes de tus compras y de tu rango (lo dice la web por el puente)
- * por hueco (CABEZA, PECHO, PIERNAS, PIES, ESPALDA) con PONER / QUITAR; solo cambia cómo te ven, no la armadura de
+ * por hueco (CABEZA, PECHO, PIERNAS, PIES, ESPALDA) con PONER / QUITAR; solo cambia cómo se ve lo que llevas puesto en
+ * ese hueco (1.3.137: con el hueco vacío no se ve nada), no la armadura de
  * verdad. Efectos: los efectos de kill (gratis) con EQUIPAR / QUITAR y, en SKILLS, las clases de skills que has
  * comprado en la web con ACTIVAR / DESACTIVAR (una activa a la vez). Todo se aplica al momento en el servidor y se
  * guarda en la web en la siguiente consulta del puente.
@@ -193,7 +194,10 @@ public final class PadWardrobe {
                 b.card(stack(p.set, p.id), name, WARDROBE_COLOR, on ? "PUESTO" : p.from.isEmpty() ? "PONER" : p.from,
                         on ? PadView.TONE_GREEN : PadView.TONE_BLUE, -1, "", on ? "" : "poner:" + slot + ":" + p.key(), on);
             }
-            b.header(wornName.isEmpty() ? "Pulsa una pieza para ponértela." : "Llevas " + wornName + ".");
+            // (1.3.137) el Armario cambia cómo se ve lo que llevas: con el hueco vacío no se ve nada
+            String need = slot == TFWardrobe.BACK ? "unas alas o una mochila puestas" : "algo puesto en " + LABELS[slot].toLowerCase();
+            b.header(wornName.isEmpty() ? "Pulsa una pieza: se verá sobre lo que lleves en " + LABELS[slot].toLowerCase() + "."
+                    : "Llevas " + wornName + " (se ve si llevas " + need + ").");
             if (!wornName.isEmpty()) b.footer(PadView.Btn.of("QUITAR", "quitar:" + slot, PadView.RED));
             if (n == 0) b.empty("No tienes nada para " + LABELS[slot].toLowerCase() + ". Los sets de los rangos y de las crates de la tienda web aparecen aquí.");
             return b.build();
