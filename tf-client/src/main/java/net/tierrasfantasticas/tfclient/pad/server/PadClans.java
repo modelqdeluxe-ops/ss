@@ -32,6 +32,8 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.economy.TFEconomy;
+import net.tierrasfantasticas.tfclient.pad.PadConfig;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
@@ -40,7 +42,8 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 /**
  * Clanes: fundar uno (nombre y etiqueta), invitar, aceptar, roles (líder, oficial, miembro), echar, ascender, salir y
  * disolver; color de la etiqueta y fuego amigo. La etiqueta sale junto al nombre del jugador (PadTitles.onName).
- * Datos en &lt;mundo&gt;/tfclient/clanes.json.
+ * Datos en &lt;mundo&gt;/tfclient/clanes.json. Fundarlo cuesta lo que diga clanes.precio de pad.json (1.500 monedas;
+ * el pad de administrador lo cambia en AJUSTES › ECONOMÍA); se cobra al final, cuando el clan se crea.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadClans {
@@ -58,6 +61,11 @@ public final class PadClans {
     private static final Map<UUID, String> CREATING = new HashMap<>();
     /** Doble clic para disolver, salir o pasar el clan: guarda qué acción espera confirmación y desde cuándo. */
     private static final Map<UUID, Map.Entry<String, Long>> CONFIRM = new HashMap<>();
+
+    /** Lo que cuesta fundar un clan (pad.json, clanes.precio). */
+    private static long price() {
+        return PadConfig.get("clanes.precio");
+    }
 
     private PadClans() {}
 
@@ -257,12 +265,14 @@ public final class PadClans {
             String creating = CREATING.get(me);
             PadView.Builder b = PadView.of("clanes");
             if (creating != null) {
-                b.header("Fundando «" + creating + "». Ahora la etiqueta: 2 a 4 letras o números (sale junto a tu nombre).");
+                long price = price();
+                b.header("Fundando «" + creating + "». Ahora la etiqueta: 2 a 4 letras o números (sale junto a tu nombre)."
+                        + (price > 0 ? " Al fundarlo se cobran " + TFEconomy.format(price) + "." : ""));
                 b.input("etiqueta", "Etiqueta, por ejemplo TF", 4, "FUNDAR");
                 b.footer(PadView.Btn.of("CANCELAR", "cancelar", PadView.RED));
                 return b.build();
             }
-            b.header("Sin clan.");
+            b.header(price() > 0 ? "Sin clan. Fundar uno cuesta " + TFEconomy.format(price()) + "." : "Sin clan.");
             for (String cid : INVITES.getOrDefault(me, Set.of())) {
                 JsonObject c = clan(cid);
                 if (c == null) continue;
@@ -465,6 +475,12 @@ public final class PadClans {
                             return null;
                         }
                     }
+                    long price = price();
+                    java.util.OptionalLong has = TFEconomy.balance(player.server, me);
+                    if (price > 0 && has.isPresent() && has.getAsLong() < price) {
+                        TFPadNet.notice(player, "Fundar un clan cuesta " + TFEconomy.format(price) + " y tienes " + TFEconomy.format(Math.max(0, has.getAsLong())) + ".");
+                        return null;
+                    }
                     CREATING.put(me, name);
                 }
                 case "cancelar" -> CREATING.remove(me);
@@ -487,6 +503,11 @@ public final class PadClans {
                             return null;
                         }
                     }
+                    long price = price();
+                    if (price > 0 && !TFEconomy.take(player, price)) {
+                        TFPadNet.notice(player, "Te faltan monedas: fundar un clan cuesta " + TFEconomy.format(price) + ".");
+                        return null;
+                    }
                     String id = UUID.randomUUID().toString().substring(0, 8);
                     JsonObject c = new JsonObject();
                     c.addProperty("nombre", name);
@@ -503,7 +524,7 @@ public final class PadClans {
                     refreshName(me);
                     PadStats.add(player, PadStats.CLAN_FOUNDED, 1);
                     player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.0F);
-                    TFPadNet.notice(player, "Clan " + name + " [" + tag + "] fundado.");
+                    TFPadNet.notice(player, "Clan " + name + " [" + tag + "] fundado" + (price > 0 ? " (pagaste " + TFEconomy.format(price) + ")." : "."));
                 }
                 case "unirse" -> {
                     String cid = action.substring(7);

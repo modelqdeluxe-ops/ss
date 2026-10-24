@@ -51,7 +51,8 @@ public final class PadConfig {
             new Setting("monedero.enviar", "Mandar monedas a otros", "Desde la app Monedero, a otro jugador.", 0, 1, 1, true, "economia", ""),
             new Setting("monedero.maximo", "Máximo por envío", "Lo más que se puede mandar de una vez.", 1, 1_000_000_000L, 1_000_000, false, "economia", "monedas"),
             new Setting("gts.maxPublicaciones", "GTS: cosas a la venta a la vez", "Por jugador.", 1, 100, 10, false, "economia", "a la vez"),
-            new Setting("gts.dias", "GTS: días a la venta", "Luego vuelve a su dueño (a GTS › Recoger).", 1, 60, 7, false, "economia", "días"));
+            new Setting("gts.dias", "GTS: días a la venta", "Luego vuelve a su dueño (a GTS › Recoger).", 1, 60, 7, false, "economia", "días"),
+            new Setting("clanes.precio", "Fundar un clan", "Lo que paga quien crea un clan. 0 = gratis.", 0, 1_000_000_000L, 1500, false, "economia", "monedas"));
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Map<String, Long> VALUES = new LinkedHashMap<>();
