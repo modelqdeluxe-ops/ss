@@ -63,8 +63,13 @@ dependencies {
         runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')
     }
     if (project.hasProperty('tfaccessories')) {
-        runtimeOnly fg.deobf('maven.modrinth:cloth-config:11.1.136+forge')
-        runtimeOnly fg.deobf('maven.modrinth:accessories:1.0.0-beta48+1.20.1')
+        // -Ptfaccessories=curios: Curios en vez de Accessories
+        if (project.property('tfaccessories') == 'curios') {
+            runtimeOnly fg.deobf('maven.modrinth:curios:5.14.1+1.20.1')
+        } else {
+            runtimeOnly fg.deobf('maven.modrinth:cloth-config:11.1.136+forge')
+            runtimeOnly fg.deobf('maven.modrinth:accessories:1.0.0-beta.49+1.20.1')
+        }
     }
 }
 
