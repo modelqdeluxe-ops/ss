@@ -228,6 +228,13 @@ public final class TFLuckPerms {
     }
 
     /** ¿Está la API de LuckPerms? (el plugin o el mod cargado) */
+    /** El sufijo del jugador por la API de LuckPerms, sin mensajes; si no se puede, con el comando. */
+    public static void setSuffix(MinecraftServer srv, UUID uuid, String name, String suffix, int priority) {
+        if (Api.setSuffix(uuid, suffix, priority)) return;
+        run(srv, suffix == null ? "lp user " + name + " meta removesuffix " + priority
+                : "lp user " + name + " meta setsuffix " + priority + " \"" + suffix + "\"");
+    }
+
     static boolean present() {
         return Api.find();
     }
@@ -360,6 +367,43 @@ public final class TFLuckPerms {
                 return true;
             } catch (Throwable t) {
                 why = t instanceof ClassNotFoundException ? "no está LuckPerms" : t.toString();
+                return false;
+            }
+        }
+
+        /**
+         * (1.3.132, el dueño: «que no salga el mensaje de LuckPerms al cambiar el color del clan») El sufijo de un
+         * jugador con la API (los comandos /lp avisan en el chat): quita los suyos de esa prioridad y pone suffix (null:
+         * ninguno). false si no se pudo (sin API o el jugador no está cargado).
+         */
+        static boolean setSuffix(UUID uuid, String suffix, int priority) {
+            if (!find()) return false;
+            try {
+                ClassLoader cl = api.getClass().getClassLoader();
+                Class<?> nodeCls = Class.forName("net.luckperms.api.node.Node", false, cl);
+                Class<?> nodeType = Class.forName("net.luckperms.api.node.NodeType", false, cl);
+                Class<?> chatMeta = Class.forName("net.luckperms.api.node.types.ChatMetaNode", false, cl);
+                Class<?> suffixNode = Class.forName("net.luckperms.api.node.types.SuffixNode", false, cl);
+                Class<?> userCls = Class.forName("net.luckperms.api.model.user.User", false, cl);
+                Class<?> nodeMap = Class.forName("net.luckperms.api.model.data.NodeMap", false, cl);
+                Class<?> umCls = Class.forName("net.luckperms.api.model.user.UserManager", false, cl);
+                Object um = getUserManager.invoke(api);
+                Object user = getUser.invoke(um, uuid);
+                if (user == null) return false;
+                Object data = userCls.getMethod("data").invoke(user);
+                Method remove = nodeMap.getMethod("remove", nodeCls), add = nodeMap.getMethod("add", nodeCls);
+                Method priorityOf = chatMeta.getMethod("getPriority");
+                for (Object n : new ArrayList<>((Collection<?>) getNodes.invoke(user, nodeType.getField("SUFFIX").get(null)))) {
+                    if ((int) priorityOf.invoke(n) == priority) remove.invoke(data, n);
+                }
+                if (suffix != null) {
+                    Object builder = suffixNode.getMethod("builder", String.class, int.class).invoke(null, suffix, priority);
+                    add.invoke(data, builder.getClass().getMethod("build").invoke(builder));
+                }
+                umCls.getMethod("saveUser", userCls).invoke(um, user);
+                return true;
+            } catch (Throwable t) {
+                TFClient.LOGGER.warn("TF LuckPerms: no se pudo poner el sufijo: {}", t.toString());
                 return false;
             }
         }
