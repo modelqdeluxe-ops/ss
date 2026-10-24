@@ -67,7 +67,7 @@ public class TFLoadingOverlay extends LoadingOverlay {
             // Se guarda la de la interfaz y se vuelve a poner (con su marco, la ventana entera y sin recortar caras).
             Matrix4f gui = new Matrix4f(RenderSystem.getProjectionMatrix());
             delegate.render(g, mouseX, mouseY, partialTick);
-            if (!testNoFix) restoreGui(gui);
+            if (!testNoFix) restoreGui(g, gui);
         }
         if (broken) {
             if (delegateDoneAt >= 0L) finish();
@@ -119,11 +119,21 @@ public class TFLoadingOverlay extends LoadingOverlay {
                 doneAt >= 0L ? 1f : progress, alpha);
     }
 
-    /** Lo que deja cambiado la pantalla de carga de Forge, como estaba para la interfaz (ver render). */
-    private static void restoreGui(Matrix4f gui) {
+    /**
+     * Lo que deja cambiado la pantalla de carga de Forge, como estaba para la interfaz (ver render). Primero se dibuja ya
+     * lo que dejó a medias (en su fundido final pinta el menú y su rojo encima: sin esto, salía encima de lo de TF) y se
+     * borra la profundidad, para que lo de TF quede siempre encima.
+     */
+    private static void restoreGui(GuiGraphics g, Matrix4f gui) {
+        g.flush();
         Minecraft mc = Minecraft.getInstance();
         Window w = mc.getWindow();
         mc.getMainRenderTarget().bindWrite(true);
+        RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.colorMask(true, true, true, true);
         RenderSystem.viewport(0, 0, w.getWidth(), w.getHeight());
         RenderSystem.setProjectionMatrix(gui, VertexSorting.ORTHOGRAPHIC_Z);
         RenderSystem.applyModelViewMatrix();

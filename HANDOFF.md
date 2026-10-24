@@ -198,8 +198,9 @@ Causa: el primer arranque aún no tiene `config/fml.toml` con `earlyWindowContro
 `TFConfig.disableForgeEarlyWindow` para el siguiente), así que la pantalla de carga es la de Forge
 (`ForgeLoadingOverlay`), que deja la proyección en píxeles de la ventana con la Y hacia arriba; `TFLoadingOverlay`
 dibujaba encima con ella. Arreglo: `TFLoadingOverlay.restoreGui` (guarda la proyección de la interfaz antes de la de
-Forge y la vuelve a poner con el marco principal, la ventana entera, sin recortar caras y la mezcla normal). La prueba
-saca `00_carga_20_sin_arreglo`, `00_carga_60` y `00_carga_120` (en CI no hay fml.toml: es el primer arranque).
+Forge y la vuelve a poner con el marco principal, la ventana entera, sin recortar caras y la mezcla normal; antes vuelca
+lo que Forge dejó a medias y borra la profundidad: en su fundido final pintaba el menú y su rojo encima de lo de TF). La
+prueba saca `00_carga_20_sin_arreglo` y `00_carga_40` … `00_carga_200` (en CI no hay fml.toml: es el primer arranque).
 Para que ni el primer arranque muestre la ventana roja de Forge (antes de cargar los mods no hay nada del mod que lo
 pueda cambiar): que el AutoModpack reparta `config/fml.toml` (`syncedFiles` de `automodpack/automodpack-server.json`)
 con `earlyWindowControl = false`. Rapidez al menú: al llegar al menú el log dice «TF Client: arranque: N s … (la pantalla

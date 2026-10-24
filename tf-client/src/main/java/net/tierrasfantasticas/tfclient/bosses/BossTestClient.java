@@ -316,12 +316,12 @@ public final class BossTestClient {
 
     /**
      * (1.3.136) La pantalla de carga del primer arranque (en la prueba no hay fml.toml: la de Forge envuelta por la de
-     * TF, como la primera vez del dueño tras el AutoModpack). Tres capturas, «carga_N», y qué pantalla envuelve.
+     * TF, como la primera vez del dueño tras el AutoModpack). Una captura cada 20 fotogramas, «carga_N», y qué pantalla envuelve.
      */
     private static void loadingShots(Minecraft mc) {
         if (!(mc.getOverlay() instanceof net.tierrasfantasticas.tfclient.client.TFLoadingOverlay tf)) return;
         int n = ++loadingFrames;
-        if (n != 20 && n != 60 && n != 120) return;
+        if (n % 20 != 0 || n > 200) return;
         boolean noFix = net.tierrasfantasticas.tfclient.client.TFLoadingOverlay.testNoFix;
         String name = "00_carga_" + n + (noFix ? "_sin_arreglo" : "");
         try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
