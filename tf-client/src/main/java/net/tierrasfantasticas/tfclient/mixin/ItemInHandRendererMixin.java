@@ -38,7 +38,7 @@ public abstract class ItemInHandRendererMixin {
         // cubrirse con un escudo de los sets, más abajo y hacia su lado (el que llama hace pushPose/popPose)
         if (ctx.firstPerson() && stack.getItem() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Shield
                 && entity.isUsingItem() && entity.getUseItem() == stack) {
-            pose.translate(left ? -0.28F : 0.28F, -0.32F, 0.05F);
+            pose.translate(left ? -0.28F : 0.28F, -0.18F, 0.05F);
             pose.scale(0.8F, 0.8F, 0.8F);
         }
     }

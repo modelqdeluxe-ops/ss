@@ -58,6 +58,14 @@ final class SkinMojang {
     }
 
     private static Result get(String name) throws Exception {
+        // (1.3.130, el dueño: «que las skins de los bots también se puedan traer; con su nombre dice que no existen») un
+        // jugador conectado (también los bots) lleva su skin en el perfil: esa, sin preguntar a Mojang
+        var server = net.tierrasfantasticas.tfclient.pad.PadServer.server();
+        var online = server == null ? null : server.getPlayerList().getPlayerByName(name);
+        if (online != null) {
+            var props = online.getGameProfile().getProperties().get("textures");
+            if (!props.isEmpty()) return fromTextures(online.getGameProfile().getName(), props.iterator().next().getValue());
+        }
         Response profile = http("https://api.mojang.com/users/profiles/minecraft/" + name, 16 * 1024);
         if (profile.status == 204 || profile.status == 404 || profile.status == 400) {
             return new Result(null, false, name, "No hay ningún jugador de Minecraft que se llame " + name + ".");
@@ -80,6 +88,11 @@ final class SkinMojang {
             }
         }
         if (textures == null) return new Result(null, false, realName, realName + " no tiene skin propia.");
+        return fromTextures(realName, textures);
+    }
+
+    /** La skin de una propiedad «textures» (base64 de Mojang): su imagen, bajada de textures.minecraft.net. */
+    private static Result fromTextures(String realName, String textures) throws Exception {
         JsonObject t = JsonParser.parseString(new String(Base64.getDecoder().decode(textures), StandardCharsets.UTF_8)).getAsJsonObject();
         JsonObject skin = TFJson.obj(TFJson.obj(t, "textures"), "SKIN");
         String url = TFJson.str(skin, "url", "");
