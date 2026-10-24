@@ -288,6 +288,7 @@ public final class BossTestClient {
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
+        loadingShots(mc);
         tunnelShots();
         skyShots();
         crateShots(mc);
@@ -309,6 +310,31 @@ public final class BossTestClient {
             TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar la captura {}", shot, e);
         }
         BossTest.SHOTS_PENDING.poll();
+    }
+
+    private static int loadingFrames;
+
+    /**
+     * (1.3.136) La pantalla de carga del primer arranque (en la prueba no hay fml.toml: la de Forge envuelta por la de
+     * TF, como la primera vez del dueño tras el AutoModpack). Una captura cada 20 fotogramas, «carga_N», y qué pantalla envuelve.
+     */
+    private static void loadingShots(Minecraft mc) {
+        if (!(mc.getOverlay() instanceof net.tierrasfantasticas.tfclient.client.TFLoadingOverlay tf)) return;
+        int n = ++loadingFrames;
+        if (n % 20 != 0 || n > 200) return;
+        boolean noFix = net.tierrasfantasticas.tfclient.client.TFLoadingOverlay.testNoFix;
+        String name = "00_carga_" + n + (noFix ? "_sin_arreglo" : "");
+        try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+            File dir = new File(mc.gameDirectory, "pruebas");
+            dir.mkdirs();
+            img.writeToFile(new File(dir, name + ".png"));
+            TFClient.LOGGER.info("Prueba de jefes: captura {} de la pantalla de carga ({}x{}; envuelve {})", name,
+                    mc.getWindow().getWidth(), mc.getWindow().getHeight(), tf.wrapped());
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudo sacar la captura de la carga", e);
+        }
+        // la primera, sin el arreglo (así se ve que la prueba reproduce lo del dueño); las demás, con él
+        net.tierrasfantasticas.tfclient.client.TFLoadingOverlay.testNoFix = false;
     }
 
     /** (1.3.91) Capturas del viaje por el agujero de gusano, a los tiempos del túnel (no a los de la prueba). */

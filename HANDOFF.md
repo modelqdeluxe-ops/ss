@@ -190,7 +190,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.135) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.136) — lee esto primero
+
+**1.3.136** (el dueño, con captura: «la primera vez que abro Minecraft después de instalar todo con el AutoModpack la
+pantalla de carga sale así»: la roja de Forge con MOJANG y, abajo a la izquierda, la de TF pequeña y del revés).
+Causa: el primer arranque aún no tiene `config/fml.toml` con `earlyWindowControl = false` (lo escribe
+`TFConfig.disableForgeEarlyWindow` para el siguiente), así que la pantalla de carga es la de Forge
+(`ForgeLoadingOverlay`), que deja la proyección en píxeles de la ventana con la Y hacia arriba; `TFLoadingOverlay`
+dibujaba encima con ella. Arreglo: `TFLoadingOverlay.restoreGui` (guarda la proyección de la interfaz antes de la de
+Forge y la vuelve a poner con el marco principal, la ventana entera, sin recortar caras y la mezcla normal; antes vuelca
+lo que Forge dejó a medias y borra la profundidad: en su fundido final pintaba el menú y su rojo encima de lo de TF). La
+prueba saca `00_carga_20_sin_arreglo` y `00_carga_40` … `00_carga_200` (en CI no hay fml.toml: es el primer arranque).
+Para que ni el primer arranque muestre la ventana roja de Forge (antes de cargar los mods no hay nada del mod que lo
+pueda cambiar): que el AutoModpack reparta `config/fml.toml` (`syncedFiles` de `automodpack/automodpack-server.json`)
+con `earlyWindowControl = false`. Rapidez al menú: al llegar al menú el log dice «TF Client: arranque: N s … (la pantalla
+de carga, M s; mods: K)»; para saber qué mod tarda, pedir al dueño `logs/latest.log` y `logs/debug.log` (Minecraft
+apunta el tiempo de cada parte de la recarga). Recomendado: ModernFix (Forge 1.20.1) en el modpack.
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.135, PUBLICADA)
 
 **1.3.135** (el dueño: «las protecciones de la tienda son la x10, x25, x40, x64 y x80; las de 100 en adelante van con
 los rangos, no las podemos dar en la tienda»): `tools/tienda/precios.py` (`PROTECCIONES`, `VERSION` 3) y

@@ -8,6 +8,9 @@
  */
 package net.tierrasfantasticas.tfclient.client;
 
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,6 +19,7 @@ import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.util.Mth;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.mixin.LoadingOverlayAccessor;
+import org.joml.Matrix4f;
 
 /**
  * Pantalla de carga de TF: el banner de Tierras Fantásticas a pantalla completa con la barra de progreso de Minecraft.
@@ -33,6 +37,9 @@ public class TFLoadingOverlay extends LoadingOverlay {
     /** La pantalla original ya terminó y pidió quitarse: a partir de aquí la de TF se funde sola sobre el menú. */
     private long delegateDoneAt = -1L;
     private boolean finished;
+
+    /** (1.3.136) Para la prueba en el juego: sin devolver la proyección de la interfaz (como antes del arreglo). */
+    public static volatile boolean testNoFix = System.getenv("TFCLIENT_PRUEBA_JEFES") != null;
 
     private static final long HOLD_MS = 500L;
     private static final long FADE_MS = 700L;
@@ -52,7 +59,15 @@ public class TFLoadingOverlay extends LoadingOverlay {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         // La pantalla original sigue mandando: termina la carga y pide quitarse al acabar (ver holdAfterDelegate).
         if (delegateDoneAt < 0L || broken) {
+            // (1.3.136, el dueño con captura: «la primera vez que abro Minecraft después de instalar todo con el
+            // AutoModpack, la pantalla de carga sale así»: la roja de Forge y la de TF pequeña, abajo a la izquierda y
+            // del revés) El primer arranque (antes de que fml.toml diga earlyWindowControl = false) la original es la de
+            // Forge (ForgeLoadingOverlay): pinta su ventana de arranque con la proyección en píxeles de la ventana y la Y
+            // hacia arriba, y no la devuelve. Lo de TF se dibujaba con esa: a la mitad de ancho y alto, abajo y girado.
+            // Se guarda la de la interfaz y se vuelve a poner (con su marco, la ventana entera y sin recortar caras).
+            Matrix4f gui = new Matrix4f(RenderSystem.getProjectionMatrix());
             delegate.render(g, mouseX, mouseY, partialTick);
+            if (!testNoFix) restoreGui(g, gui);
         }
         if (broken) {
             if (delegateDoneAt >= 0L) finish();
@@ -105,6 +120,30 @@ public class TFLoadingOverlay extends LoadingOverlay {
     }
 
     /**
+     * Lo que deja cambiado la pantalla de carga de Forge, como estaba para la interfaz (ver render). Primero se dibuja ya
+     * lo que dejó a medias (en su fundido final pinta el menú y su rojo encima: sin esto, salía encima de lo de TF) y se
+     * borra la profundidad, para que lo de TF quede siempre encima.
+     */
+    private static void restoreGui(GuiGraphics g, Matrix4f gui) {
+        g.flush();
+        Minecraft mc = Minecraft.getInstance();
+        Window w = mc.getWindow();
+        mc.getMainRenderTarget().bindWrite(true);
+        RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.viewport(0, 0, w.getWidth(), w.getHeight());
+        RenderSystem.setProjectionMatrix(gui, VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.applyModelViewMatrix();
+        RenderSystem.enableCull();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+    }
+
+    /**
      * Lo llama MinecraftMixin cuando la pantalla original pide quitarse (setOverlay(null)). Devuelve true para que la
      * de TF siga en pantalla hasta terminar su fundido.
      */
@@ -115,8 +154,36 @@ public class TFLoadingOverlay extends LoadingOverlay {
     }
 
     private void finish() {
+        if (!finished) logTimes();
         finished = true;
         Minecraft.getInstance().setOverlay(null);
+    }
+
+    /** Cuándo se lanzó Java (el arranque del juego) y si ya se apuntó el primer arranque hasta el menú. */
+    private static boolean timed;
+
+    /**
+     * (1.3.136, el dueño: «que entre rápido al menú») En el log, lo que tardó: desde que se abrió el juego hasta el menú, y
+     * cuánto de eso fue la carga de recursos (texturas, modelos y sonidos de todos los mods: lo que dibuja esta pantalla).
+     * Con el latest.log del dueño se ve dónde se va el tiempo.
+     */
+    private void logTimes() {
+        long now = System.currentTimeMillis();
+        long jvm = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
+        long reloadMs = firstFrame < 0L ? 0L : Util.getMillis() - firstFrame;
+        if (!timed) {
+            timed = true;
+            TFClient.LOGGER.info("TF Client: arranque: {} s desde que se abrió el juego hasta el menú (la pantalla de carga, {} s; mods: {})",
+                    String.format(java.util.Locale.ROOT, "%.1f", (now - jvm) / 1000.0), String.format(java.util.Locale.ROOT, "%.1f", reloadMs / 1000.0),
+                    net.minecraftforge.fml.ModList.get().size());
+        } else {
+            TFClient.LOGGER.info("TF Client: recarga de recursos: {} s", String.format(java.util.Locale.ROOT, "%.1f", reloadMs / 1000.0));
+        }
+    }
+
+    /** La pantalla de carga que envuelve (la de Forge, ForgeLoadingOverlay, o la de Minecraft). */
+    public String wrapped() {
+        return delegate.getClass().getSimpleName();
     }
 
     @Override
