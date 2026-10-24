@@ -33,7 +33,8 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
  * Lo que tiene a medias cada admin va en su sesión: &lt;app&gt;.pk.src (inv/todos), .pk.q (búsqueda), .pk.page, .pk.n.
  */
 final class PadItemPicker {
-    private static final int PAGE = 96;
+    /** (1.3.131, el dueño: «la lista debe ser literalmente todos los objetos del juego, scrolleable») todos de una vez. */
+    private static final int PAGE = 4096;
     private static final int[] AMOUNTS = {1, 4, 8, 16, 32, 64};
     /** Lo más que puede traer una entrada de un kit o una recompensa (se da en montones normales). */
     static final int MAX_AMOUNT = 6400;
