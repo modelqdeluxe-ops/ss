@@ -279,6 +279,10 @@ public final class BossTest {
             // (1.3.134) «tienda»: la tienda nueva (comprar, Tesoros, VENDER), el precio del clan, el disco de una canción
             // compartida y las compras de la web en el suelo frente a un clear lag
             if (only != null && List.of(only.split(",")).contains("tienda")) ids.add(0, "tienda");
+            // (1.3.137) «armario»: la pieza del Armario solo se ve sobre lo que se lleva puesto (pechera y alas)
+            if (only != null && List.of(only.split(",")).contains("armario")) ids.add(0, "armario");
+            // (1.3.137) «accesorios» (con [accesorios]: Accessories): alas en el hueco de espalda y en el cosmético, y quitarlas
+            if (only != null && List.of(only.split(",")).contains("accesorios")) ids.add(0, "accesorios");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -297,7 +301,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -332,6 +336,14 @@ public final class BossTest {
         }
         if ("tienda".equals(r.id)) {
             if (!waitShot) tiendaStep(server, level, player, r);
+            return;
+        }
+        if ("armario".equals(r.id)) {
+            if (!waitShot) armarioStep(level, player, r);
+            return;
+        }
+        if ("accesorios".equals(r.id)) {
+            if (!waitShot) accesoriosStep(level, player, r);
             return;
         }
         switch (phase) {
@@ -717,6 +729,8 @@ public final class BossTest {
     static volatile String typePad;
     /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
     static volatile String musicCmd;
+    /** (1.3.137) Lo que dibuja el cliente en el pecho y la espalda del jugador (TFItemsClient.BackLayer.debug). */
+    static volatile String clientWardrobe = "?";
     /** (1.3.134) Lo que cuenta el cliente de su música: canciones, las de COMPARTIDOS y lo que falta por bajar. */
     static volatile String clientMusic = "?";
     /** (1.3.109) Una acción para la app abierta del pad («tab:combate», «§scroll:400»). */
@@ -2066,6 +2080,204 @@ public final class BossTest {
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
             }
             case 1358 -> next(level);
+            default -> { }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.137) «armario»: el dueño: «las armaduras y sets de la web se quedan en el jugador cuando las desequipa, y las alas»
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static ItemStack wardrobeChestA, wardrobeChestB, wardrobeWings;
+
+    /** «set/pieza» de un objeto de set (como lo guarda el Armario). */
+    private static String pieceKey(net.minecraft.world.item.Item item) {
+        var set = net.tierrasfantasticas.tfclient.items.TFItemTypes.setOf(item);
+        String path = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item).getPath();
+        return set == null ? "" : set.id() + "/" + path.substring(set.id().length() + 1);
+    }
+
+    private static void armarioStep(ServerLevel level, ServerPlayer player, Rep r) {
+        java.util.UUID me = player.getUUID();
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                java.util.List<net.minecraft.world.item.Item> chests = new java.util.ArrayList<>();
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("armor", List.of())) {
+                    if (o.get() instanceof net.minecraft.world.item.ArmorItem a && a.getType() == net.minecraft.world.item.ArmorItem.Type.CHESTPLATE) chests.add(o.get());
+                }
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("back", List.of())) {
+                    if (o.get() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.wornModel() != null && wardrobeWings == null) {
+                        wardrobeWings = new ItemStack(o.get());
+                    }
+                }
+                if (chests.size() >= 2) {
+                    wardrobeChestA = new ItemStack(chests.get(0));
+                    wardrobeChestB = new ItemStack(chests.get(chests.size() - 1));
+                }
+                r.event("armario: pechera puesta " + (wardrobeChestA == null ? "NINGUNA" : pieceKey(wardrobeChestA.getItem())) + ", la del Armario "
+                        + (wardrobeChestB == null ? "NINGUNA" : pieceKey(wardrobeChestB.getItem())) + ", alas " + (wardrobeWings == null ? "NINGUNAS" : pieceKey(wardrobeWings.getItem())));
+                if (wardrobeChestA != null) player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, wardrobeChestA.copy());
+            }
+            case 20 -> cameraType = 1;
+            case 60 -> {
+                r.event("armario 1 (pechera puesta, sin Armario): " + clientWardrobe);
+                shot(r, "armario_1_pechera");
+            }
+            case 62 -> {
+                if (wardrobeChestB != null) net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.CHEST, pieceKey(wardrobeChestB.getItem()));
+                if (wardrobeWings != null) net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.BACK, pieceKey(wardrobeWings.getItem()));
+            }
+            case 100 -> {
+                r.event("armario 2 (pechera puesta, Armario con otra pechera y alas; sin alas puestas): " + clientWardrobe);
+                shot(r, "armario_2_con_armario");
+            }
+            case 102 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
+            case 140 -> {
+                r.event("armario 3 (se quita la pechera): " + clientWardrobe + (clientWardrobe.startsWith("pecho: nada") && clientWardrobe.split(" \\| ")[0].endsWith("espalda: nada")
+                        ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
+                shot(r, "armario_3_sin_pechera");
+            }
+            case 142 -> {
+                if (wardrobeWings != null) player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, wardrobeWings.copy());
+            }
+            case 180 -> {
+                r.event("armario 4 (alas puestas): " + clientWardrobe + (clientWardrobe.contains("espalda: armario") ? " (bien: las del Armario)" : " (MAL)"));
+                shot(r, "armario_4_alas");
+            }
+            case 182 -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
+            case 220 -> {
+                r.event("armario 5 (se quitan las alas): " + clientWardrobe + (clientWardrobe.split(" \\| ")[0].endsWith("espalda: nada") ? " (bien: no queda nada)" : " (MAL: sigue dibujando)"));
+                shot(r, "armario_5_sin_alas");
+            }
+            case 222 -> {
+                net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.CHEST, "");
+                net.tierrasfantasticas.tfclient.items.TFWardrobe.setFromPad(me, net.tierrasfantasticas.tfclient.items.TFWardrobe.BACK, "");
+                cameraType = 0;
+            }
+            case 230 -> next(level);
+            default -> { }
+        }
+    }
+
+    /**
+     * (1.3.137) El contenedor de Accessories de un hueco («back» o «cape»), real o cosmético, por reflexión
+     * (AccessoriesCapability.get(entity).getContainers().get(nombre).getAccessories() / getCosmeticAccessories()).
+     */
+    private static net.minecraft.world.Container accessorySlot(ServerPlayer player, boolean cosmetic, Rep r) {
+        try {
+            Class<?> api = Class.forName("io.wispforest.accessories.api.AccessoriesCapability");
+            Object cap = null;
+            for (String n : new String[] {"get", "getOptionally"}) {
+                try {
+                    Object o = api.getMethod(n, net.minecraft.world.entity.LivingEntity.class).invoke(null, player);
+                    if (o instanceof java.util.Optional<?> opt) o = opt.orElse(null);
+                    if (o != null) {
+                        cap = o;
+                        break;
+                    }
+                } catch (NoSuchMethodException ignored) {
+                    // otra versión
+                }
+            }
+            if (cap == null) {
+                r.event("accesorios: sin capacidad de Accessories");
+                return null;
+            }
+            Object map = cap.getClass().getMethod("getContainers").invoke(cap);
+            if (!(map instanceof java.util.Map<?, ?> m)) return null;
+            Object container = m.containsKey("back") ? m.get("back") : m.get("cape");
+            if (container == null) {
+                r.event("accesorios: no hay hueco back ni cape; huecos: " + m.keySet());
+                return null;
+            }
+            Object c = container.getClass().getMethod(cosmetic ? "getCosmeticAccessories" : "getAccessories").invoke(container);
+            return c instanceof net.minecraft.world.Container ct ? ct : null;
+        } catch (Exception e) {
+            r.event("accesorios: FALLO al leer Accessories: " + e);
+            return null;
+        }
+    }
+
+    /** Pone (o quita) algo en el hueco de espalda de Accessories o, sin él, de Curios (real o cosmético). */
+    private static void setBack(ServerPlayer player, boolean cosmetic, ItemStack stack, Rep r) {
+        if (net.minecraftforge.fml.ModList.get().isLoaded("accessories")) {
+            var c = accessorySlot(player, cosmetic, r);
+            if (c != null) {
+                c.setItem(0, stack);
+                c.setChanged();
+            }
+            return;
+        }
+        // Curios: CuriosApi.getCuriosInventory(p) → getStacksHandler("back") → getStacks() / getCosmeticStacks() → setStackInSlot
+        try {
+            Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
+            Object inv = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class).invoke(null, player);
+            if (inv instanceof net.minecraftforge.common.util.LazyOptional<?> lo) inv = lo.resolve().orElse(null);
+            else if (inv instanceof java.util.Optional<?> o) inv = o.orElse(null);
+            if (inv == null) {
+                r.event("accesorios: sin inventario de Curios");
+                return;
+            }
+            Object h = inv.getClass().getMethod("getStacksHandler", String.class).invoke(inv, "back");
+            if (h instanceof java.util.Optional<?> o) h = o.orElse(null);
+            if (h == null) {
+                r.event("accesorios: Curios sin hueco back");
+                return;
+            }
+            Object stacks = h.getClass().getMethod(cosmetic ? "getCosmeticStacks" : "getStacks").invoke(h);
+            if (stacks instanceof net.minecraftforge.items.IItemHandlerModifiable m) m.setStackInSlot(0, stack);
+        } catch (Exception e) {
+            r.event("accesorios: FALLO con Curios: " + e);
+        }
+    }
+
+    private static void accesoriosStep(ServerLevel level, ServerPlayer player, Rep r) {
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("back", List.of())) {
+                    if (o.get() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.wornModel() != null && wardrobeWings == null) {
+                        wardrobeWings = new ItemStack(o.get());
+                    }
+                }
+                r.event("accesorios: Accessories " + (net.minecraftforge.fml.ModList.get().isLoaded("accessories") ? "cargado" : "no")
+                        + ", Curios " + (net.minecraftforge.fml.ModList.get().isLoaded("curios") ? "cargado" : "no")
+                        + "; alas " + (wardrobeWings == null ? "NINGUNAS" : pieceKey(wardrobeWings.getItem())));
+            }
+            case 5 -> cameraType = 1;
+            case 10 -> {
+                if (wardrobeWings != null) setBack(player, false, wardrobeWings.copy(), r);
+            }
+            case 60 -> {
+                r.event("accesorios 1 (alas en el hueco de espalda): " + clientWardrobe);
+                shot(r, "accesorios_1_puestas");
+            }
+            case 62 -> {
+                setBack(player, false, ItemStack.EMPTY, r);
+            }
+            case 100 -> {
+                r.event("accesorios 2 (se quitan): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
+                shot(r, "accesorios_2_quitadas");
+            }
+            case 102 -> {
+                if (wardrobeWings != null) setBack(player, true, wardrobeWings.copy(), r);
+            }
+            case 140 -> {
+                r.event("accesorios 3 (alas en el hueco cosmético): " + clientWardrobe);
+                shot(r, "accesorios_3_cosmetico");
+            }
+            case 142 -> {
+                setBack(player, true, ItemStack.EMPTY, r);
+            }
+            case 180 -> {
+                r.event("accesorios 4 (se quitan del cosmético): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
+                shot(r, "accesorios_4_cosmetico_quitado");
+            }
+            case 182 -> cameraType = 0;
+            case 190 -> next(level);
             default -> { }
         }
     }

@@ -128,8 +128,11 @@ public final class TFAccessorySlots {
             LivingEntity entity = entityOf(arg(args, 1));
             if (stack == null || pose == null || buffers == null || model == null || light == null) return null;
             if (entity != null && entity.isInvisible()) return null;
+            // (1.3.137, el dueño: «me quité las alas del hueco de espalda de Accessories y se seguían viendo») solo si
+            // siguen puestas de verdad: si Accessories pasa unas que ya no están (lo que tenga guardado para dibujar), nada
+            if (entity != null && !stillWorn(entity, stack)) return null;
             drawn(entity);
-            renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
+            renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
         });
         Supplier<Object> supplier = () -> proxy;
@@ -159,7 +162,7 @@ public final class TFAccessorySlots {
             if (!(parent.getModel() instanceof HumanoidModel<?> model)) return null;
             if (entity != null && entity.isInvisible()) return null;
             drawn(entity);
-            renderer.render(pose, buffers, light, stack, model, entity != null && armored(entity));
+            renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
         });
         Supplier<Object> supplier = () -> proxy;
@@ -253,6 +256,69 @@ public final class TFAccessorySlots {
 
     public static boolean armored(LivingEntity entity) {
         return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorItem;
+    }
+
+    /** (1.3.137) Lo que se dibuja de las alas puestas en un hueco: las del Armario si ha elegido otras (solo apariencia). */
+    private static ItemStack wardrobe(@Nullable LivingEntity entity, ItemStack real) {
+        ItemStack o = entity == null ? null : TFWardrobe.back(entity);
+        return o != null && IS_BACK.test(o) ? o : real;
+    }
+
+    /** La lectura de los huecos de Accessories ya encontró alguna vez lo que dibujaba (así se puede fiar de ella). */
+    private static volatile boolean lookupWorks;
+
+    /**
+     * ¿Sigue puesto este objeto (o uno igual) en los huecos de Accessories de la entidad? Mientras la lectura de los
+     * huecos no haya encontrado nunca lo que se dibuja (otra versión de Accessories), siempre sí: no se tapa nada.
+     */
+    private static boolean stillWorn(LivingEntity entity, ItemStack stack) {
+        List<ItemStack> out = new ArrayList<>();
+        try {
+            TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+            TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+        } catch (Throwable t) {
+            return true;
+        }
+        for (ItemStack s : out) {
+            if (s == stack || ItemStack.isSameItem(s, stack)) {
+                lookupWorks = true;
+                return true;
+            }
+        }
+        if (lookupWorks && !loggedStale) {
+            loggedStale = true;
+            LOGGER.info("TF Client: accesorios: Accessories quería dibujar {} que ya no lleva puesto: no se dibuja", stack);
+        }
+        return !lookupWorks;
+    }
+
+    private static boolean loggedStale;
+
+    /** ¿El mod de accesorios está dibujando ahora lo de la espalda de este jugador (con nuestro dibujante)? */
+    public static boolean modDraws(LivingEntity entity) {
+        return (accessoriesDraws || curiosDraws) && drawnRecently(entity);
+    }
+
+    /**
+     * (1.3.137) ¿Lleva algo en la espalda en un hueco de accesorios (lo dibuje quien lo dibuje)? Para el Armario: sin
+     * nada puesto en la espalda, sus alas no se ven.
+     */
+    public static boolean wearsBack(LivingEntity entity) {
+        List<ItemStack> out = new ArrayList<>();
+        ModList mods = ModList.get();
+        try {
+            if (!accessoriesFailed && mods.isLoaded("accessories")) {
+                TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
+                TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+            }
+            if (out.isEmpty() && !curiosFailed && mods.isLoaded("curios")) {
+                TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
+                TFAccessoryLookup.cosmeticsFromCurios(entity, IS_BACK, out);
+            }
+        } catch (Throwable t) {
+            return false;
+        }
+        return !out.isEmpty();
     }
 
     // ---------------------------------------------------------------------------------------------------------------

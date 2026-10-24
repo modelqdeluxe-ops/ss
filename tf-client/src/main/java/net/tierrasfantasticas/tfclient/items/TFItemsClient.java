@@ -143,16 +143,23 @@ public final class TFItemsClient {
         public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
                            float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
             if (player.isInvisible()) return;
-            // Lo de la espalda del armario de la web tapa a lo que lleve puesto
+            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+            // Lo de la espalda del armario de la web en lugar de lo que lleve puesto en la espalda. (1.3.137, el dueño:
+            // «las alas se quedan aunque las quite») Solo si lleva algo en la espalda: en el pecho o en un hueco de
+            // accesorios; si es en un hueco que dibuja el mod de accesorios, lo cambia nuestro dibujante (TFAccessorySlots).
             ItemStack wardrobe = TFWardrobe.back(player);
             if (wardrobe != null) {
-                boolean armored = TFWardrobe.chestArmor(player) || player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorItem;
-                if (wardrobe.getItem() instanceof TFItemTypes.Cosmetic cosmetic) {
-                    renderBack(pose, buffers, light, wardrobe, cosmetic, getParentModel().body, armored);
+                boolean inChest = chest.getItem() instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
+                if (!inChest && TFAccessorySlots.modDraws(player)) return;
+                if (inChest || TFAccessorySlots.wearsBack(player)) {
+                    boolean armored = TFWardrobe.chestArmor(player) || chest.getItem() instanceof ArmorItem;
+                    if (wardrobe.getItem() instanceof TFItemTypes.Cosmetic cosmetic) {
+                        renderBack(pose, buffers, light, wardrobe, cosmetic, getParentModel().body, armored);
+                    }
+                    return;
                 }
-                return;
+                // sin nada en la espalda: no se dibuja nada del armario (y abajo, nada de lo puesto, porque no hay)
             }
-            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
             if (chest.getItem() instanceof TFItemTypes.Cosmetic cosmetic && cosmetic.wornModel() != null) {
                 renderBack(pose, buffers, light, chest, cosmetic, getParentModel().body, TFWardrobe.chestArmor(player));
             }
@@ -163,6 +170,25 @@ public final class TFItemsClient {
                     renderBack(pose, buffers, light, stack, cosmetic, getParentModel().body, armored);
                 }
             }
+        }
+
+        /** (1.3.137) Para la prueba en el juego: lo que se dibuja de este jugador en el pecho y en la espalda. */
+        public static String debug(AbstractClientPlayer player) {
+            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+            ItemStack armor = TFWardrobe.armorLayer(player, EquipmentSlot.CHEST, chest);
+            ItemStack wardrobe = TFWardrobe.back(player);
+            boolean inChest = chest.getItem() instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
+            String back = wardrobe != null && (inChest || TFAccessorySlots.wearsBack(player)) ? "armario " + key(wardrobe)
+                    : inChest ? "puestas " + key(chest) : "nada";
+            List<ItemStack> fallback = TFAccessorySlots.backCosmetics(player);
+            if (back.equals("nada") && !fallback.isEmpty()) back = "huecos " + key(fallback.get(0));
+            return "pecho: " + (armor.getItem() instanceof ArmorItem ? key(armor) : "nada") + " (lleva " + (chest.isEmpty() ? "nada" : key(chest))
+                    + "); espalda: " + back + " | accesorios: lleva " + TFAccessorySlots.wearsBack(player) + ", los dibuja su mod "
+                    + TFAccessorySlots.modDraws(player) + ", respaldo " + fallback.size();
+        }
+
+        private static String key(ItemStack stack) {
+            return String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()));
         }
 
         /** Con pechera (armored), lo de la espalda va un píxel más atrás para no atravesarla. */

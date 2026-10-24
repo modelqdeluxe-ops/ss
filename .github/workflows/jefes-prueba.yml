@@ -73,6 +73,15 @@ jobs:
             cp run/config/oculus.properties run/config/iris.properties
             echo "Con shaders: Oculus 1.8.0 + $PACK"
           fi
+          # (1.3.137) Con «[accesorios]»: Accessories (y Cloth Config), para las alas en los huecos de accesorios
+          # (y con «[accesorios=curios]», Curios en vez de Accessories)
+          if printf '%s' "$MENSAJE" | grep -q '\[accesorios=curios\]'; then
+            EXTRA="$EXTRA -Ptfaccessories=curios"
+            echo "Con Curios"
+          elif printf '%s' "$MENSAJE" | grep -q '\[accesorios\]'; then
+            EXTRA="$EXTRA -Ptfaccessories=accessories"
+            echo "Con Accessories"
+          fi
           timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient $EXTRA --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
           tail -n 80 run/juego.log
           ls run/pruebas || true

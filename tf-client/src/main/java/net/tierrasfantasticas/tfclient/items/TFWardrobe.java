@@ -47,8 +47,10 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Armario: lo que cada jugador eligió en su perfil de la web para que se vea en cada hueco (cabeza, pecho, piernas,
- * pies y espalda), entre lo que compró. Solo es apariencia: se dibuja encima de lo que lleve puesto (lo tapa) y no da
- * defensa, ni planeo, ni nada. La web lo manda por el puente ({@link #applyWeb}), el servidor lo guarda en
+ * pies y espalda), entre lo que compró. Solo es apariencia: se dibuja en lugar de lo que lleve puesto en ese hueco y no
+ * da defensa, ni planeo, ni nada. (1.3.137, el dueño: «las armaduras y sets de la web se quedan en el jugador cuando
+ * las desequipa, también las alas») Solo cambia cómo se ve lo que lleva: con el hueco vacío no se dibuja nada (antes se
+ * dibujaba la pieza del Armario aunque se quitara la armadura o las alas). La web lo manda por el puente ({@link #applyWeb}), el servidor lo guarda en
  * &lt;mundo&gt;/tfclient/wardrobe.json y se lo pasa a todos los jugadores; cada cliente lo dibuja (mixins de
  * HumanoidArmorLayer y CustomHeadLayer, y la espalda en {@link TFItemsClient.BackLayer}).
  */
@@ -267,31 +269,35 @@ public final class TFWardrobe {
     }
 
     /**
-     * Lo que dibuja la capa de armadura en un hueco: la armadura del armario; si en la cabeza hay un cosmético, nada
-     * (lo dibuja la capa de la cabeza en lugar del casco).
+     * Lo que dibuja la capa de armadura en un hueco: la armadura del armario si lleva algo puesto ahí (con el hueco vacío,
+     * nada); si en la cabeza hay un cosmético, nada (lo dibuja la capa de la cabeza en lugar del casco).
      */
     public static ItemStack armorLayer(LivingEntity entity, EquipmentSlot slot, ItemStack real) {
         int i = slotIndex(slot);
-        ItemStack o = i < 0 ? null : shown(entity, i);
+        ItemStack o = i < 0 || real.isEmpty() ? null : shown(entity, i);
         if (o == null) return real;
         return o.getItem() instanceof ArmorItem ? o : ItemStack.EMPTY;
     }
 
-    /** Lo que dibuja la capa de la cabeza: el cosmético del armario; si es un casco de armadura, nada. */
+    /** Lo que dibuja la capa de la cabeza: el cosmético del armario si lleva algo en la cabeza; si es un casco, nada. */
     public static ItemStack headLayer(LivingEntity entity, ItemStack real) {
-        ItemStack o = shown(entity, HEAD);
+        ItemStack o = real.isEmpty() ? null : shown(entity, HEAD);
         if (o == null) return real;
         return o.getItem() instanceof ArmorItem ? ItemStack.EMPTY : o;
     }
 
-    /** Lo de la espalda del armario (null si no hay): tapa a los de la espalda que lleve puestos. */
+    /**
+     * Lo de la espalda del armario (null si no hay). Solo cambia cómo se ven las alas o la mochila que lleve puestas
+     * (en el pecho o en un hueco de accesorios): quien la dibuja mira antes que lleve algo en la espalda.
+     */
     @Nullable
     public static ItemStack back(LivingEntity entity) {
         return shown(entity, BACK);
     }
 
-    /** true si se dibuja una pechera del armario (lo de la espalda va un píxel más atrás). */
+    /** true si se dibuja una pechera del armario (lo de la espalda va un píxel más atrás): solo si lleva pechera. */
     public static boolean chestArmor(LivingEntity entity) {
+        if (entity.getItemBySlot(EquipmentSlot.CHEST).isEmpty()) return false;
         ItemStack o = shown(entity, CHEST);
         return o != null && o.getItem() instanceof ArmorItem;
     }

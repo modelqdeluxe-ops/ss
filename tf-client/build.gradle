@@ -23,8 +23,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'info'
             args '--width', '1280', '--height', '720'
-            if (project.hasProperty('tfshaders')) {
-                // (los mixins de Oculus y Embeddium, compilados para el juego normal, se traducen a los nombres de aquí)
+            if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories')) {
+                // (los mixins de Oculus y Embeddium (y de Accessories), compilados para el juego normal, se traducen a los nombres de aquí)
                 property 'mixin.env.remapRefMap', 'true'
                 property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             }
@@ -44,7 +44,9 @@ mixin {
 
 // La prueba en el juego con shaders (commit con [shaders]: .github/workflows/jefes-prueba.yml pasa -Ptfshaders): Oculus
 // y Embeddium solo para jugar en la prueba; el mod no depende de ellos (vacio/ShaderPacks los busca por reflexión).
-if (project.hasProperty('tfshaders')) {
+// (1.3.137) Con [accesorios] en el commit (-Ptfaccessories): Accessories y Cloth Config, para probar las alas en los huecos
+// de accesorios (el mod los usa por reflexión, TFAccessorySlots; no depende de ellos).
+if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories')) {
     repositories {
         maven {
             url = 'https://api.modrinth.com/maven'
@@ -59,6 +61,15 @@ dependencies {
     if (project.hasProperty('tfshaders')) {
         runtimeOnly fg.deobf('maven.modrinth:embeddium:0.3.31+mc1.20.1')
         runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')
+    }
+    if (project.hasProperty('tfaccessories')) {
+        // -Ptfaccessories=curios: Curios en vez de Accessories
+        if (project.property('tfaccessories') == 'curios') {
+            runtimeOnly fg.deobf('maven.modrinth:curios:5.14.1+1.20.1')
+        } else {
+            runtimeOnly fg.deobf('maven.modrinth:cloth-config:11.1.136+forge')
+            runtimeOnly fg.deobf('maven.modrinth:accessories:1.0.0-beta.49+1.20.1')
+        }
     }
 }
 

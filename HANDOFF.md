@@ -190,7 +190,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.136) — lee esto primero
+### CHECKPOINT (24 oct 2026, TF Client 1.3.137) — lee esto primero
+
+**1.3.137** (el dueño: «me están haciendo múltiples reportes de que las armaduras o sets de la web se quedan en el
+jugador cuando las desequipa: cuando quita la armadura el mod sigue dibujando el item, pasa también con las alas»).
+Causa: el **Armario** (web y app Armario del pad, `TFWardrobe`) dibujaba la pieza elegida en su hueco lleve o no algo
+puesto: al quitarse la armadura o las alas seguía viéndose la del Armario (y con alas en un hueco que dibuja el mod de
+accesorios, salían las del Armario y las puestas a la vez). Ahora el Armario solo cambia cómo se ve lo que lleva:
+`TFWardrobe.armorLayer`/`headLayer`/`chestArmor` con el hueco vacío no dibujan nada; `BackLayer` solo pone las alas del
+Armario si lleva alas o mochila en el pecho o en un hueco de accesorios (`TFAccessorySlots.wearsBack`), y si las dibuja
+el mod de accesorios, nuestro dibujante pone las del Armario en su lugar (`TFAccessorySlots.wardrobe`). El pad lo dice
+en la cabecera del hueco. Prueba en el juego: `[prueba-jefes=armario]` (pechera, Armario, quitarla, alas, quitarlas;
+`TFItemsClient.BackLayer.debug`). El dueño después: «el casco Dragón Mecha de un jugador seguía tras reiniciar sin
+llevar nada» (el «Sombrero Dragón Mecha» en su Armario: se guarda en wardrobe.json y en la web; con esto deja de verse sin
+borrar su data) y «yo lo vi con las alas en el hueco de espalda de Accessories». Accessories 1.20.1 no arranca en la
+prueba (pide Mixin nuevo y piezas de Fabric: Sinytra Connector); con Curios (`[prueba-jefes=accesorios]
+[accesorios=curios]`, `-Ptfaccessories=curios` en build.gradle) quitar las alas, del hueco normal y del cosmético, deja de
+dibujarlas. Para Accessories, nuestro dibujante solo pinta unas alas si siguen puestas en sus huecos
+(`TFAccessorySlots.stillWorn`; si la lectura de huecos no ha funcionado nunca, no tapa nada). Si vuelve a pasar con
+Accessories, pedir la línea «TF Client: accesorios: Accessories quería dibujar … que ya no lleva puesto» del latest.log.
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.136, PUBLICADA)
 
 **1.3.136** (el dueño, con captura: «la primera vez que abro Minecraft después de instalar todo con el AutoModpack la
 pantalla de carga sale así»: la roja de Forge con MOJANG y, abajo a la izquierda, la de TF pequeña y del revés).
