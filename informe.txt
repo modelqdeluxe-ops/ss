@@ -1,0 +1,32 @@
+PRUEBA DE LOS JEFES EN EL JUEGO (TF Client 1.3.136)
+
+== tienda
+   t=4 tienda: la de antes se cambió por la nueva, copia guardada; 1037 objetos: construccion 391 (compra 391, vende 0); decoracion 274 (compra 274, vende 0); minerales 45 (compra 45, vende 0); equipo 52 (compra 52, vende 0); botin 24 (compra 24, vende 0); granja 80 (compra 80, vende 0); redstone 79 (compra 79, vende 0); utilidades 71 (compra 71, vende 0); protecciones 5 (compra 5, vende 0); tesoros 16 (compra 0, vende 16); avisos: 0
+   t=4 tienda: la de la 1.3.134 → versión 3, título «mia» (se queda lo del dueño), 64x64 sigue (bien), 100x100/150x150 quitadas (bien)
+   t=4 tienda: protecciones a la venta: 10x10 300; 25x25 1000; 40x40 2500; 64x64 5000; 80x80 8000; 
+   t=4 tienda: diamante fuera (bien), netherita fuera (bien), perla de ender fuera (bien)
+   t=10 tienda: comprar 2 lotes de roca (64 por 12): sí, saldo 50000 → 49976 (-24), roca en el inventario 128
+   t=10 tienda: vender un tótem (Tesoro, 300, 1 al día): sí (+300); el segundo el mismo día: no (bien: límite) (+0); vender todo con 5 diamantes: +0, diamantes que quedan 5
+   t=280 clan: cuesta 1500; con 100 monedas: no se funda (bien), saldo 100 → 100
+   t=280 clan: con 10100 monedas: fundado, saldo 10100 → 8600 (-1500, cobra justo el precio: bien)
+   t=380 música antes de compartir: 1 canciones; COMPARTIDOS: 0; pendientes: ninguna
+   t=480 disco: en la mano el disco «Song Disc: prueba compartir» {TFCancion:{artista:"",de:"Dev",duracion:3000L,link:"tfaudio:deb1668f40c7b5e61835eee17e95bbb7b3d1be96",titulo:"prueba compartir"}}
+   t=500 disco: clic derecho → CONSUME, en la mano queda 0 air
+   t=600 música tras gastar el disco: 2 canciones; COMPARTIDOS: 1 «prueba compartir» (mvmn6jsy8qm.wav, tfaudio:deb1668f40c7b5e61835eee17e95bbb7b3d1be96); pendientes: ninguna
+   t=706 web: en el suelo, el de la web: edad -32768, invulnerable true; el normal: edad 6, invulnerable false
+   t=712 web: tras /kill @e[type=item]: el de la web sigue (bien), el normal borrado (bien)
+   t=716 web: un clear lag (plugin) borra 1 objeto(s): el de la web sigue (bien)
+   t=760 web: en lava tras 3 s: sigue (bien); la tolva lo recoge: dentro 2, en el suelo 0 (bien, sin duplicar)
+   t=800 web: el jugador lo recoge: en el inventario 3, en el suelo ya no está (bien)
+   pelea: 0 ticks; jefes distintos: 0; vida -1 -> -1
+   objetivo = el jugador: 0% del tiempo (cerca: 0%); golpes que me da: 0 (0.0 de daño); los míos: 0 (lo más cerca que llego: 1000000000.0 del borde)
+   mis golpes que le quitan vida: 0; sin efecto (sin estar en sus ticks de invulnerable): 0
+   me mueve el jefe (empujón, arrastre): 0 veces; lo más lejos que me lanza 0.0 bloques, lo más alto 0.0
+   anda: 0 ticks, hacia atrás 0 (con lockmodel del pack 0, empujado por su skill 0), de lado 0 (con lockmodel 0, empujado 0); rápido (>0,8 b/t) 0; teletransportes 0
+   al andar por el suelo: 0.000 bloques/tick de media (0 ticks)
+   en el aire (>3 bloques) 0 ticks, como mucho 0.0; lo más lejos de la grieta 0.0; esbirros a la vez 0
+   quieto y lejos del jugador (más de 2 s seguidos): 0 ticks
+   sin modelo 0 ticks; sin animación 0 ticks
+   animaciones (ticks): {}
+   al morir: anims []; barras que ve el cliente a los 3 s: -1; quitado: false; objetos: -1; experiencia: -1; esbirros vivos: -1
+
