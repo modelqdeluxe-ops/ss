@@ -206,7 +206,7 @@ public final class TFMissionCheck {
     public static String how(String type, String raw) {
         String t = raw == null ? "*" : raw;
         return switch (type) {
-            case "romper" -> "Rómpelos en supervivencia con cualquier herramienta. Los bloques que pusiste tú no cuentan.";
+            case "romper" -> "Rómpelos en supervivencia. Los bloques que pusiste tú no cuentan.";
             case "cosechar" -> switch (t) {
                 case "minecraft:sweet_berry_bush", "minecraft:cave_vines", "minecraft:cave_vines_plant" -> "Coge las bayas con clic derecho (o rompe la planta con bayas).";
                 case "minecraft:melon", "minecraft:pumpkin" -> "Rompe los que crecen del tallo. Los que pusiste tú no cuentan.";
@@ -217,14 +217,14 @@ public final class TFMissionCheck {
             case "colocar" -> "Pon los bloques en supervivencia. Quitar y volver a poner uno en el mismo sitio no cuenta.";
             case "matar" -> "Dales tú el golpe final (vale con arco). Los mobs de generadores (spawners) no cuentan.";
             case "pescar" -> "Pesca con caña: cuenta cada cosa que sacas del agua.";
-            case "fabricar" -> "Fabrícalo en la mesa de trabajo o en el inventario y sácalo del resultado (vale mayúsculas + clic).";
+            case "fabricar" -> "Fabrícalo en la mesa de trabajo o en el inventario y sácalo del resultado.";
             case "fundir" -> "Fúndelo en un horno, ahumador o alto horno y saca tú el resultado (lo que saca una tolva no cuenta).";
             case "preparar" -> "Prepara las pociones en el soporte de pociones y sácalas tú.";
             case "criar" -> "Dale de comer a dos para que tengan una cría (la que les gusta: trigo, zanahorias, semillas…).";
             case "encantar" -> "Encanta objetos en la mesa de encantamientos.";
             case "reparar" -> "Repara o junta objetos en el yunque y saca el resultado.";
             default -> "";
-        } + " En creativo no cuenta.";
+        };
     }
 
     private static JsonArray array(JsonObject o, String key) {
