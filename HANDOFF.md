@@ -190,7 +190,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.143) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.144) — lee esto primero
+
+**1.3.144** (el dueño: «no pongas texto redundante, ambiguo ni tan extenso; eso de "en creativo no cuenta" ya se sabe»):
+la línea de cómo se hace cada misión (`TFMissionCheck.how`) dice solo lo que no es obvio, en pocas palabras («Solo
+maduros.», «Los de spawners no cuentan.»…); pescar, encantar y reparar no llevan ninguna.
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.143, PUBLICADA)
 
 **1.3.143** (el dueño: «la misión de crear cofres no cuenta los de Woodworks; haz universal la detección»).
 `TFJobsConfig.Target.sameKind`: un objetivo `minecraft:chest`, `minecraft:trapped_chest`, `minecraft:barrel` o

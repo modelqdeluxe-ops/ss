@@ -230,7 +230,8 @@ public final class PadMissions {
         List<String> lines = new ArrayList<>();
         long passXp = PadPass.xpOf(kind);
         lines.add(d.desc + "  ·  " + Math.min(st[0], d.amount) + "/" + d.amount + (passXp > 0 ? "  ·  +" + passXp + " XP de pase" : ""));
-        if (!claimed) lines.add(net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.how(d.type, d.target));
+        String how = claimed ? "" : net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.how(d.type, d.target);
+        if (!how.isEmpty()) lines.add(how);
         return new PadView.Row(new ItemStack(d.item()), d.name, claimed ? 0x7E8CA8 : 0x18265C, lines,
                 Math.min(1F, st[0] / (float) d.amount), "+" + PadView.money(d.coins), btn, null);
     }
