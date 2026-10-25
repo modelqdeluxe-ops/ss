@@ -1547,7 +1547,9 @@ export function createApp(env) {
     // Webhook de Mercado Pago: un pago creado o actualizado (aprobado, rechazado, reembolsado, contracargo). Se comprueba
     // la firma (si hay MP_WEBHOOK_SECRET) y, sobre todo, se pregunta el pago a la API con nuestro token.
     'POST /webhook/mercadopago': async (req, ctx) => {
-      if (!mp) return new Response('Mercado Pago no configurado', { status: 503 });
+      // (2026-10-26, el dueño: «no me deja guardar el webhook») Mercado Pago manda un aviso de prueba al guardarlo y
+      // quiere un 200: sin el token todavía, o con un pago de prueba que no existe, se contesta que recibido
+      if (!mp) return json({ received: true, configured: false });
       const url = new URL(req.url);
       let event = {};
       try {
@@ -1571,6 +1573,7 @@ export function createApp(env) {
         const local = ref && ORDER_ID_RE.test(ref) ? await store.getOrder(ref) : null;
         if (local) await handleMpPayments(local, [payment], ctx);
       } catch (err) {
+        if (err.status === 404) return json({ received: true, unknown: true }); // aviso de prueba (pago inventado)
         log.error('Error procesando el webhook de Mercado Pago:', err);
         return new Response('Error interno', { status: 500 });
       }
