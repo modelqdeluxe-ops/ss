@@ -162,6 +162,13 @@ const MIGRATIONS = [
   'ALTER TABLE orders ADD COLUMN gift_from TEXT',
 ];
 
+// La versión del esquema: cambia sola al tocar SCHEMA o MIGRATIONS (y entonces se vuelven a pasar una vez).
+const SCHEMA_VERSION = (() => {
+  let h = 0;
+  for (const ch of JSON.stringify([SCHEMA, MIGRATIONS])) h = (Math.imul(h, 31) + ch.charCodeAt(0)) | 0;
+  return String(h >>> 0);
+})();
+
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
 export const CLAIMED = ['queued', 'delivered', 'delivery_failed'];
 
@@ -248,8 +255,17 @@ export function createStore(db) {
   let ready = null;
 
   // Crea las tablas y añade las columnas nuevas la primera vez (una vez por instancia del Worker).
+  // (2026-10-26, el dueño: «no me cargan los productos») antes cada copia nueva de la web repasaba al arrancar las ~30
+  // tablas y las 20 migraciones, una tras otra (2–5 s por arranque, y atascos de 40 s cuando arrancaban varias a la vez).
+  // Ahora se apunta la versión del esquema en la tabla «meta» y, si ya está al día, basta con una consulta.
   function init() {
     ready ||= (async () => {
+      try {
+        const row = await db.prepare("SELECT value FROM meta WHERE key = 'schema'").first();
+        if (row && row.value === SCHEMA_VERSION) return;
+      } catch {
+        /* aún no hay tabla meta: se crea abajo */
+      }
       await db.batch(SCHEMA.map((sql) => db.prepare(sql)));
       for (const sql of MIGRATIONS) {
         try {
@@ -258,6 +274,11 @@ export function createStore(db) {
           if (!/duplicate column/i.test(String(err?.message))) throw err;
         }
       }
+      await db.prepare('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)').run();
+      await db
+        .prepare("INSERT INTO meta (key, value) VALUES ('schema', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+        .bind(SCHEMA_VERSION)
+        .run();
     })().catch((err) => {
       ready = null;
       throw err;

@@ -384,12 +384,17 @@
     return `${n} objetos${armor ? ', armadura completa' : ''}`;
   };
 
+  // Como mucho ms: si no ha llegado, se sigue sin ello (la tienda no se queda esperando a lo que tarda).
+  const atMost = (promise, ms) => Promise.race([promise, new Promise((resolve) => setTimeout(resolve, ms))]);
+
   async function loadProducts() {
     try {
+      // (2026-10-26, el dueño: «no me cargan los productos, solo el inicio») los productos salen en cuanto llegan:
+      // los efectos y las skills se esperan como mucho 4 s (antes, si tardaban, la tienda se quedaba en blanco)
       const [list] = await Promise.all([
         fetch('/api/products').then((r) => r.json()),
-        page === 'tienda' ? loadVfx() : null,
-        page === 'tienda' ? loadSkills() : null,
+        page === 'tienda' ? atMost(loadVfx(), 4000) : null,
+        page === 'tienda' ? atMost(loadSkills(), 4000) : null,
       ]);
       products = list;
     } catch {
