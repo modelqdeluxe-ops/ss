@@ -48,11 +48,16 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   nada (lava, cactus, explosiones) y si caen al vacío vuelven a su dueño.</li>
  *   <li>Solo su dueño puede cogerlos del suelo, llevarlos en el inventario, ponérselos o usarlos. Se pueden guardar en
  *   cofres; si otro jugador los saca, vuelven a su dueño (a su inventario, o al entrar si no está conectado).</li>
+ *   <li>(1.3.141, el dueño: «a uno le robaron el kit de la crate de un cofre; no es posible que lo puedan tomar de los
+ *   cofres») Nadie más que su dueño puede sacarlos de un cofre ni de ningún otro contenedor
+ *   (mixin/binding/SlotBindingMixin), ni con el cursor; las tolvas y tuberías no los sacan de los contenedores
+ *   (InvWrapperBindingMixin) ni los recogen del suelo (HopperBindingMixin).</li>
  *   <li>Se vinculan al entregarlos (/tf web sets give) y, los que no tienen dueño (los de antes de esta versión o los
  *   del creativo), al primer jugador que los lleve fuera del modo creativo.</li>
  * </ul>
- * Los cosméticos (sombreros, alas, mochilas, objetos de mano y los sets de cosméticos) no se vinculan: se pueden
- * regalar e intercambiar.
+ * Los sets de cosméticos (los que se compran con monedas) no se vinculan: se pueden regalar e intercambiar. (1.3.141) Las
+ * alas, sombreros y mochilas de los sets de rangos y crates sí: son parte del kit comprado (antes no, y se podían robar).
+ * Los que no tenían dueño se vinculan al primero que los lleve (en el inventario o puestos en un hueco de accesorios).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFBinding {
@@ -68,7 +73,7 @@ public final class TFBinding {
     /** Se vincula: objeto de un set que no es un cosmético. */
     public static boolean bindable(ItemStack stack) {
         Item item = stack.getItem();
-        if (!(item instanceof TFItem) || item instanceof TFItemTypes.Cosmetic || item instanceof TFItemTypes.Held) return false;
+        if (!(item instanceof TFItem) || item instanceof TFItemTypes.Held) return false;
         TFSets.SetDef set = TFItemTypes.setOf(item);
         return set != null && !set.cosmetic();
     }
@@ -100,6 +105,16 @@ public final class TFBinding {
 
     private static boolean exempt(Player player) {
         return player.isCreative() || player.isSpectator();
+    }
+
+    /** (1.3.141) ¿Es de otro jugador (y este no está en creativo)? Entonces no lo puede sacar de ningún sitio. */
+    public static boolean foreign(ItemStack stack, Player player) {
+        return !stack.isEmpty() && player != null && !exempt(player) && !usableBy(stack, player);
+    }
+
+    /** (1.3.141) ¿Tiene dueño? Las tolvas y tuberías no lo mueven. */
+    public static boolean bound(ItemStack stack) {
+        return !stack.isEmpty() && bindable(stack) && owner(stack) != null;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -165,7 +180,38 @@ public final class TFBinding {
                 changed = true;
             }
         }
+        // (1.3.141) lo que lleva en el cursor (con un cofre abierto) tampoco puede ser de otro
+        ItemStack carried = player.containerMenu.getCarried();
+        if (!carried.isEmpty() && bindable(carried) && owner(carried) != null && !owner(carried).equals(player.getUUID())) {
+            player.containerMenu.setCarried(ItemStack.EMPTY);
+            returnTo(player.server, owner(carried), carried);
+            changed = true;
+        }
+        // (1.3.141) las alas y demás puestas en los huecos de accesorios: las que no tienen dueño, de quien las lleva
+        if (player.tickCount % 20 == 0) bindWorn(player);
         if (changed) player.containerMenu.broadcastChanges();
+    }
+
+    private static void bindWorn(ServerPlayer player) {
+        List<ItemStack> worn = new ArrayList<>();
+        java.util.function.Predicate<ItemStack> mine = s -> bindable(s) && owner(s) == null;
+        try {
+            if (net.minecraftforge.fml.ModList.get().isLoaded("accessories")) {
+                TFAccessoryLookup.fromAccessories(player, mine, worn);
+                TFAccessoryLookup.cosmeticsFromAccessories(player, mine, worn);
+            }
+        } catch (Throwable ignored) {
+            // otra versión de Accessories
+        }
+        try {
+            if (net.minecraftforge.fml.ModList.get().isLoaded("curios")) {
+                TFAccessoryLookup.fromCurios(player, mine, worn, false);
+                TFAccessoryLookup.cosmeticsFromCurios(player, mine, worn);
+            }
+        } catch (Throwable ignored) {
+            // otra versión de Curios
+        }
+        for (ItemStack s : worn) bind(s, player);
     }
 
     @SubscribeEvent

@@ -2529,7 +2529,21 @@ public final class BossTest {
                 if (t == r0 + 76) openPad = "ranking/mobs";
                 if (t == r0 + 112) shot(r, "ranking_mobs");
                 if (t == r0 + 114) closeScreen = true;
-                if (t == r0 + 120) next(level);
+                // (1.3.141, el dueño: «a uno le robaron el kit de la crate de un cofre») un cofre con la espada y las alas de
+                // OTRO jugador: no se pueden sacar con clic, con mayúsculas, ni con una tolva; las alas sin dueño se
+                // vinculan a quien las lleva
+                if (t == r0 + 120) {
+                    player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+                    r.event("robo: " + theftTest(level, player));
+                }
+                if (t == r0 + 124) {
+                    ItemStack wing = player.getInventory().getItem(8);
+                    var owner = net.tierrasfantasticas.tfclient.items.TFBinding.owner(wing);
+                    r.event("robo: alas sin dueño en el inventario → " + (owner == null ? "SIN DUEÑO (MAL)" : owner.equals(player.getUUID()) ? "mías (bien)" : "de otro (MAL)"));
+                    player.getInventory().setItem(8, ItemStack.EMPTY);
+                    player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+                }
+                if (t == r0 + 130) next(level);
             }
         }
     }
@@ -2790,6 +2804,50 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
+    /** (1.3.141) Intenta robar de un cofre la espada y las alas de otro jugador. */
+    private static String theftTest(ServerLevel level, ServerPlayer player) {
+        java.util.function.Function<String, net.minecraft.world.item.Item> item = id -> net.minecraftforge.registries.ForgeRegistries.ITEMS
+                .getValue(new net.minecraft.resources.ResourceLocation("tfclient", id));
+        java.util.UUID other = java.util.UUID.nameUUIDFromBytes("tf-prueba-dueño".getBytes());
+        ItemStack sword = new ItemStack(item.apply("mecha_sword"));
+        sword.getOrCreateTag().putUUID("TFOwner", other);
+        sword.getOrCreateTag().putString("TFOwnerName", "Dueño_Prueba");
+        ItemStack wing = new ItemStack(item.apply("mecha_wing"));
+        wing.getOrCreateTag().putUUID("TFOwner", other);
+        wing.getOrCreateTag().putString("TFOwnerName", "Dueño_Prueba");
+        net.minecraft.core.BlockPos pos = player.blockPosition().offset(3, 0, 3);
+        level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest)) return "SIN COFRE";
+        chest.setItem(0, sword);
+        chest.setItem(1, wing);
+        StringBuilder out = new StringBuilder();
+        var menu = net.minecraft.world.inventory.ChestMenu.threeRows(999, player.getInventory(), chest);
+        player.containerMenu = menu;
+        out.append("cogerla del cofre ").append(menu.getSlot(0).mayPickup(player) ? "SE PUEDE (MAL)" : "no (bien)");
+        menu.clicked(0, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+        out.append("; clic → en el cursor ").append(menu.getCarried().isEmpty() ? "nada (bien)" : menu.getCarried().getItem() + " (MAL)");
+        menu.clicked(1, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, player);
+        out.append("; mayúsculas + clic en las alas → en el cofre ").append(chest.getItem(1).isEmpty() ? "YA NO ESTÁN (MAL)" : "siguen (bien)");
+        menu.clicked(0, 0, net.minecraft.world.inventory.ClickType.SWAP, player);
+        out.append("; tecla 1 → en el cofre ").append(chest.getItem(0).isEmpty() ? "YA NO ESTÁ (MAL)" : "sigue (bien)");
+        menu.clicked(0, 1, net.minecraft.world.inventory.ClickType.THROW, player);
+        out.append("; tirarla → ").append(chest.getItem(0).isEmpty() ? "SALE (MAL)" : "sigue (bien)");
+        player.containerMenu = player.inventoryMenu;
+        var handler = new net.minecraftforge.items.wrapper.InvWrapper(chest);
+        out.append("; una tolva/tubería saca ").append(handler.extractItem(0, 1, false).isEmpty() ? "nada (bien)" : "LA ESPADA (MAL)");
+        // lo mío sí se puede sacar
+        ItemStack mine = new ItemStack(item.apply("mecha_sword"));
+        net.tierrasfantasticas.tfclient.items.TFBinding.bind(mine, player);
+        chest.setItem(2, mine);
+        menu = net.minecraft.world.inventory.ChestMenu.threeRows(998, player.getInventory(), chest);
+        out.append("; la mía: ").append(menu.getSlot(2).mayPickup(player) ? "se puede (bien)" : "NO SE PUEDE (MAL)");
+        chest.clearContent();
+        level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        // unas alas del kit sin dueño (las de antes de esta versión): se vinculan a quien las lleva
+        player.getInventory().setItem(8, new ItemStack(item.apply("mecha_wing")));
+        return out.toString();
+    }
+
     /** (1.3.140) «yo: N (puesto P)» en un ranking, o «no salgo». */
     private static String rankLine(List<java.util.Map.Entry<java.util.UUID, Long>> top, java.util.UUID me) {
         for (int i = 0; i < top.size(); i++) if (top.get(i).getKey().equals(me)) return top.get(i).getValue() + " (puesto " + (i + 1) + ")";

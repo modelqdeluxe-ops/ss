@@ -190,7 +190,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (25 oct 2026, TF Client 1.3.140) — lee esto primero
+### CHECKPOINT (25 oct 2026, TF Client 1.3.141) — lee esto primero
+
+**1.3.141** (el dueño, con el playerdata del servidor: «a HitGp le robaron el kit Dragón Mecha de un cofre estando
+desconectado; no es posible que lo puedan tomar de los cofres»). Revisión del playerdata (152 archivos): HitGp
+(`e8c7696c…`, pedido TFHSYSEWUGHHL43UQR) conserva la armadura (ligada) y las alas; faltan las 16 armas/herramientas, el
+escudo y el sombrero (no los tiene ningún jugador: seguirían en un cofre o los movieron con tolvas). Llamitaa
+(`e69d9e54…`) tiene las 8 manzanas de oro de ese pedido y kwns_700 (`aebbb291…`) tuvo sus alas a las 15:13. capitf
+(`c825813a…`) tiene armadura, escudo y alas. Agujeros y arreglo (`TFBinding`):
+- Nada impedía sacar un objeto ligado de un cofre (solo se devolvía al llevarlo en el inventario; con tolvas o rompiendo
+  el cofre ni eso). Ahora `mixin/binding/SlotBindingMixin` (Slot.mayPickup: clic, mayúsculas, teclas, tirar),
+  `HopperBindingMixin` (las tolvas no recogen del suelo lo ligado) e `InvWrapperBindingMixin` (tolvas y tuberías no lo
+  sacan de contenedores); el cursor también se revisa.
+- Las alas, sombreros y mochilas de los sets de rango/crate no se ligaban («cosméticos»): ahora sí (los sets de
+  cosméticos de monedas siguen sin ligar). Los que no tienen dueño se ligan a quien los lleve, también puestos en
+  Accessories/Curios (`bindWorn`).
+- Prueba: `[prueba-jefes=oficios]` (al final: «robo: …»).
+
+### CHECKPOINT anterior (25 oct 2026, TF Client 1.3.140, PUBLICADA)
 
 **1.3.140** (el dueño: «el casco del rango Mágico es cosmético, hazlo casco como el de Eterno; las armaduras de los
 rangos son netherita + 2 puntos (pechera 10 en vez de 8), solo Mortal y Eterno + 1 (9); las crates netherita + 1» y
