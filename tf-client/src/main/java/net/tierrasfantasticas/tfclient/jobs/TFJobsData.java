@@ -34,6 +34,14 @@ public final class TFJobsData {
         public long claimedDay = -1;
         /** (1.3.139) La plantilla de una misión que rota («plantilla@factor»): así se puede cobrar días después. */
         public String rot = "";
+        /**
+         * (1.3.139, el dueño: «si alguien hizo un job y no le dejó cobrar, al actualizar debe poder reclamarlo») Lo que
+         * valía al hacerla (nombre, monedas, xp): si la misión ya no está en oficios.json (se cambió la config), se cobra
+         * esto.
+         */
+        public String name = "";
+        public double coins;
+        public double xp;
     }
 
     public static final class JobProgress {
@@ -137,6 +145,9 @@ public final class TFJobsData {
                 ms.done = TFJson.bool(mo, "hecha", false);
                 ms.claimedDay = TFJson.num(mo, "cobrada", -1);
                 ms.rot = TFJson.str(mo, "plantilla", "");
+                ms.name = TFJson.str(mo, "nombre", "");
+                ms.coins = TFJson.dec(mo, "monedas", 0);
+                ms.xp = TFJson.dec(mo, "xpPremio", 0);
             }
         }
         return p;
@@ -179,6 +190,11 @@ public final class TFJobsData {
                 mo.addProperty("hecha", ms.done);
                 mo.addProperty("cobrada", ms.claimedDay);
                 if (!ms.rot.isEmpty()) mo.addProperty("plantilla", ms.rot);
+                if (unclaimed && !ms.name.isEmpty()) {
+                    mo.addProperty("nombre", ms.name);
+                    mo.addProperty("monedas", ms.coins);
+                    mo.addProperty("xpPremio", ms.xp);
+                }
                 missions.add(mid, mo);
             });
             jo.add("misiones", missions);

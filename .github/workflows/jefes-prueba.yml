@@ -82,6 +82,11 @@ jobs:
             EXTRA="$EXTRA -Ptfaccessories=accessories"
             echo "Con Accessories"
           fi
+          # (1.3.139) Con «[jei]»: JEI, para ver que los objetos del TF Client no salen en su lista
+          if printf '%s' "$MENSAJE" | grep -q '\[jei\]'; then
+            EXTRA="$EXTRA -Ptfjei"
+            echo "Con JEI"
+          fi
           timeout 70m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient $EXTRA --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
           tail -n 80 run/juego.log
           ls run/pruebas || true

@@ -139,13 +139,37 @@ public final class TFJobsConfig {
         for (var e : jp.missions.entrySet()) {
             TFJobsData.MissionState ms = e.getValue();
             long d = rotatedDay(e.getKey());
-            if (d < 0 || d >= day || d < day - UNCLAIMED_DAYS || !ms.done || ms.claimedDay >= 0 || ms.rot.isEmpty()
-                    || listed.contains(e.getKey())) continue;
-            Mission m = fromRot(job, ms.rot, d);
-            if (m != null && m.id().equals(e.getKey())) out.add(m);
+            if (d < 0 || d >= day || d < day - UNCLAIMED_DAYS || !ms.done || ms.claimedDay >= 0 || listed.contains(e.getKey())) continue;
+            // las de antes de la 1.3.139 no guardaban la plantilla: sale del id («h<día>_<plantilla>»)
+            String rot = ms.rot.isEmpty() ? e.getKey().substring(e.getKey().indexOf('_') + 1) + "@1" : ms.rot;
+            Mission m = fromRot(job, rot, d);
+            if (m == null || !m.id().equals(e.getKey())) m = leftover(e.getKey(), ms);
+            if (m != null) {
+                out.add(m);
+                listed.add(m.id());
+            }
         }
-        for (Mission m : job.missions()) if (m.repeat() != Repeat.DAILY) out.add(m);
+        for (Mission m : job.missions()) {
+            if (m.repeat() != Repeat.DAILY) {
+                out.add(m);
+                listed.add(m.id());
+            }
+        }
+        // las fijas hechas sin cobrar que ya no están en oficios.json: con lo que valían al hacerlas
+        for (var e : jp.missions.entrySet()) {
+            TFJobsData.MissionState ms = e.getValue();
+            if (rotatedDay(e.getKey()) >= 0 || !ms.done || ms.claimedDay >= 0 || listed.contains(e.getKey())) continue;
+            Mission m = leftover(e.getKey(), ms);
+            if (m != null) out.add(m);
+        }
         return out;
+    }
+
+    /** Una misión hecha y sin cobrar que ya no está en la config: con lo que valía al hacerla (o null si no se guardó). */
+    private static Mission leftover(String id, TFJobsData.MissionState ms) {
+        if (ms.name.isEmpty() || ms.coins <= 0 && ms.xp <= 0) return null;
+        return new Mission(id, ms.name, "Hecha antes de un cambio de la config: se cobra lo que valía.", "minecraft:paper", "-",
+                new Target("*"), Math.max(1, ms.progress), 1, Repeat.NEVER, new Reward(ms.coins, ms.xp, List.of(), List.of()));
     }
 
     /** "plantilla@factor" del día → la misión, o null si la plantilla ya no existe. */

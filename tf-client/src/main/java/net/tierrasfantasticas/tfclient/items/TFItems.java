@@ -57,6 +57,9 @@ public final class TFItems {
             .title(Component.translatable("itemGroup.tfclient.sets"))
             .icon(TFItems::icon)
             .displayItems((params, output) -> {
+                // (1.3.139) solo para el OP o en creativo (client/TFHiddenItems): a los demás no les sale en las listas
+                // de objetos (JEI y compañía las sacan de aquí)
+                if (!net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient() || !TFItemsAccess.canSee()) return;
                 BY_SET.values().forEach(list -> list.forEach(o -> output.accept(o.get())));
                 // Las piedras de protección de TF Claims
                 net.tierrasfantasticas.tfclient.claims.item.ClaimItems.all().forEach(o -> output.accept(o.get()));
@@ -64,6 +67,13 @@ public final class TFItems {
             .build());
 
     private TFItems() {}
+
+    /** Separado para no cargar clases del cliente en el servidor. */
+    private static final class TFItemsAccess {
+        static boolean canSee() {
+            return net.tierrasfantasticas.tfclient.client.TFHiddenItems.allowed();
+        }
+    }
 
     private static ItemStack icon() {
         for (List<RegistryObject<Item>> list : BY_SET.values()) {

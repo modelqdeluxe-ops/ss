@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 
 /**
@@ -60,6 +61,46 @@ final class EssentialsWarps {
         }
         out.sort(Comparator.comparing(w -> w.name().toLowerCase(Locale.ROOT)));
         return cache = out;
+    }
+
+    private static Boolean perWarp;
+    private static long perWarpAt;
+
+    /** ¿Tiene EssentialsX «per-warp-permission: true»? (cada warp pide essentials.warps.&lt;nombre&gt;) */
+    static boolean perWarpPermission(MinecraftServer server) {
+        if (perWarp != null && System.currentTimeMillis() - perWarpAt < 30_000) return perWarp;
+        perWarpAt = System.currentTimeMillis();
+        boolean on = false;
+        try {
+            Path cfg = server.getServerDirectory().toPath().resolve(TFServerConfig.essentialsConfig()).normalize();
+            if (Files.isRegularFile(cfg)) {
+                for (String line : Files.readAllLines(cfg, StandardCharsets.UTF_8)) {
+                    String t = line.trim();
+                    if (t.startsWith("per-warp-permission:")) on = unquote(t.substring(20)).equalsIgnoreCase("true");
+                }
+            }
+        } catch (Exception ignored) {
+            // sin leerlo: como EssentialsX por defecto (false)
+        }
+        return perWarp = on;
+    }
+
+    /** Nombres que son del staff aunque EssentialsX no pida permiso por warp: admin, staff, mod, op, privado, oculto, test. */
+    private static final java.util.regex.Pattern STAFF = java.util.regex.Pattern.compile(
+            "(?i).*(admin|staff|privad|ocult).*|(?i)(.*[_-])?(mods?|op|ops|test|prueba)([_-].*)?");
+
+    /**
+     * (1.3.139, el dueño: «hay warps públicos y de admin; que el pad no publique los de admin») ¿Le sale este warp a
+     * este jugador en Viajes? Los OP ven todos. Si EssentialsX pide permiso por warp, solo los que tiene
+     * (essentials.warps.&lt;nombre&gt; o essentials.warps.*); sin poder preguntarlo, ninguno. Y nunca los que se llaman
+     * como del staff (admin, staff, mod…), salvo que tenga su permiso.
+     */
+    static boolean visible(ServerPlayer player, Warp w) {
+        if (player.hasPermissions(2)) return true;
+        Boolean own = net.tierrasfantasticas.tfclient.server.TFBukkit.hasPermission(player, "essentials.warps." + w.id().toLowerCase(Locale.ROOT));
+        if (perWarpPermission(player.getServer())) return Boolean.TRUE.equals(own);
+        if (STAFF.matcher(w.id()).matches() || STAFF.matcher(w.name()).matches()) return Boolean.TRUE.equals(own);
+        return true;
     }
 
     private static String unquote(String v) {

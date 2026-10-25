@@ -197,10 +197,14 @@ public final class TFJobs {
     private static final boolean TEST = System.getenv("TFCLIENT_PRUEBA_JEFES") != null;
     public static final List<String> TEST_LOG = new java.util.concurrent.CopyOnWriteArrayList<>();
 
+    /** Mientras se sacan pociones con mayúsculas + clic (las cuenta BrewingStandMenuJobsMixin, no el evento). */
+    public static boolean quickBrew;
+
     @SubscribeEvent
     public static void onBrew(PlayerBrewedPotionEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player) || quickBrew) return;
         ItemStack stack = event.getStack();
+        if (stack.isEmpty()) return;
         if (TEST) TEST_LOG.add("preparar " + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()) + " " + stack.getCount());
         record(player, "preparar", t -> t.item(stack), 1);
     }
@@ -267,6 +271,9 @@ public final class TFJobs {
                 changed = true;
                 if (ms.progress >= mission.amount()) {
                     ms.done = true;
+                    ms.name = mission.name();
+                    ms.coins = mission.reward().coins();
+                    ms.xp = mission.reward().xp();
                     missionDone(player, job, mission);
                 }
             }

@@ -55,9 +55,22 @@ if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories')) {
     }
 }
 
+// (1.3.139, el dueño: «que los objetos del TF Client no salgan en el JEI») la API de JEI solo para compilar el plugin que
+// los oculta (compat/jei/TFJeiPlugin); el mod no depende de JEI. Con [jei] en el commit (-Ptfjei), JEI para la prueba.
+repositories {
+    maven {
+        url = 'https://maven.blamejared.com'
+        content { includeGroup 'mezz.jei' }
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly fg.deobf('mezz.jei:jei-1.20.1-common-api:15.20.0.106')
+    if (project.hasProperty('tfjei')) {
+        runtimeOnly fg.deobf('mezz.jei:jei-1.20.1-forge:15.20.0.106')
+    }
     if (project.hasProperty('tfshaders')) {
         runtimeOnly fg.deobf('maven.modrinth:embeddium:0.3.31+mc1.20.1')
         runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')

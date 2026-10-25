@@ -40,7 +40,7 @@ import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
  * Jugadores: los conectados en tarjetas (cabeza, nombre y rango), también los bots. Al pulsar uno (1.3.117, sin su
- * ficha): Invitar al clan (si eres líder u oficial y él no tiene clan), Invitar a la protección (eliges la zona) y
+ * ficha): Invitar al clan (si tu rango invita y él no tiene clan), Invitar a la protección (eliges la zona) y
  * Enviar regalo: un objeto de tu inventario o monedas. Si está desconectado, el regalo le llega al entrar. Lo que va
  * ligado a su dueño o se compró en la web no se puede regalar (como en el GTS). Límite diario en pad.json.
  * Pestañas: "" la lista; "f:&lt;uuid&gt;" lo que se le puede hacer; "p:&lt;uuid&gt;" a qué zona; "r:&lt;uuid&gt;" regalar.

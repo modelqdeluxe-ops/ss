@@ -2412,7 +2412,7 @@ public final class BossTest {
                 long b1 = balance(player);
                 long want = Math.round(m.reward().coins());
                 r.event("oficios: COBRAR «" + m.name() + "» (" + m.id() + ", premio " + want + ") → saldo " + b0 + " → " + b1
-                        + (b1 - b0 == want && ms.claimedDay >= 0 ? " (bien)" : " (MAL: cobrada " + ms.claimedDay + ")"));
+                        + (b1 - b0 >= want && ms.claimedDay >= 0 ? " (bien; lo de más es el premio de subir de nivel)" : " (MAL: cobrada " + ms.claimedDay + ")"));
                 // la de hace 3 días (el dueño: «si alguien hizo un job y no le dejó cobrar, que pueda reclamarlo»)
                 long old = net.tierrasfantasticas.tfclient.util.TFRotation.day() - 3;
                 var tpl = job.missions().stream().filter(x -> x.repeat() == net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Repeat.DAILY
@@ -2430,12 +2430,57 @@ public final class BossTest {
                 r.event("oficios: la de hace 3 días sin cobrar: " + (found == null ? "NO SALE en la lista" : "sale") + "; COBRAR → saldo " + b2 + " → " + b3
                         + (found != null && b3 > b2 ? " (bien)" : " (MAL)"));
             }
+            // (1.3.139) los rangos del clan (líder, colíder, veterano, miembro)
+            case 22 -> r.event("clan, rangos: " + net.tierrasfantasticas.tfclient.pad.server.PadClans.testRanks(player));
             case 24 -> openPad = "oficios/o:herrero:m";
             case 70 -> shot(r, "oficios_misiones");
             case 72 -> openPad = "misiones/semanales";
             case 110 -> shot(r, "misiones_semanales");
-            case 112 -> closeScreen = true;
-            case 120 -> next(level);
+            case 112 -> openPad = "clanes";
+            case 150 -> shot(r, "clan_rangos");
+            case 152 -> openPad = "clanes/ajustes";
+            case 190 -> shot(r, "clan_ajustes");
+            case 192 -> closeScreen = true;
+            // (1.3.139) la tormenta de un jefe (Tormenta del Wither: weather{type=storm;duration=6000}) se quita al morir él
+            case 196 -> {
+                level.setWeatherParameters(6000, 0, false, false);
+                stormOwner = net.minecraft.world.entity.EntityType.ZOMBIE.create(level);
+                if (stormOwner != null) {
+                    stormOwner.moveTo(player.getX() + 6, player.getY(), player.getZ(), 0, 0);
+                    stormOwner.setNoAi(true);
+                    level.addFreshEntity(stormOwner);
+                    net.tierrasfantasticas.tfclient.skills.SkillMore.fakeWeather(level, true, true, 6000, stormOwner);
+                }
+            }
+            case 236 -> {
+                r.event("tormenta del jefe: con él vivo, el cliente ve lluvia " + clientRain());
+                if (stormOwner != null) stormOwner.kill();
+            }
+            case 240 -> shot(r, "tormenta_viva_o_no");
+            case 280 -> {
+                String rain = clientRain();
+                r.event("tormenta del jefe: 2 s después de matarlo, lluvia " + rain + (rain.startsWith("0.00") ? " (bien: se quitó)" : " (MAL: sigue lloviendo)"));
+            }
+            case 282 -> shot(r, "tormenta_tras_matarlo");
+            // (1.3.139) los objetos de tfclient en JEI: ocultos a quien no es OP ni está en creativo
+            case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = false;
+            case 320 -> {
+                r.event("JEI, jugador sin OP en supervivencia: objetos nuestros en la lista " + jeiCount()
+                        + (jeiCount().equals("0") ? " (bien: ocultos)" : jeiCount().equals("sin JEI") ? "" : " (MAL)"));
+                openInventory = true;
+            }
+            case 350 -> shot(r, "jei_oculto");
+            case 352 -> {
+                closeScreen = true;
+                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = true;
+            }
+            case 382 -> {
+                String n = jeiCount();
+                r.event("JEI, OP o creativo: objetos nuestros en la lista " + n
+                        + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)"));
+                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = null;
+            }
+            case 390 -> next(level);
             default -> { }
         }
     }
@@ -2696,6 +2741,19 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
+    /** (1.3.139) El que puso la tormenta en la prueba «oficios». */
+    private static net.minecraft.world.entity.Entity stormOwner;
+
+    /** La lluvia que ve el cliente (0.00 = no llueve). */
+    private static String clientRain() {
+        var cl = net.minecraft.client.Minecraft.getInstance().level;
+        return cl == null ? "?" : String.format(java.util.Locale.ROOT, "%.2f (trueno %.2f)", cl.getRainLevel(1F), cl.getThunderLevel(1F));
+    }
+
+    private static String jeiCount() {
+        Integer n = net.tierrasfantasticas.tfclient.client.TFHiddenItems.COUNTS.get("JEI");
+        return n == null ? "sin JEI" : String.valueOf(n);
+    }
 
     /** (1.3.117) Lo que ve el cliente de la luz de los objetos (shaders, la luz del jugador y el mapa de luz). */
     static volatile String clientItemsLight = "?";

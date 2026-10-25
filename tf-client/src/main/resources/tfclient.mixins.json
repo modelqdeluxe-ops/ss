@@ -19,7 +19,8 @@
     "BotCommandsMixin",
     "EntityRemoveMixin",
     "jobs.ResultSlotJobsMixin",
-    "jobs.FurnaceResultSlotJobsMixin"
+    "jobs.FurnaceResultSlotJobsMixin",
+    "jobs.BrewingStandMenuJobsMixin"
   ],
   "client": [
     "LoadingOverlayAccessor",
