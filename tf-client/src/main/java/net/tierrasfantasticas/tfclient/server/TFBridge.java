@@ -90,11 +90,23 @@ public final class TFBridge {
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS = 20_000;
     /** Las consultas a la web van en su propio hilo para no frenar el servidor. */
-    private static final ExecutorService HTTP = Executors.newSingleThreadExecutor(r -> {
-        Thread thread = new Thread(r, "TF Bridge");
-        thread.setDaemon(true);
-        return thread;
-    });
+    private static ExecutorService HTTP = newHttp();
+    /**
+     * (1.3.139, el dueño: «a veces la clave del puente se desconecta; debe estar siempre conectada») Una consulta que no
+     * vuelve (el DNS o la red colgados no tienen tiempo máximo) dejaba el puente parado hasta reiniciar: a los 90 s se
+     * da por perdida, se usa otro hilo y lo que llevaba vuelve a la cola cuando acabe (si acaba).
+     */
+    private static final long STUCK_MS = 90_000L;
+    private static long inFlightSince;
+    private static int pollGen;
+
+    private static ExecutorService newHttp() {
+        return Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "TF Bridge");
+            thread.setDaemon(true);
+            return thread;
+        });
+    }
 
     private static MinecraftServer server;
     private static int ticks;
@@ -137,10 +149,14 @@ public final class TFBridge {
         connected = false;
         try {
             TFServerConfig.load();
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Bridge: error al leer la config del puente", t);
+        }
+        try {
             loadExecuted();
         } catch (Throwable t) {
-            TFClient.LOGGER.error("TF Bridge: error al iniciar", t);
-            return;
+            // (1.3.139) antes esto dejaba el puente sin arrancar hasta reiniciar
+            TFClient.LOGGER.error("TF Bridge: no se pudo leer la lista de entregas hechas (se sigue igual)", t);
         }
         if (TFServerConfig.enabled()) {
             TFClient.LOGGER.info("TF Bridge: conectando con {} cada {} s", TFServerConfig.url(), TFServerConfig.intervalSeconds());
@@ -296,6 +312,14 @@ public final class TFBridge {
         // La primera consulta, a los 5 segundos de arrancar; después, cada intervalo.
         if (++ticks < TFServerConfig.intervalSeconds() * 20 && !(ticks == 100 && !connected)) return;
         ticks = 0;
+        if (inFlight && System.currentTimeMillis() - inFlightSince > STUCK_MS) {
+            logError("la consulta a la web no volvió en " + STUCK_MS / 1000 + " s; se reintenta con otra");
+            HTTP.shutdownNow();
+            HTTP = newHttp();
+            pollGen++;
+            inFlight = false;
+            connected = false;
+        }
         if (inFlight) return;
         try {
             poll();
@@ -375,6 +399,8 @@ public final class TFBridge {
         byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
 
         inFlight = true;
+        inFlightSince = System.currentTimeMillis();
+        int gen = ++pollGen;
         HTTP.execute(() -> {
             int status = -1;
             String text = null;
@@ -406,6 +432,11 @@ public final class TFBridge {
             String finalText = text;
             Throwable finalError = error;
             srv.execute(() -> {
+                if (gen != pollGen) {
+                    // se dio por perdida: lo que llevaba vuelve a la cola (la siguiente lo manda otra vez)
+                    requeue.run();
+                    return;
+                }
                 inFlight = false;
                 try {
                     handleResponse(srv, finalStatus, finalText, finalError, requeue);

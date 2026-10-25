@@ -60,3 +60,25 @@ tiene los ids de los objetos).
 
 Cuando una versión nueva del mod cambia la economía de un archivo, guarda el de antes al lado como
 `nombre.antes-vN.json`. Si quieres volver a algo de antes, cópialo de ahí.
+
+## Al actualizar el mod
+
+No hay que tocar nada: cambia el jar y reinicia el servidor. Lo que trae la versión nueva se pone solo: los ajustes
+nuevos toman su valor por defecto, y si cambia la economía de `tienda.json`, `oficios.json` o `misiones.json`, el
+archivo se cambia por el nuevo (con la copia de antes al lado, ver arriba). Las misiones de oficios hechas y sin cobrar
+se pueden cobrar hasta 30 días después, aunque cambie `oficios.json` (con lo que valían al hacerlas).
+
+## La clave del puente con la web
+
+`bridge.secret` de `servidor.properties` es la que va en Cloudflare (Secret `BRIDGE_SECRET`). El mod guarda una copia en
+`tfclient-puente.clave` (en la carpeta del servidor, junto a `mods/`) y en `config/tfclient/.puente.clave`: si
+`servidor.properties` se pierde o se cambia al actualizar, vuelve la misma clave y la web la sigue reconociendo. Para
+cambiarla de verdad, ponla en `servidor.properties` (las copias se actualizan solas) y en Cloudflare. Si la web no
+contesta, el puente lo vuelve a intentar solo cada pocos segundos; no hace falta reiniciar.
+
+## Warps en Viajes
+
+A cada jugador solo le salen los warps de EssentialsX que puede usar: con `per-warp-permission: true` en la config de
+EssentialsX, los de su permiso `essentials.warps.<nombre>`; sin eso, todos menos los que se llaman como del staff
+(admin, staff, mod, op, privado, oculto, test). Los OP los ven todos. Además se puede ocultar cualquiera en el pad de
+administrador (VIAJES › WARPS).

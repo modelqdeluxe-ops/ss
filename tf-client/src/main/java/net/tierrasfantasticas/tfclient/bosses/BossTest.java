@@ -283,6 +283,8 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("armario")) ids.add(0, "armario");
             // (1.3.137) «accesorios» (con [accesorios]: Accessories): alas en el hueco de espalda y en el cosmético, y quitarlas
             if (only != null && List.of(only.split(",")).contains("accesorios")) ids.add(0, "accesorios");
+            // (1.3.139) «oficios»: fundir, fabricar y preparar con clic y mayúsculas + clic, cobrar misiones y lo de días atrás
+            if (only != null && List.of(only.split(",")).contains("oficios")) ids.add(0, "oficios");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -301,7 +303,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -344,6 +346,10 @@ public final class BossTest {
         }
         if ("accesorios".equals(r.id)) {
             if (!waitShot) accesoriosStep(level, player, r);
+            return;
+        }
+        if ("oficios".equals(r.id)) {
+            if (!waitShot) oficiosStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -2305,6 +2311,190 @@ public final class BossTest {
     }
 
     // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.139) «oficios»: el dueño: «una misión me pide fundir hierro y no cuenta; no dejan cobrar los jobs»
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static net.minecraft.core.BlockPos at(int dx, int dz) {
+        return net.minecraft.core.BlockPos.containing(arena.x + dx, arena.y, arena.z + dz);
+    }
+
+    /** Lo que se contó desde la última vez (TFJobs.TEST_LOG), y lo vacía. */
+    private static String counted() {
+        String s = String.join(" | ", net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG);
+        net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+        return s.isEmpty() ? "NADA" : s;
+    }
+
+    private static void oficiosStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        String name = player.getGameProfile().getName();
+        java.util.UUID me = player.getUUID();
+        var click = net.minecraft.world.inventory.ClickType.QUICK_MOVE;
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                var job = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.job("herrero");
+                String err = job == null ? "no hay oficio herrero" : net.tierrasfantasticas.tfclient.jobs.TFJobs.join(player, job);
+                r.event("oficios: trabajar de herrero → " + (err == null ? "sí" : err));
+                net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+            }
+            // horno: 24 lingotes con mayúsculas + clic (antes: «aire», no contaba) y 10 con clic
+            case 5 -> {
+                var pos = at(3, 0);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.FURNACE.defaultBlockState());
+                if (level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.FurnaceBlockEntity be) {
+                    long b0 = balance(player);
+                    be.setItem(2, new ItemStack(Items.IRON_INGOT, 24));
+                    player.openMenu(be);
+                    player.containerMenu.clicked(2, 0, click, player);
+                    long b1 = balance(player);
+                    r.event("oficios: horno, mayúsculas + clic en 24 lingotes → " + counted() + "; saldo " + b0 + " → " + b1
+                            + " (" + (b1 > b0 ? "pagado al momento: bien" : "SIN PAGAR") + "), en el inventario " + player.getInventory().countItem(Items.IRON_INGOT));
+                    be.setItem(2, new ItemStack(Items.IRON_INGOT, 10));
+                    player.containerMenu.clicked(2, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                    r.event("oficios: horno, clic en 10 lingotes → " + counted());
+                    player.containerMenu.setCarried(ItemStack.EMPTY);
+                    player.closeContainer();
+                }
+            }
+            // mesa de trabajo: pan (3 de trigo en fila, 10 veces) con mayúsculas + clic, y antorchas con clic
+            case 10 -> {
+                var pos = at(-3, 0);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.CRAFTING_TABLE.defaultBlockState());
+                player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(id, inv,
+                        net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)), net.minecraft.network.chat.Component.literal("Mesa")));
+                var menu = player.containerMenu;
+                for (int i = 1; i <= 3; i++) menu.getSlot(i).set(new ItemStack(Items.WHEAT, 10));
+                menu.slotsChanged(menu.getSlot(1).container);
+                menu.clicked(0, 0, click, player);
+                r.event("oficios: mesa, pan con mayúsculas + clic (10) → " + counted() + "; pan en el inventario " + player.getInventory().countItem(Items.BREAD));
+                for (int i = 1; i <= 9; i++) menu.getSlot(i).set(ItemStack.EMPTY);
+                menu.getSlot(1).set(new ItemStack(Items.COAL, 1));
+                menu.getSlot(4).set(new ItemStack(Items.STICK, 1));
+                menu.slotsChanged(menu.getSlot(1).container);
+                menu.clicked(0, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                r.event("oficios: mesa, antorchas con clic → " + counted());
+                menu.setCarried(ItemStack.EMPTY);
+                player.closeContainer();
+            }
+            // soporte de pociones: una con mayúsculas + clic y otra con clic
+            case 15 -> {
+                var pos = at(0, 3);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.BREWING_STAND.defaultBlockState());
+                if (level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.BrewingStandBlockEntity be) {
+                    for (int i = 0; i < 2; i++) be.setItem(i, net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION),
+                            net.minecraft.world.item.alchemy.Potions.AWKWARD));
+                    player.openMenu(be);
+                    player.containerMenu.clicked(0, 0, click, player);
+                    r.event("oficios: pociones, mayúsculas + clic → " + counted());
+                    player.containerMenu.clicked(1, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                    r.event("oficios: pociones, clic → " + counted());
+                    player.containerMenu.setCarried(ItemStack.EMPTY);
+                    player.closeContainer();
+                }
+            }
+            // cobrar una misión del oficio hecha (de hoy) y otra de hace 3 días que quedó sin cobrar
+            case 20 -> {
+                var job = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.job("herrero");
+                if (job == null) return;
+                var jp = net.tierrasfantasticas.tfclient.jobs.TFJobs.data().player(me).job("herrero");
+                var list = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.missionsFor(job, me, jp);
+                var m = list.isEmpty() ? null : list.get(0);
+                if (m == null) {
+                    r.event("oficios: SIN MISIONES de herrero");
+                    return;
+                }
+                var ms = net.tierrasfantasticas.tfclient.jobs.TFJobs.refresh(jp, m);
+                ms.progress = m.amount();
+                ms.done = true;
+                long b0 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadJobs.APP.action(player, "", "cobrar:herrero:" + m.id(), "");
+                long b1 = balance(player);
+                long want = Math.round(m.reward().coins());
+                r.event("oficios: COBRAR «" + m.name() + "» (" + m.id() + ", premio " + want + ") → saldo " + b0 + " → " + b1
+                        + (b1 - b0 >= want && ms.claimedDay >= 0 ? " (bien; lo de más es el premio de subir de nivel)" : " (MAL: cobrada " + ms.claimedDay + ")"));
+                // la de hace 3 días (el dueño: «si alguien hizo un job y no le dejó cobrar, que pueda reclamarlo»)
+                long old = net.tierrasfantasticas.tfclient.util.TFRotation.day() - 3;
+                var tpl = job.missions().stream().filter(x -> x.repeat() == net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Repeat.DAILY
+                        && x.level() <= jp.level).findFirst().orElse(null);
+                if (tpl == null) return;
+                String oldId = "h" + old + "_" + tpl.id();
+                var oms = jp.mission(oldId);
+                oms.progress = 999;
+                oms.done = true;
+                oms.rot = tpl.id() + "@1.0";
+                var found = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.missionFor(job, me, jp, oldId);
+                long b2 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadJobs.APP.action(player, "", "cobrar:herrero:" + oldId, "");
+                long b3 = balance(player);
+                r.event("oficios: la de hace 3 días sin cobrar: " + (found == null ? "NO SALE en la lista" : "sale") + "; COBRAR → saldo " + b2 + " → " + b3
+                        + (found != null && b3 > b2 ? " (bien)" : " (MAL)"));
+            }
+            // (1.3.139) los rangos del clan (líder, colíder, veterano, miembro)
+            case 22 -> r.event("clan, rangos: " + net.tierrasfantasticas.tfclient.pad.server.PadClans.testRanks(player));
+            case 24 -> openPad = "oficios/o:herrero:m";
+            case 70 -> shot(r, "oficios_misiones");
+            case 72 -> openPad = "misiones/semanales";
+            case 110 -> shot(r, "misiones_semanales");
+            case 112 -> openPad = "clanes";
+            case 150 -> shot(r, "clan_rangos");
+            case 152 -> openPad = "clanes/ajustes";
+            case 190 -> shot(r, "clan_ajustes");
+            case 192 -> closeScreen = true;
+            // (1.3.139) la tormenta de un jefe (Tormenta del Wither: weather{type=storm;duration=6000}) se quita al morir él
+            case 196 -> {
+                level.setWeatherParameters(6000, 0, false, false);
+                stormOwner = net.minecraft.world.entity.EntityType.ZOMBIE.create(level);
+                if (stormOwner != null) {
+                    stormOwner.moveTo(player.getX() + 6, player.getY(), player.getZ(), 0, 0);
+                    stormOwner.setNoAi(true);
+                    level.addFreshEntity(stormOwner);
+                    net.tierrasfantasticas.tfclient.skills.SkillRuntime.testStorm(level, stormOwner, 6000);
+                }
+            }
+            case 236 -> {
+                r.event("tormenta del jefe: con él vivo, el cliente ve lluvia " + clientRain());
+                if (stormOwner != null) stormOwner.kill();
+            }
+            case 240 -> shot(r, "tormenta_viva_o_no");
+            case 280 -> {
+                String rain = clientRain();
+                r.event("tormenta del jefe: 2 s después de matarlo, lluvia " + rain + (rain.startsWith("0.00") ? " (bien: se quitó)" : " (MAL: sigue lloviendo)"));
+            }
+            case 282 -> shot(r, "tormenta_tras_matarlo");
+            // (1.3.139) los objetos de tfclient en JEI: ocultos a quien no es OP ni está en creativo
+            case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = false;
+            case 316 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
+            case 320 -> {
+                int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
+                r.event("JEI, jugador sin OP en supervivencia: objetos nuestros en la lista " + jeiCount()
+                        + (jeiCount().equals("0") ? " (bien: ocultos)" : jeiCount().equals("sin JEI") ? "" : " (MAL)")
+                        + "; pestaña TF del creativo: " + tab + (tab == 0 ? " (bien: vacía)" : " (MAL)"));
+                openInventory = true;
+            }
+            case 350 -> shot(r, "jei_oculto");
+            case 352 -> {
+                closeScreen = true;
+                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = true;
+            }
+            case 378 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
+            // (hacer la pestaña con sus 1.164 objetos tarda más que vaciarla)
+            case 400 -> {
+                String n = jeiCount();
+                int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
+                r.event("JEI, OP o creativo: objetos nuestros en la lista " + n
+                        + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)")
+                        + "; pestaña TF del creativo: " + tab + (tab > 0 ? " (bien)" : " (MAL)"));
+                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = null;
+                // sin el clan de prueba (la prueba «tienda» funda uno)
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.testCleanup(player);
+            }
+            case 410 -> next(level);
+            default -> { }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
     // (1.3.134) «tienda»: la tienda, el clan, el disco de una canción y las compras de la web en el suelo
     // ---------------------------------------------------------------------------------------------------------------
 
@@ -2560,6 +2750,19 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
+    /** (1.3.139) El que puso la tormenta en la prueba «oficios». */
+    private static net.minecraft.world.entity.monster.Zombie stormOwner;
+
+    /** La lluvia que ve el cliente (0.00 = no llueve). */
+    private static String clientRain() {
+        var cl = net.minecraft.client.Minecraft.getInstance().level;
+        return cl == null ? "?" : String.format(java.util.Locale.ROOT, "%.2f (trueno %.2f)", cl.getRainLevel(1F), cl.getThunderLevel(1F));
+    }
+
+    private static String jeiCount() {
+        Integer n = net.tierrasfantasticas.tfclient.client.TFHiddenItems.COUNTS.get("JEI");
+        return n == null ? "sin JEI" : String.valueOf(n);
+    }
 
     /** (1.3.117) Lo que ve el cliente de la luz de los objetos (shaders, la luz del jugador y el mapa de luz). */
     static volatile String clientItemsLight = "?";

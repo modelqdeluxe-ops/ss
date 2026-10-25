@@ -656,7 +656,13 @@ final class SkillMore {
         int d = (int) Math.max(1, SkillRuntime.num(m.arg("500", "duration", "d"), 500));
         boolean rain = type.startsWith("rain") || type.startsWith("storm") || type.startsWith("thunder");
         boolean thunder = type.startsWith("storm") || type.startsWith("thunder");
-        ServerLevel level = ctx.caster.level();
+        // (1.3.139, el dueño: «la Tormenta del Wither deja la lluvia y su sonido cuando la matamos») el tiempo de un jefe
+        // se acaba con su «duration» o al morir (o quitarse) quien lo puso, lo que llegue antes: se mira cada segundo
+        fakeWeather(ctx.caster.level(), rain, thunder, d, ctx.caster.entity);
+    }
+
+    /** El tiempo que ven los jugadores de ese mundo (el de verdad no cambia) durante d ticks o hasta que owner muera. */
+    public static void fakeWeather(ServerLevel level, boolean rain, boolean thunder, int d, @javax.annotation.Nullable Entity owner) {
         for (ServerPlayer p : level.players()) {
             p.connection.send(new ClientboundGameEventPacket(rain ? ClientboundGameEventPacket.START_RAINING
                     : ClientboundGameEventPacket.STOP_RAINING, 0F));
@@ -665,16 +671,30 @@ final class SkillMore {
         }
         long until = level.getGameTime() + d;
         WEATHER_UNTIL.put(level, until);
-        SkillRuntime.later(d, () -> {
-            if (WEATHER_UNTIL.getOrDefault(level, 0L) != until) return; // otro weather la alargó
-            WEATHER_UNTIL.remove(level);
-            for (ServerPlayer p : level.players()) {
-                p.connection.send(new ClientboundGameEventPacket(level.isRaining() ? ClientboundGameEventPacket.START_RAINING
-                        : ClientboundGameEventPacket.STOP_RAINING, 0F));
-                p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, level.getRainLevel(1F)));
-                p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, level.getThunderLevel(1F)));
+        watchWeather(level, until, owner);
+    }
+
+    private static void watchWeather(ServerLevel level, long until, @javax.annotation.Nullable Entity owner) {
+        SkillRuntime.later(20, () -> {
+            if (WEATHER_UNTIL.getOrDefault(level, 0L) != until) return; // otro weather la cambió (y se encarga él)
+            boolean gone = owner != null && (owner.isRemoved() || !owner.isAlive());
+            if (!gone && level.getGameTime() < until) {
+                watchWeather(level, until, owner);
+                return;
             }
+            WEATHER_UNTIL.remove(level);
+            realWeather(level);
         });
+    }
+
+    /** Los jugadores de ese mundo vuelven a ver el tiempo de verdad (y deja de sonar la lluvia si no llueve). */
+    static void realWeather(ServerLevel level) {
+        for (ServerPlayer p : level.players()) {
+            p.connection.send(new ClientboundGameEventPacket(level.isRaining() ? ClientboundGameEventPacket.START_RAINING
+                    : ClientboundGameEventPacket.STOP_RAINING, 0F));
+            p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, level.getRainLevel(1F)));
+            p.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, level.getThunderLevel(1F)));
+        }
     }
 
     /**

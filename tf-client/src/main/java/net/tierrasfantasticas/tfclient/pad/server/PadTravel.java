@@ -207,7 +207,7 @@ public final class PadTravel {
             }
             if (PadConfig.on("viajes.warps")) {
                 for (EssentialsWarps.Warp w : EssentialsWarps.list(player.getServer())) {
-                    if (PadConfig.hiddenWarps().contains(w.id())) continue;
+                    if (PadConfig.hiddenWarps().contains(w.id()) || !EssentialsWarps.visible(player, w)) continue;
                     b.card(new ItemStack(Items.ENDER_PEARL), w.name(), 0x9A5CF0, "Warp", wait > 0 ? "" : go + "warp:" + w.id(), false);
                 }
             }
@@ -234,6 +234,8 @@ public final class PadTravel {
             if (where.startsWith("warp:")) {
                 String id = where.substring(5);
                 if (!PadConfig.on("viajes.warps") || PadConfig.hiddenWarps().contains(id) || !id.matches("[A-Za-z0-9_-]{1,40}")) return null;
+                EssentialsWarps.Warp known = EssentialsWarps.list(server).stream().filter(w -> w.id().equals(id)).findFirst().orElse(null);
+                if (known == null || !EssentialsWarps.visible(player, known)) return null;
                 // el /warp de EssentialsX, como si lo escribiera el jugador (con sus permisos y su propia espera)
                 TFPadNet.close(player);
                 used(player, "viaje");

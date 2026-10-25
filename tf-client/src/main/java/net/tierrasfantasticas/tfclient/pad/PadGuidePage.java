@@ -481,12 +481,14 @@ final class PadGuidePage extends PadPage {
                 s("Escribe el nombre (3 a 20 letras) y pulsa FUNDAR."),
                 s("Escribe la etiqueta (2 a 4 letras o números, por ejemplo TF) y pulsa FUNDAR."),
                 h("Miembros"),
-                b("INVITAR (líder y oficiales): escribe el nombre del jugador."),
+                b("Rangos: líder, colíder, veterano y miembro."),
+                b("INVITAR (líder, colíderes y veteranos): escribe el nombre del jugador."),
                 b("Si te invitan, pulsa UNIRSE o NO."),
-                b("El líder puede ASCENDER a oficial, BAJAR, ECHAR o pasar el liderazgo (LÍDER)."),
+                b("El líder ASCIENDE (miembro → veterano → colíder) y BAJA; con LÍDER (dos clics) le pasa el clan a otro."),
+                b("ECHAR: el líder a los miembros; los colíderes a veteranos y miembros."),
                 b("SALIR deja el clan; el líder puede DISOLVER CLAN. Los dos piden un segundo clic."),
                 h("Ajustes (líder)"),
-                b("El color de la etiqueta y si hay fuego amigo entre miembros."));
+                b("El color de la etiqueta, si hay fuego amigo entre miembros y si los veteranos pueden invitar."));
 
         topic("jugadores", "Jugadores", "jugadores",
                 p("Quién está conectado, su ficha y regalarles cosas."),

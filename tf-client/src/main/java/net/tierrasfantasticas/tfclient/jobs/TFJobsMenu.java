@@ -302,7 +302,7 @@ public final class TFJobsMenu {
                     .append(Component.literal("  +" + TFJobs.fmt(a.coins() * mult) + " " + TFServerConfig.currency()).withStyle(ChatFormatting.GOLD)));
         }
         icon.blank();
-        icon.text("Las " + TFServerConfig.currency() + " se pagan juntas cada " + TFJobsConfig.paySeconds + " segundos.", ChatFormatting.DARK_GRAY);
+        icon.text("Las " + TFServerConfig.currency() + " te llegan al momento.", ChatFormatting.DARK_GRAY);
         return icon.build();
     }
 
@@ -373,7 +373,7 @@ public final class TFJobsMenu {
         double pendingCoins = TFJobs.pendingCoins(player.getUUID());
         TFIcon icon = TFIcon.of(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()).name("Tus " + TFServerConfig.currency(), ChatFormatting.GOLD);
         if (balance.isPresent()) icon.line(TFEconomy.format(balance.getAsLong()), ChatFormatting.YELLOW);
-        if (pendingCoins >= 1) icon.line("+" + TFEconomy.number((long) pendingCoins) + " en el próximo pago", ChatFormatting.GRAY);
+        if (pendingCoins >= 1) icon.line("+" + TFEconomy.number((long) pendingCoins) + " por llegar", ChatFormatting.GRAY);
         icon.blank().text("Gástalas en la tienda de monedas y en la ruleta de la web.", ChatFormatting.DARK_GRAY);
         return icon.build();
     }

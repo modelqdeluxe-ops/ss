@@ -118,6 +118,37 @@ public final class TFServerConfig {
         return !Boolean.toString(!def).equalsIgnoreCase(props.getProperty(key, Boolean.toString(def)).trim());
     }
 
+    private static java.util.List<Path> backups() {
+        return java.util.List.of(FMLPaths.GAMEDIR.get().resolve("tfclient-puente.clave"),
+                net.tierrasfantasticas.tfclient.util.TFConfigDir.dir().resolve(".puente.clave"));
+    }
+
+    private static String readBackup() {
+        for (Path p : backups()) {
+            try {
+                if (!Files.isRegularFile(p)) continue;
+                String v = Files.readString(p, StandardCharsets.UTF_8).trim();
+                if (v.matches("[0-9A-Za-z_\\-]{16,200}")) return v;
+            } catch (Exception ignored) {
+                // la otra copia
+            }
+        }
+        return "";
+    }
+
+    private static void writeBackup(String value) {
+        if (value.isEmpty()) return;
+        for (Path p : backups()) {
+            try {
+                if (Files.isRegularFile(p) && Files.readString(p, StandardCharsets.UTF_8).trim().equals(value)) continue;
+                Files.createDirectories(p.getParent());
+                Files.writeString(p, value + System.lineSeparator(), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("TF Bridge: no se pudo guardar la copia de la clave en {}: {}", p, e.getMessage());
+            }
+        }
+    }
+
     public static Path file() {
         return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("servidor.properties", "tfclient-server.properties");
     }
@@ -128,8 +159,12 @@ public final class TFServerConfig {
         if (Files.exists(file)) {
             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                 props.load(reader);
-            } catch (IOException e) {
-                TFClient.LOGGER.warn("TF Bridge: no se pudo leer {}: {}", file, e.getMessage());
+            } catch (IOException | IllegalArgumentException e) {
+                // (1.3.139) sin poder leerlo no se toca nada: antes se creaba otra clave y se escribía encima (y la web
+                // ya no la reconocía: «la clave del puente se desconecta»)
+                TFClient.LOGGER.warn("TF Bridge: no se pudo leer {}: {} (se sigue con lo de antes)", file, e.getMessage());
+                if (secret.isEmpty()) secret = readBackup();
+                return;
             }
         }
         enabled = flag(props, "bridge.enabled", true);
@@ -154,6 +189,15 @@ public final class TFServerConfig {
             interval = DEFAULT_INTERVAL;
         }
 
+        // (1.3.139) la clave también se guarda fuera de config/ (tfclient-puente.clave, en la carpeta del servidor) y en
+        // config/tfclient/.puente.clave: si servidor.properties se pierde o se cambia al actualizar los mods, vuelve la de
+        // siempre en vez de crear otra que la web no conoce
+        boolean restored = false;
+        if (secret.isEmpty()) {
+            secret = readBackup();
+            restored = !secret.isEmpty();
+            if (restored) TFClient.LOGGER.warn("TF Bridge: {} no tenía la clave del puente; se recupera la de siempre (copia de seguridad)", file);
+        }
         boolean created = secret.isEmpty();
         if (created) {
             byte[] bytes = new byte[24];
@@ -165,7 +209,8 @@ public final class TFServerConfig {
                 "ranks.permissions", "ranks.essentials", "economy.mode", "economy.give", "economy.take", "economy.currency", "bots.reales"}) {
             missing |= !props.containsKey(key);
         }
-        if (created || missing) {
+        writeBackup(secret);
+        if (created || restored || missing) {
             props.setProperty("bridge.enabled", Boolean.toString(enabled));
             props.setProperty("broadcast.enabled", Boolean.toString(broadcast));
             props.setProperty("broadcast.fireworks", Boolean.toString(fireworks));

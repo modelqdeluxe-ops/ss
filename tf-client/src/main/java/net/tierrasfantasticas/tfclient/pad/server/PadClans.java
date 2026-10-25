@@ -40,8 +40,11 @@ import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
- * Clanes: fundar uno (nombre y etiqueta), invitar, aceptar, roles (líder, oficial, miembro), echar, ascender, salir y
- * disolver; color de la etiqueta y fuego amigo. La etiqueta sale junto al nombre del jugador (PadTitles.onName).
+ * Clanes: fundar uno (nombre y etiqueta), invitar, aceptar, rangos, echar, ascender, salir y disolver; color de la
+ * etiqueta y fuego amigo. (1.3.139, el dueño: «que el líder administre el clan, ascienda a líder, colíder o veterano, y
+ * que el colíder también invite») Rangos: líder (todo: rangos, ajustes, pasar el clan), colíder (invita y echa a
+ * veteranos y miembros), veterano (invita, si el líder no lo quita en AJUSTES) y miembro. Los «oficiales» de antes son
+ * colíderes. La etiqueta sale junto al nombre del jugador (PadTitles.onName).
  * Datos en &lt;mundo&gt;/tfclient/clanes.json. Fundarlo cuesta lo que diga clanes.precio de pad.json (1.500 monedas;
  * el pad de administrador lo cambia en AJUSTES › ECONOMÍA); se cobra al final, cuando el clan se crea.
  */
@@ -79,7 +82,16 @@ public final class PadClans {
 
     static JsonObject clan(String id) {
         JsonElement e = clans().get(id);
-        return e != null && e.isJsonObject() ? e.getAsJsonObject() : null;
+        if (e == null || !e.isJsonObject()) return null;
+        JsonObject c = e.getAsJsonObject();
+        if (c.has("oficiales")) {
+            // (1.3.139) los oficiales de antes (invitaban y echaban) son los colíderes de ahora
+            JsonArray old = c.getAsJsonArray("oficiales");
+            c.remove("oficiales");
+            for (JsonElement u : old) setRank(c, UUID.fromString(u.getAsString()), "colider");
+            STORE_IMPL.changed();
+        }
+        return c;
     }
 
     public static String clanIdOf(UUID uuid) {
@@ -105,13 +117,19 @@ public final class PadClans {
     }
 
     /**
-     * (1.3.117) ¿Puede invitar a ese jugador a su clan? (es líder u oficial de uno y el otro no está en ninguno). Lo usa
-     * Jugadores del pad: «Invitar al clan», si aplica.
+     * (1.3.117) ¿Puede invitar a ese jugador a su clan? (su rango invita y el otro no está en ninguno). Lo usa Jugadores
+     * del pad: «Invitar al clan», si aplica.
      */
     public static boolean canInvite(ServerPlayer player, UUID other) {
         String id = clanIdOf(player.getUUID());
         if (id == null || other.equals(player.getUUID()) || clanIdOf(other) != null) return false;
-        return !role(clan(id), player.getUUID()).equals("miembro");
+        return invites(clan(id), player.getUUID());
+    }
+
+    /** ¿Puede invitar? El líder y los colíderes siempre; los veteranos si el líder no lo quitó (AJUSTES). */
+    static boolean invites(JsonObject c, UUID uuid) {
+        String r = role(c, uuid);
+        return r.equals("lider") || r.equals("colider") || r.equals("veterano") && TFJson.bool(c, "veteranosInvitan", true);
     }
 
     /** Invita a ese jugador (o bot) al clan del que invita; se lo dice por el chat si está conectado. */
@@ -119,7 +137,7 @@ public final class PadClans {
         String id = clanIdOf(player.getUUID());
         if (id == null) return;
         JsonObject c = clan(id);
-        if (role(c, player.getUUID()).equals("miembro")) return;
+        if (!invites(c, player.getUUID())) return;
         if (members(c).size() >= MAX_MEMBERS) {
             TFPadNet.notice(player, "El clan está lleno (" + MAX_MEMBERS + " miembros).");
             return;
@@ -145,9 +163,13 @@ public final class PadClans {
         return out;
     }
 
+    /** lider, colider, veterano o miembro. */
     static String role(JsonObject c, UUID uuid) {
         if (TFJson.str(c, "lider", "").equals(uuid.toString())) return "lider";
-        if (c.has("oficiales")) for (JsonElement e : c.getAsJsonArray("oficiales")) if (e.getAsString().equals(uuid.toString())) return "oficial";
+        if (c.has("rangos") && c.get("rangos").isJsonObject()) {
+            String r = TFJson.str(c.getAsJsonObject("rangos"), uuid.toString(), "miembro");
+            if (r.equals("colider") || r.equals("veterano")) return r;
+        }
         return "miembro";
     }
 
@@ -157,12 +179,22 @@ public final class PadClans {
         c.add("miembros", a);
     }
 
-    private static void setOfficer(JsonObject c, UUID uuid, boolean on) {
-        JsonArray a = c.has("oficiales") ? c.getAsJsonArray("oficiales") : new JsonArray();
-        JsonArray out = new JsonArray();
-        for (JsonElement e : a) if (!e.getAsString().equals(uuid.toString())) out.add(e);
-        if (on) out.add(uuid.toString());
-        c.add("oficiales", out);
+    /** Pone el rango de un miembro (colider, veterano; miembro u otra cosa lo quita). El líder va aparte («lider»). */
+    private static void setRank(JsonObject c, UUID uuid, String rank) {
+        JsonObject ranks = c.has("rangos") && c.get("rangos").isJsonObject() ? c.getAsJsonObject("rangos") : new JsonObject();
+        if (rank.equals("colider") || rank.equals("veterano")) ranks.addProperty(uuid.toString(), rank);
+        else ranks.remove(uuid.toString());
+        c.add("rangos", ranks);
+    }
+
+    /** El rango de encima (miembro → veterano → colíder → líder). */
+    private static String above(String r) {
+        return r.equals("miembro") ? "veterano" : r.equals("veterano") ? "colider" : "lider";
+    }
+
+    /** El de debajo (colíder → veterano → miembro). */
+    private static String below(String r) {
+        return r.equals("colider") ? "veterano" : "miembro";
     }
 
     private static void join(UUID uuid, String id) {
@@ -297,7 +329,7 @@ public final class PadClans {
             JsonObject c = clan(id);
             UUID me = player.getUUID();
             String myRole = role(c, me);
-            boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("oficial");
+            boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("colider");
             List<UUID> list = members(c);
             PadView.Builder b = PadView.of("clanes").tab("miembros", "MIEMBROS");
             if (boss) b.tab("ajustes", "AJUSTES");
@@ -317,6 +349,10 @@ public final class PadClans {
                 b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), "Fuego amigo", 0x18265C,
                         List.of(ff ? "Los del clan se pueden hacer daño." : "Los del clan no se hacen daño entre ellos."), -1, "",
                         PadView.Btn.of(ff ? "SÍ" : "NO", "fuego", ff ? PadView.RED : PadView.GREEN), null));
+                boolean vi = TFJson.bool(c, "veteranosInvitan", true);
+                b.row(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Los veteranos invitan", 0x18265C,
+                        List.of(vi ? "Invitan el líder, los colíderes y los veteranos." : "Solo invitan el líder y los colíderes."), -1, "",
+                        PadView.Btn.of(vi ? "SÍ" : "NO", "vetinv", vi ? PadView.GREEN : PadView.RED), null));
                 boolean sure = confirming(me, "disolver");
                 b.footer(PadView.Btn.of(sure ? "¿SEGURO? DISOLVER" : "DISOLVER CLAN", "disolver", PadView.RED));
                 return b.build();
@@ -328,20 +364,26 @@ public final class PadClans {
                 String r = role(c, u);
                 boolean online = server.getPlayerList().getPlayer(u) != null;
                 PadView.Btn b1 = null, b2 = null;
-                if (!u.equals(me)) {
-                    if (boss && r.equals("oficial")) {
-                        // a un oficial se le puede pasar el clan (doble clic) o bajarlo a miembro
-                        b1 = PadView.Btn.of(confirming(me, "lider:" + u) ? "¿SEGURO?" : "LÍDER", "lider:" + u, PadView.GOLD);
-                        b2 = PadView.Btn.of("BAJAR", "bajar:" + u, PadView.BLUE);
-                    } else if (r.equals("miembro")) {
-                        if (boss) b1 = PadView.Btn.of("ASCENDER", "subir:" + u, PadView.BLUE);
-                        if (officer) b2 = PadView.Btn.of("ECHAR", "echar:" + u, PadView.RED);
+                String hint = "";
+                if (!u.equals(me) && !r.equals("lider")) {
+                    if (boss) {
+                        // el líder: ASCENDER (miembro → veterano → colíder → líder, esto con doble clic) y BAJAR o, a un
+                        // miembro, ECHAR
+                        String up = above(r);
+                        boolean pass = up.equals("lider");
+                        b1 = PadView.Btn.of(pass && confirming(me, "lider:" + u) ? "¿SEGURO?" : pass ? "LÍDER" : "ASCENDER",
+                                (pass ? "lider:" : "subir:") + u, pass ? PadView.GOLD : PadView.BLUE);
+                        b2 = r.equals("miembro") ? PadView.Btn.of("ECHAR", "echar:" + u, PadView.RED)
+                                : PadView.Btn.of("BAJAR", "bajar:" + u, PadView.BLUE);
+                        hint = pass ? " · LÍDER le pasa el clan (tú quedas de colíder)" : " · ASCENDER lo hace " + roleName(up);
+                    } else if (officer && !r.equals("colider")) {
+                        b2 = PadView.Btn.of("ECHAR", "echar:" + u, PadView.RED);
                     }
                 }
                 b.row(new PadView.Row(head(u, name), name, online ? 0x1E7C2C : 0x18265C,
-                        List.of(roleName(r) + (online ? " · conectado" : "")), -1, "", b1, b2));
+                        List.of(roleName(r) + (online ? " · conectado" : "") + hint), -1, "", b1, b2));
             }
-            if (officer) b.input("invitar", "Nombre para invitar", 16, "INVITAR");
+            if (invites(c, me)) b.input("invitar", "Nombre para invitar", 16, "INVITAR");
             if (!boss) b.footer(PadView.Btn.of(confirming(me, "salir") ? "¿SEGURO?" : "SALIR", "salir", PadView.RED));
             return b.build();
         }
@@ -355,7 +397,7 @@ public final class PadClans {
             if (id == null) return noClanAction(player, action, text);
             JsonObject c = clan(id);
             String myRole = role(c, me);
-            boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("oficial");
+            boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("colider");
             // (1.3.132) el editor de color: una casilla de la paleta («col:#RRGGBB») o el campo («colhex»)
             if (action.startsWith("col:") || action.equals("colhex")) {
                 if (!boss) return null;
@@ -380,7 +422,7 @@ public final class PadClans {
             List<UUID> list = members(c);
             switch (verb) {
                 case "invitar" -> {
-                    if (!officer) return null;
+                    if (!invites(c, me)) return null;
                     ServerPlayer other = player.getServer().getPlayerList().getPlayerByName(text.trim());
                     if (other == null) {
                         TFPadNet.notice(player, "No hay nadie conectado con ese nombre.");
@@ -389,18 +431,27 @@ public final class PadClans {
                     invite(player, other.getUUID(), other.getGameProfile().getName());
                 }
                 case "subir", "bajar" -> {
-                    if (!boss || target == null || !list.contains(target)) return null;
-                    setOfficer(c, target, verb.equals("subir"));
+                    if (!boss || target == null || !list.contains(target) || target.equals(me)) return null;
+                    String r = role(c, target);
+                    String to = verb.equals("subir") ? above(r) : below(r);
+                    if (to.equals("lider") || to.equals(r)) return null; // pasar el clan es «lider» (con doble clic)
+                    setRank(c, target, to);
                     STORE_IMPL.changed();
-                    tellClan(c, PadStats.nameOf(target) + (verb.equals("subir") ? " ahora es oficial." : " vuelve a ser miembro."));
+                    tellClan(c, PadStats.nameOf(target) + " ahora es " + roleName(to).toLowerCase(java.util.Locale.ROOT) + ".");
+                }
+                case "vetinv" -> {
+                    if (!boss) return null;
+                    c.addProperty("veteranosInvitan", !TFJson.bool(c, "veteranosInvitan", true));
+                    STORE_IMPL.changed();
                 }
                 case "echar" -> {
                     if (target == null || !list.contains(target) || target.equals(me)) return null;
                     String r = role(c, target);
-                    if (!officer || !r.equals("miembro")) return null;
+                    // el líder echa a los miembros (a los demás, primero BAJAR); el colíder, a veteranos y miembros
+                    if (!(boss && r.equals("miembro") || myRole.equals("colider") && (r.equals("miembro") || r.equals("veterano")))) return null;
                     list.remove(target);
                     setMembers(c, list);
-                    setOfficer(c, target, false);
+                    setRank(c, target, "miembro");
                     leave(target);
                     refreshName(target);
                     tellClan(c, PadStats.nameOf(target) + " ya no está en el clan.");
@@ -408,11 +459,11 @@ public final class PadClans {
                     if (t != null) t.sendSystemMessage(Component.literal("[Clan] Te echaron de " + TFJson.str(c, "nombre", "?") + ".").withStyle(ChatFormatting.RED));
                 }
                 case "lider" -> {
-                    if (!boss || target == null || !list.contains(target) || !role(c, target).equals("oficial")) return null;
+                    if (!boss || target == null || !list.contains(target) || target.equals(me)) return null;
                     if (!confirm(me, action)) return null;
                     c.addProperty("lider", target.toString());
-                    setOfficer(c, target, false);
-                    setOfficer(c, me, true);
+                    setRank(c, target, "miembro");
+                    setRank(c, me, "colider");
                     STORE_IMPL.changed();
                     tellClan(c, PadStats.nameOf(target) + " es el nuevo líder del clan.");
                 }
@@ -442,13 +493,13 @@ public final class PadClans {
                 }
                 case "salir" -> {
                     if (boss) {
-                        TFPadNet.notice(player, "Eres el líder: asciende a otro y pásale el clan, o disuélvelo en Ajustes.");
+                        TFPadNet.notice(player, "Eres el líder: pásale el clan a otro (ASCENDER hasta LÍDER) o disuélvelo en Ajustes.");
                         return null;
                     }
                     if (!confirm(me, "salir")) return null;
                     list.remove(me);
                     setMembers(c, list);
-                    setOfficer(c, me, false);
+                    setRank(c, me, "miembro");
                     leave(me);
                     refreshName(me);
                     tellClan(c, player.getGameProfile().getName() + " salió del clan.");
@@ -553,6 +604,75 @@ public final class PadClans {
         }
     }
 
+    /**
+     * (1.3.139) Para la prueba en el juego (BossTest «oficios»): funda un clan para ese jugador con tres miembros de
+     * mentira y prueba los rangos con las acciones del pad (ascender, bajar, quién invita y echa, pasar el clan y los
+     * oficiales de antes). Lo deja con el clan y él de líder, para la captura.
+     */
+    public static String testRanks(ServerPlayer leader) {
+        UUID me = leader.getUUID();
+        String old = clanIdOf(me);
+        if (old != null) clans().remove(old);
+        UUID a = UUID.nameUUIDFromBytes("tf-prueba-a".getBytes()), bb = UUID.nameUUIDFromBytes("tf-prueba-b".getBytes()),
+                cc = UUID.nameUUIDFromBytes("tf-prueba-c".getBytes()), dd = UUID.nameUUIDFromBytes("tf-prueba-d".getBytes());
+        String id = "prueba01";
+        JsonObject c = new JsonObject();
+        c.addProperty("nombre", "Clan de Prueba");
+        c.addProperty("etiqueta", "PRB");
+        c.addProperty("color", "#55AAFF");
+        c.addProperty("lider", me.toString());
+        JsonArray legacy = new JsonArray();
+        legacy.add(dd.toString());
+        c.add("oficiales", legacy);
+        setMembers(c, new ArrayList<>(List.of(me, a, bb, cc, dd)));
+        clans().add(id, c);
+        join(me, id);
+        String[] names = {"Ana_Prueba", "Beto_Prueba", "Caro_Prueba", "Dani_Prueba"};
+        List<UUID> fakes = List.of(a, bb, cc, dd);
+        for (int i = 0; i < 4; i++) {
+            join(fakes.get(i), id);
+            PadStats.STORE_IMPL.player(fakes.get(i)).addProperty("nombre", names[i]);
+        }
+        StringBuilder out = new StringBuilder();
+        c = clan(id);
+        out.append("oficial de antes → ").append(role(c, dd)).append(c.has("oficiales") ? " (MAL: sigue «oficiales»)" : "");
+        App app = (App) APP;
+        app.action(leader, "", "subir:" + a, "");
+        out.append("; ASCENDER a A → ").append(role(c, a));
+        app.action(leader, "", "subir:" + a, "");
+        out.append(", otra vez → ").append(role(c, a));
+        app.action(leader, "", "subir:" + bb, "");
+        out.append("; B → ").append(role(c, bb));
+        out.append("; invitan: colíder ").append(invites(c, a)).append(", veterano ").append(invites(c, bb))
+                .append(", miembro ").append(invites(c, cc));
+        app.action(leader, "", "vetinv", "");
+        out.append("; sin «los veteranos invitan»: veterano ").append(invites(c, bb));
+        app.action(leader, "", "vetinv", "");
+        app.action(leader, "", "bajar:" + bb, "");
+        out.append("; BAJAR a B → ").append(role(c, bb));
+        app.action(leader, "", "subir:" + bb, "");
+        app.action(leader, "", "lider:" + dd, "");
+        out.append("; LÍDER a D, un clic → líder ").append(TFJson.str(c, "lider", "").equals(me.toString()) ? "sigo yo (bien)" : "otro (MAL)");
+        app.action(leader, "", "lider:" + dd, "");
+        out.append(", dos clics → D ").append(role(c, dd)).append(" y yo ").append(role(c, me));
+        // vuelvo a ser líder (para la captura)
+        c.addProperty("lider", me.toString());
+        setRank(c, me, "miembro");
+        setRank(c, dd, "colider");
+        STORE_IMPL.changed();
+        return out.toString();
+    }
+
+    /** (1.3.139) Para la prueba: quita el clan de prueba de testRanks. */
+    public static void testCleanup(ServerPlayer leader) {
+        String id = clanIdOf(leader.getUUID());
+        if (id == null) return;
+        for (UUID u : members(clan(id))) leave(u);
+        clans().remove(id);
+        STORE_IMPL.changed();
+        refreshName(leader.getUUID());
+    }
+
     private static boolean confirming(UUID uuid, String action) {
         Map.Entry<String, Long> at = CONFIRM.get(uuid);
         return at != null && at.getKey().equals(action) && System.currentTimeMillis() - at.getValue() < 6000;
@@ -615,11 +735,11 @@ public final class PadClans {
     }
 
     private static int roleOrder(String r) {
-        return r.equals("lider") ? 0 : r.equals("oficial") ? 1 : 2;
+        return r.equals("lider") ? 0 : r.equals("colider") ? 1 : r.equals("veterano") ? 2 : 3;
     }
 
     private static String roleName(String r) {
-        return r.equals("lider") ? "Líder" : r.equals("oficial") ? "Oficial" : "Miembro";
+        return r.equals("lider") ? "Líder" : r.equals("colider") ? "Colíder" : r.equals("veterano") ? "Veterano" : "Miembro";
     }
 
     // ---------------------------------------------------------------------------------------------------------------

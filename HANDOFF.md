@@ -190,7 +190,37 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (25 oct 2026, TF Client 1.3.138) — lee esto primero
+### CHECKPOINT (25 oct 2026, TF Client 1.3.139) — lee esto primero
+
+**1.3.139** (el dueño: «las misiones no reconocen nada; no dejan cobrar los jobs; la Tormenta del Wither deja la lluvia;
+rangos en los clanes; la clave del puente se desconecta; configs que se actualicen solas; que el pad no publique los
+warps de admin; que los objetos no salgan en el JEI»).
+- **Misiones y oficios**: el evento de Forge de fabricar/fundir/preparar llega con el montón vacío (aire) al sacar con
+  mayúsculas + clic: no contaba nada. Ahora lo cuentan los mixins `mixin/jobs/ResultSlotJobsMixin` (mesa e inventario),
+  `FurnaceResultSlotJobsMixin` (horno, ahumador, alto horno) y `BrewingStandMenuJobsMixin` (pociones con mayúsculas;
+  `TFJobs.quickBrew` para no contarlas dos veces) → `TFJobs.made`. Lo que se gana se paga al momento (`record`); COBRAR
+  paga primero y, si la economía falla, la misión sigue sin cobrar (`TFJobs.claim`). Las diarias hechas sin cobrar se
+  cobran hasta 30 días (`TFJobsConfig.UNCLAIMED_DAYS`; las de antes de la 1.3.139 sacan la plantilla del id) y, si la
+  misión ya no está en oficios.json, con lo que valía al hacerla (`MissionState.name/coins/xp`, `leftover`). Las
+  semanales duran de lunes a domingo (el texto lo dice; «23 h» un domingo era correcto).
+- **Tormenta de un jefe** (`weather` de MythicMobs, `SkillMore.fakeWeather`): se quita al morir (o quitarse) quien la
+  puso, mirándolo cada segundo, además de al acabar su `duration`.
+- **Clanes** (`PadClans`): rangos líder, colíder, veterano y miembro (`rangos` en clanes.json; los `oficiales` de antes
+  pasan a colíder solos). El líder asciende/baja y pasa el clan (LÍDER, dos clics); invitan líder, colíderes y
+  veteranos (esto se apaga en AJUSTES: «Los veteranos invitan»); echan el líder (a miembros) y los colíderes (a
+  veteranos y miembros).
+- **Puente**: una consulta colgada (DNS/red sin tiempo máximo) dejaba el puente parado hasta reiniciar; a los 90 s se da
+  por perdida y se usa otro hilo (`TFBridge.STUCK_MS`). La clave nunca se regenera si no se pudo leer servidor.properties
+  y tiene copia en `tfclient-puente.clave` (carpeta del servidor) y `config/tfclient/.puente.clave`
+  (`TFServerConfig.readBackup`). Un fallo al leer puente-entregas.txt ya no deja el puente sin arrancar.
+- **Warps** (`EssentialsWarps.visible`): a cada jugador solo los que puede usar (con per-warp-permission, su permiso
+  essentials.warps.<nombre>; sin eso, todos menos los que se llaman admin/staff/mod/op/privado/oculto/test). OP, todos.
+- **JEI**: `compat/jei/TFJeiPlugin` (API de JEI solo para compilar, `maven.blamejared.com`) quita los objetos de tfclient
+  de la lista a quien no es OP ni está en creativo (`client/TFHiddenItems`, cada segundo) y los devuelve si pasa a
+  serlo; la pestaña del creativo, igual (se rehace al cambiar). Prueba: `[prueba-jefes=oficios] [jei]` (fundir,
+  fabricar, pociones, cobrar, rangos del clan, tormenta y JEI).
+
+### CHECKPOINT anterior (25 oct 2026, TF Client 1.3.138, PUBLICADA)
 
 **1.3.138** (el dueño: «o sea que no arreglaste esto: las alas de Accessories se quedan»). Lo de la 1.3.137 dependía de
 la copia que el cliente tiene de los huecos de accesorios; si se queda vieja, las alas seguían. Ahora lo de la espalda

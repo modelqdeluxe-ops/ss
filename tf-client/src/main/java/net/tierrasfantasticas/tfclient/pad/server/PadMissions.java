@@ -241,7 +241,10 @@ public final class PadMissions {
                     : now.toLocalDate().plusDays(1).atStartOfDay(now.getZone());
             PadView.Builder b = PadView.of("misiones").tab("diarias", "DIARIAS").tab("semanales", "SEMANALES")
                     .selected(week ? "semanales" : "diarias")
-                    .header((week ? "Nuevas misiones en " : "Se renuevan en ") + until(next) + ".")
+                    // (1.3.139, el dueño: «las semanales dicen 23 horas») las semanales duran de lunes a domingo: el domingo
+                    // les quedan menos de 24 h; se dice cuándo cambian para que no parezca un error
+                    .header(week ? "Las semanales duran de lunes a domingo. Nuevas el lunes a las 0:00 (en " + until(next) + ")."
+                            : "Se renuevan a las 0:00 (en " + until(next) + ").")
                     .empty("Sin misiones.");
             String kind = week ? "s" : "d";
             for (Def d : defs) b.row(row(player, kind, d));

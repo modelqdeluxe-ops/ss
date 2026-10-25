@@ -32,6 +32,16 @@ public final class TFJobsData {
         public int progress;
         public boolean done;
         public long claimedDay = -1;
+        /** (1.3.139) La plantilla de una misión que rota («plantilla@factor»): así se puede cobrar días después. */
+        public String rot = "";
+        /**
+         * (1.3.139, el dueño: «si alguien hizo un job y no le dejó cobrar, al actualizar debe poder reclamarlo») Lo que
+         * valía al hacerla (nombre, monedas, xp): si la misión ya no está en oficios.json (se cambió la config), se cobra
+         * esto.
+         */
+        public String name = "";
+        public double coins;
+        public double xp;
     }
 
     public static final class JobProgress {
@@ -134,6 +144,10 @@ public final class TFJobsData {
                 ms.progress = (int) TFJson.num(mo, "progreso", 0);
                 ms.done = TFJson.bool(mo, "hecha", false);
                 ms.claimedDay = TFJson.num(mo, "cobrada", -1);
+                ms.rot = TFJson.str(mo, "plantilla", "");
+                ms.name = TFJson.str(mo, "nombre", "");
+                ms.coins = TFJson.dec(mo, "monedas", 0);
+                ms.xp = TFJson.dec(mo, "xpPremio", 0);
             }
         }
         return p;
@@ -167,12 +181,20 @@ public final class TFJobsData {
             jp.missions.forEach((mid, ms) -> {
                 if (ms.progress == 0 && !ms.done && ms.claimedDay < 0) return;
                 long day = TFJobsConfig.rotatedDay(mid);
-                // las de otros días ya no valen; las de ayer, solo si quedaron hechas sin cobrar
-                if (day >= 0 && (day < today - 1 || (day == today - 1 && !(ms.done && ms.claimedDay < 0)))) return;
+                // las de otros días ya no valen, salvo las que quedaron hechas sin cobrar (1.3.139: hasta 30 días, para
+                // cobrarlas aunque no se pudiera entonces)
+                boolean unclaimed = ms.done && ms.claimedDay < 0;
+                if (day >= 0 && day < today && !(unclaimed && day >= today - TFJobsConfig.UNCLAIMED_DAYS)) return;
                 JsonObject mo = new JsonObject();
                 mo.addProperty("progreso", ms.progress);
                 mo.addProperty("hecha", ms.done);
                 mo.addProperty("cobrada", ms.claimedDay);
+                if (!ms.rot.isEmpty()) mo.addProperty("plantilla", ms.rot);
+                if (unclaimed && !ms.name.isEmpty()) {
+                    mo.addProperty("nombre", ms.name);
+                    mo.addProperty("monedas", ms.coins);
+                    mo.addProperty("xpPremio", ms.xp);
+                }
                 missions.add(mid, mo);
             });
             jo.add("misiones", missions);

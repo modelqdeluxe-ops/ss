@@ -764,7 +764,8 @@ public final class PadAdmin {
             if (warpsTab) {
                 List<EssentialsWarps.Warp> warps = EssentialsWarps.list(player.getServer());
                 boolean on = PadConfig.on("viajes.warps");
-                b.header("Los /warp de EssentialsX que salen en Viajes (/setwarp).");
+                b.header("Los /warp de EssentialsX que salen en Viajes (/setwarp). A cada jugador solo le salen los que puede usar: con "
+                        + "per-warp-permission, los de su permiso essentials.warps.<nombre>; los que se llaman admin, staff, mod… solo al staff.");
                 b.row(PadAdminUi.toggle(new ItemStack(Items.ENDER_PEARL), "Warps en Viajes", "", on,
                         "Salen en Viajes los que estén en SÍ.", "Apagados: no sale ninguno.", "warps"));
                 if (!warps.isEmpty()) b.row(PadAdminUi.section("Warps del servidor (" + warps.size() + ")"));
