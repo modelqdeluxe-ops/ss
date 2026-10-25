@@ -247,7 +247,7 @@ public final class TFBinding {
     // Devolver a su dueño
     // ---------------------------------------------------------------------------------------------------------------
 
-    private static void returnTo(MinecraftServer server, UUID owner, ItemStack stack) {
+    public static void returnTo(MinecraftServer server, UUID owner, ItemStack stack) {
         ServerPlayer player = server.getPlayerList().getPlayer(owner);
         if (player != null) {
             giveOrDrop(player, stack);

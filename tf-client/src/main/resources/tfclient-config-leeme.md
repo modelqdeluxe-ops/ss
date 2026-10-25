@@ -83,6 +83,15 @@ mochilas) van ligadas a quien las recibe. Solo él puede sacarlas de un cofre o 
 tuberías no las mueven; si otro las lleva encima, vuelven a su dueño (al entrar, si no está conectado). En creativo
 (staff) sí se pueden mover. Los sets de cosméticos que se compran con monedas no se ligan: se pueden regalar.
 
+## Rastreador (pad de administrador)
+
+La app RASTREADOR lista a cada jugador que compró en la web (la lista la manda la web) y, al pulsarlo, cada compra con
+todos sus objetos y dónde está cada uno: puesto, en la mano, inventario, cofre de ender, un cofre o barril (también
+dentro de shulkers) con sus coordenadas, en el suelo o con otro jugador. IR te lleva; TRAER se lo quita a quien lo
+tenga y se lo da a su dueño. Busca sola al minuto de arrancar y cada media hora (BUSCAR AHORA guarda el mundo y busca al
+momento). MOVIMIENTOS y `/tf rastreo` dicen quién sacó o metió qué en cada contenedor (`<mundo>/tfclient/rastreador/`,
+60 días); `/tf buscar <jugador|pedido>` lo dice por el chat.
+
 ## Warps en Viajes
 
 A cada jugador solo le salen los warps de EssentialsX que puede usar: con `per-warp-permission: true` en la config de
