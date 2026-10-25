@@ -1253,6 +1253,12 @@ test('pagar con PayPal: se aprueba en PayPal, se cobra al volver y un reembolso 
   const price = products.find((p) => p.id === 'crate-valentine').price;
   assert.strictEqual(ppOrder.purchase_units[0].amount.value, (price / 100).toFixed(2));
   assert.strictEqual(ppOrder.context.return_url, `http://tienda.test/success?order=${id}`);
+  // (2026-10-25) el artículo lleva qué es (descripción y sku); la imagen y el enlace, solo con https (aquí no)
+  const ppItem = ppOrder.purchase_units[0].items[0];
+  assert.ok(ppItem.description.includes('Para Paypal_MC'));
+  assert.ok(ppItem.description.length <= 127);
+  assert.strictEqual(ppItem.sku, 'crate-valentine');
+  assert.strictEqual(ppItem.image_url, undefined);
 
   // Sin aprobar en PayPal no se cobra ni se entrega.
   assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');

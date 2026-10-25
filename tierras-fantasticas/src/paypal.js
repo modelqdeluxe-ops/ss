@@ -18,6 +18,30 @@ export function formatAmount(cents, currency) {
   return (cents / 100).toFixed(2);
 }
 
+// Lo que PayPal acepta en image_url (si no lo cumple, rechaza el pedido entero): https y JPG/PNG/GIF, sin caracteres
+// raros (el dominio con tilde va en punycode). Si no, no se manda la imagen.
+const IMAGE_URL = /^(https:)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)$/i;
+
+export function safeImage(u) {
+  if (!u) return undefined;
+  try {
+    const href = new URL(u).href;
+    return href.length <= 2048 && IMAGE_URL.test(href) ? href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function safeUrl(u) {
+  if (!u) return undefined;
+  try {
+    const href = new URL(u).href;
+    return href.startsWith('https://') && href.length <= 2048 ? href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export class PayPal {
   constructor({ clientId, clientSecret, env = 'sandbox', apiBase }) {
     this.clientId = clientId;
@@ -83,6 +107,13 @@ export class PayPal {
             items: [
               {
                 name: item.name.slice(0, 127),
+                // (2026-10-25, el dueño: «en PayPal sale sin descripción del producto, imagen o nada») lo que es, su
+                // imagen (PayPal solo acepta JPG/PNG/GIF: tools/paypal_images.py) y su página; PayPal los enseña al
+                // tocar el importe de arriba
+                ...(item.description ? { description: item.description.slice(0, 127) } : {}),
+                ...(item.sku ? { sku: String(item.sku).slice(0, 127) } : {}),
+                ...(safeImage(item.imageUrl) ? { image_url: safeImage(item.imageUrl) } : {}),
+                ...(safeUrl(item.url) ? { url: safeUrl(item.url) } : {}),
                 quantity: String(item.quantity),
                 unit_amount: { currency_code, value: formatAmount(item.unitAmount, currency) },
                 category: 'DIGITAL_GOODS',
@@ -93,6 +124,7 @@ export class PayPal {
         // Producto digital: sin dirección de envío.
         application_context: {
           brand_name: brandName,
+          locale: 'es-ES',
           shipping_preference: 'NO_SHIPPING',
           user_action: 'PAY_NOW',
           return_url: returnUrl,
