@@ -1898,9 +1898,9 @@
 
       ${termsLabel('pay-terms')}
       <div class="pay-actions">
-        <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>${PAY_ICON.card}Pagar con tarjeta</button>
-        <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>${PAY_ICON.paypal}Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
-        <button type="button" class="btn btn-mp btn-lg btn-block pay-btn" id="pay-mp" hidden disabled>${PAY_ICON.mercadopago}<span>Pagar con <b>Mercado Pago</b> <small id="pay-mp-mxn"></small></span></button>
+        <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>${PAY_ICON.card}Tarjeta</button>
+        <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>${PAY_ICON.paypal}<b class="pp-word">Pay<i>Pal</i></b></button>
+        <button type="button" class="btn btn-mp btn-lg btn-block pay-btn" id="pay-mp" hidden disabled>${PAY_ICON.mercadopago}<span><b>Mercado Pago</b> <small id="pay-mp-mxn"></small></span></button>
       </div>
       <p class="pay-mp-note" id="pay-mp-note" hidden>Mercado Pago es <b>solo para México</b> (tarjetas mexicanas, OXXO o saldo de Mercado Pago México) y cobra en pesos al tipo de cambio del día (el precio en pesos cambia con el dólar). Desde otro país, paga con tarjeta o PayPal.</p>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
@@ -2038,7 +2038,7 @@
     showError('');
     paying = false;
     $('#pay-terms').checked = false;
-    $('#pay-btn').innerHTML = `${PAY_ICON.card}Pagar con tarjeta`;
+    $('#pay-btn').innerHTML = `${PAY_ICON.card}Tarjeta`;
     $('#pay-btn').classList.remove('is-loading');
     $('#pay-paypal').classList.remove('is-loading');
     $('#pay-mp').classList.remove('is-loading');
