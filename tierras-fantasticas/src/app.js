@@ -2,6 +2,8 @@
 // Pagos con Stripe, cuentas de jugador (nombre de Minecraft + contraseña) con su Discord conectado,
 // y el puente con el servidor de Minecraft (mod TF Client).
 import products from '../config/products.json' with { type: 'json' };
+// Copias JPG de las imágenes de los productos para PayPal (tools/paypal_images.py): no acepta WebP.
+import paypalImages from './paypal-images.json' with { type: 'json' };
 import legal from '../config/legal.json' with { type: 'json' };
 import vfx from '../config/vfx.json' with { type: 'json' };
 import skillsCatalog from '../config/skills.json' with { type: 'json' };
@@ -1123,7 +1125,15 @@ export function createApp(env) {
             currency: CURRENCY,
             description: `${forWhom} en ${SERVER_NAME}`.slice(0, 127),
             customId: id,
-            item: { name, quantity, unitAmount: q.unit },
+            item: {
+              name,
+              quantity,
+              unitAmount: q.unit,
+              description: `${forWhom}. ${product.description || ''}`.trim(),
+              sku: product.id,
+              imageUrl: base.startsWith('https://') && paypalImages[product.image] ? `${base}/${paypalImages[product.image]}` : undefined,
+              url: base.startsWith('https://') ? `${base}/tienda` : undefined,
+            },
             brandName: SERVER_NAME,
             returnUrl: `${base}/success?order=${id}`,
             cancelUrl: `${base}/tienda?cancel=${id}`,
