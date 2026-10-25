@@ -130,8 +130,9 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
 <ul>
   <li>Los precios están en <b>dólares estadounidenses (USD)</b> y el precio que ves antes de pagar es el total que
     pagas: no se añade nada después. Tu banco puede cobrarte por convertir la moneda; eso depende de tu banco.</li>
-  <li>Si pagas con <b>Mercado Pago</b>, se cobra lo mismo en <b>pesos mexicanos (MXN)</b> al tipo de cambio del día,
-    redondeado al centavo hacia arriba; el importe en pesos sale en el botón antes de pagar.</li>
+  <li><b>Mercado Pago es solo para México</b> (tarjetas mexicanas, OXXO o saldo de Mercado Pago México): se cobra lo
+    mismo en <b>pesos mexicanos (MXN)</b> al tipo de cambio del día, redondeado al centavo hacia arriba; el importe en
+    pesos sale en el botón antes de pagar. Desde otros países, paga con tarjeta o PayPal.</li>
   <li>Si ya tienes un rango y compras uno superior, pagas solo la diferencia. No se puede comprar un rango que ya
     tienes o uno inferior.</li>
   <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link) o, si está disponible,
