@@ -1895,6 +1895,7 @@
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
         <button type="button" class="btn btn-mp btn-lg btn-block pay-btn" id="pay-mp" hidden disabled>Pagar con <b>Mercado Pago</b> <small id="pay-mp-mxn"></small></button>
       </div>
+      <p class="pay-mp-note" id="pay-mp-note" hidden>Mercado Pago es <b>solo para México</b> (tarjetas mexicanas, OXXO o saldo de Mercado Pago México) y cobra en pesos. Desde otro país, paga con tarjeta o PayPal.</p>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
       <p class="pay-legal">Precio final en USD (con Mercado Pago, lo mismo en pesos mexicanos al cambio de hoy). Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
@@ -1946,8 +1947,9 @@
     $('#pay-btn').hidden = !card;
     $('#pay-paypal').hidden = !pp;
     $('#pay-mp').hidden = !mpOn;
+    $('#pay-mp-note').hidden = !mpOn;
     $('#pay-note-text').innerHTML = mpOn
-      ? 'Pago seguro con ' + [card && '<b>Stripe</b> (tarjeta)', pp && '<b>PayPal</b>', '<b>Mercado Pago</b> (tarjeta, OXXO, saldo; en pesos al cambio de hoy)'].filter(Boolean).join(', ') + '. Nunca vemos tus datos bancarios.'
+      ? 'Pago seguro con ' + [card && '<b>Stripe</b> (tarjeta)', pp && '<b>PayPal</b>', '<b>Mercado Pago</b> (solo México)'].filter(Boolean).join(', ') + '. Nunca vemos tus datos bancarios.'
       : card && pp
       ? 'Pago seguro con <b>Stripe</b> (tarjeta, Apple Pay o Google Pay) o con <b>PayPal</b>. Nunca vemos tus datos bancarios.'
       : pp

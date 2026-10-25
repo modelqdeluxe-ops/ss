@@ -874,6 +874,14 @@ h4 {
   font-size: 15px;
 }
 
+.pay-mp-note {
+  margin: 8px 2px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted, #5b6478);
+  text-align: center;
+}
+
 .btn-mp small {
   font-weight: 700;
   opacity: 0.85;
