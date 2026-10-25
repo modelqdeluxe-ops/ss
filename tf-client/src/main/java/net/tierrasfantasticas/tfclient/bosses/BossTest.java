@@ -2288,8 +2288,9 @@ public final class BossTest {
                 r.event("accesorios 5 SIN ARREGLO (alas solo en el cliente): " + clientWardrobe
                         + (clientWardrobe.contains("los dibuja su mod true") ? " (se dibujan: así lo veía el dueño)" : " (no se reproduce)"));
                 shot(r, "accesorios_5_viejas_sin_arreglo");
-                net.tierrasfantasticas.tfclient.items.TFBackSync.testOff = false;
             }
+            // (después de la captura: la prueba espera a que salga antes de seguir)
+            case 222 -> net.tierrasfantasticas.tfclient.items.TFBackSync.testOff = false;
             case 260 -> {
                 r.event("accesorios 6 CON ARREGLO (alas solo en el cliente): " + clientWardrobe
                         + (clientWardrobe.contains("los dibuja su mod false") && clientWardrobe.contains("espalda: nada")
