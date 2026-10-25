@@ -190,7 +190,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (25 oct 2026, TF Client 1.3.141) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.142) — lee esto primero
+
+**1.3.142** (el dueño: «una app de rastreador en el pad de admin: cada jugador que compró, todos sus objetos y dónde
+están —puestos, cofres, coordenadas—; que funcione desde el minuto 1»). Piezas (paquete `rastreo`):
+- `TFPurchases`: las compras pagadas de la web. El puente manda `wantOrders` (al arrancar, cada 5 min o al abrir la app)
+  y la web responde `orders` (`ordersForServer` en app.js: las 1.000 últimas, con sus comandos); de los comandos salen
+  los objetos esperados («tf web sets give {player} set [pieza]», «give {player} objeto n»). Copia en
+  `<mundo>/tfclient/compras.json`.
+- `TFSearch`: dónde está cada objeto marcado (TFOrder) o ligado (TFOwner): conectados (puesto, mano, inventario, ender,
+  accesorios, cursor), desconectados (playerdata) y todo el mundo en disco (lee los .mca de `region` y `entities` de
+  todas las carpetas de mundos, también Multiverse y los de mods; cofres, shulkers dentro, marcos, vagonetas, suelo).
+  Hilo aparte; al escanear a mano guarda el mundo antes. Solo: al minuto de arrancar y cada 30 min. `recover` quita lo
+  de un pedido de donde esté y se lo da al dueño (a un desconectado, al entrar: `rastreador-pendiente.json`).
+- `TFTracker`: registro de quién saca/mete/rompe en contenedores (`<mundo>/tfclient/rastreador/<día>.log`, 60 días);
+  `/tf rastreo jugador|aqui|objeto` y `/tf buscar <jugador|pedido>`.
+- App `a_rastreo` (`pad/server/PadAdminTracker`, icono `icon_rastreo.png`): COMPRADORES (los que tienen algo con otro,
+  primero), ficha de cada uno con cada compra y cada objeto (dónde, IR, TRAER, TRAER TODO), ligados sin pedido,
+  MOVIMIENTOS y buscar.
+- Prueba: `[prueba-jefes=oficios]` (al final: «rastreador: …», capturas `rastreador_*`).
+
+### CHECKPOINT anterior (25 oct 2026, TF Client 1.3.141, PUBLICADA)
 
 **1.3.141** (el dueño, con el playerdata del servidor: «a HitGp le robaron el kit Dragón Mecha de un cofre estando
 desconectado; no es posible que lo puedan tomar de los cofres»). Revisión del playerdata (152 archivos): HitGp

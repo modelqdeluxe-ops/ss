@@ -107,6 +107,9 @@ public final class TFCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
                 .then(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload))
+                // (1.3.142) /tf rastreo (quién sacó qué de los cofres) y /tf buscar (dónde está lo de alguien)
+                .then(net.tierrasfantasticas.tfclient.rastreo.TFTracker.command())
+                .then(net.tierrasfantasticas.tfclient.rastreo.TFSearch.command())
                 // /tf boss (staff): la ventana de jefes, dificultades y grietas
                 .then(net.tierrasfantasticas.tfclient.bosses.TFBosses.command())
                 // /tf void npc|quitar|ir|volver (staff): el caballero de luz y el viaje a The Void

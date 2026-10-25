@@ -120,6 +120,8 @@ public final class PadServer {
         APPS.put("a_cazas", net.tierrasfantasticas.tfclient.pad.server.PadAdminHunts.APP);
         APPS.put("a_pase", net.tierrasfantasticas.tfclient.pad.server.PadAdminPass.APP);
         APPS.put("a_gacha", net.tierrasfantasticas.tfclient.pad.server.PadAdminGacha.APP);
+        // (1.3.142) RASTREADOR: las compras de la web y dónde está cada objeto
+        APPS.put("a_rastreo", net.tierrasfantasticas.tfclient.pad.server.PadAdminTracker.APP);
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);
         STORES.add(PadKits.STORE);

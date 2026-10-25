@@ -1680,11 +1680,36 @@ export function createApp(env) {
         // Armario de los conectados: «set/pieza» por hueco (el mod lo convierte en tfclient:set_pieza)
         wardrobe: await wardrobesForServer(online),
         padData,
+        // (TF Client 1.3.142, el dueño: «quiero ver cada jugador que compró y todos sus objetos y dónde están») cuando el
+        // mod lo pide: las compras pagadas (las 1.000 últimas) con lo que entrega cada una, para la app Rastreador
+        ...(body.wantOrders === true ? { orders: await ordersForServer() } : {}),
         roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });
     },
   };
+
+  // Las compras pagadas para la app Rastreador del pad de administrador: quién, qué, cuándo y sus comandos (el mod saca de
+  // ellos los objetos: «tf web sets give {player} <set> [pieza]» y «give {player} <objeto> [n]»).
+  async function ordersForServer() {
+    const rows = await store.recentOrders(1000);
+    return rows.map((o) => {
+      const product = productById.get(o.productId);
+      return {
+        id: o.id,
+        player: o.username,
+        uuid: o.uuid,
+        status: o.status,
+        refunded: o.refunded || null,
+        product: product?.name || o.productId,
+        productId: o.productId,
+        quantity: o.quantity,
+        paidAt: o.paidAt || o.createdAt,
+        gift: o.gift ? { from: o.gift.fromName || null } : null,
+        commands: product?.commands || [],
+      };
+    });
+  }
 
   // Un pago de Stripe terminó (o caducó): valida lo cobrado contra el pedido y lo pone en la cola de entrega.
   async function handleSession(checkout, ctx, type) {

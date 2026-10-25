@@ -429,6 +429,25 @@ test('pago confirmado queda en cola y el servidor lo entrega una sola vez por UU
   assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'delivered');
 });
 
+test('el mod pide las compras (app Rastreador del pad de admin): quién, qué y sus comandos; sin pedirlas no van', async () => {
+  await seen('Rastreo_MC');
+  const id = await checkout({ productId: 'crate-valentine', username: 'Rastreo_MC' });
+  await pay(id);
+  await serverDelivers('Rastreo_MC');
+  const without = await (await poll([])).json();
+  assert.strictEqual(without.orders, undefined);
+  const data = await (await poll([], [], { wantOrders: true })).json();
+  const mine = data.orders.find((o) => o.id === id);
+  assert.ok(mine);
+  assert.strictEqual(mine.player, 'Rastreo_MC');
+  assert.strictEqual(mine.uuid, uuidOf('Rastreo_MC'));
+  assert.strictEqual(mine.productId, 'crate-valentine');
+  assert.ok(mine.commands.some((c) => c.startsWith('tf web sets give {player} valentine')));
+  // los que no se pagaron no salen
+  const unpaid = await checkout({ productId: 'crate-valentine', username: 'Rastreo_MC' });
+  assert.ok(!(await (await poll([], [], { wantOrders: true })).json()).orders.some((o) => o.id === unpaid));
+});
+
 test('las versiones antiguas del mod reciben los comandos con el nombre ya puesto', async () => {
   await seen('Viejo');
   const id = await checkout({ productId: 'monedas-10000', username: 'Viejo' });

@@ -343,6 +343,8 @@ public final class TFBridge {
             players.add(p);
         }
         body.addProperty("protocol", PROTOCOL);
+        // (1.3.142) las compras de la web para la app Rastreador del pad de admin (al arrancar, cada 5 min o si se piden)
+        if (net.tierrasfantasticas.tfclient.rastreo.TFPurchases.wantFromWeb()) body.addProperty("wantOrders", true);
         body.add("players", players);
         body.addProperty("max", srv.getMaxPlayers());
         JsonArray acks = new JsonArray();
@@ -497,6 +499,9 @@ public final class TFBridge {
         // skills, armario…), las entregas se hacen igual: antes la excepción cortaba aquí y no llegaba ninguna
         try {
             if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
+            if (json.has("orders") && json.get("orders").isJsonArray()) {
+                net.tierrasfantasticas.tfclient.rastreo.TFPurchases.fromWeb(srv, json.getAsJsonArray("orders"));
+            }
             if (json.has("rankList")) {
                 TFRanks.setList(json.getAsJsonArray("rankList"));
                 // Lo que trae cada rango (permisos de LuckPerms y hogares de EssentialsX), si cambió
