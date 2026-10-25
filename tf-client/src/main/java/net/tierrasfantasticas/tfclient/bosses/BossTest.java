@@ -2489,8 +2489,48 @@ public final class BossTest {
                 // sin el clan de prueba (la prueba «tienda» funda uno)
                 net.tierrasfantasticas.tfclient.pad.server.PadClans.testCleanup(player);
             }
-            case 410 -> next(level);
-            default -> { }
+            default -> {
+                // (1.3.140) la armadura de cada rango puesta entera: netherita (pechera 8, total 20, dureza 12) + 2 por pieza;
+                // Mortal y Eterno + 1. El casco de Mágico y el de Eterno son su casco 3D.
+                int i = (t - 410) / 4;
+                if (t >= 410 && i < RANK_SETS.length && (t - 410) % 4 == 0) wearSet(player, RANK_SETS[i]);
+                if (t >= 410 && i < RANK_SETS.length && (t - 410) % 4 == 3) {
+                    int want = RANK_PLUS[i];
+                    double armor = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                    double tough = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
+                    double chest = chestDefense(player);
+                    boolean ok = armor == 20 + 4 * want && chest == 8 + want && tough == 12 + 4 * want;
+                    r.event("rango " + RANK_SETS[i] + ": armadura " + armor + " (pechera " + chest + "), dureza " + tough + " · quiero netherita +" + want
+                            + " → " + (20 + 4 * want) + " (pechera " + (8 + want) + "), dureza " + (12 + 4 * want) + (ok ? " (bien)" : " (MAL)"));
+                }
+                if (t == 410 + 4 * RANK_SETS.length) {
+                    wearSet(player, "darkworld");
+                    cameraType = 2;
+                }
+                if (t == 410 + 4 * RANK_SETS.length + 20) shot(r, "rango_magico_con_casco");
+                if (t == 410 + 4 * RANK_SETS.length + 24) {
+                    cameraType = 0;
+                    for (var slot : List.of(net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                            net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET)) player.setItemSlot(slot, ItemStack.EMPTY);
+                }
+                // (1.3.140) los rankings nuevos: DINERO (con cualquier economía), MUERTES y MOBS
+                int r0 = 410 + 4 * RANK_SETS.length + 30;
+                if (t == r0) {
+                    player.awardStat(net.minecraft.stats.Stats.DEATHS, 3);
+                    player.awardStat(net.minecraft.stats.Stats.MOB_KILLS, 7);
+                    r.event("rankings: dinero " + rankLine(net.tierrasfantasticas.tfclient.pad.server.PadRanking.testTop(server, "dinero"), me)
+                            + "; muertes " + rankLine(net.tierrasfantasticas.tfclient.pad.server.PadRanking.testTop(server, "muertes"), me)
+                            + "; mobs " + rankLine(net.tierrasfantasticas.tfclient.pad.server.PadRanking.testTop(server, "mobs"), me));
+                    openPad = "ranking/dinero";
+                }
+                if (t == r0 + 36) shot(r, "ranking_dinero");
+                if (t == r0 + 38) openPad = "ranking/muertes";
+                if (t == r0 + 74) shot(r, "ranking_muertes");
+                if (t == r0 + 76) openPad = "ranking/mobs";
+                if (t == r0 + 112) shot(r, "ranking_mobs");
+                if (t == r0 + 114) closeScreen = true;
+                if (t == r0 + 120) next(level);
+            }
         }
     }
 
@@ -2750,6 +2790,37 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
+    /** (1.3.140) «yo: N (puesto P)» en un ranking, o «no salgo». */
+    private static String rankLine(List<java.util.Map.Entry<java.util.UUID, Long>> top, java.util.UUID me) {
+        for (int i = 0; i < top.size(); i++) if (top.get(i).getKey().equals(me)) return top.get(i).getValue() + " (puesto " + (i + 1) + ")";
+        return "NO SALGO (" + top.size() + " en la lista)";
+    }
+
+    /** (1.3.140) Los sets de los rangos (Mortal → Fantástico) y los puntos que suman a la netherita. */
+    private static final String[] RANK_SETS = {"patrick", "beats", "darkworld", "malika", "necros", "eagle", "starlight"};
+    private static final int[] RANK_PLUS = {1, 2, 2, 1, 2, 2, 2};
+
+    /** Se pone el set entero: casco (el de armadura o, si no tiene, su casco 3D), pechera, grebas y botas. */
+    private static void wearSet(ServerPlayer player, String set) {
+        java.util.function.Function<String, net.minecraft.world.item.Item> item = id -> net.minecraftforge.registries.ForgeRegistries.ITEMS
+                .getValue(new net.minecraft.resources.ResourceLocation("tfclient", id));
+        net.minecraft.world.item.Item helmet = item.apply(set + "_armor_helmet");
+        if (helmet == null || helmet == Items.AIR) helmet = item.apply(set + "_helmet");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(helmet));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(item.apply(set + "_armor_chestplate")));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(item.apply(set + "_armor_leggings")));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new ItemStack(item.apply(set + "_armor_boots")));
+    }
+
+    private static double chestDefense(ServerPlayer player) {
+        double v = 0;
+        for (var m : player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST)
+                .getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.CHEST).get(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR)) {
+            v += m.getAmount();
+        }
+        return v;
+    }
+
     /** (1.3.139) El que puso la tormenta en la prueba «oficios». */
     private static net.minecraft.world.entity.monster.Zombie stormOwner;
 

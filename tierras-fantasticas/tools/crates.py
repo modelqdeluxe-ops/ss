@@ -200,15 +200,17 @@ def give_commands(extras):
 CRATE_TIER = 'netherite+1'
 
 # Rangos, de menor a mayor. Cada uno da su grupo de LuckPerms y su set completo (con el nivel de atributos del rango).
+# (TF Client 1.3.140, el dueño: «las armaduras de los rangos son netherita + 2 puntos: si la pechera de netherita es 8, la
+# del rango es 10; solo Mortal y Eterno, + 1 (9); las crates, netherita + 1»)
 # clave, nombre, set del rango, nombre del set, precio (céntimos), color del prefijo (Minecraft, hex), nivel
 RANKS = [
-    ('mortal', 'Mortal', 'patrick', 'San Patricio', 499, ('green', '#4ade80'), 'iron'),
-    ('inmortal', 'Inmortal', 'beats', 'Beats', 799, ('blue', '#7c6cff'), 'diamond'),
-    ('magico', 'Mágico', 'darkworld', 'Dark World', 1199, ('dark_purple', '#c026d3'), 'netherite'),
+    ('mortal', 'Mortal', 'patrick', 'San Patricio', 499, ('green', '#4ade80'), 'netherite+1'),
+    ('inmortal', 'Inmortal', 'beats', 'Beats', 799, ('blue', '#7c6cff'), 'netherite+2'),
+    ('magico', 'Mágico', 'darkworld', 'Dark World', 1199, ('dark_purple', '#c026d3'), 'netherite+2'),
     ('eterno', 'Eterno', 'malika', 'Malika', 1599, ('red', '#ef4444'), 'netherite+1'),
-    ('cosmico', 'Cósmico', 'necros', 'Necros', 1999, ('aqua', '#22d3ee'), 'netherite+1.5'),
+    ('cosmico', 'Cósmico', 'necros', 'Necros', 1999, ('aqua', '#22d3ee'), 'netherite+2'),
     ('celestial', 'Celestial', 'eagle', 'Eagle Ascendant', 2499, ('yellow', '#fde047'), 'netherite+2'),
-    ('fantastico', 'Fantástico', 'starlight', 'Luz de Estrella', 2999, ('gold', '#f59e0b'), 'netherite+3'),
+    ('fantastico', 'Fantástico', 'starlight', 'Luz de Estrella', 2999, ('gold', '#f59e0b'), 'netherite+2'),
 ]
 
 

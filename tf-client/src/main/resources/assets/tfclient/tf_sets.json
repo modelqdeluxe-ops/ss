@@ -4051,7 +4051,7 @@
      "slot": "boots"
     }
    ],
-   "tier": "iron"
+   "tier": "netherite+1"
   },
   {
    "id": "beats",
@@ -4149,13 +4149,13 @@
      "slot": "boots"
     }
    ],
-   "tier": "diamond"
+   "tier": "netherite+2"
   },
   {
    "id": "darkworld",
    "name": "Mágico",
    "color": "#c026d3",
-   "tier": "netherite",
+   "tier": "netherite+2",
    "items": [
     {
      "id": "darkworld_sword",
@@ -4211,7 +4211,8 @@
     },
     {
      "id": "darkworld_helmet",
-     "type": "head"
+     "type": "head",
+     "armor": true
     },
     {
      "id": "darkworld_wings",
@@ -4434,7 +4435,7 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+1.5"
+   "tier": "netherite+2"
   },
   {
    "id": "eagle",
@@ -4622,7 +4623,7 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+3"
+   "tier": "netherite+2"
   },
   {
    "id": "nazgul",

@@ -540,9 +540,11 @@ def glides(set_id, slug):
 
 
 def mark_armor_head(entry):
-    """(1.3.97) Un set de recompensa sin casco de armadura (el Void: su yelmo es el modelo 3D): su yelmo da la armadura de
+    """(1.3.97) Un set de recompensa o de rango sin casco de armadura (el Void: su yelmo es el modelo 3D): su yelmo da la armadura de
     un casco de su nivel (TFItemTypes.Cosmetic), como el resto de piezas."""
-    reward = entry['id'] in {r[0] for r in getattr(C, 'REWARD_SETS', [])}
+    # (1.3.140, el dueño: «el casco de Mágico es cosmético; hazlo casco como los demás») y los de los rangos sin casco de
+    # armadura (Mágico, Eterno): su casco 3D es el casco de verdad
+    reward = entry['id'] in {r[0] for r in getattr(C, 'REWARD_SETS', [])} | {r[2] for r in getattr(C, 'RANKS', [])}
     no_helmet = not any(i['type'] == 'armor' and i.get('slot') == 'helmet' for i in entry['items'])
     heads = [i for i in entry['items'] if i['type'] == 'head']
     for n, item in enumerate(heads):

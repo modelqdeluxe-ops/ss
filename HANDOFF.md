@@ -190,7 +190,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (25 oct 2026, TF Client 1.3.139) — lee esto primero
+### CHECKPOINT (25 oct 2026, TF Client 1.3.140) — lee esto primero
+
+**1.3.140** (el dueño: «el casco del rango Mágico es cosmético, hazlo casco como el de Eterno; las armaduras de los
+rangos son netherita + 2 puntos (pechera 10 en vez de 8), solo Mortal y Eterno + 1 (9); las crates netherita + 1» y
+«rankings del pad: más dinero, más muertes y mobs matados»).
+- Niveles (`tier` de `tf_sets.json` y `RANKS` de `tierras-fantasticas/tools/crates.py`): Mortal (patrick) +1, Inmortal
+  (beats) +2, Mágico (darkworld) +2, Eterno (malika) +1, Cósmico (necros) +2, Celestial (eagle) +2, Fantástico
+  (starlight) +2 (antes: hierro, diamante, netherita, +1, +1,5, +2, +3). Crates y Void siguen en +1. +N = N más de
+  armadura por pieza, de dureza y de daño (`TFTier`).
+- Casco de Mágico (`darkworld_helmet`): `"armor": true` como el de Eterno; `build_mod_items.mark_armor_head` lo pone
+  solo en los sets de rango y de recompensa sin casco de armadura (antes lo quitaba a todo lo que no fuera recompensa).
+- Ranking (`PadRanking`): DINERO con cualquier economía (Vault/EssentialsX: saldo de los conectados, el apuntado cada
+  minuto en pad-estadisticas.json «saldo» y el de `plugins/Essentials/userdata/*.yml`), MUERTES y MOBS (estadísticas de
+  Minecraft: conectados al momento y `<mundo>/stats/*.json`). La pestaña «monedas» de antes lleva a DINERO.
+- Prueba: `[prueba-jefes=oficios]` se pone cada set de rango y comprueba armadura total, pechera y dureza, captura
+  el de Mágico con su casco y los tres rankings nuevos.
+
+### CHECKPOINT anterior (25 oct 2026, TF Client 1.3.139, PUBLICADA)
 
 **1.3.139** (el dueño: «las misiones no reconocen nada; no dejan cobrar los jobs; la Tormenta del Wither deja la lluvia;
 rangos en los clanes; la clave del puente se desconecta; configs que se actualicen solas; que el pad no publique los

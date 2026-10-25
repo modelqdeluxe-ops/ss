@@ -527,7 +527,7 @@ final class PadGuidePage extends PadPage {
 
         topic("ranking", "Ranking", "ranking",
                 p("Los 10 mejores del servidor."),
-                b("Pestañas: MISIONES, CAZAS, LIKES (de las fotos de Comunidad), EXPLORAR y MONEDAS."),
+                b("Pestañas: MISIONES, CAZAS, LIKES (de las fotos de Comunidad), EXPLORAR, DINERO (quién tiene más), MUERTES (quién muere más) y MOBS (quién mata más mobs)."),
                 b("Si estás entre los 10 primeros, tu fila sale marcada."));
 
         topic("armario", "Armario", "armario",
