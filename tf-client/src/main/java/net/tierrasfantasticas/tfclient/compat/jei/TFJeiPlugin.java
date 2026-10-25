@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.client.TFHiddenItems;
+import net.tierrasfantasticas.tfclient.items.TFItems;
 
 /**
  * (1.3.139, el dueño: «el mod sale en el JEI: ven todos sus sets; solo OP y creativo pueden ver nuestros objetos»)
@@ -66,8 +67,15 @@ public final class TFJeiPlugin implements IModPlugin {
                     manager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, ours);
                     REMOVED.addAll(ours);
                 }
-            } else if (!REMOVED.isEmpty()) {
-                manager.addIngredientsAtRuntime(VanillaTypes.ITEM_STACK, new ArrayList<>(REMOVED));
+            } else {
+                // los que se quitaron y los de la pestaña del creativo que JEI no tenga (si su lista se hizo antes de
+                // que llegara el permiso de OP, no están)
+                java.util.Set<net.minecraft.world.item.Item> present = new java.util.HashSet<>();
+                for (ItemStack s : manager.getAllIngredients(VanillaTypes.ITEM_STACK)) present.add(s.getItem());
+                List<ItemStack> add = new ArrayList<>();
+                for (ItemStack s : REMOVED) if (present.add(s.getItem())) add.add(s);
+                for (net.minecraft.world.item.Item i : TFItems.tabItems()) if (present.add(i)) add.add(new ItemStack(i));
+                if (!add.isEmpty()) manager.addIngredientsAtRuntime(VanillaTypes.ITEM_STACK, add);
                 REMOVED.clear();
             }
             int n = 0;

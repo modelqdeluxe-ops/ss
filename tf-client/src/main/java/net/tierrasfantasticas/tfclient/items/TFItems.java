@@ -60,18 +60,24 @@ public final class TFItems {
                 // (1.3.139) solo para el OP o en creativo (client/TFHiddenItems): a los demás no les sale en las listas
                 // de objetos (JEI y compañía las sacan de aquí)
                 if (!net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient() || !TFItemsAccess.canSee()) return;
-                BY_SET.values().forEach(list -> list.forEach(o -> output.accept(o.get())));
-                // Las piedras de protección de TF Claims
-                net.tierrasfantasticas.tfclient.claims.item.ClaimItems.all().forEach(o -> output.accept(o.get()));
+                tabItems().forEach(output::accept);
             })
             .build());
 
     private TFItems() {}
 
+    /** Lo que sale en la pestaña del creativo: los sets y las piedras de protección de TF Claims. */
+    public static List<Item> tabItems() {
+        List<Item> out = new ArrayList<>();
+        BY_SET.values().forEach(list -> list.forEach(o -> out.add(o.get())));
+        net.tierrasfantasticas.tfclient.claims.item.ClaimItems.all().forEach(o -> out.add(o.get()));
+        return out;
+    }
+
     /** Separado para no cargar clases del cliente en el servidor. */
     private static final class TFItemsAccess {
         static boolean canSee() {
-            return net.tierrasfantasticas.tfclient.client.TFHiddenItems.allowed();
+            return net.tierrasfantasticas.tfclient.client.TFHiddenItems.tabBuilt();
         }
     }
 

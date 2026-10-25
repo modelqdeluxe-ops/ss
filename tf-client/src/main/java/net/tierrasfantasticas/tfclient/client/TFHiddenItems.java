@@ -39,7 +39,8 @@ public final class TFHiddenItems {
     private static final Map<String, Boolean> APPLIED = new LinkedHashMap<>();
     /** Para la prueba en el juego: cuántos de los nuestros quedaron en cada visor tras el último cambio. */
     public static final Map<String, Integer> COUNTS = new java.util.concurrent.ConcurrentHashMap<>();
-    private static Boolean tabState;
+    /** Con qué se hizo la pestaña del creativo la última vez (null: no se ha hecho o se mandó rehacer). */
+    private static volatile Boolean tabBuiltWith;
     /** Para la prueba en el juego (el jugador de la prueba es OP): null = lo de verdad. */
     public static volatile Boolean testForce;
 
@@ -50,6 +51,13 @@ public final class TFHiddenItems {
         if (testForce != null) return testForce;
         LocalPlayer p = Minecraft.getInstance().player;
         return p != null && (p.isCreative() || p.hasPermissions(2));
+    }
+
+    /** La pestaña del creativo se está haciendo: ¿con nuestros objetos? (y se apunta, para rehacerla si cambia) */
+    public static boolean tabBuilt() {
+        boolean show = allowed();
+        tabBuiltWith = show;
+        return show;
     }
 
     public static synchronized void viewer(String name, Viewer viewer) {
@@ -77,8 +85,27 @@ public final class TFHiddenItems {
             COUNTS.put(e.getKey(), n);
             TFClient.LOGGER.info("TF Client: objetos de tfclient en {}: {} ({} en la lista)", e.getKey(), show ? "se ven" : "ocultos", n);
         }
-        if (tabState != null && tabState != show) rebuildTabs();
-        tabState = show;
+        // (al entrar, la pestaña y JEI se hacen antes de que llegue el permiso de OP: se rehace si no coincide)
+        Boolean built = tabBuiltWith;
+        if (built != null && built != show) {
+            tabBuiltWith = null;
+            rebuildTabs();
+        }
+    }
+
+    /** Para la prueba en el juego: cuántos objetos tiene la pestaña TF del creativo (-1: aún no se ha mirado). */
+    public static volatile int testTabCount = -1;
+
+    /** Para la prueba: en el hilo del cliente, hace las pestañas como al abrir el inventario creativo y las cuenta. */
+    public static void requestTabCount() {
+        testTabCount = -1;
+        Minecraft mc = Minecraft.getInstance();
+        mc.execute(() -> {
+            if (mc.player == null || mc.level == null) return;
+            update();
+            CreativeModeTabs.tryRebuildTabContents(mc.player.connection.enabledFeatures(), true, mc.level.registryAccess());
+            testTabCount = net.tierrasfantasticas.tfclient.items.TFItems.TAB.get().getDisplayItems().size();
+        });
     }
 
     /** La pestaña del creativo se guarda hecha: se borra lo guardado para que se rehaga al abrir el inventario. */

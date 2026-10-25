@@ -2464,9 +2464,12 @@ public final class BossTest {
             case 282 -> shot(r, "tormenta_tras_matarlo");
             // (1.3.139) los objetos de tfclient en JEI: ocultos a quien no es OP ni está en creativo
             case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = false;
+            case 316 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
             case 320 -> {
+                int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
                 r.event("JEI, jugador sin OP en supervivencia: objetos nuestros en la lista " + jeiCount()
-                        + (jeiCount().equals("0") ? " (bien: ocultos)" : jeiCount().equals("sin JEI") ? "" : " (MAL)"));
+                        + (jeiCount().equals("0") ? " (bien: ocultos)" : jeiCount().equals("sin JEI") ? "" : " (MAL)")
+                        + "; pestaña TF del creativo: " + tab + (tab == 0 ? " (bien: vacía)" : " (MAL)"));
                 openInventory = true;
             }
             case 350 -> shot(r, "jei_oculto");
@@ -2474,10 +2477,13 @@ public final class BossTest {
                 closeScreen = true;
                 net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = true;
             }
+            case 378 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
             case 382 -> {
                 String n = jeiCount();
+                int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
                 r.event("JEI, OP o creativo: objetos nuestros en la lista " + n
-                        + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)"));
+                        + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)")
+                        + "; pestaña TF del creativo: " + tab + (tab > 0 ? " (bien)" : " (MAL)"));
                 net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = null;
             }
             case 390 -> next(level);
