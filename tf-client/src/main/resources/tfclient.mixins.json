@@ -18,6 +18,9 @@
     "MinecraftServerBotsMixin",
     "BotCommandsMixin",
     "EntityRemoveMixin",
+    "binding.SlotBindingMixin",
+    "binding.HopperBindingMixin",
+    "binding.InvWrapperBindingMixin",
     "jobs.ResultSlotJobsMixin",
     "jobs.FurnaceResultSlotJobsMixin",
     "jobs.BrewingStandMenuJobsMixin"
