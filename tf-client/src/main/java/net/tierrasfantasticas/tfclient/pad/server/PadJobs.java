@@ -200,6 +200,7 @@ public final class PadJobs {
             if (locked) lines.add("Se desbloquea en el nivel " + m.level() + ".");
             else if (claimed) lines.add(m.repeat() == TFJobsConfig.Repeat.DAILY ? "Cobrada hoy. Vuelve mañana." : "Hecha para siempre.");
             else lines.add(TFJobsMenu.goal(m).replaceFirst(": \\d+$", "") + ": " + Math.min(ms.progress, m.amount()) + "/" + m.amount() + " · " + repeat);
+            if (!locked && !claimed) lines.add(net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.how(m.type(), m.target().raw()));
             String reward = TFJobs.rewardText(m.reward());
             long coins = Math.round(m.reward().coins());
             if (!reward.equals("—") && (coins <= 0 || reward.contains("·"))) lines.add("Premio: " + reward);

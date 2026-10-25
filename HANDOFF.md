@@ -190,7 +190,33 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.142) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.143) — lee esto primero
+
+**1.3.143** (el dueño: «la misión de crear cofres no cuenta los de Woodworks; haz universal la detección»).
+`TFJobsConfig.Target.sameKind`: un objetivo `minecraft:chest`, `minecraft:trapped_chest`, `minecraft:barrel` o
+`minecraft:bookshelf` cuenta cualquier bloque de esa clase o con la etiqueta de Forge (`forge:chests/wooden`,
+`forge:chests/trapped`, `forge:barrels/wooden`, `forge:bookshelves`), de cualquier mod, al fabricar, colocar y romper
+(oficios y misiones del pad). Prueba: `[prueba-jefes=oficios] [woodworks]` (Woodworks 3.0.2 + Blueprint 7.1.3,
+`-Ptfwoodworks`): fabrica un cofre de 8 tablones de abeto.
+
+Y (el dueño: «verifica todas las misiones, en jobs y todo; no quiero más actualizaciones de este tipo; un colchón de 2
+meses de misiones, no idénticas; muchos más niveles de jobs sin pasarse con los pagos; que todas se cumplan y todos
+cobren, cazas, todo; y una pequeña descripción de lo que hay que hacer en cada misión»):
+- `tools/gen_economia.py` escribe ya los pagos finales (escala 0,6 de `PadEconomy.scale`, `economia: 3`) y comprueba
+  ids y nombres repetidos. Misiones del pad: 223 diarias (unos 74 días sin repetir ninguna, 3 al día) y 42 cazas;
+  oficios: 285 misiones, hasta el nivel 50, y una «nunca» de leyenda en cada uno. Las que ya había salen idénticas.
+  Configs a la versión 3 (`versionEconomia` de oficios.json y `version` de misiones.json): el servidor guarda la de
+  antes (`.antes-v3.json`) y pone la nueva.
+- `TFMissionCheck`: revisa cada misión con los registros y las recetas (existe, la etiqueta no está vacía, el tipo va
+  con el objetivo, algo de verdad del objetivo cuenta, «fabricar» sale de la mesa, «fundir» de un horno, «criar» se
+  puede criar). Al arrancar avisa en la consola («TF Misiones: …»). `how(tipo, objetivo)`: la línea de «cómo se hace»
+  que sale en cada misión (pad, oficios y el menú /jobs).
+- Bayas dulces y luminosas cogidas con clic derecho cuentan como cosechar (`TFJobs.onRightClick`/`checkPicks`).
+- Etiqueta `tfclient:hormigon` (los 16 hormigones, para la misión de constructor).
+- Prueba `[prueba-jefes=oficios]`, paso 21: revisa todas las del mod, hace y cobra todas las de hoy del pad (diarias,
+  semanales, cazas) y de los 10 oficios al nivel 50 (`PadMissions.testAll`, `TFJobs.testAllJobs`) y las bayas.
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.142, PUBLICADA)
 
 **1.3.142** (el dueño: «una app de rastreador en el pad de admin: cada jugador que compró, todos sus objetos y dónde
 están —puestos, cofres, coordenadas—; que funcione desde el minuto 1»). Piezas (paquete `rastreo`):

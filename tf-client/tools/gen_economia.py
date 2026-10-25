@@ -7,6 +7,7 @@ nivel. Las misiones «diaria» son plantillas: el juego (TFRotation) da 3 por of
 sin repetir ninguna igual y subiendo cantidad y premio de x1 a x2,5 a lo largo de la temporada.
 """
 import json
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -221,15 +222,209 @@ MISSIONS = {
 }
 
 
+# (1.3.143, el dueño: «a los oficios agrega muchos niveles más de misiones, sin pasarte con los pagos») misiones hasta el
+# nivel 50 (antes llegaban al 20-30): más cantidad y algo más de premio, pero por debajo de lo que vale lo que se saca
+# (ver la tienda: tools/tienda/precios.py y TIENDA.md).
+MISSIONS_HIGH = {
+    'granjero': [
+        m('cacao', 'Plantación de cacao', 'minecraft:cocoa_beans', 'cosechar', 'minecraft:cocoa', 48, 14, 28),
+        m('bayas', 'Bayas dulces', 'minecraft:sweet_berries', 'cosechar', 'minecraft:sweet_berry_bush', 64, 15, 28),
+        m('bambu', 'Bambú', 'minecraft:bamboo', 'cosechar', 'minecraft:bamboo', 192, 16, 28),
+        m('cactus', 'Cactus del desierto', 'minecraft:cactus', 'cosechar', 'minecraft:cactus', 96, 17, 30),
+        m('trigo2', 'Granero lleno', 'minecraft:hay_block', 'cosechar', 'minecraft:wheat', 256, 18, 38),
+        m('patatas2', 'Cosecha de patatas grande', 'minecraft:baked_potato', 'cosechar', 'minecraft:potatoes', 256, 22, 40),
+        m('zanahorias2', 'Zanahorias para el mercado', 'minecraft:golden_carrot', 'cosechar', 'minecraft:carrots', 256, 24, 40),
+        m('cabras', 'Rebaño de cabras', 'minecraft:goat_horn', 'criar', 'minecraft:goat', 6, 26, 40),
+        m('caballos', 'Cuadra de caballos', 'minecraft:saddle', 'criar', 'minecraft:horse', 4, 28, 45),
+        m('verruga2', 'Bodega del Nether', 'minecraft:nether_wart_block', 'cosechar', 'minecraft:nether_wart', 256, 30, 50),
+        m('abejas', 'Colmenar', 'minecraft:honeycomb', 'criar', 'minecraft:bee', 6, 32, 50),
+        m('cultivos2', 'Gran granja', 'minecraft:composter', 'cosechar', '#minecraft:crops', 600, 35, 60),
+        m('pasteles', 'Pastelería', 'minecraft:pumpkin_pie', 'fabricar', 'minecraft:pumpkin_pie', 24, 38, 50),
+        m('animales2', 'Ganadero', 'minecraft:lead', 'criar', '*', 60, 42, 65),
+        m('melones2', 'Huerta de melones', 'minecraft:glistering_melon_slice', 'cosechar', 'minecraft:melon', 160, 46, 65),
+        m('leyenda', 'Leyenda del campo', 'minecraft:golden_hoe', 'cosechar', '#minecraft:crops', 8000, 40, 700, 1800, 'nunca',
+          ['minecraft:diamond 2']),
+    ],
+    'minero': [
+        m('calcita', 'Calcita', 'minecraft:calcite', 'romper', 'minecraft:calcite', 128, 12, 25),
+        m('goteo', 'Bloques de goteo', 'minecraft:pointed_dripstone', 'romper', 'minecraft:dripstone_block', 96, 13, 28),
+        m('obsidiana', 'Obsidiana', 'minecraft:obsidian', 'romper', 'minecraft:obsidian', 32, 16, 40),
+        m('pizarra2', 'Túneles de pizarra', 'minecraft:cobbled_deepslate', 'romper', 'minecraft:deepslate', 640, 18, 45),
+        m('hierro2', 'Mina de hierro', 'minecraft:iron_block', 'romper', '#forge:ores/iron', 96, 22, 60),
+        m('cobre2', 'Mina de cobre', 'minecraft:copper_block', 'romper', '#forge:ores/copper', 128, 24, 55),
+        m('oro2', 'Mina de oro', 'minecraft:gold_block', 'romper', '#forge:ores/gold', 64, 27, 65),
+        m('redstone2', 'Circuitos', 'minecraft:redstone_block', 'romper', '#forge:ores/redstone', 96, 29, 60),
+        m('endpiedra', 'Piedra del End', 'minecraft:end_stone', 'romper', 'minecraft:end_stone', 256, 32, 55),
+        m('lapis2', 'Encargo de lapislázuli', 'minecraft:lapis_block', 'romper', '#forge:ores/lapis', 64, 34, 65),
+        m('cuarzo2', 'Cuarzo para el palacio', 'minecraft:quartz_block', 'romper', '#forge:ores/quartz', 128, 37, 65),
+        m('diamantes2', 'Bolsa de diamantes', 'minecraft:diamond_block', 'romper', '#forge:ores/diamond', 16, 40, 95),
+        m('escombros2', 'Restos antiguos', 'minecraft:netherite_scrap', 'romper', 'minecraft:ancient_debris', 6, 45, 140),
+        m('esmeraldas2', 'Veta de esmeraldas', 'minecraft:emerald_block', 'romper', '#forge:ores/emerald', 8, 48, 110),
+        m('rey', 'Rey de las profundidades', 'minecraft:netherite_pickaxe', 'romper', '#forge:ores', 6000, 45, 900, 2400, 'nunca',
+          ['minecraft:diamond 3']),
+    ],
+    'lenador': [
+        m('bambu', 'Bambú para la obra', 'minecraft:bamboo', 'romper', 'minecraft:bamboo', 192, 17, 28),
+        m('cofres2', 'Cofres de encargo', 'minecraft:barrel', 'fabricar', 'minecraft:chest', 32, 18, 32),
+        m('barriles', 'Barriles', 'minecraft:barrel', 'fabricar', 'minecraft:barrel', 16, 19, 32),
+        m('puertas', 'Puertas de madera', 'minecraft:oak_door', 'fabricar', '#minecraft:wooden_doors', 24, 21, 32),
+        m('vallas', 'Cercados', 'minecraft:oak_fence', 'fabricar', '#minecraft:wooden_fences', 48, 23, 34),
+        m('troncos2', 'Aserradero', 'minecraft:stripped_oak_log', 'romper', '#minecraft:logs', 512, 25, 55),
+        m('plantar2', 'Bosque nuevo', 'minecraft:spruce_sapling', 'colocar', '#minecraft:saplings', 128, 27, 40),
+        m('escaleras', 'Escaleras de madera', 'minecraft:oak_stairs', 'fabricar', '#minecraft:wooden_stairs', 64, 29, 38),
+        m('barcos', 'Astillero', 'minecraft:oak_boat', 'fabricar', '#minecraft:boats', 6, 31, 40),
+        m('carmesi2', 'Tala carmesí', 'minecraft:crimson_hyphae', 'romper', 'minecraft:crimson_stem', 256, 34, 60),
+        m('distorsionado2', 'Tala distorsionada', 'minecraft:warped_hyphae', 'romper', 'minecraft:warped_stem', 256, 36, 60),
+        m('mangle2', 'Pilotes de mangle', 'minecraft:mangrove_roots', 'romper', 'minecraft:mangrove_log', 256, 40, 60),
+        m('troncos3', 'Maderero mayor', 'minecraft:oak_wood', 'romper', '#minecraft:logs', 900, 45, 80),
+        m('guardabosques', 'Guardabosques', 'minecraft:netherite_axe', 'romper', '#minecraft:logs', 12000, 40, 700, 1800, 'nunca',
+          ['minecraft:diamond 2']),
+    ],
+    'excavador': [
+        m('almas2', 'Suelo de almas', 'minecraft:soul_soil', 'romper', 'minecraft:soul_soil', 128, 16, 35),
+        m('arena2', 'Arenal', 'minecraft:sandstone', 'romper', '#minecraft:sand', 640, 18, 45),
+        m('grava2', 'Gravera', 'minecraft:flint', 'romper', 'minecraft:gravel', 512, 21, 45),
+        m('tierra2', 'Explanada', 'minecraft:coarse_dirt', 'romper', 'minecraft:dirt', 1000, 24, 50),
+        m('nieve2', 'Expedición de nieve', 'minecraft:powder_snow_bucket', 'romper', 'minecraft:snow_block', 256, 27, 50),
+        m('arcilla2', 'Alfarero', 'minecraft:terracotta', 'romper', 'minecraft:clay', 256, 30, 55),
+        m('barro2', 'Ciénaga', 'minecraft:packed_mud', 'romper', 'minecraft:mud', 256, 33, 55),
+        m('pala2', 'Pala de oro', 'minecraft:golden_shovel', 'romper', '#minecraft:mineable/shovel', 2000, 36, 70),
+        m('podzol2', 'Taiga profunda', 'minecraft:rooted_dirt', 'romper', 'minecraft:podzol', 256, 40, 55),
+        m('micelio2', 'Champiñonal', 'minecraft:red_mushroom_block', 'romper', 'minecraft:mycelium', 192, 45, 65),
+        m('cavador', 'El gran cavador', 'minecraft:netherite_shovel', 'romper', '#minecraft:mineable/shovel', 20000, 40, 700, 1800, 'nunca',
+          ['minecraft:diamond 2']),
+    ],
+    'pescador': [
+        m('bacalao2', 'Lonja de bacalao', 'minecraft:cooked_cod', 'pescar', 'minecraft:cod', 48, 20, 45),
+        m('salmon2', 'Remontando el río', 'minecraft:cooked_salmon', 'pescar', 'minecraft:salmon', 32, 22, 50),
+        m('peces2', 'Barco pesquero', 'minecraft:barrel', 'pescar', '#minecraft:fishes', 64, 25, 55),
+        m('globo2', 'Pez globo venenoso', 'minecraft:pufferfish', 'pescar', 'minecraft:pufferfish', 10, 28, 55),
+        m('tropical2', 'Arrecife', 'minecraft:tropical_fish_bucket', 'pescar', 'minecraft:tropical_fish', 8, 31, 55),
+        m('tarde2', 'Jornada de pesca', 'minecraft:fishing_rod', 'pescar', '*', 120, 34, 70),
+        m('tesoros', 'Tesoros del fondo', 'minecraft:chest', 'pescar', 'minecraft:enchanted_book', 2, 38, 85),
+        m('nautilo2', 'Coleccionista de conchas', 'minecraft:nautilus_shell', 'pescar', 'minecraft:nautilus_shell', 2, 42, 90),
+        m('peces3', 'Gran pesquería', 'minecraft:cod_bucket', 'pescar', '#minecraft:fishes', 160, 46, 90),
+        m('capitan', 'Capitán de pesca', 'minecraft:conduit', 'pescar', '*', 5000, 40, 700, 1800, 'nunca', ['minecraft:diamond 2']),
+    ],
+    'cazador': [
+        m('zombis2', 'Horda de zombis', 'minecraft:zombie_head', 'matar', 'minecraft:zombie', 80, 22, 50),
+        m('esqueletos2', 'Cementerio', 'minecraft:skeleton_skull', 'matar', 'minecraft:skeleton', 70, 23, 50),
+        m('piglins', 'Piglins zombi', 'minecraft:gold_nugget', 'matar', 'minecraft:zombified_piglin', 40, 24, 50),
+        m('cueva', 'Arañas de cueva', 'minecraft:cobweb', 'matar', 'minecraft:cave_spider', 25, 26, 50),
+        m('vindicadores', 'Mansión del bosque', 'minecraft:iron_axe', 'matar', 'minecraft:vindicator', 10, 28, 70),
+        m('lepismas', 'Fortaleza', 'minecraft:stone_bricks', 'matar', 'minecraft:silverfish', 30, 30, 55),
+        m('devastadores', 'Asalto', 'minecraft:saddle', 'matar', 'minecraft:ravager', 3, 32, 80),
+        m('shulkers', 'Ciudad del End', 'minecraft:shulker_shell', 'matar', 'minecraft:shulker', 10, 35, 85),
+        m('endermans2', 'Granja de endermans', 'minecraft:ender_eye', 'matar', 'minecraft:enderman', 40, 37, 80),
+        m('blazes2', 'Granja de blazes', 'minecraft:blaze_powder', 'matar', 'minecraft:blaze', 40, 39, 85),
+        m('brutos', 'Bastión', 'minecraft:golden_axe', 'matar', 'minecraft:piglin_brute', 4, 42, 95),
+        m('wither2', 'Fortaleza oscura', 'minecraft:coal', 'matar', 'minecraft:wither_skeleton', 30, 44, 100),
+        m('monstruos2', 'Noche de caza', 'minecraft:diamond_sword', 'matar', 'hostil', 400, 46, 100),
+        m('leyenda', 'Leyenda de la caza', 'minecraft:netherite_sword', 'matar', 'hostil', 6000, 45, 900, 2400, 'nunca', ['minecraft:diamond 3']),
+    ],
+    'alquimista': [
+        m('pociones2', 'Botica', 'minecraft:potion', 'preparar', 'minecraft:potion', 36, 16, 45),
+        m('arrojadizas2', 'Granadas de cristal', 'minecraft:splash_potion', 'preparar', 'minecraft:splash_potion', 24, 19, 50),
+        m('frascos2', 'Vidriería', 'minecraft:glass_bottle', 'fabricar', 'minecraft:glass_bottle', 96, 21, 30),
+        m('polvo2', 'Polvo para el caldero', 'minecraft:blaze_powder', 'fabricar', 'minecraft:blaze_powder', 32, 24, 45),
+        m('azucar', 'Azúcar', 'minecraft:sugar', 'fabricar', 'minecraft:sugar', 64, 26, 35),
+        m('persistentes2', 'Nubes mágicas', 'minecraft:lingering_potion', 'preparar', 'minecraft:lingering_potion', 16, 30, 75),
+        m('fermentado2', 'Fermentos', 'minecraft:fermented_spider_eye', 'fabricar', 'minecraft:fermented_spider_eye', 16, 33, 55),
+        m('zanahoria2', 'Zanahorias de la vista', 'minecraft:golden_carrot', 'fabricar', 'minecraft:golden_carrot', 32, 36, 60),
+        m('muchas2', 'Laboratorio', 'minecraft:brewing_stand', 'preparar', '*', 72, 40, 85),
+        m('muchas3', 'Gran laboratorio', 'minecraft:dragon_breath', 'preparar', '*', 120, 46, 100),
+        m('archialquimista', 'Archialquimista', 'minecraft:beacon', 'preparar', '*', 2500, 40, 700, 1800, 'nunca', ['minecraft:diamond 2']),
+    ],
+    'herrero': [
+        m('hierro2', 'Fundición grande', 'minecraft:iron_block', 'fundir', 'minecraft:iron_ingot', 256, 16, 45),
+        m('cobre2', 'Tejados de cobre', 'minecraft:copper_block', 'fundir', 'minecraft:copper_ingot', 256, 18, 40),
+        m('escudos', 'Escudos', 'minecraft:shield', 'fabricar', 'minecraft:shield', 6, 20, 45),
+        m('faroles', 'Faroles', 'minecraft:lantern', 'fabricar', 'minecraft:lantern', 24, 22, 40),
+        m('tolvas', 'Tolvas', 'minecraft:hopper', 'fabricar', 'minecraft:hopper', 8, 24, 50),
+        m('barras', 'Barrotes', 'minecraft:iron_bars', 'fabricar', 'minecraft:iron_bars', 64, 26, 40),
+        m('armadura2', 'Armería', 'minecraft:iron_chestplate', 'fabricar', '#forge:armors', 12, 28, 60),
+        m('herramientas', 'Taller de herramientas', 'minecraft:iron_pickaxe', 'fabricar', '#forge:tools', 16, 30, 60),
+        m('yunque2', 'Reparaciones', 'minecraft:anvil', 'reparar', '*', 40, 33, 65),
+        m('oro2', 'Orfebre', 'minecraft:gold_block', 'fundir', 'minecraft:gold_ingot', 128, 36, 70),
+        m('rieles2', 'Red de vías', 'minecraft:powered_rail', 'fabricar', 'minecraft:rail', 128, 39, 65),
+        m('vagonetas', 'Vagonetas', 'minecraft:minecart', 'fabricar', 'minecraft:minecart', 8, 42, 60),
+        m('diamante2', 'Equipo de diamante', 'minecraft:diamond_chestplate', 'fabricar', 'minecraft:diamond_chestplate', 1, 46, 90),
+        m('forjador', 'Forjador legendario', 'minecraft:netherite_ingot', 'fabricar', '#forge:tools', 800, 40, 700, 1800, 'nunca',
+          ['minecraft:diamond 2']),
+    ],
+    'constructor': [
+        m('ladrillos2', 'Casa de ladrillo', 'minecraft:bricks', 'colocar', 'minecraft:bricks', 256, 14, 40),
+        m('arenisca', 'Arenisca', 'minecraft:sandstone', 'colocar', 'minecraft:sandstone', 192, 15, 35),
+        m('troncos', 'Cabaña de troncos', 'minecraft:oak_log', 'colocar', '#minecraft:logs', 192, 17, 35),
+        m('cristal2', 'Invernadero', 'minecraft:glass', 'colocar', '#forge:glass', 256, 19, 45),
+        m('lana2', 'Alfombras de colores', 'minecraft:red_wool', 'colocar', '#minecraft:wool', 256, 21, 45),
+        m('escaleras2', 'Escalinatas', 'minecraft:stone_stairs', 'colocar', '#minecraft:stairs', 256, 23, 45),
+        m('losas2', 'Tejados', 'minecraft:stone_slab', 'colocar', '#minecraft:slabs', 384, 25, 45),
+        m('muros', 'Murallas', 'minecraft:cobblestone_wall', 'colocar', '#minecraft:walls', 128, 27, 45),
+        m('terracota2', 'Barro cocido', 'minecraft:orange_terracotta', 'colocar', '#minecraft:terracotta', 256, 30, 55),
+        m('hormigon', 'Hormigón', 'minecraft:white_concrete', 'colocar', '#tfclient:hormigon', 256, 33, 55),
+        m('piedra2', 'Castillo', 'minecraft:stone_bricks', 'colocar', 'minecraft:stone_bricks', 512, 36, 60),
+        m('cuarzo2', 'Templo de cuarzo', 'minecraft:quartz_pillar', 'colocar', 'minecraft:quartz_block', 256, 40, 65),
+        m('bloques2', 'Gran obra', 'minecraft:bricks', 'colocar', '*', 2000, 45, 85),
+        m('maestro', 'Maestro de obras', 'minecraft:beacon', 'colocar', '*', 40000, 40, 700, 1800, 'nunca', ['minecraft:diamond 2']),
+    ],
+    'encantador': [
+        m('papel2', 'Papelería', 'minecraft:paper', 'fabricar', 'minecraft:paper', 192, 10, 30),
+        m('libros2', 'Biblioteca', 'minecraft:book', 'fabricar', 'minecraft:book', 64, 12, 40),
+        m('treinta', 'Treinta encantamientos', 'minecraft:enchanted_book', 'encantar', '*', 30, 14, 120),
+        m('atriles', 'Atriles', 'minecraft:lectern', 'fabricar', 'minecraft:lectern', 4, 16, 40),
+        m('estanterias2', 'Sala de lectura', 'minecraft:bookshelf', 'fabricar', 'minecraft:bookshelf', 24, 18, 55),
+        m('yunque', 'Yunque del encantador', 'minecraft:anvil', 'reparar', '*', 20, 20, 50),
+        m('cuarenta', 'Cuarenta encantamientos', 'minecraft:experience_bottle', 'encantar', '*', 40, 24, 140),
+        m('afilar', 'Muela', 'minecraft:grindstone', 'fabricar', 'minecraft:grindstone', 2, 28, 45),
+        m('cincuenta', 'Cincuenta encantamientos', 'minecraft:lapis_block', 'encantar', '*', 50, 34, 160),
+        m('reparar2', 'Taller mágico', 'minecraft:chipped_anvil', 'reparar', '*', 40, 40, 70),
+        m('setenta', 'Setenta encantamientos', 'minecraft:enchanting_table', 'encantar', '*', 70, 46, 190),
+        m('hechicero', 'Gran hechicero', 'minecraft:end_crystal', 'encantar', '*', 2500, 40, 700, 1800, 'nunca', ['minecraft:diamond 2']),
+    ],
+}
+
+
+# (1.3.115) La economía exigente: lo que se gana trabajando, al 60 %. Aquí los pagos se escriben como antes y al guardar se
+# aplica lo mismo que PadEconomy.scale (menos de 10: con 2 decimales; si no, redondeado), así que las configs ya salen
+# con «economia»: 3 y el servidor no las vuelve a bajar.
+ECON = 0.6
+
+
+def scale(o, fields=('monedas', 'monedasPorNivel')):
+    if isinstance(o, list):
+        for c in o:
+            scale(c, fields)
+    elif isinstance(o, dict):
+        for k, v in o.items():
+            if k in fields and isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
+                x = v * ECON
+                o[k] = math.floor(x * 100 + 0.5) / 100 if x < 10 else float(max(1, math.floor(x + 0.5)))
+            elif isinstance(v, (dict, list)):
+                scale(v, fields)
+    return o
+
+
+def check(name, lst):
+    ids = [x['id'] for x in lst]
+    dup = sorted({i for i in ids if ids.count(i) > 1})
+    assert not dup, f'{name}: ids repetidos {dup}'
+    names = [x['nombre'] for x in lst]
+    dup = sorted({i for i in names if names.count(i) > 1})
+    assert not dup, f'{name}: nombres repetidos {dup}'
+
+
 def jobs():
     d = json.load(open(JOBS_SRC, encoding='utf-8'))
-    d['versionEconomia'] = 2
+    # (1.3.143) versión 3: las misiones nuevas (niveles 10 a 50) llegan a los servidores (la de antes se guarda)
+    d['versionEconomia'] = 3
+    d['economia'] = 3
     d['misionesDiariasPorOficio'] = 3
     d['_ayuda'] = [x for x in d['_ayuda'] if not x.startswith('repetir:')] + [
         'repetir: diaria (plantilla que rota: cada día a cada jugador le tocan misionesDiariasPorOficio de las de su nivel, '
         'en temporadas de 90 días sin repetir ninguna igual y subiendo cantidad y premio de x1 a x2,5), siempre (vuelve al '
         'cobrarla) o nunca (una vez).',
-        'Economía (1.3.29): un diamante vale 150 en la tienda; una hora de trabajo da entre 40 y 150 monedas según oficio y nivel.']
+        'Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.']
     lv = d['niveles']
     lv['xpBase'] = 120
     lv['multiplicador'] = 1.15
@@ -238,11 +433,16 @@ def jobs():
                    '50': {'objetos': ['minecraft:netherite_ingot 1'], 'monedas': 1500}}
     for j in d['oficios']:
         j['acciones'] = [{'tipo': t, 'objetivo': o, 'xp': x, 'monedas': c} for t, o, x, c in ACTIONS[j['id']]]
-        j['misiones'] = MISSIONS[j['id']]
+        j['misiones'] = MISSIONS[j['id']] + MISSIONS_HIGH.get(j['id'], [])
+        check('oficio ' + j['id'], j['misiones'])
+    scale(lv)
+    for j in d['oficios']:
+        scale(j['acciones'])
+        scale(j['misiones'])
     with open(JOBS_SRC, 'w', encoding='utf-8') as f:
         json.dump(d, f, ensure_ascii=False, indent=2)
         f.write('\n')
-    return sum(len(v) for v in MISSIONS.values())
+    return sum(len(j['misiones']) for j in d['oficios'])
 
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -349,6 +549,203 @@ HUNTS = [
 ]
 
 
+# (1.3.143, el dueño: «agrega un colchón de 2 meses de misiones, no idénticas») cada día tocan 3 diarias por jugador:
+# con ~190 plantillas pasan más de 2 meses antes de que se repita ninguna (y entonces con más cantidad y premio).
+DAILY_MORE = [
+    # minería y excavación
+    d('granito', 'Granito rosado', 'Rompe {n} de granito', 'romper', 'minecraft:granite', 96, 10, 'minecraft:granite'),
+    d('diorita', 'Diorita', 'Rompe {n} de diorita', 'romper', 'minecraft:diorite', 96, 10, 'minecraft:diorite'),
+    d('andesita', 'Andesita', 'Rompe {n} de andesita', 'romper', 'minecraft:andesite', 96, 10, 'minecraft:andesite'),
+    d('toba', 'Toba volcánica', 'Rompe {n} de toba', 'romper', 'minecraft:tuff', 96, 12, 'minecraft:tuff'),
+    d('calcita', 'Calcita blanca', 'Rompe {n} de calcita', 'romper', 'minecraft:calcite', 48, 14, 'minecraft:calcite'),
+    d('goteo', 'Cuevas de goteo', 'Rompe {n} bloques de espeleotema', 'romper', 'minecraft:dripstone_block', 48, 14, 'minecraft:pointed_dripstone'),
+    d('amatista', 'Geoda', 'Rompe {n} racimos de amatista', 'romper', 'minecraft:amethyst_cluster', 4, 18, 'minecraft:amethyst_shard'),
+    d('esmeralda', 'Montaña de esmeraldas', 'Saca {n} menas de esmeralda', 'romper', '#minecraft:emerald_ores', 2, 30, 'minecraft:emerald'),
+    d('piedra2', 'Cantera grande', 'Rompe {n} piedras', 'romper', '#minecraft:base_stone_overworld', 384, 18, 'minecraft:iron_pickaxe'),
+    d('pizarra2', 'Profundidades', 'Rompe {n} de pizarra profunda', 'romper', 'minecraft:deepslate', 256, 20, 'minecraft:cobbled_deepslate'),
+    d('carbon2', 'Carbonera', 'Saca {n} menas de carbón', 'romper', '#minecraft:coal_ores', 64, 20, 'minecraft:coal_block'),
+    d('hierro2', 'Pico de hierro', 'Saca {n} menas de hierro', 'romper', '#minecraft:iron_ores', 32, 26, 'minecraft:iron_pickaxe'),
+    d('cobre2', 'Cobre a montones', 'Saca {n} menas de cobre', 'romper', '#minecraft:copper_ores', 48, 22, 'minecraft:copper_block'),
+    d('nieve', 'Quitanieves', 'Rompe {n} bloques de nieve', 'romper', 'minecraft:snow_block', 64, 12, 'minecraft:snowball'),
+    d('hielo', 'Bloques de hielo', 'Rompe {n} de hielo compacto', 'romper', 'minecraft:packed_ice', 32, 14, 'minecraft:packed_ice'),
+    d('arenaroja', 'Mesa roja', 'Excava {n} de arena roja', 'romper', 'minecraft:red_sand', 96, 14, 'minecraft:red_sand'),
+    d('barro', 'Ciénaga', 'Excava {n} de barro', 'romper', 'minecraft:mud', 64, 14, 'minecraft:mud'),
+    d('podzol', 'Suelo de taiga', 'Excava {n} de podzol', 'romper', 'minecraft:podzol', 48, 14, 'minecraft:podzol'),
+    d('micelio', 'Isla champiñón', 'Excava {n} de micelio', 'romper', 'minecraft:mycelium', 32, 16, 'minecraft:mycelium'),
+    d('hierba', 'Prados', 'Excava {n} bloques de hierba', 'romper', 'minecraft:grass_block', 96, 10, 'minecraft:grass_block'),
+    d('musgo', 'Musgo', 'Rompe {n} bloques de musgo', 'romper', 'minecraft:moss_block', 32, 12, 'minecraft:moss_block'),
+    d('arenisca', 'Desierto', 'Rompe {n} de arenisca', 'romper', 'minecraft:sandstone', 64, 12, 'minecraft:sandstone'),
+    d('terracota', 'Badlands', 'Rompe {n} de terracota', 'romper', '#minecraft:terracotta', 64, 14, 'minecraft:terracotta'),
+    d('pala', 'Pala incansable', 'Excava {n} bloques con pala', 'romper', '#minecraft:mineable/shovel', 256, 16, 'minecraft:iron_shovel'),
+    # Nether y End
+    d('netherrack', 'Rocas del Nether', 'Rompe {n} de netherrack', 'romper', 'minecraft:netherrack', 192, 14, 'minecraft:netherrack'),
+    d('negra', 'Piedra negra', 'Rompe {n} de piedra negra', 'romper', 'minecraft:blackstone', 96, 15, 'minecraft:blackstone'),
+    d('basalto', 'Deltas de basalto', 'Rompe {n} de basalto', 'romper', 'minecraft:basalt', 96, 15, 'minecraft:basalt'),
+    d('almas', 'Valle de las almas', 'Excava {n} de arena de almas', 'romper', 'minecraft:soul_sand', 64, 15, 'minecraft:soul_sand'),
+    d('tierraalmas', 'Tierra de almas', 'Excava {n} de tierra de almas', 'romper', 'minecraft:soul_soil', 64, 15, 'minecraft:soul_soil'),
+    d('cuarzo', 'Cuarzo del Nether', 'Saca {n} menas de cuarzo', 'romper', 'minecraft:nether_quartz_ore', 32, 20, 'minecraft:quartz'),
+    d('oronether', 'Oro del Nether', 'Saca {n} menas de oro del Nether', 'romper', 'minecraft:nether_gold_ore', 32, 18, 'minecraft:gold_nugget'),
+    d('piedrabrillo', 'Piedra luminosa', 'Rompe {n} de piedra luminosa', 'romper', 'minecraft:glowstone', 32, 18, 'minecraft:glowstone_dust'),
+    d('magma', 'Bloques de magma', 'Rompe {n} bloques de magma', 'romper', 'minecraft:magma_block', 24, 16, 'minecraft:magma_block'),
+    d('carmesi', 'Bosque carmesí', 'Tala {n} tallos carmesí', 'romper', 'minecraft:crimson_stem', 48, 16, 'minecraft:crimson_stem'),
+    d('distorsionado', 'Bosque distorsionado', 'Tala {n} tallos distorsionados', 'romper', 'minecraft:warped_stem', 48, 16, 'minecraft:warped_stem'),
+    d('endpiedra', 'Isla del End', 'Rompe {n} de piedra del End', 'romper', 'minecraft:end_stone', 128, 20, 'minecraft:end_stone'),
+    d('obsidiana', 'Obsidiana', 'Rompe {n} de obsidiana', 'romper', 'minecraft:obsidian', 12, 20, 'minecraft:obsidian'),
+    d('escombros', 'Restos antiguos', 'Encuentra {n} escombros ancestrales', 'romper', 'minecraft:ancient_debris', 2, 40, 'minecraft:ancient_debris'),
+    # árboles
+    d('mangle', 'Manglar', 'Tala {n} troncos de mangle', 'romper', 'minecraft:mangrove_log', 48, 15, 'minecraft:mangrove_log'),
+    d('troncos2', 'Aserradero', 'Tala {n} troncos', 'romper', '#minecraft:logs', 256, 24, 'minecraft:diamond_axe'),
+    d('hojas', 'Poda', 'Rompe {n} hojas', 'romper', '#minecraft:leaves', 128, 10, 'minecraft:oak_leaves'),
+    d('champinones', 'Champiñones gigantes', 'Rompe {n} bloques de champiñón', 'romper', 'minecraft:red_mushroom_block', 32, 14, 'minecraft:red_mushroom'),
+    # cosechas
+    d('cacao', 'Cacao', 'Cosecha {n} vainas de cacao maduras', 'cosechar', 'minecraft:cocoa', 24, 14, 'minecraft:cocoa_beans'),
+    d('bayas', 'Bayas dulces', 'Cosecha {n} arbustos de bayas maduros', 'cosechar', 'minecraft:sweet_berry_bush', 24, 14, 'minecraft:sweet_berries'),
+    d('cactus', 'Cactus', 'Cosecha {n} cactus', 'cosechar', 'minecraft:cactus', 48, 12, 'minecraft:cactus'),
+    d('bambu2', 'Bambusal', 'Cosecha {n} de bambú', 'cosechar', 'minecraft:bamboo', 96, 12, 'minecraft:bamboo'),
+    d('trigo2', 'Granero', 'Cosecha {n} trigos maduros', 'cosechar', 'minecraft:wheat', 128, 20, 'minecraft:hay_block'),
+    d('zanahorias2', 'Huerto grande', 'Cosecha {n} zanahorias maduras', 'cosechar', 'minecraft:carrots', 128, 20, 'minecraft:golden_carrot'),
+    d('patatas2', 'Saco de patatas', 'Cosecha {n} patatas maduras', 'cosechar', 'minecraft:potatoes', 128, 20, 'minecraft:baked_potato'),
+    d('cultivos', 'Campos llenos', 'Cosecha {n} cultivos maduros', 'cosechar', '#minecraft:crops', 160, 22, 'minecraft:composter'),
+    d('melones2', 'Melonar', 'Cosecha {n} melones', 'cosechar', 'minecraft:melon', 64, 20, 'minecraft:glistering_melon_slice'),
+    d('calabazas2', 'Feria de calabazas', 'Cosecha {n} calabazas', 'cosechar', 'minecraft:pumpkin', 64, 20, 'minecraft:carved_pumpkin'),
+    d('cana2', 'Azucarera', 'Cosecha {n} cañas de azúcar', 'cosechar', 'minecraft:sugar_cane', 160, 20, 'minecraft:sugar'),
+    d('verruga2', 'Bodega del Nether', 'Cosecha {n} verrugas maduras', 'cosechar', 'minecraft:nether_wart', 96, 24, 'minecraft:nether_wart_block'),
+    # combate
+    d('zombis2', 'Horda', 'Derrota {n} zombis', 'matar', 'minecraft:zombie', 30, 22, 'minecraft:zombie_head'),
+    d('esqueletos2', 'Cementerio', 'Derrota {n} esqueletos', 'matar', 'minecraft:skeleton', 25, 22, 'minecraft:skeleton_skull'),
+    d('aranas2', 'Nido', 'Derrota {n} arañas', 'matar', 'minecraft:spider', 20, 20, 'minecraft:spider_eye'),
+    d('cueva', 'Arañas de cueva', 'Derrota {n} arañas de cueva', 'matar', 'minecraft:cave_spider', 10, 18, 'minecraft:cobweb'),
+    d('husks', 'Momias del desierto', 'Derrota {n} husks', 'matar', 'minecraft:husk', 10, 18, 'minecraft:sand'),
+    d('strays', 'Errantes del hielo', 'Derrota {n} strays', 'matar', 'minecraft:stray', 8, 18, 'minecraft:tipped_arrow'),
+    d('brujas', 'Caza de brujas', 'Derrota {n} brujas', 'matar', 'minecraft:witch', 3, 22, 'minecraft:glass_bottle'),
+    d('fantasmas', 'Cielo nocturno', 'Derrota {n} phantoms', 'matar', 'minecraft:phantom', 4, 20, 'minecraft:phantom_membrane'),
+    d('saqueadores', 'Patrulla', 'Derrota {n} saqueadores', 'matar', 'minecraft:pillager', 6, 22, 'minecraft:crossbow'),
+    d('aldeanoszombi', 'Pueblo maldito', 'Derrota {n} aldeanos zombi', 'matar', 'minecraft:zombie_villager', 4, 18, 'minecraft:emerald'),
+    d('lepismas', 'Bichos de piedra', 'Derrota {n} lepismas', 'matar', 'minecraft:silverfish', 10, 16, 'minecraft:stone_bricks'),
+    d('guardianes', 'Templo del mar', 'Derrota {n} guardianes', 'matar', 'minecraft:guardian', 6, 26, 'minecraft:prismarine_shard'),
+    d('blazes', 'Fuego del Nether', 'Derrota {n} blazes', 'matar', 'minecraft:blaze', 6, 26, 'minecraft:blaze_rod'),
+    d('cubosmagma', 'Magma', 'Derrota {n} cubos de magma', 'matar', 'minecraft:magma_cube', 8, 22, 'minecraft:magma_cream'),
+    d('ghasts', 'Lágrimas', 'Derrota {n} ghasts', 'matar', 'minecraft:ghast', 2, 28, 'minecraft:ghast_tear'),
+    d('wither', 'Fortaleza', 'Derrota {n} esqueletos wither', 'matar', 'minecraft:wither_skeleton', 5, 28, 'minecraft:wither_skeleton_skull'),
+    d('hoglins', 'Bestias carmesíes', 'Derrota {n} hoglins', 'matar', 'minecraft:hoglin', 4, 24, 'minecraft:cooked_porkchop'),
+    d('piglinszombi', 'Piglins zombi', 'Derrota {n} piglins zombi', 'matar', 'minecraft:zombified_piglin', 15, 18, 'minecraft:gold_nugget'),
+    d('piglins', 'Piglins', 'Derrota {n} piglins', 'matar', 'minecraft:piglin', 8, 22, 'minecraft:gold_ingot'),
+    d('endermites', 'Plaga del End', 'Derrota {n} endermites', 'matar', 'minecraft:endermite', 3, 18, 'minecraft:ender_eye'),
+    d('shulkers', 'Cajas del End', 'Derrota {n} shulkers', 'matar', 'minecraft:shulker', 3, 30, 'minecraft:shulker_shell'),
+    d('vindicadores', 'Mansión', 'Derrota {n} vindicadores', 'matar', 'minecraft:vindicator', 3, 28, 'minecraft:iron_axe'),
+    d('monstruos2', 'Noche larga', 'Derrota {n} monstruos', 'matar', 'hostil', 80, 28, 'minecraft:diamond_sword'),
+    d('creepers2', 'Silencio verde', 'Derrota {n} creepers', 'matar', 'minecraft:creeper', 15, 24, 'minecraft:creeper_head'),
+    d('endermans2', 'Ojos del vacío', 'Derrota {n} endermans', 'matar', 'minecraft:enderman', 10, 28, 'minecraft:ender_eye'),
+    d('ahogados2', 'Ruinas sumergidas', 'Derrota {n} ahogados', 'matar', 'minecraft:drowned', 15, 22, 'minecraft:trident'),
+    d('slimes2', 'Pantano pegajoso', 'Derrota {n} slimes', 'matar', 'minecraft:slime', 20, 20, 'minecraft:slime_block'),
+    # pesca
+    d('globo', 'Pez globo', 'Pesca {n} peces globo', 'pescar', 'minecraft:pufferfish', 2, 16, 'minecraft:pufferfish'),
+    d('tropical', 'Arrecife', 'Pesca {n} peces tropicales', 'pescar', 'minecraft:tropical_fish', 2, 16, 'minecraft:tropical_fish'),
+    d('peces', 'Red llena', 'Pesca {n} peces', 'pescar', '#minecraft:fishes', 16, 18, 'minecraft:cod_bucket'),
+    d('pesca2', 'Tarde de pesca', 'Pesca {n} veces', 'pescar', '*', 24, 24, 'minecraft:fishing_rod'),
+    d('bacalao2', 'Lonja', 'Pesca {n} bacalaos', 'pescar', 'minecraft:cod', 16, 20, 'minecraft:cooked_cod'),
+    d('salmon2', 'Río arriba', 'Pesca {n} salmones', 'pescar', 'minecraft:salmon', 10, 22, 'minecraft:cooked_salmon'),
+    # horno
+    d('orofundir', 'Orfebre', 'Funde {n} lingotes de oro', 'fundir', 'minecraft:gold_ingot', 16, 18, 'minecraft:gold_ingot'),
+    d('cobrefundir', 'Calderero', 'Funde {n} lingotes de cobre', 'fundir', 'minecraft:copper_ingot', 32, 14, 'minecraft:copper_ingot'),
+    d('lingotes2', 'Altos hornos', 'Funde {n} lingotes de hierro', 'fundir', 'minecraft:iron_ingot', 64, 24, 'minecraft:blast_furnace'),
+    d('lisa', 'Losas lisas', 'Funde {n} de piedra lisa', 'fundir', 'minecraft:smooth_stone', 48, 14, 'minecraft:smooth_stone'),
+    d('carbonvegetal', 'Carbón vegetal', 'Funde {n} de carbón vegetal', 'fundir', 'minecraft:charcoal', 32, 12, 'minecraft:charcoal'),
+    d('cerdo', 'Chuletas', 'Cocina {n} chuletas', 'fundir', 'minecraft:cooked_porkchop', 16, 14, 'minecraft:cooked_porkchop'),
+    d('pollo', 'Pollo asado', 'Cocina {n} pollos', 'fundir', 'minecraft:cooked_chicken', 16, 14, 'minecraft:cooked_chicken'),
+    d('cordero', 'Cordero asado', 'Cocina {n} de cordero', 'fundir', 'minecraft:cooked_mutton', 16, 14, 'minecraft:cooked_mutton'),
+    d('pescadoasado', 'Pescado asado', 'Cocina {n} salmones', 'fundir', 'minecraft:cooked_salmon', 12, 14, 'minecraft:cooked_salmon'),
+    d('patatasasadas', 'Patatas asadas', 'Asa {n} patatas', 'fundir', 'minecraft:baked_potato', 32, 12, 'minecraft:baked_potato'),
+    d('algas', 'Algas secas', 'Seca {n} algas', 'fundir', 'minecraft:dried_kelp', 48, 12, 'minecraft:dried_kelp'),
+    d('ladrillonether', 'Ladrillo del Nether', 'Funde {n} ladrillos del Nether', 'fundir', 'minecraft:nether_brick', 48, 16, 'minecraft:nether_brick'),
+    d('terracotafundir', 'Alfarería', 'Funde {n} de terracota', 'fundir', 'minecraft:terracotta', 32, 14, 'minecraft:terracotta'),
+    d('tinteverde', 'Tinte verde', 'Funde {n} tintes verdes', 'fundir', 'minecraft:green_dye', 16, 12, 'minecraft:green_dye'),
+    d('cristal2', 'Vidriería', 'Funde {n} de cristal', 'fundir', 'minecraft:glass', 96, 18, 'minecraft:glass_pane'),
+    # mesa de trabajo
+    d('palos', 'Palos', 'Fabrica {n} palos', 'fabricar', 'minecraft:stick', 64, 8, 'minecraft:stick'),
+    d('tablones', 'Tablones', 'Fabrica {n} tablones', 'fabricar', '#minecraft:planks', 128, 10, 'minecraft:oak_planks'),
+    d('mesas', 'Mesas de trabajo', 'Fabrica {n} mesas de trabajo', 'fabricar', 'minecraft:crafting_table', 4, 10, 'minecraft:crafting_table'),
+    d('hornos', 'Hornos', 'Fabrica {n} hornos', 'fabricar', 'minecraft:furnace', 4, 12, 'minecraft:furnace'),
+    d('escaleras', 'Escaleras de mano', 'Fabrica {n} escaleras de mano', 'fabricar', 'minecraft:ladder', 24, 10, 'minecraft:ladder'),
+    d('puertas', 'Puertas', 'Fabrica {n} puertas de madera', 'fabricar', '#minecraft:wooden_doors', 6, 12, 'minecraft:oak_door'),
+    d('vallas', 'Cercas', 'Fabrica {n} vallas de madera', 'fabricar', '#minecraft:wooden_fences', 24, 12, 'minecraft:oak_fence'),
+    d('barcos', 'Barcas', 'Fabrica {n} barcas', 'fabricar', '#minecraft:boats', 2, 12, 'minecraft:oak_boat'),
+    d('cubos', 'Cubos', 'Fabrica {n} cubos', 'fabricar', 'minecraft:bucket', 3, 14, 'minecraft:bucket'),
+    d('faroles', 'Faroles', 'Fabrica {n} faroles', 'fabricar', 'minecraft:lantern', 6, 14, 'minecraft:lantern'),
+    d('hogueras', 'Hogueras', 'Fabrica {n} hogueras', 'fabricar', 'minecraft:campfire', 3, 12, 'minecraft:campfire'),
+    d('barriles', 'Barriles', 'Fabrica {n} barriles', 'fabricar', 'minecraft:barrel', 4, 12, 'minecraft:barrel'),
+    d('tolvas', 'Tolvas', 'Fabrica {n} tolvas', 'fabricar', 'minecraft:hopper', 2, 18, 'minecraft:hopper'),
+    d('papel', 'Papel', 'Fabrica {n} de papel', 'fabricar', 'minecraft:paper', 48, 10, 'minecraft:paper'),
+    d('libros', 'Libros', 'Fabrica {n} libros', 'fabricar', 'minecraft:book', 8, 12, 'minecraft:book'),
+    d('estanterias', 'Biblioteca', 'Fabrica {n} estanterías', 'fabricar', 'minecraft:bookshelf', 4, 14, 'minecraft:bookshelf'),
+    d('flechas', 'Flechas', 'Fabrica {n} flechas', 'fabricar', 'minecraft:arrow', 64, 12, 'minecraft:arrow'),
+    d('arcos', 'Arqueros', 'Fabrica {n} arcos', 'fabricar', 'minecraft:bow', 2, 12, 'minecraft:bow'),
+    d('canas', 'Cañas de pescar', 'Fabrica {n} cañas de pescar', 'fabricar', 'minecraft:fishing_rod', 2, 10, 'minecraft:fishing_rod'),
+    d('camas', 'Dormitorio', 'Fabrica {n} camas', 'fabricar', '#minecraft:beds', 2, 14, 'minecraft:red_bed'),
+    d('alfombras', 'Alfombras', 'Fabrica {n} alfombras', 'fabricar', '#minecraft:wool_carpets', 24, 12, 'minecraft:red_carpet'),
+    d('estandartes', 'Estandartes', 'Fabrica {n} estandartes', 'fabricar', '#minecraft:banners', 2, 14, 'minecraft:white_banner'),
+    d('velas', 'Velas', 'Fabrica {n} velas', 'fabricar', '#minecraft:candles', 6, 14, 'minecraft:candle'),
+    d('galletas', 'Galletas', 'Hornea {n} galletas', 'fabricar', 'minecraft:cookie', 32, 12, 'minecraft:cookie'),
+    d('tartacalabaza', 'Tarta de calabaza', 'Fabrica {n} tartas de calabaza', 'fabricar', 'minecraft:pumpkin_pie', 8, 14, 'minecraft:pumpkin_pie'),
+    d('pasteles', 'Pastelería', 'Fabrica {n} pasteles', 'fabricar', 'minecraft:cake', 2, 18, 'minecraft:cake'),
+    d('zanahoriasoro', 'Zanahorias doradas', 'Fabrica {n} zanahorias doradas', 'fabricar', 'minecraft:golden_carrot', 8, 18, 'minecraft:golden_carrot'),
+    d('piedralabrada', 'Cantero', 'Fabrica {n} ladrillos de piedra', 'fabricar', 'minecraft:stone_bricks', 64, 12, 'minecraft:stone_bricks'),
+    d('pistones', 'Pistones', 'Fabrica {n} pistones', 'fabricar', 'minecraft:piston', 4, 16, 'minecraft:piston'),
+    d('repetidores', 'Repetidores', 'Fabrica {n} repetidores', 'fabricar', 'minecraft:repeater', 4, 16, 'minecraft:repeater'),
+    d('vagonetas', 'Vagonetas', 'Fabrica {n} vagonetas', 'fabricar', 'minecraft:minecart', 2, 16, 'minecraft:minecart'),
+    d('andamios', 'Andamios', 'Fabrica {n} andamios', 'fabricar', 'minecraft:scaffolding', 24, 12, 'minecraft:scaffolding'),
+    d('composteras', 'Composteras', 'Fabrica {n} composteras', 'fabricar', 'minecraft:composter', 3, 10, 'minecraft:composter'),
+    d('marcos', 'Marcos', 'Fabrica {n} marcos', 'fabricar', 'minecraft:item_frame', 6, 12, 'minecraft:item_frame'),
+    d('artesano2', 'Gran artesano', 'Fabrica {n} objetos', 'fabricar', '*', 256, 22, 'minecraft:crafting_table'),
+    # construir
+    d('tablones2', 'Suelo de madera', 'Coloca {n} tablones', 'colocar', '#minecraft:planks', 128, 14, 'minecraft:oak_planks'),
+    d('troncoscolocar', 'Cabaña', 'Coloca {n} troncos', 'colocar', '#minecraft:logs', 64, 12, 'minecraft:oak_log'),
+    d('lana', 'Tapices', 'Coloca {n} de lana', 'colocar', '#minecraft:wool', 64, 14, 'minecraft:white_wool'),
+    d('escalerascolocar', 'Escalinatas', 'Coloca {n} escaleras', 'colocar', '#minecraft:stairs', 64, 14, 'minecraft:oak_stairs'),
+    d('losas', 'Tejados', 'Coloca {n} losas', 'colocar', '#minecraft:slabs', 96, 14, 'minecraft:stone_slab'),
+    d('muros', 'Murallas', 'Coloca {n} muros', 'colocar', '#minecraft:walls', 48, 14, 'minecraft:cobblestone_wall'),
+    d('vallascolocar', 'Cercados', 'Coloca {n} vallas', 'colocar', '#minecraft:fences', 48, 12, 'minecraft:oak_fence'),
+    d('piedralabradacolocar', 'Castillo', 'Coloca {n} ladrillos de piedra', 'colocar', 'minecraft:stone_bricks', 96, 16, 'minecraft:stone_bricks'),
+    d('arenisca2', 'Templo del desierto', 'Coloca {n} de arenisca', 'colocar', 'minecraft:sandstone', 96, 14, 'minecraft:sandstone'),
+    d('terracotacolocar', 'Barro cocido', 'Coloca {n} de terracota', 'colocar', '#minecraft:terracotta', 64, 16, 'minecraft:orange_terracotta'),
+    d('cuarzo2', 'Palacio de cuarzo', 'Coloca {n} bloques de cuarzo', 'colocar', 'minecraft:quartz_block', 48, 18, 'minecraft:quartz_block'),
+    d('flores', 'Jardinero', 'Planta {n} flores', 'colocar', '#minecraft:flowers', 16, 12, 'minecraft:poppy'),
+    d('faroles2', 'Iluminación', 'Coloca {n} faroles', 'colocar', 'minecraft:lantern', 8, 12, 'minecraft:lantern'),
+    d('constructor2', 'Gran obra', 'Coloca {n} bloques', 'colocar', '*', 512, 22, 'minecraft:scaffolding'),
+    d('arboles2', 'Bosque nuevo', 'Planta {n} brotes', 'colocar', '#minecraft:saplings', 48, 16, 'minecraft:spruce_sapling'),
+    # animales, pociones y encantamientos
+    d('conejos', 'Madrigueras', 'Cría {n} conejos', 'criar', 'minecraft:rabbit', 3, 14, 'minecraft:rabbit_foot'),
+    d('cabras', 'Cabras', 'Cría {n} cabras', 'criar', 'minecraft:goat', 3, 14, 'minecraft:goat_horn'),
+    d('caballos', 'Cuadra', 'Cría {n} caballos', 'criar', 'minecraft:horse', 2, 16, 'minecraft:saddle'),
+    d('lobos', 'Manada', 'Cría {n} lobos', 'criar', 'minecraft:wolf', 2, 16, 'minecraft:bone'),
+    d('abejas', 'Colmena', 'Cría {n} abejas', 'criar', 'minecraft:bee', 2, 16, 'minecraft:honeycomb'),
+    d('llamas', 'Caravana', 'Cría {n} llamas', 'criar', 'minecraft:llama', 2, 16, 'minecraft:lead'),
+    d('criar', 'Granjero', 'Cría {n} animales', 'criar', '*', 10, 18, 'minecraft:wheat'),
+    d('pociones2', 'Botica', 'Prepara {n} pociones', 'preparar', 'minecraft:potion', 12, 22, 'minecraft:potion'),
+    d('arrojadizas', 'Granadas', 'Prepara {n} pociones arrojadizas', 'preparar', 'minecraft:splash_potion', 6, 24, 'minecraft:splash_potion'),
+    d('encantar2', 'Mago', 'Encanta {n} objetos', 'encantar', '*', 5, 30, 'minecraft:enchanting_table'),
+    d('reparar', 'Yunque', 'Repara {n} objetos en el yunque', 'reparar', '*', 3, 18, 'minecraft:anvil'),
+]
+
+HUNTS_MORE = [
+    d('c_piglinzombi', 'Horda dorada', 'Derrota {n} piglins zombi', 'matar', 'minecraft:zombified_piglin', 30, 35, 'minecraft:golden_sword'),
+    d('c_piglin2', 'Bastión', 'Derrota {n} piglins', 'matar', 'minecraft:piglin', 12, 45, 'minecraft:gold_ingot'),
+    d('c_zoglin', 'Zoglins', 'Derrota {n} zoglins', 'matar', 'minecraft:zoglin', 3, 60, 'minecraft:rotten_flesh'),
+    d('c_devastador', 'Asalto', 'Derrota {n} devastadores', 'matar', 'minecraft:ravager', 2, 75, 'minecraft:saddle'),
+    d('c_invocador', 'Magia oscura', 'Derrota {n} invocadores', 'matar', 'minecraft:evoker', 2, 80, 'minecraft:totem_of_undying'),
+    d('c_vex', 'Espíritus', 'Derrota {n} vexes', 'matar', 'minecraft:vex', 8, 50, 'minecraft:iron_sword'),
+    d('c_zombi2', 'Asedio zombi', 'Derrota {n} zombis', 'matar', 'minecraft:zombie', 70, 50, 'minecraft:rotten_flesh'),
+    d('c_esqueleto2', 'Lluvia de flechas', 'Derrota {n} esqueletos', 'matar', 'minecraft:skeleton', 50, 50, 'minecraft:arrow'),
+    d('c_enderman2', 'Granja del End', 'Derrota {n} endermans', 'matar', 'minecraft:enderman', 20, 70, 'minecraft:ender_eye'),
+    d('c_blaze2', 'Spawner de blazes', 'Derrota {n} blazes', 'matar', 'minecraft:blaze', 25, 80, 'minecraft:blaze_powder'),
+    d('c_bruja2', 'Cabaña del pantano', 'Derrota {n} brujas', 'matar', 'minecraft:witch', 10, 65, 'minecraft:redstone'),
+    d('c_slime2', 'Chunk de slimes', 'Derrota {n} slimes', 'matar', 'minecraft:slime', 40, 50, 'minecraft:slime_block'),
+    d('c_creeper2', 'Pólvora', 'Derrota {n} creepers', 'matar', 'minecraft:creeper', 35, 65, 'minecraft:gunpowder'),
+    d('c_guardian2', 'Monumento', 'Derrota {n} guardianes', 'matar', 'minecraft:guardian', 20, 75, 'minecraft:prismarine_crystals'),
+    d('c_wither2', 'Calaveras', 'Derrota {n} esqueletos wither', 'matar', 'minecraft:wither_skeleton', 15, 90, 'minecraft:coal_block'),
+]
+
+
 def missions():
     o = {
         '_ayuda': ('Misiones del pad y Cazas (1.3.29). tipo: romper, cosechar, colocar, matar, pescar, fabricar, fundir, preparar, '
@@ -357,12 +754,15 @@ def missions():
                    'ninguna igual: cada día 3 diarias por jugador, cada semana 3 semanales (cantidad x semanalesPorCantidad, pago x '
                    'semanalesPorPago) y cada 12 h 4 cazas para todo el servidor; a lo largo de la temporada suben cantidad y premio '
                    '(x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id.'),
-        'version': 2,
+        'version': 3,
+        'economia': 3,
         'semanalesPorCantidad': 5,
         'semanalesPorPago': 4,
-        'diarias': DAILY,
-        'cazas': HUNTS,
+        'diarias': scale(json.loads(json.dumps(DAILY + DAILY_MORE))),
+        'cazas': scale(json.loads(json.dumps(HUNTS + HUNTS_MORE))),
     }
+    check('diarias', o['diarias'])
+    check('cazas', o['cazas'])
     with open(os.path.join(RES, 'tfclient-misiones-default.json'), 'w', encoding='utf-8') as f:
         json.dump(o, f, ensure_ascii=False, indent=2)
         f.write('\n')
@@ -371,4 +771,4 @@ def missions():
 if __name__ == '__main__':
     n = jobs()
     missions()
-    print(f'oficios: {n} misiones; misiones del pad: {len(DAILY)} diarias y {len(HUNTS)} cazas')
+    print(f'oficios: {n} misiones; misiones del pad: {len(DAILY + DAILY_MORE)} diarias y {len(HUNTS + HUNTS_MORE)} cazas')

@@ -2378,6 +2378,28 @@ public final class BossTest {
                 player.closeContainer();
             }
             // soporte de pociones: una con mayúsculas + clic y otra con clic
+            // (1.3.143) un cofre de 8 tablones de abeto (con Woodworks, woodworks:spruce_chest): cuenta para «fabricar cofre»
+            case 12 -> {
+                var pos = at(-3, 0);
+                player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(id, inv,
+                        net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)), net.minecraft.network.chat.Component.literal("Mesa")));
+                var menu = player.containerMenu;
+                for (int i = 1; i <= 9; i++) if (i != 5) menu.getSlot(i).set(new ItemStack(Items.SPRUCE_PLANKS, 1));
+                menu.slotsChanged(menu.getSlot(1).container);
+                ItemStack result = menu.getSlot(0).getItem().copy();
+                menu.clicked(0, 0, click, player);
+                String id = String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(result.getItem()));
+                var target = new net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Target("minecraft:chest");
+                boolean item = target.item(result);
+                boolean block = result.getItem() instanceof net.minecraft.world.item.BlockItem bi
+                        && target.block(bi.getBlock().defaultBlockState());
+                boolean woodworks = net.minecraftforge.fml.ModList.get().isLoaded("woodworks");
+                r.event("oficios: cofre de abeto (" + (woodworks ? "con Woodworks" : "sin Woodworks") + ") → " + id + ": " + counted()
+                        + "; cuenta como «minecraft:chest» al fabricar " + item + " y al colocar/romper " + block
+                        + (item && block ? " (bien)" : " (MAL)"));
+                menu.setCarried(ItemStack.EMPTY);
+                player.closeContainer();
+            }
             case 15 -> {
                 var pos = at(0, 3);
                 level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.BREWING_STAND.defaultBlockState());
@@ -2430,6 +2452,31 @@ public final class BossTest {
                 r.event("oficios: la de hace 3 días sin cobrar: " + (found == null ? "NO SALE en la lista" : "sale") + "; COBRAR → saldo " + b2 + " → " + b3
                         + (found != null && b3 > b2 ? " (bien)" : " (MAL)"));
             }
+            // (1.3.143, el dueño: «asegúrate de que todas las misiones se cumplan, que todos cobren, cazas, todo») cada misión
+            // que va en el mod se puede hacer (los objetivos existen y cuentan), y las de hoy se hacen y se cobran de verdad
+            case 193 -> {
+                var problems = new java.util.ArrayList<String>();
+                int n = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkJobs(server, resource("/tfclient-jobs-default.json"), problems)
+                        + net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkPad(server, resource("/tfclient-misiones-default.json"), problems);
+                r.event("misiones: " + n + " revisadas (oficios, diarias y cazas del mod) → " + (problems.isEmpty() ? "todas se pueden hacer (bien)"
+                        : "MAL " + problems.size() + ": " + String.join(" | ", problems)));
+                r.event("misiones del pad de hoy: " + net.tierrasfantasticas.tfclient.pad.server.PadMissions.testAll(player));
+                r.event("misiones de oficio de hoy: " + net.tierrasfantasticas.tfclient.jobs.TFJobs.testAllJobs(player));
+                // bayas dulces cogidas con clic derecho (sin romper la planta)
+                var pos = at(2, 2);
+                level.setBlockAndUpdate(pos.below(), net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState());
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE, 3));
+                net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+                player.getInventory().selected = 8;
+                player.getInventory().setItem(8, ItemStack.EMPTY);
+                var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+                var res = player.gameMode.useItemOn(player, level, ItemStack.EMPTY, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                r.event("misiones: bayas dulces con clic derecho → " + res + ", la planta queda con edad "
+                        + level.getBlockState(pos).getValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE));
+            }
+            case 195 -> r.event("misiones: bayas dulces cogidas → " + (net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.contains("cosechar minecraft:sweet_berry_bush 1")
+                    ? "cuenta como cosechar (bien)" : "NO CUENTA " + net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG));
             // (1.3.139) los rangos del clan (líder, colíder, veterano, miembro)
             case 22 -> r.event("clan, rangos: " + net.tierrasfantasticas.tfclient.pad.server.PadClans.testRanks(player));
             case 24 -> openPad = "oficios/o:herrero:m";
@@ -2586,7 +2633,15 @@ public final class BossTest {
     private static ItemEntity webDrop, plainDrop, lavaDrop, hopperDrop;
     private static net.minecraft.core.BlockPos hopperAt;
 
-    private static long balance(ServerPlayer p) {
+    private static com.google.gson.JsonObject resource(String path) {
+        try (java.io.InputStream in = BossTest.class.getResourceAsStream(path)) {
+            return in == null ? null : com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+        private static long balance(ServerPlayer p) {
         return net.tierrasfantasticas.tfclient.economy.TFEconomy.balance(p.server, p.getUUID()).orElse(-1);
     }
 
