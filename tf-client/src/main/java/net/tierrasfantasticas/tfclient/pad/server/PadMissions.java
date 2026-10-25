@@ -182,6 +182,36 @@ public final class PadMissions {
         return true;
     }
 
+    /**
+     * (1.3.143, el dueño: «asegúrate de que todas las misiones se cumplan… cazas, todo») Para la prueba en el juego: hace
+     * cada misión diaria, semanal y caza de hoy con algo de verdad de su objetivo (como lo contaría TFJobs) y la cobra;
+     * mira que el saldo suba justo lo que paga. Devuelve el resumen y los fallos.
+     */
+    public static String testAll(ServerPlayer player) {
+        var server = player.getServer();
+        int ok = 0;
+        List<String> bad = new ArrayList<>();
+        for (String kind : List.of("d", "s", "c")) {
+            List<Def> defs = kind.equals("d") ? daily(player.getUUID()) : kind.equals("s") ? weekly(player.getUUID()) : hunts();
+            for (Def d : defs) {
+                var sample = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.sample(server, d.type, d.target);
+                if (sample == null) {
+                    bad.add(kind + " " + d.id + ": sin nada con qué hacerla");
+                    continue;
+                }
+                record(player, d.type, sample, d.amount);
+                long[] st = STORE_IMPL.state(STORE_IMPL.slot(player.getUUID(), kind), d.id);
+                long b0 = TFEconomy.balance(server, player.getUUID()).orElse(-1);
+                boolean claimed = st[1] == 0 && claim(player, kind, d);
+                long b1 = TFEconomy.balance(server, player.getUUID()).orElse(-1);
+                if (!claimed || b1 - b0 != d.coins) bad.add(kind + " " + d.id + " (" + d.type + " " + d.target + "): progreso " + st[0] + "/" + d.amount
+                        + (claimed ? ", cobrada pero el saldo subió " + (b1 - b0) + " de " + d.coins : ", NO se pudo cobrar"));
+                else ok++;
+            }
+        }
+        return ok + " hechas y cobradas" + (bad.isEmpty() ? " (todas bien)" : "; MAL " + bad.size() + ": " + String.join(" | ", bad));
+    }
+
     // ---------------------------------------------------------------------------------------------------------------
     // Vistas
     // ---------------------------------------------------------------------------------------------------------------
@@ -200,6 +230,7 @@ public final class PadMissions {
         List<String> lines = new ArrayList<>();
         long passXp = PadPass.xpOf(kind);
         lines.add(d.desc + "  ·  " + Math.min(st[0], d.amount) + "/" + d.amount + (passXp > 0 ? "  ·  +" + passXp + " XP de pase" : ""));
+        if (!claimed) lines.add(net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.how(d.type, d.target));
         return new PadView.Row(new ItemStack(d.item()), d.name, claimed ? 0x7E8CA8 : 0x18265C, lines,
                 Math.min(1F, st[0] / (float) d.amount), "+" + PadView.money(d.coins), btn, null);
     }
@@ -365,7 +396,7 @@ public final class PadMissions {
             if (!Files.exists(file)) TFJson.write(file, o);
         } else {
             // 1.3.29: listas nuevas y economía nueva (rotan por temporadas); la de antes se guarda y se cambia
-            o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 2, defaults(), "misiones.json");
+            o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 3, defaults(), "misiones.json");
             // (1.3.115) economía exigente: misiones y cazas al 60 % (una vez)
             o = PadEconomy.scale(file, o, 0.6, "misiones.json", "monedas");
         }

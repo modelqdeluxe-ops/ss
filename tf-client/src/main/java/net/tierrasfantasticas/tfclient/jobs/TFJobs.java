@@ -87,6 +87,8 @@ public final class TFJobs {
         net.tierrasfantasticas.tfclient.util.TFConfigDir.writeGuide();
         TFJobsConfig.load();
         TFPlacedBlocks.load(server);
+        // (1.3.143) avisa en la consola de las misiones que no se pueden hacer (un objetivo mal escrito, una etiqueta vacía…)
+        TFMissionCheck.logProblems(server);
     }
 
     @SubscribeEvent
@@ -103,6 +105,7 @@ public final class TFJobs {
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || server == null) return;
         int tick = server.getTickCount();
+        if (!picks.isEmpty()) checkPicks();
         if (tick % 10 == 0) {
             checkEnchants();
         }
@@ -150,6 +153,42 @@ public final class TFJobs {
             }
         }
         return null;
+    }
+
+    /**
+     * (1.3.143, el dueño: «verifica todas las misiones») Las bayas dulces y las luminosas se cogen con clic derecho, sin
+     * romper la planta: se mira al final del tick si de verdad se cogieron (la planta ya no tiene bayas) y entonces cuenta
+     * como cosechar esa planta madura.
+     */
+    private record Pick(ServerPlayer player, net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, BlockState state) {}
+    private static final List<Pick> picks = new java.util.ArrayList<>();
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onRightClick(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock event) {
+        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer player) || !playing(player)
+                || !(event.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        BlockState state = level.getBlockState(event.getPos());
+        if (berries(state) && picks.size() < 256) picks.add(new Pick(player, level, event.getPos().immutable(), state));
+    }
+
+    private static boolean berries(BlockState state) {
+        if (state.getBlock() instanceof net.minecraft.world.level.block.SweetBerryBushBlock)
+            return state.getValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE) >= 2;
+        return state.getBlock() instanceof net.minecraft.world.level.block.CaveVines
+                && state.hasProperty(net.minecraft.world.level.block.CaveVines.BERRIES)
+                && state.getValue(net.minecraft.world.level.block.CaveVines.BERRIES);
+    }
+
+    private static void checkPicks() {
+        for (Pick p : List.copyOf(picks)) {
+            BlockState now = p.level().getBlockState(p.pos());
+            if (now.getBlock() == p.state().getBlock() && !berries(now) && p.player().isAlive()) {
+                // la planta, como si estuviera madura: así cuenta para «cosechar minecraft:sweet_berry_bush»
+                record(p.player(), "cosechar", t -> t.block(p.state()), 1);
+                if (TEST) TEST_LOG.add("cosechar " + net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(p.state().getBlock()) + " 1");
+            }
+        }
+        picks.clear();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -345,6 +384,56 @@ public final class TFJobs {
         TFChat.send(player, "Oficios", ChatFormatting.GOLD, "Misión completada: ", TFChat.hl(mission.name()),
                 TFChat.SEP + "cóbrala en el pad (C)");
         player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.MASTER, 0.5F, 1.2F);
+    }
+
+    /**
+     * (1.3.143, el dueño: «y los jobs, que todos cobren») Para la prueba en el juego: con cada oficio (al nivel 50, para
+     * que salgan todas), hace las misiones de hoy y las fijas con algo de verdad de su objetivo, las cobra y mira que el
+     * saldo suba lo que pagan; y que cada acción que paga cuente. Al final vuelve a dejar los oficios que tenía.
+     */
+    public static String testAllJobs(ServerPlayer player) {
+        PlayerJobs p = data().player(player.getUUID());
+        List<String> before = List.copyOf(p.active);
+        int ok = 0, actions = 0;
+        List<String> bad = new java.util.ArrayList<>();
+        for (Job job : TFJobsConfig.jobs.values()) {
+            p.active.clear();
+            p.active.add(job.id());
+            JobProgress jp = p.job(job.id());
+            int level = jp.level;
+            jp.level = TFJobsConfig.maxLevel;
+            jp.rotDay = -1;
+            for (TFJobsConfig.Action a : job.actions()) {
+                var sample = TFMissionCheck.sample(server, a.type(), a.target().raw());
+                if (sample == null || !sample.test(a.target())) bad.add(job.id() + " acción " + a.type() + " " + a.target().raw() + ": no cuenta");
+                else actions++;
+            }
+            for (Mission m : TFJobsConfig.missionsFor(job, player.getUUID(), jp)) {
+                MissionState ms = refresh(jp, m);
+                if (ms.claimedDay >= 0) continue;
+                var sample = TFMissionCheck.sample(server, m.type(), m.target().raw());
+                if (sample == null) {
+                    bad.add(job.id() + " " + m.id() + ": sin nada con qué hacerla");
+                    continue;
+                }
+                record(player, m.type(), sample, m.amount());
+                long b0 = TFEconomy.balance(server, player.getUUID()).orElse(-1);
+                String err = claim(player, job, m);
+                long b1 = TFEconomy.balance(server, player.getUUID()).orElse(-1);
+                long want = Math.round(m.reward().coins());
+                // lo de más es el premio de subir de nivel (al nivel máximo no hay)
+                if (err != null || b1 - b0 < want) bad.add(job.id() + " " + m.id() + " (" + m.type() + " " + m.target().raw() + "): progreso "
+                        + ms.progress + "/" + m.amount() + (err != null ? ", " + err : ", el saldo subió " + (b1 - b0) + " de " + want));
+                else ok++;
+            }
+            jp.level = level;
+            jp.rotDay = -1;
+        }
+        p.active.clear();
+        p.active.addAll(before);
+        data().changed();
+        return ok + " misiones de oficio hechas y cobradas, " + actions + " acciones que cuentan"
+                + (bad.isEmpty() ? " (todas bien)" : "; MAL " + bad.size() + ": " + String.join(" | ", bad));
     }
 
     /** Cobrar una misión hecha. Devuelve el mensaje de error o null si se cobró. */

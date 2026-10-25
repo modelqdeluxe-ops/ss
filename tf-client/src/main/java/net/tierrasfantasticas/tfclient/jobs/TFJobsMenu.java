@@ -229,6 +229,7 @@ public final class TFJobsMenu {
         TFIcon icon = TFIcon.of(locked ? Items.GRAY_DYE : item(mission.icon(), Items.PAPER)).name(mission.name(), nameColor);
         if (!mission.description().isEmpty()) icon.text(mission.description());
         icon.line(goal(mission), ChatFormatting.GRAY);
+        if (!locked) icon.text(TFMissionCheck.how(mission.type(), mission.target().raw()));
         icon.blank();
         if (locked) {
             icon.line("Se desbloquea en el nivel " + mission.level(), ChatFormatting.RED);

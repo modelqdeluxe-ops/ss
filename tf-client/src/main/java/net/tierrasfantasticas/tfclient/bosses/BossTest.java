@@ -2452,6 +2452,31 @@ public final class BossTest {
                 r.event("oficios: la de hace 3 días sin cobrar: " + (found == null ? "NO SALE en la lista" : "sale") + "; COBRAR → saldo " + b2 + " → " + b3
                         + (found != null && b3 > b2 ? " (bien)" : " (MAL)"));
             }
+            // (1.3.143, el dueño: «asegúrate de que todas las misiones se cumplan, que todos cobren, cazas, todo») cada misión
+            // que va en el mod se puede hacer (los objetivos existen y cuentan), y las de hoy se hacen y se cobran de verdad
+            case 21 -> {
+                var problems = new java.util.ArrayList<String>();
+                int n = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkJobs(server, resource("/tfclient-jobs-default.json"), problems)
+                        + net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkPad(server, resource("/tfclient-misiones-default.json"), problems);
+                r.event("misiones: " + n + " revisadas (oficios, diarias y cazas del mod) → " + (problems.isEmpty() ? "todas se pueden hacer (bien)"
+                        : "MAL " + problems.size() + ": " + String.join(" | ", problems)));
+                r.event("misiones del pad de hoy: " + net.tierrasfantasticas.tfclient.pad.server.PadMissions.testAll(player));
+                r.event("misiones de oficio de hoy: " + net.tierrasfantasticas.tfclient.jobs.TFJobs.testAllJobs(player));
+                // bayas dulces cogidas con clic derecho (sin romper la planta)
+                var pos = at(2, 2);
+                level.setBlockAndUpdate(pos.below(), net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState());
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE, 3));
+                net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+                player.getInventory().selected = 8;
+                player.getInventory().setItem(8, ItemStack.EMPTY);
+                var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+                var res = player.gameMode.useItemOn(player, level, ItemStack.EMPTY, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                r.event("misiones: bayas dulces con clic derecho → " + res + ", la planta queda con edad "
+                        + level.getBlockState(pos).getValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE));
+            }
+            case 23 -> r.event("misiones: bayas dulces cogidas → " + (net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.contains("cosechar minecraft:sweet_berry_bush 1")
+                    ? "cuenta como cosechar (bien)" : "NO CUENTA " + net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG));
             // (1.3.139) los rangos del clan (líder, colíder, veterano, miembro)
             case 22 -> r.event("clan, rangos: " + net.tierrasfantasticas.tfclient.pad.server.PadClans.testRanks(player));
             case 24 -> openPad = "oficios/o:herrero:m";
@@ -2608,7 +2633,15 @@ public final class BossTest {
     private static ItemEntity webDrop, plainDrop, lavaDrop, hopperDrop;
     private static net.minecraft.core.BlockPos hopperAt;
 
-    private static long balance(ServerPlayer p) {
+    private static com.google.gson.JsonObject resource(String path) {
+        try (java.io.InputStream in = BossTest.class.getResourceAsStream(path)) {
+            return in == null ? null : com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+        private static long balance(ServerPlayer p) {
         return net.tierrasfantasticas.tfclient.economy.TFEconomy.balance(p.server, p.getUUID()).orElse(-1);
     }
 
