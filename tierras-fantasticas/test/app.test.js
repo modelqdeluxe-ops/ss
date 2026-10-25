@@ -1907,6 +1907,8 @@ test('Mercado Pago (cuenta de México): cobra en pesos al cambio del día, entre
   assert.strictEqual((await mpWebhook('9002')).status, 200);
   assert.strictEqual((await (await get(`/api/order/${id}`)).json()).refunded, 'reembolsado');
 
+  // el aviso de prueba que manda Mercado Pago al guardar el webhook (un pago que no existe): recibido
+  assert.strictEqual((await mpWebhook('123456')).status, 200);
   // un importe que no es el del pedido no entrega
   const { id: id2 } = await (await post('/api/checkout', { acceptTerms: true, method: 'mercadopago', productId: 'crate-valentine', username: 'Mp_Comprador' })).json();
   mpPayments.set('9003', { id: 9003, status: 'approved', external_reference: id2, transaction_amount: 1, currency_id: 'MXN' });
