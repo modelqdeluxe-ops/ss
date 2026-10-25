@@ -23,7 +23,7 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'info'
             args '--width', '1280', '--height', '720'
-            if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories') || project.hasProperty('tfwoodworks')) {
+            if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories') || project.hasProperty('tfwoodworks') || project.hasProperty('tfmochilas')) {
                 // (los mixins de Oculus y Embeddium (y de Accessories), compilados para el juego normal, se traducen a los nombres de aquí)
                 property 'mixin.env.remapRefMap', 'true'
                 property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
@@ -46,7 +46,7 @@ mixin {
 // y Embeddium solo para jugar en la prueba; el mod no depende de ellos (vacio/ShaderPacks los busca por reflexión).
 // (1.3.137) Con [accesorios] en el commit (-Ptfaccessories): Accessories y Cloth Config, para probar las alas en los huecos
 // de accesorios (el mod los usa por reflexión, TFAccessorySlots; no depende de ellos).
-if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories') || project.hasProperty('tfwoodworks')) {
+if (project.hasProperty('tfshaders') || project.hasProperty('tfaccessories') || project.hasProperty('tfwoodworks') || project.hasProperty('tfmochilas')) {
     repositories {
         maven {
             url = 'https://api.modrinth.com/maven'
@@ -72,6 +72,11 @@ dependencies {
     if (project.hasProperty('tfwoodworks')) {
         runtimeOnly fg.deobf('maven.modrinth:blueprint:7.1.3')
         runtimeOnly fg.deobf('maven.modrinth:woodworks:3.0.2')
+    }
+    // (1.3.145) Con [mochilas] en el commit (-Ptfmochilas): Sophisticated Backpacks y Core (las versiones del servidor)
+    if (project.hasProperty('tfmochilas')) {
+        runtimeOnly fg.deobf('maven.modrinth:sophisticated-core:1.20.1-1.5.12.2412')
+        runtimeOnly fg.deobf('maven.modrinth:sophisticated-backpacks:1.20.1-3.26.12.2206')
     }
     if (project.hasProperty('tfjei')) {
         runtimeOnly fg.deobf('mezz.jei:jei-1.20.1-forge:15.20.0.106')

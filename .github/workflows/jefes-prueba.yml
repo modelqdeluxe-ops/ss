@@ -87,6 +87,11 @@ jobs:
             EXTRA="$EXTRA -Ptfwoodworks"
             echo "Con Woodworks"
           fi
+          # (1.3.145) Con «[mochilas]»: Sophisticated Backpacks (las del servidor), para el rastreador
+          if printf '%s' "$MENSAJE" | grep -q '\[mochilas\]'; then
+            EXTRA="$EXTRA -Ptfmochilas"
+            echo "Con Sophisticated Backpacks"
+          fi
           # (1.3.139) Con «[jei]»: JEI, para ver que los objetos del TF Client no salen en su lista
           if printf '%s' "$MENSAJE" | grep -q '\[jei\]'; then
             EXTRA="$EXTRA -Ptfjei"

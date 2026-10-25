@@ -83,9 +83,11 @@ public final class TFSearch {
      * Un objeto encontrado. place: puesto, mano, inventario, ender, accesorios, cursor, contenedor, entidad, suelo.
      * holder: el jugador o el bloque/entidad que lo tiene; holderUuid: el del jugador (o ""). dim: el mundo de Minecraft
      * (para ir allí; "" si no se sabe) y world: la carpeta. inside: si va dentro de otro objeto (una shulker…).
+     * (1.3.145) bag: la mochila (Sophisticated Backpacks: lo de dentro se guarda en data/sophisticatedbackpacks.dat, no en
+     * la mochila) en la que está; entonces holder, holderUuid, dim y x y z son los de la mochila y via, su sitio.
      */
     public record Found(String order, String ownerUuid, String ownerName, String item, int count, String place, String holder,
-                        String holderUuid, boolean online, String world, String dim, int x, int y, int z, String inside) {
+                        String holderUuid, boolean online, String world, String dim, int x, int y, int z, String inside, String bag, String via) {
         public boolean withPlayer() {
             return !holderUuid.isEmpty();
         }
@@ -169,6 +171,7 @@ public final class TFSearch {
         Path root = srv.getServerDirectory().toPath().toAbsolutePath().normalize();
         Path playerdata = srv.getWorldPath(LevelResource.PLAYER_DATA_DIR).toAbsolutePath().normalize();
         String levelName = srv.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize().getFileName().toString();
+        Path dataDir = srv.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize().resolve("data");
         Map<String, String> dims = new HashMap<>();
         for (ServerLevel l : srv.getAllLevels()) dims.put(l.dimension().location().getPath().toLowerCase(Locale.ROOT), l.dimension().location().toString());
         Map<String, String> names = new HashMap<>();
@@ -181,6 +184,8 @@ public final class TFSearch {
             try {
                 scanPlayerdata(playerdata, online, found, stats);
                 scanWorlds(root, levelName, dims, found, stats);
+                scanData(dataDir, levelName, found);
+                resolveBags(found);
             } catch (Throwable e) {
                 note = "error: " + e;
                 TFClient.LOGGER.error("TF Rastreador: fallo buscando en el mundo", e);
@@ -232,8 +237,21 @@ public final class TFSearch {
                 // mal guardado
             }
         }
-        if (order.isEmpty() && owner.isEmpty()) return null;
+        if (order.isEmpty() && owner.isEmpty()) {
+            // (1.3.145) una mochila (Sophisticated Backpacks): se apunta dónde está para lo que lleva dentro
+            String bag = bagOf(tag);
+            return bag == null ? null : new String[] {BAG + bag, "", ""};
+        }
         return new String[] {order, owner, tag.contains("TFOwnerName", Tag.TAG_STRING) ? tag.getString("TFOwnerName") : ""};
+    }
+
+    /** Marca de «aquí está la mochila con este uuid» (no es un objeto comprado: solo dice dónde está). */
+    static final String BAG = "#mochila:";
+
+    /** El uuid de lo que lleva dentro una mochila de Sophisticated Backpacks (contentsUuid), o null. */
+    @Nullable
+    static String bagOf(@Nullable CompoundTag tag) {
+        return tag != null && tag.hasUUID("contentsUuid") ? tag.getUUID("contentsUuid").toString() : null;
     }
 
     /** Lo que se encuentra al recorrer un NBT: cada objeto marcado (y lo que lleva dentro, como una shulker). */
@@ -306,7 +324,7 @@ public final class TFSearch {
         String world = TFTracker.world(p.serverLevel());
         BlockPos at = p.blockPosition();
         visit(s.save(new CompoundTag()), "", (m, id, count, inside) -> out.add(new Found(m[0], m[1], m[2], id, count, place, name, uuid, true,
-                world, world, at.getX(), at.getY(), at.getZ(), inside)));
+                world, world, at.getX(), at.getY(), at.getZ(), inside, "", "")));
     }
 
     // ------------------------------------------------------------------------------------------------ desconectados
@@ -343,13 +361,13 @@ public final class TFSearch {
                             int slot = c.getByte("Slot");
                             String place = slot >= 100 && slot <= 103 ? "puesto" : slot == -106 ? "mano" : "inventario";
                             visit(c, "", (m, id, count, inside) -> out.add(new Found(m[0], m[1], m[2], id, count, place, who, uuid, false,
-                                    world, world, x, y, z, inside)));
+                                    world, world, x, y, z, inside, "", "")));
                         }
                         continue;
                     }
                     String place = key.equals("EnderItems") ? "ender" : key.equals("Inventory") ? "inventario" : "accesorios";
                     visit(t, "", (m, id, count, inside) -> out.add(new Found(m[0], m[1], m[2], id, count, place, who, uuid, false,
-                            world, world, x, y, z, inside)));
+                            world, world, x, y, z, inside, "", "")));
                 }
             }
         } catch (Exception e) {
@@ -421,6 +439,90 @@ public final class TFSearch {
         }
     }
 
+    /**
+     * (1.3.145, el dueño: «¿cómo que no están?») Lo que los mods guardan aparte en &lt;mundo&gt;/data/*.dat: lo de dentro de
+     * las mochilas de Sophisticated Backpacks (sophisticatedbackpacks.dat, cada una con su uuid), lo que espera a que su
+     * dueño se conecte (tfclient_returns.dat) y lo de cualquier otro mod que guarde objetos así.
+     */
+    private static void scanData(Path dir, String levelName, List<Found> out) {
+        if (!Files.isDirectory(dir)) return;
+        List<Path> files = new ArrayList<>();
+        try (Stream<Path> s = Files.list(dir)) {
+            s.filter(f -> {
+                String n = f.getFileName().toString();
+                return n.endsWith(".dat") && !n.startsWith("map_") && !n.startsWith("idcounts") && !n.startsWith("raids")
+                        && !n.startsWith("scoreboard") && !n.startsWith("random_sequences") && !n.startsWith("chunks");
+            }).forEach(files::add);
+        } catch (Exception e) {
+            return;
+        }
+        for (Path f : files) {
+            progress = "datos de los mods (" + f.getFileName() + ")";
+            try {
+                if (Files.size(f) > 256L * 1024 * 1024) continue;
+                CompoundTag tag;
+                try {
+                    tag = NbtIo.readCompressed(f.toFile());
+                } catch (Exception notGzip) {
+                    tag = NbtIo.read(f.toFile());
+                }
+                if (tag == null) continue;
+                String file = f.getFileName().toString().replaceFirst("\\.dat$", "");
+                visitData(tag, "", file, levelName, out);
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("TF Rastreador: no se pudo leer {}: {}", f, e.toString());
+            }
+        }
+    }
+
+    /** Recorre un .dat: lo que va bajo una entrada con «uuid» (una mochila) se apunta con ese uuid. */
+    private static void visitData(Tag t, String bag, String file, String levelName, List<Found> out) {
+        if (t instanceof CompoundTag c) {
+            if (c.contains("id", Tag.TAG_STRING) && c.contains("Count", Tag.TAG_ANY_NUMERIC)) {
+                String inBag = bag;
+                visit(c, "", (m, id, count, inside) -> {
+                    if (!m[0].startsWith(BAG)) out.add(new Found(m[0], m[1], m[2], id, count, inBag.isEmpty() ? "datos" : "mochila", file, "", false,
+                            levelName, "", 0, 0, 0, inside, inBag, ""));
+                });
+                return;
+            }
+            String here = bag;
+            if (file.startsWith("sophisticatedbackpacks") && c.hasUUID("uuid")) here = c.getUUID("uuid").toString();
+            for (String k : c.getAllKeys()) {
+                Tag child = c.get(k);
+                if (child instanceof CompoundTag || child instanceof ListTag) visitData(child, here, file, levelName, out);
+            }
+        } else if (t instanceof ListTag l) {
+            if (l.getElementType() != Tag.TAG_COMPOUND && l.getElementType() != Tag.TAG_LIST) return;
+            for (Tag e : l) visitData(e, bag, file, levelName, out);
+        }
+    }
+
+    /**
+     * Lo que está en una mochila pasa a estar donde está la mochila (en el inventario de alguien, en un cofre…); las
+     * marcas de «aquí está la mochila» se quitan de la lista.
+     */
+    private static void resolveBags(List<Found> found) {
+        Map<String, Found> bags = new HashMap<>();
+        for (Found f : found) if (f.order.startsWith(BAG)) bags.putIfAbsent(f.order.substring(BAG.length()), f);
+        List<Found> out = new ArrayList<>(found.size());
+        for (Found f : found) {
+            if (f.order.startsWith(BAG)) continue;
+            if (!f.bag.isEmpty()) {
+                Found b = bags.get(f.bag);
+                String in = f.inside.isEmpty() ? "" : "dentro de " + f.inside + " · ";
+                f = b == null
+                        ? new Found(f.order, f.ownerUuid, f.ownerName, f.item, f.count, "mochila", "", "", false, f.world, "", 0, 0, 0,
+                                in + "la mochila " + f.bag.substring(0, 8) + " (no se encontró la mochila)", f.bag, "")
+                        : new Found(f.order, f.ownerUuid, f.ownerName, f.item, f.count, "mochila", b.holder, b.holderUuid, b.online, b.world,
+                                b.dim, b.x, b.y, b.z, in + where(b), f.bag, b.place);
+            }
+            out.add(f);
+        }
+        found.clear();
+        found.addAll(out);
+    }
+
     /** El mundo de Minecraft de una carpeta (world → overworld, world_nether/DIM-1 → nether, dimensions/ns/x → ns:x…). */
     static String dimOf(String label, String levelName, Map<String, String> dims) {
         int d = label.indexOf("dimensions/");
@@ -481,7 +583,7 @@ public final class TFSearch {
                     String id = be.getString("id");
                     int x = be.getInt("x"), y = be.getInt("y"), z = be.getInt("z");
                     visit(be, "", (m, item, count, inside) -> out.add(new Found(m[0], m[1], m[2], item, count, "contenedor", id, "", false,
-                            label, dim, x, y, z, inside)));
+                            label, dim, x, y, z, inside, "", "")));
                 }
                 // los de antes de 1.17 llevaban las entidades en el chunk
                 if (chunk.contains("Level", Tag.TAG_COMPOUND)) readEntities(chunk.getCompound("Level").getList("Entities", Tag.TAG_COMPOUND), label, dim, out);
@@ -498,7 +600,7 @@ public final class TFSearch {
             if (pos.size() != 3) continue;
             int x = (int) Math.floor(pos.getDouble(0)), y = (int) Math.floor(pos.getDouble(1)), z = (int) Math.floor(pos.getDouble(2));
             String place = id.equals("minecraft:item") ? "suelo" : "entidad";
-            visit(e, "", (m, item, count, inside) -> out.add(new Found(m[0], m[1], m[2], item, count, place, id, "", false, label, dim, x, y, z, inside)));
+            visit(e, "", (m, item, count, inside) -> out.add(new Found(m[0], m[1], m[2], item, count, place, id, "", false, label, dim, x, y, z, inside, "", "")));
         }
     }
 
@@ -524,11 +626,18 @@ public final class TFSearch {
         Scan scan = last;
         if (scan == null) return r;
         Set<String> doneSpots = new HashSet<>();
+        var cache = srv.getProfileCache();
+        String toName = cache == null ? "" : cache.get(to).map(com.mojang.authlib.GameProfile::getName).orElse("");
         for (Found f : scan.found) {
             if (!(crit.order.isEmpty() || crit.order.equals(f.order)) || !(crit.item.isEmpty() || crit.item.equals(f.item))) continue;
             if (crit.order.isEmpty() && !crit.owner.equals(f.ownerUuid)) continue;
             if (f.withPlayer() && f.holderUuid.equals(to.toString())) continue; // ya lo tiene él
-            String spot = f.withPlayer() ? "jugador|" + f.holderUuid : f.place + "|" + f.dim + "|" + f.x + "|" + f.y + "|" + f.z;
+            String place = f.bag.isEmpty() ? f.place : f.via;
+            if (!f.bag.isEmpty() && place.isEmpty() && !f.withPlayer()) {
+                r[2]++; // la mochila no está en ningún sitio que se pueda tocar
+                continue;
+            }
+            String spot = f.withPlayer() ? "jugador|" + f.holderUuid : place + "|" + f.dim + "|" + f.x + "|" + f.y + "|" + f.z;
             if (!doneSpots.add(spot)) continue;
             List<ItemStack> got = new ArrayList<>();
             try {
@@ -548,7 +657,7 @@ public final class TFSearch {
                     }
                     BlockPos pos = new BlockPos(f.x, f.y, f.z);
                     level.getChunk(pos.getX() >> 4, pos.getZ() >> 4); // la carga si no lo estaba
-                    if (f.place.equals("contenedor")) takeFromBlock(level, pos, crit, got);
+                    if (place.equals("contenedor")) takeFromBlock(level, pos, crit, got);
                     else takeFromEntities(level, pos, crit, got);
                 }
             } catch (Throwable e) {
@@ -558,6 +667,8 @@ public final class TFSearch {
             TFTracker.logAdmin(srv, f, got);
             for (ItemStack s : got) {
                 r[0] += s.getCount(); // antes de darlo: al meterlo en el inventario el montón se queda a 0
+                // (1.3.145) a nombre de quien lo recibe: lo que se ató al ladrón volvía a él al momento
+                TFBinding.bindTo(s, to, toName);
                 TFBinding.returnTo(srv, to, s);
             }
         }
@@ -578,6 +689,21 @@ public final class TFSearch {
         for (int i = 0; i < ender.getContainerSize(); i++) ender.setItem(i, take(ender.getItem(i), crit, got));
         ItemStack carried = p.containerMenu.getCarried();
         if (!carried.isEmpty()) p.containerMenu.setCarried(take(carried, crit, got));
+        // (1.3.145) lo puesto en accesorios (las mochilas suelen ir en la espalda)
+        List<ItemStack> worn = new ArrayList<>();
+        try {
+            if (net.minecraftforge.fml.ModList.get().isLoaded("curios")) {
+                net.tierrasfantasticas.tfclient.items.TFAccessoryLookup.fromCurios(p, x -> !x.isEmpty(), worn, false);
+                net.tierrasfantasticas.tfclient.items.TFAccessoryLookup.cosmeticsFromCurios(p, x -> !x.isEmpty(), worn);
+            }
+            if (net.minecraftforge.fml.ModList.get().isLoaded("accessories")) {
+                net.tierrasfantasticas.tfclient.items.TFAccessoryLookup.fromAccessories(p, x -> !x.isEmpty(), worn);
+                net.tierrasfantasticas.tfclient.items.TFAccessoryLookup.cosmeticsFromAccessories(p, x -> !x.isEmpty(), worn);
+            }
+        } catch (Throwable ignored) {
+            // otra versión
+        }
+        for (ItemStack s : worn) if (take(s, crit, got).isEmpty()) s.setCount(0);
         p.containerMenu.broadcastChanges();
     }
 
@@ -600,7 +726,10 @@ public final class TFSearch {
         for (Entity e : level.getEntities((Entity) null, new AABB(pos).inflate(2.5), x -> true)) {
             if (e instanceof ItemEntity ie) {
                 ItemStack rest = take(ie.getItem(), crit, got);
-                if (rest.isEmpty()) ie.discard();
+                if (rest.isEmpty()) {
+                    ie.setItem(ItemStack.EMPTY); // vacío: así TFWebDrops lo deja ir (no es un clear lag)
+                    ie.discard();
+                }
                 else ie.setItem(rest);
             } else if (e instanceof ItemFrame fr) {
                 fr.setItem(take(fr.getItem(), crit, got), false);
@@ -618,6 +747,7 @@ public final class TFSearch {
             return ItemStack.EMPTY;
         }
         CompoundTag tag = s.getTag();
+        if (bagOf(tag) != null) takeFromBag(s, crit, got);
         if (tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
             CompoundTag bet = tag.getCompound("BlockEntityTag");
             if (bet.contains("Items", Tag.TAG_LIST)) {
@@ -632,6 +762,32 @@ public final class TFSearch {
             }
         }
         return s;
+    }
+
+    /**
+     * (1.3.145) Lo de dentro de una mochila de Sophisticated Backpacks, con su propio inventario (así lo guarda bien el
+     * mod, aunque esté abierta): con la mochila de verdad, nunca con una copia (su tamaño es el de esa mochila).
+     */
+    private static void takeFromBag(ItemStack bag, Crit crit, List<ItemStack> got) {
+        try {
+            Class<?> capClass = Class.forName("net.p3pp3rf1y.sophisticatedbackpacks.api.CapabilityBackpackWrapper");
+            var cap = (net.minecraftforge.common.capabilities.Capability<?>) capClass.getMethod("getCapabilityInstance").invoke(null);
+            Object wrapper = bag.getCapability(cap).resolve().orElse(null);
+            if (wrapper == null) return;
+            Object inv = wrapper.getClass().getMethod("getInventoryHandler").invoke(wrapper);
+            if (!(inv instanceof IItemHandlerModifiable h)) return;
+            for (int i = 0; i < h.getSlots(); i++) {
+                ItemStack in = h.getStackInSlot(i);
+                if (in.isEmpty()) continue;
+                int before = got.size();
+                ItemStack rest = take(in.copy(), crit, got);
+                if (got.size() != before) h.setStackInSlot(i, rest);
+            }
+        } catch (ClassNotFoundException e) {
+            // sin Sophisticated Backpacks
+        } catch (Throwable e) {
+            TFClient.LOGGER.warn("TF Rastreador: no se pudo sacar de una mochila: {}", e.toString());
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ al entrar
@@ -675,7 +831,13 @@ public final class TFSearch {
             for (String[] c : list) {
                 List<ItemStack> got = new ArrayList<>();
                 takeFromPlayer(p, new Crit(c[0], c[1], c[2]), got);
-                for (ItemStack s : got) TFBinding.returnTo(p.server, UUID.fromString(c[3]), s);
+                UUID to = UUID.fromString(c[3]);
+                var cache = p.server.getProfileCache();
+                String toName = cache == null ? "" : cache.get(to).map(com.mojang.authlib.GameProfile::getName).orElse("");
+                for (ItemStack s : got) {
+                    TFBinding.bindTo(s, to, toName); // (1.3.145) a nombre de quien lo recibe
+                    TFBinding.returnTo(p.server, to, s);
+                }
                 if (!got.isEmpty()) TFClient.LOGGER.warn("TF Rastreador: a {} se le quitaron {} objetos que eran de otro (pedido {})",
                         p.getGameProfile().getName(), got.size(), c[0]);
             }
@@ -751,6 +913,9 @@ public final class TFSearch {
             case "cursor" -> "en el cursor de " + f.holder + in;
             case "contenedor" -> "en " + blockName(f.holder) + in + at;
             case "suelo" -> "tirado en el suelo" + at;
+            case "mochila" -> "en una mochila: " + f.inside;
+            case "datos" -> f.holder.equals("tfclient_returns") ? "esperando a que su dueño se conecte (se le da al entrar)"
+                    : "guardado por un mod en " + f.holder + ".dat" + in;
             default -> "en " + f.holder + in + at;
         };
     }
