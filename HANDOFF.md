@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (24 oct 2026, TF Client 1.3.137) — lee esto primero
+### CHECKPOINT (25 oct 2026, TF Client 1.3.138) — lee esto primero
+
+**1.3.138** (el dueño: «o sea que no arreglaste esto: las alas de Accessories se quedan»). Lo de la 1.3.137 dependía de
+la copia que el cliente tiene de los huecos de accesorios; si se queda vieja, las alas seguían. Ahora lo de la espalda
+lo dice el **servidor** (`items/TFBackSync`): cada medio segundo mira el pecho y los huecos de Accessories y Curios
+(también los cosméticos) de cada jugador y, si cambia, se lo cuenta a todos (mensaje 1 del canal `tfclient:wardrobe`). El
+cliente solo dibuja lo que el servidor confirma (`TFBackSync.allowed`): los dibujantes que registramos en Accessories y
+Curios, el respaldo de `BackLayer` y el Armario (`wearsBack`). Prueba: `[prueba-jefes=accesorios] [accesorios=curios]`
+pone unas alas solo en la copia de Curios del cliente (como si se quedara vieja): sin el arreglo se dibujan (lo del
+dueño), con él no.
+
+### CHECKPOINT anterior (24 oct 2026, TF Client 1.3.137, PUBLICADA)
 
 **1.3.137** (el dueño: «me están haciendo múltiples reportes de que las armaduras o sets de la web se quedan en el
 jugador cuando las desequipa: cuando quita la armadura el mod sigue dibujando el item, pasa también con las alas»).
