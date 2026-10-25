@@ -360,6 +360,11 @@ public final class SkillRuntime {
 
     private static boolean tasksFull;
 
+    /** (1.3.139) Para la prueba en el juego: la tormenta de un jefe (weather{type=storm}) puesta por owner. */
+    public static void testStorm(net.minecraft.server.level.ServerLevel level, Entity owner, int ticks) {
+        SkillMore.fakeWeather(level, true, true, ticks, owner);
+    }
+
     static void later(int ticks, Runnable r) {
         later(ticks, 0L, r);
     }

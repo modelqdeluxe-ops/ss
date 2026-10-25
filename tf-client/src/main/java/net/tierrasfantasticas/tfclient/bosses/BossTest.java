@@ -2449,7 +2449,7 @@ public final class BossTest {
                     stormOwner.moveTo(player.getX() + 6, player.getY(), player.getZ(), 0, 0);
                     stormOwner.setNoAi(true);
                     level.addFreshEntity(stormOwner);
-                    net.tierrasfantasticas.tfclient.skills.SkillMore.fakeWeather(level, true, true, 6000, stormOwner);
+                    net.tierrasfantasticas.tfclient.skills.SkillRuntime.testStorm(level, stormOwner, 6000);
                 }
             }
             case 236 -> {
@@ -2742,7 +2742,7 @@ public final class BossTest {
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
     /** (1.3.139) El que puso la tormenta en la prueba «oficios». */
-    private static net.minecraft.world.entity.Entity stormOwner;
+    private static net.minecraft.world.entity.monster.Zombie stormOwner;
 
     /** La lluvia que ve el cliente (0.00 = no llueve). */
     private static String clientRain() {
