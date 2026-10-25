@@ -663,6 +663,16 @@ public final class PadClans {
         return out.toString();
     }
 
+    /** (1.3.139) Para la prueba: quita el clan de prueba de testRanks. */
+    public static void testCleanup(ServerPlayer leader) {
+        String id = clanIdOf(leader.getUUID());
+        if (id == null) return;
+        for (UUID u : members(clan(id))) leave(u);
+        clans().remove(id);
+        STORE_IMPL.changed();
+        refreshName(leader.getUUID());
+    }
+
     private static boolean confirming(UUID uuid, String action) {
         Map.Entry<String, Long> at = CONFIRM.get(uuid);
         return at != null && at.getKey().equals(action) && System.currentTimeMillis() - at.getValue() < 6000;

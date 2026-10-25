@@ -2478,15 +2478,18 @@ public final class BossTest {
                 net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = true;
             }
             case 378 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
-            case 382 -> {
+            // (hacer la pestaña con sus 1.164 objetos tarda más que vaciarla)
+            case 400 -> {
                 String n = jeiCount();
                 int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
                 r.event("JEI, OP o creativo: objetos nuestros en la lista " + n
                         + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)")
                         + "; pestaña TF del creativo: " + tab + (tab > 0 ? " (bien)" : " (MAL)"));
                 net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = null;
+                // sin el clan de prueba (la prueba «tienda» funda uno)
+                net.tierrasfantasticas.tfclient.pad.server.PadClans.testCleanup(player);
             }
-            case 390 -> next(level);
+            case 410 -> next(level);
             default -> { }
         }
     }
