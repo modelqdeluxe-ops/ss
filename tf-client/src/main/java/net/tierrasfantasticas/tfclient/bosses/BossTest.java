@@ -2600,7 +2600,12 @@ public final class BossTest {
                     net.tierrasfantasticas.tfclient.rastreo.TFSearch.start(server, true, null);
                 }
                 if (t == k0 + 120) r.event("rastreador: " + trackerFound(me));
-                if (t == k0 + 121) r.event("rastreador: " + trackerShovel(player));
+                // en supervivencia (en creativo el mod no toca lo que lleva): la pala atada al ladrón tiene que pasar a ser mía
+                if (t == k0 + 90) player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+                if (t == k0 + 121) {
+                    r.event("rastreador: " + trackerShovel(player));
+                    player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+                }
                 if (t == k0 + 122) openPad = "a_rastreo";
                 if (t == k0 + 160) shot(r, "rastreador_compradores");
                 if (t == k0 + 162) openPad = "a_rastreo/j:" + me.toString();
