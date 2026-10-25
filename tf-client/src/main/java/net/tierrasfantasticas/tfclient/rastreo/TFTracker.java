@@ -121,7 +121,7 @@ public final class TFTracker {
 
     // ------------------------------------------------------------------------------------------- qué toca
 
-    @SubscribeEvent(priority = EventPriority.MONITOR)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         BlockPos pos = event.getPos();
@@ -129,7 +129,7 @@ public final class TFTracker {
         TOUCH.put(p.getUUID(), new Touch(world(p.serverLevel()), pos.immutable(), what, p.serverLevel().getGameTime()));
     }
 
-    @SubscribeEvent(priority = EventPriority.MONITOR)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         var e = event.getTarget();
@@ -197,7 +197,7 @@ public final class TFTracker {
 
     // ------------------------------------------------------------------------------------------- romper
 
-    @SubscribeEvent(priority = EventPriority.MONITOR)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreak(BlockEvent.BreakEvent event) {
         if (event.isCanceled() || !(event.getPlayer() instanceof ServerPlayer p) || !(event.getLevel() instanceof ServerLevel level)) return;
         BlockEntity be = level.getBlockEntity(event.getPos());
