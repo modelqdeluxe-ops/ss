@@ -555,11 +555,11 @@ public final class TFSearch {
                 TFClient.LOGGER.warn("TF Rastreador: no se pudo recuperar en {}: {}", spot, e.toString());
             }
             if (got.isEmpty()) r[2]++;
-            for (ItemStack s : got) {
-                TFBinding.returnTo(srv, to, s);
-                r[0] += s.getCount();
-            }
             TFTracker.logAdmin(srv, f, got);
+            for (ItemStack s : got) {
+                r[0] += s.getCount(); // antes de darlo: al meterlo en el inventario el montón se queda a 0
+                TFBinding.returnTo(srv, to, s);
+            }
         }
         return r;
     }

@@ -2464,7 +2464,7 @@ public final class BossTest {
             case 282 -> shot(r, "tormenta_tras_matarlo");
             // (1.3.139) los objetos de tfclient en JEI: ocultos a quien no es OP ni está en creativo
             case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = false;
-            case 316 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
+            case 304 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
             case 320 -> {
                 int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
                 r.event("JEI, jugador sin OP en supervivencia: objetos nuestros en la lista " + jeiCount()

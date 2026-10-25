@@ -123,11 +123,9 @@ public final class PadAdminTracker {
 
     static String scanLine() {
         TFSearch.Scan s = TFSearch.last();
-        String web = TFPurchases.receivedAt() == 0 ? "compras de la web: esperando al puente" : "compras de la web: hace " + ago(TFPurchases.receivedAt());
-        if (TFSearch.running()) return "Buscando en todo el mundo… " + TFSearch.progress() + " · " + web;
-        if (s == null) return "Aún no se ha buscado en el mundo: pulsa BUSCAR AHORA. · " + web;
-        return "Último escaneo: hace " + ago(s.at()) + " (" + s.found().size() + " objetos en " + s.regionFiles() + " archivos del mundo y "
-                + s.players() + " jugadores desconectados, " + Math.max(1, s.tookMs() / 1000) + " s) · " + web;
+        if (TFSearch.running()) return "Buscando… " + TFSearch.progress();
+        if (s == null) return "Sin buscar aún: BUSCAR AHORA.";
+        return "Buscado hace " + ago(s.at()) + ": " + s.found().size() + " objetos.";
     }
 
     static String ago(long at) {
@@ -168,7 +166,7 @@ public final class PadAdminTracker {
         private PadView list(PadView.Builder b, MinecraftServer server) {
             b.selected("");
             List<Buyer> all = buyers(server);
-            b.header(all.size() + " jugadores compraron en la web. Pulsa uno para ver todos sus objetos y dónde están. " + scanLine());
+            b.header(all.size() + (all.size() == 1 ? " comprador. " : " compradores. ") + scanLine());
             b.input("buscar", "Buscar jugador, pedido u objeto", 32, "BUSCAR");
             Map<String, Tally> t = new HashMap<>();
             for (Buyer x : all) t.put(x.key, tally(x));
