@@ -206,23 +206,19 @@ public final class TFMissionCheck {
     public static String how(String type, String raw) {
         String t = raw == null ? "*" : raw;
         return switch (type) {
-            case "romper" -> "Rómpelos en supervivencia. Los bloques que pusiste tú no cuentan.";
+            case "romper" -> "Los que pusiste tú no cuentan.";
             case "cosechar" -> switch (t) {
-                case "minecraft:sweet_berry_bush", "minecraft:cave_vines", "minecraft:cave_vines_plant" -> "Coge las bayas con clic derecho (o rompe la planta con bayas).";
-                case "minecraft:melon", "minecraft:pumpkin" -> "Rompe los que crecen del tallo. Los que pusiste tú no cuentan.";
-                case "minecraft:sugar_cane", "minecraft:cactus", "minecraft:bamboo" -> "Rompe lo que creció solo (deja el de abajo para que vuelva a crecer).";
-                case "minecraft:cocoa" -> "Rompe las vainas de cacao maduras (naranjas).";
-                default -> "Rómpelos cuando estén maduros: los cultivos verdes no cuentan, aunque los plantes tú.";
+                case "minecraft:sweet_berry_bush", "minecraft:cave_vines", "minecraft:cave_vines_plant" -> "Clic derecho a las bayas.";
+                case "minecraft:melon", "minecraft:pumpkin" -> "Los que pusiste tú no cuentan.";
+                case "minecraft:sugar_cane", "minecraft:cactus", "minecraft:bamboo" -> "Deja el de abajo para que vuelva a crecer.";
+                default -> "Solo maduros.";
             };
-            case "colocar" -> "Pon los bloques en supervivencia. Quitar y volver a poner uno en el mismo sitio no cuenta.";
-            case "matar" -> "Dales tú el golpe final (vale con arco). Los mobs de generadores (spawners) no cuentan.";
-            case "pescar" -> "Pesca con caña: cuenta cada cosa que sacas del agua.";
-            case "fabricar" -> "Fabrícalo en la mesa de trabajo o en el inventario y sácalo del resultado.";
-            case "fundir" -> "Fúndelo en un horno, ahumador o alto horno y saca tú el resultado (lo que saca una tolva no cuenta).";
-            case "preparar" -> "Prepara las pociones en el soporte de pociones y sácalas tú.";
-            case "criar" -> "Dale de comer a dos para que tengan una cría (la que les gusta: trigo, zanahorias, semillas…).";
-            case "encantar" -> "Encanta objetos en la mesa de encantamientos.";
-            case "reparar" -> "Repara o junta objetos en el yunque y saca el resultado.";
+            case "colocar" -> "Quitar y volver a poner en el mismo sitio no cuenta.";
+            case "matar" -> "Los de spawners no cuentan.";
+            case "fabricar" -> "En la mesa de trabajo o el inventario.";
+            case "fundir" -> "Saca tú el resultado; con tolva no cuenta.";
+            case "preparar" -> "Saca tú las pociones del soporte.";
+            case "criar" -> "Dales de comer a dos para que tengan una cría.";
             default -> "";
         };
     }
