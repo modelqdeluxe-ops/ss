@@ -2378,6 +2378,28 @@ public final class BossTest {
                 player.closeContainer();
             }
             // soporte de pociones: una con mayúsculas + clic y otra con clic
+            // (1.3.143) un cofre de 8 tablones de abeto (con Woodworks, woodworks:spruce_chest): cuenta para «fabricar cofre»
+            case 12 -> {
+                var pos = at(-3, 0);
+                player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(id, inv,
+                        net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)), net.minecraft.network.chat.Component.literal("Mesa")));
+                var menu = player.containerMenu;
+                for (int i = 1; i <= 9; i++) if (i != 5) menu.getSlot(i).set(new ItemStack(Items.SPRUCE_PLANKS, 1));
+                menu.slotsChanged(menu.getSlot(1).container);
+                ItemStack result = menu.getSlot(0).getItem().copy();
+                menu.clicked(0, 0, click, player);
+                String id = String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(result.getItem()));
+                var target = new net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Target("minecraft:chest");
+                boolean item = target.item(result);
+                boolean block = result.getItem() instanceof net.minecraft.world.item.BlockItem bi
+                        && target.block(bi.getBlock().defaultBlockState());
+                boolean woodworks = net.minecraftforge.fml.ModList.get().isLoaded("woodworks");
+                r.event("oficios: cofre de abeto (" + (woodworks ? "con Woodworks" : "sin Woodworks") + ") → " + id + ": " + counted()
+                        + "; cuenta como «minecraft:chest» al fabricar " + item + " y al colocar/romper " + block
+                        + (item && block ? " (bien)" : " (MAL)"));
+                menu.setCarried(ItemStack.EMPTY);
+                player.closeContainer();
+            }
             case 15 -> {
                 var pos = at(0, 3);
                 level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.BREWING_STAND.defaultBlockState());

@@ -41,6 +41,11 @@ public final class TFJobsConfig {
     public enum Repeat { DAILY, ALWAYS, NEVER }
 
     /** Qué cuenta: un id, una etiqueta (#...), * o, al matar, hostil / animal. */
+    private static final TagKey<net.minecraft.world.level.block.Block> BLOCK_TAG_WOODEN_CHESTS = TagKey.create(Registries.BLOCK, new ResourceLocation("forge", "chests/wooden"));
+    private static final TagKey<net.minecraft.world.level.block.Block> BLOCK_TAG_TRAPPED_CHESTS = TagKey.create(Registries.BLOCK, new ResourceLocation("forge", "chests/trapped"));
+    private static final TagKey<net.minecraft.world.level.block.Block> BLOCK_TAG_WOODEN_BARRELS = TagKey.create(Registries.BLOCK, new ResourceLocation("forge", "barrels/wooden"));
+    private static final TagKey<net.minecraft.world.level.block.Block> BLOCK_TAG_BOOKSHELVES = TagKey.create(Registries.BLOCK, new ResourceLocation("forge", "bookshelves"));
+
     public record Target(String raw) {
         public boolean any() {
             return raw.equals("*");
@@ -49,13 +54,31 @@ public final class TFJobsConfig {
         public boolean block(BlockState state) {
             if (any()) return true;
             if (raw.startsWith("#")) return state.is(TagKey.create(Registries.BLOCK, new ResourceLocation(raw.substring(1))));
-            return raw.equals(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
+            return raw.equals(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock()))) || sameKind(state.getBlock());
         }
 
         public boolean item(ItemStack stack) {
             if (any()) return true;
             if (raw.startsWith("#")) return stack.is(TagKey.create(Registries.ITEM, new ResourceLocation(raw.substring(1))));
-            return raw.equals(String.valueOf(ForgeRegistries.ITEMS.getKey(stack.getItem())));
+            if (raw.equals(String.valueOf(ForgeRegistries.ITEMS.getKey(stack.getItem())))) return true;
+            return stack.getItem() instanceof net.minecraft.world.item.BlockItem bi && sameKind(bi.getBlock());
+        }
+
+        /**
+         * (1.3.143, el dueño: «la misión de crear cofres no cuenta los de Woodworks; haz universal la detección») Un
+         * cofre, cofre trampa, barril o estantería de cualquier mod (Woodworks, Quark…) cuenta como el de Minecraft: por
+         * su etiqueta común de Forge o porque su bloque es de esa clase.
+         */
+        private boolean sameKind(net.minecraft.world.level.block.Block block) {
+            return switch (raw) {
+                case "minecraft:chest" -> block.defaultBlockState().is(BLOCK_TAG_WOODEN_CHESTS)
+                        || block instanceof net.minecraft.world.level.block.ChestBlock && !(block instanceof net.minecraft.world.level.block.TrappedChestBlock);
+                case "minecraft:trapped_chest" -> block.defaultBlockState().is(BLOCK_TAG_TRAPPED_CHESTS)
+                        || block instanceof net.minecraft.world.level.block.TrappedChestBlock;
+                case "minecraft:barrel" -> block.defaultBlockState().is(BLOCK_TAG_WOODEN_BARRELS) || block instanceof net.minecraft.world.level.block.BarrelBlock;
+                case "minecraft:bookshelf" -> block.defaultBlockState().is(BLOCK_TAG_BOOKSHELVES);
+                default -> false;
+            };
         }
 
         public boolean entity(Entity entity) {

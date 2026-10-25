@@ -190,7 +190,16 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.142) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.143) — lee esto primero
+
+**1.3.143** (el dueño: «la misión de crear cofres no cuenta los de Woodworks; haz universal la detección»).
+`TFJobsConfig.Target.sameKind`: un objetivo `minecraft:chest`, `minecraft:trapped_chest`, `minecraft:barrel` o
+`minecraft:bookshelf` cuenta cualquier bloque de esa clase o con la etiqueta de Forge (`forge:chests/wooden`,
+`forge:chests/trapped`, `forge:barrels/wooden`, `forge:bookshelves`), de cualquier mod, al fabricar, colocar y romper
+(oficios y misiones del pad). Prueba: `[prueba-jefes=oficios] [woodworks]` (Woodworks 3.0.2 + Blueprint 7.1.3,
+`-Ptfwoodworks`): fabrica un cofre de 8 tablones de abeto.
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.142, PUBLICADA)
 
 **1.3.142** (el dueño: «una app de rastreador en el pad de admin: cada jugador que compró, todos sus objetos y dónde
 están —puestos, cofres, coordenadas—; que funcione desde el minuto 1»). Piezas (paquete `rastreo`):

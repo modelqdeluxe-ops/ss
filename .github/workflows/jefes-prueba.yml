@@ -82,6 +82,11 @@ jobs:
             EXTRA="$EXTRA -Ptfaccessories=accessories"
             echo "Con Accessories"
           fi
+          # (1.3.143) Con «[woodworks]»: Woodworks (y Blueprint), para los cofres de madera de las misiones
+          if printf '%s' "$MENSAJE" | grep -q '\[woodworks\]'; then
+            EXTRA="$EXTRA -Ptfwoodworks"
+            echo "Con Woodworks"
+          fi
           # (1.3.139) Con «[jei]»: JEI, para ver que los objetos del TF Client no salen en su lista
           if printf '%s' "$MENSAJE" | grep -q '\[jei\]'; then
             EXTRA="$EXTRA -Ptfjei"
