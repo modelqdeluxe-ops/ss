@@ -112,9 +112,8 @@ public final class PadJobs {
         if (!TFJobsConfig.enabled) return b.empty("Oficios desactivados.").build();
         Job active = p.active.isEmpty() ? null : TFJobsConfig.job(p.active.get(0));
         if (active != null) {
-            double pending = TFJobs.pendingCoins(player.getUUID());
-            b.header("Trabajas de " + active.name() + (pending >= 1 ? " · cobras " + TFEconomy.format(Math.round(Math.floor(pending)))
-                    + " en el próximo pago." : " · cobras cada " + TFJobsConfig.paySeconds + " s."));
+            // (1.3.139) lo ganado se paga al momento: sin «cobras cada N s»
+            b.header("Trabajas de " + active.name() + ". Lo que ganas te llega al momento; las misiones, con COBRAR.");
         } else {
             b.header("Elige un oficio.");
         }

@@ -97,6 +97,9 @@ public final class TFJobsConfig {
     // ---------------------------------------------------------------------------------------------------------------
 
     /** Las misiones de un oficio hoy para un jugador: primero las diarias que le tocan, luego las fijas. */
+    /** (1.3.139) Cuántos días se puede cobrar todavía una misión diaria hecha y sin cobrar. */
+    public static final int UNCLAIMED_DAYS = 30;
+
     public static List<Mission> missionsFor(Job job, java.util.UUID uuid, TFJobsData.JobProgress jp) {
         long day = net.tierrasfantasticas.tfclient.util.TFRotation.day();
         if (jp.rotDay != day) {
@@ -117,7 +120,10 @@ public final class TFJobsConfig {
         List<Mission> out = new ArrayList<>();
         for (String r : jp.rotIds) {
             Mission m = fromRot(job, r, day);
-            if (m != null) out.add(m);
+            if (m == null) continue;
+            out.add(m);
+            TFJobsData.MissionState ms = jp.missions.get(m.id());
+            if (ms != null) ms.rot = r;
         }
         // de ayer, solo las hechas sin cobrar (al final de las diarias)
         if (jp.prevDay == day - 1) {
@@ -126,6 +132,17 @@ public final class TFJobsConfig {
                 TFJobsData.MissionState ms = m == null ? null : jp.missions.get(m.id());
                 if (ms != null && ms.done && ms.claimedDay < 0) out.add(m);
             }
+        }
+        // (1.3.139) las de días anteriores hechas sin cobrar (hasta UNCLAIMED_DAYS): se cobran aunque pasara el día
+        java.util.Set<String> listed = new java.util.HashSet<>();
+        for (Mission m : out) listed.add(m.id());
+        for (var e : jp.missions.entrySet()) {
+            TFJobsData.MissionState ms = e.getValue();
+            long d = rotatedDay(e.getKey());
+            if (d < 0 || d >= day || d < day - UNCLAIMED_DAYS || !ms.done || ms.claimedDay >= 0 || ms.rot.isEmpty()
+                    || listed.contains(e.getKey())) continue;
+            Mission m = fromRot(job, ms.rot, d);
+            if (m != null && m.id().equals(e.getKey())) out.add(m);
         }
         for (Mission m : job.missions()) if (m.repeat() != Repeat.DAILY) out.add(m);
         return out;

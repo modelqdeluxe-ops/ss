@@ -283,6 +283,8 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("armario")) ids.add(0, "armario");
             // (1.3.137) «accesorios» (con [accesorios]: Accessories): alas en el hueco de espalda y en el cosmético, y quitarlas
             if (only != null && List.of(only.split(",")).contains("accesorios")) ids.add(0, "accesorios");
+            // (1.3.139) «oficios»: fundir, fabricar y preparar con clic y mayúsculas + clic, cobrar misiones y lo de días atrás
+            if (only != null && List.of(only.split(",")).contains("oficios")) ids.add(0, "oficios");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -301,7 +303,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -344,6 +346,10 @@ public final class BossTest {
         }
         if ("accesorios".equals(r.id)) {
             if (!waitShot) accesoriosStep(level, player, r);
+            return;
+        }
+        if ("oficios".equals(r.id)) {
+            if (!waitShot) oficiosStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -2300,6 +2306,136 @@ public final class BossTest {
             }
             case 262 -> cameraType = 0;
             case 270 -> next(level);
+            default -> { }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.139) «oficios»: el dueño: «una misión me pide fundir hierro y no cuenta; no dejan cobrar los jobs»
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static net.minecraft.core.BlockPos at(int dx, int dz) {
+        return net.minecraft.core.BlockPos.containing(arena.x + dx, arena.y, arena.z + dz);
+    }
+
+    /** Lo que se contó desde la última vez (TFJobs.TEST_LOG), y lo vacía. */
+    private static String counted() {
+        String s = String.join(" | ", net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG);
+        net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+        return s.isEmpty() ? "NADA" : s;
+    }
+
+    private static void oficiosStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        String name = player.getGameProfile().getName();
+        java.util.UUID me = player.getUUID();
+        var click = net.minecraft.world.inventory.ClickType.QUICK_MOVE;
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                player.getInventory().clearContent();
+                var job = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.job("herrero");
+                String err = job == null ? "no hay oficio herrero" : net.tierrasfantasticas.tfclient.jobs.TFJobs.join(player, job);
+                r.event("oficios: trabajar de herrero → " + (err == null ? "sí" : err));
+                net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.clear();
+            }
+            // horno: 24 lingotes con mayúsculas + clic (antes: «aire», no contaba) y 10 con clic
+            case 5 -> {
+                var pos = at(3, 0);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.FURNACE.defaultBlockState());
+                if (level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.FurnaceBlockEntity be) {
+                    long b0 = balance(player);
+                    be.setItem(2, new ItemStack(Items.IRON_INGOT, 24));
+                    player.openMenu(be);
+                    player.containerMenu.clicked(2, 0, click, player);
+                    long b1 = balance(player);
+                    r.event("oficios: horno, mayúsculas + clic en 24 lingotes → " + counted() + "; saldo " + b0 + " → " + b1
+                            + " (" + (b1 > b0 ? "pagado al momento: bien" : "SIN PAGAR") + "), en el inventario " + player.getInventory().countItem(Items.IRON_INGOT));
+                    be.setItem(2, new ItemStack(Items.IRON_INGOT, 10));
+                    player.containerMenu.clicked(2, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                    r.event("oficios: horno, clic en 10 lingotes → " + counted());
+                    player.containerMenu.setCarried(ItemStack.EMPTY);
+                    player.closeContainer();
+                }
+            }
+            // mesa de trabajo: pan (3 de trigo en fila, 10 veces) con mayúsculas + clic, y antorchas con clic
+            case 10 -> {
+                var pos = at(-3, 0);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.CRAFTING_TABLE.defaultBlockState());
+                player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(id, inv,
+                        net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)), net.minecraft.network.chat.Component.literal("Mesa")));
+                var menu = player.containerMenu;
+                for (int i = 1; i <= 3; i++) menu.getSlot(i).set(new ItemStack(Items.WHEAT, 10));
+                menu.slotsChanged(menu.getSlot(1).container);
+                menu.clicked(0, 0, click, player);
+                r.event("oficios: mesa, pan con mayúsculas + clic (10) → " + counted() + "; pan en el inventario " + player.getInventory().countItem(Items.BREAD));
+                for (int i = 1; i <= 9; i++) menu.getSlot(i).set(ItemStack.EMPTY);
+                menu.getSlot(1).set(new ItemStack(Items.COAL, 1));
+                menu.getSlot(4).set(new ItemStack(Items.STICK, 1));
+                menu.slotsChanged(menu.getSlot(1).container);
+                menu.clicked(0, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                r.event("oficios: mesa, antorchas con clic → " + counted());
+                menu.setCarried(ItemStack.EMPTY);
+                player.closeContainer();
+            }
+            // soporte de pociones: una con mayúsculas + clic y otra con clic
+            case 15 -> {
+                var pos = at(0, 3);
+                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.BREWING_STAND.defaultBlockState());
+                if (level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.BrewingStandBlockEntity be) {
+                    for (int i = 0; i < 2; i++) be.setItem(i, net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION),
+                            net.minecraft.world.item.alchemy.Potions.AWKWARD));
+                    player.openMenu(be);
+                    player.containerMenu.clicked(0, 0, click, player);
+                    r.event("oficios: pociones, mayúsculas + clic → " + counted());
+                    player.containerMenu.clicked(1, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+                    r.event("oficios: pociones, clic → " + counted());
+                    player.containerMenu.setCarried(ItemStack.EMPTY);
+                    player.closeContainer();
+                }
+            }
+            // cobrar una misión del oficio hecha (de hoy) y otra de hace 3 días que quedó sin cobrar
+            case 20 -> {
+                var job = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.job("herrero");
+                if (job == null) return;
+                var jp = net.tierrasfantasticas.tfclient.jobs.TFJobs.data().player(me).job("herrero");
+                var list = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.missionsFor(job, me, jp);
+                var m = list.isEmpty() ? null : list.get(0);
+                if (m == null) {
+                    r.event("oficios: SIN MISIONES de herrero");
+                    return;
+                }
+                var ms = net.tierrasfantasticas.tfclient.jobs.TFJobs.refresh(jp, m);
+                ms.progress = m.amount();
+                ms.done = true;
+                long b0 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadJobs.APP.action(player, "", "cobrar:herrero:" + m.id(), "");
+                long b1 = balance(player);
+                long want = Math.round(m.reward().coins());
+                r.event("oficios: COBRAR «" + m.name() + "» (" + m.id() + ", premio " + want + ") → saldo " + b0 + " → " + b1
+                        + (b1 - b0 == want && ms.claimedDay >= 0 ? " (bien)" : " (MAL: cobrada " + ms.claimedDay + ")"));
+                // la de hace 3 días (el dueño: «si alguien hizo un job y no le dejó cobrar, que pueda reclamarlo»)
+                long old = net.tierrasfantasticas.tfclient.util.TFRotation.day() - 3;
+                var tpl = job.missions().stream().filter(x -> x.repeat() == net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Repeat.DAILY
+                        && x.level() <= jp.level).findFirst().orElse(null);
+                if (tpl == null) return;
+                String oldId = "h" + old + "_" + tpl.id();
+                var oms = jp.mission(oldId);
+                oms.progress = 999;
+                oms.done = true;
+                oms.rot = tpl.id() + "@1.0";
+                var found = net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.missionFor(job, me, jp, oldId);
+                long b2 = balance(player);
+                net.tierrasfantasticas.tfclient.pad.server.PadJobs.APP.action(player, "", "cobrar:herrero:" + oldId, "");
+                long b3 = balance(player);
+                r.event("oficios: la de hace 3 días sin cobrar: " + (found == null ? "NO SALE en la lista" : "sale") + "; COBRAR → saldo " + b2 + " → " + b3
+                        + (found != null && b3 > b2 ? " (bien)" : " (MAL)"));
+            }
+            case 24 -> openPad = "oficios/o:herrero:m";
+            case 70 -> shot(r, "oficios_misiones");
+            case 72 -> openPad = "misiones/semanales";
+            case 110 -> shot(r, "misiones_semanales");
+            case 112 -> closeScreen = true;
+            case 120 -> next(level);
             default -> { }
         }
     }

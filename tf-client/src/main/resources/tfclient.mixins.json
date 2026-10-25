@@ -17,7 +17,9 @@
     "claims.EntityExplosionCalculatorGuardMixin",
     "MinecraftServerBotsMixin",
     "BotCommandsMixin",
-    "EntityRemoveMixin"
+    "EntityRemoveMixin",
+    "jobs.ResultSlotJobsMixin",
+    "jobs.FurnaceResultSlotJobsMixin"
   ],
   "client": [
     "LoadingOverlayAccessor",

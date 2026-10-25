@@ -180,24 +180,28 @@ public final class TFJobs {
         for (ItemStack stack : event.getDrops()) record(player, "pescar", t -> t.item(stack), stack.getCount());
     }
 
-    @SubscribeEvent
-    public static void onCraft(PlayerEvent.ItemCraftedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
-        ItemStack stack = event.getCrafting();
-        record(player, "fabricar", t -> t.item(stack), Math.max(1, stack.getCount()));
+    /**
+     * (1.3.139, el dueño: «una misión me pide fundir hierro y cuando fundo no me cuenta») Lo fabricado (mesa de trabajo,
+     * inventario) y lo fundido (horno, ahumador, alto horno): lo cuentan mixin/jobs/ResultSlotJobsMixin y
+     * FurnaceResultSlotJobsMixin con lo que de verdad se saca del hueco del resultado. Antes eran los eventos de Forge
+     * (ItemCraftedEvent, ItemSmeltedEvent), que con mayúsculas + clic llegan con el montón ya vacío («aire»: no contaba).
+     */
+    public static void made(ServerPlayer player, String type, ItemStack stack, int amount) {
+        if (!playing(player) || stack.isEmpty() || amount <= 0) return;
+        ItemStack item = stack.copy();
+        if (TEST) TEST_LOG.add(type + " " + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item.getItem()) + " " + amount);
+        record(player, type, t -> t.item(item), amount);
     }
 
-    @SubscribeEvent
-    public static void onSmelt(PlayerEvent.ItemSmeltedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
-        ItemStack stack = event.getSmelting();
-        record(player, "fundir", t -> t.item(stack), Math.max(1, stack.getCount()));
-    }
+    /** (1.3.139) Para la prueba en el juego (BossTest «oficios»): lo que se contó de fabricar, fundir y preparar. */
+    private static final boolean TEST = System.getenv("TFCLIENT_PRUEBA_JEFES") != null;
+    public static final List<String> TEST_LOG = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     @SubscribeEvent
     public static void onBrew(PlayerBrewedPotionEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
         ItemStack stack = event.getStack();
+        if (TEST) TEST_LOG.add("preparar " + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()) + " " + stack.getCount());
         record(player, "preparar", t -> t.item(stack), 1);
     }
 
@@ -272,6 +276,8 @@ public final class TFJobs {
                 addXp(player, job, jp, xp);
             }
         }
+        // (1.3.139, el dueño: «quiero cobrar al instante») lo ganado se paga al momento (en cuanto suma una moneda)
+        if (pending.getOrDefault(player.getUUID(), 0.0) >= 1) pay(player.getUUID(), player.getGameProfile().getName(), false);
         if (changed) data().changed();
     }
 
@@ -341,14 +347,20 @@ public final class TFJobs {
         MissionState ms = refresh(jp, mission);
         if (!ms.done || ms.claimedDay >= 0) return "Esa misión aún no está completada.";
         Reward r = mission.reward();
+        // (1.3.139, el dueño: «no me deja cobrar, no cobra nada») primero se paga; si la economía falla, la misión sigue
+        // sin cobrar (antes se marcaba cobrada aunque no llegaran las monedas)
+        long coins = Math.round(r.coins());
+        if (coins > 0 && !TFEconomy.give(server, player.getUUID(), player.getGameProfile().getName(), coins)) {
+            TFClient.LOGGER.warn("TF Oficios: no se pudieron pagar {} a {} por «{}» (economía {})", coins,
+                    player.getGameProfile().getName(), mission.name(), TFEconomy.mode());
+            return "No se pudo pagar ahora mismo. Inténtalo en un momento (la misión sigue sin cobrar).";
+        }
         ms.claimedDay = TFJobsData.today();
         if (mission.repeat() == TFJobsConfig.Repeat.ALWAYS) {
             ms.progress = 0;
             ms.done = false;
             ms.claimedDay = -1;
         }
-        long coins = Math.round(r.coins());
-        TFEconomy.give(server, player.getUUID(), player.getGameProfile().getName(), coins);
         giveExtras(player, job, jp.level, r);
         if (r.xp() > 0) addXp(player, job, jp, r.xp());
         data().changed();
