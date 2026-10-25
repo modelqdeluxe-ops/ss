@@ -1893,9 +1893,10 @@
       <div class="pay-actions">
         <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
+        <button type="button" class="btn btn-mp btn-lg btn-block pay-btn" id="pay-mp" hidden disabled>Pagar con <b>Mercado Pago</b> <small id="pay-mp-mxn"></small></button>
       </div>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
-      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
+      <p class="pay-legal">Precio final en USD (con Mercado Pago, lo mismo en pesos mexicanos al cambio de hoy). Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;
@@ -1922,6 +1923,9 @@
   function updateTotal() {
     const qty = Math.max(1, Number.parseInt(qtyInput.value, 10) || 1);
     $('#dialog-total').textContent = formatPrice(unitPrice() * qty);
+    // Mercado Pago (cuenta de México) cobra lo mismo en pesos, al cambio de hoy
+    const rate = Number(config.mpRate) || 0;
+    $('#pay-mp-mxn').textContent = rate ? `· $${(Math.ceil(unitPrice() * rate - 1e-9) * qty / 100).toFixed(2)} MXN` : '';
     const from = player?.quote?.upgradeFrom;
     $('#dialog-upgrade').textContent = from ? `· mejora desde ${from.replace(/^Rango\s+/i, '')}` : '';
   }
@@ -1931,15 +1935,20 @@
     const off = !player || blocked || paying || !$('#pay-terms').checked;
     $('#pay-btn').disabled = off;
     $('#pay-paypal').disabled = off;
+    $('#pay-mp').disabled = off;
   }
 
   // Botones de pago según lo que esté conectado en el servidor (tarjeta con Stripe y/o PayPal).
   function renderPayMethods() {
     const card = config.cardEnabled !== false;
     const pp = Boolean(config.paypalEnabled);
+    const mpOn = Boolean(config.mercadopagoEnabled);
     $('#pay-btn').hidden = !card;
     $('#pay-paypal').hidden = !pp;
-    $('#pay-note-text').innerHTML = card && pp
+    $('#pay-mp').hidden = !mpOn;
+    $('#pay-note-text').innerHTML = mpOn
+      ? 'Pago seguro con ' + [card && '<b>Stripe</b> (tarjeta)', pp && '<b>PayPal</b>', '<b>Mercado Pago</b> (tarjeta, OXXO, saldo; en pesos al cambio de hoy)'].filter(Boolean).join(', ') + '. Nunca vemos tus datos bancarios.'
+      : card && pp
       ? 'Pago seguro con <b>Stripe</b> (tarjeta, Apple Pay o Google Pay) o con <b>PayPal</b>. Nunca vemos tus datos bancarios.'
       : pp
         ? 'Pago seguro con <b>PayPal</b> (tu cuenta o tarjeta). Nunca vemos tus datos bancarios.'
@@ -2023,6 +2032,7 @@
     $('#pay-btn').textContent = 'Pagar con tarjeta';
     $('#pay-btn').classList.remove('is-loading');
     $('#pay-paypal').classList.remove('is-loading');
+    $('#pay-mp').classList.remove('is-loading');
     renderPayMethods();
     // Con la cuenta vinculada, el jugador ya se sabe (en un regalo se escribe el de quien lo recibe).
     $('#username').value = gift ? '' : me.user?.name || storageGet('tf-username');
@@ -2207,6 +2217,7 @@
       pay('stripe');
     });
     $('#pay-paypal').addEventListener('click', () => pay('paypal'));
+    $('#pay-mp').addEventListener('click', () => pay('mercadopago'));
   }
 
   // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe o de PayPal.
@@ -2220,9 +2231,9 @@
     showError('');
     paying = true;
     setPayable();
-    const btn = method === 'paypal' ? $('#pay-paypal') : $('#pay-btn');
+    const btn = method === 'paypal' ? $('#pay-paypal') : method === 'mercadopago' ? $('#pay-mp') : $('#pay-btn');
     const label = btn.innerHTML;
-    btn.textContent = method === 'paypal' ? 'Abriendo PayPal…' : 'Abriendo el pago seguro…';
+    btn.textContent = method === 'paypal' ? 'Abriendo PayPal…' : method === 'mercadopago' ? 'Abriendo Mercado Pago…' : 'Abriendo el pago seguro…';
     btn.classList.add('is-loading');
     try {
       const res = await fetch('/api/checkout', {

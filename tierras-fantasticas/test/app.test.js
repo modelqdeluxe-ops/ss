@@ -133,6 +133,38 @@ function startFakeDiscord() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
 }
 
+// --- API de Mercado Pago simulada (preferencias, pagos y el cambio del dólar) ---
+const mpPrefs = new Map();
+const mpPayments = new Map();
+function startFakeMercadoPago() {
+  const server = http.createServer(async (req, res) => {
+    let raw = '';
+    for await (const chunk of req) raw += chunk;
+    const send = (status, data) => {
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(data));
+    };
+    if (req.headers.authorization !== 'Bearer APP_USR-prueba') return send(401, { message: 'invalid token' });
+    const url = new URL(req.url, 'http://x');
+    if (url.pathname === '/currency_conversions/search') return send(200, { ratio: 18.68 });
+    if (url.pathname === '/checkout/preferences' && req.method === 'POST') {
+      const body = JSON.parse(raw);
+      const id = `pref-${mpPrefs.size + 1}`;
+      mpPrefs.set(id, body);
+      return send(201, { id, init_point: `https://www.mercadopago.test/checkout?pref_id=${id}` });
+    }
+    if (url.pathname === '/v1/payments/search') {
+      const ref = url.searchParams.get('external_reference');
+      return send(200, { results: [...mpPayments.values()].filter((p) => p.external_reference === ref).reverse() });
+    }
+    const one = url.pathname.match(/^\/v1\/payments\/(\d+)$/);
+    if (one) return mpPayments.has(one[1]) ? send(200, mpPayments.get(one[1])) : send(404, { message: 'not found' });
+    send(404, { message: 'Unknown' });
+  });
+  servers.push(server);
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
+}
+
 // --- API de PayPal simulada ---
 const paypalOrders = new Map();
 const paypalCaptures = new Map();
@@ -199,7 +231,7 @@ const quietLog = { log() {}, warn() {}, error() {} };
 const ASSETS = { fetch: async (req) => new Response(`estático ${new URL(req.url).pathname}`) };
 
 before(async () => {
-  const [stripePort, discordPort, paypalPort] = await Promise.all([startFakeStripe(), startFakeDiscord(), startFakePaypal()]);
+  const [stripePort, discordPort, paypalPort, mpPort] = await Promise.all([startFakeStripe(), startFakeDiscord(), startFakePaypal(), startFakeMercadoPago()]);
   // Rol de Discord real (formato snowflake) para el rango de pruebas.
   products.find((p) => p.id === 'rango-inmortal').discordRoles = [ROLE_ID];
   env = {
@@ -223,6 +255,10 @@ before(async () => {
     PAYPAL_CLIENT_SECRET: 'pp-secret',
     PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
     PAYPAL_WEBHOOK_ID: 'WH-1',
+    MP_ACCESS_TOKEN: 'APP_USR-prueba',
+    MP_API_BASE: `http://127.0.0.1:${mpPort}`,
+    MP_RATE_API_BASE: `http://127.0.0.1:${mpPort}`,
+    MP_WEBHOOK_SECRET: 'mp-secreto',
     RESEND_API_KEY: 're_prueba',
     RECORDS_EMAIL: 'duenio@correo.test',
     MAIL_FETCH: async (url, init) => {
@@ -1825,4 +1861,54 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
   assert.match(triedId, /^TEST[0-9A-Z]+$/);
   assert.strictEqual((await refund(triedId)).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
+});
+
+
+// Un aviso de Mercado Pago firmado como lo firma él (x-signature «ts=…,v1=HMAC(id;request-id;ts)»).
+async function mpWebhook(paymentId, secret = 'mp-secreto') {
+  const ts = String(Math.floor(Date.now() / 1000));
+  const manifest = `id:${paymentId};request-id:req-1;ts:${ts};`;
+  const v1 = createHmac('sha256', secret).update(manifest).digest('hex');
+  return call(`/webhook/mercadopago?data.id=${paymentId}&type=payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-signature': `ts=${ts},v1=${v1}`, 'x-request-id': 'req-1' },
+    body: JSON.stringify({ type: 'payment', action: 'payment.updated', data: { id: paymentId } }),
+  });
+}
+
+test('Mercado Pago (cuenta de México): cobra en pesos al cambio del día, entrega al aprobarse y retira con un reembolso', async () => {
+  const config = await (await get('/api/config')).json();
+  assert.strictEqual(config.mercadopagoEnabled, true);
+  assert.strictEqual(config.mpRate, 18.68);
+  await seen('Mp_Comprador');
+  const res = await post('/api/checkout', { acceptTerms: true, method: 'mercadopago', productId: 'crate-valentine', username: 'Mp_Comprador' });
+  const { id, url } = await res.json();
+  assert.strictEqual(res.status, 200);
+  assert.match(url, /^https:\/\/www\.mercadopago\.test\/checkout\?pref_id=pref-/);
+  const pref = [...mpPrefs.values()].find((p) => p.external_reference === id);
+  const usd = products.find((p) => p.id === 'crate-valentine').price;
+  const mxn = Math.ceil(usd * 18.68 - 1e-9) / 100;
+  assert.strictEqual(pref.items[0].currency_id, 'MXN');
+  assert.strictEqual(pref.items[0].unit_price, mxn);
+  assert.ok(pref.items[0].description.includes('Para Mp_Comprador'));
+  assert.strictEqual(pref.back_urls.success, `http://tienda.test/success?order=${id}`);
+
+  // sin pagar, nada; un rechazo no cierra el pedido (puede reintentar)
+  assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');
+  mpPayments.set('9001', { id: 9001, status: 'rejected', external_reference: id, transaction_amount: mxn, currency_id: 'MXN' });
+  assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');
+  // aprobado: se entrega (por la página de vuelta o por el aviso)
+  mpPayments.set('9002', { id: 9002, status: 'approved', external_reference: id, transaction_amount: mxn, currency_id: 'MXN' });
+  assert.strictEqual((await mpWebhook('9002', 'otra-clave')).status, 401);
+  assert.strictEqual((await mpWebhook('9002')).status, 200);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'queued');
+  // reembolsado en Mercado Pago: se retira lo entregado
+  mpPayments.set('9002', { ...mpPayments.get('9002'), status: 'refunded' });
+  assert.strictEqual((await mpWebhook('9002')).status, 200);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).refunded, 'reembolsado');
+
+  // un importe que no es el del pedido no entrega
+  const { id: id2 } = await (await post('/api/checkout', { acceptTerms: true, method: 'mercadopago', productId: 'crate-valentine', username: 'Mp_Comprador' })).json();
+  mpPayments.set('9003', { id: 9003, status: 'approved', external_reference: id2, transaction_amount: 1, currency_id: 'MXN' });
+  assert.strictEqual((await (await post(`/api/order/${id2}/sync`)).json()).status, 'error');
 });

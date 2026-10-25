@@ -9,6 +9,7 @@ import vfx from '../config/vfx.json' with { type: 'json' };
 import skillsCatalog from '../config/skills.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { PayPal, formatAmount } from './paypal.js';
+import { MercadoPago, mxnCents, usdToMxn } from './mercadopago.js';
 import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
@@ -283,6 +284,12 @@ export function createApp(env) {
     env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET
       ? new PayPal({ clientId: env.PAYPAL_CLIENT_ID, clientSecret: env.PAYPAL_CLIENT_SECRET, env: env.PAYPAL_ENV || 'live', apiBase: env.PAYPAL_API_BASE })
       : null;
+  // (2026-10-26) Mercado Pago (opcional, cuenta de México): con MP_ACCESS_TOKEN aparece «Pagar con Mercado Pago». Una
+  // cuenta de México solo cobra en pesos: el precio en dólares al cambio del día (usdToMxn; MP_RATE si no hay cambio).
+  // MP_WEBHOOK_SECRET firma los avisos (sin ella, igual se pregunta a la API).
+  const mp = env.MP_ACCESS_TOKEN ? new MercadoPago({ accessToken: env.MP_ACCESS_TOKEN, apiBase: env.MP_API_BASE }) : null;
+  const MP_CURRENCY = 'MXN';
+  const mpRate = () => usdToMxn({ token: env.MP_ACCESS_TOKEN, fallback: Number(env.MP_RATE) > 0 ? Number(env.MP_RATE) : 18.5, apiBase: env.MP_RATE_API_BASE });
 
   let sessionPromise = null;
   const session = () =>
@@ -622,9 +629,11 @@ export function createApp(env) {
         discordUrl: DISCORD_URL,
         discordLogin: discord.loginEnabled,
         currency: CURRENCY,
-        paymentsEnabled: Boolean(stripe || paypal),
+        paymentsEnabled: Boolean(stripe || paypal || mp),
         cardEnabled: Boolean(stripe),
         paypalEnabled: Boolean(paypal),
+        mercadopagoEnabled: Boolean(mp),
+        ...(mp ? { mpRate: await mpRate() } : {}),
         discordInvite: DISCORD_URL,
         termsVersion: TERMS_VERSION,
         // Solo se puede comprar a jugadores que el puente ya conoce.
@@ -1060,11 +1069,12 @@ export function createApp(env) {
     //    y el jugador tiene que existir en el servidor: la entrega va a su UUID, sin errores de nombre.
     'POST /api/checkout': async (req, { url }) => {
       const body = (await readJson(req)) || {};
-      const method = body.method === 'paypal' ? 'paypal' : 'stripe';
+      const method = body.method === 'paypal' ? 'paypal' : body.method === 'mercadopago' ? 'mercadopago' : 'stripe';
       if (method === 'stripe' && !stripe) {
-        return json({ error: paypal ? 'El pago con tarjeta no está disponible ahora mismo. Usa PayPal.' : 'Los pagos no están configurados todavía.' }, 503);
+        return json({ error: paypal || mp ? 'El pago con tarjeta no está disponible ahora mismo. Usa otro método.' : 'Los pagos no están configurados todavía.' }, 503);
       }
       if (method === 'paypal' && !paypal) return json({ error: 'El pago con PayPal no está disponible ahora mismo.' }, 503);
+      if (method === 'mercadopago' && !mp) return json({ error: 'El pago con Mercado Pago no está disponible ahora mismo.' }, 503);
       const product = productById.get(body.productId);
       const quantity = Number.parseInt(body.quantity ?? 1, 10);
       if (!product) return json({ error: 'Producto no válido.' }, 400);
@@ -1117,9 +1127,30 @@ export function createApp(env) {
       const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
       const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
+      // Con Mercado Pago se cobra en pesos (su precio redondeado); lo demás, en la moneda de la tienda
+      const mxUnit = method === 'mercadopago' ? mxnCents(q.unit, await mpRate()) : 0;
+      const charged = method === 'mercadopago' ? { amount: mxUnit * quantity, currency: MP_CURRENCY } : { amount, currency: CURRENCY };
       try {
         let checkout;
-        if (method === 'paypal') {
+        if (method === 'mercadopago') {
+          const https = base.startsWith('https://');
+          const pref = await mp.createPreference({
+            orderId: id,
+            title: name,
+            description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
+            pictureUrl: https && paypalImages[product.image] ? `${base}/${paypalImages[product.image]}` : undefined,
+            quantity,
+            unitPrice: mxUnit / 100,
+            currency: MP_CURRENCY,
+            successUrl: `${base}/success?order=${id}`,
+            failureUrl: `${base}/tienda?cancel=${id}`,
+            pendingUrl: `${base}/success?order=${id}`,
+            notificationUrl: https ? `${base}/webhook/mercadopago` : undefined,
+            statement: 'TIERRASFANTASTICAS',
+          });
+          checkout = { id: pref.id, url: pref.init_point };
+          if (!checkout.url) throw new Error('Mercado Pago no devolvió el enlace de pago');
+        } else if (method === 'paypal') {
           const created = await paypal.createOrder({
             amount,
             currency: CURRENCY,
@@ -1162,8 +1193,8 @@ export function createApp(env) {
           uuid: player.uuid,
           productId: product.id,
           quantity,
-          amount,
-          currency: CURRENCY,
+          amount: charged.amount,
+          currency: charged.currency,
           // El token de Discord sirve para meter al comprador en el servidor de Discord con su rol.
           discord: account,
           discordId: account?.id,
@@ -1181,7 +1212,7 @@ export function createApp(env) {
         );
         return json({ id, url: checkout.url });
       } catch (err) {
-        log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : 'Stripe'}:`, err.message);
+        log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
     },
@@ -1513,11 +1544,50 @@ export function createApp(env) {
       return json({ received: true });
     },
 
+    // Webhook de Mercado Pago: un pago creado o actualizado (aprobado, rechazado, reembolsado, contracargo). Se comprueba
+    // la firma (si hay MP_WEBHOOK_SECRET) y, sobre todo, se pregunta el pago a la API con nuestro token.
+    'POST /webhook/mercadopago': async (req, ctx) => {
+      if (!mp) return new Response('Mercado Pago no configurado', { status: 503 });
+      const url = new URL(req.url);
+      let event = {};
+      try {
+        event = JSON.parse((await req.text()) || '{}');
+      } catch {
+        /* algunos avisos van solo en la dirección */
+      }
+      const type = event.type || url.searchParams.get('type') || url.searchParams.get('topic');
+      const dataId = String(event.data?.id || url.searchParams.get('data.id') || url.searchParams.get('id') || '');
+      const ok = await MercadoPago.verifySignature({
+        secret: env.MP_WEBHOOK_SECRET,
+        signature: req.headers.get('x-signature'),
+        requestId: req.headers.get('x-request-id'),
+        dataId: url.searchParams.get('data.id') || dataId,
+      });
+      if (!ok) return new Response('Firma no válida', { status: 401 });
+      if (type !== 'payment' || !/^\d+$/.test(dataId)) return json({ received: true });
+      try {
+        const payment = await mp.getPayment(dataId);
+        const ref = payment.external_reference;
+        const local = ref && ORDER_ID_RE.test(ref) ? await store.getOrder(ref) : null;
+        if (local) await handleMpPayments(local, [payment], ctx);
+      } catch (err) {
+        log.error('Error procesando el webhook de Mercado Pago:', err);
+        return new Response('Error interno', { status: 500 });
+      }
+      return json({ received: true });
+    },
+
     // 3) Respaldo: la página de confirmación pide a Stripe el estado del pago por si el webhook tarda.
     'POST /api/order/:id/sync': async (req, ctx) => {
       const order = ORDER_ID_RE.test(ctx.params.id) ? await store.getOrder(ctx.params.id) : null;
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
-      if (order.method === 'paypal' && paypal && order.sessionId && ['pending', 'awaiting_payment'].includes(order.status)) {
+      if (order.method === 'mercadopago' && mp && ['pending', 'awaiting_payment'].includes(order.status)) {
+        try {
+          await handleMpPayments(order, await mp.paymentsFor(order.id), ctx);
+        } catch (err) {
+          log.warn(`No se pudo consultar el pago de Mercado Pago de ${order.id}:`, err.message);
+        }
+      } else if (order.method === 'paypal' && paypal && order.sessionId && ['pending', 'awaiting_payment'].includes(order.status)) {
         try {
           await capturePayPal(order, ctx);
         } catch (err) {
@@ -1790,6 +1860,39 @@ export function createApp(env) {
       return 'error';
     }
     return fulfill(local, ctx, capture.id);
+  }
+
+  /**
+   * Mercado Pago: los pagos de un pedido (los de la API). Uno aprobado con el importe justo entrega; uno en proceso
+   * (OXXO, revisión) deja el pedido esperando; reembolsado o contracargo retira lo entregado. Uno rechazado no cierra el
+   * pedido (el comprador puede reintentar con otra tarjeta en la misma página).
+   */
+  async function handleMpPayments(local, payments, ctx) {
+    if (local.method !== 'mercadopago') return local.status;
+    const mine = payments.filter((p) => p && p.external_reference === local.id);
+    for (const p of mine) {
+      if (p.status === 'refunded' || p.status === 'charged_back') {
+        await handleReversal({ paymentIntent: String(p.id), full: true, dispute: p.status === 'charged_back' }, ctx);
+        return (await store.getOrder(local.id))?.status;
+      }
+    }
+    if (CLAIMED.includes(local.status)) return local.status; // Ya pagado y procesado.
+    const approved = mine.find((p) => p.status === 'approved');
+    if (approved) {
+      const paid = Math.round(Number(approved.transaction_amount) * 100);
+      if (paid !== local.amount || String(approved.currency_id).toUpperCase() !== local.currency) {
+        log.error(`Importe incorrecto en ${local.id}: esperado ${local.amount / 100} ${local.currency}, cobrado ${approved.transaction_amount} ${approved.currency_id}`);
+        await store.updateOrder(local.id, { status: 'error', error: 'Importe no coincide', paymentIntent: String(approved.id) });
+        return 'error';
+      }
+      return fulfill(local, ctx, String(approved.id));
+    }
+    const waiting = mine.find((p) => ['pending', 'in_process', 'authorized', 'in_mediation'].includes(p.status));
+    if (waiting && local.status === 'pending') {
+      await store.updateOrder(local.id, { status: 'awaiting_payment', paymentIntent: String(waiting.id) });
+      return 'awaiting_payment';
+    }
+    return local.status;
   }
 
   const random = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;

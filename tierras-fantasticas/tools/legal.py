@@ -130,10 +130,13 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
 <ul>
   <li>Los precios están en <b>dólares estadounidenses (USD)</b> y el precio que ves antes de pagar es el total que
     pagas: no se añade nada después. Tu banco puede cobrarte por convertir la moneda; eso depende de tu banco.</li>
+  <li>Si pagas con <b>Mercado Pago</b>, se cobra lo mismo en <b>pesos mexicanos (MXN)</b> al tipo de cambio del día,
+    redondeado al centavo hacia arriba; el importe en pesos sale en el botón antes de pagar.</li>
   <li>Si ya tienes un rango y compras uno superior, pagas solo la diferencia. No se puede comprar un rango que ya
     tienes o uno inferior.</li>
   <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link) o, si está disponible,
-    en la de <b>PayPal</b>. Nosotros nunca vemos ni guardamos los datos de tu tarjeta ni de tu cuenta de PayPal.</li>
+    en la de <b>PayPal</b> o la de <b>Mercado Pago</b> (tarjeta, OXXO o saldo). Nosotros nunca vemos ni guardamos los
+    datos de tu tarjeta ni de tus cuentas de PayPal o Mercado Pago.</li>
   <li>Antes de cobrar, la tienda comprueba que el nombre de jugador existe en el servidor y guarda la compra con su
     UUID, para que llegue al jugador que eliges. Revisa bien el nombre: si te equivocas de jugador, escríbenos.</li>
 </ul>'''),
@@ -151,7 +154,7 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
 </ul>'''),
 
     ('entrega', 'Entrega', '''
-<p>Cuando Stripe o PayPal confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
+<p>Cuando Stripe, PayPal o Mercado Pago confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
 cuenta». Si algo falla, el staff la entrega a mano. Si en 48 horas no la has recibido, escríbenos con tu número de
 pedido.</p>'''),
@@ -170,12 +173,12 @@ pedido.</p>'''),
   <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
     o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
   <li><b>Pasados esos 5 días hábiles no hay reembolsos.</b> La compra es definitiva, salvo en los casos del punto anterior.</li>
-  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe o PayPal al mismo medio de pago; tu banco puede
+  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe, PayPal o Mercado Pago al mismo medio de pago; tu banco puede
     tardar de 5 a 10 días hábiles en mostrarlo.</li>
   <li>Si dentro del plazo abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de
     la misma forma que con un reembolso. Escríbenos primero: casi siempre es más rápido.</li>
   <li><b>Reembolso injustificado: baneo de IP de 6 días.</b> Si pasados los 5 días hábiles reclamas el dinero por otra vía
-    (una disputa o un contracargo con tu banco o tu tarjeta, Stripe o PayPal) sin que se dé ninguno de los casos de
+    (una disputa o un contracargo con tu banco o tu tarjeta, Stripe, PayPal o Mercado Pago) sin que se dé ninguno de los casos de
     arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 6 días</b> (en un
     regalo, el jugador que lo pagó).
     Además respondemos a la disputa con las pruebas de la compra (ver «Registro de la aceptación y recibos»). Si la
@@ -193,11 +196,11 @@ pedido.</p>'''),
   <li><b>Cada compra con dinero tiene su recibo</b>: número de pedido, jugador y UUID, producto, importe, medio de pago y
     su referencia, fechas del pedido, del pago y de la entrega en el servidor, la versión de los Términos aceptada y esta
     política de cancelación y reembolsos.</li>
-  <li><b>Tu recibo en PDF se descarga solo</b> al terminar de pagar, aparte del que te dan Stripe o PayPal; también lo
+  <li><b>Tu recibo en PDF se descarga solo</b> al terminar de pagar, aparte del que te dan Stripe, PayPal o Mercado Pago; también lo
     puedes volver a descargar desde la página de tu compra.</li>
   <li>Una copia de cada aceptación, de cada recibo y de cada aviso de reembolso o disputa se envía al correo de la
     administración de Tierras Fantásticas y se guarda junto al registro de la entrega en el servidor.</li>
-  <li>Estos registros se pueden presentar como prueba ante tu banco, Stripe, PayPal o cualquier autoridad.</li>
+  <li>Estos registros se pueden presentar como prueba ante tu banco, Stripe, PayPal, Mercado Pago o cualquier autoridad.</li>
 </ul>'''),
 
     ('cambios-contenido', 'Cambios en el servidor', '''
@@ -215,7 +218,7 @@ protecciones de la tienda.</p>'''),
     ('responsabilidad', 'Responsabilidad', '''
 <p>Prestamos el servicio con cuidado, pero no podemos garantizar que el servidor o la web estén siempre disponibles ni
 libres de fallos. No respondemos de problemas causados por tu conexión, tus mods o tu equipo, ni por servicios de
-terceros (Stripe, PayPal, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>'''),
+terceros (Stripe, PayPal, Mercado Pago, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>'''),
 
     ('cambios', 'Cambios en estos términos', '''
 <p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha y te pediremos que la aceptes antes
@@ -243,8 +246,8 @@ dirección ni teléfono.</p>
   <li><b>Discord, solo si lo conectas:</b> tu ID, nombre de usuario, nombre visible, avatar y si estás en nuestro servidor
     de Discord.</li>
   <li><b>Compras:</b> número de pedido, producto, cantidad, importe, moneda, fechas, estado del pago y de la entrega, y el
-    identificador del pago en Stripe o PayPal y con cuál pagaste. Los datos de tu tarjeta, tu cuenta de PayPal y el correo
-    que te piden los tratan Stripe o PayPal; nosotros no los vemos ni los guardamos.</li>
+    identificador del pago en Stripe, PayPal o Mercado Pago y con cuál pagaste. Los datos de tu tarjeta, tu cuenta de PayPal o Mercado Pago y el correo
+    que te piden los tratan Stripe, PayPal o Mercado Pago; nosotros no los vemos ni los guardamos.</li>
   <li><b>Jugadores del servidor:</b> el servidor nos envía el nombre y el UUID de quienes han entrado, con la primera y
     la última vez que se les vio, para comprobar los nombres antes de vender.</li>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
@@ -282,6 +285,8 @@ prestar su servicio (algunos están fuera de México, sobre todo en Estados Unid
   <li><b>Stripe:</b> pagos. Ve tu tarjeta y el correo que le das, según su propia política de privacidad.</li>
   <li><b>PayPal:</b> pagos, solo si pagas con PayPal. Ve tu cuenta o tarjeta y tu correo, según su propia política de
     privacidad.</li>
+  <li><b>Mercado Pago:</b> pagos, solo si pagas con Mercado Pago. Ve tu cuenta, tarjeta o pago en efectivo y tu correo,
+    según su propia política de privacidad.</li>
   <li><b>Discord:</b> solo si conectas tu cuenta, para iniciar sesión y darte roles.</li>
   <li><b>Resend:</b> envía al correo de la administración las copias de las aceptaciones de los términos, de los
     recibos y de los avisos de reembolso o disputa.</li>
@@ -340,7 +345,7 @@ entrar.</p>'''),
 
     ('seguridad', 'Seguridad', '''
 <p>La web va siempre cifrada (HTTPS), las contraseñas se guardan cifradas, la sesión usa una cookie protegida y los
-pagos se hacen en Stripe o PayPal. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
+pagos se hacen en Stripe, PayPal o Mercado Pago. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
 escríbenos.</p>'''),
 
     ('cambios', 'Cambios en este aviso', '''

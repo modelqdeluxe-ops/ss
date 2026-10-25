@@ -863,6 +863,22 @@ h4 {
   font-size: 15px;
 }
 
+/* Mercado Pago: su azul claro, con letra azul marino (contraste > 6:1) */
+.btn-mp {
+  --l: #8fdcfa;
+  --c: #33b8f0;
+  --d: #0aa0e0;
+  --o: #005f8c;
+  --fg: #00264d;
+  text-shadow: none;
+  font-size: 15px;
+}
+
+.btn-mp small {
+  font-weight: 700;
+  opacity: 0.85;
+}
+
 .pp-word {
   font: italic 800 17px/1 var(--font-body);
   color: #003087;
