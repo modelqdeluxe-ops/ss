@@ -184,7 +184,7 @@ public final class TFItemsClient {
             if (back.equals("nada") && !fallback.isEmpty()) back = "huecos " + key(fallback.get(0));
             return "pecho: " + (armor.getItem() instanceof ArmorItem ? key(armor) : "nada") + " (lleva " + (chest.isEmpty() ? "nada" : key(chest))
                     + "); espalda: " + back + " | accesorios: lleva " + TFAccessorySlots.wearsBack(player) + ", los dibuja su mod "
-                    + TFAccessorySlots.modDraws(player) + ", respaldo " + fallback.size();
+                    + TFAccessorySlots.modDraws(player) + ", respaldo " + fallback.size() + "; el servidor dice: " + TFBackSync.describe(player);
         }
 
         private static String key(ItemStack stack) {

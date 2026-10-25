@@ -78,6 +78,8 @@ public final class TFWardrobe {
         registered = true;
         CHANNEL.messageBuilder(Sync.class, 0, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Sync::write).decoder(Sync::read).consumerMainThread(Sync::handle).add();
+        // (1.3.138) lo que lleva cada jugador en la espalda, dicho por el servidor
+        TFBackSync.register(CHANNEL, 1);
     }
 
     // ------------------------------------------------------------------------------------------- servidor

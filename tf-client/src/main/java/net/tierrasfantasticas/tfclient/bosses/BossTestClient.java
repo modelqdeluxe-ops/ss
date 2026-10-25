@@ -137,6 +137,12 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.pad.TFPadClient.typeForTest(BossTest.typePad);
             BossTest.typePad = null;
         }
+        // (1.3.138) prueba «accesorios»: alas solo en la copia de Curios del cliente (como si se quedara vieja)
+        if (BossTest.fakeWings != null && mc.player != null) {
+            String what = BossTest.fakeWings;
+            BossTest.fakeWings = null;
+            fakeCurio(mc.player, what.equals("poner"));
+        }
         // (1.3.137) prueba «armario»: lo que se dibuja en el pecho y la espalda del jugador
         if (("armario".equals(BossTest.currentId()) || "accesorios".equals(BossTest.currentId())) && mc.player != null) {
             BossTest.clientWardrobe = net.tierrasfantasticas.tfclient.items.TFItemsClient.BackLayer.debug(mc.player);
@@ -249,6 +255,32 @@ public final class BossTestClient {
             }
         } catch (Exception e) {
             TFClient.LOGGER.warn("Prueba de jefes: música «{}» falló", cmd, e);
+        }
+    }
+
+    /** Pone (o quita) unas alas de set en el hueco «back» de Curios del jugador del cliente, sin el servidor. */
+    private static void fakeCurio(net.minecraft.world.entity.player.Player player, boolean put) {
+        try {
+            net.minecraft.world.item.ItemStack wings = net.minecraft.world.item.ItemStack.EMPTY;
+            if (put) {
+                for (var o : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.getOrDefault("back", java.util.List.of())) {
+                    if (o.get() instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.wornModel() != null) {
+                        wings = new net.minecraft.world.item.ItemStack(o.get());
+                        break;
+                    }
+                }
+            }
+            Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
+            Object inv = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class).invoke(null, player);
+            if (inv instanceof net.minecraftforge.common.util.LazyOptional<?> lo) inv = lo.resolve().orElse(null);
+            else if (inv instanceof java.util.Optional<?> o) inv = o.orElse(null);
+            Object h = inv == null ? null : inv.getClass().getMethod("getStacksHandler", String.class).invoke(inv, "back");
+            if (h instanceof java.util.Optional<?> o) h = o.orElse(null);
+            Object stacks = h == null ? null : h.getClass().getMethod("getStacks").invoke(h);
+            if (stacks instanceof net.minecraftforge.items.IItemHandlerModifiable m) m.setStackInSlot(0, wings);
+            TFClient.LOGGER.info("Prueba de jefes: alas solo en el cliente: {}", put ? wings : "quitadas");
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudieron poner las alas en el cliente", e);
         }
     }
 

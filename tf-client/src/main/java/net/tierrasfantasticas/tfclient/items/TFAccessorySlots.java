@@ -130,7 +130,8 @@ public final class TFAccessorySlots {
             if (entity != null && entity.isInvisible()) return null;
             // (1.3.137, el dueño: «me quité las alas del hueco de espalda de Accessories y se seguían viendo») solo si
             // siguen puestas de verdad: si Accessories pasa unas que ya no están (lo que tenga guardado para dibujar), nada
-            if (entity != null && !stillWorn(entity, stack)) return null;
+            // (1.3.138) y lo que dice el servidor (la copia del cliente de Accessories puede quedarse vieja)
+            if (entity != null && (!TFBackSync.allowed(entity, stack) || !stillWorn(entity, stack))) return null;
             drawn(entity);
             renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
@@ -161,6 +162,8 @@ public final class TFAccessorySlots {
             if (stack == null || pose == null || buffers == null || parent == null || light == null) return null;
             if (!(parent.getModel() instanceof HumanoidModel<?> model)) return null;
             if (entity != null && entity.isInvisible()) return null;
+            // (1.3.138) solo lo que el servidor dice que lleva puesto
+            if (entity != null && !TFBackSync.allowed(entity, stack)) return null;
             drawn(entity);
             renderer.render(pose, buffers, light, wardrobe(entity, stack), model, entity != null && armored(entity));
             return null;
@@ -304,6 +307,9 @@ public final class TFAccessorySlots {
      * nada puesto en la espalda, sus alas no se ven.
      */
     public static boolean wearsBack(LivingEntity entity) {
+        // (1.3.138) lo dice el servidor si ya lo ha dicho
+        Boolean server = TFBackSync.wearsInSlots(entity);
+        if (server != null) return server;
         List<ItemStack> out = new ArrayList<>();
         ModList mods = ModList.get();
         try {
@@ -327,6 +333,13 @@ public final class TFAccessorySlots {
 
     /** Cosméticos de espalda en huecos de accesorios que no dibuja ya el propio mod (vacío si no hay ninguno). */
     public static List<ItemStack> backCosmetics(LivingEntity entity) {
+        List<ItemStack> out = backCosmeticsRaw(entity);
+        // (1.3.138) solo lo que el servidor dice que lleva puesto
+        out.removeIf(stack -> !TFBackSync.allowed(entity, stack));
+        return out;
+    }
+
+    private static List<ItemStack> backCosmeticsRaw(LivingEntity entity) {
         List<ItemStack> out = new ArrayList<>();
         ModList mods = ModList.get();
         // (1.3.125) con nuestro dibujante registrado, solo si el mod no lo ha llamado para este jugador

@@ -729,6 +729,8 @@ public final class BossTest {
     static volatile String typePad;
     /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
     static volatile String musicCmd;
+    /** (1.3.138) Alas que el cliente se pone solo en su copia de Curios («poner» / «quitar»; BossTestClient). */
+    static volatile String fakeWings;
     /** (1.3.137) Lo que dibuja el cliente en el pecho y la espalda del jugador (TFItemsClient.BackLayer.debug). */
     static volatile String clientWardrobe = "?";
     /** (1.3.134) Lo que cuenta el cliente de su música: canciones, las de COMPARTIDOS y lo que falta por bajar. */
@@ -2276,8 +2278,28 @@ public final class BossTest {
                 r.event("accesorios 4 (se quitan del cosmético): " + clientWardrobe + (clientWardrobe.contains("espalda: nada") ? " (bien)" : " (MAL: sigue dibujando)"));
                 shot(r, "accesorios_4_cosmetico_quitado");
             }
-            case 182 -> cameraType = 0;
-            case 190 -> next(level);
+            // (1.3.138) alas solo en el cliente (su copia de Curios se queda vieja: el servidor dice que no lleva nada).
+            // Primero sin el arreglo (lo que veía el dueño) y luego con él.
+            case 182 -> {
+                net.tierrasfantasticas.tfclient.items.TFBackSync.testOff = true;
+                fakeWings = "poner";
+            }
+            case 220 -> {
+                r.event("accesorios 5 SIN ARREGLO (alas solo en el cliente): " + clientWardrobe
+                        + (clientWardrobe.contains("los dibuja su mod true") ? " (se dibujan: así lo veía el dueño)" : " (no se reproduce)"));
+                shot(r, "accesorios_5_viejas_sin_arreglo");
+            }
+            // (después de la captura: la prueba espera a que salga antes de seguir)
+            case 222 -> net.tierrasfantasticas.tfclient.items.TFBackSync.testOff = false;
+            case 260 -> {
+                r.event("accesorios 6 CON ARREGLO (alas solo en el cliente): " + clientWardrobe
+                        + (clientWardrobe.contains("los dibuja su mod false") && clientWardrobe.contains("espalda: nada")
+                        && clientWardrobe.contains("el servidor dice: nada") ? " (bien: no se dibujan)" : " (MAL)"));
+                shot(r, "accesorios_6_viejas_con_arreglo");
+                fakeWings = "quitar";
+            }
+            case 262 -> cameraType = 0;
+            case 270 -> next(level);
             default -> { }
         }
     }
