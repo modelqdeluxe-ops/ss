@@ -76,6 +76,13 @@ se pueden cobrar hasta 30 días después, aunque cambie `oficios.json` (con lo q
 cambiarla de verdad, ponla en `servidor.properties` (las copias se actualizan solas) y en Cloudflare. Si la web no
 contesta, el puente lo vuelve a intentar solo cada pocos segundos; no hace falta reiniciar.
 
+## Objetos ligados (kits de rangos y crates)
+
+Las piezas de los sets de rangos y crates (armas, armadura, escudo, y desde la 1.3.141 también alas, sombreros y
+mochilas) van ligadas a quien las recibe. Solo él puede sacarlas de un cofre o de cualquier contenedor; las tolvas y
+tuberías no las mueven; si otro las lleva encima, vuelven a su dueño (al entrar, si no está conectado). En creativo
+(staff) sí se pueden mover. Los sets de cosméticos que se compran con monedas no se ligan: se pueden regalar.
+
 ## Warps en Viajes
 
 A cada jugador solo le salen los warps de EssentialsX que puede usar: con `per-warp-permission: true` en la config de
