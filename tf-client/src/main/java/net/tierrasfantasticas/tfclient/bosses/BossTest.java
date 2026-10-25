@@ -2454,7 +2454,7 @@ public final class BossTest {
             }
             // (1.3.143, el dueño: «asegúrate de que todas las misiones se cumplan, que todos cobren, cazas, todo») cada misión
             // que va en el mod se puede hacer (los objetivos existen y cuentan), y las de hoy se hacen y se cobran de verdad
-            case 21 -> {
+            case 193 -> {
                 var problems = new java.util.ArrayList<String>();
                 int n = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkJobs(server, resource("/tfclient-jobs-default.json"), problems)
                         + net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.checkPad(server, resource("/tfclient-misiones-default.json"), problems);
@@ -2475,7 +2475,7 @@ public final class BossTest {
                 r.event("misiones: bayas dulces con clic derecho → " + res + ", la planta queda con edad "
                         + level.getBlockState(pos).getValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE));
             }
-            case 23 -> r.event("misiones: bayas dulces cogidas → " + (net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.contains("cosechar minecraft:sweet_berry_bush 1")
+            case 195 -> r.event("misiones: bayas dulces cogidas → " + (net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG.contains("cosechar minecraft:sweet_berry_bush 1")
                     ? "cuenta como cosechar (bien)" : "NO CUENTA " + net.tierrasfantasticas.tfclient.jobs.TFJobs.TEST_LOG));
             // (1.3.139) los rangos del clan (líder, colíder, veterano, miembro)
             case 22 -> r.event("clan, rangos: " + net.tierrasfantasticas.tfclient.pad.server.PadClans.testRanks(player));

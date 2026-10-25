@@ -108,17 +108,18 @@ public final class TFMissionCheck {
         if (type.equals("encantar")) return any ? null : "encantar solo cuenta con «*»";
         if (any) return null;
         if (BLOCK_TYPES.contains(type)) {
-            if (tag) return BuiltInRegistries.BLOCK.getTag(TagKey.create(Registries.BLOCK, id)).map(s -> s.size() > 0 ? null : "la etiqueta de bloques está vacía")
-                    .orElse("la etiqueta de bloques no existe");
-            if (!BuiltInRegistries.BLOCK.containsKey(id)) return "el bloque no existe";
+            // (Optional.map con null daría «no existe»: se mira el tamaño)
+            if (tag && BuiltInRegistries.BLOCK.getTag(TagKey.create(Registries.BLOCK, id)).map(s -> s.size()).orElse(0) == 0)
+                return "la etiqueta de bloques no existe o está vacía";
+            if (!tag && !BuiltInRegistries.BLOCK.containsKey(id)) return "el bloque no existe";
             var sample = sample(server, type, raw);
             return sample != null && sample.test(new TFJobsConfig.Target(raw)) ? null : "un bloque de verdad de ese objetivo no cuenta (no encaja)";
         }
         if (ENTITY_TYPES.contains(type)) {
-            if (tag) return BuiltInRegistries.ENTITY_TYPE.getTag(TagKey.create(Registries.ENTITY_TYPE, id)).map(s -> s.size() > 0 ? null : "la etiqueta de mobs está vacía")
-                    .orElse("la etiqueta de mobs no existe");
-            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(id)) return "el mob no existe";
-            if (type.equals("criar")) {
+            if (tag && BuiltInRegistries.ENTITY_TYPE.getTag(TagKey.create(Registries.ENTITY_TYPE, id)).map(s -> s.size()).orElse(0) == 0)
+                return "la etiqueta de mobs no existe o está vacía";
+            if (!tag && !BuiltInRegistries.ENTITY_TYPE.containsKey(id)) return "el mob no existe";
+            if (type.equals("criar") && !tag) {
                 var entity = BuiltInRegistries.ENTITY_TYPE.get(id).create(server.overworld());
                 boolean breeds = entity instanceof Animal;
                 if (entity != null) entity.discard();
