@@ -40,7 +40,10 @@ import net.tierrasfantasticas.tfclient.TFClient;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFWebDrops {
     /** Lo que, en el nombre de la clase que borra el objeto, delata un clear lag. */
-    private static final String[] CLEANERS = {"clear", "lag", "clean", "limpi", "remove", "purge", "kill", "butcher"};
+    // (1.3.145) «trash» y demás: las papeleras (WorldListTrashCan recoge lo del suelo en una papelera que cualquiera abre y
+    // luego se vacía: así se perdió parte del kit de HitGp con la 1.3.132)
+    private static final String[] CLEANERS = {"clear", "lag", "clean", "limpi", "remove", "purge", "kill", "butcher", "trash", "garbage",
+            "basura", "papelera", "sweep", "dustbin"};
     /** Lo de Minecraft, Forge, CraftBukkit, Java y el propio mod: borran por otras razones (recoger, juntar, el vacío). */
     private static final String[] SAFE = {"net.minecraft.", "net.minecraftforge.", "org.bukkit.", "org.spigotmc.", "java.",
             "jdk.", "sun.", "org.spongepowered.", "cpw.mods.", "net.tierrasfantasticas.", "com.mojang."};
@@ -85,8 +88,8 @@ public final class TFWebDrops {
         // al vacío se pierde, como siempre
         if (item.getY() < item.level().getMinBuildHeight() - 32) return false;
         if (reason == Entity.RemovalReason.KILLED) return log(item, "/kill");
-        // quien lo borra está justo encima (Entity.discard, CraftEntity.remove y el plugin o el mod): solo las 8 primeras
-        String by = StackWalker.getInstance().walk(frames -> frames.limit(8).map(StackWalker.StackFrame::getClassName)
+        // quien lo borra está justo encima (Entity.discard, CraftEntity.remove y el plugin o el mod): solo las 14 primeras
+        String by = StackWalker.getInstance().walk(frames -> frames.limit(14).map(StackWalker.StackFrame::getClassName)
                 .filter(TFWebDrops::cleaner).findFirst().orElse(null));
         return by != null && log(item, by);
     }

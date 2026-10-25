@@ -190,7 +190,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.144) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.145) — lee esto primero
+
+**1.3.145** (el dueño, con el Rastreador: «HitGp: con él 10, en cofres 30, CON OTROS 8, sin encontrar 14; ¿cómo que no
+están?»). Lo de HitGp pasó con la 1.3.132 (sin las protecciones de la 1.3.134 y la 1.3.141). Su
+`sophisticatedbackpacks.dat` (133 mochilas) no tiene nada de su pedido. En el servidor están WorldListTrashCan (una
+papelera que recoge lo del suelo; cualquiera la abre y luego se vacía) e InventoryRollbackPlus. Arreglos:
+- **Dueño de verdad** (`TFBinding.rightful`/`fixOwner`): lo de un pedido (TFOrder) se ata a quien lo compró
+  (`TFPurchases`), no al primero que lo lleva. Antes, lo que estaba sin dueño en un cofre quedó atado al ladrón y
+  **TRAER TODO se lo devolvía a él al momento**. Cada segundo (y siempre que es de otro) se corrige: en el inventario, en
+  el cursor y en accesorios (lo de otro puesto en accesorios también vuelve a su dueño). `TFSearch.recover` y lo
+  pendiente al entrar atan lo recuperado a quien lo recibe.
+- **Papeleras**: `TFWebDrops.CLEANERS` con trash, garbage, basura, papelera, sweep y dustbin (14 llamadas de pila).
+- **Rastreador**: lee `<mundo>/data/*.dat` (`scanData`): lo de dentro de las mochilas de Sophisticated Backpacks (cada
+  una con su uuid; el objeto de la mochila lleva `contentsUuid`) y sale donde está la mochila («en una mochila: en el
+  inventario de X»; `resolveBags`); lo que espera a su dueño (tfclient_returns.dat) y lo de otros mods. TRAER saca de
+  las mochilas con su propio inventario (`takeFromBag`, por reflexión) y de los accesorios.
+- Prueba: `[prueba-jefes=oficios] [mochilas]` (`-Ptfmochilas`: Sophisticated Backpacks 3.26.12 + Core 1.5.12, las del
+  servidor): una pala de la compra atada al ladrón en mi inventario se queda y pasa a ser mía; un pico atado al ladrón en
+  una mochila dentro de un cofre: sale «en una mochila» y TRAER TODO me lo da atado a mí.
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.144, PUBLICADA)
 
 **1.3.144** (el dueño: «no pongas texto redundante, ambiguo ni tan extenso; eso de "en creativo no cuenta" ya se sabe»):
 la línea de cómo se hace cada misión (`TFMissionCheck.how`) dice solo lo que no es obvio, en pocas palabras («Solo

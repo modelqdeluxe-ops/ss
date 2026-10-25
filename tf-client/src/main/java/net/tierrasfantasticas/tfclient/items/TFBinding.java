@@ -97,6 +97,62 @@ public final class TFBinding {
         tag.putString(OWNER_NAME, player.getGameProfile().getName());
     }
 
+    /** Quién es su dueño de verdad. */
+    public record Rightful(UUID uuid, String name) {}
+
+    /**
+     * (1.3.145, el dueño: «a HitGp le robaron el kit; ¿cómo que no están?») Lo comprado en la web es de quien lo compró
+     * (el jugador del pedido, TFOrder), aunque otro lo coja antes: hasta ahora se ataba al primero que lo llevaba y lo que
+     * estaba en un cofre sin dueño (de antes de la 1.3.141) quedó atado al ladrón (y TRAER TODO se lo devolvía a él).
+     * null si no viene de un pedido que conozca el servidor.
+     */
+    @Nullable
+    public static Rightful rightful(@Nullable MinecraftServer server, ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (server == null || tag == null || !tag.contains(TFRevocations.ORDER, Tag.TAG_STRING)) return null;
+        var p = net.tierrasfantasticas.tfclient.rastreo.TFPurchases.get(server, tag.getString(TFRevocations.ORDER));
+        if (p == null) return null;
+        UUID id = parseUuid(p.uuid());
+        if (id == null && !p.player().isEmpty()) {
+            var cache = server.getProfileCache();
+            id = cache == null ? null : cache.get(p.player()).map(com.mojang.authlib.GameProfile::getId).orElse(null);
+        }
+        return id == null ? null : new Rightful(id, p.player());
+    }
+
+    @Nullable
+    private static UUID parseUuid(String s) {
+        if (s == null || s.isEmpty()) return null;
+        String t = s.trim();
+        if (t.length() == 32) t = t.replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{12})", "$1-$2-$3-$4-$5");
+        try {
+            return UUID.fromString(t);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /** Lo ata a ese dueño (si es de los que se atan). */
+    public static void bindTo(ItemStack stack, UUID uuid, String name) {
+        if (!bindable(stack)) return;
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putUUID(OWNER, uuid);
+        if (name != null && !name.isEmpty()) tag.putString(OWNER_NAME, name);
+    }
+
+    /** Si es de un pedido y está atado a otro, se ata al que lo compró. Devuelve el dueño que vale. */
+    @Nullable
+    static UUID fixOwner(MinecraftServer server, ItemStack stack) {
+        UUID owner = owner(stack);
+        if (!bindable(stack)) return owner;
+        Rightful r = rightful(server, stack);
+        if (r != null && !r.uuid().equals(owner)) {
+            bindTo(stack, r.uuid(), r.name());
+            return r.uuid();
+        }
+        return owner;
+    }
+
     /** El jugador puede llevarlo y usarlo: es suyo, no tiene dueño o no se vincula. */
     public static boolean usableBy(ItemStack stack, Player player) {
         UUID owner = owner(stack);
@@ -132,6 +188,7 @@ public final class TFBinding {
         }
         if (entity.getY() < level.getMinBuildHeight() - 16) {
             ItemStack rescued = stack.copy();
+            entity.setItem(ItemStack.EMPTY);
             entity.discard();
             UUID owner = bindable(rescued) ? owner(rescued) : null;
             if (owner != null) {
@@ -161,6 +218,12 @@ public final class TFBinding {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty() || !bindable(stack)) continue;
             UUID owner = owner(stack);
+            // (1.3.145) lo de un pedido, del que lo compró
+            if (owner == null || !owner.equals(player.getUUID()) || player.tickCount % 20 == 0) {
+                UUID fixed = fixOwner(player.server, stack);
+                if (fixed != null && !fixed.equals(owner)) changed = true;
+                owner = fixed;
+            }
             if (owner == null) {
                 bind(stack, player);
                 changed = true;
@@ -182,6 +245,7 @@ public final class TFBinding {
         }
         // (1.3.141) lo que lleva en el cursor (con un cofre abierto) tampoco puede ser de otro
         ItemStack carried = player.containerMenu.getCarried();
+        if (!carried.isEmpty() && bindable(carried) && player.tickCount % 20 == 0) fixOwner(player.server, carried);
         if (!carried.isEmpty() && bindable(carried) && owner(carried) != null && !owner(carried).equals(player.getUUID())) {
             player.containerMenu.setCarried(ItemStack.EMPTY);
             returnTo(player.server, owner(carried), carried);
@@ -212,6 +276,35 @@ public final class TFBinding {
             // otra versión de Curios
         }
         for (ItemStack s : worn) bind(s, player);
+        // (1.3.145) lo puesto en accesorios que es de otro (de un pedido de otro, o atado a otro) vuelve a su dueño
+        List<ItemStack> all = new ArrayList<>();
+        java.util.function.Predicate<ItemStack> any = s -> bindable(s);
+        try {
+            if (net.minecraftforge.fml.ModList.get().isLoaded("accessories")) {
+                TFAccessoryLookup.fromAccessories(player, any, all);
+                TFAccessoryLookup.cosmeticsFromAccessories(player, any, all);
+            }
+        } catch (Throwable ignored) {
+            // otra versión de Accessories
+        }
+        try {
+            if (net.minecraftforge.fml.ModList.get().isLoaded("curios")) {
+                TFAccessoryLookup.fromCurios(player, any, all, false);
+                TFAccessoryLookup.cosmeticsFromCurios(player, any, all);
+            }
+        } catch (Throwable ignored) {
+            // otra versión de Curios
+        }
+        for (ItemStack s : all) {
+            UUID owner = fixOwner(player.server, s);
+            if (owner == null || owner.equals(player.getUUID())) continue;
+            ItemStack copy = s.copy();
+            s.setCount(0);
+            String ownerName = ownerName(copy);
+            player.sendSystemMessage(Component.literal(copy.getHoverName().getString() + " es de "
+                    + (ownerName != null ? ownerName : "otro jugador") + ": se le ha devuelto.").withStyle(ChatFormatting.RED));
+            returnTo(player.server, owner, copy);
+        }
     }
 
     @SubscribeEvent
