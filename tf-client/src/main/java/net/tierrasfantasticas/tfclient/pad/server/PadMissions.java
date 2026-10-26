@@ -64,6 +64,12 @@ public final class PadMissions {
 
     private static final List<Def> DAILY = new ArrayList<>();
     private static final List<Def> HUNT = new ArrayList<>();
+    /**
+     * (1.3.146, el dueño: «en las semanales salen misiones de end game y mid game: no pueden rotar ahora misiones del
+     * Nether ni del End») Las que llevan «requiere» (nether, end) solo rotan cuando están en «abiertos» de misiones.json;
+     * las que llevan «semanal»: false no salen en las semanales (su cantidad x5 sería demasiado).
+     */
+    private static final List<Def> WEEKLY = new ArrayList<>();
     private static int weeklyTimes = 5;
     private static int weeklyPay = 6;
 
@@ -117,7 +123,7 @@ public final class PadMissions {
 
     /** Las semanales cambian el lunes, como su progreso (week()); la temporada, cada 13 semanas. */
     static List<Def> weekly(UUID uuid) {
-        return rotate(DAILY, 3, week(), 13, 23, uuid.getLeastSignificantBits() >>> 1, weeklyTimes, weeklyPay);
+        return rotate(WEEKLY.isEmpty() ? DAILY : WEEKLY, 3, week(), 13, 23, uuid.getLeastSignificantBits() >>> 1, weeklyTimes, weeklyPay);
     }
 
     /** Las cazas cambian cada 12 h (period()); la temporada, cada 180 medios días. */
@@ -397,29 +403,37 @@ public final class PadMissions {
             if (!Files.exists(file)) TFJson.write(file, o);
         } else {
             // 1.3.29: listas nuevas y economía nueva (rotan por temporadas); la de antes se guarda y se cambia
-            o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 3, defaults(), "misiones.json");
+            o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 4, defaults(), "misiones.json");
             // (1.3.115) economía exigente: misiones y cazas al 60 % (una vez)
             o = PadEconomy.scale(file, o, 0.6, "misiones.json", "monedas");
         }
         DAILY.clear();
         HUNT.clear();
+        WEEKLY.clear();
+        java.util.Set<String> open = new java.util.HashSet<>();
+        if (o.has("abiertos") && o.get("abiertos").isJsonArray())
+            for (JsonElement e : o.getAsJsonArray("abiertos")) open.add(e.getAsString().trim().toLowerCase(java.util.Locale.ROOT));
         weeklyTimes = (int) Math.max(1, TFJson.num(o, "semanalesPorCantidad", 5));
         weeklyPay = (int) Math.max(1, TFJson.num(o, "semanalesPorPago", 4));
-        read(o, "diarias", DAILY);
-        read(o, "cazas", HUNT);
+        read(o, "diarias", DAILY, WEEKLY, open);
+        read(o, "cazas", HUNT, null, open);
         TFClient.LOGGER.info("TF Pad: {} misiones y {} cazas", DAILY.size(), HUNT.size());
     }
 
-    private static void read(JsonObject o, String key, List<Def> out) {
+    private static void read(JsonObject o, String key, List<Def> out, List<Def> weekly, java.util.Set<String> open) {
         if (!o.has(key) || !o.get(key).isJsonArray()) return;
         for (JsonElement e : o.getAsJsonArray(key)) {
             try {
                 JsonObject m = e.getAsJsonObject();
                 String target = TFJson.str(m, "objetivo", "*");
                 if (target.startsWith("#")) new ResourceLocation(target.substring(1)); // etiqueta mal escrita: se avisa y se salta
-                out.add(new Def(TFJson.str(m, "id", "m" + out.size()), TFJson.str(m, "nombre", "?"), TFJson.str(m, "descripcion", ""),
+                String needs = TFJson.str(m, "requiere", "").trim().toLowerCase(java.util.Locale.ROOT);
+                if (!needs.isEmpty() && !open.contains(needs)) continue; // (1.3.146) del Nether o del End, aún cerrado
+                Def def = new Def(TFJson.str(m, "id", "m" + out.size()), TFJson.str(m, "nombre", "?"), TFJson.str(m, "descripcion", ""),
                         TFJson.str(m, "tipo", "romper"), TFJson.str(m, "objetivo", "*"), (int) Math.max(1, TFJson.num(m, "cantidad", 1)),
-                        Math.max(0, TFJson.num(m, "monedas", 0)), TFJson.str(m, "icono", "minecraft:paper")));
+                        Math.max(0, TFJson.num(m, "monedas", 0)), TFJson.str(m, "icono", "minecraft:paper"));
+                out.add(def);
+                if (weekly != null && TFJson.bool(m, "semanal", true)) weekly.add(def);
             } catch (Exception ex) {
                 TFClient.LOGGER.warn("TF Pad: una misión de la configuración no se pudo leer: {}", ex.getMessage());
             }

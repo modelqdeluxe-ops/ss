@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.145) — lee esto primero
+### CHECKPOINT (26 oct 2026, TF Client 1.3.146) — lee esto primero
+
+**1.3.146** (el dueño: «en las semanales salen misiones de end game y mid game: no pueden rotar ahora misiones del Nether
+ni del End»; y «mi pase tiene recompensas en blanco»).
+- Misiones del pad: «requiere»: nether / end en cada misión del Nether (también las pociones: piden polvo de blaze) o del
+  End; solo rotan si están en «abiertos» de misiones.json (por defecto ninguno: 194 diarias y 29 cazas). «semanal»: false
+  en las que x5 serían de mitad de partida (diamantes, esmeraldas, guardianes, vindicadores…): 173 semanales.
+  `PadMissions.WEEKLY`. misiones.json versión 4 (el servidor guarda la de antes y pone la nueva).
+- TF Pass: `PadPass.fillEmpty`: los niveles sin premio se rellenan con el de fábrica (una vez, versión 3 de pase.json).
+  Al dueño se le mandó su pase.json lleno a mano (los 20 niveles vacíos: 1 verde + algo pequeño).
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.145, PUBLICADA)
 
 **1.3.145** (el dueño, con el Rastreador: «HitGp: con él 10, en cofres 30, CON OTROS 8, sin encontrar 14; ¿cómo que no
 están?»). Lo de HitGp pasó con la 1.3.132 (sin las protecciones de la 1.3.134 y la 1.3.141). Su
