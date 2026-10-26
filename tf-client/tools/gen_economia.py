@@ -746,6 +746,34 @@ HUNTS_MORE = [
 ]
 
 
+# (1.3.146, el dueño: «no pueden rotar ahora misiones del Nether ni del End») requiere: nether / end (solo rotan si están
+# en «abiertos»). Las pociones también piden el Nether (polvo de blaze y verruga).
+NETHER = {'verruga', 'verruga2', 'netherrack', 'negra', 'basalto', 'almas', 'tierraalmas', 'cuarzo', 'oronether', 'piedrabrillo',
+          'magma', 'carmesi', 'distorsionado', 'escombros', 'blazes', 'cubosmagma', 'ghasts', 'wither', 'hoglins', 'piglinszombi',
+          'piglins', 'ladrillonether', 'cuarzo2', 'pociones', 'pociones2', 'arrojadizas',
+          'c_blaze', 'c_magma', 'c_ghast', 'c_wither', 'c_hoglin', 'c_piglin', 'c_piglinzombi', 'c_piglin2', 'c_zoglin', 'c_blaze2',
+          'c_wither2'}
+END = {'endpiedra', 'endermites', 'shulkers', 'c_shulker', 'c_endermite'}
+# en las semanales la cantidad va x5: estas serían de mitad o final de partida (15 menas de diamante, 30 guardianes…)
+NO_WEEKLY = {'diamante', 'esmeralda', 'amatista', 'guardianes', 'vindicadores', 'brujas', 'fantasmas', 'saqueadores',
+             'aldeanoszombi', 'obsidiana', 'tolvas', 'pasteles', 'caballos', 'lobos', 'llamas', 'abejas', 'encantar2',
+             'globo', 'tropical', 'hielo', 'micelio'}
+
+
+def gate(lst):
+    out = []
+    for m in lst:
+        m = dict(m)
+        if m['id'] in NETHER:
+            m['requiere'] = 'nether'
+        elif m['id'] in END:
+            m['requiere'] = 'end'
+        if m['id'] in NO_WEEKLY:
+            m['semanal'] = False
+        out.append(m)
+    return out
+
+
 def missions():
     o = {
         '_ayuda': ('Misiones del pad y Cazas (1.3.29). tipo: romper, cosechar, colocar, matar, pescar, fabricar, fundir, preparar, '
@@ -753,13 +781,15 @@ def missions():
                    'hostil / animal. En descripcion, {n} se cambia por la cantidad. Rotan por temporadas de 90 días sin repetir '
                    'ninguna igual: cada día 3 diarias por jugador, cada semana 3 semanales (cantidad x semanalesPorCantidad, pago x '
                    'semanalesPorPago) y cada 12 h 4 cazas para todo el servidor; a lo largo de la temporada suben cantidad y premio '
-                   '(x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id.'),
-        'version': 3,
+                   '(x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id. requiere: nether o end (solo rotan si '
+                   'están en «abiertos», p. ej. "abiertos": ["nether"] al abrir el Nether). semanal: false = no sale en las semanales.'),
+        'version': 4,
         'economia': 3,
+        'abiertos': [],
         'semanalesPorCantidad': 5,
         'semanalesPorPago': 4,
-        'diarias': scale(json.loads(json.dumps(DAILY + DAILY_MORE))),
-        'cazas': scale(json.loads(json.dumps(HUNTS + HUNTS_MORE))),
+        'diarias': gate(scale(json.loads(json.dumps(DAILY + DAILY_MORE)))),
+        'cazas': gate(scale(json.loads(json.dumps(HUNTS + HUNTS_MORE)))),
     }
     check('diarias', o['diarias'])
     check('cazas', o['cazas'])

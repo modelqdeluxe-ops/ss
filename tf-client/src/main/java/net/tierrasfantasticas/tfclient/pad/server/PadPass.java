@@ -278,6 +278,7 @@ public final class PadPass {
         }
         // (1.3.114) la de antes, con la economía estable (las monedas, ~15 %; los objetos raros, menos)
         o = PadEconomy.deflate(file, o, 0.15, "pase.json");
+        o = fillEmpty(file, o);
         o = PadEconomy.help(file, o,
                 "TF Pass (app Pase del pad). También se cambia desde el TF Pad de administrador (TF PASS). Tras editar a mano: /tf reload.",
                 "temporada: numero (al cambiarlo todos empiezan de cero), nombre, inicio (AAAA-MM-DD), dias, renovar (true: al acabar empieza otra).",
@@ -325,7 +326,51 @@ public final class PadPass {
         TFClient.LOGGER.info("TF Pad: TF Pass temporada {} ({} niveles, {} con premio)", season(), levels, REWARDS.size());
     }
 
-    private static JsonObject level(int n, JsonObject... prizes) {
+    /**
+     * (1.3.146, el dueño: «mi pase tiene recompensas en blanco») Cada nivel tiene su premio: a los que no tienen ninguno
+     * se les pone el de fábrica de ese nivel (en los impares, 1 moneda verde), sin tocar los que ya tienen premio. Una
+     * vez (versión 3; la de antes, en pase.antes-v3.json).
+     */
+    private static JsonObject fillEmpty(Path file, JsonObject o) {
+        if (o == null || TFJson.num(o, "version", 1) >= 3) return o;
+        try {
+            int max = (int) Math.max(1, Math.min(200, TFJson.num(o, "niveles", 50)));
+            java.util.Map<Integer, JsonObject> have = new java.util.TreeMap<>();
+            if (o.has("premios") && o.get("premios").isJsonArray()) {
+                for (JsonElement e : o.getAsJsonArray("premios")) {
+                    if (!e.isJsonObject()) continue;
+                    JsonObject l = e.getAsJsonObject();
+                    int n = (int) TFJson.num(l, "nivel", 0);
+                    if (n >= 1 && l.has("premios") && l.get("premios").isJsonArray() && l.getAsJsonArray("premios").size() > 0) have.put(n, l);
+                }
+            }
+            java.util.Map<Integer, JsonObject> factory = new java.util.HashMap<>();
+            for (JsonElement e : defaults().getAsJsonArray("premios")) {
+                JsonObject l = e.getAsJsonObject();
+                factory.put((int) TFJson.num(l, "nivel", 0), l);
+            }
+            int added = 0;
+            for (int n = 1; n <= max; n++) {
+                if (have.containsKey(n)) continue;
+                JsonObject l = factory.get(n);
+                have.put(n, l != null ? l.deepCopy() : level(n, PadPrize.of("verdes", 1, null)));
+                added++;
+            }
+            JsonArray out = new JsonArray();
+            for (JsonObject l : have.values()) out.add(l);
+            Path backup = file.resolveSibling("pase.antes-v3.json");
+            if (Files.exists(file) && !Files.exists(backup)) Files.copy(file, backup);
+            o.add("premios", out);
+            o.addProperty("version", 3);
+            TFJson.write(file, o);
+            TFClient.LOGGER.info("TF Pad: pase.json: {} niveles sin premio rellenados (la de antes, en {})", added, backup.getFileName());
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: pase.json: no se pudieron rellenar los niveles sin premio: {}", e.getMessage());
+        }
+        return o;
+    }
+
+        private static JsonObject level(int n, JsonObject... prizes) {
         JsonObject l = new JsonObject();
         l.addProperty("nivel", n);
         JsonArray a = new JsonArray();
@@ -342,7 +387,7 @@ public final class PadPass {
      */
     private static JsonObject defaults() {
         JsonObject o = new JsonObject();
-        o.addProperty("version", 2);
+        o.addProperty("version", 3);
         o.addProperty("activado", true);
         JsonObject s = new JsonObject();
         s.addProperty("numero", 1);

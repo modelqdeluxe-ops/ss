@@ -7,6 +7,7 @@
     "recompensa: monedas, xp (del oficio), objetos (\"minecraft:bread 16\") y comandos ({player} = el jugador).",
     "Las monedas salen de la economía de config/tfclient-server.properties (economy.mode).",
     "Economía (1.3.29): un diamante vale 150 en la tienda; una hora de trabajo da entre 40 y 150 monedas según oficio y nivel.",
+    "Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.",
     "repetir: diaria (plantilla que rota: cada día a cada jugador le tocan misionesDiariasPorOficio de las de su nivel, en temporadas de 90 días sin repetir ninguna igual y subiendo cantidad y premio de x1 a x2,5), siempre (vuelve al cobrarla) o nunca (una vez).",
     "Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno."
   ],
