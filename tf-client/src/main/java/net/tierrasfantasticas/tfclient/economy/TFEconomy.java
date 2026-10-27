@@ -223,6 +223,10 @@ public final class TFEconomy {
             try {
                 return ((Number) getBalance.invoke(provider, getOfflinePlayer.invoke(null, uuid))).doubleValue();
             } catch (Throwable t) {
+                // (1.3.148) al apagar el servidor los plugins (Vault, Essentials) se apagan antes de que salgan los
+                // jugadores: entonces no hay saldo que leer y no es un error
+                var srv = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+                if (srv != null && !srv.isRunning()) return null;
                 TFClient.LOGGER.warn("TF Economía: no se pudo leer el saldo: {}", t.toString());
                 return null;
             }
