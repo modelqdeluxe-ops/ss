@@ -72,7 +72,6 @@ final class PadSkin {
         theme("ajustes", 0x5B74A6, "Tu pad, a tu manera.");
         theme("admin", 0x5B74A6, "Configura el servidor.");
         theme("apps", 0x4A7FD0, "Las apps que ven los jugadores.");
-        theme("rastreo", 0xC8323C, "Cada compra de la web y dónde está cada objeto.");
         theme("guia", 0x1E9E8C, "Cómo funciona cada app, paso a paso.");
     }
 

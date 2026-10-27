@@ -343,7 +343,7 @@ public final class TFBridge {
             players.add(p);
         }
         body.addProperty("protocol", PROTOCOL);
-        // (1.3.142) las compras de la web para la app Rastreador del pad de admin (al arrancar, cada 5 min o si se piden)
+        // (1.3.142) las compras de la web: con ellas lo comprado es de quien lo compró (TFBinding.rightful) (al arrancar, cada 5 min o si se piden)
         if (net.tierrasfantasticas.tfclient.rastreo.TFPurchases.wantFromWeb()) body.addProperty("wantOrders", true);
         body.add("players", players);
         body.addProperty("max", srv.getMaxPlayers());

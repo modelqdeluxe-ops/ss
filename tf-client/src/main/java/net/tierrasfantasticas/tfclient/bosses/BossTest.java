@@ -2590,44 +2590,18 @@ public final class BossTest {
                     player.getInventory().setItem(8, ItemStack.EMPTY);
                     player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
                 }
-                // (1.3.142) el RASTREADOR: una compra de la web (como la de HitGp) repartida: la espada en un cofre, el hacha
-                // en una shulker dentro de otro cofre, el casco puesto, las alas en el inventario y el escudo en el de
-                // otro jugador desconectado (su playerdata). Buscar, la app y TRAER.
+                // (1.3.145) lo de una compra de la web es de quien la compró: una pala de mi compra atada a un «ladrón»
+                // pasa a ser mía en mi inventario (en supervivencia: en creativo el mod no toca lo que lleva)
                 int k0 = r0 + 130;
-                if (t == k0) r.event("rastreador: " + trackerSetup(level, player));
-                if (t == k0 + 4) {
-                    net.tierrasfantasticas.tfclient.rastreo.TFSearch.testReset();
-                    net.tierrasfantasticas.tfclient.rastreo.TFSearch.start(server, true, null);
+                if (t == k0) {
+                    player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+                    rightfulSetup(level, player);
                 }
-                if (t == k0 + 120) r.event("rastreador: " + trackerFound(me));
-                // en supervivencia (en creativo el mod no toca lo que lleva): la pala atada al ladrón tiene que pasar a ser mía
-                if (t == k0 + 90) player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
-                if (t == k0 + 121) {
-                    r.event("rastreador: " + trackerShovel(player));
+                if (t == k0 + 30) {
+                    r.event("dueño de verdad: " + trackerShovel(player));
                     player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
                 }
-                if (t == k0 + 122) openPad = "a_rastreo";
-                if (t == k0 + 160) shot(r, "rastreador_compradores");
-                if (t == k0 + 162) openPad = "a_rastreo/j:" + me.toString();
-                if (t == k0 + 200) shot(r, "rastreador_jugador");
-                if (t == k0 + 202) openPad = "a_rastreo/mov";
-                if (t == k0 + 240) shot(r, "rastreador_movimientos");
-                if (t == k0 + 242) {
-                    closeScreen = true;
-                    int[] got = net.tierrasfantasticas.tfclient.rastreo.TFSearch.recover(server,
-                            new net.tierrasfantasticas.tfclient.rastreo.TFSearch.Crit("TFPRUEBA1", "", ""), me);
-                    int sword = 0, axe = 0;
-                    for (ItemStack st : player.getInventory().items) {
-                        String id = String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem()));
-                        if (id.equals("tfclient:mecha_sword")) sword++;
-                        if (id.equals("tfclient:mecha_axe")) axe++;
-                    }
-                    r.event("rastreador: TRAER TODO → recuperados " + got[0] + ", al entrar " + got[1] + ", sin poder " + got[2]
-                            + "; en mi inventario: espada " + sword + ", hacha " + axe
-                            + (sword == 1 && axe == 1 && got[1] == 1 ? " (bien)" : " (MAL)") + "; cofres: " + trackerChests(level));
-                    if (trackC != null) r.event("rastreador: TRAER de la mochila → " + trackerBag(level, player));
-                }
-                if (t == k0 + 250) next(level);
+                if (t == k0 + 40) next(level);
             }
         }
     }
@@ -2896,16 +2870,8 @@ public final class BossTest {
 
     /** (1.3.114) El cliente de la prueba abre el inventario (para ver los objetos encantados con shaders). */
     static volatile boolean openInventory;
-    private static net.minecraft.core.BlockPos trackA, trackB, trackC;
-
-    /** (1.3.142) Una compra de prueba repartida por el mundo, como la del robo de HitGp. */
-    private static String trackerSetup(ServerLevel level, ServerPlayer player) {
-        java.util.function.Function<String, ItemStack> mk = id -> {
-            ItemStack st = new ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(id)));
-            st.getOrCreateTag().putString("TFOrder", "TFPRUEBA1");
-            if (id.startsWith("tfclient:")) net.tierrasfantasticas.tfclient.items.TFBinding.bind(st, player);
-            return st;
-        };
+    /** (1.3.145) Una compra de prueba (TFPRUEBA1, mía) y una pala de ella atada a otro jugador, en mi inventario. */
+    private static void rightfulSetup(ServerLevel level, ServerPlayer player) {
         com.google.gson.JsonArray orders = new com.google.gson.JsonArray();
         com.google.gson.JsonObject o = new com.google.gson.JsonObject();
         o.addProperty("id", "TFPRUEBA1");
@@ -2918,96 +2884,13 @@ public final class BossTest {
         o.addProperty("paidAt", "2026-10-25T14:03:11.000Z");
         com.google.gson.JsonArray cmds = new com.google.gson.JsonArray();
         cmds.add("tf web sets give {player} mecha");
-        cmds.add("give {player} minecraft:golden_apple 8");
         o.add("commands", cmds);
         orders.add(o);
         net.tierrasfantasticas.tfclient.rastreo.TFPurchases.testSet(level.getServer(), orders);
-        var exp = net.tierrasfantasticas.tfclient.rastreo.TFPurchases.get(level.getServer(), "TFPRUEBA1");
-        // la espada en un cofre; el hacha en una shulker dentro de otro cofre
-        trackA = player.blockPosition().offset(6, 0, -4);
-        trackB = player.blockPosition().offset(-6, 0, -4);
-        level.setBlockAndUpdate(trackA, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
-        level.setBlockAndUpdate(trackB, net.minecraft.world.level.block.Blocks.BARREL.defaultBlockState());
-        ((net.minecraft.world.Container) level.getBlockEntity(trackA)).setItem(3, mk.apply("tfclient:mecha_sword"));
-        ItemStack shulker = new ItemStack(net.minecraft.world.item.Items.PURPLE_SHULKER_BOX);
-        net.minecraft.nbt.ListTag inner = new net.minecraft.nbt.ListTag();
-        net.minecraft.nbt.CompoundTag axe = mk.apply("tfclient:mecha_axe").save(new net.minecraft.nbt.CompoundTag());
-        axe.putByte("Slot", (byte) 0);
-        inner.add(axe);
-        shulker.getOrCreateTagElement("BlockEntityTag").put("Items", inner);
-        ((net.minecraft.world.Container) level.getBlockEntity(trackB)).setItem(0, shulker);
-        // el casco puesto y las alas en el inventario
-        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, mk.apply("tfclient:mecha_armor_helmet"));
-        player.getInventory().setItem(20, mk.apply("tfclient:mecha_wing"));
-        // el escudo en el inventario de otro jugador, desconectado (su playerdata)
-        java.util.UUID thief = java.util.UUID.nameUUIDFromBytes("tf-prueba-ladron".getBytes());
-        net.minecraft.nbt.CompoundTag dat = new net.minecraft.nbt.CompoundTag();
-        net.minecraft.nbt.ListTag inv = new net.minecraft.nbt.ListTag();
-        net.minecraft.nbt.CompoundTag shield = mk.apply("tfclient:mecha_shield").save(new net.minecraft.nbt.CompoundTag());
-        shield.putByte("Slot", (byte) 5);
-        inv.add(shield);
-        dat.put("Inventory", inv);
-        net.minecraft.nbt.CompoundTag bukkit = new net.minecraft.nbt.CompoundTag();
-        bukkit.putString("lastKnownName", "Ladron_Prueba");
-        dat.put("bukkit", bukkit);
-        try {
-            java.nio.file.Path f = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).resolve(thief + ".dat");
-            java.nio.file.Files.createDirectories(f.getParent());
-            try (java.io.OutputStream out = java.nio.file.Files.newOutputStream(f)) {
-                net.minecraft.nbt.NbtIo.writeCompressed(dat, out);
-            }
-        } catch (Exception e) {
-            return "no se pudo escribir el playerdata: " + e;
-        }
-        // (1.3.145) una pala de la compra atada al ladrón (como lo que se cogió de un cofre sin dueño antes de la 1.3.141):
-        // en mi inventario pasa a ser mía (soy el que la compró) en vez de volver al ladrón
-        ItemStack shovel = mk.apply("tfclient:mecha_shovel");
-        net.tierrasfantasticas.tfclient.items.TFBinding.bindTo(shovel, thief, "Ladron_Prueba");
+        ItemStack shovel = new ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("tfclient", "mecha_shovel")));
+        shovel.getOrCreateTag().putString("TFOrder", "TFPRUEBA1");
+        net.tierrasfantasticas.tfclient.items.TFBinding.bindTo(shovel, java.util.UUID.nameUUIDFromBytes("tf-prueba-ladron".getBytes()), "Ladron_Prueba");
         player.getInventory().setItem(21, shovel);
-        // (1.3.145, [mochilas]) el pico, atado al ladrón, en una mochila de Sophisticated Backpacks dentro de un cofre
-        String bagNote = "";
-        if (net.minecraftforge.fml.ModList.get().isLoaded("sophisticatedbackpacks")) {
-            trackC = player.blockPosition().offset(0, 0, -7);
-            level.setBlockAndUpdate(trackC, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
-            ItemStack bag = new ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("sophisticatedbackpacks", "backpack")));
-            ItemStack pick = mk.apply("tfclient:mecha_pickaxe");
-            net.tierrasfantasticas.tfclient.items.TFBinding.bindTo(pick, thief, "Ladron_Prueba");
-            boolean[] in = {false};
-            bag.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER).ifPresent(h -> {
-                for (int i = 0; i < h.getSlots() && !in[0]; i++) in[0] = h.insertItem(i, pick.copy(), false).isEmpty();
-            });
-            ((net.minecraft.world.Container) level.getBlockEntity(trackC)).setItem(0, bag);
-            bagNote = "; pico en una mochila (" + (bag.getTag() != null && bag.getTag().hasUUID("contentsUuid") ? bag.getTag().getUUID("contentsUuid").toString().substring(0, 8) : "SIN UUID")
-                    + ", dentro " + in[0] + ")";
-        }
-        // y que alguien saque algo de un cofre (el registro de movimientos): abrir, sacar y cerrar
-        var be = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(trackA);
-        be.setItem(5, mk.apply("minecraft:golden_apple"));
-        player.openMenu(be);
-        be.setItem(5, ItemStack.EMPTY);
-        player.closeContainer();
-        String logged = net.tierrasfantasticas.tfclient.rastreo.TFTracker.TEST_LINES.isEmpty() ? "NADA (MAL)"
-                : net.tierrasfantasticas.tfclient.rastreo.TFTracker.TEST_LINES.get(net.tierrasfantasticas.tfclient.rastreo.TFTracker.TEST_LINES.size() - 1).replace('\t', ' ');
-        return "compra con " + (exp == null ? "NADA (MAL)" : exp.items().size() + " objetos esperados") + "; movimiento apuntado: " + logged + bagNote;
-    }
-
-    private static String trackerFound(java.util.UUID me) {
-        var scan = net.tierrasfantasticas.tfclient.rastreo.TFSearch.last();
-        if (scan == null) return "SIN ESCANEO (MAL)";
-        StringBuilder out = new StringBuilder(scan.found().size() + " objetos en " + scan.regionFiles() + " archivos (" + scan.tookMs() + " ms): ");
-        int n = 0;
-        for (var f : scan.found()) {
-            if (!f.order().equals("TFPRUEBA1")) continue;
-            n++;
-            out.append(net.tierrasfantasticas.tfclient.rastreo.TFSearch.describe(f)).append(" | ");
-        }
-        out.append(n >= 5 ? "(bien: " + n + ")" : "(MAL: " + n + " de 5)");
-        if (net.minecraftforge.fml.ModList.get().isLoaded("sophisticatedbackpacks")) {
-            var bag = scan.found().stream().filter(f -> f.item().equals("tfclient:mecha_pickaxe")).findFirst().orElse(null);
-            out.append("; el pico de la mochila: ").append(bag == null ? "NO SALE (MAL)" : net.tierrasfantasticas.tfclient.rastreo.TFSearch.describe(bag)
-                    + (bag.place().equals("mochila") && bag.via().equals("contenedor") ? " (bien)" : " (MAL)"));
-        }
-        return out.toString();
     }
 
     /** (1.3.145) La pala atada al ladrón que tengo yo (el que la compró): ¿sigue en mi inventario y ya es mía? */
@@ -3022,33 +2905,6 @@ public final class BossTest {
     }
 
     /** (1.3.145) Tras TRAER TODO: el pico ya no está en la mochila y lo tengo yo, atado a mí. */
-    private static String trackerBag(ServerLevel level, ServerPlayer player) {
-        int left = 0;
-        if (level.getBlockEntity(trackC) instanceof net.minecraft.world.Container c) {
-            ItemStack bag = c.getItem(0);
-            var h = bag.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null);
-            if (h != null) for (int i = 0; i < h.getSlots(); i++) if (!h.getStackInSlot(i).isEmpty()) left++;
-        }
-        String mine = "NO LO TENGO";
-        for (ItemStack st : player.getInventory().items) {
-            if (String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem())).equals("tfclient:mecha_pickaxe"))
-                mine = "lo tengo, atado a " + net.tierrasfantasticas.tfclient.items.TFBinding.ownerName(st)
-                        + (player.getUUID().equals(net.tierrasfantasticas.tfclient.items.TFBinding.owner(st)) ? "" : " (MAL)");
-        }
-        level.setBlockAndUpdate(trackC, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-        return "en la mochila quedan " + left + "; " + mine + (left == 0 && !mine.startsWith("NO") && !mine.endsWith("(MAL)") ? " (bien)" : " (MAL)");
-    }
-
-        private static String trackerChests(ServerLevel level) {
-        var a = (net.minecraft.world.Container) level.getBlockEntity(trackA);
-        var b = (net.minecraft.world.Container) level.getBlockEntity(trackB);
-        boolean swordGone = a == null || a.getItem(3).isEmpty();
-        ItemStack sh = b == null ? ItemStack.EMPTY : b.getItem(0);
-        boolean axeGone = sh.getTag() == null || sh.getTag().getCompound("BlockEntityTag").getList("Items", 10).isEmpty();
-        level.setBlockAndUpdate(trackA, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-        level.setBlockAndUpdate(trackB, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-        return "espada fuera del cofre " + swordGone + ", hacha fuera de la shulker " + axeGone;
-    }
 
     /** (1.3.141) Intenta robar de un cofre la espada y las alas de otro jugador. */
     private static String theftTest(ServerLevel level, ServerPlayer player) {

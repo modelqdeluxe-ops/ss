@@ -190,7 +190,18 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (26 oct 2026, TF Client 1.3.146) — lee esto primero
+### CHECKPOINT (27 oct 2026, TF Client 1.3.147) — lee esto primero
+
+**1.3.147** (el dueño, con su latest.log: «¿nuestro mod causa lag? El server se llena de RAM a veces» → «elimina por
+completo el rastreador»). El Rastreador leía todo el mundo del disco cada 30 min (3.586 archivos, ~1,9 millones de
+chunks, ~7 min cada vez): mucha RAM y disco. Quitado entero: `rastreo/TFSearch`, `rastreo/TFTracker` (registro de
+cofres), la app `a_rastreo` (`pad/server/PadAdminTracker`, su icono y tema), `/tf rastreo` y `/tf buscar`. Se queda
+`rastreo/TFPurchases` (las compras de la web, por el puente): con ellas `TFBinding.rightful` ata lo comprado a quien lo
+compró. Siguen igual las protecciones: nada ligado a otro sale de cofres, tolvas o tuberías (1.3.141), lo de un pedido
+vuelve a su comprador (1.3.145) y lo comprado no se destruye ni lo borra un clear lag en el suelo (TFWebDrops). Prueba
+`[prueba-jefes=oficios]`: la pala de mi compra atada a un «ladrón» pasa a ser mía.
+
+### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.146, PUBLICADA)
 
 **1.3.146** (el dueño: «en las semanales salen misiones de end game y mid game: no pueden rotar ahora misiones del Nether
 ni del End»; y «mi pase tiene recompensas en blanco»).
