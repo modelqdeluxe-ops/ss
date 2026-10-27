@@ -200,6 +200,12 @@ cofres), la app `a_rastreo` (`pad/server/PadAdminTracker`, su icono y tema), `/t
 compró. Siguen igual las protecciones: nada ligado a otro sale de cofres, tolvas o tuberías (1.3.141), lo de un pedido
 vuelve a su comprador (1.3.145) y lo comprado no se destruye ni lo borra un clear lag en el suelo (TFWebDrops). Prueba
 `[prueba-jefes=oficios]`: la pala de mi compra atada a un «ladrón» pasa a ser mía.
+Y (el dueño: «cuando oculto las alas en el hueco de Accessories con el puntito, se vuelven a dibujar»): con el hueco
+oculto Accessories no llama a nuestro dibujante y el respaldo (`BackLayer`, «el mod no lo dibujó») las pintaba igual.
+`TFAccessoryLookup.visibleFromAccessories` (AccessoriesContainer.shouldRender, hueco a hueco, normal y cosmético) en
+`TFAccessorySlots.backCosmeticsRaw` y `wearsBack` (el Armario tampoco las pone si está oculto). Curios ya lo respetaba
+(`fromCurios(..., true)`, getRenders). Accessories no arranca en la prueba: comprobado con la API de beta.48 (la del
+servidor) y `[prueba-jefes=accesorios,armario] [accesorios=curios]` para no romper lo demás.
 
 ### CHECKPOINT anterior (26 oct 2026, TF Client 1.3.146, PUBLICADA)
 

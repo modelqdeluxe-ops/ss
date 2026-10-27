@@ -101,6 +101,44 @@ public final class TFAccessoryLookup {
     }
 
     /**
+     * (1.3.148, el dueño: «cuando oculto las alas en el hueco de accesorios con el puntito, se vuelven a dibujar») Lo
+     * puesto en Accessories (normal y cosmético) que SE VE: sin los huecos en los que el jugador apagó el dibujo
+     * (AccessoriesContainer.shouldRender). getContainers → getAccessories / getCosmeticAccessories, hueco a hueco.
+     */
+    public static void visibleFromAccessories(LivingEntity entity, Predicate<ItemStack> wanted, List<ItemStack> out) throws Exception {
+        Class<?> api = Class.forName("io.wispforest.accessories.api.AccessoriesCapability");
+        Object capability = null;
+        for (String name : new String[] {"get", "getOptionally"}) {
+            Method m = find(api, name, LivingEntity.class);
+            if (m != null) capability = unwrap(m.invoke(null, entity));
+            if (capability != null) break;
+        }
+        if (capability == null) return;
+        Method containers = find(capability.getClass(), "getContainers");
+        Object map = containers == null ? null : containers.invoke(capability);
+        if (!(map instanceof Map<?, ?> byName)) {
+            fromAccessories(entity, wanted, out); // otra versión: como antes
+            cosmeticsFromAccessories(entity, wanted, out);
+            return;
+        }
+        for (Object container : byName.values()) {
+            if (container == null) continue;
+            Method render = find(container.getClass(), "shouldRender", int.class);
+            for (String getter : new String[] {"getAccessories", "getCosmeticAccessories"}) {
+                Method m = find(container.getClass(), getter);
+                Object items = m == null ? null : m.invoke(container);
+                if (!(items instanceof net.minecraft.world.Container c)) continue;
+                for (int i = 0; i < c.getContainerSize(); i++) {
+                    ItemStack stack = c.getItem(i);
+                    if (stack.isEmpty() || !wanted.test(stack)) continue;
+                    if (render != null && !Boolean.TRUE.equals(render.invoke(container, i))) continue;
+                    out.add(stack);
+                }
+            }
+        }
+    }
+
+    /**
      * (1.3.125) Lo puesto en los huecos COSMÉTICOS de Accessories (el que se ve en lugar del de verdad):
      * getContainers → getCosmeticAccessories (un Container).
      */

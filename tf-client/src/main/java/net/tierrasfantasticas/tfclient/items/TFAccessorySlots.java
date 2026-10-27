@@ -307,22 +307,21 @@ public final class TFAccessorySlots {
      * nada puesto en la espalda, sus alas no se ven.
      */
     public static boolean wearsBack(LivingEntity entity) {
-        // (1.3.138) lo dice el servidor si ya lo ha dicho
+        // (1.3.138) lo dice el servidor si ya lo ha dicho (y, 1.3.148, solo si el jugador no ocultó ese hueco)
         Boolean server = TFBackSync.wearsInSlots(entity);
-        if (server != null) return server;
+        if (server != null && !server) return false;
         List<ItemStack> out = new ArrayList<>();
         ModList mods = ModList.get();
         try {
             if (!accessoriesFailed && mods.isLoaded("accessories")) {
-                TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
-                TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+                TFAccessoryLookup.visibleFromAccessories(entity, IS_BACK, out);
             }
             if (out.isEmpty() && !curiosFailed && mods.isLoaded("curios")) {
                 TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
                 TFAccessoryLookup.cosmeticsFromCurios(entity, IS_BACK, out);
             }
         } catch (Throwable t) {
-            return false;
+            return server != null && server;
         }
         return !out.isEmpty();
     }
@@ -347,8 +346,7 @@ public final class TFAccessorySlots {
         if (fallback) {
             if (!accessoriesFailed && mods.isLoaded("accessories")) {
                 try {
-                    TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
-                    TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+                    TFAccessoryLookup.visibleFromAccessories(entity, IS_BACK, out);
                 } catch (Throwable t) {
                     accessoriesFailed = true;
                     LOGGER.warn("TF Client: accesorios: no se pudieron leer los huecos de Accessories", t);
@@ -371,8 +369,7 @@ public final class TFAccessorySlots {
         }
         if (!accessoriesDraws && !accessoriesFailed && mods.isLoaded("accessories")) {
             try {
-                TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
-                TFAccessoryLookup.cosmeticsFromAccessories(entity, IS_BACK, out);
+                TFAccessoryLookup.visibleFromAccessories(entity, IS_BACK, out);
                 if (!loggedAccessories && !out.isEmpty()) {
                     loggedAccessories = true;
                     LOGGER.info("TF Client: accesorios: encontrado en los huecos de Accessories {}", out);
