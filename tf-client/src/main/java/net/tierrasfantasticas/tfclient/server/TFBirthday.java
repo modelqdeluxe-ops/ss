@@ -44,7 +44,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 /**
  * (1.3.150, el dueño: «un comando tf cumpleaños felicitar (jugador)… un evento tipo el de la grieta en todo el mundo,
  * sobre todos los mundos overworld (usamos Multiverse): en el cielo felicitando al jugador, fuegos artificiales, mensaje
- * en el chat, breve música… un evento chingón, todo bonito») Un minuto de fiesta: el servidor lo anuncia en el chat y
+ * en el chat, breve música… un evento chingón, todo bonito») Minuto y medio de fiesta: el servidor lo anuncia en el chat y
  * avisa a cada jugador; lo demás lo pone cada cliente ({@code client.TFBirthdayClient}) en los mundos con cielo de
  * Overworld (todos los de Multiverse que lo sean; el Nether, el End y el Void no): el letrero en el cielo, cohetes,
  * confeti y «Cumpleaños feliz» con campanas. Son efectos del cliente: ni entidades, ni daño, ni carga para el servidor.
@@ -53,7 +53,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFBirthday {
     /** Lo que dura (ticks). */
-    public static final int LENGTH = 20 * 60;
+    public static final int LENGTH = 20 * 90;
 
     private static String name;
     private static UUID honoree;
@@ -96,7 +96,7 @@ public final class TFBirthday {
         String typed = StringArgumentType.getString(ctx, "jugador");
         ServerPlayer p = server.getPlayerList().getPlayerByName(typed);
         start(server, p != null ? p.getGameProfile().getName() : typed, p != null ? p.getUUID() : null);
-        ctx.getSource().sendSuccess(() -> Component.literal("¡Fiesta de cumpleaños para " + name + " en marcha! (1 minuto)"), true);
+        ctx.getSource().sendSuccess(() -> Component.literal("¡Fiesta de cumpleaños para " + name + " en marcha! (minuto y medio)"), true);
         return 1;
     }
 
@@ -134,7 +134,7 @@ public final class TFBirthday {
                 .append(rainbow("¡FELIZ CUMPLEAÑOS, " + who.toUpperCase(java.util.Locale.ROOT) + "!", true))
                 .append(Component.literal(" ✦\n").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal("  Todo Tierras Fantásticas te felicita. ").withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("¡Mirad al cielo! ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                .append(Component.literal("¡Mira al cielo! ").withStyle(ChatFormatting.LIGHT_PURPLE))
                 .append(Component.literal("❤\n").withStyle(ChatFormatting.RED));
     }
 
