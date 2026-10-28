@@ -339,6 +339,10 @@ node corazon-dormido/herramientas/simular-jefes.cjs 4
 node corazon-dormido/herramientas/probar-migracion.cjs /tmp/capturas
 ```
 
+```bash
+node corazon-dormido/herramientas/simular-ia.cjs
+```
+
 `probar-todo` tiene que acabar en «guardar y cargar: bien», «no falta ningún dibujo» y «sin errores». Mira las
 capturas antes de dar algo por bueno; también recorre la Selva, abre la Muralla, construye una casa (llega el
 mercader, compra y vende), incuba, pone la mascota, tira una bomba, usa la piedra de regreso y los altares.
