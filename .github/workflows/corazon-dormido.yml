@@ -63,7 +63,9 @@ jobs:
               --target "$full" --latest=false --title "Corazón Dormido $ver: $titulo" \
               --notes "$notas
 
-          Para jugar: descarga **corazon-dormido-$ver.html** y ábrelo en el navegador (necesita WebGL2), o descomprime el .zip y abre index.html. La última versión siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido/corazon-dormido.html"
+          En Android: el APK (corazon-dormido-$ver.apk) se añade a esta Release en unos minutos, cuando acaba de compilarse; y siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido-android/corazon-dormido.apk
+
+          En el navegador: descarga **corazon-dormido-$ver.html** y ábrelo (necesita WebGL2), o descomprime el .zip y abre index.html. La última versión siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido/corazon-dormido.html"
           done < corazon-dormido/VERSIONES.txt
           [[ -z "$ultima" ]] && exit 0
           cp "/tmp/salida/corazon-dormido-$ultima.html" /tmp/corazon-dormido.html

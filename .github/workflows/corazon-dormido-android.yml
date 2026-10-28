@@ -8,6 +8,8 @@ name: Corazón Dormido (Android)
 #     (vale para probar, no para subirlo a la tienda).
 # Los deja en la Release fija «corazon-dormido-android» (nunca «latest»):
 #   https://github.com/<repo>/releases/download/corazon-dormido-android/corazon-dormido.apk
+# y el APK también en la Release de la versión (corazon-dormido-v<versión>, como corazon-dormido-<versión>.apk) y en
+# la fija «corazon-dormido» (la de la última versión), que es donde lo busca quien entra en las Releases.
 on:
   push:
     paths:
@@ -49,6 +51,7 @@ jobs:
         id: version
         run: |
           ver=$(grep -v '^#' corazon-dormido/VERSIONES.txt | grep '|' | tail -1 | cut -d'|' -f1 | xargs)
+          echo "ver=$ver" >> "$GITHUB_OUTPUT"
           echo "nombre=$ver (compilación ${{ github.run_number }})" >> "$GITHUB_OUTPUT"
           echo "codigo=$((1000 + ${{ github.run_number }}))" >> "$GITHUB_OUTPUT"
       - name: Llave de subida (si está en los secretos)
@@ -87,7 +90,7 @@ jobs:
         with:
           name: corazon-dormido-android
           path: /tmp/app
-      - name: Subir a la Release fija
+      - name: Subir a las Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -99,3 +102,19 @@ jobs:
           fi
           gh release upload "$tag" /tmp/app/corazon-dormido.apk /tmp/app/corazon-dormido.aab --clobber
           gh release edit "$tag" --title "Corazón Dormido para Android (${{ steps.version.outputs.nombre }})" --latest=false
+          ver="${{ steps.version.outputs.ver }}"
+          cp /tmp/app/corazon-dormido.apk "/tmp/app/corazon-dormido-$ver.apk"
+          # en la Release de la versión (la crea el workflow corazon-dormido.yml; si aún no está, la próxima compilación)
+          if gh release view "corazon-dormido-v$ver" >/dev/null 2>&1; then
+            gh release upload "corazon-dormido-v$ver" "/tmp/app/corazon-dormido-$ver.apk" --clobber
+            notas=$(gh release view "corazon-dormido-v$ver" --json body -q .body)
+            if ! grep -q '\.apk' <<<"$notas"; then
+              gh release edit "corazon-dormido-v$ver" --latest=false --notes "**Android:** descarga **corazon-dormido-$ver.apk** en el móvil y ábrelo para instalarlo (la primera vez, Android pide permitir instalar apps de esta fuente).
+
+          $notas"
+            fi
+          fi
+          # y en la fija de la última versión
+          if gh release view corazon-dormido >/dev/null 2>&1; then
+            gh release upload corazon-dormido /tmp/app/corazon-dormido.apk --clobber
+          fi
