@@ -10,7 +10,7 @@ function nuevaCriatura(tipo, x, y) {
     tipo, x, y, hw: Math.min(7, c.radio), hh: 3, radio: c.radio, vida: c.vida, vidaMax: c.vida, def: c.def || 0, t: Math.random(), estado: 'anda',
     z: c.vuela ? 10 : 0, vz: 0, kbx: 0, kby: 0, flash: 0, mira: 1, colores: c.colores, alto: c.radio > 8 ? 12 : 6, toqueT: 0, cd: 1 + Math.random() * 2, aturdido: 0,
     // las que llama un jefe ya vienen a por ti
-    casa: { x, y }, alerta: Object.values(J.jefes || {}).some((j) => j.activo && j.estado !== 'muerto'), turno: false,
+    nace: J.t, casa: { x, y }, alerta: Object.values(J.jefes || {}).some((j) => j.activo && j.estado !== 'muerto'), turno: false,
   };
 }
 // Conductas nuevas (fauna.js las añade): f(e, c, r, lejos, dt). r: rumbo hacia el jugador o null.
@@ -203,6 +203,8 @@ function avisoSuelo(x, y, r, t, dano, colores, estilo = 'circulo') { J.avisosSue
 
 function morirCriatura(e) {
   const c = CRIATURAS[e.tipo];
+  // el cuerpo cae de lado (se dibuja en dibujarCaidos) en vez de desaparecer
+  if (e.ultimoSpr && !c.fija && J.caidos.length < 12) J.caidos.push({ n: e.ultimoSpr, dx: e.ultimoDx || 0, x: e.x / T, z: e.y / T + 0.05, y: ((e.z || 0) / 16) * GL.KY, flip: e.mira < 0, lado: Math.sign(e.x - J.jug.x) || 1, t: 0 });
   particulas(e.x, e.y - 4, 14, e.colores || ['#ffffff'], { vel: 70, vida: 0.6, s: 2 });
   efecto('humo', 4, e.x, e.y + 1, 0, 0.5);
   soltarLista(e.x, e.y, c.botin);
@@ -299,7 +301,12 @@ function actualizarCriaturas(dt) {
       const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy), min = e.radio + o.radio;
       if (d < min && d > 0.01) mover(e, (dx / d) * (min - d) * 0.3, (dy / d) * (min - d) * 0.3);
     }
-    if ((e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida' && Math.abs(p.x - e.x) < e.radio + p.hw && Math.abs(p.y - e.y) < 7) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
+    // y no se meten encima de ti: se quedan a distancia de morder (salvo al embestir o si vuelan)
+    if (e.estado !== 'carga' && !c.vuela && !EMBOSCADA.has(c.conducta)) {
+      const dx = e.x - p.x, dy = (e.y - p.y) * 1.6, d = Math.hypot(dx, dy), min = e.radio + p.hw + 5;
+      if (d < min && d > 0.01) mover(e, (dx / d) * (min - d) * 0.5, (dy / d) * (min - d) * 0.3);
+    }
+    if ((e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida' && Math.abs(p.x - e.x) < e.radio + p.hw + 8 && Math.abs(p.y - e.y) < 10) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
   }
   // las que no saben de ti y se han quedado muy lejos se van (el mundo se renueva)
   J.enemigos = J.enemigos.filter((e) => e.vida > 0 && Math.hypot(e.x - p.x, e.y - p.y) < (e.alerta || e.fija !== undefined ? 36 : 26) * T);

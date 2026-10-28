@@ -154,7 +154,7 @@ async function empezar(continuar) {
   let g = null, v4 = null, v3 = null;
   if (continuar) { g = await leerPartida(); if (!g) v4 = leerPartidaV4(); if (!g && !v4) v3 = leerPartidaV3(); }
   else { try { await Guardado.borrar(); } catch (e) { /* sin IndexedDB */ } }
-  Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null, bombas: [], regreso: null, mascotaEnt: null, cartel: null, regionAntes: -1, rayosCielo: [] });
+  Object.assign(J, { enemigos: [], caidos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null, bombas: [], regreso: null, mascotaEnt: null, cartel: null, regionAntes: -1, rayosCielo: [] });
   const sem = g ? g.meta.sem : v4 ? v4.mundo.sem : v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0;
   await generarMundoPoco(sem, ([t, txt]) => { Object.assign(J.carga, { t: t * 0.94, txt }); });
   if (g) {
@@ -414,9 +414,9 @@ function dibujarHerramienta3d(p, x, z) {
 }
 function dibujarCriatura3d(e) {
   const B = e.flash > 0, x = e.x / T, z = e.y / T + 0.05, c = CRIATURAS[e.tipo];
-  const aviso = (e.estado === 'prepara' || e.estado === 'conjura') && Math.floor(J.t * 16) % 2;
-  const tiembla = e.estado === 'prepara' ? Math.sin(J.t * 60) * 0.05 : 0;
-  const blanco = B || aviso ? 1 : 0;
+  const aviso = (e.estado === 'prepara' || e.estado === 'conjura') && Math.floor(J.t * 10) % 2;
+  const tiembla = e.estado === 'prepara' ? Math.sin(J.t * 60) * 0.04 : 0;
+  const blanco = B ? 1 : aviso ? 0.55 : 0;
   GL.plano(e.radio > 8 ? 'sombra_m' : 'sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.7 - Math.min(0.5, (e.z || 0) / 30)], escala: e.radio > 8 ? 1.3 : 1 });
   let n;
   if (SPRITE_CRIATURA[e.tipo]) n = SPRITE_CRIATURA[e.tipo](e);
@@ -426,11 +426,62 @@ function dibujarCriatura3d(e) {
   else n = `${e.tipo}_${e.reza ? 0 : e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
   const flip = e.mira < 0, dx = META_SPR[n] ? META_SPR[n].dx * (flip ? -1 : 1) : 0;
   const alfa = c.translucido ? (e.alfa ?? 1) * (0.6 + 0.2 * Math.sin(J.t * 5 + e.x)) : 1; // los Velados se transparentan
-  GL.sprite(n, x + tiembla + dx, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z, tinte: alfa < 1 ? [1, 1, 1, alfa] : undefined });
+  const an = animarCriatura(e, n, c);
+  const o = { y: ((e.z || 0) / 16) * GL.KY + an.y, flip, blanco: blanco * 0.85, lx: x, lz: z, tinte: alfa < 1 ? [1, 1, 1, alfa] : undefined, sx: an.sx, sy: an.sy, sesgo: an.sesgo };
+  GL.sprite(n, x + tiembla + dx, z, o);
   // ojos y Podre: brillan solos en la oscuridad (se ven antes que el cuerpo)
-  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: ((e.z || 0) / 16) * GL.KY, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95 * Math.min(1, alfa + 0.2)] });
+  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: o.y, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95 * Math.min(1, alfa + 0.2)], sx: an.sx, sy: an.sy, sesgo: an.sesgo });
+  e.ultimoSpr = n; e.ultimoDx = dx;
   if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
 }
+// Animación encima de los cuadros horneados: rebote y balanceo al andar, respiración quieta, anticipación antes
+// de atacar (se agacha y se echa atrás), estirón en la embestida, retroceso al recibir, aplastarse al caer de un
+// salto y salir del suelo al aparecer. Devuelve { sx, sy, sesgo, y } para GL.sprite.
+const ANIM = { sx: 1, sy: 1, sesgo: 0, y: 0 };
+function animarCriatura(e, n, c) {
+  const a = ANIM, px = J.jug ? J.jug.x : e.x, fija = c.fija || e.estado === 'escondida';
+  a.sx = 1; a.sy = 1; a.sesgo = 0; a.y = 0;
+  const vx = e.x - (e.ax ?? e.x), vy = e.y - (e.ay ?? e.y), v = Math.hypot(vx, vy);
+  e.ax = e.x; e.ay = e.y;
+  if (fija) return a;
+  const px1 = 1 / 16 * GL.KY;
+  if (v > 0.05 && !(e.z > 0)) { // andando: un rebote por paso, el cuerpo se estira y se aplasta y se inclina hacia delante
+    e.paso = (e.paso || 0) + Math.min(v, 3) * 0.42;
+    const s = Math.sin(e.paso * 2);
+    a.y += Math.abs(Math.sin(e.paso)) * 1.4 * px1;
+    a.sy = 1 + 0.06 * s; a.sx = 1 - 0.045 * s;
+    a.sesgo = 0.05 * Math.sign(vx || e.mira);
+  } else { // quieta: respira
+    const s = Math.sin(J.t * 2.6 + e.x * 0.1);
+    a.sy = 1 + 0.03 * s; a.sx = 1 - 0.02 * s;
+  }
+  if (e.estado === 'prepara' || e.estado === 'conjura') { // anticipación: se carga hacia atrás
+    const k = Math.min(1, e.t / 0.4);
+    a.sy *= 1 - 0.13 * k; a.sx *= 1 + 0.1 * k; a.sesgo = -0.09 * k * e.mira;
+  } else if (e.estado === 'carga') { a.sy *= 0.9; a.sx *= 1.16; a.sesgo = 0.13 * e.mira; }
+  if (e.z > 0 && !c.vuela) { a.sy *= 1.1; a.sx *= 0.92; }
+  if (e.aplasta > 0) { a.sy *= 0.78; a.sx *= 1.22; }
+  const g = e.golpeadoT ? Math.max(0, 1 - (J.t - e.golpeadoT) / 0.2) : 0;
+  if (g) { const lado = Math.sign(e.x - px) || 1; a.sesgo += 0.14 * g * lado; a.sy *= 1 - 0.12 * g; a.sx *= 1 + 0.1 * g; }
+  // al aparecer sale del suelo (el suelo tapa lo que queda debajo); las que vuelan, se van viendo
+  const nace = J.t - (e.nace ?? -9);
+  if (nace < 0.7 && !c.vuela && SPR[n]) {
+    const k = nace / 0.7;
+    a.y -= (1 - k) * (1 - k) * (SPR[n].h / 16) * GL.KY;
+    if (!e.polvo) { e.polvo = true; particulas(e.x, e.y, 10, ['#4a3e32', '#6a5a48', '#2a221c'], { vel: 35, vida: 0.6 }); }
+  }
+  return a;
+}
+// Las que mueren no desaparecen de golpe: caen de lado, se oscurecen y se hunden.
+function dibujarCaidos() {
+  for (const q of J.caidos) {
+    const k = Math.min(1, q.t / 0.32), hunde = Math.max(0, (q.t - 0.4) / 0.7), r = SPR[q.n];
+    if (!r) continue;
+    const osc = 1 - 0.55 * Math.min(1, q.t / 0.6), alfa = 1 - hunde;
+    GL.sprite(q.n, q.x + q.dx, q.z, { flip: q.flip, rot: -q.lado * k * k * 1.35, y: Math.max(0, (q.y || 0) * (1 - k)) - hunde * 0.35 * (r.w / 16), tinte: [osc, osc * 0.92, osc, alfa], blanco: q.t < 0.08 ? 0.9 : 0, lx: q.x, lz: q.z });
+  }
+}
+
 // Un aviso de ataque en el suelo. k: de 0 (recién puesto) a 1 (golpe). radio en píxeles.
 const COLOR_AVISO = { circulo: [1, 0.28, 0.2], grieta: [1, 0.42, 0.16], runa: [0.78, 0.38, 1] };
 function dibujarAviso(x, z, radio, k, estilo = 'circulo', v = 0) {
@@ -500,6 +551,7 @@ function dibujarMundo3d() {
   for (const o of vistaObj) dibujarObjeto3d(o);
   if (J.estado === 'juego') dibujarJugador3d(J.jug);
   for (const e of J.enemigos) dibujarCriatura3d(e);
+  dibujarCaidos();
   if (J.estado !== 'titulo') for (const j of Object.values(J.jefes)) dibujarJefe3d(j);
   dibujarFase2_3d();
   for (const b of J.botines) {

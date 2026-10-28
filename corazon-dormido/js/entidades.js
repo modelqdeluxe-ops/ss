@@ -3,7 +3,7 @@
 // arar, regar, pescar, construir), daño y muerte. También el botín, las partículas y los efectos.
 
 const J = {
-  estado: 'titulo', panel: null, t: 0, jug: null, enemigos: [], jefes: {}, proyectiles: [], disparos: [], botines: [], efectos: [], charcos: [], avisosSuelo: [],
+  estado: 'titulo', panel: null, t: 0, jug: null, enemigos: [], caidos: [], jefes: {}, proyectiles: [], disparos: [], botines: [], efectos: [], charcos: [], avisosSuelo: [],
   particulas: [], numeros: [], avisos: [], inv: [], sel: 0, hito: {}, temblor: 0, pausaGolpe: 0,
   entrada: { mx: 0, my: 0 }, cam: { x: 0, y: 0 }, objetivo: 0, aparecer: 0, guardadoT: 0, tiempoMundo: 0,
   equipo: { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, hab: {}, buffs: [], st: null, bombas: [],
@@ -205,7 +205,14 @@ function actualizarJugador(dt) {
   // pasos: suenan según el suelo
   if (p.andando) {
     p.pasoD = (p.pasoD || 0) + Math.hypot(p.x - x0, p.y - y0);
-    if (p.pasoD > 19) { p.pasoD = 0; const s = M.piso[idx(Math.floor(p.x / T), Math.floor(p.y / T))]; Sonido.sfx.paso(PASO_SUELO[s] || 'piedra'); }
+    if (p.pasoD > 19) {
+      p.pasoD = 0;
+      const s = M.piso[idx(Math.floor(p.x / T), Math.floor(p.y / T))], tipo = PASO_SUELO[s] || 'piedra';
+      Sonido.sfx.paso(tipo);
+      // un poco de polvo (o salpicaduras) en los pies
+      if (tipo === 'agua') particulas(p.x, p.y + 2, 3, ['#3a4a5a', '#6a8aa0', '#20303a'], { vel: 22, vida: 0.35 });
+      else particulas(p.x - p.fx * 3, p.y + 2, 2, ['#4a4038', '#6a5c4e', '#2e2822'], { vel: 14, vida: 0.4 });
+    }
   }
   if (p.distT > 160) { p.distT = 0; ganarXP('carrera', 1); }
   p.kbx *= Math.pow(0.002, dt); p.kby *= Math.pow(0.002, dt);
@@ -594,6 +601,8 @@ function actualizarMundoVivo(dt) {
   }
   J.botines = J.botines.filter((b) => !b.recogido);
   if (J.botines.length > 300) J.botines.splice(0, J.botines.length - 300);
+  for (const q of J.caidos) { q.t += dt; if (q.t > 0.3 && !q.polvo) { q.polvo = true; particulas(q.x * T, q.z * T, 8, ['#3a3030', '#5a4a44', '#1e1818'], { vel: 30, vida: 0.5 }); } }
+  J.caidos = J.caidos.filter((q) => q.t < 1.1);
   for (const q of J.particulas) {
     q.vida -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
     if (q.g) { q.vz -= q.g * dt; q.z += q.vz * dt; if (q.z < 0) { q.z = 0; q.vz *= -0.3; q.vx *= 0.5; q.vy *= 0.5; } }

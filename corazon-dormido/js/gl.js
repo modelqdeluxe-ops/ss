@@ -436,12 +436,18 @@ const GL = (() => {
   function limpiarLotes() { for (const k in lotes) lotes[k].n = 0; }
   const BLANCO = [1, 1, 1, 1];
   // Sprite de pie con los pies en (x, z). o: {y, flip, tinte, blanco, unlit, lote, escala, dx, lx, lz}
+  // Para animar sin más cuadros: sx / sy (estirar o aplastar desde los pies), sesgo (la cabeza se va hacia un lado,
+  // en casillas) y rot (gira sobre los pies, en radianes: para caer de lado).
   function sprite(n, x, z, o) {
     const r = SPR[n];
     if (!r) { falta(n); return; }
-    const e = (o && o.escala) || 1, w = (r.w / 16) * e, h = (r.h / 16) * KY * e, y = (o && o.y) || 0, x0 = x - w / 2 + ((o && o.dx) || 0);
-    const t = (o && o.tinte) || BLANCO, L = (o && o.lote) || lotes.spr;
-    L.q(x0, y + h, z, x0 + w, y + h, z, x0 + w, y, z, x0, y, z, uvDe(n), !!(o && o.flip), t[0], t[1], t[2], t[3], o && o.lx !== undefined ? o.lx : x, o && o.lz !== undefined ? o.lz : z, (o && o.unlit) || 0, (o && o.blanco) || 0);
+    const e = (o && o.escala) || 1, w = (r.w / 16) * e * ((o && o.sx) || 1), h = (r.h / 16) * KY * e * ((o && o.sy) || 1), y = (o && o.y) || 0, x0 = x - w / 2 + ((o && o.dx) || 0);
+    const t = (o && o.tinte) || BLANCO, L = (o && o.lote) || lotes.spr, lx = o && o.lx !== undefined ? o.lx : x, lz = o && o.lz !== undefined ? o.lz : z;
+    const sk = (o && o.sesgo) || 0, rot = (o && o.rot) || 0;
+    if (!rot) { L.q(x0 + sk, y + h, z, x0 + w + sk, y + h, z, x0 + w, y, z, x0, y, z, uvDe(n), !!(o && o.flip), t[0], t[1], t[2], t[3], lx, lz, (o && o.unlit) || 0, (o && o.blanco) || 0); return; }
+    const cx = x0 + w / 2, c = Math.cos(rot), s = Math.sin(rot), hw = w / 2;
+    L.q(cx - hw * c - h * s, y - hw * s + h * c, z, cx + hw * c - h * s, y + hw * s + h * c, z, cx + hw * c, y + hw * s, z, cx - hw * c, y - hw * s, z,
+      uvDe(n), !!(o && o.flip), t[0], t[1], t[2], t[3], lx, lz, (o && o.unlit) || 0, (o && o.blanco) || 0);
   }
   // Modelo horneado con el centro de su huella en (x, z): se coloca según lo que guardó el escultor.
   function modelo(n, x, z, o) {

@@ -572,3 +572,88 @@ CONSTRUIR_MODELOS.push(function personajesBandas() {
     m.capsula([10, 34, 6], [13, 34, 6], 0.4, M.hierro); m.figura(SDF.elipsoide(13, 30.6, 6, 1.8, 2.2, 1.8), [10, 27, 3, 16, 34, 9], mat(['#3a5a0a', '#6a9a14', '#a8d82a', '#e0ff6a', '#f8ffc8'], { luz: 1, plano: true, sube: 2 }));
   }), { cima: 0.6 });
 });
+
+// ---------------------------------------------------------------- iconos rehechos (los que eran manchas o anillos)
+CONSTRUIR_MODELOS.push(function iconosRehechos() {
+  const C = (L) => L.contorno();
+  // arcos de médula y de plata: palas curvas, cuerda y la empuñadura atada
+  const arco = (b, c, s, x) => C(rej({ b, c, s, x }, `
+    sbc.....
+    s..b....
+    s...c...
+    s....b..
+    s....xb.
+    s....xb.
+    s....b..
+    s...c...
+    s..b....
+    sbc.....`));
+  def('i_arco_medula', arco('#c8b896', '#f2ead6', '#e8e0cc', '#c8302a'));
+  def('i_arco_plata', arco('#9aa8c0', '#dce6f6', '#b4dcff', '#4a86cc'));
+  // los de antes también eran anillos
+  def('i_arco', arco('#8a5a36', '#c28a52', '#e8e0cc', '#4c2e1a'));
+  def('i_arco_madera', arco('#8a5a36', '#c28a52', '#e8e0cc', '#4c2e1a'));
+  def('i_arco_estano', arco('#8a88a0', '#d8d6e8', '#ffffff', '#4a4860'));
+  def('i_arco_carmesi', arco('#a01c2c', '#e04a5a', '#ffe0e0', '#4a0c14'));
+  def('i_arco_tamar', arco('#b8861a', '#f2c14e', '#eef2fa', '#6a4a10'));
+  // el corazón de Grul: un corazón de verdad, podrido, con la aorta y un bulto de la Podre
+  def('i_corazon_grul', C(rej({ e: '#c86a6a', f: '#e8a0a0', b: '#4a0c18', c: '#8a1c2c', d: '#2e0810', w: '#e86a74', p: '#ff3cb4', q: '#5a1040', v: '#3a1a4a' }, `
+    ....ef......
+    ....efe.ee..
+    ..bbefebfeb.
+    .bcccecccbb.
+    bccwccvcccbb
+    bcwcccvccccb
+    bcccccvqpccb
+    .bcccvccqcb.
+    .bccvccccdb.
+    ..bcvcccdb..
+    ...bccddb...
+    ....bddb....
+    .....bb.....`)));
+  // espora de la Podre: una vaina negra con poros que brillan
+  def('i_espora_podre', C(rej({ b: '#24142e', c: '#42204e', p: '#ff3cb4', q: '#c01a84', d: '#3a2a20', w: '#6a3a7a' }, `
+    ...pq...
+    ..cwbc..
+    .cbbpbc.
+    cbqbbbbc
+    cbbbbqbc
+    cbpbbbbc
+    .cbbbpc.
+    ..cbbc..
+    ...dd...
+    ...d....`)));
+  // carne de sanguijuela: un trozo anillado con el corte rosado
+  def('i_carne_sanguijuela', C(rej({ b: '#1e2622', c: '#3a4636', w: '#5a6a50', r: '#8a3a4a', s: '#c86a74' }, `
+    ..cccccc..
+    .cwbcwbcr.
+    cwbbcbbcrs
+    cbbbcbbcrs
+    cbbbcbbcrs
+    .cbbcbbcr.
+    ..cccccc..`)));
+  // ojo del Velador: un amuleto de plata con un ojo que no parpadea
+  def('i_ojo_velador', C(rej({ a: '#dce6f6', b: '#9aa8c0', c: '#5a6476', w: '#ffffff', n: '#7ab2f0', g: '#0a1020', l: '#4a86cc' }, `
+    ...cc...
+    ..c..c..
+    ..baab..
+    .baaaab.
+    babwwwab
+    awnlgnwa
+    awnggnwa
+    babwwwab
+    .baaaab.
+    ..bccb..`)));
+  // llama del Centinela: más grande, con el núcleo blanco
+  def('i_llama_centinela', C(rej({ a: '#ffffff', b: '#d8f0ff', c: '#7ab2f0', d: '#4a86cc', e: '#2a5a9a' }, `
+    ....a....
+    ...ab....
+    ...abc...
+    ..cabc...
+    ..cbacd..
+    .cbaacd..
+    .cbaabcd.
+    .dcbbcdd.
+    ..dccdd..
+    ...eee...`)));
+});
