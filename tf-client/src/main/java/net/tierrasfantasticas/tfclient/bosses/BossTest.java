@@ -2299,7 +2299,7 @@ public final class BossTest {
                 player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
                 var c = cm.createClaim(level, player.blockPosition(), player, net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_300x300"));
                 protesClaim = c.getClaimId();
-                BlockPos deep = player.blockPosition().offset(400, -12, 0);
+                net.minecraft.core.BlockPos deep = player.blockPosition().offset(400, -12, 0);
                 var d = cm.createClaim(level, deep, player, net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_300x300"));
                 protesDeep = d.getClaimId();
                 String id = protesClaim.toString();
@@ -2307,7 +2307,7 @@ public final class BossTest {
                 net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, false, "texto:" + id, "§cMi Castillo ✦");
                 String name = cm.findClaimById(protesClaim).getFlags().customName;
                 r.event("protes 1 (nombre «§cMi Castillo ✦»): guardado «" + name + "»" + ("Mi Castillo ✦".equals(name) ? " (bien: sin colores)" : " (MAL)"));
-                BlockPos top = net.tierrasfantasticas.tfclient.pad.server.PadClaims.surface(level, d);
+                net.minecraft.core.BlockPos top = net.tierrasfantasticas.tfclient.pad.server.PadClaims.surface(level, d);
                 int ground = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, deep.getX(), deep.getZ());
                 r.event("protes 2 (zona bajo tierra en y=" + deep.getY() + ", suelo en y=" + ground + "): aparece en " + top.toShortString()
                         + (top.getY() >= ground && top.getY() > deep.getY() ? " (bien: en la superficie)" : " (MAL)"));
