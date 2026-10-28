@@ -334,8 +334,9 @@ public final class TFBirthdayClient {
         int cols = 0;
         for (char ch : text.toCharArray()) cols += (GLYPHS.containsKey(ch) ? 6 : 3);
         if (cols == 0) return;
-        double step = Math.min(1.25, 58.0 / cols);
-        Vec3 center = skyPoint(c.add(0, 1.6, 0), yaw, 44F, 64);
+        double step = Math.min(1.1, 56.0 / cols);
+        // por encima del letrero y aún dentro de la pantalla
+        Vec3 center = skyPoint(c.add(0, 1.6, 0), yaw, 37F, 70);
         double y = Math.toRadians(yaw);
         Vec3 right = new Vec3(Math.cos(y), 0, Math.sin(y));
         Vec3 up = new Vec3(0, 1, 0);
@@ -352,7 +353,7 @@ public final class TFBirthdayClient {
                     if (g[row].charAt(k) != '#') continue;
                     Vec3 at = center.add(right.scale(x0 + (col + k) * step)).add(up.scale((3 - row) * step));
                     TFPartyParticle p = TFPartyParticle.spawn(TFPartyParticle.GLITTER, center.x, center.y - 8, center.z, 0, 0, 0,
-                            Mth.hsvToRgb(0.11F + RANDOM.nextFloat() * 0.04F, 0.45F, 1F) & 0xFFFFFF, (float) (step * 0.75), 170, 0, 0.3F);
+                            Mth.hsvToRgb(0.11F + RANDOM.nextFloat() * 0.04F, 0.45F, 1F) & 0xFFFFFF, (float) (step * 0.6), 190, 0, 0.3F);
                     if (p != null) p.flyTo(at, 18 + RANDOM.nextInt(16));
                     lights++;
                 }
@@ -372,10 +373,10 @@ public final class TFBirthdayClient {
             lights++;
         }
         if (age % 3 == 0) {
-            double a = RANDOM.nextDouble() * Math.PI * 2, d = 4 + RANDOM.nextDouble() * 22;
+            double a = RANDOM.nextDouble() * Math.PI * 2, d = 9 + RANDOM.nextDouble() * 26;
             int rgb = Mth.hsvToRgb(RANDOM.nextFloat(), 0.7F, 1F) & 0xFFFFFF;
             TFPartyParticle.spawn(TFPartyParticle.FLASH, c.x + Math.cos(a) * d, c.y, c.z + Math.sin(a) * d,
-                    0, 0.12 + RANDOM.nextDouble() * 0.05, 0, rgb, 0.75F, 220, 1.5F, 0F);
+                    0, 0.12 + RANDOM.nextDouble() * 0.05, 0, rgb, 0.55F, 220, 1.5F, 0F);
             lights++;
         }
     }
@@ -405,14 +406,23 @@ public final class TFBirthdayClient {
     /** Alrededor del cumpleañero (lo ven todos los que lo tienen cerca): corona de brillos y notas musicales. */
     private static void honoree(ClientLevel level) {
         if (name == null || age < BANG) return;
+        Minecraft mc = Minecraft.getInstance();
         for (Player p : level.players()) {
             if (!p.getGameProfile().getName().equalsIgnoreCase(name) || p.isInvisible()) continue;
-            Vec3 h = p.position().add(0, p.getBbHeight() + 0.45, 0);
-            float spin = age * 0.12F;
-            for (int i = 0; i < 2; i++) {
-                double a = spin + i * Math.PI;
-                TFPartyParticle.spawn(TFPartyParticle.GLITTER, h.x + Math.cos(a) * 0.45, h.y + Math.sin(age * 0.2 + i) * 0.05, h.z + Math.sin(a) * 0.45,
-                        0, 0.004, 0, 0xFFD24A, 0.18F, 18, 0, 0.3F);
+            // en su propia vista en primera persona se le pondrían delante de los ojos
+            if (p == mc.player && mc.options.getCameraType().isFirstPerson()) continue;
+            Vec3 h = p.position().add(0, p.getBbHeight() + 0.35, 0);
+            // corona: ocho puntos dorados que giran despacio (y una chispa que sube de vez en cuando)
+            if (age % 2 == 0) {
+                for (int i = 0; i < 8; i++) {
+                    double a = age * 0.05 + i * Math.PI / 4;
+                    TFPartyParticle.spawn(TFPartyParticle.GLITTER, h.x + Math.cos(a) * 0.38, h.y + (i % 2 == 0 ? 0.12 : 0), h.z + Math.sin(a) * 0.38,
+                            0, 0, 0, i % 2 == 0 ? 0xFFE27A : 0xFFB23C, 0.1F, 3, 0, 0F);
+                }
+            }
+            if (age % 9 == 0) {
+                TFPartyParticle.spawn(TFPartyParticle.GLITTER, h.x + RANDOM.nextGaussian() * 0.2, h.y + 0.2, h.z + RANDOM.nextGaussian() * 0.2,
+                        0, 0.03, 0, 0xFFF2B0, 0.12F, 24, 0, 0.4F);
             }
             if (age % 7 == 0) {
                 double a = RANDOM.nextDouble() * Math.PI * 2;
