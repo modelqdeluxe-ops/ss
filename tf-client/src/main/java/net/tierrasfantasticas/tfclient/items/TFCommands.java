@@ -110,6 +110,9 @@ public final class TFCommands {
                 // (1.3.149) /tf pide la contraseña del staff (TFStaffLock): /tf sola la pide; cada rama lleva el candado
                 .executes(TFStaffLock::bare)
                 .then(TFStaffLock.guard(TFStaffLock.command()))
+                // (1.3.150) /tf cumpleaños felicitar <jugador> | parar: la fiesta en el cielo de todos los Overworld
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.server.TFBirthday.command("cumpleaños")))
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.server.TFBirthday.command("cumpleanos")))
                 .then(TFStaffLock.guard(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload)))
                 // /tf boss (staff): la ventana de jefes, dificultades y grietas
                 .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.bosses.TFBosses.command()))

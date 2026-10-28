@@ -157,6 +157,14 @@ public final class TFPadClient {
             TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
             PadSettings.load();
             mc.setScreen(new TFPadScreen());
+        } else if (app.startsWith("a_")) {
+            // (1.3.150) una app del pad de administrador
+            int slash = app.indexOf('/');
+            TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
+            PadSettings.load();
+            TFPadScreen pad = new TFPadScreen(true);
+            mc.setScreen(pad);
+            pad.openApp(slash < 0 ? app : app.substring(0, slash), slash < 0 ? "" : app.substring(slash + 1));
         } else {
             // («app/pestaña»: la prueba abre también una pestaña, p. ej. «efectos/combate» o la zona de una protección)
             int slash = app.indexOf('/');

@@ -26,6 +26,8 @@ public class ClaimFlags {
     public boolean publicMode = false;
     public boolean showWelcome = false;
     public String welcomeMessage = "";
+    /** (1.3.150) El nombre que le pone su dueño (solo se ve en el pad; vacío = «Zona 50x50»). */
+    public String customName = "";
     public boolean showLeave = false;
     public String leaveMessage = "";
     /** (1.3.113) Los mensajes al entrar y al salir, como título en medio de la pantalla (si no, encima de la barra). */
