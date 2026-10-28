@@ -18,8 +18,9 @@ const INFO_MURO = {
   5: { nombre: 'Roca madre', arte: 'roca', vida: 1, nivel: 99, mapa: '#1a1820' },
 };
 // Suelos (arte de suelo)
-const SUELO_DE = { 1: 'tierra', 2: 'arcilla', 3: 'piedra', 4: 'ruina', 5: 'arena' };
-const SUELO_MAPA = { 1: '#2c201b', 2: '#38201d', 3: '#1c1f2a', 4: '#24323a', 5: '#33251d' };
+const SUELO_DE = { 1: 'tierra', 2: 'arcilla', 3: 'piedra', 4: 'ruina', 5: 'arena', 6: 'agua' };
+const AGUA = 6;
+const SUELO_MAPA = { 1: '#2c201b', 2: '#38201d', 3: '#1c1f2a', 4: '#24323a', 5: '#33251d', 6: '#1b4d76' };
 
 // Menas dentro de las paredes
 const MENA = { NADA: 0, COBRE: 1, ESTANO: 2, HIERRO: 3 };

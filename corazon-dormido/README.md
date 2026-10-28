@@ -81,6 +81,10 @@ lienzo 2D pequeño encima (unos 220 píxeles por el lado corto), escalado sin su
   - el suelo se oscurece junto a las paredes (sombra de contacto).
 - **Sprites de pie**: personajes y objetos son planos verticales, estirados para que se vean con píxeles cuadrados. Así una pared tapa de verdad al que pasa por detrás.
 - **Brillos**: llamas, cristales, hongos y el Corazón se vuelven a sumar encima con su halo. Hay chispas que suben de las antorchas y motas en el aire.
+- **Luz tramada**: cada píxel del dibujo toma la luz de su centro y se reparte en escalones con trama 4×4 alineada a los píxeles del arte. Es el degradado «a cuadritos» de Core Keeper.
+- **Posproceso**: la escena se guarda con luz de hasta 2 y solo resplandece lo que pasa de 1 (llamas, cristales, luz muy fuerte), con dos desenfoques. Después lleva una curva suave en los blancos, sombras frías y luces cálidas, viñeta y un grano fino.
+- **Vida en el suelo**: guijarros, hierba, setas, estalagmitas y huesos de pie en cada zona, con más junto a las paredes. Hay charcas de agua con destellos que se mueven.
+- **Efectos**: la antorcha en la mano alumbra desde la mano, y al golpear al aire sale una estela. Al pegar saltan chispazos, al morir o al romper una pared sale humo, y al andar se levanta polvo.
 
 ## El arte
 

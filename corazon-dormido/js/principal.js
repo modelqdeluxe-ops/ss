@@ -125,7 +125,11 @@ const AMBIENTE = [0.035, 0.03, 0.055];
 
 function fuentesLuz(v) {
   const f = [];
-  if (J.estado !== 'titulo' && J.estado !== 'muerto') f.push({ x: J.jug.x, y: J.jug.y - 2, r: 6, c: [1.0, 0.86, 0.64], k: 1.05 });
+  if (J.estado !== 'titulo' && J.estado !== 'muerto') {
+    const s = J.inv[J.sel];
+    if (s && s.id === 'antorcha') f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
+    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 5, c: [1.0, 0.88, 0.7], k: 0.62 });
+  }
   for (const i of M.luces) {
     const o = M.objetos.get(i);
     if (!o || o.x < v.x0 - 12 || o.x > v.x1 + 12 || o.y < v.z0 - 12 || o.y > v.z1 + 12) continue;
@@ -134,7 +138,7 @@ function fuentesLuz(v) {
     else if (o.tipo === 'pedestal') { if (o.extra) f.push({ x, y, r: 3.5, c: [1, 0.4, 0.6], k: 1 }); }
     else if (info.luz) {
       const [r, cr, cg, cb] = info.luz;
-      f.push({ x, y, r, c: [cr, cg, cb], k: info.parpadeo ? 1.05 + 0.1 * Math.sin(J.t * 13 + i) * Math.sin(J.t * 7.3 + i * 0.7) : 1 });
+      f.push({ x, y, r, c: [cr, cg, cb], k: info.parpadeo ? 0.9 + 0.08 * Math.sin(J.t * 13 + i) * Math.sin(J.t * 7.3 + i * 0.7) : 0.85 });
     }
   }
   if (J.jefe && J.jefe.estado === 'aturdido') f.push({ x: J.jefe.x, y: J.jefe.y - 20, r: 2.5, c: [1, 0.9, 0.5], k: 0.6 });
@@ -176,8 +180,35 @@ function dibujarJugador3d(p) {
   const x = p.x / T, z = p.y / T + 0.06;
   GL.plano('sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.75] });
   const parpadea = p.invuln > 0 && Math.floor(J.t * 20) % 2;
-  if (!parpadea) GL.sprite(nombreJugador(p), x, z, { blanco: p.flash > 0 ? 0 : 0 });
+  const s = J.inv[J.sel], it = s && ITEMS[s.id];
+  const enMano = !(p.swing > 0) && it && (it.tipo === 'pico' || it.tipo === 'espada' || s.id === 'antorcha');
+  const detras = p.dir === 'ar';
+  if (enMano && detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
+  if (!parpadea) GL.sprite(nombreJugador(p), x, z, {});
+  if (enMano && !detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
   if (p.swing > 0 && p.swingItem) dibujarHerramienta3d(p, x, z);
+}
+// Lo que llevas en la mano cuando no golpeas: la antorcha encendida o la herramienta en reposo.
+function dibujarEnMano(p, x, z, id, it) {
+  const lado = p.dir === 'iz' ? -1 : p.dir === 'de' ? 1 : p.dir === 'ab' ? 1 : -1;
+  const bob = p.andando && Math.floor(p.anim) % 2 ? 1 : 0;
+  const hx = x + lado * (p.dir === 'ab' || p.dir === 'ar' ? 0.36 : 0.28), hz = z + (p.dir === 'ar' ? -0.03 : 0.03), hy = ((6 + bob) / 16) * GL.KY;
+  if (id === 'antorcha') {
+    const f = Math.floor(J.t * 9) % 4;
+    GL.sprite(`antorcha_${f}`, hx, hz, { y: hy, escala: 0.62 });
+    GL.sprite(`antorcha_${f}_luz`, hx, hz + 0.002, { y: hy, escala: 0.62, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+    GL.halo(hx, hy + 0.55, hz, 0.9, [1, 0.6, 0.25], 0.3 + 0.05 * Math.sin(J.t * 13));
+    if (Math.random() < 0.08) J.particulas.push({ x: hx * T, y: hz * T, z: (hy / GL.KY) * 16 + 9, vx: (Math.random() - 0.5) * 6, vy: 0, vz: 12 + Math.random() * 10, g: -6, vida: 1 + Math.random(), c: Math.random() < 0.5 ? '#ffb040' : '#ff7020', s: 1, brilla: true, chispa: true });
+    return;
+  }
+  const r = SPR[it.icono];
+  if (!r) return;
+  const rot = lado > 0 ? 0.25 : -0.25, c = Math.cos(rot), sn = Math.sin(rot), px = 16;
+  const pts = [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]].map(([u, v]) => {
+    const uu = lado > 0 ? u : -u, ux = uu * c - v * sn, vy = uu * sn + v * c;
+    return [hx + ux / px, hy - (vy / px) * GL.KY, hz];
+  });
+  GL.lotes.spr.quad(pts, GL.uv(it.icono), [1, 1, 1, 1], x, z, 0, 0);
 }
 // La herramienta gira alrededor de la mano, en el plano del sprite.
 function dibujarHerramienta3d(p, x, z) {
@@ -256,6 +287,19 @@ function dibujarMundo3d() {
     if (q.brilla) { o.unlit = 1; o.lote = GL.lotes.brillo; }
     GL.sprite('blanco', q.x / T, q.y / T, o);
   }
+  // efectos (estela, chispazos, humo, polvo)
+  for (const e of J.efectos) {
+    const f = Math.min(e.cuadros - 1, Math.floor((e.t / e.dur) * e.cuadros)), x = e.x / T, z = e.y / T, y = (e.z / 16) * GL.KY;
+    if (e.n === 'tajo') {
+      const dir = e.dir, h = dir === 'ab' || dir === 'ar';
+      const ox = dir === 'de' ? 0.62 : dir === 'iz' ? -0.62 : 0, oz = dir === 'ab' ? 0.32 : dir === 'ar' ? -0.32 : 0.02;
+      GL.sprite(`tajo_${h ? 'h' : 'v'}_${f}`, x + ox, z + oz, { y: h ? y + (dir === 'ar' ? 0.5 : -0.1) : y - 0.2, flip: dir === 'iz', unlit: 1, lote: GL.lotes.brillo, tinte: [1, 0.96, 0.85, 0.85 * (1 - e.t / e.dur * 0.5)] });
+    } else if (e.n === 'chispazo') GL.sprite(`chispazo_${f}`, x, z + 0.05, { y, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 1] });
+    else GL.sprite(`${e.n}_${f}`, x, z + 0.04, { y });
+  }
+  for (let ty = v.z0; ty <= v.z1; ty++) for (let tx = v.x0; tx <= v.x1; tx++) {
+    if (enMundo(tx, ty) && M.piso[idx(tx, ty)] === AGUA) GL.plano(`aguab_${(Math.floor(J.t * 3) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: 0.003, unlit: 0, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+  }
   // grietas de las paredes que estás picando
   for (const [i, d] of M.danos) {
     const tx = i % N_MUNDO, ty = (i - tx) / N_MUNDO, m = M.muro[i];
@@ -275,7 +319,7 @@ function dibujarMundo3d() {
     } else if (colocar && puedeColocar(tx, ty)) GL.plano('marca', tx + 0.5, ty + 0.5, { lote: GL.lotes.brillo, unlit: 1, tinte: [0.55, 1, 0.65, a] });
   }
   const luz = calcularLuz(v.x0, v.z0, v.x1 - v.x0 + 1, v.z1 - v.z0 + 1, fuentesLuz(v), AMBIENTE);
-  GL.dibujar(luz);
+  GL.dibujar(luz, J.t);
 }
 
 // Números de daño y la «Z» del topo dormido, sobre la interfaz.

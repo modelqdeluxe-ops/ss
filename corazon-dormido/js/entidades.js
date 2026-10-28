@@ -2,7 +2,7 @@
 // El jugador, las criaturas, el Topo Rey, lo que sueltan las cosas, las partículas y el inventario.
 
 const J = {
-  estado: 'titulo', panel: null, t: 0, jug: null, enemigos: [], jefe: null, proyectiles: [], botines: [],
+  estado: 'titulo', panel: null, t: 0, jug: null, enemigos: [], jefe: null, proyectiles: [], botines: [], efectos: [],
   particulas: [], numeros: [], avisos: [], inv: [], sel: 0, armadura: null, hito: {}, temblor: 0,
   entrada: { mx: 0, my: 0 }, cam: { x: 0, y: 0 }, objetivo: 0, aparecer: 0, latidos: 0, guardadoT: 0,
   cuenta(id) { let n = 0; for (const s of this.inv) if (s && s.id === id) n += s.n; return n; },
@@ -58,6 +58,8 @@ function particulas(x, y, n, colores, o = {}) {
   }
 }
 // Número que sube desde (x, pie) a «alto» píxeles del suelo.
+// Efecto animado de unos cuadros: n = prefijo del sprite ('humo', 'chispazo'…), z = altura en px.
+function efecto(n, cuadros, x, y, z, dur, o = {}) { J.efectos.push({ n, cuadros, x, y, z, dur, t: 0, ...o }); }
 function numero(x, y, txt, c = '#ffffff', alto = 16) { J.numeros.push({ x, y, alto, txt: String(txt), c, vida: 0.8 }); }
 function soltar(x, y, id, n) {
   for (let i = 0; i < n; i++) {
@@ -253,6 +255,7 @@ function usar(apunte) {
   if (herr.tipo === 'pico' && hayMuro && !pegado) { picar(tx, ty, herr); return; }
   if (obj && OBJ[obj.tipo].vida > 0 && !enemigo && (herr.tipo === 'pico' || OBJ[obj.tipo].planta)) { golpearObjeto(obj, herr); return; }
   Sonido.sfx.zas();
+  efecto('tajo', 3, p.x, p.y, 8, herr.vel * 0.8, { dir: p.dir });
   atacar(herr.dano, herr.tipo === 'espada' ? 27 : 20, herr.tipo === 'espada' ? 1.35 : 1.0);
 }
 
@@ -278,6 +281,7 @@ function picar(tx, ty, pico) {
   particulas(cx, cy, 4, [ram[2], ram[3], ram[1]], { vel: 45, vida: 0.35 });
   if (d.v >= vidaMax) {
     romperMuro(tx, ty);
+    efecto('humo', 4, cx, cy + 10, 0, 0.45);
     Sonido.sfx.romper();
     particulas(cx, cy + 4, 12, [ram[1], ram[2], ram[3], ram[4]], { vel: 60, vida: 0.6, s: 2 });
     if (mena) { const im = INFO_MENA[mena]; soltar(cx, cy + 6, im.item, 1 + (Math.random() < 0.45 ? 1 : 0)); particulas(cx, cy, 6, MENA_COL[im.arte], { vel: 50 }); }
@@ -313,6 +317,7 @@ function herir(e, dano, kx, ky) {
   let real = Math.max(1, Math.round(dano * (e.estado === 'aturdido' ? 1.5 : 1) - (e.def || 0)));
   if (Math.random() < 0.1) real = Math.round(real * 1.6); // golpe crítico
   e.vida -= real; e.flash = 0.1;
+  efecto('chispazo', 3, e.x - kx * e.radio * 0.6, e.y + 1, e.jefe ? 20 : 7, 0.2);
   if (!e.jefe) { e.kbx = kx * 115; e.kby = ky * 115; } else J.temblor = Math.max(J.temblor, 0.08);
   numero(e.x, e.y, real, real > dano ? '#ffd166' : '#ffffff', e.jefe ? 44 : 16);
   particulas(e.x, e.y - 4, 5, e.colores || ['#ffffff'], { vel: 60, vida: 0.35 });
@@ -320,6 +325,7 @@ function herir(e, dano, kx, ky) {
   if (e.vida <= 0) {
     if (e.jefe) { e.estado = 'muriendo'; e.t = 1.6; Sonido.sfx.rugido(); return; }
     particulas(e.x, e.y - 4, 14, e.colores || ['#ffffff'], { vel: 70, vida: 0.6, s: 2 });
+    efecto('humo', 4, e.x, e.y + 1, 0, 0.5);
     soltarLista(e.x, e.y, CRIATURAS[e.tipo].botin);
     Sonido.sfx.muere();
   }
@@ -581,6 +587,9 @@ function actualizarMundoVivo(dt) {
   J.particulas = J.particulas.filter((q) => q.vida > 0);
   if (J.particulas.length > 400) J.particulas.splice(0, J.particulas.length - 400);
   for (const n of J.numeros) { n.vida -= dt; n.alto += 18 * dt; }
+  for (const e of J.efectos) e.t += dt;
+  J.efectos = J.efectos.filter((e) => e.t < e.dur);
+  if (J.jug && J.jug.andando && J.estado === 'juego') { J.pasoT = (J.pasoT || 0) + dt; if (J.pasoT > 0.32) { J.pasoT = 0; efecto('polvo', 3, J.jug.x + (Math.random() - 0.5) * 4, J.jug.y + 1, 0, 0.35); } }
   J.numeros = J.numeros.filter((n) => n.vida > 0);
   for (const a of J.avisos) a.t -= dt;
   J.avisos = J.avisos.filter((a) => a.t > 0);

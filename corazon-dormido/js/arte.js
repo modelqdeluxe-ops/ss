@@ -166,10 +166,10 @@ function suelo(tipo, v) {
     if (v === 3) { L.rect(6, 6, 4, 4, S.os); L.px(7, 7, S.br); L.px(8, 8, S.pd); }
     return L;
   }
-  const n = ruidoCiclico(sem, 4), n2 = ruidoCiclico(sem + 7, 8);
+  const n = ruidoCiclico(sem, 3), n2 = ruidoCiclico(sem + 7, 6);
   for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
-    const f = n(x, y) * 0.65 + n2(x, y) * 0.35;
-    if (f < 0.3) L.px(x, y, S.os); else if (f > 0.7) L.px(x, y, S.cl);
+    const f = n(x, y) * 0.8 + n2(x, y) * 0.2;
+    if (f < 0.28) L.px(x, y, S.os); else if (f > 0.74) L.px(x, y, S.cl);
   }
   if (tipo === 'arcilla') { // barro seco cuarteado
     let x = entre(r, 0, 15), y = 0;
@@ -183,12 +183,12 @@ function suelo(tipo, v) {
       for (let s = 0; s < 9; s++) { L.pxc(x, y, S.pd); L.pxc(x + (dx ? 0 : 1), y + (dx ? 1 : 0), S.br); if (dx) x++; else y++; if (r() < 0.3) dx = 1 - dx; }
     }
   }
-  const piedras = tipo === 'piedra' ? 1 : 3;
-  for (let k = 0; k < piedras; k++) { // piedrecitas con su luz y su sombra
+  if (v % 2 === 0) { // una piedrecita con su luz y su sombra
     const x = entre(r, 0, 15), y = entre(r, 0, 15);
-    L.pxc(x, y, S.br); L.pxc(x + 1, y, S.cl); L.pxc(x, y + 1, S.cl); L.pxc(x + 1, y + 1, S.os); L.pxc(x + 1, y + 2, S.pd); L.pxc(x + 2, y + 1, S.pd);
+    L.pxc(x, y, S.br); L.pxc(x + 1, y, S.cl); L.pxc(x, y + 1, S.cl); L.pxc(x + 1, y + 1, S.os); L.pxc(x + 2, y + 1, S.os);
   }
-  for (let k = 0; k < 4; k++) L.pxc(entre(r, 0, 15), entre(r, 0, 15), S.pd);
+  for (let k = 0; k < 3; k++) L.pxc(entre(r, 0, 15), entre(r, 0, 15), S.cl);
+  L.pxc(entre(r, 0, 15), entre(r, 0, 15), S.os);
   if (tipo === 'arena' && v < 2) { // arañazos del topo
     const x = entre(r, 2, 8), y = entre(r, 2, 8);
     for (let k = 0; k < 3; k++) { L.linea(x + k * 3, y, x + k * 3 + 3, y + 5, S.pd); L.linea(x + k * 3 + 1, y, x + k * 3 + 4, y + 5, S.os); }
@@ -276,17 +276,28 @@ const MENA_COL = {
 };
 function pepita(L, x, y, c, grande) {
   const [o, m, b, cl, br] = c;
-  if (grande) { L.rect(x, y, 3, 2, b); L.px(x, y, cl); L.px(x + 1, y, cl); L.px(x + 2, y + 1, m); L.hl(x, y + 2, 3, o); L.px(x + 3, y + 1, o); L.px(x, y - 1, br); }
-  else { L.px(x, y, cl); L.px(x + 1, y, b); L.px(x, y + 1, m); L.px(x + 1, y + 1, o); }
+  const r = grande ? 2.5 : 1.7;
+  L.esfera(x + r, y + r, r, r * 0.85, [o, m, b, cl], { amb: 0.25 });
+  if (grande) L.px(Math.round(x + r - 1), Math.round(y + r - 1), br);
 }
 function menaArriba(ore, v) {
   const r = azar(400 + v * 19 + ore.length * 7), L = new Lienzo(16, 16);
-  for (let k = 0; k < 5; k++) pepita(L, entre(r, 2, 11), entre(r, 2, 11), MENA_COL[ore], k < 2);
+  const puestos = [];
+  for (let k = 0, intentos = 0; k < 4 && intentos < 200; intentos++) {
+    const x = entre(r, 1, 10), y = entre(r, 1, 10);
+    if (puestos.some(([a, b]) => Math.hypot(a - x, b - y) < 5.5)) continue;
+    puestos.push([x, y]); pepita(L, x, y, MENA_COL[ore], k < 2); k++;
+  }
   return L;
 }
 function menaCara(ore, v) {
   const r = azar(600 + v * 23 + ore.length), L = new Lienzo(16, 12);
-  for (let k = 0; k < 3; k++) pepita(L, entre(r, 1, 12), entre(r, 2, 8), MENA_COL[ore], k === 0);
+  const puestos = [];
+  for (let k = 0, intentos = 0; k < 3 && intentos < 200; intentos++) {
+    const x = entre(r, 1, 11), y = entre(r, 1, 6);
+    if (puestos.some(([a, b]) => Math.hypot(a - x, b - y) < 5)) continue;
+    puestos.push([x, y]); pepita(L, x, y, MENA_COL[ore], k === 0); k++;
+  }
   return L;
 }
 function grieta(n) {
@@ -353,6 +364,43 @@ function construirTerreno() {
     .mM.m.
     mMMmMm
     .mmM.m`));
+  const PIEDRA_SUELTA = { 1: ['#3a2a22', '#5a4434', '#7a624e', '#9c836c', '#c0a890'], 2: ['#3a1e18', '#5e3428', '#83503c', '#a8705a', '#c89078'], 3: ['#22242e', '#383c4a', '#545a6c', '#727a8e', '#9aa2b4'], 4: ['#1e2a30', '#30444c', '#4a646c', '#6a8890', '#94b0b6'], 5: ['#3a2a22', '#5a4434', '#7a624e', '#9c836c', '#c0a890'] };
+  for (const [b, R] of Object.entries(PIEDRA_SUELTA)) for (let k = 0; k < 3; k++) {
+    const w = [7, 9, 5][k], h = [5, 6, 4][k], L = new Lienzo(w + 2, h + 1);
+    L.esfera((w + 2) / 2, h * 0.62, w / 2, h * 0.62, R, { brillo: R[4] });
+    if (k === 1) L.esfera(2.2, h * 0.75, 1.8, 1.4, R);
+    def(`dc_guijarro_${b}_${k}`, L.contorno('#120a08', 0.65));
+  }
+  const HIERBA = ['#2a3a1c', '#40582a', '#5e7c38', '#86a24a', '#b2c66a'];
+  for (let k = 0; k < 2; k++) {
+    const L = new Lienzo(11, 9), rr = azar(70 + k);
+    for (let h = 0; h < 6; h++) { let x = 2 + h * 1.4 + rr(), y = 8; const alto = 4 + Math.floor(rr() * 5), lado = rr() < 0.5 ? -1 : 1; for (let s = 0; s < alto; s++) { L.px(x, y, HIERBA[Math.min(4, 1 + Math.floor((s / alto) * 4))]); y--; if (s > alto / 2 && rr() < 0.5) x += lado; } }
+    def(`dc_hierba_${k}`, L.contorno('#0e1408', 0.7));
+  }
+  const SETA = ['#4a1c10', '#7e3418', '#b85a26', '#e08840', '#ffc070'];
+  for (let k = 0; k < 2; k++) {
+    const L = new Lienzo(10, 9);
+    for (const [x, y, r] of k ? [[3, 4, 2.5], [7, 6, 1.8]] : [[5, 3, 3], [2, 6, 1.6]]) { L.rect(Math.round(x) - 0.5, y, 1.5, 9 - y, '#e8dcc0'); L.vl(Math.round(x), y + 1, 8 - y, '#b8a888'); L.esfera(x, y, r, r * 0.7, SETA, { brillo: SETA[4], donde: (xx, yy) => yy <= y }); }
+    def(`dc_seta_${k}`, L.contorno('#140804', 0.7));
+  }
+  const ESTAL = RAMPA.piedra;
+  for (let k = 0; k < 2; k++) {
+    const h = [12, 8][k], L = new Lienzo(9, h);
+    for (let y = 0; y < h; y++) { const w = Math.max(1, Math.round((y / h) * 4)); for (let x = 4 - w; x <= 4 + w; x++) L.px(x, y, x < 4 ? ESTAL[4] : x === 4 ? ESTAL[3] : ESTAL[2]); }
+    L.px(4, 0, ESTAL[5]); L.hl(1, h - 1, 7, ESTAL[1]);
+    def(`dc_estalagmita_${k}`, L.contorno('#08080c', 0.7));
+  }
+  const HUESO = ['#8a7e6c', '#c4b8a2', '#ece2cc', '#fffaf0'];
+  def('dc_huesos', rej({ a: HUESO[0], b: HUESO[1], c: HUESO[2], d: HUESO[3] }, `
+    ..dc......
+    .dccb..cd.
+    .cbbccccb.
+    ..ab...ba.
+    ...bcca...
+    ..cbaacb..`).contorno('#140c08', 0.7));
+  const CRIS = CRISTAL_R;
+  def('dc_cristalito', new Lienzo(7, 8).rect(2, 2, 3, 6, CRIS[2]).vl(2, 2, 6, CRIS[4]).vl(4, 2, 6, CRIS[1]).px(3, 1, CRIS[3]).rect(0, 5, 2, 3, CRIS[2]).px(0, 5, CRIS[4]).contorno('#061820', 0.7));
+
   def('ad_garras', rej(AD, `
     k..k..k.
     .k..k..k
@@ -389,18 +437,21 @@ function cuerpoJugador(dir, paso) {
   // cuerpo
   if (dir === 'ar') {
     L.rect(3, 12 + Y, 8, 4, P.tunica[2]); L.vl(10, 12 + Y, 4, P.tunica[1]);
-    L.rect(2, 12 + Y, 1, 3, P.tunica[1]); L.rect(11, 12 + Y, 1, 3, P.tunica[1]); L.px(2, 15 + Y, P.pielS); L.px(11, 15 + Y, P.pielS);
+    const bi = paso === 1 ? 1 : paso === 3 ? -1 : 0;
+    L.rect(2, 12 + Y + bi, 1, 3, P.tunica[1]); L.rect(11, 12 + Y - bi, 1, 3, P.tunica[1]); L.px(2, 15 + Y + bi, P.pielS); L.px(11, 15 + Y - bi, P.pielS);
     L.rect(4, 11 + Y, 6, 5, P.mochila); L.hl(4, 11 + Y, 6, P.mochilaC); L.vl(9, 12 + Y, 4, P.mochilaS); L.hl(4, 15 + Y, 6, P.mochilaS); L.rect(6, 13 + Y, 2, 1, P.hebilla);
   } else if (dir === 'de') {
     L.rect(4, 12 + Y, 6, 4, P.tunica[2]); L.vl(4, 12 + Y, 4, P.tunica[3]); L.vl(9, 12 + Y, 4, P.tunica[1]);
     L.hl(4, 15 + Y, 6, P.cinto); L.px(8, 15 + Y, P.hebilla);
     L.rect(2, 12 + Y, 2, 3, P.mochila); L.vl(2, 12 + Y, 3, P.mochilaS); // mochila asomando
-    L.rect(6, 12 + Y, 2, 3, P.tunica[1]); L.px(8, 14 + Y, P.piel); L.px(8, 15 + Y, P.pielS); // brazo
+    const bx = paso === 1 ? 1 : paso === 3 ? -1 : 0;
+    L.rect(6 + bx, 12 + Y, 2, 3, P.tunica[1]); L.px(8 + bx, 14 + Y, P.piel); L.px(8 + bx, 15 + Y, P.pielS); // brazo
     L.hl(5, 11 + Y, 5, P.bufanda); L.px(9, 11 + Y, P.bufandaS); L.px(4, 12 + Y, P.bufanda); L.px(3, 13 + Y, P.bufandaS);
   } else {
     L.rect(3, 12 + Y, 8, 4, P.tunica[2]); L.vl(3, 12 + Y, 4, P.tunica[3]); L.vl(10, 12 + Y, 4, P.tunica[1]);
     L.hl(3, 15 + Y, 8, P.cinto); L.rect(6, 15 + Y, 2, 1, P.hebilla);
-    L.vl(2, 12 + Y, 3, P.tunica[1]); L.vl(11, 12 + Y, 3, P.tunica[1]); L.px(2, 15 + Y, P.piel); L.px(11, 15 + Y, P.pielS);
+    const bi = paso === 1 ? -1 : paso === 3 ? 1 : 0; // un brazo adelante, el otro atrás
+    L.vl(2, 12 + Y + bi, 3, P.tunica[1]); L.vl(11, 12 + Y - bi, 3, P.tunica[1]); L.px(2, 15 + Y + bi, P.piel); L.px(11, 15 + Y - bi, P.pielS);
     L.hl(4, 11 + Y, 6, P.bufanda); L.hl(4, 12 + Y, 2, P.bufanda); L.px(9, 11 + Y, P.bufandaS); L.px(5, 13 + Y, P.bufandaS); L.px(4, 13 + Y, P.bufanda);
   }
   // cabeza: una esfera de pelo grande y la cara encima
@@ -677,6 +728,63 @@ function construirObjetos() {
   def('pedestal', pedestal(false));
   const pl = pedestal(true);
   def('pedestal_lleno', pl); def('pedestal_lleno_luz', pl.solo(ROJO.slice(1).concat(['#ffffff'])));
+
+  // efectos: estela del golpe, chispazo, humo, polvo
+  const a8 = (c, a) => c + Math.round(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0');
+  for (let f = 0; f < 3; f++) {
+    for (const [nom, w, h, vertical] of [['h', 26, 14, false], ['v', 14, 24, true]]) {
+      const L = new Lienzo(w, h), R = vertical ? h / 2 : w / 2, grosor = 3.2 - f;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const u = vertical ? y - h / 2 + 0.5 : x - w / 2 + 0.5, v = vertical ? x + 0.5 : y + 0.5; // arco que mira hacia fuera
+        const d = Math.hypot(u, v - (vertical ? -4 : -4)) , borde = R + 1 - d;
+        if (borde < 0 || borde > grosor) continue;
+        const fin = 1 - Math.abs(u) / R, a = Math.min(1, fin * 1.6) * (1 - f * 0.28) * (borde > grosor - 1 ? 1 : 0.7);
+        if (a > 0.08) L.px(x, y, a8(borde > grosor - 1.2 ? '#ffffff' : '#fff2c8', a));
+      }
+      def(`tajo_${nom}_${f}`, L);
+    }
+  }
+  const CH = ['#fff8d0', '#ffd860', '#ff9a30'];
+  [[4, 4], [3, 2], [2, 1]].forEach(([r, d], f) => {
+    const L = new Lienzo(9, 9);
+    for (let k = -r; k <= r; k++) { L.px(4 + k, 4, CH[Math.min(2, Math.abs(k) >> 1)]); L.px(4, 4 + k, CH[Math.min(2, Math.abs(k) >> 1)]); }
+    for (let k = 1; k <= d; k++) for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) L.px(4 + sx * k, 4 + sy * k, CH[1]);
+    L.px(4, 4, '#ffffff');
+    def(`chispazo_${f}`, L);
+  });
+  const HUMO = ['#6e6478', '#9a90a6', '#c8c0d2', '#ece6f2'];
+  const BAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  for (let f = 0; f < 4; f++) {
+    const L = new Lienzo(18, 16), dens = 1 - f * 0.24, rr = azar(500 + f);
+    for (const [cx, cy, r] of [[6, 9, 4 + f], [11, 8, 4.5 + f], [9, 5, 3.5 + f * 0.8]]) L.esfera(cx, cy, Math.min(r, 8), Math.min(r, 7), HUMO, { amb: 0.5 });
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 18; x++) if (L.get(x, y) && BAY[(y % 4) * 4 + (x % 4)] / 16 > dens) L.px(x, y, '_');
+    void rr;
+    def(`humo_${f}`, L);
+  }
+  for (let f = 0; f < 3; f++) {
+    const L = new Lienzo(10, 6);
+    for (const [cx, cy, r] of [[3, 4, 1.6 + f * 0.5], [7, 4, 1.4 + f * 0.6]]) L.esfera(cx, cy, r, r * 0.8, ['#7a6a5a', '#a8988a', '#cfc2b4']);
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 10; x++) if (L.get(x, y) && BAY[(y % 4) * 4 + (x % 4)] / 16 > 1 - f * 0.3) L.px(x, y, '_');
+    def(`polvo_${f}`, L);
+  }
+  // agua: fondo con ondas (encaja entre casillas) y destellos que se mueven
+  const AGUA = ['#0e2a44', '#143a5c', '#1b4d76', '#26648f', '#3a82ac', '#8ccff0'];
+  for (let v = 0; v < 4; v++) {
+    const L = new Lienzo(16, 16).rect(0, 0, 16, 16, AGUA[2]), n = ruidoCiclico(7000 + v, 4);
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const f = n(x, y); if (f < 0.3) L.px(x, y, AGUA[1]); else if (f > 0.72) L.px(x, y, AGUA[3]); }
+    const rr = azar(7100 + v);
+    for (let k = 0; k < 3; k++) { const x = entre(rr, 0, 15), y = entre(rr, 0, 15), w = entre(rr, 3, 5); for (let i = 0; i < w; i++) L.pxc(x + i, y + (i === 0 || i === w - 1 ? 1 : 0), AGUA[4]); }
+    def(`agua_${v}`, L);
+  }
+  for (let f = 0; f < 4; f++) {
+    const L = new Lienzo(16, 16), rr = azar(7300);
+    for (let k = 0; k < 6; k++) {
+      const x0 = entre(rr, 0, 15), y0 = entre(rr, 0, 15), w = entre(rr, 2, 4), ciclo = (f + k) % 4;
+      if (ciclo === 3) continue;
+      for (let i = 0; i < w - (ciclo === 2 ? 1 : 0); i++) L.pxc(x0 + i + ciclo, y0, ciclo === 0 ? AGUA[5] : AGUA[4]);
+    }
+    def(`aguab_${f}`, L);
+  }
 
   // piezas para el motor
   const sombra = (w, h) => { const L = new Lienzo(w, h); L.elipse(w / 2, h / 2, w / 2, h / 2, '#05020890'); L.elipse(w / 2, h / 2, w / 2 - 1.5, h / 2 - 1, '#050208c0'); return L; };

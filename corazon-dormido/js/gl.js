@@ -17,6 +17,7 @@ const GL = (() => {
   const CHUNK = 16;
 
   let gl = null, canvas = null, prog = null, progHalo = null, texAtlas = null, texLuz = null, texHalo = null;
+  let progBrillo = null, progDesenfoque = null, progFinal = null, vaoVacio = null, fb = null;
   let W = 1, H = 1, dist = 22;
   const cam = { x: 0, z: 0, vp: new Float32Array(16), inv: new Float32Array(16) };
   const chunks = new Map();
@@ -76,20 +77,30 @@ const GL = (() => {
     vLuzUv = (aLuz - uLuzRect.xy) * uLuzRect.zw;
   }`;
   // aExtra.x: cuánto ignora la luz (0 = toda la luz, 1 = brilla solo); aExtra.y: destello blanco.
+  // La luz se lee en el centro de cada píxel del arte y se reparte en escalones con trama ordenada 4×4
+  // alineada a los píxeles del dibujo: así se ve como en Core Keeper (degradados tramados, no lisos).
   const FS = `#version 300 es
-  precision mediump float;
-  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform float uCorte; uniform float uAditivo;
+  precision highp float;
+  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam;
   in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra;
   out vec4 color;
+  const float BAYER[16] = float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
   void main() {
     vec4 t = texture(uAtlas, vUv);
     if (t.a < uCorte) discard;
     vec3 base = mix(t.rgb * vTinte.rgb, vec3(1.0), vExtra.y);
-    vec3 l = texture(uLuz, vLuzUv).rgb;
+    vec2 texel = floor(vUv * uAtlasTam);
+    vec2 luzUv = vLuzUv;
+    mat2 ju = mat2(dFdx(vUv), dFdy(vUv)), jl = mat2(dFdx(vLuzUv), dFdy(vLuzUv));
+    float det = determinant(ju);
+    if (abs(det) > 1e-14) luzUv += jl * inverse(ju) * ((texel + 0.5) / uAtlasTam - vUv);
+    vec3 l = texture(uLuz, luzUv).rgb;
     l = l * l * 2.4;
-    vec3 c = base * mix(l, vec3(1.0), vExtra.x);
-    c = c / (1.0 + max(c - 1.0, 0.0) * 0.5);
-    color = vec4(c * mix(1.0, vTinte.a, uAditivo), t.a * vTinte.a);
+    vec2 m = mod(texel, 4.0);
+    float b = (BAYER[int(m.y) * 4 + int(m.x)] + 0.5) / 16.0;
+    vec3 lq = floor(l * 7.0 + b) / 7.0;
+    vec3 c = base * mix(lq, vec3(1.0), vExtra.x);
+    color = vec4(c * mix(1.0, vTinte.a, uAditivo) * 0.5, t.a * vTinte.a); // la escena guarda la mitad: hasta 2 de luz
   }`;
   const VSH = `#version 300 es
   in vec3 aPos; in vec2 aUv; in vec4 aTinte;
@@ -98,7 +109,42 @@ const GL = (() => {
   const FSH = `#version 300 es
   precision mediump float;
   uniform sampler2D uHalo; in vec2 vUv; in vec4 vTinte; out vec4 color;
-  void main() { float a = texture(uHalo, vUv).r; color = vec4(vTinte.rgb * a * vTinte.a, 1.0); }`;
+  void main() { float a = texture(uHalo, vUv).r; color = vec4(vTinte.rgb * a * vTinte.a * 0.5, 1.0); }`;
+
+  const VSP = `#version 300 es
+  out vec2 vUv;
+  void main() { vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); vUv = p; gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+  const FS_BRILLO = `#version 300 es
+  precision mediump float;
+  uniform sampler2D uTex; in vec2 vUv; out vec4 o;
+  void main() { vec3 s = texture(uTex, vUv).rgb * 2.0; o = vec4(max(s - 1.0, 0.0), 1.0); }`;
+  const FS_DESENFOQUE = `#version 300 es
+  precision mediump float;
+  uniform sampler2D uTex; uniform vec2 uDir; in vec2 vUv; out vec4 o;
+  void main() {
+    vec3 s = texture(uTex, vUv).rgb * 0.227;
+    s += (texture(uTex, vUv + uDir * 1.385).rgb + texture(uTex, vUv - uDir * 1.385).rgb) * 0.316;
+    s += (texture(uTex, vUv + uDir * 3.231).rgb + texture(uTex, vUv - uDir * 3.231).rgb) * 0.070;
+    o = vec4(s, 1.0);
+  }`;
+  const FS_FINAL = `#version 300 es
+  precision highp float;
+  uniform sampler2D uEscena; uniform sampler2D uB1; uniform sampler2D uB2; uniform float uT; uniform float uBloom;
+  in vec2 vUv; out vec4 o;
+  void main() {
+    vec3 c = texture(uEscena, vUv).rgb * 2.0;
+    c += (texture(uB1, vUv).rgb * 0.8 + texture(uB2, vUv).rgb * 1.1) * uBloom;
+    vec3 e = max(c - 0.75, 0.0);
+    c = min(c, 0.75) + 0.25 * (1.0 - exp(-e * 4.0));            // los blancos se doblan suave
+    float l = dot(c, vec3(0.299, 0.587, 0.114));
+    c = mix(vec3(l), c, 1.1);                                   // un poco más de color
+    c *= mix(vec3(0.92, 0.95, 1.08), vec3(1.04, 1.0, 0.94), smoothstep(0.02, 0.5, l)); // sombras frías, luces cálidas
+    vec2 q = (vUv - 0.5) * vec2(1.0, 1.25);
+    c *= clamp(1.0 - dot(q, q) * 1.05, 0.0, 1.0);               // viñeta
+    float n = fract(sin(dot(gl_FragCoord.xy + fract(uT) * 91.0, vec2(12.9898, 78.233))) * 43758.5453);
+    c += (n - 0.5) * 0.02 * (0.3 + l);                          // grano fino
+    o = vec4(c, 1.0);
+  }`;
 
   function compilar(vs, fs) {
     const p = gl.createProgram();
@@ -179,7 +225,7 @@ const GL = (() => {
     gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
     if (!gl) return false;
     prog = compilar(VS, FS); progHalo = compilar(VSH, FSH);
-    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uCorte', 'uAditivo']) loc[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uCorte', 'uAditivo', 'uAtlasTam']) loc[n] = gl.getUniformLocation(prog, n);
     for (const n of ['uVP', 'uHalo']) locH[n] = gl.getUniformLocation(progHalo, n);
     indices = gl.createBuffer();
     asegurarIndices(8192);
@@ -200,6 +246,8 @@ const GL = (() => {
     gl.bindTexture(gl.TEXTURE_2D, texHalo);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, N, N, 0, gl.RGBA, gl.UNSIGNED_BYTE, hd);
     for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    progBrillo = compilar(VSP, FS_BRILLO); progDesenfoque = compilar(VSP, FS_DESENFOQUE); progFinal = compilar(VSP, FS_FINAL);
+    vaoVacio = gl.createVertexArray();
     dinamicos.spr = crearVao(prog); dinamicos.sombras = crearVao(prog); dinamicos.brillo = crearVao(prog); dinamicos.halos = crearVao(progHalo);
     return true;
   }
@@ -215,6 +263,7 @@ const GL = (() => {
     const corto = Math.min(W, H), escala = Math.max(1, Math.round(corto / (12 * 16)));
     const casillasAlto = H / (escala * 16);
     dist = casillasAlto / (2 * Math.tan(FOV / 2));
+    crearFbos();
     return escala;
   }
 
@@ -244,6 +293,13 @@ const GL = (() => {
 
   const ADORNOS3D = { 1: ['ad_piedras', 'ad_raices', 'ad_hierba', 'ad_terron'], 2: ['ad_piedras', 'ad_raices', 'ad_huesos', 'ad_terron'], 3: ['ad_piedras', 'ad_hongos', 'ad_guijarros'], 4: ['ad_hierba', 'ad_musgo'], 5: ['ad_huesos', 'ad_piedras', 'ad_raices', 'ad_garras'] };
   const AO = [0.42, 0.6, 0.8, 1.0];
+  const DECOR = {
+    1: ['dc_guijarro', 'dc_guijarro', 'dc_hierba_0', 'dc_hierba_1', 'dc_seta_0', 'dc_seta_1'],
+    2: ['dc_guijarro', 'dc_guijarro', 'dc_guijarro', 'dc_huesos', 'dc_seta_1'],
+    3: ['dc_guijarro', 'dc_guijarro', 'dc_estalagmita_0', 'dc_estalagmita_1', 'dc_cristalito'],
+    4: ['dc_guijarro', 'dc_hierba_0', 'dc_hierba_1'],
+    5: ['dc_huesos', 'dc_guijarro', 'dc_guijarro'],
+  };
   function ocupado(x, y) { return muroEn(x, y) ? 1 : 0; }
   function aoVertice(lado1, lado2, esquina) { return AO[lado1 && lado2 ? 0 : 3 - (lado1 + lado2 + esquina)]; }
 
@@ -256,12 +312,27 @@ const GL = (() => {
         const b = M.piso[i], h = hash2(tx, ty);
         const n = ocupado(tx, ty - 1), s = ocupado(tx, ty + 1), o = ocupado(tx - 1, ty), e = ocupado(tx + 1, ty);
         const ao = [aoVertice(o, n, ocupado(tx - 1, ty - 1)), aoVertice(e, n, ocupado(tx + 1, ty - 1)), aoVertice(e, s, ocupado(tx + 1, ty + 1)), aoVertice(o, s, ocupado(tx - 1, ty + 1))];
-        const sombraN = n ? 0.78 : 1; // las paredes de arriba dan sombra hacia la cámara
+        const agua = b === AGUA, orillaN = agua && M.piso[idx(tx, ty - 1)] !== AGUA;
+        const sombraN = n ? 0.78 : orillaN ? 0.55 : 1; // las paredes (y la orilla del agua) dan sombra hacia la cámara
         const tin = ao.map((a, k) => { const v = a * (k < 2 ? sombraN : 1); return [v, v, v, 1]; });
-        L.quad([[tx, 0, ty], [tx + 1, 0, ty], [tx + 1, 0, ty + 1], [tx, 0, ty + 1]], uvDe(`s_${SUELO_DE[b]}_${Math.floor(h * 4)}`), tin, 0, 0, 0, 0,
+        L.quad([[tx, 0, ty], [tx + 1, 0, ty], [tx + 1, 0, ty + 1], [tx, 0, ty + 1]], uvDe(agua ? `agua_${Math.floor(h * 4)}` : `s_${SUELO_DE[b]}_${Math.floor(h * 4)}`), tin, 0, 0, 0, 0,
           [[tx, ty], [tx + 1, ty], [tx + 1, ty + 1], [tx, ty + 1]]);
+        if (agua) continue;
+        // adornos de pie: guijarros, hierba, setas, estalagmitas… (más cerca de las paredes)
+        const h4 = hash2(tx, ty, 9), cerca = n + s + o + e;
+        if (h4 < 0.1 + cerca * 0.07 && !M.objetos.has(i) && !M.bloqueo[i]) {
+          const lista = DECOR[b], h5 = hash2(tx, ty, 11);
+          let nom = lista[Math.floor(h5 * lista.length)];
+          if (nom.startsWith('dc_guijarro')) nom = `dc_guijarro_${b}_${Math.floor(hash2(tx, ty, 13) * 3)}`;
+          const r = SPR[nom];
+          if (r) {
+            const w = r.w / 16, hh = (r.h / 16) * KY, dx = 0.2 + h5 * 0.6, dz = 0.35 + hash2(tx, ty, 12) * 0.55;
+            const x0 = tx + dx - w / 2, z0 = ty + dz;
+            L.quad([[x0, hh, z0], [x0 + w, hh, z0], [x0 + w, 0, z0], [x0, 0, z0]], uvDe(nom, h5 > 0.5), [1, 1, 1, 1], tx + dx, z0);
+          }
+        }
         const h2 = hash2(tx, ty, 3);
-        if (h2 < 0.16 && !M.objetos.has(i)) {
+        if (h2 < 0.08 && !M.objetos.has(i)) {
           const ad = ADORNOS3D[b], nom = ad[Math.floor(h2 * 1000) % ad.length], r = SPR[nom];
           if (r) {
             const ax = tx + (2 + Math.floor(h * 10)) / 16, az = ty + (2 + (Math.floor(h2 * 997) % 10)) / 16, w = r.w / 16, d = r.h / 16;
@@ -342,9 +413,60 @@ const GL = (() => {
     L.quad([[x - r, y + uy, z + uz], [x + r, y + uy, z + uz], [x + r, y - uy, z - uz], [x - r, y - uy, z - uz]], [0, 0, 1, 1], [color[0], color[1], color[2], fuerza], 0, 0);
   }
 
+  // ---------------------------------------------------------------- posproceso
+
+  function fbo(w, h, profundidad, filtro) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, filtro], [gl.TEXTURE_MAG_FILTER, filtro], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    const f = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    let rb = null;
+    if (profundidad) {
+      rb = gl.createRenderbuffer();
+      gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { f, tex, rb, w, h };
+  }
+  function crearFbos() {
+    if (fb) for (const o of Object.values(fb)) { gl.deleteFramebuffer(o.f); gl.deleteTexture(o.tex); if (o.rb) gl.deleteRenderbuffer(o.rb); }
+    const w2 = Math.max(1, W >> 2), h2 = Math.max(1, H >> 2), w3 = Math.max(1, W >> 3), h3 = Math.max(1, H >> 3);
+    fb = {
+      escena: fbo(W, H, true, gl.NEAREST),
+      a: fbo(w2, h2, false, gl.LINEAR), b: fbo(w2, h2, false, gl.LINEAR),
+      c: fbo(w3, h3, false, gl.LINEAR), d: fbo(w3, h3, false, gl.LINEAR),
+    };
+  }
+  function pasada(p, destino, texs, unif = {}) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, destino ? destino.f : null);
+    gl.viewport(0, 0, destino ? destino.w : W, destino ? destino.h : H);
+    gl.useProgram(p);
+    texs.forEach(([nombre, t], k) => { gl.activeTexture(gl.TEXTURE0 + k); gl.bindTexture(gl.TEXTURE_2D, t); gl.uniform1i(gl.getUniformLocation(p, nombre), k); });
+    for (const [n, v] of Object.entries(unif)) { const l = gl.getUniformLocation(p, n); if (Array.isArray(v)) gl.uniform2f(l, v[0], v[1]); else gl.uniform1f(l, v); }
+    gl.bindVertexArray(vaoVacio);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  function posproceso(t) {
+    gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+    pasada(progBrillo, fb.a, [['uTex', fb.escena.tex]]);
+    pasada(progDesenfoque, fb.b, [['uTex', fb.a.tex]], { uDir: [1 / fb.a.w, 0] });
+    pasada(progDesenfoque, fb.a, [['uTex', fb.b.tex]], { uDir: [0, 1 / fb.a.h] });
+    pasada(progDesenfoque, fb.c, [['uTex', fb.a.tex]], { uDir: [1.5 / fb.c.w, 0] });
+    pasada(progDesenfoque, fb.d, [['uTex', fb.c.tex]], { uDir: [0, 1.5 / fb.c.h] });
+    pasada(progFinal, null, [['uEscena', fb.escena.tex], ['uB1', fb.a.tex], ['uB2', fb.d.tex]], { uT: t, uBloom: 1.0 });
+    gl.activeTexture(gl.TEXTURE0);
+    gl.enable(gl.DEPTH_TEST);
+  }
+
   // ---------------------------------------------------------------- dibujar
 
-  function dibujar(luz) {
+  function dibujar(luz, t = 0) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb.escena.f);
     gl.viewport(0, 0, W, H);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -357,7 +479,7 @@ const GL = (() => {
     gl.uniformMatrix4fv(loc.uVP, false, cam.vp);
     gl.uniform4f(loc.uLuzRect, luz.x0, luz.y0, 1 / luz.w, 1 / luz.h);
     gl.uniform1i(loc.uAtlas, 0); gl.uniform1i(loc.uLuz, 1);
-    gl.uniform1f(loc.uCorte, 0.5); gl.uniform1f(loc.uAditivo, 0);
+    gl.uniform1f(loc.uCorte, 0.5); gl.uniform1f(loc.uAditivo, 0); gl.uniform2f(loc.uAtlasTam, ATLAS.width, ATLAS.height);
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.disable(gl.BLEND);
     gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK); gl.frontFace(gl.CW);
 
@@ -396,6 +518,7 @@ const GL = (() => {
     pintar('halos');
     gl.activeTexture(gl.TEXTURE0);
     gl.depthMask(true); gl.disable(gl.BLEND); gl.enable(gl.DEPTH_TEST);
+    posproceso(t);
     gl.bindVertexArray(null);
   }
 

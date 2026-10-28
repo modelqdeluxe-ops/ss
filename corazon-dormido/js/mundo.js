@@ -82,6 +82,17 @@ function generarMundo(sem) {
       mena[idx(x, y)] = MENA.COBRE;
     }
   }
+  // charcas en algunas cavernas, con una orilla de suelo alrededor
+  for (let k = 0; k < 40; k++) {
+    const a = r() * Math.PI * 2, d = 18 + r() * 95, cx = Math.round(CENTRO + Math.cos(a) * d), cy = Math.round(CENTRO + Math.sin(a) * d);
+    const rad = 1.8 + r() * 2.6;
+    for (let y = Math.floor(cy - rad); y <= cy + rad; y++) for (let x = Math.floor(cx - rad); x <= cx + rad; x++) {
+      if (!enMundo(x, y) || Math.hypot(x - cx, (y - cy) * 1.2) > rad + (n3(x / 2, y / 2) - 0.5) * 1.5) continue;
+      let orilla = true;
+      for (let dy = -1; dy <= 1 && orilla; dy++) for (let dx = -1; dx <= 1; dx++) if (muro[idx(x + dx, y + dy)]) { orilla = false; break; }
+      if (orilla) piso[idx(x, y)] = AGUA;
+    }
+  }
   // borde de roca madre
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const d = Math.hypot(x - CENTRO, y - CENTRO) + (n2(x / 9, y / 9) - 0.5) * 6;
@@ -124,7 +135,7 @@ function generarMundo(sem) {
   const junto = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => muro[idx(x + dx, y + dy)]);
   for (let y = 3; y < N - 3; y++) for (let x = 3; x < N - 3; x++) {
     const i = idx(x, y);
-    if (muro[i] || M.objetos.has(i) || piso[i] === BIOMA.RUINA || piso[i] === 5) continue;
+    if (muro[i] || M.objetos.has(i) || piso[i] === BIOMA.RUINA || piso[i] === 5 || piso[i] === AGUA) continue;
     if (Math.hypot(x - CENTRO, y - CENTRO) < 11) continue;
     const b = piso[i], v = r(), pegado = junto(x, y);
     if ((b === BIOMA.TIERRA || b === BIOMA.ARCILLA) && pegado && v < 0.045) ponerObjeto(x, y, 'raiz');
@@ -136,7 +147,7 @@ function generarMundo(sem) {
   let puestas = 0;
   for (let k = 0; k < 4000 && puestas < 8; k++) {
     const a = r() * Math.PI * 2, d = 10 + r() * 9, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d), i = idx(x, y);
-    if (!muro[i] && !M.objetos.has(i) && junto(x, y) && piso[i] !== BIOMA.RUINA) { ponerObjeto(x, y, 'raiz'); puestas++; }
+    if (!muro[i] && !M.objetos.has(i) && junto(x, y) && piso[i] !== BIOMA.RUINA && piso[i] !== AGUA) { ponerObjeto(x, y, 'raiz'); puestas++; }
   }
   M.mapa = null;
   return M;
@@ -149,7 +160,7 @@ function objetoEn(x, y) { return enMundo(x, y) ? M.objetos.get(idx(x, y)) : unde
 function solido(x, y) {
   if (!enMundo(x, y)) return true;
   const i = idx(x, y);
-  if (M.muro[i] || M.bloqueo[i]) return true;
+  if (M.muro[i] || M.bloqueo[i] || M.piso[i] === AGUA) return true;
   const o = M.objetos.get(i);
   return !!(o && OBJ[o.tipo].bloquea);
 }
