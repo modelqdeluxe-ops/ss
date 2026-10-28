@@ -97,7 +97,7 @@ const NOMBRE_ESTACION = { mesa: 'Mesa de trabajo', horno: 'Horno', yunque: 'Yunq
 // Objetos puestos en el mundo. bloquea: no se puede pasar. luz: [radio en casillas, r, g, b].
 // vida: golpes que aguanta; suelta: lo que da al romperse.
 const OBJ = {
-  antorcha: { arte: 'antorcha', anim: 3, brillo: true, luz: [7, 1.0, 0.72, 0.42], parpadeo: true, vida: 1, suelta: [['antorcha', 1, 1]], mapa: '#ffd060' },
+  antorcha: { arte: 'antorcha', anim: 3, brillo: true, luz: [7, 1.0, 0.78, 0.52], parpadeo: true, vida: 1, suelta: [['antorcha', 1, 1]], mapa: '#ffd060' },
   mesa: { arte: 'mesa', bloquea: true, vida: 3, suelta: [['mesa', 1, 1]], estacion: 'mesa', mapa: '#c28a52' },
   horno: { arte: 'horno', anim: 2, brillo: true, bloquea: true, luz: [4, 1.0, 0.55, 0.3], parpadeo: true, vida: 3, suelta: [['horno', 1, 1]], estacion: 'horno', mapa: '#ff9a3c' },
   yunque: { arte: 'yunque', bloquea: true, vida: 3, suelta: [['yunque', 1, 1]], estacion: 'yunque', mapa: '#9aa6b8' },

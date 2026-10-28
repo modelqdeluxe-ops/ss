@@ -35,6 +35,7 @@ function generarMundo(sem) {
   const N = N_MUNDO, NN = N * N;
   const n1 = crearRuido(sem), n2 = crearRuido(sem + 11), n3 = crearRuido(sem + 23), n4 = crearRuido(sem + 37);
   const r = azar(sem + 99);
+  GL.olvidarTodo();
   M = {
     sem, muro: new Uint8Array(NN), mena: new Uint8Array(NN), piso: new Uint8Array(NN), visto: new Uint8Array(NN),
     bloqueo: new Uint8Array(NN), objetos: new Map(), luces: new Set(), danos: new Map(), arena: null, pedestales: [],
@@ -156,14 +157,14 @@ function ponerObjeto(x, y, tipo, extra = 0) {
   const i = idx(x, y), o = { tipo, x, y, extra, vida: OBJ[tipo].vida };
   M.objetos.set(i, o);
   if (OBJ[tipo].luz || tipo === 'corazon' || tipo === 'pedestal') M.luces.add(i);
-  marcarMapa(i);
+  marcarMapa(i); GL.tocar(x, y);
   return o;
 }
-function quitarObjeto(x, y) { const i = idx(x, y); M.objetos.delete(i); M.luces.delete(i); marcarMapa(i); }
+function quitarObjeto(x, y) { const i = idx(x, y); M.objetos.delete(i); M.luces.delete(i); marcarMapa(i); GL.tocar(x, y); }
 function romperMuro(x, y) {
   const i = idx(x, y);
   M.muro[i] = 0; M.mena[i] = 0; M.danos.delete(i);
-  marcarMapa(i);
+  marcarMapa(i); GL.tocar(x, y);
 }
 // Daño acumulado en una pared (se cura sola si la dejas un rato).
 function danoMuro(x, y) { const d = M.danos.get(idx(x, y)); return d ? d.v : 0; }
@@ -171,7 +172,7 @@ function danoMuro(x, y) { const d = M.danos.get(idx(x, y)); return d ? d.v : 0; 
 // ---------------------------------------------------------------- luz
 
 const MARGEN_LUZ = 10;
-const LUZ = { X0: 0, Y0: 0, W: 0, H: 0, r: null, g: null, b: null, marca: null, sello: 0, cola: null, cv: null, cx: null, img: null };
+const LUZ = { X0: 0, Y0: 0, W: 0, H: 0, r: null, g: null, b: null, marca: null, sello: 0, cola: null, datos: null };
 
 // fuentes: [{x, y (px), r (casillas), c: [r,g,b], k}]. Devuelve la luz de la vista (tx0..tx0+w) en un canvas de 1 px por casilla.
 function calcularLuz(tx0, ty0, w, h, fuentes, ambiente) {
@@ -204,11 +205,10 @@ function calcularLuz(tx0, ty0, w, h, fuentes, ambiente) {
       if (ly < H - 1 && marca[li + W] !== sello) { marca[li + W] = sello; cola[fin++] = li + W; }
     }
   }
-  // imagen de la vista (con 1 casilla de borde para que el suavizado no corte)
+  // datos de la vista (con 1 casilla de borde para que el suavizado no corte), para la textura de luz
   const vw = w + 2, vh = h + 2;
-  if (!LUZ.cv) { LUZ.cv = document.createElement('canvas'); LUZ.cx = LUZ.cv.getContext('2d'); }
-  if (LUZ.cv.width !== vw || LUZ.cv.height !== vh) { LUZ.cv.width = vw; LUZ.cv.height = vh; LUZ.img = LUZ.cx.createImageData(vw, vh); }
-  const d = LUZ.img.data, [ar, ag, ab] = ambiente;
+  if (!LUZ.datos || LUZ.datos.length < vw * vh * 4) LUZ.datos = new Uint8Array(vw * vh * 4);
+  const d = LUZ.datos, [ar, ag, ab] = ambiente, k = 255 / Math.sqrt(2.4);
   for (let y = 0; y < vh; y++) for (let x = 0; x < vw; x++) {
     const wx = tx0 - 1 + x, wy = ty0 - 1 + y, li = (wy - Y0) * W + (wx - X0), o = (y * vw + x) * 4;
     let r = R[li], g = G[li], b = B[li];
@@ -217,10 +217,9 @@ function calcularLuz(tx0, ty0, w, h, fuentes, ambiente) {
       if (Math.max(r, g, b) > 0.16 && !M.visto[i]) { M.visto[i] = 1; marcarMapa(i); }
       if (M.visto[i]) { r += ar; g += ag; b += ab; }
     }
-    d[o] = Math.min(255, Math.sqrt(r) * 255); d[o + 1] = Math.min(255, Math.sqrt(g) * 255); d[o + 2] = Math.min(255, Math.sqrt(b) * 255); d[o + 3] = 255;
+    d[o] = Math.min(255, Math.sqrt(r) * k); d[o + 1] = Math.min(255, Math.sqrt(g) * k); d[o + 2] = Math.min(255, Math.sqrt(b) * k); d[o + 3] = 255;
   }
-  LUZ.cx.putImageData(LUZ.img, 0, 0);
-  return LUZ.cv;
+  return { datos: d.subarray(0, vw * vh * 4), x0: tx0 - 1, y0: ty0 - 1, w: vw, h: vh };
 }
 // Luz en un punto del mundo (para no hacer aparecer criaturas donde hay luz).
 function luzEn(tx, ty) {
@@ -287,4 +286,5 @@ function cargarMundo(g) {
   M.objetos.clear(); M.luces.clear();
   for (const [x, y, tipo, extra] of g.objetos) ponerObjeto(x, y, tipo, extra);
   M.mapa = null;
+  GL.olvidarTodo();
 }

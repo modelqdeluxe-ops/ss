@@ -7,7 +7,7 @@ const J = {
   entrada: { mx: 0, my: 0 }, cam: { x: 0, y: 0 }, objetivo: 0, aparecer: 0, latidos: 0, guardadoT: 0,
   cuenta(id) { let n = 0; for (const s of this.inv) if (s && s.id === id) n += s.n; return n; },
 };
-const N_INV = 32, N_BARRA = 8;
+const N_INV = 40, N_BARRA = 10;
 
 // ---------------------------------------------------------------- inventario
 
@@ -57,7 +57,8 @@ function particulas(x, y, n, colores, o = {}) {
     });
   }
 }
-function numero(x, y, txt, c = '#ffffff') { J.numeros.push({ x, y, txt: String(txt), c, vida: 0.8 }); }
+// Número que sube desde (x, pie) a «alto» píxeles del suelo.
+function numero(x, y, txt, c = '#ffffff', alto = 16) { J.numeros.push({ x, y, alto, txt: String(txt), c, vida: 0.8 }); }
 function soltar(x, y, id, n) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2;
@@ -140,7 +141,7 @@ function danarJugador(d, desde, sinEmpuje = false) {
   if (J.estado !== 'juego' || (p.invuln > 0 && !sinEmpuje)) return;
   const real = sinEmpuje ? d : Math.max(1, d - defensa());
   p.vida -= real; p.flash = 0.12;
-  numero(p.x, p.y - 22, real, '#ff6b6b');
+  numero(p.x, p.y, real, '#ff6b6b', 24);
   if (!sinEmpuje) {
     p.invuln = 0.7; J.temblor = Math.max(J.temblor, 0.25);
     if (desde) { const a = Math.atan2(p.y - desde.y, p.x - desde.x); p.kbx = Math.cos(a) * 160; p.kby = Math.sin(a) * 160; }
@@ -213,7 +214,7 @@ function usar(apunte) {
     if (p.vida >= p.vidaMax && p.hambre >= 100) { aviso('No tienes hambre'); p.golpeT = 0.4; return; }
     p.vida = Math.min(p.vidaMax, p.vida + it.cura); p.hambre = Math.min(100, p.hambre + it.hambre);
     quitar(s.id, 1); p.golpeT = 0.45;
-    numero(p.x, p.y - 22, '+' + it.cura, '#7dff9a'); Sonido.sfx.comer();
+    numero(p.x, p.y, '+' + it.cura, '#7dff9a', 24); Sonido.sfx.comer();
     particulas(p.x, p.y - 12, 6, ['#d6f6ff', '#58c8ff', '#f2c6b4'], { vel: 30 });
     return;
   }
@@ -313,7 +314,7 @@ function herir(e, dano, kx, ky) {
   if (Math.random() < 0.1) real = Math.round(real * 1.6); // golpe crítico
   e.vida -= real; e.flash = 0.1;
   if (!e.jefe) { e.kbx = kx * 115; e.kby = ky * 115; } else J.temblor = Math.max(J.temblor, 0.08);
-  numero(e.x, e.y - (e.alto || 8) - 8, real, real > dano ? '#ffd166' : '#ffffff');
+  numero(e.x, e.y, real, real > dano ? '#ffd166' : '#ffffff', e.jefe ? 44 : 16);
   particulas(e.x, e.y - 4, 5, e.colores || ['#ffffff'], { vel: 60, vida: 0.35 });
   Sonido.sfx.golpe();
   if (e.vida <= 0) {
@@ -579,7 +580,7 @@ function actualizarMundoVivo(dt) {
   }
   J.particulas = J.particulas.filter((q) => q.vida > 0);
   if (J.particulas.length > 400) J.particulas.splice(0, J.particulas.length - 400);
-  for (const n of J.numeros) { n.vida -= dt; n.y -= 22 * dt; }
+  for (const n of J.numeros) { n.vida -= dt; n.alto += 18 * dt; }
   J.numeros = J.numeros.filter((n) => n.vida > 0);
   for (const a of J.avisos) a.t -= dt;
   J.avisos = J.avisos.filter((a) => a.t > 0);

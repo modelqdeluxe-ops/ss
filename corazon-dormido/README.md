@@ -1,7 +1,8 @@
 # Corazón Dormido
 
 Juego de exploración y minería bajo tierra para el móvil, al estilo de Core Keeper, con arte, nombres y jefes
-propios. Vista desde arriba en pixel art. Cavas paredes, sacas mineral, creas herramientas, enciendes la
+propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art vistos con una cámara inclinada,
+luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
 Estado: **demo 0.1 jugable** (un jefe, tres zonas y toda la cadena de crear). Funciona en el navegador del móvil
@@ -47,9 +48,10 @@ cerca).
 ## Archivos
 
 ```
-index.html         la página para jugar (ábrela en el navegador)
+index.html         la página para jugar (ábrela en el navegador; necesita WebGL2)
 artefacto.html     la misma página sin <html>/<head>, para publicarla como Artifact en claude.ai
-js/arte.js         TODO el arte, dibujado con código (cuadrículas de letras, espejo, contorno, recolor)
+js/arte.js         TODO el arte, dibujado con código (figuras con volumen, cuadrículas, espejo, contorno de color)
+js/gl.js           motor 3D con WebGL2: bloques, cámara, luz, sprites de pie, sombras, brillos y halos
 js/fuente.js       letra de 3×5 píxeles con tildes y Ñ
 js/sonido.js       sonidos con WebAudio
 js/datos.js        números del juego: paredes, objetos, recetas, criaturas, jefe, objetivos
@@ -60,16 +62,25 @@ js/principal.js    bucle, cámara, dibujo por filas y arranque
 herramientas/probar.cjs   prueba automática en un móvil simulado (capturas + errores + guardar/cargar)
 ```
 
-Es JavaScript sin dependencias ni compilación. El dibujo se hace en un lienzo pequeño (unos 220 píxeles por el
-lado corto) que se escala por un número entero, así que los píxeles siempre quedan nítidos.
+Es JavaScript sin dependencias ni compilación. El mundo se dibuja con WebGL2 (`js/gl.js`) y la interfaz en un
+lienzo 2D pequeño encima (unos 220 píxeles por el lado corto), escalado sin suavizar.
 
-### Cómo se dibuja
+### Cómo se dibuja (medido sobre capturas de Core Keeper)
 
-- Las paredes se dibujan levantadas medio bloque, con su cara de delante, y se pintan fila a fila junto con las
-  criaturas. Así una pared tapa al personaje que está detrás.
-- La cara de arriba de cada pared elige entre 16 bordes según qué vecinas están abiertas.
-- La luz se calcula por casilla y se pone encima en modo «multiplicar», suavizada.
-- Lo que brilla solo (llamas, cristales, el Corazón) se vuelve a dibujar encima de la oscuridad.
+- **Medidas sacadas de las capturas oficiales de Steam (1920×1080):** cada píxel del arte ocupa 4 de pantalla,
+  cada bloque mide 16×16 píxeles de arte, se ven unas 30×17 casillas y los personajes miden unos 16×22.
+  Aquí el lado corto de la pantalla muestra unas 12 casillas, para que en el móvil no se vea todo diminuto.
+- **Paredes**: son bloques 3D con tapa oscura arriba, cara delante y caras a los lados.
+  - La cámara mira hacia abajo a 50° con poca perspectiva (13° de campo).
+  - El suelo se estira en profundidad para que cada casilla se vea cuadrada.
+  - La pared mide lo justo para que su cara se vea de 12 píxeles con píxeles cuadrados.
+  - El mundo va en trozos de 16×16 casillas: al picar se rehace solo el trozo tocado.
+- **Luz**: `mundo.js` calcula la luz de cada casilla de la vista, propagándola por las cuevas (no atraviesa paredes). El sombreador la lee suavizada. Además:
+  - las tapas de las paredes van más oscuras;
+  - las caras toman la luz de la casilla que tienen delante;
+  - el suelo se oscurece junto a las paredes (sombra de contacto).
+- **Sprites de pie**: personajes y objetos son planos verticales, estirados para que se vean con píxeles cuadrados. Así una pared tapa de verdad al que pasa por detrás.
+- **Brillos**: llamas, cristales, hongos y el Corazón se vuelven a sumar encima con su halo. Hay chispas que suben de las antorchas y motas en el aire.
 
 ## El arte
 

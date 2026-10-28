@@ -5,9 +5,10 @@
 const UI = {
   botones: [], joy: null, accion: null, teclas: new Set(), selInv: -1, scroll: 0, arrastre: null, confirmarNueva: 0,
 };
+// Madera oscura con canto claro, como los marcos de Core Keeper.
 const COL = {
-  fondo: '#1a1422', borde: '#3d2f4f', luz: '#5a4a76', negro: '#0b0810', texto: '#f2ecf8', suave: '#9a8fb0',
-  oro: '#f2c14e', rojo: '#e43b44', verde: '#7dff9a', hambre: '#e8a050', ranura: '#120e19',
+  fondo: '#2a1b14', borde: '#8a5a36', luz: '#c89058', negro: '#100806', texto: '#f6ecda', suave: '#bba48a',
+  oro: '#f2c14e', rojo: '#d8343c', verde: '#8ef08a', hambre: '#e8903a', ranura: '#1c120d', boton: '#4a2f20', botonOff: '#2a1b14',
 };
 
 function boton(x, y, w, h, fn, o = {}) { UI.botones.push({ x, y, w, h, fn, ...o }); }
@@ -20,8 +21,8 @@ function posLogica(e) {
   return { x: ((e.clientX - r.left) * LW) / r.width, y: ((e.clientY - r.top) * LH) / r.height };
 }
 function puntoMundoTocado(x, y) {
-  const p = J.jug, wx = J.cam.x + x, wy = J.cam.y + y;
-  return Math.hypot(wx - p.x, wy - (p.y - 6)) < 44 ? { x: wx, y: wy } : null;
+  const p = J.jug, w = GL.aMundo(x / LW, y / LH, 0.3), wx = w.x * T, wy = w.z * T;
+  return Math.hypot(wx - p.x, wy - p.y) < 48 ? { x: wx, y: wy } : null;
 }
 function alTocar(e) {
   e.preventDefault();
@@ -37,7 +38,7 @@ function alTocar(e) {
   if (J.estado !== 'juego' || J.panel) return;
   if (e.pointerType === 'mouse' || x > LW * 0.5) {
     UI.accion = { id: e.pointerId, apunte: puntoMundoTocado(x, y) };
-    if (e.pointerType === 'mouse' && !UI.accion.apunte) { const p = J.jug; UI.accion.apunte = { x: J.cam.x + x, y: J.cam.y + y }; mirarA(p, UI.accion.apunte.x, UI.accion.apunte.y); UI.accion.apunte = null; }
+    if (e.pointerType === 'mouse' && !UI.accion.apunte) { const w = GL.aMundo(x / LW, y / LH, 0.3); mirarA(J.jug, w.x * T, w.z * T); }
   } else UI.joy = { id: e.pointerId, ox: x, oy: y, x, y };
 }
 function alMover(e) {
@@ -63,7 +64,7 @@ function alTecla(e) {
   Sonido.iniciar();
   if (e.repeat) return;
   UI.teclas.add(e.code);
-  if (e.code.startsWith('Digit')) { const n = +e.code.slice(5); if (n >= 1 && n <= N_BARRA) J.sel = n - 1; }
+  if (e.code.startsWith('Digit')) { const n = +e.code.slice(5) || 10; if (n >= 1 && n <= N_BARRA) J.sel = n - 1; }
   const abrir = (p) => { if (J.estado === 'juego') { J.panel = J.panel === p ? null : p; UI.selInv = -1; UI.scroll = 0; } };
   if (e.code === 'KeyE' || e.code === 'KeyI' || e.code === 'Tab') { abrir('mochila'); e.preventDefault(); }
   if (e.code === 'KeyC') abrir('crear');
@@ -90,28 +91,36 @@ function leerEntrada() {
 function marco(ctx, x, y, w, h, fondo = COL.fondo) {
   ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y, w + 2, h); ctx.fillRect(x, y - 1, w, h + 2);
   ctx.fillStyle = COL.borde; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = COL.luz; ctx.fillRect(x + 1, y, w - 2, 1); ctx.fillRect(x, y + 1, 1, h - 2);
+  ctx.fillStyle = '#5a3822'; ctx.fillRect(x + 1, y + h - 1, w - 2, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 2);
   ctx.fillStyle = fondo; ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
-  ctx.fillStyle = COL.luz; ctx.fillRect(x + 1, y, w - 2, 1);
 }
 function botonTexto(ctx, x, y, w, h, txt, fn, o = {}) {
   const activo = o.activo !== false;
-  marco(ctx, x, y, w, h, o.color || (activo ? '#2c2240' : '#1a1422'));
+  marco(ctx, x, y, w, h, o.color || (activo ? COL.boton : COL.botonOff));
   texto(ctx, txt, x + w / 2, y + Math.floor((h - 5) / 2), activo ? (o.colTexto || COL.texto) : COL.suave, { alin: 'c', sombra: COL.negro });
   if (fn) boton(x, y, w, h, fn, o);
 }
 function ranura(ctx, x, y, s, marcada, o = {}) {
-  ctx.fillStyle = marcada ? COL.oro : COL.borde; ctx.fillRect(x, y, 18, 18);
+  ctx.fillStyle = marcada ? '#fff4d8' : COL.borde; ctx.fillRect(x, y, 18, 18);
+  ctx.fillStyle = marcada ? '#c8b088' : '#5a3822'; ctx.fillRect(x + 1, y + 17, 17, 1); ctx.fillRect(x + 17, y + 1, 1, 16);
   ctx.fillStyle = o.fondo || COL.ranura; ctx.fillRect(x + 1, y + 1, 16, 16);
+  ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x + 1, y + 1, 16, 1);
   if (s) {
     sprCentro(ctx, ITEMS[s.id].icono, x + 9, y + 9);
     if (s.n > 1) texto(ctx, s.n, x + 17, y + 12, COL.texto, { alin: 'd', borde: COL.negro });
   }
 }
-function barra(ctx, x, y, w, h, v, col, fondo = '#2a1a24') {
-  ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+// Barra con marco de madera y cortes cada cuarto, como en Core Keeper.
+function barra(ctx, x, y, w, h, v, col, fondo = '#3a1a14') {
+  ctx.fillStyle = COL.negro; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
+  ctx.fillStyle = COL.borde; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
   ctx.fillStyle = fondo; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = col; ctx.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, v))), h);
-  ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, v))), 1);
+  const lleno = Math.round(w * Math.max(0, Math.min(1, v)));
+  ctx.fillStyle = col; ctx.fillRect(x, y, lleno, h);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(x, y, lleno, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, y + h - 1, lleno, 1);
+  ctx.fillStyle = 'rgba(16,8,6,0.75)'; for (let k = 1; k < 4; k++) ctx.fillRect(x + Math.round((w * k) / 4), y, 1, h);
 }
 
 // ---------------------------------------------------------------- HUD
@@ -120,23 +129,23 @@ function dibujarHUD(ctx) {
   const p = J.jug;
   // vida, hambre, defensa
   spr(ctx, 'ui_vida', 3, 3);
-  barra(ctx, 14, 5, 58, 5, p.vida / p.vidaMax, p.flash > 0 ? '#ffffff' : COL.rojo);
-  texto(ctx, Math.ceil(p.vida), 76, 5, COL.texto, { borde: COL.negro });
-  spr(ctx, 'ui_hambre', 4, 13);
-  barra(ctx, 14, 15, 58, 4, p.hambre / 100, p.hambre < 20 && Math.floor(J.t * 3) % 2 ? '#ff6b6b' : COL.hambre);
+  barra(ctx, 15, 5, 64, 5, p.vida / p.vidaMax, p.flash > 0 ? '#ffffff' : COL.rojo);
+  texto(ctx, Math.ceil(p.vida), 84, 5, COL.texto, { borde: COL.negro });
+  spr(ctx, 'ui_hambre', 4, 14);
+  barra(ctx, 15, 16, 64, 3, p.hambre / 100, p.hambre < 20 && Math.floor(J.t * 3) % 2 ? '#ff6b6b' : COL.hambre, '#3a2210');
   if (defensa()) { spr(ctx, 'ui_escudo', 3, 23); texto(ctx, defensa(), 14, 25, COL.texto, { borde: COL.negro }); }
 
   // botones de arriba a la derecha
   const iconos = [['ui_pausa', 'pausa'], ['ui_mapa', 'mapa'], ['ui_crear', 'crear'], ['ui_mochila', 'mochila']];
   iconos.forEach(([ic, panel], k) => {
     const x = LW - 21 - k * 20, y = 3;
-    marco(ctx, x, y, 18, 18, '#241b33');
+    marco(ctx, x, y, 18, 18, COL.boton);
     sprCentro(ctx, ic, x + 9, y + 9);
     boton(x - 1, y - 1, 20, 20, () => { J.panel = panel; UI.selInv = -1; UI.scroll = 0; });
   });
   // minimapa
   const mm = 50, mx = LW - mm - 4, my = 26;
-  marco(ctx, mx - 1, my - 1, mm + 2, mm + 2, '#08060c');
+  marco(ctx, mx - 2, my - 2, mm + 4, mm + 4, '#08060c');
   const mapa = lienzoMapa(), ptx = p.x / T, pty = p.y / T;
   ctx.drawImage(mapa, Math.round(ptx - mm / 2), Math.round(pty - mm / 2), mm, mm, mx, my, mm, mm);
   if (Math.floor(J.t * 4) % 2) { ctx.fillStyle = '#fff6c8'; ctx.fillRect(mx + mm / 2 - 1, my + mm / 2 - 1, 2, 2); }
@@ -181,7 +190,8 @@ function dibujarHUD(ctx) {
   const ax = LW - 26, ay = LH - 50, pulsado = !!UI.accion;
   ctx.globalAlpha = pulsado ? 0.9 : 0.6;
   ctx.fillStyle = COL.negro; circulo(ctx, ax, ay, 17);
-  ctx.fillStyle = pulsado ? '#4a3a66' : '#2c2240'; circulo(ctx, ax, ay, 16);
+  ctx.fillStyle = COL.borde; circulo(ctx, ax, ay, 16);
+  ctx.fillStyle = pulsado ? '#6a4630' : COL.boton; circulo(ctx, ax, ay, 15);
   ctx.globalAlpha = 1;
   const icono = iconoAccion();
   if (icono) sprCentro(ctx, icono, ax, ay);
@@ -234,14 +244,14 @@ function cruz(ctx, x, y) {
 
 function panelMochila(ctx) {
   fondoPanel(ctx);
-  const w = 8 * 19 - 1 + 12, h = 4 * 19 + 62, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  const w = N_BARRA * 19 - 1 + 12, h = 4 * 19 + 62, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => { UI.selInv = -1; }, { mudo: true });
   texto(ctx, 'MOCHILA', x + 6, y + 6, COL.oro, { sombra: COL.negro });
   cruz(ctx, x + w - 17, y + 3);
   // armadura
   const axr = x + w - 41;
   texto(ctx, 'ARMADURA', axr - 3, y + 8, COL.suave, { alin: 'd' });
-  ranura(ctx, axr, y + 3, J.armadura, false, { fondo: '#1c1530' });
+  ranura(ctx, axr, y + 3, J.armadura, false, { fondo: '#2e2018' });
   boton(axr, y + 3, 18, 18, () => {
     if (!J.armadura) return;
     const i = J.inv.findIndex((s, k) => !s && k < N_INV);
@@ -249,8 +259,8 @@ function panelMochila(ctx) {
   });
   const gx = x + 6, gy = y + 24;
   for (let i = 0; i < N_INV; i++) {
-    const cx = gx + (i % 8) * 19, cy = gy + Math.floor(i / 8) * 19 + (i >= N_BARRA ? 3 : 0);
-    ranura(ctx, cx, cy, J.inv[i], i === UI.selInv, { fondo: i < N_BARRA ? '#1c1530' : COL.ranura });
+    const cx = gx + (i % N_BARRA) * 19, cy = gy + Math.floor(i / N_BARRA) * 19 + (i >= N_BARRA ? 3 : 0);
+    ranura(ctx, cx, cy, J.inv[i], i === UI.selInv, { fondo: i < N_BARRA ? '#2e2018' : COL.ranura });
     boton(cx, cy, 18, 18, () => tocarRanura(i), { mudo: true });
   }
   // información de lo marcado
@@ -297,8 +307,8 @@ function panelCrear(ctx) {
   lista.forEach(({ r, ok, est: hayEst }, k) => {
     const fy = ly + k * fila - Math.round(UI.scroll);
     if (fy + fila < ly || fy > ly + lh) return;
-    ctx.fillStyle = ok ? '#2a2040' : '#1e1729'; ctx.fillRect(x + 3, fy, w - 6, fila - 2);
-    if (ok) { ctx.fillStyle = '#4a3a66'; ctx.fillRect(x + 3, fy, 2, fila - 2); }
+    ctx.fillStyle = ok ? '#3e2a1e' : '#24170f'; ctx.fillRect(x + 3, fy, w - 6, fila - 2);
+    if (ok) { ctx.fillStyle = COL.luz; ctx.fillRect(x + 3, fy, 2, fila - 2); }
     const it = ITEMS[r.item];
     ranura(ctx, x + 7, fy + 1, { id: r.item, n: r.n }, false);
     texto(ctx, it.nombre, x + 29, fy + 3, ok ? COL.texto : COL.suave);
