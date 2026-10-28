@@ -190,7 +190,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (28 oct 2026, TF Client 1.3.150) — lee esto primero
+### CHECKPOINT (28 oct 2026, TF Client 1.3.151) — lee esto primero
+
+**1.3.151** (el dueño: «es muy simple el evento de cumpleaños, y no pongas mirad, es Mira»). La fiesta de
+`/tf cumpleaños` dura 90 s (`TFBirthday.LENGTH`) en cuatro actos (`client/TFBirthdayClient`): cuenta atrás (cielo
+violeta con `ComputeFogColor`, redoble y 3-2-1 en títulos), «¡ahora!» (anillo de 12 cohetes y un corazón de luz),
+fiesta (letrero de 3 líneas que entra con rebote y brillos alrededor, el nombre escrito con estrellas que vuelan a su
+sitio con letras de 5x7 `GLYPHS`, farolillos y globos que suben, confeti, cohetes, «Cumpleaños feliz» dos veces con
+campana, arpa, bajo y percusión, y al cumpleañero una corona de puntos y notas que ven los demás) y traca final (dos
+corazones, fanfarria y «¡Felicidades, NOMBRE!» a todos). Las luces son `client/TFPartyParticle` (dibujos del atlas de
+Minecraft, sin registrar nada, luz completa: se ven con shaders). Chat: «¡Mira al cielo!». Ojo: el segundo estallido de
+los cohetes dobles va a `LATER` (añadirlo a `ROCKETS` mientras se recorre cerraba el juego); el tick va en try/catch.
+Prueba: `[prueba-jefes=cumple]`.
+
+### CHECKPOINT (28 oct 2026, TF Client 1.3.150)
 
 **1.3.150** (el dueño, cuatro cosas). Prueba en el juego: `[prueba-jefes=encantar,protes,cumple]`, todo «bien».
 - **Encantar las piezas de los sets** (`items/TFEnchanting`, mixins `EnchantTableMixin` sobre `ItemStack.isEnchantable`

@@ -310,7 +310,7 @@ public final class TFBirthdayClient {
     private static void heart(Vec3 c, float yaw, int rgb, float scale) {
         Vec3 center = skyPoint(c.add(0, 1.6, 0), yaw, 30F, 50);
         double y = Math.toRadians(yaw);
-        Vec3 right = new Vec3(Math.cos(y), 0, Math.sin(y));
+        Vec3 right = new Vec3(-Math.cos(y), 0, -Math.sin(y)); // la derecha de quien mira hacia «yaw»
         Vec3 up = new Vec3(0, 1, 0);
         for (int i = 0; i < 110; i++) {
             double t = i * Math.PI * 2 / 110;
@@ -338,7 +338,7 @@ public final class TFBirthdayClient {
         // por encima del letrero y aún dentro de la pantalla
         Vec3 center = skyPoint(c.add(0, 1.6, 0), yaw, 37F, 70);
         double y = Math.toRadians(yaw);
-        Vec3 right = new Vec3(Math.cos(y), 0, Math.sin(y));
+        Vec3 right = new Vec3(-Math.cos(y), 0, -Math.sin(y)); // la derecha de quien mira hacia «yaw»
         Vec3 up = new Vec3(0, 1, 0);
         double x0 = -cols * step / 2;
         int col = 0;
