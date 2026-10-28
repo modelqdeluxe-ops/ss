@@ -271,21 +271,21 @@ const OBJ = {
 // ---------------------------------------------------------------- criaturas
 // conducta: salta, repta, embiste, lancea, chaman, bruto, seton. region: dónde aparecen (y su peso).
 const CRIATURAS = {
-  babosa: { nombre: 'Babosa', vida: 26, dano: 9, vel: 34, radio: 5, conducta: 'salta', regiones: { 1: 5 }, botin: [['baba', 1, 2, 0.8], ['baya', 1, 1, 0.1]], xp: 4, colores: ['#86d64f', '#56a83b', '#effed8'] },
-  babosa_roja: { nombre: 'Babosa roja', vida: 60, dano: 15, vel: 40, radio: 6, conducta: 'salta', regiones: { 1: 1, 2: 2 }, botin: [['baba_roja', 1, 2, 0.7], ['baba', 1, 2, 0.5]], xp: 9, colores: ['#e8504a', '#a82a3a', '#ffd0c0'], divide: 'babosa' },
-  seton: { nombre: 'Setón', vida: 70, dano: 12, vel: 22, radio: 6, conducta: 'seton', regiones: { 1: 2 }, botin: [['carne_seton', 1, 1, 0.7], ['espora_hongo', 1, 2, 0.6]], xp: 8, colores: ['#c86a3a', '#e8c8a0', '#8a4a2a'] },
-  larva: { nombre: 'Larva', vida: 44, dano: 13, vel: 30, radio: 6, conducta: 'repta', regiones: { 2: 5 }, botin: [['carne_larva', 1, 1, 0.65], ['quitina', 1, 1, 0.4]], xp: 7, colores: ['#efe2bf', '#c9a878', '#a5513a'] },
-  larva_grande: { nombre: 'Larva grande', vida: 140, dano: 20, vel: 24, radio: 9, conducta: 'escupe', regiones: { 2: 1 }, botin: [['quitina', 2, 4, 0.9], ['carne_larva', 1, 2, 0.7]], xp: 18, colores: ['#efe2bf', '#c9a878', '#7ac83a'] },
+  babosa: { nombre: 'Baba carroñera', vida: 26, dano: 9, vel: 34, radio: 5, conducta: 'salta', regiones: { 1: 5 }, botin: [['baba', 1, 2, 0.8], ['baya', 1, 1, 0.1]], xp: 4, colores: ['#86d64f', '#56a83b', '#effed8'] },
+  babosa_roja: { nombre: 'Baba sangrante', vida: 60, dano: 15, vel: 40, radio: 6, conducta: 'salta', regiones: { 1: 1, 2: 2 }, botin: [['baba_roja', 1, 2, 0.7], ['baba', 1, 2, 0.5]], xp: 9, colores: ['#e8504a', '#a82a3a', '#ffd0c0'], divide: 'babosa' },
+  seton: { nombre: 'Portador', vida: 70, dano: 12, vel: 22, radio: 6, conducta: 'seton', regiones: { 1: 2 }, botin: [['carne_seton', 1, 1, 0.7], ['espora_hongo', 1, 2, 0.6]], xp: 8, colores: ['#c86a3a', '#e8c8a0', '#8a4a2a'] },
+  larva: { nombre: 'Gusano roedor', vida: 44, dano: 13, vel: 30, radio: 6, conducta: 'repta', regiones: { 2: 5 }, botin: [['carne_larva', 1, 1, 0.65], ['quitina', 1, 1, 0.4]], xp: 7, colores: ['#efe2bf', '#c9a878', '#a5513a'] },
+  larva_grande: { nombre: 'Gusano escupidor', vida: 140, dano: 20, vel: 24, radio: 9, conducta: 'escupe', regiones: { 2: 1 }, botin: [['quitina', 2, 4, 0.9], ['carne_larva', 1, 2, 0.7]], xp: 18, colores: ['#efe2bf', '#c9a878', '#7ac83a'] },
   gruto_lancero: { nombre: 'Gruto lancero', vida: 80, dano: 18, vel: 38, radio: 6, conducta: 'lancea', regiones: { 2: 2, 3: 3 }, botin: [['hueso', 1, 2, 0.5], ['flecha', 2, 5, 0.3], ['lingote_estano', 1, 1, 0.08]], xp: 14, colores: ['#6a8a5a', '#a8c088', '#3a4a2a'] },
-  gruto_chaman: { nombre: 'Gruto chamán', vida: 70, dano: 16, vel: 30, radio: 6, conducta: 'chaman', regiones: { 3: 2 }, botin: [['hueso', 1, 1, 0.5], ['cristal', 1, 1, 0.25], ['gema_antigua', 1, 1, 0.04]], xp: 18, colores: ['#7a5a9a', '#c0a0e8', '#3a2a4a'] },
-  gruto_bruto: { nombre: 'Gruto bruto', vida: 220, dano: 30, def: 4, vel: 26, radio: 9, conducta: 'bruto', regiones: { 3: 1 }, botin: [['hueso', 2, 3, 0.8], ['lingote_hierro', 1, 2, 0.3]], xp: 30, colores: ['#5a6a4a', '#8a9a6a', '#2a3a1a'] },
+  gruto_chaman: { nombre: 'Gruto vidente', vida: 70, dano: 16, vel: 30, radio: 6, conducta: 'chaman', regiones: { 3: 2 }, botin: [['hueso', 1, 1, 0.5], ['cristal', 1, 1, 0.25], ['gema_antigua', 1, 1, 0.04]], xp: 18, colores: ['#7a5a9a', '#c0a0e8', '#3a2a4a'] },
+  gruto_bruto: { nombre: 'Gruto mole', vida: 220, dano: 30, def: 4, vel: 26, radio: 9, conducta: 'bruto', regiones: { 3: 1 }, botin: [['hueso', 2, 3, 0.8], ['lingote_hierro', 1, 2, 0.3]], xp: 30, colores: ['#5a6a4a', '#8a9a6a', '#2a3a1a'] },
 };
 
 // Los tres guardianes del anillo interior
 const JEFES = {
-  topo: { nombre: 'TOPO REY', vida: 1100, dano: 18, radio: 12, region: REGION.RAICES, cristal: 'cristal_topo', botin: [['pico_topo', 1, 1], ['amuleto_topo', 1, 1, 0.5], ['lingote_cobre', 6, 10], ['semilla_bulbo', 2, 4]] },
-  reina: { nombre: 'REINA LARVA', vida: 1700, dano: 22, radio: 16, region: REGION.ARCILLA, cristal: 'cristal_reina', botin: [['garra_reina', 1, 1, 0.6], ['broche_larva', 1, 1, 0.5], ['quitina', 10, 16], ['lingote_estano', 6, 10]] },
-  ozmar: { nombre: 'OZMAR EL CORROMPIDO', vida: 2100, dano: 26, radio: 10, region: REGION.RUINAS, cristal: 'cristal_ozmar', botin: [['baculo_ozmar', 1, 1, 0.5], ['corona_ozmar', 1, 1, 0.35], ['gema_antigua', 2, 4], ['lingote_hierro', 8, 12]] },
+  topo: { nombre: 'MURDO', titulo: 'el Rey Ciego', frase: 'Cavé la carne de un dios durante mil años. Ahora solo oigo tu corazón.', vida: 1100, dano: 18, radio: 12, region: REGION.RAICES, cristal: 'cristal_topo', botin: [['pico_topo', 1, 1], ['amuleto_topo', 1, 1, 0.5], ['lingote_cobre', 6, 10], ['semilla_bulbo', 2, 4]] },
+  reina: { nombre: 'VHESSA', titulo: 'Madre de la Colmena', frase: 'Todo lo muerto es mío. Pronto tú también.', vida: 1700, dano: 22, radio: 16, region: REGION.ARCILLA, cristal: 'cristal_reina', botin: [['garra_reina', 1, 1, 0.6], ['broche_larva', 1, 1, 0.5], ['quitina', 10, 16], ['lingote_estano', 6, 10]] },
+  ozmar: { nombre: 'OZMAR', titulo: 'el Último Velador', frase: 'Lo hice para salvarlo. Lo hice para salvarlo. Lo hice…', vida: 2100, dano: 26, radio: 10, region: REGION.RUINAS, cristal: 'cristal_ozmar', botin: [['baculo_ozmar', 1, 1, 0.5], ['corona_ozmar', 1, 1, 0.35], ['gema_antigua', 2, 4], ['lingote_hierro', 8, 12]] },
 };
 
 // ---------------------------------------------------------------- cultivos, peces y cocina

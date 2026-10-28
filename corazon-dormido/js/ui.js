@@ -187,7 +187,7 @@ function dibujarHUD(ctx) {
   const j = Object.values(J.jefes).find((x) => x.activo && x.estado !== 'muerto');
   if (j) {
     const w = Math.min(140, LW - 150), x = Math.round(LW / 2 - w / 2), y = LW > 330 ? 6 : my + mm + 34;
-    texto(ctx, JEFES[j.id].nombre, LW / 2, y, '#ffd166', { alin: 'c', borde: COL.negro });
+    texto(ctx, (JEFES[j.id].nombre + (JEFES[j.id].titulo ? ', ' + JEFES[j.id].titulo : '')).toUpperCase(), LW / 2, y, '#ffd166', { alin: 'c', borde: COL.negro });
     barra(ctx, x, y + 8, w, 4, j.vida / j.vidaMax, j.fase === 2 ? '#ff4060' : '#c43b3b');
   }
   J.avisos.forEach((a, k) => {
@@ -227,6 +227,15 @@ function dibujarHUD(ctx) {
   if (J.cartel) { // nombre de la región al entrar por primera vez
     ctx.globalAlpha = Math.min(1, J.cartel.t, (3.5 - J.cartel.t) * 2);
     texto(ctx, J.cartel.txt.toUpperCase(), LW / 2, Math.round(LH * 0.3), '#f6ecda', { alin: 'c', esc: 2, borde: COL.negro });
+    ctx.globalAlpha = 1;
+  }
+  if (J.presentacion) { // el jefe se presenta al despertar: nombre, título y lo que dice
+    const P = J.presentacion, a = Math.max(0, Math.min(1, (5 - P.t) * 2, P.t * 1.2));
+    const y0 = Math.round(LH * 0.6);
+    ctx.globalAlpha = a * 0.55; ctx.fillStyle = '#000000'; ctx.fillRect(0, y0, LW, 44); ctx.globalAlpha = a;
+    texto(ctx, P.nombre.toUpperCase(), LW / 2, y0 + 6, '#f2e4d0', { alin: 'c', esc: 2, borde: COL.negro });
+    texto(ctx, P.titulo, LW / 2, y0 + 22, '#c86a8a', { alin: 'c', borde: COL.negro });
+    texto(ctx, '«' + P.frase + '»', LW / 2, y0 + 32, '#b8aab8', { alin: 'c', borde: COL.negro });
     ctx.globalAlpha = 1;
   }
   if (J.regreso) texto(ctx, 'Volviendo…', LW / 2, Math.round(LH * 0.62), '#a0e0ff', { alin: 'c', borde: COL.negro });

@@ -412,10 +412,11 @@ function actualizarFase2(dt) {
   if (reg !== J.regionAntes) {
     J.regionAntes = reg;
     const clave = 'region_' + reg;
-    if (!J.hito[clave] && reg !== REGION.SANTUARIO) { J.hito[clave] = true; J.cartel = { txt: NOMBRE_REGION[reg], t: 3.5 }; }
+    if (!J.hito[clave] && reg !== REGION.SANTUARIO && !J.presentacion) { J.hito[clave] = true; J.cartel = { txt: NOMBRE_REGION[reg], t: 3.5 }; }
     if (reg >= REGION.SELVA && reg !== REGION.SELLADO) J.hito.selva = true;
   }
   if (J.cartel) { J.cartel.t -= dt; if (J.cartel.t <= 0) J.cartel = null; }
+  if (J.presentacion) { J.presentacion.t -= dt; if (J.presentacion.t <= 0) J.presentacion = null; }
 }
 
 // ---------------------------------------------------------------- dibujo (bombas, mascota, mercaderes)
@@ -432,14 +433,18 @@ function dibujarFase2_3d() {
     const d = MASCOTAS[m.id], x = m.x / T, z = m.y / T + 0.02, vuela = d.vuela ? 0.5 + Math.sin(J.t * 4) * 0.08 : m.salto > 0 ? Math.sin((m.salto / 0.25) * Math.PI) * 0.3 : 0;
     GL.plano('sombra_s', x, z - 0.02, { escala: 0.7, tinte: [1, 1, 1, 0.6] });
     const f = m.salto > 0 ? 2 : m.anda ? Math.floor(m.t * 8) % 2 : 0;
-    GL.sprite(`${d.arte}_${d.vuela ? Math.floor(J.t * 10) % 2 : f}`, x, z, { y: vuela, flip: m.mira < 0 });
-    if (m.id === 'mascota_luci') { GL.sprite(`luci_${Math.floor(J.t * 10) % 2}_luz`, x, z + 0.002, { y: vuela, flip: m.mira < 0, unlit: 1, lote: GL.lotes.brillo }); GL.halo(x, vuela + 0.3, z, 0.7, [1, 0.95, 0.6], 0.3); }
+    const nm = `${d.arte}_${d.vuela ? Math.floor(J.t * 10) % 2 : f}`, dxm = META_SPR[nm] ? META_SPR[nm].dx * (m.mira < 0 ? -1 : 1) : 0;
+    GL.sprite(nm, x + dxm, z, { y: vuela, flip: m.mira < 0, lx: x, lz: z });
+    if (SPR[nm + '_luz'] && m.id !== 'mascota_luci') GL.sprite(nm + '_luz', x + dxm, z + 0.002, { y: vuela, flip: m.mira < 0, unlit: 1, lote: GL.lotes.brillo });
+    if (m.id === 'mascota_luci') { GL.sprite(`luci_${Math.floor(J.t * 10) % 2}_luz`, x + dxm, z + 0.002, { y: vuela, flip: m.mira < 0, unlit: 1, lote: GL.lotes.brillo }); GL.halo(x, vuela + 0.3, z, 0.7, [1, 0.95, 0.6], 0.3); }
   }
   for (const me of M.mercaderes) {
     if (!me.ent) continue;
     const x = me.ent.x / T, z = me.ent.y / T + 0.02;
     GL.plano('sombra_s', x, z - 0.02, { tinte: [1, 1, 1, 0.7] });
-    GL.sprite(`mercader_${me.tipo}_${me.ent.anda ? Math.floor(J.t * 6) % 2 : 2 + (Math.floor(J.t * 1.5) % 2)}`, x, z, { flip: me.ent.mira < 0 });
+    const nm = `mercader_${me.tipo}_${me.ent.anda ? Math.floor(J.t * 6) % 2 : 2 + (Math.floor(J.t * 1.5) % 2)}`, dxm = META_SPR[nm] ? META_SPR[nm].dx * (me.ent.mira < 0 ? -1 : 1) : 0;
+    GL.sprite(nm, x + dxm, z, { flip: me.ent.mira < 0, lx: x, lz: z });
+    if (SPR[nm + '_luz']) GL.sprite(nm + '_luz', x + dxm, z + 0.002, { flip: me.ent.mira < 0, unlit: 1, lote: GL.lotes.brillo });
   }
   if (J.regreso) GL.halo(J.jug.x / T, 0.8, J.jug.y / T, 1.3, [0.6, 0.85, 1], 0.35 + 0.1 * Math.sin(J.t * 20));
 }

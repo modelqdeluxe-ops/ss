@@ -43,7 +43,8 @@ function actualizarJefes(dt) {
       if (j.id === 'ozmar' && dJug < 16) J.hito.vioOzmar = true;
       if (dJug < radioDespierta && J.estado === 'juego') {
         j.estado = 'despierta'; j.t = 1.6; j.activo = true; J.temblor = 1; Sonido.sfx.rugido();
-        aviso(`¡${JEFES[j.id].nombre} despierta!`, null, '#ffd166');
+        const dj2 = JEFES[j.id];
+        J.presentacion = { nombre: dj2.nombre, titulo: dj2.titulo || '', frase: dj2.frase || '', t: 5 }; J.cartel = null;
       }
       continue;
     }

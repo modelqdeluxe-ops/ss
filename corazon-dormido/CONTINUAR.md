@@ -34,13 +34,19 @@ push no la sustituya; la próxima versión se añade con `HEAD`).
 - `probar-todo.cjs` pasa: sin errores, no falta ningún dibujo, guardar y cargar bien. FPS en el móvil simulado:
   ~48 (antes ~57): mirar qué cuesta (sprites más grandes o las 4 lecturas de luz del sombreador).
 
+## Hecho después del checkpoint
+
+- El dueño rechazó el estilo tierno: **`LORE.md`** es ahora la biblia (historia de Ásor, el Corazón, la Podre,
+  los Veladores, grutos, guardianes y titanes; dirección de arte oscura; bestiario y jefes con nombre, título y
+  frase). Manda sobre todo lo demás.
+- `js/criaturas3d.js`: las 16 criaturas, las mascotas y los mercaderes de perfil con el estilo oscuro (siluetas
+  encorvadas, ojos que son puntos de luz, la Podre magenta). Esqueleto `grutoPerfil` para los cinco grutos.
+  Nombres nuevos en `CRIATURAS`. Su capa `_luz` se pinta sin luz (ojos y Podre brillan en la oscuridad).
+- `js/jefes3d.js`: Murdo, Vhessa, Ozmar, Hiedra y Tamar (cuadros por estado), estatuas y altares como el mismo
+  modelo en piedra (`materialEstatua`). Presentación al despertar (`J.presentacion`: nombre, título y frase).
+
 ## Lo que falta (en este orden)
 
-1. Criaturas en 3D (16, nombres en `SPRITE_CRIATURA` y `dibujarCriatura3d`: babosas `_0/1/2`, larvas `_0/1`,
-   setón `_0..2`, grutos `_0..3`, planta trampa, tentáculo, avispa, escarabajo), mascotas (`topito`,
-   `babosita`, `luci`, `mohito` `_0..2`) y mercaderes (`mercader_<tipo>_0..3`). Mirando a la derecha (se voltean).
-2. Los 5 jefes en 3D por piezas animadas en el juego (como Core Keeper), y las estatuas y altares de los jefes
-   como versiones de piedra de sus modelos. Hiedra y Tamar primero (el dueño mandó captura de Hiedra).
 3. Suelos nuevos (limpios, sin ruido de puntos) con transiciones orgánicas entre tipos; el suelo venenoso de
    Hiedra en especial. Avisos de ataque nuevos (anillo + relleno que crece; filas como una franja, no óvalos).
 4. Ajustar halos (`ALTURA_HALO`) a las alturas nuevas, mano y herramienta del jugador a la marca `mano`,

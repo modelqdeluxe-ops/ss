@@ -222,20 +222,20 @@ Object.assign(OBJ, {
 // fija: no se mueve. vuela: va por el aire (no le afecta el agua). veneno: deja charcos venenosos.
 
 Object.assign(CRIATURAS, {
-  babosa_veneno: { nombre: 'Babosa venenosa', vida: 120, dano: 20, vel: 44, radio: 6, conducta: 'salta', veneno: true, regiones: { 4: 3, 5: 1, 6: 1 }, botin: [['baba_veneno', 1, 2, 0.8], ['moneda', 1, 3, 0.3]], xp: 18, colores: ['#a060e0', '#6a2aa0', '#e8c0ff'] },
-  gruto_jardinero: { nombre: 'Gruto jardinero', vida: 150, dano: 22, vel: 30, radio: 6, conducta: 'jardinero', regiones: { 4: 2, 5: 1 }, botin: [['semilla_avena', 1, 2, 0.4], ['savia', 1, 1, 0.3], ['moneda', 2, 5, 0.5], ['huevo_leal', 1, 1, 0.01]], xp: 24, colores: ['#6a8a5a', '#a8c088', '#5a3a1a'] },
-  gruto_cazador: { nombre: 'Gruto cazador', vida: 170, dano: 26, vel: 42, radio: 6, conducta: 'cazador', regiones: { 4: 2, 5: 1 }, botin: [['pluma_antigua', 1, 1, 0.12], ['flecha_carmesi', 2, 5, 0.3], ['moneda', 3, 6, 0.5]], xp: 28, colores: ['#6a8a5a', '#a8c088', '#8a3a2a'] },
-  planta_trampa: { nombre: 'Planta trampa', vida: 220, dano: 30, vel: 0, radio: 7, conducta: 'trampa', fija: true, regiones: { 4: 1, 5: 1.5 }, botin: [['savia', 1, 2, 0.6], ['hoja_grande', 1, 2, 0.5]], xp: 22, colores: ['#3a8a3a', '#c83a5a', '#ffd0e0'] },
-  avispa: { nombre: 'Avispa esmeralda', vida: 70, dano: 18, vel: 72, radio: 5, conducta: 'avispa', vuela: true, regiones: { 4: 1.5, 5: 3 }, botin: [['aguijon', 1, 1, 0.6], ['miel', 1, 1, 0.12]], xp: 16, colores: ['#3ad06a', '#f2d040', '#1a3a1a'] },
-  escarabajo_musgo: { nombre: 'Escarabajo de musgo', vida: 340, dano: 34, def: 8, vel: 34, radio: 9, conducta: 'carga', regiones: { 4: 1.2 }, botin: [['caparazon_musgo', 1, 2, 0.85], ['carne_escarabajo', 1, 1, 0.5]], xp: 40, colores: ['#3a6a2a', '#7aa84e', '#2a1a10'] },
-  tentaculo_moho: { nombre: 'Tentáculo de moho', vida: 280, dano: 32, vel: 0, radio: 8, conducta: 'tentaculo', fija: true, regiones: {}, botin: [['espora_moho', 2, 3], ['moneda', 4, 8, 0.6]], xp: 36, colores: ['#2ab0a0', '#5ae0c0', '#0a3a3a'] },
-  larva_moho: { nombre: 'Larva de moho', vida: 120, dano: 24, vel: 32, radio: 6, conducta: 'repta', esporas: true, regiones: { 6: 4 }, botin: [['espora_moho', 1, 1, 0.7], ['quitina', 1, 1, 0.4]], xp: 20, colores: ['#5ae0c0', '#2a8a7a', '#c0fff0'] },
+  babosa_veneno: { nombre: 'Pústula', vida: 120, dano: 20, vel: 44, radio: 6, conducta: 'salta', veneno: true, regiones: { 4: 3, 5: 1, 6: 1 }, botin: [['baba_veneno', 1, 2, 0.8], ['moneda', 1, 3, 0.3]], xp: 18, colores: ['#a060e0', '#6a2aa0', '#e8c0ff'] },
+  gruto_jardinero: { nombre: 'Sembrador', vida: 150, dano: 22, vel: 30, radio: 6, conducta: 'jardinero', regiones: { 4: 2, 5: 1 }, botin: [['semilla_avena', 1, 2, 0.4], ['savia', 1, 1, 0.3], ['moneda', 2, 5, 0.5], ['huevo_leal', 1, 1, 0.01]], xp: 24, colores: ['#6a8a5a', '#a8c088', '#5a3a1a'] },
+  gruto_cazador: { nombre: 'Acechador', vida: 170, dano: 26, vel: 42, radio: 6, conducta: 'cazador', regiones: { 4: 2, 5: 1 }, botin: [['pluma_antigua', 1, 1, 0.12], ['flecha_carmesi', 2, 5, 0.3], ['moneda', 3, 6, 0.5]], xp: 28, colores: ['#6a8a5a', '#a8c088', '#8a3a2a'] },
+  planta_trampa: { nombre: 'Fauce', vida: 220, dano: 30, vel: 0, radio: 7, conducta: 'trampa', fija: true, regiones: { 4: 1, 5: 1.5 }, botin: [['savia', 1, 2, 0.6], ['hoja_grande', 1, 2, 0.5]], xp: 22, colores: ['#3a8a3a', '#c83a5a', '#ffd0e0'] },
+  avispa: { nombre: 'Aguijonera', vida: 70, dano: 18, vel: 72, radio: 5, conducta: 'avispa', vuela: true, regiones: { 4: 1.5, 5: 3 }, botin: [['aguijon', 1, 1, 0.6], ['miel', 1, 1, 0.12]], xp: 16, colores: ['#3ad06a', '#f2d040', '#1a3a1a'] },
+  escarabajo_musgo: { nombre: 'Lápida', vida: 340, dano: 34, def: 8, vel: 34, radio: 9, conducta: 'carga', regiones: { 4: 1.2 }, botin: [['caparazon_musgo', 1, 2, 0.85], ['carne_escarabajo', 1, 1, 0.5]], xp: 40, colores: ['#3a6a2a', '#7aa84e', '#2a1a10'] },
+  tentaculo_moho: { nombre: 'Brazo de la Podre', vida: 280, dano: 32, vel: 0, radio: 8, conducta: 'tentaculo', fija: true, regiones: {}, botin: [['espora_moho', 2, 3], ['moneda', 4, 8, 0.6]], xp: 36, colores: ['#2ab0a0', '#5ae0c0', '#0a3a3a'] },
+  larva_moho: { nombre: 'Gusano de Podre', vida: 120, dano: 24, vel: 32, radio: 6, conducta: 'repta', esporas: true, regiones: { 6: 4 }, botin: [['espora_moho', 1, 1, 0.7], ['quitina', 1, 1, 0.4]], xp: 20, colores: ['#5ae0c0', '#2a8a7a', '#c0fff0'] },
 });
 
 // Los dos titanes de la Selva. invocado: no se despierta solo (hay que hacer la ofrenda en su altar).
 Object.assign(JEFES, {
-  hiedra: { nombre: 'HIEDRA VIVA', vida: 4400, dano: 30, radio: 16, hw: 14, hh: 8, alto: 26, region: REGION.SELVA, cristal: 'gema_hiedra', despierta: 10, correa: 24, botin: [['latigo_hiedra', 1, 1, 0.6], ['semilla_hiedra', 1, 1, 0.5], ['savia', 6, 10], ['lingote_carmesi', 6, 10], ['moneda', 60, 120], ['huevo_luz', 1, 1, 0.4]] },
-  tamar: { nombre: 'TAMAR, TITÁN DEL CIELO', vida: 5200, dano: 34, radio: 18, hw: 16, hh: 8, alto: 30, region: REGION.SELVA, cristal: 'gema_cielo', invocado: true, despierta: 14, correa: 30, botin: [['arco_tamar', 1, 1, 0.5], ['alas_tamar', 1, 1, 0.5], ['pluma_tamar', 3, 5], ['lingote_carmesi', 8, 14], ['moneda', 80, 140]] },
+  hiedra: { nombre: 'HIEDRA', titulo: 'la Flor de Sangre', frase: 'Él quiso quemarme. Ahora es mi corazón.', vida: 4400, dano: 30, radio: 16, hw: 14, hh: 8, alto: 26, region: REGION.SELVA, cristal: 'gema_hiedra', despierta: 10, correa: 24, botin: [['latigo_hiedra', 1, 1, 0.6], ['semilla_hiedra', 1, 1, 0.5], ['savia', 6, 10], ['lingote_carmesi', 6, 10], ['moneda', 60, 120], ['huevo_luz', 1, 1, 0.4]] },
+  tamar: { nombre: 'TAMAR', titulo: 'el Ojo del Cielo', frase: 'Lo he visto todo desde arriba. Te he visto a ti.', vida: 5200, dano: 34, radio: 18, hw: 16, hh: 8, alto: 30, region: REGION.SELVA, cristal: 'gema_cielo', invocado: true, despierta: 14, correa: 30, botin: [['arco_tamar', 1, 1, 0.5], ['alas_tamar', 1, 1, 0.5], ['pluma_tamar', 3, 5], ['lingote_carmesi', 8, 14], ['moneda', 80, 140]] },
 });
 
 // ---------------------------------------------------------------- cultivos, peces y cocina

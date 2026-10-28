@@ -65,8 +65,8 @@ DIBUJAR_JEFE.hiedra = (j) => {
   const x = j.x / T, z = j.y / T + 0.1, abierta = j.estado === 'latigo' || j.estado === 'raices' || j.estado === 'esporas';
   const f = j.estado === 'aturdido' ? 3 : abierta ? 2 : Math.floor(J.t * 2) % 2, sacude = j.estado === 'muriendo' || (j.estado === 'latigo' && j.t > 0) ? Math.sin(J.t * 50) * 0.06 : 0;
   GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.85], escala: 1.6 });
-  GL.sprite(`hiedra_${f}`, x + sacude, z, { unlit: 0.35, blanco: j.flash > 0 ? 0.85 : 0 });
-  GL.sprite(`hiedra_${f}_luz`, x + sacude, z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.6 + 0.25 * Math.sin(J.t * 3)] });
+  GL.sprite(`hiedra_${f}`, x + sacude + dxDe(`hiedra_${f}`), z, { unlit: 0.35, blanco: j.flash > 0 ? 0.85 : 0 });
+  GL.sprite(`hiedra_${f}_luz`, x + sacude + dxDe(`hiedra_${f}`), z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.6 + 0.25 * Math.sin(J.t * 3)] });
   GL.halo(x, 1.4, z, 1.8, [0.7, 0.3, 0.9], 0.16 + 0.06 * Math.sin(J.t * 2));
 };
 
@@ -143,8 +143,8 @@ DIBUJAR_JEFE.tamar = (j) => {
   GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.9 - (j.vuelo || 0) * 0.12], escala: sombra });
   const f = j.estado === 'aturdido' ? 4 : j.vuelo > 0.1 ? 2 + (Math.floor(J.t * 8) % 2) : j.estado === 'plumas' || j.estado === 'viento' ? 2 + (Math.floor(J.t * 10) % 2) : Math.floor(J.t * 2) % 2;
   const sacude = j.estado === 'muriendo' ? Math.sin(J.t * 50) * 0.06 : 0;
-  GL.sprite(`tamar_${f}`, x + sacude, z, { y: alto, unlit: 0.25, blanco: j.flash > 0 ? 0.85 : 0 });
-  GL.sprite(`tamar_${f}_luz`, x + sacude, z + 0.002, { y: alto, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.75] });
+  GL.sprite(`tamar_${f}`, x + sacude + dxDe(`tamar_${f}`), z, { y: alto, unlit: 0.25, blanco: j.flash > 0 ? 0.85 : 0 });
+  GL.sprite(`tamar_${f}_luz`, x + sacude + dxDe(`tamar_${f}`), z + 0.002, { y: alto, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.75] });
   GL.halo(x, 1.6 + alto, z, 1.7, [1, 0.95, 0.7], 0.14);
 };
 // Rayos que caen del cielo (los de Tamar): se dibujan al estallar el aviso.

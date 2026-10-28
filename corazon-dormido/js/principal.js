@@ -332,10 +332,14 @@ function dibujarCriatura3d(e) {
   else if (e.tipo.startsWith('larva')) n = `${e.tipo}_${Math.floor(e.t * 6) % 2}`;
   else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
   else n = `${e.tipo}_${e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
-  const flip = e.mira < 0;
-  GL.sprite(n, x + tiembla, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85 });
+  const flip = e.mira < 0, dx = META_SPR[n] ? META_SPR[n].dx * (flip ? -1 : 1) : 0;
+  GL.sprite(n, x + tiembla + dx, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z });
+  // ojos y Podre: brillan solos en la oscuridad (se ven antes que el cuerpo)
+  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: ((e.z || 0) / 16) * GL.KY, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95] });
   if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
 }
+// desplazamiento para centrar un modelo horneado (los jefes no se voltean)
+const dxDe = (n) => (META_SPR[n] ? META_SPR[n].dx : 0);
 function dibujarJefe3d(j) {
   if (j.estado === 'muerto') return;
   if (DIBUJAR_JEFE[j.id]) { DIBUJAR_JEFE[j.id](j); return; }
@@ -344,19 +348,20 @@ function dibujarJefe3d(j) {
     if (j.enterrado) {
       const tiembla = j.t < 0.8 ? Math.sin(J.t * 50) * 0.08 : 0;
       if (j.t < 0.8) GL.plano('aviso_suelo', x, z, { escala: 2.2, tinte: [1, 1, 1, 0.5 + 0.3 * Math.sin(J.t * 20)] });
-      GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla, z);
+      GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla + dxDe('monticulo_0'), z);
       return;
     }
     GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.8] });
     const brazos = j.estado === 'rocas' || j.estado === 'embiste' || j.estado === 'despierta' ? Math.floor(J.t * 10) % 2 : Math.floor(J.t * 2) % 2;
     const tiembla = j.estado === 'embiste' || j.estado === 'muriendo' ? Math.sin(J.t * 60) * 0.08 : 0;
-    GL.sprite(`topo_${brazos}`, x + tiembla, z, { unlit: 0.18, blanco: j.flash > 0 || (j.estado === 'embiste' && Math.floor(J.t * 12) % 2) ? 0.85 : 0 });
+    GL.sprite(`topo_${brazos}`, x + tiembla + dxDe(`topo_${brazos}`), z, { unlit: 0.18, blanco: j.flash > 0 || (j.estado === 'embiste' && Math.floor(J.t * 12) % 2) ? 0.85 : 0 });
+    if (SPR[`topo_${brazos}_luz`]) GL.sprite(`topo_${brazos}_luz`, x + tiembla + dxDe(`topo_${brazos}`), z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
   } else if (j.id === 'reina') {
     GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.85], escala: 1.4 });
     const f = j.estado === 'acido' || j.estado === 'puesta' ? 1 + (Math.floor(J.t * 8) % 2) : Math.floor(J.t * 2) % 2;
     const dx = j.estado === 'muriendo' ? Math.sin(J.t * 60) * 0.08 : 0, pulso = 0.55 + 0.25 * Math.sin(J.t * 3);
-    GL.sprite(`reina_${f}`, x + dx, z, { unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
-    GL.sprite(`reina_${f}_luz`, x + dx, z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, pulso] });
+    GL.sprite(`reina_${f}`, x + dx + dxDe(`reina_${f}`), z, { unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
+    GL.sprite(`reina_${f}_luz`, x + dx + dxDe(`reina_${f}`), z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, pulso] });
     GL.halo(x, 1.0, z, 1.6, [0.5, 1, 0.3], 0.18 + 0.08 * Math.sin(J.t * 3));
   } else {
     if (j.invisible) return;
@@ -364,8 +369,8 @@ function dibujarJefe3d(j) {
     GL.plano('sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.6] });
     const f = j.estado === 'orbes' || j.estado === 'anillo' || j.estado === 'pilares' || j.estado === 'invoca' ? 2 : j.estado === 'dormido' ? 3 : Math.floor(J.t * 3) % 2;
     const alto = j.estado === 'dormido' ? 0 : j.estado === 'cansado' ? 0.04 : 0.25 + flota, cansado = j.estado === 'cansado';
-    GL.sprite(`ozmar_${f}`, x, z, { y: alto, unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
-    GL.sprite(`ozmar_${f}_luz`, x, z + 0.002, { y: alto, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, cansado ? 0.3 : 0.8] });
+    GL.sprite(`ozmar_${f}`, x + dxDe(`ozmar_${f}`), z, { y: alto, unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
+    GL.sprite(`ozmar_${f}_luz`, x + dxDe(`ozmar_${f}`), z + 0.002, { y: alto, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, cansado ? 0.3 : 0.8] });
     if (cansado && Math.floor(J.t * 3) % 2) GL.sprite('destello', x + 0.3, z + 0.004, { y: 1.5, unlit: 1, lote: GL.lotes.brillo, tinte: [0.8, 0.6, 1, 0.8] });
     GL.halo(x, 1.3 + flota, z, 1.0, [0.6, 0.3, 1], 0.25 + 0.1 * Math.sin(J.t * 4));
   }
