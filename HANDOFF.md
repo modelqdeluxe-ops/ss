@@ -190,7 +190,23 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (28 oct 2026, TF Client 1.3.148) — lee esto primero
+### CHECKPOINT (28 oct 2026, TF Client 1.3.149) — lee esto primero
+
+**1.3.149** (el dueño: «añade un comando para quitar estas cosas yo manualmente… y para quitar todos los equipados»
+y «añade contraseña al comando tf… cuando la ponga me desbloquea el comando solo a mí o al que tenga la pass»).
+- `/tf web vfx quitar <jugador|todos>` (`VfxServer.remove`): quita el efecto de kill equipado, también a los
+  desconectados (nombre → conectado, caché de perfiles o UUID offline); a los conectados se lo dice a la web.
+- `server/TFStaffLock` + `client/TFStaffLockScreen` (canal `tfclient:clave`): además de ser staff, /tf pide la
+  contraseña. Cada rama de /tf lleva `TFStaffLock.guard` (requires + `allowed`: la consola y el puente siempre; un
+  jugador solo si la puso; nada más, así que ni bloques de comandos, ni funciones, ni `/execute as` un mob). Un
+  `CommandEvent` (HIGHEST) ve «tf …» (o «… run tf …») de un staff sin abrir: lo cancela, le abre la ventana (puntos; la
+  contraseña va por paquete, no sale en el chat ni en los logs) y, bien puesta, ejecuta lo escrito. /tf sola también
+  la pide (por si en Mohist no llega el CommandEvent). Dura hasta que sale; `/tf clave cerrar` la vuelve a cerrar.
+  5 fallos: 15 min. La contraseña NO está en el repo: solo sal + huella (PBKDF2-SHA256 200k, SHA-256 de la clave, como
+  `client/TFLock`); `config/tfclient/clave-tf.json` (se crea al arrancar; `"activa": false` la quita) y desde la
+  consola `tf clave cambiar <nueva>`. Prueba en el juego: `[prueba-jefes=clave]`. El pad de administrador va aparte.
+
+### CHECKPOINT (28 oct 2026, TF Client 1.3.148)
 
 **1.3.148** (el dueño: «apareció un wey con uno desbloqueado», 8Dark_Dragon8, sin compra, sin Discord y sin
 `/tf web vfx` en ningún log). Hueco en `vfx/VfxServer.ownsKill`: sin respuesta del puente (`webFree` empezaba en true y

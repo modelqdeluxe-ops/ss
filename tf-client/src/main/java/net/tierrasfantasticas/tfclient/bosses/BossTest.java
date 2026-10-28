@@ -285,6 +285,8 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("accesorios")) ids.add(0, "accesorios");
             // (1.3.139) «oficios»: fundir, fabricar y preparar con clic y mayúsculas + clic, cobrar misiones y lo de días atrás
             if (only != null && List.of(only.split(",")).contains("oficios")) ids.add(0, "oficios");
+            // (1.3.149) «clave»: la contraseña de /tf (la ventana, fallos, bloques de comandos) y /tf web vfx quitar
+            if (only != null && List.of(only.split(",")).contains("clave")) ids.add(0, "clave");
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -303,7 +305,7 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -350,6 +352,10 @@ public final class BossTest {
         }
         if ("oficios".equals(r.id)) {
             if (!waitShot) oficiosStep(server, level, player, r);
+            return;
+        }
+        if ("clave".equals(r.id)) {
+            if (!waitShot) claveStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -2165,6 +2171,79 @@ public final class BossTest {
                 cameraType = 0;
             }
             case 230 -> next(level);
+            default -> { }
+        }
+    }
+
+    /** (1.3.149) La contraseña de /tf (server/TFStaffLock) y /tf web vfx quitar. */
+    private static void claveStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        java.util.UUID me = player.getUUID();
+        String name = player.getGameProfile().getName();
+        String kill = net.tierrasfantasticas.tfclient.vfx.VfxCatalog.kills().keySet().iterator().next();
+        java.util.function.Function<String, Integer> asPlayer = c -> server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), c);
+        java.util.function.Supplier<String> equipped = () -> net.tierrasfantasticas.tfclient.vfx.VfxServer.equipped(me)[0];
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                net.tierrasfantasticas.tfclient.server.TFStaffLock.testOn = true;
+                command(server, "tf web vfx quitar " + name);
+                r.event("clave: jugador " + name + ", staff (nivel 2) " + player.hasPermissions(2) + ", efecto de prueba " + kill);
+            }
+            case 5 -> {
+                int res = asPlayer.apply("tf web vfx kill " + name + " " + kill);
+                boolean asked = net.tierrasfantasticas.tfclient.server.TFStaffLock.testAsked(me);
+                r.event("clave 1 (/tf sin contraseña): resultado " + res + ", efecto " + equipped.get() + ", ventana pedida " + asked
+                        + (equipped.get() == null && asked ? " (bien: no se ejecuta y pide la contraseña)" : " (MAL)"));
+            }
+            case 40 -> {
+                net.minecraft.client.gui.screens.Screen sc = net.minecraft.client.Minecraft.getInstance().screen;
+                r.event("clave 2 (la ventana en el cliente): " + (sc == null ? "ninguna" : sc.getClass().getSimpleName())
+                        + (sc instanceof net.tierrasfantasticas.tfclient.client.TFStaffLockScreen ? " (bien)" : " (MAL)"));
+                shot(r, "clave_ventana");
+            }
+            case 45 -> {
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.minecraft.client.Minecraft.getInstance().setScreen(null));
+                command(server, "tf clave cambiar prueba-clave-tf-1234");
+                net.tierrasfantasticas.tfclient.server.TFStaffLock.testAnswer(player, "otra-clave-que-no-es");
+                r.event("clave 3 (contraseña mala): abierto " + net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) + ", efecto " + equipped.get()
+                        + (!net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) && equipped.get() == null ? " (bien)" : " (MAL)"));
+            }
+            case 50 -> {
+                int res = server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withPermission(2), "tf web vfx kill " + name + " " + kill);
+                r.event("clave 4 (como un bloque de comandos, nivel 2): resultado " + res + ", efecto " + equipped.get()
+                        + (equipped.get() == null ? " (bien: bloqueado)" : " (MAL)"));
+            }
+            case 55 -> {
+                asPlayer.apply("tf web vfx kill " + name + " " + kill);
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.minecraft.client.Minecraft.getInstance().setScreen(null));
+                net.tierrasfantasticas.tfclient.server.TFStaffLock.testAnswer(player, "prueba-clave-tf-1234");
+                r.event("clave 5 (contraseña buena): abierto " + net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) + ", efecto " + equipped.get()
+                        + (net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) && kill.equals(equipped.get())
+                        ? " (bien: abierto y se ejecutó lo que había escrito)" : " (MAL)"));
+            }
+            case 60 -> {
+                int res = asPlayer.apply("tf web vfx quitar " + name);
+                r.event("clave 6 (/tf web vfx quitar " + name + "): resultado " + res + ", efecto " + equipped.get() + (equipped.get() == null ? " (bien)" : " (MAL)"));
+                asPlayer.apply("tf web vfx kill " + name + " " + kill);
+            }
+            case 65 -> {
+                int res = asPlayer.apply("tf web vfx quitar todos");
+                r.event("clave 7 (/tf web vfx quitar todos): resultado " + res + ", efecto " + equipped.get() + (equipped.get() == null ? " (bien)" : " (MAL)"));
+            }
+            case 70 -> {
+                asPlayer.apply("tf clave cerrar");
+                int res = asPlayer.apply("tf web vfx kill " + name + " " + kill);
+                r.event("clave 8 (/tf clave cerrar y otra vez /tf): abierto " + net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) + ", efecto " + equipped.get()
+                        + (!net.tierrasfantasticas.tfclient.server.TFStaffLock.unlocked(me) && equipped.get() == null ? " (bien)" : " (MAL)"));
+            }
+            case 100 -> {
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.minecraft.client.Minecraft.getInstance().setScreen(null));
+                shot(r, "clave_chat");
+            }
+            case 110 -> {
+                net.tierrasfantasticas.tfclient.server.TFStaffLock.testOn = false;
+                next(level);
+            }
             default -> { }
         }
     }
