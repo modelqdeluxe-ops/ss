@@ -287,6 +287,11 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("oficios")) ids.add(0, "oficios");
             // (1.3.149) «clave»: la contraseña de /tf (la ventana, fallos, bloques de comandos) y /tf web vfx quitar
             if (only != null && List.of(only.split(",")).contains("clave")) ids.add(0, "clave");
+            // (1.3.150) «encantar» (mesa, yunque y piedra de afilar con las piezas de los sets), «protes» (nombre, ir a la
+            // zona y el módulo PROTECCIONES del pad de admin) y «cumple» (la fiesta de /tf cumpleaños)
+            for (String extra : new String[] {"encantar", "protes", "cumple"}) {
+                if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
+            }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
             for (String c : new String[] {"gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "time set 6000",
                     "weather clear", "gamerule doMobSpawning false", "gamerule keepInventory true", "difficulty normal",
@@ -305,7 +310,8 @@ public final class BossTest {
         if (SHOTS_PENDING.isEmpty()) shotWait = 0;
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
-                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id))
+                || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -356,6 +362,18 @@ public final class BossTest {
         }
         if ("clave".equals(r.id)) {
             if (!waitShot) claveStep(server, level, player, r);
+            return;
+        }
+        if ("encantar".equals(r.id)) {
+            if (!waitShot) encantarStep(level, player, r);
+            return;
+        }
+        if ("protes".equals(r.id)) {
+            if (!waitShot) protesStep(level, player, r);
+            return;
+        }
+        if ("cumple".equals(r.id)) {
+            if (!waitShot) cumpleStep(server, level, player, r);
             return;
         }
         switch (phase) {
@@ -2171,6 +2189,196 @@ public final class BossTest {
                 cameraType = 0;
             }
             case 230 -> next(level);
+            default -> { }
+        }
+    }
+
+    private static String enchants(ItemStack stack) {
+        StringBuilder sb = new StringBuilder();
+        net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(stack).forEach((e, l) -> {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getKey(e).getPath()).append(' ').append(l);
+        });
+        return sb.length() == 0 ? "ninguno" : sb.toString();
+    }
+
+    private static ItemStack book(net.minecraft.world.item.enchantment.Enchantment e, int level) {
+        return net.minecraft.world.item.EnchantedBookItem.createForEnchantment(new net.minecraft.world.item.enchantment.EnchantmentInstance(e, level));
+    }
+
+    /** (1.3.150) Yunque: la pieza a la izquierda y eso a la derecha; lo que sale y lo que cuesta. */
+    private static ItemStack anvil(ServerLevel level, ServerPlayer player, ItemStack left, ItemStack right, int[] cost) {
+        var menu = new net.minecraft.world.inventory.AnvilMenu(0, player.getInventory(),
+                net.minecraft.world.inventory.ContainerLevelAccess.create(level, player.blockPosition()));
+        menu.getSlot(0).set(left.copy());
+        menu.getSlot(1).set(right.copy());
+        menu.createResult();
+        cost[0] = menu.getCost();
+        return menu.getSlot(2).getItem().copy();
+    }
+
+    /** (1.3.150) Encantar las piezas de los sets (items/TFEnchanting). */
+    private static void encantarStep(ServerLevel level, ServerPlayer player, Rep r) {
+        if (t == 1) {
+            player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+            net.minecraft.world.item.Item sword = null, chest = null;
+            for (var list : net.tierrasfantasticas.tfclient.items.TFItems.BY_TYPE.values()) {
+                for (var o : list) {
+                    if (sword == null && o.get() instanceof net.minecraft.world.item.SwordItem) sword = o.get();
+                    if (chest == null && o.get() instanceof net.minecraft.world.item.ArmorItem a && a.getType() == net.minecraft.world.item.ArmorItem.Type.CHESTPLATE) chest = o.get();
+                }
+            }
+            if (sword == null) {
+                r.event("encantar: NO HAY ESPADA DE SET (MAL)");
+                return;
+            }
+            ItemStack s = new ItemStack(sword);
+            net.tierrasfantasticas.tfclient.items.TFSetEnchant.apply(s, 3);
+            s.getOrCreateTag().putString("TFPrueba", "se-queda");
+            String attrs = s.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND).toString();
+            r.event("encantar: espada " + pieceKey(sword) + " con " + enchants(s));
+            // mesa
+            boolean table = s.isEnchantable();
+            java.util.Set<String> offered = new java.util.TreeSet<>();
+            boolean bad = false;
+            net.minecraft.util.RandomSource rnd = net.minecraft.util.RandomSource.create(7);
+            for (int i = 0; i < 80; i++) {
+                for (var in : net.minecraft.world.item.enchantment.EnchantmentHelper.selectEnchantment(rnd, s, 30, false)) {
+                    offered.add(net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getKey(in.enchantment).getPath());
+                    if (in.enchantment == net.minecraft.world.item.enchantment.Enchantments.UNBREAKING || in.enchantment == net.minecraft.world.item.enchantment.Enchantments.SHARPNESS
+                            || in.enchantment == net.minecraft.world.item.enchantment.Enchantments.SMITE || in.enchantment == net.minecraft.world.item.enchantment.Enchantments.MOB_LOOTING) bad = true;
+                }
+            }
+            r.event("encantar 1 (mesa, ya encantada): la acepta " + table + ", ofrece " + offered + (table && !offered.isEmpty() && !bad ? " (bien)" : " (MAL)"));
+            int[] cost = new int[1];
+            ItemStack out = anvil(level, player, s, book(net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT, 2), cost);
+            boolean same = !out.isEmpty() && out.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND).toString().equals(attrs);
+            boolean tag = !out.isEmpty() && "se-queda".equals(out.getOrCreateTag().getString("TFPrueba"));
+            r.event("encantar 2 (yunque + aspecto ígneo II): " + (out.isEmpty() ? "NADA" : enchants(out)) + ", coste " + cost[0] + ", mismos atributos " + same
+                    + ", conserva su NBT " + tag + (!out.isEmpty() && out.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT) == 2
+                    && out.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS) == 4 && same && tag ? " (bien)" : " (MAL)"));
+            out = anvil(level, player, s, book(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING, 3), cost);
+            r.event("encantar 3 (yunque + irrompibilidad): " + (out.isEmpty() ? "nada" : enchants(out)) + (out.isEmpty() ? " (bien: no se puede)" : " (MAL)"));
+            out = anvil(level, player, s, book(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 4), cost);
+            r.event("encantar 4 (yunque + filo IV, ya tiene filo IV): " + (out.isEmpty() ? "NADA" : enchants(out))
+                    + (out.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS) == 5 ? " (bien: filo V)" : " (MAL)"));
+            out = anvil(level, player, s, book(net.minecraft.world.item.enchantment.Enchantments.SMITE, 5), cost);
+            r.event("encantar 5 (yunque + castigo, choca con filo): " + (out.isEmpty() ? "nada" : enchants(out)) + (out.isEmpty() ? " (bien)" : " (MAL)"));
+            out = anvil(level, player, new ItemStack(Items.DIAMOND_SWORD), s, cost);
+            r.event("encantar 6 (la pieza del set como sacrificio): " + (out.isEmpty() ? "nada" : "SALE ALGO") + (out.isEmpty() ? " (bien: no se gasta)" : " (MAL)"));
+            var grind = new net.minecraft.world.inventory.GrindstoneMenu(0, player.getInventory(),
+                    net.minecraft.world.inventory.ContainerLevelAccess.create(level, player.blockPosition()));
+            grind.getSlot(0).set(s.copy());
+            r.event("encantar 7 (piedra de afilar): " + (grind.getSlot(2).getItem().isEmpty() ? "nada (bien: no le quita lo del rango)" : "SALE SIN ENCANTAR (MAL)"));
+            ItemStack full = new ItemStack(sword);
+            net.tierrasfantasticas.tfclient.items.TFSetEnchant.apply(full, 6);
+            r.event("encantar 8 (set de rango full, " + enchants(full) + "): la mesa la acepta " + full.isEnchantable() + (full.isEnchantable() ? " (MAL)" : " (bien: no hay nada que añadir)"));
+            if (chest != null) {
+                ItemStack c = new ItemStack(chest);
+                net.tierrasfantasticas.tfclient.items.TFSetEnchant.apply(c, 2);
+                ItemStack co = anvil(level, player, c, book(net.minecraft.world.item.enchantment.Enchantments.THORNS, 3), cost);
+                r.event("encantar 9 (pechera " + pieceKey(chest) + " con " + enchants(c) + " + espinas III): " + (co.isEmpty() ? "NADA (MAL)" : enchants(co) + " (bien)"));
+            }
+            ItemStack plain = new ItemStack(sword);
+            boolean unb = false;
+            for (int i = 0; i < 80; i++) {
+                for (var in : net.minecraft.world.item.enchantment.EnchantmentHelper.selectEnchantment(rnd, plain, 30, false)) {
+                    if (in.enchantment == net.minecraft.world.item.enchantment.Enchantments.UNBREAKING) unb = true;
+                }
+            }
+            r.event("encantar 10 (espada del set sin encantar, mesa): irrompibilidad " + (unb ? "SALE (MAL)" : "nunca (bien)"));
+        }
+        if (t == 20) next(level);
+    }
+
+    /** (1.3.150) Protecciones: nombre propio, ir a la zona (a la superficie) y el módulo del pad de administrador. */
+    private static void protesStep(ServerLevel level, ServerPlayer player, Rep r) {
+        var cm = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance();
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 0F);
+                var c = cm.createClaim(level, player.blockPosition(), player, net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_300x300"));
+                protesClaim = c.getClaimId();
+                net.minecraft.core.BlockPos deep = player.blockPosition().offset(400, -12, 0);
+                var d = cm.createClaim(level, deep, player, net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_300x300"));
+                protesDeep = d.getClaimId();
+                String id = protesClaim.toString();
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, false, "editar:" + id + ":nombre", "");
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, false, "texto:" + id, "§cMi Castillo ✦");
+                String name = cm.findClaimById(protesClaim).getFlags().customName;
+                r.event("protes 1 (nombre «§cMi Castillo ✦»): guardado «" + name + "»" + ("Mi Castillo ✦".equals(name) ? " (bien: sin colores)" : " (MAL)"));
+                net.minecraft.core.BlockPos top = net.tierrasfantasticas.tfclient.pad.server.PadClaims.surface(level, d);
+                int ground = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, deep.getX(), deep.getZ());
+                r.event("protes 2 (zona bajo tierra en y=" + deep.getY() + ", suelo en y=" + ground + "): aparece en " + top.toShortString()
+                        + (top.getY() >= ground && top.getY() > deep.getY() ? " (bien: en la superficie)" : " (MAL)"));
+                player.teleportTo(level, arena.x + 900, arena.y + 40, arena.z, 0F, 0F);
+            }
+            case 20 -> {
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, false, "ir:" + protesDeep, "");
+            }
+            case 40 -> {
+                var d = cm.findClaimById(protesDeep);
+                double dx = player.getX() - d.getX(), dz = player.getZ() - d.getZ();
+                r.event("protes 3 (IR a la zona de abajo desde 900 bloques): en " + player.blockPosition().toShortString()
+                        + (dx * dx + dz * dz < 50 && player.getY() > d.getY() ? " (bien)" : " (MAL)"));
+                openPad = "protecciones/z:" + protesClaim + ":x";
+            }
+            case 90 -> shot(r, "protes_mas");
+            case 92 -> openPad = "a_protecciones";
+            case 140 -> shot(r, "protes_admin_lista");
+            case 142 -> openPad = "a_protecciones/z:" + protesDeep + ":a";
+            case 190 -> shot(r, "protes_admin_zona");
+            case 192 -> {
+                closeScreen = true;
+                player.teleportTo(level, arena.x - 700, arena.y + 30, arena.z, 0F, 0F);
+            }
+            case 200 -> net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, true, "ir:" + protesClaim, "");
+            case 220 -> {
+                var c = cm.findClaimById(protesClaim);
+                double dx = player.getX() - c.getX(), dz = player.getZ() - c.getZ();
+                r.event("protes 4 (admin: IR desde lejos): en " + player.blockPosition().toShortString() + (dx * dx + dz * dz < 50 ? " (bien)" : " (MAL)"));
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, true, "flag:" + protesDeep + ":" + net.tierrasfantasticas.tfclient.claims.data.ClaimFlags.FlagId.values()[0].name() + ":1", "");
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, true, "eliminar:" + protesDeep, "");
+                net.tierrasfantasticas.tfclient.pad.server.PadClaims.testAct(player, true, "eliminar:" + protesDeep, "");
+                r.event("protes 5 (admin: ELIMINAR, dos pulsaciones): " + (cm.findClaimById(protesDeep) == null ? "eliminada (bien)" : "SIGUE (MAL)"));
+                var c1 = cm.findClaimById(protesClaim);
+                if (c1 != null) cm.removeClaim(level, c1.getCenter());
+            }
+            case 230 -> next(level);
+            default -> { }
+        }
+    }
+
+    private static java.util.UUID protesClaim, protesDeep;
+
+    /** (1.3.150) La fiesta de /tf cumpleaños (server/TFBirthday y client/TFBirthdayClient), de noche para que luzca. */
+    private static void cumpleStep(MinecraftServer server, ServerLevel level, ServerPlayer player, Rep r) {
+        switch (t) {
+            case 1 -> {
+                player.teleportTo(level, arena.x, arena.y, arena.z, 0F, -12F);
+                command(server, "time set 18000");
+            }
+            case 10 -> command(server, "tf cumpleaños felicitar " + player.getGameProfile().getName());
+            case 70 -> shot(r, "cumple_titulo");
+            case 160 -> shot(r, "cumple_cielo");
+            case 300 -> {
+                player.setYRot(120F);
+                r.event("cumple 1 (a los 15 s): fiesta " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() + ", cohetes "
+                        + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.rocketsLaunched + ", estallidos " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts
+                        + ", notas " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed + ", fotogramas del letrero "
+                        + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bannerFrames);
+            }
+            case 360 -> shot(r, "cumple_girado");
+            case 1120 -> shot(r, "cumple_traca");
+            case 1240 -> {
+                r.event("cumple 2 (al acabar): fiesta " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() + ", servidor "
+                        + net.tierrasfantasticas.tfclient.server.TFBirthday.active() + ", cohetes " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.rocketsLaunched
+                        + ", estallidos " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts + ", notas " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed
+                        + (!net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts > 40
+                        && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed >= 25 ? " (bien)" : " (MAL)"));
+                command(server, "time set 6000");
+            }
+            case 1250 -> next(level);
             default -> { }
         }
     }

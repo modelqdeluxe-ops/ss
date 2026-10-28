@@ -49,7 +49,8 @@ final class PadHomePage extends PadPage {
             new App("a_recompensas", "RECOMPENSAS", "recompensas"), new App("a_viajes", "VIAJES", "viajes"),
             new App("a_gts", "GTS", "gts"), new App("a_comunidad", "COMUNIDAD", "comunidad"),
             new App("a_oficios", "OFICIOS", "oficios"), new App("a_cazas", "CAZAS", "cazas"), new App("a_pase", "TF PASS", "pase"),
-            new App("a_gacha", "GACHAPÓN", "gachapon"), new App("a_ajustes", "AJUSTES", "admin"));
+            new App("a_gacha", "GACHAPÓN", "gachapon"), new App("a_protecciones", "PROTECCIONES", "protecciones"),
+            new App("a_ajustes", "AJUSTES", "admin"));
 
     /** Lo que configura cada app del pad de administrador: sale abajo, en su franja, al pasar el ratón (1.3.66). */
     private static final java.util.Map<String, String> ADMIN_HINTS = java.util.Map.ofEntries(
@@ -64,6 +65,7 @@ final class PadHomePage extends PadPage {
             java.util.Map.entry("a_cazas", "Las presas que rotan cada 12 h: mob, cantidad, monedas e icono."),
             java.util.Map.entry("a_pase", "La temporada del TF Pass, la XP y los premios de cada nivel."),
             java.util.Map.entry("a_gacha", "Precio de la tirada, garantía, rarezas y los premios del Gachapón."),
+            java.util.Map.entry("a_protecciones", "Todas las zonas de todos: ir a ellas, sus permisos, miembros y baneos, o quitarlas."),
             java.util.Map.entry("a_ajustes", "Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs."));
 
     /** Ficha (textura de 40x40 + 2 de sombra) e icono (32x32, a 4 del borde). */

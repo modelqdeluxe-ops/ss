@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 @Mod(TFClient.MOD_ID)
 public final class TFClient {
     public static final String MOD_ID = "tfclient";
-    public static final String VERSION = "1.3.149";
+    public static final String VERSION = "1.3.150";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFClient() {
@@ -48,6 +48,7 @@ public final class TFClient {
                     net.tierrasfantasticas.tfclient.vacio.VoidNet.register();
                     net.tierrasfantasticas.tfclient.npcs.NpcNet.register();
                     net.tierrasfantasticas.tfclient.server.TFStaffLock.register();
+                    net.tierrasfantasticas.tfclient.server.TFBirthday.register();
                 }));
         if (FMLEnvironment.dist == Dist.CLIENT) {
             try {

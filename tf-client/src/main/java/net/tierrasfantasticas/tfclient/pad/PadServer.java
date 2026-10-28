@@ -120,6 +120,8 @@ public final class PadServer {
         APPS.put("a_cazas", net.tierrasfantasticas.tfclient.pad.server.PadAdminHunts.APP);
         APPS.put("a_pase", net.tierrasfantasticas.tfclient.pad.server.PadAdminPass.APP);
         APPS.put("a_gacha", net.tierrasfantasticas.tfclient.pad.server.PadAdminGacha.APP);
+        // (1.3.150) todas las protecciones de todos: ir, ajustes, miembros, baneos y eliminar
+        APPS.put("a_protecciones", net.tierrasfantasticas.tfclient.pad.server.PadClaims.ADMIN);
         // (1.3.142) RASTREADOR: las compras de la web y dónde está cada objeto
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);

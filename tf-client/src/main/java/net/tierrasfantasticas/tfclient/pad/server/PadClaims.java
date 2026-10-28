@@ -46,6 +46,9 @@ import net.tierrasfantasticas.tfclient.pad.TFPadNet;
  */
 public final class PadClaims {
     public static final PadServer.App APP = new App();
+    /** (1.3.150) El módulo PROTECCIONES del pad de administrador: todas las zonas de todos, desde donde sea. */
+    public static final PadServer.App ADMIN = new Admin();
+    private static final String MINE = "protecciones", ALL = "a_protecciones";
 
     private static final int TEXT = 0x18265C, MUTED = 0x7E8CA8, GOLD = 0xC27A10;
 
@@ -174,6 +177,8 @@ public final class PadClaims {
     }
 
     private static String title(Claim c) {
+        String custom = c.getFlags().customName;
+        if (custom != null && !custom.isBlank()) return custom;
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
         return g != null ? g.getName() : "Zona " + c.sizeLabel();
     }
@@ -186,137 +191,147 @@ public final class PadClaims {
             if (tab.startsWith("z:")) {
                 String[] t = tab.split(":");
                 Claim c = t.length > 1 ? claim(t[1]) : null;
-                if (canManage(player, c)) return zone(player, c, t.length > 2 ? t[2] : "a");
+                if (canManage(player, c)) return zone(player, MINE, c, t.length > 2 ? t[2] : "a");
             }
             return list(player);
         }
 
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
-            String[] a = action.split(":", 3);
-            Claim c = a.length > 1 ? claim(a[1]) : null;
-            if (a[0].equals("volver")) return "";
-            if (a[0].equals("inv_si") || a[0].equals("inv_no")) {
-                String code = a.length > 1 ? a[1] : "";
-                if (a[0].equals("inv_si")) ClaimMenuHandler.acceptMerge(player, code);
-                else ClaimMenuHandler.rejectMerge(player, code);
-                return "";
-            }
-            if (a[0].equals("salirgrupo")) {
-                if (PadServer.confirm(player, "protecciones.salirgrupo")) ClaimMenuHandler.leaveMerge(player);
-                return "";
-            }
-            if (!canManage(player, c)) return "";
-            ClaimFlags f = c.getFlags();
-            String arg = a.length > 2 ? a[2] : "";
-            ClaimManager manager = ClaimManager.getInstance();
-            switch (a[0]) {
-                case "flag" -> {
-                    FlagId id;
-                    try {
-                        id = FlagId.valueOf(arg.split(":")[0]);
-                    } catch (IllegalArgumentException e) {
-                        return null;
-                    }
-                    int need = required(id);
-                    if (need > 0 && paidLevel(c.getTier()) < need) {
-                        TFPadNet.notice(player, "Necesita una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + " o más grande.");
-                        return null;
-                    }
-                    // «flag:<zona>:<opción>:1|0» pone la opción encendida o apagada (no la alterna: pulsar el botón que
-                    // ya está elegido no cambia nada)
-                    String[] v = arg.split(":");
-                    if (v.length > 1) f.set(id, v[1].equals("1"));
-                    else f.toggle(id);
-                    manager.save();
-                }
-                case "contorno" -> {
-                    f.showBorder = arg.isEmpty() ? !f.showBorder : arg.equals("1");
-                    manager.save();
-                }
-                case "particulas" -> {
-                    f.showParticles = !f.showParticles;
-                    manager.save();
-                }
-                case "particula" -> {
-                    for (String p : ParticleBorder.availableParticles()) {
-                        if (!p.equals(arg)) continue;
-                        f.borderParticle = p;
-                        f.showParticles = true;
-                        manager.save();
-                    }
-                }
-                case "densidad" -> {
-                    f.particleDensity = Math.max(1, Math.min(200, f.particleDensity + (arg.equals("+") ? 5 : -5)));
-                    manager.save();
-                }
-                case "msg" -> { // msg:<zona>:entrar|salir:1|0
-                    String[] v = arg.split(":");
-                    boolean welcome = v[0].equals("entrar");
-                    boolean on = v.length > 1 ? v[1].equals("1") : !(welcome ? f.showWelcome : f.showLeave);
-                    if (welcome) f.showWelcome = on;
-                    else f.showLeave = on;
-                    manager.save();
-                }
-                case "estilo" -> { // estilo:<zona>:1|0 (1.3.113: los mensajes como título o encima de la barra)
-                    f.messageAsTitle = arg.equals("1");
-                    manager.save();
-                }
-                case "editar" -> PadServer.put(player, "protecciones.editar", arg);
-                case "texto" -> {
-                    String what = PadServer.get(player, "protecciones.editar", "");
-                    int max = ClaimConfig.get().maxWelcomeLength;
-                    String msg = text.length() > max ? text.substring(0, max) : text;
-                    if (what.equals("entrar")) {
-                        f.welcomeMessage = msg;
-                        f.showWelcome = !msg.isBlank();
-                    } else if (what.equals("salir")) {
-                        f.leaveMessage = msg;
-                        f.showLeave = !msg.isBlank();
-                    } else if (what.equals("grupo")) {
-                        TFPadNet.notice(player, ClaimMenuHandler.inviteToGroup(player, c, msg, ""));
-                    } else if (what.equals("invitar")) {
-                        TFPadNet.notice(player, ClaimMenuHandler.inviteToGroup(player, c, null, msg));
-                    }
-                    PadServer.put(player, "protecciones.editar", null);
-                    manager.save();
-                    if (what.equals("entrar") || what.equals("salir")) TFPadNet.notice(player, "Mensaje guardado.");
-                }
-                case "noeditar" -> PadServer.put(player, "protecciones.editar", null);
-                case "disolver" -> {
-                    ClaimGroup g = manager.getGroupOf(c);
-                    if (g == null || !c.isGroupMother() || !PadServer.confirm(player, "proteccion.disolver")) return null;
-                    manager.dissolveGroupBreaking(g.getGroupId());
-                    TFPadNet.notice(player, "Grupo disuelto.");
-                }
-                case "anadir" -> addMember(player, c, text.trim());
-                case "quitar" -> {
-                    UUID who = uuid(arg);
-                    if (who == null || !c.isMember(who) || !PadServer.confirm(player, "proteccion.quitar:" + arg)) return null;
-                    String name = PlayerLookup.nameOf(player.server, who);
-                    c.removeMember(who);
-                    manager.save();
-                    tell(player.server.getPlayerList().getPlayer(who), who, "[Protección] Ya no eres miembro de la zona de " + player.getName().getString(), ChatFormatting.YELLOW);
-                    TFPadNet.notice(player, name + " ya no es miembro.");
-                }
-                case "banear" -> ban(player, c, text.trim());
-                case "desbanear" -> {
-                    UUID who = uuid(arg);
-                    if (who == null || !c.isBanned(who)) return null;
-                    c.unbanPlayer(who);
-                    manager.save();
-                    TFPadNet.notice(player, PlayerLookup.nameOf(player.server, who) + " ya puede entrar.");
-                }
-                case "eliminar" -> {
-                    if (!PadServer.confirm(player, "proteccion.eliminar:" + c.getClaimId())) return null;
-                    delete(player, c);
-                    return "";
-                }
-                default -> {
-                }
-            }
-            return null;
+            return act(player, MINE, action, text);
         }
+    }
+
+    /** Lo que se pulsa en una zona: igual en la app de los jugadores y en la del staff (app = dónde se redibuja). */
+    private static String act(ServerPlayer player, String app, String action, String text) {
+        String[] a = action.split(":", 3);
+        Claim c = a.length > 1 ? claim(a[1]) : null;
+        if (a[0].equals("volver")) return "";
+        if (a[0].equals("inv_si") || a[0].equals("inv_no")) {
+            String code = a.length > 1 ? a[1] : "";
+            if (a[0].equals("inv_si")) ClaimMenuHandler.acceptMerge(player, code);
+            else ClaimMenuHandler.rejectMerge(player, code);
+            return "";
+        }
+        if (a[0].equals("salirgrupo")) {
+            if (PadServer.confirm(player, "protecciones.salirgrupo")) ClaimMenuHandler.leaveMerge(player);
+            return "";
+        }
+        if (!canManage(player, c)) return "";
+        ClaimFlags f = c.getFlags();
+        String arg = a.length > 2 ? a[2] : "";
+        ClaimManager manager = ClaimManager.getInstance();
+        switch (a[0]) {
+            case "flag" -> {
+                FlagId id;
+                try {
+                    id = FlagId.valueOf(arg.split(":")[0]);
+                } catch (IllegalArgumentException e) {
+                    return null;
+                }
+                int need = required(id);
+                if (need > 0 && paidLevel(c.getTier()) < need) {
+                    TFPadNet.notice(player, "Necesita una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + " o más grande.");
+                    return null;
+                }
+                // «flag:<zona>:<opción>:1|0» pone la opción encendida o apagada (no la alterna: pulsar el botón que
+                // ya está elegido no cambia nada)
+                String[] v = arg.split(":");
+                if (v.length > 1) f.set(id, v[1].equals("1"));
+                else f.toggle(id);
+                manager.save();
+            }
+            case "contorno" -> {
+                f.showBorder = arg.isEmpty() ? !f.showBorder : arg.equals("1");
+                manager.save();
+            }
+            case "particulas" -> {
+                f.showParticles = !f.showParticles;
+                manager.save();
+            }
+            case "particula" -> {
+                for (String p : ParticleBorder.availableParticles()) {
+                    if (!p.equals(arg)) continue;
+                    f.borderParticle = p;
+                    f.showParticles = true;
+                    manager.save();
+                }
+            }
+            case "densidad" -> {
+                f.particleDensity = Math.max(1, Math.min(200, f.particleDensity + (arg.equals("+") ? 5 : -5)));
+                manager.save();
+            }
+            case "msg" -> { // msg:<zona>:entrar|salir:1|0
+                String[] v = arg.split(":");
+                boolean welcome = v[0].equals("entrar");
+                boolean on = v.length > 1 ? v[1].equals("1") : !(welcome ? f.showWelcome : f.showLeave);
+                if (welcome) f.showWelcome = on;
+                else f.showLeave = on;
+                manager.save();
+            }
+            case "estilo" -> { // estilo:<zona>:1|0 (1.3.113: los mensajes como título o encima de la barra)
+                f.messageAsTitle = arg.equals("1");
+                manager.save();
+            }
+            case "editar" -> PadServer.put(player, "protecciones.editar", arg);
+            case "ir" -> goTo(player, c, !app.equals(ALL));
+            case "texto" -> {
+                String what = PadServer.get(player, "protecciones.editar", "");
+                int max = ClaimConfig.get().maxWelcomeLength;
+                String msg = text.length() > max ? text.substring(0, max) : text;
+                if (what.equals("entrar")) {
+                    f.welcomeMessage = msg;
+                    f.showWelcome = !msg.isBlank();
+                } else if (what.equals("salir")) {
+                    f.leaveMessage = msg;
+                    f.showLeave = !msg.isBlank();
+                } else if (what.equals("grupo")) {
+                    TFPadNet.notice(player, ClaimMenuHandler.inviteToGroup(player, c, msg, ""));
+                } else if (what.equals("invitar")) {
+                    TFPadNet.notice(player, ClaimMenuHandler.inviteToGroup(player, c, null, msg));
+                } else if (what.equals("nombre")) {
+                    f.customName = cleanName(text);
+                    TFPadNet.notice(player, f.customName.isEmpty() ? "Nombre quitado." : "Nombre guardado: «" + f.customName + "».");
+                }
+                PadServer.put(player, "protecciones.editar", null);
+                manager.save();
+                if (what.equals("entrar") || what.equals("salir")) TFPadNet.notice(player, "Mensaje guardado.");
+            }
+            case "noeditar" -> PadServer.put(player, "protecciones.editar", null);
+            case "disolver" -> {
+                ClaimGroup g = manager.getGroupOf(c);
+                if (g == null || !c.isGroupMother() || !PadServer.confirm(player, "proteccion.disolver")) return null;
+                manager.dissolveGroupBreaking(g.getGroupId());
+                TFPadNet.notice(player, "Grupo disuelto.");
+            }
+            case "anadir" -> addMember(player, app, c, text.trim());
+            case "quitar" -> {
+                UUID who = uuid(arg);
+                if (who == null || !c.isMember(who) || !PadServer.confirm(player, "proteccion.quitar:" + arg)) return null;
+                String name = PlayerLookup.nameOf(player.server, who);
+                c.removeMember(who);
+                manager.save();
+                tell(player.server.getPlayerList().getPlayer(who), who, "[Protección] Ya no eres miembro de la zona de " + player.getName().getString(), ChatFormatting.YELLOW);
+                TFPadNet.notice(player, name + " ya no es miembro.");
+            }
+            case "banear" -> ban(player, app, c, text.trim());
+            case "desbanear" -> {
+                UUID who = uuid(arg);
+                if (who == null || !c.isBanned(who)) return null;
+                c.unbanPlayer(who);
+                manager.save();
+                TFPadNet.notice(player, PlayerLookup.nameOf(player.server, who) + " ya puede entrar.");
+            }
+            case "eliminar" -> {
+                if (!PadServer.confirm(player, "proteccion.eliminar:" + c.getClaimId())) return null;
+                if (app.equals(ALL) && !c.isOwner(player.getUUID())) deleteAsAdmin(player, c);
+                else delete(player, c);
+                return "";
+            }
+            default -> {
+            }
+        }
+        return null;
     }
 
     private static UUID uuid(String s) {
@@ -333,7 +348,7 @@ public final class PadClaims {
         else ClaimManager.getInstance().queueMessage(who, msg);
     }
 
-    private static void addMember(ServerPlayer player, Claim c, String name) {
+    private static void addMember(ServerPlayer player, String app, Claim c, String name) {
         if (name.isEmpty()) return;
         UUID id = c.getClaimId();
         PlayerLookup.resolveAsync(player.getServer(), name, r -> {
@@ -358,7 +373,7 @@ public final class PadClaims {
                     tell(r.online(), r.id(), "[Protección] Eres miembro de la zona de " + player.getName().getString(), ChatFormatting.AQUA);
                 }
             }
-            PadServer.refresh(player, "protecciones", "z:" + id + ":m");
+            PadServer.refresh(player, app, "z:" + id + ":m");
         });
     }
 
@@ -399,7 +414,7 @@ public final class PadClaims {
         }
     }
 
-    private static void ban(ServerPlayer player, Claim c, String name) {
+    private static void ban(ServerPlayer player, String app, Claim c, String name) {
         if (name.isEmpty()) return;
         UUID id = c.getClaimId();
         PlayerLookup.resolveAsync(player.getServer(), name, r -> {
@@ -416,7 +431,7 @@ public final class PadClaims {
                 TFPadNet.notice(player, r.name() + " ya no puede entrar en la zona.");
                 tell(r.online(), r.id(), "[!] Has sido baneado de una zona de " + player.getName().getString(), ChatFormatting.RED);
             }
-            PadServer.refresh(player, "protecciones", "z:" + id + ":b");
+            PadServer.refresh(player, app, "z:" + id + ":b");
         });
     }
 
@@ -483,10 +498,10 @@ public final class PadClaims {
         return b.build();
     }
 
-    private static PadView zone(ServerPlayer player, Claim c, String section) {
+    private static PadView zone(ServerPlayer player, String app, Claim c, String section) {
         String base = "z:" + c.getClaimId() + ":";
         int members = c.getMembers().size(), bans = c.getBannedPlayers().size();
-        PadView.Builder b = PadView.of("protecciones").tab(base + "a", "AJUSTES")
+        PadView.Builder b = PadView.of(app).tab(base + "a", "AJUSTES")
                 .tab(base + "m", members > 0 ? "MIEMBROS (" + members + ")" : "MIEMBROS")
                 .tab(base + "b", bans > 0 ? "BANEOS (" + bans + ")" : "BANEOS")
                 .tab(base + "p", "PARTÍCULAS").tab(base + "x", "MÁS").selected(base + section);
@@ -497,6 +512,14 @@ public final class PadClaims {
             return b.build();
         }
         String id = c.getClaimId().toString();
+        if (app.equals(ALL)) {
+            // el staff ve de quién es y puede ir al momento, esté donde esté
+            boolean online = player.server.getPlayerList().getPlayer(c.getOwnerUUID()) != null;
+            b.hero(new PadView.Row(PadClans.head(c.getOwnerUUID(), c.getOwnerName()), title(c), GOLD,
+                    List.of("Dueño: " + c.getOwnerName() + (online ? " (conectado)" : " (desconectado)"),
+                            dim(c.getWorld()) + " · " + c.getX() + ", " + c.getY() + ", " + c.getZ() + " · " + c.sizeLabel()),
+                    -1, "", PadView.Btn.of("IR", "ir:" + id, PadView.GREEN), null));
+        }
         switch (section) {
             case "m" -> members(player, b, c, id);
             case "b" -> bans(player, b, c, id);
@@ -573,6 +596,13 @@ public final class PadClaims {
     private static void more(ServerPlayer player, PadView.Builder b, Claim c, String id) {
         ClaimFlags f = c.getFlags();
         String editing = PadServer.get(player, "protecciones.editar", "");
+        // (1.3.150, el dueño: «ponerle un nombre custom a la protección, solo visual, y una opción de tpearse a tu protección»)
+        b.row(new PadView.Row(new ItemStack(Items.NAME_TAG), "Nombre de la zona", TEXT,
+                List.of(f.customName.isBlank() ? "Sin nombre: se ve «" + title(c) + "»." : "«" + f.customName + "»"), -1, "",
+                PadView.Btn.of("CAMBIAR", "editar:" + id + ":nombre", PadView.BLUE), null).selected(editing.equals("nombre")));
+        b.row(new PadView.Row(new ItemStack(Items.ENDER_PEARL), "Ir a la zona", TEXT,
+                List.of("Te deja encima de la piedra, en la superficie."), -1, "",
+                PadView.Btn.of("IR", "ir:" + id, PadView.GREEN), null));
         b.row(new PadView.Row(new ItemStack(Items.MAP), "¿Se ve el contorno de la zona?", TEXT, List.of(), -1, "",
                 answer("SÍ", f.showBorder, "contorno:" + id + ":1"), answer("NO", !f.showBorder, "contorno:" + id + ":0")));
         b.row(new PadView.Row(new ItemStack(Items.OAK_HANGING_SIGN), "¿Mensaje al entrar?", TEXT,
@@ -604,6 +634,7 @@ public final class PadClaims {
         b.row(new PadView.Row(new ItemStack(Items.TNT), "Eliminar la zona", 0xC8323C, List.of("Se quita la protección y la piedra vuelve a tu inventario."),
                 -1, "", PadView.Btn.of(sure ? "¿SEGURO?" : "ELIMINAR", "eliminar:" + id, PadView.RED), null));
         switch (editing) {
+            case "nombre" -> b.input("texto:" + id, "NOMBRE DE LA ZONA (VACÍO: SIN NOMBRE)", NAME_MAX, "GUARDAR");
             case "entrar" -> b.input("texto:" + id, "MENSAJE AL ENTRAR", ClaimConfig.get().maxWelcomeLength, "GUARDAR");
             case "salir" -> b.input("texto:" + id, "MENSAJE AL SALIR", ClaimConfig.get().maxWelcomeLength, "GUARDAR");
             case "grupo" -> b.input("texto:" + id, "NOMBRE DEL GRUPO", 32, "CREAR");
@@ -612,5 +643,178 @@ public final class PadClaims {
             }
         }
         if (!editing.isEmpty()) b.footer(PadView.Btn.of("CANCELAR", "noeditar:" + id, PadView.GRAY));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.150) Nombre, ir a la zona y el módulo del staff
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static final int NAME_MAX = 32;
+
+    /** Sin colores (§), sin caracteres raros y como mucho {@link #NAME_MAX}. */
+    static String cleanName(String text) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < text.length() && sb.length() < NAME_MAX; i++) {
+            char ch = text.charAt(i);
+            if (ch == '§') {
+                i++;
+                continue;
+            }
+            if (!Character.isISOControl(ch)) sb.append(ch);
+        }
+        return sb.toString().trim();
+    }
+
+    private static ServerLevel levelOf(net.minecraft.server.MinecraftServer server, Claim c) {
+        for (ServerLevel l : server.getAllLevels()) if (l.dimension().location().toString().equals(c.getWorld())) return l;
+        return null;
+    }
+
+    /** ¿Se puede estar de pie aquí (suelo firme, dos de aire, nada que queme)? */
+    private static boolean standable(ServerLevel level, BlockPos feet) {
+        net.minecraft.world.level.block.state.BlockState below = level.getBlockState(feet.below());
+        if (!below.blocksMotion() || !below.getFluidState().isEmpty() || below.is(net.minecraft.world.level.block.Blocks.MAGMA_BLOCK)
+                || below.is(net.minecraft.tags.BlockTags.FIRE) || below.is(net.minecraft.world.level.block.Blocks.CAMPFIRE)) {
+            return false;
+        }
+        for (BlockPos p : new BlockPos[] {feet, feet.above()}) {
+            net.minecraft.world.level.block.state.BlockState s = level.getBlockState(p);
+            if (s.blocksMotion() || !s.getFluidState().isEmpty() || s.is(net.minecraft.tags.BlockTags.FIRE)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Dónde aparecer: encima de la piedra, en la superficie (lo más alto que pisa algo, sin hojas). En los mundos con
+     * techo (el Nether) no se puede ir a la superficie: el primer hueco libre encima de la piedra. Si justo ahí no se
+     * puede (lava, agua…), lo más cerca alrededor; si nada, encima de la piedra.
+     */
+    public static BlockPos surface(ServerLevel level, Claim c) {
+        int min = level.getMinBuildHeight(), top = min + level.getLogicalHeight() - 2;
+        for (int r = 0; r <= 4; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                    int x = c.getX() + dx, z = c.getZ() + dz;
+                    level.getChunk(x >> 4, z >> 4);
+                    if (!level.dimensionType().hasCeiling()) {
+                        BlockPos p = new BlockPos(x, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
+                        if (p.getY() > min && standable(level, p)) return p;
+                    } else {
+                        for (int y = c.getY() + 1; y < top; y++) {
+                            BlockPos p = new BlockPos(x, y, z);
+                            if (standable(level, p)) return p;
+                        }
+                    }
+                }
+            }
+        }
+        return c.getCenter().above();
+    }
+
+    /** Ir a la zona: los jugadores con la cuenta atrás de los viajes; el staff, al momento. */
+    private static void goTo(ServerPlayer player, Claim c, boolean countdown) {
+        ServerLevel level = levelOf(player.server, c);
+        if (level == null) {
+            TFPadNet.notice(player, "Ese mundo no está cargado.");
+            return;
+        }
+        String name = title(c);
+        UUID id = c.getClaimId();
+        Runnable go = () -> {
+            Claim now = ClaimManager.getInstance().findClaimById(id);
+            if (now == null || player.hasDisconnected()) return;
+            BlockPos p = surface(level, now);
+            PadTravel.arrive(player, level, p.getX() + 0.5, p.getY(), p.getZ() + 0.5, player.getYRot(), player.getXRot());
+            player.displayClientMessage(Component.literal("En «" + name + "».").withStyle(ChatFormatting.GREEN), true);
+        };
+        if (countdown) {
+            PadTravel.warmup(player, "Yendo a «" + name + "»", go);
+        } else {
+            TFPadNet.close(player);
+            go.run();
+        }
+    }
+
+    /** El staff quita la zona de otro: sin piedra para nadie (como en el panel de /tf web claims) y se le avisa al dueño. */
+    private static void deleteAsAdmin(ServerPlayer player, Claim c) {
+        ServerLevel level = levelOf(player.server, c);
+        if (level == null) {
+            TFPadNet.notice(player, "Ese mundo no está cargado.");
+            return;
+        }
+        BlockPos pos = c.getCenter();
+        if (c.getTier() != null && ClaimBlocks.isClaimConcreteForTier(level.getBlockState(pos).getBlock(), c.getTier())) {
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+        }
+        ClaimManager.getInstance().removeClaim(level, pos);
+        net.tierrasfantasticas.tfclient.TFClient.LOGGER.info("TF Protecciones: {} eliminó la zona de {} en {} {}, {}, {}", player.getGameProfile().getName(),
+                c.getOwnerName(), c.getWorld(), c.getX(), c.getY(), c.getZ());
+        tell(player.server.getPlayerList().getPlayer(c.getOwnerUUID()), c.getOwnerUUID(),
+                "[!] Un administrador eliminó tu zona " + c.sizeLabel() + " en X:" + c.getX() + " Z:" + c.getZ(), ChatFormatting.YELLOW);
+        TFPadNet.notice(player, "Zona de " + c.getOwnerName() + " eliminada.");
+    }
+
+    /** Para la prueba en el juego: como si pulsara eso en la app (la suya o la del staff). */
+    public static String testAct(ServerPlayer player, boolean admin, String action, String text) {
+        return admin ? ADMIN.action(player, "", action, text) : act(player, MINE, action, text);
+    }
+
+    private static final int ADMIN_ROWS = 120;
+
+    private static final class Admin implements PadServer.App {
+        @Override
+        public PadView view(ServerPlayer player, String tab) {
+            if (tab.startsWith("z:")) {
+                String[] t = tab.split(":");
+                Claim c = t.length > 1 ? claim(t[1]) : null;
+                if (c != null) return zone(player, ALL, c, t.length > 2 ? t[2] : "a");
+            }
+            String search = PadServer.get(player, "a_protecciones.buscar", "");
+            String q = search.toLowerCase(Locale.ROOT);
+            List<Claim> all = new ArrayList<>(ClaimManager.getInstance().getAllClaims());
+            java.util.Set<UUID> owners = new java.util.HashSet<>();
+            for (Claim c : all) owners.add(c.getOwnerUUID());
+            List<Claim> shown = new ArrayList<>();
+            for (Claim c : all) {
+                if (c.getGroupId() != null && !c.isGroupMother()) continue; // las del grupo se llevan desde la principal
+                if (q.isEmpty() || c.getOwnerName().toLowerCase(Locale.ROOT).contains(q) || title(c).toLowerCase(Locale.ROOT).contains(q)) shown.add(c);
+            }
+            shown.sort(java.util.Comparator.comparing((Claim c) -> c.getOwnerName().toLowerCase(Locale.ROOT)).thenComparing(Claim::getCreatedAt));
+            PadView.Builder b = PadView.of(ALL).header(all.size() + (all.size() == 1 ? " zona de " : " zonas de ") + owners.size()
+                    + (owners.size() == 1 ? " jugador" : " jugadores")
+                    + (q.isEmpty() ? ". Pulsa una para administrarla." : " · buscando «" + search + "»: " + shown.size() + "."));
+            Claim here = ClaimManager.getInstance().getClaimAt(player.level(), player.blockPosition());
+            for (int i = 0; i < shown.size() && i < ADMIN_ROWS; i++) {
+                Claim c = shown.get(i);
+                int m = c.getMembers().size();
+                List<String> lines = List.of("Dueño: " + c.getOwnerName(),
+                        dim(c.getWorld()) + " · " + c.getX() + ", " + c.getY() + ", " + c.getZ() + " · " + (m == 0 ? "sin miembros" : m + (m == 1 ? " miembro" : " miembros")));
+                b.row(new PadView.Row(icon(c), title(c), TEXT, lines, -1, c.equals(here) ? "ESTÁS AQUÍ" : "",
+                        PadView.Btn.of("IR", "ir:" + c.getClaimId(), PadView.GREEN), null).clickable("tab:z:" + c.getClaimId() + ":a"));
+            }
+            if (shown.size() > ADMIN_ROWS) b.text("Y " + (shown.size() - ADMIN_ROWS) + " más: busca por el dueño o el nombre.", MUTED, List.of());
+            b.empty(q.isEmpty() ? "Nadie ha puesto protecciones." : "Nada con «" + search + "».");
+            b.input("buscar", "BUSCAR POR DUEÑO O NOMBRE", 32, "BUSCAR");
+            if (!q.isEmpty()) b.footer(PadView.Btn.of("VER TODAS", "todas", PadView.GRAY));
+            return b.build();
+        }
+
+        @Override
+        public String action(ServerPlayer player, String tab, String action, String text) {
+            switch (action) {
+                case "buscar" -> {
+                    PadServer.put(player, "a_protecciones.buscar", text.trim());
+                    return "";
+                }
+                case "todas" -> {
+                    PadServer.put(player, "a_protecciones.buscar", null);
+                    return "";
+                }
+                default -> {
+                    return act(player, ALL, action, text);
+                }
+            }
+        }
     }
 }

@@ -190,7 +190,31 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (28 oct 2026, TF Client 1.3.149) — lee esto primero
+### CHECKPOINT (28 oct 2026, TF Client 1.3.150) — lee esto primero
+
+**1.3.150** (el dueño, cuatro cosas). Prueba en el juego: `[prueba-jefes=encantar,protes,cumple]`, todo «bien».
+- **Encantar las piezas de los sets** (`items/TFEnchanting`, mixins `EnchantTableMixin` sobre `ItemStack.isEnchantable`
+  y `EnchantmentHelperMixin` sobre `getAvailableEnchantmentResults`): la mesa acepta las ya encantadas mientras quede
+  algo que puedan llevar y solo ofrece lo que no tienen ni choca; el yunque con libro (`AnvilUpdateEvent`) suma sin bajar
+  nunca un nivel (los de rango por encima del máximo se quedan), coste como Minecraft con tope 39; nunca
+  Irrompibilidad ni Reparación; una pieza nuestra no se repara, no se junta ni se sacrifica; la piedra de afilar no las
+  coge (quitaría lo del rango y daría XP). El resultado es la copia de la pieza: atributos, dueño y NBT intactos. Los
+  sets full (Celestial/Fantástico) no tienen nada que añadir.
+- **Pad de admin**: textura nueva 32x32 (`textures/item/pad_admin.png`, tableta granate con corona y escudo) y la app
+  `a_protecciones` (`PadClaims.ADMIN`): todas las zonas (las de grupo, por la principal), buscar por dueño o nombre,
+  IR al momento, y la zona con sus pestañas de siempre (ajustes = permisos, miembros, baneos, partículas, más) con el
+  dueño arriba; ELIMINAR del staff = sin piedra y aviso al dueño (como el panel de `/tf web claims`). `PadClaims.act`
+  es lo común; `app` decide dónde se redibuja.
+- **Protecciones, MÁS** (para todos): «Nombre de la zona» (`ClaimFlags.customName`, guardado como `customName`; sin §,
+  32 letras; solo se ve en el pad) e «Ir a la zona» (`PadClaims.surface`: encima de la piedra en la superficie, sin
+  hojas; con techo, el primer hueco libre encima; si no se puede estar, lo más cerca; con la cuenta atrás de viajes).
+- **`/tf cumpleaños felicitar <jugador>`** (también `cumpleanos`; `parar`): `server/TFBirthday` (1 min, chat en
+  arcoíris, canal `tfclient:cumple`, también a quien entra o cambia de mundo) y `client/TFBirthdayClient` en los mundos
+  con cielo de Overworld (Multiverse incluido; Nether, End y Void no): letrero en el cielo que sigue la mirada
+  (drawInBatch8xOutline, AFTER_PARTICLES), cohetes del cliente (`createFireworks`, sin entidades ni daño) con traca al
+  final, confeti de lana, «Cumpleaños feliz» con campanas y, al homenajeado, el título. Sin probar con shaders.
+
+### CHECKPOINT (28 oct 2026, TF Client 1.3.149)
 
 **1.3.149** (el dueño: «añade un comando para quitar estas cosas yo manualmente… y para quitar todos los equipados»
 y «añade contraseña al comando tf… cuando la ponga me desbloquea el comando solo a mí o al que tenga la pass»).

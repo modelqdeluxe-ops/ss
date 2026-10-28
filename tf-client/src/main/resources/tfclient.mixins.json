@@ -6,6 +6,8 @@
   "refmap": "tfclient.refmap.json",
   "mixins": [
     "ItemStackMixin",
+    "EnchantTableMixin",
+    "EnchantmentHelperMixin",
     "BossHealthMixin",
     "claims.PressurePlateMixin",
     "claims.DispenserBlockMixin",
