@@ -1081,12 +1081,16 @@ function construirIconos() {
 // ---------------------------------------------------------------- atlas
 
 const SPR = {};
-let ATLAS = null;
+let ATLAS = null, ATLAS_N = null;
+// Funciones que añaden los archivos de modelos 3D (se llaman al construir el atlas, en orden).
+const CONSTRUIR_MODELOS = [];
 
 function construirArte() {
   construirTerreno(); construirJugador(); construirCriaturas(); construirObjetos(); construirIconos();
   if (typeof construirExtra === 'function') construirExtra();
   if (typeof construirFase2 === 'function') construirFase2();
+  // los modelos 3D horneados (modelos*.js) van al final: si se llaman igual que un dibujo viejo, lo sustituyen
+  for (const f of CONSTRUIR_MODELOS) f();
   // Empaquetado en estantes, de más alto a más bajo, con 1 px libre alrededor.
   const lista = [...new Map(DIBUJOS).entries()].sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
   const ANCHO = 1024;
@@ -1096,30 +1100,59 @@ function construirArte() {
     SPR[n] = { x, y, w: l.w, h: l.h };
     x += l.w + 2; alto = Math.max(alto, l.h);
   }
-  const H = y + alto + 1;
+  const H0 = y + alto + 1;
+  ZONA_DIN.y = H0;
+  const H = H0 + ZONA_DIN.h;
   ATLAS = document.createElement('canvas');
   ATLAS.width = ANCHO; ATLAS.height = H;
   const cx = ATLAS.getContext('2d'), img = cx.createImageData(ANCHO, H), d = img.data;
-  const cache = new Map();
-  const rgba = (c) => {
-    let v = cache.get(c);
-    if (!v) {
-      const h = c.slice(1);
-      v = [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), h.length >= 8 ? parseInt(h.slice(6, 8), 16) : 255];
-      cache.set(c, v);
-    }
-    return v;
-  };
-  for (const [n, l] of lista) {
-    const r = SPR[n];
-    for (let j = 0; j < l.h; j++) for (let i = 0; i < l.w; i++) {
-      const c = l.d[j * l.w + i]; if (!c) continue;
-      const v = rgba(c), o = ((r.y + j) * ANCHO + r.x + i) * 4;
-      d[o] = v[0]; d[o + 1] = v[1]; d[o + 2] = v[2]; d[o + 3] = v[3];
-    }
-  }
+  for (const [n, l] of lista) pintarLienzo(d, ANCHO, l, SPR[n].x, SPR[n].y);
   cx.putImageData(img, 0, 0);
+  // atlas de normales (solo los modelos horneados las tienen; el resto queda transparente: sin luz de lado)
+  ATLAS_N = document.createElement('canvas');
+  ATLAS_N.width = ANCHO; ATLAS_N.height = H;
+  const cn = ATLAS_N.getContext('2d'), imn = cn.createImageData(ANCHO, H), dn = imn.data;
+  for (const [n, l] of lista) pintarNormales(dn, ANCHO, l, SPR[n].x, SPR[n].y);
+  cn.putImageData(imn, 0, 0);
   DIBUJOS.length = 0;
+  if (typeof Personaje !== 'undefined') Personaje.inicial();
+}
+
+// Copia un lienzo (colores en hex) a un ImageData de ancho `ancho`, en (x, y).
+const CACHE_RGBA = new Map();
+function pintarLienzo(d, ancho, l, x, y) {
+  for (let j = 0; j < l.h; j++) for (let i = 0; i < l.w; i++) {
+    const c = l.d[j * l.w + i]; if (!c) continue;
+    let v = CACHE_RGBA.get(c);
+    if (!v) { const h = c.slice(1); v = [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), h.length >= 8 ? parseInt(h.slice(6, 8), 16) : 255]; CACHE_RGBA.set(c, v); }
+    const o = ((y + j) * ancho + x + i) * 4;
+    d[o] = v[0]; d[o + 1] = v[1]; d[o + 2] = v[2]; d[o + 3] = v[3];
+  }
+}
+function pintarNormales(d, ancho, l, x, y) {
+  if (!l.n) return;
+  for (let j = 0; j < l.h; j++) for (let i = 0; i < l.w; i++) {
+    const v = l.n[j * l.w + i]; if (!v) continue;
+    const o = ((y + j) * ancho + x + i) * 4;
+    d[o] = (v >> 16) & 255; d[o + 1] = (v >> 8) & 255; d[o + 2] = v & 255; d[o + 3] = 255;
+  }
+}
+// La zona dinámica: las últimas filas del atlas, para lo que se hornea en marcha (el personaje con su equipo y
+// su aspecto). escribirZona vuelve a llenarla entera y la sube a la tarjeta gráfica.
+const ZONA_DIN = { y: 0, h: 240 };
+function escribirZona(lista) {
+  const A = ATLAS.width, img = new ImageData(A, ZONA_DIN.h), imn = new ImageData(A, ZONA_DIN.h);
+  let x = 1, y = 1, alto = 0;
+  for (const [n, l] of lista) {
+    if (x + l.w + 1 > A) { x = 1; y += alto + 2; alto = 0; }
+    if (y + l.h + 1 > ZONA_DIN.h) throw new Error('zona dinámica llena');
+    SPR[n] = { x, y: ZONA_DIN.y + y, w: l.w, h: l.h };
+    pintarLienzo(img.data, A, l, x, y); pintarNormales(imn.data, A, l, x, y);
+    x += l.w + 2; alto = Math.max(alto, l.h);
+  }
+  ATLAS.getContext('2d').putImageData(img, 0, ZONA_DIN.y);
+  ATLAS_N.getContext('2d').putImageData(imn, 0, ZONA_DIN.y);
+  if (typeof GL !== 'undefined') { GL.olvidarUV(lista.map((e) => e[0])); GL.subirZona(0, ZONA_DIN.y, A, ZONA_DIN.h); }
 }
 
 // Para la interfaz (lienzo 2D): esquina arriba-izquierda, pies o centro.

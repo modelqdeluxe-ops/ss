@@ -18,7 +18,7 @@ const GL = (() => {
   const KY = 1 / Math.cos(PITCH);
   const CHUNK = 16, CASILLAS_CORTO = 14;
 
-  let gl = null, canvas = null, prog = null, progHalo = null, texAtlas = null, texLuz = null, texHalo = null, texRayo = null;
+  let gl = null, canvas = null, prog = null, progHalo = null, texAtlas = null, texNormales = null, texLuz = null, texHalo = null, texRayo = null;
   let progBrillo = null, progDesenfoque = null, progFinal = null, vaoVacio = null, fb = null;
   let W = 1, H = 1, dist = 22, luzW = 0, luzH = 0;
   const cam = { x: 0, z: 0, vp: new Float32Array(16), inv: new Float32Array(16) };
@@ -65,19 +65,22 @@ const GL = (() => {
   // ---------------------------------------------------------------- sombreadores
 
   const VS = `#version 300 es
-  in vec3 aPos; in vec2 aUv; in vec4 aTinte; in vec2 aLuz; in vec2 aExtra;
+  in vec3 aPos; in vec2 aUv; in vec4 aTinte; in vec2 aLuz; in vec2 aExtra; in vec3 aNorm;
   uniform mat4 uVP; uniform vec4 uLuzRect;
-  out vec2 vUv; out vec4 vTinte; out vec2 vLuzUv; out vec2 vExtra;
+  out vec2 vUv; out vec4 vTinte; out vec2 vLuzUv; out vec2 vExtra; out vec3 vNorm;
   void main() {
     gl_Position = uVP * vec4(aPos, 1.0);
-    vUv = aUv; vTinte = aTinte; vExtra = aExtra;
+    vUv = aUv; vTinte = aTinte; vExtra = aExtra; vNorm = aNorm;
     vLuzUv = (aLuz - uLuzRect.xy) * uLuzRect.zw;
   }`;
-  // aExtra.x: cuánto ignora la luz (1 = brilla solo); aExtra.y: destello blanco.
+  // aExtra.x: cuánto ignora la luz (1 = brilla solo); aExtra.y: destello blanco. aNorm: normal de la cara (el
+  // suelo y las paredes); si es cero, la normal sale del atlas de normales (los modelos horneados).
+  // Luz de lado: la pendiente del mapa de luz dice de dónde viene la luz; las caras que miran hacia allí se
+  // aclaran y las que le dan la espalda se oscurecen (una antorcha a la izquierda alumbra el lado izquierdo).
   const FS = `#version 300 es
   precision highp float;
-  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam;
-  in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra;
+  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform sampler2D uNormales; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam; uniform float uLado;
+  in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra; in vec3 vNorm;
   out vec4 color;
   const float BAYER[16] = float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
   void main() {
@@ -89,6 +92,16 @@ const GL = (() => {
     mat2 ju = mat2(dFdx(vUv), dFdy(vUv)), jl = mat2(dFdx(vLuzUv), dFdy(vLuzUv));
     if (abs(determinant(ju)) > 1e-14) luzUv += jl * inverse(ju) * ((texel + 0.5) / uAtlasTam - vUv);
     vec3 l = texture(uLuz, luzUv).rgb;
+    vec3 n = vNorm;
+    bool volteo = n.y < -2.5;
+    if (volteo || dot(n, n) < 0.25) { vec4 nt = texture(uNormales, vUv); n = nt.a > 0.5 ? nt.rgb * 2.0 - 1.0 : vec3(0.0); if (volteo) n.x = -n.x; }
+    if (abs(n.x) + abs(n.z) > 0.05) {
+      vec2 e = 1.0 / vec2(textureSize(uLuz, 0));
+      const vec3 Y = vec3(0.3, 0.5, 0.2);
+      float gx = dot(texture(uLuz, luzUv + vec2(e.x, 0.0)).rgb - texture(uLuz, luzUv - vec2(e.x, 0.0)).rgb, Y);
+      float gz = dot(texture(uLuz, luzUv + vec2(0.0, e.y)).rgb - texture(uLuz, luzUv - vec2(0.0, e.y)).rgb, Y);
+      l *= clamp(1.0 + uLado * dot(n.xz, vec2(gx, gz)), 0.55, 1.6);
+    }
     l = l * l * 2.4;
     vec2 m = mod(texel, 4.0);
     float b = (BAYER[int(m.y) * 4 + int(m.x)] + 0.5) / 16.0;
@@ -153,10 +166,12 @@ const GL = (() => {
   }
 
   // ---------------------------------------------------------------- vértices
-  // x y z  u v  r g b a  lx lz  unlit blanco  → 13 floats por vértice, 4 por quad.
-  const F = 13;
+  // x y z  u v  r g b a  lx lz  unlit blanco  nx ny nz → 16 floats por vértice, 4 por quad.
+  const F = 16;
   class Lote {
-    constructor(cap = 2048) { this.d = new Float32Array(cap * 4 * F); this.n = 0; }
+    constructor(cap = 2048) { this.d = new Float32Array(cap * 4 * F); this.n = 0; this.nx = 0; this.ny = 0; this.nz = 0; }
+    // normal de los quads que vengan (0,0,0: la del atlas de normales)
+    normal(x, y, z) { this.nx = x; this.ny = y; this.nz = z; return this; }
     reservar() {
       if ((this.n + 1) * 4 * F > this.d.length) { const nd = new Float32Array(this.d.length * 2); nd.set(this.d); this.d = nd; }
     }
@@ -164,11 +179,11 @@ const GL = (() => {
     q(x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3, uv, flip, r, g, b, a, lx, lz, unlit, blanco) {
       this.reservar();
       const d = this.d; let o = this.n * 4 * F;
-      const ua = flip ? uv[2] : uv[0], ub = flip ? uv[0] : uv[2];
-      d[o++] = x0; d[o++] = y0; d[o++] = z0; d[o++] = ua; d[o++] = uv[1]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco;
-      d[o++] = x1; d[o++] = y1; d[o++] = z1; d[o++] = ub; d[o++] = uv[1]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco;
-      d[o++] = x2; d[o++] = y2; d[o++] = z2; d[o++] = ub; d[o++] = uv[3]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco;
-      d[o++] = x3; d[o++] = y3; d[o++] = z3; d[o++] = ua; d[o++] = uv[3]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco;
+      const ua = flip ? uv[2] : uv[0], ub = flip ? uv[0] : uv[2], nx = flip ? -this.nx : this.nx, ny = flip && !this.nx && !this.ny && !this.nz ? -3 : this.ny, nz = this.nz;
+      d[o++] = x0; d[o++] = y0; d[o++] = z0; d[o++] = ua; d[o++] = uv[1]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco; d[o++] = nx; d[o++] = ny; d[o++] = nz;
+      d[o++] = x1; d[o++] = y1; d[o++] = z1; d[o++] = ub; d[o++] = uv[1]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco; d[o++] = nx; d[o++] = ny; d[o++] = nz;
+      d[o++] = x2; d[o++] = y2; d[o++] = z2; d[o++] = ub; d[o++] = uv[3]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco; d[o++] = nx; d[o++] = ny; d[o++] = nz;
+      d[o++] = x3; d[o++] = y3; d[o++] = z3; d[o++] = ua; d[o++] = uv[3]; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a; d[o++] = lx; d[o++] = lz; d[o++] = unlit; d[o++] = blanco; d[o++] = nx; d[o++] = ny; d[o++] = nz;
       this.n++;
     }
     // Quad con tinte y punto de luz por esquina (para el mundo, que se construye pocas veces).
@@ -197,7 +212,7 @@ const GL = (() => {
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
     const at = (n, k, off) => { const l = gl.getAttribLocation(p, n); if (l < 0) return; gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, k, gl.FLOAT, false, F * 4, off * 4); };
-    at('aPos', 3, 0); at('aUv', 2, 3); at('aTinte', 4, 5); at('aLuz', 2, 9); at('aExtra', 2, 11);
+    at('aPos', 3, 0); at('aUv', 2, 3); at('aTinte', 4, 5); at('aLuz', 2, 9); at('aExtra', 2, 11); at('aNorm', 3, 13);
     gl.bindVertexArray(null);
     return { vao, vbo, n: 0, cap: 0 };
   }
@@ -224,6 +239,18 @@ const GL = (() => {
     return u;
   }
 
+  // La zona del atlas que se vuelve a hornear en marcha (el personaje con su equipo): se sube solo ese trozo.
+  function subirZona(x, y, w, h) {
+    if (!gl) return;
+    const dc = ATLAS.getContext('2d').getImageData(x, y, w, h).data, dn = ATLAS_N.getContext('2d').getImageData(x, y, w, h).data;
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.bindTexture(gl.TEXTURE_2D, texAtlas); gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(dc.buffer));
+    gl.bindTexture(gl.TEXTURE_2D, texNormales); gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(dn.buffer));
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  function olvidarUV(nombres) { for (const n of nombres) UV.delete(n); }
+  const FUERZA_LADO = 2.4;
+
   // ---------------------------------------------------------------- iniciar
 
   function textura(filtro, datos, w, h) {
@@ -238,7 +265,7 @@ const GL = (() => {
     gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     if (!gl) return false;
     prog = compilar(VS, FS); progHalo = compilar(VSH, FSH);
-    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uCorte', 'uAditivo', 'uAtlasTam']) loc[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uNormales', 'uCorte', 'uAditivo', 'uAtlasTam', 'uLado']) loc[n] = gl.getUniformLocation(prog, n);
     for (const n of ['uVP', 'uHalo']) locH[n] = gl.getUniformLocation(progHalo, n);
     indices = gl.createBuffer();
     asegurarIndices(16384);
@@ -246,6 +273,8 @@ const GL = (() => {
     gl.bindTexture(gl.TEXTURE_2D, texAtlas);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ATLAS);
     for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    texNormales = textura(gl.NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ATLAS_N);
     texLuz = textura(gl.LINEAR);
     const N = 64, hd = new Uint8Array(N * N * 4), rd = new Uint8Array(N * N * 4);
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
@@ -326,6 +355,7 @@ const GL = (() => {
         T4[2] = aoVertice(e, s, ocupado(tx + 1, ty + 1)); T4[3] = aoVertice(o, s, ocupado(tx - 1, ty + 1));
         LZ[0] = tx; LZ[1] = ty; LZ[2] = tx + 1; LZ[3] = ty; LZ[4] = tx + 1; LZ[5] = ty + 1; LZ[6] = tx; LZ[7] = ty + 1;
         const y = liquido ? -0.06 : 0;
+        L.normal(0, 1, 0);
         L.qEsq([tx, y, ty, tx + 1, y, ty, tx + 1, y, ty + 1, tx, y, ty + 1], uvDe(`s_${info.arte}_${Math.floor(h * 4)}`), false, T4, LZ, info.brilla || 0);
         if (liquido || M.objetos.has(i) || M.bloqueo[i]) continue;
         // adornos de pie (guijarros, hierba, setas, estalagmitas…), más junto a las paredes
@@ -335,6 +365,7 @@ const GL = (() => {
           let nom = lista[Math.floor(h5 * lista.length)];
           if (nom === 'guijarro') nom = `dc_guijarro_${info.piedra || b}_${Math.floor(hash2(tx, ty, 13) * 3)}`;
           const r = SPR[nom];
+          L.normal(0, 0, 0);
           if (r) {
             const w = r.w / 16, hh = (r.h / 16) * KY, ax = tx + 0.2 + h5 * 0.6, az = ty + 0.35 + hash2(tx, ty, 12) * 0.55;
             const t = T4[3] * 0.5 + 0.5;
@@ -344,6 +375,7 @@ const GL = (() => {
         const h2 = hash2(tx, ty, 3);
         if (info.planos && h2 < 0.08) {
           const nom = info.planos[Math.floor(h2 * 1000) % info.planos.length], r = SPR[nom];
+          L.normal(0, 1, 0);
           if (r) {
             const ax = tx + (2 + Math.floor(h * 10)) / 16, az = ty + (2 + (Math.floor(h2 * 997) % 10)) / 16, w = r.w / 16, d = r.h / 16, t = T4[0];
             L.q(ax, 0.004, az, ax + w, 0.004, az, ax + w, 0.004, az + d, ax, 0.004, az + d, uvDe(nom), h > 0.5, t, t, t, 1, ax + w / 2, az + d / 2, 0, 0);
@@ -357,17 +389,20 @@ const GL = (() => {
       T4[0] = T4[1] = T4[2] = T4[3] = tapa;
       const lzN = ty + 0.5 - (N ? 0.45 : 0), lzS = ty + 0.5 + (S ? 0.45 : 0);
       LZ[0] = tx + 0.5; LZ[1] = lzN; LZ[2] = tx + 0.5; LZ[3] = lzN; LZ[4] = tx + 0.5; LZ[5] = lzS; LZ[6] = tx + 0.5; LZ[7] = lzS;
+      L.normal(0, 1, 0);
       L.qEsq([tx, alto, ty, tx + 1, alto, ty, tx + 1, alto, ty + 1, tx, alto, ty + 1], uvDe(`m_${arte}_${N | (E << 1) | (S << 2) | (O << 3)}_${v}`), false, T4, LZ, im.brilla || 0);
       const mena = M.mena[i];
       const CARA = [1, 1, 0.62, 0.62], LADO = [0.72, 0.72, 0.48, 0.48];
       if (S) {
+        L.normal(0, 0, 1);
         LZ[0] = LZ[2] = LZ[4] = LZ[6] = tx + 0.5; LZ[1] = LZ[3] = LZ[5] = LZ[7] = ty + 1.5;
         L.qEsq([tx, alto, ty + 1, tx + 1, alto, ty + 1, tx + 1, 0, ty + 1, tx, 0, ty + 1], uvDe(`c_${arte}_${(O ? 1 : 0) | (E ? 2 : 0)}_${v}`), false, CARA, LZ, im.brilla || 0);
         if (mena) L.qEsq([tx, alto, ty + 1.002, tx + 1, alto, ty + 1.002, tx + 1, 0, ty + 1.002, tx, 0, ty + 1.002], uvDe(`menac_${INFO_MENA[mena].arte}_${v}`), false, CARA, LZ, 0.12);
       }
-      if (E) { LZ[0] = LZ[2] = LZ[4] = LZ[6] = tx + 1.5; LZ[1] = LZ[3] = LZ[5] = LZ[7] = ty + 0.5; L.qEsq([tx + 1, alto, ty + 1, tx + 1, alto, ty, tx + 1, 0, ty, tx + 1, 0, ty + 1], uvDe(`c_${arte}_0_${v}`), false, LADO, LZ, im.brilla || 0); }
-      if (O) { LZ[0] = LZ[2] = LZ[4] = LZ[6] = tx - 0.5; LZ[1] = LZ[3] = LZ[5] = LZ[7] = ty + 0.5; L.qEsq([tx, alto, ty, tx, alto, ty + 1, tx, 0, ty + 1, tx, 0, ty], uvDe(`c_${arte}_0_${v}`), false, LADO, LZ, im.brilla || 0); }
+      if (E) { L.normal(1, 0, 0); LZ[0] = LZ[2] = LZ[4] = LZ[6] = tx + 1.5; LZ[1] = LZ[3] = LZ[5] = LZ[7] = ty + 0.5; L.qEsq([tx + 1, alto, ty + 1, tx + 1, alto, ty, tx + 1, 0, ty, tx + 1, 0, ty + 1], uvDe(`c_${arte}_0_${v}`), false, LADO, LZ, im.brilla || 0); }
+      if (O) { L.normal(-1, 0, 0); LZ[0] = LZ[2] = LZ[4] = LZ[6] = tx - 0.5; LZ[1] = LZ[3] = LZ[5] = LZ[7] = ty + 0.5; L.qEsq([tx, alto, ty, tx, alto, ty + 1, tx, 0, ty + 1, tx, 0, ty], uvDe(`c_${arte}_0_${v}`), false, LADO, LZ, im.brilla || 0); }
       if (mena) {
+        L.normal(0, 1, 0);
         const t = tapa * 1.8;
         L.q(tx, alto + 0.003, ty, tx + 1, alto + 0.003, ty, tx + 1, alto + 0.003, ty + 1, tx, alto + 0.003, ty + 1, uvDe(`mena_${INFO_MENA[mena].arte}_${v}`), false, t, t, t, 1, tx + 0.5, lzS, 0.08, 0);
       }
@@ -398,6 +433,14 @@ const GL = (() => {
     const e = (o && o.escala) || 1, w = (r.w / 16) * e, h = (r.h / 16) * KY * e, y = (o && o.y) || 0, x0 = x - w / 2 + ((o && o.dx) || 0);
     const t = (o && o.tinte) || BLANCO, L = (o && o.lote) || lotes.spr;
     L.q(x0, y + h, z, x0 + w, y + h, z, x0 + w, y, z, x0, y, z, uvDe(n), !!(o && o.flip), t[0], t[1], t[2], t[3], o && o.lx !== undefined ? o.lx : x, o && o.lz !== undefined ? o.lz : z, (o && o.unlit) || 0, (o && o.blanco) || 0);
+  }
+  // Modelo horneado con el centro de su huella en (x, z): se coloca según lo que guardó el escultor.
+  function modelo(n, x, z, o) {
+    const m = META_SPR[n];
+    if (!m) { sprite(n, x, z, o); return; }
+    const e = (o && o.escala) || 1;
+    if (o) { o.lx = o.lx ?? x; o.lz = o.lz ?? z; sprite(n, x + m.dx * e, z + m.dz * e, o); }
+    else sprite(n, x + m.dx, z + m.dz, { lx: x, lz: z });
   }
   function plano(n, x, z, o) {
     const r = SPR[n];
@@ -492,8 +535,10 @@ const GL = (() => {
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     if (luz.w === luzW && luz.h === luzH) gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, luz.w, luz.h, gl.RGBA, gl.UNSIGNED_BYTE, luz.datos);
     else { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, luz.w, luz.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, luz.datos); luzW = luz.w; luzH = luz.h; }
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texNormales);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texAtlas);
     gl.useProgram(prog);
+    gl.uniform1i(loc.uNormales, 3); gl.uniform1f(loc.uLado, FUERZA_LADO);
     gl.uniformMatrix4fv(loc.uVP, false, cam.vp);
     gl.uniform4f(loc.uLuzRect, luz.x0, luz.y0, 1 / luz.w, 1 / luz.h);
     gl.uniform1i(loc.uAtlas, 0); gl.uniform1i(loc.uLuz, 1);
@@ -542,7 +587,7 @@ const GL = (() => {
   }
 
   return {
-    iniciar, ajustar, camara, aMundo, aPantalla, vista, dibujar, sprite, plano, cara, tapa, libre, halo, rayo, tocar, olvidarTodo,
+    iniciar, ajustar, camara, aMundo, aPantalla, vista, dibujar, sprite, modelo, plano, cara, tapa, libre, halo, rayo, tocar, olvidarTodo, subirZona, olvidarUV,
     limpiarLotes, lotes, cam, uv: uvDe, ALTO, KY,
     get W() { return W; }, get H() { return H; }, get trozos() { return trozosDibujados; },
   };

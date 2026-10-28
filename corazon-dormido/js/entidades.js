@@ -109,6 +109,7 @@ function calcularStats() {
   }
   J.st = s;
   return s;
+  if (typeof Personaje !== 'undefined') Personaje.pedir(J.aspecto, J.equipo);
 }
 
 // ---------------------------------------------------------------- partículas, números, efectos y botín

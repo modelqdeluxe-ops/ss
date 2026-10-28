@@ -29,7 +29,7 @@ function guardarPartida() {
       v: 4, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
       inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
       jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
-      mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta,
+      mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto,
     }));
     hayPartida = true;
   } catch (e) { /* sin almacenamiento: la partida dura lo que la pestaña */ }
@@ -72,7 +72,7 @@ function empezar(continuar) {
   if (g) {
     cargarMundo(g.mundo);
     Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-    Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla });
+    Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL) });
     J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
     J.inv = g.inv.concat(new Array(N_INV).fill(null)).slice(0, N_INV);
     for (const s of J.inv) if (s) asegurarItem(s.id);
@@ -81,7 +81,7 @@ function empezar(continuar) {
     Object.assign(J.jug, g.jug);
   } else {
     generarMundo(v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0);
-    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false });
+    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
     J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
     J.inv = new Array(N_INV).fill(null);
     if (v3) migrarV3(v3);
@@ -119,6 +119,7 @@ function cuadro(ms) {
       actualizarJugador(dt); actualizarCriaturas(dt); actualizarJefes(dt); actualizarProyectiles(dt); actualizarDisparos(dt);
       actualizarCultivos(dt); actualizarPesca(dt, J.tirando); actualizarFase2(dt);
     }
+    Personaje.trabajar(4);
     actualizarMundoVivo(dt);
     ambientePart(dt);
     revisarObjetivos();
@@ -236,6 +237,19 @@ function dibujarObjeto3d(o) {
     return;
   }
   if (o.tipo === 'raiz') GL.plano('raiz_suelo', x, z - 0.3, { unlit: 0, tinte: [0.85, 0.85, 0.85, 1] });
+  const meta = META_SPR[n];
+  if (meta) { // modelo 3D horneado: su sombra con su forma y el dibujo con la huella en el centro de la casilla
+    const cz = o.y + 0.5;
+    if (SPR[n + '_sombra']) GL.plano(n + '_sombra', x, cz, { tinte: T4 });
+    GL.modelo(n, x, cz);
+    const brilla = info.brillo || ((o.tipo === 'estatua' || o.tipo === 'altar_titan') && o.extra) || o.tipo === 'incubadora' || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
+    if (brilla && SPR[n + '_luz']) {
+      GL.sprite(n + '_luz', x + meta.dx, cz + meta.dz + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.8], lx: x, lz: cz });
+      const h = HALO[o.tipo];
+      if (h) GL.halo(x, ALTURA_HALO[o.tipo], cz + meta.dz, h[0], o.datos && o.datos.magica ? [0.6, 0.3, 1] : h[1], h[2] * (info.fuego ? 0.85 + 0.15 * Math.sin(J.t * 11 + o.x) : 1));
+    }
+    return;
+  }
   if (info.alto) GL.plano('sombra_l', x, z - 0.12, { tinte: [1, 1, 1, 0.75], escala: 1.15 });
   else if (info.bloquea || o.tipo === 'antorcha' || o.tipo === 'lampara' || o.tipo === 'farol') GL.plano(o.tipo === 'antorcha' ? 'sombra_s' : 'sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.7] });
   GL.sprite(n, x, z);
@@ -247,7 +261,13 @@ function dibujarObjeto3d(o) {
   }
 }
 
-function nombreJugador(p) { return `${p.flash > 0 ? 'jugB' : 'jug'}_${p.dir}_${p.andando ? Math.floor(p.anim) % 4 : 0}`; }
+function nombreJugador(p) {
+  let a;
+  if (p.swing > 0 && p.swingDur) a = 'g' + Math.min(2, Math.floor((1 - p.swing / p.swingDur) * 3));
+  else if (p.andando) a = 'a' + (Math.floor(p.anim * 1.5) % 6);
+  else a = 'q' + (Math.floor(J.t * 1.6) % 2);
+  return `${p.flash > 0 ? 'pjB' : 'pj'}_${p.dir}_${a}`;
+}
 function dibujarJugador3d(p) {
   const x = p.x / T, z = p.y / T + 0.06;
   GL.plano('sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.75] });
@@ -257,9 +277,7 @@ function dibujarJugador3d(p) {
   const detras = p.dir === 'ar';
   if (enMano && detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
   if (!parpadea) {
-    GL.sprite(nombreJugador(p), x, z);
-    // armadura encima del cuerpo
-    for (const r of ['botas', 'peto', 'casco']) { const e = J.equipo[r]; if (e) GL.sprite(`eq_${r}_${e.id.split('_')[1]}_${p.dir}_${p.andando ? Math.floor(p.anim) % 4 : 0}`, x, z + 0.001); }
+    GL.modelo(nombreJugador(p), x, z); // el muñeco 3D horneado con su armadura (personaje.js)
   }
   if (enMano && !detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
   if (p.swing > 0 && p.swingItem) dibujarHerramienta3d(p, x, z);
