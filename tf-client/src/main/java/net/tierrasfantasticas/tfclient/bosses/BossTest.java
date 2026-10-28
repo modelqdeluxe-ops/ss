@@ -2359,26 +2359,32 @@ public final class BossTest {
                 command(server, "time set 18000");
             }
             case 10 -> command(server, "tf cumpleaños felicitar " + player.getGameProfile().getName());
-            case 70 -> shot(r, "cumple_titulo");
-            case 160 -> shot(r, "cumple_cielo");
-            case 300 -> {
-                player.setYRot(120F);
-                r.event("cumple 1 (a los 15 s): fiesta " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() + ", cohetes "
-                        + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.rocketsLaunched + ", estallidos " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts
-                        + ", notas " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed + ", fotogramas del letrero "
-                        + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bannerFrames);
-            }
-            case 360 -> shot(r, "cumple_girado");
-            case 1120 -> shot(r, "cumple_traca");
-            case 1240 -> {
+            case 55 -> shot(r, "cumple_1_cuenta_atras");
+            case 100 -> shot(r, "cumple_2_ahora_corazon");
+            case 240 -> shot(r, "cumple_3_nombre_en_estrellas");
+            case 420 -> shot(r, "cumple_4_fiesta");
+            case 430 -> player.setYRot(120F);
+            case 470 -> shot(r, "cumple_5_girado");
+            case 480 -> cameraType = 2;
+            case 520 -> shot(r, "cumple_6_corona_y_notas");
+            case 530 -> cameraType = 0;
+            case 1000 -> r.event("cumple 1 (a los 50 s): fiesta " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() + ", cohetes "
+                    + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.rocketsLaunched + ", estallidos " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts
+                    + ", notas " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed + ", luces " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.lights
+                    + ", fotogramas del letrero " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bannerFrames);
+            case 1680 -> shot(r, "cumple_7_traca");
+            case 1760 -> shot(r, "cumple_8_felicidades");
+            case 1840 -> {
                 r.event("cumple 2 (al acabar): fiesta " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() + ", servidor "
                         + net.tierrasfantasticas.tfclient.server.TFBirthday.active() + ", cohetes " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.rocketsLaunched
                         + ", estallidos " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts + ", notas " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed
-                        + (!net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts > 40
-                        && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed >= 25 ? " (bien)" : " (MAL)"));
+                        + ", luces " + net.tierrasfantasticas.tfclient.client.TFBirthdayClient.lights
+                        + (!net.tierrasfantasticas.tfclient.client.TFBirthdayClient.active() && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.bursts > 150
+                        && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.notesPlayed >= 50 && net.tierrasfantasticas.tfclient.client.TFBirthdayClient.lights > 1000
+                        ? " (bien)" : " (MAL)"));
                 command(server, "time set 6000");
             }
-            case 1250 -> next(level);
+            case 1850 -> next(level);
             default -> { }
         }
     }
