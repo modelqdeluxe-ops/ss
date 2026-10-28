@@ -781,7 +781,8 @@ public final class PadClaims {
                 if (q.isEmpty() || c.getOwnerName().toLowerCase(Locale.ROOT).contains(q) || title(c).toLowerCase(Locale.ROOT).contains(q)) shown.add(c);
             }
             shown.sort(java.util.Comparator.comparing((Claim c) -> c.getOwnerName().toLowerCase(Locale.ROOT)).thenComparing(Claim::getCreatedAt));
-            PadView.Builder b = PadView.of(ALL).header(all.size() + " zonas de " + owners.size() + " jugadores"
+            PadView.Builder b = PadView.of(ALL).header(all.size() + (all.size() == 1 ? " zona de " : " zonas de ") + owners.size()
+                    + (owners.size() == 1 ? " jugador" : " jugadores")
                     + (q.isEmpty() ? ". Pulsa una para administrarla." : " · buscando «" + search + "»: " + shown.size() + "."));
             Claim here = ClaimManager.getInstance().getClaimAt(player.level(), player.blockPosition());
             for (int i = 0; i < shown.size() && i < ADMIN_ROWS; i++) {

@@ -281,11 +281,11 @@ public final class TFBirthdayClient {
         try {
             pose.translate(dir.x * DIST, dir.y * DIST, dir.z * DIST);
             pose.mulPose(cam.rotation());
-            float s = 0.16F;
+            float s = 0.27F;
             pose.scale(-s, -s, s);
             int a = (int) (alpha * 255) << 24;
             line(font, pose, buffers, "¡FELIZ CUMPLEAÑOS!", -22, 1.6F, time, a, true);
-            line(font, pose, buffers, "❤ " + name + " ❤", 2, 1.25F, time, a, false);
+            line(font, pose, buffers, "❤ " + name + " ❤", 1, 1.5F, time, a, false);
             bannerFrames++;
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Cumpleaños: no se pudo dibujar el letrero", t);
