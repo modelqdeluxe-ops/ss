@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Corazón Dormido</title>
+<style>
+  :root { color-scheme: dark; --fondo: #000; }
+  html, body { margin: 0; height: 100%; background: var(--fondo); overflow: hidden; overscroll-behavior: none; }
+  body { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  #pantalla { position: fixed; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; outline: none; }
+</style>
+</head>
+<body>
+<canvas id="pantalla" tabindex="0" aria-label="Corazón Dormido: juego de exploración bajo tierra"></canvas>
+<script src="js/arte.js"></script>
+<script src="js/fuente.js"></script>
+<script src="js/sonido.js"></script>
+<script src="js/datos.js"></script>
+<script src="js/mundo.js"></script>
+<script src="js/entidades.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/principal.js"></script>
+</body>
+</html>
