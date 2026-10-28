@@ -5,17 +5,23 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **versión 0.6.0, el arte nuevo**. Fantasía oscura: el mundo es el cuerpo de un dios muerto, Ásor, y su
-Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el bestiario y los jefes están en
-**`LORE.md`**, que manda sobre todo lo demás). Todo lo que está de pie en el mundo es ahora un modelo 3D horneado
-a pixel art con la cámara del juego (`js/escultor.js`): muebles, árboles, rocas, criaturas, los cinco jefes y el
-personaje, que se hace a tu gusto y lleva la armadura puesta de verdad. Sobre las fases 1 y 2 (el anillo
-interior y la Selva Esmeralda). Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y
-del ordenador, sin instalar nada.
+Estado: **versión 0.7.0, el mundo vasto y la app de Android**. Es un juego para **Android** (app nativa que lleva
+el juego dentro; va a la Play Store) que también se puede abrir en el navegador. Fantasía oscura: el mundo es el
+cuerpo de un dios muerto, Ásor, y su Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el
+bestiario y los jefes están en **`LORE.md`**, que manda sobre todo lo demás). Mundo de 2048×2048 con la Selva
+Esmeralda, la Ciénaga de la Podre y la Ciudad Velada; siete jefes; puzles, encargos, bestiario y 48 tablillas de
+historia; banda sonora original. Lo que viene después está en `DISEÑO.md` y `CONTINUAR.md`.
 
 ## Descargar
 
-Cada versión es una Release de GitHub con el juego en **un solo archivo .html** (se abre en el navegador, sin
+**La app de Android** (siempre la última compilación):
+https://github.com/modelqdeluxe-ops/ss/releases/download/corazon-dormido-android/corazon-dormido.apk
+
+Se descarga en el móvil y se abre para instalarla (la primera vez Android pide permitir instalar apps de esa
+fuente). Cada APK nuevo se instala encima del anterior y la partida se conserva. En la misma Release está el
+`corazon-dormido.aab`, el paquete para la Play Store (ver «Android» más abajo).
+
+En el navegador, cada versión es una Release de GitHub con el juego en **un solo archivo .html** (se abre en el navegador, sin
 instalar nada) y en .zip:
 
 - La última, siempre en el mismo enlace:
@@ -39,6 +45,76 @@ como «latest») y actualiza la fija. Para empaquetar a mano: `python3 corazon-d
 
 Si llevas un material en la mano, la acción usa sola el mejor pico (o la mejor espada, si hay una criatura
 cerca).
+
+## Android
+
+`android/` es la app: una actividad en Kotlin (`MainActivity.kt`) a pantalla completa y en horizontal que lleva
+el juego dentro (servido desde el propio APK con `WebViewAssetLoader`: funciona sin internet y guarda la partida
+en el móvil, con copia de seguridad de Android). El botón «atrás» cierra paneles o pausa; al irse al fondo guarda
+y para la música; vibra al recibir golpes. `js/app.js` es el puente con el juego (`window.CorazonApp`).
+
+- **Compilar**: lo hace GitHub Actions (`.github/workflows/corazon-dormido-android.yml`) en cada push: compone la
+  música y los efectos (`herramientas/musica`), mete el juego en la app (`herramientas/android.py`) y saca el APK
+  y el AAB en la Release fija `corazon-dormido-android` (nunca «latest»). En local: `python3
+  corazon-dormido/herramientas/android.py` y `gradle assembleRelease` dentro de `android/` (con el SDK de Android).
+- **El icono** sale del modelo del Corazón: `node corazon-dormido/herramientas/icono.cjs` (escribe los mipmap y
+  `android/tienda/icono-512.png` para la ficha de la Play Store).
+- **Firmar para la Play Store**: el APK de prueba va firmado con `android/app/prueba.keystore` (una llave pública,
+  como la de debug: no vale para la tienda). Para el AAB de la tienda hay que crear la llave de subida una vez y
+  guardarla en los secretos del repo (Settings → Secrets and variables → Actions):
+
+  ```bash
+  keytool -genkeypair -keystore subida.jks -alias corazon -keyalg RSA -keysize 4096 -validity 10000
+  ```
+
+  ```bash
+  base64 -w0 subida.jks
+  ```
+
+  Secretos: `CD_LLAVE_B64` (lo que saca el base64), `CD_LLAVE_CLAVE` (la contraseña del almacén), `CD_ALIAS`
+  (`corazon`) y `CD_ALIAS_CLAVE` (la contraseña de la llave). Con ellos, el workflow firma el AAB con esa llave y
+  ese AAB es el que se sube a la Play Console (con «Firma de apps de Google Play»). Guarda `subida.jks` y sus
+  contraseñas fuera del repo: sin ellas no se pueden subir actualizaciones.
+- Paquete: `com.corazondormido.juego` (se puede cambiar antes de la primera subida a la tienda, no después).
+
+## Lo nuevo de la 0.7.0
+
+- **Mundo de 2048×2048** con carga por pasos y guardado por trozos en IndexedDB (solo lo que cambias); las
+  partidas de la 0.6 y de la fase 1 pasan solas al mundo nuevo.
+- **La Selva llega mucho más lejos**, en tres bandas: la Selva Esmeralda ampliada, la **Ciénaga de la Podre** (la
+  Caja Torácica de Ásor, palafitos, santuarios, el Pozo) y la **Ciudad Velada** (nueve barrios, la Gran
+  Biblioteca, el Templo de las Placas, la torre del Archivero y la Cripta de los Veladores).
+- **Puzles**: cámaras de braseros de runas, el templo de bloques y placas, las palancas de la Cripta y seis
+  piedras de paso para viajar.
+- **Dos jefes**: Grul, el Sapo Hueco, y el Centinela, el Que No Duerme. **Nueve criaturas** nuevas y dos metales
+  (médula y plata velada) con sus herramientas, armas, armaduras y mesas.
+- **Historia y misiones**: 48 tablillas que cuentan la historia por zonas, el Archivero y Muda con diálogo y
+  nueve encargos, DIARIO y BESTIARIO (con los jefes) en la mochila.
+- **Criaturas con cabeza**: no saben dónde estás hasta que te ven o te oyen, deambulan, te rastrean por el olor,
+  te pierden, y solo unas pocas atacan a la vez (las demás te rodean esperando hueco).
+- **Animación**: rebote y balanceo al andar, respiración, anticipación antes de atacar, retroceso, caída al
+  morir, salir del suelo al aparecer; polvo al pisar.
+- **Banda sonora original** (8 temas: título, interior, Selva, Ciénaga, Ciudad, Cripta y dos de jefe) y 50
+  efectos de sonido, todo sintetizado por `herramientas/musica` (ver «La música»).
+- El Corazón es ahora un corazón anatómico, y es el icono de la app.
+
+## La música
+
+`herramientas/musica` es un sintetizador propio en Python (numpy, scipy y soundfile): cuerdas, coro con
+formantes, piano, arpa (Karplus-Strong), campanas, celesta, marimba, flauta, violonchelo, metales y percusión,
+con reverb de cueva y masterizado. `temas.py` son las partituras (melodías en texto: `"A4:1 D5:1 F5:1.5 E5:0.5"`) y
+`efectos.py` los efectos. Cada tema es un bucle perfecto (la cola de la reverb vuelve al principio).
+
+```bash
+python3 corazon-dormido/herramientas/musica/componer.py corazon-dormido/musica
+```
+
+```bash
+python3 corazon-dormido/herramientas/musica/efectos.py corazon-dormido/sonidos
+```
+
+Los .ogg no van al repo: los compone el workflow de Android. `js/musica.js` elige el tema por zona (y en las
+peleas de jefe) con fundidos; `js/sonido.js` carga los efectos y, si no están (el .html suelto), los sintetiza.
 
 ## Lo nuevo de la 0.6.0 (el arte)
 
@@ -177,6 +253,14 @@ js/sistemas.js     crear (con cofres cerca), cofres, olla, cultivos y pesca
 js/fauna.js        conductas de las criaturas de la Selva
 js/titanes.js      Hiedra Viva y Tamar
 js/fase2.js        Muralla, altares, tablillas, incubadora, mascotas, mercaderes y tienda, bombas, piedra de regreso
+js/datos3.js       lo de la 0.7: suelos, paredes, menas, médula y plata, criaturas, Grul y el Centinela
+js/guardado.js     guardado por trozos de 64×64 en IndexedDB (solo los trozos tocados)
+js/cienaga.js      la Ciénaga de la Podre       js/ciudad.js  la Ciudad Velada y la Cripta
+js/puzles.js       braseros de runas, placas y bloques, palancas, piedras de paso
+js/bestias.js      conductas de las criaturas de las bandas, Grul y el Centinela
+js/misiones.js     tablillas de historia, el Archivero y Muda, encargos, diario y bestiario
+js/musica.js       la banda sonora por zonas      js/app.js     el puente con la app de Android
+js/arte4.js, js/modelos3.js, js/criaturas3d2.js   el arte de la 0.7
 js/ui.js           controles táctiles y de teclado, HUD y paneles
 js/principal.js    bucle, cámara, dibujo del mundo y arranque
 herramientas/probar.cjs         prueba rápida en un móvil simulado (capturas + errores + guardar/cargar)
@@ -186,6 +270,10 @@ herramientas/probar-migracion.cjs  una partida de la fase 1 pasa bien al mundo d
 herramientas/empaquetar.py      saca el .html de un solo archivo y el .zip de una versión (para las Releases)
 herramientas/galeria.cjs        capturas en el juego de cada zona, jefe, base y criaturas (para revisar el arte)
 herramientas/taller.cjs         el atlas ampliado con un filtro (taller.html): para modelar y revisar dibujos
+herramientas/musica/            la banda sonora y los efectos (componer.py, efectos.py, temas.py, motor.py)
+herramientas/android.py         mete el juego, la música y los efectos en la app de Android
+herramientas/icono.cjs          el icono de la app (y el de la Play Store) desde el modelo del Corazón
+android/           la app de Android (Kotlin, Gradle); android/tienda: imágenes para la ficha de la Play Store
 LORE.md            la biblia del mundo: historia, dirección de arte, bestiario y jefes
 CONTINUAR.md       dónde va el trabajo y qué falta
 VERSIONES.txt      las versiones publicadas como Releases
@@ -261,6 +349,8 @@ titanes) y 10 platos, el bot (que esquiva peor que una persona) gana la mayoría
 
 Las fases están en `DISEÑO.md`:
 
+0. **Publicar en la Play Store**: la llave de subida (ver «Android»), la ficha (icono en `android/tienda`,
+   capturas, descripción, clasificación de edad) y la prueba interna antes de producción.
 1. **Fase 3: el Mar Hundido** (el segundo sector del anillo exterior): barcos, peces de mar y su titán.
 2. **Fase 4: el Desierto del Origen**: vagonetas, lava y dos jefes.
 3. **Fase 5: la Frontera Cristalina** y el final.

@@ -149,3 +149,14 @@ Cada fase se entrega completa en lo suyo: probada, sin errores y con todo dibuja
 - **Las partidas de la fase 1** pasan al mundo nuevo: personaje, mochila, equipo, habilidades, jefes vencidos y
   estatuas; lo de los cofres y los muebles puestos llega en cofres junto al Corazón.
 
+## 10. La 0.7: el mundo vasto y Android
+
+- **Plataforma**: el juego es para Android (app nativa en `android/` que lleva el juego dentro; Play Store) y se
+  puede abrir en el navegador. Horizontal, a pantalla completa, sin internet.
+- **Mundo de 2048×2048**: el anillo interior igual que en la 0.6 y el sector de la Selva hasta R=620 en tres bandas
+  (Selva Esmeralda, Ciénaga de la Podre y Ciudad Velada). Guardado por trozos: solo lo que cambia.
+- **Contenido**: Grul y el Centinela, 9 criaturas, médula y plata velada, puzles (braseros de runas, placas y
+  bloques, palancas), piedras de paso, 48 tablillas, el Archivero y Muda con 9 encargos, diario y bestiario.
+- **Criaturas**: percepción (ven, oyen, olfatean), deambulan, pierden el interés y atacan por turnos.
+- **Sonido**: banda sonora original por zonas y para los jefes, y efectos sintetizados (`herramientas/musica`).
+

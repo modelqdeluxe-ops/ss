@@ -56,34 +56,29 @@ push no la sustituya; la próxima versión se añade con `HEAD`).
    puzles (placas, palancas, bloques, runas, espejos), mazmorras. Después la fase 3.
 7. Probar (probar-todo, galería, simular-jefes), versión 0.6.0 en `VERSIONES.txt` con `HEAD`, Release y artifact.
 
-## 0.7 en marcha: el mundo grande (sin publicar; la 0.6.0 está fijada a `1e1b5e35` en `VERSIONES.txt`)
+## 0.7.0: hecha (el mundo vasto y la app de Android)
 
-Hecho:
-- Mundo de 2048×2048 (`N_MUNDO`). El anillo interior sale idéntico al de la 0.6 (el ruido se mide desde la esquina
-  del mundo viejo, `OX` en `mundo.js`), así que las partidas de la 0.6 pegan su interior tal cual.
-- Generación por pasos (`pasosMundo` es una función generadora; `generarMundoPoco` cede al navegador entre pasos) con
-  pantalla de carga (`dibujarCarga`). Todo el mundo en ~0,6 s en el ordenador.
-- Guardado v5 en IndexedDB por trozos de 64×64 (`guardado.js`): solo se guardan los trozos tocados (cavado,
-  construido, cofres, lo visto). Al cargar se regenera con la semilla y se ponen encima. `GEN_MUNDO` = versión del
-  generador. Migración de la v4 (0.6) y de la v3 (fase 1); `herramientas/probar-migracion.cjs` prueba las tres.
-- El sector de la Selva llega a R=620 en tres bandas (`selva.js`, `cienaga.js`, `ciudad.js`):
-  - **Selva Esmeralda**: 6 praderas, 4 aldeas, 12 campamentos, 12 ruinas, 3 santuarios de la Podre y la cámara de
-    los braseros.
-  - **Ciénaga de la Podre**: la Caja Torácica de Ásor (guarida de Grul), 3 palafitos, 5 santuarios, 7 ruinas
-    hundidas, el Pozo de la Podre y los braseros.
-  - **Ciudad Velada**: 9 barrios con calles, casas, plazas y avenidas con farolas; la Gran Biblioteca, el Templo de
-    las Placas (puzle de bloques), la torre del Archivero, la Cripta de los Veladores (palancas, guarida del
-    Centinela) y 2 cámaras de braseros.
-  - 6 piedras de paso.
-- Suelos, paredes y menas nuevos (`datos3.js`, `arte4.js`): turba, raíz muerta, costra de la Podre, hueso de Ásor,
-  piedra velada, cripta, piedra gris; lodo, agua negra, podre, turbera, calzada, mosaico, ceniza, cripta, placa;
-  médula y plata velada. Modelos de los objetos nuevos en `modelos3.js`.
+Todo lo de la lista de la 0.7 está hecho y probado (probar-todo, probar-migracion, la simulación de jefes y las
+de puzles, misiones, IA y música en `herramientas/` y en el README). Además, a petición del dueño («es un juego de
+Android para la Play Store»; «los mobs me llegan todos»; «no hay música»; «animaciones e items cutres»):
 
-Falta (en este orden):
-1. La lógica de los puzles y del viaje (`INTERACCIONES` brasero, palanca, empujar, sellada, paso, restos; tablillas
-   con `orden`/`clave`/`texto`; placas que se hunden con `placa_luz`) y grutos que rezan (`fija.reza`).
-2. Criaturas propias de la Ciénaga y la Ciudad, Grul y el Centinela (guaridas ya puestas; `crearJefes` se salta las
-   que no están en `JEFES`), herramientas y armaduras de médula y plata.
-3. Misiones (diario, el Archivero con diálogo), bestiario, tablillas de historia.
-4. Probar todo, `VERSIONES.txt` 0.7.0 con `HEAD`, Release y artifact.
+- **App de Android** (`android/`, ver README «Android»): APK y AAB en la Release `corazon-dormido-android`.
+  Falta para la Play Store: que el dueño cree la llave de subida y la ponga en los secretos (README), la ficha
+  (capturas, textos, clasificación) y la prueba interna.
+- **IA**: percepción (vista con línea de visión y luz, ruido, golpes), deambular, rastrear por el olor, perder
+  interés y turnos de ataque (`js/criaturas.js`, «percepción, deambular y turnos»). Se mide con una simulación
+  de 60 s por región (1–3 encuentros por minuto, como mucho 3 persiguiendo y 2 atacando a la vez).
+- **Banda sonora y efectos** (`herramientas/musica`): sintetizados, sin muestras ni derechos de nadie. No los he
+  podido escuchar: el dueño tiene que decir qué tema no le gusta y se retoca la partitura en `temas.py`.
+- **Animación procedural** (`animarCriatura` y `dibujarCaidos` en `js/principal.js`; `sx/sy/sesgo/rot` en
+  `GL.sprite`).
 
+## Lo que falta (por orden)
+
+1. Lo que diga el dueño al probar el APK (música, sensación de combate, animaciones).
+2. Play Store: llave de subida, ficha y prueba interna (README «Android»).
+3. Más cuadros de animación de verdad (andar de 4–6 cuadros) para las criaturas que más se ven, en los modelos
+   (`criaturas3d.js`, `criaturas3d2.js`): ahora tienen 2 de andar más la animación procedural.
+4. En la simulación de jefes, una de cada dos peleas contra el Centinela el bot se queda sin hacerle daño
+   (300 s, casi toda la vida): mirar si el bot no llega o si el Centinela se queda donde no se le alcanza.
+5. Fase 3: el Mar Hundido (DISEÑO.md).
