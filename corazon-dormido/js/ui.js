@@ -484,8 +484,9 @@ function panelMapa(ctx) {
 
 function panelPausa(ctx) {
   fondoPanel(ctx);
-  const w = 120, h = 92, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
+  const w = 120, h = APP ? 110 : 92, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
+  if (APP) botonTexto(ctx, x + 10, y + 93, w - 20, 13, 'SALIR DEL JUEGO', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
   texto(ctx, 'PAUSA', LW / 2, y + 6, COL.oro, { alin: 'c', sombra: COL.negro });
   botonTexto(ctx, x + 10, y + 18, w - 20, 15, 'SEGUIR', () => { J.panel = null; });
   botonTexto(ctx, x + 10, y + 37, w - 20, 15, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
@@ -590,6 +591,7 @@ function dibujarTitulo(ctx, hayPartida) {
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
   botonTexto(ctx, x, y, w, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
+  if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'SALIR', () => APP.salir(), { color: COL.botonOff }); }
   if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
   const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
   pie.forEach((l, k) => texto(ctx, l, LW / 2, LH - 10 - (pie.length - 1 - k) * 8, COL.suave, { alin: 'c', borde: COL.negro }));

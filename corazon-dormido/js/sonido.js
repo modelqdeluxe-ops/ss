@@ -90,5 +90,8 @@ const Sonido = (() => {
     if (maestro) maestro.gain.value = activo ? 0.55 : 0;
     return activo;
   }
-  return { iniciar, sfx, alternar, get activo() { return activo; } };
+  // la app se va al fondo / vuelve
+  function pausar() { if (ac && ac.state === 'running') ac.suspend(); }
+  function seguir() { if (ac && ac.state === 'suspended') ac.resume(); }
+  return { iniciar, sfx, alternar, pausar, seguir, get activo() { return activo; } };
 })();

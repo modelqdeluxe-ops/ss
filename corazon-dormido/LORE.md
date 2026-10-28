@@ -57,8 +57,29 @@ derribas la Muralla, los despiertas.
   alimenta de cadáveres y guarda en su centro el cuerpo del Velador que intentó quemarla.
 - **Tamar, el Ojo del Cielo** (Selva Esmeralda): el ojo de Ásor, que salió volando al caer. Un ave de hueso y
   plumas rotas que lleva siglos sin posarse.
+- **Grul, el Sapo Hueco** (Ciénaga de la Podre): un sapo que vivía en el pantano de las costillas de Ásor. La Podre
+  le vació las tripas y le dejó el hambre; se tragó a cien Veladores y a los grutos del pantano, y vive dentro de
+  la Caja Torácica del dios.
+- **El Centinela, el Que No Duerme** (Ciudad Velada): un caballero Velador de piedra que guardaba la cripta antes
+  de que hubiera Muralla. Ya no recuerda qué guarda, pero no deja pasar a nadie.
 - Fase 3: **el Ahogado** (Mar Hundido), el aliento de Ásor, que se quedó bajo el agua.
 - Fase 4: **la Sed** (Desierto del Origen), lo que quedó de su piel al sol.
+
+**Las bandas de la Selva (0.7).** Más allá de la Selva Esmeralda, el sector baja hacia lo que los Veladores
+dejaron fuera:
+- **La Ciénaga de la Podre**: el pantano que se formó en el pecho de Ásor. Agua negra, turba, raíces muertas y los
+  huesos del dios asomando (la Caja Torácica). Los grutos del fango viven en palafitos y rezan a los bultos de la
+  Podre. En el centro, el Pozo: por ahí sube la Podre desde el fondo.
+- **La Ciudad Velada**: la ciudad de los Veladores, a la sombra de la Muralla. Calles de calzada, farolas que aún
+  arden con luz de alma, la Gran Biblioteca, el Templo de las Placas y la Cripta de los Veladores. Los que no
+  bajaron a la oscuridad se quedaron aquí: unos son Velados (fantasmas que buscan calor) y otros se volvieron de
+  piedra.
+
+**Los dos que todavía hablan.**
+- **El Archivero**, el último Velador cuerdo, sentado en lo alto de su torre con el libro de la Ciudad en las
+  rodillas. Quiere las páginas que faltan y los nombres de los que no volvieron. Sabe lo que hizo Ozmar.
+- **Muda**, una gruta del pantano que dejó de rezar y se quitó la máscara. Quema la Podre en su farol. Grul se
+  comió a su pueblo.
 
 **El final.** Con los titanes muertos y el Corazón despierto del todo, el latido llega hasta el cuerpo de Ásor.
 Lo que pasa entonces se deja para la última fase. La pregunta del juego: ¿despertar al dios es salvar el mundo
@@ -66,8 +87,9 @@ o terminarlo?
 
 ## 3. Cómo se cuenta (sin muros de texto)
 
-- **Tablillas** de los Veladores repartidas por el mundo, de una o dos frases. Las del interior mienten sin
-  querer; las del exterior dicen la verdad.
+- **Tablillas** de los Veladores repartidas por el mundo, de una o dos frases (48: 8 del interior, 12 de la Selva,
+  12 de la Ciénaga y 16 libros de la Ciudad). Las del interior mienten sin querer; las del exterior dicen la verdad.
+- **Encargos** del Archivero y de Muda: lo que piden cuenta su historia, y lo que dicen al cumplirlos también.
 - **Presentación de cada jefe** al despertar: su nombre, su título y una frase.
 - **Bestiario**: cada criatura que matas desbloquea su ficha con una línea de historia.
 - **El Corazón habla** con una voz corta y rara cuando le devuelves un cristal.
@@ -109,6 +131,15 @@ o terminarlo?
 | tentaculo_moho | **Brazo de la Podre** | Tentáculo negro con ojos a lo largo, saliendo de una pústula del suelo. | «No es un animal. Es un dedo de algo mucho más grande.» |
 | avispa | **Aguijonera** | Avispa grande con cara de calavera y alas venosas. | «Su nido zumba como una voz que reza.» |
 | escarabajo_musgo | **Lápida** | Escarabajo con un caparazón como una lápida cubierta de musgo; ojos rojos. | «Los Veladores enterraban a sus muertos bajo estas piedras. Las piedras se levantaron.» |
+| sanguijuela | **Sanguijuela de turba** | Gorda, negra y anillada; boca de ventosa con dientes en círculo. | «Bebe del agua negra y engorda de algo que no es sangre. Cuando te muerde, se lleva un poco de tu luz.» |
+| farolero | **Farolero** | Un cuerpo casi invisible en la oscuridad; delante de la boca cuelga una luz que te llama. | «Lo único que ves de él es la luz que cuelga delante de su boca. Lo demás lo ves cuando ya es tarde.» |
+| sapo_hueco | **Sapo hueco** | Sapo flaco con la espalda llena de bultos de la Podre; salta y aplasta. | «La Podre le vació las tripas y le llenó la espalda. Salta para que no le pese.» |
+| moscarda | **Moscarda** | Mosca hinchada con alas venosas y ojos rojos. | «Pone los huevos en lo que todavía se mueve.» |
+| gruto_fango | **Gruto del fango** | Gruto con máscara de cráneo de pez, red y arpón. | «Los grutos del pantano pescan con arpón. Lo que no pescan, se lo llevan a sus ídolos.» |
+| necrofago | **Necrófago** | Un Velador vaciado por la Podre, a cuatro patas como una araña: espinazo arqueado, mandíbula suelta, brazos larguísimos. | «Era un Velador. La Podre se le comió la luz de dentro y le dejó el hambre.» |
+| velado | **Velado** | Fantasma encorvado como quien llora, sin pies; el velo le tapa la cara y debajo hay dos puntos de luz fría. Se esconde y aparece. | «No se fue con los demás. Ahora busca algo caliente a lo que abrazarse.» |
+| guardian_piedra | **Guardián de piedra** | Velador de piedra encapuchado, con espada; espera como una estatua hasta que pasas. | «Lo tallaron alrededor de alguien que no quería dormirse. Sigue sin querer.» |
+| velador_caido | **Velador caído** | Esqueleto con túnica y alabarda, en la Cripta. | «Bajó a la cripta a enterrar a los suyos y se quedó haciendo guardia. Ya no recuerda por qué.» |
 
 ## 6. Los jefes
 
@@ -119,8 +150,10 @@ o terminarlo?
 | ozmar | **Ozmar** | el Último Velador | Cáscara flotante en túnica de sacerdote; dentro solo Podre; máscara de porcelana rota con un ojo; brazos largos como raíces. | «Lo hice para salvarlo. Lo hice para salvarlo. Lo hice…» |
 | hiedra | **Hiedra** | la Flor de Sangre | Flor gigante de pétalos de carne; en el centro, el cadáver del Velador que intentó quemarla; látigos de espinas con bocas. | «Él quiso quemarme. Ahora es mi corazón.» |
 | tamar | **Tamar** | el Ojo del Cielo | Ave colosal de hueso y plumas rotas; un solo ojo enorme en el pecho; pico de calavera. | «Lo he visto todo desde arriba. Te he visto a ti.» |
+| grul | **Grul** | el Sapo Hueco | Saco de carne muerta de frente; la espalda es un bosque de Podre con púas de hueso; ojos en racimo, pequeños y rojos; por la boca asoma el brazo de un Velador. Salta, escupe, lanza la lengua y traga. | «Me tragué a cien Veladores. Ninguno me llenó.» |
+| centinela | **El Centinela** | el Que No Duerme | Caballero Velador de piedra, más alto que una casa; el velo de piedra le tapa la cara y dentro solo hay una rendija de luz fría; espadón y lámpara (runas y Velados). | «Guardé la puerta antes de que hubiera Muralla. No pasarás.» |
 
-## 7. Lo que hay que cambiar en el juego
+## 7. Lo que había que cambiar en el juego (hecho en la 0.6 y la 0.7)
 
 1. Modelos 3D de todas las criaturas y jefes con esta dirección (escultor), con la capa de luz de ojos y Podre.
 2. Nombres nuevos en `CRIATURAS` y `JEFES`, presentación del jefe (nombre, título y frase).

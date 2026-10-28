@@ -1,0 +1,92 @@
+name: Corazón Dormido (Android)
+
+# Compila la app de Android de Corazón Dormido (corazon-dormido/android) con el juego dentro:
+#   - corazon-dormido.apk: para instalar en el móvil y probar. Siempre se firma con la llave de prueba del repo,
+#     así que cada APK nuevo se instala encima del anterior sin perder la partida.
+#   - corazon-dormido.aab: para la Play Store. Se firma con la llave de subida si están los secretos
+#     CD_LLAVE_B64, CD_LLAVE_CLAVE, CD_ALIAS y CD_ALIAS_CLAVE (ver corazon-dormido/README.md); si no, con la de prueba
+#     (vale para probar, no para subirlo a la tienda).
+# Los deja en la Release fija «corazon-dormido-android» (nunca «latest»):
+#   https://github.com/<repo>/releases/download/corazon-dormido-android/corazon-dormido.apk
+on:
+  push:
+    paths:
+      - 'corazon-dormido/**'
+      - '.github/workflows/corazon-dormido-android.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: corazon-dormido-android
+  cancel-in-progress: false
+
+jobs:
+  app:
+    name: Compilar la app
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+      - name: Meter el juego en la app
+        run: python3 corazon-dormido/herramientas/android.py corazon-dormido
+      - name: Versión
+        id: version
+        run: |
+          ver=$(grep -v '^#' corazon-dormido/VERSIONES.txt | grep '|' | tail -1 | cut -d'|' -f1 | xargs)
+          echo "nombre=$ver (compilación ${{ github.run_number }})" >> "$GITHUB_OUTPUT"
+          echo "codigo=$((1000 + ${{ github.run_number }}))" >> "$GITHUB_OUTPUT"
+      - name: Llave de subida (si está en los secretos)
+        env:
+          CD_LLAVE_B64: ${{ secrets.CD_LLAVE_B64 }}
+        run: |
+          if [ -n "$CD_LLAVE_B64" ]; then
+            echo "$CD_LLAVE_B64" | base64 -d > "$RUNNER_TEMP/subida.jks"
+            echo "CD_LLAVE=$RUNNER_TEMP/subida.jks" >> "$GITHUB_ENV"
+            echo "Se firma el AAB con la llave de subida"
+          else
+            echo "Sin llave de subida: el AAB se firma con la de prueba"
+          fi
+      - name: Compilar APK y AAB
+        env:
+          CD_LLAVE_CLAVE: ${{ secrets.CD_LLAVE_CLAVE }}
+          CD_ALIAS: ${{ secrets.CD_ALIAS }}
+          CD_ALIAS_CLAVE: ${{ secrets.CD_ALIAS_CLAVE }}
+        working-directory: corazon-dormido/android
+        run: |
+          gradle --no-daemon assembleRelease bundleRelease \
+            "-PversionCode=${{ steps.version.outputs.codigo }}" "-PversionName=${{ steps.version.outputs.nombre }}"
+          mkdir -p /tmp/app
+          cp app/build/outputs/apk/release/app-release.apk /tmp/app/corazon-dormido.apk
+          cp app/build/outputs/bundle/release/app-release.aab /tmp/app/corazon-dormido.aab
+          ls -la /tmp/app
+      - name: APK de prueba firmado con la llave de prueba
+        if: env.CD_LLAVE != ''
+        working-directory: corazon-dormido/android
+        run: |
+          # con la llave de subida, el APK sale firmado con ella; para probar, se rehace con la de prueba
+          CD_LLAVE= gradle --no-daemon assembleRelease \
+            "-PversionCode=${{ steps.version.outputs.codigo }}" "-PversionName=${{ steps.version.outputs.nombre }}"
+          cp app/build/outputs/apk/release/app-release.apk /tmp/app/corazon-dormido.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: corazon-dormido-android
+          path: /tmp/app
+      - name: Subir a la Release fija
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=corazon-dormido-android
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --latest=false --title "Corazón Dormido para Android" \
+              --notes "La app de Android de Corazón Dormido (siempre la última compilación). Descarga **corazon-dormido.apk** en el móvil y ábrelo para instalarlo (la primera vez, Android pide permitir instalar apps de esta fuente). Cada APK nuevo se instala encima del anterior y la partida se conserva. El .aab es el paquete para la Play Store."
+          fi
+          gh release upload "$tag" /tmp/app/corazon-dormido.apk /tmp/app/corazon-dormido.aab --clobber
+          gh release edit "$tag" --title "Corazón Dormido para Android (${{ steps.version.outputs.nombre }})" --latest=false

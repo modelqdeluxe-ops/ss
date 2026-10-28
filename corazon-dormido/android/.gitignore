@@ -1,0 +1,6 @@
+.gradle/
+build/
+app/build/
+local.properties
+# lo mete herramientas/android.py (el juego en un archivo y la música)
+app/src/main/assets/

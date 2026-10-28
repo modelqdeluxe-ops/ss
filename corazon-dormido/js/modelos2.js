@@ -261,14 +261,58 @@ CONSTRUIR_MODELOS.push(function modelosNaturaleza() {
     for (let x = 6; x <= 34; x += 7) m.esfera([x, 6, 23.2], 0.9, MAT.cristal);
     for (const [x, z] of [[2, 2], [38, 2], [2, 24], [38, 24]]) m.cilindro([x, 4, z], 1.6, 8, M.piedraRuina, { r1: 1.2 });
   });
-  const corazon = (nombre, mt) => modelo(nombre, 32, 32, 18, (m) => {
-    // un corazón de cristal tallado: dos lóbulos y la punta
-    m.figura((x, y, z) => {
-      const px = (x - 16) / 13, py = (y - 15) / 13, pz = (z - 9) / 5.5;
-      const a = px * px + py * py * 1.0 + pz * pz - 1, d = a * a * a - px * px * py * py * py * 0.9;
-      return d * 6;
-    }, [0, 0, 0, 32, 32, 18], mt);
-  }, { sombra: false });
-  corazon('corazon', MAT2.corazon);
-  corazon('corazon_dormido', MAT2.corazonDormido);
+  // El Corazón de Ásor: un corazón de verdad, no de San Valentín. Ventrículos de carne estriada con la punta torcida,
+  // aurículas, la aorta en arco con sus tres ramas, el tronco pulmonar y la cava; venas coronarias por el surco y
+  // grasa amarilla arriba. Dormido: gris y morado, cubierto de Podre. Despierto: rojo, con las venas encendidas.
+  const corazon = (nombre, dormido) => frontal(nombre, 40, 56, 30, (m, cx, cz) => {
+    const { mat } = ESCU, estria = (x, y) => (Math.floor(y * 0.9 + x * 0.35) % 3 === 0 ? -0.9 : 0) + (ESCU.ruido(x, y, 0, 1.6, 811) > 0.72 ? -1.2 : 0);
+    const carne = dormido ? mat(['#0c060a', '#180a12', '#26101a', '#341622', '#441e2c', '#562838', '#6a3444'], { tex: estria })
+      : mat(['#1a0408', '#300810', '#4a0c18', '#661424', '#821c30', '#a02a3e', '#c0404e', '#de6466'], { brillo: 0.5, tex: estria });
+    const arteria = dormido ? mat(['#140a10', '#24121a', '#361c26', '#4a2834', '#5e3644', '#744656'], {})
+      : mat(['#2a0c10', '#4a1820', '#6c2430', '#8e3442', '#b04a56', '#cc6a70', '#e89490'], { brillo: 0.6 });
+    const grasa = mat(dormido ? ['#18140c', '#2a2416', '#3c3420', '#4e4430'] : ['#3a2a10', '#5a4420', '#7a6030', '#9a7c44', '#b89a5c'], { tex: (x, y, z) => (ESCU.ruido(x * 2, y * 2, z * 2, 1, 812) > 0.6 ? -1 : 0) });
+    const vena = dormido ? OSC.vena : mat(['#10061a', '#1e0c2c', '#2e1640', '#402256', '#54306c'], {});
+    const latido = mat(['#6a0a20', '#c01a40', '#ff3c64', '#ff9ab0'], { luz: 1, plano: true });
+    m.con({ mover: [cx, 0, cz] }, () => {
+      // los ventrículos, inclinados, con la punta hacia la derecha y abajo
+      m.con({ rot: ['z', 0.38, [0, 20, 0]] }, () => {
+        m.elipsoide([0, 21, 0], [12.5, 15, 10.5], carne, { ruido: [0.5, 2.2, 813] });
+        m.capsula([0, 16, 0], [0, 3, 1], 10.5, 2.6, carne, { ruido: [0.4, 2, 814] });
+      });
+      // aurículas: la derecha delante a la izquierda, la izquierda asomando por detrás
+      m.elipsoide([-11, 29, 1], [7, 7.5, 7], carne, { ruido: [0.6, 2, 815] });
+      m.elipsoide([9, 31, -4], [7, 6, 6], carne, { ruido: [0.5, 2, 816] });
+      // grasa del surco de arriba
+      m.elipsoide([-2, 31, 3], [12, 3.4, 8], grasa, { ruido: [0.8, 2.4, 817] });
+      // la cava subiendo por la izquierda
+      m.tubo([[-12, 33, -1], [-13, 40, -2], [-13, 46, -2]], 2.6, 2.4, vena);
+      // la aorta: sube por el centro, hace el arco hacia atrás y baja por la derecha
+      m.tubo([[1, 30, 1], [1, 40, 1], [3, 47, -1], [9, 48.5, -4], [13, 44, -7], [14, 34, -9]], 4, 3.2, arteria);
+      for (const [x, z, l] of [[2.6, -1, -0.8], [6.6, -3, 0], [10.6, -5, 0.8]]) m.tubo([[x, 49, z], [x + l, 52, z], [x + l * 1.6, 54, z]], 1.5, 1.1, arteria);
+      // el tronco pulmonar, delante de la aorta, partiéndose en dos
+      m.tubo([[-3, 27, 7], [-4, 34, 6], [-5, 38, 4]], 3.8, 3.2, arteria);
+      m.tubo([[-5, 38, 4], [-12, 40, 2], [-17, 39, 0]], 2.6, 2, arteria);
+      m.tubo([[-5, 38, 4], [2, 41, 3], [6, 41.5, 1]], 2.4, 2, arteria);
+      // coronarias: por el surco entre los ventrículos y por arriba, con ramas
+      const r = azar(818);
+      m.tubo([[-2, 29, 10.4], [0, 22, 11.2], [3, 14, 10.4], [6, 7, 7.6]], 1.1, 0.7, vena);
+      m.tubo([[-10, 27, 7.4], [-3, 30, 9.6], [6, 30, 8.4], [12, 26, 6]], 1, 0.8, vena);
+      for (let k = 0; k < 7; k++) {
+        const y0 = 26 - k * 2.6, x0 = -1 + k * 0.7, l = k % 2 ? 1 : -1;
+        m.tubo([[x0, y0, 11], [x0 + l * (3 + r() * 2), y0 - 2 - r() * 2, 10.2], [x0 + l * (6 + r() * 3), y0 - 4 - r() * 3, 8]], 0.6, 0.35, vena);
+      }
+      // el latido que vuelve: venas encendidas encima de las coronarias
+      if (!dormido) {
+        m.pintar(() => {
+          m.tubo([[-2, 28, 10.8], [0, 22, 11.6], [3, 14, 10.8], [5.6, 8, 8.4]], 0.7, 0.45, latido);
+          m.tubo([[-8, 27.6, 8.4], [-3, 30, 10], [5, 30, 8.8]], 0.6, 0.5, latido);
+        });
+      }
+      // la Podre: bultos negros con poros magenta, muchos si duerme
+      const bultos = dormido ? [[7, 12, 8, 3.6], [-6, 18, 9, 3.2], [10, 22, 6, 2.8], [-12, 24, 4, 2.4], [2, 6, 6, 2.6], [-2, 36, 6, 2]] : [[9, 11, 7, 2.6], [-11, 22, 5, 2]];
+      bultos.forEach(([x, y, z, rr], k) => podre(m, [x, y, z], rr, 820 + k));
+    });
+  }, { cima: 0.5, sombra: false });
+  corazon('corazon', false);
+  corazon('corazon_dormido', true);
 });

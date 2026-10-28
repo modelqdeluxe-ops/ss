@@ -323,7 +323,7 @@ function dibujarObjeto3d(o) {
     const flota = Math.sin(J.t * 1.6) * 0.08, despierto = J.corazonDespierto, cor = Object.keys(J.estatuas).length ? 'corazon' : 'corazon_dormido';
     GL.sprite('altar', x, z + 0.4);
     GL.sprite(cor, x, z - 0.2, { y: 0.9 + flota, unlit: 0.35 });
-    GL.sprite(cor, x, z - 0.19, { y: 0.9 + flota, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, (despierto ? 0.7 : Object.keys(J.estatuas).length ? 0.45 : 0.18) + 0.2 * Math.sin(J.t * 2.2)] });
+    if (SPR[cor + '_luz']) GL.sprite(cor + '_luz', x, z - 0.19, { y: 0.9 + flota, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, (despierto ? 0.9 : Object.keys(J.estatuas).length ? 0.7 : 0.45) + 0.25 * Math.sin(J.t * 2.2)] });
     GL.halo(x, 1.6 + flota, z - 0.2, 2.6 + Object.keys(J.estatuas).length * 0.5, [1, 0.35, 0.55], 0.28 + 0.08 * Math.sin(J.t * 2.2));
     return;
   }
