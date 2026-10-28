@@ -80,6 +80,8 @@ public final class TFBirthdayClient {
     private static float bannerYaw;
     private static boolean yawSet;
     private static final List<Rocket> ROCKETS = new ArrayList<>();
+    /** Los que salen mientras se recorren los de ROCKETS (el segundo estallido de los dobles): entran después. */
+    private static final List<Rocket> LATER = new ArrayList<>();
     /** Para la prueba en el juego: lo que ha salido. */
     public static int rocketsLaunched, bursts, notesPlayed, bannerFrames, lights;
 
@@ -96,6 +98,7 @@ public final class TFBirthdayClient {
             name = null;
             left = 0;
             ROCKETS.clear();
+            LATER.clear();
             return;
         }
         name = who;
@@ -132,6 +135,7 @@ public final class TFBirthdayClient {
         name = null;
         left = 0;
         ROCKETS.clear();
+        LATER.clear();
     }
 
     // ------------------------------------------------------------------------------------------------- cada tick
@@ -139,6 +143,18 @@ public final class TFBirthdayClient {
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !active()) return;
+        try {
+            tick();
+        } catch (Throwable t) {
+            // la fiesta nunca cierra el juego: se acaba aquí y queda en el registro
+            TFClient.LOGGER.error("TF Cumpleaños: fallo en la fiesta", t);
+            name = null;
+            ROCKETS.clear();
+            LATER.clear();
+        }
+    }
+
+    private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
         left--;
@@ -152,6 +168,8 @@ public final class TFBirthdayClient {
             Rocket r = it.next();
             if (r.tick(level)) it.remove();
         }
+        ROCKETS.addAll(LATER);
+        LATER.clear();
         honoree(level);
         if (!sky) return;
         Vec3 c = mc.player.position();
@@ -246,7 +264,7 @@ public final class TFBirthdayClient {
             bursts++;
             if (double_) {
                 // el segundo estallido, un poco después y alrededor (un «crisantemo» doble)
-                ROCKETS.add(new Rocket(x + RANDOM.nextGaussian() * 3, toY, z + RANDOM.nextGaussian() * 3, toY + 4 + RANDOM.nextDouble() * 4, 6, false, false));
+                LATER.add(new Rocket(x + RANDOM.nextGaussian() * 3, toY, z + RANDOM.nextGaussian() * 3, toY + 4 + RANDOM.nextDouble() * 4, 6, false, false));
             }
             return true;
         }
