@@ -1,12 +1,12 @@
 'use strict';
-// Arranque, bucle principal, cámara y guardado. El mundo se dibuja en 3D (gl.js) y la interfaz en un
-// lienzo 2D encima, en baja resolución y escalado sin suavizar.
+// Arranque, bucle principal, cámara, dibujo del mundo 3D y guardado. La interfaz va en un lienzo 2D encima.
 
 const lienzo3d = document.getElementById('mundo3d');
 const lienzo = document.getElementById('pantalla');
 const ctx = lienzo.getContext('2d');
 let LW = 320, LH = 180, ESC = 1, hayPartida = false;
-const CLAVE = 'corazon-dormido-v1';
+const CLAVE = 'corazon-dormido-v3';
+const VER_FPS = /fps/.test(location.search + location.hash);
 
 function ajustar() {
   const dpr = window.devicePixelRatio || 1, wc = window.innerWidth, hc = window.innerHeight;
@@ -26,65 +26,70 @@ function guardarPartida() {
   const p = J.jug;
   try {
     localStorage.setItem(CLAVE, JSON.stringify({
-      v: 1, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
-      inv: J.inv, sel: J.sel, armadura: J.armadura, hito: J.hito, objetivo: J.objetivo, latidos: J.latidos,
-      jefeMuerto: !!(J.jefe && J.jefe.estado === 'muerto'),
+      v: 3, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
+      inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
+      jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
     }));
     hayPartida = true;
   } catch (e) { /* sin almacenamiento: la partida dura lo que la pestaña */ }
   J.guardadoT = J.t;
 }
 function leerPartida() {
-  try { const s = localStorage.getItem(CLAVE); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+  try { const s = localStorage.getItem(CLAVE); const g = s ? JSON.parse(s) : null; return g && g.v === 3 ? g : null; } catch (e) { return null; }
 }
 
 function empezar(continuar) {
   const g = continuar ? leerPartida() : null;
-  J.enemigos = []; J.botines = []; J.proyectiles = []; J.particulas = []; J.numeros = []; J.avisos = [];
-  J.jug = nuevoJugador();
+  Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null });
   if (g) {
     cargarMundo(g.mundo);
+    Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
+    J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null }, g.equipo || {});
+    J.inv = g.inv.concat(new Array(N_INV).fill(null)).slice(0, N_INV);
+    for (const s of J.inv) if (s) asegurarItem(s.id);
+    for (const o of M.objetos.values()) if (o.datos && o.datos.inv) for (const s of o.datos.inv) if (s) asegurarItem(s.id);
+    J.jug = nuevoJugador();
     Object.assign(J.jug, g.jug);
-    J.inv = g.inv.concat(new Array(N_INV).fill(null)).slice(0, N_INV); J.sel = g.sel || 0; J.armadura = g.armadura || null;
-    J.hito = g.hito || {}; J.objetivo = g.objetivo || 0; J.latidos = g.latidos || 0;
   } else {
     generarMundo((Math.random() * 1e9) | 0);
-    J.inv = new Array(N_INV).fill(null); J.sel = 0; J.armadura = null; J.hito = {}; J.objetivo = 0; J.latidos = 0;
+    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false });
+    J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null };
+    J.inv = new Array(N_INV).fill(null);
     for (const [id, n] of INICIO) agregar(id, n);
+    J.jug = nuevoJugador();
   }
-  crearJefe();
-  if (g && g.jefeMuerto) J.jefe.estado = 'muerto';
-  J.estado = 'juego'; J.panel = null; J.aparecer = 4;
+  calcularStats();
+  crearJefes();
+  J.estado = 'juego'; J.aparecer = 4;
   J.cam.x = J.jug.x; J.cam.y = J.jug.y;
   FLUJO.t = 0;
   if (!g) { aviso('El Corazón duerme. Despiértalo.', null, '#ffb3c8'); setTimeout(() => aviso('Rompe raíces para sacar madera'), 2500); }
   guardarPartida();
 }
-function irTitulo() {
-  J.estado = 'titulo'; J.panel = null; hayPartida = !!leerPartida();
-}
+function irTitulo() { J.estado = 'titulo'; J.panel = null; hayPartida = !!leerPartida(); }
 function revisarObjetivos() {
   while (J.objetivo < OBJETIVOS.length && OBJETIVOS[J.objetivo].hecho(J)) {
     aviso('¡Hecho! ' + OBJETIVOS[J.objetivo].txt, null, '#7dff9a');
     J.objetivo++;
     if (J.objetivo < OBJETIVOS.length) Sonido.sfx.nivel();
-    if (J.objetivo === 6 && M.arena) {
-      const a = Math.atan2(M.arena.y - CENTRO, M.arena.x - CENTRO), k = Math.round(((a + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 4)) % 8;
-      const rumbos = ['este', 'sureste', 'sur', 'suroeste', 'oeste', 'noroeste', 'norte', 'noreste'];
-      setTimeout(() => aviso(`Se oye escarbar al ${rumbos[k]} del Corazón (mira el mapa)`, 'ui_calavera', '#ffd166'), 1800);
-    }
   }
 }
 
 // ---------------------------------------------------------------- bucle
 
-let ultimo = 0;
+let ultimo = 0, fps = 60, fpsT = 0, fpsN = 0;
 function cuadro(ms) {
   const dt = Math.min(0.05, Math.max(0, (ms - ultimo) / 1000)); ultimo = ms;
+  fpsT += dt; fpsN++; if (fpsT > 0.5) { fps = Math.round(fpsN / fpsT); fpsT = 0; fpsN = 0; }
   J.t += dt;
   if (J.estado === 'juego' && !J.panel) {
     leerEntrada();
-    actualizarJugador(dt); actualizarCriaturas(dt); actualizarJefe(dt); actualizarProyectiles(dt); actualizarMundoVivo(dt);
+    if (J.pausaGolpe > 0) J.pausaGolpe -= dt; // pausa corta al golpear: da peso al golpe
+    else {
+      actualizarJugador(dt); actualizarCriaturas(dt); actualizarJefes(dt); actualizarProyectiles(dt); actualizarDisparos(dt);
+      actualizarCultivos(dt); actualizarPesca(dt, J.tirando);
+    }
+    actualizarMundoVivo(dt);
     ambientePart(dt);
     revisarObjetivos();
     if (J.t - J.guardadoT > 25) guardarPartida();
@@ -97,98 +102,128 @@ function cuadro(ms) {
 function moverCamara(dt) {
   let tx, ty;
   if (J.estado === 'titulo') { tx = CENTRO * T + 8 + Math.cos(J.t * 0.12) * 40; ty = CENTRO * T + 20 + Math.sin(J.t * 0.12) * 24; }
-  else { tx = J.jug.x; ty = J.jug.y - 6; }
+  else {
+    tx = J.jug.x; ty = J.jug.y - 6;
+    // en una pelea con un guardián, la cámara se va un poco hacia él para que se vean los dos
+    for (const j of Object.values(J.jefes)) {
+      if (!j.activo || j.estado === 'muerto' || j.invisible) continue;
+      const dx = j.x - J.jug.x, dy = j.y - J.jug.y;
+      if (dx * dx + dy * dy < 160 * 160) { tx += dx * 0.35; ty += dy * 0.35 + 6; break; }
+    }
+  }
   const k = Math.min(1, dt * 7);
   J.cam.x += (tx - J.cam.x) * k; J.cam.y += (ty - J.cam.y) * k;
 }
 
-// Chispas de las antorchas y motas en el aire, como en Core Keeper.
+// Chispas de las antorchas y motas en el aire.
 function ambientePart(dt) {
   if (!J.vistaObj) return;
   for (const o of J.vistaObj) {
     if ((o.tipo === 'antorcha' && Math.random() < dt * 2.2) || (o.tipo === 'horno' && Math.random() < dt * 3)) {
-      J.particulas.push({ x: o.x * T + 8 + (Math.random() - 0.5) * 4, y: o.y * T + 15, z: 14, vx: (Math.random() - 0.5) * 8, vy: 0, vz: 10 + Math.random() * 14, g: -6, vida: 1.2 + Math.random(), c: Math.random() < 0.5 ? '#ffb040' : '#ff7020', s: 1, brilla: true, chispa: true });
+      const magica = o.datos && o.datos.magica;
+      J.particulas.push({ x: o.x * T + 8 + (Math.random() - 0.5) * 4, y: o.y * T + 15, z: 14, vx: (Math.random() - 0.5) * 8, vy: 0, vz: 10 + Math.random() * 14, g: -6, vida: 1.2 + Math.random(), c: magica ? '#c080ff' : Math.random() < 0.5 ? '#ffb040' : '#ff7020', s: 1, brilla: true, chispa: true });
     }
-    if ((o.tipo === 'cristal' || o.tipo === 'hongo' || o.tipo === 'arbusto') && Math.random() < dt * 0.6) {
+    if ((o.tipo === 'cristal' || o.tipo === 'hongo' || o.tipo === 'arbusto') && Math.random() < dt * 0.6)
       J.particulas.push({ x: o.x * T + 8 + (Math.random() - 0.5) * 12, y: o.y * T + 10 + (Math.random() - 0.5) * 8, z: 4, vx: (Math.random() - 0.5) * 4, vy: 0, vz: 5 + Math.random() * 5, g: -2, vida: 2 + Math.random() * 2, c: '#7ff0ff', s: 1, brilla: true, chispa: true });
-    }
   }
   if (J.estado === 'juego' && Math.random() < dt * 3) {
     const p = J.jug;
-    J.particulas.push({ x: p.x + (Math.random() - 0.5) * 120, y: p.y + (Math.random() - 0.5) * 80, z: Math.random() * 20, vx: (Math.random() - 0.5) * 3, vy: 0, vz: 1 + Math.random() * 2, g: -0.5, vida: 3 + Math.random() * 3, c: '#fff0d0', s: 1, brilla: true, chispa: true, tenue: true });
+    J.particulas.push({ x: p.x + (Math.random() - 0.5) * 140, y: p.y + (Math.random() - 0.5) * 90, z: Math.random() * 20, vx: (Math.random() - 0.5) * 3, vy: 0, vz: 1 + Math.random() * 2, g: -0.5, vida: 3 + Math.random() * 3, c: '#fff0d0', s: 1, brilla: true, chispa: true, tenue: true });
   }
 }
 
-// ---------------------------------------------------------------- mundo 3D
+// ---------------------------------------------------------------- luz
 
 const AMBIENTE = [0.035, 0.03, 0.055];
-
-function fuentesLuz(v) {
+// Fuentes que no se mueven (se guardan en caché hasta que el mundo cambia).
+function fuentesFijas(x0, y0, x1, y1) {
   const f = [];
-  if (J.estado !== 'titulo' && J.estado !== 'muerto') {
-    const s = J.inv[J.sel];
-    if (s && s.id === 'antorcha') f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
-    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 5, c: [1.0, 0.88, 0.7], k: 0.62 });
-  }
   for (const i of M.luces) {
     const o = M.objetos.get(i);
-    if (!o || o.x < v.x0 - 12 || o.x > v.x1 + 12 || o.y < v.z0 - 12 || o.y > v.z1 + 12) continue;
+    if (!o || o.x < x0 - 12 || o.x > x1 + 12 || o.y < y0 - 12 || o.y > y1 + 12) continue;
     const info = OBJ[o.tipo], x = o.x * T + 8, y = o.y * T + 8;
-    if (o.tipo === 'corazon') f.push({ x, y: y + 4, r: 7 + J.latidos * 3, c: [1.0, 0.42, 0.6], k: 0.8 + 0.2 * Math.sin(J.t * 2.2) });
-    else if (o.tipo === 'pedestal') { if (o.extra) f.push({ x, y, r: 3.5, c: [1, 0.4, 0.6], k: 1 }); }
-    else if (info.luz) {
-      const [r, cr, cg, cb] = info.luz;
-      f.push({ x, y, r, c: [cr, cg, cb], k: info.parpadeo ? 0.9 + 0.08 * Math.sin(J.t * 13 + i) * Math.sin(J.t * 7.3 + i * 0.7) : 0.85 });
-    }
+    if (o.tipo === 'corazon') f.push({ x, y: y + 4, r: 7 + Object.keys(J.estatuas).length * 3, c: [1.0, 0.42, 0.6], k: 0.9 });
+    else if (o.tipo === 'estatua') { if (o.extra) f.push({ x, y, r: 4.5, c: [1, 0.55, 0.7], k: 1 }); }
+    else if (o.tipo === 'antorcha' && o.datos && o.datos.magica) f.push({ x, y, r: 7, c: [0.65, 0.4, 1], k: 0.9, fuego: true });
+    else if (info.luz) { const [r, cr, cg, cb] = info.luz; f.push({ x, y, r, c: [cr, cg, cb], k: info.fuego ? 0.9 : 0.85, fuego: !!info.fuego }); }
   }
-  if (J.jefe && J.jefe.estado === 'aturdido') f.push({ x: J.jefe.x, y: J.jefe.y - 20, r: 2.5, c: [1, 0.9, 0.5], k: 0.6 });
+  return f;
+}
+function fuentesDinamicas() {
+  const f = [];
+  if (J.estado !== 'titulo' && J.estado !== 'muerto') {
+    const s = J.inv[J.sel], extra = J.st ? J.st.luz : 0;
+    if (s && s.id === 'antorcha') f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8 + extra, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
+    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 6 + extra, c: [1.0, 0.88, 0.7], k: 0.7 });
+  }
+  for (const j of Object.values(J.jefes)) {
+    if (!j.activo) continue;
+    if (j.id === 'ozmar') f.push({ x: j.x, y: j.y, r: 5, c: [0.6, 0.35, 1], k: 0.8 });
+    if (j.id === 'reina') f.push({ x: j.x, y: j.y - 6, r: 5.5, c: [0.55, 1, 0.3], k: 0.7 });
+    if (j.estado === 'aturdido') f.push({ x: j.x, y: j.y - 20, r: 2.5, c: [1, 0.9, 0.5], k: 0.6 });
+  }
+  for (const d of J.disparos) if (d.magico) f.push({ x: d.x, y: d.y, r: 2.5, c: [0.7, 0.4, 1], k: 0.7 });
+  for (const r of J.proyectiles) if (r.tipo === 'orbe') f.push({ x: r.x, y: r.y, r: 2, c: [0.6, 0.3, 0.9], k: 0.6 });
   return f;
 }
 
-const HALO = { antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16] };
-const ALTURA_HALO = { antorcha: 1.05, horno: 0.5, lampara: 1.0, cristal: 0.55, hongo: 0.45, arbusto: 0.3 };
+// ---------------------------------------------------------------- dibujo de las cosas del mundo
+
+const HALO = { huevo_larva: [0.7, [0.5, 1, 0.3], 0.14], antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], farol: [1.7, [1, 0.8, 0.4], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16], olla: [0.7, [1, 0.5, 0.25], 0.15] };
+const ALTURA_HALO = { huevo_larva: 0.3, antorcha: 1.05, horno: 0.5, lampara: 1.0, farol: 1.1, cristal: 0.55, hongo: 0.45, arbusto: 0.3, olla: 0.3 };
+const T4 = [1, 1, 1, 1];
 
 function dibujarObjeto3d(o) {
   const info = OBJ[o.tipo], x = o.x + 0.5 + (o.sacude > 0 ? Math.sin(J.t * 80) * 0.08 : 0), z = o.y + 0.86;
   let n = info.arte;
-  if (o.tipo === 'antorcha') n = `antorcha_${Math.floor(J.t * 8 + o.x * 3 + o.y) % 4}`;
+  if (o.tipo === 'antorcha') n = `antorcha_${Math.floor(J.t * 8 + o.x * 3 + o.y) % 4}${o.datos && o.datos.magica ? 'm' : ''}`;
   else if (o.tipo === 'horno') n = `horno_${Math.floor(J.t * 5) % 2}`;
-  else if (o.tipo === 'pedestal') n = o.extra ? 'pedestal_lleno' : 'pedestal';
+  else if (o.tipo === 'olla') n = `olla_${Math.floor(J.t * 4) % 2}`;
+  else if (o.tipo === 'estatua') n = `estatua_${o.datos.jefe}${o.extra ? '_on' : ''}`;
+  else if (o.tipo === 'puerta') n = Math.hypot(J.jug.x / T - x, J.jug.y / T - z) < 1.4 ? 'puerta_abierta' : 'puerta';
+  else if (o.tipo === 'cultivo') { const e = etapaCultivo(o); n = `cultivo_${o.datos.planta}_${e}`; if (o.datos.regado) GL.plano('regado', x, o.y + 0.5, { unlit: 0, y: 0.003, tinte: [1, 1, 1, 0.8] }); }
   if (o.tipo === 'corazon') {
-    const flota = Math.sin(J.t * 1.6) * 0.08, cor = J.latidos ? 'corazon' : 'corazon_dormido';
-    GL.sprite('altar', x, z + 0.4, {});
+    const flota = Math.sin(J.t * 1.6) * 0.08, despierto = J.corazonDespierto, cor = Object.keys(J.estatuas).length ? 'corazon' : 'corazon_dormido';
+    GL.sprite('altar', x, z + 0.4);
     GL.sprite(cor, x, z - 0.2, { y: 0.9 + flota, unlit: 0.35 });
-    GL.sprite(cor, x, z - 0.19, { y: 0.9 + flota, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, (J.latidos ? 0.5 : 0.2) + 0.2 * Math.sin(J.t * 2.2)] });
-    GL.halo(x, 1.6 + flota, z - 0.2, 2.6 + J.latidos * 0.6, [1, 0.35, 0.55], 0.28 + 0.08 * Math.sin(J.t * 2.2));
+    GL.sprite(cor, x, z - 0.19, { y: 0.9 + flota, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, (despierto ? 0.7 : Object.keys(J.estatuas).length ? 0.45 : 0.18) + 0.2 * Math.sin(J.t * 2.2)] });
+    GL.halo(x, 1.6 + flota, z - 0.2, 2.6 + Object.keys(J.estatuas).length * 0.5, [1, 0.35, 0.55], 0.28 + 0.08 * Math.sin(J.t * 2.2));
     return;
   }
   if (o.tipo === 'raiz') GL.plano('raiz_suelo', x, z - 0.3, { unlit: 0, tinte: [0.85, 0.85, 0.85, 1] });
-  if (info.bloquea || o.tipo === 'antorcha' || o.tipo === 'lampara') GL.plano(o.tipo === 'antorcha' ? 'sombra_s' : 'sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.7] });
-  GL.sprite(n, x, z, {});
-  if (info.brillo || (o.tipo === 'pedestal' && o.extra)) {
+  if (info.bloquea || o.tipo === 'antorcha' || o.tipo === 'lampara' || o.tipo === 'farol') GL.plano(o.tipo === 'antorcha' ? 'sombra_s' : 'sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.7] });
+  GL.sprite(n, x, z);
+  const brilla = info.brillo || (o.tipo === 'estatua' && o.extra) || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
+  if (brilla && SPR[n + '_luz']) {
     GL.sprite(n + '_luz', x, z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.8] });
     const h = HALO[o.tipo];
-    if (h) GL.halo(x, ALTURA_HALO[o.tipo], z, h[0], h[1], h[2] * (info.parpadeo ? 0.85 + 0.15 * Math.sin(J.t * 11 + o.x) : 1));
+    if (h) GL.halo(x, ALTURA_HALO[o.tipo], z, h[0], o.datos && o.datos.magica ? [0.6, 0.3, 1] : h[1], h[2] * (info.fuego ? 0.85 + 0.15 * Math.sin(J.t * 11 + o.x) : 1));
   }
 }
 
-function nombreJugador(p) {
-  const f = p.andando ? Math.floor(p.anim) % 4 : 0;
-  return `${p.flash > 0 ? 'jugB' : 'jug'}_${p.dir}_${f}`;
-}
+function nombreJugador(p) { return `${p.flash > 0 ? 'jugB' : 'jug'}_${p.dir}_${p.andando ? Math.floor(p.anim) % 4 : 0}`; }
 function dibujarJugador3d(p) {
   const x = p.x / T, z = p.y / T + 0.06;
   GL.plano('sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.75] });
   const parpadea = p.invuln > 0 && Math.floor(J.t * 20) % 2;
-  const s = J.inv[J.sel], it = s && ITEMS[s.id];
-  const enMano = !(p.swing > 0) && it && (it.tipo === 'pico' || it.tipo === 'espada' || s.id === 'antorcha');
+  const s = J.inv[J.sel], it = s && asegurarItem(s.id);
+  const enMano = !(p.swing > 0) && it && (['pico', 'espada', 'maza', 'arco', 'azada', 'cana', 'regadera'].includes(it.tipo) || s.id === 'antorcha');
   const detras = p.dir === 'ar';
   if (enMano && detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
-  if (!parpadea) GL.sprite(nombreJugador(p), x, z, {});
+  if (!parpadea) {
+    GL.sprite(nombreJugador(p), x, z);
+    // armadura encima del cuerpo
+    for (const r of ['botas', 'peto', 'casco']) { const e = J.equipo[r]; if (e) GL.sprite(`eq_${r}_${e.id.split('_')[1]}_${p.dir}_${p.andando ? Math.floor(p.anim) % 4 : 0}`, x, z + 0.001); }
+  }
   if (enMano && !detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
   if (p.swing > 0 && p.swingItem) dibujarHerramienta3d(p, x, z);
+  if (J.pesca) { // sedal y corcho
+    const ps = J.pesca, bx = ps.x / T, bz = ps.y / T, hund = ps.estado === 'pica' ? Math.sin(J.t * 30) * 0.05 - 0.04 : Math.sin(J.t * 3) * 0.02;
+    GL.sprite('corcho', bx, bz, { y: 0.02 + hund });
+    const hx = x + p.fx * 0.4, hy = 0.9;
+    for (let k = 1; k < 8; k++) { const t = k / 8, cx = hx + (bx - hx) * t, cz = z + (bz - z) * t, cy = hy * (1 - t) - Math.sin(t * Math.PI) * 0.15 + 0.05; GL.sprite('blanco', cx, cz, { y: cy, escala: 0.25, unlit: 0.6, tinte: [0.9, 0.9, 0.85, 1] }); }
+  }
 }
-// Lo que llevas en la mano cuando no golpeas: la antorcha encendida o la herramienta en reposo.
 function dibujarEnMano(p, x, z, id, it) {
   const lado = p.dir === 'iz' ? -1 : p.dir === 'de' ? 1 : p.dir === 'ab' ? 1 : -1;
   const bob = p.andando && Math.floor(p.anim) % 2 ? 1 : 0;
@@ -203,60 +238,71 @@ function dibujarEnMano(p, x, z, id, it) {
   }
   const r = SPR[it.icono];
   if (!r) return;
-  const rot = lado > 0 ? 0.25 : -0.25, c = Math.cos(rot), sn = Math.sin(rot), px = 16;
-  const pts = [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]].map(([u, v]) => {
+  const rot = lado > 0 ? 0.25 : -0.25, c = Math.cos(rot), sn = Math.sin(rot), px = 16, pts = [];
+  for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) {
     const uu = lado > 0 ? u : -u, ux = uu * c - v * sn, vy = uu * sn + v * c;
-    return [hx + ux / px, hy - (vy / px) * GL.KY, hz];
-  });
-  GL.lotes.spr.quad(pts, GL.uv(it.icono), [1, 1, 1, 1], x, z, 0, 0);
+    pts.push(hx + ux / px, hy - (vy / px) * GL.KY, hz);
+  }
+  GL.libre(it.icono, pts, T4, x, z);
 }
-// La herramienta gira alrededor de la mano, en el plano del sprite.
 function dibujarHerramienta3d(p, x, z) {
   const r = SPR[p.swingItem];
   if (!r) return;
-  const k = 1 - p.swing / p.swingDur, lado = p.fx >= 0 ? 1 : -1;
-  const delante = p.dir !== 'ar';
-  // ángulo en el plano de la pantalla: de arriba por detrás a abajo por delante
+  const k = 1 - p.swing / p.swingDur, lado = p.fx >= 0 ? 1 : -1, delante = p.dir !== 'ar';
   const base = p.dir === 'ar' ? -Math.PI / 2 : p.dir === 'ab' ? Math.PI / 2 : p.fx > 0 ? 0 : Math.PI;
-  const ang = base + lado * (-1.4 + k * 2.4);
-  const px = 16, cx = x + (p.dir === 'de' ? 0.25 : p.dir === 'iz' ? -0.25 : 0.12 * lado), cy = 7 / px * GL.KY;
-  const rot = ang + Math.PI / 4, c = Math.cos(rot), s = Math.sin(rot);
-  const pts = [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]].map(([u, v]) => {
-    const ux = u * c - v * s, vy = u * s + v * c; // v hacia abajo en la imagen
-    return [cx + ux / px, cy - (vy / px) * GL.KY, z + (delante ? 0.02 : -0.02)];
-  });
-  GL.lotes.spr.quad(pts, GL.uv(p.swingItem), [1, 1, 1, 1], x, z, 0, 0);
+  const ang = base + lado * (-1.4 + k * 2.4), px = 16;
+  const cx = x + (p.dir === 'de' ? 0.25 : p.dir === 'iz' ? -0.25 : 0.12 * lado), cy = (7 / px) * GL.KY;
+  const rot = ang + Math.PI / 4, c = Math.cos(rot), s = Math.sin(rot), pts = [];
+  for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) { const ux = u * c - v * s, vy = u * s + v * c; pts.push(cx + ux / px, cy - (vy / px) * GL.KY, z + (delante ? 0.02 : -0.02)); }
+  GL.libre(p.swingItem, pts, T4, x, z);
 }
 function dibujarCriatura3d(e) {
-  const B = e.flash > 0, x = e.x / T, z = e.y / T + 0.05;
-  if (e.tipo === 'babosa') {
-    GL.plano('sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.7 - Math.min(0.5, e.z / 30)] });
-    const f = e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2;
-    GL.sprite(`babosa_${f}${B ? '_B' : ''}`, x, z, { y: (e.z / 16) * GL.KY });
-  } else if (e.tipo === 'larva') {
-    GL.plano('sombra_m', x, z - 0.04, { tinte: [1, 1, 1, 0.7] });
-    GL.sprite(`larva_${Math.floor(e.t * 6) % 2}${e.mira < 0 ? '_i' : ''}${B ? (e.mira < 0 ? 'B' : '_B') : ''}`, x, z);
-  } else if (e.tipo === 'escarabajo') {
-    GL.plano('sombra_m', x, z - 0.04, { tinte: [1, 1, 1, 0.7] });
-    const tiembla = e.estado === 'prepara' ? Math.sin(J.t * 60) * 0.06 : 0;
-    const rojo = e.estado === 'prepara' && Math.floor(J.t * 16) % 2;
-    GL.sprite(`escarabajo_${Math.floor(e.t * (e.estado === 'carga' ? 16 : 8)) % 2}${B || rojo ? '_B' : ''}`, x + tiembla, z);
-  }
+  const B = e.flash > 0, x = e.x / T, z = e.y / T + 0.05, c = CRIATURAS[e.tipo];
+  const aviso = (e.estado === 'prepara' || e.estado === 'conjura') && Math.floor(J.t * 16) % 2;
+  const tiembla = e.estado === 'prepara' ? Math.sin(J.t * 60) * 0.05 : 0;
+  const blanco = B || aviso ? 1 : 0;
+  GL.plano(e.radio > 8 ? 'sombra_m' : 'sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.7 - Math.min(0.5, (e.z || 0) / 30)], escala: e.radio > 8 ? 1.3 : 1 });
+  let n;
+  if (c.conducta === 'salta') n = `${e.tipo}_${e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2}`;
+  else if (e.tipo.startsWith('larva')) n = `${e.tipo}_${Math.floor(e.t * 6) % 2}`;
+  else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
+  else n = `${e.tipo}_${e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
+  const flip = e.mira < 0;
+  GL.sprite(n, x + tiembla, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85 });
+  if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
 }
 function dibujarJefe3d(j) {
   if (j.estado === 'muerto') return;
   const x = j.x / T, z = j.y / T + 0.1;
-  if (j.enterrado) {
-    const tiembla = j.t < 0.8 ? Math.sin(J.t * 50) * 0.08 : 0;
-    if (j.t < 0.8) GL.plano('aviso_suelo', x, z, { escala: 2.2, tinte: [1, 1, 1, 0.5 + 0.3 * Math.sin(J.t * 20)] });
-    GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla, z);
-    return;
+  if (j.id === 'topo') {
+    if (j.enterrado) {
+      const tiembla = j.t < 0.8 ? Math.sin(J.t * 50) * 0.08 : 0;
+      if (j.t < 0.8) GL.plano('aviso_suelo', x, z, { escala: 2.2, tinte: [1, 1, 1, 0.5 + 0.3 * Math.sin(J.t * 20)] });
+      GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla, z);
+      return;
+    }
+    GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.8] });
+    const brazos = j.estado === 'rocas' || j.estado === 'embiste' || j.estado === 'despierta' ? Math.floor(J.t * 10) % 2 : Math.floor(J.t * 2) % 2;
+    const tiembla = j.estado === 'embiste' || j.estado === 'muriendo' ? Math.sin(J.t * 60) * 0.08 : 0;
+    GL.sprite(`topo_${brazos}`, x + tiembla, z, { unlit: 0.18, blanco: j.flash > 0 || (j.estado === 'embiste' && Math.floor(J.t * 12) % 2) ? 0.85 : 0 });
+  } else if (j.id === 'reina') {
+    GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.85], escala: 1.4 });
+    const f = j.estado === 'acido' || j.estado === 'puesta' ? 1 + (Math.floor(J.t * 8) % 2) : Math.floor(J.t * 2) % 2;
+    const dx = j.estado === 'muriendo' ? Math.sin(J.t * 60) * 0.08 : 0, pulso = 0.55 + 0.25 * Math.sin(J.t * 3);
+    GL.sprite(`reina_${f}`, x + dx, z, { unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
+    GL.sprite(`reina_${f}_luz`, x + dx, z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, pulso] });
+    GL.halo(x, 1.0, z, 1.6, [0.5, 1, 0.3], 0.18 + 0.08 * Math.sin(J.t * 3));
+  } else {
+    if (j.invisible) return;
+    const flota = Math.sin(J.t * 2.5) * 0.08;
+    GL.plano('sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.6] });
+    const f = j.estado === 'orbes' || j.estado === 'anillo' || j.estado === 'pilares' || j.estado === 'invoca' ? 2 : j.estado === 'dormido' ? 3 : Math.floor(J.t * 3) % 2;
+    const alto = j.estado === 'dormido' ? 0 : j.estado === 'cansado' ? 0.04 : 0.25 + flota, cansado = j.estado === 'cansado';
+    GL.sprite(`ozmar_${f}`, x, z, { y: alto, unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0 });
+    GL.sprite(`ozmar_${f}_luz`, x, z + 0.002, { y: alto, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, cansado ? 0.3 : 0.8] });
+    if (cansado && Math.floor(J.t * 3) % 2) GL.sprite('destello', x + 0.3, z + 0.004, { y: 1.5, unlit: 1, lote: GL.lotes.brillo, tinte: [0.8, 0.6, 1, 0.8] });
+    GL.halo(x, 1.3 + flota, z, 1.0, [0.6, 0.3, 1], 0.25 + 0.1 * Math.sin(J.t * 4));
   }
-  GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, 0.8] });
-  const brazos = j.estado === 'rocas' || j.estado === 'embiste' || j.estado === 'despierta' ? Math.floor(J.t * 10) % 2 : Math.floor(J.t * 2) % 2;
-  const tiembla = j.estado === 'embiste' || j.estado === 'muriendo' ? Math.sin(J.t * 60) * 0.08 : 0;
-  const rojo = j.estado === 'embiste' && Math.floor(J.t * 12) % 2;
-  GL.sprite(`topo_${brazos}${j.flash > 0 || rojo ? '_B' : ''}`, x + tiembla, z);
 }
 
 function dibujarMundo3d() {
@@ -264,7 +310,6 @@ function dibujarMundo3d() {
   const sx = J.temblor > 0 ? (Math.random() - 0.5) * J.temblor * 6 : 0, sy = J.temblor > 0 ? (Math.random() - 0.5) * J.temblor * 6 : 0;
   GL.camara((J.cam.x + sx) / T, (J.cam.y + sy) / T);
   const v = GL.vista();
-  // objetos a la vista
   const vistaObj = [];
   for (let ty = v.z0; ty <= v.z1; ty++) for (let tx = v.x0; tx <= v.x1; tx++) {
     if (!enMundo(tx, ty)) continue;
@@ -275,31 +320,51 @@ function dibujarMundo3d() {
   for (const o of vistaObj) dibujarObjeto3d(o);
   if (J.estado === 'juego') dibujarJugador3d(J.jug);
   for (const e of J.enemigos) dibujarCriatura3d(e);
-  if (J.jefe && J.estado !== 'titulo') dibujarJefe3d(J.jefe);
+  if (J.estado !== 'titulo') for (const j of Object.values(J.jefes)) dibujarJefe3d(j);
   for (const b of J.botines) {
-    const x = b.x / T, z = b.y / T;
+    const x = b.x / T, z = b.y / T, it = ITEMS[b.id];
     GL.plano('sombra_s', x, z, { escala: 0.6, tinte: [1, 1, 1, 0.6] });
-    GL.sprite(ITEMS[b.id].icono, x, z, { y: (b.z / 16) * GL.KY + 0.06 + Math.sin(b.t * 4) * 0.04, escala: 0.85, lz: z });
+    GL.sprite(it.icono, x, z, { y: (b.z / 16) * GL.KY + 0.06 + Math.sin(b.t * 4) * 0.04, escala: 0.85, lz: z });
+    if ((it.rareza || 0) > 0) GL.halo(x, 0.4, z, 0.45, RAREZA_RGB[it.rareza], 0.25);
   }
-  for (const r of J.proyectiles) { GL.plano('sombra_s', r.x / T, r.y / T + 0.3, { escala: 0.5 }); GL.sprite('roca_lanzada', r.x / T, r.y / T + 0.3, { y: 0.35 }); }
+  for (const r of J.proyectiles) {
+    const x = r.x / T, z = r.y / T + 0.3;
+    if (r.tipo === 'acido') { GL.plano('sombra_s', x, z, { escala: 0.5 }); GL.sprite('acido', x, z, { y: (r.z / 16) * GL.KY, unlit: 0.4 }); }
+    else if (r.tipo === 'orbe') { GL.sprite('orbe', x, z, { y: 0.35, unlit: 1, lote: GL.lotes.brillo }); GL.halo(x, 0.55, z, 0.45, [0.6, 0.3, 1], 0.35); }
+    else { GL.plano('sombra_s', x, z, { escala: 0.5 }); GL.sprite('roca_lanzada', x, z, { y: 0.35 }); }
+  }
+  for (const d of J.disparos) {
+    const x = d.x / T, z = d.y / T + 0.2;
+    if (d.magico) { GL.sprite('orbe', x, z, { y: 0.4, unlit: 1, lote: GL.lotes.brillo, tinte: [0.8, 0.7, 1, 1] }); GL.halo(x, 0.6, z, 0.5, [0.7, 0.4, 1], 0.4); }
+    else { const a = Math.atan2(d.vy, d.vx); GL.sprite(Math.abs(Math.cos(a)) > 0.7 ? 'flecha_h' : 'flecha_v', x, z, { y: 0.35, flip: Math.cos(a) < 0 }); }
+  }
+  for (const c of J.charcos) GL.plano('charco', c.x / T, c.y / T, { y: 0.008, unlit: 0.5, tinte: [1, 1, 1, Math.min(1, c.t) * 0.9] });
+  for (const a of J.avisosSuelo) if (a.t > 0) { const k = 1 - a.t / a.t0; GL.plano('aviso_suelo', a.x / T, a.y / T, { escala: (a.r / 15) * (0.6 + 0.4 * k), tinte: [1, 1, 1, 0.35 + 0.4 * k] }); }
   for (const q of J.particulas) {
-    const o = { y: (q.z / 16) * GL.KY, escala: q.s * 0.5 * (q.tenue ? 0.8 : 1), tinte: [...hexRgb(q.c).map((c) => c / 255), q.chispa ? Math.min(1, q.vida) * (q.tenue ? 0.35 : 0.9) : 1] };
+    const o = { y: (q.z / 16) * GL.KY, escala: q.s * 0.5 * (q.tenue ? 0.8 : 1), tinte: colorRGB(q.c, q.chispa ? Math.min(1, q.vida) * (q.tenue ? 0.35 : 0.9) : 1) };
     if (q.brilla) { o.unlit = 1; o.lote = GL.lotes.brillo; }
     GL.sprite('blanco', q.x / T, q.y / T, o);
   }
-  // efectos (estela, chispazos, humo, polvo)
   for (const e of J.efectos) {
     const f = Math.min(e.cuadros - 1, Math.floor((e.t / e.dur) * e.cuadros)), x = e.x / T, z = e.y / T, y = (e.z / 16) * GL.KY;
     if (e.n === 'tajo') {
       const dir = e.dir, h = dir === 'ab' || dir === 'ar';
       const ox = dir === 'de' ? 0.62 : dir === 'iz' ? -0.62 : 0, oz = dir === 'ab' ? 0.32 : dir === 'ar' ? -0.32 : 0.02;
-      GL.sprite(`tajo_${h ? 'h' : 'v'}_${f}`, x + ox, z + oz, { y: h ? y + (dir === 'ar' ? 0.5 : -0.1) : y - 0.2, flip: dir === 'iz', unlit: 1, lote: GL.lotes.brillo, tinte: [1, 0.96, 0.85, 0.85 * (1 - e.t / e.dur * 0.5)] });
-    } else if (e.n === 'chispazo') GL.sprite(`chispazo_${f}`, x, z + 0.05, { y, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 1] });
+      GL.sprite(`tajo_${h ? 'h' : 'v'}_${f}`, x + ox, z + oz, { y: h ? y + (dir === 'ar' ? 0.5 : -0.1) : y - 0.2, flip: dir === 'iz', unlit: 1, lote: GL.lotes.brillo, tinte: [1, 0.96, 0.85, 0.85 * (1 - (e.t / e.dur) * 0.5)] });
+    } else if (e.n === 'chispazo') GL.sprite(`chispazo_${f}`, x, z + 0.05, { y, unlit: 1, lote: GL.lotes.brillo });
     else GL.sprite(`${e.n}_${f}`, x, z + 0.04, { y });
   }
+  // agua que destella, destellos de mineral en lo oscuro y rayos de luz
   for (let ty = v.z0; ty <= v.z1; ty++) for (let tx = v.x0; tx <= v.x1; tx++) {
-    if (enMundo(tx, ty) && M.piso[idx(tx, ty)] === AGUA) GL.plano(`aguab_${(Math.floor(J.t * 3) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: 0.003, unlit: 0, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+    if (!enMundo(tx, ty)) continue;
+    const i = idx(tx, ty);
+    if (M.piso[i] === SUELO.AGUA) GL.plano(`aguab_${(Math.floor(J.t * 3) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: -0.05, unlit: 0, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+    else if (M.mena[i] && M.visto[i]) {
+      const fase = (J.t * 0.6 + hash2(tx, ty, 21)) % 1;
+      if (fase < 0.12) { const k = Math.sin((fase / 0.12) * Math.PI); GL.sprite('destello', tx + 0.3 + hash2(tx, ty, 22) * 0.4, ty + 0.98, { y: GL.ALTO * 0.6, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, k], escala: 0.5 + k * 0.5 }); }
+    }
   }
+  for (const r of M.rayos) if (r.x > v.x0 - 4 && r.x < v.x1 + 4 && r.y > v.z0 - 4 && r.y < v.z1 + 6 && M.visto[idx(Math.round(r.x), Math.round(r.y))]) GL.rayo(r.x, r.y, 1.6, 3.2, [0.85, 0.9, 1], 0.12 * r.a + 0.03 * Math.sin(J.t * 0.7 + r.x));
   // grietas de las paredes que estás picando
   for (const [i, d] of M.danos) {
     const tx = i % N_MUNDO, ty = (i - tx) / N_MUNDO, m = M.muro[i];
@@ -308,32 +373,46 @@ function dibujarMundo3d() {
     GL.tapa(n, tx, ty); if (!muroEn(tx, ty + 1)) GL.cara(n, tx, ty + 1.004);
   }
   // casilla a la que apuntas
-  if (J.estado === 'juego' && !J.panel) {
-    const s = J.inv[J.sel], it = s && ITEMS[s.id];
+  if (J.estado === 'juego' && !J.panel && !J.pesca) {
+    const s = J.inv[J.sel], it = s && asegurarItem(s.id);
     const { tx, ty } = casillaMira(J.jug);
-    const muro = muroEn(tx, ty), colocar = it && it.tipo === 'colocable';
+    const muro = muroEn(tx, ty), pone = it && ['colocable', 'bloque', 'suelo', 'semilla', 'azada'].includes(it.tipo);
     const a = 0.55 + 0.3 * Math.sin(J.t * 8);
-    if (muro && muro !== MURO.ROCA && muro !== MURO.RUINA && !enemigoCerca(J.jug, 30)) {
+    if (muro && INFO_MURO[muro].poder < 999 && !enemigoCerca(J.jug, 30) && !pone) {
       GL.tapa('marca', tx, ty, { lote: GL.lotes.brillo, unlit: 1, tinte: [1, 0.95, 0.75, a] });
       if (!muroEn(tx, ty + 1)) GL.cara('marca', tx, ty + 1.006, { lote: GL.lotes.brillo, unlit: 1, tinte: [1, 0.95, 0.75, a] });
-    } else if (colocar && puedeColocar(tx, ty)) GL.plano('marca', tx + 0.5, ty + 0.5, { lote: GL.lotes.brillo, unlit: 1, tinte: [0.55, 1, 0.65, a] });
+    } else if (pone && !muro) GL.plano('marca', tx + 0.5, ty + 0.5, { lote: GL.lotes.brillo, unlit: 1, tinte: [0.55, 1, 0.65, a] });
   }
-  const luz = calcularLuz(v.x0, v.z0, v.x1 - v.x0 + 1, v.z1 - v.z0 + 1, fuentesLuz(v), AMBIENTE);
-  GL.dibujar(luz, J.t);
+  const parpadeo = 0.92 + 0.08 * Math.sin(J.t * 13) * Math.sin(J.t * 7.3);
+  const luz = calcularLuz(v, fuentesFijas, fuentesDinamicas(), AMBIENTE, parpadeo);
+  const reg = J.estado === 'titulo' ? 0 : M.region[idx(Math.floor(J.jug.x / T), Math.floor(J.jug.y / T))] || 0;
+  GL.dibujar(luz, J.t, TONO_REGION[reg]);
 }
+const RAREZA_RGB = [[1, 1, 1], [0.4, 0.7, 1], [0.75, 0.48, 1], [1, 0.65, 0.25]];
+const cacheRGB = new Map();
+function colorRGB(hex, a) { let c = cacheRGB.get(hex); if (!c) { c = hexRgb(hex).map((v) => v / 255); cacheRGB.set(hex, c); } return [c[0], c[1], c[2], a]; }
 
-// Números de daño y la «Z» del topo dormido, sobre la interfaz.
+// Números de daño, barras de vida de las criaturas y la «Z» de los guardianes dormidos.
 function dibujarTextosMundo() {
+  for (const e of J.enemigos) {
+    if (!e.golpeadoT || J.t - e.golpeadoT > 3 || e.vida >= e.vidaMax) continue;
+    const p = GL.aPantalla(e.x / T, ((e.radio > 8 ? 30 : 20) / 16) * GL.KY, e.y / T);
+    const w = e.radio > 8 ? 20 : 14, x = Math.round(p.x * LW - w / 2), y = Math.round(p.y * LH);
+    ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y - 1, w + 2, 4);
+    ctx.fillStyle = '#5a1a1a'; ctx.fillRect(x, y, w, 2);
+    ctx.fillStyle = '#e84040'; ctx.fillRect(x, y, Math.round(w * Math.max(0, e.vida / e.vidaMax)), 2);
+  }
   for (const n of J.numeros) {
     const p = GL.aPantalla(n.x / T, (n.alto / 16) * GL.KY, n.y / T);
     ctx.globalAlpha = Math.min(1, n.vida * 3);
     texto(ctx, n.txt, p.x * LW, p.y * LH, n.c, { alin: 'c', borde: COL.negro });
   }
   ctx.globalAlpha = 1;
-  const j = J.jefe;
-  if (j && j.estado === 'dormido' && J.estado !== 'titulo') {
+  if (J.estado !== 'titulo') for (const j of Object.values(J.jefes)) {
+    if (j.estado !== 'dormido') continue;
     const k = (J.t * 0.6) % 1, p = GL.aPantalla(j.x / T + 0.7 + k * 0.4, ((40 + k * 14) / 16) * GL.KY, j.y / T);
-    ctx.globalAlpha = 1 - k; texto(ctx, 'Z', p.x * LW, p.y * LH, '#e8e0f0', { borde: COL.negro, esc: 1 }); ctx.globalAlpha = 1;
+    if (p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1) continue;
+    ctx.globalAlpha = 1 - k; texto(ctx, 'Z', p.x * LW, p.y * LH, '#e8e0f0', { borde: COL.negro }); ctx.globalAlpha = 1;
   }
 }
 
@@ -345,6 +424,7 @@ function dibujar() {
   dibujarTextosMundo();
   if (J.estado === 'titulo') dibujarTitulo(ctx, hayPartida);
   else { dibujarHUD(ctx); if (J.panel) dibujarPanel(ctx); }
+  if (VER_FPS) texto(ctx, `${fps} fps · ${GL.W}x${GL.H} · ${GL.trozos} trozos`, 4, LH - 30, '#9fffa8', { borde: COL.negro });
 }
 
 // ---------------------------------------------------------------- arranque

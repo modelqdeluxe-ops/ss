@@ -25,6 +25,7 @@ class Lienzo {
   hl(x, y, n, c) { return this.rect(x, y, n, 1, c); }
   vl(x, y, n, c) { return this.rect(x, y, 1, n, c); }
   linea(x0, y0, x1, y1, c) {
+    x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
     const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
     let e = dx + dy;
     for (;;) {
@@ -139,11 +140,15 @@ const RAMPA = {
   piedra: ['#15161f', '#252a37', '#373e51', '#4c566c', '#66718a', '#8591a8'],
   ruina: ['#101a20', '#1d2e36', '#2c4550', '#3e5f6b', '#56808c', '#78a3ad'],
   roca: ['#08070b', '#0f0d14', '#17141e', '#211d2a', '#2c2737', '#383246'],
+  colmena: ['#2a1a08', '#4a3010', '#6e4a1a', '#94682a', '#bc8c3c', '#e0b860'],
+  ladrillo: ['#14181e', '#242a34', '#363e4c', '#4c5668', '#66728a', '#8a96ac'],
+  muralla: ['#0e1a14', '#1c2e24', '#2c4636', '#40624a', '#5a8262', '#7aa880'],
+  madera: ['#2a160c', '#4a2a16', '#6e4222', '#925a30', '#b67640', '#d49a5a'],
 };
 const BORDE_MURO = '#0b0709';
 const RAIZ = ['#5a3a1c', '#86592a', '#b3823a', '#dcae55'];
 
-const SUELO = {
+const RAMPA_SUELO = {
   tierra: { os: '#5a3826', base: '#6c4630', cl: '#7c5338', br: '#9a6c48', pd: '#46291c' },
   arcilla: { os: '#6e3424', base: '#80402c', cl: '#904b33', br: '#ad6544', pd: '#541f17' },
   piedra: { os: '#353b4b', base: '#404759', cl: '#4b5368', br: '#626c84', pd: '#262a37' },
@@ -152,7 +157,7 @@ const SUELO = {
 };
 
 function suelo(tipo, v) {
-  const S = SUELO[tipo], sem = 900 + v * 37 + tipo.length * 311, r = azar(sem);
+  const S = RAMPA_SUELO[tipo], sem = 900 + v * 37 + tipo.length * 311, r = azar(sem);
   const L = new Lienzo(16, 16).rect(0, 0, 16, 16, S.base);
   if (tipo === 'ruina') {
     // losa de piedra con su marco, como las del santuario de Core Keeper
@@ -203,6 +208,24 @@ function muroArriba(tipo, m, v) {
   if (tipo === 'ruina') {
     L.rect(0, 0, 16, 16, R[2]);
     for (let y = 0; y < 16; y += 4) { L.hl(0, y + 3, 16, R[1]); for (let x = (y / 4) % 2 ? 4 : 0; x < 16; x += 8) L.vl(x, y, 3, R[1]); L.hl(0, y, 16, R[3]); }
+  } else if (tipo === 'colmena') {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { // celdas hexagonales
+      const fila = Math.floor(y / 5), cx = ((x + (fila % 2) * 3) % 6), cy = y % 5;
+      L.px(x, y, cx === 0 || cy === 0 ? R[1] : cy === 1 || cx === 1 ? R[4] : R[3]);
+    }
+  } else if (tipo === 'ladrillo') {
+    for (const [y0, off] of [[0, 0], [8, 4]]) for (let x0 = -8 + off; x0 < 16; x0 += 8) {
+      L.rect(x0, y0, 8, 8, R[3]); L.hl(x0, y0, 8, R[4]); L.vl(x0, y0, 8, R[4]); L.hl(x0, y0 + 7, 8, R[1]); L.vl(x0 + 7, y0, 8, R[1]);
+      L.px(x0 + 1, y0 + 1, R[5]); if (r() < 0.4) L.linea(x0 + 2, y0 + 3, x0 + 4, y0 + 5, R[2]);
+    }
+  } else if (tipo === 'muralla') {
+    L.rect(0, 0, 16, 16, R[1]);
+    for (let k = 0; k < 4; k++) { // raíces de piedra que se cruzan
+      let x = entre(r, 0, 15), y = 0; const g = 2 + (k % 2);
+      for (let s = 0; s < 18; s++) { for (let w = 0; w < g; w++) L.pxc(x + w, y, w === 0 ? R[4] : w === g - 1 ? R[2] : R[3]); y++; x += entre(r, -1, 1); }
+    }
+  } else if (tipo === 'madera') {
+    for (let y = 0; y < 16; y += 4) { L.rect(0, y, 16, 4, R[3]); L.hl(0, y, 16, R[4]); L.hl(0, y + 3, 16, R[1]); const n = entre(r, 2, 12); L.hl(n, y + 1, 3, R[2]); L.px((n + 7) % 16, y + 2, R[2]); }
   } else if (tipo === 'arcilla') {
     const n = ruidoCiclico(sem2(tipo, v), 4);
     for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const f = n(x, y * 0.4) + y * 0.02; L.px(x, y, f < 0.38 ? R[1] : f > 0.66 ? R[3] : R[2]); }
@@ -257,6 +280,21 @@ function muroCara(tipo, lados, v) {
         if (r() < 0.4) L.px(x0 + entre(r, 2, 5), y0 + entre(r, 2, 3), R[2]);
       }
     }
+  } else if (tipo === 'colmena') {
+    for (let x = 0; x < 16; x++) for (let y = 0; y < 12; y++) { const b = Math.sin(x * 0.9 + v * 2) * 1.5 + Math.sin(y * 1.3 + x * 0.4) * 1.2; L.px(x, y, b > 1.2 ? R[4] : b > -0.4 ? R[3] : R[2]); }
+    for (let k = 0; k < 3; k++) { const x = entre(r, 1, 13), y = entre(r, 2, 8); L.px(x, y, R[5]); L.px(x + 1, y + 1, R[1]); }
+  } else if (tipo === 'ladrillo') {
+    for (const [y0, off] of [[0, v * 4], [6, 4 + v * 2]]) for (let x0 = -16 + off; x0 < 16; x0 += 8) {
+      L.rect(x0, y0, 8, 6, R[3]); L.hl(x0, y0, 8, R[4]); L.vl(x0, y0, 6, R[4]); L.hl(x0, y0 + 5, 8, R[1]); L.vl(x0 + 7, y0, 6, R[1]); L.px(x0 + 1, y0 + 1, R[5]);
+    }
+    if (v === 1) { L.rect(5, 3, 6, 5, R[1]); L.rect(6, 4, 4, 3, R[2]); L.px(7, 5, '#5fd0e0'); L.px(8, 5, '#5fd0e0'); }
+  } else if (tipo === 'muralla') {
+    L.rect(0, 0, 16, 12, R[2]);
+    for (let x0 = v * 2; x0 < 16; x0 += 5) { L.vl(x0, 0, 12, R[4]); L.vl(x0 + 1, 0, 12, R[3]); L.vl(x0 + 2, 0, 12, R[1]); }
+    for (let k = 0; k < 2; k++) { const y = entre(r, 2, 9); L.hl(0, y, 16, R[1]); L.hl(0, y - 1, 16, R[4]); }
+  } else if (tipo === 'madera') {
+    for (let x0 = 0; x0 < 16; x0 += 4) { L.rect(x0, 0, 4, 12, R[3]); L.vl(x0, 0, 12, R[4]); L.vl(x0 + 3, 0, 12, R[1]); L.px(x0 + 2, 2 + ((x0 + v) % 5), R[2]); }
+    L.hl(0, 1, 16, R[1]); L.hl(0, 9, 16, R[1]); L.px(1, 1, '#c8c8d0'); L.px(13, 9, '#c8c8d0');
   } else if (tipo === 'ruina') {
     for (let y0 = 0; y0 < 12; y0 += 4) for (let x0 = (y0 / 4) % 2 ? -4 : 0; x0 < 16; x0 += 8) {
       L.rect(x0, y0, 8, 4, R[3]); L.hl(x0, y0, 8, R[4]); L.hl(x0, y0 + 3, 8, R[1]); L.vl(x0 + 7, y0, 4, R[1]);
@@ -273,6 +311,7 @@ const MENA_COL = {
   cobre: ['#5e2814', '#9c4a24', '#d07436', '#f4a866', '#fff0d0'],
   estano: ['#3e3a58', '#6e6a92', '#a4a2c8', '#d6d4f0', '#ffffff'],
   hierro: ['#1e2a3c', '#3c5672', '#6888aa', '#9fc4e2', '#f0fbff'],
+  oro: ['#6a4a08', '#b8861a', '#f2c14e', '#ffe58a', '#fffbe0'],
 };
 function pepita(L, x, y, c, grande) {
   const [o, m, b, cl, br] = c;
@@ -318,7 +357,7 @@ function construirTerreno() {
     for (let m = 0; m < 16; m++) for (let v = 0; v < 2; v++) def(`m_${tipo}_${m}_${v}`, muroArriba(tipo, m, v));
     for (let l = 0; l < 4; l++) for (let v = 0; v < 2; v++) def(`c_${tipo}_${l}_${v}`, muroCara(tipo, l, v));
   }
-  for (const tipo of Object.keys(SUELO)) for (let v = 0; v < 4; v++) def(`s_${tipo}_${v}`, suelo(tipo, v));
+  for (const tipo of Object.keys(RAMPA_SUELO)) for (let v = 0; v < 4; v++) def(`s_${tipo}_${v}`, suelo(tipo, v));
   for (const ore of Object.keys(MENA_COL)) for (let v = 0; v < 2; v++) { def(`mena_${ore}_${v}`, menaArriba(ore, v)); def(`menac_${ore}_${v}`, menaCara(ore, v)); }
   for (let n = 1; n <= 3; n++) def(`grieta_${n}`, grieta(n));
 
@@ -517,7 +556,7 @@ function construirCriaturas() {
   conBlanco('babosa_2', babosa(6, 6.5, 1));
 
   // larva de la arcilla: segmentos redondos y una cabeza con pinzas
-  const CREMA = ['#6e5236', '#9a7a52', '#c7a978', '#e8d3a4', '#fff2d0'];
+  const CREMA = ['#5a4230', '#84664a', '#a88a62', '#c4a87c', '#dcc69a'];
   const CAB = ['#3a1410', '#6a2a1c', '#9a4630', '#c86a48'];
   const larva = (f) => {
     const L = new Lienzo(22, 12);
@@ -774,7 +813,7 @@ function construirObjetos() {
     for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const f = n(x, y); if (f < 0.3) L.px(x, y, AGUA[1]); else if (f > 0.72) L.px(x, y, AGUA[3]); }
     const rr = azar(7100 + v);
     for (let k = 0; k < 3; k++) { const x = entre(rr, 0, 15), y = entre(rr, 0, 15), w = entre(rr, 3, 5); for (let i = 0; i < w; i++) L.pxc(x + i, y + (i === 0 || i === w - 1 ? 1 : 0), AGUA[4]); }
-    def(`agua_${v}`, L);
+    def(`s_agua_${v}`, L);
   }
   for (let f = 0; f < 4; f++) {
     const L = new Lienzo(16, 16), rr = azar(7300);
@@ -805,6 +844,7 @@ const METAL = {
   estano: { H: '#a9a6c6', J: '#ebe9fb', D: '#5f5c7a' },
   hierro: { H: '#6787a6', J: '#b9d6ec', D: '#2c3a4f' },
   topo: { H: '#ffd0c0', J: '#ffffff', D: '#c9806e' },
+  oro: { H: '#e0a830', J: '#fff0a0', D: '#8a5a10' },
 };
 const MANGO = { h: '#8a5a36', g: '#d9a441', G: '#8f6420', p: '#5a3a26' };
 
@@ -832,7 +872,7 @@ function construirIconos() {
       ..hGG.....
       .h..G.....
       p.........`).contorno());
-    if (!['cobre', 'estano', 'hierro'].includes(t)) continue;
+    if (!['cobre', 'estano', 'hierro', 'oro'].includes(t)) continue;
     def(`i_armadura_${t}`, rej(P, `
       .JH....HJ.
       JHHH..HHHD
@@ -1040,8 +1080,9 @@ let ATLAS = null;
 
 function construirArte() {
   construirTerreno(); construirJugador(); construirCriaturas(); construirObjetos(); construirIconos();
+  if (typeof construirExtra === 'function') construirExtra();
   // Empaquetado en estantes, de más alto a más bajo, con 1 px libre alrededor.
-  const lista = DIBUJOS.slice().sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
+  const lista = [...new Map(DIBUJOS).entries()].sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
   const ANCHO = 1024;
   let x = 1, y = 1, alto = 0;
   for (const [n, l] of lista) {
@@ -1078,13 +1119,16 @@ function construirArte() {
 // Para la interfaz (lienzo 2D): esquina arriba-izquierda, pies o centro.
 function spr(ctx, n, x, y) {
   const r = SPR[n];
-  if (r) ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x), Math.round(y), r.w, r.h);
+  if (!r) (window.FALTAN || (window.FALTAN = new Set())).add(n);
+  else ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x), Math.round(y), r.w, r.h);
 }
 function sprPie(ctx, n, x, y) {
   const r = SPR[n];
-  if (r) ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x - r.w / 2), Math.round(y - r.h), r.w, r.h);
+  if (!r) (window.FALTAN || (window.FALTAN = new Set())).add(n);
+  else ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x - r.w / 2), Math.round(y - r.h), r.w, r.h);
 }
 function sprCentro(ctx, n, x, y) {
   const r = SPR[n];
-  if (r) ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x - r.w / 2), Math.round(y - r.h / 2), r.w, r.h);
+  if (!r) (window.FALTAN || (window.FALTAN = new Set())).add(n);
+  else ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(x - r.w / 2), Math.round(y - r.h / 2), r.w, r.h);
 }
