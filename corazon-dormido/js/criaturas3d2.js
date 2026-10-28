@@ -539,3 +539,36 @@ CONSTRUIR_MODELOS.push(function estacionesEIconosBandas() {
     ..eee..`)));
   def('i_carne_sanguijuela', C(new Lienzo(10, 7).esfera(5, 3.6, 4.6, 3, ['#0c1012', '#1e2622', '#3a4636', '#4e5a44'], { brillo: '#8a9a70' }).hl(2, 5, 6, '#646f52')));
 });
+
+// ---------------------------------------------------------------- los dos que todavía hablan (de frente)
+CONSTRUIR_MODELOS.push(function personajesBandas() {
+  const { mat, SDF, OP } = ESCU, O = OSC, M = MAT;
+  const espectro = mat(['#141c28', '#1e2a3a', '#2c3c50', '#3e5268', '#566c84', '#7890a8', '#a0b8cc'], { luz: 0.3, tex: (x, y, z) => (Math.sin(Math.atan2(z, x) * 9) > 0.55 ? -0.8 : 0) });
+  const alma = mat(['#1a3a6a', '#2a5a9a', '#4a86cc', '#7ab2f0', '#b4dcff', '#e8f6ff', '#ffffff'], { luz: 1, plano: true, sube: 2 });
+  // el Archivero: un Velador sentado en su silla de piedra, el libro abierto en las rodillas y una lámpara de alma
+  frontal('archivero', 34, 46, 26, (m, cx, cz) => m.con({ mover: [cx, 0, cz] }, () => {
+    const piedra = mat(['#101216', '#1b1e24', '#282c34', '#363b44', '#464c56', '#5a616c'], { tex: ESCU.TEX.piedra(431, 2.4) });
+    m.caja([-10, 0, -8], [10, 12, 6], piedra, { r: 0.8 }); m.caja([-10, 12, -9], [10, 30, -6], piedra, { r: 0.8 }); // la silla
+    m.figura((x, y, z) => { const t = (y - 8) / 22, r = 8 - t * 3; return Math.max(Math.hypot(x * 0.95, (z + 1) * 1.2) - r - Math.sin(Math.atan2(z, x) * 8) * 0.5, 8 - y, y - 30); }, [-11, 6, -10, 11, 31, 10], espectro); // la túnica, sentada
+    for (const l of [-1, 1]) m.capsula([l * 3.6, 12, 2], [l * 4, 4, 9], 2.6, 2, espectro);
+    m.esfera([0, 33, 0], 4, espectro);
+    m.figura(OP.corta(SDF.elipsoide(0, 32.6, 0, 5.4, 7, 5), OP.bajo(38)), [-7, 24, -6, 7, 39, 7], espectro, { ruido: [0.25, 0.8, 433] });
+    for (const dx of [-1.6, 1.6]) m.esfera([dx, 32.6, 4.6], 0.6, alma);
+    m.caja([-6, 13, 6], [6, 14.4, 12], M.papel, { r: 0.3 }); m.caja([-0.4, 13.2, 6], [0.4, 15, 12], M.cuero); // el libro
+    for (const l of [-1, 1]) m.tubo([[l * 6, 26, 2], [l * 7, 18, 6], [l * 3, 15, 10]], 1.4, 1, espectro);
+    m.capsula([12, 0, 2], [12, 22, 2], 0.6, M.hierro); m.figura(SDF.elipsoide(12, 25, 2, 2.4, 3, 2.4), [9, 21, -1, 15, 29, 5], alma); // la lámpara
+  }), { cima: 0.6 });
+  // Muda: una gruta sin máscara. Cara gris y flaca, ojos ámbar, capa de juncos y un farol de cebo (no reza: quema)
+  frontal('muda', 30, 42, 22, (m, cx, cz) => m.con({ mover: [cx, 0, cz] }, () => {
+    const piel = O.pielGruto, juncos = mat(['#141a0e', '#222c16', '#323e20', '#46542c', '#5a6a38'], { tex: (x, y) => (Math.round(x * 1.7) % 2 ? -0.7 : 0) });
+    for (const l of [-1, 1]) { m.capsula([l * 3, 14, 0], [l * 3.4, 2, 1], 1.8, 1.4, piel); m.elipsoide([l * 3.4, 1, 3], [1.6, 1, 2.4], O.hueso); }
+    m.figura((x, y, z) => { const t = (y - 6) / 22, r = 7 - t * 2.6; return Math.max(Math.hypot(x, z * 1.2) - r - Math.sin(Math.atan2(z, x) * 13) * 0.6, 6 - y, y - 28); }, [-9, 4, -8, 9, 29, 8], juncos); // capa de juncos
+    m.esfera([0, 30, 1], 3.8, piel);
+    m.elipsoide([0, 28.4, 3.6], [2.4, 1.6, 1.4], piel); // la cara, flaca, al aire
+    for (const dx of [-1.4, 1.4]) { m.esfera([dx, 31, 4], 0.9, O.hueco, { modo: 'pintar' }); m.esfera([dx, 31, 4.5], 0.45, O.ojoAmbar); }
+    for (const l of [-1, 1]) m.tubo([[l * 2.6, 32, -1], [l * 6, 35, -3], [l * 8.6, 34, -4]], 0.9, 0.3, piel); // orejas largas
+    m.tubo([[5, 24, 2], [9, 18, 5], [10, 12, 6]], 1.1, 0.8, piel);
+    m.capsula([10, 0, 6], [10, 34, 6], 0.6, M.maderaOsc);
+    m.capsula([10, 34, 6], [13, 34, 6], 0.4, M.hierro); m.figura(SDF.elipsoide(13, 30.6, 6, 1.8, 2.2, 1.8), [10, 27, 3, 16, 34, 9], mat(['#3a5a0a', '#6a9a14', '#a8d82a', '#e0ff6a', '#f8ffc8'], { luz: 1, plano: true, sube: 2 }));
+  }), { cima: 0.6 });
+});

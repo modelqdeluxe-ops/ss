@@ -467,6 +467,7 @@ function golpearObjeto(o, herr) {
   if (info.nido && Math.random() < 0.35 && J.enemigos.length < 14) { const e = nuevaCriatura(info.nido, cx + (Math.random() - 0.5) * 16, cy + 8); if (!choca(e.x, e.y, e.hw, e.hh)) J.enemigos.push(e); }
   if (o.vida <= 0) {
     quitarObjeto(o.x, o.y);
+    J.hito['roto_' + o.tipo] = (J.hito['roto_' + o.tipo] || 0) + 1;
     if (info.explota) estallido(cx, cy + 4, 0.7, 40, { quien: 'hongo' });
     if (info.suelta) soltarLista(cx, cy + 4, info.suelta);
     if (o.tipo === 'cama' && J.cama && J.cama.x === o.x && J.cama.y === o.y) J.cama = null;

@@ -42,7 +42,7 @@ const fs = require('fs');
     await ir(q[0], q[1]); await foto(n, 1400);
   });
   // los sitios de las bandas nuevas (0.7)
-  for (const [n, q] of [['costillas', 'M.costillas'], ['pozo', 'M.pozo'], ['barrio', 'M.barrios[0]'], ['biblioteca', 'M.biblioteca'], ['templo-placas', 'M.templo2'], ['archivero', 'M.archivero'], ['cripta-entrada', 'M.cripta.entrada'], ['braseros', 'M.puzles[0].puerta'], ['palafito', 'M.fijas.find((f) => f.tipo === "gruto_cazador" && M.region[idx(f.x, f.y)] === 8)']]) escena('sitio-' + n, async () => {
+  for (const [n, q] of [['costillas', 'M.costillas'], ['pozo', 'M.pozo'], ['barrio', 'M.barrios[0]'], ['biblioteca', 'M.biblioteca'], ['templo-placas', 'M.templo2'], ['archivero', 'M.archivero'], ['muda', 'M.muda'], ['cripta-entrada', 'M.cripta.entrada'], ['braseros', 'M.puzles[0].puerta'], ['palafito', 'M.fijas.find((f) => f.tipo === "gruto_cazador" && M.region[idx(f.x, f.y)] === 8)']]) escena('sitio-' + n, async () => {
     const g = await p.evaluate((q) => { const g = eval(q); return g ? [g.x, g.y + 3] : null; }, q);
     if (!g) return;
     await ir(g[0], g[1]); await foto('sitio-' + n, 1400);

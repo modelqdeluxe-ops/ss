@@ -221,7 +221,7 @@ function dibujarHUD(ctx) {
   boton(ax - 18, ay - 18, 36, 36, null, { mantener: true });
   const o = !J.pesca && interactivoCerca(), esp = !J.pesca && !o ? usoCercano() : null;
   if (o) {
-    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR', brasero: o.extra ? 'MIRAR' : 'ENCENDER', palanca: 'TIRAR', empujar: 'EMPUJAR', sellada: 'MIRAR', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'VIAJAR' : 'TOCAR', restos: o.datos && o.datos.visto ? 'MIRAR' : 'REGISTRAR' }[que] || 'USAR';
+    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR', brasero: o.extra ? 'MIRAR' : 'ENCENDER', palanca: 'TIRAR', empujar: 'EMPUJAR', sellada: 'MIRAR', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'VIAJAR' : 'TOCAR', restos: o.datos && o.datos.visto ? 'MIRAR' : 'REGISTRAR', hablar: 'HABLAR' }[que] || 'USAR';
     botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#3e6a2a' });
   } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#3e6a2a' });
   if (J.cartel) { // nombre de la región al entrar por primera vez
@@ -299,11 +299,13 @@ function rejilla(ctx, inv, x, y, cols, marcada, al, desde = 0, hasta = inv.lengt
 function panelMochila(ctx) {
   fondoPanel(ctx);
   const hab = UI.pestana === 'habilidades';
-  const w = N_BARRA * 19 - 1 + 12, h = hab ? Math.min(LH - 8, 28 + Object.keys(HABILIDADES).length * 14) : 4 * 19 + 96, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  const w = N_BARRA * 19 - 1 + 12, h = hab ? Math.min(LH - 8, 28 + Object.keys(HABILIDADES).length * 14) : UI.pestana === 'diario' || UI.pestana === 'bestiario' ? Math.min(LH - 8, 4 * 19 + 112) : 4 * 19 + 96, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => { UI.selInv = -1; }, { mudo: true });
-  pestanas(ctx, x + 5, y + 4, [['mochila', 'MOCHILA'], ['habilidades', 'HABILIDADES']]);
+  pestanas(ctx, x + 5, y + 4, [['mochila', 'MOCHILA'], ['habilidades', 'HABILIDAD'], ['diario', 'DIARIO'], ['bestiario', 'BESTIARIO']]);
   cruz(ctx, x + w - 17, y + 3);
   if (UI.pestana === 'habilidades') { panelHabilidades(ctx, x, y, w, h); return; }
+  if (UI.pestana === 'diario') { panelDiario(ctx, x, y, w, h); return; }
+  if (UI.pestana === 'bestiario') { panelBestiario(ctx, x, y, w, h); return; }
   // equipo
   const ey = y + 20;
   const vacios = { casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
@@ -564,6 +566,8 @@ function dibujarCarga(ctx) {
   ctx.fillStyle = '#ff6a9a'; ctx.fillRect(Math.round(cx - r * 0.55), Math.round(cy - r * 0.45), 2, 2);
   texto(ctx, 'DESPERTANDO EL MUNDO', cx, cy + 18, '#c86a8a', { alin: 'c' });
   texto(ctx, (c.txt || '') + '…', cx, cy + 28, COL.suave, { alin: 'c' });
+  if (!c.consejo) c.consejo = CONSEJOS[Math.floor(Math.random() * CONSEJOS.length)];
+  partirTexto(c.consejo, Math.min(LW - 30, 260)).forEach((l, k) => texto(ctx, l, cx, LH - 30 + k * 8, '#8a7a8a', { alin: 'c' }));
   const w = Math.min(160, LW - 40), x = Math.round(cx - w / 2), y = cy + 40;
   ctx.fillStyle = '#1a0e14'; ctx.fillRect(x, y, w, 3);
   ctx.fillStyle = '#c83a6a'; ctx.fillRect(x, y, Math.round(w * Math.min(1, c.t)), 3);

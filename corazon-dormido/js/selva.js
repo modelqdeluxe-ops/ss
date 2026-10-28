@@ -105,8 +105,13 @@ function* generarExterior(sem) {
     return p;
   };
   const pon = (x, y, tipo) => { if (!libre(x, y)) return null; return ponerObjeto(x, y, tipo); };
-  let tab = 0;
-  const tablilla = (x, y, tipo = 'tablilla') => { const t = pon(x, y, tipo); if (t) t.datos = { n: tab++ }; return t; };
+  // cada zona numera sus tablillas desde 0, para que salgan todos sus textos
+  const tab = {};
+  const tablilla = (x, y, tipo = 'tablilla') => {
+    const t = pon(x, y, tipo); if (!t) return null;
+    const z = ZONA_TABLILLA(M.region[idx(x, y)]); tab[z] = tab[z] || 0; t.datos = { n: tab[z]++ };
+    return t;
+  };
   // un camino serpenteante de a hacia b (para que todo se pueda alcanzar andando)
   const sendero = (ax, ay, bx, by, ancho, pisoDe) => {
     let x = ax, y = ay, a = Math.atan2(by - ay, bx - ax);

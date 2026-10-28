@@ -59,7 +59,8 @@ const path = require('path');
     // lo que hizo el jugador: un agujero cavado, su casa con un cofre y otro cofre fuera de la Muralla
     for (let y = 300; y < 306; y++) for (let x = 340; x < 346; x++) { muro[y * n + x] = 0; visto[y * n + x] = 1; }
     const rle = (u8) => { const out = []; for (let i = 0; i < u8.length;) { const v = u8[i]; let c = 1; while (i + c < u8.length && u8[i + c] === v && c < 255) c++; out.push(v, c); i += c; } let s = ''; for (let i = 0; i < out.length; i += 8192) s += String.fromCharCode.apply(null, out.slice(i, i + 8192)); return btoa(s); };
-    const objetos = [...M.objetos.values()].map((o) => [o.x - O, o.y - O, o.tipo, o.extra, o.datos || null]);
+    // (la 0.6 no tenía tablillas dentro de la Muralla: son de la 0.7)
+    const objetos = [...M.objetos.values()].filter((o) => o.tipo !== 'tablilla' || Math.hypot(o.x - CENTRO, o.y - CENTRO) > R_MURALLA + 5).map((o) => [o.x - O, o.y - O, o.tipo, o.extra, o.datos || null]);
     objetos.push([342, 303, 'cofre', 0, { inv: [{ id: 'lingote_carmesi', n: 21 }, null] }], [344, 303, 'mesa_carmesi', 0, null], [600, 320, 'cofre', 0, { inv: [{ id: 'gema_antigua', n: 5 }] }], [601, 320, 'yunque_carmesi', 0, null]);
     localStorage.setItem('corazon-dormido-v4', JSON.stringify({
       v: 4, mundo: { v: 4, n, sem, muro: rle(muro), mena: rle(mena), piso: rle(piso), visto: rle(visto), objetos, fijas: [], mercaderes: [] },
@@ -82,13 +83,14 @@ const path = require('path');
     out.mudanza = mudanza.join(' | ');
     out.muralla = (() => { let c = 0; for (let y = CENTRO - 160; y < CENTRO + 160; y++) for (let x = CENTRO - 160; x < CENTRO + 160; x++) if (M.muro[idx(x, y)] === MURO.MURALLA) c++; return c; })();
     out.objetivo = J.objetivo;
+    out.tablillas = [...M.objetos.values()].filter((o) => o.tipo === 'tablilla' && Math.hypot(o.x - CENTRO, o.y - CENTRO) <= R_MURALLA).length;
     return out;
   });
   const tipo4 = await p.evaluate(() => tipoPartida);
   await p.evaluate(() => empezar(true));
   const r4 = Object.assign(await comprobar4(), { tipo: tipo4 });
   console.log('v4', JSON.stringify(r4));
-  const ok4 = r4.tipo === 'v4' && r4.jug === '343,304' && r4.agujero === 36 && r4.cofre === 'lingote_carmesi×21' && r4.mesa === 'mesa_carmesi' && r4.mudanza.includes('gema_antigua×5') && r4.mudanza.includes('yunque_carmesi×1') && r4.muralla === 0 && r4.objetivo >= 16;
+  const ok4 = r4.tipo === 'v4' && r4.jug === '343,304' && r4.agujero === 36 && r4.cofre === 'lingote_carmesi×21' && r4.mesa === 'mesa_carmesi' && r4.mudanza.includes('gema_antigua×5') && r4.mudanza.includes('yunque_carmesi×1') && r4.muralla === 0 && r4.objetivo >= 16 && r4.tablillas >= 7;
   console.log(ok4 ? 'migración v4: bien' : 'migración v4: MAL');
   await p.screenshot({ path: path.join(salida, 'migracion-v4.png') });
 
@@ -99,7 +101,7 @@ const path = require('path');
   await p.evaluate(() => empezar(true));
   const r5 = Object.assign(await comprobar4(), { tipo: tipo5 });
   console.log('v5', JSON.stringify(r5));
-  const ok5 = r5.tipo === 'v5' && r5.jug === r4.jug && r5.agujero === 36 && r5.cofre === r4.cofre && r5.mesa === r4.mesa && r5.mudanza === r4.mudanza && r5.muralla === 0;
+  const ok5 = r5.tipo === 'v5' && r5.jug === r4.jug && r5.agujero === 36 && r5.cofre === r4.cofre && r5.mesa === r4.mesa && r5.mudanza === r4.mudanza && r5.muralla === 0 && r5.tablillas === r4.tablillas;
   console.log(ok5 ? 'v5 tras recargar: bien' : 'v5 tras recargar: MAL');
   ok = ok && ok4 && ok5;
   console.log(ok ? 'migración: bien' : 'migración: MAL');

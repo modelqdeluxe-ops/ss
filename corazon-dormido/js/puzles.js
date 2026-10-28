@@ -17,6 +17,7 @@ function abrirPuerta(k) {
   efecto('humo', 6, cx, cy + 6, 0, 0.6);
   J.temblor = Math.max(J.temblor, 0.6); Sonido.sfx.temblor(); setTimeout(() => Sonido.sfx.victoria(), 400);
   J.hito['puzle_' + k] = true;
+  if (pz.tipo === 'palancas') J.hito.cripta = true;
   aviso('La puerta sellada se abre', null, '#c8a8ff');
 }
 const puzleResuelto = (k) => { const pz = M.puzles[k]; const o = pz && objetoEn(pz.puerta.x, pz.puerta.y); return !o || o.tipo !== 'puerta_sellada'; };

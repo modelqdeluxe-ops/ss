@@ -152,6 +152,7 @@ function* generarCiudad(X) {
     for (let s = R - 1; s < R + 5; s++) for (let w = -1; w <= 1; w++) suelo(cx + w, cy + s, SUELO.CALZADA);
     pon(cx - 3, cy - 3, 'estante_roto'); pon(cx + 3, cy - 3, 'estante_roto'); tablilla(cx - 3, cy + 1, 'atril'); pon(cx + 3, cy + 1, 'farola_velada');
     M.archivero = { x: cx, y: cy - 1 };
+    ponerObjeto(cx, cy - 1, 'archivero');
     alBarrio(cx, cy + R + 5);
   }
 

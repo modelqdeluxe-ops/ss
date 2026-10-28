@@ -74,7 +74,7 @@ INTERACCIONES.altar_cielo = () => {
 };
 INTERACCIONES.tablilla = (o) => { const n = (o.datos && o.datos.n) || 0; J.tablilla = TABLILLAS[n % TABLILLAS.length]; J.hito['tablilla_' + n] = true; J.panel = 'tablilla'; Sonido.sfx.menu(); };
 PANELES.tablilla = (ctx) => panelMensaje(ctx, 'TABLILLA', J.tablilla || '', 'CERRAR', () => { J.panel = null; }, '#e8d8a0');
-PANELES.fin2 = (ctx) => panelMensaje(ctx, 'LOS TITANES DESCANSAN', 'Las gemas de Tamar y de Hiedra laten junto al Corazón. Bajo la Selva, el Mar Hundido y el Desierto del Origen se remueven: despertarán en la próxima fase. Tu mundo sigue aquí: termina tu casa, invita a los mercaderes y cría a tu mascota.', 'SEGUIR', () => { J.panel = null; guardarPartida(); }, '#9fe0a8');
+PANELES.fin2 = (ctx) => panelMensaje(ctx, 'LOS TITANES DESCANSAN', 'Las gemas de Tamar y de Hiedra laten junto al Corazón. Pero la Selva no acaba aquí: detrás, el suelo se hunde en la Ciénaga de la Podre y, más allá, espera la Ciudad Velada, la ciudad de los que levantaron la Muralla.', 'SEGUIR', () => { J.panel = null; guardarPartida(); }, '#9fe0a8');
 
 const TIEMPO_INCUBAR = 150;
 INTERACCIONES.incubadora = (o) => { if (!o.datos) o.datos = { huevo: null, t0: 0 }; J.incubadora = o; J.panel = 'incubadora'; Sonido.sfx.menu(); };
@@ -415,6 +415,7 @@ function actualizarFase2(dt) {
     const clave = 'region_' + reg;
     if (!J.hito[clave] && reg !== REGION.SANTUARIO && !J.presentacion) { J.hito[clave] = true; J.cartel = { txt: NOMBRE_REGION[reg], t: 3.5 }; }
     if (reg >= REGION.SELVA && reg !== REGION.SELLADO) J.hito.selva = true;
+    J.hito['region_' + reg] = true;
   }
   if (J.cartel) { J.cartel.t -= dt; if (J.cartel.t <= 0) J.cartel = null; }
   if (J.presentacion) { J.presentacion.t -= dt; if (J.presentacion.t <= 0) J.presentacion = null; }

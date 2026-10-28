@@ -35,6 +35,7 @@ function* generarCienaga(X) {
     for (let k = 0; k < 6; k++) { const aa = (k / 6) * Math.PI * 2, x = Math.round(cx + Math.cos(aa) * (ARENA - 1.5)), y = Math.round(cy + Math.sin(aa) * (ARENA - 1.5)); if (X.libre(x, y)) ponerObjeto(x, y, 'bulto_podre'); }
     for (let k = 0; k < 5; k++) { const aa = r() * Math.PI * 2, d = ARENA + 4 + r() * 12; const x = Math.round(cx + Math.cos(aa) * d), y = Math.round(cy + Math.sin(aa) * d); pon(x, y, 'restos_velador'); }
     M.costillas = { x: cx, y: cy };
+    tablilla(cx, cy + ARENA + 3);
   }
   yield [0.52, 'Las costillas de Ásor'];
 
@@ -66,14 +67,16 @@ function* generarCienaga(X) {
       const aa = r() * Math.PI * 2;
       for (let s = 4; s < 17; s++) { const x = Math.round(cx + Math.cos(aa) * s), y = Math.round(cy + Math.sin(aa) * s); tablas(x, y, 2, 2); }
     }
-    ponerObjeto(cx, cy - 1, 'idolo_podre');
+    // en el primero vive Muda, que ya no reza: sin ídolo y sin grutos que la vigilen
+    if (k === 0) { ponerObjeto(cx, cy - 1, 'muda'); M.muda = { x: cx, y: cy - 1 }; } else ponerObjeto(cx, cy - 1, 'idolo_podre');
     for (const [dx, dy] of [[-4, -4], [4, -4], [-4, 4], [4, 4]]) pon(cx + dx, cy + dy, 'farol_pantano');
     for (const c of chozas) {
       const o = pon(c.x0, c.y0, 'cofre_selva'); if (o) o.datos = { inv: botinBanda(r, 1, 1) };
       pon(c.x0 + c.w - 1, c.y0, 'caja_madera');
       if (r() < 0.5) pon(c.x0 + c.w - 1, c.y0 + c.h - 1, 'restos_velador');
+      tablilla(c.x0 + 1, c.y0 + c.h - 1);
     }
-    M.fijas.push({ tipo: 'gruto_fango', x: cx - 2, y: cy + 2 }, { tipo: 'gruto_fango', x: cx + 2, y: cy + 2 }, { tipo: 'gruto_cazador', x: cx, y: cy - 3 });
+    if (k > 0) M.fijas.push({ tipo: 'gruto_fango', x: cx - 2, y: cy + 2 }, { tipo: 'gruto_fango', x: cx + 2, y: cy + 2 }, { tipo: 'gruto_cazador', x: cx, y: cy - 3 });
     M.soles.push({ x: cx, y: cy, r: 9, k: 0.26, c: [0.6, 1, 0.6] });
   }
 
@@ -113,6 +116,7 @@ function* generarCienaga(X) {
     for (let k = 0; k < 5; k++) { const aa = r() * Math.PI * 2, d = 7 + r() * 7; pon(Math.round(cx + Math.cos(aa) * d), Math.round(cy + Math.sin(aa) * d), 'capullo_podre'); }
     const o = ponerObjeto(cx, cy + 7, 'cofre_velado'); o.datos = { inv: botinBanda(r, 1, 4) };
     M.pozo = { x: cx, y: cy };
+    tablilla(cx, cy - 7);
     M.soles.push({ x: cx, y: cy, r: R, k: 0.26, c: [1, 0.25, 0.7] });
     M.rayos.push({ x: cx, y: cy, a: 1.2, c: [1, 0.3, 0.75], ancho: 2 });
   }

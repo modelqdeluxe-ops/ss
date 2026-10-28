@@ -117,6 +117,8 @@ function morirCriatura(e) {
   efecto('humo', 4, e.x, e.y + 1, 0, 0.5);
   soltarLista(e.x, e.y, c.botin);
   Sonido.sfx.muere();
+  if (!J.bestiario) J.bestiario = {};
+  J.bestiario[e.tipo] = (J.bestiario[e.tipo] || 0) + 1;
   if (e.fija !== undefined && M.fijas[e.fija]) M.fijas[e.fija].muerto = J.tiempoMundo || 1;
   if (c.esporas) J.charcos.push({ x: e.x, y: e.y, t: 5, dano: c.dano, tipo: 'espora' });
   if (J.mascotaEnt && Math.hypot(J.mascotaEnt.x - e.x, J.mascotaEnt.y - e.y) < 200) ganarXPMascota(c.xp || 5);

@@ -280,6 +280,24 @@ function* pasosMundo(sem, soloInterior) {
     const a = r() * Math.PI * 2, d = 12 + r() * 14, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d), i = idx(x, y);
     if (!muro[i] && !M.objetos.has(i) && piso[i] !== SUELO.RUINA && piso[i] !== SUELO.AGUA) { ponerObjeto(x, y, puestas % 2 ? 'planta_fibra' : 'arbusto'); puestas++; }
   }
+  // tablillas del interior (las que mienten sin querer): con su propio azar para no mover nada de lo de antes
+  {
+    const r2 = azar(sem + 555);
+    let n = 0;
+    for (const s of salas.slice().sort(() => r2() - 0.5)) {
+      if (n >= 6) break;
+      const x = s.x0 + 1 + Math.floor(r2() * (s.w - 2)), y = s.y0 + 1 + Math.floor(r2() * (s.h - 2)), i = idx(x, y);
+      if (muro[i] || M.objetos.has(i)) continue;
+      ponerObjeto(x, y, 'tablilla').datos = { n: n++ };
+    }
+    for (let k = 0; k < 400 && n < 8; k++) {
+      const a = r2() * Math.PI * 2, d = 16 + r2() * 26, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d), i = idx(x, y);
+      let cerrado = false; // que no tape un pasillo: alrededor, todo abierto
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (muro[idx(x + dx, y + dy)] || M.objetos.has(idx(x + dx, y + dy))) cerrado = true;
+      if (cerrado || piso[i] === SUELO.AGUA) continue;
+      ponerObjeto(x, y, 'tablilla').datos = { n: n++ };
+    }
+  }
   if (!soloInterior) yield* generarExterior(sem);
   M.generando = false; M.mapa = null;
   GL.olvidarTodo(); cambioLuz();

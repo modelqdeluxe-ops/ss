@@ -30,7 +30,7 @@ function metaPartida() {
     v: 5, gen: GEN_MUNDO, n: N_MUNDO, sem: M.sem, jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
     inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
     jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
-    mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto, pasos: J.pasos,
+    mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto, pasos: J.pasos, bestiario: J.bestiario, encargos: J.encargos,
     fijas: M.fijas.map((f) => f.muerto || 0), mercaderes: M.mercaderes.map((m) => ({ ...m, ent: undefined, casa: undefined })),
   };
 }
@@ -102,6 +102,7 @@ function migrarV4(g) {
     M.muro[i] = muro[j]; M.mena[i] = mena[j]; M.visto[i] = visto[j]; if (piso) M.piso[i] = piso[j];
     tocarTrozo(x + O, y + O);
   }
+  const tablillas = [...M.objetos.values()].filter((o) => o.tipo === 'tablilla' && Math.hypot(o.x - CENTRO, o.y - CENTRO) <= RI);
   for (const [i, o] of [...M.objetos]) if (Math.hypot(o.x - CENTRO, o.y - CENTRO) <= RI) { M.objetos.delete(i); M.luces.delete(i); M.cultivos.delete(i); }
   // lo que salía en los cofres de la Selva vieja sin que el jugador hiciera nada no se regala dos veces
   const botinNatural = new Set();
@@ -117,6 +118,8 @@ function migrarV4(g) {
     if (inv.length && (tipo === 'cofre' || inv.some((s) => !botinNatural.has(s.id)))) for (const s of inv) caja.push({ id: s.id, n: s.n });
     if (itemDe[tipo]) caja.push({ id: itemDe[tipo], n: 1 });
   }
+  // las tablillas del interior son de la 0.7: vuelven a su sitio si no hay nada encima
+  for (const t of tablillas) if (!M.muro[idx(t.x, t.y)] && !objetoEn(t.x, t.y)) ponerObjeto(t.x, t.y, 'tablilla').datos = t.datos;
   cofresMudanza(caja);
   if (g.muralla) for (let y = CENTRO - RI - 4; y <= CENTRO + RI + 4; y++) for (let x = CENTRO - RI - 4; x <= CENTRO + RI + 4; x++) { const i = idx(x, y); if (M.muro[i] === MURO.MURALLA) { M.muro[i] = 0; M.piso[i] = SUELO.GRAVA; tocarTrozo(x, y); } }
   // posiciones guardadas: dentro, se mueven con el mundo; fuera, vuelven junto al Corazón
@@ -132,7 +135,7 @@ function migrarV4(g) {
 // Lo que guarda la partida además del mundo (la de la 0.6 lo guardaba igual).
 function restaurarJugador(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {} });
+  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {}, bestiario: g.bestiario || {}, encargos: g.encargos || {} });
   J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
   J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
   for (const s of J.inv) if (s) asegurarItem(s.id);
@@ -153,18 +156,18 @@ async function empezar(continuar) {
   else { try { await Guardado.borrar(); } catch (e) { /* sin IndexedDB */ } }
   Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null, bombas: [], regreso: null, mascotaEnt: null, cartel: null, regionAntes: -1, rayosCielo: [] });
   const sem = g ? g.meta.sem : v4 ? v4.mundo.sem : v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0;
-  await generarMundoPoco(sem, ([t, txt]) => { J.carga = { t: t * 0.94, txt }; });
+  await generarMundoPoco(sem, ([t, txt]) => { Object.assign(J.carga, { t: t * 0.94, txt }); });
   if (g) {
-    J.carga = { t: 0.96, txt: 'Tu mundo' }; await respiro();
+    Object.assign(J.carga, { t: 0.96, txt: 'Tu mundo' }); await respiro();
     for (const [c, reg] of g.trozos) aplicarTrozo(c, reg);
     GL.olvidarTodo(); M.mapa = null; cambioLuz();
     restaurarJugador(g.meta);
   } else if (v4) {
-    J.carga = { t: 0.96, txt: 'Tu mundo crece' }; await respiro();
+    Object.assign(J.carga, { t: 0.96, txt: 'Tu mundo crece' }); await respiro();
     migrarV4(v4);
     restaurarJugador(v4);
   } else {
-    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, pasos: {}, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
+    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, pasos: {}, bestiario: {}, encargos: {}, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
     J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
     J.inv = new Array(N_INV).fill(null);
     if (v3) migrarV3(v3);
