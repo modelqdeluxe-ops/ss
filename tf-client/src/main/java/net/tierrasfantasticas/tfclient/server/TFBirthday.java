@@ -148,7 +148,12 @@ public final class TFBirthday {
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !active()) return;
-        if (--left <= 0) stop(event.getServer());
+        if (--left <= 0) {
+            stop(event.getServer());
+        } else if (left % 100 == 0) {
+            // cada 5 s, cuánto queda: el cliente que va atrasado se pone al día
+            for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) send(p);
+        }
     }
 
     @SubscribeEvent

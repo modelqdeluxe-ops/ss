@@ -92,6 +92,8 @@ public final class TFBirthdayClient {
 
     private static String name;
     private static int left, total, age;
+    /** La edad al acabar el tick anterior: lo que pasa «en» un tick se lanza si se ha cruzado (aunque se salte al ponerse al día). */
+    private static int lastAge;
     private static boolean sky, mine;
     /** Hacia dónde está todo lo del cielo (grados, como la cámara): hacia donde miraba al empezar. */
     private static float skyYaw;
@@ -125,11 +127,20 @@ public final class TFBirthdayClient {
             // quien llega a mitad (entra o cambia de mundo) se salta lo que ya pasó
             total = net.tierrasfantasticas.tfclient.server.TFBirthday.LENGTH;
             age = Math.max(0, total - ticksLeft);
+            lastAge = age;
             Minecraft mc = Minecraft.getInstance();
             skyYaw = mc.player != null ? mc.player.getYRot() : 0F;
             bigTitle = null;
             rocketsLaunched = bursts = notesPlayed = bannerFrames = bannerLate = lights = 0;
+        } else if (Math.abs(total - ticksLeft - age) > 10) {
+            // (1.3.152) el servidor lo recuerda cada 5 s: un ordenador lento se pone al día y no se pierde el final
+            age = total - ticksLeft;
         }
+    }
+
+    /** ¿Ha llegado a ese momento en este tick (o se lo ha saltado al ponerse al día)? */
+    private static boolean at(int when) {
+        return lastAge < when && age >= when;
     }
 
     private static void stop() {
@@ -169,6 +180,7 @@ public final class TFBirthdayClient {
         if (event.phase != TickEvent.Phase.END || !active()) return;
         try {
             tick();
+            lastAge = age;
         } catch (Throwable t) {
             // la fiesta nunca cierra el juego: se acaba aquí y queda en el registro
             TFClient.LOGGER.error("TF Cumpleaños: fallo en la fiesta", t);
@@ -196,9 +208,9 @@ public final class TFBirthdayClient {
         if (!sky) return;
         Vec3 c = mc.player.position();
         boolean finale = left < FINALE;
-        if (age == BANG) bang(level, c);
-        if (finale && left == FINALE - 40) heart(c, skyYaw + 28F, 0xFF4FA0, 1.2F);
-        if (finale && left == FINALE - 90) heart(c, skyYaw - 28F, 0xFFD24A, 1.2F);
+        if (at(BANG)) bang(level, c);
+        if (at(total - FINALE + 40)) heart(c, skyYaw + 28F, 0xFF4FA0, 1.2F);
+        if (at(total - FINALE + 90)) heart(c, skyYaw - 28F, 0xFFD24A, 1.2F);
         if (age > BANG) {
             int every = finale ? 2 : age < BANG + 60 ? 5 : 8;
             if (left > 20 && age % every == 0) launch(level, c, finale, finale && RANDOM.nextInt(3) == 0);
@@ -211,10 +223,10 @@ public final class TFBirthdayClient {
 
     /** La cuenta atrás, el «¡ahora!» y el final (textos nuestros, que caben en cualquier pantalla). */
     private static void screen(Minecraft mc) {
-        if (age == 1 && sky) big(Component.literal("¡Atención!").withStyle(Style.EMPTY.withColor(0xFFD667).withBold(true)),
+        if (at(1) && sky) big(Component.literal("¡Atención!").withStyle(Style.EMPTY.withColor(0xFFD667).withBold(true)),
                 Component.literal("Una sorpresa para " + name).withStyle(Style.EMPTY.withColor(0xF0E6FF)), 16);
         for (int i = 0; i < 3 && sky; i++) {
-            if (age == 20 + i * 20) {
+            if (at(20 + i * 20)) {
                 big(Component.literal(String.valueOf(3 - i)).withStyle(Style.EMPTY.withColor(new int[] {0xFF6B5E, 0xFFD667, 0x7CFF8A}[i]).withBold(true)), null, 16);
                 ui(mc, SoundEvents.NOTE_BLOCK_BASEDRUM, 12, 1F);
                 ui(mc, SoundEvents.NOTE_BLOCK_PLING, 12 + i * 4, 0.7F);
@@ -222,12 +234,12 @@ public final class TFBirthdayClient {
         }
         // redoble antes del «¡ahora!»
         if (sky && age > 6 && age < BANG && age % Math.max(1, 4 - age / 25) == 0) ui(mc, SoundEvents.NOTE_BLOCK_SNARE, 12, 0.25F + 0.35F * age / BANG);
-        if (age == BANG && (sky || mine)) {
+        if (at(BANG) && (sky || mine)) {
             big(rainbow("¡Feliz cumpleaños!"), Component.literal(mine ? "Todo Tierras Fantásticas te felicita" : name)
                     .withStyle(Style.EMPTY.withColor(0xFFD667).withBold(!mine)), 70);
             mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.TOTEM_USE, 1F, 0.45F));
         }
-        if (age == FANFARE) {
+        if (at(FANFARE)) {
             big(rainbow("¡Felicidades!"), Component.literal(name + " · ¡Que cumplas muchos más!").withStyle(Style.EMPTY.withColor(0xF0E6FF)), 80);
         }
     }
