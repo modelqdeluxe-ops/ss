@@ -73,7 +73,7 @@ public final class TFBirthday {
 
     // ------------------------------------------------------------------------------------------------- comando
 
-    /** /tf cumpleaños felicitar &lt;jugador&gt; y /tf cumpleaños parar (también sin eñe: cumpleanos). */
+    /** /tf cumpleaños felicitar &lt;jugador&gt; y /tf cumpleaños parar (un solo comando, con eñe). */
     public static LiteralArgumentBuilder<CommandSourceStack> command(String literal) {
         return Commands.literal(literal).requires(s -> s.hasPermission(2))
                 .then(Commands.literal("felicitar")

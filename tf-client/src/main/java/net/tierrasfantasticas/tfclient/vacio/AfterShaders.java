@@ -117,6 +117,8 @@ public final class AfterShaders {
             }
             // (la grieta del cielo de los mundos Overworld, 1.3.93: detrás de todo, solo donde se ve el cielo)
             SkyRiftClient.renderAfterShaders(VIEW, PROJ);
+            // (1.3.152) el letrero de la fiesta de cumpleaños, detrás de los bloques
+            net.tierrasfantasticas.tfclient.client.TFBirthdayClient.renderAfterShaders(VIEW, partial);
             RiftLate.flush();
             frames++;
         } catch (Throwable t) {
