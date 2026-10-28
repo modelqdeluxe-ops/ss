@@ -17,6 +17,6 @@ window.atrasAndroid = () => {
 };
 window.appEnPausa = () => {
   try { if (J.estado === 'juego') { guardarPartida(); if (!J.panel) J.panel = 'pausa'; } } catch (e) { /* nada */ }
-  Sonido.pausar();
+  Sonido.pausar(); Musica.pausar();
 };
-window.appVuelve = () => { Sonido.seguir(); };
+window.appVuelve = () => { Sonido.seguir(); Musica.seguir(); };

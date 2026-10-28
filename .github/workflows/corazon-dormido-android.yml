@@ -1,6 +1,6 @@
 name: Corazón Dormido (Android)
 
-# Compila la app de Android de Corazón Dormido (corazon-dormido/android) con el juego dentro:
+# Compila la app de Android de Corazón Dormido (corazon-dormido/android) con el juego y su música dentro:
 #   - corazon-dormido.apk: para instalar en el móvil y probar. Siempre se firma con la llave de prueba del repo,
 #     así que cada APK nuevo se instala encima del anterior sin perder la partida.
 #   - corazon-dormido.aab: para la Play Store. Se firma con la llave de subida si están los secretos
@@ -34,6 +34,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.14.3'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # la banda sonora se compone aquí (herramientas/musica): los .ogg no van al repo
+      - name: Componer la música
+        run: |
+          pip install --quiet numpy scipy soundfile
+          python3 corazon-dormido/herramientas/musica/componer.py corazon-dormido/musica
+          python3 corazon-dormido/herramientas/musica/efectos.py corazon-dormido/sonidos
       - name: Meter el juego en la app
         run: python3 corazon-dormido/herramientas/android.py corazon-dormido
       - name: Versión

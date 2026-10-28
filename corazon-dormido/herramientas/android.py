@@ -4,7 +4,7 @@
   python3 corazon-dormido/herramientas/android.py [carpeta-del-juego]
 
 Pone el juego en un solo archivo (index.html, como el .html de las Releases: así el arte horneado se guarda en
-el móvil y la segunda vez arranca enseguida) y copia la música (musica/*.ogg). Después se compila con Gradle en
+el móvil y la segunda vez arranca enseguida) y copia la música y los efectos (musica/*.ogg, sonidos/*.ogg). Después se compila con Gradle en
 android/ (lo hace el workflow corazon-dormido-android.yml).
 """
 import pathlib
@@ -23,12 +23,13 @@ def main():
     destino.mkdir(parents=True)
     (destino / 'index.html').write_text(un_archivo(carpeta), encoding='utf-8')
     total = (destino / 'index.html').stat().st_size
-    musica = carpeta / 'musica'
-    if musica.is_dir():
-        (destino / 'musica').mkdir()
-        for f in sorted(musica.glob('*.ogg')):
-            shutil.copy2(f, destino / 'musica' / f.name)
-            total += f.stat().st_size
+    for sub in ('musica', 'sonidos'):
+        origen = carpeta / sub
+        if origen.is_dir():
+            (destino / sub).mkdir()
+            for f in sorted(origen.glob('*.ogg')):
+                shutil.copy2(f, destino / sub / f.name)
+                total += f.stat().st_size
     print(f'juego en {destino}: {total / 1e6:.1f} MB')
 
 

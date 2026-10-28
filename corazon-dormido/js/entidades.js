@@ -180,6 +180,10 @@ function nuevoJugador() {
   };
 }
 
+const PASO_SUELO = {
+  [SUELO.CESPED]: 'hierba', [SUELO.HIERBA]: 'hierba', [SUELO.MUSGO]: 'hierba', [SUELO.FLORES]: 'hierba', [SUELO.TIERRA_SELVA]: 'hierba', [SUELO.MOHO]: 'hierba', [SUELO.TIERRA]: 'hierba', [SUELO.ARADA]: 'hierba', [SUELO.TURBERA]: 'hierba',
+  [SUELO.AGUA]: 'agua', [SUELO.BARRO]: 'agua', [SUELO.LODO]: 'agua', [SUELO.AGUA_NEGRA]: 'agua', [SUELO.PODRE]: 'agua', [SUELO.VENENO]: 'agua',
+};
 function actualizarJugador(dt) {
   const p = J.jug, st = calcularStats();
   J.tiempoMundo += dt;
@@ -198,6 +202,11 @@ function actualizarJugador(dt) {
   const x0 = p.x, y0 = p.y;
   mover(p, (mx * vel + p.kbx) * dt, (my * vel + p.kby) * dt);
   p.distT += Math.hypot(p.x - x0, p.y - y0);
+  // pasos: suenan según el suelo
+  if (p.andando) {
+    p.pasoD = (p.pasoD || 0) + Math.hypot(p.x - x0, p.y - y0);
+    if (p.pasoD > 19) { p.pasoD = 0; const s = M.piso[idx(Math.floor(p.x / T), Math.floor(p.y / T))]; Sonido.sfx.paso(PASO_SUELO[s] || 'piedra'); }
+  }
   if (p.distT > 160) { p.distT = 0; ganarXP('carrera', 1); }
   p.kbx *= Math.pow(0.002, dt); p.kby *= Math.pow(0.002, dt);
   p.golpeT -= dt; p.swing -= dt; p.flash -= dt; p.invuln -= dt;

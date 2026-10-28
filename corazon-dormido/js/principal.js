@@ -213,6 +213,7 @@ function cuadro(ms) {
     if (J.t - J.guardadoT > 25) guardarPartida();
   } else if (J.estado === 'muerto') actualizarMundoVivo(dt);
   else if (J.estado === 'titulo') { ambientePart(dt); actualizarMundoVivo(dt); Personaje.trabajar(6); }
+  Musica.actualizar(dt);
   moverCamara(dt);
   dibujar();
   requestAnimationFrame(cuadro);
@@ -688,7 +689,7 @@ async function iniciar(datosHot) {
   window.addEventListener('blur', () => UI.teclas.clear());
   lienzo.addEventListener('contextmenu', (e) => e.preventDefault());
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') { guardarPartida(); if (J.estado === 'juego' && !J.panel) J.panel = 'pausa'; }
+    if (document.visibilityState === 'hidden') { guardarPartida(); if (J.estado === 'juego' && !J.panel) J.panel = 'pausa'; Musica.pausar(); } else if (!APP) Musica.seguir();
   });
   // de fondo del título: el interior de tu mundo (con lo que hiciste allí) o uno cualquiera
   const g = await leerPartida();

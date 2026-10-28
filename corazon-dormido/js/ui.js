@@ -25,7 +25,7 @@ function puntoMundoTocado(x, y) {
 }
 function alTocar(e) {
   e.preventDefault();
-  Sonido.iniciar();
+  Sonido.iniciar(); Musica.tocar();
   const { x, y } = posLogica(e);
   for (let i = UI.botones.length - 1; i >= 0; i--) {
     const b = UI.botones[i];
@@ -60,7 +60,7 @@ function alSoltar(e) {
 }
 const TECLAS_MOV = { KeyW: [0, -1], ArrowUp: [0, -1], KeyS: [0, 1], ArrowDown: [0, 1], KeyA: [-1, 0], ArrowLeft: [-1, 0], KeyD: [1, 0], ArrowRight: [1, 0] };
 function alTecla(e) {
-  Sonido.iniciar();
+  Sonido.iniciar(); Musica.tocar();
   if (e.repeat) return;
   UI.teclas.add(e.code);
   if (e.code.startsWith('Digit')) { const n = +e.code.slice(5) || 10; if (n >= 1 && n <= N_BARRA) J.sel = n - 1; }
@@ -484,14 +484,15 @@ function panelMapa(ctx) {
 
 function panelPausa(ctx) {
   fondoPanel(ctx);
-  const w = 120, h = APP ? 110 : 92, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
+  const w = 120, h = APP ? 128 : 110, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  if (APP) botonTexto(ctx, x + 10, y + 93, w - 20, 13, 'SALIR DEL JUEGO', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
+  if (APP) botonTexto(ctx, x + 10, y + 111, w - 20, 13, 'SALIR DEL JUEGO', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
   texto(ctx, 'PAUSA', LW / 2, y + 6, COL.oro, { alin: 'c', sombra: COL.negro });
   botonTexto(ctx, x + 10, y + 18, w - 20, 15, 'SEGUIR', () => { J.panel = null; });
   botonTexto(ctx, x + 10, y + 37, w - 20, 15, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
-  botonTexto(ctx, x + 10, y + 56, w - 20, 15, 'GUARDAR', () => { guardarPartida(); aviso('Partida guardada'); J.panel = null; });
-  botonTexto(ctx, x + 10, y + 75, w - 20, 13, 'SALIR AL MENÚ', () => { guardarPartida(); irTitulo(); });
+  botonTexto(ctx, x + 10, y + 56, w - 20, 15, 'MÚSICA: ' + (Musica.activa ? 'SÍ' : 'NO'), () => Musica.alternar());
+  botonTexto(ctx, x + 10, y + 75, w - 20, 15, 'GUARDAR', () => { guardarPartida(); aviso('Partida guardada'); J.panel = null; });
+  botonTexto(ctx, x + 10, y + 94, w - 20, 13, 'SALIR AL MENÚ', () => { guardarPartida(); irTitulo(); });
 }
 
 function panelMensaje(ctx, titulo, txt, boton1, fn, colorT = COL.oro) {
@@ -590,7 +591,9 @@ function dibujarTitulo(ctx, hayPartida) {
     UI.creando = true; UI.aspecto = Object.assign({}, ASPECTO_INICIAL); Personaje.pedir(UI.aspecto, null);
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
-  botonTexto(ctx, x, y, w, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
+  const w2 = (w - 3) >> 1;
+  botonTexto(ctx, x, y, w2, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
+  botonTexto(ctx, x + w - w2, y, w2, 13, 'MÚSICA: ' + (Musica.activa ? 'SÍ' : 'NO'), () => Musica.alternar());
   if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'SALIR', () => APP.salir(), { color: COL.botonOff }); }
   if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
   const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);

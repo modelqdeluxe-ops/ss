@@ -1,13 +1,44 @@
 'use strict';
-// Sonidos sintetizados con WebAudio (sin archivos): golpes, picar, recoger, y el ambiente de la cueva
-// (un rumor grave, gotas con eco y una cajita de música que suena de vez en cuando).
+// Sonidos con WebAudio. Los efectos son muestras (sonidos/*.ogg, sintetizadas con herramientas/musica/efectos.py)
+// con variantes y un poco de tono al azar; si no están (el .html suelto), se sintetizan al momento como antes.
+// Y el ambiente de la cueva: un rumor grave, gotas con eco y, sin banda sonora, una cajita de música.
 const Sonido = (() => {
   let ac = null, maestro = null, eco = null, bufRuido = null, activo = true;
   try { activo = localStorage.getItem('cd_sonido') !== '0'; } catch (e) { /* sin almacenamiento */ }
 
+  // muestras: nombre → cuántas variantes
+  const LISTA = { picar: 4, romper: 2, excavar: 2, metal: 2, golpe: 4, zas: 3, dano: 2, muere: 3, alerta: 3, rugido: 1, temblor: 1, latido: 1,
+    recoger: 3, crear: 1, comer: 1, colocar: 2, error: 1, menu: 1, nivel: 1, victoria: 1, paso_piedra: 4, paso_hierba: 4, paso_agua: 3 };
+  const VOL = { menu: 0.5, paso_piedra: 0.45, paso_hierba: 0.4, paso_agua: 0.5, recoger: 0.7, error: 0.6, latido: 0.9, rugido: 1, victoria: 0.9 };
+  const muestras = {};
+  function cargarMuestras() {
+    if (location.protocol === 'file:') return; // el .html suelto: sin muestras (fetch no puede leer archivos)
+    for (const [n, k] of Object.entries(LISTA)) {
+      muestras[n] = [];
+      for (let v = 0; v < k; v++) {
+        fetch(`sonidos/${k > 1 ? `${n}_${v}` : n}.ogg`).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject())).then((b) => ac.decodeAudioData(b))
+          .then((buf) => { muestras[n][v] = buf; }, () => { /* sin el archivo: se sintetiza */ });
+      }
+    }
+  }
+  // true si había muestra y ha sonado
+  function muestra(n, vol = 1, tonoBase = 1) {
+    const lista = muestras[n];
+    if (!ac || !activo || !lista) return false;
+    const vs = lista.filter(Boolean);
+    if (!vs.length) return false;
+    const s = ac.createBufferSource(), g = ac.createGain();
+    s.buffer = vs[Math.floor(Math.random() * vs.length)];
+    s.playbackRate.value = tonoBase * (0.94 + Math.random() * 0.12);
+    g.gain.value = vol * (VOL[n] ?? 0.8);
+    s.connect(g); g.connect(maestro); s.start();
+    return true;
+  }
+
   function iniciar() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
     try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    cargarMuestras();
     maestro = ac.createGain(); maestro.gain.value = activo ? 0.55 : 0; maestro.connect(ac.destination);
     // eco de cueva compartido
     eco = ac.createDelay(1); eco.delayTime.value = 0.23;
@@ -42,7 +73,7 @@ const Sonido = (() => {
   }
 
   const notas = [220, 261.6, 293.7, 329.6, 392, 440, 523.3, 587.3];
-  const sfx = {
+  const sintetizados = {
     picar: () => { ruido({ dur: 0.07, vol: 0.3, f: 2200, f2: 700, tipo: 'bandpass', q: 1.2 }); tono({ f: 200 + Math.random() * 40, f2: 110, dur: 0.06, tipo: 'triangle', vol: 0.2 }); },
     romper: () => { ruido({ dur: 0.28, vol: 0.4, f: 1400, f2: 200 }); tono({ f: 120, f2: 50, dur: 0.2, tipo: 'square', vol: 0.08 }); },
     metal: () => { tono({ f: 1300, f2: 1250, dur: 0.12, tipo: 'triangle', vol: 0.12 }); tono({ f: 2100, dur: 0.08, tipo: 'sine', vol: 0.06 }); },
@@ -63,7 +94,14 @@ const Sonido = (() => {
     latido: () => { tono({ f: 70, f2: 40, dur: 0.25, tipo: 'sine', vol: 0.4 }); tono({ f: 70, f2: 40, dur: 0.25, tipo: 'sine', vol: 0.3, retraso: 0.28 }); },
     nivel: () => [0, 2, 4, 7].forEach((k, i) => tono({ f: notas[k], dur: 0.25, tipo: 'triangle', vol: 0.12, retraso: i * 0.12, conEco: 0.3 })),
     victoria: () => [0, 2, 4, 5, 7].forEach((k, i) => tono({ f: notas[k] * 2, dur: 0.4, tipo: 'triangle', vol: 0.12, retraso: i * 0.15, conEco: 0.4 })),
+    paso: () => {},
   };
+  // cada efecto: la muestra si está; si no, el sintetizado
+  const sfx = {};
+  for (const [n, fn] of Object.entries(sintetizados)) sfx[n] = (...a) => { if (!muestra(n)) fn(...a); };
+  sfx.recoger = (n = 0) => { if (!muestra('recoger', 1, 1 + Math.min(n, 8) * 0.03)) sintetizados.recoger(n); };
+  // pasos según el suelo que pisas
+  sfx.paso = (tipo) => muestra('paso_' + tipo);
 
   function ambiente() {
     // rumor grave de fondo
@@ -76,7 +114,7 @@ const Sonido = (() => {
       setTimeout(gota, 2500 + Math.random() * 6000);
     };
     const cajita = () => {
-      if (activo && document.visibilityState === 'visible') {
+      if (activo && document.visibilityState === 'visible' && !(typeof Musica !== 'undefined' && Musica.activa)) {
         const base = Math.floor(Math.random() * 3);
         for (let i = 0; i < 4; i++) tono({ f: notas[base + [0, 2, 4, 3][i]] * 2, dur: 0.6, tipo: 'triangle', vol: 0.035, retraso: i * 0.42, conEco: 0.5 });
       }
@@ -94,5 +132,5 @@ const Sonido = (() => {
   // la app se va al fondo / vuelve
   function pausar() { if (ac && ac.state === 'running') ac.suspend(); }
   function seguir() { if (ac && ac.state === 'suspended') ac.resume(); }
-  return { iniciar, sfx, alternar, pausar, seguir, get activo() { return activo; } };
+  return { iniciar, sfx, alternar, pausar, seguir, get activo() { return activo; }, get muestras() { return Object.values(muestras).reduce((a, l) => a + l.filter(Boolean).length, 0); } };
 })();
