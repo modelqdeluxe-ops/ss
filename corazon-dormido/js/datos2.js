@@ -7,13 +7,13 @@
 
 Object.assign(SUELO, { HIERBA: 15, MUSGO: 16, TIERRA_SELVA: 17, FLORES: 18, MOHO: 19, TEMPLO: 20, VENENO: 21, TABLAS: 22, ALFOMBRA_VERDE: 23 });
 Object.assign(INFO_SUELO, {
-  15: { arte: 'hierba', mapa: '#3a6a2a', decor: ['dc_hierba_alta_0', 'dc_hierba_alta_1', 'dc_hierba_alta_0', 'dc_flor_selva_0', 'dc_flor_selva_1', 'dc_helechito', 'guijarro'], densidad: 0.3, planos: ['ad_hojas', 'ad_hierba'], piedra: 1, arable: true },
+  15: { arte: 'hierba', mapa: '#3a6a2a', decor: ['dc_hierba_alta_0', 'dc_hierba_alta_1', 'dc_hierba_alta_0', 'dc_flor_selva_0', 'dc_flor_selva_1', 'dc_helechito', 'guijarro'], densidad: 0.15, planos: ['ad_hojas'], piedra: 1, arable: true },
   16: { arte: 'musgo', mapa: '#2e5a3a', decor: ['dc_helechito', 'dc_seta_1', 'guijarro', 'dc_hierba_alta_1'], densidad: 0.14, planos: ['ad_musgo', 'ad_hojas'], piedra: 3, arable: true },
   17: { arte: 'tierra_selva', mapa: '#3a2c1c', decor: ['guijarro', 'dc_hierba_alta_0', 'dc_seta_0', 'dc_helechito'], densidad: 0.12, planos: ['ad_hojas', 'ad_raices'], piedra: 1, arable: true },
-  18: { arte: 'flores', mapa: '#5a7a3a', decor: ['dc_flor_selva_0', 'dc_flor_selva_1', 'dc_flor_selva_2', 'dc_flor_0', 'dc_flor_1', 'dc_hierba_alta_0'], densidad: 0.42, piedra: 1, arable: true },
+  18: { arte: 'flores', mapa: '#5a7a3a', decor: ['dc_flor_selva_0', 'dc_flor_selva_1', 'dc_flor_selva_2', 'dc_flor_0', 'dc_flor_1', 'dc_hierba_alta_0'], densidad: 0.14, piedra: 1, arable: true },
   19: { arte: 'moho', mapa: '#1e3a3a', decor: ['dc_seta_moho', 'dc_seta_moho', 'guijarro'], densidad: 0.09, planos: ['ad_moho'], piedra: 3, brilla: 0.06 },
   20: { arte: 'templo', mapa: '#6a6a58', decor: ['guijarro', 'dc_hierba_alta_0'], densidad: 0.04, planos: ['ad_musgo'], piedra: 4 },
-  21: { arte: 'veneno', mapa: '#3a2a4a', decor: ['dc_seta_moho', 'dc_helechito'], densidad: 0.1, planos: ['ad_moho'], piedra: 3, brilla: 0.04 },
+  21: { arte: 'veneno', mapa: '#2a1a34', decor: ['dc_seta_moho'], densidad: 0.04, piedra: 3, brilla: 0.03 },
   22: { arte: 'tablas', mapa: '#8a6a3a' },
   23: { arte: 'alfombra_verde', mapa: '#2a5a3a' },
 });

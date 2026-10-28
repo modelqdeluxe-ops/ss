@@ -235,7 +235,7 @@ function actualizarOzmar(j, dt) {
     case 'pilares':
       if (j.t <= 0) { // una línea de pilares de sombra que estallan en orden hacia ti
         const a = Math.atan2(p.y - j.y, p.x - j.x);
-        for (let k = 1; k <= 9; k++) { const x = j.x + Math.cos(a) * k * 16, y = j.y + Math.sin(a) * k * 14; if (!solido(Math.floor(x / T), Math.floor(y / T))) avisoSuelo(x, y, 12, 0.6 + k * 0.09, D.dano, ['#c080ff', '#40204a', '#ffffff']); }
+        for (let k = 1; k <= 9; k++) { const x = j.x + Math.cos(a) * k * 16, y = j.y + Math.sin(a) * k * 14; if (!solido(Math.floor(x / T), Math.floor(y / T))) avisoSuelo(x, y, 12, 0.6 + k * 0.09, D.dano, ['#c080ff', '#40204a', '#ffffff'], 'runa'); }
         Sonido.sfx.temblor(); j.rafagas--; j.t = 1.1 / rapido;
         if (j.rafagas <= 0) { j.estado = 'cansado'; j.t = 1.4 / rapido; }
       }

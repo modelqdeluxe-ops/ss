@@ -424,7 +424,7 @@ function actualizarFase2(dt) {
 function dibujarFase2_3d() {
   for (const b of J.bombas) {
     const x = b.x / T, z = b.y / T + 0.2;
-    if (b.quieta) { GL.plano('aviso_suelo', x, z, { escala: 1.7, tinte: [1, 1, 1, 0.45 + 0.35 * Math.sin(J.t * 24)] }); continue; }
+    if (b.quieta) { dibujarAviso(x, z, 13, 1 - Math.max(0, b.t) / 1.6); continue; }
     GL.plano('sombra_s', x, z, { escala: 0.5 });
     GL.sprite('bomba', x, z, { y: (b.z / 16) * GL.KY + 0.04, blanco: b.t < 0.5 && Math.floor(J.t * 16) % 2 ? 0.7 : 0 });
   }

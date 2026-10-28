@@ -338,6 +338,22 @@ function dibujarCriatura3d(e) {
   if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: ((e.z || 0) / 16) * GL.KY, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95] });
   if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
 }
+// Un aviso de ataque en el suelo. k: de 0 (recién puesto) a 1 (golpe). radio en píxeles.
+const COLOR_AVISO = { circulo: [1, 0.28, 0.2], grieta: [1, 0.42, 0.16], runa: [0.78, 0.38, 1] };
+function dibujarAviso(x, z, radio, k, estilo = 'circulo', v = 0) {
+  const e = radio / 16, c = COLOR_AVISO[estilo] || COLOR_AVISO.circulo, late = 0.65 + 0.35 * Math.sin(J.t * (9 + k * 16));
+  if (estilo === 'grieta') {
+    GL.plano('aviso_disco', x, z, { escala: e * 0.9, tinte: [0.08, 0.02, 0.02, 0.35 + 0.3 * k] });
+    GL.plano(`aviso_grieta_${v}`, x, z, { escala: e * (0.55 + 0.6 * k), lote: GL.lotes.brillo, unlit: 1, tinte: [c[0], c[1], c[2], (0.35 + 0.65 * k) * late], y: 0.012 });
+  } else if (estilo === 'runa') {
+    GL.plano('aviso_disco', x, z, { escala: e * k, tinte: [0.2, 0.05, 0.3, 0.45] });
+    GL.plano('aviso_runa', x, z, { escala: e, lote: GL.lotes.brillo, unlit: 1, tinte: [c[0], c[1], c[2], (0.4 + 0.6 * k) * late], y: 0.012 });
+  } else {
+    GL.plano('aviso_disco', x, z, { escala: e * (0.15 + 0.85 * k), tinte: [0.8, 0.08, 0.05, 0.3] });
+    GL.plano('aviso_anillo', x, z, { escala: e, tinte: [0.9, 0.12, 0.08, 0.8], y: 0.01 });
+    GL.plano('aviso_anillo', x, z, { escala: e, lote: GL.lotes.brillo, unlit: 1, tinte: [c[0], c[1], c[2], (0.35 + 0.45 * k) * late], y: 0.012 });
+  }
+}
 // desplazamiento para centrar un modelo horneado (los jefes no se voltean)
 const dxDe = (n) => (META_SPR[n] ? META_SPR[n].dx : 0);
 function dibujarJefe3d(j) {
@@ -347,7 +363,7 @@ function dibujarJefe3d(j) {
   if (j.id === 'topo') {
     if (j.enterrado) {
       const tiembla = j.t < 0.8 ? Math.sin(J.t * 50) * 0.08 : 0;
-      if (j.t < 0.8) GL.plano('aviso_suelo', x, z, { escala: 2.2, tinte: [1, 1, 1, 0.5 + 0.3 * Math.sin(J.t * 20)] });
+      if (j.t < 0.8) dibujarAviso(x, z, 16, j.t / 0.8, 'grieta', 1);
       GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla + dxDe('monticulo_0'), z);
       return;
     }
@@ -417,7 +433,7 @@ function dibujarMundo3d() {
   }
   for (const c of J.charcos) GL.plano(c.tipo === 'veneno' ? 'charco_veneno' : c.tipo === 'espora' ? 'charco_espora' : 'charco', c.x / T, c.y / T, { y: 0.008, unlit: 0.5, tinte: [1, 1, 1, Math.min(1, c.t) * 0.9] });
   dibujarRayosCielo();
-  for (const a of J.avisosSuelo) if (a.t > 0) { const k = 1 - a.t / a.t0; GL.plano('aviso_suelo', a.x / T, a.y / T, { escala: (a.r / 15) * (0.6 + 0.4 * k), tinte: [1, 1, 1, 0.35 + 0.4 * k] }); }
+  for (const a of J.avisosSuelo) if (a.t > 0) dibujarAviso(a.x / T, a.y / T, a.r, 1 - a.t / a.t0, a.estilo, a.v);
   for (const q of J.particulas) {
     const o = { y: (q.z / 16) * GL.KY, escala: q.s * 0.5 * (q.tenue ? 0.8 : 1), tinte: colorRGB(q.c, q.chispa ? Math.min(1, q.vida) * (q.tenue ? 0.35 : 0.9) : 1) };
     if (q.brilla) { o.unlit = 1; o.lote = GL.lotes.brillo; }

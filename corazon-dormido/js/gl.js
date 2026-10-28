@@ -357,6 +357,16 @@ const GL = (() => {
         const y = liquido ? -0.06 : 0;
         L.normal(0, 1, 0);
         L.qEsq([tx, y, ty, tx + 1, y, ty, tx + 1, y, ty + 1, tx, y, ty + 1], uvDe(`s_${info.arte}_${Math.floor(h * 4)}`), false, T4, LZ, info.brilla || 0);
+        // bordes orgánicos: los suelos vecinos con más prioridad se meten un poco en esta casilla
+        if (!liquido) {
+          const pri = PRIORIDAD_SUELO[info.arte] || 0;
+          let capa = 0;
+          const vecino = (xx, yy) => { if (!enMundo(xx, yy) || M.muro[idx(xx, yy)]) return 0; const b2 = M.piso[idx(xx, yy)]; if (b2 === b) return 0; const i2 = INFO_SUELO[b2]; return !i2.liquido && (PRIORIDAD_SUELO[i2.arte] || 0) > pri ? b2 : 0; };
+          const poner = (b2, lado) => { const uv = uvDe(`borde_${INFO_SUELO[b2].arte}_${lado}`); if (!uv) return; const yy = 0.002 + 0.001 * capa++; L.qEsq([tx, yy, ty, tx + 1, yy, ty, tx + 1, yy, ty + 1, tx, yy, ty + 1], uv, false, T4, LZ, INFO_SUELO[b2].brilla || 0); };
+          const vn = vecino(tx, ty - 1), ve = vecino(tx + 1, ty), vs = vecino(tx, ty + 1), vo = vecino(tx - 1, ty);
+          if (vn) poner(vn, 'n'); if (ve) poner(ve, 'e'); if (vs) poner(vs, 's'); if (vo) poner(vo, 'o');
+          for (const [dx, dy, lado, a, c] of [[-1, -1, 'no', vn, vo], [1, -1, 'ne', vn, ve], [1, 1, 'se', vs, ve], [-1, 1, 'so', vs, vo]]) { const d = vecino(tx + dx, ty + dy); if (d && d !== a && d !== c) poner(d, lado); }
+        }
         if (liquido || M.objetos.has(i) || M.bloqueo[i]) continue;
         // adornos de pie (guijarros, hierba, setas, estalagmitas…), más junto a las paredes
         const h4 = hash2(tx, ty, 9), cerca = n + s + o + e, lista = info.decor;

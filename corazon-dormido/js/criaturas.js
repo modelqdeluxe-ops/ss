@@ -106,7 +106,8 @@ function actualizarProyectiles(dt) {
   J.avisosSuelo = J.avisosSuelo.filter((a) => a.t > -0.1);
 }
 // Un golpe que avisa: círculo rojo en el suelo durante «t» segundos y luego daño en el radio.
-function avisoSuelo(x, y, r, t, dano, colores) { J.avisosSuelo.push({ x, y, r, t, t0: t, dano, colores }); }
+// estilo: 'circulo' (anillo y disco que se llena), 'grieta' (raíces que van a salir) o 'runa' (magia de la Podre)
+function avisoSuelo(x, y, r, t, dano, colores, estilo = 'circulo') { J.avisosSuelo.push({ x, y, r, t, t0: t, dano, colores, estilo, v: Math.floor(Math.random() * 3), giro: Math.random() < 0.5 }); }
 
 // ---------------------------------------------------------------- conductas
 

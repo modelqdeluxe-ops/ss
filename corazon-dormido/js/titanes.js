@@ -25,7 +25,7 @@ ACTUALIZAR_JEFE.hiedra = (j, dt) => {
         const a0 = Math.atan2(p.y - j.y, p.x - j.x), filas = j.fase === 2 ? [-0.35, 0, 0.35] : [0];
         for (const da of filas) for (let k = 1; k <= 10; k++) {
           const x = j.x + Math.cos(a0 + da) * (14 + k * 14), y = j.y + Math.sin(a0 + da) * (10 + k * 12);
-          if (!solido(Math.floor(x / T), Math.floor(y / T))) avisoSuelo(x, y, 12, 0.55 + k * 0.08, D.dano, ['#5ea440', '#3a2a10', '#c8f070']);
+          if (!solido(Math.floor(x / T), Math.floor(y / T))) avisoSuelo(x, y, 12, 0.55 + k * 0.08, D.dano, ['#5ea440', '#3a2a10', '#c8f070'], 'grieta');
         }
         Sonido.sfx.excavar(); j.rafagas--; j.t = 1.0 / rapido;
         if (j.rafagas <= 0) { j.estado = 'espera'; j.t = 1.3 / rapido; }
