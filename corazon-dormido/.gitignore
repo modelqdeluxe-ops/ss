@@ -1,0 +1,2 @@
+# paquetes de Python bajados con pip download (no van al repo)
+*.whl
