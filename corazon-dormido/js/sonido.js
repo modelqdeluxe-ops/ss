@@ -99,6 +99,8 @@ const Sonido = (() => {
   // cada efecto: la muestra si está; si no, el sintetizado
   const sfx = {};
   for (const [n, fn] of Object.entries(sintetizados)) sfx[n] = (...a) => { if (!muestra(n)) fn(...a); };
+  // los rugidos y los temblores también se notan en la mano
+  for (const [n, ms] of [['rugido', 160], ['temblor', 60]]) { const f = sfx[n]; sfx[n] = (...a) => { f(...a); if (typeof vibrar === 'function') vibrar(ms); }; }
   sfx.recoger = (n = 0) => { if (!muestra('recoger', 1, 1 + Math.min(n, 8) * 0.03)) sintetizados.recoger(n); };
   // pasos según el suelo que pisas
   sfx.paso = (tipo) => muestra('paso_' + tipo);

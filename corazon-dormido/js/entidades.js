@@ -242,7 +242,7 @@ function danarJugador(d, desde, sinEmpuje = false) {
     p.invuln = 0.7; J.temblor = Math.max(J.temblor, 0.25);
     if (desde) { const a = Math.atan2(p.y - desde.y, p.x - desde.x); p.kbx = Math.cos(a) * 160; p.kby = Math.sin(a) * 160; }
     Sonido.sfx.dano();
-    try { navigator.vibrate && navigator.vibrate(30); } catch (e) { /* sin vibración */ }
+    vibrar(real >= 25 ? 70 : 35); // en la app, el móvil vibra (más con los golpes fuertes)
     if (J.pesca) J.pesca = null;
   }
   if (p.vida <= 0) {
