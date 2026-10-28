@@ -39,6 +39,7 @@ public final class TFPartyParticle extends TextureSheetParticle {
     private final double swayPhase;
     private Vec3 from, to;
     private int travel;
+    private float gravity, drag = 1F;
 
     private TFPartyParticle(ClientLevel level, double x, double y, double z, TextureAtlasSprite sprite, int rgb, float size, int life,
                             float sway, float flicker) {
@@ -93,6 +94,13 @@ public final class TFPartyParticle extends TextureSheetParticle {
         return this;
     }
 
+    /** Que caiga y frene (las chispas de los cohetes). */
+    public TFPartyParticle physics(float gravity, float drag) {
+        this.gravity = gravity;
+        this.drag = drag;
+        return this;
+    }
+
     @Override
     public void tick() {
         xo = x;
@@ -113,6 +121,10 @@ public final class TFPartyParticle extends TextureSheetParticle {
             sx = Math.sin(age * 0.07 + swayPhase) * sway * 0.03;
             sz = Math.cos(age * 0.05 + swayPhase) * sway * 0.03;
         }
+        yd -= gravity;
+        xd *= drag;
+        yd *= drag;
+        zd *= drag;
         move(xd + sx, yd, zd + sz);
     }
 

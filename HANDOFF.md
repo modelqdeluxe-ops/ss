@@ -190,7 +190,21 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (28 oct 2026, TF Client 1.3.151) — lee esto primero
+### CHECKPOINT (28 oct 2026, TF Client 1.3.152) — lee esto primero
+
+**1.3.152** (el dueño con capturas, seis cosas de la fiesta). Un solo comando, `/tf cumpleaños` (fuera `cumpleanos`).
+El letrero ya no sigue la vista: quieto en el cielo hacia donde se miraba al empezar (`skyYaw`) a 58° (las «2 en
+punto»), de cara al jugador (`Quaternionf.rotationYXZ`), sin niebla (`setShaderFogStart`); el nombre en estrellas
+(40°) y los corazones de luz (34°) en la misma dirección. Los corazones del nombre son el corazón de la vida
+(`textures/gui/icons.png`, 52,0 9x9) dibujado como quad de `RenderType.text`, no «❤» (con su paquete salía raro).
+Con shaders el letrero se dibuja en `vacio.AfterShaders.end` (`TFBirthdayClient.renderAfterShaders`, como la grieta) y
+cada cohete suelta además sus chispas de `TFPartyParticle` (con `physics`: caen y frenan) y un destello: probado con
+`[shaders]` (Complementary), se ve todo. Los títulos son nuestros (`RenderGuiEvent.Post`): como mucho 4x y el 80 % del
+ancho. La canción, seis vueltas seguidas (`VERSES`: campana, flauta, carillón, xilófono, campana+pling y, con la traca,
+todo; bajo y vals de percusión desde la segunda) y fanfarria nueva (`fanfare`: arpegio, acorde y lluvia de carillón).
+Ojo: con shaders la máquina de la prueba va a 1-2 fps; las capturas del final llegan tarde.
+
+### CHECKPOINT (28 oct 2026, TF Client 1.3.151)
 
 **1.3.151** (el dueño: «es muy simple el evento de cumpleaños, y no pongas mirad, es Mira»). La fiesta de
 `/tf cumpleaños` dura 90 s (`TFBirthday.LENGTH`) en cuatro actos (`client/TFBirthdayClient`): cuenta atrás (cielo
