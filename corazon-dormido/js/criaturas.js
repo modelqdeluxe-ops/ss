@@ -134,6 +134,7 @@ function actualizarCriaturas(dt) {
     mover(e, e.kbx * dt, e.kby * dt);
     e.kbx *= Math.pow(0.001, dt); e.kby *= Math.pow(0.001, dt);
     if (e.aturdido > 0) { e.aturdido -= dt; continue; }
+    if (e.reza && rezaGruto(e, Math.hypot(p.x - e.x, p.y - e.y))) continue;
     const lejos = Math.hypot(p.x - e.x, p.y - e.y), r = lejos < 240 ? rumbo(e) : null;
     if (r) e.mira = r.x >= 0 ? 1 : -1;
     const vel = c.vel;

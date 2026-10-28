@@ -30,7 +30,7 @@ function metaPartida() {
     v: 5, gen: GEN_MUNDO, n: N_MUNDO, sem: M.sem, jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
     inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
     jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
-    mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto,
+    mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto, pasos: J.pasos,
     fijas: M.fijas.map((f) => f.muerto || 0), mercaderes: M.mercaderes.map((m) => ({ ...m, ent: undefined, casa: undefined })),
   };
 }
@@ -132,7 +132,7 @@ function migrarV4(g) {
 // Lo que guarda la partida además del mundo (la de la 0.6 lo guardaba igual).
 function restaurarJugador(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL) });
+  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {} });
   J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
   J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
   for (const s of J.inv) if (s) asegurarItem(s.id);
@@ -164,7 +164,7 @@ async function empezar(continuar) {
     migrarV4(v4);
     restaurarJugador(v4);
   } else {
-    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
+    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, pasos: {}, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
     J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
     J.inv = new Array(N_INV).fill(null);
     if (v3) migrarV3(v3);
@@ -419,7 +419,7 @@ function dibujarCriatura3d(e) {
   else if (c.conducta === 'salta') n = `${e.tipo}_${e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2}`;
   else if (e.tipo.startsWith('larva')) n = `${e.tipo}_${Math.floor(e.t * 6) % 2}`;
   else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
-  else n = `${e.tipo}_${e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
+  else n = `${e.tipo}_${e.reza ? 0 : e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
   const flip = e.mira < 0, dx = META_SPR[n] ? META_SPR[n].dx * (flip ? -1 : 1) : 0;
   GL.sprite(n, x + tiembla + dx, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z });
   // ojos y Podre: brillan solos en la oscuridad (se ven antes que el cuerpo)
@@ -541,6 +541,7 @@ function dibujarMundo3d() {
     if (!enMundo(tx, ty)) continue;
     const i = idx(tx, ty);
     if (M.piso[i] === SUELO.AGUA) GL.plano(`aguab_${(Math.floor(J.t * 3) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: -0.05, unlit: 0, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+    else if (M.piso[i] === SUELO.PLACA) { if (placaPisada(tx, ty)) GL.plano('placa_luz', tx + 0.5, ty + 0.5, { y: 0.006, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.75 + 0.25 * Math.sin(J.t * 4)] }); }
     else if (M.piso[i] === SUELO.AGUA_NEGRA) { if (hash2(tx, ty, 31) < 0.35) GL.plano(`aguab_${(Math.floor(J.t * 2) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: -0.05, unlit: 0, lote: GL.lotes.brillo, tinte: [0.45, 0.62, 0.55, 0.45] }); }
     else if (M.mena[i] && M.visto[i]) {
       const fase = (J.t * 0.6 + hash2(tx, ty, 21)) % 1;

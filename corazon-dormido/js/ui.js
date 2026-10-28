@@ -221,7 +221,7 @@ function dibujarHUD(ctx) {
   boton(ax - 18, ay - 18, 36, 36, null, { mantener: true });
   const o = !J.pesca && interactivoCerca(), esp = !J.pesca && !o ? usoCercano() : null;
   if (o) {
-    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR' }[que] || 'USAR';
+    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR', brasero: o.extra ? 'MIRAR' : 'ENCENDER', palanca: 'TIRAR', empujar: 'EMPUJAR', sellada: 'MIRAR', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'VIAJAR' : 'TOCAR', restos: o.datos && o.datos.visto ? 'MIRAR' : 'REGISTRAR' }[que] || 'USAR';
     botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#3e6a2a' });
   } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#3e6a2a' });
   if (J.cartel) { // nombre de la región al entrar por primera vez

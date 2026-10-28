@@ -399,7 +399,8 @@ function aparecerFijas(dt) {
     if (f.muerto && J.tiempoMundo - f.muerto < 600) return;
     if (J.enemigos.some((e) => e.fija === k) || solido(f.x, f.y)) return;
     const e = nuevaCriatura(f.tipo, f.x * T + 8, f.y * T + 10);
-    e.fija = k; J.enemigos.push(e);
+    e.fija = k; if (f.reza) { e.reza = true; e.rezaX = (f.ix ?? f.x) * T + 8; }
+    J.enemigos.push(e);
   });
 }
 

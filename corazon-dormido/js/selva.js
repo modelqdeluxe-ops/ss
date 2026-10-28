@@ -392,7 +392,7 @@ function santuarioPodre(X, cx, cy, rad, reg) {
   ponerObjeto(cx, cy - 1, 'idolo_podre');
   for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2 + r(), x = Math.round(cx + Math.cos(a) * (rad - 1.5)), y = Math.round(cy + Math.sin(a) * (rad - 1.5)); if (X.libre(x, y)) ponerObjeto(x, y, 'bulto_podre'); }
   const rezan = reg === REGION.SELVA ? ['gruto_jardinero', 'gruto_lancero'] : reg === REGION.CIENAGA ? ['gruto_lancero', 'gruto_chaman', 'gruto_lancero'] : ['gruto_chaman', 'gruto_bruto'];
-  rezan.forEach((tipo, k) => M.fijas.push({ tipo, x: cx - rezan.length + 1 + k * 2, y: cy + 2, reza: true }));
+  rezan.forEach((tipo, k) => M.fijas.push({ tipo, x: cx - rezan.length + 1 + k * 2, y: cy + 2, reza: true, ix: cx }));
   M.soles.push({ x: cx, y: cy, r: rad, k: 0.35, c: [1, 0.3, 0.7] });
 }
 
