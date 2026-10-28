@@ -1,12 +1,16 @@
 'use strict';
 // Criaturas: aparecen en lo oscuro según la región, siguen un campo de distancias para rodear paredes y cada
 // conducta tiene su ataque con aviso (parpadeo o círculo en el suelo) y un hueco para contraatacar.
+// No saben dónde estás hasta que te ven, te oyen o les pegas (percibir); mientras, deambulan por su sitio. Y no
+// atacan todas a la vez: unas pocas tienen el turno y las demás te rodean esperando hueco (TURNOS).
 
 function nuevaCriatura(tipo, x, y) {
   const c = CRIATURAS[tipo];
   return {
     tipo, x, y, hw: Math.min(7, c.radio), hh: 3, radio: c.radio, vida: c.vida, vidaMax: c.vida, def: c.def || 0, t: Math.random(), estado: 'anda',
     z: c.vuela ? 10 : 0, vz: 0, kbx: 0, kby: 0, flash: 0, mira: 1, colores: c.colores, alto: c.radio > 8 ? 12 : 6, toqueT: 0, cd: 1 + Math.random() * 2, aturdido: 0,
+    // las que llama un jefe ya vienen a por ti
+    casa: { x, y }, alerta: Object.values(J.jefes || {}).some((j) => j.activo && j.estado !== 'muerto'), turno: false,
   };
 }
 // Conductas nuevas (fauna.js las añade): f(e, c, r, lejos, dt). r: rumbo hacia el jugador o null.
@@ -56,6 +60,92 @@ function veJugador(e) {
   const p = J.jug, n = Math.ceil(Math.hypot(p.x - e.x, p.y - e.y) / 6);
   for (let k = 1; k < n; k++) { const x = e.x + ((p.x - e.x) * k) / n, y = e.y + ((p.y - e.y) * k) / n; if (muroEn(Math.floor(x / T), Math.floor(y / T))) return false; }
   return true;
+}
+
+// ---------------------------------------------------------------- percepción, deambular y turnos
+// Las de emboscada tienen su propio disparador (salen cuando pasas cerca); las de distancia atacan desde lejos.
+const EMBOSCADA = new Set(['tentaculo', 'trampa', 'estatua']);
+const A_DISTANCIA = new Set(['escupe', 'chaman', 'jardinero', 'cazador']);
+// Hasta dónde ve (en píxeles): menos si estás a oscuras, más si estás en la luz. Tu antorcha te delata.
+function vista(c) {
+  const p = J.jug, l = luzEn(Math.floor(p.x / T), Math.floor(p.y / T));
+  return (c.vista || 6.5) * T * (l > 0.5 ? 1.25 : l < 0.15 ? 0.7 : 1);
+}
+function alertar(e, grito = true) {
+  if (e.alerta) return;
+  e.alerta = true; e.vistoT = 0;
+  if (EMBOSCADA.has(CRIATURAS[e.tipo].conducta)) return;
+  if (grito) { numero(e.x, e.y, '!', '#ff5a40', 30); Sonido.sfx.alerta(); }
+  // avisa a las que están a su lado
+  for (const o of J.enemigos) if (o !== e && !o.alerta && Math.hypot(o.x - e.x, o.y - e.y) < 4 * T) alertar(o, false);
+}
+// Un ruido (picar, romper, pelear, una bomba) despierta a las que están cerca.
+function ruido(x, y, casillas) {
+  for (const e of J.enemigos) if (!e.alerta && Math.hypot(e.x - x, e.y - y) < casillas * T) alertar(e);
+}
+// true si sabe dónde estás
+function percibir(e, c, lejos, dt) {
+  if (e.golpeadoT && J.t - e.golpeadoT < 0.5) alertar(e);
+  if (!e.alerta) {
+    e.mirarT = (e.mirarT || Math.random() * 0.3) - dt;
+    if (lejos < 1.7 * T) alertar(e);
+    else if (e.mirarT <= 0) { e.mirarT = 0.3; if (lejos < vista(c) && veJugador(e)) alertar(e); }
+    return e.alerta;
+  }
+  // te pierde si te alejas mucho o pasa un rato sin verte; entonces vuelve a su sitio
+  const v = vista(c);
+  e.mirarT = (e.mirarT || 0) - dt;
+  if (e.mirarT <= 0) { e.mirarT = 0.3; if (lejos < v * 1.6 && veJugador(e)) e.vistoT = 0; }
+  e.vistoT = (e.vistoT || 0) + dt;
+  if (lejos > v * 2.6 || e.vistoT > 6) { e.alerta = false; e.turno = false; e.modo = e.fija !== undefined ? 'casa' : 'quieta'; e.paseoT = 3; }
+  return e.alerta;
+}
+// Sin saber de ti: da vueltas, se para a ratos y, las que no guardan un sitio, te rastrean: siguen tu olor (el
+// campo de distancias) despacio hasta quedarse rondando a unas casillas, donde te acaban viendo u oyendo.
+function deambular(e, c, dt) {
+  if (c.vuela) e.z = 10 + Math.sin(e.t * 3) * 2;
+  else if (e.z > 0 || e.vz > 0) { e.vz -= 420 * dt; e.z = Math.max(0, e.z + e.vz * dt); if (!e.z) e.vz = 0; }
+  if (e.estado !== 'escondida') e.estado = 'anda';
+  const p = J.jug, lejos = Math.hypot(p.x - e.x, p.y - e.y), guarda = e.fija !== undefined;
+  e.paseoT = (e.paseoT || 0) - dt;
+  if (e.paseoT <= 0) {
+    e.paseoT = 1.5 + Math.random() * 3;
+    const s = Math.random(), vuelve = guarda && Math.hypot(e.x - e.casa.x, e.y - e.casa.y) > 6 * T;
+    if (vuelve) e.modo = 'casa';
+    else if (!guarda && lejos > 5 * T && s < 0.6) e.modo = 'rastrea';
+    else if (s < 0.75) { e.modo = 'pasea'; const a = Math.random() * Math.PI * 2, d = (1 + Math.random() * 3) * T, o = guarda ? e.casa : e; e.paseo = { x: o.x + Math.cos(a) * d, y: o.y + Math.sin(a) * d }; }
+    else e.modo = 'quieta';
+  }
+  let dx = 0, dy = 0;
+  if (e.modo === 'rastrea') { const r = lejos > 4 * T ? rumbo(e) : null; if (r) { dx = r.x; dy = r.y; } else e.modo = 'quieta'; }
+  else if (e.modo === 'pasea' || e.modo === 'casa') {
+    const q = e.modo === 'casa' ? e.casa : e.paseo, ex = q.x - e.x, ey = q.y - e.y, d = Math.hypot(ex, ey);
+    if (d < 3) e.modo = 'quieta'; else { dx = ex / d; dy = ey / d; }
+  }
+  e.quieta = !dx && !dy;
+  if (e.quieta) return;
+  e.mira = dx >= 0 ? 1 : -1;
+  if (mover(e, dx * c.vel * 0.38 * dt, dy * c.vel * 0.38 * dt) && e.modo !== 'rastrea') e.modo = 'quieta';
+}
+// Sin turno: te rodea a media distancia, esperando hueco.
+function rodear(e, c, r, lejos, dt) {
+  if (!e.giro) e.giro = Math.random() < 0.5 ? 1 : -1;
+  const radial = lejos < 4 * T ? -0.8 : lejos > 5 * T ? 0.7 : 0;
+  if (mover(e, (-r.y * e.giro + r.x * radial) * c.vel * 0.45 * dt, (r.x * e.giro + r.y * radial) * c.vel * 0.45 * dt)) e.giro = -e.giro;
+  e.mira = r.x >= 0 ? 1 : -1; e.cd = Math.max(e.cd, 0.4);
+}
+// Quién tiene el turno: las más cercanas (y las que ya están atacando), unas pocas cuerpo a cuerpo y dos de lejos.
+const TURNOS = { t: 0 };
+function repartirTurnos(dt) {
+  TURNOS.t -= dt;
+  if (TURNOS.t > 0) return;
+  TURNOS.t = 0.4;
+  const p = J.jug, atacando = (e) => e.estado === 'prepara' || e.estado === 'carga' || e.estado === 'conjura';
+  const cola = J.enemigos.filter((e) => e.alerta && !EMBOSCADA.has(CRIATURAS[e.tipo].conducta))
+    .map((e) => [e, Math.hypot(e.x - p.x, e.y - p.y) - (atacando(e) ? 1e4 : 0)]).sort((a, b) => a[1] - b[1]);
+  const maxCuerpo = 2 + (Object.keys(J.jefesMuertos).length >= 3 ? 1 : 0);
+  let cuerpo = 0, lejos = 0;
+  for (const [e] of cola) e.turno = A_DISTANCIA.has(CRIATURAS[e.tipo].conducta) ? lejos++ < 2 : cuerpo++ < maxCuerpo;
 }
 
 // ---------------------------------------------------------------- proyectiles y charcos de las criaturas
@@ -129,6 +219,7 @@ function actualizarCriaturas(dt) {
   const p = J.jug;
   FLUJO.t -= dt;
   if (FLUJO.t <= 0) { FLUJO.t = 0.35; calcularFlujo(); }
+  repartirTurnos(dt);
   for (const e of J.enemigos) {
     const c = CRIATURAS[e.tipo];
     e.t += dt; e.flash -= dt; e.cd -= dt;
@@ -137,8 +228,14 @@ function actualizarCriaturas(dt) {
     e.kbx *= Math.pow(0.001, dt); e.kby *= Math.pow(0.001, dt);
     if (e.aturdido > 0) { e.aturdido -= dt; continue; }
     if (e.reza && rezaGruto(e, Math.hypot(p.x - e.x, p.y - e.y))) continue;
-    const lejos = Math.hypot(p.x - e.x, p.y - e.y), r = lejos < 240 ? rumbo(e) : null;
+    const lejos = Math.hypot(p.x - e.x, p.y - e.y);
+    conducta: {
+    const emboscada = EMBOSCADA.has(c.conducta);
+    if (!emboscada && !percibir(e, c, lejos, dt)) { deambular(e, c, dt); break conducta; }
+    e.quieta = false;
+    const r = lejos < 240 ? rumbo(e) : null;
     if (r) e.mira = r.x >= 0 ? 1 : -1;
+    if (!emboscada && !e.turno && r && e.estado === 'anda' && lejos < 6 * T) { rodear(e, c, r, lejos, dt); break conducta; }
     const vel = c.vel;
     if (CONDUCTAS[c.conducta]) CONDUCTAS[c.conducta](e, c, r, lejos, dt);
     else switch (c.conducta) {
@@ -195,6 +292,7 @@ function actualizarCriaturas(dt) {
       default: // repta
         if (r) { const ond = 0.75 + 0.25 * Math.sin(e.t * 8); mover(e, r.x * vel * ond * dt, r.y * vel * ond * dt); }
     }
+    }
     // separarse de las demás
     for (const o of J.enemigos) {
       if (o === e) continue;
@@ -203,7 +301,8 @@ function actualizarCriaturas(dt) {
     }
     if ((e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida' && Math.abs(p.x - e.x) < e.radio + p.hw && Math.abs(p.y - e.y) < 7) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
   }
-  J.enemigos = J.enemigos.filter((e) => e.vida > 0 && Math.hypot(e.x - p.x, e.y - p.y) < 36 * T);
+  // las que no saben de ti y se han quedado muy lejos se van (el mundo se renueva)
+  J.enemigos = J.enemigos.filter((e) => e.vida > 0 && Math.hypot(e.x - p.x, e.y - p.y) < (e.alerta || e.fija !== undefined ? 36 : 26) * T);
   aparecerCriaturas(dt);
   aparecerFijas(dt);
 }
@@ -213,14 +312,14 @@ function aparecerCriaturas(dt) {
   const p = J.jug;
   J.aparecer -= dt;
   if (J.aparecer > 0) return;
-  J.aparecer = 1.3;
+  J.aparecer = 2.4 + Math.random() * 2;
   if (Object.values(J.jefes).some((j) => j.activo && j.estado !== 'muerto')) return; // en la pelea con un guardián, solo él y los suyos
   const progreso = Object.keys(J.jefesMuertos).length;
-  const max = 6 + Math.min(6, Object.keys(J.hito).length >> 1) + progreso * 2;
+  const max = 3 + Math.min(3, J.objetivo >> 3) + progreso;
   const cerca = J.enemigos.filter((e) => Math.hypot(e.x - p.x, e.y - p.y) < 22 * T).length;
   if (cerca >= max) return;
   for (let k = 0; k < 14; k++) {
-    const a = Math.random() * Math.PI * 2, d = (9 + Math.random() * 7) * T;
+    const a = Math.random() * Math.PI * 2, d = (12 + Math.random() * 8) * T;
     const tx = Math.floor((p.x + Math.cos(a) * d) / T), ty = Math.floor((p.y + Math.sin(a) * d) / T);
     if (!enMundo(tx, ty) || solido(tx, ty) || objetoEn(tx, ty)) continue;
     const i = idx(tx, ty), reg = M.region[i];

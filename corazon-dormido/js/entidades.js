@@ -443,10 +443,10 @@ function picar(tx, ty, pico) {
   const golpe = pico.poder * J.st.minado;
   d.v += golpe; d.t = J.t; M.danos.set(i, d);
   ganarXP('mineria', golpe * 0.05);
-  Sonido.sfx.picar(); J.temblor = Math.max(J.temblor, 0.06);
+  Sonido.sfx.picar(); J.temblor = Math.max(J.temblor, 0.06); ruido(cx, cy, 5);
   particulas(cx, cy, 4, [ram[2], ram[3], ram[1]], { vel: 45, vida: 0.35 });
   if (d.v >= vidaMax) {
-    romperMuro(tx, ty);
+    romperMuro(tx, ty); ruido(cx, cy, 8);
     efecto('humo', 4, cx, cy + 10, 0, 0.45);
     Sonido.sfx.romper();
     particulas(cx, cy + 4, 12, [ram[1], ram[2], ram[3], ram[4]], { vel: 60, vida: 0.6, s: 2 });
@@ -489,7 +489,7 @@ function atacar(dano, alcance, angulo, o = {}) {
     herir(e, dano, dx / (d || 1), dy / (d || 1), { ...o, habilidad: 'combate' });
     alguno = true;
   }
-  if (alguno) J.pausaGolpe = 0.045;
+  if (alguno) { J.pausaGolpe = 0.045; ruido(p.x, p.y, 8); }
   // las vasijas y huevos se rompen al golpearlos aunque no apuntes
   const { tx, ty } = casillaMira(p), ob = objetoEn(tx, ty);
   if (ob && OBJ[ob.tipo].rompible) golpearObjeto(ob, { dano });

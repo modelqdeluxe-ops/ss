@@ -331,6 +331,7 @@ function actualizarBombas(dt) {
 }
 function explotar(b) {
   const p = J.jug, R = 30, fuerza = 1 + nivel('explosivos') * 0.02;
+  ruido(b.x, b.y, 14);
   for (const e of todosEnemigos()) {
     if (e.vida <= 0 || e.enterrado || e.invisible) continue;
     const d = Math.hypot(e.x - b.x, e.y - b.y);

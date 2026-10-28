@@ -56,6 +56,7 @@ const Sonido = (() => {
     colocar: () => { tono({ f: 140, f2: 90, dur: 0.1, tipo: 'triangle', vol: 0.2 }); ruido({ dur: 0.06, vol: 0.15, f: 800 }); },
     error: () => { tono({ f: 180, dur: 0.08, tipo: 'square', vol: 0.08 }); tono({ f: 140, dur: 0.1, tipo: 'square', vol: 0.08, retraso: 0.09 }); },
     menu: () => tono({ f: 880, dur: 0.04, tipo: 'square', vol: 0.05 }),
+    alerta: () => { tono({ f: 160, f2: 95, dur: 0.32, tipo: 'sawtooth', vol: 0.07 }); ruido({ dur: 0.28, vol: 0.12, f: 600, f2: 180 }); },
     rugido: () => { tono({ f: 110, f2: 55, dur: 0.9, tipo: 'sawtooth', vol: 0.2 }); ruido({ dur: 0.9, vol: 0.3, f: 500, f2: 120 }); },
     excavar: () => ruido({ dur: 0.3, vol: 0.18, f: 400, f2: 150 }),
     temblor: () => { ruido({ dur: 0.5, vol: 0.4, f: 300, f2: 60 }); tono({ f: 60, f2: 30, dur: 0.5, tipo: 'sine', vol: 0.3 }); },
