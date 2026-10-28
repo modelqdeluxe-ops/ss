@@ -20,6 +20,10 @@ const MATS_ARMADURA = (() => {
     larva: mat(['#1e2a0c', '#34481a', '#506a26', '#749032', '#9ab842', '#c4dc6a', '#ecf6a8'], { brillo: 0.6 }),
     musgo: mat(['#16200e', '#243418', '#364a22', '#4c642c', '#688238', '#86a048', '#aac060'], { tex: ESCU.TEX.grumos(41, 1.6, 0.8) }),
     pluma: mat(rampa('#d84040', 6), {}), hoja: MAT.hoja,
+    medula: mat(['#3a3226', '#5e5240', '#867860', '#ae9e80', '#d0c2a2', '#ece0c4', '#fff8ea'], { brillo: 0.4 }),
+    plata: mat(['#1e242e', '#323a48', '#4a5466', '#68748a', '#8e9ab0', '#b8c4d8', '#e4ecfa'], { brillo: 1 }),
+    tuetano: mat(['#3a0606', '#6a0c0c', '#9a1a16', '#c8302a', '#e85a48'], {}),
+    veloCasco: mat(['#0c0e14', '#161a24', '#222836', '#303848', '#40495c', '#525e74'], { tex: (x, y) => (y % 3 === 0 ? -0.8 : 0) }),
   };
 })();
 
@@ -121,6 +125,14 @@ const Personaje = (() => {
     if (tipo === 'carmesi') { for (const l of [-1, 1]) m.tubo([[cx + l * 5, hy + 3, cz], [cx + l * 7.2, hy + 5.5, cz + 0.5], [cx + l * 7.6, hy + 8.4, cz + 1]], 1.3, 0.5, mt); m.tubo([[cx, hy + 7.4, cz - 1], [cx, hy + 9, cz - 4], [cx, hy + 7, cz - 7.5]], 1.6, 1, MATS_ARMADURA.pluma); }
     if (tipo === 'musgo') { m.elipsoide([cx + 1, hy + 7.6, cz - 0.5], [2.6, 0.9, 2], MATS_ARMADURA.hoja); m.capsula([cx, hy + 6.6, cz - 0.5], [cx + 0.5, hy + 7.6, cz - 0.4], 0.5, MATS_ARMADURA.hoja); }
     if (tipo === 'cobre') m.esfera([cx, hy + 7.6, cz - 0.4], 1.1, mt);
+    if (tipo === 'medula') { // cuernos de hueso que se curvan hacia atrás, con el tuétano rojo en la punta
+      for (const l of [-1, 1]) { m.tubo([[cx + l * 4.6, hy + 4, cz], [cx + l * 6.8, hy + 7.4, cz - 2], [cx + l * 6, hy + 9.6, cz - 5.4]], 1.4, 0.5, mt); m.esfera([cx + l * 6, hy + 9.6, cz - 5.4], 0.6, MATS_ARMADURA.tuetano); }
+      m.caja([cx - 0.6, hy - 1.8, cz + 5.4], [cx + 0.6, hy + 2.8, cz + 6.6], mt);
+    }
+    if (tipo === 'plata') { // cresta y el velo de los Veladores cayendo por detrás
+      m.caja([cx - 0.7, hy + 6, cz - 5], [cx + 0.7, hy + 8.8, cz + 4], mt, { r: 0.6 });
+      m.figura(OP.corta(SDF.elipsoide(cx, hy + 1, cz - 2, 6.4, 7, 5.4), (x, y, z) => Math.max(z - cz + 1.2, y - hy - 5)), [cx - 8, hy - 7, cz - 9, cx + 8, hy + 6, cz], MATS_ARMADURA.veloCasco);
+    }
   }
 
   // ---------------------------------------------------------------- hornear

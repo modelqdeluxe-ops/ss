@@ -73,7 +73,7 @@ function* generarCienaga(X) {
       pon(c.x0 + c.w - 1, c.y0, 'caja_madera');
       if (r() < 0.5) pon(c.x0 + c.w - 1, c.y0 + c.h - 1, 'restos_velador');
     }
-    M.fijas.push({ tipo: 'gruto_lancero', x: cx - 2, y: cy + 2 }, { tipo: 'gruto_lancero', x: cx + 2, y: cy + 2 }, { tipo: 'gruto_cazador', x: cx, y: cy - 3 });
+    M.fijas.push({ tipo: 'gruto_fango', x: cx - 2, y: cy + 2 }, { tipo: 'gruto_fango', x: cx + 2, y: cy + 2 }, { tipo: 'gruto_cazador', x: cx, y: cy - 3 });
     M.soles.push({ x: cx, y: cy, r: 9, k: 0.26, c: [0.6, 1, 0.6] });
   }
 

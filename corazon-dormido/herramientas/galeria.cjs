@@ -72,7 +72,7 @@ const fs = require('fs');
     });
     await foto('criaturas', 400, false);
   });
-  for (const id of ['topo', 'reina', 'ozmar', 'hiedra', 'tamar']) escena('jefe-' + id, async () => {
+  for (const id of ['topo', 'reina', 'ozmar', 'hiedra', 'tamar', 'grul', 'centinela']) escena('jefe-' + id, async () => {
     const g = await p.evaluate((id) => { const g = M.guaridas[id]; return [g.x, id === 'ozmar' ? g.y0 + g.h - 4 : g.y + (id === 'tamar' ? 7 : 6)]; }, id);
     await ir(g[0], g[1]);
     if (id === 'tamar') await p.evaluate(() => { J.hito.tamarInvocado = true; J.jefes.tamar.invocar = true; });

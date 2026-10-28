@@ -60,7 +60,7 @@ function* generarCiudad(X) {
     // farolas a lo largo de las calles y estatuas en algunos cruces
     for (const bx of calleX) for (let y = y0 + 2; y < y0 + H - 1; y += 7) pon(bx + 1, y, 'farola_velada');
     for (const by of calleY) for (let x = x0 + 4; x < x0 + W - 1; x += 9) pon(x, by + 1, 'farola_velada');
-    for (const bx of calleX) for (const by of calleY) if (r() < 0.18) pon(bx + 1, by + 1, 'estatua_velador');
+    for (const bx of calleX) for (const by of calleY) { const q = r(); if (q < 0.12) pon(bx + 1, by + 1, 'estatua_velador'); else if (q < 0.2) M.fijas.push({ tipo: 'guardian_piedra', x: bx + 1, y: by + 1 }); } // algunas estatuas no lo son
     // la Podre también ha entrado en algunos barrios
     if (r() < 0.5) {
       const px = x0 + 6 + Math.floor(r() * (W - 12)), py = y0 + 6 + Math.floor(r() * (H - 12)), rad = 5 + r() * 3;
@@ -68,7 +68,7 @@ function* generarCiudad(X) {
       pon(px, py, 'bulto_podre');
     }
     barrios.push({ x: cx, y: cy, x0, y0, W, H });
-    M.fijas.push({ tipo: 'gruto_bruto', x: cx, y: cy + 1 }, { tipo: 'gruto_chaman', x: cx + 6, y: cy - 4 });
+    M.fijas.push({ tipo: 'necrofago', x: cx, y: cy + 1 }, { tipo: 'velado', x: cx + 6, y: cy - 4 });
   }
   M.barrios = barrios.map((b) => ({ x: b.x, y: b.y }));
   // avenidas de losas con farolas entre las puertas de los barrios (cada barrio con los dos más cercanos)
@@ -115,7 +115,7 @@ function* generarCiudad(X) {
     for (let k = 0; k < 4; k++) pon(x0 + 2 + Math.floor(r() * (W - 4)), y0 + H - 2, 'restos_velador');
     M.biblioteca = { x: cx, y: cy };
     alBarrio(cx, y0 + H + 5);
-    M.fijas.push({ tipo: 'gruto_chaman', x: cx - 6, y: cy }, { tipo: 'gruto_chaman', x: cx + 6, y: cy });
+    M.fijas.push({ tipo: 'velado', x: cx - 6, y: cy }, { tipo: 'velado', x: cx + 6, y: cy }, { tipo: 'guardian_piedra', x: cx, y: y0 + 2 });
   }
 
   // ---- el Templo de las Placas: cuatro bloques sobre cuatro placas abren la cámara del tesoro
@@ -209,7 +209,7 @@ function* generarCiudad(X) {
       if (r() < 0.6) { const o = pon(s.x, s.y - 2, 'sarcofago'); if (o) o.datos = { inv: botinBanda(r, 2, 2) }; }
       if (r() < 0.5) pon(s.x - 2, s.y + 2, 'restos_velador');
       if (r() < 0.4) pon(s.x + 2, s.y + 2, 'urna_velada');
-      M.fijas.push({ tipo: r() < 0.5 ? 'gruto_chaman' : 'gruto_bruto', x: s.x + 1, y: s.y });
+      M.fijas.push({ tipo: r() < 0.6 ? 'velador_caido' : 'velado', x: s.x + 1, y: s.y });
     }
     for (const [ddx, ddy] of [[-4, -4], [4, -4], [-4, 4], [4, 4]]) pon(ultima.x + ddx, ultima.y + ddy, 'sarcofago');
     M.cripta = { x: cx, y: cy, entrada: { x: entrada.x, y: entrada.y } };

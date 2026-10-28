@@ -421,9 +421,10 @@ function dibujarCriatura3d(e) {
   else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
   else n = `${e.tipo}_${e.reza ? 0 : e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
   const flip = e.mira < 0, dx = META_SPR[n] ? META_SPR[n].dx * (flip ? -1 : 1) : 0;
-  GL.sprite(n, x + tiembla + dx, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z });
+  const alfa = c.translucido ? (e.alfa ?? 1) * (0.6 + 0.2 * Math.sin(J.t * 5 + e.x)) : 1; // los Velados se transparentan
+  GL.sprite(n, x + tiembla + dx, z, { y: ((e.z || 0) / 16) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z, tinte: alfa < 1 ? [1, 1, 1, alfa] : undefined });
   // ojos y Podre: brillan solos en la oscuridad (se ven antes que el cuerpo)
-  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: ((e.z || 0) / 16) * GL.KY, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95] });
+  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: ((e.z || 0) / 16) * GL.KY, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95 * Math.min(1, alfa + 0.2)] });
   if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
 }
 // Un aviso de ataque en el suelo. k: de 0 (recién puesto) a 1 (golpe). radio en píxeles.

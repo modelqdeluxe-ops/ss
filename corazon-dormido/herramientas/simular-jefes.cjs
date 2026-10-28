@@ -17,6 +17,8 @@ const path = require('path');
     ozmar: { arma: 'espada_hierro', casco: 'casco_hierro', peto: 'peto_hierro', botas: 'botas_hierro', comida: ['pez_guppy', 'bulbo'] },
     hiedra: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'avena'] },
     tamar: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'avena'] },
+    grul: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'miel'] },
+    centinela: { arma: 'espada_medula', casco: 'casco_medula', peto: 'peto_medula', botas: 'botas_medula', comida: ['carne_sanguijuela', 'miel'] },
   };
   for (const [id, eq] of Object.entries(EQUIPO)) for (let k = 0; k < intentos && (!process.argv[3] || process.argv[3] === id); k++) {
     const r = await p.evaluate(async ([id, eq]) => {
