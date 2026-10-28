@@ -5,8 +5,10 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **fase 1 completa: el anillo interior** (tres regiones, tres guardianes, el final del Corazón y todos
-los sistemas de base). Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y del
+Estado: **fase 2 completa: la Selva Esmeralda** (versión 0.5.0). Sobre el anillo interior de la fase 1 (tres
+regiones, tres guardianes y el despertar del Corazón), se abre la Gran Muralla y llega la Selva: un sector enorme
+con luz del cielo, dos titanes, la Mazmorra del Moho, mercaderes que viven en tu casa, mascotas, el metal carmesí
+y casi el doble de objetos. Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y del
 ordenador, sin instalar nada.
 
 ## Descargar
@@ -36,10 +38,44 @@ como «latest») y actualiza la fija. Para empaquetar a mano: `python3 corazon-d
 Si llevas un material en la mano, la acción usa sola el mejor pico (o la mejor espada, si hay una criatura
 cerca).
 
-## Lo que hay (fase 1)
+## Lo que hay en la fase 2 (la Selva Esmeralda)
 
-- **Mundo de 320×320 casillas, distinto en cada partida**, en anillos alrededor del Corazón. Fuera de la Gran
-  Muralla (radio 142) sigue la roca: ahí irán las regiones de las fases siguientes.
+- **El mundo crece a 640×640 casillas.** Detrás de la Gran Muralla, el anillo exterior se parte en tres sectores
+  (como en Core Keeper): la **Selva Esmeralda** ya está; el Mar Hundido y el Desierto del Origen son roca dormida
+  hasta sus fases.
+- **Abrir la Muralla**: con las tres estatuas, el Corazón despierta; habla con él y pon la mano en la Muralla (el
+  botón TOCAR sale al lado). Se derrumba entera. Un camino de grava lleva hasta ella en la dirección de la Selva.
+- **La Selva**: más abierta y con luz que baja del cielo (claros con sol, rayos, luciérnagas, hojas que caen).
+  Árboles grandes (y árboles de luna que brillan), helechos, flores del sol, avena silvestre, hongos explosivos,
+  panales de avispas, rocas grandes con mena de cada metal y lagos con peces nuevos.
+  - **Praderas de flores**, **la Mazmorra del Moho** (salas de muros que no se rompen, tentáculos y el gran
+    cofre del centro), **el templo del cielo**, **el jardín de Hiedra Viva**, **aldeas de grutos**,
+    **campamentos** y **ruinas con tablillas** que cuentan la historia.
+- **Metal carmesí** (paredes de hierba, pico de hierro): pico con poder 80, espada, maza, arco y flechas, caña,
+  azada y regadera que cubren varias casillas, armadura, anillo, mesa, yunque y farol. Armadura de caparazón
+  musgoso, lanza de espino y flechas de aguijón que envenenan.
+- **8 criaturas nuevas**: babosa venenosa (deja charcos), gruto jardinero (semillas que revientan en
+  enredaderas), gruto cazador (arco), planta trampa, avispa esmeralda (se lanza en línea recta), escarabajo de
+  musgo (embiste y se aturde si choca), tentáculo y larva del moho.
+- **Dos titanes**:
+  - **Hiedra Viva**: filas de raíces, esporas venenosas, el látigo (después se queda expuesta) y brotes de
+    plantas trampa.
+  - **Tamar, Titán del Cielo**: baja al templo cuando pones la Ofrenda del cielo en su altar. Abanicos de plumas,
+    vuelo (su sombra te sigue) y picado (se queda aturdido), rayos y tornados.
+  - Sus gemas van a dos altares nuevos junto al Corazón.
+- **Mercaderes**: haz una casa cerrada (paredes y puertas, 64 casillas o menos) con una cama y pon un ídolo. Llega
+  Barbas, Marina la pescadora o el Encapuchado. Tienda con COMPRAR y VENDER; se paga con monedas antiguas.
+- **Mascotas**: cuatro huevos (Topito, Babosita, Luci y Mohito) que nacen en la incubadora; hueco de mascota en el
+  equipo; suben de nivel.
+- **Bombas** que rompen paredes, **piedra de regreso** para volver a tu cama y **muebles de selva**.
+- **Habilidades nuevas**: Explosivos y Doma. Cebo para pescar antes.
+- **182 objetos y 99 recetas** (antes 98 y 58), 16 criaturas, 5 guardianes y 26 objetivos.
+- **Tu partida de la fase 1 pasa al mundo nuevo**: personaje, mochila, equipo, habilidades, jefes vencidos y
+  estatuas; lo de tus cofres y los muebles que tenías puestos llega en cofres junto al Corazón.
+
+## Lo que hay del anillo interior (fase 1)
+
+- **Mundo distinto en cada partida**, en anillos alrededor del Corazón.
   - **Santuario del Corazón** (centro): el Corazón sobre su altar, tres estatuas de los guardianes y antorchas.
     Ahí te curas y ahí despiertas si caes (o en tu cama, si has puesto una).
   - **Las Raíces** (hasta radio 48): tierra y césped de cueva, raíces gruesas, cobre, charcas, setas y flores.
@@ -94,20 +130,27 @@ artefacto.html     la misma página sin <html>/<head>, para publicarla como Arti
 DISEÑO.md          el diseño completo: regiones, metales, sistemas y las fases que faltan
 js/arte.js         arte con código: terreno, paredes, jugador, criaturas y objetos de la demo, iconos base
 js/arte2.js        arte de la fase 1: suelos nuevos, muebles, cultivos, criaturas, Reina, Ozmar, armadura e iconos
+js/arte3.js        arte de la fase 2: suelos y paredes de la Selva, árboles, rocas, muebles, criaturas, Tamar, Hiedra, mascotas, mercaderes e iconos
 js/gl.js           motor 3D con WebGL2: trozos del mundo, cámara, luz, sprites de pie, sombras, brillos, halos, rayos
 js/fuente.js       letra de 3×5 píxeles con tildes y Ñ
 js/sonido.js       sonidos con WebAudio
 js/datos.js        números del juego: suelos, paredes, menas, objetos, recetas, criaturas, jefes, cultivos, peces
-js/mundo.js        generación del mundo, luz, mapa y guardado
+js/datos2.js       lo de la fase 2: carmesí, madera de selva, objetos, recetas, criaturas, titanes, mercaderes, tablillas, objetivos
+js/mundo.js        generación del anillo interior, luz, mapa y guardado
+js/selva.js        el anillo exterior: los tres sectores y la Selva Esmeralda con sus subzonas
 js/entidades.js    jugador, inventario, equipo, habilidades, herramientas, botín, partículas
 js/criaturas.js    criaturas: aparecer, mapa de distancias, conductas, proyectiles y avisos en el suelo
 js/jefes.js        los tres guardianes, las estatuas y el despertar del Corazón
 js/sistemas.js     crear (con cofres cerca), cofres, olla, cultivos y pesca
+js/fauna.js        conductas de las criaturas de la Selva
+js/titanes.js      Hiedra Viva y Tamar
+js/fase2.js        Muralla, altares, tablillas, incubadora, mascotas, mercaderes y tienda, bombas, piedra de regreso
 js/ui.js           controles táctiles y de teclado, HUD y paneles
 js/principal.js    bucle, cámara, dibujo del mundo y arranque
 herramientas/probar.cjs         prueba rápida en un móvil simulado (capturas + errores + guardar/cargar)
 herramientas/probar-todo.cjs    prueba a fondo: regiones, jefes, criaturas, paneles, base, pesca, FPS y dibujos que falten
 herramientas/simular-jefes.cjs  un bot pelea contra cada guardián con el equipo de su momento (equilibrio)
+herramientas/probar-migracion.cjs  una partida de la fase 1 pasa bien al mundo de la fase 2
 herramientas/empaquetar.py      saca el .html de un solo archivo y el .zip de una versión (para las Releases)
 VERSIONES.txt      las versiones publicadas como Releases
 ```
@@ -166,20 +209,24 @@ node corazon-dormido/herramientas/probar-todo.cjs /tmp/capturas vertical
 node corazon-dormido/herramientas/simular-jefes.cjs 4
 ```
 
+```bash
+node corazon-dormido/herramientas/probar-migracion.cjs /tmp/capturas
+```
+
 `probar-todo` tiene que acabar en «guardar y cargar: bien», «no falta ningún dibujo» y «sin errores». Mira las
-capturas antes de dar algo por bueno. `simular-jefes` dice si el bot gana y cuánta comida gasta: con el equipo
-de cada momento y 10 platos, el bot (que esquiva peor que una persona) gana casi siempre gastando 1–9 platos.
+capturas antes de dar algo por bueno; también recorre la Selva, abre la Muralla, construye una casa (llega el
+mercader, compra y vende), incuba, pone la mascota, tira una bomba, usa la piedra de regreso y los altares.
+`simular-jefes` dice si el bot gana y cuánta comida gasta: con el equipo de cada momento (carmesí para los
+titanes) y 10 platos, el bot (que esquiva peor que una persona) gana la mayoría de las peleas.
 
 ## Cómo seguir (por orden)
 
 Las fases están en `DISEÑO.md`:
 
-1. **Fase 2: la Selva Esmeralda**, al otro lado de la Gran Muralla: dos titanes, mercaderes que se mudan a tu
-   base y mascotas.
-2. **Fase 3: el Mar Hundido**: barcos, peces de mar y su titán.
-3. **Fase 4: el Desierto del Origen**: vagonetas, lava y dos jefes.
-4. **Fase 5: la Frontera Cristalina** y el final.
-5. **Fase 6**: app para Android e iOS (Capacitor), guardado en la nube y cooperativo.
+1. **Fase 3: el Mar Hundido** (el segundo sector del anillo exterior): barcos, peces de mar y su titán.
+2. **Fase 4: el Desierto del Origen**: vagonetas, lava y dos jefes.
+3. **Fase 5: la Frontera Cristalina** y el final.
+4. **Fase 6**: app para Android e iOS (Capacitor), guardado en la nube y cooperativo.
 
 **Para ganar dinero** (como Core Keeper, que es de pago): la demo gratis hasta el primer jefe y el juego
 completo con un pago único. Si se hace gratis, que los anuncios sean opcionales y den premio, por ejemplo revivir

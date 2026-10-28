@@ -10,6 +10,8 @@ function crearJefes() {
     const base = { id, jefe: true, x: g.x * T + 8, y: g.y * T + 12, hw: 9, hh: 5, radio: d.radio, alto: 14, vida: d.vida, vidaMax: d.vida, estado: 'dormido', t: 0, flash: 0, def: 0, fase: 1, activo: false, ultimo: '', rafagas: 0, colores: ['#7a5238', '#a07450', '#ff8fa8'] };
     if (id === 'reina') Object.assign(base, { hw: 14, hh: 8, alto: 20, colores: ['#efe2bf', '#c9a878', '#7ac83a'], x: g.x * T + 8, y: g.y * T + 8 });
     if (id === 'ozmar') Object.assign(base, { hw: 6, hh: 4, alto: 16, colores: ['#5a2a7a', '#c080ff', '#2a1a3a'], x: g.x * T + 8, y: (g.y0 + 3) * T + 8 });
+    if (d.hw) Object.assign(base, { hw: d.hw, hh: d.hh, alto: d.alto, x: g.x * T + 8, y: g.y * T + 8 });
+    if (CREAR_JEFE[id]) CREAR_JEFE[id](base);
     if (J.jefesMuertos[id]) base.estado = 'muerto';
     J.jefes[id] = base;
   }
@@ -19,9 +21,13 @@ function reiniciarJefe(j) {
   j.vida = j.vidaMax; j.estado = 'dormido'; j.activo = false; j.enterrado = false; j.invisible = false; j.fase = 1;
   if (j.id === 'ozmar') { j.x = g.x * T + 8; j.y = (g.y0 + 3) * T + 8; }
   else if (j.id === 'reina') { j.x = g.x * T + 8; j.y = g.y * T + 8; }
+  else if (JEFES[j.id].hw) { j.x = g.x * T + 8; j.y = g.y * T + 8; }
   else { j.x = g.x * T + 8; j.y = g.y * T + 12; }
+  if (CREAR_JEFE[j.id]) CREAR_JEFE[j.id](j);
   J.proyectiles = []; J.avisosSuelo = [];
 }
+// Lo propio de cada guardián: al crearlo (o reiniciarlo), cada cuadro y al dibujarlo. titanes.js añade los suyos.
+const CREAR_JEFE = {}, ACTUALIZAR_JEFE = {}, DIBUJAR_JEFE = {};
 function lanzarRoca(x, y, a, vel, dano = 12) { lanzar('roca', x, y, a, vel, dano); }
 
 function actualizarJefes(dt) {
@@ -30,9 +36,10 @@ function actualizarJefes(dt) {
     j.t -= dt; j.flash -= dt;
     if (j.veneno) { j.veneno.t -= dt; j.venT = (j.venT || 0) - dt; if (j.venT <= 0) { j.venT = 0.5; j.vida -= j.veneno.dano; numero(j.x, j.y, j.veneno.dano, '#9aff6a', 40); } if (j.veneno.t <= 0) j.veneno = null; }
     if (j.estado === 'muriendo') { morirJefe(j, dt); continue; }
-    const g = M.guaridas[j.id], p = J.jug, dJug = Math.hypot(p.x / T - g.x, p.y / T - g.y);
+    const g = M.guaridas[j.id], p = J.jug, dJug = Math.hypot(p.x / T - g.x, p.y / T - g.y), dj = JEFES[j.id];
     if (j.estado === 'dormido') {
-      const radioDespierta = j.id === 'ozmar' ? 11 : j.id === 'reina' ? 9 : 7;
+      if (dj.invocado && !j.invocar) continue;
+      const radioDespierta = dj.despierta || (j.id === 'ozmar' ? 11 : j.id === 'reina' ? 9 : 7);
       if (j.id === 'ozmar' && dJug < 16) J.hito.vioOzmar = true;
       if (dJug < radioDespierta && J.estado === 'juego') {
         j.estado = 'despierta'; j.t = 1.6; j.activo = true; J.temblor = 1; Sonido.sfx.rugido();
@@ -40,11 +47,12 @@ function actualizarJefes(dt) {
       }
       continue;
     }
-    if (dJug > (j.id === 'ozmar' ? 22 : 18)) { reiniciarJefe(j); aviso('El guardián vuelve a su guarida'); continue; }
+    if (dJug > (dj.correa || (j.id === 'ozmar' ? 22 : 18))) { reiniciarJefe(j); aviso(dj.invocado ? 'Tamar vuelve al cielo' : 'El guardián vuelve a su guarida'); continue; }
     if (j.vida < j.vidaMax / 2 && j.fase === 1) { j.fase = 2; Sonido.sfx.rugido(); J.temblor = 0.6; aviso('¡Se enfurece!', null, '#ff6b6b'); }
     if (j.id === 'topo') actualizarTopo(j, dt);
     else if (j.id === 'reina') actualizarReina(j, dt);
-    else actualizarOzmar(j, dt);
+    else if (j.id === 'ozmar') actualizarOzmar(j, dt);
+    else if (ACTUALIZAR_JEFE[j.id]) ACTUALIZAR_JEFE[j.id](j, dt);
   }
 }
 function morirJefe(j) {
@@ -256,6 +264,6 @@ function palabrasCorazon() {
   if (!J.estatuas.topo) out.push(J.jefesMuertos.topo ? 'Pon el Cristal del Topo en su estatua.' : `Un topo enorme escarba al ${rumboA(g.topo.x, g.topo.y)}, cerca de aquí.`);
   if (!J.estatuas.reina) out.push(J.jefesMuertos.reina ? 'Pon el Cristal de la Reina en su estatua.' : `La Reina Larva anida en la arcilla, al ${rumboA(g.reina.x, g.reina.y)}. Necesitarás un pico de cobre.`);
   if (!J.estatuas.ozmar) out.push(J.jefesMuertos.ozmar ? 'Pon el Cristal de Ozmar en su estatua.' : `Ozmar espera en su trono, en las ruinas del ${rumboA(g.ozmar.x, g.ozmar.y)}. Sus muros piden un pico de estaño.`);
-  if (!out.length) out.push('Estoy despierto. La Gran Muralla tiembla: pronto se abrirá.');
+  if (!out.length) return palabrasCorazon2();
   return out;
 }

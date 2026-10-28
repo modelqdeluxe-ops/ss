@@ -67,7 +67,7 @@ function alTecla(e) {
   if (e.code === 'KeyE' || e.code === 'KeyI' || e.code === 'Tab') { abrirPanel('mochila'); e.preventDefault(); }
   if (e.code === 'KeyC') abrirPanel('crear');
   if (e.code === 'KeyM') abrirPanel('mapa');
-  if (e.code === 'KeyF' && J.estado === 'juego' && !J.panel) { const o = interactivoCerca(); if (o) interactuar(o); }
+  if (e.code === 'KeyF' && J.estado === 'juego' && !J.panel) { const o = interactivoCerca(); if (o) interactuar(o); else { const u = usoCercano(); if (u) u.fn(); } }
   if (e.code === 'Escape' || e.code === 'KeyP') { if (J.estado === 'juego') J.panel = J.panel ? null : 'pausa'; }
   if (e.code === 'Space' || TECLAS_MOV[e.code]) e.preventDefault();
 }
@@ -141,6 +141,8 @@ function infoObjeto(ctx, s, x, y, w, lineasMax = 3) {
   if (it.poder) extra.push(`Poder de minado ${it.poder}`);
   if (it.dano && it.tipo !== 'accesorio' && it.tipo !== 'municion') extra.push(`Daño ${it.dano}`);
   if (it.def) extra.push(`Defensa ${it.def}`);
+  if (it.tipo === 'mascota') extra.push(`Nivel ${nivelMascota(s.id)}`);
+  if (J.panel === 'tienda' && valorVenta(s.id)) extra.push(`Vale ${valorVenta(s.id)} monedas`);
   const txt = (extra.length ? extra.join(' · ') + '. ' : '') + (it.desc || '');
   partirTexto(txt, w).slice(0, lineasMax).forEach((l, k) => texto(ctx, l, x, y + 8 + k * 7, COL.suave));
 }
@@ -217,11 +219,17 @@ function dibujarHUD(ctx) {
   const icono = iconoAccion();
   if (icono) sprCentro(ctx, icono, ax, ay);
   boton(ax - 18, ay - 18, 36, 36, null, { mantener: true });
-  const o = !J.pesca && interactivoCerca();
+  const o = !J.pesca && interactivoCerca(), esp = !J.pesca && !o ? usoCercano() : null;
   if (o) {
-    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER' }[que] || 'USAR';
+    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR' }[que] || 'USAR';
     botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#3e6a2a' });
+  } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#3e6a2a' });
+  if (J.cartel) { // nombre de la región al entrar por primera vez
+    ctx.globalAlpha = Math.min(1, J.cartel.t, (3.5 - J.cartel.t) * 2);
+    texto(ctx, J.cartel.txt.toUpperCase(), LW / 2, Math.round(LH * 0.3), '#f6ecda', { alin: 'c', esc: 2, borde: COL.negro });
+    ctx.globalAlpha = 1;
   }
+  if (J.regreso) texto(ctx, 'Volviendo…', LW / 2, Math.round(LH * 0.62), '#a0e0ff', { alin: 'c', borde: COL.negro });
   if (UI.joy) {
     ctx.globalAlpha = 0.5; ctx.fillStyle = '#ffffff';
     anillo(ctx, UI.joy.ox, UI.joy.oy, 20);
@@ -281,14 +289,15 @@ function rejilla(ctx, inv, x, y, cols, marcada, al, desde = 0, hasta = inv.lengt
 
 function panelMochila(ctx) {
   fondoPanel(ctx);
-  const w = N_BARRA * 19 - 1 + 12, h = 4 * 19 + 96, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  const hab = UI.pestana === 'habilidades';
+  const w = N_BARRA * 19 - 1 + 12, h = hab ? Math.min(LH - 8, 28 + Object.keys(HABILIDADES).length * 14) : 4 * 19 + 96, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => { UI.selInv = -1; }, { mudo: true });
   pestanas(ctx, x + 5, y + 4, [['mochila', 'MOCHILA'], ['habilidades', 'HABILIDADES']]);
   cruz(ctx, x + w - 17, y + 3);
   if (UI.pestana === 'habilidades') { panelHabilidades(ctx, x, y, w, h); return; }
   // equipo
   const ey = y + 20;
-  const vacios = { casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre' };
+  const vacios = { casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
   RANURAS_EQUIPO.forEach((r, k) => {
     const ex = x + 6 + k * 19;
     ranura(ctx, ex, ey, J.equipo[r], false, { fondo: '#2e2018', vacio: vacios[r] });
@@ -298,8 +307,8 @@ function panelMochila(ctx) {
     }, { mudo: true });
   });
   const st = J.st || calcularStats();
-  texto(ctx, `Vida ${st.vidaMax}  Def ${st.def}`, x + 6 + 5 * 19 + 4, ey + 2, COL.texto);
-  texto(ctx, `Vel ${Math.round(st.vel * 100)}%  Daño ${Math.round(st.dano * 100)}%`, x + 6 + 5 * 19 + 4, ey + 10, COL.suave);
+  texto(ctx, `Vida ${st.vidaMax} Def ${st.def}`, x + 6 + 6 * 19 + 3, ey + 2, COL.texto);
+  texto(ctx, `Vel ${Math.round(st.vel * 100)}% Daño ${Math.round(st.dano * 100)}%`, x + 6 + 6 * 19 + 3, ey + 10, COL.suave);
   const gy = ey + 23;
   rejilla(ctx, J.inv, x + 6, gy, N_BARRA, UI.selInv, tocarRanura);
   const s = UI.selInv >= 0 ? J.inv[UI.selInv] : null, iy = gy + 4 * 19 + 5;
@@ -309,7 +318,7 @@ function panelMochila(ctx) {
     const mini = (txt, fn) => { const bw = anchoTexto(txt) + 8; bx -= bw; botonTexto(ctx, bx, iy - 3, bw, 11, txt, fn); bx -= 3; };
     mini('SOLTAR', () => { const t = J.inv[UI.selInv]; if (t) { soltar(J.jug.x + J.jug.fx * 20, J.jug.y + J.jug.fy * 20, t.id, t.n); J.inv[UI.selInv] = null; UI.selInv = -1; } });
     const it = asegurarItem(s.id);
-    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio') mini('PONER', () => ponerEquipo(UI.selInv));
+    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio' || it.tipo === 'mascota') mini('PONER', () => ponerEquipo(UI.selInv));
     if (it.tipo === 'comida') mini('COMER', () => { comer(J.inv[UI.selInv]); if (!J.inv[UI.selInv]) UI.selInv = -1; });
   } else partirTexto('Toca algo para verlo; toca otro hueco para moverlo. La armadura se pone tocándola y luego su hueco.', w - 12).slice(0, 3).forEach((l, k) => texto(ctx, l, x + 6, iy + k * 7, COL.suave));
 }
@@ -339,8 +348,8 @@ function panelHabilidades(ctx, x, y, w) {
     texto(ctx, hb.nombre, x + 8, fy, COL.texto);
     texto(ctx, 'Nv ' + n, x + 82, fy, COL.oro);
     barra(ctx, x + 104, fy, w - 116, 3, n >= NIVEL_MAX ? 1 : xp / xpNivel(n), '#6ab0ff', '#14243a');
-    texto(ctx, hb.desc, x + 8, fy + 7, COL.suave);
-    fy += 16;
+    texto(ctx, hb.desc, x + 8, fy + 6, COL.suave);
+    fy += 14;
   }
 }
 
@@ -495,7 +504,8 @@ function dibujarPanel(ctx) {
   else if (J.panel === 'pausa') panelPausa(ctx);
   else if (J.panel === 'corazon') panelCorazon(ctx);
   else if (J.panel === 'muerto') panelMensaje(ctx, 'TE DESMAYASTE', 'Te desmayas en la oscuridad. Lo que llevabas sigue contigo.', 'DESPERTAR', revivir, '#ff6b6b');
-  else if (J.panel === 'fin') panelMensaje(ctx, 'EL CORAZÓN DESPIERTA', 'Los tres guardianes descansan y el Corazón late con fuerza. Más allá, la Gran Muralla empieza a abrirse: la Selva Esmeralda llega en la próxima fase. Tu mundo sigue aquí: termina tu base, cultiva, pesca y prepárate.', 'SEGUIR', () => { J.panel = null; guardarPartida(); });
+  else if (J.panel === 'fin') panelMensaje(ctx, 'EL CORAZÓN DESPIERTA', 'Los tres guardianes descansan y el Corazón late con fuerza. Habla con él: te dirá cómo abrir la Gran Muralla. Al otro lado espera la Selva Esmeralda.', 'SEGUIR', () => { J.panel = null; guardarPartida(); });
+  else if (PANELES[J.panel]) PANELES[J.panel](ctx);
 }
 
 // ---------------------------------------------------------------- pantalla de título
@@ -516,6 +526,7 @@ function dibujarTitulo(ctx, hayPartida) {
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
   botonTexto(ctx, x, y, w, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
-  const pie = partirTexto('Fase 1 · izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
+  if (hayPartida && !leerPartida()) texto(ctx, 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
+  const pie = partirTexto('Fase 2: la Selva Esmeralda · izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
   pie.forEach((l, k) => texto(ctx, l, LW / 2, LH - 10 - (pie.length - 1 - k) * 8, COL.suave, { alin: 'c', borde: COL.negro }));
 }

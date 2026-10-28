@@ -6,13 +6,14 @@ const J = {
   estado: 'titulo', panel: null, t: 0, jug: null, enemigos: [], jefes: {}, proyectiles: [], disparos: [], botines: [], efectos: [], charcos: [], avisosSuelo: [],
   particulas: [], numeros: [], avisos: [], inv: [], sel: 0, hito: {}, temblor: 0, pausaGolpe: 0,
   entrada: { mx: 0, my: 0 }, cam: { x: 0, y: 0 }, objetivo: 0, aparecer: 0, guardadoT: 0, tiempoMundo: 0,
-  equipo: { casco: null, peto: null, botas: null, acc1: null, acc2: null }, hab: {}, buffs: [], st: null,
+  equipo: { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, hab: {}, buffs: [], st: null, bombas: [],
+  mascotas: {}, altares: {}, murallaAbierta: false, regreso: null,
   jefesMuertos: {}, estatuas: {}, cama: null, cofreAbierto: null, olla: null, pesca: null, corazonDespierto: false,
   cuenta(id) { let n = 0; for (const s of this.inv) if (s && s.id === id) n += s.n; return n; },
 };
 const N_INV = 40, N_BARRA = 10;
-const RANURAS_EQUIPO = ['casco', 'peto', 'botas', 'acc1', 'acc2'];
-const TIPO_RANURA = { casco: 'casco', peto: 'peto', botas: 'botas', acc1: 'accesorio', acc2: 'accesorio' };
+const RANURAS_EQUIPO = ['casco', 'peto', 'botas', 'acc1', 'acc2', 'mascota'];
+const TIPO_RANURA = { casco: 'casco', peto: 'peto', botas: 'botas', acc1: 'accesorio', acc2: 'accesorio', mascota: 'mascota' };
 
 // ---------------------------------------------------------------- objetos y platos
 
@@ -88,13 +89,15 @@ function ganarXP(h, cant) {
   }
 }
 function calcularStats() {
-  const s = { vidaMax: 100, def: 0, vel: 1, dano: 1, danoDist: 1, minado: 1, critico: 0.08, luz: 0, regen: 0, suerte: 0 };
+  const s = { vidaMax: 100, def: 0, vel: 1, dano: 1, danoDist: 1, minado: 1, critico: 0.08, luz: 0, regen: 0, suerte: 0, pesca: 0 };
   s.vidaMax += nivel('vitalidad'); s.vel += nivel('carrera') * 0.005;
   s.dano += nivel('combate') * 0.01; s.danoDist += nivel('distancia') * 0.01; s.minado += nivel('mineria') * 0.01;
   for (const r of RANURAS_EQUIPO) {
     const e = J.equipo[r]; if (!e) continue;
     const it = ITEMS[e.id];
+    if (it.tipo === 'mascota') { if (e.id === 'mascota_luci') { s.luz += 3; s.regen += 0.4; } continue; }
     s.def += it.def || 0; s.vel += it.vel || 0; s.vidaMax += it.vidaMax || 0; s.minado += it.minado || 0; s.critico += it.critico || 0; s.luz += it.luz || 0;
+    s.regen += it.regen || 0; s.suerte += it.suerte || 0; s.pesca += it.pesca || 0;
     if (it.tipo === 'accesorio' && it.dano) { s.dano += it.dano; s.danoDist += it.dano; }
   }
   for (const b of J.buffs) for (const k in b.efectos) {
@@ -102,6 +105,7 @@ function calcularStats() {
     if (k === 'vidaMax') s.vidaMax += v; else if (k === 'defensa') s.def += v; else if (k === 'vel') s.vel += v;
     else if (k === 'dano') { s.dano += v; s.danoDist += v; } else if (k === 'minado') s.minado += v;
     else if (k === 'luz') s.luz += v; else if (k === 'regen') s.regen += v; else if (k === 'suerte') s.suerte += v;
+    else if (k === 'critico') s.critico += v;
   }
   J.st = s;
   return s;
@@ -291,11 +295,14 @@ function interactuar(o) {
   if (que === 'crear') { J.panel = 'crear'; UI.scroll = 0; return; }
   if (que === 'cofre') {
     if (!o.datos) o.datos = { inv: new Array(30).fill(null) };
-    J.cofreAbierto = o; J.panel = 'cofre'; Sonido.sfx.colocar(); return;
+    J.cofreAbierto = o; J.panel = 'cofre'; Sonido.sfx.colocar();
+    if (o.datos.moho) J.hito.cofreMoho = true;
+    return;
   }
   if (que === 'olla') { J.olla = o; if (!o.datos) o.datos = { a: null, b: null }; J.panel = 'olla'; return; }
   if (que === 'cama') { J.cama = { x: o.x, y: o.y }; aviso('Tu cama: aquí despertarás'); Sonido.sfx.crear(); return; }
-  if (que === 'corazon') { J.panel = 'corazon'; return; }
+  if (que === 'corazon') { J.panel = 'corazon'; if (J.corazonDespierto) J.hito.hablo2 = true; return; }
+  if (INTERACCIONES[que]) { INTERACCIONES[que](o); return; }
   if (que === 'estatua') {
     const jefe = o.datos && o.datos.jefe, cristal = JEFES[jefe].cristal;
     if (o.extra) { aviso(`La estatua de ${JEFES[jefe].nombre.toLowerCase()} brilla`); return; }
@@ -327,10 +334,12 @@ function usar(apunte) {
   if (it && it.tipo === 'regadera') { regar(tx, ty); return; }
   if (it && it.tipo === 'cana') { lanzarCana(it); return; }
   if (it && it.tipo === 'arco') { disparar(it); return; }
+  if (it && it.tipo === 'bomba') { lanzarBomba(it, s); return; }
+  if (it && it.tipo === 'regreso') { usarRegreso(s); return; }
 
   // Herramienta: la que llevas o, si llevas otra cosa, la mejor del inventario según lo que tengas delante.
   const enMano = it && (it.tipo === 'pico' || it.tipo === 'espada' || it.tipo === 'maza') ? it : null;
-  const enemigo = enemigoCerca(p, 30);
+  const enemigo = enemigoCerca(p, it && it.alcance ? it.alcance + 4 : 30);
   const hayMuro = muroEn(tx, ty) > 0, obj = objetoEn(tx, ty);
   let herr = enMano;
   if (!herr) herr = enemigo ? mejor('espada') || mejor('maza') || mejor('pico') : mejor('pico') || mejor('espada') || mejor('maza');
@@ -345,7 +354,7 @@ function usar(apunte) {
   Sonido.sfx.zas();
   efecto('tajo', 3, p.x, p.y, 8, herr.vel * 0.8, { dir: p.dir });
   const maza = herr.tipo === 'maza';
-  atacar(herr.dano * J.st.dano, maza ? 30 : herr.tipo === 'espada' ? 27 : 20, maza ? 1.6 : herr.tipo === 'espada' ? 1.35 : 1.0, { maza, veneno: herr.veneno });
+  atacar(herr.dano * J.st.dano, herr.alcance || (maza ? 30 : herr.tipo === 'espada' ? 27 : 20), maza ? 1.6 : herr.tipo === 'espada' ? 1.35 : 1.0, { maza, veneno: herr.veneno });
 }
 
 function comer(s) {
@@ -397,7 +406,7 @@ function arar(it, tx, ty) {
   const p = J.jug;
   p.golpeT = 0.35; p.swing = 0.35; p.swingDur = 0.35; p.swingItem = it.icono;
   const casillas = [[tx, ty]];
-  if (it.area) { const px = Math.round(-p.fy), py = Math.round(p.fx); casillas.push([tx + px, ty + py], [tx - px, ty - py]); }
+  if (it.area) { const px = Math.round(-p.fy), py = Math.round(p.fx); for (let k = 1; k <= it.area; k++) casillas.push([tx + px * k, ty + py * k], [tx - px * k, ty - py * k]); }
   let alguna = false;
   for (const [x, y] of casillas) {
     if (!enMundo(x, y) || muroEn(x, y) || objetoEn(x, y)) continue;
@@ -408,13 +417,16 @@ function arar(it, tx, ty) {
   if (alguna) { Sonido.sfx.picar(); ganarXP('jardineria', 1); } else aviso('Aquí no se puede arar');
 }
 function regar(tx, ty) {
-  const p = J.jug, o = objetoEn(tx, ty);
+  const p = J.jug, s = J.inv[J.sel], area = (s && ITEMS[s.id] && ITEMS[s.id].area) || 0;
   p.golpeT = 0.4;
-  if (o && o.tipo === 'cultivo') {
-    o.datos.regado = true;
-    particulas(tx * T + 8, ty * T + 8, 10, ['#6ab8ff', '#a8dcff', '#ffffff'], { vel: 25, alto: 10 });
-    Sonido.sfx.recoger(0); ganarXP('jardineria', 0.5);
-  } else aviso('Riega un cultivo');
+  let alguno = false;
+  for (let y = ty - area; y <= ty + area; y++) for (let x = tx - area; x <= tx + area; x++) {
+    const o = objetoEn(x, y);
+    if (!o || o.tipo !== 'cultivo') continue;
+    o.datos.regado = true; alguno = true;
+    particulas(x * T + 8, y * T + 8, 6, ['#6ab8ff', '#a8dcff', '#ffffff'], { vel: 25, alto: 10 });
+  }
+  if (alguno) { Sonido.sfx.recoger(0); ganarXP('jardineria', 0.5); } else aviso('Riega un cultivo');
 }
 
 function picar(tx, ty, pico) {
@@ -451,8 +463,10 @@ function golpearObjeto(o, herr) {
   Sonido.sfx.golpe();
   particulas(cx, cy, 5, info.planta ? ['#8a5a36', '#c28a52', '#4f9a64'] : ['#9aa6b8', '#c28a52'], { vel: 40 });
   o.sacude = 0.15;
+  if (info.nido && Math.random() < 0.35 && J.enemigos.length < 14) { const e = nuevaCriatura(info.nido, cx + (Math.random() - 0.5) * 16, cy + 8); if (!choca(e.x, e.y, e.hw, e.hh)) J.enemigos.push(e); }
   if (o.vida <= 0) {
     quitarObjeto(o.x, o.y);
+    if (info.explota) estallido(cx, cy + 4, 0.7, 40, { quien: 'hongo' });
     if (info.suelta) soltarLista(cx, cy + 4, info.suelta);
     if (o.tipo === 'cama' && J.cama && J.cama.x === o.x && J.cama.y === o.y) J.cama = null;
     efecto('humo', 4, cx, cy + 6, 0, 0.4);
@@ -486,7 +500,7 @@ function herir(e, dano, kx, ky, o = {}) {
   e.vida -= real; e.flash = 0.1; e.golpeadoT = J.t;
   efecto('chispazo', 3, e.x - kx * e.radio * 0.6, e.y + 1, e.jefe ? 20 : 7, 0.2);
   if (o.habilidad) ganarXP(o.habilidad, real * 0.25);
-  if (!e.jefe) {
+  if (!e.jefe && !CRIATURAS[e.tipo].fija) {
     const k = o.maza ? 220 : 115;
     e.kbx = kx * k; e.kby = ky * k;
     if (o.maza) { e.aturdido = 0.7; }
@@ -507,16 +521,20 @@ function disparar(it) {
   const p = J.jug;
   let municion = null;
   if (!it.magico) {
-    municion = J.cuenta('flecha_cobre') ? 'flecha_cobre' : J.cuenta('flecha') ? 'flecha' : null;
+    municion = ['flecha_carmesi', 'flecha_aguijon', 'flecha_cobre', 'flecha'].find((f) => J.cuenta(f)) || null;
     if (!municion) { aviso('No te quedan flechas'); p.golpeT = 0.4; return; }
     quitar(municion, 1);
   }
   const obj = enemigoCerca(p, 150, true);
   if (obj) mirarA(p, obj.x, obj.y - 2);
   p.golpeT = it.vel; p.swing = it.vel * 0.6; p.swingDur = it.vel * 0.6; p.swingItem = it.icono;
-  const a = Math.atan2(p.fy, p.fx), vel = it.magico ? 150 : 230;
-  const dano = (it.dano + (municion ? ITEMS[municion].dano : 0)) * J.st.danoDist;
-  J.disparos.push({ x: p.x + p.fx * 6, y: p.y - 1 + p.fy * 4, vx: Math.cos(a) * vel, vy: Math.sin(a) * vel, dano, vida: it.magico ? 2.2 : 1.1, magico: !!it.magico, obj, municion });
+  const a0 = Math.atan2(p.fy, p.fx), vel = it.magico ? 150 : 230;
+  const dano = (it.dano + (municion ? ITEMS[municion].dano : 0)) * J.st.danoDist, veneno = municion && ITEMS[municion].veneno;
+  const n = it.multi || 1;
+  for (let k = 0; k < n; k++) {
+    const a = a0 + (k - (n - 1) / 2) * 0.2;
+    J.disparos.push({ x: p.x + p.fx * 6, y: p.y - 1 + p.fy * 4, vx: Math.cos(a) * vel, vy: Math.sin(a) * vel, dano, vida: it.magico ? 2.2 : 1.1, magico: !!it.magico, obj: k === (n - 1) / 2 || n === 1 ? obj : null, municion: k ? null : municion, veneno });
+  }
   Sonido.sfx.zas();
 }
 function actualizarDisparos(dt) {
@@ -537,7 +555,7 @@ function actualizarDisparos(dt) {
       if (e.vida <= 0 || e.enterrado || e.invisible) continue;
       if (Math.hypot(e.x - d.x, e.y - 4 - d.y) < e.radio + 3) {
         const v = Math.hypot(d.vx, d.vy) || 1;
-        herir(e, d.dano, d.vx / v, d.vy / v, { habilidad: 'distancia' });
+        herir(e, d.dano, d.vx / v, d.vy / v, { habilidad: 'distancia', veneno: d.veneno });
         d.vida = 0;
         break;
       }

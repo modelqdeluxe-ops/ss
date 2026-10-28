@@ -20,7 +20,10 @@ Lo que tiene que sentirse en cada minuto:
 
 ## 2. El mundo
 
-El mundo es un disco de cuevas alrededor del Corazón. Las regiones van en anillos y separadas por zanjas.
+El mundo es un disco de cuevas de 640×640 casillas alrededor del Corazón. El anillo interior (radio 142) tiene
+tres regiones; detrás de la Gran Muralla, el anillo exterior (radio 147–296) está partido en tres sectores de
+120°, como en Core Keeper: la Selva Esmeralda, el Mar Hundido y el Desierto del Origen. Los sectores que aún no
+están hechos son «roca dormida» que no se rompe.
 
 | Anillo | Región | Suelo y paredes | Metal | Guardián |
 |---|---|---|---|---|
@@ -29,13 +32,14 @@ El mundo es un disco de cuevas alrededor del Corazón. Las regiones van en anill
 | 2, un lado | **Cuevas de Arcilla** | arcilla, capullos, colmenas | Estaño | **Reina Larva** (en una colmena) |
 | 2, el otro lado | **Ruinas Olvidadas** | piedra labrada, salas y laberintos | Hierro | **Ozmar el Corrompido** (sala del trono) |
 | Borde | **La Gran Muralla** | raíces de piedra que no se rompen | — | Se abre cuando el Corazón despierta |
-| 3 | **Selva Esmeralda** | hierba, árboles, flores | Carmesí | **Tamar, Titán del Cielo** y **Hiedra Viva** |
-| 4 | **Mar Hundido** | arena de playa, algas, agua | Abisalita | **Abisal, Titán del Mar** |
-| 5 | **Desierto del Origen** | arena, templos, lava | Astralita | **Ra-Sol, Titán de Arena** y **Magmo** |
-| 6 | **Frontera Cristalina** | cristal | Solarita | Arena de los antiguos |
+| Exterior, sector 1 | **Selva Esmeralda** (fase 2) | hierba, espino, piedra musgosa, árboles, flores | Carmesí | **Tamar, Titán del Cielo** y **Hiedra Viva** |
+| Exterior, sector 2 | **Mar Hundido** (fase 3) | arena de playa, algas, agua | Abisalita | **Abisal, Titán del Mar** |
+| Exterior, sector 3 | **Desierto del Origen** (fase 4) | arena, templos, lava | Astralita | **Ra-Sol, Titán de Arena** y **Magmo** |
+| Más allá | **Frontera Cristalina** (fase 5) | cristal | Solarita | Arena de los antiguos |
 
 El Corazón dice hacia dónde queda cada región («la Selva Esmeralda está al noreste»). Con sus tres estatuas
-activas, la Gran Muralla se abre.
+activas despierta; hablas con él y, al poner la mano en la Gran Muralla, se derrumba entera. Un camino de grava
+lleva desde el anillo interior hasta la Muralla en la dirección de la Selva.
 
 ## 3. Progresión por metal
 
@@ -115,3 +119,33 @@ mínimo), armas, armadura (casco, peto, botas), una **mesa de trabajo** y un **y
 6. **App para Android e iOS**, guardado en la nube y cooperativo.
 
 Cada fase se entrega completa en lo suyo: probada, sin errores y con todo dibujado.
+
+## 9. Fase 2 en detalle: la Selva Esmeralda
+
+- **La Selva** ocupa un sector de 120° del anillo exterior (unas 65.000 casillas, más que todo el anillo
+  interior). Es más abierta y recibe luz desde arriba: claros con sol y rayos, hierba alta, flores, luciérnagas y
+  hojas que caen. Paredes de hierba (con mineral carmesí), espino y piedra musgosa, que piden el pico de hierro.
+  Lagos grandes con peces propios.
+- **Subzonas**: tres praderas de flores (panales de avispas, flores del sol que alumbran), la Mazmorra del Moho
+  (3×3 salas de muros que no se rompen, tentáculos, cofres y el gran cofre del centro), el templo del cielo de
+  Tamar, el jardín envenenado de Hiedra Viva, dos aldeas de grutos con casas, cofres y huerto, siete campamentos y
+  ocho ruinas con tablillas que cuentan la historia.
+- **Metal carmesí**: pico (poder 80), espada, maza, arco, flechas, caña, azada y regadera grandes, armadura,
+  anillo, mesa, yunque y farol. Rocas grandes con mena de cada metal.
+- **Criaturas**: babosa venenosa, gruto jardinero (semillas que estallan en enredaderas), gruto cazador (arco),
+  planta trampa, avispa esmeralda, escarabajo de musgo (embiste y se aturde contra las paredes), tentáculo y larva
+  del moho. Las fijas (tentáculos y plantas) esperan en su sitio y vuelven a salir al rato.
+- **Titanes**: Hiedra Viva (filas de raíces, esporas venenosas, látigo y brotes) y Tamar (abanicos de plumas,
+  vuelo y picado, rayos y tornados; baja cuando haces la Ofrenda del cielo). Sus gemas van a dos altares junto al
+  Corazón: con las dos, se cierra la fase y el Corazón anuncia el mar y el desierto.
+- **Mercaderes**: una casa cerrada de hasta 64 casillas con cama y un ídolo: Barbas (materiales y semillas),
+  Marina (pesca) y el Encapuchado (huevos, reliquias, piedras de regreso). Se paga con monedas antiguas, que se
+  ganan vendiéndoles cosas o en cofres y cajas. Reponen cada 25–35 minutos.
+- **Mascotas**: cuatro huevos que se incuban (Topito, Babosita, Luci y Mohito), un hueco de mascota en el equipo y
+  niveles con lo que derrotan cerca.
+- **Bombas** que rompen paredes y hongos explosivos que estallan al golpearlos. **Piedra de regreso** para volver a
+  la cama. **Muebles de selva**: sillas, mesas, estanterías, lámparas de pie, vallas, banderines, macetas.
+- **Habilidades nuevas**: Explosivos y Doma. **Cocina**: cinco ingredientes y cuatro peces nuevos.
+- **Las partidas de la fase 1** pasan al mundo nuevo: personaje, mochila, equipo, habilidades, jefes vencidos y
+  estatuas; lo de los cofres y los muebles puestos llega en cofres junto al Corazón.
+

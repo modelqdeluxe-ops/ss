@@ -1,7 +1,7 @@
 'use strict';
 // El mundo: generación por semilla del anillo interior (Las Raíces en el centro; Cuevas de Arcilla y Ruinas
-// Olvidadas a cada lado; la Gran Muralla en el borde), casillas, luz (lo fijo guardado en caché y lo que se
-// mueve cada cuadro), mapa de lo explorado y guardado.
+// Olvidadas a cada lado; la Gran Muralla en el borde; el anillo exterior está en selva.js), casillas, luz (lo fijo
+// guardado en caché y lo que se mueve cada cuadro), mapa de lo explorado y guardado.
 
 let M = null;
 
@@ -43,7 +43,7 @@ function generarMundo(sem) {
   M = {
     sem, lado, muro: new Uint8Array(NN), mena: new Uint8Array(NN), piso: new Uint8Array(NN), region: new Uint8Array(NN), visto: new Uint8Array(NN),
     bloqueo: new Uint8Array(NN), objetos: new Map(), luces: new Set(), danos: new Map(), guaridas: {}, estatuas: {},
-    mapa: null, mapaSucio: true, verLuz: 0, rayos: [],
+    mapa: null, mapaSucio: true, verLuz: 0, rayos: [], soles: [], fijas: [], altares: {}, mercaderes: [],
   };
   const { muro, mena, piso, region } = M;
   const regionDe = (x, y, d) => {
@@ -205,6 +205,8 @@ function generarMundo(sem) {
     const o = ponerObjeto(x, y, 'estatua', 0); o.datos = { jefe }; M.estatuas[jefe] = { x, y };
   });
   for (const [dx, dy] of [[-3, 3], [3, 3], [-3, -3], [3, -3], [-6, 0], [6, 0]]) ponerObjeto(CENTRO + dx, CENTRO + dy, 'antorcha');
+  // los altares de los titanes de la Selva (fase 2), a los lados de la entrada del sur
+  for (const [titan, dx] of [['hiedra', -4], ['tamar', 4]]) { const o = ponerObjeto(CENTRO + dx, CENTRO + 5, 'altar_titan'); o.datos = { titan }; M.altares[titan] = { x: CENTRO + dx, y: CENTRO + 5 }; }
 
   // ---- cosas por las salas: vasijas, columnas, cofres con botín
   for (const s of salas) {
@@ -258,6 +260,7 @@ function generarMundo(sem) {
     const a = r() * Math.PI * 2, d = 12 + r() * 14, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d), i = idx(x, y);
     if (!muro[i] && !M.objetos.has(i) && piso[i] !== SUELO.RUINA && piso[i] !== SUELO.AGUA) { ponerObjeto(x, y, puestas % 2 ? 'planta_fibra' : 'arbusto'); puestas++; }
   }
+  generarExterior(sem);
   M.mapa = null;
   return M;
 }
@@ -369,14 +372,15 @@ function calcularLuz(v, fuentesFijas, dinamicas, ambiente, parpadeo) {
   for (const f of dinamicas) bfsLuz(f, X0, Y0, W, H, R, G, B, LUZ.marca, LUZ.cola, LUZ);
   const vw = v.x1 - v.x0 + 3, vh = v.z1 - v.z0 + 3;
   if (!LUZ.datos || LUZ.datos.length < vw * vh * 4) LUZ.datos = new Uint8Array(vw * vh * 4);
-  const d = LUZ.datos, [ar, ag, ab] = ambiente, k = 255 / Math.sqrt(2.4);
+  const d = LUZ.datos, k = 255 / Math.sqrt(2.4);
+  void ambiente;
   for (let y = 0; y < vh; y++) for (let x = 0; x < vw; x++) {
     const wx = v.x0 - 1 + x, wy = v.z0 - 1 + y, li = (wy - Y0) * W + (wx - X0), o = (y * vw + x) * 4;
     let r = R[li], g = G[li], b = B[li];
     if (enMundo(wx, wy)) {
       const i = idx(wx, wy);
       if (!M.visto[i] && (r > 0.16 || g > 0.16 || b > 0.16)) { M.visto[i] = 1; marcarMapa(i); }
-      if (M.visto[i]) { r += ar; g += ag; b += ab; }
+      if (M.visto[i]) { const am = AMBIENTE_REGION[M.region[i]]; r += am[0]; g += am[1]; b += am[2]; }
     }
     d[o] = Math.min(255, Math.sqrt(r) * k); d[o + 1] = Math.min(255, Math.sqrt(g) * k); d[o + 2] = Math.min(255, Math.sqrt(b) * k); d[o + 3] = 255;
   }
@@ -431,8 +435,9 @@ function desRle(b64, n) {
 }
 function datosMundo() {
   return {
-    v: 3, sem: M.sem, muro: rle(M.muro), mena: rle(M.mena), piso: rle(M.piso), visto: rle(M.visto),
+    v: 4, n: N_MUNDO, sem: M.sem, muro: rle(M.muro), mena: rle(M.mena), piso: rle(M.piso), visto: rle(M.visto),
     objetos: [...M.objetos.values()].map((o) => [o.x, o.y, o.tipo, o.extra, o.datos || null]),
+    fijas: M.fijas.map((f) => f.muerto || 0), mercaderes: M.mercaderes.map((m) => ({ ...m, ent: undefined })),
   };
 }
 function cargarMundo(g) {
@@ -442,6 +447,8 @@ function cargarMundo(g) {
   if (g.piso) M.piso = desRle(g.piso, NN);
   M.objetos.clear(); M.luces.clear();
   for (const [x, y, tipo, extra, datos] of g.objetos) { if (!OBJ[tipo]) continue; const o = ponerObjeto(x, y, tipo, extra); if (datos) o.datos = datos; }
+  if (g.fijas) g.fijas.forEach((t, k) => { if (M.fijas[k]) M.fijas[k].muerto = t; });
+  M.mercaderes = g.mercaderes || [];
   M.mapa = null;
   GL.olvidarTodo(); cambioLuz();
 }

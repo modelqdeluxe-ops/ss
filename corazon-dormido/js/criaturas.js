@@ -6,9 +6,11 @@ function nuevaCriatura(tipo, x, y) {
   const c = CRIATURAS[tipo];
   return {
     tipo, x, y, hw: Math.min(7, c.radio), hh: 3, radio: c.radio, vida: c.vida, vidaMax: c.vida, def: c.def || 0, t: Math.random(), estado: 'anda',
-    z: 0, vz: 0, kbx: 0, kby: 0, flash: 0, mira: 1, colores: c.colores, alto: c.radio > 8 ? 12 : 6, toqueT: 0, cd: 1 + Math.random() * 2, aturdido: 0,
+    z: c.vuela ? 10 : 0, vz: 0, kbx: 0, kby: 0, flash: 0, mira: 1, colores: c.colores, alto: c.radio > 8 ? 12 : 6, toqueT: 0, cd: 1 + Math.random() * 2, aturdido: 0,
   };
 }
+// Conductas nuevas (fauna.js las añade): f(e, c, r, lejos, dt). r: rumbo hacia el jugador o null.
+const CONDUCTAS = {};
 
 // Campo de distancias desde el jugador: las criaturas bajan por él y rodean las paredes (y no cruzan puertas).
 const FLUJO = { R: 22, x0: 0, y0: 0, W: 45, dist: new Int16Array(45 * 45), cola: new Int32Array(45 * 45), t: 0 };
@@ -60,9 +62,9 @@ function veJugador(e) {
 
 function lanzar(tipo, x, y, a, vel, dano, o = {}) { J.proyectiles.push({ tipo, x, y, vx: Math.cos(a) * vel, vy: Math.sin(a) * vel, dano, vida: o.vida || 2.5, z: o.z || 8, vz: o.vz || 0, busca: o.busca || 0, ...o }); }
 // Glóbulo que vuela en arco hasta un punto y deja un charco de ácido.
-function escupir(x, y, tx, ty, dano) {
+function escupir(x, y, tx, ty, dano, tipoCharco = 'acido') {
   const t = 0.8, vx = (tx - x) / t, vy = (ty - y) / t;
-  J.proyectiles.push({ tipo: 'acido', x, y, vx, vy, dano, vida: t, z: 10, vz: 120, g: 300, charco: true });
+  J.proyectiles.push({ tipo: tipoCharco === 'veneno' ? 'semilla_veneno' : 'acido', x, y, vx, vy, dano, vida: t, z: 10, vz: 120, g: 300, charco: tipoCharco });
 }
 function actualizarProyectiles(dt) {
   const p = J.jug;
@@ -74,11 +76,14 @@ function actualizarProyectiles(dt) {
     }
     r.x += r.vx * dt; r.y += r.vy * dt; r.vida -= dt;
     if (r.g) { r.vz -= r.g * dt; r.z = Math.max(0, r.z + r.vz * dt); }
-    if (r.charco) {
-      if (r.vida <= 0) { J.charcos.push({ x: r.x, y: r.y, t: 4.5, dano: r.dano }); particulas(r.x, r.y, 8, ['#9ae04a', '#cfff8a', '#4a8a2a'], { vel: 40 }); }
+    if (r.charco || r.alCaer) {
+      if (r.vida <= 0) {
+        if (r.charco) { const ven = r.charco === 'veneno'; J.charcos.push({ x: r.x, y: r.y, t: ven ? 6 : 4.5, dano: r.dano, tipo: ven ? 'veneno' : undefined }); particulas(r.x, r.y, 8, ven ? ['#a060e0', '#e8c0ff', '#6a2aa0'] : ['#9ae04a', '#cfff8a', '#4a8a2a'], { vel: 40 }); }
+        if (r.alCaer) r.alCaer(r);
+      }
       continue;
     }
-    if (r.tipo !== 'pilar' && solido(Math.floor(r.x / T), Math.floor(r.y / T))) { r.vida = 0; particulas(r.x, r.y, 4, r.tipo === 'orbe' ? ['#c080ff', '#40204a'] : ['#8a7a6a', '#5e5046'], { vel: 40 }); }
+    if (r.tipo !== 'pilar' && !r.vuela && solido(Math.floor(r.x / T), Math.floor(r.y / T))) { r.vida = 0; particulas(r.x, r.y, 4, r.tipo === 'orbe' ? ['#c080ff', '#40204a'] : ['#8a7a6a', '#5e5046'], { vel: 40 }); }
     else if (r.tipo !== 'pilar' && Math.hypot(r.x - p.x, r.y - (p.y - 6)) < 8) { r.vida = 0; danarJugador(r.dano, { x: r.x - r.vx, y: r.y - r.vy }); }
   }
   J.proyectiles = J.proyectiles.filter((r) => r.vida > 0);
@@ -111,6 +116,9 @@ function morirCriatura(e) {
   efecto('humo', 4, e.x, e.y + 1, 0, 0.5);
   soltarLista(e.x, e.y, c.botin);
   Sonido.sfx.muere();
+  if (e.fija !== undefined && M.fijas[e.fija]) M.fijas[e.fija].muerto = J.tiempoMundo || 1;
+  if (c.esporas) J.charcos.push({ x: e.x, y: e.y, t: 5, dano: c.dano, tipo: 'espora' });
+  if (J.mascotaEnt && Math.hypot(J.mascotaEnt.x - e.x, J.mascotaEnt.y - e.y) < 200) ganarXPMascota(c.xp || 5);
   if (c.divide) for (let k = 0; k < 2; k++) { const h = nuevaCriatura(c.divide, e.x + (k ? 6 : -6), e.y); if (!choca(h.x, h.y, h.hw, h.hh)) J.enemigos.push(h); }
 }
 
@@ -128,12 +136,13 @@ function actualizarCriaturas(dt) {
     const lejos = Math.hypot(p.x - e.x, p.y - e.y), r = lejos < 240 ? rumbo(e) : null;
     if (r) e.mira = r.x >= 0 ? 1 : -1;
     const vel = c.vel;
-    switch (c.conducta) {
+    if (CONDUCTAS[c.conducta]) CONDUCTAS[c.conducta](e, c, r, lejos, dt);
+    else switch (c.conducta) {
       case 'salta':
         if (e.z > 0 || e.vz > 0) {
           e.vz -= 420 * dt; e.z += e.vz * dt;
           if (e.saltoX !== undefined) mover(e, e.saltoX * dt, e.saltoY * dt);
-          if (e.z <= 0) { e.z = 0; e.vz = 0; e.t = 0; e.aplasta = 0.15; }
+          if (e.z <= 0) { e.z = 0; e.vz = 0; e.t = 0; e.aplasta = 0.15; if (c.veneno) J.charcos.push({ x: e.x, y: e.y, t: 3.5, dano: c.dano * 0.6, tipo: 'veneno' }); }
         } else if (e.t > (e.tipo === 'babosa_roja' ? 0.55 : 0.7) && r) { e.vz = 110; e.z = 0.01; e.saltoX = r.x * vel * 1.6; e.saltoY = r.y * vel * 1.6; }
         e.aplasta = (e.aplasta || 0) - dt;
         break;
@@ -188,10 +197,11 @@ function actualizarCriaturas(dt) {
       const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy), min = e.radio + o.radio;
       if (d < min && d > 0.01) mover(e, (dx / d) * (min - d) * 0.3, (dy / d) * (min - d) * 0.3);
     }
-    if (e.z < 4 && e.estado !== 'prepara' && Math.abs(p.x - e.x) < e.radio + p.hw && Math.abs(p.y - e.y) < 7) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
+    if ((e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida' && Math.abs(p.x - e.x) < e.radio + p.hw && Math.abs(p.y - e.y) < 7) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
   }
   J.enemigos = J.enemigos.filter((e) => e.vida > 0 && Math.hypot(e.x - p.x, e.y - p.y) < 36 * T);
   aparecerCriaturas(dt);
+  aparecerFijas(dt);
 }
 
 // Aparecen en lo oscuro, lejos de la luz, del santuario y de las guaridas.
@@ -200,6 +210,7 @@ function aparecerCriaturas(dt) {
   J.aparecer -= dt;
   if (J.aparecer > 0) return;
   J.aparecer = 1.3;
+  if (Object.values(J.jefes).some((j) => j.activo && j.estado !== 'muerto')) return; // en la pelea con un guardián, solo él y los suyos
   const progreso = Object.keys(J.jefesMuertos).length;
   const max = 6 + Math.min(6, Object.keys(J.hito).length >> 1) + progreso * 2;
   const cerca = J.enemigos.filter((e) => Math.hypot(e.x - p.x, e.y - p.y) < 22 * T).length;
@@ -209,9 +220,11 @@ function aparecerCriaturas(dt) {
     const tx = Math.floor((p.x + Math.cos(a) * d) / T), ty = Math.floor((p.y + Math.sin(a) * d) / T);
     if (!enMundo(tx, ty) || solido(tx, ty) || objetoEn(tx, ty)) continue;
     const i = idx(tx, ty), reg = M.region[i];
-    if (reg === REGION.SANTUARIO || Math.hypot(tx - CENTRO, ty - CENTRO) < 14 || luzEn(tx, ty) > 0.12) continue;
-    if (M.piso[i] === SUELO.MADERA || M.piso[i] === SUELO.ARADA) continue; // tu base es tuya
-    if (Object.values(M.guaridas).some((g) => Math.hypot(tx - g.x, ty - g.y) < 13)) continue;
+    const selva = reg >= REGION.SELVA;
+    if (reg === REGION.SANTUARIO || reg === REGION.SELLADO || Math.hypot(tx - CENTRO, ty - CENTRO) < 14 || luzEn(tx, ty) > (selva ? 0.6 : 0.12)) continue;
+    if (M.piso[i] === SUELO.MADERA || M.piso[i] === SUELO.ARADA || M.piso[i] === SUELO.TABLAS || M.piso[i] === SUELO.ALFOMBRA || M.piso[i] === SUELO.ALFOMBRA_VERDE) continue; // tu base es tuya
+    if (M.mercaderes.some((m) => Math.hypot(tx - m.x, ty - m.y) < 10)) continue;
+    if (Object.values(M.guaridas).some((g) => Math.hypot(tx - g.x, ty - g.y) < 18)) continue;
     if (distFlujo(tx, ty) < 0) continue;
     // elige criatura por la región
     const pesos = [];

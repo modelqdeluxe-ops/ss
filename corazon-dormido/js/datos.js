@@ -1,19 +1,22 @@
 'use strict';
-// Datos del juego (fase 1: el anillo interior). Para equilibrar o añadir contenido, se toca aquí.
-// Diseño completo en DISEÑO.md.
+// Datos del juego del anillo interior (fase 1). Lo de la Selva Esmeralda (fase 2) está en datos2.js.
+// Para equilibrar o añadir contenido, se toca aquí. Diseño completo en DISEÑO.md.
 
 const T = 16;               // tamaño de una casilla en píxeles del arte
-const N_MUNDO = 320;        // el mundo mide N_MUNDO × N_MUNDO casillas
+const N_MUNDO = 640;        // el mundo mide N_MUNDO × N_MUNDO casillas
 const CENTRO = N_MUNDO / 2;
 const R_RAICES = 48;        // radio de Las Raíces
 const R_MURALLA = 142;      // radio de la Gran Muralla
+const R_EXTERIOR = 296;     // hasta aquí llega el anillo exterior (Selva, Mar y Desierto); luego, roca
 
 // ---------------------------------------------------------------- regiones
 
-const REGION = { SANTUARIO: 0, RAICES: 1, ARCILLA: 2, RUINAS: 3 };
-const NOMBRE_REGION = ['Santuario del Corazón', 'Las Raíces', 'Cuevas de Arcilla', 'Ruinas Olvidadas'];
+const REGION = { SANTUARIO: 0, RAICES: 1, ARCILLA: 2, RUINAS: 3, SELVA: 4, PRADERA: 5, MOHO: 6, SELLADO: 7 };
+const NOMBRE_REGION = ['Santuario del Corazón', 'Las Raíces', 'Cuevas de Arcilla', 'Ruinas Olvidadas', 'Selva Esmeralda', 'Pradera de la Selva', 'Mazmorra del Moho', 'Tierras dormidas'];
 // Tono de la oscuridad en cada región (sombras frías, ambiente propio)
-const TONO_REGION = [[0.9, 0.95, 1.1], [0.95, 0.94, 1.05], [1.02, 0.92, 0.95], [0.9, 0.96, 1.08]];
+const TONO_REGION = [[0.9, 0.95, 1.1], [0.95, 0.94, 1.05], [1.02, 0.92, 0.95], [0.9, 0.96, 1.08], [0.92, 1.06, 0.9], [1.02, 1.04, 0.86], [0.86, 1.02, 1.04], [0.9, 0.9, 1.05]];
+// Luz de fondo de lo ya visto en cada región: la Selva recibe luz desde arriba (como en Core Keeper).
+const AMBIENTE_REGION = [[0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.17, 0.21, 0.11], [0.21, 0.23, 0.13], [0.03, 0.05, 0.06], [0.03, 0.03, 0.05]];
 
 // ---------------------------------------------------------------- suelos
 // arte: textura s_<arte>_<0..3>. decor: adornos de pie (guijarro = el del bioma). planos: adornos tumbados.
@@ -169,6 +172,7 @@ item('cristal_ozmar', { nombre: 'Cristal de Ozmar', tipo: 'especial', rareza: 2,
 // ---------------------------------------------------------------- recetas
 // est: estación que tiene que estar cerca (null = a mano). Las mesas de nivel alto valen para lo de nivel bajo.
 const NIVEL_MESA = { mesa: 1, mesa_cobre: 2, mesa_estano: 3, mesa_hierro: 4 };
+const NIVEL_YUNQUE = { yunque: 1, yunque_estano: 2, yunque_hierro: 3 };
 const NOMBRE_ESTACION = { mesa: 'Mesa de trabajo', mesa_cobre: 'Mesa de cobre', mesa_estano: 'Mesa de estaño', mesa_hierro: 'Mesa de hierro', horno: 'Horno', yunque: 'Yunque de cobre', yunque_estano: 'Yunque de estaño', yunque_hierro: 'Yunque de hierro' };
 const RECETAS = [];
 function receta(item, n, ing, est = null) { RECETAS.push({ item, n, ing, est }); }

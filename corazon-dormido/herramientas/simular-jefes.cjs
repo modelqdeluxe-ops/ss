@@ -1,6 +1,6 @@
 // Un bot pelea contra cada guardián con el equipo que tocaría a esa altura del juego (sin modo dios) y cuenta
 // cuánto tarda, cuánta comida gasta y si gana. Simula sin dibujar (paso fijo de 1/30 s), así va rápido.
-//   node corazon-dormido/herramientas/simular-jefes.cjs [intentos] [topo|reina|ozmar]
+//   node corazon-dormido/herramientas/simular-jefes.cjs [intentos] [topo|reina|ozmar|hiedra|tamar]
 const { chromium } = require('playwright');
 const path = require('path');
 (async () => {
@@ -15,6 +15,8 @@ const path = require('path');
     topo: { arma: 'espada_cobre', casco: 'casco_cobre', peto: 'peto_cobre', botas: 'botas_cobre', comida: ['baya', 'hongo'] },
     reina: { arma: 'espada_estano', casco: 'casco_estano', peto: 'peto_estano', botas: 'botas_estano', comida: ['baya', 'carne_larva'] },
     ozmar: { arma: 'espada_hierro', casco: 'casco_hierro', peto: 'peto_hierro', botas: 'botas_hierro', comida: ['pez_guppy', 'bulbo'] },
+    hiedra: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'avena'] },
+    tamar: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'avena'] },
   };
   for (const [id, eq] of Object.entries(EQUIPO)) for (let k = 0; k < intentos && (!process.argv[3] || process.argv[3] === id); k++) {
     const r = await p.evaluate(([id, eq]) => {
@@ -28,6 +30,7 @@ const path = require('path');
       J.sel = 0; calcularStats();
       const g = M.guaridas[id], p = J.jug;
       p.x = g.x * T + 8; p.y = (id === 'ozmar' ? g.y0 + g.h - 3 : g.y + 6) * T + 8; p.vida = J.st.vidaMax;
+      if (id === 'tamar') { J.hito.tamarInvocado = true; J.jefes.tamar.invocar = true; }
       const j = J.jefes[id], dt = 1 / 30, causas = {};
       const danarReal = window.__danar || (window.__danar = danarJugador);
       window.danarJugador = (d, desde, sin) => {
@@ -36,6 +39,7 @@ const path = require('path');
         causas[c] = (causas[c] || 0) + Math.round(v0 - J.jug.vida);
       };
       let t = 0, comidas = 0, golpes = 0, vidaMin = p.vida, danoRecibido = 0, vidaAntes = p.vida;
+      const tEst = {};
       const libre = (x, y) => !solido(Math.floor(x / T), Math.floor(y / T), true);
       while (t < 300 && j.estado !== 'muerto' && J.estado === 'juego') {
         // ---- el bot: esquiva avisos y proyectiles, se acerca y pega; come si va mal
@@ -65,8 +69,9 @@ const path = require('path');
         actualizarMundoVivo(dt);
         if (p.vida < vidaAntes) danoRecibido += vidaAntes - p.vida;
         vidaAntes = p.vida; vidaMin = Math.min(vidaMin, p.vida); t += dt;
+        tEst[j.estado + (j.invisible ? '*' : '')] = (tEst[j.estado + (j.invisible ? '*' : '')] || 0) + dt;
       }
-      const res = { gana: j.estado === 'muerto', t: Math.round(t), comidas, golpes, danoRecibido: Math.round(danoRecibido), vidaMin: Math.round(vidaMin), vidaJefe: Math.round(Math.max(0, j.vida)), fase: j.fase, muerto: J.estado === 'muerto', causas };
+      const res = { estados: Object.fromEntries(Object.entries(tEst).map(([k, v]) => [k, Math.round(v)])), gana: j.estado === 'muerto', t: Math.round(t), comidas, golpes, danoRecibido: Math.round(danoRecibido), vidaMin: Math.round(vidaMin), vidaJefe: Math.round(Math.max(0, j.vida)), fase: j.fase, muerto: J.estado === 'muerto', causas };
       J.estado = 'juego'; J.panel = null;
       return res;
     }, [id, eq]);

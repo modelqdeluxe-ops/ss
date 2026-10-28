@@ -5,7 +5,7 @@ const lienzo3d = document.getElementById('mundo3d');
 const lienzo = document.getElementById('pantalla');
 const ctx = lienzo.getContext('2d');
 let LW = 320, LH = 180, ESC = 1, hayPartida = false;
-const CLAVE = 'corazon-dormido-v3';
+const CLAVE = 'corazon-dormido-v4', CLAVE_V3 = 'corazon-dormido-v3';
 const VER_FPS = /fps/.test(location.search + location.hash);
 
 function ajustar() {
@@ -26,36 +26,66 @@ function guardarPartida() {
   const p = J.jug;
   try {
     localStorage.setItem(CLAVE, JSON.stringify({
-      v: 3, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
+      v: 4, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
       inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
       jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
+      mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta,
     }));
     hayPartida = true;
   } catch (e) { /* sin almacenamiento: la partida dura lo que la pestaña */ }
   J.guardadoT = J.t;
 }
 function leerPartida() {
-  try { const s = localStorage.getItem(CLAVE); const g = s ? JSON.parse(s) : null; return g && g.v === 3 ? g : null; } catch (e) { return null; }
+  try { const s = localStorage.getItem(CLAVE); const g = s ? JSON.parse(s) : null; return g && g.v === 4 && g.mundo.n === N_MUNDO ? g : null; } catch (e) { return null; }
+}
+// La partida de la fase 1 (mundo de 320 casillas): se lleva al mundo nuevo el personaje, la mochila, lo logrado y
+// lo que había en los cofres y los muebles puestos (en cofres de mudanza junto al Corazón).
+function leerPartidaV3() {
+  try { const s = localStorage.getItem(CLAVE_V3); const g = s ? JSON.parse(s) : null; return g && g.v === 3 ? g : null; } catch (e) { return null; }
+}
+function migrarV3(g) {
+  Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
+  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
+  J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
+  for (const s of J.inv) if (s) asegurarItem(s.id);
+  for (const [jefe, est] of Object.entries(M.estatuas)) if (J.estatuas[jefe]) { const o = objetoEn(est.x, est.y); if (o) o.extra = 1; }
+  const caja = [];
+  for (const [, , tipo, , datos] of g.mundo.objetos || []) {
+    if (datos && datos.inv) for (const s of datos.inv) if (s) caja.push({ id: s.id, n: s.n });
+    const info = OBJ[tipo], it = info && info.suelta && info.suelta[0] && ITEMS[info.suelta[0][0]];
+    if (it && it.tipo === 'colocable' && info.suelta[0][0] !== 'antorcha' && tipo !== 'cultivo') caja.push({ id: info.suelta[0][0], n: 1 });
+  }
+  let k = 0;
+  while (caja.length && k < 24) {
+    const a = (k / 12) * Math.PI * 2 + 0.3, d = k < 12 ? 6.5 : 7.4, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d);
+    k++;
+    if (solido(x, y, true) || objetoEn(x, y)) continue;
+    const o = ponerObjeto(x, y, 'cofre');
+    for (let i = 0; i < 30 && caja.length; i++) { const s = caja.shift(); asegurarItem(s.id); if (ITEMS[s.id]) o.datos.inv[i] = s; }
+  }
+  setTimeout(() => aviso('El mundo ha crecido. Tus cofres y muebles están en cofres junto al Corazón.', null, '#9fe0a8'), 1500);
 }
 
 function empezar(continuar) {
-  const g = continuar ? leerPartida() : null;
-  Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null });
+  const g = continuar ? leerPartida() : null, v3 = continuar && !g ? leerPartidaV3() : null;
+  Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null, bombas: [], regreso: null, mascotaEnt: null, cartel: null, regionAntes: -1, rayosCielo: [] });
   if (g) {
     cargarMundo(g.mundo);
     Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-    J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null }, g.equipo || {});
+    Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla });
+    J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
     J.inv = g.inv.concat(new Array(N_INV).fill(null)).slice(0, N_INV);
     for (const s of J.inv) if (s) asegurarItem(s.id);
     for (const o of M.objetos.values()) if (o.datos && o.datos.inv) for (const s of o.datos.inv) if (s) asegurarItem(s.id);
     J.jug = nuevoJugador();
     Object.assign(J.jug, g.jug);
   } else {
-    generarMundo((Math.random() * 1e9) | 0);
-    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false });
-    J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null };
+    generarMundo(v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0);
+    Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false });
+    J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
     J.inv = new Array(N_INV).fill(null);
-    for (const [id, n] of INICIO) agregar(id, n);
+    if (v3) migrarV3(v3);
+    else for (const [id, n] of INICIO) agregar(id, n);
     J.jug = nuevoJugador();
   }
   calcularStats();
@@ -63,10 +93,10 @@ function empezar(continuar) {
   J.estado = 'juego'; J.aparecer = 4;
   J.cam.x = J.jug.x; J.cam.y = J.jug.y;
   FLUJO.t = 0;
-  if (!g) { aviso('El Corazón duerme. Despiértalo.', null, '#ffb3c8'); setTimeout(() => aviso('Rompe raíces para sacar madera'), 2500); }
+  if (!g && !v3) { aviso('El Corazón duerme. Despiértalo.', null, '#ffb3c8'); setTimeout(() => aviso('Rompe raíces para sacar madera'), 2500); }
   guardarPartida();
 }
-function irTitulo() { J.estado = 'titulo'; J.panel = null; hayPartida = !!leerPartida(); }
+function irTitulo() { J.estado = 'titulo'; J.panel = null; hayPartida = !!leerPartida() || !!leerPartidaV3(); }
 function revisarObjetivos() {
   while (J.objetivo < OBJETIVOS.length && OBJETIVOS[J.objetivo].hecho(J)) {
     aviso('¡Hecho! ' + OBJETIVOS[J.objetivo].txt, null, '#7dff9a');
@@ -87,7 +117,7 @@ function cuadro(ms) {
     if (J.pausaGolpe > 0) J.pausaGolpe -= dt; // pausa corta al golpear: da peso al golpe
     else {
       actualizarJugador(dt); actualizarCriaturas(dt); actualizarJefes(dt); actualizarProyectiles(dt); actualizarDisparos(dt);
-      actualizarCultivos(dt); actualizarPesca(dt, J.tirando);
+      actualizarCultivos(dt); actualizarPesca(dt, J.tirando); actualizarFase2(dt);
     }
     actualizarMundoVivo(dt);
     ambientePart(dt);
@@ -108,7 +138,7 @@ function moverCamara(dt) {
     for (const j of Object.values(J.jefes)) {
       if (!j.activo || j.estado === 'muerto' || j.invisible) continue;
       const dx = j.x - J.jug.x, dy = j.y - J.jug.y;
-      if (dx * dx + dy * dy < 160 * 160) { tx += dx * 0.35; ty += dy * 0.35 + 6; break; }
+      if (dx * dx + dy * dy < 170 * 170) { const alto = j.alto > 24; tx += dx * (alto ? 0.5 : 0.35); ty += dy * (alto ? 0.5 : 0.35) + (alto ? -20 : 6); break; }
     }
   }
   const k = Math.min(1, dt * 7);
@@ -126,6 +156,7 @@ function ambientePart(dt) {
     if ((o.tipo === 'cristal' || o.tipo === 'hongo' || o.tipo === 'arbusto') && Math.random() < dt * 0.6)
       J.particulas.push({ x: o.x * T + 8 + (Math.random() - 0.5) * 12, y: o.y * T + 10 + (Math.random() - 0.5) * 8, z: 4, vx: (Math.random() - 0.5) * 4, vy: 0, vz: 5 + Math.random() * 5, g: -2, vida: 2 + Math.random() * 2, c: '#7ff0ff', s: 1, brilla: true, chispa: true });
   }
+  if (J.estado === 'juego') ambienteSelva(dt);
   if (J.estado === 'juego' && Math.random() < dt * 3) {
     const p = J.jug;
     J.particulas.push({ x: p.x + (Math.random() - 0.5) * 140, y: p.y + (Math.random() - 0.5) * 90, z: Math.random() * 20, vx: (Math.random() - 0.5) * 3, vy: 0, vz: 1 + Math.random() * 2, g: -0.5, vida: 3 + Math.random() * 3, c: '#fff0d0', s: 1, brilla: true, chispa: true, tenue: true });
@@ -144,9 +175,12 @@ function fuentesFijas(x0, y0, x1, y1) {
     const info = OBJ[o.tipo], x = o.x * T + 8, y = o.y * T + 8;
     if (o.tipo === 'corazon') f.push({ x, y: y + 4, r: 7 + Object.keys(J.estatuas).length * 3, c: [1.0, 0.42, 0.6], k: 0.9 });
     else if (o.tipo === 'estatua') { if (o.extra) f.push({ x, y, r: 4.5, c: [1, 0.55, 0.7], k: 1 }); }
+    else if (o.tipo === 'altar_titan') { if (o.extra) f.push({ x, y, r: 5, c: o.datos && o.datos.titan === 'tamar' ? [0.9, 0.95, 1] : [0.5, 1, 0.7], k: 1 }); }
     else if (o.tipo === 'antorcha' && o.datos && o.datos.magica) f.push({ x, y, r: 7, c: [0.65, 0.4, 1], k: 0.9, fuego: true });
     else if (info.luz) { const [r, cr, cg, cb] = info.luz; f.push({ x, y, r, c: [cr, cg, cb], k: info.fuego ? 0.9 : 0.85, fuego: !!info.fuego }); }
   }
+  // la luz que baja del cielo en la Selva
+  for (const s of M.soles) if (s.x > x0 - 12 && s.x < x1 + 12 && s.y > y0 - 12 && s.y < y1 + 12) f.push({ x: s.x * T + 8, y: s.y * T + 8, r: s.r, c: s.c || [1.0, 0.95, 0.7], k: s.k });
   return f;
 }
 function fuentesDinamicas() {
@@ -163,14 +197,20 @@ function fuentesDinamicas() {
     if (j.estado === 'aturdido') f.push({ x: j.x, y: j.y - 20, r: 2.5, c: [1, 0.9, 0.5], k: 0.6 });
   }
   for (const d of J.disparos) if (d.magico) f.push({ x: d.x, y: d.y, r: 2.5, c: [0.7, 0.4, 1], k: 0.7 });
+  if (J.estado === 'juego') { const reg = M.region[idx(Math.floor(J.jug.x / T), Math.floor(J.jug.y / T))]; if (reg === REGION.SELVA || reg === REGION.PRADERA) f.push({ x: J.jug.x, y: J.jug.y - 2, r: 10, c: [0.85, 1, 0.7], k: 0.38 }); }
+  if (J.mascotaEnt && J.mascotaEnt.id === 'mascota_luci') f.push({ x: J.mascotaEnt.x, y: J.mascotaEnt.y, r: 5, c: [1, 0.95, 0.6], k: 0.8 });
+  for (const b of J.bombas) f.push({ x: b.x, y: b.y, r: 2, c: [1, 0.7, 0.3], k: 0.6 });
+  if (J.destelloT > 0) f.push({ x: J.destello.x, y: J.destello.y, r: 8, c: [1, 0.8, 0.5], k: J.destelloT * 6 });
+  for (const r of J.rayosCielo || []) if (r.t < 0.05) f.push({ x: r.x, y: r.y, r: 7, c: [0.8, 0.9, 1], k: 1.2 });
+  for (const r of J.proyectiles) if (r.tipo === 'pluma') f.push({ x: r.x, y: r.y, r: 1.5, c: [1, 1, 0.9], k: 0.4 });
   for (const r of J.proyectiles) if (r.tipo === 'orbe') f.push({ x: r.x, y: r.y, r: 2, c: [0.6, 0.3, 0.9], k: 0.6 });
   return f;
 }
 
 // ---------------------------------------------------------------- dibujo de las cosas del mundo
 
-const HALO = { huevo_larva: [0.7, [0.5, 1, 0.3], 0.14], antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], farol: [1.7, [1, 0.8, 0.4], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16], olla: [0.7, [1, 0.5, 0.25], 0.15] };
-const ALTURA_HALO = { huevo_larva: 0.3, antorcha: 1.05, horno: 0.5, lampara: 1.0, farol: 1.1, cristal: 0.55, hongo: 0.45, arbusto: 0.3, olla: 0.3 };
+const HALO = { arbol_luna: [1.6, [0.5, 0.8, 1], 0.22], flor_sol: [0.8, [1, 0.85, 0.4], 0.18], farol_carmesi: [1.8, [1, 0.5, 0.45], 0.3], lampara_pie: [1.3, [1, 0.85, 0.55], 0.26], hoguera: [1.2, [1, 0.6, 0.25], 0.32], altar_titan: [1.2, [0.7, 1, 0.8], 0.25], incubadora: [0.7, [0.6, 0.9, 1], 0.16], huevo_larva: [0.7, [0.5, 1, 0.3], 0.14], antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], farol: [1.7, [1, 0.8, 0.4], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16], olla: [0.7, [1, 0.5, 0.25], 0.15] };
+const ALTURA_HALO = { arbol_luna: 2.0, flor_sol: 0.5, farol_carmesi: 1.1, lampara_pie: 1.15, hoguera: 0.4, altar_titan: 1.0, incubadora: 0.5, huevo_larva: 0.3, antorcha: 1.05, horno: 0.5, lampara: 1.0, farol: 1.1, cristal: 0.55, hongo: 0.45, arbusto: 0.3, olla: 0.3 };
 const T4 = [1, 1, 1, 1];
 
 function dibujarObjeto3d(o) {
@@ -180,6 +220,11 @@ function dibujarObjeto3d(o) {
   else if (o.tipo === 'horno') n = `horno_${Math.floor(J.t * 5) % 2}`;
   else if (o.tipo === 'olla') n = `olla_${Math.floor(J.t * 4) % 2}`;
   else if (o.tipo === 'estatua') n = `estatua_${o.datos.jefe}${o.extra ? '_on' : ''}`;
+  else if (o.tipo === 'altar_titan') n = `altar_${o.datos.titan}${o.extra ? '_on' : ''}`;
+  else if (o.tipo === 'incubadora') n = o.datos && o.datos.huevo ? (huevoListo(o) && Math.floor(J.t * 3) % 2 ? 'incubadora_lista' : 'incubadora_on') : 'incubadora';
+  else if (o.tipo === 'hoguera') n = `hoguera_${Math.floor(J.t * 8 + o.x) % 3}`;
+  else if (o.tipo === 'arbol' && hash2(o.x, o.y, 5) < 0.5) n = 'arbol_b';
+  else if (o.tipo === 'altar_cielo') n = J.jefesMuertos.tamar ? 'altar_cielo_on' : 'altar_cielo';
   else if (o.tipo === 'puerta') n = Math.hypot(J.jug.x / T - x, J.jug.y / T - z) < 1.4 ? 'puerta_abierta' : 'puerta';
   else if (o.tipo === 'cultivo') { const e = etapaCultivo(o); n = `cultivo_${o.datos.planta}_${e}`; if (o.datos.regado) GL.plano('regado', x, o.y + 0.5, { unlit: 0, y: 0.003, tinte: [1, 1, 1, 0.8] }); }
   if (o.tipo === 'corazon') {
@@ -191,9 +236,10 @@ function dibujarObjeto3d(o) {
     return;
   }
   if (o.tipo === 'raiz') GL.plano('raiz_suelo', x, z - 0.3, { unlit: 0, tinte: [0.85, 0.85, 0.85, 1] });
-  if (info.bloquea || o.tipo === 'antorcha' || o.tipo === 'lampara' || o.tipo === 'farol') GL.plano(o.tipo === 'antorcha' ? 'sombra_s' : 'sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.7] });
+  if (info.alto) GL.plano('sombra_l', x, z - 0.12, { tinte: [1, 1, 1, 0.75], escala: 1.15 });
+  else if (info.bloquea || o.tipo === 'antorcha' || o.tipo === 'lampara' || o.tipo === 'farol') GL.plano(o.tipo === 'antorcha' ? 'sombra_s' : 'sombra_m', x, z - 0.05, { tinte: [1, 1, 1, 0.7] });
   GL.sprite(n, x, z);
-  const brilla = info.brillo || (o.tipo === 'estatua' && o.extra) || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
+  const brilla = info.brillo || ((o.tipo === 'estatua' || o.tipo === 'altar_titan') && o.extra) || o.tipo === 'incubadora' || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
   if (brilla && SPR[n + '_luz']) {
     GL.sprite(n + '_luz', x, z + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.8] });
     const h = HALO[o.tipo];
@@ -263,7 +309,8 @@ function dibujarCriatura3d(e) {
   const blanco = B || aviso ? 1 : 0;
   GL.plano(e.radio > 8 ? 'sombra_m' : 'sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.7 - Math.min(0.5, (e.z || 0) / 30)], escala: e.radio > 8 ? 1.3 : 1 });
   let n;
-  if (c.conducta === 'salta') n = `${e.tipo}_${e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2}`;
+  if (SPRITE_CRIATURA[e.tipo]) n = SPRITE_CRIATURA[e.tipo](e);
+  else if (c.conducta === 'salta') n = `${e.tipo}_${e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2}`;
   else if (e.tipo.startsWith('larva')) n = `${e.tipo}_${Math.floor(e.t * 6) % 2}`;
   else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
   else n = `${e.tipo}_${e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
@@ -273,6 +320,7 @@ function dibujarCriatura3d(e) {
 }
 function dibujarJefe3d(j) {
   if (j.estado === 'muerto') return;
+  if (DIBUJAR_JEFE[j.id]) { DIBUJAR_JEFE[j.id](j); return; }
   const x = j.x / T, z = j.y / T + 0.1;
   if (j.id === 'topo') {
     if (j.enterrado) {
@@ -321,6 +369,7 @@ function dibujarMundo3d() {
   if (J.estado === 'juego') dibujarJugador3d(J.jug);
   for (const e of J.enemigos) dibujarCriatura3d(e);
   if (J.estado !== 'titulo') for (const j of Object.values(J.jefes)) dibujarJefe3d(j);
+  dibujarFase2_3d();
   for (const b of J.botines) {
     const x = b.x / T, z = b.y / T, it = ITEMS[b.id];
     GL.plano('sombra_s', x, z, { escala: 0.6, tinte: [1, 1, 1, 0.6] });
@@ -331,14 +380,20 @@ function dibujarMundo3d() {
     const x = r.x / T, z = r.y / T + 0.3;
     if (r.tipo === 'acido') { GL.plano('sombra_s', x, z, { escala: 0.5 }); GL.sprite('acido', x, z, { y: (r.z / 16) * GL.KY, unlit: 0.4 }); }
     else if (r.tipo === 'orbe') { GL.sprite('orbe', x, z, { y: 0.35, unlit: 1, lote: GL.lotes.brillo }); GL.halo(x, 0.55, z, 0.45, [0.6, 0.3, 1], 0.35); }
+    else if (r.tipo === 'pluma') { const a = Math.atan2(r.vy, r.vx); GL.sprite(Math.abs(Math.cos(a)) > 0.7 ? 'pluma_h' : 'pluma_v', x, z, { y: 0.4, flip: Math.cos(a) < 0, unlit: 0.5 }); }
+    else if (r.tipo === 'flecha_e') { const a = Math.atan2(r.vy, r.vx); GL.sprite(Math.abs(Math.cos(a)) > 0.7 ? 'flecha_h' : 'flecha_v', x, z, { y: 0.35, flip: Math.cos(a) < 0, tinte: [1, 0.6, 0.55, 1] }); }
+    else if (r.tipo === 'semilla' || r.tipo === 'semilla_veneno') { GL.plano('sombra_s', x, z, { escala: 0.4 }); GL.sprite(r.tipo === 'semilla' ? 'semilla_p' : 'espora_p', x, z, { y: (r.z / 16) * GL.KY, unlit: 0.4 }); }
+    else if (r.tipo === 'tornado') { GL.plano('sombra_m', x, z, { escala: 0.8, tinte: [1, 1, 1, 0.5] }); GL.sprite(`tornado_${Math.floor(J.t * 12) % 3}`, x, z, { unlit: 0.5, tinte: [1, 1, 1, 0.85] }); }
     else { GL.plano('sombra_s', x, z, { escala: 0.5 }); GL.sprite('roca_lanzada', x, z, { y: 0.35 }); }
   }
   for (const d of J.disparos) {
     const x = d.x / T, z = d.y / T + 0.2;
     if (d.magico) { GL.sprite('orbe', x, z, { y: 0.4, unlit: 1, lote: GL.lotes.brillo, tinte: [0.8, 0.7, 1, 1] }); GL.halo(x, 0.6, z, 0.5, [0.7, 0.4, 1], 0.4); }
+    else if (d.espora) GL.sprite('espora_p', x, z, { y: 0.35, unlit: 1, lote: GL.lotes.brillo });
     else { const a = Math.atan2(d.vy, d.vx); GL.sprite(Math.abs(Math.cos(a)) > 0.7 ? 'flecha_h' : 'flecha_v', x, z, { y: 0.35, flip: Math.cos(a) < 0 }); }
   }
-  for (const c of J.charcos) GL.plano('charco', c.x / T, c.y / T, { y: 0.008, unlit: 0.5, tinte: [1, 1, 1, Math.min(1, c.t) * 0.9] });
+  for (const c of J.charcos) GL.plano(c.tipo === 'veneno' ? 'charco_veneno' : c.tipo === 'espora' ? 'charco_espora' : 'charco', c.x / T, c.y / T, { y: 0.008, unlit: 0.5, tinte: [1, 1, 1, Math.min(1, c.t) * 0.9] });
+  dibujarRayosCielo();
   for (const a of J.avisosSuelo) if (a.t > 0) { const k = 1 - a.t / a.t0; GL.plano('aviso_suelo', a.x / T, a.y / T, { escala: (a.r / 15) * (0.6 + 0.4 * k), tinte: [1, 1, 1, 0.35 + 0.4 * k] }); }
   for (const q of J.particulas) {
     const o = { y: (q.z / 16) * GL.KY, escala: q.s * 0.5 * (q.tenue ? 0.8 : 1), tinte: colorRGB(q.c, q.chispa ? Math.min(1, q.vida) * (q.tenue ? 0.35 : 0.9) : 1) };
@@ -364,7 +419,7 @@ function dibujarMundo3d() {
       if (fase < 0.12) { const k = Math.sin((fase / 0.12) * Math.PI); GL.sprite('destello', tx + 0.3 + hash2(tx, ty, 22) * 0.4, ty + 0.98, { y: GL.ALTO * 0.6, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, k], escala: 0.5 + k * 0.5 }); }
     }
   }
-  for (const r of M.rayos) if (r.x > v.x0 - 4 && r.x < v.x1 + 4 && r.y > v.z0 - 4 && r.y < v.z1 + 6 && M.visto[idx(Math.round(r.x), Math.round(r.y))]) GL.rayo(r.x, r.y, 1.6, 3.2, [0.85, 0.9, 1], 0.12 * r.a + 0.03 * Math.sin(J.t * 0.7 + r.x));
+  for (const r of M.rayos) if (r.x > v.x0 - 4 && r.x < v.x1 + 4 && r.y > v.z0 - 4 && r.y < v.z1 + 6 && M.visto[idx(Math.round(r.x), Math.round(r.y))]) GL.rayo(r.x, r.y, r.ancho || 1.6, 3.2, r.c || [0.85, 0.9, 1], 0.12 * r.a + 0.03 * Math.sin(J.t * 0.7 + r.x));
   // grietas de las paredes que estás picando
   for (const [i, d] of M.danos) {
     const tx = i % N_MUNDO, ty = (i - tx) / N_MUNDO, m = M.muro[i];
@@ -408,6 +463,11 @@ function dibujarTextosMundo() {
     texto(ctx, n.txt, p.x * LW, p.y * LH, n.c, { alin: 'c', borde: COL.negro });
   }
   ctx.globalAlpha = 1;
+  if (J.estado !== 'titulo') for (const m of M.mercaderes) {
+    if (!m.ent || Math.hypot(m.ent.x - J.jug.x, m.ent.y - J.jug.y) > 60) continue;
+    const p = GL.aPantalla(m.ent.x / T, (26 / 16) * GL.KY, m.ent.y / T);
+    texto(ctx, MERCADERES[m.tipo].nombre, p.x * LW, p.y * LH, MERCADERES[m.tipo].colores[0], { alin: 'c', borde: COL.negro });
+  }
   if (J.estado !== 'titulo') for (const j of Object.values(J.jefes)) {
     if (j.estado !== 'dormido') continue;
     const k = (J.t * 0.6) % 1, p = GL.aPantalla(j.x / T + 0.7 + k * 0.4, ((40 + k * 14) / 16) * GL.KY, j.y / T);
@@ -449,7 +509,7 @@ function iniciar(datosHot) {
     if (document.visibilityState === 'hidden') { guardarPartida(); if (J.estado === 'juego' && !J.panel) J.panel = 'pausa'; }
   });
   const g = leerPartida();
-  hayPartida = !!g;
+  hayPartida = !!g || !!leerPartidaV3();
   if (g) cargarMundo(g.mundo); else generarMundo(20261028);
   J.jug = nuevoJugador();
   J.cam.x = CENTRO * T; J.cam.y = CENTRO * T;

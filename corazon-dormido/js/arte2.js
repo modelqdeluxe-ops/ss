@@ -406,7 +406,7 @@ function jefesNuevos() {
 // ---------------------------------------------------------------- armadura puesta (encima del cuerpo)
 
 function armaduraPuesta() {
-  const MAT = { cobre: ['#7c3a22', '#c8693a', '#f2a466'], estano: ['#5f5c7a', '#a9a6c6', '#ebe9fb'], hierro: ['#2c3a4f', '#6787a6', '#b9d6ec'], larva: ['#8a7a4a', '#d8c890', '#f4ecc0'] };
+  const MAT = { cobre: ['#7c3a22', '#c8693a', '#f2a466'], estano: ['#5f5c7a', '#a9a6c6', '#ebe9fb'], hierro: ['#2c3a4f', '#6787a6', '#b9d6ec'], larva: ['#8a7a4a', '#d8c890', '#f4ecc0'], carmesi: ['#5a0e16', '#c0283a', '#ff7a7a'], musgo: ['#2a4a1c', '#5a8a32', '#a8d870'] };
   for (const [m, c] of Object.entries(MAT)) for (const d of ['ab', 'ar', 'de']) for (let paso = 0; paso < 4; paso++) {
     const Y = paso % 2 ? 0 : 1;
     // casco: cúpula sobre el pelo

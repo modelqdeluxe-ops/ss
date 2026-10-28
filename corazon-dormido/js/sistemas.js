@@ -1,7 +1,6 @@
 'use strict';
 // Sistemas: crear (mesas por nivel y cofres cercanos), cofres, olla, cultivos y pesca.
 
-const NIVEL_YUNQUE = { yunque: 1, yunque_estano: 2, yunque_hierro: 3 };
 
 // ---------------------------------------------------------------- crear
 
@@ -17,7 +16,7 @@ function estacionesCerca() {
       est.add(info.estacion);
       mesa = Math.max(mesa, NIVEL_MESA[info.estacion] || 0); yunque = Math.max(yunque, NIVEL_YUNQUE[info.estacion] || 0);
     }
-    if ((o.tipo === 'cofre' || o.tipo === 'cofre_ruinas') && o.datos && d < 10) cofres.push(o);
+    if (info.interactua === 'cofre' && o.datos && d < 10) cofres.push(o);
   }
   for (const [m, n] of Object.entries(NIVEL_MESA)) if (n <= mesa) est.add(m);
   for (const [m, n] of Object.entries(NIVEL_YUNQUE)) if (n <= yunque) est.add(m);
@@ -119,7 +118,8 @@ function lanzarCana(it) {
   for (const d of [1.6, 2.4, 3.2]) {
     const x = p.x + p.fx * d * T, y = p.y + p.fy * d * T, tx = Math.floor(x / T), ty = Math.floor(y / T);
     if (enMundo(tx, ty) && M.piso[idx(tx, ty)] === SUELO.AGUA) {
-      J.pesca = { estado: 'espera', x, y, t: 2 + Math.random() * 5, cana: it, region: M.region[idx(tx, ty)] };
+      const cebo = J.cuenta('cebo') > 0;
+      J.pesca = { estado: 'espera', x, y, t: (2 + Math.random() * 5) * (cebo ? 0.45 : 1), cana: it, region: M.region[idx(tx, ty)], cebo };
       p.golpeT = 0.5; p.swing = 0.4; p.swingDur = 0.4; p.swingItem = it.icono;
       Sonido.sfx.zas(); particulas(x, y, 6, ['#a8dcff', '#ffffff'], { vel: 20, alto: 10 });
       return;
@@ -149,12 +149,13 @@ function actualizarPesca(dt, tirando) {
   else if (ps.estado === 'lucha') {
     ps.cambio -= dt;
     if (ps.cambio <= 0) { ps.lucha = !ps.lucha; ps.cambio = ps.lucha ? 0.6 + Math.random() * 0.8 * ps.dificil : 0.9 + Math.random() * 1.2; }
-    const facil = (1 + nivel('pesca') * 0.02) * ps.cana.fuerza;
+    const facil = (1 + nivel('pesca') * 0.02 + ((J.st && J.st.pesca) || 0)) * ps.cana.fuerza;
     if (tirando) {
       if (ps.lucha) { ps.tension += (0.9 * ps.dificil / facil) * dt; ps.progreso -= 0.05 * dt; }
       else ps.progreso += 0.32 * facil * dt;
     } else { ps.tension = Math.max(0, ps.tension - 0.5 * dt); ps.progreso -= (ps.lucha ? 0.12 : 0.04) * dt; }
     if (ps.progreso >= 1) {
+      if (ps.cebo) quitar('cebo', 1);
       const sobra = agregar(ps.pez, 1);
       if (sobra) soltar(J.jug.x, J.jug.y, ps.pez, 1);
       avisoRecogido(ps.pez, 1); Sonido.sfx.victoria(); ganarXP('pesca', 6 * ps.dificil);

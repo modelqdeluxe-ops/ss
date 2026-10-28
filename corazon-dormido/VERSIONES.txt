@@ -6,3 +6,4 @@
 0.2.0 | e74dd539 | En 3D como Core Keeper | Motor 3D con WebGL2: bloques con tapa y cara, cámara inclinada, luz de colores que no atraviesa paredes y arte nuevo.
 0.3.0 | dd57af28 | Luz tramada y mucho más detalle | Luz a cuadritos con trama 4×4, resplandor, halos, polvo, chispas y vida en el suelo.
 0.4.0 | 8771f496 | Fase 1: el anillo interior | Tres regiones, tres guardianes con estatuas y el despertar del Corazón; cofres, cama, puertas, granja, cocina, pesca, habilidades, armaduras que se ven puestas, arcos y mazas.
+0.5.0 | HEAD | Fase 2: la Selva Esmeralda | El mundo crece a 640×640 y se abre la Gran Muralla: la Selva Esmeralda con luz del cielo, praderas, la Mazmorra del Moho, aldeas y ruinas; el metal carmesí; 8 criaturas nuevas; los titanes Hiedra Viva y Tamar; mercaderes que viven en tu casa; mascotas; bombas; piedra de regreso; 182 objetos y 99 recetas. Tu partida de la fase 1 pasa al mundo nuevo.

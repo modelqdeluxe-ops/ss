@@ -146,6 +146,8 @@ const RAMPA = {
   madera: ['#2a160c', '#4a2a16', '#6e4222', '#925a30', '#b67640', '#d49a5a'],
 };
 const BORDE_MURO = '#0b0709';
+// Paredes que dibuja otro archivo (arte3.js): tipo → { arriba(L, R, r, v), cara(L, R, r, v) }
+const MURO_ARTE = {};
 const RAIZ = ['#5a3a1c', '#86592a', '#b3823a', '#dcae55'];
 
 const RAMPA_SUELO = {
@@ -226,6 +228,8 @@ function muroArriba(tipo, m, v) {
     }
   } else if (tipo === 'madera') {
     for (let y = 0; y < 16; y += 4) { L.rect(0, y, 16, 4, R[3]); L.hl(0, y, 16, R[4]); L.hl(0, y + 3, 16, R[1]); const n = entre(r, 2, 12); L.hl(n, y + 1, 3, R[2]); L.px((n + 7) % 16, y + 2, R[2]); }
+  } else if (MURO_ARTE[tipo]) {
+    MURO_ARTE[tipo].arriba(L, R, r, v);
   } else if (tipo === 'arcilla') {
     const n = ruidoCiclico(sem2(tipo, v), 4);
     for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const f = n(x, y * 0.4) + y * 0.02; L.px(x, y, f < 0.38 ? R[1] : f > 0.66 ? R[3] : R[2]); }
@@ -258,7 +262,8 @@ function sem2(tipo, v) { return 333 + v * 71 + tipo.length * 19; }
 function muroCara(tipo, lados, v) {
   const R = RAMPA[tipo], r = azar(55 + v * 71 + tipo.length * 31);
   const L = new Lienzo(16, 12).rect(0, 0, 16, 12, R[3]);
-  if (tipo === 'tierra') {
+  if (MURO_ARTE[tipo]) MURO_ARTE[tipo].cara(L, R, r, v);
+  else if (tipo === 'tierra') {
     const n = ruidoCiclico(sem2(tipo, v) + 5, 4, 16);
     for (let y = 0; y < 12; y++) for (let x = 0; x < 16; x++) { const f = n(x, y * 1.3); if (f < 0.35) L.px(x, y, R[2]); else if (f > 0.72) L.px(x, y, R[4]); }
     for (const y0 of [4, 8]) { let y = y0 + entre(r, -1, 0); for (let x = 0; x < 16; x++) { L.px(x, y, R[2]); L.px(x, y - 1, R[4]); if (r() < 0.25) y += entre(r, -1, 1); y = Math.max(2, Math.min(10, y)); } }
@@ -1081,6 +1086,7 @@ let ATLAS = null;
 function construirArte() {
   construirTerreno(); construirJugador(); construirCriaturas(); construirObjetos(); construirIconos();
   if (typeof construirExtra === 'function') construirExtra();
+  if (typeof construirFase2 === 'function') construirFase2();
   // Empaquetado en estantes, de más alto a más bajo, con 1 px libre alrededor.
   const lista = [...new Map(DIBUJOS).entries()].sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
   const ANCHO = 1024;
