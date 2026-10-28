@@ -1,7 +1,7 @@
 'use strict';
 // La banda sonora (musica/*.ogg, compuesta con herramientas/musica): un tema por zona y otro para las peleas de
 // jefe, con fundidos al cambiar. Se reproduce con <audio> (va leyendo el archivo sin cargarlo entero en memoria).
-// Si los archivos no están (el .html suelto), el juego sigue sin música.
+// En el .html suelto (abierto como archivo) no hay música: el juego sigue igual sin ella.
 const MUSICA_REGION = {
   [REGION.SANTUARIO]: 'titulo', [REGION.RAICES]: 'interior', [REGION.ARCILLA]: 'interior', [REGION.RUINAS]: 'interior',
   [REGION.SELVA]: 'selva', [REGION.PRADERA]: 'selva', [REGION.MOHO]: 'cripta', [REGION.SELLADO]: 'interior',
@@ -12,7 +12,11 @@ const Musica = (() => {
   let activa = true, pausada = false, bloqueada = false, actual = null, pedido = null, pedidoT = 0;
   try { activa = localStorage.getItem('cd_musica') !== '0'; } catch (e) { /* sin almacenamiento */ }
   const capas = []; // { nombre, el, vol, objetivo }
+  // el .html suelto (file://) no lleva la música al lado: sin ella, nada que cargar
+  const hay = location.protocol !== 'file:';
   function sonar(n) {
+    actual = n;
+    if (!hay) return;
     for (const c of capas) c.objetivo = 0;
     let c = capas.find((q) => q.nombre === n);
     if (!c) {
@@ -22,7 +26,6 @@ const Musica = (() => {
       capas.push(c);
     }
     c.objetivo = 1;
-    actual = n;
     if (activa && !pausada) c.el.play().then(() => { bloqueada = false; }, () => { bloqueada = true; });
   }
   // qué tema toca ahora
