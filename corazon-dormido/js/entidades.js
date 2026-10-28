@@ -379,12 +379,12 @@ function ocupadaPorAlguien(tx, ty) {
   return toca(J.jug) || J.enemigos.some(toca);
 }
 function puedeColocar(tx, ty) {
-  return enMundo(tx, ty) && !solido(tx, ty, true) && !objetoEn(tx, ty) && !ocupadaPorAlguien(tx, ty) && M.piso[idx(tx, ty)] !== SUELO.AGUA;
+  return enMundo(tx, ty) && !solido(tx, ty, true) && !objetoEn(tx, ty) && !ocupadaPorAlguien(tx, ty) && !esAgua(M.piso[idx(tx, ty)]);
 }
 function colocar(it, s, tx, ty) {
   const p = J.jug;
   if (it.tipo === 'suelo') {
-    if (!enMundo(tx, ty) || muroEn(tx, ty) || objetoEn(tx, ty) || M.piso[idx(tx, ty)] === it.suelo || M.piso[idx(tx, ty)] === SUELO.AGUA) return false;
+    if (!enMundo(tx, ty) || muroEn(tx, ty) || objetoEn(tx, ty) || M.piso[idx(tx, ty)] === it.suelo || esAgua(M.piso[idx(tx, ty)])) return false;
     ponerSuelo(tx, ty, it.suelo);
   } else if (it.tipo === 'semilla') {
     if (!enMundo(tx, ty) || M.piso[idx(tx, ty)] !== SUELO.ARADA || objetoEn(tx, ty)) { aviso('Las semillas van en tierra arada (usa la azada)'); p.golpeT = 0.3; return true; }
@@ -463,7 +463,7 @@ function golpearObjeto(o, herr) {
   o.vida -= info.planta || info.nivel || info.rompible ? Math.max(herr.poder || 0, herr.dano || 0) : 1;
   Sonido.sfx.golpe();
   particulas(cx, cy, 5, info.planta ? ['#8a5a36', '#c28a52', '#4f9a64'] : ['#9aa6b8', '#c28a52'], { vel: 40 });
-  o.sacude = 0.15;
+  o.sacude = 0.15; M.sacuden.add(o);
   if (info.nido && Math.random() < 0.35 && J.enemigos.length < 14) { const e = nuevaCriatura(info.nido, cx + (Math.random() - 0.5) * 16, cy + 8); if (!choca(e.x, e.y, e.hw, e.hh)) J.enemigos.push(e); }
   if (o.vida <= 0) {
     quitarObjeto(o.x, o.y);
@@ -600,5 +600,5 @@ function actualizarMundoVivo(dt) {
   J.avisos = J.avisos.filter((a) => a.t > 0);
   for (const [i, d] of M.danos) if (J.t - d.t > 4) M.danos.delete(i);
   J.temblor = Math.max(0, J.temblor - dt);
-  for (const o of M.objetos.values()) if (o.sacude > 0) o.sacude -= dt;
+  for (const o of M.sacuden) { o.sacude -= dt; if (o.sacude <= 0) M.sacuden.delete(o); }
 }

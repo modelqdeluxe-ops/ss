@@ -94,7 +94,7 @@ let relojCultivos = 0;
 function actualizarCultivos(dt) {
   relojCultivos += dt;
   if (relojCultivos < 1) return;
-  for (const o of M.objetos.values()) if (o.tipo === 'cultivo') o.datos.crec += relojCultivos * (o.datos.regado ? 2 : 1);
+  for (const i of M.cultivos) { const o = M.objetos.get(i); if (o && o.tipo === 'cultivo') o.datos.crec += relojCultivos * (o.datos.regado ? 2 : 1); else M.cultivos.delete(i); }
   relojCultivos = 0;
 }
 function cosechar(o) {
@@ -117,7 +117,7 @@ function lanzarCana(it) {
   const p = J.jug;
   for (const d of [1.6, 2.4, 3.2]) {
     const x = p.x + p.fx * d * T, y = p.y + p.fy * d * T, tx = Math.floor(x / T), ty = Math.floor(y / T);
-    if (enMundo(tx, ty) && M.piso[idx(tx, ty)] === SUELO.AGUA) {
+    if (enMundo(tx, ty) && esAgua(M.piso[idx(tx, ty)])) {
       const cebo = J.cuenta('cebo') > 0;
       J.pesca = { estado: 'espera', x, y, t: (2 + Math.random() * 5) * (cebo ? 0.45 : 1), cana: it, region: M.region[idx(tx, ty)], cebo };
       p.golpeT = 0.5; p.swing = 0.4; p.swingDur = 0.4; p.swingItem = it.icono;

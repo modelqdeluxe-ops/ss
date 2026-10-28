@@ -553,6 +553,22 @@ function dibujarAspecto(ctx) {
   botonTexto(ctx, x0, y + 4, w, 16, 'DESPERTAR', () => { UI.creando = false; J.aspectoNuevo = Object.assign({}, A); empezar(false); }, { color: '#5e1430' });
   botonTexto(ctx, 8, LH - 22, 54, 14, 'VOLVER', () => { UI.creando = false; });
 }
+// Pantalla de carga mientras se genera o se carga el mundo: negro, el Corazón que late y una barra fina.
+function dibujarCarga(ctx) {
+  ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, LW, LH);
+  const c = J.carga || { t: 0, txt: '' }, cx = Math.round(LW / 2), cy = Math.round(LH * 0.42), lat = (Math.sin(J.t * 5.2) + Math.sin(J.t * 10.4) * 0.5) * 0.5 + 0.5;
+  const r = 5 + lat * 1.5;
+  ctx.fillStyle = `rgba(255, 60, 120, ${0.08 + lat * 0.08})`; circulo(ctx, cx, cy, r * 3.2);
+  ctx.fillStyle = '#8a1a3a'; circulo(ctx, cx - r * 0.45, cy - r * 0.2, r * 0.62); circulo(ctx, cx + r * 0.45, cy - r * 0.2, r * 0.62);
+  ctx.beginPath(); ctx.moveTo(cx - r * 1.05, cy); ctx.lineTo(cx, cy + r * 1.15); ctx.lineTo(cx + r * 1.05, cy); ctx.fill();
+  ctx.fillStyle = '#ff6a9a'; ctx.fillRect(Math.round(cx - r * 0.55), Math.round(cy - r * 0.45), 2, 2);
+  texto(ctx, 'DESPERTANDO EL MUNDO', cx, cy + 18, '#c86a8a', { alin: 'c' });
+  texto(ctx, (c.txt || '') + '…', cx, cy + 28, COL.suave, { alin: 'c' });
+  const w = Math.min(160, LW - 40), x = Math.round(cx - w / 2), y = cy + 40;
+  ctx.fillStyle = '#1a0e14'; ctx.fillRect(x, y, w, 3);
+  ctx.fillStyle = '#c83a6a'; ctx.fillRect(x, y, Math.round(w * Math.min(1, c.t)), 3);
+  ctx.fillStyle = '#ff9ab8'; ctx.fillRect(x + Math.round(w * Math.min(1, c.t)) - 1, y, 1, 3);
+}
 function dibujarTitulo(ctx, hayPartida) {
   if (UI.creando) { dibujarAspecto(ctx); return; }
   ctx.fillStyle = 'rgba(8,6,12,0.3)'; ctx.fillRect(0, 0, LW, LH);
@@ -570,7 +586,7 @@ function dibujarTitulo(ctx, hayPartida) {
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
   botonTexto(ctx, x, y, w, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
-  if (hayPartida && !leerPartida()) texto(ctx, 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
+  if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
   const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
   pie.forEach((l, k) => texto(ctx, l, LW / 2, LH - 10 - (pie.length - 1 - k) * 8, COL.suave, { alin: 'c', borde: COL.negro }));
 }

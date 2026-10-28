@@ -86,13 +86,18 @@ CONSTRUIR_MODELOS.push(function suelosNuevos() {
   };
   for (const [arte, fn] of Object.entries(T)) for (let v = 0; v < 4; v++) def(`s_${arte}_${v}`, fn(v));
 
-  // ---- bordes: para cada suelo con prioridad, 4 lados (n, e, s, o) y 4 esquinas (no, ne, se, so)
+  bordesSuelo(Object.keys(PRIORIDAD_SUELO));
+});
+
+// Bordes de los suelos con prioridad: 4 lados (n, e, s, o) y 4 esquinas (no, ne, se, so), sacados de su textura
+// s_<arte>_0 (que tiene que estar ya dibujada). Los suelos de otros archivos llaman a esto tras dibujar los suyos.
+function bordesSuelo(lista) {
   const ultimo = (n) => { for (let i = DIBUJOS.length - 1; i >= 0; i--) if (DIBUJOS[i][0] === n) return DIBUJOS[i][1]; return null; };
   const oscuro = (L) => { const cs = L.d.filter(Boolean).map((c) => { const [r, g, b] = hexRgb(c.slice(0, 7)); return [r + g + b, c]; }).sort((p, q) => p[0] - q[0]); return cs.length ? mezcla(cs[0][1].slice(0, 7), '#000000', 0.45) : '#000000'; };
-  for (const arte of Object.keys(PRIORIDAD_SUELO)) {
-    const info = { arte }, tex = ultimo(`s_${arte}_0`);
+  for (const arte of lista) {
+    const tex = ultimo(`s_${arte}_0`);
     if (!tex) continue;
-    const borde = oscuro(tex), ondas = ruido(900 + info.arte.length * 7, 4);
+    const borde = oscuro(tex), ondas = ruidoCiclico(900 + arte.length * 7, 4, 16);
     const prof = (t) => 2.4 + ondas(t, 3) * 3.2;
     const hacer = (nombre, dentro) => {
       const L = new Lienzo(16, 16);
@@ -101,14 +106,14 @@ CONSTRUIR_MODELOS.push(function suelosNuevos() {
         if (d < 0) L.d[y * 16 + x] = tex.d[y * 16 + x];
         else if (d < 1) L.d[y * 16 + x] = borde;
       }
-      def(`borde_${info.arte}_${nombre}`, L);
+      def(`borde_${arte}_${nombre}`, L);
     };
     hacer('n', (x, y) => y - prof(x)); hacer('s', (x, y) => 15 - y - prof(x));
     hacer('o', (x, y) => x - prof(y)); hacer('e', (x, y) => 15 - x - prof(y));
     const esq = (cx, cy) => (x, y) => Math.hypot(x + 0.5 - cx, y + 0.5 - cy) - (3.6 + ondas(x, y) * 1.6);
     hacer('no', esq(0, 0)); hacer('ne', esq(16, 0)); hacer('se', esq(16, 16)); hacer('so', esq(0, 16));
   }
-});
+}
 
 // Avisos de ataque en el suelo (se tiñen al dibujarlos): un anillo que late y un disco que se llena hasta el
 // golpe; grietas que se abren (raíces que van a salir) y círculos de runas (magia de la Podre).

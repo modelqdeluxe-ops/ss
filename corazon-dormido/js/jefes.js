@@ -7,6 +7,7 @@ function crearJefes() {
   J.jefes = {};
   for (const [id, g] of Object.entries(M.guaridas)) {
     const d = JEFES[id];
+    if (!d) continue; // guaridas de jefes que aún no despiertan en esta versión
     const base = { id, jefe: true, x: g.x * T + 8, y: g.y * T + 12, hw: 9, hh: 5, radio: d.radio, alto: 14, vida: d.vida, vidaMax: d.vida, estado: 'dormido', t: 0, flash: 0, def: 0, fase: 1, activo: false, ultimo: '', rafagas: 0, colores: ['#7a5238', '#a07450', '#ff8fa8'] };
     if (id === 'reina') Object.assign(base, { hw: 14, hh: 8, alto: 20, colores: ['#efe2bf', '#c9a878', '#7ac83a'], x: g.x * T + 8, y: g.y * T + 8 });
     if (id === 'ozmar') Object.assign(base, { hw: 6, hh: 4, alto: 16, colores: ['#5a2a7a', '#c080ff', '#2a1a3a'], x: g.x * T + 8, y: (g.y0 + 3) * T + 8 });

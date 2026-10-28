@@ -15,8 +15,8 @@ const fs = require('fs');
   p.on('pageerror', (e) => errs.push(e.message + '\n' + e.stack));
   p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto('file://' + path.resolve(__dirname, '..', 'index.html'));
-  await p.waitForTimeout(600);
-  await p.evaluate(() => { localStorage.clear(); empezar(false); window.danarJugador = () => {}; J.aparecer = 1e9; });
+  await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
+  await p.evaluate(async () => { localStorage.clear(); await empezar(false); window.danarJugador = () => {}; J.aparecer = 1e9; });
   const foto = async (n, espera = 900, recorte = true) => {
     await p.waitForTimeout(espera);
     await p.screenshot({ path: path.join(salida, n + '.png') });
@@ -37,9 +37,15 @@ const fs = require('fs');
   const escena = (n, fn) => { if (!filtro || n.includes(filtro)) escenas.push([n, fn]); };
   const C = await p.evaluate(() => CENTRO);
   escena('santuario', async () => { await ir(C, C + 4); await foto('santuario'); });
-  for (const [n, reg] of [['raices', 1], ['arcilla', 2], ['ruinas', 3], ['selva', 4], ['pradera', 5]]) escena(n, async () => {
+  for (const [n, reg] of [['raices', 1], ['arcilla', 2], ['ruinas', 3], ['selva', 4], ['pradera', 5], ['cienaga', 8], ['ciudad', 9], ['cripta', 10]]) escena(n, async () => {
     const q = await p.evaluate((reg) => { for (let k = 0; k < 200000; k++) { const x = Math.floor(Math.random() * N_MUNDO), y = Math.floor(Math.random() * N_MUNDO); if (M.region[idx(x, y)] === reg && !solido(x, y, true) && !solido(x + 1, y, true) && !solido(x, y + 1, true)) return [x, y]; } return [CENTRO, CENTRO]; }, reg);
     await ir(q[0], q[1]); await foto(n, 1400);
+  });
+  // los sitios de las bandas nuevas (0.7)
+  for (const [n, q] of [['costillas', 'M.costillas'], ['pozo', 'M.pozo'], ['barrio', 'M.barrios[0]'], ['biblioteca', 'M.biblioteca'], ['templo-placas', 'M.templo2'], ['archivero', 'M.archivero'], ['cripta-entrada', 'M.cripta.entrada'], ['braseros', 'M.puzles[0].puerta'], ['palafito', 'M.fijas.find((f) => f.tipo === "gruto_cazador" && M.region[idx(f.x, f.y)] === 8)']]) escena('sitio-' + n, async () => {
+    const g = await p.evaluate((q) => { const g = eval(q); return g ? [g.x, g.y + 3] : null; }, q);
+    if (!g) return;
+    await ir(g[0], g[1]); await foto('sitio-' + n, 1400);
   });
   escena('jugador', async () => {
     await ir(C + 6, C + 6);

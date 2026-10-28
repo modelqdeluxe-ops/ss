@@ -20,28 +20,60 @@ function ajustar() {
 }
 
 // ---------------------------------------------------------------- guardar y cargar
+// Desde la 0.7 la partida va a IndexedDB por trozos (guardado.js). Las de la 0.6 (localStorage, mundo de 640) y
+// las de la fase 1 (v3) se leen una vez y pasan al mundo grande.
 
-function guardarPartida() {
-  if (!M || !J.jug || (J.estado !== 'juego' && J.estado !== 'muerto')) return;
+let tipoPartida = null; // 'v5' (IndexedDB), 'v4' (0.6, por migrar), 'v3' (fase 1, por migrar) o null
+function metaPartida() {
   const p = J.jug;
-  try {
-    localStorage.setItem(CLAVE, JSON.stringify({
-      v: 4, mundo: datosMundo(), jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
-      inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
-      jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
-      mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto,
-    }));
-    hayPartida = true;
-  } catch (e) { /* sin almacenamiento: la partida dura lo que la pestaña */ }
-  J.guardadoT = J.t;
+  return {
+    v: 5, gen: GEN_MUNDO, n: N_MUNDO, sem: M.sem, jug: { x: p.x, y: p.y, vida: Math.max(1, p.vida), hambre: p.hambre },
+    inv: J.inv, sel: J.sel, equipo: J.equipo, hab: J.hab, buffs: J.buffs, hito: J.hito, objetivo: J.objetivo,
+    jefesMuertos: J.jefesMuertos, estatuas: J.estatuas, cama: J.cama, tiempo: J.tiempoMundo, despierto: J.corazonDespierto,
+    mascotas: J.mascotas, altares: J.altares, muralla: J.murallaAbierta, aspecto: J.aspecto,
+    fijas: M.fijas.map((f) => f.muerto || 0), mercaderes: M.mercaderes.map((m) => ({ ...m, ent: undefined, casa: undefined })),
+  };
 }
-function leerPartida() {
-  try { const s = localStorage.getItem(CLAVE); const g = s ? JSON.parse(s) : null; return g && g.v === 4 && g.mundo.n === N_MUNDO ? g : null; } catch (e) { return null; }
+// Guarda en segundo plano; devuelve una promesa (true si se guardó).
+function guardarPartida() {
+  if (!M || !J.jug || M.generando || (J.estado !== 'juego' && J.estado !== 'muerto')) return Promise.resolve(false);
+  J.guardadoT = J.t;
+  let trozos, meta;
+  try { trozos = trozosParaGuardar(); meta = JSON.parse(JSON.stringify(metaPartida())); } catch (e) { return Promise.resolve(false); }
+  hayPartida = true; tipoPartida = 'v5';
+  return Guardado.escribir(meta, trozos).then(() => true, () => {
+    for (const [c] of trozos) { M.sucios.add(c); M.objGuardados.delete(c); } // la próxima vez se intentan otra vez
+    return false; // sin almacenamiento: la partida dura lo que la pestaña
+  });
+}
+async function leerPartida() {
+  try { const g = await Guardado.leer(); return g && g.meta.v === 5 && g.meta.n === N_MUNDO ? g : null; } catch (e) { return null; }
+}
+async function comprobarPartida() {
+  let hay = false;
+  try { hay = await Guardado.hay(); } catch (e) { /* sin IndexedDB */ }
+  tipoPartida = hay ? 'v5' : leerPartidaV4() ? 'v4' : leerPartidaV3() ? 'v3' : null;
+  hayPartida = !!tipoPartida;
+}
+// La partida de la 0.6 (mundo de 640 casillas, en localStorage).
+function leerPartidaV4() {
+  try { const s = localStorage.getItem(CLAVE); const g = s ? JSON.parse(s) : null; return g && g.v === 4 && g.mundo && g.mundo.sem !== undefined ? g : null; } catch (e) { return null; }
 }
 // La partida de la fase 1 (mundo de 320 casillas): se lleva al mundo nuevo el personaje, la mochila, lo logrado y
 // lo que había en los cofres y los muebles puestos (en cofres de mudanza junto al Corazón).
 function leerPartidaV3() {
   try { const s = localStorage.getItem(CLAVE_V3); const g = s ? JSON.parse(s) : null; return g && g.v === 3 ? g : null; } catch (e) { return null; }
+}
+// Pone en cofres junto al Corazón lo que no cabe en el mundo nuevo.
+function cofresMudanza(caja) {
+  let k = 0;
+  while (caja.length && k < 36) {
+    const a = (k / 12) * Math.PI * 2 + 0.3, d = k < 12 ? 6.5 : k < 24 ? 7.4 : 8.3, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d);
+    k++;
+    if (solido(x, y, true) || objetoEn(x, y)) continue;
+    const o = ponerObjeto(x, y, 'cofre');
+    for (let i = 0; i < 30 && caja.length; i++) { const s = caja.shift(); asegurarItem(s.id); if (ITEMS[s.id]) o.datos.inv[i] = s; }
+  }
 }
 function migrarV3(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
@@ -55,32 +87,83 @@ function migrarV3(g) {
     const info = OBJ[tipo], it = info && info.suelta && info.suelta[0] && ITEMS[info.suelta[0][0]];
     if (it && it.tipo === 'colocable' && info.suelta[0][0] !== 'antorcha' && tipo !== 'cultivo') caja.push({ id: info.suelta[0][0], n: 1 });
   }
-  let k = 0;
-  while (caja.length && k < 24) {
-    const a = (k / 12) * Math.PI * 2 + 0.3, d = k < 12 ? 6.5 : 7.4, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d);
-    k++;
-    if (solido(x, y, true) || objetoEn(x, y)) continue;
-    const o = ponerObjeto(x, y, 'cofre');
-    for (let i = 0; i < 30 && caja.length; i++) { const s = caja.shift(); asegurarItem(s.id); if (ITEMS[s.id]) o.datos.inv[i] = s; }
-  }
+  cofresMudanza(caja);
   setTimeout(() => aviso('El mundo ha crecido. Tus cofres y muebles están en cofres junto al Corazón.', null, '#9fe0a8'), 1500);
 }
+// La partida de la 0.6 en el mundo grande: el anillo interior (con tu casa, lo que picaste y lo que viste) se pega
+// tal cual, porque el generador lo hace igual que entonces; lo que tenías fuera de la Muralla va a cofres de mudanza.
+function migrarV4(g) {
+  const n = g.mundo.n || 640, NN = n * n, O = CENTRO - n / 2, c0 = n / 2, RI = R_MURALLA + 5;
+  const dentro = (x, y) => Math.hypot(x - c0, y - c0) <= RI;
+  const muro = desRle(g.mundo.muro, NN), mena = desRle(g.mundo.mena, NN), visto = desRle(g.mundo.visto, NN), piso = g.mundo.piso ? desRle(g.mundo.piso, NN) : null;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    if (!dentro(x, y)) continue;
+    const j = y * n + x, i = idx(x + O, y + O);
+    M.muro[i] = muro[j]; M.mena[i] = mena[j]; M.visto[i] = visto[j]; if (piso) M.piso[i] = piso[j];
+    tocarTrozo(x + O, y + O);
+  }
+  for (const [i, o] of [...M.objetos]) if (Math.hypot(o.x - CENTRO, o.y - CENTRO) <= RI) { M.objetos.delete(i); M.luces.delete(i); M.cultivos.delete(i); }
+  // lo que salía en los cofres de la Selva vieja sin que el jugador hiciera nada no se regala dos veces
+  const botinNatural = new Set();
+  for (let k = 0; k < 300; k++) { for (const s of botinSelva(azar(k + 1), 1 + (k % 4))) if (s) botinNatural.add(s.id); for (const s of botinCofre(azar(k + 7), 1 + (k % 3) * 2)) if (s) botinNatural.add(s.id); }
+  const itemDe = {};
+  for (const [id, it] of Object.entries(ITEMS)) if (it.tipo === 'colocable') itemDe[it.obj] = id;
+  for (const t of ['cofre_selva', 'mesa_selva', 'silla_selva', 'antorcha']) delete itemDe[t]; // también salen solos en la Selva
+  const caja = [];
+  for (const [x, y, tipo, extra, datos] of g.mundo.objetos || []) {
+    if (!OBJ[tipo]) continue;
+    if (dentro(x, y)) { const o = ponerObjeto(x + O, y + O, tipo, extra); if (datos) o.datos = datos; continue; }
+    const inv = datos && datos.inv ? datos.inv.filter(Boolean) : [];
+    if (inv.length && (tipo === 'cofre' || inv.some((s) => !botinNatural.has(s.id)))) for (const s of inv) caja.push({ id: s.id, n: s.n });
+    if (itemDe[tipo]) caja.push({ id: itemDe[tipo], n: 1 });
+  }
+  cofresMudanza(caja);
+  if (g.muralla) for (let y = CENTRO - RI - 4; y <= CENTRO + RI + 4; y++) for (let x = CENTRO - RI - 4; x <= CENTRO + RI + 4; x++) { const i = idx(x, y); if (M.muro[i] === MURO.MURALLA) { M.muro[i] = 0; M.piso[i] = SUELO.GRAVA; tocarTrozo(x, y); } }
+  // posiciones guardadas: dentro, se mueven con el mundo; fuera, vuelven junto al Corazón
+  const fuera = (px, py) => !dentro(Math.floor(px / T), Math.floor(py / T));
+  if (g.jug && !fuera(g.jug.x, g.jug.y)) { g.jug.x += O * T; g.jug.y += O * T; } else if (g.jug) { delete g.jug.x; delete g.jug.y; }
+  g.cama = g.cama && dentro(g.cama.x, g.cama.y) ? { x: g.cama.x + O, y: g.cama.y + O } : null;
+  g.fijas = null; // las criaturas fijas de fuera son otras
+  g.mercaderes = (g.mundo.mercaderes || []).filter((m) => dentro(m.ix, m.iy)).map((m) => ({ ...m, x: m.x + O, y: m.y + O, ix: m.ix + O, iy: m.iy + O, casa: undefined, ent: undefined }));
+  GL.olvidarTodo(); M.mapa = null; cambioLuz();
+  setTimeout(() => aviso('El mundo ha crecido: la Selva llega mucho más lejos. Tu casa sigue donde estaba.', null, '#9fe0a8'), 1500);
+  if (caja.length || g.mundo.objetos.some(([x, y]) => !dentro(x, y))) setTimeout(() => aviso('Lo que tenías al otro lado de la Muralla está en cofres junto al Corazón.', null, '#9fe0a8'), 4500);
+}
+// Lo que guarda la partida además del mundo (la de la 0.6 lo guardaba igual).
+function restaurarJugador(g) {
+  Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
+  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL) });
+  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
+  J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
+  for (const s of J.inv) if (s) asegurarItem(s.id);
+  for (const o of M.objetos.values()) if (o.datos && o.datos.inv) for (const s of o.datos.inv) if (s) asegurarItem(s.id);
+  if (g.fijas) g.fijas.forEach((t, k) => { if (M.fijas[k]) M.fijas[k].muerto = t; });
+  M.mercaderes = g.mercaderes || [];
+  J.jug = nuevoJugador();
+  Object.assign(J.jug, g.jug || {});
+}
+// Respiro para que se pinte la pantalla de carga (si la pestaña está oculta, no espera al cuadro).
+const respiro = () => new Promise((ok) => { const t = setTimeout(ok, 60); requestAnimationFrame(() => { clearTimeout(t); setTimeout(ok, 0); }); });
 
-function empezar(continuar) {
-  const g = continuar ? leerPartida() : null, v3 = continuar && !g ? leerPartidaV3() : null;
+async function empezar(continuar) {
+  J.estado = 'cargando'; J.panel = null; J.carga = { t: 0, txt: 'Despertando el mundo' };
+  await respiro();
+  let g = null, v4 = null, v3 = null;
+  if (continuar) { g = await leerPartida(); if (!g) v4 = leerPartidaV4(); if (!g && !v4) v3 = leerPartidaV3(); }
+  else { try { await Guardado.borrar(); } catch (e) { /* sin IndexedDB */ } }
   Object.assign(J, { enemigos: [], botines: [], proyectiles: [], disparos: [], particulas: [], numeros: [], avisos: [], efectos: [], charcos: [], avisosSuelo: [], pesca: null, panel: null, bombas: [], regreso: null, mascotaEnt: null, cartel: null, regionAntes: -1, rayosCielo: [] });
+  const sem = g ? g.meta.sem : v4 ? v4.mundo.sem : v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0;
+  await generarMundoPoco(sem, ([t, txt]) => { J.carga = { t: t * 0.94, txt }; });
   if (g) {
-    cargarMundo(g.mundo);
-    Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-    Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL) });
-    J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
-    J.inv = g.inv.concat(new Array(N_INV).fill(null)).slice(0, N_INV);
-    for (const s of J.inv) if (s) asegurarItem(s.id);
-    for (const o of M.objetos.values()) if (o.datos && o.datos.inv) for (const s of o.datos.inv) if (s) asegurarItem(s.id);
-    J.jug = nuevoJugador();
-    Object.assign(J.jug, g.jug);
+    J.carga = { t: 0.96, txt: 'Tu mundo' }; await respiro();
+    for (const [c, reg] of g.trozos) aplicarTrozo(c, reg);
+    GL.olvidarTodo(); M.mapa = null; cambioLuz();
+    restaurarJugador(g.meta);
+  } else if (v4) {
+    J.carga = { t: 0.96, txt: 'Tu mundo crece' }; await respiro();
+    migrarV4(v4);
+    restaurarJugador(v4);
   } else {
-    generarMundo(v3 ? v3.mundo.sem : (Math.random() * 1e9) | 0);
     Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
     J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
     J.inv = new Array(N_INV).fill(null);
@@ -88,15 +171,16 @@ function empezar(continuar) {
     else for (const [id, n] of INICIO) agregar(id, n);
     J.jug = nuevoJugador();
   }
+  if (v3 || v4) for (let y = CENTRO - 16; y <= CENTRO + 16; y++) for (let x = CENTRO - 16; x <= CENTRO + 16; x++) tocarTrozo(x, y); // que la mudanza se guarde
   calcularStats();
   crearJefes();
   J.estado = 'juego'; J.aparecer = 4;
   J.cam.x = J.jug.x; J.cam.y = J.jug.y;
   FLUJO.t = 0;
-  if (!g && !v3) { aviso('El Corazón duerme. Despiértalo.', null, '#ffb3c8'); setTimeout(() => aviso('Rompe raíces para sacar madera'), 2500); }
-  guardarPartida();
+  if (!g && !v3 && !v4) { aviso('El Corazón duerme. Despiértalo.', null, '#ffb3c8'); setTimeout(() => aviso('Rompe raíces para sacar madera'), 2500); }
+  return guardarPartida();
 }
-function irTitulo() { J.estado = 'titulo'; J.panel = null; hayPartida = !!leerPartida() || !!leerPartidaV3(); }
+function irTitulo() { J.estado = 'titulo'; J.panel = null; comprobarPartida(); }
 function revisarObjetivos() {
   while (J.objetivo < OBJETIVOS.length && OBJETIVOS[J.objetivo].hecho(J)) {
     aviso('¡Hecho! ' + OBJETIVOS[J.objetivo].txt, null, '#7dff9a');
@@ -179,6 +263,7 @@ function fuentesFijas(x0, y0, x1, y1) {
     else if (o.tipo === 'altar_titan') { if (o.extra) f.push({ x, y, r: 5, c: o.datos && o.datos.titan === 'tamar' ? [0.9, 0.95, 1] : [0.5, 1, 0.7], k: 1 }); }
     else if (o.tipo === 'antorcha' && o.datos && o.datos.magica) f.push({ x, y, r: 7, c: [0.65, 0.4, 1], k: 0.9, fuego: true });
     else if (info.luz) { const [r, cr, cg, cb] = info.luz; f.push({ x, y, r, c: [cr, cg, cb], k: info.fuego ? 0.9 : 0.85, fuego: !!info.fuego }); }
+    else if (info.encendido && o.extra) { const [r, cr, cg, cb] = info.encendido; f.push({ x, y, r, c: [cr, cg, cb], k: 0.9, fuego: !!info.fuego }); }
   }
   // la luz que baja del cielo en la Selva
   for (const s of M.soles) if (s.x > x0 - 12 && s.x < x1 + 12 && s.y > y0 - 12 && s.y < y1 + 12) f.push({ x: s.x * T + 8, y: s.y * T + 8, r: s.r, c: s.c || [1.0, 0.95, 0.7], k: s.k });
@@ -210,7 +295,7 @@ function fuentesDinamicas() {
 
 // ---------------------------------------------------------------- dibujo de las cosas del mundo
 
-const HALO = { arbol_luna: [1.6, [0.5, 0.8, 1], 0.22], flor_sol: [0.8, [1, 0.85, 0.4], 0.18], farol_carmesi: [1.8, [1, 0.5, 0.45], 0.3], lampara_pie: [1.3, [1, 0.85, 0.55], 0.26], hoguera: [1.2, [1, 0.6, 0.25], 0.32], altar_titan: [1.2, [0.7, 1, 0.8], 0.25], incubadora: [0.7, [0.6, 0.9, 1], 0.16], huevo_larva: [0.7, [0.5, 1, 0.3], 0.14], antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], farol: [1.7, [1, 0.8, 0.4], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16], olla: [0.7, [1, 0.5, 0.25], 0.15] };
+const HALO = { bulto_podre: [1.3, [1, 0.24, 0.7], 0.24], seta_podre: [0.8, [1, 0.25, 0.7], 0.18], idolo_podre: [1.1, [1, 0.24, 0.7], 0.22], capullo_podre: [0.8, [1, 0.24, 0.7], 0.14], farol_pantano: [1.3, [0.55, 1, 0.6], 0.26], farola_velada: [1.5, [0.55, 0.72, 1], 0.3], brasero_runa: [1.3, [0.72, 0.45, 1], 0.32], piedra_paso: [1.4, [0.5, 0.9, 1], 0.28], puerta_sellada: [1.2, [0.6, 0.45, 1], 0.2], cofre_velado: [0.6, [0.55, 0.72, 1], 0.14], arbol_luna: [1.6, [0.5, 0.8, 1], 0.22], flor_sol: [0.8, [1, 0.85, 0.4], 0.18], farol_carmesi: [1.8, [1, 0.5, 0.45], 0.3], lampara_pie: [1.3, [1, 0.85, 0.55], 0.26], hoguera: [1.2, [1, 0.6, 0.25], 0.32], altar_titan: [1.2, [0.7, 1, 0.8], 0.25], incubadora: [0.7, [0.6, 0.9, 1], 0.16], huevo_larva: [0.7, [0.5, 1, 0.3], 0.14], antorcha: [1.1, [1, 0.6, 0.25], 0.32], horno: [1.0, [1, 0.5, 0.2], 0.28], lampara: [1.5, [0.6, 0.9, 1], 0.3], farol: [1.7, [1, 0.8, 0.4], 0.3], cristal: [1.1, [0.3, 0.85, 1], 0.24], hongo: [0.9, [0.3, 0.85, 1], 0.2], arbusto: [0.8, [0.3, 0.6, 1], 0.16], olla: [0.7, [1, 0.5, 0.25], 0.15] };
 const ALTURA_HALO = { arbol_luna: 2.0, flor_sol: 0.5, farol_carmesi: 1.1, lampara_pie: 1.15, hoguera: 0.4, altar_titan: 1.0, incubadora: 0.5, huevo_larva: 0.3, antorcha: 1.05, horno: 0.5, lampara: 1.0, farol: 1.1, cristal: 0.55, hongo: 0.45, arbusto: 0.3, olla: 0.3 };
 const T4 = [1, 1, 1, 1];
 
@@ -228,6 +313,9 @@ function dibujarObjeto3d(o) {
   else if (o.tipo === 'altar_cielo') n = J.jefesMuertos.tamar ? 'altar_cielo_on' : 'altar_cielo';
   else if (o.tipo === 'puerta') n = Math.hypot(J.jug.x / T - x, J.jug.y / T - z) < 1.4 ? 'puerta_abierta' : 'puerta';
   else if (o.tipo === 'cultivo') { const e = etapaCultivo(o); n = `cultivo_${o.datos.planta}_${e}`; if (o.datos.regado) GL.plano('regado', x, o.y + 0.5, { unlit: 0, y: 0.003, tinte: [1, 1, 1, 0.8] }); }
+  else if (info.nombreDe) n = info.nombreDe(o);
+  else if (info.encendido) n = info.arte + (o.extra ? '_on' : '');
+  else if (info.variantes) { const v = Math.floor(hash2(o.x, o.y, 5) * info.variantes); if (v) n = `${info.arte}_${v}`; }
   if (o.tipo === 'corazon') {
     const flota = Math.sin(J.t * 1.6) * 0.08, despierto = J.corazonDespierto, cor = Object.keys(J.estatuas).length ? 'corazon' : 'corazon_dormido';
     GL.sprite('altar', x, z + 0.4);
@@ -242,7 +330,7 @@ function dibujarObjeto3d(o) {
     const cz = o.y + 0.5;
     if (SPR[n + '_sombra']) GL.plano(n + '_sombra', x, cz, { tinte: T4 });
     GL.modelo(n, x, cz);
-    const brilla = info.brillo || ((o.tipo === 'estatua' || o.tipo === 'altar_titan') && o.extra) || o.tipo === 'incubadora' || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
+    const brilla = info.brillo || ((o.tipo === 'estatua' || o.tipo === 'altar_titan' || info.encendido) && o.extra) || o.tipo === 'incubadora' || (o.tipo === 'cultivo' && CULTIVOS[o.datos.planta].brilla && etapaCultivo(o) === 3);
     if (brilla && SPR[n + '_luz']) {
       GL.sprite(n + '_luz', x + meta.dx, cz + meta.dz + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.8], lx: x, lz: cz });
       const h = HALO[o.tipo];
@@ -453,6 +541,7 @@ function dibujarMundo3d() {
     if (!enMundo(tx, ty)) continue;
     const i = idx(tx, ty);
     if (M.piso[i] === SUELO.AGUA) GL.plano(`aguab_${(Math.floor(J.t * 3) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: -0.05, unlit: 0, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
+    else if (M.piso[i] === SUELO.AGUA_NEGRA) { if (hash2(tx, ty, 31) < 0.35) GL.plano(`aguab_${(Math.floor(J.t * 2) + tx * 7 + ty * 3) % 4}`, tx + 0.5, ty + 0.5, { y: -0.05, unlit: 0, lote: GL.lotes.brillo, tinte: [0.45, 0.62, 0.55, 0.45] }); }
     else if (M.mena[i] && M.visto[i]) {
       const fase = (J.t * 0.6 + hash2(tx, ty, 21)) % 1;
       if (fase < 0.12) { const k = Math.sin((fase / 0.12) * Math.PI); GL.sprite('destello', tx + 0.3 + hash2(tx, ty, 22) * 0.4, ty + 0.98, { y: GL.ALTO * 0.6, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, k], escala: 0.5 + k * 0.5 }); }
@@ -518,6 +607,7 @@ function dibujarTextosMundo() {
 function dibujar() {
   UI.botones = [];
   ctx.clearRect(0, 0, LW, LH);
+  if (J.estado === 'cargando') { dibujarCarga(ctx); return; }
   if (!M) return;
   dibujarMundo3d();
   dibujarTextosMundo();
@@ -595,11 +685,18 @@ async function iniciar(datosHot) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') { guardarPartida(); if (J.estado === 'juego' && !J.panel) J.panel = 'pausa'; }
   });
-  const g = leerPartida();
-  hayPartida = !!g || !!leerPartidaV3();
-  if (g) cargarMundo(g.mundo); else generarMundo(20261028);
+  // de fondo del título: el interior de tu mundo (con lo que hiciste allí) o uno cualquiera
+  const g = await leerPartida();
+  await comprobarPartida();
+  const v4 = !g && leerPartidaV4();
+  generarMundo(g ? g.meta.sem : v4 ? v4.mundo.sem : 20261028, true);
+  if (g) {
+    for (const [c, reg] of g.trozos) { const cx = (c % NT_G) * TROZO_G + TROZO_G / 2, cy = Math.floor(c / NT_G) * TROZO_G + TROZO_G / 2; if (Math.hypot(cx - CENTRO, cy - CENTRO) < R_MURALLA + 60) aplicarTrozo(c, reg); }
+    GL.olvidarTodo(); cambioLuz();
+  }
   J.jug = nuevoJugador();
   J.cam.x = CENTRO * T; J.cam.y = CENTRO * T;
+  window.juegoListo = true; // las pruebas esperan a esto antes de empezar
   if (datosHot && datosHot.enJuego && hayPartida) empezar(true);
   requestAnimationFrame((ms) => { ultimo = ms; cuadro(ms); });
 }

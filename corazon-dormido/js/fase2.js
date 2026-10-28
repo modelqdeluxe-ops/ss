@@ -20,7 +20,7 @@ function abrirMuralla() {
     if (M.muro[i] !== MURO.MURALLA) continue;
     M.muro[i] = 0; M.piso[i] = SUELO.GRAVA;
     const x = i % N_MUNDO, y = (i - x) / N_MUNDO;
-    GL.tocar(x, y); if (M.visto[i]) marcarMapa(i);
+    GL.tocar(x, y); tocarTrozo(x, y); if (M.visto[i]) marcarMapa(i);
   }
   cambioLuz();
   const p = J.jug;
@@ -185,7 +185,7 @@ function casaDe(x0, y0) {
     }
   }
   const libres = [];
-  for (const i of vistas) { const o = M.objetos.get(i); if (o && o.tipo === 'cama') cama = true; if (!o && M.piso[i] !== SUELO.AGUA) libres.push(i); }
+  for (const i of vistas) { const o = M.objetos.get(i); if (o && o.tipo === 'cama') cama = true; if (!o && !esAgua(M.piso[i])) libres.push(i); }
   if (!cama || !libres.length) return null;
   return { casillas: [...vistas], libres };
 }

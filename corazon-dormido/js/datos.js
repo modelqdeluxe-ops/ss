@@ -3,20 +3,23 @@
 // Para equilibrar o añadir contenido, se toca aquí. Diseño completo en DISEÑO.md.
 
 const T = 16;               // tamaño de una casilla en píxeles del arte
-const N_MUNDO = 640;        // el mundo mide N_MUNDO × N_MUNDO casillas
+const N_MUNDO = 2048;       // el mundo mide N_MUNDO × N_MUNDO casillas
 const CENTRO = N_MUNDO / 2;
 const R_RAICES = 48;        // radio de Las Raíces
 const R_MURALLA = 142;      // radio de la Gran Muralla
-const R_EXTERIOR = 296;     // hasta aquí llega el anillo exterior (Selva, Mar y Desierto); luego, roca
+const R_SELVA1 = 330;       // fin de la Selva Esmeralda; detrás, la Ciénaga de la Podre
+const R_SELVA2 = 470;       // fin de la Ciénaga; detrás, la Ciudad Velada
+const R_EXTERIOR = 620;     // hasta aquí llega el anillo exterior (sus tres sectores); detrás, las Profundidades
+const R_MUNDO = 1000;       // el borde del mundo (las Profundidades duermen hasta su fase)
 
 // ---------------------------------------------------------------- regiones
 
-const REGION = { SANTUARIO: 0, RAICES: 1, ARCILLA: 2, RUINAS: 3, SELVA: 4, PRADERA: 5, MOHO: 6, SELLADO: 7 };
-const NOMBRE_REGION = ['Santuario del Corazón', 'Las Raíces', 'Cuevas de Arcilla', 'Ruinas Olvidadas', 'Selva Esmeralda', 'Pradera de la Selva', 'Mazmorra del Moho', 'Tierras dormidas'];
+const REGION = { SANTUARIO: 0, RAICES: 1, ARCILLA: 2, RUINAS: 3, SELVA: 4, PRADERA: 5, MOHO: 6, SELLADO: 7, CIENAGA: 8, CIUDAD: 9, CRIPTA: 10 };
+const NOMBRE_REGION = ['Santuario del Corazón', 'Las Raíces', 'Cuevas de Arcilla', 'Ruinas Olvidadas', 'Selva Esmeralda', 'Pradera de la Selva', 'Mazmorra del Moho', 'Tierras dormidas', 'Ciénaga de la Podre', 'Ciudad Velada', 'Cripta de los Veladores'];
 // Tono de la oscuridad en cada región (sombras frías, ambiente propio)
-const TONO_REGION = [[0.9, 0.95, 1.1], [0.95, 0.94, 1.05], [1.02, 0.92, 0.95], [0.9, 0.96, 1.08], [0.92, 1.06, 0.9], [1.02, 1.04, 0.86], [0.86, 1.02, 1.04], [0.9, 0.9, 1.05]];
+const TONO_REGION = [[0.9, 0.95, 1.1], [0.95, 0.94, 1.05], [1.02, 0.92, 0.95], [0.9, 0.96, 1.08], [0.92, 1.06, 0.9], [1.02, 1.04, 0.86], [0.86, 1.02, 1.04], [0.9, 0.9, 1.05], [0.96, 0.9, 1.04], [0.88, 0.94, 1.12], [0.9, 0.88, 1.08]];
 // Luz de fondo de lo ya visto en cada región: la Selva recibe luz desde arriba (como en Core Keeper).
-const AMBIENTE_REGION = [[0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.17, 0.21, 0.11], [0.21, 0.23, 0.13], [0.03, 0.05, 0.06], [0.03, 0.03, 0.05]];
+const AMBIENTE_REGION = [[0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.035, 0.03, 0.055], [0.17, 0.21, 0.11], [0.21, 0.23, 0.13], [0.03, 0.05, 0.06], [0.03, 0.03, 0.05], [0.07, 0.06, 0.08], [0.08, 0.09, 0.12], [0.03, 0.03, 0.05]];
 
 // ---------------------------------------------------------------- suelos
 // arte: textura s_<arte>_<0..3>. decor: adornos de pie (guijarro = el del bioma). planos: adornos tumbados.

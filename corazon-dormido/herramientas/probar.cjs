@@ -15,7 +15,8 @@ const path = require('path');
   await p.goto(url);
   await p.waitForTimeout(500);
   await p.screenshot({ path: path.join(salida, '1-titulo.png') });
-  await p.evaluate(() => { localStorage.clear(); empezar(false); });
+  await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
+  await p.evaluate(async () => { localStorage.clear(); await empezar(false); });
   const teclas = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
   for (let k = 0; k < 40; k++) {
     const t = teclas[Math.floor(Math.random() * 4)];
@@ -30,9 +31,9 @@ const path = require('path');
     await p.waitForTimeout(200);
     await p.screenshot({ path: path.join(salida, `3-${panel}.png`) });
   }
-  await p.evaluate(() => { J.panel = null; guardarPartida(); });
+  await p.evaluate(() => { J.panel = null; return guardarPartida(); });
   const antes = await p.evaluate(() => `${Math.round(J.jug.x)},${Math.round(J.jug.y)} muros ${M.muro.reduce((a, b) => a + (b ? 1 : 0), 0)}`);
-  await p.reload(); await p.waitForTimeout(500);
+  await p.reload(); await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
   await p.evaluate(() => empezar(true));
   const despues = await p.evaluate(() => `${Math.round(J.jug.x)},${Math.round(J.jug.y)} muros ${M.muro.reduce((a, b) => a + (b ? 1 : 0), 0)}`);
   console.log(antes === despues ? 'guardar y cargar: bien' : `guardar y cargar: DISTINTO (${antes} / ${despues})`);

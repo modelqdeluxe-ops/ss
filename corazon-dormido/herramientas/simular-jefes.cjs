@@ -10,7 +10,7 @@ const path = require('path');
   const errs = [];
   p.on('pageerror', (e) => errs.push(e.message + '\n' + e.stack));
   await p.goto('file://' + path.resolve(__dirname, '..', 'index.html'));
-  await p.waitForTimeout(500);
+  await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
   const EQUIPO = {
     topo: { arma: 'espada_cobre', casco: 'casco_cobre', peto: 'peto_cobre', botas: 'botas_cobre', comida: ['baya', 'hongo'] },
     reina: { arma: 'espada_estano', casco: 'casco_estano', peto: 'peto_estano', botas: 'botas_estano', comida: ['baya', 'carne_larva'] },
@@ -19,8 +19,8 @@ const path = require('path');
     tamar: { arma: 'espada_carmesi', casco: 'casco_carmesi', peto: 'peto_carmesi', botas: 'botas_carmesi', comida: ['fruta_selva', 'avena'] },
   };
   for (const [id, eq] of Object.entries(EQUIPO)) for (let k = 0; k < intentos && (!process.argv[3] || process.argv[3] === id); k++) {
-    const r = await p.evaluate(([id, eq]) => {
-      localStorage.clear(); empezar(false);
+    const r = await p.evaluate(async ([id, eq]) => {
+      localStorage.clear(); await empezar(false);
       cancelAnimationFrame(0);
       J.inv = new Array(N_INV).fill(null);
       J.inv[0] = { id: eq.arma, n: 1 };

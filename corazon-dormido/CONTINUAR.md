@@ -55,3 +55,35 @@ push no la sustituya; la próxima versión se añade con `HEAD`).
 6. Contenido: mundo mucho más grande por fase (guardar por cambios), diario de misiones, NPC con diálogo,
    puzles (placas, palancas, bloques, runas, espejos), mazmorras. Después la fase 3.
 7. Probar (probar-todo, galería, simular-jefes), versión 0.6.0 en `VERSIONES.txt` con `HEAD`, Release y artifact.
+
+## 0.7 en marcha: el mundo grande (sin publicar; la 0.6.0 está fijada a `1e1b5e35` en `VERSIONES.txt`)
+
+Hecho:
+- Mundo de 2048×2048 (`N_MUNDO`). El anillo interior sale idéntico al de la 0.6 (el ruido se mide desde la esquina
+  del mundo viejo, `OX` en `mundo.js`), así que las partidas de la 0.6 pegan su interior tal cual.
+- Generación por pasos (`pasosMundo` es una función generadora; `generarMundoPoco` cede al navegador entre pasos) con
+  pantalla de carga (`dibujarCarga`). Todo el mundo en ~0,6 s en el ordenador.
+- Guardado v5 en IndexedDB por trozos de 64×64 (`guardado.js`): solo se guardan los trozos tocados (cavado,
+  construido, cofres, lo visto). Al cargar se regenera con la semilla y se ponen encima. `GEN_MUNDO` = versión del
+  generador. Migración de la v4 (0.6) y de la v3 (fase 1); `herramientas/probar-migracion.cjs` prueba las tres.
+- El sector de la Selva llega a R=620 en tres bandas (`selva.js`, `cienaga.js`, `ciudad.js`):
+  - **Selva Esmeralda**: 6 praderas, 4 aldeas, 12 campamentos, 12 ruinas, 3 santuarios de la Podre y la cámara de
+    los braseros.
+  - **Ciénaga de la Podre**: la Caja Torácica de Ásor (guarida de Grul), 3 palafitos, 5 santuarios, 7 ruinas
+    hundidas, el Pozo de la Podre y los braseros.
+  - **Ciudad Velada**: 9 barrios con calles, casas, plazas y avenidas con farolas; la Gran Biblioteca, el Templo de
+    las Placas (puzle de bloques), la torre del Archivero, la Cripta de los Veladores (palancas, guarida del
+    Centinela) y 2 cámaras de braseros.
+  - 6 piedras de paso.
+- Suelos, paredes y menas nuevos (`datos3.js`, `arte4.js`): turba, raíz muerta, costra de la Podre, hueso de Ásor,
+  piedra velada, cripta, piedra gris; lodo, agua negra, podre, turbera, calzada, mosaico, ceniza, cripta, placa;
+  médula y plata velada. Modelos de los objetos nuevos en `modelos3.js`.
+
+Falta (en este orden):
+1. La lógica de los puzles y del viaje (`INTERACCIONES` brasero, palanca, empujar, sellada, paso, restos; tablillas
+   con `orden`/`clave`/`texto`; placas que se hunden con `placa_luz`) y grutos que rezan (`fija.reza`).
+2. Criaturas propias de la Ciénaga y la Ciudad, Grul y el Centinela (guaridas ya puestas; `crearJefes` se salta las
+   que no están en `JEFES`), herramientas y armaduras de médula y plata.
+3. Misiones (diario, el Archivero con diálogo), bestiario, tablillas de historia.
+4. Probar todo, `VERSIONES.txt` 0.7.0 con `HEAD`, Release y artifact.
+

@@ -15,7 +15,8 @@ const path = require('path');
   await p.goto(url);
   await p.waitForTimeout(800);
   await p.screenshot({ path: path.join(salida, '00-titulo.png') });
-  await p.evaluate(() => { localStorage.clear(); empezar(false); });
+  await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
+  await p.evaluate(async () => { localStorage.clear(); await empezar(false); });
   await p.waitForTimeout(1200);
   const foto = async (n, espera = 900) => { await p.waitForTimeout(espera); await p.screenshot({ path: path.join(salida, n + '.png') }); };
   const fps = () => p.evaluate(() => new Promise((ok) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 2000) requestAnimationFrame(f); else ok(Math.round(n / ((performance.now() - t0) / 1000))); }; requestAnimationFrame(f); }));
@@ -44,7 +45,7 @@ const path = require('path');
     await foto('02-' + n, 1500);
   }
   // guaridas de los jefes
-  const guaridas = await p.evaluate(() => Object.fromEntries(Object.entries(M.guaridas).map(([k, g]) => [k, [g.x, g.y]])));
+  const guaridas = await p.evaluate(() => Object.fromEntries(Object.entries(M.guaridas).filter(([k]) => J.jefes[k]).map(([k, g]) => [k, [g.x, g.y]])));
   console.log('guaridas', JSON.stringify(guaridas));
   for (const [id, [gx, gy]] of Object.entries(guaridas)) {
     await ir({ x: gx, y: gy + (id === 'ozmar' ? 4 : 5) });
@@ -55,7 +56,7 @@ const path = require('path');
     await foto('03-jefe-' + id + '-b', 1200);
   }
   // criaturas en fila delante del jugador (en el suelo abierto del santuario, bajo el Corazón)
-  await ir({ x: 160, y: 166 });
+  await ir({ x: C0, y: C0 + 16 }); // al sur del santuario (no encima de los altares)
   await p.evaluate(() => {
     J.enemigos = []; let k = 0;
     for (const tipo of Object.keys(CRIATURAS)) { const e = nuevaCriatura(tipo, J.jug.x - 60 + (k % 5) * 30, J.jug.y - 30 + Math.floor(k / 5) * 40); e.aturdido = 99; J.enemigos.push(e); k++; }
@@ -104,7 +105,7 @@ const path = require('path');
   await p.evaluate(() => { J.panel = null; });
   // agua y pesca
   const agua = await p.evaluate(() => {
-    for (let k = 0; k < 400000; k++) { const x = 40 + Math.floor(Math.random() * 240), y = 40 + Math.floor(Math.random() * 240); if (M.piso[idx(x, y)] === SUELO.AGUA && M.piso[idx(x, y + 2)] !== SUELO.AGUA && !M.muro[idx(x, y + 2)] && M.piso[idx(x, y + 1)] === SUELO.AGUA) return [x, y + 2]; }
+    for (let k = 0; k < 400000; k++) { const x = CENTRO - 140 + Math.floor(Math.random() * 280), y = CENTRO - 140 + Math.floor(Math.random() * 280); if (M.piso[idx(x, y)] === SUELO.AGUA && M.piso[idx(x, y + 2)] !== SUELO.AGUA && !M.muro[idx(x, y + 2)] && M.piso[idx(x, y + 1)] === SUELO.AGUA) return [x, y + 2]; }
     return null;
   });
   if (agua) {
@@ -244,9 +245,9 @@ const path = require('path');
   await p.evaluate(() => { J.panel = null; });
   console.log('FPS final:', await fps());
   // guardar y cargar
-  await p.evaluate(() => { J.panel = null; J.pesca = null; guardarPartida(); });
+  await p.evaluate(() => { J.panel = null; J.pesca = null; return guardarPartida(); });
   const antes = await p.evaluate(() => `${Math.round(J.jug.x)},${Math.round(J.jug.y)} muros ${M.muro.reduce((a, b) => a + (b ? 1 : 0), 0)} obj ${M.objetos.size} merc ${M.mercaderes.length} muralla ${J.murallaAbierta} mascota ${J.equipo.mascota && J.equipo.mascota.id}`);
-  await p.reload(); await p.waitForTimeout(800);
+  await p.reload(); await p.waitForFunction(() => window.juegoListo, null, { timeout: 120000 });
   await p.evaluate(() => empezar(true));
   const despues = await p.evaluate(() => `${Math.round(J.jug.x)},${Math.round(J.jug.y)} muros ${M.muro.reduce((a, b) => a + (b ? 1 : 0), 0)} obj ${M.objetos.size} merc ${M.mercaderes.length} muralla ${J.murallaAbierta} mascota ${J.equipo.mascota && J.equipo.mascota.id}`);
   await foto('09-cargado', 1000);

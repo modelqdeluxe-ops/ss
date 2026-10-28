@@ -34,7 +34,17 @@ const difAng = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
 
 // ---------------------------------------------------------------- generación
 
-function generarMundo(sem) {
+// El mundo se genera por pasos (una función generadora): cada `yield` es un respiro para pintar la pantalla de
+// carga. generarMundo lo hace todo de una vez; generarMundoPoco va paso a paso y devuelve el control al navegador.
+function generarMundo(sem, soloInterior = false) {
+  for (const _ of pasosMundo(sem, soloInterior)); // eslint-disable-line no-unused-vars
+  return M;
+}
+async function generarMundoPoco(sem, alPaso) {
+  for (const paso of pasosMundo(sem, false)) { alPaso(paso); await new Promise((ok) => setTimeout(ok, 0)); }
+  return M;
+}
+function* pasosMundo(sem, soloInterior) {
   const N = N_MUNDO, NN = N * N;
   const n1 = crearRuido(sem), n2 = crearRuido(sem + 11), n3 = crearRuido(sem + 23), n4 = crearRuido(sem + 37), n5 = crearRuido(sem + 51), n6 = crearRuido(sem + 67);
   const r = azar(sem + 99);
@@ -44,25 +54,33 @@ function generarMundo(sem) {
     sem, lado, muro: new Uint8Array(NN), mena: new Uint8Array(NN), piso: new Uint8Array(NN), region: new Uint8Array(NN), visto: new Uint8Array(NN),
     bloqueo: new Uint8Array(NN), objetos: new Map(), luces: new Set(), danos: new Map(), guaridas: {}, estatuas: {},
     mapa: null, mapaSucio: true, verLuz: 0, rayos: [], soles: [], fijas: [], altares: {}, mercaderes: [],
+    generando: true, tocados: new Uint8Array(NT_G * NT_G), sucios: new Set(), objGuardados: new Map(), cultivos: new Set(), sacuden: new Set(),
   };
   const { muro, mena, piso, region } = M;
+  // El ruido del anillo interior se mide desde la esquina del mundo de 640 casillas de la 0.6: así el interior
+  // sale igual que entonces y una partida vieja cabe tal cual en el mundo grande (ver migrarV4).
+  const OX = CENTRO - 320;
+  muro.fill(MURO.ROCA); region.fill(REGION.SELLADO); piso.fill(SUELO.PIEDRA);
+  // el anillo interior solo ocupa esta caja: los bucles no recorren el mundo entero
+  const C0 = CENTRO - R_MURALLA - 8, C1 = CENTRO + R_MURALLA + 8;
   const regionDe = (x, y, d) => {
-    const dd = d + (fbm(n2, x / 26, y / 26) - 0.5) * 30;
+    const dd = d + (fbm(n2, (x - OX) / 26, (y - OX) / 26) - 0.5) * 30;
     if (dd < R_RAICES) return REGION.RAICES;
-    const ang = Math.atan2(y - CENTRO, x - CENTRO) + (fbm(n6, x / 40, y / 40) - 0.5) * 1.4;
+    const ang = Math.atan2(y - CENTRO, x - CENTRO) + (fbm(n6, (x - OX) / 40, (y - OX) / 40) - 0.5) * 1.4;
     return difAng(ang, lado) < Math.PI / 2 ? REGION.ARCILLA : REGION.RUINAS;
   };
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+  for (let y = C0; y < C1; y++) for (let x = C0; x < C1; x++) {
     const i = idx(x, y), d = Math.hypot(x - CENTRO, y - CENTRO);
+    if (d > R_MURALLA + 7) continue;
     const reg = regionDe(x, y, d);
     region[i] = reg;
-    const cesped = reg === REGION.RAICES && fbm(n5, x / 18, y / 18) > 0.6;
-    piso[i] = reg === REGION.RAICES ? (cesped ? SUELO.CESPED : n5(x / 7, y / 7) > 0.8 ? SUELO.BARRO : SUELO.TIERRA) : reg === REGION.ARCILLA ? SUELO.ARCILLA : SUELO.PIEDRA;
-    const cueva = fbm(n1, x / 12, y / 12, 3) + (n3(x / 4, y / 4) - 0.5) * 0.14;
+    const cesped = reg === REGION.RAICES && fbm(n5, (x - OX) / 18, (y - OX) / 18) > 0.6;
+    piso[i] = reg === REGION.RAICES ? (cesped ? SUELO.CESPED : n5((x - OX) / 7, (y - OX) / 7) > 0.8 ? SUELO.BARRO : SUELO.TIERRA) : reg === REGION.ARCILLA ? SUELO.ARCILLA : SUELO.PIEDRA;
+    const cueva = fbm(n1, (x - OX) / 12, (y - OX) / 12, 3) + (n3((x - OX) / 4, (y - OX) / 4) - 0.5) * 0.14;
     const umbral = reg === REGION.RAICES ? 0.565 : reg === REGION.ARCILLA ? 0.555 : 0.545;
-    if (cueva > umbral) continue;
+    if (cueva > umbral) { muro[i] = 0; continue; }
     muro[i] = reg === REGION.RAICES ? MURO.TIERRA : reg === REGION.ARCILLA ? MURO.ARCILLA : MURO.PIEDRA;
-    const v = n4(x / 4.2, y / 4.2), oro = n6(x / 3, y / 3);
+    const v = n4((x - OX) / 4.2, (y - OX) / 4.2), oro = n6((x - OX) / 3, (y - OX) / 3);
     if (reg === REGION.RAICES && v > 0.76) mena[i] = MENA.COBRE;
     else if (reg === REGION.ARCILLA) mena[i] = oro > 0.86 ? MENA.ORO : v > 0.77 ? MENA.ESTANO : v < 0.13 ? MENA.COBRE : 0;
     else if (reg === REGION.RUINAS) mena[i] = oro > 0.87 ? MENA.ORO : v > 0.77 ? MENA.HIERRO : 0;
@@ -73,9 +91,10 @@ function generarMundo(sem) {
       const i = idx(x, y); muro[i] = 0; mena[i] = 0; if (conPiso) piso[i] = conPiso;
     }
   };
+  yield [0.08, 'Las Raíces'];
   // la zanja: un anillo abierto de grava que marca el borde de Las Raíces
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const d = Math.hypot(x - CENTRO, y - CENTRO), dd = d + (fbm(n2, x / 26, y / 26) - 0.5) * 30;
+  for (let y = CENTRO - 90; y < CENTRO + 90; y++) for (let x = CENTRO - 90; x < CENTRO + 90; x++) {
+    const d = Math.hypot(x - CENTRO, y - CENTRO), dd = d + (fbm(n2, (x - OX) / 26, (y - OX) / 26) - 0.5) * 30;
     if (Math.abs(dd - R_RAICES) < 1.3) { const i = idx(x, y); muro[i] = 0; mena[i] = 0; piso[i] = SUELO.GRAVA; }
   }
   // túneles desde el centro y cavernas
@@ -99,19 +118,20 @@ function generarMundo(sem) {
   for (let k = 0; k < 60; k++) {
     const a = r() * Math.PI * 2, d = 16 + r() * (R_MURALLA - 26), cx = Math.round(CENTRO + Math.cos(a) * d), cy = Math.round(CENTRO + Math.sin(a) * d), rad = 1.8 + r() * 2.8;
     for (let y = Math.floor(cy - rad); y <= cy + rad; y++) for (let x = Math.floor(cx - rad); x <= cx + rad; x++) {
-      if (!enMundo(x, y) || Math.hypot(x - cx, (y - cy) * 1.2) > rad + (n3(x / 2, y / 2) - 0.5) * 1.5) continue;
+      if (!enMundo(x, y) || Math.hypot(x - cx, (y - cy) * 1.2) > rad + (n3((x - OX) / 2, (y - OX) / 2) - 0.5) * 1.5) continue;
       let orilla = true;
       for (let dy = -1; dy <= 1 && orilla; dy++) for (let dx = -1; dx <= 1; dx++) if (muro[idx(x + dx, y + dy)]) { orilla = false; break; }
       if (orilla) piso[idx(x, y)] = SUELO.AGUA;
     }
   }
 
+  yield [0.12, 'Las colmenas y las Ruinas'];
   // ---- estructuras
   // colmenas en la arcilla (y la de la Reina)
   const colmena = (cx, cy, rad, reina) => {
     for (let y = Math.floor(cy - rad - 2); y <= cy + rad + 2; y++) for (let x = Math.floor(cx - rad - 2); x <= cx + rad + 2; x++) {
       if (!enMundo(x, y)) continue;
-      const d = Math.hypot(x - cx, y - cy) + (n3(x / 2, y / 2) - 0.5) * 2, i = idx(x, y);
+      const d = Math.hypot(x - cx, y - cy) + (n3((x - OX) / 2, (y - OX) / 2) - 0.5) * 2, i = idx(x, y);
       if (d < rad) { muro[i] = 0; mena[i] = 0; piso[i] = SUELO.COLMENA; region[i] = REGION.ARCILLA; }
       else if (d < rad + 2) { muro[i] = MURO.COLMENA; mena[i] = 0; region[i] = REGION.ARCILLA; }
     }
@@ -181,9 +201,9 @@ function generarMundo(sem) {
     M.guaridas.topo = { x: ax, y: ay };
   }
   // la Gran Muralla y la roca del borde
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const d = Math.hypot(x - CENTRO, y - CENTRO) + (n2(x / 9, y / 9) - 0.5) * 2, i = idx(x, y);
-    if (d > R_MURALLA + 5 || x < 2 || y < 2 || x > N - 3 || y > N - 3) { muro[i] = MURO.ROCA; mena[i] = 0; }
+  for (let y = C0; y < C1; y++) for (let x = C0; x < C1; x++) {
+    const d = Math.hypot(x - CENTRO, y - CENTRO) + (n2((x - OX) / 9, (y - OX) / 9) - 0.5) * 2, i = idx(x, y);
+    if (d > R_MURALLA + 5) { muro[i] = MURO.ROCA; mena[i] = 0; region[i] = REGION.SELLADO; piso[i] = SUELO.PIEDRA; }
     else if (d > R_MURALLA) { muro[i] = MURO.MURALLA; mena[i] = 0; }
   }
   // el santuario del Corazón
@@ -194,8 +214,8 @@ function generarMundo(sem) {
     else if (d < 9.7) {
       const puerta = [0, Math.PI / 2, Math.PI, -Math.PI / 2].some((p) => difAng(ang, p) < 0.2);
       piso[i] = SUELO.RUINA; mena[i] = 0;
-      muro[i] = puerta ? 0 : hash2(x, y, 5) < 0.88 ? MURO.SANTUARIO : 0;
-    } else if (d < 11 && hash2(x, y, 6) < 0.5) piso[i] = SUELO.RUINA;
+      muro[i] = puerta ? 0 : hash2(x - OX, y - OX, 5) < 0.88 ? MURO.SANTUARIO : 0;
+    } else if (d < 11 && hash2(x - OX, y - OX, 6) < 0.5) piso[i] = SUELO.RUINA;
   }
   for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) for (let s = 8; s < 16; s++) cavar(CENTRO + dx * s, CENTRO + dy * s, 1.1);
   ponerObjeto(CENTRO, CENTRO, 'corazon');
@@ -229,7 +249,7 @@ function generarMundo(sem) {
 
   // ---- plantas y cristales
   const junto = (x, y) => muro[idx(x + 1, y)] || muro[idx(x - 1, y)] || muro[idx(x, y + 1)] || muro[idx(x, y - 1)];
-  for (let y = 3; y < N - 3; y++) for (let x = 3; x < N - 3; x++) {
+  for (let y = C0; y < C1; y++) for (let x = C0; x < C1; x++) {
     const i = idx(x, y);
     if (muro[i] || M.objetos.has(i)) continue;
     const p = piso[i];
@@ -260,9 +280,10 @@ function generarMundo(sem) {
     const a = r() * Math.PI * 2, d = 12 + r() * 14, x = Math.round(CENTRO + Math.cos(a) * d), y = Math.round(CENTRO + Math.sin(a) * d), i = idx(x, y);
     if (!muro[i] && !M.objetos.has(i) && piso[i] !== SUELO.RUINA && piso[i] !== SUELO.AGUA) { ponerObjeto(x, y, puestas % 2 ? 'planta_fibra' : 'arbusto'); puestas++; }
   }
-  generarExterior(sem);
-  M.mapa = null;
-  return M;
+  if (!soloInterior) yield* generarExterior(sem);
+  M.generando = false; M.mapa = null;
+  GL.olvidarTodo(); cambioLuz();
+  yield [1, 'El mundo despierta'];
 }
 
 // Botín de los cofres de las ruinas. calidad 1: sala normal; 3: centro de un laberinto.
@@ -280,13 +301,16 @@ function botinCofre(r, calidad) {
 
 // ---------------------------------------------------------------- casillas
 
+// ¿Es agua (de la que se pesca y no se pisa)? Tabla hecha la primera vez que se pregunta.
+let TABLA_LIQUIDO = null;
+const esAgua = (p) => (TABLA_LIQUIDO || (TABLA_LIQUIDO = Uint8Array.from({ length: 64 }, (_, k) => (INFO_SUELO[k] && INFO_SUELO[k].liquido ? 1 : 0))))[p];
 function muroEn(x, y) { return enMundo(x, y) ? M.muro[idx(x, y)] : MURO.ROCA; }
 function objetoEn(x, y) { return enMundo(x, y) ? M.objetos.get(idx(x, y)) : undefined; }
 // ¿Se puede pasar? Las puertas dejan pasar al jugador pero no a las criaturas.
 function solido(x, y, jugador = false) {
   if (!enMundo(x, y)) return true;
   const i = idx(x, y);
-  if (M.muro[i] || M.bloqueo[i] || M.piso[i] === SUELO.AGUA) return true;
+  if (M.muro[i] || M.bloqueo[i] || esAgua(M.piso[i])) return true;
   const o = M.objetos.get(i);
   if (!o) return false;
   const info = OBJ[o.tipo];
@@ -298,18 +322,20 @@ function ponerObjeto(x, y, tipo, extra = 0) {
   if (OBJ[tipo].interactua === 'cofre') o.datos = { inv: new Array(30).fill(null) };
   else if (OBJ[tipo].interactua === 'olla') o.datos = { a: null, b: null };
   M.objetos.set(i, o);
-  if (OBJ[tipo].luz || tipo === 'corazon' || tipo === 'estatua') M.luces.add(i);
-  marcarMapa(i); GL.tocar(x, y); cambioLuz();
+  if (OBJ[tipo].luz || OBJ[tipo].encendido || tipo === 'corazon' || tipo === 'estatua') M.luces.add(i);
+  if (tipo === 'cultivo') M.cultivos.add(i);
+  if (M.generando) return o; // al generar no hace falta avisar a nadie: al acabar se rehace todo
+  marcarMapa(i); GL.tocar(x, y); cambioLuz(); tocarTrozo(x, y);
   return o;
 }
-function quitarObjeto(x, y) { const i = idx(x, y); M.objetos.delete(i); M.luces.delete(i); marcarMapa(i); GL.tocar(x, y); cambioLuz(); }
+function quitarObjeto(x, y) { const i = idx(x, y); M.objetos.delete(i); M.luces.delete(i); M.cultivos.delete(i); marcarMapa(i); GL.tocar(x, y); cambioLuz(); tocarTrozo(x, y); }
 function romperMuro(x, y) {
   const i = idx(x, y);
   M.muro[i] = 0; M.mena[i] = 0; M.danos.delete(i);
-  marcarMapa(i); GL.tocar(x, y); cambioLuz();
+  marcarMapa(i); GL.tocar(x, y); cambioLuz(); tocarTrozo(x, y);
 }
-function ponerMuro(x, y, tipo) { const i = idx(x, y); M.muro[i] = tipo; M.mena[i] = 0; marcarMapa(i); GL.tocar(x, y); cambioLuz(); }
-function ponerSuelo(x, y, tipo) { const i = idx(x, y); M.piso[i] = tipo; marcarMapa(i); GL.tocar(x, y); }
+function ponerMuro(x, y, tipo) { const i = idx(x, y); M.muro[i] = tipo; M.mena[i] = 0; marcarMapa(i); GL.tocar(x, y); cambioLuz(); tocarTrozo(x, y); }
+function ponerSuelo(x, y, tipo) { const i = idx(x, y); M.piso[i] = tipo; marcarMapa(i); GL.tocar(x, y); tocarTrozo(x, y); }
 
 // ---------------------------------------------------------------- luz
 // Fuentes fijas (antorchas, cristales…): se calculan sobre una zona grande y se guardan hasta que el mundo
@@ -379,7 +405,7 @@ function calcularLuz(v, fuentesFijas, dinamicas, ambiente, parpadeo) {
     let r = R[li], g = G[li], b = B[li];
     if (enMundo(wx, wy)) {
       const i = idx(wx, wy);
-      if (!M.visto[i] && (r > 0.16 || g > 0.16 || b > 0.16)) { M.visto[i] = 1; marcarMapa(i); }
+      if (!M.visto[i] && (r > 0.16 || g > 0.16 || b > 0.16)) { M.visto[i] = 1; marcarMapa(i); tocarTrozo(wx, wy); }
       if (M.visto[i]) { const am = AMBIENTE_REGION[M.region[i]]; r += am[0]; g += am[1]; b += am[2]; }
     }
     d[o] = Math.min(255, Math.sqrt(r) * k); d[o + 1] = Math.min(255, Math.sqrt(g) * k); d[o + 2] = Math.min(255, Math.sqrt(b) * k); d[o + 3] = 255;
@@ -420,35 +446,10 @@ function lienzoMapa() {
 
 // ---------------------------------------------------------------- guardar
 
-function rle(u8) {
-  const out = [];
-  for (let i = 0; i < u8.length;) { const v = u8[i]; let n = 1; while (i + n < u8.length && u8[i + n] === v && n < 255) n++; out.push(v, n); i += n; }
-  let s = '';
-  for (let i = 0; i < out.length; i += 8192) s += String.fromCharCode.apply(null, out.slice(i, i + 8192));
-  return btoa(s);
-}
 function desRle(b64, n) {
   const s = atob(b64), u8 = new Uint8Array(n);
   let p = 0;
   for (let i = 0; i < s.length; i += 2) { const v = s.charCodeAt(i), c = s.charCodeAt(i + 1); u8.fill(v, p, p + c); p += c; }
   return u8;
 }
-function datosMundo() {
-  return {
-    v: 4, n: N_MUNDO, sem: M.sem, muro: rle(M.muro), mena: rle(M.mena), piso: rle(M.piso), visto: rle(M.visto),
-    objetos: [...M.objetos.values()].map((o) => [o.x, o.y, o.tipo, o.extra, o.datos || null]),
-    fijas: M.fijas.map((f) => f.muerto || 0), mercaderes: M.mercaderes.map((m) => ({ ...m, ent: undefined })),
-  };
-}
-function cargarMundo(g) {
-  generarMundo(g.sem);
-  const NN = N_MUNDO * N_MUNDO;
-  M.muro = desRle(g.muro, NN); M.mena = desRle(g.mena, NN); M.visto = desRle(g.visto, NN);
-  if (g.piso) M.piso = desRle(g.piso, NN);
-  M.objetos.clear(); M.luces.clear();
-  for (const [x, y, tipo, extra, datos] of g.objetos) { if (!OBJ[tipo]) continue; const o = ponerObjeto(x, y, tipo, extra); if (datos) o.datos = datos; }
-  if (g.fijas) g.fijas.forEach((t, k) => { if (M.fijas[k]) M.fijas[k].muerto = t; });
-  M.mercaderes = g.mercaderes || [];
-  M.mapa = null;
-  GL.olvidarTodo(); cambioLuz();
-}
+// (El guardado del mundo grande está en guardado.js; rle/desRle quedan para leer las partidas de la 0.6.)
