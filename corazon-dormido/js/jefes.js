@@ -262,9 +262,9 @@ function rumboA(x, y) {
 }
 function palabrasCorazon() {
   const g = M.guaridas, out = [];
-  if (!J.estatuas.topo) out.push(J.jefesMuertos.topo ? 'Pon el Cristal del Topo en su estatua.' : `Un topo enorme escarba al ${rumboA(g.topo.x, g.topo.y)}, cerca de aquí.`);
-  if (!J.estatuas.reina) out.push(J.jefesMuertos.reina ? 'Pon el Cristal de la Reina en su estatua.' : `La Reina Larva anida en la arcilla, al ${rumboA(g.reina.x, g.reina.y)}. Necesitarás un pico de cobre.`);
-  if (!J.estatuas.ozmar) out.push(J.jefesMuertos.ozmar ? 'Pon el Cristal de Ozmar en su estatua.' : `Ozmar espera en su trono, en las ruinas del ${rumboA(g.ozmar.x, g.ozmar.y)}. Sus muros piden un pico de estaño.`);
+  if (!J.estatuas.topo) out.push(J.jefesMuertos.topo ? 'Pon el Cristal del Topo en su estatua.' : `Murdo, el que cavaba mis venas, se volvió ciego y hambriento. Escarba al ${rumboA(g.topo.x, g.topo.y)}, cerca de aquí.`);
+  if (!J.estatuas.reina) out.push(J.jefesMuertos.reina ? 'Pon el Cristal de la Reina en su estatua.' : `Vhessa, la Madre de la Colmena, anida en la arcilla, al ${rumboA(g.reina.x, g.reina.y)}. Necesitarás un pico de cobre.`);
+  if (!J.estatuas.ozmar) out.push(J.jefesMuertos.ozmar ? 'Pon el Cristal de Ozmar en su estatua.' : `Ozmar, el que me dio de comer la Podre, espera en su trono, en las ruinas del ${rumboA(g.ozmar.x, g.ozmar.y)}. Sus muros piden un pico de estaño.`);
   if (!out.length) return palabrasCorazon2();
   return out;
 }

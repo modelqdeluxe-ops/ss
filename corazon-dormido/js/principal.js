@@ -125,7 +125,7 @@ function cuadro(ms) {
     revisarObjetivos();
     if (J.t - J.guardadoT > 25) guardarPartida();
   } else if (J.estado === 'muerto') actualizarMundoVivo(dt);
-  else if (J.estado === 'titulo') { ambientePart(dt); actualizarMundoVivo(dt); }
+  else if (J.estado === 'titulo') { ambientePart(dt); actualizarMundoVivo(dt); Personaje.trabajar(6); }
   moverCamara(dt);
   dibujar();
   requestAnimationFrame(cuadro);
@@ -246,7 +246,7 @@ function dibujarObjeto3d(o) {
     if (brilla && SPR[n + '_luz']) {
       GL.sprite(n + '_luz', x + meta.dx, cz + meta.dz + 0.002, { unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.8], lx: x, lz: cz });
       const h = HALO[o.tipo];
-      if (h) GL.halo(x, ALTURA_HALO[o.tipo], cz + meta.dz, h[0], o.datos && o.datos.magica ? [0.6, 0.3, 1] : h[1], h[2] * (info.fuego ? 0.85 + 0.15 * Math.sin(J.t * 11 + o.x) : 1));
+      if (h) GL.halo(x + meta.dx + (meta.luzX || 0), meta.luzY !== undefined ? meta.luzY * GL.KY : ALTURA_HALO[o.tipo], cz + meta.dz, h[0], o.datos && o.datos.magica ? [0.6, 0.3, 1] : h[1], h[2] * (info.fuego ? 0.85 + 0.15 * Math.sin(J.t * 11 + o.x) : 1));
     }
     return;
   }
@@ -291,7 +291,7 @@ function dibujarJugador3d(p) {
 function dibujarEnMano(p, x, z, id, it) {
   const lado = p.dir === 'iz' ? -1 : p.dir === 'de' ? 1 : p.dir === 'ab' ? 1 : -1;
   const bob = p.andando && Math.floor(p.anim) % 2 ? 1 : 0;
-  const hx = x + lado * (p.dir === 'ab' || p.dir === 'ar' ? 0.36 : 0.28), hz = z + (p.dir === 'ar' ? -0.03 : 0.03), hy = ((6 + bob) / 16) * GL.KY;
+  const hx = x + lado * (p.dir === 'ab' || p.dir === 'ar' ? 0.32 : 0.3), hz = z + (p.dir === 'ar' ? -0.03 : 0.03), hy = ((7.4 + bob) / 16) * GL.KY;
   if (id === 'antorcha') {
     const f = Math.floor(J.t * 9) % 4;
     GL.sprite(`antorcha_${f}`, hx, hz, { y: hy, escala: 0.62 });
@@ -315,7 +315,7 @@ function dibujarHerramienta3d(p, x, z) {
   const k = 1 - p.swing / p.swingDur, lado = p.fx >= 0 ? 1 : -1, delante = p.dir !== 'ar';
   const base = p.dir === 'ar' ? -Math.PI / 2 : p.dir === 'ab' ? Math.PI / 2 : p.fx > 0 ? 0 : Math.PI;
   const ang = base + lado * (-1.4 + k * 2.4), px = 16;
-  const cx = x + (p.dir === 'de' ? 0.25 : p.dir === 'iz' ? -0.25 : 0.12 * lado), cy = (7 / px) * GL.KY;
+  const cx = x + (p.dir === 'de' ? 0.25 : p.dir === 'iz' ? -0.25 : 0.12 * lado), cy = (8.4 / px) * GL.KY;
   const rot = ang + Math.PI / 4, c = Math.cos(rot), s = Math.sin(rot), pts = [];
   for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) { const ux = u * c - v * s, vy = u * s + v * c; pts.push(cx + ux / px, cy - (vy / px) * GL.KY, z + (delante ? 0.02 : -0.02)); }
   GL.libre(p.swingItem, pts, T4, x, z);
@@ -528,8 +528,56 @@ function dibujar() {
 
 // ---------------------------------------------------------------- arranque
 
-function iniciar(datosHot) {
+// ---------------------------------------------------------------- caché del arte
+// Hornear todos los modelos tarda (segundos en un móvil). En el juego de un solo archivo (todo el código dentro de
+// la página) el atlas horneado se guarda en IndexedDB con una clave sacada del propio código: si el código cambia,
+// la clave cambia y se vuelve a hornear.
+function claveArte() {
+  const sc = [...document.scripts];
+  if (!sc.length || sc.some((x) => x.src)) return null;
+  let h = 2166136261, n = 0;
+  for (const x of sc) { const t = x.textContent; n += t.length; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } }
+  return `arte-${(h >>> 0).toString(36)}-${n}`;
+}
+function baseArte() {
+  return new Promise((ok, mal) => { const r = indexedDB.open('corazon-dormido', 1); r.onupgradeneeded = () => r.result.createObjectStore('arte'); r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error); });
+}
+async function leerArteCache(clave) {
+  try {
+    const db = await baseArte();
+    const v = await new Promise((ok, mal) => { const q = db.transaction('arte').objectStore('arte').get('atlas'); q.onsuccess = () => ok(q.result); q.onerror = () => mal(q.error); });
+    if (!v || v.clave !== clave) return false;
+    const lienzoDe = async (blob) => { const b = await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }); const c = document.createElement('canvas'); c.width = b.width; c.height = b.height; c.getContext('2d').drawImage(b, 0, 0); return c; };
+    ATLAS = await lienzoDe(v.color); ATLAS_N = await lienzoDe(v.normales);
+    Object.assign(SPR, v.spr); Object.assign(META_SPR, v.meta); ZONA_DIN.y = v.zonaY;
+    Personaje.inicial();
+    return true;
+  } catch (e) { return false; }
+}
+async function guardarArteCache(clave) {
+  try {
+    const blob = (c) => new Promise((ok) => c.toBlob(ok, 'image/png'));
+    const [color, normales] = await Promise.all([blob(ATLAS), blob(ATLAS_N)]);
+    const db = await baseArte();
+    db.transaction('arte', 'readwrite').objectStore('arte').put({ clave, color, normales, spr: SPR, meta: META_SPR, zonaY: ZONA_DIN.y }, 'atlas');
+  } catch (e) { /* sin IndexedDB: se hornea cada vez */ }
+}
+async function prepararArte() {
+  const clave = claveArte();
+  if (clave && (await leerArteCache(clave))) return;
+  // aviso mientras se hornea (la primera vez)
+  const dpr = window.devicePixelRatio || 1;
+  lienzo.width = Math.round(window.innerWidth * dpr / 4); lienzo.height = Math.round(window.innerHeight * dpr / 4);
+  lienzo.style.width = window.innerWidth + 'px'; lienzo.style.height = window.innerHeight + 'px';
+  ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+  texto(ctx, 'DESPERTANDO EL MUNDO…', lienzo.width / 2, Math.round(lienzo.height / 2), '#c86a8a', { alin: 'c' });
+  await new Promise((ok) => setTimeout(ok, 30));
   construirArte();
+  if (clave) guardarArteCache(clave);
+}
+
+async function iniciar(datosHot) {
+  await prepararArte();
   if (!GL.iniciar(lienzo3d)) {
     document.body.insertAdjacentHTML('beforeend', '<p style="color:#fff;font:16px sans-serif;padding:24px">Este navegador no tiene WebGL2. Prueba con Chrome o Safari actualizados.</p>');
     return;

@@ -44,7 +44,7 @@ function palabrasCorazon2() {
   if (!J.murallaAbierta) { out.push(`Estoy despierto. Pon la mano en la Gran Muralla y caerá. La Selva Esmeralda está al ${rumboSelva}; el camino de grava lleva hasta ella.`); return out; }
   if (!J.hito.selva) out.push(`La Selva Esmeralda está al ${rumboSelva}. Allí la luz baja del cielo.`);
   if (!J.hito.tiene_mineral_carmesi && !J.hito.mesa_carmesi) out.push('En la hierba vieja de la Selva hay metal carmesí. Tu pico de hierro lo saca.');
-  if (!J.altares.hiedra) out.push(J.jefesMuertos.hiedra ? 'Pon la Gema de la Hiedra en su altar, a mi izquierda.' : `Hiedra Viva envenena un jardín al ${rumboA(g.hiedra.x, g.hiedra.y)}. Rodéala de espino y entra por sus huecos.`);
+  if (!J.altares.hiedra) out.push(J.jefesMuertos.hiedra ? 'Pon la Gema de la Hiedra en su altar, a mi izquierda.' : `Hiedra, la Flor de Sangre, pudre un jardín al ${rumboA(g.hiedra.x, g.hiedra.y)}. Rodéala de espino y entra por sus huecos.`);
   if (!J.altares.tamar) out.push(J.jefesMuertos.tamar ? 'Pon la Gema del Cielo en su altar, a mi derecha.' : `Tamar duerme sobre el templo del cielo, al ${rumboA(g.tamar.x, g.tamar.y)}. Baja si le ofreces plumas antiguas, carmesí y una gema.`);
   if (!J.hito.cofreMoho) out.push(`La Mazmorra del Moho guarda un cofre, al ${rumboA(M.mazmorra.x, M.mazmorra.y)}. Sus muros no se rompen: entra por la puerta.`);
   if (!J.hito.mercader) out.push('Construye una casa cerrada con una cama y pon un ídolo dentro: vendrá alguien a vivir contigo.');

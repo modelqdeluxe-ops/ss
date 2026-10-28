@@ -66,12 +66,17 @@ const GL = (() => {
 
   const VS = `#version 300 es
   in vec3 aPos; in vec2 aUv; in vec4 aTinte; in vec2 aLuz; in vec2 aExtra; in vec3 aNorm;
-  uniform mat4 uVP; uniform vec4 uLuzRect;
-  out vec2 vUv; out vec4 vTinte; out vec2 vLuzUv; out vec2 vExtra; out vec3 vNorm;
+  uniform mat4 uVP; uniform vec4 uLuzRect; uniform sampler2D uLuz;
+  out vec2 vUv; out vec4 vTinte; out vec2 vLuzUv; out vec2 vExtra; out vec3 vNorm; out vec2 vPend;
   void main() {
     gl_Position = uVP * vec4(aPos, 1.0);
     vUv = aUv; vTinte = aTinte; vExtra = aExtra; vNorm = aNorm;
     vLuzUv = (aLuz - uLuzRect.xy) * uLuzRect.zw;
+    // pendiente del mapa de luz en este vértice (de dónde viene la luz): se calcula aquí y no en cada píxel
+    vec2 e = uLuzRect.zw;
+    const vec3 Y = vec3(0.3, 0.5, 0.2);
+    vPend = vec2(dot(textureLod(uLuz, vLuzUv + vec2(e.x, 0.0), 0.0).rgb - textureLod(uLuz, vLuzUv - vec2(e.x, 0.0), 0.0).rgb, Y),
+                 dot(textureLod(uLuz, vLuzUv + vec2(0.0, e.y), 0.0).rgb - textureLod(uLuz, vLuzUv - vec2(0.0, e.y), 0.0).rgb, Y));
   }`;
   // aExtra.x: cuánto ignora la luz (1 = brilla solo); aExtra.y: destello blanco. aNorm: normal de la cara (el
   // suelo y las paredes); si es cero, la normal sale del atlas de normales (los modelos horneados).
@@ -80,7 +85,7 @@ const GL = (() => {
   const FS = `#version 300 es
   precision highp float;
   uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform sampler2D uNormales; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam; uniform float uLado;
-  in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra; in vec3 vNorm;
+  in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra; in vec3 vNorm; in vec2 vPend;
   out vec4 color;
   const float BAYER[16] = float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
   void main() {
@@ -95,13 +100,7 @@ const GL = (() => {
     vec3 n = vNorm;
     bool volteo = n.y < -2.5;
     if (volteo || dot(n, n) < 0.25) { vec4 nt = texture(uNormales, vUv); n = nt.a > 0.5 ? nt.rgb * 2.0 - 1.0 : vec3(0.0); if (volteo) n.x = -n.x; }
-    if (abs(n.x) + abs(n.z) > 0.05) {
-      vec2 e = 1.0 / vec2(textureSize(uLuz, 0));
-      const vec3 Y = vec3(0.3, 0.5, 0.2);
-      float gx = dot(texture(uLuz, luzUv + vec2(e.x, 0.0)).rgb - texture(uLuz, luzUv - vec2(e.x, 0.0)).rgb, Y);
-      float gz = dot(texture(uLuz, luzUv + vec2(0.0, e.y)).rgb - texture(uLuz, luzUv - vec2(0.0, e.y)).rgb, Y);
-      l *= clamp(1.0 + uLado * dot(n.xz, vec2(gx, gz)), 0.55, 1.6);
-    }
+    if (abs(n.x) + abs(n.z) > 0.05) l *= clamp(1.0 + uLado * dot(n.xz, vPend), 0.55, 1.6);
     l = l * l * 2.4;
     vec2 m = mod(texel, 4.0);
     float b = (BAYER[int(m.y) * 4 + int(m.x)] + 0.5) / 16.0;

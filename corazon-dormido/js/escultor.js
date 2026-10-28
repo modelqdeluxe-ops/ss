@@ -465,7 +465,13 @@ function defModelo(nombre, modelo, o = {}) {
   for (const suf of ['_luz', '_B', '_i', '_iB', '_sombra']) quitarDibujo(nombre + suf);
   def(nombre, r.color);
   META_SPR[nombre] = { fondo: r.fondo, alto: r.alto, dx: r.dx, dz: r.dz, marcas: r.marcas };
-  if (r.luz) def(nombre + '_luz', r.luz);
+  if (r.luz) {
+    def(nombre + '_luz', r.luz);
+    // dónde está la luz en el dibujo (para poner el halo a su altura): centro de los píxeles que brillan
+    let sx = 0, sy = 0, n = 0;
+    for (let y = 0; y < r.luz.h; y++) for (let x = 0; x < r.luz.w; x++) if (r.luz.d[y * r.luz.w + x]) { sx += x; sy += y; n++; }
+    if (n) { META_SPR[nombre].luzX = (sx / n + 0.5 - r.luz.w / 2) / 16; META_SPR[nombre].luzY = (r.luz.h - sy / n - 0.5) / 16; }
+  }
   if (r.sombra && o.sombra !== false) def(nombre + '_sombra', r.sombra);
   if (o.blanco) def(nombre + '_B', r.color.blanco());
   if (o.voltear) { const v = r.color.voltear(); v.n = voltearNormales(r.color); def(nombre + '_i', v); if (o.blanco) def(nombre + '_iB', v.blanco()); META_SPR[nombre + '_i'] = Object.assign({}, META_SPR[nombre], { dx: -r.dx }); }

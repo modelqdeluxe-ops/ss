@@ -519,23 +519,58 @@ function dibujarPanel(ctx) {
 
 // ---------------------------------------------------------------- pantalla de título
 
+// Pantalla para hacer tu Despierto antes de una partida nueva: piel, pelo, peinado y ropa, con el muñeco 3D
+// horneado al momento de frente y de perfil.
+function sprGrande(ctx, n, cx, pie, k) {
+  const r = SPR[n];
+  if (!r) return;
+  ctx.drawImage(ATLAS, r.x, r.y, r.w, r.h, Math.round(cx - (r.w * k) / 2), Math.round(pie - r.h * k), r.w * k, r.h * k);
+}
+function dibujarAspecto(ctx) {
+  const A = UI.aspecto;
+  ctx.fillStyle = 'rgba(6,4,10,0.72)'; ctx.fillRect(0, 0, LW, LH);
+  texto(ctx, 'TU DESPIERTO', LW / 2, 8, '#f2e4d0', { alin: 'c', esc: 2, borde: COL.negro });
+  const intro = partirTexto('El último latido del Corazón hizo un cuerpo nuevo en el altar. Eres tú.', LW - 24);
+  intro.forEach((l, k) => texto(ctx, l, LW / 2, 24 + k * 8, '#b8aab8', { alin: 'c', borde: COL.negro }));
+  const k = LH >= 200 ? 3 : 2, pie = Math.round(LH * 0.66), anda = Math.floor(J.t * 6) % 6;
+  sprGrande(ctx, 'pj_ab_q' + (Math.floor(J.t * 1.6) % 2), LW * 0.3, pie, k);
+  sprGrande(ctx, 'pj_de_a' + anda, LW * 0.3 + 28 * k, pie, k);
+  if (Personaje.ocupado) texto(ctx, '…', LW * 0.3 + 14 * k, pie + 4, COL.suave, { alin: 'c' });
+  const filas = [['Piel', 'piel', ASPECTO.piel.length], ['Pelo', 'pelo', ASPECTO.pelo.length], ['Peinado', 'peinado', ASPECTO.peinado.length], ['Ropa', 'ropa', ASPECTO.ropa.length]];
+  const x0 = Math.round(LW * 0.56), w = Math.min(130, LW - x0 - 8);
+  let y = Math.round(LH * 0.3);
+  for (const [nombre, clave, n] of filas) {
+    const i = clave === 'peinado' ? ASPECTO.peinado.indexOf(A.peinado) : A[clave];
+    const cambia = (d) => { const j = (i + d + n) % n; A[clave] = clave === 'peinado' ? ASPECTO.peinado[j] : j; Personaje.pedir(A, null); };
+    botonTexto(ctx, x0, y, 16, 14, '<', () => cambia(-1));
+    const valor = clave === 'peinado' ? NOMBRE_PEINADO[A.peinado] : `${nombre} ${i + 1}/${n}`;
+    marco(ctx, x0 + 18, y, w - 36, 14, COL.ranura);
+    if (clave !== 'peinado') { ctx.fillStyle = ASPECTO[clave][i]; ctx.fillRect(x0 + 21, y + 3, 8, 8); }
+    texto(ctx, valor, x0 + 18 + (w - 36) / 2 + (clave !== 'peinado' ? 5 : 0), y + 5, COL.texto, { alin: 'c', sombra: COL.negro });
+    botonTexto(ctx, x0 + w - 16, y, 16, 14, '>', () => cambia(1));
+    y += 18;
+  }
+  botonTexto(ctx, x0, y + 4, w, 16, 'DESPERTAR', () => { UI.creando = false; J.aspectoNuevo = Object.assign({}, A); empezar(false); }, { color: '#5e1430' });
+  botonTexto(ctx, 8, LH - 22, 54, 14, 'VOLVER', () => { UI.creando = false; });
+}
 function dibujarTitulo(ctx, hayPartida) {
+  if (UI.creando) { dibujarAspecto(ctx); return; }
   ctx.fillStyle = 'rgba(8,6,12,0.3)'; ctx.fillRect(0, 0, LW, LH);
   const esc = LW >= 300 ? 3 : 2, y0 = Math.round(LH * 0.16), sacude = Math.sin(J.t * 1.3) * 1.5;
   texto(ctx, 'CORAZÓN', LW / 2, y0 + sacude, '#ff7aa0', { alin: 'c', esc, borde: '#2a0a18' });
   texto(ctx, 'DORMIDO', LW / 2, y0 + 9 * esc + 4 + sacude, '#f6ecda', { alin: 'c', esc, borde: COL.negro });
-  texto(ctx, 'Cava, crea y despierta lo que duerme bajo tierra', LW / 2, y0 + 18 * esc + 10, COL.suave, { alin: 'c', borde: COL.negro });
+  texto(ctx, 'Bajo la roca late el corazón de un dios muerto', LW / 2, y0 + 18 * esc + 10, COL.suave, { alin: 'c', borde: COL.negro });
   let y = Math.round(LH * 0.55);
   const w = 120, x = Math.round(LW / 2 - w / 2);
   if (hayPartida) { botonTexto(ctx, x, y, w, 16, 'CONTINUAR', () => empezar(true)); y += 21; }
   const confirmar = UI.confirmarNueva > J.t;
   botonTexto(ctx, x, y, w, 16, confirmar ? '¿SEGURO? TOCA OTRA VEZ' : 'NUEVA PARTIDA', () => {
     if (hayPartida && !confirmar) { UI.confirmarNueva = J.t + 3; return; }
-    empezar(false);
+    UI.creando = true; UI.aspecto = Object.assign({}, ASPECTO_INICIAL); Personaje.pedir(UI.aspecto, null);
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
   botonTexto(ctx, x, y, w, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
   if (hayPartida && !leerPartida()) texto(ctx, 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
-  const pie = partirTexto('Fase 2: la Selva Esmeralda · izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
+  const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
   pie.forEach((l, k) => texto(ctx, l, LW / 2, LH - 10 - (pie.length - 1 - k) * 8, COL.suave, { alin: 'c', borde: COL.negro }));
 }

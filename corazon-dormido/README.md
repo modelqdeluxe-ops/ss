@@ -5,11 +5,13 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **fase 2 completa: la Selva Esmeralda** (versión 0.5.0). Sobre el anillo interior de la fase 1 (tres
-regiones, tres guardianes y el despertar del Corazón), se abre la Gran Muralla y llega la Selva: un sector enorme
-con luz del cielo, dos titanes, la Mazmorra del Moho, mercaderes que viven en tu casa, mascotas, el metal carmesí
-y casi el doble de objetos. Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y del
-ordenador, sin instalar nada.
+Estado: **versión 0.6.0, el arte nuevo**. Fantasía oscura: el mundo es el cuerpo de un dios muerto, Ásor, y su
+Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el bestiario y los jefes están en
+**`LORE.md`**, que manda sobre todo lo demás). Todo lo que está de pie en el mundo es ahora un modelo 3D horneado
+a pixel art con la cámara del juego (`js/escultor.js`): muebles, árboles, rocas, criaturas, los cinco jefes y el
+personaje, que se hace a tu gusto y lleva la armadura puesta de verdad. Sobre las fases 1 y 2 (el anillo
+interior y la Selva Esmeralda). Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y
+del ordenador, sin instalar nada.
 
 ## Descargar
 
@@ -37,6 +39,29 @@ como «latest») y actualiza la fija. Para empaquetar a mano: `python3 corazon-d
 
 Si llevas un material en la mano, la acción usa sola el mejor pico (o la mejor espada, si hay una criatura
 cerca).
+
+## Lo nuevo de la 0.6.0 (el arte)
+
+- **Escultor 3D** (`js/escultor.js`): cada cosa se modela con figuras (esferas, cajas, cilindros, cápsulas,
+  toros, restas) y se hornea a pixel art con la cámara del juego: tapa y frente con volumen, luz, oclusión en
+  los rincones, brillo de los metales, líneas donde una pieza tapa a otra, contorno de color, la capa que brilla
+  sola, la sombra en el suelo con su forma y un mapa de normales.
+- **Luz de lado**: los modelos reaccionan a las antorchas: el lado que mira a la luz se aclara.
+- **Tu Despierto**: al empezar eliges piel, color de pelo, peinado y ropa (`js/personaje.js`). El personaje es un
+  muñeco 3D con andar, golpe y reposo en tres direcciones; las seis armaduras (cobre, estaño, hierro, larva,
+  carmesí y musgo) se ven puestas, cada casco con su forma.
+- **Unos 130 objetos rehechos** (`js/modelos.js`, `js/modelos2.js`): mesas, yunques, horno, olla, cofres, cama,
+  puertas, luces, muebles, árboles, rocas con mena, plantas, cultivos, pozo, tienda, ídolos, trono y el Corazón.
+- **Criaturas y jefes de fantasía oscura** (`js/criaturas3d.js`, `js/jefes3d.js`): ojos que son puntos de luz y
+  la Podre magenta que brilla en la oscuridad. Bestiario nuevo: Baba carroñera, Portador, Gusano roedor, Gruto
+  lancero, vidente, mole, Sembrador, Acechador, Fauce, Lápida, Aguijonera, Brazo de la Podre…
+- **Los cinco jefes**, con nombre, título y una frase al despertar: Murdo el Rey Ciego, Vhessa Madre de la
+  Colmena, Ozmar el Último Velador, Hiedra la Flor de Sangre y Tamar el Ojo del Cielo. Las estatuas y los
+  altares son sus modelos en piedra.
+- **Suelos** sin ruido de puntos y con bordes orgánicos entre suelos (`js/suelos2.js`); **avisos de ataque**
+  nuevos: anillo que late con un disco que se llena, grietas que se abren antes de las raíces y círculos de runas.
+- **Arranque rápido**: en el juego de un solo archivo el arte horneado se guarda en el navegador (la segunda vez
+  carga en medio segundo).
 
 ## Lo que hay en la fase 2 (la Selva Esmeralda)
 
@@ -130,7 +155,14 @@ artefacto.html     la misma página sin <html>/<head>, para publicarla como Arti
 DISEÑO.md          el diseño completo: regiones, metales, sistemas y las fases que faltan
 js/arte.js         arte con código: terreno, paredes, jugador, criaturas y objetos de la demo, iconos base
 js/arte2.js        arte de la fase 1: suelos nuevos, muebles, cultivos, criaturas, Reina, Ozmar, armadura e iconos
-js/arte3.js        arte de la fase 2: suelos y paredes de la Selva, árboles, rocas, muebles, criaturas, Tamar, Hiedra, mascotas, mercaderes e iconos
+js/arte3.js        arte de la fase 2: suelos y paredes de la Selva, iconos (lo que está de pie se rehízo en 3D)
+js/escultor.js     el escultor: modelos 3D con figuras horneados a pixel art (luz, oclusión, contorno, normales, sombra)
+js/modelos.js      modelos 3D de muebles, estaciones y luces
+js/modelos2.js     modelos 3D de la naturaleza y de los objetos especiales (columnas, pozo, tienda, ídolos, Corazón)
+js/personaje.js    el personaje: muñeco 3D articulado con aspecto y armaduras, horneado en marcha
+js/criaturas3d.js  las criaturas, mascotas y mercaderes en 3D (de perfil, estilo de LORE.md)
+js/jefes3d.js      los cinco jefes en 3D y sus estatuas y altares de piedra
+js/suelos2.js      suelos nuevos, bordes entre suelos y avisos de ataque
 js/gl.js           motor 3D con WebGL2: trozos del mundo, cámara, luz, sprites de pie, sombras, brillos, halos, rayos
 js/fuente.js       letra de 3×5 píxeles con tildes y Ñ
 js/sonido.js       sonidos con WebAudio
@@ -152,6 +184,10 @@ herramientas/probar-todo.cjs    prueba a fondo: regiones, jefes, criaturas, pane
 herramientas/simular-jefes.cjs  un bot pelea contra cada guardián con el equipo de su momento (equilibrio)
 herramientas/probar-migracion.cjs  una partida de la fase 1 pasa bien al mundo de la fase 2
 herramientas/empaquetar.py      saca el .html de un solo archivo y el .zip de una versión (para las Releases)
+herramientas/galeria.cjs        capturas en el juego de cada zona, jefe, base y criaturas (para revisar el arte)
+herramientas/taller.cjs         el atlas ampliado con un filtro (taller.html): para modelar y revisar dibujos
+LORE.md            la biblia del mundo: historia, dirección de arte, bestiario y jefes
+CONTINUAR.md       dónde va el trabajo y qué falta
 VERSIONES.txt      las versiones publicadas como Releases
 ```
 
@@ -183,7 +219,9 @@ lienzo 2D pequeño encima (unos 220 píxeles por el lado corto), escalado sin su
 
 ## El arte
 
-El arte está en `js/arte.js`. Usa la misma idea que el skill **pxl**, copiado en `.claude/skills/pxl-pixel-art`
+Lo que está de pie en el mundo se modela en 3D con `js/escultor.js` (ver «Lo nuevo de la 0.6.0»). Para revisar un
+modelo: `node corazon-dormido/herramientas/taller.cjs /tmp/t.png '^nombre' 6` saca el dibujo ampliado.
+Los suelos, las paredes, los iconos y la interfaz siguen siendo 2D en `js/arte.js`. Usa la misma idea que el skill **pxl**, copiado en `.claude/skills/pxl-pixel-art`
 (MIT, de [crsolver/claude-pxl](https://github.com/crsolver/claude-pxl)): se escribe la mitad de lo simétrico y
 se refleja, el contorno es automático, y las variantes salen cambiando los colores. Por ejemplo, el pico de
 cobre, el de estaño y el de hierro son el mismo dibujo.

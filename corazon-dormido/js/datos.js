@@ -94,7 +94,7 @@ item('alfombra', { nombre: 'Alfombra', tipo: 'suelo', suelo: SUELO.ALFOMBRA, rar
 // herramientas (poder: poder de minado)
 item('pico_viejo', { nombre: 'Pico viejo', tipo: 'pico', poder: 10, dano: 7, vel: 0.34, max: 1, desc: 'Rompe la tierra. Para la arcilla necesitas uno de cobre.' });
 item('pico_cobre', { nombre: 'Pico de cobre', tipo: 'pico', poder: 20, dano: 9, vel: 0.3, max: 1, desc: 'Rompe arcilla, colmena y piedra.' });
-item('pico_topo', { nombre: 'Garra del Topo', tipo: 'pico', poder: 30, dano: 14, vel: 0.24, max: 1, rareza: 2, desc: 'La garra del Topo Rey. Cava rapidísimo.' });
+item('pico_topo', { nombre: 'Garra del Topo', tipo: 'pico', poder: 30, dano: 14, vel: 0.24, max: 1, rareza: 2, desc: 'La garra de Murdo, el Rey Ciego. Cava rapidísimo.' });
 item('pico_estano', { nombre: 'Pico de estaño', tipo: 'pico', poder: 35, dano: 12, vel: 0.28, max: 1, desc: 'Rompe los muros de las ruinas y saca hierro.' });
 item('pico_hierro', { nombre: 'Pico de hierro', tipo: 'pico', poder: 55, dano: 16, vel: 0.25, max: 1, rareza: 1, desc: 'Atraviesa todo lo que hay a este lado de la Muralla.' });
 item('azada_madera', { nombre: 'Azada de madera', tipo: 'azada', max: 1, desc: 'Ara la tierra para plantar.' });
@@ -331,12 +331,12 @@ const OBJETIVOS = [
   { txt: 'Crea un horno y funde lingotes', hecho: (J) => J.hito.horno && J.cuenta('lingote_cobre') >= 1 || J.hito.mesa_cobre },
   { txt: 'Haz una mesa de cobre y un pico de cobre', hecho: (J) => J.hito.pico_cobre },
   { txt: 'Forja una espada y armadura de cobre', hecho: (J) => J.hito.espada_cobre },
-  { txt: 'Derrota al Topo Rey', hecho: (J) => J.jefesMuertos.topo },
+  { txt: 'Derrota a Murdo, el Rey Ciego', hecho: (J) => J.jefesMuertos.topo },
   { txt: 'Pon el cristal en su estatua', hecho: (J) => J.estatuas.topo },
   { txt: 'Busca estaño en la arcilla y mejora tu equipo', hecho: (J) => J.hito.pico_estano },
-  { txt: 'Derrota a la Reina Larva en su colmena', hecho: (J) => J.jefesMuertos.reina },
+  { txt: 'Derrota a Vhessa en su colmena', hecho: (J) => J.jefesMuertos.reina },
   { txt: 'Pon su cristal en la estatua', hecho: (J) => J.estatuas.reina },
   { txt: 'Encuentra la sala del trono de Ozmar', hecho: (J) => J.jefesMuertos.ozmar || J.hito.vioOzmar },
-  { txt: 'Derrota a Ozmar el Corrompido', hecho: (J) => J.jefesMuertos.ozmar },
+  { txt: 'Derrota a Ozmar, el Último Velador', hecho: (J) => J.jefesMuertos.ozmar },
   { txt: 'Despierta el Corazón', hecho: (J) => J.estatuas.ozmar },
 ];

@@ -127,7 +127,7 @@ COLOCABLE('cofre_selva', 'Cofre de selva', 'cofre_selva', 'Guarda 30 cosas, como
 // especiales
 item('ofrenda_cielo', { nombre: 'Ofrenda del cielo', tipo: 'especial', rareza: 2, max: 1, desc: 'Ponla en el altar del templo del cielo: Tamar baja.' });
 item('gema_cielo', { nombre: 'Gema del Cielo', tipo: 'especial', rareza: 3, max: 1, desc: 'La gema de Tamar. Ponla en su altar junto al Corazón.' });
-item('gema_hiedra', { nombre: 'Gema de la Hiedra', tipo: 'especial', rareza: 3, max: 1, desc: 'La gema de Hiedra Viva. Ponla en su altar junto al Corazón.' });
+item('gema_hiedra', { nombre: 'Gema de la Hiedra', tipo: 'especial', rareza: 3, max: 1, desc: 'La gema de Hiedra, la Flor de Sangre. Ponla en su altar junto al Corazón.' });
 
 // ---------------------------------------------------------------- recetas
 
@@ -320,7 +320,7 @@ OBJETIVOS.push(
   { txt: 'Casa cerrada con cama e ídolo: llega un mercader', hecho: (J) => J.hito.mercader },
   { txt: 'Incuba un huevo y lleva una mascota', hecho: (J) => J.hito.mascota },
   { txt: 'Encuentra el cofre de la Mazmorra del Moho', hecho: (J) => J.hito.cofreMoho },
-  { txt: 'Derrota a Hiedra Viva', hecho: (J) => J.jefesMuertos.hiedra },
+  { txt: 'Derrota a Hiedra, la Flor de Sangre', hecho: (J) => J.jefesMuertos.hiedra },
   { txt: 'Haz la ofrenda del cielo y vence a Tamar', hecho: (J) => J.jefesMuertos.tamar },
   { txt: 'Pon las gemas de los titanes en sus altares', hecho: (J) => J.altares && J.altares.tamar && J.altares.hiedra },
 );
