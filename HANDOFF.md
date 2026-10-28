@@ -190,7 +190,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (27 oct 2026, TF Client 1.3.147) — lee esto primero
+### CHECKPOINT (28 oct 2026, TF Client 1.3.148) — lee esto primero
+
+**1.3.148** (el dueño: «apareció un wey con uno desbloqueado», 8Dark_Dragon8, sin compra, sin Discord y sin
+`/tf web vfx` en ningún log). Hueco en `vfx/VfxServer.ownsKill`: sin respuesta del puente (`webFree` empezaba en true y
+`!TFBridge.connected()` daba true) el pad daba por tuyos TODOS los efectos de kill. El puente se corta ~10 s cada 10–20
+min («Read timed out»), así que pasaba a diario; lo equipado entonces se quedaba para siempre porque «el que ya lleva»
+contaba como suyo, y la web (que rechaza lo no comprado) nunca se enteraba. Ahora: sin respuesta vale lo último que
+dijo la web (`OWNED`; solo sin web configurada, `TFServerConfig.enabled()` false, son todos libres); `Equip.granted`
+(`"dado"` en `vfx.json` del mundo) marca lo que puso la web (`applyWeb`) o el staff (`/tf web vfx kill`); y
+`applyOwned(srv, …)`, cuando la web responde y no son gratis, quita el efecto equipado que no es suyo ni dado (log
+«TF VFX: se quita a … el efecto de kill …»). Lo que el staff dio antes de esta versión no lleva la marca y se quita.
+Incluye también 6b3de671 (sin el aviso de saldo al apagar).
+
+### CHECKPOINT (27 oct 2026, TF Client 1.3.147)
 
 **1.3.147** (el dueño, con su latest.log: «¿nuestro mod causa lag? El server se llena de RAM a veces» → «elimina por
 completo el rastreador»). El Rastreador leía todo el mundo del disco cada 30 min (3.586 archivos, ~1,9 millones de

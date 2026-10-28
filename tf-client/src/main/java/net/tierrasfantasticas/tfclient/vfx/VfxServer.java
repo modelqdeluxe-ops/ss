@@ -78,7 +78,8 @@ public final class VfxServer {
     /** Segundos sin pelear para salir de combate (las skills «en combate» dejan de lanzarse). */
     private static final int COMBAT_TICKS = 100;
 
-    private record Equip(String kill, String pack, long webAt) {}
+    /** granted: el efecto de kill lo puso la web (comprado) o el staff con /tf web vfx; si no, tiene que ser suyo. */
+    private record Equip(String kill, String pack, long webAt, boolean granted) {}
 
     private record Task(long at, Runnable run) {}
 
@@ -168,7 +169,7 @@ public final class VfxServer {
             try {
                 JsonObject p = players.getAsJsonObject(key);
                 EQUIP.put(UUID.fromString(key), new Equip(valid(TFJson.str(p, "kill", null), true),
-                        valid(TFJson.str(p, "pack", null), false), TFJson.num(p, "web", 0)));
+                        valid(TFJson.str(p, "pack", null), false), TFJson.num(p, "web", 0), TFJson.bool(p, "dado", false)));
             } catch (Exception ignored) {
                 // entrada rota: se ignora
             }
@@ -183,6 +184,7 @@ public final class VfxServer {
             if (e.kill() != null) p.addProperty("kill", e.kill());
             if (e.pack() != null) p.addProperty("pack", e.pack());
             if (e.webAt() > 0) p.addProperty("web", e.webAt());
+            if (e.granted()) p.addProperty("dado", true);
             players.add(uuid.toString(), p);
         });
         JsonObject json = new JsonObject();
@@ -198,7 +200,7 @@ public final class VfxServer {
     }
 
     private static Equip equip(UUID uuid) {
-        return EQUIP.getOrDefault(uuid, new Equip(null, null, 0));
+        return EQUIP.getOrDefault(uuid, new Equip(null, null, 0, false));
     }
 
     /** Lo que manda la web en cada consulta: [{uuid, kill, pack, at}] de los jugadores conectados. */
@@ -215,13 +217,14 @@ public final class VfxServer {
             long at = TFJson.num(o, "at", 0);
             Equip old = equip(uuid);
             if (at <= old.webAt()) continue; // ya aplicado (o el staff lo cambió después)
-            set(srv, uuid, valid(TFJson.str(o, "kill", null), true), valid(TFJson.str(o, "pack", null), false), at, true);
+            set(srv, uuid, valid(TFJson.str(o, "kill", null), true), valid(TFJson.str(o, "pack", null), false), at, true, true);
         }
     }
 
-    private static void set(MinecraftServer srv, UUID uuid, String kill, String pack, long webAt, boolean tell) {
+    private static void set(MinecraftServer srv, UUID uuid, String kill, String pack, long webAt, boolean tell, boolean granted) {
         Equip old = equip(uuid);
-        EQUIP.put(uuid, new Equip(kill, pack, Math.max(webAt, old.webAt())));
+        boolean keep = kill != null && kill.equals(old.kill()) && old.granted();
+        EQUIP.put(uuid, new Equip(kill, pack, Math.max(webAt, old.webAt()), kill != null && (granted || keep)));
         if (pack == null || !pack.equals(old.pack())) {
             COOLDOWN.remove(uuid);
             COMBO.remove(uuid);
@@ -241,11 +244,15 @@ public final class VfxServer {
     }
 
     // (1.3.114, el dueño: «los efectos de kill los vendemos a 2.99 cada uno») qué efectos de kill tiene cada conectado
-    // (lo manda la web en cada consulta: vfxOwned) y si siguen siendo gratis (vfxFree; sin puente, todos)
+    // (lo manda la web en cada consulta: vfxOwned) y si siguen siendo gratis (vfxFree; sin web configurada, todos)
+    // (1.3.148, el dueño: «apareció un wey con uno desbloqueado» sin comprarlo) antes, mientras el puente no respondía
+    // (al arrancar y en cada «Read timed out», unos segundos cada pocos minutos) el pad daba por tuyos TODOS los efectos y
+    // el que se equipaba entonces se quedaba para siempre. Ahora sin respuesta vale lo último que dijo la web, y al
+    // responder se quita el que no es suyo (salvo el que puso la web o el staff).
     private static final Map<UUID, java.util.Set<String>> OWNED = new java.util.concurrent.ConcurrentHashMap<>();
-    private static volatile boolean webFree = true;
+    private static volatile boolean webFree;
 
-    public static void applyOwned(boolean free, JsonArray list) {
+    public static void applyOwned(MinecraftServer srv, boolean free, JsonArray list) {
         webFree = free;
         Map<UUID, java.util.Set<String>> fresh = new HashMap<>();
         for (JsonElement el : list) {
@@ -262,19 +269,27 @@ public final class VfxServer {
         }
         OWNED.clear();
         OWNED.putAll(fresh);
+        if (free) return;
+        fresh.forEach((uuid, kills) -> {
+            Equip e = equip(uuid);
+            if (e.kill() == null || e.granted() || kills.contains(e.kill())) return;
+            TFClient.LOGGER.warn("TF VFX: se quita a {} el efecto de kill {} (no es suyo en la web)", uuid, e.kill());
+            set(srv, uuid, null, e.pack(), e.webAt(), false, false);
+        });
     }
 
-    /** ¿Puede llevar este efecto de kill? (si se venden, solo los suyos; el que ya lleva, también) */
+    /** ¿Puede llevar este efecto de kill? (si se venden, solo los suyos y el que le puso la web o el staff) */
     public static boolean ownsKill(UUID uuid, String id) {
-        if (webFree || !net.tierrasfantasticas.tfclient.server.TFBridge.connected()) return true;
-        if (id != null && id.equals(equip(uuid).kill())) return true;
+        if (webFree || !net.tierrasfantasticas.tfclient.server.TFServerConfig.enabled()) return true;
+        Equip e = equip(uuid);
+        if (id != null && id.equals(e.kill()) && e.granted()) return true;
         java.util.Set<String> mine = OWNED.get(uuid);
         return mine != null && mine.contains(id);
     }
 
     /** ¿Se venden los efectos de kill (la web dice que no son gratis)? */
     public static boolean killsForSale() {
-        return !webFree && net.tierrasfantasticas.tfclient.server.TFBridge.connected();
+        return !webFree && net.tierrasfantasticas.tfclient.server.TFServerConfig.enabled();
     }
 
     /** Lo equipado: {efecto de kill, paquete de skills} (null = nada). */
@@ -287,7 +302,7 @@ public final class VfxServer {
     public static void setFromPad(ServerPlayer player, boolean kill, String id) {
         Equip e = equip(player.getUUID());
         String v = valid(id, kill);
-        set(player.getServer(), player.getUUID(), kill ? v : e.kill(), kill ? e.pack() : v, e.webAt(), false);
+        set(player.getServer(), player.getUUID(), kill ? v : e.kill(), kill ? e.pack() : v, e.webAt(), false, false);
     }
 
     /** Manda al jugador su indicador: lo equipado y los cooldowns que le quedan. */
@@ -777,7 +792,7 @@ public final class VfxServer {
         }
         for (ServerPlayer p : targets) {
             Equip e = equip(p.getUUID());
-            set(ctx.getSource().getServer(), p.getUUID(), kill ? value : e.kill(), kill ? e.pack() : value, 0, true);
+            set(ctx.getSource().getServer(), p.getUUID(), kill ? value : e.kill(), kill ? e.pack() : value, 0, true, kill);
         }
         ctx.getSource().sendSuccess(() -> Component.literal("VFX actualizado para " + targets.size() + " jugador(es)."), true);
         return targets.size();
