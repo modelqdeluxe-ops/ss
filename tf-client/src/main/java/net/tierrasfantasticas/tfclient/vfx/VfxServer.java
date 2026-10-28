@@ -756,6 +756,15 @@ public final class VfxServer {
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("id", StringArgumentType.word()).suggests(PACKS)
                                         .executes(ctx -> give(ctx, false)))))
+                // (1.3.149, el dueño: «un comando para quitar estas cosas yo manualmente… y para quitar todos los equipados»)
+                .then(Commands.literal("quitar")
+                        .then(Commands.argument("jugador", StringArgumentType.word())
+                                .suggests((ctx, b) -> {
+                                    List<String> names = new ArrayList<>(List.of("todos"));
+                                    names.addAll(java.util.Arrays.asList(ctx.getSource().getServer().getPlayerNames()));
+                                    return SharedSuggestionProvider.suggest(names, b);
+                                })
+                                .executes(VfxServer::remove)))
                 .then(Commands.literal("probar")
                         .then(Commands.argument("id", StringArgumentType.word())
                                 .suggests((ctx, b) -> {
@@ -796,6 +805,37 @@ public final class VfxServer {
         }
         ctx.getSource().sendSuccess(() -> Component.literal("VFX actualizado para " + targets.size() + " jugador(es)."), true);
         return targets.size();
+    }
+
+    /** /tf web vfx quitar <jugador|todos>: le quita el efecto de kill equipado (también a los desconectados). */
+    private static int remove(CommandContext<CommandSourceStack> ctx) {
+        MinecraftServer srv = ctx.getSource().getServer();
+        String who = StringArgumentType.getString(ctx, "jugador");
+        List<UUID> targets = new ArrayList<>();
+        if (who.equalsIgnoreCase("todos")) {
+            EQUIP.forEach((uuid, e) -> {
+                if (e.kill() != null) targets.add(uuid);
+            });
+        } else {
+            ServerPlayer online = srv.getPlayerList().getPlayerByName(who);
+            UUID uuid = online != null ? online.getUUID()
+                    : srv.getProfileCache().get(who).map(com.mojang.authlib.GameProfile::getId)
+                            .orElse(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(who));
+            if (equip(uuid).kill() == null) {
+                ctx.getSource().sendFailure(Component.literal(who + " no lleva ningún efecto de kill."));
+                return 0;
+            }
+            targets.add(uuid);
+        }
+        for (UUID uuid : targets) {
+            Equip e = equip(uuid);
+            TFClient.LOGGER.info("TF VFX: {} quita a {} el efecto de kill {}", ctx.getSource().getTextName(), uuid, e.kill());
+            set(srv, uuid, null, e.pack(), e.webAt(), false, false);
+            if (srv.getPlayerList().getPlayer(uuid) != null) net.tierrasfantasticas.tfclient.server.TFBridge.padVfx(uuid, "kill", null);
+        }
+        int n = targets.size();
+        ctx.getSource().sendSuccess(() -> Component.literal("Efecto de kill quitado a " + n + (n == 1 ? " jugador." : " jugadores.")), true);
+        return Math.max(1, n);
     }
 
     /** Lanza un efecto delante del staff para verlo (un efecto de kill o una skill concreta, paquete/skill). */

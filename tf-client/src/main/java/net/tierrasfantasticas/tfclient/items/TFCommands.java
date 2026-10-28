@@ -37,6 +37,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomyCommands;
 import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
+import net.tierrasfantasticas.tfclient.server.TFStaffLock;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 import net.tierrasfantasticas.tfclient.shop.TFRoulette;
 
@@ -106,22 +107,25 @@ public final class TFCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
-                .then(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload))
+                // (1.3.149) /tf pide la contraseña del staff (TFStaffLock): /tf sola la pide; cada rama lleva el candado
+                .executes(TFStaffLock::bare)
+                .then(TFStaffLock.guard(TFStaffLock.command()))
+                .then(TFStaffLock.guard(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload)))
                 // /tf boss (staff): la ventana de jefes, dificultades y grietas
-                .then(net.tierrasfantasticas.tfclient.bosses.TFBosses.command())
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.bosses.TFBosses.command()))
                 // /tf void npc|quitar|ir|volver (staff): el caballero de luz y el viaje a The Void
-                .then(net.tierrasfantasticas.tfclient.vacio.TFVoid.command())
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.vacio.TFVoid.command()))
                 // (1.3.101) /tf npc (staff): el panel de control de los NPC de escenas, solo para quien lo ejecuta
-                .then(net.tierrasfantasticas.tfclient.npcs.TFNpcs.command())
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.npcs.TFNpcs.command()))
                 // (1.3.99) las crates (antes /fscrate de Fantastic Crates)
-                .then(net.tierrasfantasticas.tfclient.crates.FSCrates.command())
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.crates.FSCrates.command()))
                 // (1.3.109) /tf bots add|remove <cantidad> [segundos] (staff): jugadores de mentira en la lista
-                .then(net.tierrasfantasticas.tfclient.server.TFBots.command())
-                .then(net.tierrasfantasticas.tfclient.server.TFDataReset.command())
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.server.TFBots.command()))
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.server.TFDataReset.command()))
                 // /tf claim give <jugadores> <id> [cantidad]: dar protecciones a mano
-                .then(Commands.literal("claim").requires(s -> s.hasPermission(2))
-                        .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.giveCommand()))
-                .then(Commands.literal("web")
+                .then(TFStaffLock.guard(Commands.literal("claim").requires(s -> s.hasPermission(2))
+                        .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.giveCommand())))
+                .then(TFStaffLock.guard(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())
                         .then(TFBridgeCommands.rango())
@@ -165,7 +169,7 @@ public final class TFCommands {
                                                                 .executes(ctx -> revoke(ctx, null))
                                                                 .then(Commands.argument("item", StringArgumentType.word())
                                                                         .suggests(ITEMS)
-                                                                        .executes(ctx -> revoke(ctx, StringArgumentType.getString(ctx, "item")))))))))));
+                                                                        .executes(ctx -> revoke(ctx, StringArgumentType.getString(ctx, "item"))))))))))));
     }
 
     /** /tf reload: todas las configs a la vez (lo mismo que RECARGAR CONFIGS en el pad de administrador). */
