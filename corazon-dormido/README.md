@@ -9,6 +9,19 @@ Estado: **fase 1 completa: el anillo interior** (tres regiones, tres guardianes,
 los sistemas de base). Lo que viene después está en `DISEÑO.md`. Funciona en el navegador del móvil y del
 ordenador, sin instalar nada.
 
+## Descargar
+
+Cada versión es una Release de GitHub con el juego en **un solo archivo .html** (se abre en el navegador, sin
+instalar nada) y en .zip:
+
+- La última, siempre en el mismo enlace:
+  https://github.com/modelqdeluxe-ops/ss/releases/download/corazon-dormido/corazon-dormido.html
+- Una concreta: `https://github.com/modelqdeluxe-ops/ss/releases/tag/corazon-dormido-v<versión>`
+
+Las versiones están en `VERSIONES.txt`. Para publicar una nueva, añade su línea (con `HEAD` como commit) y
+súbela: el workflow `.github/workflows/corazon-dormido.yml` prueba el juego, crea las Releases que falten (nunca
+como «latest») y actualiza la fija. Para empaquetar a mano: `python3 corazon-dormido/herramientas/empaquetar.py`.
+
 ## Cómo se juega
 
 | Móvil | Ordenador | Qué hace |
@@ -95,6 +108,8 @@ js/principal.js    bucle, cámara, dibujo del mundo y arranque
 herramientas/probar.cjs         prueba rápida en un móvil simulado (capturas + errores + guardar/cargar)
 herramientas/probar-todo.cjs    prueba a fondo: regiones, jefes, criaturas, paneles, base, pesca, FPS y dibujos que falten
 herramientas/simular-jefes.cjs  un bot pelea contra cada guardián con el equipo de su momento (equilibrio)
+herramientas/empaquetar.py      saca el .html de un solo archivo y el .zip de una versión (para las Releases)
+VERSIONES.txt      las versiones publicadas como Releases
 ```
 
 Es JavaScript sin dependencias ni compilación. El mundo se dibuja con WebGL2 (`js/gl.js`) y la interfaz en un

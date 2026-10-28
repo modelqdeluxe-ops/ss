@@ -1,0 +1,8 @@
+# Versiones de Corazón Dormido. Cada línea es una Release de GitHub: corazon-dormido-v<versión>.
+# versión | commit (HEAD = el commit que se sube) | título | notas
+# Para publicar una versión nueva: añade su línea con HEAD y súbela. El workflow corazon-dormido.yml crea las
+# Releases que falten (nunca como «latest») y pone la última en la Release fija «corazon-dormido».
+0.1.0 | e2c258bf | Demo jugable | La primera demo, en 2D: tres zonas, la cadena de crear y el Topo Rey.
+0.2.0 | e74dd539 | En 3D como Core Keeper | Motor 3D con WebGL2: bloques con tapa y cara, cámara inclinada, luz de colores que no atraviesa paredes y arte nuevo.
+0.3.0 | dd57af28 | Luz tramada y mucho más detalle | Luz a cuadritos con trama 4×4, resplandor, halos, polvo, chispas y vida en el suelo.
+0.4.0 | 8771f496 | Fase 1: el anillo interior | Tres regiones, tres guardianes con estatuas y el despertar del Corazón; cofres, cama, puertas, granja, cocina, pesca, habilidades, armaduras que se ven puestas, arcos y mazas.
