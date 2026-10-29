@@ -211,7 +211,8 @@ const Personaje = (() => {
     const t0 = performance.now();
     while (trabajo.pend.length && performance.now() - t0 < ms) {
       const [dir, anim, f] = trabajo.pend.shift();
-      const r = hornearCuadro(dir, anim, f, trabajo.asp, trabajo.eq);
+      // el personaje dibujado a mano (mano.js); el muñeco horneado queda para el taller
+      const r = typeof PJ_MANO !== 'undefined' ? PJ_MANO.cuadro(dir, anim, f, trabajo.asp, trabajo.eq) : hornearCuadro(dir, anim, f, trabajo.asp, trabajo.eq);
       trabajo.hechos.push([`pj_${dir}_${anim}${f}`, r.color, r.dx]);
     }
     if (!trabajo.pend.length) { const t = trabajo; trabajo = null; terminar(t); }

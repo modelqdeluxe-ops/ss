@@ -1,37 +1,33 @@
-// Muestra de sprites dibujados a mano (estilo Core Keeper): el Despierto de frente.
+// El Despierto dibujado a mano con las medidas de Core Keeper (ver ARTE.md): 13×20, cabeza de 13×11, ojos de 2×2
+// con brillo, sin contorno negro (el borde es el tono más oscuro de cada material).
 pal({
-  k: "#1a0e14",
-  A: "#3a1210", B: "#6e2618", C: "#a8442a", D: "#d26a38", E: "#f2a05a",
-  S: "#b8745a", s: "#e2a07c", L: "#f8c8a0",
-  e: "#24141e", r: "#e0606a",
-  R: "#7a1a26", Q: "#c7363f",
-  T: "#1c4c48", t: "#2e7e70", u: "#52aa92",
-  b: "#4a2a1a", g: "#f0c040",
-  P: "#24192e", p: "#3e2e52",
-  O: "#2e1a10", o: "#6a4029",
+  o: "#2a0e14", H: "#7a2a1c", h: "#b44a26", g: "#e47c3c", G: "#f6b060",
+  s: "#f2b890", S: "#c98466", b: "#ee8a84",
+  E: "#1a2440", e: "#3a9a8c", w: "#f4f2ff",
+  O: "#0e2224", T: "#17463f", t: "#2b7d69", u: "#52b090",
+  R: "#6a1422", r: "#cc3440",
+  B: "#3e2416", y: "#f0c040",
+  P: "#221a34", p: "#3e325c",
+  K: "#1e120c", k: "#6e4228",
 })
-sprite("pj_frente", { outline: "k" }, `
-......CCCCCC......
-....CCDDDDDCCB....
-...CDDEEEDDDCCB...
-..CDDEEDDDDDCCBB..
-..CDDDDDDDDCCCBB..
-.BCDDDDDDDCCCCBBA.
-.BCDDDDDDCCCCCBBA.
-.BCDCDDCDCCCBCCBA.
-.BCDLCDLCCLCCLSBA.
-.BCLLeLLLLLesSCBA.
-.BCLLeLLLLLesSCBA.
-.BCLrLLLLLLLrSBBA.
-..BCsLLLLLLssSBA..
-...BBSssssSSBBA...
-....QQQQQQQQRR....
-...uuttttttttTT...
-..uTttttttttRTtT..
-..uTttttttttRTtT..
-..LuTtttttttTTSS..
-..SLbbbbgbbbbbSS..
-....pppppPPPPP....
-....pppp..PPPP....
-....oooO..oooO....
-....OOOO..OOOO....`)
+sprite("pj_frente", {}, `
+....ooo.oo...
+...ohhgohho..
+..ohgGghhhHo.
+.ohgGghhhhHHo
+.ohgghhhHhHHo
+ohhhhhHhHHhHo
+oHhsHhhHssHHo
+oHhsHsssHssHo
+oHseEssseEsHo
+oHswessswesHo
+.HHbsssssbSH.
+...RrrrrrRR..
+..OrRuttRrrO.
+.TsTutttttTsT
+.Ssuttttttuss
+..TBByBBBBT..
+..OpPPpPPpO..
+...pP...pP...
+...KK...kK...
+..Kkk...kkK..`)
