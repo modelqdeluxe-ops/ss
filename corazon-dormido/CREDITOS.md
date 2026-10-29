@@ -24,7 +24,39 @@ Se sacan con `herramientas/horno3d/extraer.cjs` y quedan en `js/anim-*.js`.
 Pixel Operator se pasa a la tabla de glifos con `herramientas/fuente/glifos.py` (se dibuja a 32 px y se toma el centro
 de cada bloque de 4×4: los píxeles salen exactos).
 
-## Música y sonido
+## Música (CC BY 4.0: hay que citar al autor)
 
-La música y los sonidos de la 0.7 son nuestros (sintetizados en `herramientas/musica` y `js/sonido.js`). Lo grabado con
-licencia libre se apunta aquí cuando entre (CHECKPOINT-0.8 §4.6).
+Toda de **Kevin MacLeod** (incompetech.com), con licencia **Creative Commons Attribution 4.0**
+(https://creativecommons.org/licenses/by/4.0/). Comprobada en https://incompetech.com/music/royalty-free/music.html
+(«Licensed under Creative Commons: By Attribution 4.0 License»). El juego lo cita en Créditos (título y pausa).
+
+| Tema del juego | Pieza | Dónde suena |
+|---|---|---|
+| `titulo` | Heart of Nowhere | Título y Santuario del Corazón |
+| `interior` | Immersed | Raíces, Arcilla, Ruinas |
+| `selva` | Ascending the Vale | Selva Esmeralda y Pradera |
+| `cienaga` | Mirage | Ciénaga de la Podre |
+| `ciudad` | Gregorian Chant | Ciudad Velada |
+| `cripta` | Oppressive Gloom | Cripta y Moho |
+| `jefe` | Darkling | Peleas con los jefes |
+| `jefe2` | Five Armies | Grul y el Centinela |
+
+## Efectos de sonido (CC0)
+
+De OpenGameArt, todos CC0 (comprobado en la página de cada uno):
+
+| Paquete | Autor | Para |
+|---|---|---|
+| RPG Sound Pack (opengameart.org/content/rpg-sound-pack) | artisticdude | tajos, menú, error, burbuja, muertes |
+| 80 CC0 creature SFX | rubberduck | alertas, rugido, golpe recibido, comer, muertes |
+| 100 CC0 SFX | rubberduck | golpes, metal, recoger, crear, colocar, nivel, victoria, agua |
+| 75 CC0 breaking/falling/hit SFX | rubberduck | picar, romper, excavar, temblor, golpes |
+| Fantozzi's Footsteps (Grass/Sand & Stone) | qubodup (grabados por Fantozzi) | pasos en piedra y en hierba |
+| Heartbeat sounds | bart | el latido del Corazón |
+| Water splash and sand footsteps | peludo | pasos en el agua |
+
+## Cómo entra en la app
+
+No van al repo: `herramientas/audio/bajar.py` los baja al compilar (workflow de Android), comprueba la huella SHA-256
+de cada archivo, los recorta, iguala el volumen y los pasa a OGG (música estéreo ~96 kbps; efectos mono). Si algo no
+se puede bajar, se queda lo compuesto (`herramientas/musica`, sintetizado por nosotros). En total, unos 18 MB.

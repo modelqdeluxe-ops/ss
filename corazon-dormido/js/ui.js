@@ -599,15 +599,40 @@ function panelMapa(ctx) {
 
 function panelPausa(ctx) {
   fondoPanel(ctx);
-  const w = 120, h = APP ? 128 : 110, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
+  const w = 120, h = APP ? 146 : 128, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  if (APP) botonTexto(ctx, x + 10, y + 111, w - 20, 13, 'Salir del juego', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
+  if (APP) botonTexto(ctx, x + 10, y + h - 19, w - 20, 13, 'Salir del juego', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
   texto(ctx, 'Pausa', LW / 2, y + 6, COL.oro, { alin: 'c', sombra: COL.negro });
   botonTexto(ctx, x + 10, y + 18, w - 20, 15, 'Seguir', () => { J.panel = null; });
   botonTexto(ctx, x + 10, y + 37, w - 20, 15, 'Sonido: ' + (Sonido.activo ? 'Sí' : 'No'), () => Sonido.alternar());
   botonTexto(ctx, x + 10, y + 56, w - 20, 15, 'Música: ' + (Musica.activa ? 'Sí' : 'No'), () => Musica.alternar());
   botonTexto(ctx, x + 10, y + 75, w - 20, 15, 'Guardar', () => { guardarPartida(); aviso('Partida guardada'); J.panel = null; });
   botonTexto(ctx, x + 10, y + 94, w - 20, 13, 'Salir al menú', () => { guardarPartida(); irTitulo(); });
+  botonTexto(ctx, x + 10, y + h - 4 - (APP ? 34 : 15), w - 20, 13, 'Créditos', () => { J.panel = 'creditos'; UI.scroll = 0; }, { color: COL.botonOff });
+}
+
+// Créditos (la música es CC BY 4.0: hay que citar a su autor; lo demás es CC0 y se cita igual). Ver CREDITOS.md.
+const CREDITOS_JUEGO = [
+  ['Música', 'Kevin MacLeod (incompetech.com). Licencia CC BY 4.0 (creativecommons.org/licenses/by/4.0). «Heart of Nowhere», «Immersed», «Ascending the Vale», «Mirage», «Gregorian Chant», «Oppressive Gloom», «Darkling» y «Five Armies».'],
+  ['Efectos de sonido', 'De OpenGameArt, CC0: artisticdude (RPG Sound Pack), rubberduck (criaturas, golpes y roturas), qubodup (pasos de Fantozzi), bart (latido) y peludo (agua).'],
+  ['Movimiento', 'Las animaciones de los huesos (los dibujos son nuestros), CC0: KayKit de Kay Lousberg (kaylousberg.com) y Quaternius (quaternius.com).'],
+  ['Letra', 'Pixel Operator, de Jayvee Enaguas (CC0).'],
+  ['Corazón Dormido', 'Juego, mundo, arte, criaturas e historia: hechos para este juego.'],
+];
+function panelCreditos(ctx, alCerrar) {
+  fondoPanel(ctx, false);
+  const w = Math.min(LW - 16, 330), h = Math.min(LH - 10, 200), x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
+  marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
+  texto(ctx, 'Créditos', x + 8, y + 6, COL.oro, { sombra: COL.negro });
+  cruz(ctx, x + w - 17, y + 3); UI.botones[UI.botones.length - 1].fn = alCerrar;
+  const ly = y + 20, lh = h - 26, lineas = [];
+  for (const [tit, txt] of CREDITOS_JUEGO) { lineas.push([tit, COL.oro]); for (const l of partirTexto(txt, w - 18)) lineas.push([l, COL.texto]); lineas.push(['', null]); }
+  const alto = lineas.length * ALTO_LINEA;
+  UI.scroll = Math.max(0, Math.min(UI.scroll, alto - lh));
+  ctx.save(); ctx.beginPath(); ctx.rect(x + 2, ly, w - 4, lh); ctx.clip();
+  lineas.forEach(([l, c], k) => { if (c) texto(ctx, l, x + 9, ly + 2 + k * ALTO_LINEA - Math.round(UI.scroll), c); });
+  ctx.restore();
+  boton(x + 2, ly, w - 4, lh, () => {}, { lista: true, mudo: true });
 }
 
 function panelMensaje(ctx, titulo, txt, boton1, fn, colorT = COL.oro) {
@@ -631,6 +656,7 @@ function dibujarPanel(ctx) {
   else if (J.panel === 'mapa') panelMapa(ctx);
   else if (J.panel === 'pausa') panelPausa(ctx);
   else if (J.panel === 'corazon') panelCorazon(ctx);
+  else if (J.panel === 'creditos') panelCreditos(ctx, () => { J.panel = 'pausa'; });
   else if (J.panel === 'muerto') panelMensaje(ctx, 'Te desmayaste', 'Te desmayas en la oscuridad. Lo que llevabas sigue contigo.', 'Despertar', revivir, '#ff6b6b');
   else if (J.panel === 'fin') panelMensaje(ctx, 'El Corazón despierta', 'Los tres guardianes descansan y el Corazón late con fuerza. Habla con él: te dirá cómo abrir la Gran Muralla. Al otro lado espera la Selva Esmeralda.', 'Seguir', () => { J.panel = null; guardarPartida(); });
   else if (PANELES[J.panel]) PANELES[J.panel](ctx);
@@ -729,6 +755,7 @@ function dibujarTitulo(ctx, hayPartida) {
   const w2 = (w - 3) >> 1;
   botonTexto(ctx, x, y, w2, 13, 'Sonido: ' + (Sonido.activo ? 'Sí' : 'No'), () => Sonido.alternar());
   botonTexto(ctx, x + w - w2, y, w2, 13, 'Música: ' + (Musica.activa ? 'Sí' : 'No'), () => Musica.alternar());
+  y += 18; botonTexto(ctx, x, y, w, 13, 'Créditos', () => { UI.creditos = true; UI.scroll = 0; }, { color: COL.botonOff });
   if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'Salir', () => APP.salir(), { color: COL.botonOff }); }
   if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', cxL, Math.round(LH * 0.56) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
   const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · Usar: abrir y hablar', cxL * 2 - 12);

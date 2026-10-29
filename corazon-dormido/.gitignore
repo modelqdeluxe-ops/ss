@@ -6,3 +6,4 @@
 __pycache__/
 herramientas/horno3d/node_modules/
 herramientas/horno3d/package-lock.json
+/.cache-audio/

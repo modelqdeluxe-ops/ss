@@ -796,7 +796,7 @@ function dibujar() {
   if (!M) return;
   dibujarMundo3d();
   dibujarTextosMundo();
-  if (J.estado === 'titulo') dibujarTitulo(ctx, hayPartida);
+  if (J.estado === 'titulo') { dibujarTitulo(ctx, hayPartida); if (UI.creditos) panelCreditos(ctx, () => { UI.creditos = false; }); }
   else { dibujarHUD(ctx); if (J.panel) dibujarPanel(ctx); }
   if (VER_FPS) texto(ctx, `${fps} fps · ${GL.W}x${GL.H} · ${GL.trozos} trozos`, 4, LH - 30, '#9fffa8', { borde: COL.negro });
 }
