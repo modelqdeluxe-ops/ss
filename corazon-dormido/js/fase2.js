@@ -309,7 +309,7 @@ function lanzarBomba(it, s) {
   const p = J.jug, obj = enemigoCerca(p, 90, true);
   if (obj) mirarA(p, obj.x, obj.y);
   quitar(s.id, 1);
-  p.golpeT = 0.5; p.swing = 0.3; p.swingDur = 0.3; p.swingItem = it.icono;
+  p.golpeT = 0.5; p.swing = 0.3; p.swingDur = 0.3; p.swingItem = it.icono; p.swingAnim = 'l';
   J.bombas.push({ x: p.x + p.fx * 8, y: p.y + p.fy * 6, z: 10, vx: p.fx * 110, vy: p.fy * 80, vz: 70, t: 1.5, dano: it.dano });
   Sonido.sfx.zas();
 }

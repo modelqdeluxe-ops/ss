@@ -1,8 +1,11 @@
 'use strict';
-// El personaje: un muñeco 3D articulado (escultor.js) que se hornea en las tres direcciones (abajo, arriba y a la
-// derecha, vista de tres cuartos; la izquierda es la derecha volteada) y en tres animaciones (quieto, andar y
-// golpe). Se vuelve a hornear cuando cambian el aspecto (piel, pelo, peinado, ropa) o la armadura puesta, así la
-// armadura se ve de verdad encima del cuerpo, con su forma y su luz. Va a la zona dinámica del atlas.
+// El personaje: pixel art movido por el esqueleto 2D (esqueleto.js, PJ_ESQ) con las animaciones CC0 de KayKit, en
+// las tres direcciones (abajo, arriba y a la derecha; la izquierda es la derecha volteada) y en todas las animaciones
+// de PJ_ESQ.ANIMS (quieto, andar, correr, golpes, golpe recibido, morir, usar, lanzar, disparar, esquivar). Se vuelve
+// a hornear cuando cambian el aspecto o la armadura. Cada cuadro se recorta a lo que tiene dibujado (con los pies
+// siempre en la misma fila) y guarda en META_SPR dónde están sus dos manos y hacia dónde apuntan, para poner el arma
+// y la antorcha (principal.js, ponerEnMano). Va a la zona dinámica del atlas. El muñeco 3D (muneco) queda para el
+// taller.
 
 const ASPECTO = {
   piel: ['#f2c2a0', '#e0a882', '#b8805a', '#8a5a3c', '#5e3a28'],
@@ -181,21 +184,37 @@ const Personaje = (() => {
   function clave(asp, eq) { return JSON.stringify([asp, Object.fromEntries(Object.entries(eq).map(([k, v]) => [k, v && v.r ? v.r[3] : v]))]); }
   // Trabajo pendiente: se hornea poco a poco (unos ms por cuadro) y se cambia todo de golpe al terminar.
   let trabajo = null, actual = null;
-  function lista(asp, eq) {
+  function lista() {
     const out = [];
-    for (const dir of ['ab', 'ar', 'de']) for (const [anim, n] of ANIMS) for (let f = 0; f < n; f++) out.push([dir, anim, f]);
+    const anims = typeof PJ_ESQ !== 'undefined' ? Object.entries(PJ_ESQ.ANIMS).map(([a, [, n]]) => [a, n]) : ANIMS;
+    for (const dir of ['ab', 'ar', 'de']) for (const [anim, n] of anims) for (let f = 0; f < n; f++) out.push([dir, anim, f]);
     return out;
   }
+  // Recorta un cuadro del esqueleto a lo dibujado. Las filas de abajo se dejan siempre hasta el final del cuadro (los
+  // pies no se mueven entre cuadros); las manos pasan a píxeles desde los pies: x a la derecha, y hacia arriba.
+  function recortarCuadro(r) {
+    const L = r.color, W = L.w, H = L.h;
+    let x0 = W, x1 = -1, y0 = H;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (L.d[y * W + x]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); }
+    if (x1 < 0) { x0 = 0; x1 = 0; y0 = H - 1; }
+    const w = x1 - x0 + 1, h = H - y0, R = new Lienzo(w, h);
+    if (L.n) R.n = new Int32Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const k = (y0 + y) * W + x0 + x; R.d[y * w + x] = L.d[k]; if (L.n) R.n[y * w + x] = L.n[k]; }
+    const [px, py] = r.pie, manos = {};
+    for (const [n, m] of Object.entries(r.manos || {})) manos[n] = { x: m.x - px, y: H - m.y, ang: m.ang, delante: m.delante };
+    return { lienzo: R, dx: ((x0 + x1 + 1) / 2 - px) / 16, manos };
+  }
+  const espejoManos = (manos) => Object.fromEntries(Object.entries(manos).map(([n, m]) => [n, { x: -m.x, y: m.y, ang: -m.ang, delante: m.delante }]));
   function terminar(t) {
     const L = [];
-    for (const [nombre, l, dx] of t.hechos) {
-      L.push([nombre, l]); L.push([nombre.replace('pj_', 'pjB_'), l.blanco()]);
-      META_SPR[nombre] = META_SPR[nombre.replace('pj_', 'pjB_')] = { dx, dz: 0 };
+    for (const [nombre, l, dx, manos] of t.hechos) {
+      L.push([nombre, l]);
+      META_SPR[nombre] = { dx, dz: 0, manos };
       if (nombre.startsWith('pj_de_')) {
-        const v = l.voltear(); v.n = voltearNormales(l);
+        const v = l.voltear(); if (l.n) v.n = voltearNormales(l);
         const ni = nombre.replace('_de_', '_iz_');
-        L.push([ni, v]); L.push([ni.replace('pj_', 'pjB_'), l.blanco().voltear()]);
-        META_SPR[ni] = META_SPR[ni.replace('pj_', 'pjB_')] = { dx: -dx, dz: 0 };
+        L.push([ni, v]);
+        META_SPR[ni] = { dx: -dx, dz: 0, manos: espejoManos(manos) };
       }
     }
     escribirZona(L);
@@ -204,16 +223,21 @@ const Personaje = (() => {
   function empezarTrabajo(asp, equipo) {
     const eq = equipoMats(equipo), k = clave(asp, eq);
     if (k === actual || (trabajo && trabajo.clave === k)) return;
-    trabajo = { clave: k, asp, eq, pend: lista(asp, eq), hechos: [] };
+    trabajo = { clave: k, asp, eq, pend: lista(), hechos: [] };
   }
   function trabajar(ms = 4) {
     if (!trabajo) return;
     const t0 = performance.now();
     while (trabajo.pend.length && performance.now() - t0 < ms) {
       const [dir, anim, f] = trabajo.pend.shift();
-      // el personaje dibujado a mano (mano.js); el muñeco horneado queda para el taller
-      const r = typeof PJ_MANO !== 'undefined' ? PJ_MANO.cuadro(dir, anim, f, trabajo.asp, trabajo.eq) : hornearCuadro(dir, anim, f, trabajo.asp, trabajo.eq);
-      trabajo.hechos.push([`pj_${dir}_${anim}${f}`, r.color, r.dx]);
+      // el esqueleto 2D (esqueleto.js); el muñeco horneado queda para el taller
+      if (typeof PJ_ESQ !== 'undefined') {
+        const c = recortarCuadro(PJ_ESQ.cuadro(dir, anim, f, trabajo.asp, trabajo.eq));
+        trabajo.hechos.push([`pj_${dir}_${anim}${f}`, c.lienzo, c.dx, c.manos]);
+      } else {
+        const r = hornearCuadro(dir, anim, f, trabajo.asp, trabajo.eq);
+        trabajo.hechos.push([`pj_${dir}_${anim}${f}`, r.color, r.dx, {}]);
+      }
     }
     if (!trabajo.pend.length) { const t = trabajo; trabajo = null; terminar(t); }
   }

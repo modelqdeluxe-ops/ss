@@ -308,7 +308,7 @@ function panelMochila(ctx) {
   if (UI.pestana === 'bestiario') { panelBestiario(ctx, x, y, w, h); return; }
   // equipo
   const ey = y + 20;
-  const vacios = { casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
+  const vacios = { mano2: 'i_antorcha', casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
   RANURAS_EQUIPO.forEach((r, k) => {
     const ex = x + 6 + k * 19;
     ranura(ctx, ex, ey, J.equipo[r], false, { fondo: '#2e2018', vacio: vacios[r] });
@@ -318,8 +318,9 @@ function panelMochila(ctx) {
     }, { mudo: true });
   });
   const st = J.st || calcularStats();
-  texto(ctx, `Vida ${st.vidaMax} Def ${st.def}`, x + 6 + 6 * 19 + 3, ey + 2, COL.texto);
-  texto(ctx, `Vel ${Math.round(st.vel * 100)}% Daño ${Math.round(st.dano * 100)}%`, x + 6 + 6 * 19 + 3, ey + 10, COL.suave);
+  const sx = x + 6 + RANURAS_EQUIPO.length * 19 + 2;
+  texto(ctx, `Vida ${st.vidaMax} Def ${st.def}`, sx, ey + 2, COL.texto);
+  texto(ctx, `Daño ${Math.round(st.dano * 100)}%`, sx, ey + 10, COL.suave);
   const gy = ey + 23;
   rejilla(ctx, J.inv, x + 6, gy, N_BARRA, UI.selInv, tocarRanura);
   const s = UI.selInv >= 0 ? J.inv[UI.selInv] : null, iy = gy + 4 * 19 + 5;
@@ -329,7 +330,7 @@ function panelMochila(ctx) {
     const mini = (txt, fn) => { const bw = anchoTexto(txt) + 8; bx -= bw; botonTexto(ctx, bx, iy - 3, bw, 11, txt, fn); bx -= 3; };
     mini('SOLTAR', () => { const t = J.inv[UI.selInv]; if (t) { soltar(J.jug.x + J.jug.fx * 20, J.jug.y + J.jug.fy * 20, t.id, t.n); J.inv[UI.selInv] = null; UI.selInv = -1; } });
     const it = asegurarItem(s.id);
-    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio' || it.tipo === 'mascota') mini('PONER', () => ponerEquipo(UI.selInv));
+    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio' || it.tipo === 'mascota' || VA_EN_MANO2.has(s.id)) mini(VA_EN_MANO2.has(s.id) ? 'A LA OTRA MANO' : 'PONER', () => ponerEquipo(UI.selInv));
     if (it.tipo === 'comida') mini('COMER', () => { comer(J.inv[UI.selInv]); if (!J.inv[UI.selInv]) UI.selInv = -1; });
   } else partirTexto('Toca algo para verlo; toca otro hueco para moverlo. La armadura se pone tocándola y luego su hueco.', w - 12).slice(0, 3).forEach((l, k) => texto(ctx, l, x + 6, iy + k * 7, COL.suave));
 }
@@ -345,11 +346,13 @@ function ponerEquipo(i, ranuraPedida) {
   const s = J.inv[i];
   if (!s) return;
   const it = ITEMS[s.id];
-  const r = ranuraPedida && TIPO_RANURA[ranuraPedida] === it.tipo ? ranuraPedida : it.tipo === 'accesorio' ? (J.equipo.acc1 ? (J.equipo.acc2 ? 'acc1' : 'acc2') : 'acc1') : TIPO_RANURA[it.tipo] ? it.tipo : null;
+  const mano2 = VA_EN_MANO2.has(s.id);
+  const r = ranuraPedida && (TIPO_RANURA[ranuraPedida] === it.tipo || (ranuraPedida === 'mano2' && mano2)) ? ranuraPedida : mano2 ? 'mano2' : it.tipo === 'accesorio' ? (J.equipo.acc1 ? (J.equipo.acc2 ? 'acc1' : 'acc2') : 'acc1') : TIPO_RANURA[it.tipo] ? it.tipo : null;
   if (!r) { aviso('Eso no se pone'); return; }
   const antes = J.equipo[r];
   J.equipo[r] = { id: s.id, n: 1 };
-  J.inv[i] = antes;
+  // de una pila (las antorchas) solo se pone una; lo que había en el hueco vuelve a la mochila
+  if (s.n > 1) { s.n--; if (antes && agregar(antes.id, antes.n) > 0) soltar(J.jug.x, J.jug.y, antes.id, antes.n); } else J.inv[i] = antes;
   UI.selInv = -1; Sonido.sfx.metal(); calcularStats();
 }
 function panelHabilidades(ctx, x, y, w) {
@@ -536,9 +539,13 @@ function dibujarAspecto(ctx) {
   texto(ctx, 'TU DESPIERTO', LW / 2, 8, '#f2e4d0', { alin: 'c', esc: 2, borde: COL.negro });
   const intro = partirTexto('El último latido del Corazón hizo un cuerpo nuevo en el altar. Eres tú.', LW - 24);
   intro.forEach((l, k) => texto(ctx, l, LW / 2, 24 + k * 8, '#b8aab8', { alin: 'c', borde: COL.negro }));
-  const k = LH >= 200 ? 3 : 2, pie = Math.round(LH * 0.66), anda = Math.floor(J.t * 6) % 6;
-  sprGrande(ctx, 'pj_ab_q' + (Math.floor(J.t * 1.6) % 2), LW * 0.3, pie, k);
-  sprGrande(ctx, 'pj_de_a' + anda, LW * 0.3 + 28 * k, pie, k);
+  const k = LH >= 200 ? 3 : 2, pie = Math.round(LH * 0.66);
+  // de frente quieto y de perfil andando (esqueleto.js); cada cuadro está recortado: se coloca por los pies
+  const nq = (PJ_ESQ.ANIMS.q || [, 2])[1], na = (PJ_ESQ.ANIMS.a || [, 6])[1];
+  const q = 'pj_ab_q' + (Math.floor((J.t / 1.6) * nq) % nq), a = 'pj_de_a' + (Math.floor(J.t * 10) % na);
+  const dxDe = (n) => (META_SPR[n] ? META_SPR[n].dx * 16 * k : 0);
+  sprGrande(ctx, q, LW * 0.3 + dxDe(q), pie, k);
+  sprGrande(ctx, a, LW * 0.3 + 28 * k + dxDe(a), pie, k);
   if (Personaje.ocupado) texto(ctx, '…', LW * 0.3 + 14 * k, pie + 4, COL.suave, { alin: 'c' });
   const filas = [['Piel', 'piel', ASPECTO.piel.length], ['Pelo', 'pelo', ASPECTO.pelo.length], ['Peinado', 'peinado', ASPECTO.peinado.length], ['Ropa', 'ropa', ASPECTO.ropa.length]];
   const x0 = Math.round(LW * 0.56), w = Math.min(130, LW - x0 - 8);

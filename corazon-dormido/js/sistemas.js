@@ -120,7 +120,7 @@ function lanzarCana(it) {
     if (enMundo(tx, ty) && esAgua(M.piso[idx(tx, ty)])) {
       const cebo = J.cuenta('cebo') > 0;
       J.pesca = { estado: 'espera', x, y, t: (2 + Math.random() * 5) * (cebo ? 0.45 : 1), cana: it, region: M.region[idx(tx, ty)], cebo };
-      p.golpeT = 0.5; p.swing = 0.4; p.swingDur = 0.4; p.swingItem = it.icono;
+      p.golpeT = 0.5; p.swing = 0.4; p.swingDur = 0.4; p.swingItem = it.icono; p.swingAnim = 'l';
       Sonido.sfx.zas(); particulas(x, y, 6, ['#a8dcff', '#ffffff'], { vel: 20, alto: 10 });
       return;
     }

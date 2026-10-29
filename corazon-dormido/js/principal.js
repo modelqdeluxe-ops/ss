@@ -77,7 +77,7 @@ function cofresMudanza(caja) {
 }
 function migrarV3(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
+  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null, mano2: null }, g.equipo || {});
   J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
   for (const s of J.inv) if (s) asegurarItem(s.id);
   for (const [jefe, est] of Object.entries(M.estatuas)) if (J.estatuas[jefe]) { const o = objetoEn(est.x, est.y); if (o) o.extra = 1; }
@@ -136,7 +136,7 @@ function migrarV4(g) {
 function restaurarJugador(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
   Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {}, bestiario: g.bestiario || {}, encargos: g.encargos || {} });
-  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null }, g.equipo || {});
+  J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null, mano2: null }, g.equipo || {});
   J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
   for (const s of J.inv) if (s) asegurarItem(s.id);
   for (const o of M.objetos.values()) if (o.datos && o.datos.inv) for (const s of o.datos.inv) if (s) asegurarItem(s.id);
@@ -168,7 +168,7 @@ async function empezar(continuar) {
     restaurarJugador(v4);
   } else {
     Object.assign(J, { sel: 0, hito: {}, objetivo: 0, hab: {}, buffs: [], jefesMuertos: {}, estatuas: {}, cama: null, tiempoMundo: 0, corazonDespierto: false, mascotas: {}, altares: {}, murallaAbierta: false, pasos: {}, bestiario: {}, encargos: {}, aspecto: J.aspectoNuevo || Object.assign({}, ASPECTO_INICIAL) });
-    J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null };
+    J.equipo = { casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null, mano2: null };
     J.inv = new Array(N_INV).fill(null);
     if (v3) migrarV3(v3);
     else for (const [id, n] of INICIO) agregar(id, n);
@@ -277,7 +277,7 @@ function fuentesDinamicas() {
   const f = [];
   if (J.estado !== 'titulo' && J.estado !== 'muerto') {
     const s = J.inv[J.sel], extra = J.st ? J.st.luz : 0;
-    if (s && s.id === 'antorcha') f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8 + extra, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
+    if ((s && s.id === 'antorcha') || (J.equipo.mano2 && J.equipo.mano2.id === 'antorcha')) f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8 + extra, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
     else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 6 + extra, c: [1.0, 0.88, 0.7], k: 0.7 });
   }
   for (const j of Object.values(J.jefes)) {
@@ -353,26 +353,44 @@ function dibujarObjeto3d(o) {
   }
 }
 
-function nombreJugador(p) {
-  let a;
-  if (p.swing > 0 && p.swingDur) a = 'g' + Math.min(2, Math.floor((1 - p.swing / p.swingDur) * 3));
-  else if (p.andando) a = 'a' + (Math.floor(p.anim * 1.5) % 6);
-  else a = 'q' + (Math.floor(J.t * 1.6) % 2);
-  return `${p.flash > 0 ? 'pjB' : 'pj'}_${p.dir}_${a}`;
+// Qué animación del esqueleto (PJ_ESQ.ANIMS) toca y en qué cuadro: el golpe según la herramienta, herido, muerto,
+// usar o comer, pescar, andar (atado a lo recorrido, para que los pies no patinen), correr y quieto.
+function animJugador(p) {
+  const A = PJ_ESQ.ANIMS, n = (a) => A[a][1], cuadro = (a, k) => [a, Math.max(0, Math.min(n(a) - 1, Math.floor(k * n(a))))];
+  if (J.estado === 'muerto') return cuadro('m', (J.t - (p.muerteT ?? J.t)) / 0.9);
+  if (p.swing > 0 && p.swingDur) return cuadro(p.swingAnim || 'g', 1 - p.swing / p.swingDur);
+  if (p.heridoT !== undefined && J.t - p.heridoT < 0.3) return cuadro('r', (J.t - p.heridoT) / 0.3);
+  if (J.pesca) return ['l', n('l') - 2]; // la caña tendida
+  if (p.usaT !== undefined && J.t - p.usaT < 0.5) return cuadro('u', (J.t - p.usaT) / 0.5);
+  if (p.andando) { const a = J.st && J.st.vel >= 1.3 ? 'c' : 'a'; return [a, Math.floor(p.anim * 1.4) % n(a)]; }
+  return ['q', Math.floor((J.t / 1.6) * n('q')) % n('q')];
 }
+function nombreJugador(p) {
+  if (typeof PJ_ESQ === 'undefined') return `pj_${p.dir}_q0`;
+  const [a, f] = animJugador(p);
+  return `pj_${p.dir}_${a}${f}`;
+}
+// Lo que lleva en cada mano: la derecha (D), lo que tiene en la barra (o lo que está usando); la izquierda (I), lo de
+// la segunda mano (la antorcha).
+const LLEVA_EN_MANO = ['pico', 'espada', 'maza', 'arco', 'azada', 'cana', 'regadera', 'hacha'];
 function dibujarJugador3d(p) {
   const x = p.x / T, z = p.y / T + 0.06;
   GL.plano('sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.75] });
-  const parpadea = p.invuln > 0 && Math.floor(J.t * 20) % 2;
-  const s = J.inv[J.sel], it = s && asegurarItem(s.id);
-  const enMano = !(p.swing > 0) && it && (['pico', 'espada', 'maza', 'arco', 'azada', 'cana', 'regadera'].includes(it.tipo) || s.id === 'antorcha');
-  const detras = p.dir === 'ar';
-  if (enMano && detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
-  if (!parpadea) {
-    GL.modelo(nombreJugador(p), x, z); // el muñeco 3D horneado con su armadura (personaje.js)
-  }
-  if (enMano && !detras && !parpadea) dibujarEnMano(p, x, z, s.id, it);
-  if (p.swing > 0 && p.swingItem) dibujarHerramienta3d(p, x, z);
+  if (p.invuln > 0 && J.estado === 'juego' && Math.floor(J.t * 20) % 2) { p.rastro = null; return; }
+  const n = nombreJugador(p), m = META_SPR[n], manos = (m && m.manos) || {};
+  const s = J.inv[J.sel], it = s && asegurarItem(s.id), muerto = J.estado === 'muerto';
+  let derecha = null;
+  if (p.swing > 0 && p.swingItem) derecha = { icono: p.swingItem, tipo: p.swingAnim };
+  else if (!muerto && it && (LLEVA_EN_MANO.includes(it.tipo) || s.id === 'antorcha')) derecha = { icono: it.icono, id: s.id, tipo: it.tipo };
+  const izquierda = !muerto && J.equipo.mano2 && J.equipo.mano2.id === 'antorcha' ? { id: 'antorcha' } : null;
+  const objetos = [];
+  if (derecha && manos.D) objetos.push(['D', derecha]);
+  if (izquierda && manos.I) objetos.push(['I', izquierda]);
+  // lo que va por detrás del cuerpo, antes; lo de delante, después
+  for (const [cual, o] of objetos) if (!manos[cual].delante) ponerEnMano(p, n, cual, x, z, o);
+  GL.modelo(n, x, z, { blanco: p.flash > 0 ? 0.85 : 0 }); // el esqueleto 2D horneado (personaje.js)
+  for (const [cual, o] of objetos) if (manos[cual].delante) ponerEnMano(p, n, cual, x, z, o);
+  if (!(p.swing > 0)) p.rastro = null;
   if (J.pesca) { // sedal y corcho
     const ps = J.pesca, bx = ps.x / T, bz = ps.y / T, hund = ps.estado === 'pica' ? Math.sin(J.t * 30) * 0.05 - 0.04 : Math.sin(J.t * 3) * 0.02;
     GL.sprite('corcho', bx, bz, { y: 0.02 + hund });
@@ -380,47 +398,44 @@ function dibujarJugador3d(p) {
     for (let k = 1; k < 8; k++) { const t = k / 8, cx = hx + (bx - hx) * t, cz = z + (bz - z) * t, cy = hy * (1 - t) - Math.sin(t * Math.PI) * 0.15 + 0.05; GL.sprite('blanco', cx, cz, { y: cy, escala: 0.25, unlit: 0.6, tinte: [0.9, 0.9, 0.85, 1] }); }
   }
 }
-function dibujarEnMano(p, x, z, id, it) {
-  const lado = p.dir === 'iz' ? -1 : p.dir === 'de' ? 1 : p.dir === 'ab' ? 1 : -1;
-  const bob = p.andando && Math.floor(p.anim) % 2 ? 1 : 0;
-  const hx = x + lado * (p.dir === 'ab' || p.dir === 'ar' ? 0.32 : 0.3), hz = z + (p.dir === 'ar' ? -0.03 : 0.03), hy = ((7.4 + bob) / 16) * GL.KY;
-  if (id === 'antorcha') {
-    const f = Math.floor(J.t * 9) % 4;
-    GL.sprite(`antorcha_${f}`, hx, hz, { y: hy, escala: 0.62 });
-    GL.sprite(`antorcha_${f}_luz`, hx, hz + 0.002, { y: hy, escala: 0.62, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.9] });
-    GL.halo(hx, hy + 0.55, hz, 0.9, [1, 0.6, 0.25], 0.3 + 0.05 * Math.sin(J.t * 13));
-    if (Math.random() < 0.08) J.particulas.push({ x: hx * T, y: hz * T, z: (hy / GL.KY) * 16 + 9, vx: (Math.random() - 0.5) * 6, vy: 0, vz: 12 + Math.random() * 10, g: -6, vida: 1 + Math.random(), c: Math.random() < 0.5 ? '#ffb040' : '#ff7020', s: 1, brilla: true, chispa: true });
+// Pone un objeto en una mano del cuadro actual: el punto por donde se agarra va a la mano y el dibujo se gira para
+// apuntar hacia donde apunta la mano (los iconos de herramienta están en diagonal: mango abajo a la izquierda, punta
+// arriba a la derecha; la antorcha y el arco, derechos). Mirando a la izquierda, el dibujo va volteado.
+function ponerEnMano(p, n, cual, x, z, o) {
+  const mano = META_SPR[n].manos[cual], izq = p.dir === 'iz', px = 16, KY = GL.KY;
+  const antorcha = o.id === 'antorcha', recto = antorcha || o.tipo === 'arco' || o.tipo === 'd';
+  const icono = antorcha ? `antorcha_${Math.floor(J.t * 9) % 4}` : o.icono, r = SPR[icono];
+  if (!r) return;
+  const esc = antorcha ? 0.62 : 1;
+  // el agarre (en píxeles del dibujo) y el giro, calculados mirando a la derecha
+  const gx = recto ? r.w / 2 : 3.5, gy = recto ? r.h * (antorcha ? 0.82 : 0.5) : r.h - 3.5;
+  // la antorcha se lleva derecha (solo se mece un poco con la mano); lo demás apunta hacia donde apunta la mano
+  const angMano = izq ? -mano.ang : mano.ang, ang = antorcha ? Math.atan2(Math.sin(angMano), Math.cos(angMano)) * 0.12 : angMano;
+  const phi = (recto ? 0 : Math.PI / 4) - ang, c = Math.cos(phi), sn = Math.sin(phi);
+  const hx = x + mano.x / px, hy = (mano.y / px) * KY, hz = z + (mano.delante ? 0.03 : -0.03);
+  const punto = (u, v) => { const X = (u - gx) * esc, Y = -(v - gy) * esc, rx = X * c - Y * sn, ry = X * sn + Y * c; return [hx + ((izq ? -rx : rx) / px), hy + (ry / px) * KY]; };
+  const pts = [];
+  for (const [u, v] of [[0, 0], [r.w, 0], [r.w, r.h], [0, r.h]]) { const [a, b] = punto(u, v); pts.push(a, b, hz); }
+  GL.libre(icono, pts, T4, x, z);
+  if (antorcha) {
+    GL.libre(icono + '_luz', pts, [1, 1, 1, 0.9], x, z, 1, GL.lotes.brillo);
+    const [fx, fy] = punto(r.w / 2, 2);
+    GL.halo(fx, fy + 0.2, hz, 0.9, [1, 0.6, 0.25], 0.3 + 0.05 * Math.sin(J.t * 13));
+    if (Math.random() < 0.08) J.particulas.push({ x: fx * T, y: hz * T, z: (fy / KY) * 16 + 2, vx: (Math.random() - 0.5) * 6, vy: 0, vz: 12 + Math.random() * 10, g: -6, vida: 1 + Math.random(), c: Math.random() < 0.5 ? '#ffb040' : '#ff7020', s: 1, brilla: true, chispa: true });
     return;
   }
-  const r = SPR[it.icono];
-  if (!r) return;
-  const rot = lado > 0 ? 0.25 : -0.25, c = Math.cos(rot), sn = Math.sin(rot), px = 16, pts = [];
-  for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) {
-    const uu = lado > 0 ? u : -u, ux = uu * c - v * sn, vy = uu * sn + v * c;
-    pts.push(hx + ux / px, hy - (vy / px) * GL.KY, hz);
-  }
-  GL.libre(it.icono, pts, T4, x, z);
-}
-function dibujarHerramienta3d(p, x, z) {
-  const r = SPR[p.swingItem];
-  if (!r) return;
-  const k = 1 - p.swing / p.swingDur, lado = p.fx >= 0 ? 1 : -1, delante = p.dir !== 'ar';
-  const base = p.dir === 'ar' ? -Math.PI / 2 : p.dir === 'ab' ? Math.PI / 2 : p.fx > 0 ? 0 : Math.PI;
-  const ang = base + lado * (-1.4 + k * 2.4), px = 16;
-  const cx = x + (p.dir === 'de' ? 0.25 : p.dir === 'iz' ? -0.25 : 0.12 * lado), cy = (8.4 / px) * GL.KY;
-  const rot = ang + Math.PI / 4, c = Math.cos(rot), s = Math.sin(rot), pts = [];
-  for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) { const ux = u * c - v * s, vy = u * s + v * c; pts.push(cx + ux / px, cy - (vy / px) * GL.KY, z + (delante ? 0.02 : -0.02)); }
-  GL.libre(p.swingItem, pts, T4, x, z);
-  // Estela del golpe: el arco que deja la punta, como el cuadro emborronado (smear) que se dibuja a mano en los
-  // golpes rápidos. Se apaga hacia atrás y solo está mientras el arma va deprisa.
-  if (k > 0.12 && k < 0.92 && SPR.blanco) {
-    const tu = r.w - 2, tv = -r.h + 2, n = 8, arco = Math.min(k, 0.7) * 2.4, fuerza = Math.sin(k * Math.PI);
-    const punta = (a, e) => { const cc = Math.cos(a + Math.PI / 4), ss = Math.sin(a + Math.PI / 4); return [cx + ((tu * cc - tv * ss) * e) / px, cy - (((tu * ss + tv * cc) * e) / px) * GL.KY]; };
-    for (let i = 0; i < n; i++) {
-      const a0 = ang - lado * arco * (i / n), a1 = ang - lado * arco * ((i + 1) / n);
-      const [ox0, oy0] = punta(a0, 1.05), [ox1, oy1] = punta(a1, 1.05), [ix1, iy1] = punta(a1, 0.62 + 0.4 * ((i + 1) / n) ** 1.5), [ix0, iy0] = punta(a0, 0.62 + 0.4 * (i / n) ** 1.5);
-      const zz = z + (delante ? 0.015 : -0.025), al = fuerza * 0.95 * (1 - i / n) ** 1.3;
-      GL.libre('blanco', [ox0, oy0, zz, ox1, oy1, zz, ix1, iy1, zz, ix0, iy0, zz], [1, 0.93, 0.78, al], x, z, 1, GL.lotes.brillo);
+  // la estela del golpe sale del movimiento de verdad de la punta del arma
+  if (cual === 'D' && p.swing > 0 && !recto && SPR.blanco) {
+    const punta = punto(r.w - 2, 2), medio = punto(r.w * 0.55, r.h * 0.45);
+    const R = p.rastro || (p.rastro = []);
+    const ultimo = R[R.length - 1];
+    if (!ultimo || Math.hypot(ultimo[0] - punta[0], ultimo[1] - punta[1]) > 0.02) R.push([punta[0], punta[1], medio[0], medio[1]]);
+    if (R.length > 7) R.shift();
+    const k = 1 - p.swing / p.swingDur, fuerza = Math.sin(Math.min(1, k * 1.1) * Math.PI), zz = hz + 0.005;
+    for (let i = R.length - 1; i > 0; i--) {
+      const [a0, b0, c0, d0] = R[i], [a1, b1, c1, d1] = R[i - 1], al = fuerza * 0.9 * (i / R.length) ** 1.4;
+      if (Math.hypot(a0 - a1, b0 - b1) < 0.03) continue;
+      GL.libre('blanco', [a0, b0, zz, a1, b1, zz, c1, d1, zz, c0, d0, zz], [1, 0.93, 0.78, al], x, z, 1, GL.lotes.brillo);
     }
   }
 }
