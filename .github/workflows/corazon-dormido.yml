@@ -1,0 +1,89 @@
+name: Corazón Dormido
+
+# Publica cada versión de corazon-dormido/VERSIONES.txt como Release de GitHub (corazon-dormido-v<versión>). Hasta
+# la 0.6.0, con el juego en un solo .html y en .zip, y la última en la Release fija «corazon-dormido»; desde la
+# 0.7.0 (juego de Android) la Release se crea vacía y corazon-dormido-android.yml le pone el APK y el AAB:
+#   https://github.com/<repo>/releases/download/corazon-dormido/corazon-dormido.html
+# Ninguna se marca como «latest» (el repo tiene otras Releases, como StickerYa) y el tag NO empieza por
+# «v<número>» (el workflow de Rumentis borra esas). Solo crea las que falten: subir una línea = publicar.
+on:
+  push:
+    paths:
+      - 'corazon-dormido/**'
+      - '.github/workflows/corazon-dormido.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: corazon-dormido-releases
+  cancel-in-progress: false
+
+jobs:
+  releases:
+    name: Probar y publicar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # La prueba rápida en un móvil simulado: si el juego no arranca o falla al guardar y cargar, no se publica.
+      - name: Probar el juego
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+          mkdir -p /tmp/capturas
+          node corazon-dormido/herramientas/probar.cjs /tmp/capturas
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas
+          path: /tmp/capturas
+      - name: Crear las Releases que falten
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          limpia() { sed 's/^[[:space:]]*//;s/[[:space:]]*$//' <<<"$1"; }
+          ultima=""
+          while IFS='|' read -r ver sha titulo notas; do
+            ver=$(limpia "$ver"); sha=$(limpia "$sha"); titulo=$(limpia "$titulo"); notas=$(limpia "${notas:-}")
+            [[ -z "$ver" || "$ver" == \#* ]] && continue
+            [[ "$sha" == "HEAD" ]] && sha="$GITHUB_SHA"
+            full=$(git rev-parse "$sha^{commit}")
+            rm -rf /tmp/fuente && mkdir -p /tmp/fuente
+            git archive "$full" corazon-dormido | tar -x -C /tmp/fuente
+            python3 corazon-dormido/herramientas/empaquetar.py /tmp/fuente/corazon-dormido "$ver" /tmp/salida
+            ultima="$ver"
+            tag="corazon-dormido-v$ver"
+            if gh release view "$tag" >/dev/null 2>&1; then echo "La Release $tag ya existe"; continue; fi
+            # desde la 0.7.0 es un juego de Android: la Release se crea vacía y el workflow de Android le pone el APK
+            if [ "$(printf '%s\n' 0.7.0 "$ver" | sort -V | head -1)" = "0.7.0" ]; then
+              gh release create "$tag" --target "$full" --latest=false --title "Corazón Dormido $ver: $titulo" \
+                --notes "El APK para Android (corazon-dormido-$ver.apk) se añade aquí en unos minutos, cuando acaba de compilarse.
+
+          $notas"
+              continue
+            fi
+            gh release create "$tag" "/tmp/salida/corazon-dormido-$ver.html" "/tmp/salida/corazon-dormido-$ver.zip" \
+              --target "$full" --latest=false --title "Corazón Dormido $ver: $titulo" \
+              --notes "$notas
+
+          En Android: el APK (corazon-dormido-$ver.apk) se añade a esta Release en unos minutos, cuando acaba de compilarse; y siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido-android/corazon-dormido.apk
+
+          En el navegador: descarga **corazon-dormido-$ver.html** y ábrelo (necesita WebGL2), o descomprime el .zip y abre index.html. La última versión siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido/corazon-dormido.html"
+          done < corazon-dormido/VERSIONES.txt
+          [[ -z "$ultima" ]] && exit 0
+          # desde la 0.7.0 la Release fija lleva el APK (lo pone el workflow de Android), no el juego de navegador
+          [ "$(printf '%s\n' 0.7.0 "$ultima" | sort -V | head -1)" = "0.7.0" ] && exit 0
+          cp "/tmp/salida/corazon-dormido-$ultima.html" /tmp/corazon-dormido.html
+          cp "/tmp/salida/corazon-dormido-$ultima.zip" /tmp/corazon-dormido.zip
+          if ! gh release view corazon-dormido >/dev/null 2>&1; then
+            gh release create corazon-dormido --latest=false --title "Corazón Dormido (última versión)" \
+              --notes "Siempre la última versión de Corazón Dormido: descarga corazon-dormido.html y ábrelo en el navegador."
+          fi
+          gh release upload corazon-dormido /tmp/corazon-dormido.html /tmp/corazon-dormido.zip --clobber
+          gh release edit corazon-dormido --title "Corazón Dormido (última versión: $ultima)" --latest=false

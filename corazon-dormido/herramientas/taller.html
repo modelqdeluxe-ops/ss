@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Taller de arte</title>
+<style>
+  body { margin: 0; background: #2b2a33; color: #ddd; font: 12px monospace; }
+  canvas { image-rendering: pixelated; display: block; }
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<script src="../js/arte.js"></script>
+<script src="../js/arte2.js"></script>
+<script src="../js/arte3.js"></script>
+<script src="../js/arte4.js"></script>
+<script src="../js/escultor.js"></script>
+<script src="../js/modelos.js"></script>
+<script src="../js/modelos2.js"></script>
+<script src="../js/personaje.js"></script>
+<script src="../js/criaturas3d.js"></script>
+<script src="../js/jefes3d.js"></script>
+<script src="../js/modelos3.js"></script>
+<script src="../js/criaturas3d2.js"></script>
+<script src="../js/suelos2.js"></script>
+<script>
+// pruebas del personaje: #pj=1 hornea combinaciones de aspecto y armadura con nombres test_*
+if (/pj=1/.test(location.hash)) CONSTRUIR_MODELOS.push(() => {
+  const sets = ['cobre', 'estano', 'hierro', 'larva', 'carmesi', 'musgo'];
+  sets.forEach((t, k) => {
+    const eq = Personaje.equipoMats({ casco: { id: 'casco_' + t }, peto: { id: 'peto_' + t }, botas: { id: 'botas_' + t } });
+    for (const dir of ['ab', 'de', 'ar']) def(`test_${t}_${dir}`, Personaje.hornearCuadro(dir, 'a', 1, { piel: k % 5, pelo: k + 1, peinado: ASPECTO.peinado[k % 5], ropa: k + 1 }, eq).color);
+  });
+  ASPECTO.peinado.forEach((p, k) => { for (const dir of ['ab', 'de', 'ar']) def(`test_pelo_${p}_${dir}`, Personaje.hornearCuadro(dir, 'q', 0, { piel: k, pelo: k + 2, peinado: p, ropa: k + 2 }, {}).color); });
+});
+// Taller: muestra los dibujos del atlas que casan con el filtro (#filtro=regex&zoom=4&luz=1), ampliados, con su
+// nombre. Con luz=1 pinta al lado cada uno iluminado desde la izquierda con sus normales (para revisarlas).
+const q = new URLSearchParams(location.hash.slice(1));
+const filtro = new RegExp(q.get('filtro') || '.'), Z = Number(q.get('zoom') || 4), conLuz = q.get('luz') === '1', fondo = q.get('fondo') || '#3b3a46';
+const t0 = performance.now();
+construirArte();
+const tArte = performance.now() - t0;
+const nombres = Object.keys(SPR).filter((n) => filtro.test(n) && !/_(B|iB)$/.test(n)).sort();
+const c = document.getElementById('c'), x = c.getContext('2d');
+const ANCHO = Number(q.get('ancho') || 1400);
+let px = 8, py = 20, fila = 0;
+const pos = [];
+for (const n of nombres) {
+  const r = SPR[n], w = r.w * Z * (conLuz ? 2 : 1) + (conLuz ? 6 : 0), h = r.h * Z + 14;
+  if (px + w > ANCHO) { px = 8; py += fila + 10; fila = 0; }
+  pos.push([n, px, py]); px += Math.max(w, n.length * 7) + 12; fila = Math.max(fila, h);
+}
+c.width = ANCHO; c.height = py + fila + 20;
+x.fillStyle = fondo; x.fillRect(0, 0, c.width, c.height);
+x.fillStyle = '#ddd'; x.fillText(`${nombres.length} dibujos · arte ${Math.round(tArte)} ms · atlas ${ATLAS.width}x${ATLAS.height}`, 8, 12);
+x.imageSmoothingEnabled = false;
+const nd = ATLAS_N.getContext('2d').getImageData(0, 0, ATLAS_N.width, ATLAS_N.height).data;
+const cd = ATLAS.getContext('2d').getImageData(0, 0, ATLAS.width, ATLAS.height).data;
+for (const [n, X, Y] of pos) {
+  const r = SPR[n];
+  x.fillStyle = '#ccc'; x.fillText(n, X, Y + 10);
+  x.drawImage(ATLAS, r.x, r.y, r.w, r.h, X, Y + 14, r.w * Z, r.h * Z);
+  if (conLuz) {
+    const X2 = X + r.w * Z + 6;
+    for (let j = 0; j < r.h; j++) for (let i = 0; i < r.w; i++) {
+      const o = ((r.y + j) * ATLAS.width + r.x + i) * 4;
+      if (cd[o + 3] < 128) continue;
+      let f = 1;
+      if (nd[o + 3]) { const nx = nd[o] / 127.5 - 1, nz = nd[o + 2] / 127.5 - 1; f = 1 + 0.7 * (-nx) + 0.2 * nz; }
+      x.fillStyle = `rgb(${Math.min(255, cd[o] * f)},${Math.min(255, cd[o + 1] * f)},${Math.min(255, cd[o + 2] * f)})`;
+      x.fillRect(X2 + i * Z, Y + 14 + j * Z, Z, Z);
+    }
+  }
+}
+window.LISTO = true;
+</script>
+</body>
+</html>

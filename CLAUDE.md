@@ -7,6 +7,9 @@
 - **No uses subagentes** (Agent / Workflow): el dueño lo prohibió. Hazlo tú directamente.
 - Cuando el dueño mande capturas, **mídelas** (recorta, amplía, colores con PIL) antes de decir que algo está arreglado.
 - Responde al dueño en español.
+- Juego para móvil **Corazón Dormido** (`corazon-dormido/`, al estilo de Core Keeper; no tiene que ver con TF Client): lee
+  `corazon-dormido/README.md` antes de tocarlo y pruébalo con `node corazon-dormido/herramientas/probar.cjs <carpeta>`.
+  Skill de pixel art: `.claude/skills/pxl-pixel-art`.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
 - NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.
   La 1.3.106 (los muebles: los de la taberna en el panel y la silla, el sofá, el taburete o el banco de los que se

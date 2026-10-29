@@ -1,0 +1,6 @@
+# paquetes de Python bajados con pip download (no van al repo)
+*.whl
+# la música y los efectos se generan (herramientas/musica): no van al repo
+/musica/
+/sonidos/
+__pycache__/
