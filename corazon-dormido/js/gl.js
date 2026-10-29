@@ -7,11 +7,14 @@
 //
 // Unidades: 1 = una casilla. x hacia el este, z hacia el sur (hacia la cámara), y hacia arriba.
 // El suelo se estira en z para que se vea cuadrado; las paredes miden lo justo para que su cara se vea con
-// píxeles cuadrados. Se dibuja a una resolución interna de ~2 píxeles por píxel del arte y el navegador la
-// escala sin suavizar: barato en el móvil y nítido.
+// píxeles cuadrados. Cámara ORTOGRÁFICA y dibujo a la resolución real del aparato, con un número entero de píxeles
+// de pantalla por píxel del arte: todos los píxeles miden lo mismo, cerca o lejos (con perspectiva y una resolución
+// interna ampliada por un factor no entero, unos medían 2 y otros 3 y las líneas se deformaban). Los sprites, que
+// se giran (el arma, al caer), se muestrean con un filtro de pixel art suave: píxeles gordos con el borde
+// suavizado en un píxel de pantalla, sin dientes. Si el aparato no llega, se dibuja a la mitad y se amplía ×2.
 
 const GL = (() => {
-  const PITCH = (50 * Math.PI) / 180, FOV = (13 * Math.PI) / 180;
+  const PITCH = (50 * Math.PI) / 180;
   const KZ = 1 / Math.sin(PITCH);
   const ALTO_CARA = 12;
   const ALTO = ALTO_CARA / 16 / Math.cos(PITCH);
@@ -20,7 +23,8 @@ const GL = (() => {
 
   let gl = null, canvas = null, prog = null, progHalo = null, texAtlas = null, texNormales = null, texLuz = null, texHalo = null, texRayo = null;
   let progBrillo = null, progDesenfoque = null, progFinal = null, vaoVacio = null, fb = null;
-  let W = 1, H = 1, dist = 22, luzW = 0, luzH = 0;
+  let W = 1, H = 1, luzW = 0, luzH = 0, pxInt = 4, escalaRender = 1;
+  const DIST = 40; // a qué distancia está la cámara (con cámara ortográfica solo cuenta para la profundidad)
   const cam = { x: 0, z: 0, vp: new Float32Array(16), inv: new Float32Array(16) };
   const chunks = new Map();
   const loc = {}, locH = {}, locP = new Map();
@@ -32,9 +36,10 @@ const GL = (() => {
     for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; }
     return o;
   }
-  function perspectiva(fov, asp, n, f) {
-    const t = 1 / Math.tan(fov / 2), o = new Float32Array(16);
-    o[0] = t / asp; o[5] = t; o[10] = (f + n) / (n - f); o[11] = -1; o[14] = (2 * f * n) / (n - f);
+  // proyección ortográfica: semiancho y semialto de lo que se ve, en unidades de la cámara
+  function ortografica(hw, hh, n, f) {
+    const o = new Float32Array(16);
+    o[0] = 1 / hw; o[5] = 1 / hh; o[10] = -2 / (f - n); o[14] = -(f + n) / (f - n); o[15] = 1;
     return o;
   }
   function mirar(ex, ey, ez, tx, ty, tz) {
@@ -84,13 +89,19 @@ const GL = (() => {
   // aclaran y las que le dan la espalda se oscurecen (una antorcha a la izquierda alumbra el lado izquierdo).
   const FS = `#version 300 es
   precision highp float;
-  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform sampler2D uNormales; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam; uniform float uLado;
+  uniform sampler2D uAtlas; uniform sampler2D uLuz; uniform sampler2D uNormales; uniform float uCorte; uniform float uAditivo; uniform vec2 uAtlasTam; uniform float uLado; uniform float uSuave;
   in vec2 vUv; in vec4 vTinte; in vec2 vLuzUv; in vec2 vExtra; in vec3 vNorm; in vec2 vPend;
   out vec4 color;
   const float BAYER[16] = float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
   void main() {
-    vec4 t = texture(uAtlas, vUv);
+    // el texel más cercano (el mundo) o pixel art suave (los sprites): dentro de cada texel el color es plano y en
+    // la frontera entre texels se mezcla solo lo que ocupa un píxel de pantalla (el atlas va con filtro lineal)
+    vec2 tp = vUv * uAtlasTam;
+    vec2 uv = (floor(tp) + 0.5) / uAtlasTam;
+    if (uSuave > 0.5) { vec2 junta = floor(tp + 0.5); uv = (junta + clamp((tp - junta) / max(fwidth(tp), vec2(1e-4)), -0.5, 0.5)) / uAtlasTam; }
+    vec4 t = texture(uAtlas, uv);
     if (t.a < uCorte) discard;
+    t.rgb /= max(t.a, 1e-3); // el borde se mezcla con texels transparentes (negros): se recupera el color
     vec3 base = mix(t.rgb * vTinte.rgb, vec3(1.0), vExtra.y);
     vec2 texel = floor(vUv * uAtlasTam);
     vec2 luzUv = vLuzUv;
@@ -99,7 +110,7 @@ const GL = (() => {
     vec3 l = texture(uLuz, luzUv).rgb;
     vec3 n = vNorm;
     bool volteo = n.y < -2.5;
-    if (volteo || dot(n, n) < 0.25) { vec4 nt = texture(uNormales, vUv); n = nt.a > 0.5 ? nt.rgb * 2.0 - 1.0 : vec3(0.0); if (volteo) n.x = -n.x; }
+    if (volteo || dot(n, n) < 0.25) { vec4 nt = texture(uNormales, (floor(tp) + 0.5) / uAtlasTam); n = nt.a > 0.5 ? nt.rgb * 2.0 - 1.0 : vec3(0.0); if (volteo) n.x = -n.x; }
     if (abs(n.x) + abs(n.z) > 0.05) l *= clamp(1.0 + uLado * dot(n.xz, vPend), 0.55, 1.6);
     l = l * l * 2.4;
     // junto al fuego no se quema el dibujo: la luz fuerte se comprime (el personaje no se vuelve una mancha)
@@ -268,14 +279,15 @@ const GL = (() => {
     gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     if (!gl) return false;
     prog = compilar(VS, FS); progHalo = compilar(VSH, FSH);
-    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uNormales', 'uCorte', 'uAditivo', 'uAtlasTam', 'uLado']) loc[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uVP', 'uLuzRect', 'uAtlas', 'uLuz', 'uNormales', 'uCorte', 'uAditivo', 'uAtlasTam', 'uLado', 'uSuave']) loc[n] = gl.getUniformLocation(prog, n);
     for (const n of ['uVP', 'uHalo']) locH[n] = gl.getUniformLocation(progHalo, n);
     indices = gl.createBuffer();
     asegurarIndices(16384);
     texAtlas = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texAtlas);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ATLAS);
-    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    // lineal: el sombreador elige el texel (el más cercano en el mundo; suave en los sprites)
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
     texNormales = textura(gl.NEAREST);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ATLAS_N);
     texLuz = textura(gl.LINEAR);
@@ -298,27 +310,32 @@ const GL = (() => {
   }
   const dinamicos = {};
 
-  // El lado corto de la pantalla muestra unas 14 casillas. Se dibuja a ~2 píxeles por píxel del arte
-  // (resolución interna) y el navegador lo agranda un número entero de veces, sin suavizar.
-  function ajustar(wCss, hCss, dpr) {
+  // El lado corto de la pantalla muestra unas 14 casillas. Píxeles del aparato por píxel del arte: un número
+  // entero (todos los píxeles miden igual). Se dibuja a la resolución del aparato (escala 1) o a la mitad (0.5, si
+  // no llega a los cuadros por segundo): entonces el navegador la amplía ×2 justo, sin suavizar.
+  let pxArte = 4, ultimo = null;
+  function ajustar(wCss, hCss, dpr, escala) {
+    if (escala) escalaRender = escala;
+    ultimo = [wCss, hCss, dpr];
     const wd = Math.round(wCss * dpr), hd = Math.round(hCss * dpr);
-    // Píxeles del aparato por píxel del arte: entero, para que todos los píxeles midan igual (nítido como en
-    // Core Keeper). Se pinta a 2 píxeles por píxel del arte y el navegador amplía sin suavizar.
-    const pxArte = Math.max(2, Math.round(Math.min(wd, hd) / (CASILLAS_CORTO * 16)));
-    W = Math.max(1, Math.round((wd * 2) / pxArte)); H = Math.max(1, Math.round((hd * 2) / pxArte));
+    pxArte = Math.max(2, Math.round(Math.min(wd, hd) / (CASILLAS_CORTO * 16)));
+    W = Math.max(1, Math.round(wd * escalaRender)); H = Math.max(1, Math.round(hd * escalaRender));
+    pxInt = pxArte * escalaRender;
     canvas.width = W; canvas.height = H;
     canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
-    dist = Math.min(wd, hd) / pxArte / 16 * (H / Math.min(W, H)) / (2 * Math.tan(FOV / 2));
     crearFbos();
   }
+  function cambiarEscala(escala) { if (escala !== escalaRender && ultimo) ajustar(ultimo[0], ultimo[1], ultimo[2], escala); }
 
   function camara(x, z) {
-    x = Math.round(x * 32) / 32; z = Math.round(z * 32) / 32; // a medio píxel del arte: el suelo no tiembla
+    // a píxeles enteros de pantalla: lo que no se mueve cae siempre en los mismos píxeles (nada tiembla)
+    const u = 16 * pxInt;
+    x = Math.round(x * u) / u; z = Math.round(z * u) / u;
     cam.x = x; cam.z = z;
     const tz = z * KZ;
-    const v = mirar(x, Math.sin(PITCH) * dist, tz + Math.cos(PITCH) * dist, x, 0, tz);
+    const v = mirar(x, Math.sin(PITCH) * DIST, tz + Math.cos(PITCH) * DIST, x, 0, tz);
     const s = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, KZ, 0, 0, 0, 0, 1]);
-    cam.vp = mul(mul(perspectiva(FOV, W / H, 1, dist * 3), v), s);
+    cam.vp = mul(mul(ortografica(W / (2 * u), H / (2 * u), 1, DIST * 3), v), s);
     cam.inv = invertir(cam.vp);
   }
   function aMundo(nx, ny, altura = 0) {
@@ -561,7 +578,7 @@ const GL = (() => {
     gl.uniformMatrix4fv(loc.uVP, false, cam.vp);
     gl.uniform4f(loc.uLuzRect, luz.x0, luz.y0, 1 / luz.w, 1 / luz.h);
     gl.uniform1i(loc.uAtlas, 0); gl.uniform1i(loc.uLuz, 1);
-    gl.uniform1f(loc.uCorte, 0.5); gl.uniform1f(loc.uAditivo, 0); gl.uniform2f(loc.uAtlasTam, ATLAS.width, ATLAS.height);
+    gl.uniform1f(loc.uCorte, 0.5); gl.uniform1f(loc.uAditivo, 0); gl.uniform2f(loc.uAtlasTam, ATLAS.width, ATLAS.height); gl.uniform1f(loc.uSuave, 0);
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.disable(gl.BLEND);
     gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK); gl.frontFace(gl.CW);
     const v = vista();
@@ -584,6 +601,7 @@ const GL = (() => {
       gl.bindVertexArray(o.vao);
       gl.drawElements(gl.TRIANGLES, l.n * 6, gl.UNSIGNED_INT, 0);
     };
+    gl.uniform1f(loc.uSuave, 1); // los sprites: pixel art suave
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
     gl.uniform1f(loc.uCorte, 0.01);
     pintar('sombras');
@@ -606,8 +624,8 @@ const GL = (() => {
   }
 
   return {
-    iniciar, ajustar, camara, aMundo, aPantalla, vista, dibujar, sprite, modelo, plano, cara, tapa, libre, halo, rayo, tocar, olvidarTodo, subirZona, olvidarUV,
+    iniciar, ajustar, cambiarEscala, camara, aMundo, aPantalla, vista, dibujar, sprite, modelo, plano, cara, tapa, libre, halo, rayo, tocar, olvidarTodo, subirZona, olvidarUV,
     limpiarLotes, lotes, cam, uv: uvDe, ALTO, KY,
-    get W() { return W; }, get H() { return H; }, get trozos() { return trozosDibujados; },
+    get W() { return W; }, get H() { return H; }, get trozos() { return trozosDibujados; }, get escala() { return escalaRender; }, get pxArte() { return pxArte; },
   };
 })();

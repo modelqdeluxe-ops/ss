@@ -194,10 +194,16 @@ function revisarObjetivos() {
 
 // ---------------------------------------------------------------- bucle
 
-let ultimo = 0, fps = 60, fpsT = 0, fpsN = 0;
+let ultimo = 0, fps = 60, fpsT = 0, fpsN = 0, lentoT = 0;
 function cuadro(ms) {
   const dt = Math.min(0.05, Math.max(0, (ms - ultimo) / 1000)); ultimo = ms;
-  fpsT += dt; fpsN++; if (fpsT > 0.5) { fps = Math.round(fpsN / fpsT); fpsT = 0; fpsN = 0; }
+  fpsT += dt; fpsN++;
+  if (fpsT > 0.5) {
+    fps = Math.round(fpsN / fpsT); fpsT = 0; fpsN = 0;
+    // si el aparato no llega (4 s seguidos por debajo de 40 cuadros), el mundo se dibuja a la mitad y se amplía ×2
+    lentoT = J.estado === 'juego' && fps < 40 ? lentoT + 0.5 : 0;
+    if (lentoT >= 4 && GL.escala > 0.5) { GL.cambiarEscala(0.5); lentoT = 0; }
+  }
   J.t += dt;
   if (J.estado === 'juego' && !J.panel) {
     leerEntrada();
