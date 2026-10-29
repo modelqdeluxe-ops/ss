@@ -169,6 +169,47 @@ const CRI = (() => {
       }
       return [X0, X1];
     };
+    // Placa tallada (piedra, metal, madera): polígono con el borde biselado. El borde que mira a la luz (arriba a la
+    // izquierda) sale claro, el contrario oscuro y el centro, del tono medio. o: { bisel (px), tex(x, y), corta(x, y),
+    // luz, centro (tono del centro, índice de la rampa) }
+    K.placa = (pts, rampa, o = {}) => {
+      const n = rampa.length - 1, medio = o.centro ?? Math.ceil(n / 2), claro = n >= 4 ? n - 1 : n, bw = o.bisel ?? 1.6;
+      let area = 0;
+      for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; area += a[0] * b[1] - b[0] * a[1]; }
+      const sg = area > 0 ? 1 : -1, ys = pts.map((p) => p[1]);
+      const y0 = Math.floor(Math.min(...ys)), y1 = Math.ceil(Math.max(...ys));
+      for (let y = y0; y <= y1; y++) {
+        const cy = y + 0.5, cortes = [];
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[(i + 1) % pts.length];
+          if ((a[1] <= cy && b[1] > cy) || (b[1] <= cy && a[1] > cy)) cortes.push(a[0] + ((cy - a[1]) / (b[1] - a[1])) * (b[0] - a[0]));
+        }
+        cortes.sort((p, q) => p - q);
+        for (let i = 0; i + 1 < cortes.length; i += 2) for (let x = Math.round(cortes[i]); x < Math.round(cortes[i + 1]); x++) {
+          if (o.corta && o.corta(x, y)) continue;
+          const cx = x + 0.5;
+          let dmin = 1e9, nx = 0, ny = 0;
+          for (let k = 0; k < pts.length; k++) {
+            const a = pts[k], b = pts[(k + 1) % pts.length], ex = b[0] - a[0], ey = b[1] - a[1], l2 = ex * ex + ey * ey || 1e-6;
+            const t = Math.max(0, Math.min(1, ((cx - a[0]) * ex + (cy - a[1]) * ey) / l2)), dx = cx - a[0] - ex * t, dy = cy - a[1] - ey * t, d = Math.hypot(dx, dy);
+            if (d < dmin) { dmin = d; const m = Math.sqrt(l2); nx = (ey / m) * sg; ny = (-ex / m) * sg; }
+          }
+          // nx, ny: hacia fuera del borde más cercano (en pantalla)
+          const cara = -nx * 0.6 - ny * 0.8;
+          let k = medio;
+          if (dmin < bw) { if (cara > 0.3) k = dmin < 1 && cara > 0.6 ? n : claro; else if (cara < -0.3) k = Math.max(1, medio - 1 - (dmin < 1 ? 1 : 0)); }
+          if (o.tex) k = Math.max(1, Math.min(n, k + Math.round(o.tex(x, y))));
+          const nz = dmin < bw ? 0.6 : 1;
+          L.pon(x, y, rampa[k], K.id, rampa, o.luz, dmin < bw ? nx * 0.8 : 0, dmin < bw ? ny * 0.8 : 0, nz);
+        }
+      }
+    };
+    // Placa de a a b con ancho wa → wb (una pieza de armadura sobre un hueso).
+    K.placaEntre = (a, b, wa, wb, rampa, o) => {
+      const dx = b[0] - a[0], dy = b[1] - a[1], m = Math.hypot(dx, dy) || 1, nx = -dy / m, ny = dx / m;
+      const ext = (o && o.punta) || 0, ux = dx / m, uy = dy / m;
+      K.placa([[a[0] + nx * wa / 2 - ux * ext, a[1] + ny * wa / 2 - uy * ext], [b[0] + nx * wb / 2 + ux * ext, b[1] + ny * wb / 2 + uy * ext], [b[0] - nx * wb / 2 + ux * ext, b[1] - ny * wb / 2 + uy * ext], [a[0] - nx * wa / 2 - ux * ext, a[1] - ny * wa / 2 - uy * ext]], rampa, o);
+    };
     // Vara fina de a a b: 1 px (color) o 2 px (luz arriba, sombra abajo).
     K.vara = (a, b, rampa, o = {}) => {
       const dx = b[0] - a[0], dy = b[1] - a[1], n = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) * 1.5));
@@ -206,6 +247,8 @@ const CRI = (() => {
       }
       return { w: W, h: H };
     };
+    // Un punto del modelo en la lámina (como los huesos de K.S).
+    K.pt = (p) => { const q = proyectar(p, D.yaw ?? 0, D.px); return [D.ox + q[0], D.oy - q[1], q[2]]; };
     // Dirección en pantalla de un vector del modelo (el «arriba» de una mano): [dx, dy] unitario, y hacia abajo.
     K.dir = (v) => { const a = proyectar(v, D.yaw ?? 0, 1), m = Math.hypot(a[0], a[1]) || 1; return [a[0] / m, -a[1] / m]; };
     return K;
@@ -306,6 +349,7 @@ const CRI = (() => {
   }
   function registrar() {
     for (const tipo of Object.keys(DEF)) {
+      if (DEF[tipo].jefe) continue; // los jefes se hornean al acercarte a su guarida (JEFE_ESQ)
       for (const [nombre, r] of hornear(tipo)) {
         for (const suf of ['', '_luz']) quitarDibujo(nombre + suf);
         def(nombre, r.color);
@@ -323,9 +367,43 @@ const CRI = (() => {
     }
   }
   // Cuántos cuadros tiene cada animación de cada criatura (para elegir en el juego).
-  const animsDe = (tipo) => DEF[tipo] && DEF[tipo].anims;
+  const animsDe = (tipo) => DEF[tipo] && !DEF[tipo].jefe && DEF[tipo].anims;
 
   return { DEF, pose, proporciones, encorvar, proyectar, cuadro, recortar, hornear, registrar, animsDe, mezcla, sum, res, por, norm, LUZ };
+})();
+
+// Los jefes: miden 80–145 px y tienen muchos cuadros, así que no caben todos en el atlas. Se hornea el del jefe que
+// tienes cerca (poco a poco, unos milisegundos por cuadro del juego) en la zona de jefes del atlas (ZONA_JEFE).
+const JEFE_ESQ = (() => {
+  let listo = null, trabajo = null;
+  function empezar(id) {
+    if (listo === id || (trabajo && trabajo.id === id) || !CRI.DEF[id]) return;
+    const D = CRI.DEF[id], pend = [];
+    for (const [anim, A] of Object.entries(D.anims)) for (let f = 0; f < A.n; f++) pend.push([anim, f]);
+    trabajo = { id, pend, hechos: [] };
+  }
+  function trabajar(ms) {
+    if (!trabajo) return;
+    const t0 = performance.now(), D = CRI.DEF[trabajo.id];
+    while (trabajo.pend.length && performance.now() - t0 < ms) {
+      const [anim, f] = trabajo.pend.shift();
+      trabajo.hechos.push([`${trabajo.id}_${anim}${f}`, CRI.recortar(D, CRI.cuadro(D, anim, f))]);
+    }
+    if (trabajo.pend.length) return;
+    const lista = [];
+    for (const [n, r] of trabajo.hechos) {
+      lista.push([n, r.color]);
+      if (r.luz && r.luz.d.some((c) => c)) lista.push([n + '_luz', r.luz]);
+      META_SPR[n] = { dx: r.dx, dz: 0, abajo: r.abajo, puntos: r.puntos };
+    }
+    escribirZona(lista, ZONA_JEFE);
+    listo = trabajo.id; trabajo = null;
+  }
+  return {
+    // pide el jefe; yaMismo: hornearlo entero ahora (si se va a ver ya)
+    pedir(id, yaMismo) { empezar(id); trabajar(yaMismo ? 1e9 : 6); return listo === id; },
+    trabajar, listo: () => listo, olvidar() { listo = null; trabajo = null; },
+  };
 })();
 
 // Los cuadros de las criaturas se hornean con el resto de modelos (al final: sustituyen a los dibujos viejos).

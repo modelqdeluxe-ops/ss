@@ -889,5 +889,589 @@ const PIEZAS_CRI = (() => {
     },
   };
 
+  // ---------------------------------------------------------------- jefes (CHECKPOINT §4.3: 80–145 px, como Core Keeper)
+  // Ruido fijo por píxel (manchas de musgo, piedra, pelo).
+  const ruido = (x, y, s = 0) => { let h = (Math.floor(x) * 374761393 + Math.floor(y) * 668265263 + s * 1442695041) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const PIEDRA6 = ['#12141c', '#242834', '#383d4c', '#525868', '#6e7586', '#959cac'];
+  const VELADOR = ['#070a14', '#121a30', '#1e2c4e', '#2e4272', '#465e98'];
+  const ORO = ['#2a1606', '#6a3e10', '#a8701e', '#e0a838', '#ffe08a'];
+
+  // EL CENTINELA: caballero Velador de piedra, más alto que una casa; el velo de piedra le tapa la cara y dentro solo
+  // hay una rendija de luz fría; espadón y lámpara. Movimiento de KayKit (espada a dos manos).
+  DEF.centinela = {
+    jefe: true, W: 230, H: 190, ox: 96, oy: 182, px: 64, yaw: 1.0, fuente: ANIM_ESQUELETO,
+    prop: { pierna: 1.2, brazo: 1.05, hombros: 1.15, caderas: 1.0, encorvar: 0.05, cuello: 0.55, tronco: 1.1, cadera: 0.39 },
+    anims: {
+      e: { clip: '2H_Melee_Idle', n: 1, de: 0, a: 0 },
+      d: { clip: 'Taunt', n: 6, de: 0, a: 1 },
+      q: { clip: '2H_Melee_Idle', n: 4, bucle: true },
+      a: { clip: 'Walking_D_Skeletons', n: 8, bucle: true },
+      p: { clip: '2H_Melee_Attack_Chop', n: 5, de: 0, a: 0.4 },
+      g: { clip: '2H_Melee_Attack_Chop', n: 5, de: 0.42, a: 0.85 },
+      c: { clip: 'Running_B', n: 6, bucle: true },
+      s: { clip: 'Spellcast_Summon', n: 6, de: 0.1, a: 0.6 },
+      r: { clip: 'Hit_B', n: 3, de: 0.1, a: 0.6 },
+      m: { clip: 'Death_A', n: 8, raiz: 0.3 },
+    },
+    // qué cuadro toca en cada estado: [anim, avance 0..1]
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['e', 0];
+      if (e === 'despierta') return ['d', t / 1.6];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25 && (e === 'espera' || e === 'camina')) return ['r', (J.t - j.golpeadoT) / 0.25];
+      if (e === 'camina') return ['a', (J.t * 1.1) % 1];
+      if (e === 'tajo' || (e === 'carga' && j.paso < 2)) return ['p', t / 0.9];
+      if (e === 'expuesto') return ['g', t / 0.5];
+      if (e === 'carga') return ['c', (J.t * 2.2) % 1];
+      if (e === 'runas' || e === 'llamada') return ['s', t / 1.2];
+      return ['q', (J.t * 0.6) % 1];
+    },
+    dibujar(K) {
+      const S = K.S, e = K.D.px / 13, vivo = K.anim !== 'e' && !(K.anim === 'm' && K.u > 0.6);
+      const piedra = Object.assign(PIEDRA6.slice(), { nombre: 'piedra' }), oscura = Object.assign(['#0c0e14', '#1a1d28', '#2a2e3c', '#3c4252', '#525a6c', '#6c7488'], { nombre: 'piedraO' });
+      const B = { bisel: 0.45 * e };
+      const grietas = (c, r, sem) => { for (let k = 0; k < 2; k++) { let x = c[0] + (ruido(sem, k, 1) - 0.5) * r, y = c[1] + (ruido(sem, k, 2) - 0.5) * r; for (let i = 0; i < 4 * e / 2; i++) { K.px(x, y, piedra[1], piedra); x += ruido(sem + i, k, 3) < 0.5 ? 1 : 0; y += 1; } } };
+      const musgo = (c, w, sem) => { for (let k = 0; k < w; k++) { const x = c[0] + (ruido(sem, k, 5) - 0.5) * w * 1.5, y = c[1] + ruido(sem, k, 6) * 2; K.px(x, y, R.musgo[3 + (k % 2)], piedra); K.px(x, y + 1, R.musgo[2], piedra); } };
+      const hem = (bajo, sem) => (x, y) => y > bajo - (0.4 + ruido(x >> 1, sem, 4) * 2.2) * e;
+      const hi = S.hips, ch = S.chest, h = S.head;
+      K.zTronco = (hi[2] + ch[2]) / 2 - 0.5;
+      const kn = Math.max(S.lowerlegl[1], S.lowerlegr[1]);
+      // la capa de piedra, detrás de todo
+      K.pieza(K.zTronco - 3, () => K.placa([[ch[0] - 5.5 * e, ch[1] - 1.5 * e], [ch[0] + 2 * e, ch[1] - 2 * e], [hi[0] + 2 * e, kn + 3 * e], [hi[0] - 9 * e, kn + 2.5 * e]], oscura, Object.assign({ corta: hem(kn + 3 * e, 1) }, B)));
+      // piernas: grebas, rodilleras y escarpes
+      for (const l of ['l', 'r']) {
+        const u = S['upperleg' + l], m = S['lowerleg' + l], p = S['foot' + l], t = S['toes' + l], ra = l === 'l' ? oscura : piedra;
+        K.pieza((u[2] + m[2]) / 2 - 0.3, () => K.placaEntre(u, m, 4.8 * e, 4.2 * e, ra, B));
+        K.pieza((m[2] + p[2]) / 2 - 0.2, () => { K.placaEntre(m, p, 4.2 * e, 3.4 * e, ra, B); K.placa([[m[0] - 2.4 * e, m[1]], [m[0], m[1] - 2.2 * e], [m[0] + 2.4 * e, m[1]], [m[0], m[1] + 2.2 * e]], ra, B); });
+        K.pieza((p[2] + t[2]) / 2, () => K.placaEntre([p[0], p[1] + 0.8 * e], [t[0], t[1] - 0.3 * e], 3.6 * e, 2.4 * e, ra, Object.assign({ punta: 0.6 * e }, B)));
+      }
+      // el tronco: peto con arista, faldones y el tabardo
+      K.pieza(K.zTronco, () => {
+        K.placa([[ch[0] - 4.6 * e, ch[1] - 1.6 * e], [ch[0] + 4.8 * e, ch[1] - 2 * e], [hi[0] + 4.2 * e, hi[1] - 0.5 * e], [hi[0] - 4 * e, hi[1]]], piedra, B);
+        K.vara([ch[0] + 0.6 * e, ch[1] - 1.6 * e], [hi[0] + 0.4 * e, hi[1] - e], piedra, { k: 5 });
+        grietas([ch[0] - e, ch[1] + 2 * e], 5 * e, 11);
+        for (let k = 0; k < 2; k++) K.placa([[hi[0] - 4.6 * e, hi[1] + (k * 1.6 - 0.6) * e], [hi[0] + 4.6 * e, hi[1] + (k * 1.6 - 0.8) * e], [hi[0] + 4.8 * e, hi[1] + (k * 1.6 + 1) * e], [hi[0] - 4.8 * e, hi[1] + (k * 1.6 + 1.2) * e]], piedra, B);
+      });
+      K.pieza(K.zTronco + 0.4, () => K.placa([[hi[0] - 1.6 * e, hi[1] + 2 * e], [hi[0] + 2.4 * e, hi[1] + 2 * e], [hi[0] + 2.8 * e, kn + 1.5 * e], [hi[0] - 1.8 * e, kn + 1.5 * e]], oscura, Object.assign({ corta: hem(kn + 1.5 * e, 2) }, B)));
+      // brazos: brazales, guanteletes y hombreras de tres láminas
+      for (const l of ['l', 'r']) {
+        const u = S['upperarm' + l], m = S['lowerarm' + l], hd = S['hand' + l], ra = l === 'l' ? oscura : piedra, z0 = (u[2] + m[2]) / 2;
+        K.pieza(z0 + 0.1, () => K.placaEntre(u, m, 3.6 * e, 3.2 * e, ra, B));
+        K.pieza((m[2] + hd[2]) / 2 + 0.2, () => K.placaEntre(m, hd, 3.0 * e, 2.6 * e, ra, B));
+        K.pieza(hd[2] + 0.3, () => K.placa([[hd[0] - 1.3 * e, hd[1] - 1.2 * e], [hd[0] + 1.3 * e, hd[1] - 1.3 * e], [hd[0] + 1.5 * e, hd[1] + 1.2 * e], [hd[0] - 1.2 * e, hd[1] + 1.3 * e]], ra, B));
+        K.pieza(u[2] + 0.5, () => {
+          for (let k = 2; k >= 0; k--) {
+            const r = (4.6 - k * 0.5) * e, c = [u[0], u[1] + k * 1.5 * e - 0.8 * e], pts = [];
+            for (let a = 0; a <= 8; a++) { const an = Math.PI * (1.05 + a * 0.1125); pts.push([c[0] + Math.cos(an) * r, c[1] + Math.sin(an) * r * 0.75]); }
+            pts.push([c[0] + r * 0.9, c[1] + 0.9 * e], [c[0] - r * 0.9, c[1] + 0.9 * e]);
+            K.placa(pts, ra, B);
+          }
+          if (l === 'r') musgo([u[0] - e, u[1] - 4 * e], 6, 21);
+        });
+      }
+      // el velo de piedra sobre la cabeza y, dentro, la rendija de luz fría
+      K.pieza(h[2] + 2, () => {
+        K.placa([[h[0] - 5.4 * e, h[1] + 2 * e], [h[0] - 5.2 * e, h[1] - 5.2 * e], [h[0] - 1.6 * e, h[1] - 9.4 * e], [h[0] + 3.2 * e, h[1] - 7.4 * e], [h[0] + 5 * e, h[1] - 1.8 * e], [h[0] + 4.6 * e, h[1] + 2.4 * e]], piedra, B);
+        K.placa([[h[0] + 0.4 * e, h[1] - 6.8 * e], [h[0] + 4.2 * e, h[1] - 4.6 * e], [h[0] + 4.4 * e, h[1] + 1.6 * e], [h[0] + 0.6 * e, h[1] + 1.6 * e]], ['#020204', '#05060a', '#080a10', '#0c0e16'], { bisel: 0 });
+        if (vivo) for (let y = -5.5; y <= 0.5; y += 1 / e * 1) K.px(h[0] + 2.4 * e, h[1] + y * e, Math.abs(y + 2.5) < 0.6 ? OJO.frio[1] : OJO.frio[0], piedra, true);
+        musgo([h[0] - 2 * e, h[1] - 10 * e], 8, 31); grietas([h[0] - 3.5 * e, h[1] - 4 * e], 3 * e, 37);
+      });
+      // el espadón: hoja tallada con runas que brillan
+      const v = vara(K, 4 * e, 4 * e, piedra, { grosor: 2 });
+      K.pieza(v.z + 0.02, () => {
+        const b = v.b, d = v.d, n = v.n, L = 16 * e, w = 1.5 * e;
+        K.placaEntre([b[0] - n[0] * 4 * e, b[1] - n[1] * 4 * e], [b[0] + n[0] * 4 * e, b[1] + n[1] * 4 * e], 1.4 * e, 1.4 * e, piedra, B);
+        K.placa([[b[0] - n[0] * w, b[1] - n[1] * w], [b[0] + d[0] * L - n[0] * w * 0.85, b[1] + d[1] * L - n[1] * w * 0.85], [b[0] + d[0] * (L + 3.4 * e), b[1] + d[1] * (L + 3.4 * e)], [b[0] + d[0] * L + n[0] * w * 0.85, b[1] + d[1] * L + n[1] * w * 0.85], [b[0] + n[0] * w, b[1] + n[1] * w]], piedra, B);
+        if (vivo) for (let k = 3; k < 15; k += 3) { const q = [b[0] + d[0] * k * e, b[1] + d[1] * k * e]; K.px(q[0], q[1], OJO.frio[0], piedra, true); K.px(q[0] + d[0] * 1.2, q[1] + d[1] * 1.2, OJO.frio[1], piedra, true); }
+      });
+      // la lámpara en la izquierda, colgando de una cadena (en alto cuando llama a las runas)
+      const hl = S.handl, alta = K.anim === 's';
+      K.pieza(hl[2] + (alta ? 0.6 : -0.2), () => {
+        const lp = alta ? [hl[0], hl[1] - 4.5 * e] : [hl[0] + 0.5 * e, hl[1] + 5 * e];
+        if (!alta) for (let k = 0; k < 3 * e; k += 2) K.px(hl[0] + 0.5 * e * (k / (3 * e)), hl[1] + k, piedra[1], piedra);
+        K.placa([[lp[0] - 1.8 * e, lp[1] - 2.6 * e], [lp[0] + 1.8 * e, lp[1] - 2.6 * e], [lp[0] + 2.2 * e, lp[1] + 2.4 * e], [lp[0] - 2.2 * e, lp[1] + 2.4 * e]], oscura, B);
+        K.ovalo(lp, 0.8 * e, 1.2 * e, ['#2a5a9a', '#4a86c8', '#7ab2f0', '#b4dcff', '#e8f6ff'], { luz: vivo, mate: true });
+        K.puntos = Object.assign(K.puntos || {}, { lampara: lp });
+      });
+    },
+  };
+
+  // MURDO, el Rey Ciego: topo colosal, calvo a parches, sin ojos; nariz de estrella de tentáculos; corona de clavos de
+  // hierro hundidos en el cráneo; garras de pala.
+  DEF.topo = {
+    jefe: true, W: 200, H: 150, ox: 92, oy: 142, px: 44, yaw: 1.05, fuente: ANIM_ESQUELETO,
+    prop: { pierna: 0.7, brazo: 1.0, hombros: 1.25, caderas: 1.2, encorvar: 0.45, cuello: 0.45, cadera: 0.39 },
+    anims: {
+      q: { clip: 'Idle', n: 4, bucle: true }, a: { clip: 'Walking_D_Skeletons', n: 8, bucle: true },
+      d: { clip: 'Taunt', n: 6 }, t: { clip: 'Throw', n: 5, de: 0.25, a: 0.8 },
+      x: { clip: 'Spawn_Ground', n: 5, de: 0.6, a: 0.05 }, s: { clip: 'Spawn_Ground', n: 5, de: 0.15, a: 0.8 },
+      w: { clip: '2H_Melee_Attack_Chop', n: 4, de: 0, a: 0.35 }, c: { clip: 'Running_B', n: 6, bucle: true },
+      z: { clip: 'Hit_B', n: 4, de: 0.1, a: 0.5 }, r: { clip: 'Hit_A', n: 3, de: 0.1, a: 0.6 }, m: { clip: 'Death_A', n: 8, raiz: 0.3 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['q', 0];
+      if (e === 'despierta') return ['d', t / 1.6];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (j.saleT && J.t - j.saleT < 0.6) return ['s', (J.t - j.saleT) / 0.6];
+      if (e === 'rocas') return ['t', 1 - Math.max(0, j.t) / 0.55];
+      if (e === 'excava') return ['x', t / 0.6];
+      if (e === 'embiste') return ['w', t / 0.6];
+      if (e === 'carga') return ['c', (J.t * 2.4) % 1];
+      if (e === 'aturdido') return ['z', 0.5 + 0.5 * Math.sin(J.t * 3)];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      if (e === 'persigue') return ['a', (J.t * 1.3) % 1];
+      return ['q', (J.t * 0.7) % 1];
+    },
+    dibujar(K) {
+      const S = K.S, e = K.D.px / 13;
+      const pelo = ['#0e0a0a', '#221a18', '#3a2e28', '#544238', '#6e5a4a'], calva = ['#3a1a1c', '#7a3a3a', '#b0605a', '#d88a7c', '#f0b0a0'];
+      const garra = ['#3a2e1a', '#8a7448', '#c4ac74', '#ead8a8', '#fff6dc'];
+      const pelaje = (x, y) => (ruido(x, Math.floor(y / 3), 2) < 0.16 ? -1 : 0); // mechones: trazos cortos más oscuros
+      // piernas cortas y gruesas
+      for (const l of ['l', 'r']) {
+        const u = S['upperleg' + l], m = S['lowerleg' + l], p = S['foot' + l], t = S['toes' + l];
+        K.pieza((u[2] + m[2]) / 2 - 0.3, () => K.cap(u, m, 3.4 * e, 3.0 * e, pelo, { tex: pelaje }));
+        K.pieza((m[2] + p[2]) / 2 - 0.2, () => K.cap(m, p, 3.0 * e, 2.6 * e, pelo, { tex: pelaje }));
+        K.pieza((p[2] + t[2]) / 2, () => { K.cap([p[0], p[1] + e], t, 2.4 * e, 2.0 * e, calva); for (let k = 0; k < 3; k++) K.cap([t[0] + (k - 1) * e, t[1]], [t[0] + (k - 0.5) * e + 1.5 * e, t[1] + 0.5 * e], 0.7 * e, 0.4 * e, garra); });
+      }
+      const hi = S.hips, ch = S.chest, h = S.head;
+      K.zTronco = (hi[2] + ch[2]) / 2 - 0.5;
+      // el cuerpo: una bola enorme de pelo, calva a parches
+      K.pieza(K.zTronco, () => {
+        const c = [(hi[0] + ch[0]) / 2, (hi[1] + ch[1]) / 2];
+        K.ovalo(c, 8.6 * e, 8.2 * e, pelo, { tex: pelaje, ang: Math.atan2(ch[1] - hi[1], ch[0] - hi[0]) + Math.PI / 2 });
+        // calvo a parches: la barriga y dos calvas en el lomo
+        K.ovalo([c[0] + 3.2 * e, c[1] + 2.4 * e], 4.2 * e, 5 * e, calva);
+        K.ovalo([c[0] - 3.5 * e, c[1] - 3.5 * e], 2 * e, 1.5 * e, calva, { ang: -0.5 });
+        K.ovalo([c[0] - 5.5 * e, c[1] + 1.5 * e], 1.4 * e, 1.8 * e, calva);
+        for (let k = 0; k < 5; k++) K.vara([c[0] + 1.5 * e + k * 0.9 * e, c[1] + (0.5 + k * 0.4) * e], [c[0] + 1.8 * e + k * 0.9 * e, c[1] + (2.5 + k * 0.4) * e], calva, { k: 1 }); // pliegues
+      });
+      // brazos enormes con garras de pala
+      for (const l of ['l', 'r']) {
+        const u = S['upperarm' + l], m = S['lowerarm' + l], hd = S['hand' + l], lejos = l === 'l';
+        K.pieza((u[2] + m[2]) / 2 + (lejos ? -0.5 : 0.5), () => { K.cap(u, m, 3.0 * e, 2.8 * e, pelo, { tex: pelaje }); K.cap(m, hd, 2.8 * e, 2.6 * e, pelo, { tex: pelaje }); });
+        K.pieza(hd[2] + (lejos ? -0.4 : 0.6), () => {
+          const dir = [hd[0] - m[0], hd[1] - m[1]], L = Math.hypot(...dir) || 1, d = [dir[0] / L, dir[1] / L], n = [-d[1], d[0]];
+          K.ovalo([hd[0], hd[1]], 3 * e, 2.6 * e, calva);
+          for (let k = -2; k <= 2; k++) { const b = [hd[0] + n[0] * k * 1.3 * e + d[0] * e, hd[1] + n[1] * k * 1.3 * e + d[1] * e]; K.cap(b, [b[0] + d[0] * 4.2 * e + n[0] * k * 0.4 * e, b[1] + d[1] * 4.2 * e + n[1] * k * 0.4 * e], 0.9 * e, 0.35 * e, garra); }
+        });
+      }
+      // la cabeza: hocico sin ojos con la nariz de estrella y la corona de clavos
+      K.pieza(h[2] + 2, () => {
+        const c = [h[0] + 2 * e, h[1] - 1 * e];
+        K.ovalo(c, 4.6 * e, 4 * e, pelo, { tex: pelaje });
+        K.cap([c[0] + 1.5 * e, c[1] + 0.5 * e], [c[0] + 5.5 * e, c[1] + 1.6 * e], 2.6 * e, 1.8 * e, calva); // el hocico pelado
+        const nz = [c[0] + 6.8 * e, c[1] + 1.6 * e];
+        for (let k = 0; k < 11; k++) { const a = (k / 11) * Math.PI * 2; K.cap(nz, [nz[0] + Math.cos(a) * 2.6 * e, nz[1] + Math.sin(a) * 2.2 * e], 0.6 * e, 0.35 * e, ['#4a1020', '#a03050', '#e05a7a', '#ff9ab0', '#ffd0dc']); }
+        K.ovalo(nz, 0.9 * e, 0.9 * e, ['#2a0a14', '#6a1a30', '#a0304a', '#c04a60'], { mate: true });
+        K.vara([c[0] + 3 * e, c[1] + 3.2 * e], [c[0] + 6 * e, c[1] + 3.4 * e], [0, OSCURO, OSCURO], { k: 2 }); // la boca
+        for (let k = 0; k < 6; k++) { const a = -Math.PI * 0.85 + k * 0.32, b = [c[0] + Math.cos(a) * 3.6 * e, c[1] + Math.sin(a) * 3.2 * e]; K.cap(b, [b[0] + Math.cos(a) * 3 * e, b[1] + Math.sin(a) * 3 * e - e], 0.7 * e, 0.3 * e, R.metal); } // la corona de clavos
+      });
+    },
+  };
+
+  // OZMAR, el Último Velador: cáscara flotante en túnica de sacerdote; dentro solo Podre; máscara de porcelana rota
+  // con un ojo; brazos largos como raíces.
+  DEF.ozmar = {
+    jefe: true, W: 200, H: 180, ox: 90, oy: 172, px: 44, yaw: 1.0, fuente: ANIM_ESQUELETO,
+    prop: { pierna: 0.9, brazo: 1.55, hombros: 0.9, caderas: 0.8, encorvar: 0.25, cuello: 0.7, tronco: 1.2, cadera: 0.39 },
+    anims: {
+      q: { clip: 'Idle', n: 6, bucle: true }, d: { clip: 'Spellcast_Summon', n: 6, de: 0, a: 0.5 },
+      o: { clip: 'Spellcast_Shoot', n: 5, de: 0, a: 0.8 }, s: { clip: 'Spellcast_Summon', n: 6, de: 0.1, a: 0.7 },
+      c: { clip: 'Hit_B', n: 3, de: 0.3, a: 0.6 }, r: { clip: 'Hit_A', n: 3, de: 0.1, a: 0.6 }, m: { clip: 'Death_A', n: 8, raiz: 0.3 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['c', 1];
+      if (e === 'despierta') return ['d', t / 1.6];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (e === 'orbes' || e === 'anillo' || e === 'pilares') return ['o', 1 - Math.max(0, j.t) / 0.85];
+      if (e === 'invoca') return ['s', t / 0.6];
+      if (e === 'cansado') return ['c', 1];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      return ['q', (J.t * 0.5) % 1];
+    },
+    dibujar(K) {
+      const S = K.S, e = K.D.px / 13, u = K.uc || 0;
+      const raiz = ['#0e0806', '#24160e', '#3e2818', '#5a3e26', '#7a5838'], porcelana = ['#3a3440', '#8a8494', '#c8c4d0', '#eeeaf2', '#ffffff'];
+      const hi = S.hips, ch = S.chest, h = S.head, abajo = K.D.oy - 1.5 * e;
+      K.zTronco = (hi[2] + ch[2]) / 2 - 0.5;
+      // la túnica: cae desde los hombros en campana y se deshace en jirones (no hay piernas: flota)
+      K.pieza(K.zTronco, () => {
+        const ond = (k) => Math.sin(u * Math.PI * 2 + k) * 1.2 * e;
+        K.poli([[ch[0] - 4.5 * e, ch[1] - e], [ch[0] + 4.2 * e, ch[1] - 1.2 * e], [hi[0] + 6 * e + ond(1), abajo], [hi[0] - 8 * e + ond(4), abajo - 0.5 * e]], VELADOR, {
+          normal: (x, y) => [((x - hi[0] + e) / (7 * e)) * 0.85, -0.1], corta: (x, y) => y > abajo - (0.5 + ruido(x >> 1, 3, 4) * 2.6) * e,
+        });
+        // el pecho abierto: dentro, la Podre que brilla
+        K.ovalo([ch[0] + 1.4 * e, ch[1] + 3.5 * e], 1.8 * e, 3 * e, ['#1a0414', '#5a0c44', '#a01e78', '#e0309e', '#ff6ac8'], { luz: true, mate: true });
+        // los bordes de oro de la túnica
+        K.vara([ch[0] - 0.2 * e, ch[1] + 6.5 * e], [hi[0] + 1.5 * e + ond(1) * 0.3, abajo - 1.5 * e], ORO, { k: 3 });
+        K.vara([ch[0] - 4.2 * e, ch[1]], [ch[0] + 3.8 * e, ch[1] - 0.5 * e], ORO, { grosor: 2 });
+        for (let x = hi[0] - 7 * e; x < hi[0] + 5.5 * e; x += 1) { const y = abajo - (0.6 + ruido(Math.floor(x) >> 1, 3, 4) * 2.6) * e - 1; if (ruido(Math.floor(x), 9, 2) < 0.5) K.px(x, y, ORO[2], VELADOR); }
+      });
+      // brazos largos como raíces, con dedos que se abren
+      for (const l of ['l', 'r']) {
+        const a = S['upperarm' + l], m = S['lowerarm' + l], hd = S['hand' + l], lejos = l === 'l';
+        K.pieza(lejos ? K.zTronco - 1 : Math.max(K.zTronco + 1, (a[2] + m[2]) / 2 + 1), () => {
+          K.cap(a, m, 1.5 * e, 1.2 * e, VELADOR); K.cap(m, hd, 1.1 * e, 0.8 * e, raiz);
+          const d = [hd[0] - m[0], hd[1] - m[1]], L = Math.hypot(...d) || 1;
+          for (let k = -2; k <= 2; k++) { const an = Math.atan2(d[1], d[0]) + k * 0.35; K.cap([hd[0], hd[1]], [hd[0] + Math.cos(an) * 4.5 * e, hd[1] + Math.sin(an) * 4.5 * e], 0.55 * e, 0.25 * e, raiz); }
+          if (K.anim === 'o' || K.anim === 's') K.ovalo([hd[0] + d[0] / L * 3 * e, hd[1] + d[1] / L * 3 * e], 1.5 * e, 1.5 * e, ['#3a0f30', '#a01e78', '#ff3cb4', '#ff7ad0', '#ffd0ee'], { luz: true, mate: true });
+        });
+      }
+      // la capucha y la máscara de porcelana rota, con un solo ojo
+      K.pieza(h[2] + 2, () => {
+        K.ovalo([h[0] - 0.5 * e, h[1] - 3 * e], 5 * e, 5.4 * e, VELADOR);
+        const c = [h[0] + 1.6 * e, h[1] - 2.6 * e];
+        K.ovalo(c, 3 * e, 3.8 * e, porcelana, { brillo: true });
+        K.ovalo([c[0] + 1 * e, c[1] - 0.6 * e], 0.9 * e, 1.1 * e, [OSCURO, OSCURO, OSCURO, OSCURO]);
+        K.px(c[0] + 1 * e, c[1] - 0.6 * e, OJO.podre[0], porcelana, true); K.px(c[0] + 1 * e + 1, c[1] - 0.6 * e, OJO.podre[1], porcelana, true);
+        for (let k = 0; k < 5; k++) K.px(c[0] - 1.5 * e + k * 0.5, c[1] - 1 * e + k * 0.9, porcelana[0], porcelana); // la grieta
+        K.ovalo([c[0] - 1.4 * e, c[1] + 0.4 * e], 0.8 * e, 0.6 * e, ['#160410', '#300a24', '#4a103a', '#6a1a52']); // el trozo que falta
+      });
+    },
+  };
+
+  // VHESSA, Madre de la Colmena: gusana reina hinchada; saco de huevos translúcido con larvas que se mueven dentro;
+  // racimo de ojos negros, mandíbulas. Esqueleto propio: el saco detrás y el cuerpo que se alza hacia delante.
+  DEF.reina = {
+    jefe: true, W: 200, H: 160, ox: 96, oy: 152, px: 1,
+    anims: {
+      z: { proc: 'duerme', n: 1 }, d: { proc: 'alza', n: 6 }, q: { proc: 'mece', n: 6, bucle: true },
+      a: { proc: 'escupe', n: 5 }, l: { proc: 'pone', n: 4, bucle: true }, s: { proc: 'golpe', n: 5 },
+      r: { proc: 'duele', n: 2 }, m: { proc: 'muere', n: 7 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['z', 0];
+      if (e === 'despierta') return ['d', t / 1.6];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (e === 'acido') return ['a', 1 - Math.max(0, j.t) / 0.75];
+      if (e === 'puesta') return ['l', (J.t * 2) % 1];
+      if (e === 'derrumbe') return ['s', 1 - Math.max(0, j.t) / 0.7];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      return ['q', (J.t * 0.45) % 1];
+    },
+    dibujar(K) {
+      const D = K.D, A = K.A, u = fase(K), suelo = D.oy;
+      const piel = ['#3a2c18', '#7a6440', '#b49a68', '#dcc898', '#f6ecca'], saco = ['#4a4020', '#a09048', '#d8c878', '#f0e6aa', '#fffbe0'];
+      let alza = 0.75, inc = 0, abre = 0.2, pulso = 0, cae = 0, mece = 0;
+      if (A.proc === 'duerme') { alza = 0; abre = 0; }
+      if (A.proc === 'alza') { alza = u * 0.9; abre = u; }
+      if (A.proc === 'mece') { mece = Math.sin(u * Math.PI * 2); pulso = mece * 0.03; }
+      if (A.proc === 'escupe') { alza = 0.85 - Math.sin(u * Math.PI) * 0.15; inc = u < 0.5 ? -u * 0.6 : -0.3 + (u - 0.5) * 1.6; abre = u < 0.6 ? u * 1.6 : 1; }
+      if (A.proc === 'pone') { pulso = Math.sin(u * Math.PI * 2) * 0.07; }
+      if (A.proc === 'golpe') { alza = u < 0.5 ? 0.75 + u * 0.5 : 1 - (u - 0.5) * 1.6; abre = 0.6; }
+      if (A.proc === 'duele') { inc = -0.25; alza = 0.65; }
+      if (A.proc === 'muere') { cae = u; alza = 0.75 * (1 - u); abre = 0.4; }
+      // el saco de huevos (detrás, a la izquierda): translúcido, con larvas que se mueven dentro y venas
+      const sc = [D.ox - 34, suelo - 28 + cae * 8], srx = 40 * (1 + pulso), sry = 28 * (1 - pulso * 0.6) * (1 - cae * 0.25);
+      K.pieza(0, () => {
+        K.ovalo(sc, srx, sry, Object.assign(saco.slice(), { sinLinea: true, arriba: 3 }), { corta: (x, y) => y > suelo });
+        for (let k = 0; k < 9; k++) { // las larvas dentro: bultos más oscuros (vistos a través) que se mueven despacio
+          const a = (k / 9) * Math.PI * 2 + (K.anim === 'l' ? u * 2 : (K.uc || 0) * 0.6), r = 0.35 + (k % 3) * 0.17;
+          const c = [sc[0] + Math.cos(a) * srx * r, sc[1] + Math.sin(a) * sry * r * 0.8];
+          K.ovalo(c, 3.2, 2.2, [saco[2], ESCU.mezclar(saco[1], '#4a3a20', 0.35), ESCU.mezclar(saco[2], '#6a5a30', 0.3), saco[3]], { mate: true, ang: a });
+        }
+        for (let k = 0; k < 5; k++) { let x = sc[0] - srx * 0.7 + k * srx * 0.35, y = sc[1] - sry * 0.6; for (let i = 0; i < 9; i++) { K.px(x, y, saco[1], saco); x += ruido(k, i, 3) < 0.5 ? 1 : -1; y += 1.5; } } // venas
+      });
+      // el cuerpo: anillos que suben del saco a la cabeza (se alza y se echa hacia atrás o delante)
+      const N = 7, pts = [];
+      for (let i = 0; i < N; i++) {
+        const t = i / (N - 1), r = 16 - t * 4.5;
+        const ang = (-0.15 - alza * 1.25 * t) + inc * t + mece * 0.05 * t;
+        const prev = pts.length ? pts[pts.length - 1] : [sc[0] + srx * 0.55, suelo - 12, 0];
+        const paso = i === 0 ? 0 : 12;
+        pts.push([prev[0] + Math.cos(ang) * paso, prev[1] + Math.sin(ang) * paso, r]);
+      }
+      pts.forEach(([x, y, r], i) => K.pieza(1 + i, () => {
+        K.ovalo([x, Math.min(y, suelo - r * 0.7)], r, r * 0.92, piel, { corta: (xx, yy) => yy > suelo });
+        if (i > 0) for (let k = -1; k <= 1; k += 2) K.vara([x + k * r * 0.2, y + r * 0.6], [x + k * r * 0.35, Math.min(suelo, y + r + 4)], piel, { k: 1 }); // patitas
+      }));
+      // la cabeza: racimo de ojos negros y mandíbulas que se abren
+      const [hx, hy, hr] = pts[N - 1], cab = [hx + 6, hy - 2];
+      K.pieza(N + 2, () => {
+        K.ovalo(cab, 14, 12, piel);
+        for (const [dx, dy, r] of [[2, -5, 2.4], [6, -3.5, 2], [-1.5, -3, 1.8], [4.5, -7, 1.6], [8.5, -6, 1.4], [0.5, -7.5, 1.3], [-3.5, -6, 1.2]]) {
+          K.ovalo([cab[0] + dx, cab[1] + dy], r, r, ['#000000', '#05060a', '#0c0e16', '#1a1e2c', '#6a7488'], { brillo: true });
+          K.px(cab[0] + dx - r * 0.4, cab[1] + dy - r * 0.4, '#c8d4e8', piel);
+        }
+        // mandíbulas
+        const ab = abre * 0.6;
+        for (const s of [-1, 1]) {
+          const b0 = [cab[0] + 8, cab[1] + 4 + s * 2], an = 0.25 + s * (0.35 + ab);
+          const m1 = [b0[0] + Math.cos(an) * 8, b0[1] + Math.sin(an) * 8], m2 = [m1[0] + Math.cos(an - s * 1.2) * 6, m1[1] + Math.sin(an - s * 1.2) * 6];
+          K.cap(b0, m1, 2.4, 1.8, R.hueso); K.cap(m1, m2, 1.8, 0.6, R.hueso);
+        }
+        if (abre > 0.5) { K.ovalo([cab[0] + 9, cab[1] + 4], 3, 2 + abre * 2, ['#100608', '#1e0a0e', '#300e16', '#401420'], { mate: true }); for (let k = 0; k < 3; k++) K.px(cab[0] + 9 + k - 1, cab[1] + 7 + abre * 2 + k, ACIDO[2 + (k % 2)], piel, true); }
+      });
+      K.puntos = { boca: [cab[0] + 10, cab[1] + 4] };
+    },
+  };
+
+  // GRUL, el Sapo Hueco: saco de carne muerta; la espalda es un bosque de Podre con púas de hueso; ojos en racimo,
+  // pequeños y rojos; por la boca asoma el brazo de un Velador. Se estira y se aplasta con el Slime de Quaternius.
+  DEF.grul = {
+    jefe: true, simetrico: true, W: 220, H: 160, ox: 110, oy: 152, px: 1, fuente: ANIM_BABA,
+    anims: {
+      z: { proc: 'duerme', n: 1 }, q: { clip: 'Slime_Idle', n: 6, bucle: true }, p: { proc: 'agacha', n: 3 }, g: { clip: 'Slime_Attack', n: 3, de: 0.3, a: 0.6 },
+      b: { proc: 'boca', n: 4 }, t: { proc: 'traga', n: 4, bucle: true }, r: { proc: 'golpe', n: 2 }, m: { clip: 'Slime_Death', n: 6 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['z', 0];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (j.salto) return j.z > 4 ? ['g', Math.min(1, j.salto.t / j.salto.dur) ] : ['p', 1];
+      if (e === 'salto' && j.paso === 0) return ['p', 1 - Math.max(0, j.t) / 0.7];
+      if (e === 'lengua' || e === 'escupe') return ['b', Math.min(1, t / 0.4)];
+      if (e === 'traga') return ['t', (J.t * 3) % 1];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      return ['q', (J.t * 0.4) % 1];
+    },
+    dibujar(K) {
+      // de frente (como en LORE.md): la boca de lado a lado, los ojos en racimo arriba y la Podre por detrás
+      const D = K.D, A = K.A, u = fase(K);
+      const carne = ['#10140c', '#262e1e', '#3e4a30', '#5a6844', '#7c8a5e', '#a0ac7c'], vientre = ['#2a2218', '#5e4e36', '#8a7656', '#b09c78', '#d0c09a'];
+      const mancha = ['#0e100a', '#1e2418', '#2e3824', '#404c32'];
+      let sy = 1, sx = 1, abre = 0.05, dormido = false, traga = 0, lengua = 0;
+      if (A.proc === 'duerme') { dormido = true; sy = 0.94; sx = 1.04; }
+      else if (A.proc === 'agacha') { const k = Math.sin(u * Math.PI / 2); sy = 1 - 0.22 * k; sx = 1 + 0.14 * k; }
+      else if (A.proc === 'golpe') { sy = 0.88; sx = 1.08; }
+      else if (A.proc === 'boca') { abre = 0.15 + 0.85 * u; lengua = u; }
+      else if (A.proc === 'traga') { abre = 1; traga = Math.sin(u * Math.PI * 2); sx = 1 + traga * 0.03; }
+      else { const [a, b] = aplasto(K); sy = a; sx = b; if (K.anim === 'm') { abre = 0.3; dormido = u > 0.5; } }
+      const cx = D.ox, base = D.oy, rx = 52 * sx, ry = 38 * sy, cy = base + 0.5 - ry * 0.86;
+      // detrás: el bosque de Podre y las púas de hueso que asoman por encima del lomo
+      K.pieza(-2, () => {
+        for (let k = 0; k < 11; k++) {
+          const a = Math.PI * (1.1 + k * 0.08), x = cx + Math.cos(a) * rx * 0.9, y = cy + Math.sin(a) * ry * 0.98 - 3;
+          if (k % 2 === 0) { const L = 12 + (k % 3) * 5; K.cap([x, y], [x + Math.cos(a) * 3, y - L], 2.6, 0.6, R.hueso); }
+          K.ovalo([x, y], 5 + (k % 3), 4 + (k % 2), PODRE, { luz: !dormido || k % 3 === 0 });
+        }
+      });
+      // patas de atrás, dobladas a los lados
+      K.pieza(-1, () => { for (const s of [-1, 1]) K.ovalo([cx + s * rx * 0.86, base - 11 * sy], 17 * sx, 12 * sy, carne, { tex: (x, y) => (ruido(x >> 2, y >> 2, 3) < 0.12 ? -1 : 0) }); });
+      // el saco de carne muerta, con manchas y verrugas
+      K.pieza(0, () => {
+        K.ovalo([cx, cy], rx, ry, carne);
+        for (const [dx, dy, r] of [[-0.55, -0.35, 7], [0.4, -0.5, 5], [-0.2, -0.65, 4], [0.65, 0.05, 6], [-0.75, 0.1, 5]]) K.ovalo([cx + dx * rx, cy + dy * ry], r * sx, r * 0.8 * sy, mancha, { mate: true });
+        for (let k = 0; k < 18; k++) { const x = cx + (ruido(k, 1, 5) - 0.5) * rx * 1.6, y = cy + (ruido(k, 2, 5) - 0.75) * ry * 1.2; if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 0.8) { K.px(x, y, carne[5], carne); K.px(x, y + 1, carne[2], carne); } } // verrugas
+        K.ovalo([cx, cy + ry * 0.5], rx * 0.62, ry * 0.42, vientre, { mate: true, corta: (x, y) => y > base });
+      });
+      // la boca de lado a lado: cerrada es una raja; abierta, una cueva con dos filas de dientes
+      K.pieza(1, () => {
+        const by = cy + ry * 0.22, ancho = rx * 0.78, alto = 1.5 + abre * ry * 0.75;
+        if (abre < 0.12) {
+          for (let x = -ancho; x <= ancho; x++) { const y = by + (x / ancho) ** 2 * -5 + 5; K.px(cx + x, y, '#080406', carne); K.px(cx + x, y + 1, carne[1], carne); }
+        } else {
+          K.ovalo([cx, by + alto * 0.45], ancho, alto * 0.6 + 2, ['#060204', '#100408', '#1a080e', '#240c14'], { mate: true });
+          for (let k = -6; k <= 6; k++) { const x = cx + k * ancho * 0.15, yt = by + alto * 0.45 - (alto * 0.6 + 1) * Math.sqrt(Math.max(0, 1 - (k / 6.6) ** 2)), yb = by + alto * 0.45 + (alto * 0.6 + 1) * Math.sqrt(Math.max(0, 1 - (k / 6.6) ** 2));
+            K.cap([x, yt], [x, yt + 3 + (k % 2)], 1.1, 0.3, R.hueso); K.cap([x + 1, yb], [x + 1, yb - 3 - ((k + 1) % 2)], 1.1, 0.3, R.hueso); }
+          if (lengua > 0.2 || traga) { const lg = ['#3a0a1a', '#8a1e3e', '#c83a5e', '#ee6a86', '#ffa0b4'], L = 6 + lengua * 26; K.cap([cx + 4, by + alto * 0.5], [cx + 6, by + alto * 0.5 + L], 6, 4.5, lg); K.ovalo([cx + 6, by + alto * 0.5 + L], 7, 4, lg); }
+        }
+        // el brazo de un Velador que asoma por la comisura: manga azul, mano de hueso
+        const c0 = [cx - ancho * 0.82, by + 3 + abre * 6];
+        K.cap(c0, [c0[0] - 8, c0[1] + 10], 3, 2.6, VELADOR);
+        K.cap([c0[0] - 8, c0[1] + 10], [c0[0] - 10, c0[1] + 15], 1.8, 1.4, R.hueso);
+        for (let k = 0; k < 4; k++) K.vara([c0[0] - 10, c0[1] + 15], [c0[0] - 13 + k * 1.6, c0[1] + 19], R.hueso, { k: 3 });
+      });
+      // los ojos en racimo, pequeños y rojos, arriba en el centro
+      K.pieza(2, () => {
+        const ox = cx, oy = cy - ry * 0.5;
+        for (const [dx, dy] of [[0, 0], [-5, 1], [5, 1], [-2.5, -3.5], [2.5, -3.5], [-8, -2], [8, -2], [0, -6.5], [-4, 4], [4, 4]]) {
+          K.ovalo([ox + dx, oy + dy], 2, 1.8, carne);
+          if (!dormido) { K.px(ox + dx, oy + dy, OJO.rojo[0], carne, true); K.px(ox + dx + 1, oy + dy, OJO.rojo[1], carne, true); }
+          else K.px(ox + dx, oy + dy + 0.5, carne[0], carne);
+        }
+      });
+      // las patas de delante, abiertas, con los dedos en el suelo
+      K.pieza(3, () => { for (const s of [-1, 1]) { const h = [cx + s * rx * 0.55, base - 1]; K.cap([cx + s * rx * 0.45, cy + ry * 0.55], h, 5, 4, carne); for (let k = -1; k <= 1; k++) K.cap(h, [h[0] + s * 3 + k * 4, base + 0.5], 1.8, 1.2, carne); } });
+      K.puntos = { boca: [cx, cy + ry * 0.3] };
+    },
+  };
+
+  // HIEDRA, la Flor de Sangre: flor gigante de pétalos de carne; en el centro, el cadáver del Velador que intentó
+  // quemarla; látigos de espinas con bocas. No se mueve ni se gira (de frente). Esqueleto propio.
+  DEF.hiedra = {
+    jefe: true, simetrico: true, W: 230, H: 200, ox: 115, oy: 192, px: 1,
+    anims: {
+      c: { proc: 'capullo', n: 1 }, d: { proc: 'abre', n: 6 }, q: { proc: 'mece', n: 6, bucle: true }, o: { proc: 'late', n: 4, bucle: true },
+      l: { proc: 'latigo', n: 6 }, z: { proc: 'cae', n: 3 }, r: { proc: 'duele', n: 2 }, m: { proc: 'muere', n: 7 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'dormido') return ['c', 0];
+      if (e === 'despierta') return ['d', t / 1.6];
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (e === 'latigo') return ['l', t / 1.0];
+      if (e === 'aturdido') return ['z', Math.min(1, t / 0.4)];
+      if (e === 'raices' || e === 'esporas' || e === 'brotes') return ['o', (J.t * 2) % 1];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      return ['q', (J.t * 0.4) % 1];
+    },
+    dibujar(K) {
+      const D = K.D, A = K.A, u = fase(K), suelo = D.oy;
+      const carne = ['#1a0408', '#420a16', '#701424', '#a02434', '#c8404a', '#e4706a'], tallo = ['#0c120a', '#1a2a14', '#2c4420', '#42602c', '#5c7c3a'];
+      let abre = 1, mece = 0, late = 0, barre = 0, cae = 0, muere = 0;
+      if (A.proc === 'capullo') abre = 0;
+      if (A.proc === 'abre') abre = u;
+      if (A.proc === 'mece') mece = Math.sin(u * Math.PI * 2);
+      if (A.proc === 'late') { late = Math.sin(u * Math.PI * 2); abre = 1.05 + late * 0.06; }
+      if (A.proc === 'latigo') barre = u;
+      if (A.proc === 'cae') { cae = u; abre = 1 - u * 0.25; }
+      if (A.proc === 'duele') { cae = 0.3; }
+      if (A.proc === 'muere') { muere = u; abre = 1 - u * 0.5; cae = u; }
+      const c = [D.ox, suelo - 40 + cae * 10 + muere * 10];
+      // la mata de raíces del suelo
+      K.pieza(-5, () => {
+        K.ovalo([D.ox, suelo - 6], 52, 12, tallo, { corta: (x, y) => y > suelo });
+        for (let k = 0; k < 8; k++) { const a = Math.PI * (0.05 + k * 0.13), x0 = D.ox + Math.cos(a) * 40, y0 = suelo - 6; K.cap([x0, y0], [x0 + Math.cos(a) * 18, suelo - 1], 3, 1.2, tallo); }
+      });
+      // los látigos de espinas con bocas: salen de detrás y se mecen (al barrer, se abren en abanico)
+      const latigos = [[-1, 0.7], [1, 0.65], [-0.45, 1], [0.5, 0.95]], negro = ['#08040c', '#180c22', '#2a1638', '#40224e', '#5a3266'];
+      latigos.forEach(([lado, alto], k) => K.pieza(-3 + (k > 1 ? 0.5 : 0), () => {
+        if (abre < 0.4) return;
+        let x = c[0] + lado * 22, y = c[1] + 4, ang = -Math.PI / 2 + lado * 0.5;
+        const N = 12, pts = [];
+        for (let i = 0; i < N; i++) {
+          const t = i / (N - 1);
+          pts.push([x, y, 4.2 - t * 2.2]);
+          ang += (lado * (0.08 + barre * 0.18) + Math.sin(u * Math.PI * 2 + k + t * 3) * 0.06 * (1 + mece)) * (1 - muere) + muere * lado * 0.25;
+          const paso = 7 * alto * (0.6 + 0.4 * abre) * (1 - cae * 0.3);
+          x += Math.cos(ang) * paso; y += Math.sin(ang) * paso;
+        }
+        pts.forEach(([px, py, r], i) => { K.ovalo([px, py], r * 1.3, r * 1.3, negro); if (i % 2 && i < N - 1) K.cap([px, py], [px + Math.cos(ang + 1.6) * (r + 4), py + Math.sin(ang + 1.6) * (r + 4)], 1.1, 0.3, R.hueso); });
+        const [hx, hy] = pts[N - 1]; // la boca de la punta
+        K.ovalo([hx, hy], 7, 6.4, carne);
+        K.ovalo([hx + Math.cos(ang) * 2, hy + Math.sin(ang) * 2], 3, 2.6, ['#0c0206', '#1a040a', '#2a0810', '#3a0c18'], { mate: true });
+        for (let d = 0; d < 6; d++) { const a = (d / 6) * Math.PI * 2; K.px(hx + Math.cos(ang) * 2 + Math.cos(a) * 3, hy + Math.sin(ang) * 2 + Math.sin(a) * 2.6, R.hueso[3], R.hueso); }
+      }));
+      // pétalos de carne: tres detrás (hacia arriba) y dos delante (bajos y anchos)
+      const petalo = (ang, largo, ancho, z) => K.pieza(z, () => {
+        const a = ang + mece * 0.03 * (z > 0 ? -1 : 1), L = largo * (0.35 + 0.65 * abre) * (1 - muere * 0.3);
+        const p0 = [c[0] + Math.cos(a) * 6, c[1] + Math.sin(a) * 4], p1 = [c[0] + Math.cos(a) * (L + 6), c[1] + Math.sin(a) * (L * 0.85 + 4) + muere * 12];
+        const m = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
+        K.ovalo(m, L / 2 + 2, ancho * (0.6 + 0.4 * abre), carne, { ang: Math.atan2(p1[1] - p0[1], p1[0] - p0[0]) });
+        for (let k = -1; k <= 1; k++) K.vara(p0, [p1[0] - Math.sin(a) * k * ancho * 0.4, p1[1] + Math.cos(a) * k * ancho * 0.4], carne, { k: k ? 2 : 1 }); // venas
+      });
+      petalo(-Math.PI / 2, 52, 20, -2); petalo(-Math.PI / 2 - 0.85, 50, 19, -1.8); petalo(-Math.PI / 2 + 0.85, 50, 19, -1.8);
+      petalo(-Math.PI / 2 - 1.75, 42, 17, -1.5); petalo(-Math.PI / 2 + 1.75, 42, 17, -1.5);
+      // el centro: el cadáver del Velador sentado entre los estambres
+      K.pieza(0, () => {
+        if (abre < 0.25) return;
+        const t0 = [c[0], c[1] - 20 * abre + cae * 8], E = 1.6;
+        K.ovalo([c[0], c[1] + 2], 16, 8, tallo); // el cáliz
+        for (let k = 0; k < 9; k++) { const a = Math.PI * (1.1 + k * 0.1); K.cap([c[0] + Math.cos(a) * 10, c[1] + 2], [c[0] + Math.cos(a) * 14, c[1] - 8 + Math.sin(k) * 2], 0.8, 0.8, ['#3a2a08', '#8a7020', '#d8b440', '#ffe070'], { luz: late > 0.2 }); }
+        K.poli([[t0[0] - 7 * E, t0[1]], [t0[0] + 7 * E, t0[1]], [c[0] + 9 * E, c[1] + 4], [c[0] - 9 * E, c[1] + 4]], VELADOR, { corta: (x, y) => y > c[1] - 2 && ruido(x >> 1, 2, 6) < 0.35 }); // la túnica
+        for (let k = 0; k < 2; k++) K.cap([t0[0] - 4 * E, t0[1] + (3.5 + k * 3) * E], [t0[0] + 1 * E, t0[1] + (3 + k * 3) * E], 0.8 * E, 0.8 * E, R.hueso); // costillas (por el roto de la túnica)
+        K.cap([t0[0] - 6 * E, t0[1] + E], [t0[0] - 11 * E, t0[1] + (12 + cae * 4) * E], 1.6 * E, 1.3 * E, R.hueso); K.cap([t0[0] + 6 * E, t0[1] + E], [t0[0] + 12 * E, t0[1] + (11 + cae * 4) * E], 1.6 * E, 1.3 * E, R.hueso); // brazos caídos
+        const cr = [t0[0] + cae * 4, t0[1] - 6 * E + cae * 5]; // el cráneo, caído hacia un lado
+        K.ovalo(cr, 5 * E, 5 * E, R.hueso); K.ovalo([cr[0], cr[1] + 4 * E], 3 * E, 2 * E, R.hueso);
+        for (const dx of [-2, 2]) { K.ovalo([cr[0] + dx * E, cr[1]], 1.3 * E, 1.6 * E, [OSCURO, OSCURO, OSCURO, OSCURO]); if (!muere) { K.px(cr[0] + dx * E, cr[1], OJO.podre[0], R.hueso, true); K.px(cr[0] + dx * E + 1, cr[1], OJO.podre[1], R.hueso, true); } }
+        // raíces que lo atraviesan
+        K.cap([c[0] - 12, c[1] - 4], [t0[0] - 2, t0[1] + 6], 1.4, 1, tallo); K.cap([c[0] + 13, c[1] - 6], [t0[0] + 3, t0[1] + 2], 1.4, 1, tallo);
+        if (late > 0.3) for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + u * 3; K.px(c[0] + Math.cos(a) * 18, c[1] - 14 + Math.sin(a) * 8, '#d8ff70', tallo, true); } // esporas
+      });
+      petalo(Math.PI / 2 - 0.75, 26, 16, 2); petalo(Math.PI / 2 + 0.75, 26, 16, 2);
+      if (abre < 0.1) K.pieza(3, () => { K.ovalo([c[0], c[1] - 18], 22, 30, carne); for (let k = -1; k <= 1; k++) K.vara([c[0] + k * 8, c[1] + 8], [c[0] + k * 4, c[1] - 44], carne, { k: 1 }); }); // el capullo cerrado
+      K.puntos = { centro: c };
+    },
+  };
+
+  // TAMAR, el Ojo del Cielo: ave colosal de hueso y plumas rotas; un solo ojo enorme en el pecho; pico de calavera.
+  // Movimiento del dragón de Quaternius (alas, cola y patas); quieta pliega las alas.
+  const PLUMA = ['#08080c', '#16161e', '#262632', '#3a3a4a', '#545466'];
+  DEF.tamar = {
+    jefe: true, W: 240, H: 200, ox: 118, oy: 190, px: 30, yaw: 0.55, fuente: ANIM_DRAGON,
+    anims: {
+      q: { clip: 'Dragon_Flying', n: 4, bucle: true, plegar: 0.8 }, v: { clip: 'Dragon_Flying', n: 8, bucle: true },
+      p: { clip: 'Dragon_Attack', n: 6 }, y: { clip: 'Dragon_Attack2', n: 6, de: 0, a: 0.6 },
+      z: { clip: 'Dragon_Hit', n: 4, de: 0.2, a: 0.5, plegar: 0.4 }, r: { clip: 'Dragon_Hit', n: 3, de: 0, a: 0.3 }, m: { clip: 'Dragon_Death', n: 8 },
+    },
+    cuadroJefe(j, t) {
+      const e = j.estado;
+      if (e === 'muriendo') return ['m', t / 1.8];
+      if (e === 'despierta' || (j.vuelo || 0) > 0.1 || e === 'viento') return ['v', (J.t * (e === 'viento' ? 2.4 : 1.6)) % 1];
+      if (e === 'plumas') return ['p', 1 - Math.max(0, j.t) / 0.8];
+      if (e === 'rayos') return ['y', Math.min(1, t / 0.5)];
+      if (e === 'aturdido') return ['z', 0.5 + 0.5 * Math.sin(J.t * 3)];
+      if (j.golpeadoT && J.t - j.golpeadoT < 0.25) return ['r', (J.t - j.golpeadoT) / 0.25];
+      return ['q', (J.t * 0.5) % 1];
+    },
+    huesos(K) {
+      const P = K.P, pl = K.A.plegar || 0;
+      for (const b of Object.keys(P)) if (b[0] !== '_') P[b] = [P[b][0], P[b][1] - 0.75, P[b][2]]; // los pies en el suelo
+      if (pl) for (const l of ['L', 'R']) { // alas plegadas: las puntas vuelven hacia el cuerpo y caen
+        const sh = P['Shoulder' + l];
+        ['Wing1', 'Wing2', 'Wing3', 'Wing4', 'Wing4'].forEach((w, i) => {
+          const b = i === 4 ? 'Wing4' + l + '_end' : w + l, q = P[b], t = (i + 1) / 5;
+          const plg = [sh[0] + (q[0] - sh[0]) * 0.35, sh[1] + 0.3 - t * 1.4, sh[2] - 0.2 - t * 0.9];
+          P[b] = CRI.mezcla(q, plg, pl);
+        });
+      }
+    },
+    dibujar(K) {
+      const S = K.S, e = K.D.px / 13, A = K.A, muerto = K.anim === 'm' && K.u > 0.5;
+      const hu = R.hueso;
+      // la cola: abanico de plumas rotas
+      K.pieza(S.Tail3[2] - 2, () => {
+        const t = S.Tail4_end, b = S.Tail1;
+        for (let k = -3; k <= 3; k++) { const L = (k % 2 ? 0.8 : 1) * 1; K.placaEntre(b, [t[0] + k * 4 * e, t[1] + Math.abs(k) * 2 * e - 2 * e * L], 3.4 * e, 1.6 * e, PLUMA, { bisel: e }); }
+      });
+      // las alas: huesos finos y plumas largas que cuelgan del borde (alguna rota)
+      const ala = (l, z) => K.pieza(z, () => {
+        const nombres = ['Shoulder', 'Wing1', 'Wing2', 'Wing3', 'Wing4'].map((w) => w + l).concat(['Wing4' + l + '_end']);
+        const P3 = nombres.map((n) => K.P[n]), cad = nombres.map((n) => S[n]);
+        for (let i = 1; i < cad.length; i++) {
+          const a = cad[i], q = cad[i - 1];
+          if (i >= 2) { // plumas: de cada tramo del ala hacia abajo y atrás (en 3D: giran con el ala)
+            const d3 = CRI.res(P3[i], P3[i - 1]), m3 = Math.hypot(...d3) || 1, du = d3.map((v) => v / m3);
+            let t3 = [0, -0.8, -0.6]; const pr = t3[0] * du[0] + t3[1] * du[1] + t3[2] * du[2];
+            t3 = CRI.norm([t3[0] - du[0] * pr, t3[1] - du[1] * pr, t3[2] - du[2] * pr]);
+            const n = i === cad.length - 1 ? 4 : 3;
+            for (let k = 0; k < n; k++) {
+              const t = k / n, rota = ruido(i, k, l === 'L' ? 1 : 2) < 0.2, L = (0.35 + i * 0.13) * (rota ? 0.55 : 1);
+              const o3 = CRI.mezcla(P3[i - 1], P3[i], t), f3 = CRI.sum(o3, CRI.por(t3, L));
+              K.placaEntre(K.pt(o3), K.pt(f3), 3 * e, rota ? 1.6 * e : 1 * e, PLUMA, { bisel: 0.6 * e });
+            }
+          }
+          K.cap(q, a, 1 * e, 0.8 * e, hu);
+        }
+      });
+      ala('L', -3);
+      // patas de hueso con garras
+      for (const l of ['L', 'R']) K.pieza(S['UpperLeg' + l][2] - 1, () => {
+        const u = S['UpperLeg' + l], m = S['LowerLeg' + l], f = S['Feet' + l];
+        K.cap(u, m, 1.6 * e, 1.1 * e, PLUMA); K.cap(m, f, 0.9 * e, 0.8 * e, hu);
+        for (let k = -1; k <= 1; k++) K.cap(f, [f[0] + k * 2.4 * e + e, f[1] + 1.2 * e], 0.6 * e, 0.3 * e, hu);
+      });
+      // el cuerpo: plumas rotas, costillas y el ojo enorme del pecho
+      const bo = S.Body, ne = S.Neck, he = S.Head, no = S.Nose;
+      K.pieza(bo[2], () => {
+        K.ovalo([bo[0], (bo[1] + ne[1]) / 2 + e], 8 * e, 11 * e, PLUMA, { ang: Math.atan2(ne[1] - bo[1], ne[0] - bo[0]) + Math.PI / 2, tex: (x, y) => (ruido(x >> 1, Math.floor(y / 3), 3) < 0.15 ? 1 : 0) });
+        for (let k = 0; k < 4; k++) K.cap([bo[0] - 5 * e, bo[1] - (2 + k * 2.2) * e], [bo[0] + 5 * e, bo[1] - (1.6 + k * 2.2) * e], 0.6 * e, 0.6 * e, hu); // costillas
+        const ojo = [bo[0] + 0.5 * e, bo[1] - 4.5 * e];
+        K.ovalo(ojo, 4.6 * e, 4 * e, ['#2a2620', '#a8a090', '#e0d8c8', '#f8f4ea', '#ffffff'], { luz: !muerto });
+        if (!muerto) {
+          K.ovalo([ojo[0] + 0.6 * e, ojo[1]], 2.6 * e, 2.6 * e, ['#3a2400', '#a06000', '#f0a820', '#ffd860', '#fff4b0'], { luz: true });
+          K.ovalo([ojo[0] + 0.9 * e, ojo[1]], 1.1 * e, 1.6 * e, [OSCURO, OSCURO, '#000000', '#0a0a10'], { mate: true });
+          K.px(ojo[0] - 0.4 * e, ojo[1] - 1.2 * e, '#ffffff', hu, true);
+        } else K.vara([ojo[0] - 4 * e, ojo[1]], [ojo[0] + 4 * e, ojo[1]], PLUMA, { grosor: 2 });
+        K.puntos = { ojo };
+      });
+      // el cuello y la cabeza: calavera con pico
+      K.pieza(ne[2] + 1, () => {
+        K.cap([bo[0], bo[1] - 8 * e], ne, 3.4 * e, 2.6 * e, PLUMA);
+        K.ovalo(he, 3.6 * e, 3.2 * e, hu);
+        K.placa([[he[0] + 1 * e, he[1] - 1.6 * e], [no[0] + 2.6 * e, no[1] + 1.2 * e], [he[0] + 1 * e, he[1] + 1.8 * e]], hu, { bisel: 0.6 * e }); // el pico
+        K.ovalo([he[0] + 0.6 * e, he[1] - 0.4 * e], 1.2 * e, 1.2 * e, [OSCURO, OSCURO, OSCURO, OSCURO]);
+        if (!muerto) K.px(he[0] + 0.6 * e, he[1] - 0.4 * e, OJO.rojo[0], hu, true);
+      });
+      ala('R', 6);
+    },
+  };
+
   return { R, OJO, cuerpo, vara, mascara, gruto, baba };
 })();

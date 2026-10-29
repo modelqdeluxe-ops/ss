@@ -1095,7 +1095,7 @@ function construirArte() {
   for (const f of CONSTRUIR_MODELOS) f();
   // Empaquetado en estantes, de más alto a más bajo, con 1 px libre alrededor.
   const lista = [...new Map(DIBUJOS).entries()].sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
-  const ANCHO = 1024;
+  const ANCHO = 2048;
   let x = 1, y = 1, alto = 0;
   for (const [n, l] of lista) {
     if (x + l.w + 1 > ANCHO) { x = 1; y += alto + 2; alto = 0; }
@@ -1105,7 +1105,8 @@ function construirArte() {
   for (const [a, r] of Object.entries(ALIAS_SPR)) if (SPR[r]) { SPR[a] = SPR[r]; if (META_SPR[r]) META_SPR[a] = META_SPR[r]; }
   const H0 = y + alto + 1;
   ZONA_DIN.y = H0;
-  const H = H0 + ZONA_DIN.h;
+  ZONA_JEFE.y = H0 + ZONA_DIN.h;
+  const H = ZONA_JEFE.y + ZONA_JEFE.h;
   ATLAS = document.createElement('canvas');
   ATLAS.width = ANCHO; ATLAS.height = H;
   const cx = ATLAS.getContext('2d'), img = cx.createImageData(ANCHO, H), d = img.data;
@@ -1142,20 +1143,24 @@ function pintarNormales(d, ancho, l, x, y) {
 }
 // La zona dinámica: las últimas filas del atlas, para lo que se hornea en marcha (el personaje con su equipo y
 // su aspecto). escribirZona vuelve a llenarla entera y la sube a la tarjeta gráfica.
-const ZONA_DIN = { y: 0, h: 240 };
-function escribirZona(lista) {
-  const A = ATLAS.width, img = new ImageData(A, ZONA_DIN.h), imn = new ImageData(A, ZONA_DIN.h);
+// La zona de los jefes, debajo: el jefe que tienes cerca, horneado con su esqueleto (criaturas-esq.js, JEFE_ESQ).
+const ZONA_DIN = { y: 0, h: 240 }, ZONA_JEFE = { y: 0, h: 1100 };
+function escribirZona(lista, zona = ZONA_DIN) {
+  const A = ATLAS.width, img = new ImageData(A, zona.h), imn = new ImageData(A, zona.h);
+  // de más alto a más bajo (se aprovecha mejor la zona)
+  if (zona !== ZONA_DIN) lista = lista.slice().sort((a, b) => b[1].h - a[1].h || b[1].w - a[1].w);
   let x = 1, y = 1, alto = 0;
   for (const [n, l] of lista) {
     if (x + l.w + 1 > A) { x = 1; y += alto + 2; alto = 0; }
-    if (y + l.h + 1 > ZONA_DIN.h) throw new Error('zona dinámica llena');
-    SPR[n] = { x, y: ZONA_DIN.y + y, w: l.w, h: l.h };
+    if (y + l.h + 1 > zona.h) throw new Error(zona === ZONA_DIN ? 'zona dinámica llena' : 'zona de jefes llena');
+    SPR[n] = { x, y: zona.y + y, w: l.w, h: l.h };
     pintarLienzo(img.data, A, l, x, y); pintarNormales(imn.data, A, l, x, y);
     x += l.w + 2; alto = Math.max(alto, l.h);
   }
-  ATLAS.getContext('2d').putImageData(img, 0, ZONA_DIN.y);
-  ATLAS_N.getContext('2d').putImageData(imn, 0, ZONA_DIN.y);
-  if (typeof GL !== 'undefined') { GL.olvidarUV(lista.map((e) => e[0])); GL.subirZona(0, ZONA_DIN.y, A, ZONA_DIN.h); }
+  ATLAS.getContext('2d').putImageData(img, 0, zona.y);
+  ATLAS_N.getContext('2d').putImageData(imn, 0, zona.y);
+  if (typeof GL !== 'undefined') { GL.olvidarUV(lista.map((e) => e[0])); GL.subirZona(0, zona.y, A, zona.h); }
+  return y + alto + 1;
 }
 
 // Para la interfaz (lienzo 2D): esquina arriba-izquierda, pies o centro.

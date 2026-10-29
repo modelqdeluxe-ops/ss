@@ -585,8 +585,47 @@ function dibujarAviso(x, z, radio, k, estilo = 'circulo', v = 0) {
 }
 // desplazamiento para centrar un modelo horneado (los jefes no se voltean)
 const dxDe = (n) => (META_SPR[n] ? META_SPR[n].dx : 0);
+// Los jefes con esqueleto (criaturas-fichas.js): se hornean al acercarte a su guarida (JEFE_ESQ) y cada uno dice
+// qué cuadro toca en cada estado (cuadroJefe). Lo propio de cada uno (el montículo de Murdo, el vuelo de Tamar, el
+// salto de Grul, Ozmar flotando) se mantiene.
+const JEFE_EXTRA = {
+  topo: { sombra: 1.8 }, reina: { sombra: 2.2, halo: [1.2, 1.8, [0.5, 1, 0.3], 0.16] }, ozmar: { sombra: 1.2, halo: [1.6, 1.2, [0.6, 0.3, 1], 0.22] },
+  hiedra: { sombra: 2.4, halo: [1.6, 2, [0.7, 0.3, 0.9], 0.15] }, tamar: { sombra: 1.8, halo: [2, 1.8, [1, 0.95, 0.7], 0.12] },
+  grul: { sombra: 2.8, halo: [1.8, 2.3, [1, 0.24, 0.7], 0.12] }, centinela: { sombra: 2.2, halo: [3, 2, [0.55, 0.72, 1], 0.14] },
+};
+function dibujarJefeEsq(j) {
+  const D = CRI.DEF[j.id], p = J.jug, lejos = Math.hypot(p.x - j.x, p.y - j.y) / T;
+  if (lejos > 34) return true;
+  if (!JEFE_ESQ.pedir(j.id, lejos < 15)) return true;
+  if (j.estAnt !== j.estado || j.pasoAnt !== j.paso) { j.estT = J.t; j.estAnt = j.estado; j.pasoAnt = j.paso; }
+  if (j.enterradoAnt && !j.enterrado) j.saleT = J.t;
+  j.enterradoAnt = j.enterrado;
+  const x = j.x / T, z = j.y / T + 0.1, X = JEFE_EXTRA[j.id] || {};
+  let alto = ((j.z || 0) / 16) * GL.KY;
+  if (j.id === 'topo' && j.enterrado) {
+    const tiembla = j.t < 0.8 ? Math.sin(J.t * 50) * 0.08 : 0;
+    if (j.t < 0.8) dibujarAviso(x, z, 16, j.t / 0.8, 'grieta', 1);
+    GL.sprite(`monticulo_${Math.floor(J.t * 8) % 2}`, x + tiembla + dxDe('monticulo_0'), z);
+    return true;
+  }
+  if (j.id === 'ozmar') { if (j.invisible) return true; alto = j.estado === 'dormido' ? 0.05 : j.estado === 'cansado' ? 0.08 : 0.3 + Math.sin(J.t * 2.5) * 0.08; }
+  if (j.id === 'tamar') { if (j.estado === 'dormido' && !j.invocar) return true; alto = (j.vuelo || 0) * GL.KY; }
+  if (!D.simetrico && Math.abs(p.x - j.x) > 10 && j.estado !== 'carga') j.mira = p.x >= j.x ? 1 : -1;
+  const flip = !D.simetrico && (j.mira || 1) < 0;
+  const [a, k] = D.cuadroJefe(j, J.t - (j.estT ?? J.t)), A = D.anims[a] || D.anims.q;
+  const f = A.bucle ? Math.floor((((k % 1) + 1) % 1) * A.n) : Math.max(0, Math.min(A.n - 1, Math.floor(k * A.n)));
+  const n = `${j.id}_${a}${f}`, m = META_SPR[n] || {}, dx = (m.dx || 0) * (flip ? -1 : 1);
+  const sacude = j.estado === 'muriendo' ? Math.sin(J.t * 50) * 0.04 : 0;
+  GL.plano('sombra_l', x, z - 0.1, { tinte: [1, 1, 1, Math.max(0.3, 0.85 - alto * 0.15)], escala: (X.sombra || 1.6) + alto * 0.1 });
+  const o = { y: alto - (m.abajo || 0) * GL.KY, flip, unlit: 0.2, blanco: j.flash > 0 ? 0.85 : 0, lx: x, lz: z };
+  GL.sprite(n, x + dx + sacude, z, o);
+  if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + dx + sacude, z + 0.003, { y: o.y, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, j.estado === 'dormido' ? 0.35 : 0.8 + 0.2 * Math.sin(J.t * 3)] });
+  if (X.halo && j.estado !== 'dormido') GL.halo(x, X.halo[0] + alto, z, X.halo[1], X.halo[2], X.halo[3] + 0.05 * Math.sin(J.t * 2.5));
+  return true;
+}
 function dibujarJefe3d(j) {
   if (j.estado === 'muerto') return;
+  if (CRI.DEF[j.id] && CRI.DEF[j.id].jefe && dibujarJefeEsq(j)) return;
   if (DIBUJAR_JEFE[j.id]) { DIBUJAR_JEFE[j.id](j); return; }
   const x = j.x / T, z = j.y / T + 0.1;
   if (j.id === 'topo') {
@@ -782,7 +821,7 @@ async function leerArteCache(clave) {
     if (!v || v.clave !== clave) return false;
     const lienzoDe = async (blob) => { const b = await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }); const c = document.createElement('canvas'); c.width = b.width; c.height = b.height; c.getContext('2d').drawImage(b, 0, 0); return c; };
     ATLAS = await lienzoDe(v.color); ATLAS_N = await lienzoDe(v.normales);
-    Object.assign(SPR, v.spr); Object.assign(META_SPR, v.meta); ZONA_DIN.y = v.zonaY;
+    Object.assign(SPR, v.spr); Object.assign(META_SPR, v.meta); ZONA_DIN.y = v.zonaY; ZONA_JEFE.y = v.zonaJefeY ?? ZONA_DIN.y + ZONA_DIN.h;
     Personaje.inicial();
     return true;
   } catch (e) { return false; }
@@ -792,7 +831,7 @@ async function guardarArteCache(clave) {
     const blob = (c) => new Promise((ok) => c.toBlob(ok, 'image/png'));
     const [color, normales] = await Promise.all([blob(ATLAS), blob(ATLAS_N)]);
     const db = await baseArte();
-    db.transaction('arte', 'readwrite').objectStore('arte').put({ clave, color, normales, spr: SPR, meta: META_SPR, zonaY: ZONA_DIN.y }, 'atlas');
+    db.transaction('arte', 'readwrite').objectStore('arte').put({ clave, color, normales, spr: SPR, meta: META_SPR, zonaY: ZONA_DIN.y, zonaJefeY: ZONA_JEFE.y }, 'atlas');
   } catch (e) { /* sin IndexedDB: se hornea cada vez */ }
 }
 async function prepararArte() {
