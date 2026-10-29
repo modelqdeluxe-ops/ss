@@ -156,6 +156,32 @@ Decisiones ya tomadas con él (no las vuelvas a discutir):
   (`<tipo>_0/1` andar, `_2` preparar, `_3` cargar, `_luz` lo que brilla). Con más cuadros, cambia esas funciones
   para elegir por tiempo y estado (golpe recibido, morir, aparecer).
 
+**HECHO (commits e8d04eff, aca87c99, 725928af):**
+- `js/criaturas-esq.js` (CRI): el motor. Lámina de tamaño libre; piezas con volumen (`cap`, `ovalo`, `poli`), placas
+  talladas con bisel (`placa`, `placaEntre`: la piedra y el metal grandes; las cápsulas a tamaño de jefe parecen
+  globos), varas, rejillas a mano; contorno del tono más oscuro del vecino (o claro arriba con `rampa.arriba`), líneas
+  entre piezas (`rampa.sinLinea` para quitarlas), capa `_luz` y normales de verdad por píxel. Proporciones de
+  humanoide (`prop`: pierna, brazo, hombros, encorvar…), `raiz` (cuánto se desplaza el cuerpo al morir/levantarse),
+  `yaw` (3/4 mirando a la derecha). `CRI.registrar` hornea las criaturas en el atlas (`<tipo>_<anim><f>`) y deja los
+  nombres viejos (`<tipo>_0…3`) como alias (`ALIAS_SPR` en arte.js).
+- `js/criaturas-fichas.js`: las 25 criaturas y los 7 jefes. Animaciones: q quieta, a andar, p preparar, g golpe,
+  r golpe recibido, m morir, n aparecer, e escondida, d despertar (y las de cada jefe).
+- Movimiento: `js/anim-esqueleto.js` (KayKit Skeleton_Warrior, 27 clips), `anim-baba.js` (Slime), `anim-murcielago.js`
+  (Bat), `anim-dragon.js` (Dragon) de Quaternius (CC0; los FBX bajados a `scratchpad/cc0/quat`, ver §2). Gusanos,
+  sanguijuela, tentáculo, Fauce, Lápida, Necrófago, Vhessa e Hiedra con esqueleto hecho a mano en su ficha.
+- Juego: `principal.js` `cuadroCriatura` (cuadro por estado y tiempo; `PREPARA` = lo que tarda cada conducta en
+  soltar el golpe), `animarEsqueleto`, muerte animada en `dibujarCaidos`; jefes en `dibujarJefeEsq` (+ `JEFE_EXTRA`:
+  sombra y halo) y `cuadroJefe` de cada ficha. Los jefes se hornean poco a poco al acercarte (`JEFE_ESQ`, 6 ms por
+  cuadro, entero si ya está a la vista) en `ZONA_JEFE` (2048×1100); el atlas es de 2048 de ancho (2048×2406).
+- Medidas (PIL, `herramientas/hoja-criaturas.cjs`): grutos 16–30 × 23–28 (con arma), Mole 25×42, babas 18–20 × 15–16,
+  jefes de 95×90 (Murdo) a 183×190 (Centinela). 10–31 colores por cuadro. 23–58 cuadros por criatura.
+- Herramientas: `herramientas/criaturas.cjs <salida.png> [tipos] [zoom] [anims]` (hoja sin abrir el juego; los
+  puntos blancos marcan lo que brilla) y `herramientas/hoja-criaturas.cjs` (lo que queda en el atlas del juego).
+- Probado: `probar-todo.cjs` sin errores y «no falta ningún dibujo», FPS como antes; `simular-jefes.cjs` igual.
+- **Para repasar** (se ven bien pero son los más flojos): el cuerpo del Centinela (guanteletes como cajas), Murdo
+  (bola de pelo) y la cola de Tamar. El horneado de criaturas viejas (criaturas3d*, criaturas-mano) sigue corriendo y
+  luego se sustituye: quitarlo ahorra ~0,3 s del primer arranque (§4.7).
+
 ### 4.4 IA y luz (puntos 7 y 8)
 - `js/criaturas.js` («percepción, deambular y turnos»): bajar el alcance de la vista y del oído, y que una criatura
   que te ataca **solo avise a las que están cerca** (radio corto), no a todo el mapa. Medir con
@@ -189,4 +215,6 @@ Decisiones ya tomadas con él (no las vuelvas a discutir):
   cualquier dibujo hecho en el momento; `recortar(L)` recorta al dibujo. Ejemplo (el personaje andando de perfil):
   `node herramientas/vista-mano.cjs /tmp/a.png 8 "Array.from({length:8},(_, f)=>['de a'+f, recortar(PJ_ESQ.cuadro('de','a',f,ASPECTO_INICIAL,null).color)])"`
 - `node herramientas/galeria.cjs <carpeta> [escena]`: capturas del juego en cada zona, jefe, base y criaturas.
+- `node herramientas/criaturas.cjs <salida.png> [tipos,coma] [zoom] [anims]`: las criaturas y jefes con esqueleto,
+  cada animación en una fila (hornea solo esas, en medio segundo).
 - `python3 herramientas/comparar.py antes.png despues.png salida.png`: antes arriba y después abajo.
