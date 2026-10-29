@@ -130,7 +130,7 @@ PANELES.pasos = (ctx) => {
   const lista = M.pasos.filter((p) => J.pasos && J.pasos[p.nombre]);
   const w = Math.min(LW - 20, 190), h = 30 + lista.length * 16, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  texto(ctx, 'PIEDRAS DE PASO', x + 6, y + 6, '#80e0ff', { sombra: COL.negro });
+  texto(ctx, 'Piedras de paso', x + 6, y + 6, '#80e0ff', { sombra: COL.negro });
   cruz(ctx, x + w - 17, y + 3);
   lista.forEach((p, k) => {
     const aqui = p.nombre === J.pasoDesde;
@@ -180,7 +180,7 @@ INTERACCIONES.restos = (o) => {
   J.tablilla = RESTOS[Math.floor(hash2(o.x, o.y, 91) * RESTOS.length)];
   J.panel = 'restos'; Sonido.sfx.menu();
 };
-PANELES.restos = (ctx) => panelMensaje(ctx, 'UN VELADOR', J.tablilla || '', 'CERRAR', () => { J.panel = null; }, '#c8c0a8');
+PANELES.restos = (ctx) => panelMensaje(ctx, 'Un Velador', J.tablilla || '', 'Cerrar', () => { J.panel = null; }, '#c8c0a8');
 
 // ---------------------------------------------------------------- grutos que rezan
 // Las fijas con reza: true se quedan quietas mirando a su ídolo hasta que te acercas o les pegas; entonces se

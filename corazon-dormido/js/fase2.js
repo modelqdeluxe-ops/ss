@@ -32,8 +32,8 @@ function abrirMuralla() {
 // Lo que se puede hacer con USAR cerca aunque no haya un objeto: hablar con un mercader o tocar la Muralla.
 function usoCercano() {
   const m = mercaderCerca();
-  if (m) return { txt: 'HABLAR', fn: () => abrirTienda(m) };
-  if (J.corazonDespierto && !J.murallaAbierta && murallaCerca()) return { txt: 'TOCAR', fn: () => (J.hito.hablo2 ? abrirMuralla() : aviso('Habla antes con el Corazón')) };
+  if (m) return { txt: 'Hablar', fn: () => abrirTienda(m) };
+  if (J.corazonDespierto && !J.murallaAbierta && murallaCerca()) return { txt: 'Tocar', fn: () => (J.hito.hablo2 ? abrirMuralla() : aviso('Habla antes con el Corazón')) };
   return null;
 }
 
@@ -73,8 +73,8 @@ INTERACCIONES.altar_cielo = () => {
   aviso('¡Algo enorme baja del cielo!', null, '#ffd166');
 };
 INTERACCIONES.tablilla = (o) => { const n = (o.datos && o.datos.n) || 0; J.tablilla = TABLILLAS[n % TABLILLAS.length]; J.hito['tablilla_' + n] = true; J.panel = 'tablilla'; Sonido.sfx.menu(); };
-PANELES.tablilla = (ctx) => panelMensaje(ctx, 'TABLILLA', J.tablilla || '', 'CERRAR', () => { J.panel = null; }, '#e8d8a0');
-PANELES.fin2 = (ctx) => panelMensaje(ctx, 'LOS TITANES DESCANSAN', 'Las gemas de Tamar y de Hiedra laten junto al Corazón. Pero la Selva no acaba aquí: detrás, el suelo se hunde en la Ciénaga de la Podre y, más allá, espera la Ciudad Velada, la ciudad de los que levantaron la Muralla.', 'SEGUIR', () => { J.panel = null; guardarPartida(); }, '#9fe0a8');
+PANELES.tablilla = (ctx) => panelMensaje(ctx, 'Tablilla', J.tablilla || '', 'Cerrar', () => { J.panel = null; }, '#e8d8a0');
+PANELES.fin2 = (ctx) => panelMensaje(ctx, 'Los titanes descansan', 'Las gemas de Tamar y de Hiedra laten junto al Corazón. Pero la Selva no acaba aquí: detrás, el suelo se hunde en la Ciénaga de la Podre y, más allá, espera la Ciudad Velada, la ciudad de los que levantaron la Muralla.', 'Seguir', () => { J.panel = null; guardarPartida(); }, '#9fe0a8');
 
 const TIEMPO_INCUBAR = 150;
 INTERACCIONES.incubadora = (o) => { if (!o.datos) o.datos = { huevo: null, t0: 0 }; J.incubadora = o; J.panel = 'incubadora'; Sonido.sfx.menu(); };
@@ -83,29 +83,29 @@ PANELES.incubadora = (ctx) => {
   const o = J.incubadora;
   if (!o || !M.objetos.has(idx(o.x, o.y))) { J.panel = null; return; }
   fondoPanel(ctx);
-  const w = N_BARRA * 19 - 1 + 12, h = 112, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
-  marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  texto(ctx, 'INCUBADORA', x + 6, y + 6, COL.oro, { sombra: COL.negro });
+  const t = TEMAS_ESTACION.incubar, w = Math.min(LW - 14, 300), h = 124, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  marcoTema(ctx, x, y, w, h, t); boton(x, y, w, h, () => {}, { mudo: true });
+  texto(ctx, 'Incubadora', x + 6, y + 6, t.titulo, { sombra: COL.negro });
   cruz(ctx, x + w - 17, y + 3);
   const d = o.datos;
   ranura(ctx, x + 8, y + 20, d.huevo ? { id: d.huevo, n: 1 } : null, false);
   if (!d.huevo) {
-    texto(ctx, 'Toca un huevo de abajo para ponerlo', x + 32, y + 26, COL.suave);
+    texto(ctx, 'Toca un huevo de abajo para ponerlo', x + 32, y + 25, COL.suave);
     const huevos = J.inv.map((s, i) => (s && ITEMS[s.id] && ITEMS[s.id].mascota ? i : -1)).filter((i) => i >= 0);
     huevos.forEach((i, k) => {
       const cx = x + 8 + k * 19, cy = y + 48;
       ranura(ctx, cx, cy, J.inv[i], false);
       boton(cx, cy, 18, 18, () => { d.huevo = J.inv[i].id; d.t0 = J.tiempoMundo; quitar(d.huevo, 1); Sonido.sfx.colocar(); }, { mudo: true });
     });
-    if (!huevos.length) partirTexto('No llevas huevos. Salen de cofres, cajas y del Encapuchado; a veces los suelta algún bicho.', w - 16).forEach((l, k) => texto(ctx, l, x + 8, y + 50 + k * 7, COL.suave));
+    if (!huevos.length) partirTexto('No llevas huevos. Salen de cofres, cajas y del Encapuchado; a veces los suelta algún bicho.', w - 16).forEach((l, k) => texto(ctx, l, x + 8, y + 50 + k * ALTO_LINEA, COL.suave));
   } else if (huevoListo(o)) {
     const mas = ITEMS[d.huevo].mascota;
     texto(ctx, `¡Ha nacido ${ITEMS[mas].nombre}!`, x + 32, y + 22, COL.verde);
-    botonTexto(ctx, x + 32, y + 32, 70, 13, 'SACAR', () => {
+    botonTexto(ctx, x + 32, y + 32, 70, 13, 'Sacar', () => {
       if (agregar(mas, 1)) { aviso('La mochila está llena'); return; }
       avisoRecogido(mas, 1); d.huevo = null; Sonido.sfx.victoria(); J.mascotas[mas] = J.mascotas[mas] || { n: 1, xp: 0 };
     });
-    partirTexto(ITEMS[mas].desc, w - 16).slice(0, 3).forEach((l, k) => texto(ctx, l, x + 8, y + 56 + k * 7, COL.suave));
+    partirTexto(ITEMS[mas].desc, w - 16).slice(0, 3).forEach((l, k) => texto(ctx, l, x + 8, y + 56 + k * ALTO_LINEA, COL.suave));
   } else {
     const k = (J.tiempoMundo - d.t0) / TIEMPO_INCUBAR;
     texto(ctx, `${ITEMS[d.huevo].nombre}: falta ${Math.ceil((1 - k) * TIEMPO_INCUBAR)} s`, x + 32, y + 22, COL.texto);
@@ -253,7 +253,7 @@ PANELES.tienda = (ctx) => {
   cruz(ctx, x + w - 17, y + 3);
   sprCentro(ctx, 'i_moneda', x + 10, y + 19);
   texto(ctx, String(J.cuenta('moneda')), x + 18, y + 17, COL.oro);
-  pestanas(ctx, x + 60, y + 14, [['comprar', 'COMPRAR'], ['vender', 'VENDER']]);
+  pestanas(ctx, x + 60, y + 14, [['comprar', 'Comprar'], ['vender', 'Vender']]);
   const ly = y + 30, lh = h - 36;
   if (UI.pestana === 'vender') {
     rejilla(ctx, J.inv, x + Math.round((w - (N_BARRA * 19 - 1)) / 2), ly, N_BARRA, UI.selInv, (i) => { UI.selInv = J.inv[i] ? i : -1; Sonido.sfx.menu(); });

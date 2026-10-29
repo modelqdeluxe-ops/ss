@@ -11,7 +11,7 @@ const COL = {
 
 function boton(x, y, w, h, fn, o = {}) { UI.botones.push({ x, y, w, h, fn, ...o }); }
 function enBoton(b, x, y) { return x >= b.x && y >= b.y && x < b.x + b.w && y < b.y + b.h; }
-function abrirPanel(p) { if (J.estado !== 'juego') return; J.panel = J.panel === p ? null : p; UI.selInv = -1; UI.selCofre = -1; UI.scroll = 0; }
+function abrirPanel(p) { if (J.estado !== 'juego') return; J.panel = J.panel === p ? null : p; UI.selInv = -1; UI.selCofre = -1; UI.scroll = 0; if (p === 'crear') { J.estacionAbierta = null; UI.selReceta = null; UI.cat = 'todo'; } }
 
 // ---------------------------------------------------------------- entrada
 
@@ -100,7 +100,7 @@ function marco(ctx, x, y, w, h, fondo = COL.fondo) {
 function botonTexto(ctx, x, y, w, h, txt, fn, o = {}) {
   const activo = o.activo !== false;
   marco(ctx, x, y, w, h, o.color || (activo ? COL.boton : COL.botonOff));
-  texto(ctx, txt, x + w / 2, y + Math.floor((h - 5) / 2), activo ? (o.colTexto || COL.texto) : COL.suave, { alin: 'c', sombra: COL.negro });
+  texto(ctx, txt, x + w / 2, y + Math.floor((h - 7) / 2), activo ? (o.colTexto || COL.texto) : COL.suave, { alin: 'c', sombra: COL.negro });
   if (fn) boton(x, y, w, h, fn, o);
 }
 function ranura(ctx, x, y, s, marcada, o = {}) {
@@ -111,7 +111,7 @@ function ranura(ctx, x, y, s, marcada, o = {}) {
   ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x + 1, y + 1, 16, 1);
   if (s && it) {
     sprCentro(ctx, it.icono, x + 9, y + 9);
-    if (s.n > 1) texto(ctx, s.n, x + 17, y + 12, COL.texto, { alin: 'd', borde: COL.negro });
+    if (s.n > 1) texto(ctx, s.n, x + 17, y + 12, COL.texto, { alin: 'd', borde: COL.negro, mini: true });
   } else if (o.vacio) { ctx.globalAlpha = 0.3; sprCentro(ctx, o.vacio, x + 9, y + 9); ctx.globalAlpha = 1; }
 }
 function barra(ctx, x, y, w, h, v, col, fondo = '#3a1a14') {
@@ -134,9 +134,9 @@ function anillo(ctx, cx, cy, r) {
   }
 }
 // Nombre (con el color de su rareza) y descripción de un objeto.
-function infoObjeto(ctx, s, x, y, w, lineasMax = 3) {
+function infoObjeto(ctx, s, x, y, w, lineasMax = 3, sinNombre = false) {
   const it = asegurarItem(s.id);
-  texto(ctx, it.nombre, x, y, RAREZA[it.rareza || 0].color);
+  if (!sinNombre) texto(ctx, it.nombre, x, y, RAREZA[it.rareza || 0].color);
   const extra = [];
   if (it.poder) extra.push(`Poder de minado ${it.poder}`);
   if (it.dano && it.tipo !== 'accesorio' && it.tipo !== 'municion') extra.push(`Daño ${it.dano}`);
@@ -144,7 +144,7 @@ function infoObjeto(ctx, s, x, y, w, lineasMax = 3) {
   if (it.tipo === 'mascota') extra.push(`Nivel ${nivelMascota(s.id)}`);
   if (J.panel === 'tienda' && valorVenta(s.id)) extra.push(`Vale ${valorVenta(s.id)} monedas`);
   const txt = (extra.length ? extra.join(' · ') + '. ' : '') + (it.desc || '');
-  partirTexto(txt, w).slice(0, lineasMax).forEach((l, k) => texto(ctx, l, x, y + 8 + k * 7, COL.suave));
+  partirTexto(txt, w).slice(0, lineasMax).forEach((l, k) => texto(ctx, l, x, y + ALTO_LINEA + 1 + k * ALTO_LINEA, COL.suave));
 }
 
 // ---------------------------------------------------------------- HUD
@@ -181,7 +181,7 @@ function dibujarHUD(ctx) {
   const reg = M.region[idx(Math.floor(ptx), Math.floor(pty))];
   texto(ctx, NOMBRE_REGION[reg] || '', LW - 4, my + mm + 4, COL.suave, { alin: 'd', borde: COL.negro });
   const ob = OBJETIVOS[J.objetivo];
-  if (ob) partirTexto(ob.txt, 90).forEach((l, k) => texto(ctx, l, LW - 4, my + mm + 13 + k * 7, '#ffe9a8', { alin: 'd', borde: COL.negro }));
+  if (ob) partirTexto(ob.txt, 124).forEach((l, k) => texto(ctx, l, LW - 4, my + mm + 13 + k * ALTO_LINEA, '#ffe9a8', { alin: 'd', borde: COL.negro }));
 
   // jefe activo
   const j = Object.values(J.jefes).find((x) => x.activo && x.estado !== 'muerto');
@@ -191,7 +191,7 @@ function dibujarHUD(ctx) {
     barra(ctx, x, y + 8, w, 4, j.vida / j.vidaMax, j.fase === 2 ? '#ff4060' : '#c43b3b');
   }
   J.avisos.forEach((a, k) => {
-    const y = (LW < 300 ? 122 : 40) + k * 11;
+    const y = (LW < 300 ? 122 : 40) + k * 13;
     ctx.globalAlpha = Math.min(1, a.t * 2);
     const w = anchoTexto(a.txt) + (a.icono ? 14 : 0), x0 = Math.round(LW / 2 - w / 2);
     if (a.icono) sprCentro(ctx, a.icono, x0 + 5, y + 2);
@@ -221,7 +221,7 @@ function dibujarHUD(ctx) {
   boton(ax - 18, ay - 18, 36, 36, null, { mantener: true });
   const o = !J.pesca && interactivoCerca(), esp = !J.pesca && !o ? usoCercano() : null;
   if (o) {
-    const que = OBJ[o.tipo].interactua, txt = { crear: 'CREAR', cofre: 'ABRIR', olla: 'COCINAR', cama: 'DORMIR', corazon: 'HABLAR', estatua: o.extra ? 'MIRAR' : 'OFRECER', altar_titan: o.extra ? 'MIRAR' : 'OFRECER', altar_cielo: 'OFRECER', tablilla: 'LEER', incubadora: 'INCUBAR', idolo: 'MIRAR', brasero: o.extra ? 'MIRAR' : 'ENCENDER', palanca: 'TIRAR', empujar: 'EMPUJAR', sellada: 'MIRAR', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'VIAJAR' : 'TOCAR', restos: o.datos && o.datos.visto ? 'MIRAR' : 'REGISTRAR', hablar: 'HABLAR' }[que] || 'USAR';
+    const que = OBJ[o.tipo].interactua, txt = { crear: 'Crear', cofre: 'Abrir', olla: 'Cocinar', cama: 'Dormir', corazon: 'Hablar', estatua: o.extra ? 'Mirar' : 'Ofrecer', altar_titan: o.extra ? 'Mirar' : 'Ofrecer', altar_cielo: 'Ofrecer', tablilla: 'Leer', incubadora: 'Incubar', idolo: 'Mirar', brasero: o.extra ? 'Mirar' : 'Encender', palanca: 'Tirar', empujar: 'Empujar', sellada: 'Mirar', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'Viajar' : 'Tocar', restos: o.datos && o.datos.visto ? 'Mirar' : 'Registrar', hablar: 'Hablar' }[que] || 'Usar';
     botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#3e6a2a' });
   } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#3e6a2a' });
   if (J.cartel) { // nombre de la región al entrar por primera vez
@@ -259,7 +259,7 @@ function iconoAccion() {
 function dibujarPesca(ctx) {
   const ps = J.pesca, w = 120, x = Math.round(LW / 2 - w / 2), y = LH - 64;
   if (ps.estado === 'espera') { texto(ctx, 'Espera a que pique…', LW / 2, y + 6, COL.suave, { alin: 'c', borde: COL.negro }); return; }
-  if (ps.estado === 'pica') { if (Math.floor(J.t * 8) % 2) texto(ctx, '¡TIRA!', LW / 2, y, '#ffd166', { alin: 'c', esc: 2, borde: COL.negro }); return; }
+  if (ps.estado === 'pica') { if (Math.floor(J.t * 8) % 2) texto(ctx, '¡Tira!', LW / 2, y, '#ffd166', { alin: 'c', esc: 2, borde: COL.negro }); return; }
   marco(ctx, x - 4, y - 14, w + 8, 34);
   texto(ctx, ps.lucha ? '¡SUELTA! Está tirando' : 'MANTÉN para recoger', LW / 2, y - 10, ps.lucha ? '#ff8080' : COL.verde, { alin: 'c' });
   barra(ctx, x, y, w, 5, ps.progreso, '#6ab0ff', '#14243a');
@@ -276,13 +276,15 @@ function fondoPanel(ctx, cerrar = true) {
 }
 function cruz(ctx, x, y) {
   marco(ctx, x, y, 13, 13, '#3a1e2e');
-  texto(ctx, '×', x + 5, y + 4, COL.texto);
+  texto(ctx, '×', x + 4, y + 3, COL.texto);
   boton(x - 3, y - 3, 19, 19, () => { J.panel = null; UI.selInv = -1; });
 }
-function pestanas(ctx, x, y, lista) {
+// ancho: lo que hay de sitio (si no caben con 5 px a cada lado, se estrechan)
+function pestanas(ctx, x, y, lista, ancho = 1e9) {
   let px = x;
+  const textos = lista.reduce((a, [, t]) => a + anchoTexto(t), 0), pad = Math.max(2, Math.min(10, Math.floor((ancho - textos - 2 * (lista.length - 1)) / lista.length)));
   for (const [id, txt] of lista) {
-    const w = anchoTexto(txt) + 10, activa = UI.pestana === id;
+    const w = anchoTexto(txt) + pad, activa = UI.pestana === id;
     botonTexto(ctx, px, y, w, 12, txt, () => { UI.pestana = id; UI.selInv = -1; }, { color: activa ? '#7a4a2a' : COL.botonOff, colTexto: activa ? COL.oro : COL.suave });
     px += w + 2;
   }
@@ -296,18 +298,19 @@ function rejilla(ctx, inv, x, y, cols, marcada, al, desde = 0, hasta = inv.lengt
   }
 }
 
+// La mochila (0.8): más ancha, con la rejilla a la izquierda y, a la derecha, lo que llevas puesto y la ficha de lo
+// que tocas, con sus botones.
 function panelMochila(ctx) {
   fondoPanel(ctx);
-  const hab = UI.pestana === 'habilidades';
-  const w = N_BARRA * 19 - 1 + 12, h = hab ? Math.min(LH - 8, 28 + Object.keys(HABILIDADES).length * 14) : UI.pestana === 'diario' || UI.pestana === 'bestiario' ? Math.min(LH - 8, 4 * 19 + 112) : 4 * 19 + 96, x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  const gw = N_BARRA * 19 - 1, w = Math.min(LW - 14, gw + 150), h = Math.min(LH - 8, 4 * 19 + 52), x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => { UI.selInv = -1; }, { mudo: true });
-  pestanas(ctx, x + 5, y + 4, [['mochila', 'MOCHILA'], ['habilidades', 'HABILIDAD'], ['diario', 'DIARIO'], ['bestiario', 'BESTIARIO']]);
+  pestanas(ctx, x + 5, y + 4, [['mochila', 'Mochila'], ['habilidades', 'Habilidades'], ['diario', 'Diario'], ['bestiario', 'Bestiario']], w - 28);
   cruz(ctx, x + w - 17, y + 3);
   if (UI.pestana === 'habilidades') { panelHabilidades(ctx, x, y, w, h); return; }
   if (UI.pestana === 'diario') { panelDiario(ctx, x, y, w, h); return; }
   if (UI.pestana === 'bestiario') { panelBestiario(ctx, x, y, w, h); return; }
   // equipo
-  const ey = y + 20;
+  const ey = y + 21;
   const vacios = { mano2: 'i_antorcha', casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
   RANURAS_EQUIPO.forEach((r, k) => {
     const ex = x + 6 + k * 19;
@@ -318,21 +321,27 @@ function panelMochila(ctx) {
     }, { mudo: true });
   });
   const st = J.st || calcularStats();
-  const sx = x + 6 + RANURAS_EQUIPO.length * 19 + 2;
-  texto(ctx, `Vida ${st.vidaMax} Def ${st.def}`, sx, ey + 2, COL.texto);
-  texto(ctx, `Daño ${Math.round(st.dano * 100)}%`, sx, ey + 10, COL.suave);
-  const gy = ey + 23;
+  const sx = x + 6 + RANURAS_EQUIPO.length * 19 + 4;
+  texto(ctx, `Vida ${st.vidaMax}  Def ${st.def}`, sx, ey, COL.texto);
+  texto(ctx, `Daño ${Math.round(st.dano * 100)} %`, sx, ey + ALTO_LINEA, COL.suave);
+  const gy = ey + 24;
   rejilla(ctx, J.inv, x + 6, gy, N_BARRA, UI.selInv, tocarRanura);
-  const s = UI.selInv >= 0 ? J.inv[UI.selInv] : null, iy = gy + 4 * 19 + 5;
+  // la ficha de lo que tocas
+  const dx = x + 6 + gw + 6, dw = x + w - 6 - dx, dy = gy, dh = 4 * 19 - 1;
+  marco(ctx, dx, dy, dw, dh, '#1e140e');
+  const s = UI.selInv >= 0 ? J.inv[UI.selInv] : null;
   if (s) {
-    infoObjeto(ctx, s, x + 6, iy, w - 12, 2);
-    let bx = x + w - 6;
-    const mini = (txt, fn) => { const bw = anchoTexto(txt) + 8; bx -= bw; botonTexto(ctx, bx, iy - 3, bw, 11, txt, fn); bx -= 3; };
-    mini('SOLTAR', () => { const t = J.inv[UI.selInv]; if (t) { soltar(J.jug.x + J.jug.fx * 20, J.jug.y + J.jug.fy * 20, t.id, t.n); J.inv[UI.selInv] = null; UI.selInv = -1; } });
     const it = asegurarItem(s.id);
-    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio' || it.tipo === 'mascota' || VA_EN_MANO2.has(s.id)) mini(VA_EN_MANO2.has(s.id) ? 'A LA OTRA MANO' : 'PONER', () => ponerEquipo(UI.selInv));
-    if (it.tipo === 'comida') mini('COMER', () => { comer(J.inv[UI.selInv]); if (!J.inv[UI.selInv]) UI.selInv = -1; });
-  } else partirTexto('Toca algo para verlo; toca otro hueco para moverlo. La armadura se pone tocándola y luego su hueco.', w - 12).slice(0, 3).forEach((l, k) => texto(ctx, l, x + 6, iy + k * 7, COL.suave));
+    marco(ctx, dx + 4, dy + 4, 22, 22, '#120c08'); sprCentro(ctx, it.icono, dx + 15, dy + 15);
+    partirTexto(it.nombre, dw - 34).slice(0, 2).forEach((l, k) => texto(ctx, l, dx + 30, dy + 5 + k * ALTO_LINEA, RAREZA[it.rareza || 0].color));
+    infoObjeto(ctx, s, dx + 4, dy + 30 - ALTO_LINEA - 1, dw - 8, Math.max(1, Math.floor((dh - 30 - 19) / ALTO_LINEA)), true);
+    const ops = [];
+    if (TIPO_RANURA[it.tipo] || it.tipo === 'accesorio' || it.tipo === 'mascota' || VA_EN_MANO2.has(s.id)) ops.push([VA_EN_MANO2.has(s.id) ? 'Otra mano' : 'Poner', () => ponerEquipo(UI.selInv)]);
+    if (it.tipo === 'comida') ops.push(['Comer', () => { comer(J.inv[UI.selInv]); if (!J.inv[UI.selInv]) UI.selInv = -1; }]);
+    ops.push(['Soltar', () => { const t = J.inv[UI.selInv]; if (t) { soltar(J.jug.x + J.jug.fx * 20, J.jug.y + J.jug.fy * 20, t.id, t.n); J.inv[UI.selInv] = null; UI.selInv = -1; } }]);
+    const bw = Math.floor((dw - 8 - (ops.length - 1) * 2) / ops.length);
+    ops.forEach(([txt, fn], k) => botonTexto(ctx, dx + 4 + k * (bw + 2), dy + dh - 17, bw, 13, anchoTexto(txt) > bw - 4 ? txt.split(' ').pop() : txt, fn, { color: txt === 'Soltar' ? COL.botonOff : COL.boton }));
+  } else partirTexto('Toca algo para verlo. Toca otro hueco para moverlo; la armadura, tócala y luego su hueco.', dw - 8).slice(0, 7).forEach((l, k) => texto(ctx, l, dx + 4, dy + 4 + k * ALTO_LINEA, COL.suave));
 }
 function tocarRanura(i) {
   if (UI.selInv === -1) { if (J.inv[i]) UI.selInv = i; Sonido.sfx.menu(); return; }
@@ -355,62 +364,154 @@ function ponerEquipo(i, ranuraPedida) {
   if (s.n > 1) { s.n--; if (antes && agregar(antes.id, antes.n) > 0) soltar(J.jug.x, J.jug.y, antes.id, antes.n); } else J.inv[i] = antes;
   UI.selInv = -1; Sonido.sfx.metal(); calcularStats();
 }
-function panelHabilidades(ctx, x, y, w) {
-  let fy = y + 22;
-  for (const [id, hb] of Object.entries(HABILIDADES)) {
-    const n = nivel(id), xp = (J.hab[id] && J.hab[id].xp) || 0;
-    texto(ctx, hb.nombre, x + 8, fy, COL.texto);
-    texto(ctx, 'Nv ' + n, x + 82, fy, COL.oro);
-    barra(ctx, x + 104, fy, w - 116, 3, n >= NIVEL_MAX ? 1 : xp / xpNivel(n), '#6ab0ff', '#14243a');
-    texto(ctx, hb.desc, x + 8, fy + 6, COL.suave);
-    fy += 14;
-  }
+function panelHabilidades(ctx, x, y, w, h) {
+  const ids = Object.keys(HABILIDADES), dos = ids.length > 8, cw = dos ? Math.floor((w - 16) / 2) : w - 12, filas = dos ? Math.ceil(ids.length / 2) : ids.length;
+  if (!UI.selHab || !HABILIDADES[UI.selHab]) UI.selHab = ids[0];
+  ids.forEach((id, k) => {
+    const hb = HABILIDADES[id], n = nivel(id), xp = (J.hab[id] && J.hab[id].xp) || 0;
+    const fx = x + 6 + (dos ? Math.floor(k / filas) * (cw + 4) : 0), fy = y + 21 + (k % filas) * 15, sel = UI.selHab === id;
+    ctx.fillStyle = sel ? '#4a2f20' : '#24170f'; ctx.fillRect(fx, fy, cw, 14);
+    texto(ctx, hb.nombre, fx + 3, fy + 3, sel ? COL.oro : COL.texto);
+    texto(ctx, String(n), fx + cw - 3, fy + 3, COL.oro, { alin: 'd' });
+    barra(ctx, fx + cw - 40, fy + 6, 22, 2, n >= NIVEL_MAX ? 1 : xp / xpNivel(n), '#6ab0ff', '#14243a');
+    boton(fx, fy, cw, 14, () => { UI.selHab = id; Sonido.sfx.menu(); }, { mudo: true });
+  });
+  const hb = HABILIDADES[UI.selHab], dy = y + 21 + filas * 15 + 3;
+  texto(ctx, `${hb.nombre}, nivel ${nivel(UI.selHab)}`, x + 6, dy, COL.oro);
+  partirTexto(hb.desc, w - 12).slice(0, 2).forEach((l, k) => texto(ctx, l, x + 6, dy + ALTO_LINEA + k * ALTO_LINEA, COL.suave));
 }
 
+// ---------------------------------------------------------------- crear: una ventana propia para cada estación
+// Cada estación abre su ventana (0.8): su nombre y su icono, el marco de su material (madera para las mesas, metal para
+// los yunques, ascuas para el horno), pestañas por tipo de objeto, la rejilla de lo que se hace ahí y, al lado, la
+// ficha de lo elegido con sus materiales y los botones de crear (uno o cinco). Sin estación (el botón de crear), lo
+// básico y lo de las estaciones que tengas cerca.
+const TEMAS_ESTACION = {
+  madera: { fondo: '#2a1b14', borde: '#8a5a36', luz: '#c89058', sombra: '#5a3822', hondo: '#1a110c', titulo: '#f2c14e', boton: '#4a2f20' },
+  metal: { fondo: '#1a1d24', borde: '#5c6474', luz: '#a8b2c4', sombra: '#2e3440', hondo: '#0f1116', titulo: '#d8e6f8', boton: '#2e3644' },
+  horno: { fondo: '#221410', borde: '#7a3e22', luz: '#e8803c', sombra: '#3e1a0e', hondo: '#140a06', titulo: '#ffc060', boton: '#4a2216' },
+  cocina: { fondo: '#261a12', borde: '#8a5236', luz: '#d0905a', sombra: '#4a2a18', hondo: '#160e08', titulo: '#ffcf7a', boton: '#5a3420' },
+  incubar: { fondo: '#14201e', borde: '#3e7068', luz: '#8ad0c4', sombra: '#1e3a36', hondo: '#0a1210', titulo: '#b8ffe8', boton: '#244a44' },
+};
+const CATEGORIAS = [
+  ['todo', 'Todo', () => true],
+  ['armas', 'Armas', (t) => ['espada', 'maza', 'arco', 'municion'].includes(t)],
+  ['armadura', 'Armadura', (t) => ['casco', 'peto', 'botas', 'accesorio'].includes(t)],
+  ['utiles', 'Útiles', (t) => ['pico', 'azada', 'cana', 'regadera', 'bomba', 'regreso', 'especial', 'mascota', 'semilla', 'hacha'].includes(t)],
+  ['casa', 'Casa', (t) => ['colocable', 'bloque', 'suelo'].includes(t)],
+  ['otros', 'Otros', (t) => ['material', 'comida'].includes(t)],
+];
+function familiaEstacion(e) {
+  const icono = (e && ITEMS[e] && ITEMS[e].icono) || 'ui_crear';
+  if (!e) return { nombre: 'Crear', sub: 'A mano y con lo que tengas cerca', tema: TEMAS_ESTACION.madera, icono, vale: null };
+  if (NIVEL_MESA[e]) return { nombre: NOMBRE_ESTACION[e], sub: 'Herramientas, muebles y útiles', tema: TEMAS_ESTACION.madera, acento: OBJ[e] && OBJ[e].mapa, icono, vale: (r) => !r.est || (NIVEL_MESA[r.est] && NIVEL_MESA[r.est] <= NIVEL_MESA[e]) };
+  if (NIVEL_YUNQUE[e]) return { nombre: NOMBRE_ESTACION[e], sub: 'Armas y armaduras', verbo: 'Forjar', tema: TEMAS_ESTACION.metal, acento: OBJ[e] && OBJ[e].mapa, icono, vale: (r) => r.est && NIVEL_YUNQUE[r.est] && NIVEL_YUNQUE[r.est] <= NIVEL_YUNQUE[e] };
+  if (e === 'horno') return { nombre: 'Horno', sub: 'Funde el mineral en lingotes', verbo: 'Fundir', tema: TEMAS_ESTACION.horno, icono, fuego: true, vale: (r) => r.est === 'horno' };
+  return { nombre: NOMBRE_ESTACION[e] || 'Crear', sub: '', tema: TEMAS_ESTACION.madera, icono, vale: (r) => r.est === e };
+}
+function marcoTema(ctx, x, y, w, h, t, fondo) {
+  ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y, w + 2, h); ctx.fillRect(x, y - 1, w, h + 2);
+  ctx.fillStyle = t.borde; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = t.luz; ctx.fillRect(x + 1, y, w - 2, 1); ctx.fillRect(x, y + 1, 1, h - 2);
+  ctx.fillStyle = t.sombra; ctx.fillRect(x + 1, y + h - 1, w - 2, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 2);
+  ctx.fillStyle = fondo || t.fondo; ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+}
+function botonTema(ctx, x, y, w, h, txt, fn, t, o = {}) {
+  const activo = o.activo !== false;
+  marcoTema(ctx, x, y, w, h, t, activo ? (o.color || t.boton) : t.hondo);
+  texto(ctx, txt, x + w / 2, y + Math.floor((h - 7) / 2), activo ? (o.colTexto || COL.texto) : COL.suave, { alin: 'c', sombra: COL.negro });
+  if (fn) boton(x, y, w, h, fn, o);
+}
+function crearVarias(r, n) {
+  let k = 0;
+  while (k < n && crear(r)) k++;
+  if (k) { particulas(J.jug.x, J.jug.y - 10, 6 + k * 2, ['#f2c14e', '#ffffff'], { vel: 40, brilla: true }); if (k > 1) aviso(`Creaste ${k}`); }
+  return k;
+}
 function panelCrear(ctx) {
   fondoPanel(ctx);
-  const w = Math.min(LW - 12, 240), h = LH - 12, x = Math.round(LW / 2 - w / 2), y = 6;
-  marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  texto(ctx, 'CREAR', x + 6, y + 6, COL.oro, { sombra: COL.negro });
-  cruz(ctx, x + w - 17, y + 3);
+  const F = familiaEstacion(J.estacionAbierta), t = F.tema;
+  const w = Math.min(LW - 14, 390), h = Math.min(LH - 10, 214), x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  marcoTema(ctx, x, y, w, h, t); boton(x, y, w, h, () => {}, { mudo: true });
+  // cabecera: icono, nombre y lo que se hace aquí; el horno con su fuego
+  marcoTema(ctx, x + 5, y + 4, 20, 20, t, t.hondo); sprCentro(ctx, F.icono, x + 15, y + 14);
+  texto(ctx, F.nombre, x + 30, y + 5, t.titulo, { sombra: COL.negro });
+  texto(ctx, F.sub, x + 30, y + 15, COL.suave);
+  if (F.acento) { ctx.fillStyle = F.acento; ctx.fillRect(x + 1, y + 27, w - 2, 1); }
+  if (F.fuego) for (let fx = x + 2; fx < x + w - 2; fx += 2) { const k = Math.sin(fx * 0.7 + J.t * 9) * 0.5 + Math.sin(fx * 0.31 - J.t * 5) * 0.5, hh = 2 + Math.round((k + 1) * 1.6); ctx.fillStyle = k > 0.3 ? '#ffd060' : k > -0.3 ? '#ff8a30' : '#c43a10'; ctx.fillRect(fx, y + 28 - hh, 2, hh); }
+  cruz(ctx, x + w - 17, y + 4);
+  // las recetas de esta estación (o, sin estación, lo que puedes hacer o casi)
   const ctxEst = estacionesCerca(), est = ctxEst.est;
-  const nombres = [...est].filter((e) => !(NIVEL_MESA[e] && [...est].some((o) => (NIVEL_MESA[o] || 0) > NIVEL_MESA[e])) && !(NIVEL_YUNQUE[e] && [...est].some((o) => (NIVEL_YUNQUE[o] || 0) > NIVEL_YUNQUE[e])));
-  const cab = (est.size ? 'Cerca: ' + nombres.map((e) => NOMBRE_ESTACION[e]).join(', ') : 'Sin estaciones cerca: solo lo básico') + (ctxEst.cofres.length ? ` · ${ctxEst.cofres.length} cofre${ctxEst.cofres.length > 1 ? 's' : ''}` : '');
-  partirTexto(cab, w - 12).slice(0, 2).forEach((l, k) => texto(ctx, l, x + 6, y + 15 + k * 7, COL.suave));
-  const lista = RECETAS.map((r) => ({ r, ok: puedeCrear(r, ctxEst), est: !r.est || est.has(r.est) }))
-    .filter((e) => e.est || e.ok || Object.keys(e.r.ing).some((id) => cuentaTotal(id, ctxEst) > 0))
-    .sort((a, b) => (b.ok - a.ok) || (b.est - a.est));
-  const ly = y + 30, lh = h - 36, fila = 21;
-  UI.scroll = Math.min(UI.scroll, Math.max(0, lista.length * fila - lh));
-  ctx.save(); ctx.beginPath(); ctx.rect(x + 2, ly, w - 4, lh); ctx.clip();
-  lista.forEach(({ r, ok, est: hayEst }, k) => {
-    const fy = ly + k * fila - Math.round(UI.scroll);
-    if (fy + fila < ly || fy > ly + lh) return;
-    ctx.fillStyle = ok ? '#3e2a1e' : '#24170f'; ctx.fillRect(x + 3, fy, w - 6, fila - 2);
-    if (ok) { ctx.fillStyle = COL.luz; ctx.fillRect(x + 3, fy, 2, fila - 2); }
-    const it = ITEMS[r.item];
-    ranura(ctx, x + 7, fy + 1, { id: r.item, n: r.n }, false);
-    texto(ctx, it.nombre, x + 29, fy + 3, ok ? RAREZA[it.rareza || 0].color : COL.suave);
-    let ix = x + 29;
-    for (const [id, n] of Object.entries(r.ing)) {
-      const tiene = cuentaTotal(id, ctxEst);
-      sprCentro(ctx, ITEMS[id].icono, ix + 5, fy + 14);
-      const t = `${tiene}/${n}`;
-      texto(ctx, t, ix + 12, fy + 12, tiene >= n ? COL.verde : '#ff8080');
-      ix += 16 + anchoTexto(t);
+  if (J.estacionAbierta) est.add(J.estacionAbierta);
+  let todas = RECETAS.map((r) => ({ r, it: ITEMS[r.item], ok: puedeCrear(r, ctxEst), est: !r.est || est.has(r.est) }));
+  todas = F.vale ? todas.filter((e) => F.vale(e.r)) : todas.filter((e) => e.est || e.ok || Object.keys(e.r.ing).some((id) => cuentaTotal(id, ctxEst) > 0));
+  const cats = CATEGORIAS.filter(([id, , f]) => id === 'todo' || todas.some((e) => f(e.it.tipo)));
+  if (!cats.some(([id]) => id === UI.cat)) UI.cat = 'todo';
+  const filtro = cats.find(([id]) => id === UI.cat)[2];
+  const lista = todas.filter((e) => filtro(e.it.tipo)).sort((a, b) => (b.ok - a.ok) || (b.est - a.est));
+  let gy = y + 31;
+  if (cats.length > 2) {
+    let px = x + 6;
+    for (const [id, nombre] of cats) {
+      const tw = anchoTexto(nombre) + 8, act = UI.cat === id;
+      botonTema(ctx, px, gy, tw, 12, nombre, () => { UI.cat = id; UI.scroll = 0; UI.selReceta = null; }, t, { color: act ? t.borde : t.hondo, colTexto: act ? t.titulo : COL.suave });
+      px += tw + 2;
     }
-    if (!hayEst) texto(ctx, NOMBRE_ESTACION[r.est], x + w - 7, fy + 3, '#ffb070', { alin: 'd' });
-    else if (ok) texto(ctx, 'CREAR', x + w - 7, fy + 3, COL.oro, { alin: 'd' });
-    boton(x + 3, Math.max(fy, ly), w - 6, Math.min(fila - 2, ly + lh - fy), () => {
-      if (crear(r)) particulas(J.jug.x, J.jug.y - 10, 8, ['#f2c14e', '#ffffff'], { vel: 40, brilla: true });
-      else if (!hayEst) aviso(`Necesitas estar cerca de: ${NOMBRE_ESTACION[r.est]}`);
-      else aviso('Te faltan materiales');
-    }, { lista: true });
+    gy += 15;
+  }
+  // la rejilla
+  const cols = Math.max(4, Math.min(8, Math.floor((w * 0.5 - 8) / 19))), gx = x + 6, gw = cols * 19 + 1, gh = y + h - 6 - gy;
+  marcoTema(ctx, gx - 1, gy - 1, gw + 2, gh + 2, t, t.hondo);
+  const filas = Math.ceil(lista.length / cols), alto = filas * 19;
+  UI.scroll = Math.max(0, Math.min(UI.scroll, alto - gh));
+  if (!lista.some((e) => e.r === UI.selReceta)) UI.selReceta = lista.length ? lista[0].r : null;
+  ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip();
+  lista.forEach(({ r, it, ok, est: hayEst }, k) => {
+    const cx = gx + 1 + (k % cols) * 19, cy = gy + 1 + Math.floor(k / cols) * 19 - Math.round(UI.scroll);
+    if (cy + 19 < gy || cy > gy + gh) return;
+    const sel = r === UI.selReceta;
+    ranura(ctx, cx, cy, null, sel, { fondo: ok ? '#2a3a22' : t.hondo });
+    ctx.globalAlpha = ok ? 1 : hayEst ? 0.55 : 0.3; sprCentro(ctx, it.icono, cx + 9, cy + 9); ctx.globalAlpha = 1;
+    if (r.n > 1) texto(ctx, r.n, cx + 17, cy + 12, COL.texto, { alin: 'd', borde: COL.negro, mini: true });
+    if (ok) { ctx.fillStyle = COL.oro; ctx.fillRect(cx + 1, cy + 1, 3, 1); ctx.fillRect(cx + 1, cy + 1, 1, 3); }
+    boton(cx, Math.max(cy, gy), 18, Math.min(18, gy + gh - cy), () => { UI.selReceta = r; Sonido.sfx.menu(); }, { lista: true, mudo: true });
   });
   ctx.restore();
-  if (lista.length * fila > lh) {
-    const t = lh / (lista.length * fila), sy = ly + (UI.scroll / (lista.length * fila)) * lh;
-    ctx.fillStyle = COL.borde; ctx.fillRect(x + w - 3, ly, 1, lh); ctx.fillStyle = COL.suave; ctx.fillRect(x + w - 3, Math.round(sy), 1, Math.round(lh * t));
+  if (alto > gh) { const k = gh / alto; ctx.fillStyle = t.borde; ctx.fillRect(gx + gw - 2, gy, 1, gh); ctx.fillStyle = t.luz; ctx.fillRect(gx + gw - 2, Math.round(gy + (UI.scroll / alto) * gh), 1, Math.max(4, Math.round(gh * k))); }
+  if (!lista.length) partirTexto('Aquí todavía no puedes hacer nada.', gw - 8).forEach((l, k) => texto(ctx, l, gx + 4, gy + 4 + k * ALTO_LINEA, COL.suave));
+  // la ficha de lo elegido
+  const dx = gx + gw + 6, dw = x + w - 6 - dx;
+  marcoTema(ctx, dx, gy - 1, dw, gh + 2, t, t.hondo);
+  const sel = lista.find((e) => e.r === UI.selReceta);
+  if (!sel) return;
+  const { r, it, ok, est: hayEst } = sel;
+  marcoTema(ctx, dx + 5, gy + 4, 38, 38, t, '#0c0808');
+  const ri = SPR[it.icono];
+  if (ri) { const k = Math.max(1, Math.floor(32 / Math.max(ri.w, ri.h))); ctx.drawImage(ATLAS, ri.x, ri.y, ri.w, ri.h, Math.round(dx + 24 - (ri.w * k) / 2), Math.round(gy + 23 - (ri.h * k) / 2), ri.w * k, ri.h * k); }
+  let ty = gy + 6;
+  partirTexto(it.nombre + (r.n > 1 ? ` ×${r.n}` : ''), dw - 54).slice(0, 2).forEach((l) => { texto(ctx, l, dx + 48, ty, RAREZA[it.rareza || 0].color); ty += ALTO_LINEA; });
+  const datos = [];
+  if (it.dano) datos.push(`Daño ${it.dano}`);
+  if (it.def) datos.push(`Defensa ${it.def}`);
+  if (it.poder) datos.push(`Minado ${it.poder}`);
+  if (datos.length) { texto(ctx, datos.join(' · '), dx + 48, ty, '#9fd0ff'); ty += ALTO_LINEA; }
+  ty = Math.max(ty, gy + 46);
+  partirTexto(it.desc || '', dw - 10).slice(0, 3).forEach((l) => { texto(ctx, l, dx + 5, ty, COL.suave); ty += ALTO_LINEA; });
+  ty += 3;
+  texto(ctx, 'Necesitas', dx + 5, ty, t.titulo); ty += ALTO_LINEA + 1;
+  for (const [id, n] of Object.entries(r.ing)) {
+    const tiene = cuentaTotal(id, ctxEst), ii = ITEMS[id];
+    sprCentro(ctx, ii.icono, dx + 12, ty + 3);
+    texto(ctx, ii.nombre, dx + 22, ty, COL.texto);
+    texto(ctx, `${tiene}/${n}`, dx + dw - 6, ty, tiene >= n ? COL.verde : '#ff8080', { alin: 'd' });
+    ty += ALTO_LINEA + 2;
+  }
+  const by = gy + gh - 17;
+  if (!hayEst) texto(ctx, 'Se hace en: ' + (NOMBRE_ESTACION[r.est] || r.est), dx + 5, by + 3, '#ffb070');
+  else {
+    const puede5 = ok && Object.entries(r.ing).every(([id, n]) => cuentaTotal(id, ctxEst) >= n * 5);
+    botonTema(ctx, dx + 5, by, dw - 46, 15, F.verbo || 'Crear', () => { if (!crearVarias(r, 1)) aviso('Te faltan materiales'); }, t, { activo: ok, color: '#3e6a2a' });
+    botonTema(ctx, dx + dw - 38, by, 33, 15, '×5', () => crearVarias(r, 5), t, { activo: puede5, color: '#3e6a2a' });
   }
 }
 
@@ -420,46 +521,57 @@ function panelCofre(ctx) {
   fondoPanel(ctx);
   const w = N_BARRA * 19 - 1 + 12, h = 3 * 19 + 4 * 19 + 52, x = Math.round(LW / 2 - w / 2), y = Math.max(3, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  texto(ctx, c.tipo === 'cofre_ruinas' ? 'COFRE ANTIGUO' : 'COFRE', x + 6, y + 6, COL.oro, { sombra: COL.negro });
+  texto(ctx, c.tipo === 'cofre_ruinas' ? 'Cofre antiguo' : 'Cofre', x + 6, y + 6, COL.oro, { sombra: COL.negro });
   cruz(ctx, x + w - 17, y + 3);
   const inv = c.datos.inv;
   rejilla(ctx, inv, x + 6, y + 17, N_BARRA, -1, (i) => pasarPila(inv, i, J.inv));
   const by = y + 17 + 3 * 19 + 3;
-  botonTexto(ctx, x + 6, by, 56, 11, 'APILAR', () => apilarEnCofre(inv));
-  botonTexto(ctx, x + 66, by, 56, 11, 'SACAR TODO', () => { for (let i = 0; i < inv.length; i++) if (inv[i]) pasarPila(inv, i, J.inv); });
-  texto(ctx, 'Toca para pasar', x + w - 6, by + 3, COL.suave, { alin: 'd' });
+  botonTexto(ctx, x + 6, by, anchoTexto('Apilar') + 14, 12, 'Apilar', () => apilarEnCofre(inv));
+  botonTexto(ctx, x + 6 + anchoTexto('Apilar') + 18, by, anchoTexto('Sacar todo') + 14, 12, 'Sacar todo', () => { for (let i = 0; i < inv.length; i++) if (inv[i]) pasarPila(inv, i, J.inv); });
+  texto(ctx, 'Toca para pasar', x + w - 22, y + 6, COL.suave, { alin: 'd' });
   rejilla(ctx, J.inv, x + 6, by + 15, N_BARRA, -1, (i) => pasarPila(J.inv, i, inv));
 }
 
+// La olla (0.8): su ventana, como las de las estaciones. Arriba los dos ingredientes y el plato; abajo lo que llevas
+// que se puede cocinar; a la derecha, el plato que sale y lo que hace.
 function panelOlla(ctx) {
   const o = J.olla;
   if (!o || !M.objetos.has(idx(o.x, o.y))) { J.panel = null; return; }
   fondoPanel(ctx);
-  const w = N_BARRA * 19 - 1 + 12, h = 4 * 19 + 66, x = Math.round(LW / 2 - w / 2), y = Math.max(3, Math.round(LH / 2 - h / 2));
-  marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  texto(ctx, 'OLLA', x + 6, y + 6, COL.oro, { sombra: COL.negro });
-  cruz(ctx, x + w - 17, y + 3);
-  const d = o.datos, sy = y + 18;
-  ranura(ctx, x + 8, sy, d.a ? { id: d.a, n: 1 } : null, false); boton(x + 8, sy, 18, 18, () => { d.a = null; });
-  texto(ctx, '+', x + 31, sy + 7, COL.texto);
-  ranura(ctx, x + 38, sy, d.b ? { id: d.b, n: 1 } : null, false); boton(x + 38, sy, 18, 18, () => { d.b = null; });
-  texto(ctx, '=', x + 61, sy + 7, COL.texto);
-  if (d.a && d.b) {
-    const [a, b] = [d.a, d.b].sort(), id = registrarPlato(a, b), it = ITEMS[id];
-    ranura(ctx, x + 68, sy, { id, n: 1 }, false);
-    texto(ctx, it.nombre, x + 90, sy + 1, RAREZA[it.rareza || 0].color);
-    partirTexto(it.desc, w - 96).slice(0, 2).forEach((l, k) => texto(ctx, l, x + 90, sy + 9 + k * 7, COL.suave));
-  } else texto(ctx, 'Toca dos ingredientes de abajo', x + 72, sy + 7, COL.suave);
-  botonTexto(ctx, x + w - 64, sy + 23, 58, 12, 'COCINAR', () => cocinar(o), { activo: !!(d.a && d.b) });
-  const ingredientes = J.inv.map((s, i) => (s && ITEMS[s.id] && ITEMS[s.id].ingrediente ? i : -1)).filter((i) => i >= 0);
-  texto(ctx, 'Ingredientes', x + 6, sy + 27, COL.suave);
-  const iy = sy + 38;
-  ingredientes.slice(0, 30).forEach((i, k) => {
-    const cx = x + 6 + (k % N_BARRA) * 19, cy = iy + Math.floor(k / N_BARRA) * 19;
+  const t = TEMAS_ESTACION.cocina, w = Math.min(LW - 14, 360), h = Math.min(LH - 10, 168), x = Math.round(LW / 2 - w / 2), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  marcoTema(ctx, x, y, w, h, t); boton(x, y, w, h, () => {}, { mudo: true });
+  marcoTema(ctx, x + 5, y + 4, 20, 20, t, t.hondo); sprCentro(ctx, ITEMS.olla ? ITEMS.olla.icono : 'ui_crear', x + 15, y + 14);
+  texto(ctx, 'Olla', x + 30, y + 5, t.titulo, { sombra: COL.negro });
+  texto(ctx, 'Junta dos ingredientes y cocina', x + 30, y + 15, COL.suave);
+  // vapor
+  for (let k = 0; k < 3; k++) { const vy = y + 26 - ((J.t * 8 + k * 5) % 12); ctx.fillStyle = 'rgba(240,230,220,0.35)'; ctx.fillRect(x + 12 + k * 3 + Math.round(Math.sin(J.t * 3 + k) * 1.5), Math.round(vy), 1, 2); }
+  cruz(ctx, x + w - 17, y + 4);
+  const d = o.datos, lw = 7 * 19 + 1, lx = x + 6, sy = y + 32;
+  ranura(ctx, lx, sy, d.a ? { id: d.a, n: 1 } : null, false); boton(lx, sy, 18, 18, () => { d.a = null; });
+  texto(ctx, '+', lx + 23, sy + 5, COL.texto);
+  ranura(ctx, lx + 30, sy, d.b ? { id: d.b, n: 1 } : null, false); boton(lx + 30, sy, 18, 18, () => { d.b = null; });
+  texto(ctx, '=', lx + 53, sy + 5, COL.texto);
+  const plato = d.a && d.b ? registrarPlato(...[d.a, d.b].sort()) : null;
+  ranura(ctx, lx + 60, sy, plato ? { id: plato, n: 1 } : null, false, { fondo: plato ? '#2a3a22' : COL.ranura });
+  texto(ctx, 'Ingredientes', lx, sy + 24, t.titulo);
+  const iy = sy + 24 + ALTO_LINEA + 2, ingredientes = J.inv.map((q, i) => (q && ITEMS[q.id] && ITEMS[q.id].ingrediente ? i : -1)).filter((i) => i >= 0);
+  marcoTema(ctx, lx - 1, iy - 1, lw + 2, y + h - 6 - iy + 2, t, t.hondo);
+  ingredientes.slice(0, 28).forEach((i, k) => {
+    const cx = lx + 1 + (k % 7) * 19, cy = iy + 1 + Math.floor(k / 7) * 19;
     ranura(ctx, cx, cy, J.inv[i], false);
     boton(cx, cy, 18, 18, () => { const id = J.inv[i].id; if (!d.a) d.a = id; else d.b = id; Sonido.sfx.menu(); }, { mudo: true });
   });
-  if (!ingredientes.length) partirTexto('No llevas ingredientes: bayas, hongos, bulbos, trigo, carne o pescado.', w - 12).forEach((l, k) => texto(ctx, l, x + 6, iy + 4 + k * 7, COL.suave));
+  if (!ingredientes.length) partirTexto('No llevas ingredientes: bayas, hongos, bulbos, trigo, carne o pescado.', lw - 8).forEach((l, k) => texto(ctx, l, lx + 3, iy + 3 + k * ALTO_LINEA, COL.suave));
+  // el plato
+  const dx = lx + lw + 6, dw = x + w - 6 - dx, dy = sy;
+  marcoTema(ctx, dx, dy, dw, y + h - 6 - dy, t, t.hondo);
+  if (plato) {
+    const it = ITEMS[plato];
+    marcoTema(ctx, dx + 4, dy + 4, 22, 22, t, '#0c0806'); sprCentro(ctx, it.icono, dx + 15, dy + 15);
+    partirTexto(it.nombre, dw - 34).slice(0, 2).forEach((l, k) => texto(ctx, l, dx + 30, dy + 5 + k * ALTO_LINEA, RAREZA[it.rareza || 0].color));
+    partirTexto(it.desc || '', dw - 8).slice(0, Math.floor((y + h - 6 - dy - 52) / ALTO_LINEA)).forEach((l, k) => texto(ctx, l, dx + 4, dy + 30 + k * ALTO_LINEA, COL.suave));
+  } else partirTexto('Toca dos ingredientes de abajo. Puedes repetir el mismo.', dw - 8).forEach((l, k) => texto(ctx, l, dx + 4, dy + 4 + k * ALTO_LINEA, COL.suave));
+  botonTema(ctx, dx + 4, y + h - 25, dw - 8, 15, 'Cocinar', () => cocinar(o), t, { activo: !!plato, color: '#3e6a2a' });
 }
 
 function panelMapa(ctx) {
@@ -480,8 +592,8 @@ function panelMapa(ctx) {
   }
   if (J.cama) marca(J.cama.x, J.cama.y, (x, y) => { ctx.fillStyle = '#ff8090'; ctx.fillRect(x - 2, y - 1, 4, 3); });
   marca(cx, cy, (x, y) => { if (Math.floor(J.t * 4) % 2) { ctx.fillStyle = '#fff6c8'; ctx.fillRect(x - 1, y - 1, 3, 3); } });
-  texto(ctx, 'MAPA', 6, 6, COL.oro, { sombra: COL.negro });
-  texto(ctx, 'Solo ves lo que has iluminado', 30, 6, COL.suave);
+  texto(ctx, 'Mapa', 6, 6, COL.oro, { sombra: COL.negro });
+  texto(ctx, 'Solo ves lo que has iluminado', 8 + anchoTexto('Mapa') + 8, 6, COL.suave);
   cruz(ctx, LW - 17, 3);
 }
 
@@ -489,26 +601,26 @@ function panelPausa(ctx) {
   fondoPanel(ctx);
   const w = 120, h = APP ? 128 : 110, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
-  if (APP) botonTexto(ctx, x + 10, y + 111, w - 20, 13, 'SALIR DEL JUEGO', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
-  texto(ctx, 'PAUSA', LW / 2, y + 6, COL.oro, { alin: 'c', sombra: COL.negro });
-  botonTexto(ctx, x + 10, y + 18, w - 20, 15, 'SEGUIR', () => { J.panel = null; });
-  botonTexto(ctx, x + 10, y + 37, w - 20, 15, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
-  botonTexto(ctx, x + 10, y + 56, w - 20, 15, 'MÚSICA: ' + (Musica.activa ? 'SÍ' : 'NO'), () => Musica.alternar());
-  botonTexto(ctx, x + 10, y + 75, w - 20, 15, 'GUARDAR', () => { guardarPartida(); aviso('Partida guardada'); J.panel = null; });
-  botonTexto(ctx, x + 10, y + 94, w - 20, 13, 'SALIR AL MENÚ', () => { guardarPartida(); irTitulo(); });
+  if (APP) botonTexto(ctx, x + 10, y + 111, w - 20, 13, 'Salir del juego', () => { guardarPartida(); APP.salir(); }, { color: COL.botonOff });
+  texto(ctx, 'Pausa', LW / 2, y + 6, COL.oro, { alin: 'c', sombra: COL.negro });
+  botonTexto(ctx, x + 10, y + 18, w - 20, 15, 'Seguir', () => { J.panel = null; });
+  botonTexto(ctx, x + 10, y + 37, w - 20, 15, 'Sonido: ' + (Sonido.activo ? 'Sí' : 'No'), () => Sonido.alternar());
+  botonTexto(ctx, x + 10, y + 56, w - 20, 15, 'Música: ' + (Musica.activa ? 'Sí' : 'No'), () => Musica.alternar());
+  botonTexto(ctx, x + 10, y + 75, w - 20, 15, 'Guardar', () => { guardarPartida(); aviso('Partida guardada'); J.panel = null; });
+  botonTexto(ctx, x + 10, y + 94, w - 20, 13, 'Salir al menú', () => { guardarPartida(); irTitulo(); });
 }
 
 function panelMensaje(ctx, titulo, txt, boton1, fn, colorT = COL.oro) {
   fondoPanel(ctx, false);
-  const w = Math.min(LW - 20, 210), lineasT = partirTexto(txt, w - 16), h = 44 + lineasT.length * 8, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
+  const w = Math.min(LW - 20, 300), lineasT = partirTexto(txt, w - 16).slice(0, Math.floor((LH - 70) / ALTO_LINEA)), h = 50 + lineasT.length * ALTO_LINEA, x = Math.round(LW / 2 - w / 2), y = Math.round(LH / 2 - h / 2);
   marco(ctx, x, y, w, h);
   texto(ctx, titulo, LW / 2, y + 7, colorT, { alin: 'c', esc: 2, sombra: COL.negro });
-  lineasT.forEach((l, k) => texto(ctx, l, LW / 2, y + 24 + k * 8, COL.texto, { alin: 'c' }));
-  botonTexto(ctx, Math.round(LW / 2 - 50), y + h - 18, 100, 13, boton1, fn);
+  lineasT.forEach((l, k) => texto(ctx, l, LW / 2, y + 26 + k * ALTO_LINEA, COL.texto, { alin: 'c' }));
+  botonTexto(ctx, Math.round(LW / 2 - 50), y + h - 19, 100, 14, boton1, fn);
 }
 function panelCorazon(ctx) {
   const n = Object.keys(J.estatuas).length;
-  panelMensaje(ctx, 'EL CORAZÓN', `Latidos: ${n}/3. ` + palabrasCorazon().join(' '), 'SEGUIR', () => { J.panel = null; }, '#ff9ab8');
+  panelMensaje(ctx, 'El Corazón', `Latidos: ${n}/3. ` + palabrasCorazon().join(' '), 'Seguir', () => { J.panel = null; }, '#ff9ab8');
 }
 
 function dibujarPanel(ctx) {
@@ -519,8 +631,8 @@ function dibujarPanel(ctx) {
   else if (J.panel === 'mapa') panelMapa(ctx);
   else if (J.panel === 'pausa') panelPausa(ctx);
   else if (J.panel === 'corazon') panelCorazon(ctx);
-  else if (J.panel === 'muerto') panelMensaje(ctx, 'TE DESMAYASTE', 'Te desmayas en la oscuridad. Lo que llevabas sigue contigo.', 'DESPERTAR', revivir, '#ff6b6b');
-  else if (J.panel === 'fin') panelMensaje(ctx, 'EL CORAZÓN DESPIERTA', 'Los tres guardianes descansan y el Corazón late con fuerza. Habla con él: te dirá cómo abrir la Gran Muralla. Al otro lado espera la Selva Esmeralda.', 'SEGUIR', () => { J.panel = null; guardarPartida(); });
+  else if (J.panel === 'muerto') panelMensaje(ctx, 'Te desmayaste', 'Te desmayas en la oscuridad. Lo que llevabas sigue contigo.', 'Despertar', revivir, '#ff6b6b');
+  else if (J.panel === 'fin') panelMensaje(ctx, 'El Corazón despierta', 'Los tres guardianes descansan y el Corazón late con fuerza. Habla con él: te dirá cómo abrir la Gran Muralla. Al otro lado espera la Selva Esmeralda.', 'Seguir', () => { J.panel = null; guardarPartida(); });
   else if (PANELES[J.panel]) PANELES[J.panel](ctx);
 }
 
@@ -536,9 +648,9 @@ function sprGrande(ctx, n, cx, pie, k) {
 function dibujarAspecto(ctx) {
   const A = UI.aspecto;
   ctx.fillStyle = 'rgba(6,4,10,0.72)'; ctx.fillRect(0, 0, LW, LH);
-  texto(ctx, 'TU DESPIERTO', LW / 2, 8, '#f2e4d0', { alin: 'c', esc: 2, borde: COL.negro });
+  texto(ctx, 'Tu Despierto', LW / 2, 8, '#f2e4d0', { alin: 'c', esc: 2, borde: COL.negro });
   const intro = partirTexto('El último latido del Corazón hizo un cuerpo nuevo en el altar. Eres tú.', LW - 24);
-  intro.forEach((l, k) => texto(ctx, l, LW / 2, 24 + k * 8, '#b8aab8', { alin: 'c', borde: COL.negro }));
+  intro.forEach((l, k) => texto(ctx, l, LW / 2, 24 + k * ALTO_LINEA, '#b8aab8', { alin: 'c', borde: COL.negro }));
   const k = LH >= 200 ? 3 : 2, pie = Math.round(LH * 0.66);
   // de frente quieto y de perfil andando (esqueleto.js); cada cuadro está recortado: se coloca por los pies
   const nq = (PJ_ESQ.ANIMS.q || [, 2])[1], na = (PJ_ESQ.ANIMS.a || [, 6])[1];
@@ -561,8 +673,8 @@ function dibujarAspecto(ctx) {
     botonTexto(ctx, x0 + w - 16, y, 16, 14, '>', () => cambia(1));
     y += 18;
   }
-  botonTexto(ctx, x0, y + 4, w, 16, 'DESPERTAR', () => { UI.creando = false; J.aspectoNuevo = Object.assign({}, A); empezar(false); }, { color: '#5e1430' });
-  botonTexto(ctx, 8, LH - 22, 54, 14, 'VOLVER', () => { UI.creando = false; });
+  botonTexto(ctx, x0, y + 4, w, 16, 'Despertar', () => { UI.creando = false; J.aspectoNuevo = Object.assign({}, A); empezar(false); }, { color: '#5e1430' });
+  botonTexto(ctx, 8, LH - 22, 54, 14, 'Volver', () => { UI.creando = false; });
 }
 // Pantalla de carga mientras se genera o se carga el mundo: negro, el Corazón que late y una barra fina.
 function dibujarCarga(ctx) {
@@ -573,10 +685,10 @@ function dibujarCarga(ctx) {
   ctx.fillStyle = '#8a1a3a'; circulo(ctx, cx - r * 0.45, cy - r * 0.2, r * 0.62); circulo(ctx, cx + r * 0.45, cy - r * 0.2, r * 0.62);
   ctx.beginPath(); ctx.moveTo(cx - r * 1.05, cy); ctx.lineTo(cx, cy + r * 1.15); ctx.lineTo(cx + r * 1.05, cy); ctx.fill();
   ctx.fillStyle = '#ff6a9a'; ctx.fillRect(Math.round(cx - r * 0.55), Math.round(cy - r * 0.45), 2, 2);
-  texto(ctx, 'DESPERTANDO EL MUNDO', cx, cy + 18, '#c86a8a', { alin: 'c' });
+  texto(ctx, 'Despertando el mundo', cx, cy + 18, '#c86a8a', { alin: 'c' });
   texto(ctx, (c.txt || '') + '…', cx, cy + 28, COL.suave, { alin: 'c' });
   if (!c.consejo) c.consejo = CONSEJOS[Math.floor(Math.random() * CONSEJOS.length)];
-  partirTexto(c.consejo, Math.min(LW - 30, 260)).forEach((l, k) => texto(ctx, l, cx, LH - 30 + k * 8, '#8a7a8a', { alin: 'c' }));
+  partirTexto(c.consejo, Math.min(LW - 30, 260)).forEach((l, k) => texto(ctx, l, cx, LH - 30 + k * ALTO_LINEA, '#8a7a8a', { alin: 'c' }));
   const w = Math.min(160, LW - 40), x = Math.round(cx - w / 2), y = cy + 40;
   ctx.fillStyle = '#1a0e14'; ctx.fillRect(x, y, w, 3);
   ctx.fillStyle = '#c83a6a'; ctx.fillRect(x, y, Math.round(w * Math.min(1, c.t)), 3);
@@ -604,22 +716,22 @@ function dibujarTitulo(ctx, hayPartida) {
   ctx.fillStyle = '#5a2a3a'; ctx.fillRect(cxL - an, yf, an * 2 + 1, 1);
   ctx.fillStyle = '#8a4a5e'; ctx.fillRect(cxL - an + 8, yf, an * 2 - 15, 1);
   ctx.fillStyle = '#ff7aa0'; ctx.fillRect(cxL - 1, yf - 1, 3, 3); ctx.fillStyle = '#ffd0e0'; ctx.fillRect(cxL, yf - 2, 1, 5); ctx.fillRect(cxL - 2, yf, 5, 1);
-  partirTexto('Bajo la roca late el corazón de un dios muerto', col - 24).forEach((l, k) => texto(ctx, l, cxL, yf + 7 + k * 8, '#c9a8b4', { alin: 'c', borde: COL.negro }));
+  partirTexto('Bajo la roca late el corazón de un dios muerto', col - 24).forEach((l, k) => texto(ctx, l, cxL, yf + 7 + k * ALTO_LINEA, '#c9a8b4', { alin: 'c', borde: COL.negro }));
   let y = Math.round(LH * 0.56);
   const w = 120, x = Math.round(cxL - w / 2);
-  if (hayPartida) { botonTexto(ctx, x, y, w, 16, 'CONTINUAR', () => empezar(true)); y += 21; }
+  if (hayPartida) { botonTexto(ctx, x, y, w, 16, 'Continuar', () => empezar(true)); y += 21; }
   const confirmar = UI.confirmarNueva > J.t;
-  botonTexto(ctx, x, y, w, 16, confirmar ? '¿SEGURO? TOCA OTRA VEZ' : 'NUEVA PARTIDA', () => {
+  botonTexto(ctx, x, y, w, 16, confirmar ? '¿Seguro? Toca otra vez' : 'Nueva partida', () => {
     if (hayPartida && !confirmar) { UI.confirmarNueva = J.t + 3; return; }
     UI.creando = true; UI.aspecto = Object.assign({}, ASPECTO_INICIAL); Personaje.pedir(UI.aspecto, null);
   }, { color: confirmar ? '#5e1430' : undefined });
   y += 21;
   const w2 = (w - 3) >> 1;
-  botonTexto(ctx, x, y, w2, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
-  botonTexto(ctx, x + w - w2, y, w2, 13, 'MÚSICA: ' + (Musica.activa ? 'SÍ' : 'NO'), () => Musica.alternar());
-  if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'SALIR', () => APP.salir(), { color: COL.botonOff }); }
+  botonTexto(ctx, x, y, w2, 13, 'Sonido: ' + (Sonido.activo ? 'Sí' : 'No'), () => Sonido.alternar());
+  botonTexto(ctx, x + w - w2, y, w2, 13, 'Música: ' + (Musica.activa ? 'Sí' : 'No'), () => Musica.alternar());
+  if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'Salir', () => APP.salir(), { color: COL.botonOff }); }
   if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', cxL, Math.round(LH * 0.56) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
-  const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', cxL * 2 - 12);
-  pie.forEach((l, k) => texto(ctx, l, cxL, LH - 10 - (pie.length - 1 - k) * 8, '#8a7a80', { alin: 'c', borde: COL.negro }));
+  const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · Usar: abrir y hablar', cxL * 2 - 12);
+  pie.forEach((l, k) => texto(ctx, l, cxL, LH - 11 - (pie.length - 1 - k) * ALTO_LINEA, '#8a7a80', { alin: 'c', borde: COL.negro }));
   if (typeof VERSION_JUEGO !== 'undefined') texto(ctx, 'v' + VERSION_JUEGO, LW - 4, LH - 10, '#6a5a60', { alin: 'd', borde: COL.negro });
 }

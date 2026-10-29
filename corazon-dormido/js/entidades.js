@@ -312,7 +312,7 @@ function interactivoCerca() {
 }
 function interactuar(o) {
   const que = OBJ[o.tipo].interactua;
-  if (que === 'crear') { J.panel = 'crear'; UI.scroll = 0; return; }
+  if (que === 'crear') { J.panel = 'crear'; J.estacionAbierta = OBJ[o.tipo].estacion; UI.scroll = 0; UI.selReceta = null; UI.cat = 'todo'; return; }
   if (que === 'cofre') {
     if (!o.datos) o.datos = { inv: new Array(30).fill(null) };
     J.cofreAbierto = o; J.panel = 'cofre'; Sonido.sfx.colocar();

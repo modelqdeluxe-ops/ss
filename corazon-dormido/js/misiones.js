@@ -64,17 +64,17 @@ const HISTORIA = {
   ],
 };
 const ZONA_TABLILLA = (reg) => (reg === REGION.CIENAGA ? 'cienaga' : reg === REGION.CIUDAD || reg === REGION.CRIPTA ? 'ciudad' : reg >= REGION.SELVA && reg !== REGION.SELLADO ? 'selva' : 'interior');
-const TITULO_TABLILLA = { interior: 'TABLILLA', selva: 'TABLILLA DE FUERA', cienaga: 'TABLILLA HUNDIDA', ciudad: 'LIBRO VELADOR' };
+const TITULO_TABLILLA = { interior: 'Tablilla', selva: 'Tablilla de fuera', cienaga: 'Tablilla hundida', ciudad: 'Libro velador' };
 const leerTablillaPuzles = INTERACCIONES.tablilla;
 INTERACCIONES.tablilla = (o) => {
   const d = o.datos || {};
-  if (d.orden || d.clave || d.texto) { leerTablillaPuzles(o); J.tituloTablilla = 'TABLILLA'; return; }
+  if (d.orden || d.clave || d.texto) { leerTablillaPuzles(o); J.tituloTablilla = 'Tablilla'; return; }
   const zona = ZONA_TABLILLA(M.region[idx(o.x, o.y)]), lista = HISTORIA[zona], k = (d.n || 0) % lista.length;
-  J.tablilla = `«${lista[k]}»`; J.tituloTablilla = o.tipo === 'atril' ? 'LIBRO VELADOR' : TITULO_TABLILLA[zona];
+  J.tablilla = `«${lista[k]}»`; J.tituloTablilla = o.tipo === 'atril' ? 'Libro velador' : TITULO_TABLILLA[zona];
   J.hito[`leida_${zona}_${k}`] = true;
   J.panel = 'tablilla'; Sonido.sfx.menu();
 };
-PANELES.tablilla = (ctx) => panelMensaje(ctx, J.tituloTablilla || 'TABLILLA', J.tablilla || '', 'CERRAR', () => { J.panel = null; }, '#e8d8a0');
+PANELES.tablilla = (ctx) => panelMensaje(ctx, J.tituloTablilla || 'Tablilla', J.tablilla || '', 'Cerrar', () => { J.panel = null; }, '#e8d8a0');
 const leidas = () => Object.keys(J.hito).filter((k) => k.startsWith('leida_')).length;
 const TOTAL_TABLILLAS = Object.values(HISTORIA).reduce((a, l) => a + l.length, 0);
 
@@ -131,7 +131,7 @@ item('ojo_velador', { nombre: 'Ojo del Velador', tipo: 'accesorio', luz: 4, suer
 
 const PERSONAJES = {
   archivero: {
-    nombre: 'EL ARCHIVERO', titulo: 'el último Velador', color: '#b4dcff',
+    nombre: 'El Archivero', titulo: 'el último Velador', color: '#b4dcff',
     intro: [
       'Tienes calor. Hace mil años que nadie con calor sube a esta torre.',
       'Soy el Archivero. Cuando los demás se fueron, yo me quedé con los libros. Los libros no saben irse.',
@@ -142,7 +142,7 @@ const PERSONAJES = {
     saludos: ['Sigues caliente. Bien.', 'Los libros me han hablado de ti mientras no estabas.', '¿Qué has encontrado ahí fuera?', 'Cuidado con las farolas que parpadean. Alguien se está yendo.'],
   },
   muda: {
-    nombre: 'MUDA', titulo: 'la que dejó de rezar', color: '#ffa424',
+    nombre: 'Muda', titulo: 'la que dejó de rezar', color: '#ffa424',
     intro: [
       'No grites. No llevo máscara: no soy de ellos. Ya no.',
       'Me llaman Muda porque dejé de rezar. Para los míos, quien no reza a la Podre no tiene voz.',
@@ -195,47 +195,47 @@ PANELES.dialogo = (ctx) => {
   const D = J.dialogo; if (!D) { J.panel = null; return; }
   const P = PERSONAJES[D.quien];
   fondoPanel(ctx, false);
-  const w = Math.min(LW - 16, 240), x = Math.round(LW / 2 - w / 2), lineas = partirTexto(D.lineas[D.k] || '', w - 70);
+  const w = Math.min(LW - 16, 320), x = Math.round(LW / 2 - w / 2), lineas = partirTexto(D.lineas[D.k] || '', w - 70);
   const ops = [];
-  if (D.k < D.lineas.length - 1) ops.push(['SIGUE', () => { D.k++; Sonido.sfx.menu(); }]);
+  if (D.k < D.lineas.length - 1) ops.push(['Sigue', () => { D.k++; Sonido.sfx.menu(); }]);
   else {
     if (D.intro) J.hito['conoce_' + D.quien] = true;
     for (const [id, e] of Object.entries(ENCARGOS)) {
       if (e.de !== D.quien || J.encargos[id] === 'hecho') continue;
       if (e.requiere && J.encargos[e.requiere] !== 'hecho') continue;
       if (J.encargos[id] === 'activo') {
-        if (encargoListo(id)) ops.push(['ENTREGAR: ' + e.nombre, () => {
+        if (encargoListo(id)) ops.push(['Entregar: ' + e.nombre, () => {
           if (e.pide) for (const [it, n] of e.pide) quitar(it, n);
           J.encargos[id] = 'hecho'; darPremio(e.premio); Sonido.sfx.victoria();
           J.dialogo = { quien: D.quien, lineas: [e.linea], k: 0 };
         }]);
-      } else ops.push(['ENCARGO: ' + e.nombre, () => { J.encargos[id] = 'activo'; Sonido.sfx.nivel(); aviso('Nuevo encargo: ' + e.nombre, null, P.color); J.dialogo = { quien: D.quien, lineas: [e.desc], k: 0 }; }]);
+      } else ops.push(['Encargo: ' + e.nombre, () => { J.encargos[id] = 'activo'; Sonido.sfx.nivel(); aviso('Nuevo encargo: ' + e.nombre, null, P.color); J.dialogo = { quien: D.quien, lineas: [e.desc], k: 0 }; }]);
     }
-    ops.push(['ADIÓS', () => { J.panel = null; J.dialogo = null; }]);
+    ops.push(['Adiós', () => { J.panel = null; J.dialogo = null; }]);
   }
-  const h = Math.max(70, 30 + lineas.length * 8 + 4 + ops.length * 15), y = Math.max(4, Math.round(LH / 2 - h / 2));
+  const h = Math.max(70, 32 + lineas.length * ALTO_LINEA + 6 + ops.length * 15), y = Math.max(4, Math.round(LH / 2 - h / 2));
   marco(ctx, x, y, w, h); boton(x, y, w, h, () => {}, { mudo: true });
   sprGrande(ctx, D.quien, x + 30, y + 58, 1);
   texto(ctx, P.nombre, x + 62, y + 6, P.color, { sombra: COL.negro });
-  texto(ctx, P.titulo, x + 62, y + 14, COL.suave);
-  lineas.forEach((l, k) => texto(ctx, l, x + 62, y + 26 + k * 8, COL.texto));
-  ops.forEach(([txt, fn], k) => botonTexto(ctx, x + 62, y + h - 4 - (ops.length - k) * 15, w - 68, 13, txt, fn, { color: txt === 'ADIÓS' ? COL.botonOff : '#2a4a5a' }));
+  texto(ctx, P.titulo, x + 62, y + 6 + ALTO_LINEA, COL.suave);
+  lineas.forEach((l, k) => texto(ctx, l, x + 62, y + 30 + k * ALTO_LINEA, COL.texto));
+  ops.forEach(([txt, fn], k) => botonTexto(ctx, x + 62, y + h - 4 - (ops.length - k) * 15, w - 68, 13, txt, fn, { color: txt === 'Adiós' ? COL.botonOff : '#2a4a5a' }));
 };
 
 // ---------------------------------------------------------------- diario y bestiario (pestañas de la mochila)
 function panelDiario(ctx, x, y, w, h) {
   let fy = y + 22;
-  const linea = (txt, color = COL.texto, sangria = 0) => { for (const l of partirTexto(txt, w - 14 - sangria)) { if (fy > y + h - 8) return; texto(ctx, l, x + 7 + sangria, fy, color); fy += 7; } };
-  texto(ctx, 'LO QUE HAY QUE HACER', x + 7, fy, COL.oro); fy += 9;
+  const linea = (txt, color = COL.texto, sangria = 0) => { for (const l of partirTexto(txt, w - 14 - sangria)) { if (fy > y + h - 8) return; texto(ctx, l, x + 7 + sangria, fy, color); fy += ALTO_LINEA; } };
+  texto(ctx, 'Lo que hay que hacer', x + 7, fy, COL.oro); fy += 11;
   linea(J.objetivo < OBJETIVOS.length ? OBJETIVOS[J.objetivo].txt : 'El Corazón late. Por ahora no hay nada más.', '#ffd8a0', 4);
   fy += 3;
-  texto(ctx, 'ENCARGOS', x + 7, fy, COL.oro); fy += 9;
+  texto(ctx, 'Encargos', x + 7, fy, COL.oro); fy += 11;
   const activos = Object.entries(J.encargos || {}).filter(([, v]) => v === 'activo');
   if (!activos.length) linea('Nadie te ha pedido nada. Busca a quien todavía hable: en la Ciénaga y en la Ciudad Velada.', COL.suave, 4);
   for (const [id] of activos) { const e = ENCARGOS[id], [a, b] = progresoEncargo(id); linea(`${e.nombre} (${PERSONAJES[e.de].nombre.toLowerCase()}): ${a}/${b}${a >= b ? ' · ¡listo para entregar!' : ''}`, a >= b ? '#9fffa8' : COL.texto, 4); }
   const hechos = Object.values(J.encargos || {}).filter((v) => v === 'hecho').length;
   fy += 3;
-  texto(ctx, 'LO QUE SABES', x + 7, fy, COL.oro); fy += 9;
+  texto(ctx, 'Lo que sabes', x + 7, fy, COL.oro); fy += 11;
   linea(`Tablillas leídas: ${leidas()}/${TOTAL_TABLILLAS}. Veladores registrados: ${J.hito.restos || 0}. Puertas de runas abiertas: ${contar('puzle_')}/${M.puzles.length}. Encargos cumplidos: ${hechos}/${Object.keys(ENCARGOS).length}.`, COL.suave, 4);
 }
 function panelBestiario(ctx, x, y, w, h) {
@@ -250,7 +250,7 @@ function panelBestiario(ctx, x, y, w, h) {
   });
   // los jefes, en su propia fila: se desvelan al vencerlos
   const jy = y + 22 + Math.ceil(tipos.length / cols) * 19, JM = J.jefesMuertos || {};
-  texto(ctx, 'JEFES', x + 7, jy, COL.oro);
+  texto(ctx, 'Jefes', x + 7, jy, COL.oro);
   BESTIARIO_JEFES.forEach((id, k) => {
     const cx = x + 6 + k * 19, cy = jy + 8, visto = !!JM[id];
     ctx.fillStyle = UI.selBestia === 'j' + k ? '#5a3a2a' : '#22101a'; ctx.fillRect(cx, cy, 18, 18);
@@ -264,14 +264,14 @@ function panelBestiario(ctx, x, y, w, h) {
     const id = BESTIARIO_JEFES[+UI.selBestia.slice(1)], d = JEFES[id];
     if (!JM[id]) { texto(ctx, 'Todavía vive. Lo sabrás cuando no.', x + 7, fy, COL.suave); return; }
     texto(ctx, `${d.nombre}, ${d.titulo}`, x + 7, fy, '#ff9a7a');
-    partirTexto(`«${d.frase}»`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + 9 + k * 7, COL.texto));
+    partirTexto(`«${d.frase}»`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + 9 + k * ALTO_LINEA, COL.texto));
     return;
   }
   const t = tipos[UI.selBestia];
-  if (!t) { partirTexto(`Criaturas conocidas: ${tipos.filter((q) => B[q] > 0).length}/${tipos.length}. Jefes vencidos: ${BESTIARIO_JEFES.filter((q) => JM[q]).length}/${BESTIARIO_JEFES.length}. Toca una para leer su ficha.`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + k * 7, COL.suave)); return; }
+  if (!t) { partirTexto(`Criaturas conocidas: ${tipos.filter((q) => B[q] > 0).length}/${tipos.length}. Jefes vencidos: ${BESTIARIO_JEFES.filter((q) => JM[q]).length}/${BESTIARIO_JEFES.length}. Toca una para leer su ficha.`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + k * ALTO_LINEA, COL.suave)); return; }
   if (!(B[t] > 0)) { texto(ctx, 'Todavía no la conoces. Mata una.', x + 7, fy, COL.suave); return; }
   texto(ctx, `${CRIATURAS[t].nombre} · vencidas: ${B[t]}`, x + 7, fy, COL.oro);
-  partirTexto(`«${FICHAS[t]}»`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + 9 + k * 7, COL.texto));
+  partirTexto(`«${FICHAS[t]}»`, w - 14).forEach((l, k) => texto(ctx, l, x + 7, fy + 9 + k * ALTO_LINEA, COL.texto));
 }
 
 // ---------------------------------------------------------------- objetivos de las bandas (siguen a los de la Selva)

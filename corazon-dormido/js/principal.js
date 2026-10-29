@@ -14,7 +14,9 @@ function ajustar() {
   ESC = Math.max(1, Math.round(Math.min(wd, hd) / 220));
   LW = Math.floor(wd / ESC); LH = Math.floor(hd / ESC);
   lienzo.width = LW; lienzo.height = LH;
-  lienzo.style.width = wc + 'px'; lienzo.style.height = hc + 'px';
+  // a escala entera (cada píxel de la interfaz, ESC×ESC píxeles del aparato): si no, unas columnas salen más anchas
+  // que otras y las letras se deforman; lo que sobra (menos de ESC píxeles) queda a la derecha y abajo
+  lienzo.style.width = (LW * ESC) / dpr + 'px'; lienzo.style.height = (LH * ESC) / dpr + 'px';
   ctx.imageSmoothingEnabled = false;
   GL.ajustar(wc, hc, dpr);
 }
@@ -843,7 +845,7 @@ async function prepararArte() {
   lienzo.width = Math.round(window.innerWidth * dpr / 4); lienzo.height = Math.round(window.innerHeight * dpr / 4);
   lienzo.style.width = window.innerWidth + 'px'; lienzo.style.height = window.innerHeight + 'px';
   ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
-  texto(ctx, 'DESPERTANDO EL MUNDO…', lienzo.width / 2, Math.round(lienzo.height / 2), '#c86a8a', { alin: 'c' });
+  texto(ctx, 'Despertando el mundo…', lienzo.width / 2, Math.round(lienzo.height / 2), '#c86a8a', { alin: 'c' });
   await new Promise((ok) => setTimeout(ok, 30));
   construirArte();
   if (clave) guardarArteCache(clave);
