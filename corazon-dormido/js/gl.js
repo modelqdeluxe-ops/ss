@@ -102,9 +102,13 @@ const GL = (() => {
     if (volteo || dot(n, n) < 0.25) { vec4 nt = texture(uNormales, vUv); n = nt.a > 0.5 ? nt.rgb * 2.0 - 1.0 : vec3(0.0); if (volteo) n.x = -n.x; }
     if (abs(n.x) + abs(n.z) > 0.05) l *= clamp(1.0 + uLado * dot(n.xz, vPend), 0.55, 1.6);
     l = l * l * 2.4;
+    // junto al fuego no se quema el dibujo: la luz fuerte se comprime (el personaje no se vuelve una mancha)
+    l = min(l, 1.0) + max(l - 1.0, 0.0) * 0.35;
     vec2 m = mod(texel, 4.0);
     float b = (BAYER[int(m.y) * 4 + int(m.x)] + 0.5) / 16.0;
-    vec3 lq = floor(l * 7.0 + b) / 7.0;
+    // escalones de luz con trama: 12 y la trama solo en la mitad del escalón (con 7 escalones y trama entera, lo
+    // oscuro se veía como una rejilla)
+    vec3 lq = floor(l * 12.0 + 0.25 + b * 0.5) / 12.0;
     vec3 c = base * mix(lq, vec3(1.0), vExtra.x);
     color = vec4(c * mix(1.0, vTinte.a, uAditivo) * 0.5, t.a * vTinte.a);
   }`;
@@ -145,7 +149,7 @@ const GL = (() => {
     c = mix(vec3(l), c, 1.12);
     c *= mix(uTono, vec3(1.04, 1.0, 0.94), smoothstep(0.02, 0.5, l));
     vec2 q = (vUv - 0.5) * vec2(1.0, 1.25);
-    c *= clamp(1.0 - dot(q, q) * 0.95, 0.0, 1.0);
+    c *= clamp(1.0 - dot(q, q) * 0.7, 0.0, 1.0);
     float n = fract(sin(dot(gl_FragCoord.xy + fract(uT) * 91.0, vec2(12.9898, 78.233))) * 43758.5453);
     c += (n - 0.5) * 0.02 * (0.3 + l);
     o = vec4(c, 1.0);

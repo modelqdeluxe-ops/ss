@@ -220,7 +220,7 @@ function cuadro(ms) {
 }
 function moverCamara(dt) {
   let tx, ty;
-  if (J.estado === 'titulo') { tx = CENTRO * T + 8 + Math.cos(J.t * 0.12) * 40; ty = CENTRO * T + 20 + Math.sin(J.t * 0.12) * 24; }
+  if (J.estado === 'titulo') { tx = CENTRO * T + 8 - LW * 0.19 + Math.cos(J.t * 0.12) * 12; ty = CENTRO * T + 10 + Math.sin(J.t * 0.12) * 8; } // el Corazón a la derecha del menú
   else {
     tx = J.jug.x; ty = J.jug.y - 6;
     // en una pelea con un guardián, la cámara se va un poco hacia él para que se vean los dos
@@ -411,6 +411,18 @@ function dibujarHerramienta3d(p, x, z) {
   const rot = ang + Math.PI / 4, c = Math.cos(rot), s = Math.sin(rot), pts = [];
   for (const [u, v] of [[-2, -r.h + 2], [r.w - 2, -r.h + 2], [r.w - 2, 2], [-2, 2]]) { const ux = u * c - v * s, vy = u * s + v * c; pts.push(cx + ux / px, cy - (vy / px) * GL.KY, z + (delante ? 0.02 : -0.02)); }
   GL.libre(p.swingItem, pts, T4, x, z);
+  // Estela del golpe: el arco que deja la punta, como el cuadro emborronado (smear) que se dibuja a mano en los
+  // golpes rápidos. Se apaga hacia atrás y solo está mientras el arma va deprisa.
+  if (k > 0.12 && k < 0.92 && SPR.blanco) {
+    const tu = r.w - 2, tv = -r.h + 2, n = 8, arco = Math.min(k, 0.7) * 2.4, fuerza = Math.sin(k * Math.PI);
+    const punta = (a, e) => { const cc = Math.cos(a + Math.PI / 4), ss = Math.sin(a + Math.PI / 4); return [cx + ((tu * cc - tv * ss) * e) / px, cy - (((tu * ss + tv * cc) * e) / px) * GL.KY]; };
+    for (let i = 0; i < n; i++) {
+      const a0 = ang - lado * arco * (i / n), a1 = ang - lado * arco * ((i + 1) / n);
+      const [ox0, oy0] = punta(a0, 1.05), [ox1, oy1] = punta(a1, 1.05), [ix1, iy1] = punta(a1, 0.62 + 0.4 * ((i + 1) / n) ** 1.5), [ix0, iy0] = punta(a0, 0.62 + 0.4 * (i / n) ** 1.5);
+      const zz = z + (delante ? 0.015 : -0.025), al = fuerza * 0.95 * (1 - i / n) ** 1.3;
+      GL.libre('blanco', [ox0, oy0, zz, ox1, oy1, zz, ix1, iy1, zz, ix0, iy0, zz], [1, 0.93, 0.78, al], x, z, 1, GL.lotes.brillo);
+    }
+  }
 }
 function dibujarCriatura3d(e) {
   const B = e.flash > 0, x = e.x / T, z = e.y / T + 0.05, c = CRIATURAS[e.tipo];
@@ -646,7 +658,7 @@ function dibujarTextosMundo() {
   for (const n of J.numeros) {
     const p = GL.aPantalla(n.x / T, (n.alto / 16) * GL.KY, n.y / T);
     ctx.globalAlpha = Math.min(1, n.vida * 3);
-    texto(ctx, n.txt, p.x * LW, p.y * LH, n.c, { alin: 'c', borde: COL.negro });
+    texto(ctx, n.txt, p.x * LW, p.y * LH, n.c, { alin: 'c', borde: COL.negro, esc: n.grande && n.vida > 0.45 ? 2 : 1 });
   }
   ctx.globalAlpha = 1;
   if (J.estado !== 'titulo') for (const m of M.mercaderes) {

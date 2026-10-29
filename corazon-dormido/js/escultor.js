@@ -279,7 +279,7 @@ const ESCU = (() => {
       // luz fija: arriba a la izquierda y un poco hacia la cámara
       const L = o.luz || [-0.45, 0.88, 0.25], ll = len3(...L), Lx = L[0] / ll, Ly = L[1] / ll, Lz = L[2] / ll;
       const Vx = 0, Vy = 0.7071, Vz = 0.7071;
-      const amb = o.amb ?? 0.28, envuelve = o.envuelve ?? 0.25;
+      const amb = o.amb ?? 0.28, envuelve = o.envuelve ?? 0.25, contraste = o.contraste ?? 1, realce = o.realce ?? 0;
       const idxC = new Int16Array(U * V).fill(-1), matC = new Int16Array(U * V), nrm = new Float32Array(U * V * 3);
       for (let k = 0; k < U * V; k++) {
         const i = vox[k];
@@ -319,6 +319,8 @@ const ESCU = (() => {
             lum = lum * 0.74 + sp * 0.9;
           }
         }
+        // contraste de tonos (toon): la luz y la sombra se separan con un corte claro en vez de un degradado largo
+        if (!mt.plano) lum = Math.max(0, Math.min(1, (lum - 0.5) * (mt.contraste ?? contraste) + 0.5 + realce));
         const n = mt.r.length;
         let t = lum * n + (mt.tex ? mt.tex(x, y, z, nx, ny, nz) : 0) + (mt.sube || 0);
         idxC[k] = Math.max(0, Math.min(n - 1, Math.floor(t)));
@@ -356,6 +358,56 @@ const ESCU = (() => {
           if (c >= 3) copia[k] = +mejor;
         }
         idxC.set(copia);
+      }
+      // cúmulos: en el pixel art no hay manchas sueltas de uno o dos píxeles (se leen como ruido); cada mancha de
+      // un tono más pequeña que `cumulo` toma el tono vecino del mismo material que más toca. Se respetan el brillo
+      // de los metales y lo que brilla solo (son detalles a propósito).
+      const minC = o.cumulo ?? 2;
+      if (minC > 1) for (let pasada = 0; pasada < 2; pasada++) {
+        const visto = new Uint8Array(U * V), pila = [], comp = [];
+        for (let k0 = 0; k0 < U * V; k0++) {
+          if (idxC[k0] < 0 || visto[k0]) continue;
+          const t0 = idxC[k0], m0 = matC[k0];
+          comp.length = 0; pila.length = 0; pila.push(k0); visto[k0] = 1;
+          while (pila.length) {
+            const k = pila.pop(); comp.push(k);
+            const u = k % U;
+            for (const q of [u > 0 ? k - 1 : -1, u < U - 1 ? k + 1 : -1, k - U, k + U]) {
+              if (q < 0 || q >= U * V || visto[q] || idxC[q] !== t0 || matC[q] !== m0) continue;
+              visto[q] = 1; pila.push(q);
+            }
+          }
+          if (comp.length >= minC) continue;
+          const mt = this.mats[m0];
+          if (mt.luz || mt.detalle || (mt.brillo && t0 >= mt.r.length - 2)) continue;
+          const cuenta = new Map();
+          for (const k of comp) {
+            const u = k % U;
+            for (const q of [u > 0 ? k - 1 : -1, u < U - 1 ? k + 1 : -1, k - U, k + U]) {
+              if (q < 0 || q >= U * V || idxC[q] < 0 || matC[q] !== m0 || idxC[q] === t0) continue;
+              cuenta.set(idxC[q], (cuenta.get(idxC[q]) || 0) + 1);
+            }
+          }
+          let mejor = -1, mc = 0;
+          for (const [t, c] of cuenta) if (c > mc || (c === mc && Math.abs(t - t0) < Math.abs(mejor - t0))) { mejor = t; mc = c; }
+          if (mejor >= 0) for (const k of comp) idxC[k] = mejor;
+        }
+      }
+      // luz de borde: el filo de la silueta que mira a la lámpara (arriba a la izquierda) sube un tono, como el
+      // brillo que el pixel artist pone a mano para despegar la figura del fondo
+      if (o.borde !== false) {
+        const sube = [];
+        for (let v = 0; v < V; v++) for (let u = 0; u < U; u++) {
+          const k = v * U + u;
+          if (idxC[k] < 0) continue;
+          const mt = this.mats[matC[k]];
+          if (mt.plano || mt.luz) continue;
+          const arriba = v === 0 || vox[k - U] < 0, izq = u === 0 || vox[k - 1] < 0;
+          if (!arriba && !izq) continue;
+          const nx = nrm[k * 3], ny = nrm[k * 3 + 1], nz = nrm[k * 3 + 2];
+          if (nx * Lx + ny * Ly + nz * Lz > 0.2) sube.push(k);
+        }
+        for (const k of sube) idxC[k] = Math.min(this.mats[matC[k]].r.length - 1, idxC[k] + 1);
       }
       // a lienzos (con 1 px de margen para el contorno)
       const C = o.contorno !== false ? 1 : 0, LW = U + C * 2, LH = V + C * 2;

@@ -126,7 +126,8 @@ function particulas(x, y, n, colores, o = {}) {
   }
 }
 function efecto(n, cuadros, x, y, z, dur, o = {}) { J.efectos.push({ n, cuadros, x, y, z, dur, t: 0, ...o }); }
-function numero(x, y, txt, c = '#ffffff', alto = 16) { J.numeros.push({ x, y, alto, txt: String(txt), c, vida: 0.8 }); }
+// Los números de daño saltan (suben deprisa y frenan) y se abren un poco hacia un lado para no taparse.
+function numero(x, y, txt, c = '#ffffff', alto = 16) { J.numeros.push({ x, y, alto, txt: String(txt), c, vida: 0.8, vy: 70, dx: (Math.random() - 0.5) * 24, grande: String(txt).endsWith('!') }); }
 function soltar(x, y, id, n) {
   asegurarItem(id);
   for (let i = 0; i < n; i++) {
@@ -505,7 +506,7 @@ function atacar(dano, alcance, angulo, o = {}) {
     herir(e, dano, dx / (d || 1), dy / (d || 1), { ...o, habilidad: 'combate' });
     alguno = true;
   }
-  if (alguno) { J.pausaGolpe = 0.045; ruido(p.x, p.y, 8); }
+  if (alguno) { J.pausaGolpe = Math.max(J.pausaGolpe, 0.045); ruido(p.x, p.y, 8); }
   // las vasijas y huevos se rompen al golpearlos aunque no apuntes
   const { tx, ty } = casillaMira(p), ob = objetoEn(tx, ty);
   if (ob && OBJ[ob.tipo].rompible) golpearObjeto(ob, { dano });
@@ -525,10 +526,13 @@ function herir(e, dano, kx, ky, o = {}) {
   } else J.temblor = Math.max(J.temblor, 0.08);
   if (o.veneno) e.veneno = { dano: o.veneno, t: 3 };
   numero(e.x, e.y, critico ? real + '!' : real, critico ? '#ffd166' : '#ffffff', e.jefe ? 44 : 16);
+  // el peso del golpe: el crítico para más el tiempo y sacude un poco la pantalla
+  if (critico) { J.pausaGolpe = Math.max(J.pausaGolpe, 0.09); J.temblor = Math.max(J.temblor, 0.12); efecto('chispazo', 3, e.x, e.y - 2, e.jefe ? 24 : 10, 0.25); }
   particulas(e.x, e.y - 4, 5, e.colores || ['#ffffff'], { vel: 60, vida: 0.35 });
   Sonido.sfx.golpe();
   if (e.vida <= 0) {
-    if (e.jefe) { e.estado = 'muriendo'; e.t = 1.8; Sonido.sfx.rugido(); return; }
+    if (e.jefe) { e.estado = 'muriendo'; e.t = 1.8; Sonido.sfx.rugido(); J.pausaGolpe = Math.max(J.pausaGolpe, 0.2); return; }
+    J.pausaGolpe = Math.max(J.pausaGolpe, 0.075); J.temblor = Math.max(J.temblor, 0.1);
     morirCriatura(e);
   }
 }
@@ -610,7 +614,7 @@ function actualizarMundoVivo(dt) {
   }
   J.particulas = J.particulas.filter((q) => q.vida > 0);
   if (J.particulas.length > 500) J.particulas.splice(0, J.particulas.length - 500);
-  for (const n of J.numeros) { n.vida -= dt; n.alto += 18 * dt; }
+  for (const n of J.numeros) { n.vida -= dt; n.alto += (n.vy ?? 18) * dt; if (n.vy) { n.vy = Math.max(8, n.vy - 190 * dt); n.x += n.dx * dt; } }
   J.numeros = J.numeros.filter((n) => n.vida > 0);
   for (const e of J.efectos) e.t += dt;
   J.efectos = J.efectos.filter((e) => e.t < e.dur);

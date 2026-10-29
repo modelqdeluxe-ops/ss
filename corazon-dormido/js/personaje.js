@@ -29,9 +29,15 @@ const MATS_ARMADURA = (() => {
 
 const Personaje = (() => {
   const cacheMat = new Map();
-  const tela = (c, o = {}) => { const k = 'tela' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 16, oscuro: 0.32 }), o)); return cacheMat.get(k); };
-  const piel = (c) => { const k = 'piel' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 12, oscuro: 0.5 }), {})); return cacheMat.get(k); };
-  const pelo = (c) => { const k = 'pelo' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 22, oscuro: 0.3 }), {})); return cacheMat.get(k); };
+  // La ropa con un corte de luz claro; la piel suave (sin manchas en la cara); el pelo por mechones (rayas que
+  // salen de la coronilla) y con la banda de brillo que los pixel artists ponen a mano.
+  const tela = (c, o = {}) => { const k = 'tela' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 16, oscuro: 0.32 }), Object.assign({ contraste: 1.2 }, o))); return cacheMat.get(k); };
+  const piel = (c) => { const k = 'piel' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 12, oscuro: 0.5 }), { contraste: 0.8 })); return cacheMat.get(k); };
+  const mechones = (x, y, z) => {
+    const a = Math.atan2(x + 0.5 - 9, z + 0.5 - 8);
+    return (((Math.floor((a + Math.PI) * 4.2) % 3) + 3) % 3 === 0 ? -0.7 : 0) + (y >= 20 && y < 21.6 ? 1.6 : 0);
+  };
+  const pelo = (c) => { const k = 'pelo' + c; if (!cacheMat.has(k)) cacheMat.set(k, ESCU.mat(ESCU.rampa(c, 6, { giro: 15, oscuro: 0.26, claro: 0.75 }), { contraste: 1.35, sube: -0.9, tex: mechones })); return cacheMat.get(k); };
 
   function colores(asp) {
     return {
@@ -52,7 +58,9 @@ const Personaje = (() => {
     m.con({ rot: ['y', ang, [cx, 0, cz]] }, () => {
       // piernas: giran en la cadera
       for (const [lado, s] of [[-1, sw], [1, -sw]]) {
-        m.con({ rot: ['x', -s * 0.6, [cx + lado * 2, 7, cz]] }, () => {
+        // de frente y de espaldas el paso no se ve girando la pierna: el pie que va delante se levanta
+        const alza = anda && o.dir !== 'de' ? Math.max(0, s) * 1.6 : 0;
+        m.con([{ mover: [0, alza, 0] }, { rot: ['x', -s * (o.dir === 'de' ? 0.75 : 0.4), [cx + lado * 2, 7, cz]] }], () => {
           m.capsula([cx + lado * 2, 7, cz], [cx + lado * 2, 2.6, cz], 1.7, 1.5, C.pant);
           m.elipsoide([cx + lado * 2, 1.6, cz + 0.8], [1.8, 1.6, 2.4], C.bota);
           if (eq.botas) {
@@ -79,7 +87,8 @@ const Personaje = (() => {
         // brazos (el derecho lleva la herramienta: en el golpe sube y baja)
         for (const [lado, s] of [[-1, -sw], [1, sw]]) {
           const g = golpe !== null && lado === 1 ? 2.2 - golpe * 3.2 : golpe !== null ? -0.3 : s * 0.65;
-          m.con({ rot: ['x', -g, [cx + lado * 4, 12.2, cz]] }, () => {
+          const abre = o.dir !== 'de' && golpe === null ? lado * (0.12 + Math.abs(s) * 0.25) : 0;
+          m.con([{ rot: ['z', abre, [cx + lado * 4, 12.2, cz]] }, { rot: ['x', -g, [cx + lado * 4, 12.2, cz]] }], () => {
             m.capsula([cx + lado * 4, 12.2, cz], [cx + lado * 4.6, 8.4, cz + 0.4], 1.35, 1.2, C.tunica);
             m.esfera([cx + lado * 4.7, 7.8, cz + 0.5], 1.4, C.piel);
             if (lado === 1) m.marca('mano', cx + lado * 4.7, 7.8, cz + 0.5);
@@ -140,13 +149,19 @@ const Personaje = (() => {
   function hornearCuadro(dir, anim, f, asp, eq) {
     const m = new ESCU.Modelo(18, 30, 18);
     muneco(m, { dir, anim, f, asp, eq });
-    const r = m.hornear({ luz: [-0.5, 0.72, 0.5], amb: 0.32, cima: 0.45, sombra: false });
-    if (dir !== 'ar' && !(eq && eq.casco && false)) {
+    const r = m.hornear({ luz: [-0.5, 0.72, 0.5], amb: 0.32, cima: 0.45, sombra: false, cumulo: 3 });
+    // los ojos: dos píxeles oscuros con un brillo arriba y un poco de rubor debajo, hacia fuera (si el golpe
+    // cierra los ojos, una raya)
+    if (dir !== 'ar') {
+      const cierra = anim === 'g' && f === 1;
       for (const k of dir === 'ab' ? ['ojoI', 'ojoD'] : ['ojoD']) {
         const [x, y] = r.marcas[k];
-        const mt = r.mapa ? r.mapa(x - 0, y) : null;
-        if (!mt || mt.r.length !== 6 || !/^#/.test(mt.r[0]) || !esPiel(mt)) continue;
-        r.color.px(x, y - 1, '#1a1222'); r.color.px(x, y, '#1a1222');
+        const mt = r.mapa ? r.mapa(x, y) : null;
+        if (!mt || !esPiel(mt)) continue;
+        if (cierra) { r.color.px(x, y, '#1a1222'); continue; }
+        r.color.px(x, y - 1, '#1a1222'); r.color.px(x, y, '#2a1a30');
+        const fuera = dir === 'de' ? 1 : k === 'ojoI' ? -1 : 1, mr = r.mapa(x + fuera, y + 1);
+        if (mr && esPiel(mr)) r.color.px(x + fuera, y + 1, ESCU.mezclar(mr.r[3], '#e0505a', 0.45));
       }
     }
     return r;

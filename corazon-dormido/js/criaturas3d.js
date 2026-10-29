@@ -47,7 +47,7 @@ function podre(m, [x, y, z], r, sem = 1) {
 function perfil(nombre, w, h, d, fn, o = {}) {
   const m = new ESCU.Modelo(w, h, d);
   fn(m, d / 2);
-  const r = defModelo(nombre, m, Object.assign({ luz: [-0.5, 0.78, 0.38], amb: 0.27, envuelve: 0.2, cima: o.cima ?? 0.42, sombra: false, tinta: '#05030a' }, o));
+  const r = defModelo(nombre, m, Object.assign({ luz: [-0.5, 0.78, 0.38], amb: 0.27, envuelve: 0.2, cima: o.cima ?? 0.42, sombra: false, tinta: '#05030a', contraste: 1.22, realce: 0.05, cumulo: 3 }, o));
   if (o.cx !== undefined) META_SPR[nombre].dx = r.dx + (w / 2 - o.cx) / 16;
   return r;
 }

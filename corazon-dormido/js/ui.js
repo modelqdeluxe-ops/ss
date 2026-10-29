@@ -577,13 +577,29 @@ function dibujarCarga(ctx) {
 }
 function dibujarTitulo(ctx, hayPartida) {
   if (UI.creando) { dibujarAspecto(ctx); return; }
-  ctx.fillStyle = 'rgba(8,6,12,0.3)'; ctx.fillRect(0, 0, LW, LH);
-  const esc = LW >= 300 ? 3 : 2, y0 = Math.round(LH * 0.16), sacude = Math.sin(J.t * 1.3) * 1.5;
-  texto(ctx, 'CORAZÓN', LW / 2, y0 + sacude, '#ff7aa0', { alin: 'c', esc, borde: '#2a0a18' });
-  texto(ctx, 'DORMIDO', LW / 2, y0 + 9 * esc + 4 + sacude, '#f6ecda', { alin: 'c', esc, borde: COL.negro });
-  texto(ctx, 'Bajo la roca late el corazón de un dios muerto', LW / 2, y0 + 18 * esc + 10, COL.suave, { alin: 'c', borde: COL.negro });
-  let y = Math.round(LH * 0.55);
-  const w = 120, x = Math.round(LW / 2 - w / 2);
+  // Composición: el santuario con el Corazón a la derecha (la cámara se corre) y, a la izquierda, una sombra en
+  // franjas de 3 píxeles (sin degradado liso: es pixel art) con el título y el menú encima.
+  const col = Math.round(LW * 0.6), cxL = Math.round(LW * 0.27);
+  for (let x = 0; x < col; x += 3) { const k = 1 - x / col; ctx.fillStyle = `rgba(6,3,9,${(0.9 * Math.pow(k, 1.25)).toFixed(3)})`; ctx.fillRect(x, 0, 3, LH); }
+  ctx.fillStyle = 'rgba(6,3,9,0.35)'; ctx.fillRect(0, 0, LW, 6); ctx.fillRect(0, LH - 6, LW, 6);
+  const esc = LW >= 300 ? 3 : 2, y0 = Math.round(LH * 0.13);
+  // el latido: dos golpes y una pausa, como el de la pantalla de carga
+  const lat = Math.max(0, Math.sin(J.t * 5.2)) ** 6 + Math.max(0, Math.sin(J.t * 5.2 - 0.9)) ** 6 * 0.6;
+  const g = ctx.createRadialGradient(cxL, y0 + 5 * esc, 2, cxL, y0 + 5 * esc, 40 + lat * 8);
+  g.addColorStop(0, `rgba(255,60,140,${0.22 + lat * 0.18})`); g.addColorStop(1, 'rgba(255,60,140,0)');
+  ctx.fillStyle = g; ctx.fillRect(cxL - 60, y0 - 40, 120, 90);
+  texto(ctx, 'CORAZÓN', cxL, y0 + esc, '#3a0618', { alin: 'c', esc });
+  texto(ctx, 'CORAZÓN', cxL, y0, lat > 0.5 ? '#ffa0c0' : '#ff6a98', { alin: 'c', esc, borde: '#1a0410' });
+  texto(ctx, 'DORMIDO', cxL, y0 + 9 * esc + 3 + esc, '#2a2018', { alin: 'c', esc });
+  texto(ctx, 'DORMIDO', cxL, y0 + 9 * esc + 3, '#f2e6d0', { alin: 'c', esc, borde: COL.negro });
+  // filete con un rombo en medio
+  const yf = y0 + 18 * esc + 8, an = 46;
+  ctx.fillStyle = '#5a2a3a'; ctx.fillRect(cxL - an, yf, an * 2 + 1, 1);
+  ctx.fillStyle = '#8a4a5e'; ctx.fillRect(cxL - an + 8, yf, an * 2 - 15, 1);
+  ctx.fillStyle = '#ff7aa0'; ctx.fillRect(cxL - 1, yf - 1, 3, 3); ctx.fillStyle = '#ffd0e0'; ctx.fillRect(cxL, yf - 2, 1, 5); ctx.fillRect(cxL - 2, yf, 5, 1);
+  partirTexto('Bajo la roca late el corazón de un dios muerto', col - 24).forEach((l, k) => texto(ctx, l, cxL, yf + 7 + k * 8, '#c9a8b4', { alin: 'c', borde: COL.negro }));
+  let y = Math.round(LH * 0.56);
+  const w = 120, x = Math.round(cxL - w / 2);
   if (hayPartida) { botonTexto(ctx, x, y, w, 16, 'CONTINUAR', () => empezar(true)); y += 21; }
   const confirmar = UI.confirmarNueva > J.t;
   botonTexto(ctx, x, y, w, 16, confirmar ? '¿SEGURO? TOCA OTRA VEZ' : 'NUEVA PARTIDA', () => {
@@ -595,7 +611,8 @@ function dibujarTitulo(ctx, hayPartida) {
   botonTexto(ctx, x, y, w2, 13, 'SONIDO: ' + (Sonido.activo ? 'SÍ' : 'NO'), () => Sonido.alternar());
   botonTexto(ctx, x + w - w2, y, w2, 13, 'MÚSICA: ' + (Musica.activa ? 'SÍ' : 'NO'), () => Musica.alternar());
   if (APP) { y += 18; botonTexto(ctx, x, y, w, 13, 'SALIR', () => APP.salir(), { color: COL.botonOff }); }
-  if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', LW / 2, Math.round(LH * 0.55) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
-  const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', LW - 16);
-  pie.forEach((l, k) => texto(ctx, l, LW / 2, LH - 10 - (pie.length - 1 - k) * 8, COL.suave, { alin: 'c', borde: COL.negro }));
+  if (tipoPartida === 'v4' || tipoPartida === 'v3') texto(ctx, tipoPartida === 'v4' ? 'Tu partida pasa al mundo grande: tu casa se queda' : 'Tu partida de la fase 1 pasa al mundo nuevo', cxL, Math.round(LH * 0.56) - 10, '#9fe0a8', { alin: 'c', borde: COL.negro });
+  const pie = partirTexto('Izquierda: moverte · derecha: picar y pelear · USAR: abrir y hablar', cxL * 2 - 12);
+  pie.forEach((l, k) => texto(ctx, l, cxL, LH - 10 - (pie.length - 1 - k) * 8, '#8a7a80', { alin: 'c', borde: COL.negro }));
+  if (typeof VERSION_JUEGO !== 'undefined') texto(ctx, 'v' + VERSION_JUEGO, LW - 4, LH - 10, '#6a5a60', { alin: 'd', borde: COL.negro });
 }

@@ -7,7 +7,7 @@ const MAT_JEFE = (() => {
   return {
     pelaje: mat(['#08070a', '#121014', '#1e1a1e', '#2c2628', '#3c3434', '#4e4442', '#625654'], { tex: (x, y, z) => (ESCU.ruido(x * 1.6, y * 0.7, z * 1.6, 1.3, 201) > 0.62 ? -1 : 0) }),
     pielEnferma: mat(['#1e0c10', '#36161a', '#542428', '#743a38', '#94544c', '#b47264', '#d09482'], { tex: TEX.grumos(203, 1.4, 0.6) }),
-    estrella: mat(['#3a0a14', '#6a1424', '#9a2234', '#c83c48', '#e46a6a', '#f6a09a'], { brillo: 0.6 }),
+    estrella: mat(['#3a0a14', '#6a1424', '#9a2234', '#c83c48', '#e46a6a', '#f6a09a'], { brillo: 0.6, detalle: true }),
     garra: mat(['#2a2014', '#4a3a22', '#6e5a36', '#948050', '#b8a46e', '#d8c896'], { brillo: 0.4 }),
     clavo: mat(['#0e0a08', '#22160e', '#3a2414', '#56361c', '#744c28', '#8e6436', '#a87e4a'], { brillo: 0.5 }),
     tierra: mat(['#100a06', '#20140c', '#322012', '#46301a', '#5c4024', '#74542e'], { tex: TEX.grumos(207, 1.6, 0.9) }),
@@ -15,7 +15,7 @@ const MAT_JEFE = (() => {
     saco: mat(['#16160c', '#2c2a16', '#464222', '#625c32', '#827a46', '#a49a62', '#c6bc86'], { luz: 0.35, tex: (x, y, z) => (ESCU.ruido(x, y, z, 2.2, 213) > 0.62 ? -2 : 0) }),
     ojoInsecto: mat(['#020203', '#08080c', '#121218', '#1e1e28', '#3a3a4c', '#8888a8'], { brillo: 1 }),
     tunica: mat(['#06080e', '#0c1220', '#141c30', '#1e2842', '#2a3654', '#384668'], { tex: TEX.grumos(217, 1.6, 0.5) }),
-    oroViejo: mat(['#1e1206', '#3a240a', '#5a3a10', '#7c5418', '#9e7024', '#be8e38'], { brillo: 0.8 }),
+    oroViejo: mat(['#1e1206', '#3a240a', '#5a3a10', '#7c5418', '#9e7024', '#be8e38'], { brillo: 0.8, detalle: true }),
     porcelana: mat(['#2a2826', '#4a4644', '#6e6a66', '#94908a', '#bab6ae', '#dcd8d0', '#f4f2ec'], { brillo: 0.5 }),
     pluma: mat(['#06060a', '#0e0e14', '#181820', '#24242e', '#32323e', '#42424e', '#56566a'], { tex: (x, y, z) => ((Math.floor(x * 0.7 + y) % 3) === 0 ? -1 : 0) }),
     ojoTitan: mat(['#4a3a06', '#8a700e', '#c8a820', '#f0d850', '#fff4a8', '#ffffff'], { luz: 1, plano: true }),
@@ -26,7 +26,7 @@ const MAT_JEFE = (() => {
 function frontal(nombre, w, h, d, fn, o = {}) {
   const m = new ESCU.Modelo(w, h, d);
   fn(m, w / 2, d / 2);
-  return defModelo(nombre, m, Object.assign({ luz: [-0.5, 0.75, 0.42], amb: 0.25, envuelve: 0.18, cima: o.cima ?? 0.55, sombra: false, tinta: '#05030a' }, o));
+  return defModelo(nombre, m, Object.assign({ luz: [-0.5, 0.75, 0.42], amb: 0.25, envuelve: 0.18, cima: o.cima ?? 0.55, sombra: false, tinta: '#05030a', contraste: 1.22, realce: 0.05, cumulo: 3 }, o));
 }
 // Cambia todos los materiales por piedra (para estatuas). Los que brillan se apagan, salvo si encendida.
 function materialEstatua(encendida) {

@@ -1,4 +1,6 @@
 'use strict';
+// La versión que se ve en el título (la misma que la última línea de VERSIONES.txt)
+const VERSION_JUEGO = '0.8.0';
 // Datos del juego del anillo interior (fase 1). Lo de la Selva Esmeralda (fase 2) está en datos2.js.
 // Para equilibrar o añadir contenido, se toca aquí. Diseño completo en DISEÑO.md.
 
