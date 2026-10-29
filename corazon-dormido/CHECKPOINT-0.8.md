@@ -189,11 +189,23 @@ Decisiones ya tomadas con él (no las vuelvas a discutir):
 - Luz del jugador: `fuentesDinamicas` en `principal.js` (sin antorcha: `r: 6, k: 0.7`; con antorcha `r: 8`). Más
   grande y cálida.
 
+**HECHO 4.4 (commit 1262f443):** vista 5 casillas (a oscuras ×0,65, con luz ×1,2), aviso a las de al lado a 2,5
+casillas y sin cadena, ruido picar 3 / romper 5 / pelear 4 / bomba 9, rastreo raro (32 %, < 16 casillas), pierden
+el interés antes. `simular-ia.cjs` con escenas andando: explorando, 0–1 se enteran por minuto. Luz del personaje r 8,5
+(antorcha r 11), más cálida: el radio iluminado medido pasa de 141 a 313 px (antorcha: de 325 a 439).
+
 ### 4.5 Interfaz (punto 5)
 - Fuente legible (pixel font libre con acentos y ñ: p. ej. «Pixel Operator» CC0 o «Silver» CC-BY 4.0) y el lienzo de
   la interfaz a la resolución real del aparato (ahora es de ~435×206 y se amplía: por eso se lee mal).
 - Paneles nuevos y una **GUI propia para cada mesa/estación** (mesas, yunques, horno, olla, incubadora…): busca en
   `ui.js` qué paneles hay y qué estaciones abren el panel genérico de crear.
+
+**HECHO 4.5 (commit 013ed19e):** letra Pixel Operator 8 (CC0) → `js/glifos8.js` (`herramientas/fuente/glifos.py`),
+interlineado `ALTO_LINEA` = 10, lienzo de la interfaz a escala entera (`principal.js` `ajustar`), textos en minúscula,
+números de las ranuras con la letra de 3×5 (`texto(..., { mini: true })`). Ventana propia por estación (`ui.js`
+`panelCrear` + `familiaEstacion`/`TEMAS_ESTACION`: madera, metal, horno con fuego; pestañas por tipo, rejilla y
+ficha; Crear/Forjar/Fundir y ×5), mochila con ficha, habilidades en dos columnas, olla e incubadora con su ventana,
+mensajes y diálogos que crecen con el texto. Herramientas de captura: ver `scratchpad` (ui.cjs, ui2.cjs).
 
 ### 4.6 Audio (punto 6)
 - Sustituir la música y los efectos sintetizados (`herramientas/musica`, `js/musica.js`, `js/sonido.js`) por
@@ -201,6 +213,14 @@ Decisiones ya tomadas con él (no las vuelvas a discutir):
   Alexander Nakarada) y efectos CC0 (Kenney, OpenGameArt CC0, Freesound CC0). **Comprueba la licencia de cada
   archivo** y apúntala en un `CREDITOS.md` (y en el juego, en créditos). Ojo: no metas MB y MB en el repo sin
   pensarlo (el workflow de Android empaqueta la música).
+
+**HECHO 4.6 (commit 555c9885):** música de Kevin MacLeod (CC BY 4.0) y efectos CC0 de OpenGameArt, elegidos por su
+ficha (el catálogo de incompetech, `pieces.json`: «feel», instrumentos, descripción) y medidos (duración, pico,
+brillo); **nadie los ha escuchado todavía**: que el dueño diga si alguno no le gusta y se cambia en
+`herramientas/audio/bajar.py` (MUSICA / EFECTOS). El script los baja al compilar con su huella y los prepara; el
+workflow de Android lo llama después de componer (lo compuesto queda si algo falla). Créditos en el juego (título y
+pausa) y `CREDITOS.md`. **Sin probar en el CI todavía** (los commits llevan [skip ci]): mirar el paso «Bajar la
+música…» del workflow la primera vez que se compile.
 
 ### 4.7 Después
 - Mundo (suelos y paredes), objetos, el Corazón y los iconos con las mismas reglas. `ARTE.md` (biblia de arte con
