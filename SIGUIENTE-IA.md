@@ -1,5 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **Corazón Dormido (el juego de móvil, `corazon-dormido/`)**: el trabajo en marcha está en
+> **`corazon-dormido/CHECKPOINT-0.8.md`** (rama `claude/magical-hopper-cwbjnh`). Lo de abajo es de TF Client.
+
 > **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
 > AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
 > suelo (CHECKPOINT de `HANDOFF.md`).

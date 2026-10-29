@@ -350,5 +350,21 @@ oHHHHHHHHHo..`,
     MANO.normales(L);
     return { color: L, dx: 0 };
   }
-  return { cuadro, W, H };
+  // La cabeza sola como rejilla de letras (para el esqueleto 2D, esqueleto.js): peinado, coleta o moño y casco. 17×14,
+  // con 2 columnas de margen a cada lado y 3 filas arriba; la fila de abajo es el cuello.
+  function cabeza(dir, asp, eq) {
+    const pein = asp.peinado || 'melena', base = CABEZA[dir][pein] ? pein : pein === 'melena' ? 'melena' : 'corto';
+    const g = Array.from({ length: 14 }, () => Array(17).fill('.'));
+    const poner = (rej, x0, y0, mapa) => MANO.rejilla(rej).forEach((f, y) => [...f].forEach((k, x) => {
+      if (k === '.' || k === ' ') return;
+      const X = x0 + x, Y = y0 + y;
+      if (X >= 0 && Y >= 0 && X < 17 && Y < 14) g[Y][X] = mapa ? mapa[k] || k : k;
+    }));
+    poner(CABEZA[dir][base], 2, 3);
+    const ex = EXTRA[pein] && EXTRA[pein][dir];
+    if (ex) poner(ex.g, 2 + ex.x, 3 + ex.y);
+    if (eq && eq.casco) poner(CASCO[dir], 2, 2, { o: 'c', H: 'C', h: 'k', g: 'K', G: 'X' });
+    return g.map((f) => f.join('')).join('\n');
+  }
+  return { cuadro, cabeza, W, H };
 })();

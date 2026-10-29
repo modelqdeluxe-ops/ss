@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8">
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
+<script type="module">
+// Lee un glTF animado y saca, para cada clip pedido, la posición en el mundo de cada hueso en cada cuadro. Solo el
+// movimiento: el modelo no se usa. window.extraer(url, clips, fps) → { huesos: [...], clips: { nombre: { fps, cuadros: [[x,y,z]...] } } }
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+window.extraer = async (url, pedir, fps = 12, huesosPedidos = null) => {
+  const obj = url.endsWith('.fbx') ? await new FBXLoader().loadAsync(url) : (await new GLTFLoader().loadAsync(url)).scene;
+  const anims = url.endsWith('.fbx') ? obj.animations : (await new GLTFLoader().loadAsync(url)).animations;
+  let huesos = [];
+  obj.traverse((o) => { if (o.isBone) huesos.push(o); });
+  if (huesosPedidos) huesos = huesos.filter((h) => huesosPedidos.includes(h.name));
+  const mixer = new THREE.AnimationMixer(obj), out = { huesos: huesos.map((h) => h.name), clips: {} };
+  const v = new THREE.Vector3(), q = new THREE.Quaternion(), e = new THREE.Vector3();
+  for (const c of anims) {
+    if (pedir && !pedir.includes(c.name)) continue;
+    mixer.stopAllAction();
+    const a = mixer.clipAction(c); a.play();
+    const n = Math.max(1, Math.round(c.duration * fps)), cuadros = [];
+    for (let i = 0; i < n; i++) {
+      mixer.setTime((i / n) * c.duration);
+      obj.updateMatrixWorld(true);
+      cuadros.push(huesos.map((h) => { h.getWorldPosition(v); h.getWorldQuaternion(q); e.set(0, 1, 0).applyQuaternion(q); return [+v.x.toFixed(4), +v.y.toFixed(4), +v.z.toFixed(4), +e.x.toFixed(3), +e.y.toFixed(3), +e.z.toFixed(3)]; }));
+    }
+    out.clips[c.name] = { duracion: +c.duration.toFixed(3), fps, cuadros };
+  }
+  out.todos = anims.map((c) => c.name);
+  return out;
+};
+window.LISTO = true;
+</script>

@@ -9,6 +9,9 @@
 - Responde al dueño en español.
 - Juego para móvil **Corazón Dormido** (`corazon-dormido/`, al estilo de Core Keeper; no tiene que ver con TF Client): lee
   `corazon-dormido/README.md` antes de tocarlo y pruébalo con `node corazon-dormido/herramientas/probar.cjs <carpeta>`.
+  **El trabajo en marcha (0.8, rehacerlo a calidad Core Keeper) está en `corazon-dormido/CHECKPOINT-0.8.md`: léelo
+  entero antes de seguir.** Mientras no esté listo, los commits de `corazon-dormido/` llevan `[skip ci]` (cada push
+  compila el APK y sustituye el que descarga el dueño).
   Skill de pixel art: `.claude/skills/pxl-pixel-art`.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
 - NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.

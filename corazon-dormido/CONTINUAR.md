@@ -1,3 +1,6 @@
+> **Lo último está en [`CHECKPOINT-0.8.md`](CHECKPOINT-0.8.md)** (29 oct 2026: rehacer el juego a calidad Core Keeper,
+> en marcha y sin publicar). Empieza por ahí; lo de abajo es historia de la 0.6–0.7.
+
 # Checkpoint: arte 3D (en marcha, sin publicar)
 
 Lo pidió el dueño tras la 0.5.0: bosses, personaje y objetos se veían planos y feos (los objetos dibujados de

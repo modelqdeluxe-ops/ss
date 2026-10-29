@@ -1,0 +1,6 @@
+{
+  "name": "horno3d",
+  "private": true,
+  "description": "Hornea modelos 3D animados (glTF/FBX, CC0) a hojas de pixel art para Corazón Dormido",
+  "dependencies": { "three": "0.160.0" }
+}
