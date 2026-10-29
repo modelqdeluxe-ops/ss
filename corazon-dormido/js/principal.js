@@ -452,20 +452,63 @@ function dibujarCriatura3d(e) {
   const blanco = B ? 1 : aviso ? 0.55 : 0;
   GL.plano(e.radio > 8 ? 'sombra_m' : 'sombra_s', x, z - 0.04, { tinte: [1, 1, 1, 0.7 - Math.min(0.5, (e.z || 0) / 30)], escala: e.radio > 8 ? 1.3 : 1 });
   let n;
-  if (SPRITE_CRIATURA[e.tipo]) n = SPRITE_CRIATURA[e.tipo](e);
+  const esq = CRI.animsDe(e.tipo);
+  if (esq) n = cuadroCriatura(e, c, esq);
+  else if (SPRITE_CRIATURA[e.tipo]) n = SPRITE_CRIATURA[e.tipo](e);
   else if (c.conducta === 'salta') n = `${e.tipo}_${e.z > 0 ? 2 : e.aplasta > 0 ? 1 : Math.floor(e.t * 3) % 2}`;
   else if (e.tipo.startsWith('larva')) n = `${e.tipo}_${Math.floor(e.t * 6) % 2}`;
   else if (e.tipo === 'seton') n = `seton_${e.estado === 'prepara' ? 2 : Math.floor(e.t * 5) % 2}`;
   else n = `${e.tipo}_${e.reza ? 0 : e.estado === 'prepara' || e.estado === 'conjura' ? 2 : e.estado === 'carga' ? 3 : Math.floor(e.t * 6) % 2}`;
   const flip = e.mira < 0, dx = META_SPR[n] ? META_SPR[n].dx * (flip ? -1 : 1) : 0;
   const alfa = c.translucido ? (e.alfa ?? 1) * (0.6 + 0.2 * Math.sin(J.t * 5 + e.x)) : 1; // los Velados se transparentan
-  const an = animarCriatura(e, n, c);
-  const o = { y: ((e.z || 0) / 16) * GL.KY + an.y, flip, blanco: blanco * 0.85, lx: x, lz: z, tinte: alfa < 1 ? [1, 1, 1, alfa] : undefined, sx: an.sx, sy: an.sy, sesgo: an.sesgo };
+  const an = esq ? animarEsqueleto(e, n, c) : animarCriatura(e, n, c);
+  const o = { y: ((e.z || 0) / 16) * GL.KY + an.y - ((META_SPR[n] && META_SPR[n].abajo) || 0) * GL.KY, flip, blanco: blanco * 0.85, lx: x, lz: z, tinte: alfa < 1 ? [1, 1, 1, alfa] : undefined, sx: an.sx, sy: an.sy, sesgo: an.sesgo };
   GL.sprite(n, x + tiembla + dx, z, o);
   // ojos y Podre: brillan solos en la oscuridad (se ven antes que el cuerpo)
   if (SPR[n + '_luz']) GL.sprite(n + '_luz', x + tiembla + dx, z + 0.003, { y: o.y, flip, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 0.95 * Math.min(1, alfa + 0.2)], sx: an.sx, sy: an.sy, sesgo: an.sesgo });
   e.ultimoSpr = n; e.ultimoDx = dx;
   if (e.estado === 'conjura') GL.halo(x, 1.1, z, 0.6, [0.7, 0.4, 1], 0.4);
+}
+// Qué cuadro toca a una criatura con esqueleto (criaturas-esq.js), por lo que hace y el tiempo: aparecer (n), golpe
+// recibido (r), preparar el ataque (p, al ritmo de lo que tarda en soltarlo), golpear (g: al embestir o justo después
+// de preparar), andar (a, atado a lo que avanza para que los pies no patinen) y quieta (q).
+const PREPARA = { lancea: 0.45, bruto: 0.8, seton: 0.6, escupe: 0.5, chaman: 0.55, jardinero: 0.55, cazador: 0.5, trampa: 0.6, avispa: 0.55, carga: 0.75, tentaculo: 0.4, farol: 0.55, fantasma: 0.6, estatua: 0.85 };
+function cuadroCriatura(e, c, A) {
+  const t = e.tipo, fr = (a, k) => `${t}_${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}`;
+  if (e.estAnt !== e.estado) { if (e.estAnt === 'prepara' || e.estAnt === 'conjura') e.golpeT = J.t; e.estAnt = e.estado; }
+  const vx = e.x - (e.ax ?? e.x), vy = e.y - (e.ay ?? e.y), v = Math.hypot(vx, vy);
+  e.ax = e.x; e.ay = e.y;
+  if (v > 0.04) { e.andaT = J.t; e.paso = (e.paso || 0) + Math.min(v, 4); }
+  const nace = J.t - (e.nace ?? -9), D = CRI.DEF[t];
+  if (A.n && nace < 0.8) return fr('n', (nace / 0.8) * A.n.n);
+  if (e.estado === 'escondida' && A.e) return fr('e', (J.t * 4) % A.e.n);
+  if (e.estado === 'despierta' && A.d) return fr('d', Math.min(0.999, e.t / 0.8) * A.d.n);
+  const g = e.golpeadoT ? J.t - e.golpeadoT : 9;
+  if (c.conducta === 'salta') { // las que saltan: agacharse antes, estirarse en el aire, aplastarse al caer
+    if (e.z > 0) return fr('g', ((1 - Math.max(-1, Math.min(1, (e.vz || 0) / 110))) / 2) * A.g.n);
+    if (e.aplasta > 0) return fr('p', A.p.n - 1);
+    if (A.r && g < 0.3) return fr('r', (g / 0.3) * A.r.n);
+    const espera = e.tipo === 'babosa_roja' ? 0.55 : 0.7;
+    if (e.alerta && e.t > espera - 0.3) return fr('p', Math.min(0.999, (e.t - espera + 0.3) / 0.3) * A.p.n);
+  }
+  if (A.r && g < 0.3 && e.estado !== 'carga') return fr('r', (g / 0.3) * A.r.n);
+  if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);
+  if (A.g && (e.estado === 'carga' || e.estado === 'muerde')) return fr('g', Math.min(0.999, e.t / 0.3) * A.g.n);
+  if (A.g && e.golpeT && J.t - e.golpeT < 0.45) return fr('g', ((J.t - e.golpeT) / 0.45) * A.g.n);
+  if (A.a && J.t - (e.andaT || -9) < 0.12) return fr('a', ((e.paso / (D.zancada || 20)) * A.a.n) % A.a.n);
+  return fr('q', ((J.t * (D.fpsQuieta || 5) + (e.x % 7)) % A.q.n));
+}
+// Las de esqueleto ya se mueven solas: solo el retroceso del golpe y, las que no tienen «aparecer», salir del suelo.
+function animarEsqueleto(e, n, c) {
+  const a = ANIM, px = J.jug ? J.jug.x : e.x;
+  a.sx = 1; a.sy = 1; a.sesgo = 0; a.y = 0;
+  const g = e.golpeadoT ? Math.max(0, 1 - (J.t - e.golpeadoT) / 0.18) : 0;
+  if (g) a.sesgo = 0.06 * g * (Math.sign(e.x - px) || 1);
+  if (!CRI.animsDe(e.tipo).n) {
+    const nace = J.t - (e.nace ?? -9);
+    if (nace < 0.7 && !c.vuela && SPR[n]) { const k = nace / 0.7; a.y -= (1 - k) * (1 - k) * (SPR[n].h / 16) * GL.KY; }
+  }
+  return a;
 }
 // Animación encima de los cuadros horneados: rebote y balanceo al andar, respiración quieta, anticipación antes
 // de atacar (se agacha y se echa atrás), estirón en la embestida, retroceso al recibir, aplastarse al caer de un
@@ -508,6 +551,15 @@ function animarCriatura(e, n, c) {
 // Las que mueren no desaparecen de golpe: caen de lado, se oscurecen y se hunden.
 function dibujarCaidos() {
   for (const q of J.caidos) {
+    if (q.tipo) { // con esqueleto: su animación de morir, quieta en el último cuadro, y luego se oscurece y se hunde
+      const A = CRI.animsDe(q.tipo), nm = A.m.n, f = Math.min(nm - 1, Math.floor((q.t / 0.6) * nm)), n = `${q.tipo}_m${f}`, r = SPR[n], m = META_SPR[n] || {};
+      if (!r) continue;
+      const hunde = Math.max(0, (q.t - 1.1) / 0.7), osc = 1 - 0.55 * Math.min(1, Math.max(0, q.t - 0.5) / 0.6);
+      const dx = (m.dx || 0) * (q.flip ? -1 : 1);
+      GL.sprite(n, q.x + dx, q.z, { flip: q.flip, y: Math.max(0, (q.y || 0) * (1 - Math.min(1, q.t / 0.3))) - hunde * 0.3 - (m.abajo || 0) * GL.KY, tinte: [osc, osc * 0.92, osc, 1 - hunde], blanco: q.t < 0.08 ? 0.9 : 0, lx: q.x, lz: q.z });
+      if (SPR[n + '_luz'] && q.t < 0.5) GL.sprite(n + '_luz', q.x + dx, q.z + 0.003, { flip: q.flip, y: -(m.abajo || 0) * GL.KY, unlit: 1, lote: GL.lotes.brillo, tinte: [1, 1, 1, 1 - q.t * 2] });
+      continue;
+    }
     const k = Math.min(1, q.t / 0.32), hunde = Math.max(0, (q.t - 0.4) / 0.7), r = SPR[q.n];
     if (!r) continue;
     const osc = 1 - 0.55 * Math.min(1, q.t / 0.6), alfa = 1 - hunde;

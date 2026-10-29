@@ -1081,6 +1081,8 @@ function construirIconos() {
 // ---------------------------------------------------------------- atlas
 
 const SPR = {};
+// Nombres que apuntan al dibujo de otro (los cuadros viejos de las criaturas → los del esqueleto): se ponen al empaquetar.
+const ALIAS_SPR = {};
 let ATLAS = null, ATLAS_N = null;
 // Funciones que añaden los archivos de modelos 3D (se llaman al construir el atlas, en orden).
 const CONSTRUIR_MODELOS = [];
@@ -1100,6 +1102,7 @@ function construirArte() {
     SPR[n] = { x, y, w: l.w, h: l.h };
     x += l.w + 2; alto = Math.max(alto, l.h);
   }
+  for (const [a, r] of Object.entries(ALIAS_SPR)) if (SPR[r]) { SPR[a] = SPR[r]; if (META_SPR[r]) META_SPR[a] = META_SPR[r]; }
   const H0 = y + alto + 1;
   ZONA_DIN.y = H0;
   const H = H0 + ZONA_DIN.h;

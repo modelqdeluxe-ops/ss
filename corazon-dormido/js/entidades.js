@@ -609,7 +609,7 @@ function actualizarMundoVivo(dt) {
   J.botines = J.botines.filter((b) => !b.recogido);
   if (J.botines.length > 300) J.botines.splice(0, J.botines.length - 300);
   for (const q of J.caidos) { q.t += dt; if (q.t > 0.3 && !q.polvo) { q.polvo = true; particulas(q.x * T, q.z * T, 8, ['#3a3030', '#5a4a44', '#1e1818'], { vel: 30, vida: 0.5 }); } }
-  J.caidos = J.caidos.filter((q) => q.t < 1.1);
+  J.caidos = J.caidos.filter((q) => q.t < (q.tipo ? 1.8 : 1.1));
   for (const q of J.particulas) {
     q.vida -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
     if (q.g) { q.vz -= q.g * dt; q.z += q.vz * dt; if (q.z < 0) { q.z = 0; q.vz *= -0.3; q.vx *= 0.5; q.vy *= 0.5; } }

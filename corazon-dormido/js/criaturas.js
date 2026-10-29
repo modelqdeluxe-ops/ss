@@ -204,7 +204,8 @@ function avisoSuelo(x, y, r, t, dano, colores, estilo = 'circulo') { J.avisosSue
 function morirCriatura(e) {
   const c = CRIATURAS[e.tipo];
   // el cuerpo cae de lado (se dibuja en dibujarCaidos) en vez de desaparecer
-  if (e.ultimoSpr && !c.fija && J.caidos.length < 12) J.caidos.push({ n: e.ultimoSpr, dx: e.ultimoDx || 0, x: e.x / T, z: e.y / T + 0.05, y: ((e.z || 0) / 16) * GL.KY, flip: e.mira < 0, lado: Math.sign(e.x - J.jug.x) || 1, t: 0 });
+  if (CRI.animsDe(e.tipo) && CRI.animsDe(e.tipo).m && J.caidos.length < 12) J.caidos.push({ tipo: e.tipo, x: e.x / T, z: e.y / T + 0.05, y: ((e.z || 0) / 16) * GL.KY, flip: e.mira < 0, t: 0 });
+  else if (e.ultimoSpr && !c.fija && J.caidos.length < 12) J.caidos.push({ n: e.ultimoSpr, dx: e.ultimoDx || 0, x: e.x / T, z: e.y / T + 0.05, y: ((e.z || 0) / 16) * GL.KY, flip: e.mira < 0, lado: Math.sign(e.x - J.jug.x) || 1, t: 0 });
   particulas(e.x, e.y - 4, 14, e.colores || ['#ffffff'], { vel: 70, vida: 0.6, s: 2 });
   efecto('humo', 4, e.x, e.y + 1, 0, 0.5);
   soltarLista(e.x, e.y, c.botin);
