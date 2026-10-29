@@ -283,8 +283,9 @@ function fuentesDinamicas() {
   const f = [];
   if (J.estado !== 'titulo' && J.estado !== 'muerto') {
     const s = J.inv[J.sel], extra = J.st ? J.st.luz : 0;
-    if ((s && s.id === 'antorcha') || (J.equipo.mano2 && J.equipo.mano2.id === 'antorcha')) f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 8 + extra, c: [1.0, 0.8, 0.52], k: 1.0 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
-    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 6 + extra, c: [1.0, 0.88, 0.7], k: 0.7 });
+    // la luz del personaje (0.8: más grande y más cálida; con antorcha, mucho más)
+    if ((s && s.id === 'antorcha') || (J.equipo.mano2 && J.equipo.mano2.id === 'antorcha')) f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 11 + extra, c: [1.0, 0.74, 0.44], k: 1.08 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
+    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 8.5 + extra, c: [1.0, 0.82, 0.6], k: 0.8 });
   }
   for (const j of Object.values(J.jefes)) {
     if (!j.activo) continue;

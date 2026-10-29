@@ -66,18 +66,20 @@ function veJugador(e) {
 // Las de emboscada tienen su propio disparador (salen cuando pasas cerca); las de distancia atacan desde lejos.
 const EMBOSCADA = new Set(['tentaculo', 'trampa', 'estatua']);
 const A_DISTANCIA = new Set(['escupe', 'chaman', 'jardinero', 'cazador']);
-// Hasta dónde ve (en píxeles): menos si estás a oscuras, más si estás en la luz. Tu antorcha te delata.
+// Hasta dónde ve (en píxeles): poco (0.8: antes 6,5 casillas y te veían «a kilómetros»); menos si estás a oscuras,
+// más si estás en la luz. Tu antorcha te delata.
 function vista(c) {
   const p = J.jug, l = luzEn(Math.floor(p.x / T), Math.floor(p.y / T));
-  return (c.vista || 6.5) * T * (l > 0.5 ? 1.25 : l < 0.15 ? 0.7 : 1);
+  return (c.vista || 5) * T * (l > 0.5 ? 1.2 : l < 0.15 ? 0.65 : 1);
 }
-function alertar(e, grito = true) {
+function alertar(e, grito = true, avisa = true) {
   if (e.alerta) return;
   e.alerta = true; e.vistoT = 0;
   if (EMBOSCADA.has(CRIATURAS[e.tipo].conducta)) return;
   if (grito) { numero(e.x, e.y, '!', '#ff5a40', 30); Sonido.sfx.alerta(); }
-  // avisa a las que están a su lado
-  for (const o of J.enemigos) if (o !== e && !o.alerta && Math.hypot(o.x - e.x, o.y - e.y) < 4 * T) alertar(o, false);
+  // avisa solo a las que están pegadas a ella, y esas ya no avisan a nadie más (antes el aviso corría de una a otra
+  // y venían todas)
+  if (avisa) for (const o of J.enemigos) if (o !== e && !o.alerta && Math.hypot(o.x - e.x, o.y - e.y) < 2.5 * T) alertar(o, false, false);
 }
 // Un ruido (picar, romper, pelear, una bomba) despierta a las que están cerca.
 function ruido(x, y, casillas) {
@@ -97,7 +99,7 @@ function percibir(e, c, lejos, dt) {
   e.mirarT = (e.mirarT || 0) - dt;
   if (e.mirarT <= 0) { e.mirarT = 0.3; if (lejos < v * 1.6 && veJugador(e)) e.vistoT = 0; }
   e.vistoT = (e.vistoT || 0) + dt;
-  if (lejos > v * 2.6 || e.vistoT > 6) { e.alerta = false; e.turno = false; e.modo = e.fija !== undefined ? 'casa' : 'quieta'; e.paseoT = 3; }
+  if (lejos > v * 2.2 || e.vistoT > 5) { e.alerta = false; e.turno = false; e.modo = e.fija !== undefined ? 'casa' : 'quieta'; e.paseoT = 3; }
   return e.alerta;
 }
 // Sin saber de ti: da vueltas, se para a ratos y, las que no guardan un sitio, te rastrean: siguen tu olor (el
@@ -112,7 +114,7 @@ function deambular(e, c, dt) {
     e.paseoT = 1.5 + Math.random() * 3;
     const s = Math.random(), vuelve = guarda && Math.hypot(e.x - e.casa.x, e.y - e.casa.y) > 6 * T;
     if (vuelve) e.modo = 'casa';
-    else if (!guarda && lejos > 5 * T && s < 0.6) e.modo = 'rastrea';
+    else if (!guarda && lejos > 5 * T && lejos < 16 * T && s < 0.32) e.modo = 'rastrea'; // pocas te rastrean, y solo de cerca
     else if (s < 0.75) { e.modo = 'pasea'; const a = Math.random() * Math.PI * 2, d = (1 + Math.random() * 3) * T, o = guarda ? e.casa : e; e.paseo = { x: o.x + Math.cos(a) * d, y: o.y + Math.sin(a) * d }; }
     else e.modo = 'quieta';
   }

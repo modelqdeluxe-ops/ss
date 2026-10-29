@@ -1,7 +1,8 @@
 // La IA de las criaturas, medida: el jugador quieto (o picando, que hace ruido) 60 s en un sitio oscuro de cada
 // región, y cuenta cuántas se enteran de él, cuántas lo persiguen y cuántas atacan a la vez, y cuántos golpes recibe.
 //   node corazon-dormido/herramientas/simular-ia.cjs
-// Lo bueno (0.7): 1–3 se enteran por minuto, como mucho 3 persiguiendo y 2 atacando a la vez.
+// Lo bueno (0.8): explorando, 1–3 se enteran por minuto, como mucho 3 persiguiendo y 2 atacando a la vez; quieto a
+// oscuras, casi ninguna (el dueño: «te ven a kilómetros y vienen todas»).
 const { chromium } = require('playwright');
 const path = require('path');
 (async () => {
@@ -13,7 +14,7 @@ const path = require('path');
     localStorage.clear(); await empezar(false);
     let golpes = 0, ultimo = -9; window.danarJugador = () => { if (J.t - ultimo > 0.7) { golpes++; ultimo = J.t; } };
     const out = [];
-    const prueba = async (nombre, reg, picando) => {
+    const prueba = async (nombre, reg, picando, andando) => {
       // un sitio oscuro de la región
       let q = null;
       for (let k = 0; k < 200000 && !q; k++) { const x = Math.floor(Math.random() * N_MUNDO), y = Math.floor(Math.random() * N_MUNDO); if (M.region[idx(x, y)] === reg && !solido(x, y, true) && luzEn(x, y) < 0.1 && Math.hypot(x - CENTRO, y - CENTRO) > 30) q = [x, y]; }
@@ -23,7 +24,11 @@ const path = require('path');
       for (let s = 0; s < 60 * 60; s++) { // 60 s a 60 cuadros
         const dt = 1 / 60;
         J.t += dt; J.tiempoMundo = (J.tiempoMundo || 0) + dt;
-        if (picando && s % 25 === 0) ruido(J.jug.x, J.jug.y, 4);
+        if (picando && s % 25 === 0) ruido(J.jug.x, J.jug.y, 3);
+        if (andando) { // explora: anda a paso de jugador (unas 4 casillas por segundo) y cambia de rumbo cada 3 s
+          if (s % 180 === 0 || J.jug.choco) { J.jug.rumbo = Math.random() * Math.PI * 2; J.jug.choco = false; }
+          J.jug.choco = mover(J.jug, Math.cos(J.jug.rumbo) * 64 * dt, Math.sin(J.jug.rumbo) * 64 * dt);
+        }
         actualizarCriaturas(dt); actualizarProyectiles(dt);
         const al = J.enemigos.filter((e) => e.alerta);
         for (const e of al) if (!vistas.has(e)) { vistas.add(e); alertas++; }
@@ -33,6 +38,9 @@ const path = require('path');
       }
       out.push(`${nombre}: vivas de media ${(sumaVivas / n).toFixed(1)}, se enteraron ${alertas}, persiguiendo a la vez máx ${maxAlerta}, atacando a la vez máx ${maxAtacan}, golpes recibidos ${golpes}`);
     };
+    await prueba('Raíces, andando', 1, false, true);
+    await prueba('Ruinas, andando', 3, false, true);
+    await prueba('Selva, andando', 4, false, true);
     await prueba('Raíces, quieto', 1, false);
     await prueba('Raíces, picando', 1, true);
     await prueba('Ruinas, quieto', 3, false);
