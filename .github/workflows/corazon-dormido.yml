@@ -1,7 +1,8 @@
 name: Corazón Dormido
 
-# Publica cada versión de corazon-dormido/VERSIONES.txt como Release de GitHub (corazon-dormido-v<versión>) con
-# el juego en un solo .html y en .zip, y deja la última en la Release fija «corazon-dormido»:
+# Publica cada versión de corazon-dormido/VERSIONES.txt como Release de GitHub (corazon-dormido-v<versión>). Hasta
+# la 0.6.0, con el juego en un solo .html y en .zip, y la última en la Release fija «corazon-dormido»; desde la
+# 0.7.0 (juego de Android) la Release se crea vacía y corazon-dormido-android.yml le pone el APK y el AAB:
 #   https://github.com/<repo>/releases/download/corazon-dormido/corazon-dormido.html
 # Ninguna se marca como «latest» (el repo tiene otras Releases, como StickerYa) y el tag NO empieza por
 # «v<número>» (el workflow de Rumentis borra esas). Solo crea las que falten: subir una línea = publicar.
@@ -59,6 +60,14 @@ jobs:
             ultima="$ver"
             tag="corazon-dormido-v$ver"
             if gh release view "$tag" >/dev/null 2>&1; then echo "La Release $tag ya existe"; continue; fi
+            # desde la 0.7.0 es un juego de Android: la Release se crea vacía y el workflow de Android le pone el APK
+            if [ "$(printf '%s\n' 0.7.0 "$ver" | sort -V | head -1)" = "0.7.0" ]; then
+              gh release create "$tag" --target "$full" --latest=false --title "Corazón Dormido $ver: $titulo" \
+                --notes "El APK para Android (corazon-dormido-$ver.apk) se añade aquí en unos minutos, cuando acaba de compilarse.
+
+          $notas"
+              continue
+            fi
             gh release create "$tag" "/tmp/salida/corazon-dormido-$ver.html" "/tmp/salida/corazon-dormido-$ver.zip" \
               --target "$full" --latest=false --title "Corazón Dormido $ver: $titulo" \
               --notes "$notas
@@ -68,6 +77,8 @@ jobs:
           En el navegador: descarga **corazon-dormido-$ver.html** y ábrelo (necesita WebGL2), o descomprime el .zip y abre index.html. La última versión siempre está en https://github.com/${{ github.repository }}/releases/download/corazon-dormido/corazon-dormido.html"
           done < corazon-dormido/VERSIONES.txt
           [[ -z "$ultima" ]] && exit 0
+          # desde la 0.7.0 la Release fija lleva el APK (lo pone el workflow de Android), no el juego de navegador
+          [ "$(printf '%s\n' 0.7.0 "$ultima" | sort -V | head -1)" = "0.7.0" ] && exit 0
           cp "/tmp/salida/corazon-dormido-$ultima.html" /tmp/corazon-dormido.html
           cp "/tmp/salida/corazon-dormido-$ultima.zip" /tmp/corazon-dormido.zip
           if ! gh release view corazon-dormido >/dev/null 2>&1; then

@@ -8,8 +8,9 @@ name: Corazón Dormido (Android)
 #     (vale para probar, no para subirlo a la tienda).
 # Los deja en la Release fija «corazon-dormido-android» (nunca «latest»):
 #   https://github.com/<repo>/releases/download/corazon-dormido-android/corazon-dormido.apk
-# y el APK también en la Release de la versión (corazon-dormido-v<versión>, como corazon-dormido-<versión>.apk) y en
-# la fija «corazon-dormido» (la de la última versión), que es donde lo busca quien entra en las Releases.
+# y también en la Release de la versión (corazon-dormido-v<versión>: corazon-dormido-<versión>.apk y .aab, sin el
+# juego de navegador) y en la fija «corazon-dormido» (corazon-dormido.apk), que es donde lo busca quien entra en
+# las Releases.
 on:
   push:
     paths:
@@ -103,18 +104,23 @@ jobs:
           gh release upload "$tag" /tmp/app/corazon-dormido.apk /tmp/app/corazon-dormido.aab --clobber
           gh release edit "$tag" --title "Corazón Dormido para Android (${{ steps.version.outputs.nombre }})" --latest=false
           ver="${{ steps.version.outputs.ver }}"
-          cp /tmp/app/corazon-dormido.apk "/tmp/app/corazon-dormido-$ver.apk"
-          # en la Release de la versión (la crea el workflow corazon-dormido.yml; si aún no está, la próxima compilación)
+          apk="/tmp/app/corazon-dormido-$ver.apk"; aab="/tmp/app/corazon-dormido-$ver.aab"
+          cp /tmp/app/corazon-dormido.apk "$apk"; cp /tmp/app/corazon-dormido.aab "$aab"
+          notas=$(grep "^$ver *|" corazon-dormido/VERSIONES.txt | cut -d'|' -f4- | sed 's/^ *//')
+          instalar="**Para instalarlo en el móvil:** descarga **corazon-dormido-$ver.apk** (abajo, en «Assets») y ábrelo. La primera vez Android pide permitir instalar apps de esta fuente. Cada versión nueva se instala encima de la anterior y la partida se conserva.
+
+          El .aab es el paquete para subirlo a la Play Store. Los dos «Source code» los pone GitHub solo en todas las Releases: no hacen falta."
+          # la Release de la versión: el APK y el AAB (el juego de navegador ya no va: es un juego de Android)
           if gh release view "corazon-dormido-v$ver" >/dev/null 2>&1; then
-            gh release upload "corazon-dormido-v$ver" "/tmp/app/corazon-dormido-$ver.apk" --clobber
-            notas=$(gh release view "corazon-dormido-v$ver" --json body -q .body)
-            if ! grep -q '\.apk' <<<"$notas"; then
-              gh release edit "corazon-dormido-v$ver" --latest=false --notes "**Android:** descarga **corazon-dormido-$ver.apk** en el móvil y ábrelo para instalarlo (la primera vez, Android pide permitir instalar apps de esta fuente).
+            gh release upload "corazon-dormido-v$ver" "$apk" "$aab" --clobber
+            for f in "corazon-dormido-$ver.html" "corazon-dormido-$ver.zip"; do gh release delete-asset "corazon-dormido-v$ver" "$f" -y 2>/dev/null || true; done
+            gh release edit "corazon-dormido-v$ver" --latest=false --notes "$instalar
 
           $notas"
-            fi
           fi
-          # y en la fija de la última versión
+          # la fija «corazon-dormido»: siempre el APK de la última versión
           if gh release view corazon-dormido >/dev/null 2>&1; then
             gh release upload corazon-dormido /tmp/app/corazon-dormido.apk --clobber
+            for f in corazon-dormido.html corazon-dormido.zip; do gh release delete-asset corazon-dormido "$f" -y 2>/dev/null || true; done
+            gh release edit corazon-dormido --latest=false --title "Corazón Dormido para Android (última versión: $ver)" --notes "${instalar//corazon-dormido-$ver.apk/corazon-dormido.apk}"
           fi

@@ -14,23 +14,19 @@ historia; banda sonora original. Lo que viene después está en `DISEÑO.md` y `
 
 ## Descargar
 
-**La app de Android** (siempre la última compilación):
-https://github.com/modelqdeluxe-ops/ss/releases/download/corazon-dormido-android/corazon-dormido.apk
+**La app de Android**, siempre la última versión:
+https://github.com/modelqdeluxe-ops/ss/releases/download/corazon-dormido/corazon-dormido.apk
 
 Se descarga en el móvil y se abre para instalarla (la primera vez Android pide permitir instalar apps de esa
-fuente). Cada APK nuevo se instala encima del anterior y la partida se conserva. En la misma Release está el
-`corazon-dormido.aab`, el paquete para la Play Store (ver «Android» más abajo).
-
-En el navegador, cada versión es una Release de GitHub con el juego en **un solo archivo .html** (se abre en el navegador, sin
-instalar nada) y en .zip:
-
-- La última, siempre en el mismo enlace:
-  https://github.com/modelqdeluxe-ops/ss/releases/download/corazon-dormido/corazon-dormido.html
-- Una concreta: `https://github.com/modelqdeluxe-ops/ss/releases/tag/corazon-dormido-v<versión>`
+fuente). Cada APK nuevo se instala encima del anterior y la partida se conserva. Cada versión está en su Release
+(`https://github.com/modelqdeluxe-ops/ss/releases/tag/corazon-dormido-v<versión>`) con su `.apk` y el `.aab` para la
+Play Store; la compilación de cada push está en la Release `corazon-dormido-android`. Hasta la 0.6.0 las Releases
+llevaban el juego de navegador (`.html` y `.zip`).
 
 Las versiones están en `VERSIONES.txt`. Para publicar una nueva, añade su línea (con `HEAD` como commit) y
-súbela: el workflow `.github/workflows/corazon-dormido.yml` prueba el juego, crea las Releases que falten (nunca
-como «latest») y actualiza la fija. Para empaquetar a mano: `python3 corazon-dormido/herramientas/empaquetar.py`.
+súbela: `.github/workflows/corazon-dormido.yml` prueba el juego y crea la Release (nunca como «latest») y
+`.github/workflows/corazon-dormido-android.yml` compila la app y le pone el APK y el AAB. Para el juego de navegador
+a mano: `python3 corazon-dormido/herramientas/empaquetar.py`.
 
 ## Cómo se juega
 
