@@ -1026,7 +1026,7 @@ const PIEZAS_CRI = (() => {
     },
     dibujar(K) {
       const S = K.S, e = K.D.px / 13;
-      const pelo = ['#0e0a0a', '#221a18', '#3a2e28', '#544238', '#6e5a4a'], calva = ['#3a1a1c', '#7a3a3a', '#b0605a', '#d88a7c', '#f0b0a0'];
+      const pelo = ['#0e0a0a', '#221a18', '#3a2e28', '#544238', '#6e5a4a'], calva = ['#2a1a1a', '#5a3a36', '#86605a', '#a8807a', '#c4a098'], nariz = ['#3a1a1c', '#7a3a3a', '#b0605a', '#d88a7c', '#f0b0a0'];
       const garra = ['#3a2e1a', '#8a7448', '#c4ac74', '#ead8a8', '#fff6dc'];
       const pelaje = (x, y) => (ruido(x, Math.floor(y / 3), 2) < 0.16 ? -1 : 0); // mechones: trazos cortos más oscuros
       // piernas cortas y gruesas
@@ -1034,7 +1034,7 @@ const PIEZAS_CRI = (() => {
         const u = S['upperleg' + l], m = S['lowerleg' + l], p = S['foot' + l], t = S['toes' + l];
         K.pieza((u[2] + m[2]) / 2 - 0.3, () => K.cap(u, m, 3.4 * e, 3.0 * e, pelo, { tex: pelaje }));
         K.pieza((m[2] + p[2]) / 2 - 0.2, () => K.cap(m, p, 3.0 * e, 2.6 * e, pelo, { tex: pelaje }));
-        K.pieza((p[2] + t[2]) / 2, () => { K.cap([p[0], p[1] + e], t, 2.4 * e, 2.0 * e, calva); for (let k = 0; k < 3; k++) K.cap([t[0] + (k - 1) * e, t[1]], [t[0] + (k - 0.5) * e + 1.5 * e, t[1] + 0.5 * e], 0.7 * e, 0.4 * e, garra); });
+        K.pieza((p[2] + t[2]) / 2, () => { K.cap([p[0], p[1] + e], t, 2.4 * e, 2.0 * e, nariz); for (let k = 0; k < 3; k++) K.cap([t[0] + (k - 1) * e, t[1]], [t[0] + (k - 0.5) * e + 1.5 * e, t[1] + 0.5 * e], 0.7 * e, 0.4 * e, garra); });
       }
       const hi = S.hips, ch = S.chest, h = S.head;
       K.zTronco = (hi[2] + ch[2]) / 2 - 0.5;
@@ -1043,9 +1043,8 @@ const PIEZAS_CRI = (() => {
         const c = [(hi[0] + ch[0]) / 2, (hi[1] + ch[1]) / 2];
         K.ovalo(c, 8.6 * e, 8.2 * e, pelo, { tex: pelaje, ang: Math.atan2(ch[1] - hi[1], ch[0] - hi[0]) + Math.PI / 2 });
         // calvo a parches: la barriga y dos calvas en el lomo
-        K.ovalo([c[0] + 3.2 * e, c[1] + 2.4 * e], 4.2 * e, 5 * e, calva);
-        K.ovalo([c[0] - 3.5 * e, c[1] - 3.5 * e], 2 * e, 1.5 * e, calva, { ang: -0.5 });
-        K.ovalo([c[0] - 5.5 * e, c[1] + 1.5 * e], 1.4 * e, 1.8 * e, calva);
+        K.ovalo([c[0] + 3.6 * e, c[1] + 2.8 * e], 3.4 * e, 4.2 * e, calva, { corta: (x, y) => ruido(x >> 1, y >> 1, 12) < 0.12 });
+        for (const [dx, dy, r] of [[-3.5, -3.8, 1.3], [-5.6, 1.2, 1.0], [0.5, -5.6, 0.9]]) { K.ovalo([c[0] + dx * e, c[1] + dy * e], r * e, r * 0.8 * e, calva); }
         for (let k = 0; k < 5; k++) K.vara([c[0] + 1.5 * e + k * 0.9 * e, c[1] + (0.5 + k * 0.4) * e], [c[0] + 1.8 * e + k * 0.9 * e, c[1] + (2.5 + k * 0.4) * e], calva, { k: 1 }); // pliegues
       });
       // brazos enormes con garras de pala
@@ -1054,7 +1053,7 @@ const PIEZAS_CRI = (() => {
         K.pieza((u[2] + m[2]) / 2 + (lejos ? -0.5 : 0.5), () => { K.cap(u, m, 3.0 * e, 2.8 * e, pelo, { tex: pelaje }); K.cap(m, hd, 2.8 * e, 2.6 * e, pelo, { tex: pelaje }); });
         K.pieza(hd[2] + (lejos ? -0.4 : 0.6), () => {
           const dir = [hd[0] - m[0], hd[1] - m[1]], L = Math.hypot(...dir) || 1, d = [dir[0] / L, dir[1] / L], n = [-d[1], d[0]];
-          K.ovalo([hd[0], hd[1]], 3 * e, 2.6 * e, calva);
+          K.ovalo([hd[0], hd[1]], 2 * e, 1.8 * e, pelo);
           for (let k = -2; k <= 2; k++) { const b = [hd[0] + n[0] * k * 1.3 * e + d[0] * e, hd[1] + n[1] * k * 1.3 * e + d[1] * e]; K.cap(b, [b[0] + d[0] * 4.2 * e + n[0] * k * 0.4 * e, b[1] + d[1] * 4.2 * e + n[1] * k * 0.4 * e], 0.9 * e, 0.35 * e, garra); }
         });
       }
@@ -1062,7 +1061,7 @@ const PIEZAS_CRI = (() => {
       K.pieza(h[2] + 2, () => {
         const c = [h[0] + 2 * e, h[1] - 1 * e];
         K.ovalo(c, 4.6 * e, 4 * e, pelo, { tex: pelaje });
-        K.cap([c[0] + 1.5 * e, c[1] + 0.5 * e], [c[0] + 5.5 * e, c[1] + 1.6 * e], 2.6 * e, 1.8 * e, calva); // el hocico pelado
+        K.cap([c[0] + 1.5 * e, c[1] + 0.5 * e], [c[0] + 5.5 * e, c[1] + 1.6 * e], 2.4 * e, 1.5 * e, nariz); // el hocico pelado
         const nz = [c[0] + 6.8 * e, c[1] + 1.6 * e];
         for (let k = 0; k < 11; k++) { const a = (k / 11) * Math.PI * 2; K.cap(nz, [nz[0] + Math.cos(a) * 2.6 * e, nz[1] + Math.sin(a) * 2.2 * e], 0.6 * e, 0.35 * e, ['#4a1020', '#a03050', '#e05a7a', '#ff9ab0', '#ffd0dc']); }
         K.ovalo(nz, 0.9 * e, 0.9 * e, ['#2a0a14', '#6a1a30', '#a0304a', '#c04a60'], { mate: true });
