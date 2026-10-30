@@ -211,6 +211,13 @@ disputas de PayPal o Stripe para que las ganemos»):
   disputas»): `/archivo-legal/` con las 16 variantes publicadas desde el 6 oct 2026 (copia exacta, commit y SHA-256),
   `tools/legal_archive.py` y `config/legal-archive.json`; el recibo y el expediente citan la versión del pedido (enlace y huella; nunca el repositorio de GitHub: orden del dueño) y su
   sección de reembolsos tal cual. Vuelve a ejecutarlo tras fusionar unos Términos nuevos.
+- **Términos 2026-10-30.2** (el dueño: «¿no hiciste nada para ganar las disputas fuera de 24 h? ¿cláusulas?»): la casilla
+  de aceptación dice la garantía de 24 h; «Aceptación» con la base legal del consentimiento electrónico (CCF 1803 y
+  1834 bis, Código de Comercio 89-114); «Disputas y contracargos» reforzada (solo cuentan las solicitudes al correo,
+  venta definitiva pasadas 24 h, usarlo = recibido y como se describe, pagar con el medio de otro = con permiso, no es
+  suscripción ni cobro duplicado, disputa injustificada = incumplimiento con gastos reclamables y sin más compras,
+  registros electrónicos como prueba). La página de pago de Stripe enseña la política (`custom_text.submit`). El
+  expediente cita la casilla tal como se veía y esas cláusulas (`receipt.js: TERMS_DISPUTES`, punto 5b).
 - **Ojo: `tools/pages.py` está desfasado** respecto a #191 (quitó «El mundo» del menú y la IP 19015 se puso a mano en
   el HTML): si lo vuelves a correr, deshace eso. Esta vez se pegó solo el contenido nuevo en `terminos.html`,
   `privacidad.html`, `ayuda.html` y `tienda.html`. Tests de la web: 62 bien.

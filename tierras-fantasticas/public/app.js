@@ -236,7 +236,8 @@
     <label class="terms-check" for="${id}">
       <input type="checkbox" id="${id}">
       <span class="terms-box" aria-hidden="true"></span>
-      <span>He leído y acepto los <a href="/terminos" target="_blank" rel="noopener">Términos y condiciones</a> y el
+      <span>He leído y acepto los <a href="/terminos" target="_blank" rel="noopener">Términos y condiciones</a> (compras de
+        contenido digital: garantía de 24 horas desde la entrega; después no hay reembolsos) y el
         <a href="/privacidad" target="_blank" rel="noopener">Aviso de privacidad</a>.</span>
     </label>`;
 

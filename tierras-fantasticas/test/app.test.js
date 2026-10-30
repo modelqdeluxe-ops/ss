@@ -4,6 +4,8 @@ import http from 'node:http';
 import { createHmac } from 'node:crypto';
 import products from '../config/products.json' with { type: 'json' };
 import skillsCatalog from '../config/skills.json' with { type: 'json' };
+import legal from '../config/legal.json' with { type: 'json' };
+import legalArchive from '../config/legal-archive.json' with { type: 'json' };
 import './retired.js';
 import worker from '../src/index.js';
 import { createD1 } from './d1.js';
@@ -1678,8 +1680,17 @@ test('cada firma de los Términos y cada recibo llegan por correo; el recibo en 
   assert.match(evidence['evidence[refund_refusal_explanation]'], /outside the refund window/);
   assert.match(evidence['evidence[uncategorized_text]'], /Terms and refund policy accepted before paying/);
   // (30 oct 2026) cita la copia archivada de los Términos de esa compra
-  assert.match(aviso.text, /Texto de esos Términos: https:\/\/tierrasfantásticas\.store\/archivo-legal\/terminos-2026-10-30\.1(-[a-z])?$/m);
-  assert.match(evidence['evidence[refund_policy_disclosure]'], /archivo-legal\/terminos-2026-10-30\.1(-[a-z])? \(SHA-256 of the original: [0-9a-f]{64}\)/);
+  // (la versión vigente se archiva al fusionarla en main: si ya está en el archivo, se cita)
+  const esc = (v) => v.replace(/\./g, '\\.');
+  if (legalArchive.versions.some((v) => v.version === legal.version)) {
+    assert.match(aviso.text, new RegExp(`Texto de esos Términos: https://tierrasfantásticas\\.store/archivo-legal/terminos-${esc(legal.version)}(-[a-z])?$`, 'm'));
+    assert.match(evidence['evidence[refund_policy_disclosure]'], new RegExp(`archivo-legal/terminos-${esc(legal.version)}(-[a-z])? \\(SHA-256 of the original: [0-9a-f]{64}\\)`));
+  }
+  // (30 oct 2026) la casilla tal como se veía y las cláusulas de disputa de la versión aceptada
+  assert.match(evidence['evidence[uncategorized_text]'], /24-hour guarantee from delivery; no refunds afterwards/);
+  assert.match(evidence['evidence[uncategorized_text]'], /5b\. In the Terms the buyer accepted/);
+  // y en la página de pago de Stripe se ve la política
+  assert.match(sessionOf(late).form['custom_text[submit][message]'], /Garantía de 24 horas desde la entrega/);
   // Otro aviso de la misma disputa no duplica el baneo
   await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
   await dispute(late);
