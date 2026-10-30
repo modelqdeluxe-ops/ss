@@ -207,6 +207,10 @@ disputas de PayPal o Stripe para que las ganemos»):
 - **Expediente de disputa**: en cada disputa llega al correo `disputa-<pedido>.pdf` (respuesta en inglés y en español
   lista para pegar, registro de actividad, política aceptada) y en Stripe las pruebas quedan rellenadas **sin enviar**
   (`Stripe.updateDisputeEvidence`, `submit=false`). Botón **Pruebas** en `/staff`. Ver README de la web.
+- **Archivo legal** (el dueño: «espero que tengas una copia de los términos anteriores para citarlos en las
+  disputas»): `/archivo-legal/` con las 16 variantes publicadas desde el 6 oct 2026 (copia exacta, commit y SHA-256),
+  `tools/legal_archive.py` y `config/legal-archive.json`; el recibo y el expediente citan la versión del pedido y su
+  sección de reembolsos tal cual. Vuelve a ejecutarlo tras fusionar unos Términos nuevos.
 - **Ojo: `tools/pages.py` está desfasado** respecto a #191 (quitó «El mundo» del menú y la IP 19015 se puso a mano en
   el HTML): si lo vuelves a correr, deshace eso. Esta vez se pegó solo el contenido nuevo en `terminos.html`,
   `privacidad.html`, `ayuda.html` y `tienda.html`. Tests de la web: 62 bien.

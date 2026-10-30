@@ -199,7 +199,8 @@ entregó y tus conexiones al servidor. Con eso se demuestra que la compra se rec
   <li><b>Compras anteriores a esta versión.</b> Las compras hechas antes del 30 de octubre de 2026 (con los Términos
     del 26 de octubre de 2026 o anteriores) se rigen por los términos que se aceptaron entonces: <b>5 días hábiles</b>
     desde la entrega para cancelar y, por un reembolso injustificado pasado ese plazo, <b>baneo de IP de 6 días</b>.
-    Cada compra se rige por la versión de los Términos que se aceptó al pagarla, que sale en su recibo.</li>
+    Cada compra se rige por la versión de los Términos que se aceptó al pagarla, que sale en su recibo; todas las
+    versiones están en el <a href="/archivo-legal/">archivo legal</a>.</li>
 </ul>'''),
 
     ('disputas', 'Disputas y contracargos', f'''
@@ -270,7 +271,11 @@ terceros (Stripe, PayPal, Mercado Pago, Discord, tu banco). Nada de esto limita 
 <p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha y te pediremos que la aceptes antes
 de tu siguiente compra o recompensa. Las compras se rigen por los términos vigentes el día en que las hiciste (los que
 aceptaste en ese momento): por ejemplo, las anteriores al 30 de octubre de 2026 tienen 5 días hábiles para cancelar y
-un baneo de 6 días por reembolso injustificado.</p>'''),
+un baneo de 6 días por reembolso injustificado.</p>
+<p><b>Versiones anteriores.</b> Todas las versiones de estos Términos y del Aviso de privacidad, tal como se publicaron
+y con las fechas en que estuvieron vigentes, están en el <a href="/archivo-legal/">archivo legal</a>. La fecha de cada
+una se puede comprobar en el historial público de la web en GitHub, y el recibo de cada compra dice qué versión se
+aceptó.</p>'''),
 
     ('ley', 'Ley aplicable y reclamaciones', f'''
 <p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos, incluida la Ley Federal de Protección al
