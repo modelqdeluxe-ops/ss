@@ -418,6 +418,15 @@
     return ` style="--t1:${hex};--t2:${hex};--t3:rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, 0.28)"`;
   }
 
+  // (30 oct 2026, el dueño: «pon Bonus: más cosas en el juego, como bonus extra, no como parte del rango») lo que se da
+  // de regalo aparte del rango: fuera de la lista de lo que incluye, con su nota
+  const bonusLine = (p, long = false) =>
+    p.bonus
+      ? `<p class="${long ? 'rk-bonus' : 'perk-bonus'}">${ICON_GIFT}<span><b>Bonus:</b> ${escapeHtml(p.bonus.charAt(0).toLowerCase() + p.bonus.slice(1))}${
+          long ? '<small>Regalo extra que damos aparte del rango: no forma parte de lo que compras y puede cambiar.</small>' : ''
+        }</span></p>`
+      : '';
+
   // Tienda: tarjetas de regalos y rangos
   function productCard(p) {
     const perks = Array.isArray(p.perks) ? p.perks.slice(0, 5) : [];
@@ -430,6 +439,7 @@
           <h3>${escapeHtml(p.name)}</h3>
           <p>${escapeHtml(p.description)}</p>
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
+          ${bonusLine(p)}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
             <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>${testBtn(p)}</span>`}
@@ -1427,6 +1437,7 @@
         <div class="rk-chat" aria-label="Así se ve tu nombre en el chat"><span class="rk-chat-prefix">[${escapeHtml(prefix)}]</span> <span class="rk-chat-name">${escapeHtml(who)}</span><span class="rk-chat-msg">: ¡Hola, reino!</span></div>
         <ul class="rk-perks">${(p.perks || []).map((x) => `<li>${ICON_CHECK}<span>${escapeHtml(x)}</span></li>`).join('')}
           <li>${ICON_CHECK}<span>Llega al instante a tu cuenta del servidor</span></li></ul>
+        ${bonusLine(p, true)}
         <div class="rk-try">
           <div class="rk-try-head"><span>Pruébate las piezas</span><button type="button" class="rk-reset" data-rk-reset>Set completo</button></div>
           <div class="rk-pieces" role="group" aria-label="Piezas del set: toca una para ponértela">${(p.models || [])

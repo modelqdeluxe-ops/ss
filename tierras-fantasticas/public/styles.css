@@ -8246,3 +8246,34 @@ h4 {
   vertical-align: -2px;
   color: #7a1238;
 }
+
+/* (30 oct 2026) «Bonus»: lo que se regala aparte del rango, fuera de la lista de lo que incluye */
+.perk-bonus,
+.rk-bonus {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+.perk-bonus svg,
+.rk-bonus svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.rk-bonus {
+  margin-top: 12px;
+  font-size: 14.5px;
+}
+
+.rk-bonus small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: 12.5px;
+}

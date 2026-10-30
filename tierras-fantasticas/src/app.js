@@ -238,7 +238,12 @@ function rankSetup(rank) {
     homes: rank.rank.homes,
     permissions: rank.rank.permissions,
     // Para «Mi rango» del TF Pad: lo que trae, en frases cortas
-    perks: [...(rank.perks || []), ...(rank.serverPerks || []).map((x) => (x.cmd ? `${x.cmd}: ${x.text}` : x.text))].slice(0, 30),
+    perks: [
+      ...(rank.perks || []),
+      ...(rank.serverPerks || []).map((x) => (x.cmd ? `${x.cmd}: ${x.text}` : x.text)),
+      // (30 oct 2026) el bonus, aparte de lo que incluye el rango
+      ...(rank.bonus ? [`Bonus: ${rank.bonus.charAt(0).toLowerCase()}${rank.bonus.slice(1)} (regalo extra, aparte del rango)`] : []),
+    ].slice(0, 30),
   };
 }
 
