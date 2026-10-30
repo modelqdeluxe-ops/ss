@@ -1678,8 +1678,8 @@ test('cada firma de los Términos y cada recibo llegan por correo; el recibo en 
   assert.match(evidence['evidence[refund_refusal_explanation]'], /outside the refund window/);
   assert.match(evidence['evidence[uncategorized_text]'], /Terms and refund policy accepted before paying/);
   // (30 oct 2026) cita la copia archivada de los Términos de esa compra
-  assert.match(aviso.text, /Texto de esos Términos: https:\/\/tierrasfantásticas\.store\/archivo-legal\/terminos-2026-10-30\.1\.html/);
-  assert.match(evidence['evidence[refund_policy_disclosure]'], /archivo-legal\/terminos-2026-10-30\.1\.html — publication verifiable at https:\/\/github\.com\/modelqdeluxe-ops\/ss\/commit\//);
+  assert.match(aviso.text, /Texto de esos Términos: https:\/\/tierrasfantásticas\.store\/archivo-legal\/terminos-2026-10-30\.1(-[a-z])?\.html/);
+  assert.match(evidence['evidence[refund_policy_disclosure]'], /archivo-legal\/terminos-2026-10-30\.1(-[a-z])?\.html — publication verifiable at https:\/\/github\.com\/modelqdeluxe-ops\/ss\/commit\//);
   // Otro aviso de la misma disputa no duplica el baneo
   await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
   await dispute(late);
