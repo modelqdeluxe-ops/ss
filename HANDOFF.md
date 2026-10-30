@@ -190,7 +190,44 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (30 oct 2026, TF Client 1.3.153) — lee esto primero
+### CHECKPOINT (30 oct 2026, TF Client 1.3.154 y web) — lee esto primero
+
+**Web** (el dueño: «pon no disponibles las skills hasta un reajuste de la economía» y «garantía de 24 horas, ban de IP
+de 15 días; las compras de antes, con los términos anteriores (5 días y 6 de ban); ponte en los zapatos de un experto en
+disputas de PayPal o Stripe para que las ganemos»):
+- **Skills sin vender**: `tierras-fantasticas/tools/skills.py` → `ON_SALE = False` (catálogo `onSale`); `POST
+  /api/skills/coins` da 403 `not_on_sale` y la tienda dice «No disponible por ahora». Las que ya son de alguien se
+  siguen usando. Para volver a venderlas: `ON_SALE = True` y `python3 tools/skills.py`.
+- **Términos 2026-10-30.1** (`tools/legal.py`, `config/legal.json`): garantía de 24 h desde la entrega, baneo de IP de
+  15 días, sección nueva «Disputas y contracargos» (escribir primero, «no recibido / no como se describe / no autorizado»,
+  qué pruebas se presentan), entrega inmediata pedida, uso autorizado con la cuenta, el equilibrio del juego no es motivo
+  de reembolso, y **las compras anteriores con sus términos** (5 días hábiles, 6 días). Privacidad: qué se comparte en una
+  disputa. `src/receipt.js: refundPolicyFor(order)` elige la política por `order.termsVersion` (recibo, correo y
+  `tempbanip … 15d|6d` en `handleReversal`).
+- **Expediente de disputa**: en cada disputa llega al correo `disputa-<pedido>.pdf` (respuesta en inglés y en español
+  lista para pegar, registro de actividad, política aceptada) y en Stripe las pruebas quedan rellenadas **sin enviar**
+  (`Stripe.updateDisputeEvidence`, `submit=false`). Botón **Pruebas** en `/staff`. Ver README de la web.
+- **Ojo: `tools/pages.py` está desfasado** respecto a #191 (quitó «El mundo» del menú y la IP 19015 se puso a mano en
+  el HTML): si lo vuelves a correr, deshace eso. Esta vez se pegó solo el contenido nuevo en `terminos.html`,
+  `privacidad.html`, `ayuda.html` y `tienda.html`. Tests de la web: 62 bien.
+
+**1.3.154** (el dueño: «nerfea el daño de las skills y aumenta el cooldown; el mínimo tiene 0,2 segundos» y «/clan chat
+enable o disable; nadie, a excepción de operadores, puede ver el chat del clan de otros clanes»).
+- **Nerf de skills** (`skills/SkillServer`): daño de las skills de jugadores x0,4 (`multiplicadorDano`, aplicado en
+  `SkillRuntime.hurt` a todo: daño fijo, en %, explosiones e invocaciones; los jefes no cambian), recarga x1,5
+  (`multiplicadorCooldown`) y nunca menos de 1,5 s (`cooldownMinimoSegundos`; antes 0,2 s). `config/tfclient/skills.json`
+  se ajusta una vez (marca `"nerf": 1`; el daño que tuviera puesto, por 0,4). El pad (Efectos › Skills) y la web enseñan
+  la recarga de verdad (`SkillServer.cooldownTicks`, `tools/skills.py: NERF_*`).
+- **Chat del clan** (`pad/server/PadClanChat`): `/clan chat enable|disable`, solo dentro de un clan. Lo escrito se para en
+  la cabeza de `broadcastChatMessage` (`mixin/claims/ServerChatPromptMixin`, antes del ServerChatEvent y del
+  AsyncPlayerChatEvent de Bukkit: no lo ve EssentialsX ni DiscordSRV) y va solo a su clan conectado y a los operadores
+  (`recipients`). Con él puesto no se recibe el chat público de los demás (`mixin/chat/ServerPlayerClanChatMixin`; en
+  Mohist, `TFBukkit.registerChatFilter`, un oyente de Bukkit por reflexión que quita destinatarios y cancela lo que se
+  escape). Respeta `/mute` de EssentialsX, antispam (4 en 2,5 s), se guarda (`chatClan` en clanes.json) y se quita al
+  salir del clan. Sin Mohist en GitHub Actions: lo de Bukkit está compilado, no probado.
+- Prueba `[prueba-jefes=oficios]`: «chat del clan: …», «skills: daño x0.4; …».
+
+### CHECKPOINT (30 oct 2026, TF Client 1.3.153)
 
 **1.3.153** (el dueño: «necesito que des menos monedas en los oficios, misiones, etc, y que los jobs no me suban nivel
 cuando mino o hago la acción, solo me debe dar al completar la misión» y «quita recompensas que den netherita»). Antes,
