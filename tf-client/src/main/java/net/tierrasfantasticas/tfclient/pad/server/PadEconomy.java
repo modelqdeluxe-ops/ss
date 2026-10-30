@@ -219,7 +219,7 @@ public final class PadEconomy {
     }
 
     /** Quita los premios de netherita de debajo de e (key: la clave de e en su padre). Devuelve cuántos quitó. */
-    static int stripNetherite(JsonElement e, String key) {
+    public static int stripNetherite(JsonElement e, String key) {
         int n = 0;
         if (e == null) return 0;
         if (e.isJsonObject()) {

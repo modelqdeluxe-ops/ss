@@ -2984,7 +2984,9 @@ public final class BossTest {
             net.tierrasfantasticas.tfclient.pad.server.PadEconomy.economy4(jf, net.tierrasfantasticas.tfclient.util.TFJson.read(jf), "oficios.json (prueba)", true,
                     "monedas", "monedasPorNivel");
             if (!saved.equals(java.nio.file.Files.readString(jf))) bad.add("la segunda vez vuelve a cambiar oficios.json");
-            if (saved.contains("netherite_ingot")) bad.add("queda netherita en oficios.json");
+            // (los iconos de netherita de algunas misiones se quedan: son el dibujo, no un premio)
+            int left = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.stripNetherite(net.tierrasfantasticas.tfclient.util.TFJson.read(jf), "");
+            if (left > 0) bad.add("quedan " + left + " premios de netherita en oficios.json");
 
             var pass = com.google.gson.JsonParser.parseString("{\"version\":3,\"premios\":[{\"nivel\":40,\"premios\":[{\"tipo\":\"verdes\",\"cantidad\":5},"
                     + "{\"tipo\":\"objeto\",\"id\":\"minecraft:netherite_scrap\",\"cantidad\":1}]},{\"nivel\":50,\"premios\":[{\"tipo\":\"objeto\","
