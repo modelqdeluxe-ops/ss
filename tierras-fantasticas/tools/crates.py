@@ -446,7 +446,9 @@ def rank_products():
             'set': set_id, 'models': models,
             'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces,
                       f'Piedra de protección {RANK_CLAIM[key].replace("x", "×")}: una zona tuya a salvo de grifeo',
-                      f'Rol {name} en Discord', 'Y más cosas en el juego'],
+                      f'Rol {name} en Discord'],
+            # (30 oct 2026, el dueño) aparte de lo que incluye el rango, como regalo extra (normas de Mojang)
+            'bonus': 'Más cosas en el juego',
             'serverPerks': rank_server_perks(key),
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc, 'homes': RANK_SERVER_PERKS[key][0],
                      'permissions': rank_permissions(key)},

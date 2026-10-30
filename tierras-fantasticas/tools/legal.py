@@ -112,6 +112,9 @@ uso personal dentro del servidor:</p>
     activa en la web y puedes cambiarla cuando quieras. Al cambiar de clase, el arma y la armadura de la anterior se
     quitan y recibes las de la nueva.</li>
   <li>Las <b>recompensas gratis</b> se pueden reclamar una vez por jugador, con la cuenta iniciada.</li>
+  <li>Lo que se anuncia como <b>«Bonus»</b> (por ejemplo, «Bonus: más cosas en el juego» en los rangos) es un regalo
+    extra que damos aparte: no forma parte de lo que compras ni de lo que incluye el rango, y puede cambiar o retirarse
+    sin que eso dé derecho a reembolso.</li>
 </ul>'''),
 
     ('vinculados', 'Objetos permanentes y vinculados a tu cuenta', '''

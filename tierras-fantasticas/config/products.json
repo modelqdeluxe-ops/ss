@@ -177,8 +177,7 @@
       "Prefijo «Mortal» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 80×80: una zona tuya a salvo de grifeo",
-      "Rol Mortal en Discord",
-      "Y más cosas en el juego"
+      "Rol Mortal en Discord"
     ],
     "serverPerks": [
       {
@@ -219,7 +218,8 @@
         "essentials.loom",
         "essentials.hat"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-inmortal",
@@ -345,8 +345,7 @@
       "Prefijo «Inmortal» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
-      "Rol Inmortal en Discord",
-      "Y más cosas en el juego"
+      "Rol Inmortal en Discord"
     ],
     "serverPerks": [
       {
@@ -387,7 +386,8 @@
         "essentials.loom",
         "essentials.hat"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-magico",
@@ -510,8 +510,7 @@
       "Prefijo «Mágico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
-      "Rol Mágico en Discord",
-      "Y más cosas en el juego"
+      "Rol Mágico en Discord"
     ],
     "serverPerks": [
       {
@@ -557,7 +556,8 @@
         "essentials.hat",
         "essentials.enderchest"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-eterno",
@@ -680,8 +680,7 @@
       "Prefijo «Eterno» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 100×100: una zona tuya a salvo de grifeo",
-      "Rol Eterno en Discord",
-      "Y más cosas en el juego"
+      "Rol Eterno en Discord"
     ],
     "serverPerks": [
       {
@@ -732,7 +731,8 @@
         "essentials.enderchest",
         "essentials.heal"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-cosmico",
@@ -859,8 +859,7 @@
       "Prefijo «Cósmico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
-      "Rol Cósmico en Discord",
-      "Y más cosas en el juego"
+      "Rol Cósmico en Discord"
     ],
     "serverPerks": [
       {
@@ -916,7 +915,8 @@
         "essentials.heal",
         "essentials.feed"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-celestial",
@@ -1047,8 +1047,7 @@
       "Prefijo «Celestial» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
-      "Rol Celestial en Discord",
-      "Y más cosas en el juego"
+      "Rol Celestial en Discord"
     ],
     "serverPerks": [
       {
@@ -1109,7 +1108,8 @@
         "essentials.repair",
         "essentials.fly"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "rango-fantastico",
@@ -1224,8 +1224,7 @@
       "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Piedra de protección 150×150: una zona tuya a salvo de grifeo",
-      "Rol Fantástico en Discord",
-      "Y más cosas en el juego"
+      "Rol Fantástico en Discord"
     ],
     "serverPerks": [
       {
@@ -1291,7 +1290,8 @@
         "essentials.feed",
         "essentials.fly"
       ]
-    }
+    },
+    "bonus": "Más cosas en el juego"
   },
   {
     "id": "crate-valentine",
