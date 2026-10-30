@@ -1491,7 +1491,7 @@ test('Skills: ya no se venden con dinero, solo con Fantastic Coins', async () =>
   assert.strictEqual(res.status, 400);
   assert.strictEqual((await res.json()).code, 'coins');
   const list = await (await get('/api/products')).json();
-  assert.ok(list.filter((p) => p.category === 'skills').every((p) => p.coinsOnly === true && p.coinPrice >= 50000));
+  assert.ok(list.filter((p) => p.category === 'skills').every((p) => p.coinsOnly === true && p.coinPrice === 150000));
 });
 
 
