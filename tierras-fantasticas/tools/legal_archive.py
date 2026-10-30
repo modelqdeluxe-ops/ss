@@ -1,10 +1,12 @@
 """Archivo legal: cada versión de los Términos y del Aviso de privacidad, tal como se publicó.
 
 (30 oct 2026, el dueño: «espero que tengas una copia de los términos anteriores, para que podamos citarlos en cualquier
-disputa de los pagos anteriores») Lee el historial de git de origin/main (público en GitHub: la fecha de cada versión la
-prueba su commit) y escribe:
+disputa de los pagos anteriores») Lee el historial de git de origin/main (la fecha de cada versión es la de su commit en
+main) y escribe. (El dueño: «no pongas mi dirección de GitHub, mi repo es público»): en lo que se publica no sale ni el
+repositorio ni el commit; cada copia lleva la huella SHA-256 del original y el commit solo va en config/legal-archive.json,
+que no se sirve.
 
-    public/archivo-legal/index.html                       la lista de versiones, con su vigencia, commit y SHA-256
+    public/archivo-legal/index.html                       la lista de versiones, con su vigencia y su SHA-256
     public/archivo-legal/terminos-<versión>[-b].html      copia exacta de /terminos de esa versión, con un aviso arriba
     public/archivo-legal/privacidad-<versión>[-b].html    copia exacta de /privacidad de esa versión
     config/legal-archive.json                             lo mismo para el Worker: el recibo y el expediente de una
@@ -33,7 +35,9 @@ WEB = os.path.normpath(os.path.join(HERE, '..'))
 ROOT = os.path.normpath(os.path.join(WEB, '..'))
 OUT_DIR = os.path.join(WEB, 'public', 'archivo-legal')
 OUT_JSON = os.path.join(WEB, 'config', 'legal-archive.json')
-REPO = 'https://github.com/modelqdeluxe-ops/ss'
+# Frases de los originales que no se publican en el archivo (decían dónde está el repositorio): se cambian por una nota
+REDACT = [(re.compile(r'La fecha de cada\s+una se puede comprobar en el historial público de la web en GitHub, y el recibo'),
+           '[frase retirada del archivo por privacidad; no cambia ninguna condición] El recibo')]
 SITE = 'https://tierrasfantásticas.store'
 PATHS = {
     'terminos': 'tierras-fantasticas/public/terminos.html',
@@ -81,7 +85,7 @@ def refunds_text(page):
     return '\n'.join(x for x in lines if x)
 
 
-def banner(kind, v, page_sha):
+def banner(kind, v, page_sha, redacted=False):
     title = 'Términos y condiciones' if kind == 'terminos' else 'Aviso de privacidad'
     until = f"hasta el {when(v['to'])}" if v['to'] else 'hasta hoy (es la vigente)'
     current = '/terminos' if kind == 'terminos' else '/privacidad'
@@ -89,18 +93,22 @@ def banner(kind, v, page_sha):
         '<div style="background:#fff7d6;border-bottom:2px solid #e0b100;color:#2a1d14;font:15px/1.5 Arial,sans-serif;'
         'padding:12px 16px;position:relative;z-index:9999">'
         f'<b>Versión archivada de los {title}</b> · versión <b>{html.escape(v["label"])}</b>, vigente desde el '
-        f'{when(v["from"])} {until} (hora de Ciudad de México). Es una copia exacta de la página publicada entonces; las '
+        f'{when(v["from"])} {until} (hora de Ciudad de México). Es una copia exacta de la página publicada entonces'
+        f'{" (salvo una frase retirada por privacidad, marcada entre corchetes)" if redacted else ""}; las '
         f'compras de esas fechas se rigen por ella. La versión vigente está en <a href="{current}">{current}</a>; todas las '
-        f'versiones, en <a href="/archivo-legal/">el archivo legal</a>. Original publicado en GitHub: commit '
-        f'<a href="{REPO}/blob/{v["commit"]}/{PATHS[kind]}">{v["commit"][:10]}</a> · SHA-256 del original: '
+        f'versiones, en <a href="/archivo-legal/">el archivo legal</a>. Huella SHA-256 del original: '
         f'<code style="font-size:12px;word-break:break-all">{page_sha}</code></div>'
     )
 
 
 def archived(page, kind, v, sha):
     s = page.decode('utf-8')
+    redacted = False
+    for pattern, note in REDACT:
+        s, n = pattern.subn(note, s)
+        redacted = redacted or n > 0
     s = s.replace('<head>', '<head>\n  <meta name="robots" content="noindex">', 1)
-    s = re.sub(r'(<body[^>]*>)', lambda m: m.group(1) + '\n' + banner(kind, v, sha), s, count=1)
+    s = re.sub(r'(<body[^>]*>)', lambda m: m.group(1) + '\n' + banner(kind, v, sha, redacted), s, count=1)
     return s
 
 
@@ -166,7 +174,6 @@ def write(variants):
         rows.append(
             f'<tr><td><b>{html.escape(e["label"])}</b></td><td>{when(e["from"])}</td><td>{until}</td>'
             f'<td><a href="{e["terms"]}">Términos</a> · <a href="{e["privacy"]}">Privacidad</a></td>'
-            f'<td><a href="{REPO}/commit/{e["commit"]}"><code>{e["commit"][:10]}</code></a></td>'
             f'<td><code style="font-size:11px;word-break:break-all">{e["termsSha256"]}</code></td></tr>'
         )
     index = f'''<!doctype html>
@@ -194,11 +201,10 @@ def write(variants):
   <h1>Archivo legal de Tierras Fantásticas</h1>
   <p>Todas las versiones de los <a href="/terminos">Términos y condiciones</a> y del <a href="/privacidad">Aviso de
   privacidad</a>, tal como se publicaron, con las fechas en que estuvieron vigentes (hora de Ciudad de México). Cada
-  compra se rige por la versión que se aceptó al pagarla; su número sale en el recibo. La fecha de cada versión se puede
-  comprobar en el historial público del repositorio de la web en GitHub (commit) y cada copia lleva la huella SHA-256
-  del archivo original.</p>
+  compra se rige por la versión que se aceptó al pagarla; su número sale en el recibo. Cada copia lleva la huella
+  SHA-256 del archivo original, que conservamos con su fecha de publicación.</p>
   <div class="scroll"><table>
-    <thead><tr><th>Versión</th><th>Vigente desde</th><th>Hasta</th><th>Textos</th><th>Commit en GitHub</th><th>SHA-256 de los Términos</th></tr></thead>
+    <thead><tr><th>Versión</th><th>Vigente desde</th><th>Hasta</th><th>Textos</th><th>SHA-256 de los Términos</th></tr></thead>
     <tbody>
       {chr(10).join("      " + r for r in rows).strip()}
     </tbody>
