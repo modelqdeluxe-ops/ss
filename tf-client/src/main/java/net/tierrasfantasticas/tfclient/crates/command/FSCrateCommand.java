@@ -126,7 +126,7 @@ public final class FSCrateCommand {
       } else {
          CrateConfig crate = new CrateConfig("crate_" + System.currentTimeMillis() % 100000L);
          crate.rewards.add(exampleItem("minecraft:diamond", 60, "Diamante"));
-         crate.rewards.add(exampleItem("minecraft:netherite_ingot", 10, "Netherite"));
+         crate.rewards.add(exampleItem("minecraft:emerald", 10, "Esmeralda"));
          JsonCrateLoader.saveToFile(crate);
          FSNetwork.sendToClient(player, new OpenEditorPacket(crate.save()));
          return 1;

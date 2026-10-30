@@ -59,8 +59,9 @@ import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
- * Oficios: el jugador elige uno en el pad (app Oficios) y gana experiencia del oficio y monedas al hacer su trabajo (romper,
- * cosechar, pescar...). Sube de nivel, cumple misiones con recompensa y puede dejarlo cuando quiera sin perder nada.
+ * Oficios: el jugador elige uno en el pad (app Oficios) y gana monedas al hacer su trabajo (romper, cosechar, pescar...).
+ * Sube de nivel solo al cobrar sus misiones (la XP del oficio es la de las misiones) y puede dejarlo cuando quiera sin
+ * perder nada.
  * Todo se ajusta en config/tfclient/oficios.json ({@link TFJobsConfig}).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
@@ -283,7 +284,11 @@ public final class TFJobs {
 
     // --- Experiencia, monedas y misiones ---
 
-    /** Algo que hizo el jugador: paga según las acciones de sus oficios y avanza sus misiones. */
+    /**
+     * Algo que hizo el jugador: paga según las acciones de sus oficios y avanza sus misiones. (1.3.153, el dueño: «que los
+     * jobs no me suban nivel cuando mino o hago la acción, solo me debe dar al completar la misión») Las acciones ya no dan
+     * XP del oficio: solo las monedas; el nivel sube al cobrar las misiones ({@link #claim}).
+     */
     private static void record(ServerPlayer player, String type, Predicate<TFJobsConfig.Target> match, int amount) {
         // Las misiones y cazas del pad cuentan lo mismo (con las mismas reglas: nada de bloques puestos ni spawners)
         net.tierrasfantasticas.tfclient.pad.server.PadMissions.record(player, type, match, amount);
@@ -294,11 +299,9 @@ public final class TFJobs {
             Job job = TFJobsConfig.job(jobId);
             if (job == null) continue;
             JobProgress jp = p.job(jobId);
-            double xp = 0;
             double coins = 0;
             for (TFJobsConfig.Action action : job.actions()) {
                 if (!action.type().equals(type) || !match.test(action.target())) continue;
-                xp += action.xp() * amount;
                 coins += action.coins() * amount * (1 + TFJobsConfig.coinBonusPerLevel * (jp.level - 1));
                 break; // la primera acción que encaja (de más concreta a más general, como estén en la config)
             }
@@ -316,10 +319,9 @@ public final class TFJobs {
                     missionDone(player, job, mission);
                 }
             }
-            if (xp > 0 || coins > 0) {
+            if (coins > 0) {
                 changed = true;
                 pending.merge(player.getUUID(), coins, Double::sum);
-                addXp(player, job, jp, xp);
             }
         }
         // (1.3.139, el dueño: «quiero cobrar al instante») lo ganado se paga al momento (en cuanto suma una moneda)

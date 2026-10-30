@@ -8,6 +8,7 @@
  */
 package net.tierrasfantasticas.tfclient.pad.server;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.nio.file.Files;
@@ -146,5 +147,117 @@ public final class PadEconomy {
         for (Map.Entry<String, JsonElement> c : o.entrySet()) {
             if (c.getValue().isJsonObject() || c.getValue().isJsonArray()) walk(c.getValue(), coinFactor, n);
         }
+    }
+
+    /** (1.3.153) Lo que se gana trabajando (oficios, misiones del pad y cazas), otra vez a la mitad. */
+    public static final double COINS_4 = 0.5;
+    /** (1.3.153) La curva de niveles de los oficios ahora que solo suben con las misiones (ver economy4). */
+    public static final double JOB_XP_BASE = 150, JOB_XP_FACTOR = 1.075;
+
+    /**
+     * (1.3.153, el dueño: «necesito que des menos monedas en los oficios, misiones, etc, y que los jobs no me suban nivel
+     * cuando mino o hago la acción, solo me debe dar al completar la misión» y «quita recompensas que den netherita») A
+     * las configs que ya había, una vez (marca «economia»: 4; copia «.antes-economia4.json»): las monedas de los campos
+     * dados a la mitad (COINS_4) y, en oficios.json (jobs), las acciones sin XP y la curva de niveles para subir solo con
+     * misiones: con la de antes (120 × 1,15^nivel) un nivel 30 pedía ~15 días de misiones y el 49, ~180; con 150 ×
+     * 1,075^nivel, de medio día al principio a ~6 días al final (el 50, en unos 4 meses haciendo las 3 diarias). También
+     * quita la netherita de los premios ({@link #withoutNetherite}). Lo demás que cambió el dueño se queda. Devuelve la
+     * que vale.
+     */
+    public static JsonObject economy4(Path file, JsonObject o, String what, boolean jobs, String... fields) {
+        if (o == null || TFJson.num(o, "economia", 0) >= 4) return o;
+        try {
+            String name = file.getFileName().toString().replaceFirst("\\.json$", "");
+            Path backup = file.resolveSibling(name + ".antes-economia4.json");
+            if (Files.exists(file) && !Files.exists(backup)) Files.copy(file, backup);
+            int[] n = {0};
+            scaleWalk(o, COINS_4, java.util.Set.of(fields), n);
+            if (jobs) {
+                if (o.has("oficios") && o.get("oficios").isJsonArray()) {
+                    for (JsonElement j : o.getAsJsonArray("oficios")) {
+                        if (!j.isJsonObject() || !j.getAsJsonObject().has("acciones") || !j.getAsJsonObject().get("acciones").isJsonArray()) continue;
+                        for (JsonElement a : j.getAsJsonObject().getAsJsonArray("acciones")) {
+                            if (a.isJsonObject()) a.getAsJsonObject().addProperty("xp", 0);
+                        }
+                    }
+                }
+                JsonObject levels = TFJson.obj(o, "niveles");
+                levels.addProperty("xpBase", JOB_XP_BASE);
+                levels.addProperty("multiplicador", JOB_XP_FACTOR);
+                if (!o.has("niveles")) o.add("niveles", levels);
+            }
+            int gone = stripNetherite(o, "");
+            o.addProperty("economia", 4);
+            o.addProperty("sinNetherita", true);
+            TFJson.write(file, o);
+            TFClient.LOGGER.info("TF Pad: {}: economía 4 (1.3.153), {} pagos a la mitad{}{} (la de antes, en {})", what, n[0],
+                    jobs ? ", las acciones sin XP y los niveles con la curva de las misiones" : "",
+                    gone > 0 ? ", " + gone + " premios de netherita quitados" : "", backup.getFileName());
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo ajustar {}: {}", what, e.getMessage());
+        }
+        return o;
+    }
+
+    /**
+     * (1.3.153, el dueño: «quita recompensas que den netherita») Quita de una config de premios (pase, gachapón, kits,
+     * recompensas…), una vez (marca «sinNetherita»), cada premio que dé netherita o escombros ancestrales: los objetos
+     * («minecraft:netherite_ingot 1» en una lista «objetos») y los premios {tipo: objeto, id: …}. Si un nivel o día se
+     * queda sin premios, se le pone un diamante para que no salga en blanco. Devuelve la que vale.
+     */
+    public static JsonObject withoutNetherite(Path file, JsonObject o, String what) {
+        if (o == null || TFJson.bool(o, "sinNetherita", false)) return o;
+        try {
+            int gone = stripNetherite(o, "");
+            o.addProperty("sinNetherita", true);
+            if (Files.exists(file)) TFJson.write(file, o);
+            if (gone > 0) TFClient.LOGGER.info("TF Pad: {}: {} premios de netherita quitados (1.3.153)", what, gone);
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo quitar la netherita de {}: {}", what, e.getMessage());
+        }
+        return o;
+    }
+
+    /** Quita los premios de netherita de debajo de e (key: la clave de e en su padre). Devuelve cuántos quitó. */
+    static int stripNetherite(JsonElement e, String key) {
+        int n = 0;
+        if (e == null) return 0;
+        if (e.isJsonObject()) {
+            for (Map.Entry<String, JsonElement> c : e.getAsJsonObject().entrySet()) n += stripNetherite(c.getValue(), c.getKey());
+        } else if (e.isJsonArray()) {
+            JsonArray a = e.getAsJsonArray();
+            int before = a.size();
+            for (int i = a.size() - 1; i >= 0; i--) {
+                if (netheriteReward(a.get(i), key)) {
+                    a.remove(i);
+                    n++;
+                } else {
+                    n += stripNetherite(a.get(i), key);
+                }
+            }
+            // un nivel del pase o un día del calendario que solo daba netherita: un diamante, para que no salga vacío
+            if (before > 0 && a.isEmpty() && key.equals("premios")) {
+                JsonObject d = new JsonObject();
+                d.addProperty("tipo", "objeto");
+                d.addProperty("id", "minecraft:diamond");
+                d.addProperty("cantidad", 1);
+                a.add(d);
+            }
+        }
+        return n;
+    }
+
+    /** Un premio que da netherita: «minecraft:netherite_ingot 1» en «objetos», o {tipo: objeto, id/nbt con netherita}. */
+    private static boolean netheriteReward(JsonElement c, String key) {
+        if (c.isJsonPrimitive()) return key.equals("objetos") && netherite(c.getAsString());
+        if (!c.isJsonObject()) return false;
+        JsonObject o = c.getAsJsonObject();
+        return TFJson.str(o, "tipo", "objeto").equals("objeto") && (netherite(TFJson.str(o, "id", "")) || netherite(TFJson.str(o, "nbt", "")));
+    }
+
+    /** Un objeto de netherita («minecraft:netherite_ingot», «minecraft:netherite_sword{…}», «minecraft:ancient_debris 2»…). */
+    static boolean netherite(String s) {
+        String l = s.toLowerCase(java.util.Locale.ROOT);
+        return l.contains(":") && (l.contains("netherite") || l.contains("ancient_debris"));
     }
 }

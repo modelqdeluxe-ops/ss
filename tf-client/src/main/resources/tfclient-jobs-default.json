@@ -7,9 +7,9 @@
     "recompensa: monedas, xp (del oficio), objetos (\"minecraft:bread 16\") y comandos ({player} = el jugador).",
     "Las monedas salen de la economía de config/tfclient-server.properties (economy.mode).",
     "Economía (1.3.29): un diamante vale 150 en la tienda; una hora de trabajo da entre 40 y 150 monedas según oficio y nivel.",
-    "Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.",
     "repetir: diaria (plantilla que rota: cada día a cada jugador le tocan misionesDiariasPorOficio de las de su nivel, en temporadas de 90 días sin repetir ninguna igual y subiendo cantidad y premio de x1 a x2,5), siempre (vuelve al cobrarla) o nunca (una vez).",
-    "Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno."
+    "Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.",
+    "Economía (1.3.153): lo que se gana, la mitad que en la 1.3.115 (una hora de trabajo, unas 20-45 monedas), sin netherita en los premios. Las acciones solo pagan monedas (su xp no cuenta): el nivel del oficio sube con la xp de las misiones; niveles.xpBase × multiplicador^(nivel-1) es la xp de cada nivel."
   ],
   "activado": true,
   "maxOficios": 1,
@@ -19,13 +19,13 @@
   "generadoresCuentan": false,
   "niveles": {
     "maximo": 50,
-    "xpBase": 120,
-    "multiplicador": 1.15,
+    "xpBase": 150,
+    "multiplicador": 1.075,
     "bonusMonedasPorNivel": 0.03,
     "anunciarCada": 10,
     "recompensa": {
-      "monedas": 6.0,
-      "monedasPorNivel": 1.8,
+      "monedas": 3.0,
+      "monedasPorNivel": 0.9,
       "comandos": []
     },
     "hitos": {
@@ -40,10 +40,8 @@
         ]
       },
       "50": {
-        "objetos": [
-          "minecraft:netherite_ingot 1"
-        ],
-        "monedas": 900.0
+        "objetos": [],
+        "monedas": 450.0
       }
     }
   },
@@ -59,38 +57,38 @@
         {
           "tipo": "cosechar",
           "objetivo": "#minecraft:crops",
-          "xp": 3,
-          "monedas": 0.06
+          "xp": 0,
+          "monedas": 0.03
         },
         {
           "tipo": "cosechar",
           "objetivo": "minecraft:melon",
-          "xp": 2,
-          "monedas": 0.04
-        },
-        {
-          "tipo": "cosechar",
-          "objetivo": "minecraft:pumpkin",
-          "xp": 2,
-          "monedas": 0.04
-        },
-        {
-          "tipo": "cosechar",
-          "objetivo": "minecraft:sugar_cane",
-          "xp": 1,
+          "xp": 0,
           "monedas": 0.02
         },
         {
           "tipo": "cosechar",
+          "objetivo": "minecraft:pumpkin",
+          "xp": 0,
+          "monedas": 0.02
+        },
+        {
+          "tipo": "cosechar",
+          "objetivo": "minecraft:sugar_cane",
+          "xp": 0,
+          "monedas": 0.01
+        },
+        {
+          "tipo": "cosechar",
           "objetivo": "minecraft:nether_wart",
-          "xp": 3,
-          "monedas": 0.06
+          "xp": 0,
+          "monedas": 0.03
         },
         {
           "tipo": "criar",
           "objetivo": "*",
-          "xp": 5,
-          "monedas": 0.24
+          "xp": 0,
+          "monedas": 0.12
         }
       ],
       "misiones": [
@@ -104,7 +102,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -118,7 +116,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -132,7 +130,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -146,7 +144,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 13.0,
+            "monedas": 6.5,
             "xp": 66
           }
         },
@@ -160,7 +158,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -174,7 +172,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -188,7 +186,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -202,7 +200,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -216,7 +214,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -230,7 +228,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -244,7 +242,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -258,7 +256,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -272,7 +270,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -286,7 +284,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -300,7 +298,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -314,7 +312,7 @@
           "nivel": 11,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -328,7 +326,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -342,7 +340,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 240.0,
+            "monedas": 120.0,
             "xp": 1000,
             "objetos": [
               "minecraft:golden_hoe 1"
@@ -359,7 +357,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -373,7 +371,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -387,7 +385,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -401,7 +399,7 @@
           "nivel": 17,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -415,7 +413,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 23.0,
+            "monedas": 12.0,
             "xp": 114
           }
         },
@@ -429,7 +427,7 @@
           "nivel": 22,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -443,7 +441,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -457,7 +455,7 @@
           "nivel": 26,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -471,7 +469,7 @@
           "nivel": 28,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -485,7 +483,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -499,7 +497,7 @@
           "nivel": 32,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -513,7 +511,7 @@
           "nivel": 35,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -527,7 +525,7 @@
           "nivel": 38,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -541,7 +539,7 @@
           "nivel": 42,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -555,7 +553,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -569,7 +567,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -589,19 +587,19 @@
         {
           "tipo": "romper",
           "objetivo": "#forge:ores",
-          "xp": 6,
-          "monedas": 0.36
+          "xp": 0,
+          "monedas": 0.18
         },
         {
           "tipo": "romper",
           "objetivo": "#minecraft:base_stone_overworld",
-          "xp": 0.5,
+          "xp": 0,
           "monedas": 0.01
         },
         {
           "tipo": "romper",
           "objetivo": "#minecraft:base_stone_nether",
-          "xp": 0.5,
+          "xp": 0,
           "monedas": 0.01
         }
       ],
@@ -616,7 +614,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -630,7 +628,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -644,7 +642,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -658,7 +656,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -672,7 +670,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -686,7 +684,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -700,7 +698,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -714,7 +712,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -728,7 +726,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -742,7 +740,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -756,7 +754,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -770,7 +768,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -784,7 +782,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -798,7 +796,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -812,7 +810,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -826,7 +824,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -840,7 +838,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -854,7 +852,7 @@
           "nivel": 11,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -868,7 +866,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 48.0,
+            "monedas": 24.0,
             "xp": 240
           }
         },
@@ -882,7 +880,7 @@
           "nivel": 20,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 54.0,
+            "monedas": 27.0,
             "xp": 270
           }
         },
@@ -896,7 +894,7 @@
           "nivel": 25,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 78.0,
+            "monedas": 39.0,
             "xp": 390
           }
         },
@@ -910,7 +908,7 @@
           "nivel": 30,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 360.0,
+            "monedas": 180.0,
             "xp": 1500,
             "objetos": [
               "minecraft:diamond 3"
@@ -927,7 +925,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -941,7 +939,7 @@
           "nivel": 13,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -955,7 +953,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -969,7 +967,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -983,7 +981,7 @@
           "nivel": 22,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -997,7 +995,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1011,7 +1009,7 @@
           "nivel": 27,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -1025,7 +1023,7 @@
           "nivel": 29,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -1039,7 +1037,7 @@
           "nivel": 32,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1053,7 +1051,7 @@
           "nivel": 34,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -1067,7 +1065,7 @@
           "nivel": 37,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -1081,7 +1079,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 57.0,
+            "monedas": 29.0,
             "xp": 285
           }
         },
@@ -1095,7 +1093,7 @@
           "nivel": 45,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 84.0,
+            "monedas": 42.0,
             "xp": 420
           }
         },
@@ -1109,7 +1107,7 @@
           "nivel": 48,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 66.0,
+            "monedas": 33.0,
             "xp": 330
           }
         },
@@ -1123,7 +1121,7 @@
           "nivel": 45,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 540.0,
+            "monedas": 270.0,
             "xp": 2400,
             "objetos": [
               "minecraft:diamond 3"
@@ -1143,14 +1141,14 @@
         {
           "tipo": "romper",
           "objetivo": "#minecraft:logs",
-          "xp": 2,
-          "monedas": 0.09
+          "xp": 0,
+          "monedas": 0.05
         },
         {
           "tipo": "colocar",
           "objetivo": "#minecraft:saplings",
-          "xp": 1,
-          "monedas": 0.02
+          "xp": 0,
+          "monedas": 0.01
         }
       ],
       "misiones": [
@@ -1164,7 +1162,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1178,7 +1176,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1192,7 +1190,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -1206,7 +1204,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 13.0,
+            "monedas": 6.5,
             "xp": 66
           }
         },
@@ -1220,7 +1218,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -1234,7 +1232,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1248,7 +1246,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -1262,7 +1260,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1276,7 +1274,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1290,7 +1288,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -1304,7 +1302,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -1318,7 +1316,7 @@
           "nivel": 11,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 19.0,
+            "monedas": 9.5,
             "xp": 96
           }
         },
@@ -1332,7 +1330,7 @@
           "nivel": 13,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -1346,7 +1344,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1360,7 +1358,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1374,7 +1372,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 270.0,
+            "monedas": 135.0,
             "xp": 1200
           }
         },
@@ -1388,7 +1386,7 @@
           "nivel": 17,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -1402,7 +1400,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 19.0,
+            "monedas": 9.5,
             "xp": 96
           }
         },
@@ -1416,7 +1414,7 @@
           "nivel": 19,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 19.0,
+            "monedas": 9.5,
             "xp": 96
           }
         },
@@ -1430,7 +1428,7 @@
           "nivel": 21,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 19.0,
+            "monedas": 9.5,
             "xp": 96
           }
         },
@@ -1444,7 +1442,7 @@
           "nivel": 23,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 20.0,
+            "monedas": 10.0,
             "xp": 102
           }
         },
@@ -1458,7 +1456,7 @@
           "nivel": 25,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1472,7 +1470,7 @@
           "nivel": 27,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1486,7 +1484,7 @@
           "nivel": 29,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 23.0,
+            "monedas": 12.0,
             "xp": 114
           }
         },
@@ -1500,7 +1498,7 @@
           "nivel": 31,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1514,7 +1512,7 @@
           "nivel": 34,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -1528,7 +1526,7 @@
           "nivel": 36,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -1542,7 +1540,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -1556,7 +1554,7 @@
           "nivel": 45,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 48.0,
+            "monedas": 24.0,
             "xp": 240
           }
         },
@@ -1570,7 +1568,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -1590,8 +1588,8 @@
         {
           "tipo": "romper",
           "objetivo": "#minecraft:mineable/shovel",
-          "xp": 1,
-          "monedas": 0.02
+          "xp": 0,
+          "monedas": 0.01
         }
       ],
       "misiones": [
@@ -1605,7 +1603,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1619,7 +1617,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 11.0,
+            "monedas": 5.5,
             "xp": 54
           }
         },
@@ -1633,7 +1631,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 13.0,
+            "monedas": 6.5,
             "xp": 66
           }
         },
@@ -1647,7 +1645,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -1661,7 +1659,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1675,7 +1673,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -1689,7 +1687,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 17.0,
+            "monedas": 8.5,
             "xp": 84
           }
         },
@@ -1703,7 +1701,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -1717,7 +1715,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -1731,7 +1729,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -1745,7 +1743,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -1759,7 +1757,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -1773,7 +1771,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 270.0,
+            "monedas": 135.0,
             "xp": 1200
           }
         },
@@ -1787,7 +1785,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -1801,7 +1799,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -1815,7 +1813,7 @@
           "nivel": 21,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -1829,7 +1827,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -1843,7 +1841,7 @@
           "nivel": 27,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -1857,7 +1855,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1871,7 +1869,7 @@
           "nivel": 33,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1885,7 +1883,7 @@
           "nivel": 36,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -1899,7 +1897,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -1913,7 +1911,7 @@
           "nivel": 45,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -1927,7 +1925,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -1947,8 +1945,8 @@
         {
           "tipo": "pescar",
           "objetivo": "*",
-          "xp": 8,
-          "monedas": 0.48
+          "xp": 0,
+          "monedas": 0.24
         }
       ],
       "misiones": [
@@ -1962,7 +1960,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -1976,7 +1974,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -1990,7 +1988,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -2004,7 +2002,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -2018,7 +2016,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2032,7 +2030,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2046,7 +2044,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2060,7 +2058,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2074,7 +2072,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -2088,7 +2086,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -2102,7 +2100,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -2116,7 +2114,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 48.0,
+            "monedas": 24.0,
             "xp": 240
           }
         },
@@ -2130,7 +2128,7 @@
           "nivel": 10,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 90.0,
+            "monedas": 45.0,
             "xp": 500
           }
         },
@@ -2144,7 +2142,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 300.0,
+            "monedas": 150.0,
             "xp": 1400
           }
         },
@@ -2158,7 +2156,7 @@
           "nivel": 20,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -2172,7 +2170,7 @@
           "nivel": 22,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2186,7 +2184,7 @@
           "nivel": 25,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2200,7 +2198,7 @@
           "nivel": 28,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2214,7 +2212,7 @@
           "nivel": 31,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2228,7 +2226,7 @@
           "nivel": 34,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -2242,7 +2240,7 @@
           "nivel": 38,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 51.0,
+            "monedas": 26.0,
             "xp": 255
           }
         },
@@ -2256,7 +2254,7 @@
           "nivel": 42,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 54.0,
+            "monedas": 27.0,
             "xp": 270
           }
         },
@@ -2270,7 +2268,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 54.0,
+            "monedas": 27.0,
             "xp": 270
           }
         },
@@ -2284,7 +2282,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -2304,14 +2302,14 @@
         {
           "tipo": "matar",
           "objetivo": "hostil",
-          "xp": 6,
-          "monedas": 0.36
+          "xp": 0,
+          "monedas": 0.18
         },
         {
           "tipo": "matar",
           "objetivo": "animal",
-          "xp": 1,
-          "monedas": 0.03
+          "xp": 0,
+          "monedas": 0.02
         }
       ],
       "misiones": [
@@ -2325,7 +2323,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -2339,7 +2337,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -2353,7 +2351,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -2367,7 +2365,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -2381,7 +2379,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2395,7 +2393,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2409,7 +2407,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2423,7 +2421,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2437,7 +2435,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2451,7 +2449,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2465,7 +2463,7 @@
           "nivel": 11,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2479,7 +2477,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -2493,7 +2491,7 @@
           "nivel": 13,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2507,7 +2505,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2521,7 +2519,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -2535,7 +2533,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -2549,7 +2547,7 @@
           "nivel": 17,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -2563,7 +2561,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 45.0,
+            "monedas": 23.0,
             "xp": 225
           }
         },
@@ -2577,7 +2575,7 @@
           "nivel": 20,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 54.0,
+            "monedas": 27.0,
             "xp": 270
           }
         },
@@ -2591,7 +2589,7 @@
           "nivel": 25,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 360.0,
+            "monedas": 180.0,
             "xp": 1500
           }
         },
@@ -2605,7 +2603,7 @@
           "nivel": 22,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2619,7 +2617,7 @@
           "nivel": 23,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2633,7 +2631,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2647,7 +2645,7 @@
           "nivel": 26,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -2661,7 +2659,7 @@
           "nivel": 28,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -2675,7 +2673,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -2689,7 +2687,7 @@
           "nivel": 32,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 48.0,
+            "monedas": 24.0,
             "xp": 240
           }
         },
@@ -2703,7 +2701,7 @@
           "nivel": 35,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 51.0,
+            "monedas": 26.0,
             "xp": 255
           }
         },
@@ -2717,7 +2715,7 @@
           "nivel": 37,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 48.0,
+            "monedas": 24.0,
             "xp": 240
           }
         },
@@ -2731,7 +2729,7 @@
           "nivel": 39,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 51.0,
+            "monedas": 26.0,
             "xp": 255
           }
         },
@@ -2745,7 +2743,7 @@
           "nivel": 42,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 57.0,
+            "monedas": 29.0,
             "xp": 285
           }
         },
@@ -2759,7 +2757,7 @@
           "nivel": 44,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 60.0,
+            "monedas": 30.0,
             "xp": 300
           }
         },
@@ -2773,7 +2771,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 60.0,
+            "monedas": 30.0,
             "xp": 300
           }
         },
@@ -2787,7 +2785,7 @@
           "nivel": 45,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 540.0,
+            "monedas": 270.0,
             "xp": 2400,
             "objetos": [
               "minecraft:diamond 3"
@@ -2807,8 +2805,8 @@
         {
           "tipo": "preparar",
           "objetivo": "*",
-          "xp": 6,
-          "monedas": 0.3
+          "xp": 0,
+          "monedas": 0.15
         }
       ],
       "misiones": [
@@ -2822,7 +2820,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -2836,7 +2834,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -2850,7 +2848,7 @@
           "nivel": 2,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 80
           }
         },
@@ -2864,7 +2862,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -2878,7 +2876,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2892,7 +2890,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2906,7 +2904,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -2920,7 +2918,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2934,7 +2932,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -2948,7 +2946,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -2962,7 +2960,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -2976,7 +2974,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -2990,7 +2988,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 270.0,
+            "monedas": 135.0,
             "xp": 1200
           }
         },
@@ -3004,7 +3002,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3018,7 +3016,7 @@
           "nivel": 19,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -3032,7 +3030,7 @@
           "nivel": 21,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3046,7 +3044,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3060,7 +3058,7 @@
           "nivel": 26,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3074,7 +3072,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 45.0,
+            "monedas": 23.0,
             "xp": 225
           }
         },
@@ -3088,7 +3086,7 @@
           "nivel": 33,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -3102,7 +3100,7 @@
           "nivel": 36,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3116,7 +3114,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 51.0,
+            "monedas": 26.0,
             "xp": 255
           }
         },
@@ -3130,7 +3128,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 60.0,
+            "monedas": 30.0,
             "xp": 300
           }
         },
@@ -3144,7 +3142,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -3164,26 +3162,26 @@
         {
           "tipo": "fundir",
           "objetivo": "#forge:ingots",
-          "xp": 2,
-          "monedas": 0.06
+          "xp": 0,
+          "monedas": 0.03
         },
         {
           "tipo": "fabricar",
           "objetivo": "#forge:tools",
-          "xp": 8,
-          "monedas": 0.48
+          "xp": 0,
+          "monedas": 0.24
         },
         {
           "tipo": "fabricar",
           "objetivo": "#forge:armors",
-          "xp": 10,
-          "monedas": 0.6
+          "xp": 0,
+          "monedas": 0.3
         },
         {
           "tipo": "reparar",
           "objetivo": "*",
-          "xp": 4,
-          "monedas": 0.18
+          "xp": 0,
+          "monedas": 0.09
         }
       ],
       "misiones": [
@@ -3197,7 +3195,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -3211,7 +3209,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -3225,7 +3223,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3239,7 +3237,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3253,7 +3251,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -3267,7 +3265,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3281,7 +3279,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3295,7 +3293,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3309,7 +3307,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3323,7 +3321,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3337,7 +3335,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3351,7 +3349,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3365,7 +3363,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3379,7 +3377,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -3393,7 +3391,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3407,7 +3405,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 270.0,
+            "monedas": 135.0,
             "xp": 1200
           }
         },
@@ -3421,7 +3419,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3435,7 +3433,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3449,7 +3447,7 @@
           "nivel": 20,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3463,7 +3461,7 @@
           "nivel": 22,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3477,7 +3475,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -3491,7 +3489,7 @@
           "nivel": 26,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3505,7 +3503,7 @@
           "nivel": 28,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3519,7 +3517,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3533,7 +3531,7 @@
           "nivel": 33,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -3547,7 +3545,7 @@
           "nivel": 36,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -3561,7 +3559,7 @@
           "nivel": 39,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -3575,7 +3573,7 @@
           "nivel": 42,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3589,7 +3587,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 54.0,
+            "monedas": 27.0,
             "xp": 270
           }
         },
@@ -3603,7 +3601,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -3623,8 +3621,8 @@
         {
           "tipo": "colocar",
           "objetivo": "*",
-          "xp": 0.4,
-          "monedas": 0.02
+          "xp": 0,
+          "monedas": 0.01
         }
       ],
       "misiones": [
@@ -3638,7 +3636,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -3652,7 +3650,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -3666,7 +3664,7 @@
           "nivel": 3,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -3680,7 +3678,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 75
           }
         },
@@ -3694,7 +3692,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3708,7 +3706,7 @@
           "nivel": 6,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3722,7 +3720,7 @@
           "nivel": 7,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3736,7 +3734,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3750,7 +3748,7 @@
           "nivel": 9,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -3764,7 +3762,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3778,7 +3776,7 @@
           "nivel": 11,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3792,7 +3790,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3806,7 +3804,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 300.0,
+            "monedas": 150.0,
             "xp": 1400
           }
         },
@@ -3820,7 +3818,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -3834,7 +3832,7 @@
           "nivel": 15,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3848,7 +3846,7 @@
           "nivel": 17,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -3862,7 +3860,7 @@
           "nivel": 19,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3876,7 +3874,7 @@
           "nivel": 21,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3890,7 +3888,7 @@
           "nivel": 23,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3904,7 +3902,7 @@
           "nivel": 25,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3918,7 +3916,7 @@
           "nivel": 27,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -3932,7 +3930,7 @@
           "nivel": 30,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -3946,7 +3944,7 @@
           "nivel": 33,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -3960,7 +3958,7 @@
           "nivel": 36,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -3974,7 +3972,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 39.0,
+            "monedas": 20.0,
             "xp": 195
           }
         },
@@ -3988,7 +3986,7 @@
           "nivel": 45,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 51.0,
+            "monedas": 26.0,
             "xp": 255
           }
         },
@@ -4002,7 +4000,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -4022,8 +4020,8 @@
         {
           "tipo": "encantar",
           "objetivo": "*",
-          "xp": 15,
-          "monedas": 0.9
+          "xp": 0,
+          "monedas": 0.45
         }
       ],
       "misiones": [
@@ -4037,7 +4035,7 @@
           "nivel": 1,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 15.0,
+            "monedas": 7.5,
             "xp": 80
           }
         },
@@ -4051,7 +4049,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 9.0,
+            "monedas": 4.5,
             "xp": 45
           }
         },
@@ -4065,7 +4063,7 @@
           "nivel": 1,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 21.0,
+            "monedas": 11.0,
             "xp": 105
           }
         },
@@ -4079,7 +4077,7 @@
           "nivel": 2,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 12.0,
+            "monedas": 6.0,
             "xp": 60
           }
         },
@@ -4093,7 +4091,7 @@
           "nivel": 3,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -4107,7 +4105,7 @@
           "nivel": 4,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -4121,7 +4119,7 @@
           "nivel": 5,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 36.0,
+            "monedas": 18.0,
             "xp": 180
           }
         },
@@ -4135,7 +4133,7 @@
           "nivel": 8,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 66.0,
+            "monedas": 33.0,
             "xp": 330
           }
         },
@@ -4149,7 +4147,7 @@
           "nivel": 20,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 360.0,
+            "monedas": 180.0,
             "xp": 1500
           }
         },
@@ -4163,7 +4161,7 @@
           "nivel": 10,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 18.0,
+            "monedas": 9.0,
             "xp": 90
           }
         },
@@ -4177,7 +4175,7 @@
           "nivel": 12,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -4191,7 +4189,7 @@
           "nivel": 14,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 72.0,
+            "monedas": 36.0,
             "xp": 360
           }
         },
@@ -4205,7 +4203,7 @@
           "nivel": 16,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 24.0,
+            "monedas": 12.0,
             "xp": 120
           }
         },
@@ -4219,7 +4217,7 @@
           "nivel": 18,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 33.0,
+            "monedas": 17.0,
             "xp": 165
           }
         },
@@ -4233,7 +4231,7 @@
           "nivel": 20,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 30.0,
+            "monedas": 15.0,
             "xp": 150
           }
         },
@@ -4247,7 +4245,7 @@
           "nivel": 24,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 84.0,
+            "monedas": 42.0,
             "xp": 420
           }
         },
@@ -4261,7 +4259,7 @@
           "nivel": 28,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 27.0,
+            "monedas": 14.0,
             "xp": 135
           }
         },
@@ -4275,7 +4273,7 @@
           "nivel": 34,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 96.0,
+            "monedas": 48.0,
             "xp": 480
           }
         },
@@ -4289,7 +4287,7 @@
           "nivel": 40,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 42.0,
+            "monedas": 21.0,
             "xp": 210
           }
         },
@@ -4303,7 +4301,7 @@
           "nivel": 46,
           "repetir": "diaria",
           "recompensa": {
-            "monedas": 114.0,
+            "monedas": 57.0,
             "xp": 570
           }
         },
@@ -4317,7 +4315,7 @@
           "nivel": 40,
           "repetir": "nunca",
           "recompensa": {
-            "monedas": 420.0,
+            "monedas": 210.0,
             "xp": 1800,
             "objetos": [
               "minecraft:diamond 2"
@@ -4328,6 +4326,7 @@
     }
   ],
   "versionEconomia": 3,
-  "economia": 3,
-  "misionesDiariasPorOficio": 3
+  "economia": 4,
+  "misionesDiariasPorOficio": 3,
+  "sinNetherita": true
 }

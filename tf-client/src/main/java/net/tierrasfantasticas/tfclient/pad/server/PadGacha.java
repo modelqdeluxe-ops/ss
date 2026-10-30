@@ -254,6 +254,8 @@ public final class PadGacha {
         }
         // (1.3.114) la de antes, con la economía estable (las monedas, la quinta parte; los objetos raros, menos)
         o = PadEconomy.deflate(file, o, 0.2, "gachapon.json");
+        // (1.3.153, el dueño: «quita recompensas que den netherita») una vez
+        o = PadEconomy.withoutNetherite(file, o, "gachapon.json");
         o = PadEconomy.help(file, o,
                 "Gachapón (app del pad). También se cambia desde el TF Pad de administrador (GACHAPÓN). Tras editar a mano: /tf reload.",
                 "precio: Fantastic Gacha Coins por tirada; tiradaMultiple: {tiradas, precio}; historial: cuántas tiradas se recuerdan.",
@@ -368,10 +370,8 @@ public final class PadGacha {
         ps.add(prize("epico", 6, "monedas", 300, null));
         ps.add(prize("epico", 5, "objeto", 3, "minecraft:diamond"));
         ps.add(prize("epico", 4, "objeto", 1, "minecraft:enchanted_golden_apple"));
-        ps.add(prize("epico", 4, "objeto", 1, "minecraft:netherite_scrap"));
         ps.add(prize("epico", 3, "objeto", 1, "minecraft:totem_of_undying"));
         ps.add(prize("legendario", 5, "monedas", 1000, null));
-        ps.add(prize("legendario", 4, "objeto", 1, "minecraft:netherite_ingot"));
         ps.add(prize("legendario", 3, "objeto", 1, "minecraft:totem_of_undying"));
         ps.add(prize("legendario", 3, "objeto", 1, "minecraft:enchanted_golden_apple"));
         o.add("premios", ps);

@@ -339,6 +339,8 @@ public final class PadRewards {
             o = defaults();
             if (!Files.exists(file)) TFJson.write(file, o);
         }
+        // (1.3.153, el dueño: «quita recompensas que den netherita») una vez
+        o = PadEconomy.withoutNetherite(file, o, "recompensas.json");
         DAYS.clear();
         REWARDS.clear();
         // las monedas puestas como objeto (antes se daban como objeto): pasan a «monedas» y «verdes», una sola vez

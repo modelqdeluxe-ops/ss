@@ -1,5 +1,9 @@
 """Genera la economía por defecto (1.3.29): python3 tools/gen_economia.py
 
+(1.3.153) Las acciones de los oficios ya no dan XP (el nivel sube solo con las misiones: el mod no la lee) y lo que se
+gana trabajando va a la mitad (ECON4); sin netherita en los premios. Las configs salen con «economia»: 4 y
+«sinNetherita»: true (PadEconomy.economy4 y withoutNetherite hacen lo mismo una vez a las que ya hay en los servidores).
+
 Escribe src/main/resources/tfclient-jobs-default.json (oficios: lo que paga cada acción, niveles y las plantillas de
 misiones diarias que rotan) y src/main/resources/tfclient-misiones-default.json (Misiones del pad y Cazas). La escala es
 «tipo dólar»: un diamante en la tienda vale 150 y una hora de trabajo da entre 40 y 150 monedas según el oficio y el
@@ -389,20 +393,35 @@ MISSIONS_HIGH = {
 # aplica lo mismo que PadEconomy.scale (menos de 10: con 2 decimales; si no, redondeado), así que las configs ya salen
 # con «economia»: 3 y el servidor no las vuelve a bajar.
 ECON = 0.6
+# (1.3.153, el dueño: «des menos monedas en los oficios, misiones, etc») y luego, a la mitad (PadEconomy.COINS_4), con el
+# mismo redondeo: salen igual que las de los servidores después de PadEconomy.economy4.
+ECON4 = 0.5
+# (1.3.153) La curva de niveles para subir solo con misiones (PadEconomy.JOB_XP_BASE y JOB_XP_FACTOR)
+XP_BASE = 150
+XP_FACTOR = 1.075
 
 
-def scale(o, fields=('monedas', 'monedasPorNivel')):
+def scale(o, fields=('monedas', 'monedasPorNivel'), factor=ECON):
     if isinstance(o, list):
         for c in o:
-            scale(c, fields)
+            scale(c, fields, factor)
     elif isinstance(o, dict):
         for k, v in o.items():
             if k in fields and isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
-                x = v * ECON
+                x = v * factor
                 o[k] = math.floor(x * 100 + 0.5) / 100 if x < 10 else float(max(1, math.floor(x + 0.5)))
             elif isinstance(v, (dict, list)):
-                scale(v, fields)
+                scale(v, fields, factor)
     return o
+
+
+def econ(o, fields=('monedas', 'monedasPorNivel')):
+    """Lo de la 1.3.115 (60 %) y lo de la 1.3.153 (la mitad), uno detrás de otro, como en los servidores."""
+    return scale(scale(o, fields, ECON), fields, ECON4)
+
+
+def no_netherite(items):
+    return [x for x in items if not (':' in x and ('netherite' in x.lower() or 'ancient_debris' in x.lower()))]
 
 
 def check(name, lst):
@@ -418,27 +437,35 @@ def jobs():
     d = json.load(open(JOBS_SRC, encoding='utf-8'))
     # (1.3.143) versión 3: las misiones nuevas (niveles 10 a 50) llegan a los servidores (la de antes se guarda)
     d['versionEconomia'] = 3
-    d['economia'] = 3
+    d['economia'] = 4
+    d['sinNetherita'] = True
     d['misionesDiariasPorOficio'] = 3
-    d['_ayuda'] = [x for x in d['_ayuda'] if not x.startswith('repetir:')] + [
+    d['_ayuda'] = [x for x in d['_ayuda'] if not x.startswith(('repetir:', 'Economía (1.3.115', 'Economía (1.3.153'))] + [
         'repetir: diaria (plantilla que rota: cada día a cada jugador le tocan misionesDiariasPorOficio de las de su nivel, '
         'en temporadas de 90 días sin repetir ninguna igual y subiendo cantidad y premio de x1 a x2,5), siempre (vuelve al '
         'cobrarla) o nunca (una vez).',
-        'Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.']
+        'Economía (1.3.115, exigente): una hora de trabajo da unas 40-90 monedas según oficio y nivel. (1.3.143) Misiones de oficio hasta el nivel 50 y un objetivo «nunca» de leyenda en cada uno.',
+        'Economía (1.3.153): lo que se gana, la mitad que en la 1.3.115 (una hora de trabajo, unas 20-45 monedas), sin '
+        'netherita en los premios. Las acciones solo pagan monedas (su xp no cuenta): el nivel del oficio sube con la xp '
+        'de las misiones; niveles.xpBase × multiplicador^(nivel-1) es la xp de cada nivel.']
     lv = d['niveles']
-    lv['xpBase'] = 120
-    lv['multiplicador'] = 1.15
+    lv['xpBase'] = XP_BASE
+    lv['multiplicador'] = XP_FACTOR
     lv['recompensa'] = {'monedas': 10, 'monedasPorNivel': 3, 'comandos': []}
     lv['hitos'] = {'10': {'objetos': ['minecraft:diamond 1']}, '25': {'objetos': ['minecraft:diamond 3']},
-                   '50': {'objetos': ['minecraft:netherite_ingot 1'], 'monedas': 1500}}
+                   '50': {'objetos': no_netherite(['minecraft:netherite_ingot 1']), 'monedas': 1500}}
     for j in d['oficios']:
-        j['acciones'] = [{'tipo': t, 'objetivo': o, 'xp': x, 'monedas': c} for t, o, x, c in ACTIONS[j['id']]]
+        # (1.3.153) las acciones no dan xp del oficio (solo monedas)
+        j['acciones'] = [{'tipo': t, 'objetivo': o, 'xp': 0, 'monedas': c} for t, o, x, c in ACTIONS[j['id']]]
         j['misiones'] = MISSIONS[j['id']] + MISSIONS_HIGH.get(j['id'], [])
+        for mi in j['misiones']:
+            if 'objetos' in mi['recompensa']:
+                mi['recompensa']['objetos'] = no_netherite(mi['recompensa']['objetos'])
         check('oficio ' + j['id'], j['misiones'])
-    scale(lv)
+    econ(lv)
     for j in d['oficios']:
-        scale(j['acciones'])
-        scale(j['misiones'])
+        econ(j['acciones'])
+        econ(j['misiones'])
     with open(JOBS_SRC, 'w', encoding='utf-8') as f:
         json.dump(d, f, ensure_ascii=False, indent=2)
         f.write('\n')
@@ -784,12 +811,13 @@ def missions():
                    '(x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id. requiere: nether o end (solo rotan si '
                    'están en «abiertos», p. ej. "abiertos": ["nether"] al abrir el Nether). semanal: false = no sale en las semanales.'),
         'version': 4,
-        'economia': 3,
+        'economia': 4,
+        'sinNetherita': True,
         'abiertos': [],
         'semanalesPorCantidad': 5,
         'semanalesPorPago': 4,
-        'diarias': gate(scale(json.loads(json.dumps(DAILY + DAILY_MORE)))),
-        'cazas': gate(scale(json.loads(json.dumps(HUNTS + HUNTS_MORE)))),
+        'diarias': gate(econ(json.loads(json.dumps(DAILY + DAILY_MORE)), ('monedas',))),
+        'cazas': gate(econ(json.loads(json.dumps(HUNTS + HUNTS_MORE)), ('monedas',))),
     }
     check('diarias', o['diarias'])
     check('cazas', o['cazas'])

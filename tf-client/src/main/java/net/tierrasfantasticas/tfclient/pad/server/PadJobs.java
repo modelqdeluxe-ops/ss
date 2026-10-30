@@ -218,6 +218,8 @@ public final class PadJobs {
 
     private static void actions(PadView.Builder b, Job job, JobProgress jp) {
         double bonus = 1 + TFJobsConfig.coinBonusPerLevel * (jp.level - 1);
+        // (1.3.153) lo que se hace solo paga monedas: el nivel sube con las misiones
+        b.header("El nivel del oficio sube al cobrar sus misiones.");
         if (TFJobsConfig.coinBonusPerLevel > 0 && jp.level > 1) {
             b.header("Con tu nivel cobras un " + Math.round((bonus - 1) * 100) + " % más.");
         }
@@ -226,7 +228,7 @@ public final class PadJobs {
             ItemStack icon = target.startsWith("#") || !target.contains(":") ? new ItemStack(TFJobsMenu.icon(job))
                     : new ItemStack(TFJobsMenu.item(target, TFJobsMenu.icon(job)));
             List<String> lines = new ArrayList<>();
-            lines.add("+" + num(a.xp()) + " xp" + (a.coins() > 0 ? " · +" + num(a.coins() * bonus) + " " + TFServerConfig.currency() : ""));
+            lines.add(a.coins() > 0 ? "+" + num(a.coins() * bonus) + " " + TFServerConfig.currency() : "No paga.");
             b.row(new PadView.Row(icon, TFJobsMenu.actionLabel(a), TEXT, lines, -1, "", null, null));
         }
         if (job.actions().isEmpty()) b.empty("Solo paga con misiones.");
