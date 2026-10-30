@@ -228,11 +228,10 @@ export function disputeLetter(f, lang = 'en') {
   );
   if (f.archived) {
     const url = `${SITE}${f.archived.terms}`;
-    const commit = `https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}`;
     out.push(
       en
-        ? `4b. Exact terms in force for this purchase: version ${f.archived.label}, published on ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` and replaced on ${enDate(isoOf(f.archived.to))}` : ''}. Archived copy: ${url}. Its publication date can be verified in our public repository: ${commit} (SHA-256 of the page: ${f.archived.termsSha256}). The refund section of that version is quoted in full in the attached evidence.`
-        : `4b. Términos exactos de esta compra: versión ${f.archived.label}, publicada el ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` y sustituida el ${enDate(isoOf(f.archived.to))}` : ''}. Copia archivada: ${url}. Su fecha se puede comprobar en el repositorio público: ${commit} (SHA-256 de la página: ${f.archived.termsSha256}). La sección de reembolsos de esa versión va copiada entera en el expediente.`,
+        ? `4b. Exact terms in force for this purchase: version ${f.archived.label}, published on ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` and replaced on ${enDate(isoOf(f.archived.to))}` : ''}. Archived copy: ${url} (SHA-256 of the original page: ${f.archived.termsSha256}; we keep the original file with its publication date). The refund section of that version is quoted in full in the attached evidence.`
+        : `4b. Términos exactos de esta compra: versión ${f.archived.label}, publicada el ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` y sustituida el ${enDate(isoOf(f.archived.to))}` : ''}. Copia archivada: ${url} (SHA-256 de la página original: ${f.archived.termsSha256}; conservamos el original con su fecha de publicación). La sección de reembolsos de esa versión va copiada entera en el expediente.`,
     );
   }
   out.push(
@@ -280,7 +279,7 @@ export function stripeEvidence(f) {
     ...(f.delivered ? { service_date: f.delivered.slice(0, 10) } : {}),
     access_activity_log: cut(log.join('\n')),
     refund_policy_disclosure: cut(
-      `The refund policy is shown next to the payment button and in our Terms (https://tierrasfantásticas.store/terminos#reembolsos). The buyer must tick a mandatory checkbox accepting the Terms before paying${a ? ` (accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP ${a.ip || 'n/a'})` : ''}. Refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery by emailing us.${f.archived ? ` Exact terms accepted (archived, version ${f.archived.label}): ${SITE}${f.archived.terms} — publication verifiable at https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}.` : ''}`,
+      `The refund policy is shown next to the payment button and in our Terms (https://tierrasfantásticas.store/terminos#reembolsos). The buyer must tick a mandatory checkbox accepting the Terms before paying${a ? ` (accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP ${a.ip || 'n/a'})` : ''}. Refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery by emailing us.${f.archived ? ` Exact terms accepted (archived, version ${f.archived.label}): ${SITE}${f.archived.terms} (SHA-256 of the original: ${f.archived.termsSha256}).` : ''}`,
     ),
     refund_refusal_explanation: cut(
       `The buyer never requested a refund. The dispute was opened ${span(f.elapsedMs, 'en')} after ${f.delivered ? 'delivery' : 'payment'}, outside the refund window, and the item had been delivered${f.usedAfter ? ' and used (the account kept playing on our server)' : ''}.`,
@@ -310,7 +309,7 @@ export function disputePdf(f) {
     blocks.push(
       { rule: true },
       { text: `Terms in force for this purchase, refund section verbatim / Sección de reembolsos de los Términos de esta compra, tal cual (versión ${f.archived.label})`, size: 12, bold: true, gap: 2 },
-      { text: `${SITE}${f.archived.terms} · https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}`, size: 9, color: [0.42, 0.35, 0.29], gap: 4 },
+      { text: `${SITE}${f.archived.terms} · SHA-256 ${f.archived.termsSha256}`, size: 9, color: [0.42, 0.35, 0.29], gap: 4 },
     );
     for (const line of f.archived.refunds.split('\n')) blocks.push({ text: line, size: 10, gap: 4 });
   }

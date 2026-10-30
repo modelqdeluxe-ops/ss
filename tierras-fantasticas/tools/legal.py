@@ -273,9 +273,8 @@ de tu siguiente compra o recompensa. Las compras se rigen por los términos vige
 aceptaste en ese momento): por ejemplo, las anteriores al 30 de octubre de 2026 tienen 5 días hábiles para cancelar y
 un baneo de 6 días por reembolso injustificado.</p>
 <p><b>Versiones anteriores.</b> Todas las versiones de estos Términos y del Aviso de privacidad, tal como se publicaron
-y con las fechas en que estuvieron vigentes, están en el <a href="/archivo-legal/">archivo legal</a>. La fecha de cada
-una se puede comprobar en el historial público de la web en GitHub, y el recibo de cada compra dice qué versión se
-aceptó.</p>'''),
+y con las fechas en que estuvieron vigentes, están en el <a href="/archivo-legal/">archivo legal</a>. Cada copia lleva la
+huella SHA-256 del original, y el recibo de cada compra dice qué versión se aceptó.</p>'''),
 
     ('ley', 'Ley aplicable y reclamaciones', f'''
 <p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos, incluida la Ley Federal de Protección al

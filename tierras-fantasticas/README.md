@@ -262,11 +262,12 @@ los Términos. El plazo y el baneo son los de la versión de los Términos que a
 hábiles y 6 días. Los reembolsos que hace el dueño desde Stripe o PayPal no banean.
 
 **Archivo legal (30 oct 2026)**: `/archivo-legal/` tiene cada versión de los Términos y del Aviso de privacidad tal
-como se publicó (copia exacta con un aviso arriba, el commit de GitHub que prueba su fecha y la huella SHA-256), desde el
+como se publicó (copia exacta con un aviso arriba y la huella SHA-256 del original; el dueño no quiere que en la web
+salga el repositorio de GitHub ni sus commits: el commit solo va en `config/legal-archive.json`, que no se sirve), desde el
 6 de octubre de 2026; si el texto cambió sin cambiar de número, cada texto es una variante (-b, -c…). Lo genera
 `python3 tools/legal_archive.py` desde el historial de `origin/main` (hace falta el historial completo: `git fetch
 --unshallow origin main`), con `config/legal-archive.json` para el Worker: el recibo dice «Texto de esos Términos» con
-el enlace de la versión que aceptó el pedido y el expediente de una disputa la cita (enlace, commit, huella) y copia su
+el enlace de la versión que aceptó el pedido y el expediente de una disputa la cita (enlace y huella) y copia su
 sección de reembolsos tal cual. **Cada vez que se publiquen unos Términos nuevos, vuelve a ejecutarlo después de
 fusionar en main** y publica el resultado.
 
