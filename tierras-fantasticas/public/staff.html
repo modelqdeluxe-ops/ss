@@ -78,7 +78,7 @@
       <div id="testList" class="tests"></div>
     </section>
     <div class="bar">
-      <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal.</span>
+      <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal. «Pruebas» descarga el expediente (PDF, en inglés y español) para responder una disputa o un contracargo.</span>
       <button id="reload" type="button">Recargar</button>
       <button id="logout" type="button">Salir</button>
     </div>
@@ -134,7 +134,7 @@
             <td>${esc(o.product)}<div class="dim">${esc(o.id)}</div></td>
             <td>${esc(money(o.amount, o.currency))}${o.amount ? `<div class="dim">${esc(o.method)}</div>` : ''}</td>
             <td class="tag ${o.refunded ? 'refunded' : ''}">${esc(o.refunded ? o.refunded[0].toUpperCase() + o.refunded.slice(1) : STATUS[o.status] || o.status)}${o.status === 'queued' && !o.refunded ? '<div class="dim">esperando a que el servidor lo entregue</div>' : ''}${o.error ? `<div class="dim">${esc(o.error)}</div>` : ''}</td>
-            <td>${o.refundable ? `<button class="refund" data-id="${esc(o.id)}" data-what="${esc(`${o.product} de ${o.username}`)}">Reembolsar</button>` : ''}</td>
+            <td>${o.refundable ? `<button class="refund" data-id="${esc(o.id)}" data-what="${esc(`${o.product} de ${o.username}`)}">Reembolsar</button>` : ''}${o.disputable ? ` <button class="dispute" data-id="${esc(o.id)}" title="Expediente en PDF para responder una disputa o un contracargo">Pruebas</button>` : ''}</td>
           </tr>`).join('')
         : '<tr><td colspan="6" class="dim">No hay pedidos.</td></tr>';
       show('');
@@ -210,6 +210,25 @@
   });
   $('logout').addEventListener('click', () => { logout(); show(''); });
   $('rows').addEventListener('click', async (e) => {
+    // (30 oct 2026) el expediente para responder una disputa: se descarga en PDF
+    const pdfBtn = e.target.closest('button.dispute');
+    if (pdfBtn) {
+      pdfBtn.disabled = true;
+      try {
+        const res = await fetch('/api/staff/dispute-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify({ id: pdfBtn.dataset.id }) });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Error ${res.status}`);
+        const url = URL.createObjectURL(await res.blob());
+        const a = Object.assign(document.createElement('a'), { href: url, download: `disputa-${pdfBtn.dataset.id}.pdf` });
+        document.body.append(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (err) {
+        show(err.message, 'err');
+      }
+      pdfBtn.disabled = false;
+      return;
+    }
     const btn = e.target.closest('button.refund');
     if (!btn) return;
     if (!confirm(`¿Reembolsar ${btn.dataset.what}?\n\nSe le quita lo entregado en el servidor y sus roles de Discord. No se puede deshacer.`)) return;

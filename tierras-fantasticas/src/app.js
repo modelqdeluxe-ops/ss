@@ -15,7 +15,7 @@ import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { createMailer, mailHtml, fieldsText } from './mail.js';
-import { receiptPdf, receiptRows, money, REFUND_POLICY } from './receipt.js';
+import { receiptPdf, receiptRows, money, refundPolicyFor, disputeFacts, disputePdf, stripeEvidence } from './receipt.js';
 import { toBase64 } from './pdf.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
@@ -37,10 +37,10 @@ const BRIDGE_TEMPLATES = 2;
 
 // Versión vigente de los Términos y del Aviso de privacidad (la fecha de config/legal.json, la misma que muestran).
 const TERMS_VERSION = legal.version;
-// Reembolsos: plazo para cancelar (días hábiles desde la entrega) y la penalización de un reembolso injustificado
-// (una disputa o contracargo pasado el plazo): baneo de IP del servidor (EssentialsX, tempbanip) de 6 días.
-const REFUND_DAYS = 5;
-const PENALTY = '6d';
+// Reembolsos: el plazo para cancelar y la penalización de un reembolso injustificado (una disputa o contracargo pasado
+// el plazo: baneo de IP del servidor con EssentialsX, tempbanip) son los de los Términos que aceptó cada pedido
+// (receipt.js, refundPolicyFor): desde la versión 2026-10-30.1, 24 horas desde la entrega y 15 días; antes, 5 días
+// hábiles y 6 días.
 const CONTEXT_LABEL = { cuenta: 'al crear la cuenta', compra: 'al pagar', regalo: 'al pagar un regalo', actualizacion: 'al aceptar la versión nueva' };
 
 // Mensaje de un regalo: una línea corta, sin códigos de color (§) ni caracteres de control (va en un tellraw)
@@ -475,10 +475,11 @@ export function createApp(env) {
     if (!order || !order.amount) return;
     const { pdf, rows } = await receiptFor(order, true);
     const intro = `Compra pagada en ${SERVER_NAME}: ${order.username}, ${money(order.amount, order.currency)}.`;
+    const policy = refundPolicyFor(order).lines;
     await mailer.send({
       subject: `Recibo ${order.id} · ${order.username} · ${money(order.amount, order.currency)}`,
-      text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
-      html: mailHtml('Recibo de compra', intro, rows, REFUND_POLICY.join(' ')),
+      text: `${intro}\n\n${fieldsText(rows)}\n\n${policy.join('\n')}`,
+      html: mailHtml('Recibo de compra', intro, rows, policy.join(' ')),
       attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
     });
   }
@@ -693,6 +694,7 @@ export function createApp(env) {
       return json({
         price: skillsCatalog.price,
         coinPrice: skillsCatalog.coinPrice,
+        onSale: skillsCatalog.onSale !== false,
         keys: skillsCatalog.keys,
         groups: skillsCatalog.groups,
         classes: skillClasses,
@@ -706,6 +708,10 @@ export function createApp(env) {
     'POST /api/skills/coins': async (req) => {
       const user = await currentUser(req);
       if (!user) return json({ error: 'Inicia sesión para comprar con tus monedas.', code: 'login' }, 401);
+      // (30 oct 2026, el dueño: «nadie puede comprarlas ahora hasta que hagas un reajuste en la economía»)
+      if (skillsCatalog.onSale === false) {
+        return json({ error: 'Las skills no están a la venta por ahora: estamos reajustando la economía del servidor.', code: 'not_on_sale' }, 403);
+      }
       const terms = termsMissing(user);
       if (terms) return terms;
       const body = (await readJson(req)) || {};
@@ -1238,6 +1244,7 @@ export function createApp(env) {
           error: o.error || null,
           createdAt: o.createdAt,
           refundable: CLAIMED.includes(o.status) && !o.refunded,
+          disputable: o.amount > 0 && ['queued', ...CLAIMED].includes(o.status),
         })),
       });
     },
@@ -1292,6 +1299,20 @@ export function createApp(env) {
       const status = await fulfill(await store.getOrder(id), ctx, null);
       log.warn(`Prueba desde el panel de staff: ${product.id} para ${player.name} (${id})`);
       return json({ ok: true, id, status, product: product.name, username: player.name });
+    },
+
+    // (30 oct 2026) El expediente de un pedido para responder una disputa o un contracargo (PDF), cuando sea
+    'POST /api/staff/dispute-pdf': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const body = (await readJson(req)) || {};
+      const order = typeof body.id === 'string' ? await store.getOrder(body.id) : null;
+      if (!order) return json({ error: 'Ese pedido no existe.' }, 404);
+      if (!order.amount) return json({ error: 'Ese pedido no se pagó con dinero.' }, 400);
+      const pdf = disputePdf(await disputeCase(order));
+      return new Response(pdf, {
+        headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="disputa-${order.id}.pdf"`, 'Cache-Control': 'no-store' },
+      });
     },
 
     'POST /api/staff/refund': async (req, ctx) => {
@@ -1474,7 +1495,7 @@ export function createApp(env) {
           case 'charge.dispute.created': {
             const dispute = event.type === 'charge.dispute.created';
             const paymentIntent = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
-            await handleReversal({ paymentIntent, full: dispute || object.refunded === true, dispute }, ctx);
+            await handleReversal({ paymentIntent, full: dispute || object.refunded === true, dispute, disputeId: dispute ? object.id : null }, ctx);
             break;
           }
           default:
@@ -1993,7 +2014,19 @@ export function createApp(env) {
     return null;
   }
 
-  async function handleReversal({ paymentIntent, full, dispute, order: given = null, manual = false }, ctx) {
+  // El expediente de un pedido para responder una disputa (receipt.js): los hechos, con lo que hay en la web
+  async function disputeCase(order, late) {
+    const acceptance = await store.termsForOrder(order.id);
+    const payerUuid = order.gift?.fromUuid || order.uuid;
+    const player = order.uuid ? await store.playerByUuid(order.uuid) : null;
+    const delivery = await store.deliveryOf(order.id);
+    const history = payerUuid ? (await store.ordersFor({ uuid: payerUuid })).map((o) => ({ ...o, productName: productById.get(o.productId)?.name })) : [];
+    const facts = disputeFacts({ order, productName: orderView(order).product, acceptance, player, delivery, history });
+    if (late !== undefined) facts.inWindow = !late;
+    return facts;
+  }
+
+  async function handleReversal({ paymentIntent, full, dispute, order: given = null, manual = false, disputeId = null }, ctx) {
     const order = given || (paymentIntent ? await store.findOrderByPaymentIntent(paymentIntent) : null);
     if (!order) return;
     const what = dispute ? 'disputa' : full ? 'reembolsado' : 'reembolso parcial';
@@ -2001,40 +2034,67 @@ export function createApp(env) {
     if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
     if (full && CLAIMED.includes(order.status)) await revoke(order, ctx, { manual });
 
-    // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasados los 5 días
-    // hábiles desde la entrega → baneo de IP del servidor de 6 días. Los reembolsos que hace el dueño no se castigan.
-    const since = businessDaysSince(order.deliveredAt || order.paidAt || order.createdAt);
-    const late = since > REFUND_DAYS;
+    // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasado el plazo de los
+    // Términos que aceptó (24 horas o, antes del 30 oct 2026, 5 días hábiles desde la entrega) → baneo de IP del
+    // servidor (15 o 6 días). Los reembolsos que hace el dueño no se castigan.
+    const policy = refundPolicyFor(order);
+    const since = order.deliveredAt || order.paidAt || order.createdAt;
+    const hours = Math.max(0, Math.floor((Date.now() - Date.parse(since)) / 3600000));
+    const days = businessDaysSince(since);
+    const late = policy.id === '24h' ? hours >= 24 : days > 5;
+    const elapsed = policy.id === '24h' ? `${hours} horas` : `${days} días hábiles`;
     let penalty = false;
     // En un regalo la sanción es para quien pagó (y reclamó el dinero), no para el que lo recibió
     const payer = order.gift ? (await store.playerByUuid(order.gift.fromUuid))?.name || order.gift.fromName : order.username;
     if (dispute && late && CLAIMED.includes(order.status)) {
       penalty = await store.queuePenalty(order, [
-        `tempbanip ${order.gift ? payer : '{player}'} ${PENALTY} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasados ${REFUND_DAYS} días hábiles)`,
+        `tempbanip ${order.gift ? payer : '{player}'} ${policy.ban} Reembolso injustificado del pedido ${order.id} (Términos de ${SERVER_NAME}: sin reembolsos pasadas ${policy.windowText} desde la entrega)`,
       ]);
       if (penalty) {
-        await store.updateOrder(order.id, { refunded: `${what} fuera de plazo · baneo de IP de 6 días` });
-        log.warn(`Pedido ${order.id}: baneo de IP de 6 días en cola para ${payer}`);
+        await store.updateOrder(order.id, { refunded: `${what} fuera de plazo · baneo de IP de ${policy.banText}` });
+        log.warn(`Pedido ${order.id}: baneo de IP de ${policy.banText} en cola para ${payer}`);
       }
     }
 
-    // Aviso para el dueño, con todo lo que sirve de prueba (y el recibo adjunto)
+    // (30 oct 2026) Disputa: el expediente con las pruebas. En Stripe se dejan rellenadas las pruebas de la disputa (sin
+    // enviar: el dueño las revisa, adjunta el PDF y pulsa «Enviar»); en PayPal se pega la respuesta y se adjunta el PDF.
+    let facts = null;
+    if (dispute && order.amount > 0) {
+      try {
+        facts = await disputeCase(order, late);
+        if (disputeId && stripe && order.method !== 'paypal') {
+          await stripe.updateDisputeEvidence(disputeId, stripeEvidence(facts));
+          log.log(`Pedido ${order.id}: pruebas de la disputa ${disputeId} rellenadas en Stripe (sin enviar)`);
+        }
+      } catch (err) {
+        log.error(`Pedido ${order.id}: no se pudieron preparar las pruebas de la disputa:`, err);
+      }
+    }
+
+    // Aviso para el dueño, con todo lo que sirve de prueba (el recibo y, en una disputa, el expediente)
     if (mailer.enabled) {
       const fresh = (await store.getOrder(order.id)) || order;
       const { pdf, rows } = await receiptFor(fresh, true);
       const verdict = dispute
         ? late
-          ? `Disputa abierta ${since} días hábiles después de la entrega (fuera del plazo de ${REFUND_DAYS}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de 6 días para ${payer}.` : ''}`
-          : `Disputa abierta ${since} días hábiles después de la entrega (dentro del plazo de ${REFUND_DAYS}).`
+          ? `Disputa abierta ${elapsed} después de la entrega (fuera del plazo de ${policy.windowText}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de ${policy.banText} para ${payer}.` : ''}`
+          : `Disputa abierta ${elapsed} después de la entrega (dentro del plazo de ${policy.windowText}): según los Términos se trata como una cancelación.`
         : manual
-          ? `Reembolso hecho a mano desde el panel de staff, ${since} días hábiles después de la entrega.`
-          : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${since} días hábiles después de la entrega.`;
-      const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor. Responde la disputa con el recibo adjunto, la firma de los Términos y la entrega registrada.`;
+          ? `Reembolso hecho a mano desde el panel de staff, ${elapsed} después de la entrega.`
+          : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${order.method === 'paypal' ? 'PayPal' : 'Stripe'}, ${elapsed} después de la entrega.`;
+      const how = dispute
+        ? order.method === 'paypal'
+          ? ' Responde en el Centro de resoluciones de PayPal antes de que venza el plazo: pega la respuesta en inglés del expediente adjunto y sube el expediente y el recibo. Antes, comprueba que el comprador no te escribió pidiendo el reembolso.'
+          : ' En Stripe las pruebas ya están rellenadas (sin enviar): revísalas, adjunta el expediente y el recibo y pulsa «Enviar pruebas». Antes, comprueba que el comprador no te escribió pidiendo el reembolso.'
+        : '';
+      const intro = `${what[0].toUpperCase()}${what.slice(1)} del pedido ${order.id} (${order.username}). ${verdict} Lo entregado se retira del servidor.${how}`;
+      const attachments = [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }];
+      if (facts) attachments.push({ filename: `disputa-${order.id}.pdf`, content: toBase64(disputePdf(facts)) });
       await mailer.send({
         subject: `${dispute ? 'DISPUTA' : 'Reembolso'} · pedido ${order.id} · ${order.username}`,
-        text: `${intro}\n\n${fieldsText(rows)}\n\n${REFUND_POLICY.join('\n')}`,
-        html: mailHtml(dispute ? 'Disputa de un pago' : 'Reembolso de un pago', intro, rows, REFUND_POLICY.join(' ')),
-        attachments: [{ filename: `recibo-${order.id}.pdf`, content: toBase64(pdf) }],
+        text: `${intro}\n\n${fieldsText(rows)}\n\n${policy.lines.join('\n')}`,
+        html: mailHtml(dispute ? 'Disputa de un pago' : 'Reembolso de un pago', intro, rows, policy.lines.join(' ')),
+        attachments,
       });
     }
   }

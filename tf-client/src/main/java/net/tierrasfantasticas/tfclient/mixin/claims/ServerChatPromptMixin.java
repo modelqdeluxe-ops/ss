@@ -47,6 +47,12 @@ public abstract class ServerChatPromptMixin {
             }
             if (ChatPromptRouter.shouldSuppress(serverplayer.getUUID(), playerchatmessage.signedContent())) {
                 callbackinfo.cancel();
+                return;
+            }
+            // (1.3.154) el chat del clan: aquí, antes del ServerChatEvent de Forge y del AsyncPlayerChatEvent de Bukkit
+            // (Mohist), para que ningún plugin del chat público lo vea; va solo a su clan y a los operadores
+            if (net.tierrasfantasticas.tfclient.pad.server.PadClanChat.intercept(serverplayer, playerchatmessage.signedContent())) {
+                callbackinfo.cancel();
             }
         }
         catch (Throwable throwable) {

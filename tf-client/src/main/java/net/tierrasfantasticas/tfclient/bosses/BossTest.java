@@ -2920,7 +2920,48 @@ public final class BossTest {
                     r.event("dueño de verdad: " + trackerShovel(player));
                     player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
                 }
-                if (t == k0 + 40) next(level);
+                // (1.3.154, el dueño: «nadie, a excepción de operadores, puede ver lo que escriben en el chat del clan de
+                // otros clanes») el chat del clan: /clan chat enable solo dentro de un clan, la regla de destinatarios,
+                // mi mensaje de verdad (escrito desde el cliente) va solo al clan, y el público de otro no me llega
+                var chatLog = net.tierrasfantasticas.tfclient.pad.server.PadClanChat.TEST_LOG;
+                if (t == k0 + 40) {
+                    r.event("chat del clan: " + net.tierrasfantasticas.tfclient.pad.server.PadClanChat.testSetup(player));
+                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                        var mc = net.minecraft.client.Minecraft.getInstance();
+                        if (mc.player != null) mc.player.connection.sendChat("hola clan");
+                    });
+                }
+                if (t == k0 + 50) net.tierrasfantasticas.tfclient.pad.server.PadClanChat.testPublic(server, "hola publico");
+                if (t == k0 + 52) {
+                    r.event("chat del clan, lo que pasó: " + (chatLog.isEmpty() ? "NADA" : String.join(" | ", chatLog)));
+                    boolean mine = chatLog.stream().anyMatch(x -> x.startsWith("clan CHT «hola clan» → "));
+                    boolean leaked = chatLog.contains("público a " + name + ": entregado");
+                    boolean hidden = chatLog.contains("público a " + name + ": oculto");
+                    r.event("chat del clan: mi mensaje → " + (mine ? "al clan (bien)" : "NO LLEGÓ AL CLAN (MAL)") + ", al público → "
+                            + (leaked ? "SALIÓ (MAL)" : "no (bien)") + "; el chat público de otro → " + (hidden ? "no me llega (bien)" : "ME LLEGA (MAL)"));
+                    chatLog.clear();
+                    server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "clan chat disable");
+                    net.tierrasfantasticas.tfclient.pad.server.PadClanChat.testPublic(server, "hola de nuevo");
+                    r.event("chat del clan desactivado (" + (net.tierrasfantasticas.tfclient.pad.server.PadClanChat.enabled(player.getUUID()) ? "SIGUE (MAL)" : "bien")
+                            + "): el público → " + (chatLog.contains("público a " + name + ": entregado") ? "me llega (bien)" : "NO ME LLEGA (MAL)"));
+                    net.tierrasfantasticas.tfclient.pad.server.PadClanChat.testCleanup(player);
+                }
+                // (1.3.154, el dueño: «nerfea el daño de las skills y aumenta el cooldown; el mínimo tiene 0,2 s») lo
+                // que usa el servidor: Thor (golpe de martillo, 0 s en el pack) y su skill más larga
+                if (t == k0 + 54) {
+                    var thor = net.tierrasfantasticas.tfclient.skills.SkillDefs.get("thor");
+                    StringBuilder sk = new StringBuilder("skills: daño x" + net.tierrasfantasticas.tfclient.skills.SkillServer.damageScale());
+                    if (thor != null) {
+                        for (var s : thor.actives()) {
+                            sk.append("; ").append(s.id()).append(" ").append(s.cooldown()).append(" s → ")
+                                    .append(net.tierrasfantasticas.tfclient.skills.SkillServer.cooldownTicks(s) / 20.0).append(" s");
+                        }
+                    }
+                    boolean ok = net.tierrasfantasticas.tfclient.skills.SkillServer.damageScale() <= 0.4 + 1e-9 && thor != null
+                            && thor.actives().stream().allMatch(s -> net.tierrasfantasticas.tfclient.skills.SkillServer.cooldownTicks(s) >= 30);
+                    r.event(sk + (ok ? " (bien: nada baja de 1,5 s)" : " (MAL)"));
+                }
+                if (t == k0 + 60) next(level);
             }
         }
     }

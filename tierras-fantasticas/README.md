@@ -35,7 +35,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
       (con productos de ejemplo en `test/retired-products.json`) por si algún día vuelven de forma permitida; en
       `tools/crates.py` están `ROULETTE_ENABLED = False` y `RETIRED`.
   - **Páginas legales**: `/legal` (aviso legal, no afiliación con Mojang/Microsoft y cómo funciona la tienda),
-    `/terminos` (términos de uso y de compra: precios, entrega, 5 días hábiles para cancelar, reembolsos) y
+    `/terminos` (términos de uso y de compra: precios, entrega, garantía de 24 horas para cancelar, disputas, reembolsos) y
     `/privacidad` (aviso de privacidad según la ley mexicana de 2025, con cookies). Los textos están en
     `tools/legal.py`. **Aceptación con casilla**: al crear la cuenta y al pagar hay que marcar «He leído y acepto los
     Términos y condiciones y el Aviso de privacidad» (sin ella el servidor responde 400 `terms`). Cada aceptación se
@@ -255,9 +255,19 @@ de pagar (`GET /api/order/<id>/receipt`, solo pedidos pagados con dinero), apart
 para otro jugador que haya entrado al servidor. El pedido es del que lo recibe (le llega con un `tellraw` de quién es
 y el mensaje); la firma de los Términos, el recibo y la sanción por reembolso injustificado son de quien paga.
 
-**Reembolso injustificado**: si llega una disputa o contracargo pasados 5 días hábiles desde la entrega (y el pedido se
-había entregado), además de retirar lo comprado se encola en el puente `tempbanip <jugador> 6d …` (EssentialsX), como
-dicen los Términos. Los reembolsos que hace el dueño desde Stripe o PayPal no banean.
+**Reembolso injustificado**: si llega una disputa o contracargo pasado el plazo de la garantía (y el pedido se había
+entregado), además de retirar lo comprado se encola en el puente `tempbanip <jugador> 15d …` (EssentialsX), como dicen
+los Términos. El plazo y el baneo son los de la versión de los Términos que aceptó cada pedido (`src/receipt.js`,
+`refundPolicyFor`): desde la 2026-10-30.1, **24 horas** desde la entrega y **15 días**; las compras de antes, 5 días
+hábiles y 6 días. Los reembolsos que hace el dueño desde Stripe o PayPal no banean.
+
+**Disputas (30 oct 2026)**: con cada disputa llega al correo del dueño, además del recibo, el **expediente**
+(`disputa-<pedido>.pdf`, `receipt.js: disputePdf`): la respuesta lista para pegar en inglés y en español (producto,
+entrega registrada, conexiones del jugador después de la entrega, aceptación de los Términos con IP y navegador,
+plazo, compras anteriores sin disputar, «como se describe») y el registro de actividad. En Stripe, las pruebas de la
+disputa se dejan rellenadas **sin enviar** (`Stripe.updateDisputeEvidence`, `submit=false`): el dueño las revisa,
+adjunta el PDF y las envía. En PayPal se pega la respuesta y se sube el PDF en el Centro de resoluciones. El panel de
+staff tiene el botón **Pruebas** para descargar el expediente de cualquier pedido pagado.
 
 ### 4. Productos
 

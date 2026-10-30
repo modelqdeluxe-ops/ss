@@ -38,6 +38,14 @@ PRICE_CENTS = 599  # (ya no se venden con dinero: la web solo las cobra con mone
 # de coins»)
 COIN_PRICE = 150000
 PRICE_OVERRIDES = {}  # 'glacia': {'price': 799, 'coinPrice': 40000}
+# (TF Client 1.3.154, el dueño: «nerfea el daño de las skills y aumenta el cooldown») La recarga que enseña la web es
+# la del mod: la del pack por NERF_COOLDOWN y como mínimo NERF_MIN_COOLDOWN segundos (SkillServer.NERF_*).
+NERF_COOLDOWN = 1.5
+NERF_MIN_COOLDOWN = 1.5
+# (30 oct 2026, el dueño: «pon no disponibles las skills hasta que hagamos un reajuste en la economía; nadie puede
+# comprarlas ahora») False: la tienda las enseña con «No disponible» y POST /api/skills/coins no deja comprar. Las que
+# ya son de alguien se siguen usando y cambiando. Para volver a venderlas: True y python3 tools/skills.py.
+ON_SALE = False
 
 # Teclas por defecto de la barra de skills del mod (SkillHud.DEFAULT_KEYS): las skills con tecla, por orden.
 KEYS = ['5', '6', '7', '8', '9', '0']  # las teclas de las skills en el mod (SkillHud: eligen la skill)
@@ -209,8 +217,8 @@ def main():
                 # TIMER: se lanza sola todo el rato; DAMAGED: al recibir daño
                 entry['passive'] = 'dano' if str(passive.get('type', '')).upper() == 'DAMAGED' else 'siempre'
             else:
-                # Como el mod: nunca menos de 4 ticks entre dos usos (SkillServer.MIN_COOLDOWN)
-                entry['cooldown'] = max(entry['cooldown'], 0.2)
+                # Como el mod (1.3.154, SkillServer.cooldownTicks): la del pack x1,5 y nunca menos de 1,5 s
+                entry['cooldown'] = round(max(round(entry['cooldown'] * NERF_COOLDOWN * 20), NERF_MIN_COOLDOWN * 20) / 20, 2)
                 entry['slot'] = slot
                 entry['key'] = KEYS[slot] if slot < len(KEYS) else None
                 if sid == data.get('basic'):
@@ -254,6 +262,7 @@ def main():
         '_leeme': 'Generado por tools/skills.py (no lo edites a mano: cambia el script y vuelve a ejecutarlo).',
         'price': PRICE_CENTS,
         'coinPrice': COIN_PRICE,
+        'onSale': ON_SALE,
         'keys': KEYS,
         'groups': [{'id': g, 'name': n, 'color': c} for g, n, c in GROUPS if any(x['group'] == g for x in classes)],
         'classes': classes,

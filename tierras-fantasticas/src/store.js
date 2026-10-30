@@ -450,12 +450,19 @@ export function createStore(db) {
   async function playerByUuid(uuid) {
     await init();
     const row = await db
-      .prepare('SELECT uuid, name, last_seen, coins, coins_at FROM players WHERE uuid = ?')
+      .prepare('SELECT uuid, name, first_seen, last_seen, coins, coins_at FROM players WHERE uuid = ?')
       .bind(String(uuid).toLowerCase())
       .first();
     return row
-      ? { uuid: row.uuid, name: row.name, lastSeen: row.last_seen, coins: row.coins ?? null, coinsAt: row.coins_at ?? null }
+      ? { uuid: row.uuid, name: row.name, firstSeen: row.first_seen, lastSeen: row.last_seen, coins: row.coins ?? null, coinsAt: row.coins_at ?? null }
       : null;
+  }
+
+  // La entrega de un pedido en el servidor (la prueba de que se entregó): estado, cuándo se confirmó y qué se ejecutó
+  async function deliveryOf(orderId) {
+    await init();
+    const row = await db.prepare('SELECT status, done_at, created_at, commands FROM deliveries WHERE order_id = ?').bind(orderId).first();
+    return row ? { status: row.status, doneAt: row.done_at, queuedAt: row.created_at, commands: row.commands } : null;
   }
 
   // Saldos de monedas que manda el puente: [{ uuid, coins }].
@@ -1091,6 +1098,7 @@ export function createStore(db) {
     setCoins,
     findPlayer,
     playerByUuid,
+    deliveryOf,
     getRank,
     ranksFor,
     setRank,
