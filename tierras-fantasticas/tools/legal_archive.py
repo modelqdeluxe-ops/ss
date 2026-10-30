@@ -148,7 +148,8 @@ def write(variants):
             with open(os.path.join(OUT_DIR, name), 'w', encoding='utf-8') as f:
                 f.write(archived(page, kind, v, sha))
             keep.add(name)
-            entry['terms' if kind == 'terminos' else 'privacy'] = f'/archivo-legal/{name}'
+            # sin «.html»: Cloudflare (html_handling) redirige la URL con extensión a esta
+            entry['terms' if kind == 'terminos' else 'privacy'] = f'/archivo-legal/{name[:-5]}'
             entry['termsSha256' if kind == 'terminos' else 'privacySha256'] = sha
         entry['refunds'] = refunds_text(v['terms'])
         manifest.append(entry)
