@@ -342,11 +342,16 @@ public final class PadClanChat {
         if (!isPublic(to, bound)) return false;
         if (!hidesPublic(to.getUUID(), from)) {
             if (TEST) TEST_LOG.add("público a " + to.getGameProfile().getName() + ": entregado");
-            return false;
+            // (prueba) el remitente de mentira no existe en el cliente: Minecraft lo desconectaría («chat validation
+            // failed»); la decisión ya está apuntada, el paquete no se manda
+            return testDry;
         }
         if (TEST) TEST_LOG.add("público a " + to.getGameProfile().getName() + ": oculto");
         return true;
     }
+
+    /** Mientras testPublic manda su mensaje de un jugador que no existe. */
+    private static volatile boolean testDry;
 
     private static boolean isPublic(ServerPlayer to, ChatType.Bound bound) {
         try {
@@ -418,8 +423,13 @@ public final class PadClanChat {
     /** Un mensaje «público» de otro jugador (de mentira) para ver si al que tiene el chat del clan le llega. */
     public static void testPublic(MinecraftServer server, String text) {
         var msg = net.minecraft.network.chat.PlayerChatMessage.unsigned(T_D, text);
-        server.getPlayerList().broadcastChatMessage(msg, server.createCommandSourceStack(),
-                ChatType.bind(ChatType.CHAT, server.registryAccess(), Component.literal("Dani_Publico")));
+        testDry = true;
+        try {
+            server.getPlayerList().broadcastChatMessage(msg, server.createCommandSourceStack(),
+                    ChatType.bind(ChatType.CHAT, server.registryAccess(), Component.literal("Dani_Publico")));
+        } finally {
+            testDry = false;
+        }
     }
 
     /** Lo deja como estaba: sin los clanes de prueba y con el chat público. */
