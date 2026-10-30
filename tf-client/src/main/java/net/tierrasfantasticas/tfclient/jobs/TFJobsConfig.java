@@ -100,7 +100,11 @@ public final class TFJobsConfig {
         }
     }
 
-    public record Action(String type, Target target, double xp, double coins) {}
+    /**
+     * Lo que paga una acción del oficio (romper, cosechar…): solo monedas. (1.3.153, el dueño: «que los jobs no me suban
+     * nivel cuando mino o hago la acción, solo me debe dar al completar la misión») La XP del oficio sale de las misiones.
+     */
+    public record Action(String type, Target target, double coins) {}
 
     public record Mission(String id, String name, String description, String icon, String type, Target target, int amount,
                           int level, Repeat repeat, Reward reward) {}
@@ -249,8 +253,8 @@ public final class TFJobsConfig {
     public static boolean placedDontCount = true;
     public static boolean spawnersCount = false;
     public static int maxLevel = 50;
-    public static double xpBase = 100;
-    public static double xpFactor = 1.15;
+    public static double xpBase = 150;
+    public static double xpFactor = 1.075;
     public static double coinBonusPerLevel = 0.03;
     public static int announceEvery = 10;
     /** Cuántas misiones diarias da cada oficio al día (salen de sus misiones «diaria», que rotan). */
@@ -300,6 +304,8 @@ public final class TFJobsConfig {
             json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionEconomia", 3, defaults(), "oficios.json");
             // (1.3.115) economía exigente: lo que paga cada acción, las misiones y los niveles, al 60 % (una vez)
             json = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.scale(file, json, 0.6, "oficios.json", "monedas", "monedasPorNivel");
+            // (1.3.153) las monedas a la mitad, las acciones sin XP (el nivel, solo con misiones) y sin netherita (una vez)
+            json = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.economy4(file, json, "oficios.json", true, "monedas", "monedasPorNivel");
         }
         if (json == null) return warnings;
         enabled = TFJson.bool(json, "activado", true);
@@ -310,8 +316,8 @@ public final class TFJobsConfig {
         spawnersCount = TFJson.bool(json, "generadoresCuentan", false);
         JsonObject levels = TFJson.obj(json, "niveles");
         maxLevel = (int) Math.max(1, TFJson.num(levels, "maximo", 50));
-        xpBase = Math.max(1, TFJson.dec(levels, "xpBase", 100));
-        xpFactor = Math.max(1, TFJson.dec(levels, "multiplicador", 1.15));
+        xpBase = Math.max(1, TFJson.dec(levels, "xpBase", 150));
+        xpFactor = Math.max(1, TFJson.dec(levels, "multiplicador", 1.075));
         coinBonusPerLevel = Math.max(0, TFJson.dec(levels, "bonusMonedasPorNivel", 0.03));
         announceEvery = (int) Math.max(0, TFJson.num(levels, "anunciarCada", 10));
         dailyMissions = (int) Math.max(1, Math.min(8, TFJson.num(json, "misionesDiariasPorOficio", 3)));
@@ -353,7 +359,7 @@ public final class TFJobsConfig {
                     warnings.add(id + ": acción de tipo desconocido «" + type + "»");
                     continue;
                 }
-                actions.add(new Action(type, new Target(TFJson.str(ao, "objetivo", "*")), TFJson.dec(ao, "xp", 0), TFJson.dec(ao, "monedas", 0)));
+                actions.add(new Action(type, new Target(TFJson.str(ao, "objetivo", "*")), TFJson.dec(ao, "monedas", 0)));
             }
             List<Mission> missions = new ArrayList<>();
             for (JsonElement m : array(o, "misiones")) {

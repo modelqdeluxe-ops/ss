@@ -190,7 +190,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (28 oct 2026, TF Client 1.3.152) — lee esto primero
+### CHECKPOINT (30 oct 2026, TF Client 1.3.153) — lee esto primero
+
+**1.3.153** (el dueño: «necesito que des menos monedas en los oficios, misiones, etc, y que los jobs no me suban nivel
+cuando mino o hago la acción, solo me debe dar al completar la misión» y «quita recompensas que den netherita»). Antes,
+en la web, las skills a 150.000 Fantastic Coins (`tierras-fantasticas/tools/skills.py`, PR #219).
+- **Oficios**: las acciones solo pagan monedas (`TFJobs.record` ya no llama a `addXp`; `TFJobsConfig.Action` sin `xp`;
+  el pad, `/jobs` y el editor del pad de admin ya no la enseñan). El nivel sube con la XP de las misiones al COBRAR.
+  Curva nueva **150 × 1,075^(nivel-1)** (antes 120 × 1,15^(nivel-1): con solo misiones el 30 pedía ~15 días y el 49,
+  ~180); ahora de medio día a ~6 días por nivel, el 50 en unos 4 meses haciendo las 3 diarias.
+- **Monedas a la mitad**: oficios (acciones, misiones, niveles, hito 50: 450), misiones del pad y cazas
+  (`tools/gen_economia.py`: `ECON4`, `econ()`). En los servidores, una vez: `PadEconomy.economy4` (marca
+  `"economia": 4`, copia `.antes-economia4.json`; en oficios.json además acciones a `xp: 0` y la curva nueva). Los
+  archivos por defecto salen idénticos a los migrados (comprobado).
+- **Sin netherita en los premios**: hito 50 de oficios, pase (niveles 40 y 50, solo verdes), gachapón (épico y
+  legendario), ejemplo de `/tf crates create` (esmeralda). En las configs que ya hay (pase, gachapón, kits,
+  recompensas, oficios, misiones), una vez: `PadEconomy.withoutNetherite` (marca `"sinNetherita": true`; un nivel o día
+  que se quede sin `premios` recibe un diamante). Las crates del dueño (`config/fscrates/cajas`) no se tocan.
+- Prueba `[prueba-jefes=oficios]`: «XP del oficio al fundir … (no sube: bien)», «al cobrar … (sube: bien)» y
+  «economía 4 en configs viejas … (bien)» (`BossTest.economy4Test`).
+
+### CHECKPOINT (28 oct 2026, TF Client 1.3.152)
 
 **1.3.152** (el dueño con capturas, seis cosas de la fiesta). Un solo comando, `/tf cumpleaños` (fuera `cumpleanos`).
 El letrero ya no sigue la vista: quieto en el cielo hacia donde se miraba al empezar (`skyYaw`) a 58° (las «2 en

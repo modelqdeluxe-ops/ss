@@ -279,6 +279,8 @@ public final class PadPass {
         // (1.3.114) la de antes, con la economía estable (las monedas, ~15 %; los objetos raros, menos)
         o = PadEconomy.deflate(file, o, 0.15, "pase.json");
         o = fillEmpty(file, o);
+        // (1.3.153, el dueño: «quita recompensas que den netherita») una vez
+        o = PadEconomy.withoutNetherite(file, o, "pase.json");
         o = PadEconomy.help(file, o,
                 "TF Pass (app Pase del pad). También se cambia desde el TF Pad de administrador (TF PASS). Tras editar a mano: /tf reload.",
                 "temporada: numero (al cambiarlo todos empiezan de cero), nombre, inicio (AAAA-MM-DD), dias, renovar (true: al acabar empieza otra).",
@@ -408,11 +410,13 @@ public final class PadPass {
         String[][] items = {{"minecraft:bread", "16"}, {"minecraft:iron_ingot", "8"}, {"minecraft:experience_bottle", "8"},
                 {"minecraft:golden_carrot", "8"}, {"minecraft:diamond", "1"}, {"minecraft:ender_pearl", "2"}, {"minecraft:golden_apple", "1"},
                 {"minecraft:lapis_lazuli", "32"}};
-        String[][] big = {{"minecraft:diamond", "3"}, {"minecraft:golden_apple", "3"}, {"minecraft:totem_of_undying", "1"},
-                {"minecraft:netherite_scrap", "1"}, {"minecraft:netherite_ingot", "1"}};
+        // (1.3.153, el dueño: «quita recompensas que den netherita») los niveles 40 y 50, solo con sus verdes
+        String[][] big = {{"minecraft:diamond", "3"}, {"minecraft:golden_apple", "3"}, {"minecraft:totem_of_undying", "1"}};
         JsonArray ls = new JsonArray();
         for (int n = 1; n <= 50; n++) {
-            if (n % 10 == 0) {
+            if (n % 10 == 0 && n / 10 > big.length) {
+                ls.add(level(n, PadPrize.of("verdes", n == 50 ? 10 : 5, null)));
+            } else if (n % 10 == 0) {
                 String[] it = big[n / 10 - 1];
                 ls.add(level(n, PadPrize.of("verdes", n == 50 ? 10 : 5, null), PadPrize.of("objeto", Long.parseLong(it[1]), it[0])));
             } else if (n % 5 == 0) {

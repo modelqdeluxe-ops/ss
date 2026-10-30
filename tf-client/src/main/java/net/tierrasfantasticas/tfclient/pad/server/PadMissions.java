@@ -406,6 +406,8 @@ public final class PadMissions {
             o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 4, defaults(), "misiones.json");
             // (1.3.115) economía exigente: misiones y cazas al 60 % (una vez)
             o = PadEconomy.scale(file, o, 0.6, "misiones.json", "monedas");
+            // (1.3.153) misiones y cazas, a la mitad (una vez)
+            o = PadEconomy.economy4(file, o, "misiones.json", false, "monedas");
         }
         DAILY.clear();
         HUNT.clear();

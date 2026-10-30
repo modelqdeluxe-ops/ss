@@ -2645,13 +2645,23 @@ public final class BossTest {
                 var pos = at(3, 0);
                 level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.FURNACE.defaultBlockState());
                 if (level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.FurnaceBlockEntity be) {
+                    var jp = net.tierrasfantasticas.tfclient.jobs.TFJobs.data().player(me).job("herrero");
+                    int lv0 = jp.level;
+                    double xp0 = jp.xp;
                     long b0 = balance(player);
+                    double p0 = net.tierrasfantasticas.tfclient.jobs.TFJobs.pendingCoins(me);
                     be.setItem(2, new ItemStack(Items.IRON_INGOT, 24));
                     player.openMenu(be);
                     player.containerMenu.clicked(2, 0, click, player);
                     long b1 = balance(player);
-                    r.event("oficios: horno, mayúsculas + clic en 24 lingotes → " + counted() + "; saldo " + b0 + " → " + b1
-                            + " (" + (b1 > b0 ? "pagado al momento: bien" : "SIN PAGAR") + "), en el inventario " + player.getInventory().countItem(Items.IRON_INGOT));
+                    double p1 = net.tierrasfantasticas.tfclient.jobs.TFJobs.pendingCoins(me);
+                    // (1.3.153) 24 lingotes pagan menos de una moneda: se apuntan y se pagan al llegar a 1
+                    r.event("oficios: horno, mayúsculas + clic en 24 lingotes → " + counted() + "; saldo " + b0 + " → " + b1 + ", por pagar "
+                            + dec2(p0) + " → " + dec2(p1) + " (" + (b1 > b0 || p1 > p0 ? "pagado o apuntado: bien" : "SIN PAGAR")
+                            + "), en el inventario " + player.getInventory().countItem(Items.IRON_INGOT));
+                    // (1.3.153, el dueño: «que los jobs no me suban nivel cuando hago la acción, solo al completar la misión»)
+                    r.event("oficios: XP del oficio al fundir: nivel " + lv0 + " " + dec2(xp0) + " xp → nivel " + jp.level + " "
+                            + dec2(jp.xp) + " xp" + (jp.level == lv0 && jp.xp == xp0 ? " (no sube: bien)" : " (MAL: sube al trabajar)"));
                     be.setItem(2, new ItemStack(Items.IRON_INGOT, 10));
                     player.containerMenu.clicked(2, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
                     r.event("oficios: horno, clic en 10 lingotes → " + counted());
@@ -2732,11 +2742,17 @@ public final class BossTest {
                 ms.progress = m.amount();
                 ms.done = true;
                 long b0 = balance(player);
+                int lv0 = jp.level;
+                double xp0 = jp.xp;
                 net.tierrasfantasticas.tfclient.pad.server.PadJobs.APP.action(player, "", "cobrar:herrero:" + m.id(), "");
                 long b1 = balance(player);
                 long want = Math.round(m.reward().coins());
                 r.event("oficios: COBRAR «" + m.name() + "» (" + m.id() + ", premio " + want + ") → saldo " + b0 + " → " + b1
                         + (b1 - b0 >= want && ms.claimedDay >= 0 ? " (bien; lo de más es el premio de subir de nivel)" : " (MAL: cobrada " + ms.claimedDay + ")"));
+                // (1.3.153) el nivel sube con la XP de la misión
+                r.event("oficios: XP del oficio al cobrar (" + Math.round(m.reward().xp()) + " xp): nivel " + lv0 + " " + dec2(xp0)
+                        + " xp → nivel " + jp.level + " " + dec2(jp.xp) + " xp"
+                        + (jp.level > lv0 || jp.xp > xp0 ? " (sube: bien)" : m.reward().xp() > 0 ? " (MAL: no sube)" : " (la misión no da XP)"));
                 // la de hace 3 días (el dueño: «si alguien hizo un job y no le dejó cobrar, que pueda reclamarlo»)
                 long old = net.tierrasfantasticas.tfclient.util.TFRotation.day() - 3;
                 var tpl = job.missions().stream().filter(x -> x.repeat() == net.tierrasfantasticas.tfclient.jobs.TFJobsConfig.Repeat.DAILY
@@ -2764,6 +2780,7 @@ public final class BossTest {
                         : "MAL " + problems.size() + ": " + String.join(" | ", problems)));
                 r.event("misiones del pad de hoy: " + net.tierrasfantasticas.tfclient.pad.server.PadMissions.testAll(player));
                 r.event("misiones de oficio de hoy: " + net.tierrasfantasticas.tfclient.jobs.TFJobs.testAllJobs(player));
+                r.event("economía 4 en configs viejas: " + economy4Test());
                 // bayas dulces cogidas con clic derecho (sin romper la planta)
                 var pos = at(2, 2);
                 level.setBlockAndUpdate(pos.below(), net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState());
@@ -2915,6 +2932,98 @@ public final class BossTest {
     private static long tiendaB0;
     private static ItemEntity webDrop, plainDrop, lavaDrop, hopperDrop;
     private static net.minecraft.core.BlockPos hopperAt;
+
+    /** Un número con 2 decimales para la prueba de oficios (1.3.153). */
+    private static String dec2(double v) {
+        return String.format(java.util.Locale.ROOT, "%.2f", v);
+    }
+
+    /**
+     * (1.3.153, el dueño: «des menos monedas en los oficios, misiones, etc; que los jobs no me suban nivel al hacer la
+     * acción; quita recompensas que den netherita») Lo que les pasa a las configs que ya había en el servidor: un
+     * oficios.json de la 1.3.152 (economia 3, acciones con XP, netherita en el nivel 50), un pase.json, un gachapon.json y
+     * un kits.json con netherita. Mira que las monedas queden a la mitad, las acciones sin XP, la curva de niveles nueva,
+     * nada de netherita, ningún nivel del pase vacío y que la segunda vez no cambie nada.
+     */
+    private static String economy4Test() {
+        var bad = new java.util.ArrayList<String>();
+        try {
+            java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("tf-economia4");
+            var jobs = resource("/tfclient-jobs-default.json");
+            if (jobs == null) return "MAL: no hay oficios por defecto";
+            jobs.addProperty("economia", 3);
+            jobs.remove("sinNetherita");
+            var lv = jobs.getAsJsonObject("niveles");
+            lv.addProperty("xpBase", 120);
+            lv.addProperty("multiplicador", 1.15);
+            var stone50 = lv.getAsJsonObject("hitos").getAsJsonObject("50");
+            var items50 = new com.google.gson.JsonArray();
+            items50.add("minecraft:netherite_ingot 1");
+            stone50.add("objetos", items50);
+            stone50.addProperty("monedas", 900);
+            var minero = jobs.getAsJsonArray("oficios").get(1).getAsJsonObject();
+            var ore = minero.getAsJsonArray("acciones").get(0).getAsJsonObject();
+            ore.addProperty("xp", 6);
+            ore.addProperty("monedas", 0.36);
+            var firstMission = minero.getAsJsonArray("misiones").get(0).getAsJsonObject().getAsJsonObject("recompensa");
+            firstMission.addProperty("monedas", 12);
+            java.nio.file.Path jf = dir.resolve("oficios.json");
+            net.tierrasfantasticas.tfclient.util.TFJson.write(jf, jobs);
+            var out = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.economy4(jf, jobs, "oficios.json (prueba)", true, "monedas", "monedasPorNivel");
+            int withXp = 0;
+            for (var j : out.getAsJsonArray("oficios"))
+                for (var a : j.getAsJsonObject().getAsJsonArray("acciones")) if (a.getAsJsonObject().get("xp").getAsDouble() != 0) withXp++;
+            if (withXp > 0) bad.add(withXp + " acciones con XP");
+            if (ore.get("monedas").getAsDouble() != 0.18) bad.add("mena: " + ore.get("monedas") + " monedas (quería 0.18)");
+            if (firstMission.get("monedas").getAsDouble() != 6) bad.add("misión: " + firstMission.get("monedas") + " monedas (quería 6)");
+            if (stone50.get("monedas").getAsDouble() != 450) bad.add("nivel 50: " + stone50.get("monedas") + " monedas (quería 450)");
+            if (stone50.getAsJsonArray("objetos").size() != 0) bad.add("nivel 50 con " + stone50.getAsJsonArray("objetos"));
+            if (lv.get("xpBase").getAsDouble() != 150 || lv.get("multiplicador").getAsDouble() != 1.075) bad.add("curva " + lv.get("xpBase") + " × " + lv.get("multiplicador"));
+            if (!java.nio.file.Files.exists(dir.resolve("oficios.antes-economia4.json"))) bad.add("sin copia de la de antes");
+            String saved = java.nio.file.Files.readString(jf);
+            net.tierrasfantasticas.tfclient.pad.server.PadEconomy.economy4(jf, net.tierrasfantasticas.tfclient.util.TFJson.read(jf), "oficios.json (prueba)", true,
+                    "monedas", "monedasPorNivel");
+            if (!saved.equals(java.nio.file.Files.readString(jf))) bad.add("la segunda vez vuelve a cambiar oficios.json");
+            // (los iconos de netherita de algunas misiones se quedan: son el dibujo, no un premio)
+            int left = net.tierrasfantasticas.tfclient.pad.server.PadEconomy.stripNetherite(net.tierrasfantasticas.tfclient.util.TFJson.read(jf), "");
+            if (left > 0) bad.add("quedan " + left + " premios de netherita en oficios.json");
+
+            var pass = com.google.gson.JsonParser.parseString("{\"version\":3,\"premios\":[{\"nivel\":40,\"premios\":[{\"tipo\":\"verdes\",\"cantidad\":5},"
+                    + "{\"tipo\":\"objeto\",\"id\":\"minecraft:netherite_scrap\",\"cantidad\":1}]},{\"nivel\":50,\"premios\":[{\"tipo\":\"objeto\","
+                    + "\"id\":\"minecraft:netherite_ingot\",\"cantidad\":1}]},{\"nivel\":2,\"premios\":[{\"tipo\":\"objeto\",\"id\":\"minecraft:bread\","
+                    + "\"cantidad\":16}]}]}").getAsJsonObject();
+            java.nio.file.Path pf = dir.resolve("pase.json");
+            net.tierrasfantasticas.tfclient.util.TFJson.write(pf, pass);
+            net.tierrasfantasticas.tfclient.pad.server.PadEconomy.withoutNetherite(pf, pass, "pase.json (prueba)");
+            String ps = java.nio.file.Files.readString(pf);
+            var levels = pass.getAsJsonArray("premios");
+            if (ps.contains("netherite")) bad.add("queda netherita en el pase");
+            if (levels.get(0).getAsJsonObject().getAsJsonArray("premios").size() != 1) bad.add("pase nivel 40: " + levels.get(0));
+            if (!levels.get(1).getAsJsonObject().getAsJsonArray("premios").toString().contains("minecraft:diamond")) bad.add("pase nivel 50 vacío: " + levels.get(1));
+            if (!levels.get(2).toString().contains("minecraft:bread")) bad.add("pase nivel 2 tocado: " + levels.get(2));
+
+            var gacha = com.google.gson.JsonParser.parseString("{\"version\":2,\"rarezas\":[{\"id\":\"legendario\",\"peso\":2}],\"premios\":["
+                    + "{\"rareza\":\"legendario\",\"peso\":4,\"tipo\":\"objeto\",\"cantidad\":1,\"id\":\"minecraft:netherite_ingot\"},"
+                    + "{\"rareza\":\"legendario\",\"peso\":5,\"tipo\":\"monedas\",\"cantidad\":200}]}").getAsJsonObject();
+            java.nio.file.Path gf = dir.resolve("gachapon.json");
+            net.tierrasfantasticas.tfclient.util.TFJson.write(gf, gacha);
+            net.tierrasfantasticas.tfclient.pad.server.PadEconomy.withoutNetherite(gf, gacha, "gachapon.json (prueba)");
+            if (gacha.getAsJsonArray("premios").size() != 1 || gacha.getAsJsonArray("rarezas").size() != 1) bad.add("gachapón: " + gacha);
+
+            var kits = com.google.gson.JsonParser.parseString("{\"kits\":[{\"id\":\"vip\",\"tipo\":\"unico\",\"icono\":\"minecraft:netherite_sword\","
+                    + "\"objetos\":[\"minecraft:netherite_sword 1\",\"minecraft:bread 4\",\"minecraft:netherite_chestplate{Damage:0} 1\"]}]}").getAsJsonObject();
+            java.nio.file.Path kf = dir.resolve("kits.json");
+            net.tierrasfantasticas.tfclient.util.TFJson.write(kf, kits);
+            net.tierrasfantasticas.tfclient.pad.server.PadEconomy.withoutNetherite(kf, kits, "kits.json (prueba)");
+            var kit = kits.getAsJsonArray("kits").get(0).getAsJsonObject();
+            if (!kit.getAsJsonArray("objetos").toString().equals("[\"minecraft:bread 4\"]") || !kit.has("id")) bad.add("kits: " + kits);
+            if (!kits.has("sinNetherita")) bad.add("kits sin la marca sinNetherita");
+        } catch (Exception e) {
+            bad.add("error: " + e);
+        }
+        return bad.isEmpty() ? "monedas a la mitad, acciones sin XP, curva nueva, sin netherita (oficios, pase, gachapón, kits) y una sola vez (bien)"
+                : "MAL " + bad.size() + ": " + String.join(" | ", bad);
+    }
 
     private static com.google.gson.JsonObject resource(String path) {
         try (java.io.InputStream in = BossTest.class.getResourceAsStream(path)) {

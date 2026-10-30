@@ -317,6 +317,8 @@ public final class PadKits {
             o = defaults();
             if (!Files.exists(file)) TFJson.write(file, o);
         }
+        // (1.3.153, el dueño: «quita recompensas que den netherita») una vez
+        o = PadEconomy.withoutNetherite(file, o, "kits.json");
         KITS.clear();
         // los kits diarios pasan a Recompensas (se quitan de aquí una sola vez, sin perder lo que traían)
         if (o.has("kits") && o.get("kits").isJsonArray()) {

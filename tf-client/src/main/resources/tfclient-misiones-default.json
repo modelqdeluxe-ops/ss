@@ -1,7 +1,8 @@
 {
   "_ayuda": "Misiones del pad y Cazas (1.3.29). tipo: romper, cosechar, colocar, matar, pescar, fabricar, fundir, preparar, criar, encantar. objetivo: un id (minecraft:zombie o mod:mob), una etiqueta (#minecraft:logs), * o, al matar, hostil / animal. En descripcion, {n} se cambia por la cantidad. Rotan por temporadas de 90 días sin repetir ninguna igual: cada día 3 diarias por jugador, cada semana 3 semanales (cantidad x semanalesPorCantidad, pago x semanalesPorPago) y cada 12 h 4 cazas para todo el servidor; a lo largo de la temporada suben cantidad y premio (x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id. requiere: nether o end (solo rotan si están en «abiertos», p. ej. \"abiertos\": [\"nether\"] al abrir el Nether). semanal: false = no sale en las semanales.",
   "version": 4,
-  "economia": 3,
+  "economia": 4,
+  "sinNetherita": true,
   "abiertos": [],
   "semanalesPorCantidad": 5,
   "semanalesPorPago": 4,
@@ -13,7 +14,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:base_stone_overworld",
       "cantidad": 192,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:stone_pickaxe"
     },
     {
@@ -23,7 +24,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:deepslate",
       "cantidad": 128,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:deepslate"
     },
     {
@@ -33,7 +34,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:coal_ores",
       "cantidad": 36,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:coal"
     },
     {
@@ -43,7 +44,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:copper_ores",
       "cantidad": 24,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:raw_copper"
     },
     {
@@ -53,7 +54,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:iron_ores",
       "cantidad": 18,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:raw_iron"
     },
     {
@@ -63,7 +64,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:gold_ores",
       "cantidad": 10,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:raw_gold"
     },
     {
@@ -73,7 +74,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:redstone_ores",
       "cantidad": 12,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:redstone"
     },
     {
@@ -83,7 +84,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:lapis_ores",
       "cantidad": 8,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:lapis_lazuli"
     },
     {
@@ -93,7 +94,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:diamond_ores",
       "cantidad": 3,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:diamond",
       "semanal": false
     },
@@ -104,7 +105,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:sand",
       "cantidad": 96,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:sand"
     },
     {
@@ -114,7 +115,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:gravel",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:gravel"
     },
     {
@@ -124,7 +125,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:dirt",
       "cantidad": 192,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:dirt"
     },
     {
@@ -134,7 +135,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:clay",
       "cantidad": 32,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:clay_ball"
     },
     {
@@ -144,7 +145,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:oak_log",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_log"
     },
     {
@@ -154,7 +155,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:birch_log",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:birch_log"
     },
     {
@@ -164,7 +165,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:spruce_log",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:spruce_log"
     },
     {
@@ -174,7 +175,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:jungle_log",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:jungle_log"
     },
     {
@@ -184,7 +185,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:acacia_log",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:acacia_log"
     },
     {
@@ -194,7 +195,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:dark_oak_log",
       "cantidad": 48,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:dark_oak_log"
     },
     {
@@ -204,7 +205,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:cherry_log",
       "cantidad": 48,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:cherry_log"
     },
     {
@@ -214,7 +215,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:logs",
       "cantidad": 128,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:iron_axe"
     },
     {
@@ -224,7 +225,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:wheat",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:wheat"
     },
     {
@@ -234,7 +235,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:carrots",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:carrot"
     },
     {
@@ -244,7 +245,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:potatoes",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:potato"
     },
     {
@@ -254,7 +255,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:beetroots",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:beetroot"
     },
     {
@@ -264,7 +265,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:melon",
       "cantidad": 24,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:melon_slice"
     },
     {
@@ -274,7 +275,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:pumpkin",
       "cantidad": 24,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:pumpkin"
     },
     {
@@ -284,7 +285,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:sugar_cane",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:sugar_cane"
     },
     {
@@ -294,7 +295,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:nether_wart",
       "cantidad": 48,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:nether_wart",
       "requiere": "nether"
     },
@@ -305,7 +306,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie",
       "cantidad": 15,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:rotten_flesh"
     },
     {
@@ -315,7 +316,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:skeleton",
       "cantidad": 12,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:bone"
     },
     {
@@ -325,7 +326,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:spider",
       "cantidad": 10,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:string"
     },
     {
@@ -335,7 +336,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:creeper",
       "cantidad": 8,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:gunpowder"
     },
     {
@@ -345,7 +346,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:enderman",
       "cantidad": 5,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:ender_pearl"
     },
     {
@@ -355,7 +356,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:drowned",
       "cantidad": 8,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:kelp"
     },
     {
@@ -365,7 +366,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:slime",
       "cantidad": 10,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:slime_ball"
     },
     {
@@ -375,7 +376,7 @@
       "tipo": "matar",
       "objetivo": "hostil",
       "cantidad": 40,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:iron_sword"
     },
     {
@@ -385,7 +386,7 @@
       "tipo": "pescar",
       "objetivo": "*",
       "cantidad": 12,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:fishing_rod"
     },
     {
@@ -395,7 +396,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:cod",
       "cantidad": 8,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cod"
     },
     {
@@ -405,7 +406,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:salmon",
       "cantidad": 5,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:salmon"
     },
     {
@@ -415,7 +416,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:iron_ingot",
       "cantidad": 24,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:iron_ingot"
     },
     {
@@ -425,7 +426,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:glass",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:glass"
     },
     {
@@ -435,7 +436,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:brick",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:brick"
     },
     {
@@ -445,7 +446,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:stone",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:stone"
     },
     {
@@ -455,7 +456,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:cooked_beef",
       "cantidad": 16,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cooked_beef"
     },
     {
@@ -465,7 +466,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:bread",
       "cantidad": 24,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:bread"
     },
     {
@@ -475,7 +476,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:torch",
       "cantidad": 64,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:torch"
     },
     {
@@ -485,7 +486,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:chest",
       "cantidad": 8,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:chest"
     },
     {
@@ -495,7 +496,7 @@
       "tipo": "fabricar",
       "objetivo": "*",
       "cantidad": 96,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:crafting_table"
     },
     {
@@ -505,7 +506,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:rail",
       "cantidad": 32,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:rail"
     },
     {
@@ -515,7 +516,7 @@
       "tipo": "colocar",
       "objetivo": "*",
       "cantidad": 256,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:bricks"
     },
     {
@@ -525,7 +526,7 @@
       "tipo": "colocar",
       "objetivo": "minecraft:bricks",
       "cantidad": 64,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:brick"
     },
     {
@@ -535,7 +536,7 @@
       "tipo": "colocar",
       "objetivo": "#forge:glass",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:glass_pane"
     },
     {
@@ -545,7 +546,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:saplings",
       "cantidad": 24,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_sapling"
     },
     {
@@ -555,7 +556,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:cow",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:leather"
     },
     {
@@ -565,7 +566,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:sheep",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:white_wool"
     },
     {
@@ -575,7 +576,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:pig",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:porkchop"
     },
     {
@@ -585,7 +586,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:chicken",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:egg"
     },
     {
@@ -595,7 +596,7 @@
       "tipo": "preparar",
       "objetivo": "*",
       "cantidad": 6,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:brewing_stand",
       "requiere": "nether"
     },
@@ -606,7 +607,7 @@
       "tipo": "encantar",
       "objetivo": "*",
       "cantidad": 2,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:enchanted_book"
     },
     {
@@ -616,7 +617,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:granite",
       "cantidad": 96,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:granite"
     },
     {
@@ -626,7 +627,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:diorite",
       "cantidad": 96,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:diorite"
     },
     {
@@ -636,7 +637,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:andesite",
       "cantidad": 96,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:andesite"
     },
     {
@@ -646,7 +647,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:tuff",
       "cantidad": 96,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:tuff"
     },
     {
@@ -656,7 +657,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:calcite",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:calcite"
     },
     {
@@ -666,7 +667,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:dripstone_block",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:pointed_dripstone"
     },
     {
@@ -676,7 +677,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:amethyst_cluster",
       "cantidad": 4,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:amethyst_shard",
       "semanal": false
     },
@@ -687,7 +688,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:emerald_ores",
       "cantidad": 2,
-      "monedas": 18.0,
+      "monedas": 9.0,
       "icono": "minecraft:emerald",
       "semanal": false
     },
@@ -698,7 +699,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:base_stone_overworld",
       "cantidad": 384,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:iron_pickaxe"
     },
     {
@@ -708,7 +709,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:deepslate",
       "cantidad": 256,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:cobbled_deepslate"
     },
     {
@@ -718,7 +719,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:coal_ores",
       "cantidad": 64,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:coal_block"
     },
     {
@@ -728,7 +729,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:iron_ores",
       "cantidad": 32,
-      "monedas": 16.0,
+      "monedas": 8.0,
       "icono": "minecraft:iron_pickaxe"
     },
     {
@@ -738,7 +739,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:copper_ores",
       "cantidad": 48,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:copper_block"
     },
     {
@@ -748,7 +749,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:snow_block",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:snowball"
     },
     {
@@ -758,7 +759,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:packed_ice",
       "cantidad": 32,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:packed_ice",
       "semanal": false
     },
@@ -769,7 +770,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:red_sand",
       "cantidad": 96,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:red_sand"
     },
     {
@@ -779,7 +780,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:mud",
       "cantidad": 64,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:mud"
     },
     {
@@ -789,7 +790,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:podzol",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:podzol"
     },
     {
@@ -799,7 +800,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:mycelium",
       "cantidad": 32,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:mycelium",
       "semanal": false
     },
@@ -810,7 +811,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:grass_block",
       "cantidad": 96,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:grass_block"
     },
     {
@@ -820,7 +821,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:moss_block",
       "cantidad": 32,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:moss_block"
     },
     {
@@ -830,7 +831,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:sandstone",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:sandstone"
     },
     {
@@ -840,7 +841,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:terracotta",
       "cantidad": 64,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:terracotta"
     },
     {
@@ -850,7 +851,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:mineable/shovel",
       "cantidad": 256,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:iron_shovel"
     },
     {
@@ -860,7 +861,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:netherrack",
       "cantidad": 192,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:netherrack",
       "requiere": "nether"
     },
@@ -871,7 +872,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:blackstone",
       "cantidad": 96,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:blackstone",
       "requiere": "nether"
     },
@@ -882,7 +883,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:basalt",
       "cantidad": 96,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:basalt",
       "requiere": "nether"
     },
@@ -893,7 +894,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:soul_sand",
       "cantidad": 64,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:soul_sand",
       "requiere": "nether"
     },
@@ -904,7 +905,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:soul_soil",
       "cantidad": 64,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:soul_soil",
       "requiere": "nether"
     },
@@ -915,7 +916,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:nether_quartz_ore",
       "cantidad": 32,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:quartz",
       "requiere": "nether"
     },
@@ -926,7 +927,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:nether_gold_ore",
       "cantidad": 32,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:gold_nugget",
       "requiere": "nether"
     },
@@ -937,7 +938,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:glowstone",
       "cantidad": 32,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:glowstone_dust",
       "requiere": "nether"
     },
@@ -948,7 +949,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:magma_block",
       "cantidad": 24,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:magma_block",
       "requiere": "nether"
     },
@@ -959,7 +960,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:crimson_stem",
       "cantidad": 48,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:crimson_stem",
       "requiere": "nether"
     },
@@ -970,7 +971,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:warped_stem",
       "cantidad": 48,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:warped_stem",
       "requiere": "nether"
     },
@@ -981,7 +982,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:end_stone",
       "cantidad": 128,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:end_stone",
       "requiere": "end"
     },
@@ -992,7 +993,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:obsidian",
       "cantidad": 12,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:obsidian",
       "semanal": false
     },
@@ -1003,7 +1004,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:ancient_debris",
       "cantidad": 2,
-      "monedas": 24.0,
+      "monedas": 12.0,
       "icono": "minecraft:ancient_debris",
       "requiere": "nether"
     },
@@ -1014,7 +1015,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:mangrove_log",
       "cantidad": 48,
-      "monedas": 9.0,
+      "monedas": 4.5,
       "icono": "minecraft:mangrove_log"
     },
     {
@@ -1024,7 +1025,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:logs",
       "cantidad": 256,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:diamond_axe"
     },
     {
@@ -1034,7 +1035,7 @@
       "tipo": "romper",
       "objetivo": "#minecraft:leaves",
       "cantidad": 128,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:oak_leaves"
     },
     {
@@ -1044,7 +1045,7 @@
       "tipo": "romper",
       "objetivo": "minecraft:red_mushroom_block",
       "cantidad": 32,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:red_mushroom"
     },
     {
@@ -1054,7 +1055,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:cocoa",
       "cantidad": 24,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cocoa_beans"
     },
     {
@@ -1064,7 +1065,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:sweet_berry_bush",
       "cantidad": 24,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:sweet_berries"
     },
     {
@@ -1074,7 +1075,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:cactus",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:cactus"
     },
     {
@@ -1084,7 +1085,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:bamboo",
       "cantidad": 96,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:bamboo"
     },
     {
@@ -1094,7 +1095,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:wheat",
       "cantidad": 128,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:hay_block"
     },
     {
@@ -1104,7 +1105,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:carrots",
       "cantidad": 128,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:golden_carrot"
     },
     {
@@ -1114,7 +1115,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:potatoes",
       "cantidad": 128,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:baked_potato"
     },
     {
@@ -1124,7 +1125,7 @@
       "tipo": "cosechar",
       "objetivo": "#minecraft:crops",
       "cantidad": 160,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:composter"
     },
     {
@@ -1134,7 +1135,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:melon",
       "cantidad": 64,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:glistering_melon_slice"
     },
     {
@@ -1144,7 +1145,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:pumpkin",
       "cantidad": 64,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:carved_pumpkin"
     },
     {
@@ -1154,7 +1155,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:sugar_cane",
       "cantidad": 160,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:sugar"
     },
     {
@@ -1164,7 +1165,7 @@
       "tipo": "cosechar",
       "objetivo": "minecraft:nether_wart",
       "cantidad": 96,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:nether_wart_block",
       "requiere": "nether"
     },
@@ -1175,7 +1176,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie",
       "cantidad": 30,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:zombie_head"
     },
     {
@@ -1185,7 +1186,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:skeleton",
       "cantidad": 25,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:skeleton_skull"
     },
     {
@@ -1195,7 +1196,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:spider",
       "cantidad": 20,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:spider_eye"
     },
     {
@@ -1205,7 +1206,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:cave_spider",
       "cantidad": 10,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:cobweb"
     },
     {
@@ -1215,7 +1216,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:husk",
       "cantidad": 10,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:sand"
     },
     {
@@ -1225,7 +1226,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:stray",
       "cantidad": 8,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:tipped_arrow"
     },
     {
@@ -1235,7 +1236,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:witch",
       "cantidad": 3,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:glass_bottle",
       "semanal": false
     },
@@ -1246,7 +1247,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:phantom",
       "cantidad": 4,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:phantom_membrane",
       "semanal": false
     },
@@ -1257,7 +1258,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:pillager",
       "cantidad": 6,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:crossbow",
       "semanal": false
     },
@@ -1268,7 +1269,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie_villager",
       "cantidad": 4,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:emerald",
       "semanal": false
     },
@@ -1279,7 +1280,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:silverfish",
       "cantidad": 10,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:stone_bricks"
     },
     {
@@ -1289,7 +1290,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:guardian",
       "cantidad": 6,
-      "monedas": 16.0,
+      "monedas": 8.0,
       "icono": "minecraft:prismarine_shard",
       "semanal": false
     },
@@ -1300,7 +1301,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:blaze",
       "cantidad": 6,
-      "monedas": 16.0,
+      "monedas": 8.0,
       "icono": "minecraft:blaze_rod",
       "requiere": "nether"
     },
@@ -1311,7 +1312,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:magma_cube",
       "cantidad": 8,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:magma_cream",
       "requiere": "nether"
     },
@@ -1322,7 +1323,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:ghast",
       "cantidad": 2,
-      "monedas": 17.0,
+      "monedas": 8.5,
       "icono": "minecraft:ghast_tear",
       "requiere": "nether"
     },
@@ -1333,7 +1334,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:wither_skeleton",
       "cantidad": 5,
-      "monedas": 17.0,
+      "monedas": 8.5,
       "icono": "minecraft:wither_skeleton_skull",
       "requiere": "nether"
     },
@@ -1344,7 +1345,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:hoglin",
       "cantidad": 4,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:cooked_porkchop",
       "requiere": "nether"
     },
@@ -1355,7 +1356,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombified_piglin",
       "cantidad": 15,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:gold_nugget",
       "requiere": "nether"
     },
@@ -1366,7 +1367,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:piglin",
       "cantidad": 8,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:gold_ingot",
       "requiere": "nether"
     },
@@ -1377,7 +1378,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:endermite",
       "cantidad": 3,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:ender_eye",
       "requiere": "end"
     },
@@ -1388,7 +1389,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:shulker",
       "cantidad": 3,
-      "monedas": 18.0,
+      "monedas": 9.0,
       "icono": "minecraft:shulker_shell",
       "requiere": "end"
     },
@@ -1399,7 +1400,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:vindicator",
       "cantidad": 3,
-      "monedas": 17.0,
+      "monedas": 8.5,
       "icono": "minecraft:iron_axe",
       "semanal": false
     },
@@ -1410,7 +1411,7 @@
       "tipo": "matar",
       "objetivo": "hostil",
       "cantidad": 80,
-      "monedas": 17.0,
+      "monedas": 8.5,
       "icono": "minecraft:diamond_sword"
     },
     {
@@ -1420,7 +1421,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:creeper",
       "cantidad": 15,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:creeper_head"
     },
     {
@@ -1430,7 +1431,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:enderman",
       "cantidad": 10,
-      "monedas": 17.0,
+      "monedas": 8.5,
       "icono": "minecraft:ender_eye"
     },
     {
@@ -1440,7 +1441,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:drowned",
       "cantidad": 15,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:trident"
     },
     {
@@ -1450,7 +1451,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:slime",
       "cantidad": 20,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:slime_block"
     },
     {
@@ -1460,7 +1461,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:pufferfish",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:pufferfish",
       "semanal": false
     },
@@ -1471,7 +1472,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:tropical_fish",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:tropical_fish",
       "semanal": false
     },
@@ -1482,7 +1483,7 @@
       "tipo": "pescar",
       "objetivo": "#minecraft:fishes",
       "cantidad": 16,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:cod_bucket"
     },
     {
@@ -1492,7 +1493,7 @@
       "tipo": "pescar",
       "objetivo": "*",
       "cantidad": 24,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:fishing_rod"
     },
     {
@@ -1502,7 +1503,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:cod",
       "cantidad": 16,
-      "monedas": 12.0,
+      "monedas": 6.0,
       "icono": "minecraft:cooked_cod"
     },
     {
@@ -1512,7 +1513,7 @@
       "tipo": "pescar",
       "objetivo": "minecraft:salmon",
       "cantidad": 10,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:cooked_salmon"
     },
     {
@@ -1522,7 +1523,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:gold_ingot",
       "cantidad": 16,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:gold_ingot"
     },
     {
@@ -1532,7 +1533,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:copper_ingot",
       "cantidad": 32,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:copper_ingot"
     },
     {
@@ -1542,7 +1543,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:iron_ingot",
       "cantidad": 64,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:blast_furnace"
     },
     {
@@ -1552,7 +1553,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:smooth_stone",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:smooth_stone"
     },
     {
@@ -1562,7 +1563,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:charcoal",
       "cantidad": 32,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:charcoal"
     },
     {
@@ -1572,7 +1573,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:cooked_porkchop",
       "cantidad": 16,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cooked_porkchop"
     },
     {
@@ -1582,7 +1583,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:cooked_chicken",
       "cantidad": 16,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cooked_chicken"
     },
     {
@@ -1592,7 +1593,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:cooked_mutton",
       "cantidad": 16,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cooked_mutton"
     },
     {
@@ -1602,7 +1603,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:cooked_salmon",
       "cantidad": 12,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cooked_salmon"
     },
     {
@@ -1612,7 +1613,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:baked_potato",
       "cantidad": 32,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:baked_potato"
     },
     {
@@ -1622,7 +1623,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:dried_kelp",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:dried_kelp"
     },
     {
@@ -1632,7 +1633,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:nether_brick",
       "cantidad": 48,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:nether_brick",
       "requiere": "nether"
     },
@@ -1643,7 +1644,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:terracotta",
       "cantidad": 32,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:terracotta"
     },
     {
@@ -1653,7 +1654,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:green_dye",
       "cantidad": 16,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:green_dye"
     },
     {
@@ -1663,7 +1664,7 @@
       "tipo": "fundir",
       "objetivo": "minecraft:glass",
       "cantidad": 96,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:glass_pane"
     },
     {
@@ -1673,7 +1674,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:stick",
       "cantidad": 64,
-      "monedas": 4.8,
+      "monedas": 2.4,
       "icono": "minecraft:stick"
     },
     {
@@ -1683,7 +1684,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:planks",
       "cantidad": 128,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:oak_planks"
     },
     {
@@ -1693,7 +1694,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:crafting_table",
       "cantidad": 4,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:crafting_table"
     },
     {
@@ -1703,7 +1704,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:furnace",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:furnace"
     },
     {
@@ -1713,7 +1714,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:ladder",
       "cantidad": 24,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:ladder"
     },
     {
@@ -1723,7 +1724,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:wooden_doors",
       "cantidad": 6,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_door"
     },
     {
@@ -1733,7 +1734,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:wooden_fences",
       "cantidad": 24,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_fence"
     },
     {
@@ -1743,7 +1744,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:boats",
       "cantidad": 2,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_boat"
     },
     {
@@ -1753,7 +1754,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:bucket",
       "cantidad": 3,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:bucket"
     },
     {
@@ -1763,7 +1764,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:lantern",
       "cantidad": 6,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:lantern"
     },
     {
@@ -1773,7 +1774,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:campfire",
       "cantidad": 3,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:campfire"
     },
     {
@@ -1783,7 +1784,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:barrel",
       "cantidad": 4,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:barrel"
     },
     {
@@ -1793,7 +1794,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:hopper",
       "cantidad": 2,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:hopper",
       "semanal": false
     },
@@ -1804,7 +1805,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:paper",
       "cantidad": 48,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:paper"
     },
     {
@@ -1814,7 +1815,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:book",
       "cantidad": 8,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:book"
     },
     {
@@ -1824,7 +1825,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:bookshelf",
       "cantidad": 4,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:bookshelf"
     },
     {
@@ -1834,7 +1835,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:arrow",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:arrow"
     },
     {
@@ -1844,7 +1845,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:bow",
       "cantidad": 2,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:bow"
     },
     {
@@ -1854,7 +1855,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:fishing_rod",
       "cantidad": 2,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:fishing_rod"
     },
     {
@@ -1864,7 +1865,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:beds",
       "cantidad": 2,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:red_bed"
     },
     {
@@ -1874,7 +1875,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:wool_carpets",
       "cantidad": 24,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:red_carpet"
     },
     {
@@ -1884,7 +1885,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:banners",
       "cantidad": 2,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:white_banner"
     },
     {
@@ -1894,7 +1895,7 @@
       "tipo": "fabricar",
       "objetivo": "#minecraft:candles",
       "cantidad": 6,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:candle"
     },
     {
@@ -1904,7 +1905,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:cookie",
       "cantidad": 32,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:cookie"
     },
     {
@@ -1914,7 +1915,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:pumpkin_pie",
       "cantidad": 8,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:pumpkin_pie"
     },
     {
@@ -1924,7 +1925,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:cake",
       "cantidad": 2,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:cake",
       "semanal": false
     },
@@ -1935,7 +1936,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:golden_carrot",
       "cantidad": 8,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:golden_carrot"
     },
     {
@@ -1945,7 +1946,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:stone_bricks",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:stone_bricks"
     },
     {
@@ -1955,7 +1956,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:piston",
       "cantidad": 4,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:piston"
     },
     {
@@ -1965,7 +1966,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:repeater",
       "cantidad": 4,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:repeater"
     },
     {
@@ -1975,7 +1976,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:minecart",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:minecart"
     },
     {
@@ -1985,7 +1986,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:scaffolding",
       "cantidad": 24,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:scaffolding"
     },
     {
@@ -1995,7 +1996,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:composter",
       "cantidad": 3,
-      "monedas": 6.0,
+      "monedas": 3.0,
       "icono": "minecraft:composter"
     },
     {
@@ -2005,7 +2006,7 @@
       "tipo": "fabricar",
       "objetivo": "minecraft:item_frame",
       "cantidad": 6,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:item_frame"
     },
     {
@@ -2015,7 +2016,7 @@
       "tipo": "fabricar",
       "objetivo": "*",
       "cantidad": 256,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:crafting_table"
     },
     {
@@ -2025,7 +2026,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:planks",
       "cantidad": 128,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:oak_planks"
     },
     {
@@ -2035,7 +2036,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:logs",
       "cantidad": 64,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_log"
     },
     {
@@ -2045,7 +2046,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:wool",
       "cantidad": 64,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:white_wool"
     },
     {
@@ -2055,7 +2056,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:stairs",
       "cantidad": 64,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:oak_stairs"
     },
     {
@@ -2065,7 +2066,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:slabs",
       "cantidad": 96,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:stone_slab"
     },
     {
@@ -2075,7 +2076,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:walls",
       "cantidad": 48,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:cobblestone_wall"
     },
     {
@@ -2085,7 +2086,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:fences",
       "cantidad": 48,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:oak_fence"
     },
     {
@@ -2095,7 +2096,7 @@
       "tipo": "colocar",
       "objetivo": "minecraft:stone_bricks",
       "cantidad": 96,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:stone_bricks"
     },
     {
@@ -2105,7 +2106,7 @@
       "tipo": "colocar",
       "objetivo": "minecraft:sandstone",
       "cantidad": 96,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:sandstone"
     },
     {
@@ -2115,7 +2116,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:terracotta",
       "cantidad": 64,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:orange_terracotta"
     },
     {
@@ -2125,7 +2126,7 @@
       "tipo": "colocar",
       "objetivo": "minecraft:quartz_block",
       "cantidad": 48,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:quartz_block",
       "requiere": "nether"
     },
@@ -2136,7 +2137,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:flowers",
       "cantidad": 16,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:poppy"
     },
     {
@@ -2146,7 +2147,7 @@
       "tipo": "colocar",
       "objetivo": "minecraft:lantern",
       "cantidad": 8,
-      "monedas": 7.2,
+      "monedas": 3.6,
       "icono": "minecraft:lantern"
     },
     {
@@ -2156,7 +2157,7 @@
       "tipo": "colocar",
       "objetivo": "*",
       "cantidad": 512,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:scaffolding"
     },
     {
@@ -2166,7 +2167,7 @@
       "tipo": "colocar",
       "objetivo": "#minecraft:saplings",
       "cantidad": 48,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:spruce_sapling"
     },
     {
@@ -2176,7 +2177,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:rabbit",
       "cantidad": 3,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:rabbit_foot"
     },
     {
@@ -2186,7 +2187,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:goat",
       "cantidad": 3,
-      "monedas": 8.4,
+      "monedas": 4.2,
       "icono": "minecraft:goat_horn"
     },
     {
@@ -2196,7 +2197,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:horse",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:saddle",
       "semanal": false
     },
@@ -2207,7 +2208,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:wolf",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:bone",
       "semanal": false
     },
@@ -2218,7 +2219,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:bee",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:honeycomb",
       "semanal": false
     },
@@ -2229,7 +2230,7 @@
       "tipo": "criar",
       "objetivo": "minecraft:llama",
       "cantidad": 2,
-      "monedas": 9.6,
+      "monedas": 4.8,
       "icono": "minecraft:lead",
       "semanal": false
     },
@@ -2240,7 +2241,7 @@
       "tipo": "criar",
       "objetivo": "*",
       "cantidad": 10,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:wheat"
     },
     {
@@ -2250,7 +2251,7 @@
       "tipo": "preparar",
       "objetivo": "minecraft:potion",
       "cantidad": 12,
-      "monedas": 13.0,
+      "monedas": 6.5,
       "icono": "minecraft:potion",
       "requiere": "nether"
     },
@@ -2261,7 +2262,7 @@
       "tipo": "preparar",
       "objetivo": "minecraft:splash_potion",
       "cantidad": 6,
-      "monedas": 14.0,
+      "monedas": 7.0,
       "icono": "minecraft:splash_potion",
       "requiere": "nether"
     },
@@ -2272,7 +2273,7 @@
       "tipo": "encantar",
       "objetivo": "*",
       "cantidad": 5,
-      "monedas": 18.0,
+      "monedas": 9.0,
       "icono": "minecraft:enchanting_table",
       "semanal": false
     },
@@ -2283,7 +2284,7 @@
       "tipo": "reparar",
       "objetivo": "*",
       "cantidad": 3,
-      "monedas": 11.0,
+      "monedas": 5.5,
       "icono": "minecraft:anvil"
     }
   ],
@@ -2295,7 +2296,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie",
       "cantidad": 40,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:zombie_head"
     },
     {
@@ -2305,7 +2306,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:skeleton",
       "cantidad": 30,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:skeleton_skull"
     },
     {
@@ -2315,7 +2316,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:creeper",
       "cantidad": 20,
-      "monedas": 27.0,
+      "monedas": 14.0,
       "icono": "minecraft:creeper_head"
     },
     {
@@ -2325,7 +2326,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:spider",
       "cantidad": 25,
-      "monedas": 18.0,
+      "monedas": 9.0,
       "icono": "minecraft:spider_eye"
     },
     {
@@ -2335,7 +2336,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:cave_spider",
       "cantidad": 20,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:fermented_spider_eye"
     },
     {
@@ -2345,7 +2346,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:enderman",
       "cantidad": 10,
-      "monedas": 33.0,
+      "monedas": 17.0,
       "icono": "minecraft:ender_pearl"
     },
     {
@@ -2355,7 +2356,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:witch",
       "cantidad": 6,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:glass_bottle"
     },
     {
@@ -2365,7 +2366,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:slime",
       "cantidad": 20,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:slime_ball"
     },
     {
@@ -2375,7 +2376,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:drowned",
       "cantidad": 15,
-      "monedas": 24.0,
+      "monedas": 12.0,
       "icono": "minecraft:trident"
     },
     {
@@ -2385,7 +2386,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:husk",
       "cantidad": 15,
-      "monedas": 24.0,
+      "monedas": 12.0,
       "icono": "minecraft:sand"
     },
     {
@@ -2395,7 +2396,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:stray",
       "cantidad": 12,
-      "monedas": 27.0,
+      "monedas": 14.0,
       "icono": "minecraft:tipped_arrow"
     },
     {
@@ -2405,7 +2406,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:pillager",
       "cantidad": 10,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:crossbow"
     },
     {
@@ -2415,7 +2416,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:vindicator",
       "cantidad": 5,
-      "monedas": 36.0,
+      "monedas": 18.0,
       "icono": "minecraft:iron_axe"
     },
     {
@@ -2425,7 +2426,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:phantom",
       "cantidad": 8,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:phantom_membrane"
     },
     {
@@ -2435,7 +2436,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:silverfish",
       "cantidad": 15,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:stone_bricks"
     },
     {
@@ -2445,7 +2446,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:guardian",
       "cantidad": 10,
-      "monedas": 36.0,
+      "monedas": 18.0,
       "icono": "minecraft:prismarine_shard"
     },
     {
@@ -2455,7 +2456,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:blaze",
       "cantidad": 12,
-      "monedas": 39.0,
+      "monedas": 20.0,
       "icono": "minecraft:blaze_rod",
       "requiere": "nether"
     },
@@ -2466,7 +2467,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:magma_cube",
       "cantidad": 15,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:magma_cream",
       "requiere": "nether"
     },
@@ -2477,7 +2478,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:ghast",
       "cantidad": 4,
-      "monedas": 42.0,
+      "monedas": 21.0,
       "icono": "minecraft:ghast_tear",
       "requiere": "nether"
     },
@@ -2488,7 +2489,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:wither_skeleton",
       "cantidad": 8,
-      "monedas": 45.0,
+      "monedas": 23.0,
       "icono": "minecraft:wither_skeleton_skull",
       "requiere": "nether"
     },
@@ -2499,7 +2500,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:hoglin",
       "cantidad": 6,
-      "monedas": 36.0,
+      "monedas": 18.0,
       "icono": "minecraft:cooked_porkchop",
       "requiere": "nether"
     },
@@ -2510,7 +2511,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:piglin_brute",
       "cantidad": 3,
-      "monedas": 48.0,
+      "monedas": 24.0,
       "icono": "minecraft:golden_axe",
       "requiere": "nether"
     },
@@ -2521,7 +2522,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie_villager",
       "cantidad": 8,
-      "monedas": 27.0,
+      "monedas": 14.0,
       "icono": "minecraft:emerald"
     },
     {
@@ -2531,7 +2532,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:shulker",
       "cantidad": 6,
-      "monedas": 48.0,
+      "monedas": 24.0,
       "icono": "minecraft:shulker_shell",
       "requiere": "end"
     },
@@ -2542,7 +2543,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:endermite",
       "cantidad": 6,
-      "monedas": 27.0,
+      "monedas": 14.0,
       "icono": "minecraft:ender_eye",
       "requiere": "end"
     },
@@ -2553,7 +2554,7 @@
       "tipo": "matar",
       "objetivo": "hostil",
       "cantidad": 80,
-      "monedas": 36.0,
+      "monedas": 18.0,
       "icono": "minecraft:diamond_sword"
     },
     {
@@ -2563,7 +2564,7 @@
       "tipo": "matar",
       "objetivo": "hostil",
       "cantidad": 150,
-      "monedas": 54.0,
+      "monedas": 27.0,
       "icono": "minecraft:netherite_sword"
     },
     {
@@ -2573,7 +2574,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombified_piglin",
       "cantidad": 30,
-      "monedas": 21.0,
+      "monedas": 11.0,
       "icono": "minecraft:golden_sword",
       "requiere": "nether"
     },
@@ -2584,7 +2585,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:piglin",
       "cantidad": 12,
-      "monedas": 27.0,
+      "monedas": 14.0,
       "icono": "minecraft:gold_ingot",
       "requiere": "nether"
     },
@@ -2595,7 +2596,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zoglin",
       "cantidad": 3,
-      "monedas": 36.0,
+      "monedas": 18.0,
       "icono": "minecraft:rotten_flesh",
       "requiere": "nether"
     },
@@ -2606,7 +2607,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:ravager",
       "cantidad": 2,
-      "monedas": 45.0,
+      "monedas": 23.0,
       "icono": "minecraft:saddle"
     },
     {
@@ -2616,7 +2617,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:evoker",
       "cantidad": 2,
-      "monedas": 48.0,
+      "monedas": 24.0,
       "icono": "minecraft:totem_of_undying"
     },
     {
@@ -2626,7 +2627,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:vex",
       "cantidad": 8,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:iron_sword"
     },
     {
@@ -2636,7 +2637,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:zombie",
       "cantidad": 70,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:rotten_flesh"
     },
     {
@@ -2646,7 +2647,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:skeleton",
       "cantidad": 50,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:arrow"
     },
     {
@@ -2656,7 +2657,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:enderman",
       "cantidad": 20,
-      "monedas": 42.0,
+      "monedas": 21.0,
       "icono": "minecraft:ender_eye"
     },
     {
@@ -2666,7 +2667,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:blaze",
       "cantidad": 25,
-      "monedas": 48.0,
+      "monedas": 24.0,
       "icono": "minecraft:blaze_powder",
       "requiere": "nether"
     },
@@ -2677,7 +2678,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:witch",
       "cantidad": 10,
-      "monedas": 39.0,
+      "monedas": 20.0,
       "icono": "minecraft:redstone"
     },
     {
@@ -2687,7 +2688,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:slime",
       "cantidad": 40,
-      "monedas": 30.0,
+      "monedas": 15.0,
       "icono": "minecraft:slime_block"
     },
     {
@@ -2697,7 +2698,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:creeper",
       "cantidad": 35,
-      "monedas": 39.0,
+      "monedas": 20.0,
       "icono": "minecraft:gunpowder"
     },
     {
@@ -2707,7 +2708,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:guardian",
       "cantidad": 20,
-      "monedas": 45.0,
+      "monedas": 23.0,
       "icono": "minecraft:prismarine_crystals"
     },
     {
@@ -2717,7 +2718,7 @@
       "tipo": "matar",
       "objetivo": "minecraft:wither_skeleton",
       "cantidad": 15,
-      "monedas": 54.0,
+      "monedas": 27.0,
       "icono": "minecraft:coal_block",
       "requiere": "nether"
     }

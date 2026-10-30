@@ -30,6 +30,10 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
   y un jugador normal gana unas 270 al día (oficio, misiones, cazas y calendario). En la tienda, algo cuesta unas 6
   veces lo que ganarías en el rato de conseguirlo tú (hierro 12, oro 19, carbón 4; el diamante y la netherita no se
   venden). Antes de subir un premio, compáralo con eso: la moneda tiene que valer algo.
+- (1.3.153) Oficios, misiones del pad y cazas pagan **la mitad** que en esa referencia (una hora de oficio, unas 35
+  monedas) y **ningún premio da netherita** (pase, gachapón, kits, recompensas y oficios: se quitó una vez; las
+  configs llevan `"sinNetherita": true`). Los oficios **solo suben de nivel con las misiones**: las acciones pagan
+  monedas y nada de XP.
 
 ## Qué archivo cambia cada cosa
 
@@ -38,7 +42,7 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
 | `servidor.properties` | Economía (`economy.mode`, `economy.currency` = nombre de la moneda), rangos, puente con la web, anuncios. |
 | `pase.json` | TF Pass: temporada (número, nombre, inicio, días, renovar), niveles, XP por nivel, XP de diarias/semanales/cazas y `premios` de cada nivel. |
 | `gachapon.json` | Gachapón: precio de una tirada y de la múltiple, garantía (`garantia.cada`, `garantia.rareza`), `rarezas` (peso = probabilidad) y `premios` (cada uno con `rareza` y `peso`). |
-| `oficios.json` | Oficios: ajustes generales, niveles y su recompensa, y cada oficio con `acciones` (lo que paga cada bloque o mob: `monedas`, `xp`) y `misiones` (tipo, objetivo, cantidad, nivel, repetir, recompensa). Lleva su propia `_ayuda`. |
+| `oficios.json` | Oficios: ajustes generales, niveles y su recompensa, y cada oficio con `acciones` (lo que paga cada bloque o mob: `monedas`; su `xp` ya no cuenta, el nivel sube con las misiones) y `misiones` (tipo, objetivo, cantidad, nivel, repetir, recompensa). Lleva su propia `_ayuda`. |
 | `misiones.json` | Misiones diarias y semanales del pad y las cazas (presas que rotan cada 12 h). |
 | `recompensas.json` | Calendario de recompensas diarias y recompensas sueltas. |
 | `kits.json` | Kits: objetos, monedas, espera y quién puede cogerlos. |

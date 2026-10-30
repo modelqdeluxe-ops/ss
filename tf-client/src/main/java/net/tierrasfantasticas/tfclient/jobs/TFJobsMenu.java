@@ -78,7 +78,7 @@ public final class TFJobsMenu {
         }
         // Barra: info · página anterior · monedas · página siguiente · tu oficio · cerrar
         menu.nav(0, TFIcon.of(Items.BOOK).name("¿Cómo funcionan?", ChatFormatting.GOLD)
-                .text("Elige un oficio y gana experiencia y " + TFServerConfig.currency() + " haciendo su trabajo.")
+                .text("Elige un oficio: gana " + TFServerConfig.currency() + " haciendo su trabajo y sube de nivel con sus misiones.")
                 .blank()
                 .text("Sube de nivel para cobrar más y desbloquear misiones con recompensa.")
                 .blank()
@@ -187,7 +187,7 @@ public final class TFJobsMenu {
             if (other && otherJob != null) {
                 join.text("Dejas " + otherJob.name() + " (sin perder su progreso) y empiezas de " + job.name() + ".");
             } else {
-                join.text("Empieza a ganar experiencia y " + TFServerConfig.currency() + " con este oficio.");
+                join.text("Empieza a ganar " + TFServerConfig.currency() + " y a hacer las misiones de este oficio.");
             }
             if (TFJobsConfig.switchWaitMinutes > 0) {
                 join.line("Después hay que esperar " + TFJobsConfig.switchWaitMinutes + " min para cambiar.", ChatFormatting.DARK_GRAY);
@@ -300,11 +300,11 @@ public final class TFJobsMenu {
         for (TFJobsConfig.Action a : job.actions()) {
             if (shown++ >= 8) break;
             icon.line(Component.literal("• " + actionLabel(a)).withStyle(ChatFormatting.WHITE));
-            icon.line(Component.literal("   +" + TFJobs.fmt(a.xp()) + " xp").withStyle(ChatFormatting.AQUA)
-                    .append(Component.literal("  +" + TFJobs.fmt(a.coins() * mult) + " " + TFServerConfig.currency()).withStyle(ChatFormatting.GOLD)));
+            icon.line(Component.literal("   +" + TFJobs.fmt(a.coins() * mult) + " " + TFServerConfig.currency()).withStyle(ChatFormatting.GOLD));
         }
         icon.blank();
         icon.text("Las " + TFServerConfig.currency() + " te llegan al momento.", ChatFormatting.DARK_GRAY);
+        icon.text("El nivel sube al cobrar las misiones.", ChatFormatting.DARK_GRAY);
         return icon.build();
     }
 

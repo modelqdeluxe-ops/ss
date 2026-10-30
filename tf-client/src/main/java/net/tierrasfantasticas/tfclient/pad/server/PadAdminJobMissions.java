@@ -25,8 +25,8 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Las misiones y los pagos de cada oficio en el pad de administrador (1.3.114, el dueño: «no veo configuración de las
- * misiones del jobs»). La app a_oficios abre aquí cada oficio (pestaña «j:id»): lo que paga cada acción (monedas y XP) y
- * sus misiones; cada misión (pestaña «m:id:n») se cambia entera: nombre, descripción, icono, tipo, objetivo, cantidad,
+ * misiones del jobs»). La app a_oficios abre aquí cada oficio (pestaña «j:id»): lo que paga cada acción (monedas; desde la
+ * 1.3.153, sin XP) y sus misiones; cada misión (pestaña «m:id:n») se cambia entera: nombre, descripción, icono, tipo, objetivo, cantidad,
  * nivel, cada cuánto se repite y la recompensa. Todo se guarda en config/tfclient/oficios.json y se recarga al momento.
  */
 final class PadAdminJobMissions {
@@ -128,16 +128,16 @@ final class PadAdminJobMissions {
             JsonObject a = at(actions, i);
             if (a == null) continue;
             String target = TFJson.str(a, "objetivo", "*");
-            String value = dec(TFJson.dec(a, "monedas", 0)) + " FC · " + dec(TFJson.dec(a, "xp", 0)) + " XP";
-            boolean editing = f.equals("am" + i) || f.equals("ax" + i);
+            // (1.3.153) las acciones solo pagan monedas: la XP del oficio sale de las misiones
+            String value = dec(TFJson.dec(a, "monedas", 0)) + " FC";
+            boolean editing = f.equals("am" + i);
             b.row(new PadView.Row(new ItemStack(TFJobsMenu.item(target.startsWith("#") ? "" : target, Items.PAPER)),
                     TFJson.str(a, "tipo", "?") + " " + target, TEXT,
-                    List.of(editing ? (f.startsWith("am") ? "Escribe abajo las Fantastic Coins." : "Escribe abajo la XP del oficio.")
-                            : "Pulsa MONEDAS o XP para cambiarlo."), -1, value,
-                    PadView.Btn.of("MONEDAS", "f:am" + i, f.equals("am" + i) ? PadView.GOLD : PadView.BLUE),
-                    PadView.Btn.of("XP", "f:ax" + i, f.equals("ax" + i) ? PadView.GOLD : PadView.BLUE)).selected(editing));
+                    List.of(editing ? "Escribe abajo las Fantastic Coins." : "Pulsa MONEDAS para cambiarlo."), -1, value,
+                    PadView.Btn.of("MONEDAS", "f:am" + i, editing ? PadView.GOLD : PadView.BLUE), null).selected(editing));
         }
         if (actions.isEmpty()) b.row(PadAdminUi.note("Este oficio no paga por nada: añade acciones en oficios.json."));
+        else b.row(PadAdminUi.note("El nivel del oficio solo sube con la XP de las misiones."));
         JsonArray missions = array(job, "misiones");
         b.row(PadAdminUi.section("MISIONES (" + missions.size() + ")"));
         for (int i = 0; i < missions.size(); i++) {
@@ -154,8 +154,8 @@ final class PadAdminJobMissions {
         }
         b.row(PadAdminUi.button(new ItemStack(Items.WRITABLE_BOOK), "Nueva misión", "Sale con valores de ejemplo: luego cámbialos.", "",
                 PadView.Btn.of("AÑADIR", "nueva", PadView.GREEN)));
-        if (f.startsWith("am") || f.startsWith("ax")) {
-            b.input("v", f.startsWith("am") ? "FANTASTIC COINS (0,05 O 2)" : "XP DEL OFICIO", 12, "GUARDAR");
+        if (f.startsWith("am")) {
+            b.input("v", "FANTASTIC COINS (0,05 O 2)", 12, "GUARDAR");
             b.footer(PadView.Btn.of("CANCELAR", "f:", PadView.GRAY));
         } else {
             b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
@@ -242,14 +242,14 @@ final class PadAdminJobMissions {
                 String f = PadAdminUi.field(player, APP_ID, tab);
                 if (f.isEmpty()) return null;
                 String v = text.trim();
-                if (m == null && (f.startsWith("am") || f.startsWith("ax"))) {
+                if (m == null && f.startsWith("am")) {
                     JsonObject act = at(array(job, "acciones"), PadAdminUi.parse(f.substring(2)));
                     double d = decimal(v);
                     if (act == null || Double.isNaN(d) || d < 0 || d > 1_000_000) {
                         TFPadNet.notice(player, "Escribe un número (puede llevar decimales: 0,05).");
                         return null;
                     }
-                    act.addProperty(f.startsWith("am") ? "monedas" : "xp", d);
+                    act.addProperty("monedas", d);
                 } else if (m != null) {
                     Field fd = field(f);
                     if (fd == null) return null;
