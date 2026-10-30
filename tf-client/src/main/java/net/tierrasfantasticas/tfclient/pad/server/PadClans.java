@@ -205,6 +205,8 @@ public final class PadClans {
     private static void leave(UUID uuid) {
         JsonObject p = STORE_IMPL.playerIfAny(uuid);
         if (p != null) p.remove("clan");
+        // (1.3.154) sin clan no hay chat del clan
+        PadClanChat.forget(uuid);
         STORE_IMPL.changed();
     }
 

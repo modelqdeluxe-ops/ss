@@ -104,4 +104,108 @@ public final class TFBukkit {
             return null;
         }
     }
+
+    // -------------------------------------------------------------------------------------------------------------
+    // (1.3.154) El chat del clan en Mohist: el chat público de los plugins (EssentialsX Chat) va por el
+    // AsyncPlayerChatEvent de Bukkit, no por Minecraft. Un oyente de Bukkit hecho por reflexión (con un Proxy de
+    // Listener y EventExecutor, registrado a nombre de un plugin que ya está activo) quita de los destinatarios a quien
+    // tiene el chat del clan puesto y, si un mensaje del chat del clan llegara hasta ahí, lo cancela (no lo ve ningún
+    // plugin más) y lo manda al clan.
+    // -------------------------------------------------------------------------------------------------------------
+
+    private static boolean chatRegistered;
+
+    /**
+     * Registra el filtro del chat (una vez, al arrancar el servidor). hides(destinatario, remitente): no debe verlo;
+     * divert(remitente, texto): es del chat del clan (true = cancelar el evento). Sin Bukkit no hace nada.
+     */
+    public static void registerChatFilter(java.util.function.BiPredicate<UUID, UUID> hides, java.util.function.BiPredicate<UUID, String> divert) {
+        if (chatRegistered || !find()) return;
+        try {
+            Class<?> b = Class.forName("org.bukkit.Bukkit");
+            ClassLoader cl = b.getClassLoader();
+            Object pm = b.getMethod("getPluginManager").invoke(null);
+            Class<?> pluginC = Class.forName("org.bukkit.plugin.Plugin", false, cl);
+            Class<?> listenerC = Class.forName("org.bukkit.event.Listener", false, cl);
+            Class<?> executorC = Class.forName("org.bukkit.plugin.EventExecutor", false, cl);
+            Class<?> eventC = Class.forName("org.bukkit.event.player.AsyncPlayerChatEvent", false, cl);
+            Class<?> priorityC = Class.forName("org.bukkit.event.EventPriority", false, cl);
+            Class<?> playerC = Class.forName("org.bukkit.entity.Player", false, cl);
+            Object plugin = null;
+            Method enabled = pluginC.getMethod("isEnabled");
+            Method pluginName = pluginC.getMethod("getName");
+            for (Object p : (Object[]) pm.getClass().getMethod("getPlugins").invoke(pm)) {
+                if (!(Boolean) enabled.invoke(p)) continue;
+                String n = String.valueOf(pluginName.invoke(p));
+                if (plugin == null || n.equals("LuckPerms") || n.equals("Essentials")) plugin = p;
+            }
+            if (plugin == null) {
+                TFClient.LOGGER.warn("TF Clanes: hay Bukkit pero ningún plugin activo: el filtro del chat de Bukkit no se pudo poner");
+                return;
+            }
+            Method getPlayer = eventC.getMethod("getPlayer");
+            Method getMessage = eventC.getMethod("getMessage");
+            Method getRecipients = eventC.getMethod("getRecipients");
+            Method setCancelled = eventC.getMethod("setCancelled", boolean.class);
+            Method uuidOf = playerC.getMethod("getUniqueId");
+            Object listener = java.lang.reflect.Proxy.newProxyInstance(cl, new Class<?>[] {listenerC}, (proxy, m, args) -> switch (m.getName()) {
+                case "hashCode" -> System.identityHashCode(proxy);
+                case "equals" -> proxy == args[0];
+                case "toString" -> "TFClanChatListener";
+                default -> null;
+            });
+            Object executor = java.lang.reflect.Proxy.newProxyInstance(cl, new Class<?>[] {executorC}, (proxy, m, args) -> {
+                switch (m.getName()) {
+                    case "hashCode":
+                        return System.identityHashCode(proxy);
+                    case "equals":
+                        return proxy == args[0];
+                    case "toString":
+                        return "TFClanChatExecutor";
+                    case "execute":
+                        Object event = args[1];
+                        if (!eventC.isInstance(event)) return null;
+                        UUID sender = (UUID) uuidOf.invoke(getPlayer.invoke(event));
+                        if (divert.test(sender, String.valueOf(getMessage.invoke(event)))) {
+                            setCancelled.invoke(event, true);
+                            return null;
+                        }
+                        java.util.Set<?> to = (java.util.Set<?>) getRecipients.invoke(event);
+                        to.removeIf(p -> {
+                            try {
+                                return hides.test((UUID) uuidOf.invoke(p), sender);
+                            } catch (Exception e) {
+                                return false;
+                            }
+                        });
+                        return null;
+                    default:
+                        return null;
+                }
+            });
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object lowest = Enum.valueOf((Class) priorityC, "LOWEST");
+            pm.getClass().getMethod("registerEvent", Class.class, listenerC, priorityC, executorC, pluginC, boolean.class)
+                    .invoke(pm, eventC, listener, lowest, executor, plugin, false);
+            chatRegistered = true;
+            TFClient.LOGGER.info("TF Clanes: filtro del chat del clan puesto en Bukkit (a nombre de {})", pluginName.invoke(plugin));
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Clanes: no se pudo poner el filtro del chat del clan en Bukkit", t);
+        }
+    }
+
+    /** (1.3.154) ¿Está silenciado con EssentialsX (/mute)? null si no hay Bukkit o EssentialsX. */
+    public static Boolean essentialsMuted(UUID uuid) {
+        if (!find()) return null;
+        try {
+            Class<?> b = Class.forName("org.bukkit.Bukkit");
+            Object pm = b.getMethod("getPluginManager").invoke(null);
+            Object ess = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, "Essentials");
+            if (ess == null) return null;
+            Object user = ess.getClass().getMethod("getUser", UUID.class).invoke(ess, uuid);
+            return user == null ? null : (Boolean) user.getClass().getMethod("isMuted").invoke(user);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
 }

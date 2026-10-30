@@ -1603,8 +1603,8 @@ public final class SkillRuntime {
                 continue;
             }
             if (!canHurt(ctx, le)) continue;
-            double scale = ctx.host != null ? 1.0 : SkillServer.damageScale();
-            hurt(ctx, le, amount * ctx.power * t.power * scale, noKnock, ignoreArmor, noImmunity);
+            // (1.3.154) el daño de las skills de los jugadores lo escala hurt() con multiplicadorDano
+            hurt(ctx, le, amount * ctx.power * t.power, noKnock, ignoreArmor, noImmunity);
         }
     }
 
@@ -1771,7 +1771,7 @@ public final class SkillRuntime {
                 continue;
             }
             if (!canHurt(ctx, le)) continue;
-            double scale = ctx.host != null ? ctx.host.damageMul() : SkillServer.damageScale();
+            double scale = ctx.host != null ? ctx.host.damageMul() : 1.0; // el de los jugadores, en hurt()
             hurt(ctx, le, base * pct * scale, false, true, noImmunity);
         }
     }
@@ -1834,6 +1834,9 @@ public final class SkillRuntime {
     }
 
     static void hurt(Ctx ctx, LivingEntity le, double amount, boolean noKnock, boolean ignoreArmor, boolean noImmunity) {
+        // (1.3.154, el dueño: «nerfea el daño de las skills») todo golpe de una skill de jugador (daño fijo, en %,
+        // explosiones, sus invocaciones) por multiplicadorDano de config/tfclient/skills.json; los jefes, con lo suyo
+        if (ctx.host == null) amount *= SkillServer.damageScale();
         if (amount <= 0) return;
         amount = immunity(le.getUUID(), ctx.cast, amount, noImmunity, ctx.host != null ? 10 : IMMUNITY);
         if (amount <= 0) return;

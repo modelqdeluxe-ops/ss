@@ -71,9 +71,19 @@ public final class SkillServer {
 
     private static boolean enabled = true;
     private static boolean pvp = true;
-    private static double damageScale = 1.0;
+    /**
+     * (1.3.154, el dueño: «nerfea el daño de las skills y aumenta el cooldown; el mínimo tiene 0,2 segundos y hacen
+     * demasiado daño») Los packs están hechos para servidores de MMO con mucha más vida (un golpe normal de una skill
+     * quita 15, la mediana; una definitiva, 60): todo el daño de las skills de los jugadores va por NERF_DAMAGE
+     * (multiplicadorDano de config/tfclient/skills.json), los tiempos de recarga por NERF_COOLDOWN
+     * (multiplicadorCooldown) y ninguno baja de NERF_MIN_COOLDOWN segundos (cooldownMinimoSegundos; antes 0,2 s). Las
+     * configs de antes se ajustan una vez (marca «nerf»: 1).
+     */
+    static final double NERF_DAMAGE = 0.4, NERF_COOLDOWN = 1.5, NERF_MIN_COOLDOWN = 1.5;
+    private static double damageScale = NERF_DAMAGE;
+    private static double cooldownScale = NERF_COOLDOWN;
     /** Lo mínimo entre dos usos de la misma skill (ticks), para que no se pueda aporrear la tecla. */
-    private static final int MIN_COOLDOWN = 4;
+    private static int minCooldown = (int) Math.round(NERF_MIN_COOLDOWN * 20);
 
     private SkillServer() {}
 
@@ -81,7 +91,7 @@ public final class SkillServer {
         return pvp;
     }
 
-    static double damageScale() {
+    public static double damageScale() {
         return damageScale;
     }
 
@@ -121,16 +131,30 @@ public final class SkillServer {
 
     private static void loadConfig() {
         JsonObject json = TFJson.read(configFile());
+        boolean write = json == null || !json.has("activado");
         if (json == null) json = new JsonObject();
+        // (1.3.154) el nerf, una vez: el daño que tuviera puesto, por NERF_DAMAGE; recarga x1,5 y mínimo 1,5 s
+        if (TFJson.num(json, "nerf", 0) < 1) {
+            double before = TFJson.dec(json, "multiplicadorDano", 1.0);
+            json.addProperty("multiplicadorDano", Math.round(Math.max(0, before) * NERF_DAMAGE * 1000) / 1000.0);
+            json.addProperty("multiplicadorCooldown", NERF_COOLDOWN);
+            json.addProperty("cooldownMinimoSegundos", NERF_MIN_COOLDOWN);
+            json.addProperty("nerf", 1);
+            if (json.has("activado")) {
+                TFClient.LOGGER.info("TF Skills: nerf de la 1.3.154: daño x{} (antes x{}), recarga x{} y como mínimo {} s",
+                        json.get("multiplicadorDano").getAsDouble(), before, NERF_COOLDOWN, NERF_MIN_COOLDOWN);
+            }
+            write = true;
+        }
         enabled = TFJson.bool(json, "activado", true);
         pvp = TFJson.bool(json, "skillsDanJugadores", true);
-        damageScale = Math.max(0, TFJson.dec(json, "multiplicadorDano", 1.0));
-        if (!json.has("activado")) {
-            JsonObject out = new JsonObject();
-            out.addProperty("activado", enabled);
-            out.addProperty("skillsDanJugadores", pvp);
-            out.addProperty("multiplicadorDano", damageScale);
-            TFJson.write(configFile(), out);
+        damageScale = Math.max(0, TFJson.dec(json, "multiplicadorDano", NERF_DAMAGE));
+        cooldownScale = Math.max(0.1, TFJson.dec(json, "multiplicadorCooldown", NERF_COOLDOWN));
+        minCooldown = (int) Math.max(1, Math.round(Math.max(0, TFJson.dec(json, "cooldownMinimoSegundos", NERF_MIN_COOLDOWN)) * 20));
+        if (write) {
+            json.addProperty("activado", enabled);
+            json.addProperty("skillsDanJugadores", pvp);
+            TFJson.write(configFile(), json);
         }
     }
 
@@ -280,8 +304,9 @@ public final class SkillServer {
         SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel));
     }
 
-    private static int cooldownTicks(SkillDefs.SkillDef s) {
-        return (int) Math.max(MIN_COOLDOWN, Math.round(s.cooldown() * 20));
+    /** La recarga de una skill en ticks: la del pack por multiplicadorCooldown y como mínimo cooldownMinimoSegundos. */
+    public static int cooldownTicks(SkillDefs.SkillDef s) {
+        return (int) Math.max(minCooldown, Math.round(s.cooldown() * cooldownScale * 20));
     }
 
     // ------------------------------------------------------------------------------------------- lanzar

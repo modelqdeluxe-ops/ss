@@ -465,8 +465,9 @@ public final class PadWardrobe {
                 for (int i = 0; i < acts.size() && i < keys.length; i++) {
                     SkillDefs.SkillDef s = acts.get(i);
                     List<String> about = new ArrayList<>();
-                    String cd = s.cooldown() > 0 ? "Recarga " + (s.cooldown() == Math.floor(s.cooldown()) ? String.valueOf((long) s.cooldown())
-                            : String.valueOf(s.cooldown()).replace('.', ',')) + " s" : "";
+                    // (1.3.154) la recarga de verdad (con el nerf: x1,5 y como mínimo 1,5 s), no la del pack
+                    double secs = net.tierrasfantasticas.tfclient.skills.SkillServer.cooldownTicks(s) / 20.0;
+                    String cd = "Recarga " + (secs == Math.floor(secs) ? String.valueOf((long) secs) : String.valueOf(secs).replace('.', ',')) + " s";
                     String kind = i == cur.basicSlot() ? "Ataque básico" : "";
                     String head = kind.isEmpty() ? cd : cd.isEmpty() ? kind : kind + " · " + cd;
                     if (!s.desc().isEmpty()) about.add(head.isEmpty() ? s.desc() : head + " · " + s.desc());
