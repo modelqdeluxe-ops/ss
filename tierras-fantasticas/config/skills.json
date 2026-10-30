@@ -2,6 +2,7 @@
  "_leeme": "Generado por tools/skills.py (no lo edites a mano: cambia el script y vuelve a ejecutarlo).",
  "price": 599,
  "coinPrice": 150000,
+ "onSale": false,
  "keys": [
   "5",
   "6",

@@ -103,6 +103,12 @@ export class Stripe {
     });
   }
 
+  // (30 oct 2026) Deja rellenadas las pruebas de una disputa sin enviarlas (submit=false): el dueño las revisa en el
+  // panel de Stripe y las envía. https://docs.stripe.com/api/disputes/update
+  updateDisputeEvidence(id, evidence) {
+    return this.request('POST', `/v1/disputes/${encodeURIComponent(id)}`, { form: { evidence, submit: 'false' } });
+  }
+
   retrieveCheckoutSession(id) {
     return this.request('GET', `/v1/checkout/sessions/${encodeURIComponent(id)}`);
   }

@@ -78,7 +78,10 @@ legal</a>.</p>'''),
     ('menores', 'Menores de edad', '''
 <p>Si eres menor de edad, necesitas el permiso de tu madre, padre o tutor para crear una cuenta y para comprar, y
 son ellos quienes aceptan estos términos y pagan. Si tienes menos de 13 años, tu madre, padre o tutor debe crear la
-cuenta por ti. Si un menor compró sin permiso, escríbenos y lo resolvemos (ver «Cancelaciones y reembolsos»).</p>'''),
+cuenta por ti. Si un menor compró sin permiso, el titular del medio de pago tiene que <b>escribirnos antes de reclamar
+al banco o a la plataforma de pago</b> y lo resolvemos (ver «Cancelaciones y reembolsos»).</p>
+<p>Quien tiene la cuenta, el jugador y el medio de pago es responsable de quién los usa: una compra hecha con tu cuenta
+de la web o con tu jugador, desde tu conexión y con tu medio de pago se considera hecha y autorizada por ti.</p>'''),
 
     ('cuentas', 'Cuentas', '''
 <ul>
@@ -149,7 +152,8 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
   <li>Al pagar un regalo, quien paga es quien acepta estos Términos y quien puede pedir la cancelación o el reembolso.
     Lo regalado es del jugador que lo recibe y se le entrega a él, con un aviso en el juego de quién se lo regala.</li>
   <li>Si un regalo se reembolsa o se disputa, se le retira al jugador que lo recibió igual que cualquier compra. La
-    sanción por reembolso injustificado (el baneo de IP de 6 días) es para <b>quien pagó</b>, no para quien lo recibió.</li>
+    sanción por reembolso injustificado (el baneo de IP de 15 días; 6 en las compras anteriores al 30 de octubre de 2026) es
+    para <b>quien pagó</b>, no para quien lo recibió.</li>
   <li>El mensaje del regalo es opcional, de hasta 100 caracteres, y tiene que respetar las <a href="/mundo#normas">normas
     del servidor</a>.</li>
 </ul>'''),
@@ -158,34 +162,71 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
 <p>Cuando Stripe, PayPal o Mercado Pago confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
 cuenta». Si algo falla, el staff la entrega a mano. Si en 48 horas no la has recibido, escríbenos con tu número de
-pedido.</p>'''),
+pedido.</p>
+<p><b>Es contenido digital y pides que se entregue al momento.</b> Al pagar aceptas que la compra se entregue en
+cuanto se confirme el pago y que, desde ese momento, ya la puedes usar en el servidor. Por eso el plazo para cancelar
+es el de la garantía de 24 horas (ver «Cancelaciones y reembolsos»).</p>
+<p><b>La entrega queda registrada:</b> la fecha y la hora en que el servidor la entregó en tu jugador, lo que se
+entregó y tus conexiones al servidor. Con eso se demuestra que la compra se recibió.</p>'''),
 
     ('reembolsos', 'Cancelaciones y reembolsos', f'''
 <ul>
-  <li><b>5 días hábiles para cancelar.</b> Puedes cancelar cualquier compra y pedir que te devolvamos el dinero dentro de
-    los 5 días hábiles siguientes a la entrega, sin dar explicaciones. Escríbenos a {MAIL} con tu número de pedido y tu
-    nombre de jugador.</li>
+  <li><b>Garantía de 24 horas.</b> Puedes cancelar cualquier compra y pedir que te devolvamos el dinero dentro de las
+    <b>24 horas siguientes a la entrega</b> en el servidor, sin dar explicaciones. Escríbenos a {MAIL} con tu número de
+    pedido y tu nombre de jugador: basta con que nos escribas dentro de esas 24 horas (contamos la hora de tu correo).</li>
   <li><b>Al reembolsar se retira todo lo de esa compra.</b> Cada objeto que se entrega queda marcado con su número de
     pedido. Cuando una compra se reembolsa, el servidor retira automáticamente todo lo que se entregó con ella esté
     donde esté: inventario, cofre de ender, huecos de accesorios, cofres y demás contenedores (también dentro de cajas
     de shulker), marcos, soportes y el suelo; lo que esté en zonas sin cargar se retira en cuanto se cargan. Si la
     compra era un rango, se quita el rango (o vuelves al que tenías si era una mejora) y sus roles de Discord; si era una
     clase de skills, deja de ser tuya (y, si era tu clase activa, se quita).</li>
-  <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
-    o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
-  <li><b>Pasados esos 5 días hábiles no hay reembolsos.</b> La compra es definitiva, salvo en los casos del punto anterior.</li>
-  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe, PayPal o Mercado Pago al mismo medio de pago; tu banco puede
-    tardar de 5 a 10 días hábiles en mostrarlo.</li>
-  <li>Si dentro del plazo abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de
-    la misma forma que con un reembolso. Escríbenos primero: casi siempre es más rápido.</li>
-  <li><b>Reembolso injustificado: baneo de IP de 6 días.</b> Si pasados los 5 días hábiles reclamas el dinero por otra vía
-    (una disputa o un contracargo con tu banco o tu tarjeta, Stripe, PayPal o Mercado Pago) sin que se dé ninguno de los casos de
-    arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 6 días</b> (en un
-    regalo, el jugador que lo pagó).
-    Además respondemos a la disputa con las pruebas de la compra (ver «Registro de la aceptación y recibos»). Si la
-    disputa se resuelve a nuestro favor, te devolvemos lo retirado.</li>
+  <li><b>En cualquier momento</b> te devolvemos el dinero si la compra no llegó a entregarse en el servidor o si se
+    cobró dos veces o por error. Si un menor compró sin permiso, escríbenos (no abras una disputa) y lo revisamos.</li>
+  <li><b>Pasadas esas 24 horas no hay reembolsos.</b> La compra es definitiva, salvo en los casos del punto anterior.
+    Que ya no quieras jugar, que te sancionen por romper las normas o que cambie el equilibrio del juego no son motivo de
+    reembolso.</li>
+  <li>Respondemos en un máximo de 3 días hábiles. El reembolso se hace por Stripe, PayPal o Mercado Pago al mismo medio
+    de pago; tu banco puede tardar de 5 a 10 días hábiles en mostrarlo.</li>
+  <li>Si dentro de las 24 horas abres una disputa o contracargo en lugar de escribirnos, se trata como una cancelación:
+    se retira lo entregado igual que con un reembolso. Escríbenos primero: es más rápido.</li>
+  <li><b>Reembolso injustificado: baneo de IP de 15 días.</b> Si pasadas las 24 horas reclamas el dinero por otra vía
+    (una disputa o un contracargo con tu banco o tu tarjeta, Stripe, PayPal o Mercado Pago) sin que se dé ninguno de los
+    casos de arriba, se retira todo lo de esa compra y tu jugador recibe un <b>baneo de la IP del servidor durante 15
+    días</b> (en un regalo, el jugador que lo pagó). Además respondemos a la disputa con las pruebas (ver «Disputas y
+    contracargos»). Si la disputa se resuelve a nuestro favor, te devolvemos lo retirado.</li>
   <li>Las recompensas gratis y lo comprado con monedas del servidor no tienen reembolso en dinero, porque no se pagaron
     con dinero.</li>
+  <li><b>Compras anteriores a esta versión.</b> Las compras hechas antes del 30 de octubre de 2026 (con los Términos
+    del 26 de octubre de 2026 o anteriores) se rigen por los términos que se aceptaron entonces: <b>5 días hábiles</b>
+    desde la entrega para cancelar y, por un reembolso injustificado pasado ese plazo, <b>baneo de IP de 6 días</b>.
+    Cada compra se rige por la versión de los Términos que se aceptó al pagarla, que sale en su recibo.</li>
+</ul>'''),
+
+    ('disputas', 'Disputas y contracargos', f'''
+<p>Una disputa o un contracargo es reclamar el dinero de una compra a tu banco, a tu tarjeta o a la plataforma de pago
+(Stripe, PayPal o Mercado Pago) en lugar de pedírnoslo a nosotros.</p>
+<ul>
+  <li><b>Escríbenos primero.</b> Antes de abrir una disputa te comprometes a escribirnos a {MAIL} con tu número de
+    pedido y a darnos 3 días hábiles para resolverlo. Casi todo se arregla así, y dentro de la garantía de 24 horas te
+    devolvemos el dinero sin preguntas.</li>
+  <li><b>«No lo recibí».</b> La entrega se hace en el jugador de Minecraft que se eligió al pagar y queda registrada
+    por el servidor con su fecha y hora. Una compra entregada en ese jugador está recibida.</li>
+  <li><b>«No es lo que se describía».</b> Cada producto dice antes de pagar exactamente qué incluye, y eso es lo que se
+    entrega. Los ajustes normales del juego (daño, tiempos de recarga, precios en monedas, economía del servidor) no
+    cambian lo que compraste ni lo convierten en algo distinto de lo descrito (ver «Cambios en el servidor»).</li>
+  <li><b>«No la hice yo».</b> Una compra hecha con tu cuenta de la web o con tu jugador, desde tu conexión y con tu
+    medio de pago se considera autorizada por ti (ver «Menores de edad»). Si de verdad alguien usó tu tarjeta o tu cuenta
+    sin permiso, escríbenos: te ayudamos y bloqueamos lo comprado.</li>
+  <li><b>Qué presentamos.</b> Ante una disputa respondemos con las pruebas de la compra: el recibo, la aceptación de
+    estos Términos (versión, fecha, hora, IP y navegador), la política de reembolsos que se veía al pagar, el registro de
+    la entrega en el servidor, las conexiones de tu jugador al servidor después de la entrega, tus compras anteriores y
+    los mensajes que nos hayas enviado. Al comprar aceptas que se las enviemos a tu banco, a Stripe, a PayPal o a
+    Mercado Pago para resolver la disputa.</li>
+  <li><b>Qué pasa con lo comprado.</b> Mientras dura la disputa, lo entregado se retira del servidor. Si se resuelve a
+    nuestro favor, se te devuelve; si es un reembolso injustificado, se aplica además el baneo de IP de 15 días (ver
+    «Cancelaciones y reembolsos»). Podemos no aceptar nuevas compras de una cuenta o de un jugador que haya abierto
+    disputas injustificadas.</li>
+  <li>Si retiras la disputa o la pierdes, la compra vuelve a ser tuya tal como estaba.</li>
 </ul>'''),
 
     ('registros', 'Registro de la aceptación y recibos', '''
@@ -195,8 +236,10 @@ pedido.</p>'''),
     recompensa o cuando cambian): la versión aceptada, la fecha y la hora, tu jugador o tu cuenta, el pedido y la
     dirección IP y el navegador desde los que aceptaste.</li>
   <li><b>Cada compra con dinero tiene su recibo</b>: número de pedido, jugador y UUID, producto, importe, medio de pago y
-    su referencia, fechas del pedido, del pago y de la entrega en el servidor, la versión de los Términos aceptada y esta
-    política de cancelación y reembolsos.</li>
+    su referencia, fechas del pedido, del pago y de la entrega en el servidor, la versión de los Términos aceptada y la
+    política de cancelación y reembolsos de esa versión.</li>
+  <li><b>El servidor registra la entrega y tus conexiones</b>: cuándo se entregó cada compra en tu jugador, qué se
+    entregó y cuándo entró tu jugador al servidor por primera y por última vez.</li>
   <li><b>Tu recibo en PDF se descarga solo</b> al terminar de pagar, aparte del que te dan Stripe, PayPal o Mercado Pago; también lo
     puedes volver a descargar desde la página de tu compra.</li>
   <li>Una copia de cada aceptación, de cada recibo y de cada aviso de reembolso o disputa se envía al correo de la
@@ -205,8 +248,10 @@ pedido.</p>'''),
 </ul>'''),
 
     ('cambios-contenido', 'Cambios en el servidor', '''
-<p>El servidor puede cambiar: actualizaciones, equilibrio del juego o las normas de Mojang. Si tenemos que retirar o
-cambiar algo que compraste, te ofreceremos algo equivalente de valor similar. Si algún día el servidor fuera a cerrar,
+<p>El servidor puede cambiar: actualizaciones, equilibrio del juego o las normas de Mojang. Ajustar el equilibrio (el
+daño, los tiempos de recarga, la vida, los precios en monedas o la economía del servidor) es parte normal de un
+servidor de Minecraft: lo que compraste sigue siendo tuyo y sigue haciendo lo que se describía, y esos ajustes no son
+motivo de reembolso. Si tenemos que retirar algo que compraste, te ofreceremos algo equivalente de valor similar. Si algún día el servidor fuera a cerrar,
 lo avisaremos con al menos 30 días de antelación en la web y en Discord, y dejaremos de vender en cuanto se decida.</p>'''),
 
     ('normas', 'Normas y sanciones', '''
@@ -224,7 +269,8 @@ terceros (Stripe, PayPal, Mercado Pago, Discord, tu banco). Nada de esto limita 
     ('cambios', 'Cambios en estos términos', '''
 <p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha y te pediremos que la aceptes antes
 de tu siguiente compra o recompensa. Las compras se rigen por los términos vigentes el día en que las hiciste (los que
-aceptaste en ese momento).</p>'''),
+aceptaste en ese momento): por ejemplo, las anteriores al 30 de octubre de 2026 tienen 5 días hábiles para cancelar y
+un baneo de 6 días por reembolso injustificado.</p>'''),
 
     ('ley', 'Ley aplicable y reclamaciones', f'''
 <p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos, incluida la Ley Federal de Protección al
@@ -250,7 +296,8 @@ dirección ni teléfono.</p>
     identificador del pago en Stripe, PayPal o Mercado Pago y con cuál pagaste. Los datos de tu tarjeta, tu cuenta de PayPal o Mercado Pago y el correo
     que te piden los tratan Stripe, PayPal o Mercado Pago; nosotros no los vemos ni los guardamos.</li>
   <li><b>Jugadores del servidor:</b> el servidor nos envía el nombre y el UUID de quienes han entrado, con la primera y
-    la última vez que se les vio, para comprobar los nombres antes de vender.</li>
+    la última vez que se les vio, para comprobar los nombres antes de vender y para demostrar ante una disputa que la
+    compra se entregó y se usó.</li>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
   <li><b>Aceptación de los términos:</b> cada vez que aceptas los Términos y este aviso (al crear la cuenta, al comprar
     o cuando cambian), la versión aceptada, la fecha y la hora, tu jugador o tu cuenta, el pedido, y la dirección IP y el
@@ -297,6 +344,10 @@ prestar su servicio (algunos están fuera de México, sobre todo en Estados Unid
   <li><b>Google Fonts:</b> tu navegador descarga de Google las tipografías de la web.</li>
   <li><b>El servidor de Minecraft de Tierras Fantásticas:</b> recibe tu nombre, UUID y tus compras para entregarlas.</li>
 </ul>
+<p><b>Disputas y contracargos:</b> si reclamas una compra a tu banco, a tu tarjeta, a Stripe, a PayPal o a Mercado
+Pago, les enviamos las pruebas de esa compra para resolverla: tu jugador y su UUID, el pedido y su recibo, la aceptación
+de los Términos (fecha, hora, IP y navegador), el registro de la entrega, las conexiones de tu jugador al servidor, tus
+compras anteriores y los mensajes que nos hayas enviado.</p>
 <p>No compartimos tus datos con nadie más, salvo que una autoridad nos lo exija conforme a la ley.</p>'''),
 
     ('derechos', 'Tus derechos (ARCO) y cómo ejercerlos', f'''

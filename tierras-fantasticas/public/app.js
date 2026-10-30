@@ -1008,6 +1008,10 @@
     if (st === 'pending') {
       return own('is-pending', IC.clock, 'Comprando con monedas', 'Se cobra en el juego en cuanto entres al servidor; después es tuya y pasa a ser tu clase activa.');
     }
+    // (30 oct 2026) no se venden hasta reajustar la economía del servidor
+    if (skData.onSale === false) {
+      return own('is-pending', IC.clock, 'No disponible por ahora', 'Las skills no están a la venta mientras reajustamos la economía del servidor. Las que ya tienes las sigues usando.');
+    }
     const coins = Number.isFinite(mine?.coins) ? mine.coins : null;
     const short = coins !== null && coins < c.coinPrice;
     return `<div class="sk-buy">
@@ -1904,7 +1908,7 @@
       </div>
       <p class="pay-mp-note" id="pay-mp-note" hidden>Mercado Pago es <b>solo para México</b> (tarjetas mexicanas, OXXO o saldo de Mercado Pago México) y cobra en pesos al tipo de cambio del día (el precio en pesos cambia con el dólar). Desde otro país, paga con tarjeta o PayPal.</p>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
-      <p class="pay-legal">Precio final en USD (con Mercado Pago, lo mismo en pesos mexicanos al cambio de hoy). Tienes 5 días hábiles para cancelar la compra; pasado ese plazo no hay reembolsos y reclamar el dinero al banco sin motivo se sanciona con 6 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
+      <p class="pay-legal">Precio final en USD (con Mercado Pago, lo mismo en pesos mexicanos al cambio de hoy). Es contenido digital y se entrega al momento: tienes <b>24 horas desde la entrega</b> para cancelar la compra escribiéndonos; pasado ese plazo no hay reembolsos, y reclamar el dinero al banco, a Stripe o a PayPal sin motivo se sanciona con 15 días de baneo de IP del servidor (<a href="/terminos#reembolsos">Términos</a>). Recibirás tu recibo en PDF.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;
