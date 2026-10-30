@@ -5,12 +5,13 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **versión 0.7.0, el mundo vasto y la app de Android**. Es un juego para **Android** (app nativa que lleva
+Estado: **versión 0.8.0, el arte a calidad Core Keeper**. Es un juego para **Android** (app nativa que lleva
 el juego dentro; va a la Play Store) que también se puede abrir en el navegador. Fantasía oscura: el mundo es el
 cuerpo de un dios muerto, Ásor, y su Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el
 bestiario y los jefes están en **`LORE.md`**, que manda sobre todo lo demás). Mundo de 2048×2048 con la Selva
 Esmeralda, la Ciénaga de la Podre y la Ciudad Velada; siete jefes; puzles, encargos, bestiario y 48 tablillas de
-historia; banda sonora original. Lo que viene después está en `DISEÑO.md` y `CONTINUAR.md`.
+historia; música y efectos grabados. Las reglas del arte están en **`ARTE.md`** y lo que no es nuestro (con su
+licencia) en **`CREDITOS.md`**. Lo que viene después está en `DISEÑO.md` y `CONTINUAR.md`.
 
 ## Descargar
 
@@ -72,6 +73,24 @@ y para la música; vibra al recibir golpes. `js/app.js` es el puente con el jueg
   ese AAB es el que se sube a la Play Console (con «Firma de apps de Google Play»). Guarda `subida.jks` y sus
   contraseñas fuera del repo: sin ellas no se pueden subir actualizaciones.
 - Paquete: `com.corazondormido.juego` (se puede cambiar antes de la primera subida a la tienda, no después).
+
+## Lo nuevo de la 0.8.0
+
+Todo el juego, rehecho con la construcción de Core Keeper (medidas, paleta, contorno de color; ver `ARTE.md`):
+
+- **Personaje con esqueleto 2D** y las animaciones de KayKit (CC0): anda, corre, golpea con cada arma a su manera
+  y lleva **la antorcha en una mano y la herramienta o el arma en la otra**; lo que lleva se dibuja en la mano.
+- **Criaturas y jefes con esqueleto**, a tamaño Core Keeper (criaturas de 14–43 px, jefes de 95–190 px), dibujados
+  por piezas con volumen y movidos con animaciones de verdad (KayKit y Quaternius, CC0).
+- **Render nítido**: sin dientes ni líneas que se deforman.
+- **Criaturas más justas**: te ven a 5 casillas (menos a oscuras), avisan solo a las de al lado y te pierden antes.
+  **Más luz** alrededor del personaje (el doble de radio).
+- **Interfaz legible** (letra Pixel Operator) y **una ventana propia para cada mesa** (madera, metal, horno,
+  cocina, incubadora), con pestañas, ficha y ×5.
+- **Música de Kevin MacLeod (CC BY 4.0) y efectos grabados (CC0)**; créditos en el título y en la pausa.
+- **El mundo**: el Corazón y los árboles dibujados a mano, todos los objetos con 4 tonos por material y contorno de
+  color (sin negro), paredes con canto, suelos más tranquilos e iconos nuevos de mesas, yunques, cofre, horno,
+  olla y cama. El icono de la app es el Corazón nuevo.
 
 ## Lo nuevo de la 0.7.0
 

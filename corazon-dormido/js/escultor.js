@@ -63,6 +63,39 @@ const ESCU = (() => {
   function shortest(a, b) { let d = b - a; while (d > 180) d -= 360; while (d < -180) d += 360; return Math.sign(d) * Math.min(60, Math.abs(d)); }
   const mezclar = (a, b, t) => { const x = hex2(a), y = hex2(b); return a2hex(x.map((v, i) => v + (y[i] - v) * t)); };
 
+  // ---------------------------------------------------------------- estilo (Core Keeper, ARTE.md)
+  // ck: 4 tonos por material y contorno del color del material; textura: cuánto pesan las vetas y las grietas
+  const ESTILO = { ck: true, textura: 0.65 };
+  // Los 4 tonos de un material (posiciones en su rampa) y, para cada tono de la rampa, a cuál va (q), el de debajo
+  // (líneas entre piezas) y el de encima (filo con luz).
+  function niveles(mt) {
+    if (mt._niv) return mt._niv;
+    const n = mt.r.length, S = [...new Set([0.2, 0.45, 0.66, 0.84].map((f) => Math.round((n - 1) * f)))];
+    const top = n - 1, q = [], abajo = [], arriba = [];
+    for (let i = 0; i < n; i++) {
+      let mejor = S[0];
+      for (const v of S) if (Math.abs(v - i) < Math.abs(mejor - i)) mejor = v;
+      q.push(i === top && mt.brillo ? top : mejor);
+    }
+    for (let i = 0; i < n; i++) {
+      const j = S.indexOf(q[i]);
+      abajo.push(j > 0 ? S[j - 1] : Math.max(0, S[0] - 1));
+      arriba.push(j >= 0 && j < S.length - 1 ? S[j + 1] : top);
+    }
+    return (mt._niv = { S, q, abajo, arriba });
+  }
+  // El contorno: el tono más oscuro del material (sel-out), nunca negro: en Core Keeper el borde tiene un valor de
+  // 0,2–0,35 y el tono del material (madera: marrón oscuro; piedra: azul oscuro). Abajo y a la derecha, un poco más
+  // oscuro (es el lado de la sombra).
+  function contornoCK(mt, arribaIzq) {
+    if (mt._cont) return mt._cont[arribaIzq ? 0 : 1];
+    const [h, s0, v0] = rgb2hsv(hex2(mt.r[0]));
+    const v = Math.max(0.2, Math.min(0.32, v0 * 1.4)), s = Math.min(0.85, Math.max(s0, 0.35));
+    const a = a2hex(hsv2rgb([h, s, v])), b = a2hex(hsv2rgb([h, Math.min(0.9, s * 1.08), v * 0.82]));
+    mt._cont = [a, b];
+    return mt._cont[arribaIzq ? 0 : 1];
+  }
+
   // ---------------------------------------------------------------- materiales
   // { r: rampa (oscuro→claro), tex(x,y,z,nx,ny,nz) → pasos de rampa (+/-), brillo: metal (0..1), luz: brilla solo
   //   (0..1), plano: sin luz direccional (solo la rampa del medio), contorno: color del borde }
@@ -281,6 +314,7 @@ const ESCU = (() => {
       const Vx = 0, Vy = 0.7071, Vz = 0.7071;
       const amb = o.amb ?? 0.28, envuelve = o.envuelve ?? 0.25, contraste = o.contraste ?? 1, realce = o.realce ?? 0;
       const idxC = new Int16Array(U * V).fill(-1), matC = new Int16Array(U * V), nrm = new Float32Array(U * V * 3);
+      const ck0 = o.estilo !== 'viejo' && ESTILO.ck;
       for (let k = 0; k < U * V; k++) {
         const i = vox[k];
         if (i < 0) continue;
@@ -322,9 +356,19 @@ const ESCU = (() => {
         // contraste de tonos (toon): la luz y la sombra se separan con un corte claro en vez de un degradado largo
         if (!mt.plano) lum = Math.max(0, Math.min(1, (lum - 0.5) * (mt.contraste ?? contraste) + 0.5 + realce));
         const n = mt.r.length;
-        let t = lum * n + (mt.tex ? mt.tex(x, y, z, nx, ny, nz) : 0) + (mt.sube || 0);
+        let t = lum * n + (mt.tex ? mt.tex(x, y, z, nx, ny, nz) * (ck0 ? ESTILO.textura : 1) : 0) + (mt.sube || 0);
         idxC[k] = Math.max(0, Math.min(n - 1, Math.floor(t)));
         matC[k] = this.m[i];
+      }
+      // a la manera de Core Keeper: cada material en 4 tonos bien separados (sombra, medio, luz, brillo) en vez de
+      // los 6–8 de la rampa, que en un dibujo pequeño se leen como ruido; el brillo de arriba del todo, solo en
+      // los metales y en el filo que mira a la lámpara
+      const ck = o.estilo !== 'viejo' && ESTILO.ck;
+      if (ck) for (let k = 0; k < U * V; k++) {
+        if (idxC[k] < 0) continue;
+        const mt = this.mats[matC[k]];
+        if (mt.luz || mt.plano || mt.libre) continue;
+        idxC[k] = niveles(mt).q[idxC[k]];
       }
       // líneas interiores: donde algo cercano tapa a algo de detrás, lo de detrás se oscurece en el borde
       if (o.lineas !== false) {
@@ -341,7 +385,13 @@ const ESCU = (() => {
             if (dif >= (otra ? 2 : 4)) marca[k] = Math.max(marca[k], otra ? 2 : 1);
           }
         }
-        for (let k = 0; k < U * V; k++) if (marca[k]) idxC[k] = this.mats[matC[k]].lineaFuerte ? 0 : Math.max(0, idxC[k] - marca[k]);
+        for (let k = 0; k < U * V; k++) {
+          if (!marca[k]) continue;
+          const mt = this.mats[matC[k]];
+          if (mt.lineaFuerte) idxC[k] = 0;
+          else if (ck && !mt.luz && !mt.plano && !mt.libre) idxC[k] = niveles(mt).abajo[idxC[k]];
+          else idxC[k] = Math.max(0, idxC[k] - marca[k]);
+        }
       }
       // limpieza: un píxel solo, rodeado de otro tono del mismo material, toma ese tono
       if (o.limpiar !== false) {
@@ -362,7 +412,7 @@ const ESCU = (() => {
       // cúmulos: en el pixel art no hay manchas sueltas de uno o dos píxeles (se leen como ruido); cada mancha de
       // un tono más pequeña que `cumulo` toma el tono vecino del mismo material que más toca. Se respetan el brillo
       // de los metales y lo que brilla solo (son detalles a propósito).
-      const minC = o.cumulo ?? 2;
+      const minC = o.cumulo ?? (ck ? 3 : 2);
       if (minC > 1) for (let pasada = 0; pasada < 2; pasada++) {
         const visto = new Uint8Array(U * V), pila = [], comp = [];
         for (let k0 = 0; k0 < U * V; k0++) {
@@ -407,7 +457,7 @@ const ESCU = (() => {
           const nx = nrm[k * 3], ny = nrm[k * 3 + 1], nz = nrm[k * 3 + 2];
           if (nx * Lx + ny * Ly + nz * Lz > 0.2) sube.push(k);
         }
-        for (const k of sube) idxC[k] = Math.min(this.mats[matC[k]].r.length - 1, idxC[k] + 1);
+        for (const k of sube) { const mt = this.mats[matC[k]]; idxC[k] = ck && !mt.libre ? niveles(mt).arriba[idxC[k]] : Math.min(mt.r.length - 1, idxC[k] + 1); }
       }
       // a lienzos (con 1 px de margen para el contorno)
       const C = o.contorno !== false ? 1 : 0, LW = U + C * 2, LH = V + C * 2;
@@ -436,7 +486,7 @@ const ESCU = (() => {
           }
           if (vec < 0) continue;
           const mt = this.mats[matC[vec]];
-          const borde = mt.contorno || mezclar(mt.r[0], tinta, arribaIzq ? 0.35 : 0.6);
+          const borde = mt.contorno || (ck ? contornoCK(mt, arribaIzq) : mezclar(mt.r[0], tinta, arribaIzq ? 0.35 : 0.6));
           col.px(u, v, borde);
           nor[v * LW + u] = nor[(v + (arribaIzq ? 1 : -1)) * LW + u] || 0;
         }
@@ -504,7 +554,7 @@ const ESCU = (() => {
     // semiespacios: lo que queda por encima / debajo de una altura, delante / detrás de un z
     sobre: (h) => (x, y) => h - y, bajo: (h) => (x, y) => y - h,
   };
-  return { Modelo, mat, rampa, mezclar, TEX, ruido, fbm, h3, SDF, OP };
+  return { Modelo, mat, rampa, mezclar, TEX, ruido, fbm, h3, SDF, OP, ESTILO };
 })();
 
 // Registra un modelo horneado: el dibujo, su capa de luz (si tiene), su versión en blanco (golpe) y su sombra.

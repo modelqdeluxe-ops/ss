@@ -184,11 +184,9 @@ function suelo(tipo, v) {
     let x2 = 0, y2 = entre(r, 3, 12);
     for (let k = 0; k < 16; k++) { L.pxc(x2, y2, S.pd); L.pxc(x2, y2 + 1, S.os); x2++; if (r() < 0.35) y2 += entre(r, -1, 1); }
   }
-  if (tipo === 'piedra') { // losas naturales
-    for (let k = 0; k < 2; k++) {
-      let x = entre(r, 0, 15), y = entre(r, 0, 15), dx = r() < 0.5 ? 1 : 0;
-      for (let s = 0; s < 9; s++) { L.pxc(x, y, S.pd); L.pxc(x + (dx ? 0 : 1), y + (dx ? 1 : 0), S.br); if (dx) x++; else y++; if (r() < 0.3) dx = 1 - dx; }
-    }
+  if (tipo === 'piedra' && v % 2 === 1) { // una grieta suave (en Core Keeper el suelo es tranquilo: poco contraste)
+    let x = entre(r, 0, 15), y = entre(r, 0, 15), dx = r() < 0.5 ? 1 : 0;
+    for (let s = 0; s < 7; s++) { L.pxc(x, y, S.os); if (dx) x++; else y++; if (r() < 0.3) dx = 1 - dx; }
   }
   if (v % 2 === 0) { // una piedrecita con su luz y su sombra
     const x = entre(r, 0, 15), y = entre(r, 0, 15);
@@ -247,13 +245,15 @@ function muroArriba(tipo, m, v) {
     }
     for (let y = 1; y < 16; y++) for (let x = 1; x < 16; x++) if (L.get(x - 1, y - 1) === R[1] && L.get(x, y) !== R[1] && r() < 0.6) L.px(x, y, R[4]);
   }
-  const N = m & 1, E = m & 2, S = m & 4, O = m & 8;
-  if (N) { L.hl(0, 0, 16, BORDE_MURO); L.hl(0, 1, 16, R[1]); }
-  if (O) { L.vl(0, 0, 16, BORDE_MURO); L.vl(1, 0, 16, mezcla(R[2], R[3], 0.5)); }
-  if (E) { L.vl(15, 0, 16, BORDE_MURO); L.vl(14, 0, 16, R[1]); }
-  if (S) { L.hl(0, 14, 16, R[4]); L.hl(0, 15, 16, R[5]); if (O) L.px(0, 15, BORDE_MURO); if (E) L.px(15, 15, BORDE_MURO); }
-  if (N && O) { L.px(0, 0, '_'); L.px(1, 1, BORDE_MURO); }
-  if (N && E) { L.px(15, 0, '_'); L.px(14, 1, BORDE_MURO); }
+  // Como en Core Keeper: la tapa (que el juego pinta más oscura, INFO_MURO.tapa) tiene, donde da al suelo, un canto
+  // del material (claro donde mira a la luz) y el borde del tono más oscuro del material, nunca negro.
+  const N = m & 1, E = m & 2, S = m & 4, O = m & 8, B = R[0];
+  if (N) { L.hl(0, 0, 16, B); L.hl(0, 1, 16, R[5]); }
+  if (O) { L.vl(0, 0, 16, B); L.vl(1, N ? 1 : 0, 16, R[4]); }
+  if (E) { L.vl(15, 0, 16, B); L.vl(14, N ? 1 : 0, 16, R[3]); }
+  if (S) { L.hl(0, 14, 16, R[4]); L.hl(0, 15, 16, R[5]); if (O) L.px(0, 15, B); if (E) L.px(15, 15, B); }
+  if (N && O) { L.px(0, 0, '_'); L.px(1, 1, B); }
+  if (N && E) { L.px(15, 0, '_'); L.px(14, 1, B); }
   return L;
 }
 function sem2(tipo, v) { return 333 + v * 71 + tipo.length * 19; }
@@ -307,8 +307,8 @@ function muroCara(tipo, lados, v) {
     if (v === 1) { L.rect(6, 4, 4, 4, R[1]); L.px(7, 5, '#5fd0e0'); L.px(8, 6, '#5fd0e0'); }
   }
   L.hl(0, 11, 16, R[1]);
-  if (lados & 1) L.vl(0, 0, 12, BORDE_MURO);
-  if (lados & 2) L.vl(15, 0, 12, BORDE_MURO);
+  if (lados & 1) L.vl(0, 0, 12, R[0]);
+  if (lados & 2) L.vl(15, 0, 12, R[0]);
   return L;
 }
 

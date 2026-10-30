@@ -1,8 +1,8 @@
-# Checkpoint 0.8 (29 oct 2026): rehacer el juego «a calidad Core Keeper». EN MARCHA, SIN PUBLICAR
+# Checkpoint 0.8 (29 oct 2026): rehacer el juego «a calidad Core Keeper». PUBLICADA LA 0.8.0 (30 oct 2026)
 
 Lee esto entero antes de tocar nada. Rama: `claude/magical-hopper-cwbjnh` (lleva `main` + la rama del juego
-`claude/quirky-tesla-jg3j9c` fusionadas). La última versión publicada sigue siendo la **0.7.0** (APK en la Release
-`corazon-dormido`).
+`claude/quirky-tesla-jg3j9c` fusionadas). **La 0.8.0 está publicada desde esta rama** (APK en las Releases
+`corazon-dormido` y `corazon-dormido-android`); lo que queda por repasar está al final de cada paso de §4.
 
 ## 0. Aviso importante para publicar (o para NO publicar)
 
@@ -227,6 +227,20 @@ música…» del workflow la primera vez que se compile.
   todo lo de §2) no está escrita todavía.
 - Probar todo (`probar-todo.cjs`, `probar-migracion.cjs`, `simular-jefes.cjs`, `galeria.cjs`), versión 0.8.0 en
   `VERSIONES.txt` y publicar (§0).
+
+**HECHO 4.7 (publicada la 0.8.0):** `ARTE.md` escrita (lo medido de Core Keeper, las reglas, la paleta y cómo se hace
+cada cosa). Escultor con `ESTILO.ck` (`escultor.js`): 4 tonos por material, contorno del tono más oscuro del
+material (valor 0,2–0,32, medido: antes 0,12–0,14, casi negro), textura al 65 % y manchas de 3 px o más: lo
+cambia en todos los objetos horneados. `js/objetos-px.js` (`OBJ_PX`, con `CRI.lamina` y la primitiva nueva
+`K.tubo`): el Corazón dormido y despierto dibujado a mano (50×60, venas que brillan en `_luz`), los árboles
+(`arbol`, `arbol_b`, `arbol_luna`: racimos con su sombra, línea de sombra entre racimos con `rampa.linea`) y los
+iconos de las 8 mesas, los 6 yunques, el cofre, el horno, la olla y la cama (rejillas a mano, ≤ 16×16). Paredes:
+el borde de la tapa del tono más oscuro del material (sin `BORDE_MURO` negro) y un canto claro; suelo de piedra
+con menos grietas. Icono de la app rehecho (`herramientas/icono.cjs`). Probado: `probar-todo` (sin errores, no
+falta ningún dibujo, 34 FPS), `probar-migracion`, `simular-jefes`, `probar` bien.
+**Para repasar**: los objetos horneados que quedan (estatuas, ídolos, faroles…) ganan con el estilo nuevo pero
+siguen siendo modelos; los iconos reducidos de modelos (`reducir`, `arte3.js`) se dejaron como estaban (probé a
+reducir por el color que más se repite y perdía detalle en lo fino); `arbol_muerto` sigue horneado.
 
 ## 5. Herramientas para ver el arte (sin abrir el juego)
 

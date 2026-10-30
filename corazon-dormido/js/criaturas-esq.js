@@ -130,6 +130,28 @@ const CRI = (() => {
         L.pon(x, y, tono(rampa, nx, ny, nz, op), K.id, rampa, o.luz, nx, ny, nz);
       }
     };
+    // Tubo por una lista de puntos (px, ya muestreados juntos) con el radio de r0 a r1: cada píxel toma la normal del
+    // punto más cercano de la línea, así no quedan costuras entre trozos. o: como en cap.
+    K.tubo = (pts, r0, r1, rampa, o = {}) => {
+      const n = pts.length, R = Math.max(r0, r1), xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+      const x0 = Math.floor(Math.min(...xs) - R - 1), x1 = Math.ceil(Math.max(...xs) + R + 1), y0 = Math.floor(Math.min(...ys) - R - 1), y1 = Math.ceil(Math.max(...ys) + R + 1);
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        let best = 1e9, bi = 0, bq = null, bt = 0;
+        for (let i = 0; i < n - 1; i++) {
+          const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1e-6;
+          const t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (py - a[1]) * dy) / l2)), qx = px - a[0] - dx * t, qy = py - a[1] - dy * t;
+          const d = qx * qx + qy * qy;
+          if (d < best) { best = d; bi = i; bq = [qx, qy]; bt = t; }
+        }
+        if (!bq) continue;
+        const rr = r0 + (r1 - r0) * ((bi + bt) / Math.max(1, n - 1)), d = Math.sqrt(best);
+        if (d > rr || (o.corta && o.corta(x, y))) continue;
+        const nx = bq[0] / Math.max(rr, 0.5), ny = bq[1] / Math.max(rr, 0.5), nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+        const op = o.tex ? Object.assign({}, o, { tex: o.tex(x, y) }) : o;
+        L.pon(x, y, tono(rampa, nx, ny, nz, op), K.id, rampa, o.luz, nx, ny, nz);
+      }
+    };
     // Óvalo de centro c y radios rx, ry, girado ang (radianes).
     K.ovalo = (c, rx, ry, rampa, o = {}) => {
       const ang = o.ang || 0, ca = Math.cos(ang), sa = Math.sin(ang), R = Math.max(rx, ry);
@@ -265,7 +287,7 @@ const CRI = (() => {
         const xx = x + dx, yy = y + dy;
         if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
         const q = L.p[yy * W + xx];
-        if (q >= 0 && q !== p && orden[q] > orden[p] && !(L.r[yy * W + xx] && L.r[yy * W + xx].sinLinea)) { out[k] = L.r[k][0]; break; }
+        if (q >= 0 && q !== p && orden[q] > orden[p] && !(L.r[yy * W + xx] && L.r[yy * W + xx].sinLinea)) { out[k] = L.r[k].linea || L.r[k][0]; break; }
       }
     }
     const color = new Lienzo(W, H), luz = new Lienzo(W, H);
@@ -366,10 +388,42 @@ const CRI = (() => {
       }
     }
   }
+  // Un dibujo quieto (objetos, el Corazón, iconos) con las mismas primitivas y el mismo acabado que las criaturas:
+  // fn(K) apunta piezas con K.pieza(z, () => …) o pinta directamente; devuelve { color, luz } recortados al dibujo
+  // con 1 px de margen para el contorno y { x0, y0 } (dónde quedó la esquina de la lámina).
+  function lamina(W, H, fn) {
+    const D = { px: 1, ox: 0, oy: 0, yaw: 0 }, L = new Lam(W + 2, H + 2), K = contexto(D, L, {}, {}, 'q', 0, 0);
+    const pieza = K.pieza;
+    K.pieza = (z, f) => pieza(z, f);
+    // todo se pinta corrido 1 px para que quepa el contorno
+    for (const k of ['cap', 'tubo', 'ovalo', 'poli', 'placa', 'placaEntre', 'vara', 'rej', 'px']) {
+      const f = K[k];
+      K[k] = (...a) => {
+        const m = (p) => [p[0] + 1, p[1] + 1];
+        if (k === 'cap' || k === 'placaEntre' || k === 'vara') { a[0] = m(a[0]); a[1] = m(a[1]); }
+        else if (k === 'ovalo') a[0] = m(a[0]);
+        else if (k === 'poli' || k === 'placa' || k === 'tubo') a[0] = a[0].map(m);
+        else if (k === 'rej') { a[2] += 1; a[3] += 1; }
+        else if (k === 'px') { a[0] += 1; a[1] += 1; }
+        // las funciones de las opciones reciben las coordenadas de antes de correrlas
+        const i = { cap: 5, tubo: 4, ovalo: 4, poli: 2, placa: 2 }[k], o = i && a[i];
+        if (o && (o.corta || o.tex || o.normal)) {
+          a[i] = Object.assign({}, o, o.corta ? { corta: (x, y) => o.corta(x - 1, y - 1) } : {}, o.tex ? { tex: (x, y) => o.tex(x - 1, y - 1) } : {}, o.normal ? { normal: (x, y) => o.normal(x - 1, y - 1) } : {});
+        }
+        return f(...a);
+      };
+    }
+    K.id = 0;
+    fn(K);
+    K.piezas.sort((a, b) => a[0] - b[0]);
+    const orden = new Int16Array(K.piezas.length + 2);
+    K.piezas.forEach(([, f], i) => { orden[i + 1] = i + 1; K.id = i + 1; f(); });
+    return terminar(L, orden);
+  }
   // Cuántos cuadros tiene cada animación de cada criatura (para elegir en el juego).
   const animsDe = (tipo) => DEF[tipo] && !DEF[tipo].jefe && DEF[tipo].anims;
 
-  return { DEF, pose, proporciones, encorvar, proyectar, cuadro, recortar, hornear, registrar, animsDe, mezcla, sum, res, por, norm, LUZ };
+  return { DEF, pose, proporciones, encorvar, proyectar, cuadro, recortar, hornear, registrar, animsDe, lamina, tono, mezcla, sum, res, por, norm, LUZ };
 })();
 
 // Los jefes: miden 80–145 px y tienen muchos cuadros, así que no caben todos en el atlas. Se hornea el del jefe que
