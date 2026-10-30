@@ -3,6 +3,7 @@
 // referencia, las fechas de pago y de entrega en el servidor, la aceptación de los Términos (versión y fecha) y la
 // política de cancelación y reembolsos que se aceptó. La copia del dueño añade la IP y el navegador de la aceptación.
 import { makePdf } from './pdf.js';
+import legalArchive from '../config/legal-archive.json' with { type: 'json' };
 
 const SELLER = 'Tierras Fantásticas (servidor de Minecraft independiente)';
 const CONTACT = 'tierrasfantasticasmc@gmail.com';
@@ -40,6 +41,19 @@ const POLICY_5D = {
     'Reembolso injustificado: si pasado el plazo se reclama el dinero por otra vía (disputa o contracargo con el banco, la tarjeta, Stripe o PayPal), se retira todo lo de esta compra y el jugador recibe un baneo de IP del servidor de 6 días (en un regalo, el jugador que lo pagó). Este recibo, el registro del pago y de la entrega y la aceptación de los Términos se presentan como prueba.',
   ],
 };
+
+// (30 oct 2026, el dueño: «espero que tengas una copia de los términos anteriores para citarlos en cualquier disputa»)
+// La versión archivada de los Términos que aceptó un pedido (tools/legal_archive.py → /archivo-legal/): la de su número
+// y, si el texto cambió dentro del mismo número, la que estaba publicada cuando aceptó. Sin número (antes del 7 oct
+// 2026), la publicada en la fecha del pedido.
+export function archivedTerms(order, acceptance) {
+  const all = legalArchive.versions || [];
+  const version = order?.termsVersion || acceptance?.version || null;
+  const at = Date.parse(acceptance?.at || order?.createdAt || '') || Date.now();
+  const inTime = (e) => Date.parse(e.from) <= at && (!e.to || at < Date.parse(e.to));
+  const same = all.filter((e) => (version ? e.version === version : true));
+  return same.find(inTime) || (version ? same[same.length - 1] : null) || null;
+}
 
 // La política de cancelación y reembolsos de un pedido: la de los Términos que aceptó al pagar
 export function refundPolicyFor(order) {
@@ -85,6 +99,8 @@ export function receiptRows({ order, productName, acceptance, owner = false }) {
     ['Entrega en el servidor', order.deliveredAt ? `Entregado el ${fmtDate(order.deliveredAt)}` : 'En cola: se entrega al entrar al servidor'],
     ['Términos aceptados', acceptance ? `Versión ${acceptance.version}, el ${fmtDate(acceptance.at)}` : order.termsVersion ? `Versión ${order.termsVersion}` : '—'],
   ];
+  const archived = archivedTerms(order, acceptance);
+  if (archived) rows.push(['Texto de esos Términos', `${SITE}${archived.terms}`]);
   if (owner) {
     rows.push(['IP de la aceptación', acceptance?.ip || '—'], ['Navegador de la aceptación', acceptance?.userAgent || '—']);
     if (order.discord?.username || order.discordId) rows.push(['Discord', order.discord?.username || order.discordId]);
@@ -158,6 +174,7 @@ export function disputeFacts({ order, productName, acceptance, player, delivery,
     order,
     productName,
     policy,
+    archived: archivedTerms(order, acceptance),
     delivered,
     paid,
     elapsedMs: elapsed,
@@ -209,6 +226,15 @@ export function disputeLetter(f, lang = 'en') {
         ? `4. Terms: the buyer accepted our Terms and Conditions (version ${o.termsVersion || 'n/a'}) with a mandatory checkbox before paying; refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery.`
         : `4. Términos: el comprador aceptó los Términos (versión ${o.termsVersion || '—'}) con la casilla obligatoria antes de pagar; reembolsos solo dentro de ${f.policy.windowText} desde la entrega.`,
   );
+  if (f.archived) {
+    const url = `${SITE}${f.archived.terms}`;
+    const commit = `https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}`;
+    out.push(
+      en
+        ? `4b. Exact terms in force for this purchase: version ${f.archived.label}, published on ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` and replaced on ${enDate(isoOf(f.archived.to))}` : ''}. Archived copy: ${url}. Its publication date can be verified in our public repository: ${commit} (SHA-256 of the page: ${f.archived.termsSha256}). The refund section of that version is quoted in full in the attached evidence.`
+        : `4b. Términos exactos de esta compra: versión ${f.archived.label}, publicada el ${enDate(isoOf(f.archived.from))}${f.archived.to ? ` y sustituida el ${enDate(isoOf(f.archived.to))}` : ''}. Copia archivada: ${url}. Su fecha se puede comprobar en el repositorio público: ${commit} (SHA-256 de la página: ${f.archived.termsSha256}). La sección de reembolsos de esa versión va copiada entera en el expediente.`,
+    );
+  }
   out.push(
     en
       ? `5. Refund window: the buyer never asked us for a refund (our support email is in the receipt, the Terms and the store). The dispute was opened ${span(f.elapsedMs, 'en')} after ${f.delivered ? 'delivery' : 'payment'}, ${f.inWindow ? 'within' : 'outside'} the refund window.`
@@ -254,7 +280,7 @@ export function stripeEvidence(f) {
     ...(f.delivered ? { service_date: f.delivered.slice(0, 10) } : {}),
     access_activity_log: cut(log.join('\n')),
     refund_policy_disclosure: cut(
-      `The refund policy is shown next to the payment button and in our Terms (https://tierrasfantásticas.store/terminos#reembolsos). The buyer must tick a mandatory checkbox accepting the Terms before paying${a ? ` (accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP ${a.ip || 'n/a'})` : ''}. Refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery by emailing us.`,
+      `The refund policy is shown next to the payment button and in our Terms (https://tierrasfantásticas.store/terminos#reembolsos). The buyer must tick a mandatory checkbox accepting the Terms before paying${a ? ` (accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP ${a.ip || 'n/a'})` : ''}. Refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery by emailing us.${f.archived ? ` Exact terms accepted (archived, version ${f.archived.label}): ${SITE}${f.archived.terms} — publication verifiable at https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}.` : ''}`,
     ),
     refund_refusal_explanation: cut(
       `The buyer never requested a refund. The dispute was opened ${span(f.elapsedMs, 'en')} after ${f.delivered ? 'delivery' : 'payment'}, outside the refund window, and the item had been delivered${f.usedAfter ? ' and used (the account kept playing on our server)' : ''}.`,
@@ -280,6 +306,14 @@ export function disputePdf(f) {
   for (const line of stripeEvidence(f).access_activity_log.split('\n')) blocks.push({ text: `• ${line}`, size: 10, gap: 4 });
   blocks.push({ rule: true }, { text: `Refund policy accepted at checkout / Política aceptada al pagar (${f.policy.windowText})`, size: 12, bold: true, gap: 4 });
   for (const p of f.policy.lines) blocks.push({ text: `• ${p}`, size: 10, gap: 5 });
+  if (f.archived?.refunds) {
+    blocks.push(
+      { rule: true },
+      { text: `Terms in force for this purchase, refund section verbatim / Sección de reembolsos de los Términos de esta compra, tal cual (versión ${f.archived.label})`, size: 12, bold: true, gap: 2 },
+      { text: `${SITE}${f.archived.terms} · https://github.com/modelqdeluxe-ops/ss/commit/${f.archived.commit}`, size: 9, color: [0.42, 0.35, 0.29], gap: 4 },
+    );
+    for (const line of f.archived.refunds.split('\n')) blocks.push({ text: line, size: 10, gap: 4 });
+  }
   blocks.push({ text: `Expediente generado el ${fmtDate(new Date().toISOString())}. Términos completos: ${SITE}/terminos`, size: 9, color: [0.42, 0.35, 0.29] });
   return makePdf(blocks, { title: `Disputa ${o.id}` });
 }
