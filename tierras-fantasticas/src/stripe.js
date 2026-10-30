@@ -97,6 +97,13 @@ export class Stripe {
           },
         ],
         metadata,
+        // (30 oct 2026) la política, también en la página de pago de Stripe, junto al botón (prueba de que se vio)
+        custom_text: {
+          submit: {
+            message:
+              'Contenido digital que se entrega al momento en tu jugador. Garantía de 24 horas desde la entrega (escríbenos a tierrasfantasticasmc@gmail.com); después no hay reembolsos. Términos: https://tierrasfantásticas.store/terminos',
+          },
+        },
         // El pago (PaymentIntent) también lleva el pedido: así los reembolsos y disputas se encuentran.
         payment_intent_data: { metadata, description: `${name} — pedido ${orderId}`.slice(0, 1000) },
       },

@@ -63,6 +63,20 @@ export function refundPolicyFor(order) {
 // La vigente (lo que se enseña antes de pagar)
 export const REFUND_POLICY = POLICY_24H.lines;
 
+// (30 oct 2026) Desde esta versión la casilla de aceptación dice la garantía de 24 horas y los Términos tienen las
+// cláusulas de disputas reforzadas (aviso previo, uso = recepción, no es suscripción, incumplimiento y gastos)
+export const TERMS_DISPUTES = '2026-10-30.2';
+const CHECKBOX = {
+  en: (v) =>
+    v >= TERMS_DISPUTES
+      ? '"I have read and accept the Terms and Conditions (digital content purchases: 24-hour guarantee from delivery; no refunds afterwards) and the Privacy Notice"'
+      : '"I have read and accept the Terms and Conditions and the Privacy Notice"',
+  es: (v) =>
+    v >= TERMS_DISPUTES
+      ? '«He leído y acepto los Términos y condiciones (compras de contenido digital: garantía de 24 horas desde la entrega; después no hay reembolsos) y el Aviso de privacidad»'
+      : '«He leído y acepto los Términos y condiciones y el Aviso de privacidad»',
+};
+
 const fmtDate = (iso) => {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -220,8 +234,8 @@ export function disputeLetter(f, lang = 'en') {
   out.push(
     a
       ? en
-        ? `4. Terms and refund policy accepted before paying: the checkout requires ticking a mandatory checkbox "I have read and accept the Terms and Conditions and the Privacy Notice". The buyer accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP address ${a.ip || 'n/a'} (browser: ${a.userAgent || 'n/a'}). The refund policy is written next to the payment button and in the Terms (https://tierrasfantásticas.store/terminos#reembolsos): refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery, by emailing us; after that the sale is final, and disputing a valid charge is penalized.`
-        : `4. Términos y política de reembolsos aceptados antes de pagar: para pagar hay que marcar la casilla obligatoria «He leído y acepto los Términos y condiciones y el Aviso de privacidad». El comprador aceptó la versión ${a.version} el ${enDate(isoOf(a.at))} desde la IP ${a.ip || '—'} (navegador: ${a.userAgent || '—'}). La política está junto al botón de pago y en los Términos (https://tierrasfantásticas.store/terminos#reembolsos): reembolso solo dentro de ${f.policy.windowText} desde la entrega, escribiéndonos; después la compra es definitiva y disputar un cargo válido se sanciona.`
+        ? `4. Terms and refund policy accepted before paying: the checkout requires ticking a mandatory checkbox ${CHECKBOX.en(String(a.version || o.termsVersion || ''))}. The buyer accepted version ${a.version} on ${enDate(isoOf(a.at))} from IP address ${a.ip || 'n/a'} (browser: ${a.userAgent || 'n/a'}). The refund policy is written next to the payment button and in the Terms (https://tierrasfantásticas.store/terminos#reembolsos): refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery, by emailing us; after that the sale is final, and disputing a valid charge is penalized.`
+        : `4. Términos y política de reembolsos aceptados antes de pagar: para pagar hay que marcar la casilla obligatoria ${CHECKBOX.es(String(a.version || o.termsVersion || ''))}. El comprador aceptó la versión ${a.version} el ${enDate(isoOf(a.at))} desde la IP ${a.ip || '—'} (navegador: ${a.userAgent || '—'}). La política está junto al botón de pago y en los Términos (https://tierrasfantásticas.store/terminos#reembolsos): reembolso solo dentro de ${f.policy.windowText} desde la entrega, escribiéndonos; después la compra es definitiva y disputar un cargo válido se sanciona.`
       : en
         ? `4. Terms: the buyer accepted our Terms and Conditions (version ${o.termsVersion || 'n/a'}) with a mandatory checkbox before paying; refunds only within ${f.policy.id === '24h' ? '24 hours' : '5 business days'} of delivery.`
         : `4. Términos: el comprador aceptó los Términos (versión ${o.termsVersion || '—'}) con la casilla obligatoria antes de pagar; reembolsos solo dentro de ${f.policy.windowText} desde la entrega.`,
@@ -239,6 +253,13 @@ export function disputeLetter(f, lang = 'en') {
       ? `5. Refund window: the buyer never asked us for a refund (our support email is in the receipt, the Terms and the store). The dispute was opened ${span(f.elapsedMs, 'en')} after ${f.delivered ? 'delivery' : 'payment'}, ${f.inWindow ? 'within' : 'outside'} the refund window.`
       : `5. Plazo de reembolso: el comprador nunca nos pidió el reembolso (el correo de soporte está en el recibo, los Términos y la tienda). La disputa se abrió ${span(f.elapsedMs, 'es')} después de la ${f.delivered ? 'entrega' : 'compra'}, ${f.inWindow ? 'dentro' : 'fuera'} del plazo.`,
   );
+  if (String(o.termsVersion || '') >= TERMS_DISPUTES) {
+    out.push(
+      en
+        ? '5b. In the Terms the buyer accepted ("Disputes and chargebacks"), the buyer agreed to contact us by email and give us 3 business days before opening any dispute; that the sale is final 24 hours after delivery; that a purchase delivered to the chosen Minecraft account is received; that continuing to play or use the item after delivery confirms it was received and as described; that it is a one-time payment, not a subscription; and that disputing a delivered purchase after the guarantee is a breach of the Terms. The buyer did none of the above before disputing.'
+        : '5b. En los Términos que aceptó («Disputas y contracargos»), el comprador se comprometió a escribirnos y darnos 3 días hábiles antes de abrir una disputa; aceptó que la venta es definitiva pasadas 24 horas de la entrega, que una compra entregada en su jugador está recibida, que seguir jugando o usarla confirma que la recibió y que es lo descrito, que es un pago único y no una suscripción, y que disputar una compra entregada pasada la garantía incumple los Términos. No hizo nada de eso antes de disputar.',
+    );
+  }
   if (f.previous.length) {
     const list = f.previous.slice(0, 10).map((p) => `${p.id} (${enDate(p.at)}, ${p.amount})`).join('; ');
     out.push(
