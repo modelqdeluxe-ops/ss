@@ -4,31 +4,11 @@
 > **solo con GitHub Actions** (`tf-client.yml`, nunca `./gradlew` en el contenedor), no subas jars, prueba en el juego
 > tú mismo con `[prueba-jefes=<escenario>]` y mide las capturas con PIL antes de decir que algo está bien.
 
-## 0. Dónde lo dejamos (31 oct 2026, el dueño pidió parar y dejar el checkpoint)
+## 0. Dónde lo dejamos (31 oct 2026): TODO HECHO Y PROBADO EN LA 1.3.156
 
-Rama `claude/wizardly-euler-tw8ooy`, encima de `main` (que tiene la web de los Términos 2026-10-30.2 y la 1.3.154):
-
-1. **TF Client 1.3.155: hecha y VERIFICADA en el juego, pero SIN PUBLICAR** (commits `71c52054` y `29bbc60b`, más el
-   commit de este checkpoint). Planeo de los sets ilimitado y sin hambre, fondo del menú del pad y 44 marcos de fotos.
-   La segunda prueba `[prueba-jefes=pad]` (29bbc60b) dio: «marcos: … bien; 44 marcos», «planeo: hambre 0.00 → 0.00 al
-   planear, 3.00 sin planear; límite ninguno (bien)», y las miniaturas de marcos y fondos ya sin el velo oscuro
-   (medido: «Noche estrellada» (28,26,71), «Cerezos» (241,221,226)). Detalle en el CHECKPOINT 1.3.155 de `HANDOFF.md`.
-2. **Encima, el commit `d2f4bf5d` «WIP clanes fase 2» SIN TERMINAR** (los archivos de la §3). El último commit con
-   solo la 1.3.155 (y este documento) es `484bdf00`. Los números de versión siguen en
-   1.3.155. Mira en el workflow `tf-client.yml` de ese commit si compila; si no, arréglalo primero.
-
-**El dueño quiere UN SOLO PARCHE CON TODO** (una versión, la **1.3.156**, y una Release; nada suelto). Orden de
-trabajo: (1) la caída del servidor por la GTS (el dueño ya quitó la venta, pero el fallo sigue en el código) y (2) las
-flags de spawn de las protecciones, las dos en el CHECKPOINT del 31 oct de `HANDOFF.md`; (3) lo de la 1.3.155, ya
-hecho; (4) los clanes: termina la fase 2 (§3, «Falta») y sigue con las demás. Si las fases 3–5 van a tardar mucho,
-pregúntale al dueño si espera o si el parche sale con la fase 2. Súbelo a 1.3.156 (`mod_version` en
-`tf-client/gradle.properties` y `VERSION` en `TFClient.java`), pruébalo todo en el juego, apunta un CHECKPOINT en
-`HANDOFF.md` y publícalo una sola vez.
-
-Cómo publicar (siempre igual): PR borrador de la rama a `main` → listo → squash merge → comprobar que existe la Release
-`tfclient-v<versión>` (el CI tarda unos minutos) → rehacer la rama:
-`git fetch origin main && git checkout -B claude/wizardly-euler-tw8ooy origin/main && git push --force-with-lease -u origin claude/wizardly-euler-tw8ooy`
-(si tienes cambios sin subir, guárdalos antes con `git stash -u` y recupéralos después).
+La 1.3.156 es el parche único que pidió el dueño: la caída por la GTS, las flags de spawn, lo de la 1.3.155 y los
+clanes enteros (fases 2–5, §3). Todo probado en el juego (`[prueba-jefes=arreglos]` y `[prueba-jefes=clanes]`, ver el
+CHECKPOINT de `HANDOFF.md`). Si el dueño pide más cosas de clanes, mira las ideas de la §4 y su lista literal de la §1.
 
 ### Respuestas del dueño (31 oct 2026, sesión del parche 1.3.156)
 

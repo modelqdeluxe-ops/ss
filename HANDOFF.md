@@ -217,7 +217,20 @@ una por clan y caras; en la tienda del juego, 1 protección de cada tipo por jug
 4. **Clanes** (CLANES.md §3): Clan Coins de 1–2, paleta tipo Paint (`PadColorPicker`), banco del clan con su cofre
    (`PadClanBank`, `tfclient:banco_clan`), guerras con la barra vertical doble (`PadClanWar`, `PadClanWarPage`), alianzas,
    duelos (`/clan duelo`), tienda del clan, protecciones del clan y territorio, límite de protecciones en la tienda del
-   juego. Prueba `[prueba-jefes=clanes]`: RESULTADOS_CLANES
+   juego. Prueba `[prueba-jefes=clanes]` (commit `b4b1a011`): los 17 casos «bien» — objetivos de misiones y guerras
+   que cuentan con algo de verdad del juego; nivel 1→5 = +5 Clan Coins; misión cumplida +2, +35 prestigio y +1 verde;
+   potenciador 10 → 15; aliado +5 de cada 10; banco (128 piedra y 20 tierra dentro, la espada encantada fuera, sacar una
+   pila, mejora 5.000 → 10.000 por 2); tienda del clan (2 protecciones 50x50 de 3 intentos, 30 Clan Coins); la protección
+   del clan solo la pone el líder, sus miembros construyen y el rival no, título «Territorio de [PRB] Clan de Prueba»;
+   tienda del juego (1.ª protección 10x10 sí, 2.ª no); guerra declarada y aceptada, la barra doble dibuja 62 % y 35 %
+   (medido en la captura con PIL: 0,62 y 0,34 de su altura), al cumplirlo todo gana A con +2 Clan Coins, +150 y +1
+   verde; duelos (otro clan sí, mismo clan y sin clan no, con el PvP apagado el golpe del duelo pasa y deja 2 de vida,
+   +25 de prestigio y la misma pareja +0); PALETA abre `PadColorPicker` y GUARDAR deja #22b14c (medido: «Antes»
+   (88,169,252) ≈ #55AAFF, «Ahora» (37,175,80) ≈ #22B14C); el cofre lo da COFRE, se pone y abre el BANCO en el pad.
+   Capturas `00_clanes_clanes_1_miembros` … `17_cofre_abre_banco` en la rama `pruebas-jefes`. Lo único a pulir que se
+   vio (arreglado en `34dc5c68`): la barra de arriba no se refrescaba tras gastar Clan Coins, cabeceras que se cortaban y
+   ALIANZA con el clan enemigo. La barra de arriba: verde, azul (la Clan Coin, solo líder y colíderes) y oro, en ese
+   orden (medido).
 
 **Al publicar**: dile al dueño que **actualice también el jar del servidor** (el 31 oct iba por la 1.3.152): el arreglo
 de la GTS, las flags, los clanes y los bloques nuevos (cofre y protecciones del clan) son del servidor; un servidor
