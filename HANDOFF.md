@@ -192,6 +192,26 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 
 ### CHECKPOINT (31 oct 2026, TF Client 1.3.155 VERIFICADA SIN PUBLICAR + clanes a medias) — lee esto primero
 
+**URGENTE — se cae el servidor (31 oct 2026, 02:15; el dueño: «no le pongas nada, pon que la otra IA lo arregle»).**
+El servidor del dueño (Mohist, con TF Client **1.3.152**, `tfclient (1).jar`) se cayó con «Exception in server tick
+loop»: `java.lang.NoClassDefFoundError: net/minecraft/client/gui/screens/Screen` en
+`de.ellpeck.prettypipes.Utility.addTooltip` ← `ItemTerminalBlock.appendHoverText` ← `ItemStack.getTooltipLines` ←
+**`pad/server/PadMarket.listing` (línea 208)** ← `PadMarket$App.view` ← `PadServer.send` ← `PadServer.action` ←
+`TFPadNet$Action.handle`. Es decir: alguien puso a la venta en la GTS un **Item Terminal de Pretty Pipes**, y al abrir
+esa venta en el pad el servidor pide el tooltip del objeto; el tooltip de Pretty Pipes usa `Screen.hasShiftDown()`, una
+clase que solo existe en el cliente, y el servidor revienta. **Se volverá a caer cada vez que alguien abra esa venta.**
+Arreglo pedido (hazlo tú, no estaba hecho):
+1. `PadMarket.listing`: la parte de «Lo que dice el objeto» (`getTooltipLines`) dentro de `try { … } catch (Exception |
+   LinkageError e)`; si falla, la ficha sale sin esas líneas. Es la única llamada a `getTooltipLines` del lado del
+   servidor (comprobado con grep).
+2. `pad/PadServer`: los `catch (Exception e)` de `action`, `sendData`, `send` y el tick (líneas ~229, 246, 261, 280,
+   320, 331, 356) no atrapan `Error` (NoClassDefFoundError es un `LinkageError`): ponlos como `catch (Exception |
+   LinkageError e)` para que ninguna app del pad pueda tumbar el servidor (sale «Error. Si se repite, avisa al staff.»).
+3. Publícalo cuanto antes (con la 1.3.155, que ya está probada; ver arriba cómo publicarla sin el WIP de clanes) y dile
+   al dueño que **actualice el jar del servidor** (va por la 1.3.152, dos versiones por detrás) y el de los jugadores.
+   Mientras tanto, para que no se caiga: que nadie abra esa venta, o que el dueño la quite con el servidor apagado de
+   `world/…/gts.json` (`TFMarket`, `TFJson.worldFile(server, "gts.json")`; busca `prettypipes:item_terminal`).
+
 **El dueño pidió parar aquí.** La 1.3.155 (abajo) está probada en el juego y lista, pero no fusionada. Encima hay un
 commit «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48 insignias, ranking
 de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).**

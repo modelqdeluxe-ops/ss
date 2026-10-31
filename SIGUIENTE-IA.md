@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **31 oct 2026 — URGENTE ANTES QUE NADA**: el servidor del dueño se cae al abrir en la GTS del pad una venta de un
+> Item Terminal de Pretty Pipes (`PadMarket.listing` pide el tooltip en el servidor y Pretty Pipes usa una clase del
+> cliente). Causa, arreglo exacto y cómo publicarlo: primer bloque del CHECKPOINT del 31 oct de `HANDOFF.md`.
+>
 > **31 oct 2026 — AHORA**: la **1.3.155** (planeo de los sets ilimitado y sin hambre, fondo del menú del pad, 44 marcos
 > de fotos) está verificada en el juego pero **sin publicar**, y encima hay un commit **«WIP clanes fase 2»** a medias.
 > Sigue por **[`tf-client/CLANES.md`](tf-client/CLANES.md)** (la actualización grande de clanes: Clan Coins azules,

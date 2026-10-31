@@ -17,7 +17,10 @@ Rama `claude/wizardly-euler-tw8ooy`, encima de `main` (que tiene la web de los T
    solo la 1.3.155 (y este documento) es `484bdf00`. Los números de versión siguen en
    1.3.155. Mira en el workflow `tf-client.yml` de ese commit si compila; si no, arréglalo primero.
 
-**Qué hacer primero:** termina la fase 2 (§3, «Falta»), súbela a **1.3.156** (`mod_version` en
+**Antes que nada: arregla la caída del servidor** (la GTS del pad con un Item Terminal de Pretty Pipes); está en el
+primer bloque del CHECKPOINT del 31 oct de `HANDOFF.md`. Para publicarla rápido, saca el WIP de clanes (abajo).
+
+**Qué hacer primero (después de eso):** termina la fase 2 (§3, «Falta»), súbela a **1.3.156** (`mod_version` en
 `tf-client/gradle.properties` y `VERSION` en `TFClient.java`), prueba en el juego, apunta en `HANDOFF.md` y publica
 todo junto (la Release llevará también lo de la 1.3.155, que ya está probado). Si el dueño quiere la 1.3.155 YA, antes
 de terminar la fase 2: `git revert` del commit WIP (o sácalo a un commit aparte después), publica, y vuelve a aplicarlo.
