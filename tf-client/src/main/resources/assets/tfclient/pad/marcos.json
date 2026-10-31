@@ -1,0 +1,222 @@
+[
+ {
+  "id": "oro",
+  "nombre": "Oro",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "plata",
+  "nombre": "Plata",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "bronce",
+  "nombre": "Bronce",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "madera",
+  "nombre": "Madera",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "marmol",
+  "nombre": "Mármol",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "negro",
+  "nombre": "Negro y oro",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "galeria",
+  "nombre": "Galería",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "polaroid",
+  "nombre": "Instantánea",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "pelicula",
+  "nombre": "Película",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "postal",
+  "nombre": "Postal",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "vintage",
+  "nombre": "Vintage",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "vineta",
+  "nombre": "Viñeta",
+  "grupo": "Clásicos"
+ },
+ {
+  "id": "hierba",
+  "nombre": "Hierba",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "piedra",
+  "nombre": "Piedra",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "tablones",
+  "nombre": "Tablones",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "diamante",
+  "nombre": "Diamante",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "esmeralda",
+  "nombre": "Esmeralda",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "oro_pixel",
+  "nombre": "Bloque de oro",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "ladrillo",
+  "nombre": "Ladrillo",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "hielo",
+  "nombre": "Hielo",
+  "grupo": "Bloques"
+ },
+ {
+  "id": "enredadera",
+  "nombre": "Enredadera",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "flores",
+  "nombre": "Flores",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "hadas",
+  "nombre": "Hadas",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "runas",
+  "nombre": "Runas",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "cristales",
+  "nombre": "Cristales",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "estrellas",
+  "nombre": "Estrellas",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "corazones",
+  "nombre": "Corazones",
+  "grupo": "Fantasía"
+ },
+ {
+  "id": "neon_rosa",
+  "nombre": "Neón rosa",
+  "grupo": "Neón"
+ },
+ {
+  "id": "neon_azul",
+  "nombre": "Neón azul",
+  "grupo": "Neón"
+ },
+ {
+  "id": "neon_verde",
+  "nombre": "Neón verde",
+  "grupo": "Neón"
+ },
+ {
+  "id": "neon_oro",
+  "nombre": "Neón dorado",
+  "grupo": "Neón"
+ },
+ {
+  "id": "arcoiris",
+  "nombre": "Arcoíris",
+  "grupo": "Neón"
+ },
+ {
+  "id": "confeti",
+  "nombre": "Cumpleaños",
+  "grupo": "Fiestas"
+ },
+ {
+  "id": "fuegos",
+  "nombre": "Fuegos artificiales",
+  "grupo": "Fiestas"
+ },
+ {
+  "id": "halloween",
+  "nombre": "Halloween",
+  "grupo": "Fiestas"
+ },
+ {
+  "id": "navidad",
+  "nombre": "Navidad",
+  "grupo": "Fiestas"
+ },
+ {
+  "id": "nieve",
+  "nombre": "Nieve",
+  "grupo": "Temporadas"
+ },
+ {
+  "id": "primavera",
+  "nombre": "Primavera",
+  "grupo": "Temporadas"
+ },
+ {
+  "id": "otono",
+  "nombre": "Otoño",
+  "grupo": "Temporadas"
+ },
+ {
+  "id": "verano",
+  "nombre": "Verano",
+  "grupo": "Temporadas"
+ },
+ {
+  "id": "rec",
+  "nombre": "Cámara REC",
+  "grupo": "Otros"
+ },
+ {
+  "id": "comic",
+  "nombre": "Cómic",
+  "grupo": "Otros"
+ },
+ {
+  "id": "tf",
+  "nombre": "Tierras Fantásticas",
+  "grupo": "Otros"
+ },
+ {
+  "id": "tf_noche",
+  "nombre": "Noche de Tierras",
+  "grupo": "Otros"
+ }
+]

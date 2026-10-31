@@ -80,5 +80,10 @@ abstract class PadPage {
     /** La página pasa a verse (al abrir el pad o al volver a ella): para sus animaciones de entrada. */
     void shown() {}
 
+    /** (1.3.155) Adónde lleva «atrás» (null: a la portada), p. ej. de Fondo del menú a Ajustes. */
+    PadPage backTo() {
+        return null;
+    }
+
     void closed() {}
 }

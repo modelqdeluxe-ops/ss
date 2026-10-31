@@ -23,23 +23,24 @@ final class PadInfoPages {
      */
     static final class Ajustes extends PadPage {
         private static final String[] NAMES = {"Sonidos del pad", "Tic al pasar por encima", "Animaciones", "Volumen",
-                "Oír los altavoces de otros", "Tema del pad"};
+                "Oír los altavoces de otros", "Tema del pad", "Fondo del menú"};
         private static final String[] ABOUT = {"Clics, pestañas y avisos.", "Un tic suave al pasar el ratón por encima.",
                 "Fondo animado, brillos y transiciones.", "El de los sonidos del pad.", "La música que ponen cerca de ti.",
-                "El color del cristal."};
+                "El color del cristal.", "Una imagen o un color para la portada (o tus PNG)."};
         private static final ItemStack[] ICONS = {new ItemStack(Items.NOTE_BLOCK), new ItemStack(Items.LEVER),
                 new ItemStack(Items.FIREWORK_ROCKET), new ItemStack(Items.JUKEBOX), new ItemStack(Items.BELL),
-                new ItemStack(Items.PINK_DYE)};
+                new ItemStack(Items.PINK_DYE), new ItemStack(Items.PAINTING)};
+        private static final int ROWS = 7;
         /** Las muestras de los temas: lado y hueco entre ellas. */
         private static final int SW = 13, SW_GAP = 3;
         private final int[][] swatches = new int[PadSettings.THEMES.length][];
         private static final int SLIDER_W = 96;
         /** Dónde está la bola de cada interruptor (0 a 1): va hacia el valor poco a poco. */
-        private final float[] knob = new float[6];
+        private final float[] knob = new float[ROWS];
         private boolean first = true;
         private long lastNs = System.nanoTime();
         /** Zonas de clic: {x, y, w, h} por ajuste (el 3 es el deslizador). */
-        private final int[][] rects = new int[6][];
+        private final int[][] rects = new int[ROWS][];
         private boolean dragging;
 
         Ajustes(TFPadScreen pad) {
@@ -71,8 +72,8 @@ final class PadInfoPages {
             int bh = PadSkin.bannerHeight(1);
             PadSkin.banner(g, pad, X + 1, Y + 1, W - 2, bh, acc, PadSkin.icon(app), List.of(PadSkin.tagline(app)));
             int top = Y + bh + 6, bottom = Y + H - 14;
-            int rowH = Math.max(21, Math.min(30, (bottom - top) / 6));
-            for (int i = 0; i < 6; i++) {
+            int rowH = Math.max(19, Math.min(30, (bottom - top) / ROWS));
+            for (int i = 0; i < ROWS; i++) {
                 float target = value(i) ? 1F : 0F;
                 if (first || !PadSettings.animations) knob[i] = target;
                 else knob[i] += (target - knob[i]) * Math.min(1F, dt * 14F);
@@ -87,9 +88,10 @@ final class PadInfoPages {
                 int ms = Math.min(20, h - 4), iy = yy + (h - ms) / 2;
                 PadSkin.medallion(g, x + 8, iy, ms, 0);
                 PadUi.item(g, ICONS[i], x + 8 + (ms - 16) / 2, iy + (ms - 16) / 2, 1);
-                boolean themes = i == 5;
+                boolean themes = i == 5, wallpaper = i == 6;
                 int swW = PadSettings.THEMES.length * (SW + SW_GAP) - SW_GAP;
-                int tx = x + 8 + ms + 7, textW = w - (tx - x) - (slider ? SLIDER_W + 50 : themes ? swW + 18 : 44);
+                String wpName = wallpaper ? wallpaperName() : "";
+                int tx = x + 8 + ms + 7, textW = w - (tx - x) - (slider ? SLIDER_W + 50 : themes ? swW + 18 : wallpaper ? PadUi.chipWidth(wpName) + 30 : 44);
                 boolean two = h >= 24;
                 int ty = yy + (two ? (h - 20) / 2 + 1 : (h - 8) / 2);
                 PadUi.title(g, NAMES[i], tx, ty, textW, PadUi.TEXT);
@@ -123,6 +125,13 @@ final class PadInfoPages {
                     String name = PadSettings.theme().name();
                     PadUi.chip(g, bx - 6 - PadUi.chipWidth(name), yy + (h - 12) / 2, name, PadUi.TONE_BLUE, 12);
                     rects[i] = null;
+                } else if (wallpaper) {
+                    // (1.3.155) el fondo elegido y una flecha: toda la tarjeta abre el selector
+                    int ax = x + w - 14, ay = yy + h / 2;
+                    PadUi.chip(g, ax - 8 - PadUi.chipWidth(wpName), yy + (h - 12) / 2, wpName, PadUi.TONE_BLUE, 12);
+                    int c = hover ? PadUi.GOLD_LO : PadUi.INK;
+                    for (int d = 0; d < 4; d++) g.fill(ax + d, ay - 3 + d, ax + d + 1, ay + 4 - d, c);
+                    rects[i] = new int[] {x, y, w, h};
                 } else {
                     PadSkin.toggle(g, x + w - 38, yy + (h - 14) / 2, knob[i], hover);
                     rects[i] = new int[] {x, y, w, h};
@@ -132,6 +141,11 @@ final class PadInfoPages {
             // la nota de abajo, centrada (lejos de las esquinas de oro de la ventana)
             String note = PadUi.fitEnd("Tecla del pad: se cambia en Opciones › Controles.", W - 40);
             PadUi.text(g, note, X + (W - PadUi.font().width(note)) / 2, Y + H - 12, PadUi.MUTED);
+        }
+
+        private static String wallpaperName() {
+            PadWallpaper.Option o = PadWallpaper.current();
+            return o == null ? "El del tema" : o.name();
         }
 
         /** El volumen según dónde está el ratón en el deslizador (de 5 en 5). */
@@ -171,6 +185,11 @@ final class PadInfoPages {
                     }
                     case 4 -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.setHearOthers(
                             !net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.hearOthers());
+                    case 6 -> {
+                        pad.sound("page", 0.55F);
+                        pad.setPage(new PadWallpaperPage(pad));
+                        return true;
+                    }
                     default -> {
                     }
                 }

@@ -172,6 +172,52 @@ public final class TFPadClient {
         }
     }
 
+    /** (1.3.155) Prueba «pad»: pone ese fondo en el menú principal («tema», «c:menta», «i:castillo»…). */
+    public static void wallpaperForTest(String id) {
+        PadSettings.load();
+        PadSettings.wallpaper = id;
+    }
+
+    /** (1.3.155) Prueba «pad»: una foto de muestra en la carpeta de la Cámara y el paso de publicar con ese marco. */
+    public static void photoForTest(String frame) {
+        try {
+            java.nio.file.Files.createDirectories(PadCamera.dir());
+            java.nio.file.Path f = PadCamera.dir().resolve("prueba_marco.png");
+            try (com.mojang.blaze3d.platform.NativeImage img = new com.mojang.blaze3d.platform.NativeImage(960, 540, false)) {
+                for (int y = 0; y < 540; y++) {
+                    for (int x = 0; x < 960; x++) {
+                        int r = 60 + x * 120 / 960, gg = 120 + y * 100 / 540, b = 200 - y * 80 / 540;
+                        img.setPixelRGBA(x, y, 0xFF000000 | b << 16 | gg << 8 | r);
+                    }
+                }
+                img.writeToFile(f);
+            }
+            PadCamera.lastPhoto = f;
+            PadCamera.flashAt = System.currentTimeMillis();
+        } catch (Exception e) {
+            net.tierrasfantasticas.tfclient.TFClient.LOGGER.warn("Prueba: no se pudo hacer la foto de muestra", e);
+        }
+        PadCameraPage.testFrame = frame;
+    }
+
+    /** (1.3.155) Prueba «pad»: pega un marco a una foto lisa y mira que cambie el borde y no el centro. */
+    public static String frameApplyTest(String id) {
+        byte[] png = PadPhotoFrames.bytes(id);
+        if (png == null) return "MAL: no se encuentra el marco " + id;
+        int blue = 0xFFFF6020; // ABGR
+        try (com.mojang.blaze3d.platform.NativeImage photo = new com.mojang.blaze3d.platform.NativeImage(320, 180, false);
+             com.mojang.blaze3d.platform.NativeImage frame = com.mojang.blaze3d.platform.NativeImage.read(new java.io.ByteArrayInputStream(png))) {
+            photo.fillRect(0, 0, 320, 180, blue);
+            PadPhotoFrames.apply(photo, frame);
+            int corner = photo.getPixelRGBA(3, 3), center = photo.getPixelRGBA(160, 90);
+            boolean ok = corner != blue && center == blue;
+            return id + ": borde " + Integer.toHexString(corner) + ", centro " + Integer.toHexString(center) + (ok ? " (bien: el marco se pega y el centro queda igual)" : " (MAL)")
+                    + "; " + (PadPhotoFrames.all().size() - 1) + " marcos";
+        } catch (Exception e) {
+            return "MAL: " + e;
+        }
+    }
+
     /** (1.3.134) Prueba «tienda»: la primera canción de Música, como con el ratón encima (sus botones a la vista). */
     public static void hoverMusicForTest(boolean on) {
         PadMusicPage.testHoverFirst = on;

@@ -27,7 +27,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * La Cámara: tus fotos (de .minecraft/tfclient/fotos), una grande con flechas para pasar, y los botones: PUBLICAR (en
- * Comunidad, con un texto), BORRAR, CARPETA y MODO FOTO (para hacer una nueva).
+ * Comunidad, con un texto), BORRAR, CARPETA y MODO FOTO (para hacer una nueva). (1.3.155) Al publicar se elige un marco
+ * (PadPhotoFrames): sale encima de la foto y se pega en ella al subirla.
  */
 final class PadCameraPage extends PadPage {
     /** La foto: 16:9 a la izquierda, lo más grande que quepa dejando sitio debajo para MODO FOTO (nunca se pisan). */
@@ -61,6 +62,13 @@ final class PadCameraPage extends PadPage {
     private final Map<Path, Tex> textures = new LinkedHashMap<>(8, 0.75F, true);
     private boolean captioning;
     private String caption = "";
+    /** (1.3.155) El marco elegido para publicar ("" sin marco) y el desplazamiento de su lista. */
+    private String frame = "";
+    private float frameScroll;
+    private int[] frameGrid;
+    private final java.util.Set<ResourceLocation> previews = new java.util.HashSet<>();
+    /** Para la prueba en el juego: abre el paso de publicar con este marco. */
+    static String testFrame;
     private long confirmDelete;
     private Path confirmPath;
     /** Fotos que no se pudieron abrir (no se reintentan en cada fotograma). */
@@ -181,6 +189,11 @@ final class PadCameraPage extends PadPage {
     void render(GuiGraphics g, double mx, double my, float partial) {
         buttons.clear();
         actions.clear();
+        if (testFrame != null && !photos.isEmpty()) {
+            captioning = true;
+            frame = testFrame;
+            testFrame = null;
+        }
         PadCommunityClient.checkUpload();
         int acc = PadSkin.accent(app);
         PadSkin.window(g, X, Y, W, H, acc);
@@ -209,7 +222,15 @@ final class PadCameraPage extends PadPage {
             } else {
                 PadUi.spinner(g, px + PW / 2, py + PH / 2 - 4);
             }
-            viewfinder(g, px, py, PW, PH);
+            // (1.3.155) el marco elegido, encima de la foto mientras se publica
+            if (captioning && !frame.isEmpty() && loc != null) {
+                ResourceLocation fr = PadPhotoFrames.byId(frame).preview();
+                previews.add(fr);
+                com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                Minecraft.getInstance().getTextureManager().getTexture(fr).setFilter(true, false);
+                g.blit(fr, px, py, PW, PH, 0, 0, 640, 360, 640, 360);
+            }
+            if (!captioning || frame.isEmpty()) viewfinder(g, px, py, PW, PH);
             if (photos.size() > 1) {
                 arrow(g, px + 2, py + PH / 2 - 7, true, mx, my, () -> move(-1));
                 arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
@@ -249,7 +270,7 @@ final class PadCameraPage extends PadPage {
                 int n = PadUi.wrap(g, status, cx, py + 26, cw, PadUi.TEXT, 2);
                 PadSkin.progress(g, cx, py + 28 + n * 10, cw, PadCommunityClient.uploadProgress);
             } else if (captioning) {
-                PadUi.wrap(g, "Texto (opcional)", cx, py + 26, cw, PadUi.MUTED, 5);
+                frames(g, cx, py + 24, cw, by - 4 - (py + 24), mx, my);
             } else {
                 button(g, cx, py + 26, cw, "PUBLICAR", PadView.GOLD, mx, my, () -> {
                     captioning = true;
@@ -261,6 +282,47 @@ final class PadCameraPage extends PadPage {
         } else {
             PadUi.wrap(g, "Pulsa una foto para publicarla.", cx, py + 1, cw, PadUi.MUTED, 6);
         }
+    }
+
+    /**
+     * (1.3.155) La lista de marcos en la columna derecha: su nombre arriba y las miniaturas de dos en dos (con la rueda
+     * se desplaza); la elegida, con borde de oro.
+     */
+    private void frames(GuiGraphics g, int x, int y, int w, int h, double mx, double my) {
+        List<PadPhotoFrames.Frame> all = PadPhotoFrames.all();
+        PadPhotoFrames.Frame cur = PadPhotoFrames.byId(frame);
+        PadUi.text(g, PadUi.fitEnd("Marco: " + cur.name(), w), x, y, PadUi.TEXT);
+        int gy = y + 11, gh = h - 11, gap = 3, tw = (w - gap) / 2, th = tw * 9 / 16;
+        int rows = (all.size() + 1) / 2;
+        int content = rows * (th + gap);
+        frameScroll = Math.max(0, Math.min(frameScroll, Math.max(0, content - gh)));
+        frameGrid = new int[] {x, gy, w, gh};
+        pad.scissor(g, x - 1, gy, w + 2, gh);
+        for (int i = 0; i < all.size(); i++) {
+            PadPhotoFrames.Frame f = all.get(i);
+            int tx = x + (i % 2) * (tw + gap), ty = gy + (i / 2) * (th + gap) - Math.round(frameScroll);
+            if (ty + th < gy || ty > gy + gh) continue;
+            boolean sel = f.id().equals(frame);
+            boolean hover = PadUi.inside(mx, my, tx, ty, tw, th) && PadUi.inside(mx, my, x, gy, w, gh);
+            if (hover) pad.hover("§marco" + i);
+            if (f.id().isEmpty()) {
+                g.fillGradient(tx, ty, tx + tw, ty + th, 0xFF5E8F7A, 0xFF2D5244);
+                PadUi.text(g, PadUi.fitEnd("Sin marco", tw - 4), tx + 3, ty + th / 2 - 4, 0xFFFFFFFF);
+            } else {
+                com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                Minecraft.getInstance().getTextureManager().getTexture(f.mini()).setFilter(true, false);
+                g.blit(f.mini(), tx, ty, tw, th, 0, 0, 256, 144, 256, 144);
+            }
+            PadUi.box(g, tx - 1, ty - 1, tw + 2, th + 2, sel ? PadUi.GOLD_LO : hover ? PadUi.INK : 0x8018265C);
+            if (sel) PadUi.box(g, tx - 2, ty - 2, tw + 4, th + 4, PadUi.GOLD_LO);
+            int top = Math.max(ty, gy), bottom = Math.min(ty + th, gy + gh);
+            if (bottom > top) {
+                buttons.add(new int[] {tx, top, tw, bottom - top});
+                String id = f.id();
+                actions.add(() -> frame = id);
+            }
+        }
+        pad.noScissor(g);
     }
 
     /** Las cuatro esquinas del visor (blancas, un poco transparentes) dentro de la foto. */
@@ -331,7 +393,7 @@ final class PadCameraPage extends PadPage {
 
     private void send() {
         if (photos.isEmpty() || PadCommunityClient.uploadStatus != null) return;
-        PadCommunityClient.publish(photos.get(index), caption.trim());
+        PadCommunityClient.publish(photos.get(index), caption.trim(), frame);
         captioning = false;
         caption = "";
     }
@@ -352,6 +414,11 @@ final class PadCameraPage extends PadPage {
 
     @Override
     boolean scroll(double mx, double my, double delta) {
+        // (1.3.155) sobre la lista de marcos, la rueda la desplaza
+        if (captioning && frameGrid != null && PadUi.inside(mx, my, frameGrid[0], frameGrid[1], frameGrid[2], frameGrid[3])) {
+            frameScroll -= (float) delta * 18;
+            return true;
+        }
         move(delta < 0 ? 1 : -1);
         return true;
     }
@@ -401,5 +468,8 @@ final class PadCameraPage extends PadPage {
         closed = true;
         for (Tex t : textures.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         textures.clear();
+        // las vistas previas de los marcos que se miraron (640x360 cada una): fuera de la memoria de vídeo
+        for (ResourceLocation r : previews) Minecraft.getInstance().getTextureManager().release(r);
+        previews.clear();
     }
 }

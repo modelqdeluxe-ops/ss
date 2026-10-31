@@ -26,6 +26,8 @@ final class PadSettings {
     static int volume = 80;
     /** El tema del pad (color del cristal): índice de {@link #THEMES}. */
     static int theme = 0;
+    /** (1.3.155) El fondo del menú principal: «tema» (el del cristal), «c:» un color, «i:» uno dibujado, «f:» un PNG tuyo. */
+    static String wallpaper = "tema";
     private static boolean loaded;
 
     private PadSettings() {}
@@ -66,6 +68,7 @@ final class PadSettings {
             animations = Boolean.parseBoolean(p.getProperty("animaciones", "true"));
             volume = Math.max(0, Math.min(100, Integer.parseInt(p.getProperty("volumen", "80").trim())));
             theme = Math.max(0, Math.min(THEMES.length - 1, Integer.parseInt(p.getProperty("tema", "0").trim())));
+            wallpaper = p.getProperty("fondo", "tema").trim();
         } catch (Exception e) {
             TFClient.LOGGER.warn("TF Pad: no se pudieron leer los ajustes", e);
         }
@@ -78,6 +81,7 @@ final class PadSettings {
         p.setProperty("animaciones", Boolean.toString(animations));
         p.setProperty("volumen", Integer.toString(volume));
         p.setProperty("tema", Integer.toString(theme));
+        p.setProperty("fondo", wallpaper == null ? "tema" : wallpaper);
         try (Writer w = Files.newBufferedWriter(file(), StandardCharsets.UTF_8)) {
             p.store(w, "TF Pad - ajustes del jugador");
         } catch (Exception e) {
