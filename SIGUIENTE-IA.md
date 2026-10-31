@@ -1,5 +1,13 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **31 oct 2026 — 1.3.156, EL PARCHE ÚNICO** (lo pidió el dueño: una sola versión y una sola Release con todo): la
+> caída del servidor por la GTS del pad (Pretty Pipes), las flags de spawn de las protecciones, lo de la 1.3.155
+> (planeo, fondo del menú del pad, marcos de fotos) y la actualización de clanes entera (Clan Coins de 1–2, paleta tipo
+> Paint, banco del clan con su cofre, guerras con la barra vertical doble, alianzas, duelos, tienda del clan,
+> protecciones del clan y territorio). Todo en el CHECKPOINT de `HANDOFF.md` y en
+> **[`tf-client/CLANES.md`](tf-client/CLANES.md)**. Pruebas en el juego: `[prueba-jefes=arreglos]` y
+> `[prueba-jefes=clanes]`.
+>
 > **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
 > AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
 > suelo (CHECKPOINT de `HANDOFF.md`).

@@ -439,7 +439,8 @@ public final class TFPadScreen extends Screen {
     void back() {
         sound("back", 0.6F);
         if (page instanceof PadViewPage vp && vp.goBack()) return;
-        setPage(home);
+        PadPage up = page.backTo();
+        setPage(up != null ? up : home);
     }
 
     /** Abre una app de la portada. */
@@ -465,7 +466,7 @@ public final class TFPadScreen extends Screen {
         switch (id) {
             case "comunidad" -> setPage(new PadCommunityPage(this));
             case "camara" -> setPage(new PadCameraPage(this));
-            case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
+            case "ajustes" -> setPage(tab.equals("fondos") ? new PadWallpaperPage(this) : new PadInfoPages.Ajustes(this));
             case "musica" -> setPage(new PadMusicPage(this));
             case "guia" -> setPage(new PadGuidePage(this));
             case "gachapon", "pase" -> { // páginas propias con los datos del servidor
@@ -778,6 +779,11 @@ public final class TFPadScreen extends Screen {
     private void drawBackdrop(GuiGraphics g) {
         float t = PadSkin.time();
         int w = unitsW, h = unitsH;
+        // (1.3.155) en la portada, el fondo de pantalla elegido (Ajustes › Fondo del menú) en lugar del cristal del tema
+        if (page == home && wallpaperBase(g)) {
+            noScissor(g);
+            return;
+        }
         glassBase(g); // deja el recorte en todo el cristal (no en GX/GY/GW/GH: si no, se veía un rectángulo dentro)
         float k = (t % 13F) / 4.5F;
         if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
@@ -809,6 +815,31 @@ public final class TFPadScreen extends Screen {
      * color del tema en degradado (el de Cielo es el azul de marco.png), la trama y una sombra suave abajo; nada más
      * (1.3.108, el dueño: «déjalo sin fondo, sin el logo, que quede limpio»: ni monogramas, ni logo, ni aldeas). Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
      */
+    /**
+     * (1.3.155) El fondo de pantalla de la portada en todo el hueco del cristal (el mismo recorte que glassBase: el marco,
+     * encima, le da su forma), cubriéndolo sin deformarse, con la sombra suave de abajo. false si no hay uno elegido o aún
+     * se está leyendo (entonces va el del tema).
+     */
+    private boolean wallpaperBase(GuiGraphics g) {
+        PadWallpaper.Option o = PadWallpaper.current();
+        if (o == null) return false;
+        int lift = liftReal();
+        int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
+        int x1 = fx + (GLASS_R + 8 * extraX) * ps / 4, y1 = fy + lift + (GLASS_B + 8 * extra) * ps / 4;
+        int top = gy + lift;
+        int mL = Math.max(0, (gx - x0 + cs - 1) / cs), mT = Math.max(0, (top - y0 + cs - 1) / cs);
+        int mR = Math.max(0, (x1 - gx - unitsW * cs + cs - 1) / cs), mB = Math.max(0, (y1 - top - unitsH * cs + cs - 1) / cs);
+        g.flush();
+        int fbH = Minecraft.getInstance().getWindow().getHeight();
+        RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+        if (!PadWallpaper.draw(g, o, -mL, -mT, unitsW + mR, unitsH + mB)) {
+            noScissor(g);
+            return false;
+        }
+        PadSkin.vgrad(g, -mL, unitsH * 2 / 3F, unitsW + mR, unitsH + mB, 0x00102040, 0x30102040);
+        return true;
+    }
+
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
         int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
@@ -936,6 +967,20 @@ public final class TFPadScreen extends Screen {
             g.pose().popPose();
             right -= big(14);
             blitBig(g, "coin", right, (bar - big(11)) / 2F);
+            right -= big(8);
+        }
+        // (1.3.156) las Fantastic Clan Coins del clan (azules), solo al líder y a los colíderes
+        if (s != null && !admin && s.clanCoins() >= 0) {
+            String clan = PadUi.THOUSANDS.format(s.clanCoins());
+            int w = big(PadFont.width(clan));
+            right -= w;
+            g.pose().pushPose();
+            g.pose().translate(right, textY + bs, 0);
+            g.pose().scale(bs, bs, 1);
+            PadFont.draw(g, clan, 0, 0, 0x9CD2FF, true);
+            g.pose().popPose();
+            right -= big(14);
+            blitBig(g, "coin_clan", right, (bar - big(11)) / 2F);
             right -= big(8);
         }
         // 1.3.38: las monedas verdes (las del Gachapón, se ganan con el TF Pass)

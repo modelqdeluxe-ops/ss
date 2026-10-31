@@ -91,6 +91,8 @@ public class TFClaims {
     /** Lo llama TFClient al arrancar: bloques y objetos, red y eventos. */
     public static void init(IEventBus ieventbus) {
         ClaimItems.register(ieventbus);
+        // (1.3.156) el cofre del Banco del clan
+        net.tierrasfantasticas.tfclient.clans.ClanBlocks.register(ieventbus);
         ClaimNetwork.init();
         MinecraftForge.EVENT_BUS.register((Object)new TFClaims());
         MinecraftForge.EVENT_BUS.register((Object)new BlockProtectionEvents());

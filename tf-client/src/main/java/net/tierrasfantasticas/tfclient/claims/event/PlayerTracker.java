@@ -78,7 +78,13 @@ public final class PlayerTracker {
                     return;
                 }
                 MutableComponent mutablecomponent2 = claim.getFlags().showWelcome && claim.getFlags().welcomeMessage != null && !claim.getFlags().welcomeMessage.isBlank() ? Component.literal((String)PlayerTracker.truncate(claim.getFlags().welcomeMessage, 50)).withStyle(ChatFormatting.GREEN) : Component.literal((String)"Entrando a la zona ").withStyle(ChatFormatting.GREEN).append((Component)Component.literal((String)PlayerTracker.truncate(PlayerTracker.zoneLabel(claim), 24)).withStyle(new ChatFormatting[]{ChatFormatting.WHITE, ChatFormatting.BOLD}));
-                PlayerTracker.show(serverplayer, mutablecomponent2, claim.getFlags().messageAsTitle);
+                // (1.3.156) el territorio de un clan: «Territorio de [TAG]» con el color del clan, como título
+                Component territory = claim.getClanId() == null ? null : net.tierrasfantasticas.tfclient.pad.server.PadClans.territoryTitle(claim.getClanId());
+                if (territory != null && !(claim.getFlags().showWelcome && claim.getFlags().welcomeMessage != null && !claim.getFlags().welcomeMessage.isBlank())) {
+                    PlayerTracker.show(serverplayer, territory, true);
+                } else {
+                    PlayerTracker.show(serverplayer, mutablecomponent2, claim.getFlags().messageAsTitle);
+                }
                 serverplayer.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 2.0f, 1.4f);
                 if (claim.getFlags().trespasserAlerts && !claim.canModify((Player)serverplayer)) {
                     long i = serverlevel.getGameTime();

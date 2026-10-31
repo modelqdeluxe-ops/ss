@@ -53,6 +53,23 @@ public final class PadGreen {
         TFPadNet.sendState(player);
     }
 
+    /** (1.3.156) Suma n también sin estar conectado (premios de las misiones del clan). */
+    public static void add(net.minecraft.server.MinecraftServer server, UUID uuid, long n) {
+        ServerPlayer online = server.getPlayerList().getPlayer(uuid);
+        if (online != null) {
+            add(online, n);
+            return;
+        }
+        if (n <= 0) return;
+        n = net.tierrasfantasticas.tfclient.economy.TFDebt.payFrom(server, uuid, net.tierrasfantasticas.tfclient.economy.TFDebt.GREEN, n);
+        if (n > 0) {
+            JsonObject p = STORE_IMPL.player(uuid);
+            p.addProperty("verdes", raw(uuid) + n);
+            p.addProperty("ganadas", JsonStore.num(p, "ganadas") + n);
+            STORE_IMPL.changed();
+        }
+    }
+
     /**
      * (1.3.125) Reembolso: quita n (también sin estar conectado); lo que no tenga queda como deuda. Devuelve lo que se
      * le quitó ya.

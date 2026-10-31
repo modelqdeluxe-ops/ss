@@ -160,7 +160,9 @@ public final class PadClanChat {
                 .then(Commands.literal("chat")
                         .executes(ctx -> usage(ctx.getSource()))
                         .then(Commands.literal("enable").executes(ctx -> toggle(ctx.getSource(), true)))
-                        .then(Commands.literal("disable").executes(ctx -> toggle(ctx.getSource(), false))));
+                        .then(Commands.literal("disable").executes(ctx -> toggle(ctx.getSource(), false))))
+                // (1.3.156) /clan duelo <jugador> | aceptar | rechazar
+                .then(PadClanDuels.command());
     }
 
     private static int usage(CommandSourceStack src) {

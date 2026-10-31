@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "tfclient:block/clan/banco_clan"
+    },
+    "facing=east": {
+      "model": "tfclient:block/clan/banco_clan",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "tfclient:block/clan/banco_clan",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "tfclient:block/clan/banco_clan",
+      "y": 270
+    }
+  }
+}

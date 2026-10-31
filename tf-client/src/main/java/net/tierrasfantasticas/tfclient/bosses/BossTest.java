@@ -249,7 +249,7 @@ public final class BossTest {
         }
     }
 
-    private static void command(MinecraftServer server, String cmd) {
+    static void command(MinecraftServer server, String cmd) {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd);
     }
 
@@ -289,7 +289,9 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("clave")) ids.add(0, "clave");
             // (1.3.150) «encantar» (mesa, yunque y piedra de afilar con las piezas de los sets), «protes» (nombre, ir a la
             // zona y el módulo PROTECCIONES del pad de admin) y «cumple» (la fiesta de /tf cumpleaños)
-            for (String extra : new String[] {"encantar", "protes", "cumple"}) {
+            // (1.3.156) «arreglos»: la ficha de la GTS con un tooltip que falla (Pretty Pipes) y las flags de spawn de las
+            // protecciones; «clanes»: Clan Coins, nivel, misiones, insignias, paleta, banco, duelos, guerras, alianzas y tienda
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -311,7 +313,7 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id))
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -374,6 +376,14 @@ public final class BossTest {
         }
         if ("cumple".equals(r.id)) {
             if (!waitShot) cumpleStep(server, level, player, r);
+            return;
+        }
+        if ("arreglos".equals(r.id)) {
+            if (!waitShot) BossTestFixes.step(t, server, level, player, r);
+            return;
+        }
+        if ("clanes".equals(r.id)) {
+            if (!waitShot) BossTestClanes.step(t, server, level, player, r);
             return;
         }
         switch (phase) {
@@ -755,6 +765,8 @@ public final class BossTest {
     static volatile boolean closeScreen;
     /** El cliente de la prueba abre el pad en esa app («» = la portada; BossTest «pad»). */
     static volatile String openPad;
+    /** (1.3.155) Lo que el cliente apunta para el informe (el marco pegado a una foto). */
+    static volatile String clientNote;
     /** (1.3.106) Lo que la prueba escribe en la casilla de Música del pad (BossTestClient). */
     static volatile String typePad;
     /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
@@ -2111,7 +2123,45 @@ public final class BossTest {
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
             }
-            case 1358 -> next(level);
+            // (1.3.155, el dueño: «un fondo de pantalla cualquiera en el pad, bien cuadrado; más fondos o colores; más marcos
+            // para publicar las fotos; el planeo de los sets sin 30 s y sin hambre») el fondo en la portada (uno dibujado y un
+            // color), Ajustes con su fila, el selector, la Cámara con un marco, el marco pegado y el planeo
+            case 1358 -> {
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.tierrasfantasticas.tfclient.pad.TFPadClient.wallpaperForTest("i:castillo"));
+                openPad = "";
+            }
+            case 1392 -> shot(r, "pad_fondo_castillo");
+            case 1394 -> {
+                closeScreen = true;
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.tierrasfantasticas.tfclient.pad.TFPadClient.wallpaperForTest("i:aurora"));
+            }
+            case 1398 -> openPad = "";
+            case 1430 -> shot(r, "pad_fondo_aurora");
+            case 1432 -> {
+                closeScreen = true;
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.tierrasfantasticas.tfclient.pad.TFPadClient.wallpaperForTest("c:menta"));
+            }
+            case 1436 -> openPad = "";
+            case 1466 -> shot(r, "pad_fondo_color");
+            case 1468 -> openPad = "ajustes";
+            case 1496 -> shot(r, "pad_ajustes_fondo");
+            case 1498 -> openPad = "ajustes/fondos";
+            case 1526 -> shot(r, "pad_fondos_selector");
+            case 1528 -> {
+                net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                    net.tierrasfantasticas.tfclient.pad.TFPadClient.photoForTest("tf");
+                    clientNote = net.tierrasfantasticas.tfclient.pad.TFPadClient.frameApplyTest("oro");
+                });
+                openPad = "camara";
+            }
+            case 1560 -> shot(r, "pad_camara_marco");
+            case 1562 -> {
+                r.event("marcos: " + clientNote);
+                r.event("planeo: " + glideHungerTest(player));
+                closeScreen = true;
+                net.minecraft.client.Minecraft.getInstance().execute(() -> net.tierrasfantasticas.tfclient.pad.TFPadClient.wallpaperForTest("tema"));
+            }
+            case 1566 -> next(level);
             default -> { }
         }
     }
@@ -2974,6 +3024,38 @@ public final class BossTest {
     private static ItemEntity webDrop, plainDrop, lavaDrop, hopperDrop;
     private static net.minecraft.core.BlockPos hopperAt;
 
+    /**
+     * (1.3.155, el dueño: «el vuelo de los sets, que no me quite hambre volar, y quita esos 30 segundos») Con unas alas de
+     * set puestas y planeando, gastar hambre no gasta nada; sin planear, sí; y el planeo ya no tiene límite.
+     */
+    private static String glideHungerTest(ServerPlayer p) {
+        net.minecraft.world.item.Item wings = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValues().stream()
+                .filter(i -> i instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic c && c.glides()).findFirst().orElse(null);
+        if (wings == null) return "MAL: no hay alas en los sets";
+        var mode = p.gameMode.getGameModeForPlayer();
+        ItemStack chest = p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).copy();
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.teleportTo(p.getX(), p.getY() + 40, p.getZ());
+        p.setOnGround(false);
+        p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(wings));
+        p.startFallFlying();
+        boolean gliding = net.tierrasfantasticas.tfclient.items.TFWings.glidingWithWings(p);
+        float e0 = p.getFoodData().getExhaustionLevel();
+        p.causeFoodExhaustion(3F);
+        float e1 = p.getFoodData().getExhaustionLevel();
+        p.stopFallFlying();
+        p.causeFoodExhaustion(3F);
+        float e2 = p.getFoodData().getExhaustionLevel();
+        p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, chest);
+        p.teleportTo(p.getX(), p.getY() - 40, p.getZ());
+        p.setGameMode(mode);
+        boolean ok = gliding && e1 == e0 && e2 > e1 && net.tierrasfantasticas.tfclient.items.TFWings.GLIDE_TICKS == Integer.MAX_VALUE;
+        return "con " + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(wings) + " planeando " + (gliding ? "sí" : "NO")
+                + ", hambre " + dec2(e0) + " → " + dec2(e1) + " al planear, " + dec2(e2) + " sin planear; límite de planeo "
+                + (net.tierrasfantasticas.tfclient.items.TFWings.GLIDE_TICKS == Integer.MAX_VALUE ? "ninguno" : net.tierrasfantasticas.tfclient.items.TFWings.GLIDE_TICKS)
+                + (ok ? " (bien)" : " (MAL)");
+    }
+
     /** Un número con 2 decimales para la prueba de oficios (1.3.153). */
     private static String dec2(double v) {
         return String.format(java.util.Locale.ROOT, "%.2f", v);
@@ -3809,12 +3891,17 @@ public final class BossTest {
         if (r != null) shot(r, what);
     }
 
-    private static void shot(Rep r, String what) {
+    /** La arena de este escenario (para las pruebas de otras clases: BossTestFixes, BossTestClanes). */
+    static Vec3 arena() {
+        return arena;
+    }
+
+    static void shot(Rep r, String what) {
         SHOTS_PENDING.add(String.format("%02d_%s_%s", index, r.id, what));
     }
 
     /** Recoge la arena y pasa al siguiente jefe (o acaba). */
-    private static void next(ServerLevel level) {
+    static void next(ServerLevel level) {
         if (rift != null) {
             Rifts.remove(rift.id);
             AABB box = new AABB(arena, arena).inflate(96);

@@ -34,9 +34,17 @@ public final class PadMarket {
 
     private PadMarket() {}
 
+    /**
+     * (1.3.156) Para la prueba en el juego (bosses/BossTest, escenario «arreglos»): el tooltip del objeto falla como el
+     * del Item Terminal de Pretty Pipes en el servidor (NoClassDefFoundError de una clase del cliente), o falla la
+     * vista entera.
+     */
+    public static boolean testTooltipError, testViewError;
+
     private static final class App implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
+            if (testViewError) throw new NoClassDefFoundError("net/minecraft/client/gui/screens/Screen");
             if (tab.startsWith("l:")) {
                 Listing l = TFMarket.find(tab.substring(2));
                 if (l != null) return listing(player, l);
@@ -203,12 +211,19 @@ public final class PadMarket {
         if (!own && balance >= 0) lines.add(balance >= l.price() ? "Tienes " + TFEconomy.format(balance) + "."
                 : "Te faltan " + TFEconomy.format(l.price() - balance) + ".");
         b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, PadView.moneyExact(l.price()), null, null));
-        // lo que dice el objeto (encantamientos, descripción…), como en su tooltip
+        // lo que dice el objeto (encantamientos, descripción…), como en su tooltip. En el servidor, el tooltip de algunos
+        // mods usa clases del cliente (Pretty Pipes: Screen.hasShiftDown → NoClassDefFoundError, que tumbó el servidor
+        // el 31 oct 2026): si falla, la ficha sale sin esas líneas.
         List<String> tip = new ArrayList<>();
-        var lines2 = l.item().getTooltipLines(player, net.minecraft.world.item.TooltipFlag.NORMAL);
-        for (int i = 1; i < lines2.size() && tip.size() < 6; i++) {
-            String s = lines2.get(i).getString();
-            if (!s.isBlank()) tip.add(s);
+        try {
+            if (testTooltipError) throw new NoClassDefFoundError("net/minecraft/client/gui/screens/Screen");
+            var lines2 = l.item().getTooltipLines(player, net.minecraft.world.item.TooltipFlag.NORMAL);
+            for (int i = 1; i < lines2.size() && tip.size() < 6; i++) {
+                String s = lines2.get(i).getString();
+                if (!s.isBlank()) tip.add(s);
+            }
+        } catch (Exception | LinkageError e) {
+            tip.clear();
         }
         if (!tip.isEmpty()) b.text("Lo que dice el objeto", TEXT, tip);
         b.footer(PadView.Btn.of("ATRÁS", "volver:", PadView.BLUE));

@@ -95,6 +95,8 @@ public final class ClaimBlocks {
             case "claimstone_250x250" -> ChatFormatting.DARK_RED;
             case "claimstone_300x300" -> ChatFormatting.GOLD;
             case "claimstone_500x500" -> ChatFormatting.YELLOW;
+            case "claimstone_clan_50x50" -> ChatFormatting.AQUA;
+            case "claimstone_clan_120x120" -> ChatFormatting.BLUE;
             default -> ChatFormatting.WHITE;
         };
     }
@@ -102,7 +104,7 @@ public final class ClaimBlocks {
     public static ItemStack createTierItem(ClaimTier claimtier, int i) {
         Item item = ClaimItems.itemFor(claimtier);
         ChatFormatting chatformatting = ClaimBlocks.colorForTier(claimtier);
-        MutableComponent mutablecomponent = Component.literal((String)("Protecci\u00f3n " + claimtier.label())).setStyle(Style.EMPTY.withColor(chatformatting).withBold(Boolean.valueOf(true)).withItalic(Boolean.valueOf(false)));
+        MutableComponent mutablecomponent = Component.literal((String)((claimtier.isClan() ? "Protecci\u00f3n del clan " + claimtier.label().substring(5) : "Protecci\u00f3n " + claimtier.label()))).setStyle(Style.EMPTY.withColor(chatformatting).withBold(Boolean.valueOf(true)).withItalic(Boolean.valueOf(false)));
         if (item != null) {
             ItemStack itemstack1 = new ItemStack((ItemLike)item, i);
             itemstack1.setHoverName((Component)mutablecomponent);

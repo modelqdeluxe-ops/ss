@@ -146,6 +146,11 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     /** Tonos de las etiquetas (0: el que toque por el texto). */
     public static final int TONE_GOLD = 1, TONE_GREEN = 2, TONE_GRAY = 3, TONE_BLUE = 4;
 
+    /** (1.3.156) Fantastic Clan Coins para una etiqueta: «¢1.250» (el pad pone la moneda azul). */
+    public static String clanCoins(long v) {
+        return "¢" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
+    }
+
     /** Dinero exacto para una etiqueta: «¤1.299.999» (cabeceras de las fichas, monedero, admin: donde se paga o se fija). */
     public static String moneyExact(long v) {
         return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);

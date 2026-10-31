@@ -107,6 +107,8 @@ public final class PadServer {
         APPS.put("ranking", PadRanking.APP);
         DATA_APPS.put("gachapon", net.tierrasfantasticas.tfclient.pad.server.PadGacha.APP);
         DATA_APPS.put("pase", net.tierrasfantasticas.tfclient.pad.server.PadPass.APP);
+        // (1.3.156) la guerra de clanes (la barra vertical doble: PadClanWarPage)
+        DATA_APPS.put("guerra", net.tierrasfantasticas.tfclient.pad.server.PadClanWar.APP);
         // pad de administrador (los a_* solo los abre el staff)
         APPS.put("a_apps", PadAdmin.APPS);
         APPS.put("a_ajustes", PadAdmin.SETTINGS);
@@ -131,6 +133,9 @@ public final class PadServer {
         STORES.add(PadHomes.STORE);
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPlayers.STORE);
         STORES.add(PadClans.STORE);
+        // (1.3.156) el banco y las guerras de los clanes
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadClanBank.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadClanWar.STORE);
         STORES.add(PadTitles.STORE);
         STORES.add(PadHelp.STORE);
         STORES.add(PadCommunityServer.STORE);
@@ -226,7 +231,7 @@ public final class PadServer {
             com.google.gson.JsonObject event = null;
             try {
                 event = d.action(player, action);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
                 TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
             }
@@ -243,7 +248,7 @@ public final class PadServer {
         String next = null;
         try {
             next = a.action(player, tab, action, text == null ? "" : text);
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
             TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
         }
@@ -258,7 +263,7 @@ public final class PadServer {
             com.google.gson.JsonObject data = d.data(player);
             if (event != null) data.add("evento", event);
             TFPadNet.sendData(player, app, data);
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: no se pudieron mandar los datos de {}", app, e);
         }
     }
@@ -277,7 +282,7 @@ public final class PadServer {
     private static void send(ServerPlayer player, App a, String tab) {
         try {
             TFPadNet.sendView(player, a.view(player, tab));
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: no se pudo dibujar una app", e);
         }
     }
@@ -317,7 +322,7 @@ public final class PadServer {
         for (Store s : STORES) {
             try {
                 s.load(server);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron cargar unos datos", e);
             }
         }
@@ -328,7 +333,7 @@ public final class PadServer {
         for (Store s : STORES) {
             try {
                 s.save(event.getServer());
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron guardar unos datos", e);
             }
         }
@@ -353,7 +358,7 @@ public final class PadServer {
             if (!s.dirty()) continue;
             try {
                 s.save(server);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron guardar unos datos", e);
             }
         }

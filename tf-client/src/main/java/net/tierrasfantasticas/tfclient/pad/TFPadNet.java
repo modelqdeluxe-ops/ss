@@ -142,10 +142,12 @@ public final class TFPadNet {
      * cliente usa esa (botón WEB del pad, del menú) y no la de su cliente.properties.
      */
     public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled, long green,
-                        String web) {
+                        String web, long clanCoins) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeLong(m.balance);
             buf.writeLong(m.green);
+            // (1.3.156) las Fantastic Clan Coins del clan (-1: no es líder ni colíder)
+            buf.writeLong(m.clanCoins);
             buf.writeUtf(m.currency, 64);
             buf.writeUtf(m.rank, 64);
             buf.writeInt(m.rankColor);
@@ -156,13 +158,13 @@ public final class TFPadNet {
         }
 
         static State read(FriendlyByteBuf buf) {
-            long balance = buf.readLong(), green = buf.readLong();
+            long balance = buf.readLong(), green = buf.readLong(), clanCoins = buf.readLong();
             String currency = buf.readUtf(64), rank = buf.readUtf(64);
             int color = buf.readInt(), homes = buf.readInt();
             List<String> off = new java.util.ArrayList<>();
             for (int i = buf.readVarInt(); i > 0; i--) off.add(buf.readUtf(32));
             String web = buf.readUtf(256);
-            return new State(balance, currency, rank, color, homes, off, green, web);
+            return new State(balance, currency, rank, color, homes, off, green, web, clanCoins);
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {
@@ -284,7 +286,8 @@ public final class TFPadNet {
                 rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
                 rank == null ? -1 : rank.homes(), PadConfig.disabledApps(),
                 net.tierrasfantasticas.tfclient.pad.server.PadGreen.balance(player.getUUID()),
-                "https://" + net.tierrasfantasticas.tfclient.server.TFBridge.storeHost());
+                "https://" + net.tierrasfantasticas.tfclient.server.TFBridge.storeHost(),
+                net.tierrasfantasticas.tfclient.pad.server.PadClanProgress.walletOf(player.getUUID()));
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), state);
     }
 

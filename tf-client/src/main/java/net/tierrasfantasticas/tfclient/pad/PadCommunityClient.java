@@ -386,17 +386,24 @@ final class PadCommunityClient {
 
     /** Prepara la foto (16:9, 1280x720 o, si pesa demasiado, 960x540, PNG) en segundo plano y la manda a trozos. */
     static void publish(Path file, String caption) {
+        publish(file, caption, null);
+    }
+
+    /** (1.3.155) Con un marco (PadPhotoFrames): se pega encima de la foto antes de subirla. */
+    static void publish(Path file, String caption, String frameId) {
         uploadStatus = "Preparando la foto...";
         uploadProgress = 0;
+        byte[] framePng = PadPhotoFrames.bytes(frameId);
         Util.backgroundExecutor().execute(() -> {
             byte[] png;
-            try (InputStream in = Files.newInputStream(file); NativeImage src = NativeImage.read(in)) {
+            try (InputStream in = Files.newInputStream(file); NativeImage src = NativeImage.read(in);
+                 NativeImage frame = framePng == null ? null : NativeImage.read(new ByteArrayInputStream(framePng))) {
                 // nunca más grande que la foto (si la pantalla era pequeña, a su tamaño)
                 int w = Math.min(PHOTO_W, Math.max(640, src.getWidth()));
-                png = encode(src, w, w * 9 / 16);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1600, 900);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1280, 720);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 960, 540);
+                png = encode(src, w, w * 9 / 16, frame);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1600, 900, frame);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 1280, 720, frame);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 960, 540, frame);
             } catch (Exception e) {
                 TFClient.LOGGER.warn("Comunidad: no se pudo preparar la foto", e);
                 Minecraft.getInstance().execute(() -> result(new PadCommunityNet.Result(false, "No se pudo leer la foto.")));
@@ -407,7 +414,7 @@ final class PadCommunityClient {
         });
     }
 
-    private static byte[] encode(NativeImage src, int w, int h) throws java.io.IOException {
+    private static byte[] encode(NativeImage src, int w, int h, NativeImage frame) throws java.io.IOException {
         // recorte centrado a 16:9
         int sw = src.getWidth(), sh = src.getHeight();
         int cw = sw, ch = sw * 9 / 16;
@@ -417,6 +424,7 @@ final class PadCommunityClient {
         }
         try (NativeImage out = new NativeImage(w, h, false)) {
             src.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, out);
+            if (frame != null) PadPhotoFrames.apply(out, frame);
             return out.asByteArray();
         }
     }

@@ -1,0 +1,50 @@
+[
+ {
+  "id": "noche",
+  "nombre": "Noche estrellada"
+ },
+ {
+  "id": "aurora",
+  "nombre": "Aurora boreal"
+ },
+ {
+  "id": "atardecer",
+  "nombre": "Atardecer"
+ },
+ {
+  "id": "bosque",
+  "nombre": "Bosque brumoso"
+ },
+ {
+  "id": "oceano",
+  "nombre": "Océano"
+ },
+ {
+  "id": "cerezos",
+  "nombre": "Cerezos"
+ },
+ {
+  "id": "galaxia",
+  "nombre": "Galaxia"
+ },
+ {
+  "id": "dunas",
+  "nombre": "Dunas"
+ },
+ {
+  "id": "islas",
+  "nombre": "Islas flotantes"
+ },
+ {
+  "id": "castillo",
+  "nombre": "Tierras Fantásticas"
+ },
+ {
+  "id": "nubes",
+  "nombre": "Mar de nubes"
+ },
+ {
+  "id": "fugaces",
+  "nombre": "Lluvia de estrellas"
+ }
+]

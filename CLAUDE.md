@@ -14,6 +14,9 @@
   La 1.3.99 está publicada; si hay que volver a tocar la cinemática, sigue `tf-client/CRATES-CONTINUAR.md`. El dueño
   juega con Oculus + Photon: las pruebas de la cinemática y del pad, con `[shaders=photon]` (1.3.106: Photon no arranca
   en la máquina de la prueba, pero con Oculus y Embeddium ya se ve lo que él ve; sin ellos, no).
+- Clanes (la app de clanes del pad, `/clan`, Clan Coins, misiones, banco, duelos, guerras): lee `tf-client/CLANES.md`
+  antes de tocarlos; ahí está lo que pidió el dueño literal, lo hecho y lo que falta (31 oct: 1.3.155 sin publicar, la
+  fase 2 a medias, y el dueño quiere **un solo parche con todo**: ver el CHECKPOINT del 31 oct de `HANDOFF.md`).
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
   comprobarlos sin abrir el juego).
 - **El motor de jefes tiene que ser fiel a MythicMobs/ModelEngine para TODOS los packs que metamos** (orden del dueño).

@@ -190,6 +190,125 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (31 oct 2026, TF Client 1.3.156: EL PARCHE ÚNICO) — lee esto primero
+
+**Una sola versión con todo lo pedido** (el dueño: «un solo parche con todo»): la caída del servidor por la GTS, las
+flags de spawn de las protecciones, lo de la 1.3.155 (planeo, fondo del menú del pad, marcos de fotos) y la
+actualización de clanes entera (fases 2–5). Detalle de los clanes: [`tf-client/CLANES.md`](tf-client/CLANES.md) §3.
+
+Respuestas del dueño en esta sesión: flags de spawn «solo que no aparezcan» (lo que ya estaba o entra andando se
+queda); «espero a tenerlo todo» (todas las fases en este parche); protecciones del clan de 50x50 y 120x120, 2 de cada
+una por clan y caras; en la tienda del juego, 1 protección de cada tipo por jugador; Clan Coins «como las del gacha, 1 o
+2 en las recompensas».
+
+1. **La GTS ya no tumba el servidor**: `PadMarket.listing` pide el tooltip dentro de `try/catch (Exception |
+   LinkageError)` (el Item Terminal de Pretty Pipes usa `Screen`, del cliente) y todos los `catch` de `pad/PadServer`
+   atrapan también `LinkageError`. Prueba `[prueba-jefes=arreglos]`: «gts 1 … sale la ficha (bien: el servidor sigue)» y
+   «gts 2 … el pad lo atrapa (bien)».
+2. **Flags de spawn** (`claims/event/EntityProtectionEvents`): una sola regla (`blockedBy`) para «sin monstruos» (ahora
+   también slimes, phantoms y los `Enemy` de otros mods), «ningún mob», «sin pasivos» y la global, en los cuatro puntos
+   por los que nace un mob: `SpawnPlacementCheck` (antes de crearlo, por su categoría), `PositionCheck`,
+   `FinalizeSpawn` y `EntityJoinLevel` (la red para el camino de Bukkit de Mohist: solo recién nacidos). Salen siempre
+   los de jugadores (huevo, cubo, crías, comandos) y las entidades del propio TF Client. Ya no borra los monstruos que
+   se cargan del disco. Prueba: cada flag × 7 tipos × 4 caminos «bien», y 40 s de spawn natural de noche por flag:
+   sin flag nacen dentro 45 hostiles y 11 pasivos; con «monstruos» 0 hostiles dentro; con «pasivos» 0 pasivos dentro;
+   con «todos» 0 dentro; con la global 0 en ningún sitio (fuera sí nacen: 89, 65, 88…).
+3. **Lo de la 1.3.155** (ver su CHECKPOINT abajo), sin cambios.
+4. **Clanes** (CLANES.md §3): Clan Coins de 1–2, paleta tipo Paint (`PadColorPicker`), banco del clan con su cofre
+   (`PadClanBank`, `tfclient:banco_clan`), guerras con la barra vertical doble (`PadClanWar`, `PadClanWarPage`), alianzas,
+   duelos (`/clan duelo`), tienda del clan, protecciones del clan y territorio, límite de protecciones en la tienda del
+   juego. Prueba `[prueba-jefes=clanes]` (commit `b4b1a011`): los 17 casos «bien» — objetivos de misiones y guerras
+   que cuentan con algo de verdad del juego; nivel 1→5 = +5 Clan Coins; misión cumplida +2, +35 prestigio y +1 verde;
+   potenciador 10 → 15; aliado +5 de cada 10; banco (128 piedra y 20 tierra dentro, la espada encantada fuera, sacar una
+   pila, mejora 5.000 → 10.000 por 2); tienda del clan (2 protecciones 50x50 de 3 intentos, 30 Clan Coins); la protección
+   del clan solo la pone el líder, sus miembros construyen y el rival no, título «Territorio de [PRB] Clan de Prueba»;
+   tienda del juego (1.ª protección 10x10 sí, 2.ª no); guerra declarada y aceptada, la barra doble dibuja 62 % y 35 %
+   (medido en la captura con PIL: 0,62 y 0,34 de su altura), al cumplirlo todo gana A con +2 Clan Coins, +150 y +1
+   verde; duelos (otro clan sí, mismo clan y sin clan no, con el PvP apagado el golpe del duelo pasa y deja 2 de vida,
+   +25 de prestigio y la misma pareja +0); PALETA abre `PadColorPicker` y GUARDAR deja #22b14c (medido: «Antes»
+   (88,169,252) ≈ #55AAFF, «Ahora» (37,175,80) ≈ #22B14C); el cofre lo da COFRE, se pone y abre el BANCO en el pad.
+   Capturas `00_clanes_clanes_1_miembros` … `17_cofre_abre_banco` en la rama `pruebas-jefes`. Lo único a pulir que se
+   vio (arreglado en `34dc5c68`): la barra de arriba no se refrescaba tras gastar Clan Coins, cabeceras que se cortaban y
+   ALIANZA con el clan enemigo. La barra de arriba: verde, azul (la Clan Coin, solo líder y colíderes) y oro, en ese
+   orden (medido).
+
+**Al publicar**: dile al dueño que **actualice también el jar del servidor** (el 31 oct iba por la 1.3.152): el arreglo
+de la GTS, las flags, los clanes y los bloques nuevos (cofre y protecciones del clan) son del servidor; un servidor
+viejo con clientes nuevos no tiene los bloques nuevos.
+
+### CHECKPOINT (31 oct 2026, TF Client 1.3.155 VERIFICADA SIN PUBLICAR + clanes a medias)
+
+**El dueño quiere UN SOLO PARCHE CON TODO** («deja ordenadito eso y que me entregue 1 solo parche con todo»): no
+publiques versiones sueltas. Una sola versión nueva (**1.3.156**: `mod_version` en `tf-client/gradle.properties` y
+`VERSION` en `TFClient.java`) con, en este orden de trabajo:
+1. el arreglo de la caída del servidor por la GTS (abajo);
+2. el arreglo de las flags de spawn de las protecciones (abajo);
+3. lo de la 1.3.155, que ya está hecho y probado (planeo, fondo del menú del pad, marcos de fotos; más abajo);
+4. la actualización de clanes ([`tf-client/CLANES.md`](tf-client/CLANES.md): terminar la fase 2 y seguir con las
+   siguientes). Si las fases 3–5 van a tardar mucho, pregúntale al dueño si espera a tenerlas o si el parche sale
+   con la fase 2.
+Todo probado en el juego por ti (`[prueba-jefes=…]`), un CHECKPOINT nuevo en este archivo y una sola Release.
+
+**Caída del servidor (31 oct 2026, 02:15; el dueño: «no le pongas nada, pon que la otra IA lo arregle»). Ya no es urgente:
+el dueño quitó esa venta de la GTS**, pero el fallo sigue en el código: cualquier otro objeto de un mod con un tooltip
+así vuelve a tumbar el servidor.
+El servidor del dueño (Mohist, con TF Client **1.3.152**, `tfclient (1).jar`) se cayó con «Exception in server tick
+loop»: `java.lang.NoClassDefFoundError: net/minecraft/client/gui/screens/Screen` en
+`de.ellpeck.prettypipes.Utility.addTooltip` ← `ItemTerminalBlock.appendHoverText` ← `ItemStack.getTooltipLines` ←
+**`pad/server/PadMarket.listing` (línea 208)** ← `PadMarket$App.view` ← `PadServer.send` ← `PadServer.action` ←
+`TFPadNet$Action.handle`. Es decir: alguien puso a la venta en la GTS un **Item Terminal de Pretty Pipes**, y al abrir
+esa venta en el pad el servidor pide el tooltip del objeto; el tooltip de Pretty Pipes usa `Screen.hasShiftDown()`, una
+clase que solo existe en el cliente, y el servidor revienta.
+Arreglo pedido (hazlo tú, no estaba hecho; va en el parche único):
+1. `PadMarket.listing`: la parte de «Lo que dice el objeto» (`getTooltipLines`) dentro de `try { … } catch (Exception |
+   LinkageError e)`; si falla, la ficha sale sin esas líneas. Es la única llamada a `getTooltipLines` del lado del
+   servidor (comprobado con grep).
+2. `pad/PadServer`: los `catch (Exception e)` de `action`, `sendData`, `send` y el tick (líneas ~229, 246, 261, 280,
+   320, 331, 356) no atrapan `Error` (NoClassDefFoundError es un `LinkageError`): ponlos como `catch (Exception |
+   LinkageError e)` para que ninguna app del pad pueda tumbar el servidor (sale «Error. Si se repite, avisa al staff.»).
+3. Al entregar el parche, dile al dueño que **actualice también el jar del servidor** (el 31 oct iba por la 1.3.152,
+   `tfclient (1).jar`) y no solo el de los jugadores. (Las ventas de la GTS se guardan en `gts.json` del mundo,
+   `TFJson.worldFile(server, "gts.json")`, por si hiciera falta quitar otra a mano con el servidor apagado.)
+
+**También del dueño (31 oct): «la flag de no mobs y la de pasivos no están funcionando; la de las claims también».**
+No está tocado; va en el parche único. Son las flags de spawn de las protecciones (`claims/`): «Sin spawn de mobs» (`MOB_SPAWN` →
+`ClaimFlags.blockMobSpawn`), «Sin ningún mob» (`ALL_MOB_SPAWN` → `blockAllMobSpawn`), «Sin pasivos»
+(`PASSIVE_MOB_SPAWN` → `blockPassiveMobSpawn`, página 3 del menú, `claims/gui/ClaimMenuHandler`) y la global
+«Sin spawn de mobs (global)» (`GlobalFlags.globalNoMobSpawn`, `AdminGlobalFlagsHandler` y `/tfclaims` admin). Todo se
+decide en `claims/event/EntityProtectionEvents`: `shouldBlockSpawn`, `onFinalizeSpawn` (`MobSpawnEvent.FinalizeSpawn`) y
+`onEntityJoin` (`EntityJoinLevelEvent`). Sospechas a comprobar (no verificadas):
+- `onEntityJoin` sale enseguida si el mob no es hostil (`ClaimMobs.hostile`): los pasivos y «ningún mob» solo se paran
+  en `FinalizeSpawn`; si en Mohist ese evento no llega por algún camino de spawn (Bukkit), no se para nada.
+- Con `flag = true` (FinalizeSpawn) «Sin spawn de mobs» solo para `Monster`: los hostiles que no lo son (slimes,
+  phantoms, `Enemy` de otros mods) pasan. Usa `ClaimMobs.hostile` en los dos sitios.
+- Las flags solo impiden que **aparezcan**: los mobs que ya estaban (`loadedFromDisk`) o que **entran andando** desde
+  fuera siguen ahí, y el dueño lo verá como «no funciona». Pregúntale si quiere que además se quiten/no entren
+  (p. ej. retirar cada pocos segundos los mobs sin dueño dentro de la zona, como hace `BURN_HOSTILES`).
+- Comprueba también que la flag se guarda y se lee (`Claim.java`, `blockAllMobSpawn`/`blockPassiveMobSpawn` en el JSON).
+Pruébalo tú en el juego (escenario de la prueba con una protección, cada flag puesta, esperar y contar mobs nuevos
+dentro, de noche y de día) antes de decir que está arreglado.
+
+**Estado de la rama** (el dueño pidió parar aquí): la 1.3.155 (abajo) está probada en el juego, sin fusionar; encima,
+el commit `d2f4bf5d` «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48
+insignias, ranking de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a
+paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).** Nada de esto se publica por separado: va todo en el parche único.
+
+
+El dueño: «el vuelo de los sets, quita que me quite hambre volar y quita esos 30 segundos: el planeo ilimitado como el de
+las élitras (los boost, no los toques)», «que pueda poner un fondo cualquiera en el pad, un png que se autoajuste, solo
+en el menú principal; que lo cambie en Ajustes; más fondos o colores» y «en el modo foto, una lista extensa de marcos».
+- **Planeo**: `items/TFWings.GLIDE_TICKS = Integer.MAX_VALUE` (sin límite) y `mixin/PlayerFoodWingsMixin` cancela
+  `Player.causeFoodExhaustion` mientras se planea con unas alas de set. Los impulsos siguen igual.
+- **Fondo del menú** (`pad/PadWallpaper`, `pad/PadWallpaperPage`, Ajustes › «Fondo del menú»): el del tema, 12 colores,
+  12 dibujados (`tools/pad/fondos.py` → `textures/gui/pad/fondos/`, `pad/fondos.json`) y los PNG del jugador en
+  `.minecraft/tfclient/fondos` (se cargan en segundo plano; >1920 px se reducen), recortados para cubrir el cristal.
+  Solo en el menú principal; las apps conservan el suyo. `PadSettings.wallpaper` (propiedad `fondo`).
+- **Marcos de fotos** (`pad/PadPhotoFrames`, `tools/pad/marcos.py`: 44 marcos en 1600×900, 640×360 y 256×144): se eligen
+  al escribir el texto de la foto en la cámara (columna de la derecha), se ven encima de la foto y se pegan al publicarla
+  (`PadCommunityClient.encode`).
+- Prueba `[prueba-jefes=pad]`: «marcos: … bien», «planeo: … hambre 0.00 → 0.00 … límite ninguno (bien)» y las capturas
+  `pad_fondo_*`, `pad_ajustes_fondo`, `pad_fondos_selector` y `pad_camara_marco`.
+
 ### CHECKPOINT (30 oct 2026, TF Client 1.3.154 y web) — lee esto primero
 
 **Web** (el dueño: «pon no disponibles las skills hasta un reajuste de la economía» y «garantía de 24 horas, ban de IP
