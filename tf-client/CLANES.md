@@ -13,7 +13,8 @@ Rama `claude/wizardly-euler-tw8ooy`, encima de `main` (que tiene la web de los T
    La segunda prueba `[prueba-jefes=pad]` (29bbc60b) dio: «marcos: … bien; 44 marcos», «planeo: hambre 0.00 → 0.00 al
    planear, 3.00 sin planear; límite ninguno (bien)», y las miniaturas de marcos y fondos ya sin el velo oscuro
    (medido: «Noche estrellada» (28,26,71), «Cerezos» (241,221,226)). Detalle en el CHECKPOINT 1.3.155 de `HANDOFF.md`.
-2. **Encima, un commit «WIP clanes fase 2» SIN TERMINAR** (los archivos de la §3). Los números de versión siguen en
+2. **Encima, el commit `d2f4bf5d` «WIP clanes fase 2» SIN TERMINAR** (los archivos de la §3). El último commit con
+   solo la 1.3.155 (y este documento) es `484bdf00`. Los números de versión siguen en
    1.3.155. Mira en el workflow `tf-client.yml` de ese commit si compila; si no, arréglalo primero.
 
 **Qué hacer primero:** termina la fase 2 (§3, «Falta»), súbela a **1.3.156** (`mod_version` en
