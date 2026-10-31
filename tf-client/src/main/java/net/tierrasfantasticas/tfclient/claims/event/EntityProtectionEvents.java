@@ -27,6 +27,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ambient.AmbientCreature;
@@ -49,6 +50,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public final class EntityProtectionEvents {
@@ -148,10 +150,6 @@ public final class EntityProtectionEvents {
         };
     }
 
-    private static boolean isPassiveAnimal(Mob mob) {
-        return mob instanceof Animal || mob instanceof WaterAnimal || mob instanceof AmbientCreature;
-    }
-
     private static boolean isPlayerOwnedMob(Mob mob) {
         if (!mob.hasCustomName() && !mob.isPersistenceRequired()) {
             AgeableMob ageablemob;
@@ -164,19 +162,77 @@ public final class EntityProtectionEvents {
         return true;
     }
 
-    private static boolean shouldBlockSpawn(Level level, BlockPos blockpos, Mob mob, boolean flag) {
-        if (GlobalFlags.getInstance().globalNoMobSpawn) {
-            return true;
+    // ------------------------------------------------------------------------------------------------------------
+    // (1.3.156) Las flags de spawn: «Sin spawn de mobs» (monstruos), «Sin ningún mob», «Sin pasivos» y la global
+    // «Sin spawn de mobs». El dueño (31 oct 2026): «la flag de no mobs y la de pasivos no están funcionando». Antes:
+    //  - «sin monstruos» solo paraba a los `Monster` (slimes, phantoms y los `Enemy` de otros mods pasaban);
+    //  - los pasivos, «ningún mob» y la global solo se paraban en FinalizeSpawn, que en Mohist no siempre cuenta (el
+    //    camino de Bukkit añade el mob sin mirar el «spawn cancelado» de Forge);
+    //  - y «sin monstruos» borraba también los que se cargaban del disco y los de huevos de spawn.
+    // Ahora una sola regla (`blockedBy`) en los cuatro puntos por los que nace un mob: antes de crearlo
+    // (SpawnPlacementCheck, por su categoría), al mirar el sitio (PositionCheck), al prepararlo (FinalizeSpawn) y al
+    // entrar en el mundo (EntityJoinLevel, solo los recién nacidos: lo que ya estaba o entra andando se queda, como
+    // pidió el dueño). Los que pone un jugador (huevo, cubo, cría, comando, dispensador) y los del motor de TF
+    // (jefes, NPC, fauna: BossEntity) salen siempre.
+    // ------------------------------------------------------------------------------------------------------------
+
+    /** Lo que se sabe del mob para decidir: si es hostil y si es un animal (pasivo). */
+    private static boolean hostileKind(Entity mob) {
+        return ClaimMobs.hostile(mob) || mob.getType().getCategory() == MobCategory.MONSTER;
+    }
+
+    private static boolean passiveKind(Entity mob) {
+        return mob instanceof Animal || mob instanceof WaterAnimal || mob instanceof AmbientCreature || passiveCategory(mob.getType().getCategory());
+    }
+
+    private static boolean passiveCategory(MobCategory c) {
+        return c == MobCategory.CREATURE || c == MobCategory.AMBIENT || c == MobCategory.AXOLOTLS || c == MobCategory.WATER_CREATURE
+                || c == MobCategory.WATER_AMBIENT || c == MobCategory.UNDERGROUND_WATER_CREATURE;
+    }
+
+    /**
+     * Qué flag impide que nazca un mob así en este sitio: "global", "todos", "pasivos", "monstruos" o null (ninguna).
+     * Público para la prueba en el juego (bosses/BossTest, escenario «spawn»).
+     */
+    public static String blockedBy(Level level, BlockPos pos, boolean hostile, boolean passive) {
+        if (GlobalFlags.getInstance().globalNoMobSpawn) return "global";
+        Claim claim = ClaimManager.getInstance().getClaimAt(level, pos);
+        if (claim == null) return null;
+        ClaimFlags f = claim.getFlags();
+        if (f.blockAllMobSpawn) return "todos";
+        if (passive && f.blockPassiveMobSpawn) return "pasivos";
+        if (hostile && (f.blockMobSpawn || f.publicMode)) return "monstruos";
+        return null;
+    }
+
+    private static boolean ourEngine(Entity e) {
+        return e instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity;
+    }
+
+    private static Level serverLevel(net.minecraft.world.level.ServerLevelAccessor accessor) {
+        return accessor.getLevel();
+    }
+
+    /** Antes de crear el mob (el spawn natural, el de los generadores y el del mundo nuevo): por su categoría. */
+    @SubscribeEvent
+    public void onSpawnPlacement(MobSpawnEvent.SpawnPlacementCheck event) {
+        if (EntityProtectionEvents.isPlayerDrivenSpawn(event.getSpawnType())) return;
+        MobCategory c = event.getEntityType().getCategory();
+        if (EntityProtectionEvents.blockedBy(EntityProtectionEvents.serverLevel(event.getLevel()), event.getPos(), c == MobCategory.MONSTER,
+                EntityProtectionEvents.passiveCategory(c)) != null) {
+            event.setResult(Event.Result.DENY);
         }
-        Claim claim = ClaimManager.getInstance().getClaimAt(level, blockpos);
-        if (claim == null) {
-            return false;
+    }
+
+    /** Al mirar si el sitio vale (spawn natural y generadores), ya con el mob creado. */
+    @SubscribeEvent
+    public void onPositionCheck(MobSpawnEvent.PositionCheck event) {
+        Mob mob = event.getEntity();
+        if (EntityProtectionEvents.isPlayerDrivenSpawn(event.getSpawnType()) || EntityProtectionEvents.ourEngine(mob)) return;
+        if (EntityProtectionEvents.blockedBy(EntityProtectionEvents.serverLevel(event.getLevel()), BlockPos.containing(event.getX(), event.getY(), event.getZ()),
+                EntityProtectionEvents.hostileKind(mob), EntityProtectionEvents.passiveKind(mob)) != null) {
+            event.setResult(Event.Result.DENY);
         }
-        ClaimFlags claimflags = claim.getFlags();
-        if (claimflags.blockAllMobSpawn) {
-            return true;
-        }
-        return claimflags.blockPassiveMobSpawn && EntityProtectionEvents.isPassiveAnimal(mob) ? true : flag && mob instanceof Monster && (claimflags.blockMobSpawn || claimflags.publicMode);
     }
 
     @SubscribeEvent
@@ -184,38 +240,28 @@ public final class EntityProtectionEvents {
         Mob mob = finalizespawn.getEntity();
         if (EntityProtectionEvents.isPlayerDrivenSpawn(finalizespawn.getSpawnType())) {
             mob.getPersistentData().putBoolean(SPAWN_OK_TAG, true);
-        } else {
-            ServerLevel serverlevel = finalizespawn.getLevel().getLevel();
-            if (EntityProtectionEvents.shouldBlockSpawn((Level)serverlevel, BlockPos.containing((double)finalizespawn.getX(), (double)finalizespawn.getY(), (double)finalizespawn.getZ()), mob, true)) {
+        } else if (!EntityProtectionEvents.ourEngine(mob)) {
+            Level level = EntityProtectionEvents.serverLevel(finalizespawn.getLevel());
+            if (EntityProtectionEvents.blockedBy(level, BlockPos.containing(finalizespawn.getX(), finalizespawn.getY(), finalizespawn.getZ()),
+                    EntityProtectionEvents.hostileKind(mob), EntityProtectionEvents.passiveKind(mob)) != null) {
                 finalizespawn.setSpawnCancelled(true);
                 finalizespawn.setCanceled(true);
             }
         }
     }
 
+    /**
+     * La última red: al entrar en el mundo un mob recién nacido (no cargado del disco). Para lo que se salta los
+     * eventos de arriba (el camino de Bukkit en Mohist, mods que añaden el mob sin prepararlo). Lo que pone un jugador
+     * lleva la marca de FinalizeSpawn; las crías y los mobs con dueño, nombre o que no desaparecen, salen siempre.
+     */
     @SubscribeEvent
-    public void onEntityJoin(EntityJoinLevelEvent entityjoinlevelevent) {
-        Entity entity;
-        Level level = entityjoinlevelevent.getLevel();
-        if (!level.isClientSide() && (entity = entityjoinlevelevent.getEntity()) instanceof Mob) {
-            Mob mob = (Mob)entity;
-            if (mob.tickCount == 0) {
-                Claim claim;
-                if (!(mob instanceof Monster) || (claim = ClaimManager.getInstance().getClaimAt(level, mob.blockPosition())) == null || !claim.getFlags().blockMobSpawn && !claim.getFlags().publicMode) {
-                    if (!ClaimMobs.hostile(mob)) {
-                        return;
-                    }
-                    if (!(entityjoinlevelevent.loadedFromDisk() || mob.getPersistentData().getBoolean(SPAWN_OK_TAG) || EntityProtectionEvents.isPlayerOwnedMob(mob))) {
-                        if (EntityProtectionEvents.shouldBlockSpawn(level, mob.blockPosition(), mob, false)) {
-                            entityjoinlevelevent.setCanceled(true);
-                        }
-                        return;
-                    }
-                    return;
-                }
-                entityjoinlevelevent.setCanceled(true);
-                return;
-            }
+    public void onEntityJoin(EntityJoinLevelEvent event) {
+        Level level = event.getLevel();
+        if (level.isClientSide() || event.loadedFromDisk() || !(event.getEntity() instanceof Mob mob) || mob.tickCount != 0) return;
+        if (EntityProtectionEvents.ourEngine(mob) || mob.getPersistentData().getBoolean(SPAWN_OK_TAG) || EntityProtectionEvents.isPlayerOwnedMob(mob)) return;
+        if (EntityProtectionEvents.blockedBy(level, mob.blockPosition(), EntityProtectionEvents.hostileKind(mob), EntityProtectionEvents.passiveKind(mob)) != null) {
+            event.setCanceled(true);
         }
     }
 

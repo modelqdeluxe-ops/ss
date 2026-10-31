@@ -249,7 +249,7 @@ public final class BossTest {
         }
     }
 
-    private static void command(MinecraftServer server, String cmd) {
+    static void command(MinecraftServer server, String cmd) {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd);
     }
 
@@ -289,7 +289,9 @@ public final class BossTest {
             if (only != null && List.of(only.split(",")).contains("clave")) ids.add(0, "clave");
             // (1.3.150) «encantar» (mesa, yunque y piedra de afilar con las piezas de los sets), «protes» (nombre, ir a la
             // zona y el módulo PROTECCIONES del pad de admin) y «cumple» (la fiesta de /tf cumpleaños)
-            for (String extra : new String[] {"encantar", "protes", "cumple"}) {
+            // (1.3.156) «arreglos»: la ficha de la GTS con un tooltip que falla (Pretty Pipes) y las flags de spawn de las
+            // protecciones; «clanes»: Clan Coins, nivel, misiones, insignias, paleta, banco, duelos, guerras, alianzas y tienda
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -311,7 +313,7 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id))
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -374,6 +376,14 @@ public final class BossTest {
         }
         if ("cumple".equals(r.id)) {
             if (!waitShot) cumpleStep(server, level, player, r);
+            return;
+        }
+        if ("arreglos".equals(r.id)) {
+            if (!waitShot) BossTestFixes.step(t, server, level, player, r);
+            return;
+        }
+        if ("clanes".equals(r.id)) {
+            if (!waitShot) BossTestClanes.step(t, server, level, player, r);
             return;
         }
         switch (phase) {
@@ -3881,12 +3891,17 @@ public final class BossTest {
         if (r != null) shot(r, what);
     }
 
-    private static void shot(Rep r, String what) {
+    /** La arena de este escenario (para las pruebas de otras clases: BossTestFixes, BossTestClanes). */
+    static Vec3 arena() {
+        return arena;
+    }
+
+    static void shot(Rep r, String what) {
         SHOTS_PENDING.add(String.format("%02d_%s_%s", index, r.id, what));
     }
 
     /** Recoge la arena y pasa al siguiente jefe (o acaba). */
-    private static void next(ServerLevel level) {
+    static void next(ServerLevel level) {
         if (rift != null) {
             Rifts.remove(rift.id);
             AABB box = new AABB(arena, arena).inflate(96);

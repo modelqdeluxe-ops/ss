@@ -226,7 +226,7 @@ public final class PadServer {
             com.google.gson.JsonObject event = null;
             try {
                 event = d.action(player, action);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
                 TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
             }
@@ -243,7 +243,7 @@ public final class PadServer {
         String next = null;
         try {
             next = a.action(player, tab, action, text == null ? "" : text);
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
             TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
         }
@@ -258,7 +258,7 @@ public final class PadServer {
             com.google.gson.JsonObject data = d.data(player);
             if (event != null) data.add("evento", event);
             TFPadNet.sendData(player, app, data);
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: no se pudieron mandar los datos de {}", app, e);
         }
     }
@@ -277,7 +277,7 @@ public final class PadServer {
     private static void send(ServerPlayer player, App a, String tab) {
         try {
             TFPadNet.sendView(player, a.view(player, tab));
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
             TFClient.LOGGER.error("TF Pad: no se pudo dibujar una app", e);
         }
     }
@@ -317,7 +317,7 @@ public final class PadServer {
         for (Store s : STORES) {
             try {
                 s.load(server);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron cargar unos datos", e);
             }
         }
@@ -328,7 +328,7 @@ public final class PadServer {
         for (Store s : STORES) {
             try {
                 s.save(event.getServer());
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron guardar unos datos", e);
             }
         }
@@ -353,7 +353,7 @@ public final class PadServer {
             if (!s.dirty()) continue;
             try {
                 s.save(server);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 TFClient.LOGGER.error("TF Pad: no se pudieron guardar unos datos", e);
             }
         }

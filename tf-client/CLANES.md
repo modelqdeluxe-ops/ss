@@ -30,6 +30,16 @@ Cómo publicar (siempre igual): PR borrador de la rama a `main` → listo → sq
 `git fetch origin main && git checkout -B claude/wizardly-euler-tw8ooy origin/main && git push --force-with-lease -u origin claude/wizardly-euler-tw8ooy`
 (si tienes cambios sin subir, guárdalos antes con `git stash -u` y recupéralos después).
 
+### Respuestas del dueño (31 oct 2026, sesión del parche 1.3.156)
+
+- **Flags de spawn**: «solo que no aparezcan» (no quitar los mobs que ya estaban ni los que entran andando).
+- **Fases 3–5**: «espero a tenerlo todo»: la 1.3.156 lleva TODO (fase 2, banco, duelos, guerras, alianzas, tienda y
+  territorio).
+- **Tienda del clan**: protecciones del clan de **50×50 y 120×120**, como mucho **2 de cada una por clan**, «caras, no
+  regaladas». Y **en la tienda del juego (monedas amarillas) cada jugador solo puede comprar 1 protección de cada tipo**.
+- **Clan Coins sin inflar**: «no pongas esa moneda inflada, que sea como las de gacha: 1 o 2 máximo en recompensas».
+  Todo lo que da Clan Coins da 1–2 y los precios de la tienda/banco van en esa escala.
+
 ## 1. Lo que pidió el dueño (literal, para no perder nada)
 
 > Meteremos un nuevo coin, este sera azul, pero este sera llamado Fantastic Clan Coin, y solo lo tendra el lider y el
