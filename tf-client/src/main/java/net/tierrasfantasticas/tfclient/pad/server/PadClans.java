@@ -476,11 +476,18 @@ public final class PadClans {
                 }
                 return null;
             }
-            // (1.3.156) banco, guerra, alianzas y tienda del clan
-            if (action.startsWith("banco.")) return PadClanBank.action(player, id, c, action);
-            if (action.startsWith("guerra.")) return PadClanWar.action(player, id, c, action);
-            if (action.startsWith("alianza.")) return PadClanAlliances.action(player, id, c, action);
-            if (action.startsWith("tienda.")) return PadClanShop.action(player, id, c, action);
+            // (1.3.156) banco, guerra, alianzas y tienda del clan (y la barra de arriba al día: las Clan Coins cambian)
+            String routed = null;
+            boolean clanAction = true;
+            if (action.startsWith("banco.")) routed = PadClanBank.action(player, id, c, action);
+            else if (action.startsWith("guerra.")) routed = PadClanWar.action(player, id, c, action);
+            else if (action.startsWith("alianza.")) routed = PadClanAlliances.action(player, id, c, action);
+            else if (action.startsWith("tienda.")) routed = PadClanShop.action(player, id, c, action);
+            else clanAction = false;
+            if (clanAction) {
+                if (!(player instanceof net.minecraftforge.common.util.FakePlayer)) TFPadNet.sendState(player);
+                return routed;
+            }
             int colon = action.indexOf(':');
             String verb = colon < 0 ? action : action.substring(0, colon);
             UUID target = null;

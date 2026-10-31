@@ -69,8 +69,8 @@ final class PadClanViews {
         long day = net.tierrasfantasticas.tfclient.util.TFRotation.day();
         long left = 7 - Math.floorMod(day, 7);
         b.hero(hero(c, player.getUUID()));
-        b.header("Misiones del clan de esta semana (cambian en " + left + (left == 1 ? " día" : " días") + "): cuentan entre todos"
-                + (PadClans.allies(c).isEmpty() ? "." : "; los aliados suman la mitad de lo suyo."));
+        b.header("Misiones de la semana (quedan " + left + (left == 1 ? " día" : " días") + ")"
+                + (PadClans.allies(c).isEmpty() ? ", entre todo el clan." : ", con la ayuda de los aliados."));
         JsonArray list = ms.has("lista") ? ms.getAsJsonArray("lista") : new JsonArray();
         for (JsonElement e : list) {
             JsonObject o = e.getAsJsonObject();
@@ -106,7 +106,7 @@ final class PadClanViews {
         int cur = PadClans.rgbOf(c);
         String tag = TFJson.str(c, "etiqueta", "?");
         String hex = String.format("%06X", cur);
-        b.header("La etiqueta [" + tag + "] y la insignia del clan. PALETA abre la paleta de colores; abajo, un color escrito.");
+        b.header("La etiqueta [" + tag + "] y la insignia. PALETA abre la paleta de colores.");
         b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "[" + tag + "]", cur,
                 List.of("Así se ve al lado de vuestros nombres.", "#" + hex + " · insignia: " + PadClanProgress.badge(c).name()), -1, "",
                 PadView.Btn.of("PALETA", "§color:clanes:estilo:" + hex + ":" + tag, PadView.GOLD), null)

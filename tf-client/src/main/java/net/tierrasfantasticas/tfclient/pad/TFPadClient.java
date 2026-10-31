@@ -178,6 +178,11 @@ public final class TFPadClient {
         PadColorPicker.testColor = rgb;
     }
 
+    /** (1.3.156) Prueba «clanes»: las Clan Coins que enseña la barra de arriba del pad (-1: ninguna). */
+    public static long clanCoinsForTest() {
+        return state == null ? -2 : state.clanCoins();
+    }
+
     /** (1.3.156) Prueba «clanes»: qué página del pad está abierta (para el informe). */
     public static String pageForTest() {
         return Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() != null ? pad.page().getClass().getSimpleName() : "ninguna";

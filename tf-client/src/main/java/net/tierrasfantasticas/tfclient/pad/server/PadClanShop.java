@@ -72,8 +72,7 @@ final class PadClanShop {
         UUID me = player.getUUID();
         boolean treasurer = PadClanProgress.treasurer(c, me);
         long coins = PadClanProgress.coins(c);
-        b.header(treasurer ? "Se paga con las Fantastic Clan Coins del clan (las ganan las misiones, los niveles y las guerras). El clan tiene "
-                + coins + "." : "La tienda del clan la usan el líder y los colíderes, con las Clan Coins del clan.");
+        b.header(treasurer ? "Se paga con las Clan Coins del clan: tenéis " + coins + "." : "La tienda la usan el líder y los colíderes.");
         for (Offer o : OFFERS) {
             int n = bought(c, o.key());
             List<String> lines = new ArrayList<>();

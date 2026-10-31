@@ -232,8 +232,8 @@ public final class PadClanBank {
             b.footer(PadView.Btn.of("ATRÁS", "banco.volver", PadView.BLUE));
             return b.build();
         }
-        b.header(take ? "Pulsa un objeto del banco para sacar una pila. Abajo, lo que llevas: METER guarda todo lo de ese tipo."
-                : "Abajo, lo que llevas: METER guarda todo lo de ese tipo en el banco del clan.");
+        b.header(take ? "Pulsa un objeto para sacar una pila; METER guarda lo que llevas."
+                : "METER guarda en el banco lo que llevas (todo lo de ese tipo).");
         // lo guardado, de más a menos
         List<Map.Entry<String, JsonElement>> stored = new ArrayList<>(items(bank).entrySet());
         stored.sort((x, y) -> Long.compare(y.getValue().getAsLong(), x.getValue().getAsLong()));

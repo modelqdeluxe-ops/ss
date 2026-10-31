@@ -399,9 +399,8 @@ public final class PadClanWar {
                     List.of("La última guerra: " + Math.round(progress(lastWar, side) * 100) + " % a " + Math.round(progress(lastWar, side.equals("A") ? "B" : "A") * 100) + " %."),
                     -1, "", PadView.Btn.of("VER", "§guerra", PadView.BLUE), null).image(PadClanProgress.badge(c).image()));
         }
-        b.header(w != null ? "La guerra: objetivos de equipo durante " + DAYS + " días. Premio: " + WIN_COINS + " Clan Coins, " + WIN_PRESTIGE
-                + " de prestigio y una verde a cada uno que aporte."
-                : officer ? "Declara la guerra a otro clan (no es PvP: gana quien antes cumpla los objetivos). Y las alianzas: suman la mitad de lo suyo a vuestras misiones."
+        b.header(w != null ? "Guerra de objetivos (" + DAYS + " días): " + WIN_COINS + " Clan Coins y " + WIN_PRESTIGE + " de prestigio."
+                : officer ? "Declara la guerra (por objetivos, no PvP) o propón una alianza."
                 : "Las guerras y alianzas las deciden el líder y los colíderes.");
         // declaraciones que nos llegan
         for (JsonObject p : incoming(id)) {
@@ -428,7 +427,8 @@ public final class PadClanWar {
                 boolean ally = PadClans.allies(c).contains(oid);
                 boolean busy = active(oid) != null;
                 PadView.Btn war = w == null && !ally && !busy ? PadView.Btn.of("GUERRA", "guerra.declarar:" + oid, PadView.RED) : null;
-                PadView.Btn al = !ally && PadClans.allies(c).size() < PadClanAlliances.MAX && PadClans.allies(oc).size() < PadClanAlliances.MAX
+                boolean enemy = w != null && oid.equals(TFJson.str(w, side(w, id).equals("A") ? "b" : "a", ""));
+                PadView.Btn al = !ally && !enemy && PadClans.allies(c).size() < PadClanAlliances.MAX && PadClans.allies(oc).size() < PadClanAlliances.MAX
                         ? PadView.Btn.of("ALIANZA", "alianza.proponer:" + oid, PadView.GREEN) : null;
                 b.row(new PadView.Row(new ItemStack(Items.WHITE_BANNER), label(oc), PadClans.rgbOf(oc),
                         List.of("Nivel " + PadClanProgress.level(oc) + " · " + PadClans.members(oc).size() + " miembros · " + PadClanViews.fmt(PadClanProgress.prestige(oc))

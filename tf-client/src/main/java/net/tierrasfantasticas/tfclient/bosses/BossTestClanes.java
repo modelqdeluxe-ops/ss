@@ -162,7 +162,11 @@ final class BossTestClanes {
                         + (cob == 128 && dirt == 20 && swordIn == 0 && cob2 == 64 && back == 64 && cap1 == cap0 + 5000 && c0 - c1 == 2 ? " (bien)" : " (MAL)"));
                 BossTest.openPad = "clanes/banco";
             }
-            case 160 -> BossTest.shot(r, "clanes_3_banco");
+            case 160 -> {
+                BossTest.shot(r, "clanes_3_banco");
+                long bar = TFPadClient.clanCoinsForTest(), real = PadClanProgress.testStats(A)[0];
+                r.event("clanes 6b (la barra de arriba tras pagar la mejora): ¢" + bar + ", el clan tiene " + real + (bar == real ? " (bien)" : " (MAL)"));
+            }
             case 162 -> BossTest.openPad = "clanes/banco_reg";
             case 210 -> BossTest.shot(r, "clanes_4_banco_registro");
             case 212 -> {
