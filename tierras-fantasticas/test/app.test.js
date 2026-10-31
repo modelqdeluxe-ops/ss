@@ -1936,6 +1936,17 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
   const triedId = (await tried.json()).id;
   assert.match(triedId, /^TEST[0-9A-Z]+$/);
   assert.strictEqual((await refund(triedId)).status, 200);
+  // (31 oct 2026) también los efectos VFX y las clases de skills (no llevan comandos): quedan en su cuenta
+  const catalog = await (await get('/api/products')).json();
+  const fxId = catalog.find((p) => p.category === 'vfx')?.id;
+  const clsId = catalog.find((p) => p.category === 'skills')?.id;
+  assert.ok(fxId && clsId, 'hay efectos y skills en el catálogo');
+  for (const pid of [fxId, clsId]) {
+    const r = await tryIt({ productId: pid, username: 'Staff_MC' });
+    assert.strictEqual(r.status, 200, pid);
+    const quote = (await (await get(`/api/player/Staff_MC?product=${pid}`)).json()).quote;
+    assert.ok(quote?.blocked, `${pid} dado de prueba: ya lo tiene`);
+  }
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
 });
 
