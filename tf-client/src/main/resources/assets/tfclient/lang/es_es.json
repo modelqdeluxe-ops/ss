@@ -1260,5 +1260,11 @@
  "item.tfclient.void_armor_boots": "Botas del Coloso del Vacío",
  "tfclient.set.void": "Coloso del Vacío",
  "item.tfclient.npc_panel": "Panel de NPC",
- "entity.tfclient.npc": "NPC de escena"
+ "entity.tfclient.npc": "NPC de escena",
+ "item.tfclient.proteccion_clan_50x50": "Protección del clan 50x50",
+ "block.tfclient.proteccion_clan_50x50": "Protección del clan 50x50",
+ "item.tfclient.proteccion_clan_120x120": "Protección del clan 120x120",
+ "block.tfclient.proteccion_clan_120x120": "Protección del clan 120x120",
+ "block.tfclient.banco_clan": "Banco del clan",
+ "item.tfclient.banco_clan": "Banco del clan"
 }

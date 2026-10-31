@@ -25,6 +25,14 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 final class PadClanViews {
     private PadClanViews() {}
 
+    /** «3 d 4 h», «5 h 12 min», «8 min». */
+    static String until(long ms) {
+        long m = Math.max(0, ms / 60000), h = m / 60, d = h / 24;
+        if (d > 0) return d + " d " + (h % 24) + " h";
+        if (h > 0) return h + " h " + (m % 60) + " min";
+        return Math.max(1, m) + " min";
+    }
+
     static String fmt(double v) {
         return java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(Math.round(v));
     }
@@ -38,9 +46,14 @@ final class PadClanViews {
         long xp = PadClanProgress.xp(c), need = PadClanProgress.xpFor(lvl);
         boolean max = lvl >= PadClanProgress.MAX_LEVEL;
         int n = PadClans.members(c).size();
-        List<String> lines = List.of(
+        List<String> lines = new ArrayList<>(List.of(
                 "Nivel " + lvl + (max ? " (el máximo)" : " · " + fmt(xp) + " de " + fmt(need) + " XP para el " + (lvl + 1)),
-                "Prestigio " + fmt(PadClanProgress.prestige(c)) + " · " + n + "/" + PadClanProgress.maxMembers(c) + " miembros");
+                "Prestigio " + fmt(PadClanProgress.prestige(c)) + " · " + n + "/" + PadClanProgress.maxMembers(c) + " miembros"));
+        // (1.3.156) los aliados, la guerra y el potenciador, si los hay
+        List<String> extra = new ArrayList<>();
+        for (String a : PadClans.allies(c)) extra.add("aliado de [" + TFJson.str(PadClans.clan(a), "etiqueta", "?") + "]");
+        if (PadClanProgress.boosted(c)) extra.add("misiones x1,5");
+        if (!extra.isEmpty()) lines.add(String.join(" · ", extra));
         String coins = PadClanProgress.treasurer(c, me) ? PadView.clanCoins(PadClanProgress.coins(c)) : "";
         return new PadView.Row(new ItemStack(Items.WHITE_BANNER), TFJson.str(c, "nombre", "?") + " [" + TFJson.str(c, "etiqueta", "?") + "]",
                 PadClans.rgbOf(c), lines, max ? 1F : (float) Math.min(1.0, xp / (double) need), coins, null, null)

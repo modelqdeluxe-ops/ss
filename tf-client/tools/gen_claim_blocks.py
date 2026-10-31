@@ -40,8 +40,12 @@ TIERS = [
     ("250x250", (240, 66, 66)),
     ("300x300", (255, 146, 40)),
     ("500x500", (255, 212, 70)),
+    # (1.3.156) las protecciones del clan (tienda del clan, con Clan Coins): azul de la Clan Coin, plata azulada y ónice
+    ("clan_50x50", (92, 178, 255)),
+    ("clan_120x120", (60, 120, 255)),
 ]
 PAID = {"250x250", "300x300", "500x500"}
+CLAN = {"clan_50x50", "clan_120x120"}
 
 # las letras TF (6 de ancho cada una, 2 de hueco, 10 de alto)
 GLYPH_T = ["######", "######", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##.."]
@@ -94,20 +98,24 @@ METALS = {
     "cobre": ((74, 36, 26), (128, 64, 40), (178, 98, 58), (222, 140, 88), (250, 198, 152)),
     "hierro": ((50, 52, 60), (96, 100, 110), (150, 155, 165), (200, 204, 212), (240, 242, 246)),
     "oro": ((92, 56, 16), (156, 104, 28), (214, 160, 46), (244, 206, 86), (255, 244, 178)),
+    "plata": ((30, 44, 74), (70, 92, 132), (128, 152, 196), (186, 206, 236), (236, 244, 255)),
 }
 STONES = {
     "pizarra": ((18, 20, 26), (28, 31, 39), (39, 43, 53), (53, 58, 70), (74, 80, 95)),
     "basalto": ((20, 17, 21), (30, 26, 31), (42, 37, 43), (57, 50, 57), (80, 72, 78)),
+    "onice": ((10, 14, 30), (17, 23, 44), (26, 34, 60), (38, 48, 80), (58, 70, 108)),
 }
 
 
 def metal_of(label):
+    if label in CLAN:
+        return METALS["plata"]
     size = int(label.split("x")[0])
     return METALS["oro"] if label in PAID else METALS["cobre"] if size <= 40 else METALS["hierro"]
 
 
 def stone_of(label):
-    return STONES["basalto"] if label in PAID else STONES["pizarra"]
+    return STONES["onice"] if label in CLAN else STONES["basalto"] if label in PAID else STONES["pizarra"]
 
 
 # El escudo: medio ancho de cada fila (16 de ancho, 20 de alto, centrado en el panel)

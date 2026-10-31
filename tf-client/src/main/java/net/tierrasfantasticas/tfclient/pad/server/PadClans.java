@@ -50,7 +50,6 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadClans {
-    static final int MAX_MEMBERS = 20;
     private static final String[] COLORS = {"gold", "aqua", "green", "light_purple", "red", "yellow", "blue", "white"};
     private static final String[] COLOR_NAMES = {"Oro", "Celeste", "Verde", "Rosa", "Rojo", "Amarillo", "Azul", "Blanco"};
 
@@ -155,6 +154,25 @@ public final class PadClans {
             online.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.MASTER, 0.6F, 1.2F);
         }
         TFPadNet.notice(player, "Invitación al clan enviada a " + otherName + ".");
+    }
+
+    /**
+     * (1.3.156) ¿Gestiona ese jugador el territorio del clan (las protecciones del clan)? El líder y los colíderes, como
+     * dueños de la zona (Claim.isOwner).
+     */
+    public static boolean managesTerritory(String clanId, UUID uuid) {
+        JsonObject c = clanId == null ? null : clan(clanId);
+        return c != null && members(c).contains(uuid) && PadClanProgress.treasurer(c, uuid);
+    }
+
+    /** (1.3.156) Lo que sale al entrar en el territorio de un clan: «Territorio de [TAG]» con su color (null si ya no está). */
+    public static Component territoryTitle(String clanId) {
+        JsonObject c = clan(clanId);
+        if (c == null) return null;
+        var color = net.minecraft.network.chat.Style.EMPTY.withColor(net.minecraft.network.chat.TextColor.fromRgb(rgbOf(c)));
+        return Component.literal("Territorio de ").withStyle(ChatFormatting.WHITE)
+                .append(Component.literal("[" + TFJson.str(c, "etiqueta", "?") + "] ").withStyle(color.withBold(true)))
+                .append(Component.literal(TFJson.str(c, "nombre", "")).withStyle(color));
     }
 
     /** (1.3.156) Los clanes aliados (alianza aceptada por los dos): sus misiones se ayudan. */
@@ -340,14 +358,29 @@ public final class PadClans {
             String myRole = role(c, me);
             boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("colider");
             List<UUID> list = members(c);
-            // (1.3.156) MISIONES del clan y ESTILO (insignia y color, con la paleta del pad) en lugar de COLOR
-            PadView.Builder b = PadView.of("clanes").tab("miembros", "MIEMBROS").tab("misiones", "MISIONES");
+            // (1.3.156) MISIONES del clan, BANCO, GUERRA (y alianzas), TIENDA (Clan Coins) y ESTILO (insignia y color, con la
+            // paleta del pad) en lugar de COLOR
+            PadView.Builder b = PadView.of("clanes").tab("miembros", "MIEMBROS").tab("misiones", "MISIONES").tab("banco", "BANCO")
+                    .tab("guerra", "GUERRA");
+            if (officer) b.tab("tienda", "TIENDA");
             if (boss) b.tab("estilo", "ESTILO");
             if (boss) b.tab("ajustes", "AJUSTES");
             boolean settings = boss && tab.equals("ajustes");
             if (tab.equals("misiones")) {
                 b.selected("misiones");
                 return PadClanViews.missions(b, player, id, c);
+            }
+            if (tab.equals("banco") || tab.equals("banco_reg")) {
+                b.selected("banco");
+                return PadClanBank.view(b, player, id, c, tab.equals("banco_reg"));
+            }
+            if (tab.equals("guerra")) {
+                b.selected("guerra");
+                return PadClanWar.view(b, player, id, c);
+            }
+            if (officer && tab.equals("tienda")) {
+                b.selected("tienda");
+                return PadClanShop.view(b, player, id, c);
             }
             if (boss && (tab.equals("estilo") || tab.equals("color"))) {
                 b.selected("estilo");
@@ -369,6 +402,11 @@ public final class PadClans {
                 b.row(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Los veteranos invitan", 0x18265C,
                         List.of(vi ? "Invitan el líder, los colíderes y los veteranos." : "Solo invitan el líder y los colíderes."), -1, "",
                         PadView.Btn.of(vi ? "SÍ" : "NO", "vetinv", vi ? PadView.GREEN : PadView.RED), null));
+                // (1.3.156) el banco del clan: quién saca
+                boolean vb = TFJson.bool(c, "veteranosSacan", false);
+                b.row(new PadView.Row(new ItemStack(Items.CHEST), "Los veteranos sacan del banco", 0x18265C,
+                        List.of(vb ? "Sacan del banco el líder, los colíderes y los veteranos." : "Solo sacan del banco el líder y los colíderes (meten todos)."),
+                        -1, "", PadView.Btn.of(vb ? "SÍ" : "NO", "vetbanco", vb ? PadView.GREEN : PadView.RED), null));
                 boolean sure = confirming(me, "disolver");
                 b.footer(PadView.Btn.of(sure ? "¿SEGURO? DISOLVER" : "DISOLVER CLAN", "disolver", PadView.RED));
                 return b.build();
@@ -438,6 +476,11 @@ public final class PadClans {
                 }
                 return null;
             }
+            // (1.3.156) banco, guerra, alianzas y tienda del clan
+            if (action.startsWith("banco.")) return PadClanBank.action(player, id, c, action);
+            if (action.startsWith("guerra.")) return PadClanWar.action(player, id, c, action);
+            if (action.startsWith("alianza.")) return PadClanAlliances.action(player, id, c, action);
+            if (action.startsWith("tienda.")) return PadClanShop.action(player, id, c, action);
             int colon = action.indexOf(':');
             String verb = colon < 0 ? action : action.substring(0, colon);
             UUID target = null;
@@ -471,6 +514,11 @@ public final class PadClans {
                 case "vetinv" -> {
                     if (!boss) return null;
                     c.addProperty("veteranosInvitan", !TFJson.bool(c, "veteranosInvitan", true));
+                    STORE_IMPL.changed();
+                }
+                case "vetbanco" -> {
+                    if (!boss) return null;
+                    c.addProperty("veteranosSacan", !TFJson.bool(c, "veteranosSacan", false));
                     STORE_IMPL.changed();
                 }
                 case "echar" -> {
@@ -517,6 +565,10 @@ public final class PadClans {
                         refreshName(u);
                     }
                     clans().remove(id);
+                    // (1.3.156) su banco, su guerra y sus alianzas se van con él
+                    PadClanBank.forget(id);
+                    PadClanWar.clanGone(id);
+                    PadClanAlliances.clanGone(id);
                     STORE_IMPL.changed();
                     return "";
                 }
@@ -692,6 +744,56 @@ public final class PadClans {
         return out.toString();
     }
 
+    /** (1.3.156) Para la prueba en el juego: un clan con ese líder y esos miembros (de mentira o de verdad). */
+    public static void testClan(String id, String name, String tag, UUID leader, List<UUID> members, String color) {
+        JsonObject c = new JsonObject();
+        c.addProperty("nombre", name);
+        c.addProperty("etiqueta", tag);
+        c.addProperty("color", color);
+        c.addProperty("lider", leader.toString());
+        List<UUID> all = new ArrayList<>(members);
+        if (!all.contains(leader)) all.add(0, leader);
+        setMembers(c, all);
+        clans().add(id, c);
+        for (UUID u : all) join(u, id);
+        STORE_IMPL.changed();
+    }
+
+    /** (1.3.156) Para la prueba: el nombre de un jugador de mentira (para las listas). */
+    public static void testName(UUID uuid, String name) {
+        PadStats.STORE_IMPL.player(uuid).addProperty("nombre", name);
+        PadStats.STORE_IMPL.changed();
+    }
+
+    /** (1.3.156) Para la prueba: quita un clan (y a sus miembros de él). */
+    public static void testRemove(String id) {
+        JsonObject c = clan(id);
+        if (c == null) return;
+        for (UUID u : members(c)) leave(u);
+        clans().remove(id);
+        PadClanBank.forget(id);
+        PadClanWar.clanGone(id);
+        PadClanAlliances.clanGone(id);
+        STORE_IMPL.changed();
+    }
+
+    /** (1.3.156) Para la prueba: el color de la etiqueta del clan («#rrggbb»). */
+    public static String testColor(String id) {
+        JsonObject c = clan(id);
+        return c == null ? "" : TFJson.str(c, "color", "");
+    }
+
+    /** (1.3.156) Para la prueba: ¿son aliados? */
+    public static boolean testAllied(String a, String b) {
+        JsonObject c = clan(a);
+        return c != null && allies(c).contains(b);
+    }
+
+    /** (1.3.156) Para la prueba: una acción de la app de clanes como si la pulsara ese jugador (en esa pestaña). */
+    public static String testAction(ServerPlayer player, String tab, String action, String text) {
+        return APP.action(player, tab, action, text);
+    }
+
     /** (1.3.139) Para la prueba: quita el clan de prueba de testRanks. */
     public static void testCleanup(ServerPlayer leader) {
         String id = clanIdOf(leader.getUUID());
@@ -747,6 +849,10 @@ public final class PadClans {
         if (!(event.getEntity() instanceof Player victim) || victim.level().isClientSide) return;
         if (!(event.getSource().getEntity() instanceof Player attacker) || attacker == victim) return;
         String a = clanIdOf(attacker.getUUID()), v = clanIdOf(victim.getUUID());
-        if (a != null && a.equals(v) && !TFJson.bool(clan(a), "fuegoAmigo", false)) event.setCanceled(true);
+        if (a == null || !a.equals(v)) return;
+        // (1.3.156) en el territorio del clan, nunca (aunque el fuego amigo esté puesto)
+        var claim = net.tierrasfantasticas.tfclient.claims.data.ClaimManager.getInstance().getClaimAt(victim.level(), victim.blockPosition());
+        boolean home = claim != null && a.equals(claim.getClanId());
+        if (home || !TFJson.bool(clan(a), "fuegoAmigo", false)) event.setCanceled(true);
     }
 }

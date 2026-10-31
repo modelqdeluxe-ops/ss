@@ -205,7 +205,8 @@ final class BossTestFixes {
     private static void paths(ServerLevel level, String config, BossTest.Rep r) {
         set(config);
         BlockPos in = center.offset(12, 0, 12);
-        BlockPos out = center.offset(200, 0, 0);
+        // fuera de la zona (radio 64) pero en chunks cargados (a 200 no lo estaban y getEntity no lo encontraba)
+        BlockPos out = center.offset(80, 0, 0);
         List<String> bornPlacement = new ArrayList<>(), bornPosition = new ArrayList<>(), bornForge = new ArrayList<>(),
                 bornBukkit = new ArrayList<>(), eggNo = new ArrayList<>(), outNo = new ArrayList<>();
         for (EntityType<? extends Mob> type : TYPES) {
@@ -242,7 +243,7 @@ final class BossTestFixes {
             Mob o = type.create(level);
             o.moveTo(out.getX() + 0.5, out.getY(), out.getZ() + 0.5, 0F, 0F);
             boolean addedOut = level.addFreshEntity(o);
-            if (!addedOut || level.getEntity(o.getUUID()) == null) outNo.add(n);
+            if (!addedOut) outNo.add(n);
             o.discard();
         }
         List<String> want = expected(config);

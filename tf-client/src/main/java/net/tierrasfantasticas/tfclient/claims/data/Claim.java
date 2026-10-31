@@ -226,8 +226,23 @@ public class Claim {
         return ClaimManager.getInstance().topOf(this.world);
     }
 
+    /**
+     * (1.3.156) La zona de una protección del clan: es del clan entero (sus miembros construyen como miembros de la zona;
+     * el líder y los colíderes la gestionan como dueños). null en las de siempre.
+     */
+    private String clanId;
+
+    public String getClanId() {
+        return this.clanId;
+    }
+
+    public void setClanId(String id) {
+        this.clanId = id == null || id.isEmpty() ? null : id;
+    }
+
     public boolean isOwner(UUID uuid) {
-        return this.ownerUUID != null && this.ownerUUID.equals(uuid);
+        if (this.ownerUUID != null && this.ownerUUID.equals(uuid)) return true;
+        return this.clanId != null && uuid != null && net.tierrasfantasticas.tfclient.pad.server.PadClans.managesTerritory(this.clanId, uuid);
     }
 
     public boolean isOwner(Player player) {
@@ -235,7 +250,8 @@ public class Claim {
     }
 
     public boolean isMember(UUID uuid) {
-        return this.members.contains(uuid);
+        if (this.members.contains(uuid)) return true;
+        return this.clanId != null && uuid != null && this.clanId.equals(net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(uuid));
     }
 
     public boolean isMember(Player player) {
@@ -314,6 +330,9 @@ public class Claim {
         jsonobject.addProperty("createdAt", (Number)this.createdAt);
         if (this.groupId != null) {
             jsonobject.addProperty("groupId", this.groupId.toString());
+        }
+        if (this.clanId != null) {
+            jsonobject.addProperty("clanId", this.clanId);
         }
         JsonArray jsonarray = new JsonArray();
         for (UUID uUID : this.members) {
@@ -408,6 +427,9 @@ public class Claim {
         long l1 = claim.createdAt = jsonobject.has("createdAt") ? jsonobject.get("createdAt").getAsLong() : 0L;
         if (jsonobject.has("groupId") && !jsonobject.get("groupId").getAsString().isEmpty()) {
             claim.groupId = UUID.fromString(jsonobject.get("groupId").getAsString());
+        }
+        if (jsonobject.has("clanId")) {
+            claim.setClanId(jsonobject.get("clanId").getAsString());
         }
         if (jsonobject.has("members")) {
             JsonArray jsonarray = jsonobject.getAsJsonArray("members");

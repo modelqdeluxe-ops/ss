@@ -814,6 +814,22 @@ final class PadViewPage extends PadPage {
             pad.openApp(action.substring(6));
             return;
         }
+        // (1.3.156) la paleta de colores (PadColorPicker): «§color:<app>:<pestaña>:<RRGGBB>:<texto>»
+        if (action.startsWith("§color:")) {
+            PadColorPicker picker = PadColorPicker.parse(pad, action);
+            if (picker != null) {
+                pad.sound("page", 0.55F);
+                pad.setPage(picker);
+            }
+            return;
+        }
+        // (1.3.156) la guerra de clanes con su barra vertical doble (PadClanWarPage, datos de la app «guerra»)
+        if (action.equals("§guerra")) {
+            pad.sound("page", 0.55F);
+            pad.setPage(new PadClanWarPage(pad));
+            TFPadClient.openServerApp("guerra", "");
+            return;
+        }
         send(action, "");
     }
 

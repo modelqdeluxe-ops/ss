@@ -172,6 +172,22 @@ public final class TFPadClient {
         }
     }
 
+    /** (1.3.156) Prueba «clanes»: en la paleta de colores abierta, pone ese color (0xRRGGBB) y, si save, lo guarda. */
+    public static void colorForTest(int rgb, boolean save) {
+        PadColorPicker.testSave = save;
+        PadColorPicker.testColor = rgb;
+    }
+
+    /** (1.3.156) Prueba «clanes»: qué página del pad está abierta (para el informe). */
+    public static String pageForTest() {
+        return Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() != null ? pad.page().getClass().getSimpleName() : "ninguna";
+    }
+
+    /** (1.3.156) Prueba «clanes»: lo que dibuja la barra doble de la guerra (A, B). */
+    public static float[] warForTest() {
+        return new float[] {PadClanWarPage.testDrawnA, PadClanWarPage.testDrawnB};
+    }
+
     /** (1.3.155) Prueba «pad»: pone ese fondo en el menú principal («tema», «c:menta», «i:castillo»…). */
     public static void wallpaperForTest(String id) {
         PadSettings.load();

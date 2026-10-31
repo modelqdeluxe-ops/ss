@@ -10,7 +10,9 @@ package net.tierrasfantasticas.tfclient.claims.data;
 
 public final class ClaimTier {
     /** Tamaño, altura bajo la piedra y color (el de la gema de su textura: tools/gen_claim_blocks.py TIERS; 1.3.66). */
-    public static final ClaimTier[] VALUES = new ClaimTier[]{new ClaimTier("claimstone_10x10", 10, 15, 92, 214, 120), new ClaimTier("claimstone_25x25", 25, 20, 40, 206, 192), new ClaimTier("claimstone_40x40", 40, 30, 76, 178, 255), new ClaimTier("claimstone_64x64", 64, 40, 86, 112, 255), new ClaimTier("claimstone_80x80", 80, 50, 156, 98, 255), new ClaimTier("claimstone_100x100", 100, 60, 228, 82, 216), new ClaimTier("claimstone_150x150", 150, 80, 255, 104, 140), new ClaimTier("claimstone_250x250", 250, 100, 240, 66, 66), new ClaimTier("claimstone_300x300", 300, 120, 255, 146, 40), new ClaimTier("claimstone_500x500", 500, 150, 255, 212, 70)};
+    public static final ClaimTier[] VALUES = new ClaimTier[]{new ClaimTier("claimstone_10x10", 10, 15, 92, 214, 120), new ClaimTier("claimstone_25x25", 25, 20, 40, 206, 192), new ClaimTier("claimstone_40x40", 40, 30, 76, 178, 255), new ClaimTier("claimstone_64x64", 64, 40, 86, 112, 255), new ClaimTier("claimstone_80x80", 80, 50, 156, 98, 255), new ClaimTier("claimstone_100x100", 100, 60, 228, 82, 216), new ClaimTier("claimstone_150x150", 150, 80, 255, 104, 140), new ClaimTier("claimstone_250x250", 250, 100, 240, 66, 66), new ClaimTier("claimstone_300x300", 300, 120, 255, 146, 40), new ClaimTier("claimstone_500x500", 500, 150, 255, 212, 70),
+            // (1.3.156) las protecciones del clan (tienda del clan, con Clan Coins): del clan entero, sin las ventajas de pago
+            new ClaimTier("claimstone_clan_50x50", 50, 40, 92, 178, 255), new ClaimTier("claimstone_clan_120x120", 120, 70, 60, 120, 255)};
     public final String id;
     public final int radius;
     public final int height;
@@ -29,6 +31,11 @@ public final class ClaimTier {
 
     public String label() {
         return this.id.substring("claimstone_".length());
+    }
+
+    /** (1.3.156) ¿Es una protección del clan? (la zona es del clan entero: Claim.clanId). */
+    public boolean isClan() {
+        return this.id.startsWith("claimstone_clan_");
     }
 
     public boolean isPaid() {
@@ -58,6 +65,7 @@ public final class ClaimTier {
         ClaimTier claimtier = VALUES[0];
         int k = Integer.MAX_VALUE;
         for (ClaimTier claimtier1 : VALUES) {
+            if (claimtier1.isClan()) continue;
             int l = Math.abs(claimtier1.radius - i) + Math.abs(claimtier1.height - j);
             if (l >= k) continue;
             k = l;

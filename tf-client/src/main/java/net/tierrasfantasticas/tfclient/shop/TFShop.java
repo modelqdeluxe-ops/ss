@@ -84,6 +84,15 @@ public final class TFShop {
             return false;
         }
         long units = (long) lots * e.amount();
+        // (1.3.156) las piedras de protección: una de cada tamaño por jugador, para siempre
+        boolean stone = TFShopProtections.limited(e.itemId());
+        if (stone && (units != 1 || TFShopProtections.bought(player.server, player.getUUID(), e.itemId()))) {
+            say(player, TFShopProtections.bought(player.server, player.getUUID(), e.itemId())
+                    ? "&cYa compraste tu " + name(e) + ": solo se puede comprar una de cada tamaño."
+                    : "&cDe las protecciones se compra solo una de cada tamaño.", Map.of());
+            sound(player, false);
+            return false;
+        }
         long left = left(player.getUUID(), "c:" + e.key(), e.buyDaily());
         if (left <= 0 || units > left) {
             // aún puede comprar algo (de N en N), pero no tanto: se le dice cuánto le queda, no que ya no puede más
@@ -116,6 +125,7 @@ public final class TFShop {
             if (!errors.isEmpty()) TFClient.LOGGER.warn("TF Tienda: «{}» falló: {}", c, errors.get(0));
         }
         count(player.getUUID(), "c:" + e.key(), units);
+        if (stone) TFShopProtections.mark(player.server, player.getUUID(), e.itemId());
         say(player, TFShopConfig.message("compra"), Map.of("cantidad", TFEconomy.number(units), "objeto", name(e), "precio", TFEconomy.format(price)));
         sound(player, true);
         log(player, "COMPRA", e, units, price);

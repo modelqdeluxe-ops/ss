@@ -272,6 +272,11 @@ public final class EntityProtectionEvents {
         if (!level.isClientSide()) {
             DamageSource damagesource = livinghurtevent.getSource();
             Entity entity = damagesource.getEntity();
+            // (1.3.156) un duelo de clanes (/clan duelo): el PvP del servidor y de las zonas no lo para
+            if (livingentity instanceof Player && entity instanceof Player
+                    && net.tierrasfantasticas.tfclient.pad.server.PadClanDuels.fighting(livingentity.getUUID(), entity.getUUID())) {
+                return;
+            }
             Claim claim = ClaimManager.getInstance().getClaimAt(level, livingentity.blockPosition());
             if (livingentity instanceof Player && entity instanceof Player && !GlobalFlags.getInstance().globalPVP) {
                 EntityProtectionEvents.deny((Player)entity, "[!] El PVP est\u00e1 desactivado en este servidor.");

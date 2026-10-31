@@ -107,6 +107,8 @@ public final class PadServer {
         APPS.put("ranking", PadRanking.APP);
         DATA_APPS.put("gachapon", net.tierrasfantasticas.tfclient.pad.server.PadGacha.APP);
         DATA_APPS.put("pase", net.tierrasfantasticas.tfclient.pad.server.PadPass.APP);
+        // (1.3.156) la guerra de clanes (la barra vertical doble: PadClanWarPage)
+        DATA_APPS.put("guerra", net.tierrasfantasticas.tfclient.pad.server.PadClanWar.APP);
         // pad de administrador (los a_* solo los abre el staff)
         APPS.put("a_apps", PadAdmin.APPS);
         APPS.put("a_ajustes", PadAdmin.SETTINGS);
@@ -131,6 +133,9 @@ public final class PadServer {
         STORES.add(PadHomes.STORE);
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPlayers.STORE);
         STORES.add(PadClans.STORE);
+        // (1.3.156) el banco y las guerras de los clanes
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadClanBank.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadClanWar.STORE);
         STORES.add(PadTitles.STORE);
         STORES.add(PadHelp.STORE);
         STORES.add(PadCommunityServer.STORE);

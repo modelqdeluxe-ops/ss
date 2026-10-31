@@ -233,7 +233,20 @@ public final class BlockProtectionEvents {
             }
             uuid = uuid1;
         }
-        if ((i = ClaimManager.getMaxClaimsPerPlayer()) > 0 && !player.hasPermissions(2) && claimmanager.getClaimsOf(player.getUUID()).size() >= i) {
+        // (1.3.156) una protección del clan: la pone el líder o un colíder, y la zona es del clan entero
+        String clanId = null;
+        if (claimtier.isClan()) {
+            clanId = net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(player.getUUID());
+            if (clanId == null) {
+                BlockProtectionEvents.deny(player, "[x] Es una protecci\u00f3n del clan: tienes que estar en un clan.");
+                return InteractionResult.SUCCESS;
+            }
+            if (!net.tierrasfantasticas.tfclient.pad.server.PadClans.managesTerritory(clanId, player.getUUID()) && !player.hasPermissions(2)) {
+                BlockProtectionEvents.deny(player, "[x] Solo el l\u00edder o un col\u00edder del clan pone sus protecciones.");
+                return InteractionResult.SUCCESS;
+            }
+        }
+        if (!claimtier.isClan() && (i = ClaimManager.getMaxClaimsPerPlayer()) > 0 && !player.hasPermissions(2) && claimmanager.getClaimsOf(player.getUUID()).size() >= i) {
             BlockProtectionEvents.deny(player, "[x] Has alcanzado el l\u00edmite de zonas (" + i + ").");
             return InteractionResult.SUCCESS;
         }
@@ -241,6 +254,10 @@ public final class BlockProtectionEvents {
         level.setBlockAndUpdate(blockpos1, block instanceof ProtectionBlock ? ((ProtectionBlock)block).facing(player.getDirection()) : block.defaultBlockState());
         level.playSound(null, blockpos1, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.BLOCKS, 0.8f, 1.2f);
         Claim claim2 = claimmanager.createClaim(level, blockpos1, player, claimtier);
+        if (claim2 != null && clanId != null) {
+            claim2.setClanId(clanId);
+            claimmanager.save();
+        }
         if (claim2 != null && level instanceof net.minecraft.server.level.ServerLevel sl) {
             net.tierrasfantasticas.tfclient.items.TFRevocations.claimPlaced(sl, blockpos1, itemstack);
         }
@@ -257,7 +274,9 @@ public final class BlockProtectionEvents {
                 String s = claimgroup != null ? claimgroup.getName() : "grupo";
                 ((ServerPlayer)player).displayClientMessage((Component)Component.literal((String)("\u2714 Piedra unida a la zona \"" + s + "\".")).withStyle(ChatFormatting.GREEN), false);
             } else {
-                ((ServerPlayer)player).displayClientMessage((Component)Component.literal((String)("\u2714 Zona creada: " + claimtier.label() + " bloques | hasta el cielo y " + claimtier.height + " bajo la piedra")).withStyle(ChatFormatting.GREEN), false);
+                ((ServerPlayer)player).displayClientMessage((Component)Component.literal((String)(clanId != null
+                        ? "\u2714 Territorio del clan creado: " + claimtier.label().substring(5) + " bloques | todos los del clan construyen aqu\u00ed"
+                        : "\u2714 Zona creada: " + claimtier.label() + " bloques | hasta el cielo y " + claimtier.height + " bajo la piedra")).withStyle(ChatFormatting.GREEN), false);
             }
         }
         return InteractionResult.SUCCESS;

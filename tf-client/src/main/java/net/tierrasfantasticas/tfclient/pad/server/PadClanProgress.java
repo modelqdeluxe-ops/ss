@@ -67,26 +67,26 @@ public final class PadClanProgress {
      * La meta es para un clan de 5; cambia con los miembros ({@link #goal}).
      */
     public static final List<Mission> POOL = List.of(
-            m("cantera", "Cantera del clan", "Rompan piedra entre todos.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 20000, 60, 400, 30),
-            m("lenadores", "Leñadores", "Talen troncos de cualquier árbol.", Items.OAK_LOG, "romper", "#minecraft:logs", 4000, 60, 400, 30),
-            m("carbon", "Vetas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 1200, 50, 350, 25),
-            m("hierro", "Hierro para el clan", "Minen hierro.", Items.RAW_IRON, "romper", "#forge:ores/iron", 700, 70, 450, 35),
-            m("cobre", "Brillo de cobre", "Minen cobre.", Items.RAW_COPPER, "romper", "#forge:ores/copper", 900, 50, 350, 25),
-            m("excavadores", "Excavadores", "Caven tierra, arena y grava.", Items.IRON_SHOVEL, "romper", "#minecraft:mineable/shovel", 12000, 50, 350, 25),
-            m("cosecha", "Gran cosecha", "Cosechen cultivos maduros.", Items.WHEAT, "cosechar", "#minecraft:crops", 5000, 60, 400, 30),
-            m("cazadores", "Noche de cacería", "Derroten monstruos.", Items.BONE, "matar", "hostil", 1200, 70, 450, 35),
-            m("zombis", "Plaga de zombis", "Derroten zombis.", Items.ROTTEN_FLESH, "matar", "minecraft:zombie", 500, 50, 350, 25),
-            m("esqueletos", "Huesos al viento", "Derroten esqueletos.", Items.ARROW, "matar", "minecraft:skeleton", 400, 50, 350, 25),
-            m("aranas", "Telarañas", "Derroten arañas.", Items.STRING, "matar", "minecraft:spider", 350, 50, 350, 25),
-            m("creepers", "Sin explosiones", "Derroten creepers.", Items.GUNPOWDER, "matar", "minecraft:creeper", 200, 60, 400, 30),
-            m("pesca", "Flota pesquera", "Pesquen lo que sea.", Items.COD, "pescar", "*", 350, 60, 400, 30),
-            m("granja", "Granja del clan", "Críen animales.", Items.WHEAT_SEEDS, "criar", "*", 250, 50, 350, 25),
-            m("antorchas", "Luz para todos", "Fabriquen antorchas.", Items.TORCH, "fabricar", "minecraft:torch", 1500, 40, 300, 20),
-            m("herramientas", "Forja del clan", "Fabriquen herramientas.", Items.IRON_PICKAXE, "fabricar", "#forge:tools", 120, 60, 400, 30),
-            m("pan", "Panadería", "Hagan pan.", Items.BREAD, "fabricar", "minecraft:bread", 1000, 40, 300, 20),
-            m("lingotes", "Fundición", "Fundan lingotes.", Items.IRON_INGOT, "fundir", "#forge:ingots", 1500, 60, 400, 30),
-            m("constructores", "Constructores", "Coloquen bloques nuevos.", Items.BRICKS, "colocar", "*", 15000, 60, 400, 30),
-            m("encantadores", "Biblioteca arcana", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 120, 70, 450, 35));
+            m("cantera", "Cantera del clan", "Rompan piedra entre todos.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 20000, 1, 400, 30),
+            m("lenadores", "Leñadores", "Talen troncos de cualquier árbol.", Items.OAK_LOG, "romper", "#minecraft:logs", 4000, 1, 400, 30),
+            m("carbon", "Vetas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 1200, 1, 350, 25),
+            m("hierro", "Hierro para el clan", "Minen hierro.", Items.RAW_IRON, "romper", "#forge:ores/iron", 700, 2, 450, 35),
+            m("cobre", "Brillo de cobre", "Minen cobre.", Items.RAW_COPPER, "romper", "#forge:ores/copper", 900, 1, 350, 25),
+            m("excavadores", "Excavadores", "Caven tierra, arena y grava.", Items.IRON_SHOVEL, "romper", "#minecraft:mineable/shovel", 12000, 1, 350, 25),
+            m("cosecha", "Gran cosecha", "Cosechen cultivos maduros.", Items.WHEAT, "cosechar", "#minecraft:crops", 5000, 1, 400, 30),
+            m("cazadores", "Noche de cacería", "Derroten monstruos.", Items.BONE, "matar", "hostil", 1200, 2, 450, 35),
+            m("zombis", "Plaga de zombis", "Derroten zombis.", Items.ROTTEN_FLESH, "matar", "minecraft:zombie", 500, 1, 350, 25),
+            m("esqueletos", "Huesos al viento", "Derroten esqueletos.", Items.ARROW, "matar", "minecraft:skeleton", 400, 1, 350, 25),
+            m("aranas", "Telarañas", "Derroten arañas.", Items.STRING, "matar", "minecraft:spider", 350, 1, 350, 25),
+            m("creepers", "Sin explosiones", "Derroten creepers.", Items.GUNPOWDER, "matar", "minecraft:creeper", 200, 2, 400, 30),
+            m("pesca", "Flota pesquera", "Pesquen lo que sea.", Items.COD, "pescar", "*", 350, 1, 400, 30),
+            m("granja", "Granja del clan", "Críen animales.", Items.WHEAT_SEEDS, "criar", "*", 250, 1, 350, 25),
+            m("antorchas", "Luz para todos", "Fabriquen antorchas.", Items.TORCH, "fabricar", "minecraft:torch", 1500, 1, 300, 20),
+            m("herramientas", "Forja del clan", "Fabriquen herramientas.", Items.IRON_PICKAXE, "fabricar", "#forge:tools", 120, 1, 400, 30),
+            m("pan", "Panadería", "Hagan pan.", Items.BREAD, "fabricar", "minecraft:bread", 1000, 1, 300, 20),
+            m("lingotes", "Fundición", "Fundan lingotes.", Items.IRON_INGOT, "fundir", "#forge:ingots", 1500, 2, 400, 30),
+            m("constructores", "Constructores", "Coloquen bloques nuevos.", Items.BRICKS, "colocar", "*", 15000, 1, 400, 30),
+            m("encantadores", "Biblioteca arcana", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 120, 2, 450, 35));
 
     private static Mission m(String id, String name, String desc, net.minecraft.world.item.Item icon, String type, String target, int amount,
                              long coins, long xp, long prestige) {
@@ -154,12 +154,20 @@ public final class PadClanProgress {
         PadClans.STORE_IMPL.changed();
     }
 
-    /** Las plazas del clan: 20 y dos más por nivel, hasta 40. */
+    /** Las plazas del clan: 20 y dos más por nivel (hasta 40), más las que se compran en la tienda del clan. */
     public static int maxMembers(JsonObject c) {
-        return Math.min(40, 20 + 2 * (level(c) - 1));
+        return Math.min(40, 20 + 2 * (level(c) - 1)) + 2 * (int) Math.max(0, TFJson.num(c, "plazasCompradas", 0));
     }
 
-    /** Suma XP al clan y sube los niveles que toquen (cada uno da 100 × nivel monedas del clan). */
+    /**
+     * Las Clan Coins de subir al nivel dado. (El dueño, 31 oct 2026: «no pongas esa moneda inflada, que sea como las de
+     * gacha: 1 o 2 máximo en recompensas».) 1, y 2 en los niveles 5, 10, 15 y 20.
+     */
+    public static long levelReward(int level) {
+        return level % 5 == 0 ? 2 : 1;
+    }
+
+    /** Suma XP al clan y sube los niveles que toquen (cada uno da 1 o 2 Clan Coins). */
     public static void addXp(MinecraftServer server, JsonObject c, long n) {
         if (c == null || n <= 0) return;
         int level = level(c);
@@ -167,10 +175,10 @@ public final class PadClanProgress {
         while (level < MAX_LEVEL && xp >= xpFor(level)) {
             xp -= xpFor(level);
             level++;
-            long reward = 100L * level;
+            long reward = levelReward(level);
             addCoins(c, reward);
-            tell(server, c, "¡El clan sube al nivel " + level + "! +" + reward + " Fantastic Clan Coins y ya caben " + Math.min(40, 20 + 2 * (level - 1))
-                    + " miembros.", ChatFormatting.AQUA);
+            tell(server, c, "¡El clan sube al nivel " + level + "! +" + reward + " Fantastic Clan Coin" + (reward == 1 ? "" : "s") + " y ya caben "
+                    + (Math.min(40, 20 + 2 * (level - 1)) + 2 * (int) Math.max(0, TFJson.num(c, "plazasCompradas", 0))) + " miembros.", ChatFormatting.AQUA);
         }
         if (level >= MAX_LEVEL) xp = 0;
         c.addProperty("nivel", level);
@@ -271,11 +279,21 @@ public final class PadClanProgress {
         if (id == null || amount <= 0) return;
         JsonObject c = PadClans.clan(id);
         if (c == null) return;
-        advance(player.getServer(), id, c, player.getUUID(), type, match, amount);
+        double boost = boosted(c) ? BOOST : 1.0;
+        advance(player.getServer(), id, c, player.getUUID(), type, match, amount * boost);
         for (String ally : PadClans.allies(c)) {
             JsonObject a = PadClans.clan(ally);
-            if (a != null) advance(player.getServer(), ally, a, null, type, match, amount * ALLY_SHARE);
+            if (a != null) advance(player.getServer(), ally, a, null, type, match, amount * ALLY_SHARE * (boosted(a) ? BOOST : 1.0));
         }
+        // (1.3.156) la guerra de clanes, si hay una en marcha
+        PadClanWar.record(player, id, type, match, amount);
+    }
+
+    /** El potenciador de la tienda del clan: las misiones avanzan x1,5 durante 24 h. */
+    static final double BOOST = 1.5;
+
+    static boolean boosted(JsonObject c) {
+        return c != null && TFJson.num(c, "potenciadorHasta", 0) > System.currentTimeMillis();
     }
 
     private static void advance(MinecraftServer server, String id, JsonObject c, UUID who, String type, Predicate<TFJobsConfig.Target> match,
@@ -358,6 +376,118 @@ public final class PadClanProgress {
         }
         out.sort((a, b) -> Long.compare(prestige(b.getValue()), prestige(a.getValue())));
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Prueba en el juego (bosses/BossTestClanes)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** {Clan Coins, nivel, xp, prestigio} del clan. */
+    public static long[] testStats(String clanId) {
+        JsonObject c = PadClans.clan(clanId);
+        return c == null ? new long[4] : new long[] {coins(c), level(c), xp(c), prestige(c)};
+    }
+
+    public static void testSet(String clanId, long coins, int level, long xp, long prestige) {
+        JsonObject c = PadClans.clan(clanId);
+        if (c == null) return;
+        c.addProperty("monedasClan", coins);
+        c.addProperty("nivel", level);
+        c.addProperty("xp", xp);
+        c.addProperty("prestigio", prestige);
+        c.remove("misiones");
+        c.remove("potenciadorHasta");
+        c.remove("compras");
+        c.remove("plazasCompradas");
+        PadClans.STORE_IMPL.changed();
+    }
+
+    /** Sube el clan del nivel en el que esté a «to» con la XP justa; devuelve las Clan Coins que ganó. */
+    public static long testLevelTo(MinecraftServer server, String clanId, int to) {
+        JsonObject c = PadClans.clan(clanId);
+        if (c == null) return -1;
+        long before = coins(c);
+        long need = -xp(c);
+        for (int l = level(c); l < to; l++) need += xpFor(l);
+        addXp(server, c, Math.max(1, need));
+        return coins(c) - before;
+    }
+
+    /**
+     * Comprueba que cada objetivo de las misiones del clan y de las guerras existe y cuenta (TFMissionCheck.sample: algo
+     * de verdad del juego que lo cumple). Devuelve los que fallan.
+     */
+    public static List<String> testValidate(MinecraftServer server) {
+        List<String> bad = new ArrayList<>();
+        List<Mission> all = new ArrayList<>(POOL);
+        all.addAll(PadClanWar.POOL);
+        for (Mission m : all) {
+            Predicate<TFJobsConfig.Target> p = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.sample(server, m.type(), m.target());
+            if (p == null || !p.test(new TFJobsConfig.Target(m.target()))) bad.add(m.id() + " (" + m.type() + " " + m.target() + ")");
+        }
+        return bad;
+    }
+
+    /** Cumple la primera misión de la semana que quede, con lo que haría el juego (sample). Devuelve su id o null. */
+    public static String testCompleteMission(ServerPlayer player) {
+        String id = PadClans.clanIdOf(player.getUUID());
+        if (id == null) return null;
+        JsonObject c = PadClans.clan(id);
+        JsonObject ms = missions(id, c);
+        for (JsonElement e : ms.getAsJsonArray("lista")) {
+            JsonObject o = e.getAsJsonObject();
+            if (TFJson.bool(o, "hecha", false)) continue;
+            Mission m = byId(TFJson.str(o, "id", ""));
+            if (m == null) continue;
+            int left = (int) Math.ceil(TFJson.dec(o, "meta", m.amount()) - TFJson.dec(o, "progreso", 0));
+            Predicate<TFJobsConfig.Target> p = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.sample(player.getServer(), m.type(), m.target());
+            if (p == null) continue;
+            record(player, m.type(), p, Math.max(1, left));
+            return m.id();
+        }
+        return null;
+    }
+
+    /** El avance de la misión número i de la semana de ese clan (para ver lo que suman el potenciador y los aliados). */
+    public static double testFirstProgress(String clanId, int i) {
+        JsonObject c = PadClans.clan(clanId);
+        if (c == null) return -1;
+        JsonObject ms = missions(clanId, c);
+        return TFJson.dec(ms.getAsJsonArray("lista").get(i).getAsJsonObject(), "progreso", 0);
+    }
+
+    /** Suma n a la misión número i de la semana del clan del jugador (como lo haría el juego). Devuelve su id. */
+    public static String testAddFirst(ServerPlayer player, int i, int n) {
+        String id = PadClans.clanIdOf(player.getUUID());
+        if (id == null) return null;
+        JsonObject c = PadClans.clan(id);
+        Mission m = byId(TFJson.str(missions(id, c).getAsJsonArray("lista").get(i).getAsJsonObject(), "id", ""));
+        if (m == null) return null;
+        Predicate<TFJobsConfig.Target> p = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.sample(player.getServer(), m.type(), m.target());
+        if (p != null) record(player, m.type(), p, n);
+        return m.id();
+    }
+
+    /** Pone las misiones de esta semana del clan «to» iguales que las de «from» (para probar lo que suman los aliados). */
+    public static void testCopyMissions(String from, String to) {
+        JsonObject a = PadClans.clan(from), b = PadClans.clan(to);
+        if (a == null || b == null) return;
+        b.add("misiones", missions(from, a).deepCopy());
+        JsonObject ms = b.getAsJsonObject("misiones");
+        for (JsonElement e : ms.getAsJsonArray("lista")) {
+            e.getAsJsonObject().addProperty("progreso", 0.0);
+            e.getAsJsonObject().addProperty("hecha", false);
+        }
+        ms.add("aportes", new JsonObject());
+        PadClans.STORE_IMPL.changed();
+    }
+
+    public static void testBoost(String clanId, boolean on) {
+        JsonObject c = PadClans.clan(clanId);
+        if (c == null) return;
+        if (on) c.addProperty("potenciadorHasta", System.currentTimeMillis() + 60_000);
+        else c.remove("potenciadorHasta");
+        PadClans.STORE_IMPL.changed();
     }
 
     /** Para el pad: el servidor donde está (para los avisos). */
