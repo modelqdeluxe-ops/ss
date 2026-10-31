@@ -1274,14 +1274,18 @@ export function createApp(env) {
       return json({ ok: true, ip: await serverIp() });
     },
 
-    // Probar cualquier producto (rangos, crates, packs…) en el juego: se entrega gratis a un jugador como un pedido de
+    // Probar cualquier producto (rangos, crates, packs, efectos VFX, clases de skills…) en el juego: se entrega gratis a un jugador como un pedido de
     // verdad (rango, rol de Discord, anuncio y comandos) y se puede reembolsar desde el mismo panel.
     'POST /api/staff/test': async (req, ctx) => {
       const denied = await staffDenied(req);
       if (denied) return denied;
       const body = (await readJson(req)) || {};
       const product = productById.get(body.productId);
-      if (!product || !(product.commands || []).length) return json({ error: 'Ese producto no se entrega en el juego.' }, 400);
+      // (31 oct 2026, el dueño: «agrega los efectos VFX y las skills al test») los efectos y las clases de skills no
+      // llevan comandos: fulfill los apunta en la cuenta y los equipa, y el puente los manda al servidor
+      if (!product || !((product.commands || []).length || skillOf(product) || vfxOf(product))) {
+        return json({ error: 'Ese producto no se entrega en el juego.' }, 400);
+      }
       const player = typeof body.username === 'string' && USERNAME_RE.test(body.username) ? await store.findPlayer(body.username) : null;
       if (!player) return json({ error: 'Ese jugador no ha entrado nunca al servidor.' }, 404);
       const rank = rankById.get(product.id);

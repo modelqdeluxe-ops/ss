@@ -73,7 +73,7 @@
       <label for="testPlayer">Probar productos en el juego <span class="dim">(gratis, como si se hubiera comprado: rango, rol de Discord, anuncio y lo del juego; luego se puede reembolsar abajo)</span></label>
       <div class="row">
         <input id="testPlayer" type="text" autocomplete="off" spellcheck="false" placeholder="Jugador (su nombre en Minecraft)">
-        <input id="testFilter" type="search" autocomplete="off" placeholder="Buscar producto (rango, crate, pack…)">
+        <input id="testFilter" type="search" autocomplete="off" placeholder="Buscar producto (rango, crate, pack, efecto, skill…)">
       </div>
       <div id="testList" class="tests"></div>
     </section>
@@ -162,12 +162,12 @@
     load();
   });
   $('reload').addEventListener('click', load);
-  // Probar productos: el catálogo de la tienda (menos efectos y skills, que no se entregan con comandos)
+  // Probar productos: todo el catálogo de la tienda (31 oct 2026: también los efectos VFX y las clases de skills)
   let catalog = [];
   async function loadCatalog() {
     if (catalog.length) return renderCatalog();
     try {
-      catalog = (await (await fetch('/api/products')).json()).filter((p) => !['vfx', 'skills'].includes(p.category));
+      catalog = await (await fetch('/api/products')).json();
     } catch {
       catalog = [];
     }
