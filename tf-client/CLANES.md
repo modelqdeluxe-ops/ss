@@ -17,15 +17,13 @@ Rama `claude/wizardly-euler-tw8ooy`, encima de `main` (que tiene la web de los T
    solo la 1.3.155 (y este documento) es `484bdf00`. Los números de versión siguen en
    1.3.155. Mira en el workflow `tf-client.yml` de ese commit si compila; si no, arréglalo primero.
 
-**Antes que nada: arregla la caída del servidor** (la GTS del pad con un Item Terminal de Pretty Pipes); está en el
-primer bloque del CHECKPOINT del 31 oct de `HANDOFF.md`. Para publicarla rápido, saca el WIP de clanes (abajo).
-Y después, **las flags de las protecciones «sin mobs» y «sin pasivos»** (y la global), que según el dueño no funcionan
-(mismo CHECKPOINT).
-
-**Qué hacer primero (después de eso):** termina la fase 2 (§3, «Falta»), súbela a **1.3.156** (`mod_version` en
-`tf-client/gradle.properties` y `VERSION` en `TFClient.java`), prueba en el juego, apunta en `HANDOFF.md` y publica
-todo junto (la Release llevará también lo de la 1.3.155, que ya está probado). Si el dueño quiere la 1.3.155 YA, antes
-de terminar la fase 2: `git revert` del commit WIP (o sácalo a un commit aparte después), publica, y vuelve a aplicarlo.
+**El dueño quiere UN SOLO PARCHE CON TODO** (una versión, la **1.3.156**, y una Release; nada suelto). Orden de
+trabajo: (1) la caída del servidor por la GTS (el dueño ya quitó la venta, pero el fallo sigue en el código) y (2) las
+flags de spawn de las protecciones, las dos en el CHECKPOINT del 31 oct de `HANDOFF.md`; (3) lo de la 1.3.155, ya
+hecho; (4) los clanes: termina la fase 2 (§3, «Falta») y sigue con las demás. Si las fases 3–5 van a tardar mucho,
+pregúntale al dueño si espera o si el parche sale con la fase 2. Súbelo a 1.3.156 (`mod_version` en
+`tf-client/gradle.properties` y `VERSION` en `TFClient.java`), pruébalo todo en el juego, apunta un CHECKPOINT en
+`HANDOFF.md` y publícalo una sola vez.
 
 Cómo publicar (siempre igual): PR borrador de la rama a `main` → listo → squash merge → comprobar que existe la Release
 `tfclient-v<versión>` (el CI tarda unos minutos) → rehacer la rama:

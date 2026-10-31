@@ -192,28 +192,40 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 
 ### CHECKPOINT (31 oct 2026, TF Client 1.3.155 VERIFICADA SIN PUBLICAR + clanes a medias) — lee esto primero
 
-**URGENTE — se cae el servidor (31 oct 2026, 02:15; el dueño: «no le pongas nada, pon que la otra IA lo arregle»).**
+**El dueño quiere UN SOLO PARCHE CON TODO** («deja ordenadito eso y que me entregue 1 solo parche con todo»): no
+publiques versiones sueltas. Una sola versión nueva (**1.3.156**: `mod_version` en `tf-client/gradle.properties` y
+`VERSION` en `TFClient.java`) con, en este orden de trabajo:
+1. el arreglo de la caída del servidor por la GTS (abajo);
+2. el arreglo de las flags de spawn de las protecciones (abajo);
+3. lo de la 1.3.155, que ya está hecho y probado (planeo, fondo del menú del pad, marcos de fotos; más abajo);
+4. la actualización de clanes ([`tf-client/CLANES.md`](tf-client/CLANES.md): terminar la fase 2 y seguir con las
+   siguientes). Si las fases 3–5 van a tardar mucho, pregúntale al dueño si espera a tenerlas o si el parche sale
+   con la fase 2.
+Todo probado en el juego por ti (`[prueba-jefes=…]`), un CHECKPOINT nuevo en este archivo y una sola Release.
+
+**Caída del servidor (31 oct 2026, 02:15; el dueño: «no le pongas nada, pon que la otra IA lo arregle»). Ya no es urgente:
+el dueño quitó esa venta de la GTS**, pero el fallo sigue en el código: cualquier otro objeto de un mod con un tooltip
+así vuelve a tumbar el servidor.
 El servidor del dueño (Mohist, con TF Client **1.3.152**, `tfclient (1).jar`) se cayó con «Exception in server tick
 loop»: `java.lang.NoClassDefFoundError: net/minecraft/client/gui/screens/Screen` en
 `de.ellpeck.prettypipes.Utility.addTooltip` ← `ItemTerminalBlock.appendHoverText` ← `ItemStack.getTooltipLines` ←
 **`pad/server/PadMarket.listing` (línea 208)** ← `PadMarket$App.view` ← `PadServer.send` ← `PadServer.action` ←
 `TFPadNet$Action.handle`. Es decir: alguien puso a la venta en la GTS un **Item Terminal de Pretty Pipes**, y al abrir
 esa venta en el pad el servidor pide el tooltip del objeto; el tooltip de Pretty Pipes usa `Screen.hasShiftDown()`, una
-clase que solo existe en el cliente, y el servidor revienta. **Se volverá a caer cada vez que alguien abra esa venta.**
-Arreglo pedido (hazlo tú, no estaba hecho):
+clase que solo existe en el cliente, y el servidor revienta.
+Arreglo pedido (hazlo tú, no estaba hecho; va en el parche único):
 1. `PadMarket.listing`: la parte de «Lo que dice el objeto» (`getTooltipLines`) dentro de `try { … } catch (Exception |
    LinkageError e)`; si falla, la ficha sale sin esas líneas. Es la única llamada a `getTooltipLines` del lado del
    servidor (comprobado con grep).
 2. `pad/PadServer`: los `catch (Exception e)` de `action`, `sendData`, `send` y el tick (líneas ~229, 246, 261, 280,
    320, 331, 356) no atrapan `Error` (NoClassDefFoundError es un `LinkageError`): ponlos como `catch (Exception |
    LinkageError e)` para que ninguna app del pad pueda tumbar el servidor (sale «Error. Si se repite, avisa al staff.»).
-3. Publícalo cuanto antes (con la 1.3.155, que ya está probada; ver arriba cómo publicarla sin el WIP de clanes) y dile
-   al dueño que **actualice el jar del servidor** (va por la 1.3.152, dos versiones por detrás) y el de los jugadores.
-   Mientras tanto, para que no se caiga: que nadie abra esa venta, o que el dueño la quite con el servidor apagado de
-   `world/…/gts.json` (`TFMarket`, `TFJson.worldFile(server, "gts.json")`; busca `prettypipes:item_terminal`).
+3. Al entregar el parche, dile al dueño que **actualice también el jar del servidor** (el 31 oct iba por la 1.3.152,
+   `tfclient (1).jar`) y no solo el de los jugadores. (Las ventas de la GTS se guardan en `gts.json` del mundo,
+   `TFJson.worldFile(server, "gts.json")`, por si hiciera falta quitar otra a mano con el servidor apagado.)
 
 **También del dueño (31 oct): «la flag de no mobs y la de pasivos no están funcionando; la de las claims también».**
-No está tocado. Son las flags de spawn de las protecciones (`claims/`): «Sin spawn de mobs» (`MOB_SPAWN` →
+No está tocado; va en el parche único. Son las flags de spawn de las protecciones (`claims/`): «Sin spawn de mobs» (`MOB_SPAWN` →
 `ClaimFlags.blockMobSpawn`), «Sin ningún mob» (`ALL_MOB_SPAWN` → `blockAllMobSpawn`), «Sin pasivos»
 (`PASSIVE_MOB_SPAWN` → `blockPassiveMobSpawn`, página 3 del menú, `claims/gui/ClaimMenuHandler`) y la global
 «Sin spawn de mobs (global)» (`GlobalFlags.globalNoMobSpawn`, `AdminGlobalFlagsHandler` y `/tfclaims` admin). Todo se
@@ -230,11 +242,10 @@ decide en `claims/event/EntityProtectionEvents`: `shouldBlockSpawn`, `onFinalize
 Pruébalo tú en el juego (escenario de la prueba con una protección, cada flag puesta, esperar y contar mobs nuevos
 dentro, de noche y de día) antes de decir que está arreglado.
 
-**El dueño pidió parar aquí.** La 1.3.155 (abajo) está probada en el juego y lista, pero no fusionada. Encima hay un
-commit «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48 insignias, ranking
-de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).**
-Lo siguiente: terminar la fase 2 (§3 de CLANES.md: que compile, la paleta tipo Paint, la prueba), subir a 1.3.156 y
-publicar todo junto.
+**Estado de la rama** (el dueño pidió parar aquí): la 1.3.155 (abajo) está probada en el juego, sin fusionar; encima,
+el commit `d2f4bf5d` «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48
+insignias, ranking de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a
+paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).** Nada de esto se publica por separado: va todo en el parche único.
 
 
 El dueño: «el vuelo de los sets, quita que me quite hambre volar y quita esos 30 segundos: el planeo ilimitado como el de

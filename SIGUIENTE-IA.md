@@ -1,17 +1,16 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **31 oct 2026 — URGENTE ANTES QUE NADA**: el servidor del dueño se cae al abrir en la GTS del pad una venta de un
-> Item Terminal de Pretty Pipes (`PadMarket.listing` pide el tooltip en el servidor y Pretty Pipes usa una clase del
-> cliente). Causa, arreglo exacto y cómo publicarlo: primer bloque del CHECKPOINT del 31 oct de `HANDOFF.md`.
->
-> **31 oct 2026 — TAMBIÉN**: las flags de las protecciones «sin mobs», «sin pasivos» (y la global) no funcionan (dice el
-> dueño). Dónde está y qué sospechar: CHECKPOINT del 31 oct de `HANDOFF.md`, justo después de lo de la caída.
->
-> **31 oct 2026 — AHORA**: la **1.3.155** (planeo de los sets ilimitado y sin hambre, fondo del menú del pad, 44 marcos
-> de fotos) está verificada en el juego pero **sin publicar**, y encima hay un commit **«WIP clanes fase 2»** a medias.
-> Sigue por **[`tf-client/CLANES.md`](tf-client/CLANES.md)** (la actualización grande de clanes: Clan Coins azules,
-> nivel y misiones, paleta tipo Paint, insignias, banco, duelos, guerras, alianzas, tienda y territorio) y el
-> CHECKPOINT del 31 oct de `HANDOFF.md`.
+> **31 oct 2026 — AHORA: el dueño quiere UN SOLO PARCHE CON TODO** (una sola versión, la 1.3.156, y una sola Release;
+> nada suelto). Lleva, en este orden de trabajo:
+> 1. **La caída del servidor por la GTS del pad** (un Item Terminal de Pretty Pipes: `PadMarket.listing` pide el tooltip
+>    en el servidor y Pretty Pipes usa una clase del cliente). El dueño ya quitó esa venta, pero el fallo sigue en el
+>    código. Causa y arreglo exacto en el CHECKPOINT del 31 oct de `HANDOFF.md`.
+> 2. **Las flags de las protecciones «sin mobs», «sin pasivos» y la global**, que no funcionan (mismo CHECKPOINT).
+> 3. **Lo de la 1.3.155**, ya hecho y probado en el juego (planeo de los sets ilimitado y sin hambre, fondo del menú del
+>    pad, 44 marcos de fotos).
+> 4. **La actualización de clanes**: la fase 2 está a medias en el commit `d2f4bf5d`; todo en
+>    **[`tf-client/CLANES.md`](tf-client/CLANES.md)** (Clan Coins azules, nivel y misiones, paleta tipo Paint,
+>    insignias, banco, duelos, guerras, alianzas, tienda y territorio).
 >
 > **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
 > AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
