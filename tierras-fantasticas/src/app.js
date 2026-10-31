@@ -294,6 +294,10 @@ export function createApp(env) {
   // MP_WEBHOOK_SECRET firma los avisos (sin ella, igual se pregunta a la API).
   const mp = env.MP_ACCESS_TOKEN ? new MercadoPago({ accessToken: env.MP_ACCESS_TOKEN, apiBase: env.MP_API_BASE }) : null;
   const MP_CURRENCY = 'MXN';
+  // (31 oct 2026) Desde México, la tarjeta (Stripe) cobra en pesos: muchas tarjetas mexicanas (Carnet, débito) no
+  // admiten cargos en dólares («Divisa no aceptada»). El país lo dice Cloudflare (request.cf.country).
+  const visitorCountry = (req) => String(req.cf?.country || req.headers.get('CF-IPCountry') || '').toUpperCase();
+  const cardInPesos = (req) => visitorCountry(req) === 'MX';
   const mpRate = () => usdToMxn({ token: env.MP_ACCESS_TOKEN, fallback: Number(env.MP_RATE) > 0 ? Number(env.MP_RATE) : 18.5, apiBase: env.MP_RATE_API_BASE });
 
   let sessionPromise = null;
@@ -639,7 +643,9 @@ export function createApp(env) {
         cardEnabled: Boolean(stripe),
         paypalEnabled: Boolean(paypal),
         mercadopagoEnabled: Boolean(mp),
-        ...(mp ? { mpRate: await mpRate() } : {}),
+        ...(mp || (stripe && cardInPesos(req)) ? { mpRate: await mpRate() } : {}),
+        // (31 oct 2026) la tarjeta cobra en pesos desde México (y en la moneda de la tienda desde fuera)
+        cardCurrency: stripe && cardInPesos(req) ? MP_CURRENCY : CURRENCY,
         discordInvite: DISCORD_URL,
         termsVersion: TERMS_VERSION,
         // Solo se puede comprar a jugadores que el puente ya conoce.
@@ -1139,8 +1145,10 @@ export function createApp(env) {
       const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
       // Con Mercado Pago se cobra en pesos (su precio redondeado); lo demás, en la moneda de la tienda
-      const mxUnit = method === 'mercadopago' ? mxnCents(q.unit, await mpRate()) : 0;
-      const charged = method === 'mercadopago' ? { amount: mxUnit * quantity, currency: MP_CURRENCY } : { amount, currency: CURRENCY };
+      // (31 oct 2026) con tarjeta desde México, también en pesos (las tarjetas mexicanas que no aceptan dólares)
+      const pesos = method === 'mercadopago' || (method === 'stripe' && cardInPesos(req));
+      const mxUnit = pesos ? mxnCents(q.unit, await mpRate()) : 0;
+      const charged = pesos ? { amount: mxUnit * quantity, currency: MP_CURRENCY } : { amount, currency: CURRENCY };
       try {
         let checkout;
         if (method === 'mercadopago') {
@@ -1186,8 +1194,8 @@ export function createApp(env) {
         } else {
           checkout = await stripe.createCheckoutSession({
             orderId: id,
-            currency: CURRENCY,
-            unitAmount: q.unit,
+            currency: charged.currency,
+            unitAmount: pesos ? mxUnit : q.unit,
             quantity,
             name,
             description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
