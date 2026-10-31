@@ -1914,7 +1914,7 @@
 
       ${termsLabel('pay-terms')}
       <div class="pay-actions">
-        <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>${PAY_ICON.card}Tarjeta</button>
+        <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>${PAY_ICON.card}<span>Tarjeta <small id="pay-card-mxn"></small></span></button>
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>${PAY_ICON.paypal}<b class="pp-word">Pay<i>Pal</i></b></button>
         <button type="button" class="btn btn-mp btn-lg btn-block pay-btn" id="pay-mp" hidden disabled>${PAY_ICON.mercadopago}<span><b>Mercado Pago</b> <small id="pay-mp-mxn"></small></span></button>
       </div>
@@ -1949,7 +1949,10 @@
     $('#dialog-total').textContent = formatPrice(unitPrice() * qty);
     // Mercado Pago (cuenta de México) cobra lo mismo en pesos, al cambio de hoy
     const rate = Number(config.mpRate) || 0;
-    $('#pay-mp-mxn').textContent = rate ? `· $${(Math.ceil(unitPrice() * rate - 1e-9) * qty / 100).toFixed(2)} MXN` : '';
+    const mxn = rate ? `· $${(Math.ceil(unitPrice() * rate - 1e-9) * qty / 100).toFixed(2)} MXN` : '';
+    $('#pay-mp-mxn').textContent = mxn;
+    // (31 oct 2026) desde México la tarjeta también cobra en pesos
+    $('#pay-card-mxn').textContent = config.cardCurrency === 'MXN' ? mxn : '';
     const from = player?.quote?.upgradeFrom;
     $('#dialog-upgrade').textContent = from ? `· mejora desde ${from.replace(/^Rango\s+/i, '')}` : '';
   }

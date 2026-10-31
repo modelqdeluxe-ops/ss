@@ -2001,3 +2001,28 @@ test('Mercado Pago (cuenta de México): cobra en pesos al cambio del día, entre
   mpPayments.set('9003', { id: 9003, status: 'approved', external_reference: id2, transaction_amount: 1, currency_id: 'MXN' });
   assert.strictEqual((await (await post(`/api/order/${id2}/sync`)).json()).status, 'error');
 });
+
+test('Tarjeta desde México: cobra en pesos (Carnet y débito mexicanos no aceptan dólares) y se entrega al pagar', async () => {
+  const mx = { 'CF-IPCountry': 'MX' };
+  // el botón «Tarjeta» enseña pesos solo a quien entra desde México
+  assert.strictEqual((await (await call('/api/config', { headers: mx })).json()).cardCurrency, 'MXN');
+  assert.strictEqual((await (await get('/api/config')).json()).cardCurrency, 'USD');
+  await seen('Mx_Tarjeta');
+  const buy = (headers) => call('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ acceptTerms: true, method: 'stripe', productId: 'crate-valentine', username: 'Mx_Tarjeta' }),
+  });
+  const usd = products.find((p) => p.id === 'crate-valentine').price;
+  const res = await buy(mx);
+  assert.strictEqual(res.status, 200);
+  const { id } = await res.json();
+  const session = sessionOf(id);
+  assert.strictEqual(session.currency, 'mxn');
+  assert.strictEqual(session.amount_total, Math.ceil(usd * 18.68 - 1e-9));
+  assert.strictEqual((await pay(id)).status, 'queued');
+  // desde otro país, en dólares como siempre
+  const { id: id2 } = await (await buy({ 'CF-IPCountry': 'AR' })).json();
+  assert.strictEqual(sessionOf(id2).currency, 'usd');
+  assert.strictEqual(sessionOf(id2).amount_total, usd);
+});
