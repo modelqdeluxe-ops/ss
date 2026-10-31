@@ -71,7 +71,9 @@ final class PadWallpaperPage extends PadPage {
             Util.getPlatform().openFile(PadWallpaper.dir().toFile());
         });
         // la rejilla de miniaturas (16:9 como el cristal, algo más ancha)
-        int gx = X + 8, gy = top + 22, gw = W - 16, gh = Y + H - 6 - gy;
+        // (abajo, el aviso de la carpeta si aún no hay fondos tuyos: la rejilla acaba antes para no taparlo)
+        boolean hint = PadWallpaper.files(false).isEmpty();
+        int gx = X + 8, gy = top + 22, gw = W - 16, gh = Y + H - (hint ? 16 : 6) - gy;
         int tw = (gw - GAP * (COLS - 1)) / COLS, th = Math.round(tw * 0.46F);
         List<PadWallpaper.Option> all = PadWallpaper.all();
         int rows = (all.size() + COLS - 1) / COLS;
@@ -85,6 +87,8 @@ final class PadWallpaperPage extends PadPage {
             boolean sel = o.id().equals(PadSettings.wallpaper) || o.theme() && !PadWallpaper.active();
             boolean hover = PadUi.inside(mx, my, x, y, tw, th + LABEL) && PadUi.inside(mx, my, gx, gy, gw, gh);
             if (hover) pad.hover("§fondo" + i);
+            // los recuadros primero (PadUi.box rellena): luego la miniatura encima
+            if (sel) PadUi.box(g, x - 2, y - 2, tw + 4, th + 4, PadUi.GOLD_LO);
             PadUi.box(g, x - 1, y - 1, tw + 2, th + 2, sel ? PadUi.GOLD_LO : hover ? PadUi.INK : 0xFF9AA6C4);
             if (o.theme()) {
                 PadSettings.Theme t = PadSettings.theme();
@@ -99,7 +103,6 @@ final class PadWallpaperPage extends PadPage {
                 }
             }
             if (sel) {
-                PadUi.box(g, x - 2, y - 2, tw + 4, th + 4, PadUi.GOLD_LO);
                 int cx = x + tw - 9, cy = y + 3;
                 g.fill(cx - 1, cy - 1, cx + 8, cy + 8, 0xFF2EAF5C);
                 for (int d = 0; d < 2; d++) g.fill(cx + 1 + d, cy + 3 + d, cx + 2 + d, cy + 4 + d, 0xFFFFFFFF);
@@ -115,9 +118,9 @@ final class PadWallpaperPage extends PadPage {
             }
         }
         pad.noScissor(g);
-        if (PadWallpaper.files(false).isEmpty()) {
-            String hint = PadUi.fitEnd("Mete tus PNG en .minecraft/tfclient/fondos y pulsa RECARGAR.", W - 20);
-            PadUi.text(g, hint, X + (W - PadUi.font().width(hint)) / 2, Y + H - 11, PadUi.MUTED);
+        if (hint) {
+            String note = PadUi.fitEnd("Mete tus PNG en .minecraft/tfclient/fondos y pulsa RECARGAR.", W - 20);
+            PadUi.text(g, note, X + (W - PadUi.font().width(note)) / 2, Y + H - 12, PadUi.MUTED);
         }
     }
 

@@ -305,6 +305,9 @@ final class PadCameraPage extends PadPage {
             boolean sel = f.id().equals(frame);
             boolean hover = PadUi.inside(mx, my, tx, ty, tw, th) && PadUi.inside(mx, my, x, gy, w, gh);
             if (hover) pad.hover("§marco" + i);
+            // los recuadros primero (PadUi.box rellena): luego la miniatura encima
+            if (sel) PadUi.box(g, tx - 2, ty - 2, tw + 4, th + 4, PadUi.GOLD_LO);
+            PadUi.box(g, tx - 1, ty - 1, tw + 2, th + 2, sel ? PadUi.GOLD_LO : hover ? PadUi.INK : 0xFF9AA6C4);
             if (f.id().isEmpty()) {
                 g.fillGradient(tx, ty, tx + tw, ty + th, 0xFF5E8F7A, 0xFF2D5244);
                 PadUi.text(g, PadUi.fitEnd("Sin marco", tw - 4), tx + 3, ty + th / 2 - 4, 0xFFFFFFFF);
@@ -313,8 +316,6 @@ final class PadCameraPage extends PadPage {
                 Minecraft.getInstance().getTextureManager().getTexture(f.mini()).setFilter(true, false);
                 g.blit(f.mini(), tx, ty, tw, th, 0, 0, 256, 144, 256, 144);
             }
-            PadUi.box(g, tx - 1, ty - 1, tw + 2, th + 2, sel ? PadUi.GOLD_LO : hover ? PadUi.INK : 0x8018265C);
-            if (sel) PadUi.box(g, tx - 2, ty - 2, tw + 4, th + 4, PadUi.GOLD_LO);
             int top = Math.max(ty, gy), bottom = Math.min(ty + th, gy + gh);
             if (bottom > top) {
                 buttons.add(new int[] {tx, top, tw, bottom - top});
