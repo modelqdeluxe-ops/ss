@@ -242,7 +242,8 @@ public final class PadClanBank {
             if (it == Items.AIR) continue;
             long n = e.getValue().getAsLong();
             ItemStack icon = new ItemStack(it, (int) Math.min(Integer.MAX_VALUE, Math.max(1, n)));
-            b.cell(new PadView.Cell(icon, PadView.shortNumber(n), 0x18265C, take ? "banco.sacar:" + e.getKey() : "", false));
+            // casillas pequeñas, como un inventario (la cantidad encima y corta debajo)
+            b.cell(icon, PadView.shortNumber(n), 0x18265C, take ? "banco.sacar:" + e.getKey() : "", false);
         }
         // lo que lleva y puede meter
         Map<String, Long> mine = new LinkedHashMap<>();

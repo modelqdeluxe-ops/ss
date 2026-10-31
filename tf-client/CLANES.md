@@ -85,99 +85,32 @@ Reglas que salen de ahí:
 `pad/PadWallpaperPage`, `pad/PadPhotoFrames`, `PadCameraPage` (elegir marco), `PadCommunityClient.encode` (lo pega),
 generadores `tools/pad/fondos.py` y `tools/pad/marcos.py`, prueba en `bosses/BossTest` (escenario `pad`, casos 1358–1566).
 
-## 3. Fase 2 (1.3.156): núcleo de los clanes — EN CURSO (commit WIP)
+## 3. Lo hecho en la 1.3.156 (fases 2–5, todo en el mismo parche)
 
-### Hecho (escrito, sin compilar ni probar todavía)
-- `tools/pad/clanes.py`: genera la moneda azul (`textures/gui/pad/coin_clan.png`, `coin_clan_s.png`,
-  `textures/item/fantastic_coin_clan.png`, recoloreando la dorada) y **48 insignias** pixel art de 64×64
-  (`textures/gui/pad/insignias/<id>.png` + `pad/insignias.json` `[{id, nombre}]`). Se vuelve a correr sin problema.
-- `pad/server/PadClanProgress.java` (nuevo): todo el progreso del clan, guardado en el objeto del clan de `clanes.json`:
-  - `monedasClan` (Clan Coins: `coins/addCoins/takeCoins`, `treasurer(c, uuid)` = líder o colíder, `walletOf(uuid)` =
-    -1 si no es tesorero), `nivel`/`xp` (`MAX_LEVEL = 20`, `xpFor(l) = round(1000·1,35^(l-1)/50)·50`; al subir, 100 ×
-    nivel Clan Coins y aviso al clan), `prestigio`, `insignia` (`badge(c)`, por defecto la primera),
-    `maxMembers(c) = min(40, 20 + 2·(nivel-1))`.
-  - Misiones semanales: `POOL` de 20 (piedra, troncos, carbón, hierro, cobre, pala, cultivos, hostiles, zombis,
-    esqueletos, arañas, creepers, pesca, criar, antorchas, herramientas, pan, lingotes, colocar, encantar; metas para 5
-    miembros, `goal()` las escala por miembros ×clamp(0,5+0,1n, 0,7, 2,5)); `MISSIONS_PER_WEEK = 4` elegidas con
-    `Random(semana·1_000_003 + id.hashCode())`; se guardan en `misiones = {semana, lista[{id, meta, progreso, hecha}],
-    aportes{uuid: n}}`. `record(player, tipo, match, n)` (lo llama `TFJobs.record`) suma al clan y **a los aliados la
-    mitad** (`ALLY_SHARE = 0.5`, lista `aliados`); `complete()` da Clan Coins, prestigio, XP y **1 moneda verde a cada uno
-    que aportó** (`PadGreen.add(server, uuid, 1)`, que ya sirve con el jugador desconectado).
-  - `byPrestige()` para el ranking.
-- `pad/server/PadClanViews.java` (nuevo): `hero()` (ficha con la insignia, nivel y barra, prestigio, miembros, y las
-  Clan Coins para los tesoreros), `missions()` (las 4 de la semana con barra y los 5 que más aportan), `style()` (la
-  etiqueta con su color, botón PALETA, todas las insignias en tarjetas, campo «colhex») y `ranking()` (top 20 por
-  prestigio con insignia, nivel, miembros y líder).
-- `PadClans.java`: pestañas MIEMBROS (con la ficha), MISIONES, ESTILO (solo el líder; alias `color`) y AJUSTES (fila
-  «Color e insignia»); acción `insignia:<id>`; tope de miembros con `maxMembers`; `allies(c)`. Las acciones de color
-  `col:#RRGGBB` y `colhex` ya existían (1.3.132) y siguen. La constante `MAX_MEMBERS` ya no se usa (quítala).
-- `PadRanking.java`: pestaña **CLANES** (`PadClanViews.ranking`).
-- `PadUi`/`PadView`: el prefijo `¢` en los chips = Clan Coin azul (`PadView.clanCoins(v)` → «¢1.250», `coin_clan_s`,
-  tono azul).
-- `TFPadNet.State` lleva `clanCoins` (escrito/leído después de `green`; -1 = no es tesorero) y `TFPadScreen` la dibuja
-  arriba con `coin_clan` en azul (0x9CD2FF) solo para el líder y los colíderes. **Comprueba en la captura el orden con
-  la verde y la dorada** (se pintan de derecha a izquierda).
-- `TFJobs.record` llama también a `PadClanProgress.record`.
+**Economía de las Clan Coins (sin inflar, orden del dueño).** Son del clan (`monedasClan` en clanes.json) y solo las ven
+y gastan el líder y los colíderes. Se ganan: misiones del clan 1–2 (`PadClanProgress.POOL`: 2 las difíciles), subir de
+nivel 1 (2 en los niveles 5, 10, 15 y 20: `levelReward`), ganar una guerra 2 (`PadClanWar.WIN_COINS`). Unas 6 a la
+semana con las 4 misiones. Los duelos no dan monedas (solo prestigio).
 
-### Falta (en este orden)
-1. **Que compile** (CI `tf-client.yml` del commit WIP).
-2. **La paleta tipo Paint** (cliente): una página `pad/PadColorPicker` (extiende `PadPage`, como `PadWallpaperPage`):
-   cuadro de saturación/brillo (una `fillGradient` por columna, de blanco→tono arriba a negro abajo), barra de tono
-   vertical, fila de colores básicos (los de Paint: 28), muestra antes/después con la etiqueta `[TAG]` pintada, campo
-   hex editable, GUARDAR y CANCELAR. Al guardar manda la acción `col:#RRGGBB` a la app `clanes`, pestaña `estilo`
-   (`TFPadNet.Action("clanes", "estilo", "col:#RRGGBB", "")`) y vuelve a abrir la app en ESTILO. `backTo()` → la app
-   de clanes.
-   El botón PALETA de `PadClanViews.style` ya manda `§color:clanes:estilo:<HEX>:<TAG>`; hay que atenderlo en
-   `PadViewPage.run` (como `§open:`) para abrir la paleta. **Ahora mismo ese botón se manda al servidor y no hace nada.**
-3. **Prueba en el juego** (añádela al escenario `pad` de `bosses/BossTest`): crear un clan con un bot (`/tf bots`),
-   hacer al jugador líder, sumar progreso de misión (`PadClanProgress.record` directo o romper bloques) hasta completar
-   una, comprobar Clan Coins/XP/prestigio/verde en el informe, capturas de MIEMBROS (ficha), MISIONES, ESTILO, la
-   paleta abierta, la barra de arriba con la moneda azul y Ranking › CLANES. Valida los objetivos del `POOL` con
-   `TFMissionCheck.sample` (que cada `target` exista y se pueda cumplir).
-4. 1.3.156, `HANDOFF.md` (CHECKPOINT nuevo) y publicar.
+| Qué | Dónde | Cómo |
+|---|---|---|
+| Nivel, prestigio, misiones, insignias, ranking CLANES | `pad/server/PadClanProgress`, `PadClanViews`, `PadRanking` | como en la fase 2 de antes; `maxMembers` = 20 + 2·(nivel−1) hasta 40, + 2 por cada «+2 plazas» comprada |
+| Paleta tipo Paint | `pad/PadColorPicker` (cliente) | botón PALETA de ESTILO → `§color:clanes:estilo:<HEX>:<TAG>` (`PadViewPage.run`); cuadro S/B, barra de tono, los 28 colores de Paint, antes/ahora con la etiqueta (sobre oscuro y claro) y el hex escribible; GUARDAR manda `col:#RRGGBB` y vuelve a ESTILO |
+| Banco del clan | `pad/server/PadClanBank` (`clan_banco.json`), `clans/ClanBankBlock`, `clans/ClanBlocks`, `tools/pad/banco.py` | digital: `objetos {id: cantidad}`; sin NBT (encantados, con nombre, gastados no entran); 5.000 + 5.000 por mejora hasta 100.000 (19 mejoras; la n cuesta n+1 Clan Coins, 209 en total); meten todos, sacan líder y colíderes (y veteranos con «Los veteranos sacan del banco» en AJUSTES); REGISTRO de 40 movimientos; COFRE da el bloque `tfclient:banco_clan` (no guarda nada: abre la pestaña BANCO de quien lo usa) |
+| Guerras | `pad/server/PadClanWar` (`clan_guerras.json`), `pad/PadClanWarPage` (cliente, app de datos «guerra») | pestaña GUERRA: el líder o un colíder declara (doble clic) y el otro acepta en 24 h; 5 días; 5 objetivos de `PadClanWar.POOL` (duros, solo Overworld, meta por miembros con `goal`); cuenta lo que se hace con las reglas de los oficios (`TFJobs.record` → `PadClanProgress.record` → `PadClanWar.record`); gana el primero al 100 % o el que más lleve al acabar; premio 2 Clan Coins + 150 prestigio + 1 verde a cada uno que aportó; el otro 30 prestigio. VER LA GUERRA abre la barra vertical doble (una por clan con su color, META de oro, insignias, % y los 3 que más aportan; a la derecha los objetivos con las dos barritas) |
+| Alianzas | `pad/server/PadClanAlliances` | en GUERRA: ALIANZA (proponer), ACEPTAR/NO, ROMPER (doble clic); máximo 2; lo de cada uno suma la mitad a las misiones del otro (`ALLY_SHARE`); los aliados no se declaran la guerra |
+| Duelos | `pad/server/PadClanDuels` (`/clan duelo <jugador>`, `aceptar`, `rechazar`, en `PadClanChat.command`) | clanes distintos, a menos de 48 bloques; 60 s para aceptar (clic en el chat); cuenta atrás 3-2-1; el PvP apagado (global o de la zona) no lo para (`EntityProtectionEvents.onLivingHurt`); gana el que deja al otro a 1 corazón (nadie muere: `LivingDeathEvent` cancelado); 3 min = empate; alejarse 64 bloques = huye y pierde; +25 prestigio al clan del ganador, una vez cada 24 h por pareja |
+| Tienda del clan | `pad/server/PadClanShop` | pestaña TIENDA (líder y colíderes): Protección del clan 50x50 (15 Clan Coins, máx. 2), 120x120 (40, máx. 2), +2 plazas (10, máx. 5), potenciador de misiones x1,5 24 h (3) |
+| Protecciones del clan y territorio | `claims/data/ClaimTier` (`claimstone_clan_50x50` y `_120x120`, `isClan`), `Claim.clanId`, `BlockProtectionEvents.tryPlaceClaim`, `PlayerTracker`, `tools/gen_claim_blocks.py` (ónice y plata azulada) | solo las pone el líder o un colíder; la zona es del clan: `isMember` = cualquiera del clan, `isOwner` = líder y colíderes (`PadClans.managesTerritory`); al entrar, título «Territorio de [TAG] Nombre» con el color del clan; dentro nunca hay PvP entre los del clan (`PadClans.onAttack`); no cuentan para el límite de zonas por jugador |
+| Tienda del juego | `shop/TFShopProtections` (`tienda_protecciones.json`) | cada jugador compra una piedra de protección de cada tamaño, para siempre (y de una en una) |
 
-## 4. Fase 3: Banco del clan (propuesta, sin empezar)
+Al disolver un clan se borran su banco, su guerra (gana el otro) y sus alianzas.
 
-- **Bloque propio** «Banco del clan» (cofre con textura trabajada: genérala con un script en `tools/pad/` como las
-  demás, pixel art 16×16 por cara + modelo con tapa y cerraduras doradas/azules del clan; mira cómo están hechas las
-  piedras de protección en `claims/` para registrar bloque e ítem). Lo pone el líder; también se abre desde la app de
-  clanes (pestaña BANCO).
-- **Almacenamiento digital**: no guarda `ItemStack`s, solo `id del ítem → cantidad` en un archivo aparte
-  (`clan_banco.json`, uno por clan) para no cargar `clanes.json`. Los objetos con NBT (encantados, con nombre, con
-  durabilidad gastada) no se meten (o, si el dueño lo quiere, se guardan aparte con SNBT y cuentan 1 cada uno).
-- **Capacidad**: 5.000 ítems al principio, +5.000 por mejora, hasta 100.000 (19 mejoras). Coste en Clan Coins
-  creciente, por ejemplo 250 × mejora (250, 500, 750 … 4.750; 47.500 en total). Pregúntale al dueño la cifra final.
-- Meten todos los miembros; sacan el líder y los colíderes (o un permiso por miembro); registro de movimientos (quién,
-  qué, cuánto) visible en la app.
-- Vista en el pad: lista con buscador, icono, nombre y cantidad; meter desde el inventario (todo de un tipo / una pila)
-  y sacar por pilas.
+**Prueba en el juego**: `[prueba-jefes=clanes]` (`bosses/BossTestClanes`, casos «clanes 1»–«clanes 17» y capturas
+`clanes_1_miembros` … `clanes_17_cofre_abre_banco`) y `[prueba-jefes=arreglos]` (`bosses/BossTestFixes`: la GTS y las
+flags de spawn).
 
-## 5. Fase 4: duelos, guerras y alianzas (propuesta, sin empezar)
+## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 
-- **Duelos**: `/clan duelo <jugador>` en el mismo comando que `/clan chat` (`pad/server/PadClanChat`). Solo jugadores
-  en un clan, nunca del mismo clan (ni aliados, a confirmar). El retado acepta o rechaza (60 s). Cuenta atrás, sin
-  perder objetos (keepInventory solo para el duelo), gana el que deja al otro a 1 corazón (no muere). El clan del
-  ganador sube prestigio (p. ej. +25; el perdedor no baja); contra la misma pareja solo cuenta 1 vez cada 24 h (para que
-  no se haga farmeo).
-- **Guerras de clanes** (no es PvP; por objetivos): el líder declara la guerra desde la app, el otro líder acepta;
-  duran 3–7 días; misiones de guerra **difíciles y de equipo**, solo Overworld (p. ej. 40.000 piedra, 8.000 troncos,
-  2.000 hierro, 2.500 hostiles, 600 creepers, 10.000 cultivos, 1.000 peces…). Pantalla con una **barra de progreso
-  VERTICAL doble** (como la del pase, que es horizontal): cada lado con la insignia, el nombre y el color de su clan,
-  llenándose hasta la meta. Premio: Clan Coins, prestigio y verdes a los que aportaron (nunca amarillas).
-  Probablemente necesite una página de cliente propia o un tipo de «hero» especial en `PadView`.
-- **Alianzas**: el campo `aliados` (lista de ids) ya se lee y `record()` ya reparte la mitad del progreso a los
-  aliados. Falta la interfaz: proponer, aceptar, romper (líder), máximo 2 aliados, y que salga en la ficha.
-
-## 6. Fase 5: tienda del clan y territorio (propuesta, sin empezar)
-
-- Pestaña TIENDA en la app de clanes, se paga con Clan Coins (solo los tesoreros).
-- **Protecciones que ya tenemos** (personales, `claims/`): `proteccion_10x10`, `25x25`, `40x40`, `64x64`, `80x80`,
-  `100x100`, `150x150`, `250x250`, `300x300`, `500x500` y `proteccion_titulo`. Las del clan deben ser **otras**:
-  propuesta «Protección del clan» de 50×50, 100×100 y 150×150, dueña el clan (todos los miembros con permiso solos;
-  sin PvP entre miembros; título «Territorio de [TAG]» al entrar con el color del clan). **El dueño pidió que se las
-  propongas antes**: enséñale la lista y espera su respuesta.
-- Ideas para vender (preséntaselas): mejoras del banco, +plazas de miembros, el estandarte físico con la insignia,
-  etiqueta con degradado o animada, potenciador de XP del clan ×1,5 durante 24 h, `/clan home` (un punto de
-  teletransporte del clan), insignias exclusivas, partículas del clan en el territorio.
-- **Territorio del clan** (lo eligió el dueño): las protecciones del clan forman su territorio; aviso al entrar y,
-  si se puede, verlo en el mapa del pad.
+`/clan home` (un punto de teletransporte del clan), el estandarte físico con la insignia, etiqueta con degradado o
+animada, insignias exclusivas de pago, partículas del clan en su territorio y el territorio en el mapa del pad.

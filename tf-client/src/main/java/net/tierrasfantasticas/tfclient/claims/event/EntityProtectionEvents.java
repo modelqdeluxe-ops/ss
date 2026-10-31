@@ -172,8 +172,8 @@ public final class EntityProtectionEvents {
     // Ahora una sola regla (`blockedBy`) en los cuatro puntos por los que nace un mob: antes de crearlo
     // (SpawnPlacementCheck, por su categoría), al mirar el sitio (PositionCheck), al prepararlo (FinalizeSpawn) y al
     // entrar en el mundo (EntityJoinLevel, solo los recién nacidos: lo que ya estaba o entra andando se queda, como
-    // pidió el dueño). Los que pone un jugador (huevo, cubo, cría, comando, dispensador) y los del motor de TF
-    // (jefes, NPC, fauna: BossEntity) salen siempre.
+    // pidió el dueño). Los que pone un jugador (huevo, cubo, cría, comando, dispensador) y los del propio TF Client
+    // (jefes, NPC, fauna, caballeros: entidades «tfclient:») salen siempre.
     // ------------------------------------------------------------------------------------------------------------
 
     /** Lo que se sabe del mob para decidir: si es hostil y si es un animal (pasivo). */
@@ -205,8 +205,11 @@ public final class EntityProtectionEvents {
         return null;
     }
 
+    /** Lo que pone el propio TF Client (jefes, esbirros, NPC, fauna, caballeros del Void): sale siempre. */
     private static boolean ourEngine(Entity e) {
-        return e instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity;
+        if (e instanceof net.tierrasfantasticas.tfclient.bosses.BossEntity) return true;
+        net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        return id != null && id.getNamespace().equals(net.tierrasfantasticas.tfclient.TFClient.MOD_ID);
     }
 
     private static Level serverLevel(net.minecraft.world.level.ServerLevelAccessor accessor) {

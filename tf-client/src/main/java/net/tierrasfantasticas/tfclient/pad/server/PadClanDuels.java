@@ -77,6 +77,8 @@ public final class PadClanDuels {
         String result = "";
         /** Dónde estaba cada uno al empezar a pelear (el que más se aleja de su sitio es el que huye). */
         net.minecraft.world.phys.Vec3 fromA, fromB;
+        /** El último segundo de la cuenta atrás que se enseñó. */
+        int shown = -1;
 
         Duel(UUID a, UUID b, long start) {
             this.a = a;
@@ -265,9 +267,10 @@ public final class PadClanDuels {
             if (!d.fighting) {
                 // la cuenta atrás: 3, 2, 1, ¡YA!
                 int sec = (int) (t / 1000);
-                if (t % 1000 < 50) {
+                if (sec != d.shown && sec < 3) {
+                    d.shown = sec;
                     for (ServerPlayer p : new ServerPlayer[] {a, b}) {
-                        if (sec < 3) {
+                        {
                             title(p, String.valueOf(3 - sec), "Duelo contra " + (p == a ? b : a).getGameProfile().getName(), ChatFormatting.YELLOW);
                             p.playNotifySound(SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.MASTER, 0.8F, 1.0F);
                         }

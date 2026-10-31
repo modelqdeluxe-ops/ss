@@ -1,16 +1,12 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **31 oct 2026 — AHORA: el dueño quiere UN SOLO PARCHE CON TODO** (una sola versión, la 1.3.156, y una sola Release;
-> nada suelto). Lleva, en este orden de trabajo:
-> 1. **La caída del servidor por la GTS del pad** (un Item Terminal de Pretty Pipes: `PadMarket.listing` pide el tooltip
->    en el servidor y Pretty Pipes usa una clase del cliente). El dueño ya quitó esa venta, pero el fallo sigue en el
->    código. Causa y arreglo exacto en el CHECKPOINT del 31 oct de `HANDOFF.md`.
-> 2. **Las flags de las protecciones «sin mobs», «sin pasivos» y la global**, que no funcionan (mismo CHECKPOINT).
-> 3. **Lo de la 1.3.155**, ya hecho y probado en el juego (planeo de los sets ilimitado y sin hambre, fondo del menú del
->    pad, 44 marcos de fotos).
-> 4. **La actualización de clanes**: la fase 2 está a medias en el commit `d2f4bf5d`; todo en
->    **[`tf-client/CLANES.md`](tf-client/CLANES.md)** (Clan Coins azules, nivel y misiones, paleta tipo Paint,
->    insignias, banco, duelos, guerras, alianzas, tienda y territorio).
+> **31 oct 2026 — 1.3.156, EL PARCHE ÚNICO** (lo pidió el dueño: una sola versión y una sola Release con todo): la
+> caída del servidor por la GTS del pad (Pretty Pipes), las flags de spawn de las protecciones, lo de la 1.3.155
+> (planeo, fondo del menú del pad, marcos de fotos) y la actualización de clanes entera (Clan Coins de 1–2, paleta tipo
+> Paint, banco del clan con su cofre, guerras con la barra vertical doble, alianzas, duelos, tienda del clan,
+> protecciones del clan y territorio). Todo en el CHECKPOINT de `HANDOFF.md` y en
+> **[`tf-client/CLANES.md`](tf-client/CLANES.md)**. Pruebas en el juego: `[prueba-jefes=arreglos]` y
+> `[prueba-jefes=clanes]`.
 >
 > **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
 > AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
