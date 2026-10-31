@@ -1,0 +1,33 @@
+PRUEBA DE LOS JEFES EN EL JUEGO (TF Client 1.3.156)
+
+== pad
+   t=284 en la mano: valentine_sword
+   t=376 zona de la prueba 7bb30d36-3694-4fc2-b0eb-a148bbc9c14e (300x300, arden los monstruos); NPC dentro: vida 5.0 en 1000.5 -60.0 0.5
+   t=481 NPC en la zona tras 5 s: vivo, vida 5.0, ardiendo no, en 1000.5 -60.0 0.5
+   t=560 bots: /tpa y /msg a LautiOrtiz25; peticiones esperando: 1
+   t=644 bots: 4 dentro en el servidor; el cliente ve 5 en la lista (4 con su skin): [LautiOrtiz25, br4yan74, Miguet0, thomas73k]
+   t=660 bots tras /tf bots remove all: 0 en el servidor; el cliente ve 1 en la lista
+   t=670 bots, segunda tanda: [gabo385, lrafa60, dumelil5, TINCH069]; repetidos de la primera: 0
+   t=672 bots: a los 5 s, peticiones esperando: 0 (0 = el bot la denegó)
+   t=722 pad: ficha del bot gabo385: oficios [lenador] [1], 5 misiones, 2 cazas, 0 fotos, 0 likes, 0 exploraciones, 5 viajes
+   t=802 zona con título: c2f2ed5f-1c2b-4ad7-8910-b0a212e95c38
+   t=834 en las manos: oni_left_spear y oni_right_spear
+   t=922 inventario con shaders: false; la mezcla de Oculus estaba bloqueada al pintar un objeto 0 veces y OpenGL no coincidía con la caché de Minecraft 0 veces
+   t=926 set Fantástico encantado (nivel 6): starlight_sword: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_dagger: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_blade: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_axe: unbreaking 3, mending 1, sharpness 5, efficiency 5, fortune 3, ; starlight_pickaxe: unbreaking 3, mending 1, efficiency 5, fortune 3, ; starlight_shovel: unbreaking 3, mending 1, efficiency 5, fortune 3, ; starlight_hoe: unbreaking 3, mending 1, efficiency 5, fortune 3, ; starlight_battle_axe: unbreaking 3, mending 1, sharpness 5, efficiency 5, fortune 3, ; starlight_sickle: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_spear: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_staff: unbreaking 3, mending 1, sharpness 5, looting 3, fire_aspect 2, knockback 2, sweeping 3, ; starlight_bow: unbreaking 3, mending 1, power 5, punch 2, flame 1, ; starlight_shield: unbreaking 3, mending 1, ; starlight_wings: ; starlight_armor_helmet: protection 4, unbreaking 3, mending 1, respiration 3, aqua_affinity 1, thorns 3, ; starlight_armor_chestplate: protection 4, unbreaking 3, mending 1, thorns 3, ; starlight_armor_leggings: protection 4, unbreaking 3, mending 1, thorns 3, swift_sneak 3, ; starlight_armor_boots: protection 4, unbreaking 3, mending 1, thorns 3, feather_falling 4, depth_strider 3, soul_speed 3, ; 
+   t=998 comunidad: foto de prueba mvwkwhs8t de [lrafa60, gabo385, thomas73k]
+   t=1102 en la mano: proteccion_25x25
+   t=1320 en la mano: necros_sword; armadura con el casco de Eterno: 0
+   t=1562 marcos: oro: borde ffa1f1ff, centro ffff6020 (bien: el marco se pega y el centro queda igual); 44 marcos
+   t=1562 planeo: con tfclient:valentine_wings planeando sí, hambre 0.00 → 0.00 al planear, 3.00 sin planear; límite de planeo ninguno (bien)
+   pelea: 0 ticks; jefes distintos: 0; vida -1 -> -1
+   objetivo = el jugador: 0% del tiempo (cerca: 0%); golpes que me da: 0 (0.0 de daño); los míos: 0 (lo más cerca que llego: 1000000000.0 del borde)
+   mis golpes que le quitan vida: 0; sin efecto (sin estar en sus ticks de invulnerable): 0
+   me mueve el jefe (empujón, arrastre): 0 veces; lo más lejos que me lanza 0.0 bloques, lo más alto 0.0
+   anda: 0 ticks, hacia atrás 0 (con lockmodel del pack 0, empujado por su skill 0), de lado 0 (con lockmodel 0, empujado 0); rápido (>0,8 b/t) 0; teletransportes 0
+   al andar por el suelo: 0.000 bloques/tick de media (0 ticks)
+   en el aire (>3 bloques) 0 ticks, como mucho 0.0; lo más lejos de la grieta 0.0; esbirros a la vez 0
+   quieto y lejos del jugador (más de 2 s seguidos): 0 ticks
+   sin modelo 0 ticks; sin animación 0 ticks
+   animaciones (ticks): {}
+   al morir: anims []; barras que ve el cliente a los 3 s: -1; quitado: false; objetos: -1; experiencia: -1; esbirros vivos: -1
+
