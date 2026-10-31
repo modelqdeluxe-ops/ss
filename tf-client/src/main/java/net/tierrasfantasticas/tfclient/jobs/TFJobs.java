@@ -292,6 +292,8 @@ public final class TFJobs {
     private static void record(ServerPlayer player, String type, Predicate<TFJobsConfig.Target> match, int amount) {
         // Las misiones y cazas del pad cuentan lo mismo (con las mismas reglas: nada de bloques puestos ni spawners)
         net.tierrasfantasticas.tfclient.pad.server.PadMissions.record(player, type, match, amount);
+        // (1.3.156) y las misiones de su clan (y la mitad, las de sus aliados)
+        net.tierrasfantasticas.tfclient.pad.server.PadClanProgress.record(player, type, match, amount);
         if (!counts(player)) return;
         PlayerJobs p = data().player(player.getUUID());
         boolean changed = false;

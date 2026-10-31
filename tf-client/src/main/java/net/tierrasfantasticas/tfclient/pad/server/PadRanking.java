@@ -46,8 +46,14 @@ public final class PadRanking {
             String t = tab.isEmpty() ? "misiones" : tab;
             if (t.equals("monedas")) t = "dinero";
             PadView.Builder b = PadView.of("ranking").tab("misiones", "MISIONES").tab("cazas", "CAZAS").tab("likes", "LIKES")
-                    .tab("exploraciones", "EXPLORAR").tab("dinero", "DINERO").tab("muertes", "MUERTES").tab("mobs", "MOBS");
+                    .tab("exploraciones", "EXPLORAR").tab("dinero", "DINERO").tab("muertes", "MUERTES").tab("mobs", "MOBS")
+                    .tab("clanes", "CLANES");
             b.selected(t).empty("Sin datos.");
+            // (1.3.156, el dueño: «en el ranking del pad agregar una pestaña de clanes, su logo, info y prestigio»)
+            if (t.equals("clanes")) {
+                PadClanViews.ranking(b, player);
+                return b.build();
+            }
             List<Map.Entry<UUID, Long>> top;
             String unit;
             switch (t) {

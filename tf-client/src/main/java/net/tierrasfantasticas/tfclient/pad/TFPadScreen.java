@@ -969,6 +969,20 @@ public final class TFPadScreen extends Screen {
             blitBig(g, "coin", right, (bar - big(11)) / 2F);
             right -= big(8);
         }
+        // (1.3.156) las Fantastic Clan Coins del clan (azules), solo al líder y a los colíderes
+        if (s != null && !admin && s.clanCoins() >= 0) {
+            String clan = PadUi.THOUSANDS.format(s.clanCoins());
+            int w = big(PadFont.width(clan));
+            right -= w;
+            g.pose().pushPose();
+            g.pose().translate(right, textY + bs, 0);
+            g.pose().scale(bs, bs, 1);
+            PadFont.draw(g, clan, 0, 0, 0x9CD2FF, true);
+            g.pose().popPose();
+            right -= big(14);
+            blitBig(g, "coin_clan", right, (bar - big(11)) / 2F);
+            right -= big(8);
+        }
         // 1.3.38: las monedas verdes (las del Gachapón, se ganan con el TF Pass)
         if (s != null && !admin) {
             String greens = PadUi.THOUSANDS.format(s.green());

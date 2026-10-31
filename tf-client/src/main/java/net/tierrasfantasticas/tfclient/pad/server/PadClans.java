@@ -138,8 +138,8 @@ public final class PadClans {
         if (id == null) return;
         JsonObject c = clan(id);
         if (!invites(c, player.getUUID())) return;
-        if (members(c).size() >= MAX_MEMBERS) {
-            TFPadNet.notice(player, "El clan está lleno (" + MAX_MEMBERS + " miembros).");
+        if (members(c).size() >= PadClanProgress.maxMembers(c)) {
+            TFPadNet.notice(player, "El clan está lleno (" + PadClanProgress.maxMembers(c) + " miembros: sube de nivel para tener más plazas).");
             return;
         }
         if (clanIdOf(other) != null) {
@@ -155,6 +155,13 @@ public final class PadClans {
             online.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.MASTER, 0.6F, 1.2F);
         }
         TFPadNet.notice(player, "Invitación al clan enviada a " + otherName + ".");
+    }
+
+    /** (1.3.156) Los clanes aliados (alianza aceptada por los dos): sus misiones se ayudan. */
+    static List<String> allies(JsonObject c) {
+        List<String> out = new ArrayList<>();
+        for (String a : PadClanViews.ids(c, "aliados")) if (clan(a) != null) out.add(a);
+        return out;
     }
 
     static List<UUID> members(JsonObject c) {
@@ -333,20 +340,27 @@ public final class PadClans {
             String myRole = role(c, me);
             boolean boss = myRole.equals("lider"), officer = boss || myRole.equals("colider");
             List<UUID> list = members(c);
-            PadView.Builder b = PadView.of("clanes").tab("miembros", "MIEMBROS");
+            // (1.3.156) MISIONES del clan y ESTILO (insignia y color, con la paleta del pad) en lugar de COLOR
+            PadView.Builder b = PadView.of("clanes").tab("miembros", "MIEMBROS").tab("misiones", "MISIONES");
+            if (boss) b.tab("estilo", "ESTILO");
             if (boss) b.tab("ajustes", "AJUSTES");
-            if (boss) b.tab("color", "COLOR");
             boolean settings = boss && tab.equals("ajustes");
-            if (boss && tab.equals("color")) {
-                b.selected("color");
-                return colorView(b, c);
+            if (tab.equals("misiones")) {
+                b.selected("misiones");
+                return PadClanViews.missions(b, player, id, c);
+            }
+            if (boss && (tab.equals("estilo") || tab.equals("color"))) {
+                b.selected("estilo");
+                return PadClanViews.style(b, c);
             }
             b.selected(settings ? "ajustes" : "miembros");
-            b.header(TFJson.str(c, "nombre", "?") + " [" + TFJson.str(c, "etiqueta", "?") + "] · " + list.size() + "/" + MAX_MEMBERS
+            if (!settings) b.hero(PadClanViews.hero(c, me));
+            b.header(TFJson.str(c, "nombre", "?") + " [" + TFJson.str(c, "etiqueta", "?") + "] · " + list.size() + "/" + PadClanProgress.maxMembers(c)
                     + " miembros · tú: " + roleName(myRole));
             if (settings) {
-                b.row(new PadView.Row(new ItemStack(Items.ORANGE_DYE), "Color de la etiqueta", 0x18265C,
-                        List.of("Ahora: " + String.format("#%06X", rgbOf(c)) + ". Cámbialo en la pestaña COLOR (arriba)."), -1, "", null, null));
+                b.row(new PadView.Row(new ItemStack(Items.ORANGE_DYE), "Color e insignia", 0x18265C,
+                        List.of("Ahora: " + String.format("#%06X", rgbOf(c)) + " y «" + PadClanProgress.badge(c).name() + "». Cámbialos en ESTILO (arriba)."),
+                        -1, "", null, null));
                 boolean ff = TFJson.bool(c, "fuegoAmigo", false);
                 b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), "Fuego amigo", 0x18265C,
                         List.of(ff ? "Los del clan se pueden hacer daño." : "Los del clan no se hacen daño entre ellos."), -1, "",
@@ -409,6 +423,19 @@ public final class PadClans {
                 c.addProperty("color", v.toLowerCase(java.util.Locale.ROOT));
                 STORE_IMPL.changed();
                 for (UUID u : members(c)) refreshName(u);
+                return null;
+            }
+            // (1.3.156) la insignia del clan (ESTILO)
+            if (action.startsWith("insignia:")) {
+                if (!boss) return null;
+                String bid = action.substring(9);
+                for (PadClanProgress.Badge bd : PadClanProgress.badges()) {
+                    if (bd.id().equals(bid)) {
+                        c.addProperty("insignia", bid);
+                        STORE_IMPL.changed();
+                        tellClan(c, "Insignia nueva del clan: " + bd.name() + ".");
+                    }
+                }
                 return null;
             }
             int colon = action.indexOf(':');
@@ -584,7 +611,7 @@ public final class PadClans {
                     JsonObject c = clan(cid);
                     if (c == null || !INVITES.getOrDefault(me, Set.of()).contains(cid)) return null;
                     List<UUID> list = members(c);
-                    if (list.size() >= MAX_MEMBERS) {
+                    if (list.size() >= PadClanProgress.maxMembers(c)) {
                         TFPadNet.notice(player, "Ese clan ya está lleno.");
                         return null;
                     }
@@ -696,39 +723,6 @@ public final class PadClans {
         if (v.matches("#[0-9a-fA-F]{6}")) return Integer.parseInt(v.substring(1), 16);
         ChatFormatting f = ChatFormatting.getByName(v);
         return f != null && f.getColor() != null ? f.getColor() : 0xFFAA00;
-    }
-
-    /** Una casilla de color: un objeto teñido de ese color (se ve el color en el icono) que lo pone al pulsarla. */
-    private static PadView.Cell swatch(int rgb, int current) {
-        ItemStack s = new ItemStack(Items.LEATHER_HORSE_ARMOR);
-        s.getOrCreateTagElement("display").putInt("color", rgb);
-        s.getOrCreateTag().putInt("HideFlags", 127);
-        String hex = String.format("#%06X", rgb);
-        return new PadView.Cell(s, "", rgb, "col:" + hex, (rgb & 0xFFFFFF) == (current & 0xFFFFFF));
-    }
-
-    /**
-     * (1.3.132, el dueño: «el editor del color del tag del clan hazlo completo: una ventana con un editor de color, paleta
-     * interactiva o predefinida») La pestaña COLOR: la etiqueta con su color, la paleta (12 tonos en 5 luces y los grises),
-     * los 16 colores de Minecraft y un campo para escribir cualquiera (#RRGGBB).
-     */
-    private static PadView colorView(PadView.Builder b, JsonObject c) {
-        int cur = rgbOf(c);
-        String tag = "[" + TFJson.str(c, "etiqueta", "?") + "]";
-        b.header("Color de la etiqueta " + tag + ": " + String.format("#%06X", cur) + ". Pulsa un color de la paleta o escribe uno.");
-        b.hero(new PadView.Row(swatch(cur, cur).icon(), tag, cur, List.of("Así se ve al lado de tu nombre (lista, chat y encima de la cabeza).",
-                String.format("#%06X", cur)), -1, "", null, null));
-        float[][] lights = {{0.30F, 1F}, {0.55F, 1F}, {0.85F, 1F}, {0.90F, 0.72F}, {0.90F, 0.45F}};
-        for (float[] l : lights) {
-            for (int h = 0; h < 12; h++) b.cell(swatch(java.awt.Color.HSBtoRGB(h / 12F, l[0], l[1]) & 0xFFFFFF, cur));
-        }
-        for (int i = 0; i < 12; i++) {
-            int v = Math.round(255 * i / 11F);
-            b.cell(swatch(v << 16 | v << 8 | v, cur));
-        }
-        for (ChatFormatting f : ChatFormatting.values()) if (f.isColor() && f.getColor() != null) b.cell(swatch(f.getColor(), cur));
-        b.input("colhex", "Color en hex, por ejemplo #FF8800", 7, "PONER");
-        return b.build();
     }
 
     private static int colorIndex(String c) {

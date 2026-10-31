@@ -179,12 +179,17 @@ final class PadUi {
     static int tone(String text, boolean on, int tone) {
         if (tone >= 1 && tone <= 4) return tone;
         if (!on) return TONE_GRAY;
-        return text.startsWith("¤") ? TONE_GOLD : text.startsWith("+") ? TONE_GREEN : TONE_BLUE;
+        return text.startsWith("¤") ? TONE_GOLD : text.startsWith("¢") ? TONE_BLUE : text.startsWith("+") ? TONE_GREEN : TONE_BLUE;
     }
 
-    /** Ancho de una etiqueta. «¤1.250» lleva la moneda delante; «+¤48», más y la moneda. */
+    /** (1.3.156) ¿Empieza por una moneda? «¤» la de oro, «¢» la del clan (azul). */
+    private static boolean coinAt(String text, int i) {
+        return text.length() > i && (text.charAt(i) == '¤' || text.charAt(i) == '¢');
+    }
+
+    /** Ancho de una etiqueta. «¤1.250» lleva la moneda delante; «+¤48», más y la moneda; «¢300», la del clan. */
     static int chipWidth(String text) {
-        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        boolean plus = text.startsWith("+") && coinAt(text, 1), coin = plus || coinAt(text, 0);
         String rest = plus ? text.substring(2) : coin ? text.substring(1) : text;
         return (plus ? font().width("+") : 0) + (coin ? 9 : 0) + font().width(rest) + 8;
     }
@@ -192,7 +197,7 @@ final class PadUi {
     /** La etiqueta recortada (con «…») para que mida como mucho w, contando la moneda y el «+» que lleve delante. */
     static String fitChip(String text, int w) {
         if (chipWidth(text) <= w) return text;
-        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        boolean plus = text.startsWith("+") && coinAt(text, 1), coin = plus || coinAt(text, 0);
         String head = plus ? text.substring(0, 2) : coin ? text.substring(0, 1) : "";
         String rest = text.substring(head.length());
         int room = w - (chipWidth(head + "x") - font().width("x"));
@@ -207,7 +212,8 @@ final class PadUi {
         box(g, x, y, w, h, c[0]);
         g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, c[1], c[2]);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
-        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        boolean plus = text.startsWith("+") && coinAt(text, 1), coin = plus || coinAt(text, 0);
+        boolean clan = coin && text.charAt(plus ? 1 : 0) == '¢';
         String rest = plus ? text.substring(2) : coin ? text.substring(1) : text;
         int tx = x + 4, ty = y + (h - 8) / 2 + 1;
         if (plus) {
@@ -216,7 +222,7 @@ final class PadUi {
         }
         if (coin) {
             RenderSystem.enableBlend();
-            g.blit(TFPadScreen.tex("coin_s"), tx, y + (h - 8) / 2, 0, 0, 8, 8, 8, 8);
+            g.blit(TFPadScreen.tex(clan ? "coin_clan_s" : "coin_s"), tx, y + (h - 8) / 2, 0, 0, 8, 8, 8, 8);
             tx += 9;
         }
         g.drawString(font(), rest, tx, ty, c[3], false);
