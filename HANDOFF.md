@@ -212,6 +212,24 @@ Arreglo pedido (hazlo tú, no estaba hecho):
    Mientras tanto, para que no se caiga: que nadie abra esa venta, o que el dueño la quite con el servidor apagado de
    `world/…/gts.json` (`TFMarket`, `TFJson.worldFile(server, "gts.json")`; busca `prettypipes:item_terminal`).
 
+**También del dueño (31 oct): «la flag de no mobs y la de pasivos no están funcionando; la de las claims también».**
+No está tocado. Son las flags de spawn de las protecciones (`claims/`): «Sin spawn de mobs» (`MOB_SPAWN` →
+`ClaimFlags.blockMobSpawn`), «Sin ningún mob» (`ALL_MOB_SPAWN` → `blockAllMobSpawn`), «Sin pasivos»
+(`PASSIVE_MOB_SPAWN` → `blockPassiveMobSpawn`, página 3 del menú, `claims/gui/ClaimMenuHandler`) y la global
+«Sin spawn de mobs (global)» (`GlobalFlags.globalNoMobSpawn`, `AdminGlobalFlagsHandler` y `/tfclaims` admin). Todo se
+decide en `claims/event/EntityProtectionEvents`: `shouldBlockSpawn`, `onFinalizeSpawn` (`MobSpawnEvent.FinalizeSpawn`) y
+`onEntityJoin` (`EntityJoinLevelEvent`). Sospechas a comprobar (no verificadas):
+- `onEntityJoin` sale enseguida si el mob no es hostil (`ClaimMobs.hostile`): los pasivos y «ningún mob» solo se paran
+  en `FinalizeSpawn`; si en Mohist ese evento no llega por algún camino de spawn (Bukkit), no se para nada.
+- Con `flag = true` (FinalizeSpawn) «Sin spawn de mobs» solo para `Monster`: los hostiles que no lo son (slimes,
+  phantoms, `Enemy` de otros mods) pasan. Usa `ClaimMobs.hostile` en los dos sitios.
+- Las flags solo impiden que **aparezcan**: los mobs que ya estaban (`loadedFromDisk`) o que **entran andando** desde
+  fuera siguen ahí, y el dueño lo verá como «no funciona». Pregúntale si quiere que además se quiten/no entren
+  (p. ej. retirar cada pocos segundos los mobs sin dueño dentro de la zona, como hace `BURN_HOSTILES`).
+- Comprueba también que la flag se guarda y se lee (`Claim.java`, `blockAllMobSpawn`/`blockPassiveMobSpawn` en el JSON).
+Pruébalo tú en el juego (escenario de la prueba con una protección, cada flag puesta, esperar y contar mobs nuevos
+dentro, de noche y de día) antes de decir que está arreglado.
+
 **El dueño pidió parar aquí.** La 1.3.155 (abajo) está probada en el juego y lista, pero no fusionada. Encima hay un
 commit «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48 insignias, ranking
 de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).**

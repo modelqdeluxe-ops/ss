@@ -19,6 +19,8 @@ Rama `claude/wizardly-euler-tw8ooy`, encima de `main` (que tiene la web de los T
 
 **Antes que nada: arregla la caída del servidor** (la GTS del pad con un Item Terminal de Pretty Pipes); está en el
 primer bloque del CHECKPOINT del 31 oct de `HANDOFF.md`. Para publicarla rápido, saca el WIP de clanes (abajo).
+Y después, **las flags de las protecciones «sin mobs» y «sin pasivos»** (y la global), que según el dueño no funcionan
+(mismo CHECKPOINT).
 
 **Qué hacer primero (después de eso):** termina la fase 2 (§3, «Falta»), súbela a **1.3.156** (`mod_version` en
 `tf-client/gradle.properties` y `VERSION` en `TFClient.java`), prueba en el juego, apunta en `HANDOFF.md` y publica
