@@ -1950,9 +1950,11 @@
     // Mercado Pago (cuenta de México) cobra lo mismo en pesos, al cambio de hoy
     const rate = Number(config.mpRate) || 0;
     const mxn = rate ? `· $${(Math.ceil(unitPrice() * rate - 1e-9) * qty / 100).toFixed(2)} MXN` : '';
-    $('#pay-mp-mxn').textContent = mxn;
+    const mpMxn = $('#pay-mp-mxn');
+    if (mpMxn) mpMxn.textContent = mxn;
     // (31 oct 2026) desde México la tarjeta también cobra en pesos
-    $('#pay-card-mxn').textContent = config.cardCurrency === 'MXN' ? mxn : '';
+    const cardMxn = $('#pay-card-mxn');
+    if (cardMxn) cardMxn.textContent = config.cardCurrency === 'MXN' ? mxn : '';
     const from = player?.quote?.upgradeFrom;
     $('#dialog-upgrade').textContent = from ? `· mejora desde ${from.replace(/^Rango\s+/i, '')}` : '';
   }
@@ -2057,7 +2059,7 @@
     showError('');
     paying = false;
     $('#pay-terms').checked = false;
-    $('#pay-btn').innerHTML = `${PAY_ICON.card}Tarjeta`;
+    $('#pay-btn').innerHTML = `${PAY_ICON.card}<span>Tarjeta <small id="pay-card-mxn"></small></span>`;
     $('#pay-btn').classList.remove('is-loading');
     $('#pay-paypal').classList.remove('is-loading');
     $('#pay-mp').classList.remove('is-loading');
