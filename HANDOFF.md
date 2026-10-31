@@ -190,6 +190,30 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (31 oct 2026, TF Client 1.3.155 VERIFICADA SIN PUBLICAR + clanes a medias) — lee esto primero
+
+**El dueño pidió parar aquí.** La 1.3.155 (abajo) está probada en el juego y lista, pero no fusionada. Encima hay un
+commit «WIP clanes fase 2» sin terminar (Clan Coins azules, nivel, prestigio, misiones del clan, 48 insignias, ranking
+de clanes). **Todo lo de los clanes, lo que pidió el dueño literal, lo hecho y lo que falta paso a paso: [`tf-client/CLANES.md`](tf-client/CLANES.md).**
+Lo siguiente: terminar la fase 2 (§3 de CLANES.md: que compile, la paleta tipo Paint, la prueba), subir a 1.3.156 y
+publicar todo junto.
+
+
+El dueño: «el vuelo de los sets, quita que me quite hambre volar y quita esos 30 segundos: el planeo ilimitado como el de
+las élitras (los boost, no los toques)», «que pueda poner un fondo cualquiera en el pad, un png que se autoajuste, solo
+en el menú principal; que lo cambie en Ajustes; más fondos o colores» y «en el modo foto, una lista extensa de marcos».
+- **Planeo**: `items/TFWings.GLIDE_TICKS = Integer.MAX_VALUE` (sin límite) y `mixin/PlayerFoodWingsMixin` cancela
+  `Player.causeFoodExhaustion` mientras se planea con unas alas de set. Los impulsos siguen igual.
+- **Fondo del menú** (`pad/PadWallpaper`, `pad/PadWallpaperPage`, Ajustes › «Fondo del menú»): el del tema, 12 colores,
+  12 dibujados (`tools/pad/fondos.py` → `textures/gui/pad/fondos/`, `pad/fondos.json`) y los PNG del jugador en
+  `.minecraft/tfclient/fondos` (se cargan en segundo plano; >1920 px se reducen), recortados para cubrir el cristal.
+  Solo en el menú principal; las apps conservan el suyo. `PadSettings.wallpaper` (propiedad `fondo`).
+- **Marcos de fotos** (`pad/PadPhotoFrames`, `tools/pad/marcos.py`: 44 marcos en 1600×900, 640×360 y 256×144): se eligen
+  al escribir el texto de la foto en la cámara (columna de la derecha), se ven encima de la foto y se pegan al publicarla
+  (`PadCommunityClient.encode`).
+- Prueba `[prueba-jefes=pad]`: «marcos: … bien», «planeo: … hambre 0.00 → 0.00 … límite ninguno (bien)» y las capturas
+  `pad_fondo_*`, `pad_ajustes_fondo`, `pad_fondos_selector` y `pad_camara_marco`.
+
 ### CHECKPOINT (30 oct 2026, TF Client 1.3.154 y web) — lee esto primero
 
 **Web** (el dueño: «pon no disponibles las skills hasta un reajuste de la economía» y «garantía de 24 horas, ban de IP

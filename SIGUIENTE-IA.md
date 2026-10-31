@@ -1,5 +1,11 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **31 oct 2026 — AHORA**: la **1.3.155** (planeo de los sets ilimitado y sin hambre, fondo del menú del pad, 44 marcos
+> de fotos) está verificada en el juego pero **sin publicar**, y encima hay un commit **«WIP clanes fase 2»** a medias.
+> Sigue por **[`tf-client/CLANES.md`](tf-client/CLANES.md)** (la actualización grande de clanes: Clan Coins azules,
+> nivel y misiones, paleta tipo Paint, insignias, banco, duelos, guerras, alianzas, tienda y territorio) y el
+> CHECKPOINT del 31 oct de `HANDOFF.md`.
+>
 > **1.3.121 (23 oct 2026)**: servidor de verdad `tierras.ultramc.co` (la IP solo se cambia desde `/staff` de la web),
 > AutoModpack obligatorio antes de entrar, menú principal ajustado y sin lag, y la piedra de protección sin líneas de
 > suelo (CHECKPOINT de `HANDOFF.md`).
