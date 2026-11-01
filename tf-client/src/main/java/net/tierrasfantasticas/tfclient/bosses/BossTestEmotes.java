@@ -25,6 +25,7 @@ import net.tierrasfantasticas.tfclient.pad.server.PadClans;
  * de la etiqueta, bloqueados hasta comprarlos en la tienda del clan; la cuadrícula de emotes; el editor de la etiqueta con
  * los estilos de arcoíris; y un vídeo de cada emote nuevo. Con «[shaders]» en el commit (el dueño: «que los efectos se
  * vean con shaders también»), los 15 emotes en pocos fotogramas cada uno (con shaders la máquina va a 1-2 por segundo).
+ * OJO: el workflow solo sale si el push cambia algo dentro de tf-client/ (un commit vacío no la lanza).
  */
 final class BossTestEmotes {
     private BossTestEmotes() {}
