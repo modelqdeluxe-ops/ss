@@ -5762,6 +5762,563 @@
     ]
   },
   {
+    "id": "crate-dryadia",
+    "category": "crates",
+    "name": "Crate Dríada",
+    "theme": "dryadia",
+    "colors": [
+      "#d9f99d",
+      "#65a30d"
+    ],
+    "tagline": "La guardiana del bosque",
+    "description": "Madera viva, hojas y flores de la guardiana del bosque: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y corona de ramas. Y más cosas en el juego.",
+    "image": "img/crates/dryadia.webp",
+    "price": 499,
+    "maxQuantity": 1,
+    "set": "dryadia",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} dryadia",
+      "tf web monedas dar {player} 100",
+      "tf web verdes dar {player} 1",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:enchanted_golden_apple 1",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:ender_pearl 16"
+    ]
+  },
+  {
+    "id": "crate-spring",
+    "category": "crates",
+    "name": "Crate Primavera",
+    "theme": "spring",
+    "colors": [
+      "#fed7aa",
+      "#fb7185"
+    ],
+    "tagline": "Pétalos y flores de cerezo",
+    "description": "Madera de cerezo, pétalos rosas y flores: espada, maza, guadaña, tridente, ballesta, armadura completa, alas de mariposa y casco. Y más cosas en el juego.",
+    "image": "img/crates/spring.webp",
+    "price": 499,
+    "maxQuantity": 1,
+    "set": "spring",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} spring",
+      "tf web monedas dar {player} 100",
+      "tf web verdes dar {player} 1",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:enchanted_golden_apple 1",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:ender_pearl 16"
+    ]
+  },
+  {
+    "id": "crate-drakegoat",
+    "category": "crates",
+    "name": "Crate Draco Imperial",
+    "theme": "drakegoat",
+    "colors": [
+      "#fde68a",
+      "#ca8a04"
+    ],
+    "tagline": "Oro y obsidiana del imperio",
+    "description": "El arsenal imperial del draco: obsidiana negra con filos de oro. Espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y casco con cuernos. Y más cosas en el juego.",
+    "image": "img/crates/drakegoat.webp",
+    "price": 499,
+    "maxQuantity": 1,
+    "set": "drakegoat",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} drakegoat",
+      "tf web monedas dar {player} 100",
+      "tf web verdes dar {player} 1",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:enchanted_golden_apple 1",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:ender_pearl 16"
+    ]
+  },
+  {
+    "id": "crate-onicurse",
+    "category": "crates",
+    "name": "Crate Maldición Oni",
+    "theme": "onicurse",
+    "colors": [
+      "#fecdd3",
+      "#be123c"
+    ],
+    "tagline": "La máscara maldita",
+    "description": "Carmesí y sombra de la maldición oni: gran espada, hacha de batalla, hoz, lanza, bastón, arco, armadura completa y alas. Y más cosas en el juego.",
+    "image": "img/crates/onicurse.webp",
+    "price": 499,
+    "maxQuantity": 1,
+    "set": "onicurse",
+    "models": [
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} onicurse",
+      "tf web monedas dar {player} 100",
+      "tf web verdes dar {player} 1",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:enchanted_golden_apple 1",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:ender_pearl 16"
+    ]
+  },
+  {
+    "id": "crate-deepsea",
+    "category": "crates",
+    "name": "Crate Reliquias del Abismo",
+    "theme": "deepsea",
+    "colors": [
+      "#a5f3fc",
+      "#0891b2"
+    ],
+    "tagline": "Tesoros de las profundidades",
+    "description": "Oro, coral y agua del fondo del mar: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y sombrero de tiburón. Y más cosas en el juego.",
+    "image": "img/crates/deepsea.webp",
+    "price": 499,
+    "maxQuantity": 1,
+    "set": "deepsea",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} deepsea",
+      "tf web monedas dar {player} 100",
+      "tf web verdes dar {player} 1",
+      "give {player} minecraft:golden_apple 8",
+      "give {player} minecraft:enchanted_golden_apple 1",
+      "give {player} minecraft:diamond 8",
+      "give {player} minecraft:experience_bottle 32",
+      "give {player} minecraft:golden_carrot 32",
+      "give {player} minecraft:ender_pearl 16"
+    ]
+  },
+  {
     "id": "crate-soulskull",
     "category": "crates",
     "name": "Crate Soul Skull",

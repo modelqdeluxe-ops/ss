@@ -96,6 +96,17 @@ CRATES = [
      'El arsenal del genio Ifrit: obsidiana verde con llamas carmesí. Espada, martillo, hoz, lanza, bastón, ballesta, armadura completa, alas, carcaj y casco.', '', 449, ('#fda4af', '#be123c')),
     ('easter', 'Crate Conejo de Pascua', 'Edición limitada', 'Huevos, zanahorias y conejos',
      'El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo.', 'items/easter/key', 349, ('#f5d0fe', '#d946ef')),
+    # (TF Client 1.3.162) las 5 del dueño del 1 nov 2026
+    ('dryadia', 'Crate Dríada', 'Mítico', 'La guardiana del bosque',
+     'Madera viva, hojas y flores de la guardiana del bosque: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y corona de ramas.', 'items/dryadia/key', 499, ('#d9f99d', '#65a30d')),
+    ('spring', 'Crate Primavera', 'Edición limitada', 'Pétalos y flores de cerezo',
+     'Madera de cerezo, pétalos rosas y flores: espada, maza, guadaña, tridente, ballesta, armadura completa, alas de mariposa y casco.', 'items/spring/key', 499, ('#fed7aa', '#fb7185')),
+    ('drakegoat', 'Crate Draco Imperial', 'Legendario', 'Oro y obsidiana del imperio',
+     'El arsenal imperial del draco: obsidiana negra con filos de oro. Espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y casco con cuernos.', 'items/drakegoat/key', 499, ('#fde68a', '#ca8a04')),
+    ('onicurse', 'Crate Maldición Oni', 'Legendario', 'La máscara maldita',
+     'Carmesí y sombra de la maldición oni: gran espada, hacha de batalla, hoz, lanza, bastón, arco, armadura completa y alas.', 'items/onicurse/key', 499, ('#fecdd3', '#be123c')),
+    ('deepsea', 'Crate Reliquias del Abismo', 'Mítico', 'Tesoros de las profundidades',
+     'Oro, coral y agua del fondo del mar: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y sombrero de tiburón.', 'items/deepsea/key', 499, ('#a5f3fc', '#0891b2')),
     ('soulskull', 'Crate Soul Skull', 'Legendario', 'Calaveras y fuego de almas',
      'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]

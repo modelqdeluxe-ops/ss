@@ -65,7 +65,10 @@ def main():
             if ctx not in DISPLAY:
                 errs.append(('display', f, ctx))
     for f in glob.glob('textures/**/*.mcmeta', recursive=True):
-        a = json.load(open(f))['animation']
+        meta = json.load(open(f))
+        if 'animation' not in meta:
+            continue  # solo «texture» (blur/clamp: las insignias de los clanes a 256 px), no es una animación
+        a = meta['animation']
         w, h = Image.open(f[:-7]).size
         fw = a.get('width', w)
         fh = a.get('height', fw if h % fw == 0 else h)

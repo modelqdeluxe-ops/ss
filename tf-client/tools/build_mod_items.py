@@ -1354,9 +1354,9 @@ def main(packs, only=None):
     for lang_file in ('es_es.json', 'en_us.json'):
         path = os.path.join(ASSETS, 'lang', lang_file)
         old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
-        old = {k: v for k, v in old.items()
-               if k.startswith(('item.tfclient.job_', 'item.tfclient.fantastic_coin', 'item.tfclient.proteccion_'))
-               or not k.startswith(('item.tfclient.', 'tfclient.set.', 'itemGroup.tfclient'))}
+        # (1.3.162) se conserva todo lo que ya había (antes se borraban los nombres de lo que no es de un set: las armas de
+        # las clases «clase_*», el pad de administrador o el disco compartido salían sin nombre); los sets lo pisan
+        old = {k: v for k, v in old.items() if k != 'itemGroup.tfclient.sets'}
         with open(path, 'w', encoding='utf-8') as fh:
             json.dump({**old, **lang}, fh, ensure_ascii=False, indent=1)
     print(f'TOTAL {total} objetos en {len(sets_out)} sets; mipmap mínimo {mip_low[0]}px')

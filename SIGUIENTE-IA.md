@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.162, 5 CRATES NUEVAS**: Dríada, Primavera, Draco Imperial, Maldición Oni y Reliquias del Abismo,
+> en la web y en el mod. Ojo con `crates.py` (borra campos a mano de los rangos) y `wear_export.py` (rehace sets viejos):
+> el CHECKPOINT de `HANDOFF.md` dice cómo se hizo. Prueba `[prueba-jefes=sets]`.
+>
 > **1 nov 2026 — 1.3.161, EMOTES PULIDOS**: final sostenido (cámara lenta y acorde final, 1,3 s más), música más baja
 > e igual en todos, insignias a 256 px en emotes y estandarte, emotes solo para los que están a 24 bloques y la guitarra
 > del Concierto sin brazos dentro. §8 de **[`tf-client/CLANES.md`](tf-client/CLANES.md)**; prueba `[prueba-jefes=emotes]`.
