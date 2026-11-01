@@ -71,6 +71,11 @@ public final class TFBotPlayer extends ServerPlayer {
         }
     }
 
+    /** (1.3.157) Si es una diana de las pruebas en el juego. */
+    public static boolean isTarget(ServerPlayer player) {
+        return player instanceof TFBotPlayer b && b.target;
+    }
+
     /** (1.3.157) Saca una diana de la prueba (como si se desconectara). */
     public static void removeTarget(ServerPlayer player) {
         despawn(player);

@@ -229,7 +229,8 @@ public final class BossTest {
             current.hitsTaken++;
             current.dmgTaken += event.getAmount();
         }
-        // El jugador de prueba no muere: así se ve la pelea entera
+        // El jugador de prueba no muere: así se ve la pelea entera (1.3.157: las dianas de la prueba de revivir, sí)
+        if (net.tierrasfantasticas.tfclient.server.TFBotPlayer.isTarget(p)) return;
         if (event.getAmount() >= p.getHealth() - 1) event.setAmount(Math.max(0F, p.getHealth() - 1));
     }
 
