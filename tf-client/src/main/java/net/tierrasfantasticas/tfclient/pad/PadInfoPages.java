@@ -27,7 +27,7 @@ final class PadInfoPages {
         private static final String[] ABOUT = {"Clics, pestañas y avisos.", "Un tic suave al pasar el ratón por encima.",
                 "Fondo animado, brillos y transiciones.", "El de los sonidos del pad.", "La música que ponen cerca de ti.",
                 "El color del cristal.", "Una imagen o un color para la portada (o tus PNG).",
-                "Rendirse y auto-revivir estando noqueado (mantener)."};
+                "Rendirse y auto-revivir (también en Opciones › Controles)."};
         private static final ItemStack[] ICONS = {new ItemStack(Items.NOTE_BLOCK), new ItemStack(Items.LEVER),
                 new ItemStack(Items.FIREWORK_ROCKET), new ItemStack(Items.JUKEBOX), new ItemStack(Items.BELL),
                 new ItemStack(Items.PINK_DYE), new ItemStack(Items.PAINTING), new ItemStack(Items.TOTEM_OF_UNDYING)};
@@ -79,7 +79,11 @@ final class PadInfoPages {
             PadSkin.banner(g, pad, X + 1, Y + 1, W - 2, bh, acc, PadSkin.icon(app), List.of(PadSkin.tagline(app)));
             int top = Y + bh + 6, bottom = Y + H - 14;
             int rows = rows();
-            int rowH = Math.max(19, Math.min(30, (bottom - top) / rows));
+            // (1.3.157) con la 8.ª fila no caben con la nota de abajo: se usa ese hueco y la nota se quita (medido en la
+            // captura de la prueba: la fila de las teclas quedaba debajo de la nota y cortada)
+            boolean note = (bottom - top) / rows >= 19;
+            if (!note) bottom = Y + H - 5;
+            int rowH = Math.max(note ? 19 : 16, Math.min(30, (bottom - top) / rows));
             for (int i = 0; i < rows; i++) {
                 float target = value(i) ? 1F : 0F;
                 if (first || !PadSettings.animations) knob[i] = target;
@@ -146,8 +150,10 @@ final class PadInfoPages {
             }
             first = false;
             // la nota de abajo, centrada (lejos de las esquinas de oro de la ventana)
-            String note = PadUi.fitEnd("Tecla del pad (y las de revivir): Opciones › Controles.", W - 40);
-            PadUi.text(g, note, X + (W - PadUi.font().width(note)) / 2, Y + H - 12, PadUi.MUTED);
+            if (note) {
+                String text = PadUi.fitEnd("Tecla del pad: se cambia en Opciones › Controles.", W - 40);
+                PadUi.text(g, text, X + (W - PadUi.font().width(text)) / 2, Y + H - 12, PadUi.MUTED);
+            }
         }
 
         /** (1.3.157) Las dos teclas de revivir, p. ej. «E · F». */
