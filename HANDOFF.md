@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (1 nov 2026, TF Client 1.3.160: 5 EMOTES, MÚSICA EN LAS PROTECCIONES, ESCUDO DE GUERRA) — lee esto primero
+### CHECKPOINT (1 nov 2026, TF Client 1.3.160: 15 EMOTES, ARCOÍRIS DE PAGO, MÚSICA EN LAS PROTECCIONES, ESCUDO DE GUERRA) — lee esto primero
 
 Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está cada cosa: §7 de
 [`tf-client/CLANES.md`](tf-client/CLANES.md)):
@@ -205,6 +205,20 @@ Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está 
 - Cosas a saber: en GitHub Actions no hay tarjeta de sonido (el motor de sonido del juego no arranca): la prueba
   comprueba que el servidor cuenta la zona al entrar y al salir, que el cliente la pone y la quita y que la canción se
   baja; que suene de verdad solo se oye en un PC con sonido.
+- **Después, en la misma 1.3.160** (el dueño: «mete muchos más emotes, que sean comprables en la tienda del clan», «eso
+  sigue solapado», «que los efectos se vean con shaders también», «pon muchos efectos de arcoíris… el botón de arcoíris
+  bloqueado, deben comprarlo en la tienda del clan»):
+  - **15 emotes**: los 5 de antes gratis y 10 de pago (`ClanEmotes2`: Fénix, Tornado, Ventisca, Meteoro, Fuegos,
+    Espadas, Aura, Corazones, Concierto, Portal), cada uno con su música; se compran en la tienda del clan (tipo `emote`
+    de `clanes.json`, `PadClanConfig` versión 4) y valen para todo el clan (`ClanEmote.owns`, el clan guarda `emotes`).
+  - La rueda pasó a ser una **cuadrícula** (`ClanEmoteWheel`, 5 por fila, fondo opaco, candado y «TIENDA» en las de pago).
+  - **Con shaders** (Oculus): los efectos se apuntan en `RenderPlayerEvent.Post` y se dibujan en `AfterShaders.end`
+    (`ClanEmoteClient.renderAfterShaders`), como la grieta y el letrero del cumpleaños; en la pasada de sombras, nada.
+  - **133 estilos de arcoíris** en la etiqueta (los de los títulos de las crates, `FSRainbow`), elegidos en el editor
+    (`PadColorPicker`: nombre con flechas y muestras); ARCOÍRIS con candado hasta comprar «Efectos arcoíris» (15 ¢, tipo
+    `arcoiris`). El servidor lo comprueba también (`tagfx`).
+  - La prueba **`[prueba-jefes=emotes]`** es corta (el dueño: «no hagas test tan largos»): bloqueos, tienda, editor,
+    cuadrícula y un vídeo de cada emote de pago; con `[shaders]`, los 15 en fotogramas sueltos con Complementary.
 
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.159: LOS 12 PUNTOS DEL DUEÑO — EMOTE, ESTANDARTE, ETIQUETA ARCOÍRIS) — lee esto primero
 
