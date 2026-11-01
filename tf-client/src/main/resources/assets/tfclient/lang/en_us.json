@@ -10,6 +10,7 @@
  "item.tfclient.job_blacksmith": "Blacksmith",
  "item.tfclient.job_builder": "Builder",
  "item.tfclient.job_enchanter": "Enchanter",
+ "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets",
  "item.tfclient.valentine_sword": "Espada Valentine",
  "item.tfclient.valentine_axe": "Hacha Valentine",
  "item.tfclient.valentine_pickaxe": "Pico Valentine",
@@ -1394,6 +1395,5 @@
  "item.tfclient.deepsea_armor_chestplate": "Peto Reliquias del Abismo",
  "item.tfclient.deepsea_armor_leggings": "Grebas Reliquias del Abismo",
  "item.tfclient.deepsea_armor_boots": "Botas Reliquias del Abismo",
- "tfclient.set.deepsea": "Reliquias del Abismo",
- "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets"
+ "tfclient.set.deepsea": "Reliquias del Abismo"
 }
