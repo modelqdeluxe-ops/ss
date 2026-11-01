@@ -107,6 +107,23 @@ CRATES = [
      'Carmesí y sombra de la maldición oni: gran espada, hacha de batalla, hoz, lanza, bastón, arco, armadura completa y alas.', 'items/onicurse/key', 499, ('#fecdd3', '#be123c')),
     ('deepsea', 'Crate Reliquias del Abismo', 'Mítico', 'Tesoros de las profundidades',
      'Oro, coral y agua del fondo del mar: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y sombrero de tiburón.', 'items/deepsea/key', 499, ('#a5f3fc', '#0891b2')),
+    # (TF Client 1.3.163) otras 8 del dueño del 1 nov 2026
+    ('dragonstone', 'Crate Piedra de Dragón', 'Legendario', 'Los guardianes de la piedra dragón',
+     'El arsenal de los guardianes de la piedra dragón: espada, hoja, daga, hacha de batalla, alabarda, lanza, bastón, arco, escudo, armadura completa y alas.', 'items/dragonstone/key', 499, ('COLOR1', 'COLOR2')),
+    ('leviathan', 'Crate Leviatán', 'Mítico', 'La bestia de las profundidades',
+     'Escamas y aletas del leviatán: hoja, daga, hacha de batalla, alabarda, hoz, lanza, bastón, arco, escudo, armadura completa y alas.', '', 499, ('COLOR1', 'COLOR2')),
+    ('aceruin', 'Crate Aceruin', 'Legendario', 'El acero del reino caído',
+     'Espada, maza, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco del set Aceruin.', 'items/aceruin/key', 499, ('COLOR1', 'COLOR2')),
+    ('violet', 'Crate Violeta', 'Épico', 'Cristal y magia violeta',
+     'Cristal violeta con magia arcana: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/violet/key', 499, ('COLOR1', 'COLOR2')),
+    ('runemoth', 'Crate Polilla Rúnica', 'Mítico', 'Runas y fuego infernal',
+     'La polilla rúnica del infierno: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas de polilla y sombrero.', 'items/runemoth/key', 499, ('COLOR1', 'COLOR2')),
+    ('nexus', 'Crate Nexus', 'Mítico', 'La energía del nexo',
+     'Tecnología y energía del nexo: gran espada, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/nexus/key', 499, ('COLOR1', 'COLOR2')),
+    ('mysticcyan', 'Crate Cian Místico', 'Épico', 'Magia turquesa',
+     'Cristal cian lleno de magia: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/mysticcyan/key', 499, ('COLOR1', 'COLOR2')),
+    ('sakura', 'Crate Sakura', 'Edición limitada', 'Flores de cerezo',
+     'Pétalos de cerezo y acero japonés: katana, gran espada, garrote, guantelete, alabarda, maza, martillo, arco, armadura completa, alas y sombrero.', 'items/sakura/key', 499, ('COLOR1', 'COLOR2')),
     ('soulskull', 'Crate Soul Skull', 'Legendario', 'Calaveras y fuego de almas',
      'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]
@@ -312,6 +329,30 @@ def mod_sets():
     out += [{'id': set_id, 'name': f'Cosméticos {coll}', 'color': c2, 'tier': 'netherite'}
             for set_id, (coll, (_c1, c2), _themes) in COSMETICS.items()]
     out += [{'id': set_id, 'name': name, 'color': hexc, 'tier': tier} for set_id, name, hexc, tier in REWARD_SETS]
+    out += [{'id': s[0], 'name': s[1].replace('Set ', ''), 'color': s[5][1], 'tier': CRATE_TIER} for s in SPECIALS]
+    return out
+
+
+# (TF Client 1.3.163, el dueño: «la de Discord Nitro es especial, no estará en la tienda web; se le otorga a los usuarios
+# que boosteen el Discord… lo del nitro no lo pongas automático, yo se lo doy manualmente desde el panel admin de la web»)
+# Sets que solo da el staff (panel /staff, «Test»; se quitan con «Reembolsar»): producto «especiales» con staffOnly (no
+# sale en la tienda ni se puede comprar ni reclamar). set, nombre, frase, descripción, precio (de referencia), colores.
+SPECIALS = [
+    ('nitro', 'Set Discord Nitro', 'Para los que boostean el Discord',
+     'El set de Discord Nitro: armas, herramientas, armadura completa, alas y casco. Solo para quien boostea el Discord de '
+     'Tierras Fantásticas (lo da el staff).', 499, ('#fbcfe8', '#ec4899')),
+]
+
+
+def special_products():
+    out = []
+    for set_id, name, tagline, desc, price, (c1, c2) in SPECIALS:
+        out.append({
+            'id': f'especial-{set_id}', 'category': 'especiales', 'staffOnly': True, 'name': name, 'theme': set_id,
+            'colors': [c1, c2], 'tagline': tagline, 'description': desc, 'image': f'img/crates/{set_id}.webp',
+            'price': price, 'maxQuantity': 1, 'set': set_id, 'models': listing(set_id),
+            'commands': [f'tf web sets give {{player}} {set_id}'],
+        })
     return out
 
 
@@ -565,9 +606,10 @@ def main():
     cosmetics = cosmetic_products()
     ranks = rank_products()
     protections = protection_products()
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'cosmeticos', 'protecciones') + RETIRED]
+    specials = special_products()
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'cosmeticos', 'protecciones', 'especiales') + RETIRED]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
-        json.dump(gifts + ranks + crates + cosmetics + protections + roulette + rest, fh, ensure_ascii=False, indent=2)
+        json.dump(gifts + ranks + crates + cosmetics + protections + roulette + specials + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
     print(len(ranks), 'rangos,', len(cosmetics), 'cosméticos,', len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
           f'ruleta con {len(weapons)} armas' if ROULETTE_ENABLED else 'ruleta retirada')

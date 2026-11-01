@@ -133,7 +133,7 @@ function productPieces(p) {
     const slot = p.slot === 'head' || p.slot === 'back' ? p.slot : null;
     return slot && p.set && p.item ? [{ set: p.set, id: p.item, name: p.name, slot }] : [];
   }
-  if ((p.category === 'rangos' || p.category === 'crates') && p.set) {
+  if ((p.category === 'rangos' || p.category === 'crates' || p.category === 'especiales') && p.set) {
     return (p.models || []).map((m) => ({ set: p.set, id: m.id, name: m.name, slot: wardrobeSlot(m.id) })).filter((x) => x.slot);
   }
   return [];
@@ -653,9 +653,10 @@ export function createApp(env) {
       }),
 
     // Los comandos y los IDs de rol nunca se envían al navegador.
+    // (TF Client 1.3.163) los «staffOnly» (el set de Discord Nitro) no salen en la tienda: solo en el panel de staff
     'GET /api/products': async (req, { discord }) =>
       json(
-        allProducts.map(({ commands, discordRoles, ...p }) => ({
+        allProducts.filter((p) => !p.staffOnly).map(({ commands, discordRoles, ...p }) => ({
           ...p,
           ...(p.pool ? { pool: p.pool.map(({ give, ...entry }) => entry) } : {}),
           discordRole: discord.rolesEnabled && hasRoles({ discordRoles }),
@@ -1094,7 +1095,7 @@ export function createApp(env) {
       if (method === 'mercadopago' && !mp) return json({ error: 'El pago con Mercado Pago no está disponible ahora mismo.' }, 503);
       const product = productById.get(body.productId);
       const quantity = Number.parseInt(body.quantity ?? 1, 10);
-      if (!product) return json({ error: 'Producto no válido.' }, 400);
+      if (!product || product.staffOnly) return json({ error: 'Producto no válido.' }, 400);
       if (product.price === 0) return json({ error: 'Este regalo es gratis: reclámalo con tu cuenta.', code: 'free' }, 400);
       // (1.3.117) los cosméticos solo con Fantastic Coins (POST /api/coins/buy)
       if (product.coinsOnly) return json({ error: 'Esto solo se compra con Fantastic Coins.', code: 'coins' }, 400);
@@ -1284,6 +1285,13 @@ export function createApp(env) {
 
     // Probar cualquier producto (rangos, crates, packs, efectos VFX, clases de skills…) en el juego: se entrega gratis a un jugador como un pedido de
     // verdad (rango, rol de Discord, anuncio y comandos) y se puede reembolsar desde el mismo panel.
+    // (TF Client 1.3.163) El catálogo entero para el panel de staff, con los que no salen en la tienda (staffOnly)
+    'GET /api/staff/products': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      return json(allProducts.map(({ commands, discordRoles, pool, ...p }) => p));
+    },
+
     'POST /api/staff/test': async (req, ctx) => {
       const denied = await staffDenied(req);
       if (denied) return denied;
@@ -1356,7 +1364,7 @@ export function createApp(env) {
       // (1.3.125, el dueño: «ponles el precio a los rangos, solo déjame a un lado el botón de test para probarlos en el
       // juego») Los de pago con testClaim se reclaman gratis solo con la clave del panel de staff (ADMIN_KEY).
       const test = product && product.price !== 0 && product.testClaim && req.headers.get('Authorization');
-      if (!product || (product.price !== 0 && !test)) return json({ error: 'Ese regalo no existe.' }, 400);
+      if (!product || product.staffOnly || (product.price !== 0 && !test)) return json({ error: 'Ese regalo no existe.' }, 400);
       if (test) {
         const denied = await staffDenied(req);
         if (denied) return denied;
