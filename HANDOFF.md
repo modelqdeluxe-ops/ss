@@ -206,7 +206,20 @@ aplique los cambios en tiempo real». Todo en [`tf-client/REVIVIR.md`](tf-client
 - Si el revivemod sigue instalado, el del TF Client no se enciende (aviso en el registro). **El dueño tiene que quitar
   el revivemod de `mods` del servidor y del AutoModpack.**
 - Prueba `[prueba-jefes=revivir]` (`bosses/BossTestRevive`) con dianas (`TFBotPlayer.spawnTarget`: jugadores de prueba
-  que reciben daño). Resultado: ver abajo cuando acabe.
+  que reciben daño). **Resultado (commit 346eaa08): los 13 casos «bien»**: noqueo por un zombi (y el zombi deja de
+  seguirla), mobs y jugadores no rematan si está apagado, el PvP apagado lo para, el archivo cambiado a mano + `/tf
+  reload` hace que el zombi remate («Diana_A was slain by Zombie»), el jugador remata de un espadazo («Diana_B was slain
+  by Dev», asesino el jugador), revivir en 78 ticks con 6 de vida, `/revive kill` y el jugador noqueado y revivido.
+  Capturas medidas: el HUD («Desangrándose – 88s», «[E] Rendirte», «[F] Auto-revivir (10 niveles de XP)»), «Reviviendo
+  […] 50%», la pantalla de teclas y Ajustes del pad con la 8.ª fila (sin la nota de abajo: con 8 filas se solapaban).
+  Nota: el barrido de la espada también remata a un noqueado de al lado (es daño de jugador).
+- Pad › Ajustes › «Teclas de revivir» (el dueño: «¿cómo configuro las teclas si TF Client no tiene configuración
+  in game?»): abre `ReviveConfigScreen`; también Mods › TF Client › Configuración y Opciones › Controles › Revive Mod.
+- La prueba de jefes deja a 1 de vida a cualquier jugador (para que no muera el de la prueba): ahora no a las dianas
+  (`TFBotPlayer.isTarget`). Y un jugador recién entrado es invulnerable 60 ticks: las dianas se golpean desde el 80.
+- AutoModpack (el dueño: «cuando metí el TF Client en el AutoModpack como que no me cargó»): sin su log no se sabe;
+  lo probable es el reinicio que pide AutoModpack la primera vez o dos jars del TF Client en `mods`. Pedido el
+  `logs/latest.log` del cliente si vuelve a pasar.
 
 ### CHECKPOINT (31 oct 2026, TF Client 1.3.156: EL PARCHE ÚNICO) — lee esto primero
 
