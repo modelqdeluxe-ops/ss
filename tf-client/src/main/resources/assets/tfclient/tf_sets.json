@@ -4073,7 +4073,7 @@
    "id": "drakegoat",
    "name": "Draco Imperial",
    "color": "#ca8a04",
-   "tier": "netherite+1",
+   "tier": "netherite+2",
    "items": [
     {
      "id": "drakegoat_sword",
@@ -5036,92 +5036,6 @@
      "id": "mysticcyan_armor_boots",
      "type": "armor",
      "slot": "boots"
-    }
-   ]
-  },
-  {
-   "id": "sakura",
-   "name": "Sakura",
-   "color": "#be185d",
-   "tier": "netherite+1",
-   "items": [
-    {
-     "id": "sakura_sword",
-     "type": "sword"
-    },
-    {
-     "id": "sakura_dagger",
-     "type": "sword"
-    },
-    {
-     "id": "sakura_halberd",
-     "type": "sword"
-    },
-    {
-     "id": "sakura_club",
-     "type": "heavy"
-    },
-    {
-     "id": "sakura_gauntlet",
-     "type": "heavy"
-    },
-    {
-     "id": "sakura_axe",
-     "type": "axe"
-    },
-    {
-     "id": "sakura_pickaxe",
-     "type": "pickaxe"
-    },
-    {
-     "id": "sakura_shovel",
-     "type": "shovel"
-    },
-    {
-     "id": "sakura_hoe",
-     "type": "hoe"
-    },
-    {
-     "id": "sakura_hammer",
-     "type": "heavy"
-    },
-    {
-     "id": "sakura_mace",
-     "type": "heavy"
-    },
-    {
-     "id": "sakura_spear",
-     "type": "sword"
-    },
-    {
-     "id": "sakura_bow",
-     "type": "bow"
-    },
-    {
-     "id": "sakura_fishing_rod",
-     "type": "fishing_rod"
-    },
-    {
-     "id": "sakura_shield",
-     "type": "shield"
-    },
-    {
-     "id": "sakura_hat",
-     "type": "head"
-    },
-    {
-     "id": "sakura_wing",
-     "type": "back",
-     "worn": "tfclient:item/sets/sakura/wing_worn",
-     "glide": true
-    },
-    {
-     "id": "sakura_katana",
-     "type": "sword"
-    },
-    {
-     "id": "sakura_bigsword",
-     "type": "sword"
     }
    ]
   },
@@ -6340,7 +6254,7 @@
    "id": "nitro",
    "name": "Discord Nitro",
    "color": "#5865f2",
-   "tier": "netherite+1",
+   "tier": "diamond",
    "items": [
     {
      "id": "nitro_sword",

@@ -124,8 +124,6 @@ SETS = {
     'nexus': ('polygony_nexusset/polygony_nexusset/resourcepack/assets', 'nexusset', COMMON),
     'mysticcyan': ('Mystic-Cyan-Animated-Weapons-Tools-Set/Mystic Cyan Animated Weapons & Tools Set/Itemsadder Setup/ItemsAdder/contents/mysticcyanset/resourcepack/assets',
                    'mysticcyanset', COMMON),
-    'sakura': ('elitecreatures_sakura_animated_weapon_set/ItemsAdder/data/resource_pack/assets', 'elitecreatures',
-               COMMON + [('katana', 'Katana'), ('bigsword', 'Gran espada')], 'sakura/'),
     'nitro': ('DiscordNitroSet/ItemAdder/data/resource_pack', 'discordnitroset', COMMON),
     # Kits de los rangos (y los cuatro que pasaron a las crates: akira, cardael, evergreen y soulskull)
     'eagle': ('Eagle/Nexo Setup (1.20-1.21.1)/pack/assets', 'eagle_ascendant', COMMON),

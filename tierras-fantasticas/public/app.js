@@ -332,7 +332,11 @@
     gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro', cosmeticos: 'Cosmético',
     skills: 'Clase de skills', protecciones: 'Protección', vfx: 'Efecto de kill',
   };
-  const crates = () => products.filter((p) => p.category === 'crates');
+  // (1.3.164, el dueño: «pon los sets nuevos siempre de primero… y ponles un rotulito que diga nuevo») isNew en products.json
+  const crates = () => {
+    const list = products.filter((p) => p.category === 'crates');
+    return [...list.filter((p) => p.isNew), ...list.filter((p) => !p.isNew)];
+  };
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
   // Colores propios de cada crate (config/products.json → colors)
   const HEX = /^#[0-9a-f]{6}$/i;
@@ -453,7 +457,7 @@
     return `
       <article class="panel crate-tile" data-crate="${escapeHtml(p.id)}"${themeAttr(p)}>
         <button type="button" class="crate-tile-art" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver ${escapeHtml(p.name)} y probártelo">
-          ${glow(i)}${img(p.image, '')}
+          ${glow(i)}${img(p.image, '')}${p.isNew ? '<span class="crate-new">Nuevo</span>' : ''}
         </button>
         <div class="body">
           <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
