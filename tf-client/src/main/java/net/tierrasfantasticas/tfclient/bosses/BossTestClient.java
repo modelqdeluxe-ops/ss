@@ -382,7 +382,7 @@ public final class BossTestClient {
                 + (st.getHoverEvent() != null ? "con texto al pasar el ratón" : "sin texto") + "): " + ok;
     }
 
-    private static int videoFrame;
+    private static int videoFrame, videoWait;
     private static java.util.UUID videoWho;
 
     /**
@@ -397,15 +397,24 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime = 0;
             net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = true;
             videoFrame = 0;
+            videoWait = 0;
             videoWho = mc.player.getUUID();
-            BossTest.videoBusy = true;
             return;
         }
         double e = net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.elapsed(videoWho);
         if (e < 0 && videoFrame == 0) {
-            // aún no ha llegado el emote: esperar (sin avanzar el reloj)
+            // aún no ha llegado el emote: esperar sin avanzar el reloj (la prueba sigue: es ella la que lo pide); si no
+            // llega en un rato, se deja
+            if (++videoWait > 900) {
+                TFClient.LOGGER.warn("Prueba de jefes: el vídeo {} no empezó (no llegó el emote)", name);
+                net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;
+                BossTest.video = null;
+                BossTest.videoBusy = false;
+            }
             return;
         }
+        // ya está grabando: la prueba espera a que acabe
+        BossTest.videoBusy = true;
         try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
             File dir = new File(mc.gameDirectory, "pruebas");
             dir.mkdirs();

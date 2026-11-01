@@ -316,8 +316,8 @@ final class BossTestClanes2 {
             }
             case 1060 -> BossTest.video = "emote";
             case 1064 -> ClanEmote.testPlay(player);
-            case 1070 -> r.event("clanes2 12 (emote del clan): grabado en vídeo (video_emote.mp4)");
-            case 1072 -> {
+            case 1100 -> r.event("clanes2 12 (emote del clan): " + (BossTest.video == null ? "grabado en vídeo (video_emote.mp4)" : "NO SE GRABÓ (MAL)"));
+            case 1102 -> {
                 BossTest.camera = "primera";
                 BossTest.command(server, "time set 6000");
                 if (chestPos != null) level.removeBlock(chestPos, false);
@@ -331,7 +331,7 @@ final class BossTestClanes2 {
                 PadClans.testRemove(B);
                 PadClans.testCleanup(player);
             }
-            case 1080 -> BossTest.next(level);
+            case 1110 -> BossTest.next(level);
             default -> { }
         }
     }
