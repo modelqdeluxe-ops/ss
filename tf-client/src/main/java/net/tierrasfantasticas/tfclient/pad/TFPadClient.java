@@ -233,12 +233,6 @@ public final class TFPadClient {
         return new float[] {PadClanWarPage.testDrawnA, PadClanWarPage.testDrawnB};
     }
 
-    /** (1.3.155) Prueba «pad»: pone ese fondo en el menú principal («tema», «c:menta», «i:castillo»…). */
-    public static void wallpaperForTest(String id) {
-        PadSettings.load();
-        PadSettings.wallpaper = id;
-    }
-
     /** (1.3.155) Prueba «pad»: una foto de muestra en la carpeta de la Cámara y el paso de publicar con ese marco. */
     public static void photoForTest(String frame) {
         try {
