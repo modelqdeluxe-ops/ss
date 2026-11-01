@@ -120,8 +120,10 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
 
     /** Lo que ondea la tela en (u de 0 a 1 de izquierda a derecha, v de 0 a 1 de arriba abajo). */
     private static float wave(double t, float u, float v) {
-        double amp = 0.012 + 0.085 * v;
-        return (float) (amp * Math.sin(t * 2.4 + v * 4.3 + u * 2.1) + 0.02 * v * Math.sin(t * 1.3 + u * 5.0));
+        // solo hacia delante (0 o más): si iba también hacia atrás, abajo la tela se metía detrás del asta y el asta asomaba
+        // por delante de la etiqueta
+        double amp = (0.012 + 0.085 * v) * 1.3;
+        return (float) (amp * (0.5 + 0.5 * Math.sin(t * 2.4 + v * 4.3 + u * 2.1)) + 0.026 * v * (0.5 + 0.5 * Math.sin(t * 1.3 + u * 5.0)));
     }
 
     /** La tela, recortada inset por los lados y arriba (y con sus dos puntas abajo), a dz delante. */
