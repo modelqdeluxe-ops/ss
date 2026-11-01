@@ -4,7 +4,7 @@
 > **solo con GitHub Actions** (`tf-client.yml`, nunca `./gradlew` en el contenedor), no subas jars, prueba en el juego
 > tú mismo con `[prueba-jefes=<escenario>]` y mide las capturas con PIL antes de decir que algo está bien.
 
-## 0. Dónde lo dejamos (1 nov 2026): la 1.3.159 (§6) sobre la 1.3.158 (§5) y la 1.3.156
+## 0. Dónde lo dejamos (1 nov 2026): la 1.3.160 (§7) sobre la 1.3.159 (§6), la 1.3.158 (§5) y la 1.3.156
 
 La 1.3.156 es el parche único que pidió el dueño: la caída por la GTS, las flags de spawn, lo de la 1.3.155 y los
 clanes enteros (fases 2–5, §3). Todo probado en el juego (`[prueba-jefes=arreglos]` y `[prueba-jefes=clanes]`, ver el
@@ -156,6 +156,27 @@ vídeo `video_emote.mp4` (134 fotogramas, 30 por segundo): los brillos, los rayo
 `ClanLooks`: el servidor manda a los TF Client cómo se ve cada clan (etiqueta, color, efecto, insignia) y de qué clan es
 cada jugador conectado (cada 2 s si cambió). Prueba: `[prueba-jefes=clanes2]` (`bosses/BossTestClanes2`, con el vídeo
 `video_emote.mp4` que arma el workflow con ffmpeg).
+
+## 7. La 1.3.160 (1 nov 2026): los 7 puntos del dueño tras ver la 1.3.159
+
+El dueño, literal (resumido): «1 el emote no me gusta, necesito más de 1, mínimo 5 distintos, ninguno igual ni música
+igual; 2 el banner: saca las letras de esos corchetes; 3 en la prote se pueda poner música, con la función del
+reproductor, la claim debe tener su apartado; la música solo se oirá dentro de la zona, fuera se quita; hazlo bien sin
+romper algo; 4 asegúrate que el tag del clan al escribir en el chat funcione bien el efecto arcoíris, no quiero que nada
+se rompa; 5 el emote también: los corchetes son para el chat y el TAB; en emote y banner solo las letras con un efecto a
+los lados; 6 el apartado de guerra está desalineado, quiero todo simétrico; 7 en la tienda vende una protección contra
+las guerras, de 24 horas o 2 días».
+
+| Punto | Dónde | Cómo |
+|---|---|---|
+| 1 Emotes | `clans/client/ClanEmotes` (los 5), `ClanEmoteFx` (lo que dibujan), `ClanEmoteClient` (reloj, música, cámara), `ClanEmoteWheel` (la rueda), `ClanEmote.IDS`, `tools/pad/emotes_sonido.py` | la tecla B abre la rueda (ratón o 1-5): **Estandarte** (sale de la tierra un estandarte gigante que se despliega; Do mayor, marcha), **Corona** (haz del cielo, se arrodilla, la corona con la insignia se le posa; Re mayor, coro y campanas), **Trueno** (carga energía, le cae un rayo del color del clan, la insignia grabada en el suelo; Mi menor, taikos), **Fiesta** (confeti, pista de baile, la insignia de bola de disco; Sol mayor, 128 ppm, 8 bits), **Órbita** (levita, 6 insignias giran y se juntan; La menor, arpa) |
+| 2 y 5 Sin corchetes | `ClanBannerRenderer` (estrellas con `star`), `ClanEmoteFx.tag` | solo las letras con su efecto y borde oscuro, y una estrella que titila a cada lado del color de la letra de ese lado; los corchetes siguen en el chat y el TAB |
+| 3 Música en la zona | `pad/server/PadZoneMusic` (+ `musica_zonas.json`), `PadClaims` (pestaña MÚSICA), `PadSpeakerNet.ZoneSet/Zone`, `MusicSpeaker.zone`, `PadMusicPage` (elegir para la zona) | Protecciones › zona › MÚSICA › ELEGIR abre la app Música para tocar una canción (link o de tu carpeta: se sube como las de los discos); suena en bucle, igual en toda la zona, para quien esté dentro (`Claim.contains`, cada medio segundo); al salir se apaga en 1 s; volumen de 10 en 10; «Oír la música de otros» (Ajustes del pad) también la quita |
+| 4 Chat arcoíris | `mixin/ChatComponentClanMixin` (`require = 0`), `ClanClient.animateChat` | la etiqueta del clan en las líneas del chat se anima como en el TAB (solo «[TAG]» que llega con color del servidor; el mensaje no se toca); con LuckPerms el sufijo ya lleva el color letra a letra |
+| 6 Guerra simétrica | `PadClanWarPage.side` | los dos lados a la misma distancia de las barras y los dos con rótulo (TU CLAN / RIVAL / GANADOR), «Sin aportes aún» si no hay |
+| 7 Escudo de guerra | `PadClanWar` (`shielded`, `dropIncoming`), `PadClanShop` (tipo `escudo`), `PadClanConfig` (versión 3: `escudo_24h` 10 ¢ y `escudo_48h` 18 ¢) | mientras dura nadie les declara la guerra (el botón sale como ESCUDO), lo sin aceptar se anula al comprarlo, se suma si se compra otro; el clan con escudo sí puede declarar (el otro decide si acepta) |
+
+Prueba: `[prueba-jefes=clanes,clanes3]` (`bosses/BossTestClanes3`, con un vídeo de cada emote: `video_emote_<nombre>.mp4`).
 
 ## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 
