@@ -1,5 +1,11 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.159, LOS 12 PUNTOS DEL DUEÑO**: banco en dos vistas, el fondo del pad en todas las apps, guerra
+> con un objetivo PvP, duelo con botones en el chat, cofre (crate) que brilla, uno por clan y que solo quitan el líder y
+> los colíderes, misiones x1,6, **estandarte** físico, **editor de etiqueta** (degradado, arcoíris, onda), **emote del
+> clan** (tecla B, con vídeo en la prueba), «Todos los objetos en venta» con buscador y nombres en español, y español
+> latino. Tabla en la §6 de **[`tf-client/CLANES.md`](tf-client/CLANES.md)**; prueba `[prueba-jefes=clanes,clanes2]`.
+>
 > **1 nov 2026 — 1.3.158, CLANES AL GUSTO DEL DUEÑO**: `config/tfclient/clanes.json` (todo configurable, también la
 > tienda del clan) y su app CLANES en el pad de administrador, el cofre del banco con el modelo 3D de la crate de madera
 > `crate_lvl1`, 207 insignias, los miembros sin ESTILO ni AJUSTES y fuera los repetidos. Todo en la §5 de

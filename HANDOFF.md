@@ -190,6 +190,30 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.159: LOS 12 PUNTOS DEL DUEÑO — EMOTE, ESTANDARTE, ETIQUETA ARCOÍRIS) — lee esto primero
+
+Lo que pidió el dueño tras ver la 1.3.158 (literal y la tabla de dónde está cada cosa: §6 de
+[`tf-client/CLANES.md`](tf-client/CLANES.md)):
+- **Banco** en dos vistas (lo guardado y METER, con METER TODO); **el fondo del pad** (Ajustes › Fondo del pad) en todas
+  las apps, no solo en la portada; **guerra** con un objetivo PvP (`guerra.pvp` en `clanes.json`; con Revivir solo cuenta
+  el remate; la misma pareja una vez cada 10 min); **duelo** con [✔ ACEPTAR] [✖ RECHAZAR] en el chat (se pulsan).
+- **Cofre** del banco: la crate `crate_lvl1` a su escala (0,83), a plena luz como las crates, uno por clan, lo quitan solo
+  el líder y los colíderes (le vuelve al inventario; nadie más, ni explosiones ni pistones). **Misiones** x1,6 (y
+  `PadClanConfig.migrate` pone al día un `clanes.json` de antes).
+- **Estandarte** (`ClanBannerBlock`, tienda del clan, 8 Clan Coins) con la insignia y la etiqueta con su efecto;
+  **editor de la etiqueta** (`PadColorPicker`: SÓLIDO, DEGRADADO, ARCOÍRIS, ONDA; `ClanTagFx`); encima de la cabeza y en
+  el TAB se anima en el TF Client (`ClanLooks` manda cómo se ve cada clan).
+- **Emote del clan**: tecla **B** (Opciones › Controles › Tierras Fantásticas), `ClanEmote`/`ClanEmoteClient`/`ClanNet`,
+  fanfarria propia (`tools/pad/emote_sonido.py`). La prueba graba `video_emote.mp4` (30 fps, sin sonido: el sonido se
+  le pone aparte con ffmpeg y `sounds/clanes/emote.ogg`).
+- **Tienda del pad**: «Todos los objetos en venta» con la lupa (busca en español, inglés o id), nombres en español
+  (`util/TFNames`, `assets/tfclient/pad/nombres_es.json`, es_mx de la 1.20.1), también en la leyenda al pasar el ratón; los
+  nombres largos van en dos líneas. **Español latino** en clanes y explicaciones del pad.
+- Cosas aprendidas (no las repitas): `BossTest.hideGui` ya existía (1.3.114): el de la 1.3.159 se llama `hideHud`; el
+  noqueo de Revivir deja 40 ticks invulnerable (se remata pasado eso); con `MultiBufferSource` pedir otro `RenderType`
+  cierra el anterior (vuelve a pedir el búfer antes de escribir: los brillos del emote salían como manchas oscuras); en
+  el estandarte todas las capas ondean con la misma u y v (la del sitio de verdad), si no se cruzan.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.158: CLANES CONFIGURABLES, COFRE DE CRATE, 207 INSIGNIAS) — lee esto primero
 
 Lo que pidió el dueño al ver las capturas de los clanes (literal en la §5 de [`tf-client/CLANES.md`](tf-client/CLANES.md)):
