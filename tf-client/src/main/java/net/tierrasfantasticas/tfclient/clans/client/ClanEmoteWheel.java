@@ -77,24 +77,34 @@ public final class ClanEmoteWheel extends Screen {
         int cx = width / 2, cy = centerY(), r = radius();
         Minecraft mc = Minecraft.getInstance();
         ClanLooks.Look look = mc.player == null ? null : ClanLooks.ofPlayer(mc.player.getUUID());
+        // el tamaño de los círculos va con el de la rueda (en pantallas bajas no se pisan)
+        int base = Math.max(17, Math.min(26, (int) Math.round(r * 0.36)));
         for (int i = 0; i < ClanEmote.IDS.length; i++) {
             double a = Math.toRadians(-90 + i * 72);
             boolean on = i == hover;
-            int sr = on ? 30 : 25;
+            int sr = on ? base + 4 : base;
             int x = cx + (int) Math.round(Math.cos(a) * r), y = cy + (int) Math.round(Math.sin(a) * r);
             disc(g, x, y, sr + 2, on ? 0xFFFFE070 : 0xFF1A1F2E);
             disc(g, x, y, sr, on ? COLORS[i] : 0xFF2C3446);
             disc(g, x, y - sr / 3, (int) (sr * 0.62), on ? 0x30FFFFFF : 0x14FFFFFF);
             g.pose().pushPose();
-            float k = on ? 1.9F : 1.5F;
-            g.pose().translate(x, y - 2, 0);
+            float k = sr / 16F;
+            g.pose().translate(x, y - 1, 0);
             g.pose().scale(k, k, 1);
             g.renderItem(ICONS[i], -8, -8);
             g.pose().popPose();
-            g.drawString(font, String.valueOf(i + 1), x - sr + 4, y - sr + 2, on ? 0xFF3A2000 : 0xFFB8C2D8, false);
-            // el nombre fuera del círculo: el de arriba, encima (debajo tapaba el centro); los demás, debajo
+            g.drawString(font, String.valueOf(i + 1), x - sr + 3, y - sr + 1, on ? 0xFF3A2000 : 0xFFB8C2D8, false);
+            // el nombre fuera del círculo y hacia fuera de la rueda: el de arriba, encima; los de los lados, al lado
             String name = ClanEmote.NAMES[i];
-            g.drawCenteredString(font, name, x, i == 0 ? y - sr - 13 : y + sr + 5, on ? 0xFFFFE070 : 0xFFE8ECF4);
+            int col = on ? 0xFFFFE070 : 0xFFE8ECF4;
+            double ca = Math.cos(a);
+            if (Math.abs(ca) < 0.5) {
+                g.drawCenteredString(font, name, x, y - sr - 12, col);
+            } else if (ca > 0) {
+                g.drawString(font, name, x + sr + 6, y - 4, col);
+            } else {
+                g.drawString(font, name, x - sr - 6 - font.width(name), y - 4, col);
+            }
         }
         // en medio: la insignia del clan y lo que hace el elegido
         disc(g, cx, cy, 29, 0xFF10141E);
