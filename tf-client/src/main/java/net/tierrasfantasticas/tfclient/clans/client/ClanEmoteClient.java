@@ -64,15 +64,18 @@ public final class ClanEmoteClient {
     }
 
     public static double duration(int emote) {
-        return emote >= 0 && emote < ClanEmotes.DURATIONS.length ? ClanEmotes.DURATIONS[emote] : 5.0;
+        return (emote >= 0 && emote < ClanEmotes.DURATIONS.length ? ClanEmotes.DURATIONS[emote] : 5.0) + ClanEmotes.HOLD;
     }
 
     /** Llega del servidor: ese jugador hace ese emote. */
     public static void start(UUID uuid, int emote) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || emote < 0 || emote >= ClanEmote.IDS.length) return;
-        ACTIVE.put(uuid, new Run(clock(), emote));
         Player p = mc.level.getPlayerByUUID(uuid);
+        // (1.3.161, el dueño: «nadie que no esté cerca suyo lo podrá ver ni escuchar») el servidor solo lo manda a los que
+        // están a ClanEmote.RANGE bloques; aquí, por si acaso, tampoco se hace si está más lejos
+        if (mc.player != null && !uuid.equals(mc.player.getUUID()) && (p == null || p.distanceToSqr(mc.player) > ClanEmote.RANGE * ClanEmote.RANGE)) return;
+        ACTIVE.put(uuid, new Run(clock(), emote));
         if (p != null) {
             ResourceLocation sound = new ResourceLocation(TFClient.MOD_ID, "clanes.emote_" + ClanEmote.IDS[emote]);
             mc.getSoundManager().play(new EntityBoundSoundInstance(SoundEvent.createVariableRangeEvent(sound), SoundSource.PLAYERS, 1.0F, 1.0F, p,
@@ -130,9 +133,10 @@ public final class ClanEmoteClient {
         double e = elapsed(p.getUUID());
         int id = emoteOf(p.getUUID());
         if (e < 0 || id < 0) return;
-        double w = weight(e, duration(id));
+        double a = ClanEmotes.anim(id, e);
+        double w = weight(a, ClanEmotes.DURATIONS[id]);
         ClanEmotes.P q = new ClanEmotes.P();
-        ClanEmotes.pose(id, e, q);
+        ClanEmotes.pose(id, a, q);
         blend(m.rightArm, q.ra, q.ry, q.rz, w);
         blend(m.leftArm, q.la, q.ly, q.lz, w);
         blend(m.rightLeg, q.rl, 0, q.rlz, w);
@@ -168,7 +172,7 @@ public final class ClanEmoteClient {
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         PUSHED.add(p.getUUID());
-        ClanEmotes.body(id, e, pose, Mth.rotLerp(event.getPartialTick(), p.yBodyRotO, p.yBodyRot));
+        ClanEmotes.body(id, ClanEmotes.anim(id, e), pose, Mth.rotLerp(event.getPartialTick(), p.yBodyRotO, p.yBodyRot));
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -190,7 +194,7 @@ public final class ClanEmoteClient {
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         try {
-            ClanEmotes.fx(id, e, pose, event.getMultiBufferSource(), p, look, event.getPartialTick());
+            ClanEmotes.fx(id, ClanEmotes.anim(id, e), pose, event.getMultiBufferSource(), p, look, event.getPartialTick());
         } finally {
             pose.popPose();
         }
@@ -215,7 +219,7 @@ public final class ClanEmoteClient {
                 PoseStack pose = new PoseStack();
                 pose.mulPoseMatrix(view);
                 pose.translate(Mth.lerp(partial, p.xo, p.getX()) - cam.x, Mth.lerp(partial, p.yo, p.getY()) - cam.y, Mth.lerp(partial, p.zo, p.getZ()) - cam.z);
-                ClanEmotes.fx(id, e, pose, buffers, p, ClanLooks.ofPlayer(p.getUUID()), partial);
+                ClanEmotes.fx(id, ClanEmotes.anim(id, e), pose, buffers, p, ClanLooks.ofPlayer(p.getUUID()), partial);
             }
             buffers.endBatch();
             lateFrames++;

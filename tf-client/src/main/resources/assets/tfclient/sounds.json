@@ -3979,7 +3979,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_estandarte",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -3989,7 +3989,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_corona",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -3999,7 +3999,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_trueno",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4009,7 +4009,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_fiesta",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4019,7 +4019,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_orbita",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4029,7 +4029,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_fenix",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4039,7 +4039,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_tornado",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4049,7 +4049,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_ventisca",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4059,7 +4059,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_meteoro",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4069,7 +4069,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_fuegos",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4079,7 +4079,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_espadas",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4089,7 +4089,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_aura",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4099,7 +4099,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_corazones",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4109,7 +4109,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_concierto",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  },
@@ -4119,7 +4119,7 @@
   "sounds": [
    {
     "name": "tfclient:clanes/emote_portal",
-    "attenuation_distance": 24
+    "attenuation_distance": 16
    }
   ]
  }

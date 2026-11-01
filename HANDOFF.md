@@ -190,6 +190,19 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.161: EMOTES PULIDOS) — lee esto primero
+
+Lo que dijo el dueño al ver los vídeos de la 1.3.160 (literal y tabla: §8 de [`tf-client/CLANES.md`](tf-client/CLANES.md)):
+- **Guitarra del Concierto** sin los brazos dentro (medida con las cajas de los brazos del modelo).
+- **Final sostenido** en los 15: 1,3 s más, el final a cámara lenta (`ClanEmotes.anim`) y la música con su acorde final
+  sostenido (`emotes_sonido.py`, `Track.coda`), que se apaga despacio.
+- **Logo nítido**: insignias a 256 px (`textures/clanes/insignias_hd`, `Look.badgeHd`) en emotes y estandarte.
+- **Volumen** más bajo e igual en todos (RMS −24 dB). **Solo los cercanos**: el emote se manda a los que están a 24
+  bloques (`ClanEmote.RANGE`) y el sonido se apaga a los 16.
+- Prueba `[prueba-jefes=emotes]` (92415ee6): todo «bien»; vídeos mirados (la guitarra con las manos delante, el final
+  lento, la insignia sin escalones). **Publicada** como Release `tfclient-v1.3.161`.
+- Lo siguiente (aviso del dueño): **crates nuevas y arreglar crates** — lee `tf-client/CRATES.md` antes de tocarlas.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.160: 15 EMOTES, ARCOÍRIS DE PAGO, MÚSICA EN LAS PROTECCIONES, ESCUDO DE GUERRA) — lee esto primero
 
 Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está cada cosa: §7 de

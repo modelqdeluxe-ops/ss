@@ -33,7 +33,10 @@ INDEX = os.path.join(RES, 'pad', 'insignias.json')
 ICONS = os.path.join(HERE, 'gameicons.json')
 
 S = 256          # se dibuja a este tamaño
-OUT = 64         # y se guarda a este
+OUT = 64         # y se guarda a este (la del pad)
+# (1.3.161, el dueño: «el logo sale borroso en algunas») la de los emotes y el estandarte, grande en el mundo: a 256
+# (textures/clanes/insignias_hd, con «blur» en su .mcmeta para que al ampliarla no salgan escalones)
+HD = os.path.join(RES, 'textures', 'clanes', 'insignias_hd')
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Símbolos: clave → (icono de game-icons, nombre en español)
@@ -425,8 +428,7 @@ def badge(shape, symbol, scheme, icons):
     ImageDraw.Draw(gloss).ellipse((bx0 - fw * 0.3, by0 - fh * 0.75, bx1 + fw * 0.3, by0 + fh * 0.42), fill=255)
     gloss = Image.fromarray(np.minimum(np.asarray(gloss), np.asarray(field_m)))
     paint(np.array([255, 255, 255], np.float32), gloss.filter(ImageFilter.GaussianBlur(4)), 0.12)
-    img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), 'RGBA')
-    return img.resize((OUT, OUT), Image.LANCZOS)
+    return Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), 'RGBA')
 
 
 def main():
@@ -434,12 +436,19 @@ def main():
     icons = load_icons(extra)
     items = insignias()
     os.makedirs(BADGES, exist_ok=True)
+    os.makedirs(HD, exist_ok=True)
+    meta = json.dumps({'texture': {'blur': True, 'clamp': True}})
     for bid, _, shape, symbol, scheme in items:
-        badge(shape, symbol, scheme, icons).save(os.path.join(BADGES, f'{bid}.png'))
+        big = badge(shape, symbol, scheme, icons)
+        big.resize((OUT, OUT), Image.LANCZOS).save(os.path.join(BADGES, f'{bid}.png'))
+        big.save(os.path.join(HD, f'{bid}.png'), optimize=True)
+        with open(os.path.join(HD, f'{bid}.png.mcmeta'), 'w') as f:
+            f.write(meta + '\n')
     keep = {f'{b[0]}.png' for b in items}
-    for f in os.listdir(BADGES):
-        if f not in keep:
-            os.remove(os.path.join(BADGES, f))
+    for folder, ok in ((BADGES, keep), (HD, keep | {k + '.mcmeta' for k in keep})):
+        for f in os.listdir(folder):
+            if f not in ok:
+                os.remove(os.path.join(folder, f))
     names = {}
     index = []
     for b in items:

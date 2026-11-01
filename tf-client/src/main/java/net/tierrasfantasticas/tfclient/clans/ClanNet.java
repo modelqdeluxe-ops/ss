@@ -47,7 +47,12 @@ public final class ClanNet {
 
     /** El emote de ese jugador, a él y a los que lo ven. */
     static void sendEmote(ServerPlayer who, int emote) {
-        if (channel != null) channel.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> who), new EmotePlay(who.getUUID(), who.getId(), emote));
+        if (channel == null) return;
+        // solo a él y a los que están cerca (ClanEmote.RANGE), no a todos los que lo ven de lejos
+        EmotePlay msg = new EmotePlay(who.getUUID(), who.getId(), emote);
+        for (ServerPlayer p : who.serverLevel().players()) {
+            if (p == who || p.distanceToSqr(who) <= ClanEmote.RANGE * ClanEmote.RANGE) channel.send(PacketDistributor.PLAYER.with(() -> p), msg);
+        }
     }
 
     /** Desde el cliente: el emote elegido en la rueda (0 a 4, ClanEmote.IDS). */

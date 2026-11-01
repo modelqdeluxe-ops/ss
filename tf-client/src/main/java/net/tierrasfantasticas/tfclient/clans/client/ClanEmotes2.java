@@ -206,17 +206,19 @@ final class ClanEmotes2 {
             case 13 -> { // Concierto: guitarra en el aire, cabeza al ritmo y salto final
                 double a = smooth(0, 0.3, e);
                 if (e < 3.65) {
-                    double strum = (e % 0.5 < 0.25 ? 0.28 : -0.1) * smooth(0.3, 0.45, e);
-                    p.ra = -0.75 * a + strum;
-                    p.ry = -0.6 * a;
+                    // (1.3.161, el dueño: «los brazos solapan la guitarra») la mano derecha rasguea delante de la caja y la
+                    // guitarra va más abajo y más inclinada: los brazos pasan por encima, no por dentro (medido en concert)
+                    double strum = (e % 0.5 < 0.25 ? 0.16 : -0.06) * smooth(0.3, 0.45, e);
+                    p.ra = -1.0 * a + strum;
+                    p.ry = -0.45 * a;
                     p.la = -1.15 * a;
                     p.ly = 0.55 * a;
                     p.lz = -0.15 * a;
                     p.hx = 0.25 * Math.abs(Math.sin(e * Math.PI * 2)) * smooth(0.5, 0.7, e);
-                    p.bx = -0.12 * a;
+                    p.bx = 0.08 * a; // un poco hacia atrás, como un guitarrista (hacia delante, la tripa se metía en la guitarra)
                 } else {
                     double b = smooth(3.65, 3.8, e);
-                    p.arms(lerp(-0.75, -3.0, b), 0.2 * b, lerp(-1.15, -3.0, b), -0.2 * b);
+                    p.arms(lerp(-1.0, -3.0, b), 0.2 * b, lerp(-1.15, -3.0, b), -0.2 * b);
                     p.hx = -0.4 * b;
                 }
             }
@@ -780,8 +782,9 @@ final class ClanEmotes2 {
             }
             // la guitarra (en diagonal sobre el cuerpo)
             pose.pushPose();
-            pose.translate(-0.05, 0.92 + lift, 0.24);
-            pose.mulPose(Axis.ZP.rotationDegrees(-55));
+            // (medido con los brazos del modelo: ni la mano que rasguea ni la del mástil se meten en la caja ni en el mástil)
+            pose.translate(-0.06, 0.74 + lift, 0.2);
+            pose.mulPose(Axis.ZP.rotationDegrees(-65));
             float sc = (float) Math.min(1, show * 1.5);
             pose.scale(sc, sc, sc);
             VertexConsumer vc = ClanEmoteFx.solid(b);
