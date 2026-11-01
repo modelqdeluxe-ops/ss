@@ -95,17 +95,21 @@ TIENDA: se guarda y vale al momento) o en el archivo y `/tf reload`. Lo que borr
   encantar), `objetivo` (un id, una #etiqueta, `hostil` o `*`), `cantidad`, `monedas`, `xp`, `prestigio` y `activa`.
 - `potenciador`: `multiplicador` (1,5).
 - `guerra`: `dias` (5), `objetivos` (5), `monedas` (2) y `prestigio` (150) del ganador, `prestigioPerdedor` (30),
-  `verdes` (1), `horasParaAceptar` (24) y `lista` (como las misiones, sin premio propio).
+  `verdes` (1), `horasParaAceptar` (24), `lista` (como las misiones, sin premio propio) y `pvp` (1.3.159: `activa`,
+  `nombre`, `descripcion`, `icono`, `cantidad` = derrotas a jugadores del clan rival para un clan de 5, y `minutos` entre
+  la misma pareja): con el PvP, uno de los objetivos es ese y los demás no son de matar.
 - `banco`: `inicial` (5000), `porMejora` (5000), `mejoras` (19), `primeraMejora` (2 Clan Coins) y `subePorMejora` (1).
 - `alianzas`: `maximo` (2). `duelos`: `prestigio` (25), `horasPorPareja` (24), `distancia` (48), `huida` (64),
   `segundos` (180) y `segundosParaAceptar` (60).
 - `tienda`: lo que se vende en la tienda del clan (con Clan Coins; compran el líder y los colíderes). Cada oferta: `id`,
   `nombre`, `descripcion`, `icono`, `precio`, `maximo` (cuántas por clan; 0 = sin tope), `activa` y `tipo`:
-  `proteccion` (`piedra`), `plazas`, `potenciador` (`horas`), `objeto` (`objeto`: mejor con «Vender lo que llevas en la
+  `proteccion` (`piedra`), `plazas`, `potenciador` (`horas`), `estandarte` (`cantidad`; el estandarte del clan con su
+  insignia), `objeto` (`objeto`: mejor con «Vender lo que llevas en la
   mano» del pad de administrador, que guarda encantamientos y nombre), `verdes` (`cantidad` para cada miembro) o
   `comando` (`comandos`, desde la consola: `{jugador}`, `{clan}`, `{etiqueta}`). En `nombre` y `descripcion` valen
   `{cantidad}`, `{horas}` y `{x}`. Precios de fábrica (1.3.158): protección 50x50 30, 120x120 80, +2 plazas 20,
-  potenciador 6.
+  potenciador 6 y (1.3.159) estandarte 8. Las metas de las misiones son x1,6 desde la 1.3.159 (un clanes.json de antes se
+  pone al día solo en las que no se cambiaron).
 
 ## Copias de seguridad
 

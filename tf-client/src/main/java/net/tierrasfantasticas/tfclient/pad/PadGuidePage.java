@@ -487,8 +487,18 @@ final class PadGuidePage extends PadPage {
                 b("El líder ASCIENDE (miembro → veterano → colíder) y BAJA; con LÍDER (dos clics) le pasa el clan a otro."),
                 b("ECHAR: el líder a los miembros; los colíderes a veteranos y miembros."),
                 b("SALIR deja el clan; el líder puede DISOLVER CLAN. Los dos piden un segundo clic."),
-                h("Ajustes (líder)"),
-                b("El color de la etiqueta, si hay fuego amigo entre miembros y si los veteranos pueden invitar."));
+                h("Ajustes y estilo (líder y colíderes)"),
+                b("ESTILO › ETIQUETA: un color, un degradado (2 o 3 colores), arcoíris u onda; y la insignia del clan."),
+                b("AJUSTES: si hay fuego amigo entre miembros y si los veteranos pueden invitar o sacar del banco."),
+                h("Banco, cofre y estandarte"),
+                b("BANCO: todos meten lo que llevan (METER); sacan el líder y los colíderes (y los veteranos si se activa)."),
+                b("COFRE da el cofre del clan (uno por clan): quien lo usa abre el banco. Lo quitan el líder y los colíderes."),
+                b("El estandarte del clan se compra en TIENDA: lleva la insignia y la etiqueta del clan."),
+                h("Emote del clan"),
+                b("Tecla B (cámbiala en Opciones › Controles): ¡por el clan! con la insignia, brillos y fanfarria."),
+                h("Guerras y duelos"),
+                b("Guerra por objetivos de trabajo y uno PvP: derrotar a los del clan rival (opcional, suma igual)."),
+                b("/clan duelo <jugador>: al otro le salen los botones ACEPTAR y RECHAZAR en el chat."));
 
         topic("jugadores", "Jugadores", "jugadores",
                 p("Quién está conectado, su ficha y regalarles cosas."),

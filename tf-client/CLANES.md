@@ -4,7 +4,7 @@
 > **solo con GitHub Actions** (`tf-client.yml`, nunca `./gradlew` en el contenedor), no subas jars, prueba en el juego
 > tú mismo con `[prueba-jefes=<escenario>]` y mide las capturas con PIL antes de decir que algo está bien.
 
-## 0. Dónde lo dejamos (1 nov 2026): la 1.3.158 (§5) sobre la 1.3.156
+## 0. Dónde lo dejamos (1 nov 2026): la 1.3.159 (§6) sobre la 1.3.158 (§5) y la 1.3.156
 
 La 1.3.156 es el parche único que pidió el dueño: la caída por la GTS, las flags de spawn, lo de la 1.3.155 y los
 clanes enteros (fases 2–5, §3). Todo probado en el juego (`[prueba-jefes=arreglos]` y `[prueba-jefes=clanes]`, ver el
@@ -119,7 +119,39 @@ Caben 5.000 objetos y cada mejora suma 5.000 (con Clan Coins); los objetos con e
 entran (para que nadie pierda nada). REGISTRO enseña quién metió o sacó qué. El bloque del cofre (botón COFRE) solo abre
 la pestaña BANCO de quien lo usa.
 
+## 6. La 1.3.159 (1 nov 2026): los 12 puntos del dueño tras ver la 1.3.158
+
+El dueño, literal (resumido): «1 la pestaña del banco es demasiado grande, no me deja ver los items ni los que puedo
+meter; 2 el tema que pongo en el menú principal debe aplicarse a todas las apps (puse Limón y en una app se quita); 3 que
+los temas o fotos que ponga queden perfectamente dibujados, sin discrepancias en las texturas; 4 la guerra debe incluir
+algo de PvP, opcional pero que dé punto igual, solo 1 misión de matar; 5 el reto de duelo con aceptar y rechazar como
+botones en el chat; 6 el cofre se ve muy pequeño, hazlo más grande, que el pad dé solo 1, y que lo rompan solo el líder o
+colíder y les vuelva al inventario como las claim blocks; 7 misiones un poco más exigentes, porque las hacen en grupo; 8
+que el cofre brille en la oscuridad como las crates; 9 el estandarte físico con la insignia del clan y un editor completo
+de efecto arcoíris y degradado en la etiqueta; 10 un emote exclusivo del clan con animación, físicas, sonido o música y
+la insignia dinámica, con una tecla, y un vídeo de frente en tercera persona; 11 en la tienda del pad, «Todos los objetos
+en venta» con una lupa para buscar, los objetos en español; 12 nada de español de España: latinoamericano».
+
+| Punto | Dónde | Cómo |
+|---|---|---|
+| 1 Banco | `PadClanBank.view` | la ficha de arriba en una línea (capacidad, tipos y la mejora), sin la burbuja de monedas; filas compactas; «Lo que llevas (N)» con METER; COFRE y REGISTRO abajo |
+| 2-3 Fondo | `TFPadScreen.drawBackdrop` | el fondo elegido (Ajustes › **Fondo del pad**) en la portada y en todas las apps; probado con Limón, un PNG de 1600x900 con rejilla de 1 px y el del tema |
+| 4 Guerra PvP | `PadClanWar` (`PVP`, `onDeath`, `recordKill`), `clanes.json` guerra.pvp | cada guerra lleva un objetivo PvP (derrotar a los del clan rival; con Revivir solo cuenta el remate); los demás objetivos de esa guerra no son de matar; la misma pareja cuenta una vez cada 10 min; cuenta como cualquier objetivo (la guerra es la media) |
+| 5 Duelo | `PadClanDuels.challengeMessage` | «⚔ X (clan) te reta a un duelo.» y debajo [✔ ACEPTAR] [✖ RECHAZAR] con texto al pasar el ratón y los segundos; la prueba los pulsa como el ratón (`Screen.handleComponentClicked`) |
+| 6-8 Cofre | `ClanBankBlock` (+ `ClanBankBlockEntity`, `ClanBankRenderer`), `ClanBlockEvents`, `PadClanBank` (`cofres`, `chestOf`) | la crate `crate_lvl1` a su escala de crate (0,83: ~20 px de ancho), dibujada a plena luz (como las crates); uno por clan (COFRE no da otro si está puesto o alguien del clan lo lleva); lo quitan solo el líder y los colíderes de su clan (le vuelve al inventario), nadie más, ni explosiones ni pistones; lo abren los de su clan |
+| 7 Misiones | `PadClanProgress.FACTORY` (x1,6), `OLD_AMOUNTS`, `PadClanConfig.migrate` (versión 2) | un clanes.json de antes se pone al día solo en las misiones que tenían la meta de fábrica |
+| 9 Estandarte | `ClanBannerBlock`, `ClanBannerBlockEntity`, `ClanBannerRenderer`, tienda (`tipo: estandarte`, 8 Clan Coins) | asta con remate y travesaño dorados, tela del color del clan que ondea, la insignia de ahora y la etiqueta con su efecto; de su clan (`estandartes`), lo quitan el líder y los colíderes |
+| 9 Etiqueta | `ClanTagFx`, `PadColorPicker` (el editor), `PadClans.tagOf`/`syncSuffix`, `ClanClient.animateTag`, `PlayerTabOverlayClanMixin` | SÓLIDO, DEGRADADO (2-3 colores), ARCOÍRIS (velocidad) y ONDA; en el chat y en el TAB (sufijo de LuckPerms) sale quieto letra a letra; encima de la cabeza y en la lista se anima en el TF Client |
+| 10 Emote | `ClanEmote` (servidor), `ClanEmoteClient`, `ClanNet`, `ClanLooks`, `tools/pad/emote_sonido.py` (`clanes.emote`) | tecla **B** (Opciones › Controles › Tierras Fantásticas › Emote del clan); 4,4 s: impulso, salto con vuelta y brazos en V, la insignia sale del pecho con un muelle y gira, rayos y halo de los colores del clan, brillos con gravedad, onda en el suelo, puño en alto y la etiqueta animada; fanfarria propia; cámara de frente mientras dura |
+| 11 Tienda | `PadShop.all`, `util/TFNames`, `assets/tfclient/pad/nombres_es.json` (es_mx de la 1.20.1) | «Todos los objetos en venta» (primera fila de COMPRAR) con el buscador (la lupa) en español, inglés o id; los nombres de la tienda y del banco en español |
+| 12 Español | clanes, protecciones, guía y armario del pad | sin vosotros (tienen, sus, ganaron…) ni «ordenador» (computadora) |
+
+`ClanLooks`: el servidor manda a los TF Client cómo se ve cada clan (etiqueta, color, efecto, insignia) y de qué clan es
+cada jugador conectado (cada 2 s si cambió). Prueba: `[prueba-jefes=clanes2]` (`bosses/BossTestClanes2`, con el vídeo
+`video_emote.mp4` que arma el workflow con ffmpeg).
+
 ## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 
-`/clan home` (un punto de teletransporte del clan), el estandarte físico con la insignia, etiqueta con degradado o
-animada, insignias exclusivas de pago, partículas del clan en su territorio y el territorio en el mapa del pad.
+`/clan home` (un punto de teletransporte del clan), insignias exclusivas de pago, partículas del clan en su territorio,
+el territorio en el mapa del pad, escudo de guerra (3 días sin que les declaren la guerra), potenciador de prestigio,
+llave de crate del clan y capa del clan. (El estandarte y la etiqueta con degradado o arcoíris ya están: 1.3.159.)
