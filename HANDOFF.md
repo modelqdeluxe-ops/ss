@@ -212,7 +212,10 @@ Lo que pidió el dueño tras ver la 1.3.158 (literal y la tabla de dónde está 
 - Cosas aprendidas (no las repitas): `BossTest.hideGui` ya existía (1.3.114): el de la 1.3.159 se llama `hideHud`; el
   noqueo de Revivir deja 40 ticks invulnerable (se remata pasado eso); con `MultiBufferSource` pedir otro `RenderType`
   cierra el anterior (vuelve a pedir el búfer antes de escribir: los brillos del emote salían como manchas oscuras); en
-  el estandarte todas las capas ondean con la misma u y v (la del sitio de verdad), si no se cruzan.
+  el estandarte todas las capas ondean con la misma u y v (la del sitio de verdad), si no se cruzan, y la tela solo ondea
+  hacia delante (si no, el asta asoma por delante).
+- **Prueba `[prueba-jefes=clanes,clanes2]`: todo «bien»** (capturas y vídeo medidos: §6 de `CLANES.md`). **Publicada** como
+  Release `tfclient-v1.3.159`. Al dueño se le mandó el vídeo del emote con su sonido.
 
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.158: CLANES CONFIGURABLES, COFRE DE CRATE, 207 INSIGNIAS) — lee esto primero
 
