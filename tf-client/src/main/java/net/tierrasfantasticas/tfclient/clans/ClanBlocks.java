@@ -18,7 +18,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
 
-/** (1.3.156) Los bloques de los clanes: el cofre del Banco del clan (tools/pad/banco.py). */
+/** (1.3.156) Los bloques de los clanes: el cofre del Banco del clan (1.3.158: el modelo de la crate de madera crate_lvl1 de TF Crates, tools/pad/banco_modelo.py). */
 public final class ClanBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, TFClient.MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, TFClient.MOD_ID);

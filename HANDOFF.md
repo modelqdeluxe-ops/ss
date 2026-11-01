@@ -190,6 +190,25 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.158: CLANES CONFIGURABLES, COFRE DE CRATE, 207 INSIGNIAS) — lee esto primero
+
+Lo que pidió el dueño al ver las capturas de los clanes (literal en la §5 de [`tf-client/CLANES.md`](tf-client/CLANES.md)):
+- **Config 100 %**: `config/tfclient/clanes.json` (`PadClanConfig`, en `/tf reload`) con niveles, plazas, misiones (la
+  lista), potenciador, guerras (la lista), banco, alianzas, duelos y la **tienda del clan** (tipos proteccion, plazas,
+  potenciador, objeto, verdes, comando); y **pad de administrador › CLANES** (`PadAdminClans`, `a_clanes`).
+- **Precios de la tienda al doble**: 50x50 30, 120x120 80, +2 plazas 20, potenciador 6 Clan Coins.
+- **Cofre del banco**: el modelo 3D de la crate de madera `crate_lvl1` de TF Crates (el dueño: «saca un modelo de las
+  crates, uno de madera… no de la web»), `tools/pad/banco_modelo.py` (y `tools/pad/ver_modelo.py` para verlos).
+- **207 insignias** (`tools/pad/insignias.py`, iconos de game-icons.net CC BY 3.0, créditos en `LICENSE-ICONOS.txt`).
+- **Pestañas**: los miembros ven todo menos ESTILO y AJUSTES. **Repetidos** fuera (guerra, banco, misiones).
+- **Prueba `[prueba-jefes=clanes]` (commit bfa3d63e): todos los casos «bien»**, también los nuevos: «5b» (un miembro
+  raso pide AJUSTES o ESTILO y le sale MIEMBROS; el líder ve las 7), «5c» (cambiar clanes.json vale al momento, se
+  guarda y se deshace: plazas 28 → 38, 50x50 30 → 45, misiones 20 → 19) y «7» (2 protecciones como mucho, 30 cada una).
+  Capturas miradas: el cofre puesto (la crate con su cerradura delante), la tienda entera (arriba y abajo), el banco y la
+  app CLANES del administrador (GENERAL, MISIONES, TIENDA, una oferta, una misión). Después se acortaron los textos de la
+  tienda (salía «miembros.porCompra» a los jugadores) y las cabeceras del administrador (se cortaban).
+- Ideas de tienda del clan que se le dieron al dueño (sin hacer, que elija): §4 de `CLANES.md`.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.157: REVIVIR DENTRO DEL TF CLIENT) — lee esto primero
 
 **El Revive Mod del dueño (revivemod 2.1.0, `ReviveForge-1.20.1V2.jar`) dentro del TF Client**, igual que era, y con

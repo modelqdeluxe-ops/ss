@@ -70,8 +70,8 @@ final class PadClanWarPage extends PadDataPage {
         JsonObject a = data.getAsJsonObject("a"), b = data.getAsJsonObject("b");
         String mine = str(data, "tuLado", "A"), winner = str(data, "ganador", "");
         boolean over = str(data, "estado", "").equals("acabada");
-        // arriba: el título y lo que queda (o quién ganó)
-        PadUi.title(g, "GUERRA DE CLANES", X + 8, Y + 6, W / 2, ink);
+        // arriba: lo que queda (o quién ganó). (1.3.158, el dueño: «frases repetidas») sin «GUERRA DE CLANES» otra vez: ya
+        // es el título de la ventana
         String status;
         int statusColor;
         if (over) {
@@ -82,8 +82,7 @@ final class PadClanWarPage extends PadDataPage {
             status = "Quedan " + until(left);
             statusColor = PadUi.TEXT;
         }
-        int sw = PadUi.font().width(status);
-        PadUi.text(g, status, X + W - 8 - sw, Y + 7, statusColor);
+        PadUi.text(g, status, X + 8, Y + 7, statusColor);
         // la parte de la izquierda: los dos clanes y la barra doble en medio
         int top = Y + 22;
         int lw = Math.max(150, (int) (W * 0.56));
@@ -111,9 +110,7 @@ final class PadClanWarPage extends PadDataPage {
             g.fill(xa, y, xa + bw, y + 1, 0x30FFFFFF);
             g.fill(xb, y, xb + bw, y + 1, 0x30FFFFFF);
         }
-        // los porcentajes, debajo de cada barra
-        PadFont.drawCentered(g, Math.round(pa * 100) + "%", xa + bw / 2, barBot + 4, 0x18265C, false);
-        PadFont.drawCentered(g, Math.round(pb * 100) + "%", xb + bw / 2, barBot + 4, 0x18265C, false);
+        // (1.3.158) sin el % debajo de cada barra: ya sale en grande al lado de cada clan
         side(g, a, X + 6, top, pw, bottom, mine.equals("A"), over && winner.equals("A"), pa);
         side(g, b, cx + barsW / 2 + 6, top, pw, bottom, mine.equals("B"), over && winner.equals("B"), pb);
         // la derecha: los objetivos, con el avance de cada lado

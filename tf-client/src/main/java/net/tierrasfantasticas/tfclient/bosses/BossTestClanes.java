@@ -127,8 +127,19 @@ final class BossTestClanes {
                 double b1 = PadClanProgress.testFirstProgress(B, 1);
                 r.event("clanes 5 (alianza propuesta y aceptada): aliados " + allied + "; 10 de un miembro de A suman a B " + (b1 - b0)
                         + (allied && Math.abs(b1 - b0 - 5) < 0.01 ? " (bien: la mitad)" : " (MAL)"));
-                PadClanProgress.testSet(A, 60, 5, 0, 120);
+                PadClanProgress.testSet(A, 200, 5, 0, 120);
                 TFPadNet.sendState(player);
+            }
+            case 11 -> {
+                // (1.3.158) los miembros ven todas las pestañas menos ESTILO y AJUSTES (las del líder y los colíderes)
+                FakePlayer mate = fake(level, A_MEMBER, "Caro_Prueba", player);
+                String member = PadClans.testTabs(mate, "ajustes"), memberStyle = PadClans.testTabs(mate, "estilo"), leader = PadClans.testTabs(player, "ajustes");
+                boolean ok = member.startsWith("miembros,misiones,banco,guerra,tienda ") && !member.endsWith("ajustes") && !memberStyle.endsWith("estilo")
+                        && leader.contains("estilo") && leader.endsWith("ajustes");
+                r.event("clanes 5b (pestañas): un miembro raso pide AJUSTES y ve «" + member + "», pide ESTILO: «" + memberStyle + "»; el líder «" + leader
+                        + "»" + (ok ? " (bien)" : " (MAL)"));
+                // (1.3.158) la config de los clanes (clanes.json) vale al momento
+                r.event("clanes 5c (clanes.json como el pad de administrador): " + net.tierrasfantasticas.tfclient.pad.server.PadClanConfig.testConfig(A));
             }
             case 12 -> BossTest.openPad = "clanes/miembros";
             case 60 -> BossTest.shot(r, "clanes_1_miembros");
@@ -181,7 +192,7 @@ final class BossTestClanes {
                         net.tierrasfantasticas.tfclient.claims.data.ClaimTier.byId("claimstone_clan_50x50"));
                 int stones = countItem(player, item50);
                 r.event("clanes 7 (tienda del clan: 3 intentos de la protección 50x50, con su doble clic): " + stones + " piedras, " + (c0 - c1)
-                        + " Clan Coins" + (stones == 2 && c0 - c1 == 30 ? " (bien: 2 como mucho, 15 cada una)" : " (MAL)"));
+                        + " Clan Coins" + (stones == 2 && c0 - c1 == 60 ? " (bien: 2 como mucho, 30 cada una)" : " (MAL)"));
                 BossTest.openPad = "clanes/tienda";
             }
             case 260 -> BossTest.shot(r, "clanes_5_tienda");
@@ -343,7 +354,25 @@ final class BossTestClanes {
                 BossTest.shot(r, "clanes_17_cofre_abre_banco");
                 r.event("clanes 17 (abrir el cofre): página " + TFPadClient.pageForTest() + (TFPadClient.pageForTest().equals("PadViewPage") ? " (bien)" : " (MAL)"));
             }
-            case 940 -> {
+            // (1.3.158) la tienda del clan entera (arriba y abajo) y la app CLANES del pad de administrador
+            case 932 -> BossTest.closeScreen = true;
+            case 936 -> BossTest.openPad = "clanes/tienda";
+            case 980 -> BossTest.shot(r, "clanes_18_tienda_arriba");
+            case 982 -> BossTest.actPad = "§scroll:900";
+            case 1000 -> BossTest.shot(r, "clanes_19_tienda_abajo");
+            case 1002 -> BossTest.openPad = "clanes/banco";
+            case 1040 -> BossTest.shot(r, "clanes_20_banco");
+            case 1042 -> BossTest.openPad = "a_clanes";
+            case 1080 -> BossTest.shot(r, "clanes_21_admin_general");
+            case 1082 -> BossTest.openPad = "a_clanes/misiones";
+            case 1120 -> BossTest.shot(r, "clanes_22_admin_misiones");
+            case 1122 -> BossTest.openPad = "a_clanes/tienda";
+            case 1160 -> BossTest.shot(r, "clanes_23_admin_tienda");
+            case 1162 -> BossTest.openPad = "a_clanes/t:proteccion_clan_50x50";
+            case 1200 -> BossTest.shot(r, "clanes_24_admin_oferta");
+            case 1202 -> BossTest.openPad = "a_clanes/m:cantera";
+            case 1240 -> BossTest.shot(r, "clanes_25_admin_mision");
+            case 1250 -> {
                 BossTest.closeScreen = true;
                 if (chestPos != null) level.removeBlock(chestPos, false);
                 if (stonePos != null) {
@@ -356,7 +385,7 @@ final class BossTestClanes {
                 PadClans.testCleanup(player);
                 PadClanDuels.testClear();
             }
-            case 950 -> BossTest.next(level);
+            case 1260 -> BossTest.next(level);
             default -> { }
         }
     }

@@ -54,9 +54,10 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * </ul>
  */
 public final class PadClanProgress {
-    public static final int MAX_LEVEL = 20, MISSIONS_PER_WEEK = 4;
+    /** (1.3.158) Estos números y las listas vienen de config/tfclient/clanes.json ({@link PadClanConfig}); aquí, lo de fábrica. */
+    public static int MAX_LEVEL = 20, MISSIONS_PER_WEEK = 4;
     /** Lo que suma a las misiones lo que hace un clan aliado (la mitad). */
-    static final double ALLY_SHARE = 0.5;
+    static double ALLY_SHARE = 0.5;
 
     /** Una misión de clan: lo que pide (como los oficios: tipo y objetivo), la meta base para 5 miembros y su premio. */
     public record Mission(String id, String name, String desc, ItemStack icon, String type, String target, int amount, long coins,
@@ -66,7 +67,7 @@ public final class PadClanProgress {
      * Las misiones de clan (inicio del juego: nada del Nether ni del End; todas se pueden cumplir con lo del Overworld).
      * La meta es para un clan de 5; cambia con los miembros ({@link #goal}).
      */
-    public static final List<Mission> POOL = List.of(
+    public static final List<Mission> FACTORY = List.of(
             m("cantera", "Cantera del clan", "Rompan piedra entre todos.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 20000, 1, 400, 30),
             m("lenadores", "Leñadores", "Talen troncos de cualquier árbol.", Items.OAK_LOG, "romper", "#minecraft:logs", 4000, 1, 400, 30),
             m("carbon", "Vetas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 1200, 1, 350, 25),
@@ -87,6 +88,11 @@ public final class PadClanProgress {
             m("lingotes", "Fundición", "Fundan lingotes.", Items.IRON_INGOT, "fundir", "#forge:ingots", 1500, 2, 400, 30),
             m("constructores", "Constructores", "Coloquen bloques nuevos.", Items.BRICKS, "colocar", "*", 15000, 1, 400, 30),
             m("encantadores", "Biblioteca arcana", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 120, 2, 450, 35));
+
+    /** Las que salen en las semanas nuevas (las activas de clanes.json). */
+    public static List<Mission> POOL = FACTORY;
+    /** Todas las de clanes.json, también las desactivadas (para las que ya tenía un clan esta semana). */
+    static List<Mission> KNOWN = FACTORY;
 
     private static Mission m(String id, String name, String desc, net.minecraft.world.item.Item icon, String type, String target, int amount,
                              long coins, long xp, long prestige) {
@@ -139,9 +145,9 @@ public final class PadClanProgress {
         return Math.max(0, TFJson.num(c, "xp", 0));
     }
 
-    /** XP para pasar del nivel dado al siguiente. */
+    /** XP para pasar del nivel dado al siguiente (clanes.json: nivel.xpBase · nivel.xpCrece^(nivel−1)). */
     public static long xpFor(int level) {
-        return Math.round(1000 * Math.pow(1.35, Math.max(0, level - 1)) / 50.0) * 50;
+        return PadClanConfig.xpFor(level);
     }
 
     public static long prestige(JsonObject c) {
@@ -154,9 +160,13 @@ public final class PadClanProgress {
         PadClans.STORE_IMPL.changed();
     }
 
-    /** Las plazas del clan: 20 y dos más por nivel (hasta 40), más las que se compran en la tienda del clan. */
+    /** Las plazas del clan: 20 y dos más por nivel (hasta 40), más las que se compran en la tienda del clan (clanes.json: miembros). */
     public static int maxMembers(JsonObject c) {
-        return Math.min(40, 20 + 2 * (level(c) - 1)) + 2 * (int) Math.max(0, TFJson.num(c, "plazasCompradas", 0));
+        return seats(level(c), c);
+    }
+
+    static int seats(int level, JsonObject c) {
+        return PadClanConfig.seats(level, TFJson.num(c, "plazasCompradas", 0));
     }
 
     /**
@@ -164,7 +174,7 @@ public final class PadClanProgress {
      * gacha: 1 o 2 máximo en recompensas».) 1, y 2 en los niveles 5, 10, 15 y 20.
      */
     public static long levelReward(int level) {
-        return level % 5 == 0 ? 2 : 1;
+        return PadClanConfig.levelReward(level);
     }
 
     /** Suma XP al clan y sube los niveles que toquen (cada uno da 1 o 2 Clan Coins). */
@@ -178,7 +188,7 @@ public final class PadClanProgress {
             long reward = levelReward(level);
             addCoins(c, reward);
             tell(server, c, "¡El clan sube al nivel " + level + "! +" + reward + " Fantastic Clan Coin" + (reward == 1 ? "" : "s") + " y ya caben "
-                    + (Math.min(40, 20 + 2 * (level - 1)) + 2 * (int) Math.max(0, TFJson.num(c, "plazasCompradas", 0))) + " miembros.", ChatFormatting.AQUA);
+                    + seats(level, c) + " miembros.", ChatFormatting.AQUA);
         }
         if (level >= MAX_LEVEL) xp = 0;
         c.addProperty("nivel", level);
@@ -233,7 +243,7 @@ public final class PadClanProgress {
 
     /** La meta de una misión para un clan de n miembros (la base es para 5; de x0,7 a x2,5), redondeada. */
     public static long goal(Mission m, int members) {
-        double f = Math.max(0.7, Math.min(2.5, 0.5 + 0.1 * members));
+        double f = PadClanConfig.goalFactor(members);
         long g = Math.round(m.amount() * f);
         return g >= 1000 ? Math.round(g / 100.0) * 100 : g >= 100 ? Math.round(g / 10.0) * 10 : g;
     }
@@ -266,7 +276,7 @@ public final class PadClanProgress {
     }
 
     static Mission byId(String id) {
-        for (Mission m : POOL) if (m.id().equals(id)) return m;
+        for (Mission m : KNOWN) if (m.id().equals(id)) return m;
         return null;
     }
 
@@ -289,8 +299,8 @@ public final class PadClanProgress {
         PadClanWar.record(player, id, type, match, amount);
     }
 
-    /** El potenciador de la tienda del clan: las misiones avanzan x1,5 durante 24 h. */
-    static final double BOOST = 1.5;
+    /** El potenciador de la tienda del clan: las misiones avanzan x1,5 (clanes.json: potenciador.multiplicador). */
+    static double BOOST = 1.5;
 
     static boolean boosted(JsonObject c) {
         return c != null && TFJson.num(c, "potenciadorHasta", 0) > System.currentTimeMillis();
@@ -322,22 +332,28 @@ public final class PadClanProgress {
         o.addProperty("hecha", true);
         addCoins(c, m.coins());
         addPrestige(c, m.prestige());
-        // una moneda verde para cada miembro que aportó algo esta semana
+        // una moneda verde (clanes.json: misiones.verdes) para cada miembro que aportó algo esta semana
         JsonObject ap = TFJson.obj(ms, "aportes");
+        long each = PadClanConfig.missionGreens();
         int greens = 0;
         for (String key : ap.keySet()) {
             try {
                 UUID u = UUID.fromString(key);
-                if (!PadClans.members(c).contains(u) || TFJson.dec(ap, key, 0) <= 0) continue;
-                PadGreen.add(server, u, 1);
+                if (each <= 0 || !PadClans.members(c).contains(u) || TFJson.dec(ap, key, 0) <= 0) continue;
+                PadGreen.add(server, u, each);
                 greens++;
             } catch (IllegalArgumentException ignored) {
                 // una clave rara: se salta
             }
         }
         tell(server, c, "Misión del clan cumplida: «" + m.name() + "». +" + m.coins() + " Fantastic Clan Coins, +" + m.xp() + " XP del clan, +"
-                + m.prestige() + " de prestigio" + (greens > 0 ? " y una moneda verde para los " + greens + " que aportaron" : "") + ".", ChatFormatting.GREEN);
+                + m.prestige() + " de prestigio" + (greens > 0 ? " y " + greensText(each) + " para los " + greens + " que aportaron" : "") + ".", ChatFormatting.GREEN);
         addXp(server, c, m.xp());
+    }
+
+    /** «una moneda verde» o «3 monedas verdes» (para cada uno). */
+    static String greensText(long each) {
+        return each == 1 ? "una moneda verde" : each + " monedas verdes";
     }
 
     /** Un aviso a los del clan conectados. */

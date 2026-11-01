@@ -1,4 +1,4 @@
-"""Dibujos de los clanes (1.3.156): la Fantastic Clan Coin azul y las insignias.
+"""Dibujos de los clanes (1.3.156): la Fantastic Clan Coin azul (las insignias, desde la 1.3.158: tools/pad/insignias.py).
 
 (El dueño: «meteremos un nuevo coin, azul, Fantastic Clan Coin» y «el estandarte sería un icono o badge que tú hagas,
 haz muchas») Todo pixel art propio:
@@ -558,17 +558,7 @@ def main():
     blue_coin(os.path.join(PAD, 'coin.png'), os.path.join(PAD, 'coin_clan.png'))
     blue_coin(os.path.join(PAD, 'coin_s.png'), os.path.join(PAD, 'coin_clan_s.png'))
     blue_coin(os.path.join(ITEM, 'fantastic_coin.png'), os.path.join(ITEM, 'fantastic_coin_clan.png'))
-    os.makedirs(BADGES, exist_ok=True)
-    for bid, _, shape, symbol, scheme in INSIGNIAS:
-        badge(shape, symbol, scheme).save(os.path.join(BADGES, f'{bid}.png'))
-    keep = {f'{b[0]}.png' for b in INSIGNIAS}
-    for f in os.listdir(BADGES):
-        if f not in keep:
-            os.remove(os.path.join(BADGES, f))
-    os.makedirs(os.path.dirname(INDEX), exist_ok=True)
-    with open(INDEX, 'w', encoding='utf-8') as f:
-        json.dump([{'id': b[0], 'nombre': b[1]} for b in INSIGNIAS], f, ensure_ascii=False, indent=1)
-        f.write('\n')
+    # (1.3.158) las insignias las hace ahora tools/pad/insignias.py (unas 200, con los símbolos de game-icons.net)
     if '--ver' in sys.argv:
         dest = sys.argv[sys.argv.index('--ver') + 1]
         os.makedirs(dest, exist_ok=True)
@@ -584,7 +574,7 @@ def main():
         coin = Image.open(os.path.join(ITEM, 'fantastic_coin_clan.png')).convert('RGBA')
         sheet.alpha_composite(coin.resize((coin.width * 3, coin.height * 3), Image.NEAREST), (260, y))
         sheet.save(os.path.join(dest, 'insignias.png'))
-    print(f'{len(INSIGNIAS)} insignias y la moneda azul')
+    print('la moneda azul')
 
 
 if __name__ == '__main__':

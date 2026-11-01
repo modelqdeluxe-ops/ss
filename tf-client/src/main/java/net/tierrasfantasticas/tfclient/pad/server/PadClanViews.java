@@ -38,7 +38,7 @@ final class PadClanViews {
     }
 
     /**
-     * La ficha del clan, arriba de MIEMBROS y MISIONES: su insignia, el nombre y la etiqueta, el nivel con su barra, el
+     * La ficha del clan, arriba de MIEMBROS (1.3.158: MISIONES tiene la suya): su insignia, el nombre y la etiqueta, el nivel con su barra, el
      * prestigio y los miembros; y, al líder y los colíderes, las Fantastic Clan Coins del clan.
      */
     static PadView.Row hero(JsonObject c, UUID me) {
@@ -52,7 +52,7 @@ final class PadClanViews {
         // (1.3.156) los aliados, la guerra y el potenciador, si los hay
         List<String> extra = new ArrayList<>();
         for (String a : PadClans.allies(c)) extra.add("aliado de [" + TFJson.str(PadClans.clan(a), "etiqueta", "?") + "]");
-        if (PadClanProgress.boosted(c)) extra.add("misiones x1,5");
+        if (PadClanProgress.boosted(c)) extra.add("misiones " + PadClanConfig.boostText());
         if (!extra.isEmpty()) lines.add(String.join(" · ", extra));
         String coins = PadClanProgress.treasurer(c, me) ? PadView.clanCoins(PadClanProgress.coins(c)) : "";
         return new PadView.Row(new ItemStack(Items.WHITE_BANNER), TFJson.str(c, "nombre", "?") + " [" + TFJson.str(c, "etiqueta", "?") + "]",
@@ -68,18 +68,32 @@ final class PadClanViews {
         JsonObject ms = PadClanProgress.missions(id, c);
         long day = net.tierrasfantasticas.tfclient.util.TFRotation.day();
         long left = 7 - Math.floorMod(day, 7);
-        b.hero(hero(c, player.getUUID()));
-        b.header("Misiones de la semana (quedan " + left + (left == 1 ? " día" : " días") + ")"
-                + (PadClans.allies(c).isEmpty() ? ", entre todo el clan." : ", con la ayuda de los aliados."));
         JsonArray list = ms.has("lista") ? ms.getAsJsonArray("lista") : new JsonArray();
+        // (1.3.158, el dueño: «frases repetidas») arriba, lo de la semana (no la ficha del clan otra vez, que ya está en
+        // MIEMBROS)
+        int doneCount = 0;
+        long earned = 0;
+        for (JsonElement e : list) {
+            JsonObject o = e.getAsJsonObject();
+            if (!TFJson.bool(o, "hecha", false)) continue;
+            doneCount++;
+            PadClanProgress.Mission m = PadClanProgress.byId(TFJson.str(o, "id", ""));
+            if (m != null) earned += m.coins();
+        }
+        b.hero(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Misiones de la semana", PadClans.rgbOf(c),
+                List.of(doneCount + " de " + list.size() + " hechas" + (earned > 0 ? " · " + earned + " Clan Coins ganadas" : "") + ".",
+                        "Quedan " + left + (left == 1 ? " día" : " días") + (PadClans.allies(c).isEmpty() ? "." : "; los aliados suman " + PadClanConfig.allyText() + " de lo suyo.")),
+                list.isEmpty() ? -1F : doneCount / (float) list.size(), "", null, null).image(PadClanProgress.badge(c).image()));
+        b.header("Las cumplís entre todo el clan: cada uno que aporta gana 1 verde.");
         for (JsonElement e : list) {
             JsonObject o = e.getAsJsonObject();
             PadClanProgress.Mission m = PadClanProgress.byId(TFJson.str(o, "id", ""));
             if (m == null) continue;
             double meta = TFJson.dec(o, "meta", m.amount()), got = TFJson.dec(o, "progreso", 0);
             boolean done = TFJson.bool(o, "hecha", false);
+            // (las Clan Coins van en la burbuja de la derecha; la verde, en la cabecera)
             List<String> lines = List.of(m.desc() + " " + fmt(got) + " de " + fmt(meta) + ".",
-                    "+" + m.coins() + " Clan Coins · +" + m.xp() + " XP · +" + m.prestige() + " prestigio · 1 verde a cada uno que aporte");
+                    "+" + m.xp() + " XP del clan · +" + m.prestige() + " de prestigio");
             b.row(new PadView.Row(m.icon(), m.name(), done ? 0x1E7C2C : 0x18265C, lines, (float) Math.min(1.0, got / Math.max(1, meta)),
                     done ? "HECHA" : PadView.clanCoins(m.coins()), null, null));
         }

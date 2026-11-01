@@ -27,7 +27,8 @@ import net.tierrasfantasticas.tfclient.pad.TFPadNet;
  * Datos en el clan (clanes.json): «aliados» [ids] en los dos y «propuestasAlianza» [ids] en el que recibe.
  */
 final class PadClanAlliances {
-    static final int MAX = 2;
+    /** (1.3.158) clanes.json: alianzas.maximo. */
+    static int MAX = 2;
 
     private PadClanAlliances() {}
 
@@ -48,7 +49,7 @@ final class PadClanAlliances {
             JsonObject ac = PadClans.clan(a);
             boolean sure = PadServer.confirming(player, "alianza.romper:" + a);
             b.row(new PadView.Row(new ItemStack(Items.EMERALD), "Aliados: " + PadClanWar.label(ac), 0x1E7C2C,
-                    List.of("Lo que hacen suma la mitad a vuestras misiones (y lo vuestro a las suyas)."), -1, "",
+                    List.of("Lo que hacen suma " + PadClanConfig.allyText() + " a vuestras misiones (y lo vuestro a las suyas)."), -1, "",
                     officer ? PadView.Btn.of(sure ? "¿SEGURO?" : "ROMPER", "alianza.romper:" + a, PadView.RED) : null, null)
                     .image(PadClanProgress.badge(ac).image()));
         }
@@ -56,7 +57,7 @@ final class PadClanAlliances {
             JsonObject pc = PadClans.clan(p);
             if (pc == null) continue;
             b.row(new PadView.Row(new ItemStack(Items.EMERALD), PadClanWar.label(pc) + " os propone una alianza", 0x1E7C2C,
-                    List.of("Os ayudáis con las misiones (la mitad de lo de cada uno). Máximo " + MAX + " aliados."), -1, "",
+                    List.of("Os ayudáis con las misiones (" + PadClanConfig.allyText() + " de lo de cada uno). Máximo " + MAX + " aliados."), -1, "",
                     officer ? PadView.Btn.of("ACEPTAR", "alianza.aceptar:" + p, PadView.GREEN) : null,
                     officer ? PadView.Btn.of("NO", "alianza.rechazar:" + p, PadView.GRAY) : null).image(PadClanProgress.badge(pc).image()));
         }
@@ -105,7 +106,7 @@ final class PadClanAlliances {
                 if (!bb.contains(id)) bb.add(id);
                 setIds(c, "aliados", a);
                 setIds(oc, "aliados", bb);
-                String text = "¡Alianza entre " + PadClanWar.label(c) + " y " + PadClanWar.label(oc) + "! Lo de cada uno suma la mitad a las misiones del otro.";
+                String text = "¡Alianza entre " + PadClanWar.label(c) + " y " + PadClanWar.label(oc) + "! Lo de cada uno suma " + PadClanConfig.allyText() + " a las misiones del otro.";
                 PadClanProgress.tell(PadServer.server(), c, text, ChatFormatting.GREEN);
                 PadClanProgress.tell(PadServer.server(), oc, text, ChatFormatting.GREEN);
             }
