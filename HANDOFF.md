@@ -190,6 +190,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.157: REVIVIR DENTRO DEL TF CLIENT) — lee esto primero
+
+**El Revive Mod del dueño (revivemod 2.1.0, `ReviveForge-1.20.1V2.jar`) dentro del TF Client**, igual que era, y con
+lo que pidió: «que me puedan rematar los jugadores, ojo no mobs; opcional en la config, funcional; y que /tf reload
+aplique los cambios en tiempo real». Todo en [`tf-client/REVIVIR.md`](tf-client/REVIVIR.md).
+
+- Paquete `revive` (servidor) y `revive/client`: el código del jar sacado con Vineflower y los nombres de Minecraft
+  traducidos con las tablas oficiales (`mcp_config` 1.20.1 + mappings de Mojang), sin cambiar lo que hace.
+- `config/tfclient/revivir.json` (la primera vez, copia de `config/revivemod.json`): los mismos campos más
+  `playersCanFinish` (true) y `mobsCanFinish` (false). `/tf reload` (TFReload, «revivir») y `/revive reload` la aplican;
+  `/revive set rematar jugadores|mobs true|false`.
+- Remate: `CombatEvents` (onAttack deja pasar al que puede rematar, onHurt LOWEST sube el golpe a 1e6 después de las
+  protecciones, onDeath HIGH deja morir y `DownManager.finished`). Respeta las zonas sin PvP y el PvP apagado.
+- Si el revivemod sigue instalado, el del TF Client no se enciende (aviso en el registro). **El dueño tiene que quitar
+  el revivemod de `mods` del servidor y del AutoModpack.**
+- Prueba `[prueba-jefes=revivir]` (`bosses/BossTestRevive`) con dianas (`TFBotPlayer.spawnTarget`: jugadores de prueba
+  que reciben daño). Resultado: ver abajo cuando acabe.
+
 ### CHECKPOINT (31 oct 2026, TF Client 1.3.156: EL PARCHE ÚNICO) — lee esto primero
 
 **Una sola versión con todo lo pedido** (el dueño: «un solo parche con todo»): la caída del servidor por la GTS, las
