@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.158, CLANES AL GUSTO DEL DUEÑO**: `config/tfclient/clanes.json` (todo configurable, también la
+> tienda del clan) y su app CLANES en el pad de administrador, el cofre del banco con el modelo 3D de la crate de madera
+> `crate_lvl1`, 207 insignias, los miembros sin ESTILO ni AJUSTES y fuera los repetidos. Todo en la §5 de
+> **[`tf-client/CLANES.md`](tf-client/CLANES.md)**; prueba `[prueba-jefes=clanes]`.
+>
 > **1 nov 2026 — 1.3.157, REVIVIR**: el Revive Mod del dueño dentro del TF Client (paquete `revive`), con rematar
 > (jugadores sí, mobs no, en `config/tfclient/revivir.json` y `/tf reload`). Todo en
 > **[`tf-client/REVIVIR.md`](tf-client/REVIVIR.md)**; prueba `[prueba-jefes=revivir]`.
