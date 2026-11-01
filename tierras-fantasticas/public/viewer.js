@@ -164,8 +164,11 @@ const centroidUv = (shader) => {
 };
 
 // Material de los modelos (bloques con textura de píxeles): recorte por alfa, sin mezcla y con UV en el centroide.
+// (TF Client 1.3.165, el dueño: «el casco del abismo no deja de parpadear en rojo cuando se mueve») solo la cara de
+// delante, como Minecraft (los objetos se dibujan con las caras de atrás ocultas): con las dos, el forro de dentro de
+// los cascos (la boca roja del tiburón) se veía por fuera y se peleaba con la cara de fuera.
 export function blockMaterial(map) {
-  const mat = new THREE.MeshBasicMaterial({ map, vertexColors: true, alphaTest: 0.1, side: THREE.DoubleSide, transparent: false });
+  const mat = new THREE.MeshBasicMaterial({ map, vertexColors: true, alphaTest: 0.1, side: THREE.FrontSide, transparent: false });
   mat.onBeforeCompile = centroidUv;
   return mat;
 }

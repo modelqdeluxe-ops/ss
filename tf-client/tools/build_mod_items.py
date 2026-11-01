@@ -1435,3 +1435,9 @@ def main(packs, only=None):
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2:] or None)
+    # (1.3.165) el último repaso de lo que se ve puesto, con los modelos ya escritos: cascos que no dejen asomar la
+    # cabeza ni la segunda capa de la skin, y alas y mochilas pegadas a la espalda sin atravesar el cuerpo
+    import ajustar_cascos  # noqa: E402
+    import ajustar_espaldas  # noqa: E402
+    ajustar_cascos.main(sys.argv[2:])
+    ajustar_espaldas.main(sys.argv[2:])

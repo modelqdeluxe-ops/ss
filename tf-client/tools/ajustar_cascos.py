@@ -15,8 +15,9 @@ import build_mod_items as M
 import check_backs as CB
 
 HAT = 0.28125        # la segunda capa de la skin (bloques desde el centro de la cabeza)
-HAT_CLEAR = 0.262    # donde deben quedar como poco las paredes del casco (la cabeza: 0,25; el gorro no se dibuja con
-                     # un casco cosmético, TFHeadHatClient)
+HAT_CLEAR = 0.295    # donde deben quedar como poco las paredes del casco: por fuera del gorro (0,28). OJO: el gorro
+                     # NO se puede esconder (1.3.165): skins como la de Pewez777 tienen toda la cabeza en esa capa (la de
+                     # abajo es transparente) y sin ella la cabeza desaparecía dentro del casco
 WALL_MIN = 0.15      # lo que está más cerca del centro no es pared (adornos por dentro)
 INSIDE_MAX = 0.06    # parte de una cara con la pared por dentro del gorro que se tolera
 GROW_MAX = 1.25      # como mucho se agranda esto
