@@ -132,7 +132,7 @@ public final class PadClanDuels {
         if (from.getUUID().equals(to.getUUID())) return "No puedes retarte a ti mismo.";
         if (DUELS.containsKey(from.getUUID())) return "Ya estás en un duelo.";
         if (DUELS.containsKey(to.getUUID())) return to.getGameProfile().getName() + " ya está en un duelo.";
-        if (from.level() != to.level() || from.distanceTo(to) > START_DIST) return "Tenéis que estar cerca (a menos de " + (int) START_DIST + " bloques).";
+        if (from.level() != to.level() || from.distanceTo(to) > START_DIST) return "Tienen que estar cerca (a menos de " + (int) START_DIST + " bloques).";
         return null;
     }
 

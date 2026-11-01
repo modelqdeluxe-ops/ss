@@ -49,15 +49,15 @@ final class PadClanAlliances {
             JsonObject ac = PadClans.clan(a);
             boolean sure = PadServer.confirming(player, "alianza.romper:" + a);
             b.row(new PadView.Row(new ItemStack(Items.EMERALD), "Aliados: " + PadClanWar.label(ac), 0x1E7C2C,
-                    List.of("Lo que hacen suma " + PadClanConfig.allyText() + " a vuestras misiones (y lo vuestro a las suyas)."), -1, "",
+                    List.of("Lo que hacen suma " + PadClanConfig.allyText() + " a sus misiones (y lo de ustedes a las suyas)."), -1, "",
                     officer ? PadView.Btn.of(sure ? "¿SEGURO?" : "ROMPER", "alianza.romper:" + a, PadView.RED) : null, null)
                     .image(PadClanProgress.badge(ac).image()));
         }
         for (String p : proposals(c)) {
             JsonObject pc = PadClans.clan(p);
             if (pc == null) continue;
-            b.row(new PadView.Row(new ItemStack(Items.EMERALD), PadClanWar.label(pc) + " os propone una alianza", 0x1E7C2C,
-                    List.of("Os ayudáis con las misiones (" + PadClanConfig.allyText() + " de lo de cada uno). Máximo " + MAX + " aliados."), -1, "",
+            b.row(new PadView.Row(new ItemStack(Items.EMERALD), PadClanWar.label(pc) + " les propone una alianza", 0x1E7C2C,
+                    List.of("Se ayudan con las misiones (" + PadClanConfig.allyText() + " de lo de cada uno). Máximo " + MAX + " aliados."), -1, "",
                     officer ? PadView.Btn.of("ACEPTAR", "alianza.aceptar:" + p, PadView.GREEN) : null,
                     officer ? PadView.Btn.of("NO", "alianza.rechazar:" + p, PadView.GRAY) : null).image(PadClanProgress.badge(pc).image()));
         }
@@ -79,7 +79,7 @@ final class PadClanAlliances {
                     return "guerra";
                 }
                 if (PadClanWar.active(id) != null && other.equals(otherSide(id))) {
-                    TFPadNet.notice(player, "Estáis en guerra con ese clan.");
+                    TFPadNet.notice(player, "Están en guerra con ese clan.");
                     return "guerra";
                 }
                 // si ellos ya nos la habían propuesto, se acepta directamente
@@ -89,7 +89,7 @@ final class PadClanAlliances {
                     p.add(id);
                     setIds(oc, "propuestasAlianza", p);
                 }
-                PadClanProgress.tell(PadServer.server(), oc, PadClanWar.label(c) + " os propone una alianza: pad › Clanes › GUERRA.", ChatFormatting.GREEN);
+                PadClanProgress.tell(PadServer.server(), oc, PadClanWar.label(c) + " les propone una alianza: pad › Clanes › GUERRA.", ChatFormatting.GREEN);
                 TFPadNet.notice(player, "Alianza propuesta a " + PadClanWar.label(oc) + ".");
             }
             case "alianza.aceptar" -> {

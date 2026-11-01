@@ -4,7 +4,7 @@ Este archivo lo escribe el mod cada vez que arranca el servidor: no lo cambies, 
 
 ## Servidor o cliente
 
-Manda **siempre la config del servidor**. Estos archivos solo valen en el ordenador donde corre el servidor; si los ves
+Manda **siempre la config del servidor**. Estos archivos solo valen en la computadora donde corre el servidor; si los ves
 en la carpeta de un jugador es porque jugó un mundo local, y en un servidor no se usan (la economía, el pase, el
 gachapón, los oficios, las misiones, la tienda, las zonas… los decide el servidor, y la dirección de la web también: el
 cliente usa la que le manda el servidor). En el cliente solo cuentan `cliente.properties` (el menú y el servidor al que

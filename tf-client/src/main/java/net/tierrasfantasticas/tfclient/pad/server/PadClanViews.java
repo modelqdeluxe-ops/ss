@@ -84,7 +84,7 @@ final class PadClanViews {
                 List.of(doneCount + " de " + list.size() + " hechas" + (earned > 0 ? " · " + earned + " Clan Coins ganadas" : "") + ".",
                         "Quedan " + left + (left == 1 ? " día" : " días") + (PadClans.allies(c).isEmpty() ? "." : "; los aliados suman " + PadClanConfig.allyText() + " de lo suyo.")),
                 list.isEmpty() ? -1F : doneCount / (float) list.size(), "", null, null).image(PadClanProgress.badge(c).image()));
-        b.header("Las cumplís entre todo el clan: cada uno que aporta gana 1 verde.");
+        b.header("Las cumplen entre todo el clan: cada uno que aporta gana 1 verde.");
         for (JsonElement e : list) {
             JsonObject o = e.getAsJsonObject();
             PadClanProgress.Mission m = PadClanProgress.byId(TFJson.str(o, "id", ""));
@@ -122,7 +122,7 @@ final class PadClanViews {
         String hex = String.format("%06X", cur);
         b.header("La etiqueta [" + tag + "] y la insignia. PALETA abre la paleta de colores.");
         b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "[" + tag + "]", cur,
-                List.of("Así se ve al lado de vuestros nombres.", "#" + hex + " · insignia: " + PadClanProgress.badge(c).name()), -1, "",
+                List.of("Así se ve al lado de sus nombres.", "#" + hex + " · insignia: " + PadClanProgress.badge(c).name()), -1, "",
                 PadView.Btn.of("PALETA", "§color:clanes:estilo:" + hex + ":" + tag, PadView.GOLD), null)
                 .image(PadClanProgress.badge(c).image()));
         String now = PadClanProgress.badge(c).id();

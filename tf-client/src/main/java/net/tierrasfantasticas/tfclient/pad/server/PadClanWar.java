@@ -167,7 +167,7 @@ public final class PadClanWar {
         if (from.equals(to)) return "No puedes declararte la guerra.";
         JsonObject a = PadClans.clan(from), b = PadClans.clan(to);
         if (a == null || b == null) return "Ese clan ya no existe.";
-        if (PadClans.allies(a).contains(to)) return "Sois aliados: rompe la alianza antes.";
+        if (PadClans.allies(a).contains(to)) return "Son aliados: rompe la alianza antes.";
         if (active(from) != null) return "Tu clan ya está en guerra.";
         if (active(to) != null) return "Ese clan ya está en guerra.";
         for (JsonElement e : proposals()) {
@@ -180,9 +180,9 @@ public final class PadClanWar {
         p.addProperty("t", System.currentTimeMillis());
         proposals().add(p);
         STORE_IMPL.changed();
-        PadClanProgress.tell(PadServer.server(), b, "¡El clan " + label(a) + " os declara la guerra! El líder o un colíder la acepta en pad › Clanes › GUERRA.",
+        PadClanProgress.tell(PadServer.server(), b, "¡El clan " + label(a) + " les declara la guerra! El líder o un colíder la acepta en pad › Clanes › GUERRA.",
                 ChatFormatting.RED);
-        PadClanProgress.tell(PadServer.server(), a, "Declarasteis la guerra a " + label(b) + ". Empieza cuando la acepten (tienen " + ACCEPT_MS / 3_600_000L + " h).", ChatFormatting.GOLD);
+        PadClanProgress.tell(PadServer.server(), a, "Le declararon la guerra a " + label(b) + ". Empieza cuando la acepten (tienen " + ACCEPT_MS / 3_600_000L + " h).", ChatFormatting.GOLD);
         return null;
     }
 
@@ -315,12 +315,12 @@ public final class PadClanWar {
                     // se salta
                 }
             }
-            PadClanProgress.tell(server, win, "¡Ganasteis la guerra contra " + label(lose) + " (" + score + ")! +" + WIN_COINS + " Clan Coins, +" + WIN_PRESTIGE
+            PadClanProgress.tell(server, win, "¡Ganaron la guerra contra " + label(lose) + " (" + score + ")! +" + WIN_COINS + " Clan Coins, +" + WIN_PRESTIGE
                     + " de prestigio" + (greens > 0 ? " y " + PadClanProgress.greensText(each) + " para los " + greens + " que aportaron." : "."), ChatFormatting.GREEN);
         }
         if (lose != null) {
             PadClanProgress.addPrestige(lose, LOSE_PRESTIGE);
-            PadClanProgress.tell(server, lose, "Perdisteis la guerra contra " + label(win) + " (" + score + "). +" + LOSE_PRESTIGE + " de prestigio por luchar.",
+            PadClanProgress.tell(server, lose, "Perdieron la guerra contra " + label(win) + " (" + score + "). +" + LOSE_PRESTIGE + " de prestigio por luchar.",
                     ChatFormatting.GRAY);
         }
     }
@@ -404,7 +404,7 @@ public final class PadClanWar {
             String side = side(lastWar, id), win = TFJson.str(lastWar, "ganador", "");
             String other = TFJson.str(lastWar, side.equals("A") ? "b" : "a", "");
             b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), win.equals("empate") ? "Empate contra " + label(PadClans.clan(other))
-                    : (win.equals(side) ? "Ganasteis contra " : "Perdisteis contra ") + label(PadClans.clan(other)), win.equals(side) ? 0x1E7C2C : 0x7E8CA8,
+                    : (win.equals(side) ? "Ganaron contra " : "Perdieron contra ") + label(PadClans.clan(other)), win.equals(side) ? 0x1E7C2C : 0x7E8CA8,
                     List.of("La última guerra: " + Math.round(progress(lastWar, side) * 100) + " % a " + Math.round(progress(lastWar, side.equals("A") ? "B" : "A") * 100) + " %."),
                     -1, "", PadView.Btn.of("VER", "§guerra", PadView.BLUE), null).image(PadClanProgress.badge(c).image()));
         }
@@ -414,14 +414,14 @@ public final class PadClanWar {
         // declaraciones que nos llegan
         for (JsonObject p : incoming(id)) {
             JsonObject from = PadClans.clan(TFJson.str(p, "de", ""));
-            b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), label(from) + " os declara la guerra", 0xC0392B,
-                    List.of("Si aceptáis, empieza ya: " + DAYS + " días y " + OBJECTIVES + " objetivos."), -1, "",
+            b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), label(from) + " les declara la guerra", 0xC0392B,
+                    List.of("Si aceptan, empieza ya: " + DAYS + " días y " + OBJECTIVES + " objetivos."), -1, "",
                     officer ? PadView.Btn.of("ACEPTAR", "guerra.aceptar:" + TFJson.str(p, "de", ""), PadView.RED) : null,
                     officer ? PadView.Btn.of("NO", "guerra.rechazar:" + TFJson.str(p, "de", ""), PadView.GRAY) : null).image(PadClanProgress.badge(from).image()));
         }
         for (JsonObject p : outgoing(id)) {
             JsonObject to = PadClans.clan(TFJson.str(p, "a", ""));
-            b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Esperando a " + label(to), 0x7E8CA8, List.of("Le declarasteis la guerra."), -1, "", null, null)
+            b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Esperando a " + label(to), 0x7E8CA8, List.of("Le declararon la guerra."), -1, "", null, null)
                     .image(PadClanProgress.badge(to).image()));
         }
         // alianzas
