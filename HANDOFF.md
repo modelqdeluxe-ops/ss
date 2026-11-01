@@ -219,6 +219,12 @@ Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está 
     `arcoiris`). El servidor lo comprueba también (`tagfx`).
   - La prueba **`[prueba-jefes=emotes]`** es corta (el dueño: «no hagas test tan largos»): bloqueos, tienda, editor,
     cuadrícula y un vídeo de cada emote de pago; con `[shaders]`, los 15 en fotogramas sueltos con Complementary.
+- **Pruebas**: `[prueba-jefes=clanes3]` (los 7 puntos) y `[prueba-jefes=emotes]` (commit cba34f97) todo «bien», vídeos
+  mirados (Fénix con alas de fuego a la espalda, Tornado, Ventisca y Espadas sin tapar al jugador, Meteoro y Fuegos dentro
+  de la imagen); con `[shaders]` (1a8d8e2b, Complementary) los efectos se dibujan después del paquete en 268 fotogramas y
+  se ven en los 13 vídeos grabados (los dos primeros, Estandarte y Corona, no se grabaron mientras el paquete cargaba).
+  Ojo: un commit vacío no lanza la prueba (el workflow solo sale si cambia algo en `tf-client/`). **Publicada** como
+  Release `tfclient-v1.3.160`; al dueño se le mandaron los 10 vídeos de los emotes de pago con su música.
 
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.159: LOS 12 PUNTOS DEL DUEÑO — EMOTE, ESTANDARTE, ETIQUETA ARCOÍRIS) — lee esto primero
 
