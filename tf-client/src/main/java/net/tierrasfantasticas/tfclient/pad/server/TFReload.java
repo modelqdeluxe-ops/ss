@@ -97,6 +97,11 @@ public final class TFReload {
             net.tierrasfantasticas.tfclient.skills.SkillServer.reloadConfig();
             return List.of();
         }, done, problems);
+        // (1.3.158) clanes: niveles, miembros, misiones, guerras, banco, alianzas, duelos y la tienda del clan
+        reload(PadClanConfig.FILE, "clanes", () -> {
+            PadClanConfig.load();
+            return List.of();
+        }, done, problems);
         reload("tienda-monedas.json", "tienda de monedas", () -> {
             TFCoinShop.reload();
             return List.of();

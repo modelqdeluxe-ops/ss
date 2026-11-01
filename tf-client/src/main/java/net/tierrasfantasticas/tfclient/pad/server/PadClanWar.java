@@ -59,12 +59,15 @@ public final class PadClanWar {
     public static final PadServer.Store STORE = STORE_IMPL;
     public static final PadServer.DataApp APP = new App();
 
-    public static final int DAYS = 5, OBJECTIVES = 5;
-    static final long WIN_COINS = 2, WIN_PRESTIGE = 150, LOSE_PRESTIGE = 30;
+    /** (1.3.158) De config/tfclient/clanes.json, «guerra» ({@link PadClanConfig}); aquí, lo de fábrica. */
+    public static int DAYS = 5, OBJECTIVES = 5;
+    static long WIN_COINS = 2, WIN_PRESTIGE = 150, LOSE_PRESTIGE = 30;
     private static final long DAY_MS = 24L * 60 * 60 * 1000;
+    /** Lo que tiene el otro clan para aceptar la guerra (clanes.json: guerra.horasParaAceptar). */
+    static long ACCEPT_MS = DAY_MS;
 
     /** Los objetivos de guerra (la meta es para un clan de 5; PadClanProgress.goal la escala con los miembros). */
-    public static final List<PadClanProgress.Mission> POOL = List.of(
+    public static final List<PadClanProgress.Mission> FACTORY = List.of(
             w("cantera", "Gran cantera", "Rompan piedra.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 40000),
             w("lenadores", "Bosque talado", "Talen troncos.", Items.OAK_LOG, "romper", "#minecraft:logs", 8000),
             w("carbon", "Minas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 3000),
@@ -78,6 +81,10 @@ public final class PadClanWar {
             w("granja", "Ganadería", "Críen animales.", Items.WHEAT_SEEDS, "criar", "*", 600),
             w("encantadores", "Arcanos", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 250));
 
+    /** Los objetivos que salen en las guerras nuevas (los activos de clanes.json) y todos (para las que ya están en marcha). */
+    public static List<PadClanProgress.Mission> POOL = FACTORY;
+    static List<PadClanProgress.Mission> KNOWN = FACTORY;
+
     private static PadClanProgress.Mission w(String id, String name, String desc, net.minecraft.world.item.Item icon, String type, String target,
                                              int amount) {
         return new PadClanProgress.Mission(id, name, desc, new ItemStack(icon), type, target, amount, 0, 0, 0);
@@ -86,7 +93,7 @@ public final class PadClanWar {
     private PadClanWar() {}
 
     static PadClanProgress.Mission byId(String id) {
-        for (PadClanProgress.Mission m : POOL) if (m.id().equals(id)) return m;
+        for (PadClanProgress.Mission m : KNOWN) if (m.id().equals(id)) return m;
         return null;
     }
 
@@ -175,7 +182,7 @@ public final class PadClanWar {
         STORE_IMPL.changed();
         PadClanProgress.tell(PadServer.server(), b, "¡El clan " + label(a) + " os declara la guerra! El líder o un colíder la acepta en pad › Clanes › GUERRA.",
                 ChatFormatting.RED);
-        PadClanProgress.tell(PadServer.server(), a, "Declarasteis la guerra a " + label(b) + ". Empieza cuando la acepten (tienen 24 h).", ChatFormatting.GOLD);
+        PadClanProgress.tell(PadServer.server(), a, "Declarasteis la guerra a " + label(b) + ". Empieza cuando la acepten (tienen " + ACCEPT_MS / 3_600_000L + " h).", ChatFormatting.GOLD);
         return null;
     }
 
@@ -184,7 +191,7 @@ public final class PadClanWar {
         long now = System.currentTimeMillis();
         for (JsonElement e : proposals()) {
             JsonObject p = e.getAsJsonObject();
-            if (TFJson.str(p, "a", "").equals(clanId) && now - TFJson.num(p, "t", 0) < DAY_MS && PadClans.clan(TFJson.str(p, "de", "")) != null) out.add(p);
+            if (TFJson.str(p, "a", "").equals(clanId) && now - TFJson.num(p, "t", 0) < ACCEPT_MS && PadClans.clan(TFJson.str(p, "de", "")) != null) out.add(p);
         }
         return out;
     }
@@ -194,7 +201,7 @@ public final class PadClanWar {
         long now = System.currentTimeMillis();
         for (JsonElement e : proposals()) {
             JsonObject p = e.getAsJsonObject();
-            if (TFJson.str(p, "de", "").equals(clanId) && now - TFJson.num(p, "t", 0) < DAY_MS && PadClans.clan(TFJson.str(p, "a", "")) != null) out.add(p);
+            if (TFJson.str(p, "de", "").equals(clanId) && now - TFJson.num(p, "t", 0) < ACCEPT_MS && PadClans.clan(TFJson.str(p, "a", "")) != null) out.add(p);
         }
         return out;
     }
@@ -247,7 +254,7 @@ public final class PadClanWar {
         Collections.shuffle(pool, new Random(now ^ (a + b).hashCode()));
         JsonArray objs = new JsonArray();
         int na = PadClans.members(ca).size(), nb = PadClans.members(cb).size();
-        for (PadClanProgress.Mission m : pool.subList(0, OBJECTIVES)) {
+        for (PadClanProgress.Mission m : pool.subList(0, Math.min(OBJECTIVES, pool.size()))) {
             JsonObject o = new JsonObject();
             o.addProperty("id", m.id());
             o.addProperty("metaA", PadClanProgress.goal(m, na));
@@ -296,19 +303,20 @@ public final class PadClanWar {
             PadClanProgress.addCoins(win, WIN_COINS);
             PadClanProgress.addPrestige(win, WIN_PRESTIGE);
             int greens = 0;
+            long each = PadClanConfig.warGreens();
             JsonObject ap = TFJson.obj(w, "aportes" + winner);
             for (String k : ap.keySet()) {
                 try {
                     UUID u = UUID.fromString(k);
-                    if (TFJson.dec(ap, k, 0) <= 0 || !PadClans.members(win).contains(u)) continue;
-                    PadGreen.add(server, u, 1);
+                    if (each <= 0 || TFJson.dec(ap, k, 0) <= 0 || !PadClans.members(win).contains(u)) continue;
+                    PadGreen.add(server, u, each);
                     greens++;
                 } catch (IllegalArgumentException ignored) {
                     // se salta
                 }
             }
             PadClanProgress.tell(server, win, "¡Ganasteis la guerra contra " + label(lose) + " (" + score + ")! +" + WIN_COINS + " Clan Coins, +" + WIN_PRESTIGE
-                    + " de prestigio" + (greens > 0 ? " y una moneda verde para los " + greens + " que aportaron." : "."), ChatFormatting.GREEN);
+                    + " de prestigio" + (greens > 0 ? " y " + PadClanProgress.greensText(each) + " para los " + greens + " que aportaron." : "."), ChatFormatting.GREEN);
         }
         if (lose != null) {
             PadClanProgress.addPrestige(lose, LOSE_PRESTIGE);
@@ -388,8 +396,9 @@ public final class PadClanWar {
             long left = Math.max(0, TFJson.num(w, "fin", 0) - System.currentTimeMillis());
             double mine = progress(w, side), theirs = progress(w, side.equals("A") ? "B" : "A");
             b.hero(new PadView.Row(new ItemStack(Items.IRON_SWORD), "En guerra contra " + label(oc), 0xC0392B,
-                    List.of("Vosotros " + Math.round(mine * 100) + " % · ellos " + Math.round(theirs * 100) + " %",
-                            "Quedan " + PadClanViews.until(left) + ". Gana quien llegue antes al 100 %."),
+                    // (1.3.158) la barra es lo vuestro (con su %); aquí solo lo de ellos (antes salía 2 veces lo vuestro)
+                    List.of("Ellos llevan " + Math.round(theirs * 100) + " %. Gana quien llegue antes al 100 %.",
+                            "Quedan " + PadClanViews.until(left) + "."),
                     (float) mine, "", PadView.Btn.of("VER LA GUERRA", "§guerra", PadView.GOLD), null).image(PadClanProgress.badge(c).image()));
         } else if (lastWar != null && System.currentTimeMillis() - TFJson.num(lastWar, "acabo", 0) < 3 * DAY_MS) {
             String side = side(lastWar, id), win = TFJson.str(lastWar, "ganador", "");

@@ -47,8 +47,10 @@ public final class PadClanBank {
     static final JsonStore STORE_IMPL = new JsonStore("clan_banco.json");
     public static final PadServer.Store STORE = STORE_IMPL;
 
-    public static final long BASE = 5000, STEP = 5000;
-    public static final int MAX_UPGRADES = 19, LOG = 40;
+    /** (1.3.158) De config/tfclient/clanes.json, «banco» ({@link PadClanConfig}); aquí, lo de fábrica. */
+    public static long BASE = 5000, STEP = 5000;
+    public static int MAX_UPGRADES = 19;
+    public static final int LOG = 40;
     private static final Map<UUID, Long> CHEST_GIVEN = new java.util.HashMap<>();
 
     private PadClanBank() {}
@@ -75,9 +77,9 @@ public final class PadClanBank {
         return BASE + STEP * upgrades(b);
     }
 
-    /** Lo que cuesta la mejora número next (1 a 19): next + 1 Clan Coins. */
+    /** Lo que cuesta la mejora número next (1 a 19): next + 1 Clan Coins (clanes.json: banco.primeraMejora y banco.subePorMejora). */
     public static long upgradeCost(int next) {
-        return next + 1L;
+        return PadClanConfig.bankUpgradeCost(next);
     }
 
     static JsonObject items(JsonObject b) {
@@ -241,8 +243,8 @@ public final class PadClanBank {
             Item it = item(e.getKey());
             if (it == Items.AIR) continue;
             long n = e.getValue().getAsLong();
-            ItemStack icon = new ItemStack(it, (int) Math.min(Integer.MAX_VALUE, Math.max(1, n)));
-            // casillas pequeñas, como un inventario (la cantidad encima y corta debajo)
+            // (1.3.158, el dueño: «números repetidos») el objeto sin su número encima: la cantidad va una vez, debajo
+            ItemStack icon = new ItemStack(it);
             b.cell(icon, PadView.shortNumber(n), 0x18265C, take ? "banco.sacar:" + e.getKey() : "", false);
         }
         // lo que lleva y puede meter

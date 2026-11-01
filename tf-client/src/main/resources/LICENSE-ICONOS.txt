@@ -1,0 +1,10 @@
+Símbolos de las insignias de los clanes (TF Client 1.3.158 y siguientes)
+
+Los símbolos que llevan las insignias de los clanes (textures/gui/pad/insignias) salen de Game-icons.net:
+https://game-icons.net — iconos de Lorc, Delapouite, Skoll, Carl Olsen, Willdabeast, Sbed, Caro Asercion, Cathelineau,
+DarkZaitzev, Faithtoken, Felbrigg, Generalace135, Guard13007, HeavenlyDog, Irongamer, John Colburn, John Redman,
+Kier Heyl, Lucas, Lord Berandas, Pierre Leducq, PriorBlue, Quoting, Viscious Speed, Zeromancer y los demás autores
+de la colección, con licencia Creative Commons BY 3.0 (https://creativecommons.org/licenses/by/3.0/).
+
+Los escudos, los colores, el borde de metal y la composición son de Tierras Fantásticas; los símbolos se han
+redibujado (tamaño, color, contorno y sombra) para las insignias.

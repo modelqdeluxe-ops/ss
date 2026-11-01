@@ -69,7 +69,7 @@
  },
  {
   "id": "dragon_rojo",
-  "nombre": "Mariposa roja"
+  "nombre": "Dragón rojo"
  },
  {
   "id": "castillo_azul",
@@ -149,7 +149,7 @@
  },
  {
   "id": "dragon_oro",
-  "nombre": "Mariposa dorada"
+  "nombre": "Dragón dorado"
  },
  {
   "id": "castillo_rojo",
@@ -173,7 +173,7 @@
  },
  {
   "id": "dragon_verde",
-  "nombre": "Mariposa verde"
+  "nombre": "Dragón verde"
  },
  {
   "id": "lobo_azul",
@@ -190,5 +190,641 @@
  {
   "id": "gema_rosa",
   "nombre": "Gema rosa"
+ },
+ {
+  "id": "espadas_granate",
+  "nombre": "Espadas cruzadas"
+ },
+ {
+  "id": "hachas_sangre",
+  "nombre": "Hachas cruzadas"
+ },
+ {
+  "id": "lanzas_marino",
+  "nombre": "Lanzas"
+ },
+ {
+  "id": "martillo_azul",
+  "nombre": "Martillo de trueno"
+ },
+ {
+  "id": "maza_gris",
+  "nombre": "Maza"
+ },
+ {
+  "id": "tridente_turquesa",
+  "nombre": "Tridente"
+ },
+ {
+  "id": "katana_negro",
+  "nombre": "Katana"
+ },
+ {
+  "id": "guadana_noche",
+  "nombre": "Guadaña"
+ },
+ {
+  "id": "alabarda_cobre",
+  "nombre": "Alabarda"
+ },
+ {
+  "id": "espada_alada_blanco",
+  "nombre": "Espada alada"
+ },
+ {
+  "id": "espada_rayo_marino",
+  "nombre": "Espada de Zeus"
+ },
+ {
+  "id": "puno_rojo",
+  "nombre": "Puño"
+ },
+ {
+  "id": "guantelete_gris",
+  "nombre": "Guantelete"
+ },
+ {
+  "id": "shuriken_negro",
+  "nombre": "Shuriken"
+ },
+ {
+  "id": "mangual_oliva",
+  "nombre": "Mangual"
+ },
+ {
+  "id": "sai_granate",
+  "nombre": "Sai"
+ },
+ {
+  "id": "leon_ambar",
+  "nombre": "León"
+ },
+ {
+  "id": "tigre_naranja",
+  "nombre": "Tigre"
+ },
+ {
+  "id": "oso_cobre",
+  "nombre": "Oso"
+ },
+ {
+  "id": "aguila_marino",
+  "nombre": "Águila"
+ },
+ {
+  "id": "cuervo_noche",
+  "nombre": "Cuervo"
+ },
+ {
+  "id": "buho_oliva",
+  "nombre": "Búho"
+ },
+ {
+  "id": "serpiente_esmeralda",
+  "nombre": "Serpiente"
+ },
+ {
+  "id": "cobra_ambar",
+  "nombre": "Cobra"
+ },
+ {
+  "id": "escorpion_sangre",
+  "nombre": "Escorpión"
+ },
+ {
+  "id": "arana_negro",
+  "nombre": "Araña"
+ },
+ {
+  "id": "zorro_naranja",
+  "nombre": "Zorro"
+ },
+ {
+  "id": "jabali_cobre",
+  "nombre": "Jabalí"
+ },
+ {
+  "id": "toro_rojo",
+  "nombre": "Toro"
+ },
+ {
+  "id": "caballo_blanco",
+  "nombre": "Caballo"
+ },
+ {
+  "id": "ciervo_verde",
+  "nombre": "Ciervo"
+ },
+ {
+  "id": "aullido_noche",
+  "nombre": "Aullido"
+ },
+ {
+  "id": "mamut_cian",
+  "nombre": "Mamut"
+ },
+ {
+  "id": "elefante_gris",
+  "nombre": "Elefante"
+ },
+ {
+  "id": "gorila_negro",
+  "nombre": "Gorila"
+ },
+ {
+  "id": "conejo_rosa",
+  "nombre": "Conejo"
+ },
+ {
+  "id": "sabueso_cobre",
+  "nombre": "Sabueso"
+ },
+ {
+  "id": "tortuga_esmeralda",
+  "nombre": "Tortuga"
+ },
+ {
+  "id": "rana_verde",
+  "nombre": "Rana"
+ },
+ {
+  "id": "cangrejo_naranja",
+  "nombre": "Cangrejo"
+ },
+ {
+  "id": "dinosaurio_oliva",
+  "nombre": "Dinosaurio"
+ },
+ {
+  "id": "abeja_ambar",
+  "nombre": "Abeja"
+ },
+ {
+  "id": "mariposa_morado",
+  "nombre": "Mariposa"
+ },
+ {
+  "id": "paloma_azul",
+  "nombre": "Paloma"
+ },
+ {
+  "id": "cisne_turquesa",
+  "nombre": "Cisne"
+ },
+ {
+  "id": "gallo_rojo",
+  "nombre": "Gallo"
+ },
+ {
+  "id": "colibri_esmeralda",
+  "nombre": "Colibrí"
+ },
+ {
+  "id": "buitre_sangre",
+  "nombre": "Buitre"
+ },
+ {
+  "id": "delfin_cian",
+  "nombre": "Delfín"
+ },
+ {
+  "id": "medusa_mar_rosa",
+  "nombre": "Medusa"
+ },
+ {
+  "id": "pinguino_blanco",
+  "nombre": "Pingüino"
+ },
+ {
+  "id": "salamandra_naranja",
+  "nombre": "Salamandra"
+ },
+ {
+  "id": "murcielago_noche",
+  "nombre": "Murciélago"
+ },
+ {
+  "id": "gato_morado",
+  "nombre": "Gato"
+ },
+ {
+  "id": "pulpo_granate",
+  "nombre": "Pulpo"
+ },
+ {
+  "id": "tiburon_marino",
+  "nombre": "Tiburón"
+ },
+ {
+  "id": "huella_cobre",
+  "nombre": "Huella"
+ },
+ {
+  "id": "garras_sangre",
+  "nombre": "Zarpazo"
+ },
+ {
+  "id": "colmillos_negro",
+  "nombre": "Colmillos"
+ },
+ {
+  "id": "oso_cara_oliva",
+  "nombre": "Oso pardo"
+ },
+ {
+  "id": "aguila_cabeza_ambar",
+  "nombre": "Halcón"
+ },
+ {
+  "id": "unicornio_rosa",
+  "nombre": "Unicornio"
+ },
+ {
+  "id": "grifo_ambar",
+  "nombre": "Grifo"
+ },
+ {
+  "id": "pegaso_azul",
+  "nombre": "Pegaso"
+ },
+ {
+  "id": "hidra_esmeralda",
+  "nombre": "Hidra"
+ },
+ {
+  "id": "minotauro_granate",
+  "nombre": "Minotauro"
+ },
+ {
+  "id": "gorgona_verde",
+  "nombre": "Gorgona"
+ },
+ {
+  "id": "kraken_turquesa",
+  "nombre": "Kraken"
+ },
+ {
+  "id": "dragon_espiral_sangre",
+  "nombre": "Dragón enroscado"
+ },
+ {
+  "id": "calavera_cuernos_negro",
+  "nombre": "Calavera con cuernos"
+ },
+ {
+  "id": "calaveras_gris",
+  "nombre": "Tres calaveras"
+ },
+ {
+  "id": "pirata_negro",
+  "nombre": "Bandera pirata"
+ },
+ {
+  "id": "fantasma_noche",
+  "nombre": "Fantasma"
+ },
+ {
+  "id": "diablo_rojo",
+  "nombre": "Diablo"
+ },
+ {
+  "id": "vampiro_granate",
+  "nombre": "Vampiro"
+ },
+ {
+  "id": "bruja_morado",
+  "nombre": "Bruja"
+ },
+ {
+  "id": "mago_marino",
+  "nombre": "Mago"
+ },
+ {
+  "id": "orco_oliva",
+  "nombre": "Orco"
+ },
+ {
+  "id": "duende_verde",
+  "nombre": "Duende"
+ },
+ {
+  "id": "enano_cobre",
+  "nombre": "Enano"
+ },
+ {
+  "id": "troll_gris",
+  "nombre": "Trol"
+ },
+ {
+  "id": "ogro_ambar",
+  "nombre": "Ogro"
+ },
+ {
+  "id": "golem_gris",
+  "nombre": "Gólem"
+ },
+ {
+  "id": "sirena_turquesa",
+  "nombre": "Sirena"
+ },
+ {
+  "id": "hada_rosa",
+  "nombre": "Hada"
+ },
+ {
+  "id": "diablillo_naranja",
+  "nombre": "Diablillo"
+ },
+ {
+  "id": "calavera_colmillos_sangre",
+  "nombre": "Calavera feroz"
+ },
+ {
+  "id": "vikingo_azul",
+  "nombre": "Casco vikingo"
+ },
+ {
+  "id": "espartano_granate",
+  "nombre": "Casco espartano"
+ },
+ {
+  "id": "samurai_rojo",
+  "nombre": "Casco samurái"
+ },
+ {
+  "id": "caballero_negro",
+  "nombre": "Caballero negro"
+ },
+ {
+  "id": "ninja_noche",
+  "nombre": "Ninja"
+ },
+ {
+  "id": "tribal_cobre",
+  "nombre": "Máscara tribal"
+ },
+ {
+  "id": "totem_oliva",
+  "nombre": "Tótem"
+ },
+ {
+  "id": "yelmo_cuernos_gris",
+  "nombre": "Yelmo con cuernos"
+ },
+ {
+  "id": "alas_blanco",
+  "nombre": "Alas de ángel"
+ },
+ {
+  "id": "alas_murcielago_negro",
+  "nombre": "Alas oscuras"
+ },
+ {
+  "id": "pluma_cian",
+  "nombre": "Pluma"
+ },
+ {
+  "id": "cristal_morado",
+  "nombre": "Cristales"
+ },
+ {
+  "id": "baculo_marino",
+  "nombre": "Báculo"
+ },
+ {
+  "id": "orbe_azul",
+  "nombre": "Orbe helado"
+ },
+ {
+  "id": "magia_morado",
+  "nombre": "Magia"
+ },
+ {
+  "id": "remolino_turquesa",
+  "nombre": "Remolino"
+ },
+ {
+  "id": "runa_gris",
+  "nombre": "Runa"
+ },
+ {
+  "id": "santo_blanco",
+  "nombre": "Símbolo sagrado"
+ },
+ {
+  "id": "ankh_ambar",
+  "nombre": "Ankh"
+ },
+ {
+  "id": "yinyang_gris",
+  "nombre": "Yin y yang"
+ },
+ {
+  "id": "pentaculo_sangre",
+  "nombre": "Pentáculo"
+ },
+ {
+  "id": "luna_maldita_noche",
+  "nombre": "Luna maldita"
+ },
+ {
+  "id": "libro_marino",
+  "nombre": "Libro"
+ },
+ {
+  "id": "pergamino_cobre",
+  "nombre": "Pergamino"
+ },
+ {
+  "id": "pocion_rosa",
+  "nombre": "Poción"
+ },
+ {
+  "id": "caldero_esmeralda",
+  "nombre": "Caldero"
+ },
+ {
+  "id": "caliz_granate",
+  "nombre": "Cáliz"
+ },
+ {
+  "id": "reloj_ambar",
+  "nombre": "Reloj de arena"
+ },
+ {
+  "id": "llave_marino",
+  "nombre": "Llave"
+ },
+ {
+  "id": "cofre_cobre",
+  "nombre": "Cofre"
+ },
+ {
+  "id": "monedas_oro",
+  "nombre": "Monedas"
+ },
+ {
+  "id": "dado_blanco",
+  "nombre": "Dado"
+ },
+ {
+  "id": "brujula_azul",
+  "nombre": "Brújula"
+ },
+ {
+  "id": "rayo_hielo_cian",
+  "nombre": "Rayo de hielo"
+ },
+ {
+  "id": "anillo_fuego_naranja",
+  "nombre": "Anillo de fuego"
+ },
+ {
+  "id": "ojo_escudo_noche",
+  "nombre": "Escudo vigía"
+ },
+ {
+  "id": "montana_azul",
+  "nombre": "Montañas"
+ },
+ {
+  "id": "volcan_sangre",
+  "nombre": "Volcán"
+ },
+ {
+  "id": "copo_cian",
+  "nombre": "Copo de nieve"
+ },
+ {
+  "id": "tornado_gris",
+  "nombre": "Tornado"
+ },
+ {
+  "id": "amanecer_naranja",
+  "nombre": "Amanecer"
+ },
+ {
+  "id": "rosa_flor_rojo",
+  "nombre": "Rosa"
+ },
+ {
+  "id": "loto_rosa",
+  "nombre": "Loto"
+ },
+ {
+  "id": "seta_rojo",
+  "nombre": "Seta"
+ },
+ {
+  "id": "pino_verde",
+  "nombre": "Pino"
+ },
+ {
+  "id": "brote_esmeralda",
+  "nombre": "Brote"
+ },
+ {
+  "id": "bellota_cobre",
+  "nombre": "Bellota"
+ },
+ {
+  "id": "cactus_oliva",
+  "nombre": "Cactus"
+ },
+ {
+  "id": "bambu_esmeralda",
+  "nombre": "Bambú"
+ },
+ {
+  "id": "calabaza_naranja",
+  "nombre": "Calabaza"
+ },
+ {
+  "id": "cerezas_blanco",
+  "nombre": "Cerezas"
+ },
+ {
+  "id": "trigo_ambar",
+  "nombre": "Trigo"
+ },
+ {
+  "id": "grieta_cobre",
+  "nombre": "Tierra rota"
+ },
+ {
+  "id": "antorcha_granate",
+  "nombre": "Antorcha"
+ },
+ {
+  "id": "farol_noche",
+  "nombre": "Farol"
+ },
+ {
+  "id": "estandarte_rojo",
+  "nombre": "Estandarte"
+ },
+ {
+  "id": "torre_azul",
+  "nombre": "Torre"
+ },
+ {
+  "id": "drakkar_marino",
+  "nombre": "Drakkar"
+ },
+ {
+  "id": "timon_cobre",
+  "nombre": "Timón"
+ },
+ {
+  "id": "yunque_gris",
+  "nombre": "Yunque"
+ },
+ {
+  "id": "cerveza_ambar",
+  "nombre": "Jarra"
+ },
+ {
+  "id": "musica_morado",
+  "nombre": "Música"
+ },
+ {
+  "id": "arpa_oro",
+  "nombre": "Arpa"
+ },
+ {
+  "id": "tambor_rojo",
+  "nombre": "Tambor"
+ },
+ {
+  "id": "faro_marino",
+  "nombre": "Faro"
+ },
+ {
+  "id": "pagoda_granate",
+  "nombre": "Pagoda"
+ },
+ {
+  "id": "molino_blanco",
+  "nombre": "Molino"
+ },
+ {
+  "id": "obelisco_ambar",
+  "nombre": "Obelisco"
+ },
+ {
+  "id": "templo_oliva",
+  "nombre": "Templo"
+ },
+ {
+  "id": "anzuelo_turquesa",
+  "nombre": "Anzuelo"
+ },
+ {
+  "id": "hoz_oliva",
+  "nombre": "Hoz"
+ },
+ {
+  "id": "horca_cobre",
+  "nombre": "Horca"
  }
 ]

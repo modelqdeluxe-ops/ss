@@ -56,6 +56,7 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
 | `ayuda.json` | Textos de la Guía del pad. |
 | `pad.json` | Qué apps del pad ven los jugadores y ajustes del pad. En `mundos`: `explorar` (el mundo al que lleva Explorar) y `spawn` (el del botón Spawn), por su id (`minecraft:overworld`, `minecraft:survival`…); vacío = automático (Explorar nunca va a un mundo vacío como el spawn de Multiverse; Spawn usa el `/spawn` de EssentialsX). También con `/tf web viajes explorar aqui` o `spawn aqui` estando en ese mundo, y `/tf web viajes lista` para ver cuáles son. |
 | `jefes.json` | Jefes de incursión. |
+| `clanes.json` | Clanes: niveles y su XP, plazas de miembros, misiones de la semana (la lista entera), guerras (y sus objetivos), banco, alianzas, duelos y la **tienda del clan**. Ver «Clanes» abajo. Lo que cuesta fundar un clan sigue en `pad.json` (`clanes.precio`). |
 | `revivir.json` | Revivir (el Revive Mod, ahora dentro del TF Client): tiempo desangrándose, distancia y tiempo para revivir, auto-revivir, sonidos, partículas y **quién puede rematar** a un noqueado (`playersCanFinish`, `mobsCanFinish`). Ver «Revivir» abajo. |
 
 Las crates (cajas) van aparte, en `config/fscrates/cajas/` (un JSON por caja; `config/fscrates/items_referencia.json`
@@ -78,6 +79,33 @@ o en Mods › TF Client › Configuración.
   `/revive set rematar mobs true|false`.
 - La primera vez se copia de `config/revivemod.json` (el del mod de antes). **Quita el revivemod (ReviveForge) de la
   carpeta mods y del AutoModpack**: mientras siga instalado, el revivir del TF Client no se enciende.
+
+## Clanes (`clanes.json`)
+
+Todo lo de los clanes que antes era fijo. Se cambia en el **pad de administrador › CLANES** (GENERAL, MISIONES, GUERRA y
+TIENDA: se guarda y vale al momento) o en el archivo y `/tf reload`. Lo que borres del archivo vuelve con lo de fábrica.
+
+- `nivel`: `maximo` (20), `xpBase` (1000: la XP del nivel 1 al 2), `xpCrece` (1,35: cada nivel pide eso por la del
+  anterior), `monedas` (Clan Coins al subir: 1), `monedasEspeciales` (2) cada `especialCada` niveles (5).
+- `miembros`: `base` (20 plazas), `porNivel` (+2), `maximoPorNivel` (40) y `porCompra` (las plazas de cada «+plazas» de
+  la tienda: 2).
+- `misiones`: `porSemana` (4), `verdes` (las de cada miembro que aportó: 1), `aliados` (0,5 = la mitad), `metaMin` y
+  `metaMax` (la `cantidad` de cada misión es para 5 miembros; con más o menos, entre x0,7 y x2,5) y `lista`: cada misión
+  con `id`, `nombre`, `descripcion`, `icono`, `tipo` (romper, colocar, matar, pescar, cosechar, criar, fabricar, fundir,
+  encantar), `objetivo` (un id, una #etiqueta, `hostil` o `*`), `cantidad`, `monedas`, `xp`, `prestigio` y `activa`.
+- `potenciador`: `multiplicador` (1,5).
+- `guerra`: `dias` (5), `objetivos` (5), `monedas` (2) y `prestigio` (150) del ganador, `prestigioPerdedor` (30),
+  `verdes` (1), `horasParaAceptar` (24) y `lista` (como las misiones, sin premio propio).
+- `banco`: `inicial` (5000), `porMejora` (5000), `mejoras` (19), `primeraMejora` (2 Clan Coins) y `subePorMejora` (1).
+- `alianzas`: `maximo` (2). `duelos`: `prestigio` (25), `horasPorPareja` (24), `distancia` (48), `huida` (64),
+  `segundos` (180) y `segundosParaAceptar` (60).
+- `tienda`: lo que se vende en la tienda del clan (con Clan Coins; compran el líder y los colíderes). Cada oferta: `id`,
+  `nombre`, `descripcion`, `icono`, `precio`, `maximo` (cuántas por clan; 0 = sin tope), `activa` y `tipo`:
+  `proteccion` (`piedra`), `plazas`, `potenciador` (`horas`), `objeto` (`objeto`: mejor con «Vender lo que llevas en la
+  mano» del pad de administrador, que guarda encantamientos y nombre), `verdes` (`cantidad` para cada miembro) o
+  `comando` (`comandos`, desde la consola: `{jugador}`, `{clan}`, `{etiqueta}`). En `nombre` y `descripcion` valen
+  `{cantidad}`, `{horas}` y `{x}`. Precios de fábrica (1.3.158): protección 50x50 30, 120x120 80, +2 plazas 20,
+  potenciador 6.
 
 ## Copias de seguridad
 

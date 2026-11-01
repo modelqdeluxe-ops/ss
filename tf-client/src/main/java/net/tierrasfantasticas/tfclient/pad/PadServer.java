@@ -124,6 +124,7 @@ public final class PadServer {
         APPS.put("a_gacha", net.tierrasfantasticas.tfclient.pad.server.PadAdminGacha.APP);
         // (1.3.150) todas las protecciones de todos: ir, ajustes, miembros, baneos y eliminar
         APPS.put("a_protecciones", net.tierrasfantasticas.tfclient.pad.server.PadClaims.ADMIN);
+        APPS.put("a_clanes", net.tierrasfantasticas.tfclient.pad.server.PadAdminClans.APP);
         // (1.3.142) RASTREADOR: las compras de la web y dónde está cada objeto
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);
@@ -319,6 +320,11 @@ public final class PadServer {
     public static void onStarted(ServerStartedEvent event) {
         server = event.getServer();
         PadConfig.load();
+        try {
+            net.tierrasfantasticas.tfclient.pad.server.PadClanConfig.load();
+        } catch (Exception | LinkageError e) {
+            TFClient.LOGGER.error("TF Pad: no se pudo cargar clanes.json", e);
+        }
         for (Store s : STORES) {
             try {
                 s.load(server);

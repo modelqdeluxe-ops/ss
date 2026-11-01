@@ -59,9 +59,10 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadClanDuels {
-    static final long PRESTIGE = 25;
-    private static final long CHALLENGE_MS = 60_000, MAX_MS = 180_000, PAIR_MS = 24L * 60 * 60 * 1000;
-    private static final double START_DIST = 48, FLEE_DIST = 64;
+    /** (1.3.158) De config/tfclient/clanes.json, «duelos» ({@link PadClanConfig}); aquí, lo de fábrica. */
+    static long PRESTIGE = 25;
+    static long CHALLENGE_MS = 60_000, MAX_MS = 180_000, PAIR_MS = 24L * 60 * 60 * 1000;
+    static double START_DIST = 48, FLEE_DIST = 64;
 
     /** Retos pendientes: retado → (retador, cuándo). */
     private static final Map<UUID, Map.Entry<UUID, Long>> CHALLENGES = new HashMap<>();
