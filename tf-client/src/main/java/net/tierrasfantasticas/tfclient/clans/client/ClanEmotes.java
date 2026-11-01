@@ -610,7 +610,9 @@ final class ClanEmotes {
     private static void fxCrown(double e, PoseStack pose, MultiBufferSource b, ClanLooks.Look look, Frame f, long seed, int[] pal, double now) {
         int warm = 0xFFE6A0;
         double light = e < 3.0 ? 1 : 1 - smooth(3.0, 4.0, e);
-        double low = e < 0.6 ? 16 - 16 * easeOut(e / 0.6) : 0;
+        // (el dueño: «el haz de luz tapa al jugador») el haz baja del cielo solo hasta encima de la cabeza (2,15): al
+        // cuerpo no le pasa luz por delante; abajo queda la luz del suelo y las motas
+        double low = e < 0.6 ? 16 - (16 - 2.15) * easeOut(e / 0.6) : 2.15;
         if (light > 0.01) {
             // el haz de luz del cielo (4 caras cruzadas) y la luz en el suelo
             VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.BEAM);
@@ -622,16 +624,19 @@ final class ClanEmotes {
                 ClanEmoteFx.quad(pose, vc, 0, (float) ((low + 16) / 2), 0, 0.6F, (float) (16 - low), ClanEmoteFx.scale(0xFFFFFF, (float) (0.16 * light)));
                 pose.popPose();
             }
-            if (low < 0.5) {
-                ClanEmoteFx.flat(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), 0, 0.03, 0, 3.2F, 0, ClanEmoteFx.scale(warm, (float) (0.7 * light)));
+            if (e > 0.45) {
+                ClanEmoteFx.flat(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), 0, 0.03, 0, 3.2F, 0,
+                        ClanEmoteFx.scale(warm, (float) (0.7 * light * smooth(0.45, 0.7, e))));
             }
             // motas doradas que caen despacio dentro del haz
             VertexConsumer motes = ClanEmoteFx.light(b, ClanEmoteFx.GLOW);
             for (int i = 0; i < 46; i++) {
                 double ph = (e * 0.32 + rnd(seed, i, 1)) % 1.0;
-                double y = 4.4 - ph * 4.4;
-                if (y > 16 - (16 - low)) {
-                    double ang = rnd(seed, i, 2) * Math.PI * 2 + e * 0.6, rad = 0.2 + rnd(seed, i, 3) * 0.75;
+                // dentro del haz (encima de la cabeza) o, más abajo, alrededor del cuerpo sin pasarle por delante
+                boolean high = i % 3 != 0;
+                double y = high ? 4.6 - ph * (4.6 - 2.2) : 2.2 - ph * 2.1;
+                if (y > low || !high) {
+                    double ang = rnd(seed, i, 2) * Math.PI * 2 + e * 0.6, rad = high ? 0.15 + rnd(seed, i, 3) * 0.55 : 0.75 + rnd(seed, i, 3) * 0.45;
                     float tw = (float) (0.5 + 0.5 * Math.sin(e * 7 + i * 1.9));
                     ClanEmoteFx.billboard(pose, motes, Math.cos(ang) * rad, y, Math.sin(ang) * rad, 0.07F, ClanEmoteFx.scale(i % 4 == 0 ? 0xFFFFFF : 0xFFD24A,
                             (float) (tw * light)));
