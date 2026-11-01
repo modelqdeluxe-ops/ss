@@ -102,6 +102,17 @@ SETS = {
     'ifrit': ('elitecreatures-ifrit_animated-weapon/RSS/assets', 'elitecreatures', COMMON + [('quiver', 'Carcaj')], 'ifrit_animated/'),
     # El Cyber Set trae 7 colores; el crate usa el original (cyan).
     'cyber': ('CyberSet-EliteCreatures/- Cyber Set/RSS/assets', 'cyber_set', COMMON + [('rod', 'Caña de pescar')], 'cyber_original_set/'),
+    # (TF Client 1.3.162) Las 5 crates nuevas del dueño (zips del 1 nov 2026). Deepsea, con la armadura de cuero (la de
+    # 1.20.1; la otra es la de netherita de 1.21.2+). El Oni Curse es otro pack que el set «oni» (elitecreatures).
+    'dryadia': ('dryadia_keeper_of_the_grove/ItemsAdder Setup/contents/dryadia_keeper_of_the_grove/resourcepack/assets',
+                'dryadia_keeper_of_the_grove', COMMON),
+    'spring': ('Spring_Season_Animated_Collection_1/ItemsAdder Setup/ItemsAdder/contents/plny_springset/resourcepack/assets',
+               'plny_springset', COMMON),
+    'drakegoat': ('imperial_drakegoa/ItemsAdder Setup/contents/imperial_drakegoat_armaments/resourcepack/assets',
+                  'imperial_drakegoat_armaments', COMMON),
+    'onicurse': ('oni_curse_pack/ItemsAdder Setup/ItemsAdder/contents/shine_oni/resourcepack/assets', 'shine_oni', COMMON),
+    'deepsea': ('deepsea_relics/ItemsAdder Setup (Leather Amror)/contents/deepsea_relics/resourcepack/assets', 'deepsea_relics',
+                COMMON),
     # Kits de los rangos (y los cuatro que pasaron a las crates: akira, cardael, evergreen y soulskull)
     'eagle': ('Eagle/Nexo Setup (1.20-1.21.1)/pack/assets', 'eagle_ascendant', COMMON),
     'akira': ('Akira/Akira Set/ItemsAdder/data/resource_pack/assets', 'akiraset', COMMON),

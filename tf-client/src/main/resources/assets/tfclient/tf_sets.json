@@ -3870,6 +3870,488 @@
    "tier": "netherite+1"
   },
   {
+   "id": "dryadia",
+   "name": "Dríada",
+   "color": "#65a30d",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "dryadia_sword",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_axe",
+     "type": "axe"
+    },
+    {
+     "id": "dryadia_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "dryadia_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "dryadia_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "dryadia_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "dryadia_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_spear",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_trident",
+     "type": "trident"
+    },
+    {
+     "id": "dryadia_staff",
+     "type": "sword"
+    },
+    {
+     "id": "dryadia_bow",
+     "type": "bow"
+    },
+    {
+     "id": "dryadia_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "dryadia_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "dryadia_shield",
+     "type": "shield"
+    },
+    {
+     "id": "dryadia_hat",
+     "type": "head"
+    },
+    {
+     "id": "dryadia_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/dryadia/wing_worn",
+     "glide": true
+    },
+    {
+     "id": "dryadia_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "dryadia_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "dryadia_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "dryadia_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "spring",
+   "name": "Primavera",
+   "color": "#fb7185",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "spring_sword",
+     "type": "sword"
+    },
+    {
+     "id": "spring_axe",
+     "type": "axe"
+    },
+    {
+     "id": "spring_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "spring_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "spring_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "spring_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "spring_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "spring_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "spring_spear",
+     "type": "sword"
+    },
+    {
+     "id": "spring_trident",
+     "type": "trident"
+    },
+    {
+     "id": "spring_staff",
+     "type": "sword"
+    },
+    {
+     "id": "spring_bow",
+     "type": "bow"
+    },
+    {
+     "id": "spring_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "spring_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "spring_shield",
+     "type": "shield"
+    },
+    {
+     "id": "spring_helmet",
+     "type": "head"
+    },
+    {
+     "id": "spring_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/spring/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "spring_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "spring_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "spring_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "spring_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "drakegoat",
+   "name": "Draco Imperial",
+   "color": "#ca8a04",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "drakegoat_sword",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_axe",
+     "type": "axe"
+    },
+    {
+     "id": "drakegoat_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "drakegoat_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "drakegoat_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "drakegoat_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "drakegoat_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_spear",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_trident",
+     "type": "trident"
+    },
+    {
+     "id": "drakegoat_staff",
+     "type": "sword"
+    },
+    {
+     "id": "drakegoat_bow",
+     "type": "bow"
+    },
+    {
+     "id": "drakegoat_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "drakegoat_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "drakegoat_shield",
+     "type": "shield"
+    },
+    {
+     "id": "drakegoat_hat",
+     "type": "head"
+    },
+    {
+     "id": "drakegoat_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/drakegoat/wing_worn",
+     "glide": true
+    },
+    {
+     "id": "drakegoat_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "drakegoat_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "drakegoat_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "drakegoat_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "onicurse",
+   "name": "Maldición Oni",
+   "color": "#be123c",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "onicurse_big_sword",
+     "type": "sword"
+    },
+    {
+     "id": "onicurse_axe",
+     "type": "axe"
+    },
+    {
+     "id": "onicurse_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "onicurse_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "onicurse_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "onicurse_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "onicurse_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "onicurse_spear",
+     "type": "sword"
+    },
+    {
+     "id": "onicurse_staff",
+     "type": "sword"
+    },
+    {
+     "id": "onicurse_bow",
+     "type": "bow"
+    },
+    {
+     "id": "onicurse_shield",
+     "type": "shield"
+    },
+    {
+     "id": "onicurse_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/onicurse/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "onicurse_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "onicurse_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "onicurse_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "onicurse_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "deepsea",
+   "name": "Reliquias del Abismo",
+   "color": "#0891b2",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "deepsea_sword",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_axe",
+     "type": "axe"
+    },
+    {
+     "id": "deepsea_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "deepsea_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "deepsea_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "deepsea_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "deepsea_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_spear",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_trident",
+     "type": "trident"
+    },
+    {
+     "id": "deepsea_staff",
+     "type": "sword"
+    },
+    {
+     "id": "deepsea_bow",
+     "type": "bow"
+    },
+    {
+     "id": "deepsea_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "deepsea_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "deepsea_shield",
+     "type": "shield"
+    },
+    {
+     "id": "deepsea_hat",
+     "type": "head"
+    },
+    {
+     "id": "deepsea_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/deepsea/wing_worn",
+     "glide": true
+    },
+    {
+     "id": "deepsea_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "deepsea_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "deepsea_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "deepsea_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
    "id": "soulskull",
    "name": "Soul Skull",
    "color": "#14b8a6",
