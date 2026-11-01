@@ -44,11 +44,17 @@ public final class ClanEmoteWheel extends Screen {
     }
 
     private int radius() {
-        return Math.max(56, Math.min(92, (int) (Math.min(width, height) * 0.27)));
+        // que el nombre de arriba no pise el título (pantallas bajas)
+        return Math.max(50, Math.min(Math.min(92, (int) (Math.min(width, height) * 0.27)), centerY() - 75));
+    }
+
+    /** El centro de la rueda (un poco más abajo que el de la pantalla: arriba va el nombre y lo que hace). */
+    private int centerY() {
+        return height / 2 + 10;
     }
 
     private int slotAt(double mx, double my) {
-        double dx = mx - width / 2.0, dy = my - height / 2.0;
+        double dx = mx - width / 2.0, dy = my - centerY();
         double d = Math.sqrt(dx * dx + dy * dy), r = radius();
         if (d < r * 0.42 || d > r * 1.55) return -1;
         double ang = Math.toDegrees(Math.atan2(dy, dx)) + 90 + 36;
@@ -68,7 +74,7 @@ public final class ClanEmoteWheel extends Screen {
     public void render(GuiGraphics g, int mx, int my, float partial) {
         g.fill(0, 0, width, height, 0x88000000);
         hover = testHover >= 0 ? testHover : slotAt(mx, my);
-        int cx = width / 2, cy = height / 2, r = radius();
+        int cx = width / 2, cy = centerY(), r = radius();
         Minecraft mc = Minecraft.getInstance();
         ClanLooks.Look look = mc.player == null ? null : ClanLooks.ofPlayer(mc.player.getUUID());
         for (int i = 0; i < ClanEmote.IDS.length; i++) {
@@ -86,14 +92,15 @@ public final class ClanEmoteWheel extends Screen {
             g.renderItem(ICONS[i], -8, -8);
             g.pose().popPose();
             g.drawString(font, String.valueOf(i + 1), x - sr + 4, y - sr + 2, on ? 0xFF3A2000 : 0xFFB8C2D8, false);
+            // el nombre fuera del círculo: el de arriba, encima (debajo tapaba el centro); los demás, debajo
             String name = ClanEmote.NAMES[i];
-            g.drawCenteredString(font, name, x, y + sr + 5, on ? 0xFFFFE070 : 0xFFE8ECF4);
+            g.drawCenteredString(font, name, x, i == 0 ? y - sr - 13 : y + sr + 5, on ? 0xFFFFE070 : 0xFFE8ECF4);
         }
         // en medio: la insignia del clan y lo que hace el elegido
-        disc(g, cx, cy, 36, 0xFF10141E);
-        disc(g, cx, cy, 34, 0xFF222A3A);
+        disc(g, cx, cy, 29, 0xFF10141E);
+        disc(g, cx, cy, 27, 0xFF222A3A);
         if (look != null) {
-            g.blit(look.badgeTexture(), cx - 22, cy - 26, 0, 0, 44, 44, 44, 44);
+            g.blit(look.badgeTexture(), cx - 18, cy - 18, 0, 0, 36, 36, 36, 36);
         }
         String l1, l2;
         if (look == null) {
@@ -106,10 +113,9 @@ public final class ClanEmoteWheel extends Screen {
             l1 = "Emotes del clan";
             l2 = "Clic o 1 a 5 · Esc para salir";
         }
-        int ty = cy + Math.max(r + 46, 0);
-        if (ty + 22 > height) ty = height - 22;
-        g.drawCenteredString(font, l1, cx, ty, look == null ? 0xFFFF6060 : 0xFFFFFFFF);
-        g.drawCenteredString(font, l2, cx, ty + 11, 0xFFB8C2D8);
+        // arriba de la pantalla (abajo tapaba la barra de objetos)
+        g.drawCenteredString(font, l1, cx, 8, look == null ? 0xFFFF6060 : 0xFFFFE070);
+        g.drawCenteredString(font, l2, cx, 19, 0xFFB8C2D8);
         super.render(g, mx, my, partial);
     }
 

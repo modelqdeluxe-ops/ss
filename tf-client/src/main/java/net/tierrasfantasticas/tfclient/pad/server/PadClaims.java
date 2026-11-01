@@ -545,7 +545,7 @@ public final class PadClaims {
      * una canción), QUITAR y el volumen.
      */
     private static void music(PadView.Builder b, Claim c, String id) {
-        b.header("Suena en bucle para todos los que estén dentro de la zona; al salir, se deja de oír.");
+        b.header("Suena en bucle dentro de la zona; al salir, se deja de oír.");
         PadZoneMusic.Song s = PadZoneMusic.of(c);
         String pick = "§zonamusica:" + id + ":" + title(c);
         if (s == null) {
@@ -557,8 +557,8 @@ public final class PadClaims {
                 List.of((s.artist().isBlank() ? "" : s.artist() + " · ") + "La puso " + s.by() + "."), -1, "",
                 PadView.Btn.of("CAMBIAR", pick, PadView.BLUE), PadView.Btn.of("QUITAR", "musica_quitar:" + id, PadView.RED)));
         b.row(new PadView.Row(new ItemStack(Items.NOTE_BLOCK), "Volumen: " + s.volume() + " %", TEXT, List.of("Lo alto que suena dentro de la zona."), -1, "",
-                s.volume() > 10 ? PadView.Btn.of("−", "musica_vol:" + id + ":-10", PadView.BLUE) : PadView.Btn.off("−"),
-                s.volume() < 100 ? PadView.Btn.of("+", "musica_vol:" + id + ":10", PadView.BLUE) : PadView.Btn.off("+")));
+                s.volume() > 10 ? PadView.Btn.of("BAJAR", "musica_vol:" + id + ":-10", PadView.BLUE) : PadView.Btn.off("BAJAR"),
+                s.volume() < 100 ? PadView.Btn.of("SUBIR", "musica_vol:" + id + ":10", PadView.BLUE) : PadView.Btn.off("SUBIR")));
         b.text("Quien no la quiera oír: Ajustes del pad › Oír la música de otros.", MUTED, List.of());
     }
 

@@ -163,7 +163,13 @@ public final class MusicSpeaker {
         Heard h = zoneKey == null ? null : HEARD.get(zoneKey);
         if (h == null) return "ninguna";
         boolean active = h.sound != null && Minecraft.getInstance().getSoundManager().isActive(h.sound);
-        return zoneKey + (active ? " sonando" : DOWNLOADING.contains(h.url) ? " bajando" : " sin sonar");
+        Path file = cacheFile(h.url);
+        boolean got = file != null && Files.exists(file);
+        // sin «sonando»: por qué (bajada, archivo, flujo de audio abierto y el motor de sonido del juego)
+        String why = " [bajada " + (DOWNLOADING.contains(h.url) ? "en curso" : FAILED.containsKey(h.url) ? "falló" : got ? "hecha" : "sin empezar")
+                + ", flujo " + (h.sound != null && h.sound.stream != null ? "abierto" : "no") + ", motor «"
+                + Minecraft.getInstance().getSoundManager().getDebugString() + "»]";
+        return zoneKey + (active ? " sonando" : DOWNLOADING.contains(h.url) ? " bajando" : " sin sonar") + why;
     }
 
     private static final Map<UUID, Heard> HEARD = new HashMap<>();

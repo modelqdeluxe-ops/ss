@@ -614,11 +614,12 @@ final class ClanEmotes {
         if (light > 0.01) {
             // el haz de luz del cielo (4 caras cruzadas) y la luz en el suelo
             VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.BEAM);
-            for (int i = 0; i < 4; i++) {
+            // (dos caras cruzadas, no cuatro: con cuatro se sumaba tanta luz que el jugador salía blanco)
+            for (int i = 0; i < 2; i++) {
                 pose.pushPose();
-                pose.mulPose(Axis.YP.rotationDegrees(i * 45 + (float) (e * 8)));
-                ClanEmoteFx.quad(pose, vc, 0, (float) ((low + 16) / 2), 0, 1.9F, (float) (16 - low), ClanEmoteFx.scale(warm, (float) (0.55 * light)));
-                ClanEmoteFx.quad(pose, vc, 0, (float) ((low + 16) / 2), 0, 0.7F, (float) (16 - low), ClanEmoteFx.scale(0xFFFFFF, (float) (0.5 * light)));
+                pose.mulPose(Axis.YP.rotationDegrees(i * 90 + (float) (e * 8)));
+                ClanEmoteFx.quad(pose, vc, 0, (float) ((low + 16) / 2), 0, 2.0F, (float) (16 - low), ClanEmoteFx.scale(warm, (float) (0.32 * light)));
+                ClanEmoteFx.quad(pose, vc, 0, (float) ((low + 16) / 2), 0, 0.6F, (float) (16 - low), ClanEmoteFx.scale(0xFFFFFF, (float) (0.16 * light)));
                 pose.popPose();
             }
             if (low < 0.5) {
