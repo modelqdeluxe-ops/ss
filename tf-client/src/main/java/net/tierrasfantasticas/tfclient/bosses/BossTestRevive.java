@@ -98,7 +98,8 @@ final class BossTestRevive {
                         + ", mobsCanFinish " + TFRevive.getConfig().mobsCanFinish + ", downTimeSeconds " + TFRevive.getConfig().downTimeSeconds);
                 a = target(server, level, "Diana_A", -1.5, 3);
                 b = target(server, level, "Diana_B", 0, 2.2);
-                c = target(server, level, "Diana_C", 1.5, 1.5);
+                // (lejos de B: el barrido de la espada al rematar a B también la remataba)
+                c = target(server, level, "Diana_C", -2.2, -1);
                 d = target(server, level, "Diana_D", 3, 3);
                 zombie = EntityType.ZOMBIE.create(level);
                 if (zombie != null) {
