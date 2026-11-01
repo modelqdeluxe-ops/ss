@@ -4,7 +4,7 @@
 > **solo con GitHub Actions** (`tf-client.yml`, nunca `./gradlew` en el contenedor), no subas jars, prueba en el juego
 > tú mismo con `[prueba-jefes=<escenario>]` y mide las capturas con PIL antes de decir que algo está bien.
 
-## 0. Dónde lo dejamos (31 oct 2026): TODO HECHO Y PROBADO EN LA 1.3.156
+## 0. Dónde lo dejamos (1 nov 2026): la 1.3.158 (§5) sobre la 1.3.156
 
 La 1.3.156 es el parche único que pidió el dueño: la caída por la GTS, las flags de spawn, lo de la 1.3.155 y los
 clanes enteros (fases 2–5, §3). Todo probado en el juego (`[prueba-jefes=arreglos]` y `[prueba-jefes=clanes]`, ver el
@@ -76,11 +76,11 @@ semana con las 4 misiones. Los duelos no dan monedas (solo prestigio).
 |---|---|---|
 | Nivel, prestigio, misiones, insignias, ranking CLANES | `pad/server/PadClanProgress`, `PadClanViews`, `PadRanking` | como en la fase 2 de antes; `maxMembers` = 20 + 2·(nivel−1) hasta 40, + 2 por cada «+2 plazas» comprada |
 | Paleta tipo Paint | `pad/PadColorPicker` (cliente) | botón PALETA de ESTILO → `§color:clanes:estilo:<HEX>:<TAG>` (`PadViewPage.run`); cuadro S/B, barra de tono, los 28 colores de Paint, antes/ahora con la etiqueta (sobre oscuro y claro) y el hex escribible; GUARDAR manda `col:#RRGGBB` y vuelve a ESTILO |
-| Banco del clan | `pad/server/PadClanBank` (`clan_banco.json`), `clans/ClanBankBlock`, `clans/ClanBlocks`, `tools/pad/banco.py` | digital: `objetos {id: cantidad}`; sin NBT (encantados, con nombre, gastados no entran); 5.000 + 5.000 por mejora hasta 100.000 (19 mejoras; la n cuesta n+1 Clan Coins, 209 en total); meten todos, sacan líder y colíderes (y veteranos con «Los veteranos sacan del banco» en AJUSTES); REGISTRO de 40 movimientos; COFRE da el bloque `tfclient:banco_clan` (no guarda nada: abre la pestaña BANCO de quien lo usa) |
+| Banco del clan | `pad/server/PadClanBank` (`clan_banco.json`), `clans/ClanBankBlock`, `clans/ClanBlocks`, `tools/pad/banco_modelo.py` (1.3.158) | digital: `objetos {id: cantidad}`; sin NBT (encantados, con nombre, gastados no entran); 5.000 + 5.000 por mejora hasta 100.000 (19 mejoras; la n cuesta n+1 Clan Coins, 209 en total); meten todos, sacan líder y colíderes (y veteranos con «Los veteranos sacan del banco» en AJUSTES); REGISTRO de 40 movimientos; COFRE da el bloque `tfclient:banco_clan` (no guarda nada: abre la pestaña BANCO de quien lo usa) |
 | Guerras | `pad/server/PadClanWar` (`clan_guerras.json`), `pad/PadClanWarPage` (cliente, app de datos «guerra») | pestaña GUERRA: el líder o un colíder declara (doble clic) y el otro acepta en 24 h; 5 días; 5 objetivos de `PadClanWar.POOL` (duros, solo Overworld, meta por miembros con `goal`); cuenta lo que se hace con las reglas de los oficios (`TFJobs.record` → `PadClanProgress.record` → `PadClanWar.record`); gana el primero al 100 % o el que más lleve al acabar; premio 2 Clan Coins + 150 prestigio + 1 verde a cada uno que aportó; el otro 30 prestigio. VER LA GUERRA abre la barra vertical doble (una por clan con su color, META de oro, insignias, % y los 3 que más aportan; a la derecha los objetivos con las dos barritas) |
 | Alianzas | `pad/server/PadClanAlliances` | en GUERRA: ALIANZA (proponer), ACEPTAR/NO, ROMPER (doble clic); máximo 2; lo de cada uno suma la mitad a las misiones del otro (`ALLY_SHARE`); los aliados no se declaran la guerra |
 | Duelos | `pad/server/PadClanDuels` (`/clan duelo <jugador>`, `aceptar`, `rechazar`, en `PadClanChat.command`) | clanes distintos, a menos de 48 bloques; 60 s para aceptar (clic en el chat); cuenta atrás 3-2-1; el PvP apagado (global o de la zona) no lo para (`EntityProtectionEvents.onLivingHurt`); gana el que deja al otro a 1 corazón (nadie muere: `LivingDeathEvent` cancelado); 3 min = empate; alejarse 64 bloques = huye y pierde; +25 prestigio al clan del ganador, una vez cada 24 h por pareja |
-| Tienda del clan | `pad/server/PadClanShop` | pestaña TIENDA (líder y colíderes): Protección del clan 50x50 (15 Clan Coins, máx. 2), 120x120 (40, máx. 2), +2 plazas (10, máx. 5), potenciador de misiones x1,5 24 h (3) |
+| Tienda del clan | `pad/server/PadClanShop` | pestaña TIENDA (compran líder y colíderes; desde la 1.3.158 la ven todos y sale de `clanes.json`): Protección del clan 50x50 (15 Clan Coins, máx. 2; 30 en la 1.3.158), 120x120 (40, máx. 2; 80), +2 plazas (10, máx. 5; 20), potenciador de misiones x1,5 24 h (3; 6) |
 | Protecciones del clan y territorio | `claims/data/ClaimTier` (`claimstone_clan_50x50` y `_120x120`, `isClan`), `Claim.clanId`, `BlockProtectionEvents.tryPlaceClaim`, `PlayerTracker`, `tools/gen_claim_blocks.py` (ónice y plata azulada) | solo las pone el líder o un colíder; la zona es del clan: `isMember` = cualquiera del clan, `isOwner` = líder y colíderes (`PadClans.managesTerritory`); al entrar, título «Territorio de [TAG] Nombre» con el color del clan; dentro nunca hay PvP entre los del clan (`PadClans.onAttack`); no cuentan para el límite de zonas por jugador |
 | Tienda del juego | `shop/TFShopProtections` (`tienda_protecciones.json`) | cada jugador compra una piedra de protección de cada tamaño, para siempre (y de una en una) |
 
@@ -89,6 +89,35 @@ Al disolver un clan se borran su banco, su guerra (gana el otro) y sus alianzas.
 **Prueba en el juego**: `[prueba-jefes=clanes]` (`bosses/BossTestClanes`, casos «clanes 1»–«clanes 17» y capturas
 `clanes_1_miembros` … `clanes_17_cofre_abre_banco`) y `[prueba-jefes=arreglos]` (`bosses/BossTestFixes`: la GTS y las
 flags de spawn).
+
+## 5. La 1.3.158 (1 nov 2026): lo que pidió el dueño al ver las capturas de la 1.3.156
+
+El dueño, literal: «1. textura de cofre horrible; 2. hay frases y números repetidos; 3. no me mostraste la tienda del clan
+completa, y sube los precios; 4. banners o logos de clan pobres y hay muy pocos, haz una vasta lista, grande, bien
+dibujados sin errores» («mínimo 100 o más»); «5. no vi el banco, ¿cómo funciona?, y haz que los miembros vean todas esas
+pestañas menos ajustes y estilo, esas opciones solo son para colíder y el líder; 6. haz la config de los clanes
+configurable 100 por 100 (misiones, miembros y así), en el config y en el pad de admin, que incluya la tienda, aunque
+quiero una tienda más específica para el clan, dame ideas». Y después: «los cofres siguen siendo una mierda, saca un
+modelo de las crates, uno de madera, de los modelos 3D de las crates del mod, no de la web».
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| El cofre del banco | `tools/pad/banco_modelo.py`, `models/block/clan/banco_clan.json` | el modelo 3D de la crate **`crate_lvl1`** de TF Crates (madera con herrajes; base y tapa cerrada), a escala 0,625 para que quepa en un bloque, con su textura `fscrates:block/crate_lvl1`. Para cambiarla por otra crate: `python3 tools/pad/banco_modelo.py <crate> --ver salida.png` (lo hace todo, también el blockstate si la cerradura va al sur). Para ver los modelos sin abrir el juego: `tools/pad/ver_modelo.py` (`--pitch -28` para verlos desde arriba). Fuera las texturas pixeladas de `tools/pad/banco.py` |
+| Las insignias | `tools/pad/insignias.py`, `tools/pad/gameicons.json`, `LICENSE-ICONOS.txt` | **207** (antes 48): símbolos de game-icons.net (CC BY 3.0: los créditos van en el jar) sobre 9 formas, 20 campos y 4 metales; las 48 de antes conservan su id. `python3 tools/pad/insignias.py --ver <carpeta>` hace la hoja |
+| Repetidos | `PadClanWar` (el hero: solo lo de ellos), `PadClanWarPage` (sin el título ni los % debajo de las barras), `PadClanBank` (la cantidad una vez), `PadClanViews` (misiones: «Misiones de la semana», hechas y Clan Coins ganadas) | |
+| Pestañas | `PadClans` | miembros, misiones, banco, guerra y tienda para todos; **estilo y ajustes solo líder y colíderes** (y sus acciones: `col:`, `colhex`, `insignia:`, `vetinv`, `vetbanco`, `color`, `fuego`); disolver solo el líder |
+| Config 100 % | `pad/server/PadClanConfig` (`config/tfclient/clanes.json`, en `/tf reload`) | nivel, miembros, misiones (+ lista), potenciador, guerra (+ lista), banco, alianzas, duelos y **tienda** (tipos `proteccion`, `plazas`, `potenciador`, `objeto`, `verdes`, `comando`). Lo de fábrica es lo de la 1.3.156 salvo los precios (al doble: 30, 80, 20, 6). Los números de cada clase (`PadClanProgress.MAX_LEVEL`, `PadClanWar.DAYS`…) ya no son `final`: los pone `PadClanConfig.apply`. Las misiones apagadas no salen en semanas nuevas pero las de esta semana siguen (`KNOWN` / `POOL`) |
+| Pad de administrador › CLANES | `pad/server/PadAdminClans` (`a_clanes`) | GENERAL (fundar, plazas, niveles, banco, alianzas, duelos), MISIONES y GUERRA (números + la lista: SÍ/NO, EDITAR nombre, tipo, objetivo —comprobado con `TFMissionCheck.sample`—, cantidad, premio e icono; añadir y borrar), TIENDA (SÍ/NO, precio, máximo, tipo y lo suyo; «Vender lo que llevas en la mano») |
+
+**Prueba**: `[prueba-jefes=clanes]` con lo nuevo: «clanes 5b» (pestañas de un miembro raso y del líder), «clanes 5c»
+(`PadClanConfig.testConfig`: cambiar clanes.json vale al momento y se guarda), «clanes 7» con los precios nuevos y las
+capturas `clanes_18_tienda_arriba` … `clanes_25_admin_mision` (la tienda entera, el banco y la app de administrador).
+
+**El banco, como se le explicó al dueño**: es digital (no es un cofre de verdad): en la pestaña BANCO cualquiera del clan
+mete lo que lleva (METER, por tipo de objeto); sacan el líder y los colíderes (y los veteranos si se activa en AJUSTES).
+Caben 5.000 objetos y cada mejora suma 5.000 (con Clan Coins); los objetos con encantamientos, nombre o gastados no
+entran (para que nadie pierda nada). REGISTRO enseña quién metió o sacó qué. El bloque del cofre (botón COFRE) solo abre
+la pestaña BANCO de quien lo usa.
 
 ## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 

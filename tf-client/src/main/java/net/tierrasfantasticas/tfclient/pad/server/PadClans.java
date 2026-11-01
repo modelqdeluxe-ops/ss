@@ -390,9 +390,9 @@ public final class PadClans {
             b.selected(settings ? "ajustes" : "miembros");
             if (!settings) b.hero(PadClanViews.hero(c, me));
             // (1.3.158, el dueño: «frases repetidas») el nombre y los miembros ya salen en la ficha de arriba
-            long online = list.stream().filter(u -> player.getServer().getPlayerList().getPlayer(u) != null).count();
+            long connected = list.stream().filter(u -> player.getServer().getPlayerList().getPlayer(u) != null).count();
             b.header(settings ? "Ajustes del clan: los cambian el líder y los colíderes."
-                    : "Eres " + roleName(myRole).toLowerCase(java.util.Locale.ROOT) + " · " + online + " conectado" + (online == 1 ? "" : "s") + " ahora.");
+                    : "Eres " + roleName(myRole).toLowerCase(java.util.Locale.ROOT) + " · " + connected + " conectado" + (connected == 1 ? "" : "s") + " ahora.");
             if (settings) {
                 b.row(new PadView.Row(new ItemStack(Items.ORANGE_DYE), "Color e insignia", 0x18265C,
                         List.of("Ahora: " + String.format("#%06X", rgbOf(c)) + " y «" + PadClanProgress.badge(c).name() + "». Cámbialos en ESTILO (arriba)."),
