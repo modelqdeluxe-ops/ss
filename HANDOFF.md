@@ -203,6 +203,8 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   esté donde esté: `TFRevocations`). Prueba en `test/app.test.js` (63 pruebas bien).
 - Las alas de Cian Místico y Violeta y la mochila de Cian Místico venían con la posición de CosmeticsCore (en la
   cintura): `Y50_BY_TAG` de `build_mod_items.py` las sube a los hombros.
+- Los iconos del Aceruin se salían de su casilla del inventario (sus modelos son más grandes y su «gui» no los encoge):
+  `GUI_SCALE_BY_SET` de `build_mod_items.py` (0,62). Medido en la captura del inventario de la prueba.
 - Licencias: los zips del dueño de la 1.3.162 y 1.3.163 traen el cartel de un sitio de descargas. El dueño dice que los
   pagó («yo pagué por ellos»); las licencias para vender esos objetos en el servidor son cosa suya.
 - Prueba `[prueba-jefes=sets]` con los 9 sets: todos «bien».
