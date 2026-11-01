@@ -190,6 +190,23 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.163: 8 CRATES MÁS Y EL SET DISCORD NITRO) — lee esto primero
+
+- **8 crates** (54 en total): `dragonstone` (Piedra de Dragón), `leviathan` (Leviatán: su pack no trae llave, usa la de
+  siempre), `aceruin`, `violet` (Violeta), `runemoth` (Polilla Rúnica), `nexus`, `mysticcyan` (Cian Místico) y `sakura`
+  (su pack no trae armadura: la crate lo dice). Mismo camino que la 1.3.162 (packs en el scratchpad, `packs162`).
+- **Set Discord Nitro** (`nitro`, `SPECIALS` de `crates.py` → producto `especial-nitro`, categoría `especiales`,
+  `staffOnly`). El dueño: «no estará en la tienda web; se le otorga a los que boosteen el Discord… lo del nitro no lo
+  pongas automático, yo se lo doy manualmente desde el panel admin de la web». No sale en `/api/products`, no se puede
+  comprar (`/api/checkout`) ni reclamar (`/api/claim`); el panel `/staff` lo ve con `GET /api/staff/products` y lo da con
+  «Test» (un pedido de verdad, marcado `TFOrder`), y se le quita con «Reembolsar» del mismo panel (retira el set del juego
+  esté donde esté: `TFRevocations`). Prueba en `test/app.test.js` (63 pruebas bien).
+- Las alas de Cian Místico y Violeta y la mochila de Cian Místico venían con la posición de CosmeticsCore (en la
+  cintura): `Y50_BY_TAG` de `build_mod_items.py` las sube a los hombros.
+- Licencias: los zips del dueño de la 1.3.162 y 1.3.163 traen el cartel de un sitio de descargas. El dueño dice que los
+  pagó («yo pagué por ellos»); las licencias para vender esos objetos en el servidor son cosa suya.
+- Prueba `[prueba-jefes=sets]` con los 9 sets: todos «bien».
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.162: 5 CRATES NUEVAS) — lee esto primero
 
 El dueño mandó 5 packs (zips: `dryadia_keeper_of_the_grove`, `Spring_Season_Animated_Collection_1`, `imperial_drakegoa`,
