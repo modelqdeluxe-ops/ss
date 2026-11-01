@@ -190,6 +190,29 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.162: 5 CRATES NUEVAS) — lee esto primero
+
+El dueño mandó 5 packs (zips: `dryadia_keeper_of_the_grove`, `Spring_Season_Animated_Collection_1`, `imperial_drakegoa`,
+`oni_curse_pack`, `deepsea_relics`): «no quiero errores… ningún error de textura… las alas deben colocarse bien en la
+espalda, altura correcta… el motor de las animaciones de los sets… un trabajo impecable». Hecho con el camino de siempre
+(`tierras-fantasticas/README.md`, «Crates y visor 3D»):
+- Sets `dryadia` (Crate Dríada), `spring` (Crate Primavera: el pack entero; `springcos` sigue con sus alas y corona en
+  Cosméticos), `drakegoat` (Crate Draco Imperial), `onicurse` (Crate Maldición Oni: otro pack que el set `oni`) y `deepsea`
+  (Crate Reliquias del Abismo, con la armadura de cuero de su ItemsAdder: la de 1.20.1). En `SETS` de `build_items.py` (los
+  ItemsAdder Setup de cada zip) y en `CRATES` de `crates.py`; 46 crates.
+- Web: `build_items.py`, `compose_cover.py`, `paypal_images.py` y `wear_export.py` de los 5. **Ojo**: `crates.py` reescribe
+  `products.json` y **borra a mano** lo de los rangos que no está en su tabla (`testClaim`, `giftCode`, roles de Discord,
+  `bonus`): esta vez se metieron solo las 5 crates nuevas en el `products.json` de antes. Y `wear_export.py` rehízo 9 sets
+  viejos con cambios (el mod tiene modelos más nuevos que lo exportado): se dejaron como estaban (solo los 5 nuevos).
+- Mod: `build_mod_items.py <packs> dryadia spring drakegoat onicurse deepsea` (103 objetos; 0 avisos; alas por forma o por
+  el pack, `check_backs.py` todo «ok»). Se arregló que el script **borraba los nombres** de lo que no es de un set (las
+  armas de las clases `clase_*`, el pad de administrador, el disco compartido: 78 nombres), y `check_mod_items.py` (se
+  caía con los `.mcmeta` sin animación de las insignias a 256 px): ahora 0 errores.
+- Prueba **`[prueba-jefes=sets]`** (`bosses/BossTestSets`): por set, cuántos objetos hay; las alas puestas (en el pecho:
+  el Armario solo cambia cómo se ve lo que llevas, no lo pone) con el casco y el arma, de espaldas y de frente; la armadura
+  entera; y todos los objetos en el inventario. Las alas quedan en la espalda, a la altura de los hombros; las del Draco
+  Imperial van giradas 90° porque así las diseñó el pack (`display.head` del modelo).
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.161: EMOTES PULIDOS) — lee esto primero
 
 Lo que dijo el dueño al ver los vídeos de la 1.3.160 (literal y tabla: §8 de [`tf-client/CLANES.md`](tf-client/CLANES.md)):
