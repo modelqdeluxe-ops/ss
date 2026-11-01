@@ -293,19 +293,21 @@ final class ClanEmotes2 {
             double flap = 16 * Math.sin((e - 0.5) * 5.0);
             f.push(pose);
             VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.RAY);
+            // (las alas, a la espalda y hacia fuera: cada pluma sale del hombro con su ángulo φ desde la horizontal hacia
+            // fuera; de un poco hacia abajo a casi arriba)
             for (int side = -1; side <= 1; side += 2) {
                 pose.pushPose();
-                pose.translate(side * 0.2, 1.38 + lift, -0.22);
-                // el ala, en un plano algo inclinado hacia atrás
-                pose.mulPose(Axis.YP.rotationDegrees(side * -18));
-                for (int k = 0; k < 10; k++) {
-                    double ang = 18 + k * 13.5 + flap * (0.4 + k * 0.06);
-                    float len = (float) ((0.75 + 0.11 * k) * open * (0.92 + 0.08 * Math.sin(e * 9 + k)));
-                    int col = ClanEmoteFx.mix(ClanEmoteFx.mix(0xFFE070, 0xFF7A20, k / 9F), main, k > 6 ? 0.35F : 0F);
+                pose.translate(side * 0.22, 1.4 + lift, -0.3);
+                // (barridas hacia atrás: con side * 14 las dos puntas quedan detrás del cuerpo)
+                pose.mulPose(Axis.YP.rotationDegrees(side * 14));
+                for (int k = 0; k < 11; k++) {
+                    double phi = -25 + k * 10 + flap * (0.6 + k * 0.05);
+                    float len = (float) ((1.05 + 0.09 * k) * open * (0.92 + 0.08 * Math.sin(e * 9 + k)));
+                    int col = ClanEmoteFx.mix(ClanEmoteFx.mix(0xFFC040, 0xFF5A10, k / 10F), main, k > 7 ? 0.4F : 0F);
                     pose.pushPose();
-                    pose.mulPose(Axis.ZP.rotationDegrees((float) (side * -(90 - ang))));
-                    ClanEmoteFx.quad(pose, vc, 0, len * 0.5F, 0, 0.2F + 0.02F * k, len, ClanEmoteFx.scale(col, 0.85F));
-                    ClanEmoteFx.quad(pose, vc, 0, len * 0.42F, 0.002F, 0.08F, len * 0.8F, ClanEmoteFx.scale(0xFFFFFF, 0.4F));
+                    pose.mulPose(Axis.ZP.rotationDegrees((float) (side * -(90 - phi))));
+                    ClanEmoteFx.quad(pose, vc, 0, len * 0.5F, 0, 0.3F + 0.025F * k, len, ClanEmoteFx.scale(col, 0.95F));
+                    ClanEmoteFx.quad(pose, vc, 0, len * 0.45F, 0.002F, 0.1F, len * 0.75F, ClanEmoteFx.scale(0xFFE8A0, 0.35F));
                     pose.popPose();
                 }
                 pose.popPose();
@@ -347,16 +349,28 @@ final class ClanEmotes2 {
         double on = smooth(0.2, 0.8, e) * (1 - smooth(3.7, 4.3, e));
         if (on > 0.01) {
             VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.GLOW);
-            for (int ring = 0; ring < 7; ring++) {
-                double h = ring * 0.6, r = 0.45 + ring * 0.2;
-                double speed = 7.0 - ring * 0.6;
-                for (int i = 0; i < 22; i++) {
-                    double a = i * Math.PI * 2 / 22 + e * speed + ring * 0.7;
+            for (int ring = 0; ring < 9; ring++) {
+                double h = ring * 0.45, r = 0.5 + ring * 0.17;
+                double speed = 8.0 - ring * 0.55;
+                for (int i = 0; i < 18; i++) {
+                    double a = i * Math.PI * 2 / 18 + e * speed + ring * 0.7;
                     double rr = r * (0.9 + 0.1 * Math.sin(e * 6 + i));
-                    float tw = (float) (0.5 + 0.5 * Math.sin(e * 11 + i * 1.7 + ring));
-                    ClanEmoteFx.billboard(pose, vc, Math.cos(a) * rr, h + 0.08 * Math.sin(a * 3 + e * 4), Math.sin(a) * rr, 0.12F,
-                            ClanEmoteFx.scale(i % 4 == 0 ? pal[(i + ring) % pal.length] : 0xD8E6F0, (float) (on * tw * 0.75)));
+                    float tw = (float) (0.6 + 0.4 * Math.sin(e * 11 + i * 1.7 + ring));
+                    // (los de delante, más suaves: que se vea al jugador dentro del torbellino)
+                    double px = Math.cos(a) * rr, pz = Math.sin(a) * rr;
+                    float k = f.front(px, pz) > 0.15 && h < 2.2 ? 0.45F : 1F;
+                    ClanEmoteFx.billboard(pose, vc, px, h + 0.08 * Math.sin(a * 3 + e * 4), pz, 0.22F,
+                            ClanEmoteFx.scale(i % 3 == 0 ? pal[(i + ring) % pal.length] : 0xE8F0F8, (float) (on * tw * k)));
                 }
+            }
+            // las estelas del viento (trozos de arco que giran)
+            VertexConsumer streak = ClanEmoteFx.light(b, ClanEmoteFx.RAY);
+            for (int i = 0; i < 26; i++) {
+                double h = rnd(seed, i, 11) * 3.8, r = 0.5 + h * 0.38;
+                double a = rnd(seed, i, 12) * Math.PI * 2 + e * (8 - h * 1.2);
+                double a2 = a - 0.5;
+                ClanEmoteFx.segment(pose, streak, Math.cos(a) * r, h, Math.sin(a) * r, Math.cos(a2) * r, h - 0.08, Math.sin(a2) * r, 0.07F,
+                        ClanEmoteFx.scale(0xF0F6FF, (float) (0.8 * on)));
             }
             // las hojas que vuelan dentro
             VertexConsumer leaf = ClanEmoteFx.solid(b);
@@ -388,23 +402,27 @@ final class ClanEmotes2 {
         if (grow > 0.01) {
             VertexConsumer vc = ClanEmoteFx.solid(b);
             VertexConsumer glow = null;
+            // (solo a los lados y detrás: los de delante tapaban al jugador)
+            f.push(pose);
             for (int i = 0; i < 9; i++) {
-                double a = i * Math.PI * 2 / 9 + 0.3;
+                double a = Math.toRadians(-25 + i * (230.0 / 8));
                 double r = 1.25 + rnd(seed, i, 1) * 0.25, h = (0.8 + rnd(seed, i, 2) * 0.7) * Math.max(0, Math.min(1.15, grow - i * 0.03));
                 if (h < 0.02) continue;
                 pose.pushPose();
-                pose.translate(Math.cos(a) * r, 0, Math.sin(a) * r);
-                pose.mulPose(Axis.YP.rotation((float) (-a)));
+                pose.translate(Math.cos(a) * r, 0, -Math.sin(a) * r);
+                pose.mulPose(Axis.YP.rotation((float) a));
                 pose.mulPose(Axis.ZP.rotationDegrees((float) (-12 - rnd(seed, i, 3) * 12)));
                 float w = 0.09F + (float) rnd(seed, i, 4) * 0.05F;
                 ClanEmoteFx.box(pose, vc, -w, 0, -w, w, (float) h, w, ice);
                 ClanEmoteFx.box(pose, vc, -w * 0.6F, (float) h, -w * 0.6F, w * 0.6F, (float) h + 0.12F, w * 0.6F, 0xF0FCFF);
                 pose.popPose();
             }
+            pose.popPose();
             glow = ClanEmoteFx.light(b, ClanEmoteFx.GLOW);
             for (int i = 0; i < 9; i++) {
-                double a = i * Math.PI * 2 / 9 + 0.3, r = 1.25 + rnd(seed, i, 1) * 0.25;
-                ClanEmoteFx.billboard(pose, glow, Math.cos(a) * r, 0.6, Math.sin(a) * r, (float) (0.9 * Math.min(1, grow)), ClanEmoteFx.scale(ice, 0.35F));
+                double a = Math.toRadians(-25 + i * (230.0 / 8)), r = 1.25 + rnd(seed, i, 1) * 0.25;
+                double lx = Math.cos(a) * r, lz = -Math.sin(a) * r;
+                ClanEmoteFx.billboard(pose, glow, f.x(lx, lz), 0.6, f.z(lx, lz), (float) (0.9 * Math.min(1, grow)), ClanEmoteFx.scale(ice, 0.35F));
             }
             ClanEmoteFx.ring(pose, glow, 0.04, 1.3, 0.35, ClanEmoteFx.scale(0xD8F4FF, (float) (0.55 * Math.min(1, grow))), 48);
             ClanEmoteFx.flat(pose, glow, 0, 0.03, 0, 3.4F, 0, ClanEmoteFx.scale(0x9AD8F0, (float) (0.3 * Math.min(1, grow))));
@@ -447,20 +465,21 @@ final class ClanEmotes2 {
 
     private static void meteor(double e, PoseStack pose, MultiBufferSource b, ClanLooks.Look look, ClanEmotes.Frame f, long seed, int[] pal, double now, int main) {
         // del cielo (atrás a la derecha de quien mira) al suelo, detrás del jugador
-        double sx = 7, sy = 24, sz = -16, ix = -2.6, iz = -7.5;
+        double sx = 6, sy = 13, sz = -13, ix = -2.8, iz = -7.5;
         double t = (e - 0.6) / 1.4;
         if (t > 0 && t < 1) {
             double k = easeIn(t);
             VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.GLOW);
-            for (int i = 14; i >= 0; i--) {
-                double kk = Math.max(0, k - i * 0.025);
+            for (int i = 18; i >= 0; i--) {
+                double kk = Math.max(0, k - i * 0.03);
                 double lx = lerp(sx, ix, kk), ly = lerp(sy, 0.5, kk), lz = lerp(sz, iz, kk);
-                float s = (float) (1.6 - i * 0.09);
+                float s = (float) (2.6 - i * 0.11);
                 ClanEmoteFx.billboard(pose, vc, f.x(lx, lz), ly, f.z(lx, lz), s, ClanEmoteFx.scale(i == 0 ? 0xFFF0C0 : ClanEmoteFx.mix(0xFF7A20, main, i / 14F),
                         (float) (1 - i / 15.0)));
             }
             double lx = lerp(sx, ix, k), ly = lerp(sy, 0.5, k), lz = lerp(sz, iz, k);
-            ClanEmoteFx.billboard(pose, vc, f.x(lx, lz), ly, f.z(lx, lz), 0.9F, 0xFFFFFF);
+            ClanEmoteFx.billboard(pose, vc, f.x(lx, lz), ly, f.z(lx, lz), 1.4F, 0xFFFFFF);
+            ClanEmoteFx.star(pose, b, f.x(lx, lz), ly, f.z(lx, lz), 2.6F, (float) (e * 200), 0xFFC060);
         }
         double cx = f.x(ix, iz), cz = f.z(ix, iz);
         if (e > 2.0 && e < 2.6) {
@@ -504,14 +523,15 @@ final class ClanEmotes2 {
             }
         }
         // la insignia grande sobre el cráter, y la onda que llega al jugador
-        crest(pose, b, look, e, 2.35, 5.0, cx, 3.4, cz, 1.7F, main, now);
+        crest(pose, b, look, e, 2.35, 5.0, cx, 4.0, cz, 2.6F, main, now);
         ClanEmotes.shock(pose, b, e, 2.25, main);
     }
 
     // ----- 9. Fuegos artificiales -----------------------------------------------------------------------------------
 
     private static void fireworks(double e, PoseStack pose, MultiBufferSource b, ClanLooks.Look look, ClanEmotes.Frame f, long seed, int[] pal, double now, int main) {
-        double[][] rockets = {{-1.6, 0.4, 0.5, 7.5}, {1.5, 0.2, 0.9, 8.5}, {-2.4, -1.4, 1.3, 9.5}, {2.3, -1.2, 1.7, 8.0}, {-0.8, -2.2, 2.1, 10.5}, {0.9, -2.0, 2.5, 9.0}};
+        // (detrás y no muy altos: con la cámara de frente, más arriba de 5,5 se salían de la imagen)
+        double[][] rockets = {{-2.2, -1.5, 0.5, 4.2}, {2.1, -1.6, 0.9, 4.6}, {-3.2, -3.0, 1.3, 5.2}, {3.1, -2.8, 1.7, 4.8}, {-1.2, -3.6, 2.1, 5.6}, {1.3, -3.4, 2.5, 5.0}};
         for (int r = 0; r < rockets.length; r++) {
             double lx = rockets[r][0], lz = rockets[r][1], t0 = rockets[r][2], top = rockets[r][3];
             double wx = f.x(lx, lz), wz = f.z(lx, lz);
@@ -520,26 +540,26 @@ final class ClanEmotes2 {
             if (up > 0 && up < 1) {
                 double y = top * easeOut(up);
                 VertexConsumer vc = ClanEmoteFx.light(b, ClanEmoteFx.GLOW);
-                for (int k = 0; k < 8; k++) {
-                    double yy = Math.max(0, y - k * 0.35);
-                    ClanEmoteFx.billboard(pose, vc, wx + 0.04 * Math.sin(k + e * 30), yy, wz, (float) (0.2 - k * 0.018), ClanEmoteFx.scale(k == 0 ? 0xFFFFFF : 0xFFC060,
-                            (float) (1 - k / 9.0)));
+                for (int k = 0; k < 12; k++) {
+                    double yy = Math.max(0, y - k * 0.25);
+                    ClanEmoteFx.billboard(pose, vc, wx + 0.05 * Math.sin(k + e * 30), yy, wz, (float) (0.38 - k * 0.025), ClanEmoteFx.scale(k == 0 ? 0xFFFFFF : 0xFFC060,
+                            (float) (1 - k / 13.0)));
                 }
             }
             if (e >= t0 + 0.9 && e < t0 + 0.9 + 0.25) {
                 double k = (e - t0 - 0.9) / 0.25;
                 ClanEmoteFx.billboard(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), wx, top, wz, (float) (3.2 * (1 - k * 0.4)), ClanEmoteFx.scale(col, (float) (1 - k)));
             }
-            ClanEmotes.burst(pose, b, seed + r * 101, new int[] {col, ClanEmoteFx.mix(col, 0xFFFFFF, 0.5F), 0xFFFFFF}, e, t0 + 0.9, 60, wx, top, wz, 5.5, 2.4, 1.5, 0.16F);
+            ClanEmotes.burst(pose, b, seed + r * 101, new int[] {col, ClanEmoteFx.mix(col, 0xFFFFFF, 0.5F), 0xFFFFFF}, e, t0 + 0.9, 70, wx, top, wz, 4.0, 1.6, 1.5, 0.2F);
         }
         // el gran final: la insignia en el cielo
         double t0 = 3.3;
         if (e > t0 - 0.9 && e < t0) {
-            double y = 11 * easeOut((e - t0 + 0.9) / 0.9);
-            ClanEmoteFx.billboard(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), f.x(0, -3), y, f.z(0, -3), 0.3F, 0xFFFFFF);
+            double y = 5.4 * easeOut((e - t0 + 0.9) / 0.9);
+            ClanEmoteFx.billboard(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), f.x(0, -3.5), y, f.z(0, -3.5), 0.45F, 0xFFFFFF);
         }
-        crest(pose, b, look, e, t0, 5.2, f.x(0, -3), 11, f.z(0, -3), 3.2F, main, now);
-        ClanEmotes.burst(pose, b, seed + 7, pal, e, t0, 90, f.x(0, -3), 11, f.z(0, -3), 6.5, 2.0, 1.7, 0.18F);
+        crest(pose, b, look, e, t0, 5.2, f.x(0, -3.5), 5.4, f.z(0, -3.5), 2.4F, main, now);
+        ClanEmotes.burst(pose, b, seed + 7, pal, e, t0, 90, f.x(0, -3.5), 5.4, f.z(0, -3.5), 4.0, 1.4, 1.7, 0.22F);
         // la mecha al principio
         if (e < 0.6) {
             ClanEmoteFx.star(pose, b, f.x(0, 0.55), 0.15, f.z(0, 0.55), (float) (0.3 + 0.1 * Math.sin(e * 40)), (float) (e * 300), 0xFFC060);
@@ -555,8 +575,11 @@ final class ClanEmotes2 {
             double t0 = 0.8 + i * 0.12;
             if (e < t0) continue;
             double fall = clamp01((e - t0) / 0.35);
-            double a = i * Math.PI * 2 / n + Math.PI / 8;
-            double r = 1.6;
+            // (a los lados y detrás: delante tapaban al jugador)
+            double la = Math.toRadians(-30 + i * (240.0 / (n - 1)));
+            double r = 1.7;
+            double lx = Math.cos(la) * r, lz = -Math.sin(la) * r;
+            double a = Math.atan2(f.z(lx, lz), f.x(lx, lz));
             double y = lerp(9, 0.0, easeIn(fall)) + leave * 9 * leave;
             double glowOn = e > 2.2 + i * 0.05 ? smooth(2.2 + i * 0.05, 2.4 + i * 0.05, e) : 0;
             pose.pushPose();
@@ -614,8 +637,8 @@ final class ClanEmotes2 {
                 double r = 0.4 + rnd(seed + step, i, 2) * 0.18;
                 float len = (float) ((1.2 + rnd(seed + step, i, 3) * 1.3) * power);
                 int col = pal[i % pal.length];
-                ClanEmoteFx.segment(pose, vc, Math.cos(a) * r, lift, Math.sin(a) * r, Math.cos(a) * r * 0.75, lift + len, Math.sin(a) * r * 0.75, 0.16F,
-                        ClanEmoteFx.scale(col, (float) (0.7 * power)));
+                ClanEmoteFx.segment(pose, vc, Math.cos(a) * r * 1.15, lift, Math.sin(a) * r * 1.15, Math.cos(a) * r, lift + len, Math.sin(a) * r, 0.09F,
+                        ClanEmoteFx.scale(col, (float) (0.42 * power)));
             }
             ClanEmoteFx.ring(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), 0.04, 0.9, 0.5, ClanEmoteFx.scale(main, (float) (0.6 * power)), 40);
         }

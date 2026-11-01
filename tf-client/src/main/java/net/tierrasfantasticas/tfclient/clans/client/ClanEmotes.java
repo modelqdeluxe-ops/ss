@@ -383,6 +383,11 @@ final class ClanEmotes {
             return lx * sin + lz * cos;
         }
 
+        /** Lo contrario: cuánto está delante del jugador (z local) un punto (x, z) del mundo respecto a él. */
+        double front(double x, double z) {
+            return z * cos - x * sin;
+        }
+
         /** Gira el sistema para dibujar en local (hay que hacer popPose después). */
         void push(PoseStack pose) {
             pose.pushPose();

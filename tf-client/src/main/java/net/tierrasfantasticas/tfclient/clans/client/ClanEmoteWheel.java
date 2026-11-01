@@ -128,7 +128,7 @@ public final class ClanEmoteWheel extends Screen {
             if (i < 9) g.drawString(font, String.valueOf(i + 1), x + 3, y + 3, have ? 0xFFB8C2D8 : 0xFF5A6478, false);
             g.pose().popPose();
         }
-        String foot = "Los de candado se compran con Clan Coins en pad › Clanes › TIENDA (para todo el clan).";
+        String foot = "Con candado: pad › Clanes › TIENDA (Clan Coins, para todo el clan).";
         while (font.width(foot) > width - 10 && foot.length() > 10) foot = foot.substring(0, foot.length() - 2) + "…";
         g.drawCenteredString(font, foot, width / 2, height - 16, 0xFF7E8CA8);
         super.render(g, mx, my, partial);
