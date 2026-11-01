@@ -46,6 +46,7 @@ public final class PadShop {
             }
             List<Category> cats = TFShop.visible(player);
             String[] t = tab.split(":");
+            if (t[0].equals("todos")) return all(player, cats);
             if (t[0].equals("c") && t.length > 1) {
                 Category c = cat(cats, t[1]);
                 if (c != null) return category(player, cats.indexOf(c), c);
@@ -53,7 +54,8 @@ public final class PadShop {
             if (t[0].equals("i") && t.length > 2) {
                 Category c = cat(cats, t[1]);
                 Entry e = c == null ? null : entry(c, t[2]);
-                if (e != null) return item(player, cats.indexOf(c), c, c.entries().indexOf(e), e, t.length > 3 && t[3].equals("s"));
+                if (e != null) return item(player, cats.indexOf(c), c, c.entries().indexOf(e), e, t.length > 3 && t[3].equals("s"),
+                        t.length > 4 && t[4].equals("t"));
             }
             if (t[0].equals("v")) return sell(player);
             return categories(player, cats);
@@ -68,6 +70,15 @@ public final class PadShop {
                 switch (a[0]) {
                     case "volver" -> {
                         return a.length > 1 ? a[1].replace('/', ':') : "";
+                    }
+                    // (1.3.159) el buscador de «Todos los objetos en venta» (lo buscado se queda al volver de un objeto)
+                    case "buscar" -> {
+                        PadServer.put(player, "tienda.buscar", text.trim().isEmpty() ? null : text.trim());
+                        return "todos";
+                    }
+                    case "limpiar" -> {
+                        PadServer.put(player, "tienda.buscar", null);
+                        return "todos";
                     }
                     case "todo" -> {
                         if (!PadServer.confirm(player, "tienda.todo")) return null;
@@ -163,6 +174,13 @@ public final class PadShop {
 
     private static PadView categories(ServerPlayer player, List<Category> cats) {
         PadView.Builder b = base("");
+        // (1.3.159, el dueño: «agrega una categoría que diga Todos los objetos en venta, con una lupa para buscar»)
+        int total = 0;
+        for (Category c : cats) total += buyable(player, c);
+        if (total > 0) {
+            b.row(new PadView.Row(new ItemStack(net.minecraft.world.item.Items.SPYGLASS), "Todos los objetos en venta", 0x1A7FC8,
+                    List.of("Búscalos por su nombre en español."), -1, total + (total == 1 ? " objeto" : " objetos"), null, null).clickable("tab:todos"));
+        }
         for (int i = 0; i < cats.size(); i++) {
             Category c = cats.get(i);
             int n = buyable(player, c);
@@ -186,11 +204,60 @@ public final class PadShop {
             Entry e = c.entries().get(i);
             if (!player.hasPermissions(e.permission()) || !e.buyable()) continue;
             ItemStack shown = shown(e, e.amount());
-            String name = e.name().isBlank() ? shown.getHoverName().getString() : plain(e.name());
+            String name = name(e);
             b.card(shown, name, 0xF6B628, coins(e.buy()), "tab:i:" + ci + ":" + i + ":b", false);
         }
         b.empty("Aquí no hay nada a la venta.");
         b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
+        return b.build();
+    }
+
+    /** El nombre que se ve: el de la tienda o, si no tiene, el del objeto en español. */
+    static String name(Entry e) {
+        return e.name().isBlank() ? net.tierrasfantasticas.tfclient.util.TFNames.es(e.stack(1)) : plain(e.name());
+    }
+
+    /**
+     * (1.3.159) «Todos los objetos en venta»: los de todas las categorías (lo que se compra y con permiso), por orden
+     * alfabético en español, con el buscador abajo (la lupa): busca en español, en inglés o por su id.
+     */
+    private static PadView all(ServerPlayer player, List<Category> cats) {
+        String q = PadServer.get(player, "tienda.buscar", "");
+        record Found(int ci, int ei, Entry e, String name) {}
+        List<Found> list = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        int total = 0;
+        for (int ci = 0; ci < cats.size(); ci++) {
+            Category c = cats.get(ci);
+            for (int ei = 0; ei < c.entries().size(); ei++) {
+                Entry e = c.entries().get(ei);
+                if (!e.buyable() || !player.hasPermissions(e.permission())) continue;
+                // el mismo objeto en dos categorías, una vez
+                if (!seen.add(e.itemId() + "|" + e.nbt() + "|" + e.amount() + "|" + e.buy())) continue;
+                total++;
+                ItemStack shown = shown(e, e.amount());
+                String n = name(e);
+                if (!q.isEmpty() && !net.tierrasfantasticas.tfclient.util.TFNames.matches(shown, q)
+                        && !net.tierrasfantasticas.tfclient.util.TFNames.fold(n).contains(net.tierrasfantasticas.tfclient.util.TFNames.fold(q))) {
+                    continue;
+                }
+                list.add(new Found(ci, ei, e, n));
+            }
+        }
+        java.text.Collator col = java.text.Collator.getInstance(new java.util.Locale("es"));
+        list.sort((x, y) -> col.compare(x.name(), y.name()));
+        PadView.Builder b = PadView.of("tienda").selected("todos").cards();
+        b.header(q.isEmpty() ? "Todos los objetos en venta (" + total + "). Escribe abajo para buscar."
+                : "«" + q + "»: " + (list.isEmpty() ? "nada" : list.size() + (list.size() == 1 ? " objeto" : " objetos")) + " de " + total + ".");
+        int shownCount = 0;
+        for (Found f : list) {
+            if (shownCount++ >= 1500) break;
+            b.card(shown(f.e(), f.e().amount()), f.name(), 0xF6B628, coins(f.e().buy()), "tab:i:" + f.ci() + ":" + f.ei() + ":b:t", false);
+        }
+        b.empty(q.isEmpty() ? "No hay nada a la venta." : "No hay nada que se llame «" + q + "». Prueba con otra palabra (por ejemplo: espada, madera, diamante).");
+        b.input("buscar", "Buscar: espada, madera, diamante...", 40, "BUSCAR");
+        b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
+        if (!q.isEmpty()) b.footer(PadView.Btn.of("QUITAR", "limpiar", PadView.GRAY));
         return b.build();
     }
 
@@ -200,11 +267,11 @@ public final class PadShop {
      * objeto marcado con esas 128 y lo que cuesta o lo que cobras); las que no puedes pagar o vender salen apagadas y dicen por qué (el límite de
      * hoy primero: aunque tuvieras más, hoy no se puede). Comprar: otra cantidad (en unidades) abajo.
      */
-    private static PadView item(ServerPlayer player, int ci, Category c, int ei, Entry e, boolean selling) {
+    private static PadView item(ServerPlayer player, int ci, Category c, int ei, Entry e, boolean selling, boolean fromAll) {
         if (selling && !e.sellable()) selling = false;
         if (!selling && !e.buyable()) selling = true;
         // comprar y vender no se mezclan: la ficha es de compra (desde COMPRAR) o de venta (desde VENDER)
-        PadView.Builder b = PadView.of("tienda").selected("i:" + ci + ":" + ei + ":" + (selling ? "s" : "b"));
+        PadView.Builder b = PadView.of("tienda").selected("i:" + ci + ":" + ei + ":" + (selling ? "s" : "b") + (fromAll ? ":t" : ""));
         int have = TFShop.count(player.getInventory(), e);
         long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         // lo que deja hoy el límite diario, en veces la cantidad del objeto (límite de 50 y de 16 en 16: 3 veces, 48 unidades)
@@ -219,7 +286,7 @@ public final class PadShop {
         if (!selling && balance >= 0) lines.add("Tienes " + TFEconomy.format(balance) + "." + (today.isEmpty() ? "" : " " + today));
         else if (!today.isEmpty()) lines.add(today);
         String badge = selling ? "+" + PadView.moneyExact(e.sell()) : PadView.moneyExact(e.buy());
-        b.hero(new PadView.Row(shown(e, e.amount()), TFShop.name(e), selling ? 0x40C850 : 0xF6B628, lines, -1, badge, null, null));
+        b.hero(new PadView.Row(shown(e, e.amount()), name(e), selling ? 0x40C850 : 0xF6B628, lines, -1, badge, null, null));
 
         String cat = ci + ":" + ei;
         if (selling) {
@@ -250,7 +317,7 @@ public final class PadShop {
             long maxUnits = (long) TFShopConfig.maxLots * e.amount();
             b.input("comprar:" + cat, e.amount() == 1 ? "OTRA CANTIDAD (UNIDADES)" : "OTRA CANTIDAD (DE " + e.amount() + " EN " + e.amount() + ")",
                     PadView.number(maxUnits).length(), "COMPRAR");
-            b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
+            b.footer(PadView.Btn.of("ATRÁS", fromAll ? "volver:todos" : "volver:c/" + ci, PadView.BLUE));
         }
         return b.build();
     }
@@ -328,7 +395,7 @@ public final class PadShop {
             List<String> lines = List.of("Llevas " + PadView.number(v[2]) + " · " + TFEconomy.format(e.sell())
                     + (e.amount() == 1 ? " la unidad" : " por " + units(e.amount())));
             PadView.Btn btn = lots > 0 ? PadView.Btn.of("VENDER", "vendertodo:" + v[0] + ":" + v[1], PadView.GREEN) : PadView.Btn.off("LÍMITE");
-            b.row(new PadView.Row(shown(e, v[2]), TFShop.name(e), TEXT, lines, -1, lots > 0 ? "+" + coins(pay) : "", btn, null)
+            b.row(new PadView.Row(shown(e, v[2]), name(e), TEXT, lines, -1, lots > 0 ? "+" + coins(pay) : "", btn, null)
                     .clickable("tab:i:" + v[0] + ":" + v[1] + ":s"));
         }
         // (1.3.134) la tienda solo compra Tesoros: debajo, los que no llevas, con lo que pagan y cuántos al día
@@ -347,7 +414,7 @@ public final class PadShop {
                     if (!p.isBlank()) lines.add(p);
                     if (lines.size() >= 2) break;
                 }
-                b.row(new PadView.Row(shown(e, e.amount()), TFShop.name(e), 0x8A96B4, lines, -1, "+" + coins(e.sell()), null, null)
+                b.row(new PadView.Row(shown(e, e.amount()), name(e), 0x8A96B4, lines, -1, "+" + coins(e.sell()), null, null)
                         .clickable("tab:i:" + ci + ":" + ei + ":s"));
             }
         }
@@ -362,6 +429,15 @@ public final class PadShop {
             }
         }
         return b.build();
+    }
+
+    /** (1.3.159) Para la prueba: cuántos salen en «Todos los objetos en venta» al buscar q y los 4 primeros nombres. */
+    public static String testSearch(ServerPlayer player, String q) {
+        PadServer.put(player, "tienda.buscar", q.isEmpty() ? null : q);
+        PadView v = all(player, TFShop.visible(player));
+        StringBuilder b = new StringBuilder(v.cells().size() + " (");
+        for (int i = 0; i < Math.min(4, v.cells().size()); i++) b.append(i == 0 ? "" : ", ").append(v.cells().get(i).label());
+        return b.append(")").toString();
     }
 
     /** Precio corto para debajo de una casilla: 950, 1,2K, 35K, 1,5M. */

@@ -779,8 +779,10 @@ public final class TFPadScreen extends Screen {
     private void drawBackdrop(GuiGraphics g) {
         float t = PadSkin.time();
         int w = unitsW, h = unitsH;
-        // (1.3.155) en la portada, el fondo de pantalla elegido (Ajustes › Fondo del menú) en lugar del cristal del tema
-        if (page == home && wallpaperBase(g)) {
+        // (1.3.155) el fondo de pantalla elegido (Ajustes › Fondo del pad) en lugar del cristal del tema; (1.3.159, el
+        // dueño: «el tema que pongo en el menú principal debe aplicarse a todas las apps, se quita y se pone el default»)
+        // en la portada y en todas las apps
+        if (wallpaperBase(g)) {
             noScissor(g);
             return;
         }

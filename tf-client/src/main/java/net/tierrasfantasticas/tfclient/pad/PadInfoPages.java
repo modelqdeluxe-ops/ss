@@ -23,10 +23,10 @@ final class PadInfoPages {
      */
     static final class Ajustes extends PadPage {
         private static final String[] NAMES = {"Sonidos del pad", "Tic al pasar por encima", "Animaciones", "Volumen",
-                "Oír los altavoces de otros", "Tema del pad", "Fondo del menú", "Teclas de revivir"};
+                "Oír los altavoces de otros", "Tema del pad", "Fondo del pad", "Teclas de revivir"};
         private static final String[] ABOUT = {"Clics, pestañas y avisos.", "Un tic suave al pasar el ratón por encima.",
                 "Fondo animado, brillos y transiciones.", "El de los sonidos del pad.", "La música que ponen cerca de ti.",
-                "El color del cristal.", "Una imagen o un color para la portada (o tus PNG).",
+                "El color del cristal.", "Una imagen o un color de fondo para todo el pad (o tus PNG).",
                 "Rendirse y auto-revivir (también en Opciones › Controles)."};
         private static final ItemStack[] ICONS = {new ItemStack(Items.NOTE_BLOCK), new ItemStack(Items.LEVER),
                 new ItemStack(Items.FIREWORK_ROCKET), new ItemStack(Items.JUKEBOX), new ItemStack(Items.BELL),

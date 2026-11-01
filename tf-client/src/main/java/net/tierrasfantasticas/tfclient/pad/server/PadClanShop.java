@@ -85,6 +85,9 @@ final class PadClanShop {
             ItemStack s = stored(o);
             if (!s.isEmpty()) return s;
         }
+        if (type.equals("estandarte")) {
+            return new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANNER_ITEM.get(), (int) Math.max(1, Math.min(16, TFJson.num(o, "cantidad", 1))));
+        }
         return new ItemStack(PadClanConfig.item(TFJson.str(o, "icono", "minecraft:chest")));
     }
 

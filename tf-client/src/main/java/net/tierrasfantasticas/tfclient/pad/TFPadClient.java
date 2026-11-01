@@ -172,10 +172,50 @@ public final class TFPadClient {
         }
     }
 
+    /**
+     * (1.3.159) Prueba «clanes2»: pone el fondo del pad (como Ajustes › Fondo del pad) y lo guarda. «f:prueba_fondo.png»
+     * crea antes en .minecraft/tfclient/fondos un PNG de 1600x900 con detalle fino (rejilla de 1 px, círculos, degradado)
+     * para ver que se dibuja nítido, sin deformarse ni costuras.
+     */
+    public static void wallpaperForTest(String id) {
+        try {
+            if (id.equals("f:prueba_fondo.png")) {
+                java.nio.file.Path dir = PadWallpaper.dir();
+                java.nio.file.Files.createDirectories(dir);
+                int w = 1600, h = 900;
+                try (com.mojang.blaze3d.platform.NativeImage img = new com.mojang.blaze3d.platform.NativeImage(w, h, false)) {
+                    for (int y = 0; y < h; y++) {
+                        for (int x = 0; x < w; x++) {
+                            int r = 40 + x * 180 / w, gg = 90 + y * 120 / h, b = 200 - x * 100 / w;
+                            boolean grid = x % 40 == 0 || y % 40 == 0;
+                            double dx = x - w / 2.0, dy = y - h / 2.0, d = Math.sqrt(dx * dx + dy * dy);
+                            boolean ring = Math.abs(d % 120 - 60) < 2;
+                            boolean edge = x < 6 || y < 6 || x >= w - 6 || y >= h - 6;
+                            int c = edge ? 0xFF0000FF : ring ? 0xFFFFFFFF : grid ? 0xFF202020 : 0xFF000000 | b << 16 | gg << 8 | r;
+                            img.setPixelRGBA(x, y, c); // ABGR
+                        }
+                    }
+                    img.writeToFile(dir.resolve("prueba_fondo.png"));
+                }
+                PadWallpaper.reload();
+            }
+            PadSettings.wallpaper = id;
+            PadSettings.save();
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudo poner el fondo {}", id, e);
+        }
+    }
+
     /** (1.3.156) Prueba «clanes»: en la paleta de colores abierta, pone ese color (0xRRGGBB) y, si save, lo guarda. */
     public static void colorForTest(int rgb, boolean save) {
-        PadColorPicker.testSave = save;
         PadColorPicker.testColor = rgb;
+        PadColorPicker.testSave = save;
+    }
+
+    /** (1.3.159) Prueba «clanes2»: en el editor de la etiqueta, pone ese efecto («modo|colores|velocidad») y, si save, lo guarda. */
+    public static void tagFxForTest(String fx, boolean save) {
+        PadColorPicker.testFx = fx;
+        PadColorPicker.testSave = save;
     }
 
     /** (1.3.156) Prueba «clanes»: las Clan Coins que enseña la barra de arriba del pad (-1: ninguna). */

@@ -219,7 +219,7 @@ final class PadViewPage extends PadPage {
                 int bw = PadUi.buttonWidth(in.button());
                 int right = X + W - 5 - footerW;
                 int fw = Math.max(40, right - (X + 5) - bw - 4);
-                PadSkin.field(g, X + 5, fy, fw, input, in.hint(), acc);
+                PadSkin.field(g, X + 5, fy, fw, input, in.hint(), acc, in.action().startsWith("buscar"));
                 PadView.Btn send = new PadView.Btn(in.button(), "§input", PadView.GREEN, !input.isBlank());
                 button(g, right - bw, fy, bw, send, mx, my, true);
             }

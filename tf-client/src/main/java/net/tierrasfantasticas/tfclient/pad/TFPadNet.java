@@ -64,6 +64,8 @@ public final class TFPadNet {
                 .encoder(Data::write).decoder(Data::read).consumerMainThread(Data::handle).add();
         PadCommunityNet.register(CHANNEL, 10);
         PadSpeakerNet.register(CHANNEL, 20);
+        // (1.3.159) clanes: cómo se ve cada clan, el emote del clan
+        net.tierrasfantasticas.tfclient.clans.ClanNet.register(CHANNEL, 30);
     }
 
     /** El cliente pide sus datos al abrir el pad. */

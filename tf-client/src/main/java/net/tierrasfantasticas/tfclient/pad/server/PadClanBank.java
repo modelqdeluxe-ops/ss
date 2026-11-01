@@ -63,10 +63,61 @@ public final class PadClanBank {
         return STORE_IMPL.obj(STORE_IMPL.obj(STORE_IMPL.root, "bancos"), clanId);
     }
 
-    /** Al disolver un clan: su banco se va con él. */
+    /** Al disolver un clan: su banco se va con él (y su cofre y sus estandartes dejan de ser de nadie). */
     static void forget(String clanId) {
         STORE_IMPL.obj(STORE_IMPL.root, "bancos").remove(clanId);
+        for (String k : new String[] {"cofres", "estandartes"}) STORE_IMPL.obj(STORE_IMPL.root, k).entrySet().removeIf(e -> e.getValue().getAsString().equals(clanId));
         STORE_IMPL.changed();
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.159) El cofre (uno por clan) y los estandartes puestos en el mundo: de qué clan es cada uno
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** «dimensión|x|y|z». */
+    public static String posKey(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        return level.dimension().location() + "|" + pos.getX() + "|" + pos.getY() + "|" + pos.getZ();
+    }
+
+    /** El clan del cofre o del estandarte puesto ahí (kind: «cofres» o «estandartes»), o null. */
+    public static String ownerAt(String kind, String key) {
+        JsonObject m = STORE_IMPL.obj(STORE_IMPL.root, kind);
+        return m.has(key) ? m.get(key).getAsString() : null;
+    }
+
+    /** Lo apunta al ponerlo (el cofre: también en el banco de su clan, para dar uno solo). */
+    public static void placed(String kind, String key, String clanId) {
+        STORE_IMPL.obj(STORE_IMPL.root, kind).addProperty(key, clanId);
+        if (kind.equals("cofres")) bank(clanId).addProperty("cofre", key);
+        STORE_IMPL.changed();
+    }
+
+    /** Lo quita al romperlo. */
+    public static void removed(String kind, String key) {
+        String clan = ownerAt(kind, key);
+        STORE_IMPL.obj(STORE_IMPL.root, kind).remove(key);
+        if (kind.equals("cofres") && clan != null && key.equals(TFJson.str(bank(clan), "cofre", ""))) bank(clan).remove("cofre");
+        STORE_IMPL.changed();
+    }
+
+    /** Dónde tiene puesto su cofre ese clan («x, y, z»), o null. */
+    public static String chestOf(String clanId) {
+        String k = TFJson.str(bank(clanId), "cofre", "");
+        if (k.isEmpty() || !clanId.equals(ownerAt("cofres", k))) return null;
+        String[] p = k.split("\\|");
+        return p.length == 4 ? p[1] + ", " + p[2] + ", " + p[3] : k;
+    }
+
+    /** ¿Quién del clan (conectado) lleva un cofre en el inventario? (su nombre, o null) */
+    static String carrying(net.minecraft.server.MinecraftServer server, JsonObject c) {
+        if (server == null) return null;
+        net.minecraft.world.item.Item it = net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANK_ITEM.get();
+        for (UUID u : PadClans.members(c)) {
+            ServerPlayer p = server.getPlayerList().getPlayer(u);
+            if (p == null) continue;
+            if (p.getInventory().contains(new ItemStack(it)) || p.getEnderChestInventory().countItem(it) > 0) return p.getGameProfile().getName();
+        }
+        return null;
     }
 
     public static int upgrades(JsonObject b) {
@@ -227,7 +278,7 @@ public final class PadClanBank {
                 boolean in = TFJson.str(o, "que", "").equals("meter");
                 long n = TFJson.num(o, "n", 0);
                 ItemStack icon = new ItemStack(item(id));
-                b.row(new PadView.Row(icon, TFJson.str(o, "quien", "?") + (in ? " metió " : " sacó ") + PadClanViews.fmt(n) + " " + icon.getHoverName().getString(),
+                b.row(new PadView.Row(icon, TFJson.str(o, "quien", "?") + (in ? " metió " : " sacó ") + PadClanViews.fmt(n) + " " + net.tierrasfantasticas.tfclient.util.TFNames.es(icon),
                         in ? 0x1E7C2C : 0xB0342C, List.of(ago(TFJson.num(o, "t", 0))), -1, (in ? "+" : "−") + PadView.shortNumber(n), null, null));
             }
             b.empty("Aún no hay movimientos.");
@@ -262,7 +313,7 @@ public final class PadClanBank {
         for (Map.Entry<String, Long> e : mine.entrySet()) {
             if (shown++ >= 36) break;
             ItemStack icon = new ItemStack(item(e.getKey()));
-            b.row(new PadView.Row(icon, icon.getHoverName().getString(), 0x18265C, List.of(), -1, "×" + PadClanViews.fmt(e.getValue()),
+            b.row(new PadView.Row(icon, net.tierrasfantasticas.tfclient.util.TFNames.es(icon), 0x18265C, List.of(), -1, "×" + PadClanViews.fmt(e.getValue()),
                     PadView.Btn.of("METER", "banco.meter:" + e.getKey(), PadView.GREEN), null).clickable("banco.meter:" + e.getKey()));
         }
         if (treasurer) b.footer(PadView.Btn.of("COFRE", "banco.cofre", PadView.BLUE));
@@ -335,16 +386,29 @@ public final class PadClanBank {
                 return "banco";
             }
             case "banco.cofre" -> {
+                // (1.3.159, el dueño: «que solo te dé 1 el pad nada más») un cofre por clan: si ya está puesto o alguien
+                // del clan lo lleva, no se da otro (para moverlo: el líder o un colíder lo rompe y le vuelve al inventario)
                 if (!PadClanProgress.treasurer(c, me)) return "banco";
-                Long at = CHEST_GIVEN.get(me);
-                if (at != null && System.currentTimeMillis() - at < 30_000) {
+                String at = chestOf(clanId);
+                if (at != null) {
+                    TFPadNet.notice(player, "Tu clan ya tiene su cofre en " + at + ". Para moverlo, rómpelo (vuelve a tu inventario).");
+                    return "banco";
+                }
+                String who = carrying(player.getServer(), c);
+                if (who != null) {
+                    TFPadNet.notice(player, who.equals(player.getGameProfile().getName()) ? "Ya llevas el cofre del clan: ponlo donde quieras."
+                            : who + " ya lleva el cofre del clan.");
+                    return "banco";
+                }
+                Long given = CHEST_GIVEN.get(me);
+                if (given != null && System.currentTimeMillis() - given < 30_000) {
                     TFPadNet.notice(player, "Espera un poco para otro cofre.");
                     return "banco";
                 }
                 CHEST_GIVEN.put(me, System.currentTimeMillis());
                 ItemStack s = new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANK_ITEM.get());
                 if (!player.getInventory().add(s)) player.drop(s, false);
-                TFPadNet.notice(player, "Ahí tienes un cofre del Banco del clan: cualquiera del clan lo abre y ve el banco.");
+                TFPadNet.notice(player, "Ahí tienes el cofre del clan (uno por clan): cualquiera del clan lo abre y ve el banco.");
                 return "banco";
             }
             default -> {

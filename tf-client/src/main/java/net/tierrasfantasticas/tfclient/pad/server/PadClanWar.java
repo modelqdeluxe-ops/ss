@@ -92,7 +92,22 @@ public final class PadClanWar {
 
     private PadClanWar() {}
 
+    /**
+     * (1.3.159, el dueño: «la guerra de clanes debe incluir al menos algo de PvP, opcional, pero que si lo hace dé punto
+     * igual; ojo, solo 1 misión es de Matar, no es obligatoria pero está ahí») El objetivo PvP: derrotar a jugadores del
+     * clan rival. Cuenta como los demás objetivos (la guerra es la media de todos); el resto de objetivos de esa guerra no
+     * son de «matar». clanes.json: guerra.pvp (activa, nombre, descripción, icono, cantidad, minutos entre la misma pareja).
+     */
+    static final String PVP_ID = "pvp";
+    static PadClanProgress.Mission PVP = new PadClanProgress.Mission(PVP_ID, "Batalla contra el clan rival", "Derroten a jugadores del clan rival (PvP).",
+            new ItemStack(Items.IRON_SWORD), "pvp", "enemigo", 15, 0, 0, 0);
+    static boolean PVP_ON = true;
+    /** Una misma pareja (el que mata y el que muere) cuenta una vez cada tanto (contra el farmeo entre amigos). */
+    static long PVP_PAIR_MS = 10 * 60_000L;
+    private static final Map<String, Long> PVP_PAIRS = new java.util.HashMap<>();
+
     static PadClanProgress.Mission byId(String id) {
+        if (PVP_ID.equals(id)) return PVP;
         for (PadClanProgress.Mission m : KNOWN) if (m.id().equals(id)) return m;
         return null;
     }
@@ -251,10 +266,15 @@ public final class PadClanWar {
         w.addProperty("fin", now + DAYS * DAY_MS);
         w.addProperty("estado", "activa");
         List<PadClanProgress.Mission> pool = new ArrayList<>(POOL);
+        // con el PvP, el resto no es de «matar» (solo un objetivo de matar en cada guerra)
+        if (PVP_ON) pool.removeIf(m -> m.type().equals("matar"));
         Collections.shuffle(pool, new Random(now ^ (a + b).hashCode()));
+        List<PadClanProgress.Mission> picked = new ArrayList<>();
+        if (PVP_ON) picked.add(PVP);
+        picked.addAll(pool.subList(0, Math.min(Math.max(0, OBJECTIVES - picked.size()), pool.size())));
         JsonArray objs = new JsonArray();
         int na = PadClans.members(ca).size(), nb = PadClans.members(cb).size();
-        for (PadClanProgress.Mission m : pool.subList(0, Math.min(OBJECTIVES, pool.size()))) {
+        for (PadClanProgress.Mission m : picked) {
             JsonObject o = new JsonObject();
             o.addProperty("id", m.id());
             o.addProperty("metaA", PadClanProgress.goal(m, na));
@@ -268,8 +288,8 @@ public final class PadClanWar {
         w.add("aportesB", new JsonObject());
         wars().add(w);
         STORE_IMPL.changed();
-        String text = "¡Guerra de clanes! " + label(ca) + " contra " + label(cb) + ": " + DAYS + " días, " + OBJECTIVES
-                + " objetivos. Mírala en pad › Clanes › GUERRA.";
+        String text = "¡Guerra de clanes! " + label(ca) + " contra " + label(cb) + ": " + DAYS + " días, " + picked.size()
+                + " objetivos" + (PVP_ON ? " (uno es PvP: derrotar a los del clan rival)" : "") + ". Mírala en pad › Clanes › GUERRA.";
         PadClanProgress.tell(PadServer.server(), ca, text, ChatFormatting.RED);
         PadClanProgress.tell(PadServer.server(), cb, text, ChatFormatting.RED);
         return w;
@@ -356,6 +376,59 @@ public final class PadClanWar {
         if (progress(w, side) >= 1.0 - 1e-9) finish(player.getServer(), w);
     }
 
+    /**
+     * (1.3.159) Un jugador derrota a otro: si sus clanes están en guerra entre ellos, suma 1 al objetivo PvP del lado del
+     * que mata. LOWEST y sin los cancelados: el noqueo de Revivir y los duelos cancelan la muerte (no cuentan); rematar a
+     * un noqueado sí (es una muerte de verdad). Los jugadores de mentira de otros mods no cuentan.
+     */
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)
+    public static void onDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer victim) || victim instanceof net.minecraftforge.common.util.FakePlayer) return;
+        if (!(event.getSource().getEntity() instanceof ServerPlayer killer) || killer instanceof net.minecraftforge.common.util.FakePlayer || killer == victim) return;
+        recordKill(killer, victim);
+    }
+
+    /** Suma la muerte al objetivo PvP (si toca). Devuelve true si contó. */
+    static boolean recordKill(ServerPlayer killer, ServerPlayer victim) {
+        String ck = PadClans.clanIdOf(killer.getUUID()), cv = PadClans.clanIdOf(victim.getUUID());
+        if (ck == null || cv == null || ck.equals(cv)) return false;
+        JsonObject w = active(ck);
+        if (w == null) return false;
+        String side = side(w, ck);
+        String other = TFJson.str(w, side.equals("A") ? "b" : "a", "");
+        if (!other.equals(cv)) return false;
+        long now = System.currentTimeMillis();
+        if (now > TFJson.num(w, "fin", 0)) {
+            finish(killer.getServer(), w);
+            return false;
+        }
+        String pair = killer.getUUID() + "|" + victim.getUUID();
+        Long last = PVP_PAIRS.get(pair);
+        if (last != null && now - last < PVP_PAIR_MS) {
+            killer.sendSystemMessage(net.minecraft.network.chat.Component.literal("[Guerra] Ya derrotaste a " + victim.getGameProfile().getName()
+                    + " hace poco: vuelve a contar en " + Math.max(1, (PVP_PAIR_MS - (now - last)) / 60000) + " min.").withStyle(ChatFormatting.GRAY));
+            return false;
+        }
+        for (JsonElement e : w.getAsJsonArray("objetivos")) {
+            JsonObject o = e.getAsJsonObject();
+            if (!PVP_ID.equals(TFJson.str(o, "id", ""))) continue;
+            double meta = TFJson.dec(o, "meta" + side, PVP.amount()), cur = TFJson.dec(o, "prog" + side, 0);
+            if (cur >= meta) return false;
+            PVP_PAIRS.put(pair, now);
+            PVP_PAIRS.values().removeIf(t -> now - t > PVP_PAIR_MS);
+            o.addProperty("prog" + side, Math.min(meta, cur + 1));
+            JsonObject ap = TFJson.obj(w, "aportes" + side);
+            ap.addProperty(killer.getUUID().toString(), TFJson.dec(ap, killer.getUUID().toString(), 0) + 1);
+            w.add("aportes" + side, ap);
+            STORE_IMPL.changed();
+            killer.sendSystemMessage(net.minecraft.network.chat.Component.literal("[Guerra] +1 en «" + PVP.name() + "» (" + Math.round(cur + 1) + "/"
+                    + Math.round(meta) + ").").withStyle(ChatFormatting.RED));
+            if (progress(w, side) >= 1.0 - 1e-9) finish(killer.getServer(), w);
+            return true;
+        }
+        return false;
+    }
+
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -409,13 +482,13 @@ public final class PadClanWar {
                     -1, "", PadView.Btn.of("VER", "§guerra", PadView.BLUE), null).image(PadClanProgress.badge(c).image()));
         }
         b.header(w != null ? "Guerra de objetivos (" + DAYS + " días): " + WIN_COINS + " Clan Coins y " + WIN_PRESTIGE + " de prestigio."
-                : officer ? "Declara la guerra (por objetivos, no PvP) o propón una alianza."
+                : officer ? (PVP_ON ? "Declara la guerra (por objetivos; uno es PvP) o propón una alianza." : "Declara la guerra (por objetivos) o propón una alianza.")
                 : "Las guerras y alianzas las deciden el líder y los colíderes.");
         // declaraciones que nos llegan
         for (JsonObject p : incoming(id)) {
             JsonObject from = PadClans.clan(TFJson.str(p, "de", ""));
             b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), label(from) + " les declara la guerra", 0xC0392B,
-                    List.of("Si aceptan, empieza ya: " + DAYS + " días y " + OBJECTIVES + " objetivos."), -1, "",
+                    List.of("Si aceptan, empieza ya: " + DAYS + " días y " + OBJECTIVES + " objetivos" + (PVP_ON ? " (uno es PvP)." : ".")), -1, "",
                     officer ? PadView.Btn.of("ACEPTAR", "guerra.aceptar:" + TFJson.str(p, "de", ""), PadView.RED) : null,
                     officer ? PadView.Btn.of("NO", "guerra.rechazar:" + TFJson.str(p, "de", ""), PadView.GRAY) : null).image(PadClanProgress.badge(from).image()));
         }
@@ -534,6 +607,27 @@ public final class PadClanWar {
     // ---------------------------------------------------------------------------------------------------------------
     // Prueba en el juego
     // ---------------------------------------------------------------------------------------------------------------
+
+    /** (1.3.159) Para la prueba: una muerte de jugador contra jugador (como onDeath). true si contó. */
+    public static boolean testKill(ServerPlayer killer, ServerPlayer victim) {
+        return recordKill(killer, victim);
+    }
+
+    /** (1.3.159) Para la prueba: los objetivos de la guerra del clan («id:tipo», …) y lo que lleva del PvP su lado. */
+    public static String testObjectives(String clanId) {
+        JsonObject w = active(clanId);
+        if (w == null) return "sin guerra";
+        String side = side(w, clanId);
+        StringBuilder b = new StringBuilder();
+        double pvp = -1;
+        for (JsonElement e : w.getAsJsonArray("objetivos")) {
+            JsonObject o = e.getAsJsonObject();
+            PadClanProgress.Mission m = byId(TFJson.str(o, "id", ""));
+            b.append(b.length() == 0 ? "" : ",").append(TFJson.str(o, "id", "?")).append(':').append(m == null ? "?" : m.type());
+            if (PVP_ID.equals(TFJson.str(o, "id", ""))) pvp = TFJson.dec(o, "prog" + side, 0);
+        }
+        return b + " | pvp=" + Math.round(pvp);
+    }
 
     /** Para la prueba: quita las guerras y declaraciones de esos clanes. */
     public static void testReset(String... clanIds) {

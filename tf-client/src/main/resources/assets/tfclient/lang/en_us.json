@@ -1269,5 +1269,9 @@
  "item.tfclient.banco_clan": "Clan Bank",
  "key.categories.revivemod": "Revive Mod",
  "key.revivemod.surrender": "Surrender / Die (hold)",
- "key.revivemod.self_revive": "Self-revive (hold)"
+ "key.revivemod.self_revive": "Self-revive (hold)",
+ "key.tfclient.emote_clan": "Clan emote",
+ "block.tfclient.estandarte_clan": "Clan banner",
+ "item.tfclient.estandarte_clan": "Clan banner",
+ "subtitles.tfclient.clanes.emote": "Clan emote fanfare"
 }

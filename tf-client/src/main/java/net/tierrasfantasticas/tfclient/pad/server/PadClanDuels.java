@@ -145,16 +145,43 @@ public final class PadClanDuels {
             return 0;
         }
         CHALLENGES.put(to.getUUID(), Map.entry(from.getUUID(), System.currentTimeMillis()));
-        MutableComponent yes = Component.literal("[ACEPTAR]").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan duelo aceptar"))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Aceptar el duelo"))));
-        MutableComponent no = Component.literal("[RECHAZAR]").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(true)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan duelo rechazar")));
-        to.sendSystemMessage(tag(from.getGameProfile().getName() + " (" + PadClans.clanNameOf(from.getUUID()) + ") te reta a duelo. ", ChatFormatting.YELLOW)
-                .append(yes).append(Component.literal(" ")).append(no));
+        to.sendSystemMessage(challengeMessage(from));
         to.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.MASTER, 0.7F, 0.8F);
         src.sendSuccess(() -> tag("Retaste a " + to.getGameProfile().getName() + ". Tiene 60 s para aceptar.", ChatFormatting.YELLOW), false);
         return 1;
+    }
+
+    /**
+     * (1.3.159, el dueño: «la petición de un duelo debe salirle en el chat con aceptar o rechazar como botones
+     * presionables con el mouse») El reto: quién reta (y su clan) y dos botones que se pulsan con el ratón (ejecutan
+     * /clan duelo aceptar o rechazar), con su explicación al pasar el ratón y el tiempo que hay.
+     */
+    static MutableComponent challengeMessage(ServerPlayer from) {
+        long secs = CHALLENGE_MS / 1000;
+        MutableComponent yes = Component.literal(" ✔ ACEPTAR ").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan duelo aceptar"))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Clic para aceptar el duelo contra "
+                        + from.getGameProfile().getName() + ".\nGana el que deja al otro a 1 corazón (nadie muere).").withStyle(ChatFormatting.GREEN))));
+        MutableComponent no = Component.literal(" ✖ RECHAZAR ").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(true)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan duelo rechazar"))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Clic para rechazar el duelo.").withStyle(ChatFormatting.RED))));
+        return tag("⚔ " + from.getGameProfile().getName() + " (" + PadClans.clanNameOf(from.getUUID()) + ") te reta a un duelo.", ChatFormatting.YELLOW)
+                .append(Component.literal("\n        "))
+                .append(Component.literal("[").withStyle(ChatFormatting.DARK_GREEN)).append(yes).append(Component.literal("]").withStyle(ChatFormatting.DARK_GREEN))
+                .append(Component.literal("   "))
+                .append(Component.literal("[").withStyle(ChatFormatting.DARK_RED)).append(no).append(Component.literal("]").withStyle(ChatFormatting.DARK_RED))
+                .append(Component.literal("   " + secs + " s").withStyle(ChatFormatting.GRAY));
+    }
+
+    /** (1.3.159) Para la prueba en el juego: from reta a to (como /clan duelo, sin mirar la distancia). */
+    public static void testChallenge(ServerPlayer from, ServerPlayer to) {
+        CHALLENGES.put(to.getUUID(), Map.entry(from.getUUID(), System.currentTimeMillis()));
+        to.sendSystemMessage(challengeMessage(from));
+    }
+
+    /** (1.3.159) Para la prueba: ¿hay un duelo en marcha (o en su cuenta atrás) de ese jugador? */
+    public static boolean testInDuel(java.util.UUID u) {
+        return DUELS.containsKey(u);
     }
 
     static int accept(CommandSourceStack src) {

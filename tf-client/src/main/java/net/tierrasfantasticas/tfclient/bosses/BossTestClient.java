@@ -201,6 +201,20 @@ public final class BossTestClient {
             BossTest.openPad = null;
             net.tierrasfantasticas.tfclient.pad.TFPadClient.openForTest(app);
         }
+        // (1.3.159) clanes2: el fondo del pad, la cámara y pulsar un botón del chat
+        if (BossTest.wallpaper != null) {
+            net.tierrasfantasticas.tfclient.pad.TFPadClient.wallpaperForTest(BossTest.wallpaper);
+            BossTest.wallpaper = null;
+        }
+        if (BossTest.camera != null) {
+            mc.options.setCameraType(switch (BossTest.camera) {
+                case "frente" -> net.minecraft.client.CameraType.THIRD_PERSON_FRONT;
+                case "espalda" -> net.minecraft.client.CameraType.THIRD_PERSON_BACK;
+                default -> net.minecraft.client.CameraType.FIRST_PERSON;
+            });
+            BossTest.camera = null;
+        }
+        if (BossTest.chatClick != null) clickChat(mc, BossTest.chatClick);
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
         BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();
@@ -328,10 +342,92 @@ public final class BossTestClient {
      * cliente, con el último fotograma dibujado: con shaders, a pocos fotogramas por segundo, podía ser de antes de la
      * vista pedida).
      */
+    /** (1.3.159) El último mensaje del chat con botones (el reto de duelo), para pulsarlos como con el ratón. */
+    private static volatile net.minecraft.network.chat.Component lastButtons;
+
+    @SubscribeEvent
+    public static void onChat(net.minecraftforge.client.event.ClientChatReceivedEvent event) {
+        if (!BossTest.ON) return;
+        net.minecraft.network.chat.Component m = event.getMessage();
+        if (m != null && m.getString().contains("te reta a un duelo")) lastButtons = m;
+    }
+
+    /**
+     * Abre el chat y pulsa el botón que diga label (como un clic del ratón: Screen.handleComponentClicked, que manda su
+     * comando). En el informe: lo que se pulsó.
+     */
+    private static void clickChat(Minecraft mc, String label) {
+        if (!(mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen)) {
+            mc.setScreen(new net.minecraft.client.gui.screens.ChatScreen(""));
+            return;
+        }
+        BossTest.chatClick = null;
+        net.minecraft.network.chat.Component m = lastButtons;
+        if (m == null) {
+            BossTest.clientSaw = "no llegó ningún reto con botones";
+            return;
+        }
+        java.util.concurrent.atomic.AtomicReference<net.minecraft.network.chat.Style> found = new java.util.concurrent.atomic.AtomicReference<>();
+        m.visit((style, text) -> {
+            if (found.get() == null && text.contains(label) && style.getClickEvent() != null) found.set(style);
+            return java.util.Optional.empty();
+        }, net.minecraft.network.chat.Style.EMPTY);
+        net.minecraft.network.chat.Style st = found.get();
+        if (st == null) {
+            BossTest.clientSaw = "el botón «" + label + "» no está o no se puede pulsar";
+            return;
+        }
+        boolean ok = mc.screen.handleComponentClicked(st);
+        BossTest.clientSaw = "pulsé «" + label + "» (" + st.getClickEvent().getAction().getName() + " " + st.getClickEvent().getValue() + ", "
+                + (st.getHoverEvent() != null ? "con texto al pasar el ratón" : "sin texto") + "): " + ok;
+    }
+
+    private static int videoFrame;
+    private static java.util.UUID videoWho;
+
+    /**
+     * (1.3.159) Graba un vídeo del emote: con el reloj del emote a mano (ClanEmoteClient.fixedClock), un fotograma por
+     * cada 1/30 s del emote, en pruebas/video_&lt;nombre&gt;_NNNN.png (el workflow los junta en un MP4). Empieza cuando el
+     * emote del jugador ha empezado y acaba 0,3 s después de que termine.
+     */
+    private static void videoFrames(Minecraft mc) {
+        String name = BossTest.video;
+        if (name == null || mc.player == null) return;
+        if (!net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock) {
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime = 0;
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = true;
+            videoFrame = 0;
+            videoWho = mc.player.getUUID();
+            BossTest.videoBusy = true;
+            return;
+        }
+        double e = net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.elapsed(videoWho);
+        if (e < 0 && videoFrame == 0) {
+            // aún no ha llegado el emote: esperar (sin avanzar el reloj)
+            return;
+        }
+        try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+            File dir = new File(mc.gameDirectory, "pruebas");
+            dir.mkdirs();
+            img.writeToFile(new File(dir, String.format("video_%s_%04d.png", name, videoFrame)));
+        } catch (Exception ex) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudo grabar el fotograma {} del vídeo {}", videoFrame, name, ex);
+        }
+        videoFrame++;
+        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += 1 / 30.0;
+        if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.DURATION + 0.3) * 30)) {
+            TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;
+            BossTest.video = null;
+            BossTest.videoBusy = false;
+        }
+    }
+
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (!BossTest.ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
+        videoFrames(mc);
         loadingShots(mc);
         tunnelShots();
         skyShots();

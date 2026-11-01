@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tfclient:block/clan/estandarte_clan"
+    }
+  }
+}

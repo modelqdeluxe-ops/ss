@@ -3972,5 +3972,15 @@
     "name": "tfclient:crates/mundo_cierra"
    }
   ]
+ },
+ "clanes.emote": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote",
+    "attenuation_distance": 24
+   }
+  ]
  }
 }
