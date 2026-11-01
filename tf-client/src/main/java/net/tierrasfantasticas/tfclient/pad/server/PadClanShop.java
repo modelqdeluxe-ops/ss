@@ -85,6 +85,10 @@ final class PadClanShop {
             ItemStack s = stored(o);
             if (!s.isEmpty()) return s;
         }
+        if (type.equals("emote")) {
+            int i = net.tierrasfantasticas.tfclient.clans.ClanEmote.index(TFJson.str(o, "emote", ""));
+            if (i >= 0) return new ItemStack(PadClanConfig.item(net.tierrasfantasticas.tfclient.clans.ClanEmote.ICONS[i]));
+        }
         if (type.equals("estandarte")) {
             return new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANNER_ITEM.get(), (int) Math.max(1, Math.min(16, TFJson.num(o, "cantidad", 1))));
         }
@@ -111,6 +115,12 @@ final class PadClanShop {
         return null;
     }
 
+    /** (1.3.160) ¿El clan ya tiene el emote de esta oferta? */
+    static boolean owned(JsonObject c, Offer o) {
+        if (o.type().equals("arcoiris")) return net.tierrasfantasticas.tfclient.clans.ClanTagFx.rainbowOwned(c);
+        return net.tierrasfantasticas.tfclient.clans.ClanEmote.owns(c, net.tierrasfantasticas.tfclient.clans.ClanEmote.index(TFJson.str(o.data(), "emote", "")));
+    }
+
     static int bought(JsonObject c, String key) {
         return (int) TFJson.num(TFJson.obj(c, "compras"), key, 0);
     }
@@ -133,14 +143,19 @@ final class PadClanShop {
             lines.add(o.desc());
             if (o.type().equals("potenciador") && PadClanProgress.boosted(c)) {
                 lines.add("Activo: quedan " + PadClanViews.until(TFJson.num(c, "potenciadorHasta", 0) - System.currentTimeMillis()) + ".");
+            } else if (o.type().equals("emote") && owned(c, o)) {
+                lines.add("Ya es del clan: tecla B › elígelo.");
+            } else if (o.type().equals("arcoiris") && owned(c, o)) {
+                lines.add("Ya es del clan: ESTILO › ETIQUETA › ARCOÍRIS.");
             } else if (o.type().equals("escudo") && PadClanWar.shielded(c)) {
                 lines.add("Escudo activo: quedan " + PadClanViews.until(PadClanWar.shieldLeft(c)) + " (si compran otro, se suma).");
             } else if (o.max() > 0) {
                 lines.add("Compradas: " + n + " de " + o.max() + ".");
             }
-            boolean full = o.max() > 0 && n >= o.max();
+            boolean once = o.type().equals("emote") || o.type().equals("arcoiris");
+            boolean full = o.max() > 0 && n >= o.max() || once && owned(c, o);
             boolean sure = PadServer.confirming(player, "tienda.comprar:" + o.key());
-            PadView.Btn buy = !treasurer ? null : full ? PadView.Btn.off("AGOTADO")
+            PadView.Btn buy = !treasurer ? null : full ? PadView.Btn.off(once ? "LO TIENEN" : "AGOTADO")
                     : coins < o.price() ? PadView.Btn.off("FALTAN " + (o.price() - coins)) : PadView.Btn.of(sure ? "¿SEGURO?" : "COMPRAR", "tienda.comprar:" + o.key(), PadView.GOLD);
             b.row(new PadView.Row(o.icon().get(), o.name(), full ? 0x7E8CA8 : 0x18265C, lines, -1, PadView.clanCoins(o.price()), buy, null));
         }
@@ -152,6 +167,10 @@ final class PadClanShop {
         if (!action.startsWith("tienda.comprar:") || !PadClanProgress.treasurer(c, player.getUUID())) return null;
         Offer o = offer(action.substring("tienda.comprar:".length()));
         if (o == null) return "tienda";
+        if ((o.type().equals("emote") || o.type().equals("arcoiris")) && owned(c, o)) {
+            TFPadNet.notice(player, o.type().equals("emote") ? "Ese emote ya es del clan." : "El clan ya tiene los efectos arcoíris.");
+            return "tienda";
+        }
         if (o.max() > 0 && bought(c, o.key()) >= o.max()) {
             TFPadNet.notice(player, "Ya tienen las " + o.max() + " que se pueden comprar.");
             return "tienda";
@@ -178,6 +197,13 @@ final class PadClanShop {
             case "plazas" -> c.addProperty("plazasCompradas", TFJson.num(c, "plazasCompradas", 0) + 1);
             case "potenciador" -> c.addProperty("potenciadorHasta",
                     Math.max(System.currentTimeMillis(), TFJson.num(c, "potenciadorHasta", 0)) + hours(o.data()) * 60L * 60 * 1000);
+            case "emote" -> net.tierrasfantasticas.tfclient.clans.ClanEmote.unlock(c,
+                    net.tierrasfantasticas.tfclient.clans.ClanEmote.index(TFJson.str(o.data(), "emote", "")));
+            case "arcoiris" -> {
+                // (1.3.160, el dueño: «el botón de arcoíris estará bloqueado, deben comprarlo en la tienda del clan»)
+                c.addProperty("arcoiris", true);
+                net.tierrasfantasticas.tfclient.clans.ClanLooks.dirty();
+            }
             case "escudo" -> {
                 // (1.3.160, el dueño: «una protección contra las guerras, de 24 horas o 2 días: que nadie te pueda declarar la
                 // guerra») se suma a lo que quede; las declaraciones sin aceptar se anulan

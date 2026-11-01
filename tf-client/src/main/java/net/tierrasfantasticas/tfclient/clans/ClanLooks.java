@@ -34,7 +34,12 @@ import net.tierrasfantasticas.tfclient.pad.server.PadClans;
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class ClanLooks {
     /** Un clan visto desde el cliente. */
-    public record Look(String id, String tag, String name, int rgb, String badge, ClanTagFx.Fx fx) {
+    public record Look(String id, String tag, String name, int rgb, String badge, ClanTagFx.Fx fx, int emotes) {
+        /** (1.3.160) ¿Tiene el clan ese emote? (los gratis siempre; los de la tienda, si los compró) */
+        public boolean hasEmote(int i) {
+            return i < ClanEmote.FREE || (emotes >> i & 1) == 1;
+        }
+
         /** La imagen de la insignia (tfclient:textures/gui/pad/insignias/&lt;id&gt;.png). */
         public net.minecraft.resources.ResourceLocation badgeTexture() {
             return new net.minecraft.resources.ResourceLocation(TFClient.MOD_ID, "textures/gui/pad/insignias/" + badge + ".png");
@@ -96,7 +101,7 @@ public final class ClanLooks {
                 JsonObject c = e.getValue().getAsJsonObject();
                 int rgb = c.get("r").getAsInt();
                 cl.put(e.getKey(), new Look(e.getKey(), c.get("t").getAsString(), c.has("n") ? c.get("n").getAsString() : "", rgb, c.get("b").getAsString(),
-                        ClanTagFx.decode(c.get("f").getAsString(), rgb)));
+                        ClanTagFx.decode(c.get("f").getAsString(), rgb), c.has("e") ? c.get("e").getAsInt() : (1 << ClanEmote.FREE) - 1));
             }
             Map<UUID, String> pl = new HashMap<>();
             for (var e : o.getAsJsonObject("p").entrySet()) {

@@ -4022,5 +4022,105 @@
     "attenuation_distance": 24
    }
   ]
+ },
+ "clanes.emote_fenix": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_fenix",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_fenix",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_tornado": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_tornado",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_tornado",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_ventisca": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_ventisca",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_ventisca",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_meteoro": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_meteoro",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_meteoro",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_fuegos": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_fuegos",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_fuegos",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_espadas": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_espadas",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_espadas",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_aura": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_aura",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_aura",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_corazones": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_corazones",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_corazones",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_concierto": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_concierto",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_concierto",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_portal": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_portal",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_portal",
+    "attenuation_distance": 24
+   }
+  ]
  }
 }

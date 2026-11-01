@@ -47,7 +47,7 @@ import org.joml.Matrix4f;
  * Las posiciones «locales» son respecto a hacia dónde mira el cuerpo: x a su izquierda, z hacia delante.
  */
 final class ClanEmotes {
-    static final double[] DURATIONS = {5.0, 5.0, 4.6, 5.2, 5.0};
+    static final double[] DURATIONS = {5.0, 5.0, 4.6, 5.2, 5.0, 5.0, 4.8, 5.0, 5.0, 5.2, 5.0, 4.8, 4.6, 5.0, 5.0};
 
     private ClanEmotes() {}
 
@@ -116,6 +116,10 @@ final class ClanEmotes {
     }
 
     static void pose(int id, double e, P p) {
+        if (id >= 5) {
+            ClanEmotes2.pose(id, e, p);
+            return;
+        }
         switch (id) {
             case 0 -> poseBanner(e, p);
             case 1 -> poseCrown(e, p);
@@ -127,6 +131,7 @@ final class ClanEmotes {
 
     /** Cuánto se baja, sube o flota el cuerpo entero (bloques). */
     static double lift(int id, double e) {
+        if (id >= 5) return ClanEmotes2.lift(id, e);
         switch (id) {
             case 0 -> {
                 if (e < 0.32) return 0.05 * smooth(0, 0.3, e);
@@ -331,6 +336,10 @@ final class ClanEmotes {
     // ---------------------------------------------------------------------------------------------------------------
 
     static void body(int id, double e, PoseStack pose, float yaw) {
+        if (id >= 5) {
+            ClanEmotes2.body(id, e, pose, yaw);
+            return;
+        }
         pose.translate(0, lift(id, e), 0);
         switch (id) {
             case 0 -> {
@@ -386,6 +395,10 @@ final class ClanEmotes {
         long seed = p.getUUID().getLeastSignificantBits() ^ id * 7919L;
         int[] pal = ClanEmoteFx.palette(look);
         double now = ClanClient.now();
+        if (id >= 5) {
+            ClanEmotes2.fx(id, e, pose, b, look, f, seed, pal, now);
+            return;
+        }
         switch (id) {
             case 0 -> fxBanner(e, pose, b, look, f, seed, pal, now);
             case 1 -> fxCrown(e, pose, b, look, f, seed, pal, now);
@@ -826,7 +839,7 @@ final class ClanEmotes {
     }
 
     /** Una onda de luz que corre por el suelo desde los pies (t0), con otra blanca detrás. */
-    private static void shock(PoseStack pose, MultiBufferSource b, double e, double t0, int rgb) {
+    static void shock(PoseStack pose, MultiBufferSource b, double e, double t0, int rgb) {
         for (int w = 0; w < 2; w++) {
             double k = (e - t0 - w * 0.08) / 0.7;
             if (k <= 0 || k >= 1) continue;
@@ -919,7 +932,7 @@ final class ClanEmotes {
     }
 
     /** Un papelito de confeti que da vueltas (se ve de canto y de cara). */
-    private static void confetti(PoseStack pose, VertexConsumer vc, double x, double y, double z, double turn, int rgb, long seed) {
+    static void confetti(PoseStack pose, VertexConsumer vc, double x, double y, double z, double turn, int rgb, long seed) {
         pose.pushPose();
         pose.translate(x, y, z);
         pose.mulPose(Axis.YP.rotationDegrees((float) (rnd(seed, 0, 1) * 360 + turn * 40)));

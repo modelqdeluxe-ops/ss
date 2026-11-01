@@ -52,7 +52,7 @@ public final class PadAdminClans {
     /** Los tipos de misión (los de los oficios). */
     static final List<String> TYPES = List.of("romper", "colocar", "matar", "pescar", "cosechar", "criar", "fabricar", "fundir", "encantar");
     /** Los tipos de oferta de la tienda del clan. */
-    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "escudo", "estandarte", "objeto", "verdes", "comando");
+    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "escudo", "emote", "arcoiris", "estandarte", "objeto", "verdes", "comando");
 
     private PadAdminClans() {}
 
@@ -182,6 +182,8 @@ public final class PadAdminClans {
             case "plazas" -> "Plazas";
             case "potenciador" -> "Potenciador";
             case "escudo" -> "Escudo de guerra";
+            case "emote" -> "Emote del clan";
+            case "arcoiris" -> "Efectos arcoíris";
             case "objeto" -> "Objeto";
             case "verdes" -> "Verdes para todos";
             case "estandarte" -> "Estandarte del clan";
@@ -376,6 +378,11 @@ public final class PadAdminClans {
                         + PadClanConfig.num("miembros", "porCompra") + ")."));
                 case "potenciador" -> b.row(PadAdminUi.value(new ItemStack(Items.CLOCK), "Horas", "Lo que dura (se suman si se compra otra vez).",
                         String.valueOf(PadClanShop.hours(o)), "f:horas", f.equals("horas")));
+                case "emote" -> {
+                    int ei = net.tierrasfantasticas.tfclient.clans.ClanEmote.index(TFJson.str(o, "emote", ""));
+                    b.row(PadAdminUi.cycle(PadClanShop.icon(type, o), "Emote", "El que se lleva el clan entero (tecla B).",
+                            ei < 0 ? "?" : net.tierrasfantasticas.tfclient.clans.ClanEmote.NAMES[ei], "emote:-1", "emote:1"));
+                }
                 case "escudo" -> b.row(PadAdminUi.value(new ItemStack(Items.CLOCK), "Horas", "Lo que nadie les puede declarar la guerra (se suman si compran otro).",
                         String.valueOf(PadClanShop.hours(o)), "f:horas", f.equals("horas")));
                 case "verdes" -> b.row(PadAdminUi.value(new ItemStack(Items.EMERALD), "Verdes para cada miembro", "",
@@ -528,10 +535,17 @@ public final class PadAdminClans {
                     TFPadNet.notice(player, held.getCount() + " × " + net.tierrasfantasticas.tfclient.util.TFNames.es(held) + " en la tienda del clan" + (o == null ? " (apagada: ponle precio y enciéndela)." : "."));
                     return "t:" + TFJson.str(target, "id", "");
                 }
-                case "tipo", "otipo", "piedra" -> {
+                case "tipo", "otipo", "piedra", "emote" -> {
                     if (o == null) return null;
                     int dir = arg.startsWith("-") ? -1 : 1;
-                    if (parts[0].equals("piedra")) {
+                    if (parts[0].equals("emote")) {
+                        // (1.3.160) el emote que da (solo los de pago)
+                        List<String> ids = new ArrayList<>();
+                        for (int i = net.tierrasfantasticas.tfclient.clans.ClanEmote.FREE; i < net.tierrasfantasticas.tfclient.clans.ClanEmote.IDS.length; i++) {
+                            ids.add(net.tierrasfantasticas.tfclient.clans.ClanEmote.IDS[i]);
+                        }
+                        o.addProperty("emote", next(ids, TFJson.str(o, "emote", ""), dir));
+                    } else if (parts[0].equals("piedra")) {
                         List<String> ids = new ArrayList<>();
                         for (ClaimTier t : ClaimTier.VALUES) ids.add(t.id);
                         o.addProperty("piedra", next(ids, TFJson.str(o, "piedra", ""), dir));
@@ -541,6 +555,7 @@ public final class PadAdminClans {
                         o.addProperty("tipo", now);
                         if (now.equals("proteccion") && !o.has("piedra")) o.addProperty("piedra", "claimstone_clan_50x50");
                         if ((now.equals("potenciador") || now.equals("escudo")) && !o.has("horas")) o.addProperty("horas", 24);
+                        if (now.equals("emote") && !o.has("emote")) o.addProperty("emote", net.tierrasfantasticas.tfclient.clans.ClanEmote.IDS[net.tierrasfantasticas.tfclient.clans.ClanEmote.FREE]);
                     }
                     PadClanConfig.save(r);
                 }

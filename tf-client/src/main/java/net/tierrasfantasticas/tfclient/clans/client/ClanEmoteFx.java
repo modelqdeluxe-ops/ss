@@ -42,6 +42,7 @@ final class ClanEmoteFx {
     static final ResourceLocation STAR = tex("estrella");
     static final ResourceLocation BEAM = tex("haz");
     static final ResourceLocation WHITE = tex("blanco");
+    static final ResourceLocation HEART = tex("corazon");
 
     private ClanEmoteFx() {}
 

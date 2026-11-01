@@ -178,6 +178,14 @@ public final class ClanEmoteClient {
         double e = elapsed(p.getUUID());
         int id = emoteOf(p.getUUID());
         if (e < 0 || id < 0) return;
+        // (1.3.160, el dueño: «quiero que los efectos se vean con shaders también, que no haya error como el evento del
+        // cumpleaños») con un paquete de shaders (Oculus), lo que no es suyo no deja nada mientras dibuja el mundo: los
+        // efectos se apuntan y se dibujan después de su pasada final, con la profundidad de la escena (vacio.AfterShaders,
+        // como la grieta y el letrero del cumpleaños). En su pasada de sombras, nada.
+        if (net.tierrasfantasticas.tfclient.vacio.AfterShaders.active()) {
+            if (!net.tierrasfantasticas.tfclient.vacio.AfterShaders.shadowPass()) LATE.add(p);
+            return;
+        }
         ClanLooks.Look look = ClanLooks.ofPlayer(p.getUUID());
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
@@ -185,6 +193,34 @@ public final class ClanEmoteClient {
             ClanEmotes.fx(id, e, pose, event.getMultiBufferSource(), p, look, event.getPartialTick());
         } finally {
             pose.popPose();
+        }
+    }
+
+    /** Los jugadores con emote de este fotograma, para dibujar sus efectos después del paquete de shaders. */
+    private static final java.util.List<Player> LATE = new java.util.ArrayList<>();
+    /** Para la prueba en el juego: fotogramas en los que los efectos se dibujaron después del paquete. */
+    public static int lateFrames;
+
+    /** Desde vacio.AfterShaders.end: los efectos de los emotes, en su sitio respecto a la cámara. */
+    public static void renderAfterShaders(org.joml.Matrix4f view, float partial) {
+        if (LATE.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
+        net.minecraft.client.renderer.MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        net.minecraft.world.phys.Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+        try {
+            for (Player p : LATE) {
+                double e = elapsed(p.getUUID());
+                int id = emoteOf(p.getUUID());
+                if (e < 0 || id < 0) continue;
+                PoseStack pose = new PoseStack();
+                pose.mulPoseMatrix(view);
+                pose.translate(Mth.lerp(partial, p.xo, p.getX()) - cam.x, Mth.lerp(partial, p.yo, p.getY()) - cam.y, Mth.lerp(partial, p.zo, p.getZ()) - cam.z);
+                ClanEmotes.fx(id, e, pose, buffers, p, ClanLooks.ofPlayer(p.getUUID()), partial);
+            }
+            buffers.endBatch();
+            lateFrames++;
+        } finally {
+            LATE.clear();
         }
     }
 }

@@ -47,7 +47,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 public final class PadClanConfig {
     public static final String FILE = "clanes.json";
     /** Sube si cambian los valores de fábrica (los que no se hayan tocado se ponen al día solos: ver {@link #load}). */
-    static final int VERSION = 3;
+    static final int VERSION = 4;
 
     private static JsonObject root = new JsonObject();
 
@@ -118,6 +118,39 @@ public final class PadClanConfig {
                 "minecraft:shield", 18, 0, "escudo");
         b.addProperty("horas", 48);
         return new JsonObject[] {a, b};
+    }
+
+    /** (1.3.160, el dueño: «mete muchos más emotes, que sean comprables en la tienda del clan») los emotes de pago. */
+    static java.util.List<JsonObject> emoteOffers() {
+        String[][] info = {
+                {"fenix", "Alas de fuego que se abren y un ave de llamas con la insignia.", "10"},
+                {"tornado", "Un torbellino de viento y hojas que lleva la insignia al cielo.", "8"},
+                {"ventisca", "Cristales de hielo que crecen del suelo y una ventisca de nieve.", "8"},
+                {"meteoro", "Señala el cielo: cae un meteoro, tiembla todo y queda la insignia.", "12"},
+                {"fuegos", "Cohetes que estallan en los colores del clan y la insignia en el cielo.", "10"},
+                {"espadas", "Ocho espadas de luz caen en círculo y la insignia como escudo.", "12"},
+                {"aura", "Carga su poder: aura de llamas, el suelo se agrieta y flotan piedras.", "14"},
+                {"corazones", "Lanza un beso: corazones de los colores del clan por todas partes.", "6"},
+                {"concierto", "Toca la guitarra: notas musicales, focos y la insignia en un altavoz.", "8"},
+                {"portal", "Abre un portal mágico detrás y la insignia sale de él.", "12"}};
+        java.util.List<JsonObject> out = new java.util.ArrayList<>();
+        for (String[] e : info) {
+            int i = net.tierrasfantasticas.tfclient.clans.ClanEmote.index(e[0]);
+            JsonObject o = offer("emote_" + e[0], "Emote: " + net.tierrasfantasticas.tfclient.clans.ClanEmote.NAMES[i], e[1] + " Para todo el clan.",
+                    net.tierrasfantasticas.tfclient.clans.ClanEmote.ICONS[i], Integer.parseInt(e[2]), 0, "emote");
+            o.addProperty("emote", e[0]);
+            out.add(o);
+        }
+        return out;
+    }
+
+    /** (1.3.160) Los efectos arcoíris de la etiqueta (el botón ARCOÍRIS del editor, bloqueado hasta comprarlo). */
+    static JsonObject rainbowOffer() {
+        JsonObject o = offer("efectos_arcoiris", "Efectos arcoíris para la etiqueta",
+                "El arcoíris y " + (net.tierrasfantasticas.tfclient.clans.ClanTagFx.styles() - 1)
+                        + " estilos más de colores que se mueven (los de los títulos de las crates). ESTILO › ETIQUETA.",
+                "minecraft:prismarine_crystals", 15, 0, "arcoiris");
+        return o;
     }
 
     private static JsonObject DEF;
@@ -231,6 +264,8 @@ public final class PadClanConfig {
         shop.add(boost);
         shop.add(banner());
         for (JsonObject sh : shields()) shop.add(sh);
+        shop.add(rainbowOffer());
+        for (JsonObject em : emoteOffers()) shop.add(em);
         r.add("tienda", shop);
         return r;
     }
@@ -292,6 +327,19 @@ public final class PadClanConfig {
                 if (!has) shop.add(sh);
             }
             TFClient.LOGGER.info("TF Clanes: clanes.json puesto al día (versión 3): escudos de guerra en la tienda del clan");
+        }
+        if (v < 4 && cur.has("tienda") && cur.get("tienda").isJsonArray()) {
+            // (1.3.160) los emotes de pago (si no los tenía)
+            JsonArray shop = cur.getAsJsonArray("tienda");
+            java.util.List<JsonObject> add = new java.util.ArrayList<>();
+            add.add(rainbowOffer());
+            add.addAll(emoteOffers());
+            for (JsonObject em : add) {
+                boolean has = false;
+                for (JsonElement e : shop) has |= e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals(TFJson.str(em, "id", ""));
+                if (!has) shop.add(em);
+            }
+            TFClient.LOGGER.info("TF Clanes: clanes.json puesto al día (versión 4): efectos arcoíris y emotes en la tienda del clan");
         }
     }
 

@@ -297,7 +297,7 @@ public final class BossTest {
             // duelo con botones) y del pad (fondo en todas las apps, tienda con buscador, banco compacto)
             // (1.3.160) «clanes3»: los 5 emotes (vídeo de cada uno), estandarte sin corchetes, chat arcoíris, música en la zona,
             // guerra simétrica y escudo de guerra
-            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir", "clanes2", "clanes3"}) {
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir", "clanes2", "clanes3", "emotes"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -319,7 +319,7 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id) || "clanes2".equals(r.id) || "clanes3".equals(r.id))
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id) || "clanes2".equals(r.id) || "clanes3".equals(r.id) || "emotes".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200 || videoBusy;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -402,6 +402,10 @@ public final class BossTest {
         }
         if ("clanes3".equals(r.id)) {
             if (!waitShot) BossTestClanes3.step(t, server, level, player, r);
+            return;
+        }
+        if ("emotes".equals(r.id)) {
+            if (!waitShot) BossTestEmotes.step(t, server, level, player, r);
             return;
         }
         switch (phase) {

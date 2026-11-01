@@ -575,9 +575,303 @@ def orbita():
     tr.render('orbita', 2.2, 0.5)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# (1.3.160, el dueño: «mete muchos más emotes») los diez de la tienda del clan
+# ---------------------------------------------------------------------------------------------------------------
+
+def dist(x, drive=4.0):
+    return np.tanh(x * drive) / np.tanh(drive)
+
+
+def power_chord(root, length, gain=0.16):
+    n = int((length + 0.2) * SR)
+    t = np.arange(n) / SR
+    s = np.zeros(n)
+    for m in (root, root + 7, root + 12):
+        for det in (-0.004, 0.004):
+            s += saw_ph(note(m) * (1 + det) * t)
+    s = dist(lp(s, 3200) * 0.6, 5.0)
+    return lp(s, 4200) * env(n, 0.005, 0.2, 0.75, 0.15, length) * gain
+
+
+def wind(tr, length, gain=0.2, f0=400, f1=1500, rate=0.8):
+    n = int(length * SR)
+    t = np.arange(n) / SR
+    x = tr.noise(n)
+    a = bp(x, f0, f1)
+    b = bp(x, f0 * 1.8, f1 * 2.2)
+    m = 0.5 + 0.5 * np.sin(2 * np.pi * rate * t)
+    return (a * m + b * (1 - m)) * gain * np.clip(t / 0.3, 0, 1)
+
+
+def kiss(gain=0.3):
+    n = int(0.18 * SR)
+    t = np.arange(n) / SR
+    f = 900 + 1200 * t / 0.18
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-14 * t) * gain
+
+
+def fenix():
+    tr = Track(5.0, 1606)
+    tr.add(strings((38, 45, 50), 0.6, 0.08, 1200, 0.3), 0.0)
+    tr.add(riser(tr, 0.5, 0.12, 300, 3000), 0.0)
+    # 0,5: se abren las alas (llamarada) y el acorde
+    tr.add(riser(tr, 0.35, 0.3, 2000, 9000)[::-1], 0.5)
+    tr.add(kick(0.7, 0.6, 110, 40), 0.5)
+    for m in (38, 50, 53, 57, 62):
+        tr.add(brass(m, 0.6, 0.14, 1.1), 0.52)
+    # los aleteos (cada 1,26 s)
+    for k in range(4):
+        tr.add(wind(tr, 0.55, 0.2, 300, 1800, 2.0) * np.hanning(int(0.55 * SR)), 0.9 + k * 1.26)
+    # la melodía que vuela (cuerdas agudas y coro)
+    mel = [(74, 0.4), (77, 0.4), (81, 0.8), (84, 0.4), (82, 0.4), (81, 0.8), (86, 1.0)]
+    at = 1.0
+    for m, ln in mel:
+        tr.add(strings((m,), ln, 0.12, 4200, 0.05), at)
+        at += ln
+    tr.add(choir((50, 57, 62, 65), 3.2, 0.08, 0.6, 3000), 1.0)
+    # 4,4: re mayor
+    for m in (38, 50, 54, 57, 62, 66):
+        tr.add(brass(m, 0.55, 0.12, 1.2), 4.4)
+    tr.add(cymbal(tr, 1.2, 0.18), 4.4)
+    tr.render('fenix', 1.6, 0.4)
+
+
+def tornado():
+    tr = Track(4.8, 1607)
+    tr.add(wind(tr, 4.4, 0.28, 250, 1400, 0.9), 0.1)
+    beat = 60 / 140
+    pattern = [55, 58, 62, 58, 55, 58, 63, 58]
+    t = 0.4
+    k = 0
+    while t < 3.8:
+        up = int((t - 0.4) / 0.9)
+        tr.add(strings((pattern[k % 8] + up,), beat / 4 * 0.9, 0.09, 3800, 0.005), t)
+        t += beat / 4
+        k += 1
+    tr.add(strings((43, 50), 3.4, 0.07, 900, 0.5), 0.4)
+    tr.add(riser(tr, 3.3, 0.1, 400, 7000), 0.5)
+    for at in (0.4, 1.3, 2.2, 3.0, 3.4):
+        tr.add(taiko(tr, 0.3, 0.4, 80), at)
+    # 3,85: se deshace
+    tr.add(cymbal(tr, 1.0, 0.22), 3.85)
+    for m in (43, 55, 59, 62, 67):
+        tr.add(brass(m, 0.5, 0.13, 1.2), 3.85)
+    tr.render('tornado', 1.0, 0.3)
+
+
+def ventisca():
+    tr = Track(5.0, 1608)
+    tr.add(wind(tr, 4.8, 0.08, 1500, 5000, 0.4), 0.0)
+    tr.add(strings((71, 74, 78), 4.3, 0.05, 6000, 0.8), 0.2)
+    # los cristales que crecen (tintineos)
+    for i in range(9):
+        tr.add(bell(note(95 + (i * 5) % 12), 0.8, 0.05), 0.45 + i * 0.09)
+    mel = [(83, 0.5), (86, 0.5), (90, 1.0), (88, 0.5), (86, 0.5), (83, 1.0)]
+    at = 0.5
+    for m, ln in mel:
+        tr.add(bell(note(m), 1.5, 0.12), at)
+        tr.add(harp(m - 12, 1.2, 0.06), at)
+        at += ln * 0.68
+    # 2,5: el marco de hielo
+    for m in (71, 75, 78, 83, 85):
+        tr.add(bell(note(m), 2.2, 0.1), 2.5)
+    tr.add(choir((59, 66, 71, 75), 1.8, 0.06, 0.2, 5000), 2.5)
+    # 4,4: el hielo se rompe
+    for i in range(10):
+        tr.add(hp(tr.noise(int(0.12 * SR)), 5000) * np.exp(-30 * np.arange(int(0.12 * SR)) / SR) * 0.2, 4.4 + i * 0.03)
+    for i, m in enumerate((95, 90, 86, 83, 78)):
+        tr.add(bell(note(m), 0.9, 0.08), 4.42 + i * 0.06)
+    tr.render('ventisca', 2.4, 0.55)
+
+
+def meteoro():
+    tr = Track(5.0, 1609)
+    tr.add(strings((36, 43), 2.0, 0.09, 600, 0.5), 0.0)
+    for at in (0.0, 0.6, 1.0, 1.3, 1.55, 1.75, 1.9):
+        tr.add(timpani(36, 0.6, 0.35), at)
+    tr.add(glide(72, 100, 1.4, 0.07), 0.6)
+    tr.add(riser(tr, 1.4, 0.18, 150, 4000), 0.6)
+    # 2,0: el golpe
+    tr.add(kick(1.0, 1.0, 100, 28), 2.0)
+    tr.add(thunder(tr, 2.4, 0.7), 2.0)
+    for m in (36, 48, 51, 55):
+        tr.add(brass(m, 0.4, 0.2, 1.5, 0.0), 2.02)
+    tr.add(cymbal(tr, 1.8, 0.2), 2.0)
+    # 2,35: la fanfarria (do mayor)
+    fan = [(60, 0.18), (64, 0.18), (67, 0.18), (72, 0.7), (71, 0.3), (72, 0.9)]
+    at = 2.4
+    for m, ln in fan:
+        tr.add(brass(m, ln * 0.9, 0.16, 1.1), at)
+        tr.add(brass(m - 12, ln * 0.9, 0.08, 0.8), at)
+        at += ln
+    tr.add(strings((48, 55, 64, 67), 2.2, 0.08, 3000, 0.1), 2.4)
+    tr.add(timpani(36, 1.2, 0.5), 4.3)
+    tr.render('meteoro', 1.4, 0.35)
+
+
+def fuegos():
+    tr = Track(5.2, 1610)
+    launches = [0.5, 0.9, 1.3, 1.7, 2.1, 2.5]
+    for i, t0 in enumerate(launches):
+        tr.add(glide(84 + i, 100 + i, 0.85, 0.05), t0)
+        tr.add(pop(tr, 0.55), t0 + 0.9)
+        tr.add(kick(0.45, 0.4, 90, 40), t0 + 0.9)
+        n = int(0.9 * SR)
+        crackle = (tr.rng.random(n) > 0.995).astype(float) * tr.rng.standard_normal(n)
+        tr.add(hp(crackle, 3000) * np.exp(-2.5 * np.arange(n) / SR) * 0.8, t0 + 0.95)
+    mel = [(70, 0.25), (74, 0.25), (77, 0.5), (82, 0.5), (81, 0.25), (79, 0.25), (77, 0.5), (74, 0.5), (77, 1.0)]
+    at = 0.5
+    for m, ln in mel:
+        tr.add(bell(note(m + 12), 0.8, 0.07), at)
+        tr.add(brass(m, ln * 0.85, 0.08, 0.9), at)
+        at += ln
+    # 3,3: el gran final
+    tr.add(kick(0.9, 0.8, 100, 32), 3.3)
+    tr.add(cymbal(tr, 1.6, 0.22), 3.3)
+    for m in (46, 58, 62, 65, 70, 74):
+        tr.add(brass(m, 0.8, 0.12, 1.2), 3.3)
+    n = int(1.5 * SR)
+    crackle = (tr.rng.random(n) > 0.99).astype(float) * tr.rng.standard_normal(n)
+    tr.add(hp(crackle, 2500) * np.exp(-1.5 * np.arange(n) / SR) * 0.9, 3.35)
+    tr.render('fuegos', 1.2, 0.3)
+
+
+def espadas():
+    tr = Track(5.0, 1611)
+    beat = 0.6
+    for k in range(8):
+        tr.add(taiko(tr, 0.45 if k % 2 == 0 else 0.3, 0.7, 55), 0.0 + k * beat)
+    tr.add(choir((45, 52, 57), 2.2, 0.12, 0.6, 1600), 0.0)
+    tr.add(snare_roll(tr, 0.8, 0.12), 0.4)
+    # las espadas que se clavan
+    for i in range(8):
+        tr.add(shing(tr, 0.6, 0.18), 1.15 + i * 0.12)
+        tr.add(kick(0.25, 0.25, 140, 60), 1.15 + i * 0.12)
+    # 2,2: el acorde
+    tr.add(gong(110, 2.2, 0.25), 2.2)
+    for m in (45, 57, 60, 64, 69):
+        tr.add(brass(m, 0.8, 0.13, 1.1), 2.2)
+    tr.add(choir((57, 60, 64, 69), 2.4, 0.14, 0.2, 2800), 2.2)
+    ost = [57, 60, 64, 60, 59, 62, 64, 62]
+    for k, m in enumerate(ost):
+        tr.add(strings((m - 12,), 0.28, 0.08, 1800, 0.01), 2.5 + k * 0.28)
+    tr.add(taiko(tr, 0.7, 1.0, 50), 4.3)
+    tr.render('espadas', 2.0, 0.45)
+
+
+def aura():
+    tr = Track(4.8, 1612)
+    n = int(4.0 * SR)
+    t = np.arange(n) / SR
+    f = note(30) * (1 + 0.5 * (t / 4.0) ** 2)
+    drone = saw_ph(np.cumsum(f) / SR) + saw_ph(np.cumsum(f * 1.007) / SR)
+    cut = 200 + 2500 * (t / 4.0) ** 2
+    out = np.zeros(n)
+    for i in range(16):
+        a, b = i * n // 16, (i + 1) * n // 16
+        out[a:b] = lp(drone, cut[(a + b) // 2])[a:b]
+    tr.add(out * 0.18 * np.clip(t / 0.6, 0, 1), 0.0)
+    # latidos que se aceleran
+    at, gap = 0.6, 0.5
+    while at < 3.6:
+        tr.add(kick(0.45, 0.25, 90, 45), at)
+        tr.add(kick(0.3, 0.2, 90, 45), at + 0.14)
+        at += gap
+        gap = max(0.18, gap * 0.85)
+    for k in range(10):
+        tr.add(zap(tr, 0.06, 0.1, 2600, 500), 1.6 + k * 0.2 + tr.rng.uniform(-0.03, 0.03))
+    # 1,6: el grito de poder
+    tr.add(power_chord(42, 0.8, 0.12), 1.6)
+    tr.add(riser(tr, 2.2, 0.12, 500, 9000), 1.65)
+    # 3,85: la descarga
+    tr.add(kick(1.0, 1.0, 120, 26), 3.85)
+    tr.add(cymbal(tr, 1.4, 0.24), 3.85)
+    tr.add(power_chord(42, 0.9, 0.16), 3.86)
+    tr.add(thunder(tr, 1.2, 0.35), 3.86)
+    tr.render('aura', 1.0, 0.3)
+
+
+def corazones():
+    tr = Track(4.6, 1613)
+    beat = 60 / 110
+    chords = [(53, 57, 60, 65), (48, 55, 60, 64), (50, 57, 62, 65), (46, 53, 58, 62)]
+    for k in range(8):
+        ch = chords[(k // 2) % 4]
+        for j, m in enumerate(ch):
+            tr.add(harp(m + 12, 0.5, 0.09), 0.1 + k * beat + j * 0.012)
+    mel = [(77, 0.5), (79, 0.5), (81, 1.0), (84, 0.5), (81, 0.5), (79, 1.0), (77, 1.5)]
+    at = 0.1
+    for m, ln in mel:
+        tr.add(bell(note(m + 12), 1.0, 0.1), at)
+        at += ln * beat
+    tr.add(kiss(0.25), 1.4)
+    for k in range(5):
+        tr.add(kick(0.25, 0.25, 70, 45), 1.85 + k * 0.48)
+        tr.add(kick(0.18, 0.2, 70, 45), 1.85 + k * 0.48 + 0.16)
+    tr.add(choir((65, 69, 72), 2.2, 0.05, 0.4, 4000), 1.8)
+    tr.render('corazones', 1.2, 0.35)
+
+
+def concierto():
+    tr = Track(5.0, 1614)
+    beat = 0.5
+    riff = [40, 40, 43, 45, 40, 40, 47, 45]
+    for k in range(7):
+        tr.add(power_chord(riff[k % 8], 0.22, 0.17), 0.3 + k * beat)
+        tr.add(power_chord(riff[k % 8], 0.18, 0.12), 0.3 + k * beat + 0.25)
+    for k in range(14):
+        at = 0.3 + k * beat / 2
+        if k % 4 == 0:
+            tr.add(kick(0.6, 0.3, 130, 50), at)
+        if k % 4 == 2:
+            tr.add(snare(tr, 0.35), at)
+        tr.add(hat(tr, 0.09), at)
+    tr.add(bass(28, 3.2, 0.18, 500), 0.3)
+    # 3,65: el acorde final con el salto
+    tr.add(power_chord(40, 1.2, 0.2), 3.7)
+    tr.add(cymbal(tr, 1.5, 0.24), 3.7)
+    tr.add(kick(0.9, 0.6, 120, 40), 3.7)
+    tr.render('concierto', 0.7, 0.22)
+
+
+def portal():
+    tr = Track(5.0, 1615)
+    sw = (cymbal(tr, 0.9, 0.2) + bell(note(64), 0.9, 0.2))[::-1]
+    tr.add(sw, 0.0)
+    tr.add(riser(tr, 0.6, 0.15, 300, 6000), 0.35)
+    tr.add(kick(0.5, 0.8, 60, 30), 0.95)
+    arp = [52, 53, 55, 59, 60, 59, 55, 53]
+    for k in range(20):
+        m = arp[k % 8] + 12 * (k // 8 % 2)
+        tr.add(square(m + 12, 0.12, 0.04, 0.5), 1.0 + k * 0.15)
+        tr.add(bell(note(m + 24), 0.6, 0.025), 1.0 + k * 0.15 + 0.075)
+    tr.add(strings((40, 47, 52, 53), 3.0, 0.07, 1500, 0.6), 1.0)
+    for k in range(6):
+        tr.add(kick(0.3, 0.5, 50, 32), 1.0 + k * 0.6)
+    # 2,0: la insignia sale (barrido que sube)
+    tr.add(glide(64, 88, 0.7, 0.07), 2.0)
+    for m in (76, 79, 83, 88):
+        tr.add(bell(note(m), 1.6, 0.09), 2.7)
+    # 4,25: se cierra
+    tr.add(cymbal(tr, 0.4, 0.2)[::-1], 3.85)
+    tr.add(kick(0.8, 0.7, 80, 30), 4.25)
+    tr.render('portal', 2.0, 0.5)
+
+
 if __name__ == '__main__':
     estandarte()
     corona()
     trueno()
     fiesta()
     orbita()
+    fenix()
+    tornado()
+    ventisca()
+    meteoro()
+    fuegos()
+    espadas()
+    aura()
+    corazones()
+    concierto()
+    portal()

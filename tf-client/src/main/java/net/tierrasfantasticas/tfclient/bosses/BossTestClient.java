@@ -500,8 +500,10 @@ public final class BossTestClient {
             TFClient.LOGGER.warn("Prueba de jefes: no se pudo grabar el fotograma {} del vídeo {}", videoFrame, name, ex);
         }
         videoFrame++;
-        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += 1 / 30.0;
-        if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.durationOf(videoWho) + 0.3) * 30)) {
+        // (1.3.160) con shaders la máquina de la prueba va a 1-2 fotogramas por segundo: pasos de 0,25 s (unos 20 por emote)
+        double stepS = System.getenv("TFCLIENT_PRUEBA_SHADERS") != null ? 0.25 : 1 / 30.0;
+        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += stepS;
+        if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.durationOf(videoWho) + 0.3) / stepS)) {
             TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
             endVideo(mc);
         }
