@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.161, EMOTES PULIDOS**: final sostenido (cámara lenta y acorde final, 1,3 s más), música más baja
+> e igual en todos, insignias a 256 px en emotes y estandarte, emotes solo para los que están a 24 bloques y la guitarra
+> del Concierto sin brazos dentro. §8 de **[`tf-client/CLANES.md`](tf-client/CLANES.md)**; prueba `[prueba-jefes=emotes]`.
+> El dueño avisó: lo siguiente son **crates nuevas y arreglar crates** (lee `tf-client/CRATES.md` antes).
+>
 > **1 nov 2026 — 1.3.160, 5 EMOTES Y MÚSICA EN LAS PROTECCIONES**: la tecla B abre la rueda de 5 emotes del clan (cada
 > uno con su animación y su música), estandarte y emotes sin corchetes, la etiqueta arcoíris animada en el chat, música
 > en las protecciones (solo dentro de la zona), guerra simétrica y escudo de guerra. Tabla en la §7 de

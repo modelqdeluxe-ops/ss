@@ -193,6 +193,21 @@ comprarlo en la tienda del clan»):
 Prueba corta: `[prueba-jefes=emotes]` (`bosses/BossTestEmotes`: bloqueos, compras, editor, cuadrícula y un vídeo de cada
 emote nuevo); con `[shaders]`, los 15 emotes en pasos de 0,25 s.
 
+## 8. La 1.3.161 (1 nov 2026): lo que dijo el dueño al ver los vídeos
+
+Literal: «mira ese, los brazos solapan la guitarra», «en la finalización de todas, terminan muy rápido, haz un mejor
+ending… que sea sostenido un poco más para que no se note que termine de golpe», «el logo sale borroso en algunas», «el
+volumen… está demasiado alto», «el sonido y volumen y animación es para el jugador y la persona cercana a él, nadie que no
+esté cerca suyo lo podrá ver ni escuchar».
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| Guitarra | `ClanEmotes2` (pose 13 y `concert`) | la guitarra más abajo y más inclinada (z 0,2, −65°), el brazo derecho más adelante y el cuerpo un poco hacia atrás: medido con las cajas de los brazos del modelo (ni la mano que rasguea ni la del mástil entran en la caja o el mástil) |
+| Final sostenido | `ClanEmotes.HOLD`, `SLOW_FROM`, `anim`; `emotes_sonido.py` (`HOLD`, `Track.coda`) | 1,3 s más: pasado el último golpe de la música, lo que queda va a cámara lenta (insignia, chispas y postura se apagan despacio) y la música sostiene el acorde final (cuerdas y coro) y se apaga en 1,4 s |
+| Logo nítido | `tools/pad/insignias.py` → `textures/clanes/insignias_hd` (256 px, `blur` en su `.mcmeta`), `ClanLooks.Look.badgeHd` | los emotes y el estandarte usan la de 256 (antes la de 64 ampliada, con escalones); el pad sigue con la de 64 |
+| Volumen | `emotes_sonido.py` (`RMS_DB = −24`, pico ≤ −3 dB) | todos igual de fuertes y más bajos (antes pico a −1 dB y RMS de −13 a −22 dB) |
+| Solo los cercanos | `ClanNet.sendEmote`, `ClanEmote.RANGE` (24), `ClanEmoteClient.start`, `sounds.json` (`attenuation_distance` 16) | el servidor manda el emote solo a él y a los que están a 24 bloques; el cliente tampoco lo hace si está más lejos; el sonido se apaga a los 16 bloques. La espera entre emotes pasa a 7 s |
+
 ## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 
 `/clan home` (un punto de teletransporte del clan), insignias exclusivas de pago, partículas del clan en su territorio,
