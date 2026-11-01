@@ -113,6 +113,14 @@ SETS = {
     'onicurse': ('oni_curse_pack/ItemsAdder Setup/ItemsAdder/contents/shine_oni/resourcepack/assets', 'shine_oni', COMMON),
     'deepsea': ('deepsea_relics/ItemsAdder Setup (Leather Amror)/contents/deepsea_relics/resourcepack/assets', 'deepsea_relics',
                 COMMON),
+    # (TF Client 1.3.163) otras 5 del dueño (1 nov 2026)
+    'dragonstone': ('DragonstoneAnimated/dragonstoneanimatedMrRJay/dragonstone_guardians/resourcepack/assets', 'dragonstone_guardians', COMMON),
+    'leviathan': ('Leviathan_Pack_Item_and_Tools/ItemsAdder Setup/ItemsAdder/contents/leviathanset/resourcepack/assets', 'leviathanset', COMMON),
+    'aceruin': ('Aceruin_Animated_Weapons_and_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/plny_aceruin_set/resourcepack/assets',
+                'plny_aceruin_set', COMMON),
+    'violet': ('Violet-Animated-Weapons-Tools-Set/ItemsAdder Setup/ItemsAdder/contents/violetset/resourcepack/assets', 'violetset', COMMON),
+    'runemoth': ('infernal_rune_moth_/infernal_rune_moth_/ItemsAdder Setup/ItemsAdder/contents/infernal_rune_moth/resourcepack/assets',
+                 'infernal_rune_moth', COMMON),
     # Kits de los rangos (y los cuatro que pasaron a las crates: akira, cardael, evergreen y soulskull)
     'eagle': ('Eagle/Nexo Setup (1.20-1.21.1)/pack/assets', 'eagle_ascendant', COMMON),
     'akira': ('Akira/Akira Set/ItemsAdder/data/resource_pack/assets', 'akiraset', COMMON),

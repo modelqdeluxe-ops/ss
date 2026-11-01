@@ -30,7 +30,8 @@ import net.tierrasfantasticas.tfclient.items.TFItemTypes;
 final class BossTestSets {
     private BossTestSets() {}
 
-    static final String[] SETS = {"dryadia", "spring", "drakegoat", "onicurse", "deepsea"};
+    // (1.3.163) las 5 siguientes; las de la 1.3.162 eran dryadia, spring, drakegoat, onicurse y deepsea
+    static final String[] SETS = {"dragonstone", "leviathan", "aceruin", "violet", "runemoth"};
     private static final int EACH = 110;
 
     private static Item item(String set, String slug) {
@@ -87,7 +88,7 @@ final class BossTestSets {
                     }
                     Item chest = item(set, "armor_chestplate"), legs = item(set, "armor_leggings"), feet = item(set, "armor_boots");
                     Item head = first(set, "hat", "helmet", "crown", "armor_helmet");
-                    Item wings = first(set, "wings", "wing");
+                    Item wings = first(set, "wings", "wing", "backpack");
                     Item weapon = first(set, "sword", "big_sword", "great_sword", "battle_axe");
                     boolean worn = wings instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
                     r.event("set " + set + ": " + n + " objetos (" + slugs.toString().trim() + "); armadura " + (chest != null && legs != null && feet != null)
