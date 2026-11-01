@@ -303,11 +303,12 @@ final class ClanEmotes2 {
                 for (int k = 0; k < 11; k++) {
                     double phi = -25 + k * 10 + flap * (0.6 + k * 0.05);
                     float len = (float) ((1.05 + 0.09 * k) * open * (0.92 + 0.08 * Math.sin(e * 9 + k)));
-                    int col = ClanEmoteFx.mix(ClanEmoteFx.mix(0xFFC040, 0xFF5A10, k / 10F), main, k > 7 ? 0.4F : 0F);
+                    // (de fuego, no blancas: las plumas se suman donde se cruzan, así que cada una va suave)
+                    int col = ClanEmoteFx.mix(ClanEmoteFx.mix(0xFFA020, 0xFF3A08, k / 10F), main, k > 7 ? 0.3F : 0F);
                     pose.pushPose();
                     pose.mulPose(Axis.ZP.rotationDegrees((float) (side * -(90 - phi))));
-                    ClanEmoteFx.quad(pose, vc, 0, len * 0.5F, 0, 0.3F + 0.025F * k, len, ClanEmoteFx.scale(col, 0.95F));
-                    ClanEmoteFx.quad(pose, vc, 0, len * 0.45F, 0.002F, 0.1F, len * 0.75F, ClanEmoteFx.scale(0xFFE8A0, 0.35F));
+                    ClanEmoteFx.quad(pose, vc, 0, len * 0.5F, 0, 0.3F + 0.025F * k, len, ClanEmoteFx.scale(col, 0.5F));
+                    ClanEmoteFx.quad(pose, vc, 0, len * 0.55F, 0.002F, 0.1F, len * 0.7F, ClanEmoteFx.scale(0xFFC860, 0.16F));
                     pose.popPose();
                 }
                 pose.popPose();
@@ -380,8 +381,8 @@ final class ClanEmotes2 {
                 double r = 0.5 + ph * 1.1, y = ph * 3.8;
                 ClanEmotes.confetti(pose, leaf, Math.cos(a) * r, y, Math.sin(a) * r, e * 5 + i, i % 3 == 0 ? 0x4F8F2A : i % 3 == 1 ? 0x6FB23A : 0xA88A3A, seed + i);
             }
-            // el polvo en el suelo
-            ClanEmoteFx.ring(pose, vc, 0.04, 1.0 + 0.6 * on, 0.5, ClanEmoteFx.scale(0xB8A890, (float) (0.4 * on)), 48);
+            // el polvo en el suelo (con su búfer pedido otra vez: el de antes ya se cerró al pedir el de las hojas)
+            ClanEmoteFx.ring(pose, ClanEmoteFx.light(b, ClanEmoteFx.GLOW), 0.04, 1.0 + 0.6 * on, 0.5, ClanEmoteFx.scale(0xB8A890, (float) (0.4 * on)), 48);
         }
         // la insignia sube por el centro (0,8–3,8) y se queda arriba
         if (e > 0.8 && e < 3.9) {
