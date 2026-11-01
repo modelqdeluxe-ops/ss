@@ -1269,5 +1269,9 @@
  "item.tfclient.banco_clan": "Banco del clan",
  "key.categories.revivemod": "Revive Mod",
  "key.revivemod.surrender": "Rendirse / Morir (manten pulsado)",
- "key.revivemod.self_revive": "Auto-revivir (manten pulsado)"
+ "key.revivemod.self_revive": "Auto-revivir (manten pulsado)",
+ "key.tfclient.emote_clan": "Emote del clan",
+ "block.tfclient.estandarte_clan": "Estandarte del clan",
+ "item.tfclient.estandarte_clan": "Estandarte del clan",
+ "subtitles.tfclient.clanes.emote": "Fanfarria del clan"
 }

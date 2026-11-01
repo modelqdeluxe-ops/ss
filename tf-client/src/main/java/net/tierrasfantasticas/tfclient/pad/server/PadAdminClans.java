@@ -52,19 +52,30 @@ public final class PadAdminClans {
     /** Los tipos de misión (los de los oficios). */
     static final List<String> TYPES = List.of("romper", "colocar", "matar", "pescar", "cosechar", "criar", "fabricar", "fundir", "encantar");
     /** Los tipos de oferta de la tienda del clan. */
-    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "objeto", "verdes", "comando");
+    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "estandarte", "objeto", "verdes", "comando");
 
     private PadAdminClans() {}
 
     /** Un número de clanes.json: su sitio (sección.clave), cómo se llama, para qué sirve, su icono, límites y clase. */
     private record Num(String id, String title, String help, Item icon, double min, double max, int kind) {
+        /** La sección (puede ser anidada: «guerra.pvp»). */
         String section() {
-            return id.substring(0, id.indexOf('.'));
+            return id.substring(0, id.lastIndexOf('.'));
         }
 
         String key() {
-            return id.substring(id.indexOf('.') + 1);
+            return id.substring(id.lastIndexOf('.') + 1);
         }
+    }
+
+    /** El objeto de una sección (anidada con puntos) dentro de r; lo crea si falta (r cambia). */
+    private static JsonObject sect(JsonObject r, String path) {
+        JsonObject cur = r;
+        for (String part : path.split("\\.")) {
+            if (!cur.has(part) || !cur.get(part).isJsonObject()) cur.add(part, new JsonObject());
+            cur = cur.getAsJsonObject(part);
+        }
+        return cur;
     }
 
     private static final String PRICE = "clanes.precio";
@@ -103,6 +114,8 @@ public final class PadAdminClans {
 
     private static final List<Num> WAR = List.of(
             new Num("guerra.dias", "Días que dura", "Gana quien llegue antes al 100 % o el que más lleve al final.", Items.CLOCK, 1, 60, INT),
+            new Num("guerra.pvp.cantidad", "PvP: derrotas para el 100 %", "El objetivo PvP (para un clan de 5): derrotar a los del clan rival.", Items.IRON_SWORD, 1, 1000, INT),
+            new Num("guerra.pvp.minutos", "PvP: minutos entre la misma pareja", "Matar al mismo otra vez no cuenta hasta entonces (contra el farmeo).", Items.CLOCK, 0, 1440, INT),
             new Num("guerra.objetivos", "Objetivos", "Cuántos de la lista salen en cada guerra.", Items.TARGET, 1, 20, INT),
             new Num("guerra.monedas", "Clan Coins del ganador", "", Items.PRISMARINE_CRYSTALS, 0, 100, INT),
             new Num("guerra.prestigio", "Prestigio del ganador", "", Items.GOLDEN_HELMET, 0, 100_000, INT),
@@ -116,7 +129,7 @@ public final class PadAdminClans {
     }
 
     private static String shown(Num n, JsonObject r) {
-        JsonObject s = TFJson.obj(r, n.section());
+        JsonObject s = sect(r.deepCopy(), n.section());
         return switch (n.kind) {
             case DEC -> "x" + PadClanConfig.decimal(TFJson.dec(s, n.key(), 1));
             case PCT -> Math.round(TFJson.dec(s, n.key(), 0) * 100) + " %";
@@ -170,6 +183,7 @@ public final class PadAdminClans {
             case "potenciador" -> "Potenciador";
             case "objeto" -> "Objeto";
             case "verdes" -> "Verdes para todos";
+            case "estandarte" -> "Estandarte del clan";
             case "comando" -> "Comandos";
             default -> t;
         };
@@ -217,6 +231,9 @@ public final class PadAdminClans {
                 }
                 case "guerra" -> {
                     b.header("Pulsa un objetivo para cambiarlo; SÍ/NO: si sale o no.");
+                    boolean pvp = TFJson.bool(sect(r.deepCopy(), "guerra.pvp"), "activa", true);
+                    b.row(PadAdminUi.toggle(new ItemStack(Items.IRON_SWORD), "Objetivo PvP en cada guerra", "Derrotar a los del clan rival; los demás objetivos no son de matar.",
+                            pvp, "Sí: uno de los objetivos es PvP (opcional: da puntos como los demás).", "No: solo objetivos de trabajo.", "pvp"));
                     for (Num n : WAR) b.row(PadAdminUi.value(new ItemStack(n.icon), n.title, n.help, shown(n, r), "f:" + n.id, f.equals(n.id)));
                     missionRows(b, r, 'w');
                     if (f.isEmpty()) b.input("nueva", "NOMBRE DE UN OBJETIVO NUEVO", 40, "AÑADIR");
@@ -360,9 +377,12 @@ public final class PadAdminClans {
                         String.valueOf(PadClanShop.hours(o)), "f:horas", f.equals("horas")));
                 case "verdes" -> b.row(PadAdminUi.value(new ItemStack(Items.EMERALD), "Verdes para cada miembro", "",
                         String.valueOf(Math.max(1, TFJson.num(o, "cantidad", 1))), "f:cantidad", f.equals("cantidad")));
+                case "estandarte" -> b.row(PadAdminUi.value(new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANNER_ITEM.get()),
+                        "Estandartes por compra", "Llevan la insignia y la etiqueta del clan (las de ahora).",
+                        String.valueOf(Math.max(1, TFJson.num(o, "cantidad", 1))), "f:cantidad", f.equals("cantidad")));
                 case "objeto" -> {
                     ItemStack s = PadClanShop.stored(o);
-                    b.row(PadAdminUi.button(s, "El objeto", s.getCount() + " × " + s.getHoverName().getString() + ". Cámbialo por lo que llevas en la mano.",
+                    b.row(PadAdminUi.button(s, "El objeto", s.getCount() + " × " + net.tierrasfantasticas.tfclient.util.TFNames.es(s) + ". Cámbialo por lo que llevas en la mano.",
                             "", PadView.Btn.of("PONER EL DE LA MANO", "mano:" + id, PadView.GOLD)));
                 }
                 case "comando" -> {
@@ -377,7 +397,7 @@ public final class PadAdminClans {
                 default -> {
                 }
             }
-            if (!type.equals("proteccion") && !type.equals("objeto")) {
+            if (!type.equals("proteccion") && !type.equals("objeto") && !type.equals("estandarte")) {
                 b.row(PadAdminUi.button(icon(o), "Icono", "El objeto que sale en su fila.", "", PadView.Btn.of("CAMBIAR", "tab:pi:" + tab, PadView.BLUE)));
             }
             boolean sure = PadServer.confirming(player, APP_ID + ".borrar:" + tab);
@@ -412,7 +432,7 @@ public final class PadAdminClans {
                     if (chosen.isEmpty() || o == null) return null;
                     o.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(chosen.getItem())));
                     PadClanConfig.save(r);
-                    TFPadNet.notice(player, "Icono: " + chosen.getHoverName().getString() + ".");
+                    TFPadNet.notice(player, "Icono: " + net.tierrasfantasticas.tfclient.util.TFNames.es(chosen) + ".");
                     return what;
                 }
                 return null;
@@ -424,6 +444,13 @@ public final class PadAdminClans {
             String arg = parts.length > 1 ? parts[1] : "";
             switch (parts[0]) {
                 case "f" -> PadAdminUi.editField(player, APP_ID, tab, arg.equals(PadAdminUi.field(player, APP_ID, tab)) ? "" : arg);
+                case "pvp" -> {
+                    JsonObject p = sect(r, "guerra.pvp");
+                    boolean on = !TFJson.bool(p, "activa", true);
+                    p.addProperty("activa", on);
+                    PadClanConfig.save(r);
+                    TFPadNet.notice(player, on ? "Las guerras nuevas tendrán un objetivo PvP." : "Las guerras nuevas no tendrán PvP.");
+                }
                 case "act" -> {
                     // act:m:id (en la lista) o act:m:id desde su ficha
                     if (arg.length() < 3) return null;
@@ -483,7 +510,7 @@ public final class PadAdminClans {
                         if (!tab.equals("tienda")) return null;
                         target = new JsonObject();
                         target.addProperty("id", newId(a, held.getHoverName().getString(), "o_"));
-                        target.addProperty("nombre", held.getHoverName().getString());
+                        target.addProperty("nombre", net.tierrasfantasticas.tfclient.util.TFNames.es(held));
                         target.addProperty("descripcion", "Para quien la compra (el líder o un colíder).");
                         target.addProperty("precio", 10);
                         target.addProperty("maximo", 0);
@@ -495,7 +522,7 @@ public final class PadAdminClans {
                     target.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(held.getItem())));
                     target.addProperty("tipo", "objeto");
                     PadClanConfig.save(r);
-                    TFPadNet.notice(player, held.getCount() + " × " + held.getHoverName().getString() + " en la tienda del clan" + (o == null ? " (apagada: ponle precio y enciéndela)." : "."));
+                    TFPadNet.notice(player, held.getCount() + " × " + net.tierrasfantasticas.tfclient.util.TFNames.es(held) + " en la tienda del clan" + (o == null ? " (apagada: ponle precio y enciéndela)." : "."));
                     return "t:" + TFJson.str(target, "id", "");
                 }
                 case "tipo", "otipo", "piedra" -> {
@@ -561,7 +588,7 @@ public final class PadAdminClans {
             }
             Num num = num(f);
             if (num != null) {
-                JsonObject s = TFJson.obj(r, num.section());
+                JsonObject s = sect(r, num.section());
                 if (num.kind == INT) {
                     long n = PadAdminUi.number(player, v, (long) num.min, (long) num.max);
                     if (n < 0) return null;
@@ -583,7 +610,6 @@ public final class PadAdminClans {
                     }
                     s.addProperty(num.key(), Math.round(d * 1000) / 1000.0);
                 }
-                r.add(num.section(), s);
                 PadClanConfig.save(r);
                 PadAdminUi.stopEditing(player, APP_ID);
                 TFPadNet.notice(player, "Guardado: " + num.title + " = " + shown(num, r) + ".");

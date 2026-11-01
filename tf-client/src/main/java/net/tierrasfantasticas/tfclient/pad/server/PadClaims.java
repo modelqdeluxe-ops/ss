@@ -108,10 +108,10 @@ public final class PadClaims {
                     want(FlagId.PVP_ALL, "¿PvP libre?", "Todos se pueden atacar aquí.", Items.DIAMOND_SWORD),
                     want(FlagId.ALERTS, "¿Avisarte si entra alguien?", Items.BELL))),
             new Section("Ventajas de zona grande (para ti y tus miembros)", List.of(
-                    want(FlagId.EFFECT_REGEN, "¿Regeneración?", "Os curáis solos en la zona.", Items.GOLDEN_APPLE),
-                    want(FlagId.EFFECT_RESIST, "¿Resistencia?", "Recibís menos daño en la zona.", Items.IRON_CHESTPLATE),
+                    want(FlagId.EFFECT_REGEN, "¿Regeneración?", "Se curan solos en la zona.", Items.GOLDEN_APPLE),
+                    want(FlagId.EFFECT_RESIST, "¿Resistencia?", "Reciben menos daño en la zona.", Items.IRON_CHESTPLATE),
                     want(FlagId.EFFECT_SPEED, "¿Velocidad?", "Vais más rápido en la zona.", Items.SUGAR),
-                    want(FlagId.ALLOW_FLIGHT, "¿Volar?", "Voláis dentro de la zona.", Items.FEATHER))));
+                    want(FlagId.ALLOW_FLIGHT, "¿Volar?", "Vuelan dentro de la zona.", Items.FEATHER))));
 
     /** Los dos botones de una pregunta: el que vale ahora, verde; el otro, gris (pulsarlo la cambia). */
     private static PadView.Btn answer(String label, boolean chosen, String action) {

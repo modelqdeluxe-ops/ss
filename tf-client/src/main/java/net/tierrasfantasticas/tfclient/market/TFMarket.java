@@ -210,7 +210,7 @@ public final class TFMarket {
      * price. Devuelve el error o null si se publicó.
      */
     public static String publish(ServerPlayer player, int slot, ItemStack snapshot, long price) {
-        if (price <= 0 || price > MAX_PRICE) return "Ese precio no vale. Escribe solo el número (por ejemplo 1500 o 5k).";
+        if (price <= 0 || price > MAX_PRICE) return "Ese precio no sirve. Escribe solo el número (por ejemplo 1500 o 5k).";
         if (slot < 0 || slot >= player.getInventory().items.size()) return "Elige qué vender.";
         ItemStack stack = player.getInventory().items.get(slot);
         if (snapshot != null && !ItemStack.matches(stack, snapshot)) return "Ese objeto ya no está donde estaba. Vuelve a elegirlo.";

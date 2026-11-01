@@ -75,6 +75,40 @@ public final class PadClans {
     // Datos
     // ---------------------------------------------------------------------------------------------------------------
 
+    /**
+     * (1.3.159) Para ClanLooks (lo que ve cada TF Client de cada clan): id → (etiqueta, color, efecto de la etiqueta e
+     * insignia) de todos los clanes, y de qué clan es cada jugador conectado.
+     */
+    public static com.google.gson.JsonObject looks(net.minecraft.server.MinecraftServer server) {
+        JsonObject out = new JsonObject(), cl = new JsonObject(), pl = new JsonObject();
+        for (var e : clans().entrySet()) {
+            if (!e.getValue().isJsonObject()) continue;
+            JsonObject c = e.getValue().getAsJsonObject();
+            JsonObject o = new JsonObject();
+            int rgb = rgbOf(c);
+            o.addProperty("t", TFJson.str(c, "etiqueta", "?"));
+            o.addProperty("n", TFJson.str(c, "nombre", "?"));
+            o.addProperty("r", rgb);
+            o.addProperty("b", PadClanProgress.badge(c).id());
+            o.addProperty("f", net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, rgb).encode());
+            cl.add(e.getKey(), o);
+        }
+        if (server != null) {
+            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                String id = clanIdOf(p.getUUID());
+                if (id != null) pl.addProperty(p.getUUID().toString(), id);
+            }
+        }
+        out.add("c", cl);
+        out.add("p", pl);
+        return out;
+    }
+
+    /** (1.3.159) El clan con ese id (para los bloques del clan: ClanBlockEvents), o null. */
+    public static JsonObject clanForEvents(String id) {
+        return clan(id);
+    }
+
     static JsonObject clans() {
         return STORE_IMPL.obj(STORE_IMPL.root, "clanes");
     }
@@ -104,8 +138,9 @@ public final class PadClans {
         String id = clanIdOf(uuid);
         if (id == null) return null;
         JsonObject c = clan(id);
-        return Component.literal("[" + TFJson.str(c, "etiqueta", "?") + "]")
-                .withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(net.minecraft.network.chat.TextColor.fromRgb(rgbOf(c))));
+        // (1.3.159) con su efecto (degradado, arcoíris u onda) como se ve en el instante 0: el TF Client lo anima
+        return net.tierrasfantasticas.tfclient.clans.ClanTagFx.component("[" + TFJson.str(c, "etiqueta", "?") + "]",
+                net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, rgbOf(c)), 0, false);
     }
 
     public static String clanNameOf(UUID uuid) {
@@ -268,8 +303,9 @@ public final class PadClans {
         JsonObject c = clan(id);
         String tag = TFJson.str(c, "etiqueta", "?").replaceAll("[^A-Za-z0-9_\\-]", "");
         // (1.3.132) por la API (sin mensajes de LuckPerms) y con el color exacto (&#RRGGBB)
+        // (1.3.159) con su efecto letra a letra (degradado o arcoíris fijo: el chat y el TAB no se animan)
         net.tierrasfantasticas.tfclient.server.TFLuckPerms.setSuffix(server, p.getUUID(), name,
-                " &" + String.format("#%06X", rgbOf(c)) + "[" + tag + "]", 50);
+                " " + net.tierrasfantasticas.tfclient.clans.ClanTagFx.legacyHex("[" + tag + "]", net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, rgbOf(c))), 50);
     }
 
     private static void tellClan(JsonObject c, String text) {
@@ -371,9 +407,9 @@ public final class PadClans {
                 b.selected("misiones");
                 return PadClanViews.missions(b, player, id, c);
             }
-            if (tab.equals("banco") || tab.equals("banco_reg")) {
+            if (tab.equals("banco") || tab.equals("banco_reg") || tab.equals("banco_meter")) {
                 b.selected("banco");
-                return PadClanBank.view(b, player, id, c, tab.equals("banco_reg"));
+                return PadClanBank.view(b, player, id, c, tab);
             }
             if (tab.equals("guerra")) {
                 b.selected("guerra");
@@ -465,8 +501,21 @@ public final class PadClans {
                 if (!v.startsWith("#")) v = "#" + v;
                 if (!v.matches("#[0-9a-fA-F]{6}")) return "Escribe un color como #FF8800.";
                 c.addProperty("color", v.toLowerCase(java.util.Locale.ROOT));
+                // (1.3.159) un color solo = etiqueta de un color (sin degradado ni arcoíris)
+                c.remove("tagEfecto");
                 STORE_IMPL.changed();
                 for (UUID u : members(c)) refreshName(u);
+                net.tierrasfantasticas.tfclient.clans.ClanLooks.dirty();
+                return null;
+            }
+            // (1.3.159) el efecto de la etiqueta (el editor del pad: «tagfx:modo|RRGGBB,RRGGBB|velocidad»)
+            if (action.startsWith("tagfx:")) {
+                if (!officer) return null;
+                net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx fx = net.tierrasfantasticas.tfclient.clans.ClanTagFx.decode(action.substring(6), rgbOf(c));
+                net.tierrasfantasticas.tfclient.clans.ClanTagFx.store(c, fx);
+                STORE_IMPL.changed();
+                for (UUID u : members(c)) refreshName(u);
+                net.tierrasfantasticas.tfclient.clans.ClanLooks.dirty();
                 return null;
             }
             // (1.3.156) la insignia del clan (ESTILO)
@@ -772,6 +821,23 @@ public final class PadClans {
         STORE_IMPL.changed();
     }
 
+    /** (1.3.159) Para la prueba: mete a ese jugador (un bot) en el clan como miembro raso. */
+    public static void testJoin(String id, UUID u) {
+        JsonObject c = clan(id);
+        if (c == null) return;
+        List<UUID> all = new ArrayList<>(members(c));
+        if (!all.contains(u)) all.add(u);
+        setMembers(c, all);
+        join(u, id);
+        STORE_IMPL.changed();
+    }
+
+    /** (1.3.159) Para la prueba: el efecto de la etiqueta del clan («modo|colores|velocidad»). */
+    public static String testFx(String id) {
+        JsonObject c = clan(id);
+        return c == null ? "" : net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, rgbOf(c)).encode();
+    }
+
     /** (1.3.156) Para la prueba: el nombre de un jugador de mentira (para las listas). */
     public static void testName(UUID uuid, String name) {
         PadStats.STORE_IMPL.player(uuid).addProperty("nombre", name);
@@ -844,7 +910,7 @@ public final class PadClans {
     }
 
     /** El color de la etiqueta en RGB: «#rrggbb» (editor de color) o un nombre de los de antes («gold»…). */
-    static int rgbOf(JsonObject c) {
+    public static int rgbOf(JsonObject c) {
         String v = TFJson.str(c, "color", "gold");
         if (v.matches("#[0-9a-fA-F]{6}")) return Integer.parseInt(v.substring(1), 16);
         ChatFormatting f = ChatFormatting.getByName(v);

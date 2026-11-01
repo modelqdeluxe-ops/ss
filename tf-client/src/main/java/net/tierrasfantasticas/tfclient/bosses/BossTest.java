@@ -293,7 +293,9 @@ public final class BossTest {
             // (1.3.156) «arreglos»: la ficha de la GTS con un tooltip que falla (Pretty Pipes) y las flags de spawn de las
             // protecciones; «clanes»: Clan Coins, nivel, misiones, insignias, paleta, banco, duelos, guerras, alianzas y tienda
             // (1.3.157) «revivir»: el Revive Mod dentro del TF Client y rematar (jugadores sí, mobs no, /tf reload)
-            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir"}) {
+            // (1.3.159) «clanes2»: lo nuevo de los clanes (cofre, estandarte, etiqueta arcoíris, emote con vídeo, guerra PvP,
+            // duelo con botones) y del pad (fondo en todas las apps, tienda con buscador, banco compacto)
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir", "clanes2"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -315,8 +317,8 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id))
-                && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id) || "clanes2".equals(r.id))
+                && !SHOTS_PENDING.isEmpty() && shotWait++ < 200 || videoBusy;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
         player.getFoodData().setFoodLevel(20);
@@ -390,6 +392,10 @@ public final class BossTest {
         }
         if ("revivir".equals(r.id)) {
             if (!waitShot) BossTestRevive.step(t, server, level, player, r);
+            return;
+        }
+        if ("clanes2".equals(r.id)) {
+            if (!waitShot) BossTestClanes2.step(t, server, level, player, r);
             return;
         }
         switch (phase) {
@@ -777,6 +783,20 @@ public final class BossTest {
     static volatile String typePad;
     /** (1.3.134) Lo que hace el cliente en la app Música (BossTestClient.music): crear, compartir, lista:…, hover, nohover. */
     static volatile String musicCmd;
+    /** (1.3.159) Para el cliente: el fondo del pad («c:limon», «f:prueba_fondo.png», «tema»…). */
+    static volatile String wallpaper;
+    /** (1.3.159) Para el cliente: esconder la interfaz (F1) en las capturas del mundo (true/false). */
+    static volatile Boolean hideHud;
+    /** (1.3.159) Para el cliente: la cámara («frente», «espalda», «primera»). */
+    static volatile String camera;
+    /** (1.3.159) Para el cliente: pulsar con el ratón el botón del chat que diga esto (en el último reto de duelo). */
+    static volatile String chatClick;
+    /** (1.3.159) Para el cliente: grabar un vídeo (fotograma a fotograma, 30 por segundo de juego) con este nombre. */
+    static volatile String video;
+    /** Mientras se graba, la prueba espera. */
+    static volatile boolean videoBusy;
+    /** (1.3.159) Lo que vio el cliente (para el informe). */
+    static volatile String clientSaw = "";
     /** (1.3.138) Alas que el cliente se pone solo en su copia de Curios («poner» / «quitar»; BossTestClient). */
     static volatile String fakeWings;
     /** (1.3.137) Lo que dibuja el cliente en el pecho y la espalda del jugador (TFItemsClient.BackLayer.debug). */

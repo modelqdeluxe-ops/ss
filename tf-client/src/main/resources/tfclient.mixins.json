@@ -53,7 +53,8 @@
     "crates.LevelRendererMixin",
     "SoundBufferLibraryMixin",
     "ConnectScreenMixin",
-    "ItemEntityRendererMixin"
+    "ItemEntityRendererMixin",
+    "PlayerTabOverlayClanMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -3,9 +3,11 @@ tapa cerrada, de assets/fscrates/models/block), encogido para que quepa en un bl
 «los cofres siguen siendo una mierda, saca un modelo de las crates, uno de madera, de los modelos 3D de las crates del
 mod, no de la web». Usa la textura de la crate tal cual (fscrates:block/…). Las rotaciones de cada pieza se quedan igual
 (escalar no cambia los ángulos: siguen siendo los que admite Minecraft, ±22,5 y ±45).
-Uso: python3 tools/pad/banco_modelo.py [crate] [--lado N] [--ver salida.png]
+(1.3.159, el dueño: «el cofre se ve muy pequeño, hazlo más grande») a la escala de la crate en el mundo (la de
+CrateStyles: 0,8299 para crate_lvl1), no encogido a un bloque: unos 20 píxeles de ancho y 18 de alto, como las crates.
+Uso: python3 tools/pad/banco_modelo.py [crate] [--escala E | --lado N] [--ver salida.png]
   crate: crate_lvl1 (la de fábrica), crates1_lvl1, toro_minotaur, toro_xi, cine_legendary… (con su _lid si lo tiene).
-  --lado: lo que mide de ancho como mucho, en píxeles de bloque (15)."""
+  --escala: la escala del modelo (0,8299, la de la crate en el mundo); --lado: o lo que mide de ancho, en píxeles."""
 import json
 import os
 import sys
@@ -20,11 +22,15 @@ FRONT_SOUTH = {'cine_legendary', 'crates1_lvl1'}
 
 def main():
     args = sys.argv[1:]
-    crate, side, ver = 'crate_lvl1', 15.0, None
+    crate, side, ver, scale = 'crate_lvl1', None, None, 0.8299
     i = 0
     while i < len(args):
         if args[i] == '--lado':
             side = float(args[i + 1])
+            scale = None
+            i += 2
+        elif args[i] == '--escala':
+            scale = float(args[i + 1])
             i += 2
         elif args[i] == '--ver':
             ver = args[i + 1]
@@ -40,7 +46,7 @@ def main():
         elements += m['elements']
     lo = [min(e['from'][k] for e in elements) for k in range(3)]
     hi = [max(e['to'][k] for e in elements) for k in range(3)]
-    s = side / max(hi[0] - lo[0], hi[2] - lo[2])
+    s = scale if scale else side / max(hi[0] - lo[0], hi[2] - lo[2])
     cx, cz = (lo[0] + hi[0]) / 2, (lo[2] + hi[2]) / 2
 
     def tr(p):
@@ -64,6 +70,14 @@ def main():
                        + '» de TF Crates (base y tapa), a escala ' + str(round(s, 4)) + '. No editar a mano.',
         'parent': 'minecraft:block/block',
         'render_type': 'minecraft:cutout',
+        # (1.3.159) en el mundo lo dibuja ClanBankRenderer a plena luz (brilla en la oscuridad, como las crates); el
+        # modelo sirve para eso y para el objeto en la mano y en el inventario
+        'display': {'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.5, 0.5, 0.5]},
+                    'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.25, 0.25, 0.25]},
+                    'fixed': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [0.5, 0.5, 0.5]},
+                    'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, 2.5, 0], 'scale': [0.3, 0.3, 0.3]},
+                    'firstperson_righthand': {'rotation': [0, 45, 0], 'translation': [0, 0, 0], 'scale': [0.32, 0.32, 0.32]},
+                    'firstperson_lefthand': {'rotation': [0, 225, 0], 'translation': [0, 0, 0], 'scale': [0.32, 0.32, 0.32]}},
         'textures': tex,
         'elements': out,
     }

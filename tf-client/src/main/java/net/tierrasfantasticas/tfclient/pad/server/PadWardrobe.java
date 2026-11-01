@@ -232,7 +232,7 @@ public final class PadWardrobe {
             // abajo, tu skin de siempre y las tuyas, cada una en 3D en su tarjeta
             List<String> lines = new ArrayList<>();
             lines.add(wearing == null ? "Llevas la skin de tu cuenta de Minecraft." : "Llevas «" + wearing.name() + "».");
-            lines.add(mine.isEmpty() ? "Añade skins de tu ordenador o de cualquier jugador con AÑADIR SKIN."
+            lines.add(mine.isEmpty() ? "Agrega skins de tu computadora o de cualquier jugador con AÑADIR SKIN."
                     : "Pulsa una skin de abajo para verla o ponértela.");
             b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), wearing == null ? "Tu skin" : wearing.name(), WARDROBE_COLOR, lines, -1,
                     mine.size() + "/" + SkinServer.MAX_SKINS, wearing == null ? null : PadView.Btn.of("QUITÁRMELA", "skin:original", PadView.RED), null)
@@ -254,7 +254,7 @@ public final class PadWardrobe {
         private static PadView skinView(ServerPlayer player, PadView.Builder b, SkinServer.Skin sk) {
             SkinServer.sendImages(player, List.of(sk.hash()));
             boolean on = sk.id().equals(SkinServer.worn(player.getUUID()));
-            String from = sk.from().startsWith("jugador:") ? "De " + sk.from().substring(8) + "." : "Importada de tu ordenador.";
+            String from = sk.from().startsWith("jugador:") ? "De " + sk.from().substring(8) + "." : "Importada de tu computadora.";
             b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR,
                     List.of(from, "Brazos " + (sk.slim() ? "finos (Alex)." : "normales (Steve).") + (on ? " La llevas puesta." : "")),
                     -1, "", null, null).image(SkinServer.model(sk.hash(), sk.slim())));

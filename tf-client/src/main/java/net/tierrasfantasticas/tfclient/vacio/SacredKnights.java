@@ -78,7 +78,7 @@ public final class SacredKnights {
                                     "La piel del Coloso del Vacío, la primera criatura que cayó cuando el ojo se abrió. La Orden la forjó en armadura: el Vacío no se come lo que es suyo, y quien la viste camina por él sin que lo corroa."),
                             new Topic("¿Cómo la consigo?",
                                     "Demuestra que puedes con lo que el Vacío esconde: derrota a cinco criaturas de las grietas. Entonces será tuya. Pero escucha: el Coloso solo dio una piel, y la Orden forja una armadura por guerrero. No hay segunda."),
-                            new Topic("¿Por qué la guardáis aquí?",
+                            new Topic("¿Por qué la guardan aquí?",
                                     "Porque fuera del Velo nada dura. Aquí la luz la conserva... y nos recuerda que hasta lo que nace del Vacío puede servir a la luz.")),
                     "El Coloso aún espera a su portador."),
             new Def(4, "Dama Liora", "La Jardinera", "jade", "minecraft:cherry_sapling", 22, -1, 2, 6F, 270F,

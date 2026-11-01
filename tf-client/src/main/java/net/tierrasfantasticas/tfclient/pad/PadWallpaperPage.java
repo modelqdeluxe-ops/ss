@@ -35,7 +35,7 @@ final class PadWallpaperPage extends PadPage {
 
     @Override
     String title() {
-        return "FONDO DEL MENÚ";
+        return "FONDO DEL PAD";
     }
 
     @Override

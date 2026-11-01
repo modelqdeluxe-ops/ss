@@ -66,28 +66,53 @@ public final class PadClanProgress {
     /**
      * Las misiones de clan (inicio del juego: nada del Nether ni del End; todas se pueden cumplir con lo del Overworld).
      * La meta es para un clan de 5; cambia con los miembros ({@link #goal}).
+     * (1.3.159, el dueño: «las misiones hazlas un poco más exigentes, porque las hacen en grupo») las metas, x1,6 de las
+     * de la 1.3.156 ({@link #OLD_AMOUNTS}: clanes.json se pone al día solo en las que no se tocaron).
      */
     public static final List<Mission> FACTORY = List.of(
-            m("cantera", "Cantera del clan", "Rompan piedra entre todos.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 20000, 1, 400, 30),
-            m("lenadores", "Leñadores", "Talen troncos de cualquier árbol.", Items.OAK_LOG, "romper", "#minecraft:logs", 4000, 1, 400, 30),
-            m("carbon", "Vetas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 1200, 1, 350, 25),
-            m("hierro", "Hierro para el clan", "Minen hierro.", Items.RAW_IRON, "romper", "#forge:ores/iron", 700, 2, 450, 35),
-            m("cobre", "Brillo de cobre", "Minen cobre.", Items.RAW_COPPER, "romper", "#forge:ores/copper", 900, 1, 350, 25),
-            m("excavadores", "Excavadores", "Caven tierra, arena y grava.", Items.IRON_SHOVEL, "romper", "#minecraft:mineable/shovel", 12000, 1, 350, 25),
-            m("cosecha", "Gran cosecha", "Cosechen cultivos maduros.", Items.WHEAT, "cosechar", "#minecraft:crops", 5000, 1, 400, 30),
-            m("cazadores", "Noche de cacería", "Derroten monstruos.", Items.BONE, "matar", "hostil", 1200, 2, 450, 35),
-            m("zombis", "Plaga de zombis", "Derroten zombis.", Items.ROTTEN_FLESH, "matar", "minecraft:zombie", 500, 1, 350, 25),
-            m("esqueletos", "Huesos al viento", "Derroten esqueletos.", Items.ARROW, "matar", "minecraft:skeleton", 400, 1, 350, 25),
-            m("aranas", "Telarañas", "Derroten arañas.", Items.STRING, "matar", "minecraft:spider", 350, 1, 350, 25),
-            m("creepers", "Sin explosiones", "Derroten creepers.", Items.GUNPOWDER, "matar", "minecraft:creeper", 200, 2, 400, 30),
-            m("pesca", "Flota pesquera", "Pesquen lo que sea.", Items.COD, "pescar", "*", 350, 1, 400, 30),
-            m("granja", "Granja del clan", "Críen animales.", Items.WHEAT_SEEDS, "criar", "*", 250, 1, 350, 25),
-            m("antorchas", "Luz para todos", "Fabriquen antorchas.", Items.TORCH, "fabricar", "minecraft:torch", 1500, 1, 300, 20),
-            m("herramientas", "Forja del clan", "Fabriquen herramientas.", Items.IRON_PICKAXE, "fabricar", "#forge:tools", 120, 1, 400, 30),
-            m("pan", "Panadería", "Hagan pan.", Items.BREAD, "fabricar", "minecraft:bread", 1000, 1, 300, 20),
-            m("lingotes", "Fundición", "Fundan lingotes.", Items.IRON_INGOT, "fundir", "#forge:ingots", 1500, 2, 400, 30),
-            m("constructores", "Constructores", "Coloquen bloques nuevos.", Items.BRICKS, "colocar", "*", 15000, 1, 400, 30),
-            m("encantadores", "Biblioteca arcana", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 120, 2, 450, 35));
+            m("cantera", "Cantera del clan", "Rompan piedra entre todos.", Items.COBBLESTONE, "romper", "#minecraft:base_stone_overworld", 32000, 1, 400, 30),
+            m("lenadores", "Leñadores", "Talen troncos de cualquier árbol.", Items.OAK_LOG, "romper", "#minecraft:logs", 6400, 1, 400, 30),
+            m("carbon", "Vetas de carbón", "Minen carbón.", Items.COAL, "romper", "#forge:ores/coal", 2000, 1, 350, 25),
+            m("hierro", "Hierro para el clan", "Minen hierro.", Items.RAW_IRON, "romper", "#forge:ores/iron", 1100, 2, 450, 35),
+            m("cobre", "Brillo de cobre", "Minen cobre.", Items.RAW_COPPER, "romper", "#forge:ores/copper", 1500, 1, 350, 25),
+            m("excavadores", "Excavadores", "Caven tierra, arena y grava.", Items.IRON_SHOVEL, "romper", "#minecraft:mineable/shovel", 19000, 1, 350, 25),
+            m("cosecha", "Gran cosecha", "Cosechen cultivos maduros.", Items.WHEAT, "cosechar", "#minecraft:crops", 8000, 1, 400, 30),
+            m("cazadores", "Noche de cacería", "Derroten monstruos.", Items.BONE, "matar", "hostil", 2000, 2, 450, 35),
+            m("zombis", "Plaga de zombis", "Derroten zombis.", Items.ROTTEN_FLESH, "matar", "minecraft:zombie", 800, 1, 350, 25),
+            m("esqueletos", "Huesos al viento", "Derroten esqueletos.", Items.ARROW, "matar", "minecraft:skeleton", 650, 1, 350, 25),
+            m("aranas", "Telarañas", "Derroten arañas.", Items.STRING, "matar", "minecraft:spider", 550, 1, 350, 25),
+            m("creepers", "Sin explosiones", "Derroten creepers.", Items.GUNPOWDER, "matar", "minecraft:creeper", 320, 2, 400, 30),
+            m("pesca", "Flota pesquera", "Pesquen lo que sea.", Items.COD, "pescar", "*", 560, 1, 400, 30),
+            m("granja", "Granja del clan", "Críen animales.", Items.WHEAT_SEEDS, "criar", "*", 400, 1, 350, 25),
+            m("antorchas", "Luz para todos", "Fabriquen antorchas.", Items.TORCH, "fabricar", "minecraft:torch", 2400, 1, 300, 20),
+            m("herramientas", "Forja del clan", "Fabriquen herramientas.", Items.IRON_PICKAXE, "fabricar", "#forge:tools", 200, 1, 400, 30),
+            m("pan", "Panadería", "Hagan pan.", Items.BREAD, "fabricar", "minecraft:bread", 1600, 1, 300, 20),
+            m("lingotes", "Fundición", "Fundan lingotes.", Items.IRON_INGOT, "fundir", "#forge:ingots", 2400, 2, 400, 30),
+            m("constructores", "Constructores", "Coloquen bloques nuevos.", Items.BRICKS, "colocar", "*", 24000, 1, 400, 30),
+            m("encantadores", "Biblioteca arcana", "Encanten objetos.", Items.ENCHANTED_BOOK, "encantar", "*", 200, 2, 450, 35));
+
+    /** Las metas de fábrica hasta la 1.3.158 (para poner al día clanes.json: ver PadClanConfig.load). */
+    static final java.util.Map<String, Integer> OLD_AMOUNTS = java.util.Map.ofEntries(
+            java.util.Map.entry("cantera", 20000),
+            java.util.Map.entry("lenadores", 4000),
+            java.util.Map.entry("carbon", 1200),
+            java.util.Map.entry("hierro", 700),
+            java.util.Map.entry("cobre", 900),
+            java.util.Map.entry("excavadores", 12000),
+            java.util.Map.entry("cosecha", 5000),
+            java.util.Map.entry("cazadores", 1200),
+            java.util.Map.entry("zombis", 500),
+            java.util.Map.entry("esqueletos", 400),
+            java.util.Map.entry("aranas", 350),
+            java.util.Map.entry("creepers", 200),
+            java.util.Map.entry("pesca", 350),
+            java.util.Map.entry("granja", 250),
+            java.util.Map.entry("antorchas", 1500),
+            java.util.Map.entry("herramientas", 120),
+            java.util.Map.entry("pan", 1000),
+            java.util.Map.entry("lingotes", 1500),
+            java.util.Map.entry("constructores", 15000),
+            java.util.Map.entry("encantadores", 120));
 
     /** Las que salen en las semanas nuevas (las activas de clanes.json). */
     public static List<Mission> POOL = FACTORY;

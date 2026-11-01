@@ -85,6 +85,9 @@ final class PadClanShop {
             ItemStack s = stored(o);
             if (!s.isEmpty()) return s;
         }
+        if (type.equals("estandarte")) {
+            return new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANNER_ITEM.get(), (int) Math.max(1, Math.min(16, TFJson.num(o, "cantidad", 1))));
+        }
         return new ItemStack(PadClanConfig.item(TFJson.str(o, "icono", "minecraft:chest")));
     }
 
@@ -123,7 +126,7 @@ final class PadClanShop {
         UUID me = player.getUUID();
         boolean treasurer = PadClanProgress.treasurer(c, me);
         long coins = PadClanProgress.coins(c);
-        b.header(treasurer ? "Se paga con las Clan Coins del clan: tenéis " + coins + "." : "La tienda la usan el líder y los colíderes.");
+        b.header(treasurer ? "Se paga con las Clan Coins del clan: tienen " + coins + "." : "La tienda la usan el líder y los colíderes.");
         for (Offer o : OFFERS) {
             int n = bought(c, o.key());
             List<String> lines = new ArrayList<>();
@@ -148,7 +151,7 @@ final class PadClanShop {
         Offer o = offer(action.substring("tienda.comprar:".length()));
         if (o == null) return "tienda";
         if (o.max() > 0 && bought(c, o.key()) >= o.max()) {
-            TFPadNet.notice(player, "Ya tenéis las " + o.max() + " que se pueden comprar.");
+            TFPadNet.notice(player, "Ya tienen las " + o.max() + " que se pueden comprar.");
             return "tienda";
         }
         if (PadClanProgress.coins(c) < o.price()) {

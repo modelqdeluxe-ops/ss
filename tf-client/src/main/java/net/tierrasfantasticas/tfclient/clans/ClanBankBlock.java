@@ -38,13 +38,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * (1.3.156) El cofre del Banco del clan. No guarda nada dentro: el banco es digital (pad/server/PadClanBank, solo el id
  * del objeto y su cantidad), así que cualquier cofre abre el banco del clan de quien lo usa, en la app de clanes del pad
  * (pestaña BANCO). Lo da la pestaña BANCO al líder y a los colíderes.
+ * <p>
+ * (1.3.159, el dueño: «el cofre se ve muy pequeño, hazlo más grande, que solo te dé 1 el pad, y que lo puedas romper, ojo
+ * solo el líder o colíder, y se lo devuelve al inventario tipo las claim blocks; y que brille en la oscuridad como las
+ * crates») Del tamaño de una crate, uno por clan (PadClanBank), lo rompen el líder y los colíderes de su clan y les vuelve
+ * al inventario (ClanBlockEvents); lo dibuja ClanBankRenderer a plena luz. Lo abren los de su clan.
  */
-public class ClanBankBlock extends Block {
+public class ClanBankBlock extends Block implements net.minecraft.world.level.block.EntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 14, 15);
+    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 15, 16);
 
     public ClanBankBlock() {
-        super(Properties.of().mapColor(MapColor.COLOR_BROWN).strength(2.5F, 6.0F).sound(SoundType.WOOD).lightLevel(s -> 3));
+        super(Properties.of().mapColor(MapColor.COLOR_BROWN).strength(2.5F, 3_600_000F).sound(SoundType.WOOD).lightLevel(s -> 7).noOcclusion()
+                .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
@@ -74,12 +80,36 @@ public class ClanBankBlock extends Block {
     }
 
     @Override
+    public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ClanBankBlockEntity(pos, state);
+    }
+
+    /** Lo dibuja ClanBankRenderer (a plena luz), no el mundo. */
+    @Override
+    @SuppressWarnings("deprecation")
+    public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
+        return net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (!(player instanceof ServerPlayer sp)) return InteractionResult.PASS;
-        if (net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(sp.getUUID()) == null) {
+        String mine = net.tierrasfantasticas.tfclient.pad.server.PadClans.clanIdOf(sp.getUUID());
+        if (mine == null) {
             sp.displayClientMessage(Component.literal("Es el banco de un clan: únete a uno (pad › Clanes) para usarlo.").withStyle(ChatFormatting.RED), true);
+            return InteractionResult.CONSUME;
+        }
+        // (1.3.159) cada cofre es de un clan: lo abren los suyos (uno de antes, sin dueño, se queda con el clan que lo usa)
+        String key = net.tierrasfantasticas.tfclient.pad.server.PadClanBank.posKey(level, pos);
+        String owner = net.tierrasfantasticas.tfclient.pad.server.PadClanBank.ownerAt("cofres", key);
+        if (owner == null && net.tierrasfantasticas.tfclient.pad.server.PadClanBank.chestOf(mine) == null) {
+            net.tierrasfantasticas.tfclient.pad.server.PadClanBank.placed("cofres", key, mine);
+            owner = mine;
+        }
+        if (owner != null && !owner.equals(mine)) {
+            sp.displayClientMessage(Component.literal("Es el banco de otro clan.").withStyle(ChatFormatting.RED), true);
             return InteractionResult.CONSUME;
         }
         level.playSound(null, pos, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.6F, 0.9F);

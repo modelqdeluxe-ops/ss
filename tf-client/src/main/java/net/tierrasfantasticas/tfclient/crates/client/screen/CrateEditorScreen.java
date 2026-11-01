@@ -535,7 +535,7 @@ public class CrateEditorScreen extends Screen {
                      "§bRegistro§7: todos los items del juego y de los mods.",
                      "§eInventario§7: los items que llevas encima.",
                      "",
-                     "Cogerlo del inventario copia el item §fCON su NBT§7:",
+                     "Tomarlo del inventario copia el item §fCON su NBT§7:",
                      "encantamientos, nombre, lore, atributos... tal cual."
                   )
                )

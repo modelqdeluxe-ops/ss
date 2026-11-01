@@ -84,7 +84,7 @@ final class PadClanViews {
                 List.of(doneCount + " de " + list.size() + " hechas" + (earned > 0 ? " · " + earned + " Clan Coins ganadas" : "") + ".",
                         "Quedan " + left + (left == 1 ? " día" : " días") + (PadClans.allies(c).isEmpty() ? "." : "; los aliados suman " + PadClanConfig.allyText() + " de lo suyo.")),
                 list.isEmpty() ? -1F : doneCount / (float) list.size(), "", null, null).image(PadClanProgress.badge(c).image()));
-        b.header("Las cumplís entre todo el clan: cada uno que aporta gana 1 verde.");
+        b.header("Las cumplen entre todo el clan: cada uno que aporta gana 1 verde.");
         for (JsonElement e : list) {
             JsonObject o = e.getAsJsonObject();
             PadClanProgress.Mission m = PadClanProgress.byId(TFJson.str(o, "id", ""));
@@ -120,10 +120,18 @@ final class PadClanViews {
         int cur = PadClans.rgbOf(c);
         String tag = TFJson.str(c, "etiqueta", "?");
         String hex = String.format("%06X", cur);
-        b.header("La etiqueta [" + tag + "] y la insignia. PALETA abre la paleta de colores.");
+        // (1.3.159) ETIQUETA abre el editor: color, degradado, arcoíris u onda
+        net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx fx = net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, cur);
+        String fxName = switch (fx.mode()) {
+            case "degradado" -> "degradado de " + fx.colors().length + " colores";
+            case "arcoiris" -> "arcoíris (velocidad " + fx.speed() + ")";
+            case "onda" -> "onda de " + fx.colors().length + " colores (velocidad " + fx.speed() + ")";
+            default -> "un color, #" + hex;
+        };
+        b.header("La etiqueta [" + tag + "] y la insignia. ETIQUETA: color y efectos.");
         b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "[" + tag + "]", cur,
-                List.of("Así se ve al lado de vuestros nombres.", "#" + hex + " · insignia: " + PadClanProgress.badge(c).name()), -1, "",
-                PadView.Btn.of("PALETA", "§color:clanes:estilo:" + hex + ":" + tag, PadView.GOLD), null)
+                List.of("Efecto: " + fxName + ".", "Insignia: " + PadClanProgress.badge(c).name() + "."), -1, "",
+                PadView.Btn.of("ETIQUETA", "§color:clanes:estilo:" + hex + ":" + tag + ":" + fx.encode(), PadView.GOLD), null)
                 .image(PadClanProgress.badge(c).image()));
         String now = PadClanProgress.badge(c).id();
         for (PadClanProgress.Badge bd : PadClanProgress.badges()) {

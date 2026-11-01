@@ -47,7 +47,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 public final class PadClanConfig {
     public static final String FILE = "clanes.json";
     /** Sube si cambian los valores de fábrica (los que no se hayan tocado se ponen al día solos: ver {@link #load}). */
-    static final int VERSION = 1;
+    static final int VERSION = 2;
 
     private static JsonObject root = new JsonObject();
 
@@ -98,6 +98,14 @@ public final class PadClanConfig {
         return o;
     }
 
+    /** (1.3.159) El estandarte del clan en la tienda. */
+    static JsonObject banner() {
+        JsonObject o = offer("estandarte", "Estandarte del clan", "Con la insignia y la etiqueta del clan, para su territorio. Lo quitan el líder y los colíderes.",
+                "tfclient:estandarte_clan", 8, 0, "estandarte");
+        o.addProperty("cantidad", 1);
+        return o;
+    }
+
     private static JsonObject DEF;
 
     /** Lo de fábrica (se hace una vez: necesita los objetos del juego ya registrados). */
@@ -114,7 +122,7 @@ public final class PadClanConfig {
                 "misiones.lista y guerra.lista: tipo = romper, colocar, matar, pescar, cosechar, criar, fabricar, fundir o encantar (como los oficios);",
                 "  objetivo = un id (minecraft:zombie), una etiqueta (#minecraft:logs), 'hostil' o '*'; cantidad = la meta para un clan de 5 miembros",
                 "  (se escala con los miembros: de metaMin a metaMax veces). Nada del Nether ni del End: el servidor va por el inicio del juego.",
-                "tienda: tipo = proteccion (piedra: claimstone_clan_50x50 o claimstone_clan_120x120), plazas (las de miembros.porCompra),",
+                "tienda: tipo = proteccion (piedra: claimstone_clan_50x50 o claimstone_clan_120x120), plazas (las de miembros.porCompra), estandarte (cantidad),",
                 "  potenciador (horas), objeto ('objeto': lo pone el pad de administrador › CLANES › TIENDA › Vender lo que llevas en la mano,",
                 "  o \"minecraft:diamond 3\"), verdes (cantidad para cada miembro) o comando (comandos: lista, desde la consola; {jugador},",
                 "  {clan} y {etiqueta}). maximo = cuántas por clan (0 = sin tope); precio en Clan Coins; activa = a la venta.",
@@ -158,6 +166,15 @@ public final class PadClanConfig {
         war.addProperty("prestigioPerdedor", 30);
         war.addProperty("verdes", 1);
         war.addProperty("horasParaAceptar", 24);
+        // (1.3.159) el objetivo PvP de cada guerra
+        JsonObject pvp = new JsonObject();
+        pvp.addProperty("activa", true);
+        pvp.addProperty("nombre", "Batalla contra el clan rival");
+        pvp.addProperty("descripcion", "Derroten a jugadores del clan rival (PvP).");
+        pvp.addProperty("icono", "minecraft:iron_sword");
+        pvp.addProperty("cantidad", 15);
+        pvp.addProperty("minutos", 10);
+        war.add("pvp", pvp);
         JsonArray wl = new JsonArray();
         for (PadClanProgress.Mission m : PadClanWar.FACTORY) wl.add(mission(m, false));
         war.add("lista", wl);
@@ -183,7 +200,7 @@ public final class PadClanConfig {
         // (1.3.158, el dueño: «sube los precios») el doble que en la 1.3.156
         JsonArray shop = new JsonArray();
         JsonObject p50 = offer("proteccion_clan_50x50", "Protección del clan 50x50",
-                "El territorio del clan: construís todos y sin PvP entre vosotros. La pone el líder o un colíder.",
+                "El territorio del clan: construyen todos y sin PvP entre ustedes. La pone el líder o un colíder.",
                 "tfclient:claimstone_clan_50x50", 30, 2, "proteccion");
         p50.addProperty("piedra", "claimstone_clan_50x50");
         shop.add(p50);
@@ -194,10 +211,11 @@ public final class PadClanConfig {
         shop.add(p120);
         shop.add(offer("plazas", "+{cantidad} plazas en el clan", "{cantidad} miembros más, además de los que da el nivel.",
                 "minecraft:player_head", 20, 5, "plazas"));
-        JsonObject boost = offer("potenciador", "Potenciador de misiones ({horas} h)", "Durante {horas} horas, todo lo que hagáis cuenta {x} en las misiones del clan.",
+        JsonObject boost = offer("potenciador", "Potenciador de misiones ({horas} h)", "Durante {horas} horas, todo lo que hagan cuenta {x} en las misiones del clan.",
                 "minecraft:experience_bottle", 6, 0, "potenciador");
         boost.addProperty("horas", 24);
         shop.add(boost);
+        shop.add(banner());
         r.add("tienda", shop);
         return r;
     }
@@ -211,12 +229,45 @@ public final class PadClanConfig {
         JsonObject def = defaults();
         JsonObject cur = TFJson.read(file());
         if (cur == null) cur = new JsonObject();
+        else migrate(cur);
         JsonObject merged = merge(def, cur);
         merged.add("_ayuda", def.get("_ayuda"));
         merged.addProperty("version", VERSION);
         root = merged;
         TFJson.write(file(), merged);
         apply();
+    }
+
+    /**
+     * Pone al día un clanes.json de antes: (versión 2, 1.3.159) las misiones con la meta de fábrica de antes pasan a la
+     * nueva (x1,6); las que el dueño cambió se quedan como las dejó.
+     */
+    private static void migrate(JsonObject cur) {
+        long v = TFJson.num(cur, "version", 1);
+        if (v < 2) {
+            int n = 0;
+            JsonArray l = list(cur, "misiones");
+            for (JsonElement e : l) {
+                if (!e.isJsonObject()) continue;
+                JsonObject o = e.getAsJsonObject();
+                String id = TFJson.str(o, "id", "");
+                Integer old = PadClanProgress.OLD_AMOUNTS.get(id);
+                if (old == null || TFJson.num(o, "cantidad", -1) != old) continue;
+                for (PadClanProgress.Mission m : PadClanProgress.FACTORY) {
+                    if (m.id().equals(id)) {
+                        o.addProperty("cantidad", m.amount());
+                        n++;
+                    }
+                }
+            }
+            // y el estandarte del clan en la tienda (si no lo tenía)
+            if (cur.has("tienda") && cur.get("tienda").isJsonArray()) {
+                boolean has = false;
+                for (JsonElement e : cur.getAsJsonArray("tienda")) has |= e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals("estandarte");
+                if (!has) cur.getAsJsonArray("tienda").add(banner());
+            }
+            TFClient.LOGGER.info("TF Clanes: clanes.json puesto al día (versión 2): {} misiones con la meta nueva", n);
+        }
     }
 
     /** Guarda el JSON (desde el pad de administrador) y lo vuelve a aplicar. */
@@ -299,6 +350,12 @@ public final class PadClanConfig {
             PadClanWar.WIN_PRESTIGE = Math.max(0, num("guerra", "prestigio"));
             PadClanWar.LOSE_PRESTIGE = Math.max(0, num("guerra", "prestigioPerdedor"));
             PadClanWar.ACCEPT_MS = Math.max(1, num("guerra", "horasParaAceptar")) * 3_600_000L;
+            JsonObject pvp = TFJson.obj(TFJson.obj(root, "guerra"), "pvp");
+            PadClanWar.PVP_ON = TFJson.bool(pvp, "activa", true);
+            PadClanWar.PVP = new PadClanProgress.Mission(PadClanWar.PVP_ID, TFJson.str(pvp, "nombre", "Batalla contra el clan rival"),
+                    TFJson.str(pvp, "descripcion", "Derroten a jugadores del clan rival (PvP)."), new ItemStack(item(TFJson.str(pvp, "icono", "minecraft:iron_sword"))),
+                    "pvp", "enemigo", (int) Math.max(1, Math.min(1000, TFJson.num(pvp, "cantidad", 15))), 0, 0, 0);
+            PadClanWar.PVP_PAIR_MS = Math.max(0, TFJson.num(pvp, "minutos", 10)) * 60_000L;
             PadClanBank.BASE = Math.max(1, num("banco", "inicial"));
             PadClanBank.STEP = Math.max(0, num("banco", "porMejora"));
             PadClanBank.MAX_UPGRADES = (int) Math.max(0, Math.min(1000, num("banco", "mejoras")));
@@ -395,6 +452,40 @@ public final class PadClanConfig {
                 && seats2 == seats0 && PadClanShop.offer("proteccion_clan_50x50").price() == 30 && PadClanProgress.POOL.size() == pool0;
         return "plazas " + seats0 + " → " + seats1 + " (+10 al empezar), protección 50x50 " + price0 + " → " + price1 + " Clan Coins, misiones que salen "
                 + pool0 + " → " + pool1 + ", guardado en el archivo " + saved + "; al deshacerlo " + seats2 + " plazas" + (ok ? " (bien)" : " (MAL)");
+    }
+
+    /**
+     * (1.3.159) Para la prueba: pone al día un clanes.json de la 1.3.158 (versión 1) con «cantera» de fábrica (20000),
+     * «lenadores» cambiada por el dueño (5000) y la tienda sin estandarte: la primera pasa a la meta nueva, la segunda se
+     * queda y el estandarte aparece.
+     */
+    public static String testMigrate() {
+        JsonObject old = new JsonObject();
+        old.addProperty("version", 1);
+        JsonObject mis = new JsonObject();
+        JsonArray l = new JsonArray();
+        JsonObject a = new JsonObject();
+        a.addProperty("id", "cantera");
+        a.addProperty("cantidad", 20000);
+        l.add(a);
+        JsonObject b = new JsonObject();
+        b.addProperty("id", "lenadores");
+        b.addProperty("cantidad", 5000);
+        l.add(b);
+        mis.add("lista", l);
+        old.add("misiones", mis);
+        JsonArray shop = new JsonArray();
+        JsonObject p = new JsonObject();
+        p.addProperty("id", "plazas");
+        shop.add(p);
+        old.add("tienda", shop);
+        migrate(old);
+        long cantera = TFJson.num(list(old, "misiones").get(0).getAsJsonObject(), "cantidad", 0);
+        long lena = TFJson.num(list(old, "misiones").get(1).getAsJsonObject(), "cantidad", 0);
+        boolean banner = false;
+        for (JsonElement e : old.getAsJsonArray("tienda")) banner |= TFJson.str(e.getAsJsonObject(), "id", "").equals("estandarte");
+        boolean ok = cantera == 32000 && lena == 5000 && banner;
+        return "cantera 20000 → " + cantera + ", leñadores (cambiada a 5000) → " + lena + ", estandarte en la tienda " + banner + (ok ? " (bien)" : " (MAL)");
     }
 
     /** Lo que cuesta la mejora número next del banco. */

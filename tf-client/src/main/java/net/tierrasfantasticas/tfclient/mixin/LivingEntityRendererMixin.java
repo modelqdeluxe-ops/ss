@@ -35,5 +35,9 @@ public abstract class LivingEntityRendererMixin {
                 && ((LivingEntityRenderer<?, ?>) (Object) this).getModel() instanceof HumanoidModel<?> model) {
             VfxActor.applyHumanoid(model, entity);
         }
+        // (1.3.159) el emote del clan: la postura de cada momento
+        if (((LivingEntityRenderer<?, ?>) (Object) this).getModel() instanceof HumanoidModel<?> model2) {
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.applyPose(model2, entity);
+        }
     }
 }

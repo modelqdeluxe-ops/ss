@@ -551,6 +551,11 @@ final class PadSkin {
      * pastilla a la izquierda, la pista en el tono de la app y el cursor de su color que parpadea.
      */
     static void field(GuiGraphics g, int x, int y, int w, String text, String hint, int acc) {
+        field(g, x, y, w, text, hint, acc, false);
+    }
+
+    /** search: la pastilla de la izquierda lleva una lupa en vez del lápiz (1.3.159: buscadores). */
+    static void field(GuiGraphics g, int x, int y, int w, String text, String hint, int acc, boolean search) {
         int c = deep(acc);
         g.fill(x + 1, y + 16, x + w - 1, y + 17, 0x2418265C);
         PadUi.box(g, x, y, w, 16, mix(c, PadUi.INK, 0.35F));
@@ -560,8 +565,18 @@ final class PadSkin {
         int px = x + 2, py = y + 2;
         g.fillGradient(px, py, px + 12, py + 12, mix(c, WHITE, 0.35F), c);
         g.fill(px + 12, py, px + 13, py + 12, mix(c, PadUi.INK, 0.3F));
-        for (int i = 0; i < 6; i++) g.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE);
-        g.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8F));
+        if (search) {
+            // la lupa: un aro de 6x6 con su brillo y el mango en diagonal
+            g.fill(px + 3, py + 2, px + 7, py + 3, WHITE);
+            g.fill(px + 3, py + 7, px + 7, py + 8, WHITE);
+            g.fill(px + 2, py + 3, px + 3, py + 7, WHITE);
+            g.fill(px + 7, py + 3, px + 8, py + 7, WHITE);
+            g.fill(px + 4, py + 4, px + 5, py + 5, mix(c, WHITE, 0.7F));
+            for (int i = 0; i < 3; i++) g.fill(px + 7 + i, py + 7 + i, px + 9 + i, py + 8 + i, WHITE);
+        } else {
+            for (int i = 0; i < 6; i++) g.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE);
+            g.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8F));
+        }
         int tx = x + 18, tw = w - 22;
         if (text.isEmpty()) {
             // la pista nunca se corta: si no cabe, se escribe más pequeña (hasta 6/10) y solo entonces se recorta

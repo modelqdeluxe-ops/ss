@@ -219,7 +219,7 @@ final class PadViewPage extends PadPage {
                 int bw = PadUi.buttonWidth(in.button());
                 int right = X + W - 5 - footerW;
                 int fw = Math.max(40, right - (X + 5) - bw - 4);
-                PadSkin.field(g, X + 5, fy, fw, input, in.hint(), acc);
+                PadSkin.field(g, X + 5, fy, fw, input, in.hint(), acc, in.action().startsWith("buscar"));
                 PadView.Btn send = new PadView.Btn(in.button(), "§input", PadView.GREEN, !input.isBlank());
                 button(g, right - bw, fy, bw, send, mx, my, true);
             }
@@ -411,6 +411,34 @@ final class PadViewPage extends PadPage {
      * marcada: borde de oro con un aura que late, rayos de luz que giran y la cinta con la marca; al pasar el ratón,
      * sube, el objeto se mece, salen los rayos y la cruza un brillo. gallery: la vitrina grande con la imagen a 50.
      */
+    /**
+     * (1.3.159) Un nombre que no cabe en la tarjeta (en español son largos: «Espada de diamante», «Alfombra celeste»): en
+     * dos líneas, un poco más pequeñas, en vez de «Espada de...». top es el borde de abajo de la vitrina.
+     */
+    private static void longName(GuiGraphics g, String name, int cx, int top, int w) {
+        net.minecraft.client.gui.Font font = PadUi.font();
+        float k = 0.7F;
+        int lw = Math.round(w / k);
+        String[] words = name.split(" ");
+        StringBuilder first = new StringBuilder();
+        int i = 0;
+        while (i < words.length) {
+            String next = first.length() == 0 ? words[i] : first + " " + words[i];
+            if (font.width(next) > lw && first.length() > 0) break;
+            first.setLength(0);
+            first.append(next);
+            i++;
+        }
+        String l1 = PadUi.fitEnd(first.toString(), lw);
+        String l2 = i < words.length ? PadUi.fitEnd(String.join(" ", java.util.Arrays.copyOfRange(words, i, words.length)), lw) : "";
+        g.pose().pushPose();
+        g.pose().translate(cx, top + (l2.isEmpty() ? 8 : 5), 0);
+        g.pose().scale(k, k, 1);
+        PadUi.text(g, l1, -font.width(l1) / 2, 0, PadUi.TEXT);
+        if (!l2.isEmpty()) PadUi.text(g, l2, -font.width(l2) / 2, 9, PadUi.TEXT);
+        g.pose().popPose();
+    }
+
     private void drawCard(GuiGraphics g, PadView.Cell c, int x, int y, int cw, int ch, double mx, double my, int acc, boolean gallery,
                           float t) {
         boolean clickable = !c.action().isEmpty();
@@ -453,8 +481,12 @@ final class PadViewPage extends PadPage {
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
         if (lift) PadSkin.sheen(g, x0 + 1, yy + 1, w - 2, sh, 1.6F, 0.3F);
-        int nameW = PadUi.titleWidth(c.label(), w - 6);
-        PadUi.title(g, c.label(), cx - nameW / 2, yy + sh + 7, w - 6, PadUi.TEXT);
+        if (PadUi.font().width(c.label()) <= w - 6) {
+            int nameW = PadUi.titleWidth(c.label(), w - 6);
+            PadUi.title(g, c.label(), cx - nameW / 2, yy + sh + 7, w - 6, PadUi.TEXT);
+        } else {
+            longName(g, c.label(), cx, yy + sh, w - 6);
+        }
         if (!c.sub().isEmpty()) {
             // si no cabe, se recorta lo de dentro de la etiqueta (sin contar la moneda ni el «+»)
             String sub = PadUi.fitChip(c.sub(), w - 6);
@@ -741,7 +773,12 @@ final class PadViewPage extends PadPage {
         if (tooltip.isEmpty() || !(app.equals("tienda") || app.equals("kits"))) return;
         float k = 2F / 3F;
         // a 2/3 el juego no sabe si se sale de la pantalla: se mide aquí y, si no cabe, va al otro lado del ratón
-        List<Component> lines = Screen.getTooltipFromItem(Minecraft.getInstance(), tooltip);
+        List<Component> lines = new java.util.ArrayList<>(Screen.getTooltipFromItem(Minecraft.getInstance(), tooltip));
+        // (1.3.159, el dueño: «pon los items en español») el nombre, en español aunque el juego esté en otro idioma
+        if (!lines.isEmpty() && !tooltip.hasCustomHoverName()) {
+            String es = net.tierrasfantasticas.tfclient.util.TFNames.es(tooltip);
+            if (es != null && !es.isBlank()) lines.set(0, Component.literal(es).withStyle(lines.get(0).getStyle()));
+        }
         int tw = 0;
         for (Component c : lines) tw = Math.max(tw, PadUi.font().width(c));
         float w = (tw + 20) * k, h = (lines.size() * 10 + 8) * k;
@@ -750,7 +787,7 @@ final class PadViewPage extends PadPage {
         g.pose().pushPose();
         g.pose().translate(tx, ty, 0);
         g.pose().scale(k, k, 1);
-        g.renderTooltip(PadUi.font(), tooltip, 0, 0);
+        g.renderTooltip(PadUi.font(), lines, tooltip.getTooltipImage(), 0, 0);
         g.pose().popPose();
     }
 
@@ -805,7 +842,11 @@ final class PadViewPage extends PadPage {
     /** (1.3.109) Para la prueba en el juego: hace esa acción como si se pulsara (p. ej. «tab:combate»). */
     void actForTest(String action) {
         if (action.startsWith("§scroll:")) scroll = Integer.parseInt(action.substring(8));
-        else run(action);
+        else if (action.startsWith("§type:")) {
+            // (1.3.159) escribir en el campo de abajo y pulsar su botón (como el jugador)
+            input = action.substring(6);
+            submit();
+        } else run(action);
     }
 
     /** Acciones del propio pad («§open:app») o del servidor. */
