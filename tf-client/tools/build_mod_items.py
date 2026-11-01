@@ -146,6 +146,7 @@ class SetWriter:
         self.flat_uv_fixed = 0
         self.zfight_fixed = 0
         self.planes_trimmed = 0
+        self.gui_fitted = 0
         self.alpha_cache = {}
         # Lo que el pack se pone de verdad (HMCCosmetics): el modelo «puesto» puede no ser el del inventario.
         self.hmc = hmc_worn.worn_models(os.path.join(packs, rel_root.replace('\\', '/').split('/')[0]))
@@ -407,6 +408,8 @@ class SetWriter:
         return trimmed
 
     def write_model(self, path_rel, data):
+        if fit_gui(data, self.set_id):
+            self.gui_fitted += 1
         self.planes_trimmed += self.trim_planes(data)
         self.zfight_fixed += separate_coplanar(data)
         dst = os.path.join(ASSETS, 'models', 'item', path_rel + '.json')
@@ -509,6 +512,26 @@ def _apply(m, v):
     return [sum(m[i][k] * v[k] for k in range(3)) for i in range(3)]
 
 
+# (1.3.163) Iconos del inventario que se salían de su casilla (medido en la captura de la prueba «sets»): los modelos del
+# Aceruin son más grandes que los de los demás sets de su autor y su «gui» no los encoge. Se multiplica su escala (y su
+# desplazamiento) en el icono.
+GUI_SCALE_BY_SET = {'aceruin': 0.62}
+
+
+def fit_gui(model, set_id):
+    k = GUI_SCALE_BY_SET.get(set_id)
+    if not k or not model.get('elements'):
+        return False
+    display = model.setdefault('display', {})
+    gui = dict(display.get('gui') or {})
+    sc = gui.get('scale') or [1, 1, 1]
+    gui['scale'] = [round(float(v) * k, 4) for v in sc]
+    gui['translation'] = [round(float(v) * k, 3) for v in (gui.get('translation') or [0, 0, 0])]
+    gui.setdefault('rotation', [0, 0, 0])
+    display['gui'] = gui
+    return True
+
+
 # Dónde va cada cosmético en la espalda, en bloques desde el cuello hacia abajo (centro, o borde de arriba).
 BACK_PLACE = {'wings': ('center', 0.30), 'wing': ('center', 0.30), 'backpack': ('center', 0.38),
               'cape': ('top', 0.02), 'tail': ('top', 0.60), 'quiver': ('center', 0.38)}
@@ -580,7 +603,9 @@ def mark_flags(entry):
 # - oni: el aro de arriba sube la mitad de lo visible; así la máscara del centro queda entre los omóplatos.
 # - cosméticos: la mochila de hielo son alas (colgaba hasta los pies) y las alas de calabaza quedaban en la cintura.
 Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02, 'cosmeticsv1/frozen_backpack': -0.2,
-              'halloweenbundle/spooky_pumpkin_wings': -0.12}
+              'halloweenbundle/spooky_pumpkin_wings': -0.12,
+              # (1.3.163) con la posición de su pack (la de CosmeticsCore) quedaban a la altura de la cintura
+              'mysticcyan/wings': -0.24, 'mysticcyan/backpack': -0.5, 'violet/wings': -0.24}
 # Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
 HMC_SKIP = {'shadow'}
 # Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.

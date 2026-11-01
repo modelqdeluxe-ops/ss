@@ -53,6 +53,14 @@
  "img/crates/drakegoat.webp": "img/pp/crates/drakegoat.jpg",
  "img/crates/onicurse.webp": "img/pp/crates/onicurse.jpg",
  "img/crates/deepsea.webp": "img/pp/crates/deepsea.jpg",
+ "img/crates/dragonstone.webp": "img/pp/crates/dragonstone.jpg",
+ "img/crates/leviathan.webp": "img/pp/crates/leviathan.jpg",
+ "img/crates/aceruin.webp": "img/pp/crates/aceruin.jpg",
+ "img/crates/violet.webp": "img/pp/crates/violet.jpg",
+ "img/crates/runemoth.webp": "img/pp/crates/runemoth.jpg",
+ "img/crates/nexus.webp": "img/pp/crates/nexus.jpg",
+ "img/crates/mysticcyan.webp": "img/pp/crates/mysticcyan.jpg",
+ "img/crates/sakura.webp": "img/pp/crates/sakura.jpg",
  "img/crates/soulskull.webp": "img/pp/crates/soulskull.jpg",
  "img/items/halloween23/pumpkin_warlock_hat.webp": "img/pp/items/halloween23/pumpkin_warlock_hat.jpg",
  "img/items/halloween23/pumpkin_warlock_backpack.webp": "img/pp/items/halloween23/pumpkin_warlock_backpack.jpg",
@@ -101,5 +109,6 @@
  "img/items/springcos/wings.webp": "img/pp/items/springcos/wings.jpg",
  "img/protecciones/250x250.webp": "img/pp/protecciones/250x250.jpg",
  "img/protecciones/300x300.webp": "img/pp/protecciones/300x300.jpg",
- "img/protecciones/500x500.webp": "img/pp/protecciones/500x500.jpg"
+ "img/protecciones/500x500.webp": "img/pp/protecciones/500x500.jpg",
+ "img/crates/nitro.webp": "img/pp/crates/nitro.jpg"
 }

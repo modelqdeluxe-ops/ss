@@ -4352,6 +4352,780 @@
    ]
   },
   {
+   "id": "dragonstone",
+   "name": "Piedra de Dragón",
+   "color": "#b91c1c",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "dragonstone_sword",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_blade",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_axe",
+     "type": "axe"
+    },
+    {
+     "id": "dragonstone_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "dragonstone_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "dragonstone_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "dragonstone_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "dragonstone_spear",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_staff",
+     "type": "sword"
+    },
+    {
+     "id": "dragonstone_bow",
+     "type": "bow"
+    },
+    {
+     "id": "dragonstone_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "dragonstone_shield",
+     "type": "shield"
+    },
+    {
+     "id": "dragonstone_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/dragonstone/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "dragonstone_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "dragonstone_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "dragonstone_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "dragonstone_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "leviathan",
+   "name": "Leviatán",
+   "color": "#1d4ed8",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "leviathan_sword",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_blade",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_axe",
+     "type": "axe"
+    },
+    {
+     "id": "leviathan_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "leviathan_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "leviathan_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "leviathan_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "leviathan_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_spear",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_staff",
+     "type": "sword"
+    },
+    {
+     "id": "leviathan_bow",
+     "type": "bow"
+    },
+    {
+     "id": "leviathan_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "leviathan_shield",
+     "type": "shield"
+    },
+    {
+     "id": "leviathan_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/leviathan/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "leviathan_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "leviathan_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "leviathan_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "leviathan_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "aceruin",
+   "name": "Aceruin",
+   "color": "#16a34a",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "aceruin_sword",
+     "type": "sword"
+    },
+    {
+     "id": "aceruin_axe",
+     "type": "axe"
+    },
+    {
+     "id": "aceruin_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "aceruin_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "aceruin_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "aceruin_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "aceruin_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "aceruin_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "aceruin_spear",
+     "type": "sword"
+    },
+    {
+     "id": "aceruin_trident",
+     "type": "trident"
+    },
+    {
+     "id": "aceruin_staff",
+     "type": "sword"
+    },
+    {
+     "id": "aceruin_bow",
+     "type": "bow"
+    },
+    {
+     "id": "aceruin_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "aceruin_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "aceruin_shield",
+     "type": "shield"
+    },
+    {
+     "id": "aceruin_helmet",
+     "type": "head"
+    },
+    {
+     "id": "aceruin_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/aceruin/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "aceruin_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "aceruin_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "aceruin_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "aceruin_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "violet",
+   "name": "Violeta",
+   "color": "#c026d3",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "violet_sword",
+     "type": "sword"
+    },
+    {
+     "id": "violet_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "violet_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/violet/backpack_worn"
+    },
+    {
+     "id": "violet_axe",
+     "type": "axe"
+    },
+    {
+     "id": "violet_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "violet_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "violet_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "violet_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "violet_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "violet_spear",
+     "type": "sword"
+    },
+    {
+     "id": "violet_trident",
+     "type": "trident"
+    },
+    {
+     "id": "violet_staff",
+     "type": "sword"
+    },
+    {
+     "id": "violet_bow",
+     "type": "bow"
+    },
+    {
+     "id": "violet_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "violet_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "violet_shield",
+     "type": "shield"
+    },
+    {
+     "id": "violet_helmet",
+     "type": "head"
+    },
+    {
+     "id": "violet_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/violet/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "violet_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "violet_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "violet_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "violet_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "runemoth",
+   "name": "Polilla Rúnica",
+   "color": "#7c3aed",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "runemoth_sword",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_axe",
+     "type": "axe"
+    },
+    {
+     "id": "runemoth_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "runemoth_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "runemoth_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "runemoth_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "runemoth_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_spear",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_trident",
+     "type": "trident"
+    },
+    {
+     "id": "runemoth_staff",
+     "type": "sword"
+    },
+    {
+     "id": "runemoth_bow",
+     "type": "bow"
+    },
+    {
+     "id": "runemoth_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "runemoth_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "runemoth_shield",
+     "type": "shield"
+    },
+    {
+     "id": "runemoth_hat",
+     "type": "head"
+    },
+    {
+     "id": "runemoth_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/runemoth/wing_worn",
+     "glide": true
+    },
+    {
+     "id": "runemoth_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "runemoth_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "runemoth_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "runemoth_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "nexus",
+   "name": "Nexus",
+   "color": "#d97706",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "nexus_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nexus_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "nexus_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nexus_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "nexus_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "nexus_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "nexus_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nexus_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "nexus_spear",
+     "type": "sword"
+    },
+    {
+     "id": "nexus_trident",
+     "type": "trident"
+    },
+    {
+     "id": "nexus_staff",
+     "type": "sword"
+    },
+    {
+     "id": "nexus_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nexus_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "nexus_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "nexus_shield",
+     "type": "shield"
+    },
+    {
+     "id": "nexus_helmet",
+     "type": "head"
+    },
+    {
+     "id": "nexus_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/nexus/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "nexus_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "nexus_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "nexus_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "nexus_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "mysticcyan",
+   "name": "Cian Místico",
+   "color": "#0e7490",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "mysticcyan_sword",
+     "type": "sword"
+    },
+    {
+     "id": "mysticcyan_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "mysticcyan_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/mysticcyan/backpack_worn"
+    },
+    {
+     "id": "mysticcyan_axe",
+     "type": "axe"
+    },
+    {
+     "id": "mysticcyan_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "mysticcyan_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "mysticcyan_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "mysticcyan_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "mysticcyan_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "mysticcyan_spear",
+     "type": "sword"
+    },
+    {
+     "id": "mysticcyan_trident",
+     "type": "trident"
+    },
+    {
+     "id": "mysticcyan_staff",
+     "type": "sword"
+    },
+    {
+     "id": "mysticcyan_bow",
+     "type": "bow"
+    },
+    {
+     "id": "mysticcyan_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "mysticcyan_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "mysticcyan_shield",
+     "type": "shield"
+    },
+    {
+     "id": "mysticcyan_helmet",
+     "type": "head"
+    },
+    {
+     "id": "mysticcyan_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/mysticcyan/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "mysticcyan_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "mysticcyan_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "mysticcyan_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "mysticcyan_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "sakura",
+   "name": "Sakura",
+   "color": "#be185d",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "sakura_sword",
+     "type": "sword"
+    },
+    {
+     "id": "sakura_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "sakura_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "sakura_club",
+     "type": "heavy"
+    },
+    {
+     "id": "sakura_gauntlet",
+     "type": "heavy"
+    },
+    {
+     "id": "sakura_axe",
+     "type": "axe"
+    },
+    {
+     "id": "sakura_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "sakura_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "sakura_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "sakura_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "sakura_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "sakura_spear",
+     "type": "sword"
+    },
+    {
+     "id": "sakura_bow",
+     "type": "bow"
+    },
+    {
+     "id": "sakura_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "sakura_shield",
+     "type": "shield"
+    },
+    {
+     "id": "sakura_hat",
+     "type": "head"
+    },
+    {
+     "id": "sakura_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/sakura/wing_worn",
+     "glide": true
+    },
+    {
+     "id": "sakura_katana",
+     "type": "sword"
+    },
+    {
+     "id": "sakura_bigsword",
+     "type": "sword"
+    }
+   ]
+  },
+  {
    "id": "soulskull",
    "name": "Soul Skull",
    "color": "#14b8a6",
@@ -5557,6 +6331,104 @@
     },
     {
      "id": "void_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "nitro",
+   "name": "Discord Nitro",
+   "color": "#5865f2",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "nitro_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nitro_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "nitro_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nitro_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "nitro_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "nitro_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "nitro_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nitro_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "nitro_spear",
+     "type": "sword"
+    },
+    {
+     "id": "nitro_trident",
+     "type": "trident"
+    },
+    {
+     "id": "nitro_staff",
+     "type": "sword"
+    },
+    {
+     "id": "nitro_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nitro_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "nitro_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "nitro_shield",
+     "type": "shield"
+    },
+    {
+     "id": "nitro_helmet",
+     "type": "head"
+    },
+    {
+     "id": "nitro_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/nitro/wings_worn",
+     "glide": true
+    },
+    {
+     "id": "nitro_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "nitro_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "nitro_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "nitro_armor_boots",
      "type": "armor",
      "slot": "boots"
     }

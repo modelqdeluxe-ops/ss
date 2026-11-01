@@ -30,8 +30,10 @@ import net.tierrasfantasticas.tfclient.items.TFItemTypes;
 final class BossTestSets {
     private BossTestSets() {}
 
-    static final String[] SETS = {"dryadia", "spring", "drakegoat", "onicurse", "deepsea"};
-    private static final int EACH = 110;
+    // (1.3.163) las 8 crates siguientes y el set de Discord Nitro; las de la 1.3.162 eran dryadia, spring, drakegoat,
+    // onicurse y deepsea
+    static final String[] SETS = {"dragonstone", "leviathan", "aceruin", "violet", "runemoth", "nexus", "mysticcyan", "sakura", "nitro"};
+    private static final int EACH = 140;
 
     private static Item item(String set, String slug) {
         Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("tfclient", set + "_" + slug));
@@ -87,13 +89,13 @@ final class BossTestSets {
                     }
                     Item chest = item(set, "armor_chestplate"), legs = item(set, "armor_leggings"), feet = item(set, "armor_boots");
                     Item head = first(set, "hat", "helmet", "crown", "armor_helmet");
-                    Item wings = first(set, "wings", "wing");
+                    Item wings = first(set, "wings", "wing", "backpack");
                     Item weapon = first(set, "sword", "big_sword", "great_sword", "battle_axe");
                     boolean worn = wings instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
                     r.event("set " + set + ": " + n + " objetos (" + slugs.toString().trim() + "); armadura " + (chest != null && legs != null && feet != null)
                             + ", cabeza " + (head == null ? "-" : key(head)) + ", alas " + (wings == null ? "-" : key(wings)) + " (modelo puesto " + worn
                             + "), arma " + (weapon == null ? "-" : key(weapon))
-                            + (n >= 16 && chest != null && head != null && wings != null && worn && weapon != null ? " (bien)" : " (MAL)"));
+                            + (n >= 16 && (chest != null || "sakura".equals(set)) && head != null && wings != null && worn && weapon != null ? " (bien)" : " (MAL)"));
                     // 1: las alas puestas (en el pecho, como las lleva un jugador), el casco del set, las grebas, las botas y el arma
                     if (wings != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(wings));
                     if (legs != null) player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs));
@@ -107,14 +109,26 @@ final class BossTestSets {
                 case 32 -> BossTest.camera = "frente";
                 case 60 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_2_alas_frente");
                 case 62 -> {
-                    // 2: la armadura entera (peto y casco de armadura)
+                    // 3: la mochila, si el set trae mochila y alas
+                    Item pack = item(set, "backpack");
+                    if (pack != null && first(set, "wings", "wing") != null) {
+                        player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(pack));
+                        BossTest.camera = "espalda";
+                    }
+                }
+                case 90 -> {
+                    if (item(set, "backpack") != null && first(set, "wings", "wing") != null) BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_3_mochila_espalda");
+                }
+                case 92 -> {
+                    // 4: la armadura entera (peto y casco de armadura)
                     Item chest = item(set, "armor_chestplate"), helm = item(set, "armor_helmet");
                     if (chest != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chest));
                     if (helm != null) player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helm));
+                    BossTest.camera = "frente";
                 }
-                case 90 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_3_armadura_frente");
-                case 92 -> {
-                    // 4: todos los objetos del set en el inventario (que ninguno salga como el cubo morado y negro)
+                case 120 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_4_armadura_frente");
+                case 122 -> {
+                    // 5: todos los objetos del set en el inventario (que ninguno salga como el cubo morado y negro)
                     int slot = 9;
                     for (Item it : ForgeRegistries.ITEMS) {
                         var st = TFItemTypes.setOf(it);
@@ -122,8 +136,8 @@ final class BossTestSets {
                     }
                     BossTest.openInventory = true;
                 }
-                case 104 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_4_inventario");
-                case 106 -> BossTest.closeScreen = true;
+                case 134 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_5_inventario");
+                case 136 -> BossTest.closeScreen = true;
                 default -> { }
             }
             return;

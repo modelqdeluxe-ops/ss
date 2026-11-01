@@ -52,6 +52,16 @@
   "tfclient:drakegoat_wing",
   "tfclient:onicurse_wings",
   "tfclient:deepsea_wing",
+  "tfclient:dragonstone_wings",
+  "tfclient:leviathan_wings",
+  "tfclient:aceruin_wings",
+  "tfclient:violet_backpack",
+  "tfclient:violet_wings",
+  "tfclient:runemoth_wing",
+  "tfclient:nexus_wings",
+  "tfclient:mysticcyan_backpack",
+  "tfclient:mysticcyan_wings",
+  "tfclient:sakura_wing",
   "tfclient:soulskull_wings",
   "tfclient:patrick_wings",
   "tfclient:beats_wings",
@@ -73,6 +83,7 @@
   "tfclient:cosmeticsv1_ender_backpack",
   "tfclient:unicorncos_unicorn_backpack",
   "tfclient:springcos_wings",
-  "tfclient:void_wings"
+  "tfclient:void_wings",
+  "tfclient:nitro_wings"
  ]
 }

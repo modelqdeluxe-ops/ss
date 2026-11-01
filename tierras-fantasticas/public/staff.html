@@ -167,7 +167,8 @@
   async function loadCatalog() {
     if (catalog.length) return renderCatalog();
     try {
-      catalog = await (await fetch('/api/products')).json();
+      // (1.3.163) el del staff: también lo que no sale en la tienda (el set de Discord Nitro)
+      catalog = await api('/api/staff/products');
     } catch {
       catalog = [];
     }

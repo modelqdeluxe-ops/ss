@@ -1,5 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.163, 8 CRATES MÁS Y EL SET DISCORD NITRO**: el Nitro no se vende; lo da el staff desde `/staff`
+> («Test») y se quita con «Reembolsar» (producto `staffOnly`). CHECKPOINT en `HANDOFF.md`.
+>
 > **1 nov 2026 — 1.3.162, 5 CRATES NUEVAS**: Dríada, Primavera, Draco Imperial, Maldición Oni y Reliquias del Abismo,
 > en la web y en el mod. Ojo con `crates.py` (borra campos a mano de los rangos) y `wear_export.py` (rehace sets viejos):
 > el CHECKPOINT de `HANDOFF.md` dice cómo se hizo. Prueba `[prueba-jefes=sets]`.
