@@ -190,6 +190,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.160: 5 EMOTES, MÚSICA EN LAS PROTECCIONES, ESCUDO DE GUERRA) — lee esto primero
+
+Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está cada cosa: §7 de
+[`tf-client/CLANES.md`](tf-client/CLANES.md)):
+- **5 emotes** (el de la 1.3.159 no le gustó: se quitó) con la tecla B, que abre una rueda (`ClanEmoteWheel`):
+  Estandarte, Corona, Trueno, Fiesta y Órbita (`clans/client/ClanEmotes`, dibujos en `ClanEmoteFx`), cada uno con su
+  música (`tools/pad/emotes_sonido.py` → `sounds/clanes/emote_<nombre>.ogg`, numpy con filtros y sala por FFT).
+- **Sin corchetes** en el estandarte y en los emotes: solo las letras, con borde oscuro y una estrella a cada lado.
+- **Música en las protecciones** (`PadZoneMusic`, pestaña MÚSICA de la zona; la app Música elige la canción): suena en
+  bucle, igual en toda la zona, para quien está dentro; al salir se apaga. «Oír la música de otros» (Ajustes) la quita.
+- **Etiqueta arcoíris animada en el chat** (`ChatComponentClanMixin`, `require = 0`: si no engancha, no rompe nada).
+- **Guerra simétrica** (los dos lados a 91 px de las barras, medido) y **escudo de guerra** en la tienda del clan.
+- Cosas a saber: en GitHub Actions no hay tarjeta de sonido (el motor de sonido del juego no arranca): la prueba
+  comprueba que el servidor cuenta la zona al entrar y al salir, que el cliente la pone y la quita y que la canción se
+  baja; que suene de verdad solo se oye en un PC con sonido.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.159: LOS 12 PUNTOS DEL DUEÑO — EMOTE, ESTANDARTE, ETIQUETA ARCOÍRIS) — lee esto primero
 
 Lo que pidió el dueño tras ver la 1.3.158 (literal y la tabla de dónde está cada cosa: §6 de
