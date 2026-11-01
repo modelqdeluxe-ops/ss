@@ -388,6 +388,16 @@ public final class BossTestClient {
 
     private static int videoFrame, videoWait;
     private static java.util.UUID videoWho;
+    /** El campo de visión de antes del vídeo (en el vídeo, 62: el emote entero, de los pies a los rayos, más cerca). */
+    private static int videoFov = -1;
+
+    private static void endVideo(Minecraft mc) {
+        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;
+        BossTest.video = null;
+        BossTest.videoBusy = false;
+        if (videoFov > 0) mc.options.fov().set(videoFov);
+        videoFov = -1;
+    }
 
     /**
      * (1.3.159) Graba un vídeo del emote: con el reloj del emote a mano (ClanEmoteClient.fixedClock), un fotograma por
@@ -403,6 +413,8 @@ public final class BossTestClient {
             videoFrame = 0;
             videoWait = 0;
             videoWho = mc.player.getUUID();
+            videoFov = mc.options.fov().get();
+            mc.options.fov().set(62);
             return;
         }
         double e = net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.elapsed(videoWho);
@@ -411,9 +423,7 @@ public final class BossTestClient {
             // llega en un rato, se deja
             if (++videoWait > 900) {
                 TFClient.LOGGER.warn("Prueba de jefes: el vídeo {} no empezó (no llegó el emote)", name);
-                net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;
-                BossTest.video = null;
-                BossTest.videoBusy = false;
+                endVideo(mc);
             }
             return;
         }
@@ -430,9 +440,7 @@ public final class BossTestClient {
         net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += 1 / 30.0;
         if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.DURATION + 0.3) * 30)) {
             TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
-            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;
-            BossTest.video = null;
-            BossTest.videoBusy = false;
+            endVideo(mc);
         }
     }
 

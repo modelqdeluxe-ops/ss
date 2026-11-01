@@ -79,11 +79,19 @@ final class BossTestClanes2 {
         p.teleportTo(level, from.x, from.y, from.z, yaw, pitch);
     }
 
-    private static void place(ServerPlayer p, ServerLevel level, BlockPos at, ItemStack stack) {
+    /** Lo pone como el jugador (clic derecho encima del bloque de abajo). Devuelve lo que pasó (y quién estorba, si alguien). */
+    private static String place(ServerPlayer p, ServerLevel level, BlockPos at, ItemStack stack) {
         p.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos below = at.below();
-        p.gameMode.useItemOn(p, level, p.getMainHandItem(), InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(below), Direction.UP, below, false));
+        net.minecraft.world.InteractionResult res = p.gameMode.useItemOn(p, level, p.getMainHandItem(), InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(below), Direction.UP, below, false));
         p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        StringBuilder in = new StringBuilder();
+        for (net.minecraft.world.entity.Entity e : level.getEntities((net.minecraft.world.entity.Entity) null, new net.minecraft.world.phys.AABB(at))) {
+            in.append(in.length() == 0 ? "" : ",").append(e.getName().getString());
+        }
+        return res + " en " + at.toShortString() + " sobre " + level.getBlockState(below).getBlock().getName().getString()
+                + (in.length() > 0 ? ", estorban " + in : "");
     }
 
     static void step(int t, MinecraftServer server, ServerLevel level, ServerPlayer player, BossTest.Rep r) {
@@ -179,7 +187,8 @@ final class BossTestClanes2 {
                 rival2.hurt(player.damageSources().playerAttack(player), 1000F);
                 r.event("clanes2 5a (golpe 1 a un rival): " + PadClanWar.testObjectives(A));
             }
-            case 434 -> {
+            // el noqueo deja al noqueado 40 ticks invulnerable (Revivir, invulnerableTime = 40): se remata pasado eso
+            case 470 -> {
                 rival2.hurt(player.damageSources().playerAttack(player), 1000F);
                 String after = PadClanWar.testObjectives(A);
                 boolean again = PadClanWar.testKill(player, rival2);
@@ -187,8 +196,8 @@ final class BossTestClanes2 {
                         + (after.endsWith("pvp=1") && !again ? " (bien: 1, y no se puede farmear)" : " (MAL)"));
                 GlobalFlags.getInstance().globalPVP = pvpBefore;
             }
-            case 440 -> BossTest.openPad = "clanes/guerra";
-            case 470 -> BossTest.actPad = "§guerra";
+            case 472 -> BossTest.openPad = "clanes/guerra";
+            case 496 -> BossTest.actPad = "§guerra";
             case 520 -> BossTest.shot(r, "clanes2_09_guerra_pvp");
             // el reto de duelo con sus botones
             case 522 -> {
@@ -214,8 +223,8 @@ final class BossTestClanes2 {
                 act(player, "banco", "banco.cofre");
                 int still = count(player, chest);
                 player.teleportTo(level, ax + 0.5, ground(level, ax, az).getY(), az + 0.5, 0F, 18F);
-                chestPos = ground(level, ax, az + 3);
-                place(player, level, chestPos, new ItemStack(chest));
+                chestPos = ground(level, ax - 12, az + 10);
+                String why = place(player, level, chestPos, new ItemStack(chest));
                 boolean placed = level.getBlockState(chestPos).getBlock() == ClanBlocks.BANK.get();
                 act(player, "banco", "banco.cofre");
                 int afterPlace = count(player, chest);
@@ -228,7 +237,7 @@ final class BossTestClanes2 {
                 int back = count(player, chest);
                 r.event("clanes2 7 (el cofre, uno por clan): COFRE da " + one + ", otra vez " + still + "; puesto " + placed + ", COFRE con él puesto deja "
                         + afterPlace + "; un rival no lo quita " + rivalCant + ", un miembro raso no " + mateCant + ", el líder sí " + gone
-                        + " y le vuelve: " + back + (one == 1 && still == 1 && placed && afterPlace == 0 && rivalCant && mateCant && gone && back == 1
+                        + " y le vuelve: " + back + (placed ? "" : " [al ponerlo: " + why + "]") + (one == 1 && still == 1 && placed && afterPlace == 0 && rivalCant && mateCant && gone && back == 1
                         ? " (bien)" : " (MAL)"));
                 place(player, level, chestPos, new ItemStack(chest));
                 vanillaPos = chestPos.east(2);
@@ -341,7 +350,11 @@ final class BossTestClanes2 {
             case 1080 -> {
                 BossTest.command(server, "time set 12800");
                 BlockPos g = ground(level, ax + 6, az - 6);
-                player.teleportTo(level, g.getX() + 0.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
+                // mirando un poco abajo: la cámara de frente queda algo más baja y mira hacia arriba (cabe la insignia
+                // arriba y los pies abajo); sin nada en la mano
+                player.teleportTo(level, g.getX() + 0.5, g.getY(), g.getZ() + 0.5, 0F, 12F);
+                player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
                 mate.teleportTo(level, g.getX() + 40.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
                 BossTest.camera = "frente";
                 BossTest.hideHud = true;

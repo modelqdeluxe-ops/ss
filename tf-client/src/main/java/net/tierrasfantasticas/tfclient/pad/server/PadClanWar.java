@@ -691,12 +691,25 @@ public final class PadClanWar {
         String side = side(w, id);
         for (JsonElement e : w.getAsJsonArray("objetivos")) {
             JsonObject o = e.getAsJsonObject();
+            if (PVP_ID.equals(TFJson.str(o, "id", ""))) {
+                // (1.3.159) el PvP no pasa por record (cuenta en recordKill, una muerte cada vez): se llena aquí
+                double meta = TFJson.dec(o, "meta" + side, PVP.amount()), cur = TFJson.dec(o, "prog" + side, 0);
+                if (cur < meta) {
+                    o.addProperty("prog" + side, meta);
+                    JsonObject ap = TFJson.obj(w, "aportes" + side);
+                    ap.addProperty(player.getUUID().toString(), TFJson.dec(ap, player.getUUID().toString(), 0) + (meta - cur));
+                    w.add("aportes" + side, ap);
+                    STORE_IMPL.changed();
+                }
+                continue;
+            }
             PadClanProgress.Mission m = byId(TFJson.str(o, "id", ""));
             if (m == null) continue;
             int left = (int) Math.ceil(TFJson.dec(o, "meta" + side, 0) - TFJson.dec(o, "prog" + side, 0));
             Predicate<TFJobsConfig.Target> p = net.tierrasfantasticas.tfclient.jobs.TFMissionCheck.sample(player.getServer(), m.type(), m.target());
             if (p != null && left > 0 && active(id) != null) record(player, id, m.type(), p, left);
         }
+        if (active(id) != null && progress(w, side) >= 1.0 - 1e-9) finish(player.getServer(), w);
     }
 
     public static void testFinish(String clanId) {

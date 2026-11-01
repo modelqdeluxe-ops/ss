@@ -37,7 +37,7 @@ import org.joml.Matrix4f;
  */
 public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEntity> {
     private static final ResourceLocation WHITE = new ResourceLocation(TFClient.MOD_ID, "textures/misc/blanco.png");
-    private static final int NX = 8, NY = 16;
+    private static final int NX = 12, NY = 16;
     /** La tela: de arriba (bajo el travesaño) a abajo, ancho y dónde va respecto al asta. */
     private static final float TOP = 2.34F, BOTTOM = 0.86F, HALF = 0.5F, Z0 = 0.10F;
     private final Font font;
@@ -66,14 +66,14 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
         // la tela: el ribete (más oscuro, con un toque dorado) y encima el paño del color del clan
         int trim = mix(darken(rgb, 0.45F), 0xC9962E, 0.25F);
         cloth(pose, solid, t, 0F, 0F, trim, lit, 0F);
-        cloth(pose, solid, t, 0.05F, 0.05F, rgb, lit, 0.004F);
-        cloth(pose, solid, t, 0.05F, 0.05F, rgb, lit, -0.004F);
+        cloth(pose, solid, t, 0.05F, 0.05F, rgb, lit, 0.005F);
+        cloth(pose, solid, t, 0.05F, 0.05F, rgb, lit, -0.005F);
         // la insignia, por delante y por detrás
         if (look != null) {
             VertexConsumer badge = buffers.getBuffer(RenderType.entityCutoutNoCull(look.badgeTexture()));
             float size = 0.70F, cy = TOP - 0.50F;
-            badge(pose, badge, t, cy, size, lit, 0.010F, false);
-            badge(pose, badge, t, cy, size, lit, -0.006F, true);
+            badge(pose, badge, t, cy, size, lit, 0.011F, false);
+            badge(pose, badge, t, cy, size, lit, -0.011F, true);
             // la etiqueta, debajo, con su efecto: letra a letra sobre la onda de la tela (si fuera plana, la tela la tapaba
             // a trozos al ondear)
             String tag = "[" + look.tag() + "]";
@@ -94,12 +94,16 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
                     int col = ClanTagFx.colorAt(look.fx(), i, cps.length, now);
                     Component one = Component.literal(ch).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)
                             .withColor(net.minecraft.network.chat.TextColor.fromRgb(col)));
+                    // la pendiente de la tela ahí (dz/dx; por detrás sale la misma): la letra se inclina con ella
+                    float slope = (wave(t, u + 0.01F, v) - wave(t, u - 0.01F, v)) / (0.02F * 2 * HALF);
                     pose.pushPose();
                     if (side == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
-                    pose.translate(x, ty, side == 0 ? Z0 + dz + 0.012F : -(Z0 + dz) + 0.010F);
+                    pose.translate(cx, ty, side == 0 ? Z0 + dz + 0.016F : -(Z0 + dz) + 0.016F);
+                    pose.mulPose(Axis.YP.rotation((float) -Math.atan(slope)));
                     pose.scale(-k, -k, k);
                     pose.mulPose(Axis.YP.rotationDegrees(180));
-                    font.drawInBatch(one, 0F, -4F, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+                    font.drawInBatch(one, -cw / k / 2F, -4F, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0,
+                            LightTexture.FULL_BRIGHT);
                     pose.popPose();
                     x += cw;
                 }
@@ -137,7 +141,9 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
                 for (int k = 0; k < 4; k++) {
                     float shade = 1.06F - 0.22F * vs[k];
                     int c = scale(rgb, shade);
-                    float z = Z0 + wave(t, us[k], vs[k] * (TOP - BOTTOM) / (TOP - BOTTOM)) + dz;
+                    // la onda según el sitio de verdad en la tela (no el de esta capa): el ribete, el paño, la insignia y la
+                    // etiqueta ondean igual y no se cruzan (antes el ribete asomaba en picos oscuros y tapaba letras)
+                    float z = Z0 + wave(t, (xs[k] + HALF) / (2 * HALF), (TOP - ys[k]) / (TOP - BOTTOM)) + dz;
                     vc.vertex(m, xs[k], ys[k], z).color(c >> 16 & 255, c >> 8 & 255, c & 255, 255).uv(0.5F, 0.5F)
                             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, 0, 0, 1).endVertex();
                 }

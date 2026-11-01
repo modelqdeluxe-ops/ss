@@ -254,7 +254,7 @@ public final class PadClanBank {
     /**
      * La pestaña BANCO (1.3.159, el dueño: «la pestaña del banco es demasiado grande, no me deja ver los items ni los que
      * puedo meter»): sin ficha grande arriba (lo del banco va en la cabecera) y en dos vistas que usan todo el sitio:
-     * «banco», lo guardado (pulsar uno saca una pila), y «banco_meter» (METER ›), lo que llevas (pulsar uno lo guarda;
+     * «banco», lo guardado (pulsar uno saca una pila), y «banco_meter» (METER), lo que llevas (pulsar uno lo guarda;
      * METER TODO, con doble clic, guarda todo lo que entra). «banco_reg» es el registro.
      */
     static PadView view(PadView.Builder b, ServerPlayer player, String clanId, JsonObject c, String mode) {
@@ -287,20 +287,17 @@ public final class PadClanBank {
         if (mode.equals("banco_meter")) {
             // lo que llevas y se puede guardar, en casillas (pulsar uno guarda todo lo de ese tipo)
             Map<String, Long> mine = new LinkedHashMap<>();
-            int skipped = 0;
             for (ItemStack s : player.getInventory().items) {
-                if (s.isEmpty()) continue;
                 String k = key(s);
                 if (k != null && !k.equals("tfclient:banco_clan") && !k.equals("tfclient:estandarte_clan")) mine.merge(k, (long) s.getCount(), Long::sum);
-                else if (k == null) skipped++;
             }
-            b.header(status + ". Toca lo que quieras guardar (todo lo de ese tipo)." + (skipped > 0 ? " Lo encantado o con nombre no entra." : ""));
+            b.header(status + ". Toca uno para guardarlo (todo).");
             for (Map.Entry<String, Long> e : mine.entrySet()) {
                 ItemStack icon = new ItemStack(item(e.getKey()));
                 b.cell(icon, "×" + PadView.shortNumber(e.getValue()), 0x1E7C2C, "banco.meter:" + e.getKey(), false);
             }
             b.empty("No llevas nada que se pueda guardar (lo encantado, con nombre o gastado no entra).");
-            b.footer(PadView.Btn.of("‹ BANCO", "banco.volver", PadView.BLUE));
+            b.footer(PadView.Btn.of("BANCO", "banco.volver", PadView.BLUE));
             if (!mine.isEmpty()) {
                 boolean sure = PadServer.confirming(player, "banco.metertodo");
                 b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "METER TODO", "banco.metertodo", PadView.GREEN));
@@ -320,8 +317,8 @@ public final class PadClanBank {
             ItemStack icon = new ItemStack(it);
             b.cell(icon, PadView.shortNumber(n), 0x18265C, take ? "banco.sacar:" + e.getKey() : "", false);
         }
-        b.empty("El banco está vacío. METER › para guardar lo que llevas.");
-        b.footer(PadView.Btn.of("METER ›", "banco.vermeter", PadView.GREEN));
+        b.empty("El banco está vacío. METER para guardar lo que llevas.");
+        b.footer(PadView.Btn.of("METER", "banco.vermeter", PadView.GREEN));
         if (treasurer && up < MAX_UPGRADES) {
             boolean sure = PadServer.confirming(player, "banco.mejorar");
             b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "MEJORAR " + upgradeCost(up + 1) + "¢", "banco.mejorar", PadView.GOLD));

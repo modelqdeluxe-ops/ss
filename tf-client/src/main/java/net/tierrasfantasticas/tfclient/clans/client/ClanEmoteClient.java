@@ -313,7 +313,10 @@ public final class ClanEmoteClient {
             }
             pose.popPose();
         }
-        // los brillos (con gravedad: posición = salida + velocidad·t + ½·g·t²)
+        // los brillos (con gravedad: posición = salida + velocidad·t + ½·g·t²). El búfer de la luz se pide otra vez: pedir el
+        // de los rayos, la insignia o la letra cierra el anterior, y lo que se escribía en él salía con otro dibujo (manchas
+        // oscuras en vez de brillos)
+        glow = buffers.getBuffer(RenderType.eyes(GLOW));
         sparkles(pose, glow, mc, seed, pal, e, 0.55, 46, bobY, 4.2, -7.5, 1.7);
         sparkles(pose, glow, mc, seed ^ 0x9E3779B97F4A7C15L, pal, e, 3.6, 40, 3.0, 3.6, -6.0, 1.4);
         fountain(pose, glow, mc, seed, pal, e);

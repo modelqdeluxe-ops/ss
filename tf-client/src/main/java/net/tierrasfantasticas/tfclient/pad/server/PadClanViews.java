@@ -128,7 +128,7 @@ final class PadClanViews {
             case "onda" -> "onda de " + fx.colors().length + " colores (velocidad " + fx.speed() + ")";
             default -> "un color, #" + hex;
         };
-        b.header("La etiqueta [" + tag + "] y la insignia. ETIQUETA abre el editor (color, degradado, arcoíris).");
+        b.header("La etiqueta [" + tag + "] y la insignia. ETIQUETA: color y efectos.");
         b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "[" + tag + "]", cur,
                 List.of("Efecto: " + fxName + ".", "Insignia: " + PadClanProgress.badge(c).name() + "."), -1, "",
                 PadView.Btn.of("ETIQUETA", "§color:clanes:estilo:" + hex + ":" + tag + ":" + fx.encode(), PadView.GOLD), null)
