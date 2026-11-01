@@ -28,6 +28,7 @@ WEB_TOOLS = os.path.join(HERE, '..', '..', 'tierras-fantasticas', 'tools')
 sys.path.insert(0, WEB_TOOLS)
 import build_items as B
 import hmc_worn  # noqa: E402
+import quitar_rayas  # noqa: E402
 import crates as C  # noqa: E402
 
 RES = os.path.join(HERE, '..', 'src', 'main', 'resources')
@@ -410,6 +411,8 @@ class SetWriter:
     def write_model(self, path_rel, data):
         if fit_gui(data, self.set_id):
             self.gui_fitted += 1
+        # (1.3.164) sin las caras de canto de los planos sin grosor (rayas negras alrededor: tools/quitar_rayas.py)
+        quitar_rayas.strip_edge_faces(data.get('elements'))
         self.planes_trimmed += self.trim_planes(data)
         self.zfight_fixed += separate_coplanar(data)
         dst = os.path.join(ASSETS, 'models', 'item', path_rel + '.json')
@@ -605,7 +608,9 @@ def mark_flags(entry):
 Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02, 'cosmeticsv1/frozen_backpack': -0.2,
               'halloweenbundle/spooky_pumpkin_wings': -0.12,
               # (1.3.163) con la posición de su pack (la de CosmeticsCore) quedaban a la altura de la cintura
-              'mysticcyan/wings': -0.24, 'mysticcyan/backpack': -0.5, 'violet/wings': -0.24}
+              'mysticcyan/wings': -0.24, 'mysticcyan/backpack': -0.5, 'violet/wings': -0.24,
+              # (1.3.164) con la posición del pack atravesaban el pecho
+              'runemoth/wing': -0.24, 'violet/backpack': -0.5}
 # Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
 HMC_SKIP = {'shadow'}
 # Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.
@@ -1057,10 +1062,44 @@ def finish_back(model, tag, alpha_of):
         if abs(wrap_body(model)) > 0.05:
             done.append('traje centrado en el cuerpo')
         return done
+    if tag in BULK_Q_BY_TAG:
+        dz = snap_bulk(model, alpha_of, BULK_Q_BY_TAG[tag])
+        if dz:
+            done.append(f'el bulto pegado a la espalda (z {dz:+.2f})')
+        return done
     dz = snap_to_back(model, alpha_of)
     if dz:
         done.append(f'pegado a la espalda (z {dz:+.2f})')
     return done
+
+
+# (1.3.164, el dueño: «algunas alas o mochilas están separadas del cuerpo… audita todos los modelos nuevos») piezas en
+# las que la capa de contacto normal (el 15 % más cercano del torso) son correas o puntas que se meten en el cuerpo,
+# mientras el bulto (la caja de la mochila, el cuerpo de las alas) queda lejos, o que atraviesan el pecho: se coloca
+# en z para que esa parte (cuantil q de lo que se ve en el torso) quede justo en la espalda. Medido con
+# /tmp/.../audit_backs.py y en el probador de la web de lado.
+BULK_Q_BY_TAG = {'mysticcyan/backpack': 0.3, 'nitro/wings': 0.3, 'drakegoat/wing': 0.3, 'violet/backpack': 0.3,
+                 'runemoth/wing': 0.1}
+BULK_FRONT_MAX = 0.01   # lo que puede quedar delante del pecho (parte de lo que se ve en el torso)
+
+
+def snap_bulk(model, alpha_of, q):
+    pts, wts = back_points(model, alpha_of)
+    torso = [i for i, p in enumerate(pts) if abs(p[0]) <= BACK_CENTER and -0.85 <= p[1] <= 0.15]
+    if len(torso) < 12:
+        return 0.0
+    zs = [pts[i][2] - BACK_SURFACE for i in torso]
+    ws = [wts[i] for i in torso]
+    shift = _wquantile(zs, ws, q)
+    # que nada atraviese el pecho (lo que quede más adelante del pecho, a -0,25 de la espalda)
+    front = _wquantile(zs, ws, BULK_FRONT_MAX)
+    shift = min(shift, front + 0.25)
+    if abs(shift) < 0.005:
+        return 0.0
+    dz = -shift / 0.625 * 16
+    head = model['display']['head']
+    head['translation'] = [head['translation'][0], head['translation'][1], round(head['translation'][2] + dz, 3)]
+    return dz
 
 
 def held_display(model):

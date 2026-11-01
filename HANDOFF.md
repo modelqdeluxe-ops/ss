@@ -190,6 +190,27 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.164: AUDITORÍA DE LOS SETS NUEVOS) — lee esto primero
+
+Lo que dijo el dueño tras la 1.3.163 (con capturas del probador de la web: fondo café, su skin de panda) y lo hecho:
+1. **Alas y mochilas separadas o atravesando el cuerpo**: medido de lado en el probador (playwright, girando el lienzo) y
+   con un auditor (`tools/check_backs.py` + el cuantil del bulto). `BULK_Q_BY_TAG` de `build_mod_items.py` (`snap_bulk`):
+   mochila del Cian Místico, alas del Nitro y del Draco Imperial (separadas), mochila de Violeta y alas de la Polilla
+   Rúnica (atravesaban el pecho). El «rectángulo negro» de su primera captura era el brazo negro de su skin de panda.
+2. **Discord Nitro de diamante** (`SPECIALS` → tier `diamond`; se encanta como cualquier set).
+3. **Crates nuevas primero con «Nuevo»** (`NEW_CRATES` de `crates.py` → `isNew` en `products.json`; `crates()` y
+   `crateCard` de `public/app.js`, estilo `.crate-new`).
+4. **La skin asomaba por el casco**: con un casco o sombrero cosmético no se dibuja la segunda capa de la cabeza (el
+   «gorro»): `items/TFHeadHatClient` y `public/wardrobe.js`; y `tools/ajustar_cascos.py` agrandó los cascos cuyas
+   paredes quedaban dentro de la cabeza (Dríada x1,08, Aceruin x1,20).
+5. **Rayas negras del Ifrit** (y de los nuevos): eran las caras de canto de los planos sin grosor (fuego, chispas), que
+   cogen un texel oscuro: `tools/quitar_rayas.py` (mod, `public/models` y `public/wear`), y `build_mod_items.py` las quita
+   al generar.
+6. **Draco Imperial a 10 USD y netherita +2** (`CRATE_PRICES`, `CRATE_TIERS`).
+7. **Sakura quitada** (crate, set, modelos, texturas, nombres, etiquetas de espalda y de Better Combat, web).
+8. **GIFs** para Discord de los 13 sets con la skin de Pewez777 (probador de la web, sin la crate).
+- Prueba `[prueba-jefes=sets]` con los 13 sets.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.163: 8 CRATES MÁS Y EL SET DISCORD NITRO) — lee esto primero
 
 - **8 crates** (54 en total): `dragonstone` (Piedra de Dragón), `leviathan` (Leviatán: su pack no trae llave, usa la de

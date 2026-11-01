@@ -30,9 +30,9 @@ import net.tierrasfantasticas.tfclient.items.TFItemTypes;
 final class BossTestSets {
     private BossTestSets() {}
 
-    // (1.3.163) las 8 crates siguientes y el set de Discord Nitro; las de la 1.3.162 eran dryadia, spring, drakegoat,
-    // onicurse y deepsea
-    static final String[] SETS = {"dragonstone", "leviathan", "aceruin", "violet", "runemoth", "nexus", "mysticcyan", "sakura", "nitro"};
+    // (1.3.164) todos los sets nuevos de la 1.3.162 y la 1.3.163 (Sakura se quitó) y el de Discord Nitro
+    static final String[] SETS = {"dryadia", "spring", "drakegoat", "onicurse", "deepsea", "dragonstone", "leviathan", "aceruin",
+            "violet", "runemoth", "nexus", "mysticcyan", "nitro"};
     private static final int EACH = 140;
 
     private static Item item(String set, String slug) {
@@ -95,7 +95,7 @@ final class BossTestSets {
                     r.event("set " + set + ": " + n + " objetos (" + slugs.toString().trim() + "); armadura " + (chest != null && legs != null && feet != null)
                             + ", cabeza " + (head == null ? "-" : key(head)) + ", alas " + (wings == null ? "-" : key(wings)) + " (modelo puesto " + worn
                             + "), arma " + (weapon == null ? "-" : key(weapon))
-                            + (n >= 16 && (chest != null || "sakura".equals(set)) && head != null && wings != null && worn && weapon != null ? " (bien)" : " (MAL)"));
+                            + (n >= 16 && chest != null && head != null && wings != null && worn && weapon != null ? " (bien)" : " (MAL)"));
                     // 1: las alas puestas (en el pecho, como las lleva un jugador), el casco del set, las grebas, las botas y el arma
                     if (wings != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(wings));
                     if (legs != null) player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs));

@@ -122,8 +122,7 @@ CRATES = [
      'Tecnología y energía del nexo: gran espada, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/nexus/key', 499, ('#fde68a', '#d97706')),
     ('mysticcyan', 'Crate Cian Místico', 'Épico', 'Magia turquesa',
      'Cristal cian lleno de magia: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/mysticcyan/key', 499, ('#a5f3fc', '#0e7490')),
-    ('sakura', 'Crate Sakura', 'Edición limitada', 'Flores de cerezo',
-     'Pétalos de cerezo y acero japonés: katana, gran espada, espada, daga, garrote, guantelete, alabarda, maza, martillo, lanza, arco, escudo, alas y sombrero (este pack no trae armadura).', 'items/sakura/key', 499, ('#fecdd3', '#be185d')),
+    # (1.3.164) Sakura retirada (el dueño: «elimina el set ese de cerezo que no tiene armor»)
     ('soulskull', 'Crate Soul Skull', 'Legendario', 'Calaveras y fuego de almas',
      'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]
@@ -161,7 +160,7 @@ CRATE_EXTRAS = [coins(100), gacha(1), it(8, 'golden_apple', 'manzanas doradas'),
 
 
 def crate_price(set_id):
-    return CRATE_PRICE
+    return CRATE_PRICES.get(set_id, CRATE_PRICE)
 
 
 # (1.3.116, el dueño: «¿qué tienen que ver esas armaduras en los rangos si ya tenemos los sets custom?»; «esos
@@ -226,6 +225,14 @@ def give_commands(extras):
 # Nivel de los atributos de los sets (lo usa el TF Client; la web no los enseña). «netherite+1» es la netherita con 1
 # punto más de daño, de armadura en cada pieza y de dureza.
 CRATE_TIER = 'netherite+1'
+# (1.3.164, el dueño: «el precio del Draco Imperial ponle 10 USD, y que sea nivel netherita +2 puntos; los demás como las
+# otras crates») las crates con otro nivel y otro precio (centavos)
+CRATE_TIERS = {'drakegoat': 'netherite+2'}
+# (1.3.164, el dueño: «pon los sets nuevos siempre de primero… ponles un rotulito que diga nuevo») salen primero en la
+# tienda con «Nuevo» (isNew en products.json). Al meter otras, cámbialas aquí.
+NEW_CRATES = ('dryadia', 'spring', 'drakegoat', 'onicurse', 'deepsea', 'dragonstone', 'leviathan', 'aceruin', 'violet',
+              'runemoth', 'nexus', 'mysticcyan')
+CRATE_PRICES = {'drakegoat': 1000}
 
 # Rangos, de menor a mayor. Cada uno da su grupo de LuckPerms y su set completo (con el nivel de atributos del rango).
 # (TF Client 1.3.140, el dueño: «las armaduras de los rangos son netherita + 2 puntos: si la pechera de netherita es 8, la
@@ -323,13 +330,14 @@ def cosmetic_products():
 
 def mod_sets():
     """Sets que registra el TF Client: los de las crates, los de los rangos y el de la ruleta, con su nivel."""
-    out = [{'id': r[0], 'name': r[1].replace('Crate ', ''), 'color': r[7][1], 'tier': CRATE_TIER} for r in CRATES]
+    out = [{'id': r[0], 'name': r[1].replace('Crate ', ''), 'color': r[7][1], 'tier': CRATE_TIERS.get(r[0], CRATE_TIER)} for r in CRATES]
     out += [{'id': set_id, 'name': set_name, 'color': hexc, 'tier': tier} for _k, _n, set_id, set_name, _p, (_c, hexc), tier in RANKS]
     out.append({'id': ROULETTE_ROW[0], 'name': ROULETTE_ROW[1], 'color': ROULETTE_ROW[7][1], 'tier': CRATE_TIER})
     out += [{'id': set_id, 'name': f'Cosméticos {coll}', 'color': c2, 'tier': 'netherite'}
             for set_id, (coll, (_c1, c2), _themes) in COSMETICS.items()]
     out += [{'id': set_id, 'name': name, 'color': hexc, 'tier': tier} for set_id, name, hexc, tier in REWARD_SETS]
-    out += [{'id': s[0], 'name': s[1].replace('Set ', ''), 'color': s[5][1], 'tier': CRATE_TIER} for s in SPECIALS]
+    # (1.3.164, el dueño: «la armadura de Discord ponle atributos de diamante, no arriba de netherita… admite encantamientos»)
+    out += [{'id': s[0], 'name': s[1].replace('Set ', ''), 'color': s[5][1], 'tier': 'diamond'} for s in SPECIALS]
     return out
 
 
@@ -590,7 +598,10 @@ def main():
             # La crate es el set completo (se entrega entero con el comando del TF Client) y sus recursos.
             'commands': [f'tf web sets give {{player}} {set_id}', *give_commands(extras)],
         }
+        if set_id in NEW_CRATES:
+            crate['isNew'] = True
         crates.append(crate)
+    crates.sort(key=lambda c: 0 if c.get('isNew') else 1)
     weapons = listing(ROULETTE_SET)
     roulette = []
     for pid, name, spins, price in ROULETTE if ROULETTE_ENABLED else []:
