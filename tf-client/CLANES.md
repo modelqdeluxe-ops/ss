@@ -178,6 +178,21 @@ las guerras, de 24 horas o 2 días».
 
 Prueba: `[prueba-jefes=clanes,clanes3]` (`bosses/BossTestClanes3`, con un vídeo de cada emote: `video_emote_<nombre>.mp4`).
 
+**Después, en la misma 1.3.160** (el dueño: «mete muchos más emotes, que sean comprables en la tienda del clan», «no
+hagas test tan largos», «que los efectos se vean con shaders también, que no haya error como el evento del cumpleaños»,
+«pon varios efectos de arcoíris, muchos colores, como los títulos de las crates; el botón de arcoíris bloqueado, deben
+comprarlo en la tienda del clan»):
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| 10 emotes más | `ClanEmotes2` (Fénix, Tornado, Ventisca, Meteoro, Fuegos artificiales, Espadas, Aura, Corazones, Concierto, Portal), música en `emotes_sonido.py` | 15 en total; los 5 primeros, de todos los clanes (`ClanEmote.FREE`); los demás, oferta `emote` de la tienda del clan (6 a 14 ¢, para todo el clan: `emotes` en el JSON del clan, `ClanEmote.owns/unlock`, `ClanLooks` manda los bits `e`) |
+| La cuadrícula | `ClanEmoteWheel` | ya no es rueda: tarjetas de 5 en fila sobre fondo opaco; las no compradas con candado y TIENDA; clic o 1 a 9 |
+| Con shaders | `ClanEmoteClient.onPost/renderAfterShaders`, `vacio.AfterShaders.end` | con un paquete puesto, los efectos se apuntan y se dibujan después de su pasada final, con la profundidad de la escena (como la grieta y el letrero del cumpleaños); en la pasada de sombras, nada |
+| Arcoíris de pago | `ClanTagFx` (`style`, `rainbowOwned`), `PadColorPicker` (selector de estilos y candado), oferta `arcoiris` (`efectos_arcoiris`, 15 ¢) | el modo ARCOÍRIS con los 137 estilos de los títulos de las crates (`crates.client.color.FSRainbow`, el 0 es el de siempre); sin comprarlo el botón sale con candado y guardar arcoíris no vale (`PadClans` tagfx); `clanes.json` versión 4 añade las ofertas |
+
+Prueba corta: `[prueba-jefes=emotes]` (`bosses/BossTestEmotes`: bloqueos, compras, editor, cuadrícula y un vídeo de cada
+emote nuevo); con `[shaders]`, los 15 emotes en pasos de 0,25 s.
+
 ## 4. Ideas para la tienda del clan que no se hicieron (preséntaselas al dueño si pide más)
 
 `/clan home` (un punto de teletransporte del clan), insignias exclusivas de pago, partículas del clan en su territorio,
