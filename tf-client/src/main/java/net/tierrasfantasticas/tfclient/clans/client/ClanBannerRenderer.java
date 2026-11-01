@@ -81,6 +81,7 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
             float ty = TOP - 0.98F, v = (TOP - ty) / (TOP - BOTTOM);
             float k = 0.020F;
             int[] cps = tag.codePoints().toArray();
+            int outline = scale(rgb, 0.2F);
             float total = font.width(Component.literal(tag).withStyle(s -> s.withBold(true))) * k;
             for (int side = 0; side < 2; side++) {
                 float x = -total / 2F;
@@ -94,16 +95,21 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
                     int col = ClanTagFx.colorAt(look.fx(), i, cps.length, now);
                     Component one = Component.literal(ch).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)
                             .withColor(net.minecraft.network.chat.TextColor.fromRgb(col)));
-                    // la pendiente de la tela ahí (dz/dx; por detrás sale la misma): la letra se inclina con ella
+                    // la pendiente de la tela ahí, de lado (dz/dx) y de arriba abajo (dw/dv por metro): la letra se inclina con
+                    // ella para no meterse en la tela (de lado sale igual por detrás; de arriba abajo, al revés)
                     float slope = (wave(t, u + 0.01F, v) - wave(t, u - 0.01F, v)) / (0.02F * 2 * HALF);
+                    float slopeV = (wave(t, u, v + 0.01F) - wave(t, u, v - 0.01F)) / (0.02F * (TOP - BOTTOM));
                     pose.pushPose();
                     if (side == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
-                    pose.translate(cx, ty, side == 0 ? Z0 + dz + 0.016F : -(Z0 + dz) + 0.016F);
+                    pose.translate(cx, ty, side == 0 ? Z0 + dz + 0.018F : -(Z0 + dz) + 0.018F);
                     pose.mulPose(Axis.YP.rotation((float) -Math.atan(slope)));
+                    pose.mulPose(Axis.XP.rotation((float) Math.atan(side == 0 ? -slopeV : slopeV)));
                     pose.scale(-k, -k, k);
                     pose.mulPose(Axis.YP.rotationDegrees(180));
-                    font.drawInBatch(one, -cw / k / 2F, -4F, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0,
-                            LightTexture.FULL_BRIGHT);
+                    // con borde oscuro (como los carteles que brillan): la etiqueta de un color es del color del paño y no se
+                    // leía, y en arcoíris alguna letra salía del mismo tono
+                    font.drawInBatch8xOutline(one.getVisualOrderText(), -cw / k / 2F, -4F, 0xFFFFFFFF, 0xFF000000 | outline,
+                            pose.last().pose(), buffers, LightTexture.FULL_BRIGHT);
                     pose.popPose();
                     x += cw;
                 }
