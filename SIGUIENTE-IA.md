@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.164, AUDITORÍA DE LOS SETS NUEVOS**: alas y mochilas pegadas, sin rayas negras, cascos sin la skin
+> asomando, Nitro de diamante, Draco Imperial 10 USD, sin Sakura y crates nuevas primero con «Nuevo». Al meter sets
+> nuevos: míralos de LADO en el probador de la web (el dueño los mira ahí) y pasa `tools/quitar_rayas.py` y
+> `tools/ajustar_cascos.py`. CHECKPOINT en `HANDOFF.md`.
+>
 > **1 nov 2026 — 1.3.163, 8 CRATES MÁS Y EL SET DISCORD NITRO**: el Nitro no se vende; lo da el staff desde `/staff`
 > («Test») y se quita con «Reembolsar» (producto `staffOnly`). CHECKPOINT en `HANDOFF.md`.
 >
