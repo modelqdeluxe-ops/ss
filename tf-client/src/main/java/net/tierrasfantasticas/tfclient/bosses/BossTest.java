@@ -804,6 +804,8 @@ public final class BossTest {
     static volatile Boolean hideHud;
     /** (1.3.159) Para el cliente: la cámara («frente», «espalda», «primera»). */
     static volatile String camera;
+    /** (1.3.162) Para el cliente: el campo de visión de las capturas (0 = el que tenía). */
+    static volatile Integer fov;
     /** (1.3.159) Para el cliente: pulsar con el ratón el botón del chat que diga esto (en el último reto de duelo). */
     static volatile String chatClick;
     /** (1.3.160) Para el cliente: abrir la rueda de emotes (con ese como «debajo del ratón»; -2: cerrarla). */

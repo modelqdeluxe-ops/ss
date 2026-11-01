@@ -214,6 +214,17 @@ public final class BossTestClient {
             });
             BossTest.camera = null;
         }
+        if (BossTest.fov != null) {
+            int f = BossTest.fov;
+            BossTest.fov = null;
+            if (f > 0) {
+                if (shotFov < 0) shotFov = mc.options.fov().get();
+                mc.options.fov().set(f);
+            } else if (shotFov > 0) {
+                mc.options.fov().set(shotFov);
+                shotFov = -1;
+            }
+        }
         if (BossTest.chatClick != null) clickChat(mc, BossTest.chatClick);
         // (1.3.160) clanes3: la rueda de emotes, escribir en el chat, los colores de la etiqueta en el chat y la música de zona
         if (BossTest.emoteWheel != null) {
@@ -453,6 +464,8 @@ public final class BossTestClient {
     private static java.util.UUID videoWho;
     /** El campo de visión de antes del vídeo (en el vídeo, 62: el emote entero, de los pies a los rayos, más cerca). */
     private static int videoFov = -1;
+    /** (1.3.162) El campo de visión que había antes de BossTest.fov. */
+    private static int shotFov = -1;
 
     private static void endVideo(Minecraft mc) {
         net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = false;

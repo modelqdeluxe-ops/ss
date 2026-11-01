@@ -20,19 +20,18 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.items.TFItemTypes;
-import net.tierrasfantasticas.tfclient.items.TFWardrobe;
 
 /**
  * (1.3.162) Prueba «sets», corta: las 5 crates nuevas del dueño (Dríada, Primavera, Draco Imperial, Maldición Oni y
  * Reliquias del Abismo; el dueño: «no quiero errores, ningún error de textura, las alas deben colocarse bien en la espalda,
  * altura correcta»). Por cada set: cuántos objetos hay y si todos tienen modelo y textura que cargue el juego, y el
- * jugador con la armadura, el casco, las alas (en el Armario) y un arma, de espaldas y de frente.
+ * jugador con las alas puestas (en el pecho), el casco y un arma, de espaldas y de frente, y con la armadura entera.
  */
 final class BossTestSets {
     private BossTestSets() {}
 
     static final String[] SETS = {"dryadia", "spring", "drakegoat", "onicurse", "deepsea"};
-    private static final int EACH = 70;
+    private static final int EACH = 100;
 
     private static Item item(String set, String slug) {
         Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("tfclient", set + "_" + slug));
@@ -53,6 +52,13 @@ final class BossTestSets {
         return set == null ? "" : set.id() + "/" + path.substring(set.id().length() + 1);
     }
 
+    private static void undress(ServerPlayer player) {
+        player.getInventory().clearContent();
+        for (EquipmentSlot s : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            player.setItemSlot(s, ItemStack.EMPTY);
+        }
+    }
+
     static void step(int t, MinecraftServer server, ServerLevel level, ServerPlayer player, BossTest.Rep r) {
         Vec3 arena = BossTest.arena();
         int ax = (int) arena.x, az = (int) arena.z;
@@ -68,10 +74,7 @@ final class BossTestSets {
             String set = SETS[k];
             switch (at) {
                 case 0 -> {
-                    player.getInventory().clearContent();
-                    for (EquipmentSlot s : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-                        player.setItemSlot(s, ItemStack.EMPTY);
-                    }
+                    undress(player);
                     // cuántos objetos tiene el set y cuáles no están registrados
                     int n = 0;
                     StringBuilder slugs = new StringBuilder();
@@ -86,33 +89,38 @@ final class BossTestSets {
                     Item head = first(set, "hat", "helmet", "crown", "armor_helmet");
                     Item wings = first(set, "wings", "wing");
                     Item weapon = first(set, "sword", "big_sword", "great_sword", "battle_axe");
-                    if (chest != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chest));
+                    boolean worn = wings instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
+                    r.event("set " + set + ": " + n + " objetos (" + slugs.toString().trim() + "); armadura " + (chest != null && legs != null && feet != null)
+                            + ", cabeza " + (head == null ? "-" : key(head)) + ", alas " + (wings == null ? "-" : key(wings)) + " (modelo puesto " + worn
+                            + "), arma " + (weapon == null ? "-" : key(weapon))
+                            + (n >= 16 && chest != null && head != null && wings != null && worn && weapon != null ? " (bien)" : " (MAL)"));
+                    // 1: las alas puestas (en el pecho, como las lleva un jugador), el casco del set, las grebas, las botas y el arma
+                    if (wings != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(wings));
                     if (legs != null) player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs));
                     if (feet != null) player.setItemSlot(EquipmentSlot.FEET, new ItemStack(feet));
                     if (head != null) player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(head));
                     if (weapon != null) player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(weapon));
-                    boolean back = wings != null && TFWardrobe.setFromPad(player.getUUID(), TFWardrobe.BACK, key(wings));
-                    boolean worn = wings instanceof TFItemTypes.Cosmetic c && c.wornModel() != null;
-                    r.event("set " + set + ": " + n + " objetos (" + slugs.toString().trim() + "); armadura " + (chest != null && legs != null && feet != null)
-                            + ", cabeza " + (head == null ? "-" : key(head)) + ", alas " + (wings == null ? "-" : key(wings)) + " (modelo puesto " + worn
-                            + ", en el Armario " + back + "), arma " + (weapon == null ? "-" : key(weapon))
-                            + (n >= 16 && chest != null && head != null && wings != null && worn && back && weapon != null ? " (bien)" : " (MAL)"));
                     BossTest.camera = "espalda";
+                    BossTest.fov = 34;
                 }
-                case 30 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_espalda");
+                case 30 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_1_alas_espalda");
                 case 32 -> BossTest.camera = "frente";
-                case 62 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_frente");
+                case 60 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_2_alas_frente");
+                case 62 -> {
+                    // 2: la armadura entera (peto y casco de armadura)
+                    Item chest = item(set, "armor_chestplate"), helm = item(set, "armor_helmet");
+                    if (chest != null) player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chest));
+                    if (helm != null) player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helm));
+                }
+                case 90 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_3_armadura_frente");
                 default -> { }
             }
             return;
         }
         if (k == SETS.length && at == 0) {
-            TFWardrobe.setFromPad(player.getUUID(), TFWardrobe.BACK, "");
-            player.getInventory().clearContent();
-            for (EquipmentSlot s : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-                player.setItemSlot(s, ItemStack.EMPTY);
-            }
+            undress(player);
             BossTest.camera = "primera";
+            BossTest.fov = 0;
             BossTest.hideHud = false;
         }
         if (k == SETS.length && at == 10) BossTest.next(level);
