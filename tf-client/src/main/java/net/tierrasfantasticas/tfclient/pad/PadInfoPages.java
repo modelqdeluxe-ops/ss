@@ -23,14 +23,20 @@ final class PadInfoPages {
      */
     static final class Ajustes extends PadPage {
         private static final String[] NAMES = {"Sonidos del pad", "Tic al pasar por encima", "Animaciones", "Volumen",
-                "Oír los altavoces de otros", "Tema del pad", "Fondo del menú"};
+                "Oír los altavoces de otros", "Tema del pad", "Fondo del menú", "Teclas de revivir"};
         private static final String[] ABOUT = {"Clics, pestañas y avisos.", "Un tic suave al pasar el ratón por encima.",
                 "Fondo animado, brillos y transiciones.", "El de los sonidos del pad.", "La música que ponen cerca de ti.",
-                "El color del cristal.", "Una imagen o un color para la portada (o tus PNG)."};
+                "El color del cristal.", "Una imagen o un color para la portada (o tus PNG).",
+                "Rendirse y auto-revivir estando noqueado (mantener)."};
         private static final ItemStack[] ICONS = {new ItemStack(Items.NOTE_BLOCK), new ItemStack(Items.LEVER),
                 new ItemStack(Items.FIREWORK_ROCKET), new ItemStack(Items.JUKEBOX), new ItemStack(Items.BELL),
-                new ItemStack(Items.PINK_DYE), new ItemStack(Items.PAINTING)};
-        private static final int ROWS = 7;
+                new ItemStack(Items.PINK_DYE), new ItemStack(Items.PAINTING), new ItemStack(Items.TOTEM_OF_UNDYING)};
+        /** (1.3.157) La 8.ª, las teclas de revivir, solo si el revivir del TF Client está encendido. */
+        private static final int ROWS = 8;
+
+        private static int rows() {
+            return net.tierrasfantasticas.tfclient.revive.TFRevive.active() ? ROWS : ROWS - 1;
+        }
         /** Las muestras de los temas: lado y hueco entre ellas. */
         private static final int SW = 13, SW_GAP = 3;
         private final int[][] swatches = new int[PadSettings.THEMES.length][];
@@ -72,8 +78,9 @@ final class PadInfoPages {
             int bh = PadSkin.bannerHeight(1);
             PadSkin.banner(g, pad, X + 1, Y + 1, W - 2, bh, acc, PadSkin.icon(app), List.of(PadSkin.tagline(app)));
             int top = Y + bh + 6, bottom = Y + H - 14;
-            int rowH = Math.max(19, Math.min(30, (bottom - top) / ROWS));
-            for (int i = 0; i < ROWS; i++) {
+            int rows = rows();
+            int rowH = Math.max(19, Math.min(30, (bottom - top) / rows));
+            for (int i = 0; i < rows; i++) {
                 float target = value(i) ? 1F : 0F;
                 if (first || !PadSettings.animations) knob[i] = target;
                 else knob[i] += (target - knob[i]) * Math.min(1F, dt * 14F);
@@ -88,9 +95,9 @@ final class PadInfoPages {
                 int ms = Math.min(20, h - 4), iy = yy + (h - ms) / 2;
                 PadSkin.medallion(g, x + 8, iy, ms, 0);
                 PadUi.item(g, ICONS[i], x + 8 + (ms - 16) / 2, iy + (ms - 16) / 2, 1);
-                boolean themes = i == 5, wallpaper = i == 6;
+                boolean themes = i == 5, wallpaper = i == 6 || i == 7;
                 int swW = PadSettings.THEMES.length * (SW + SW_GAP) - SW_GAP;
-                String wpName = wallpaper ? wallpaperName() : "";
+                String wpName = i == 7 ? reviveKeys() : wallpaper ? wallpaperName() : "";
                 int tx = x + 8 + ms + 7, textW = w - (tx - x) - (slider ? SLIDER_W + 50 : themes ? swW + 18 : wallpaper ? PadUi.chipWidth(wpName) + 30 : 44);
                 boolean two = h >= 24;
                 int ty = yy + (two ? (h - 20) / 2 + 1 : (h - 8) / 2);
@@ -126,7 +133,7 @@ final class PadInfoPages {
                     PadUi.chip(g, bx - 6 - PadUi.chipWidth(name), yy + (h - 12) / 2, name, PadUi.TONE_BLUE, 12);
                     rects[i] = null;
                 } else if (wallpaper) {
-                    // (1.3.155) el fondo elegido y una flecha: toda la tarjeta abre el selector
+                    // (1.3.155) el fondo elegido y una flecha: toda la tarjeta abre el selector (1.3.157: o las teclas de revivir)
                     int ax = x + w - 14, ay = yy + h / 2;
                     PadUi.chip(g, ax - 8 - PadUi.chipWidth(wpName), yy + (h - 12) / 2, wpName, PadUi.TONE_BLUE, 12);
                     int c = hover ? PadUi.GOLD_LO : PadUi.INK;
@@ -139,8 +146,14 @@ final class PadInfoPages {
             }
             first = false;
             // la nota de abajo, centrada (lejos de las esquinas de oro de la ventana)
-            String note = PadUi.fitEnd("Tecla del pad: se cambia en Opciones › Controles.", W - 40);
+            String note = PadUi.fitEnd("Tecla del pad (y las de revivir): Opciones › Controles.", W - 40);
             PadUi.text(g, note, X + (W - PadUi.font().width(note)) / 2, Y + H - 12, PadUi.MUTED);
+        }
+
+        /** (1.3.157) Las dos teclas de revivir, p. ej. «E · F». */
+        private static String reviveKeys() {
+            return net.tierrasfantasticas.tfclient.revive.client.RevivemodKeybinds.SURRENDER.getTranslatedKeyMessage().getString() + " · "
+                    + net.tierrasfantasticas.tfclient.revive.client.RevivemodKeybinds.SELF_REVIVE.getTranslatedKeyMessage().getString();
         }
 
         private static String wallpaperName() {
@@ -188,6 +201,13 @@ final class PadInfoPages {
                     case 6 -> {
                         pad.sound("page", 0.55F);
                         pad.setPage(new PadWallpaperPage(pad));
+                        return true;
+                    }
+                    case 7 -> {
+                        // (1.3.157) la pantalla de teclas del Revive Mod; al cerrarla se vuelve al pad
+                        pad.sound("page", 0.55F);
+                        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                        mc.setScreen(new net.tierrasfantasticas.tfclient.revive.client.ReviveConfigScreen(mc.screen));
                         return true;
                     }
                     default -> {

@@ -86,7 +86,15 @@ public final class BossTestClient {
             net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = what.equals("opciones");
             // (que no pausen: son pantallas de pausa y, en un mundo de un jugador, el servidor se pararía y la prueba
             // no seguiría nunca)
-            if (what.equals("automodpack")) {
+            if (what.equals("revivir-teclas")) {
+                // (1.3.157) la pantalla de teclas de revivir (la de Ajustes del pad y Mods › TF Client › Configuración)
+                mc.setScreen(new net.tierrasfantasticas.tfclient.revive.client.ReviveConfigScreen(null) {
+                    @Override
+                    public boolean isPauseScreen() {
+                        return false;
+                    }
+                });
+            } else if (what.equals("automodpack")) {
                 net.tierrasfantasticas.tfclient.client.TFButtonTheme.testForce = true;
                 mc.setScreen(new net.tierrasfantasticas.tfclient.client.TFAutoModpack.Missing(new net.minecraft.client.gui.screens.TitleScreen()) {
                     @Override

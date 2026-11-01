@@ -51,6 +51,7 @@ final class BossTestRevive {
     private static ServerPlayer a, b, c, d;
     private static Zombie zombie;
     private static int reviveStart;
+    private static boolean cDownAtStart;
     private static String fileBefore;
 
     private static ServerPlayer target(MinecraftServer server, ServerLevel level, String name, double dx, double dz) {
@@ -74,11 +75,15 @@ final class BossTestRevive {
         return victim.hurt(src, amount);
     }
 
+    /** Al entrar, un jugador es invulnerable 60 ticks (spawnInvulnerableTime): las dianas se ponen antes de golpearlas. */
+    private static final int READY = 80;
+
     static void step(int t, MinecraftServer server, ServerLevel level, ServerPlayer player, BossTest.Rep r) {
         Vec3 arena = BossTest.arena();
         switch (t) {
             case 1 -> {
                 reviveStart = 0;
+                cDownAtStart = false;
                 TARGETS.clear();
                 player.teleportTo(level, arena.x, arena.y, arena.z, 0F, 10F);
                 r.event("revivir 0 (el revivir del TF Client está encendido): " + (TFRevive.active() ? "sí (bien)" : "NO (MAL)"));
@@ -92,6 +97,9 @@ final class BossTestRevive {
                 r.event("revivir 0b (config por defecto, " + TFRevive.FILE + "): playersCanFinish " + TFRevive.getConfig().playersCanFinish
                         + ", mobsCanFinish " + TFRevive.getConfig().mobsCanFinish + ", downTimeSeconds " + TFRevive.getConfig().downTimeSeconds);
                 a = target(server, level, "Diana_A", -1.5, 3);
+                b = target(server, level, "Diana_B", 0, 2.2);
+                c = target(server, level, "Diana_C", 1.5, 1.5);
+                d = target(server, level, "Diana_D", 3, 3);
                 zombie = EntityType.ZOMBIE.create(level);
                 if (zombie != null) {
                     zombie.moveTo(arena.x - 3, arena.y, arena.z + 4, 0F, 0F);
@@ -101,9 +109,9 @@ final class BossTestRevive {
                     level.addFreshEntity(zombie);
                 }
             }
-            case 10 -> {
-                if (a == null || zombie == null) {
-                    r.event("revivir 1: NO se pudo poner la diana o el zombi (MAL)");
+            case READY -> {
+                if (a == null || b == null || c == null || d == null || zombie == null) {
+                    r.event("revivir 1: NO se pudieron poner las dianas o el zombi (MAL)");
                     return;
                 }
                 hit(a, a.damageSources().mobAttack(zombie), 1000F);
@@ -112,14 +120,14 @@ final class BossTestRevive {
                 r.event("revivir 1 (un zombi le hace 1000 de daño a la diana A): " + state(a)
                         + (ok ? " (bien: noqueada, no muerta)" : " (MAL)") + "; el zombi la sigue: " + (zombie.getTarget() == a ? "sí (MAL)" : "no (bien)"));
             }
-            case 40 -> BossTest.shot(r, "revivir_1_noqueada");
-            case 50 -> {
+            case READY + 30 -> BossTest.shot(r, "revivir_1_noqueada");
+            case READY + 40 -> {
                 boolean took = hit(a, a.damageSources().mobAttack(zombie), 10F);
                 boolean ok = a.isAlive() && DownManager.isDown(a);
                 r.event("revivir 2 (mobsCanFinish false: el zombi le pega 10): " + state(a) + ", golpe " + (took ? "aceptado" : "cancelado")
                         + (ok ? " (bien: no la remata)" : " (MAL)"));
             }
-            case 55 -> {
+            case READY + 45 -> {
                 TFRevive.testSet(false, false);
                 boolean took = hit(a, a.damageSources().playerAttack(player), 10F);
                 boolean ok = a.isAlive() && DownManager.isDown(a);
@@ -127,7 +135,7 @@ final class BossTestRevive {
                         + (ok ? " (bien: no la remata)" : " (MAL)"));
                 TFRevive.testSet(true, false);
             }
-            case 60 -> {
+            case READY + 50 -> {
                 GlobalFlags.getInstance().globalPVP = false;
                 hit(a, a.damageSources().playerAttack(player), 10F);
                 GlobalFlags.getInstance().globalPVP = true;
@@ -135,7 +143,7 @@ final class BossTestRevive {
                 r.event("revivir 4 (PvP del servidor apagado, playersCanFinish true: el jugador le pega 10): " + state(a)
                         + (ok ? " (bien: las protecciones mandan)" : " (MAL: la remató sin PvP)"));
             }
-            case 65 -> {
+            case READY + 55 -> {
                 // como el dueño: cambia el archivo a mano y /tf reload
                 Path f = TFRevive.testPath();
                 String how;
@@ -152,19 +160,16 @@ final class BossTestRevive {
                 boolean ok = !a.isAlive() && !DownManager.isDown(a);
                 r.event("revivir 5 (archivo con mobsCanFinish true y /tf reload; " + how + "; config: mobs " + TFRevive.getConfig().mobsCanFinish
                         + "): el zombi le pega 10: " + state(a) + (cfgOk && ok ? " (bien: la remata)" : " (MAL)"));
-            }
-            case 70 -> {
                 TFRevive.testSet(true, false);
-                b = target(server, level, "Diana_B", 0, 2.2);
-                c = target(server, level, "Diana_C", 1.5, 1.5);
-                d = target(server, level, "Diana_D", 3, 3);
-                if (b != null) hit(b, b.damageSources().playerAttack(player), 1000F);
-                if (c != null) hit(c, c.damageSources().mobAttack(zombie), 1000F);
-                if (d != null) hit(d, d.damageSources().mobAttack(zombie), 1000F);
-                r.event("revivir 6 (el jugador «mata» a la diana B; un zombi a C y a D): B " + state(b) + ", C " + state(c) + ", D " + state(d)
-                        + (b != null && c != null && d != null && DownManager.isDown(b) && DownManager.isDown(c) && DownManager.isDown(d) ? " (bien: las tres noqueadas)" : " (MAL)"));
             }
-            case 100 -> {
+            case READY + 60 -> {
+                hit(b, b.damageSources().playerAttack(player), 1000F);
+                hit(c, c.damageSources().mobAttack(zombie), 1000F);
+                hit(d, d.damageSources().mobAttack(zombie), 1000F);
+                r.event("revivir 6 (el jugador «mata» a la diana B; un zombi a C y a D): B " + state(b) + ", C " + state(c) + ", D " + state(d)
+                        + (DownManager.isDown(b) && DownManager.isDown(c) && DownManager.isDown(d) ? " (bien: las tres noqueadas)" : " (MAL)"));
+            }
+            case READY + 100 -> {
                 // un espadazo de verdad, como en el juego
                 player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.NETHERITE_SWORD));
                 b.invulnerableTime = 0;
@@ -175,26 +180,36 @@ final class BossTestRevive {
                         + ", asesino " + (killer == null ? "ninguno" : killer.getGameProfile().getName())
                         + (ok && killer == player ? " (bien)" : " (MAL)"));
             }
-            case 105 -> {
+            case READY + 105 -> {
                 reviveStart = t;
-                r.event("revivir 8 (el jugador empieza a revivir a C, a " + String.format("%.1f", player.distanceTo(c)) + " bloques; reviveTimeTicks "
-                        + TFRevive.getConfig().reviveTimeTicks + ")");
+                cDownAtStart = DownManager.isDown(c);
+                r.event("revivir 8 (el jugador empieza a revivir a C, " + state(c) + ", a " + String.format("%.1f", player.distanceTo(c))
+                        + " bloques; reviveTimeTicks " + TFRevive.getConfig().reviveTimeTicks + ")");
             }
-            case 230 -> {
+            case READY + 230 -> {
                 DownManager.forceDeath(d, d.damageSources().genericKill());
                 r.event("revivir 10 (/revive kill a D): " + state(d) + (!d.isAlive() && !DownManager.isDown(d) ? " (bien)" : " (MAL)"));
             }
-            case 240 -> {
+            case READY + 240 -> {
                 // el jugador de la prueba noqueado: su pantalla (la barra «Desangrándose» y las teclas)
                 DownManager.knockDown(player, player.damageSources().generic());
                 r.event("revivir 11 (el jugador noqueado): " + (DownManager.isDown(player) ? "noqueado (bien)" : "NO (MAL)"));
             }
-            case 290 -> BossTest.shot(r, "revivir_2_pantalla_noqueado");
-            case 330 -> {
+            case READY + 290 -> BossTest.shot(r, "revivir_2_pantalla_noqueado");
+            case READY + 330 -> {
                 DownManager.revive(player);
                 r.event("revivir 12 (el jugador revivido): " + (DownManager.isDown(player) ? "sigue noqueado (MAL)" : "de pie (bien)"));
             }
-            case 340 -> {
+            // las teclas: la fila de Ajustes del pad y su pantalla
+            case READY + 340 -> BossTest.openPad = "ajustes";
+            case READY + 390 -> BossTest.shot(r, "revivir_4_ajustes_pad");
+            case READY + 400 -> {
+                BossTest.closeScreen = true;
+                BossTest.openMenu = "revivir-teclas";
+            }
+            case READY + 440 -> BossTest.shot(r, "revivir_5_pantalla_teclas");
+            case READY + 450 -> {
+                BossTest.closeScreen = true;
                 for (ServerPlayer p : TARGETS) TFBotPlayer.removeTarget(p);
                 TARGETS.clear();
                 if (zombie != null) zombie.discard();
@@ -205,12 +220,12 @@ final class BossTestRevive {
                     // (la prueba deja la config como estaba)
                 }
             }
-            case 350 -> BossTest.next(level);
+            case READY + 460 -> BossTest.next(level);
             default -> {
             }
         }
         // revivir a C como con clic derecho: la ventana del que revive se renueva mientras mantiene
-        if (c != null && t >= reviveStart && reviveStart > 0 && t < reviveStart + 120 && DownManager.isDown(c)) {
+        if (c != null && reviveStart > 0 && t >= reviveStart && t < reviveStart + 120 && DownManager.isDown(c)) {
             DownState st = DownManager.get(c);
             if (st != null) st.reviverWindow.put(player.getUUID(), 12);
             if (t == reviveStart + 40) BossTest.shot(r, "revivir_3_reviviendo");
@@ -218,7 +233,7 @@ final class BossTestRevive {
         if (c != null && reviveStart > 0 && t > reviveStart && !DownManager.isDown(c) && c.getPersistentData().getInt("tf_prueba_revivida") == 0) {
             c.getPersistentData().putInt("tf_prueba_revivida", t);
             int took = t - reviveStart;
-            boolean ok = c.isAlive() && Math.abs(c.getHealth() - TFRevive.getConfig().reviveHealth) < 0.01F;
+            boolean ok = cDownAtStart && c.isAlive() && Math.abs(c.getHealth() - TFRevive.getConfig().reviveHealth) < 0.01F;
             r.event("revivir 9 (C revivida en " + took + " ticks): " + state(c) + (ok && took <= TFRevive.getConfig().reviveTimeTicks + 3 ? " (bien)" : " (MAL)"));
         }
     }

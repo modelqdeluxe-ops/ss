@@ -20,7 +20,8 @@ nombres de Minecraft (SRG → oficiales con `mcp_config` 1.20.1 + las mappings d
 - El vacío y `/kill` matan aunque estés noqueado. En creativo o espectador no se noquea.
 - `/revive` (help, surrender, self; con permiso 2: status, reload, force, kill, down, set time|distance|channel|selfcost).
 - Teclas en Opciones › Controles › «Revive Mod» (mismos nombres que antes: se conservan las que tuviera cada uno) y la
-  pantalla de teclas del mod en **Mods › TF Client › Configuración**.
+  pantalla de teclas del mod (`ReviveConfigScreen`), que se abre desde **TF Pad › Ajustes › Teclas de revivir** (la
+  fila enseña las dos teclas, «E · F») y desde Mods › TF Client › Configuración.
 
 ## Lo nuevo: rematar
 
@@ -43,4 +44,5 @@ Cómo: `CombatEvents.onAttack` deja pasar ese golpe; `onHurt` (prioridad más ba
 - El canal de red (`tfclient:revivir`) se registra siempre, para que servidor y jugadores tengan los mismos.
 - Prueba en el juego: `[prueba-jefes=revivir]` (`bosses/BossTestRevive`), con «dianas»: `TFBotPlayer.spawnTarget`,
   jugadores de prueba que sí reciben daño. Capturas `revivir_1_noqueada`, `revivir_2_pantalla_noqueado`,
-  `revivir_3_reviviendo`.
+  `revivir_3_reviviendo`, `revivir_4_ajustes_pad` y `revivir_5_pantalla_teclas`. Las dianas se golpean a partir del
+  tick 80: un jugador recién entrado es invulnerable 60 ticks (`spawnInvulnerableTime`; la 1.ª prueba falló por eso).
