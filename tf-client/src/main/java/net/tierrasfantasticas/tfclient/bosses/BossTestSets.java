@@ -31,7 +31,7 @@ final class BossTestSets {
     private BossTestSets() {}
 
     static final String[] SETS = {"dryadia", "spring", "drakegoat", "onicurse", "deepsea"};
-    private static final int EACH = 100;
+    private static final int EACH = 110;
 
     private static Item item(String set, String slug) {
         Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("tfclient", set + "_" + slug));
@@ -113,6 +113,17 @@ final class BossTestSets {
                     if (helm != null) player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helm));
                 }
                 case 90 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_3_armadura_frente");
+                case 92 -> {
+                    // 4: todos los objetos del set en el inventario (que ninguno salga como el cubo morado y negro)
+                    int slot = 9;
+                    for (Item it : ForgeRegistries.ITEMS) {
+                        var st = TFItemTypes.setOf(it);
+                        if (st != null && st.id().equals(set) && slot < 36) player.getInventory().setItem(slot++, new ItemStack(it));
+                    }
+                    BossTest.openInventory = true;
+                }
+                case 104 -> BossTest.shot(r, "sets_" + (k + 1) + "_" + set + "_4_inventario");
+                case 106 -> BossTest.closeScreen = true;
                 default -> { }
             }
             return;
