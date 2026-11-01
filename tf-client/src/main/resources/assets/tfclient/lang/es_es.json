@@ -1395,7 +1395,6 @@
  "item.tfclient.deepsea_armor_leggings": "Grebas Reliquias del Abismo",
  "item.tfclient.deepsea_armor_boots": "Botas Reliquias del Abismo",
  "tfclient.set.deepsea": "Reliquias del Abismo",
- "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets",
  "item.tfclient.dragonstone_sword": "Espada Piedra de Dragón",
  "item.tfclient.dragonstone_dagger": "Daga Piedra de Dragón",
  "item.tfclient.dragonstone_blade": "Hoja Piedra de Dragón",
@@ -1591,5 +1590,6 @@
  "item.tfclient.nitro_armor_chestplate": "Peto Discord Nitro",
  "item.tfclient.nitro_armor_leggings": "Grebas Discord Nitro",
  "item.tfclient.nitro_armor_boots": "Botas Discord Nitro",
- "tfclient.set.nitro": "Discord Nitro"
+ "tfclient.set.nitro": "Discord Nitro",
+ "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets"
 }

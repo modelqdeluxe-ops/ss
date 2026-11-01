@@ -580,7 +580,9 @@ def mark_flags(entry):
 # - oni: el aro de arriba sube la mitad de lo visible; así la máscara del centro queda entre los omóplatos.
 # - cosméticos: la mochila de hielo son alas (colgaba hasta los pies) y las alas de calabaza quedaban en la cintura.
 Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02, 'cosmeticsv1/frozen_backpack': -0.2,
-              'halloweenbundle/spooky_pumpkin_wings': -0.12}
+              'halloweenbundle/spooky_pumpkin_wings': -0.12,
+              # (1.3.163) con la posición de su pack (la de CosmeticsCore) quedaban a la altura de la cintura
+              'mysticcyan/wings': -0.24, 'mysticcyan/backpack': -0.5, 'violet/wings': -0.24}
 # Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
 HMC_SKIP = {'shadow'}
 # Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.
