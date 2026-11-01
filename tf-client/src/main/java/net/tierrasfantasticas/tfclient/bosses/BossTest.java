@@ -786,7 +786,7 @@ public final class BossTest {
     /** (1.3.159) Para el cliente: el fondo del pad («c:limon», «f:prueba_fondo.png», «tema»…). */
     static volatile String wallpaper;
     /** (1.3.159) Para el cliente: esconder la interfaz (F1) en las capturas del mundo (true/false). */
-    static volatile Boolean hideGui;
+    static volatile Boolean hideHud;
     /** (1.3.159) Para el cliente: la cámara («frente», «espalda», «primera»). */
     static volatile String camera;
     /** (1.3.159) Para el cliente: pulsar con el ratón el botón del chat que diga esto (en el último reto de duelo). */

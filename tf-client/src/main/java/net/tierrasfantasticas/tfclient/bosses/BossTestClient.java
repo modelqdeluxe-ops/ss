@@ -215,9 +215,9 @@ public final class BossTestClient {
             BossTest.camera = null;
         }
         if (BossTest.chatClick != null) clickChat(mc, BossTest.chatClick);
-        if (BossTest.hideGui != null) {
-            mc.options.hideGui = BossTest.hideGui;
-            BossTest.hideGui = null;
+        if (BossTest.hideHud != null) {
+            mc.options.hideGui = BossTest.hideHud;
+            BossTest.hideHud = null;
         }
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();

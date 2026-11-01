@@ -235,7 +235,7 @@ final class BossTestClanes2 {
                 level.setBlock(vanillaPos, Blocks.CHEST.defaultBlockState(), 3);
                 look(player, level, new Vec3(chestPos.getX() + 1.5, chestPos.getY(), chestPos.getZ() - 2.7), new Vec3(chestPos.getX() + 1.5, chestPos.getY() + 0.5,
                         chestPos.getZ() + 0.5));
-                BossTest.hideGui = true;
+                BossTest.hideHud = true;
             }
             case 580 -> BossTest.shot(r, "clanes2_11_cofre_dia");
             case 582 -> BossTest.command(server, "time set 18000");
@@ -284,7 +284,7 @@ final class BossTestClanes2 {
                 place(player, level, bannerPos, new ItemStack(ClanBlocks.BANNER_ITEM.get()));
             }
             // el editor de la etiqueta
-            case 798 -> BossTest.hideGui = false;
+            case 798 -> BossTest.hideHud = false;
             case 800 -> BossTest.openPad = "clanes/estilo";
             case 840 -> BossTest.shot(r, "clanes2_17_estilo");
             case 842 -> BossTest.actPad = "§color:clanes:estilo:55AAFF:PRB:arcoiris||3";
@@ -312,12 +312,12 @@ final class BossTestClanes2 {
                 BlockPos g = ground(level, ax - 6, az + 3);
                 player.teleportTo(level, ax - 5.5, g.getY(), az - 0.5, 0F, 6F);
                 mate.teleportTo(level, ax - 5.5, g.getY(), az + 3.5, 180F, 0F);
-                BossTest.hideGui = true;
+                BossTest.hideHud = true;
             }
             case 1000 -> BossTest.shot(r, "clanes2_20_etiqueta_cabeza_1");
             case 1006 -> BossTest.shot(r, "clanes2_21_etiqueta_cabeza_2");
             case 1008 -> {
-                BossTest.hideGui = false;
+                BossTest.hideHud = false;
                 BossTest.tabList = true;
             }
             case 1030 -> BossTest.shot(r, "clanes2_22_tab");
@@ -344,14 +344,14 @@ final class BossTestClanes2 {
                 player.teleportTo(level, g.getX() + 0.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
                 mate.teleportTo(level, g.getX() + 40.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
                 BossTest.camera = "frente";
-                BossTest.hideGui = true;
+                BossTest.hideHud = true;
             }
             case 1100 -> BossTest.video = "emote";
             case 1104 -> ClanEmote.testPlay(player);
             case 1140 -> r.event("clanes2 12 (emote del clan): " + (BossTest.video == null ? "grabado en vídeo (video_emote.mp4)" : "NO SE GRABÓ (MAL)"));
             case 1142 -> {
                 BossTest.camera = "primera";
-                BossTest.hideGui = false;
+                BossTest.hideHud = false;
                 BossTest.command(server, "time set 6000");
                 if (chestPos != null) level.removeBlock(chestPos, false);
                 if (vanillaPos != null) level.removeBlock(vanillaPos, false);
