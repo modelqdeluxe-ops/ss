@@ -74,22 +74,35 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
             float size = 0.70F, cy = TOP - 0.50F;
             badge(pose, badge, t, cy, size, lit, 0.010F, false);
             badge(pose, badge, t, cy, size, lit, -0.006F, true);
-            // la etiqueta, debajo, con su efecto
+            // la etiqueta, debajo, con su efecto: letra a letra sobre la onda de la tela (si fuera plana, la tela la tapaba
+            // a trozos al ondear)
             String tag = "[" + look.tag() + "]";
-            Component text = ClanTagFx.component(tag, look.fx(), ClanClient.now(), true);
-            float ty = TOP - 0.98F;
-            float dz = wave(t, 0.5F, (TOP - ty) / (TOP - BOTTOM));
+            double now = ClanClient.now();
+            float ty = TOP - 0.98F, v = (TOP - ty) / (TOP - BOTTOM);
+            float k = 0.020F;
+            int[] cps = tag.codePoints().toArray();
+            float total = font.width(tag) * k;
             for (int side = 0; side < 2; side++) {
-                pose.pushPose();
-                if (side == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
-                pose.translate(0, ty, side == 0 ? Z0 + dz + 0.012F : -(Z0 + dz) + 0.010F);
-                float k = 0.020F;
-                pose.scale(-k, -k, k);
-                pose.mulPose(Axis.YP.rotationDegrees(180));
-                float w = font.width(text);
-                font.drawInBatch(text, -w / 2F, -4F, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0,
-                        LightTexture.FULL_BRIGHT);
-                pose.popPose();
+                float x = -total / 2F;
+                for (int i = 0; i < cps.length; i++) {
+                    String ch = new String(Character.toChars(cps[i]));
+                    float cw = font.width(net.minecraft.network.chat.Component.literal(ch).withStyle(s -> s.withBold(true))) * k;
+                    float cx = x + cw / 2F;
+                    // la u de esta letra en la tela (por detrás, reflejada)
+                    float u = ((side == 0 ? cx : -cx) + HALF) / (2 * HALF);
+                    float dz = wave(t, u, v);
+                    int col = ClanTagFx.colorAt(look.fx(), i, cps.length, now);
+                    Component one = Component.literal(ch).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)
+                            .withColor(net.minecraft.network.chat.TextColor.fromRgb(col)));
+                    pose.pushPose();
+                    if (side == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
+                    pose.translate(x, ty, side == 0 ? Z0 + dz + 0.012F : -(Z0 + dz) + 0.010F);
+                    pose.scale(-k, -k, k);
+                    pose.mulPose(Axis.YP.rotationDegrees(180));
+                    font.drawInBatch(one, 0F, -4F, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+                    pose.popPose();
+                    x += cw;
+                }
             }
         }
         pose.popPose();

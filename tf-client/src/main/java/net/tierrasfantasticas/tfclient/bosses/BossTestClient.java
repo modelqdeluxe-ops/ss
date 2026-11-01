@@ -215,6 +215,10 @@ public final class BossTestClient {
             BossTest.camera = null;
         }
         if (BossTest.chatClick != null) clickChat(mc, BossTest.chatClick);
+        if (BossTest.hideGui != null) {
+            mc.options.hideGui = BossTest.hideGui;
+            BossTest.hideGui = null;
+        }
         BossTest.clientBars = bars(mc);
         BossTest.clientItems = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItems();
         BossTest.clientItemCount = net.tierrasfantasticas.tfclient.skills.SkillClient.debugItemCount();

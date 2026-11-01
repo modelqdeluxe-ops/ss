@@ -407,9 +407,9 @@ public final class PadClans {
                 b.selected("misiones");
                 return PadClanViews.missions(b, player, id, c);
             }
-            if (tab.equals("banco") || tab.equals("banco_reg")) {
+            if (tab.equals("banco") || tab.equals("banco_reg") || tab.equals("banco_meter")) {
                 b.selected("banco");
-                return PadClanBank.view(b, player, id, c, tab.equals("banco_reg"));
+                return PadClanBank.view(b, player, id, c, tab);
             }
             if (tab.equals("guerra")) {
                 b.selected("guerra");

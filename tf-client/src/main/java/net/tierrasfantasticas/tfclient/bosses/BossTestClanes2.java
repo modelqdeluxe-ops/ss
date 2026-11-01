@@ -71,6 +71,14 @@ final class BossTestClanes2 {
         return new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
     }
 
+    /** Pone al jugador en from mirando a to (los ojos, a 1,62 del suelo). */
+    private static void look(ServerPlayer p, ServerLevel level, Vec3 from, Vec3 to) {
+        double dx = to.x - from.x, dy = to.y - (from.y + 1.62), dz = to.z - from.z;
+        float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90F;
+        float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+        p.teleportTo(level, from.x, from.y, from.z, yaw, pitch);
+    }
+
     private static void place(ServerPlayer p, ServerLevel level, BlockPos at, ItemStack stack) {
         p.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos below = at.below();
@@ -115,10 +123,7 @@ final class BossTestClanes2 {
             }
             case 5 -> BossTest.openPad = "tienda/todos";
             case 50 -> BossTest.shot(r, "clanes2_01_tienda_todos");
-            case 52 -> {
-                PadShop.testSearch(player, "espada");
-                BossTest.openPad = "tienda/todos";
-            }
+            case 52 -> BossTest.actPad = "§type:espada";
             case 100 -> BossTest.shot(r, "clanes2_02_tienda_buscar_espada");
             case 102 -> {
                 var inv = player.getInventory();
@@ -228,6 +233,9 @@ final class BossTestClanes2 {
                 place(player, level, chestPos, new ItemStack(chest));
                 vanillaPos = chestPos.east(2);
                 level.setBlock(vanillaPos, Blocks.CHEST.defaultBlockState(), 3);
+                look(player, level, new Vec3(chestPos.getX() + 1.5, chestPos.getY(), chestPos.getZ() - 2.7), new Vec3(chestPos.getX() + 1.5, chestPos.getY() + 0.5,
+                        chestPos.getZ() + 0.5));
+                BossTest.hideGui = true;
             }
             case 580 -> BossTest.shot(r, "clanes2_11_cofre_dia");
             case 582 -> BossTest.command(server, "time set 18000");
@@ -239,12 +247,15 @@ final class BossTestClanes2 {
                 act(player, "tienda", "tienda.comprar:estandarte");
                 int got = count(player, ClanBlocks.BANNER_ITEM.get());
                 bannerPos = chestPos.west(3);
+                look(player, level, new Vec3(bannerPos.getX() + 0.5, bannerPos.getY(), bannerPos.getZ() - 1.5), new Vec3(bannerPos.getX() + 0.5, bannerPos.getY(),
+                        bannerPos.getZ() + 0.5));
                 place(player, level, bannerPos, new ItemStack(ClanBlocks.BANNER_ITEM.get()));
                 String clan = level.getBlockEntity(bannerPos) instanceof ClanBannerBlockEntity be ? be.clan() : "(no está)";
                 ClanLooks.Look look = ClanLooks.clan(A);
                 r.event("clanes2 8 (estandarte de la tienda del clan): compré " + got + "; puesto, del clan «" + clan + "»; el cliente ve la insignia «"
                         + (look == null ? "?" : look.badge()) + "»" + (got == 1 && A.equals(clan) && look != null ? " (bien)" : " (MAL)"));
-                player.teleportTo(level, bannerPos.getX() + 0.5, bannerPos.getY(), bannerPos.getZ() - 3.5, 0F, -12F);
+                look(player, level, new Vec3(bannerPos.getX() + 1.6, bannerPos.getY(), bannerPos.getZ() - 3.4), new Vec3(bannerPos.getX() + 0.5, bannerPos.getY() + 1.5,
+                        bannerPos.getZ() + 0.5));
             }
             case 650 -> BossTest.shot(r, "clanes2_13_estandarte");
             case 652 -> act(player, "estilo", "tagfx:arcoiris||3");
@@ -273,6 +284,7 @@ final class BossTestClanes2 {
                 place(player, level, bannerPos, new ItemStack(ClanBlocks.BANNER_ITEM.get()));
             }
             // el editor de la etiqueta
+            case 798 -> BossTest.hideGui = false;
             case 800 -> BossTest.openPad = "clanes/estilo";
             case 840 -> BossTest.shot(r, "clanes2_17_estilo");
             case 842 -> BossTest.actPad = "§color:clanes:estilo:55AAFF:PRB:arcoiris||3";
@@ -300,25 +312,46 @@ final class BossTestClanes2 {
                 BlockPos g = ground(level, ax - 6, az + 3);
                 player.teleportTo(level, ax - 5.5, g.getY(), az - 0.5, 0F, 6F);
                 mate.teleportTo(level, ax - 5.5, g.getY(), az + 3.5, 180F, 0F);
+                BossTest.hideGui = true;
             }
             case 1000 -> BossTest.shot(r, "clanes2_20_etiqueta_cabeza_1");
             case 1006 -> BossTest.shot(r, "clanes2_21_etiqueta_cabeza_2");
-            case 1008 -> BossTest.tabList = true;
+            case 1008 -> {
+                BossTest.hideGui = false;
+                BossTest.tabList = true;
+            }
             case 1030 -> BossTest.shot(r, "clanes2_22_tab");
             case 1032 -> BossTest.tabList = false;
+            // el banco: METER › (lo que llevas, en casillas)
+            case 1034 -> {
+                var inv = player.getInventory();
+                inv.items.set(0, new ItemStack(Items.COBBLESTONE, 64));
+                inv.items.set(1, new ItemStack(Items.OAK_PLANKS, 48));
+                inv.items.set(2, new ItemStack(Items.IRON_INGOT, 9));
+                inv.items.set(3, new ItemStack(Items.WHEAT, 30));
+                inv.items.set(4, new ItemStack(Items.TORCH, 24));
+                ItemStack named = new ItemStack(Items.DIAMOND_SWORD);
+                named.setHoverName(Component.literal("Espada de Dev"));
+                inv.items.set(5, named);
+                BossTest.openPad = "clanes/banco_meter";
+            }
+            case 1076 -> BossTest.shot(r, "clanes2_23_banco_meter");
+            case 1078 -> BossTest.closeScreen = true;
             // el emote del clan, grabado en vídeo (de frente, en tercera persona, al atardecer)
-            case 1040 -> {
+            case 1080 -> {
                 BossTest.command(server, "time set 12800");
                 BlockPos g = ground(level, ax + 6, az - 6);
                 player.teleportTo(level, g.getX() + 0.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
                 mate.teleportTo(level, g.getX() + 40.5, g.getY(), g.getZ() + 0.5, 0F, 0F);
                 BossTest.camera = "frente";
+                BossTest.hideGui = true;
             }
-            case 1060 -> BossTest.video = "emote";
-            case 1064 -> ClanEmote.testPlay(player);
-            case 1100 -> r.event("clanes2 12 (emote del clan): " + (BossTest.video == null ? "grabado en vídeo (video_emote.mp4)" : "NO SE GRABÓ (MAL)"));
-            case 1102 -> {
+            case 1100 -> BossTest.video = "emote";
+            case 1104 -> ClanEmote.testPlay(player);
+            case 1140 -> r.event("clanes2 12 (emote del clan): " + (BossTest.video == null ? "grabado en vídeo (video_emote.mp4)" : "NO SE GRABÓ (MAL)"));
+            case 1142 -> {
                 BossTest.camera = "primera";
+                BossTest.hideGui = false;
                 BossTest.command(server, "time set 6000");
                 if (chestPos != null) level.removeBlock(chestPos, false);
                 if (vanillaPos != null) level.removeBlock(vanillaPos, false);
@@ -331,7 +364,7 @@ final class BossTestClanes2 {
                 PadClans.testRemove(B);
                 PadClans.testCleanup(player);
             }
-            case 1110 -> BossTest.next(level);
+            case 1150 -> BossTest.next(level);
             default -> { }
         }
     }

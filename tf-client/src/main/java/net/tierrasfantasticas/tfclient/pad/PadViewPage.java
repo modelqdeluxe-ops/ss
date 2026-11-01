@@ -805,7 +805,11 @@ final class PadViewPage extends PadPage {
     /** (1.3.109) Para la prueba en el juego: hace esa acción como si se pulsara (p. ej. «tab:combate»). */
     void actForTest(String action) {
         if (action.startsWith("§scroll:")) scroll = Integer.parseInt(action.substring(8));
-        else run(action);
+        else if (action.startsWith("§type:")) {
+            // (1.3.159) escribir en el campo de abajo y pulsar su botón (como el jugador)
+            input = action.substring(6);
+            submit();
+        } else run(action);
     }
 
     /** Acciones del propio pad («§open:app») o del servidor. */
