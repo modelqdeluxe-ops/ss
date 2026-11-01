@@ -119,6 +119,8 @@ public final class AfterShaders {
             SkyRiftClient.renderAfterShaders(VIEW, PROJ);
             // (1.3.152) el letrero de la fiesta de cumpleaños, detrás de los bloques
             net.tierrasfantasticas.tfclient.client.TFBirthdayClient.renderAfterShaders(VIEW, partial);
+            // (1.3.160) los efectos de los emotes del clan
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.renderAfterShaders(VIEW, partial);
             RiftLate.flush();
             frames++;
         } catch (Throwable t) {

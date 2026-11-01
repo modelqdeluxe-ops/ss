@@ -190,6 +190,42 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.160: 15 EMOTES, ARCOÍRIS DE PAGO, MÚSICA EN LAS PROTECCIONES, ESCUDO DE GUERRA) — lee esto primero
+
+Lo que pidió el dueño tras ver la 1.3.159 (literal y la tabla de dónde está cada cosa: §7 de
+[`tf-client/CLANES.md`](tf-client/CLANES.md)):
+- **5 emotes** (el de la 1.3.159 no le gustó: se quitó) con la tecla B, que abre una rueda (`ClanEmoteWheel`):
+  Estandarte, Corona, Trueno, Fiesta y Órbita (`clans/client/ClanEmotes`, dibujos en `ClanEmoteFx`), cada uno con su
+  música (`tools/pad/emotes_sonido.py` → `sounds/clanes/emote_<nombre>.ogg`, numpy con filtros y sala por FFT).
+- **Sin corchetes** en el estandarte y en los emotes: solo las letras, con borde oscuro y una estrella a cada lado.
+- **Música en las protecciones** (`PadZoneMusic`, pestaña MÚSICA de la zona; la app Música elige la canción): suena en
+  bucle, igual en toda la zona, para quien está dentro; al salir se apaga. «Oír la música de otros» (Ajustes) la quita.
+- **Etiqueta arcoíris animada en el chat** (`ChatComponentClanMixin`, `require = 0`: si no engancha, no rompe nada).
+- **Guerra simétrica** (los dos lados a 91 px de las barras, medido) y **escudo de guerra** en la tienda del clan.
+- Cosas a saber: en GitHub Actions no hay tarjeta de sonido (el motor de sonido del juego no arranca): la prueba
+  comprueba que el servidor cuenta la zona al entrar y al salir, que el cliente la pone y la quita y que la canción se
+  baja; que suene de verdad solo se oye en un PC con sonido.
+- **Después, en la misma 1.3.160** (el dueño: «mete muchos más emotes, que sean comprables en la tienda del clan», «eso
+  sigue solapado», «que los efectos se vean con shaders también», «pon muchos efectos de arcoíris… el botón de arcoíris
+  bloqueado, deben comprarlo en la tienda del clan»):
+  - **15 emotes**: los 5 de antes gratis y 10 de pago (`ClanEmotes2`: Fénix, Tornado, Ventisca, Meteoro, Fuegos,
+    Espadas, Aura, Corazones, Concierto, Portal), cada uno con su música; se compran en la tienda del clan (tipo `emote`
+    de `clanes.json`, `PadClanConfig` versión 4) y valen para todo el clan (`ClanEmote.owns`, el clan guarda `emotes`).
+  - La rueda pasó a ser una **cuadrícula** (`ClanEmoteWheel`, 5 por fila, fondo opaco, candado y «TIENDA» en las de pago).
+  - **Con shaders** (Oculus): los efectos se apuntan en `RenderPlayerEvent.Post` y se dibujan en `AfterShaders.end`
+    (`ClanEmoteClient.renderAfterShaders`), como la grieta y el letrero del cumpleaños; en la pasada de sombras, nada.
+  - **133 estilos de arcoíris** en la etiqueta (los de los títulos de las crates, `FSRainbow`), elegidos en el editor
+    (`PadColorPicker`: nombre con flechas y muestras); ARCOÍRIS con candado hasta comprar «Efectos arcoíris» (15 ¢, tipo
+    `arcoiris`). El servidor lo comprueba también (`tagfx`).
+  - La prueba **`[prueba-jefes=emotes]`** es corta (el dueño: «no hagas test tan largos»): bloqueos, tienda, editor,
+    cuadrícula y un vídeo de cada emote de pago; con `[shaders]`, los 15 en fotogramas sueltos con Complementary.
+- **Pruebas**: `[prueba-jefes=clanes3]` (los 7 puntos) y `[prueba-jefes=emotes]` (commit cba34f97) todo «bien», vídeos
+  mirados (Fénix con alas de fuego a la espalda, Tornado, Ventisca y Espadas sin tapar al jugador, Meteoro y Fuegos dentro
+  de la imagen); con `[shaders]` (1a8d8e2b, Complementary) los efectos se dibujan después del paquete en 268 fotogramas y
+  se ven en los 13 vídeos grabados (los dos primeros, Estandarte y Corona, no se grabaron mientras el paquete cargaba).
+  Ojo: un commit vacío no lanza la prueba (el workflow solo sale si cambia algo en `tf-client/`). **Publicada** como
+  Release `tfclient-v1.3.160`; al dueño se le mandaron los 10 vídeos de los emotes de pago con su música.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.159: LOS 12 PUNTOS DEL DUEÑO — EMOTE, ESTANDARTE, ETIQUETA ARCOÍRIS) — lee esto primero
 
 Lo que pidió el dueño tras ver la 1.3.158 (literal y la tabla de dónde está cada cosa: §6 de

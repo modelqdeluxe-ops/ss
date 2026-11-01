@@ -855,6 +855,15 @@ final class PadViewPage extends PadPage {
             pad.openApp(action.substring(6));
             return;
         }
+        // (1.3.160) la música de una protección: la app Música, eligiendo la canción para esa zona
+        if (action.startsWith("§zonamusica:")) {
+            String[] z = action.split(":", 3);
+            PadMusicPage.zoneFor = z.length > 1 ? z[1] : null;
+            PadMusicPage.zoneName = z.length > 2 ? z[2] : "tu zona";
+            PadMusicPage.zoneAt = System.currentTimeMillis();
+            pad.openApp("musica");
+            return;
+        }
         // (1.3.156) la paleta de colores (PadColorPicker): «§color:<app>:<pestaña>:<RRGGBB>:<texto>»
         if (action.startsWith("§color:")) {
             PadColorPicker picker = PadColorPicker.parse(pad, action);

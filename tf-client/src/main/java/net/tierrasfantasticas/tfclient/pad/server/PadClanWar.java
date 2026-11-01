@@ -185,6 +185,9 @@ public final class PadClanWar {
         if (PadClans.allies(a).contains(to)) return "Son aliados: rompe la alianza antes.";
         if (active(from) != null) return "Tu clan ya está en guerra.";
         if (active(to) != null) return "Ese clan ya está en guerra.";
+        // (1.3.160) el escudo de guerra de la tienda del clan: nadie se la puede declarar mientras dure
+        if (shielded(b)) return label(b) + " tiene escudo de guerra: nadie le puede declarar la guerra hasta dentro de "
+                + PadClanViews.until(shieldLeft(b)) + ".";
         for (JsonElement e : proposals()) {
             JsonObject p = e.getAsJsonObject();
             if (TFJson.str(p, "de", "").equals(from) && TFJson.str(p, "a", "").equals(to)) return "Ya le declaraste la guerra: espera a que acepte.";
@@ -199,6 +202,37 @@ public final class PadClanWar {
                 ChatFormatting.RED);
         PadClanProgress.tell(PadServer.server(), a, "Le declararon la guerra a " + label(b) + ". Empieza cuando la acepten (tienen " + ACCEPT_MS / 3_600_000L + " h).", ChatFormatting.GOLD);
         return null;
+    }
+
+    /** (1.3.160) Si el clan tiene escudo de guerra (comprado en la tienda del clan) y cuánto le queda (ms). */
+    static boolean shielded(JsonObject c) {
+        return shieldLeft(c) > 0;
+    }
+
+    static long shieldLeft(JsonObject c) {
+        return c == null ? 0 : Math.max(0, TFJson.num(c, "escudoHasta", 0) - System.currentTimeMillis());
+    }
+
+    /** (1.3.160) Al comprar el escudo: las declaraciones que le habían hecho y aún no aceptó se anulan. */
+    static int dropIncoming(String clanId) {
+        JsonArray keep = new JsonArray();
+        int dropped = 0;
+        for (JsonElement e : proposals()) {
+            JsonObject p = e.getAsJsonObject();
+            if (TFJson.str(p, "a", "").equals(clanId)) {
+                dropped++;
+                JsonObject from = PadClans.clan(TFJson.str(p, "de", ""));
+                if (from != null) PadClanProgress.tell(PadServer.server(), from, label(PadClans.clan(clanId))
+                        + " compró escudo de guerra: su declaración de guerra se anuló.", ChatFormatting.GRAY);
+            } else {
+                keep.add(p);
+            }
+        }
+        if (dropped > 0) {
+            STORE_IMPL.root.add("propuestas", keep);
+            STORE_IMPL.changed();
+        }
+        return dropped;
     }
 
     static List<JsonObject> incoming(String clanId) {
@@ -497,6 +531,11 @@ public final class PadClanWar {
             b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Esperando a " + label(to), 0x7E8CA8, List.of("Le declararon la guerra."), -1, "", null, null)
                     .image(PadClanProgress.badge(to).image()));
         }
+        // (1.3.160) su escudo de guerra
+        if (shielded(c)) {
+            b.row(new PadView.Row(new ItemStack(Items.SHIELD), "Escudo de guerra", 0x2E7DB0,
+                    List.of("Nadie les puede declarar la guerra: quedan " + PadClanViews.until(shieldLeft(c)) + "."), -1, "", null, null));
+        }
         // alianzas
         PadClanAlliances.rows(b, player, id, c, officer);
         // los demás clanes: declarar y proponer alianza
@@ -508,13 +547,16 @@ public final class PadClanWar {
                 JsonObject oc = e.getValue();
                 boolean ally = PadClans.allies(c).contains(oid);
                 boolean busy = active(oid) != null;
-                PadView.Btn war = w == null && !ally && !busy ? PadView.Btn.of("GUERRA", "guerra.declarar:" + oid, PadView.RED) : null;
+                boolean shield = shielded(oc);
+                PadView.Btn war = w == null && !ally && !busy ? shield ? PadView.Btn.off("ESCUDO") : PadView.Btn.of("GUERRA", "guerra.declarar:" + oid, PadView.RED)
+                        : null;
                 boolean enemy = w != null && oid.equals(TFJson.str(w, side(w, id).equals("A") ? "b" : "a", ""));
                 PadView.Btn al = !ally && !enemy && PadClans.allies(c).size() < PadClanAlliances.MAX && PadClans.allies(oc).size() < PadClanAlliances.MAX
                         ? PadView.Btn.of("ALIANZA", "alianza.proponer:" + oid, PadView.GREEN) : null;
                 b.row(new PadView.Row(new ItemStack(Items.WHITE_BANNER), label(oc), PadClans.rgbOf(oc),
                         List.of("Nivel " + PadClanProgress.level(oc) + " · " + PadClans.members(oc).size() + " miembros · " + PadClanViews.fmt(PadClanProgress.prestige(oc))
-                                + " de prestigio" + (ally ? " · aliado" : busy ? " · en guerra" : "")), -1, "", war, al).image(PadClanProgress.badge(oc).image()));
+                                + " de prestigio" + (ally ? " · aliado" : busy ? " · en guerra" : shield ? " · escudo " + PadClanViews.until(shieldLeft(oc)) : "")),
+                        -1, "", war, al).image(PadClanProgress.badge(oc).image()));
                 n++;
             }
         }
@@ -641,6 +683,21 @@ public final class PadClanWar {
         STORE_IMPL.root.add("guerras", keep);
         for (String id : clanIds) dropProposals(id);
         STORE_IMPL.changed();
+    }
+
+    /** (1.3.160) Para la prueba: quita el escudo de guerra del clan. */
+    public static void testUnshield(String clanId) {
+        JsonObject c = PadClans.clan(clanId);
+        if (c != null) c.remove("escudoHasta");
+        PadClans.STORE_IMPL.changed();
+    }
+
+    public static int testIncoming(String clanId) {
+        return incoming(clanId).size();
+    }
+
+    public static long testShieldLeft(String clanId) {
+        return shieldLeft(PadClans.clan(clanId));
     }
 
     public static String testDeclare(String from, String to) {

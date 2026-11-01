@@ -34,9 +34,10 @@ import net.tierrasfantasticas.tfclient.clans.ClanNet;
 import net.tierrasfantasticas.tfclient.clans.ClanTagFx;
 
 /**
- * (1.3.159) Lo de los clanes en el cliente: los dibujantes del cofre (a plena luz) y del estandarte, la tecla del emote
- * del clan (B de fábrica; Opciones › Controles › TF Client) y la etiqueta del clan animada (arcoíris u onda) encima de la
- * cabeza y en la lista de jugadores (la de la lista, desde PlayerTabOverlayMixin).
+ * (1.3.159) Lo de los clanes en el cliente: los dibujantes del cofre (a plena luz) y del estandarte, la tecla de los
+ * emotes del clan (B de fábrica; Opciones › Controles › TF Client; 1.3.160: abre la rueda de los 5) y la etiqueta del
+ * clan animada (arcoíris u onda) encima de la cabeza, en la lista de jugadores (PlayerTabOverlayClanMixin) y en el chat
+ * (ChatComponentClanMixin).
  */
 public final class ClanClient {
     public static final KeyMapping EMOTE = new KeyMapping("key.tfclient.emote_clan", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM,
@@ -94,6 +95,50 @@ public final class ClanClient {
         return out;
     }
 
+    /**
+     * (1.3.160) Una línea del chat con la etiqueta de un clan animado («[TAG]» que llega con color del servidor: lo que
+     * escribe un jugador a mano no viene coloreado y no se toca) con los colores de este instante. Si no hay nada que
+     * animar, la misma línea.
+     */
+    public static net.minecraft.util.FormattedCharSequence animateChat(net.minecraft.util.FormattedCharSequence in) {
+        if (in == null) return in;
+        List<ClanLooks.Look> anim = ClanLooks.animated();
+        if (anim.isEmpty()) return in;
+        List<Integer> cps = new ArrayList<>();
+        List<Style> styles = new ArrayList<>();
+        in.accept((i, st, cp) -> {
+            cps.add(cp);
+            styles.add(st);
+            return true;
+        });
+        int n = cps.size();
+        int[] color = null;
+        double t = now();
+        for (ClanLooks.Look l : anim) {
+            int[] target = ("[" + l.tag() + "]").codePoints().toArray();
+            for (int at = 0; at + target.length <= n; at++) {
+                boolean match = true;
+                for (int k = 0; k < target.length && match; k++) match = cps.get(at + k) == target[k];
+                if (!match || styles.get(at + 1).getColor() == null) continue;
+                if (color == null) {
+                    color = new int[n];
+                    java.util.Arrays.fill(color, -1);
+                }
+                for (int k = 0; k < target.length; k++) color[at + k] = ClanTagFx.colorAt(l.fx(), k, target.length, t);
+                at += target.length - 1;
+            }
+        }
+        if (color == null) return in;
+        int[] c = color;
+        return sink -> {
+            for (int k = 0; k < n; k++) {
+                Style st = c[k] >= 0 ? styles.get(k).withColor(TextColor.fromRgb(c[k])) : styles.get(k);
+                if (!sink.accept(k, st, cps.get(k))) return false;
+            }
+            return true;
+        };
+    }
+
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static final class ModEvents {
         private ModEvents() {}
@@ -118,8 +163,9 @@ public final class ClanClient {
         public static void onTick(TickEvent.ClientTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
+            // (1.3.160) la tecla abre la rueda de los 5 emotes
             while (EMOTE.consumeClick()) {
-                if (mc.player != null && mc.screen == null) ClanNet.askEmote();
+                if (mc.player != null && mc.screen == null) mc.setScreen(new ClanEmoteWheel());
             }
             ClanEmoteClient.tick();
         }

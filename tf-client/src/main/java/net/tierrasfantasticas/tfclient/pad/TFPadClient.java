@@ -278,6 +278,11 @@ public final class TFPadClient {
         PadMusicPage.testHoverFirst = on;
     }
 
+    /** (1.3.160) Prueba «emotes»: el estilo de arcoíris que se pone en el editor de la etiqueta. */
+    public static void tagStyleForTest(int style) {
+        PadColorPicker.testStyle = style;
+    }
+
     static void openServerApp(String app, String tab) {
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Open(app, tab == null ? "" : tab));
     }

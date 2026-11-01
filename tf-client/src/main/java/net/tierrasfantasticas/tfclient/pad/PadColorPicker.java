@@ -53,14 +53,20 @@ final class PadColorPicker extends PadPage {
     private String mode = MODES[0];
     private final int[] cols = new int[3];
     private int count = 1, slot, speed = 2;
+    /** (1.3.160) El estilo del arcoíris (0, el de siempre; luego los de los títulos de las crates) y si el clan lo compró. */
+    private int style;
+    private final boolean rainbowOwned;
+    /** Para la prueba en el juego: el estilo de arcoíris que se pone (-1: ninguno). */
+    static volatile int testStyle = -1;
     /** Para la prueba en el juego (BossTest «clanes»): pone este color (0xRRGGBB) y, si save, lo guarda. */
     static volatile int testColor = -1;
     static volatile boolean testSave;
     /** (1.3.159) Para la prueba: pone este efecto («modo|RRGGBB,RRGGBB|velocidad») y, si testSave, lo guarda. */
     static volatile String testFx;
 
-    PadColorPicker(TFPadScreen pad, String app, String tab, int rgb, String label, String fx) {
+    PadColorPicker(TFPadScreen pad, String app, String tab, int rgb, String label, String fx, boolean rainbowOwned) {
         super(pad, app);
+        this.rainbowOwned = rainbowOwned;
         this.tab = tab;
         this.label = label;
         this.original = rgb & 0xFFFFFF;
@@ -76,6 +82,7 @@ final class PadColorPicker extends PadPage {
         net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx f = net.tierrasfantasticas.tfclient.clans.ClanTagFx.decode(fx, original);
         mode = f.mode();
         speed = f.speed();
+        style = f.style();
         int[] c = f.colors();
         for (int i = 0; i < Math.min(3, c.length); i++) cols[i] = c[i];
         count = mode.equals(MODES[0]) || mode.equals(MODES[2]) ? 1 : Math.max(2, c.length);
@@ -84,7 +91,7 @@ final class PadColorPicker extends PadPage {
 
     /** «§color:clanes:estilo:FF8800:TAG[:modo|colores|velocidad]» → el editor (null si no se entiende). */
     static PadColorPicker parse(TFPadScreen pad, String action) {
-        String[] p = action.substring("§color:".length()).split(":", 5);
+        String[] p = action.substring("§color:".length()).split(":", 6);
         if (p.length < 3) return null;
         int rgb;
         try {
@@ -92,7 +99,7 @@ final class PadColorPicker extends PadPage {
         } catch (NumberFormatException e) {
             rgb = 0xFFAA00;
         }
-        return new PadColorPicker(pad, p[0], p[1], rgb, p.length > 3 ? p[3] : "", p.length > 4 ? p[4] : "");
+        return new PadColorPicker(pad, p[0], p[1], rgb, p.length > 3 ? p[3] : "", p.length > 4 ? p[4] : "", p.length <= 5 || p[5].equals("1"));
     }
 
     @Override
@@ -143,7 +150,7 @@ final class PadColorPicker extends PadPage {
     private net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx fx() {
         int[] c = new int[count];
         System.arraycopy(cols, 0, c, 0, count);
-        return new net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx(mode, c, speed);
+        return new net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx(mode, c, speed, mode.equals(MODES[2]) ? style : 0);
     }
 
     private void save() {
@@ -163,6 +170,10 @@ final class PadColorPicker extends PadPage {
 
     @Override
     void render(GuiGraphics g, double mx, double my, float partial) {
+        if (testStyle >= 0) {
+            style = testStyle;
+            testStyle = -1;
+        }
         if (testFx != null) {
             setFx(testFx);
             setRgb(cols[slot]);
@@ -227,7 +238,14 @@ final class PadColorPicker extends PadPage {
             pill(g, bx, byy, pillW, 11, MODE_NAMES[i], mode.equals(MODES[i]), mx, my, acc);
             final String m = MODES[i];
             buttons.add(new int[] {bx, byy, pillW, 11});
-            actions.add(() -> setMode(m));
+            if (i == 2 && !rainbowOwned) {
+                // (1.3.160, el dueño: «el botón de arcoíris estará bloqueado, deben comprarlo en la tienda del clan»)
+                g.fill(bx + 1, byy + 1, bx + pillW - 1, byy + 10, 0xB0E6ECF5);
+                lock(g, bx + pillW - 11, byy + 1);
+                actions.add(() -> pad.showNotice("El arcoíris se compra en Clanes › TIENDA (Efectos arcoíris, para todo el clan)."));
+            } else {
+                actions.add(() -> setMode(m));
+            }
         }
         y += 28;
         // las casillas de color (1 en sólido, 2 o 3 en degradado y onda) y la velocidad (arcoíris y onda)
@@ -299,8 +317,33 @@ final class PadColorPicker extends PadPage {
                 hex = "";
             });
         } else {
-            PadUi.text(g, PadUi.fitEnd("Todos los colores, corriendo.", pw), px, y + 2, 0xFF7E8CA8);
-            PadUi.text(g, PadUi.fitEnd("En el chat y el TAB sale quieto.", pw), px, y + 13, 0xFF7E8CA8);
+            // (1.3.160, el dueño: «pon varios efectos de arcoíris, muchos colores, como los títulos de las crates») el
+            // estilo: su nombre con ‹ › y una tira de muestras (16 por página; las flechas pasan de uno en uno)
+            int total = net.tierrasfantasticas.tfclient.clans.ClanTagFx.styles();
+            tiny(g, px, y, "<", mx, my, () -> style = (style - 1 + total) % total);
+            String nm = net.tierrasfantasticas.tfclient.clans.ClanTagFx.styleName(style) + " (" + (style + 1) + "/" + total + ")";
+            nm = PadUi.fitEnd(nm, pw - 32);
+            PadUi.text(g, nm, px + (pw - PadUi.font().width(nm)) / 2, y + 2, PadUi.TEXT);
+            tiny(g, px + pw - 12, y, ">", mx, my, () -> style = (style + 1) % total);
+            y += 15;
+            int per = 16, page = style / per, cols8 = 8;
+            int sw = Math.max(8, (pw - (cols8 - 1) * 2) / cols8);
+            for (int k = 0; k < per; k++) {
+                int st = page * per + k;
+                if (st >= total) break;
+                int sx = px + (k % cols8) * (sw + 2), sy = y + (k / cols8) * 10;
+                boolean on = st == style, hover = PadUi.inside(mx, my, sx, sy, sw, 8);
+                if (hover) pad.hover("§estilo" + st);
+                g.fill(sx - 1, sy - 1, sx + sw + 1, sy + 9, on ? 0xFFFFD650 : hover ? 0xFF18265C : 0xFF7C8AA8);
+                for (int xx = 0; xx < sw; xx++) {
+                    int c = st == 0 ? java.awt.Color.HSBtoRGB(xx / (float) sw, 0.72F, 1F)
+                            : net.tierrasfantasticas.tfclient.crates.client.color.FSRainbow.color(st, xx / (float) sw, 0F);
+                    g.fill(sx + xx, sy, sx + xx + 1, sy + 8, 0xFF000000 | c);
+                }
+                final int pick = st;
+                buttons.add(new int[] {sx, sy, sw, 8});
+                actions.add(() -> style = pick);
+            }
         }
     }
 
@@ -333,6 +376,15 @@ final class PadColorPicker extends PadPage {
         PadUi.text(g, text, x + (12 - PadUi.font().width(text)) / 2, y + 2, PadUi.TEXT);
         buttons.add(new int[] {x, y, 12, 12});
         actions.add(action);
+    }
+
+    /** Un candado pequeño (8 x 9). */
+    private static void lock(GuiGraphics g, int x, int y) {
+        g.fill(x + 2, y, x + 6, y + 1, 0xFFC27A10);
+        g.fill(x + 1, y + 1, x + 2, y + 4, 0xFFC27A10);
+        g.fill(x + 6, y + 1, x + 7, y + 4, 0xFFC27A10);
+        g.fill(x, y + 4, x + 8, y + 9, 0xFFC27A10);
+        g.fill(x + 3, y + 5, x + 5, y + 7, 0xFFFFF2C0);
     }
 
     private static void ring(GuiGraphics g, int cx, int cy, int color) {

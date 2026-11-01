@@ -143,6 +143,8 @@ public final class PadServer {
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadGreen.STORE);
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadGacha.STORE);
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPass.STORE);
+        // (1.3.160) la música de las protecciones
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadZoneMusic.STORE);
     }
 
     private PadServer() {}

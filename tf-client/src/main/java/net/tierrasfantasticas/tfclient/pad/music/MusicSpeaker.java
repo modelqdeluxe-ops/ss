@@ -66,6 +66,9 @@ public final class MusicSpeaker {
         final long durationMs;
         long originMs;
         SpeakerSound sound;
+        /** (1.3.160) La música de una protección: suena igual en toda la zona (no situada) y en bucle. */
+        boolean zone;
+        long playedAt;
 
         Heard(String url, long originMs, long durationMs) {
             this.url = url;
@@ -74,12 +77,99 @@ public final class MusicSpeaker {
         }
 
         long position() {
-            return System.currentTimeMillis() - originMs;
+            long p = System.currentTimeMillis() - originMs;
+            return zone && durationMs > 0 ? Math.floorMod(p, durationMs) : p;
         }
 
         boolean over() {
-            return durationMs > 0 && position() > durationMs;
+            return !zone && durationMs > 0 && position() > durationMs;
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.160) La música de las protecciones (PadZoneMusic): la de la zona en la que estás
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** La zona que suena ahora (su id), o null. */
+    private static UUID zoneKey;
+    /** Su volumen (0 a 100, el que puso el dueño de la zona). */
+    private static int zoneVolume = 80;
+
+    /** Lo que cuenta el servidor: entraste en una zona con música (o sigue sonando), o saliste. */
+    public static void zone(PadSpeakerNet.Zone m) {
+        if (!m.playing()) {
+            Heard h = HEARD.get(m.claim());
+            if (h != null && h.zone) {
+                HEARD.remove(m.claim());
+                fadeOut(h);
+            }
+            if (m.claim().equals(zoneKey)) zoneKey = null;
+            return;
+        }
+        String url = m.url();
+        if (!(url.startsWith("https://") || url.startsWith("http://") || url.startsWith(PadSpeakerNet.LOCAL))) return;
+        if (zoneKey != null && !zoneKey.equals(m.claim())) {
+            Heard old = HEARD.remove(zoneKey);
+            if (old != null) fadeOut(old);
+        }
+        zoneKey = m.claim();
+        zoneVolume = m.volume();
+        long origin = System.currentTimeMillis() - m.positionMs();
+        Heard old = HEARD.get(m.claim());
+        if (old != null && old.zone && old.url.equals(url)) {
+            // el recordatorio: si va desfasada más de 1,5 s, se vuelve a poner donde va; si no, no se corta
+            long d = m.durationMs() > 0 ? Math.floorMod(origin - old.originMs, m.durationMs()) : Math.abs(origin - old.originMs);
+            if (m.durationMs() > 0) d = Math.min(d, m.durationMs() - d);
+            if (d > 1500) {
+                old.originMs = origin;
+                if (old.sound != null && MusicLibrary.hearOthers()) {
+                    Path file = cacheFile(old.url);
+                    if (file != null && Files.exists(file)) play(m.claim(), old, file);
+                }
+            }
+            if (old.sound == null && MusicLibrary.hearOthers()) ensure(m.claim(), old);
+            return;
+        }
+        if (old != null) stopSound(old);
+        Heard h = new Heard(url, origin, m.durationMs());
+        h.zone = true;
+        HEARD.put(m.claim(), h);
+        if (MusicLibrary.hearOthers()) ensure(m.claim(), h);
+    }
+
+    /**
+     * (1.3.160) Desde la app Música, eligiendo para una zona: manda la canción (su link, o tfaudio: si es de tu carpeta:
+     * el servidor la pide y se sube) para la música de esa protección. Devuelve un aviso si no se pudo (si no, avisa el
+     * servidor).
+     */
+    public static String setZone(String claim, MusicLibrary.Track t) {
+        if (Minecraft.getInstance().getConnection() == null) return "Entra en el servidor para ponerle música a la zona.";
+        String url = shareUrl(t);
+        if (url == null) return "Esa canción pesa demasiado para ponerla en la zona.";
+        PadSpeakerNet.toServerAny(new PadSpeakerNet.ZoneSet(claim, url, t.shownTitle(), t.artist(), t.durationMs()));
+        return null;
+    }
+
+    /** Se apaga poco a poco (1 s) en vez de cortarse. */
+    private static void fadeOut(Heard h) {
+        if (h.sound != null) {
+            h.sound.fadeOut();
+            h.sound = null;
+        }
+    }
+
+    /** Para la prueba en el juego: la zona que suena (o null) y si su sonido está sonando. */
+    public static String zoneForTest() {
+        Heard h = zoneKey == null ? null : HEARD.get(zoneKey);
+        if (h == null) return "ninguna";
+        boolean active = h.sound != null && Minecraft.getInstance().getSoundManager().isActive(h.sound);
+        Path file = cacheFile(h.url);
+        boolean got = file != null && Files.exists(file);
+        // sin «sonando»: por qué (bajada, archivo, flujo de audio abierto y el motor de sonido del juego)
+        String why = " [bajada " + (DOWNLOADING.contains(h.url) ? "en curso" : FAILED.containsKey(h.url) ? "falló" : got ? "hecha" : "sin empezar")
+                + ", flujo " + (h.sound != null && h.sound.stream != null ? "abierto" : "no") + ", motor «"
+                + Minecraft.getInstance().getSoundManager().getDebugString() + "»]";
+        return zoneKey + (active ? " sonando" : DOWNLOADING.contains(h.url) ? " bajando" : " sin sonar") + why;
     }
 
     private static final Map<UUID, Heard> HEARD = new HashMap<>();
@@ -338,7 +428,8 @@ public final class MusicSpeaker {
     private static void play(UUID speaker, Heard h, Path file) {
         stopSound(h);
         if (h.over()) return;
-        h.sound = new SpeakerSound(speaker, file, Math.max(0, h.position()));
+        h.sound = new SpeakerSound(speaker, file, Math.max(0, h.position()), h.zone);
+        h.playedAt = System.currentTimeMillis();
         Minecraft.getInstance().getSoundManager().play(h.sound);
     }
 
@@ -406,6 +497,15 @@ public final class MusicSpeaker {
         Minecraft mc = Minecraft.getInstance();
         HEARD.entrySet().removeIf(e -> {
             Heard h = e.getValue();
+            // (1.3.160) la de la zona, en bucle: si acabó (o el motor de sonido se reinició), otra vez donde va
+            if (h.zone) {
+                if ((h.sound == null || !mc.getSoundManager().isActive(h.sound)) && MusicLibrary.hearOthers()
+                        && System.currentTimeMillis() - h.playedAt > 2000) {
+                    Path file = cacheFile(h.url);
+                    if (file != null && Files.exists(file)) play(e.getKey(), h, file);
+                }
+                return false;
+            }
             if (h.over()) {
                 stopSound(h);
                 return true;
@@ -423,6 +523,7 @@ public final class MusicSpeaker {
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         HEARD.values().forEach(MusicSpeaker::stopSound);
         HEARD.clear();
+        zoneKey = null;
         published = false;
         UPLOAD.clear();
         INCOMING.clear();
@@ -430,24 +531,36 @@ public final class MusicSpeaker {
         DOWNLOADING.removeIf(u -> u.startsWith(PadSpeakerNet.LOCAL));
     }
 
-    /** La canción de un altavoz: situada en el jugador que la pone, en mono, y apagándose hasta RANGE bloques. */
+    /**
+     * La canción de un altavoz: situada en el jugador que la pone, en mono, y apagándose hasta RANGE bloques. (1.3.160)
+     * O la de una zona: igual en toda la zona (pegada a quien la oye), entrando y saliendo poco a poco.
+     */
     static final class SpeakerSound extends AbstractSoundInstance implements TickableSoundInstance {
         private final UUID speaker;
         private final Path file;
         private final long startMs;
+        private final boolean zone;
+        private final long bornMs = System.currentTimeMillis();
+        private long fadeFrom = -1;
         volatile MusicStream stream;
         private boolean stopped;
 
-        SpeakerSound(UUID speaker, Path file, long startMs) {
+        SpeakerSound(UUID speaker, Path file, long startMs, boolean zone) {
             super(ID, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
             this.speaker = speaker;
             this.file = file;
             this.startMs = startMs;
-            this.volume = MusicPlayer.volume();
-            this.relative = false;
-            this.attenuation = Attenuation.LINEAR;
+            this.zone = zone;
+            this.volume = zone ? 0F : MusicPlayer.volume();
+            this.relative = zone;
+            this.attenuation = zone ? Attenuation.NONE : Attenuation.LINEAR;
             this.looping = false;
             follow();
+        }
+
+        /** (1.3.160) Que se apague en 1 s y pare. */
+        void fadeOut() {
+            if (fadeFrom < 0) fadeFrom = System.currentTimeMillis();
         }
 
         @Override
@@ -487,6 +600,7 @@ public final class MusicSpeaker {
 
         /** El sonido va donde está el jugador (a la altura de la cabeza). */
         private void follow() {
+            if (zone) return; // la de la zona va pegada a quien la oye (relative)
             Minecraft mc = Minecraft.getInstance();
             Player p = mc.level == null ? null : mc.level.getPlayerByUUID(speaker);
             if (p == null) return;
@@ -498,7 +612,17 @@ public final class MusicSpeaker {
         @Override
         public void tick() {
             follow();
-            this.volume = MusicLibrary.hearOthers() ? MusicPlayer.volume() : 0F;
+            if (!zone) {
+                this.volume = MusicLibrary.hearOthers() ? MusicPlayer.volume() : 0F;
+                return;
+            }
+            long now = System.currentTimeMillis();
+            float in = Math.min(1F, (now - bornMs) / 1200F);
+            float out = fadeFrom < 0 ? 1F : Math.max(0F, 1F - (now - fadeFrom) / 1000F);
+            if (out <= 0F) stopped = true;
+            // si suena tu música del pad, la de la zona se queda bajita
+            float duck = MusicPlayer.playing() ? 0.3F : 1F;
+            this.volume = MusicLibrary.hearOthers() ? MusicPlayer.volume() * zoneVolume / 100F * in * out * duck : 0F;
         }
     }
 }

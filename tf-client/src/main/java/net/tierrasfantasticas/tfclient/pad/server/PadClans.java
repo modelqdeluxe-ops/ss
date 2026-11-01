@@ -91,6 +91,7 @@ public final class PadClans {
             o.addProperty("r", rgb);
             o.addProperty("b", PadClanProgress.badge(c).id());
             o.addProperty("f", net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, rgb).encode());
+            o.addProperty("e", net.tierrasfantasticas.tfclient.clans.ClanEmote.mask(c));
             cl.add(e.getKey(), o);
         }
         if (server != null) {
@@ -512,6 +513,10 @@ public final class PadClans {
             if (action.startsWith("tagfx:")) {
                 if (!officer) return null;
                 net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx fx = net.tierrasfantasticas.tfclient.clans.ClanTagFx.decode(action.substring(6), rgbOf(c));
+                if (fx.mode().equals(net.tierrasfantasticas.tfclient.clans.ClanTagFx.RAINBOW) && !net.tierrasfantasticas.tfclient.clans.ClanTagFx.rainbowOwned(c)) {
+                    TFPadNet.notice(player, "Los efectos arcoíris se compran en la TIENDA del clan.");
+                    return null;
+                }
                 net.tierrasfantasticas.tfclient.clans.ClanTagFx.store(c, fx);
                 STORE_IMPL.changed();
                 for (UUID u : members(c)) refreshName(u);

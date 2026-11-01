@@ -360,7 +360,7 @@ final class BossTestClanes2 {
                 BossTest.hideHud = true;
             }
             case 1100 -> BossTest.video = "emote";
-            case 1104 -> ClanEmote.testPlay(player);
+            case 1104 -> ClanEmote.testPlay(player, 0);
             case 1140 -> r.event("clanes2 12 (emote del clan): " + (BossTest.video == null ? "grabado en vídeo (video_emote.mp4)" : "NO SE GRABÓ (MAL)"));
             case 1142 -> {
                 BossTest.camera = "primera";

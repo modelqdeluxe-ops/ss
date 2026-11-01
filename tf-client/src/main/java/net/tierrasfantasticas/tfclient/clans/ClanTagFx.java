@@ -32,18 +32,38 @@ public final class ClanTagFx {
     public static final String SOLID = "solido", GRADIENT = "degradado", RAINBOW = "arcoiris", WAVE = "onda";
     public static final String[] MODES = {SOLID, GRADIENT, RAINBOW, WAVE};
 
-    /** Un efecto: modo, colores (1 a 3) y velocidad (1 a 5). */
-    public record Fx(String mode, int[] colors, int speed) {
+    /**
+     * Un efecto: modo, colores (1 a 3), velocidad (1 a 5) y, en arcoíris (1.3.160, el dueño: «pon varios efectos de
+     * arcoíris, muchos colores, como los títulos de las crates»), el estilo: 0 el arcoíris de siempre; 1 en adelante, los
+     * de los títulos de las crates (FSRainbow: Fuego, Océano, Neón, Galaxia, Aurora…).
+     */
+    public record Fx(String mode, int[] colors, int speed, int style) {
+        public Fx(String mode, int[] colors, int speed) {
+            this(mode, colors, speed, 0);
+        }
+
         public boolean animated() {
             return mode.equals(RAINBOW) || mode.equals(WAVE);
         }
 
-        /** «modo|RRGGBB,RRGGBB|velocidad» (para la red y las acciones del pad). */
+        /** «modo|RRGGBB,RRGGBB|velocidad[|estilo]» (para la red y las acciones del pad). */
         public String encode() {
             StringBuilder b = new StringBuilder(mode).append('|');
             for (int i = 0; i < colors.length; i++) b.append(i == 0 ? "" : ",").append(String.format("%06X", colors[i] & 0xFFFFFF));
-            return b.append('|').append(speed).toString();
+            b.append('|').append(speed);
+            if (mode.equals(RAINBOW) && style > 0) b.append('|').append(style);
+            return b.toString();
         }
+    }
+
+    /** Cuántos estilos de arcoíris hay (el 0, el de siempre, y los de las crates). */
+    public static int styles() {
+        return net.tierrasfantasticas.tfclient.crates.client.color.FSRainbow.count();
+    }
+
+    /** El nombre del estilo de arcoíris. */
+    public static String styleName(int style) {
+        return style <= 0 ? "Arcoíris" : net.tierrasfantasticas.tfclient.crates.client.color.FSRainbow.name(style);
     }
 
     private ClanTagFx() {}
@@ -61,13 +81,14 @@ public final class ClanTagFx {
         for (String m : MODES) known |= m.equals(mode);
         if (!known) return solid(base);
         int[] cols = parseColors(p.length > 1 ? p[1] : "", base);
-        int speed = 2;
+        int speed = 2, style = 0;
         try {
             if (p.length > 2) speed = Math.max(1, Math.min(5, Integer.parseInt(p[2].trim())));
+            if (p.length > 3) style = Math.max(0, Math.min(styles() - 1, Integer.parseInt(p[3].trim())));
         } catch (NumberFormatException ignored) {
             // la de siempre
         }
-        return new Fx(mode, cols, speed);
+        return new Fx(mode, cols, speed, style);
     }
 
     static int[] parseColors(String list, int base) {
@@ -89,13 +110,16 @@ public final class ClanTagFx {
     public static Fx of(JsonObject clan, int base) {
         if (clan == null || !clan.has("tagEfecto")) return solid(base);
         String mode = clan.get("tagEfecto").getAsString();
+        // (1.3.160) el arcoíris se compra en la tienda del clan: sin él, de un color
+        if (mode.equals(RAINBOW) && !rainbowOwned(clan)) return solid(base);
         StringBuilder cols = new StringBuilder();
         if (clan.has("tagColores") && clan.get("tagColores").isJsonArray()) {
             JsonArray a = clan.getAsJsonArray("tagColores");
             for (JsonElement e : a) cols.append(cols.length() == 0 ? "" : ",").append(e.getAsString());
         }
         int speed = clan.has("tagVelocidad") ? clan.get("tagVelocidad").getAsInt() : 2;
-        Fx fx = decode(mode + "|" + cols + "|" + speed, base);
+        int style = clan.has("tagEstilo") ? clan.get("tagEstilo").getAsInt() : 0;
+        Fx fx = decode(mode + "|" + cols + "|" + speed + "|" + style, base);
         // el primer color manda en lo que no se anima (y es «el color del clan»)
         return fx.mode().equals(SOLID) ? solid(base) : fx;
     }
@@ -107,6 +131,7 @@ public final class ClanTagFx {
         for (int c : fx.colors()) a.add(String.format("#%06X", c & 0xFFFFFF));
         clan.add("tagColores", a);
         clan.addProperty("tagVelocidad", fx.speed());
+        clan.addProperty("tagEstilo", fx.style());
         clan.addProperty("color", String.format("#%06x", fx.colors()[0] & 0xFFFFFF));
     }
 
@@ -117,6 +142,11 @@ public final class ClanTagFx {
         double v = 0.18 + 0.22 * fx.speed();
         switch (fx.mode()) {
             case RAINBOW -> {
+                if (fx.style() > 0) {
+                    // los estilos de los títulos de las crates: su paleta corriendo letra a letra
+                    return net.tierrasfantasticas.tfclient.crates.client.color.FSRainbow.color(fx.style(), (float) (i / Math.max(1.0, n) * 0.85),
+                            (float) (-t * v * 0.5)) & 0xFFFFFF;
+                }
                 double h = (i / Math.max(1.0, n) * 0.85 - t * v * 0.5) % 1.0;
                 if (h < 0) h += 1;
                 return java.awt.Color.HSBtoRGB((float) h, 0.72F, 1F) & 0xFFFFFF;
@@ -133,6 +163,11 @@ public final class ClanTagFx {
                 return c[0];
             }
         }
+    }
+
+    /** (1.3.160) ¿El clan compró los efectos arcoíris (tienda del clan, oferta «arcoiris»)? */
+    public static boolean rainbowOwned(JsonObject clan) {
+        return clan != null && clan.has("arcoiris") && clan.get("arcoiris").getAsBoolean();
     }
 
     /** El color en f (0 a 1) a lo largo de los colores. */

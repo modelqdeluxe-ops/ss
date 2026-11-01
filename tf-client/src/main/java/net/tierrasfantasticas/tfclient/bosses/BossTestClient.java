@@ -215,6 +215,30 @@ public final class BossTestClient {
             BossTest.camera = null;
         }
         if (BossTest.chatClick != null) clickChat(mc, BossTest.chatClick);
+        // (1.3.160) clanes3: la rueda de emotes, escribir en el chat, los colores de la etiqueta en el chat y la música de zona
+        if (BossTest.emoteWheel != null) {
+            int h = BossTest.emoteWheel;
+            BossTest.emoteWheel = null;
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteWheel.testHover = Math.max(-1, h);
+            if (h < -1) {
+                if (mc.screen instanceof net.tierrasfantasticas.tfclient.clans.client.ClanEmoteWheel) mc.setScreen(null);
+            } else {
+                mc.setScreen(new net.tierrasfantasticas.tfclient.clans.client.ClanEmoteWheel());
+            }
+        }
+        if (BossTest.chatSay != null && mc.player != null && mc.getConnection() != null) {
+            mc.getConnection().sendChat(BossTest.chatSay);
+            BossTest.chatSay = null;
+            mc.setScreen(new net.minecraft.client.gui.screens.ChatScreen(""));
+        }
+        if (BossTest.chatCheck) {
+            BossTest.chatCheck = false;
+            BossTest.clientSaw = chatColors();
+        }
+        if (BossTest.zoneCheck) {
+            BossTest.zoneCheck = false;
+            BossTest.clientZone = net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.zoneForTest();
+        }
         if (BossTest.hideHud != null) {
             mc.options.hideGui = BossTest.hideHud;
             BossTest.hideHud = null;
@@ -349,11 +373,50 @@ public final class BossTestClient {
     /** (1.3.159) El último mensaje del chat con botones (el reto de duelo), para pulsarlos como con el ratón. */
     private static volatile net.minecraft.network.chat.Component lastButtons;
 
+    /** (1.3.160) La última línea del chat que dijo el jugador de la prueba («¡Hola, clan!»). */
+    private static volatile net.minecraft.network.chat.Component lastSaid;
+
     @SubscribeEvent
     public static void onChat(net.minecraftforge.client.event.ClientChatReceivedEvent event) {
         if (!BossTest.ON) return;
         net.minecraft.network.chat.Component m = event.getMessage();
         if (m != null && m.getString().contains("te reta a un duelo")) lastButtons = m;
+        if (m != null && m.getString().contains("Hola, clan")) lastSaid = m;
+    }
+
+    /**
+     * (1.3.160) Los colores de «[TAG]» en esa línea del chat tal como se dibuja (ClanClient.animateChat, lo que usa el
+     * mixin del chat) a los 0 s y a los 0,6 s: si cambian, la etiqueta arcoíris se anima en el chat.
+     */
+    private static String chatColors() {
+        net.minecraft.network.chat.Component m = lastSaid;
+        if (m == null) return "no llegó la línea del chat";
+        String text = m.getString();
+        int at = text.indexOf('[');
+        if (at < 0) return "la línea «" + text + "» no tiene etiqueta";
+        boolean was = net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock;
+        double old = net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime;
+        StringBuilder out = new StringBuilder("«" + text + "»: ");
+        java.util.List<String> sets = new java.util.ArrayList<>();
+        try {
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = true;
+            for (double t : new double[] {0.0, 0.6}) {
+                net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime = t;
+                StringBuilder c = new StringBuilder();
+                int[] k = {0};
+                net.tierrasfantasticas.tfclient.clans.client.ClanClient.animateChat(m.getVisualOrderText()).accept((i, st, cp) -> {
+                    if (k[0] >= at && k[0] < at + 5 && st.getColor() != null) c.append(String.format("%06X ", st.getColor().getValue()));
+                    k[0]++;
+                    return true;
+                });
+                sets.add(c.toString().trim());
+            }
+        } finally {
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = was;
+            net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime = old;
+        }
+        boolean moves = !sets.get(0).equals(sets.get(1)) && sets.get(0).split(" ").length >= 3;
+        return out + "a los 0 s " + sets.get(0) + " | a los 0,6 s " + sets.get(1) + " → se anima " + moves;
     }
 
     /**
@@ -437,8 +500,10 @@ public final class BossTestClient {
             TFClient.LOGGER.warn("Prueba de jefes: no se pudo grabar el fotograma {} del vídeo {}", videoFrame, name, ex);
         }
         videoFrame++;
-        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += 1 / 30.0;
-        if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.DURATION + 0.3) * 30)) {
+        // (1.3.160) con shaders la máquina de la prueba va a 1-2 fotogramas por segundo: pasos de 0,25 s (unos 20 por emote)
+        double stepS = System.getenv("TFCLIENT_PRUEBA_SHADERS") != null ? 0.25 : 1 / 30.0;
+        net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime += stepS;
+        if (e < 0 || videoFrame > (int) ((net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.durationOf(videoWho) + 0.3) / stepS)) {
             TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
             endVideo(mc);
         }

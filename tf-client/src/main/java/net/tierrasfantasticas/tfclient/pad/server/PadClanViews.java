@@ -124,14 +124,15 @@ final class PadClanViews {
         net.tierrasfantasticas.tfclient.clans.ClanTagFx.Fx fx = net.tierrasfantasticas.tfclient.clans.ClanTagFx.of(c, cur);
         String fxName = switch (fx.mode()) {
             case "degradado" -> "degradado de " + fx.colors().length + " colores";
-            case "arcoiris" -> "arcoíris (velocidad " + fx.speed() + ")";
+            case "arcoiris" -> "arcoíris «" + net.tierrasfantasticas.tfclient.clans.ClanTagFx.styleName(fx.style()) + "» (velocidad " + fx.speed() + ")";
             case "onda" -> "onda de " + fx.colors().length + " colores (velocidad " + fx.speed() + ")";
             default -> "un color, #" + hex;
         };
         b.header("La etiqueta [" + tag + "] y la insignia. ETIQUETA: color y efectos.");
         b.hero(new PadView.Row(new ItemStack(Items.WHITE_BANNER), "[" + tag + "]", cur,
                 List.of("Efecto: " + fxName + ".", "Insignia: " + PadClanProgress.badge(c).name() + "."), -1, "",
-                PadView.Btn.of("ETIQUETA", "§color:clanes:estilo:" + hex + ":" + tag + ":" + fx.encode(), PadView.GOLD), null)
+                PadView.Btn.of("ETIQUETA", "§color:clanes:estilo:" + hex + ":" + tag + ":" + fx.encode() + ":"
+                        + (net.tierrasfantasticas.tfclient.clans.ClanTagFx.rainbowOwned(c) ? "1" : "0"), PadView.GOLD), null)
                 .image(PadClanProgress.badge(c).image()));
         String now = PadClanProgress.badge(c).id();
         for (PadClanProgress.Badge bd : PadClanProgress.badges()) {
