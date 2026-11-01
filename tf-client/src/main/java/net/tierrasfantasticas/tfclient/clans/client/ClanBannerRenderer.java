@@ -81,7 +81,7 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
             float ty = TOP - 0.98F, v = (TOP - ty) / (TOP - BOTTOM);
             float k = 0.020F;
             int[] cps = tag.codePoints().toArray();
-            float total = font.width(tag) * k;
+            float total = font.width(Component.literal(tag).withStyle(s -> s.withBold(true))) * k;
             for (int side = 0; side < 2; side++) {
                 float x = -total / 2F;
                 for (int i = 0; i < cps.length; i++) {

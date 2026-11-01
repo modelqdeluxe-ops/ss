@@ -134,7 +134,7 @@ en venta» con una lupa para buscar, los objetos en español; 12 nada de españo
 
 | Punto | Dónde | Cómo |
 |---|---|---|
-| 1 Banco | `PadClanBank.view` | la ficha de arriba en una línea (capacidad, tipos y la mejora), sin la burbuja de monedas; filas compactas; «Lo que llevas (N)» con METER; COFRE y REGISTRO abajo |
+| 1 Banco | `PadClanBank.view` (modos `banco`, `banco_meter`, `banco_reg`) | dos vistas: **BANCO** (lo guardado en casillas, la capacidad y la mejora en la cabecera, sin ficha grande; abajo METER ›, MEJORAR, COFRE y REGISTRO) y **METER** (lo que llevas en casillas con «×64» en verde; tocar uno lo mete, METER TODO con confirmación, ‹ BANCO para volver) |
 | 2-3 Fondo | `TFPadScreen.drawBackdrop` | el fondo elegido (Ajustes › **Fondo del pad**) en la portada y en todas las apps; probado con Limón, un PNG de 1600x900 con rejilla de 1 px y el del tema |
 | 4 Guerra PvP | `PadClanWar` (`PVP`, `onDeath`, `recordKill`), `clanes.json` guerra.pvp | cada guerra lleva un objetivo PvP (derrotar a los del clan rival; con Revivir solo cuenta el remate); los demás objetivos de esa guerra no son de matar; la misma pareja cuenta una vez cada 10 min; cuenta como cualquier objetivo (la guerra es la media) |
 | 5 Duelo | `PadClanDuels.challengeMessage` | «⚔ X (clan) te reta a un duelo.» y debajo [✔ ACEPTAR] [✖ RECHAZAR] con texto al pasar el ratón y los segundos; la prueba los pulsa como el ratón (`Screen.handleComponentClicked`) |
