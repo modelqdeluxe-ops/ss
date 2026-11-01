@@ -210,19 +210,19 @@ public final class PadAdminClans {
             String f = PadAdminUi.field(player, APP_ID, tab);
             switch (tab) {
                 case "misiones" -> {
-                    b.header("Las misiones de la semana de cada clan. Pulsa una para cambiarla; SÍ/NO la deja salir o no.");
+                    b.header("Pulsa una misión para cambiarla; SÍ/NO: si sale o no.");
                     for (Num n : MISSIONS) b.row(PadAdminUi.value(new ItemStack(n.icon), n.title, n.help, shown(n, r), "f:" + n.id, f.equals(n.id)));
                     missionRows(b, r, 'm');
                     if (f.isEmpty()) b.input("nueva", "NOMBRE DE UNA MISIÓN NUEVA", 40, "AÑADIR");
                 }
                 case "guerra" -> {
-                    b.header("Las guerras de clanes (por objetivos, no PvP). Pulsa un objetivo para cambiarlo.");
+                    b.header("Pulsa un objetivo para cambiarlo; SÍ/NO: si sale o no.");
                     for (Num n : WAR) b.row(PadAdminUi.value(new ItemStack(n.icon), n.title, n.help, shown(n, r), "f:" + n.id, f.equals(n.id)));
                     missionRows(b, r, 'w');
                     if (f.isEmpty()) b.input("nueva", "NOMBRE DE UN OBJETIVO NUEVO", 40, "AÑADIR");
                 }
                 case "tienda" -> {
-                    b.header("La tienda del clan (se paga con Clan Coins). Pulsa una para cambiarla; SÍ/NO la pone a la venta o no.");
+                    b.header("Pulsa una oferta para cambiarla; SÍ/NO: a la venta o no.");
                     JsonArray a = list(r.deepCopy(), "tienda");
                     int on = 0;
                     for (JsonElement e : a) if (e.isJsonObject() && TFJson.bool(e.getAsJsonObject(), "activa", true)) on++;
@@ -246,7 +246,7 @@ public final class PadAdminClans {
                     b.input("nueva", "NOMBRE DE UNA OFERTA NUEVA", 40, "AÑADIR");
                 }
                 default -> {
-                    b.header("Todo lo de los clanes (config/tfclient/clanes.json). Pulsa un número para cambiarlo.");
+                    b.header("Todo lo de los clanes (clanes.json). Pulsa uno para cambiarlo.");
                     PadConfig.Setting s = PadConfig.setting(PRICE);
                     if (s != null) {
                         b.row(PadAdminUi.value(new ItemStack(Items.GOLD_INGOT), s.label(), s.help(), PadView.moneyExact(PadConfig.get(PRICE)), "f:" + PRICE,

@@ -183,16 +183,16 @@ public final class PadClanConfig {
         // (1.3.158, el dueño: «sube los precios») el doble que en la 1.3.156
         JsonArray shop = new JsonArray();
         JsonObject p50 = offer("proteccion_clan_50x50", "Protección del clan 50x50",
-                "El territorio del clan: todos los del clan construyen, sin PvP entre vosotros y con el aviso «Territorio de [TAG]». La pone el líder o un colíder.",
+                "El territorio del clan: construís todos y sin PvP entre vosotros. La pone el líder o un colíder.",
                 "tfclient:claimstone_clan_50x50", 30, 2, "proteccion");
         p50.addProperty("piedra", "claimstone_clan_50x50");
         shop.add(p50);
         JsonObject p120 = offer("proteccion_clan_120x120", "Protección del clan 120x120",
-                "Un territorio grande del clan (120x120), con todo lo de la de 50x50. La pone el líder o un colíder.",
+                "Un territorio grande, con todo lo de la de 50x50. La pone el líder o un colíder.",
                 "tfclient:claimstone_clan_120x120", 80, 2, "proteccion");
         p120.addProperty("piedra", "claimstone_clan_120x120");
         shop.add(p120);
-        shop.add(offer("plazas", "+{cantidad} plazas en el clan", "{cantidad} miembros más, además de los que da el nivel (las de cada compra: miembros.porCompra).",
+        shop.add(offer("plazas", "+{cantidad} plazas en el clan", "{cantidad} miembros más, además de los que da el nivel.",
                 "minecraft:player_head", 20, 5, "plazas"));
         JsonObject boost = offer("potenciador", "Potenciador de misiones ({horas} h)", "Durante {horas} horas, todo lo que hagáis cuenta {x} en las misiones del clan.",
                 "minecraft:experience_bottle", 6, 0, "potenciador");
