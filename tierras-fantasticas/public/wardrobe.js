@@ -376,13 +376,9 @@ export function createWardrobe(canvas) {
     const poses = {};
     const items0 = set.items;
     const holding = outfit.offhand && items0[outfit.offhand]?.model ? POSE_HOLDING : POSE;
-    // (1.3.164) con un casco o sombrero cosmético, sin la segunda capa de la cabeza (el «gorro» de la skin asomaba por
-    // las paredes del casco), como en el TF Client (TFHeadHatClient)
-    const hatless = set.items[outfit.helmet]?.type === 'head';
     for (const [name, part] of Object.entries(parts)) {
       poses[name] = partPose(base, name, part.pivot, holding);
-      const cubes = hatless && name === 'head' ? part.cubes.filter((c) => !(c[0] === 32 && c[1] === 0)) : part.cubes;
-      group.add(partMesh(cubes, state.skin.tex, poses[name].m, 64, state.skin.legacy ? 32 : 64, DEPTH_RANK[name]));
+      group.add(partMesh(part.cubes, state.skin.tex, poses[name].m, 64, state.skin.legacy ? 32 : 64, DEPTH_RANK[name]));
     }
     const items = set.items;
     // Encima de la cabeza (donde Minecraft pone el nombre) y entre los pies

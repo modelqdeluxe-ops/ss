@@ -190,6 +190,23 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.165: LO QUE SALIÓ MAL EN LA 1.3.164) — lee esto primero
+
+El dueño (furioso, con capturas del probador de la web): «¿y mi skin???», «parece que no arreglaste nada», «el casco del
+abismo no deja de parpadear en rojo», «hay varias con las alas malas en la espalda». Lo que pasó y lo hecho:
+- **Su skin (Pewez777, el panda) tiene la cabeza de abajo TRANSPARENTE y toda la cara en la segunda capa (el «gorro»).**
+  La 1.3.164 escondía esa capa con los cascos cosméticos → la cabeza desaparecía dentro del casco. Se quitó
+  (`TFHeadHatClient` borrado, `wardrobe.js` vuelve a dibujarla). **Nunca escondas el gorro de la skin.** En su lugar,
+  `tools/ajustar_cascos.py` (HAT_CLEAR 0,295) agranda los cascos cuyas paredes quedan dentro del gorro.
+- **Parpadeo rojo**: el probador dibujaba las caras por los dos lados (DoubleSide) y el forro de dentro del casco del
+  tiburón (caras que miran hacia dentro) se peleaba con la de fuera. `viewer.js`: `FrontSide`, como Minecraft.
+- **Alas y mochilas**: `tools/ajustar_espaldas.py` (nada atravesando los brazos ni el pecho, pegado a la espalda, las
+  mochilas centradas y la raíz de las alas entre -0,45 y -0,22). La 1.3.164 había adelantado las alas del Nitro (61 % a
+  la altura del cuerpo: cruzaban los brazos). `build_mod_items.py` pasa los dos ajustes al final.
+- **Cómo mirarlo** (lo que ve el dueño): el probador de la web con su skin y ángulos fijos (frente, 45°, lado, espalda,
+  otro lado y desde arriba): el script `views.cjs` del scratchpad sirve `wardrobe.js` con `window.__wd = state` para
+  fijar la cámara (solo en la prueba). Míralo SIEMPRE así antes de decir que algo está bien.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.164: AUDITORÍA DE LOS SETS NUEVOS) — lee esto primero
 
 Lo que dijo el dueño tras la 1.3.163 (con capturas del probador de la web: fondo café, su skin de panda) y lo hecho:
