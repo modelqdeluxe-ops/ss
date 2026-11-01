@@ -54,7 +54,8 @@
     "SoundBufferLibraryMixin",
     "ConnectScreenMixin",
     "ItemEntityRendererMixin",
-    "PlayerTabOverlayClanMixin"
+    "PlayerTabOverlayClanMixin",
+    "ChatComponentClanMixin"
   ],
   "injectors": {
     "defaultRequire": 0

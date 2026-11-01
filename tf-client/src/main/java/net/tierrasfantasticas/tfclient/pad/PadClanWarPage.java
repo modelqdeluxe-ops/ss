@@ -111,8 +111,9 @@ final class PadClanWarPage extends PadDataPage {
             g.fill(xb, y, xb + bw, y + 1, 0x30FFFFFF);
         }
         // (1.3.158) sin el % debajo de cada barra: ya sale en grande al lado de cada clan
-        side(g, a, X + 6, top, pw, bottom, mine.equals("A"), over && winner.equals("A"), pa);
-        side(g, b, cx + barsW / 2 + 6, top, pw, bottom, mine.equals("B"), over && winner.equals("B"), pb);
+        // (1.3.160, el dueño: «está desalineado, quiero todo simétrico») los dos lados a la misma distancia de las barras
+        side(g, a, cx - barsW / 2 - 7 - pw, top, pw, bottom, mine.equals("A"), over && winner.equals("A"), pa);
+        side(g, b, cx + barsW / 2 + 7, top, pw, bottom, mine.equals("B"), over && winner.equals("B"), pb);
         // la derecha: los objetivos, con el avance de cada lado
         int rx = X + 8 + lw, rw = X + W - 8 - rx;
         g.fill(rx - 4, top, rx - 3, bottom, 0x3018265C);
@@ -148,13 +149,10 @@ final class PadClanWarPage extends PadDataPage {
         int rgb = 0xFF000000 | (int) num(c, "color", 0xFFFFFF);
         int cx = x + w / 2;
         int y = top + 2;
-        if (won) {
-            PadFont.drawShadowCentered(g, "GANADOR", cx, y, 0xFFD650, 0xFF6A3E08);
-            y += 9;
-        } else if (mine) {
-            PadFont.drawCentered(g, "TU CLAN", cx, y, 0x3A5888, false);
-            y += 9;
-        }
+        // (1.3.160) los dos lados con su rótulo (antes solo el tuyo: tu insignia quedaba 9 px más abajo que la del rival)
+        if (won) PadFont.drawShadowCentered(g, "GANADOR", cx, y, 0xFFD650, 0xFF6A3E08);
+        else PadFont.drawCentered(g, mine ? "TU CLAN" : "RIVAL", cx, y, mine ? 0x3A5888 : 0x9A3A3A, false);
+        y += 9;
         int size = Math.max(18, Math.min(36, w - 8));
         String badge = str(c, "insignia", "");
         if (badge.isEmpty() || !PadSkin.image(g, pad, badge, cx - size / 2, y, size)) {
@@ -186,6 +184,10 @@ final class PadClanWarPage extends PadDataPage {
             String line = PadUi.fitEnd((++i) + ". " + str(t, "nombre", "?") + " " + PadView.shortNumber(num(t, "n", 0)), w);
             PadUi.text(g, line, cx - PadUi.font().width(line) / 2, y, PadUi.TEXT);
             y += 10;
+        }
+        if (i == 0 && y + 9 <= bottom) {
+            String none = PadUi.fitEnd("Sin aportes aún", w);
+            PadUi.text(g, none, cx - PadUi.font().width(none) / 2, y, PadUi.MUTED);
         }
     }
 

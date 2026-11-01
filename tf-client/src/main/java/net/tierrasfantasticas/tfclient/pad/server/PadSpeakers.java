@@ -197,7 +197,7 @@ public final class PadSpeakers {
     public static void uploaded(ServerPlayer p, PadSpeakerNet.UpPart m) {
         State st = SPEAKERS.get(p.getUUID());
         boolean speaking = st != null && st.url.equals(PadSpeakerNet.LOCAL + m.hash()) && isLocal(st.url);
-        if (!speaking && !(m.hash().matches("[0-9a-f]{40}") && PadMusicShare.waiting(p, m.hash()))) return;
+        if (!speaking && !(m.hash().matches("[0-9a-f]{40}") && (PadMusicShare.waiting(p, m.hash()) || PadZoneMusic.waiting(p, m.hash())))) return;
         long maxParts = (PadSpeakerNet.MAX_BYTES + PadSpeakerNet.UP_PART - 1) / PadSpeakerNet.UP_PART;
         if (m.total() <= 0 || m.total() > maxParts || m.index() < 0 || m.index() >= m.total() || m.size() <= 0
                 || m.size() > PadSpeakerNet.MAX_BYTES || m.data().length > PadSpeakerNet.UP_PART) return;
@@ -236,6 +236,7 @@ public final class PadSpeakers {
             return;
         }
         PadMusicShare.uploaded(p, m.hash());
+        PadZoneMusic.uploaded(p, m.hash());
         Set<UUID> waiting = WAITING.remove(m.hash());
         MinecraftServer server = p.getServer();
         if (waiting != null && server != null) {

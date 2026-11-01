@@ -18,21 +18,25 @@ import net.tierrasfantasticas.tfclient.pad.server.PadClans;
 
 /**
  * (1.3.159, el dueño: «quiero un emote exclusivo del clan, con animación, sonido, y que muestre la insignia del clan, que
- * lo usemos con una tecla que asignemos; animado con físicas, sonido o música y su logo del clan dinámico: si lo cambio,
- * se pone el que cambié; quiero algo chingón») El emote del clan: «¡Por el clan!». Solo para los de un clan (es su
- * insignia y su etiqueta, las de ahora). La tecla (Opciones › Controles › TF Client › Emote del clan, B de fábrica) lo
- * pide; el servidor mira que esté en un clan y que no lo repita antes de 6 s, y lo manda a él y a los que lo ven
- * (ClanEmoteClient lo anima y suena en cada uno).
+ * lo usemos con una tecla que asignemos») El emote del clan. (1.3.160, el dueño: «el emote no me gusta, necesito más de
+ * 1, mínimo 5 distintos, ninguno igual ni música igual») Cinco: Estandarte, Corona, Trueno, Fiesta y Órbita, cada uno
+ * con su animación, sus efectos y su música (ClanEmotes en el cliente). Solo para los de un clan (es su insignia y su
+ * etiqueta, las de ahora). La tecla (Opciones › Controles › TF Client › Emotes del clan, B de fábrica) abre la rueda
+ * para elegir; el servidor mira que esté en un clan y que no lo repita antes de 6 s, y lo manda a él y a los que lo ven.
  */
 public final class ClanEmote {
     public static final long COOLDOWN_MS = 6_000;
+    /** Los emotes (el id va por la red: el orden no se cambia; uno nuevo, al final). */
+    public static final String[] IDS = {"estandarte", "corona", "trueno", "fiesta", "orbita"};
+    public static final String[] NAMES = {"Estandarte", "Corona", "Trueno", "Fiesta", "Órbita"};
     private static final Map<UUID, Long> LAST = new HashMap<>();
 
     private ClanEmote() {}
 
-    static void ask(ServerPlayer p) {
+    static void ask(ServerPlayer p, int emote) {
+        if (emote < 0 || emote >= IDS.length) return;
         if (PadClans.clanIdOf(p.getUUID()) == null) {
-            p.displayClientMessage(Component.literal("El emote es de los clanes: únete a uno (pad › Clanes).").withStyle(ChatFormatting.RED), true);
+            p.displayClientMessage(Component.literal("Los emotes son de los clanes: únete a uno (pad › Clanes).").withStyle(ChatFormatting.RED), true);
             return;
         }
         if (p.isSpectator() || p.isSleeping() || !p.isAlive()) return;
@@ -41,12 +45,12 @@ public final class ClanEmote {
         if (last != null && now - last < COOLDOWN_MS) return;
         LAST.put(p.getUUID(), now);
         ClanLooks.dirty();
-        ClanNet.sendEmote(p);
+        ClanNet.sendEmote(p, emote);
     }
 
-    /** Para la prueba en el juego: el emote de ese jugador, sin esperar. */
-    public static void testPlay(ServerPlayer p) {
+    /** Para la prueba en el juego: ese emote de ese jugador, sin esperar. */
+    public static void testPlay(ServerPlayer p, int emote) {
         LAST.remove(p.getUUID());
-        ask(p);
+        ask(p, emote);
     }
 }

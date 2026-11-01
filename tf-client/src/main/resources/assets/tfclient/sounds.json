@@ -3973,12 +3973,52 @@
    }
   ]
  },
- "clanes.emote": {
+ "clanes.emote_estandarte": {
   "category": "player",
-  "subtitle": "subtitles.tfclient.clanes.emote",
+  "subtitle": "subtitles.tfclient.clanes.emote_estandarte",
   "sounds": [
    {
-    "name": "tfclient:clanes/emote",
+    "name": "tfclient:clanes/emote_estandarte",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_corona": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_corona",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_corona",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_trueno": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_trueno",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_trueno",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_fiesta": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_fiesta",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_fiesta",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "clanes.emote_orbita": {
+  "category": "player",
+  "subtitle": "subtitles.tfclient.clanes.emote_orbita",
+  "sounds": [
+   {
+    "name": "tfclient:clanes/emote_orbita",
     "attenuation_distance": 24
    }
   ]

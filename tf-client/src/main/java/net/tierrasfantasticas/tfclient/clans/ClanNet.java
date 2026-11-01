@@ -46,13 +46,13 @@ public final class ClanNet {
     }
 
     /** El emote de ese jugador, a él y a los que lo ven. */
-    static void sendEmote(ServerPlayer who) {
-        if (channel != null) channel.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> who), new EmotePlay(who.getUUID(), who.getId()));
+    static void sendEmote(ServerPlayer who, int emote) {
+        if (channel != null) channel.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> who), new EmotePlay(who.getUUID(), who.getId(), emote));
     }
 
-    /** Desde el cliente: la tecla del emote. */
-    public static void askEmote() {
-        if (channel != null) channel.sendToServer(new EmoteAsk());
+    /** Desde el cliente: el emote elegido en la rueda (0 a 4, ClanEmote.IDS). */
+    public static void askEmote(int emote) {
+        if (channel != null) channel.sendToServer(new EmoteAsk(emote));
     }
 
     public record Looks(String json) {
@@ -70,32 +70,35 @@ public final class ClanNet {
         }
     }
 
-    public record EmoteAsk() {
-        static void write(EmoteAsk m, FriendlyByteBuf buf) {}
+    public record EmoteAsk(int emote) {
+        static void write(EmoteAsk m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.emote);
+        }
 
         static EmoteAsk read(FriendlyByteBuf buf) {
-            return new EmoteAsk();
+            return new EmoteAsk(buf.readVarInt());
         }
 
         static void handle(EmoteAsk m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer p = ctx.get().getSender();
-            if (p != null) ClanEmote.ask(p);
+            if (p != null) ClanEmote.ask(p, m.emote);
             ctx.get().setPacketHandled(true);
         }
     }
 
-    public record EmotePlay(UUID uuid, int entity) {
+    public record EmotePlay(UUID uuid, int entity, int emote) {
         static void write(EmotePlay m, FriendlyByteBuf buf) {
             buf.writeUUID(m.uuid);
             buf.writeVarInt(m.entity);
+            buf.writeVarInt(m.emote);
         }
 
         static EmotePlay read(FriendlyByteBuf buf) {
-            return new EmotePlay(buf.readUUID(), buf.readVarInt());
+            return new EmotePlay(buf.readUUID(), buf.readVarInt(), buf.readVarInt());
         }
 
         static void handle(EmotePlay m, Supplier<NetworkEvent.Context> ctx) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.start(m.uuid));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.start(m.uuid, m.emote));
             ctx.get().setPacketHandled(true);
         }
     }

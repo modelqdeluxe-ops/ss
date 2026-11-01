@@ -65,6 +65,13 @@ final class PadMusicPage extends PadPage {
     private boolean newList;
     /** Dentro de una playlist: eligiendo de tu música qué canciones van en ella. */
     private boolean picking;
+    /**
+     * (1.3.160) Eligiendo la canción para la música de una protección (desde Protecciones › zona › MÚSICA): su id y su
+     * nombre. Tocar una canción la manda y vuelve a la zona.
+     */
+    static String zoneFor, zoneName;
+    /** Cuándo se empezó a elegir (pasados 5 min sin elegir, se olvida: la app vuelve a ser la de siempre). */
+    static long zoneAt;
     private String confirmList;
     private long confirmListAt;
     /** La primera playlist que se ve en las pestañas (si no caben todas). */
@@ -449,9 +456,10 @@ final class PadMusicPage extends PadPage {
     private void drawLibrary(GuiGraphics g, double mx, double my) {
         int x = listX(), w = listW(), y = Y;
         String list = MusicLibrary.currentList();
-        if (list.isEmpty()) picking = false;
+        if (zoneFor != null && System.currentTimeMillis() - zoneAt > 300_000) zoneFor = null;
+        if (list.isEmpty() || zoneFor != null) picking = false;
         // eligiendo canciones para la playlist: se ve toda tu música, cada una con su casilla
-        List<MusicLibrary.Track> tracks = picking ? MusicLibrary.tracks() : MusicLibrary.queue();
+        List<MusicLibrary.Track> tracks = picking || zoneFor != null ? MusicLibrary.tracks() : MusicLibrary.queue();
         int top = y + PadSkin.TABS;
         int bottom = Y + H - 19;
         MusicDownloader.Job job = MusicDownloader.job();
@@ -460,7 +468,10 @@ final class PadMusicPage extends PadPage {
         drawListTabs(g, mx, my, x, y, w, list);
         // en una playlist, arriba: cuántas lleva y el botón para elegir de tu música
         int rowsTop = top + 4;
-        if (!list.isEmpty()) {
+        if (zoneFor != null) {
+            drawZoneHeader(g, mx, my, x, top, w);
+            rowsTop = top + LIST_HEADER;
+        } else if (!list.isEmpty()) {
             drawListHeader(g, mx, my, x, top, w, list);
             rowsTop = top + LIST_HEADER;
         }
@@ -489,6 +500,43 @@ final class PadMusicPage extends PadPage {
     }
 
     private static final int LIST_HEADER = 22;
+
+    /** (1.3.160) Eligiendo para una zona: «Toca la canción para «…»» y CANCELAR (vuelve a la zona sin cambiar nada). */
+    private void drawZoneHeader(GuiGraphics g, double mx, double my, int x, int top, int w) {
+        String label = "CANCELAR";
+        int bw = PadUi.buttonWidth(label), bx = x + w - 6 - bw, by = top + 4;
+        String info = "Toca la canción para «" + zoneName + "»";
+        PadUi.text(g, PadUi.fitEnd(info, bx - x - 14), x + 8, by + 4, PadUi.GOLD_TEXT);
+        boolean bh = PadUi.inside(mx, my, bx, by, bw, 16);
+        if (bh) pad.hover("§zonacancelar");
+        PadUi.button(g, bx, by, bw, label, PadView.GRAY, bh, true);
+        hits.add(new Hit(bx, by, bw, 16, () -> {
+            String claim = zoneFor;
+            zoneFor = null;
+            pad.openApp("protecciones", "z:" + claim + ":u");
+        }));
+        g.fill(x + 6, top + LIST_HEADER - 2, x + w - 6, top + LIST_HEADER - 1, 0xFFE8C860);
+    }
+
+    /** (1.3.160) La canción elegida para la zona: se manda y se vuelve a la zona (pestaña MÚSICA). */
+    private void pickForZone(MusicLibrary.Track t) {
+        String err = net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.setZone(zoneFor, t);
+        if (err != null) {
+            pad.showNotice(err);
+            return;
+        }
+        String claim = zoneFor;
+        zoneFor = null;
+        pad.sound("like", 0.7F);
+        pad.openApp("protecciones", "z:" + claim + ":u");
+    }
+
+    /** Para la prueba en el juego: elige para la zona la primera canción de tu música (como al tocarla). */
+    static String pickFirstForZoneTest() {
+        List<MusicLibrary.Track> all = MusicLibrary.tracks();
+        if (zoneFor == null || all.isEmpty()) return zoneFor == null ? "sin zona" : "sin canciones";
+        return net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.setZone(zoneFor, all.get(0));
+    }
 
     /** Cabecera de una playlist: «N canciones» y el botón ELEGIR CANCIONES (o LISTO mientras eliges). */
     private void drawListHeader(GuiGraphics g, double mx, double my, int x, int top, int w, String list) {
@@ -773,7 +821,7 @@ final class PadMusicPage extends PadPage {
         PadUi.text(g, PadUi.fitEnd(t.shownArtist(), right - tx), tx, y + 16, PadUi.MUTED);
         if (inList) {
             if (hover) pad.hover("§row" + t.id());
-            hits.add(new Hit(x, y, w, ROW - 1, picking ? () -> toggleIn(list, t) : () -> {
+            hits.add(new Hit(x, y, w, ROW - 1, picking ? () -> toggleIn(list, t) : zoneFor != null ? () -> pickForZone(t) : () -> {
                 if (current) MusicPlayer.toggle();
                 else MusicPlayer.play(t);
                 pad.sound("select", 0.6F);

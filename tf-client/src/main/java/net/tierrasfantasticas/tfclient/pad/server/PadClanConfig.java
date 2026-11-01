@@ -47,7 +47,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 public final class PadClanConfig {
     public static final String FILE = "clanes.json";
     /** Sube si cambian los valores de fábrica (los que no se hayan tocado se ponen al día solos: ver {@link #load}). */
-    static final int VERSION = 2;
+    static final int VERSION = 3;
 
     private static JsonObject root = new JsonObject();
 
@@ -104,6 +104,20 @@ public final class PadClanConfig {
                 "tfclient:estandarte_clan", 8, 0, "estandarte");
         o.addProperty("cantidad", 1);
         return o;
+    }
+
+    /**
+     * (1.3.160, el dueño: «vende una protección contra las guerras, de 24 horas o 2 días, que nadie te pueda declarar la
+     * guerra») los dos escudos de guerra de la tienda.
+     */
+    static JsonObject[] shields() {
+        JsonObject a = offer("escudo_24h", "Escudo de guerra ({horas} h)", "Durante {horas} horas nadie les puede declarar la guerra (lo que estaba sin aceptar se anula).",
+                "minecraft:shield", 10, 0, "escudo");
+        a.addProperty("horas", 24);
+        JsonObject b = offer("escudo_48h", "Escudo de guerra (2 días)", "Durante 2 días nadie les puede declarar la guerra (lo que estaba sin aceptar se anula).",
+                "minecraft:shield", 18, 0, "escudo");
+        b.addProperty("horas", 48);
+        return new JsonObject[] {a, b};
     }
 
     private static JsonObject DEF;
@@ -216,6 +230,7 @@ public final class PadClanConfig {
         boost.addProperty("horas", 24);
         shop.add(boost);
         shop.add(banner());
+        for (JsonObject sh : shields()) shop.add(sh);
         r.add("tienda", shop);
         return r;
     }
@@ -267,6 +282,16 @@ public final class PadClanConfig {
                 if (!has) cur.getAsJsonArray("tienda").add(banner());
             }
             TFClient.LOGGER.info("TF Clanes: clanes.json puesto al día (versión 2): {} misiones con la meta nueva", n);
+        }
+        if (v < 3 && cur.has("tienda") && cur.get("tienda").isJsonArray()) {
+            // (1.3.160) los escudos de guerra (si no los tenía)
+            JsonArray shop = cur.getAsJsonArray("tienda");
+            for (JsonObject sh : shields()) {
+                boolean has = false;
+                for (JsonElement e : shop) has |= e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals(TFJson.str(sh, "id", ""));
+                if (!has) shop.add(sh);
+            }
+            TFClient.LOGGER.info("TF Clanes: clanes.json puesto al día (versión 3): escudos de guerra en la tienda del clan");
         }
     }
 

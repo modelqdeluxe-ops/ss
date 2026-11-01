@@ -133,6 +133,8 @@ final class PadClanShop {
             lines.add(o.desc());
             if (o.type().equals("potenciador") && PadClanProgress.boosted(c)) {
                 lines.add("Activo: quedan " + PadClanViews.until(TFJson.num(c, "potenciadorHasta", 0) - System.currentTimeMillis()) + ".");
+            } else if (o.type().equals("escudo") && PadClanWar.shielded(c)) {
+                lines.add("Escudo activo: quedan " + PadClanViews.until(PadClanWar.shieldLeft(c)) + " (si compran otro, se suma).");
             } else if (o.max() > 0) {
                 lines.add("Compradas: " + n + " de " + o.max() + ".");
             }
@@ -176,6 +178,12 @@ final class PadClanShop {
             case "plazas" -> c.addProperty("plazasCompradas", TFJson.num(c, "plazasCompradas", 0) + 1);
             case "potenciador" -> c.addProperty("potenciadorHasta",
                     Math.max(System.currentTimeMillis(), TFJson.num(c, "potenciadorHasta", 0)) + hours(o.data()) * 60L * 60 * 1000);
+            case "escudo" -> {
+                // (1.3.160, el dueño: «una protección contra las guerras, de 24 horas o 2 días: que nadie te pueda declarar la
+                // guerra») se suma a lo que quede; las declaraciones sin aceptar se anulan
+                c.addProperty("escudoHasta", Math.max(System.currentTimeMillis(), TFJson.num(c, "escudoHasta", 0)) + hours(o.data()) * 60L * 60 * 1000);
+                PadClanWar.dropIncoming(id);
+            }
             case "verdes" -> {
                 long n = Math.max(1, TFJson.num(o.data(), "cantidad", 1));
                 for (UUID u : PadClans.members(c)) PadGreen.add(server, u, n);

@@ -76,7 +76,9 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
             badge(pose, badge, t, cy, size, lit, -0.011F, true);
             // la etiqueta, debajo, con su efecto: letra a letra sobre la onda de la tela (si fuera plana, la tela la tapaba
             // a trozos al ondear)
-            String tag = "[" + look.tag() + "]";
+            // (1.3.160, el dueño: «saca las letras de esos corchetes: los corchetes son para el chat y el TAB; en el
+            // estandarte solo las letras con un efecto a los lados») sin corchetes y con una estrella que titila a cada lado
+            String tag = look.tag();
             double now = ClanClient.now();
             float ty = TOP - 0.98F, v = (TOP - ty) / (TOP - BOTTOM);
             float k = 0.020F;
@@ -84,6 +86,17 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
             int outline = scale(rgb, 0.2F);
             float total = font.width(Component.literal(tag).withStyle(s -> s.withBold(true))) * k;
             for (int side = 0; side < 2; side++) {
+                // las estrellas de los lados (del color de la letra de ese lado; en un color, doradas), antes que las letras:
+                // el búfer de la letra cierra el de la tela
+                VertexConsumer stars = buffers.getBuffer(RenderType.entityCutoutNoCull(WHITE));
+                boolean plain = look.fx().mode().equals(ClanTagFx.SOLID);
+                for (int end = 0; end < 2; end++) {
+                    float sx = (end == 0 ? -1 : 1) * (total / 2F + 0.075F);
+                    int col = plain ? 0xF2C14E : mix(ClanTagFx.colorAt(look.fx(), end == 0 ? 0 : cps.length - 1, cps.length, now), 0xFFFFFF, 0.25F);
+                    float tw = (float) (0.80 + 0.20 * Math.sin(now * 3.4 + end * 2.1));
+                    star(stars, pose, t, side == 0 ? sx : -sx, ty, 0.062F * tw, col, side);
+                    star(stars, pose, t, side == 0 ? sx : -sx, ty, 0.026F * tw, 0xFFFFFF, side);
+                }
                 float x = -total / 2F;
                 for (int i = 0; i < cps.length; i++) {
                     String ch = new String(Character.toChars(cps[i]));
@@ -119,6 +132,30 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
     }
 
     /** Lo que ondea la tela en (u de 0 a 1 de izquierda a derecha, v de 0 a 1 de arriba abajo). */
+    /**
+     * (1.3.160) Una estrella de 4 puntas (dos rombos cruzados) sobre la tela en (x, y) del sistema del estandarte, por
+     * delante (side 0) o por detrás (side 1), siguiendo la onda; r es el largo de las puntas.
+     */
+    private static void star(VertexConsumer vc, PoseStack pose, double t, float x, float y, float r, int rgb, int side) {
+        Matrix4f m = pose.last().pose();
+        Matrix3f n = pose.last().normal();
+        float w = r * 0.30F;
+        float[][] shapes = {
+                {x, y + r, x + w, y, x, y - r, x - w, y},
+                {x + r, y, x, y - w, x - r, y, x, y + w}};
+        float extra = r < 0.04F ? 0.004F : 0F;
+        for (float[] q : shapes) {
+            for (int k = 0; k < 4; k++) {
+                float vx = q[k * 2], vy = q[k * 2 + 1];
+                float u = (vx + HALF) / (2 * HALF), v = (TOP - vy) / (TOP - BOTTOM);
+                float z = Z0 + wave(t, u, v);
+                z = side == 0 ? z + 0.020F + extra : z - 0.020F - extra;
+                vc.vertex(m, vx, vy, z).color(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, 255).uv(0.5F, 0.5F).overlayCoords(OverlayTexture.NO_OVERLAY)
+                        .uv2(LightTexture.FULL_BRIGHT).normal(n, 0, 0, side == 0 ? 1 : -1).endVertex();
+            }
+        }
+    }
+
     private static float wave(double t, float u, float v) {
         // solo hacia delante (0 o más): si iba también hacia atrás, abajo la tela se metía detrás del asta y el asta asomaba
         // por delante de la etiqueta

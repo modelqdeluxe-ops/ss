@@ -1270,8 +1270,12 @@
  "key.categories.revivemod": "Revive Mod",
  "key.revivemod.surrender": "Rendirse / Morir (manten pulsado)",
  "key.revivemod.self_revive": "Auto-revivir (manten pulsado)",
- "key.tfclient.emote_clan": "Emote del clan",
+ "key.tfclient.emote_clan": "Emotes del clan",
  "block.tfclient.estandarte_clan": "Estandarte del clan",
  "item.tfclient.estandarte_clan": "Estandarte del clan",
- "subtitles.tfclient.clanes.emote": "Fanfarria del clan"
+ "subtitles.tfclient.clanes.emote_estandarte": "Emote del clan: Estandarte",
+ "subtitles.tfclient.clanes.emote_corona": "Emote del clan: Corona",
+ "subtitles.tfclient.clanes.emote_trueno": "Emote del clan: Trueno",
+ "subtitles.tfclient.clanes.emote_fiesta": "Emote del clan: Fiesta",
+ "subtitles.tfclient.clanes.emote_orbita": "Emote del clan: Órbita"
 }

@@ -52,7 +52,7 @@ public final class PadAdminClans {
     /** Los tipos de misión (los de los oficios). */
     static final List<String> TYPES = List.of("romper", "colocar", "matar", "pescar", "cosechar", "criar", "fabricar", "fundir", "encantar");
     /** Los tipos de oferta de la tienda del clan. */
-    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "estandarte", "objeto", "verdes", "comando");
+    static final List<String> OFFER_TYPES = List.of("proteccion", "plazas", "potenciador", "escudo", "estandarte", "objeto", "verdes", "comando");
 
     private PadAdminClans() {}
 
@@ -181,6 +181,7 @@ public final class PadAdminClans {
             case "proteccion" -> "Protección del clan";
             case "plazas" -> "Plazas";
             case "potenciador" -> "Potenciador";
+            case "escudo" -> "Escudo de guerra";
             case "objeto" -> "Objeto";
             case "verdes" -> "Verdes para todos";
             case "estandarte" -> "Estandarte del clan";
@@ -375,6 +376,8 @@ public final class PadAdminClans {
                         + PadClanConfig.num("miembros", "porCompra") + ")."));
                 case "potenciador" -> b.row(PadAdminUi.value(new ItemStack(Items.CLOCK), "Horas", "Lo que dura (se suman si se compra otra vez).",
                         String.valueOf(PadClanShop.hours(o)), "f:horas", f.equals("horas")));
+                case "escudo" -> b.row(PadAdminUi.value(new ItemStack(Items.CLOCK), "Horas", "Lo que nadie les puede declarar la guerra (se suman si compran otro).",
+                        String.valueOf(PadClanShop.hours(o)), "f:horas", f.equals("horas")));
                 case "verdes" -> b.row(PadAdminUi.value(new ItemStack(Items.EMERALD), "Verdes para cada miembro", "",
                         String.valueOf(Math.max(1, TFJson.num(o, "cantidad", 1))), "f:cantidad", f.equals("cantidad")));
                 case "estandarte" -> b.row(PadAdminUi.value(new ItemStack(net.tierrasfantasticas.tfclient.clans.ClanBlocks.BANNER_ITEM.get()),
@@ -537,7 +540,7 @@ public final class PadAdminClans {
                         String now = next(opts, TFJson.str(o, "tipo", opts.get(0)), dir);
                         o.addProperty("tipo", now);
                         if (now.equals("proteccion") && !o.has("piedra")) o.addProperty("piedra", "claimstone_clan_50x50");
-                        if (now.equals("potenciador") && !o.has("horas")) o.addProperty("horas", 24);
+                        if ((now.equals("potenciador") || now.equals("escudo")) && !o.has("horas")) o.addProperty("horas", 24);
                     }
                     PadClanConfig.save(r);
                 }

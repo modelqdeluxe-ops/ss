@@ -1270,8 +1270,12 @@
  "key.categories.revivemod": "Revive Mod",
  "key.revivemod.surrender": "Surrender / Die (hold)",
  "key.revivemod.self_revive": "Self-revive (hold)",
- "key.tfclient.emote_clan": "Clan emote",
+ "key.tfclient.emote_clan": "Clan emotes",
  "block.tfclient.estandarte_clan": "Clan banner",
  "item.tfclient.estandarte_clan": "Clan banner",
- "subtitles.tfclient.clanes.emote": "Clan emote fanfare"
+ "subtitles.tfclient.clanes.emote_estandarte": "Clan emote: Banner",
+ "subtitles.tfclient.clanes.emote_corona": "Clan emote: Crown",
+ "subtitles.tfclient.clanes.emote_trueno": "Clan emote: Thunder",
+ "subtitles.tfclient.clanes.emote_fiesta": "Clan emote: Party",
+ "subtitles.tfclient.clanes.emote_orbita": "Clan emote: Orbit"
 }

@@ -110,7 +110,7 @@ public final class PadMusicShare {
     }
 
     /** Se asegura de tener la canción entre las de los discos (la copia de las del altavoz si hace falta). */
-    private static boolean keep(String hash) {
+    static boolean keep(String hash) {
         if (stored(hash) != null) return true;
         Path from = PadSpeakers.speakerFile(hash), d = dir();
         if (from == null || d == null || !Files.exists(from)) return false;

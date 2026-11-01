@@ -49,6 +49,59 @@ public final class PadSpeakerNet {
                 .encoder(Share::write).decoder(Share::read).consumerMainThread(Share::handle).add();
         ch.messageBuilder(Shared.class, base + 7, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Shared::write).decoder(Shared::read).consumerMainThread(Shared::handle).add();
+        // (1.3.160) la música de las protecciones (PadZoneMusic): ponerla desde la app Música y oírla dentro
+        ch.messageBuilder(ZoneSet.class, base + 8, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ZoneSet::write).decoder(ZoneSet::read).consumerMainThread(ZoneSet::handle).add();
+        ch.messageBuilder(Zone.class, base + 9, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Zone::write).decoder(Zone::read).consumerMainThread(Zone::handle).add();
+    }
+
+    /** (1.3.160) Desde la app Música: esta canción (link o tfaudio:) para la música de esa protección. */
+    public record ZoneSet(String claim, String url, String title, String artist, long durationMs) {
+        static void write(ZoneSet m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.claim, 64);
+            buf.writeUtf(m.url, 512);
+            buf.writeUtf(m.title, 80);
+            buf.writeUtf(m.artist, 80);
+            buf.writeVarLong(Math.max(0, m.durationMs));
+        }
+
+        static ZoneSet read(FriendlyByteBuf buf) {
+            return new ZoneSet(buf.readUtf(64), buf.readUtf(512), buf.readUtf(80), buf.readUtf(80), buf.readVarLong());
+        }
+
+        static void handle(ZoneSet m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = ctx.get().getSender();
+            if (p != null) net.tierrasfantasticas.tfclient.pad.server.PadZoneMusic.set(p, m);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /**
+     * (1.3.160) Al que está dentro de una protección con música: lo que suena (por dónde va, en bucle, y su volumen de
+     * 0 a 100); playing false = salió de la zona (o se quitó la música): que pare.
+     */
+    public record Zone(UUID claim, boolean playing, String url, String title, String artist, long positionMs, long durationMs, int volume) {
+        static void write(Zone m, FriendlyByteBuf buf) {
+            buf.writeUUID(m.claim);
+            buf.writeBoolean(m.playing);
+            buf.writeUtf(m.url, 512);
+            buf.writeUtf(m.title, 80);
+            buf.writeUtf(m.artist, 80);
+            buf.writeVarLong(Math.max(0, m.positionMs));
+            buf.writeVarLong(Math.max(0, m.durationMs));
+            buf.writeVarInt(Math.max(0, Math.min(100, m.volume)));
+        }
+
+        static Zone read(FriendlyByteBuf buf) {
+            return new Zone(buf.readUUID(), buf.readBoolean(), buf.readUtf(512), buf.readUtf(80), buf.readUtf(80), buf.readVarLong(), buf.readVarLong(),
+                    buf.readVarInt());
+        }
+
+        static void handle(Zone m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.zone(m));
+            ctx.get().setPacketHandled(true);
+        }
     }
 
     /**

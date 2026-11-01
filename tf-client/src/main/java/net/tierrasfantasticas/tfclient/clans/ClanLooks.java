@@ -113,6 +113,13 @@ public final class ClanLooks {
         }
     }
 
+    /** (1.3.160) Los clanes con la etiqueta animada (arcoíris u onda): para el chat. */
+    public static java.util.List<Look> animated() {
+        java.util.List<Look> out = new java.util.ArrayList<>();
+        for (Look l : clans.values()) if (l.fx().animated()) out.add(l);
+        return out;
+    }
+
     public static Look clan(String id) {
         return id == null ? null : clans.get(id);
     }

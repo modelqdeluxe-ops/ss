@@ -110,7 +110,7 @@ public final class PadClaims {
             new Section("Ventajas de zona grande (para ti y tus miembros)", List.of(
                     want(FlagId.EFFECT_REGEN, "¿Regeneración?", "Se curan solos en la zona.", Items.GOLDEN_APPLE),
                     want(FlagId.EFFECT_RESIST, "¿Resistencia?", "Reciben menos daño en la zona.", Items.IRON_CHESTPLATE),
-                    want(FlagId.EFFECT_SPEED, "¿Velocidad?", "Vais más rápido en la zona.", Items.SUGAR),
+                    want(FlagId.EFFECT_SPEED, "¿Velocidad?", "Van más rápido en la zona.", Items.SUGAR),
                     want(FlagId.ALLOW_FLIGHT, "¿Volar?", "Vuelan dentro de la zona.", Items.FEATHER))));
 
     /** Los dos botones de una pregunta: el que vale ahora, verde; el otro, gris (pulsarlo la cambia). */
@@ -176,7 +176,7 @@ public final class PadClaims {
         return tier == null ? new ItemStack(Items.STONE) : new ItemStack(ClaimBlocks.itemForTier(tier));
     }
 
-    private static String title(Claim c) {
+    static String title(Claim c) {
         String custom = c.getFlags().customName;
         if (custom != null && !custom.isBlank()) return custom;
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
@@ -272,6 +272,14 @@ public final class PadClaims {
             case "estilo" -> { // estilo:<zona>:1|0 (1.3.113: los mensajes como título o encima de la barra)
                 f.messageAsTitle = arg.equals("1");
                 manager.save();
+            }
+            case "musica_quitar" -> PadZoneMusic.clear(player, c);
+            case "musica_vol" -> {
+                try {
+                    PadZoneMusic.volume(player, c, Integer.parseInt(arg.trim()));
+                } catch (NumberFormatException ignored) {
+                    // nada
+                }
             }
             case "editar" -> PadServer.put(player, "protecciones.editar", arg);
             case "ir" -> goTo(player, c, !app.equals(ALL));
@@ -504,7 +512,7 @@ public final class PadClaims {
         PadView.Builder b = PadView.of(app).tab(base + "a", "AJUSTES")
                 .tab(base + "m", members > 0 ? "MIEMBROS (" + members + ")" : "MIEMBROS")
                 .tab(base + "b", bans > 0 ? "BANEOS (" + bans + ")" : "BANEOS")
-                .tab(base + "p", "PARTÍCULAS").tab(base + "x", "MÁS").selected(base + section);
+                .tab(base + "p", "PARTÍCULAS").tab(base + "u", "MÚSICA").tab(base + "x", "MÁS").selected(base + section);
         if (c.getGroupId() != null && !c.isGroupMother()) {
             Claim mother = c.getMother();
             b.header("Esta piedra es del grupo de " + (mother != null ? mother.getOwnerName() : "?") + ": se administra desde su piedra principal.");
@@ -524,11 +532,34 @@ public final class PadClaims {
             case "m" -> members(player, b, c, id);
             case "b" -> bans(player, b, c, id);
             case "p" -> particles(b, c, id);
+            case "u" -> music(b, c, id);
             case "x" -> more(player, b, c, id);
             default -> settings(b, c, id);
         }
         b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
         return b.build();
+    }
+
+    /**
+     * (1.3.160) La música de la zona (PadZoneMusic): la que suena dentro, ELEGIR / CAMBIAR (abre la app Música para tocar
+     * una canción), QUITAR y el volumen.
+     */
+    private static void music(PadView.Builder b, Claim c, String id) {
+        b.header("Suena en bucle para todos los que estén dentro de la zona; al salir, se deja de oír.");
+        PadZoneMusic.Song s = PadZoneMusic.of(c);
+        String pick = "§zonamusica:" + id + ":" + title(c);
+        if (s == null) {
+            b.row(new PadView.Row(new ItemStack(Items.JUKEBOX), "Sin música", MUTED,
+                    List.of("Elige una canción de tu app Música: de un link o de tu carpeta."), -1, "", PadView.Btn.of("ELEGIR", pick, PadView.GREEN), null));
+            return;
+        }
+        b.row(new PadView.Row(new ItemStack(Items.MUSIC_DISC_CAT), s.title(), TEXT,
+                List.of((s.artist().isBlank() ? "" : s.artist() + " · ") + "La puso " + s.by() + "."), -1, "",
+                PadView.Btn.of("CAMBIAR", pick, PadView.BLUE), PadView.Btn.of("QUITAR", "musica_quitar:" + id, PadView.RED)));
+        b.row(new PadView.Row(new ItemStack(Items.NOTE_BLOCK), "Volumen: " + s.volume() + " %", TEXT, List.of("Lo alto que suena dentro de la zona."), -1, "",
+                s.volume() > 10 ? PadView.Btn.of("−", "musica_vol:" + id + ":-10", PadView.BLUE) : PadView.Btn.off("−"),
+                s.volume() < 100 ? PadView.Btn.of("+", "musica_vol:" + id + ":10", PadView.BLUE) : PadView.Btn.off("+")));
+        b.text("Quien no la quiera oír: Ajustes del pad › Oír la música de otros.", MUTED, List.of());
     }
 
     private static void settings(PadView.Builder b, Claim c, String id) {

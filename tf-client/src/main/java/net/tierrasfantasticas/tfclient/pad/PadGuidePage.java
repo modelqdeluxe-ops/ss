@@ -334,7 +334,7 @@ final class PadGuidePage extends PadPage {
                 h("Portada y altavoz"),
                 b("PORTADA pone una imagen a la canción que suena desde un link a un PNG o JPG."),
                 b("El botón del altavoz, al final de los controles, hace que los jugadores a menos de 32 bloques oigan tu música."),
-                b("Para oír los altavoces de otros, deja encendido «Oír los altavoces de otros» en Ajustes."));
+                b("Para oír los altavoces de otros y la música de las zonas, deja encendido «Oír la música de otros» en Ajustes."));
 
         topic("oficios", "Oficios", "oficios",
                 p("Elige un oficio y cobra monedas por lo que haces en el mundo: picar, talar, cosechar, pescar, cazar…"),
@@ -472,6 +472,7 @@ final class PadGuidePage extends PadPage {
                 b("MIEMBROS: invita a quien pueda construir y usarlo todo."),
                 b("BANEOS: quien no puede entrar (la barrera lo saca). DESBANEAR lo quita."),
                 b("PARTÍCULAS: el efecto del borde y su densidad (MENOS / MÁS)."),
+                b("MÚSICA: ELEGIR abre tu app Música para tocar una canción; suena en bucle para quien esté dentro de la zona y al salir se deja de oír."),
                 b("MÁS: los mensajes al entrar y salir, el contorno, el grupo y eliminar la zona."),
                 tip("Si estás dentro de una zona ajena, el pad te dice de quién es."));
 
@@ -494,10 +495,12 @@ final class PadGuidePage extends PadPage {
                 b("BANCO: todos meten lo que llevan (METER); sacan el líder y los colíderes (y los veteranos si se activa)."),
                 b("COFRE da el cofre del clan (uno por clan): quien lo usa abre el banco. Lo quitan el líder y los colíderes."),
                 b("El estandarte del clan se compra en TIENDA: lleva la insignia y la etiqueta del clan."),
-                h("Emote del clan"),
-                b("Tecla B (cámbiala en Opciones › Controles): ¡por el clan! con la insignia, brillos y fanfarria."),
+                h("Emotes del clan"),
+                b("Tecla B (cámbiala en Opciones › Controles): abre la rueda con 5 emotes, cada uno con su música y la insignia del clan."),
+                b("Estandarte, Corona, Trueno, Fiesta y Órbita: elige con el ratón o con 1 a 5."),
                 h("Guerras y duelos"),
                 b("Guerra por objetivos de trabajo y uno PvP: derrotar a los del clan rival (opcional, suma igual)."),
+                b("TIENDA › Escudo de guerra (24 h o 2 días): mientras dura, nadie les puede declarar la guerra."),
                 b("/clan duelo <jugador>: al otro le salen los botones ACEPTAR y RECHAZAR en el chat."));
 
         topic("jugadores", "Jugadores", "jugadores",
