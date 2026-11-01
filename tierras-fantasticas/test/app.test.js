@@ -1947,6 +1947,17 @@ test('panel de staff: solo con la clave; ve los pedidos y reembolsa a mano (tamb
     const quote = (await (await get(`/api/player/Staff_MC?product=${pid}`)).json()).quote;
     assert.ok(quote?.blocked, `${pid} dado de prueba: ya lo tiene`);
   }
+  // (TF Client 1.3.163) el set de Discord Nitro: solo del staff (no sale en la tienda ni se compra ni se reclama; se da
+  // y se quita desde el panel)
+  assert.ok(!catalog.some((p) => p.id === 'especial-nitro'), 'el Nitro no sale en la tienda');
+  assert.strictEqual((await staff('/api/staff/products', { key: 'otra-clave' })).status, 401);
+  const staffCatalog = await (await staff('/api/staff/products')).json();
+  assert.ok(staffCatalog.some((p) => p.id === 'especial-nitro' && p.staffOnly && !p.commands), 'el panel lo ve (sin comandos)');
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'especial-nitro', username: 'Staff_MC' })).status, 400);
+  assert.strictEqual((await post('/api/claim', { productId: 'especial-nitro' }, cookie)).status, 400);
+  const nitro = await tryIt({ productId: 'especial-nitro', username: 'Staff_MC' });
+  assert.strictEqual(nitro.status, 200);
+  assert.strictEqual((await refund((await nitro.json()).id)).status, 200);
   assert.strictEqual((await (await get('/api/config')).json()).serverIp, '216.163.187.40:19015');
 });
 

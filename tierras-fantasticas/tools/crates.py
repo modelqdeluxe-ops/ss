@@ -109,21 +109,21 @@ CRATES = [
      'Oro, coral y agua del fondo del mar: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y sombrero de tiburón.', 'items/deepsea/key', 499, ('#a5f3fc', '#0891b2')),
     # (TF Client 1.3.163) otras 8 del dueño del 1 nov 2026
     ('dragonstone', 'Crate Piedra de Dragón', 'Legendario', 'Los guardianes de la piedra dragón',
-     'El arsenal de los guardianes de la piedra dragón: espada, hoja, daga, hacha de batalla, alabarda, lanza, bastón, arco, escudo, armadura completa y alas.', 'items/dragonstone/key', 499, ('COLOR1', 'COLOR2')),
+     'El arsenal de los guardianes de la piedra dragón: espada, hoja, daga, hacha de batalla, alabarda, lanza, bastón, arco, escudo, armadura completa y alas.', 'items/dragonstone/key', 499, ('#fca5a5', '#b91c1c')),
     ('leviathan', 'Crate Leviatán', 'Mítico', 'La bestia de las profundidades',
-     'Escamas y aletas del leviatán: hoja, daga, hacha de batalla, alabarda, hoz, lanza, bastón, arco, escudo, armadura completa y alas.', '', 499, ('COLOR1', 'COLOR2')),
+     'Escamas y aletas del leviatán: hoja, daga, hacha de batalla, alabarda, hoz, lanza, bastón, arco, escudo, armadura completa y alas.', '', 499, ('#93c5fd', '#1d4ed8')),
     ('aceruin', 'Crate Aceruin', 'Legendario', 'El acero del reino caído',
-     'Espada, maza, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco del set Aceruin.', 'items/aceruin/key', 499, ('COLOR1', 'COLOR2')),
+     'Espada, maza, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco del set Aceruin.', 'items/aceruin/key', 499, ('#86efac', '#16a34a')),
     ('violet', 'Crate Violeta', 'Épico', 'Cristal y magia violeta',
-     'Cristal violeta con magia arcana: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/violet/key', 499, ('COLOR1', 'COLOR2')),
+     'Cristal violeta con magia arcana: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/violet/key', 499, ('#f5d0fe', '#c026d3')),
     ('runemoth', 'Crate Polilla Rúnica', 'Mítico', 'Runas y fuego infernal',
-     'La polilla rúnica del infierno: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas de polilla y sombrero.', 'items/runemoth/key', 499, ('COLOR1', 'COLOR2')),
+     'La polilla rúnica del infierno: espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas de polilla y sombrero.', 'items/runemoth/key', 499, ('#ddd6fe', '#7c3aed')),
     ('nexus', 'Crate Nexus', 'Mítico', 'La energía del nexo',
-     'Tecnología y energía del nexo: gran espada, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/nexus/key', 499, ('COLOR1', 'COLOR2')),
+     'Tecnología y energía del nexo: gran espada, martillo, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/nexus/key', 499, ('#fde68a', '#d97706')),
     ('mysticcyan', 'Crate Cian Místico', 'Épico', 'Magia turquesa',
-     'Cristal cian lleno de magia: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/mysticcyan/key', 499, ('COLOR1', 'COLOR2')),
+     'Cristal cian lleno de magia: gran espada, martillo, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/mysticcyan/key', 499, ('#a5f3fc', '#0e7490')),
     ('sakura', 'Crate Sakura', 'Edición limitada', 'Flores de cerezo',
-     'Pétalos de cerezo y acero japonés: katana, gran espada, garrote, guantelete, alabarda, maza, martillo, arco, armadura completa, alas y sombrero.', 'items/sakura/key', 499, ('COLOR1', 'COLOR2')),
+     'Pétalos de cerezo y acero japonés: katana, gran espada, espada, daga, garrote, guantelete, alabarda, maza, martillo, lanza, arco, escudo, alas y sombrero (este pack no trae armadura).', 'items/sakura/key', 499, ('#fecdd3', '#be185d')),
     ('soulskull', 'Crate Soul Skull', 'Legendario', 'Calaveras y fuego de almas',
      'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]
@@ -340,7 +340,7 @@ def mod_sets():
 SPECIALS = [
     ('nitro', 'Set Discord Nitro', 'Para los que boostean el Discord',
      'El set de Discord Nitro: armas, herramientas, armadura completa, alas y casco. Solo para quien boostea el Discord de '
-     'Tierras Fantásticas (lo da el staff).', 499, ('#fbcfe8', '#ec4899')),
+     'Tierras Fantásticas (lo da el staff).', 499, ('#c7d2fe', '#5865f2')),
 ]
 
 
