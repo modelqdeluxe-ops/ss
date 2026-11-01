@@ -56,9 +56,28 @@ conecta), `pad-cliente.properties` y `estelas.properties` (preferencias de cada 
 | `ayuda.json` | Textos de la Guía del pad. |
 | `pad.json` | Qué apps del pad ven los jugadores y ajustes del pad. En `mundos`: `explorar` (el mundo al que lleva Explorar) y `spawn` (el del botón Spawn), por su id (`minecraft:overworld`, `minecraft:survival`…); vacío = automático (Explorar nunca va a un mundo vacío como el spawn de Multiverse; Spawn usa el `/spawn` de EssentialsX). También con `/tf web viajes explorar aqui` o `spawn aqui` estando en ese mundo, y `/tf web viajes lista` para ver cuáles son. |
 | `jefes.json` | Jefes de incursión. |
+| `revivir.json` | Revivir (el Revive Mod, ahora dentro del TF Client): tiempo desangrándose, distancia y tiempo para revivir, auto-revivir, sonidos, partículas y **quién puede rematar** a un noqueado (`playersCanFinish`, `mobsCanFinish`). Ver «Revivir» abajo. |
 
 Las crates (cajas) van aparte, en `config/fscrates/cajas/` (un JSON por caja; `config/fscrates/items_referencia.json`
 tiene los ids de los objetos).
+
+## Revivir (`revivir.json`)
+
+Al morir no mueres: te desangras tumbado con un contador (`downTimeSeconds`, 90). Otro jugador te revive manteniendo
+clic derecho cerca (`reviveDistance` bloques, `reviveTimeTicks` ticks; entre varios va más rápido) y vuelves con
+`reviveHealth` de vida y `reviveFood` de comida. Tú puedes rendirte (tecla E mantenida) o auto-revivirte pagando
+`selfReviveLevelCost` niveles (tecla F; `allowSelfRevive`). Las teclas se cambian en Opciones › Controles › Revive Mod
+o en Mods › TF Client › Configuración.
+
+- `playersCanFinish` (por defecto `true`): otro jugador puede **rematar** a un noqueado. Un golpe suyo que haga daño
+  (espada, flecha, tridente…) lo mata de verdad: suelta su tumba, sale su mensaje de muerte y cuenta como asesinato.
+  Las zonas sin PvP lo siguen impidiendo.
+- `mobsCanFinish` (por defecto `false`): los mobs (y los jefes) también rematan. Con `false`, a un noqueado no le hacen
+  nada y le pierden de vista.
+- Con `/tf reload` (o `/revive reload`) vale al momento. También: `/revive set rematar jugadores true|false` y
+  `/revive set rematar mobs true|false`.
+- La primera vez se copia de `config/revivemod.json` (el del mod de antes). **Quita el revivemod (ReviveForge) de la
+  carpeta mods y del AutoModpack**: mientras siga instalado, el revivir del TF Client no se enciende.
 
 ## Copias de seguridad
 

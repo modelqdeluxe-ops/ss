@@ -1266,5 +1266,8 @@
  "item.tfclient.proteccion_clan_120x120": "Protección del clan 120x120",
  "block.tfclient.proteccion_clan_120x120": "Protección del clan 120x120",
  "block.tfclient.banco_clan": "Banco del clan",
- "item.tfclient.banco_clan": "Banco del clan"
+ "item.tfclient.banco_clan": "Banco del clan",
+ "key.categories.revivemod": "Revive Mod",
+ "key.revivemod.surrender": "Rendirse / Morir (manten pulsado)",
+ "key.revivemod.self_revive": "Auto-revivir (manten pulsado)"
 }

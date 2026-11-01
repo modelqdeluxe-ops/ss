@@ -190,6 +190,37 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (1 nov 2026, TF Client 1.3.157: REVIVIR DENTRO DEL TF CLIENT) — lee esto primero
+
+**El Revive Mod del dueño (revivemod 2.1.0, `ReviveForge-1.20.1V2.jar`) dentro del TF Client**, igual que era, y con
+lo que pidió: «que me puedan rematar los jugadores, ojo no mobs; opcional en la config, funcional; y que /tf reload
+aplique los cambios en tiempo real». Todo en [`tf-client/REVIVIR.md`](tf-client/REVIVIR.md).
+
+- Paquete `revive` (servidor) y `revive/client`: el código del jar sacado con Vineflower y los nombres de Minecraft
+  traducidos con las tablas oficiales (`mcp_config` 1.20.1 + mappings de Mojang), sin cambiar lo que hace.
+- `config/tfclient/revivir.json` (la primera vez, copia de `config/revivemod.json`): los mismos campos más
+  `playersCanFinish` (true) y `mobsCanFinish` (false). `/tf reload` (TFReload, «revivir») y `/revive reload` la aplican;
+  `/revive set rematar jugadores|mobs true|false`.
+- Remate: `CombatEvents` (onAttack deja pasar al que puede rematar, onHurt LOWEST sube el golpe a 1e6 después de las
+  protecciones, onDeath HIGH deja morir y `DownManager.finished`). Respeta las zonas sin PvP y el PvP apagado.
+- Si el revivemod sigue instalado, el del TF Client no se enciende (aviso en el registro). **El dueño tiene que quitar
+  el revivemod de `mods` del servidor y del AutoModpack.**
+- Prueba `[prueba-jefes=revivir]` (`bosses/BossTestRevive`) con dianas (`TFBotPlayer.spawnTarget`: jugadores de prueba
+  que reciben daño). **Resultado (commit 346eaa08): los 13 casos «bien»**: noqueo por un zombi (y el zombi deja de
+  seguirla), mobs y jugadores no rematan si está apagado, el PvP apagado lo para, el archivo cambiado a mano + `/tf
+  reload` hace que el zombi remate («Diana_A was slain by Zombie»), el jugador remata de un espadazo («Diana_B was slain
+  by Dev», asesino el jugador), revivir en 78 ticks con 6 de vida, `/revive kill` y el jugador noqueado y revivido.
+  Capturas medidas: el HUD («Desangrándose – 88s», «[E] Rendirte», «[F] Auto-revivir (10 niveles de XP)»), «Reviviendo
+  […] 50%», la pantalla de teclas y Ajustes del pad con la 8.ª fila (sin la nota de abajo: con 8 filas se solapaban).
+  Nota: el barrido de la espada también remata a un noqueado de al lado (es daño de jugador).
+- Pad › Ajustes › «Teclas de revivir» (el dueño: «¿cómo configuro las teclas si TF Client no tiene configuración
+  in game?»): abre `ReviveConfigScreen`; también Mods › TF Client › Configuración y Opciones › Controles › Revive Mod.
+- La prueba de jefes deja a 1 de vida a cualquier jugador (para que no muera el de la prueba): ahora no a las dianas
+  (`TFBotPlayer.isTarget`). Y un jugador recién entrado es invulnerable 60 ticks: las dianas se golpean desde el 80.
+- AutoModpack (el dueño: «cuando metí el TF Client en el AutoModpack como que no me cargó»): sin su log no se sabe;
+  lo probable es el reinicio que pide AutoModpack la primera vez o dos jars del TF Client en `mods`. Pedido el
+  `logs/latest.log` del cliente si vuelve a pasar.
+
 ### CHECKPOINT (31 oct 2026, TF Client 1.3.156: EL PARCHE ÚNICO) — lee esto primero
 
 **Una sola versión con todo lo pedido** (el dueño: «un solo parche con todo»): la caída del servidor por la GTS, las

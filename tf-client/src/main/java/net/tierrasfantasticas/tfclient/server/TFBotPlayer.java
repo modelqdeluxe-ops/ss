@@ -44,8 +44,41 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * lista del TAB (TFBots).
  */
 public final class TFBotPlayer extends ServerPlayer {
+    /**
+     * (1.3.157) Un jugador de prueba («diana») para la prueba en el juego de revivir: entra igual que un bot, pero es un
+     * jugador normal (se ve, recibe daño, muere). Nunca lo usa el servidor de verdad.
+     */
+    private boolean target;
+
     private TFBotPlayer(MinecraftServer server, ServerLevel level, GameProfile profile) {
         super(server, level, profile);
+    }
+
+    /** (1.3.157) Para las pruebas en el juego: mete una «diana» (un jugador que recibe daño) en level, en (x, y, z). */
+    @Nullable
+    public static ServerPlayer spawnTarget(MinecraftServer server, ServerLevel level, String name, double x, double y, double z) {
+        try {
+            GameProfile profile = new GameProfile(java.util.UUID.nameUUIDFromBytes(("tf-diana-" + name).getBytes()), name);
+            TFBotPlayer player = new TFBotPlayer(server, level, profile);
+            player.target = true;
+            server.getPlayerList().placeNewPlayer(new BotConnection(), player);
+            player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            player.teleportTo(level, x, y, z, 180F, 0F);
+            return player;
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Bots: no se pudo meter la diana {}", name, t);
+            return null;
+        }
+    }
+
+    /** (1.3.157) Si es una diana de las pruebas en el juego. */
+    public static boolean isTarget(ServerPlayer player) {
+        return player instanceof TFBotPlayer b && b.target;
+    }
+
+    /** (1.3.157) Saca una diana de la prueba (como si se desconectara). */
+    public static void removeTarget(ServerPlayer player) {
+        despawn(player);
     }
 
     /** Lo mete en el servidor como un jugador; null si no se pudo (entonces va solo en la lista). */
@@ -85,27 +118,32 @@ public final class TFBotPlayer extends ServerPlayer {
     /** Nadie lo ve: no se manda su entidad a ningún jugador (sí su entrada en la lista del TAB). */
     @Override
     public boolean broadcastToPlayer(ServerPlayer viewer) {
+        if (target) return super.broadcastToPlayer(viewer);
         return false;
     }
 
     /** Para el juego, espectador: ni monstruos, ni dormir, ni empujones. El TAB enseña su modo de juego (supervivencia). */
     @Override
     public boolean isSpectator() {
+        if (target) return super.isSpectator();
         return true;
     }
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
+        if (target) return super.isInvulnerableTo(source);
         return true;
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        if (target) return super.hurt(source, amount);
         return false;
     }
 
     @Override
     public boolean isPushable() {
+        if (target) return super.isPushable();
         return false;
     }
 

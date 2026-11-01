@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **1 nov 2026 — 1.3.157, REVIVIR**: el Revive Mod del dueño dentro del TF Client (paquete `revive`), con rematar
+> (jugadores sí, mobs no, en `config/tfclient/revivir.json` y `/tf reload`). Todo en
+> **[`tf-client/REVIVIR.md`](tf-client/REVIVIR.md)**; prueba `[prueba-jefes=revivir]`.
+>
 > **31 oct 2026 — 1.3.156, EL PARCHE ÚNICO** (lo pidió el dueño: una sola versión y una sola Release con todo): la
 > caída del servidor por la GTS del pad (Pretty Pipes), las flags de spawn de las protecciones, lo de la 1.3.155
 > (planeo, fondo del menú del pad, marcos de fotos) y la actualización de clanes entera (Clan Coins de 1–2, paleta tipo

@@ -229,7 +229,8 @@ public final class BossTest {
             current.hitsTaken++;
             current.dmgTaken += event.getAmount();
         }
-        // El jugador de prueba no muere: así se ve la pelea entera
+        // El jugador de prueba no muere: así se ve la pelea entera (1.3.157: las dianas de la prueba de revivir, sí)
+        if (net.tierrasfantasticas.tfclient.server.TFBotPlayer.isTarget(p)) return;
         if (event.getAmount() >= p.getHealth() - 1) event.setAmount(Math.max(0F, p.getHealth() - 1));
     }
 
@@ -291,7 +292,8 @@ public final class BossTest {
             // zona y el módulo PROTECCIONES del pad de admin) y «cumple» (la fiesta de /tf cumpleaños)
             // (1.3.156) «arreglos»: la ficha de la GTS con un tooltip que falla (Pretty Pipes) y las flags de spawn de las
             // protecciones; «clanes»: Clan Coins, nivel, misiones, insignias, paleta, banco, duelos, guerras, alianzas y tienda
-            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes"}) {
+            // (1.3.157) «revivir»: el Revive Mod dentro del TF Client y rematar (jugadores sí, mobs no, /tf reload)
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -313,7 +315,7 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id))
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -384,6 +386,10 @@ public final class BossTest {
         }
         if ("clanes".equals(r.id)) {
             if (!waitShot) BossTestClanes.step(t, server, level, player, r);
+            return;
+        }
+        if ("revivir".equals(r.id)) {
+            if (!waitShot) BossTestRevive.step(t, server, level, player, r);
             return;
         }
         switch (phase) {
