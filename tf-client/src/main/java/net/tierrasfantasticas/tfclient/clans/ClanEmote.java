@@ -25,7 +25,12 @@ import net.tierrasfantasticas.tfclient.pad.server.PadClans;
  * para elegir; el servidor mira que esté en un clan y que no lo repita antes de 6 s, y lo manda a él y a los que lo ven.
  */
 public final class ClanEmote {
-    public static final long COOLDOWN_MS = 6_000;
+    public static final long COOLDOWN_MS = 7_000;
+    /**
+     * (1.3.161, el dueño: «el sonido, el volumen y la animación son para el jugador y la persona cercana a él; nadie que no
+     * esté cerca suyo lo podrá ver ni escuchar») a cuántos bloques se manda (y el sonido se apaga a los 16: sounds.json).
+     */
+    public static final double RANGE = 24;
     /**
      * Los emotes (el número va por la red: el orden no se cambia; uno nuevo, al final). Los FREE primeros los tiene todo
      * clan; (1.3.160, el dueño: «mete muchos más emotes, que sean comprables en la tienda del clan») los demás se compran

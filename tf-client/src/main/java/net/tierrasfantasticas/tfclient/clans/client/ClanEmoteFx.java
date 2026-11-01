@@ -226,7 +226,7 @@ final class ClanEmoteFx {
     /** La insignia del clan de lado size, en el plano XY del sistema actual (por las dos caras, sin verse al revés). */
     static void badge(PoseStack pose, MultiBufferSource b, ClanLooks.Look look, float size) {
         if (look == null) return;
-        VertexConsumer vc = b.getBuffer(RenderType.entityTranslucentEmissive(look.badgeTexture()));
+        VertexConsumer vc = b.getBuffer(RenderType.entityTranslucentEmissive(look.badgeHd()));
         Matrix4f m = pose.last().pose();
         Matrix3f n = pose.last().normal();
         float h = size / 2;

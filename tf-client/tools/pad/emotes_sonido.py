@@ -12,7 +12,10 @@ música igual». Cada uno con su tono, su tempo, sus instrumentos y su sala, al 
   orbita      La menor, místico: un oleaje al revés, arpa en arpegios (Lam–Fa–Do–Sol) con un colchón que brilla, el
               barrido que sube al juntarse las insignias y el destello (campana y coro en La mayor).       5,0 s
 
-Todo sintetizado aquí (numpy, filtros y sala con FFT), mono (suena en el sitio del jugador), pico a −1 dB.
+Todo sintetizado aquí (numpy, filtros y sala con FFT), mono (suena en el sitio del jugador).
+(1.3.161, el dueño: «terminan muy rápido, haz un mejor ending… sostenido un poco más» y «el volumen es demasiado alto»)
+cada uno acaba con su acorde final sostenido (coda: cuerdas y coro suaves) HOLD segundos más, que se apaga despacio
+(la animación también: ClanEmotes.anim), y todos al mismo volumen, más bajo (RMS a −24 dB, pico como mucho a −3 dB).
 Uso: python3 tools/pad/emotes_sonido.py → assets/tfclient/sounds/clanes/emote_<nombre>.ogg (con ffmpeg)."""
 import os
 import subprocess
@@ -23,6 +26,9 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIR = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient', 'sounds', 'clanes'))
 SR = 44100
+HOLD = 1.3       # lo que se alarga el final (igual que ClanEmotes.HOLD)
+RMS_DB = -24.0   # el volumen de todos
+PEAK_DB = -3.0
 
 
 def note(n):
@@ -63,7 +69,7 @@ def conv(a, b):
 class Track:
     def __init__(self, dur, seed):
         self.dur = dur
-        self.mix = np.zeros(int(SR * (dur + 1.5)))
+        self.mix = np.zeros(int(SR * (dur + HOLD + 1.5)))
         self.rng = np.random.default_rng(seed)
 
     def add(self, sig, at, gain=1.0):
@@ -76,6 +82,12 @@ class Track:
     def noise(self, n):
         return self.rng.standard_normal(n)
 
+    def coda(self, midis, at, gain=1.0):
+        """El acorde final sostenido hasta el final alargado (se apaga en render)."""
+        length = self.dur + HOLD - at + 0.3
+        self.add(strings(midis, length, 0.07 * gain, 2200, 0.35), at)
+        self.add(choir(midis[1:] if len(midis) > 2 else midis, length, 0.045 * gain, 0.5, 2600), at + 0.05)
+
     def render(self, name, room, wet):
         """La sala (ruido que se apaga en room segundos), el final suave y el pico a −1 dB."""
         ir_n = int(room * SR)
@@ -85,12 +97,16 @@ class Track:
         ir[0] = 1.0
         ir /= np.sqrt(np.sum(ir ** 2))
         out = (1 - wet * 0.4) * self.mix + wet * conv(self.mix, ir)
-        end = int((self.dur + 0.2) * SR)
+        end = int((self.dur + HOLD + 0.1) * SR)
         out = out[:end]
-        fade = int(0.3 * SR)
-        out[-fade:] *= np.linspace(1, 0, fade) ** 1.5
+        # el final: se apaga despacio (1,4 s, en coseno)
+        fade = int(1.4 * SR)
+        out[-fade:] *= 0.5 + 0.5 * np.cos(np.linspace(0, np.pi, fade))
         out -= np.mean(out)
-        out /= np.max(np.abs(out)) / 10 ** (-1 / 20)
+        out *= 10 ** (RMS_DB / 20) / np.sqrt(np.mean(out ** 2))
+        peak = np.max(np.abs(out))
+        if peak > 10 ** (PEAK_DB / 20):
+            out *= 10 ** (PEAK_DB / 20) / peak
         wav = os.path.join(DIR, 'emote_' + name + '.wav')
         ogg = os.path.join(DIR, 'emote_' + name + '.ogg')
         with wave.open(wav, 'wb') as w:
@@ -403,6 +419,7 @@ def estandarte():
         tr.add(brass(m, 0.55, 0.13 if m > 40 else 0.2, 1.2), 4.3)
     tr.add(cymbal(tr, 1.4, 0.2), 4.3)
     tr.add(timpani(36, 1.0, 0.6), 4.3)
+    tr.coda((48, 55, 60, 64, 67, 72), 4.3)
     tr.render('estandarte', 1.3, 0.35)
 
 
@@ -439,6 +456,7 @@ def corona():
         tr.add(harp(m - 12, 1.2, 0.08), at)
     tr.add(choir((55, 62, 67, 71), 0.7, 0.07, 0.2, 2800), 3.6)
     tr.add(choir((50, 62, 66, 69, 74), 0.9, 0.08, 0.2, 2800), 4.2)
+    tr.coda((50, 57, 62, 66, 69, 74), 4.2)
     tr.render('corona', 2.6, 0.55)
 
 
@@ -485,6 +503,7 @@ def trueno():
     tr.add(thunder(tr, 1.4, 0.35), 3.82)
     for m in (40, 52, 55, 59, 64):
         tr.add(brass(m, 0.4, 0.17, 1.3, 0.0), 3.8)
+    tr.coda((40, 47, 52, 55, 59, 64), 3.8)
     tr.render('trueno', 1.0, 0.3)
 
 
@@ -533,6 +552,7 @@ def fiesta():
     for m in (55, 67, 71, 74, 79):
         tr.add(square(m, 0.35, 0.05, 0.5), 4.8)
     tr.add(strings((55, 59, 62, 67), 0.4, 0.08, 4000, 0.01), 4.8)
+    tr.coda((43, 55, 59, 62, 67), 4.8)
     tr.render('fiesta', 0.6, 0.18)
 
 
@@ -572,6 +592,7 @@ def orbita():
     tr.add(bell(note(88), 1.6, 0.14), 4.21)
     tr.add(choir((57, 61, 64, 69, 73), 0.9, 0.14, 0.03, 4000), 4.2)
     tr.add(gong(55, 1.6, 0.18), 4.2)
+    tr.coda((45, 57, 61, 64, 69, 73), 4.2)
     tr.render('orbita', 2.2, 0.5)
 
 
@@ -634,6 +655,7 @@ def fenix():
     for m in (38, 50, 54, 57, 62, 66):
         tr.add(brass(m, 0.55, 0.12, 1.2), 4.4)
     tr.add(cymbal(tr, 1.2, 0.18), 4.4)
+    tr.coda((38, 50, 54, 57, 62, 66), 4.4)
     tr.render('fenix', 1.6, 0.4)
 
 
@@ -657,6 +679,7 @@ def tornado():
     tr.add(cymbal(tr, 1.0, 0.22), 3.85)
     for m in (43, 55, 59, 62, 67):
         tr.add(brass(m, 0.5, 0.13, 1.2), 3.85)
+    tr.coda((43, 50, 55, 59, 62, 67), 3.85)
     tr.render('tornado', 1.0, 0.3)
 
 
@@ -682,6 +705,7 @@ def ventisca():
         tr.add(hp(tr.noise(int(0.12 * SR)), 5000) * np.exp(-30 * np.arange(int(0.12 * SR)) / SR) * 0.2, 4.4 + i * 0.03)
     for i, m in enumerate((95, 90, 86, 83, 78)):
         tr.add(bell(note(m), 0.9, 0.08), 4.42 + i * 0.06)
+    tr.coda((47, 59, 63, 66, 71, 75), 4.4)
     tr.render('ventisca', 2.4, 0.55)
 
 
@@ -707,6 +731,7 @@ def meteoro():
         at += ln
     tr.add(strings((48, 55, 64, 67), 2.2, 0.08, 3000, 0.1), 2.4)
     tr.add(timpani(36, 1.2, 0.5), 4.3)
+    tr.coda((36, 48, 55, 64, 67, 72), 4.3)
     tr.render('meteoro', 1.4, 0.35)
 
 
@@ -734,6 +759,7 @@ def fuegos():
     n = int(1.5 * SR)
     crackle = (tr.rng.random(n) > 0.99).astype(float) * tr.rng.standard_normal(n)
     tr.add(hp(crackle, 2500) * np.exp(-1.5 * np.arange(n) / SR) * 0.9, 3.35)
+    tr.coda((46, 58, 62, 65, 70, 74), 3.3)
     tr.render('fuegos', 1.2, 0.3)
 
 
@@ -757,6 +783,7 @@ def espadas():
     for k, m in enumerate(ost):
         tr.add(strings((m - 12,), 0.28, 0.08, 1800, 0.01), 2.5 + k * 0.28)
     tr.add(taiko(tr, 0.7, 1.0, 50), 4.3)
+    tr.coda((45, 57, 60, 64, 69), 4.3)
     tr.render('espadas', 2.0, 0.45)
 
 
@@ -789,6 +816,7 @@ def aura():
     tr.add(cymbal(tr, 1.4, 0.24), 3.85)
     tr.add(power_chord(42, 0.9, 0.16), 3.86)
     tr.add(thunder(tr, 1.2, 0.35), 3.86)
+    tr.coda((42, 49, 54, 61, 66), 3.85)
     tr.render('aura', 1.0, 0.3)
 
 
@@ -810,6 +838,7 @@ def corazones():
         tr.add(kick(0.25, 0.25, 70, 45), 1.85 + k * 0.48)
         tr.add(kick(0.18, 0.2, 70, 45), 1.85 + k * 0.48 + 0.16)
     tr.add(choir((65, 69, 72), 2.2, 0.05, 0.4, 4000), 1.8)
+    tr.coda((53, 60, 65, 69, 72), 3.9)
     tr.render('corazones', 1.2, 0.35)
 
 
@@ -832,6 +861,7 @@ def concierto():
     tr.add(power_chord(40, 1.2, 0.2), 3.7)
     tr.add(cymbal(tr, 1.5, 0.24), 3.7)
     tr.add(kick(0.9, 0.6, 120, 40), 3.7)
+    tr.coda((40, 47, 52, 56, 59, 64), 3.7)
     tr.render('concierto', 0.7, 0.22)
 
 
@@ -856,6 +886,7 @@ def portal():
     # 4,25: se cierra
     tr.add(cymbal(tr, 0.4, 0.2)[::-1], 3.85)
     tr.add(kick(0.8, 0.7, 80, 30), 4.25)
+    tr.coda((40, 52, 59, 64, 67), 4.25)
     tr.render('portal', 2.0, 0.5)
 
 

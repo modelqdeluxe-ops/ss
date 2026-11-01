@@ -44,6 +44,14 @@ public final class ClanLooks {
         public net.minecraft.resources.ResourceLocation badgeTexture() {
             return new net.minecraft.resources.ResourceLocation(TFClient.MOD_ID, "textures/gui/pad/insignias/" + badge + ".png");
         }
+
+        /**
+         * (1.3.161, el dueño: «el logo sale borroso en algunas») la misma a 256 px y suavizada al ampliarla, para lo que se
+         * ve grande en el mundo (emotes y estandarte); la de 64 px es para el pad (tools/pad/insignias.py hace las dos).
+         */
+        public net.minecraft.resources.ResourceLocation badgeHd() {
+            return new net.minecraft.resources.ResourceLocation(TFClient.MOD_ID, "textures/clanes/insignias_hd/" + badge + ".png");
+        }
     }
 
     private static String last = "";

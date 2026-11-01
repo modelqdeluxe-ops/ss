@@ -70,7 +70,7 @@ public class ClanBannerRenderer implements BlockEntityRenderer<ClanBannerBlockEn
         cloth(pose, solid, t, 0.05F, 0.05F, rgb, lit, -0.005F);
         // la insignia, por delante y por detrás
         if (look != null) {
-            VertexConsumer badge = buffers.getBuffer(RenderType.entityCutoutNoCull(look.badgeTexture()));
+            VertexConsumer badge = buffers.getBuffer(RenderType.entityCutoutNoCull(look.badgeHd()));
             float size = 0.70F, cy = TOP - 0.50F;
             badge(pose, badge, t, cy, size, lit, 0.011F, false);
             badge(pose, badge, t, cy, size, lit, -0.011F, true);

@@ -48,6 +48,22 @@ import org.joml.Matrix4f;
  */
 final class ClanEmotes {
     static final double[] DURATIONS = {5.0, 5.0, 4.6, 5.2, 5.0, 5.0, 4.8, 5.0, 5.0, 5.2, 5.0, 4.8, 4.6, 5.0, 5.0};
+    /**
+     * (1.3.161, el dueño: «terminan muy rápido, haz un mejor ending… sostenido un poco más para que no se note que termine
+     * de golpe») el final se alarga HOLD segundos: desde SLOW_FROM (pasado el último golpe de la música) lo que queda de la
+     * animación va a cámara lenta (la insignia, las chispas y la postura se quedan y se apagan despacio) mientras suena el
+     * acorde final sostenido (tools/pad/emotes_sonido.py, coda). Los golpes de antes siguen a su tiempo, con la música.
+     */
+    static final double HOLD = 1.3;
+    static final double[] SLOW_FROM = {4.4, 4.35, 3.95, 4.9, 4.35, 4.5, 4.15, 4.5, 4.4, 4.55, 4.4, 4.15, 3.95, 4.35, 4.35};
+
+    /** El tiempo de la animación para e segundos de verdad (con el final a cámara lenta). */
+    static double anim(int id, double e) {
+        if (id < 0 || id >= DURATIONS.length) return e;
+        double d = DURATIONS[id], s = SLOW_FROM[id];
+        if (e <= s) return e;
+        return Math.min(d, s + (e - s) * (d - s) / (d + HOLD - s));
+    }
 
     private ClanEmotes() {}
 
@@ -556,7 +572,7 @@ final class ClanEmotes {
         double show = len < 1.45 ? 0 : spring((len - 1.45) / 0.5 * 0.6);
         if (show > 0.01) {
             float size = (float) (0.95 * show), cy = top - 0.98F;
-            VertexConsumer bv = b.getBuffer(RenderType.entityCutoutNoCull(look.badgeTexture()));
+            VertexConsumer bv = b.getBuffer(RenderType.entityCutoutNoCull(look.badgeHd()));
             int steps = 6;
             for (int j = 0; j < steps; j++) {
                 for (int i = 0; i < steps; i++) {
