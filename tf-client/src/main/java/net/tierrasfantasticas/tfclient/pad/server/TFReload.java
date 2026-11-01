@@ -105,6 +105,13 @@ public final class TFReload {
             TFRoulette.reload();
             return List.of();
         }, done, problems);
+        // (1.3.157) revivir (rematar jugadores / mobs y lo demás del Revive Mod): vale al momento
+        if (net.tierrasfantasticas.tfclient.revive.TFRevive.active()) {
+            reload(net.tierrasfantasticas.tfclient.revive.TFRevive.FILE, "revivir", () -> {
+                net.tierrasfantasticas.tfclient.revive.TFRevive.reloadConfig();
+                return List.of();
+            }, done, problems);
+        }
         reload(null, "servidor", () -> {
             TFServerConfig.load();
             return List.of();

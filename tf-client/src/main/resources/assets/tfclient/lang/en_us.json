@@ -1266,5 +1266,8 @@
  "item.tfclient.proteccion_clan_120x120": "Clan Protection 120x120",
  "block.tfclient.proteccion_clan_120x120": "Clan Protection 120x120",
  "block.tfclient.banco_clan": "Clan Bank",
- "item.tfclient.banco_clan": "Clan Bank"
+ "item.tfclient.banco_clan": "Clan Bank",
+ "key.categories.revivemod": "Revive Mod",
+ "key.revivemod.surrender": "Surrender / Die (hold)",
+ "key.revivemod.self_revive": "Self-revive (hold)"
 }
