@@ -1537,7 +1537,7 @@
     "tagline": "Oro y obsidiana del imperio",
     "description": "El arsenal imperial del draco: obsidiana negra con filos de oro. Espada, estoque, daga, guadaña, tridente, ballesta, armadura completa, alas y casco con cuernos. Y más cosas en el juego.",
     "image": "img/crates/drakegoat.webp",
-    "price": 1000,
+    "price": 999,
     "maxQuantity": 1,
     "set": "drakegoat",
     "models": [

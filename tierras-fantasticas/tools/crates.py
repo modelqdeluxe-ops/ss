@@ -232,7 +232,8 @@ CRATE_TIERS = {'drakegoat': 'netherite+2'}
 # tienda con «Nuevo» (isNew en products.json). Al meter otras, cámbialas aquí.
 NEW_CRATES = ('dryadia', 'spring', 'drakegoat', 'onicurse', 'deepsea', 'dragonstone', 'leviathan', 'aceruin', 'violet',
               'runemoth', 'nexus', 'mysticcyan')
-CRATE_PRICES = {'drakegoat': 1000}
+# (2 nov 2026, el dueño: «el set que vale 10 ponle 9.99»)
+CRATE_PRICES = {'drakegoat': 999}
 
 # Rangos, de menor a mayor. Cada uno da su grupo de LuckPerms y su set completo (con el nivel de atributos del rango).
 # (TF Client 1.3.140, el dueño: «las armaduras de los rangos son netherita + 2 puntos: si la pechera de netherita es 8, la
