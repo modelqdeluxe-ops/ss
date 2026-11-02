@@ -1,16 +1,26 @@
-"""(1.3.165, el dueño, con capturas del probador de la web: «hay varias con las alas malas en la espalda», «algunas alas o
-mochilas están separadas del cuerpo») Coloca lo de la espalda (alas, mochilas) de los sets que se le pidan con tres
-reglas, medidas sobre lo que se ve del modelo puesto (check_backs / build_mod_items.back_points):
+"""(1.3.166) Lo de la espalda (alas, mochilas) de los sets: medirlo con reglas que se ven y dejarlo como se aprobó.
 
-1. Nada que se vea atravesando: dentro de los brazos (0,25 < |x| < 0,55, de la cintura al cuello, hasta la espalda) o
-   saliendo por el pecho (|x| < 0,25, por delante del pecho). Lo que queda escondido dentro del torso (las correas de
-   las mochilas, la raíz de las alas) no cuenta. Si más de PEN_MAX queda así, se echa hacia atrás lo justo.
-2. Pegado a la espalda: lo más cercano del torso (cuantil 15 de |x| < 0,3) a menos de GAP_MAX; si no, se acerca, pero
-   nunca tanto que vuelva a meterse en el cuerpo (la regla 1 manda).
-3. Mochilas: el bulto (lo que va detrás de la espalda, |x| < 0,35) centrado en la espalda (BAG_Y desde el cuello), no
-   colgando de la cadera. Alas: su raíz (la parte pegada a la espalda) entre ROOT_LO y ROOT_HI.
+Lo que pidió el dueño, con capturas del probador de la web (de lado, con su skin): «las alas deben colocarse bien en la
+espalda, altura correcta», «hay varias con las alas malas en la espalda» (Draco Imperial, Dríada, mochila de Violeta,
+Polilla Rúnica) y, al ver una propuesta que bajaba el Dragonstone: «esta estaba bien arriba… tampoco es que las que
+están bien las vas a poner en las patas». Así que solo se toca lo que tiene un defecto que se ve:
 
-    python3 tools/ajustar_espaldas.py [--medir] set [set ...]
+1. **Cabeza**: nada de lo que se ve dentro de la cabeza (|x| < 0,27, de 0,04 a 0,52 sobre el cuello, z < 0,27). De lado
+   se ve como una raya o unas hojas que cruzan la cara (la 1.3.165 lo dejaba pasar: no miraba la cabeza).
+2. **Cuerpo**: nada saliendo por el pecho ni dentro de los brazos (`bad`), como mucho PEN_MAX.
+3. **Hueco**: lo más cercano de lo que va detrás del torso (|x| < 0,25, sin las correas, que van por dentro del cuerpo
+   hasta el pecho) pegado a la espalda (HUECO_MAX). La 1.3.165 contaba las correas como «pegado» y la mochila de Violeta
+   flotaba detrás.
+4. **Altura**: no se baja lo que ya está bien (un ala que tapa la cabeza vista de lado es normal: también pasa en los
+   sets de antes). Solo se baja lo justo para que la cabeza quede libre, o se echan hacia atrás las piezas que se meten.
+
+Lo aprobado se guarda en `tools/espaldas.json` (por objeto: su `display.head` y, si hace falta, piezas movidas) y
+`build_mod_items.py` lo aplica al final, así regenerar no lo pierde. Medido y mirado desde 8 ángulos en el probador de
+la web con la skin del dueño (HANDOFF, CHECKPOINT de la 1.3.166).
+
+    python3 tools/ajustar_espaldas.py [set ...]             aplica la tabla (lo que hace build_mod_items)
+    python3 tools/ajustar_espaldas.py --medir [set ...]     solo mide (cabeza, cuerpo, hueco, alto)
+    python3 tools/ajustar_espaldas.py --proponer [set ...]  propone (no escribe) un arreglo para lo que tenga defectos
 Después hay que volver a exportar el probador (tierras-fantasticas/tools/wear_export.py).
 """
 import json
@@ -20,11 +30,12 @@ import sys
 import build_mod_items as M
 import check_backs as CB
 
-BACK = 0.125         # la espalda (bloques desde el centro del cuerpo)
-PEN_MAX = 0.01       # parte de lo que se ve que se tolera dentro del cuerpo o de los brazos
-GAP_MAX = 0.04
-BAG_Y = -0.40        # centro de la mochila (bloques desde el cuello)
-ROOT_LO, ROOT_HI = -0.45, -0.22
+TABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'espaldas.json')
+BACK = 0.125          # la espalda (bloques desde el centro del cuerpo)
+PEN_MAX = 1.0         # % de lo que se ve que se tolera dentro del cuerpo o de los brazos
+HEAD_MAX = 0.5        # % dentro de la cabeza
+HUECO_MAX = 0.05      # separación de la espalda (bloques)
+HEAD_Z = 0.275        # detrás de la cabeza
 
 
 def bad(p):
@@ -36,84 +47,66 @@ def bad(p):
     return abs(p[0]) < 0.55 and p[2] < BACK
 
 
+def in_head(p):
+    return abs(p[0]) < 0.27 and 0.04 < p[1] < 0.52 and p[2] < 0.27
+
+
 def measure(pts, wts):
-    W = sum(wts) or 1
-    inside = sum(w for p, w in zip(pts, wts) if bad(p)) / W
-    torso = [(p, w) for p, w in zip(pts, wts) if abs(p[0]) <= 0.3 and -0.85 <= p[1] <= 0.15]
-    gap = M._wquantile([p[2] - BACK for p, _ in torso], [w for _, w in torso], 0.15) if len(torso) > 12 else None
-    return inside, gap
+    """% en el cuerpo, % en la cabeza, hueco con la espalda, y lo más alto y lo más bajo (cuantiles 98 y 2)."""
+    W = sum(wts) or 1.0
+    pen = 100 * sum(w for p, w in zip(pts, wts) if bad(p)) / W
+    head = 100 * sum(w for p, w in zip(pts, wts) if in_head(p)) / W
+    tor = [(p[2], w) for p, w in zip(pts, wts) if abs(p[0]) < 0.25 and -0.75 < p[1] < -0.05 and p[2] > 0.10]
+    gap = M._wquantile([z for z, _ in tor], [w for _, w in tor], 0.10) - BACK if len(tor) > 8 else None
+    ys = [p[1] for p in pts]
+    return {'cuerpo': pen, 'cabeza': head, 'hueco': gap, 'arriba': M._wquantile(ys, wts, 0.98),
+            'abajo': M._wquantile(ys, wts, 0.02)}
 
 
-def shift_z_out(pts, wts):
-    """Lo mínimo que hay que echar hacia atrás para que dentro quede como mucho PEN_MAX."""
-    W = sum(wts)
-    # lo que hay que mover cada punto malo para que deje de serlo (al pecho: hasta -0,115; a los brazos: hasta la espalda)
-    need = sorted(((-BACK - 0.01 - p[2]) if abs(p[0]) < 0.25 else (BACK - p[2]) + 0.005, w)
-                  for p, w in zip(pts, wts) if bad(p))
-    if not need or sum(w for _, w in need) / W <= PEN_MAX:
-        return 0.0
-    # mover lo justo para que lo que siga mal no pase de PEN_MAX
-    acc = sum(w for _, w in need)
-    for d, w in need:
-        acc -= w
-        if acc / W <= PEN_MAX:
-            return max(0.0, d)
-    return need[-1][0]
+def fmt(m):
+    gap = '   -  ' if m['hueco'] is None else f"{m['hueco']:+.3f}"
+    return (f"cabeza {m['cabeza']:4.1f}%  cuerpo {m['cuerpo']:4.1f}%  hueco {gap}  "
+            f"alto {m['arriba']:+.2f}..{m['abajo']:+.2f}")
 
 
-def apply(model, dz=0.0, dy=0.0):
-    head = model['display']['head']
-    t = head['translation']
-    head["translation"] = [t[0], round(t[1] + dy / 0.625 * 16, 3), round(t[2] + dz / 0.625 * 16, 3)]
+def defects(m, acepta=None):
+    """Lo que se ve mal. `acepta` (de espalda.json) sube el límite de un objeto que el dueño dio por bueno así."""
+    a = acepta or {}
+    out = []
+    if m['cabeza'] > a.get('cabeza', HEAD_MAX):
+        out.append('se mete en la cabeza')
+    if m['cuerpo'] > a.get('cuerpo', PEN_MAX):
+        out.append('atraviesa el cuerpo')
+    if m['hueco'] is not None and m['hueco'] > a.get('hueco', HUECO_MAX):
+        out.append('separado de la espalda')
+    return out
 
 
-def fix(model, kind, alpha_of):
-    notes = []
-    pts, wts = M.back_points(model, alpha_of)
-    if not pts:
-        return notes
-    # 3. altura
-    if kind == 'backpack':
-        bag = [(p[1], w) for p, w in zip(pts, wts) if abs(p[0]) < 0.35 and p[2] > BACK + 0.05]
-        if bag:
-            y50 = M._wquantile([b[0] for b in bag], [b[1] for b in bag], 0.5)
-            dy = BAG_Y - y50
-            if abs(dy) > 0.03:
-                apply(model, dy=dy)
-                notes.append(f'mochila centrada en la espalda (y {dy:+.2f})')
-    else:
-        torso = [(p, w) for p, w in zip(pts, wts) if abs(p[0]) <= 0.3]
-        if torso:
-            zc = M._wquantile([p[2] for p, _ in torso], [w for _, w in torso], 0.15)
-            root = [(p[1], w) for p, w in torso if p[2] <= zc + 0.08]
-            ry = M._wquantile([r[0] for r in root], [r[1] for r in root], 0.5)
-            target = min(ROOT_HI, max(ROOT_LO, ry))
-            if abs(target - ry) > 0.03:
-                apply(model, dy=target - ry)
-                notes.append(f'raíz de las alas a {target:+.2f} (y {target - ry:+.2f})')
-    pts, wts = M.back_points(model, alpha_of)
-    # 1. fuera del cuerpo
-    out = shift_z_out(pts, wts)
-    if out > 0.005:
-        apply(model, dz=out)
-        notes.append(f'fuera del cuerpo (z +{out:.2f})')
-    pts, wts = M.back_points(model, alpha_of)
-    # 2. pegado (sin volver a entrar)
-    _, gap = measure(pts, wts)
-    if gap is not None and gap > GAP_MAX:
-        arms = [p[2] for p in pts if 0.25 <= abs(p[0]) < 0.55 and -0.80 < p[1] < 0.05]
-        zmin = min(arms) if arms else BACK + 1
-        step = min(gap - GAP_MAX / 2, max(0.0, zmin - BACK - 0.005))
-        if step > 0.005:
-            apply(model, dz=-step)
-            notes.append(f'pegado a la espalda (z -{step:.2f})')
-    return notes
+def move_element(el, d):
+    for k in ('from', 'to'):
+        el[k] = [round(v + d[i], 4) for i, v in enumerate(el[k])]
+    if el.get('rotation'):
+        el['rotation']['origin'] = [round(v + d[i], 4) for i, v in enumerate(el['rotation']['origin'])]
 
 
-def main(args):
-    only_measure = '--medir' in args
-    wanted = [a for a in args if not a.startswith('--')]
-    alpha_of = CB.alpha_of_factory()
+MARK = 'tf_espalda'   # en el modelo: ya tiene la posición de espaldas.json (Minecraft no lee esta clave)
+
+
+def apply_entry(model, entry):
+    """Pone la posición aprobada y mueve las piezas que diga. Deja la marca MARK para no moverlas dos veces si se vuelve
+    a pasar (build_mod_items parte siempre del modelo del pack, sin marca). Para cambiar las piezas de una entrada ya
+    aplicada, regenera el set con build_mod_items."""
+    if 'head' not in entry or model.get(MARK):
+        return False
+    model.setdefault('display', {})['head'] = json.loads(json.dumps(entry['head']))
+    for mv in entry.get('mover', []):
+        for i in mv['elements']:
+            move_element(model['elements'][i], mv['d'])
+    model[MARK] = 1
+    return True
+
+
+def items(wanted):
     sets = json.load(open(os.path.join(M.ASSETS, 'tf_sets.json'), encoding='utf-8'))['sets']
     for s in sets:
         if wanted and s['id'] not in wanted:
@@ -124,15 +117,52 @@ def main(args):
             worn = item.get('worn')
             path = os.path.join(M.ASSETS, 'models', worn.split(':', 1)[1] + '.json') if worn else \
                 os.path.join(M.ASSETS, 'models', 'item', item['id'] + '.json')
-            model = json.load(open(path, encoding='utf-8'))
-            kind = 'backpack' if item['id'].endswith('backpack') else 'wings'
-            before = measure(*M.back_points(model, alpha_of))
-            notes = [] if only_measure else fix(model, kind, alpha_of)
-            after = measure(*M.back_points(model, alpha_of))
-            print(f"{item['id']:24s} dentro {before[0]:5.1%} → {after[0]:5.1%}  hueco {before[1]:+.3f} → {after[1]:+.3f}  {'; '.join(notes)}")
-            if notes:
-                with open(path, 'w', encoding='utf-8') as fh:
-                    json.dump(model, fh, separators=(',', ':'))
+            yield s['id'] + '/' + item['id'][len(s['id']) + 1:], item, path
+
+
+def propose(model, alpha_of):
+    """Lo mínimo para quitar los defectos: bajar (hasta 0,4) para librar la cabeza y acercar o alejar en z. Solo una
+    propuesta: hay que mirarla en el probador (8 ángulos, la skin del dueño) antes de pasarla a espaldas.json."""
+    pts, wts = M.back_points(model, alpha_of)
+    for k in range(0, 41):
+        dy = -0.01 * k
+        moved = [(p[0], p[1] + dy, p[2]) for p in pts]
+        m = measure(moved, wts)
+        dz = -(m['hueco'] - 0.01) if m['hueco'] is not None else 0.0
+        for _ in range(80):
+            m = measure([(p[0], p[1], p[2] + dz) for p in moved], wts)
+            if m['cuerpo'] <= PEN_MAX and m['cabeza'] <= HEAD_MAX:
+                break
+            dz += 0.005
+        if m['cabeza'] <= HEAD_MAX and m['cuerpo'] <= PEN_MAX:
+            return dy, dz, m
+    return None
+
+
+def main(args):
+    only_measure = '--medir' in args
+    proposing = '--proponer' in args
+    wanted = [a for a in args if not a.startswith('--')]
+    table = json.load(open(TABLE, encoding='utf-8'))
+    alpha_of = CB.alpha_of_factory()
+    for tag, item, path in items(wanted):
+        model = json.load(open(path, encoding='utf-8'))
+        before = measure(*M.back_points(model, alpha_of))
+        changed = False
+        if not only_measure and not proposing and tag in table:
+            changed = apply_entry(model, table[tag])
+        after = measure(*M.back_points(model, alpha_of))
+        bad_now = defects(after, table.get(tag, {}).get('acepta'))
+        note = ('aplicado ' if changed else '') + ('MAL: ' + ', '.join(bad_now) if bad_now else 'bien')
+        print(f"{tag:34s} {fmt(after)}  {note}" + (f"   (antes: {fmt(before)})" if changed else ''))
+        if proposing and bad_now:
+            p = propose(model, alpha_of)
+            if p:
+                dy, dz, m = p
+                print(f"{'':34s} propuesta: bajar {dy:+.2f}, z {dz:+.3f} → {fmt(m)} (mírala en el probador)")
+        if changed:
+            with open(path, 'w', encoding='utf-8') as fh:
+                json.dump(model, fh, separators=(',', ':'))
 
 
 if __name__ == '__main__':

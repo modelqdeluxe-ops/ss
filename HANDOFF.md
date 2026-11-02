@@ -190,6 +190,31 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (2 nov 2026, TF Client 1.3.166: ALAS Y MOCHILAS QUE SE VEÍAN MAL DE LADO) — lee esto primero
+
+El dueño, con 4 capturas del probador de la web **de lado** (Draco Imperial, Dríada, mochila de Violeta, Polilla Rúnica):
+«mira esas alas todas malas en la espalda… no estás viendo lo que haces, solo das por hecho que está bueno». Y al ver
+una propuesta que bajaba el Dragonstone: «esta estaba bien arriba… tampoco es que las que están bien las vas a poner en
+las patas». Lo que estaba mal y por qué no lo vio la 1.3.165:
+- **La 1.3.165 no miraba la cabeza** y su «pegado a la espalda» contaba las correas: alas cuyas piezas cruzaban la
+  cabeza (Dríada, Primavera y su copia de Cosméticos, Maldición Oni, Abismo —la raya que cruza el casco de su captura—,
+  Leviatán, Violeta, Cian Místico), Draco Imperial y Polilla Rúnica separados 0,2 de la espalda y la mochila de Violeta
+  flotando detrás (solo las correas tocaban). Medido con `tools/ajustar_espaldas.py --medir` (reglas nuevas: cabeza,
+  cuerpo, hueco sin correas) y **mirado** en el probador real con la skin del dueño desde 8 ángulos.
+- **Arreglo mínimo, sin bajar lo que estaba bien**: cada objeto lleva su posición aprobada en `tools/espaldas.json`
+  (con una nota de qué tenía): bajar solo lo justo (Dríada 0,26 al 90 %, Oni 0,35 al 88 %, Violeta 0,14, Cian Místico
+  0,2, Leviatán 0,09), echar hacia atrás las piezas que se metían en la cabeza (Primavera; la gema de la Dríada), menos
+  fondo en z para pegar sin bajar (Draco 40 %, Polilla 45 %), el Abismo 0,075 atrás (sus planos cruzaban la cabeza) y la
+  mochila de Violeta pegada con las correas donde estaban. **Dragonstone no se toca** (el dueño: estaba bien; su
+  círculo va detrás de la cabeza a propósito: `acepta` en la tabla). `build_mod_items.py` aplica la tabla al final
+  (`ajustar_espaldas.main`) y deja la marca `tf_espalda` en el modelo para no mover piezas dos veces.
+- **Cómo mirarlo** (lo que ve el dueño): `rig.cjs` del scratchpad carga `wardrobe.js` en una página vacía y saca, por
+  cada objeto de espalda, solo el objeto y el set entero desde 8 ángulos (espalda, los dos lados, diagonales, arriba,
+  frente, de lado desde abajo); `par.py` pone antes y después a la misma escala. Un ala que tapa la cabeza vista de
+  lado es normal (también en los sets de antes); lo que no puede pasar es que **se meta** en la cabeza o que flote.
+- Prueba en el juego `[prueba-jefes=sets]`: ahora también de los dos lados (`BossTest.bodyTurn` gira el cuerpo al
+  dibujarlo, la cámara sigue detrás) y la mochila de lado.
+
 ### CHECKPOINT (1 nov 2026, TF Client 1.3.165: LO QUE SALIÓ MAL EN LA 1.3.164) — lee esto primero
 
 El dueño (furioso, con capturas del probador de la web): «¿y mi skin???», «parece que no arreglaste nada», «el casco del

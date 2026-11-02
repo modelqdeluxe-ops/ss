@@ -1,0 +1,117 @@
+{
+ "deepsea/wing": {
+  "nota": "Los planos de las alas pasaban por la cabeza (la raya de la captura 26): 0,075 hacia atrás, detrás de la cabeza. Queda a 0,1 de la espalda: es lo que hace falta para que el plano no cruce la cabeza de lado.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, 0.489, -1.799],
+   "scale": [2.2232, 2.2232, 2.2232]
+  },
+  "acepta": {"hueco": 0.11}
+ },
+ "dragonstone/wings": {
+  "nota": "El dueño (1.3.166): «esta estaba bien arriba». El círculo mágico va detrás de la cabeza a propósito; no se toca.",
+  "acepta": {"cabeza": 4.0}
+ },
+ "drakegoat/wing": {
+  "nota": "La capa y el dragón quedaban 0,2 separados de la espalda (captura 28): menos fondo (40 % en z), pegado.",
+  "head": {
+   "rotation": [0, -90, 0],
+   "translation": [0.0, -31.185, -2.0],
+   "scale": [1.32, 3.3, 3.3]
+  }
+ },
+ "dryadia/wing": {
+  "nota": "El manto y la gema tapaban media cabeza y las hojas la cruzaban (capturas del dueño 27 y 29): 0,26 más abajo, al 90 % y la gema detrás de la cabeza.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, 0.346, 6.67],
+   "scale": [3.5372, 3.5372, 3.5372]
+  },
+  "mover": [
+   {"elements": [18], "d": [0, 0, 1.2]}
+  ]
+ },
+ "leviathan/wings": {
+  "nota": "La gema del centro se metía en la cabeza: 0,09 más abajo.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, -15.554, 2.498],
+   "scale": [1.74, 1.74, 1.74]
+  }
+ },
+ "mysticcyan/wings": {
+  "nota": "El círculo mágico tapaba la cabeza y los planos la cruzaban: 0,2 más abajo.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, 4.313, 4.199],
+   "scale": [1.5, 1.5, 1.5]
+  }
+ },
+ "onicurse/wings": {
+  "nota": "La llama roja del centro atravesaba la cabeza: la máscara, en la parte alta de la espalda (0,35 más abajo, al 88 %).",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, -16.97, 4.261],
+   "scale": [1.76, 1.76, 1.76]
+  }
+ },
+ "runemoth/wing": {
+  "nota": "El cuerpo de la polilla y las alas quedaban 0,18 separados de la espalda (captura 31): menos fondo (45 % en z), pegado. Hueco medido 0,03.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, -9.84, 5.678],
+   "scale": [3.9354, 3.9354, 1.7709]
+  }
+ },
+ "spring/wings": {
+  "nota": "Las plumas azules y el tallo del centro se metían en la cabeza: esas piezas, un poco hacia atrás (la altura, igual).",
+  "head": {
+   "translation": [0.0, -13.75, 12.663],
+   "scale": [1.6, 1.6, 1.6],
+   "rotation": [0, 0, 0]
+  },
+  "mover": [
+   {"elements": [18], "d": [0, 0, 1.99]},
+   {"elements": [37], "d": [0, 0, 1.99]},
+   {"elements": [47], "d": [0, 0, 1.97]},
+   {"elements": [56], "d": [0, 0, 1.97]},
+   {"elements": [61], "d": [0, 0, 2.11]},
+   {"elements": [64], "d": [0, 0, 2.11]}
+  ]
+ },
+ "springcos/wings": {
+  "nota": "Las mismas alas que spring/wings (pestaña de cosméticos): el mismo arreglo.",
+  "head": {
+   "translation": [0.0, -13.75, 12.663],
+   "scale": [1.6, 1.6, 1.6],
+   "rotation": [0, 0, 0]
+  },
+  "mover": [
+   {"elements": [18], "d": [0, 0, 1.99]},
+   {"elements": [37], "d": [0, 0, 1.99]},
+   {"elements": [47], "d": [0, 0, 1.97]},
+   {"elements": [56], "d": [0, 0, 1.97]},
+   {"elements": [61], "d": [0, 0, 2.11]},
+   {"elements": [64], "d": [0, 0, 2.11]}
+  ]
+ },
+ "violet/backpack": {
+  "nota": "La mochila flotaba 0,055 detrás de la espalda (captura 30) y su tapa llegaba a la cabeza: pegada (a 0,005) y 0,095 más abajo; las correas, donde estaban (dentro del pecho).",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, -16.26, 9.276],
+   "scale": [1.5, 1.5, 1.5]
+  },
+  "mover": [
+   {"elements": [3, 4, 5, 6, 7, 8], "d": [0, 0, 0.94]}
+  ]
+ },
+ "violet/wings": {
+  "nota": "Las piezas de los hombros se metían en la cabeza: 0,14 más abajo.",
+  "head": {
+   "rotation": [0, 0, 0],
+   "translation": [0.0, -17.562, 4.342],
+   "scale": [1.5, 1.5, 1.5]
+  }
+ }
+}

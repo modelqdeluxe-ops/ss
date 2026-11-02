@@ -129,7 +129,9 @@ Jobs*): quita los textos en inglés del cartel y de la cinta, que el mod escribe
 
 Lo que va puesto en la espalda sale del modelo que el propio pack usa en HMCCosmetics (`tools/hmc_worn.py`), que puede
 no ser el del inventario, y se coloca por su forma: alas a la altura de los hombros, mochilas y carcaj sin tapar la
-cabeza (el carcaj en diagonal), todo pegado a la espalda. Los planos sin grosor se recortan a lo que se ve para que no
+cabeza (el carcaj en diagonal), todo pegado a la espalda. Al final, `tools/ajustar_espaldas.py` pone la posición
+aprobada de `tools/espaldas.json` (nada dentro de la cabeza ni del cuerpo, pegado a la espalda; `--medir` lo comprueba
+y `--proponer` sugiere un arreglo que hay que mirar en el probador antes de guardarlo en la tabla). Los planos sin grosor se recortan a lo que se ve para que no
 salgan rayas sueltas en los bordes.
 
 ## Monedas

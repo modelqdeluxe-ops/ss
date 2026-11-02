@@ -387,6 +387,19 @@ public final class BossTestClient {
     /** (1.3.160) La última línea del chat que dijo el jugador de la prueba («¡Hola, clan!»). */
     private static volatile net.minecraft.network.chat.Component lastSaid;
 
+    /** (1.3.166) Prueba «sets»: el jugador girado (cuerpo y cabeza) solo al dibujarlo, para fotografiarlo de lado. */
+    @SubscribeEvent
+    public static void onRenderLiving(net.minecraftforge.client.event.RenderLivingEvent.Pre<?, ?> event) {
+        Float turn = BossTest.bodyTurn;
+        Minecraft mc = Minecraft.getInstance();
+        if (turn == null || event.getEntity() != mc.player) return;
+        float yaw = mc.player.getYRot() + turn;
+        mc.player.yBodyRot = yaw;
+        mc.player.yBodyRotO = yaw;
+        mc.player.yHeadRot = yaw;
+        mc.player.yHeadRotO = yaw;
+    }
+
     @SubscribeEvent
     public static void onChat(net.minecraftforge.client.event.ClientChatReceivedEvent event) {
         if (!BossTest.ON) return;
