@@ -205,11 +205,12 @@ public final class PadClanChat {
      * clan: entonces ya se repartió (o se rechazó) y NO debe seguir al chat público.
      */
     public static boolean intercept(ServerPlayer sender, String text) {
+        return intercept(sender, text, "mixin");
+    }
+
+    private static boolean intercept(ServerPlayer sender, String text, String via) {
         if (sender == null || text == null || !enabled(sender.getUUID())) return false;
-        MinecraftServer server = sender.getServer();
-        if (server == null) return true;
-        if (server.isSameThread()) route(sender, text);
-        else server.execute(() -> route(sender, text));
+        deliver(sender, text, via);
         return true;
     }
 
@@ -218,7 +219,7 @@ public final class PadClanChat {
     public static void onServerChat(ServerChatEvent event) {
         if (event.getPlayer() != null && enabled(event.getPlayer().getUUID())) {
             event.setCanceled(true);
-            intercept(event.getPlayer(), event.getRawText());
+            intercept(event.getPlayer(), event.getRawText(), "Forge");
         }
     }
 
@@ -226,13 +227,37 @@ public final class PadClanChat {
     private static boolean divertFromBukkit(UUID sender, String text) {
         if (!enabled(sender)) return false;
         MinecraftServer server = PadServer.server();
-        if (server != null) {
-            server.execute(() -> {
-                ServerPlayer p = server.getPlayerList().getPlayer(sender);
-                if (p != null) route(p, text);
-            });
+        if (server == null) server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        ServerPlayer p = server == null ? null : server.getPlayerList().getPlayer(sender);
+        if (p == null) {
+            TFClient.LOGGER.warn("TF Clanes: chat del clan de {} por Bukkit sin jugador en el servidor: no se pudo repartir", sender);
+            return true;
         }
+        deliver(p, text, "Bukkit");
         return true;
+    }
+
+    /**
+     * (1.3.167, el dueño en su servidor Mohist: «puse el chat y cuando mandé mensaje no pasó nada») Reparte el mensaje
+     * en el momento, en el hilo en el que llega (el del chat; Bukkit también manda el chat desde ahí), en vez de dejarlo
+     * en la cola del hilo del servidor: en Mohist el mensaje se quitaba del chat público y no llegaba a repartirse, sin
+     * dejar nada en el registro. Ahora cada mensaje deja su línea («chat del clan de X por …») y, si algo falla, el error
+     * y un aviso en rojo al que escribe; nunca se pierde en silencio.
+     */
+    private static void deliver(ServerPlayer sender, String text, String via) {
+        String name = sender.getGameProfile().getName();
+        TFClient.LOGGER.info("TF Clanes: chat del clan de {} (por {}, hilo {})", name, via, Thread.currentThread().getName());
+        try {
+            route(sender, text);
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Clanes: no se pudo repartir el chat del clan de {}", name, t);
+            try {
+                sender.sendSystemMessage(Component.literal("[Clan] No se pudo mandar tu mensaje al clan (" + t.getClass().getSimpleName()
+                        + "). Avisa al staff.").withStyle(ChatFormatting.RED));
+            } catch (Throwable ignored) {
+                // sin conexión
+            }
+        }
     }
 
     private static void route(ServerPlayer sender, String raw) {
@@ -246,6 +271,7 @@ public final class PadClanChat {
         LAST_ROUTED.put(uuid, new Last(now, text));
         String id = PadClans.clanIdOf(uuid);
         if (id == null) {
+            TFClient.LOGGER.info("TF Clanes: {} escribió en el chat del clan sin estar en un clan: se le quita", sender.getGameProfile().getName());
             // ya no está en un clan: se le quita y no se manda a nadie (tampoco al público)
             forget(uuid);
             sender.sendSystemMessage(Component.literal("Ya no estás en un clan: el chat del clan se ha desactivado. Vuelve a escribirlo.")
@@ -253,11 +279,13 @@ public final class PadClanChat {
             return;
         }
         if (spam(uuid, now)) {
+            TFClient.LOGGER.info("TF Clanes: chat del clan de {}: muy rápido (antispam)", sender.getGameProfile().getName());
             sender.sendSystemMessage(Component.literal("Vas muy rápido: espera un momento.").withStyle(ChatFormatting.RED));
             return;
         }
         Boolean muted = net.tierrasfantasticas.tfclient.server.TFBukkit.essentialsMuted(uuid);
         if (Boolean.TRUE.equals(muted)) {
+            TFClient.LOGGER.info("TF Clanes: chat del clan de {}: silenciado en EssentialsX", sender.getGameProfile().getName());
             sender.sendSystemMessage(Component.literal("Estás silenciado: no puedes escribir en el chat del clan.").withStyle(ChatFormatting.RED));
             return;
         }
@@ -265,8 +293,10 @@ public final class PadClanChat {
         String clanTag = TFJson.str(c, "etiqueta", "?");
         int rgb = PadClans.rgbOf(c);
         MinecraftServer server = sender.getServer();
-        List<ServerPlayer> online = server.getPlayerList().getPlayers();
+        List<ServerPlayer> online = new ArrayList<>(server.getPlayerList().getPlayers());
         List<ServerPlayer> to = recipients(uuid, online, p -> server.getPlayerList().isOp(p.getGameProfile()));
+        // el que escribe siempre ve su mensaje (aunque la lista de miembros del clan no lo tuviera)
+        if (to.stream().noneMatch(p -> p.getUUID().equals(uuid))) to.add(0, sender);
         String name = sender.getGameProfile().getName();
         Set<UUID> members = Set.copyOf(PadClans.members(c));
         for (ServerPlayer p : to) {
