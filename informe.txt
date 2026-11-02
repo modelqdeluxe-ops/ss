@@ -1,0 +1,28 @@
+PRUEBA DE LOS JEFES EN EL JUEGO (TF Client 1.3.166)
+
+== sets
+   t=10 set dryadia: 22 objetos (sword rapier_sword dagger axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield hat wing armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza dryadia/hat, alas dryadia/wing (modelo puesto true), arma dryadia/sword (bien)
+   t=246 set spring: 21 objetos (sword axe pickaxe shovel hoe hammer mace scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza spring/helmet, alas spring/wings (modelo puesto true), arma spring/sword (bien)
+   t=482 set drakegoat: 22 objetos (sword rapier_sword dagger axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield hat wing armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza drakegoat/hat, alas drakegoat/wing (modelo puesto true), arma drakegoat/sword (bien)
+   t=718 set onicurse: 16 objetos (big_sword axe pickaxe shovel hoe battle_axe sickle spear staff bow shield wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza onicurse/armor_helmet, alas onicurse/wings (modelo puesto true), arma onicurse/big_sword (bien)
+   t=954 set deepsea: 22 objetos (sword rapier_sword dagger axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield hat wing armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza deepsea/hat, alas deepsea/wing (modelo puesto true), arma deepsea/sword (bien)
+   t=1190 set dragonstone: 19 objetos (sword dagger blade halberd axe pickaxe shovel hoe battle_axe spear staff bow fishing_rod shield wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza dragonstone/armor_helmet, alas dragonstone/wings (modelo puesto true), arma dragonstone/sword (bien)
+   t=1426 set leviathan: 20 objetos (sword dagger blade halberd axe pickaxe shovel hoe battle_axe sickle spear staff bow fishing_rod shield wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza leviathan/armor_helmet, alas leviathan/wings (modelo puesto true), arma leviathan/sword (bien)
+   t=1662 set aceruin: 21 objetos (sword axe pickaxe shovel hoe hammer mace scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza aceruin/helmet, alas aceruin/wings (modelo puesto true), arma aceruin/sword (bien)
+   t=1898 set violet: 22 objetos (sword greatsword backpack axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza violet/helmet, alas violet/wings (modelo puesto true), arma violet/sword (bien)
+   t=2134 set runemoth: 22 objetos (sword rapier_sword dagger axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield hat wing armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza runemoth/hat, alas runemoth/wing (modelo puesto true), arma runemoth/sword (bien)
+   t=2370 set nexus: 21 objetos (sword greatsword axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza nexus/helmet, alas nexus/wings (modelo puesto true), arma nexus/sword (bien)
+   t=2606 set mysticcyan: 22 objetos (sword greatsword backpack axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza mysticcyan/helmet, alas mysticcyan/wings (modelo puesto true), arma mysticcyan/sword (bien)
+   t=2842 set nitro: 21 objetos (sword greatsword axe pickaxe shovel hoe hammer scythe spear trident staff bow crossbow fishing_rod shield helmet wings armor_helmet armor_chestplate armor_leggings armor_boots); armadura true, cabeza nitro/helmet, alas nitro/wings (modelo puesto true), arma nitro/sword (bien)
+   pelea: 0 ticks; jefes distintos: 0; vida -1 -> -1
+   objetivo = el jugador: 0% del tiempo (cerca: 0%); golpes que me da: 0 (0.0 de daño); los míos: 0 (lo más cerca que llego: 1000000000.0 del borde)
+   mis golpes que le quitan vida: 0; sin efecto (sin estar en sus ticks de invulnerable): 0
+   me mueve el jefe (empujón, arrastre): 0 veces; lo más lejos que me lanza 0.0 bloques, lo más alto 0.0
+   anda: 0 ticks, hacia atrás 0 (con lockmodel del pack 0, empujado por su skill 0), de lado 0 (con lockmodel 0, empujado 0); rápido (>0,8 b/t) 0; teletransportes 0
+   al andar por el suelo: 0.000 bloques/tick de media (0 ticks)
+   en el aire (>3 bloques) 0 ticks, como mucho 0.0; lo más lejos de la grieta 0.0; esbirros a la vez 0
+   quieto y lejos del jugador (más de 2 s seguidos): 0 ticks
+   sin modelo 0 ticks; sin animación 0 ticks
+   animaciones (ticks): {}
+   al morir: anims []; barras que ve el cliente a los 3 s: -1; quitado: false; objetos: -1; experiencia: -1; esbirros vivos: -1
+
