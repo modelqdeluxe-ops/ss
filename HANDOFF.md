@@ -190,7 +190,7 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (2 nov 2026, TF Client 1.3.167: EL CHAT DEL CLAN NO REPARTÍA EN EL SERVIDOR MOHIST) — lee esto primero
+### CHECKPOINT (2 nov 2026, TF Client 1.3.167: EL CHAT DEL CLAN EN MOHIST Y EL HAMBRE DE BETTER FLIGHT) — lee esto primero
 
 - El dueño, con su servidor (Mohist + EssentialsX) en la 1.3.166: «puse el chat [`/clan chat enable`] y cuando mandé
   mensaje no pasó nada». En su `latest.log` (03:44–04:45): el mensaje no salió en el chat público (se quitó bien) pero
@@ -202,6 +202,14 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   antispam, silenciado) su línea; y si algo falla, el error con su traza y un aviso en rojo al que escribe. El que escribe
   siempre ve su mensaje. Si el dueño dice que sigue sin ir: pídele el `latest.log` y busca «TF Clanes: chat del clan».
 - No se probó en un Mohist (no hay uno en las pruebas de GitHub Actions; la prueba `oficios` es Forge).
+- Alas y hambre (el dueño: «recargar las alas me quita pollitos, te dije que no debía quitarme hambre»): es el mod
+  **Better Flight** (betterflight 2.2.0, en el servidor y el modpack). Da a todo lo que planea una barra para aletear y
+  cobra hambre por cada punto que recarga (`FlightHandler.handleFlightStaminaExhaustion` → `causeFoodExhaustion`
+  (`ExhaustionPerChargePoint`), casi siempre en el suelo, así que `PlayerFoodWingsMixin` (solo mientras se planea) no
+  lo paraba. `mixin/compat/BetterFlightWingsMixin` (@Pseudo, require 0) cancela esa recarga cuando se llevan alas de
+  los sets (`TFWings.wearsWings`); con élitros normales sigue igual. Sin build nueva, lo mismo se consigue en
+  `world/serverconfig/betterflight-server.toml`: `ExhaustionPerChargePoint = 0.0` (y `MinFood = 0` para que recargue
+  con hambre baja; eso lo mira el cliente, con la config que le manda el servidor), pero vale para todas las élitros.
 - Lo demás de ese día (sus registros): el revivir ya va (`TF Revivir: activo`, rematar probado entre jugadores tras
   quitar el revivemod); el mod no reescribió ningún archivo del mundo en esos arranques (ni limpieza ni «JSON no válido»;
   40 protecciones cargadas; las etiquetas `[TF]` del chat son las del clan, así que `clanes.json` está).

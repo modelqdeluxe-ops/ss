@@ -113,6 +113,11 @@ public final class TFWings {
         }
     }
 
+    /** Lleva puestas unas alas de los sets (en el pecho o en el hueco de la espalda), planee o no. */
+    public static boolean wearsWings(LivingEntity entity) {
+        return isWings(entity.getItemBySlot(EquipmentSlot.CHEST)) || wornInSlots(entity);
+    }
+
     private static boolean wornInSlots(LivingEntity entity) {
         ModList mods = ModList.get();
         List<ItemStack> out = new ArrayList<>(1);

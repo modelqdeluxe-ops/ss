@@ -13,6 +13,7 @@
     "claims.DispenserBlockMixin",
     "claims.ServerChatPromptMixin",
     "chat.ServerPlayerClanChatMixin",
+    "compat.BetterFlightWingsMixin",
     "PlayerFoodWingsMixin",
     "claims.HangingEntityMixin",
     "claims.HopperGuardMixin",
