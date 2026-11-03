@@ -13,6 +13,13 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (3 nov 2026, 6.ª ronda): «Comprar   crate» con un hueco de más (hecho)
+Captura del dueño medida con PIL: 2 px entre letras y 12 px entre «Comprar» y «crate» (un espacio son ~4). Causa: el
+texto del botón iba en dos piezas («Comprar» suelto y `<span class="crate-word"> crate</span>`) y el `gap: 10px` de
+`.btn` (pensado para icono + texto) se metía entre ellas. Ahora va todo en un `<span>`; medido después: 4 px. Revisado
+en Chromium que ningún otro botón (todas las pestañas, ventana de compra y carrito) tenga el texto partido. Regla: el
+texto de un `.btn` siempre en UNA pieza (`<span>…</span>`), el icono aparte.
+
 ### Web (3 nov 2026, 5.ª ronda): CUPONES DE UN SOLO USO, a prueba de filtraciones, y la lista de quién los usó (hecho)
 El dueño: «quiero generar 1 solo cupón: cuando lo use ya queda inhabilitado, porque nos pueden filtrar el cupón y
 usarlo todos; pon ahí los usos de ese cupón». Antes había «Usos máximos» (con 1 casi servía), pero escondido y con tres

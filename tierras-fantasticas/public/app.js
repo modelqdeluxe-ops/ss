@@ -481,7 +481,7 @@
           <span class="pieces">${escapeHtml(piecesText(p))}</span>
           <div class="card-foot">
             <span class="price">${formatPrice(p.price)}</span>
-            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar<span class="crate-word"> crate</span></button>${cartIcon(p)}</span>
+            <span class="buy-pair">${giftIcon(p)}<button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}><span>Comprar<span class="crate-word"> crate</span></span></button>${cartIcon(p)}</span>
           </div>
         </div>
       </article>`;
