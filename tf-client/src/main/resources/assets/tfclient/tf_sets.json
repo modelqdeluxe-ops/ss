@@ -5221,7 +5221,8 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+1"
+   "tier": "netherite+1",
+   "rank": true
   },
   {
    "id": "beats",
@@ -5319,7 +5320,8 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+2"
+   "tier": "netherite+2",
+   "rank": true
   },
   {
    "id": "darkworld",
@@ -5413,7 +5415,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "rank": true
   },
   {
    "id": "malika",
@@ -5507,7 +5510,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "rank": true
   },
   {
    "id": "necros",
@@ -5605,7 +5609,8 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+2"
+   "tier": "netherite+2",
+   "rank": true
   },
   {
    "id": "eagle",
@@ -5707,7 +5712,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "rank": true
   },
   {
    "id": "starlight",
@@ -5793,7 +5799,8 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+2"
+   "tier": "netherite+2",
+   "rank": true
   },
   {
    "id": "nazgul",

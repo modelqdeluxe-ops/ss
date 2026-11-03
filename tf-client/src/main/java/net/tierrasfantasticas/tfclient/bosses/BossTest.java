@@ -2322,6 +2322,118 @@ public final class BossTest {
         return menu.getSlot(2).getItem().copy();
     }
 
+    private static ItemStack grind(ServerLevel level, ServerPlayer player, ItemStack top, ItemStack bottom) {
+        var g = new net.minecraft.world.inventory.GrindstoneMenu(0, player.getInventory(),
+                net.minecraft.world.inventory.ContainerLevelAccess.create(level, player.blockPosition()));
+        g.getSlot(0).set(top.copy());
+        g.getSlot(1).set(bottom.copy());
+        return g.getSlot(2).getItem().copy();
+    }
+
+    /** (1.3.168) Una pieza del tipo pedido de un set de crate (rank=false) o de rango (rank=true). */
+    private static net.minecraft.world.item.Item setPiece(boolean rank, java.util.function.Predicate<net.minecraft.world.item.Item> what) {
+        for (var e : net.tierrasfantasticas.tfclient.items.TFItems.BY_SET.entrySet()) {
+            var set = net.tierrasfantasticas.tfclient.items.TFSets.all().get(e.getKey());
+            if (set == null || set.rank() != rank || set.cosmetic()) continue;
+            for (var o : e.getValue()) if (what.test(o.get())) return o.get();
+        }
+        return null;
+    }
+
+    /** (1.3.168) Espinas en toda la armadura y filo en las hachas (yunque) y la piedra de afilar: crates sí, rangos no. */
+    private static void encantar168(ServerLevel level, ServerPlayer player, Rep r, int[] cost) {
+        var thorns = net.minecraft.world.item.enchantment.Enchantments.THORNS;
+        for (var type : new net.minecraft.world.item.ArmorItem.Type[] {net.minecraft.world.item.ArmorItem.Type.HELMET,
+                net.minecraft.world.item.ArmorItem.Type.CHESTPLATE, net.minecraft.world.item.ArmorItem.Type.LEGGINGS, net.minecraft.world.item.ArmorItem.Type.BOOTS}) {
+            var piece = setPiece(false, i -> i instanceof net.minecraft.world.item.ArmorItem a && a.getType() == type);
+            if (piece == null) {
+                r.event("encantar 11 (espinas, " + type + "): sin pieza de crate de ese tipo");
+                continue;
+            }
+            ItemStack out = anvil(level, player, new ItemStack(piece), book(thorns, 3), cost);
+            r.event("encantar 11 (yunque, espinas III en " + pieceKey(piece) + "): " + (out.isEmpty() ? "NADA (MAL)" : enchants(out)
+                    + (out.getEnchantmentLevel(thorns) == 3 ? " (bien)" : " (MAL)")));
+        }
+        var head3d = setPiece(false, i -> i instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic
+                && new ItemStack(i).canApplyAtEnchantingTable(net.minecraft.world.item.enchantment.Enchantments.ALL_DAMAGE_PROTECTION));
+        if (head3d == null) head3d = setPiece(true, i -> i instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Cosmetic
+                && new ItemStack(i).canApplyAtEnchantingTable(net.minecraft.world.item.enchantment.Enchantments.ALL_DAMAGE_PROTECTION));
+        if (head3d != null) {
+            ItemStack out = anvil(level, player, new ItemStack(head3d), book(thorns, 2), cost);
+            r.event("encantar 12 (yunque, espinas II en el casco 3D con armadura " + pieceKey(head3d) + "): " + (out.isEmpty() ? "NADA (MAL)"
+                    : enchants(out) + (out.getEnchantmentLevel(thorns) == 2 ? " (bien)" : " (MAL)")));
+        }
+        var axe = setPiece(false, i -> i instanceof net.minecraft.world.item.AxeItem);
+        if (axe != null) {
+            ItemStack out = anvil(level, player, new ItemStack(axe), book(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 5), cost);
+            r.event("encantar 13 (yunque, filo V en el hacha " + pieceKey(axe) + "): " + (out.isEmpty() ? "NADA (MAL)"
+                    : enchants(out) + (out.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS) == 5 ? " (bien)" : " (MAL)")));
+        }
+        var rankSword = setPiece(true, i -> i instanceof net.minecraft.world.item.SwordItem);
+        if (rankSword != null) {
+            ItemStack rs = new ItemStack(rankSword);
+            net.tierrasfantasticas.tfclient.items.TFSetEnchant.apply(rs, 3);
+            ItemStack g = grind(level, player, rs, ItemStack.EMPTY);
+            r.event("encantar 14 (piedra de afilar, espada de rango " + pieceKey(rankSword) + " con " + enchants(rs) + "): "
+                    + (g.isEmpty() ? "nada (bien: no le quita lo del rango)" : "SALE " + enchants(g) + " (MAL)"));
+        }
+        var crateSword = setPiece(false, i -> i instanceof net.minecraft.world.item.SwordItem);
+        if (crateSword != null) {
+            ItemStack cs = new ItemStack(crateSword);
+            cs.enchant(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 3);
+            ItemStack g = grind(level, player, cs, cs);
+            r.event("encantar 15 (piedra de afilar, dos piezas de crate a la vez): " + (g.isEmpty() ? "nada (bien: no se funden en una nueva)" : "SALE ALGO (MAL)"));
+            ItemStack cursed = new ItemStack(crateSword);
+            cursed.enchant(net.minecraft.world.item.enchantment.Enchantments.VANISHING_CURSE, 1);
+            cursed.enchant(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS, 2);
+            g = grind(level, player, cursed, ItemStack.EMPTY);
+            r.event("encantar 16 (piedra de afilar, crate con filo y maldición): " + (g.isEmpty() ? "NADA (MAL)" : enchants(g)
+                    + (g.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS) == 0
+                    && g.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.VANISHING_CURSE) == 1 ? " (bien: la maldición se queda, como en Minecraft)" : " (MAL)")));
+        }
+    }
+
+    /** (1.3.168) El servidor no deja sacar, mover, tirar ni copiar en creativo los objetos de tfclient (items/TFCreativeGuard). */
+    private static void creativo168(ServerLevel level, ServerPlayer player, Rep r) {
+        var ours = setPiece(false, i -> i instanceof net.minecraft.world.item.SwordItem);
+        if (ours == null) {
+            r.event("creativo: SIN OBJETO DE SET (MAL)");
+            return;
+        }
+        var inv = player.getInventory();
+        var menu = player.inventoryMenu;
+        for (int i = 0; i < 9; i++) inv.setItem(i, ItemStack.EMPTY);
+        player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+        int before = net.tierrasfantasticas.tfclient.items.TFCreativeGuard.blocked;
+        // sacar uno de la «pestaña» (lo que manda el cliente al ponerlo en la barra): hueco 36 = el primero de la barra
+        player.connection.handleSetCreativeModeSlot(new net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket(36, new ItemStack(ours)));
+        r.event("creativo 1 (sacar " + pieceKey(ours) + " del creativo): en la barra " + (inv.getItem(0).isEmpty() ? "nada (bien)" : inv.getItem(0).getHoverName().getString() + " (MAL)"));
+        player.connection.handleSetCreativeModeSlot(new net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket(36, new ItemStack(Items.DIAMOND, 5)));
+        r.event("creativo 2 (sacar diamantes, de Minecraft): " + (inv.getItem(0).is(Items.DIAMOND) ? "sí (bien: lo demás sigue igual)" : "NO (MAL)"));
+        // uno de verdad (dado por el mod) no se puede mover por el creativo (quitarlo del hueco) ni se pierde
+        inv.setItem(1, new ItemStack(ours));
+        player.connection.handleSetCreativeModeSlot(new net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket(37, ItemStack.EMPTY));
+        r.event("creativo 3 (quitar el suyo del hueco por el creativo): " + (inv.getItem(1).is(ours) ? "se queda (bien)" : "DESAPARECE (MAL)"));
+        int drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(6)).size();
+        player.connection.handleSetCreativeModeSlot(new net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket(-1, new ItemStack(ours)));
+        int drops2 = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(6)).size();
+        r.event("creativo 4 (tirar uno nuevo desde el creativo): " + (drops2 == drops ? "no aparece (bien)" : "APARECE EN EL SUELO (MAL)"));
+        // botón central (copiar el montón) en el inventario
+        menu.setCarried(ItemStack.EMPTY);
+        menu.clicked(37, 2, net.minecraft.world.inventory.ClickType.CLONE, player);
+        boolean cloned = !menu.getCarried().isEmpty();
+        menu.setCarried(ItemStack.EMPTY);
+        menu.clicked(36, 2, net.minecraft.world.inventory.ClickType.CLONE, player);
+        boolean clonedVanilla = menu.getCarried().is(Items.DIAMOND);
+        menu.setCarried(ItemStack.EMPTY);
+        r.event("creativo 5 (botón central sobre el suyo): " + (cloned ? "LO COPIA (MAL)" : "nada (bien)") + "; sobre los diamantes: "
+                + (clonedVanilla ? "los copia (bien: como en Minecraft)" : "NADA (MAL)"));
+        int n = net.tierrasfantasticas.tfclient.items.TFCreativeGuard.blocked - before;
+        r.event("creativo 6: rechazados por el servidor " + n + (n >= 4 ? " (bien)" : " (MAL)"));
+        for (int i = 0; i < 9; i++) inv.setItem(i, ItemStack.EMPTY);
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+    }
+
     /** (1.3.150) Encantar las piezas de los sets (items/TFEnchanting). */
     private static void encantarStep(ServerLevel level, ServerPlayer player, Rep r) {
         if (t == 1) {
@@ -2371,10 +2483,15 @@ public final class BossTest {
             r.event("encantar 5 (yunque + castigo, choca con filo): " + (out.isEmpty() ? "nada" : enchants(out)) + (out.isEmpty() ? " (bien)" : " (MAL)"));
             out = anvil(level, player, new ItemStack(Items.DIAMOND_SWORD), s, cost);
             r.event("encantar 6 (la pieza del set como sacrificio): " + (out.isEmpty() ? "nada" : "SALE ALGO") + (out.isEmpty() ? " (bien: no se gasta)" : " (MAL)"));
-            var grind = new net.minecraft.world.inventory.GrindstoneMenu(0, player.getInventory(),
-                    net.minecraft.world.inventory.ContainerLevelAccess.create(level, player.blockPosition()));
-            grind.getSlot(0).set(s.copy());
-            r.event("encantar 7 (piedra de afilar): " + (grind.getSlot(2).getItem().isEmpty() ? "nada (bien: no le quita lo del rango)" : "SALE SIN ENCANTAR (MAL)"));
+            // (1.3.168) la piedra de afilar: las piezas de las crates se desencantan (con sus atributos y su NBT); las de los
+            // rangos, no
+            ItemStack g = grind(level, player, s, ItemStack.EMPTY);
+            boolean gAttrs = !g.isEmpty() && g.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND).toString().equals(attrs);
+            boolean gTag = !g.isEmpty() && "se-queda".equals(g.getOrCreateTag().getString("TFPrueba"));
+            boolean crateSet = !net.tierrasfantasticas.tfclient.items.TFItemTypes.setOf(sword).rank();
+            r.event("encantar 7 (piedra de afilar, " + pieceKey(sword) + (crateSet ? ", de crate" : ", DE RANGO") + "): "
+                    + (g.isEmpty() ? "nada" : "sale " + enchants(g) + ", mismos atributos " + gAttrs + ", conserva su NBT " + gTag)
+                    + (crateSet && !g.isEmpty() && !g.isEnchanted() && gAttrs && gTag ? " (bien)" : " (MAL)"));
             ItemStack full = new ItemStack(sword);
             net.tierrasfantasticas.tfclient.items.TFSetEnchant.apply(full, 6);
             r.event("encantar 8 (set de rango full, " + enchants(full) + "): la mesa la acepta " + full.isEnchantable() + (full.isEnchantable() ? " (MAL)" : " (bien: no hay nada que añadir)"));
@@ -2392,7 +2509,9 @@ public final class BossTest {
                 }
             }
             r.event("encantar 10 (espada del set sin encantar, mesa): irrompibilidad " + (unb ? "SALE (MAL)" : "nunca (bien)"));
+            encantar168(level, player, r, cost);
         }
+        if (t == 3) creativo168(level, player, r);
         if (t == 20) next(level);
     }
 
@@ -2933,30 +3052,20 @@ public final class BossTest {
                 r.event("tormenta del jefe: 2 s después de matarlo, lluvia " + rain + (rain.startsWith("0.00") ? " (bien: se quitó)" : " (MAL: sigue lloviendo)"));
             }
             case 282 -> shot(r, "tormenta_tras_matarlo");
-            // (1.3.139) los objetos de tfclient en JEI: ocultos a quien no es OP ni está en creativo
-            case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = false;
-            case 304 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
+            // (1.3.168) los objetos de tfclient no salen en JEI ni en ninguna pestaña del creativo, para nadie (el jugador de
+            // la prueba es OP: antes a él sí le salían)
+            case 290 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
             case 320 -> {
                 int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
-                r.event("JEI, jugador sin OP en supervivencia: objetos nuestros en la lista " + jeiCount()
-                        + (jeiCount().equals("0") ? " (bien: ocultos)" : jeiCount().equals("sin JEI") ? "" : " (MAL)")
-                        + "; pestaña TF del creativo: " + tab + (tab == 0 ? " (bien: vacía)" : " (MAL)"));
+                String n = jeiCount();
+                r.event("JEI y creativo, siendo OP: objetos nuestros en JEI " + n
+                        + (n.equals("0") ? " (bien: ocultos)" : n.equals("sin JEI") ? "" : " (MAL)")
+                        + "; en todas las pestañas del creativo (buscador incluido): " + tab + (tab == 0 ? " (bien: ninguno)" : " (MAL)"));
                 openInventory = true;
             }
             case 350 -> shot(r, "jei_oculto");
-            case 352 -> {
-                closeScreen = true;
-                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = true;
-            }
-            case 378 -> net.tierrasfantasticas.tfclient.client.TFHiddenItems.requestTabCount();
-            // (hacer la pestaña con sus 1.164 objetos tarda más que vaciarla)
+            case 352 -> closeScreen = true;
             case 400 -> {
-                String n = jeiCount();
-                int tab = net.tierrasfantasticas.tfclient.client.TFHiddenItems.testTabCount;
-                r.event("JEI, OP o creativo: objetos nuestros en la lista " + n
-                        + (n.equals("sin JEI") ? "" : !n.equals("0") ? " (bien: se ven)" : " (MAL)")
-                        + "; pestaña TF del creativo: " + tab + (tab > 0 ? " (bien)" : " (MAL)"));
-                net.tierrasfantasticas.tfclient.client.TFHiddenItems.testForce = null;
                 // sin el clan de prueba (la prueba «tienda» funda uno)
                 net.tierrasfantasticas.tfclient.pad.server.PadClans.testCleanup(player);
             }

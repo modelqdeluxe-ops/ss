@@ -580,13 +580,27 @@ def mark_armor_head(entry):
             item.pop('armor', None)
 
 
+def rank_sets():
+    """Los sets de los rangos (crates.py RANKS): su pieza no se desencanta en la piedra de afilar (1.3.168)."""
+    return {r[2] for r in getattr(C, 'RANKS', [])}
+
+
+def mark_rank(entry):
+    if entry['id'] in rank_sets():
+        entry['rank'] = True
+    else:
+        entry.pop('rank', None)
+
+
 def mark_flags(entry):
-    """Marcas que lee el mod en un set que no se reconstruye: set de cosméticos (no se vincula) y alas que planean."""
+    """Marcas que lee el mod en un set que no se reconstruye: set de cosméticos (no se vincula), de rango (no se
+    desencanta) y alas que planean."""
     set_id = entry['id']
     if set_id in C.COSMETICS:
         entry['cosmetic'] = True
     else:
         entry.pop('cosmetic', None)
+    mark_rank(entry)
     mark_armor_head(entry)
     for item in entry['items']:
         if item['type'] != 'back':
@@ -1396,6 +1410,7 @@ def main(packs, only=None):
         entry = {'id': set_id, 'name': set_name, 'color': color, 'tier': spec['tier'], 'items': items}
         if set_id in C.COSMETICS:
             entry['cosmetic'] = True
+        mark_rank(entry)
         mark_armor_head(entry)
         if any(i['type'] == 'armor' for i in items):
             layers, frames, frametime = w.armor_layers()

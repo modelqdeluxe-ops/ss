@@ -12,14 +12,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.Tier;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -29,12 +25,12 @@ import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * Registra todos los objetos de los sets (tfclient:&lt;set&gt;_&lt;objeto&gt;) y su pestaña del modo creativo.
- * No tienen receta: se sacan del creativo o con /tf web sets give.
+ * Registra todos los objetos de los sets (tfclient:&lt;set&gt;_&lt;objeto&gt;). No tienen receta ni pestaña en el modo
+ * creativo (1.3.168, el dueño: «elimina por completo el registro del inventario creativo»): solo se dan con los comandos
+ * de TF (/tf web sets give…) y el servidor no deja sacarlos del creativo (TFCreativeGuard).
  */
 public final class TFItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, TFClient.MOD_ID);
-    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, TFClient.MOD_ID);
 
     /** id del set → objetos del set, en orden. */
     public static final Map<String, List<RegistryObject<Item>>> BY_SET = new LinkedHashMap<>();
@@ -53,41 +49,14 @@ public final class TFItems {
     public static final List<String> JOB_ICONS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
 
-    public static final RegistryObject<CreativeModeTab> TAB = TABS.register("sets", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.tfclient.sets"))
-            .icon(TFItems::icon)
-            .displayItems((params, output) -> {
-                // (1.3.139) solo para el OP o en creativo (client/TFHiddenItems): a los demás no les sale en las listas
-                // de objetos (JEI y compañía las sacan de aquí)
-                if (!net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient() || !TFItemsAccess.canSee()) return;
-                tabItems().forEach(output::accept);
-            })
-            .build());
-
     private TFItems() {}
 
-    /** Lo que sale en la pestaña del creativo: los sets y las piedras de protección de TF Claims. */
+    /** Los objetos de los sets y las piedras de protección de TF Claims (los que se esconden de JEI y compañía). */
     public static List<Item> tabItems() {
         List<Item> out = new ArrayList<>();
         BY_SET.values().forEach(list -> list.forEach(o -> out.add(o.get())));
         net.tierrasfantasticas.tfclient.claims.item.ClaimItems.all().forEach(o -> out.add(o.get()));
         return out;
-    }
-
-    /** Separado para no cargar clases del cliente en el servidor. */
-    private static final class TFItemsAccess {
-        static boolean canSee() {
-            return net.tierrasfantasticas.tfclient.client.TFHiddenItems.tabBuilt();
-        }
-    }
-
-    private static ItemStack icon() {
-        for (List<RegistryObject<Item>> list : BY_SET.values()) {
-            for (RegistryObject<Item> o : list) {
-                if (o.getId().getPath().endsWith("_sword")) return new ItemStack(o.get());
-            }
-        }
-        return BY_SET.isEmpty() ? ItemStack.EMPTY : new ItemStack(BY_SET.values().iterator().next().get(0).get());
     }
 
     public static void register(IEventBus modBus) {
@@ -109,7 +78,6 @@ public final class TFItems {
         // (1.3.101) El panel de control de los NPC de escenas (/tf npc)
         net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL = ITEMS.register("npc_panel", net.tierrasfantasticas.tfclient.npcs.NpcPanelItem::new);
         ITEMS.register(modBus);
-        TABS.register(modBus);
     }
 
     // Los atributos de los objetos de los sets no se enseñan en su descripción (ver TFItemTypes.HIDE_ATTRIBUTES).

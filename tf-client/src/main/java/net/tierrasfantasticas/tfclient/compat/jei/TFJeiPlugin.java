@@ -19,18 +19,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.client.TFHiddenItems;
-import net.tierrasfantasticas.tfclient.items.TFItems;
 
 /**
- * (1.3.139, el dueño: «el mod sale en el JEI: ven todos sus sets; solo OP y creativo pueden ver nuestros objetos»)
- * JEI carga esta clase solo si está instalado (por la anotación); el mod no depende de JEI. Quita de su lista los objetos
- * de tfclient mientras el jugador no pueda verlos ({@link TFHiddenItems#allowed}) y los devuelve cuando sí.
+ * JEI carga esta clase solo si está instalado (por la anotación); el mod no depende de JEI. Quita de su lista todos los
+ * objetos de tfclient, para todos (1.3.168: también OP y creativo; ver {@link TFHiddenItems}).
  */
 @JeiPlugin
 public final class TFJeiPlugin implements IModPlugin {
     private static IJeiRuntime runtime;
-    /** Los que se quitaron (para devolver exactamente esos). */
-    private static final List<ItemStack> REMOVED = new ArrayList<>();
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -40,44 +36,28 @@ public final class TFJeiPlugin implements IModPlugin {
     @Override
     public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
         runtime = jeiRuntime;
-        REMOVED.clear();
         TFHiddenItems.viewer("JEI", TFJeiPlugin::apply);
+        TFHiddenItems.update();
     }
 
     @Override
     public void onRuntimeUnavailable() {
         runtime = null;
-        REMOVED.clear();
         TFHiddenItems.viewer("JEI", null);
     }
 
-    /** show: que se vean (true) o no (false). Devuelve cuántos de los nuestros hay ahora en la lista de JEI. */
+    /** Quita lo nuestro de la lista de JEI. Devuelve cuántos de los nuestros quedan (0 = ninguno; -1 = no se pudo). */
     private static int apply(boolean show) {
         IJeiRuntime rt = runtime;
         if (rt == null) return -1;
         var manager = rt.getIngredientManager();
         try {
-            if (!show) {
-                List<ItemStack> ours = new ArrayList<>();
-                for (ItemStack s : manager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
-                    ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
-                    if (id != null && id.getNamespace().equals(TFClient.MOD_ID)) ours.add(s);
-                }
-                if (!ours.isEmpty()) {
-                    manager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, ours);
-                    REMOVED.addAll(ours);
-                }
-            } else {
-                // los que se quitaron y los de la pestaña del creativo que JEI no tenga (si su lista se hizo antes de
-                // que llegara el permiso de OP, no están)
-                java.util.Set<net.minecraft.world.item.Item> present = new java.util.HashSet<>();
-                for (ItemStack s : manager.getAllIngredients(VanillaTypes.ITEM_STACK)) present.add(s.getItem());
-                List<ItemStack> add = new ArrayList<>();
-                for (ItemStack s : REMOVED) if (present.add(s.getItem())) add.add(s);
-                for (net.minecraft.world.item.Item i : TFItems.tabItems()) if (present.add(i)) add.add(new ItemStack(i));
-                if (!add.isEmpty()) manager.addIngredientsAtRuntime(VanillaTypes.ITEM_STACK, add);
-                REMOVED.clear();
+            List<ItemStack> ours = new ArrayList<>();
+            for (ItemStack s : manager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
+                ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
+                if (id != null && id.getNamespace().equals(TFClient.MOD_ID)) ours.add(s);
             }
+            if (!ours.isEmpty()) manager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, ours);
             int n = 0;
             for (ItemStack s : manager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
                 ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());

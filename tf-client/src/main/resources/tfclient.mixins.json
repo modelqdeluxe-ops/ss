@@ -28,7 +28,9 @@
     "binding.InvWrapperBindingMixin",
     "jobs.ResultSlotJobsMixin",
     "jobs.FurnaceResultSlotJobsMixin",
-    "jobs.BrewingStandMenuJobsMixin"
+    "jobs.BrewingStandMenuJobsMixin",
+    "items.CreativeSlotGuardMixin",
+    "items.ContainerCloneGuardMixin"
   ],
   "client": [
     "LoadingOverlayAccessor",
