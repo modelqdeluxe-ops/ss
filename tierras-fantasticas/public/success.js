@@ -65,13 +65,16 @@
         : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
     $('d-user').textContent = order.gift ? `${order.username} · regalo de ${order.gift.from}` : order.username;
     if (order.cart && Array.isArray(order.items)) {
-      // (3 nov 2026) el carrito: todos sus productos, pagados en un solo pago
+      // (3 nov 2026) el carrito: todos sus productos, pagados en un solo pago (y quien paga, si hay algo para otros)
       $('d-product-label').textContent = 'Productos';
+      if (order.items.some((it) => it.username && it.username !== order.username)) $('d-user-label').textContent = 'Paga';
       $('d-product').replaceChildren(
         ...order.items.map((it) => {
           const line = document.createElement('span');
           line.className = 'receipt-line';
-          line.textContent = `${it.product}${it.quantity > 1 ? ` ×${it.quantity}` : ''}${it.upgradeFrom ? ` (mejora desde ${it.upgradeFrom})` : ''}`;
+          // Para quién es cada uno: los regalos dicen a quién van
+          const whom = it.gift ? ` · regalo para ${it.username}` : it.username && it.username !== order.username ? ` · para ${it.username}` : '';
+          line.textContent = `${it.product}${it.quantity > 1 ? ` ×${it.quantity}` : ''}${it.upgradeFrom ? ` (mejora desde ${it.upgradeFrom})` : ''}${whom}`;
           return line;
         }),
       );
@@ -170,6 +173,18 @@
     if (['queued', 'delivered', 'delivery_failed'].includes(order.status) && order.amount > 0) receipt(order);
     if (PAID.includes(order.status) && order.kind === 'skills') {
       show('ok', 'Pagado', '¡Gracias por tu compra!', `Tu pago se ha completado. ${order.product} ya es de ${order.username} para siempre y es su clase activa: la tendrá en el servidor en unos segundos si está conectado o al entrar. La clase activa se cambia en la tienda, en Skills.`);
+      return;
+    }
+    // (3 nov 2026) Carrito con regalos o para varios jugadores: a cada uno le llega lo suyo
+    const forOthers = order.cart && Array.isArray(order.items) ? [...new Set(order.items.filter((it) => it.username && it.username !== order.username).map((it) => it.username))] : [];
+    if (PAID.includes(order.status) && forOthers.length) {
+      const join = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names.at(-1)}` : names[0]);
+      const list = join(forOthers);
+      const all = join([...forOthers, ...(order.items.some((it) => it.username === order.username) ? ['tú'] : [])]);
+      const gifts = order.items.some((it) => it.gift);
+      show('ok', 'Pagado', gifts ? '¡Regalos enviados!' : '¡Gracias por tu compra!', order.status === 'delivered'
+        ? `Todo está entregado en el servidor: ${list} ya ${forOthers.length > 1 ? 'tienen' : 'tiene'} lo suyo${gifts ? ', con un aviso de que es tu regalo' : ''}.`
+        : `Tu pago se ha completado. Cada uno (${all}) recibirá lo suyo en cuanto entre al servidor (si ya está dentro, en unos segundos)${gifts ? '; los regalos llegan con tu nombre y tu mensaje' : ''}.`);
       return;
     }
     if (PAID.includes(order.status) && order.gift) {

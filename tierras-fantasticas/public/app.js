@@ -1960,7 +1960,7 @@
       <div class="to-cart" id="to-cart">
         <span class="to-cart-or">o</span>
         <button type="button" class="btn btn-cart btn-block" id="dialog-to-cart">${ICON_CART}<span>Añadir al carrito y seguir comprando</span></button>
-        <p class="muted small">Junta varios productos y págalos todos en un solo pago.</p>
+        <p class="muted small" id="to-cart-hint">Junta varios productos (y regalos para otros jugadores) y págalos todos en un solo pago.</p>
       </div>
       <p class="pay-mp-note" id="pay-mp-note" hidden>Mercado Pago es <b>solo para México</b> (tarjetas mexicanas, OXXO o saldo de Mercado Pago México) y cobra en pesos al tipo de cambio del día (el precio en pesos cambia con el dólar). Desde otro país, paga con tarjeta o PayPal.</p>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
@@ -2038,15 +2038,42 @@
     }
   }
 
+  // En el carrito: lo que falta para poder pagar (o null)
+  function cartMissing() {
+    if (!cart.length) return 'empty';
+    if (cartHasSelf() && !player) return 'player';
+    if (cartHasGifts() && !me.user) return 'login';
+    if (quoting || !quote || quote.lines.some((l) => l.blocked)) return 'quote';
+    return null;
+  }
+
   function setPayable() {
     if (!dialog) return;
-    let blocked = isSelf() || (giftMode && !me.user);
-    if (dialogMode === 'cart') blocked ||= !cart.length || quoting || !quote || quote.lines.some((l) => l.blocked);
-    else blocked ||= Boolean(player?.quote?.blocked) || Boolean(coupon && (quoting || !quote));
-    const off = !player || blocked || paying || !$('#pay-terms').checked;
+    let off;
+    if (dialogMode === 'cart') off = Boolean(cartMissing()) || paying || !$('#pay-terms').checked;
+    else {
+      const blocked = isSelf() || (giftMode && !me.user) || Boolean(player?.quote?.blocked) || Boolean(coupon && (quoting || !quote));
+      off = !player || blocked || paying || !$('#pay-terms').checked;
+    }
     $('#pay-btn').disabled = off;
     $('#pay-paypal').disabled = off;
     $('#pay-mp').disabled = off;
+    syncToCart();
+  }
+
+  // «Añadir al carrito» de la ventana de un producto: para ti, o (en «Como regalo») para el jugador comprobado, con su
+  // mensaje
+  function syncToCart() {
+    const btn = $('#dialog-to-cart');
+    if (!btn || dialogMode !== 'single' || !selected) return;
+    const target = giftMode && player && !isSelf() ? player.name : null;
+    btn.disabled = giftMode && !target;
+    $('span', btn).textContent = giftMode ? (target ? `Añadir al carrito: regalo para ${target}` : 'Añadir al carrito como regalo') : 'Añadir al carrito y seguir comprando';
+    $('#to-cart-hint').textContent = giftMode
+      ? target
+        ? 'Junta regalos para varios jugadores (y lo tuyo) y págalos todos en un solo pago.'
+        : 'Escribe arriba a quién se lo regalas y añádelo al carrito con tu mensaje.'
+      : 'Junta varios productos (y regalos para otros jugadores) y págalos todos en un solo pago.';
   }
 
   // Botones de pago según lo que esté conectado en el servidor (tarjeta con Stripe y/o PayPal).
@@ -2180,18 +2207,31 @@
   }
 
   // --- Carrito (3 nov 2026, el dueño: «agrega en la tienda la opción del carrito, para que paguen 1 solo pago al
-  // comprar varios productos») ---
-  // Se guarda en este navegador (localStorage «tf-cart»: [{ id, qty }]). Al pagar, el servidor vuelve a mirar cada
-  // producto y su precio (el de la mejora si el jugador ya tiene un rango); un rango por compra.
+  // comprar varios productos»; y después: «quiero que añada todo lo que yo quiera… mandar varios regalos a 4 jugadores
+  // distintos en 1 solo pago») ---
+  // Se guarda en este navegador (localStorage «tf-cart»: [{ id, qty, to, msg }]). Cada línea es un producto para un
+  // jugador: «para ti» (to vacío: el nombre que escribes al pagar) o un regalo para «to» con su mensaje. La misma crate
+  // puede ir a varios jugadores; para el mismo jugador, una. Al pagar, el servidor vuelve a mirar cada producto y su
+  // precio para quien lo recibe (mejoras de rango: varios rangos para el mismo jugador van de menor a mayor).
   const CART_KEY = 'tf-cart';
-  const CART_MAX = 20;
+  const CART_MAX = 50;
+  const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+  const lineKey = (c) => `${c.id}|${(c.to || '').toLowerCase()}`;
   function readCart() {
     try {
       const raw = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
       if (!Array.isArray(raw)) return [];
-      return raw
-        .filter((c) => c && typeof c.id === 'string' && /^[a-z0-9-]{1,60}$/.test(c.id) && Number.isInteger(c.qty) && c.qty > 0)
-        .slice(0, CART_MAX);
+      const seen = new Set();
+      const out = [];
+      for (const c of raw) {
+        if (!c || typeof c.id !== 'string' || !/^[a-z0-9_-]{1,60}$/.test(c.id) || !Number.isInteger(c.qty) || c.qty < 1) continue;
+        const to = typeof c.to === 'string' && NAME_RE.test(c.to) ? c.to : '';
+        const line = { id: c.id, qty: c.qty, to, msg: to && typeof c.msg === 'string' ? c.msg.slice(0, 100) : '' };
+        if (seen.has(lineKey(line))) continue;
+        seen.add(lineKey(line));
+        out.push(line);
+      }
+      return out.slice(0, CART_MAX);
     } catch {
       return [];
     }
@@ -2205,19 +2245,14 @@
     }
     renderCartFab();
   }
-  // Con el catálogo cargado: fuera lo que ya no se vende y las cantidades a su máximo (y un solo rango)
+  // Con el catálogo cargado: fuera lo que ya no se vende y las cantidades a su máximo
   function pruneCart() {
     if (!products.length) return;
-    let rank = false;
     const next = [];
     for (const c of cart) {
       const p = products.find((x) => x.id === c.id);
       if (!cartable(p)) continue;
-      if (p.category === 'rangos') {
-        if (rank) continue;
-        rank = true;
-      }
-      next.push({ id: c.id, qty: Math.min(c.qty, p.maxQuantity || 10) });
+      next.push({ ...c, qty: Math.min(c.qty, p.maxQuantity || 10) });
     }
     const changed = JSON.stringify(next) !== JSON.stringify(cart);
     cart = next;
@@ -2227,41 +2262,38 @@
   const cartLines = () =>
     cart.map((c) => ({ ...c, p: products.find((x) => x.id === c.id) })).filter((l) => l.p);
   const cartCount = () => cart.reduce((a, c) => a + c.qty, 0);
+  const cartHasSelf = () => cart.some((c) => !c.to);
+  const cartHasGifts = () => cart.some((c) => c.to);
 
-  function addToCart(id, qty = 1) {
+  // Al carrito: para ti, o como regalo para «to» (con su mensaje)
+  function addToCart(id, qty = 1, { to = '', msg = '' } = {}) {
     const p = products.find((x) => x.id === id);
     if (!config.paymentsEnabled) return toast('Los pagos no están disponibles ahora mismo.');
     if (!cartable(p)) return toast('Esto no se puede añadir al carrito.');
     const max = p.maxQuantity || 10;
-    const line = cart.find((c) => c.id === id);
-    let note = '';
+    const want = { id, qty: Math.min(max, qty), to: NAME_RE.test(to) ? to : '', msg: to ? String(msg || '').slice(0, 100) : '' };
+    const line = cart.find((c) => lineKey(c) === lineKey(want));
     if (line) {
       if (line.qty >= max) {
-        toast(max === 1 ? `${p.name} ya está en tu carrito` : `Ya tienes ${max} en el carrito, el máximo`);
+        toast(max === 1 ? `${p.name} ya está en tu carrito${want.to ? ` para ${want.to}` : ''}` : `Ya llevas ${max} en el carrito${want.to ? ` para ${want.to}` : ''}, el máximo`);
         bumpFab();
         return;
       }
-      line.qty = Math.min(max, line.qty + qty);
+      line.qty = Math.min(max, line.qty + want.qty);
+      if (want.msg) line.msg = want.msg;
     } else {
-      if (cart.length >= CART_MAX) return toast(`Tu carrito está lleno (${CART_MAX} productos distintos). Paga o quita algo primero.`);
-      if (p.category === 'rangos') {
-        const old = cart.find((c) => products.find((x) => x.id === c.id)?.category === 'rangos');
-        if (old) {
-          cart = cart.filter((c) => c !== old);
-          note = ' (en lugar del otro rango: uno por compra)';
-        }
-      }
-      cart.push({ id, qty: Math.min(max, qty) });
+      if (cart.length >= CART_MAX) return toast(`Tu carrito está lleno (${CART_MAX} líneas). Paga estas y sigue después.`);
+      cart.push(want);
     }
     saveCart();
-    toast(`${p.name} en tu carrito${note}`);
+    toast(want.to ? `Regalo para ${want.to} en tu carrito: ${p.name}` : `${p.name} en tu carrito`);
     bumpFab();
     if (dialog?.open && dialogMode === 'cart') refreshCart();
   }
 
-  function setCartQty(id, qty) {
-    const line = cart.find((c) => c.id === id);
-    const p = products.find((x) => x.id === id);
+  function setCartQty(key, qty) {
+    const line = cart.find((c) => lineKey(c) === key);
+    const p = line && products.find((x) => x.id === line.id);
     if (!line || !p) return;
     if (qty < 1) cart = cart.filter((c) => c !== line);
     else line.qty = Math.min(qty, p.maxQuantity || 10);
@@ -2288,7 +2320,8 @@
     document.body.classList.toggle('has-cart', n > 0);
     $('.cart-count', fab).textContent = n > 99 ? '99+' : String(n);
     const lines = cartLines();
-    const total = lines.reduce((a, l) => a + (ownedQuote(l.p)?.unit ?? l.p.price) * l.qty, 0);
+    // (aproximado: lo tuyo con tu precio de mejora; el precio de verdad lo calcula el servidor al abrir el carrito)
+    const total = lines.reduce((a, l) => a + ((l.to ? null : ownedQuote(l.p)?.unit) ?? l.p.price) * l.qty, 0);
     $('small', fab).textContent = lines.length ? formatPrice(total) : `${n} ${n === 1 ? 'producto' : 'productos'}`;
     fab.setAttribute('aria-label', `Abrir el carrito: ${n} ${n === 1 ? 'producto' : 'productos'}${lines.length ? `, ${formatPrice(total)}` : ''}`);
   }
@@ -2310,7 +2343,7 @@
     if (dialog?.open && dialogMode === 'cart') refreshCart();
   });
 
-  function openCart({ gift = false } = {}) {
+  function openCart() {
     if (!dialog) return;
     if (!config.paymentsEnabled) return toast('Los pagos no están disponibles ahora mismo.');
     dialogMode = 'cart';
@@ -2323,34 +2356,45 @@
     $('#cart-lines').hidden = false;
     $('#to-cart').hidden = true;
     $('#quantity-field').hidden = true;
-    resetDialog(gift);
+    resetDialog(false);
+    syncCartFields();
     renderCartLines();
     if (!dialog.open) dialog.showModal();
-    setGiftMode(gift);
+    setGiftMode(false);
   }
 
-  // Las líneas del carrito con el precio del servidor (el de mejora, lo que ya tiene) o, mientras llega, el del catálogo
+  // El nombre de «para ti» solo se pide si hay algo para ti (los regalos ya dicen para quién son)
+  function syncCartFields() {
+    if (dialogMode !== 'cart') return;
+    $('#username').closest('.field').hidden = !cartHasSelf();
+  }
+
+  // Las líneas del carrito, por jugador («Para ti» y cada regalo), con el precio del servidor (el de mejora, lo que ya
+  // tiene) o, mientras llega, el del catálogo
   function renderCartLines() {
     const box = $('#cart-lines');
     if (!box || dialogMode !== 'cart') return;
     const lines = cartLines();
     if (!lines.length) {
-      box.innerHTML = `<div class="cart-empty">${ICON_CART}<p><b>Tu carrito está vacío.</b> Añade crates, rangos, protecciones o efectos con el botón del carrito y págalos todos juntos.</p></div>`;
+      box.innerHTML = `<div class="cart-empty">${ICON_CART}<p><b>Tu carrito está vacío.</b> Añade crates, rangos, protecciones o efectos con el botón del carrito (o «Regalar» para mandárselos a otros jugadores) y págalos todos juntos.</p></div>`;
       return;
     }
-    const fromServer = new Map((quote?.lines || []).map((l) => [l.productId, l]));
-    box.innerHTML = `<ul class="cart-list">${lines
-      .map(({ id, qty, p }) => {
-        const s = fromServer.get(id);
-        const unit = s?.unit ?? p.price;
-        const max = p.maxQuantity || 10;
-        const kind = p.category === 'crates' ? 'Crate' : CATEGORY_LABEL[p.category] || p.category;
-        const note = s?.blocked
-          ? `<span class="cart-note bad">${escapeHtml(s.blocked)}</span>`
-          : s?.upgradeFrom
-            ? `<span class="cart-note">Mejora desde ${escapeHtml(s.upgradeFrom.replace(/^Rango\s+/i, ''))}: pagas la diferencia</span>`
-            : '';
-        return `<li class="cart-line${s?.blocked ? ' is-blocked' : ''}"${themeAttr(p) || rankAttr(p)}>
+    const fromServer = new Map();
+    for (const l of quote?.lines || []) for (const k of l.keys || [`${l.productId}|`]) fromServer.set(k, l);
+    const row = (c) => {
+      const { p, qty } = c;
+      const key = lineKey(c);
+      const s = fromServer.get(key);
+      const unit = s?.unit ?? p.price;
+      const max = p.maxQuantity || 10;
+      const kind = p.category === 'crates' ? 'Crate' : CATEGORY_LABEL[p.category] || p.category;
+      const note = s?.blocked
+        ? `<span class="cart-note bad">${escapeHtml(s.blocked)}</span>`
+        : s?.upgradeFrom
+          ? `<span class="cart-note">Mejora desde ${escapeHtml(s.upgradeFrom.replace(/^Rango\s+/i, ''))}: pagas la diferencia</span>`
+          : '';
+      const k = escapeHtml(key);
+      return `<li class="cart-line${s?.blocked ? ' is-blocked' : ''}"${themeAttr(p) || rankAttr(p)}>
           <span class="cart-img">${p.image ? img(p.image, '') : ''}</span>
           <span class="cart-main">
             <b>${escapeHtml(p.name)}</b>
@@ -2361,22 +2405,45 @@
             <b class="cart-price">${s?.blocked ? '—' : formatPrice(unit * qty)}</b>
             <span class="cart-ctrl">
               ${max > 1 ? `<span class="cart-qty" role="group" aria-label="Cantidad de ${escapeHtml(p.name)}">
-                <button type="button" data-cart-dec="${escapeHtml(id)}" aria-label="Uno menos">−</button>
+                <button type="button" data-cart-dec="${k}" aria-label="Uno menos">−</button>
                 <output aria-live="polite">${qty}</output>
-                <button type="button" data-cart-inc="${escapeHtml(id)}" aria-label="Uno más" ${qty >= max ? 'disabled' : ''}>+</button>
+                <button type="button" data-cart-inc="${k}" aria-label="Uno más" ${qty >= max ? 'disabled' : ''}>+</button>
               </span>` : ''}
-              <button type="button" class="cart-del" data-cart-del="${escapeHtml(id)}" aria-label="Quitar ${escapeHtml(p.name)} del carrito" title="Quitar">${ICON_X}</button>
+              <button type="button" class="cart-del" data-cart-del="${k}" aria-label="Quitar ${escapeHtml(p.name)} del carrito" title="Quitar">${ICON_X}</button>
             </span>
           </span>
         </li>`;
-      })
-      .join('')}</ul>
-      <div class="cart-tools"><span>${cartCount()} ${cartCount() === 1 ? 'producto' : 'productos'} · un solo pago</span><button type="button" class="link-btn" data-cart-clear>Vaciar carrito</button></div>`;
+    };
+    // Por jugador: primero lo tuyo y luego cada regalo (en el orden en que se añadieron)
+    const groups = new Map();
+    for (const l of lines) {
+      const g = (l.to || '').toLowerCase();
+      if (!groups.has(g)) groups.set(g, { to: l.to, msg: '', items: [] });
+      const grp = groups.get(g);
+      grp.items.push(l);
+      grp.msg ||= l.msg || '';
+    }
+    const order = [...groups.values()].sort((x, y) => (x.to ? 1 : 0) - (y.to ? 1 : 0));
+    const mine = player?.name;
+    box.innerHTML = `${order
+      .map((g) => `<section class="cart-group${g.to ? ' is-gift' : ''}">
+        <h4 class="cart-group-head">${
+          g.to
+            ? `${ICON_GIFT}<img src="https://mc-heads.net/avatar/${encodeURIComponent(g.to)}/48" alt="" width="22" height="22" class="pixel-img"><span>Regalo para <b>${escapeHtml(g.to)}</b></span>`
+            : `<span>Para ti${mine ? ` (<b>${escapeHtml(mine)}</b>)` : ''}</span>`
+        }</h4>
+        ${g.to && g.msg ? `<p class="cart-group-msg">«${escapeHtml(g.msg)}»</p>` : ''}
+        <ul class="cart-list">${g.items.map(row).join('')}</ul>
+      </section>`)
+      .join('')}
+      <div class="cart-tools"><span>${cartCount()} ${cartCount() === 1 ? 'producto' : 'productos'}${groups.size > 1 ? ` para ${groups.size} jugadores` : ''} · un solo pago</span><button type="button" class="link-btn" data-cart-clear>Vaciar carrito</button></div>`;
   }
 
   // Algo cambió en el carrito con la ventana abierta: se pinta y se vuelve a pedir el precio
   function refreshCart() {
+    syncCartFields();
     renderCartLines();
+    renderDiscordBox();
     updateTotal();
     requote(150);
   }
@@ -2410,9 +2477,10 @@
   }
 
   // Pide al servidor el precio de lo que se va a pagar (con el cupón, las mejoras de rango y lo que ya tiene)
+  const cartItems = () => cart.map((c) => ({ productId: c.id, quantity: c.qty, ...(c.to ? { to: c.to, message: c.msg || undefined } : {}) }));
   function quoteBody() {
-    const items = dialogMode === 'cart' ? cart.map((c) => ({ productId: c.id, quantity: c.qty })) : [{ productId: selected.id, quantity: qtyNow() }];
-    return { items, username: player?.name, gift: giftMode, coupon: coupon?.code };
+    if (dialogMode === 'cart') return { items: cartItems(), username: cartHasSelf() ? player?.name : undefined, coupon: coupon?.code };
+    return { items: [{ productId: selected.id, quantity: qtyNow() }], username: player?.name, gift: giftMode, coupon: coupon?.code };
   }
   function requote(delay = 0) {
     clearTimeout(quoteTimer);
@@ -2599,19 +2667,25 @@
   }
 
   function renderDiscordBox() {
+    if (!dialog || (dialogMode === 'single' && !selected)) return;
     const user = me.user;
-    const back = dialogMode === 'cart' ? `${location.pathname}?carrito=1` : `${location.pathname}?buy=${selected.id}`;
-    const role = dialogMode === 'cart' ? cartLines().some((l) => l.p.discordRole) : selected.discordRole;
+    const inCart = dialogMode === 'cart';
+    const back = inCart ? `${location.pathname}?carrito=1` : `${location.pathname}?buy=${selected.id}`;
+    const role = inCart ? cartLines().some((l) => !l.to && l.p.discordRole) : selected.discordRole;
+    const gifting = inCart ? cartHasGifts() : giftMode;
+    const onlyGifts = inCart && !cartHasSelf();
     $('#discord-linked').hidden = !user;
     $('#discord-unlinked').hidden = Boolean(user);
-    if (user && giftMode) {
+    if (user && (giftMode || onlyGifts)) {
       $('#discord-name').textContent = user.name;
       $('#discord-avatar').src = user.head;
-      $('#discord-linked-hint').textContent = 'El regalo va de tu parte: le llega con tu nombre.';
-    } else if (giftMode) {
-      $('#discord-login').href = `/cuenta?return=${encodeURIComponent(`${back}&gift=1`)}`;
+      $('#discord-linked-hint').textContent = inCart ? 'Los regalos van de tu parte: a cada jugador le llega con tu nombre y tu mensaje.' : 'El regalo va de tu parte: le llega con tu nombre.';
+    } else if (gifting && !user) {
+      $('#discord-login').href = `/cuenta?return=${encodeURIComponent(inCart ? back : `${back}&gift=1`)}`;
       $('#discord-login').textContent = 'Entra para regalar';
-      $('#discord-unlinked-hint').textContent = 'Para regalar necesitas tu cuenta: así sabrá quién se lo regala.';
+      $('#discord-unlinked-hint').textContent = inCart
+        ? 'Tu carrito lleva regalos: entra con tu cuenta para pagarlos (así saben de quién son). El carrito se queda como está.'
+        : 'Para regalar necesitas tu cuenta: así sabrá quién se lo regala.';
     } else if (user) {
       $('#discord-name').textContent = user.name;
       $('#discord-avatar').src = user.head;
@@ -2648,7 +2722,7 @@
     history.replaceState(null, '', `${location.pathname}${hash}`);
     if (cancelled) toast('Pago cancelado. No se ha realizado ningún cargo.');
     if (buy) openCheckout(buy, { gift: params.get('gift') === '1' });
-    else if (openCartToo && cart.length) openCart({ gift: params.get('gift') === '1' });
+    else if (openCartToo && cart.length) openCart();
     else if (result === 'ok') toast('Sesión iniciada');
   }
 
@@ -2678,7 +2752,7 @@
       const inc = e.target.closest('[data-cart-inc]')?.dataset.cartInc;
       const dec = e.target.closest('[data-cart-dec]')?.dataset.cartDec;
       const del = e.target.closest('[data-cart-del]')?.dataset.cartDel;
-      const line = (id) => cart.find((c) => c.id === id);
+      const line = (key) => cart.find((c) => lineKey(c) === key);
       if (inc) setCartQty(inc, (line(inc)?.qty || 0) + 1);
       else if (dec) setCartQty(dec, (line(dec)?.qty || 0) - 1);
       else if (del) setCartQty(del, 0);
@@ -2689,8 +2763,13 @@
       }
     });
     $('#dialog-to-cart').addEventListener('click', () => {
-      if (!selected) return;
-      addToCart(selected.id, dialogMode === 'single' ? qtyNow() : 1);
+      if (!selected || dialogMode !== 'single') return;
+      if (giftMode) {
+        if (!player || isSelf()) return;
+        addToCart(selected.id, qtyNow(), { to: player.name, msg: $('#gift-message').value.trim() });
+      } else {
+        addToCart(selected.id, qtyNow());
+      }
       dialog.close();
     });
     // Cupón
@@ -2721,8 +2800,13 @@
 
   // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe o de PayPal.
   async function pay(method) {
-    if (paying || !player || isSelf()) return;
-    if (dialogMode === 'cart' ? !cart.length || !quote || quoting || quote.lines.some((l) => l.blocked) : player.quote?.blocked) return;
+    if (paying) return;
+    if (dialogMode === 'cart') {
+      const miss = cartMissing();
+      if (miss === 'login') return showError('Entra con tu cuenta para pagar los regalos: así sabrán de quién son.');
+      if (miss === 'player') return showError('Escribe tu nombre de Minecraft para lo que es para ti.');
+      if (miss) return;
+    } else if (!player || isSelf() || player.quote?.blocked) return;
     if (dialogMode === 'single' && coupon && (quoting || !quote)) return;
     if (giftMode && !me.user) return showError('Entra con tu cuenta para regalar.');
     if (!$('#pay-terms').checked) return showError('Marca la casilla para aceptar los Términos y el Aviso de privacidad.');
@@ -2738,13 +2822,13 @@
     const label = btn.innerHTML;
     btn.textContent = method === 'paypal' ? 'Abriendo PayPal…' : method === 'mercadopago' ? 'Abriendo Mercado Pago…' : 'Abriendo el pago seguro…';
     btn.classList.add('is-loading');
+    const forSelf = dialogMode === 'single' || cartHasSelf();
     const common = {
-      username: player.name,
-      uuid: player.uuid,
+      ...(forSelf ? { username: player.name, uuid: player.uuid } : {}),
       acceptTerms: true,
       method,
       ...(coupon ? { coupon: coupon.code } : {}),
-      ...(giftMode ? { gift: true, message: $('#gift-message').value.trim() } : {}),
+      ...(giftMode && dialogMode === 'single' ? { gift: true, message: $('#gift-message').value.trim() } : {}),
     };
     try {
       const res = await fetch(dialogMode === 'cart' ? '/api/cart/checkout' : '/api/checkout', {
@@ -2752,13 +2836,13 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
           dialogMode === 'cart'
-            ? { items: cart.map((c) => ({ productId: c.id, quantity: c.qty })), ...common }
+            ? { items: cartItems(), ...common }
             : { productId: selected.id, quantity, ...common },
         ),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw Object.assign(new Error(data.error || 'No se pudo iniciar el pago.'), { code: data.code });
-      if (!giftMode) storageSet('tf-username', player.name);
+      if (!giftMode && player) storageSet('tf-username', player.name);
       window.location.href = data.url;
     } catch (err) {
       paying = false;

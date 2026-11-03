@@ -2291,7 +2291,7 @@ test('carrito: varios productos en UN solo pago de Stripe con cupón; cada uno s
   assert.ok(mails.some((m) => m.subject === `Reembolso · pedido ${cartId} · Carrito_MC`));
 });
 
-test('carrito: lo que no se puede juntar (dos rangos, lo de monedas, lo gratis, lo que ya tiene) y el carrito vacío', async () => {
+test('carrito: lo que no se puede (monedas, gratis, lo que ya tiene, lo mismo dos veces para el mismo jugador) y el vacío', async () => {
   await seen('Carro_Malo');
   const bad = async (items, code) => {
     const r = await cartCheckout({ items, username: 'Carro_Malo' });
@@ -2300,16 +2300,24 @@ test('carrito: lo que no se puede juntar (dos rangos, lo de monedas, lo gratis, 
     return r.data;
   };
   await bad([], 'empty');
-  await bad([{ productId: 'rango-mortal' }, { productId: 'rango-magico' }], 'ranks');
   await bad([{ productId: 'no-existe' }], 'invalid');
   await bad([{ productId: 'especial-nitro' }], 'invalid');
   const coins = products.find((p) => p.coinsOnly);
   await bad([{ productId: coins.id }], 'coins');
   const free = products.find((p) => p.price === 0 && !p.staffOnly);
   await bad([{ productId: free.id }], 'free');
-  await bad([{ productId: 'crate-oni', quantity: 2 }], 'quantity');
+  // La misma crate dos veces para el mismo jugador: una por jugador (para otro jugador, sí: ver la prueba de regalos)
+  const twice = await bad([{ productId: 'crate-oni', quantity: 2 }], 'quantity');
+  assert.match(twice.error, /ya está en el carrito/);
+  await bad([{ productId: 'crate-oni' }, { productId: 'crate-oni' }], 'quantity');
   await bad([{ productId: 'proteccion-250x250', quantity: 3 }, { productId: 'proteccion-250x250', quantity: 3 }], 'quantity');
-  await bad(Array.from({ length: 21 }, (_, i) => ({ productId: products.filter((p) => p.category === 'crates')[i].id })), 'cart');
+  // Hasta 50 líneas (antes, 20)
+  const crates = products.filter((p) => p.category === 'crates');
+  assert.ok(crates.length >= 51);
+  await bad(crates.slice(0, 51).map((p) => ({ productId: p.id })), 'cart');
+  const many = await quoteCart({ items: crates.slice(0, 50).map((p) => ({ productId: p.id })), username: 'Carro_Malo' });
+  assert.strictEqual(many.status, 200);
+  assert.strictEqual(many.data.lines.length, 50);
   // Ya tiene ese rango: el carrito dice cuál y por qué
   const id = await checkout({ productId: 'rango-inmortal', username: 'Carro_Malo' });
   await pay(id);
@@ -2324,37 +2332,105 @@ test('carrito: lo que no se puede juntar (dos rangos, lo de monedas, lo gratis, 
   assert.match(up.data.lines[0].upgradeFrom, /Inmortal/);
 });
 
-test('carrito con PayPal (y como regalo) y con Mercado Pago en pesos: un pago, todo entregado', async () => {
+test('carrito: varios rangos para el mismo jugador van de menor a mayor (cada uno mejora desde el anterior) y se retiran al revés', async () => {
   received.length = 0;
-  await seen('Carro_Pp', 'Carro_Mp');
+  await seen('Carro_Rangos');
+  const items = [{ productId: 'rango-magico' }, { productId: 'crate-oni' }, { productId: 'rango-mortal' }];
+  const q = await quoteCart({ items, username: 'Carro_Rangos' });
+  assert.deepStrictEqual(q.data.lines.map((l) => [l.productId, l.unit]), [
+    ['crate-oni', priceOf('crate-oni')],
+    ['rango-mortal', priceOf('rango-mortal')],
+    ['rango-magico', priceOf('rango-magico') - priceOf('rango-mortal')],
+  ]);
+  assert.match(q.data.lines[2].upgradeFrom, /Mortal/);
+  // El mismo rango dos veces para el mismo jugador, no
+  const dup = await quoteCart({ items: [{ productId: 'rango-mortal' }, { productId: 'rango-mortal' }], username: 'Carro_Rangos' });
+  assert.strictEqual(dup.status, 400);
+  const { data } = await cartCheckout({ items, username: 'Carro_Rangos' });
+  assert.strictEqual(sessionOf(data.id).amount_total, priceOf('crate-oni') + priceOf('rango-magico'), 'lo mismo que comprarlos seguidos');
+  await pay(data.id);
+  await serverDelivers('Carro_Rangos');
+  // Se entregan de menor a mayor: termina con Mágico (en LuckPerms y en la web)
+  const sets = received.filter((c) => c.startsWith('lp user Carro_Rangos parent set'));
+  assert.deepStrictEqual(sets, ['lp user Carro_Rangos parent set mortal', 'lp user Carro_Rangos parent set magico']);
+  assert.strictEqual((await (await get('/api/player/Carro_Rangos')).json()).rank.id, 'rango-magico');
+  // Reembolso completo: se quita primero Mágico (vuelve a Mortal) y luego Mortal → sin rango
+  await signedEvent({ type: 'charge.refunded', data: { object: { id: 'ch_rangos', payment_intent: sessionOf(data.id).payment_intent, refunded: true } } });
+  const { deliveries } = await (await poll([])).json();
+  const groups = deliveries.flatMap((d) => d.commands.filter((c) => c.startsWith('lp user')));
+  assert.deepStrictEqual(groups, ['lp user {uuid} parent remove magico', 'lp user {uuid} parent add mortal', 'lp user {uuid} parent remove mortal']);
+  assert.strictEqual((await (await get('/api/player/Carro_Rangos')).json()).rank, null);
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+});
+test('carrito con regalos para 4 jugadores distintos en UN solo pago (PayPal), más lo tuyo, y Mercado Pago en pesos', async () => {
+  received.length = 0;
+  announcements.length = 0;
+  await seen('Amigo_A', 'Amigo_B', 'Amigo_C', 'Amigo_D', 'Carro_Mp');
   const cookie = await register('Regala_Carro');
-  const items = [{ productId: 'crate-oni' }, { productId: 'proteccion-250x250', quantity: 2 }];
-  const subtotal = priceOf('crate-oni') + priceOf('proteccion-250x250') * 2;
-  // Regalo con cupón: el que paga es quien regala
-  const { status, data } = await cartCheckout({ items, username: 'Carro_Pp', method: 'paypal', gift: true, message: '¡Para ti!', coupon: 'FIJO-2' }, { cookie });
+  const items = [
+    { productId: 'crate-oni', to: 'Amigo_A', message: '¡Feliz cumple!' },
+    { productId: 'crate-oni', to: 'amigo_b' },
+    { productId: 'rango-mortal', to: 'Amigo_C', message: 'Bienvenido' },
+    { productId: 'rango-inmortal', to: 'Amigo_D' },
+    { productId: 'proteccion-250x250', quantity: 2 },
+    { productId: 'crate-oni' },
+  ];
+  const subtotal = priceOf('crate-oni') * 3 + priceOf('rango-mortal') + priceOf('rango-inmortal') + priceOf('proteccion-250x250') * 2;
+  // Sin cuenta no se regala (el regalo dice de quién es); a quien nunca entró, tampoco
+  assert.strictEqual((await cartCheckout({ items, username: 'Regala_Carro' })).status, 401);
+  const nobody = await cartCheckout({ items: [{ productId: 'crate-oni', to: 'Nadie_Juega' }], username: 'Regala_Carro' }, { cookie });
+  assert.strictEqual(nobody.status, 404);
+  assert.match(nobody.data.error, /No encontramos a Nadie_Juega/);
+  const q = await quoteCart({ items, username: 'Regala_Carro' }, { Cookie: cookie });
+  assert.strictEqual(q.status, 200);
+  assert.strictEqual(q.data.lines.length, 6);
+  assert.strictEqual(q.data.needsLogin, false);
+  assert.strictEqual(q.data.subtotal, subtotal);
+  assert.deepStrictEqual(q.data.lines.filter((l) => l.gift).map((l) => l.to).sort(), ['Amigo_A', 'Amigo_B', 'Amigo_C', 'Amigo_D']);
+  assert.ok(q.data.lines.find((l) => l.keys.includes('crate-oni|amigo_b')));
+  assert.strictEqual((await quoteCart({ items, username: 'Regala_Carro' })).data.needsLogin, true);
+
+  const { status, data } = await cartCheckout({ items, username: 'Regala_Carro', method: 'paypal', coupon: 'FIJO-2' }, { cookie });
   assert.strictEqual(status, 200, data.error);
   const ppOrder = [...paypalOrders.values()].find((o) => o.purchase_units[0].custom_id === data.id);
   const unit = ppOrder.purchase_units[0];
-  assert.strictEqual(unit.amount.value, ((subtotal - 250) / 100).toFixed(2));
-  assert.strictEqual(unit.items.length, 2);
+  assert.strictEqual(unit.amount.value, ((subtotal - 250) / 100).toFixed(2), 'un solo pago con todo');
+  assert.strictEqual(unit.items.length, 6);
   const itemsTotal = unit.items.reduce((a, it) => a + Math.round(Number(it.unit_amount.value) * 100) * Number(it.quantity), 0);
   assert.strictEqual(itemsTotal, subtotal - 250, 'las líneas suman el total');
-  assert.strictEqual(unit.amount.breakdown.item_total.value, unit.amount.value);
+  assert.ok(unit.items.some((it) => /regalo para Amigo_D/.test(it.name)));
   ppOrder.approved = true;
   const view = await (await post(`/api/order/${data.id}/sync`)).json();
   assert.strictEqual(view.status, 'queued');
-  assert.deepStrictEqual(view.gift, { from: 'Regala_Carro', message: '¡Para ti!' });
+  assert.strictEqual(view.username, 'Regala_Carro', 'el carrito es de quien paga');
+  assert.deepStrictEqual(view.items.map((it) => it.username).sort(), ['Amigo_A', 'Amigo_B', 'Amigo_C', 'Amigo_D', 'Regala_Carro', 'Regala_Carro']);
+  assert.deepStrictEqual(view.items.find((it) => it.username === 'Amigo_A').gift, { from: 'Regala_Carro', message: '¡Feliz cumple!' });
+  assert.strictEqual(view.items.find((it) => it.username === 'Regala_Carro').gift, null);
   // El aviso de PayPal del mismo cobro no entrega dos veces
   await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: unit.payments.captures[0] });
-  const delivered = await serverDelivers('Carro_Pp');
-  assert.strictEqual(delivered.length, 2);
-  assert.ok(received.some((c) => c.startsWith('tellraw Carro_Pp') && c.includes('Regala_Carro te ha regalado')));
-  // El que regala lo ve en sus compras
+  const delivered = await serverDelivers('Amigo_A', 'Amigo_B', 'Amigo_C', 'Amigo_D', 'Regala_Carro');
+  assert.strictEqual(delivered.length, 6);
+  for (const who of ['Amigo_A', 'Amigo_B', 'Amigo_C', 'Amigo_D']) {
+    assert.ok(received.some((c) => c.startsWith(`tellraw ${who} `) && c.includes('Regala_Carro te ha regalado')), `aviso del regalo a ${who}`);
+  }
+  assert.ok(received.some((c) => c.startsWith('tellraw Amigo_A') && c.includes('¡Feliz cumple!')));
+  assert.ok(!received.some((c) => c.startsWith('tellraw Regala_Carro')), 'lo suyo no es un regalo');
+  assert.strictEqual((await (await get('/api/player/Amigo_C')).json()).rank.id, 'rango-mortal');
+  assert.strictEqual((await (await get('/api/player/Amigo_D')).json()).rank.id, 'rango-inmortal');
+  assert.ok(received.includes('give Regala_Carro tfclient:proteccion_250x250 1'));
+  // Un solo anuncio, con cada regalo
+  assert.strictEqual(announcements.length, 1);
+  assert.match(announcements[0].embeds[0].description, /\*\*Regala_Carro\*\* le ha regalado \*\*Rango Inmortal\*\* a \*\*Amigo_D\*\*/);
+  // Quien regala lo ve todo en sus compras
   const mine = (await (await get('/api/account/orders', { Cookie: cookie })).json()).orders.filter((o) => o.cartId === data.id);
-  assert.strictEqual(mine.length, 2);
+  assert.strictEqual(mine.length, 6);
+  // El navegador de antes (todo el carrito como regalo para un jugador) sigue funcionando
+  const legacy = await quoteCart({ items: [{ productId: 'crate-valentine' }], username: 'Amigo_A', gift: true, message: 'hola' }, { Cookie: cookie });
+  assert.deepStrictEqual([legacy.data.lines[0].to, legacy.data.lines[0].gift], ['Amigo_A', true]);
 
   // Mercado Pago: en pesos, cada producto al cambio del día; la suma es lo cobrado
-  const mp = await cartCheckout({ items, username: 'Carro_Mp', method: 'mercadopago' });
+  const mpItems = [{ productId: 'crate-oni' }, { productId: 'proteccion-250x250', quantity: 2 }];
+  const mp = await cartCheckout({ items: mpItems, username: 'Carro_Mp', method: 'mercadopago' });
   assert.strictEqual(mp.status, 200, mp.data.error);
   const pref = [...mpPrefs.values()].find((p) => p.external_reference === mp.data.id);
   assert.strictEqual(pref.items.length, 2);
@@ -2362,8 +2438,8 @@ test('carrito con PayPal (y como regalo) y con Mercado Pago en pesos: un pago, t
   const mxn = Math.ceil(priceOf('crate-oni') * 18.68 - 1e-9) + Math.ceil(priceOf('proteccion-250x250') * 18.68 - 1e-9) * 2;
   const prefTotal = pref.items.reduce((a, it) => a + Math.round(it.unit_price * 100) * it.quantity, 0);
   assert.strictEqual(prefTotal, mxn);
-  const q = await quoteCart({ items, username: 'Carro_Mp' });
-  assert.strictEqual(q.data.mxn, mxn, 'la tienda enseña lo mismo en pesos');
+  const q2 = await quoteCart({ items: mpItems, username: 'Carro_Mp' });
+  assert.strictEqual(q2.data.mxn, mxn, 'la tienda enseña lo mismo en pesos');
   mpPayments.set('9101', { id: 9101, status: 'approved', external_reference: mp.data.id, transaction_amount: mxn / 100, currency_id: 'MXN' });
   assert.strictEqual((await mpWebhook('9101')).status, 200);
   const mpView = await (await get(`/api/order/${mp.data.id}`)).json();
@@ -2377,7 +2453,6 @@ test('carrito con PayPal (y como regalo) y con Mercado Pago en pesos: un pago, t
   assert.strictEqual(after.refunded, 'disputa');
   assert.ok(after.items.every((it) => it.refunded === 'disputa'));
 });
-
 test('carrito con Stripe que caduca o que no cuadra: no se entrega nada', async () => {
   await seen('Carro_Caduca');
   const items = [{ productId: 'crate-oni' }, { productId: 'crate-valentine' }];

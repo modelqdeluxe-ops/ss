@@ -13,6 +13,27 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (3 nov 2026, 2.ª ronda): el carrito SIN TOPES y con REGALOS PARA VARIOS JUGADORES en un solo pago (hecho)
+Queja del dueño tras la 1.ª ronda: «solo deja añadir 3 compras, solo deja añadir 1 rango… quiero que añada todo lo que yo
+quiera; y que se pueda como regalo: mandar varios regalos, subirlos al carrito, para enviarle a 4 jugadores distintos en
+1 solo pago». Medido: con productos distintos sí entraban (8 de 8); lo que lo frenaba eran mis reglas (cada crate una
+vez, un solo rango, todo el carrito para UN jugador) y un fallo: 16 de los 50 efectos VFX tienen «_» en su id y el
+carrito los tiraba al recargar.
+- **Cada línea del carrito lleva su destinatario** (`to` y `msg` en `tf-cart`; `to`/`message` en las rutas): para ti o
+  regalo para cualquier jugador. «Regalar» (o «Como regalo») → escribir a quién → «Añadir al carrito: regalo para X».
+  La ventana del carrito agrupa por jugador (cabeza, mensaje) y solo pide tu nombre si hay algo para ti; con regalos
+  pide la cuenta. `priceLines` en `src/app.js` resuelve cada destinatario y junta lo mismo para el mismo jugador.
+- **Sin topes**: 50 líneas; la misma crate para jugadores distintos; rangos los que quieras (para el mismo jugador, de
+  menor a mayor y cada uno mejora desde el anterior: lo mismo que comprarlos seguidos; se entregan en ese orden y un
+  reembolso completo los quita al revés).
+- El carrito es de quien paga (`carts.username/uuid`); cada pedido, de quien lo recibe con su `gift`. Un anuncio
+  («X ha conseguido… y le ha regalado… a Y»), un recibo con los destinatarios, la confirmación con «¡Regalos
+  enviados!» y para quién es cada cosa, y la sanción de una disputa fuera de plazo para quien pagó.
+- Comprobado: 72 pruebas (nuevas: regalos a 4 jugadores + lo tuyo con PayPal y cupón, rangos encadenados con su
+  entrega y su retirada, 50 líneas, compatibilidad con el navegador de antes) y en Chromium (escritorio y móvil, con
+  la cuenta iniciada): la misma crate para Amigo_A, Amigo_B y para mí, Mortal para Amigo_C y Mágico para Amigo_D, un
+  solo pago de 36,94 y la petición que sale es la correcta; el botón del regalo cabe a 360 px con 16 letras.
+
 ### Web (3 nov 2026): CARRITO (un solo pago) y CUPONES DE DESCUENTO en el panel de staff (hecho)
 Pedido literal del dueño: «agrega en la tienda la opción del carrito, para que paguen 1 solo pago al comprar varios
 productos, y en el panel de staff dame la posibilidad de crear cupones de descuento, tanto en porcentaje como en

@@ -252,23 +252,37 @@ Sin estos Secrets no se envía nada y las compras siguen igual. El jugador desca
 de pagar (`GET /api/order/<id>/receipt`, solo pedidos pagados con dinero), aparte del de Stripe o PayPal.
 
 **Carrito (3 nov 2026)**: junto a cada «Comprar» (crates, rangos, protecciones y efectos VFX) hay un botón con un
-carrito, y en la ventana de compra «o Añadir al carrito y seguir comprando». El carrito se guarda en el navegador
-(`localStorage` «tf-cart») y un botón flotante (abajo a la derecha) dice cuántos productos lleva y cuánto suman; al
-tocarlo se abre la misma ventana de pago con la lista (cantidades, quitar, vaciar), «Para mí / Como regalo», el
-cupón y los métodos de pago. **Un solo pago** con Stripe, PayPal o Mercado Pago (en pesos al cambio del día) por todo:
-- `POST /api/cart/quote` da el precio de cada línea para ese jugador (mejoras de rango, lo que ya tiene bloqueado) y
-  el del cupón; `POST /api/cart/checkout` crea el pago. Lo de monedas, lo gratis y lo «solo staff» no entra; un rango
-  por compra; como mucho 20 productos distintos; los repetidos se juntan.
-- En la base de datos: el carrito es el pago (tabla `carts`, número `CART…`, con su sesión, importe, cupón y quién
-  paga) y **cada producto es un pedido normal** de `orders` con `cart_id` (número del carrito + `01`, `02`…): se
-  entrega, sale en «Mis compras» y en el panel, y el staff lo puede reembolsar suelto. El importe del carrito se
-  reparte entre sus pedidos (con su parte del cupón) y la suma es exactamente lo cobrado.
-- Al pagarse: cada producto a la cola del puente, sus roles de Discord, **un solo anuncio** con todo y **un solo
-  recibo** (PDF con todos los productos y el cupón; `GET /api/order/CART…/receipt`). La página `/success?order=CART…`
-  enseña los productos y vacía el carrito del navegador.
-- Reembolso completo o disputa del pago (Stripe, PayPal o Mercado Pago): se retira todo lo del carrito, una sola
-  sanción si es fuera de plazo y un solo correo con el expediente. Un reembolso parcial solo se apunta en el carrito
-  (el staff retira desde `/staff` los productos que devolvió).
+carrito, y en la ventana de compra «o Añadir al carrito y seguir comprando». **Cada línea del carrito es un producto
+para un jugador**: «para ti» (el nombre que escribes al pagar) o **un regalo** para otro jugador con su mensaje (en
+«Regalar» o «Como regalo», escribe a quién y pulsa «Añadir al carrito: regalo para X»). Así se pagan de una vez, por
+ejemplo, la misma crate para 4 jugadores distintos, lo tuyo y un rango para cada uno. El carrito se guarda en el
+navegador (`localStorage` «tf-cart»: `[{ id, qty, to, msg }]`) y un botón flotante (abajo a la derecha) dice cuántos
+productos lleva y cuánto suman; al tocarlo se abre la ventana de pago con la lista agrupada por jugador («Para ti» y
+«Regalo para X» con su cabeza y su mensaje; cantidades, quitar, vaciar), el cupón y los métodos de pago. **Un solo
+pago** con Stripe, PayPal o Mercado Pago (en pesos al cambio del día) por todo:
+- `POST /api/cart/quote` da el precio de cada línea para quien la recibe (mejoras de rango; lo que ya tiene sale
+  bloqueado con el motivo) y el del cupón; `POST /api/cart/checkout` crea el pago. Cada línea: `{ productId, quantity,
+  to?, message? }` (sin `to` = para el nombre de `username`). Los regalos piden la cuenta de quien paga (como siempre);
+  el nombre de «para ti» solo se pide si hay algo para ti.
+- Sin topes inventados: hasta 50 líneas; la misma crate, una por jugador (para jugadores distintos, las que quieras);
+  rangos todos los que quieras: **varios para el mismo jugador van de menor a mayor y cada uno es una mejora desde el
+  anterior** (cuesta lo mismo que comprarlos seguidos: Mortal + Mágico = el precio de Mágico) y se entregan en ese
+  orden. Lo de monedas, lo gratis y lo «solo staff» no entra.
+- En la base de datos: el carrito es el pago y es **de quien paga** (tabla `carts`, número `CART…`, con su sesión,
+  importe, cupón y quién paga) y **cada producto es un pedido normal** de `orders` con `cart_id` (número del carrito +
+  `01`, `02`…) a nombre de quien lo recibe y, si es regalo, con su `gift` (de quién y su mensaje): se entrega (con el
+  aviso del regalo en el chat), sale en «Mis compras» de quien lo recibe y de quien lo regaló y en el panel, y el staff
+  lo puede reembolsar suelto. El importe se reparte entre sus pedidos (con su parte del cupón) y la suma es lo cobrado.
+- Al pagarse: cada producto a la cola del puente, sus roles de Discord, **un solo anuncio** («X ha conseguido… y le ha
+  regalado… a Y») y **un solo recibo** (PDF con todos los productos, para quién es cada uno y el cupón;
+  `GET /api/order/CART…/receipt`). La página `/success?order=CART…` enseña los productos con su destinatario y vacía el
+  carrito del navegador.
+- Reembolso completo o disputa del pago (Stripe, PayPal o Mercado Pago): se retira todo lo del carrito (al revés de
+  como se entregó: con dos rangos del mismo jugador, primero el más alto), una sola sanción para **quien pagó** si es
+  fuera de plazo y un solo correo con el expediente. Un reembolso parcial solo se apunta en el carrito (el staff retira
+  desde `/staff` los productos que devolvió).
+- Compatibilidad: el navegador de antes (todo el carrito para un jugador con `gift: true`) sigue funcionando (cada
+  producto pasa a ser un regalo para ese jugador).
 
 **Cupones de descuento (3 nov 2026)**: los crea el staff en `/staff` («Cupones de descuento»): código (o «Generar»),
 **porcentaje** (1–99 %) o **cantidad fija** en dólares, usos máximos (vacío = ilimitados), un solo uso por jugador,
