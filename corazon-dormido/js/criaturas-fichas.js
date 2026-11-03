@@ -291,7 +291,7 @@ const PIEZAS_CRI = (() => {
     return [s, 1 / Math.sqrt(Math.max(0.3, s)) * (A.clip === 'Slime_Death' ? 1.25 : 1), (P.Head[0] - P.Body[0] - 0.03) * 1.5];
   }
   // o: { rampa (5 tonos), rx, ry, dentro: 'craneo' | 'visceras' | 'pustulas', ojo, W, H }
-  function baba(o) {
+  function babaEsq(o) { // la baba movida por el esqueleto de Quaternius (queda para el sapo)
     const W = o.W || 36, H = o.H || 30;
     return {
       W, H, ox: Math.round(W / 2), oy: H - 4, px: 1, yaw: 0, fuente: ANIM_BABA, zancada: 16, fpsQuieta: 4,
@@ -346,9 +346,73 @@ const PIEZAS_CRI = (() => {
       },
     };
   }
-  DEF.babosa = baba({ rampa: ['#33400c', '#6a7a16', '#a0b028', '#d0dc4c', '#f4fca0'], rx: 8.5, ry: 6.8, dentro: 'craneo' });
-  DEF.babosa_roja = baba({ rampa: ['#2e0610', '#62101e', '#a01c2c', '#d83a3a', '#ff8a6c'], rx: 9.5, ry: 7.6, dentro: 'visceras', ojo: ['#ffe060', '#fff8c0'] });
-  DEF.babosa_veneno = baba({ rampa: ['#180a20', '#36183e', '#5a2864', '#84388a', '#b45cb0'], rx: 9.5, ry: 7.2, dentro: 'pustulas', ojo: ['#c8ff40', '#f0ffb0'] });
+  // La baba cuadro a cuadro, construida como las de Core Keeper (ESTUDIO-CK.md): una gota de base plana, limpia (sin
+  // ruido), con bandas de luz (clara arriba a la izquierda, oscura abajo), el núcleo más oscuro visto a través, lo que
+  // se ha tragado y un brillo en cruz. Se mueve solo aplastándose y estirándose: respira (8 cuadros), avanza a saltitos
+  // (8), se agacha antes de saltar (3), se estira en el aire (4), se espachurra al recibir (2), se deshace al morir (5)
+  // y sale de un charco (4). Cada cuadro: [ancho, alto, subida en px] de la gota.
+  const BABA_CUADROS = {
+    q: Array.from({ length: 8 }, (_, f) => { const k = Math.sin((f / 8) * Math.PI * 2); return [1 + 0.05 * k, 1 - 0.06 * k, 0]; }),
+    a: [[1.12, 0.84, 0], [0.92, 1.12, 1], [0.86, 1.18, 3], [0.9, 1.12, 4], [0.96, 1.04, 3], [1.02, 0.98, 1], [1.16, 0.8, 0], [1.06, 0.92, 0]],
+    p: [[1.1, 0.88, 0], [1.18, 0.78, 0], [1.26, 0.68, 0]],
+    g: [[0.78, 1.3, 0], [0.82, 1.24, 0], [0.9, 1.12, 0], [1.0, 1.0, 0]],
+    r: [[1.22, 0.74, 0], [1.1, 0.88, 0]],
+    m: [[1.25, 0.7, 0], [1.4, 0.5, 0], [1.55, 0.34, 0], [1.6, 0.24, 0], [1.6, 0.16, 0]],
+    n: [[1.5, 0.25, 0], [1.25, 0.55, 0], [1.05, 0.9, 0], [1, 1, 0]],
+  };
+  function baba(o) {
+    const W = o.W || 32, H = o.H || 28;
+    const anims = {};
+    for (const [a, c] of Object.entries(BABA_CUADROS)) anims[a] = { proc: 'baba', n: c.length, bucle: a === 'q' || a === 'a' };
+    return {
+      W, H, ox: Math.round(W / 2), oy: H - 2, px: 1, yaw: 0, zancada: 16, fpsQuieta: 6, anims,
+      dibujar(K) {
+        const D = K.D, [sx, sy, sube] = BABA_CUADROS[K.anim][K.f] || [1, 1, 0];
+        const rp = Object.assign(o.rampa.slice(), { sinLinea: true });
+        const rx = o.rx * sx, alto = o.ry * 1.6 * sy, base = D.oy - Math.round(sube), cx = D.ox;
+        // una gota: media elipse arriba y abajo otra más larga cortada por la base (los lados se recogen un poco al
+        // llegar al suelo, sin esquinas)
+        const ryA = alto * 0.58, cy = base + 1 - alto + ryA, ryB = (base + 1 - cy) * 1.45;
+        const dentro = (x, y) => { const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - cy) / (y + 0.5 < cy ? ryA : ryB); return y <= base && u * u + v * v <= 1; };
+        const muerta = K.anim === 'm' && K.f >= 3;
+        K.pieza(0, () => {
+          for (let y = Math.floor(base - alto - 1); y <= base; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) {
+            if (!dentro(x, y)) continue;
+            const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - (base - alto)) / alto; // v: 0 arriba, 1 abajo
+            let k = 2;
+            if (v > 0.78) k = 1; // la base, en sombra
+            else if (u + v * 1.3 < 0.05 && v < 0.55) k = 3; // arriba a la izquierda, con luz
+            // el núcleo, más oscuro, visto a través
+            const nu = (x + 0.5 - (cx + rx * 0.08)) / (rx * 0.5), nv = (y + 0.5 - (base - alto * 0.38)) / (alto * 0.3);
+            if (!muerta && nu * nu + nv * nv <= 1) k = Math.min(k, 1);
+            K.L.pon(x, y, rp[k], K.id, rp, false, u, v * 2 - 1, Math.sqrt(Math.max(0, 1 - u * u)));
+          }
+        });
+        // lo que se ha tragado (encima del núcleo, teñido de baba)
+        const tinte = (c) => mezclar(c, rp[2], 0.5);
+        const bx = cx - rx * 0.12, by = base - alto * 0.38;
+        if (!muerta && alto > 5) K.pieza(1, () => {
+          if (o.dentro === 'craneo') {
+            K.px(bx - 1, by - 1, tinte(R.hueso[3]), rp); K.px(bx, by - 1, tinte(R.hueso[3]), rp); K.px(bx + 1, by - 1, tinte(R.hueso[2]), rp);
+            K.px(bx - 1, by, tinte(R.hueso[2]), rp); K.px(bx, by, tinte(OSCURO), rp); K.px(bx + 1, by, tinte(R.hueso[2]), rp);
+            K.px(bx, by + 1, tinte(R.hueso[1]), rp); K.px(bx + 3, by + 1, tinte(R.hueso[3]), rp); K.px(bx + 4, by + 1, tinte(R.hueso[2]), rp);
+          } else if (o.dentro === 'visceras') {
+            for (const [dx, dy, c] of [[-1, 0, '#8a1428'], [0, 0, '#c03040'], [1, 0, '#8a1428'], [0, -1, '#c03040'], [2, 1, '#e8c0b0'], [3, 1, '#e8c0b0']]) K.px(bx + dx, by + dy, tinte(c), rp);
+          }
+        });
+        // brillo en cruz arriba a la izquierda (y una motita al lado), como las de Core Keeper
+        if (!muerta && alto > 4) K.pieza(2, () => {
+          const x = Math.round(cx - rx * 0.48), y = Math.round(base - alto * 0.7);
+          K.px(x, y, rp[4], rp); K.px(x - 1, y, rp[4], rp); K.px(x + 1, y, rp[3], rp); K.px(x, y - 1, rp[4], rp); K.px(x, y + 1, rp[3], rp);
+          K.px(x + 2, y - 2, rp[3], rp);
+          if (o.dentro === 'pustulas') for (const [px, py] of [[0.3, 0.35], [0.55, 0.55], [-0.15, 0.62]]) K.px(cx + rx * px, base - alto * (1 - py), '#ff3cb4', rp, true);
+        });
+      },
+    };
+  }
+  DEF.babosa = baba({ rampa: ['#2e3a0a', '#5e7014', '#94a826', '#c8d84a', '#f6ffc0'], rx: 7.5, ry: 6.5, dentro: 'craneo' });
+  DEF.babosa_roja = baba({ rampa: ['#2e0610', '#5e0e1c', '#9a1a2a', '#d23a3a', '#ffc8b4'], rx: 8.5, ry: 7.2, dentro: 'visceras' });
+  DEF.babosa_veneno = baba({ rampa: ['#1a0a22', '#3a1a44', '#62306c', '#8e4a94', '#e8c0f0'], rx: 8.5, ry: 7, dentro: 'pustulas' });
 
   // ---------------------------------------------------------------- gusanos, sanguijuela y tentáculo (esqueleto propio)
   // Una cadena de anillos (de la cola a la cabeza): cada anillo es una pieza (las líneas entre anillos salen solas).
@@ -488,7 +552,7 @@ const PIEZAS_CRI = (() => {
   };
 
   // Sapo hueco: flaco, la espalda llena de bultos de la Podre; salta y aplasta (con el Slime de Quaternius).
-  DEF.sapo_hueco = Object.assign(baba({ rampa: R.gruto, rx: 1, ry: 1 }), {
+  DEF.sapo_hueco = Object.assign(babaEsq({ rampa: R.gruto, rx: 1, ry: 1 }), {
     W: 44, H: 34, ox: 20, oy: 30,
     dibujar(K) {
       const D = K.D, [sy, sx, inc] = aplasto(K), piel = ['#10140c', '#2a3420', '#465430', '#687846', '#909e66'], vientre = ['#2a2418', '#6a5c40', '#9a8a62', '#c4b48a'];
