@@ -130,6 +130,55 @@ const SCHEMA = [
     items TEXT NOT NULL,
     updated_at INTEGER NOT NULL
   )`,
+  // (3 nov 2026) Cupones de descuento que crea el staff en /staff: kind 'percent' (value = %) o 'amount' (value =
+  // céntimos de dólar). max_uses null = ilimitados; per_player = un uso por jugador (el que paga); min_total = compra
+  // mínima en céntimos de dólar; expires_at ISO (null = no caduca). Los usos salen de los pedidos y carritos pagados.
+  `CREATE TABLE IF NOT EXISTS coupons (
+    code TEXT PRIMARY KEY,
+    kind TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    max_uses INTEGER,
+    per_player INTEGER NOT NULL DEFAULT 0,
+    min_total INTEGER NOT NULL DEFAULT 0,
+    expires_at TEXT,
+    note TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  // (3 nov 2026) El carrito: varios productos en UN solo pago. El carrito es el pago (sesión de Stripe, pedido de PayPal
+  // o preferencia de Mercado Pago, con su importe total); cada producto es un pedido normal de «orders» con cart_id, que
+  // se entrega, se ve en «Mis compras» y se reembolsa desde el panel como cualquier otro. amount = lo cobrado (en la
+  // moneda del cobro); subtotal y discount, en céntimos de dólar. payer = UUID de quien paga (el que recibe, o quien
+  // regala). items = [{ orderId, productId, quantity, unit, line, charged, rankFrom }].
+  `CREATE TABLE IF NOT EXISTS carts (
+    id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    username TEXT NOT NULL,
+    uuid TEXT,
+    payer TEXT,
+    amount INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    subtotal INTEGER NOT NULL,
+    discount INTEGER NOT NULL DEFAULT 0,
+    coupon TEXT,
+    method TEXT,
+    session_id TEXT,
+    capture_id TEXT,
+    items TEXT NOT NULL,
+    gift TEXT,
+    discord TEXT,
+    discord_id TEXT,
+    terms_version TEXT,
+    error TEXT,
+    refunded TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    paid_at TEXT
+  )`,
+  'CREATE INDEX IF NOT EXISTS carts_session ON carts (session_id)',
+  'CREATE INDEX IF NOT EXISTS carts_capture ON carts (capture_id)',
+  'CREATE INDEX IF NOT EXISTS carts_coupon ON carts (coupon)',
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.
@@ -160,6 +209,13 @@ const MIGRATIONS = [
   // paga, para que vea en su cuenta los regalos que hizo. El pedido (username/uuid) es el del jugador que lo recibe.
   'ALTER TABLE orders ADD COLUMN gift TEXT',
   'ALTER TABLE orders ADD COLUMN gift_from TEXT',
+  // (3 nov 2026) Carrito y cupones: el carrito al que pertenece el pedido (si se pagó junto con otros), el cupón usado
+  // y lo que descontó (céntimos de dólar).
+  'ALTER TABLE orders ADD COLUMN cart_id TEXT',
+  'ALTER TABLE orders ADD COLUMN coupon TEXT',
+  'ALTER TABLE orders ADD COLUMN discount INTEGER',
+  'CREATE INDEX IF NOT EXISTS orders_cart ON orders (cart_id)',
+  'CREATE INDEX IF NOT EXISTS orders_coupon ON orders (coupon)',
 ];
 
 // La versión del esquema: cambia sola al tocar SCHEMA o MIGRATIONS (y entonces se vuelven a pasar una vez).
@@ -218,6 +274,9 @@ function rowToOrder(row) {
     method: row.method || (row.session_id ? 'stripe' : null),
     prizes: row.prizes ? JSON.parse(row.prizes) : null,
     gift: row.gift ? JSON.parse(row.gift) : null,
+    cartId: row.cart_id || null,
+    coupon: row.coupon || null,
+    discount: row.discount || 0,
     error: row.error,
     refunded: row.refunded,
     createdAt: row.created_at,
@@ -226,6 +285,59 @@ function rowToOrder(row) {
     deliveredAt: row.delivered_at,
   };
 }
+
+function rowToCart(row) {
+  if (!row) return null;
+  return {
+    isCart: true,
+    id: row.id,
+    status: row.status,
+    username: row.username,
+    uuid: row.uuid || null,
+    payer: row.payer || null,
+    amount: row.amount,
+    currency: row.currency,
+    subtotal: row.subtotal,
+    discount: row.discount || 0,
+    coupon: row.coupon || null,
+    method: row.method || null,
+    sessionId: row.session_id || null,
+    paymentIntent: row.capture_id || null,
+    items: JSON.parse(row.items || '[]'),
+    gift: row.gift ? JSON.parse(row.gift) : null,
+    discord: row.discord ? JSON.parse(row.discord) : null,
+    discordId: row.discord_id || null,
+    termsVersion: row.terms_version || null,
+    error: row.error,
+    refunded: row.refunded,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    paidAt: row.paid_at,
+  };
+}
+
+function rowToCoupon(row) {
+  if (!row) return null;
+  return {
+    code: row.code,
+    kind: row.kind,
+    value: row.value,
+    active: row.active === 1,
+    maxUses: row.max_uses ?? null,
+    perPlayer: row.per_player === 1,
+    minTotal: row.min_total || 0,
+    expiresAt: row.expires_at || null,
+    note: row.note || null,
+    createdAt: row.created_at,
+    ...(row.used !== undefined ? { used: row.used || 0, reserved: row.reserved || 0 } : {}),
+  };
+}
+
+// Un cupón cuenta como usado en cada pago hecho con él (un pedido suelto o un carrito) y queda «apartado» mientras el
+// pago está empezado: los de la última hora y pico (la página de pago de Stripe caduca a la hora) y los que esperan el
+// cobro del banco (OXXO, transferencias). Los reembolsados siguen contando como usados.
+export const COUPON_HOLD_MS = 65 * 60 * 1000;
+const PAID_ORDER = "('queued', 'delivered', 'delivery_failed', 'reiniciado')";
 
 function rowToUser(row) {
   if (!row) return null;
@@ -300,17 +412,15 @@ export function createStore(db) {
 
   async function findOrderByPaymentIntent(paymentIntent) {
     await init();
-    return rowToOrder(await db.prepare('SELECT * FROM orders WHERE capture_id = ?').bind(paymentIntent).first());
+    return rowToOrder(await db.prepare('SELECT * FROM orders WHERE capture_id = ? ORDER BY id').bind(paymentIntent).first());
   }
 
-  async function createOrder(order) {
-    await init();
-    const at = now();
-    await db
+  function orderInsert(order, at) {
+    return db
       .prepare(
         `INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, discord, discord_id,
-           session_id, rank_from, terms_version, method, gift, gift_from, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           session_id, rank_from, terms_version, method, gift, gift_from, cart_id, coupon, discount, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         order.id,
@@ -329,10 +439,200 @@ export function createStore(db) {
         order.method || null,
         order.gift ? JSON.stringify(order.gift) : null,
         order.gift ? String(order.gift.fromUuid).toLowerCase() : null,
+        order.cartId || null,
+        order.coupon || null,
+        order.discount || null,
         at,
         at,
-      )
+      );
+  }
+
+  async function createOrder(order) {
+    await init();
+    await orderInsert(order, now()).run();
+  }
+
+  // --- Carritos (varios productos en un solo pago) ---
+
+  // El carrito y sus pedidos (uno por producto), todo a la vez
+  async function createCart(cart, orders) {
+    await init();
+    const at = now();
+    await db.batch([
+      db
+        .prepare(
+          `INSERT INTO carts (id, status, username, uuid, payer, amount, currency, subtotal, discount, coupon, method,
+             session_id, items, gift, discord, discord_id, terms_version, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          cart.id,
+          cart.status,
+          cart.username,
+          cart.uuid || null,
+          cart.payer ? String(cart.payer).toLowerCase() : null,
+          cart.amount,
+          cart.currency,
+          cart.subtotal,
+          cart.discount || 0,
+          cart.coupon || null,
+          cart.method || null,
+          cart.sessionId || null,
+          JSON.stringify(cart.items || []),
+          cart.gift ? JSON.stringify(cart.gift) : null,
+          cart.discord ? JSON.stringify(cart.discord) : null,
+          cart.discordId || null,
+          cart.termsVersion || null,
+          at,
+          at,
+        ),
+      ...orders.map((o) => orderInsert(o, at)),
+    ]);
+  }
+
+  async function getCart(id) {
+    await init();
+    return rowToCart(await db.prepare('SELECT * FROM carts WHERE id = ?').bind(id).first());
+  }
+
+  async function findCartBySession(sessionId) {
+    await init();
+    return rowToCart(await db.prepare('SELECT * FROM carts WHERE session_id = ?').bind(sessionId).first());
+  }
+
+  async function findCartByPaymentIntent(paymentIntent) {
+    await init();
+    return rowToCart(await db.prepare('SELECT * FROM carts WHERE capture_id = ?').bind(paymentIntent).first());
+  }
+
+  const CART_FIELDS = { status: 'status', paymentIntent: 'capture_id', error: 'error', refunded: 'refunded', paidAt: 'paid_at', sessionId: 'session_id' };
+
+  // Cambia el carrito; con status 'expired' o 'failed' sus pedidos (sin pagar) pasan al mismo estado.
+  async function updateCart(id, fields) {
+    await init();
+    const sets = [];
+    const values = [];
+    for (const [key, column] of Object.entries(CART_FIELDS)) {
+      if (!(key in fields)) continue;
+      sets.push(`${column} = ?`);
+      values.push(fields[key] ?? null);
+    }
+    const at = now();
+    sets.push('updated_at = ?');
+    values.push(at, id);
+    const statements = [db.prepare(`UPDATE carts SET ${sets.join(', ')} WHERE id = ?`).bind(...values)];
+    if (['expired', 'failed', 'error'].includes(fields.status)) {
+      statements.push(
+        db
+          .prepare(`UPDATE orders SET status = ?, error = ?, updated_at = ? WHERE cart_id = ? AND status IN ('pending', 'awaiting_payment')`)
+          .bind(fields.status, fields.error ?? null, at, id),
+      );
+    } else if (fields.status === 'awaiting_payment') {
+      statements.push(db.prepare(`UPDATE orders SET status = 'awaiting_payment', updated_at = ? WHERE cart_id = ? AND status = 'pending'`).bind(at, id));
+    }
+    await db.batch(statements);
+  }
+
+  // Marca el carrito como pagado. true solo la primera vez (el webhook y la página de confirmación pueden avisar del
+  // mismo pago): así el anuncio y el recibo salen una sola vez.
+  async function markCartPaid(id, paymentIntent) {
+    await init();
+    const at = now();
+    const res = await db
+      .prepare(`UPDATE carts SET status = 'paid', capture_id = ?, paid_at = COALESCE(paid_at, ?), updated_at = ? WHERE id = ? AND status != 'paid'`)
+      .bind(paymentIntent || null, at, at, id)
       .run();
+    return res.meta.changes === 1;
+  }
+
+  // Los pedidos de un carrito, en el orden en que se metieron
+  async function cartOrders(cartId) {
+    await init();
+    const { results } = await db.prepare('SELECT * FROM orders WHERE cart_id = ? ORDER BY id').bind(cartId).all();
+    return results.map(rowToOrder);
+  }
+
+  // --- Cupones ---
+
+  async function getCoupon(code) {
+    await init();
+    return rowToCoupon(await db.prepare('SELECT * FROM coupons WHERE code = ?').bind(String(code).toUpperCase()).first());
+  }
+
+  // Los cupones con sus usos (pagos hechos) y los apartados ahora mismo (pagos empezados sin terminar)
+  async function listCoupons() {
+    await init();
+    const since = new Date(Date.now() - COUPON_HOLD_MS).toISOString();
+    const { results } = await db
+      .prepare(
+        `SELECT c.*,
+           (SELECT COUNT(*) FROM orders o WHERE o.coupon = c.code AND o.cart_id IS NULL AND o.status IN ${PAID_ORDER})
+             + (SELECT COUNT(*) FROM carts k WHERE k.coupon = c.code AND k.status = 'paid') AS used,
+           (SELECT COUNT(*) FROM orders o WHERE o.coupon = c.code AND o.cart_id IS NULL
+               AND (o.status = 'awaiting_payment' OR (o.status = 'pending' AND o.created_at > ?)))
+             + (SELECT COUNT(*) FROM carts k WHERE k.coupon = c.code
+               AND (k.status = 'awaiting_payment' OR (k.status = 'pending' AND k.created_at > ?))) AS reserved
+         FROM coupons c ORDER BY c.created_at DESC`,
+      )
+      .bind(since, since)
+      .all();
+    return results.map(rowToCoupon);
+  }
+
+  // Usos de un cupón: pagados, apartados y los de este jugador (el que paga: el que lo recibe o, en un regalo, quien
+  // regala), pagados o empezados
+  async function couponUsage(code, payer) {
+    await init();
+    const since = new Date(Date.now() - COUPON_HOLD_MS).toISOString();
+    const who = String(payer || '').toLowerCase();
+    const row = await db
+      .prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL AND status IN ${PAID_ORDER})
+             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1 AND status = 'paid') AS used,
+           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL
+               AND (status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2)))
+             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1
+               AND (status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2))) AS reserved,
+           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL AND ?3 != ''
+               AND COALESCE(gift_from, lower(uuid)) = ?3
+               AND (status IN ${PAID_ORDER} OR status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2)))
+             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1 AND ?3 != '' AND payer = ?3
+               AND (status IN ('paid', 'awaiting_payment') OR (status = 'pending' AND created_at > ?2))) AS mine`,
+      )
+      .bind(String(code).toUpperCase(), since, who)
+      .first();
+    return { used: row?.used || 0, reserved: row?.reserved || 0, mine: row?.mine || 0 };
+  }
+
+  // Devuelve false si ya hay uno con ese código
+  async function createCoupon(c) {
+    await init();
+    const at = now();
+    const res = await db
+      .prepare(
+        `INSERT OR IGNORE INTO coupons (code, kind, value, active, max_uses, per_player, min_total, expires_at, note, created_at, updated_at)
+         VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(c.code, c.kind, c.value, c.maxUses ?? null, c.perPlayer ? 1 : 0, c.minTotal || 0, c.expiresAt || null, c.note || null, at, at)
+      .run();
+    return res.meta.changes === 1;
+  }
+
+  async function setCouponActive(code, active) {
+    await init();
+    const res = await db
+      .prepare('UPDATE coupons SET active = ?, updated_at = ? WHERE code = ?')
+      .bind(active ? 1 : 0, now(), String(code).toUpperCase())
+      .run();
+    return res.meta.changes === 1;
+  }
+
+  // Borrar un cupón no toca los pedidos que lo usaron (siguen diciendo qué cupón llevaron)
+  async function deleteCoupon(code) {
+    await init();
+    const res = await db.prepare('DELETE FROM coupons WHERE code = ?').bind(String(code).toUpperCase()).run();
+    return res.meta.changes === 1;
   }
 
   async function updateOrder(id, fields) {
@@ -1090,6 +1390,19 @@ export function createStore(db) {
     findOrderByPaymentIntent,
     findOrderBySession,
     createOrder,
+    createCart,
+    getCart,
+    findCartBySession,
+    findCartByPaymentIntent,
+    updateCart,
+    markCartPaid,
+    cartOrders,
+    getCoupon,
+    listCoupons,
+    couponUsage,
+    createCoupon,
+    setCouponActive,
+    deleteCoupon,
     updateOrder,
     ordersFor,
     queueDelivery,

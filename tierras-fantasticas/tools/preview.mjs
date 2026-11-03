@@ -26,6 +26,8 @@ const ASSETS = {
 const env = { DB: createD1(), ASSETS, BRIDGE_SECRET: 'x', STRIPE_SECRET_KEY: 'sk', SESSION_SECRET: 's', DISCORD_CLIENT_ID: 'c', DISCORD_CLIENT_SECRET: 'd', LOGGER: { log() {}, warn() {}, error() {} } };
 // Con PREVIEW_PAYPAL=1 aparece también el botón de PayPal (sin PayPal real: solo para ver la ventana de compra).
 if (process.env.PREVIEW_PAYPAL) Object.assign(env, { PAYPAL_CLIENT_ID: 'p', PAYPAL_CLIENT_SECRET: 'p' });
+// Con PREVIEW_STAFF=<clave> se puede entrar a /staff con esa clave; trae los cupones VERANO10 (10 %) y FIJO5 (5 USD)
+if (process.env.PREVIEW_STAFF) env.ADMIN_KEY = process.env.PREVIEW_STAFF;
 const call = (p, init) => worker.fetch(new Request(`http://localhost${p}`, init), env);
 await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x' }, body: JSON.stringify({ protocol: 2, players: [{ name: 'Steve', uuid: '11111111-2222-3333-4444-555555555555' }], seen: [{ name: 'Notch', uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5', at: Date.now() - 1e6 }] }) });
 await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x' }, body: JSON.stringify({ protocol: 2, ranks: [{ uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5', rank: 'rango-mortal' }] }) });
@@ -50,6 +52,14 @@ for (const [i, cls] of ['glacia', 'thor'].entries()) {
 }
 env.DB.raw.prepare("INSERT INTO skill_active (uuid, class, updated_at) VALUES ('069a79f4-44e9-4726-a5be-fca90e38aaf5', 'glacia', 1)").run();
 env.DB.raw.prepare("UPDATE players SET coins = 12000, coins_at = 1 WHERE uuid = '069a79f4-44e9-4726-a5be-fca90e38aaf5'").run();
+if (process.env.PREVIEW_STAFF) {
+  for (const c of [
+    { code: 'VERANO10', kind: 'percent', value: 10, maxUses: 50, note: 'Promo de verano' },
+    { code: 'FIJO5', kind: 'amount', value: '5', perPlayer: true, expiresAt: '2099-12-31' },
+  ]) {
+    await call('/api/staff/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.ADMIN_KEY}` }, body: JSON.stringify(c) });
+  }
+}
 // Cookie de sesión de Notch, por si hace falta ver «Mi cuenta» con la sesión iniciada
 if (process.env.COOKIE_FILE) fs.writeFileSync(process.env.COOKIE_FILE, cookie);
 http.createServer(async (req, res) => {

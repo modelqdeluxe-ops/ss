@@ -88,10 +88,27 @@ export function money(cents, currency) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format((cents || 0) / 100);
 }
 
-const METHOD = { stripe: 'Tarjeta con Stripe (Apple Pay, Google Pay, Link)', paypal: 'PayPal' };
+const METHOD = { stripe: 'Tarjeta con Stripe (Apple Pay, Google Pay, Link)', paypal: 'PayPal', mercadopago: 'Mercado Pago' };
+
+// (3 nov 2026) Carrito y cupones. items = las líneas de un carrito pagado de una vez ([{ name, quantity, amount,
+// currency }]); cart = el carrito de un pedido que se pagó junto con otros ({ id, count, amount, currency }); coupon =
+// { code, label, subtotal, discount } (céntimos de dólar) si la compra llevó cupón.
+function cartRows({ order, items, cart, coupon }) {
+  const rows = [];
+  if (items?.length) {
+    rows.push(['Productos', items.map((it) => `${it.name}${it.quantity > 1 ? ` ×${it.quantity}` : ''} · ${money(it.amount, it.currency)}`).join('\n')]);
+  }
+  if (cart) rows.push(['Pagado en el carrito', `${cart.id}: ${cart.count} productos en un solo pago de ${money(cart.amount, cart.currency)}`]);
+  const c = coupon || (order.coupon ? { code: order.coupon, discount: order.discount || 0 } : null);
+  if (c) {
+    if (c.subtotal) rows.push(['Subtotal sin cupón', `${money(c.subtotal, 'USD')} (precio de catálogo)`]);
+    rows.push(['Cupón de descuento', `${c.code}${c.label ? ` (${c.label})` : ''}: −${money(c.discount, 'USD')}`]);
+  }
+  return rows;
+}
 
 // Filas del recibo [etiqueta, valor]; owner = la copia del dueño (con IP y navegador)
-export function receiptRows({ order, productName, acceptance, owner = false }) {
+export function receiptRows({ order, productName, acceptance, owner = false, items = null, cart = null, coupon = null }) {
   const rows = [
     ['Número de pedido', order.id],
     ['Fecha del pedido', fmtDate(order.createdAt)],
@@ -105,8 +122,9 @@ export function receiptRows({ order, productName, acceptance, owner = false }) {
       : []),
     [order.gift ? 'Jugador que lo recibe' : 'Jugador de Minecraft', order.username],
     [order.gift ? 'UUID de quien lo recibe' : 'UUID del jugador', order.uuid || '—'],
-    ['Producto', `${productName}${order.quantity > 1 ? ` ×${order.quantity}` : ''}`],
-    ['Importe total pagado', `${money(order.amount, order.currency)} (${order.currency}, precio final)`],
+    ...(items?.length ? [] : [['Producto', `${productName}${order.quantity > 1 ? ` ×${order.quantity}` : ''}`]]),
+    ...cartRows({ order, items, cart, coupon }),
+    [cart ? 'Parte de este producto' : 'Importe total pagado', `${money(order.amount, order.currency)} (${order.currency}, precio final)`],
     ['Medio de pago', METHOD[order.method] || order.method || '—'],
     ['Referencia del pago', order.paymentIntent || '—'],
     ['Sesión de pago', order.sessionId || '—'],
@@ -123,14 +141,14 @@ export function receiptRows({ order, productName, acceptance, owner = false }) {
   return rows;
 }
 
-export function receiptPdf({ order, productName, acceptance, owner = false }) {
+export function receiptPdf({ order, productName, acceptance, owner = false, items = null, cart = null, coupon = null }) {
   const blocks = [
     { text: 'Recibo de compra', size: 22, bold: true, gap: 2 },
     { text: SELLER, size: 11, color: [0.42, 0.35, 0.29], gap: 2 },
     { text: `${SITE} · ${CONTACT}`, size: 10, color: [0.42, 0.35, 0.29], gap: 6 },
     { rule: true },
   ];
-  for (const [k, v] of receiptRows({ order, productName, acceptance, owner })) {
+  for (const [k, v] of receiptRows({ order, productName, acceptance, owner, items, cart, coupon })) {
     blocks.push({ text: k, size: 9.5, bold: true, color: [0.42, 0.35, 0.29], gap: 0 }, { text: String(v), size: 11, gap: 7 });
   }
   blocks.push({ rule: true }, { text: 'Política de cancelación y reembolsos (aceptada al pagar)', size: 12, bold: true, gap: 4 });

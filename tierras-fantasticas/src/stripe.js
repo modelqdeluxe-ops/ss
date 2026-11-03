@@ -71,7 +71,21 @@ export class Stripe {
   }
 
   // Página de pago de Stripe para un pedido. El precio sale del catálogo de la web, nunca del navegador.
-  createCheckoutSession({ orderId, currency, unitAmount, quantity, name, description, image, successUrl, cancelUrl, metadata }) {
+  // (3 nov 2026) Con «lines» ([{ name, description, image, unitAmount, quantity }]) cobra varios productos de una vez
+  // (el carrito); si no, la línea única de siempre.
+  createCheckoutSession({ orderId, currency, unitAmount, quantity, name, description, image, successUrl, cancelUrl, metadata, lines }) {
+    const items = (lines?.length ? lines : [{ name, description, image, unitAmount, quantity }]).map((l) => ({
+      quantity: l.quantity,
+      price_data: {
+        currency: currency.toLowerCase(),
+        unit_amount: toStripeAmount(l.unitAmount, currency),
+        product_data: {
+          name: l.name.slice(0, 250),
+          description: l.description ? l.description.slice(0, 500) : undefined,
+          images: l.image ? [l.image] : undefined,
+        },
+      },
+    }));
     return this.request('POST', '/v1/checkout/sessions', {
       idempotencyKey: `checkout-${orderId}`,
       form: {
@@ -82,20 +96,7 @@ export class Stripe {
         locale: 'es',
         // Stripe exige al menos 30 minutos; una hora da tiempo de sobra para pagar.
         expires_at: Math.floor(Date.now() / 1000) + 3600,
-        line_items: [
-          {
-            quantity,
-            price_data: {
-              currency: currency.toLowerCase(),
-              unit_amount: toStripeAmount(unitAmount, currency),
-              product_data: {
-                name: name.slice(0, 250),
-                description: description ? description.slice(0, 500) : undefined,
-                images: image ? [image] : undefined,
-              },
-            },
-          },
-        ],
+        line_items: items,
         metadata,
         // (30 oct 2026) la política, también en la página de pago de Stripe, junto al botón (prueba de que se vio)
         custom_text: {

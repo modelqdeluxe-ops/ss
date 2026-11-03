@@ -2501,7 +2501,8 @@ h4 {
 
 .pay-legal {
   margin: 10px 0 0;
-  color: var(--faint);
+  /* (3 nov 2026) --faint daba 3,8:1 sobre el fondo de la ventana; --muted, 6,2:1 */
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -6340,7 +6341,8 @@ h4 {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--rank, var(--gold));
+  /* (3 nov 2026) el color del rango oscurecido (regla del Atardecer): el verde de Mortal tal cual daba 1,4:1 */
+  color: color-mix(in srgb, var(--rank, var(--gold)) 40%, #1f1408);
   border: 1px solid color-mix(in srgb, var(--rank, var(--gold)) 50%, transparent);
   background: color-mix(in srgb, var(--rank, var(--gold)) 13%, transparent);
 }
@@ -8293,4 +8295,567 @@ h4 {
   margin-top: 2px;
   color: var(--text-2);
   font-size: 12.5px;
+}
+
+/* ---------- Carrito y cupones (3 nov 2026) ----------
+   El dueño: «agrega en la tienda la opción del carrito, para que paguen 1 solo pago al comprar varios productos» y
+   cupones de descuento (los crea el staff). «Al carrito» es secundario, como el regalo: blanco con contorno y letra
+   verde muy oscuros (14:1 sobre blanco; el lima sigue siendo solo comprar). El botón flotante que abre el carrito es
+   lima, porque lleva a pagar. */
+.btn-cart {
+  --l: #ffffff;
+  --c: #f7fdee;
+  --d: #d9f99d;
+  --o: #1f3a07;
+  --fg: #1f3a07;
+  text-shadow: none;
+}
+
+.btn-cart::before {
+  background: #f3fde3;
+}
+
+.btn-cart svg {
+  width: 20px;
+  height: 20px;
+  filter: none;
+}
+
+/* El botón flotante: cuántos productos lleva y cuánto suman */
+.cart-fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 0 20px 0 14px;
+  border: 3px solid #1f3a07;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #bef264 0 38%, #a3e635 38% 72%, #84cc16 72%);
+  box-shadow:
+    0 5px 0 #1f3a07,
+    0 18px 30px -12px rgb(0 0 0 / 0.45);
+  color: #172b04;
+  font: 900 15px/1.1 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--spring),
+    box-shadow 0.2s var(--ease);
+}
+
+.cart-fab[hidden] {
+  display: none;
+}
+
+.cart-fab:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 7px 0 #1f3a07,
+    0 22px 34px -12px rgb(0 0 0 / 0.5);
+}
+
+.cart-fab:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #1f3a07;
+  transition-duration: 0.06s;
+}
+
+.cart-fab:focus-visible {
+  outline: 3px solid var(--n-900);
+  outline-offset: 3px;
+}
+
+.cart-fab-ico {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+}
+
+.cart-fab-ico svg {
+  width: 27px;
+  height: 27px;
+}
+
+.cart-count {
+  position: absolute;
+  top: -11px;
+  right: -12px;
+  min-width: 23px;
+  height: 23px;
+  padding: 0 6px;
+  border: 2px solid #fff;
+  border-radius: 99px;
+  background: var(--n-900);
+  color: #fff;
+  font: 900 12px/19px var(--font-body);
+  font-style: normal;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-fab-text {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.cart-fab-text small {
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-fab.bump {
+  animation: cart-bump 0.5s var(--spring);
+}
+
+@keyframes cart-bump {
+  35% {
+    transform: scale(1.12);
+  }
+}
+
+/* Con el carrito a la vista, «volver arriba» y los avisos suben para no taparlo */
+body.has-cart .to-top {
+  bottom: calc(18px + 74px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 640px) {
+  body.has-cart .toast {
+    bottom: calc(22px + 74px + env(safe-area-inset-bottom));
+  }
+
+  .cart-fab {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-fab.bump {
+    animation: none;
+  }
+}
+
+/* En la ventana del carrito: sus productos */
+.cart-lines {
+  margin: 16px 0 18px;
+}
+
+.cart-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-line {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 2px solid var(--bd);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.cart-line.is-blocked {
+  border-color: #f2b8b5;
+  background: #fff7f6;
+}
+
+.cart-img {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--tile);
+}
+
+.cart-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.cart-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cart-main b {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.cart-kind {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.cart-note {
+  color: #7a4a00;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.cart-note.bad {
+  color: #9b1c1c;
+}
+
+.cart-side {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.cart-price {
+  color: var(--text);
+  font: 800 15px/1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cart-ctrl {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cart-qty {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 2px solid var(--n-400);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cart-qty button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: var(--n-50);
+  color: var(--n-900);
+  font: 800 18px/1 var(--font-body);
+  cursor: pointer;
+}
+
+.cart-qty button:hover:not(:disabled) {
+  background: var(--n-100);
+}
+
+.cart-qty button:disabled {
+  color: var(--n-400);
+  cursor: not-allowed;
+}
+
+.cart-qty output {
+  min-width: 26px;
+  color: var(--text);
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-del {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--n-400);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--n-700);
+  cursor: pointer;
+}
+
+.cart-del svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cart-del:hover {
+  border-color: #9b1c1c;
+  color: #9b1c1c;
+}
+
+.cart-qty button:focus-visible,
+.cart-del:focus-visible,
+.coupon-toggle:focus-visible,
+.coupon-remove:focus-visible {
+  outline: 2px solid var(--a-300);
+  outline-offset: 2px;
+}
+
+.cart-tools {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.cart-empty {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border: 2px dashed var(--n-300);
+  border-radius: 14px;
+  color: var(--text-2);
+}
+
+.cart-empty svg {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  color: var(--n-600);
+}
+
+.cart-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* El cupón: un enlace que lo abre, el campo con «Aplicar» y, aplicado, una etiqueta que se puede quitar */
+.coupon-box {
+  margin-top: 18px;
+}
+
+.coupon-toggle {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--a-300);
+  font: 800 14.5px/1.2 var(--font-body);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.coupon-toggle svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.coupon-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.coupon-field input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--bd-2);
+  border-radius: var(--r);
+  background: var(--bg-2);
+  color: var(--text);
+  font: 800 15px/1 var(--font-body);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.coupon-field input::placeholder {
+  color: var(--faint);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.coupon-field input:focus {
+  outline: none;
+  border-color: var(--a-400);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgb(var(--a-rgb) / 0.15);
+}
+
+.coupon-field .btn {
+  flex: none;
+}
+
+.coupon-chip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 7px 7px 12px;
+  border: 2px dashed #166534;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #14532d;
+  font-size: 14.5px;
+}
+
+.coupon-chip > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.coupon-chip > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.coupon-chip b {
+  letter-spacing: 0.04em;
+}
+
+.coupon-remove {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #14532d;
+  cursor: pointer;
+}
+
+.coupon-remove:hover {
+  background: #dcfce7;
+}
+
+.coupon-remove svg {
+  width: 16px;
+  height: 16px;
+}
+
+.coupon-msg {
+  margin: 6px 0 0;
+  color: #166534;
+  font-size: 13px;
+}
+
+.coupon-msg:empty {
+  display: none;
+}
+
+.coupon-msg.bad {
+  color: #9b1c1c;
+}
+
+/* Subtotal y descuento encima del total */
+.dialog-sum {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bd);
+  color: var(--text-2);
+  font-size: 14.5px;
+}
+
+.dialog-sum > div {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+.dialog-sum .sum-off {
+  color: #166534;
+  font-weight: 700;
+}
+
+.dialog-sum:not([hidden]) + .dialog-total {
+  margin-top: 10px;
+  padding-top: 12px;
+}
+
+/* «o añádelo al carrito», debajo de los botones de pago */
+.to-cart {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.to-cart-or {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.to-cart-or::before,
+.to-cart-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bd);
+}
+
+.to-cart p {
+  margin: 0;
+}
+
+/* La página de confirmación: un producto por línea */
+.receipt-line {
+  display: block;
+}
+
+/* Tarjetas estrechas (dos crates por fila en el móvil): con el carrito no caben los tres botones en una fila sin
+   aplastar «Comprar». Si el pie mide menos de 215 px, «Comprar» va arriba a lo ancho y el regalo y el carrito debajo,
+   mitad y mitad. */
+.crate-tile .card-foot,
+.product .card-foot {
+  container-type: inline-size;
+}
+
+@container (max-width: 215px) {
+  .card-foot .buy-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .card-foot .buy-pair > .btn:not(.btn-icon) {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .card-foot .buy-pair > .btn.btn-icon {
+    width: 100%;
+  }
+}
+
+/* VFX: «Comprar» y el carrito juntos en la misma fila (el carrito, cuadrado) */
+.cx-deal .buy-pair {
+  flex: 1 1 170px;
+  flex-wrap: nowrap;
+}
+
+.cx-deal .buy-pair > .btn:not(.btn-icon) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cx-deal .buy-pair > .btn.btn-icon {
+  flex: none;
 }
