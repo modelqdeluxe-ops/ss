@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **3 nov 2026 — 1.3.168, LOS OBJETOS DE TF FUERA DEL CREATIVO**: nadie (ni OP) los ve en el creativo ni en JEI y el
+> servidor rechaza sacarlos, moverlos o copiarlos en creativo (`items/TFCreativeGuard`); Espinas en toda la armadura con
+> el yunque; las piezas de las crates se desencantan en la piedra de afilar (las de los rangos no). CHECKPOINT en
+> `HANDOFF.md`.
+>
 > **3 nov 2026 — WEB: CARRITO Y CUPONES**: carrito con un solo pago (Stripe, PayPal, Mercado Pago), sin topes y con
 > regalos para varios jugadores (cada línea con su destinatario), y cupones de descuento (porcentaje o cantidad fija)
 > que crea el staff en `/staff`. Cómo funciona: «Carrito» y «Cupones de
