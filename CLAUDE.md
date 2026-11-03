@@ -12,7 +12,8 @@
   **La 0.8 (rehecho a calidad Core Keeper) está publicada; cómo se hizo y lo que queda por repasar, en
   `corazon-dormido/CHECKPOINT-0.8.md`, y las reglas del arte en `corazon-dormido/ARTE.md`: léelos antes de seguir.**
   Cada push que toca `corazon-dormido/` compila el APK y sustituye el que descarga el dueño: los commits de trabajo
-  sin terminar llevan `[skip ci]`.
+  sin terminar llevan `[skip ci]`. El dueño compró Core Keeper: lo que se ha sacado de sus archivos (medidas y
+  números, nunca sus dibujos ni su código) está en `corazon-dormido/ESTUDIO-CK.md`.
   Skill de pixel art: `.claude/skills/pxl-pixel-art`.
 - Crates (TF Crates, `/tf crates`, la cinemática del Bosque de las Hadas): lee `tf-client/CRATES.md` antes de tocarlas.
 - NPC de escenas (`/tf npc`, el panel de NPC, los 13 packs de Scenes): lee `tf-client/NPCS.md` antes de tocarlos.
