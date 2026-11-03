@@ -284,19 +284,27 @@ pago** con Stripe, PayPal o Mercado Pago (en pesos al cambio del día) por todo:
 - Compatibilidad: el navegador de antes (todo el carrito para un jugador con `gift: true`) sigue funcionando (cada
   producto pasa a ser un regalo para ese jugador).
 
-**Cupones de descuento (3 nov 2026)**: los crea el staff en `/staff` («Cupones de descuento»): código (o «Generar»),
-**porcentaje** (1–99 %) o **cantidad fija** en dólares, usos máximos (vacío = ilimitados), un solo uso por jugador,
-compra mínima, caducidad (vale todo ese día, hora de México) y una nota. Se pausan, se activan y se borran desde la
-lista, que dice cuántas veces se usó. El jugador lo escribe en la ventana de pago («¿Tienes un cupón de descuento?»),
-en la compra suelta y en el carrito; el servidor lo vuelve a comprobar al pagar.
+**Cupones de descuento (3 nov 2026)**: los crea el staff en `/staff` («Cupones de descuento»): código (o «Generar»:
+`TF-` + 8 letras al azar), **porcentaje** (1–99 %) o **cantidad fija** en dólares, **cuántas veces se puede usar**
+(por defecto **«1 sola vez (se desactiva al usarse)»**; o «Varias veces…» con un número, o «Sin límite»), uno por
+jugador (con varios usos), compra mínima, caducidad (vale todo ese día, hora de México) y una nota. En la lista: «Usado»
+o «Agotado» cuando se gastó, se pausan, se activan y se borran, y **«Usos (N)»** despliega quién lo usó, cuándo, qué
+compró, cuánto pagó, en qué quedó (pagado, pagándose, esperando el cobro, reembolsado) y el número de pedido. El jugador
+lo escribe en la ventana de pago («¿Tienes un cupón de descuento?»), en la compra suelta y en el carrito.
+- **A prueba de filtraciones** (tabla `coupon_claims`): cada pago con un cupón **reclama su uso antes de abrir la página
+  de pago**, de una vez y solo si quedan usos (`claimCoupon`: `INSERT … SELECT … WHERE`, así dos pagos a la vez no
+  pueden pasar los dos). El uso queda apartado mientras ese pago se puede pagar (tarjeta y Mercado Pago, 65 min: con
+  cupón, la página de Mercado Pago caduca a la hora; PayPal, 190 min; un pago que espera al banco u OXXO, hasta que se
+  cobra o falla), se gasta al cobrarse (aunque luego se reembolse) y vuelve a quedar libre si el pago caduca o falla.
+  Si el mismo jugador cancela y vuelve a intentarlo, su intento anterior no le bloquea. Mensajes: «Ese cupón ya se
+  usó: era de un solo uso» o «lo está usando otra persona ahora mismo; si no termina de pagar, vuelve a valer en una
+  hora».
 - El descuento sale del precio en dólares (o del de la mejora de rango) y **el total con cupón nunca baja de
   1,00 USD** (lo mínimo que cobran las pasarelas; para dar algo gratis está «Test»). Con pesos, cada producto ya
   descontado se pasa al cambio del día. En la página de pago va una línea con el total descontado («×N · cupón X»).
-- Usos: cada pago pagado con el cupón (un pedido suelto o un carrito) cuenta uno, también si luego se reembolsa; los
-  pagos empezados hace menos de 65 minutos (o esperando el cobro del banco) lo «apartan». «Uno por jugador» mira a
-  quien paga (en un regalo, quien regala).
-- Rutas: `GET/POST /api/staff/coupons`, `POST /api/staff/coupons/<código>` (`{ active }`) y
-  `DELETE /api/staff/coupons/<código>`, con `ADMIN_KEY`. A quien prueba 8 códigos que no existen se le frena 15 minutos.
+- Rutas: `GET/POST /api/staff/coupons`, `GET /api/staff/coupons/<código>/uses`, `POST /api/staff/coupons/<código>`
+  (`{ active }`) y `DELETE /api/staff/coupons/<código>`, con `ADMIN_KEY`. A quien prueba 8 códigos que no existen se
+  le frena 15 minutos.
 - El pedido guarda `coupon` y `discount` (céntimos de dólar); salen en el recibo, en el panel y en «Mis compras».
 
 **Comprar como regalo**: con la cuenta iniciada, el botón del regalo (o «Como regalo» en la ventana de pago) compra

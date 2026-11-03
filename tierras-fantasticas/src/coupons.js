@@ -95,7 +95,11 @@ export function couponProblem(c, { subtotal, usage, now = Date.now() }) {
   if (!c) return 'Ese cupón no existe.';
   if (!c.active) return 'Ese cupón está pausado.';
   if (c.expiresAt && Date.parse(c.expiresAt) <= now) return 'Ese cupón ya caducó.';
-  if (c.maxUses && usage && usage.used + usage.reserved >= c.maxUses) return 'Ese cupón ya se usó todas las veces que se podía.';
+  if (c.maxUses && usage) {
+    if (usage.used >= c.maxUses) return c.maxUses === 1 ? 'Ese cupón ya se usó: era de un solo uso.' : 'Ese cupón ya se usó todas las veces que se podía.';
+    // Apartado por otro pago que se está haciendo ahora (si no se paga, vuelve a quedar libre al caducar su página de pago)
+    if (usage.used + usage.reserved >= c.maxUses) return 'Ese cupón lo está usando otra persona ahora mismo. Si no termina de pagar, vuelve a valer en una hora.';
+  }
   if (c.perPlayer && usage && usage.mine > 0) return 'Ya usaste este cupón: es de un solo uso por jugador.';
   if (c.minTotal && subtotal < c.minTotal) return `Este cupón es para compras de ${money(c.minTotal)} o más.`;
   if (subtotal <= MIN_TOTAL) return `El cupón solo se aplica a compras de más de ${money(MIN_TOTAL)}.`;

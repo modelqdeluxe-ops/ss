@@ -179,6 +179,23 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS carts_session ON carts (session_id)',
   'CREATE INDEX IF NOT EXISTS carts_capture ON carts (capture_id)',
   'CREATE INDEX IF NOT EXISTS carts_coupon ON carts (coupon)',
+  // (3 nov 2026, el dueño: «un cupón de 1 solo uso: cuando lo use ya queda inhabilitado, porque nos pueden filtrar el
+  // cupón y usarlo todos») Cada pago con un cupón lo «reclama» aquí ANTES de abrir la página de pago, de una vez y solo
+  // si quedan usos (INSERT … SELECT … WHERE: dos pagos a la vez no pueden pasar los dos). state: 'held' (pago empezado:
+  // aparta el uso mientras la página de pago sigue abierta), 'waiting' (esperando el cobro del banco u OXXO: lo aparta
+  // hasta que se cobra), 'used' (pagado: uso gastado, aunque luego se reembolse) y 'void' (caducó, se canceló o falló:
+  // el uso vuelve a quedar libre). payment_id = el pedido suelto o el carrito.
+  `CREATE TABLE IF NOT EXISTS coupon_claims (
+    code TEXT NOT NULL,
+    payment_id TEXT NOT NULL,
+    payer TEXT,
+    method TEXT,
+    state TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (code, payment_id)
+  )`,
+  'CREATE INDEX IF NOT EXISTS coupon_claims_payment ON coupon_claims (payment_id)',
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.
@@ -216,6 +233,20 @@ const MIGRATIONS = [
   'ALTER TABLE orders ADD COLUMN discount INTEGER',
   'CREATE INDEX IF NOT EXISTS orders_cart ON orders (cart_id)',
   'CREATE INDEX IF NOT EXISTS orders_coupon ON orders (coupon)',
+  // (3 nov 2026) Los usos de cupón de antes de coupon_claims, desde los pedidos sueltos y los carritos (una vez: los que
+  // ya están no se tocan)
+  `INSERT OR IGNORE INTO coupon_claims (code, payment_id, payer, method, state, created_at, updated_at)
+   SELECT coupon, id, COALESCE(gift_from, lower(uuid)), method,
+     CASE WHEN status IN ('queued', 'delivered', 'delivery_failed', 'reiniciado', 'error') THEN 'used'
+          WHEN status = 'awaiting_payment' THEN 'waiting' WHEN status = 'pending' THEN 'held' ELSE 'void' END,
+     created_at, updated_at
+   FROM orders WHERE coupon IS NOT NULL AND cart_id IS NULL`,
+  `INSERT OR IGNORE INTO coupon_claims (code, payment_id, payer, method, state, created_at, updated_at)
+   SELECT coupon, id, payer, method,
+     CASE WHEN status IN ('paid', 'error') THEN 'used' WHEN status = 'awaiting_payment' THEN 'waiting'
+          WHEN status = 'pending' THEN 'held' ELSE 'void' END,
+     created_at, updated_at
+   FROM carts WHERE coupon IS NOT NULL`,
 ];
 
 // La versión del esquema: cambia sola al tocar SCHEMA o MIGRATIONS (y entonces se vuelven a pasar una vez).
@@ -333,11 +364,15 @@ function rowToCoupon(row) {
   };
 }
 
-// Un cupón cuenta como usado en cada pago hecho con él (un pedido suelto o un carrito) y queda «apartado» mientras el
-// pago está empezado: los de la última hora y pico (la página de pago de Stripe caduca a la hora) y los que esperan el
-// cobro del banco (OXXO, transferencias). Los reembolsados siguen contando como usados.
+// Un cupón cuenta como usado en cada pago hecho con él (un pedido suelto o un carrito; los reembolsados siguen contando)
+// y queda «apartado» mientras el pago está empezado y todavía se puede pagar: con tarjeta y Mercado Pago, la página de
+// pago caduca a la hora (65 min); con PayPal, a las 3 horas (190 min); y los que esperan el cobro del banco (OXXO,
+// transferencias), hasta que se cobran o fallan. Así un cupón de un solo uso nunca se gasta dos veces.
 export const COUPON_HOLD_MS = 65 * 60 * 1000;
-const PAID_ORDER = "('queued', 'delivered', 'delivery_failed', 'reiniciado')";
+export const COUPON_HOLD_PAYPAL_MS = 190 * 60 * 1000;
+// Los usos que cuentan: los pagados, los que esperan el cobro y los empezados que aún se pueden pagar (?h1 tarjeta y
+// Mercado Pago, ?h2 PayPal)
+const CLAIM_ACTIVE = `(state IN ('used', 'waiting') OR (state = 'held' AND created_at > CASE WHEN method = 'paypal' THEN ?h2 ELSE ?h1 END))`;
 
 function rowToUser(row) {
   if (!row) return null;
@@ -559,50 +594,110 @@ export function createStore(db) {
     return rowToCoupon(await db.prepare('SELECT * FROM coupons WHERE code = ?').bind(String(code).toUpperCase()).first());
   }
 
-  // Los cupones con sus usos (pagos hechos) y los apartados ahora mismo (pagos empezados sin terminar)
+  const holdSince = () => ({ h1: new Date(Date.now() - COUPON_HOLD_MS).toISOString(), h2: new Date(Date.now() - COUPON_HOLD_PAYPAL_MS).toISOString() });
+  // D1 y node:sqlite: los parámetros con nombre (?h1) se pasan como objeto; aquí se convierten a posición
+  function named(sql, values) {
+    const order = [];
+    const text = sql.replace(/\?(h1|h2|code|payer|payment|method|at)\b/g, (_, k) => {
+      order.push(k);
+      return '?';
+    });
+    return { text, args: order.map((k) => values[k]) };
+  }
+
+  // Los cupones con sus usos (pagos hechos) y los apartados ahora mismo (pagos empezados que aún se pueden pagar)
   async function listCoupons() {
     await init();
-    const since = new Date(Date.now() - COUPON_HOLD_MS).toISOString();
-    const { results } = await db
-      .prepare(
-        `SELECT c.*,
-           (SELECT COUNT(*) FROM orders o WHERE o.coupon = c.code AND o.cart_id IS NULL AND o.status IN ${PAID_ORDER})
-             + (SELECT COUNT(*) FROM carts k WHERE k.coupon = c.code AND k.status = 'paid') AS used,
-           (SELECT COUNT(*) FROM orders o WHERE o.coupon = c.code AND o.cart_id IS NULL
-               AND (o.status = 'awaiting_payment' OR (o.status = 'pending' AND o.created_at > ?)))
-             + (SELECT COUNT(*) FROM carts k WHERE k.coupon = c.code
-               AND (k.status = 'awaiting_payment' OR (k.status = 'pending' AND k.created_at > ?))) AS reserved
-         FROM coupons c ORDER BY c.created_at DESC`,
-      )
-      .bind(since, since)
-      .all();
+    const { text, args } = named(
+      `SELECT c.*,
+         (SELECT COUNT(*) FROM coupon_claims WHERE code = c.code AND state = 'used') AS used,
+         (SELECT COUNT(*) FROM coupon_claims WHERE code = c.code AND state != 'used' AND ${CLAIM_ACTIVE}) AS reserved
+       FROM coupons c ORDER BY c.created_at DESC`,
+      holdSince(),
+    );
+    const { results } = await db.prepare(text).bind(...args).all();
     return results.map(rowToCoupon);
   }
 
-  // Usos de un cupón: pagados, apartados y los de este jugador (el que paga: el que lo recibe o, en un regalo, quien
-  // regala), pagados o empezados
+  // Usos de un cupón para quien va a pagar: pagados, apartados por OTROS (lo que este mismo jugador empezó y no pagó no
+  // le bloquea: si vuelve a intentarlo, se le libera) y los suyos ya pagados o esperando el cobro (para «uno por
+  // jugador»). payer = el UUID de quien paga (el que lo recibe o, en un regalo, quien regala).
   async function couponUsage(code, payer) {
     await init();
-    const since = new Date(Date.now() - COUPON_HOLD_MS).toISOString();
     const who = String(payer || '').toLowerCase();
-    const row = await db
-      .prepare(
-        `SELECT
-           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL AND status IN ${PAID_ORDER})
-             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1 AND status = 'paid') AS used,
-           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL
-               AND (status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2)))
-             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1
-               AND (status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2))) AS reserved,
-           (SELECT COUNT(*) FROM orders WHERE coupon = ?1 AND cart_id IS NULL AND ?3 != ''
-               AND COALESCE(gift_from, lower(uuid)) = ?3
-               AND (status IN ${PAID_ORDER} OR status = 'awaiting_payment' OR (status = 'pending' AND created_at > ?2)))
-             + (SELECT COUNT(*) FROM carts WHERE coupon = ?1 AND ?3 != '' AND payer = ?3
-               AND (status IN ('paid', 'awaiting_payment') OR (status = 'pending' AND created_at > ?2))) AS mine`,
-      )
-      .bind(String(code).toUpperCase(), since, who)
-      .first();
+    const { text, args } = named(
+      `SELECT
+         (SELECT COUNT(*) FROM coupon_claims WHERE code = ?code AND state = 'used') AS used,
+         (SELECT COUNT(*) FROM coupon_claims WHERE code = ?code AND state != 'used' AND ${CLAIM_ACTIVE}
+            AND (state = 'waiting' OR COALESCE(payer, '') != ?payer OR ?payer = '')) AS reserved,
+         (SELECT COUNT(*) FROM coupon_claims WHERE code = ?code AND ?payer != '' AND payer = ?payer AND state IN ('used', 'waiting')) AS mine`,
+      { ...holdSince(), code: String(code).toUpperCase(), payer: who },
+    );
+    const row = await db.prepare(text).bind(...args).first();
     return { used: row?.used || 0, reserved: row?.reserved || 0, mine: row?.mine || 0 };
+  }
+
+  /**
+   * Reclama un uso del cupón para un pago, de una vez: solo si el cupón está activo, no caducó, le quedan usos (contando
+   * los apartados por otros) y, si es de uno por jugador, este jugador no lo usó. Antes, lo que este mismo jugador había
+   * empezado con el cupón sin pagar se libera (volvió a intentarlo). Devuelve true si lo consiguió.
+   */
+  async function claimCoupon({ code, paymentId, payer, method }) {
+    await init();
+    const who = String(payer || '').toLowerCase();
+    const at = now();
+    const v = { ...holdSince(), code: String(code).toUpperCase(), payer: who, payment: paymentId, method: method || null, at };
+    const release = named(`UPDATE coupon_claims SET state = 'void', updated_at = ?at WHERE code = ?code AND ?payer != '' AND payer = ?payer AND state = 'held'`, v);
+    const insert = named(
+      `INSERT INTO coupon_claims (code, payment_id, payer, method, state, created_at, updated_at)
+       SELECT ?code, ?payment, ?payer, ?method, 'held', ?at, ?at
+       WHERE EXISTS (SELECT 1 FROM coupons WHERE code = ?code AND active = 1 AND (expires_at IS NULL OR expires_at > ?at))
+         AND ((SELECT max_uses FROM coupons WHERE code = ?code) IS NULL
+           OR (SELECT COUNT(*) FROM coupon_claims WHERE code = ?code AND ${CLAIM_ACTIVE})
+              < (SELECT max_uses FROM coupons WHERE code = ?code))
+         AND ((SELECT per_player FROM coupons WHERE code = ?code) = 0
+           OR (SELECT COUNT(*) FROM coupon_claims WHERE code = ?code AND payer = ?payer AND state IN ('used', 'waiting')) = 0)`,
+      v,
+    );
+    const [, res] = await db.batch([db.prepare(release.text).bind(...release.args), db.prepare(insert.text).bind(...insert.args)]);
+    return res.meta.changes === 1;
+  }
+
+  // El estado del uso de un cupón de un pago (si lo tiene): 'waiting', 'used' o 'void'. Un uso gastado ('used') no
+  // vuelve atrás. Si el pago se cobró y no había fila (pagos de antes), se apunta.
+  async function setClaimState(paymentId, state, { code = null, payer = null, method = null } = {}) {
+    await init();
+    const at = now();
+    const res = await db
+      .prepare(`UPDATE coupon_claims SET state = ?, updated_at = ? WHERE payment_id = ? AND state != 'used'`)
+      .bind(state, at, paymentId)
+      .run();
+    if (!res.meta.changes && state === 'used' && code) {
+      await db
+        .prepare(
+          `INSERT OR IGNORE INTO coupon_claims (code, payment_id, payer, method, state, created_at, updated_at) VALUES (?, ?, ?, ?, 'used', ?, ?)`,
+        )
+        .bind(String(code).toUpperCase(), paymentId, payer ? String(payer).toLowerCase() : null, method, at, at)
+        .run();
+    }
+  }
+
+  // Quién usó el cupón: cada pago con su estado (los liberados, no), del más nuevo al más viejo
+  async function couponUses(code, limit = 100) {
+    await init();
+    const { text, args } = named(
+      `SELECT k.payment_id, k.payer, k.method, k.state, k.created_at, k.updated_at,
+         CASE WHEN k.state = 'held' AND NOT ${CLAIM_ACTIVE.replaceAll('state', 'k.state').replaceAll('created_at', 'k.created_at').replaceAll('method', 'k.method')} THEN 1 ELSE 0 END AS stale,
+         p.name AS payer_name
+       FROM coupon_claims k LEFT JOIN players p ON p.uuid = k.payer
+       WHERE k.code = ?code AND k.state != 'void'
+       ORDER BY k.created_at DESC LIMIT ${Number(limit) || 100}`,
+      { ...holdSince(), code: String(code).toUpperCase() },
+    );
+    const { results } = await db.prepare(text).bind(...args).all();
+    return results
+      .filter((r) => !r.stale)
+      .map((r) => ({ paymentId: r.payment_id, payer: r.payer || null, payerName: r.payer_name || null, method: r.method || null, state: r.state, at: r.created_at, updatedAt: r.updated_at }));
   }
 
   // Devuelve false si ya hay uno con ese código
@@ -1400,6 +1495,9 @@ export function createStore(db) {
     getCoupon,
     listCoupons,
     couponUsage,
+    claimCoupon,
+    setClaimState,
+    couponUses,
     createCoupon,
     setCouponActive,
     deleteCoupon,

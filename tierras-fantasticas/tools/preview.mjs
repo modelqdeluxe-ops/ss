@@ -56,9 +56,19 @@ if (process.env.PREVIEW_STAFF) {
   for (const c of [
     { code: 'VERANO10', kind: 'percent', value: 10, maxUses: 50, note: 'Promo de verano' },
     { code: 'FIJO5', kind: 'amount', value: '5', perPlayer: true, expiresAt: '2099-12-31' },
+    { code: 'TF-UNICO01', kind: 'percent', value: 50, maxUses: 1, note: 'Ya usado por Notch' },
+    { code: 'TF-UNICO02', kind: 'amount', value: '3', maxUses: 1 },
   ]) {
     await call('/api/staff/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.ADMIN_KEY}` }, body: JSON.stringify(c) });
   }
+  // TF-UNICO01 ya gastado: un pedido de Notch pagado con él
+  const at = new Date().toISOString();
+  env.DB.raw
+    .prepare("INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, method, coupon, discount, created_at, updated_at) VALUES ('TFPREVIEWCUPON1', 'delivered', 'Notch', '069a79f4-44e9-4726-a5be-fca90e38aaf5', 'crate-oni', 1, 250, 'USD', 'stripe', 'TF-UNICO01', 249, ?, ?)")
+    .run(at, at);
+  env.DB.raw
+    .prepare("INSERT INTO coupon_claims (code, payment_id, payer, method, state, created_at, updated_at) VALUES ('TF-UNICO01', 'TFPREVIEWCUPON1', '069a79f4-44e9-4726-a5be-fca90e38aaf5', 'stripe', 'used', ?, ?)")
+    .run(at, at);
 }
 // Cookie de sesión de Notch, por si hace falta ver «Mi cuenta» con la sesión iniciada
 if (process.env.COOKIE_FILE) fs.writeFileSync(process.env.COOKIE_FILE, cookie);

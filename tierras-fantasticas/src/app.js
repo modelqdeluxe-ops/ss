@@ -833,8 +833,26 @@ export function createApp(env) {
     return (await store.getOrder(id)) || (id.startsWith('CART') ? await store.getCart(id) : null);
   }
   const settled = (local) => CLAIMED.includes(local.status) || local.status === 'paid';
-  const setPay = (local, fields) => (local.isCart ? store.updateCart(local.id, fields) : store.updateOrder(local.id, fields));
-  const complete = (local, ctx, paymentIntent) => (local.isCart ? fulfillCart(local, ctx, paymentIntent) : fulfill(local, ctx, paymentIntent));
+  // El cupón del pago (si lo lleva) sigue al pago: caducado o fallido = el uso vuelve a quedar libre; esperando el cobro =
+  // apartado hasta que se cobre; cobrado (o con un importe que no cuadra: hubo dinero) = uso gastado
+  const CLAIM_FOR = { expired: 'void', failed: 'void', awaiting_payment: 'waiting', error: 'used' };
+  const couponOf = (local) => (local.coupon && (local.isCart || !local.cartId) ? local.coupon : null);
+  const claimInfo = (local) => ({ code: couponOf(local), payer: local.isCart ? local.payer : local.gift?.fromUuid || local.uuid, method: local.method });
+  async function setPay(local, fields) {
+    await (local.isCart ? store.updateCart(local.id, fields) : store.updateOrder(local.id, fields));
+    if (couponOf(local) && CLAIM_FOR[fields.status]) await store.setClaimState(local.id, CLAIM_FOR[fields.status], claimInfo(local));
+  }
+  async function complete(local, ctx, paymentIntent) {
+    const status = await (local.isCart ? fulfillCart(local, ctx, paymentIntent) : fulfill(local, ctx, paymentIntent));
+    if (couponOf(local)) await store.setClaimState(local.id, 'used', claimInfo(local));
+    return status;
+  }
+
+  // Por qué no se pudo reclamar el uso (otro pago lo acaba de gastar o apartar, o se pausó)
+  async function couponGone(code, payer) {
+    const c = await store.getCoupon(code);
+    return couponProblem(c, { subtotal: Number.MAX_SAFE_INTEGER, usage: c ? await store.couponUsage(code, payer) : null }) || 'Ese cupón ya no se puede usar.';
+  }
 
   // Icono de un objeto de la tienda de monedas: los del TF Client tienen miniatura en la web.
   const setIds = [...new Set(products.map((p) => p.set).filter(Boolean))].sort((a, b) => b.length - a.length);
@@ -1425,6 +1443,12 @@ export function createApp(env) {
 
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
+      // (3 nov 2026) El uso del cupón se reclama ANTES de abrir el pago, de una vez: si se gastó (un cupón de un solo uso
+      // que alguien acaba de usar), no se cobra con descuento
+      const couponPayer = gift ? String(buyer.uuid).toLowerCase() : player.uuid;
+      if (applied.coupon && !(await store.claimCoupon({ code: applied.coupon.code, paymentId: id, payer: couponPayer, method }))) {
+        return json({ error: await couponGone(applied.coupon.code, couponPayer), code: 'coupon' }, 409);
+      }
       // Con cupón se cobra una sola línea con el total ya descontado (cantidad 1, «×N» en el nombre); sin él, como siempre
       const amount = q.unit * quantity - discount;
       // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord. En un regalo, no: el
@@ -1459,6 +1483,8 @@ export function createApp(env) {
             pendingUrl: `${base}/success?order=${id}`,
             notificationUrl: https ? `${base}/webhook/mercadopago` : undefined,
             statement: 'TIERRASFANTASTICAS',
+            // Con cupón, la página de pago caduca a la hora (como la de Stripe): un uso apartado no se paga días después
+            ...(applied.coupon ? { expiresInMinutes: 60 } : {}),
           });
           checkout = { id: pref.id, url: pref.init_point };
           if (!checkout.url) throw new Error('Mercado Pago no devolvió el enlace de pago');
@@ -1533,6 +1559,8 @@ export function createApp(env) {
         );
         return json({ id, url: checkout.url });
       } catch (err) {
+        // El pago no se abrió: el uso del cupón queda libre
+        if (applied.coupon) await store.setClaimState(id, 'void');
         log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
@@ -1661,6 +1689,10 @@ export function createApp(env) {
       const amount = sum(charged);
       const id = orderId('CART');
       const base = PUBLIC_URL || url.origin;
+      // El uso del cupón, reclamado antes de abrir el pago (ver /api/checkout)
+      if (coupon && !(await store.claimCoupon({ code: coupon.code, paymentId: id, payer, method }))) {
+        return json({ error: await couponGone(coupon.code, payer), code: 'coupon' }, 409);
+      }
       const https = base.startsWith('https://');
       // El rol y el anuncio de lo que es «para ti» van al Discord de quien compra (si entró con su cuenta)
       const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
@@ -1718,6 +1750,7 @@ export function createApp(env) {
             pendingUrl: `${base}/success?order=${id}`,
             notificationUrl: https ? `${base}/webhook/mercadopago` : undefined,
             statement: 'TIERRASFANTASTICAS',
+            ...(coupon ? { expiresInMinutes: 60 } : {}),
           });
           checkout = { id: pref.id, url: pref.init_point };
           if (!checkout.url) throw new Error('Mercado Pago no devolvió el enlace de pago');
@@ -1813,6 +1846,7 @@ export function createApp(env) {
         await recordTerms(req, { uuid: payer, username: payerName, context: gifts.length ? 'regalo' : 'compra', orderId: id });
         return json({ id, url: checkout.url });
       } catch (err) {
+        if (coupon) await store.setClaimState(id, 'void');
         log.error(`Error creando el pago del carrito en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
@@ -1960,6 +1994,33 @@ export function createApp(env) {
       if (!(await store.createCoupon(made.coupon))) return json({ error: `Ya hay un cupón ${made.coupon.code}. Elige otro código.` }, 409);
       log.warn(`Cupón creado desde el panel de staff: ${made.coupon.code} (${couponLabel(made.coupon)})`);
       return json({ ok: true, coupon: await store.getCoupon(made.coupon.code) });
+    },
+
+    // Quién usó un cupón: cada pago con el jugador que pagó, cuándo, qué compró, cuánto y si está pagado o pagándose
+    'GET /api/staff/coupons/:code/uses': async (req, { params }) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const code = normalizeCode(params.code);
+      const coupon = code ? await store.getCoupon(code) : null;
+      if (!coupon) return json({ error: 'Ese cupón no existe.' }, 404);
+      const uses = [];
+      for (const u of await store.couponUses(code)) {
+        const pay = await loadPayable(u.paymentId);
+        const children = pay?.isCart ? await store.cartOrders(pay.id) : pay ? [pay] : [];
+        uses.push({
+          id: u.paymentId,
+          state: u.state,
+          at: u.at,
+          payer: u.payerName || pay?.gift?.fromName || pay?.username || null,
+          method: u.method || pay?.method || null,
+          amount: pay?.amount ?? null,
+          currency: pay?.currency || null,
+          discount: pay ? (pay.isCart ? pay.discount : pay.discount || 0) : null,
+          refunded: pay?.refunded || null,
+          products: children.map((o) => `${productById.get(o.productId)?.name || o.productId}${o.quantity > 1 ? ` ×${o.quantity}` : ''}${o.gift ? ` (regalo para ${o.username})` : ''}`),
+        });
+      }
+      return json({ coupon: { ...coupon, label: couponLabel(coupon) }, uses });
     },
 
     // Pausar o volver a activar un cupón ({ active: true|false })
